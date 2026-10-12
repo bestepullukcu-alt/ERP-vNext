@@ -1,0 +1,638 @@
+﻿{
+    "probe":  {
+                  "tenantId":  "969456f9-2390-450c-b2d1-9792ec289cb9",
+                  "legalEntityId":  "599cb744-6b28-4e0e-a598-7c2c3843f045",
+                  "userId":  "190306b3-abdf-4d90-9936-0f5748f039ad",
+                  "callerCorrelationId":  "51b563ac-154b-4440-82b3-e3cc9919df6f",
+                  "siteId":  "38bb58a3-61ce-490e-abcb-5ce01f04157e",
+                  "mongoDatabase":  "diten_inventory_mock"
+              },
+    "steps":  [
+                  {
+                      "step":  "a) POST /api/locations Site (+ e: X-Correlation-Id UUID)",
+                      "request":  {
+                                      "method":  "POST",
+                                      "url":  "http://localhost:5090/api/locations",
+                                      "headers":  {
+                                                      "Authorization":  "Bearer ***(masked)",
+                                                      "X-Correlation-Id":  "51b563ac-154b-4440-82b3-e3cc9919df6f",
+                                                      "Idempotency-Key":  "int2-20261002065415-site"
+                                                  },
+                                      "body":  {
+                                                   "idempotencyKey":  "int2-20261002065415-site",
+                                                   "code":  "SITE-INT2-20261002065415",
+                                                   "name":  "INT-2 probe site",
+                                                   "type":  "Site"
+                                               }
+                                  },
+                      "gatewayResponse":  {
+                                              "status":  201,
+                                              "xCorrelationId":  [
+                                                                     "51b563ac-154b-4440-82b3-e3cc9919df6f"
+                                                                 ],
+                                              "etag":  "W/\"1\"",
+                                              "body":  {
+                                                           "version":  1,
+                                                           "createdAt":  "2026-10-02T06:54:15.3934369Z",
+                                                           "createdBy":  "190306b3-abdf-4d90-9936-0f5748f039ad",
+                                                           "locationId":  "38bb58a3-61ce-490e-abcb-5ce01f04157e",
+                                                           "code":  "SITE-INT2-20261002065415",
+                                                           "name":  "INT-2 probe site",
+                                                           "type":  "Site",
+                                                           "legalEntityId":  "599cb744-6b28-4e0e-a598-7c2c3843f045",
+                                                           "status":  "Active",
+                                                           "isStockable":  false,
+                                                           "operatingMode":  "internal",
+                                                           "contractVersion":  "v1"
+                                                       }
+                                          }
+                  },
+                  {
+                      "step":  "a) same Idempotency-Key again (replay)",
+                      "request":  {
+                                      "method":  "POST",
+                                      "url":  "http://localhost:5090/api/locations",
+                                      "headers":  {
+                                                      "Authorization":  "Bearer ***(masked)",
+                                                      "Idempotency-Key":  "int2-20261002065415-site"
+                                                  },
+                                      "body":  {
+                                                   "idempotencyKey":  "int2-20261002065415-site",
+                                                   "code":  "SITE-INT2-20261002065415",
+                                                   "name":  "INT-2 probe site",
+                                                   "type":  "Site"
+                                               }
+                                  },
+                      "gatewayResponse":  {
+                                              "status":  200,
+                                              "xCorrelationId":  [
+                                                                     "e440ad19203549fbad371bc34efd4cae"
+                                                                 ],
+                                              "etag":  "W/\"1\"",
+                                              "body":  {
+                                                           "version":  1,
+                                                           "createdAt":  "2026-10-02T06:54:15.3930000Z",
+                                                           "createdBy":  "190306b3-abdf-4d90-9936-0f5748f039ad",
+                                                           "locationId":  "38bb58a3-61ce-490e-abcb-5ce01f04157e",
+                                                           "code":  "SITE-INT2-20261002065415",
+                                                           "name":  "INT-2 probe site",
+                                                           "type":  "Site",
+                                                           "legalEntityId":  "599cb744-6b28-4e0e-a598-7c2c3843f045",
+                                                           "status":  "Active",
+                                                           "isStockable":  false,
+                                                           "operatingMode":  "internal",
+                                                           "contractVersion":  "v1"
+                                                       }
+                                          }
+                  },
+                  {
+                      "step":  "b) GET /api/locations/{id}",
+                      "request":  {
+                                      "method":  "GET",
+                                      "url":  "http://localhost:5090/api/locations/38bb58a3-61ce-490e-abcb-5ce01f04157e",
+                                      "headers":  {
+                                                      "Authorization":  "Bearer ***(masked)"
+                                                  },
+                                      "body":  null
+                                  },
+                      "gatewayResponse":  {
+                                              "status":  200,
+                                              "xCorrelationId":  [
+                                                                     "3ed6e766d01e477e8134351eca2fc370"
+                                                                 ],
+                                              "etag":  "W/\"1\"",
+                                              "body":  {
+                                                           "locationId":  "38bb58a3-61ce-490e-abcb-5ce01f04157e",
+                                                           "code":  "SITE-INT2-20261002065415",
+                                                           "name":  "INT-2 probe site",
+                                                           "type":  "Site",
+                                                           "legalEntityId":  "599cb744-6b28-4e0e-a598-7c2c3843f045",
+                                                           "status":  "Active",
+                                                           "isStockable":  false,
+                                                           "operatingMode":  "internal",
+                                                           "contractVersion":  "v1"
+                                                       }
+                                          }
+                  },
+                  {
+                      "step":  "b) PATCH name with If-Match W/\"1\"",
+                      "request":  {
+                                      "method":  "PATCH",
+                                      "url":  "http://localhost:5090/api/locations/38bb58a3-61ce-490e-abcb-5ce01f04157e",
+                                      "headers":  {
+                                                      "Authorization":  "Bearer ***(masked)",
+                                                      "If-Match":  "W/\"1\""
+                                                  },
+                                      "body":  {
+                                                   "name":  "INT-2 probe site (renamed)"
+                                               }
+                                  },
+                      "gatewayResponse":  {
+                                              "status":  200,
+                                              "xCorrelationId":  [
+                                                                     "18580baf028b4ed69b5bed1fe9332015"
+                                                                 ],
+                                              "etag":  "W/\"2\"",
+                                              "body":  {
+                                                           "version":  2,
+                                                           "createdAt":  "2026-10-02T06:54:15.3930000Z",
+                                                           "createdBy":  "190306b3-abdf-4d90-9936-0f5748f039ad",
+                                                           "updatedAt":  "2026-10-02T06:54:16.0984891Z",
+                                                           "updatedBy":  "190306b3-abdf-4d90-9936-0f5748f039ad",
+                                                           "locationId":  "38bb58a3-61ce-490e-abcb-5ce01f04157e",
+                                                           "code":  "SITE-INT2-20261002065415",
+                                                           "name":  "INT-2 probe site (renamed)",
+                                                           "type":  "Site",
+                                                           "legalEntityId":  "599cb744-6b28-4e0e-a598-7c2c3843f045",
+                                                           "status":  "Active",
+                                                           "isStockable":  false,
+                                                           "operatingMode":  "internal",
+                                                           "contractVersion":  "v1"
+                                                       }
+                                          }
+                  },
+                  {
+                      "step":  "b) PATCH again with the now-stale If-Match W/\"1\"",
+                      "request":  {
+                                      "method":  "PATCH",
+                                      "url":  "http://localhost:5090/api/locations/38bb58a3-61ce-490e-abcb-5ce01f04157e",
+                                      "headers":  {
+                                                      "Authorization":  "Bearer ***(masked)",
+                                                      "If-Match":  "W/\"1\""
+                                                  },
+                                      "body":  {
+                                                   "name":  "stale"
+                                               }
+                                  },
+                      "gatewayResponse":  {
+                                              "status":  409,
+                                              "xCorrelationId":  [
+                                                                     "62fe1729477e49a9941af81ff3348537"
+                                                                 ],
+                                              "etag":  null,
+                                              "body":  {
+                                                           "error":  {
+                                                                         "code":  "LOCATION_CONFLICT",
+                                                                         "message":  "The location changed since it was read; reload it and retry with its current ETag.",
+                                                                         "correlationId":  "62fe1729-477e-49a9-941a-f81ff3348537"
+                                                                     },
+                                                           "contractVersion":  "v1"
+                                                       }
+                                          }
+                  },
+                  {
+                      "step":  "b) PATCH without If-Match",
+                      "request":  {
+                                      "method":  "PATCH",
+                                      "url":  "http://localhost:5090/api/locations/38bb58a3-61ce-490e-abcb-5ce01f04157e",
+                                      "headers":  {
+                                                      "Authorization":  "Bearer ***(masked)"
+                                                  },
+                                      "body":  {
+                                                   "name":  "none"
+                                               }
+                                  },
+                      "gatewayResponse":  {
+                                              "status":  400,
+                                              "xCorrelationId":  [
+                                                                     "07cd04cddba1487e81468c69eec988c3"
+                                                                 ],
+                                              "etag":  null,
+                                              "body":  {
+                                                           "error":  {
+                                                                         "code":  "INVALID_REQUEST",
+                                                                         "message":  "The If-Match header is required.",
+                                                                         "correlationId":  "07cd04cd-dba1-487e-8146-8c69eec988c3"
+                                                                     },
+                                                           "contractVersion":  "v1"
+                                                       }
+                                          }
+                  },
+                  {
+                      "step":  "c) POST /api/locations Warehouse",
+                      "request":  {
+                                      "method":  "POST",
+                                      "url":  "http://localhost:5090/api/locations",
+                                      "headers":  {
+                                                      "Authorization":  "Bearer ***(masked)",
+                                                      "Idempotency-Key":  "int2-20261002065415-wh"
+                                                  },
+                                      "body":  {
+                                                   "idempotencyKey":  "int2-20261002065415-wh",
+                                                   "code":  "WH-INT2-20261002065415",
+                                                   "name":  "INT-2 warehouse",
+                                                   "type":  "Warehouse",
+                                                   "parentId":  "38bb58a3-61ce-490e-abcb-5ce01f04157e"
+                                               }
+                                  },
+                      "gatewayResponse":  {
+                                              "status":  201,
+                                              "xCorrelationId":  [
+                                                                     "0fa589c04de643998f6e772de1aea0dc"
+                                                                 ],
+                                              "etag":  "W/\"1\"",
+                                              "body":  {
+                                                           "version":  1,
+                                                           "createdAt":  "2026-10-02T06:54:16.5076790Z",
+                                                           "createdBy":  "190306b3-abdf-4d90-9936-0f5748f039ad",
+                                                           "locationId":  "adae4fc6-7aef-4a85-ad31-9babe99c4446",
+                                                           "code":  "WH-INT2-20261002065415",
+                                                           "name":  "INT-2 warehouse",
+                                                           "type":  "Warehouse",
+                                                           "parentId":  "38bb58a3-61ce-490e-abcb-5ce01f04157e",
+                                                           "legalEntityId":  "599cb744-6b28-4e0e-a598-7c2c3843f045",
+                                                           "status":  "Active",
+                                                           "isStockable":  false,
+                                                           "operatingMode":  "internal",
+                                                           "contractVersion":  "v1"
+                                                       }
+                                          }
+                  },
+                  {
+                      "step":  "c) POST /api/locations StorageLocation",
+                      "request":  {
+                                      "method":  "POST",
+                                      "url":  "http://localhost:5090/api/locations",
+                                      "headers":  {
+                                                      "Authorization":  "Bearer ***(masked)",
+                                                      "Idempotency-Key":  "int2-20261002065415-sl"
+                                                  },
+                                      "body":  {
+                                                   "idempotencyKey":  "int2-20261002065415-sl",
+                                                   "code":  "SL-INT2-20261002065415",
+                                                   "name":  "INT-2 storage",
+                                                   "type":  "StorageLocation",
+                                                   "parentId":  "adae4fc6-7aef-4a85-ad31-9babe99c4446"
+                                               }
+                                  },
+                      "gatewayResponse":  {
+                                              "status":  201,
+                                              "xCorrelationId":  [
+                                                                     "07042b8d59994651a765c07a59562175"
+                                                                 ],
+                                              "etag":  "W/\"1\"",
+                                              "body":  {
+                                                           "version":  1,
+                                                           "createdAt":  "2026-10-02T06:54:16.6302054Z",
+                                                           "createdBy":  "190306b3-abdf-4d90-9936-0f5748f039ad",
+                                                           "locationId":  "112080ba-e377-4739-8ee0-7ba6406eb928",
+                                                           "code":  "SL-INT2-20261002065415",
+                                                           "name":  "INT-2 storage",
+                                                           "type":  "StorageLocation",
+                                                           "parentId":  "adae4fc6-7aef-4a85-ad31-9babe99c4446",
+                                                           "legalEntityId":  "599cb744-6b28-4e0e-a598-7c2c3843f045",
+                                                           "status":  "Active",
+                                                           "isStockable":  false,
+                                                           "contractVersion":  "v1"
+                                                       }
+                                          }
+                  },
+                  {
+                      "step":  "c) GET /api/locations (count before the dry run)",
+                      "request":  {
+                                      "method":  "GET",
+                                      "url":  "http://localhost:5090/api/locations",
+                                      "headers":  {
+                                                      "Authorization":  "Bearer ***(masked)"
+                                                  },
+                                      "body":  null
+                                  },
+                      "gatewayResponse":  {
+                                              "status":  200,
+                                              "xCorrelationId":  [
+                                                                     "04e265cc397d405d8d94f6fb8b515d2a"
+                                                                 ],
+                                              "etag":  null,
+                                              "body":  {
+                                                           "items":  [
+                                                                         {
+                                                                             "locationId":  "38bb58a3-61ce-490e-abcb-5ce01f04157e",
+                                                                             "code":  "SITE-INT2-20261002065415",
+                                                                             "name":  "INT-2 probe site (renamed)",
+                                                                             "type":  "Site",
+                                                                             "legalEntityId":  "599cb744-6b28-4e0e-a598-7c2c3843f045",
+                                                                             "status":  "Active",
+                                                                             "isStockable":  false,
+                                                                             "operatingMode":  "internal",
+                                                                             "contractVersion":  "v1"
+                                                                         },
+                                                                         {
+                                                                             "locationId":  "112080ba-e377-4739-8ee0-7ba6406eb928",
+                                                                             "code":  "SL-INT2-20261002065415",
+                                                                             "name":  "INT-2 storage",
+                                                                             "type":  "StorageLocation",
+                                                                             "parentId":  "adae4fc6-7aef-4a85-ad31-9babe99c4446",
+                                                                             "legalEntityId":  "599cb744-6b28-4e0e-a598-7c2c3843f045",
+                                                                             "status":  "Active",
+                                                                             "isStockable":  false,
+                                                                             "contractVersion":  "v1"
+                                                                         },
+                                                                         {
+                                                                             "locationId":  "adae4fc6-7aef-4a85-ad31-9babe99c4446",
+                                                                             "code":  "WH-INT2-20261002065415",
+                                                                             "name":  "INT-2 warehouse",
+                                                                             "type":  "Warehouse",
+                                                                             "parentId":  "38bb58a3-61ce-490e-abcb-5ce01f04157e",
+                                                                             "legalEntityId":  "599cb744-6b28-4e0e-a598-7c2c3843f045",
+                                                                             "status":  "Active",
+                                                                             "isStockable":  false,
+                                                                             "operatingMode":  "internal",
+                                                                             "contractVersion":  "v1"
+                                                                         }
+                                                                     ],
+                                                           "total":  3,
+                                                           "contractVersion":  "v1"
+                                                       }
+                                          }
+                  },
+                  {
+                      "step":  "c) POST /api/locations/{id}/bins/bulk dryRun (2 aisles x 2 racks x 1 level x 2 positions)",
+                      "request":  {
+                                      "method":  "POST",
+                                      "url":  "http://localhost:5090/api/locations/112080ba-e377-4739-8ee0-7ba6406eb928/bins/bulk",
+                                      "headers":  {
+                                                      "Authorization":  "Bearer ***(masked)",
+                                                      "Idempotency-Key":  "int2-20261002065415-bulk"
+                                                  },
+                                      "body":  {
+                                                   "idempotencyKey":  "int2-20261002065415-bulk",
+                                                   "aisleFrom":  "A",
+                                                   "aisleTo":  "B",
+                                                   "rackFrom":  1,
+                                                   "rackTo":  2,
+                                                   "levelFrom":  1,
+                                                   "levelTo":  1,
+                                                   "positionsPerLevel":  2,
+                                                   "dryRun":  true
+                                               }
+                                  },
+                      "gatewayResponse":  {
+                                              "status":  200,
+                                              "xCorrelationId":  [
+                                                                     "9b53130ec5c74763aab84499f865b217"
+                                                                 ],
+                                              "etag":  null,
+                                              "body":  {
+                                                           "toCreate":  [
+                                                                            "A-01-01-01",
+                                                                            "A-01-01-02",
+                                                                            "A-02-01-01",
+                                                                            "A-02-01-02",
+                                                                            "B-01-01-01",
+                                                                            "B-01-01-02",
+                                                                            "B-02-01-01",
+                                                                            "B-02-01-02"
+                                                                        ],
+                                                           "skipped":  [
+
+                                                                       ],
+                                                           "count":  8,
+                                                           "contractVersion":  "v1"
+                                                       }
+                                          }
+                  },
+                  {
+                      "step":  "c) GET /api/locations (count after the dry run)",
+                      "request":  {
+                                      "method":  "GET",
+                                      "url":  "http://localhost:5090/api/locations",
+                                      "headers":  {
+                                                      "Authorization":  "Bearer ***(masked)"
+                                                  },
+                                      "body":  null
+                                  },
+                      "gatewayResponse":  {
+                                              "status":  200,
+                                              "xCorrelationId":  [
+                                                                     "046fbee770264002a73327793f7ab638"
+                                                                 ],
+                                              "etag":  null,
+                                              "body":  {
+                                                           "items":  [
+                                                                         {
+                                                                             "locationId":  "38bb58a3-61ce-490e-abcb-5ce01f04157e",
+                                                                             "code":  "SITE-INT2-20261002065415",
+                                                                             "name":  "INT-2 probe site (renamed)",
+                                                                             "type":  "Site",
+                                                                             "legalEntityId":  "599cb744-6b28-4e0e-a598-7c2c3843f045",
+                                                                             "status":  "Active",
+                                                                             "isStockable":  false,
+                                                                             "operatingMode":  "internal",
+                                                                             "contractVersion":  "v1"
+                                                                         },
+                                                                         {
+                                                                             "locationId":  "112080ba-e377-4739-8ee0-7ba6406eb928",
+                                                                             "code":  "SL-INT2-20261002065415",
+                                                                             "name":  "INT-2 storage",
+                                                                             "type":  "StorageLocation",
+                                                                             "parentId":  "adae4fc6-7aef-4a85-ad31-9babe99c4446",
+                                                                             "legalEntityId":  "599cb744-6b28-4e0e-a598-7c2c3843f045",
+                                                                             "status":  "Active",
+                                                                             "isStockable":  false,
+                                                                             "contractVersion":  "v1"
+                                                                         },
+                                                                         {
+                                                                             "locationId":  "adae4fc6-7aef-4a85-ad31-9babe99c4446",
+                                                                             "code":  "WH-INT2-20261002065415",
+                                                                             "name":  "INT-2 warehouse",
+                                                                             "type":  "Warehouse",
+                                                                             "parentId":  "38bb58a3-61ce-490e-abcb-5ce01f04157e",
+                                                                             "legalEntityId":  "599cb744-6b28-4e0e-a598-7c2c3843f045",
+                                                                             "status":  "Active",
+                                                                             "isStockable":  false,
+                                                                             "operatingMode":  "internal",
+                                                                             "contractVersion":  "v1"
+                                                                         }
+                                                                     ],
+                                                           "total":  3,
+                                                           "contractVersion":  "v1"
+                                                       }
+                                          }
+                  },
+                  {
+                      "step":  "d) GET /api/locations/{id}/path",
+                      "request":  {
+                                      "method":  "GET",
+                                      "url":  "http://localhost:5090/api/locations/112080ba-e377-4739-8ee0-7ba6406eb928/path",
+                                      "headers":  {
+                                                      "Authorization":  "Bearer ***(masked)"
+                                                  },
+                                      "body":  null
+                                  },
+                      "gatewayResponse":  {
+                                              "status":  200,
+                                              "xCorrelationId":  [
+                                                                     "04fb82c3d8a84292b03aecfbcf8453c8"
+                                                                 ],
+                                              "etag":  null,
+                                              "body":  {
+                                                           "locationId":  "112080ba-e377-4739-8ee0-7ba6406eb928",
+                                                           "path":  [
+                                                                        {
+                                                                            "type":  "Site",
+                                                                            "id":  "38bb58a3-61ce-490e-abcb-5ce01f04157e",
+                                                                            "code":  "SITE-INT2-20261002065415"
+                                                                        },
+                                                                        {
+                                                                            "type":  "Warehouse",
+                                                                            "id":  "adae4fc6-7aef-4a85-ad31-9babe99c4446",
+                                                                            "code":  "WH-INT2-20261002065415"
+                                                                        },
+                                                                        {
+                                                                            "type":  "StorageLocation",
+                                                                            "id":  "112080ba-e377-4739-8ee0-7ba6406eb928",
+                                                                            "code":  "SL-INT2-20261002065415"
+                                                                        }
+                                                                    ],
+                                                           "contractVersion":  "v1"
+                                                       }
+                                          }
+                  },
+                  {
+                      "step":  "d) GET /api/locations/{id}/history",
+                      "request":  {
+                                      "method":  "GET",
+                                      "url":  "http://localhost:5090/api/locations/38bb58a3-61ce-490e-abcb-5ce01f04157e/history",
+                                      "headers":  {
+                                                      "Authorization":  "Bearer ***(masked)"
+                                                  },
+                                      "body":  null
+                                  },
+                      "gatewayResponse":  {
+                                              "status":  200,
+                                              "xCorrelationId":  [
+                                                                     "f3b0799d18cc4b089d00bb90f98107f8"
+                                                                 ],
+                                              "etag":  null,
+                                              "body":  {
+                                                           "items":  [
+                                                                         {
+                                                                             "changeId":  "67bd858d-9546-4929-af64-7c7496a4ed1d",
+                                                                             "action":  "Updated",
+                                                                             "field":  "name",
+                                                                             "oldValue":  "INT-2 probe site",
+                                                                             "newValue":  "INT-2 probe site (renamed)",
+                                                                             "actorUserId":  "190306b3-abdf-4d90-9936-0f5748f039ad",
+                                                                             "occurredAt":  "2026-10-02T06:54:16.0980000Z",
+                                                                             "correlationId":  "18580baf-028b-4ed6-9b5b-ed1fe9332015"
+                                                                         },
+                                                                         {
+                                                                             "changeId":  "f7e1796f-33a8-4fc4-b07b-c5325c7dde76",
+                                                                             "action":  "Created",
+                                                                             "newValue":  "SITE-INT2-20261002065415",
+                                                                             "actorUserId":  "190306b3-abdf-4d90-9936-0f5748f039ad",
+                                                                             "occurredAt":  "2026-10-02T06:54:15.3930000Z",
+                                                                             "correlationId":  "51b563ac-154b-4440-82b3-e3cc9919df6f"
+                                                                         }
+                                                                     ],
+                                                           "total":  2,
+                                                           "page":  1,
+                                                           "pageSize":  50,
+                                                           "contractVersion":  "v1"
+                                                       }
+                                          }
+                  },
+                  {
+                      "step":  "d) GET /api/locations/search?type=Site",
+                      "request":  {
+                                      "method":  "GET",
+                                      "url":  "http://localhost:5090/api/locations/search?type=Site",
+                                      "headers":  {
+                                                      "Authorization":  "Bearer ***(masked)"
+                                                  },
+                                      "body":  null
+                                  },
+                      "gatewayResponse":  {
+                                              "status":  200,
+                                              "xCorrelationId":  [
+                                                                     "9b3dd455e16541f2a050d64ec4717562"
+                                                                 ],
+                                              "etag":  null,
+                                              "body":  {
+                                                           "items":  [
+                                                                         {
+                                                                             "locationId":  "38bb58a3-61ce-490e-abcb-5ce01f04157e",
+                                                                             "code":  "SITE-INT2-20261002065415",
+                                                                             "name":  "INT-2 probe site (renamed)",
+                                                                             "type":  "Site",
+                                                                             "legalEntityId":  "599cb744-6b28-4e0e-a598-7c2c3843f045",
+                                                                             "status":  "Active",
+                                                                             "isStockable":  false,
+                                                                             "operatingMode":  "internal",
+                                                                             "contractVersion":  "v1"
+                                                                         }
+                                                                     ],
+                                                           "total":  1,
+                                                           "page":  1,
+                                                           "pageSize":  50,
+                                                           "contractVersion":  "v1"
+                                                       }
+                                          }
+                  },
+                  {
+                      "step":  "f) no token",
+                      "request":  {
+                                      "method":  "GET",
+                                      "url":  "http://localhost:5090/api/locations/38bb58a3-61ce-490e-abcb-5ce01f04157e",
+                                      "headers":  {
+
+                                                  },
+                                      "body":  null
+                                  },
+                      "gatewayResponse":  {
+                                              "status":  401,
+                                              "xCorrelationId":  [
+                                                                     "791624215b1440a2b1c5e4f6a8c5afc8"
+                                                                 ],
+                                              "etag":  null,
+                                              "body":  {
+                                                           "error":  {
+                                                                         "message":  "A valid bearer token is required.",
+                                                                         "correlationId":  "79162421-5b14-40a2-b1c5-e4f6a8c5afc8"
+                                                                     },
+                                                           "contractVersion":  "v1"
+                                                       }
+                                          }
+                  },
+                  {
+                      "step":  "f) PUT /api/locations/{id}",
+                      "request":  {
+                                      "method":  "PUT",
+                                      "url":  "http://localhost:5090/api/locations/38bb58a3-61ce-490e-abcb-5ce01f04157e",
+                                      "headers":  {
+                                                      "Authorization":  "Bearer ***(masked)"
+                                                  },
+                                      "body":  {
+                                                   "name":  "put"
+                                               }
+                                  },
+                      "gatewayResponse":  {
+                                              "status":  404,
+                                              "xCorrelationId":  [
+                                                                     "087dd25fe4de440eaa6d1fcb211ddd73"
+                                                                 ],
+                                              "etag":  null,
+                                              "body":  null
+                                          }
+                  },
+                  {
+                      "step":  "f) DELETE /api/locations/{id}",
+                      "request":  {
+                                      "method":  "DELETE",
+                                      "url":  "http://localhost:5090/api/locations/38bb58a3-61ce-490e-abcb-5ce01f04157e",
+                                      "headers":  {
+                                                      "Authorization":  "Bearer ***(masked)"
+                                                  },
+                                      "body":  null
+                                  },
+                      "gatewayResponse":  {
+                                              "status":  404,
+                                              "xCorrelationId":  [
+                                                                     "ab3b913c085848058ef55bdb9860a064"
+                                                                 ],
+                                              "etag":  null,
+                                              "body":  null
+                                          }
+                  }
+              ]
+}

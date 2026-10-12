@@ -1,0 +1,62 @@
+@using Diten.Web.Views.Inventory.Locations
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LocationsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@*
+    L-2 filters = the searchLocations parameters (pack §11): type (multi chip — the contract's LocationType enum),
+    status (multi chip — LocationStatus enum), can hold stock (single), parent (searched on the server among the
+    company's own locations). The free-text search and the sort live in the toolbar / headers (the factory).
+*@
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+
+                    <div class="filter-chip filter-type">
+                        <select id="filterType" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["FilterType"]">
+                            <option value="Site">@Localizer["TypeSite"]</option>
+                            <option value="Warehouse">@Localizer["TypeWarehouse"]</option>
+                            <option value="StorageLocation">@Localizer["TypeStorageLocation"]</option>
+                            <option value="Zone">@Localizer["TypeZone"]</option>
+                            <option value="Bin">@Localizer["TypeBin"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-status">
+                        <select id="filterStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@SharedLocalizer["Status"]">
+                            <option value="Active">@Localizer["StatusActive"]</option>
+                            <option value="Inactive">@Localizer["StatusInactive"]</option>
+                            <option value="Archived">@Localizer["StatusArchived"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-stockable">
+                        <select id="filterStockable" class="form-select form-select-sm select2" data-placeholder="@Localizer["FilterStockable"]">
+                            <option value="">@SharedLocalizer["ShowAll"]</option>
+                            <option value="true">@Localizer["StockableYes"]</option>
+                            <option value="false">@Localizer["StockableNo"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-parent">
+                        <select id="filterParent" class="form-select form-select-sm" data-placeholder="@Localizer["FilterParent"]" aria-label="@Localizer["FilterParent"]">
+                            <option value=""></option>
+                        </select>
+                    </div>
+
+                    <small id="locations-picker-unavailable" class="text-muted d-none"></small>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">
+                            @SharedLocalizer["Apply"]
+                        </button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">
+                            @SharedLocalizer["Reset"]
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

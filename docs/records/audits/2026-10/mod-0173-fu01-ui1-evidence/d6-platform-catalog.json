@@ -1,0 +1,49 @@
+{ "note": "Platform catalog after TWO startups of InventoryService (two manifest pushes, see d6-service-log-excerpt.log): one module, two pages, two actions, no duplicates. Read-only query of the local Platform DB.",
+"module":
+[{
+    "IsDeleted" : false,
+    "ModuleCode" : "INVENTORY-LEDGER",
+    "ModuleName" : "Inventory Ledger",
+    "DisplayName" : "Inventory",
+    "Domain" : "SUPPLYCHAINEXECUTION",
+    "Service" : "Inventory",
+    "Status" : 1,
+    "IsTenantAssignable" : true,
+    "Icon" : "bx-package",
+    "Origin" : 1
+  }]
+, "pages":
+[{
+    "IsDeleted" : false,
+    "PageCode" : "STOCKLEDGER",
+    "RoutePath" : "/StockLedger",
+    "RequiredPermission" : "inventory.stock.read",
+    "ParentPageCode" : null,
+    "IsNavigationVisible" : true
+  }, {
+    "IsDeleted" : false,
+    "PageCode" : "STOCKMOVEMENTS",
+    "RoutePath" : "/StockMovements",
+    "RequiredPermission" : "inventory.stock.read",
+    "ParentPageCode" : "STOCKLEDGER",
+    "IsNavigationVisible" : false
+  }]
+, "actions":
+[{
+    "IsDeleted" : false,
+    "PageCode" : "STOCKLEDGER",
+    "ActionCode" : "ROWHISTORY",
+    "PermissionKey" : "inventory.stock.read",
+    "IsDangerous" : false,
+    "IsToolbarAction" : false,
+    "IsRowAction" : true
+  }, {
+    "IsDeleted" : false,
+    "PageCode" : "STOCKMOVEMENTS",
+    "ActionCode" : "REVERSAL",
+    "PermissionKey" : "inventory.movements.create",
+    "IsDangerous" : true,
+    "IsToolbarAction" : false,
+    "IsRowAction" : true
+  }]
+}

@@ -214,6 +214,76 @@ public sealed class WorkflowApprovalStatusHttpMongoTests : IClassFixture<Workflo
         Assert.Equal(HttpStatusCode.OK, (await DecideAsync(starter, instance.InstanceId, "approve")).Status);
     }
 
+    // ── WP-MVP1-SYNC1 (CT decision 3): an MVP-1 build wrote StartedByUserId as TEXT ────────────────────────────────
+    // MVP-1 (WP-0023-FX) and main (B2) added the same field, as a string and as a Guid. The merge keeps the Guid and reads
+    // the text form tolerantly (WorkflowInstanceBsonMap); no bulk migration.
+
+    [Fact]
+    public async Task Sync1_an_instance_whose_starter_id_was_written_as_text_is_read_and_its_starter_still_cannot_approve()
+    {
+        var starter = Guid.NewGuid();
+        var definitionId = await PlainDefinitionAsync(starter);
+        var instance = await StartInstanceAsync(definitionId, starter, starter, "task", Guid.NewGuid());
+        var raw = await WriteStarterIdAsTextAsync(instance.InstanceId, starter);
+        Assert.Equal(BsonType.String, raw["StartedByUserId"].BsonType);
+
+        Assert.Equal(starter, (await InstanceAsync(instance.InstanceId)).StartedByUserId);
+        var approve = await DecideAsync(starter, instance.InstanceId, "approve");
+
+        Assert.Equal(HttpStatusCode.Conflict, approve.Status);
+        Assert.Equal(WorkflowReasonCodes.SodViolation, approve.ReasonCode);
+        Assert.Equal(WorkflowInstanceStatus.Active, (await InstanceAsync(instance.InstanceId)).Status);
+    }
+
+    [Fact]
+    public async Task Sync1_another_approver_decides_a_text_starter_instance_and_the_save_writes_the_starter_back_as_a_Guid()
+    {
+        var starter = Guid.NewGuid();
+        var definitionId = await PlainDefinitionAsync(starter);
+        var instance = await StartInstanceAsync(definitionId, starter, _manager, "task", Guid.NewGuid());
+        await WriteStarterIdAsTextAsync(instance.InstanceId, starter);
+
+        Assert.Equal(HttpStatusCode.OK, (await DecideAsync(_manager, instance.InstanceId, "approve")).Status);
+
+        var saved = await RawInstanceAsync(instance.InstanceId);
+        Assert.Equal(BsonType.Binary, saved["StartedByUserId"].BsonType);
+        Assert.Equal(starter, saved["StartedByUserId"].AsBsonBinaryData.ToGuid(GuidRepresentation.Standard));
+        Assert.Equal(WorkflowInstanceStatus.Completed, (await InstanceAsync(instance.InstanceId)).Status);
+    }
+
+    /// <summary>
+    /// Measured with the K3 sabotage (e): the driver's own GuidSerializer already reads a VALID Guid text, so the two tests
+    /// above stay green without WorkflowInstanceBsonMap. What the map adds is this case — a text that is not a Guid. The
+    /// default serializer throws FormatException on the whole instance (every task read of it fails); the map reads it as
+    /// "no starter id", which is exactly an instance from before the field: main's old comparison (owner decision B).
+    /// </summary>
+    [Fact]
+    public async Task Sync1_a_starter_id_text_that_is_not_a_guid_reads_as_no_id_and_the_instance_keeps_the_old_comparison()
+    {
+        var starter = Guid.NewGuid();
+        var definitionId = await PlainDefinitionAsync(starter);
+        var instance = await StartInstanceAsync(definitionId, starter, starter, "task", Guid.NewGuid());
+        await _fixture.Database.GetCollection<BsonDocument>(PlatformCollections.WorkflowInstances).UpdateOneAsync(
+            Builders<BsonDocument>.Filter.Eq("_id", new BsonBinaryData(instance.InstanceId, GuidRepresentation.Standard)),
+            Builders<BsonDocument>.Update.Set("StartedByUserId", "not-a-user-id"));
+
+        Assert.Null((await InstanceAsync(instance.InstanceId)).StartedByUserId);
+        Assert.Equal(HttpStatusCode.OK, (await DecideAsync(starter, instance.InstanceId, "approve")).Status);
+    }
+
+    private async Task<BsonDocument> WriteStarterIdAsTextAsync(Guid instanceId, Guid starter)
+    {
+        await _fixture.Database.GetCollection<BsonDocument>(PlatformCollections.WorkflowInstances).UpdateOneAsync(
+            Builders<BsonDocument>.Filter.Eq("_id", new BsonBinaryData(instanceId, GuidRepresentation.Standard)),
+            Builders<BsonDocument>.Update.Set("StartedByUserId", starter.ToString()));
+        return await RawInstanceAsync(instanceId);
+    }
+
+    private Task<BsonDocument> RawInstanceAsync(Guid instanceId)
+        => _fixture.Database.GetCollection<BsonDocument>(PlatformCollections.WorkflowInstances)
+            .Find(Builders<BsonDocument>.Filter.Eq("_id", new BsonBinaryData(instanceId, GuidRepresentation.Standard)))
+            .SingleAsync();
+
     // ── B3 (v2 revert): the PUBLIC cancel never cancels an escalated task ─────────────────────────────────────
 
     [Fact]

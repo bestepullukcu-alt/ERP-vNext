@@ -1,0 +1,29 @@
+using Microsoft.AspNetCore.Authorization;
+
+namespace Diten.InventoryService.Infrastructure.Authorization;
+
+/// <summary>
+/// Grants a <see cref="PermissionRequirement"/> only when the token carries that exact <c>permission</c> claim.
+///
+/// ⚠ FU-S1-02 / pack ASSUMPTION-0173-19: the ProcurementService template let the <c>SuperAdmin</c> role pass every
+/// permission. For a GxP stock system of record every endpoint — and above all every stock mutation — needs its
+/// explicit permission, so there is deliberately NO role shortcut here.
+/// </summary>
+public sealed class PermissionAuthorizationHandler : AuthorizationHandler<PermissionRequirement>
+{
+    protected override Task HandleRequirementAsync(
+        AuthorizationHandlerContext context,
+        PermissionRequirement requirement)
+    {
+        var permissions = context.User.Claims
+            .Where(c => c.Type == "permission")
+            .Select(c => c.Value);
+
+        if (permissions.Contains(requirement.Permission, StringComparer.OrdinalIgnoreCase))
+        {
+            context.Succeed(requirement);
+        }
+
+        return Task.CompletedTask;
+    }
+}

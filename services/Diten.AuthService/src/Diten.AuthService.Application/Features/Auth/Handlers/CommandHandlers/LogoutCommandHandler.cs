@@ -13,11 +13,16 @@ public sealed class LogoutCommandHandler : IRequestHandler<LogoutCommand, Respon
     private readonly ITokenService _tokenService;
     private readonly ILogger<LogoutCommandHandler> _logger;
 
+    // MOD-0022 E1 — revokes KS-3 e-signature windows; optional so direct constructions stay valid (DI always supplies it).
+    private readonly IESignReauthTicketService? _eSignTickets;
+
     public LogoutCommandHandler(
         IRefreshTokenRepository refreshTokenRepository,
         ITokenService tokenService,
-        ILogger<LogoutCommandHandler> logger)
+        ILogger<LogoutCommandHandler> logger,
+        IESignReauthTicketService? eSignTickets = null)
     {
+        _eSignTickets = eSignTickets;
         _refreshTokenRepository = refreshTokenRepository;
         _tokenService = tokenService;
         _logger = logger;
@@ -56,6 +61,11 @@ public sealed class LogoutCommandHandler : IRequestHandler<LogoutCommand, Respon
         {
             existingToken.Revoke(revokedByIp: request.RequestIp, revokedReason: "logout");
             await _refreshTokenRepository.UpdateAsync(existingToken, ct);
+        }
+
+        if (_eSignTickets is not null)
+        {
+            await _eSignTickets.RevokeWindowsAsync(existingToken.TenantId, existingToken.UserId, "logout", ct);
         }
 
         _logger.LogInformation(

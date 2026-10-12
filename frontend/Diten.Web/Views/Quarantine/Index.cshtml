@@ -1,0 +1,156 @@
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.Quarantine.Quarantine> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["Quarantine.Queue.Title"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    MOD-0175 Q5 — Karantina Kuyruğu (QUARANTINEQUEUE, pack §11.1 / §11.3). DataTable v2, SERVER mode (pack data_mode: server):
+    /Quarantine/list/holds → QUARANTINE-BUNDLE listHolds (page / pageSize / q; the service's own order: open first, then the
+    most overdue). KPI cards from the same response (kpis — over the company's open holds, never counted from the page).
+    UAS-001 — nothing below is drawn without quarantine.holds.read: no heading, no filter, no empty table. No redirect.
+*@
+@if (!Perms.Has("quarantine.holds.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["Quarantine.Queue.Title"].Value" />
+    return;
+}
+
+@{
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["Quarantine.Common.Company.Label"].Value;
+    company.Placeholder = Localizer["Quarantine.Common.Company.Placeholder"].Value;
+    company.SelectHint = Localizer["Quarantine.Common.Company.Required"].Value;
+    company.UnavailableText = Localizer["Quarantine.Common.Company.Unavailable"].Value;
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-quarantine-holds",
+        DataMode = "server",
+        Slug = "quarantine-holds",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["Quarantine.Col.Product"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["Quarantine.Col.LotNo"].Value, CssClass = "min-tablet-l" },
+            new DataTableColumnViewModel { Header = Localizer["Quarantine.Col.Expiry"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Quarantine.Col.WarehouseLocation"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Quarantine.Col.StockStatus"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Quarantine.Col.Quantity"].Value, CssClass = "min-tablet-l" },
+            new DataTableColumnViewModel { Header = Localizer["Quarantine.Col.EnteredAt"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Quarantine.Col.Wait"].Value, CssClass = "min-tablet-l" },
+            new DataTableColumnViewModel { Header = Localizer["Quarantine.Col.Source"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Quarantine.Col.Status"].Value, CssClass = "all" }
+        ],
+        ActionsHeader = Localizer["Quarantine.Col.Actions"].Value
+    };
+}
+
+<partial name="~/Views/Quarantine/_Header.cshtml" model="@("QUARANTINEQUEUE")" />
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready)
+{
+    <div class="row g-4 mb-4" id="qr-kpis">
+        <div class="col-12 col-md-4">
+            <div class="card h-100"><div class="card-body d-flex align-items-center gap-3 p-3">
+                <div class="avatar"><span class="avatar-initial rounded bg-label-warning"><i class="bx bx-time-five"></i></span></div>
+                <div>
+                    <small class="text-muted">@Localizer["Quarantine.Queue.Kpi.Pending"]</small>
+                    <h5 class="mb-0" data-kpi="pending">—</h5>
+                    <small class="text-muted" data-kpi="inReview"></small>
+                </div>
+            </div></div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card h-100"><div class="card-body d-flex align-items-center gap-3 p-3">
+                <div class="avatar"><span class="avatar-initial rounded bg-label-primary"><i class="bx bx-package"></i></span></div>
+                <div>
+                    <small class="text-muted">@Localizer["Quarantine.Queue.Kpi.Quantity"]</small>
+                    <div class="d-flex flex-wrap gap-2" data-kpi="quantity">—</div>
+                </div>
+            </div></div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card h-100"><div class="card-body d-flex align-items-center gap-3 p-3">
+                <div class="avatar"><span class="avatar-initial rounded bg-label-danger"><i class="bx bx-error"></i></span></div>
+                <div>
+                    <small class="text-muted">@Localizer["Quarantine.Queue.Kpi.Late"]</small>
+                    <h5 class="mb-0" data-kpi="late">—</h5>
+                    <small class="text-muted" data-kpi="expirySoon"></small>
+                </div>
+            </div></div>
+        </div>
+    </div>
+
+    <div id="inlineFilterHost">
+        <div class="collapse" id="inlineFilterCollapse">
+            <div class="pt-0 pb-3">
+                <form class="m-0" id="filterForm" data-no-tracker>
+                    <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                        <div class="filter-chip">
+                            <select id="filterWarehouse" class="form-select form-select-sm" aria-label="@Localizer["Quarantine.Filter.AllWarehouses"]">
+                                <option value="">@Localizer["Quarantine.Filter.AllWarehouses"]</option>
+                            </select>
+                        </div>
+                        <div class="filter-chip">
+                            <select id="filterStockStatus" class="form-select form-select-sm" aria-label="@Localizer["Quarantine.Filter.AllStockStatuses"]">
+                                <option value="">@Localizer["Quarantine.Filter.AllStockStatuses"]</option>
+                                <option value="QUARANTINE">@Localizer["Quarantine.Status.QUARANTINE"]</option>
+                                <option value="QUALITY_INSPECTION">@Localizer["Quarantine.Status.QUALITY_INSPECTION"]</option>
+                            </select>
+                        </div>
+                        <div class="filter-chip">
+                            <select id="filterSource" class="form-select form-select-sm" aria-label="@Localizer["Quarantine.Filter.AllSources"]">
+                                <option value="">@Localizer["Quarantine.Filter.AllSources"]</option>
+                                @foreach (var source in new[] { "GoodsReceipt", "Production", "Manual", "CustomerReturn", "Retest", "Rework", "OtherInbound" })
+                                {
+                                    <option value="@source">@Localizer["Quarantine.Source." + source]</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="filter-chip">
+                            @* A select, not a checkbox: the list factory reads a field's value (Lots _Filter.cshtml note). *@
+                            <select id="filterLate" class="form-select form-select-sm" aria-label="@Localizer["Quarantine.Filter.LateOnly"]">
+                                <option value="">@SharedLocalizer["ShowAll"]</option>
+                                <option value="true">@Localizer["Quarantine.Filter.LateOnly"]</option>
+                            </select>
+                        </div>
+                        <div class="ms-auto d-flex gap-3">
+                            <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">@SharedLocalizer["Apply"]</button>
+                            <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">@Localizer["Quarantine.Filter.Clear"]</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="qr-labels-unavailable" class="alert alert-warning d-none" role="status">@Localizer["Quarantine.Common.NamesUnavailable"]</div>
+    <div id="qr-list-error" class="alert alert-danger d-none" role="alert"></div>
+
+    @* Contract markers are rendered by _ListShell: <partial name="_TableSkeleton" /> (id="skeleton-loader"), <table data-dt-standard="v2" data-dt-data-mode="server"> *@
+    <partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />
+
+    <div class="d-flex flex-wrap align-items-center gap-4 mt-3 small text-muted">
+        <span id="qr-footer"></span>
+        <span class="d-flex align-items-center gap-1"><span class="d-inline-block rounded" style="width:.75rem;height:.75rem;background:#fff2d6"></span>@Localizer["Quarantine.Queue.Legend.Late"]</span>
+        <span class="d-flex align-items-center gap-1"><i class="bx bx-error-circle text-danger"></i>@Localizer["Quarantine.Queue.Legend.Expiry"]</span>
+    </div>
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    <partial name="~/Views/Quarantine/_QuarantineActions.cshtml" />
+    <partial name="~/Views/Quarantine/_QuarantineL10n.cshtml" />
+    @if (company.Ready)
+    {
+        <script src="~/assets/js/Quarantine/queue.js" asp-append-version="true"></script>
+    }
+}

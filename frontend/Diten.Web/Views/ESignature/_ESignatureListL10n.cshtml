@@ -1,0 +1,34 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject IHtmlLocalizer<Diten.Web.Views.ESignature.ESignature> Localizer
+@*
+    MOD-0022 E5W2 — the list component's own words (DitenDataTable.createList reads window.L10n: Filter, Apply, Reset, SaveView,
+    the DataTables texts …) for the e-signature lists, from SharedResource (localization-standard: toolbar words are shared).
+    esign-pages.js merges it into window.L10n; no script carries a hardcoded fallback.
+*@
+<script id="esign-list-l10n" type="application/json">
+    @Json.Serialize(new Dictionary<string, string>
+    {
+        ["Actions"] = Localizer["ESign.Common.Actions"].Value,
+        ["Cancel"] = SharedLocalizer["Cancel"].Value,
+        ["Close"] = SharedLocalizer["Close"].Value,
+        ["Unknown"] = SharedLocalizer["Unknown"].Value,
+        ["Filter"] = SharedLocalizer["Filter"].Value,
+        ["Apply"] = SharedLocalizer["Apply"].Value,
+        ["Reset"] = SharedLocalizer["Reset"].Value,
+        ["ShowAll"] = SharedLocalizer["ShowAll"].Value,
+        ["Search"] = SharedLocalizer["Search"].Value,
+        ["SaveView"] = SharedLocalizer["SaveView"].Value,
+        ["ColumnVisibility"] = SharedLocalizer["ColumnVisibility"].Value,
+        ["Export"] = SharedLocalizer["Export"].Value,
+        ["Status"] = SharedLocalizer["Status"].Value,
+        ["RecordSaved"] = SharedLocalizer["RecordSaved"].Value,
+        ["ErrorOccurred"] = SharedLocalizer["ErrorOccurred"].Value,
+        ["DtNoRecords"] = SharedLocalizer["DtNoRecords"].Value,
+        ["DtInfo"] = SharedLocalizer["DtInfo"].Value,
+        ["DtInfoEmpty"] = SharedLocalizer["DtInfoEmpty"].Value,
+        ["DtInfoFiltered"] = SharedLocalizer["DtInfoFiltered"].Value,
+        ["DtZeroRecords"] = SharedLocalizer["DtZeroRecords"].Value,
+        ["DtEmptyTable"] = SharedLocalizer["DtEmptyTable"].Value
+    })
+</script>

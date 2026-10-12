@@ -1,0 +1,101 @@
+@using Diten.Web.Views.Traceability.LotMigration
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LotMigrationIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["Page.Title"].Value;
+    Layout = "_LayoutTenantShell";
+}
+@*
+    MOD-0174 P4 — Elle Girilmiş Lotları Aktarma (pack §11.5, K-D, CT-D6, CT K4-1…K4-5). One row per SKU + typed lot text of
+    a lot-controlled item; every decision stays in the page until "Aktarımı Onayla" (ASSUMPTION-0174-11) sends them in ONE
+    commit with the group count (stale → MIGRATION_STALE). The commit links, it never changes a movement. After it the
+    screen is read-only ("Tamamlandı"). UAS-001: nothing without trace.lots.migrate. Every button only with its key (§14).
+*@
+@if (!Perms.Has("trace.lots.migrate"))
+{
+    <partial name="_AccessDenied" model="@Localizer["Page.Title"].Value" />
+    return;
+}
+@{
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["Company.Label"].Value;
+    company.Placeholder = Localizer["Company.Placeholder"].Value;
+    company.SelectHint = Localizer["Company.Required"].Value;
+    company.UnavailableText = Localizer["Company.Unavailable"].Value;
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+    <div>
+        <h5 class="mb-0">@Localizer["Page.Title"]</h5>
+        <p class="mb-0 text-muted">@Localizer["Page.Description"]</p>
+    </div>
+    @if (company.Ready)
+    {
+        <div class="d-flex gap-2" id="migration-toolbar">
+            @if (Perms.Has("trace.lots.migrate"))
+            {
+                <button type="button" class="btn btn-label-primary" data-trace-action="APPLYALLSUGGESTIONS" id="btnApplyAll" disabled>
+                    <i class="bx bx-check-double me-1"></i>@Localizer["Action.APPLYALLSUGGESTIONS"]
+                </button>
+                <button type="button" class="btn btn-danger" data-trace-action="CONFIRMMIGRATION" id="btnConfirmMigration" disabled>
+                    <i class="bx bx-transfer-alt me-1"></i>@Localizer["Action.CONFIRMMIGRATION"]
+                </button>
+            }
+        </div>
+    }
+</div>
+
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready)
+{
+    <div class="alert alert-info d-flex gap-2 align-items-start" role="note" id="migration-banner">
+        <i class="bx bx-info-circle mt-1"></i><div>@Localizer["Banner.NoChange"]</div>
+    </div>
+    <div class="alert alert-success d-none" role="status" id="migration-done"><div data-done-text></div></div>
+    <div id="migration-error" class="alert alert-danger d-none" role="alert">
+        <div data-alert-text></div>
+        <details class="small mt-1 d-none" data-alert-reference><summary>@Localizer["Error.Correlation"]</summary><span data-alert-correlation></span></details>
+    </div>
+
+    <div class="row g-3 mb-3" id="migration-kpi">
+        <div class="col-12 col-md-4"><div class="card h-100"><div class="card-body">
+            <div class="text-muted small">@Localizer["Kpi.Total"]</div><div class="h4 mb-0" data-kpi="total">—</div><div class="small text-muted" data-kpi-moves="total"></div>
+        </div></div></div>
+        <div class="col-12 col-md-4"><div class="card h-100"><div class="card-body">
+            <div class="text-muted small">@Localizer["Kpi.Matched"]</div><div class="h4 mb-0 text-success" data-kpi="matched">—</div><div class="small text-muted" data-kpi-moves="matched"></div>
+        </div></div></div>
+        <div class="col-12 col-md-4"><div class="card h-100"><div class="card-body">
+            <div class="text-muted small">@Localizer["Kpi.Pending"]</div><div class="h4 mb-0 text-warning" data-kpi="pending">—</div><div class="small text-muted" data-kpi-moves="pending"></div>
+        </div></div></div>
+    </div>
+
+    <ul class="nav nav-pills mb-3" role="tablist" id="migration-tabs">
+        <li class="nav-item"><button type="button" class="nav-link active" data-tab="all">@Localizer["Tab.All"]</button></li>
+        <li class="nav-item"><button type="button" class="nav-link" data-tab="pending">@Localizer["Tab.Pending"]</button></li>
+        <li class="nav-item"><button type="button" class="nav-link" data-tab="done">@Localizer["Tab.Done"]</button></li>
+    </ul>
+
+    <form id="migration-antiforgery" class="d-none">@Html.AntiForgeryToken()</form>
+    @* Contract markers are rendered by _DataTable.cshtml: <partial name="_TableSkeleton" /> (id="skeleton-loader"), <table id="dt-lotmigration" data-dt-standard="v2"> *@
+    <partial name="~/Views/Traceability/LotMigration/_DataTable.cshtml" />
+    <partial name="~/Views/Traceability/LotMigration/_PickModal.cshtml" />
+    <partial name="~/Views/Traceability/LotMigration/_NewLotModal.cshtml" />
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    <partial name="~/Views/Traceability/LotMigration/_MigrationActions.cshtml" />
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/Traceability/LotMigration/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Traceability/LotMigration/index.l10n.js" asp-append-version="true"></script>
+    @if (company.Ready)
+    {
+        <script src="~/assets/js/Traceability/trace-ui.js" asp-append-version="true"></script>
+        <script src="~/assets/js/Traceability/LotMigration/index.js" asp-append-version="true"></script>
+    }
+}

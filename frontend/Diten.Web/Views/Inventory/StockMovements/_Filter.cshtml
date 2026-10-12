@@ -1,0 +1,60 @@
+@using Diten.Web.Views.Inventory.StockMovements
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<StockMovementsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@*
+    S-2 filters = the contract's /transactions parameters (pack §4/§8, BG-09: no movementType / skuId filter):
+    product (W-UI-01 Model A selector, searched on the server), lot (typed, BG-02), location (LOCATION v1 under a
+    warehouse — BG-10, empty and labelled "unavailable" until the route exists), date range (from / to).
+*@
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+
+                    <div class="filter-chip filter-product">
+                        <select id="filterItemId" class="form-select form-select-sm" data-placeholder="@Localizer["FilterProduct"]" aria-label="@Localizer["FilterProduct"]">
+                            <option value=""></option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-lot">
+                        <input id="filterLotId" type="text" class="form-control form-control-sm" maxlength="40" placeholder="@Localizer["FilterLot"]" aria-label="@Localizer["FilterLot"]" />
+                    </div>
+
+                    <div class="filter-chip filter-warehouse">
+                        <select id="filterWarehouseId" class="form-select form-select-sm select2" data-placeholder="@Localizer["FilterWarehouse"]">
+                            <option value="">@SharedLocalizer["ShowAll"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-location">
+                        <select id="filterLocationId" class="form-select form-select-sm select2" data-placeholder="@Localizer["FilterLocation"]">
+                            <option value="">@SharedLocalizer["ShowAll"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-from">
+                        <input id="filterFrom" type="date" class="form-control form-control-sm" aria-label="@Localizer["FilterFrom"]" title="@Localizer["FilterFrom"]" />
+                    </div>
+
+                    <div class="filter-chip filter-to">
+                        <input id="filterTo" type="date" class="form-control form-control-sm" aria-label="@Localizer["FilterTo"]" title="@Localizer["FilterTo"]" />
+                    </div>
+
+                    <small id="stockmovements-picker-unavailable" class="text-muted d-none"></small>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">
+                            @SharedLocalizer["Apply"]
+                        </button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">
+                            @SharedLocalizer["Reset"]
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

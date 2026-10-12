@@ -1,0 +1,409 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+      <data name="Action.APPLYALLSUGGESTIONS" xml:space="preserve">
+    <value>应用全部建议</value>
+  </data>
+  <data name="Action.APPLYSUGGESTION" xml:space="preserve">
+    <value>应用建议</value>
+  </data>
+  <data name="Action.CHANGEDECISION" xml:space="preserve">
+    <value>更改</value>
+  </data>
+  <data name="Action.CONFIRMMIGRATION" xml:space="preserve">
+    <value>确认迁移</value>
+  </data>
+  <data name="Action.LINKEXISTINGLOT" xml:space="preserve">
+    <value>关联到现有批次</value>
+  </data>
+  <data name="Action.MARKTYPO" xml:space="preserve">
+    <value>录入错误 — 关联到其他批次</value>
+  </data>
+  <data name="Action.NEWLOTFROMTEXT" xml:space="preserve">
+    <value>作为新批次创建</value>
+  </data>
+  <data name="Banner.Done" xml:space="preserve">
+    <value>已完成 · {0} · {1} 条移动已关联到 {2} 个批次（新建 {3} 个批次，草稿）。此后不能在库存台账中手工录入批次。</value>
+  </data>
+  <data name="Banner.NoChange" xml:space="preserve">
+    <value>迁移不会更改历史移动；只会添加与批次的关联。</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="Col.Action" xml:space="preserve">
+    <value>操作</value>
+  </data>
+  <data name="Col.Actions" xml:space="preserve">
+    <value>操作</value>
+  </data>
+  <data name="Col.Decision" xml:space="preserve">
+    <value>决定</value>
+  </data>
+  <data name="Col.Moves" xml:space="preserve">
+    <value>移动</value>
+  </data>
+  <data name="Col.OnHand" xml:space="preserve">
+    <value>现有库存</value>
+  </data>
+  <data name="Col.Product" xml:space="preserve">
+    <value>产品</value>
+  </data>
+  <data name="Col.Suggestion" xml:space="preserve">
+    <value>建议匹配</value>
+  </data>
+  <data name="Col.Typed" xml:space="preserve">
+    <value>手工录入批次</value>
+  </data>
+  <data name="Company.Label" xml:space="preserve">
+    <value>公司</value>
+  </data>
+  <data name="Company.Placeholder" xml:space="preserve">
+    <value>请选择公司</value>
+  </data>
+  <data name="Company.Required" xml:space="preserve">
+    <value>请选择您所在的公司，以查看其批次和库存。</value>
+  </data>
+  <data name="Company.Unavailable" xml:space="preserve">
+    <value>无法加载公司列表。请稍后重试。</value>
+  </data>
+  <data name="Confirm.Button" xml:space="preserve">
+    <value>确认迁移</value>
+  </data>
+  <data name="Confirm.Count" xml:space="preserve">
+    <value>{0} 条移动将关联到 {1} 个批次。</value>
+  </data>
+  <data name="Confirm.Danger" xml:space="preserve">
+    <value>此操作无法撤销：之后将不能在库存台账中手工录入批次。</value>
+  </data>
+  <data name="Confirm.Existing" xml:space="preserve">
+    <value>{0} 个现有批次</value>
+  </data>
+  <data name="Confirm.New" xml:space="preserve">
+    <value>{0} 个新批次（草稿）</value>
+  </data>
+  <data name="Confirm.Reason" xml:space="preserve">
+    <value>原因（至少 10 个字符）</value>
+  </data>
+  <data name="Confirm.Title" xml:space="preserve">
+    <value>确认迁移</value>
+  </data>
+  <data name="Decision.Linked" xml:space="preserve">
+    <value>已关联 → {0}</value>
+  </data>
+  <data name="Decision.New" xml:space="preserve">
+    <value>新批次 → {0}</value>
+  </data>
+  <data name="Decision.Pending" xml:space="preserve">
+    <value>待定</value>
+  </data>
+  <data name="Decision.Typo" xml:space="preserve">
+    <value>录入错误 → {0}</value>
+  </data>
+  <data name="Error.ACKNOWLEDGEMENT_REQUIRED" xml:space="preserve">
+    <value>请确认您了解冻结的影响。</value>
+  </data>
+  <data name="Error.COMPANY_NOT_SELECTED" xml:space="preserve">
+    <value>请先选择公司。</value>
+  </data>
+  <data name="Error.CROSS_LE_FORBIDDEN" xml:space="preserve">
+    <value>您的账户不能使用该公司。</value>
+  </data>
+  <data name="Error.Correlation" xml:space="preserve">
+    <value>支持参考号</value>
+  </data>
+  <data name="Error.GS1_UNREADABLE" xml:space="preserve">
+    <value>无法读取该代码。</value>
+  </data>
+  <data name="Error.Generic" xml:space="preserve">
+    <value>无法完成操作。请重试。</value>
+  </data>
+  <data name="Error.IDEMPOTENCY_KEY_REUSED" xml:space="preserve">
+    <value>此表单已使用不同的值提交过。请重新加载页面。</value>
+  </data>
+  <data name="Error.INVALID_REQUEST" xml:space="preserve">
+    <value>部分值无效。请检查各字段。</value>
+  </data>
+  <data name="Error.LEGAL_ENTITY_MASTER_UNAVAILABLE" xml:space="preserve">
+    <value>暂时无法验证公司。请稍后重试。</value>
+  </data>
+  <data name="Error.LOT_ALREADY_EXISTS" xml:space="preserve">
+    <value>该产品已存在此批号。</value>
+  </data>
+  <data name="Error.LOT_CONFLICT" xml:space="preserve">
+    <value>该批次已被他人修改。请重新加载页面后重试。</value>
+  </data>
+  <data name="Error.LOT_DATES_INVALID" xml:space="preserve">
+    <value>日期不一致（生产日期 ≤ 今天，有效期晚于生产日期，复验日期介于两者之间）。</value>
+  </data>
+  <data name="Error.LOT_KEY_IMMUTABLE" xml:space="preserve">
+    <value>批号和 SKU 不能更改。</value>
+  </data>
+  <data name="Error.LOT_NO_CHANGES" xml:space="preserve">
+    <value>没有任何更改。</value>
+  </data>
+  <data name="Error.LOT_NUMBER_INVALID" xml:space="preserve">
+    <value>批号只能包含 1 至 40 个字符：字母 A–Z、数字以及 . / -。</value>
+  </data>
+  <data name="Error.LOT_SKU_MISMATCH" xml:space="preserve">
+    <value>该批次属于其他 SKU。</value>
+  </data>
+  <data name="Error.LOT_SKU_REQUIRED" xml:space="preserve">
+    <value>请选择该批次所属的 SKU。</value>
+  </data>
+  <data name="Error.LOT_STATUS_TRANSITION_INVALID" xml:space="preserve">
+    <value>该批次不允许此状态变更。</value>
+  </data>
+  <data name="Error.MIGRATION_ALREADY_COMPLETED" xml:space="preserve">
+    <value>迁移已完成；不能再手工录入批次。</value>
+  </data>
+  <data name="Error.MIGRATION_DECISIONS_INCOMPLETE" xml:space="preserve">
+    <value>部分行的决定不完整。</value>
+  </data>
+  <data name="Error.MIGRATION_STALE" xml:space="preserve">
+    <value>列表在加载后发生了变化（登记了新的手工录入批次）。已重新加载：请检查各行后再次确认。</value>
+  </data>
+  <data name="Error.MIGRATION_TYPO_UNRESOLVED" xml:space="preserve">
+    <value>某个录入错误决定在 3 步内未指向同一 SKU 的批次。</value>
+  </data>
+  <data name="Error.NoPermission" xml:space="preserve">
+    <value>您无权执行此操作。</value>
+  </data>
+  <data name="Error.PRODUCT_MASTER_UNAVAILABLE" xml:space="preserve">
+    <value>暂时无法获取产品数据；未保存任何内容。</value>
+  </data>
+  <data name="Error.PRODUCT_NOT_LOT_CONTROLLED" xml:space="preserve">
+    <value>该产品未启用批次管理；无法创建批次。</value>
+  </data>
+  <data name="Error.REASON_REQUIRED" xml:space="preserve">
+    <value>请填写至少 10 个字符的原因。</value>
+  </data>
+  <data name="Error.ServiceUnavailable" xml:space="preserve">
+    <value>暂时无法访问批次服务。请稍后重试。</value>
+  </data>
+  <data name="Error.SessionExpired" xml:space="preserve">
+    <value>您的会话已过期。请重新登录。</value>
+  </data>
+  <data name="Error.UNKNOWN_ITEM" xml:space="preserve">
+    <value>未找到该产品或 SKU。</value>
+  </data>
+  <data name="Error.UNKNOWN_LOT" xml:space="preserve">
+    <value>未找到该批次。</value>
+  </data>
+  <data name="Error.UNKNOWN_SERIAL" xml:space="preserve">
+    <value>未找到该序列号。</value>
+  </data>
+  <data name="Expiry.Days" xml:space="preserve">
+    <value>{0} 天</value>
+  </data>
+  <data name="Expiry.Past" xml:space="preserve">
+    <value>已过期</value>
+  </data>
+  <data name="Kpi.Matched" xml:space="preserve">
+    <value>已匹配</value>
+  </data>
+  <data name="Kpi.Moves" xml:space="preserve">
+    <value>{0} 条移动</value>
+  </data>
+  <data name="Kpi.Pending" xml:space="preserve">
+    <value>待处理</value>
+  </data>
+  <data name="Kpi.Total" xml:space="preserve">
+    <value>总行数</value>
+  </data>
+  <data name="NewLot.Apply" xml:space="preserve">
+    <value>用作决定</value>
+  </data>
+  <data name="NewLot.DraftNote" xml:space="preserve">
+    <value>确认迁移时，该批次将作为草稿创建。</value>
+  </data>
+  <data name="NewLot.Prefilled" xml:space="preserve">
+    <value>批号取自录入的文本（大写）。</value>
+  </data>
+  <data name="NewLot.Title" xml:space="preserve">
+    <value>作为新批次创建</value>
+  </data>
+  <data name="NoResults" xml:space="preserve">
+    <value>无匹配结果</value>
+  </data>
+  <data name="Page.Breadcrumb" xml:space="preserve">
+    <value>批次/序列号追踪</value>
+  </data>
+  <data name="Page.Description" xml:space="preserve">
+    <value>将批次登记之前在库存台账中手工填写的批次文本关联到已登记批次。</value>
+  </data>
+  <data name="Page.Title" xml:space="preserve">
+    <value>手工录入批次迁移</value>
+  </data>
+  <data name="Pick.Apply" xml:space="preserve">
+    <value>关联</value>
+  </data>
+  <data name="Pick.Lots" xml:space="preserve">
+    <value>已登记批次</value>
+  </data>
+  <data name="Pick.NoLots" xml:space="preserve">
+    <value>该 SKU 尚无已登记批次。</value>
+  </data>
+  <data name="Pick.Rows" xml:space="preserve">
+    <value>同一 SKU 的行</value>
+  </data>
+  <data name="Pick.Target" xml:space="preserve">
+    <value>目标</value>
+  </data>
+  <data name="Pick.TitleLink" xml:space="preserve">
+    <value>关联到现有批次</value>
+  </data>
+  <data name="Pick.TitleTypo" xml:space="preserve">
+    <value>录入错误 — 关联到其他批次</value>
+  </data>
+  <data name="Pick.Typed" xml:space="preserve">
+    <value>录入的文本</value>
+  </data>
+  <data name="Pick.TypoNote" xml:space="preserve">
+    <value>在此选择的行将沿用该行的决定（最多 3 步）。</value>
+  </data>
+  <data name="Retest.Past" xml:space="preserve">
+    <value>已超过复验日期</value>
+  </data>
+  <data name="Searching" xml:space="preserve">
+    <value>正在搜索…</value>
+  </data>
+  <data name="Serial.Status.Active" xml:space="preserve">
+    <value>有效</value>
+  </data>
+  <data name="Serial.Status.Blocked" xml:space="preserve">
+    <value>已冻结</value>
+  </data>
+  <data name="Serial.Status.Consumed" xml:space="preserve">
+    <value>已消耗</value>
+  </data>
+  <data name="Status.Blocked" xml:space="preserve">
+    <value>已冻结</value>
+  </data>
+  <data name="Status.Dialog.Acknowledge" xml:space="preserve">
+    <value>我了解其影响。</value>
+  </data>
+  <data name="Status.Dialog.AcknowledgeRequired" xml:space="preserve">
+    <value>请确认您了解其影响。</value>
+  </data>
+  <data name="Status.Dialog.Allowed" xml:space="preserve">
+    <value>允许</value>
+  </data>
+  <data name="Status.Dialog.Confirm" xml:space="preserve">
+    <value>更改状态</value>
+  </data>
+  <data name="Status.Dialog.ConfirmBlock" xml:space="preserve">
+    <value>冻结批次</value>
+  </data>
+  <data name="Status.Dialog.Current" xml:space="preserve">
+    <value>当前状态</value>
+  </data>
+  <data name="Status.Dialog.Danger" xml:space="preserve">
+    <value>冻结后，该批次的全部库存均不可使用。</value>
+  </data>
+  <data name="Status.Dialog.Done" xml:space="preserve">
+    <value>批次状态已更改。</value>
+  </data>
+  <data name="Status.Dialog.Impact" xml:space="preserve">
+    <value>{0} 件 · {1} 个库位 · {2}</value>
+  </data>
+  <data name="Status.Dialog.New" xml:space="preserve">
+    <value>新状态</value>
+  </data>
+  <data name="Status.Dialog.NotAllowed" xml:space="preserve">
+    <value>当前状态不允许此变更。</value>
+  </data>
+  <data name="Status.Dialog.PickOne" xml:space="preserve">
+    <value>请选择一个允许的状态。</value>
+  </data>
+  <data name="Status.Dialog.Reason" xml:space="preserve">
+    <value>原因（至少 10 个字符）</value>
+  </data>
+  <data name="Status.Dialog.SystemOnly" xml:space="preserve">
+    <value>由系统设置；无法手动选择。</value>
+  </data>
+  <data name="Status.Dialog.Title" xml:space="preserve">
+    <value>更改批次状态</value>
+  </data>
+  <data name="Status.Draft" xml:space="preserve">
+    <value>草稿</value>
+  </data>
+  <data name="Status.Expired" xml:space="preserve">
+    <value>已过期</value>
+  </data>
+  <data name="Status.Released" xml:space="preserve">
+    <value>已放行</value>
+  </data>
+  <data name="StockStatus.AVAILABLE" xml:space="preserve">
+    <value>可用</value>
+  </data>
+  <data name="StockStatus.BLOCKED" xml:space="preserve">
+    <value>冻结</value>
+  </data>
+  <data name="StockStatus.DAMAGED" xml:space="preserve">
+    <value>损坏</value>
+  </data>
+  <data name="StockStatus.EXPIRED" xml:space="preserve">
+    <value>过期</value>
+  </data>
+  <data name="StockStatus.IN_TRANSIT" xml:space="preserve">
+    <value>在途</value>
+  </data>
+  <data name="StockStatus.QUALITY_INSPECTION" xml:space="preserve">
+    <value>质检</value>
+  </data>
+  <data name="StockStatus.QUARANTINE" xml:space="preserve">
+    <value>隔离</value>
+  </data>
+  <data name="Suggest.CaseOnly" xml:space="preserve">
+    <value>现有批次（大小写或空格不同）：{0}</value>
+  </data>
+  <data name="Suggest.Exact" xml:space="preserve">
+    <value>现有批次：{0}</value>
+  </data>
+  <data name="Suggest.NewDraft" xml:space="preserve">
+    <value>新批次 {0}（草稿）</value>
+  </data>
+  <data name="Suggest.None" xml:space="preserve">
+    <value>新批次（请先更正批号）</value>
+  </data>
+  <data name="Suggest.Similar" xml:space="preserve">
+    <value>可能是批次 {0} 的录入错误</value>
+  </data>
+  <data name="Suggest.SimilarRow" xml:space="preserve">
+    <value>可能是第 {0} 行的录入错误</value>
+  </data>
+  <data name="Tab.All" xml:space="preserve">
+    <value>全部</value>
+  </data>
+  <data name="Tab.Done" xml:space="preserve">
+    <value>已匹配</value>
+  </data>
+  <data name="Tab.Pending" xml:space="preserve">
+    <value>待处理</value>
+  </data>
+  <data name="Toast.Done" xml:space="preserve">
+    <value>迁移已完成。</value>
+  </data>
+  <data name="Validation.DatesOrder" xml:space="preserve">
+    <value>生产日期 ≤ 今天；有效期晚于生产日期；复验日期介于两者之间。</value>
+  </data>
+  <data name="Validation.FixFields" xml:space="preserve">
+    <value>请检查标记的字段。</value>
+  </data>
+  <data name="Validation.Length" xml:space="preserve">
+    <value>该值过长。</value>
+  </data>
+  <data name="Validation.LotFormat" xml:space="preserve">
+    <value>请使用 1 至 40 个字符：A–Z、0–9 以及 . / -。</value>
+  </data>
+  <data name="Validation.ReasonMin" xml:space="preserve">
+    <value>请填写至少 10 个字符的原因。</value>
+  </data>
+  <data name="Validation.Required" xml:space="preserve">
+    <value>此字段为必填项。</value>
+  </data>
+</root>

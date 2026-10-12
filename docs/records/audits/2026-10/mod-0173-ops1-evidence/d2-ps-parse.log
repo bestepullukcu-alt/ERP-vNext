@@ -1,0 +1,10 @@
+# D2 — Windows PowerShell 5.1 ParseFile, 2026-10-02T09:57:22+03:00
+PSVersion: 5.1.26100.4652 (Desktop)
+## before (git show 8fe909947:watch-diten.ps1, no BOM)
+watch-diten.ps1@8fe909947 -> parse errors: 1
+    L43: The string is missing the terminator: ".
+## control (new content with the BOM stripped)
+watch-diten.ps1(new, no BOM) -> parse errors: 1
+    L65: The string is missing the terminator: ".
+## after (working tree = staged, UTF-8 BOM)
+watch-diten.ps1 -> parse errors: 0

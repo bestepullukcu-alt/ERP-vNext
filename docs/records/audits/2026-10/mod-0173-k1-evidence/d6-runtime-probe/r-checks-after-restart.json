@@ -1,0 +1,31 @@
+{
+  "phase": "after-restart",
+  "passed": 6,
+  "failed": 0,
+  "checks": [
+    {
+      "check": "AC2 after restart /balance onHand 100.000",
+      "passed": true
+    },
+    {
+      "check": "AC2 after restart /availability onHand 100.000 / available 100.000",
+      "passed": true
+    },
+    {
+      "check": "AC3 after restart availability 80.000",
+      "passed": true
+    },
+    {
+      "check": "AC3 after restart 2 immutable transactions",
+      "passed": true
+    },
+    {
+      "check": "S2 after restart reserved 25.000 / available 55.000 / onHand 80.000",
+      "passed": true
+    },
+    {
+      "check": "S2 after restart position (rebuilt at startup) AvailableOnHand 80 / Reserved 25",
+      "passed": true
+    }
+  ]
+}

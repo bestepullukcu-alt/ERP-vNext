@@ -1,0 +1,51 @@
+# D3 what-if — watch-diten.ps1 (staged blob) under Windows PowerShell 5.1 with stub functions for Start-Process/Get-NetTCPConnection/Stop-Process/taskkill/Start-Sleep (+guard). Nothing started or stopped. 2026-10-02T10:02:40+03:00
+
+?? Starting Diten ERP Multi-Service Suite with WATCH (Hot Reload) on Windows...
+?? Cleaning up ports 5000, 5001, 5056, 5057, 5058, 5059, 5060, 5061...
+Select-Object : Property "OwningProcess" cannot be found.
+At C:\Users\Ali\AppData\Local\Temp\claude\C--Users-Ali-erp-vnext\66848348-47fa-4c02-a312-28ee93e9a6b9\scratchpad\whatif
+-watch-diten.ps1:16 char:5
++     Select-Object -ExpandProperty OwningProcess |
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidArgument: (WHATIF> Get-Net...,5059,5060,5061:PSObject) [Select-Object], PSArgumen 
+   tException
+    + FullyQualifiedErrorId : ExpandPropertyNotFound,Microsoft.PowerShell.Commands.SelectObjectCommand
+ 
+WHATIF> taskkill /F /IM dotnet.exe /T
+?? Cleaning up ports 4010, 5066...
+Select-Object : Property "OwningProcess" cannot be found.
+At C:\Users\Ali\AppData\Local\Temp\claude\C--Users-Ali-erp-vnext\66848348-47fa-4c02-a312-28ee93e9a6b9\scratchpad\whatif
+-watch-diten.ps1:26 char:5
++     Select-Object -ExpandProperty OwningProcess |
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidArgument: (WHATIF> Get-Net...lPort 4010,5066:PSObject) [Select-Object], PSArgumen 
+   tException
+    + FullyQualifiedErrorId : ExpandPropertyNotFound,Microsoft.PowerShell.Commands.SelectObjectCommand
+ 
+WHATIF> Start-Sleep -Seconds 1
+Starting Auth on port 5056 with watch...
+WHATIF> Start-Process cmd.exe /k title Diten ERP - Auth && cd "C:\Users\Ali\erp-vnext\services\Diten.AuthService\src\Diten.AuthService.Api" && dotnet watch run --non-interactive --launch-profile http
+WHATIF> Start-Sleep -Seconds 3
+Starting DevEnablement on port 5058 with watch...
+WHATIF> Start-Process cmd.exe /k title Diten ERP - DevEnablement && cd "C:\Users\Ali\erp-vnext\services\Diten.DevEnablementService\src\Diten.DevEnablementService.Api" && dotnet watch run --non-interactive --launch-profile http
+Starting Platform on port 5057 with watch...
+WHATIF> Start-Process cmd.exe /k title Diten ERP - Platform && cd "C:\Users\Ali\erp-vnext\services\Diten.Platform\src\Diten.Platform.API" && dotnet watch run --non-interactive --launch-profile http
+Starting Hcm on port 5060 with watch...
+WHATIF> Start-Process cmd.exe /k title Diten ERP - Hcm && cd "C:\Users\Ali\erp-vnext\services\Diten.HcmService\src\Diten.HcmService.Api" && dotnet watch run --non-interactive --launch-profile http
+Starting Mdm on port 5059 with watch...
+WHATIF> Start-Process cmd.exe /k title Diten ERP - Mdm && cd "C:\Users\Ali\erp-vnext\services\Diten.MdmService\src\Diten.MdmService.Api" && dotnet watch run --non-interactive --launch-profile http
+Starting Crm on port 5061 with watch...
+WHATIF> Start-Process cmd.exe /k title Diten ERP - Crm && cd "C:\Users\Ali\erp-vnext\services\Diten.CrmService\src\Diten.CrmService.Api" && dotnet watch run --non-interactive --launch-profile http
+Starting PrismProductMaster on port 4010...
+WHATIF> Start-Process cmd.exe /k title Diten ERP - PrismProductMaster && node --max-http-header-size=65536 "C:\Users\Ali\AppData\Local\npm-cache\_npx\aa6973f8d4bc9dda\node_modules\@stoplight\prism-cli\dist\index.js" mock "C:\Users\Ali\erp-vnext\docs\analysis\contracts\product-master-bundle.openapi.yaml" --port 4010 --host 127.0.0.1
+Starting Inventory on port 5066 with watch...
+WHATIF> Start-Process cmd.exe /k title Diten ERP - Inventory && cd "C:\Users\Ali\erp-vnext\services\Diten.InventoryService\src\Diten.InventoryService.Api" && set "Inventory__Upstream__ProductMasterBaseUrl=http://127.0.0.1:4010/" && dotnet watch run --non-interactive --launch-profile http
+Starting Gateway on port 5000 with watch...
+WHATIF> Start-Process cmd.exe /k title Diten ERP - Gateway && cd "C:\Users\Ali\erp-vnext\gateway\Diten.ApiGateway" && dotnet watch run --non-interactive --launch-profile http
+Starting Web on port 5001 with watch...
+WHATIF> Start-Process cmd.exe /k title Diten ERP - Web && cd "C:\Users\Ali\erp-vnext\frontend\Diten.Web" && dotnet watch run --non-interactive --launch-profile http
+
+? Services are launching in separate CMD windows.
+?? Access: http://localhost:5001/platform/login
+# exit 0
+# note: the two 'Select-Object : Property "OwningProcess" cannot be found' errors are produced by the what-if stub (Get-NetTCPConnection returns a string, not a connection object); the real cmdlet returns objects with OwningProcess. Emojis show as '?' only because the captured console code page is not UTF-8 — the parse is 0 errors (d2-ps-parse.log).

@@ -1,0 +1,139 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+    <data name="Lot.BlockedDisabled" xml:space="preserve">
+    <value>已冻结 — 不能入库</value>
+  </data>
+  <data name="Lot.Created" xml:space="preserve">
+    <value>批次 {0} 已作为草稿创建并选中。</value>
+  </data>
+  <data name="Lot.ExpiredDisabled" xml:space="preserve">
+    <value>已过期 — 不能入库</value>
+  </data>
+  <data name="Lot.FromSource" xml:space="preserve">
+    <value>批次取自来源行。</value>
+  </data>
+  <data name="Lot.NewLot" xml:space="preserve">
+    <value>+ 新建批次</value>
+  </data>
+  <data name="Lot.None" xml:space="preserve">
+    <value>该 SKU 尚无已登记批次。</value>
+  </data>
+  <data name="Lot.Picker" xml:space="preserve">
+    <value>批次</value>
+  </data>
+  <data name="Lot.Placeholder" xml:space="preserve">
+    <value>请选择已登记批次</value>
+  </data>
+  <data name="Lot.RetestConfirm" xml:space="preserve">
+    <value>我确认在超过复验日期的情况下仍使用该批次。</value>
+  </data>
+  <data name="Lot.RetestConfirmRequired" xml:space="preserve">
+    <value>请确认使用已超过复验日期的批次。</value>
+  </data>
+  <data name="Lot.RetestWarn" xml:space="preserve">
+    <value>该批次的复验日期（{0}）已过。</value>
+  </data>
+  <data name="Lot.TypedBadge" xml:space="preserve">
+    <value>手工录入批次</value>
+  </data>
+  <data name="Lot.TypedHint" xml:space="preserve">
+    <value>过渡期间仍接受手工录入的批次文本（W-UI-02）；请优先选择已登记批次。</value>
+  </data>
+  <data name="Lot.Unavailable" xml:space="preserve">
+    <value>暂时无法列出已登记批次。</value>
+  </data>
+  <data name="Serial.Add" xml:space="preserve">
+    <value>添加</value>
+  </data>
+  <data name="Serial.Added" xml:space="preserve">
+    <value>已添加 {0} 个序列号。</value>
+  </data>
+  <data name="Serial.BadFormat" xml:space="preserve">
+    <value>序列号无效（3 至 24 个字符 A–Z、0–9、-）：{0}</value>
+  </data>
+  <data name="Serial.CheckUnavailable" xml:space="preserve">
+    <value>暂时无法校验该代码。</value>
+  </data>
+  <data name="Serial.Clear" xml:space="preserve">
+    <value>清除</value>
+  </data>
+  <data name="Serial.Counter" xml:space="preserve">
+    <value>{0} / {1}</value>
+  </data>
+  <data name="Serial.CounterMore" xml:space="preserve">
+    <value>还缺 {0} 个序列号。</value>
+  </data>
+  <data name="Serial.CounterOk" xml:space="preserve">
+    <value>序列号数量与数量一致。</value>
+  </data>
+  <data name="Serial.CounterOver" xml:space="preserve">
+    <value>多出 {0} 个序列号。</value>
+  </data>
+  <data name="Serial.Duplicates" xml:space="preserve">
+    <value>已在列表中，已跳过：{0}</value>
+  </data>
+  <data name="Serial.Empty" xml:space="preserve">
+    <value>尚未添加序列号。</value>
+  </data>
+  <data name="Serial.GtinSkippedWarning" xml:space="preserve">
+    <value>主数据中该产品没有 GTIN：未校验 GTIN；已校验批次和有效期。</value>
+  </data>
+  <data name="Serial.Methods.Range" xml:space="preserve">
+    <value>区间</value>
+  </data>
+  <data name="Serial.Methods.Scan" xml:space="preserve">
+    <value>二维码 (GS1)</value>
+  </data>
+  <data name="Serial.Methods.Single" xml:space="preserve">
+    <value>逐个</value>
+  </data>
+  <data name="Serial.Mismatch.Expiry" xml:space="preserve">
+    <value>该代码的有效期不同。</value>
+  </data>
+  <data name="Serial.Mismatch.Gtin" xml:space="preserve">
+    <value>该代码属于其他产品（GTIN）。</value>
+  </data>
+  <data name="Serial.Mismatch.Lot" xml:space="preserve">
+    <value>该代码的批次不同。</value>
+  </data>
+  <data name="Serial.RangeAdd" xml:space="preserve">
+    <value>添加区间</value>
+  </data>
+  <data name="Serial.RangeEnd" xml:space="preserve">
+    <value>末个序列号</value>
+  </data>
+  <data name="Serial.RangeHint" xml:space="preserve">
+    <value>前缀相同、位数相同，最多 5,000 个。</value>
+  </data>
+  <data name="Serial.RangeMax" xml:space="preserve">
+    <value>一个区间最多包含 5,000 个序列号。</value>
+  </data>
+  <data name="Serial.RangeOrder" xml:space="preserve">
+    <value>末个序列号不能小于首个序列号。</value>
+  </data>
+  <data name="Serial.RangePrefix" xml:space="preserve">
+    <value>首个和末个序列号必须前缀相同、位数相同。</value>
+  </data>
+  <data name="Serial.RangePreview" xml:space="preserve">
+    <value>{0} 个序列号：{1} … {2}</value>
+  </data>
+  <data name="Serial.RangeStart" xml:space="preserve">
+    <value>首个序列号</value>
+  </data>
+  <data name="Serial.ScanHint" xml:space="preserve">
+    <value>扫描或粘贴 GS1 / ITS 二维码，然后按回车键。</value>
+  </data>
+  <data name="Serial.ScanNeedsLot" xml:space="preserve">
+    <value>扫描前请先选择批次。</value>
+  </data>
+  <data name="Serial.Unreadable" xml:space="preserve">
+    <value>无法读取该代码。</value>
+  </data>
+  <data name="Lot.RetestRequired" xml:space="preserve">
+    <value>该批次已超过复验日期：保存前请确认批次字段中的警告。</value>
+  </data>
+</root>

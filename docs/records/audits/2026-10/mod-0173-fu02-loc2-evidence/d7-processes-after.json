@@ -1,0 +1,31 @@
+﻿{
+    "stopped":  [
+                    {
+                        "name":  "inventory-service",
+                        "pid":  8480,
+                        "started":  "2026-10-02T11:18:05.7481840+03:00"
+                    },
+                    {
+                        "name":  "gateway",
+                        "pid":  30748,
+                        "started":  "2026-10-02T10:55:38.2991048+03:00"
+                    },
+                    {
+                        "name":  "diten-web",
+                        "pid":  33656,
+                        "started":  "2026-10-02T10:55:38.3341369+03:00"
+                    },
+                    {
+                        "name":  "persona-helper",
+                        "pid":  41172,
+                        "started":  "2026-10-02T11:15:42.1970343+03:00"
+                    }
+                ],
+    "gatewayCopyRemoved":  true,
+    "listenersLeftOnOwnPorts":  [
+
+                                ],
+    "startedPidsStillAlive":  [
+
+                              ]
+}

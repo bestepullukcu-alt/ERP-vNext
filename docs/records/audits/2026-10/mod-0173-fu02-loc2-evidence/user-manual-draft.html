@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lokasyonlar — Kullanıcı Kılavuzu (taslak)</title>
+<style>
+  :root { --ink: #2f3349; --muted: #6d6b77; --line: #e6e6e8; --accent: #696cff; --bg: #f8f7fa; }
+  body { margin: 0; font: 15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ink); background: var(--bg); }
+  main { max-width: 920px; margin: 0 auto; padding: 32px 20px 64px; }
+  h1 { font-size: 26px; margin: 0 0 4px; } h2 { font-size: 19px; margin: 36px 0 8px; border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+  h3 { font-size: 16px; margin: 22px 0 6px; } p, li { color: var(--ink); } .muted { color: var(--muted); }
+  figure { margin: 14px 0 20px; } figure img { width: 100%; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+  figcaption { color: var(--muted); font-size: 13px; margin-top: 4px; }
+  .note { background: #fff; border-left: 4px solid var(--accent); padding: 10px 14px; border-radius: 6px; margin: 12px 0; }
+  table { border-collapse: collapse; width: 100%; background: #fff; } th, td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; vertical-align: top; }
+  code { background: #eeeefc; padding: 1px 5px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<main>
+<h1>Lokasyonlar — Kullanıcı Kılavuzu</h1>
+<p class="muted">MOD-0173-FU02 · Lokasyon / Depolama Ana Verisi · ekranlar: <code>/LocationTree</code> (Hiyerarşi) ve <code>/Locations</code> (Liste).
+Taslak (WP-0173-LOC2); kalıcı yeri <code>docs/guides/inventory-locations/index.html</code> (FU-LOC2-02).</p>
+
+<h2>1. Bu ekran ne işe yarar?</h2>
+<p>Şirketin fiziksel yerlerinin <strong>tek listesi</strong>dir: Tesis → Depo → Depolama alanı → Bölge → Raf/Göz. Stok, depo,
+satınalma ve üretim bu listeden okur; kimse ikinci bir kopya tutmaz. Lokasyonlar <strong>silinmez</strong>; kullanılmayan
+bir yer pasife alınır ya da arşivlenir, geçmiş stok hareketleri onu göstermeye devam eder.</p>
+
+<h2>2. Başlarken: şirket seçimi</h2>
+<p>Hesabınız tek bir şirkete bağlı değilse önce sayfanın üstündeki <strong>Şirket</strong> kutusundan şirketi seçin. Şirket
+seçilene kadar hiçbir veri gösterilmez. Seçiminiz Stok Defteri ekranlarıyla ortaktır.</p>
+<figure><img src="screenshots/01-company-not-selected.jpg" alt="Şirket seçilmemiş"><figcaption>Şirket seçilene kadar yalnız seçim kutusu görünür.</figcaption></figure>
+<p>Şirkette henüz lokasyon yoksa ekran sizi ilk tesisi eklemeye davet eder.</p>
+<figure><img src="screenshots/02-empty-company-first-site-prompt.jpg" alt="Boş şirket"><figcaption>“İlk tesisi ekle”.</figcaption></figure>
+
+<h2>3. Hiyerarşi ekranı (ağaç + detay)</h2>
+<ul>
+  <li>Soldaki ağaçta bir satıra tıklayın: detay sağda açılır, alt kayıtlar yüklenir. Klavye: ↑ ↓ gezinme, → aç, ← kapat, Enter seç.</li>
+  <li>Detayda: kod, ad, tür, durum, tam yol, <strong>stok var/yok</strong> (miktar gösterilmez), alt kayıtlar ve değişiklik geçmişi.</li>
+  <li><strong>Arşivlenenleri göster</strong> anahtarı arşivdeki kayıtları da ağaca ekler.</li>
+  <li>Bir kaydın altında 500'den fazla kayıt varsa ağaç onları çizmez; “Listede aç” ile Liste ekranına geçersiniz.</li>
+</ul>
+<figure><img src="screenshots/09-tree-with-bins-presence.jpg" alt="Ağaç ve detay"><figcaption>Bölge seçili: “Bu lokasyonda stok yok, altındakilerde stok var”.</figcaption></figure>
+
+<h2>4. Yeni lokasyon, alt kayıt ve düzenleme</h2>
+<table>
+  <tr><th>Alan</th><th>Kural</th></tr>
+  <tr><td>Kod *</td><td>Şirket içinde benzersiz (büyük/küçük harf fark etmez), 1–40 karakter: harf, rakam, <code>. _ / -</code>. Sonradan değiştirilebilir; stok aynı lokasyonu göstermeye devam eder.</td></tr>
+  <tr><td>Ad *</td><td>1–120 karakter.</td></tr>
+  <tr><td>Tür *</td><td>Yalnız oluştururken seçilir; sonradan değişmez. Üst kayda göre yalnız izin verilen türler listelenir.</td></tr>
+  <tr><td>Üst kayıt *</td><td>Tesis dışındaki her tür için zorunlu ve <strong>aktif</strong> olmalı. Raf, bölge olmadan doğrudan depolama alanı altına da bağlanabilir.</td></tr>
+  <tr><td>Stok tutulabilir</td><td>Yalnız Raf/Göz ve Depolama alanında. Üzerinde stok varken kapatılamaz.</td></tr>
+  <tr><td>Çalışma modu</td><td>Yalnız Tesis ve Depoda; altında stok varken değiştirilemez.</td></tr>
+  <tr><td>Organizasyon birimi / Masraf merkezi</td><td>İsteğe bağlı. Birim listesi okunamazsa alan boş bırakılıp kaydedilebilir.</td></tr>
+</table>
+<p class="note">Şirket bir form alanı değildir: Tesis seçili şirkete ait olur, altındaki her şey onu miras alır.</p>
+<figure><img src="screenshots/05-form-code-taken-409.jpg" alt="Kod kullanılıyor"><figcaption>Sunucunun reddi ilgili alanın altında, sizin dilinizde; “Ayrıntılar” destek için referans numarasını gösterir.</figcaption></figure>
+
+<h2>5. Durum: aktife al, pasife al, arşivle</h2>
+<ul>
+  <li><strong>Pasife al</strong>: lokasyon stok formlarında seçilemez. Üzerinde (veya altında) stok ya da aktif alt kayıt varsa izin verilmez.</li>
+  <li><strong>Aktife al</strong>: üst kaydı aktif değilse izin verilmez.</li>
+  <li><strong>Arşivle</strong>: geri alınamaz; arşivdeki kayıt yeniden aktif edilemez ve değiştirilemez.</li>
+</ul>
+<figure><img src="screenshots/10-deactivate-refused-has-stock.jpg" alt="Stok var"><figcaption>Ret diyalog içinde kalır; “Stok listesinde gör” stoğun nerede olduğunu açar.</figcaption></figure>
+<figure><img src="screenshots/14-archive-confirm-danger.jpg" alt="Arşiv onayı"><figcaption>Arşiv onayı kırmızıdır ve geri alınamaz olduğunu söyler.</figcaption></figure>
+
+<h2>6. Toplu raf üretimi</h2>
+<p>Bir Bölge ya da Depolama alanının detayında <strong>Toplu raf üret</strong>: koridor, raf, kat aralıklarını ve kat başına göz
+sayısını girin. Kodlar <code>KORİDOR-RAF-KAT-GÖZ</code> biçimindedir (örn. <code>A-01-01-01</code>). Tek seferde en fazla 1000.</p>
+<ol><li><strong>Önizleme</strong>: hiçbir şey yazılmaz; oluşturulacak ve zaten var olan (atlanacak) kodlar listelenir.</li>
+<li><strong>Oluştur</strong>: hepsi tek işlemde oluşturulur; çift tıklama ikinci bir parti üretmez.</li></ol>
+<figure><img src="screenshots/20-bulk-preview-skipped-codes.jpg" alt="Önizleme"><figcaption>Önizleme: 2 yeni, 4 atlanacak (arşivdeki kod da dahil).</figcaption></figure>
+
+<h2>7. Liste ekranı</h2>
+<p>Arama (kod veya ad), sıralama (kod, ad, tür, durum) ve filtreler (tür, durum, stok tutulabilir, üst kayıt). Satır
+menüsünde düzenle, alt kayıt ekle, durum işlemleri, geçmiş ve stok listesinde gör bulunur. Filtreleri “Görünümü Kaydet”
+ile varsayılan yapabilirsiniz.</p>
+<figure><img src="screenshots/13-list-filters-applied.jpg" alt="Liste"><figcaption>Tür = Raf/Göz, Durum = Aktif.</figcaption></figure>
+
+<h2>8. Yetkiler</h2>
+<table>
+  <tr><th>Yetki</th><th>Ne sağlar</th></tr>
+  <tr><td><code>inventory.locations.read</code></td><td>Her iki ekranı görme, geçmiş, stok var/yok.</td></tr>
+  <tr><td><code>inventory.locations.manage</code></td><td>Oluşturma, düzenleme/taşıma, durum işlemleri, toplu raf.</td></tr>
+  <tr><td><code>inventory.stock.read</code></td><td>“Stok listesinde gör” bağlantısı.</td></tr>
+</table>
+<p>Yetkisi olmayan kullanıcı ekranın iskeletini görmez; yalnız ne yapması gerektiğini söyleyen bir açıklama görür.</p>
+<figure><img src="screenshots/25-uas-locationtree.jpg" alt="Yetki yok"><figcaption>“Lokasyonlar için erişim yetkiniz yok — yöneticinizden yetki isteyin.”</figcaption></figure>
+</main>
+</body>
+</html>

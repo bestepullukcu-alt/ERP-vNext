@@ -1,0 +1,105 @@
+@using Diten.Web.Views.Inventory.LocationTree
+@using Diten.Web.Views.Inventory.Locations
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LocationTreeIndex> Localizer
+@inject IHtmlLocalizer<LocationsIndex> ListLocalizer
+@*
+    L-1 detail panel (pack §11): fields, status badge, path breadcrumb, stock presence (yes / no — K-10, never a
+    quantity) with "View in stock list", child locations, change history (K-11), and the node's actions by permission
+    (drawn by js/Inventory/LocationTree/index.js; absent, not disabled, when not allowed). Three distinct pictures:
+    nothing selected (hint), loading (card skeleton), refused (localized sentence).
+*@
+<div class="card h-100" id="locationDetail">
+    <div class="card-body">
+        <div id="locationDetailHint" class="text-center text-muted py-5">
+            <i class="bx bx-pointer fs-2 d-block mb-2" aria-hidden="true"></i>
+            @Localizer["SelectHint"]
+        </div>
+
+        <div id="locationDetailSkeleton" class="d-none" aria-hidden="true">
+            <div class="shimmer skeleton-row" style="width: 45%; height: 28px;"></div>
+            <div class="shimmer skeleton-row" style="width: 70%;"></div>
+            <div class="shimmer skeleton-row" style="width: 100%; height: 120px;"></div>
+            <div class="shimmer skeleton-row" style="width: 100%; height: 80px;"></div>
+        </div>
+
+        <div id="locationDetailError" class="alert alert-danger d-none" role="alert"></div>
+
+        <div id="locationDetailBody" class="d-none">
+            <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="avatar avatar-md"><span class="avatar-initial rounded bg-label-primary"><i id="ldIcon" class="bx bx-map fs-4" aria-hidden="true"></i></span></div>
+                    <div>
+                        <h5 class="mb-1" id="ldName">-</h5>
+                        <div class="d-flex flex-wrap align-items-center gap-2">
+                            <span class="font-monospace text-muted" id="ldCode">-</span>
+                            <span id="ldTypeBadge"></span>
+                            <span id="ldStatusBadge"></span>
+                        </div>
+                    </div>
+                </div>
+                <div id="ldActions" class="d-flex flex-wrap gap-2"></div>
+            </div>
+
+            <nav aria-label="@ListLocalizer["FieldParent"]" class="mb-3">
+                <ol class="breadcrumb breadcrumb-style1 mb-0" id="ldPath"></ol>
+            </nav>
+
+            <div id="ldNote" class="alert alert-secondary d-none" role="status"></div>
+
+            <div class="row g-4">
+                <div class="col-12 col-md-7">
+                    <h6 class="text-uppercase text-muted fw-bold small mb-3">@Localizer["DetailsHeading"]</h6>
+                    <dl class="row mb-0">
+                        <dt class="col-5 fw-medium text-heading mb-2">@ListLocalizer["FieldCode"]</dt>
+                        <dd class="col-7 mb-2 font-monospace" id="ldFieldCode">-</dd>
+                        <dt class="col-5 fw-medium text-heading mb-2">@ListLocalizer["FieldName"]</dt>
+                        <dd class="col-7 mb-2" id="ldFieldName">-</dd>
+                        <dt class="col-5 fw-medium text-heading mb-2">@ListLocalizer["FieldType"]</dt>
+                        <dd class="col-7 mb-2" id="ldFieldType">-</dd>
+                        <dt class="col-5 fw-medium text-heading mb-2" id="ldStockableLabel">@ListLocalizer["FieldStockable"]</dt>
+                        <dd class="col-7 mb-2" id="ldFieldStockable">-</dd>
+                        <dt class="col-5 fw-medium text-heading mb-2" id="ldModeLabel">@ListLocalizer["FieldOperatingMode"]</dt>
+                        <dd class="col-7 mb-2" id="ldFieldMode">-</dd>
+                        <dt class="col-5 fw-medium text-heading mb-2">@ListLocalizer["FieldOrgUnit"]</dt>
+                        <dd class="col-7 mb-2" id="ldFieldOrgUnit">-</dd>
+                        <dt class="col-5 fw-medium text-heading mb-2">@ListLocalizer["FieldCostCenter"]</dt>
+                        <dd class="col-7 mb-2 font-monospace" id="ldFieldCostCenter">-</dd>
+                    </dl>
+                </div>
+                <div class="col-12 col-md-5">
+                    <h6 class="text-uppercase text-muted fw-bold small mb-3">@Localizer["StockHeading"]</h6>
+                    <ul class="list-unstyled mb-2">
+                        <li class="d-flex justify-content-between mb-2"><span>@Localizer["StockOnLocation"]</span><span id="ldStockSelf">-</span></li>
+                        <li class="d-flex justify-content-between mb-2"><span>@Localizer["StockBelow"]</span><span id="ldStockBelow">-</span></li>
+                    </ul>
+                    <small id="ldStockUnknown" class="text-warning d-none" role="status">@Localizer["StockUnknown"]</small>
+
+                    <h6 class="text-uppercase text-muted fw-bold small mt-4 mb-3">@Localizer["ChildrenHeading"]</h6>
+                    <div id="ldChildren" class="small text-muted">-</div>
+                </div>
+            </div>
+
+            <hr class="my-4" />
+
+            <div id="history">
+                <h6 class="text-uppercase text-muted fw-bold small mb-3">@Localizer["HistoryHeading"]</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm mb-2">
+                        <thead>
+                            <tr>
+                                <th>@Localizer["HistoryDate"]</th>
+                                <th>@Localizer["HistoryUser"]</th>
+                                <th>@Localizer["HistoryField"]</th>
+                                <th>@Localizer["HistoryChange"]</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ldHistory"></tbody>
+                    </table>
+                </div>
+                <div id="ldHistoryEmpty" class="text-muted small d-none">@Localizer["HistoryEmpty"]</div>
+                <button type="button" class="btn btn-sm btn-label-secondary d-none" id="ldHistoryMore">@Localizer["HistoryMore"]</button>
+            </div>
+        </div>
+    </div>
+</div>

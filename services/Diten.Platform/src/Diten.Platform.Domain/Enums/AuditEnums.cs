@@ -20,7 +20,10 @@ public enum AuditCategory
     PortfolioDelivery = 15,
 
     /// <summary>MOD-0024 — first use is Slice ATT-1 (task attachments); additive, no prior Tasks category existed.</summary>
-    Tasks = 16
+    Tasks = 16,
+
+    /// <summary>MOD-0022 e-Signature Service — signatures, invalidations, requests, policy, meanings, exports. Additive.</summary>
+    ESignature = 17
 }
 
 public enum AuditOperation

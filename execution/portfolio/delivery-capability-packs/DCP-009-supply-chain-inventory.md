@@ -39,7 +39,7 @@ inputs:
 | Status | **approved** (CT 2026-09-11; runtime_code_allowed=false) |
 | Owner domain | supply-chain-execution |
 | Canonical source | Blueprint 8.1 (Supply Chain Execution Suite + Planning + Manufacturing) |
-| Service | `Diten.SupplyChainService` · port **5061** |
+| Service | `Diten.SupplyChainService` · port **5061** (warehouse/planning/mfg/logistics) · `Diten.InventoryService` · port **5067** (MOD-0173…0177, OD-5 2026-09-30; moved 5066 → 5067 by owner decision OD-P1 2026-10-12, WP-MVP1-SYNC1) |
 | runtime_code_allowed | **false** (DCP-level value, unchanged here; seven member packs are ready-for-dev and MVP-6 code exists — see `runtime_code_scope`, measured 2026-10-05, Q450) |
 
 ## 2. Business outcome
@@ -94,6 +94,10 @@ Procurement (0142 GRN → 0173 post) · Commercial ATP (0172 ← 0173 availabili
 
 ## 18. Open decisions
 **OD-1** Location master owner alt-kırılım (Option A split vs B shared — B seçildi, MOD-# reservation + collision-check pending). **OD-2** BOM (0193) sırası — pharma composition foundation'a yakın (rapor §23.5). **OD-3** MVP-1 module pack bölünmesi (tek pack mi FU'lar mı). **OD-4 RESOLVED (user 2026-09-15):** MVP-6-first. Servis scaffold tetik = onaylı MOD-0183 module pack + `@orchestrator /add-module`; MVP-1 (0173) sonra aynı servise katılır. MVP-6'nın consumed seam'leri (WAREHOUSE-OUTBOUND sahibi MVP-5, SUPPLIER sahibi MVP-2) merkezi CT tarafından öne çekilip frozen edildi (`docs/analysis/contracts/`), böylece MVP-6 mock'a karşı beklemeden geliştirir.
+
+**OD-5 RESOLVED (user 2026-09-30): MVP-1 inventory core gets its own service.** `Diten.InventoryService`, port **5066**, owns MOD-0173…0177. Reason: `Diten.SupplyChainService` exists only on `origin/feature/mvp6-logistics` (not on `main`), which blocked MVP-1. This supersedes OD-4's "MVP-1 (0173) later joins the same service" for 0173–0177 only; everything else in this pack stays in SupplyChainService. Boundaries are unchanged: single stock SoR = MOD-0173; consumers use `INVENTORY-BUNDLE` over HTTP. Scaffold trigger = MOD-0173 pack `ready-for-dev` (commit 946bbab3) + dev WP. The frontmatter `runtime_code_allowed` / `runtime_code_scope` text is stale (CT-0183-05) and is left for the central CT.
+
+**OD-1 RESOLVED (2026-10-01, measured):** Location master owner = **`MOD-0173-FU02 Location / Storage Master`** — Blueprint 8.1 `Blueprint_Data` gives MOD-0173 SoR "inventory balances, movements, valuation, locations (as scoped)" and no other module owns physical locations; the owner workbook (Supply Planning Procure Cap Block) records 0 new canonical IDs. Shared master per DEC-INV-03 Option B, in `Diten.InventoryService`, owner of the LOCATION contract; consumers read only. Pack ready-for-dev 2026-10-01.
 
 ## 19. Future follow-ups
 External-integration adapter (DEC-INV-19) · special-stock/ownership (P2) · material ledger/costing advanced · Transport/TMS (MVP-6) · S&OP (MVP-6).

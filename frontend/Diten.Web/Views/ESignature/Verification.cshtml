@@ -1,0 +1,124 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.ESignature.ESignature> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["ESign.Verify.Title"].Value;
+    Layout = "_LayoutTenantShell";
+}
+@*
+    MOD-0022 E5W2 — Doğrulama (ESIGN_VERIFICATION, /ESignature/Verification, esign.signatures.read; pack §11.1, §11.3; mockup v2
+    tab 3). §17.3 (evidence §0): Single detail-section — emsal Views/ESignature/MySignature.cshtml (cards) + the shared zoom.
+    A record comes from the deep link (?module=&type=&id= or ?signature=) or the record form; its signatures are
+    listSignaturesBySubject (signedAt ascending) and each is verified (verifySignature, esign.signatures.verify). Geçersiz kıl:
+    red reasoned confirm (≥ 10) → password (ticket intent invalidate, V3) → invalidateSignature. UAS-001 below.
+*@
+@if (!Perms.Has("esign.signatures.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["ESign.Verify.Title"].Value" />
+    return;
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["ESign.Verify.Title"]</h5>
+    <p class="mb-0 text-muted">@Localizer["ESign.Verify.Sub"]</p>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form class="row g-3 align-items-end" id="esignVerifyForm" novalidate autocomplete="off">
+            <div class="col-12 col-md-3">
+                <label class="form-label" for="esignVerifyModule">@Localizer["ESign.Common.Module"]</label>
+                <select class="form-select" id="esignVerifyModule">
+                    <option value="workflow">@Localizer["ESign.Module.workflow"]</option>
+                    <option value="inventory">@Localizer["ESign.Module.inventory"]</option>
+                    <option value="document-management">@Localizer["ESign.Module.documentmanagement"]</option>
+                </select>
+            </div>
+            <div class="col-12 col-md-3">
+                <label class="form-label" for="esignVerifyType">@Localizer["ESign.Verify.SubjectType"]</label>
+                <input class="form-control" id="esignVerifyType" placeholder="workflow-task" spellcheck="false" />
+            </div>
+            <div class="col-12 col-md-4">
+                <label class="form-label" for="esignVerifyId">@Localizer["ESign.Verify.SubjectId"]</label>
+                <input class="form-control" id="esignVerifyId" spellcheck="false" />
+            </div>
+            <div class="col-12 col-md-2 d-grid">
+                <button type="submit" class="btn btn-primary"><i class="bx bx-search me-1"></i>@Localizer["ESign.Verify.Show"]</button>
+            </div>
+            <div class="col-12 d-none" id="esignVerifyRecentWrap">
+                <label class="form-label" for="esignVerifyRecent">@Localizer["ESign.Verify.Recent"]</label>
+                <select class="form-select" id="esignVerifyRecent"></select>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="d-none" id="esignVerifyEmptyState">
+    <div class="card"><div class="card-body text-center text-muted py-5">
+        <i class="bx bx-search-alt fs-1 d-block mb-2"></i>@Localizer["ESign.Verify.Pick"]
+    </div></div>
+</div>
+
+<div class="d-none" id="esignVerifyResult">
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                <span class="badge bg-label-secondary" id="esignVerifyModuleBadge"></span>
+                <span class="text-muted small" id="esignVerifyCompany"></span>
+                <span class="flex-grow-1"></span>
+                <span class="text-muted small" id="esignVerifyAt"></span>
+                @if (Perms.Has("esign.signatures.verify"))
+                {
+                    <button type="button" class="btn btn-sm btn-label-primary" id="esignReverify"><i class="bx bx-refresh me-1"></i>@Localizer["ESign.Verify.Reverify"]</button>
+                }
+            </div>
+            <h6 class="mb-1" id="esignVerifyTitle"></h6>
+            <small class="text-muted d-block text-break">@Localizer["ESign.Verify.CurrentHash"] <span class="font-monospace" id="esignVerifyHash"></span></small>
+            <div class="d-flex flex-wrap gap-2 mt-3" id="esignVerifyCounts"></div>
+        </div>
+    </div>
+    <div id="esignVerifyTimeline"></div>
+    <div class="card d-none" id="esignVerifyNone"><div class="card-body text-center text-muted">@Localizer["ESign.Verify.NoSignatures"]</div></div>
+</div>
+
+@if (Perms.Has("esign.signatures.invalidate"))
+{
+    @* The password of an invalidation (ticket intent invalidate — always the password, V3); the reason was asked in the red confirm. *@
+    <div class="modal fade" id="esignInvalidatePwd" tabindex="-1" aria-hidden="true" aria-labelledby="esignInvalidatePwdTitle" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <form class="modal-content" id="esignInvalidatePwdForm" novalidate autocomplete="off">
+                <div class="modal-header">
+                    <div><h5 class="modal-title mb-0" id="esignInvalidatePwdTitle">@Localizer["ESign.Verify.Invalidate.PwdTitle"]</h5><small class="text-muted" id="esignInvalidatePwdSub"></small></div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["ESign.Dialog.Close"]"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger d-flex gap-2 align-items-start" role="note"><i class="bx bx-error fs-5"></i><span>@Localizer["ESign.Verify.Invalidate.Warn"]</span></div>
+                    <div class="alert alert-danger d-none" role="alert" id="esignInvalidateFormError"></div>
+                    <div class="mb-0">
+                        <label class="form-label" for="esignInvalidatePassword">@Localizer["ESign.Dialog.Password"] <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="esignInvalidatePassword" name="esign-invalidate-password" autocomplete="current-password" placeholder="••••••••" spellcheck="false" />
+                        <div class="invalid-feedback" id="esignInvalidatePasswordError"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@Localizer["ESign.Dialog.Cancel"]</button>
+                    <button type="submit" class="btn btn-danger" id="esignInvalidateSubmit"><i class="bx bx-block me-1"></i>@Localizer["ESign.Verify.Invalidate"]</button>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
+<partial name="~/Views/Shared/ESignature/_SignatureZoom.cshtml" />
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/ESignature/_ESignatureL10n.cshtml" />
+    <partial name="~/Views/ESignature/_ESignatureListL10n.cshtml" />
+    <script src="~/assets/js/shared/premium-modal.js" asp-append-version="true"></script>
+    <script src="~/assets/js/ESignature/esign-pad.js" asp-append-version="true"></script>
+    <script src="~/assets/js/ESignature/esign-dialog.js" asp-append-version="true"></script>
+    <script src="~/assets/js/ESignature/esign-pages.js" asp-append-version="true"></script>
+    <script src="~/assets/js/ESignature/verification.js" asp-append-version="true"></script>
+}

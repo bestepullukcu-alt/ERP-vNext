@@ -1,0 +1,68 @@
+{
+  "wp": "WP-0173-LOC2",
+  "date": "2026-10-02",
+  "chain": "browser pane → Diten.Web (this branch, Release, :5091) → scratch copy of the gateway (:5090; only its four \"Port\": 5066 lines → 5067, d6-gateway-copy-override.json) → Diten.InventoryService (this branch, Release, :5067, Development, DB diten_inventory_loc2_smoke). Reused, never stopped / restarted / rebuilt: the user's Auth :5056, Platform :5057, MDM :5059, Prism PRODUCT-MASTER :4010.",
+  "login": "REAL login of the dev-runbook seed user at :5091 (AuthService token, no legal_entity_id claim → company selector). The Web instance ran with Platform:InternalApiKey blank (FIX-4 tenant-liveness guard fails open for the seed tenant, UI1-11 adaptation). Personas (read-only, no permission) = HS256 test JWTs minted by persona-helper.js with the Web's local signing settings, carrying legal_entity_id = LE-DITEN-HQ; no token or password is written anywhere.",
+  "checks": {
+    "AC14_company_selection": {
+      "claimless_real_user_without_company": "only the selector is drawn ('Şirket seçin' + hint); no /LocationTree/children, no /Locations/* request (network list) — screenshot 01",
+      "after_selecting_LE-DITEN-HQ": "tree card + empty state 'Bu şirkette henüz lokasyon yok' + 'İlk tesisi ekle' (own empty DB) — screenshot 02",
+      "token_company_persona": "viewer persona (legal_entity_id claim): no selector element at all (#inventory-company-selector absent) — screenshots 22/23"
+    },
+    "tree_built_through_the_UI_as_the_real_user": {
+      "created": ["LOC2-TR (Site)", "LOC2-WH01 (Warehouse)", "LOC2-SO (StorageLocation)", "LOC2-ZA (Zone)", "LOC2-SO2 (StorageLocation)", "LOC2-ZB (Zone)"],
+      "type_list_under_a_storage_location": ["Zone", "Bin"],
+      "add_child_parent": "locked to the node the reader started from",
+      "deep_link": "/LocationTree?locationId=<bin> opens the path TR › WH01 › SO › ZA and selects the bin — screenshot 09/10",
+      "ARIA": "role=tree / treeitem / group, aria-level, aria-expanded, aria-selected, roving tabindex",
+      "RTL_indent": "margin-inline-start 0/20/40/60 px measured in ar (dir=rtl) — screenshot 27"
+    },
+    "L4_bulk_bins_AC12": {
+      "limit": "A–Z × racks 1–50 = 1300 → 'Tek seferde en fazla 1000 raf/göz…', preview disabled (client mirror of 400 LOCATION_BULK_LIMIT) — screenshot 06",
+      "dry_run": "A..A, racks 1–2, level 1, 2 per level → preview A-01-01-01, A-01-01-02, A-02-01-01, A-02-01-02; Mongo after the preview: 4 locations, 0 bins, 4 history rows (d6-mongo-locations-after-preview.json, d6-mongo-history-after-preview.json)",
+      "confirm": "double click on 'Create 4 bins' → ONE /Locations/bins/{id} create request (resource timing: preview @147004 ms, create @190994 ms, nothing else); result '4 raf/göz oluşturuldu.'",
+      "mongo_after": "8 locations, the 4 bins share ONE BulkIdempotencyKey (one batch), history +4 BulkCreated (d6-mongo-locations-after-bulk.json, d6-mongo-history-after-bulk.json)",
+      "skipped_preview": "racks 1–2 × 3 per level → 2 to create, 4 skipped incl. the ARCHIVED A-02-01-02 (any status) — screenshot 20 (not created)"
+    },
+    "E4_stock_and_lifecycle": {
+      "posting": "OPENING_BALANCE 25 EA into A-01-01-01 through the probe gateway → 201 INV-2026-0000001 (d6-stock-posting.json, test JWT masked)",
+      "presence": "bin: 'Bu lokasyonda: Stok var'; zone: 'Bu lokasyonda: Stok yok / Altındaki: Stok var' (K-10, no quantity anywhere)",
+      "deactivate_bin_with_stock": "422 LOCATION_HAS_STOCK kept IN the shared confirm: 'Bu lokasyonda (veya altındakilerde) stok var; değişiklik yapılamaz. Önce stoğu transfer edin. Hiçbir şey değiştirilmedi.' + Ayrıntılar (reference) + 'Stok listesinde gör' — screenshot 10",
+      "AC10_view_in_stock_list": "link → /StockLedger?locationId=719585e5-…; S-1 request draw=3 carries locationId=719585e5-…; one row: A-01-01-01, LOT-LOC2-01, location labels resolved (LOC2-WH01 · LOC2 Merkez Depo / A-01-01-01) — screenshot 11"
+    },
+    "UI_error_sentences_in_Turkish_one_live_case_each": {
+      "AC01_LOCATION_LEVEL_INVALID": "not reachable from the form (type list and parent picker only offer K-01-valid pairs); the proxy's sentence measured with a same-origin POST /Locations/create {type: Bin, parent: Site} → 422, 'Bu tür seçilen üst kaydın altına bağlanamaz (tesis → depo → depolama alanı → bölge → raf; raf depolama alanı altına da bağlanabilir).', correlation id present",
+      "AC02_LOCATION_CODE_TAKEN": "code 'loc2-tr' (case-insensitive duplicate) → under the Code field: 'Bu kod bu şirkette zaten kullanılıyor. Başka bir kod seçin.' — screenshot 05",
+      "AC05_LOCATION_HAS_STOCK": "screenshot 10 (dialog)",
+      "AC05_LOCATION_HAS_ACTIVE_CHILDREN": "deactivate LOC2-SO2 (active LOC2-ZB below, no stock) → dialog: 'Bu lokasyonun altında aktif kayıtlar var. Önce onları pasife alın.' — screenshot 19",
+      "AC06_LOCATION_PARENT_INACTIVE": "LOC2-ZB deactivated, then Add child (bin) → under Parent: 'Üst kayıt aktif değil. Önce üst kaydı aktife alın.' — screenshot 18",
+      "AC07_move_with_stock": "A-01-01-01 parent LOC2-ZA → LOC2-SO → under Parent: LOCATION_HAS_STOCK sentence — screenshot 16 (taken before the select2 re-padding fix of LOC2-09; the sentence is the evidence)",
+      "AC07_LOCATION_MOVE_INTO_SUBTREE": "not reachable through the UI or K-01 (a node's descendants are always lower levels, never an allowed parent type); covered by the LOC1 API tests",
+      "AC08_stockable_off_with_stock": "under 'Stok tutulabilir': LOCATION_HAS_STOCK sentence — screenshot 15",
+      "AC09_operating_mode_with_stock_below": "LOC2-WH01 → external-integrated → under 'Çalışma modu': LOCATION_HAS_STOCK sentence — screenshot 17; below-Warehouse types are never offered the field",
+      "AC12_bulk": "screenshots 06/07/08/20",
+      "nothing_written_by_refusals": "final Mongo: 10 locations; history = 6 Created + 4 BulkCreated + 3 StatusChanged (ZB → Inactive, ZB → Active, A-02-01-02 → Archived); A-01-01-01 still Active, stockable, under LOC2-ZA; LOC2-WH01 still internal (d6-mongo-*-final.json)"
+    },
+    "L2_list": {
+      "first_request": "/Locations/api?start=0&length=10&orderBy=code&orderDir=asc&draw=1",
+      "search": "search=loc2 → 4 rows",
+      "sort": "orderBy=name&orderDir=asc, then desc (header clicks dispatched in the page) → LOC2 Test Tesisi, LOC2 Soguk Oda, LOC2 Merkez Depo, LOC2 Bolge A",
+      "filters": "type=Bin&status=Active → 4 bins, filter badge 2, Save View visible — screenshot 13",
+      "archive_from_row": "danger confirm with 'Bu işlem geri alınamaz…' → A-02-01-02 Archived, gone from the Active filter — screenshot 14"
+    },
+    "AC18_UAS001_live": {
+      "none_persona": "/LocationTree and /Locations: only 'Lokasyonlar için erişim yetkiniz yok — Bu sayfaya erişim için yöneticinizden yetki isteyin.' (resp. 'Lokasyon listesi …'), URL unchanged, no tree / table / filter / tabs, no technical text, 0 /Locations/api calls — screenshots 25/26",
+      "viewer_persona": "L-1: no New site, no form, no bulk dialog; detail actions = History + View in stock list only; L-2: no 'Yeni lokasyon', row actions = locationHistory + viewStock only — screenshots 22/23/24"
+    },
+    "no_direct_browser_call": "resource entries of the ar page load (80): 0 matching :5066 / :5067 / :5090 / :5000 / /api/locations / /api/inventory; only same-origin /LocationTree/children, /Locations/node, /Locations/history",
+    "history_K11": "LOC2-ZB: 'Durum değişikliği · Durum: Pasif → Aktif', 'Aktif → Pasif', 'Oluşturma' with the real user's id 11111111-… — screenshot 21",
+    "AC20_catalog_after_restart": "probe service started twice (two pushes: inventory-service.log, inventory-service-2.log 'Module manifest self-registered … INVENTORY-LEDGER'); Platform catalog: 1 module, 4 live pages, 15 live actions, 0 duplicates (d6-platform-catalog.json)",
+    "AC19_ar_RTL": "html dir=rtl lang=ar, Arabic labels, mirrored tree — screenshot 27"
+  },
+  "environment_notes": [
+    "E1: no Python (verifier / quality gate BLOCKED-ENV, manual checklist d5); no node_modules (vitest BLOCKED-ENV) — the repo-wide JS guard tests were executed unchanged with a minimal vitest-compatible node runner on the base and on LOC2: identical output (e1-js-guards-*.txt); 21 failures are environmental on BOTH (no jsdom; Windows path separators vs '/' lists).",
+    "E2: the user's fleet runs dotnet watch from the main worktree; this WP worked in a detached scratch worktree and landed by fast-forward, so the fleet saw ONE change set (d7-fleet-*.json). 10:15 — another session (CT) started a new Inventory watch window and the fleet rebuilt (e2-fleet-rebuild-1015-origin.json), then committed bc27dda23 (break-glass); LOC2 is committed on top of it.",
+    "The browser pane is not painted while hidden: CSS transitions (offcanvas) only finish when a screenshot forces a frame; several steps take a screenshot first. A real browser is not affected.",
+    "The persona helper needed --max-http-header-size=65536: the browser sends the real login's chunked cookies (~35 KB) to every localhost port (same as the Prism note of LE1)."
+  ]
+}

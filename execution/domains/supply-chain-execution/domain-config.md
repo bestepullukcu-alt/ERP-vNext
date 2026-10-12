@@ -38,6 +38,7 @@ Blueprint-canonical SoR modülleri (DCP-002 gate PASS; registry'ye DCP-009 ile e
 - `MOD-0290 Product/Item/SKU Master` → **MDM-owned** (item kimliği, UoM, materialType). SCE consume eder (`itemId/skuId`), lokal kopya açmaz.
 - `MOD-0172 Allocation & ATP/CTP` → **Commercial-owned** (O2C). 0173 availability+reservation okur; ikinci balance açmaz.
 - **Physical Location Master** (Site→Warehouse→StorageLocation→Zone→Bin) → **DEC-INV-03: Option B shared master** (yeni lightweight master; MOD-# registry collision-check pending). OrganizationUnit DEĞİL (K6).
+  **2026-10-01 — kimlik çözüldü:** `MOD-0173-FU02 Location / Storage Master` (Blueprint 8.1: MOD-0173 SoR "locations (as scoped)"; yeni MOD yok). Bu domain'in sahipliğinde, `Diten.InventoryService` içinde; LOCATION sözleşmesinin sahibi. Diğer modüller (0178, 0142, üretim) yalnız okur.
 - Backbone (consume): Canonical ID (MOD-0040/0288) · RBAC (MOD-0018) · Audit (MOD-0021) · Workflow (MOD-0023) · Reference Data (MOD-0048) · Evidence/Docs (MOD-0029) · Event Bus · Gateway.
 - Feeder seam: `MOD-0142 GRN` (Procurement/Commercial) → 0173'e goods-receipt post eder.
 
@@ -60,6 +61,7 @@ Blueprint-canonical SoR modülleri (DCP-002 gate PASS; registry'ye DCP-009 ile e
 
 - **Servis:** `Diten.SupplyChainService` (tek servis — inventory/warehouse/traceability feature'lar; kullanıcı onayı 2026-09-11).
 - **Port:** **5061** (mikroservis bandı 5011-5060 doluydu; band 5061'e uzatıldı — AGENTS.md §3 güncellenir).
+- **Servis (2026-09-30, OD-5 — kullanıcı onayı):** `Diten.InventoryService` · port **5067** (2026-10-12 OD-P1: 5066 → 5067; 5066 artık MVP-6 `Diten.SupplyChainService`; WP-MVP1-SYNC1) · MOD-0173…0177 (stok defteri, lot/seri, karantina, FEFO, recall). Gerekçe: SupplyChainService main'de değil (yalnız `feature/mvp6-logistics`); MVP-1 beklemeden ilerler. Sınırlar değişmez: stok gerçeği tek SoR = MOD-0173; diğer modüller (0178 WMS, 0183 Shipment, 0142 GRN, 0193 BOM) `INVENTORY-BUNDLE` üzerinden HTTP ile okur/post eder — DB/iç tip paylaşımı yok.
 - **Persistence:** MongoDB (repo deseni) · **Gateway:** `/api/inventory` vb. route'lar yalnız `integration-agent` tarafından eklenir (protected ocelot.json).
 - ⚠️ **Servis scaffold** yalnız ilgili module pack `ready-for-dev` + `@orchestrator /add-module` ile başlar (AGENTS.md §2). Bu domain-config scaffold'ı **yetkilendirir**, tetiklemez.
 

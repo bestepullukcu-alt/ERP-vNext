@@ -1,0 +1,421 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ESign.Dialog.Title" xml:space="preserve"><value>Elektronik imza</value></data>
+  <data name="ESign.Dialog.StandardRef" xml:space="preserve"><value>21 CFR Part 11 · EU GMP Annex 11</value></data>
+  <data name="ESign.Dialog.Close" xml:space="preserve"><value>Kapat</value></data>
+  <data name="ESign.Dialog.Loading" xml:space="preserve"><value>İmza bilgileri yükleniyor…</value></data>
+  <data name="ESign.Dialog.WhatYouSign" xml:space="preserve"><value>Ne imzalıyorsunuz</value></data>
+  <data name="ESign.Dialog.UserName" xml:space="preserve"><value>Kullanıcı adı</value></data>
+  <data name="ESign.Dialog.Password" xml:space="preserve"><value>Şifre</value></data>
+  <data name="ESign.Dialog.RetypeUserName" xml:space="preserve"><value>Kullanıcı adınızı yazın</value></data>
+  <data name="ESign.Dialog.RetypeHint" xml:space="preserve"><value>Şifre penceresinde imzanın bir bileşeni olarak kullanıcı adınızı yeniden yazarsınız.</value></data>
+  <data name="ESign.Dialog.WindowInfo" xml:space="preserve"><value>Şifreniz {0}'de doğrulandı. Politika gereği {1} dk içinde yeniden sorulmaz ({2} dk kaldı).</value></data>
+  <data name="ESign.Dialog.Meaning" xml:space="preserve"><value>İmza anlamı</value></data>
+  <data name="ESign.Dialog.MeaningSelect" xml:space="preserve"><value>Seçin</value></data>
+  <data name="ESign.Dialog.Appearance" xml:space="preserve"><value>İmza görünümü</value></data>
+  <data name="ESign.Dialog.AppearancePolicy" xml:space="preserve"><value>Politika: {0}</value></data>
+  <data name="ESign.Dialog.App.Saved" xml:space="preserve"><value>Kayıtlı imzamı kullan</value></data>
+  <data name="ESign.Dialog.App.SavedSub" xml:space="preserve"><value>{0} · bu seçenekte şifre her zaman istenir</value></data>
+  <data name="ESign.Dialog.App.Draw" xml:space="preserve"><value>Şimdi çiz</value></data>
+  <data name="ESign.Dialog.App.DrawSub" xml:space="preserve"><value>Pencere içindeki imza alanına çizin</value></data>
+  <data name="ESign.Dialog.App.Name" xml:space="preserve"><value>Yalnız ad soyad</value></data>
+  <data name="ESign.Dialog.App.NameSub" xml:space="preserve"><value>Ad soyad ve tarih-saat metin olarak eklenir</value></data>
+  <data name="ESign.Dialog.Dis.DrawRequired" xml:space="preserve"><value>Politika bu işlem için o an çizim istiyor</value></data>
+  <data name="ESign.Dialog.Dis.None" xml:space="preserve"><value>Bu işlemde görsel imza kullanılmaz</value></data>
+  <data name="ESign.Dialog.Dis.Pending" xml:space="preserve"><value>İmza örneğiniz yönetici onayı bekliyor</value></data>
+  <data name="ESign.Dialog.Dis.NoSample" xml:space="preserve"><value>Kayıtlı imza örneğiniz yok · İmzam sayfasından ekleyin</value></data>
+  <data name="ESign.Dialog.Dis.VisualRequired" xml:space="preserve"><value>Bu işlem görsel imza gerektiriyor</value></data>
+  <data name="ESign.Dialog.VisualMode.none" xml:space="preserve"><value>Yok</value></data>
+  <data name="ESign.Dialog.VisualMode.optional" xml:space="preserve"><value>İsteğe bağlı</value></data>
+  <data name="ESign.Dialog.VisualMode.savedAccepted" xml:space="preserve"><value>Kayıtlı imza kabul</value></data>
+  <data name="ESign.Dialog.VisualMode.drawRequired" xml:space="preserve"><value>Zorunlu: o an çiz</value></data>
+  <data name="ESign.Pad.Hint" xml:space="preserve"><value>Fare, kalem veya parmakla imzalayın</value></data>
+  <data name="ESign.Pad.Undo" xml:space="preserve"><value>Geri al</value></data>
+  <data name="ESign.Pad.Clear" xml:space="preserve"><value>Temizle</value></data>
+  <data name="ESign.Pad.Area" xml:space="preserve"><value>İmza alanı</value></data>
+  <data name="ESign.Dialog.Note" xml:space="preserve"><value>İmza notu</value></data>
+  <data name="ESign.Dialog.NotePlaceholder" xml:space="preserve"><value>İsteğe bağlı</value></data>
+  <data name="ESign.Dialog.Statement1" xml:space="preserve"><value>Bu elektronik imza, el yazısı imzamla eşdeğerdir.</value></data>
+  <data name="ESign.Dialog.Statement2" xml:space="preserve"><value>İmza; kimliğiniz, tarih-saat, imza anlamı ve kaydın o anki özetiyle değiştirilemez şekilde saklanır.</value></data>
+  <data name="ESign.Dialog.Cancel" xml:space="preserve"><value>Vazgeç</value></data>
+  <data name="ESign.Dialog.Sign" xml:space="preserve"><value>İmzala</value></data>
+  <data name="ESign.Dialog.Signing" xml:space="preserve"><value>İmzalanıyor…</value></data>
+  <data name="ESign.Dialog.Err.Meaning" xml:space="preserve"><value>İmza anlamı seçin.</value></data>
+  <data name="ESign.Dialog.Err.Password" xml:space="preserve"><value>Şifrenizi girin.</value></data>
+  <data name="ESign.Dialog.Err.UserName" xml:space="preserve"><value>Kullanıcı adınızı yazın.</value></data>
+  <data name="ESign.Dialog.Err.Draw" xml:space="preserve"><value>İmza alanına çizin.</value></data>
+  <data name="ESign.Dialog.Err.NoSample" xml:space="preserve"><value>Kullanılabilir kayıtlı imza örneğiniz yok.</value></data>
+  <data name="ESign.Dialog.Err.WrongPassword" xml:space="preserve"><value>Şifre hatalı. Kalan deneme: {0}</value></data>
+  <data name="ESign.Dialog.Err.Generic" xml:space="preserve"><value>İmza tamamlanamadı. Lütfen tekrar deneyin.</value></data>
+  <data name="ESign.Dialog.Err.Forbidden" xml:space="preserve"><value>Bu imza için yetkiniz yok. Yöneticinizden yetki isteyin.</value></data>
+  <data name="ESign.Dialog.Err.Title" xml:space="preserve"><value>İmza atılamadı</value></data>
+  <data name="ESign.Dialog.Locked.Title" xml:space="preserve"><value>Hesabınız kilitlendi</value></data>
+  <data name="ESign.Dialog.Locked.Text" xml:space="preserve"><value>Ard arda hatalı şifre girişi yapıldı. İmza atılmadı. Hesabınız {0} dakika kilitlendi; olay güvenlik denetim kaydına yazıldı.</value></data>
+  <data name="ESign.Dialog.Timeout.Title" xml:space="preserve"><value>Oturumunuz zaman aşımına uğradı</value></data>
+  <data name="ESign.Dialog.Timeout.Text" xml:space="preserve"><value>Güvenlik nedeniyle imza için yeniden oturum açmanız gerekiyor. İmza atılmadı; kayıttaki karar taslak olarak korunuyor.</value></data>
+  <data name="ESign.Dialog.Timeout.Relogin" xml:space="preserve"><value>Yeniden oturum aç</value></data>
+  <data name="ESign.Dialog.Success.Title" xml:space="preserve"><value>İmza kaydedildi</value></data>
+  <data name="ESign.Dialog.Success.SignatureId" xml:space="preserve"><value>İmza kimliği</value></data>
+  <data name="ESign.Dialog.Success.Timestamp" xml:space="preserve"><value>Zaman damgası</value></data>
+  <data name="ESign.Dialog.Success.Signer" xml:space="preserve"><value>İmzalayan</value></data>
+  <data name="ESign.Dialog.Success.Meaning" xml:space="preserve"><value>Anlam</value></data>
+  <data name="ESign.Dialog.Success.Appearance" xml:space="preserve"><value>Görünüm</value></data>
+  <data name="ESign.Dialog.Success.Record" xml:space="preserve"><value>Kayıt</value></data>
+  <data name="ESign.Dialog.Success.RecordDigest" xml:space="preserve"><value>Kayıt özeti</value></data>
+  <data name="ESign.Dialog.Success.ImageDigest" xml:space="preserve"><value>Görüntü özeti</value></data>
+  <data name="ESign.Dialog.Success.NoVisual" xml:space="preserve"><value>Görsel imza yok · yalnız ad soyad</value></data>
+  <data name="ESign.Dialog.Success.Ok" xml:space="preserve"><value>Tamam</value></data>
+  <data name="ESign.Dialog.AppType.drawn" xml:space="preserve"><value>Çizim</value></data>
+  <data name="ESign.Dialog.AppType.sample" xml:space="preserve"><value>Kayıtlı imza</value></data>
+  <data name="ESign.Dialog.AppType.none" xml:space="preserve"><value>Yalnız ad</value></data>
+  <data name="ESign.Module.workflow" xml:space="preserve"><value>İş akışı</value></data>
+  <data name="ESign.Module.quarantine" xml:space="preserve"><value>Kalite / Karantina</value></data>
+  <data name="ESign.Module.documentmanagement" xml:space="preserve"><value>Belge yönetimi</value></data>
+  <data name="ESign.Mine.Title" xml:space="preserve"><value>İmzam</value></data>
+  <data name="ESign.Mine.Statement" xml:space="preserve"><value>Görsel imza, imzanın görünümüdür. İmzanın geçerliliği şifre doğrulaması ve seçilen imza anlamından gelir. Kayıtlı imza resmi şifre doğrulanmadan hiçbir kayda eklenemez.</value></data>
+  <data name="ESign.Mine.MySample" xml:space="preserve"><value>İmza örneğim</value></data>
+  <data name="ESign.Mine.Active" xml:space="preserve"><value>Aktif</value></data>
+  <data name="ESign.Mine.Id" xml:space="preserve"><value>Kimlik</value></data>
+  <data name="ESign.Mine.AddedAt" xml:space="preserve"><value>Eklenme</value></data>
+  <data name="ESign.Mine.Storage" xml:space="preserve"><value>Saklama</value></data>
+  <data name="ESign.Mine.ApprovedBy" xml:space="preserve"><value>Onaylayan</value></data>
+  <data name="ESign.Mine.Usage" xml:space="preserve"><value>Kullanım</value></data>
+  <data name="ESign.Mine.UsedIn" xml:space="preserve"><value>{0} imzada kullanıldı</value></data>
+  <data name="ESign.Mine.NoApprovalNeeded" xml:space="preserve"><value>Onay gerekmedi</value></data>
+  <data name="ESign.Mine.Empty.Title" xml:space="preserve"><value>Kayıtlı imza örneğiniz yok</value></data>
+  <data name="ESign.Mine.Empty.Text" xml:space="preserve"><value>İmza Penceresi'nde "Şimdi çiz" veya "Yalnız ad soyad" ile imzalamaya devam edebilirsiniz.</value></data>
+  <data name="ESign.Mine.PendingInfo" xml:space="preserve"><value>{0} yönetici onayı bekliyor. Onaylanana kadar {1}.</value></data>
+  <data name="ESign.Mine.PendingKeep" xml:space="preserve"><value>mevcut örneğiniz kullanılır</value></data>
+  <data name="ESign.Mine.PendingNone" xml:space="preserve"><value>"Kayıtlı imzamı kullan" pasif kalır</value></data>
+  <data name="ESign.Mine.NewSample" xml:space="preserve"><value>Yeni imza örneği</value></data>
+  <data name="ESign.Mine.Tab.Draw" xml:space="preserve"><value>Çiz</value></data>
+  <data name="ESign.Mine.Tab.Upload" xml:space="preserve"><value>Resim yükle</value></data>
+  <data name="ESign.Mine.Thickness" xml:space="preserve"><value>Kalınlık</value></data>
+  <data name="ESign.Mine.Thin" xml:space="preserve"><value>İnce</value></data>
+  <data name="ESign.Mine.Medium" xml:space="preserve"><value>Orta</value></data>
+  <data name="ESign.Mine.Color" xml:space="preserve"><value>Renk</value></data>
+  <data name="ESign.Mine.Black" xml:space="preserve"><value>Siyah</value></data>
+  <data name="ESign.Mine.Navy" xml:space="preserve"><value>Lacivert</value></data>
+  <data name="ESign.Mine.FullScreen" xml:space="preserve"><value>Tam ekran (yatay)</value></data>
+  <data name="ESign.Mine.Full.Title" xml:space="preserve"><value>İmzanızı çizin</value></data>
+  <data name="ESign.Mine.Full.Rotate" xml:space="preserve"><value>Telefon veya tablette cihazınızı yatay çevirin</value></data>
+  <data name="ESign.Mine.Full.Apply" xml:space="preserve"><value>Tamam</value></data>
+  <data name="ESign.Mine.Upload.Pick" xml:space="preserve"><value>İmza resmi seçin</value></data>
+  <data name="ESign.Mine.Upload.Hint" xml:space="preserve"><value>PNG veya JPG · en fazla 1 MB</value></data>
+  <data name="ESign.Mine.Upload.Change" xml:space="preserve"><value>Değiştir</value></data>
+  <data name="ESign.Mine.Upload.Remove" xml:space="preserve"><value>Kaldır</value></data>
+  <data name="ESign.Mine.Upload.Original" xml:space="preserve"><value>Orijinal · kırpma alanı</value></data>
+  <data name="ESign.Mine.Upload.Result" xml:space="preserve"><value>Sonuç önizlemesi</value></data>
+  <data name="ESign.Mine.Crop.Left" xml:space="preserve"><value>Soldan kırp</value></data>
+  <data name="ESign.Mine.Crop.Right" xml:space="preserve"><value>Sağdan kırp</value></data>
+  <data name="ESign.Mine.Crop.Top" xml:space="preserve"><value>Üstten kırp</value></data>
+  <data name="ESign.Mine.Crop.Bottom" xml:space="preserve"><value>Alttan kırp</value></data>
+  <data name="ESign.Mine.Upload.Bg" xml:space="preserve"><value>Arka planı temizle</value></data>
+  <data name="ESign.Mine.Upload.Sensitivity" xml:space="preserve"><value>Hassasiyet</value></data>
+  <data name="ESign.Mine.Upload.ErrType" xml:space="preserve"><value>Yalnız PNG veya JPG seçebilirsiniz.</value></data>
+  <data name="ESign.Mine.Upload.ErrSize" xml:space="preserve"><value>Dosya 1 MB'tan büyük.</value></data>
+  <data name="ESign.Mine.StoreLabel" xml:space="preserve"><value>Saklama biçimi:</value></data>
+  <data name="ESign.Mine.Store.Drawn" xml:space="preserve"><value>PNG resim + çizgi verisi (vektör)</value></data>
+  <data name="ESign.Mine.Store.Uploaded" xml:space="preserve"><value>PNG resim (yüklenen resimlerde çizgi verisi yoktur)</value></data>
+  <data name="ESign.Mine.ApprovalNote" xml:space="preserve"><value>Kaydedilen örnek, e-İmza yöneticisi onayından sonra kullanılabilir.</value></data>
+  <data name="ESign.Mine.SaveWithPassword" xml:space="preserve"><value>Şifreyle kaydet</value></data>
+  <data name="ESign.Mine.Pwd.Title" xml:space="preserve"><value>Şifrenizi doğrulayın</value></data>
+  <data name="ESign.Mine.Pwd.Sub" xml:space="preserve"><value>İmza örneğini kaydetmek için</value></data>
+  <data name="ESign.Mine.Pwd.Save" xml:space="preserve"><value>Doğrula ve kaydet</value></data>
+  <data name="ESign.Mine.History.Title" xml:space="preserve"><value>İmza örneği geçmişi</value></data>
+  <data name="ESign.Mine.History.Sub" xml:space="preserve"><value>Kullanılmış örnek silinemez, yalnız pasif yapılır; eski imza kayıtları kendi görüntüsünü korur</value></data>
+  <data name="ESign.Mine.Col.Sample" xml:space="preserve"><value>Örnek</value></data>
+  <data name="ESign.Mine.Col.Kind" xml:space="preserve"><value>Nasıl eklendi</value></data>
+  <data name="ESign.Mine.Col.Status" xml:space="preserve"><value>Durum</value></data>
+  <data name="ESign.Mine.Col.Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="ESign.Mine.Kind.drawn" xml:space="preserve"><value>Çizim</value></data>
+  <data name="ESign.Mine.Kind.uploaded" xml:space="preserve"><value>Yükleme</value></data>
+  <data name="ESign.Mine.Format.png" xml:space="preserve"><value>PNG</value></data>
+  <data name="ESign.Mine.Format.pngAndVector" xml:space="preserve"><value>PNG + vektör</value></data>
+  <data name="ESign.Mine.Format.vector" xml:space="preserve"><value>Vektör</value></data>
+  <data name="ESign.Mine.Status.active" xml:space="preserve"><value>Aktif</value></data>
+  <data name="ESign.Mine.Status.inactive" xml:space="preserve"><value>Pasif</value></data>
+  <data name="ESign.Mine.Status.pending" xml:space="preserve"><value>Onay bekliyor</value></data>
+  <data name="ESign.Mine.Status.rejected" xml:space="preserve"><value>Reddedildi</value></data>
+  <data name="ESign.Mine.Status.withdrawn" xml:space="preserve"><value>Silindi</value></data>
+  <data name="ESign.Mine.Deactivate" xml:space="preserve"><value>Pasif yap</value></data>
+  <data name="ESign.Mine.Delete" xml:space="preserve"><value>Sil</value></data>
+  <data name="ESign.Mine.Locked" xml:space="preserve"><value>Silinemez</value></data>
+  <data name="ESign.Mine.LockedTitle" xml:space="preserve"><value>Kullanılmış imza örneği silinemez</value></data>
+  <data name="ESign.Mine.HistoryEmpty" xml:space="preserve"><value>Henüz imza örneği eklenmedi.</value></data>
+  <data name="ESign.Mine.UsedCount" xml:space="preserve"><value>{0} imza</value></data>
+  <data name="ESign.Mine.RejectReason" xml:space="preserve"><value>Gerekçe: {0}</value></data>
+  <data name="ESign.Mine.Confirm.Deactivate" xml:space="preserve"><value>İmza örneği pasif yapılsın mı?</value></data>
+  <data name="ESign.Mine.Confirm.DeactivateText" xml:space="preserve"><value>Pasif örnek yeni imzalarda kullanılamaz; eski imzalar görüntüsünü korur.</value></data>
+  <data name="ESign.Mine.Confirm.Delete" xml:space="preserve"><value>İmza örneği silinsin mi?</value></data>
+  <data name="ESign.Mine.Confirm.DeleteText" xml:space="preserve"><value>Hiç kullanılmamış bu örnek geri çekilir ve listede "Silindi" olarak kalır.</value></data>
+  <data name="ESign.Mine.Toast.Saved" xml:space="preserve"><value>İmza örneği kaydedildi.</value></data>
+  <data name="ESign.Mine.Toast.SavedPending" xml:space="preserve"><value>İmza örneği yönetici onayına gönderildi.</value></data>
+  <data name="ESign.Mine.Toast.Deactivated" xml:space="preserve"><value>İmza örneği pasif yapıldı.</value></data>
+  <data name="ESign.Mine.Toast.Withdrawn" xml:space="preserve"><value>İmza örneği silindi.</value></data>
+  <data name="ESign.Zoom.Title" xml:space="preserve"><value>İmza görüntüsü</value></data>
+  <data name="ESign.Zoom.Enlarge" xml:space="preserve"><value>Büyüt</value></data>
+  <data name="ESign.Zoom.Person" xml:space="preserve"><value>Kişi</value></data>
+  <data name="ESign.Zoom.Type" xml:space="preserve"><value>Görünüm türü</value></data>
+  <data name="ESign.Zoom.At" xml:space="preserve"><value>Tarih-saat</value></data>
+  <data name="ESign.Zoom.Sample" xml:space="preserve"><value>İmza örneği · {0}</value></data>
+  <data name="ESign.Errors.ESIGN_ACCOUNT_LOCKED" xml:space="preserve"><value>Hesabınız kilitli; imza atılamaz.</value></data>
+  <data name="ESign.Errors.ESIGN_ACTION_PREFIX_MISMATCH" xml:space="preserve"><value>İşlem kodu modülle eşleşmiyor.</value></data>
+  <data name="ESign.Errors.ESIGN_ACTOR_NOT_TENANT_USER" xml:space="preserve"><value>Yalnız kiracı kullanıcıları imza atabilir.</value></data>
+  <data name="ESign.Errors.ESIGN_ALREADY_INVALIDATED" xml:space="preserve"><value>Bu imza zaten geçersiz kılınmış.</value></data>
+  <data name="ESign.Errors.ESIGN_APPEARANCE_NOT_ALLOWED" xml:space="preserve"><value>Seçilen imza görünümü bu işlemin politikasına uymuyor.</value></data>
+  <data name="ESign.Errors.ESIGN_DRAWING_EMPTY" xml:space="preserve"><value>İmza alanı boş; lütfen çizin.</value></data>
+  <data name="ESign.Errors.ESIGN_EXPORT_TOO_LARGE" xml:space="preserve"><value>Dışa aktarım çok büyük; filtreyi daraltın.</value></data>
+  <data name="ESign.Errors.ESIGN_IMAGE_NOT_PNG" xml:space="preserve"><value>İmza görüntüsü PNG olmalıdır.</value></data>
+  <data name="ESign.Errors.ESIGN_IMAGE_TOO_LARGE" xml:space="preserve"><value>İmza görüntüsü 1 MB sınırını aşıyor.</value></data>
+  <data name="ESign.Errors.ESIGN_INTENT_REQUIRES_PASSWORD" xml:space="preserve"><value>Bu işlem için şifrenizi girmeniz gerekiyor.</value></data>
+  <data name="ESign.Errors.ESIGN_MEANING_CODE_EXISTS" xml:space="preserve"><value>Bu anlam kodu zaten var.</value></data>
+  <data name="ESign.Errors.ESIGN_MEANING_CODE_LOCKED" xml:space="preserve"><value>Kullanılmış bir anlamın kodu değiştirilemez.</value></data>
+  <data name="ESign.Errors.ESIGN_MEANING_IN_USE" xml:space="preserve"><value>Bu anlam bir politika satırında kullanılıyor.</value></data>
+  <data name="ESign.Errors.ESIGN_MEANING_LANGUAGE_MISSING" xml:space="preserve"><value>Görünen ad 7 dilin hepsinde zorunludur.</value></data>
+  <data name="ESign.Errors.ESIGN_MEANING_NOT_ALLOWED" xml:space="preserve"><value>Seçilen imza anlamı bu işlem için izinli değil.</value></data>
+  <data name="ESign.Errors.ESIGN_POLICY_VERSION_CONFLICT" xml:space="preserve"><value>Politika bu arada değişti; sayfayı yenileyin.</value></data>
+  <data name="ESign.Errors.ESIGN_REASON_TOO_SHORT" xml:space="preserve"><value>Gerekçe en az 10 karakter olmalıdır.</value></data>
+  <data name="ESign.Errors.ESIGN_REAUTH_FAILED" xml:space="preserve"><value>Şifre hatalı.</value></data>
+  <data name="ESign.Errors.ESIGN_REAUTH_REQUIRED" xml:space="preserve"><value>Bu imza için şifrenizi yeniden girmeniz gerekiyor.</value></data>
+  <data name="ESign.Errors.ESIGN_REAUTH_UNAVAILABLE" xml:space="preserve"><value>Şifre doğrulama hizmetine şu an ulaşılamıyor.</value></data>
+  <data name="ESign.Errors.ESIGN_REAUTH_WINDOW_EXPIRED" xml:space="preserve"><value>Şifre doğrulama süreniz doldu; şifrenizi yeniden girin.</value></data>
+  <data name="ESign.Errors.ESIGN_REQUEST_NOT_OPEN" xml:space="preserve"><value>Bu imza talebi artık açık değil.</value></data>
+  <data name="ESign.Errors.ESIGN_SAMPLE_IN_USE" xml:space="preserve"><value>Kullanılmış imza örneği silinemez.</value></data>
+  <data name="ESign.Errors.ESIGN_SAMPLE_NOT_ACTIVE" xml:space="preserve"><value>İmza örneğiniz aktif değil.</value></data>
+  <data name="ESign.Errors.ESIGN_SAMPLE_NOT_PENDING" xml:space="preserve"><value>Bu imza örneği onay beklemiyor.</value></data>
+  <data name="ESign.Errors.ESIGN_SECOND_FACTOR_NOT_AVAILABLE" xml:space="preserve"><value>İkinci faktör henüz kullanılamıyor.</value></data>
+  <data name="ESign.Errors.ESIGN_SELF_APPROVAL_FORBIDDEN" xml:space="preserve"><value>Kendi imza örneğinizi onaylayamazsınız.</value></data>
+  <data name="ESign.Errors.ESIGN_SIGNATURE_MISMATCH" xml:space="preserve"><value>İmza bu onayla eşleşmiyor; yeniden imzalayın.</value></data>
+  <data name="ESign.Errors.ESIGN_SIGNATURE_REQUIRED" xml:space="preserve"><value>Bu onay elektronik imza gerektiriyor.</value></data>
+  <data name="ESign.Errors.ESIGN_SIGNER_NOT_FOUND" xml:space="preserve"><value>İmzalayan kullanıcı bulunamadı.</value></data>
+  <data name="ESign.Errors.ESIGN_SIGNER_NOT_NOMINATED" xml:space="preserve"><value>Bu talep için imzalayan olarak atanmadınız.</value></data>
+  <data name="ESign.Errors.ESIGN_SUBJECT_NOT_FOUND" xml:space="preserve"><value>İmzalanacak kayıt bulunamadı ya da size görünmüyor.</value></data>
+  <data name="ESign.Errors.ESIGN_TICKET_INVALID" xml:space="preserve"><value>Şifre doğrulamanız geçersiz ya da süresi dolmuş; yeniden deneyin.</value></data>
+  <data name="ESign.Errors.ESIGN_TICKET_REQUIRED" xml:space="preserve"><value>İmza için şifre doğrulaması gerekiyor.</value></data>
+  <data name="ESign.Common.Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="ESign.Common.AllModules" xml:space="preserve"><value>Tüm modüller</value></data>
+  <data name="ESign.Common.AllStatuses" xml:space="preserve"><value>Tüm durumlar</value></data>
+  <data name="ESign.Common.Company" xml:space="preserve"><value>Şirket</value></data>
+  <data name="ESign.Common.Continue" xml:space="preserve"><value>Devam et</value></data>
+  <data name="ESign.Common.From" xml:space="preserve"><value>Başlangıç</value></data>
+  <data name="ESign.Common.To" xml:space="preserve"><value>Bitiş</value></data>
+  <data name="ESign.Common.Module" xml:space="preserve"><value>Modül</value></data>
+  <data name="ESign.Common.Reason" xml:space="preserve"><value>Gerekçe</value></data>
+  <data name="ESign.Common.ReasonMin" xml:space="preserve"><value>Gerekçe en az {0} karakter olmalı.</value></data>
+  <data name="ESign.Common.ReasonPlaceholder" xml:space="preserve"><value>Bu kararın gerekçesini yazın</value></data>
+  <data name="ESign.Common.ReasonQuoted" xml:space="preserve"><value>Gerekçe: "{0}"</value></data>
+  <data name="ESign.Common.Record" xml:space="preserve"><value>Kayıt</value></data>
+  <data name="ESign.Common.Save" xml:space="preserve"><value>Kaydet</value></data>
+  <data name="ESign.Common.Status" xml:space="preserve"><value>Durum</value></data>
+  <data name="ESign.Dialog.Err.PasswordRequired" xml:space="preserve"><value>Şifrenizi girin.</value></data>
+  <data name="ESign.Module.inventory" xml:space="preserve"><value>Stok</value></data>
+  <data name="ESign.Requests.Title" xml:space="preserve"><value>İmza talepleri</value></data>
+  <data name="ESign.Requests.Sub" xml:space="preserve"><value>Size atanmış imza işleri</value></data>
+  <data name="ESign.Requests.Info" xml:space="preserve"><value>Workflow onayları WorkCenter'da da görünür; bu ekran yalnız size atanmış imza işlerini listeler.</value></data>
+  <data name="ESign.Requests.Count" xml:space="preserve"><value>{0} talep · {1} bekliyor</value></data>
+  <data name="ESign.Requests.Col.Meaning" xml:space="preserve"><value>İstenen anlam</value></data>
+  <data name="ESign.Requests.Col.RequestedBy" xml:space="preserve"><value>Talep eden</value></data>
+  <data name="ESign.Requests.Col.RequestedAt" xml:space="preserve"><value>Talep tarihi</value></data>
+  <data name="ESign.Requests.Col.Due" xml:space="preserve"><value>Son tarih</value></data>
+  <data name="ESign.Requests.Today" xml:space="preserve"><value>Bugün</value></data>
+  <data name="ESign.Requests.Status.waiting" xml:space="preserve"><value>Bekliyor</value></data>
+  <data name="ESign.Requests.Status.signed" xml:space="preserve"><value>İmzalandı</value></data>
+  <data name="ESign.Requests.Status.rejected" xml:space="preserve"><value>Reddedildi</value></data>
+  <data name="ESign.Requests.Status.expired" xml:space="preserve"><value>Süresi doldu</value></data>
+  <data name="ESign.Requests.Status.cancelled" xml:space="preserve"><value>İptal edildi</value></data>
+  <data name="ESign.Requests.Sign" xml:space="preserve"><value>İmzala</value></data>
+  <data name="ESign.Requests.Reject" xml:space="preserve"><value>Reddet</value></data>
+  <data name="ESign.Requests.OpenRecord" xml:space="preserve"><value>Kaydın imzaları</value></data>
+  <data name="ESign.Requests.Reject.Title" xml:space="preserve"><value>İmza talebi reddedilsin mi?</value></data>
+  <data name="ESign.Requests.Reject.Sub" xml:space="preserve"><value>{0} · {1} — talep eden bilgilendirilir.</value></data>
+  <data name="ESign.Requests.Rejected" xml:space="preserve"><value>{0} reddedildi.</value></data>
+  <data name="ESign.Requests.RejectReason" xml:space="preserve"><value>Ret gerekçesi: {0}</value></data>
+  <data name="ESign.Verify.Title" xml:space="preserve"><value>İmza doğrulama</value></data>
+  <data name="ESign.Verify.Sub" xml:space="preserve"><value>Bir kaydın imzalarını ve bugünkü geçerliliklerini görün</value></data>
+  <data name="ESign.Verify.SubjectType" xml:space="preserve"><value>Kayıt türü</value></data>
+  <data name="ESign.Verify.SubjectId" xml:space="preserve"><value>Kayıt kimliği</value></data>
+  <data name="ESign.Verify.Show" xml:space="preserve"><value>Göster</value></data>
+  <data name="ESign.Verify.Recent" xml:space="preserve"><value>Son imzalanan kayıtlar</value></data>
+  <data name="ESign.Verify.RecentPick" xml:space="preserve"><value>Bir kayıt seçin</value></data>
+  <data name="ESign.Verify.Pick" xml:space="preserve"><value>Doğrulamak için bir kayıt seçin ya da bir imza bağlantısından gelin.</value></data>
+  <data name="ESign.Verify.Reverify" xml:space="preserve"><value>Yeniden doğrula</value></data>
+  <data name="ESign.Verify.LastVerified" xml:space="preserve"><value>Son doğrulama: {0}</value></data>
+  <data name="ESign.Verify.NoVerifyPermission" xml:space="preserve"><value>Doğrulama durumu için e-İmza doğrulama yetkisi gerekir</value></data>
+  <data name="ESign.Verify.CurrentHash" xml:space="preserve"><value>Güncel kayıt özeti (SHA-256):</value></data>
+  <data name="ESign.Verify.Count.Total" xml:space="preserve"><value>{0} imza</value></data>
+  <data name="ESign.Verify.Count.Valid" xml:space="preserve"><value>{0} geçerli</value></data>
+  <data name="ESign.Verify.Count.Changed" xml:space="preserve"><value>{0} kayıt değişti</value></data>
+  <data name="ESign.Verify.Count.Invalidated" xml:space="preserve"><value>{0} geçersiz kılındı</value></data>
+  <data name="ESign.Verify.Count.Tampered" xml:space="preserve"><value>{0} bozulmuş</value></data>
+  <data name="ESign.Verify.Status.valid" xml:space="preserve"><value>Geçerli</value></data>
+  <data name="ESign.Verify.Status.changed" xml:space="preserve"><value>Kayıt değişti</value></data>
+  <data name="ESign.Verify.Status.invalidated" xml:space="preserve"><value>Geçersiz kılındı</value></data>
+  <data name="ESign.Verify.Status.tampered" xml:space="preserve"><value>Bozulmuş</value></data>
+  <data name="ESign.Verify.Status.subjectUnresolvable" xml:space="preserve"><value>Kayıt okunamıyor</value></data>
+  <data name="ESign.Verify.ChangedNote" xml:space="preserve"><value>Kayıt imzadan sonra değişti: imza anındaki özet {0}…, güncel özet {1}…</value></data>
+  <data name="ESign.Verify.InvalidatedReason" xml:space="preserve"><value>Gerekçe: "{0}"</value></data>
+  <data name="ESign.Verify.Note" xml:space="preserve"><value>Not: "{0}"</value></data>
+  <data name="ESign.Verify.AppearanceType" xml:space="preserve"><value>Görünüm türü</value></data>
+  <data name="ESign.Verify.SignatureId" xml:space="preserve"><value>İmza kimliği</value></data>
+  <data name="ESign.Verify.HashAtSign" xml:space="preserve"><value>İmza anındaki özet</value></data>
+  <data name="ESign.Verify.ImageHash" xml:space="preserve"><value>Görüntü özeti</value></data>
+  <data name="ESign.Verify.DrawnNoImage" xml:space="preserve"><value>çizim · görüntü özeti kayıtta</value></data>
+  <data name="ESign.Verify.NameOnly" xml:space="preserve"><value>yalnız ad</value></data>
+  <data name="ESign.Verify.NoSignatures" xml:space="preserve"><value>Bu kayıtta henüz imza yok.</value></data>
+  <data name="ESign.Verify.Invalidate" xml:space="preserve"><value>İmzayı geçersiz kıl</value></data>
+  <data name="ESign.Verify.InvalidateNoPermission" xml:space="preserve"><value>Geçersiz kılma için e-İmza yöneticisi yetkisi gerekir</value></data>
+  <data name="ESign.Verify.Invalidate.Title" xml:space="preserve"><value>İmza geçersiz kılınsın mı?</value></data>
+  <data name="ESign.Verify.Invalidate.Sub" xml:space="preserve"><value>{0} · {1} — imza kaydı değişmez; geçersiz kılma ayrıca ve kalıcı olarak kaydedilir.</value></data>
+  <data name="ESign.Verify.Invalidate.PwdTitle" xml:space="preserve"><value>Geçersiz kılmayı şifrenizle onaylayın</value></data>
+  <data name="ESign.Verify.Invalidate.Warn" xml:space="preserve"><value>Bu işlem geri alınamaz. İmza, onu kullanan her işlemde geçersiz görünür.</value></data>
+  <data name="ESign.Verify.Invalidated" xml:space="preserve"><value>{0} geçersiz kılındı.</value></data>
+  <data name="ESign.Export.Title" xml:space="preserve"><value>Denetim dışa aktarımı</value></data>
+  <data name="ESign.Export.Sub" xml:space="preserve"><value>İmza kayıtlarını filtreleyip PDF ya da CSV olarak indirin</value></data>
+  <data name="ESign.Export.Preview" xml:space="preserve"><value>Önizleme</value></data>
+  <data name="ESign.Export.View.Table" xml:space="preserve"><value>Tablo</value></data>
+  <data name="ESign.Export.View.Pdf" xml:space="preserve"><value>PDF önizleme</value></data>
+  <data name="ESign.Export.AsPdf" xml:space="preserve"><value>PDF olarak dışa aktar</value></data>
+  <data name="ESign.Export.AsCsv" xml:space="preserve"><value>CSV olarak dışa aktar</value></data>
+  <data name="ESign.Export.Count" xml:space="preserve"><value>{0} imza kaydı</value></data>
+  <data name="ESign.Export.Done" xml:space="preserve"><value>{0} indirildi ({1}).</value></data>
+  <data name="ESign.Export.Empty" xml:space="preserve"><value>Filtreye uyan imza kaydı yok.</value></data>
+  <data name="ESign.Export.NoVisual" xml:space="preserve"><value>Görsel imza yok · yalnız ad soyad</value></data>
+  <data name="ESign.Export.AllSigners" xml:space="preserve"><value>Tüm imzalayanlar</value></data>
+  <data name="ESign.Export.AllMeanings" xml:space="preserve"><value>Tüm anlamlar</value></data>
+  <data name="ESign.Export.AllCompanies" xml:space="preserve"><value>Tüm şirketler</value></data>
+  <data name="ESign.Export.Col.At" xml:space="preserve"><value>Tarih-saat</value></data>
+  <data name="ESign.Export.Col.Signer" xml:space="preserve"><value>İmzalayan</value></data>
+  <data name="ESign.Export.Col.Meaning" xml:space="preserve"><value>İmza anlamı</value></data>
+  <data name="ESign.Export.Col.Record" xml:space="preserve"><value>Modül · Kayıt</value></data>
+  <data name="ESign.Export.Col.Verification" xml:space="preserve"><value>Doğrulama</value></data>
+  <data name="ESign.Export.Report.Title" xml:space="preserve"><value>İmza Denetim Raporu</value></data>
+  <data name="ESign.Export.Report.Sub" xml:space="preserve"><value>e-İmza Servisi (MOD-0022)</value></data>
+  <data name="ESign.Export.Report.Foot" xml:space="preserve"><value>Her imza bloğu; görüntü, ad soyad, imza anlamı, tarih-saat ve imza kimliğini içerir. Asıl dosya sunucuda üretilir.</value></data>
+  <data name="ESign.Export.Log.Title" xml:space="preserve"><value>Dışa aktarım denetim kaydı</value></data>
+  <data name="ESign.Export.Log.Sub" xml:space="preserve"><value>Her dışa aktarım değiştirilemez şekilde kaydedilir</value></data>
+  <data name="ESign.Export.Log.Number" xml:space="preserve"><value>Dışa aktarım no.</value></data>
+  <data name="ESign.Export.Log.By" xml:space="preserve"><value>Yapan</value></data>
+  <data name="ESign.Export.Log.Format" xml:space="preserve"><value>Biçim</value></data>
+  <data name="ESign.Export.Log.Count" xml:space="preserve"><value>Kayıt sayısı</value></data>
+  <data name="ESign.Export.Log.Records" xml:space="preserve"><value>{0} kayıt</value></data>
+  <data name="ESign.Export.Log.Filter" xml:space="preserve"><value>Filtre</value></data>
+  <data name="ESign.Export.Log.FileHash" xml:space="preserve"><value>Dosya özeti</value></data>
+  <data name="ESign.Export.Log.Empty" xml:space="preserve"><value>Henüz dışa aktarım yok.</value></data>
+  <data name="ESign.Policy.Title" xml:space="preserve"><value>e-İmza politikası</value></data>
+  <data name="ESign.Policy.Sub" xml:space="preserve"><value>Hangi işlemin imza istediğini, anlamını ve görsel imza kuralını belirleyin</value></data>
+  <data name="ESign.Policy.Scope" xml:space="preserve"><value>Kapsam</value></data>
+  <data name="ESign.Policy.Scope.Tenant" xml:space="preserve"><value>Tenant varsayılanı</value></data>
+  <data name="ESign.Policy.Scope.Company" xml:space="preserve"><value>Şirket bazında</value></data>
+  <data name="ESign.Policy.ScopeHint.Tenant" xml:space="preserve"><value>Farklı politikası olmayan her şirket bunu kullanır</value></data>
+  <data name="ESign.Policy.ScopeHint.Company" xml:space="preserve"><value>Şirket kendi kaydında bu politikayı kullanır</value></data>
+  <data name="ESign.Policy.UsesTenant.Title" xml:space="preserve"><value>{0} tenant varsayılanını kullanıyor</value></data>
+  <data name="ESign.Policy.UsesTenant.Text" xml:space="preserve"><value>Tenant politikasındaki her değişiklik bu şirkete de uygulanır. Farklı kurallar gerekiyorsa tenant varsayılanından kopya oluşturup düzenleyebilirsiniz.</value></data>
+  <data name="ESign.Policy.CopyForCompany" xml:space="preserve"><value>Bu şirket için farklı politika</value></data>
+  <data name="ESign.Policy.Override.Text" xml:space="preserve"><value>{0} için farklı politika uygulanıyor. Tenant varsayılanından ayrılan satırlar "Farklı" etiketiyle gösterilir.</value></data>
+  <data name="ESign.Policy.Override.New" xml:space="preserve"><value>{0} için tenant varsayılanından kopya: kaydettiğinizde şirket politikası oluşur.</value></data>
+  <data name="ESign.Policy.Revert" xml:space="preserve"><value>Tenant varsayılanına dön</value></data>
+  <data name="ESign.Policy.Revert.Title" xml:space="preserve"><value>{0} tenant varsayılanına dönsün mü?</value></data>
+  <data name="ESign.Policy.Revert.Sub" xml:space="preserve"><value>Şirketin farklı politikası kaldırılır; içeriği değişiklik geçmişinde kalır.</value></data>
+  <data name="ESign.Policy.Reverted" xml:space="preserve"><value>{0} tenant varsayılanına döndü.</value></data>
+  <data name="ESign.Policy.Rules" xml:space="preserve"><value>İşlem bazında imza kuralları</value></data>
+  <data name="ESign.Policy.Col.Action" xml:space="preserve"><value>İşlem</value></data>
+  <data name="ESign.Policy.Col.Meaning" xml:space="preserve"><value>İmza anlamı</value></data>
+  <data name="ESign.Policy.Col.Visual" xml:space="preserve"><value>Görsel imza</value></data>
+  <data name="ESign.Policy.Col.SecondFactor" xml:space="preserve"><value>İkinci faktör</value></data>
+  <data name="ESign.Policy.Required" xml:space="preserve"><value>Zorunlu</value></data>
+  <data name="ESign.Policy.Off" xml:space="preserve"><value>Kapalı</value></data>
+  <data name="ESign.Policy.Soon" xml:space="preserve"><value>Yakında</value></data>
+  <data name="ESign.Policy.Differs" xml:space="preserve"><value>Farklı</value></data>
+  <data name="ESign.Policy.Unsaved" xml:space="preserve"><value>Kaydedilmemiş değişiklik</value></data>
+  <data name="ESign.Policy.MeaningSignerChooses" xml:space="preserve"><value>— İmzalayan seçer —</value></data>
+  <data name="ESign.Policy.NoActions" xml:space="preserve"><value>Kayıtlı imzalanabilir işlem yok.</value></data>
+  <data name="ESign.Policy.NoCompanies" xml:space="preserve"><value>Şirket listesi okunamadı.</value></data>
+  <data name="ESign.Policy.General" xml:space="preserve"><value>Genel ayarlar</value></data>
+  <data name="ESign.Policy.Reauth" xml:space="preserve"><value>Ard arda imzalarda şifre</value></data>
+  <data name="ESign.Policy.Reauth.Every" xml:space="preserve"><value>Her imzada şifre istensin</value></data>
+  <data name="ESign.Policy.Reauth.EverySub" xml:space="preserve"><value>Her imza için kullanıcı şifresini yeniden girer.</value></data>
+  <data name="ESign.Policy.Reauth.Window" xml:space="preserve"><value>Süre içinde bir kez</value></data>
+  <data name="ESign.Policy.Reauth.WindowSub" xml:space="preserve"><value>Doğrulama geçerlilik süresi içindeki sonraki imzalarda şifre sorulmaz.</value></data>
+  <data name="ESign.Policy.Minutes" xml:space="preserve"><value>Şifre yeniden doğrulamanın geçerlilik süresi</value></data>
+  <data name="ESign.Policy.MinutesUnit" xml:space="preserve"><value>dk</value></data>
+  <data name="ESign.Policy.MinutesHint" xml:space="preserve"><value>1–60 dakika</value></data>
+  <data name="ESign.Policy.MinutesHintEvery" xml:space="preserve"><value>"Her imzada şifre" seçiliyken kullanılmaz</value></data>
+  <data name="ESign.Policy.SampleApproval" xml:space="preserve"><value>İmza örneği kullanılmadan önce yönetici onayı gereksin</value></data>
+  <data name="ESign.Policy.SampleApproval.Sub" xml:space="preserve"><value>Açıkken yeni imza örnekleri, e-İmza yöneticisi onaylayana kadar kullanılamaz.</value></data>
+  <data name="ESign.Policy.SampleApproval.TenantOnly" xml:space="preserve"><value>Bu ayar tenant genelidir; şirket politikasında yalnız gösterilir.</value></data>
+  <data name="ESign.Policy.DirtyText" xml:space="preserve"><value>{0} değişiklik kaydedilmedi</value></data>
+  <data name="ESign.Policy.SaveWithReason" xml:space="preserve"><value>Gerekçe girip kaydet</value></data>
+  <data name="ESign.Policy.Save" xml:space="preserve"><value>Kaydet</value></data>
+  <data name="ESign.Policy.Save.Title" xml:space="preserve"><value>Politika değişikliği kaydedilsin mi?</value></data>
+  <data name="ESign.Policy.Save.Sub" xml:space="preserve"><value>Değişiklikler gerekçeyle birlikte geçmişe yazılır ve yeni imzalara uygulanır.</value></data>
+  <data name="ESign.Policy.Saved" xml:space="preserve"><value>Politika kaydedildi.</value></data>
+  <data name="ESign.Policy.Change.Required" xml:space="preserve"><value>{0}: durum → {1}</value></data>
+  <data name="ESign.Policy.Change.Meaning" xml:space="preserve"><value>{0}: anlam → {1}</value></data>
+  <data name="ESign.Policy.Change.Visual" xml:space="preserve"><value>{0}: görsel imza → {1}</value></data>
+  <data name="ESign.Policy.Change.Minutes" xml:space="preserve"><value>Geçerlilik süresi → {0} dk</value></data>
+  <data name="ESign.Policy.History" xml:space="preserve"><value>Değişiklik geçmişi</value></data>
+  <data name="ESign.Policy.HistoryEmpty" xml:space="preserve"><value>Henüz değişiklik yok.</value></data>
+  <data name="ESign.Meanings.Title" xml:space="preserve"><value>İmza anlamları</value></data>
+  <data name="ESign.Meanings.Sub" xml:space="preserve"><value>Görünen ad 7 dilde; imza penceresi kullanıcının dilinde gösterir</value></data>
+  <data name="ESign.Meanings.Col.Code" xml:space="preserve"><value>Kod</value></data>
+  <data name="ESign.Meanings.Col.Name" xml:space="preserve"><value>Görünen ad</value></data>
+  <data name="ESign.Meanings.Col.Description" xml:space="preserve"><value>Açıklama</value></data>
+  <data name="ESign.Meanings.Col.Usage" xml:space="preserve"><value>Kullanım</value></data>
+  <data name="ESign.Meanings.Active" xml:space="preserve"><value>Aktif</value></data>
+  <data name="ESign.Meanings.Inactive" xml:space="preserve"><value>Pasif</value></data>
+  <data name="ESign.Meanings.Used" xml:space="preserve"><value>Kullanılmış</value></data>
+  <data name="ESign.Meanings.Unused" xml:space="preserve"><value>Kullanılmadı</value></data>
+  <data name="ESign.Meanings.UsedIn" xml:space="preserve"><value>{0} imzada</value></data>
+  <data name="ESign.Meanings.LangCount" xml:space="preserve"><value>{0}/7 dil</value></data>
+  <data name="ESign.Meanings.New" xml:space="preserve"><value>Yeni anlam</value></data>
+  <data name="ESign.Meanings.Edit" xml:space="preserve"><value>Anlamı düzenle · {0}</value></data>
+  <data name="ESign.Meanings.View" xml:space="preserve"><value>Anlam · {0}</value></data>
+  <data name="ESign.Meanings.EditAction" xml:space="preserve"><value>Düzenle</value></data>
+  <data name="ESign.Meanings.ViewAction" xml:space="preserve"><value>Görüntüle</value></data>
+  <data name="ESign.Meanings.Modal.Sub" xml:space="preserve"><value>Görünen ad 7 dilde zorunludur</value></data>
+  <data name="ESign.Meanings.CodeLocked" xml:space="preserve"><value>Kod, mevcut imzalarda kullanıldığı için değiştirilemez.</value></data>
+  <data name="ESign.Meanings.CodeFormat" xml:space="preserve"><value>Büyük harfle başlayan 2–32 karakter: A–Z, 0–9, _</value></data>
+  <data name="ESign.Meanings.NameRequired" xml:space="preserve"><value>Bu dilde ad zorunlu.</value></data>
+  <data name="ESign.Meanings.FixFields" xml:space="preserve"><value>İşaretli alanları düzeltin.</value></data>
+  <data name="ESign.Meanings.UsageWarn" xml:space="preserve"><value>Bu anlam {0} imzada kullanıldı. Ad değişikliği yalnız yeni imzaları etkiler; eski imzalar imza anındaki metni korur.</value></data>
+  <data name="ESign.Meanings.Created" xml:space="preserve"><value>{0} oluşturuldu.</value></data>
+  <data name="ESign.Meanings.Updated" xml:space="preserve"><value>{0} güncellendi.</value></data>
+  <data name="ESign.Meanings.Activate" xml:space="preserve"><value>Etkinleştir</value></data>
+  <data name="ESign.Meanings.Activate.Title" xml:space="preserve"><value>{0} etkinleştirilsin mi?</value></data>
+  <data name="ESign.Meanings.Activate.Sub" xml:space="preserve"><value>Anlam imza penceresinde seçilebilir olur.</value></data>
+  <data name="ESign.Meanings.Deactivate" xml:space="preserve"><value>Pasifleştir</value></data>
+  <data name="ESign.Meanings.Deactivate.Title" xml:space="preserve"><value>{0} pasifleştirilsin mi?</value></data>
+  <data name="ESign.Meanings.Deactivate.Sub" xml:space="preserve"><value>Yeni imzalarda seçilemez; mevcut imzalar değişmez. Bir politika satırı kullanıyorsa işlem reddedilir.</value></data>
+  <data name="ESign.Meanings.Lang.tr" xml:space="preserve"><value>Türkçe</value></data>
+  <data name="ESign.Meanings.Lang.en" xml:space="preserve"><value>İngilizce</value></data>
+  <data name="ESign.Meanings.Lang.fr" xml:space="preserve"><value>Fransızca</value></data>
+  <data name="ESign.Meanings.Lang.es" xml:space="preserve"><value>İspanyolca</value></data>
+  <data name="ESign.Meanings.Lang.zh" xml:space="preserve"><value>Çince</value></data>
+  <data name="ESign.Meanings.Lang.ar" xml:space="preserve"><value>Arapça</value></data>
+  <data name="ESign.Meanings.Lang.ru" xml:space="preserve"><value>Rusça</value></data>
+  <data name="ESign.Approvals.Title" xml:space="preserve"><value>İmza örneği onayları</value></data>
+  <data name="ESign.Approvals.Sub" xml:space="preserve"><value>Onay bekleyen imza örnekleri</value></data>
+  <data name="ESign.Approvals.Note" xml:space="preserve"><value>Kendi imza örneğinizi onaylayamazsınız. Her onay ve ret kararı denetim kaydına yazılır.</value></data>
+  <data name="ESign.Approvals.Col.User" xml:space="preserve"><value>Kullanıcı</value></data>
+  <data name="ESign.Approvals.Col.AddedAt" xml:space="preserve"><value>Eklenme</value></data>
+  <data name="ESign.Approvals.Col.Image" xml:space="preserve"><value>Görüntü</value></data>
+  <data name="ESign.Approvals.Col.How" xml:space="preserve"><value>Nasıl eklendi</value></data>
+  <data name="ESign.Approvals.OtherAdmin" xml:space="preserve"><value>Başka bir yönetici onaylar</value></data>
+  <data name="ESign.Approvals.Approve" xml:space="preserve"><value>Onayla</value></data>
+  <data name="ESign.Approvals.Approve.Title" xml:space="preserve"><value>{0} kişisinin imza örneği onaylansın mı?</value></data>
+  <data name="ESign.Approvals.Approve.Sub" xml:space="preserve"><value>{0} — onaylanınca kullanıcının önceki etkin örneği pasif olur.</value></data>
+  <data name="ESign.Approvals.Approved" xml:space="preserve"><value>{0} onaylandı.</value></data>
+  <data name="ESign.Approvals.Reject" xml:space="preserve"><value>Reddet</value></data>
+  <data name="ESign.Approvals.Reject.Title" xml:space="preserve"><value>{0} kişisinin imza örneği reddedilsin mi?</value></data>
+  <data name="ESign.Approvals.Reject.Sub" xml:space="preserve"><value>{0} — kullanıcı gerekçeyi İmzam sayfasında görür.</value></data>
+  <data name="ESign.Approvals.Rejected" xml:space="preserve"><value>{0} reddedildi.</value></data>
+  <data name="ESign.Approvals.Log" xml:space="preserve"><value>Karar geçmişi</value></data>
+  <data name="ESign.Approvals.LogEmpty" xml:space="preserve"><value>Henüz karar yok.</value></data>
+  <data name="ESign.Approvals.Decision.approved" xml:space="preserve"><value>Onaylandı</value></data>
+  <data name="ESign.Approvals.Decision.rejected" xml:space="preserve"><value>Reddedildi</value></data>
+</root>

@@ -1,0 +1,614 @@
+openapi: 3.1.0
+info:
+  title: TRACE-BUNDLE
+  description: >
+    MOD-0174 Lot/Batch/Serial Tracking — Wave-0 frozen (v1), additive v1.1.
+    Lot uniqueness = surrogate LotId + business key Tenant+SKU(skuId+skuLevel)+LotNumber (DEC-INV-14 as changed by the owner 2026-10-05, K-G; v1.0.0 said Tenant+Item+LotNumber — behaviour change B-1).
+    INVENTORY movement lotId/serialIds ile buna bağlanır. Tenant+LegalEntity scoped.
+  version: 1.1.0
+  x-status: FROZEN
+  x-owner: MOD-0174
+  x-owner-service: Diten.InventoryService (MOD-0174, in-process with MOD-0173)
+  x-changelog:
+    - "1.0.0 — Wave-0 frozen: getLot, listLots, createLot, getSerial, getGenealogy, validateTrace (paths, parameters, schemas and enums unchanged in 1.1.0)."
+    - "1.1.0 — additive (WP-0174-P1, accepted proposal drafts/trace-v1.1-proposal.md next to this file): LotRef / SerialRef / CreateLotRequest optional members; listLots optional filters + paging; getGenealogy optional depth; validateTrace typed results; new operations updateLot, changeLotStatus, getLotHistory, getLotDetail, listSerials, checkGs1Code, linkGenealogy, and the typed-lot migration operations (implemented by slice P4). contractVersion stays v1."
+    - "1.1.0 behaviour changes — B-1: business key Tenant+SKU+LotNumber (the same lotNumber may exist twice under one itemId; LOT_ALREADY_EXISTS is per SKU). B-2: createLot without skuId+skuLevel → 422 LOT_SKU_REQUIRED (CT-D2). B-3: Expired is set automatically when expiryDate < today and can never be set or left by a caller."
+  x-decisions: [DEC-INV-14, 18]
+servers: [{ url: /api/trace }]
+security: [{ bearerAuth: [] }]
+paths:
+  /lots/{lotId}:
+    get:
+      operationId: getLot
+      x-permission: trace.lots.read
+      parameters: [{ name: lotId, in: path, required: true, schema: { type: string } }]
+      responses:
+        '200':
+          description: Lot
+          headers: { ETag: { $ref: '#/components/headers/ETag' } }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LotRef' }
+              example: { lotId: lot-777, lotNumber: "L2026-0455", itemId: b1f2c3d4-0000-0000-0000-000000000001, manufacturerLot: "M-99", supplierLot: "S-12", manufacturingDate: "2026-01-10T00:00:00Z", expiryDate: "2028-01-10T00:00:00Z", retestDate: "2027-01-10T00:00:00Z", countryOfOrigin: TR, status: Released, coaReference: "COA-777", contractVersion: v1 }
+        '404': { $ref: '#/components/responses/UnknownLot' }
+    patch:
+      operationId: updateLot
+      summary: "v1.1 — edit lot attributes (K-C). Draft: trace.lots.update. Non-Draft (Released / Blocked / Expired, CT-D8): trace.lots.update-released + reason ≥ 10. lotNumber / itemId / skuId / skuLevel / status are immutable here."
+      x-permission: "trace.lots.update (Draft) | trace.lots.update-released (non-Draft)"
+      x-error-codes: [INVALID_REQUEST, LOT_KEY_IMMUTABLE, REASON_REQUIRED, LOT_DATES_INVALID, UNKNOWN_LOT, LOT_CONFLICT, LOT_NO_CHANGES]
+      parameters:
+        - { name: lotId, in: path, required: true, schema: { type: string } }
+        - { $ref: '#/components/parameters/IfMatch' }
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/UpdateLotRequest' } } }
+      responses:
+        '200':
+          description: Lot after the edit
+          headers: { ETag: { $ref: '#/components/headers/ETag' } }
+          content: { application/json: { schema: { $ref: '#/components/schemas/LotRef' } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/UnknownLot' }
+        '409': { $ref: '#/components/responses/LotVersionConflict' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+  /lots:
+    get:
+      operationId: listLots
+      x-permission: trace.lots.read
+      parameters:
+        - { name: itemId, in: query, schema: { type: string, format: uuid } }
+        - { name: status, in: query, schema: { type: string } }
+        - { name: expiryBefore, in: query, schema: { type: string, format: date } }
+        - { name: q, in: query, description: "v1.1 — contains, case-insensitive: lot number, manufacturer lot, supplier lot", schema: { type: string, maxLength: 100 } }
+        - { name: skuId, in: query, description: v1.1, schema: { type: string, format: uuid } }
+        - { name: skuLevel, in: query, description: v1.1, schema: { $ref: '#/components/schemas/SkuLevel' } }
+        - { name: warn, in: query, description: "v1.1 — expired ∪ expiring within 90 days ∪ retest due", schema: { type: boolean } }
+        - { name: includeStock, in: query, description: "v1.1 — add stockSummary (K-A, ledger per-lot projection)", schema: { type: boolean } }
+        - { name: page, in: query, description: "v1.1 — absent = the v1 unpaged answer", schema: { type: integer, minimum: 1 } }
+        - { name: pageSize, in: query, description: v1.1, schema: { type: integer, minimum: 1, maximum: 200 } }
+        - { name: sort, in: query, description: "v1.1 — expiryDate · lotNumber · createdAt, '-' prefix = descending", schema: { type: string } }
+      responses:
+        '200':
+          description: Lot listesi (FEFO/expiry consumer)
+          content: { application/json: { schema: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/LotRef' } }, total: { type: integer }, contractVersion: { type: string }, page: { type: integer }, pageSize: { type: integer } } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+    post:
+      operationId: createLot
+      summary: Lot oluştur (GR sırasında 0142 çağırır)
+      x-permission: trace.lots.create
+      x-error-codes: [INVALID_REQUEST, LOT_NUMBER_INVALID, LOT_DATES_INVALID, LOT_SKU_REQUIRED, LOT_SKU_MISMATCH, UNKNOWN_ITEM, PRODUCT_NOT_LOT_CONTROLLED, LOT_ALREADY_EXISTS, IDEMPOTENCY_KEY_REUSED, PRODUCT_MASTER_UNAVAILABLE]
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateLotRequest' }
+            example: { idempotencyKey: lot-abc, itemId: b1f2c3d4-0000-0000-0000-000000000001, lotNumber: "L2026-0455", supplierLot: "S-12", manufacturingDate: "2026-01-10T00:00:00Z", expiryDate: "2028-01-10T00:00:00Z" }
+      responses:
+        '201':
+          description: Lot oluşturuldu
+          headers: { ETag: { $ref: '#/components/headers/ETag' } }
+          content: { application/json: { schema: { $ref: '#/components/schemas/LotRef' }, example: { lotId: lot-777, lotNumber: "L2026-0455", itemId: b1f2c3d4-0000-0000-0000-000000000001, status: Draft, contractVersion: v1 } } }
+        '409': { $ref: '#/components/responses/LotConflict' }
+        '200':
+          description: v1.1 — idempotent replay of the same request
+          headers: { ETag: { $ref: '#/components/headers/ETag' } }
+          content: { application/json: { schema: { $ref: '#/components/schemas/LotRef' } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '503': { $ref: '#/components/responses/ProductMasterUnavailable' }
+  /serials/{serialId}:
+    get:
+      operationId: getSerial
+      x-permission: trace.serials.read
+      parameters: [{ name: serialId, in: path, required: true, schema: { type: string } }]
+      responses:
+        '200':
+          description: Serial
+          content: { application/json: { schema: { $ref: '#/components/schemas/SerialRef' }, example: { serialId: sn-1, serialNumber: "SN-000001", itemId: b1f2c3d4-0000-0000-0000-000000000001, lotId: lot-777, status: Active, contractVersion: v1 } } }
+        '404': { $ref: '#/components/responses/UnknownSerial' }
+  /lots/{lotId}/genealogy:
+    get:
+      operationId: getGenealogy
+      summary: İleri/geri iz (recall)
+      x-permission: trace.lots.read
+      parameters:
+        - { name: lotId, in: path, required: true, schema: { type: string } }
+        - { name: depth, in: query, description: "v1.1 — 1 (default) or 2 levels each way; every item names both ends of its link", schema: { type: integer, minimum: 1, maximum: 2 } }
+      responses:
+        '200':
+          description: Genealogy
+          content: { application/json: { schema: { $ref: '#/components/schemas/Genealogy' }, example: { lotId: lot-777, parents: [ { parentLotId: lot-100, transformationReference: "MO-55" } ], children: [ { childLotId: lot-900, transformationReference: "MO-77" } ], contractVersion: v1 } } }
+        '404': { $ref: '#/components/responses/UnknownLot' }
+    post:
+      operationId: linkGenealogy
+      summary: "v1.1 — parent lot → child lot (writer MOD-0194; API-only permission). Same parent + child + transformationReference again = 200 replay."
+      x-permission: trace.genealogy.link
+      x-error-codes: [INVALID_REQUEST, UNKNOWN_LOT, GENEALOGY_SELF_LINK, GENEALOGY_CYCLE, IDEMPOTENCY_KEY_REUSED]
+      parameters:
+        - { name: lotId, in: path, required: true, description: "the child lot; must equal childLotId", schema: { type: string } }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/GenealogyLinkRequest' } } }
+      responses:
+        '201': { description: Link created, content: { application/json: { schema: { $ref: '#/components/schemas/GenealogyLink' } } } }
+        '200': { description: Replay, content: { application/json: { schema: { $ref: '#/components/schemas/GenealogyLink' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/UnknownLot' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+  /validate:
+    post:
+      operationId: validateTrace
+      x-permission: trace.lots.read
+      requestBody: { required: true, content: { application/json: { schema: { type: object, properties: { lotIds: { type: array, items: { type: string } }, serialIds: { type: array, items: { type: string } } } } } } }
+      responses:
+        '200': { description: Sonuçlar, content: { application/json: { schema: { $ref: '#/components/schemas/ValidateResponse' }, example: { results: [ { lotId: lot-777, exists: true } ], contractVersion: v1 } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+  /lots/{lotId}/status:
+    post:
+      operationId: changeLotStatus
+      summary: "v1.1 — Draft → Released, Released → Blocked, Blocked → Released (K-E). Expired is system-only (B-3). Blocked needs acknowledgeImpact. 202 is reserved for an approval step MOD-0175 may add (ILotStatusChangeGate); MOD-0174 never answers 202."
+      x-permission: trace.lots.change-status
+      x-error-codes: [INVALID_REQUEST, REASON_REQUIRED, ACKNOWLEDGEMENT_REQUIRED, UNKNOWN_LOT, LOT_CONFLICT, LOT_STATUS_TRANSITION_INVALID, IDEMPOTENCY_KEY_REUSED]
+      parameters:
+        - { name: lotId, in: path, required: true, schema: { type: string } }
+        - { $ref: '#/components/parameters/IfMatch' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/ChangeLotStatusRequest' } } }
+      responses:
+        '200':
+          description: Lot after the change (or the replay of the same request)
+          headers: { ETag: { $ref: '#/components/headers/ETag' } }
+          content: { application/json: { schema: { $ref: '#/components/schemas/LotRef' } } }
+        '202': { description: Reserved for MOD-0175 approval, content: { application/json: { schema: { $ref: '#/components/schemas/PendingApproval' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/UnknownLot' }
+        '409': { $ref: '#/components/responses/LotVersionConflict' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+  /lots/{lotId}/history:
+    get:
+      operationId: getLotHistory
+      summary: v1.1 — append-only change history, newest first
+      x-permission: trace.lots.read
+      parameters:
+        - { name: lotId, in: path, required: true, schema: { type: string } }
+        - { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+        - { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 200, default: 50 } }
+      responses:
+        '200': { description: History page, content: { application/json: { schema: { $ref: '#/components/schemas/LotHistoryPage' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/UnknownLot' }
+  /lots/{lotId}/detail:
+    get:
+      operationId: getLotDetail
+      summary: "v1.1 — LotRef + source (first inbound ledger movement in the caller's company) + serialCount (+ stockSummary from the ledger per-lot projection, slice P2)"
+      x-permission: trace.lots.read
+      parameters: [{ name: lotId, in: path, required: true, schema: { type: string } }]
+      responses:
+        '200':
+          description: Lot detail
+          headers: { ETag: { $ref: '#/components/headers/ETag' } }
+          content: { application/json: { schema: { $ref: '#/components/schemas/LotDetail' } } }
+        '404': { $ref: '#/components/responses/UnknownLot' }
+  /serials:
+    get:
+      operationId: listSerials
+      summary: v1.1 — filtered serial list
+      x-permission: trace.serials.read
+      parameters:
+        - { name: q, in: query, description: serial number contains, schema: { type: string, maxLength: 100 } }
+        - { name: skuId, in: query, schema: { type: string, format: uuid } }
+        - { name: skuLevel, in: query, schema: { $ref: '#/components/schemas/SkuLevel' } }
+        - { name: lotId, in: query, schema: { type: string } }
+        - { name: status, in: query, schema: { type: string, enum: [Active, Consumed, Blocked] } }
+        - { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+        - { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 200, default: 50 } }
+      responses:
+        '200': { description: Serial page, content: { application/json: { schema: { $ref: '#/components/schemas/SerialPage' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+  /serials/gs1-check:
+    post:
+      operationId: checkGs1Code
+      summary: "v1.1 — K-B: (01) GTIN, (21) serial, (17) expiry, (10) lot of a scanned ITS / GS1 code against the selected SKU and lot. GTIN is skipped ONLY when PRODUCT-MASTER returns gtin null (MOD-0290 D-1); lot and expiry are always checked. Read-only."
+      x-permission: trace.lots.read
+      x-error-codes: [INVALID_REQUEST, GS1_UNREADABLE, UNKNOWN_LOT, LOT_SKU_MISMATCH, UNKNOWN_ITEM, PRODUCT_MASTER_UNAVAILABLE]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/Gs1CheckRequest' } } }
+      responses:
+        '200': { description: Check result, content: { application/json: { schema: { $ref: '#/components/schemas/Gs1CheckResult' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/UnknownLot' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '503': { $ref: '#/components/responses/ProductMasterUnavailable' }
+  /migration/manual-lots:
+    get:
+      operationId: listManualLotGroups
+      summary: "v1.1 — typed-lot (W-UI-02) groups, one per SKU + typed text, with a suggestion (K-D)"
+      x-permission: trace.lots.migrate
+      x-implemented-by: "MOD-0174 slice P4"
+      parameters:
+        - { name: view, in: query, schema: { type: string, enum: [all, pending] } }
+        - { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+        - { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 200, default: 50 } }
+      responses:
+        '200': { description: Groups, content: { application/json: { schema: { $ref: '#/components/schemas/ManualLotGroupPage' } } } }
+        '503': { $ref: '#/components/responses/ProductMasterUnavailable' }
+  /migration/manual-lots/commit:
+    post:
+      operationId: commitManualLotMigration
+      summary: "v1.1 — one transaction: new Draft lots, movement↔lot links, projection re-key (CT-D6), typing closed. No inventory transaction is changed."
+      x-permission: trace.lots.migrate
+      x-implemented-by: "MOD-0174 slice P4"
+      x-error-codes: [REASON_REQUIRED, MIGRATION_ALREADY_COMPLETED, MIGRATION_STALE, MIGRATION_DECISIONS_INCOMPLETE, MIGRATION_TYPO_UNRESOLVED, LOT_ALREADY_EXISTS, IDEMPOTENCY_KEY_REUSED]
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/CommitManualLotMigrationRequest' } } }
+      responses:
+        '200': { description: Migration result, content: { application/json: { schema: { $ref: '#/components/schemas/MigrationResult' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { $ref: '#/components/responses/MigrationConflict' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+  /migration/links:
+    get:
+      operationId: getMovementLotLinks
+      summary: v1.1 — movement ↔ lot links written by the migration
+      x-permission: trace.lots.read
+      x-implemented-by: "MOD-0174 slice P4"
+      parameters:
+        - { name: transactionId, in: query, schema: { type: string } }
+        - { name: lotId, in: query, schema: { type: string } }
+      responses:
+        '200': { description: Links, content: { application/json: { schema: { $ref: '#/components/schemas/MovementLotLinks' } } } }
+components:
+  securitySchemes: { bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT } }
+  parameters:
+    IdempotencyKey: { name: Idempotency-Key, in: header, required: true, schema: { type: string } }
+    IfMatch: { name: If-Match, in: header, required: true, description: "v1.1 — W/\"<version>\" from the ETag of the last read; missing → 400 INVALID_REQUEST, stale → 409 LOT_CONFLICT", schema: { type: string } }
+  headers:
+    ETag: { description: "v1.1 — W/\"<version>\" — optimistic concurrency token of the lot", schema: { type: string } }
+  schemas:
+    LotRef:
+      type: object
+      properties:
+        lotId: { type: string, description: "surrogate canonical id" }
+        lotNumber: { type: string, description: "business key: Tenant+SKU(skuId+skuLevel)+LotNumber (v1.0.0: Tenant+Item+LotNumber — B-1)" }
+        itemId: { type: string, format: uuid }
+        manufacturerLot: { type: string, nullable: true }
+        supplierLot: { type: string, nullable: true }
+        manufacturingDate: { type: string, format: date-time, nullable: true }
+        expiryDate: { type: string, format: date-time, nullable: true }
+        retestDate: { type: string, format: date-time, nullable: true }
+        countryOfOrigin: { type: string, nullable: true }
+        status: { type: string, enum: [Draft, Released, Blocked, Expired] }
+        coaReference: { type: string, nullable: true }
+        contractVersion: { type: string }
+        skuId: { type: string, format: uuid, description: "v1.1 (K-G)" }
+        skuLevel: { $ref: '#/components/schemas/SkuLevel' }
+        version: { type: integer, description: "v1.1 — equals the ETag version" }
+        legalEntityId: { type: string, description: "v1.1 — the company that created the lot (identity is tenant-wide, CT-D3)" }
+        stockSummary: { $ref: '#/components/schemas/LotStockSummary' }
+        expiryState: { type: string, enum: [None, Ok, ExpiringSoon, Expired], description: "v1.1 — computed, ExpiringSoon = within 90 days" }
+        retestDue: { type: boolean, description: "v1.1 — retestDate < today (K-F)" }
+        trackingMode: { type: string, enum: [Lot, LotAndSerial], description: v1.1 }
+    LotStockSummary:
+      type: object
+      description: "v1.1 (K-A) — from the ledger per-lot projection, never summed per request; base UoM; all stock statuses; caller's company"
+      properties:
+        onHand: { $ref: '#/components/schemas/Decimal' }
+        baseUomId: { type: string }
+        legalEntityId: { type: string }
+        asOf: { type: string, format: date-time }
+    LotDetail:
+      type: object
+      description: "v1.1 — getLotDetail: the LotRef members + source + serialCount"
+      properties:
+        lotId: { type: string }
+        lotNumber: { type: string }
+        itemId: { type: string, format: uuid }
+        manufacturerLot: { type: string, nullable: true }
+        supplierLot: { type: string, nullable: true }
+        manufacturingDate: { type: string, format: date-time, nullable: true }
+        expiryDate: { type: string, format: date-time, nullable: true }
+        retestDate: { type: string, format: date-time, nullable: true }
+        countryOfOrigin: { type: string, nullable: true }
+        status: { type: string, enum: [Draft, Released, Blocked, Expired] }
+        coaReference: { type: string, nullable: true }
+        contractVersion: { type: string }
+        skuId: { type: string, format: uuid }
+        skuLevel: { $ref: '#/components/schemas/SkuLevel' }
+        version: { type: integer }
+        legalEntityId: { type: string }
+        stockSummary: { $ref: '#/components/schemas/LotStockSummary' }
+        expiryState: { type: string, enum: [None, Ok, ExpiringSoon, Expired] }
+        retestDue: { type: boolean }
+        trackingMode: { type: string, enum: [Lot, LotAndSerial] }
+        source: { $ref: '#/components/schemas/LotSource' }
+        serialCount: { type: integer }
+    LotSource:
+      type: object
+      properties:
+        kind: { type: string, enum: [GoodsReceipt, ProductionReceipt, OpeningBalance, Manual, Migration] }
+        documentNumber: { type: string, nullable: true }
+        partyName: { type: string, nullable: true }
+        date: { type: string, format: date-time, nullable: true }
+    LotChangeEntry:
+      type: object
+      properties:
+        entryId: { type: string }
+        lotId: { type: string }
+        action: { type: string, enum: [Created, Updated, StatusChanged, Linked, Migrated, SystemExpired] }
+        field: { type: string, nullable: true }
+        oldValue: { type: string, nullable: true }
+        newValue: { type: string, nullable: true }
+        reason: { type: string, nullable: true }
+        actorUserId: { type: string }
+        actorDisplay: { type: string, nullable: true }
+        occurredAt: { type: string, format: date-time }
+        correlationId: { type: string }
+        source: { type: string, enum: [lot-form, ledger-shortcut, migration, system-expiry, api] }
+    LotHistoryPage:
+      type: object
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/LotChangeEntry' } }
+        total: { type: integer }
+        page: { type: integer }
+        pageSize: { type: integer }
+        contractVersion: { type: string }
+    SerialRef:
+      type: object
+      properties:
+        serialId: { type: string }
+        serialNumber: { type: string }
+        itemId: { type: string, format: uuid }
+        lotId: { type: string, nullable: true }
+        status: { type: string, enum: [Active, Consumed, Blocked] }
+        contractVersion: { type: string }
+        skuId: { type: string, format: uuid, description: v1.1 }
+        skuLevel: { $ref: '#/components/schemas/SkuLevel' }
+        lotNumber: { type: string, nullable: true, description: v1.1 }
+        warehouseId: { type: string, nullable: true, description: v1.1 }
+        locationId: { type: string, nullable: true, description: v1.1 }
+        lastTransactionId: { type: string, nullable: true, description: v1.1 }
+        lastMovementAt: { type: string, format: date-time, nullable: true, description: v1.1 }
+    SerialPage:
+      type: object
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/SerialRef' } }
+        total: { type: integer }
+        page: { type: integer }
+        pageSize: { type: integer }
+        contractVersion: { type: string }
+    CreateLotRequest:
+      type: object
+      required: [idempotencyKey, itemId, lotNumber]
+      properties:
+        idempotencyKey: { type: string }
+        itemId: { type: string, format: uuid }
+        lotNumber: { type: string }
+        manufacturerLot: { type: string, nullable: true }
+        supplierLot: { type: string, nullable: true }
+        manufacturingDate: { type: string, format: date-time, nullable: true }
+        expiryDate: { type: string, format: date-time, nullable: true }
+        retestDate: { type: string, format: date-time, nullable: true }
+        countryOfOrigin: { type: string, nullable: true }
+        skuId: { type: string, format: uuid, description: "v1.1 — required by the server rule B-2 (422 LOT_SKU_REQUIRED when absent)" }
+        skuLevel: { $ref: '#/components/schemas/SkuLevel' }
+        coaReference: { type: string, nullable: true, description: v1.1 }
+    UpdateLotRequest:
+      type: object
+      description: "v1.1 — absent member = unchanged; null = cleared"
+      properties:
+        manufacturerLot: { type: string, nullable: true }
+        supplierLot: { type: string, nullable: true }
+        manufacturingDate: { type: string, format: date-time, nullable: true }
+        expiryDate: { type: string, format: date-time, nullable: true }
+        retestDate: { type: string, format: date-time, nullable: true }
+        countryOfOrigin: { type: string, nullable: true }
+        coaReference: { type: string, nullable: true }
+        reason: { type: string, description: "≥ 10 characters for a non-Draft lot" }
+    ChangeLotStatusRequest:
+      type: object
+      required: [idempotencyKey, toStatus, reason]
+      properties:
+        idempotencyKey: { type: string }
+        toStatus: { type: string, enum: [Draft, Released, Blocked, Expired] }
+        reason: { type: string, description: "≥ 10 characters" }
+        acknowledgeImpact: { type: boolean, description: "required true for Blocked" }
+    PendingApproval:
+      type: object
+      properties:
+        lotId: { type: string }
+        pendingRequestId: { type: string }
+        contractVersion: { type: string }
+    Genealogy:
+      type: object
+      properties:
+        lotId: { type: string }
+        parents: { type: array, items: { $ref: '#/components/schemas/GenealogyItem' } }
+        children: { type: array, items: { $ref: '#/components/schemas/GenealogyItem' } }
+        contractVersion: { type: string }
+    GenealogyItem:
+      type: object
+      properties:
+        parentLotId: { type: string }
+        childLotId: { type: string, description: "v1.1 — on parent items too, so a depth-2 item names both ends" }
+        transformationReference: { type: string }
+        linkId: { type: string, description: v1.1 }
+        sourceModule: { type: string, description: v1.1 }
+        createdAt: { type: string, format: date-time, description: v1.1 }
+    GenealogyLinkRequest:
+      type: object
+      required: [idempotencyKey, parentLotId, childLotId, transformationReference, sourceModule]
+      properties:
+        idempotencyKey: { type: string }
+        parentLotId: { type: string }
+        childLotId: { type: string }
+        transformationReference: { type: string, minLength: 1, maxLength: 60 }
+        sourceModule: { type: string, minLength: 1, maxLength: 40 }
+        quantityConsumed: { $ref: '#/components/schemas/Decimal' }
+        uomId: { type: string, nullable: true }
+    GenealogyLink:
+      type: object
+      properties:
+        linkId: { type: string }
+        parentLotId: { type: string }
+        childLotId: { type: string }
+        transformationReference: { type: string }
+        sourceModule: { type: string }
+        createdAt: { type: string, format: date-time }
+        contractVersion: { type: string }
+    ValidateResponse:
+      type: object
+      properties:
+        results: { type: array, items: { $ref: '#/components/schemas/ValidateResult' } }
+        contractVersion: { type: string }
+    ValidateResult:
+      type: object
+      properties:
+        lotId: { type: string }
+        serialId: { type: string, description: "v1.1 — a serialIds entry answers with serialId" }
+        exists: { type: boolean }
+        status: { type: string, description: "v1.1 — lot or serial status" }
+        skuId: { type: string, format: uuid, description: v1.1 }
+        skuLevel: { $ref: '#/components/schemas/SkuLevel' }
+        usable: { type: boolean, description: "v1.1 — false for a Blocked / Expired lot (or a serial of one), a Consumed serial" }
+    Gs1CheckRequest:
+      type: object
+      required: [code, skuId, skuLevel, lotId]
+      properties:
+        code: { type: string, minLength: 1, maxLength: 200 }
+        skuId: { type: string, format: uuid }
+        skuLevel: { $ref: '#/components/schemas/SkuLevel' }
+        lotId: { type: string }
+    Gs1CheckResult:
+      type: object
+      properties:
+        serialNumber: { type: string, nullable: true }
+        gtin: { type: string, nullable: true }
+        lotNumber: { type: string, nullable: true }
+        expiry: { type: string, format: date, nullable: true }
+        checks: { type: array, items: { $ref: '#/components/schemas/Gs1Check' } }
+        accepted: { type: boolean }
+        gtinSkippedReason: { type: string, enum: [PRODUCT_MASTER_GTIN_NULL] }
+        contractVersion: { type: string }
+    Gs1Check:
+      type: object
+      properties:
+        field: { type: string, enum: [Gtin, Lot, Expiry, Format] }
+        result: { type: string, enum: [Ok, Mismatch, Missing, Skipped] }
+        expected: { type: string, nullable: true }
+        actual: { type: string, nullable: true }
+    LotFields:
+      type: object
+      properties:
+        lotNumber: { type: string }
+        manufacturerLot: { type: string, nullable: true }
+        supplierLot: { type: string, nullable: true }
+        manufacturingDate: { type: string, format: date-time, nullable: true }
+        expiryDate: { type: string, format: date-time, nullable: true }
+        retestDate: { type: string, format: date-time, nullable: true }
+        countryOfOrigin: { type: string, nullable: true }
+        coaReference: { type: string, nullable: true }
+    ManualLotGroup:
+      type: object
+      properties:
+        groupId: { type: string }
+        itemId: { type: string, format: uuid }
+        skuId: { type: string, format: uuid }
+        skuLevel: { $ref: '#/components/schemas/SkuLevel' }
+        typedText: { type: string }
+        transactionCount: { type: integer }
+        onHand: { $ref: '#/components/schemas/Decimal' }
+        baseUomId: { type: string }
+        suggestion:
+          type: object
+          properties:
+            kind: { type: string, enum: [ExactLot, SimilarLot, SimilarGroup, None] }
+            lotId: { type: string, nullable: true }
+            groupId: { type: string, nullable: true }
+            note: { type: string }
+    ManualLotGroupPage:
+      type: object
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/ManualLotGroup' } }
+        total: { type: integer }
+        totals: { type: object, properties: { groups: { type: integer }, transactions: { type: integer } } }
+        completed: { $ref: '#/components/schemas/MigrationResult' }
+        contractVersion: { type: string }
+    MigrationDecision:
+      type: object
+      required: [groupId, kind]
+      properties:
+        groupId: { type: string }
+        kind: { type: string, enum: [LinkExisting, Typo, NewLot] }
+        lotId: { type: string, nullable: true }
+        targetGroupId: { type: string, nullable: true }
+        newLot: { $ref: '#/components/schemas/LotFields' }
+    CommitManualLotMigrationRequest:
+      type: object
+      required: [idempotencyKey, reason, expectedGroupCount, decisions]
+      properties:
+        idempotencyKey: { type: string }
+        reason: { type: string }
+        expectedGroupCount: { type: integer }
+        decisions: { type: array, items: { $ref: '#/components/schemas/MigrationDecision' } }
+    MigrationResult:
+      type: object
+      properties:
+        migrationId: { type: string }
+        completedAt: { type: string, format: date-time }
+        completedBy: { type: string }
+        transactionsLinked: { type: integer }
+        lotsLinked: { type: integer }
+        lotsCreated: { type: integer }
+        contractVersion: { type: string }
+    MovementLotLinks:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              transactionId: { type: string }
+              typedText: { type: string }
+              lotId: { type: string }
+              migrationId: { type: string }
+        contractVersion: { type: string }
+    SkuLevel: { type: string, enum: [Gsku, Lsku, FinishedGood], description: "v1.1 — same values as INVENTORY-BUNDLE SkuLevel" }
+    Decimal: { type: string, pattern: '^\d{1,18}(\.\d{1,6})?$', description: "v1.1 — decimal as string, never a float" }
+    Error: { type: object, properties: { error: { type: object, properties: { code: { type: string }, message: { type: string }, correlationId: { type: string } } }, contractVersion: { type: string } } }
+  responses:
+    UnknownLot:
+      description: Lot bulunamadı
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: UNKNOWN_LOT, message: "lot bulunamadı", correlationId: req-1 }, contractVersion: v1 } } }
+    LotConflict:
+      description: Aynı Tenant+SKU+LotNumber zaten var (DEC-INV-14 as changed 2026-10-05 — B-1; v1.0.0 said Tenant+Item+LotNumber)
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: LOT_ALREADY_EXISTS, message: "bu item+lotNumber zaten var", correlationId: req-2 }, contractVersion: v1 } } }
+    UnknownSerial:
+      description: v1.1 — serial not found in the caller's tenant
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: UNKNOWN_SERIAL, message: "serial not found", correlationId: req-3 }, contractVersion: v1 } } }
+    BadRequest:
+      description: v1.1 — malformed request (INVALID_REQUEST or a named shape code)
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    Forbidden:
+      description: v1.1 — the caller lacks the permission for this lot's status (updateLot)
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    LotVersionConflict:
+      description: v1.1 — If-Match is stale (LOT_CONFLICT)
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    Unprocessable:
+      description: v1.1 — a business rule refused the request (see x-error-codes)
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    MigrationConflict:
+      description: v1.1 — MIGRATION_ALREADY_COMPLETED / MIGRATION_STALE / LOT_ALREADY_EXISTS
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    ProductMasterUnavailable:
+      description: v1.1 — PRODUCT-MASTER could not answer; nothing was written
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
