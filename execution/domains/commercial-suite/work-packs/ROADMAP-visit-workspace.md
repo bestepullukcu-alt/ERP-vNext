@@ -51,9 +51,9 @@
 | K-W2 | Kanıt: fotoğraf zorunlu mu, konum zorunlu mu; ek kanıtlar (imza / QR / süre / anti-fraud) hangileri — ✅ **KARAR (2026-10-09): kiracı ayarı**, varsayılan konum zorunlu + fotoğraf isteğe bağlı (ek kanıt seçenekleri W3 öncesi netleşir) | W3 |
 | K-W3 | Fotoğraf + imza saklama yeri (MOD-0262 ikili depo mu, başka) — ✅ **KARAR (2026-10-12): MOD-0262 ikili depo** (hazır değilse yalnız konum + zaman damgası). CT kontrolü: MOD-0262-FU01 main'de, SCMM-16A canlı E4 8/8, CRM `HttpContentArtifactStore` deseni var → **(a) geçerli**. Yeni kapsam `CrmVisitEvidence`. **İzin kararı (kullanıcı 2026-10-12):** Platform'a yalnız ziyaret kanıtı kapsamıyla sınırlı izin eklenir (kiracı geneli `platform.document-repository.read/manage` temsilciye VERİLMEZ); temsilci kanıtı yalnız kendi ziyareti üzerinden, CRM aracılığıyla görür → W3'te ayrı Platform parçası | W3 |
 | K-W4 | Bağlılık modeli: pay % · aşama · birleşik | W4 |
-| K-W5 | Hekim tipolojisi: benimseme · iletişim stili · ikisi | W4 |
-| K-W6 | Endikasyon × hasta profili ve rakip verisinin sahibi (MDM mi CRM mi) ve kim girer | W4 |
-| K-W7 | Hasta sayısı / satış payı görünürlüğü (temsilci / yönetici / pazarlama) | W4 / W7 |
+| K-W5 | Hekim tipolojisi: benimseme · iletişim stili · ikisi — ✅ **KARAR (2026-10-12): ikisi + KOL düzeyi**; doktor profilinde (ürüne değil), seçenekler referans verisinden (kiracı uyarlar), temsilci raporda önerir, değişiklik geçmişi tutulur | W4 |
+| K-W6 | Endikasyon × hasta profili ve rakip verisinin sahibi — **kısmi KARAR (2026-10-12):** endikasyon / hasta profili / fayda = **KnowledgeConcepts** (CRM kavram grafiği; türler CT-002 Endikasyon, CT-003 Hasta profili, CT-005 Fayda… ürün konusuna bağlı). Rakip ürün: blueprint'te modül YOK; ürün ana verisi MOD-0290 (MDM) → rakip ürün MOD-0290 eki olarak MDM'ye, **bizim ekibimiz ekler** (MDM ekibini beklemeden); biçim kararı bekliyor | W4 |
+| K-W7 | Hasta sayısı / satış payı görünürlüğü — ✅ **KARAR (2026-10-12):** temsilci kendi doktorları; yönetici ekibinin doktorları; pazarlama toplulaştırılmış, doktor kimliği olmadan | W4 / W7 |
 | K-W8 | Advers olay → hangi PV ekranı / kaydı; endikasyon dışı → MSL kim | W5 |
 | K-W9 | E-posta alıcıları (bölge müdürü kim — bölge / HR hiyerarşisi) ve gönderim altyapısı | W5 |
 | K-W10 | Ön sipariş: hangi modül; ERP satış siparişine dönüşecek mi; red kuralları (iskonto / MF sınırları); fiyat kaynağı | W6 |
