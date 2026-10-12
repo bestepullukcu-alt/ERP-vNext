@@ -205,3 +205,22 @@ Commit: "feat(web): WP-VW-W2-WEB-c — visit workspace design fit (calendar card
 **CT sabotajı:** E2 sekme uygunluğu kapatıldı (hepsi etkin) → 2 kırmızı (`A1`, `A2` design fit). Geri alındı, touch yapıldı; tam tur 865/0.
 
 **Sıradaki:** fleet yeniden başlatılınca canlı E4 + mockup ile görsel karşılaştırma (Yürüt, Planla, Ayrıntı, E2, Ay, RTL, telefon).
+
+## §37 ek — W2-WEB-c canlı E4 + mockup görsel karşılaştırma (2026-10-12, CT; mockup ↔ canlı yan yana, yalnız okuma)
+- **Yürüt — UYUMLU:**
+  - dönem çipi; Planla / Yürüt; büyük "+ Plan dışı ziyaret";
+  - tek takvim kartı (‹ › Bugün, tarih, süzgeçler, Gün / Hafta / Ay);
+  - kart içi hafta başlığı ("42. Hafta · Taslak · otomatik", kapasite + çubuk, "Haftayı onayla");
+  - gün başlığı mini çubuk + "Bugün" rozeti; tüm-gün satırı yok.
+- **Planla — UYUMLU:** HEDEFLER paneli, kurum seçimi, küçük hızlı süzgeçler, "Tümünü seç (3)" + "Ürün uygula (5)" tek satır, doktor kartı (işaret, uzmanlık çipi, ürün çipleri, "0 / 14 · Per 09:50", tutamaç).
+- **Ayrıntı — UYUMLU:** durum çipi, ad, uzmanlık, kurum bloğu (harita yer tutucu, AMERİKAN HASTANESİ, adres, "Per 8 Eki · 09:00–09:12 · 12 dk"), uyarı, numaralı ürün kartları, "Sıklık: dönemde 14 · 0/14", "3 tanıtım + rapor ≈ 12 dk". 8 Eki ziyaretleri doğru biçimde `expired` (kilitli).
+- **Ay — UYUMLU:** gün hücresinde sayı + durum noktaları (8 Eki 33, 9 Eki 21, 12 Eki 16…).
+- **Telefon (375 px):** gün sekmeleri + liste, yatay kaydırma yok.
+- **Denenemeyen:**
+  - E2 tek pencere / 3 sekme: canlıda işlem yapılabilir yazılı ziyaret yok (41. hafta tümü `expired`, 42+ taslak); ajanın statik sahne karşılaştırması ve testler kanıt;
+  - Arapça RTL: kullanıcı dil tercihini değiştirmek gerekir.
+- **Kalan küçük farklar (W2 kapanış düzeltmesi):**
+  1. **Kısa ziyaretler okunmuyor:** taslak ziyaretler 6–12 dk; Planla'da dar sütunda kart yalnız saati gösteriyor, ad yok. Mockup'ta 25 dk kartlarda ad + kurum var. Öneri: en az kart yüksekliği (FullCalendar `eventMinHeight`) ve kompakt kartta saat yerine ad. Ayrıca süreler veri / kapasite ayarından geliyor; gerçekçi süre ayrı bir veri işi.
+  2. **Yanıltıcı metin:** ayrıntı uyarısı "Kayıt kilitli, yöneticinize bildirildi." diyor; bildirim W5'te gelecek. Şimdilik "yöneticiniz için işaretlendi" olmalı.
+  3. **12 Eki iptal kartları** (hafta yeniden açılınca iptal edilen 3 ziyaret) taslak kartlarla üst üste biniyor. Öneri: "Tüm durumlar" varsayılanında iptaller gizli, süzgeçten açılabilir.
+  4. Uzmanlıklar İngilizce (veri: `label_tr` 0/22; veri sahibi işi).
