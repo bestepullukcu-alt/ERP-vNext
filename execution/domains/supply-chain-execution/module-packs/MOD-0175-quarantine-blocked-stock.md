@@ -1547,6 +1547,21 @@ O-ITEM-4, FU-0022-CT-01 CLOSED. Fast-forwarded into the MVP-1 branch. The two BL
     restart; the invitee is assigned Admin; 5 audit rows in total, one per created role.
 - **Evidence.** `docs/records/audits/2026-10/mod-0018-role1-evidence-2026-10-10.md`, `-scripts-2026-10-10.md`.
 
+**SYNC1 — the MVP-1 lane is merged with `origin/main` (WP-MVP1-SYNC1, 2026-10-12; agent result, pending CT).**
+- **Owner decision B (2026-10-12) — the FX acceptance item is NARROWED by owner decision: on old open tasks the starter can
+  approve their own workflow (a known gap the owner accepted).** — *"Sahip kararıyla FX kabul maddesi daraltıldı: eski açık
+  görevlerde başlatan kendi onayını verebilir (bilinen açık, sahip kabul etti)."* An instance from before `StartedByUserId` keeps main's old
+  comparison (main test `An_instance_from_before_the_field_keeps_the_old_comparison` → 200). Our Start-log fallback and its
+  test were removed. New instances: SoD by user id on both sides, unchanged.
+- One actor binding (`WorkflowActorBinding`, ours); main's `TryBindActor` removed — every input main accepted is accepted.
+  One starter check (`IsStarter`, main's). `StartedByUserId` is main's `Guid?`, read tolerantly (text or Guid; no migration).
+- **For this module:** MOD-0175 still removes the decider from the approver candidates (runtime: decider = only candidate →
+  409 `QUARANTINE_APPROVERS_NOT_CONFIGURED`), so a quarantine decision never reaches the Workflow-level SoD; both guards hold.
+  WorkCenter approval of a quarantine decision: main's note window, then our e-signature dialog; unsigned 409
+  `ESIGN_SIGNATURE_REQUIRED`, signed 200 → decision Applied (runtime probe).
+- **Port (OD-P1):** InventoryService 5066 → **5067**; `/api/quarantine` and the other three route families follow.
+- **Evidence.** `docs/records/audits/2026-10/mvp1-sync1-evidence-2026-10-12.md`, `-scripts-2026-10-12.md`.
+
 ## 20. Follow-up Items
 
 - **FU-0175-WF-SOD (MOD-0023):** store `StartedByUserId` and compare user ids in SoD; add an integration test that starts

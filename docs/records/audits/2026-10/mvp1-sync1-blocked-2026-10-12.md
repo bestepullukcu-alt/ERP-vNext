@@ -1,5 +1,7 @@
 # WP-MVP1-SYNC1 — BLOCKED (2026-10-12)
 
+> **Çözüldü (aynı gün):** sahip kararı **B** (main'in eski-kayıt davranışı kalır) ve CT kararı v1.2 ile merge tamamlandı → `mvp1-sync1-evidence-2026-10-12.md`.
+
 **BLOCKED — eski (alan öncesi) Workflow örneklerinde başlatanın kendi onayı: MVP-1 (WP-0023-FX) 409 istiyor, main
 (WP-WORKFLOW-APPROVAL-STATUS-01) 200 istiyor. Aynı girdi, zıt sonuç; tek uygulama iki testi birden yeşil tutamaz.**
 
