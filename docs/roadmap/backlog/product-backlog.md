@@ -7832,7 +7832,7 @@ sayfa yardımı (BL-495) ile aynı pakette yapılabilir. Gelecek regresyon riski
 
 **İş ortağı yöneticisi (partner_admin) bütün kiracıları görüp değiştirebiliyor: "izin verilen kiracılar" hiçbir yerde okunmuyor**
 
-DURUM: AÇIK · SAHİP: CT (Platform yetki) · BULAN: WP-PLATFORM-TENANT-MODULES-01 FIX1 ölçümü (2026-10-03) · KAYIT: 2026-10-03
+DURUM: KAPANDI — hatta `404685da0` (iş `87f82f164`, 8 düzeltme turu; artıkları BL-550) · SAHİP: CT (Platform yetki) · BULAN: WP-PLATFORM-TENANT-MODULES-01 FIX1 ölçümü (2026-10-03) · KAYIT: 2026-10-03
 
 `PlatformActor` politikası platform_admin ile partner_admin'i aynı sayıyor (`Infrastructure/DependencyInjection.cs:99-101`); `[HasPermission]`
 her platform aktörünü her anahtarda geçiriyor (`API/Security/HasPermissionAttribute.cs:36-38`); kiracı çözümleme ara katmanı yönetim yolunda
@@ -8395,6 +8395,36 @@ DURUM: AÇIK · SAHİP: CT (Zaman Çizelgesi, MOD-0280) · BULAN: BL-577 yerel �
 Olası sebepler: testin paylaşılan Mongo / zaman kaynağıyla yarışı ya da gerçek bir eşzamanlılık açığı (iki çalışan bölüm). Ölç: hangisi? Gerçek açıksa "tek çalışan bölüm" değişmezi depoda tekil dizinle korunmalı.
 
 Gelecek regresyon riski: 🟡 (gerçek açıksa canlıda çift sayaç).
+
+---
+
+### BL-620
+
+**İş ortağı kaydı yok: iş ortağı yöneticisi açılırken iş ortağı kimliği ve izinli kiracılar elle GUID olarak yazılıyor**
+
+DURUM: AÇIK · SAHİP: CT (Platform) + sahip (iş ortağı modeli kararı) · BULAN: sahip sorusu "iş ortağı nasıl ekleniyor?" (2026-10-12) · KAYIT: 2026-10-12 · 🟡
+
+Ölçüm (`cfc03da74`): Platform → Yöneticiler → yeni yönetici, rol "İş Ortağı Yöneticisi" seçilince iki alan çıkıyor: `PartnerId` (serbest metin) ve `AllowedTenantIds` (GUID'lerin elle yazıldığı metin kutusu; `Views/Platform/Administrators/_CreateEditOffcanvas.cshtml:76-89`). Ayrı bir iş ortağı varlığı / ekranı yok; kiracı kaydında iş ortağı alanı yok. Erişim sınırı çalışıyor (BL-521), ama kurulumu elle ve hataya açık.
+
+Yapılacak: sahip kararı. İş ortağı modeli (iş ortağı kaydı + kiracıya iş ortağı bağı + izinli kiracıların seçiciyle atanması) mı, yoksa iş ortağı rolü kullanılmayacaksa ekrandan kaldırılması mı. Karşılaştırma: SAP Partner / Oracle Partner Relationship Management'ta iş ortağı ayrı ana veridir.
+
+Gelecek regresyon riski: 🟡 elle yazılan GUID hatası bir iş ortağına yanlış kiracı açabilir.
+
+---
+
+### BL-619
+
+**Eski Görev Merkezi (`/WorkCenter`, taklit veri) hâlâ duruyor; kullanılmayan / yarım sayfaların denetimi**
+
+DURUM: AÇIK · SAHİP: CT · BULAN: sahip (2026-10-12) · KAYIT: 2026-10-12 · 🟢
+
+Gerçek Görev Merkezi `/WorkCenterNext`. Eski `/WorkCenter` taklit veriyle çalışan ilk taslak; menüden kaldırılmamış ve dondurulmuş eski çerçeveyi kullanıyor (ortak klavye katmanını da almıyor: UXH-001 ölçümü, 18 görünüm).
+
+Yapılacak:
+1. Eski Görev Merkezi'nin bütün görünüm, denetleyici, betik, resx, menü ve test kalıntılarıyla kaldırılması. Önce ölç: kim bağlanıyor, hangi testler okuyor.
+2. Aynı denetimle sistemde kullanılmayan ya da yarım kalmış sayfaların listesi (menüde olmayan, taklit veri kullanan, eski çerçevedeki 99 görünüm). Her biri için kaldır / tamamla / sahibine sor.
+
+Gelecek regresyon riski: 🟢 eski sayfa kullanılmıyor; risk yanlış sayfanın açılması ve bakım yükü.
 
 ---
 
