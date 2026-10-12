@@ -85,7 +85,7 @@
   <data name="RolePromo" xml:space="preserve"><value>tanıtım</value></data>
   <data name="RoleReminder" xml:space="preserve"><value>hatırlatma</value></data>
   <data name="MinutesClock" xml:space="preserve"><value>{0} dk</value></data>
-  <data name="ShortVisitWarning" xml:space="preserve"><value>Ziyaret {0} süreden kısa; süre tutarlılığı için işaretlendi.</value></data>
+  <data name="ShortVisitWarning" xml:space="preserve"><value>Ziyaret süresi {0} altında kaldı; süre tutarlılığı için işaretlendi.</value></data>
   <data name="NotesHeading" xml:space="preserve"><value>Notlar</value></data>
   <data name="CoVisitorsLine" xml:space="preserve"><value>Ortak ziyaret: {0}</value></data>
   <data name="SignatureTitleApproval" xml:space="preserve"><value>Doktor onayı</value></data>

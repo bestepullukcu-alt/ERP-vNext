@@ -375,7 +375,9 @@
         const slide = current();
         const total = C.clock(C.totalSeconds(state.timers));
         const live = el('vp-live-text');
-        if (live) { live.textContent = fmt(L.LiveChip || '{0}', total); }
+        // CT (live E4): the chip is the visit's own clock (server start → now); the rep strip's total stays the presented time
+        const visit = state.execution && state.execution.startedAt ? C.clock(C.sinceStart(state.execution.startedAt, Date.now())) : total;
+        if (live) { live.textContent = fmt(L.LiveChip || '{0}', visit); }
         const prod = el('vp-prod-timer');
         if (prod) { prod.textContent = slide ? productName(slide) + ' ' + C.clock(C.productSeconds(state.timers, slide.productId)) : ''; }
         const tot = el('vp-total');
@@ -442,7 +444,7 @@
             + rows.map(r => '<div class="vp-row"><div class="d-flex justify-content-between"><span><strong>' + esc(r.name) + '</strong> <span class="vp-muted">· ' + esc(r.role === 'promo' ? L.RolePromo || '' : L.RoleReminder || '') + '</span></span><span>' + esc(fmt(L.MinutesClock || '{0}', C.clock(r.seconds))) + '</span></div>'
                 + '<div class="vp-bar vp-bar-lg"><span style="width:' + r.pct + '%"></span></div>'
                 + '<div class="d-flex flex-wrap gap-1">' + r.tags.map(tg => '<span class="vp-tag vp-tag-' + esc(tg.key) + '">' + esc(tg.text) + '</span>').join('') + '</div></div>').join('')
-            + (e.shortVisit ? '<div class="vp-warn"><i class="bx bx-error"></i>' + esc(fmt(L.ShortVisitWarning || '{0}', C.clock((state.policy && state.policy.shortVisitSeconds) || 120))) + '</div>' : '')
+            + (e.shortVisit ? '<div class="vp-warn"><i class="bx bx-error"></i>' + esc(fmt(L.ShortVisitWarning || '{0}', C.target((state.policy && state.policy.shortVisitSeconds) || 120, culture, L) || '')) + '</div>' : '')
             + '</div>';
 
         const coNames = (e.coVisitors || []).map(v => v.displayName).filter(Boolean);
@@ -582,6 +584,17 @@
         form.append('context', C.signatureContext(C.marks(state.execution)));
         const res = await api('POST', '/execution/' + encodeURIComponent(state.execution.id) + '/signature', undefined, form);
         state.busy = false;
+        // CT (live E4): a duplicate delivery answered "already signed" although the signature IS stored — read the
+        // execution again and show the signed state instead of an error.
+        if (!res.ok && (res.errors || []).indexOf('visit_signature_exists') > -1) {
+            const again = await api('GET', '/execution/by-plan/' + encodeURIComponent(plannedVisitId));
+            if (again.ok && again.data && again.data.signature && again.data.signature.present) {
+                state.execution = again.data;
+                toast(L.SignatureSaved || '');
+                renderSummary();
+                return;
+            }
+        }
         if (!res.ok) {
             toast(C.errorText(res.errors, L), 'error');
             syncSignatureButton();

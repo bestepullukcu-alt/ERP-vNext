@@ -230,8 +230,10 @@ public sealed class VisitPresentationWebTests
         Assert.True(r.GetProperty("myNoteRestored").GetBoolean());
         Assert.Equal("Dr. Ayşe Kaya", r.GetProperty("topbarName").GetString());
 
-        Assert.Equal("Devam ediyor · 00:42", r.GetProperty("liveAfterTwo").GetString());
-        Assert.Equal("Devam ediyor · 00:42", r.GetProperty("liveWhileHidden").GetString()); // hidden: the timers stop
+        // CT (live E4): the chip is the visit's clock (server start → now: 5 min); the strip's total is the presented time
+        Assert.Equal("Devam ediyor · 05:00", r.GetProperty("liveAfterTwo").GetString());
+        Assert.Contains("00:42", r.GetProperty("totalAfterTwo").GetString());
+        Assert.Contains("00:42", r.GetProperty("totalWhileHidden").GetString()); // hidden: the timers stop
         Assert.Equal(1, r.GetProperty("putsOnHide").GetInt32());                            // leaving sends what was counted
 
         Assert.True(r.GetProperty("categoryPicker").GetBoolean());   // "objected" asks the category
@@ -438,6 +440,36 @@ public sealed class VisitPresentationWebTests
         http.Request.ContentType = contentType;
         controller.ControllerContext = new ControllerContext { HttpContext = http };
         return (gateway, controller);
+    }
+
+    // ═══ CT live E4 (2026-10-12) — four findings fixed after the first live run ═════════════════════════════
+
+    [Fact]
+    public void Live_E4_the_chip_counts_the_visit_a_duplicate_signature_shows_signed_the_short_copy_and_the_menu_group()
+    {
+        // 1. the live chip is the visit's clock (server start → now), not the slide timers ("00:00" with no slides)
+        var node = RunNode(Core() + "process.stdout.write(JSON.stringify([C.sinceStart('2026-10-12T10:45:00Z', Date.parse('2026-10-12T10:47:05Z')), C.sinceStart('bogus', 0), C.sinceStart('2026-10-12T10:45:00Z', Date.parse('2026-10-12T10:44:00Z'))]));");
+        if (node is not null)
+        {
+            Assert.Equal(new[] { 125, 0, 0 }, JsonSerializer.Deserialize<int[]>(node));
+        }
+
+        var js = File.ReadAllText(Path.Combine(ScriptDir(), "visit-presentation.js"));
+        Assert.Contains("C.clock(C.sinceStart(state.execution.startedAt, Date.now()))", js);
+
+        // 2. "already signed" (a duplicate delivery) re-reads the execution and shows the signed state, not an error
+        Assert.Contains("(res.errors || []).indexOf('visit_signature_exists') > -1", js);
+        Assert.Contains("again.data.signature && again.data.signature.present", js);
+
+        // 3. the short-visit warning names the threshold as a duration ("2 dk"), never a clock ("02:00")
+        Assert.Contains("fmt(L.ShortVisitWarning || '{0}', C.target(", js);
+        Assert.Equal("Ziyaret süresi {0} altında kaldı; süre tutarlılığı için işaretlendi.", Resx("tr")["ShortVisitWarning"]);
+
+        // 4. the page has no menu entry: it opens the CRM group at Visit Workspace
+        var view = File.ReadAllText(Path.Combine(WebRoot(), "Views", "CRM", "VisitPresentation", "Index.cshtml"));
+        Assert.Contains("Context.Items[\"NavActivePath\"] = \"/CRM/VisitWorkspace\";", view);
+        var menu = File.ReadAllText(Path.Combine(WebRoot(), "Views", "Shared", "Components", "DynamicModuleMenu", "Default.cshtml"));
+        Assert.Contains("(Context.Items[\"NavActivePath\"] as string) ?? Context.Request.Path.Value", menu);
     }
 
     private static JsonElement? Smoke(string scenario)

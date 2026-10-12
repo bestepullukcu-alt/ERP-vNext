@@ -4,6 +4,8 @@
 const dir = process.argv[2];
 const scenario = process.argv[3] || 'run';
 const nodes = {};
+// CT (live E4): a fixed wall clock — the live chip counts the visit from its server start (2026-10-15T09:00Z + 5 min)
+Date.now = () => Date.parse('2026-10-15T09:05:00Z');
 // the browser's Blob / FormData (Node 16 has neither as a global)
 if (typeof Blob === 'undefined') { global.Blob = require('buffer').Blob; }
 if (typeof FormData === 'undefined') { global.FormData = class { constructor() { this.m = new Map(); } append(k, v) { this.m.set(k, v); } get(k) { return this.m.get(k); } }; }
@@ -149,11 +151,13 @@ const docHtml = () => ['vp-ptabs', 'vp-slide', 'vp-ref', 'vp-dots', 'vp-slide-no
   // timers: two visible seconds count, hidden seconds do not
   intervalFn(); intervalFn();
   out.liveAfterTwo = el('vp-live-text').textContent;
+  out.totalAfterTwo = el('vp-total').textContent;
   global.document.visibilityState = 'hidden';
   listeners.doc.visibilitychange();
   await settle();
   intervalFn(); intervalFn(); intervalFn();
   out.liveWhileHidden = el('vp-live-text').textContent;
+  out.totalWhileHidden = el('vp-total').textContent;
   out.putsOnHide = puts().length;
   global.document.visibilityState = 'visible';
   listeners.doc.visibilitychange();

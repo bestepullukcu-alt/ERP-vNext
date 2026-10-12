@@ -13,6 +13,7 @@
  *   swipeStep(dx, rtl)                    a 50 px swipe → ±1 (mirrored in Arabic)
  *   timers(execution) / tick(t, slide, visible, seconds)   the timers: seeded from the execution, counting only while visible
  *   clock(seconds)                        mm:ss
+ *   sinceStart(startedAt, nowMs)          whole seconds since the server start (the live chip; CT live E4)
  *   target(seconds, culture, L)           "45 sn" / "1,5 dk"
  *   slideBar(elapsed, target)             { pct, over }
  *   marks(execution) / toggleFlag / setInterest / setObjection   the per-product marks
@@ -109,6 +110,13 @@
     const clock = seconds => {
         const s = Math.max(0, Math.floor(seconds || 0));
         return pad(Math.floor(s / 60)) + ':' + pad(s % 60);
+    };
+
+    /** CT (live E4 2026-10-12) — the live chip counts the VISIT (server start → now), not only the slide timers: a visit
+     *  with no slides showed "00:00" for its whole length. An unreadable instant → 0. */
+    const sinceStart = (startedAt, nowMs) => {
+        const t = Date.parse(startedAt || '');
+        return isNaN(t) ? 0 : Math.max(0, Math.floor(((nowMs == null ? Date.now() : nowMs) - t) / 1000));
     };
 
     /** The slide's target in the page culture: under a minute in seconds, else minutes with ONE decimal in the culture's
@@ -335,7 +343,7 @@
         MAX_SECONDS, SWIPE_PX, LONG_PRESS_MS, CAPTURE_EVERY_SECONDS, CAPTURE_DEBOUNCE_MS, MAX_CO_VISITORS,
         INTERESTS, FLAGS, KINDS,
         deviceOf, deck, productOrder, step, skipProduct, swipeStep,
-        slideKey, timers, tick, slideSeconds, productSeconds, totalSeconds, clock, target, slideBar,
+        slideKey, timers, tick, slideSeconds, productSeconds, totalSeconds, clock, sinceStart, target, slideBar,
         emptyMark, marks, setInterest, toggleFlag, setObjection, markCount,
         captureBody, signatureCard, signatureContext,
         digest, pinInitial, pin,

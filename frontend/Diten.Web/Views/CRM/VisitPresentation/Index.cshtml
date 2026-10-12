@@ -5,6 +5,8 @@
 @{
     ViewData["Title"] = Localizer["PageTitle"].Value;
     Layout = "_LayoutTenantShell";
+    // CT (live E4): no menu entry of its own — the sidebar opens the CRM group at Visit Workspace.
+    Context.Items["NavActivePath"] = "/CRM/VisitWorkspace";
 }
 
 @*
