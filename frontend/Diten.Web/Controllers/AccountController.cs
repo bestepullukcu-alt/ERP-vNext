@@ -85,9 +85,13 @@ public class AccountController : Controller
     // bridge as StatusCode >= 500 with a clean ErrorMessage; map it to 503 so the client shows "service
     // unavailable" instead of a misleading 401. Credential / validation failures keep the existing 401.
     private IActionResult AuthFailureResult(AuthBridgeResult result, string fallbackKey)
-        => result.StatusCode is >= 500
-            ? Refused(503, result, "Auth.Error.ServiceUnavailable")
-            : Refused(401, result, fallbackKey);
+        => result.StatusCode switch
+        {
+            >= 500 => Refused(503, result, "Auth.Error.ServiceUnavailable"),
+            // FIX3 item 2 — the sign-in doors' rate limit keeps its status (and says it in the reader's language).
+            429 => Refused(429, result, "Auth.Error.TooManyRequests"),
+            _ => Refused(401, result, fallbackKey)
+        };
 
     [HttpGet("/account/login")]
     public async Task<IActionResult> Login(Guid? tenantId = null, string? returnUrl = null, CancellationToken ct = default)

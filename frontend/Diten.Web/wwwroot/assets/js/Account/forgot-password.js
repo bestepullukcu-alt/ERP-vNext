@@ -25,9 +25,13 @@ const ForgotPasswordPage = (function () {
                 body: JSON.stringify({ email })
             });
             // BL-529 FIX3 — a refusal says why (too many requests, in the reader's language) instead of a generic failure.
+            // WP-USERS-ROLES-CLOSE-FIX1 FIX3 item 6 — only the Web door's own sentence (already the reader's language, marked
+            // local) is shown as it is; anything else is the general sentence — never a raw detail or a network error.
             if (!response.ok) {
                 const body = await response.json().catch(() => null);
-                throw new Error(body?.detail || window.L10n?.ErrorGeneric || 'Request failed.');
+                const error = new Error(body && body.local === true && body.detail ? body.detail : '');
+                error.isRefusal = Boolean(error.message);
+                throw error;
             }
             await Swal.fire({
                 title: window.L10n?.SentTitle || 'Check your email',
@@ -50,7 +54,7 @@ const ForgotPasswordPage = (function () {
             });
             window.location.href = '/platform/login';
         } catch (error) {
-            showError(error.message);
+            showError(error && error.isRefusal && error.message ? error.message : (window.L10n?.ErrorGeneric || ''));
         } finally {
             button.disabled = false;
             button.innerHTML = original;
@@ -61,7 +65,8 @@ const ForgotPasswordPage = (function () {
         if (typeof Swal !== 'undefined') {
             Swal.fire({
                 title: window.L10n?.ErrorTitle || 'Hata',
-                html: `<div class="mb-1 text-muted">${message}</div>`,
+                // FIX3 item 6 — TEXT, never HTML.
+                text: message,
                 iconHtml: '<div class="swal-icon-circle bg-label-danger border-danger border-opacity-25" style="display: flex; align-items: center; justify-content: center; width: 80px; height: 80px; border-radius: 50%; background: rgba(255, 76, 81, 0.12); border: 2px solid rgba(255, 76, 81, 0.25); margin: 0 auto !important;"><i class="bx bx-error-circle text-danger" style="font-size: 2.5rem; color: #ff4c51;"></i></div>',
                 confirmButtonText: 'Tamam',
                 width: '400px',
@@ -69,7 +74,7 @@ const ForgotPasswordPage = (function () {
                 customClass: {
                     popup: 'rounded-4 shadow-lg',
                     title: 'fs-4 fw-bold text-heading mt-4 mb-2 d-block w-100 text-center',
-                    htmlContainer: 'mb-1 d-block w-100 text-center',
+                    htmlContainer: 'mb-1 d-block w-100 text-center text-muted',
                     actions: 'd-flex justify-content-center mt-4 w-100',
                     confirmButton: 'btn btn-primary waves-effect waves-light px-5',
                     icon: 'border-0 m-0 p-0 d-flex justify-content-center w-100'

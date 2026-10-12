@@ -99,6 +99,8 @@ public sealed class PlatformAuthController : CustomBaseController
 
     [HttpPost("login")]
     [AllowAnonymous]
+    [AnonymousDoorLimit(Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.LoginDoor.Platform)]
+    [RequestSizeLimit(AnonymousDoorBody.Limit)] // FIX3 — an anonymous body is small
     public async Task<IActionResult> Login([FromBody] PlatformLoginRequest request, CancellationToken ct)
     {
         var command = new PlatformLoginCommand(request.Email, request.Password, ResolveRequestIp(HttpContext), ResolveUserAgent(HttpContext), request.RememberMe);

@@ -17,7 +17,10 @@ public static class MongoDbIndexConfigurations
     public const string LegacyUserEmailIndexName = "Email_1_TenantId_1";
 
     /// <summary>WP-USERS-ROLES-CLOSE-FIX1 FIX2 item 5 — the set-password link's lookup.</summary>
-    public const string PasswordResetTokenHashIndexName = "ix_users_password_reset_token_hash";
+    public const string PasswordResetTokenHashIndexName = "ix_users_password_reset_token_hash_v2";
+
+    /// <summary>FIX2's sparse index (held every user: the field is written as null). No longer created; to be removed later.</summary>
+    public const string RetiredSparsePasswordResetTokenHashIndexName = "ix_users_password_reset_token_hash";
 
     public static async Task EnsureIndexesAsync(IMongoDatabase database)
     {
@@ -41,9 +44,16 @@ public static class MongoDbIndexConfigurations
             new CreateIndexModel<User>(Builders<User>.IndexKeys.Ascending(u => u.IsActive).Ascending(u => u.TenantId)),
             // WP-USERS-ROLES-CLOSE-FIX1 FIX2 item 5 — the set-password link finds its account by the link's hash, across
             // tenants and anonymously (the page's check and the redemption): without an index every such request scanned
-            // the whole users collection. Sparse: an account that never had the field is not in it.
+            // the whole users collection. FIX3 item 7 — PARTIAL on a string value: User writes PasswordResetTokenHash: null
+            // explicitly, so FIX2's sparse index held every user. A new NAME (an index of the same name with other options
+            // cannot be created over it); FIX2's ix_users_password_reset_token_hash is no longer created here and is NOT
+            // dropped — remove it later where it exists.
             new CreateIndexModel<User>(Builders<User>.IndexKeys.Ascending(u => u.PasswordResetTokenHash),
-                new CreateIndexOptions { Name = PasswordResetTokenHashIndexName, Sparse = true })
+                new CreateIndexOptions<User>
+                {
+                    Name = PasswordResetTokenHashIndexName,
+                    PartialFilterExpression = Builders<User>.Filter.Type(u => u.PasswordResetTokenHash, MongoDB.Bson.BsonType.String)
+                })
         });
 
         await EnsurePermissionOnboardingIndexesAsync(database);

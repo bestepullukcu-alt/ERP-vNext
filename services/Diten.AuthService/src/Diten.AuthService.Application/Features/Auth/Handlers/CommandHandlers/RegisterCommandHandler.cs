@@ -68,6 +68,12 @@ public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Re
 
     public async Task<Response<AuthResponse>> Handle(RegisterCommand request, CancellationToken ct)
     {
+        // WP-USERS-ROLES-CLOSE-FIX1 FIX3 item 5 — the PLATFORM system tenant holds the platform administrators: nobody signs
+        // themselves up there, and the "already in use" answer below would otherwise tell an administrator's address apart.
+        // Refused before the address is looked at (the same answer for every address).
+        if (_tenantContext.TenantId == Diten.AuthService.Domain.Authorization.PlatformSystemTenant.Id)
+            return Response<AuthResponse>.Fail("Registration is not available for this tenant.", 403);
+
         var existing = await _userRepository.GetByEmailAndTenantAsync(request.Email, _tenantContext.TenantId, ct);
         if (existing != null)
             return Response<AuthResponse>.Fail("Email is already in use.", 409);

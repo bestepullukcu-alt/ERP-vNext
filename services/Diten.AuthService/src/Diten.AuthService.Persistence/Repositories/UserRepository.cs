@@ -60,12 +60,17 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
 
         // Intentionally NOT tenant-scoped: the anonymous set-password caller has no tenant context.
         // The token hash is a cryptographically-random unique value, so it maps to one user + tenant.
-        var filter = Builders<User>.Filter.And(
-            Builders<User>.Filter.Eq(u => u.PasswordResetTokenHash, tokenHash),
-            Builders<User>.Filter.Eq(u => u.IsDeleted, false));
+        var filter = PasswordResetTokenLookup(tokenHash);
 
         return await Collection.Find(filter).FirstOrDefaultAsync(ct);
     }
+
+    // WP-USERS-ROLES-CLOSE-FIX1 FIX3 item 7 — the link lookup states the partial index's own filter ($type: string), so the
+    // planner can always use ix_users_password_reset_token_hash_v2 (it serves only a query that implies its filter).
+    public static FilterDefinition<User> PasswordResetTokenLookup(string tokenHash) => Builders<User>.Filter.And(
+        Builders<User>.Filter.Type(u => u.PasswordResetTokenHash, MongoDB.Bson.BsonType.String),
+        Builders<User>.Filter.Eq(u => u.PasswordResetTokenHash, tokenHash),
+        Builders<User>.Filter.Eq(u => u.IsDeleted, false));
 
     public Task<IEnumerable<User>> GetAllByTenantAsync(Guid tenantId, int page, int pageSize, CancellationToken ct)
         => GetAllByTenantAsync(tenantId, page, pageSize, excludePlatformAccounts: false, ct);

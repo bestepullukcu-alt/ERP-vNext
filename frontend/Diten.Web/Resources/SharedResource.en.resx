@@ -583,8 +583,7 @@
   <data name="Auth.Error.TooManyRequests" xml:space="preserve"><value>Too many requests. Please wait a few minutes and try again.</value></data>
   <data name="Auth.Error.PasswordChangedMeanwhile" xml:space="preserve"><value>Your password was changed meanwhile (for example by an administrator). Please sign in again.</value></data>
   <data name="Auth.Error.AccountDeactivated" xml:space="preserve"><value>Your account has been deactivated by an administrator. Contact your administrator.</value></data>
-  <data name="Auth.Error.InvalidCredentials" xml:space="preserve"><value>Invalid email or password.</value></data>
-  <data name="Auth.Error.AccountLocked" xml:space="preserve"><value>Your account is temporarily locked after too many failed attempts. Please try again later.</value></data>
+  <data name="Auth.Error.InvalidCredentials" xml:space="preserve"><value>The email or password is incorrect, or the account is temporarily locked. Please try again later.</value></data>
   <data name="Auth.Error.LoginUnavailable" xml:space="preserve"><value>Sign-in is temporarily unavailable. Please try again in a moment.</value></data>
   <data name="Auth.Error.EmailLoginDisabled" xml:space="preserve"><value>Sign-in with email is turned off for this organization.</value></data>
   <data name="Auth.Error.TemporaryPasswordExpired" xml:space="preserve"><value>Your temporary password has expired. Please reset your password.</value></data>

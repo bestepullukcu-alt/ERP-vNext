@@ -4,6 +4,7 @@ using System.Text.Json;
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Domain.Entities;
 using Diten.AuthService.Infrastructure.Services;
+using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -91,9 +92,9 @@ public sealed partial class AdminResetInvalidatesEndpointTests
         Assert.Equal(lockEndBefore, lockedAfter.LockoutEnd);              // … the running lockout not extended
         Assert.Equal(1, (await ReadUserAsync(deactivated.Id)).FailedLoginAttempts);
 
-        // The RIGHT password, and only it, learns the state.
-        Assert.Equal("401|Account is locked. Please try again later.|" + AuthRefusalCodes.AccountLocked,
-            await RefusalOfAsync(await TenantLoginAsync(tenantId, locked.Email, OldPassword)));
+        // FIX3 item 1 — a LOCK is never said, the right password included (FIX2 said "locked" to the right one: the lock
+        // confirmed the guess). Only an unlocked account's right password learns more ("deactivated").
+        Assert.Equal(expected, await RefusalOfAsync(await TenantLoginAsync(tenantId, locked.Email, OldPassword)));
         Assert.Equal("401|Account is disabled.|" + AuthRefusalCodes.AccountDeactivated,
             await RefusalOfAsync(await TenantLoginAsync(tenantId, deactivated.Email, OldPassword)));
     }
@@ -121,6 +122,109 @@ public sealed partial class AdminResetInvalidatesEndpointTests
         Assert.Equal(1, GatedHasher.Verifications.GetValueOrDefault(unknownPlatform));
     }
 
+    /// <summary>FIX3 item 1 (blocker) — a LOCKED account with the RIGHT password: the same answer as a wrong one, no session,
+    /// the attempt counted — and the password still verified exactly once (the answer takes as long; the result is thrown
+    /// away).</summary>
+    [Fact]
+    public async Task A_locked_account_with_the_right_password_gets_the_one_answer_and_is_still_verified_once()
+    {
+        var tenantId = _host.Seeded.TenantId;
+        var password = "Locked!" + Guid.NewGuid().ToString("N")[..12];
+        var account = new User($"locked.{Guid.NewGuid():N}@reset.test", new PasswordHasher().Hash(password), "Locked", "Right", tenantId);
+        account.ConfirmEmail();
+        await _host.Database.GetCollection<User>("users").InsertOneAsync(account);
+        await _host.Database.GetCollection<User>("users").UpdateOneAsync(u => u.Id == account.Id,
+            Builders<User>.Update.Set(u => u.LockoutEnd, DateTime.UtcNow.AddMinutes(10)).Set(u => u.FailedLoginAttempts, 5));
+
+        var answer = await TenantLoginAsync(tenantId, account.Email, password);
+
+        Assert.Equal("401|Invalid email or password.|" + AuthRefusalCodes.InvalidCredentials, await RefusalOfAsync(answer));
+        Assert.Equal(1, GatedHasher.Verifications.GetValueOrDefault(password));
+        Assert.Equal(6, (await ReadUserAsync(account.Id)).FailedLoginAttempts);
+        Assert.Empty(await LiveRefreshTokensAsync(account.Id, tenantId));
+    }
+
+    /// <summary>FIX3 item 7 (test gap) — the lockout's own audit row: written once, by the failure that STARTED the lock — not
+    /// by the failures counted while it runs.</summary>
+    [Fact]
+    public async Task The_lockout_started_row_is_written_once_by_the_failure_that_starts_it()
+    {
+        var tenantId = _host.Seeded.TenantId;
+        var user = await SeedTenantUserAsync(tenantId);
+        await _host.Database.GetCollection<User>("users").UpdateOneAsync(u => u.Id == user.Id,
+            Builders<User>.Update.Set(u => u.FailedLoginAttempts, 4));
+
+        for (var attempt = 0; attempt < 3; attempt++)
+            Assert.Equal(HttpStatusCode.Unauthorized, (await TenantLoginAsync(tenantId, user.Email, WrongPassword)).StatusCode);
+
+        var rows = await _host.Database.GetCollection<AuthAuditLog>("authAuditLogs")
+            .Find(r => r.EventName == "tenant_login_lockout_started" && r.UserId == user.Id).ToListAsync();
+        Assert.Single(rows);
+        Assert.Equal(7, (await ReadUserAsync(user.Id)).FailedLoginAttempts);
+    }
+
+    /// <summary>FIX3 item 2 — the three sign-in doors are counted BEFORE the request is validated (and before any password is
+    /// verified): bodies the door refuses as invalid use up the client's count, and the next real attempt from that client
+    /// is the coded 429; another client is not affected.</summary>
+    [Theory]
+    [InlineData("api/tenant-auth/login", true)]
+    [InlineData("api/auth/login", true)]
+    [InlineData("api/platform-auth/login", false)]
+    public async Task Each_sign_in_door_is_counted_before_the_request_is_validated(string door, bool tenantDoor)
+    {
+        var peer = RandomPeer();
+        for (var i = 0; i < Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.DefaultLoginPerClientLimit; i++)
+        {
+            var invalid = await DoorPostAsync(peer, door, tenantDoor, "{}");
+            Assert.NotEqual((HttpStatusCode)429, invalid.StatusCode);
+        }
+
+        var refused = await DoorPostAsync(peer, door, tenantDoor, $$"""{"email":"nobody.{{Guid.NewGuid():N}}@reset.test","password":"x"}""");
+        Assert.Equal((HttpStatusCode)429, refused.StatusCode);
+        Assert.Contains(AuthRefusalCodes.TooManyRequests, await refused.Content.ReadAsStringAsync(), StringComparison.Ordinal);
+        Assert.NotEqual((HttpStatusCode)429, (await DoorPostAsync(RandomPeer(), door, tenantDoor,
+            $$"""{"email":"nobody.{{Guid.NewGuid():N}}@reset.test","password":"x"}""")).StatusCode);
+    }
+
+    /// <summary>FIX3 item 5 — nobody registers themselves in the PLATFORM tenant (its accounts are the platform
+    /// administrators): refused before the address is looked at, so an administrator's address and a new one get the same
+    /// 403 (never the 409 "already in use"), and nothing is created.</summary>
+    [Fact]
+    public async Task Registration_in_the_platform_tenant_is_refused_alike_for_every_address()
+    {
+        var email = await ProvisionedPlatformAdminAsync(OldPassword);
+        var users = _host.Database.GetCollection<User>("users");
+        var before = await users.CountDocumentsAsync(u => u.TenantId == PlatformTenantId);
+        using var client = _host.Client(null, PlatformTenantId);
+
+        var existing = await client.PostAsJsonAsync("api/tenant-auth/register", new { email, password = NewPassword, firstName = "Self", lastName = "Signup" });
+        var fresh = await client.PostAsJsonAsync("api/tenant-auth/register",
+            new { email = $"new.{Guid.NewGuid():N}@reset.test", password = NewPassword, firstName = "Self", lastName = "Signup" });
+
+        Assert.Equal(HttpStatusCode.Forbidden, existing.StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, fresh.StatusCode);
+        Assert.Equal(await RefusalOfAsync(existing), await RefusalOfAsync(fresh));
+        Assert.Equal(before, await users.CountDocumentsAsync(u => u.TenantId == PlatformTenantId));
+    }
+
+    /// <summary>FIX3 item 7 — the fixed "no account" hash is made when the host starts, not by the first unknown address.
+    /// Asked of the host's own start-up (the hash cache is process-wide, so any earlier unknown address would also fill it):
+    /// the warm-up runs as a hosted service, and the hash it makes is there.</summary>
+    [Fact]
+    public void The_no_account_hash_is_made_when_the_host_starts()
+    {
+        Assert.Single(_host.Factory.Services.GetServices<Microsoft.Extensions.Hosting.IHostedService>()
+            .OfType<Diten.AuthService.Infrastructure.Security.SignInTimingWarmup>());
+        Assert.True(Diten.AuthService.Application.Features.Auth.Services.SignInTiming.IsWarm(new GatedHasher(_host.Gate)));
+    }
+
+    private async Task<HttpResponseMessage> DoorPostAsync(string peer, string path, bool tenantDoor, string json)
+    {
+        using var client = tenantDoor ? _host.Client(null, _host.Seeded.TenantId) : _host.Client();
+        client.DefaultRequestHeaders.Add("X-Test-Peer", peer);
+        return await client.PostAsync(path, new StringContent(json, System.Text.Encoding.UTF8, "application/json"));
+    }
+
     /// <summary>The refusals said only AFTER the password matched (so they tell nothing about who exists) carry their own
     /// codes; the forced change's wrong current password too.</summary>
     [Fact]
@@ -136,7 +240,8 @@ public sealed partial class AdminResetInvalidatesEndpointTests
         var locked = await SeedTenantUserAsync(tenantId);
         await _host.Database.GetCollection<User>("users").UpdateOneAsync(u => u.Id == locked.Id,
             Builders<User>.Update.Set(u => u.LockoutEnd, DateTime.UtcNow.AddMinutes(10)));
-        Assert.Equal("401|Account is locked. Please try again later.|" + AuthRefusalCodes.AccountLocked,
+        // FIX3 item 1 — a lock is never said, not even to the right password: the one answer.
+        Assert.Equal("401|Invalid email or password.|" + AuthRefusalCodes.InvalidCredentials,
             await RefusalOfAsync(await TenantLoginAsync(tenantId, locked.Email, OldPassword)));
 
         var changing = await SeedTenantUserAsync(tenantId, mustChangePassword: true);
@@ -273,24 +378,23 @@ public sealed partial class AdminResetInvalidatesEndpointTests
         return string.Join(";", counts);
     }
 
-    /// <summary>FIX2 item 5 — the link's lookup (anonymous, across tenants) is served by an index, not a scan of every user:
-    /// the sparse index exists and the planner's winning plan for the lookup's own filter uses it.</summary>
+    /// <summary>FIX2 item 5 / FIX3 item 7 — the link's lookup (anonymous, across tenants) is served by its index, not a scan
+    /// of every user: the index is PARTIAL on a string value (FIX2's sparse index held every user, the field is written as
+    /// null) and the planner's winning plan for the repository's own lookup filter uses it.</summary>
     [Fact]
     public async Task The_link_lookup_has_its_index_and_uses_it()
     {
-        var users = _host.Database.GetCollection<BsonDocument>("users");
-        var index = Assert.Single(await (await users.Indexes.ListAsync()).ToListAsync(),
+        var users = _host.Database.GetCollection<User>("users");
+        var index = Assert.Single(await (await _host.Database.GetCollection<BsonDocument>("users").Indexes.ListAsync()).ToListAsync(),
             x => x["name"] == Diten.AuthService.Persistence.Configurations.MongoDbIndexConfigurations.PasswordResetTokenHashIndexName);
-        Assert.True(index.GetValue("sparse", false).ToBoolean());
+        var type = index["partialFilterExpression"]["PasswordResetTokenHash"]["$type"];
+        Assert.True(type == 2 || type == "string", $"the index is partial on a string value: {index.ToJson()}"); // BSON type 2 = string
 
+        var filter = Diten.AuthService.Persistence.Repositories.UserRepository.PasswordResetTokenLookup("no-such-hash")
+            .Render(users.DocumentSerializer, users.Settings.SerializerRegistry);
         var explain = await _host.Database.RunCommandAsync<BsonDocument>(new BsonDocument
         {
-            ["explain"] = new BsonDocument
-            {
-                ["find"] = "users",
-                ["filter"] = new BsonDocument { ["PasswordResetTokenHash"] = "no-such-hash", ["IsDeleted"] = false },
-                ["limit"] = 1
-            },
+            ["explain"] = new BsonDocument { ["find"] = "users", ["filter"] = filter, ["limit"] = 1 },
             ["verbosity"] = "queryPlanner"
         });
         Assert.Contains(Diten.AuthService.Persistence.Configurations.MongoDbIndexConfigurations.PasswordResetTokenHashIndexName,

@@ -519,8 +519,7 @@
   <data name="Auth.Error.TooManyRequests" xml:space="preserve"><value>Demasiadas solicitudes. Espere unos minutos e inténtelo de nuevo.</value></data>
   <data name="Auth.Error.PasswordChangedMeanwhile" xml:space="preserve"><value>Su contraseña se cambió mientras tanto (por ejemplo, un administrador). Vuelva a iniciar sesión.</value></data>
   <data name="Auth.Error.AccountDeactivated" xml:space="preserve"><value>Un administrador ha desactivado su cuenta. Póngase en contacto con su administrador.</value></data>
-  <data name="Auth.Error.InvalidCredentials" xml:space="preserve"><value>Correo electrónico o contraseña incorrectos.</value></data>
-  <data name="Auth.Error.AccountLocked" xml:space="preserve"><value>Su cuenta está bloqueada temporalmente tras demasiados intentos fallidos. Vuelva a intentarlo más tarde.</value></data>
+  <data name="Auth.Error.InvalidCredentials" xml:space="preserve"><value>El correo electrónico o la contraseña son incorrectos, o la cuenta está bloqueada temporalmente. Vuelva a intentarlo más tarde.</value></data>
   <data name="Auth.Error.LoginUnavailable" xml:space="preserve"><value>El inicio de sesión no está disponible temporalmente. Vuelva a intentarlo en unos instantes.</value></data>
   <data name="Auth.Error.EmailLoginDisabled" xml:space="preserve"><value>El inicio de sesión con correo electrónico está desactivado para esta organización.</value></data>
   <data name="Auth.Error.TemporaryPasswordExpired" xml:space="preserve"><value>Su contraseña temporal ha caducado. Restablezca su contraseña.</value></data>

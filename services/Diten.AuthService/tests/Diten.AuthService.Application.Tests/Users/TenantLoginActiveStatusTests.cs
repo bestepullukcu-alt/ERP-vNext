@@ -75,6 +75,29 @@ public sealed class TenantLoginActiveStatusTests
         Assert.InRange(audit.Events.Count(e => e == "tenant_login_settings_read_failed"), 0, AnonymousAuditBudget.RowsPerWindow);
     }
 
+    /// <summary>FIX3 item 4 — the e-mail-sign-in-switched-off row (no user) goes through the same budget.</summary>
+    [Fact]
+    public async Task A_tenant_with_email_sign_in_off_is_answered_every_time_but_audited_within_the_budget()
+    {
+        var audit = new FakeAuditService();
+        var handler = CreateHandler(new User("x@acme.test", "hash:x", "X", "Y", TenantA), audit, new EmailOffSettings());
+
+        for (var i = 0; i < 3 * AnonymousAuditBudget.RowsPerWindow; i++)
+            Assert.Equal(AuthRefusalCodes.EmailLoginDisabled, Assert.Single((await handler.Handle(Login("x@acme.test"), CancellationToken.None)).ErrorCodes).Code);
+
+        Assert.InRange(audit.Events.Count(e => e == "tenant_login_denied_by_settings"), 0, AnonymousAuditBudget.RowsPerWindow);
+    }
+
+    private sealed class EmailOffSettings : ITenantLoginSettingsClient
+    {
+        public Task<TenantLoginSettingsSnapshot> GetAsync(Guid tenantId, CancellationToken ct) =>
+            Task.FromResult(new TenantLoginSettingsSnapshot(
+                tenantId, TwoFactorEnabled: false, MfaRequired: false, EmailLoginEnabled: false, PhoneLoginEnabled: false,
+                PasswordMinLength: 8, PasswordRequireUppercase: false, PasswordRequireLowercase: false,
+                PasswordRequireDigit: false, PasswordRequireSpecialChar: false, PasswordExpirationDays: null,
+                SessionTimeoutMinutes: 60, RefreshTokenLifetimeDays: 7, MaxFailedLoginAttempts: 5, LockoutDurationMinutes: 15));
+    }
+
     [Fact]
     public void The_anonymous_audit_budget_refills_each_window()
     {

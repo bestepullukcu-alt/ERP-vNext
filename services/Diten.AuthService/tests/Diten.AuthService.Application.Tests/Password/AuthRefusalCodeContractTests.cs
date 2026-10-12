@@ -20,7 +20,6 @@ public sealed class AuthRefusalCodeContractTests
         [AuthRefusalCodes.AccountDeactivated] = "Auth.Error.AccountDeactivated",
         // WP-USERS-ROLES-CLOSE-FIX1 item 2 (BL-496)
         [AuthRefusalCodes.InvalidCredentials] = "Auth.Error.InvalidCredentials",
-        [AuthRefusalCodes.AccountLocked] = "Auth.Error.AccountLocked",
         [AuthRefusalCodes.LoginUnavailable] = "Auth.Error.LoginUnavailable",
         [AuthRefusalCodes.EmailLoginDisabled] = "Auth.Error.EmailLoginDisabled",
         [AuthRefusalCodes.TemporaryPasswordExpired] = "Auth.Error.TemporaryPasswordExpired",

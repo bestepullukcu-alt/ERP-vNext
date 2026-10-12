@@ -22,6 +22,8 @@ public sealed class TenantAuthController : CustomBaseController
 
     [HttpPost("login")]
     [AllowAnonymous]
+    [AnonymousDoorLimit(Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.LoginDoor.Tenant)]
+    [RequestSizeLimit(AnonymousDoorBody.Limit)] // FIX3 — an anonymous body is small
     public async Task<IActionResult> Login([FromBody] TenantLoginRequest request, CancellationToken ct)
     {
         var command = new LoginCommand(request.Email, request.Password, ResolveRequestIp(HttpContext), ResolveUserAgent(HttpContext), request.RememberMe);
@@ -49,6 +51,8 @@ public sealed class TenantAuthController : CustomBaseController
 
     [HttpPost("register")]
     [AllowAnonymous]
+    [AnonymousDoorLimit(Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.LoginDoor.Register)]
+    [RequestSizeLimit(AnonymousDoorBody.Limit)] // FIX3 — an anonymous body is small
     public async Task<IActionResult> Register([FromBody] RegisterRequest request, CancellationToken ct)
     {
         var command = new RegisterCommand(

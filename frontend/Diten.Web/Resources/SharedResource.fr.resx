@@ -519,8 +519,7 @@
   <data name="Auth.Error.TooManyRequests" xml:space="preserve"><value>Trop de demandes. Veuillez patienter quelques minutes puis réessayer.</value></data>
   <data name="Auth.Error.PasswordChangedMeanwhile" xml:space="preserve"><value>Votre mot de passe a été modifié entre-temps (par exemple par un administrateur). Veuillez vous reconnecter.</value></data>
   <data name="Auth.Error.AccountDeactivated" xml:space="preserve"><value>Votre compte a été désactivé par un administrateur. Contactez votre administrateur.</value></data>
-  <data name="Auth.Error.InvalidCredentials" xml:space="preserve"><value>Adresse e-mail ou mot de passe incorrect.</value></data>
-  <data name="Auth.Error.AccountLocked" xml:space="preserve"><value>Votre compte est temporairement verrouillé après un trop grand nombre de tentatives infructueuses. Veuillez réessayer plus tard.</value></data>
+  <data name="Auth.Error.InvalidCredentials" xml:space="preserve"><value>L'adresse e-mail ou le mot de passe est incorrect, ou le compte est temporairement verrouillé. Veuillez réessayer plus tard.</value></data>
   <data name="Auth.Error.LoginUnavailable" xml:space="preserve"><value>La connexion est temporairement indisponible. Veuillez réessayer dans un instant.</value></data>
   <data name="Auth.Error.EmailLoginDisabled" xml:space="preserve"><value>La connexion par e-mail est désactivée pour cette organisation.</value></data>
   <data name="Auth.Error.TemporaryPasswordExpired" xml:space="preserve"><value>Votre mot de passe temporaire a expiré. Veuillez réinitialiser votre mot de passe.</value></data>

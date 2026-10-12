@@ -196,8 +196,9 @@ public sealed class ClientAddressStartupWarning(ClientAddressResolver resolver, 
         if (!resolver.IdentifiesClients)
         {
             logger.LogWarning(
-                "{Key} is empty: the per-client rate limit of the anonymous platform password doors is OFF (the per-address limits " +
-                "still apply). List the Web server's and the gateway's addresses to switch it on.",
+                "{Key} is empty: the per-client rate limits of the anonymous doors are OFF — the sign-in doors, self-registration and " +
+                "the set-password link doors fall back to one coarse ceiling for everybody, the platform password doors to their " +
+                "per-address limits. List the Web server's and the gateway's addresses to switch the per-client limits on.",
                 ClientAddressResolver.TrustedProxiesKey);
         }
 

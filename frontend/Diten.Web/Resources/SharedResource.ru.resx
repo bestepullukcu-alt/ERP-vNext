@@ -519,8 +519,7 @@
   <data name="Auth.Error.TooManyRequests" xml:space="preserve"><value>Слишком много запросов. Подождите несколько минут и повторите попытку.</value></data>
   <data name="Auth.Error.PasswordChangedMeanwhile" xml:space="preserve"><value>Ваш пароль тем временем был изменён (например, администратором). Войдите снова.</value></data>
   <data name="Auth.Error.AccountDeactivated" xml:space="preserve"><value>Ваша учётная запись отключена администратором. Обратитесь к администратору.</value></data>
-  <data name="Auth.Error.InvalidCredentials" xml:space="preserve"><value>Неверный адрес электронной почты или пароль.</value></data>
-  <data name="Auth.Error.AccountLocked" xml:space="preserve"><value>Ваша учётная запись временно заблокирована из-за слишком большого числа неудачных попыток. Повторите попытку позже.</value></data>
+  <data name="Auth.Error.InvalidCredentials" xml:space="preserve"><value>Неверный адрес электронной почты или пароль, либо учётная запись временно заблокирована. Повторите попытку позже.</value></data>
   <data name="Auth.Error.LoginUnavailable" xml:space="preserve"><value>Вход временно недоступен. Повторите попытку через некоторое время.</value></data>
   <data name="Auth.Error.EmailLoginDisabled" xml:space="preserve"><value>Вход по электронной почте отключён для этой организации.</value></data>
   <data name="Auth.Error.TemporaryPasswordExpired" xml:space="preserve"><value>Срок действия временного пароля истёк. Сбросьте пароль.</value></data>

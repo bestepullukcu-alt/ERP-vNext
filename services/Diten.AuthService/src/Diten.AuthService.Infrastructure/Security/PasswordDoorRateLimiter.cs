@@ -24,6 +24,15 @@ public sealed class PasswordDoorRateLimiter : IDisposable
 
     public const int DefaultPerAddressLimit = 5;
     public const int DefaultPerClientLimit = 30;
+    // WP-USERS-ROLES-CLOSE-FIX1 FIX3 items 2–3 — the sign-in doors per client: higher than the link doors' 30, because one
+    // office behind one NAT address is one "client" here; the per-ACCOUNT lockout (5) still caps the guesses at an account.
+    public const int DefaultLoginPerClientLimit = 100;
+    // When clients CANNOT be told apart there is no per-address count on these doors (a junk request for a victim's address
+    // would lock the victim out): one coarse ceiling for everybody, per door, per minute — the CPU guard (a sign-in verifies
+    // a BCrypt hash, ~250 ms: 300 a minute is ~1.25 cores) that still lets a 3,000-person organisation sign in within ten
+    // minutes behind a single proxy (120 would throttle a mid-size office's morning).
+    public const int DefaultUnidentifiedPerMinute = 300;
+    public static readonly TimeSpan UnidentifiedWindow = TimeSpan.FromMinutes(1);
     public static readonly TimeSpan DefaultWindow = TimeSpan.FromMinutes(15);
 
     /// <summary>BL-529 FIX6 — how many per-address buckets the set-password link has while clients cannot be told apart.</summary>
@@ -31,6 +40,8 @@ public sealed class PasswordDoorRateLimiter : IDisposable
 
     private readonly PartitionedRateLimiter<string> _perAddress;
     private readonly PartitionedRateLimiter<string> _perClient;
+    private readonly PartitionedRateLimiter<string> _loginPerClient;
+    private readonly PartitionedRateLimiter<string> _unidentified;
 
     public PasswordDoorRateLimiter()
         : this(DefaultPerAddressLimit, DefaultPerClientLimit, DefaultWindow)
@@ -42,6 +53,8 @@ public sealed class PasswordDoorRateLimiter : IDisposable
         Window = window;
         _perAddress = Fixed(perAddressLimit, window);
         _perClient = Fixed(perClientLimit, window);
+        _loginPerClient = Fixed(DefaultLoginPerClientLimit, window);
+        _unidentified = Fixed(DefaultUnidentifiedPerMinute, UnidentifiedWindow);
     }
 
     public TimeSpan Window { get; }
@@ -76,18 +89,38 @@ public sealed class PasswordDoorRateLimiter : IDisposable
             : TryAcquire(_perAddress, $"reset-password|address-bucket|{AddressBucket(email)}");
 
     /// <summary>WP-USERS-ROLES-CLOSE-FIX1 FIX2 item 4 — the TENANT set-password link's two doors (the page's read-only check
-    /// and the redemption POST): EVERY request is counted, before anything is read — per client when clients can be told
-    /// apart, otherwise per address bucket — with its own prefix (never shares a count with the platform door's
-    /// "reset-password|…" keys, nor the check with the redemption). Unlike the platform door, a request carrying the valid
-    /// link is counted too: a page opened, refreshed and submitted a few times stays far inside the per-client limit, and
-    /// the link's 64 random bytes — not this count — are what keep it from being guessed. True = go on; false = 429.</summary>
+    /// and the redemption POST): EVERY request is counted, before anything is read, with its own prefix (never shares a count
+    /// with the platform door's "reset-password|…" keys, nor the check with the redemption) — the valid link's too; the link's
+    /// 64 random bytes, not this count, are what keep it from being guessed. Per client when clients can be told apart.
+    /// FIX3 item 3 — when they CANNOT, no per-address count any more (5 junk requests for a victim's address locked the
+    /// victim's real link out for 15 minutes, again and again): the coarse ceiling for everybody instead. True = go on;
+    /// false = 429.</summary>
     public bool TryAcquireTenantLinkDoor(TenantLinkDoor door, string client, string? email, bool countPerClient)
     {
         var prefix = door == TenantLinkDoor.Check ? "tenant-link-check" : "tenant-link-set";
         return countPerClient
             ? TryAcquire(_perClient, $"{prefix}|client|{client}")
-            : TryAcquire(_perAddress, $"{prefix}|address-bucket|{AddressBucket(email)}");
+            : TryAcquire(_unidentified, $"{prefix}|all-clients");
     }
+
+    /// <summary>WP-USERS-ROLES-CLOSE-FIX1 FIX3 items 2 and 5 — the sign-in doors (tenant, platform) and self-registration are
+    /// counted BEFORE the request is validated or the store is read: per client when clients can be told apart
+    /// (<see cref="DefaultLoginPerClientLimit"/> / window), otherwise the coarse ceiling for everybody
+    /// (<see cref="DefaultUnidentifiedPerMinute"/> a minute) — never per address. Each door has its own prefix.</summary>
+    public bool TryAcquireLoginDoor(LoginDoor door, string client, bool countPerClient)
+    {
+        var prefix = door switch
+        {
+            LoginDoor.Tenant => "tenant-login",
+            LoginDoor.Platform => "platform-login",
+            _ => "tenant-register"
+        };
+        return countPerClient
+            ? TryAcquire(_loginPerClient, $"{prefix}|client|{client}")
+            : TryAcquire(_unidentified, $"{prefix}|all-clients");
+    }
+
+    public enum LoginDoor { Tenant, Platform, Register }
 
     public enum TenantLinkDoor { Check, Redeem }
 
@@ -99,6 +132,8 @@ public sealed class PasswordDoorRateLimiter : IDisposable
     {
         _perAddress.Dispose();
         _perClient.Dispose();
+        _loginPerClient.Dispose();
+        _unidentified.Dispose();
     }
 
     private static PartitionedRateLimiter<string> Fixed(int permits, TimeSpan window) =>

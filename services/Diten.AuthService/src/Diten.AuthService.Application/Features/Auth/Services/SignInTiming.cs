@@ -18,9 +18,14 @@ public static class SignInTiming
     private static readonly ConcurrentDictionary<Type, string> NoAccountHash = new();
 
     public static void VerifyAgainstNoAccount(IPasswordHasher hasher, string? password)
-    {
-        var hash = NoAccountHash.GetOrAdd(hasher.GetType(),
-            _ => hasher.Hash(Convert.ToHexString(RandomNumberGenerator.GetBytes(32))));
-        _ = hasher.Verify(password ?? string.Empty, hash);
-    }
+        => _ = hasher.Verify(password ?? string.Empty, HashFor(hasher));
+
+    /// <summary>FIX3 item 7 — made at start (<c>SignInTimingWarmup</c>): otherwise the FIRST unknown address after a start
+    /// would also pay for making the hash, and be slower than every other answer.</summary>
+    public static void Warm(IPasswordHasher hasher) => _ = HashFor(hasher);
+
+    public static bool IsWarm(IPasswordHasher hasher) => NoAccountHash.ContainsKey(hasher.GetType());
+
+    private static string HashFor(IPasswordHasher hasher) => NoAccountHash.GetOrAdd(hasher.GetType(),
+        _ => hasher.Hash(Convert.ToHexString(RandomNumberGenerator.GetBytes(32))));
 }

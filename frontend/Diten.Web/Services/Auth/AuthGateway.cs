@@ -30,7 +30,6 @@ public sealed class AuthGateway : IAuthGateway
         ["AUTH_ACCOUNT_DEACTIVATED"] = "Auth.Error.AccountDeactivated",
         // WP-USERS-ROLES-CLOSE-FIX1 item 2 (BL-496) — every refusal of the sign-in, forced-change and set-password doors.
         ["AUTH_INVALID_CREDENTIALS"] = "Auth.Error.InvalidCredentials",
-        ["AUTH_ACCOUNT_LOCKED"] = "Auth.Error.AccountLocked",
         ["AUTH_LOGIN_UNAVAILABLE"] = "Auth.Error.LoginUnavailable",
         ["AUTH_EMAIL_LOGIN_DISABLED"] = "Auth.Error.EmailLoginDisabled",
         ["AUTH_TEMPORARY_PASSWORD_EXPIRED"] = "Auth.Error.TemporaryPasswordExpired",

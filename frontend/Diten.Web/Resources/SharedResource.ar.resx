@@ -519,8 +519,7 @@
   <data name="Auth.Error.TooManyRequests" xml:space="preserve"><value>عدد كبير جدًا من الطلبات. يُرجى الانتظار بضع دقائق ثم المحاولة مرة أخرى.</value></data>
   <data name="Auth.Error.PasswordChangedMeanwhile" xml:space="preserve"><value>تم تغيير كلمة المرور الخاصة بك في هذه الأثناء (من قِبل مسؤول مثلًا). يُرجى تسجيل الدخول مرة أخرى.</value></data>
   <data name="Auth.Error.AccountDeactivated" xml:space="preserve"><value>قام مسؤول بتعطيل حسابك. يُرجى التواصل مع المسؤول.</value></data>
-  <data name="Auth.Error.InvalidCredentials" xml:space="preserve"><value>البريد الإلكتروني أو كلمة المرور غير صحيحة.</value></data>
-  <data name="Auth.Error.AccountLocked" xml:space="preserve"><value>تم قفل حسابك مؤقتًا بسبب كثرة المحاولات الفاشلة. يُرجى المحاولة مرة أخرى لاحقًا.</value></data>
+  <data name="Auth.Error.InvalidCredentials" xml:space="preserve"><value>البريد الإلكتروني أو كلمة المرور غير صحيحة، أو أن الحساب مقفل مؤقتًا. يُرجى المحاولة مرة أخرى لاحقًا.</value></data>
   <data name="Auth.Error.LoginUnavailable" xml:space="preserve"><value>تسجيل الدخول غير متاح مؤقتًا. يُرجى المحاولة مرة أخرى بعد قليل.</value></data>
   <data name="Auth.Error.EmailLoginDisabled" xml:space="preserve"><value>تسجيل الدخول بالبريد الإلكتروني معطّل لهذه المؤسسة.</value></data>
   <data name="Auth.Error.TemporaryPasswordExpired" xml:space="preserve"><value>انتهت صلاحية كلمة المرور المؤقتة. يُرجى إعادة تعيين كلمة المرور.</value></data>

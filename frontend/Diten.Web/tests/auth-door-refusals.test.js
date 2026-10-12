@@ -153,3 +153,42 @@ describe("the password page says every refusal through the shared bridge", () =>
     expect(dialog.text).not.toContain("Password could not be changed");
   });
 });
+
+describe("FIX3 — the forgot-password page says every refusal as text, never HTML", () => {
+  beforeAll(() => {
+    document.body.innerHTML = `
+      <form id="forgotPasswordForm"><input id="email" value="a@b.test"><button type="submit">Gönder</button></form>`;
+    loadScript("wwwroot/assets/js/Account/forgot-password.js");
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+  });
+
+  beforeEach(() => {
+    window.L10n = { ...L, ErrorGeneric: L.ErrorOccurred };
+    window.Swal = { fire: vi.fn(() => Promise.resolve({})) };
+  });
+  afterEach(() => vi.restoreAllMocks());
+
+  const submit = () => document.getElementById("forgotPasswordForm").dispatchEvent(new Event("submit", { cancelable: true }));
+
+  test("the door's own sentence is shown as TEXT (markup stays text)", async () => {
+    const sentence = '<img src=x onerror="window.__pwned=1"> Çok fazla istek.';
+    global.fetch = vi.fn(() => answer(429, { detail: sentence, errors: [sentence], local: true }));
+
+    submit();
+    const dialog = await shownSentence();
+
+    expect(dialog.text).toBe(sentence);
+    expect(dialog.html).toBeUndefined();
+  });
+
+  test("a raw detail (not the door's own) and a network failure are the general sentence", async () => {
+    global.fetch = vi.fn(() => answer(503, { detail: "Upstream exploded at 10.0.0.7" }));
+    submit();
+    expect((await shownSentence()).text).toBe(L.ErrorOccurred);
+
+    window.Swal.fire.mockClear();
+    global.fetch = vi.fn(() => Promise.reject(new TypeError("Failed to fetch")));
+    submit();
+    expect((await shownSentence()).text).toBe(L.ErrorOccurred);
+  });
+});

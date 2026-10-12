@@ -519,8 +519,7 @@
   <data name="Auth.Error.TooManyRequests" xml:space="preserve"><value>请求过多。请等待几分钟后重试。</value></data>
   <data name="Auth.Error.PasswordChangedMeanwhile" xml:space="preserve"><value>您的密码已在此期间被更改（例如由管理员更改）。请重新登录。</value></data>
   <data name="Auth.Error.AccountDeactivated" xml:space="preserve"><value>您的账户已被管理员停用。请联系您的管理员。</value></data>
-  <data name="Auth.Error.InvalidCredentials" xml:space="preserve"><value>电子邮件或密码不正确。</value></data>
-  <data name="Auth.Error.AccountLocked" xml:space="preserve"><value>由于失败尝试次数过多，您的账户已被暂时锁定。请稍后重试。</value></data>
+  <data name="Auth.Error.InvalidCredentials" xml:space="preserve"><value>电子邮件或密码不正确，或账户已被暂时锁定。请稍后重试。</value></data>
   <data name="Auth.Error.LoginUnavailable" xml:space="preserve"><value>登录暂时不可用。请稍后重试。</value></data>
   <data name="Auth.Error.EmailLoginDisabled" xml:space="preserve"><value>此组织已关闭电子邮件登录。</value></data>
   <data name="Auth.Error.TemporaryPasswordExpired" xml:space="preserve"><value>您的临时密码已过期。请重置您的密码。</value></data>

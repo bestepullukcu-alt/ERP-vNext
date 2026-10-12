@@ -78,6 +78,7 @@ public static class DependencyInjection
         services.AddSingleton(sp => new Security.ClientAddressResolver(
             trustedProxies, sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Security.ClientAddressResolver>>()));
         services.AddHostedService<Security.ClientAddressStartupWarning>();
+        services.AddHostedService<Security.SignInTimingWarmup>();
         services.AddScoped<ITenantUserInvitationEmailService, TenantUserInvitationEmailService>();
         services.AddScoped<IMfaChallengeService, MfaChallengeService>();
         services.AddScoped<IOtpDeliveryService, SmtpOtpDeliveryService>();

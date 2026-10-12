@@ -22,11 +22,9 @@ public static class AuthRefusalCodes
     // code; the screens never show the service's English again.
 
     /// <summary>The one answer of a sign-in that did not match — no such address, a wrong password, an account of another kind
-    /// at this door: the SAME code and sentence, so the answer never tells an address that exists from one that does not.</summary>
+    /// at this door, a LOCKED account whatever the password (FIX3: a lock is never said — "AUTH_ACCOUNT_LOCKED" is gone): the
+    /// SAME code and sentence, so the answer tells neither an address that exists nor a password that is right.</summary>
     public const string InvalidCredentials = "AUTH_INVALID_CREDENTIALS";
-
-    /// <summary>Too many wrong passwords: the account is locked for a while.</summary>
-    public const string AccountLocked = "AUTH_ACCOUNT_LOCKED";
 
     /// <summary>The sign-in cannot be decided now (a dependency did not answer) — try again.</summary>
     public const string LoginUnavailable = "AUTH_LOGIN_UNAVAILABLE";

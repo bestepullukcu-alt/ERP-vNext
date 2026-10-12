@@ -443,12 +443,14 @@ public sealed class PlatformAccountAtTenantDoorTests : IClassFixture<PlatformAcc
         return await client.PostAsJsonAsync("api/auth/refresh-token", new { accessToken, refreshToken = raw });
     }
 
-    /// <summary>Registration mints a token only for the account it CREATES. An address that belongs to a platform account is
-    /// "already in use" — the same 409 an ordinary user's address gets — and creates, mints and writes nothing.</summary>
+    /// <summary>Registration mints a token only for the account it CREATES. An address that belongs to a platform account gets
+    /// the same answer an ordinary user's address gets, and creates, mints and writes nothing. WP-USERS-ROLES-CLOSE-FIX1 FIX3
+    /// item 5 — in the PLATFORM tenant (this class's business-and-platform tenant) that answer is now the 403 every address
+    /// gets (nobody signs themselves up where the platform administrators are), no longer the 409.</summary>
     [Theory]
     [InlineData("platform_admin")]
     [InlineData("partner_admin")]
-    public async Task Registering_the_address_of_a_platform_account_is_the_ordinary_409_and_mints_nothing(string actorType)
+    public async Task Registering_the_address_of_a_platform_account_gets_the_ordinary_answer_and_mints_nothing(string actorType)
     {
         var platformAccount = await SeedAsync(BusinessAndPlatformTenant, platform: true, actorType: actorType);
         var ordinary = await SeedAsync(BusinessAndPlatformTenant);
@@ -457,7 +459,7 @@ public sealed class PlatformAccountAtTenantDoorTests : IClassFixture<PlatformAcc
         var platformAnswer = await RegisterAsync(platformAccount.Email);
         var ordinaryAnswer = await RegisterAsync(ordinary.Email);
 
-        Assert.Equal(HttpStatusCode.Conflict, platformAnswer.Status);
+        Assert.Equal(HttpStatusCode.Forbidden, platformAnswer.Status);
         Assert.Equal(ordinaryAnswer.Status, platformAnswer.Status);
         Assert.Equal(ordinaryAnswer.Errors, platformAnswer.Errors);
         Assert.False(platformAnswer.HasToken);

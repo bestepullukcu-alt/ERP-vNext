@@ -583,8 +583,7 @@
   <data name="Auth.Error.TooManyRequests" xml:space="preserve"><value>Çok fazla istek gönderildi. Lütfen birkaç dakika bekleyip yeniden deneyin.</value></data>
   <data name="Auth.Error.PasswordChangedMeanwhile" xml:space="preserve"><value>Parolanız bu arada değiştirildi (örneğin bir yönetici tarafından). Lütfen yeniden oturum açın.</value></data>
   <data name="Auth.Error.AccountDeactivated" xml:space="preserve"><value>Hesabınız bir yönetici tarafından pasifleştirildi. Yöneticinize başvurun.</value></data>
-  <data name="Auth.Error.InvalidCredentials" xml:space="preserve"><value>E-posta veya şifre hatalı.</value></data>
-  <data name="Auth.Error.AccountLocked" xml:space="preserve"><value>Çok sayıda hatalı deneme nedeniyle hesabınız geçici olarak kilitlendi. Lütfen daha sonra tekrar deneyin.</value></data>
+  <data name="Auth.Error.InvalidCredentials" xml:space="preserve"><value>E-posta ya da parola hatalı, ya da hesap kısa süreliğine kilitlendi. Biraz sonra yeniden deneyin.</value></data>
   <data name="Auth.Error.LoginUnavailable" xml:space="preserve"><value>Giriş şu anda yapılamıyor. Lütfen biraz sonra tekrar deneyin.</value></data>
   <data name="Auth.Error.EmailLoginDisabled" xml:space="preserve"><value>Bu kuruluş için e-posta ile giriş kapalı.</value></data>
   <data name="Auth.Error.TemporaryPasswordExpired" xml:space="preserve"><value>Geçici şifrenizin süresi doldu. Lütfen şifrenizi sıfırlayın.</value></data>
