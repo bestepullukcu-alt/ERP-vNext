@@ -320,3 +320,12 @@ Commit: "chore(crm): WP-VW-W3-CFG — workflow templates CRM-OBJ-RESP + CRM-VISI
 ```
 
 ---
+
+## Hazırlık (CT, 2026-10-12; kullanıcı onayı "sen yap")
+- **Pozisyon:** Organizasyon ekranından **POS-SALES-OPS "Satış Operasyon"** oluşturuldu (`c1acdf12-40d2-4b2c-a2a4-afe1bdd7681d`).
+  - Birim: HQ — Genel Merkez; bağlı olduğu: Head of Commercial (`hoc`).
+  - Tür: Kalıcı; durum: **Aktif**.
+- **Atama:** **sema pullukcu** → POS-SALES-OPS, **İkincil**, başlangıç 2026-10-12, neden Transfer. sema'nın birincil pozisyonu MED-DIR olarak kalır.
+- **Gerekçe:** testlerde istisnayı Admin oluşturur; SoD gereği onaylayıcı başka biri olmalı.
+- W3-CFG şablonu `CRM-VISIT-EVIDENCE-EXC` adayı = POS-SALES-OPS.
+
