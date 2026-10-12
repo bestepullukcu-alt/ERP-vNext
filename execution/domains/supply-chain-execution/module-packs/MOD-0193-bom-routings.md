@@ -308,6 +308,26 @@ okunur. Merkezi günlük ("bu kiracıda dün kim ne yaptı") bu izle cevaplanmaz
 
 Sorgular (liste, sürüm, current, explode, geçmiş) yazmaz; `explode` POST olsa da kalıcı kayıt değiştirmez (sorgu türü).
 
+**Merkezi denetim günlüğü — KARAR (ürün sahibi, 2026-10-12).** MOD-0193'ün yazma komutları Platform'daki merkezi
+günlüğe de yazar (AUD-001 K4, ortak iletici **BL-501**). Sürüm geçmişi (yol c) **kalır**; merkezi kayıt onun yanına
+eklenir, yerine geçmez — F-0193-05'i BL-501 bağlandığında kapatır. BL-501 paketi henüz yok ve MDM ileticisini kopyalamak
+yasak; bu yüzden bugün yalnız **veri** hazır: her yazma komutu `ICentralAuditDeclaration` ile kaydını bildirir
+(davranış, istemci, kayıt yok — çalışma anında hiçbir şey değişmez). BL-501 gelince iş yalnız bağlamadır: komutlara
+ortak işaret + `Program.cs`'e ortak davranışın kaydı. **MVP-3 PR'ı BL-501 bağlanmadan merge edilmez.**
+
+| komut | kategori | işlem | varlık / kimlik |
+|---|---|---|---|
+| CreateBomDraftCommand | `MasterData` | `Create` | `BomVersion` · yanıttaki `BomView.bomVersionId` |
+| UpdateBomDraftCommand | `MasterData` | `Update` | `BomVersion` · komuttaki `BomVersionId` |
+| ReleaseBomVersionCommand | `MasterData` | `LifecycleTransition` | `BomVersion` · komuttaki `BomVersionId` |
+| DeleteBomDraftCommand | `MasterData` | `Delete` | `BomVersion` · komuttaki `BomVersionId` |
+
+Kaynak modül `bom-routings` (manifest ModuleCode). Değerler Platform `AuditCategory` / `AuditOperation` adlarıdır;
+`CentralAuditDeclarationTests` Platform'un kaynak dosyasından okuyup doğrular ve serviste ayrı bir iletici olmadığını
+ölçer. Release'in önceki sürümü `Superseded` yapması merkezi günlükte ayrı kayıt değildir (tek komut, tek kayıt);
+sürüm geçmişinde iki satırdır. BL-501'e açık soru: Create kimliği yanıtın içinde (`Response<BomView>`) — ortak
+davranış kimliği `ICentralAuditDeclaration.CentralAuditEntityId` benzeri açık bir üyeden almalı, yansıma ile değil.
+
 ## 22. Implementation record (2026-10-06)
 
 Built on `claude/bold-bell-52tgsz` (commits `8269e7cbd` governance · `2e7a9d06b` service · `7ed5ee378` screens + gateway).
