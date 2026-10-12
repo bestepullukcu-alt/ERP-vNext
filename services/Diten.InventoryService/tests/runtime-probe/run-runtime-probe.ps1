@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  WP-0173-S1 section R - runtime E4 probe of Diten.InventoryService (MOD-0173) as a REAL process on port 5066.
+  WP-0173-S1 section R - runtime E4 probe of Diten.InventoryService (MOD-0173) as a REAL process on port 5067.
   WP-0173-LOC1 D6 - the location master (MOD-0173-FU02) is in this service: locations are built through its owner API.
 
 .DESCRIPTION
@@ -21,7 +21,7 @@
 #>
 param(
     [Parameter(Mandatory = $true)][string]$EvidenceDir,
-    [int]$ServicePort = 5066,
+    [int]$ServicePort = 5067,
     [int]$ProductMasterPort = 4010,
     [int]$ClosedPort = 9,
     [string]$MongoConnectionString = 'mongodb://localhost:27017',

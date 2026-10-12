@@ -5,7 +5,7 @@
  *   window.LocationUi   — formatters (type / status / mode text, badges, escaping, the reference disclosure).
  *   window.LocationForm — open({ mode: 'create'|'child'|'edit', parent, id, onSaved }), changeStatus(node, target, { onDone }).
  *
- * THE BROWSER TALKS ONLY TO THE SAME-ORIGIN MVC PROXIES (/Locations/…, pack §8): never to 5066, never to
+ * THE BROWSER TALKS ONLY TO THE SAME-ORIGIN MVC PROXIES (/Locations/…, pack §8): never to 5067, never to
  * /api/locations, never to the Gateway. Writes carry the page's anti-forgery token.
  *
  * FORM (pack §4/§12, Slim offcanvas, 8 fields): the company is NOT a field (K-03/K-14). Type is chosen at create only

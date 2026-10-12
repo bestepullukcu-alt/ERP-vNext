@@ -12,7 +12,7 @@ namespace Diten.Web.Controllers;
 // The list is SERVER mode through the proxy profile (ASSUMPTION-UI-01): the browser asks /StockLedger/api, this
 // controller asks Gateway GET /api/inventory/balance — one call per page — plus /availability for the KPI strip
 // when a product / SKU filter is set, folded into the SAME browser response (pack §8). The browser never calls
-// 5066 or /api/inventory itself. The balance is a projection: no create / edit / delete lives here. UI-2 adds the
+// 5067 or /api/inventory itself. The balance is a projection: no create / edit / delete lives here. UI-2 adds the
 // inbound entry PAGE (KD-2, pack §19): it hosts the shared movement _Form restricted to the inbound manual types and
 // posts to /StockMovements/Create → POST /api/inventory/movements. This controller has no POST and writes nothing.
 [Authorize]

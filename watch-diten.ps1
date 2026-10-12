@@ -1,9 +1,9 @@
 ﻿# Diten ERP - All-in-One Start Script for Windows with Watch (Hot Reload)
 Write-Host "🚀 Starting Diten ERP Multi-Service Suite with WATCH (Hot Reload) on Windows..." -ForegroundColor Cyan
 
-# 1. Kill old processes on target ports (5000, 5001, 5056, 5057, 5058, 5059, 5060, 5061, 5066)
-Write-Host "🧹 Cleaning up ports 5000, 5001, 5056, 5057, 5058, 5059, 5060, 5061, 5066..." -ForegroundColor Yellow
-Get-NetTCPConnection -LocalPort 5000,5001,5056,5057,5058,5059,5060,5061,5066 -ErrorAction SilentlyContinue | 
+# 1. Kill old processes on target ports (5000, 5001, 5056, 5057, 5058, 5059, 5060, 5061, 5067)
+Write-Host "🧹 Cleaning up ports 5000, 5001, 5056, 5057, 5058, 5059, 5060, 5061, 5067..." -ForegroundColor Yellow
+Get-NetTCPConnection -LocalPort 5000,5001,5056,5057,5058,5059,5060,5061,5067 -ErrorAction SilentlyContinue | 
     Select-Object -ExpandProperty OwningProcess | 
     Unique | 
     ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue }
@@ -11,9 +11,9 @@ Get-NetTCPConnection -LocalPort 5000,5001,5056,5057,5058,5059,5060,5061,5066 -Er
 # Also kill any dotnet.exe processes
 taskkill /F /IM dotnet.exe /T 2>$null
 
-# Prism product-master mock (node) + Inventory: ports 4010, 5066
-Write-Host "🧹 Cleaning up ports 4010, 5066..." -ForegroundColor Yellow
-Get-NetTCPConnection -LocalPort 4010,5066 -ErrorAction SilentlyContinue |
+# Prism product-master mock (node) + Inventory: ports 4010, 5067
+Write-Host "🧹 Cleaning up ports 4010, 5067..." -ForegroundColor Yellow
+Get-NetTCPConnection -LocalPort 4010,5067 -ErrorAction SilentlyContinue |
     Select-Object -ExpandProperty OwningProcess |
     Unique |
     ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue }
@@ -55,7 +55,7 @@ if ($prismJs -and $pmSpec) {
     Write-Host "⚠️ Prism product-master mock (4010) skipped: prism-cli not in npm cache or product-master-bundle.openapi.yaml not found (cache it: npx --yes @stoplight/prism-cli@4.10.5 --version)" -ForegroundColor Yellow
 }
 # Inventory: same as Launch-Service, plus Inventory__Upstream__ProductMasterBaseUrl for this window only
-Write-Host "Starting Inventory on port 5066 with watch..." -ForegroundColor Green
+Write-Host "Starting Inventory on port 5067 with watch..." -ForegroundColor Green
 $inventoryPath = (Resolve-Path "services/Diten.InventoryService/src/Diten.InventoryService.Api").Path
 Start-Process cmd.exe -ArgumentList "/k title Diten ERP - Inventory && cd `"$inventoryPath`" && set `"Inventory__Upstream__ProductMasterBaseUrl=http://127.0.0.1:4010/`" && dotnet watch run --non-interactive --launch-profile http"
 Launch-Service -Name "Gateway" -Path "gateway/Diten.ApiGateway" -Port 5000

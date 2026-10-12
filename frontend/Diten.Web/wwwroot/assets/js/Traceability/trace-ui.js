@@ -3,7 +3,7 @@
  * index.l10n.js), the pack §14 button table (window.TraceActions, from the page's _TraceActions partial), formatting and
  * the same-origin fetch helpers. NO business rule lives here: the MVC proxies and the service decide; this file draws.
  *
- * The browser talks only to same-origin /Lots, /Serials, /LotMovements, /LotTrace — never to the Gateway, 5066 or /api/trace.
+ * The browser talks only to same-origin /Lots, /Serials, /LotMovements, /LotTrace — never to the Gateway, 5067 or /api/trace.
  */
 'use strict';
 

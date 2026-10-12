@@ -6,8 +6,8 @@ echo "🚀 Starting Diten ERP Multi-Service Suite..."
 # 1. Kill old processes
 echo "🧹 Cleaning up ports 5000, 5001, 5056, 5057, 5058, 5059..."
 lsof -ti :5000,5001,5056,5057,5058,5059 | xargs kill -9 2>/dev/null || true
-echo "🧹 Cleaning up ports 4010, 5066 (Prism product-master mock + Inventory)..."
-lsof -ti :4010,5066 | xargs kill -9 2>/dev/null || true
+echo "🧹 Cleaning up ports 4010, 5067 (Prism product-master mock + Inventory)..."
+lsof -ti :4010,5067 | xargs kill -9 2>/dev/null || true
 sleep 1
 
 # 2. Build everything
@@ -67,15 +67,15 @@ EOF
 else
     echo "⚠️ Prism product-master mock (4010) atlandı: prism-cli önbellekte ya da product-master-bundle.openapi.yaml bulunamadı (önbelleğe almak için: npx --yes @stoplight/prism-cli@4.10.5 --version)"
 fi
-echo "Starting Inventory on port 5066..."
+echo "Starting Inventory on port 5067..."
 /usr/bin/osascript <<EOF
 tell application "Terminal"
-    do script "cd '$PWD/services/Diten.InventoryService/src/Diten.InventoryService.Api' && Inventory__Upstream__ProductMasterBaseUrl=http://127.0.0.1:4010/ dotnet run --no-build --launch-profile http --urls http://localhost:5066"
+    do script "cd '$PWD/services/Diten.InventoryService/src/Diten.InventoryService.Api' && Inventory__Upstream__ProductMasterBaseUrl=http://127.0.0.1:4010/ dotnet run --no-build --launch-profile http --urls http://localhost:5067"
 end tell
 EOF
 if [ $? -ne 0 ]; then
     echo "⚠️ Could not open new terminal tab for Inventory, running in background..."
-    (cd "$PWD/services/Diten.InventoryService/src/Diten.InventoryService.Api" && Inventory__Upstream__ProductMasterBaseUrl=http://127.0.0.1:4010/ dotnet run --no-build --launch-profile http --urls "http://localhost:5066" > "/tmp/diten_Inventory.log" 2>&1 &)
+    (cd "$PWD/services/Diten.InventoryService/src/Diten.InventoryService.Api" && Inventory__Upstream__ProductMasterBaseUrl=http://127.0.0.1:4010/ dotnet run --no-build --launch-profile http --urls "http://localhost:5067" > "/tmp/diten_Inventory.log" 2>&1 &)
 fi
 launch_service "Gateway" "gateway/Diten.ApiGateway" 5000
 # FU-PM-01: MDM PRODUCT-MASTER gelene kadar geçici (docs/roadmap/plans/mod-0290-product-master-bundle-requirements-for-mvp1-2026-10-02.md §6) — WP-0173-PM0

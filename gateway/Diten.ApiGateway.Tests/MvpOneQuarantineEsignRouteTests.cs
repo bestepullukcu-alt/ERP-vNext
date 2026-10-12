@@ -8,7 +8,7 @@ namespace Diten.ApiGateway.Tests;
 
 /// <summary>
 /// WP-MVP1-INT-QE (MOD-0175 INT + MOD-0022 INT-ESIGN): <c>/api/quarantine</c> + <c>/api/quarantine/{everything}</c> →
-/// Diten.InventoryService (localhost:5066) and <c>/api/v1/esign</c> + <c>/api/v1/esign/{everything}</c> → Diten.Platform
+/// Diten.InventoryService (localhost:5067; OD-P1 2026-10-12, was 5066) and <c>/api/v1/esign</c> + <c>/api/v1/esign/{everything}</c> → Diten.Platform
 /// (localhost:5057). The INT-TRACE blocks (<see cref="Mod0174TraceRouteTests"/>) cloned with only path, port and method list
 /// changed: authentication in the service (no gateway AuthenticationOptions), headers passed through unchanged, no rate limit.
 /// Contract direction: every path + method of <c>quarantine.openapi.yaml</c> and of <c>esign.openapi.yaml</c> is matched by
@@ -27,8 +27,8 @@ public sealed class MvpOneQuarantineEsignRouteTests
 
     public static TheoryData<string, int, string[]> NewRoutes() => new()
     {
-        { "/api/quarantine", 5066, QuarantineMethods },
-        { "/api/quarantine/{everything}", 5066, QuarantineMethods },
+        { "/api/quarantine", 5067, QuarantineMethods },
+        { "/api/quarantine/{everything}", 5067, QuarantineMethods },
         { "/api/v1/esign", 5057, EsignMethods },
         { "/api/v1/esign/{everything}", 5057, EsignMethods }
     };
@@ -70,7 +70,7 @@ public sealed class MvpOneQuarantineEsignRouteTests
 
         foreach (var (trace, path, port, methods) in new[]
                  {
-                     ("/api/trace", "/api/quarantine", 5066, QuarantineMethods), ("/api/trace/{everything}", "/api/quarantine/{everything}", 5066, QuarantineMethods),
+                     ("/api/trace", "/api/quarantine", 5067, QuarantineMethods), ("/api/trace/{everything}", "/api/quarantine/{everything}", 5067, QuarantineMethods),
                      ("/api/trace", "/api/v1/esign", 5057, EsignMethods), ("/api/trace/{everything}", "/api/v1/esign/{everything}", 5057, EsignMethods)
                  })
         {

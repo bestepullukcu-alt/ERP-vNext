@@ -16,7 +16,7 @@
  *   StorageLocation) — inventory.locations.manage, through the shared form.js / bulk-bins.js;
  *   locationHistory — inventory.locations.read; viewStock — inventory.stock.read.
  *
- * Same-origin MVC proxies only (/LocationTree/children, /Locations/…): never 5066, /api/locations or the Gateway.
+ * Same-origin MVC proxies only (/LocationTree/children, /Locations/…): never 5067, /api/locations or the Gateway.
  */
 'use strict';
 

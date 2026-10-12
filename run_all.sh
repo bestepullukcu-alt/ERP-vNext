@@ -42,7 +42,7 @@ echo ""
 
 # Terminate processes on our target ports
 lsof -ti :5000,5001,5056,5057,5058,5059,5060 | xargs kill -9 2>/dev/null || true
-lsof -ti :4010,5066 | xargs kill -9 2>/dev/null || true # Prism product-master mock + Inventory
+lsof -ti :4010,5067 | xargs kill -9 2>/dev/null || true # Prism product-master mock + Inventory
 killall -9 dotnet 2>/dev/null || true
 
 prefix_logs "[AUTH    ]" "dotnet run --no-build --project services/Diten.AuthService/src/Diten.AuthService.Api/Diten.AuthService.Api.csproj --urls http://0.0.0.0:5056" &
@@ -62,7 +62,7 @@ if [ -n "$PRISM_JS" ] && [ -n "$PM_SPEC" ]; then
 else
     echo "⚠️ Prism product-master mock (4010) atlandı: prism-cli önbellekte ya da product-master-bundle.openapi.yaml bulunamadı (önbelleğe almak için: npx --yes @stoplight/prism-cli@4.10.5 --version)"
 fi
-prefix_logs "[INVENTRY]" "env Inventory__Upstream__ProductMasterBaseUrl=http://127.0.0.1:4010/ dotnet run --no-build --project services/Diten.InventoryService/src/Diten.InventoryService.Api/Diten.InventoryService.Api.csproj --launch-profile http --urls http://0.0.0.0:5066" &
+prefix_logs "[INVENTRY]" "env Inventory__Upstream__ProductMasterBaseUrl=http://127.0.0.1:4010/ dotnet run --no-build --project services/Diten.InventoryService/src/Diten.InventoryService.Api/Diten.InventoryService.Api.csproj --launch-profile http --urls http://0.0.0.0:5067" &
 prefix_logs "[GATEWAY ]" "dotnet run --no-build --project gateway/Diten.ApiGateway/Diten.ApiGateway.csproj --urls http://0.0.0.0:5000" &
 # FU-PM-01: MDM PRODUCT-MASTER gelene kadar geçici (docs/roadmap/plans/mod-0290-product-master-bundle-requirements-for-mvp1-2026-10-02.md §6) — WP-0173-PM0
 # Diten.Web'in /api/product-master okumaları Prism mock'a (4010) — yalnız bu Web süreci alır ve yalnız Development'ta geçerlidir.

@@ -13,7 +13,7 @@ namespace Diten.Web.Controllers;
 // Route is single-segment /Locations; views live under Views/Inventory/Locations/ (pack §9 folder decision).
 // The browser talks only to this same-origin controller; it calls Gateway 5000 /api/locations (INT-2) with the FU01
 // InventoryGatewayClient — cookie bearer, X-Tenant-Id and the W-0173-02 company header (pack §8). The browser never
-// calls 5066 or /api/locations itself. Every write is [ValidateAntiForgeryToken] and is only offered to a user holding
+// calls 5067 or /api/locations itself. Every write is [ValidateAntiForgeryToken] and is only offered to a user holding
 // inventory.locations.manage; InventoryService's [HasPermission] stays the authority (UAS-001 §4). No delete exists
 // (K-04): a location ends Archived.
 [Authorize]

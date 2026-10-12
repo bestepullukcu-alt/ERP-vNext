@@ -13,7 +13,7 @@ namespace Diten.Web.Tests.Traceability;
 /// never an English copy unless <see cref="SameAsEnglish"/> names it with its reason;</item>
 /// <item>every key the views, the controllers' choice tables (errors, countries, statuses) and the scripts ask for exists
 /// — a missing resx key prints its NAME at runtime and no compiler sees it;</item>
-/// <item>the browser never calls the Gateway, 5066 or /api/trace; no raw Swal.fire; no code path into docs/analysis.</item>
+/// <item>the browser never calls the Gateway, 5067 or /api/trace; no raw Swal.fire; no code path into docs/analysis.</item>
 /// </list>
 /// </summary>
 public sealed class TraceL10nAndGuardTests
@@ -192,7 +192,7 @@ public sealed class TraceL10nAndGuardTests
         Assert.All(sources, s =>
         {
             Assert.DoesNotContain("/api/trace", s.Value, StringComparison.Ordinal);
-            Assert.DoesNotContain(":5066", s.Value, StringComparison.Ordinal);
+            Assert.DoesNotContain(":5067", s.Value, StringComparison.Ordinal);
             Assert.DoesNotContain(":5000", s.Value, StringComparison.Ordinal);
             Assert.DoesNotContain("Swal.fire", s.Value, StringComparison.Ordinal);
         });

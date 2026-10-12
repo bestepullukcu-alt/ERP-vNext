@@ -39,7 +39,7 @@ inputs:
 | Status | **approved** (CT 2026-09-11; runtime_code_allowed=false) |
 | Owner domain | supply-chain-execution |
 | Canonical source | Blueprint 8.1 (Supply Chain Execution Suite + Planning + Manufacturing) |
-| Service | `Diten.SupplyChainService` · port **5061** (warehouse/planning/mfg/logistics) · `Diten.InventoryService` · port **5066** (MOD-0173…0177, OD-5 2026-09-30) |
+| Service | `Diten.SupplyChainService` · port **5061** (warehouse/planning/mfg/logistics) · `Diten.InventoryService` · port **5067** (MOD-0173…0177, OD-5 2026-09-30; moved 5066 → 5067 by owner decision OD-P1 2026-10-12, WP-MVP1-SYNC1) |
 | runtime_code_allowed | **false** (DCP-level value, unchanged here; seven member packs are ready-for-dev and MVP-6 code exists — see `runtime_code_scope`, measured 2026-10-05, Q450) |
 
 ## 2. Business outcome

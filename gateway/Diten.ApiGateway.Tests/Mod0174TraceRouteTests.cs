@@ -8,7 +8,7 @@ namespace Diten.ApiGateway.Tests;
 
 /// <summary>
 /// WP-0174-INT (INT-TRACE, MOD-0174 pack §15): <c>/api/trace</c> and <c>/api/trace/{everything}</c> → Diten.InventoryService
-/// (localhost:5066), GET / POST / PATCH / OPTIONS, authentication in the service (no gateway AuthenticationOptions), headers
+/// (localhost:5067; OD-P1 2026-10-12, was 5066), GET / POST / PATCH / OPTIONS, authentication in the service (no gateway AuthenticationOptions), headers
 /// passed through unchanged — the INT-1 / INT-2 (<c>/api/inventory</c>, <c>/api/locations</c>) pattern, block for block.
 /// The contract direction is measured too: every path + method of <c>trace.openapi.yaml</c> is served by these routes.
 /// </summary>
@@ -23,7 +23,7 @@ public sealed class Mod0174TraceRouteTests
     [Theory]
     [InlineData("/api/trace")]
     [InlineData("/api/trace/{everything}")]
-    public void The_trace_route_goes_to_InventoryService_5066_with_the_contract_methods_and_no_gateway_auth(string template)
+    public void The_trace_route_goes_to_InventoryService_5067_with_the_contract_methods_and_no_gateway_auth(string template)
     {
         var route = Assert.Single(Config().Routes, r => r.UpstreamPathTemplate == template);
 
@@ -31,7 +31,7 @@ public sealed class Mod0174TraceRouteTests
         Assert.Equal("http", route.DownstreamScheme);
         var target = Assert.Single(route.DownstreamHostAndPorts);
         Assert.Equal("localhost", target.Host);
-        Assert.Equal(5066, target.Port);
+        Assert.Equal(5067, target.Port); // OD-P1 (2026-10-12): InventoryService 5066 → 5067
         Assert.Equal(Methods.OrderBy(m => m, StringComparer.Ordinal), route.UpstreamHttpMethod.OrderBy(m => m, StringComparer.Ordinal));
         Assert.DoesNotContain("DELETE", route.UpstreamHttpMethod);
         Assert.DoesNotContain("PUT", route.UpstreamHttpMethod);

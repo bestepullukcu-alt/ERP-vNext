@@ -809,7 +809,7 @@
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 5066
+          "Port": 5067
         }
       ],
       "UpstreamPathTemplate": "/api/inventory",
@@ -826,7 +826,7 @@
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 5066
+          "Port": 5067
         }
       ],
       "UpstreamPathTemplate": "/api/inventory/{everything}",
@@ -843,7 +843,7 @@
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 5066
+          "Port": 5067
         }
       ],
       "UpstreamPathTemplate": "/api/locations",
@@ -861,7 +861,7 @@
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 5066
+          "Port": 5067
         }
       ],
       "UpstreamPathTemplate": "/api/locations/{everything}",
@@ -879,7 +879,7 @@
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 5066
+          "Port": 5067
         }
       ],
       "UpstreamPathTemplate": "/api/trace",
@@ -897,7 +897,7 @@
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 5066
+          "Port": 5067
         }
       ],
       "UpstreamPathTemplate": "/api/trace/{everything}",
@@ -915,7 +915,7 @@
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 5066
+          "Port": 5067
         }
       ],
       "UpstreamPathTemplate": "/api/quarantine",
@@ -934,7 +934,7 @@
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 5066
+          "Port": 5067
         }
       ],
       "UpstreamPathTemplate": "/api/quarantine/{everything}",

@@ -14,7 +14,7 @@ namespace Diten.Web.Models.Traceability;
 /// so a token without <c>legal_entity_id</c> sends the user's selected company as <c>X-Legal-Entity-Id</c>, and with no
 /// company selected no call is made. (The FU01 client adds that header to <c>/api/inventory</c> and
 /// <c>/api/locations</c> only; it is reused as is for those — this one exists for <c>/api/trace</c>.)
-/// The browser never calls the Gateway, 5066 or <c>/api/trace</c>.
+/// The browser never calls the Gateway, 5067 or <c>/api/trace</c>.
 /// </summary>
 public sealed class TraceGatewayClient
 {
