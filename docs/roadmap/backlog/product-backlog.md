@@ -8398,6 +8398,20 @@ Gelecek regresyon riski: 🟡 (gerçek açıksa canlıda çift sayaç).
 
 ---
 
+### BL-618
+
+**Parola belirleme / sıfırlama bağlantısı e-posta adresi olmayan kullanıcıya ulaşamıyor**
+
+DURUM: AÇIK · SAHİP: CT (Auth / Kullanıcılar) · BULAN: WP-USERS-ROLES-CLOSE-FIX1 raporu §6 (WF sohbeti, 2026-10-12) · KAYIT: 2026-10-12 · 🟢
+
+Ölçüm (`eba8648a4`): bağlantı yalnız e-postayla gidiyor; e-postası olmayan bir kiracı kullanıcısı için yöneticinin bağlantıyı başka yolla (ekranda bir kez göster / kopyala) vermesinin yolu yok.
+
+Yapılacak: ürün kararı (yönetici ekranında tek kullanımlık bağlantıyı bir kez gösterme + denetim kaydı) → küçük iş.
+
+Gelecek regresyon riski: 🟢 yalnız e-postasız kullanıcılar.
+
+---
+
 ### BL-617
 
 **İzinler ekranı (`PermissionsController`) UAS-001 kapısı taşımıyor: Index ve sunucu tarafı `Lookups` çağrısı anahtarsız kullanıcıya açık**
