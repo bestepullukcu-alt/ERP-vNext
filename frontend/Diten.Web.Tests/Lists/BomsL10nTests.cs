@@ -48,6 +48,28 @@ public sealed class BomsL10nTests
         Assert.Empty(same);
     }
 
+    /// <summary>
+    /// The history stores changed-field NAMES; the Details view shows each under its translated label. The names are read
+    /// from the service code that writes them (the edit diff and the release / supersede entries), so a field added
+    /// there without a label here would surface raw — in English, in all seven languages — and turns this red.
+    /// </summary>
+    [Fact]
+    public void Every_history_field_name_the_service_writes_has_a_translated_label()
+    {
+        var src = Path.Combine(RepoRoot(), "services", "Diten.ManufacturingService", "src");
+        var written = Directory.GetFiles(src, "*.cs", SearchOption.AllDirectories)
+            .Select(File.ReadAllText)
+            .SelectMany(code => Regex.Matches(code, @"changed\.Add\(""([a-zA-Z]+)""\)").Select(m => m.Groups[1].Value)
+                .Concat(Regex.Matches(code, @"BomHistoryOperation\.\w+,[^\[]*\[([^\]]*)\]")
+                    .SelectMany(m => Regex.Matches(m.Groups[1].Value, @"""([a-zA-Z]+)""").Select(f => f.Groups[1].Value))))
+            .ToHashSet(StringComparer.Ordinal);
+        Assert.Superset(new HashSet<string> { "description", "components", "routing", "status", "effectiveFrom", "effectiveTo", "changeControlRef" }, written);
+
+        var details = File.ReadAllText(Path.Combine(RepoRoot(), "frontend", "Diten.Web", "Views", "Manufacturing", "Boms", "Details.cshtml"));
+        var labelled = Regex.Matches(details, @"""([a-zA-Z]+)""\s*=>\s*(?:Shared)?Localizer\[").Select(m => m.Groups[1].Value).ToHashSet(StringComparer.Ordinal);
+        Assert.Empty(written.Except(labelled));
+    }
+
     private static Dictionary<string, string> Values(string language)
     {
         var path = Path.Combine(RepoRoot(), "frontend", "Diten.Web", "Resources", "Views", "Manufacturing", "Boms", $"BomsIndex.{language}.resx");
