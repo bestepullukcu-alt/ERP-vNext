@@ -58,11 +58,16 @@ public sealed class UserRoleAssignmentsController : Controller
     // sentence is the one a 403 from AuthService already produces through GatewayRefusal (`AccessDenied`): the same
     // refusal reads the same whichever side made it. (`AccessDeniedMessage` names "this page" — right for the face,
     // wrong for an action toast.)
+    // FIX2 — a JsonResult, not StatusCode(403, value): an ObjectResult goes through content negotiation, so the
+    // caller's Accept header could pick another formatter (or a 406); the refusal is always the same JSON body. It is
+    // the FIRST line of each write — before the id check and the tenant/bearer headers (pinned by test).
     private IActionResult? RefuseWithoutPermission() =>
         PermissionClaims.HasPermission(User, AssignRolePermission)
             ? null
-            : StatusCode(StatusCodes.Status403Forbidden,
-                GatewayRefusal.Local(_sharedLocalizer["AccessDenied"].Value));
+            : new JsonResult(GatewayRefusal.Local(_sharedLocalizer["AccessDenied"].Value))
+            {
+                StatusCode = StatusCodes.Status403Forbidden
+            };
 
     [HttpPost("assign")]
     [ValidateAntiForgeryToken]

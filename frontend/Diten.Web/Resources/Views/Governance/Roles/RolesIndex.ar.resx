@@ -5,14 +5,14 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
   <data name="RolesTitle" xml:space="preserve"><value>الأدوار</value></data>
-  <data name="PageDescription" xml:space="preserve"><value>إدارة أدوار المستأجر وصلاحياتها.</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>إدارة أدوار المستأجر وأذوناتها.</value></data>
   <data name="Name" xml:space="preserve"><value>الاسم</value></data>
   <data name="DisplayName" xml:space="preserve"><value>الاسم المعروض</value></data>
   <data name="RoleType" xml:space="preserve"><value>النوع</value></data>
   <data name="RoleTypeSystem" xml:space="preserve"><value>النظام</value></data>
   <data name="RoleTypeCustom" xml:space="preserve"><value>مخصص</value></data>
   <data name="SystemRoleLocked" xml:space="preserve"><value>دور النظام — مقفل</value></data>
-  <data name="PermissionCount" xml:space="preserve"><value>الصلاحيات</value></data>
+  <data name="PermissionCount" xml:space="preserve"><value>الأذونات</value></data>
   <data name="UserCount" xml:space="preserve"><value>المستخدمون</value></data>
   <data name="RoleTypeSystemOption" xml:space="preserve"><value>النظام (مدمج، مقفل)</value></data>
   <data name="RoleTypeCustomOption" xml:space="preserve"><value>مخصص (قابل للتعديل)</value></data>
@@ -26,7 +26,7 @@
   <data name="NamePlaceholder" xml:space="preserve"><value>مثال: المعتمِد</value></data>
   <data name="NameImmutableHint" xml:space="preserve"><value>لا يمكن تغيير اسم الدور بعد الإنشاء.</value></data>
   <data name="DisplayNamePlaceholder" xml:space="preserve"><value>مثال: المعتمِد</value></data>
-  <data name="ManagePermissions" xml:space="preserve"><value>إدارة الصلاحيات</value></data>
+  <data name="ManagePermissions" xml:space="preserve"><value>إدارة الأذونات</value></data>
   <data name="KpiTotalRoles" xml:space="preserve"><value>إجمالي الأدوار</value></data>
   <data name="KpiSystemRoles" xml:space="preserve"><value>أدوار النظام</value></data>
   <data name="KpiCustomRoles" xml:space="preserve"><value>أدوار مخصصة</value></data>

@@ -81,10 +81,26 @@ describe("the guard's comparison cannot be dodged by spelling", () => {
   });
 });
 
-describe("Arabic Role Permissions speaks of permissions with ONE word (أذونات)", () => {
-  test("no value in the Arabic Role Permissions file uses صلاحيات", () => {
-    const mixed = [...rolePermissions.ar].filter(([, value]) => /صلاحي/.test(value)).map(([key]) => key);
+describe("Arabic speaks of permissions with ONE word (أذونات) across the role screens", () => {
+  /*
+   * FIX2 — the family is Roles, Role Permissions and User Roles: the Roles screen's "إدارة الصلاحيات" button opens
+   * Role Permissions, whose heading reads "أذونات الأدوار". The shared SharedResource rows (AccessDeniedMessage,
+   * DtLoadForbidden) are other branches' ground (BL-614) and are not read here.
+   */
+  const family = {
+    "Roles/RolesIndex": read("Resources/Views/Governance/Roles/RolesIndex.ar.resx"),
+    "RoleAssignments/RoleAssignmentsIndex": rolePermissions.ar,
+    "UserRoleAssignments/UserRoleAssignmentsIndex": screen.ar
+  };
+
+  test.each(Object.keys(family))("no value in the Arabic %s file uses صلاحيات", (file) => {
+    const mixed = [...family[file]].filter(([, value]) => /صلاحي/.test(value)).map(([key]) => key);
     expect(mixed).toEqual([]);
+  });
+
+  test("the Roles screen's button to Role Permissions uses the word of that page's heading", () => {
+    expect(family["Roles/RolesIndex"].get("ManagePermissions")).toContain("أذونات");
+    expect(rolePermissions.ar.get("Title")).toContain("أذونات");
   });
 });
 

@@ -32,9 +32,15 @@ public abstract class AccessGovernanceScreenAccessTests(WebApplicationFactory<Pr
     protected abstract string AntiForgeryFormId { get; }
     protected abstract string Script { get; }
     protected abstract Controller CreateController(HttpMessageHandler gateway, params Claim[] claims);
-    protected abstract Task<IActionResult> AssignAsync(Controller controller);
-    protected abstract Task<IActionResult> RevokeAsync(Controller controller);
+    protected abstract string SiblingKey { get; }        // the other screen of the family: opens THAT screen, not this one
+    protected abstract string[] ScreenOnlyMarkers { get; } // markup of the page that must not reach the denied face
+    protected abstract Guid FirstId { get; }
+    protected abstract Guid SecondId { get; }
+    protected abstract Task<IActionResult> WriteAsync(Controller controller, string action, Guid first, Guid second);
     protected abstract IActionResult Index(Controller controller);
+
+    private Task<IActionResult> AssignAsync(Controller controller) => WriteAsync(controller, "assign", FirstId, SecondId);
+    private Task<IActionResult> RevokeAsync(Controller controller) => WriteAsync(controller, "revoke", FirstId, SecondId);
 
     private static readonly Claim Tenant = new("tenantId", Guid.NewGuid().ToString("D"));
 
@@ -69,13 +75,55 @@ public abstract class AccessGovernanceScreenAccessTests(WebApplicationFactory<Pr
 
         var result = action == "assign" ? await AssignAsync(controller) : await RevokeAsync(controller);
 
-        var refused = Assert.IsType<ObjectResult>(result);
+        // FIX2 — a JsonResult: always JSON, whatever the caller's Accept header says (no content negotiation).
+        var refused = Assert.IsType<JsonResult>(result);
         Assert.Equal(StatusCodes.Status403Forbidden, refused.StatusCode);
         Assert.Equal(0, gateway.Calls);
         // FIX1 — the body says WHAT: the gateway-403 sentence (the test localizer echoes the key it was asked for).
         var body = JsonSerializer.Serialize(refused.Value);
         Assert.Contains("AccessDenied", body);
         Assert.DoesNotContain("AccessDeniedMessage", body);
+    }
+
+    [Theory]
+    [InlineData("assign", "empty ids")]
+    [InlineData("revoke", "empty ids")]
+    [InlineData("assign", "no tenant")]
+    [InlineData("revoke", "no tenant")]
+    public async Task The_key_is_checked_FIRST_before_the_ids_and_the_tenant(string action, string shape)
+    {
+        // FIX2 — "first line" is a rule, not a habit: a write without the key gets the 403 even when its ids are empty
+        // (the validation answer would otherwise come first) or the tenant claim is missing (the header step would).
+        var gateway = new CountingGateway();
+        var controller = shape == "no tenant"
+            ? CreateController(gateway, new Claim("permission", "auth.users.read"))
+            : CreateController(gateway, Tenant, new Claim("permission", "auth.users.read"));
+        var (first, second) = shape == "empty ids" ? (Guid.Empty, Guid.Empty) : (FirstId, SecondId);
+
+        var result = await WriteAsync(controller, action, first, second);
+
+        var refused = Assert.IsType<JsonResult>(result);
+        Assert.Equal(StatusCodes.Status403Forbidden, refused.StatusCode);
+        Assert.Contains("AccessDenied", JsonSerializer.Serialize(refused.Value));
+        Assert.Equal(0, gateway.Calls);
+    }
+
+    [Fact]
+    public async Task The_sibling_screens_key_does_not_open_this_screen()
+    {
+        // FIX2 — the two screens of the family are opened by DIFFERENT keys: holding the other one is not enough here.
+        var gateway = new CountingGateway();
+        var controller = CreateController(gateway, Tenant, new Claim("permission", SiblingKey));
+
+        Index(controller);
+        var assign = await AssignAsync(controller);
+        var denied = await LayoutRenderer.RenderAsync(factory, View, ControllerName, SiblingKey);
+
+        Assert.Equal(StatusCodes.Status403Forbidden, controller.Response.StatusCode);
+        Assert.Equal(StatusCodes.Status403Forbidden, Assert.IsType<JsonResult>(assign).StatusCode);
+        Assert.Equal(0, gateway.Calls);
+        Assert.Contains("diten-access-denied", denied);
+        Assert.DoesNotContain(ScreenMarker, denied);
     }
 
     [Theory]
@@ -112,6 +160,11 @@ public abstract class AccessGovernanceScreenAccessTests(WebApplicationFactory<Pr
         Assert.DoesNotContain(ScreenMarker, denied);
         Assert.DoesNotContain(AntiForgeryFormId, denied);
         Assert.DoesNotContain(Script, denied);
+        // FIX2 — every piece of the page's own markup, not one id: a root div moved above the gate is the page again.
+        foreach (var marker in ScreenOnlyMarkers)
+        {
+            Assert.DoesNotContain(marker, denied);
+        }
     }
 
     [Fact]
@@ -122,6 +175,10 @@ public abstract class AccessGovernanceScreenAccessTests(WebApplicationFactory<Pr
         Assert.Contains(ScreenMarker, reader);
         Assert.Contains(AntiForgeryFormId, reader);
         Assert.Contains(Script, reader);
+        foreach (var marker in ScreenOnlyMarkers)
+        {
+            Assert.Contains(marker, reader); // non-vacuity: each marker is really drawn for a holder
+        }
         Assert.DoesNotContain("diten-access-denied", reader);
     }
 
@@ -193,6 +250,10 @@ public sealed class UserRoleAssignmentsAccessTests(WebApplicationFactory<Program
     protected override string ScreenMarker => "id=\"uraSearch\"";
     protected override string AntiForgeryFormId => "uraAntiForgery";
     protected override string Script => "Governance/UserRoleAssignments/index.js";
+    protected override string SiblingKey => RoleAssignmentsController.AssignPermissionPermission;
+    protected override string[] ScreenOnlyMarkers => ["id=\"uraUserSelect\"", "ura-state-tab", "id=\"uraStatPerms\""];
+    protected override Guid FirstId => UserId;
+    protected override Guid SecondId => RoleId;
 
     protected override Controller CreateController(HttpMessageHandler gateway, params Claim[] claims)
     {
@@ -201,11 +262,10 @@ public sealed class UserRoleAssignmentsAccessTests(WebApplicationFactory<Program
             NullLogger<UserRoleAssignmentsController>.Instance) { ControllerContext = Context(claims) };
     }
 
-    protected override Task<IActionResult> AssignAsync(Controller controller) =>
-        ((UserRoleAssignmentsController)controller).Assign(UserId, RoleId);
-
-    protected override Task<IActionResult> RevokeAsync(Controller controller) =>
-        ((UserRoleAssignmentsController)controller).Revoke(UserId, RoleId);
+    protected override Task<IActionResult> WriteAsync(Controller controller, string action, Guid first, Guid second) =>
+        action == "assign"
+            ? ((UserRoleAssignmentsController)controller).Assign(first, second)
+            : ((UserRoleAssignmentsController)controller).Revoke(first, second);
 
     protected override IActionResult Index(Controller controller) => ((UserRoleAssignmentsController)controller).Index();
 
@@ -229,6 +289,10 @@ public sealed class RoleAssignmentsAccessTests(WebApplicationFactory<Program> fa
     protected override string ScreenMarker => "id=\"raRoleSelect\"";
     protected override string AntiForgeryFormId => "raAntiForgery";
     protected override string Script => "Governance/RoleAssignments/index.js";
+    protected override string SiblingKey => UserRoleAssignmentsController.AssignRolePermission;
+    protected override string[] ScreenOnlyMarkers => ["id=\"raRoot\"", "data-menu-url", "id=\"raStatTotal\""];
+    protected override Guid FirstId => RoleId;
+    protected override Guid SecondId => PermissionId;
 
     protected override Controller CreateController(HttpMessageHandler gateway, params Claim[] claims)
     {
@@ -237,11 +301,10 @@ public sealed class RoleAssignmentsAccessTests(WebApplicationFactory<Program> fa
             NullLogger<RoleAssignmentsController>.Instance) { ControllerContext = Context(claims) };
     }
 
-    protected override Task<IActionResult> AssignAsync(Controller controller) =>
-        ((RoleAssignmentsController)controller).Assign(RoleId, PermissionId);
-
-    protected override Task<IActionResult> RevokeAsync(Controller controller) =>
-        ((RoleAssignmentsController)controller).Revoke(RoleId, PermissionId);
+    protected override Task<IActionResult> WriteAsync(Controller controller, string action, Guid first, Guid second) =>
+        action == "assign"
+            ? ((RoleAssignmentsController)controller).Assign(first, second)
+            : ((RoleAssignmentsController)controller).Revoke(first, second);
 
     protected override IActionResult Index(Controller controller) => ((RoleAssignmentsController)controller).Index();
 
