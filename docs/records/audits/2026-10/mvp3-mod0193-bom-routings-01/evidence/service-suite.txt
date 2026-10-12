@@ -1,2 +1,10 @@
 # service suite — feature/mvp3-bom-routings @ 9f96b1ff2, Mongo replica set rs1, SDK 10.0.112
 Passed!  - Failed:     0, Passed:    77, Skipped:     0, Total:    77
+
+## re-run after 82ebedeb4 (BOM commands changed)
+ManufacturingService suite @ 0413ab5ef (contains 82ebedeb4), 2026-10-12T12:12:02Z
+temporary replica set rstmp on 127.0.0.1:28117 (outside 27017-27021 and >=49152), dbpath scratchpad/tmpmongo
+Total tests: 77
+     Passed: 77
+Skipped lines: 0
+temporary Mongo shut down and its data directory deleted after the run.

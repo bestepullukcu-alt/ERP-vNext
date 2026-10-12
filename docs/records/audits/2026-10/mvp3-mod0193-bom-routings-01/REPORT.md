@@ -72,7 +72,7 @@ from an explicit member, not by reflection (Create's id is inside `Response<BomV
 
 | level | what | result |
 |---|---|---|
-| E2 | `service-suite.txt` — real Mongo replica set | 77/77 |
+| E2 | `service-suite.txt` — real Mongo replica set; re-run 2026-10-12 on a temporary replica set (port 28117), 0 skipped | 77/77 |
 | E2 | `service-sabotage.txt`, `m3-mdm-sabotage.txt`, `guards-sabotage-2026-10-12.txt` | each guard red under sabotage, green restored |
 | **E3** | `m3-live-mdm.txt` (2026-10-06) — real Gateway + MDM: DRAFT LE 422, ACTIVE LE 201/200, unknown LE 422, no LE 400, other tenant 422, MDM stopped 503 | as expected |
 | **E3** | `gateway-e2e.txt` (2026-10-06) — full API flow incl. other active LE 404, no permission 403 | 15/15 |
@@ -91,4 +91,5 @@ from an explicit member, not by reflection (Create's id is inside `Response<BomV
 - MOD-0290 `validate` is not live: `ProductMaster:Mode=Permissive` (F-0193-07). MOD-0209 absent: `changeControlRef`
   format-checked only (W-0193-01, F-0193-04). MOD-0003 absent (W-0193-02).
 - UAS-001: the shared `_AccessDenied` partial answers HTTP 200 inside the shell (rule table says 403); same on every page
-  using it — not an MVP-3 change.
+  using it — not an MVP-3 change. Recorded as **BL-510** (CT, open; record only).
+- Company authority is pack follow-up **F-0193-08**.
