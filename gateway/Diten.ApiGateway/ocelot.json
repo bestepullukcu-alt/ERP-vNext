@@ -729,7 +729,7 @@
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 5067
+          "Port": 5070
         }
       ],
       "UpstreamPathTemplate": "/api/bom",
@@ -749,7 +749,7 @@
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 5067
+          "Port": 5070
         }
       ],
       "UpstreamPathTemplate": "/api/bom/{everything}",

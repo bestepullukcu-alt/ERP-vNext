@@ -8,7 +8,7 @@ using Diten.ManufacturingService.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 
-// Diten.ManufacturingService — MOD-0193 BOM & Routings (MVP-3, DCP-009). Port 5067 (AGENTS.md §3).
+// Diten.ManufacturingService — MOD-0193 BOM & Routings (MVP-3, DCP-009). Port 5070 (AGENTS.md §3).
 var builder = WebApplication.CreateBuilder(args);
 
 // Mirror of Procurement/DevEnablement: a tenant-admin JWT carries one claim per permission and can exceed Kestrel's

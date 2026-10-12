@@ -24,7 +24,7 @@ the branch by ElikPenco): BL-501 connection deferred until after the MVPs; the P
 
 ## What was built
 
-- **Service** `services/Diten.ManufacturingService` (5 layers, port 5067): JWT; tenant from the token (a contradicting
+- **Service** `services/Diten.ManufacturingService` (5 layers, port **5070**; 5067 until 2026-10-12, when OD-P1 gave 5067 to Inventory): JWT; tenant from the token (a contradicting
   `X-Tenant-Id` → 400); `HasPermission` on every endpoint; the four pipeline behaviours.
 - **Legal entity (M-3, MVP-1 pattern):** not a token claim. It travels in `X-Legal-Entity-Id` (GET may use
   `?legalEntityId`); missing → 400 `LEGAL_ENTITY_REQUIRED`; every request is proven against MDM
@@ -43,7 +43,7 @@ the branch by ElikPenco): BL-501 connection deferred until after the MVPs; the P
   interface is added ahead of BL-501's real contract. The 4 write commands are listed "BL-501 bekliyor" in the audit ledger.
 - **Web** `/Manufacturing/Boms`: Golden Compact, LE filter on the list (from `/api/legal-entities/lookup`, auto-selected
   when only one), LE required on Create, shown on Edit/Details; history, release, delete, requirement check; UAS-001; 7 languages.
-- **Gateway:** `/api/bom` + `/api/bom/{everything}` → 5067. **Platform:** self-registration (M-4).
+- **Gateway:** `/api/bom` + `/api/bom/{everything}` → 5070. **Platform:** self-registration (M-4).
 
 ## M-1 … M-6 and the 2026-10-12 package
 

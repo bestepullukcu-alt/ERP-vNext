@@ -102,7 +102,7 @@ ActorDisplayName, CorrelationId, OccurredAtUtc, Outcome`. Index: (Tenant, LE, Bo
   `Views/Manufacturing/Boms/**`, `wwwroot/assets/js/Manufacturing/Boms/**`, `Resources/Views/Manufacturing/Boms/**`
 - `frontend/Diten.Web.Tests/**` içinde yalnız BOM'a ait yeni test dosyaları
 - Paylaşılan dosyalarda **yalnız kendi satırı (ekleme):** `gateway/Diten.ApiGateway/ocelot.json` (`/api/bom` çifti →
-  5067), `gateway/Diten.ApiGateway.Tests/OcelotConfigurationTests.cs` (`KnownDownstreamPorts` += 5067),
+  5070), `gateway/Diten.ApiGateway.Tests/OcelotConfigurationTests.cs` (`KnownDownstreamPorts` += 5070),
   `frontend/Diten.Web/Resources/SharedResource.{7 dil}.resx` (`Nav.Module.BOMROUTINGS`, `Nav.Page.BOMS`),
   `tests/architecture/**` (yeni servisin denetim defteri + kabul edilen iz + kiracı sitesi), `AGENTS.md` §3 port satırı.
 - Governance: bu pack, `module-id-registry.md` MOD-0193 satırı, DCP-009 §MVP-3 notu, domain-config servis notu,
@@ -134,8 +134,8 @@ kapanış tetiği = MOD-0209 / MOD-0003 module pack'i `ready-for-dev` · risk = 
 
 ## 8. Runtime Constraints
 
-- Servis **`Diten.ManufacturingService`**, port **5067** (5066 MVP-6 SupplyChain'de; 5067 hiçbir servis config'inde yok —
-  ölçüldü). Manufacturing Execution (0193–0197) için ayrı bounded context (ürün sahibi kararı 2026-10-06). Frontend
+- Servis **`Diten.ManufacturingService`**, port **5070** (ilk atama 5067'ydi; OD-P1 2026-10-12 ile 5067 Inventory'nin oldu,
+  Manufacturing 5070'e taşındı — 5070 tüm remote dallarda kullanılmıyor, ölçüldü). Manufacturing Execution (0193–0197) için ayrı bounded context (ürün sahibi kararı 2026-10-06). Frontend
   yalnız Gateway (5000) üzerinden.
 - **Tenant:** JWT `tenant_id` (header farklıysa 400). **Legal entity — MVP-1 deseni (M-3, 2026-10-06):** token'da legal
   entity YOK ve okunmaz; dev bypass YOK. Çağıran seçer ve her istekte `X-Legal-Entity-Id` başlığıyla gönderir (yalnız GET'te
@@ -213,8 +213,8 @@ L10n: tenant modülü → **7 dil**.
 
 ## 15. Gateway / API Routing Decision
 
-Yeni contract ailesi → `ocelot.json` çifti `/api/bom` + `/api/bom/{everything}` → `localhost:5067`, tüm metodlar.
-Paylaşılan dosyaya yalnız bu iki rota eklenir (integration-agent rolü bu lane CT'si). `KnownDownstreamPorts` += 5067.
+Yeni contract ailesi → `ocelot.json` çifti `/api/bom` + `/api/bom/{everything}` → `localhost:5070`, tüm metodlar.
+Paylaşılan dosyaya yalnız bu iki rota eklenir (integration-agent rolü bu lane CT'si). `KnownDownstreamPorts` += 5070.
 
 ## 16. Acceptance Criteria
 
@@ -235,7 +235,7 @@ Paylaşılan dosyaya yalnız bu iki rota eklenir (integration-agent rolü bu lan
 9. Başka kiracı / LE'nin BOM'u hiçbir uçta görünmez (404), listede çıkmaz.
 10. Web: `/Manufacturing/Boms` — legal entity seçici (listenin kapsam filtresi; MDM lookup; tek ise otomatik), liste (server-side, filtre status), Create/Edit (bileşen + rota grid), Details
     (release, sil, geçmiş); `Layout = "_LayoutTenantShell"`; 7 dil `.resx` eşit anahtar; yetkisiz → `_AccessDenied`.
-11. Gateway: `/api/bom/**` → 5067; `OcelotConfigurationTests` 5067'yi tanır.
+11. Gateway: `/api/bom/**` → 5070; `OcelotConfigurationTests` 5070'i tanır.
 11b. Legal entity (M-3): doğru legal entity ile create + list başarılı; başka tenant'ınki 422; eksik 400; MDM kapalı 503;
     JWT claim'i ve dev bypass yok (`git grep 'legal_entity_id|DevBypassLegalEntityId' -- services/Diten.ManufacturingService` boş).
 12. Mimari testler (denetim defteri, kiracı-çelişki sitesi, JWT clock skew, Mongo test DB deseni) yeşil.
@@ -247,7 +247,7 @@ Paylaşılan dosyaya yalnız bu iki rota eklenir (integration-agent rolü bu lan
   supersede, unique Effective, concurrency, kiracı + LE izolasyonu, geçmiş aynı işlemde), HTTP (WebApplicationFactory:
   frozen şekil, hata zarfı, 401/403/404, header çelişkisi).
 - Sabotaj kanıtı: izolasyon filtresi ve geçmiş yazımı kaldırılınca ilgili test kırmızı.
-- `dotnet build` 0 hata; `tests/architecture` yeşil; `gateway/Diten.ApiGateway.Tests` 5067 ihlali yok;
+- `dotnet build` 0 hata; `tests/architecture` yeşil; `gateway/Diten.ApiGateway.Tests` 5070 ihlali yok;
   `frontend/Diten.Web.Tests` (NavManifest L10n guard dahil) yeşil; 7 resx anahtar paritesi.
 
 ## 18. Ready-for-dev Checklist
@@ -260,7 +260,7 @@ Paylaşılan dosyaya yalnız bu iki rota eklenir (integration-agent rolü bu lan
 - [x] Validation Rules her alan için
 - [x] Failure Path ≥ 4 (duplicate/cycle, missing, unauthorized, concurrency)
 - [x] Authorization Convention (anahtarlar + manifest bildirimi)
-- [x] Gateway kararı (yeni çift, 5067)
+- [x] Gateway kararı (yeni çift, 5070; ilk 5067 → OD-P1)
 - [x] Lookup kararı: platform lookup yok; item seçimi MOD-0290 kimliği (uuid) ile — MDM picker FU (F-0193-02)
 - [x] AC test edilebilir
 - [x] Test expectations build/test/arch/resx kapsıyor
@@ -346,7 +346,7 @@ written; these rows supersede its numbers.
 | 1–9 | service suite 73/73, 0 skipped, on a temporary Mongo replica set (after `730a7fa1f`); live gateway run 15/15 and live MDM proof (M-3) |
 | 10 | **driven in a browser (M-5):** choose LE → create → release → second version → history → explode → Excel export → `ar` (RTL); two defects found there and fixed (history actor, untranslated field names); `BomsL10nTests` 4/4 |
 | 10 (UAS-001) | live: unentitled tenant Admin sees the in-shell denial, no redirect, no skeleton; gateway 403 (page itself answers 200 → BL-510, shared) |
-| 11 | `OcelotConfigurationTests` knows 5066 and 5067 after the main sync |
+| 11 | after the main sync `77cd61a44` (PR #139): `/api/bom` pair → **5070** (OD-P1 gave 5067 to Inventory); `OcelotConfigurationTests` knows 5066, 5067 (Inventory) and 5070; live gateway call measured on 5070 |
 | 12 | architecture 69/77 on the branch = 69/77 on main `a814bad0f` (the 8 reds are main's, byte-identical) |
 | Platform | self-registration; entitlement gives the tenant Admin exactly the 6 `manufacturing.bom.*` (M-4) |
 | AUD-001 | path c unchanged; central-log connection is an open item (BL-501, central team, after the MVPs — §21, `730a7fa1f`); the PR does not wait for it |
