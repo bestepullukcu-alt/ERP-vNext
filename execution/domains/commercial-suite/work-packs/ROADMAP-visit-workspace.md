@@ -78,7 +78,7 @@
 | **(en sonda — kullanıcı kararı)** Faz 8 · AUD-CRM-1 | CRM komutlarını merkezi denetime bağla; mimari test yeşil | F8-a (altyapı + ilk grup) · F8-b (kalan komutlar) | 2 |
 | **W2** · Takvim çalışma alanı — ▶ [WP-VW-W2](WP-VW-W2-calendar-workspace.md) paketlendi 2026-10-09 (BE-a ∥ BE-b ∥ WEB-a; WEB-b + BE-c (tatil adı, gün dengesi) 2. tur; 4 → 5 prompt) — BE-b ☑ + BE-a ☑ + WEB-a ☑ E2 2026-10-09 (CRM 2543, Web 854) | **BE:** birleşik takvim okuması (taslak önizleme + planlı + rapor durumu tek akışta), neden kategorileri (referans seti), erteleme (K-W1), plan dışı ziyaret yalnız bugün, **saat sabiti** (sürükle → gün + saat). **WEB-a:** E1 takvim (FullCalendar), hafta başlığı, kartlar, süzgeçler, ayrıntı paneli, E2. **WEB-b:** Planla modu + Hedefler paneli gömülü + sürükle-bırak + ürün uygula | W2-BE · W2-WEB-a · W2-WEB-b | 3 |
 | **W3** · Ziyaret yürütme — ▶ [WP-VW-W3](WP-VW-W3-visit-execution.md) paketlendi 2026-10-12 (1. tur PLT ∥ BE-a ∥ BE-b; 2. tur WEB-a ∥ WEB-b; W3-WEB-c yazım ekranları + W3-WEB-d kanıt ayarları ekranı **mockup yaptırılıyor** (kullanıcı 2026-10-12; brief [BRIEF-W3-authoring-and-evidence-settings](mockups/visit-workspace/BRIEF-W3-authoring-and-evidence-settings.md)); 4 → 7 prompt) | **BE-a:** ziyaret yürütme kaydı (başlat / bitir, sunucu saati, kanıt: fotoğraf yükleme, konum uzaklığı, kiracı kanıt ayarı, ürün başına süre, işaretler, notlar, ortak ziyaret, imza). **BE-b:** içerik modeli: sunum notları (anahtar mesaj, konuşma metni, slayt süre hedefi, geçiş), itiraz kütüphanesi + onaylı yanıt, doktora özel hatırlatma (Content Studio). **WEB-a:** E3 kanıt + E4b kumanda + E4c bitiş (masaüstü bölünmüş). **WEB-b:** E4a doktor ekranı (tablet, PIN kilidi) | W3-BE-a · W3-BE-b · W3-WEB-a · W3-WEB-b | 4 |
-| **W3E** · Ek kanıtlar (ÖNERİ, kullanıcı onayı bekliyor) — W4'ten sonra | **QR:** kurum başına imzalı QR kodu üretimi + yazdırma (kurum kaydından), tarama (tablet / telefon kamerası), sunucuda doğrulama (imza + kiracı + kurum + geçerlilik), kiracı ayarına "Kurum QR kodu". **Anti-fraud:** web tarayıcısı cihaz bütünlüğünü ölçemez → **mobil uygulama işi** (Play Integrity / App Attest + sahte konum tespiti); backend yalnız mobilin gönderdiği doğrulama sonucunu alır, doğrular, işaretler; kiracı ayarına "Anti-fraud check-in". Mobil not ile birlikte | W3E-BE · W3E-WEB (+ mobil not) | 2 |
+| **W3E** · Ek kanıtlar — ✅ **KARAR (kullanıcı 2026-10-12): W4'ten sonra** | **QR:** kurum başına imzalı QR kodu üretimi + yazdırma (kurum kaydından), tarama (tablet / telefon kamerası), sunucuda doğrulama (imza + kiracı + kurum + geçerlilik), kiracı ayarına "Kurum QR kodu". **Anti-fraud:** web tarayıcısı cihaz bütünlüğünü ölçemez → **mobil uygulama işi** (Play Integrity / App Attest + sahte konum tespiti); backend yalnız mobilin gönderdiği doğrulama sonucunu alır, doğrular, işaretler; kiracı ayarına "Anti-fraud check-in". Mobil not ile birlikte | W3E-BE · W3E-WEB (+ mobil not) | 2 |
 | **W4** · Rapor v2 | **BE-a:** hekim raporu modeli (ürün başına A / B / C, zorunluluk + "yok" seçenekleri, güvenlik soruları, önceki değer okuması, sunumdan ön doldurma). **BE-b:** veri: endikasyon × hasta profili, rakip ürün bilgisi (K-W6 SoR'a göre MDM / CRM). **BE-c:** doktor profili alanları (Contact: tipoloji, KOL, kanal, en uygun gün / saat, toplam hasta + kaynak). **WEB-a:** E5 hekim raporu sihirbazı. **WEB-b:** E6 eczane raporu (+ eczane rapor modeli BE kısmı WEB-b'nin eşi olarak BE-a'ya dahil) | W4-BE-a · W4-BE-b · W4-BE-c · W4-WEB-a · W4-WEB-b | 5 |
 | **W5** · Bildirimler | e-posta / bildirim yeteneği (Platform), şablonlar (7 dil), olaylar: rapor özeti, advers olay → PV (24 sa), endikasyon dışı → MSL, rapor süresi doldu (zamanlayıcı), sipariş e-postaları (W6); uygulama içi "gönderilen e-postalar" | W5-BE · (W5-WEB: önizleme listesi, küçük) | 2 |
 | **W6** · Eczane ön siparişi | **BE-a:** sipariş modülü (K-W10), satırlar / MF / iskonto / KDV / kur, eczacı imzası, durum makinesi (ön sipariş → onay → onaylandı / reddedildi → depoya iletildi), onay (Workflow ya da e-posta eylem bağlantısı, güvenli tek kullanımlık). **BE-b:** depo e-postası + PDF, eczane kopyası, geçmiş siparişler. **WEB:** ön sipariş ekranı (takvimden ve E4c'den) | W6-BE-a · W6-BE-b · W6-WEB | 3 |
@@ -94,7 +94,7 @@
 - Geçmiş turlardan deneyim: her 4–5 pakette bir **E4 düzeltme paketi** çıkıyor (4I, 4J, 4L, 4M gibi) → **+5–7 düzeltme promptu**.
 - **Gerçekçi toplam: 30–33 prompt.**
 
-**Sıra ve paralellik:** sıra **(4M ✅) → W1 → W2 → W3 → W4 → W5 ∥ W6 → W7 → W9 → Faz 8** (kullanıcı 2026-10-09: Faz 8 en sonda).
+**Sıra ve paralellik:** sıra **(4M ✅) → W1 → W2 → W3 → W4 → W3E → W5 ∥ W6 → W7 → W9 → Faz 8** (kullanıcı 2026-10-09: Faz 8 en sonda).
 - Her fazda BE ve WEB paralel.
 - W5 ve W6 paralel gidebilir (W6'nın e-postaları W5'e bağlanır).
 - W7 bağımsız; veri kaynağı kararı erken gelirse öne alınabilir.
@@ -132,7 +132,7 @@
   - "Ürünler" bağımlılıklarının geçişi;
   - eski veri.
 - **Tahmini prompt:** 3–5. Kesin sayı MDM kararından sonra.
-- **Sıra:** W1 → W2 → W3 → W4 → W5 ∥ W6 → W7 → W9 → Faz 8 → **W10 Marka**.
+- **Sıra:** W1 → W2 → W3 → W4 → W3E → W5 ∥ W6 → W7 → W9 → Faz 8 → **W10 Marka**.
 
 ### W2 durum notu (2026-10-10)
 - **1. tur:** BE-a, BE-b ve WEB-a E2 + canlı E4 ☑.
