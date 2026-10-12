@@ -464,3 +464,28 @@ Geri alma: `db.rolePermissions.deleteMany({CreatedBy: "manual-grant-w3-authoring
   - istisna oluştur → gönder → `CRM-VISIT-EVIDENCE-EXC` görevi sema'ya → onay → etkin ayarda "İstisna" kaynağı;
   - A1–A3, B, C1–C4, AR ekranları mockup ile yan yana.
 - Kod değişikliği yok.
+
+## §37 CT kabul — W3-CFG E2 ACCEPTED (2026-10-12)
+
+**Kaynak:** kullanıcının ajanı, `7b280c196` (`wp/vw-w3-cfg`) → test dalında `b40a3702f`. Kod değişikliği yok (rapor + betik).
+
+**CT canlı doğrulaması (yalnız okuma, `diten_personalization_dev`):**
+- `workflow_templates`: `CRM-OBJ-RESP` (`b6cc495f…`) ve `CRM-VISIT-EVIDENCE-EXC` (`f28ec41d…`) **Status 2 (Published)**, `ActivePublishedVersionId` dolu.
+- `workflow_template_versions` (ikisi de v1, `IsImmutable: true`):
+  - `requestedObjectType` doğru (`crm.objection-response` / `crm.visit-evidence-exception`);
+  - kökte `options.rejectCommentRequired: true`;
+  - tek aşama, tek adım; aday `position:d0b6ce33…` (POS-MED-DIR) / `position:c1acdf12…` (POS-SALES-OPS);
+  - SLA 4320 dk, yükseltme 2880 dk, aynı pozisyona.
+- **Adayın çözülmesi:** `WorkflowCandidateResolver` her atama türünü kabul ediyor (Birincil, İkincil, Vekâleten). sema'nın POS-SALES-OPS ataması ikincil olduğu için bu önemliydi; görev ona düşer.
+
+**Betik okuması:** `scripts/rbac/grant_w3_authoring_rbac_97c5.py`
+- Dry-run varsayılan; GUID'ler subtype-4; tarih alanları yerel belgeden aynen kopyalanıyor; rol ya da izin oluşturmuyor.
+- Marker `manual-grant-w3-authoring-rbac`; eklemeden sonra subtype denetimi yapıyor.
+- `crm.objection-response.approve` verilmiyor (onay yalnız Workflow ile).
+- Admin rol kimliği `6a315467…` = önceki betiklerdeki kimlik.
+
+**Kabul edilen sapmalar:**
+- KP-MLR-TR'deki ikinci tıbbi aday (POS-MED-SPC) eklenmedi; paket yalnız MED-DIR diyor.
+- İstisna şablonunun süresi tıbbi adımdan alındı (4320 / 2880).
+
+**Sıradaki:** kullanıcı betiği `--apply` ile çalıştırır ve yeniden giriş yapar → CT canlı E4: itiraz akışı + istisna akışı (sema onayı) + mockup görsel karşılaştırması.
