@@ -104,3 +104,55 @@ Büyüklük ölçüsü:
 - küçük: 1 prompt, yaklaşık yarım gün;
 - orta: 2–3 prompt, 1–2 gün;
 - büyük: 4 ve üzeri prompt, 3–5 gün.
+
+## 5. Toplantı adımı için notlar (2026-10-12)
+
+Yöneticinin programının "toplantı ve tutanak" adımında bu notlarla başlanır. Ayrıntılı görüşme notu sahipte (Toplantı Türleri Değerlendirmesi sayfası).
+
+### 5.1 Toplantı türleri
+- İki liste var:
+  - Eylül: görev türü kataloğunun "MeetingTypes" sayfası, 23 tür, işe göre.
+  - Ekim: yöneticinin 12 Ekim listesi, 33 tür, biçime göre.
+- Öneri: ikisi birleşir (34 tür, gruplu). Yönetimin Gözden Geçirmesi, Kalite Kurulu, Değişiklik Kontrol Kurulu ve Sapma / CAPA Değerlendirmesi kalır. Mülakat çıkar (İK işe alım). Birebir tek tür ve gizli.
+- Aksiyon görev türü: 32 yeni tür açılmaz.
+  - Kalite işleri mevcut kalite türlerine bağlanır: Değişiklik Kontrolü, Sapma, CAPA, Kalite Risk Değerlendirmesi, Eğitim Ataması.
+  - Geri kalanlar Eylül kataloğunun birim bazlı aksiyon türlerine bağlanır. Bu türler görev türü kataloğu yüklenince gelir.
+- Yöneticiye sorulan 8 soru görüşme notunda. Cevaplar gelince bu bölüm güncellenir.
+
+### 5.2 Toplantı modülünün eksikleri (ölçüm: hat `def9acdc9`)
+
+| Eksik | Büyüklük | Öncelik |
+|---|---|---|
+| Gündem maddesi başına not ve sonuç (tutanakta bugün yalnız katılım, kararlar, görevler var) | orta | liste yüklenmeden önce |
+| Kalite kaydı türlerinde zorunlu gündem maddesi (ISO 9001 §9.3.2) | küçük–orta | liste yüklenmeden önce |
+| Gizli toplantı türü ("tüm toplantıları okuma" yetkisi görmez) | küçük–orta | liste yüklenmeden önce |
+| "Katılım zorunlu" kuralı (herkes işaretlenmeden yayın yok) | küçük | liste yüklenmeden önce |
+| Kalite kaydı / e-imza işaretleri etkin değilken tür ekranında uyarı | küçük | liste yüklenmeden önce |
+| Yayımlanan tutanağın katılımcılara gönderilmesi | küçük | kısa vade |
+| Tek toplantının tutanak çıktısı (PDF) | orta | kısa vade |
+| Tutanağı e-imzaya bağlama. **İmza altyapısını başka geliştirici yapıyor**; bizim payımız bağlamak. | küçük–orta | altyapı hazır olunca |
+| Kalite kaydı tutanağının silinmezliği ve saklanması | küçük | kısa vade |
+| Ön okuma paketi ve ekler (görev eki deposu yeniden kullanılır) | orta | kısa vade |
+| Gündem maddesine sunan kişi ve süre | küçük | kısa vade |
+| Dış katılımcı (önce saklama kararı) | orta | kısa vade |
+| Türe özel tutanak alanları (görev türüne alan bağlama ile aynı altyapı) | büyük | ileride |
+| Kurullar, yeter sayı, ayrı karar defteri (Blueprint MOD-0359, MOD-0007) | büyük | ileride |
+| Google Takvim / Meet | büyük | ileride |
+
+Ayrıca, toplantı türündeki üç işaret bugün hiçbir şey yapmıyor: "kalite kaydı", "e-imza" ve "katılım zorunlu" yalnız kaydediliyor.
+
+### 5.3 Görev türü ↔ toplantı türü
+- **Toplantı türü → görev türü:** toplantıdan görev açılınca önceden seçili gelen tür; kullanıcı değiştirebilir. Bu bir kilit değil, önerilen değer.
+- **Görev türü → toplantı:** görev türü ekranında "İnceleme toplantısı: İzin verilmez / İsteğe bağlı / Zorunlu" var. "Zorunlu" ise bağlı toplantının tutanağı yayımlanmadan görevde karar verilemez. Kod `a9c40ee0` (2026-09-15); canlı denemesi bu adımda yapılır.
+
+### 5.4 Yöneticinin isteği: görev / toplantı verirken kişinin zamanı var mı?
+- **Bugün:** yalnız kişinin kendi plan görünümü var. Kendi bloğu bir toplantıyla çakışınca ya da mesai dışına düşünce uyarı alıyor.
+- **Eksik:** atayan ya da düzenleyen, başkasının boş / meşgul durumunu göremiyor; izin kontrolü yok.
+- **Öneri:** üç kademe; engel değil uyarı. Gizli toplantının konusu sızmasın diye yalnız "meşgul" gösterilir, detay gösterilmez.
+  1. Atama / davet anında uyarı: başka toplantı, plan bloğu, tatil; İK izin modülü gelince izin. Küçük–orta.
+  2. Kişi seçicide iş yükü ("12 açık görev, bu hafta 4'ü bitiyor") ve yönetici için ekip görünümü. Orta.
+  3. Google takviminden boş / meşgul. Google entegrasyonundan sonra. Büyük.
+- **Hazır alternatif:** rutin işte görevi havuza / pozisyona atamak; müsait olan alır.
+- **Yöneticiye soruldu:**
+  - kademe 1 yeterli mi, kademe 2 de isteniyor mu?
+  - rutin işte havuza atama kullanılsın mı?
