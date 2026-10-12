@@ -122,7 +122,8 @@ describe("an input prompt is not a confirmation", () => {
 
   // Two now: the fake "log time" dialog and its sentence were removed (BL-485).
   it("gives the two named dialogs a sentence that says what the box cannot", () => {
-    ["MeetingWhenSubtext", "NewInSourceSubtext"].forEach((key) => {
+    // WP-WCN-FIX-01 (BL-589) — NewInSourceSubtext left with the deleted create-in-source dialog.
+    ["MeetingWhenSubtext"].forEach((key) => {
       expect(APP, `${key} is not wired`).toContain(`t('${key}')`);
       LANGS.forEach((lang) => {
         const v = String(value(resx(lang), key) || "").trim();
@@ -164,7 +165,8 @@ describe("the icon is a thing a raw dialog can have too", () => {
   it("uses the parameter that already existed rather than opening a new one", () => {
     // `options.icon` was opened for the snooze moon; every caller names its glyph through it.
     expect(APP).toContain("icon: inboxActionIcon(action)");
-    expect(APP).toContain("icon: 'bx-cube'");   // not action-driven: the "+ Yeni" module picker
+    // WP-WCN-FIX-01 (BL-589) — the "+ Yeni" module picker (`icon: 'bx-cube'`) was deleted with its mock entry.
+    expect(APP, "the deleted create-in-source picker came back").not.toContain("icon: 'bx-cube'");
     expect(APP).toContain("icon: 'bx-moon'");   // not action-driven: the snooze
   });
 });
@@ -184,7 +186,8 @@ describe("two dialog selects become the product's own picker", () => {
     expect(APP, "app.js rebuilt its own binder body instead of delegating to the shared one")
       .toContain("DitenDialog.bindDialogSelect2(");
     /*
-     * FIVE REAL CALL SITES: the module picker, the assignee picker, the waiting-on picker, the closure outcome
+     * FOUR REAL CALL SITES since WP-WCN-FIX-01 (BL-589): the module picker went with the deleted create-in-source
+     * dialog. Previously five: the module picker, the assignee picker, the waiting-on picker, the closure outcome
      * picker, and — since WP-PSS-MOD0024-TASK-MENTIONS-01 — the @mention picker. (The delegating wrapper's own
      * internal call to `DitenDialog.bindDialogSelect2(` is excluded by the negative lookbehind — it is not a
      * sixth dialog.)
@@ -196,7 +199,7 @@ describe("two dialog selects become the product's own picker", () => {
      * exists — see `wcn-dialog-one-language.test.js`'s raw-dialog count.
      */
     const realCallSites = (APP.match(/(?<!DitenDialog\.)\bbindDialogSelect2\(/g) || []).length;
-    expect(realCallSites, "a dialog select lost its picker").toBe(5);
+    expect(realCallSites, "a dialog select lost its picker").toBe(4);
 
     // The mechanism itself, read from shared/diten-dialog.js — not app.js, which no longer declares it.
     const fn = bindDialogSelect2Body();
@@ -255,8 +258,10 @@ describe("two dead ends were removed, not disabled", () => {
     expect(APP).toContain("applyReviewMeeting");
   });
 
-  it("keeps the two menu entries that DO something", () => {
+  // WP-WCN-FIX-01 (BL-589) — ONE now: "Kaynak modülde oluştur" turned out to be a mock too (it only toasted
+  // "(mock)") and was removed the same way — absence asserted in wcn-create-task-needs-create-permission.test.js.
+  it("keeps the one menu entry that DOES something", () => {
     expect(APP).toContain("createItem('task'");
-    expect(APP).toContain("createItem('source'");
+    expect(APP, "the mock create-in-source entry came back").not.toContain("createItem('source'");
   });
 });

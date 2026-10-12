@@ -1122,4 +1122,7 @@
   <data name="ShellSearchPlaceholder" xml:space="preserve">
     <value>Search ({0})</value>
   </data>
+  <data name="DateNotRecognized" xml:space="preserve">
+    <value>A date you typed could not be read, so it was not saved. Type it again in the field's format or pick it from the calendar.</value>
+  </data>
 </root>

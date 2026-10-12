@@ -1058,4 +1058,7 @@
   <data name="ShellSearchPlaceholder" xml:space="preserve">
     <value>Buscar ({0})</value>
   </data>
+  <data name="DateNotRecognized" xml:space="preserve">
+    <value>Una fecha que escribió no se pudo leer, por lo que no se guardó. Escríbala de nuevo en el formato del campo o elíjala en el calendario.</value>
+  </data>
 </root>

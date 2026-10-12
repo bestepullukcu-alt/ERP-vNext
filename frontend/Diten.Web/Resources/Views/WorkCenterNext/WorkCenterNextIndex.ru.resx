@@ -886,14 +886,8 @@
   <data name="MeetingLocationPlaceholder" xml:space="preserve">
     <value>Teams / Переговорная 2</value>
   </data>
-  <data name="NewPickModuleLabel" xml:space="preserve">
-    <value>Какой модуль?</value>
-  </data>
   <data name="MeetingWhenSubtext" xml:space="preserve">
     <value>Связь с календарём ещё не настроена: эта запись видна только на этом экране и исчезнет при закрытии страницы. Срок не меняется.</value>
-  </data>
-  <data name="NewInSourceSubtext" xml:space="preserve">
-    <value>Запись создаётся в этом модуле и остаётся там; Центр задач копию не хранит.</value>
   </data>
   <data name="ConfirmProceedNamed" xml:space="preserve">
     <value>Да, {0}</value>
@@ -1066,23 +1060,11 @@
   <data name="NewSelfTaskDesc" xml:space="preserve">
     <value>Личное дело — живёт в WorkCenter</value>
   </data>
-  <data name="NewInSource" xml:space="preserve">
-    <value>Создать в исходном модуле</value>
-  </data>
-  <data name="NewInSourceDesc" xml:space="preserve">
-    <value>Запись самого модуля — живёт в этом модуле</value>
-  </data>
   <data name="NewTaskTitlePlaceholder" xml:space="preserve">
     <value>Название задачи…</value>
   </data>
   <data name="NewCreate" xml:space="preserve">
     <value>Создать</value>
-  </data>
-  <data name="NewPickModule" xml:space="preserve">
-    <value>Выберите модуль</value>
-  </data>
-  <data name="NewCreateInSource" xml:space="preserve">
-    <value>Создать в источнике</value>
   </data>
   <data name="SelfSource" xml:space="preserve">
     <value>Личное</value>
@@ -1101,9 +1083,6 @@
   </data>
   <data name="ToastSelfTaskCreatedReal" xml:space="preserve">
     <value>{0} · добавлено в «Мои задачи»</value>
-  </data>
-  <data name="ToastCreateInSource" xml:space="preserve">
-    <value>Создание открылось бы в модуле {0} (макет)</value>
   </data>
   <data name="ScopeAll" xml:space="preserve">
     <value>Все</value>
@@ -1571,6 +1550,15 @@
   </data>
   <data name="WorkAggregation_Action_Cancel" xml:space="preserve">
     <value>Отменить задачу</value>
+  </data>
+  <data name="WorkAggregation_Action_Decline" xml:space="preserve">
+    <value>Отклонить</value>
+  </data>
+  <data name="WorkAggregation_Action_Withdraw" xml:space="preserve">
+    <value>Отозвать запрос</value>
+  </data>
+  <data name="WorkAggregation_Action_Offer" xml:space="preserve">
+    <value>Отправить запрос</value>
   </data>
   <data name="ToastActionApplied" xml:space="preserve">
     <value>{1} — «{0}» выполнено</value>

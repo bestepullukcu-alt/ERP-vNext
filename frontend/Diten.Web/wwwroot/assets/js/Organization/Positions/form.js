@@ -87,11 +87,26 @@
     };
 
     // ─── Culture-aware date pickers ──────────────────────────────────────────
+    /*
+     * BL-391 × WCN-FIX-03 (XMC-001) — the position dates use the shared typed-date guard (`DitenDateField.guardAgainstSilentMisparse`,
+     * altFormat shape): a typed date that does not exist ("31.02") is cleared and marked, never saved as another date.
+     * Without the shared script the dates FAIL CLOSED: `allowInput: false` (read-only box, picked from the calendar).
+     */
+    const dateGuard = () => {
+        const guard = window.DitenDateField && window.DitenDateField.guardAgainstSilentMisparse;
+        return typeof guard === 'function' ? guard : null;
+    };
+    const reportMissingDateGuard = () => console.error('[Position Form] The dates cannot be typed: assets/js/shared/diten-datefield.js '
+        + '(the BL-391 typed-date guard) is not loaded on this page, so they open read-only and are picked from the calendar.');
     const initDatePickers = () => {
         if (typeof window.flatpickr !== 'function') return;
+        const guard = dateGuard();
+        if (!guard) reportMissingDateGuard();
         DATE_FIELDS.forEach((id) => {
             const el = byId(id);
-            if (el) window.flatpickr(el, { dateFormat: 'Y-m-d', altInput: true, altFormat: L.DateFormat || 'Y-m-d', allowInput: true });
+            if (!el) return;
+            window.flatpickr(el, { dateFormat: 'Y-m-d', altInput: true, altFormat: L.DateFormat || 'Y-m-d', allowInput: !!guard });
+            if (guard) guard(el._flatpickr, 'altFormat');
         });
     };
     const dateOrNull = (id) => { const v = trim(byId(id)?.value); return v.length ? `${v}T00:00:00Z` : null; };
@@ -106,14 +121,27 @@
 
     // ─── Validation + payload ────────────────────────────────────────────────
     const isFilled = (id) => trim(byId(id)?.value).length > 0;
+    // WCN-FIX-04 — the guard marks the box the reader types in (altInput), not the hidden value input.
+    const dateRefused = (id) => !!byId(id)?._flatpickr?.altInput?.classList.contains('is-invalid');
     const validate = () => {
         let ok = true;
+        const messages = [];
         REQUIRED.forEach((id) => {
             const el = byId(id);
             if (!isFilled(id)) { ok = false; el?.classList.add('is-invalid'); }
             else el?.classList.remove('is-invalid');
         });
-        if (!ok) showAlert([L.RequiredField || 'Required fields are missing.']);
+        if (!ok) messages.push(L.RequiredField || 'Required fields are missing.');
+        /*
+         * WCN-FIX-04 — a refused typed date is CLEARED by the guard, and an empty optional date is a valid payload.
+         * The update is a full replace, so saving would turn "ends on 31.02" into "never ends" — and on an edit it
+         * would DELETE the stored end date. A refused date stops the save until it is entered again.
+         */
+        if (DATE_FIELDS.some(dateRefused)) {
+            ok = false;
+            messages.push(L.DateNotRecognized || 'A date you typed could not be read, so it was not saved.');
+        }
+        if (!ok) showAlert(messages);
         return ok;
     };
     const valueOrNull = (id) => { const v = trim(byId(id)?.value); return v.length ? v : null; };

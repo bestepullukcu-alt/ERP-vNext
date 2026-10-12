@@ -886,14 +886,8 @@
   <data name="MeetingLocationPlaceholder" xml:space="preserve">
     <value>Teams / Salle de réunion 2</value>
   </data>
-  <data name="NewPickModuleLabel" xml:space="preserve">
-    <value>Quel module ?</value>
-  </data>
   <data name="MeetingWhenSubtext" xml:space="preserve">
     <value>La connexion au calendrier n'est pas encore en place : cet enregistrement n'apparaît que sur cet écran et disparaît à la fermeture de la page. L'échéance ne change pas.</value>
-  </data>
-  <data name="NewInSourceSubtext" xml:space="preserve">
-    <value>L'enregistrement est créé dans ce module et y reste ; le Centre de tâches n'en garde aucune copie.</value>
   </data>
   <data name="ConfirmProceedNamed" xml:space="preserve">
     <value>Oui, {0}</value>
@@ -1066,23 +1060,11 @@
   <data name="NewSelfTaskDesc" xml:space="preserve">
     <value>Un pense-bête personnel — vit dans WorkCenter</value>
   </data>
-  <data name="NewInSource" xml:space="preserve">
-    <value>Créer dans le module source</value>
-  </data>
-  <data name="NewInSourceDesc" xml:space="preserve">
-    <value>Une fiche du module — vit dans ce module</value>
-  </data>
   <data name="NewTaskTitlePlaceholder" xml:space="preserve">
     <value>Titre de la tâche…</value>
   </data>
   <data name="NewCreate" xml:space="preserve">
     <value>Créer</value>
-  </data>
-  <data name="NewPickModule" xml:space="preserve">
-    <value>Choisir un module</value>
-  </data>
-  <data name="NewCreateInSource" xml:space="preserve">
-    <value>Créer dans la source</value>
   </data>
   <data name="SelfSource" xml:space="preserve">
     <value>Personnel</value>
@@ -1101,9 +1083,6 @@
   </data>
   <data name="ToastSelfTaskCreatedReal" xml:space="preserve">
     <value>{0} · ajouté à Mes tâches</value>
-  </data>
-  <data name="ToastCreateInSource" xml:space="preserve">
-    <value>La création s'ouvrirait dans le module {0} (mock)</value>
   </data>
   <data name="ScopeAll" xml:space="preserve">
     <value>Tous</value>
@@ -1571,6 +1550,15 @@
   </data>
   <data name="WorkAggregation_Action_Cancel" xml:space="preserve">
     <value>Annuler la tâche</value>
+  </data>
+  <data name="WorkAggregation_Action_Decline" xml:space="preserve">
+    <value>Refuser</value>
+  </data>
+  <data name="WorkAggregation_Action_Withdraw" xml:space="preserve">
+    <value>Retirer la demande</value>
+  </data>
+  <data name="WorkAggregation_Action_Offer" xml:space="preserve">
+    <value>Envoyer la demande</value>
   </data>
   <data name="ToastActionApplied" xml:space="preserve">
     <value>{1} — « {0} » effectué</value>

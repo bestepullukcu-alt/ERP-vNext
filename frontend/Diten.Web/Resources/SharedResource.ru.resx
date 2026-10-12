@@ -1057,4 +1057,7 @@
   <data name="ShellSearchPlaceholder" xml:space="preserve">
     <value>Поиск ({0})</value>
   </data>
+  <data name="DateNotRecognized" xml:space="preserve">
+    <value>Введённую дату не удалось распознать, поэтому она не сохранена. Введите её снова в формате поля или выберите в календаре.</value>
+  </data>
 </root>

@@ -886,14 +886,8 @@
   <data name="MeetingLocationPlaceholder" xml:space="preserve">
     <value>Teams / Toplantı Odası 2</value>
   </data>
-  <data name="NewPickModuleLabel" xml:space="preserve">
-    <value>Hangi modül?</value>
-  </data>
   <data name="MeetingWhenSubtext" xml:space="preserve">
     <value>Takvim bağlantısı henüz kurulmadı: bu kayıt yalnızca bu ekranda görünür ve sayfayı kapattığınızda kaybolur. Son tarih değişmez.</value>
-  </data>
-  <data name="NewInSourceSubtext" xml:space="preserve">
-    <value>Kayıt o modülde oluşur ve orada kalır; Görev Merkezi kopyasını tutmaz.</value>
   </data>
   <data name="ConfirmProceedNamed" xml:space="preserve">
     <value>Evet, {0}</value>
@@ -1066,23 +1060,11 @@
   <data name="NewSelfTaskDesc" xml:space="preserve">
     <value>Kişisel yapılacak — WorkCenter'da yaşar</value>
   </data>
-  <data name="NewInSource" xml:space="preserve">
-    <value>Kaynak modülde oluştur</value>
-  </data>
-  <data name="NewInSourceDesc" xml:space="preserve">
-    <value>Modülün kendi kaydı — o modülde yaşar</value>
-  </data>
   <data name="NewTaskTitlePlaceholder" xml:space="preserve">
     <value>Görev başlığı…</value>
   </data>
   <data name="NewCreate" xml:space="preserve">
     <value>Oluştur</value>
-  </data>
-  <data name="NewPickModule" xml:space="preserve">
-    <value>Modül seç</value>
-  </data>
-  <data name="NewCreateInSource" xml:space="preserve">
-    <value>Kaynakta oluştur</value>
   </data>
   <data name="SelfSource" xml:space="preserve">
     <value>Kişisel</value>
@@ -1101,9 +1083,6 @@
   </data>
   <data name="ToastSelfTaskCreatedReal" xml:space="preserve">
     <value>{0} · İşlerim'e eklendi</value>
-  </data>
-  <data name="ToastCreateInSource" xml:space="preserve">
-    <value>{0} modülünde oluşturma açılacaktı (mock)</value>
   </data>
   <data name="ScopeAll" xml:space="preserve">
     <value>Tümü</value>
@@ -1571,6 +1550,15 @@
   </data>
   <data name="WorkAggregation_Action_Cancel" xml:space="preserve">
     <value>Görevi iptal et</value>
+  </data>
+  <data name="WorkAggregation_Action_Decline" xml:space="preserve">
+    <value>Reddet</value>
+  </data>
+  <data name="WorkAggregation_Action_Withdraw" xml:space="preserve">
+    <value>Talebi geri çek</value>
+  </data>
+  <data name="WorkAggregation_Action_Offer" xml:space="preserve">
+    <value>Talebi gönder</value>
   </data>
   <data name="ToastActionApplied" xml:space="preserve">
     <value>{1} — '{0}' işlemi tamamlandı</value>

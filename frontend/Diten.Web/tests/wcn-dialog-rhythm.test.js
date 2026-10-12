@@ -133,11 +133,11 @@ describe("one action, one icon", () => {
     expect(APP).toContain("dialogIcon('info', inboxActionIcon(action))");
   });
 
-  it("leaves the two dialogs that no action opens with their own glyph", () => {
-    // The snooze is a personal overlay, the module picker is a create menu — neither is an action's dialog,
-    // so neither has a dictionary entry to read.
+  // WP-WCN-FIX-01 (BL-589) — ONE now: the module picker (`bx-cube`) was deleted with the mock create-in-source entry.
+  it("leaves the one dialog that no action opens with its own glyph", () => {
+    // The snooze is a personal overlay — not an action's dialog, so it has no dictionary entry to read.
     expect(APP).toContain("icon: 'bx-moon'");
-    expect(APP).toContain("icon: 'bx-cube'");
+    expect(APP, "the deleted create-in-source picker came back").not.toContain("icon: 'bx-cube'");
   });
 });
 

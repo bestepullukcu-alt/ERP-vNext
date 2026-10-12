@@ -143,11 +143,26 @@
 
     // ─── Culture-aware date pickers ──────────────────────────────────────────
     // Stored value stays ISO (Y-m-d); the visible altInput renders in the request culture's short-date format.
+    /*
+     * BL-391 × WCN-FIX-03 (XMC-001) — the legal entity dates use the shared typed-date guard (`DitenDateField.guardAgainstSilentMisparse`,
+     * altFormat shape): a typed date that does not exist ("31.02") is cleared and marked, never saved as another date.
+     * Without the shared script the dates FAIL CLOSED: `allowInput: false` (read-only box, picked from the calendar).
+     */
+    const dateGuard = () => {
+        const guard = window.DitenDateField && window.DitenDateField.guardAgainstSilentMisparse;
+        return typeof guard === 'function' ? guard : null;
+    };
+    const reportMissingDateGuard = () => console.error('[Legal Entity Wizard] The dates cannot be typed: assets/js/shared/diten-datefield.js '
+        + '(the BL-391 typed-date guard) is not loaded on this page, so they open read-only and are picked from the calendar.');
     const initDatePickers = () => {
         if (typeof window.flatpickr !== 'function') return;
+        const guard = dateGuard();
+        if (!guard) reportMissingDateGuard();
         DATE_FIELDS.forEach((id) => {
             const el = byId(id);
-            if (el) window.flatpickr(el, { dateFormat: 'Y-m-d', altInput: true, altFormat: L.DateFormat || 'Y-m-d', allowInput: true });
+            if (!el) return;
+            window.flatpickr(el, { dateFormat: 'Y-m-d', altInput: true, altFormat: L.DateFormat || 'Y-m-d', allowInput: !!guard });
+            if (guard) guard(el._flatpickr, 'altFormat');
         });
     };
     const dateValue = (id) => trim(byId(id)?.value); // altInput keeps the original input's Y-m-d value
@@ -187,6 +202,8 @@
             if (!isFilled(id)) { ok = false; if (surfaceErrors && el) el.classList.add('is-invalid'); }
             else if (el) { el.classList.remove('is-invalid'); }
         });
+        // WCN-FIX-04 — the dates live on step 2: a refused one fails that step, at Next and at the final Submit.
+        if (stepNum === 2 && DATE_FIELDS.some(dateRefused)) { ok = false; }
         if (stepNum === 3) {
             const parentMissing = isParentRequired() && !isFilled('leParentLegalEntityId');
             const parentEl = byId('leParentLegalEntityId');
@@ -196,7 +213,14 @@
         return ok;
     };
 
+    // WCN-FIX-04 — the guard marks the box the reader types in (altInput), not the hidden value input.
+    const dateRefused = (id) => !!byId(id)?._flatpickr?.altInput?.classList.contains('is-invalid');
+    const requiredMissing = () => Object.values(STEP_REQUIRED).flat().some((id) => !isFilled(id));
     const stepErrorMessage = () => {
+        // A refused date is named on its own when nothing required is missing (the empty field reads as optional).
+        if (DATE_FIELDS.some(dateRefused) && !requiredMissing() && !(isParentRequired() && !isFilled('leParentLegalEntityId'))) {
+            return L.DateNotRecognized || 'A date you typed could not be read, so it was not saved.';
+        }
         const parentMissing = isParentRequired() && !isFilled('leParentLegalEntityId');
         return parentMissing
             ? (L.ParentRequiredForBranch || L.RequiredField || 'Required fields are missing.')
@@ -447,8 +471,27 @@
         if (!el || typeof window.Stepper !== 'function') return;
         stepper = new window.Stepper(el, { linear: false, animation: false });
         // Safety net: block any programmatic/-click jump past the furthest validated step.
+        /*
+         * Sneat's vendored bs-stepper.js paints `.crossed` on every step before the target in its OWN show listener,
+         * registered before this one and blind to defaultPrevented. A refused jump would leave steps 1–3 drawn as passed
+         * while the reader stays put, so a jump this wizard stops redraws the marks for the step it is still on, by
+         * Sneat's own rule (steps before the current one are crossed). The vendored file is not touched.
+         */
+        const refuseJump = (event) => {
+            event.preventDefault();
+            el.querySelectorAll('.step').forEach((step, index) => step.classList.toggle('crossed', index < currentStep - 1));
+        };
         el.addEventListener('show.bs-stepper', (event) => {
-            if (event.detail.indexStep + 1 > maxReachedStep) event.preventDefault();
+            const target = event.detail.indexStep + 1;
+            if (target > maxReachedStep) { refuseJump(event); return; }
+            // WCN-FIX-06/07 — a refused date is not carried FORWARD past its step (2), from ANY step: Next stops on
+            // step 2, and a header click (the stepper is non-linear; in edit mode every step is reached) from step 1
+            // or later to step 3+ is stopped too — "Previous" from the dates' step and a header jump onwards was the
+            // way round it. Going to step 2, or back, stays free; the final Save still re-checks every step.
+            if (target > 2 && target > currentStep && DATE_FIELDS.some(dateRefused)) {
+                refuseJump(event);
+                showAlert([stepErrorMessage()], 'danger');
+            }
         });
         // Keep currentStep + the action bar in sync, and refresh the overview whenever step 6 becomes visible.
         el.addEventListener('shown.bs-stepper', (event) => {

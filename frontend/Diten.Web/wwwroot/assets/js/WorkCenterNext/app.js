@@ -1013,8 +1013,13 @@
                         ${scopeItem('all', t('ScopeAll'), t('ScopeAllSub'))}` : ''}
                     </ul>
                 </div>
-                <div class="dropdown">
-                    <button type="button" class="btn btn-primary shadow-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                ${/*
+                   * BL-589 (WP-WCN-FIX-01, UAS-001 §6) — "+ Yeni" is drawn only when it has an item. Its one item is
+                   * "Görev" (platform.tasks.create); a user without it gets NO button rather than a menu that opens on
+                   * nothing (BL-208: a dead control is worse than an absence).
+                   */ ''}
+                ${canCreateTask ? `<div class="dropdown">
+                    <button type="button" class="btn btn-primary shadow-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" data-wcn-new-menu>
                         <i class="icon-base bx bx-plus icon-sm me-1"></i><span>${esc(t('NewButton'))}</span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end wcn-dd-menu">
@@ -1041,10 +1046,16 @@
                            * through `TasksApi.addPersonalNote` (real), and the "Onay toplantısı planla" ACTION
                            * has a contract behind it (`reviewMeetingPolicy`). Neither was touched.
                            */ ''}
-                        ${canCreateTask ? '<li><hr class="dropdown-divider"></li>' : ''}
-                        ${createItem('source', 'bx-link-external', t('NewInSource'))}
+                        ${/*
+                           * BL-589 (WP-WCN-FIX-01) — "KAYNAK MODÜLDE OLUŞTUR" WAS REMOVED, NOT DISABLED (2026-10-09).
+                           * MEASURED: drawn without any permission check; its module list came from the user's own
+                           * work items (empty for a user with none); and confirming it only toasted "(mock)" — the
+                           * projection carries no CREATE address (`deepLink` addresses an existing object). It returns
+                           * only with a real source: the tenant navigation's per-module CreateRoute + CreatePermission
+                           * (what Ctrl+K already lists), filtered to modules the user may create in.
+                           */ ''}
                     </ul>
-                </div>
+                </div>` : ''}
             </div>
         </div>`;
     };
@@ -10151,50 +10162,7 @@
         return item;
     };
 
-    const openCreateInSource = () => {
-        const opts = {};
-        moduleOptions().forEach((m) => { opts[m] = m; });
-        sharedConfirm({
-            title: t('NewInSource'),
-            // Where the record will LIVE, which is the thing a module picker leaves unsaid.
-            subtext: t('NewInSourceSubtext'),
-            icon: 'bx-cube',
-            // The button names CREATING, not opening: nothing is opened here any more (see below), and the old
-            // 'NewOpenSource' label promised an act this dialog no longer performs.
-            confirmText: t('NewCreateInSource'),
-            input: {
-                type: 'select',
-                options: opts,
-                label: t('NewPickModuleLabel'),
-                /*
-                 * A SELECT'S PLACEHOLDER IS ITS EMPTY OPTION, not an example — there is nothing to exemplify,
-                 * the choices are all listed. And its glyph is the THEME'S OWN caret, which `.swal2-select`
-                 * already draws: adding a second one would put two arrows on one control.
-                 */
-                placeholder: t('NewPickModule'),
-                // select2, from the same binder the filter panel uses — and parented INTO the popup so its
-                // list cannot open behind the dialog the way flatpickr's calendar once did.
-                onOpen: (box, popup) => { bindDialogSelect2(box, popup); }
-            },
-            onConfirm: (value) => {
-                if (value) {
-                /*
-                 * Nothing is opened here, DELIBERATELY — do not "restore" this.
-                 *
-                 * It used to find an arbitrary EXISTING item from the chosen module and open that record's detail
-                 * page. The user asked to CREATE something in that module; showing them an unrelated record they
-                 * did not ask for is not a lesser version of creating one, it is the wrong act.
-                 *
-                 * Creating in another module needs that module's CREATE url, and the projection does not carry
-                 * one (`deepLink` addresses an existing object). Until a provider supplies it, the honest
-                 * behaviour is to say this is not wired yet and do nothing — which is exactly what the "(mock)"
-                 * toast below already says.
-                 */
-                    toast(tf('ToastCreateInSource', value), 'info');
-                }
-            }
-        });
-    };
+    // BL-589 (WP-WCN-FIX-01) — `openCreateInSource` was deleted with its menu item: it could only toast "(mock)".
 
     /*
      * ⚠ `openMeetingForm` WAS DELETED (2026-08-24) — see the note on the "+ Yeni" menu above. It collected a
@@ -11250,7 +11218,6 @@
             const kind = newEl.getAttribute('data-wcn-new');
             // The entry is not rendered without the key; this refuses a stale menu the same way (UAS-001 §6).
             if (kind === 'task') { if (canCreateSelfTask()) { openSelfTask(); } }
-            else if (kind === 'source') { openCreateInSource(); }
             return;
         }
 

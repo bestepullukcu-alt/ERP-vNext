@@ -1122,4 +1122,7 @@
   <data name="ShellSearchPlaceholder" xml:space="preserve">
     <value>Ara ({0})</value>
   </data>
+  <data name="DateNotRecognized" xml:space="preserve">
+    <value>Yazdığınız bir tarih okunamadığı için kaydedilmedi. Alanın biçiminde yeniden yazın ya da takvimden seçin.</value>
+  </data>
 </root>
