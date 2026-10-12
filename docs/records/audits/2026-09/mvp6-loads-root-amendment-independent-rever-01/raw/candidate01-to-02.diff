@@ -1,0 +1,11 @@
+--- candidate-01/loads-semantics-v3.1.0-rc.1.md
++++ candidate-02/loads-semantics-v3.1.0-rc.1.md
+@@ -189,7 +189,7 @@
+ 
+ ## R185-C04 — Release and migration boundary
+ 
+-info.version2.0.0 is candidate metadata only; wire contractVersion v1 remains unchanged.
++info.version3.1.0-rc.1 is candidate metadata only; wire contractVersion v1 remains unchanged.
+ New business restrictions reject some baseline-schema-valid requests. This is not proven minor
+ compatibility. Metadata major does not supply route negotiation, migration, cutover or rollback.
+ No new route is introduced. Consumer compatibility/consent and published uptake remain separate

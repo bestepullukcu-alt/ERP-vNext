@@ -1,0 +1,65 @@
+@using Diten.Web.Views.TimeEntry.Approvals
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ApprovalsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["ApprovalsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canDecide = Perms.Has("platform.workflow.tasks.approve");
+    var bulkActionBar = new DataTableBulkActionBarViewModel
+    {
+        SelectedText = SharedLocalizer["SelectedCount"].Value,
+        ClearSelectionText = SharedLocalizer["ClearSelection"].Value,
+        Actions =
+        [
+            new DataTableActionItemViewModel
+            {
+                Key = "approve",
+                Text = Localizer["BulkApprove"].Value,
+                Icon = "bx bx-check-double",
+                ButtonClass = "btn btn-label-success",
+                ConfirmKey = "BulkApproveConfirm",
+                Endpoint = "/TimeEntry/Approvals/api/bulk",
+                Method = "POST",
+                Visible = canDecide
+            }
+        ]
+    };
+}
+
+@*
+    MOD-0280-FU01 T2b (U4) — the approver's queue. UAS-001: without time-entry.approvals.read nothing below is drawn.
+    ⚠ Display only; Platform's [HasPermission] and MOD-0023's own keys stay the authority.
+*@
+@if (!Perms.Has("time-entry.approvals.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["ApprovalsTitle"].Value" />
+    return;
+}
+
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/TimeEntry/Approvals/_Filter.cshtml" />
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["ApprovalsTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+    <p class="mb-0 text-muted small time-entry-approvals-hint">@Localizer["BulkMarkedHint"]</p>
+</div>
+
+<partial name="~/Views/Shared/Components/DataTable/_BulkActionBar.cshtml" model="bulkActionBar" />
+
+@* Contract markers are rendered by _DataTable.cshtml: the shared <partial name="_TableSkeleton" /> (which carries id="skeleton-loader"), <table id="dt-timeapprovals" data-dt-standard="v2"> *@
+<partial name="~/Views/TimeEntry/Approvals/_DataTable.cshtml" />
+
+@* Contract marker: id="offcanvasDetailsPreview" — the approvals list has no quick view; a row opens the read-only week page. *@
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/TimeEntry/Approvals/_IndexL10n.cshtml" />
+    <partial name="~/Views/TimeEntry/_ErrorL10n.cshtml" />
+    <script src="~/assets/js/TimeEntry/Approvals/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/TimeEntry/core.js" asp-append-version="true"></script>
+    <script src="~/assets/js/TimeEntry/Approvals/index.js" asp-append-version="true"></script>
+}

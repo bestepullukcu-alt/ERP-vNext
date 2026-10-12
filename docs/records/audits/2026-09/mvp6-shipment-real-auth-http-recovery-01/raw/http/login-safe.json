@@ -1,0 +1,19 @@
+{
+  "sub": "222734cf-0c08-416f-832e-f67d9cdb1c38",
+  "tenant_id": "00000000-0000-0000-0000-000000000001",
+  "legal_entity_id": "10000000-0000-0000-0000-000000000001",
+  "actor_type": "tenant_user",
+  "iss": "diten-auth-service",
+  "aud": "diten-erp",
+  "exp": 1790262225,
+  "permissions": [
+    "supplychain.shipments.read",
+    "supplychain.shipments.create",
+    "supplychain.shipments.dispatch",
+    "supplychain.shipments.cancel",
+    "supplychain.shipments.pod.capture"
+  ],
+  "tokenPresent": true,
+  "refreshTokenPresent": true,
+  "status": 200
+}

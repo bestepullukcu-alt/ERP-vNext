@@ -42,6 +42,13 @@ internal sealed class FakePlannedVisitRepository : IPlannedVisitRepository
         => Task.FromResult<IReadOnlyList<PlannedVisitEntity>>(
             Scope(tenantId).Where(x => x.TargetId == targetId && x.PlannedDate == plannedDate).ToList());
 
+    public Task<IReadOnlyList<PlannedVisitEntity>> ListFromDateByContentPathsAsync(
+        Guid tenantId, IReadOnlyCollection<Guid> pathIds, DateOnly fromDate, CancellationToken ct)
+        => Task.FromResult<IReadOnlyList<PlannedVisitEntity>>(Items
+            .Where(x => x.TenantId == tenantId && x.PlannedDate >= fromDate
+                        && x.ContentItems.Any(item => pathIds.Contains(item.PathId)))
+            .ToList());
+
     public Task InsertAsync(PlannedVisitEntity entity, CancellationToken ct)
     {
         InsertCount++;
@@ -68,8 +75,22 @@ internal sealed class FakeAccountRepository : IAccountRepository
 {
     public List<Account> Items { get; } = new();
 
+    /// <summary>WP-VP-2 — every read the name reader may make, counted (bulk read vs per-row read).</summary>
+    public int ListByIdsCalls { get; private set; }
+    public int GetByIdCalls { get; private set; }
+
+    public Task<IReadOnlyList<Account>> ListByIdsAsync(Guid tenantId, IReadOnlyCollection<Guid> ids, CancellationToken ct)
+    {
+        ListByIdsCalls++;
+        return Task.FromResult<IReadOnlyList<Account>>(
+            Items.Where(a => a.TenantId == tenantId && ids.Contains(a.Id) && !a.IsDeleted).ToList());
+    }
+
     public Task<Account?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct)
-        => Task.FromResult(Items.FirstOrDefault(a => a.TenantId == tenantId && a.Id == id && !a.IsDeleted));
+    {
+        GetByIdCalls++;
+        return Task.FromResult(Items.FirstOrDefault(a => a.TenantId == tenantId && a.Id == id && !a.IsDeleted));
+    }
 
     public Task<Account?> GetByCodeAsync(Guid tenantId, string accountCode, CancellationToken ct)
         => throw new NotImplementedException();
@@ -95,9 +116,15 @@ internal sealed class FakeContactRepository : IContactRepository
     public Task<Contact?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct)
         => Task.FromResult(Items.FirstOrDefault(c => c.TenantId == tenantId && c.Id == id && !c.IsDeleted));
 
+    /// <summary>WP-VP-2 — bulk reads counted (the name reader must not read per row).</summary>
+    public int ListByIdsCalls { get; private set; }
+
     public Task<IReadOnlyList<Contact>> ListByIdsAsync(Guid tenantId, IReadOnlyCollection<Guid> ids, CancellationToken ct)
-        => Task.FromResult<IReadOnlyList<Contact>>(
+    {
+        ListByIdsCalls++;
+        return Task.FromResult<IReadOnlyList<Contact>>(
             Items.Where(c => c.TenantId == tenantId && !c.IsDeleted && ids.Contains(c.Id)).ToList());
+    }
 
     public Task<(IReadOnlyList<Contact> Items, long Total, long UnfilteredTotal)> ListAsync(
         Guid tenantId, string? search, int page, int pageSize, string? sortBy, string? sortDir,

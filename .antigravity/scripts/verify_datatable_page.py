@@ -433,6 +433,7 @@ def resolve_list_shell(root: Path, data_table_path: Path, data_table_html: str) 
 
 LIST_FACTORY_CALL = re.compile(r"DitenDataTable\.createList\(")
 LIST_FACTORY_RELATIVE = Path("frontend") / "Diten.Web" / "wwwroot" / "assets" / "js" / "diten-datatable.js"
+DT_DEFAULTS_RELATIVE = Path("frontend") / "Diten.Web" / "wwwroot" / "assets" / "js" / "dt-defaults.js"
 
 
 def strip_js_comments(text: str) -> str:
@@ -525,6 +526,32 @@ def resolve_list_factory(root: Path, index_js: Path, js_text: str, page_data_mod
             "Server mode branch: serverSide + processing, the flat request (toServerQuery) and the response translation (toDataTablesResponse)",
             server_branch,
             "serverSide: true, processing: true, ajax: { data: toServerQuery, dataFilter: toDataTablesResponse }"))
+        # BL-452 package 1: the page's `export: { mode: 'server' }` only works if the factory still turns CSV/Excel into a
+        # request for every row — the export query carries no start/length/draw. Resolved to no page token: the page's own
+        # declaration is checked on the page (check_list_screen_coherence), never satisfied by the factory's text.
+        export_query = re.search(r"function toExportQuery\([^)]*\) \{([\s\S]*?)\n    \}", factory)
+        export_branch = bool(export_query) and not re.search(r"add\('(start|length|draw)'", export_query.group(1)) \
+            and "serverExport: exportSpec ?" in factory and "normalizeExportSpec(options.export, options.dataMode)" in factory
+        mechanics.append((
+            "Server export (BL-452): CSV/Excel ask export.url for every row — visible columns, filters, search, order; never start/length",
+            export_branch,
+            ""))
+        # BL-452 package 2 — the CONTROLLED COPY: on a server-export list PDF and print take their rows from the SAME
+        # request as the CSV button (exportUrl('csv'), parsed), never from the page DataTables holds. Three production
+        # sources must agree: the factory's row provider asks exportUrl('csv'), the factory hands that provider to the
+        # toolbar only when the list declares a server export, and dt-defaults' PDF and print entries both prefer it.
+        defaults_path = root / DT_DEFAULTS_RELATIVE
+        defaults = strip_js_comments(read_text(defaults_path)) if defaults_path.exists() else ""
+        cc_rows = re.search(r"async function controlledCopyRows\(\) \{([\s\S]*?)\n        \}", factory)
+        cc_branch = bool(cc_rows) and "exportUrl('csv')" in cc_rows.group(1) and "parseCsv(" in cc_rows.group(1) \
+            and not re.search(r"exportData\(|dt\.rows\(|\.data\(\)", cc_rows.group(1)) \
+            and bool(re.search(r"rows: exportSpec \? function \(\) \{ return handle\.controlledCopyRows\(\); \}", factory)) \
+            and len(re.findall(r"runControlledCopy\('(?:pdf|print)', dt, exportOptions, controlledCopy\)", defaults)) == 2 \
+            and "typeof source.rows === 'function' ? await source.rows() : dt.buttons.exportData(exportOptions)" in defaults
+        mechanics.append((
+            "Server export PDF/print (BL-452 package 2): controlled-copy rows from exportUrl('csv') — every matching row, never the page",
+            cc_branch,
+            ""))
         if not hook_client_only:
             checks.append(Check("List factory keeps its filter hook client-only", False,
                                 f"{factory_path} registers ext.search.push without the `!isServer` guard — every server-mode list filters rows in the browser too"))
@@ -640,6 +667,11 @@ def check_list_screen_coherence(
                              "" if server_side else f"data_mode=server but index.js has no `serverSide: true` (file: {js_path})"))
             out.append(Check("Server mode: no client-side filter hook", not client_filter_hook,
                              "" if not client_filter_hook else f"data_mode=server but filters run in the browser via ext.search.push (file: {js_path})"))
+            # BL-452 package 1: on a server-paged list DataTables holds one page, so its own CSV/Excel write that page and
+            # call it the list. The page must declare the server export (the factory then asks the service for every row).
+            server_export = bool(re.search(r"\bexport\s*:\s*\{[^{}]*\bmode\s*:\s*['\"]server['\"][^{}]*\burl\s*:", js_no_comments))
+            out.append(Check("Server mode: export declared server-side (BL-452 — CSV/Excel = every matching row, not the page)", server_export,
+                             "" if server_export else f"data_mode=server but index.js declares no `export: {{ mode: 'server', url }}` — CSV/Excel write only the page DataTables holds (file: {js_path})"))
         else:
             out.append(Check("Client mode: DataTables serverSide is off", not server_side,
                              "" if not server_side else f"data_mode=client but index.js sets `serverSide: true` (file: {js_path})"))

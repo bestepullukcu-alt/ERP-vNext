@@ -1,0 +1,77 @@
+@using Diten.Web.Views.TimeEntry.Categories
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CategoriesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@* MOD-0280-FU01 T2b — this page's words, 7 languages (Golden Reference l10n payload; index.l10n.js PascalCases the keys). *@
+<script id="timecategories-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        CategoriesTitle = Localizer["CategoriesTitle"].Value,
+        PageDescription = Localizer["PageDescription"].Value,
+        AddNew = Localizer["AddNew"].Value,
+        Code = Localizer["Code"].Value,
+        Label = Localizer["Label"].Value,
+        CountsAsWork = Localizer["CountsAsWork"].Value,
+        SortOrder = Localizer["SortOrder"].Value,
+        Actions = Localizer["Actions"].Value,
+        QuickView = Localizer["QuickView"].Value,
+        EditItem = Localizer["EditItem"].Value,
+        FormTitleCreate = Localizer["FormTitleCreate"].Value,
+        FormTitleEdit = Localizer["FormTitleEdit"].Value,
+        CodePlaceholder = Localizer["CodePlaceholder"].Value,
+        LabelPlaceholder = Localizer["LabelPlaceholder"].Value,
+        CodeHint = Localizer["CodeHint"].Value,
+        CodeLocked = Localizer["CodeLocked"].Value,
+        InstallRecommended = Localizer["InstallRecommended"].Value,
+        InstallRecommendedConfirm = Localizer["InstallRecommendedConfirm"].Value,
+        InstallRecommendedDone = Localizer["InstallRecommendedDone"].Value,
+        Activate = Localizer["Activate"].Value,
+        Deactivate = Localizer["Deactivate"].Value,
+        ActivateConfirm = Localizer["ActivateConfirm"].Value,
+        DeactivateConfirm = Localizer["DeactivateConfirm"].Value,
+        Activated = Localizer["Activated"].Value,
+        Deactivated = Localizer["Deactivated"].Value,
+        CountsAsWorkYes = Localizer["CountsAsWorkYes"].Value,
+        CountsAsWorkNo = Localizer["CountsAsWorkNo"].Value,
+        GeneralInformation = Localizer["GeneralInformation"].Value,
+        RecommendedLabel = Localizer["RecommendedLabel"].Value,
+        NoCategories = Localizer["NoCategories"].Value,
+        Active = SharedLocalizer["Active"].Value,
+        Passive = SharedLocalizer["Passive"].Value,
+        Unknown = SharedLocalizer["Unknown"].Value,
+        Edit = SharedLocalizer["EditRecord"].Value,
+        ViewDetails = SharedLocalizer["ViewDetails"].Value,
+        BulkDelete = SharedLocalizer["BulkDelete"].Value,
+        BulkDeleteConfirm = SharedLocalizer["BulkDeleteConfirm"].Value,
+        AreYouSure = SharedLocalizer["AreYouSure"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        Export = SharedLocalizer["Export"].Value,
+        Import = SharedLocalizer["Import"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        Apply = SharedLocalizer["Apply"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        ShowAll = SharedLocalizer["ShowAll"].Value,
+        SaveView = SharedLocalizer["SaveView"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        Status = SharedLocalizer["Status"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        Details = SharedLocalizer["Details"].Value,
+        Description = SharedLocalizer["Description"].Value,
+        RecordCreated = SharedLocalizer["RecordCreated"].Value,
+        RecordUpdated = SharedLocalizer["RecordUpdated"].Value,
+        RecordSaved = SharedLocalizer["RecordSaved"].Value,
+        Save = SharedLocalizer["Save"].Value,
+        Update = SharedLocalizer["Update"].Value,
+        FormValidationError = SharedLocalizer["ValidationFailed"].Value,
+        NotAvailable = SharedLocalizer["NotAvailable"].Value,
+        CategoryLabels = new Dictionary<string, string>
+        {
+            ["TimeEntry.Category.ADMINISTRATION"] = Localizer["TimeEntry.Category.ADMINISTRATION"].Value,
+            ["TimeEntry.Category.INTERNAL_MEETING"] = Localizer["TimeEntry.Category.INTERNAL_MEETING"].Value,
+            ["TimeEntry.Category.TRAINING"] = Localizer["TimeEntry.Category.TRAINING"].Value,
+            ["TimeEntry.Category.SUPPORT"] = Localizer["TimeEntry.Category.SUPPORT"].Value,
+            ["TimeEntry.Category.TRAVEL"] = Localizer["TimeEntry.Category.TRAVEL"].Value
+        }
+    })
+</script>

@@ -1,0 +1,17 @@
+# verify from: /Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-10/mvp6-q372-observability-close-01 — shasum -a 256 -c ARTIFACTS.sha256 (this record's own files only; repo paths are in SOURCE-AS-MEASURED.sha256, never verified)
+31e683b1d9e9fd74fb88cd8adbef211a072d5106b38bff10cd0e9f58274c8ff0  REPORT.md
+5fc23a3b486d5e6cbb11c3ae782a3a7d282f383de4f29ea5ad817d6c52985b59  SOURCE-AS-MEASURED.sha256
+12c652ab31f2131e4e436b89fd3db84825c581fd965d973b79d7344fe1b30538  evidence/b-drive.jsonl
+78e4a0c30fa3b7c0c111b7b7d996ba848dde417f14a92dc93d1391ce9b014d4f  evidence/b-outbox-status.txt
+2cc906086315ea77fec29176e71467abc17f27d28dacf010aed5b5e2d7838a5c  evidence/b-snapshots.txt
+40b8aca8e0fc89ae41f68e22bdbc4a95cd1fdfe02aa862bc18bef7153f18cb82  evidence/b1-monitor-screen.txt
+6af030ac6cbed758db1af145a68a28ce20059df251d2f39522307b75a14341ec  evidence/b3-monitor-screen.txt
+203acb39a816b4765fc61ba892ed9db3deaeb56b0f51571de72e4fdb27170741  evidence/change.diff
+6fd40bcf6e3a3edc3645af3b030d60ef37d923eb7dc379f31d976dffcca6f042  evidence/counters-monitor-nontty.raw
+9b7f2086217c494385c4ac1bc3460e4e27daffa07c3626ac345faf7c309d1d02  evidence/drive.py
+901b71b51839b59358d43babdca23f605aa4cbadc9bcde4e0f21d3fefd4e0514  evidence/o1-fixed.log
+432e8faca039a477cbd1abc94529b85ce8d6262bd890189795d2177a6fff33d3  evidence/o1-restored.log
+568d640ba124f78e1fa4d8fb263623bc866b86cfec59115c89a53b1f5f6612fd  evidence/o1-sabotage.log
+37316da9d2f860221f5f55857c1ed8611d658c56ae668e42d1ac5d9236389a40  evidence/returns-failure-isolation.txt
+249e521329e4d2eefa8594ccca75729a7f401228352ca5c0649523c698a75c34  evidence/sc-suite.txt
+f4e255d60a792fbad84b7cfb2d1ed740b4ff3b94bda6f84208f8be0193e64433  evidence/telemetry-tests.txt

@@ -96,6 +96,20 @@ public sealed class UsersEditAccountKindProxyTests
         Assert.Equal("Service", doc.RootElement.GetProperty("data").GetProperty("accountKind").GetString());
     }
 
+    [Fact]
+    public async Task GetById_hands_the_edit_form_the_DERIVED_status_AuthService_reports()
+    {
+        // Finding 22 (owner, 2026-09-24): an invited account's edit form drew the activation switch, because the
+        // detail model dropped `status` and the form fell back to `isActive`. The status must survive the proxy.
+        var gateway = new CapturingGateway(HttpStatusCode.OK,
+            $$$"""{"isSuccessful":true,"data":{"id":"{{{UserId}}}","email":"a@b.test","firstName":"A","lastName":"B","isActive":false,"mustChangePassword":true,"roles":[],"accountKind":"Unknown","status":"Invited"}}""");
+        var controller = ControllerWith(gateway, Form());
+        var result = await controller.GetById(UserId);
+        using var doc = JsonDocument.Parse(JsonSerializer.Serialize(Assert.IsType<JsonResult>(result).Value));
+        Assert.True(doc.RootElement.GetProperty("success").GetBoolean());
+        Assert.Equal("Invited", doc.RootElement.GetProperty("data").GetProperty("status").GetString());
+    }
+
     // ── wiring ──
 
     private static UserEditViewModel EditModel() => new() { Email = "ali@acme.test", FirstName = "Ali", LastName = "Veli", IsActive = true };

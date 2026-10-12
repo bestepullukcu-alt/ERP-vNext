@@ -66,16 +66,14 @@ describe("the classification controls exist only for the holder of the explicit-
     expect(block).not.toMatch(/<option value="\d+"/);
   });
 
-  test("the quick view shows the kind badge to every reader but gates 'Change type' on the key", () => {
+  test("the quick view shows the kind badge to every reader and draws NO change control (owner, 2026-09-24)", () => {
     const source = quickView();
-    expect(source).toMatch(/@inject\s+Diten\.Web\.Services\.IPermissionSnapshot\s+Perms/);
     // The badge is outside any gate: a reader with auth.users.read sees the FACT.
     expect(gatedBlockContaining(source, 'id="oc-accountkind"'), "the badge itself must not be gated").toBeNull();
-    // The change control is inside the gate.
-    const block = gatedBlockContaining(source, 'id="oc-btn-accountkind"');
-    expect(block, "the change button is drawn outside the account-kind.manage gate").toBeTruthy();
-    expect(gatedBlockContaining(source, 'id="oc-accountkind-select"'), "the select is drawn outside the gate").toBeTruthy();
-    KINDS.forEach((k) => expect(block).toMatch(new RegExp(`<option value="${k}">`)));
+    // The quick view is a preview. The kind is changed on the edit form (one write path, one audit row); the
+    // interim "Change type" control that lived here is gone — for every reader, key or no key.
+    expect(source).not.toMatch(/oc-btn-accountkind/);
+    expect(source).not.toMatch(/oc-accountkind-select/);
   });
 
   test("no control is merely disabled for the unauthorized — it is absent (UAS-001)", () => {
@@ -88,26 +86,13 @@ describe("the classification controls exist only for the holder of the explicit-
 describe("the JS gates on the same key and talks only to the same-origin proxy", () => {
   const js = () => read("wwwroot", "assets", "js", "Governance", "Users", "index.js");
 
-  test("the change action is gated on the explicit-grant-only key", () => {
+  test("no quick-view change path is left in the module (owner, 2026-09-24)", () => {
     const source = js();
-    expect(source).toMatch(new RegExp(`can\\('${KEY.replace(/\./g, "\\.")}'\\)`));
-    // The handler bails out when the key is absent, before any confirm or fetch.
-    const handler = source.slice(source.indexOf("oc-btn-accountkind')?.addEventListener"));
-    expect(handler.indexOf("if (!canManageKind()) return;")).toBeGreaterThan(-1);
-    expect(handler.indexOf("if (!canManageKind()) return;")).toBeLessThan(handler.indexOf("window.showConfirm"));
-  });
-
-  test("the change goes through window.showConfirm (one dialog body, BL-367) and POSTs to /Users/api", () => {
-    const source = js();
-    expect(source).toMatch(/window\.showConfirm\?\.\(L\(\)\.ChangeAccountKind/);
-    expect(source).toMatch(/fetch\(`\/Users\/api\/\$\{id\}\/account-kind`/);
-    // Never a service port, never the gateway from the browser for this mutation.
+    expect(source).not.toMatch(/oc-btn-accountkind/);
+    expect(source).not.toMatch(/oc-accountkind-select/);
+    expect(source).not.toMatch(/\/account-kind`/);
+    // Never a service port from the browser.
     expect(source).not.toMatch(/localhost:505\d/);
-    expect(source).not.toMatch(/\$\{apiUrl\}\/api\/users\/\$\{[a-z]+\}\/account-kind/);
-  });
-
-  test("the request body carries the enum NAME under `kind`", () => {
-    expect(js()).toMatch(/body:\s*JSON\.stringify\(\{\s*kind\s*\}\)/);
   });
 
   test("an unknown or numeric kind collapses to Unknown, never to Human", () => {
@@ -253,20 +238,18 @@ describe("the account-kind selects are select2, and both of its seams are honour
 
   beforeEach(() => {
     const create = selectFromView(read("Views", "Governance", "Users", "_CreateEditOffcanvas.cshtml"), "userAccountKind");
-    const quick = selectFromView(read("Views", "Governance", "Users", "_DetailsQuickView.cshtml"), "oc-accountkind-select");
     document.body.innerHTML =
       `<div class="offcanvas" id="offcanvasCreateEdit">${create}</div>` +
-      `<div class="offcanvas" id="offcanvasDetailsPreview">${quick}</div>`;
+      `<div class="offcanvas" id="offcanvasDetailsPreview"></div>`;
     usersList.offcanvasSelects.init();
   });
 
   const created = () => document.getElementById("userAccountKind");
-  const quickView = () => document.getElementById("oc-accountkind-select");
   const paintedBoxOf = (el) => el.nextElementSibling;
   const shownText = (el) => paintedBoxOf(el).querySelector(".select2-selection__rendered").textContent.trim();
 
-  test("both selects are wrapped — the view marks them and the module wraps what the view marked", () => {
-    [created(), quickView()].forEach((el) => {
+  test("the create/edit select is wrapped — the view marks it and the module wraps what the view marked", () => {
+    [created()].forEach((el) => {
       expect(el.classList.contains("select2-offcanvas"), `${el.id} lost the select2 marker in the view`).toBe(true);
       expect(el.classList.contains("select2-hidden-accessible"), `${el.id} was not wrapped`).toBe(true);
       expect(paintedBoxOf(el).classList.contains("select2-container")).toBe(true);
@@ -276,7 +259,7 @@ describe("the account-kind selects are select2, and both of its seams are honour
   test("the dropdown opens INSIDE its own offcanvas, not on <body>", () => {
     // Without dropdownParent select2 appends to <body>, which sits below the offcanvas in the stacking
     // context — the list opens behind the panel, which is the whole reason this screen never got select2.
-    [["userAccountKind", "offcanvasCreateEdit"], ["oc-accountkind-select", "offcanvasDetailsPreview"]]
+    [["userAccountKind", "offcanvasCreateEdit"]]
       .forEach(([selectId, panelId]) => {
         global.jQuery(`#${selectId}`).select2("open");
         const dropdown = document.querySelector(".select2-dropdown");
@@ -298,7 +281,7 @@ describe("the account-kind selects are select2, and both of its seams are honour
   });
 
   test("seam 2 — hiding through the module hides the painted box too (the permission withdrawal)", () => {
-    const el = quickView();
+    const el = created();
     usersList.offcanvasSelects.setHidden(el, true);
     expect(el.classList.contains("d-none")).toBe(true);
     expect(paintedBoxOf(el).classList.contains("d-none"), "the control the user can actually see stayed visible").toBe(true);
@@ -313,8 +296,7 @@ describe("the account-kind selects are select2, and both of its seams are honour
     expect(source).not.toMatch(/kindSelect\.value\s*=/);
     expect(source).not.toMatch(/kindSelect\.classList\.toggle\('d-none'/);
     expect(source).toMatch(/setSelectValue\(byId\('userAccountKind'\), ''\)/);
-    expect(source).toMatch(/setSelectValue\(kindSelect, normalizeAccountKind\(data\.accountKind\)\)/);
-    expect(source).toMatch(/setSelectHidden\(kindSelect, !canManageKind\(\)\)/);
+    expect(source).toMatch(/setSelectValue\(byId\('userAccountKind'\), currentKind === 'Unknown' \? '' : currentKind\)/);
   });
 });
 
@@ -378,19 +360,12 @@ describe("the account type is a select on the edit form, saved by Update", () =>
     expect(read("wwwroot", "assets", "js", "diten-datatable.js")).toMatch(/form\.submit\(new FormData\(formEl\), isEdit/);
   });
 
-  test("the account-kind route keeps exactly one caller: the quick view's 'Change type'", () => {
+  test("the account-kind route has no caller left on this page — the edit form's Update is the one write", () => {
+    // 2026-09-24 (owner): the quick view's "Change type" is gone; the kind is a saved field of the edit form.
     const source = js();
-    const posts = source.match(/\/Users\/api\/\$\{id\}\/account-kind/g) || [];
-    expect(posts.length, "the account-kind write exists in more than one place again").toBe(1);
-    expect(source).toContain("const postAccountKind = async (id, kind)");
-    const callers = source.match(/postAccountKind\(/g) || []; // the declaration is `postAccountKind = async (`
-    expect(callers.length, "postAccountKind gained or lost a caller (the quick view is the only one)").toBe(1);
-    // The one caller sits in the quick view's "Change type" handler, and the write closes the QUICK VIEW, never the form.
-    const handler = source.slice(source.indexOf("byId('oc-btn-accountkind')?.addEventListener"));
-    expect(handler).toMatch(/postAccountKind\(id, kind\)/);
-    const post = source.slice(source.indexOf("const postAccountKind"), source.indexOf("const showInviteLink"));
-    expect(post).toMatch(/Offcanvas\.getInstance\(byId\('offcanvasDetailsPreview'\)\)\?\.hide\(\)/);
-    expect(post).not.toMatch(/offcanvasCreateEdit/);
+    expect(source).not.toMatch(/\/Users\/api\/\$\{id\}\/account-kind/);
+    expect(source).not.toContain("postAccountKind");
+    expect(source).not.toContain("oc-btn-accountkind");
   });
 
   test("the edit select starts from the kind AuthService reports, through the select2-safe setter", () => {

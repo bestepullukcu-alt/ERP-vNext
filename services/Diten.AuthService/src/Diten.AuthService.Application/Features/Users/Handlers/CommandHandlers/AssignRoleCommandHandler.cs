@@ -1,6 +1,7 @@
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.Features.Users.Commands;
+using Diten.AuthService.Application.Features.Users.Services;
 using Diten.AuthService.Domain.Entities;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -14,7 +15,7 @@ public sealed class AssignRoleCommandHandler : IRequestHandler<AssignRoleCommand
     private readonly IUserRoleRepository _userRoleRepository;
     private readonly IRoleAssignmentVersionService _versionService;
     private readonly ITenantContext _tenantContext;
-    private readonly IRbacAuditRecorder _rbacAudit;
+    private readonly IUserAuditRecorder _userAudit;
     private readonly ICurrentUserAccessor _currentUser;
     private readonly ILogger<AssignRoleCommandHandler> _logger;
 
@@ -24,7 +25,7 @@ public sealed class AssignRoleCommandHandler : IRequestHandler<AssignRoleCommand
         IUserRoleRepository userRoleRepository,
         IRoleAssignmentVersionService versionService,
         ITenantContext tenantContext,
-        IRbacAuditRecorder rbacAudit,
+        IUserAuditRecorder userAudit,
         ICurrentUserAccessor currentUser,
         ILogger<AssignRoleCommandHandler> logger)
     {
@@ -33,7 +34,7 @@ public sealed class AssignRoleCommandHandler : IRequestHandler<AssignRoleCommand
         _userRoleRepository = userRoleRepository;
         _versionService = versionService;
         _tenantContext = tenantContext;
-        _rbacAudit = rbacAudit;
+        _userAudit = userAudit;
         _currentUser = currentUser;
         _logger = logger;
     }
@@ -61,8 +62,9 @@ public sealed class AssignRoleCommandHandler : IRequestHandler<AssignRoleCommand
         await _versionService.IncrementAsync(_tenantContext.TenantId, ct);
 
         // FEAT-AUDIT-RBAC — a role was newly assigned to a user (idempotent no-op above is not audited).
-        await _rbacAudit.RecordAsync("user_role_assigned", _tenantContext.TenantId,
-            new { targetUserId = request.UserId, roleId = request.RoleId, roleName = role.Name }, ct);
+        // BL-456 — the same row as before, now through the user audit recorder so it also reaches Platform's log.
+        await _userAudit.RecordAsync(UserAuditEvents.RoleAssigned, _tenantContext.TenantId, request.UserId,
+            new Dictionary<string, object?> { ["roleId"] = request.RoleId, ["roleName"] = role.Name }, ct);
 
         return Response<NoContent>.Success(204);
     }

@@ -338,4 +338,144 @@ public sealed class TaskReadAccessPolicyTests
         Assert.DoesNotContain(Me, candidates);
         Assert.Contains(Rival, candidates);
     }
+
+    // ── BL-484 — the batched form: the same answer as CanReadAsync, task by task ──────────────────────────────────
+
+    /// <summary>One task per leg (and per refusal) in ONE batch, with the scope, team and ReadAll legs switchable.</summary>
+    private static (Harness Harness, Dictionary<string, TaskItem> Tasks) EveryLeg(bool readAll)
+    {
+        var coveredUnit = new OrganizationUnit
+        {
+            Id = Guid.NewGuid(), TenantId = TaskTestData.Tenant, Code = "COVERED", Name = "Covered", LegalEntityId = Guid.NewGuid()
+        };
+        var otherUnit = new OrganizationUnit
+        {
+            Id = Guid.NewGuid(), TenantId = TaskTestData.Tenant, Code = "OTHER", Name = "Other", LegalEntityId = Guid.NewGuid()
+        };
+        var archivedUnit = new OrganizationUnit
+        {
+            Id = Guid.NewGuid(), TenantId = TaskTestData.Tenant, Code = "ARCHIVED", Name = "Archived", LegalEntityId = Guid.NewGuid(),
+            IsArchived = true
+        };
+        var h = new Harness
+        {
+            OrganizationUnits = new FakeOrganizationUnitRepository(coveredUnit, otherUnit, archivedUnit),
+            Scope = new TaskAssignmentScopeResolver(
+                new FakeDataScopeResolver(
+                    new EntitlementDataScope(EntitlementDataScopeKind.OrgUnit, coveredUnit.Id, "granted"),
+                    new EntitlementDataScope(EntitlementDataScopeKind.OrgUnit, archivedUnit.Id, "granted")),
+                new FakePositionRepository(),
+                new FakeOrganizationUnitRepository(coveredUnit, otherUnit, archivedUnit),
+                new FakeTenantContext(TaskTestData.Tenant),
+                new FakeCurrentUserContext(Me)),
+            Team = new FakeTaskTeamResolver(Rival),
+            Permissions = readAll ? TaskActors.Holding(TaskPermissions.ReadAll) : TaskActors.None()
+        };
+
+        var parentAssigned = NewTask(assignee: Me, createdBy: Other);
+        var parentPooled = NewTask(target: TaskAssignmentTarget.PositionPool, poolPositionId: Guid.NewGuid());
+        var parentCreated = NewTask(assignee: Other, createdBy: Me);
+        var parentWatched = NewTask(assignee: Other, createdBy: Other);
+        foreach (var parent in new[] { parentAssigned, parentPooled, parentCreated, parentWatched })
+        {
+            h.Tasks.CreateAsync(parent, CancellationToken.None).GetAwaiter().GetResult();
+        }
+
+        h.Notifications.PoolHoldersByTaskId[parentPooled.Id] = [Me];
+        h.Watchers.CreateAsync(new TaskWatcher { TenantId = TaskTestData.Tenant, TaskItemId = parentWatched.Id, UserId = Me }, CancellationToken.None)
+            .GetAwaiter().GetResult();
+
+        TaskItem InUnit(TaskItem task, OrganizationUnit unit)
+        {
+            task.OrganizationUnitId = unit.Id;
+            return task;
+        }
+
+        var tasks = new Dictionary<string, TaskItem>
+        {
+            ["assignee"] = NewTask(assignee: Me, createdBy: Other),
+            ["pool"] = NewTask(target: TaskAssignmentTarget.PositionPool, poolPositionId: Guid.NewGuid()),
+            ["creator"] = NewTask(assignee: Rival, createdBy: Me),
+            ["watcher"] = NewTask(assignee: Other, createdBy: Other),
+            ["askedOf"] = NewTask(assignee: Other, createdBy: Other),
+            ["parentAssignee"] = NewTask(assignee: Other, createdBy: Other, parentId: parentAssigned.Id),
+            ["parentPool"] = NewTask(assignee: Other, createdBy: Other, parentId: parentPooled.Id),
+            ["parentCreator"] = NewTask(assignee: Other, createdBy: Other, parentId: parentCreated.Id),
+            ["parentWatcher"] = NewTask(assignee: Other, createdBy: Other, parentId: parentWatched.Id),
+            ["danglingParent"] = NewTask(assignee: Other, createdBy: Other, parentId: Guid.NewGuid()),
+            ["scope"] = InUnit(NewTask(assignee: Other, createdBy: Other), coveredUnit),
+            ["scopeElsewhere"] = InUnit(NewTask(assignee: Other, createdBy: Other), otherUnit),
+            ["scopeArchived"] = InUnit(NewTask(assignee: Other, createdBy: Other), archivedUnit),
+            ["team"] = NewTask(assignee: Rival, createdBy: Other),
+            ["teamCreatedOnly"] = NewTask(assignee: Other, createdBy: Rival),
+            ["unrelated"] = NewTask(assignee: Other, createdBy: Other)
+        };
+        h.Notifications.PoolHoldersByTaskId[tasks["pool"].Id] = [Me];
+        h.Watchers.CreateAsync(new TaskWatcher { TenantId = TaskTestData.Tenant, TaskItemId = tasks["watcher"].Id, UserId = Me }, CancellationToken.None)
+            .GetAwaiter().GetResult();
+        tasks["askedOf"].Lifecycle = TaskLifecycle.Waiting;
+        tasks["askedOf"].WaitingOnUserId = Me;
+        return (h, tasks);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task The_batched_form_admits_exactly_the_tasks_CanReadAsync_admits_for_the_caller(bool readAll)
+    {
+        var (h, tasks) = EveryLeg(readAll);
+        var policy = h.Build();
+
+        var batched = await policy.ReadableTaskIdsAsync(tasks.Values.ToList(), Me, CancellationToken.None);
+
+        var oneByOne = new HashSet<Guid>();
+        foreach (var task in tasks.Values)
+        {
+            if (await policy.CanReadAsync(task, Me, CancellationToken.None))
+            {
+                oneByOne.Add(task.Id);
+            }
+        }
+
+        Assert.Equal(oneByOne.OrderBy(id => id), batched.OrderBy(id => id));
+        var admitted = tasks.Where(t => batched.Contains(t.Value.Id)).Select(t => t.Key).OrderBy(k => k, StringComparer.Ordinal).ToList();
+        var expected = readAll
+            ? tasks.Keys.OrderBy(k => k, StringComparer.Ordinal).ToList()
+            : new[] { "askedOf", "assignee", "creator", "parentAssignee", "parentPool", "pool", "scope", "team", "watcher" }.ToList();
+        Assert.Equal(expected, admitted);
+    }
+
+    [Fact]
+    public async Task The_batched_form_asked_about_someone_else_answers_from_the_data_legs_only()
+    {
+        // Watcher is not the caller: scope, team and ReadAll must not answer for them — exactly CanReadAsync's narrowing.
+        var (h, tasks) = EveryLeg(readAll: true);
+        var policy = h.Build();
+        h.Watchers.CreateAsync(new TaskWatcher { TenantId = TaskTestData.Tenant, TaskItemId = tasks["unrelated"].Id, UserId = Watcher }, CancellationToken.None)
+            .GetAwaiter().GetResult();
+
+        var batched = await policy.ReadableTaskIdsAsync(tasks.Values.ToList(), Watcher, CancellationToken.None);
+
+        var oneByOne = new HashSet<Guid>();
+        foreach (var task in tasks.Values)
+        {
+            if (await policy.CanReadAsync(task, Watcher, CancellationToken.None))
+            {
+                oneByOne.Add(task.Id);
+            }
+        }
+
+        Assert.Equal(oneByOne.OrderBy(id => id), batched.OrderBy(id => id));
+        Assert.Equal([tasks["unrelated"].Id], batched.ToList());
+    }
+
+    [Fact]
+    public async Task The_batched_form_reads_the_watchers_of_all_the_tasks_at_once()
+    {
+        var (h, tasks) = EveryLeg(readAll: false);
+
+        await h.Build().ReadableTaskIdsAsync(tasks.Values.ToList(), Me, CancellationToken.None);
+
+        Assert.Equal(0, h.Watchers.ListByTaskIdCalls);                 // never the one-task read, whatever the batch size
+    }
 }

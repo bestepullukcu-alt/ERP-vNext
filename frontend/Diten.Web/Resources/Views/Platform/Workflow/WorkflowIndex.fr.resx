@@ -103,7 +103,6 @@
   <data name="ActorId" xml:space="preserve"><value>Actor Id</value></data>
   <data name="DelegatePrincipalId" xml:space="preserve"><value>Delegate Principal Id</value></data>
   <data name="TargetPrincipalId" xml:space="preserve"><value>Target Principal Id</value></data>
-  <data name="ActorIdRequired" xml:space="preserve"><value>Actor Id is required.</value></data>
   <data name="ReasonCodeRequired" xml:space="preserve"><value>Reason Code is required.</value></data>
   <data name="IdempotencyKeyRequired" xml:space="preserve"><value>Idempotency Key is required.</value></data>
   <data name="DelegatePrincipalRequired" xml:space="preserve"><value>Delegate Principal Id is required.</value></data>

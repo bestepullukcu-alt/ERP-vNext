@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="CarriersTitle" xml:space="preserve"><value>Carriers</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>View carriers, create a carrier, and manage lifecycle status.</value></data>
+  <data name="AddNewCarrier" xml:space="preserve"><value>Add Carrier</value></data>
+  <data name="CarrierCode" xml:space="preserve"><value>Carrier Code</value></data>
+  <data name="CarrierCodePlaceholder" xml:space="preserve"><value>Enter the carrier code</value></data>
+  <data name="DisplayName" xml:space="preserve"><value>Display Name</value></data>
+  <data name="DisplayNamePlaceholder" xml:space="preserve"><value>Enter the display name</value></data>
+  <data name="SupportedModes" xml:space="preserve"><value>Supported Modes</value></data>
+  <data name="SupportedModesPlaceholder" xml:space="preserve"><value>Select one or more modes</value></data>
+  <data name="ExternalReference" xml:space="preserve"><value>External Reference</value></data>
+  <data name="ExternalReferencePlaceholder" xml:space="preserve"><value>Enter an optional external reference</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Quick View</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Active</value></data>
+  <data name="StatusSuspended" xml:space="preserve"><value>Suspended</value></data>
+  <data name="StatusRetired" xml:space="preserve"><value>Retired</value></data>
+  <data name="ModeRoad" xml:space="preserve"><value>Road</value></data>
+  <data name="ModeAir" xml:space="preserve"><value>Air</value></data>
+  <data name="ModeSea" xml:space="preserve"><value>Sea</value></data>
+  <data name="ModeRail" xml:space="preserve"><value>Rail</value></data>
+  <data name="ModeParcel" xml:space="preserve"><value>Parcel</value></data>
+  <data name="ChangeStatus" xml:space="preserve"><value>Change Status</value></data>
+  <data name="ChangeStatusTitle" xml:space="preserve"><value>Change Carrier Status</value></data>
+  <data name="TargetStatus" xml:space="preserve"><value>Target Status</value></data>
+  <data name="ReasonCode" xml:space="preserve"><value>Reason Code</value></data>
+  <data name="ReasonCodePlaceholder" xml:space="preserve"><value>Enter a reason, or leave it empty</value></data>
+  <data name="ReasonCodeHelp" xml:space="preserve"><value>An empty reason is valid for this command.</value></data>
+  <data name="StatusChangeConfirm" xml:space="preserve"><value>Apply this carrier status change?</value></data>
+  <data name="ConfirmStatusChange" xml:space="preserve"><value>Apply Status</value></data>
+  <data name="CreateSuccess" xml:space="preserve"><value>Carrier created successfully.</value></data>
+  <data name="CreateReplaySuccess" xml:space="preserve"><value>This carrier request was already completed successfully.</value></data>
+  <data name="StatusSuccess" xml:space="preserve"><value>Carrier status changed successfully.</value></data>
+  <data name="StatusReplaySuccess" xml:space="preserve"><value>This status request was already completed successfully.</value></data>
+  <data name="ValidationError" xml:space="preserve"><value>Check the entered values and try again.</value></data>
+  <data name="AccessDenied" xml:space="preserve"><value>You no longer have permission for this action.</value></data>
+  <data name="CarrierNotFound" xml:space="preserve"><value>The carrier could not be found.</value></data>
+  <data name="CarrierCodeConflict" xml:space="preserve"><value>This carrier code is already reserved.</value></data>
+  <data name="IdempotencyKeyReused" xml:space="preserve"><value>This request was already received with different values. To make a different request, close this form and open a new one.</value></data>
+  <data name="InvalidCarrierTransition" xml:space="preserve"><value>The current carrier status no longer permits this change.</value></data>
+  <data name="PersistenceUnavailable" xml:space="preserve"><value>The request outcome is unavailable.</value></data>
+  <data name="ListUnavailable" xml:space="preserve"><value>Carriers could not be loaded. Try again later.</value></data>
+  <data name="InternalError" xml:space="preserve"><value>An unexpected error occurred.</value></data>
+  <data name="RetrySameRequest" xml:space="preserve"><value>Retry without changing the form to preserve the request identity.</value></data>
+  <data name="SupportReference" xml:space="preserve"><value>Support reference</value></data>
+  <data name="EmptyList" xml:space="preserve"><value>No carriers were found.</value></data>
+</root>

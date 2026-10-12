@@ -658,22 +658,10 @@ public sealed class WorkflowCrossServiceTests
         Assert.Equal(WorkflowInstanceStatus.Completed, f.Store.Instances.Single().Status);
     }
 
-    [Fact]
-    public async Task Fx_an_instance_started_before_the_fix_still_blocks_its_starter_through_the_start_log()
-    {
-        // Legacy row: StartedBy holds the e-mail, no starter id field; the Start log row has always carried the
-        // starter's user id (StartWorkflowInstanceHandler), so open tasks of old instances stay protected.
-        var f = new Fx(TenantA);
-        var run = f.SeedRuntime(startedBy: "starter@tenant.test");
-        f.Store.Snapshots.Single().ResolvedPrincipalId = FxStarter.ToString();
-        f.Store.Logs.Single().ActorId = FxStarter.ToString();
-
-        var r = await f.Approve().Handle(new ApproveWorkflowTaskCommand(run.Task.Id,
-            new ApproveWorkflowTaskRequest(FxStarter.ToString(), "APPROVED", "fx-sod-3", null, null), Correlation), default);
-
-        Assert.Equal(409, r.StatusCode);
-        Assert.Equal(WorkflowReasonCodes.SodViolation, r.ReasonCode);
-    }
+    // WP-MVP1-SYNC1 (owner decision B, 2026-10-12): "Fx_an_instance_started_before_the_fix_still_blocks_its_starter_through
+    // _the_start_log" was removed with the Start-log fallback. An instance from before StartedByUserId keeps main's old
+    // comparison (WP-WORKFLOW-APPROVAL-STATUS-01, test An_instance_from_before_the_field_keeps_the_old_comparison) — a known
+    // gap the owner accepted. New instances: SoD by user id, unchanged (the two tests above and main's B2 tests).
 
     [Fact]
     public async Task Fx_assignment_and_SoD_compare_user_ids_as_ids_not_as_text_casing()
@@ -687,9 +675,12 @@ public sealed class WorkflowCrossServiceTests
             new ApproveWorkflowTaskRequest(FxOther.ToString(), "APPROVED", "fx-case-1", null, null), Correlation), default);
         Assert.True(approved.IsSuccessful, string.Join(",", approved.Errors));
 
+        // WP-MVP1-SYNC1 — a NEW instance (StartedByUserId set, main's Guid): the starter is compared as an id, so the
+        // upper-case snapshot principal and the lower-case JWT sub are the same person and the approve is refused.
         var g = new Fx(TenantA);
         var own = g.SeedRuntime(startedBy: FxStarter.ToString().ToUpperInvariant());
-        g.Store.Snapshots.Single().ResolvedPrincipalId = FxStarter.ToString();
+        own.Instance.StartedByUserId = FxStarter;
+        g.Store.Snapshots.Single().ResolvedPrincipalId = FxStarter.ToString().ToUpperInvariant();
         var refused = await g.Approve().Handle(new ApproveWorkflowTaskCommand(own.Task.Id,
             new ApproveWorkflowTaskRequest(FxStarter.ToString(), "APPROVED", "fx-case-2", null, null), Correlation), default);
         Assert.Equal(WorkflowReasonCodes.SodViolation, refused.ReasonCode);

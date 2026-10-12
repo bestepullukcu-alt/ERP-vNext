@@ -1,0 +1,31 @@
+--- a/docs/reference/architecture/docs-path-authority.json
++++ b/docs/reference/architecture/docs-path-authority.json
+@@ -1,10 +1,7 @@
+ {
+   "schemaVersion": 1,
+-  "status": "APPROVED",
+-  "decision": {
+-    "path": "docs/records/decisions/2026-09/mvp6-sandop-publication-guard-owner-decision-01.json",
+-    "sha256": "e618a1f06ebca5028157a90fab8b7d799c6fde187802003de5056e21c8476654"
+-  },
++  "status": "UNAPPROVED",
++  "decision": null,
+   "canonicalTargets": [
+     {
+       "path": "docs/analysis/contracts/shipment-bundle.openapi.yaml",
+@@ -334,6 +331,15 @@
+       "provenanceSha256": "dc7aa123eef262014ded3bc90c325b92df71aaaf7ed668cfa732a903fe8f9f57",
+       "provenanceLine": 14,
+       "targets": []
++    },
++    {
++      "path": "docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-ver-01/raw/input-bindings-recomputed.json",
++      "sha256": "edfeaace44b96c2699e62da3bd8fe9f16b6f836e5ef5d1988ced3f657b43d21a",
++      "kind": "historical-data",
++      "provenancePath": "docs/records/audits/2026-09/mvp6-capacity-guard-single-disposition-01/PROVENANCE.md",
++      "provenanceSha256": "401174ea2ff6e12861a9f2e375f5990f42bd879623ecc20b8c83e21f93f2ceda",
++      "provenanceLine": 3,
++      "targets": []
+     }
+   ]
+ }

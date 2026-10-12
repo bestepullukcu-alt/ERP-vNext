@@ -1,0 +1,36 @@
+Q122 FINAL-CHECK 2026-09-27T15:40:51+0300
+uname: Darwin
+branch: feature/mvp6-logistics
+HEAD: 4a8d4d4b339528a88e6220fb8402e5a2c771136c
+index.lock: absent
+diff --name-only count: 19
+diff --cached --name-only count: 0
+diff --check: clean
+status --porcelain entries: 494 (start 492; +1 this folder; +1 mvp6-q121b-build-test-01/ from the parallel Q121b lane)
+new untracked folders since start:
+  ?? docs/records/audits/2026-09/mvp6-q121b-build-test-01/
+  ?? docs/records/audits/2026-09/mvp6-q122-ver-claims-v3-01/
+diff paths:
+  .antigravity/rules/docs-organization.md
+  .claude/settings.local.json
+  docs/analysis/contracts/sandop-capacity.openapi.yaml
+  docs/analysis/contracts/shipment-bundle.openapi.yaml
+  docs/roadmap/backlog/product-backlog.md
+  execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md
+  execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md
+  execution/domains/supply-chain-execution/module-packs/MOD-0185-routing-load-planning.md
+  execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md
+  execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md
+  execution/domains/supply-chain-execution/module-packs/MOD-0190-sop-workflow-signoffs.md
+  execution/domains/supply-chain-execution/module-packs/MOD-0192-capacity-planning.md
+  execution/portfolio/delivery-capability-packs/DCP-009-supply-chain-inventory.md
+  services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs
+  services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Handlers/QueryHandlers/GetShipmentByIdHandler.cs
+  services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/ShipmentProjection.cs
+  services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/IShipmentRepository.cs
+  services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Shipments/ShipmentRepository.cs
+  tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs
+lane ports still listening (57192 57222 39994 5900 5901 5956 5957 5959 5961 5999):
+  (end of list)
+lane processes (dotnet / k00_supervisor / playwright chromium): 0
+BASE folder mode: dr-xr-xr-x

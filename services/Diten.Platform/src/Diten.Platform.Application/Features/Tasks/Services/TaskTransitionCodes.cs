@@ -46,6 +46,9 @@ public static class TaskTransitionCodes
             // BL-439 — the question a waiting task was parked on was answered by the person it was asked of.
             [TaskTransitionKind.InquiryAnswered] = "inquiryAnswered",
 
+            // WP-TASK-CALENDAR-ENGINE-01 — the plan day and block were cleared (POST {id}/unplan).
+            [TaskTransitionKind.Unplanned] = "unplanned",
+
             [TaskTransitionKind.Unknown] = "unknown"
         };
 

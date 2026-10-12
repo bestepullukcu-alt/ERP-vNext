@@ -1,0 +1,12 @@
+{
+  "command": [
+    "mongosh",
+    "--quiet",
+    "mongodb://127.0.0.1:27989/",
+    "--eval",
+    "JSON.stringify(rs.initiate({_id:\"mvp6_normal_integration_net8\",members:[{_id:0,host:\"127.0.0.1:27989\"}]}))"
+  ],
+  "exit": 0,
+  "stdout": "{\"ok\":1,\"$clusterTime\":{\"clusterTime\":{\"$timestamp\":\"7688252576671727617\"},\"signature\":{\"hash\":\"AAAAAAAAAAAAAAAAAAAAAAAAAAA=\",\"keyId\":{\"low\":0,\"high\":0,\"unsigned\":false}}},\"operationTime\":{\"$timestamp\":\"7688252576671727617\"}}\n",
+  "stderr": ""
+}

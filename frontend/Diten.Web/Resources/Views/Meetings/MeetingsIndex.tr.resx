@@ -114,4 +114,34 @@
   <data name="FormValidationError" xml:space="preserve"><value>Lütfen zorunlu tüm alanları doldurun.</value></data>
   <data name="ManageTypes" xml:space="preserve"><value>Toplantı Türleri</value></data>
   <data name="ManageSeries" xml:space="preserve"><value>Toplantı Serileri</value></data>
+  <data name="ViewSwitchLabel" xml:space="preserve">
+    <value>Görünüm</value>
+  </data>
+  <data name="ViewList" xml:space="preserve">
+    <value>Liste</value>
+  </data>
+  <data name="ViewCalendar" xml:space="preserve">
+    <value>Takvim</value>
+  </data>
+  <data name="CalendarInvitesTitle" xml:space="preserve">
+    <value>Yanıt bekleyen davetlerim</value>
+  </data>
+  <data name="CalendarInvitesEmpty" xml:space="preserve">
+    <value>Yanıtınızı bekleyen davet yok.</value>
+  </data>
+  <data name="CalendarLegendAccepted" xml:space="preserve">
+    <value>Kabul ettiğim ya da düzenlediğim</value>
+  </data>
+  <data name="CalendarLegendPending" xml:space="preserve">
+    <value>Yanıtımı bekleyen</value>
+  </data>
+  <data name="CalendarLegendOther" xml:space="preserve">
+    <value>Diğer toplantılar</value>
+  </data>
+  <data name="CalendarLoadFailed" xml:space="preserve">
+    <value>Takvim yüklenemedi.</value>
+  </data>
+  <data name="InviteAccepted" xml:space="preserve">
+    <value>Davet kabul edildi.</value>
+  </data>
 </root>

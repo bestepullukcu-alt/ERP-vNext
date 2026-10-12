@@ -23,7 +23,7 @@ public sealed class StrategyTemplateBindingValidationTests
     private CreateStrategyTemplateHandler Create() => new(
         StrategyTemplateTestDoubles.Tenant(StrategyTemplateTestDoubles.TenantA),
         new NullActorContext(), _templates,
-        new StrategyTemplateBindingValidator(_segments, _policies, _paths, _journeys),
+        new StrategyTemplateBindingValidator(_segments, _policies, _paths, _journeys, _journeys.Subjects),
         _references, StrategyTemplateTestDoubles.DefaultScope());
 
     private static void AssertCode(string expected, IReadOnlyList<string>? errors)
@@ -250,73 +250,67 @@ public sealed class StrategyTemplateBindingValidationTests
     [Fact]
     public async Task An_unpublished_knowledge_path_cannot_be_bound()
     {
-        var segment = _segments.Add(StrategyTemplateTestDoubles.TenantA);
         var draftPath = _paths.Add(StrategyTemplateTestDoubles.TenantA, status: KnowledgePathStatuses.Draft);
-        var command = StrategyTemplateTestBuilders.NewTemplate(segment.Id) with
-        {
-            ContentBindings = new[] { StrategyTemplateTestBuilders.KnowledgePath(draftPath.Id) }
-        };
 
-        var response = await Create().Handle(command, default);
+        var failure = await ProveRetained(Binding(StrategyContentRefTypes.KnowledgePath, draftPath.Id));
 
-        Assert.Equal(400, response.StatusCode);
-        AssertCode(StrategyTemplateErrorCodes.ContentNotPublished, response.Errors);
+        Assert.Equal(StrategyTemplateErrorCodes.ContentNotPublished, failure!.Code);
     }
 
     [Fact]
     public async Task An_archived_journey_cannot_be_bound()
     {
-        var segment = _segments.Add(StrategyTemplateTestDoubles.TenantA);
         var journey = _journeys.Add(StrategyTemplateTestDoubles.TenantA, archived: true);
-        var command = StrategyTemplateTestBuilders.NewTemplate(segment.Id) with
-        {
-            ContentBindings = new[] { StrategyTemplateTestBuilders.Journey(journey.Id) }
-        };
 
-        var response = await Create().Handle(command, default);
+        var failure = await ProveRetained(Binding(StrategyContentRefTypes.ContentEngagementJourney, journey.Id));
 
-        Assert.Equal(400, response.StatusCode);
-        AssertCode(StrategyTemplateErrorCodes.ContentArchived, response.Errors);
+        Assert.Equal(StrategyTemplateErrorCodes.ContentArchived, failure!.Code);
     }
 
     [Fact]
     public async Task An_unknown_content_reference_is_refused()
     {
-        var segment = _segments.Add(StrategyTemplateTestDoubles.TenantA);
-        var command = StrategyTemplateTestBuilders.NewTemplate(segment.Id) with
-        {
-            ContentBindings = new[] { StrategyTemplateTestBuilders.Journey(Guid.NewGuid()) }
-        };
+        var failure = await ProveRetained(Binding(StrategyContentRefTypes.ContentEngagementJourney, Guid.NewGuid()));
 
-        var response = await Create().Handle(command, default);
-
-        Assert.Equal(400, response.StatusCode);
-        AssertCode(StrategyTemplateErrorCodes.ContentReferenceNotFound, response.Errors);
+        Assert.Equal(StrategyTemplateErrorCodes.ContentReferenceNotFound, failure!.Code);
     }
 
     [Fact]
     public async Task Both_content_kinds_bind_and_stamp_their_business_version()
     {
-        var segment = _segments.Add(StrategyTemplateTestDoubles.TenantA);
         var path = _paths.Add(StrategyTemplateTestDoubles.TenantA);
         var journey = _journeys.Add(StrategyTemplateTestDoubles.TenantA);
-        var command = StrategyTemplateTestBuilders.NewTemplate(segment.Id) with
+        var bindings = new[]
         {
-            ContentBindings = new[]
-            {
-                StrategyTemplateTestBuilders.KnowledgePath(path.Id),
-                StrategyTemplateTestBuilders.Journey(journey.Id)
-            }
+            Binding(StrategyContentRefTypes.KnowledgePath, path.Id, 10),
+            Binding(StrategyContentRefTypes.ContentEngagementJourney, journey.Id, 20)
         };
 
-        var response = await Create().Handle(command, default);
-
-        Assert.True(response.IsSuccessful);
-        var bindings = _templates.Rows.Single().ContentBindings;
-        Assert.Equal(2, bindings.Count);
+        Assert.Null(await ProveRetained(bindings));
         Assert.All(bindings, b => Assert.Equal("1.0", b.ContentVersionAtBinding));
         Assert.Contains(bindings, b => b.ContentCodeDisplay == "onboarding");
         Assert.Contains(bindings, b => b.ContentCodeDisplay == "adoption");
+    }
+
+    // WP-SB-3a — a NEW template-level binding is refused (409 content_binding_type_retired) before any proof runs, so the
+    // proofs above run on a stored template that already carries the binding — exactly what an update keeping an
+    // existing (retired) binding re-validates.
+    private static StrategyTemplateContentBinding Binding(string type, Guid id, int sortOrder = 10)
+        => new() { ContentRefType = type, ContentRefId = id, SortOrder = sortOrder };
+
+    private Task<StrategyTemplateValidation.Failure?> ProveRetained(params StrategyTemplateContentBinding[] bindings)
+    {
+        var segment = _segments.Add(StrategyTemplateTestDoubles.TenantA);
+        var template = new Diten.CrmService.Domain.Entities.StrategyTemplate
+        {
+            TenantId = StrategyTemplateTestDoubles.TenantA, TemplateCode = "legacy-play", TemplateName = "Legacy",
+            SubjectType = StrategyTemplateSubjectTypes.Contact,
+            SegmentBindings = { new StrategyTemplateSegmentBinding { SegmentId = segment.Id, SortOrder = 10 } },
+            FrequencyIntent = new StrategyTemplateFrequencyIntent { Mode = StrategyFrequencyIntentModes.None },
+            ContentBindings = bindings.ToList()
+        };
+        return new StrategyTemplateBindingValidator(_segments, _policies, _paths, _journeys, _journeys.Subjects)
+            .ValidateAsync(StrategyTemplateTestDoubles.TenantA, template, requireActiveSegments: false, default);
     }
 
     [Fact]

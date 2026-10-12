@@ -174,7 +174,63 @@ public static class NotificationTemplateSeed
             MeetingOrganizerCancelled("es"),
             MeetingOrganizerCancelled("zh"),
             MeetingOrganizerCancelled("ar"),
-            MeetingOrganizerCancelled("ru")
+            MeetingOrganizerCancelled("ru"),
+
+            /*
+             * MOD-0280-FU01 T3 (pack §21.3 N7) — the time-entry events, SEVEN languages each: 7 × 7 = 49. The key is the
+             * event code. Each template renders exactly the event's required variables (TimeEntryNotificationVariables),
+             * in subject, HTML and text alike, and nothing else — so no placeholder is ever left blank. Minimal content:
+             * a week and a link; an approver's e-mail names the person; nothing about anyone else, no minutes per day.
+             */
+            TimeEntryWeekSubmitted("en"),
+            TimeEntryWeekSubmitted("tr"),
+            TimeEntryWeekSubmitted("fr"),
+            TimeEntryWeekSubmitted("es"),
+            TimeEntryWeekSubmitted("zh"),
+            TimeEntryWeekSubmitted("ar"),
+            TimeEntryWeekSubmitted("ru"),
+            TimeEntryWeekWithdrawn("en"),
+            TimeEntryWeekWithdrawn("tr"),
+            TimeEntryWeekWithdrawn("fr"),
+            TimeEntryWeekWithdrawn("es"),
+            TimeEntryWeekWithdrawn("zh"),
+            TimeEntryWeekWithdrawn("ar"),
+            TimeEntryWeekWithdrawn("ru"),
+            TimeEntryWeekApproved("en"),
+            TimeEntryWeekApproved("tr"),
+            TimeEntryWeekApproved("fr"),
+            TimeEntryWeekApproved("es"),
+            TimeEntryWeekApproved("zh"),
+            TimeEntryWeekApproved("ar"),
+            TimeEntryWeekApproved("ru"),
+            TimeEntryWeekRejected("en"),
+            TimeEntryWeekRejected("tr"),
+            TimeEntryWeekRejected("fr"),
+            TimeEntryWeekRejected("es"),
+            TimeEntryWeekRejected("zh"),
+            TimeEntryWeekRejected("ar"),
+            TimeEntryWeekRejected("ru"),
+            TimeEntryWeekReminder("en"),
+            TimeEntryWeekReminder("tr"),
+            TimeEntryWeekReminder("fr"),
+            TimeEntryWeekReminder("es"),
+            TimeEntryWeekReminder("zh"),
+            TimeEntryWeekReminder("ar"),
+            TimeEntryWeekReminder("ru"),
+            TimeEntryTimerAutoClosed("en"),
+            TimeEntryTimerAutoClosed("tr"),
+            TimeEntryTimerAutoClosed("fr"),
+            TimeEntryTimerAutoClosed("es"),
+            TimeEntryTimerAutoClosed("zh"),
+            TimeEntryTimerAutoClosed("ar"),
+            TimeEntryTimerAutoClosed("ru"),
+            TimeEntryMinutesConflict("en"),
+            TimeEntryMinutesConflict("tr"),
+            TimeEntryMinutesConflict("fr"),
+            TimeEntryMinutesConflict("es"),
+            TimeEntryMinutesConflict("zh"),
+            TimeEntryMinutesConflict("ar"),
+            TimeEntryMinutesConflict("ru")
         ];
     }
 
@@ -590,6 +646,125 @@ public static class NotificationTemplateSeed
 
         return Create("platform.meetings.removed", locale, subject, html, text,
             ["MeetingTitle", "MeetingType", "StartAt", "EndAt", "Organizer"]);
+    }
+
+    private static NotificationTemplate TimeEntryWeekSubmitted(string locale)
+    {
+        var (subject, html, text) = locale switch
+        {
+            "en" => ("Timesheet to approve: {{PersonName}}, {{WeekLabel}}", "<p>{{PersonName}} has submitted a timesheet for your approval.</p><p><strong>Week:</strong> {{WeekLabel}}</p><p><a href=\"{{TimesheetUrl}}\">Open the timesheet</a></p>", "{{PersonName}} has submitted a timesheet for your approval. Week: {{WeekLabel}} — Open it: {{TimesheetUrl}}"),
+            "tr" => ("Onayınızı bekleyen zaman çizelgesi: {{PersonName}}, {{WeekLabel}}", "<p>{{PersonName}} onayınız için bir zaman çizelgesi gönderdi.</p><p><strong>Hafta:</strong> {{WeekLabel}}</p><p><a href=\"{{TimesheetUrl}}\">Zaman çizelgesini aç</a></p>", "{{PersonName}} onayınız için bir zaman çizelgesi gönderdi. Hafta: {{WeekLabel}} — Aç: {{TimesheetUrl}}"),
+            "fr" => ("Feuille de temps à approuver : {{PersonName}}, {{WeekLabel}}", "<p>{{PersonName}} a soumis une feuille de temps à votre approbation.</p><p><strong>Semaine :</strong> {{WeekLabel}}</p><p><a href=\"{{TimesheetUrl}}\">Ouvrir la feuille de temps</a></p>", "{{PersonName}} a soumis une feuille de temps à votre approbation. Semaine : {{WeekLabel}} — Ouvrir : {{TimesheetUrl}}"),
+            "es" => ("Parte de horas pendiente de aprobación: {{PersonName}}, {{WeekLabel}}", "<p>{{PersonName}} ha enviado un parte de horas para su aprobación.</p><p><strong>Semana:</strong> {{WeekLabel}}</p><p><a href=\"{{TimesheetUrl}}\">Abrir el parte de horas</a></p>", "{{PersonName}} ha enviado un parte de horas para su aprobación. Semana: {{WeekLabel}} — Abrir: {{TimesheetUrl}}"),
+            "zh" => ("待审批的工时表：{{PersonName}}，{{WeekLabel}}", "<p>{{PersonName}} 已提交一份工时表，等待您审批。</p><p><strong>周次：</strong>{{WeekLabel}}</p><p><a href=\"{{TimesheetUrl}}\">打开工时表</a></p>", "{{PersonName}} 已提交一份工时表，等待您审批。周次：{{WeekLabel}} — 打开：{{TimesheetUrl}}"),
+            "ar" => ("جدول زمني بانتظار موافقتك: {{PersonName}}، {{WeekLabel}}", "<p>أرسل {{PersonName}} جدولًا زمنيًا للحصول على موافقتك.</p><p><strong>الأسبوع:</strong> {{WeekLabel}}</p><p><a href=\"{{TimesheetUrl}}\">فتح الجدول الزمني</a></p>", "أرسل {{PersonName}} جدولًا زمنيًا للحصول على موافقتك. الأسبوع: {{WeekLabel}} — فتح: {{TimesheetUrl}}"),
+            "ru" => ("Табель на утверждение: {{PersonName}}, {{WeekLabel}}", "<p>{{PersonName}}: табель учёта времени отправлен вам на утверждение.</p><p><strong>Неделя:</strong> {{WeekLabel}}</p><p><a href=\"{{TimesheetUrl}}\">Открыть табель</a></p>", "{{PersonName}}: табель учёта времени отправлен вам на утверждение. Неделя: {{WeekLabel}} — Открыть: {{TimesheetUrl}}"),
+            _ => throw new ArgumentOutOfRangeException(nameof(locale), locale, "Unsupported time-entry template locale.")
+        };
+
+        return Create("timeentry.week.submitted", locale, subject, html, text, ["PersonName", "WeekLabel", "TimesheetUrl"]);
+    }
+
+    private static NotificationTemplate TimeEntryWeekWithdrawn(string locale)
+    {
+        var (subject, html, text) = locale switch
+        {
+            "en" => ("Timesheet withdrawn: {{PersonName}}, {{WeekLabel}}", "<p>{{PersonName}} has withdrawn a submitted timesheet. There is nothing for you to approve until it is submitted again.</p><p><strong>Week:</strong> {{WeekLabel}}</p>", "{{PersonName}} has withdrawn a submitted timesheet. There is nothing for you to approve until it is submitted again. Week: {{WeekLabel}}"),
+            "tr" => ("Zaman çizelgesi geri çekildi: {{PersonName}}, {{WeekLabel}}", "<p>{{PersonName}} gönderdiği bir zaman çizelgesini geri çekti. Yeniden gönderilene kadar onaylamanız gereken bir şey yok.</p><p><strong>Hafta:</strong> {{WeekLabel}}</p>", "{{PersonName}} gönderdiği bir zaman çizelgesini geri çekti. Yeniden gönderilene kadar onaylamanız gereken bir şey yok. Hafta: {{WeekLabel}}"),
+            "fr" => ("Feuille de temps retirée : {{PersonName}}, {{WeekLabel}}", "<p>{{PersonName}} a retiré une feuille de temps soumise. Vous n'avez rien à approuver tant qu'elle n'est pas soumise à nouveau.</p><p><strong>Semaine :</strong> {{WeekLabel}}</p>", "{{PersonName}} a retiré une feuille de temps soumise. Vous n'avez rien à approuver tant qu'elle n'est pas soumise à nouveau. Semaine : {{WeekLabel}}"),
+            "es" => ("Parte de horas retirado: {{PersonName}}, {{WeekLabel}}", "<p>{{PersonName}} ha retirado un parte de horas enviado. No tiene nada que aprobar hasta que se vuelva a enviar.</p><p><strong>Semana:</strong> {{WeekLabel}}</p>", "{{PersonName}} ha retirado un parte de horas enviado. No tiene nada que aprobar hasta que se vuelva a enviar. Semana: {{WeekLabel}}"),
+            "zh" => ("工时表已撤回：{{PersonName}}，{{WeekLabel}}", "<p>{{PersonName}} 已撤回一份已提交的工时表。在其重新提交之前，您无需审批。</p><p><strong>周次：</strong>{{WeekLabel}}</p>", "{{PersonName}} 已撤回一份已提交的工时表。在其重新提交之前，您无需审批。周次：{{WeekLabel}}"),
+            "ar" => ("تم سحب الجدول الزمني: {{PersonName}}، {{WeekLabel}}", "<p>سحب {{PersonName}} جدولًا زمنيًا كان قد أرسله. لا يوجد ما يلزم موافقتك عليه حتى يُعاد إرساله.</p><p><strong>الأسبوع:</strong> {{WeekLabel}}</p>", "سحب {{PersonName}} جدولًا زمنيًا كان قد أرسله. لا يوجد ما يلزم موافقتك عليه حتى يُعاد إرساله. الأسبوع: {{WeekLabel}}"),
+            "ru" => ("Табель отозван: {{PersonName}}, {{WeekLabel}}", "<p>{{PersonName}}: отправленный табель отозван. Утверждать ничего не нужно, пока он не будет отправлен снова.</p><p><strong>Неделя:</strong> {{WeekLabel}}</p>", "{{PersonName}}: отправленный табель отозван. Утверждать ничего не нужно, пока он не будет отправлен снова. Неделя: {{WeekLabel}}"),
+            _ => throw new ArgumentOutOfRangeException(nameof(locale), locale, "Unsupported time-entry template locale.")
+        };
+
+        return Create("timeentry.week.withdrawn", locale, subject, html, text, ["PersonName", "WeekLabel"]);
+    }
+
+    private static NotificationTemplate TimeEntryWeekApproved(string locale)
+    {
+        var (subject, html, text) = locale switch
+        {
+            "en" => ("Your timesheet was approved: {{WeekLabel}}", "<p>Your timesheet has been approved.</p><p><strong>Week:</strong> {{WeekLabel}}</p><p><a href=\"{{TimesheetUrl}}\">Open your timesheet</a></p>", "Your timesheet has been approved. Week: {{WeekLabel}} — Open it: {{TimesheetUrl}}"),
+            "tr" => ("Zaman çizelgeniz onaylandı: {{WeekLabel}}", "<p>Zaman çizelgeniz onaylandı.</p><p><strong>Hafta:</strong> {{WeekLabel}}</p><p><a href=\"{{TimesheetUrl}}\">Zaman çizelgenizi açın</a></p>", "Zaman çizelgeniz onaylandı. Hafta: {{WeekLabel}} — Açın: {{TimesheetUrl}}"),
+            "fr" => ("Votre feuille de temps a été approuvée : {{WeekLabel}}", "<p>Votre feuille de temps a été approuvée.</p><p><strong>Semaine :</strong> {{WeekLabel}}</p><p><a href=\"{{TimesheetUrl}}\">Ouvrir votre feuille de temps</a></p>", "Votre feuille de temps a été approuvée. Semaine : {{WeekLabel}} — Ouvrir : {{TimesheetUrl}}"),
+            "es" => ("Su parte de horas ha sido aprobado: {{WeekLabel}}", "<p>Su parte de horas ha sido aprobado.</p><p><strong>Semana:</strong> {{WeekLabel}}</p><p><a href=\"{{TimesheetUrl}}\">Abrir su parte de horas</a></p>", "Su parte de horas ha sido aprobado. Semana: {{WeekLabel}} — Abrir: {{TimesheetUrl}}"),
+            "zh" => ("您的工时表已获批准：{{WeekLabel}}", "<p>您的工时表已获批准。</p><p><strong>周次：</strong>{{WeekLabel}}</p><p><a href=\"{{TimesheetUrl}}\">打开您的工时表</a></p>", "您的工时表已获批准。周次：{{WeekLabel}} — 打开：{{TimesheetUrl}}"),
+            "ar" => ("تمت الموافقة على جدولك الزمني: {{WeekLabel}}", "<p>تمت الموافقة على جدولك الزمني.</p><p><strong>الأسبوع:</strong> {{WeekLabel}}</p><p><a href=\"{{TimesheetUrl}}\">فتح جدولك الزمني</a></p>", "تمت الموافقة على جدولك الزمني. الأسبوع: {{WeekLabel}} — فتح: {{TimesheetUrl}}"),
+            "ru" => ("Ваш табель утверждён: {{WeekLabel}}", "<p>Ваш табель учёта времени утверждён.</p><p><strong>Неделя:</strong> {{WeekLabel}}</p><p><a href=\"{{TimesheetUrl}}\">Открыть ваш табель</a></p>", "Ваш табель учёта времени утверждён. Неделя: {{WeekLabel}} — Открыть: {{TimesheetUrl}}"),
+            _ => throw new ArgumentOutOfRangeException(nameof(locale), locale, "Unsupported time-entry template locale.")
+        };
+
+        return Create("timeentry.week.approved", locale, subject, html, text, ["WeekLabel", "TimesheetUrl"]);
+    }
+
+    private static NotificationTemplate TimeEntryWeekRejected(string locale)
+    {
+        var (subject, html, text) = locale switch
+        {
+            "en" => ("Your timesheet was returned: {{WeekLabel}}", "<p>Your timesheet has been returned to you for changes.</p><p><strong>Week:</strong> {{WeekLabel}}</p><p><strong>Reason:</strong> {{Reason}}</p><p><a href=\"{{TimesheetUrl}}\">Open your timesheet</a></p>", "Your timesheet has been returned to you for changes. Week: {{WeekLabel}} — Reason: {{Reason}} — Open it: {{TimesheetUrl}}"),
+            "tr" => ("Zaman çizelgeniz iade edildi: {{WeekLabel}}", "<p>Zaman çizelgeniz düzeltmeniz için size iade edildi.</p><p><strong>Hafta:</strong> {{WeekLabel}}</p><p><strong>Gerekçe:</strong> {{Reason}}</p><p><a href=\"{{TimesheetUrl}}\">Zaman çizelgenizi açın</a></p>", "Zaman çizelgeniz düzeltmeniz için size iade edildi. Hafta: {{WeekLabel}} — Gerekçe: {{Reason}} — Açın: {{TimesheetUrl}}"),
+            "fr" => ("Votre feuille de temps vous a été renvoyée : {{WeekLabel}}", "<p>Votre feuille de temps vous a été renvoyée pour modification.</p><p><strong>Semaine :</strong> {{WeekLabel}}</p><p><strong>Motif :</strong> {{Reason}}</p><p><a href=\"{{TimesheetUrl}}\">Ouvrir votre feuille de temps</a></p>", "Votre feuille de temps vous a été renvoyée pour modification. Semaine : {{WeekLabel}} — Motif : {{Reason}} — Ouvrir : {{TimesheetUrl}}"),
+            "es" => ("Su parte de horas ha sido devuelto: {{WeekLabel}}", "<p>Su parte de horas le ha sido devuelto para que lo modifique.</p><p><strong>Semana:</strong> {{WeekLabel}}</p><p><strong>Motivo:</strong> {{Reason}}</p><p><a href=\"{{TimesheetUrl}}\">Abrir su parte de horas</a></p>", "Su parte de horas le ha sido devuelto para que lo modifique. Semana: {{WeekLabel}} — Motivo: {{Reason}} — Abrir: {{TimesheetUrl}}"),
+            "zh" => ("您的工时表已退回：{{WeekLabel}}", "<p>您的工时表已退回给您修改。</p><p><strong>周次：</strong>{{WeekLabel}}</p><p><strong>原因：</strong>{{Reason}}</p><p><a href=\"{{TimesheetUrl}}\">打开您的工时表</a></p>", "您的工时表已退回给您修改。周次：{{WeekLabel}} — 原因：{{Reason}} — 打开：{{TimesheetUrl}}"),
+            "ar" => ("أُعيد إليك جدولك الزمني: {{WeekLabel}}", "<p>أُعيد إليك جدولك الزمني لإجراء تعديلات.</p><p><strong>الأسبوع:</strong> {{WeekLabel}}</p><p><strong>السبب:</strong> {{Reason}}</p><p><a href=\"{{TimesheetUrl}}\">فتح جدولك الزمني</a></p>", "أُعيد إليك جدولك الزمني لإجراء تعديلات. الأسبوع: {{WeekLabel}} — السبب: {{Reason}} — فتح: {{TimesheetUrl}}"),
+            "ru" => ("Ваш табель возвращён: {{WeekLabel}}", "<p>Ваш табель учёта времени возвращён вам на доработку.</p><p><strong>Неделя:</strong> {{WeekLabel}}</p><p><strong>Причина:</strong> {{Reason}}</p><p><a href=\"{{TimesheetUrl}}\">Открыть ваш табель</a></p>", "Ваш табель учёта времени возвращён вам на доработку. Неделя: {{WeekLabel}} — Причина: {{Reason}} — Открыть: {{TimesheetUrl}}"),
+            _ => throw new ArgumentOutOfRangeException(nameof(locale), locale, "Unsupported time-entry template locale.")
+        };
+
+        return Create("timeentry.week.rejected", locale, subject, html, text, ["WeekLabel", "Reason", "TimesheetUrl"]);
+    }
+
+    private static NotificationTemplate TimeEntryWeekReminder(string locale)
+    {
+        var (subject, html, text) = locale switch
+        {
+            "en" => ("Reminder: your timesheet for {{WeekLabel}} is not submitted yet", "<p>Your timesheet for last week has not been submitted yet. Please complete and submit it.</p><p><strong>Week:</strong> {{WeekLabel}}</p><p><a href=\"{{TimesheetUrl}}\">Open your timesheet</a></p>", "Your timesheet for last week has not been submitted yet. Please complete and submit it. Week: {{WeekLabel}} — Open it: {{TimesheetUrl}}"),
+            "tr" => ("Hatırlatma: {{WeekLabel}} haftasının zaman çizelgesi henüz gönderilmedi", "<p>Geçen haftaya ait zaman çizelgeniz henüz gönderilmedi. Lütfen tamamlayıp gönderin.</p><p><strong>Hafta:</strong> {{WeekLabel}}</p><p><a href=\"{{TimesheetUrl}}\">Zaman çizelgenizi açın</a></p>", "Geçen haftaya ait zaman çizelgeniz henüz gönderilmedi. Lütfen tamamlayıp gönderin. Hafta: {{WeekLabel}} — Açın: {{TimesheetUrl}}"),
+            "fr" => ("Rappel : votre feuille de temps de la semaine {{WeekLabel}} n'est pas encore soumise", "<p>Votre feuille de temps de la semaine dernière n'a pas encore été soumise. Merci de la compléter et de la soumettre.</p><p><strong>Semaine :</strong> {{WeekLabel}}</p><p><a href=\"{{TimesheetUrl}}\">Ouvrir votre feuille de temps</a></p>", "Votre feuille de temps de la semaine dernière n'a pas encore été soumise. Merci de la compléter et de la soumettre. Semaine : {{WeekLabel}} — Ouvrir : {{TimesheetUrl}}"),
+            "es" => ("Recordatorio: su parte de horas de la semana {{WeekLabel}} aún no se ha enviado", "<p>Su parte de horas de la semana pasada aún no se ha enviado. Por favor, complételo y envíelo.</p><p><strong>Semana:</strong> {{WeekLabel}}</p><p><a href=\"{{TimesheetUrl}}\">Abrir su parte de horas</a></p>", "Su parte de horas de la semana pasada aún no se ha enviado. Por favor, complételo y envíelo. Semana: {{WeekLabel}} — Abrir: {{TimesheetUrl}}"),
+            "zh" => ("提醒：您 {{WeekLabel}} 的工时表尚未提交", "<p>您上周的工时表尚未提交。请填写完整并提交。</p><p><strong>周次：</strong>{{WeekLabel}}</p><p><a href=\"{{TimesheetUrl}}\">打开您的工时表</a></p>", "您上周的工时表尚未提交。请填写完整并提交。周次：{{WeekLabel}} — 打开：{{TimesheetUrl}}"),
+            "ar" => ("تذكير: لم يُرسَل جدولك الزمني للأسبوع {{WeekLabel}} بعد", "<p>لم يُرسَل جدولك الزمني للأسبوع الماضي بعد. يُرجى إكماله وإرساله.</p><p><strong>الأسبوع:</strong> {{WeekLabel}}</p><p><a href=\"{{TimesheetUrl}}\">فتح جدولك الزمني</a></p>", "لم يُرسَل جدولك الزمني للأسبوع الماضي بعد. يُرجى إكماله وإرساله. الأسبوع: {{WeekLabel}} — فتح: {{TimesheetUrl}}"),
+            "ru" => ("Напоминание: табель за неделю {{WeekLabel}} ещё не отправлен", "<p>Ваш табель учёта времени за прошлую неделю ещё не отправлен. Пожалуйста, заполните и отправьте его.</p><p><strong>Неделя:</strong> {{WeekLabel}}</p><p><a href=\"{{TimesheetUrl}}\">Открыть ваш табель</a></p>", "Ваш табель учёта времени за прошлую неделю ещё не отправлен. Пожалуйста, заполните и отправьте его. Неделя: {{WeekLabel}} — Открыть: {{TimesheetUrl}}"),
+            _ => throw new ArgumentOutOfRangeException(nameof(locale), locale, "Unsupported time-entry template locale.")
+        };
+
+        return Create("timeentry.week.reminder", locale, subject, html, text, ["WeekLabel", "TimesheetUrl"]);
+    }
+
+    private static NotificationTemplate TimeEntryTimerAutoClosed(string locale)
+    {
+        var (subject, html, text) = locale switch
+        {
+            "en" => ("Your timer was stopped at midnight ({{LocalDate}})", "<p>Your timer was still running at midnight, so it was stopped automatically.</p><p><strong>Day:</strong> {{LocalDate}}</p><p><strong>Recorded:</strong> {{DurationMinutes}} minutes</p><p>Please check the time on your timesheet and correct it if needed.</p><p><a href=\"{{TimesheetUrl}}\">Open your timesheet</a></p>", "Your timer was still running at midnight, so it was stopped automatically. Day: {{LocalDate}} — Recorded: {{DurationMinutes}} minutes. Please check the time on your timesheet and correct it if needed: {{TimesheetUrl}}"),
+            "tr" => ("Sayacınız gece yarısı durduruldu ({{LocalDate}})", "<p>Sayacınız gece yarısı hâlâ çalışıyordu, bu yüzden otomatik olarak durduruldu.</p><p><strong>Gün:</strong> {{LocalDate}}</p><p><strong>Kaydedilen:</strong> {{DurationMinutes}} dakika</p><p>Lütfen zaman çizelgenizdeki süreyi kontrol edin, gerekirse düzeltin.</p><p><a href=\"{{TimesheetUrl}}\">Zaman çizelgenizi açın</a></p>", "Sayacınız gece yarısı hâlâ çalışıyordu, bu yüzden otomatik olarak durduruldu. Gün: {{LocalDate}} — Kaydedilen: {{DurationMinutes}} dakika. Lütfen zaman çizelgenizdeki süreyi kontrol edin, gerekirse düzeltin: {{TimesheetUrl}}"),
+            "fr" => ("Votre minuteur a été arrêté à minuit ({{LocalDate}})", "<p>Votre minuteur tournait encore à minuit ; il a donc été arrêté automatiquement.</p><p><strong>Jour :</strong> {{LocalDate}}</p><p><strong>Enregistré :</strong> {{DurationMinutes}} minutes</p><p>Veuillez vérifier la durée sur votre feuille de temps et la corriger si nécessaire.</p><p><a href=\"{{TimesheetUrl}}\">Ouvrir votre feuille de temps</a></p>", "Votre minuteur tournait encore à minuit ; il a donc été arrêté automatiquement. Jour : {{LocalDate}} — Enregistré : {{DurationMinutes}} minutes. Veuillez vérifier la durée sur votre feuille de temps et la corriger si nécessaire : {{TimesheetUrl}}"),
+            "es" => ("Su temporizador se detuvo a medianoche ({{LocalDate}})", "<p>Su temporizador seguía en marcha a medianoche, por lo que se detuvo automáticamente.</p><p><strong>Día:</strong> {{LocalDate}}</p><p><strong>Registrado:</strong> {{DurationMinutes}} minutos</p><p>Revise el tiempo en su parte de horas y corríjalo si es necesario.</p><p><a href=\"{{TimesheetUrl}}\">Abrir su parte de horas</a></p>", "Su temporizador seguía en marcha a medianoche, por lo que se detuvo automáticamente. Día: {{LocalDate}} — Registrado: {{DurationMinutes}} minutos. Revise el tiempo en su parte de horas y corríjalo si es necesario: {{TimesheetUrl}}"),
+            "zh" => ("您的计时器已在午夜停止（{{LocalDate}}）", "<p>您的计时器在午夜时仍在运行，因此已自动停止。</p><p><strong>日期：</strong>{{LocalDate}}</p><p><strong>已记录：</strong>{{DurationMinutes}} 分钟</p><p>请检查工时表中的时间，如有需要请更正。</p><p><a href=\"{{TimesheetUrl}}\">打开您的工时表</a></p>", "您的计时器在午夜时仍在运行，因此已自动停止。日期：{{LocalDate}} — 已记录：{{DurationMinutes}} 分钟。请检查工时表中的时间，如有需要请更正：{{TimesheetUrl}}"),
+            "ar" => ("تم إيقاف مؤقّتك عند منتصف الليل ({{LocalDate}})", "<p>كان مؤقّتك لا يزال يعمل عند منتصف الليل، لذلك أُوقف تلقائيًا.</p><p><strong>اليوم:</strong> {{LocalDate}}</p><p><strong>المسجَّل:</strong> {{DurationMinutes}} دقيقة</p><p>يُرجى التحقق من الوقت في جدولك الزمني وتصحيحه عند الحاجة.</p><p><a href=\"{{TimesheetUrl}}\">فتح جدولك الزمني</a></p>", "كان مؤقّتك لا يزال يعمل عند منتصف الليل، لذلك أُوقف تلقائيًا. اليوم: {{LocalDate}} — المسجَّل: {{DurationMinutes}} دقيقة. يُرجى التحقق من الوقت في جدولك الزمني وتصحيحه عند الحاجة: {{TimesheetUrl}}"),
+            "ru" => ("Ваш таймер остановлен в полночь ({{LocalDate}})", "<p>В полночь ваш таймер всё ещё работал, поэтому он был остановлен автоматически.</p><p><strong>День:</strong> {{LocalDate}}</p><p><strong>Записано:</strong> {{DurationMinutes}} мин.</p><p>Проверьте время в табеле и при необходимости исправьте его.</p><p><a href=\"{{TimesheetUrl}}\">Открыть ваш табель</a></p>", "В полночь ваш таймер всё ещё работал, поэтому он был остановлен автоматически. День: {{LocalDate}} — Записано: {{DurationMinutes}} мин. Проверьте время в табеле и при необходимости исправьте его: {{TimesheetUrl}}"),
+            _ => throw new ArgumentOutOfRangeException(nameof(locale), locale, "Unsupported time-entry template locale.")
+        };
+
+        return Create("timeentry.timer.autoclosed", locale, subject, html, text, ["LocalDate", "DurationMinutes", "TimesheetUrl"]);
+    }
+
+    private static NotificationTemplate TimeEntryMinutesConflict(string locale)
+    {
+        var (subject, html, text) = locale switch
+        {
+            "en" => ("Please check your meeting time: {{MeetingTitle}}", "<p>The published minutes of a meeting record that you did not attend (absent or excused), but your timesheet includes time for it.</p><p><strong>Meeting:</strong> {{MeetingTitle}}</p><p><strong>Date:</strong> {{MeetingDate}}</p><p>Please check the entry and correct it if needed.</p><p><a href=\"{{TimesheetUrl}}\">Open your timesheet</a></p>", "The published minutes of a meeting record that you did not attend (absent or excused), but your timesheet includes time for it. Meeting: {{MeetingTitle}} — Date: {{MeetingDate}}. Please check the entry and correct it if needed: {{TimesheetUrl}}"),
+            "tr" => ("Toplantı sürenizi kontrol edin: {{MeetingTitle}}", "<p>Bir toplantının yayımlanan tutanağında katılmadığınız (devamsız ya da mazeretli) kayıtlı; ancak zaman çizelgenizde bu toplantı için süre var.</p><p><strong>Toplantı:</strong> {{MeetingTitle}}</p><p><strong>Tarih:</strong> {{MeetingDate}}</p><p>Lütfen kaydı kontrol edin, gerekirse düzeltin.</p><p><a href=\"{{TimesheetUrl}}\">Zaman çizelgenizi açın</a></p>", "Bir toplantının yayımlanan tutanağında katılmadığınız (devamsız ya da mazeretli) kayıtlı; ancak zaman çizelgenizde bu toplantı için süre var. Toplantı: {{MeetingTitle}} — Tarih: {{MeetingDate}}. Lütfen kaydı kontrol edin, gerekirse düzeltin: {{TimesheetUrl}}"),
+            "fr" => ("Veuillez vérifier le temps de votre réunion : {{MeetingTitle}}", "<p>Le procès-verbal publié d'une réunion indique votre absence (excusée ou non), mais votre feuille de temps comporte du temps pour cette réunion.</p><p><strong>Réunion :</strong> {{MeetingTitle}}</p><p><strong>Date :</strong> {{MeetingDate}}</p><p>Veuillez vérifier la saisie et la corriger si nécessaire.</p><p><a href=\"{{TimesheetUrl}}\">Ouvrir votre feuille de temps</a></p>", "Le procès-verbal publié d'une réunion indique votre absence (excusée ou non), mais votre feuille de temps comporte du temps pour cette réunion. Réunion : {{MeetingTitle}} — Date : {{MeetingDate}}. Veuillez vérifier la saisie et la corriger si nécessaire : {{TimesheetUrl}}"),
+            "es" => ("Revise el tiempo de su reunión: {{MeetingTitle}}", "<p>El acta publicada de una reunión indica que no asistió (ausencia justificada o no), pero su parte de horas incluye tiempo para esa reunión.</p><p><strong>Reunión:</strong> {{MeetingTitle}}</p><p><strong>Fecha:</strong> {{MeetingDate}}</p><p>Revise la entrada y corríjala si es necesario.</p><p><a href=\"{{TimesheetUrl}}\">Abrir su parte de horas</a></p>", "El acta publicada de una reunión indica que no asistió (ausencia justificada o no), pero su parte de horas incluye tiempo para esa reunión. Reunión: {{MeetingTitle}} — Fecha: {{MeetingDate}}. Revise la entrada y corríjala si es necesario: {{TimesheetUrl}}"),
+            "zh" => ("请核对您的会议时间：{{MeetingTitle}}", "<p>某次会议已发布的会议纪要记录您未出席（缺席或请假），但您的工时表中包含该会议的时间。</p><p><strong>会议：</strong>{{MeetingTitle}}</p><p><strong>日期：</strong>{{MeetingDate}}</p><p>请核对该条记录，如有需要请更正。</p><p><a href=\"{{TimesheetUrl}}\">打开您的工时表</a></p>", "某次会议已发布的会议纪要记录您未出席（缺席或请假），但您的工时表中包含该会议的时间。会议：{{MeetingTitle}} — 日期：{{MeetingDate}}。请核对该条记录，如有需要请更正：{{TimesheetUrl}}"),
+            "ar" => ("يُرجى التحقق من وقت اجتماعك: {{MeetingTitle}}", "<p>يسجّل محضر الاجتماع المنشور غيابك عن الاجتماع (بعذر أو بدون عذر)، لكن جدولك الزمني يتضمن وقتًا لهذا الاجتماع.</p><p><strong>الاجتماع:</strong> {{MeetingTitle}}</p><p><strong>التاريخ:</strong> {{MeetingDate}}</p><p>يُرجى التحقق من الإدخال وتصحيحه عند الحاجة.</p><p><a href=\"{{TimesheetUrl}}\">فتح جدولك الزمني</a></p>", "يسجّل محضر الاجتماع المنشور غيابك عن الاجتماع (بعذر أو بدون عذر)، لكن جدولك الزمني يتضمن وقتًا لهذا الاجتماع. الاجتماع: {{MeetingTitle}} — التاريخ: {{MeetingDate}}. يُرجى التحقق من الإدخال وتصحيحه عند الحاجة: {{TimesheetUrl}}"),
+            "ru" => ("Проверьте время совещания: {{MeetingTitle}}", "<p>В опубликованном протоколе совещания указано, что вас не было (отсутствие или уважительная причина), но в вашем табеле есть время на это совещание.</p><p><strong>Совещание:</strong> {{MeetingTitle}}</p><p><strong>Дата:</strong> {{MeetingDate}}</p><p>Проверьте запись и при необходимости исправьте её.</p><p><a href=\"{{TimesheetUrl}}\">Открыть ваш табель</a></p>", "В опубликованном протоколе совещания указано, что вас не было (отсутствие или уважительная причина), но в вашем табеле есть время на это совещание. Совещание: {{MeetingTitle}} — Дата: {{MeetingDate}}. Проверьте запись и при необходимости исправьте её: {{TimesheetUrl}}"),
+            _ => throw new ArgumentOutOfRangeException(nameof(locale), locale, "Unsupported time-entry template locale.")
+        };
+
+        return Create("timeentry.meeting.minutesconflict", locale, subject, html, text, ["MeetingTitle", "MeetingDate", "TimesheetUrl"]);
     }
 
     private static NotificationTemplate Create(

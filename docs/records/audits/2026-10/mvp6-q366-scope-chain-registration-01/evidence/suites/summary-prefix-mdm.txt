@@ -1,0 +1,1 @@
+Failed!  - Failed:     7, Passed:   491, Skipped:     0, Total:   498, Duration: 23 s - Diten.MdmService.Application.Tests.dll (net8.0)

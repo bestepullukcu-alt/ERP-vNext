@@ -1,8 +1,12 @@
 /**
  * MOD-0162-FU04 KnowledgePath — DataTables Index (Golden aligned, proxy profile).
+ * WP-KP-UI-1 — Knowledge Path Studio list (mockup v2): rows from api/studio/paths (names, never raw country / language
+ * codes), columns Path · Product · Country/language · Chain · Version · Status (+ "unapproved legacy path" badge),
+ * filters product / country / language (native names) / status / legacy-only, summary cards that apply a filter, and the
+ * bind-chain modal on a legacy draft row (studio-common.js).
  *  - Native toolbar search, Select2 filter chips mounted under the toolbar
  *  - SaveView (filter + search + colvis + colorder) via personalizationClient
- *  - Row actions: View (Details) + Edit + Archive; Compact "Create" (.add-new) → /Create
+ *  - Row actions: Open (workspace) + Bind to a chain (legacy draft) + Archive; Compact "Create" (.add-new) → /Create
  *  - All traffic via same-origin MVC proxy /CRM/KnowledgePaths/api (never a Gateway URL / bearer token)
  */
 (function (window, document) {
@@ -14,21 +18,23 @@
     const filterCollapseId = 'inlineFilterCollapse';
     const personalizationClient = window.personalizationClient;
     const personalizationContext = { moduleKey: 'CRM', pageKey: 'KnowledgePaths' };
-    const saveViewColumnIndexes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
-    const totalColumnCount = 15;
-    const baseOrder = [[13, 'desc']];
+    const saveViewColumnIndexes = [1, 2, 3, 4, 5, 6, 7];
+    const totalColumnCount = 9;
+    const baseOrder = [[7, 'desc']];
 
     let L = window.KnowledgePathsL10n || window.L10n || {};
+    const S = window.KpStudio;
+    const t = S ? S.t : () => '';
+    const canManage = document.getElementById('kpSummary')?.dataset.canManage === 'true';
     let dt = null;
     let contract = null;
     let addNewBound = false;
     let saveFilterArmed = false;
     let defaultViewRecord = null;
     let defaultViewState = null;
-    const emptyFilters = () => ({ pathStatus: [], subjectId: [], languageCode: '', includeArchived: 'true' });
+    const emptyFilters = () => ({ product: [], countryCode: '', languageCode: '', status: [], legacy: '' });
     let appliedFilters = emptyFilters();
     let allRows = [];
-    const subjectMap = {};
 
     const getAuthHeaders = () => ({ Accept: 'application/json' });
     const esc = v => String(v ?? '').replace(/[&<>'"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[ch]));
@@ -93,20 +99,26 @@
         });
     };
 
-    const distinct = key => Array.from(new Set(allRows.map(r => r[key]).filter(Boolean))).map(v => ({ value: v, text: v }));
+    const distinctBy = (valueKey, textKey) => {
+        const map = new Map();
+        allRows.forEach(r => { if (r[valueKey]) map.set(r[valueKey], r[textKey] || r[valueKey]); });
+        return Array.from(map, ([value, text]) => ({ value, text })).sort((a, b) => a.text.localeCompare(b.text));
+    };
 
     const loadFilterOptions = async () => {
-        fillSelect('filterPathStatus', (contract?.vocabularies?.pathStatuses || []).map(v => ({ value: v, text: v })), false);
-        const fetchTax = async (path, idKey, codeKey, nameKey, map) => {
-            try {
-                const data = await envelope(await fetch(`${endpoint}/${path}?includeArchived=true`, { credentials: 'same-origin', headers: getAuthHeaders() }));
-                const items = data?.items || [];
-                items.forEach(x => { if (x[idKey]) map[x[idKey]] = x[nameKey] || x[codeKey] || x[idKey]; });
-                return items.map(x => ({ value: x[idKey], text: `${x[codeKey]} — ${x[nameKey]}` }));
-            } catch (e) { return []; }
-        };
-        fillSelect('filterSubjectId', await fetchTax('subjects', 'subjectId', 'subjectCode', 'subjectName', subjectMap), false);
-        fillSelect('filterLanguageCode', distinct('languageCode'), true);
+        fillSelect('filterProduct', distinctBy('productName', 'productName'), false);
+        fillSelect('filterStatus', distinctBy('status', 'statusLabel'), false);
+        try {
+            const countries = S ? await S.countries() : [];
+            fillSelect('filterCountry', countries.map(c => ({ value: c.code, text: c.name })), true);
+            const languages = new Map();
+            countries.forEach(c => (c.languageDetails || []).forEach(l => { if (!languages.has(l.code)) languages.set(l.code, l.nativeName); }));
+            fillSelect('filterLanguage', Array.from(languages, ([value, text]) => ({ value, text })), true);
+        } catch (e) {
+            // The country axis is unavailable: fall back to the names already on the rows (never raw codes).
+            fillSelect('filterCountry', distinctBy('countryCode', 'countryName'), true);
+            fillSelect('filterLanguage', distinctBy('languageCode', 'languageName'), true);
+        }
         initSelect2();
     };
 
@@ -138,25 +150,28 @@
             if (settings.nTable !== tableEl) return true;
             const r = row || dt?.row(dataIndex)?.data?.();
             if (!r) return true;
-            if (appliedFilters.includeArchived === 'false' && r.isArchived) return false;
-            return matchesMulti(appliedFilters.pathStatus, r.pathStatus)
-                && matchesMulti(appliedFilters.subjectId, r.subjectId)
-                && matchesSingle(appliedFilters.languageCode, r.languageCode);
+            if (appliedFilters.legacy === 'legacy' && !r.isLegacyUnapproved) return false;
+            return matchesMulti(appliedFilters.product, r.productName)
+                && matchesSingle(appliedFilters.countryCode, r.countryCode)
+                && matchesSingle(appliedFilters.languageCode, r.languageCode)
+                && matchesMulti(appliedFilters.status, r.status);
         });
     };
-    const getAppliedFilterCount = () => [appliedFilters.pathStatus, appliedFilters.subjectId, appliedFilters.languageCode].filter(hasVal).length + (appliedFilters.includeArchived === 'false' ? 1 : 0);
+    const getAppliedFilterCount = () => [appliedFilters.product, appliedFilters.countryCode, appliedFilters.languageCode, appliedFilters.status, appliedFilters.legacy].filter(hasVal).length;
 
     const readControls = () => ({
-        pathStatus: window.jQuery('#filterPathStatus').val() || [],
-        subjectId: window.jQuery('#filterSubjectId').val() || [],
-        languageCode: document.getElementById('filterLanguageCode')?.value || '',
-        includeArchived: document.getElementById('filterIncludeArchived')?.value || 'true'
+        product: window.jQuery('#filterProduct').val() || [],
+        countryCode: document.getElementById('filterCountry')?.value || '',
+        languageCode: document.getElementById('filterLanguage')?.value || '',
+        status: window.jQuery('#filterStatus').val() || [],
+        legacy: document.getElementById('filterLegacy')?.value || ''
     });
     const writeControls = f => {
-        window.jQuery('#filterPathStatus').val(normArr(f.pathStatus)).trigger('change');
-        window.jQuery('#filterSubjectId').val(normArr(f.subjectId)).trigger('change');
-        window.jQuery('#filterLanguageCode').val(f.languageCode || '').trigger('change');
-        window.jQuery('#filterIncludeArchived').val(f.includeArchived || 'true').trigger('change');
+        window.jQuery('#filterProduct').val(normArr(f.product)).trigger('change');
+        window.jQuery('#filterCountry').val(f.countryCode || '').trigger('change');
+        window.jQuery('#filterLanguage').val(f.languageCode || '').trigger('change');
+        window.jQuery('#filterStatus').val(normArr(f.status)).trigger('change');
+        window.jQuery('#filterLegacy').val(f.legacy || '').trigger('change');
     };
 
     const captureColVis = api => { const r = {}; saveViewColumnIndexes.forEach(ci => { try { r[ci] = !!api.column(ci).visible(); } catch (e) {} }); return r; };
@@ -210,21 +225,40 @@
         window.DtDefaults?.updateVisualState?.(api, getAppliedFilterCount());
     };
 
-    const resolutionBadge = row => {
-        if (row.hasUnresolvedStepContent) return badge(L.Unresolved || 'unresolved', 'danger');
-        return badge(L.Resolved || 'resolved', 'success');
-    };
+    const statusTone = v => ({ draft: 'secondary', review: 'info', approved: 'success', published: 'success', inactive: 'warning', archived: 'secondary' }[v] || 'secondary');
+
+    const pathCell = row => `
+        <div class="d-flex flex-column">
+            <a class="fw-medium text-heading" href="/CRM/KnowledgePaths/${esc(row.pathId)}">${esc(row.pathName)}</a>
+            <small class="text-muted">${esc(row.pathCode)}</small>
+            ${row.isLegacyUnapproved ? `<span class="badge bg-label-warning align-self-start mt-1" title="${esc(t('LegacyBadgeTip'))}">${esc(t('LegacyBadge'))}</span>` : ''}
+        </div>`;
+
+    const countryLanguageCell = row => row.countryName || row.languageName
+        ? `<div class="d-flex flex-column"><span>${esc(row.countryName || '—')}</span><small class="text-muted">${esc(row.languageName || '—')}</small></div>`
+        : '—';
+
+    const canBind = row => canManage && row.isLegacyUnapproved && !row.isArchived && row.status === 'draft';
 
     const actions = row => {
         const id = esc(row.pathId);
-        const items = [{ className: 'js-quick-view me-1', icon: 'bx bx-show', attrs: { 'data-id': id, title: L.ViewDetails } }];
-        if (!row.isArchived && !row.isStepSetFrozen) {
-            items.push({ className: 'js-edit-path', icon: 'bx bx-edit', text: L.EditPath, attrs: { 'data-id': id } });
+        const items = [{ className: 'js-quick-view me-1', icon: 'bx bx-show', attrs: { 'data-id': id, title: t('OpenPath') } }];
+        if (canBind(row)) {
+            items.push({ className: 'js-bind-path', icon: 'bx bx-link', text: t('BindChain'), attrs: { 'data-id': id } });
         }
-        if (!row.isArchived) {
+        if (canManage && !row.isArchived) {
             items.push({ className: 'js-archive-path text-warning', icon: 'bx bx-archive-in', text: L.ArchivePath, attrs: { 'data-id': id, 'data-name': esc(row.pathName) } });
         }
         return window.DitenDataTable?.renderActions ? window.DitenDataTable.renderActions(items) : '';
+    };
+
+    const renderSummary = () => {
+        const set = (id, n) => { const el = document.getElementById(id); if (el) el.textContent = String(n); };
+        const live = allRows.filter(r => !r.isArchived);
+        set('kpSumTotal', live.length);
+        set('kpSumDraft', live.filter(r => r.status === 'draft').length);
+        set('kpSumPublished', live.filter(r => r.status === 'published').length);
+        set('kpSumLegacy', live.filter(r => r.isLegacyUnapproved).length);
     };
 
     const buildConfig = () => ({
@@ -232,25 +266,22 @@
         colReorder: { columns: ':gt(0):not(:last-child)' },
         order: baseOrder,
         columns: [
-            { data: null, defaultContent: '' }, { data: 'pathCode' }, { data: 'pathName' }, { data: 'pathVersion' },
-            { data: 'pathStatus' }, { data: 'subjectId' }, { data: 'languageCode' }, { data: 'activeStepCount' },
-            { data: 'requiredStepCount' }, { data: null }, { data: 'effectiveFrom' }, { data: 'effectiveTo' },
-            { data: 'isArchived' }, { data: 'updatedAt' }, { data: null }
+            { data: null, defaultContent: '' }, { data: 'pathName' }, { data: 'productName' }, { data: 'countryName' },
+            { data: 'chainName' }, { data: 'pathVersion' }, { data: 'statusLabel' }, { data: 'updatedAt' }, { data: null }
         ],
         columnDefs: [
             { targets: 0, className: 'control', orderable: false, render: () => '' },
-            { targets: 2, render: v => `<span class="fw-medium text-heading">${esc(v)}</span>` },
-            { targets: 4, render: v => badge(v, v === 'archived' ? 'secondary' : v === 'published' ? 'success' : 'primary') },
-            { targets: 5, render: v => esc(subjectMap[v] || v || '—') },
-            { targets: 6, render: v => esc(v || '—') },
-            { targets: [7, 8], render: v => esc(v ?? 0) },
-            { targets: 9, orderable: false, searchable: false, render: (v, t, row) => resolutionBadge(row) },
-            { targets: [10, 11, 13], render: v => date(v) },
-            { targets: 12, render: v => badge(v ? L.Yes : L.No, v ? 'warning' : 'success') },
-            { targets: 14, title: L.Actions, orderable: false, searchable: false, className: 'cell-fit text-end pe-3 all', render: (v, t, row) => actions(row) }
+            { targets: 1, render: (v, type, row) => type === 'display' ? pathCell(row) : `${row.pathName || ''} ${row.pathCode || ''}` },
+            { targets: 2, render: v => esc(v || '—') },
+            { targets: 3, render: (v, type, row) => type === 'display' ? countryLanguageCell(row) : `${row.countryName || ''} ${row.languageName || ''}` },
+            { targets: 4, render: (v, type, row) => v ? `${esc(v)}${row.chainVersion ? ` <small class="text-muted">${esc(t('VersionShort', row.chainVersion))}</small>` : ''}` : '—' },
+            { targets: 5, render: v => esc(v || '—') },
+            { targets: 6, render: (v, type, row) => type === 'display' ? badge(v, statusTone(row.status)) : (v || '') },
+            { targets: 7, render: v => date(v) },
+            { targets: 8, title: L.Actions, orderable: false, searchable: false, className: 'cell-fit text-end pe-3 all', render: (v, type, row) => actions(row) }
         ],
-        language: { emptyTable: L.EmptyState, processing: L.Loading },
-        buttons: window.DtDefaults.exportButtons(L.CreatePath, { href: '/CRM/KnowledgePaths/Create' }, {
+        language: { emptyTable: L.EmptyState, zeroRecords: t('EmptyFiltered') || L.EmptyState, processing: L.Loading },
+        buttons: window.DtDefaults.exportButtons(t('NewPath') || L.CreatePath, { href: '/CRM/KnowledgePaths/Create' }, {
             filterBtn: { text: '<i class="icon-base bx bx-filter-alt icon-sm"></i>', className: 'btn btn-icon btn-label-secondary dt-filter-btn position-relative', attr: { title: L.Filter, 'aria-controls': filterCollapseId, 'aria-expanded': 'false', 'data-bs-toggle': 'tooltip' }, action: () => toggleInlineFilter() },
             saveFilterBtn: {
                 text: '<i class="icon-base bx bx-save icon-sm"></i><span class="ms-2 d-none d-lg-inline-block">' + (L.SaveView || '') + '</span>',
@@ -302,7 +333,16 @@
         }
     };
 
-    const fetchRows = async () => (await envelope(await fetch(`${endpoint}/paths?includeArchived=true`, { credentials: 'same-origin', headers: getAuthHeaders() })))?.items || [];
+    const fetchRows = async () => {
+        const rows = (await envelope(await fetch(`${endpoint}/studio/paths`, { credentials: 'same-origin', headers: getAuthHeaders() }))) || [];
+        allRows = rows;
+        renderSummary();
+        return rows;
+    };
+    const reloadRows = async () => {
+        allRows = await fetchRows();
+        if (dt) { dt.clear(); dt.rows.add(allRows).draw(false); }
+    };
 
     const init = async () => {
         document.getElementById('skeleton-loader')?.classList.remove('d-none');
@@ -325,9 +365,25 @@
 
     document.addEventListener('click', event => {
         const view = event.target.closest('.js-quick-view');
-        if (view) { event.preventDefault(); window.location.href = `/CRM/KnowledgePaths/Details/${view.dataset.id}`; return; }
-        const edit = event.target.closest('.js-edit-path');
-        if (edit) { event.preventDefault(); window.location.href = `/CRM/KnowledgePaths/Edit/${edit.dataset.id}`; return; }
+        if (view) { event.preventDefault(); window.location.href = `/CRM/KnowledgePaths/${view.dataset.id}`; return; }
+        const bind = event.target.closest('.js-bind-path');
+        if (bind) {
+            event.preventDefault();
+            const row = allRows.find(r => r.pathId === bind.dataset.id);
+            if (row && window.KpLegacyWizard) window.KpLegacyWizard.open({ pathId: row.pathId, subjectId: row.subjectId, name: row.pathName, code: row.pathCode }, reloadRows);
+            return;
+        }
+        const summary = event.target.closest('.js-summary');
+        if (summary && dt) {
+            event.preventDefault();
+            const kind = summary.dataset.filter;
+            appliedFilters = Object.assign(emptyFilters(), kind === 'legacy' ? { legacy: 'legacy' } : kind === 'all' ? {} : { status: [kind] });
+            writeControls(appliedFilters);
+            dt.draw();
+            window.DtDefaults?.updateVisualState?.(dt, getAppliedFilterCount());
+            if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(dt));
+            return;
+        }
         const archive = event.target.closest('.js-archive-path');
         if (!archive) return;
         event.preventDefault();
@@ -335,8 +391,7 @@
             try {
                 await envelope(await fetch(`${endpoint}/paths/${archive.dataset.id}/archive`, { method: 'POST', credentials: 'same-origin', headers: getAuthHeaders() }));
                 window.showToast?.(L.RecordArchived, 'success');
-                allRows = await fetchRows();
-                if (dt) { dt.clear(); dt.rows.add(allRows).draw(false); }
+                await reloadRows();
             } catch (error) { window.showToast?.(error.message || L.ErrorState, 'error'); }
         }, { entityName: archive.dataset.name, type: 'warning', confirmButtonText: L.ArchivePath });
     });

@@ -45,8 +45,6 @@ public static class WorkflowReasonCodes
     public const string WorkflowAssignmentSnapshotNotFound = "WORKFLOW_ASSIGNMENT_SNAPSHOT_NOT_FOUND";
     public const string WorkflowActorDenied = "WORKFLOW_ACTOR_DENIED";
     public const string SodViolation = "SOD_VIOLATION";
-    // WP-0023-FX — the body named someone other than the authenticated caller (direct task API).
-    public const string WorkflowActorMismatch = "WORKFLOW_ACTOR_MISMATCH";
     public const string WorkflowTaskInvalidState = "WORKFLOW_TASK_INVALID_STATE";
     public const string WorkflowTransitionConflict = "WORKFLOW_TRANSITION_CONFLICT";
     public const string WorkflowTransitionIdempotent = "WORKFLOW_TRANSITION_IDEMPOTENT";
@@ -69,6 +67,13 @@ public static class WorkflowReasonCodes
 
     /// <summary>BL-422 — an escalation run carried NowUtc; runs are evaluated against the server clock only.</summary>
     public const string WorkflowEscalationClockNotAccepted = "WORKFLOW_ESCALATION_CLOCK_NOT_ACCEPTED";
+
+    /// <summary>B4 — the request named an actor other than the signed-in user. The actor of a task action is ALWAYS the
+    /// authenticated user; a body may omit it, and may repeat it, but never name somebody else.</summary>
+    public const string WorkflowActorMismatch = "WORKFLOW_ACTOR_MISMATCH";
+
+    /// <summary>MOD-0280-FU01 R5 — the definition says a rejection must say why, and the reject carried no comment.</summary>
+    public const string WorkflowRejectCommentRequired = "WORKFLOW_REJECT_COMMENT_REQUIRED";
 
     /// <summary>WP-CL-BE-3 — the Platform transaction that carries a terminal transition and its completion event
     /// could not run (e.g. a MongoDB deployment without transactions). Nothing was written.</summary>

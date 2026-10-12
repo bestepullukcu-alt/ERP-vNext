@@ -1,0 +1,102 @@
+{
+  "A08": {
+    "actorA": {
+      "initialStatus": "Draft",
+      "submittedTarget": "Planned",
+      "resultStatus": "Planned",
+      "successToastObserved": true
+    },
+    "actorB": {
+      "initialStatus": "Draft",
+      "staleModalOpenedBeforeActorACommit": true,
+      "submittedTarget": "Planned",
+      "resultStatusAfterRefresh": "Planned",
+      "alert": "The current status no longer permits this transition. Support reference: 770306bf-b5b5-4645-b232-3d2b8713c323",
+      "visibleActionsAfterRefresh": ["Change Status"]
+    }
+  },
+  "A09_409": {
+    "actorA": {
+      "initialStatus": "Dispatched",
+      "podModalOpenedBeforeMutation": true,
+      "resultStatus": "Delivered",
+      "recipient": "Recipient A",
+      "evidenceReference": "EVID-A09-A"
+    },
+    "actorB": {
+      "initialStatus": "Dispatched",
+      "stalePodModalOpenedBeforeActorACommit": true,
+      "resultStatusAfterRefresh": "Delivered",
+      "alert": "Proof of delivery was already captured. Support reference: d7f1caef-9aa0-4d92-94d7-b5c135d045bb",
+      "authoritativePodVisible": true,
+      "podActionVisible": false
+    },
+    "discardedSetupAttempt": {
+      "reason": "receivedAt preceded the fixture's dispatchedAt",
+      "status": 422,
+      "writesObserved": 0
+    }
+  },
+  "A09_422": {
+    "actorA": {
+      "initialStatus": "Dispatched",
+      "submittedTarget": "Exception",
+      "resultStatus": "Exception"
+    },
+    "actorB": {
+      "initialStatus": "Dispatched",
+      "stalePodModalOpenedBeforeActorACommit": true,
+      "resultStatusAfterRefresh": "Exception",
+      "alert": "The current status no longer permits this transition. Support reference: a51831b9-44e2-4b74-9bf3-4f360cd9ca38",
+      "podActionVisible": false,
+      "visibleActionsAfterRefresh": ["Change Status"]
+    }
+  },
+  "A12": {
+    "actorA": {
+      "listContainsSource": true,
+      "shipmentNumber": "SHP-194c6d7ba5294bbf83cef9263d38bb75",
+      "status": "Draft",
+      "source": "S-A12-adfd411c",
+      "root": "cca9a611-b53d-4ed9-8484-99528d903381",
+      "actions": ["Change Status"]
+    },
+    "actorLeB": {
+      "listContainsSource": false,
+      "listDataRows": 0,
+      "crossLe": {
+        "shipmentNumber": "Loading…",
+        "status": "",
+        "source": "",
+        "root": "",
+        "lineRows": 0,
+        "actions": [],
+        "summarySkeletonPresent": true,
+        "linesTableSkeletonPresent": true,
+        "alert": "The shipment could not be found. Support reference: fbd44c5e-8e2d-440a-90fd-b8f830b4d2ef"
+      },
+      "unknown": {
+        "shipmentNumber": "Loading…",
+        "status": "",
+        "source": "",
+        "root": "",
+        "lineRows": 0,
+        "actions": [],
+        "summarySkeletonPresent": true,
+        "linesTableSkeletonPresent": true,
+        "alert": "The shipment could not be found. Support reference: 112ccf8c-d211-4bf7-b02e-15e7044baca7"
+      },
+      "softDeleted": {
+        "shipmentNumber": "Loading…",
+        "status": "",
+        "source": "",
+        "root": "",
+        "lineRows": 0,
+        "actions": [],
+        "summarySkeletonPresent": true,
+        "linesTableSkeletonPresent": true,
+        "alert": "The shipment could not be found. Support reference: 7dd3785b-9ffb-4747-84d8-36331342a14f"
+      }
+    }
+  }
+}

@@ -1,0 +1,105 @@
+{
+  key503: 0,
+  root503: 0,
+  loads: [
+    {
+      Version: 1,
+      LoadNumber: 'LOAD-659A9B097C6544E28CD12F053432AFF7',
+      ShipmentIds: [
+        '587dd735-f705-4083-ae3c-70bdb1a64052'
+      ],
+      PlannedDepartAt: '2026-10-04T18:59:00Z',
+      Status: 'Draft',
+      CorrelationRoot: 'f44306eb-7d57-42f2-baf2-ba4b8d6541db'
+    },
+    {
+      Version: 1,
+      LoadNumber: 'LOAD-E3272E862E6B4F3B8418EB870B20CC50',
+      ShipmentIds: [
+        'ff789ac5-126f-44ad-bc35-e98577f10c8c',
+        '66cc6d59-fc6f-4f36-b1a5-8f26ce61d1d7'
+      ],
+      PlannedDepartAt: '2026-10-04T19:00:00Z',
+      Status: 'Draft',
+      CorrelationRoot: '07855f3a-d367-4d0e-a4c3-c649d9cdb96e'
+    },
+    {
+      Version: 1,
+      LoadNumber: 'LOAD-A42FF9E53DD24FC1B71D2074A45AB3E4',
+      ShipmentIds: [
+        '109dfad8-3ed9-473e-b74a-77e38f0fe1b3'
+      ],
+      PlannedDepartAt: '2026-10-04T19:01:00Z',
+      Status: 'Draft',
+      CorrelationRoot: '3471bc37-a11f-4984-87e0-560e52802bdf'
+    },
+    {
+      Version: 1,
+      LoadNumber: 'LOAD-47325C977EE9413C9AC66C2B4C997FFB',
+      ShipmentIds: [
+        '8602a4f6-fee9-41bc-a625-0c63f5b954d3'
+      ],
+      PlannedDepartAt: '2026-10-04T19:01:00Z',
+      Status: 'Draft',
+      CorrelationRoot: 'bf1af4c0-a2ca-40ae-897d-072c38d70b54'
+    },
+    {
+      Version: 1,
+      LoadNumber: 'LOAD-C48D05792B1640C48504128084F03608',
+      ShipmentIds: [
+        '891dbf46-ce5c-4e5b-b220-f4382ae28550'
+      ],
+      PlannedDepartAt: '2026-10-04T19:02:00Z',
+      Status: 'Draft',
+      CorrelationRoot: '56eafd56-006f-43c4-a371-ab09f42cd5d4'
+    },
+    {
+      Version: 1,
+      LoadNumber: 'LOAD-C98B21753FFF408BABD3B97E0B51B757',
+      ShipmentIds: [
+        '6f5ba6ee-d16f-4529-a18e-4fdd8f0687e7'
+      ],
+      PlannedDepartAt: '2026-10-04T19:03:00Z',
+      Status: 'Draft',
+      CorrelationRoot: '9aa74fe7-0980-4358-9a6e-012f3a559d36'
+    }
+  ],
+  receipts: [
+    {
+      IdempotencyKey: '8441b8fa-ba6e-42ba-9779-73092adde007',
+      CorrelationRoot: 'f44306eb-7d57-42f2-baf2-ba4b8d6541db',
+      LoadNumber: 'LOAD-659A9B097C6544E28CD12F053432AFF7',
+      StatusCode: 201
+    },
+    {
+      IdempotencyKey: '5ef84797-3635-4ec9-9cce-ef5adc8d7847',
+      CorrelationRoot: '07855f3a-d367-4d0e-a4c3-c649d9cdb96e',
+      LoadNumber: 'LOAD-E3272E862E6B4F3B8418EB870B20CC50',
+      StatusCode: 201
+    },
+    {
+      IdempotencyKey: '61c1dc4f-5cf9-45ce-b2b2-be2f59dcd81d',
+      CorrelationRoot: '3471bc37-a11f-4984-87e0-560e52802bdf',
+      LoadNumber: 'LOAD-A42FF9E53DD24FC1B71D2074A45AB3E4',
+      StatusCode: 201
+    },
+    {
+      IdempotencyKey: '8b469fcd-393c-483a-83f8-9b96567436a8',
+      CorrelationRoot: 'bf1af4c0-a2ca-40ae-897d-072c38d70b54',
+      LoadNumber: 'LOAD-47325C977EE9413C9AC66C2B4C997FFB',
+      StatusCode: 201
+    },
+    {
+      IdempotencyKey: '70bb7e87-eb27-419a-baa6-59be7b1a229b',
+      CorrelationRoot: '56eafd56-006f-43c4-a371-ab09f42cd5d4',
+      LoadNumber: 'LOAD-C48D05792B1640C48504128084F03608',
+      StatusCode: 201
+    },
+    {
+      IdempotencyKey: '6bf91f81-be99-4658-8430-5b631d1a74ec',
+      CorrelationRoot: '9aa74fe7-0980-4358-9a6e-012f3a559d36',
+      LoadNumber: 'LOAD-C98B21753FFF408BABD3B97E0B51B757',
+      StatusCode: 201
+    }
+  ]
+}

@@ -1,3 +1,4 @@
+using Diten.Platform.Application.Contracts;
 using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
@@ -18,14 +19,20 @@ public sealed class TaskItemRepository : TenantRepository<TaskItem>, ITaskItemRe
     private readonly ITaskTransitionRepository _transitions;
     private readonly ITenantContext _tenantContext;
 
+    /// <summary>MOD-0280-FU01 §5.1 item 1 — time entry's hook. Optional: a repository built without it (every test
+    /// that constructs this class by hand) records transitions exactly as before and simply tells nobody.</summary>
+    private readonly ITaskTransitionObserver? _transitionObserver;
+
     public TaskItemRepository(
         IPlatformDbContext dbContext,
         ITenantContext tenantContext,
-        ITaskTransitionRepository transitions)
+        ITaskTransitionRepository transitions,
+        ITaskTransitionObserver? transitionObserver = null)
         : base(dbContext.Database, tenantContext, PlatformCollections.TaskItems)
     {
         _transitions = transitions;
         _tenantContext = tenantContext;
+        _transitionObserver = transitionObserver;
     }
 
     public async Task<IReadOnlyList<TaskItem>> GetAllForTenantAsync(CancellationToken ct = default)
@@ -250,7 +257,7 @@ public sealed class TaskItemRepository : TenantRepository<TaskItem>, ITaskItemRe
         var kind = intent?.Kind
             ?? (moved ? TaskTransitionKind.Unknown : TaskTransitionKind.Edited);
 
-        await RecordAsync(
+        var transition = await RecordAsync(
             current.Id,
             kind,
             from: previous.Lifecycle,
@@ -258,9 +265,17 @@ public sealed class TaskItemRepository : TenantRepository<TaskItem>, ITaskItemRe
             intent,
             fieldChanges,
             ct);
+
+        /*
+         * MOD-0280-FU01 §5.1 item 1 — the ONE call time entry is given here: after the row is written, with its id as
+         * the idempotency key. The observer never throws into this write (ITaskTransitionObserver).
+         */
+        await (_transitionObserver?.OnTransitionRecordedAsync(new TaskTransitionObservation(
+            _tenantContext.TenantId, current.Id, transition.Id, kind, previous.Lifecycle, current.Lifecycle,
+            intent?.ActorUserId, previous.AssigneeUserId, current.AssigneeUserId, transition.CreatedAt), ct) ?? Task.CompletedTask);
     }
 
-    private Task RecordAsync(
+    private Task<TaskTransition> RecordAsync(
         Guid taskItemId,
         TaskTransitionKind kind,
         TaskLifecycle from,

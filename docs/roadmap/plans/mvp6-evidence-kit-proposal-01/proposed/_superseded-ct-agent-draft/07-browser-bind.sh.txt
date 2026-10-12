@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# CANDIDATE — NOT APPROVED. Step 7b: bind a browser observation window to the running Web/Gateway processes.
+# Call with "open <label>" before and "close <label>" after each browser scenario. PASS requires the same PIDs
+# and start times at open and close (no silent restart), and the browser origin must be the lane Web port.
+source "$(dirname "$0")/kit-lib.sh"
+mode="${1:?open|close}"; label="${2:?}"; E="${3:?}"; require_workspace
+snap() { for s in web gateway auth supplychain; do
+           p="$(lane_port "$(printf '%s\n' "${KIT_SERVICES[@]}" | grep "^$s|" | cut -d'|' -f2)")"
+           pid="$(listening_pids "$p" | head -1)"; printf '%s:%s:%s;' "$s" "$pid" "$(ps -o lstart= -p "$pid" 2>/dev/null | tr -s ' ')"
+         done; }
+origin="http://${BROWSER_ORIGIN_HOST:-localhost}:$(lane_port 5001)"
+code="$(curl -s -o /dev/null -w '%{http_code}' "$origin/account/login")"
+printf '%s\t%s\t%s\t%s\t%s\n' "$(ts)" "$label" "$mode" "$origin login=$code" "$(snap)" >> "$E/BROWSER-BINDING.tsv"
+if [[ "$mode" == close ]]; then
+  o="$(awk -F'\t' -v l="$label" '$2==l && $3=="open"{print $5}' "$E/BROWSER-BINDING.tsv" | tail -1)"
+  c="$(awk -F'\t' -v l="$label" '$2==l && $3=="close"{print $5}' "$E/BROWSER-BINDING.tsv" | tail -1)"
+  [[ -n "$o" && "$o" == "$c" ]] || die "process identity changed during browser scenario $label"
+fi

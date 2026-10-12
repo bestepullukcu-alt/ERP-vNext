@@ -107,6 +107,13 @@
         isConcurrencyConflict,
         failureMessage,
         list: (query) => request('GET', query ? `/list?${query}` : '/list'),
+        /*
+         * WP-UI-MEETINGS-CALENDAR-01 — the list API with its filter, the way the same-origin proxy takes it: the
+         * WHOLE query string as ONE `query` parameter (MeetingsController.ApiList(string? query) forwards `?{query}`
+         * upstream). A bare `?fromUtc=…` never reaches Platform — measured on the proxy's signature: `list('pageSize=1000')`
+         * above loses its pageSize the same way.
+         */
+        listQuery: (params) => request('GET', `/list?query=${encodeURIComponent(new URLSearchParams(params).toString())}`),
         get: (id) => request('GET', `/${id}`),
         create: (payload) => request('POST', '', payload),
         update: (id, payload) => request('PUT', `/${id}`, payload),

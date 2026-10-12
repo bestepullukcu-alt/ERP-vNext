@@ -11,6 +11,7 @@ using Diten.Platform.Application.Features.WorkingCalendar.Services;
 using Diten.Platform.Application.Features.WorkingCalendarImport;
 using Diten.Platform.Application.Features.TenantOrganization.Services;
 using Diten.Platform.Application.Contracts.Eventing;
+using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Services;
 using Diten.Platform.Application.Services.Eventing;
 using Diten.Platform.Domain.Repositories;
@@ -128,6 +129,9 @@ public static class DependencyInjection
         services.Configure<TenantManagementOptions>(configuration.GetSection(TenantManagementOptions.SectionName));
         services.Configure<AuditRetentionSeedOptions>(configuration.GetSection(AuditRetentionSeedOptions.SectionName));
         services.Configure<BusinessReferenceDataCatalogLoadOptions>(configuration.GetSection(BusinessReferenceDataCatalogLoadOptions.SectionName));
+        // WP-BRD-TENANT-CRM-SETS — the reference sets every tenant user may read on api/lookups/reference-data/consumable-sets.
+        services.Configure<Diten.Platform.Application.Features.BusinessReferenceData.Services.BusinessReferenceDataConsumableSetsOptions>(
+            configuration.GetSection(Diten.Platform.Application.Features.BusinessReferenceData.Services.BusinessReferenceDataConsumableSetsOptions.SectionName));
         services.Configure<BusinessReferenceDataProviderOptions>(configuration.GetSection(BusinessReferenceDataProviderOptions.SectionName));
         services.AddSingleton<IValidateOptions<BusinessReferenceDataProviderOptions>, BusinessReferenceDataProviderOptionsValidator>();
         services.Configure<SmtpOptions>(configuration.GetSection(SmtpOptions.SectionName));
@@ -200,6 +204,11 @@ public static class DependencyInjection
 
         services.AddScoped<ITenantContext, TenantContext>();
         services.AddScoped<ICurrentUserContext, CurrentUserContext>();
+        // R-2b (PR #134): the internal legal-entity path is retired outright. R-2 had already left it with no
+        // production caller — InternalTenantLegalEntityScopeController held the only call to Bind, so IsBound was
+        // never true and the service token was never minted; Q481 measured that a deliberately wrong
+        // MdmServiceIdentity secret changed nothing. The context, the token provider, their options and MDM's
+        // internal reference-validation endpoint are gone, so there is nothing left to register here.
         services.AddTenantAuthorizationContext();
         services.AddScoped<ITenantDefaultsProvider, TenantDefaultsProvider>();
         services.AddSingleton<EntitlementCacheService>();
@@ -215,6 +224,8 @@ public static class DependencyInjection
         services.AddScoped<IAuthPermissionModulesClient, AuthPermissionModulesClient>();
         // MOD-0024 §K6.4 — display-name resolution for task assignees/requesters (best-effort S2S).
         services.AddScoped<IUserDisplayNameResolver, AuthUserDisplayNameClient>();
+        // BL-459 — the tenant users summary counts AuthService's users, not only Platform's AdminUsers list.
+        services.AddScoped<ITenantUserCountReader, AuthTenantUserCountClient>();
         services.AddScoped<IPlatformLookupCache, PlatformLookupMemoryCache>();
         services.AddScoped<IPlatformAdministratorProvisioningService, PlatformAdministratorProvisioningService>();
         services.AddScoped<IPlatformAdministratorInvitationEmailService, PlatformAdministratorInvitationEmailService>();
@@ -379,6 +390,19 @@ public static class DependencyInjection
         services.AddScoped<IMeetingMinutesVersionRepository, MeetingMinutesVersionRepository>();
         // MOD-0357 S11 — the recurring cadence rule's own storage.
         services.AddScoped<IMeetingSeriesRepository, MeetingSeriesRepository>();
+        // MOD-0280-FU01 T1a (ADR-004) — the time-entry module's own storage (time_entry_* collections).
+        services.AddScoped<ITimesheetWeekRepository, TimesheetWeekRepository>();
+        services.AddScoped<ITimeEntryRepository, TimeEntryRepository>();
+        services.AddScoped<IWorkCategoryRepository, WorkCategoryRepository>();
+        services.AddScoped<ITimeEntrySettingsRepository, TimeEntrySettingsRepository>();
+        services.AddScoped<ILegalEntityTimeSettingRepository, LegalEntityTimeSettingRepository>();
+        services.AddScoped<ITaskTimeTotalRepository, TaskTimeTotalRepository>();
+        // MOD-0280-FU01 T1b — the timer's segments and the meeting-suggestion decisions.
+        services.AddScoped<ITimerSegmentRepository, TimerSegmentRepository>();
+        services.AddScoped<ITimeSuggestionRepository, TimeSuggestionRepository>();
+        // MOD-0280-FU01 T3 — the at-most-once notification marks, and the deep links its e-mails carry.
+        services.AddScoped<ITimeEntryNotificationMarkRepository, TimeEntryNotificationMarkRepository>();
+        services.AddScoped<Diten.Platform.Application.Features.TimeEntry.Services.ITimeEntryLinks, TimeEntryLinks>();
         // MOD-0357 S5 — needs AuthServiceOptions.FrontendBaseUrl for the "Toplantıyı aç" deep link, which is
         // why the implementation lives here rather than beside ITaskNotificationService in Application.
         services.AddScoped<Diten.Platform.Application.Features.Meetings.Services.IMeetingInviteMailer,

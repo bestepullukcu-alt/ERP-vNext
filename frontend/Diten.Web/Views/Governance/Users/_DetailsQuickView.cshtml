@@ -67,19 +67,10 @@
                                 <div class="backbone-preview-label">@Localizer["AccountKind"]</div>
                                 <div class="mt-1 d-flex align-items-center flex-wrap gap-2">
                                     <span id="oc-accountkind" class="badge bg-label-secondary">-</span>
-                                    @* WP-INFRA-AUTH-ACCOUNT-KIND-01 — "Change type" is drawn ONLY for a holder of the
-                                       explicit-grant-only key (UAS-001: no disabled control for the others). The confirm
-                                       goes through window.showConfirm (BL-367, one dialog body); the POST goes through
-                                       /Users/api/{id}/account-kind, never to a service port. *@
-                                    @if (Perms.Has("auth.users.account-kind.manage"))
-                                    {
-                                        <select id="oc-accountkind-select" class="form-select form-select-sm w-auto select2-offcanvas" aria-label="@Localizer["AccountKind"]">
-                                            <option value="Unknown">@Localizer["AccountKindUnknown"]</option>
-                                            <option value="Human">@Localizer["AccountKindHuman"]</option>
-                                            <option value="Service">@Localizer["AccountKindService"]</option>
-                                        </select>
-                                        <button type="button" id="oc-btn-accountkind" class="btn btn-sm btn-label-primary">@Localizer["ChangeAccountKind"]</button>
-                                    }
+                                    @* Read-only on purpose (owner, 2026-09-24): the quick view is a preview. The account
+                                       kind is changed on the edit form (select2, "Güncelle") — one write path, one audit
+                                       record. The "Change type" control that used to sit here was CT's interim answer
+                                       before the edit form could do it (finding 3). *@
                                 </div>
                             </div>
                         </div>

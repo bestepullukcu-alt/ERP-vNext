@@ -1,0 +1,9 @@
+role	port	state
+gateway	5400	FREE
+web	5401	FREE
+auth	5456	FREE
+platform	5457	FREE
+mdm	5459	FREE
+supplychain	5461	FREE
+sink	5499	FREE
+mongo	34994	FREE

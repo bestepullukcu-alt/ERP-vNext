@@ -17,7 +17,10 @@ public sealed record CreateKnowledgePathRequest(
     string? LanguageCode = null,
     string? PathStatus = null,
     DateTimeOffset? EffectiveTo = null,
-    string? Source = null);
+    string? Source = null,
+    // WP-KP-1 — chain + country + language together; SubjectId then comes from the chain and PathCode may be empty.
+    Guid? ChainTemplateId = null,
+    string? CountryCode = null);
 
 public sealed record UpdateKnowledgePathRequest(
     string PathName,
@@ -33,9 +36,50 @@ public sealed record UpdateKnowledgePathRequest(
     DateTimeOffset? EffectiveTo = null,
     string? Source = null,
     int? ExpectedVersion = null,
-    object? Steps = null);
+    object? Steps = null,
+    string? CountryCode = null);
 
 public sealed record CreateKnowledgePathVersionRequest(string? NewPathVersion = null);
+
+// WP-KP-1 — studio sub-routes.
+public sealed record BindKnowledgePathChainRequest(
+    Guid ChainTemplateId, string? CountryCode, string? LanguageCode, int? ExpectedVersion = null);
+
+public sealed record KnowledgePathArrangementRequest(Guid ChainStepId, string? BranchCode, int Position = 0);
+
+public sealed record AddKnowledgePathClaimRequest(
+    Guid ClaimId, KnowledgePathArrangementRequest? Arrangement, int? ExpectedVersion = null);
+
+public sealed record ArrangeKnowledgePathClaimRequest(int Position, int? ExpectedVersion = null);
+
+// WP-KP-2 — review sub-routes.
+public sealed record KnowledgePathDecisionRequest(string? Decision, string? Comment = null);
+
+// WP-KP-5a — safety text / country legal profile requests (the key is fixed at creation; PUT edits a draft's content).
+public sealed record CreateSafetyTextRequest(
+    Guid GlobalProductId, string? GlobalProductCodeDisplay, string? CountryCode, string? LanguageCode, string? Body,
+    string? ShortBody = null, string? SourceDocumentRef = null, DateTimeOffset? SourceDate = null,
+    string? ApprovalReference = null);
+
+public sealed record UpdateSafetyTextRequest(
+    string? Body, string? ShortBody = null, string? SourceDocumentRef = null, DateTimeOffset? SourceDate = null,
+    string? ApprovalReference = null, int? ExpectedVersion = null);
+
+public sealed record CreateCountryLegalProfileRequest(
+    string? CountryCode, string? LanguageCode, string? LegalFooterText, string? MarketingAuthorizationHolder = null,
+    string? AdverseEventReportingText = null, string? PromotionalNotice = null, string? PageApprovalCodeFormat = null);
+
+public sealed record UpdateCountryLegalProfileRequest(
+    string? LegalFooterText, string? MarketingAuthorizationHolder = null, string? AdverseEventReportingText = null,
+    string? PromotionalNotice = null, string? PageApprovalCodeFormat = null, int? ExpectedVersion = null);
+
+public sealed record RegulatoryTextDecisionRequest(string? Outcome, string? Comment = null);
+
+// WP-KP-3 — withdrawal of a released revision (reason required).
+public sealed record KnowledgePathWithdrawRequest(string? Reason);
+
+public sealed record KnowledgePathNoteRequest(
+    string? Text, string? PageRef = null, string? BlockRef = null, string? StepRef = null, double? X = null, double? Y = null);
 
 public sealed record KnowledgePathBranchConditionRequest(
     string ConditionCode,
@@ -56,7 +100,8 @@ public sealed record AddKnowledgePathStepRequest(
     int? EstimatedDurationMinutes = null,
     string? Notes = null,
     IReadOnlyList<KnowledgePathBranchConditionRequest>? BranchConditions = null,
-    int? ExpectedVersion = null);
+    int? ExpectedVersion = null,
+    KnowledgePathArrangementRequest? Arrangement = null);
 
 public sealed record UpdateKnowledgePathStepRequest(
     int StepOrder,
@@ -72,4 +117,5 @@ public sealed record UpdateKnowledgePathStepRequest(
     int? EstimatedDurationMinutes = null,
     string? Notes = null,
     IReadOnlyList<KnowledgePathBranchConditionRequest>? BranchConditions = null,
-    int? ExpectedVersion = null);
+    int? ExpectedVersion = null,
+    KnowledgePathArrangementRequest? Arrangement = null);

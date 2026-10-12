@@ -1,0 +1,5 @@
+docs(records): add MVP6 records: Q-series work packages, CT verdicts and BASE-STACK (2026-09) (part e)
+
+3 folders/items, first 'mvp6-q64d-claims-runtime-01', last 'mvp6-q82-ver-ui-pack-190-192'.
+Work packages: Q64D, Q65B, Q82.
+432 files from pathspec/R7e.txt (Q230 commit plan).

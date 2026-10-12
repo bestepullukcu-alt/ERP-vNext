@@ -1,0 +1,226 @@
+# MOD-0187 Claims Management — UI-REVISION-01 (Q35). PROPOSED ONLY — NOT APPROVED. Apply only after the alignment patch.
+# Preimage SHA-256 f0e4d3bd6af5c16a0d0904721019bfb33f10818a6f9baffd92d3f50740bb1baf (= mvp6-pack-alignment-02-claims target)  Target SHA-256 762ab5337af85b965216d41a212217db3681af3a31bbd1514544b58dbfc7786b
+diff --git a/execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md b/execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md
+index c0cbd81..219190e 100644
+--- a/execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md
++++ b/execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md
+@@ -3,8 +3,8 @@ id: MOD-0187
+ name: Claims Management
+ domain: supply-chain-execution
+ service: Diten.SupplyChainService
+-shell: none
+-golden_reference: none
++shell: tenant
++golden_reference: slim
+ entity_base: EntityBase
+ status: ready-for-dev
+ status_note: "Owner-promoted isolated pack d035d420… (PACK-ACTIVATE-01, 2026-09-20) bound to CT-accepted bounded work package MVP6-MOD0187-CT-ACCEPT-01 on published SHIPMENT-BUNDLE 3.0.0 / wire v1 (§31). Common-checkout integration, gateway, live producer uptake, UI, E5/G5 and rollout remain open."
+@@ -12,7 +12,7 @@ owner: supply-chain-execution / control-tower
+ branch: feature/mvp6-logistics
+ started: 2026-09-15
+ target: 2026-09-30
+-form_field_count: 0
++form_field_count: 6
+ ---
+ 
+ # MOD-0187 — Claims Management
+@@ -537,3 +537,199 @@ This section records, without changing any business rule above, the Control Towe
+ **Owned paths:** the 47 paths of `docs/roadmap/plans/mod-0187-runtime-dispatch-01/owned-paths.txt` (SHA-256 `eebaf0ac75206a664c168c072411224dc22e4f9b295cf70ad79031eb72e99517`). All 47 occur in the accepted 341-entry manifest; none exists in the common checkout today. `Program.cs` and `ClaimOutboxWorker.cs` are not owned paths.
+ 
+ **Still open:** common-checkout source uptake and composition, gateway and shared permission registration, real producer authoritative-root uptake beyond the accepted seam, publisher/Event Bus delivery, finance posting, UI, migration/backfill, rollout, E5/G5 and full-module acceptance. This section is not `done` status and grants no new DEV scope.
++
++## 32. Tenant UI scope (UI-REVISION-01) — GoldenReferenceSlim
++
++This section adds the tenant UI scope approved in `docs/records/decisions/2026-09/mvp6-returns-claims-ui-scope-owner-decision-01.md`
++(SHA-256 `309319173e77bcc5da1d4587082742dfa4feb31b0d5e6337b04309646acfaee9`), bound to the draft package
++`docs/roadmap/plans/mvp6-ui-pack-drafts-01/` (SHA256SUMS `b568c94f7f524dd0bff1e2fa3277571fed174c6214ac0a9efd3ab13200abb57f`;
++`claims/APPROVAL-DECISION.md` `ea11f670af31355e67e939c219c8d27142977c2ea79c09398efded4a47bf4813`). It stacks on §31 and changes
++**no** business, contract, backend, owned-backend-path or acceptance rule in §§1–31. The frontmatter changes `shell: tenant`,
++`golden_reference: slim` and `form_field_count: 6` apply to the UI only. For the UI, §9 ("`shell: none`") and §11 ("not applicable")
++are superseded by this section; for the backend they remain as written. `status` stays `ready-for-dev` (backend scope, per §§30–31);
++UI code is **not** authorized by this section alone (§32.14).
++
++### 32.1 Identity
++
++UI revision inside MOD-0187; no FU, child or new ID. The pack author runs
++`python3 .antigravity/scripts/verify_module_id.py . --check-id MOD-0187 --name "Claims Management"` before applying; non-zero exit stops.
++Observed 2026-09-26: `OK`, exit 0.
++
++### 32.2 Layout and shell contract
++
++- `shell: tenant` → every Claims `.cshtml` states `Layout = "_LayoutTenantShell";` explicitly; `_ViewStart.cshtml` unchanged.
++- View folder `frontend/Diten.Web/Views/SupplyChain/Claims/`; route `/SupplyChain/Claims`; no `/Platform` prefix; no `Areas/`.
++- Skeleton, empty and error are three distinct states (VIEW-001 §3.1); no spinner or "Loading" text.
++
++### 32.3 Bound operations (nothing else)
++
++Published SHIPMENT-BUNDLE 3.0.0 / wire v1 (`5dfe7c1b…d21c`) and Claims annex (`16e65c26…4eb63`) only:
++`queryClaims` (list/filter/reload), `createClaim` (create offcanvas), `transitionClaim` (row action), and Shipment-owned
++`getShipment` consumed read-only (status, `carrierId`, and the lifecycle root resolved **server-side**). No Claim by-ID GET, detail page,
++edit, delete, bulk, import/export, server paging/search/sort, carrier lookup, evidence upload/verification, currency catalogue or finance call.
++
++### 32.4 Screens, routes, permissions
++
++Browser → same-origin MVC (`proxy-profile`, NET-001) → Gateway 5000 → SupplyChain 5061. The browser never calls 5000/5061 or holds a bearer token.
++
++| Surface | MVC route | Gateway downstream | UI display gate | Backend |
++|---|---|---|---|---|
++| Page | GET `/SupplyChain/Claims` | — | `supplychain.claims.read` | — |
++| List adapter | GET `/SupplyChain/Claims/api?shipmentId=&status=` | GET `/api/shipment-bundle/claims` | read | `queryClaims` |
++| Shipment resolve adapter | GET `/SupplyChain/Claims/api/shipments/{shipmentId:guid}` | GET `/api/shipment-bundle/shipments/{shipmentId}` | `.create` + `supplychain.shipments.read` | `getShipment`; projection = number, status, carrierId; root never returned to the browser |
++| Create adapter | POST `/SupplyChain/Claims/api` | root via `getShipment`, then POST `/api/shipment-bundle/claims` | `.create` + `supplychain.shipments.read` | `createClaim` |
++| Transition adapter | POST `/SupplyChain/Claims/api/{claimId:guid}/transition` | root via `getShipment`, then POST `/api/shipment-bundle/claims/{claimId}/transition` | exact target key + `supplychain.shipments.read` | `transitionClaim` |
++| Unsupported detail/edit/delete/bulk/import/export | absent | absent | — | no route, control, proxy or request |
++
++Permission keys stay exactly as published and approved: `supplychain.claims.read`, `.create`, `.investigate`, `.decide`, `.settle`
++(annex D187-04 target map), plus the approved UI prerequisite **`supplychain.shipments.read`** for create and transition actors (G-SHIPREAD).
++The UI check is a display decision (UAS-001 §4); `[HasPermission]` on the backend stays the authority.
++
++Adapter headers: `Authorization` server-side only; `X-Correlation-Id` = fresh UUID trace for GET, **the Shipment's
++`lifecycleCorrelationId`** for create/transition; `Idempotency-Key` = browser per-intent key forwarded exactly. Optional
++`X-Tenant-Id`/`X-Legal-Entity-Id` and scope query keys are never sent. Antiforgery on every POST.
++The browser-supplied `shipmentId` on a transition is a lookup hint only; the backend root check (409 `CLAIM_CORRELATION_MISMATCH`) is authoritative.
++
++### 32.5 List — bounded DataTables v2 profile
++
++`data-dt-standard="v2"`, `DtDefaults.create()`, explicit `stateSave: false`, `serverSide: false`; client search/sort/paging over the
++returned set only; `total` shown as returned. Filter (`_Filter.cshtml` inline collapse): `status` single Select2 with `ShowAll`
++(omits the parameter), `shipmentId` UUID text input (not a lookup). No other query parameter. Save View / column visibility / colReorder / Reset
++through the shared `personalizationClient` (`moduleKey`/`pageKey` codes assigned by the integration owner); no localStorage.
++Columns: `claimNumber`, `shipmentId` (LTR, copyable), localized status, `claimedAmount` (exact wire text, LTR, no grouping/rounding),
++`currency` (as sent), actions. Absent summary field → "not provided"; no action without `claimId`; malformed envelope → error, never empty.
++QuickView (`_DetailsQuickView.cshtml`) shows the row summary and copyable `claimId` only, with no by-ID request and no Edit button.
++`approvedAmount` is not in `ClaimSummary` and is not listed (gap §32.13).
++
++### 32.6 Create offcanvas — field count and validation
++
++`form_field_count: 6` → **GoldenReferenceSlim**, create-only `_CreateEditOffcanvas.cshtml` (no edit mode), `.diten-field` + icon per field.
++
++| Field | Required | UI rule (no client tightening; backend authoritative) |
++|---|---|---|
++| `shipmentId` | yes | UUID text + Resolve; a late response for a previous UUID never populates; 404 → safe-not-found, no shipment data left in DOM |
++| `carrierId` | no | Checkbox "link the shipment's carrier", enabled only when the resolved Shipment has non-null `carrierId`; checked sends that UUID, unchecked omits |
++| `reasonCode` | yes (presence) | Free text sent as typed; empty allowed; no HTML `required`, trim or maxlength |
++| `claimedAmount` | yes | Text, `inputmode=decimal`, sent as a JSON **string** exactly as typed; no conversion, locale comma handling, formatting or float |
++| `currency` | yes | Text sent as typed; no ISO list, no auto-uppercase |
++| `evidenceReferenceIds` | no | Repeatable text; omitted when empty; order, duplicates, empty strings preserved; no upload |
++
++Eligibility (Dispatched, InTransit, Delivered, Exception, Closed) is shown as a note and submit is disabled for other statuses
++(display only; backend 422 `CLAIM_SHIPMENT_INELIGIBLE` stays authoritative). Required-contract parity follows the backend validator
++(presence ≠ nonempty).
++
++### 32.7 Transition action
++
++Shown only when the row status permits the arrow and the actor holds the exact key. `occurredAt` (date-time with explicit offset;
++default now; exact text kept for retries) on every target; optional `resolutionCode`/`note` on every target.
++
++| Current | Target | Key | Extra |
++|---|---|---|---|
++| Open | Investigating / Withdrawn | `.investigate` | — |
++| Investigating | Approved | `.decide` | `approvedAmount` required, text, 0 ≤ x ≤ claimed (server-checked) |
++| Investigating | Rejected | `.decide` | — |
++| Approved | Settled | `.settle` | label "Settled (operational status, no payment posted)" |
++| Rejected / Settled | Closed | `.decide` | — |
++| Withdrawn, Closed | none | — | no action |
++
++`approvedAmount` is sent only for Approved. Confirmations use the shared premium wrapper (`window.showConfirm`, MOD-0013); no native
++dialog, manual `Swal.fire`, or inline handler (form surface: gap §32.13 G-MODAL).
++
++### 32.8 Errors, replay and concurrency (annex D187-05; localized, never raw text)
++
++| Code (HTTP) | UI behaviour |
++|---|---|
++| `INVALID_REQUEST` (400), `UNSUPPORTED_MEDIA_TYPE` (415) | Localized form summary; safe field mapping only |
++| `UNAUTHENTICATED` (401) | Standard session surface; JSON adapters return 401 JSON without redirect |
++| `FORBIDDEN` (403) | Page: `_AccessDenied` in shell. Action: close/disable + localized denial |
++| `CLAIM_NOT_FOUND` (404) | One identical safe-not-found text + support reference for unknown, foreign-scope and soft-deleted targets; action closed; list reload; hidden surfaces inert and not keyboard-reachable; late responses never re-expose them |
++| `CLAIM_SHIPMENT_INELIGIBLE`, `CLAIM_CARRIER_MISMATCH`, `CLAIM_AMOUNT_INVALID`, `CLAIM_APPROVAL_AMOUNT_INVALID`, `CLAIM_APPROVED_AMOUNT_NOT_ALLOWED` (422) | Specific localized message; inputs kept |
++| `INVALID_CLAIM_TRANSITION` (422) | Stale-state conflict + support reference + reload |
++| `CLAIM_CORRELATION_MISMATCH` (409) | "Request no longer matches the shipment record"; no automatic new key |
++| `IDEMPOTENCY_KEY_REUSED` (409) | Stop retry; new user intent required |
++| `CLAIM_REFERENCE_INVALID` (502) | Reference data invalid; no retry loop |
++| `CLAIM_REFERENCE_INCOMPLETE`, `CLAIM_REFERENCE_UNAVAILABLE`, `CLAIM_STORAGE_UNAVAILABLE` (503) | Temporarily unavailable; same-key retry; unknown commit never shown as rolled back |
++| `INTERNAL_ERROR` (500) | Sanitized error; explicit same-intent retry |
++
++Per intent: one pending request; the same key and **identical body text** on network/500/503 retry; an edited payload is a new
++intent. A 201/200 with `idempotentReplay: true` is shown as completed, then the list reloads; a replay snapshot is never shown as current state.
++The response `X-Correlation-Id` (= `error.correlationId`) is a copyable support reference, never labelled as the lifecycle root.
++
++### 32.9 Localization, UAS-001, accessibility
++
++Seven tenant languages (en, tr, fr, es, zh, ar, ru) in `Resources/Views/SupplyChain/Claims/ClaimsIndex.{lang}.resx`, marker class
++`ClaimsIndex`, `_IndexL10n.cshtml` JSON bridge + `index.l10n.js`; mandatory keys `ClaimsTitle`, `PageDescription`, `AddNewClaims`
++and column headers; shared toolbar vocabulary from `SharedResource`; no English placeholder in other languages, no hardcoded fallback; all 18 annex codes localized.
++Arabic RTL; UUIDs/amounts/currency LTR-isolated; 390/768/1024/1440 without horizontal overflow; keyboard focus/Escape in offcanvas
++and dialogs. UAS-001: without `.read` only `_AccessDenied` inside the shell (no title, filter, table, skeleton, button, toast or redirect);
++no create CTA without `.create` + `supplychain.shipments.read`; no action without its key.
++
++### 32.10 Owned UI paths (21, new files only), protected paths, shared handoff
++
++Owned: `frontend/Diten.Web/Controllers/SupplyChainClaimsController.cs`; `frontend/Diten.Web/Models/SupplyChain/Claims/ClaimViewModels.cs`;
++`frontend/Diten.Web/Views/SupplyChain/Claims/{ClaimsIndex.cs, Index.cshtml, _Filter.cshtml, _DataTable.cshtml, _IndexL10n.cshtml, _CreateEditOffcanvas.cshtml, _DetailsQuickView.cshtml}`;
++`frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/{index.js, index.l10n.js}`;
++`frontend/Diten.Web/Resources/Views/SupplyChain/Claims/ClaimsIndex.{en,tr,fr,es,zh,ar,ru}.resx`;
++`frontend/Diten.Web.Tests/{Controllers/SupplyChainClaimsControllerTests.cs, Forms/ClaimFormContractTests.cs, JavaScript/ClaimIndexBehaviorTests.cs}`.
++These are separate from, and add nothing to, the 47 backend owned paths of §31.
++
++Protected for the UI writer: all backend source (including `Features/Claims/**` and service `Program.cs`), contracts/annexes,
++`gateway/**`, shared layouts/partials/JS/CSS, `SharedResource.*.resx`, frontend `Program.cs`/DI, navigation/module/permission catalogues,
++`frontend/Diten.Web/tests/diten-field-icons.test.js`, other modules' UI files, Golden Slim (read only), packs, registries, `.antigravity/**`,
++guards, existing records and Git state.
++
++One CT-appointed **integration owner** (the same owner for Returns when its UI revision exists) alone delivers exact diffs for:
++gateway routes (**listed, not edited here**): GET+POST `/api/shipment-bundle/claims`, POST `/api/shipment-bundle/claims/{claimId}/transition`,
++and confirmation of GET `/api/shipment-bundle/shipments/{shipmentId}`, explicit routes with OPTIONS (NET-001), `/claimsXYZ` not matched;
++page/permission registration and G-SHIPREAD role design; tenant navigation and Ctrl+K with registry-reconciled module/page codes; shared
++L10n nav keys in 7 languages; personalization confirmation; the `ICON_MAP` entries; Shipment root emission in the target; and uptake
++of the accepted Claims backend (47 paths + approved `Program.cs` composition) into the integrated target.
++
++### 32.11 Single acceptance matrix (UI) — early vertical slice first
++
++Full row text with HTTP/browser/DB expectations, owner, evidence type and dependency is controlling in
++`docs/roadmap/plans/mvp6-ui-pack-drafts-01/claims/ACCEPTANCE.md` (bound by the draft SHA256SUMS above). No row has run.
++
++| ID | Criterion | Readiness |
++|---|---|---|
++| CU-VS1 | Early vertical slice: real-Auth actor resolves a Dispatched Shipment (non-null root, no carrier), creates a claim `250.00 EUR`; 201 Open with Gateway `X-Correlation-Id` = Shipment root; +1 claim/receipt/audit/Pending outbox; reload shows `250.00` | BLOCKED (target, gateway, G-SHIPREAD, seed) |
++| CU-01…CU-03 | Same-origin chain; list query parity; envelope/absent fields | BLOCKED (gateway) / READY |
++| CU-04…CU-06 | Exact amount text; skeleton/empty/error; UAS-001 no read | READY |
++| CU-07, CU-08 | Create CTA gating (BLOCKED G-SHIPREAD); action gating matrix with 403 zero-write | BLOCKED / READY |
++| CU-09…CU-13 | Create body parity; carrier link; amount/currency lexical; presence ≠ nonempty; resolve stale-response guard | READY |
++| CU-14…CU-17 | Safe-not-found (create, transition); cross-LE list; eligibility display vs server 422 | READY |
++| CU-18, CU-19 | Root seam (BLOCKED producer uptake); idempotency (BLOCKED DN-01) | BLOCKED |
++| CU-20…CU-26 | Approval amount; stale transition; Settled wording; support ref vs root; 7 languages + RTL; responsive + keyboard; premium dialogs/no secrets | READY |
++| CU-27, CU-28 | Family routing `/claimsXYZ`; regression incl. Claims backend suites on target | BLOCKED |
++| CU-29 | Source→binary→process→browser binding | READY |
++| CU-30 | PNG via supported export only | BLOCKED (PRES-183-04) |
++| CU-31 | QuickView without by-ID request | READY |
++
++OUT at the start (scope-change rows, approved by the owner decision above): CU-SCR-01 checkbox + BulkActionBar; CU-SCR-02 edit/delete/bulk
++delete (incl. QuickView Edit button); CU-SCR-03 import/export; CU-SCR-04 server paging/search/sort; CU-SCR-05 multi-select status;
++CU-SCR-06 generic `verify_datatable_page.py --reference slim` as acceptance (run and kept as a record only).
++
++### 32.12 Test expectations (UI)
++
++Module tests in the three owned test files; `python3 .antigravity/scripts/verify_datatable_page.py . --area SupplyChain --module Claims --reference slim`
++run and recorded (CU-SCR-06); `quality-gate-datatable` result recorded against the bounded profile; RESX parity 7/7 with no placeholder;
++build of frontend, gateway and SupplyChain service on the integrated target; real-Auth browser smoke with three identities and separate
++profiles; `grep` scans for native dialogs, inline handlers and "Permission denied"/"Forbidden" text; independent VER on a frozen source.
++
++### 32.13 Remaining gaps (recorded, not decided here)
++
++- **Approved-amount list gap:** `ClaimSummary` has no `approvedAmount`; it shows only in the transition success message. Contract change not authorized.
++- **G-MODAL:** MOD-0013 §4 requires `window.showConfirm` and forbids manual `Swal.fire` on layout pages; whether it can host the transition inputs is unverified. If not, a module-owned form surface (one more owned partial) needs a scope amendment.
++- **G-ICONMAP:** FORM template requires an icon per field registered in shared `diten-field-icons.test.js`; that edit belongs to the integration owner.
++- **G-DATETIME:** `occurredAt` needs date-time with offset; the shared date field is date-oriented; component choice is a Phase 1.5 item.
++- **Verifier tension:** module-pack standard §15 expects DataTable verifier PASS; the approved OUT rows make the generic verifier record-only until a scope-aware profile (DN-02 / PRES-183-03) exists.
++- G-TARGET integrated target; Claims backend absent from the common checkout; DN-01 retry policy; producer root uptake; PNG; nav/personalization codes; Loads 3.1.0 forward drift of the `5dfe7c1b…` pin; `module-implementation-status.md` update is a separate path.
++
++### 32.14 Effort and authorization boundary
++
++O/M/P (person-hours, replacement of 0187-1/4-REMAINING and the UI sub-items of 0187-5/6-REMAINING, not additive): pack/Phase 1.5 4/8/16;
++frontend 30/50/84; shared integration 8/16/28; independent UI VER 14/24/40; **total 56/98/168**; with the non-UI remainders 68/118/200
++(net +6.8/+16/+14.4 against the old rows). Joint delivery with Returns lowers the shared parts (draft README).
++
++Not authorized by this section: UI code until an integrated target exists and a versioned UI dispatch is released; gateway, permission,
++navigation, L10n or icon-map edits except by the single integration owner; contract changes; `done` status; commit or push.

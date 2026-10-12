@@ -1,0 +1,22 @@
+# Q232 ARTIFACTS — sha256
+# start 2026-10-02 23:15:11 +03 · end 2026-10-02 23:30:58 +03
+# branch feature/mvp6-logistics @ 4a8d4d4b339528a88e6220fb8402e5a2c771136c
+# git status --porcelain at end: byte-identical to the start snapshot (665 lines)
+# repo Program.cs at end: 7fdb5ef0d322c3b9c814fab709dcfbaf1c9a2904f3d9a39e6f90bce077f204d8 (unchanged)
+2c5a90cb180e64f8a98f5609e5cf434ed48c2338168ce7f5bab235b288b4b633  BEFORE-AFTER.md
+82fcaf25ceb574459d471fcc0422044369e1d521867de8566327945a2b2825d0  SABOTAGE-PROOF.md
+c0901f9d345f57f95c6e36aefb5ece4b7ca9a7ed339da79a089c928b593c2989  SOP-22.md
+b62a2b8d8803e04ae8f8faef6576edc5b17900907e6a5883ec32c65bce0ca8c0  STARTUP-AND-HTTP.md
+e59ea161557c1c1c218d17e13137c2afb6cc85c92d602c1db9b2fb9f2e6df8dc  TEST-RESULT.tsv
+7fdb5ef0d322c3b9c814fab709dcfbaf1c9a2904f3d9a39e6f90bce077f204d8  before/Program.cs.txt
+659c1cd6591445298a90b1b16821ebe2ba6f8cc16a9d889bd56120ac6d04b864  evidence/build-fixed.log
+5fb1e778838674b84b455f45f09cde2512f595b28e0c0001c1e12be4b253e0cd  evidence/build-fixed2.log
+735085e928d9c4886c8019eb644c3479e3e62251bea0e6257f638a8cfc9a247d  evidence/build-sabotage.log
+eabf6fb948214400d2813ef87ce73a3ade6fbeb52a452ff5e081263518232d00  evidence/http-production-supplementary.txt
+8ad39bf8b447f1d1004f9deeb8cbac7ac2497529053d39f37400c92f251f9a4f  evidence/run.sh
+3eabaaae567847233fbf0751d84692a9e4f1e0952416b51e14bb901166d827db  evidence/service-fixed.log
+3eabaaae567847233fbf0751d84692a9e4f1e0952416b51e14bb901166d827db  evidence/service-fixed2.log
+9ce3b5a00af1b8728092d43fbe048f892bd9aed4b26bfdc36504765e81e11daa  evidence/service-prod.log
+49190834929a151bffb276080d388271f922e8afa22b4672ac05fa638f846165  evidence/service-sabotage.log
+b9e165815ce4544ab902ad238526669d2a1729a521bebb9bbde6f091b2aeb6fe  evidence/test.log
+b417e7694fd8bde6bb19e95ebd047f661ecf48235b697a8b5149ab3b46ae7897  proposed/Program.cs.txt

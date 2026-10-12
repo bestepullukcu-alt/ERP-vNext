@@ -372,7 +372,36 @@
         };
     };
 
+    /*
+     * WP-UI-CALENDAR-VIEW-01 — the calendar feed, same-origin (WorkCenterNextController.Calendar forwards it to
+     * the gateway; the browser never names a module route). Result shape is dispatchAction's ({ ok, status, reasonCode, data }) so a refusal
+     * (WORK_CALENDAR_RANGE_INVALID) goes through the same TasksApi.failureMessage bridge as every other code.
+     */
+    const CALENDAR_ENDPOINT = '/WorkCenterNext/api/calendar';
+
+    const fetchCalendar = async (from, to) => {
+        let response;
+        try {
+            response = await global.fetch(
+                `${CALENDAR_ENDPOINT}?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
+                { method: 'GET', headers: { Accept: 'application/json' }, credentials: 'same-origin' });
+        } catch (_) {
+            return { ok: false, status: 0, reasonCode: 'UNAVAILABLE', data: null };
+        }
+
+        let body = null;
+        try { body = await response.json(); } catch (_) { /* an empty body is still an answer */ }
+        return {
+            ok: response.ok,
+            status: response.status,
+            reasonCode: body?.reason_code ?? body?.reasonCode ?? null,
+            data: body?.data ?? null
+        };
+    };
+
     global.WorkCenterNextApi = {
+        CALENDAR_ENDPOINT,
+        fetchCalendar,
         ENDPOINT,
         TEAM_AVAILABILITY_ENDPOINT,
         fetchTeamAvailability,

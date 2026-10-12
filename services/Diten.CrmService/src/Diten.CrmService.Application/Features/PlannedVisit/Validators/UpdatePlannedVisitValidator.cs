@@ -13,8 +13,8 @@ public sealed class UpdatePlannedVisitValidator : AbstractValidator<UpdatePlanne
         RuleFor(x => x.PlannedVisitId).NotEmpty();
         RuleFor(x => x.TargetType).NotEmpty();
         RuleFor(x => x.TargetId).NotEmpty();
-        RuleFor(x => x.ResourceId).NotEmpty().MaximumLength(PlannedVisitLimits.MaxResourceIdLength);
-        RuleFor(x => x.ResourceType).NotEmpty();
+        // WP-VP-2 (B-1) — optional: an empty resource is the caller (the handler decides; another rep is 403).
+        RuleFor(x => x.ResourceId).MaximumLength(PlannedVisitLimits.MaxResourceIdLength);
         RuleFor(x => x.VisitPurpose).NotEmpty();
         RuleFor(x => x.VisitType).NotEmpty();
         RuleFor(x => x.Objective!).MaximumLength(PlannedVisitLimits.MaxObjectiveLength).When(x => x.Objective is not null);

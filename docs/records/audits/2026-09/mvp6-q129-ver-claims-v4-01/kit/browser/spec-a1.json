@@ -1,0 +1,102 @@
+{
+  "phase": "spec",
+  "extra": null,
+  "startedAt": "2026-09-27T13:35:40.634Z",
+  "web": "http://127.0.0.1:5801",
+  "playwright": "1.59.1",
+  "cases": {
+    "spec": {
+      "result": "FAIL",
+      "exit": 1,
+      "specSha256": "ab3cb56db126caca8ced0b71b7d8c0cb23a5b071d216e533e7d12b7118e64e5c",
+      "stdoutTail": "\nRunning 18 tests using 1 worker\n\n  ✓   1 claims-ui.spec.mjs:46:3 › Claims list (CU-01…CU-05, CU-31) › list loads through the same-origin adapter only; skeleton then table (1.8s)\n  ✓   2 claims-ui.spec.mjs:59:3 › Claims list (CU-01…CU-05, CU-31) › filter sends only status and shipmentId (1.5s)\n  ✓   3 claims-ui.spec.mjs:70:3 › Claims list (CU-01…CU-05, CU-31) › QuickView makes no by-ID request (CU-31) (1.2s)\n  ✓   4 claims-ui.spec.mjs:88:3 › Create (CU-VS1, CU-09…CU-14, CU-17) › create positive: 250.00 EUR on a Dispatched shipment; body is exact text (1.8s)\n  ✓   5 claims-ui.spec.mjs:110:3 › Create (CU-VS1, CU-09…CU-14, CU-17) › create negative: lowercase currency → localized 400, inputs kept (CU-11) (1.8s)\n  ✓   6 claims-ui.spec.mjs:127:3 › Create (CU-VS1, CU-09…CU-14, CU-17) › create 400 keeps keyboard focus in the surface; Escape closes it without Tab (CU-25, Q122-D5) (2.2s)\n  ✓   7 claims-ui.spec.mjs:151:3 › Create (CU-VS1, CU-09…CU-14, CU-17) › ineligible shipment: note + disabled submit (CU-17) (1.7s)\n  ✓   8 claims-ui.spec.mjs:160:3 › Create (CU-VS1, CU-09…CU-14, CU-17) › carrier checkbox enabled only when the shipment has a carrier (CU-10) (1.9s)\n  ✓   9 claims-ui.spec.mjs:171:3 › Create (CU-VS1, CU-09…CU-14, CU-17) › unknown shipment → one safe not-found text, no shipment data (CU-14) (1.4s)\n  ✓  10 claims-ui.spec.mjs:186:3 › Transition (CU-08, CU-20…CU-22) › allowed transition Open → Investigating returns 200 and reloads (2.1s)\n  ✘  11 claims-ui.spec.mjs:199:3 › Transition (CU-08, CU-20…CU-22) › stale transition → 422 INVALID_CLAIM_TRANSITION shows conflict + reload (CU-21) (4.2s)\n  -  12 claims-ui.spec.mjs:225:3 › Transition (CU-08, CU-20…CU-22) › reused key with a changed body → 409 IDEMPOTENCY_KEY_REUSED, retry stops (CU-19)\n  ✓  13 claims-ui.spec.mjs:232:3 › Scope and permissions (CU-06, CU-07, CU-15, CU-16) › without read: only _AccessDenied inside the shell (1.0s)\n  ✓  14 claims-ui.spec.mjs:246:3 › Scope and permissions (CU-06, CU-07, CU-15, CU-16) › read-only: no create CTA and no row actions (1.1s)\n  ✓  15 claims-ui.spec.mjs:256:3 › Scope and permissions (CU-06, CU-07, CU-15, CU-16) › cross-LE: LE-B list excludes LE-A claims; ?shipmentId=<LE-A> → empty (144ms)\n  ✓  16 claims-ui.spec.mjs:266:3 › Scope and permissions (CU-06, CU-07, CU-15, CU-16) › cross-LE: resolve of an LE-A shipment from LE-B → 404 safe-not-found (126ms)\n  ✓  17 claims-ui.spec.mjs:279:5 › Languages (CU-24, CU-25) › screen in tr (1.8s)\n  ✓  18 claims-ui.spec.mjs:279:5 › Languages (CU-24, CU-25) › screen in ar (RTL) (1.9s)\n\n\n  1) claims-ui.spec.mjs:199:3 › Transition (CU-08, CU-20…CU-22) › stale transition → 422 INVALID_CLAIM_TRANSITION shows conflict + reload (CU-21) \n\n    Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\n    Expected: \u001b[32m422\u001b[39m\n    Received: \u001b[31m200\u001b[39m\n\n      217 |     await pb.locator('.swal2-confirm, [data-confirm=\"yes\"]').first().click();\n      218 |     const response = await res;\n    > 219 |     expect(response.status()).toBe(422);\n          |                               ^\n      220 |     expect((await response.json()).error.code).toBe('INVALID_CLAIM_TRANSITION');\n      221 |     await pb.screenshot({ path: png('04-transition-422') });\n      222 |     await a.close(); await b.close();\n        at /Users/natig/mvp6-env/q129/runtime/claims-ui.spec.mjs:219:31\n\n    Error Context: test-output/claims-ui-Transition-CU-08-7f481-hows-conflict-reload-CU-21-/error-context.md\n\n  1 failed\n    claims-ui.spec.mjs:199:3 › Transition (CU-08, CU-20…CU-22) › stale transition → 422 INVALID_CLAIM_TRANSITION shows conflict + reload (CU-21) \n  1 skipped\n  16 passed (29.7s)\n",
+      "stderrTail": ""
+    }
+  },
+  "png": [
+    {
+      "name": "spec/01-list-en.png",
+      "sha256": "abd16aea76559230d11b96ab68585880ae42070680120885e41e2281181af1a6",
+      "phase": "spec",
+      "tool": "@playwright/test 1.59.1 page.screenshot"
+    },
+    {
+      "name": "spec/02-create-201.png",
+      "sha256": "6884d10d89f21642d49d0259791ed204bdf0093353f64f7143ae6cb2b9f8be05",
+      "phase": "spec",
+      "tool": "@playwright/test 1.59.1 page.screenshot"
+    },
+    {
+      "name": "spec/03-create-400.png",
+      "sha256": "ab661bb0d718a4a35fdb8e55766e0add1bd4f205d18867f14317af83f3c6c5a4",
+      "phase": "spec",
+      "tool": "@playwright/test 1.59.1 page.screenshot"
+    },
+    {
+      "name": "spec/03b-create-400-escape.png",
+      "sha256": "7344a8956f396ebccf65c2d3f307552b4f8127cdeef6384fdaa572c200030404",
+      "phase": "spec",
+      "tool": "@playwright/test 1.59.1 page.screenshot"
+    },
+    {
+      "name": "spec/05-access-denied.png",
+      "sha256": "3ce2d84809b50a9415708c26953cf456e6166a06d9580cf152f510320f1e33a4",
+      "phase": "spec",
+      "tool": "@playwright/test 1.59.1 page.screenshot"
+    },
+    {
+      "name": "spec/06-ar-1024.png",
+      "sha256": "0813db6647aec1706feefe5e8ed47069bf0be729ce8cf738ccf3df66e40f7ce4",
+      "phase": "spec",
+      "tool": "@playwright/test 1.59.1 page.screenshot"
+    },
+    {
+      "name": "spec/06-ar-1440.png",
+      "sha256": "5e2e5738f27761b153d0d8bde74ad3c950721130191ceb23ac0e6d2d8344f8e3",
+      "phase": "spec",
+      "tool": "@playwright/test 1.59.1 page.screenshot"
+    },
+    {
+      "name": "spec/06-ar-390.png",
+      "sha256": "285dc969efa3e551d5081bc27951a0f2f814aa1d49a4a7ec12b525aa55c6499c",
+      "phase": "spec",
+      "tool": "@playwright/test 1.59.1 page.screenshot"
+    },
+    {
+      "name": "spec/06-ar-768.png",
+      "sha256": "9d4d3aebf0d9f914f6db7c7e04b77f47c81440a95a790322865958298179a82c",
+      "phase": "spec",
+      "tool": "@playwright/test 1.59.1 page.screenshot"
+    },
+    {
+      "name": "spec/06-tr-1024.png",
+      "sha256": "f66f60add44ce17a4beb78ccfa944872d7d1bd05488153206f8c1f76356b511b",
+      "phase": "spec",
+      "tool": "@playwright/test 1.59.1 page.screenshot"
+    },
+    {
+      "name": "spec/06-tr-1440.png",
+      "sha256": "1d871461ee4bfe65957fcbc904251c2f5c06155b3fcadc0bcbc8581aa1469085",
+      "phase": "spec",
+      "tool": "@playwright/test 1.59.1 page.screenshot"
+    },
+    {
+      "name": "spec/06-tr-390.png",
+      "sha256": "c39d6b97263d55c1d258e7b658e83ca86f03fe7147479130f227d8a76e936bbc",
+      "phase": "spec",
+      "tool": "@playwright/test 1.59.1 page.screenshot"
+    },
+    {
+      "name": "spec/06-tr-768.png",
+      "sha256": "2168d091d92ff6abb598fd90a9c5aa23504adcbe9c5905df349fc87ede82678b",
+      "phase": "spec",
+      "tool": "@playwright/test 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [],
+  "toasts": [],
+  "dialogs": [],
+  "rootLeak": [],
+  "foreign": [],
+  "endedAt": "2026-09-27T13:36:11.200Z"
+}

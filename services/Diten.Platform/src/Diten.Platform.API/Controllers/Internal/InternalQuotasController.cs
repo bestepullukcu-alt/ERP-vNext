@@ -4,6 +4,7 @@ using Diten.Platform.API.Controllers.Common;
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.Quotas;
 using Diten.Platform.Application.Features.Quotas.Commands;
+using Diten.Platform.Application.Features.Quotas.Services;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,15 +19,18 @@ public sealed class InternalQuotasController : CustomBaseController
     private const string InternalApiKeyHeader = "X-Internal-Api-Key";
     private const string CorrelationIdHeader = "X-Correlation-Id";
     private readonly IMediator _mediator;
+    private readonly IQuotaService _quotaService;
     private readonly IConfiguration _configuration;
     private readonly ILogger<InternalQuotasController> _logger;
 
     public InternalQuotasController(
         IMediator mediator,
+        IQuotaService quotaService,
         IConfiguration configuration,
         ILogger<InternalQuotasController> logger)
     {
         _mediator = mediator;
+        _quotaService = quotaService;
         _configuration = configuration;
         _logger = logger;
     }
@@ -45,6 +49,34 @@ public sealed class InternalQuotasController : CustomBaseController
             ActorId = string.IsNullOrWhiteSpace(request.ActorId) ? "InternalService" : request.ActorId
         };
         var response = await _mediator.Send(new TryConsumeQuotaCommand(normalized), ct);
+
+        // BL-459 — at the limit, say what the limit is: the caller (AuthService's user create) shows it to a person.
+        // Read after the refused consume, same tenant + key; if the read fails the plain refusal goes out unchanged.
+        if (response.StatusCode == StatusCodes.Status409Conflict
+            && response.Errors.Contains(QuotaErrorCodes.LimitExceeded, StringComparer.Ordinal))
+        {
+            Response<QuotaStatusDto>? status = null;
+            try
+            {
+                status = await _quotaService.GetStatusResponseAsync(normalized.TenantId, normalized.QuotaKey, ct);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                // The refusal must stay a refusal: a failed read never turns the 409 into a 500 the caller treats as "open".
+                _logger.LogWarning(ex, "Quota status read after a limit refusal failed. TenantId={TenantId}", normalized.TenantId);
+            }
+
+            if (status is { IsSuccessful: true, Data: { } usage })
+            {
+                return Conflict(new QuotaLimitExceededEnvelope(
+                    null,
+                    response.StatusCode,
+                    false,
+                    response.Errors,
+                    new QuotaLimitSnapshot(usage.QuotaKey, usage.LimitValue, usage.CurrentValue)));
+            }
+        }
+
         return CreateActionResultInstance(response);
     }
 

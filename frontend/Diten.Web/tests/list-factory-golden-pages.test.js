@@ -85,6 +85,13 @@ describe("the golden pages go through the factory and only the factory", () => {
     expect(source).toMatch(/\/bulk`/);
   });
 
+  test("BL-452: Compact (server) declares the server export at its /export route; Slim (client) keeps the browser buttons", () => {
+    const slim = stripComments(read("wwwroot", "assets", "js", "DevEnablement", "GoldenReferenceSlim", "index.js"));
+    const compact = stripComments(read("wwwroot", "assets", "js", "DevEnablement", "GoldenReferenceCompact", "index.js"));
+    expect(compact).toMatch(/export: \{ mode: 'server', url: apiUrl \+ '\/api\/golden-reference-compact\/export', fileName: 'golden-reference-compact' \}/);
+    expect(slim, "a client-mode list already holds every row: no server export").not.toMatch(/export: \{/);
+  });
+
   test("Slim keeps populate and its form fields; Compact has no offcanvas form at all", () => {
     const slim = stripComments(read("wwwroot", "assets", "js", "DevEnablement", "GoldenReferenceSlim", "index.js"));
     const compact = stripComments(read("wwwroot", "assets", "js", "DevEnablement", "GoldenReferenceCompact", "index.js"));

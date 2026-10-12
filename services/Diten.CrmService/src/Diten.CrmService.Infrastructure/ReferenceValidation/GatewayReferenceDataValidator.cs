@@ -12,6 +12,14 @@ namespace Diten.CrmService.Infrastructure.ReferenceValidation;
 /// Consumes MOD-0048 / PSS-012 published reference values through the Gateway (never CRM-local).
 /// Controlled dependency: if the consumer endpoint is not available or the set is not published, this
 /// returns <see cref="ReferenceValidationStatus.SetMissing"/> — it never fabricates or falls back to a local list.
+/// <para><b>WP-BRD-TENANT-CRM-SETS — two Platform routes, one meaning.</b> Every read (validate, value attributes, catalog)
+/// first asks the CONSUMABLE-SETS route (<c>ReferenceData:ConsumableSetsPathTemplate</c>), which any signed-in tenant user
+/// may read and which answers by the set's own scope. Only when the Platform says the set is not on its consumable list
+/// (404 <c>reference_set_not_tenant_accessible</c>) does the read fall back to the Platform consumer path below (needs
+/// <c>Platform.BusinessReferenceData.Consumer.Read</c>, i.e. an administrator), and that set code is remembered for the
+/// life of the process (<see cref="ConsumableReferenceSetRouting"/>). 404 <c>reference_set_not_published</c> is final:
+/// it is reported exactly as an unpublished set always was (SetMissing / no metadata / NotPublished). Any other refusal of
+/// the consumable route (for example a Platform deployed without it) falls back too, but is not remembered.</para>
 /// </summary>
 public sealed class GatewayReferenceDataValidator : IReferenceDataValidator, IReferenceMetadataReader, IReferenceDataCatalogReader
 {
@@ -20,26 +28,100 @@ public sealed class GatewayReferenceDataValidator : IReferenceDataValidator, IRe
 
     /// <summary>The consumer service's own error signal for "this set is global; do not send a scope key".</summary>
     private const string GlobalScopeKeyRefusal = "scope_key_not_allowed_for_global";
+
+    /// <summary>Platform consumable-sets route: this set is not on the consumable list — use the consumer path.</summary>
+    public const string NotTenantAccessibleSignal = "reference_set_not_tenant_accessible";
+
+    /// <summary>Platform consumable-sets route: the set is listed but has nothing published for this tenant.</summary>
+    public const string NotPublishedSignal = "reference_set_not_published";
+
+    public const string DefaultConsumableSetsPathTemplate =
+        "/api/lookups/reference-data/consumable-sets/{setCode}/published-values";
+
     private readonly HttpClient _httpClient;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ITenantContext _tenantContext;
+    private readonly ConsumableReferenceSetRouting _routing;
     private readonly ILogger<GatewayReferenceDataValidator> _logger;
     private readonly string _pathTemplate;
+    private readonly string _consumablePathTemplate;
 
     public GatewayReferenceDataValidator(
         HttpClient httpClient,
         IConfiguration configuration,
         IHttpContextAccessor httpContextAccessor,
         ITenantContext tenantContext,
+        ConsumableReferenceSetRouting routing,
         ILogger<GatewayReferenceDataValidator> logger)
     {
         _httpClient = httpClient;
         _httpContextAccessor = httpContextAccessor;
         _tenantContext = tenantContext;
+        _routing = routing;
         _logger = logger;
         _httpClient.BaseAddress = new Uri(configuration["Gateway:BaseUrl"] ?? "http://localhost:5000");
         _pathTemplate = configuration["ReferenceData:PublishedValuesPathTemplate"]
             ?? "/api/v1/reference-data/sets/{setCode}/published-values";
+        _consumablePathTemplate = configuration["ReferenceData:ConsumableSetsPathTemplate"]
+            ?? DefaultConsumableSetsPathTemplate;
+    }
+
+    /// <summary>
+    /// WP-BRD-TENANT-CRM-SETS — the single entry every read goes through: consumable-sets route first, the Platform
+    /// consumer path only for a set the Platform does not list (see class note). The returned response is owned by the
+    /// caller, exactly as before.
+    /// </summary>
+    private async Task<HttpResponseMessage> ReadPublishedValuesAsync(
+        string setCode, Guid tenantId, CancellationToken cancellationToken)
+    {
+        if (!_routing.IsKnownNotConsumable(setCode))
+        {
+            using var consumableRequest = new HttpRequestMessage(
+                HttpMethod.Get, _consumablePathTemplate.Replace("{setCode}", Uri.EscapeDataString(setCode)));
+            ForwardContextHeaders(consumableRequest);
+            var consumable = await _httpClient.SendAsync(consumableRequest, cancellationToken);
+
+            if (consumable.IsSuccessStatusCode)
+            {
+                return consumable;
+            }
+
+            var refusal = await ReadBodyAsync(consumable, cancellationToken);
+            if (consumable.StatusCode == HttpStatusCode.NotFound
+                && refusal.Contains(NotPublishedSignal, StringComparison.OrdinalIgnoreCase))
+            {
+                return consumable;
+            }
+
+            consumable.Dispose();
+            if (refusal.Contains(NotTenantAccessibleSignal, StringComparison.OrdinalIgnoreCase))
+            {
+                _routing.MarkNotConsumable(setCode);
+                _logger.LogDebug(
+                    "Reference set '{SetCode}' is not on the Platform consumable list; reading it on the consumer path from now on.",
+                    setCode);
+            }
+            else
+            {
+                _logger.LogDebug(
+                    "Consumable-sets read of '{SetCode}' returned {Status}; falling back to the consumer path for this read.",
+                    setCode, consumable.StatusCode);
+            }
+        }
+
+        return await SendPublishedValuesAsync(setCode, tenantId, cancellationToken);
+    }
+
+    private static async Task<string> ReadBodyAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await response.Content.ReadAsStringAsync(cancellationToken);
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or InvalidOperationException)
+        {
+            return string.Empty;
+        }
     }
 
     /// <summary>
@@ -106,7 +188,7 @@ public sealed class GatewayReferenceDataValidator : IReferenceDataValidator, IRe
 
         try
         {
-            using var response = await SendPublishedValuesAsync(setCode, tenantId, cancellationToken);
+            using var response = await ReadPublishedValuesAsync(setCode, tenantId, cancellationToken);
 
             if (response.StatusCode == HttpStatusCode.NotFound)
             {
@@ -142,7 +224,7 @@ public sealed class GatewayReferenceDataValidator : IReferenceDataValidator, IRe
 
         try
         {
-            using var response = await SendPublishedValuesAsync(setCode, tenantId, cancellationToken);
+            using var response = await ReadPublishedValuesAsync(setCode, tenantId, cancellationToken);
             if (!response.IsSuccessStatusCode)
             {
                 return null;
@@ -210,7 +292,7 @@ public sealed class GatewayReferenceDataValidator : IReferenceDataValidator, IRe
 
         try
         {
-            using var response = await SendPublishedValuesAsync(setCode, tenantId, cancellationToken);
+            using var response = await ReadPublishedValuesAsync(setCode, tenantId, cancellationToken);
             if (!response.IsSuccessStatusCode)
             {
                 return ReferenceSetSnapshot.NotPublished(setCode);

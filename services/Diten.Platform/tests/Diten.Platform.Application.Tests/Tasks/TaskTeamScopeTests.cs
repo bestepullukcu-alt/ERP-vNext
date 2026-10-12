@@ -189,11 +189,15 @@ public sealed class TaskTeamScopeTests
     /// <summary>
     /// Non-vacuity for the two guards above, from the OTHER direction that reaches Ekibim: when I am the one who
     /// OPENED a subordinate's task (I am its requester, they hold it), Ekibim must not go blank on me either —
-    /// `cancel`, `reassign` and `plan` are mine by the requester rule (BL-357/BL-361), whatever `DelegationAllowed`
-    /// says, and start/complete stay withheld because holding the work is still theirs, not mine.
+    /// `cancel` and `reassign` are mine by the requester rule (BL-357), whatever `DelegationAllowed` says, and
+    /// start/complete stay withheld because holding the work is still theirs, not mine.
+    ///
+    /// <para>BL-449 (owner, 2026-09-29) — and `plan` is now withheld too. It used to be offered here (BL-361:
+    /// "holder or requester"); a plan is a block of the HOLDER's time, so my lever as requester is the due date,
+    /// not their calendar.</para>
     /// </summary>
     [Fact]
-    public async Task The_Ekibim_scope_still_offers_cancel_reassign_and_plan_when_Im_the_REQUESTER_of_a_subordinates_task()
+    public async Task The_Ekibim_scope_offers_cancel_and_reassign_but_not_plan_when_Im_the_REQUESTER_of_a_subordinates_task()
     {
         var assigned = Task(assignee: Report, title: "asıma verdiğim iş");
         assigned.CreatedByUserId = TaskTestData.Me;
@@ -206,7 +210,7 @@ public sealed class TaskTeamScopeTests
 
         Assert.Contains(item.Actions, a => a.Code == "cancel" && a.Enabled);
         Assert.Contains(item.Actions, a => a.Code == "reassign" && a.Enabled);
-        Assert.Contains(item.Actions, a => a.Code == "plan" && a.Enabled);
+        Assert.DoesNotContain(item.Actions, a => a.Code == "plan");
         Assert.DoesNotContain(item.Actions, a => a.Code == "start");
         Assert.DoesNotContain(item.Actions, a => a.Code == "complete");
     }

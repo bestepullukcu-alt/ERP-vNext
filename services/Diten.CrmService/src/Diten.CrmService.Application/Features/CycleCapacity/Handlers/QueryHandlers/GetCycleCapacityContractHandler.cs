@@ -88,7 +88,8 @@ public sealed class GetCycleCapacityContractHandler
                 defaults.DailyWorkMinutes,
                 defaults.Fte,
                 CycleCapacityFteSources.InterimDefault,
-                FteIsEditable: false,
+                // WP-CAP-MODEL (K-5) — the month FTE is authorable; this is the value an omitted one takes.
+                FteIsEditable: true,
                 defaults.BetweenVisitTimeMinutes,
                 CyclePeriodReferenceSets.CountrySet),
             CycleCapacityReasonCodes.All,

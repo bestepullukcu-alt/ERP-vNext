@@ -29,4 +29,15 @@ public interface IKnowledgeContentRepository
     Task InsertAsync(KnowledgeContent content, CancellationToken cancellationToken);
 
     Task UpdateAsync(KnowledgeContent content, CancellationToken cancellationToken);
+
+    /// <summary>WP-E2E-FIX-2 — optimistic replace (KnowledgePathRepository pattern): writes <paramref name="content"/>
+    /// (whose <c>Version</c> the caller has already stamped to <paramref name="expectedVersion"/> + 1) only while the
+    /// stored row still carries <paramref name="expectedVersion"/>. False = another writer got there first (the caller
+    /// answers 409). The default body is the unconditional write (test doubles need no change); the Mongo implementation
+    /// filters on the version.</summary>
+    async Task<bool> ReplaceAsync(KnowledgeContent content, int expectedVersion, CancellationToken cancellationToken)
+    {
+        await UpdateAsync(content, cancellationToken);
+        return true;
+    }
 }

@@ -1,0 +1,15 @@
+step	command_or_action	exit_or_observation	artifact
+1	git worktree add --detach /private/tmp/mvp6-mod0190-http-integration-02 4a8d4d4b339528a88e6220fb8402e5a2c771136c	0; registered checkout	transfer-before.tsv
+2	verify SHA256 and exact 341/38 archive members; copy; git apply --check then git apply exact composition.patch	0; Program target 0f6bf84e...	transfer-check.txt; final-source-check.tsv
+3	dotnet build API -c Debug -v normal -m:1 -p:UseSharedCompilation=false --ignore-failed-sources	0; 14 NU1900, 0 errors	build.log; build.exit
+4	launch API without roll-forward	150; ASP.NET 8 runtime missing	raw-process-logs.tar.gz:api.log
+5	launch API Development with DOTNET_ROLL_FORWARD=Major	abort -6; IDemandFixtureReader DI validation	raw-process-logs.tar.gz:api.log
+6	launch API Production with ASPNETCORE_URLS	started on appsettings port 5061, stopped immediately; no request	raw-process-logs.tar.gz:api-production.log
+7	launch API Production with URLS=55190, isolated Mongo 57190	PID 40693; health 200	raw-process-logs.tar.gz:api-production-55190.log
+8	python3 http_probe.py	0; 9 requests, 3 POST 500	http-results.json
+9	dotnet test --filter FullyQualifiedName~SandopPlans --ignore-failed-sources	1; unsupported switch	targeted-tests.log; targeted-tests.exit
+10	dotnet test --filter FullyQualifiedName~SandopPlans without roll-forward	1; testhost lacks ASP.NET 8	targeted-tests-r2.log; mod0190-targeted.trx
+11	dotnet test with major roll-forward, failCommand disabled	1; 16/19, failpoint command unavailable	targeted-tests-r3.log; mod0190-targeted-r3.trx
+12	restart isolated Mongo with enableTestCommands=1; rerun targeted tests	1; 18/19; committed uncertainty expected 503 actual 201	targeted-tests-r4.log; mod0190-targeted-r4.trx
+13	stop own API, restart same binary, rerun nine HTTP requests	0; PID 42246 health 200, same status pattern	http-results-after-restart.json; raw-process-logs.tar.gz:api-restart.log
+14	read six isolated DB collection counts; stop own API and Mongo	0; all zero, ports 55190/57190 freed	db-counts.json; raw-process-logs.tar.gz

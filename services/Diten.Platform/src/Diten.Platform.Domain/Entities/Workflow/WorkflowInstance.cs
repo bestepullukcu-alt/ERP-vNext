@@ -31,13 +31,11 @@ public sealed class WorkflowInstance : TenantScopedEntity
     /// <summary>Display identity of the starter (e-mail first) — for people, not for comparisons.</summary>
     public string? StartedBy { get; set; }
 
-    /// <summary>
-    /// WP-0023-FX — the starter's user id (JWT <c>sub</c>), the value the four-eyes rule compares with the approver.
-    /// Null on instances started before the fix; those fall back to the Start transition log row, which has always
-    /// carried the starter's user id.
-    /// </summary>
-    public string? StartedByUserId { get; set; }
-
+    /// <summary>WP-WORKFLOW-APPROVAL-STATUS-01 (B2) — the starter's USER ID. <see cref="StartedBy"/> holds the actor
+    /// NAME (an e-mail), while an approver is identified by user id, so the "the starter may not approve" check compared
+    /// two different things and never fired. Additive: instances started before this field existed keep null and keep
+    /// the old comparison — no migration.</summary>
+    public Guid? StartedByUserId { get; set; }
     public DateTimeOffset? StartedAt { get; set; }
     public DateTimeOffset? DueAt { get; set; }
     public DateTimeOffset? CompletedAt { get; set; }

@@ -1,0 +1,8 @@
+PASS node frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/index.js
+PASS node frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/index.l10n.js
+PASS node ../runtime-scenarios/claims-ui.spec.mjs
+native dialogs: 0
+storage: 0
+token/ports: 0
+English literals in sinks: 0
+resx/views/fragments unchanged vs static run 1: 0

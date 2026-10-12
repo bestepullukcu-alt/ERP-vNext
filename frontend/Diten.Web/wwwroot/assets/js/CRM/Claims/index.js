@@ -386,6 +386,42 @@
         + `<span class="fw-medium">${esc(ch.name)}</span>${chipHtml(ch)}</div>`
         + `<small class="text-muted d-block mt-1">${esc(ch.title)}</small></div>`;
 
+    // WP-KP-4 — the usage list of the claim code: contents · knowledge paths (the retired content set is no longer a
+    // source) · journeys, grouped by country. A knowledge path links to its studio workspace, a journey to its detail.
+    const USAGE_LINKS = {
+        'knowledge-path': id => `/CRM/KnowledgePaths/${encodeURIComponent(id)}`,
+        journey: id => `/CRM/ContentEngagementJourneys/Details/${encodeURIComponent(id)}`
+    };
+    const usageType = type => L['UsageType_' + type] || L.Unknown;
+    const usageItem = item => {
+        const link = USAGE_LINKS[item.type];
+        const title = esc(item.name || item.code);
+        return `<li class="d-flex align-items-start gap-2 py-1">`
+            + `<span class="badge bg-label-secondary flex-shrink-0">${esc(usageType(item.type))}</span>`
+            + `<div class="min-w-0"><div class="fw-medium text-break">${link ? `<a href="${esc(link(item.id))}">${title}</a>` : title}</div>`
+            + `<small class="text-muted">${esc([item.code, item.version ? 'v' + item.version : '', item.via ? fmt(L.UsageVia, item.via) : ''].filter(Boolean).join(' · '))}</small>`
+            + (item.claimNeedsReview ? `<small class="d-block text-warning">${esc(L.UsageNeedsReview)}</small>` : '')
+            + '</div></li>';
+    };
+    const loadUsage = async claimCode => {
+        const host = document.getElementById('pvUsageList');
+        if (!host) return;
+        host.innerHTML = `<div class="text-muted small">${esc(L.Loading)}</div>`;
+        try {
+            const usage = await getJson(`${api}/claims/usage?claimCode=${encodeURIComponent(claimCode)}`);
+            const groups = Array.isArray(usage?.groups) ? usage.groups : [];
+            host.innerHTML = groups.length === 0
+                ? `<div class="text-muted small">${esc(L.QvUsageNone)}</div>`
+                : groups.map(g => {
+                    const country = g.countryCode === 'GLOBAL' ? L.UsageGlobal : (countries.find(c => c.code === g.countryCode)?.name || g.countryCode);
+                    return `<div class="claim-version-row"><div class="fw-medium mb-1">${esc(country)}</div>`
+                        + `<ul class="list-unstyled mb-0">${(g.items || []).map(usageItem).join('')}</ul></div>`;
+                }).join('');
+        } catch (error) {
+            host.innerHTML = `<div class="text-danger small">${esc(L.QvUsageFailed)}</div>`;
+        }
+    };
+
     const openClaimPreview = async id => {
         const row = rowById[id];
         if (!row) return;
@@ -428,6 +464,7 @@
         } catch (error) {
             if (host) host.innerHTML = `<div class="text-danger small">${esc(L.QvLoadFailed)}</div>`;
         }
+        await loadUsage(row.claimCode);
     };
 
     // ─── Table ──────────────────────────────────────────────────────────────────

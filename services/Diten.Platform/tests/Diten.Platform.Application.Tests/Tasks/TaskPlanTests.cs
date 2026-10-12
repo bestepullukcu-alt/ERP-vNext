@@ -227,15 +227,17 @@ public sealed class TaskPlanTests
 
     // ── helpers ──────────────────────────────────────────────────────────────
 
+    // WP-TASK-CALENDAR-ENGINE-01 — a plan now ANSWERS (200 + what was stored, warnings, remaining minutes)
+    // instead of 204: the calendar needs the saved block and its warnings back without a second read.
     private static void AssertAccepted(IActionResult result)
         => Assert.Equal(
-            StatusCodes.Status204NoContent,
+            StatusCodes.Status200OK,
             Assert.IsAssignableFrom<IStatusCodeActionResult>(result).StatusCode);
 
     private static string? ReasonOf(IActionResult result)
     {
         var objectResult = Assert.IsAssignableFrom<ObjectResult>(result);
-        return Assert.IsType<Response<NoContent>>(objectResult.Value).ReasonCode;
+        return Assert.IsType<Response<PlanTaskItemResultDto>>(objectResult.Value).ReasonCode;
     }
 
     private sealed class Fixture
@@ -261,7 +263,9 @@ public sealed class TaskPlanTests
             var handler = new PlanTaskItemHandler(
                 _tasks,
                 new TaskLifecycleService(),
-                new FakeCurrentUserContext(TaskTestData.Me));
+                new FakeCurrentUserContext(TaskTestData.Me),
+                new FakeWorkingHoursProvider(),
+                new FakeCalendarMeetingReader());
 
             var correlation = new CorrelationContext();
             correlation.SetCorrelationId("corr");

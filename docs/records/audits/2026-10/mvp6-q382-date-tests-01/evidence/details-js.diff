@@ -1,0 +1,30 @@
+--- ORIGINAL/details.js	2026-10-04 13:07:46
++++ frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/details.js	2026-10-04 13:09:47
+@@ -67,8 +67,9 @@
+     const prefillNow = (id) => { const now = new Date(); document.getElementById(id).value = localInputValue(now);
+         const zone = document.getElementById(`${id}Zone`); if (zone) zone.textContent = zoneLabel(now); };
+     // Client check before any request: an empty date used to throw inside the submit handler and show nothing.
+-    const instant = (id) => {
+-        const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/.exec(document.getElementById(id).value);
++    // Q382: the parse is pure and returned below so Node can run it at fixed zones; instant() is its only DOM caller.
++    const parseLocalInput = (raw) => {
++        const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/.exec(raw);
+         if (!match) return null;
+         const [, year, month, day, hour, minute, second] = match.map(Number);
+         const value = new Date(year, month - 1, day, hour, minute, second || 0);
+@@ -77,6 +78,7 @@
+             && value.getHours() === hour && value.getMinutes() === minute;
+         return exact ? value : null;
+     };
++    const instant = (id) => parseLocalInput(document.getElementById(id).value);
+     const rejectInvalid = (form, checks, alertId) => {
+         form.querySelectorAll('.is-invalid').forEach((field) => field.classList.remove('is-invalid'));
+         document.getElementById(alertId)?.classList.add('d-none');
+@@ -183,5 +185,6 @@
+         load();
+     };
+     document.addEventListener('DOMContentLoaded', init);
+-    return { init, allowedTargets };
++    // localInputValue and parseLocalInput touch no DOM; they are returned for the Node date tests (Q382), nothing else uses them.
++    return { init, allowedTargets, localInputValue, parseLocalInput };
+ })();

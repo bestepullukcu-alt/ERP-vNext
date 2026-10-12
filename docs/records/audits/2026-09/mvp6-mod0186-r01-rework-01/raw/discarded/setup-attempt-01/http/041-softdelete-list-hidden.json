@@ -1,0 +1,29 @@
+{
+  "name": "softdelete-list-hidden",
+  "request": {
+    "bodyUtf8": null,
+    "headers": {
+      "Authorization": "Bearer <redacted>",
+      "X-Correlation-Id": "94649c10-daab-49ed-8d23-4c716cc0f77c",
+      "X-Legal-Entity-Id": "22222222-2222-4222-8222-222222222222",
+      "X-Tenant-Id": "11111111-1111-4111-8111-111111111111"
+    },
+    "method": "GET",
+    "path": "/api/shipment-bundle/returns?shipmentId=7a95045c-2480-4a63-86ce-39c9ecda7cd1"
+  },
+  "response": {
+    "body": {
+      "contractVersion": "v1",
+      "items": [],
+      "total": 0
+    },
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8",
+      "Date": "Mon, 21 Sep 2026 16:20:56 GMT",
+      "Server": "Kestrel",
+      "Transfer-Encoding": "chunked",
+      "X-Correlation-Id": "94649c10-daab-49ed-8d23-4c716cc0f77c"
+    },
+    "status": 200
+  }
+}

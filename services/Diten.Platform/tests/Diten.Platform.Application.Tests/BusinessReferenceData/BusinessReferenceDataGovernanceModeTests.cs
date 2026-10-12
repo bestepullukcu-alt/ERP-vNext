@@ -11,7 +11,7 @@ public sealed class BusinessReferenceDataGovernanceModeTests : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        _harness = await BusinessReferenceDataTestHarness.CreateAsync();
+        _harness = await BusinessReferenceDataTestHarness.CreateAsync("governance_mode");
     }
 
     public Task DisposeAsync() => _harness.DisposeAsync().AsTask();

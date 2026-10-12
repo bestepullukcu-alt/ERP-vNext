@@ -82,7 +82,10 @@ public sealed class WorkflowApprovalWorkItemActionDispatcher : IWorkItemActionDi
             ? Guid.NewGuid().ToString("N")
             : payload.IdempotencyKey!.Trim();
 
-        var comment = string.IsNullOrWhiteSpace(payload.Comment) ? payload.Reason : payload.Comment;
+        // CT acceptance (T2b): the Task Center's reason dialog sends the text as `note` (app.js transition body), and
+        // only Comment/Reason were read — an approver's reason never reached MOD-0023, and a definition that requires a
+        // reject comment (the timesheet approval) refused every return from the Task Center card.
+        var comment = new[] { payload.Comment, payload.Reason, payload.Note }.FirstOrDefault(v => !string.IsNullOrWhiteSpace(v));
 
         switch (request.ActionCode)
         {

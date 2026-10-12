@@ -1,0 +1,27 @@
+  Diten.BuildingBlocks.Security.Secrets -> /private/tmp/mvp6-shipment-pod-ui-exec-01/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/bin/Debug/net8.0/Diten.BuildingBlocks.Security.Secrets.dll
+  Diten.Platform.Common -> /private/tmp/mvp6-shipment-pod-ui-exec-01/services/Diten.Platform.Common/src/Diten.Platform.Common/bin/Debug/net8.0/Diten.Platform.Common.dll
+  Diten.ApiGateway -> /private/tmp/mvp6-shipment-pod-ui-exec-01/gateway/Diten.ApiGateway/bin/Debug/net8.0/Diten.ApiGateway.dll
+  Diten.ApiGateway.Tests -> /private/tmp/mvp6-shipment-pod-ui-exec-01/gateway/Diten.ApiGateway.Tests/bin/Debug/net8.0/Diten.ApiGateway.Tests.dll
+Test run for /private/tmp/mvp6-shipment-pod-ui-exec-01/gateway/Diten.ApiGateway.Tests/bin/Debug/net8.0/Diten.ApiGateway.Tests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 17.11.1 (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.77]     Diten.ApiGateway.Tests.CarrierRouteCoverageTests.Carrier_routes_expose_only_the_three_published_operations [FAIL]
+  Failed Diten.ApiGateway.Tests.CarrierRouteCoverageTests.Carrier_routes_expose_only_the_three_published_operations [169 ms]
+  Error Message:
+   Assert.All() Failure: 2 out of 2 items in the collection did not pass.
+[0]: Item:  /api/shipment-bundle/carriers
+     Error: Assert.Equal() Failure: Values differ
+            Expected: 5061
+            Actual:   5065
+[1]: Item:  /api/shipment-bundle/carriers/{carrierId}/status
+     Error: Assert.Equal() Failure: Values differ
+            Expected: 5061
+            Actual:   5065
+  Stack Trace:
+     at Diten.ApiGateway.Tests.CarrierRouteCoverageTests.Carrier_routes_expose_only_the_three_published_operations() in /private/tmp/mvp6-shipment-pod-ui-exec-01/gateway/Diten.ApiGateway.Tests/CarrierRouteCoverageTests.cs:line 26
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Failed!  - Failed:     1, Passed:     1, Skipped:     0, Total:     2, Duration: 22 ms - Diten.ApiGateway.Tests.dll (net8.0)

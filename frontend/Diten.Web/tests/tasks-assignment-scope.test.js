@@ -160,9 +160,16 @@ describe("the people lookup answers an OBJECT now, not a bare array", () => {
      * The server had to start returning { people, excluded } — only it knows why somebody is missing. A client
      * that still did `data.map(...)` would render an empty picker with no error at all, which is the exact
      * failure mode this whole round exists to remove.
+     *
+     * BL-491 — the envelope is opened in ONE place for BOTH lists: TasksApi. The form used to open the decision
+     * list by hand; with a second caller (the Task Center's delegate window) that is how the shape gets opened
+     * wrongly somewhere. What the two calls hand out is measured on the real code in
+     * tasks-api-people-lists-one-shape.test.js; this pins WHERE the opening lives.
      */
-    const source = FORM_PAGE_JS();
-    expect(source).toMatch(/\.people/);
+    const strip = (src) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
+    expect((strip(API_JS()).match(/res\.data\?\.people/g) || []).length,
+      "TasksApi does not open the envelope once per list").toBe(2);
+    expect(strip(FORM_PAGE_JS()), "the form opens the envelope by hand again").not.toMatch(/\.people\b/);
   });
 
   test("a person row carries its legal entity, so the client can tell two companies apart", () => {

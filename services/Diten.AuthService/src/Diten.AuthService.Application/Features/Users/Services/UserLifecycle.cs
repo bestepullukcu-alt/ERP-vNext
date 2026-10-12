@@ -29,6 +29,24 @@ public static class UserLifecycle
     /// <summary>Stable code: a live (not deleted) user of the same tenant already has this e-mail address.</summary>
     public const string EmailTakenCode = "USER_EMAIL_TAKEN";
 
+    /// <summary>
+    /// BL-459 — stable code: the subscription plan's user limit (<c>users.max</c>) is reached; params <c>max</c> and
+    /// <c>current</c> when Platform told us the numbers. Nothing was written and no invitation went out.
+    /// </summary>
+    public const string QuotaExceededCode = "USER_QUOTA_EXCEEDED";
+
+    public static Response<T> QuotaExceededRefusal<T>(decimal? max, decimal? current)
+    {
+        var parameters = new Dictionary<string, string>();
+        if (max is { } m) parameters["max"] = m.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+        if (current is { } c) parameters["current"] = c.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+
+        return Response<T>.Fail(
+            "The subscription plan's user limit is reached; no user was added.",
+            [new ResponseError(QuotaExceededCode, parameters.Count == 0 ? null : parameters)],
+            409);
+    }
+
     public static string StatusOf(User user)
         => user.IsInvitationPending() ? StatusInvited : user.IsActive ? StatusActive : StatusInactive;
 

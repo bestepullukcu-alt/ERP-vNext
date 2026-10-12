@@ -16,6 +16,9 @@ Human Capital Management owns native HCM Foundation domain capabilities, startin
   - Registry/detail scope decision: Employee Registry and Employee Detail are not P2 support surfaces and must move through later approved read-only sequences before runtime smoke closure can include them.
   - Registry read-only governance contract exists for later `MOD0251-P4-REGISTRY-READ-M1`; runtime implementation remains unapproved until that prompt explicitly authorizes backend/frontend/gateway/test changes.
   - Full Employee Master lifecycle remains blocked until a later approved scope closes submit, approval/rejection, activation, MOD-0023 workflow, `employee.created`, evidence, export/status/Data Quality Queue, and government identifier/tokenization contracts.
+- `MOD-0280-FU01 Time Entry & Weekly Timesheet` (child of Blueprint `MOD-0280 Time, Attendance & Leave Management`)
+  - Pack: `module-packs/MOD-0280-FU01-time-entry-weekly-timesheet.md` (`ready-for-dev`, 2026-09-29). Placement: `docs/records/decisions/2026-09/ADR-004-time-entry-mod-0280-fu01-lives-in-platform.md`.
+  - Recorded deviation from Runtime Decisions (backend owner = `Diten.HcmService`): this slice runs inside `Diten.Platform` with its own `time_entry_*` collections, `time-entry.*` permissions and module code `time-entry`, keyed by TenantId+UserId, reaching tasks/meetings/org only through ports — moving it to `Diten.HcmService` is a data move (pack §2.4). The time/attendance line under Out-of-Scope is lifted for this slice only; leave, absence, attendance and schedules stay out of scope.
 
 ## Out-of-Scope
 

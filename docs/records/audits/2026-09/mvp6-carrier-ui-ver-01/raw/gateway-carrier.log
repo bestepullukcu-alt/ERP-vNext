@@ -1,0 +1,24 @@
+  Determining projects to restore...
+/private/tmp/mvp6-carrier-ui-ver-01/snapshot/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/Diten.BuildingBlocks.Security.Secrets.csproj : warning NU1900: Error occurred while getting package vulnerability data: Unable to load the service index for source https://api.nuget.org/v3/index.json. [/private/tmp/mvp6-carrier-ui-ver-01/snapshot/gateway/Diten.ApiGateway.Tests/Diten.ApiGateway.Tests.csproj]
+  Restored /private/tmp/mvp6-carrier-ui-ver-01/snapshot/gateway/Diten.ApiGateway.Tests/Diten.ApiGateway.Tests.csproj (in 1.6 sec).
+  Restored /private/tmp/mvp6-carrier-ui-ver-01/snapshot/gateway/Diten.ApiGateway/Diten.ApiGateway.csproj (in 1.6 sec).
+  Restored /private/tmp/mvp6-carrier-ui-ver-01/snapshot/services/Diten.Platform.Common/src/Diten.Platform.Common/Diten.Platform.Common.csproj (in 1.6 sec).
+  1 of 4 projects are up-to-date for restore.
+/private/tmp/mvp6-carrier-ui-ver-01/snapshot/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/Diten.BuildingBlocks.Security.Secrets.csproj : warning NU1900: Error occurred while getting package vulnerability data: Unable to load the service index for source https://api.nuget.org/v3/index.json.
+  Diten.BuildingBlocks.Security.Secrets -> /private/tmp/mvp6-carrier-ui-ver-01/snapshot/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/bin/Debug/net8.0/Diten.BuildingBlocks.Security.Secrets.dll
+  Diten.Platform.Common -> /private/tmp/mvp6-carrier-ui-ver-01/snapshot/services/Diten.Platform.Common/src/Diten.Platform.Common/bin/Debug/net8.0/Diten.Platform.Common.dll
+  Diten.ApiGateway -> /private/tmp/mvp6-carrier-ui-ver-01/snapshot/gateway/Diten.ApiGateway/bin/Debug/net8.0/Diten.ApiGateway.dll
+/private/tmp/mvp6-carrier-ui-ver-01/snapshot/gateway/Diten.ApiGateway.Tests/TenantContradictionGuardTests.cs(66,37): warning CS8604: Possible null reference argument for parameter 'actualArray' in 'void Assert.Equal<string>(ReadOnlySpan<string> expectedSpan, string[] actualArray)'. [/private/tmp/mvp6-carrier-ui-ver-01/snapshot/gateway/Diten.ApiGateway.Tests/Diten.ApiGateway.Tests.csproj]
+/private/tmp/mvp6-carrier-ui-ver-01/snapshot/gateway/Diten.ApiGateway.Tests/TenantContradictionGuardTests.cs(79,34): warning CS8604: Possible null reference argument for parameter 'actualArray' in 'void Assert.Equal<string>(ReadOnlySpan<string> expectedSpan, string[] actualArray)'. [/private/tmp/mvp6-carrier-ui-ver-01/snapshot/gateway/Diten.ApiGateway.Tests/Diten.ApiGateway.Tests.csproj]
+/private/tmp/mvp6-carrier-ui-ver-01/snapshot/gateway/Diten.ApiGateway.Tests/TenantContradictionGuardTests.cs(96,47): warning CS8604: Possible null reference argument for parameter 'actualArray' in 'void Assert.Equal<string>(ReadOnlySpan<string> expectedSpan, string[] actualArray)'. [/private/tmp/mvp6-carrier-ui-ver-01/snapshot/gateway/Diten.ApiGateway.Tests/Diten.ApiGateway.Tests.csproj]
+/private/tmp/mvp6-carrier-ui-ver-01/snapshot/gateway/Diten.ApiGateway.Tests/TenantContradictionGuardTests.cs(206,37): warning CS8604: Possible null reference argument for parameter 'actualArray' in 'void Assert.Equal<string>(ReadOnlySpan<string> expectedSpan, string[] actualArray)'. [/private/tmp/mvp6-carrier-ui-ver-01/snapshot/gateway/Diten.ApiGateway.Tests/Diten.ApiGateway.Tests.csproj]
+/private/tmp/mvp6-carrier-ui-ver-01/snapshot/gateway/Diten.ApiGateway.Tests/TenantContradictionGuardTests.cs(284,34): warning CS8604: Possible null reference argument for parameter 'actualArray' in 'void Assert.Equal<string>(ReadOnlySpan<string> expectedSpan, string[] actualArray)'. [/private/tmp/mvp6-carrier-ui-ver-01/snapshot/gateway/Diten.ApiGateway.Tests/Diten.ApiGateway.Tests.csproj]
+  Diten.ApiGateway.Tests -> /private/tmp/mvp6-carrier-ui-ver-01/snapshot/gateway/Diten.ApiGateway.Tests/bin/Debug/net8.0/Diten.ApiGateway.Tests.dll
+Test run for /private/tmp/mvp6-carrier-ui-ver-01/snapshot/gateway/Diten.ApiGateway.Tests/bin/Debug/net8.0/Diten.ApiGateway.Tests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 18.0.1 (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+Results File: /private/tmp/mvp6-carrier-ui-ver-01/raw/gateway-carrier-ver.trx
+
+Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 135 ms - Diten.ApiGateway.Tests.dll (net8.0)

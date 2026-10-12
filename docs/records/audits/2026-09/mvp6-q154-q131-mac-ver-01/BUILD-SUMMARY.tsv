@@ -1,0 +1,11 @@
+tree	target	exit	warnings	errors
+A	services/Diten.Platform/tests/Diten.Platform.Application.Tests/Diten.Platform.Application.Tests.csproj	0	127	0
+A	services/Diten.Platform/tests/Diten.Platform.BackgroundJobs.Tests/Diten.Platform.BackgroundJobs.Tests.csproj	0	1	0
+A	services/Diten.Platform/tests/Diten.Platform.Eventing.Tests/Diten.Platform.Eventing.Tests.csproj	0	0	0
+A	services/Diten.SupplyChainService/Diten.SupplyChainService.sln	0	0	0
+A	tests/architecture/TenantArchitecture.ArchitectureTests/TenantArchitecture.ArchitectureTests.csproj	0	0	0
+B	services/Diten.Platform/tests/Diten.Platform.Application.Tests/Diten.Platform.Application.Tests.csproj	0	127	0
+B	services/Diten.Platform/tests/Diten.Platform.BackgroundJobs.Tests/Diten.Platform.BackgroundJobs.Tests.csproj	0	1	0
+B	services/Diten.Platform/tests/Diten.Platform.Eventing.Tests/Diten.Platform.Eventing.Tests.csproj	0	0	0
+B	services/Diten.SupplyChainService/Diten.SupplyChainService.sln	0	0	0
+B	tests/architecture/TenantArchitecture.ArchitectureTests/TenantArchitecture.ArchitectureTests.csproj	0	0	0

@@ -33,5 +33,6 @@ public sealed class CancelWorkflowTaskHandler
             request.Request.IdempotencyKey,
             request.Request.Comment,
             request.CorrelationId,
-            ct);
+            ct,
+            request.AllowEscalated);
 }

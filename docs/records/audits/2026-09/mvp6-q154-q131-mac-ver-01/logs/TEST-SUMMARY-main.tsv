@@ -1,0 +1,9 @@
+tree	suite	filter	exit	summary
+B	platform-application	-	1	Failed!  - Failed:    65, Passed:  4343, Skipped:     0, Total:  4408, Duration: 3 m 46 s
+B	platform-backgroundjobs	-	1	Failed!  - Failed:     2, Passed:    19, Skipped:     0, Total:    21, Duration: 13 s
+A	platform-eventing	-	0	Passed!  - Failed:     0, Passed:    65, Skipped:     3, Total:    68, Duration: 228 ms
+B	platform-eventing	-	0	Passed!  - Failed:     0, Passed:    65, Skipped:     3, Total:    68, Duration: 223 ms
+A	architecture	-	0	Passed!  - Failed:     0, Passed:    18, Skipped:     0, Total:    18, Duration: 3 s - TenantArchitecture.ArchitectureTests.dll (net8.0)
+B	architecture	-	0	Passed!  - Failed:     0, Passed:    18, Skipped:     0, Total:    18, Duration: 3 s - TenantArchitecture.ArchitectureTests.dll (net8.0)
+B	supplychain-single	-	1	Failed!  - Failed:     2, Passed:   415, Skipped:     0, Total:   417, Duration: 4 m 30 s
+A	backgroundjobs-contracts	BackgroundJobContractsTests	1	Failed!  - Failed:     2, Passed:     1, Skipped:     0, Total:     3, Duration: 4 ms

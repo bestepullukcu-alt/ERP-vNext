@@ -1,0 +1,663 @@
+MVP6-CAPACITY-DUPLICATE-FINAL-VER-01 raw transcript
+Date: 2026-09-23 Europe/Istanbul
+Snapshot: /private/tmp/mvp6-capacity-duplicate-final-ver-01-lwl8BC
+Canonical repository was read-only.
+A first sandboxed VSTest attempt aborted on local socket permission and is not counted; all recorded gate runs below executed with the native VSTest channel.
+
+===== OWNER BINDING =====
+$ sha256sum docs/records/decisions/2026-09/mvp6-capacity-duplicate-final-owner-decision-01.md
+80c343e6ad07c053c69aa1c9de003396bf2fd347379bf72e734264caef42f91b  docs/records/decisions/2026-09/mvp6-capacity-duplicate-final-owner-decision-01.md
+expected=80c343e6ad07c053c69aa1c9de003396bf2fd347379bf72e734264caef42f91b
+result=PASS
+
+===== PACKAGE SHA256SUMS CHECK =====
+$ (cd docs/records/audits/2026-09/mvp6-capacity-duplicate-final-release-prep-01 && sha256sum -c SHA256SUMS)
+exit=0
+AUTHORITY.md: OK
+CONSUMER-INVENTORY.md: OK
+FINAL-HASHES.tsv: OK
+OWNER-DECISION-PACK.md: OK
+PRESERVATION.txt: OK
+SOP-22.md: OK
+TOOLCHAIN.txt: OK
+candidate-to-final.diff: OK
+consumer-search.txt: OK
+editorial-substitutions.json.txt: OK
+external-inventory-owner-evidence.json.txt: OK
+independent-ver/REVIEW.md: OK
+independent-ver/commands.json: OK
+independent-ver/independent-hashes.json: OK
+independent-ver/verify_final.stderr.txt: OK
+independent-ver/verify_final.stdout.json: OK
+input-pins.json.txt: OK
+publication-proposed.patch: OK
+sandop-capacity-semantics-v3.0.0.md: OK
+sandop-capacity.openapi.final-proposed.yaml: OK
+validation-results.json: OK
+validation-stderr.txt: OK
+verify_final.py: OK
+
+===== PRODUCTION PREIMAGE =====
+9543e3f295dcabb9f7c1ab464fadfacfcbc53ada2f9bec9d32deb8f52cb02ff3  docs/analysis/contracts/sandop-capacity.openapi.yaml
+eb1df1383e637c744179abe4c8faa3b3b7ebe4cccd19738aadf41896a9311bda  docs/analysis/contracts/sandop-capacity-semantics-v2.0.0.md
+063e0cde7c436cf0926101ac9a300b9b1e6147dd5bea5c7dbfd100e65a868fe9  docs/reference/architecture/docs-path-authority.json
+da5ec0cc0f180d7237bdf599c7d71eb1fb96962ed14496427a1ea789b18c5050  tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs
+docs/analysis/contracts/sandop-capacity-semantics-v3.0.0.md  ABSENT
+
+===== PATCH DRY RUN =====
+$ patch --batch -p1 --dry-run -i publication-proposed.patch
+exit=0
+patching file 'docs/analysis/contracts/sandop-capacity.openapi.yaml'
+patching file 'docs/analysis/contracts/sandop-capacity-semantics-v3.0.0.md'
+
+===== PATCH REAL APPLY =====
+$ patch --batch -p1 -i publication-proposed.patch
+exit=0
+patching file 'docs/analysis/contracts/sandop-capacity.openapi.yaml'
+patching file 'docs/analysis/contracts/sandop-capacity-semantics-v3.0.0.md'
+
+===== POST-PATCH BYTE EQUALITY =====
+5213b5353267ad4c25d150975d6f38422bced72f678c02271b0cccf6e768adab  docs/analysis/contracts/sandop-capacity.openapi.yaml
+eb1df1383e637c744179abe4c8faa3b3b7ebe4cccd19738aadf41896a9311bda  docs/analysis/contracts/sandop-capacity-semantics-v2.0.0.md
+f9d9d5553d70e1c54af3e03924600f4c8f426de50355ae861a4d3d5cef21ee64  docs/analysis/contracts/sandop-capacity-semantics-v3.0.0.md
+cmp final YAML target: PASS
+cmp final v3 annex target: PASS
+v2 annex preservation: PASS
+
+===== REVERSE AND REAPPLY =====
+$ patch -R ...; verify preimage; verify_final.py; patch ...
+reverse_exit=0
+reapply_exit=0
+patching file 'docs/analysis/contracts/sandop-capacity.openapi.yaml'
+patching file 'docs/analysis/contracts/sandop-capacity-semantics-v3.0.0.md'
+patching file 'docs/analysis/contracts/sandop-capacity.openapi.yaml'
+patching file 'docs/analysis/contracts/sandop-capacity-semantics-v3.0.0.md'
+
+===== OAS REF EXAMPLE NEGATIVE RESULTS =====
+$ python3 verify_final.py
+exit=0
+{
+  "verdict": "PASS",
+  "checks": {
+    "A_pin_sandop-capacity.openapi.candidate.yaml": true,
+    "A_pin_sandop-capacity-semantics-v3.0.0-rc.1.md": true,
+    "A_pin_successor-candidate.patch": true,
+    "published_yaml_pin": true,
+    "published_annex_pin": true,
+    "only_three_yaml_metadata_fields_change": true,
+    "proposed_final_metadata": true,
+    "all_operations_and_shared_components_equal_A": true,
+    "unique_editorial_substitution_5": true,
+    "unique_editorial_substitution_4": true,
+    "unique_editorial_substitution_3": true,
+    "unique_editorial_substitution_2": true,
+    "unique_editorial_substitution_1": true,
+    "unique_editorial_substitution_0": true,
+    "annex_inverse_byte_equal_A": true,
+    "unchanged_## Common transport, error, receipt and precedence": true,
+    "unchanged_## Twelve-operation status/error matrix": true,
+    "no_permanent_unapproved_label": true,
+    "oas31_meta": true,
+    "oas31_full": true,
+    "204_local_refs": true,
+    "53_examples": true,
+    "negative_controls": true,
+    "exact_consumer_code_delta": true,
+    "strict_old_rejects_new_code": true,
+    "strict_final_accepts_new_code": true,
+    "schema_code_string_blind_spot_and_allowlist_rejection": true,
+    "patch_dry_run": true,
+    "patch_apply": true,
+    "patch_final_yaml_byte_equality": true,
+    "patch_final_annex_byte_equality": true,
+    "old_annex_preserved": true,
+    "exact_two_file_patch_surface": true
+  },
+  "refs": 204,
+  "examples": 53,
+  "example_paths": [
+    "/paths//sandop-plans/post/requestBody/content/application/json/example",
+    "/paths//sandop-plans/post/responses/201/content/application/json/example",
+    "/paths//sandop-plans/{sandopPlanId}/get/responses/200/content/application/json/example",
+    "/paths//sandop-plans/{sandopPlanId}/snapshots/post/requestBody/content/application/json/example",
+    "/paths//sandop-plans/{sandopPlanId}/snapshots/post/responses/201/content/application/json/example",
+    "/paths//sandop-plans/{sandopPlanId}/snapshots/get/responses/200/content/application/json/example",
+    "/paths//sandop-plans/{sandopPlanId}/sign-offs/post/requestBody/content/application/json/example",
+    "/paths//sandop-plans/{sandopPlanId}/sign-offs/post/responses/201/content/application/json/example",
+    "/paths//sandop-plans/{sandopPlanId}/sign-offs/get/responses/200/content/application/json/example",
+    "/paths//capacity-plans/post/requestBody/content/application/json/example",
+    "/paths//capacity-plans/post/responses/201/content/application/json/example",
+    "/paths//capacity-plans/{capacityPlanId}/get/responses/200/content/application/json/example",
+    "/paths//capacity-plans/{capacityPlanId}/scenarios/post/requestBody/content/application/json/example",
+    "/paths//capacity-plans/{capacityPlanId}/scenarios/post/responses/201/content/application/json/example",
+    "/paths//capacity-plans/{capacityPlanId}/scenarios/{scenarioId}/get/responses/200/content/application/json/example",
+    "/paths//capacity-plans/{capacityPlanId}/scenarios/{scenarioId}/evaluations/post/requestBody/content/application/json/example",
+    "/paths//capacity-plans/{capacityPlanId}/scenarios/{scenarioId}/evaluations/post/responses/202/content/application/json/example",
+    "/paths//capacity-plans/{capacityPlanId}/evaluations/{evaluationId}/get/responses/200/content/application/json/example",
+    "/components/responses/InvalidRequest/content/application/json/example",
+    "/components/responses/Unauthenticated/headers/WWW-Authenticate/example",
+    "/components/responses/Unauthenticated/content/application/json/example",
+    "/components/responses/Forbidden/content/application/json/example",
+    "/components/responses/ReadUnavailable/content/application/json/example",
+    "/components/responses/MutationUnavailable/content/application/json/dependency",
+    "/components/responses/MutationUnavailable/content/application/json/unknownCommit",
+    "/components/responses/InvalidConstraintReference/content/application/json/example",
+    "/components/responses/UnknownSandopPlan/content/application/json/example",
+    "/components/responses/PlanConflict/content/application/json/existingBusinessConflict",
+    "/components/responses/PlanConflict/content/application/json/idempotencyKeyReused",
+    "/components/responses/PlanStateConflict/content/application/json/existingBusinessConflict",
+    "/components/responses/PlanStateConflict/content/application/json/idempotencyKeyReused",
+    "/components/responses/InvalidDemandReference/content/application/json/unknownOrUnpublished",
+    "/components/responses/InvalidDemandReference/content/application/json/checksumMismatch",
+    "/components/responses/InvalidSnapshotReference/content/application/json/example",
+    "/components/responses/SignOffConflict/content/application/json/existingBusinessConflict",
+    "/components/responses/SignOffConflict/content/application/json/idempotencyKeyReused",
+    "/components/responses/SignOffConflict/content/application/json/signOffStateConflict",
+    "/components/responses/UnknownCapacityPlan/content/application/json/example",
+    "/components/responses/CapacityPlanConflict/content/application/json/existingBusinessConflict",
+    "/components/responses/CapacityPlanConflict/content/application/json/idempotencyKeyReused",
+    "/components/responses/CapacityPlanStateConflict/content/application/json/existingBusinessConflict",
+    "/components/responses/CapacityPlanStateConflict/content/application/json/idempotencyKeyReused",
+    "/components/responses/CapacityPlanStateConflict/content/application/json/scenarioNameConflict",
+    "/components/responses/UnknownCapacityScenario/content/application/json/example",
+    "/components/responses/EvaluationConflict/content/application/json/existingBusinessConflict",
+    "/components/responses/EvaluationConflict/content/application/json/idempotencyKeyReused",
+    "/components/responses/UnknownCapacityEvaluation/content/application/json/example",
+    "/components/schemas/SandopPlanCreatedEvent/examples/0",
+    "/components/schemas/SandopSnapshotCapturedEvent/examples/0",
+    "/components/schemas/SandopSignOffRecordedEvent/examples/0",
+    "/components/schemas/CapacityPlanCreatedEvent/examples/0",
+    "/components/schemas/CapacityScenarioCreatedEvent/examples/0",
+    "/components/schemas/CapacityEvaluationCompletedEvent/examples/0"
+  ],
+  "negative_controls": {
+    "bad_oas": true,
+    "missing_title": true,
+    "bad_ref": true,
+    "missing_code": true,
+    "bad_wire": true,
+    "bad_correlation": true
+  },
+  "validator": "0.7.2",
+  "final_hashes": {
+    "sandop-capacity.openapi.final-proposed.yaml": "5213b5353267ad4c25d150975d6f38422bced72f678c02271b0cccf6e768adab",
+    "sandop-capacity-semantics-v3.0.0.md": "f9d9d5553d70e1c54af3e03924600f4c8f426de50355ae861a4d3d5cef21ee64",
+    "publication-proposed.patch": "064827b512586bb17813a8e3703cc186f4a94295c590329674897ba31327aa23"
+  }
+}
+/private/tmp/mvp6-capacity-duplicate-name-candidate-01/tooldeps/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+/private/tmp/mvp6-capacity-duplicate-final-ver-01-lwl8BC/docs/records/audits/2026-09/mvp6-capacity-duplicate-final-release-prep-01/verify_final.py:36: DeprecationWarning: jsonschema.RefResolver is deprecated as of v4.18.0, in favor of the https://github.com/python-jsonschema/referencing library, which provides more compliant referencing behavior as well as more flexible APIs for customization. A future release will remove RefResolver. Please file a feature request (on referencing) if you are missing an API for the kind of customization you need.
+  def validate(schema,value):jsonschema.Draft202012Validator(schema,resolver=jsonschema.RefResolver.from_schema(d),format_checker=jsonschema.FormatChecker()).validate(value)
+
+===== HISTORICAL TREE PRESERVATION =====
+{
+  "docs/records/audits/2026-09/mvp6-capacity-duplicate-name-candidate-01": {
+    "file_count": 30,
+    "production_aggregate_sha256": "b0320420b9ee02cea3e1ef7e577c30034be865e1e2cc8de4779a39019777dabc",
+    "snapshot_aggregate_sha256": "b0320420b9ee02cea3e1ef7e577c30034be865e1e2cc8de4779a39019777dabc",
+    "equal": true
+  },
+  "docs/records/audits/2026-09/mvp6-capacity-duplicate-name-contract-candidate-01": {
+    "file_count": 6,
+    "production_aggregate_sha256": "914431e86845e09faeb8e4bceb7799cb0435e5c8bd7410116ab56712073a75ec",
+    "snapshot_aggregate_sha256": "914431e86845e09faeb8e4bceb7799cb0435e5c8bd7410116ab56712073a75ec",
+    "equal": true
+  },
+  "docs/records/audits/2026-09/mvp6-capacity-duplicate-candidate-reconcile-01": {
+    "file_count": 7,
+    "production_aggregate_sha256": "8e5a98bca42ec02073c2c343a477b76dc2186cfb00722873a7e8c387f29bb56c",
+    "snapshot_aggregate_sha256": "8e5a98bca42ec02073c2c343a477b76dc2186cfb00722873a7e8c387f29bb56c",
+    "equal": true
+  }
+}
+
+===== PRODUCTION DOCSPATHGUARD =====
+$ dotnet test ... --filter FullyQualifiedName~DocsPathGuardTests
+exit=1
+  TenantArchitecture.ArchitectureTests -> /Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/bin/Debug/net8.0/TenantArchitecture.ArchitectureTests.dll
+Test run for /Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/bin/Debug/net8.0/TenantArchitecture.ArchitectureTests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 17.11.1 (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.5.3.1+6b60a9e56a (64-bit .NET 8.0.23)
+[xUnit.net 00:00:00.06]   Discovering: TenantArchitecture.ArchitectureTests
+[xUnit.net 00:00:00.10]   Discovered:  TenantArchitecture.ArchitectureTests
+[xUnit.net 00:00:00.10]   Starting:    TenantArchitecture.ArchitectureTests
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "unapproved") [63 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "provenance-sha-missing") [23 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "symlink") [21 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "provenance-sha-null") [20 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "traversal") [21 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "invalid-decision-kind") [19 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "duplicate-json-key") [24 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "roadmap-active-tool") [32 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "decision-sha-missing") [20 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "canonical-sha-null") [20 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "payload-tampering") [20 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "unknown-path") [162 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "unknown-manifest-field") [21 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "wildcard") [25 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "wrong-source-hash") [21 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "source-sha-missing") [21 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "wrong-canonical-hash") [20 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "roadmap-wrong-hash") [32 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "empty-inputs") [21 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "missing-canonical") [20 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "canonical-sha-missing") [21 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "decision-sha-null") [21 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "roadmap-neighbor") [30 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "source-sha-null") [21 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "missing-ps1-presence") [163 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "wrong-provenance-hash") [22 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "missing-provenance") [22 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "wrong-provenance-line") [24 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "unregistered-tool") [162 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "duplicate-source") [41 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "missing-decision") [19 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "missing-owner") [21 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "synthetic-production") [20 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "missing-cs-presence") [159 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "unknown-kind") [23 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "invalid-decision") [19 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "changed-history") [21 ms]
+[xUnit.net 00:00:04.04]     TenantArchitecture.ArchitectureTests.DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders [FAIL]
+[xUnit.net 00:00:04.04]       code points into docs/ outside vendor · records · roadmap · guides · reference. Each of these fails the day it runs, not the day the docs moved:
+[xUnit.net 00:00:04.04]       docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-ver-01/raw/input-bindings-recomputed.json:46 → docs/analysis — bkz. docs-organization.md §4
+[xUnit.net 00:00:04.04]       docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-ver-01/raw/input-bindings-recomputed.json:53 → docs/analysis — bkz. docs-organization.md §4
+[xUnit.net 00:00:04.04]       Stack Trace:
+[xUnit.net 00:00:04.04]         /Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs(139,0): at TenantArchitecture.ArchitectureTests.DocsPathGuardTests.VerifyRoot(String root, Boolean syntheticFixture)
+[xUnit.net 00:00:04.04]         /Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs(90,0): at TenantArchitecture.ArchitectureTests.DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders()
+[xUnit.net 00:00:04.04]            at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+[xUnit.net 00:00:04.04]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:04.19]   Finished:    TenantArchitecture.ArchitectureTests
+  Failed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders [2 s]
+  Error Message:
+   code points into docs/ outside vendor · records · roadmap · guides · reference. Each of these fails the day it runs, not the day the docs moved:
+docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-ver-01/raw/input-bindings-recomputed.json:46 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-ver-01/raw/input-bindings-recomputed.json:53 → docs/analysis — bkz. docs-organization.md §4
+  Stack Trace:
+     at TenantArchitecture.ArchitectureTests.DocsPathGuardTests.VerifyRoot(String root, Boolean syntheticFixture) in /Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs:line 139
+   at TenantArchitecture.ArchitectureTests.DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders() in /Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs:line 90
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_ReadsExactFilesAndProvenance [140 ms]
+
+Test Run Failed.
+Total tests: 39
+     Passed: 38
+     Failed: 1
+ Total time: 4.6364 Seconds
+
+===== PRODUCTION FULL ARCHITECTURE =====
+$ dotnet test TenantArchitecture.ArchitectureTests.csproj --no-restore
+exit=1
+  TenantArchitecture.ArchitectureTests -> /Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/bin/Debug/net8.0/TenantArchitecture.ArchitectureTests.dll
+Test run for /Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/bin/Debug/net8.0/TenantArchitecture.ArchitectureTests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 17.11.1 (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.5.3.1+6b60a9e56a (64-bit .NET 8.0.23)
+[xUnit.net 00:00:00.05]   Discovering: TenantArchitecture.ArchitectureTests
+[xUnit.net 00:00:00.10]   Discovered:  TenantArchitecture.ArchitectureTests
+[xUnit.net 00:00:00.10]   Starting:    TenantArchitecture.ArchitectureTests
+  Passed TenantArchitecture.ArchitectureTests.TenantContradictionSiteGuardTests.NoSiteIsPendingADecision_BecauseAllEightEnforceTheRule [13 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "unapproved") [109 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "provenance-sha-missing") [46 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "symlink") [42 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "provenance-sha-null") [49 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "traversal") [64 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "invalid-decision-kind") [74 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "duplicate-json-key") [92 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "roadmap-active-tool") [164 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "decision-sha-missing") [72 ms]
+  Passed TenantArchitecture.ArchitectureTests.TenantContradictionSiteGuardTests.EveryTenantResolutionSite_IsClassified_AndTheSetsAreExact [714 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "canonical-sha-null") [70 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "payload-tampering") [69 ms]
+  Passed TenantArchitecture.ArchitectureTests.PpmAuditIntentV1DefaultOffArchitectureTests.Ppm_audit_identity_exists_only_in_the_unregistered_default_off_foundation [892 ms]
+  Passed TenantArchitecture.ArchitectureTests.PpmAuditIntentV1DefaultOffArchitectureTests.Compatibility_fixture_has_the_locked_six_field_shape_without_an_undocumented_aggregate_allowlist [21 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "unknown-path") [456 ms]
+  Passed TenantArchitecture.ArchitectureTests.PersistenceBoundaryTests.MongoClientInstantiation_MustStayInAllowedBootstrapFiles [1 s]
+  Passed TenantArchitecture.ArchitectureTests.PersistenceBoundaryTests.TenantHeaderContract_MustExistInGatewayAndServices [2 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "unknown-manifest-field") [75 ms]
+  Passed TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests.TheScanActuallySeesTheTestTree [1 s]
+  Passed TenantArchitecture.ArchitectureTests.TenantContradictionSiteGuardTests.SitesThatEnforceTheRule_AreExactlyTheMeasuredEight [683 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "wildcard") [58 ms]
+  Passed TenantArchitecture.ArchitectureTests.PpmAuditIntentV1DefaultOffArchitectureTests.Both_platform_transport_message_families_are_guarded_against_ppm_consumer_wiring [557 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "wrong-source-hash") [49 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "source-sha-missing") [44 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "wrong-canonical-hash") [41 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "roadmap-wrong-hash") [50 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "empty-inputs") [52 ms]
+[xUnit.net 00:00:02.31]     TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.NoProductionValidatorWritesItsOwnClockSkew [FAIL]
+[xUnit.net 00:00:02.31]       a JWT validator wrote its own ClockSkew instead of using JwtValidationDefaults.ClockSkew — that is BL-296 coming back: the same token judged differently by two services, 30 seconds wide and invisible from the symptom. Use the shared constant; if the value itself is wrong, change it in services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/JwtValidationDefaults.cs so every service moves together:
+[xUnit.net 00:00:02.31]       services/Diten.HumanCapitalService/src/Diten.HumanCapitalService.Api/Program.cs
+[xUnit.net 00:00:02.31]       services/Diten.TalentEcosystemService/src/Diten.TalentEcosystemService.Api/Program.cs
+[xUnit.net 00:00:02.31]       Stack Trace:
+[xUnit.net 00:00:02.31]         /Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/JwtClockSkewGuardTests.cs(76,0): at TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.NoProductionValidatorWritesItsOwnClockSkew()
+[xUnit.net 00:00:02.31]            at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+[xUnit.net 00:00:02.31]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "missing-canonical") [36 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "canonical-sha-missing") [36 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "decision-sha-null") [40 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "roadmap-neighbor") [53 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "source-sha-null") [39 ms]
+  Failed TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.NoProductionValidatorWritesItsOwnClockSkew [2 s]
+  Error Message:
+   a JWT validator wrote its own ClockSkew instead of using JwtValidationDefaults.ClockSkew — that is BL-296 coming back: the same token judged differently by two services, 30 seconds wide and invisible from the symptom. Use the shared constant; if the value itself is wrong, change it in services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/JwtValidationDefaults.cs so every service moves together:
+services/Diten.HumanCapitalService/src/Diten.HumanCapitalService.Api/Program.cs
+services/Diten.TalentEcosystemService/src/Diten.TalentEcosystemService.Api/Program.cs
+  Stack Trace:
+     at TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.NoProductionValidatorWritesItsOwnClockSkew() in /Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/JwtClockSkewGuardTests.cs:line 76
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Passed TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.TheSingleSourceStillDeclaresTheConstant [< 1 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "missing-ps1-presence") [318 ms]
+[xUnit.net 00:00:02.42]     TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests.NoTestCreatesItsOwnDatabasePerRun [FAIL]
+[xUnit.net 00:00:02.42]       a Mongo test named its database with a fresh Guid — share one database and isolate by TenantId, or add the file to KnownPerRunDatabase with a reason:
+[xUnit.net 00:00:02.42]       services/Diten.Platform/tests/Diten.Platform.Application.Tests/Audit/PpmAuditRetentionPolicySeedMongoTests.cs
+[xUnit.net 00:00:02.42]       services/Diten.Platform/tests/Diten.Platform.Application.Tests/Persistence/DisposableStandaloneMongo.cs
+[xUnit.net 00:00:02.42]       Stack Trace:
+[xUnit.net 00:00:02.42]         /Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/MongoTestDatabaseGuardTests.cs(126,0): at TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests.NoTestCreatesItsOwnDatabasePerRun()
+[xUnit.net 00:00:02.42]            at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+[xUnit.net 00:00:02.42]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "wrong-provenance-hash") [40 ms]
+  Failed TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests.NoTestCreatesItsOwnDatabasePerRun [875 ms]
+  Error Message:
+   a Mongo test named its database with a fresh Guid — share one database and isolate by TenantId, or add the file to KnownPerRunDatabase with a reason:
+services/Diten.Platform/tests/Diten.Platform.Application.Tests/Audit/PpmAuditRetentionPolicySeedMongoTests.cs
+services/Diten.Platform/tests/Diten.Platform.Application.Tests/Persistence/DisposableStandaloneMongo.cs
+  Stack Trace:
+     at TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests.NoTestCreatesItsOwnDatabasePerRun() in /Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/MongoTestDatabaseGuardTests.cs:line 126
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "missing-provenance") [34 ms]
+  Passed TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests.SchemaBuildExceptionListStaysHonest [3 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "wrong-provenance-line") [39 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "unregistered-tool") [345 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "duplicate-source") [72 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "missing-decision") [37 ms]
+[xUnit.net 00:00:03.81]     TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.EveryLifetimeValidatingFileDeclaresTheSharedSkew [FAIL]
+[xUnit.net 00:00:03.81]       this file validates token lifetime but never names JwtValidationDefaults.ClockSkew. With no ClockSkew set, Microsoft.IdentityModel applies its own default of FIVE MINUTES — silently looser than every other validator in this system:
+[xUnit.net 00:00:03.81]       services/Diten.HumanCapitalService/src/Diten.HumanCapitalService.Api/Program.cs
+[xUnit.net 00:00:03.81]       services/Diten.TalentEcosystemService/src/Diten.TalentEcosystemService.Api/Program.cs
+[xUnit.net 00:00:03.81]       Stack Trace:
+[xUnit.net 00:00:03.81]         /Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/JwtClockSkewGuardTests.cs(93,0): at TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.EveryLifetimeValidatingFileDeclaresTheSharedSkew()
+[xUnit.net 00:00:03.81]            at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+[xUnit.net 00:00:03.81]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "missing-owner") [36 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "synthetic-production") [42 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "missing-cs-presence") [268 ms]
+  Passed TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests.NoTestBuildsThePlatformSchema [844 ms]
+  Passed TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests.PerRunDatabaseExceptionListStaysHonest [9 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "unknown-kind") [36 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "invalid-decision") [30 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "changed-history") [33 ms]
+  Failed TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.EveryLifetimeValidatingFileDeclaresTheSharedSkew [1 s]
+  Error Message:
+   this file validates token lifetime but never names JwtValidationDefaults.ClockSkew. With no ClockSkew set, Microsoft.IdentityModel applies its own default of FIVE MINUTES — silently looser than every other validator in this system:
+services/Diten.HumanCapitalService/src/Diten.HumanCapitalService.Api/Program.cs
+services/Diten.TalentEcosystemService/src/Diten.TalentEcosystemService.Api/Program.cs
+  Stack Trace:
+     at TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.EveryLifetimeValidatingFileDeclaresTheSharedSkew() in /Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/JwtClockSkewGuardTests.cs:line 93
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Passed TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.TheScanActuallySeesTheProductionTree [1 s]
+[xUnit.net 00:00:05.82]     TenantArchitecture.ArchitectureTests.DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders [FAIL]
+[xUnit.net 00:00:05.82]       code points into docs/ outside vendor · records · roadmap · guides · reference. Each of these fails the day it runs, not the day the docs moved:
+[xUnit.net 00:00:05.82]       docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-ver-01/raw/input-bindings-recomputed.json:46 → docs/analysis — bkz. docs-organization.md §4
+[xUnit.net 00:00:05.82]       docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-ver-01/raw/input-bindings-recomputed.json:53 → docs/analysis — bkz. docs-organization.md §4
+[xUnit.net 00:00:05.82]       Stack Trace:
+[xUnit.net 00:00:05.82]         /Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs(139,0): at TenantArchitecture.ArchitectureTests.DocsPathGuardTests.VerifyRoot(String root, Boolean syntheticFixture)
+[xUnit.net 00:00:05.82]         /Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs(90,0): at TenantArchitecture.ArchitectureTests.DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders()
+[xUnit.net 00:00:05.82]            at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+[xUnit.net 00:00:05.82]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:05.96]   Finished:    TenantArchitecture.ArchitectureTests
+  Failed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders [2 s]
+  Error Message:
+   code points into docs/ outside vendor · records · roadmap · guides · reference. Each of these fails the day it runs, not the day the docs moved:
+docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-ver-01/raw/input-bindings-recomputed.json:46 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-ver-01/raw/input-bindings-recomputed.json:53 → docs/analysis — bkz. docs-organization.md §4
+  Stack Trace:
+     at TenantArchitecture.ArchitectureTests.DocsPathGuardTests.VerifyRoot(String root, Boolean syntheticFixture) in /Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs:line 139
+   at TenantArchitecture.ArchitectureTests.DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders() in /Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs:line 90
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_ReadsExactFilesAndProvenance [143 ms]
+
+Test Run Failed.
+Total tests: 56
+     Passed: 52
+     Failed: 4
+ Total time: 6.3776 Seconds
+
+===== POST-PATCH DOCSPATHGUARD =====
+$ dotnet test ... --filter FullyQualifiedName~DocsPathGuardTests
+exit=1
+  TenantArchitecture.ArchitectureTests -> /private/tmp/mvp6-capacity-duplicate-final-ver-01-lwl8BC/tests/architecture/TenantArchitecture.ArchitectureTests/bin/Debug/net8.0/TenantArchitecture.ArchitectureTests.dll
+Test run for /private/tmp/mvp6-capacity-duplicate-final-ver-01-lwl8BC/tests/architecture/TenantArchitecture.ArchitectureTests/bin/Debug/net8.0/TenantArchitecture.ArchitectureTests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 18.0.1 (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.5.3.1+6b60a9e56a (64-bit .NET 8.0.26)
+[xUnit.net 00:00:00.06]   Discovering: TenantArchitecture.ArchitectureTests
+[xUnit.net 00:00:00.11]   Discovered:  TenantArchitecture.ArchitectureTests
+[xUnit.net 00:00:00.12]   Starting:    TenantArchitecture.ArchitectureTests
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "unapproved") [69 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "provenance-sha-missing") [24 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "symlink") [21 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "provenance-sha-null") [22 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "traversal") [20 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "invalid-decision-kind") [20 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "duplicate-json-key") [20 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "roadmap-active-tool") [35 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "decision-sha-missing") [20 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "canonical-sha-null") [19 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "payload-tampering") [22 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "unknown-path") [156 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "unknown-manifest-field") [21 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "wildcard") [20 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "wrong-source-hash") [25 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "source-sha-missing") [20 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "wrong-canonical-hash") [20 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "roadmap-wrong-hash") [31 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "empty-inputs") [21 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "missing-canonical") [20 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "canonical-sha-missing") [22 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "decision-sha-null") [19 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "roadmap-neighbor") [30 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "source-sha-null") [21 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "missing-ps1-presence") [156 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "wrong-provenance-hash") [21 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "missing-provenance") [21 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "wrong-provenance-line") [22 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "unregistered-tool") [156 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "duplicate-source") [39 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "missing-decision") [20 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "missing-owner") [20 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "synthetic-production") [19 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "missing-cs-presence") [172 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "unknown-kind") [22 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "invalid-decision") [19 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "changed-history") [21 ms]
+[xUnit.net 00:00:04.20]     TenantArchitecture.ArchitectureTests.DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders [FAIL]
+[xUnit.net 00:00:04.20]       code points into docs/ outside vendor · records · roadmap · guides · reference. Each of these fails the day it runs, not the day the docs moved:
+[xUnit.net 00:00:04.20]       docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-ver-01/raw/input-bindings-recomputed.json:46 → docs/analysis — bkz. docs-organization.md §4
+[xUnit.net 00:00:04.20]       docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-ver-01/raw/input-bindings-recomputed.json:53 → docs/analysis — bkz. docs-organization.md §4
+[xUnit.net 00:00:04.20]       Stack Trace:
+[xUnit.net 00:00:04.20]         /private/tmp/mvp6-capacity-duplicate-final-ver-01-lwl8BC/tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs(139,0): at TenantArchitecture.ArchitectureTests.DocsPathGuardTests.VerifyRoot(String root, Boolean syntheticFixture)
+[xUnit.net 00:00:04.20]         /private/tmp/mvp6-capacity-duplicate-final-ver-01-lwl8BC/tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs(90,0): at TenantArchitecture.ArchitectureTests.DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders()
+[xUnit.net 00:00:04.20]            at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+[xUnit.net 00:00:04.20]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:04.38]   Finished:    TenantArchitecture.ArchitectureTests
+  Failed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders [2 s]
+  Error Message:
+   code points into docs/ outside vendor · records · roadmap · guides · reference. Each of these fails the day it runs, not the day the docs moved:
+docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-ver-01/raw/input-bindings-recomputed.json:46 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-ver-01/raw/input-bindings-recomputed.json:53 → docs/analysis — bkz. docs-organization.md §4
+  Stack Trace:
+     at TenantArchitecture.ArchitectureTests.DocsPathGuardTests.VerifyRoot(String root, Boolean syntheticFixture) in /private/tmp/mvp6-capacity-duplicate-final-ver-01-lwl8BC/tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs:line 139
+   at TenantArchitecture.ArchitectureTests.DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders() in /private/tmp/mvp6-capacity-duplicate-final-ver-01-lwl8BC/tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs:line 90
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_ReadsExactFilesAndProvenance [174 ms]
+
+Test Run Failed.
+Total tests: 39
+     Passed: 38
+     Failed: 1
+ Total time: 4.9950 Seconds
+
+===== POST-PATCH FULL ARCHITECTURE =====
+$ dotnet test TenantArchitecture.ArchitectureTests.csproj --no-restore
+exit=1
+  TenantArchitecture.ArchitectureTests -> /private/tmp/mvp6-capacity-duplicate-final-ver-01-lwl8BC/tests/architecture/TenantArchitecture.ArchitectureTests/bin/Debug/net8.0/TenantArchitecture.ArchitectureTests.dll
+Test run for /private/tmp/mvp6-capacity-duplicate-final-ver-01-lwl8BC/tests/architecture/TenantArchitecture.ArchitectureTests/bin/Debug/net8.0/TenantArchitecture.ArchitectureTests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 18.0.1 (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.5.3.1+6b60a9e56a (64-bit .NET 8.0.26)
+[xUnit.net 00:00:00.05]   Discovering: TenantArchitecture.ArchitectureTests
+[xUnit.net 00:00:00.09]   Discovered:  TenantArchitecture.ArchitectureTests
+[xUnit.net 00:00:00.10]   Starting:    TenantArchitecture.ArchitectureTests
+  Passed TenantArchitecture.ArchitectureTests.TenantContradictionSiteGuardTests.NoSiteIsPendingADecision_BecauseAllEightEnforceTheRule [9 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "unapproved") [103 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "provenance-sha-missing") [49 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "symlink") [54 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "provenance-sha-null") [70 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "traversal") [90 ms]
+  Passed TenantArchitecture.ArchitectureTests.TenantContradictionSiteGuardTests.EveryTenantResolutionSite_IsClassified_AndTheSetsAreExact [445 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "invalid-decision-kind") [132 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "duplicate-json-key") [101 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "roadmap-active-tool") [127 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "decision-sha-missing") [71 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "canonical-sha-null") [77 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "payload-tampering") [72 ms]
+  Passed TenantArchitecture.ArchitectureTests.TenantContradictionSiteGuardTests.SitesThatEnforceTheRule_AreExactlyTheMeasuredEight [537 ms]
+  Passed TenantArchitecture.ArchitectureTests.PpmAuditIntentV1DefaultOffArchitectureTests.Ppm_audit_identity_exists_only_in_the_unregistered_default_off_foundation [1 s]
+  Passed TenantArchitecture.ArchitectureTests.PpmAuditIntentV1DefaultOffArchitectureTests.Compatibility_fixture_has_the_locked_six_field_shape_without_an_undocumented_aggregate_allowlist [19 ms]
+  Passed TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests.TheScanActuallySeesTheTestTree [1 s]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "unknown-path") [428 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "unknown-manifest-field") [93 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "wildcard") [123 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "wrong-source-hash") [98 ms]
+  Passed TenantArchitecture.ArchitectureTests.PpmAuditIntentV1DefaultOffArchitectureTests.Both_platform_transport_message_families_are_guarded_against_ppm_consumer_wiring [678 ms]
+  Passed TenantArchitecture.ArchitectureTests.PersistenceBoundaryTests.MongoClientInstantiation_MustStayInAllowedBootstrapFiles [1 s]
+  Passed TenantArchitecture.ArchitectureTests.PersistenceBoundaryTests.TenantHeaderContract_MustExistInGatewayAndServices [1 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "source-sha-missing") [94 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "wrong-canonical-hash") [91 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "roadmap-wrong-hash") [117 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "empty-inputs") [66 ms]
+[xUnit.net 00:00:02.71]     TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests.NoTestCreatesItsOwnDatabasePerRun [FAIL]
+[xUnit.net 00:00:02.71]       a Mongo test named its database with a fresh Guid — share one database and isolate by TenantId, or add the file to KnownPerRunDatabase with a reason:
+[xUnit.net 00:00:02.71]       services/Diten.Platform/tests/Diten.Platform.Application.Tests/Audit/PpmAuditRetentionPolicySeedMongoTests.cs
+[xUnit.net 00:00:02.71]       services/Diten.Platform/tests/Diten.Platform.Application.Tests/Persistence/DisposableStandaloneMongo.cs
+[xUnit.net 00:00:02.71]       Stack Trace:
+[xUnit.net 00:00:02.71]         /private/tmp/mvp6-capacity-duplicate-final-ver-01-lwl8BC/tests/architecture/TenantArchitecture.ArchitectureTests/MongoTestDatabaseGuardTests.cs(126,0): at TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests.NoTestCreatesItsOwnDatabasePerRun()
+[xUnit.net 00:00:02.71]            at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+[xUnit.net 00:00:02.71]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:02.89]     TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.NoProductionValidatorWritesItsOwnClockSkew [FAIL]
+[xUnit.net 00:00:02.89]       a JWT validator wrote its own ClockSkew instead of using JwtValidationDefaults.ClockSkew — that is BL-296 coming back: the same token judged differently by two services, 30 seconds wide and invisible from the symptom. Use the shared constant; if the value itself is wrong, change it in services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/JwtValidationDefaults.cs so every service moves together:
+[xUnit.net 00:00:02.89]       services/Diten.HumanCapitalService/src/Diten.HumanCapitalService.Api/Program.cs
+[xUnit.net 00:00:02.89]       services/Diten.TalentEcosystemService/src/Diten.TalentEcosystemService.Api/Program.cs
+[xUnit.net 00:00:02.89]       Stack Trace:
+[xUnit.net 00:00:02.89]         /private/tmp/mvp6-capacity-duplicate-final-ver-01-lwl8BC/tests/architecture/TenantArchitecture.ArchitectureTests/JwtClockSkewGuardTests.cs(76,0): at TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.NoProductionValidatorWritesItsOwnClockSkew()
+[xUnit.net 00:00:02.89]            at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+[xUnit.net 00:00:02.89]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "missing-canonical") [65 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "canonical-sha-missing") [65 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "decision-sha-null") [52 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "roadmap-neighbor") [74 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "source-sha-null") [59 ms]
+  Failed TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests.NoTestCreatesItsOwnDatabasePerRun [1 s]
+  Error Message:
+   a Mongo test named its database with a fresh Guid — share one database and isolate by TenantId, or add the file to KnownPerRunDatabase with a reason:
+services/Diten.Platform/tests/Diten.Platform.Application.Tests/Audit/PpmAuditRetentionPolicySeedMongoTests.cs
+services/Diten.Platform/tests/Diten.Platform.Application.Tests/Persistence/DisposableStandaloneMongo.cs
+  Stack Trace:
+     at TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests.NoTestCreatesItsOwnDatabasePerRun() in /private/tmp/mvp6-capacity-duplicate-final-ver-01-lwl8BC/tests/architecture/TenantArchitecture.ArchitectureTests/MongoTestDatabaseGuardTests.cs:line 126
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Passed TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests.SchemaBuildExceptionListStaysHonest [5 ms]
+  Failed TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.NoProductionValidatorWritesItsOwnClockSkew [2 s]
+  Error Message:
+   a JWT validator wrote its own ClockSkew instead of using JwtValidationDefaults.ClockSkew — that is BL-296 coming back: the same token judged differently by two services, 30 seconds wide and invisible from the symptom. Use the shared constant; if the value itself is wrong, change it in services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/JwtValidationDefaults.cs so every service moves together:
+services/Diten.HumanCapitalService/src/Diten.HumanCapitalService.Api/Program.cs
+services/Diten.TalentEcosystemService/src/Diten.TalentEcosystemService.Api/Program.cs
+  Stack Trace:
+     at TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.NoProductionValidatorWritesItsOwnClockSkew() in /private/tmp/mvp6-capacity-duplicate-final-ver-01-lwl8BC/tests/architecture/TenantArchitecture.ArchitectureTests/JwtClockSkewGuardTests.cs:line 76
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Passed TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.TheSingleSourceStillDeclaresTheConstant [< 1 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "missing-ps1-presence") [411 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "wrong-provenance-hash") [54 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "missing-provenance") [45 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "wrong-provenance-line") [60 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "unregistered-tool") [428 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "duplicate-source") [118 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "missing-decision") [51 ms]
+[xUnit.net 00:00:04.39]     TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.EveryLifetimeValidatingFileDeclaresTheSharedSkew [FAIL]
+[xUnit.net 00:00:04.39]       this file validates token lifetime but never names JwtValidationDefaults.ClockSkew. With no ClockSkew set, Microsoft.IdentityModel applies its own default of FIVE MINUTES — silently looser than every other validator in this system:
+[xUnit.net 00:00:04.39]       services/Diten.HumanCapitalService/src/Diten.HumanCapitalService.Api/Program.cs
+[xUnit.net 00:00:04.39]       services/Diten.TalentEcosystemService/src/Diten.TalentEcosystemService.Api/Program.cs
+[xUnit.net 00:00:04.39]       Stack Trace:
+[xUnit.net 00:00:04.39]         /private/tmp/mvp6-capacity-duplicate-final-ver-01-lwl8BC/tests/architecture/TenantArchitecture.ArchitectureTests/JwtClockSkewGuardTests.cs(93,0): at TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.EveryLifetimeValidatingFileDeclaresTheSharedSkew()
+[xUnit.net 00:00:04.39]            at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+[xUnit.net 00:00:04.39]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "missing-owner") [43 ms]
+  Passed TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests.NoTestBuildsThePlatformSchema [1 s]
+  Passed TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests.PerRunDatabaseExceptionListStaysHonest [11 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "synthetic-production") [39 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "missing-cs-presence") [209 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "unknown-kind") [31 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "invalid-decision") [27 ms]
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_RejectsInvalidEvidence(scenario: "changed-history") [27 ms]
+  Failed TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.EveryLifetimeValidatingFileDeclaresTheSharedSkew [1 s]
+  Error Message:
+   this file validates token lifetime but never names JwtValidationDefaults.ClockSkew. With no ClockSkew set, Microsoft.IdentityModel applies its own default of FIVE MINUTES — silently looser than every other validator in this system:
+services/Diten.HumanCapitalService/src/Diten.HumanCapitalService.Api/Program.cs
+services/Diten.TalentEcosystemService/src/Diten.TalentEcosystemService.Api/Program.cs
+  Stack Trace:
+     at TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.EveryLifetimeValidatingFileDeclaresTheSharedSkew() in /private/tmp/mvp6-capacity-duplicate-final-ver-01-lwl8BC/tests/architecture/TenantArchitecture.ArchitectureTests/JwtClockSkewGuardTests.cs:line 93
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Passed TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.TheScanActuallySeesTheProductionTree [1 s]
+[xUnit.net 00:00:06.42]     TenantArchitecture.ArchitectureTests.DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders [FAIL]
+[xUnit.net 00:00:06.42]       code points into docs/ outside vendor · records · roadmap · guides · reference. Each of these fails the day it runs, not the day the docs moved:
+[xUnit.net 00:00:06.42]       docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-ver-01/raw/input-bindings-recomputed.json:46 → docs/analysis — bkz. docs-organization.md §4
+[xUnit.net 00:00:06.42]       docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-ver-01/raw/input-bindings-recomputed.json:53 → docs/analysis — bkz. docs-organization.md §4
+[xUnit.net 00:00:06.42]       Stack Trace:
+[xUnit.net 00:00:06.42]         /private/tmp/mvp6-capacity-duplicate-final-ver-01-lwl8BC/tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs(139,0): at TenantArchitecture.ArchitectureTests.DocsPathGuardTests.VerifyRoot(String root, Boolean syntheticFixture)
+[xUnit.net 00:00:06.42]         /private/tmp/mvp6-capacity-duplicate-final-ver-01-lwl8BC/tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs(90,0): at TenantArchitecture.ArchitectureTests.DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders()
+[xUnit.net 00:00:06.42]            at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+[xUnit.net 00:00:06.42]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:06.56]   Finished:    TenantArchitecture.ArchitectureTests
+  Failed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders [2 s]
+  Error Message:
+   code points into docs/ outside vendor · records · roadmap · guides · reference. Each of these fails the day it runs, not the day the docs moved:
+docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-ver-01/raw/input-bindings-recomputed.json:46 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-ver-01/raw/input-bindings-recomputed.json:53 → docs/analysis — bkz. docs-organization.md §4
+  Stack Trace:
+     at TenantArchitecture.ArchitectureTests.DocsPathGuardTests.VerifyRoot(String root, Boolean syntheticFixture) in /private/tmp/mvp6-capacity-duplicate-final-ver-01-lwl8BC/tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs:line 139
+   at TenantArchitecture.ArchitectureTests.DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders() in /private/tmp/mvp6-capacity-duplicate-final-ver-01-lwl8BC/tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs:line 90
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Passed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.AuthorityFixture_ReadsExactFilesAndProvenance [142 ms]
+
+Test Run Failed.
+Total tests: 56
+     Passed: 52
+     Failed: 4
+ Total time: 7.0150 Seconds
+
+===== FINAL DISPOSITION =====
+artifact_validation=PASS
+publication_guard=FAIL
+publication=BLOCKED
+canonical_write=NO
+guard_write=NO
+git_mutation=NO

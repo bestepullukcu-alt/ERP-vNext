@@ -73,6 +73,46 @@ public sealed class KnowledgePermissionSeedTests
         Assert.Contains(expected, seederSource, StringComparison.Ordinal);
     }
 
+    // WP-KP-5a — the safety text / country legal profile keys are in the catalog (tenant-scoped "crm-knowledge")...
+    [Theory]
+    [InlineData("crm\", \"safety-text\", \"read")]
+    [InlineData("crm\", \"safety-text\", \"manage")]
+    [InlineData("crm\", \"safety-text\", \"submit")]
+    [InlineData("crm\", \"country-legal-profile\", \"read")]
+    [InlineData("crm\", \"country-legal-profile\", \"manage")]
+    [InlineData("crm\", \"country-legal-profile\", \"submit")]
+    public void Regulatory_text_permission_is_present_in_canonical_seed(string permissionConstructor)
+    {
+        var seederSource = File.ReadAllText(GetDataSeederPath());
+
+        Assert.Contains(permissionConstructor, seederSource, StringComparison.Ordinal);
+    }
+
+    // ...and granted to NO role by the seeder (the grants are the KP-5a-CFG user script).
+    [Theory]
+    [InlineData("\"crm.safety-text.")]
+    [InlineData("\"crm.country-legal-profile.")]
+    public void Regulatory_text_permission_is_not_granted_by_the_seeder(string grantedKeyPrefix)
+    {
+        var seederSource = File.ReadAllText(GetDataSeederPath());
+
+        Assert.DoesNotContain(grantedKeyPrefix, seederSource, StringComparison.Ordinal);
+    }
+
+    // WP-VP-2 (B-1) — the two visit read-all keys are in the catalog (English description), explicit-grant-only, and
+    // granted to NO role by the seeder (the grant is the user's script, scripts/rbac/grant_visit_planning_read_all_97c5.py).
+    [Theory]
+    [InlineData("new(\"crm\", \"planned-visit\", \"read-all\"", "crm.planned-visit.read-all")]
+    [InlineData("new(\"crm\", \"visit-plan\", \"read-all\"", "crm.visit-plan.read-all")]
+    public void Visit_read_all_keys_are_catalogued_explicit_grant_only_and_never_granted_by_the_seeder(string constructor, string key)
+    {
+        var seederSource = File.ReadAllText(GetDataSeederPath());
+
+        Assert.Contains(constructor, seederSource, StringComparison.Ordinal);
+        Assert.DoesNotContain("\"" + key + "\"", seederSource, StringComparison.Ordinal);
+        Assert.Contains(key, Diten.AuthService.Domain.Authorization.ExplicitGrantOnlyPermissions.Keys);
+    }
+
     private static string GetDataSeederPath()
     {
         var directory = Path.GetDirectoryName(typeof(DataSeeder).Assembly.Location)

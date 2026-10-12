@@ -1,0 +1,1 @@
+Restart probe attempted against same binary and persisted fixture; HTTP 401 Unauthorized, so restart acceptance is OPEN.

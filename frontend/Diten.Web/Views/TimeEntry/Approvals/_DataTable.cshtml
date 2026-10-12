@@ -1,0 +1,27 @@
+@using Diten.Web.Views.TimeEntry.Approvals
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ApprovalsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    // MOD-0280-FU01 T2b (U4) — the approver's queue: server mode (pack screens: Approvals → server). Selection is for
+    // bulk APPROVE of unmarked weeks only; there is no edit column, an approver never edits a week (D6).
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-timeapprovals",
+        DataMode = "server",
+        Slug = "timeapprovals",
+        HasSelection = true,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["ColPerson"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["ColWeek"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColTotal"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColMarks"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColSubmitted"].Value }
+        ],
+        ActionsHeader = Localizer["Actions"].Value
+    };
+}
+
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />

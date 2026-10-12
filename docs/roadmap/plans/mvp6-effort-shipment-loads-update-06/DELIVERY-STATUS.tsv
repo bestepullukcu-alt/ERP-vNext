@@ -1,0 +1,12 @@
+scope	name	readiness_status	delivered_ml	remaining_ml	total_ml	estimated_effort_completion_percent	new_disposition
+0183	Shipment/POD	PARTIAL_INTEGRATION_CLOSED_AUTH_BROWSER_OPEN	228	66	294	77.6	Source/build/route integration reserve delivered; real-Auth HTTP/browser/PNG and final acceptance remain open
+0184	Carrier	PARTIAL_CT_DECIDED_PNG_OPEN	180	28	208	86.5	CT accepted bounded functional slice; mandatory durable PNG remains OPEN and Test/VER reserve is retained
+0185	Loads	PARTIAL_REESTIMATED_SCOPE_OPEN	136	144	280	48.6	48/84/144 bounded UI estimate replaces existing reserves; transition/detail/lookup-root UI remains unestimated
+0186	Returns	PARTIAL_UNCHANGED	172	106	278	61.9	No new evidence
+0187	Claims	PARTIAL_UNCHANGED	200	114	314	63.7	No new evidence
+0190	S&OP	PARTIAL_UNCHANGED	148	136	284	52.1	No new evidence
+0192	Capacity	PARTIAL_UNCHANGED	220	144	364	60.4	No new evidence
+0147	Supplier Performance	PRE_DEV_PARTIAL	20	248	268	7.5	No new evidence; owner/seam gates remain
+0148	Supplier Portal	PRE_DEV_PARTIAL	20	232	252	7.9	No new evidence; owner/seam gates remain
+SHARED	Shared work	PARTIAL_UNCHANGED	108	164	272	39.7	Shared Auth remains counted only here; no Carrier double credit
+portfolio	MVP6	PARTIAL_ADVANCED_SCOPE_UNESTIMATED	1432	1382	2814	50.9	Shipment completion and Loads estimate correction recorded; numeric total excludes open unestimated Loads successor scope

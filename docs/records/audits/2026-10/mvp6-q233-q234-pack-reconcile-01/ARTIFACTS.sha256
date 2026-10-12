@@ -1,0 +1,23 @@
+# Q233+Q234 ARTIFACTS — generated 2026-10-02 23:22:06 +0300 (Europe/Istanbul). Start 2026-10-02 23:16:18 +03.
+# HEAD 4a8d4d4b339528a88e6220fb8402e5a2c771136c (unchanged). Porcelain start: 89 M + 576 ?? = 665. Porcelain end: 89 M + 576 ?? = 665.
+# New porcelain entries since start: none. Removed: none.
+# Packs and contract — end-of-lane sha256, equal to the start (NOT edited):
+# 2a65ce1d516c1850bef74f9d26e5d54dfc6042acae45ad5199730ef43ddf2c83  execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md
+# 9ec4ef1bc1db21e07e01d5e8c0671ea4809840e6245d8749fb4da0a8b75abd2e  execution/domains/supply-chain-execution/module-packs/MOD-0185-routing-load-planning.md
+# 933e89262713f36982a7885b9b95a84e3fbfad62b276b721a300c0ec6c8521fe  execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md
+# 3d1a00e2f0a0e7e58d19f44b340de9ab0d6bf84e7e2997db451c65d2ddb74cae  execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md
+# 6dc1dd486375130dc4225d59f08bc4ff05e62d148ac72aeeb2034731e7796aa2  docs/analysis/contracts/shipment-bundle.openapi.yaml
+# 7389d65e6bfb1bf828b1072092e1c4e79f9d393978ccf1250385da18e8783778  .claude/settings.local.json
+# Files of this record (ARTIFACTS.sha256 itself excluded):
+580bae8ff81883d638b0d2a19794b6a9767ef5cccdbbf2d0e097110d42ea533d  MOD0183-UI-DECLARATION.md
+6f84a25d6573a0210e1da26328c5196dd037fe5e7caef1ecb44852f04c5547ee  MOD0185-OPEN.md
+2542bf4788806b7e29dbcc6ee3533bc03d8fda5fb2049888e73eb864c09d1147  OPEN-ITEMS-ADDED.tsv
+6e52e58813a872e46a59bbb057d45de1b19041767d1504da5d9643397bfe8e39  PIN-CHANGE.md
+f76ce058c3adaefe731758795ae7a1fb02c5305e8bd4ec2a69be449883bb7398  SOP-22.md
+c9f68b9331a1f5c5a3d45060ca4286d9a1250f2be0bfd9a43625cdef612b1acb  proposed/MOD-0183-shipment-tracking-pod.md.diff.txt
+7dea2f64eff7e823ff713b6c44f53b378a097c7bf7d99162d66754a3d4360d6a  proposed/MOD-0183-shipment-tracking-pod.md.txt
+889ae5696de60d17fd82cb393444dcb630d5d643ea480a1a6c135ba6c46cd650  proposed/MOD-0186-reverse-logistics.md.diff.txt
+2c1a57573307dcd5ad0dcdf30804fd24b100c658fc4deab0596f783226e3c9f9  proposed/MOD-0186-reverse-logistics.md.txt
+abf05f7b1b9c11d1dd2fe9f12f177d55f380b2f01dde936155fbfb8925ab7288  proposed/MOD-0187-claims-management.md.diff.txt
+530b7a022b7bda50f442146710b0fb06408dffb9d761c373fbd3f0f046cd085a  proposed/MOD-0187-claims-management.md.txt
+707d5249eb7a84e7f7b54b0614774d916355c2a44a1b14eead05693ca6c1f843  q233_generator.py.txt

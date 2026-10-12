@@ -1,0 +1,4 @@
+forms_checked 9 (raw, url-encoded x2, base64 and base64url at 3 alignments)
+scanned_units 64266
+hits 0
+result PASS

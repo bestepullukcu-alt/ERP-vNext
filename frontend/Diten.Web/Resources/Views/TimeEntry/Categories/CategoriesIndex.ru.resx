@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="CategoriesTitle" xml:space="preserve"><value>Категории работ</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Работа вне задач, на которую можно записывать время. Категории отключаются, а не удаляются.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Новая категория</value></data>
+  <data name="Code" xml:space="preserve"><value>Код</value></data>
+  <data name="Label" xml:space="preserve"><value>Название</value></data>
+  <data name="CountsAsWork" xml:space="preserve"><value>Считается работой</value></data>
+  <data name="SortOrder" xml:space="preserve"><value>Порядок</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Подробности</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Изменить категорию</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Новая категория работ</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Изменить категорию работ</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>например, QUALITY_REVIEW</value></data>
+  <data name="LabelPlaceholder" xml:space="preserve"><value>например, Проверка качества</value></data>
+  <data name="CodeHint" xml:space="preserve"><value>Заглавные буквы, цифры и _ ; после сохранения изменить нельзя.</value></data>
+  <data name="CodeLocked" xml:space="preserve"><value>Код фиксируется после сохранения.</value></data>
+  <data name="InstallRecommended" xml:space="preserve"><value>Установить рекомендуемые</value></data>
+  <data name="InstallRecommendedConfirm" xml:space="preserve"><value>Установить рекомендуемые категории? Существующие останутся без изменений.</value></data>
+  <data name="InstallRecommendedDone" xml:space="preserve"><value>Установлено: {0}, уже было: {1}.</value></data>
+  <data name="Activate" xml:space="preserve"><value>Включить</value></data>
+  <data name="Deactivate" xml:space="preserve"><value>Отключить</value></data>
+  <data name="ActivateConfirm" xml:space="preserve"><value>Включить эту категорию?</value></data>
+  <data name="DeactivateConfirm" xml:space="preserve"><value>Отключить эту категорию? Записанное время сохранится; выбрать её будет нельзя.</value></data>
+  <data name="Activated" xml:space="preserve"><value>Категория включена.</value></data>
+  <data name="Deactivated" xml:space="preserve"><value>Категория отключена.</value></data>
+  <data name="CountsAsWorkYes" xml:space="preserve"><value>Считается работой</value></data>
+  <data name="CountsAsWorkNo" xml:space="preserve"><value>Не считается работой</value></data>
+  <data name="GeneralInformation" xml:space="preserve"><value>Общие сведения</value></data>
+  <data name="RecommendedLabel" xml:space="preserve"><value>Рекомендуемая (переведённое название)</value></data>
+  <data name="NoCategories" xml:space="preserve"><value>Категорий пока нет. Установите рекомендуемые или добавьте свои.</value></data>
+  <data name="TimeEntry.Category.ADMINISTRATION" xml:space="preserve"><value>Административная работа</value></data>
+  <data name="TimeEntry.Category.INTERNAL_MEETING" xml:space="preserve"><value>Внутреннее совещание</value></data>
+  <data name="TimeEntry.Category.TRAINING" xml:space="preserve"><value>Обучение</value></data>
+  <data name="TimeEntry.Category.SUPPORT" xml:space="preserve"><value>Поддержка</value></data>
+  <data name="TimeEntry.Category.TRAVEL" xml:space="preserve"><value>Командировка</value></data>
+</root>

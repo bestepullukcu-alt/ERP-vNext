@@ -1,0 +1,63 @@
+APPLY-CHECK — Q73 heading-label patches (VM /tmp copies; git outside any repository; GIT_CEILING_DIRECTORIES=/tmp)
+run_at_istanbul 2026-09-26T14:52:40+0300
+git 2.34.1
+
+# 1 before hashes of the current repository files (copied to /tmp)
+OK    before execution/portfolio/delivery-capability-packs/DCP-009-supply-chain-inventory.md e346043dd6d8163be561353fb393ee7b2b7f424c10239c282538c4f47020cec6
+OK    before execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md 8e269efa44b47bef41a81745a946ccef9d30a26d8ddf175000e80aad2242eadf
+OK    before execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md 346288abaf9c26c9bfeebf1c923c8201166bb5c930f2389b57528014c1bffd1e
+OK    before execution/domains/supply-chain-execution/module-packs/MOD-0185-routing-load-planning.md 45b5dd3325b4c917eeaa9cb6b5268008173579e4525f4c90f25c43630c27caa5
+OK    before execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md a762305ec789f0b2547d5205135a0ff70b64e83f4a63b839a985432a46d8a552
+OK    before execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md 31cb35c38fd97c91172884156a32b69ec219e3cf4f96ad5f9124dc3c8ad06626
+OK    before execution/domains/supply-chain-execution/module-packs/MOD-0190-sop-workflow-signoffs.md 8403d8f46059c99ef34d3fe08b3cacdbbbefb321f30f921b620eceda9180ea40
+OK    before execution/domains/supply-chain-execution/module-packs/MOD-0192-capacity-planning.md de81a0e289fff2732ca333357654fcd0ea7254fd9496391d2b06933d1891946c
+
+# 2 git apply --check, each patch alone
+OK    apply --check 01-DCP-009-supply-chain-inventory-heading-labels.patch
+OK    apply --check 02-MOD-0183-shipment-tracking-pod-heading-labels.patch
+OK    apply --check 03-MOD-0184-carrier-management-heading-labels.patch
+OK    apply --check 04-MOD-0185-routing-load-planning-heading-labels.patch
+OK    apply --check 05-MOD-0186-reverse-logistics-heading-labels.patch
+OK    apply --check 06-MOD-0187-claims-management-heading-labels.patch
+OK    apply --check 07-MOD-0190-sop-workflow-signoffs-heading-labels.patch
+OK    apply --check 08-MOD-0192-capacity-planning-heading-labels.patch
+
+# 3 git apply --check, all eight together
+OK    all 8 together
+
+# 4 apply all on the copies, then compare after hashes
+OK    after execution/portfolio/delivery-capability-packs/DCP-009-supply-chain-inventory.md 6b12ce685114248e89b78729546f43e86836d52f337599cb399de2993920046b
+OK    after execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md 2a65ce1d516c1850bef74f9d26e5d54dfc6042acae45ad5199730ef43ddf2c83
+OK    after execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md 35bead97350624074d5d67e4119eaafba59a9eb68dd15f8e1f5729564291dc21
+OK    after execution/domains/supply-chain-execution/module-packs/MOD-0185-routing-load-planning.md 9ec4ef1bc1db21e07e01d5e8c0671ea4809840e6245d8749fb4da0a8b75abd2e
+OK    after execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md fa7bd61e7635cbf5a84c433562fb1a371ed80a08626f6f39e4b881c66f8c3e27
+OK    after execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md 8ed42fad66b7739b8c56778a57e0ead84cc8ce3678ea4868306263ac501a94a2
+OK    after execution/domains/supply-chain-execution/module-packs/MOD-0190-sop-workflow-signoffs.md 56fb8e7d19daa36370747f391ac92c05eca1b51c84d643fbdf7ace687b82ac41
+OK    after execution/domains/supply-chain-execution/module-packs/MOD-0192-capacity-planning.md 9b8b90f1def56be975d63c456a6fb61ba574fec8e2060457d53c72c839fdf813
+
+# 5 diff shows only heading lines and the added approval-note lines
+OK    DCP-009-supply-chain-inventory.md: removed 1 heading line(s); added 3 line(s) (new headings, approval notes, blank separators); no other byte changed
+OK    MOD-0183-shipment-tracking-pod.md: removed 1 heading line(s); added 3 line(s) (new headings, approval notes, blank separators); no other byte changed
+OK    MOD-0184-carrier-management.md: removed 1 heading line(s); added 3 line(s) (new headings, approval notes, blank separators); no other byte changed
+OK    MOD-0185-routing-load-planning.md: removed 1 heading line(s); added 3 line(s) (new headings, approval notes, blank separators); no other byte changed
+OK    MOD-0186-reverse-logistics.md: removed 2 heading line(s); added 6 line(s) (new headings, approval notes, blank separators); no other byte changed
+OK    MOD-0187-claims-management.md: removed 2 heading line(s); added 6 line(s) (new headings, approval notes, blank separators); no other byte changed
+OK    MOD-0190-sop-workflow-signoffs.md: removed 1 heading line(s); added 3 line(s) (new headings, approval notes, blank separators); no other byte changed
+OK    MOD-0192-capacity-planning.md: removed 2 heading line(s); added 6 line(s) (new headings, approval notes, blank separators); no other byte changed
+
+# 6 no NOT APPROVED heading remains in the patched copies of the changed sections
+OK    no heading with 'NOT APPROVED' remains
+
+# 7 each new heading = old heading with only its status suffix removed (prefix check)
+OK    DCP-009-supply-chain-inventory.md line 104: removed suffix ' (PATCH PROPOSAL — NOT APPROVED until owner sign-off)'
+OK    MOD-0183-shipment-tracking-pod.md line 322: removed suffix ' (PATCH PROPOSAL — NOT APPROVED until owner sign-off)'
+OK    MOD-0184-carrier-management.md line 412: removed suffix ' (PATCH PROPOSAL — NOT APPROVED until owner sign-off)'
+OK    MOD-0185-routing-load-planning.md line 541: removed suffix ' (PATCH PROPOSAL — NOT APPROVED until owner sign-off)'
+OK    MOD-0186-reverse-logistics.md line 570: removed suffix ' (PACK-ALIGNMENT-03 proposal — NOT APPROVED)'
+OK    MOD-0186-reverse-logistics.md line 789: removed suffix ' (PATCH PROPOSAL — NOT APPROVED until owner sign-off)'
+OK    MOD-0187-claims-management.md line 519: removed suffix ' (PACK-ALIGNMENT-02 proposal — NOT APPROVED)'
+OK    MOD-0187-claims-management.md line 737: removed suffix ' (PATCH PROPOSAL — NOT APPROVED until owner sign-off)'
+OK    MOD-0190-sop-workflow-signoffs.md line 249: removed suffix ' (PACK-ALIGNMENT-01 proposal — NOT APPROVED)'
+OK    MOD-0192-capacity-planning.md line 249: removed suffix ' (proposed draft delta)'
+OK    MOD-0192-capacity-planning.md line 257: removed suffix ' (PACK-ALIGNMENT-01 proposal — NOT APPROVED)'
+# RESULT: ALL OK

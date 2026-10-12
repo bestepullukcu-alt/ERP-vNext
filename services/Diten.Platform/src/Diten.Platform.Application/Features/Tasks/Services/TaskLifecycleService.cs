@@ -135,7 +135,7 @@ public sealed class TaskLifecycleService : ITaskLifecycleService
         };
     }
 
-    public decimal? CalculateRemainingHours(TaskItem task)
+    public decimal? CalculateRemainingHours(TaskItem task, decimal spentHours)
     {
         ArgumentNullException.ThrowIfNull(task);
         if (task.EstimateHours is null)
@@ -143,7 +143,8 @@ public sealed class TaskLifecycleService : ITaskLifecycleService
             return null;
         }
 
-        var remaining = task.EstimateHours.Value - task.SpentHours;
+        // MOD-0280-FU01 D7 — the approved time, handed in by the caller; TaskItem.SpentHours is never read here.
+        var remaining = task.EstimateHours.Value - spentHours;
         return remaining < 0 ? 0 : remaining;
     }
 

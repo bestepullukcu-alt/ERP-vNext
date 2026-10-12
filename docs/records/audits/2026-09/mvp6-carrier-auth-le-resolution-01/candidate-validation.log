@@ -1,0 +1,31 @@
+{
+  "checks": {
+    "all_four_issuance_paths_resolve_and_emit": true,
+    "client_fails_closed_on_non_success": true,
+    "client_requires_single_disposition": true,
+    "endpoint_distinct_legal_entity_scope": true,
+    "endpoint_exactly_one": true,
+    "exact_ten_paths": true,
+    "git_apply_check": true,
+    "manifest_sha256_expected": true,
+    "no_program_gateway_ui_permission_paths": true,
+    "patch_sha256_expected": true,
+    "token_emits_only_nonempty_guid": true,
+    "token_uses_canonical_uuid": true
+  },
+  "evidence_level": "E1/E2 static candidate verification; not runtime or Auth E2E",
+  "git_apply_stderr": "",
+  "patch_paths": [
+    "services/Diten.AuthService/src/Diten.AuthService.Application/Common/Interfaces/ITenantLegalEntityScopeClient.cs",
+    "services/Diten.AuthService/src/Diten.AuthService.Application/Common/Interfaces/ITokenService.cs",
+    "services/Diten.AuthService/src/Diten.AuthService.Application/Features/Auth/Handlers/CommandHandlers/ForcedChangeTenantPasswordCommandHandler.cs",
+    "services/Diten.AuthService/src/Diten.AuthService.Application/Features/Auth/Handlers/CommandHandlers/LoginCommandHandler.cs",
+    "services/Diten.AuthService/src/Diten.AuthService.Application/Features/Auth/Handlers/CommandHandlers/RefreshTokenCommandHandler.cs",
+    "services/Diten.AuthService/src/Diten.AuthService.Application/Features/Auth/Handlers/CommandHandlers/VerifyMfaCommandHandler.cs",
+    "services/Diten.AuthService/src/Diten.AuthService.Infrastructure/DependencyInjection.cs",
+    "services/Diten.AuthService/src/Diten.AuthService.Infrastructure/Services/PlatformTenantLegalEntityScopeClient.cs",
+    "services/Diten.AuthService/src/Diten.AuthService.Infrastructure/Services/TokenService.cs",
+    "services/Diten.Platform/src/Diten.Platform.API/Controllers/Internal/InternalTenantLegalEntityScopeController.cs"
+  ],
+  "verdict": "PASS"
+}

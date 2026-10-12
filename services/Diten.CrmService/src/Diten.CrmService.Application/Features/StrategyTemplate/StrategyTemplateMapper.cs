@@ -68,6 +68,10 @@ public static class StrategyTemplateMapper
                     SkuAllocationMode = StrategySkuAllocationModes.Normalize(input.SkuAllocationMode),
                     SortOrder = input.SortOrder,
                     Notes = StrategyTemplateValidation.Trim(input.Notes),
+                    // WP-SB-3a — a blank role stays null so the write path can say "role required" instead of
+                    // silently reading it as promo. JourneyCodeDisplay is stamped by the binding validator.
+                    Role = StrategyProductLineRoles.Normalize(input.Role),
+                    JourneyId = input.JourneyId,
                     SkuAllocations = (input.SkuAllocations ?? Array.Empty<StrategyTemplateSkuAllocationInput>())
                         .Select(allocation => new StrategyTemplateSkuAllocation
                         {
@@ -139,6 +143,11 @@ public static class StrategyTemplateMapper
                 SkuAllocationMode = l.SkuAllocationMode,
                 SortOrder = l.SortOrder,
                 Notes = l.Notes,
+                // WP-SB-3a — carried as-is: a pre-SB-3a line stays without role / journey in the new draft, where the
+                // author completes it (the write path then requires both).
+                Role = l.Role,
+                JourneyId = l.JourneyId,
+                JourneyCodeDisplay = l.JourneyCodeDisplay,
                 SkuAllocations = l.SkuAllocations
                     .Select(a => new StrategyTemplateSkuAllocation
                     {
@@ -207,9 +216,15 @@ public static class StrategyTemplateMapper
         template.IsArchived(),
         template.Version,
         template.CreatedAt,
-        template.UpdatedAt);
+        template.UpdatedAt,
+        PromoLineCount: StrategyTemplateLineJourneyReader.Summary(template).Promo,
+        NonPromoLineCount: StrategyTemplateLineJourneyReader.Summary(template).NonPromo,
+        LinesWithoutJourneyCount: StrategyTemplateLineJourneyReader.Summary(template).WithoutJourney);
 
-    public static StrategyTemplateDetailDto ToDetail(TemplateEntity template) => new(
+    /// <summary>The detail; <paramref name="journeys"/> (WP-SB-3a, per LineId) adds each line's journey name / status /
+    /// hints — without it a line carries only what is stored.</summary>
+    public static StrategyTemplateDetailDto ToDetail(
+        TemplateEntity template, IReadOnlyDictionary<Guid, StrategyTemplateLineJourneyView>? journeys = null) => new(
         template.Id,
         template.TemplateCode,
         template.TemplateName,
@@ -231,7 +246,7 @@ public static class StrategyTemplateMapper
         template.EffectiveTo,
         OrderedSegmentBindings(template).Select(ToDto).ToList(),
         ToDto(template.FrequencyIntent),
-        OrderedProductLines(template).Select(ToDto).ToList(),
+        OrderedProductLines(template).Select(line => ToDto(line, journeys?.GetValueOrDefault(line.LineId))).ToList(),
         OrderedContentBindings(template).Select(ToDto).ToList(),
         template.AreBindingsFrozen(),
         template.BindingsFrozenAt,
@@ -244,7 +259,10 @@ public static class StrategyTemplateMapper
         template.CreatedAt,
         template.CreatedBy,
         template.UpdatedAt,
-        template.UpdatedBy);
+        template.UpdatedBy,
+        PromoLineCount: StrategyTemplateLineJourneyReader.Summary(template).Promo,
+        NonPromoLineCount: StrategyTemplateLineJourneyReader.Summary(template).NonPromo,
+        LinesWithoutJourneyCount: StrategyTemplateLineJourneyReader.Summary(template).WithoutJourney);
 
     public static IEnumerable<StrategyTemplateSegmentBinding> OrderedSegmentBindings(TemplateEntity template)
         => template.SegmentBindings.OrderBy(b => b.SortOrder).ThenBy(b => b.BindingId);
@@ -274,19 +292,42 @@ public static class StrategyTemplateMapper
         intent.PeriodType,
         intent.IntentNote);
 
-    public static StrategyTemplateProductLineDto ToDto(StrategyTemplateProductLine line) => new(
-        line.LineId,
-        line.GlobalProductId,
-        line.GlobalProductCodeDisplay,
-        line.LineWeightPercentage,
-        line.SkuAllocationMode,
-        line.SkuAllocations
-            .OrderBy(a => a.SortOrder).ThenBy(a => a.AllocationId)
-            .Select(ToDto)
-            .ToList(),
-        StrategyTemplateAllocationRules.TotalOf(line),
-        line.SortOrder,
-        line.Notes);
+    public static StrategyTemplateProductLineDto ToDto(StrategyTemplateProductLine line)
+        => ToDto(line, null);
+
+    /// <summary>WP-SB-3a — the line with its effective role (a pre-SB-3a line reads <c>promo</c>) and its journey: from
+    /// <paramref name="journey"/> when the reader resolved it, otherwise only what is stored.</summary>
+    public static StrategyTemplateProductLineDto ToDto(
+        StrategyTemplateProductLine line, StrategyTemplateLineJourneyView? journey)
+    {
+        var view = journey ?? StoredJourney(line);
+        return new StrategyTemplateProductLineDto(
+            line.LineId,
+            line.GlobalProductId,
+            line.GlobalProductCodeDisplay,
+            line.LineWeightPercentage,
+            line.SkuAllocationMode,
+            line.SkuAllocations
+                .OrderBy(a => a.SortOrder).ThenBy(a => a.AllocationId)
+                .Select(ToDto)
+                .ToList(),
+            StrategyTemplateAllocationRules.TotalOf(line),
+            line.SortOrder,
+            line.Notes,
+            line.EffectiveRole(),
+            view.JourneyId,
+            view.JourneyCode,
+            view.JourneyName,
+            view.JourneyStatus,
+            view.JourneyMissing,
+            view.Warnings);
+    }
+
+    /// <summary>What a line says about its journey without reading it (code stamp only).</summary>
+    public static StrategyTemplateLineJourneyView StoredJourney(StrategyTemplateProductLine line)
+        => line.JourneyId is { } id && id != Guid.Empty
+            ? new StrategyTemplateLineJourneyView(id, line.JourneyCodeDisplay, null, null, false, Array.Empty<string>())
+            : StrategyTemplateLineJourneyView.Missing;
 
     public static StrategyTemplateSkuAllocationDto ToDto(StrategyTemplateSkuAllocation allocation) => new(
         allocation.AllocationId,
@@ -302,5 +343,6 @@ public static class StrategyTemplateMapper
         binding.ContentCodeDisplay,
         binding.ContentVersionAtBinding,
         binding.SortOrder,
-        binding.Notes);
+        binding.Notes,
+        Retired: StrategyContentRefTypes.IsRetired(binding.ContentRefType));
 }

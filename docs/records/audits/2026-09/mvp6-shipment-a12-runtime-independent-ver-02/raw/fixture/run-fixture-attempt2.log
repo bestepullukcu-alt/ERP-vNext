@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-shipment-a12-runtime-independent-ver-02/scripts/fixture_prepare.py", line 102, in <module>
+    step(f"mdm-activate-le-{tag}", st, b, ok=(200, 204))
+  File "/Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-shipment-a12-runtime-independent-ver-02/scripts/fixture_prepare.py", line 73, in step
+    return rec["dataId"]
+KeyError: 'dataId'

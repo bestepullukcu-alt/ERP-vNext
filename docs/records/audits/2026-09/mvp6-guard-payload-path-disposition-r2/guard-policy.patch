@@ -1,0 +1,18 @@
+--- a/tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs
++++ b/tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs
+@@ -233,7 +233,14 @@
+         foreach (var seal in record.SealedInputs)
+         {
+             Assert.True(paths.Add(seal.Path), "duplicate sealed input");
+-            Assert.StartsWith("docs/records/", seal.Path);
++            // Two immutable recovery snapshots only; all other paths retain the records requirement.
++            var exactRecoverySnapshot = seal.Kind == "historical-data" &&
++                ((seal.Path == "docs/roadmap/plans/mod-0183-root-uptake-recovery-01/input-manifest.json" &&
++                  seal.Sha256 == "a70f79d7892d83ddbe772653a06cb009ebfe7e2b72549d11dd956f72ab9f83fe") ||
++                 (seal.Path == "docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json" &&
++                  seal.Sha256 == "74e31359aaeb662645d224d9602cb801f8f81a433cc75cf09840d852fd2e878e"));
++            Assert.True(seal.Path.StartsWith("docs/records/", StringComparison.Ordinal) ||
++                exactRecoverySnapshot, "sealed input must be in records or an exact approved recovery snapshot");
+             ReadPinned(root, seal.Path, seal.Sha256);
+             Assert.StartsWith("docs/records/", seal.ProvenancePath);
+             var proof = Encoding.UTF8.GetString(ReadPinned(root, seal.ProvenancePath, seal.ProvenanceSha256))

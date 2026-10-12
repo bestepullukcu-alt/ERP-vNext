@@ -1,0 +1,7 @@
+  Determining projects to restore...
+  Restored /Users/natig/mvp6-env/ek-work/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Diten.SupplyChainService.Domain.csproj (in 134 ms).
+  Restored /Users/natig/mvp6-env/ek-work/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Diten.SupplyChainService.Application.csproj (in 389 ms).
+  Restored /Users/natig/mvp6-env/ek-work/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Diten.SupplyChainService.Infrastructure.csproj (in 388 ms).
+  Restored /Users/natig/mvp6-env/ek-work/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Diten.SupplyChainService.Persistence.csproj (in 417 ms).
+  Restored /Users/natig/mvp6-env/ek-work/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Diten.SupplyChainService.Api.csproj (in 418 ms).
+  3 of 8 projects are up-to-date for restore.

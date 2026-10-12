@@ -1,0 +1,12 @@
+id	acceptance	updated_disposition	basis
+RA-01	Auth/Platform independent VER handoff	REWORK; successor pending	Independent VER exists; GAP-CARRIER-AUTH-LE-01 runtime-reproduced and GAP-CARRIER-AUTH-LE-02 source-confirmed
+RA-02	Carrier final UI exact identity	PASS inherited	Final v3 manifest 3b7086f0; old e96578d0 is preimage only
+RA-04..RA-11	Fresh Auth issuance and real HTTP/browser operations	OPEN	Wait for approved/applied Auth rework successor plus independent runtime PASS
+RA-14	Tenant and LE cross-scope isolation	OPEN	Auth successor prerequisite; no E2E in this lane
+RA-16..RA-17	Persistence and response/error behavior	OPEN	Auth successor prerequisite; diagnostic tokens remain excluded
+RA-18	Responsive 768 and 390	PASS inherited	Final v3 exact window.innerWidth/DPR/overflow evidence; four checks PASS
+RA-19	Seven-language and Arabic RTL	PASS inherited	Final v3 70/70 resources and RTL evidence
+RA-20	Carrier L10n warnings	PASS inherited	Final v3 RED 10 to GREEN 0 and fresh console 0
+RA-20-SHARED	Shared Search localization	OPEN	Shared-owner unapplied candidate; separate from Carrier L10n closure
+RA-21	Durable PNG archive	OPEN	No supported permitted screenshot file-save/export API
+OVERALL	Real Auth Carrier E2E successor	OPEN	Auth independent REWORK; successor pending; Auth-dependent E2E not run

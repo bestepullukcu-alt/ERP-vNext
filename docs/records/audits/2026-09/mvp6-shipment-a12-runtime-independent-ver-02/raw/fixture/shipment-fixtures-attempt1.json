@@ -1,0 +1,20 @@
+{
+  "actor": "actor-a",
+  "tenant": "97c59330-dbc4-4665-b29c-0c26dbb5cc93",
+  "actorLegalEntityClaim": "06df9bbb-22c3-4f69-b0f7-b7fca6f32d46",
+  "run": "cc71ac6a",
+  "fixtures": {},
+  "calls": [
+    {
+      "fixture": "VS",
+      "op": "create",
+      "status": 400,
+      "responseCorrelation": "e360f7ff-2980-4e51-880b-7acab37ab454",
+      "requestCorrelation": "e360f7ff-2980-4e51-880b-7acab37ab454",
+      "key": "K-VS-cc71ac6a-CREATE",
+      "payloadSha256": "1a9346bf35f5776fe2179f334b48770097a67689d6cc6a87eb94742be236bc05",
+      "errorCode": "INVALID_REQUEST"
+    }
+  ]
+}
+create VS failed 400

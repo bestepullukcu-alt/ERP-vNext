@@ -267,4 +267,51 @@
   <data name="ProductColWeight" xml:space="preserve"><value>Percentage</value></data>
   <data name="EqualDistribute" xml:space="preserve"><value>Distribute evenly</value></data>
   <data name="ProductTotalWarning" xml:space="preserve"><value>Product percentage is not 100%. Computed total {total}% — off by {diff} points. Fix the rows to save.</value></data>
+  <data name="ProductColRole" xml:space="preserve"><value>Role</value></data>
+  <data name="ProductColJourney" xml:space="preserve"><value>Journey</value></data>
+  <data name="LineRole_promo" xml:space="preserve"><value>Promo</value></data>
+  <data name="LineRole_non-promo" xml:space="preserve"><value>Non-promo</value></data>
+  <data name="LineJourneySelect" xml:space="preserve"><value>Select a journey…</value></data>
+  <data name="LineJourneyLoading" xml:space="preserve"><value>Loading journeys…</value></data>
+  <data name="LineJourneyNotOffered" xml:space="preserve"><value>(not in the list)</value></data>
+  <data name="LineNoPublishedJourney" xml:space="preserve"><value>There is no published engagement journey for this product.</value></data>
+  <data name="LineOpenJourneys" xml:space="preserve"><value>Engagement Journeys ↗</value></data>
+  <data name="LineJourneyFilterUnavailable" xml:space="preserve"><value>The product match could not be checked here; it is checked when you save.</value></data>
+  <data name="LineJourneyMissing" xml:space="preserve"><value>Journey missing — choose this product’s published journey.</value></data>
+  <data name="LineJourneyMissingBadge" xml:space="preserve"><value>Journey missing</value></data>
+  <data name="JourneyWarning_journey_language_not_in_country" xml:space="preserve"><value>The journey’s language is not a content language of the template’s country.</value></data>
+  <data name="JourneyWarning_journey_not_published" xml:space="preserve"><value>The journey is no longer published.</value></data>
+  <data name="JourneyWarning_journey_not_found" xml:space="preserve"><value>The journey can no longer be found.</value></data>
+  <data name="JourneyStatus_draft" xml:space="preserve"><value>Draft</value></data>
+  <data name="JourneyStatus_review" xml:space="preserve"><value>In review</value></data>
+  <data name="JourneyStatus_approved" xml:space="preserve"><value>Approved</value></data>
+  <data name="JourneyStatus_published" xml:space="preserve"><value>Published</value></data>
+  <data name="JourneyStatus_inactive" xml:space="preserve"><value>Inactive</value></data>
+  <data name="JourneyStatus_archived" xml:space="preserve"><value>Archived</value></data>
+  <data name="Err_product_line_role_required" xml:space="preserve"><value>Choose a role for this product line (promo / non-promo).</value></data>
+  <data name="Err_product_line_role_invalid" xml:space="preserve"><value>The role can only be promo or non-promo.</value></data>
+  <data name="Err_product_line_journey_required" xml:space="preserve"><value>Choose this product’s published journey for the line.</value></data>
+  <data name="Err_journey_not_published" xml:space="preserve"><value>The chosen journey is not published; choose a published one.</value></data>
+  <data name="Err_journey_product_mismatch" xml:space="preserve"><value>The chosen journey tells another product; choose this product’s journey.</value></data>
+  <data name="Err_content_binding_type_retired" xml:space="preserve"><value>A new template-level knowledge path / journey binding can no longer be added; choose the journey on the product line.</value></data>
+  <data name="Err_bindings_frozen" xml:space="preserve"><value>The bindings of an active template are frozen; create a new version to change them.</value></data>
+  <data name="RetiredBindingsHelp" xml:space="preserve"><value>Legacy binding — not used in the visit; the journey on the product line applies.</value></data>
+  <data name="RetiredBindingBadge" xml:space="preserve"><value>Legacy binding</value></data>
+  <data name="NoRetiredBindings" xml:space="preserve"><value>No template-level binding — content comes from the journey on each product line.</value></data>
+  <data name="RoleSplitTpl" xml:space="preserve"><value>{promo} promo · {nonpromo} non-promo</value></data>
+  <data name="RecipeJourneysTpl" xml:space="preserve"><value>{n} journeys</value></data>
+  <data name="RetiredBindingsCountTpl" xml:space="preserve"><value>{n} legacy bindings</value></data>
+  <data name="LinesWithoutJourneyTpl" xml:space="preserve"><value>{n} lines without a journey</value></data>
+  <data name="SupersededByVersion" xml:space="preserve"><value>Replaced by v{0}</value></data>
+  <data name="ArchivedSegmentSuffix" xml:space="preserve"><value>(archived)</value></data>
+  <data name="ActivationBlocked" xml:space="preserve"><value>Activation was refused.</value></data>
+  <data name="ActivationBlocked_segment_not_active" xml:space="preserve"><value>A bound segment is not active — activate the segment first.</value></data>
+  <data name="ActivationBlocked_segment_archived" xml:space="preserve"><value>A bound segment is archived — replace it with an active segment.</value></data>
+  <data name="ActivationBlocked_segment_reference_not_found" xml:space="preserve"><value>A bound segment no longer exists.</value></data>
+  <data name="ActivationBlocked_frequency_policy_not_active" xml:space="preserve"><value>The referenced visit frequency policy is not active.</value></data>
+  <data name="ActivationBlocked_journey_not_published" xml:space="preserve"><value>A product line’s engagement journey is not published.</value></data>
+  <data name="ActivationBlocked_journey_product_mismatch" xml:space="preserve"><value>A product line’s engagement journey tells a different product.</value></data>
+  <data name="ActivationBlocked_product_line_journey_required" xml:space="preserve"><value>Every product line needs an engagement journey.</value></data>
+  <data name="ActivationBlocked_content_not_published" xml:space="preserve"><value>A bound content item is not published.</value></data>
+  <data name="ActivationBlocked_content_archived" xml:space="preserve"><value>A bound content item is archived.</value></data>
 </root>

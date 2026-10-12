@@ -1,0 +1,18 @@
+A (Q121b after, tree-identical): 4397 results, 64 failed | B: 4408 results, 65 failed
+new tests in B: 11
+  + 0.1:31994/?replicaSet=rsq131") Passed
+  + PlatformMongoTestConnectionTests.LaneOwnedLoopbackUri_IsReturnedUnchanged(value: "mongodb://localhost:37994/?directConnecti Passed
+  + PlatformMongoTestConnectionTests.MissingUri_FailsClosed(value: "   ") Passed
+  + PlatformMongoTestConnectionTests.MissingUri_FailsClosed(value: "") Passed
+  + PlatformMongoTestConnectionTests.MissingUri_FailsClosed(value: null) Passed
+  + example.test/") Passed
+  + example.test:31994/?replicaSet=rsq131") Passed
+  + 0.1") Passed
+  + 0.1:27017/?directConnection=true") Passed
+  + 0.1:27018/?directConnection=true") Passed
+  + PlatformMongoTestConnectionTests.OperationalPorts_FailClosed(value: "mongodb://localhost:27017") Passed
+tests missing in B: []
+failed only in B: 1
+   Diten.Platform.Application.Tests.BusinessReferenceData.BusinessReferenceDataMongoResidueSweeperTests.Sweep_DropsOnlyStaleOwnedMarkedDatabaseFromPreviousRun | System.AggregateException : One or more errors occurred. (Assert.Contains() Failure: Item not found in collection
+failed only in A (fixed by B): 0
+failed in both: 64

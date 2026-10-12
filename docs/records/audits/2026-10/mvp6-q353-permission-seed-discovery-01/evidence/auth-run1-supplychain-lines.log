@@ -1,0 +1,7 @@
+19:52:42 Information Catalog permission synced (created). Key="supplychain.shipments.read" Module="supplychain"
+19:52:42 Information Catalog permission synced (created). Key="supplychain.shipments.create" Module="supplychain"
+19:52:42 Information Catalog permission synced (updated). Key="supplychain.shipments.create" Module="shipment-tracking-pod"
+19:52:42 Information Catalog permission synced (updated). Key="supplychain.shipments.read" Module="shipment-tracking-pod"
+19:52:42 Information Catalog permission synced (created). Key="supplychain.shipments.dispatch" Module="supplychain"
+19:52:42 Information Catalog permission synced (created). Key="supplychain.shipments.cancel" Module="supplychain"
+19:52:42 Information Catalog permission synced (created). Key="supplychain.shipments.pod.capture" Module="supplychain"

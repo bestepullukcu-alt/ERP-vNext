@@ -1,0 +1,70 @@
+{
+  "sha256": {
+    "yaml": "6dc1dd486375130dc4225d59f08bc4ff05e62d148ac72aeeb2034731e7796aa2",
+    "annex": "9d8a370664abb8221d5f8b23038f7c506e0621fadb2e5c83450ad93e63cf5034",
+    "models": "ac19181885dd0e25568b34eeb21d6ac04af31081e66ed6934b0403069469777e",
+    "handler": "6402f91a64c016ef70942cda3df3826993a1895b85e8754418822df6b498db2f",
+    "repo": "7e35d02eb11ca3d64a2a419509e1072fe7c267eb89cb9040fc01ca0868537c62",
+    "materializer": "c740464a2948f4189916e5a3828cc57d4185f23edda5249b12a1c17b62dbe072",
+    "contract_tests": "de6d48a85cbf00daed6f360d44f13cb0de154d3eada738ef63eb0829830826cc",
+    "verify_evidence": "6c4a5625637956ea27ad86bb56c84c839f185f0d925419ca37232efbc01e6aeb"
+  },
+  "checks": [
+    {
+      "name": "published_yaml_hash",
+      "ok": true,
+      "detail": "6dc1dd486375130dc4225d59f08bc4ff05e62d148ac72aeeb2034731e7796aa2"
+    },
+    {
+      "name": "published_annex_hash",
+      "ok": true,
+      "detail": "9d8a370664abb8221d5f8b23038f7c506e0621fadb2e5c83450ad93e63cf5034"
+    },
+    {
+      "name": "yaml_declares_lifecycleCorrelationId",
+      "ok": true,
+      "detail": "field+uuid format present"
+    },
+    {
+      "name": "model_has_guid_nullable_field",
+      "ok": true,
+      "detail": "LoadSummary includes Guid? LifecycleCorrelationId"
+    },
+    {
+      "name": "handler_maps_materialized_root",
+      "ok": false,
+      "detail": "handler projects materialized lifecycle correlation"
+    },
+    {
+      "name": "materializer_presence_states",
+      "ok": true,
+      "detail": "all root states present"
+    },
+    {
+      "name": "query_raw_bson_no_write_path",
+      "ok": true,
+      "detail": "raw read + no materializer writes"
+    },
+    {
+      "name": "f1_transition_rejects_missing_root",
+      "ok": true,
+      "detail": "transition requires present stored uuid"
+    },
+    {
+      "name": "contract_test_shape",
+      "ok": true,
+      "detail": "contract tests assert list item field"
+    },
+    {
+      "name": "evidence_pin_yaml",
+      "ok": true,
+      "detail": "verifier pinned to 3.1.0 YAML"
+    },
+    {
+      "name": "evidence_pin_annex",
+      "ok": true,
+      "detail": "verifier pinned to 3.1.0 annex"
+    }
+  ],
+  "pass": false
+}

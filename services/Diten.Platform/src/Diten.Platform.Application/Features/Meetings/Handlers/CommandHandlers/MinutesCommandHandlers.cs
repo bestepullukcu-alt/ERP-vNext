@@ -5,6 +5,7 @@ using Diten.Platform.Domain.Entities.Meetings;
 using Diten.Platform.Domain.Enums.Meetings;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace Diten.Platform.Application.Features.Meetings.Handlers.CommandHandlers;
 
@@ -208,19 +209,25 @@ public sealed class PublishMinutesHandler : IRequestHandler<PublishMinutesComman
     private readonly IMeetingMinutesVersionRepository _minutes;
     private readonly ICurrentUserContext _currentUser;
     private readonly IUserDisplayNameResolver _displayNames;
+    private readonly IMeetingAttendanceObserver? _attendanceObserver;
+    private readonly ILogger<PublishMinutesHandler>? _logger;
 
     public PublishMinutesHandler(
         IMeetingRepository meetings,
         IMeetingAttendeeRepository attendees,
         IMeetingMinutesVersionRepository minutes,
         ICurrentUserContext currentUser,
-        IUserDisplayNameResolver displayNames)
+        IUserDisplayNameResolver displayNames,
+        IMeetingAttendanceObserver? attendanceObserver = null,
+        ILogger<PublishMinutesHandler>? logger = null)
     {
         _meetings = meetings;
         _attendees = attendees;
         _minutes = minutes;
         _currentUser = currentUser;
         _displayNames = displayNames;
+        _attendanceObserver = attendanceObserver;
+        _logger = logger;
     }
 
     public async Task<Response<MeetingMinutesVersionDto>> Handle(PublishMinutesCommand command, CancellationToken ct)
@@ -256,6 +263,8 @@ public sealed class PublishMinutesHandler : IRequestHandler<PublishMinutesComman
         }
 
         await SyncAsync(_meetings, _attendees, meeting, latest, ct);
+        // MOD-0280-FU01 T3 (N5) — time entry hears who the minutes recorded; never throws into this publish.
+        await _attendanceObserver.NotifySafelyAsync(meeting, latest, _logger);
 
         return Response<MeetingMinutesVersionDto>.Success(
             await MinutesEligibility.ToDtoAsync(latest, _displayNames, ct), 200, command.CorrelationId);
@@ -301,19 +310,25 @@ public sealed class CorrectPublishedMinutesHandler
     private readonly IMeetingMinutesVersionRepository _minutes;
     private readonly ICurrentUserContext _currentUser;
     private readonly IUserDisplayNameResolver _displayNames;
+    private readonly IMeetingAttendanceObserver? _attendanceObserver;
+    private readonly ILogger<CorrectPublishedMinutesHandler>? _logger;
 
     public CorrectPublishedMinutesHandler(
         IMeetingRepository meetings,
         IMeetingAttendeeRepository attendees,
         IMeetingMinutesVersionRepository minutes,
         ICurrentUserContext currentUser,
-        IUserDisplayNameResolver displayNames)
+        IUserDisplayNameResolver displayNames,
+        IMeetingAttendanceObserver? attendanceObserver = null,
+        ILogger<CorrectPublishedMinutesHandler>? logger = null)
     {
         _meetings = meetings;
         _attendees = attendees;
         _minutes = minutes;
         _currentUser = currentUser;
         _displayNames = displayNames;
+        _attendanceObserver = attendanceObserver;
+        _logger = logger;
     }
 
     public async Task<Response<MeetingMinutesVersionDto>> Handle(CorrectPublishedMinutesCommand command, CancellationToken ct)
@@ -387,6 +402,8 @@ public sealed class CorrectPublishedMinutesHandler
         // Meeting.Lifecycle is already Completed from the original publish — this call's Lifecycle half is a
         // guarded no-op, and only the attendance sync runs (PublishMinutesHandler.SyncAsync's own doc comment).
         await PublishMinutesHandler.SyncAsync(_meetings, _attendees, meeting, created, ct);
+        // MOD-0280-FU01 T3 (N5) — the correction is heard too; never throws into it.
+        await _attendanceObserver.NotifySafelyAsync(meeting, created, _logger);
 
         return Response<MeetingMinutesVersionDto>.Success(
             await MinutesEligibility.ToDtoAsync(created, _displayNames, ct), 201, command.CorrelationId);

@@ -1,0 +1,2 @@
+suite	command	result	passed	failed	skipped	evidence
+focused-shared-ui-and-shipment	/Users/natig/.dotnet/dotnet test frontend/Diten.Web.Tests/Diten.Web.Tests.csproj -c Debug --no-build --no-restore -m:1 /nr:false --filter FullyQualifiedName~ShipmentJsonAdapterChallengeTests|FullyQualifiedName~SupplyChainShipmentsControllerTests|FullyQualifiedName~DataTableResponsiveLocalizationTests|FullyQualifiedName~ShipmentFormContractTests|FullyQualifiedName~ShipmentDetailActionTests|FullyQualifiedName~ShipmentIndexBehaviorTests	PASS	19	0	0	raw/focused-regression.trx

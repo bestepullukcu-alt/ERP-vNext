@@ -1,0 +1,17 @@
+services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Shipments/ShipmentRepository.cs:95:                            payload = new { shipmentId = s.Id, shipmentNumber = s.ShipmentNumber, status = s.Status.ToString(), carrierId = s.CarrierId, loadId = s.LoadPlanId, podId = s.Pod?.Id, reasonCode = change.ReasonCode },
+services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/Shipment.cs:16:    public Guid? CarrierId { get; set; }
+services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/ShipmentProjection.cs:13:        s.CarrierId,
+services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Controllers/ShipmentsController.cs:10:[Route("api/shipment-bundle/shipments")]
+services/Diten.SupplyChainService/tests/runtime_probe.py:30:    req=urllib.request.Request("http://127.0.0.1:5061/api/shipment-bundle/shipments"+path,
+services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Middleware/ShipmentContextMiddleware.cs:9:        if (!http.Request.Path.StartsWithSegments("/api/shipment-bundle")) { await next(http); return; }
+services/Diten.SupplyChainService/tests/sent_body_probe.py:22:    if isinstance(request, urllib.request.Request) and "/api/shipment-bundle/shipments" in request.full_url:
+services/Diten.SupplyChainService/tests/sent_body_probe.py:25:            "path": request.full_url.split("/api/shipment-bundle/shipments", 1)[1],
+services/Diten.SupplyChainService/README.md:4:SHIPMENT-BUNDLE, module pack or DCP-009 acceptance.
+services/Diten.SupplyChainService/README.md:27:| GET | /api/shipment-bundle/shipments | read |
+services/Diten.SupplyChainService/README.md:28:| POST | /api/shipment-bundle/shipments | create |
+services/Diten.SupplyChainService/README.md:29:| GET | /api/shipment-bundle/shipments/{shipmentId} | read |
+services/Diten.SupplyChainService/README.md:30:| POST | /api/shipment-bundle/shipments/{shipmentId}/transition | cancel for Cancelled; otherwise dispatch |
+services/Diten.SupplyChainService/README.md:31:| POST | /api/shipment-bundle/shipments/{shipmentId}/pod | pod.capture |
+services/Diten.SupplyChainService/README.md:69:MOD0183_TEST_MONGO='mongodb://127.0.0.1:27027/?replicaSet=mod0183verify' python3 services/Diten.SupplyChainService/tests/runtime_probe.py /private/tmp/mod0183-evidence docs/analysis/contracts/shipment-bundle.openapi.yaml
+services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentTests.cs:100:        using var request = new HttpRequestMessage(new HttpMethod(method), "/api/shipment-bundle/shipments" + path);
+services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentTests.cs:279:        using var options = new HttpRequestMessage(HttpMethod.Options, "/api/shipment-bundle/shipments");

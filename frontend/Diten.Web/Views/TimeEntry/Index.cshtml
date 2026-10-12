@@ -1,0 +1,94 @@
+@using Diten.Web.Views.TimeEntry
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TimeEntryIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["Title"].Value;
+    Layout = "_LayoutTenantShell";
+    var canUpdate = Perms.Has("time-entry.timesheets.update");
+    var week = ViewData["WeekKey"] as string ?? string.Empty;
+}
+
+@*
+    MOD-0280-FU01 T2a — My Timesheet (pack §21.2 U1–U5). Deliberately NOT a DataTable (pack §11): a week grid, so the
+    Golden Reference list verifier is not run on it (declared in pack §17).
+
+    UAS-001 — without time-entry.timesheets.read nothing below is drawn: no heading, no grid, no button — only the one
+    explanation. ⚠ Display only; Platform's [HasPermission] on /api/v1/time-entry stays the authority.
+*@
+@if (!Perms.Has("time-entry.timesheets.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["Title"].Value" />
+    return;
+}
+
+<partial name="~/Views/TimeEntry/_IndexL10n.cshtml" />
+
+<div class="time-entry-page" id="timeEntryPage" data-can-update="@(canUpdate ? "true" : "false")" data-week="@week">
+    <header class="time-entry-header">
+        <div class="time-entry-title-block">
+            <h5 class="mb-0">@Localizer["Title"]</h5>
+            <p class="mb-0 text-muted time-entry-week-label" id="teWeekLabel"></p>
+        </div>
+        <div class="time-entry-week-nav" role="group" aria-label="@Localizer["Title"]">
+            <button type="button" class="btn btn-sm btn-icon btn-label-secondary" id="tePrevWeek"
+                    aria-label="@Localizer["PrevWeek"]" title="@Localizer["PrevWeek"]"><i class="bx bx-chevron-left"></i></button>
+            <button type="button" class="btn btn-sm btn-label-secondary" id="teToday">@Localizer["Today"]</button>
+            <button type="button" class="btn btn-sm btn-icon btn-label-secondary" id="teNextWeek"
+                    aria-label="@Localizer["NextWeek"]" title="@Localizer["NextWeek"]"><i class="bx bx-chevron-right"></i></button>
+        </div>
+        <span class="badge rounded-pill time-entry-status" id="teStatus" hidden></span>
+        <span class="time-entry-missing" id="teMissingDays" hidden></span>
+        @if (canUpdate)
+        {
+            <div class="dropdown time-entry-actions" id="teActionsMenu" hidden>
+                <button type="button" class="btn btn-sm btn-label-primary dropdown-toggle" data-bs-toggle="dropdown"
+                        aria-expanded="false">@Localizer["Actions"]</button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><button type="button" class="dropdown-item" id="teCopyPrevious">@Localizer["CopyPreviousWeek"]</button></li>
+                    <li><button type="button" class="dropdown-item" id="teFillFromPlan">@Localizer["FillFromPlan"]</button></li>
+                    <li><button type="button" class="dropdown-item" id="teReviewSuggestions">@Localizer["ReviewSuggestions"]</button></li>
+                </ul>
+            </div>
+        }
+    </header>
+
+    <p class="time-entry-loading" id="teLoading">@Localizer["Loading"]</p>
+
+    <div id="teContent" hidden>
+        <div id="teBanner" class="time-entry-banners"></div>
+        <div id="teHistory" class="time-entry-history" hidden></div>
+        @* v3 M1 — the page's status line is VISIBLE and live: a rounding, a refusal or a copy result is seen and read out. *@
+        <div class="time-entry-notice" id="teNotice" role="status" aria-live="polite"></div>
+
+        <div class="time-entry-layout">
+            <section class="card time-entry-main">
+                <div class="card-body">
+                    <div id="teRowAdd" class="time-entry-row-add"></div>
+                    <div id="teReview" class="time-entry-review" hidden></div>
+                    <div id="teGrid" class="time-entry-grid-host"></div>
+                    <div id="teDayView" class="time-entry-day-view"></div>
+                    <div id="teFooterActions" class="time-entry-footer-actions"></div>
+                </div>
+            </section>
+
+            <aside class="card time-entry-side" id="teSide" aria-labelledby="teSideTitle">
+                <div class="card-header time-entry-side-header">
+                    <h6 class="mb-0" id="teSideTitle">@Localizer["SidePanel"]</h6>
+                    <button type="button" class="btn btn-sm btn-icon btn-label-secondary" id="teSideToggle"
+                            aria-expanded="true" aria-controls="teSideBody" aria-label="@Localizer["SideToggle"]"
+                            title="@Localizer["SideToggle"]"><i class="bx bx-collapse-vertical"></i></button>
+                </div>
+                <div class="card-body time-entry-side-body" id="teSideBody"></div>
+            </aside>
+        </div>
+    </div>
+
+    <p class="time-entry-disclaimer" id="teDisclaimer">@Localizer["Disclaimer"]</p>
+</div>
+
+@section Scripts {
+    <script src="~/assets/js/TimeEntry/core.js" asp-append-version="true"></script>
+    <script src="~/assets/js/TimeEntry/api.js" asp-append-version="true"></script>
+    <script src="~/assets/js/TimeEntry/index.js" asp-append-version="true"></script>
+}

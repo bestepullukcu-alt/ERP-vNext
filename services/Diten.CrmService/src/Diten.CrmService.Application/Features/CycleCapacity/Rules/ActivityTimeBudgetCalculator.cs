@@ -8,11 +8,12 @@ namespace Diten.CrmService.Application.Features.CycleCapacity.Rules;
 /// repository, no <c>ITenantContext</c>, no <c>DateTime.UtcNow</c>. It takes a capacity and the promo / non-promo
 /// content-item counts of one visit and returns a duration. That is what lets the formula be tested exhaustively.</para>
 ///
-/// <para><b>The formula (normative).</b></para>
+/// <para><b>The formula (normative).</b> WP-CAP-MODEL moved it into the domain
+/// (<c>CycleCapacity.VisitMinutes</c>) so the capacity calculator and this read model share ONE definition:</para>
 /// <code>
-/// visitDurationMinutes = (promoCount    × capacity.PromoProductTime)      // FU06 root field, REUSE
-///                      + (nonPromoCount × capacity.NonPromoProductTime)   // FU06 root field, REUSE
-///                      + capacity.ReportDuration                          // FU06 root field, REUSE
+/// visitDurationMinutes = (promoCount    × capacity.PromoProductTime)
+///                      + (nonPromoCount × capacity.NonPromoProductTime)
+///                      + capacity.ReportMinutesForVisit()   // typical row: ReportMinutesPerVisit; legacy row: ReportDuration
 /// </code>
 ///
 /// <para><b>It REUSES FU06's existing root fields</b> (<c>PromoProductTime</c> / <c>NonPromoProductTime</c> /
@@ -42,14 +43,6 @@ public static class ActivityTimeBudgetCalculator
     public static int VisitDuration(CapacityEntity capacity, int promoCount, int nonPromoCount)
     {
         ArgumentNullException.ThrowIfNull(capacity);
-
-        var promo = Math.Max(0, promoCount);
-        var nonPromo = Math.Max(0, nonPromoCount);
-
-        var duration = ((long)promo * capacity.PromoProductTime)
-                       + ((long)nonPromo * capacity.NonPromoProductTime)
-                       + capacity.ReportDuration;
-
-        return duration <= 0L ? 0 : (int)Math.Min(duration, int.MaxValue);
+        return capacity.VisitMinutes(promoCount, nonPromoCount);
     }
 }

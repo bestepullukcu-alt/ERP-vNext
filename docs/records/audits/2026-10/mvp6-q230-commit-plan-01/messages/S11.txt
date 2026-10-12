@@ -1,0 +1,5 @@
+chore(repo): apply BASE-STACK v2 root files: AGENTS.md, scripts, test-env helper
+
+AGENTS.md, smoke/watch scripts, scripts/test-env/mvp6-test-mongo-env.sh.
+Work packages: Q202a; Q131.
+14 files from pathspec/S11.txt (Q230 commit plan).

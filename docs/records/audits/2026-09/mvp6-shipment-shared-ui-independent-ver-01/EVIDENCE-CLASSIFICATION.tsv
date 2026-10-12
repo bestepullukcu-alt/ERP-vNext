@@ -1,0 +1,13 @@
+evidence	classification	result	scope
+Native .NET build	FRESH	PASS	Exact HEAD scaffolding plus immutable 360-source overlay
+Focused 19-test regression	FRESH	PASS	Shared UI, Shipment controllers/forms/JS
+Five JSON adapters and HTML challenge	FRESH	PASS	Real ASP.NET pipeline
+Seven-culture 390/768 browser	FRESH	PASS_APPLICABILITY	Stateless presentation fixture; not backend/Auth acceptance
+Line accessibility browser regression	FRESH	PASS	Final shared successor source
+Prior PRES-183-01 independent acceptance	INHERITED_CONTENT_BOUND	PRESERVED	Three exact file hashes preserved
+A08 transition race	NOT_RUN	OPEN	Fixture/authority prerequisites not present in handoff
+A09 stale POD	NOT_RUN	OPEN	Fixture/authority prerequisites not present in handoff
+A12 cross-LE	NOT_RUN	OPEN	Fixture/authority prerequisites not present in handoff
+A10 fault proxy	NOT_RUN_UNAUTHORIZED	OPEN	Explicit prohibition
+Durable PNG	OPEN	OPEN	No supported export capability
+

@@ -1,0 +1,11 @@
+# verify from: /Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-10/mvp6-q447-return-403-test-01 — shasum -a 256 -c ARTIFACTS.sha256 (this record's own files only; repo paths are in SOURCE-AS-MEASURED.sha256, never verified)
+b5c6624286861cefb6c84bd56e1c4bf7b54a3b3da11716db5fb0b621d13580af  REPORT.md
+93baed74e021d362509701f7e6a476a67de56a193e4805034229bd2783b1355c  SOURCE-AS-MEASURED.sha256
+c066b7101ebb31a3ae9ec31adab071909773059479ec56132dee13f32c2289f1  evidence/change.diff
+a767472dde8b8645d5044474105ce7b5632ee4a9575dc6c1636aa3a00185de75  evidence/reference-tests-overmap.txt
+2c5a80d154890d3b8fa0c128f291919e26d0da9b75d7b662c8bb6eeecccb4c74  evidence/reference-tests-sab.txt
+4bf8b12ec28aa238fa01468d9d2cd1a583bb32f7c5dbe16cdd67526e24474bdf  evidence/reference-tests-stack.txt
+901cbc0af4397423952b7487115c887a2e4fdcf521bacf6c0d15d39a7fe43107  evidence/run-modules.sh.txt
+d95454d1419f5bdc24483a5857dd882da86ec9aeec3e5873b4b3c7764de7c1f2  evidence/sabotage-overmap.diff
+f68ccbb90dd78d6c3412cff52fca9e9d0ef8ca77e051c000a3f8e6155f642053  evidence/sabotage-revert-q420.diff
+5699652094cacfa15f2c8573deb44253e4dbe8946bab28fb50f41323edef88ca  evidence/sc-suite.txt

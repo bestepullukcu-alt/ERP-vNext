@@ -215,7 +215,7 @@ public sealed class SubscriptionConcurrencySecurityMongoTests
             var usage = new QuotaUsageRepository(context, tenantContext);
             var events = new QuotaEventRepository(context, tenantContext);
             var quota = new QuotaService(usage, events, subscriptions, plans, tenants,
-                Mock.Of<ITenantModuleEntitlementRepository>(), NullLogger<QuotaService>.Instance);
+                Mock.Of<ITenantModuleEntitlementRepository>(), Mock.Of<Diten.Platform.Application.Contracts.ITenantUserCountReader>(), NullLogger<QuotaService>.Instance);
             var writer = new TenantSubscriptionTransactionWriter(new PlatformTransactionExecutor(context), subscriptions, tenants, plans,
                 new EntitlementStateVersionRepository(context), new MongoIntentWriter(context), new MongoAuditWriter(context), user.Object);
             return new Fixture(mongo, database, context, subscriptions, tenants, plans, tenant, plan, subscription, user.Object, quota, writer);

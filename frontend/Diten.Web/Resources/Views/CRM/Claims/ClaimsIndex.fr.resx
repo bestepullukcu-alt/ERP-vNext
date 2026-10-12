@@ -178,4 +178,13 @@
   <data name="Err_country_not_closed" xml:space="preserve"><value>Ce pays n'est pas marqué comme non ouvert.</value></data>
   <data name="Err_invalid_reference_value" xml:space="preserve"><value>Choisissez un motif valide.</value></data>
   <data name="Err_required" xml:space="preserve"><value>Choisissez un motif.</value></data>
+  <data name="QvUsage" xml:space="preserve"><value>Où elle est utilisée</value></data>
+  <data name="QvUsageNone" xml:space="preserve"><value>Aucun contenu, parcours de connaissances ou parcours client n’utilise cette allégation.</value></data>
+  <data name="QvUsageFailed" xml:space="preserve"><value>L’utilisation n’a pas pu être chargée.</value></data>
+  <data name="UsageGlobal" xml:space="preserve"><value>Global (allégation de base)</value></data>
+  <data name="UsageVia" xml:space="preserve"><value>via {0}</value></data>
+  <data name="UsageNeedsReview" xml:space="preserve"><value>La version de l’allégation utilisée ici doit être revue.</value></data>
+  <data name="UsageType_content" xml:space="preserve"><value>Contenu</value></data>
+  <data name="UsageType_knowledge-path" xml:space="preserve"><value>Parcours de connaissances</value></data>
+  <data name="UsageType_journey" xml:space="preserve"><value>Parcours client</value></data>
 </root>

@@ -114,4 +114,34 @@
   <data name="FormValidationError" xml:space="preserve"><value>请填写所有必填字段。</value></data>
   <data name="ManageTypes" xml:space="preserve"><value>会议类型</value></data>
   <data name="ManageSeries" xml:space="preserve"><value>会议系列</value></data>
+  <data name="ViewSwitchLabel" xml:space="preserve">
+    <value>视图</value>
+  </data>
+  <data name="ViewList" xml:space="preserve">
+    <value>列表</value>
+  </data>
+  <data name="ViewCalendar" xml:space="preserve">
+    <value>日历</value>
+  </data>
+  <data name="CalendarInvitesTitle" xml:space="preserve">
+    <value>待我回复的邀请</value>
+  </data>
+  <data name="CalendarInvitesEmpty" xml:space="preserve">
+    <value>没有等待您回复的邀请。</value>
+  </data>
+  <data name="CalendarLegendAccepted" xml:space="preserve">
+    <value>我已接受或我组织的</value>
+  </data>
+  <data name="CalendarLegendPending" xml:space="preserve">
+    <value>等待我回复</value>
+  </data>
+  <data name="CalendarLegendOther" xml:space="preserve">
+    <value>其他会议</value>
+  </data>
+  <data name="CalendarLoadFailed" xml:space="preserve">
+    <value>无法加载日历。</value>
+  </data>
+  <data name="InviteAccepted" xml:space="preserve">
+    <value>已接受邀请。</value>
+  </data>
 </root>

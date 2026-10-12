@@ -45,25 +45,13 @@ public sealed class DeleteTenantAdminUserCommandHandler : IRequestHandler<Delete
             return Response<NoContent>.Fail("Admin user not found.", 404);
         }
 
-        var releasesUsersQuota = TenantAdminUserSupport.CountsTowardsUsersQuota(user);
         tenant.AdminUsers.Remove(user);
         tenant.ActiveUserCount = TenantAdminUserSupport.CountUsersQuotaUsage(tenant);
         TenantAdminUserSupport.AddActivity(tenant, "tenant.admin_user.deleted", $"Admin user '{user.Email}' deleted.", _currentUser.ActorName, DateTimeOffset.UtcNow);
         await _repository.UpdateAsync(tenant, cancellationToken);
 
-        if (releasesUsersQuota)
-        {
-            await _quotaService.ReleaseAsync(new ReleaseQuotaRequest(
-                tenant.Id,
-                QuotaKeys.UsersMax,
-                1,
-                "TenantAdminUserDelete",
-                $"tenant-admin-user:{user.Id}:delete",
-                user.Id.ToString(),
-                "Tenant admin user deleted.",
-                _currentUser.ActorName,
-                Guid.NewGuid().ToString()), cancellationToken);
-        }
+        // BL-459 F1 — no release: users.max is the live AuthService count, and the seat frees itself when the account
+        // leaves it. (Releasing here AND on the tenant Users screen used to give the same seat back twice.)
 
         return Response<NoContent>.Success(204);
     }

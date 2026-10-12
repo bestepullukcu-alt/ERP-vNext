@@ -33,6 +33,9 @@ const loadModules = () => {
   loadScript("wwwroot/assets/js/shared/diten-related-records.js");
   // WP-UI-SHORTCUTS-01 — the shared shortcut layer app.js registers its keys with (Views/Shared/_DitenShortcuts).
   loadScript("wwwroot/assets/js/shared/diten-shortcuts.js");
+  // WP-UI-CALENDAR-VIEW-01 — the zone helper both host views load (Index via _CalendarAssets, Details directly):
+  // the plan dialog reads a typed start time in the tenant zone through it.
+  loadScript("wwwroot/assets/js/shared/diten-zoned-time.js");
   loadScript(SCRIPT_ROOT + "fixture-contract.js");
   loadScript(SCRIPT_ROOT + "task-detail-resolver.js");
   loadScript(SCRIPT_ROOT + "trigger-response-resolver.js");

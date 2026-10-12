@@ -97,6 +97,7 @@ Each **namespace** (first segment) is owned by **exactly one** module/service. T
 | `mdm.*` | `Diten.MdmService` (e.g. `mdm.legal-entities.*`) | MDM (MOD-0220 family) |
 | `platform.*` | `Diten.Platform` — platform-admin surfaces (administrators, audit, tenants, subscription plans/features, notifications, interface-registry, lookups, org master data, module catalog) | Platform / MOD-0018 enforcement |
 | `strategy.*` | `Diten.EnterpriseStrategyService` | Enterprise Strategy |
+| `time-entry.*` | `Diten.Platform` — MOD-0280-FU01 Time Entry & Weekly Timesheet (placement: ADR-004; the namespace moves with the module if it is extracted to the HCM service) | MOD-0280 (Time, Attendance & Leave) |
 | *(future business domains)* `crm.*`, `hr.*`, `ppm.*`, … | the respective business-domain module | Blueprint-selected (per AG-STEP-022) |
 
 **Legacy prefixes pending remap (AG-STEP-004B):**

@@ -167,15 +167,44 @@
             circle = 'swal-icon-circle bg-label-warning border-warning border-opacity-25';
             text = 'text-warning'; picture = 'bx-error';
         }
-        if (glyph) { picture = glyph; }
+        // The glyph is written into a class attribute: only something shaped like class names may go there.
+        // Checked HERE, in the builder, because raw dialogs call it directly and never pass through showConfirm.
+        if (typeof glyph === 'string' && /^[A-Za-z0-9_-]+( [A-Za-z0-9_-]+)*$/.test(glyph)) { picture = glyph; }
         return '<div class="' + circle + '"><i class="bx ' + picture + ' ' + text + '"></i></div>';
+    };
+
+    /*
+     * ── WHAT A CALLER HANDS THIS DIALOG IS TEXT (WP-SHARED-CONFIRM-XSS-01) ──────────────────────────────────
+     *
+     * SweetAlert writes its title, its body, its buttons, its select options and its validation message with
+     * `innerHTML`, and callers pass text other people typed: a user's e-mail, a role's name, a task's title.
+     * Handed over raw, markup in a record's name was built into the page of whoever opened that record's
+     * "Delete" dialog. Every caller value is turned into text HERE, at the one door, so no caller has to
+     * remember to do it — and a caller must NOT escape first, or the reader sees the entities.
+     *
+     * ⚠ THE SAME FUNCTION AS `window.DitenToastText` in `_GlobalNotification.cshtml`, character for character.
+     * It is written in both because each of the two doors is loaded and tested on its own; a test
+     * (tests/global-confirm-text-is-text.test.js) fails the day the two bodies differ.
+     */
+    window.DitenText = function (value) {
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
     };
 
     /**
      * MOD-0013: Platform Standards - Global Confirmation System
      * window.showConfirm(keyOrTitle, callback, entityNameOrOptions)
+     *
+     * `subtext`, `entityName`, the title and the button texts are TEXT. A caller whose body is a FORM (fields it
+     * built itself from its own constant markup and escaped data) passes it as `subtextHtml` instead — the only
+     * value this dialog builds as markup, and a test names every caller that uses it.
      */
     window.showConfirm = function (keyOrTitle, callback, entityNameOrOptions) {
+        const text = window.DitenText;
         const confirmations = {
             'DeleteConfirmationTitle': @Json.Serialize(SharedLocalizer["DeleteConfirmationTitle"].Value),
             'DeleteConfirmationSubText': @Json.Serialize(SharedLocalizer["DeleteConfirmationSubText"].Value),
@@ -227,7 +256,9 @@
          * product already uses, verified on three different screens before and after.
          */
         // No sentence, no box: an empty description div still costs a margin and reads as a gap.
-        let htmlContent = subtext ? `<div class="${window.DitenDialogAppearance.description}">${subtext}</div>` : '';
+        const hasFormBody = options.subtextHtml !== undefined && options.subtextHtml !== null;
+        const body = hasFormBody ? String(options.subtextHtml) : (subtext ? text(subtext) : '');
+        let htmlContent = body ? `<div class="${window.DitenDialogAppearance.description}">${body}</div>` : '';
         if (options.entityName) {
             /*
              * ⚠ SECONDARY, NOT PRIMARY (2026-08-24, owner). Measured: this badge rendered `rgb(105,108,255)` —
@@ -240,7 +271,7 @@
              * Full width and truncated: a long title used to wrap into a three-line purple block that outweighed
              * the sentence above it.
              */
-            htmlContent += `<div class="badge bg-label-secondary fs-6 py-2 px-3 fw-medium d-block text-start text-truncate dt-dialog-entity">${options.entityName}</div>`;
+            htmlContent += `<div class="badge bg-label-secondary fs-6 py-2 px-3 fw-medium d-block text-start text-truncate dt-dialog-entity">${text(options.entityName)}</div>`;
         }
 
         /*
@@ -272,6 +303,7 @@
          * The circle, its colour and its size are still the type's, so a caller cannot invent a new look — only
          * swap the picture inside the one this component already draws.
          */
+        // The builder refuses anything that is not shaped like class names (see iconHtml).
         var iconHtml = window.DitenDialogAppearance.iconHtml(type, options.icon);
 
         try {
@@ -286,13 +318,13 @@
                  * `title` is `aria-labelledby` for the dialog. The glyph is an empty `<i>` painted by a CSS
                  * mask — no text, no label — so the accessible name is the title's own words, unchanged.
                  */
-                var titleHtml = options.hideIcon ? title : (iconHtml + '<span>' + title + '</span>');
+                var titleHtml = options.hideIcon ? text(title) : (iconHtml + '<span>' + text(title) + '</span>');
                 var swalConfig = Object.assign({
                     title: titleHtml,
                     html: htmlContent,
                     showCancelButton: true,
-                    confirmButtonText: yesBtn,
-                    cancelButtonText: noBtn
+                    confirmButtonText: text(yesBtn),
+                    cancelButtonText: text(noBtn)
                 }, window.DitenDialogAppearance({ confirmVariant: confirmBtnClass, width: options.width }));
 
                 /*
@@ -329,10 +361,20 @@
                     // for prose — which is why the dialogs needing a date could not use this component at all
                     // (BL-146). The label, the validator and the didOpen seam are untouched.
                     swalConfig.input = options.inputType || 'textarea';
+                    /*
+                     * ⚠ ESCAPED ONLY WHERE THE LIBRARY BUILDS MARKUP — measured in the vendored 11.14.5. The label
+                     * is written with `innerText` and a box's placeholder is an attribute: both are text already,
+                     * and escaping them here would show the reader the entities. A SELECT's placeholder is an
+                     * <option> and a CHECKBOX's label is a <span>, both written with `innerHTML`.
+                     */
+                    var writesLabelAsMarkup = swalConfig.input === 'checkbox';
+                    var writesPlaceholderAsMarkup = swalConfig.input === 'checkbox' || swalConfig.input === 'select';
                     if (options.inputLabel) {
-                        swalConfig.inputLabel = options.inputLabel;
+                        swalConfig.inputLabel = writesLabelAsMarkup ? text(options.inputLabel) : options.inputLabel;
                     }
-                    swalConfig.inputPlaceholder = options.inputPlaceholder || '';
+                    swalConfig.inputPlaceholder = writesPlaceholderAsMarkup
+                        ? text(options.inputPlaceholder || '')
+                        : (options.inputPlaceholder || '');
                     /*
                      * ⚠ THE SEVENTH PARAMETER, AND THE LAST (owner, 2026-08-24).
                      *
@@ -348,21 +390,49 @@
                      * more takes `DitenDialogAppearance` and builds its own body.
                      */
                     if (options.inputOptions) {
-                        swalConfig.inputOptions = options.inputOptions;
+                        // Every option's label is built with `innerHTML`: a plain object, a Map, a group of
+                        // either, or a promise that answers one — the labels are text in all of them. (SweetAlert
+                        // itself refuses a function here, so there is no function form to cover.)
+                        var textOptions = function (source) {
+                            if (source && typeof source.then === 'function') { return source.then(textOptions); }
+                            var label = function (value) {
+                                if (value === null || value === undefined) { return ''; }
+                                return typeof value === 'object' ? textOptions(value) : text(value);
+                            };
+                            if (source instanceof Map) {
+                                var mapped = new Map();
+                                source.forEach(function (value, key) { mapped.set(key, label(value)); });
+                                return mapped;
+                            }
+                            if (source !== null && typeof source === 'object') {
+                                var copy = {};
+                                Object.keys(source).forEach(function (key) { copy[key] = label(source[key]); });
+                                return copy;
+                            }
+                            return source;
+                        };
+                        swalConfig.inputOptions = textOptions(options.inputOptions);
                     }
+                    // SweetAlert sets each of these with setAttribute: the VALUE is always text, the NAME is not —
+                    // an `on…` handler or a `style` would be live. Those names are dropped.
+                    var callerAttributes = {};
+                    Object.keys(options.inputAttributes || {}).forEach(function (name) {
+                        if (/^on/i.test(name) || /^style$/i.test(name)) { return; }
+                        callerAttributes[name] = options.inputAttributes[name];
+                    });
                     swalConfig.inputAttributes = Object.assign({
                         'rows': 3,
                         'class': 'form-control mt-3 px-3 py-2 rounded-3 border-light-subtle shadow-none'
-                    }, options.inputAttributes || {});
+                    }, callerAttributes);
                     swalConfig.preConfirm = (value) => {
                         if (options.inputRequired && !value) {
-                            Swal.showValidationMessage(options.inputValidationMessage || 'Value is required');
+                            Swal.showValidationMessage(text(options.inputValidationMessage || 'Value is required'));
                             return false;
                         }
                         if (typeof options.inputValidator === 'function') {
                             var validationMessage = options.inputValidator(value);
                             if (validationMessage) {
-                                Swal.showValidationMessage(validationMessage);
+                                Swal.showValidationMessage(text(validationMessage));
                                 return false;
                             }
                         }
@@ -387,12 +457,23 @@
             }
 
             // Fallback: Native browser confirm
-            if (confirm(title + '\n\n' + subtext)) {
+            // The browser's own dialog shows text as it is: the caller's words go in unescaped, and a form body —
+            // which is markup — is not shown at all.
+            // A dialog whose body is a FORM cannot be answered here either: confirming it would run the action
+            // with none of the form's values. It is treated as dismissed.
+            if (!hasFormBody && confirm(title + '\n\n' + subtext)) {
                 if (typeof callback === 'function') { callback(); }
+            } else if (typeof options.onCancel === 'function') {
+                // The Swal path above calls onCancel on No; the native one must too, or a caller that waits for an
+                // answer (an invitation's Accept) hangs forever (CT acceptance, calendar 2c review).
+                options.onCancel();
             }
         } catch (err) {
+            // ⚠ FAIL CLOSED. This used to call `callback()`: a dialog that could not be drawn (an option that threw
+            // while being read) CONFIRMED the action it was asking about — a delete nobody agreed to. A question
+            // that was never shown has not been answered; the caller hears "dismissed".
             console.error('[MOD-0013 showConfirm] CRITICAL ERROR:', err);
-            if (typeof callback === 'function') { callback(); }
+            if (typeof options.onCancel === 'function') { options.onCancel(); }
         }
     };
 </script>

@@ -111,6 +111,24 @@ public sealed class UpdateStrategyTemplateHandler : IRequestHandler<UpdateStrate
             return Response<bool>.Fail(StrategyTemplateWriteGuards.ToErrors(shapeFailure), shapeFailure.StatusCode);
         }
 
+        // WP-SB-3a — only what the update WRITES is judged: written product lines need role + journey (a metadata-only
+        // update of a pre-SB-3a play stays possible), and no NEW template-level content binding is accepted (a binding
+        // the template already carries may stay or be removed).
+        var productLinesChanged = request.ProductLines is not null
+            && !string.Equals(
+                StrategyTemplateWriteGuards.ProductLinesSignature(productLines),
+                StrategyTemplateWriteGuards.ProductLinesSignature(template.ProductLines),
+                StringComparison.Ordinal);
+        var sb3Failure = (productLinesChanged
+                             ? StrategyTemplateValidation.ValidateProductLineRolesAndJourneys(productLines)
+                             : null)
+                         ?? StrategyTemplateValidation.ValidateNoNewRetiredContentBindings(
+                             contentBindings, template.ContentBindings);
+        if (sb3Failure is not null)
+        {
+            return Response<bool>.Fail(StrategyTemplateWriteGuards.ToErrors(sb3Failure), sb3Failure.StatusCode);
+        }
+
         // WP-ST-SCOPE — scope is EDITABLE metadata, not a binding: it is re-validated on EVERY update (even on a frozen
         // play, where the four binding lists cannot move) and never gated by the freeze guard. The stored play is passed
         // as `current` so the governed business-unit check runs only when the reference actually CHANGED — a pre-scope

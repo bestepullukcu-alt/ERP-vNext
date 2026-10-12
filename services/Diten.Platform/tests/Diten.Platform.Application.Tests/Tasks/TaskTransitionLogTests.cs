@@ -492,6 +492,19 @@ public sealed class TaskTransitionLogTests
                 await Plan(repository, task);
                 return Last(repository);
             },
+            // WP-TASK-CALENDAR-ENGINE-01 — taking a planned task off the calendar.
+            [TaskTransitionKind.Unplanned] = async () =>
+            {
+                var task = AssignedTask(TaskLifecycle.Planned);
+                task.PlannedDate = DateTimeOffset.UtcNow.AddDays(2);
+                var repository = new FakeTaskItemRepository(task);
+                await new UnplanTaskItemHandler(
+                        repository, new TaskLifecycleService(), new FakeCurrentUserContext(TaskTestData.Me))
+                    .Handle(
+                        new UnplanTaskItemCommand(task.Id, new TaskTransitionRequest(task.Version, null, null), "corr"),
+                        CancellationToken.None);
+                return Last(repository);
+            },
             [TaskTransitionKind.Started] = async () =>
             {
                 var task = AssignedTask(TaskLifecycle.Planned);
@@ -639,8 +652,10 @@ public sealed class TaskTransitionLogTests
                 new AcceptTaskItemCommand(task.Id, new TaskTransitionRequest(task.Version, null, null), "corr"),
                 CancellationToken.None);
 
-    private static Task<Response<NoContent>> Plan(FakeTaskItemRepository tasks, TaskItem task)
-        => new PlanTaskItemHandler(tasks, new TaskLifecycleService(), new FakeCurrentUserContext(TaskTestData.Me))
+    private static Task<Response<PlanTaskItemResultDto>> Plan(FakeTaskItemRepository tasks, TaskItem task)
+        => new PlanTaskItemHandler(
+                tasks, new TaskLifecycleService(), new FakeCurrentUserContext(TaskTestData.Me),
+                new FakeWorkingHoursProvider(), new FakeCalendarMeetingReader())
             .Handle(
                 new PlanTaskItemCommand(
                     task.Id,

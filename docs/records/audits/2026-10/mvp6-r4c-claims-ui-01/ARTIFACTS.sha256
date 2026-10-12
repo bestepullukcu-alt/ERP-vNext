@@ -1,0 +1,21 @@
+# verify from: repository root
+a85a3ce6a414d60c20f9121abbece3099e90f831a4cc41e44b519808c3616565  docs/records/audits/2026-10/mvp6-r4c-claims-ui-01/REPORT.md
+c96a11965f0c74b318f81eee939bfa6eb1b2aa2a5217f1d8a29152876ca198b0  docs/records/audits/2026-10/mvp6-r4c-claims-ui-01/SOURCE-AS-MEASURED.sha256
+210cc10acc9853c735379ef36e3da55e134722a57e3dc02038670df398a27d8c  docs/records/audits/2026-10/mvp6-r4c-claims-ui-01/evidence/carrier-fixture.txt
+b675f12ed18569388d62e004a8f157198cbfca41a9a58ab309bb7d770112c5f6  docs/records/audits/2026-10/mvp6-r4c-claims-ui-01/evidence/claims-holdings.txt
+7e4ad9dc066a7187d8808f6ed1da0a3e86e9ce43460cc7fa23d7754b22a98f6a  docs/records/audits/2026-10/mvp6-r4c-claims-ui-01/evidence/date-trap.txt
+e2b3aa7e14182f75a08b6814c9621e263b140aa849ecd26678a9a171469bb397  docs/records/audits/2026-10/mvp6-r4c-claims-ui-01/evidence/draft-files-status.txt
+dbe65aab2626fddefa4b7a729063b1580d18c341d6bfdcc4d45e4a62c5d65cc2  docs/records/audits/2026-10/mvp6-r4c-claims-ui-01/evidence/draft-to-final.diff
+727ea43b7da441c9187bb98066d3375746317c80101558789f728ae670b54162  docs/records/audits/2026-10/mvp6-r4c-claims-ui-01/evidence/entitle.txt
+2f0438385ca802534548b25196decb267886a3e45b9382bb2b6d32613197246f  docs/records/audits/2026-10/mvp6-r4c-claims-ui-01/evidence/fixture-summary.json
+458a729479a24d2655566efed69165855a0d4fd12f77adf46415ff781e95f0f3  docs/records/audits/2026-10/mvp6-r4c-claims-ui-01/evidence/gateway-claims-lines.txt
+717286c0965c4de31b4b9bffaa06f9afaee70a4b816fafe4de047a4f1338f6fd  docs/records/audits/2026-10/mvp6-r4c-claims-ui-01/evidence/golden-db.txt
+0fe8675fc82e9148a383a8308b64399bdbd65a2f28f17aa80626d1cae3928ade  docs/records/audits/2026-10/mvp6-r4c-claims-ui-01/evidence/json401.txt
+199ea492aa161b7d613a4d923599d197472d7fcfdfb78d7081ef63833cdfe78b  docs/records/audits/2026-10/mvp6-r4c-claims-ui-01/evidence/refs.json
+ded63ff62ed11e4a9061bd3836828e0b8752e4cfe022745b23a5a2aec60a7317  docs/records/audits/2026-10/mvp6-r4c-claims-ui-01/evidence/register-tenant.txt
+212a75f5756cce49d12c546c07613812227578da13c2640f09b187299e49e99f  docs/records/audits/2026-10/mvp6-r4c-claims-ui-01/evidence/sabotage-scripts.diff
+f69d72e1d7aa107c615d7193f166a5992016e96a0847c626ae60e267032c56ee  docs/records/audits/2026-10/mvp6-r4c-claims-ui-01/evidence/sc-suite.txt
+4afa9e2062faf6fab064495d4c9492842d4f2e166c68d1b2d7a84113f98c7843  docs/records/audits/2026-10/mvp6-r4c-claims-ui-01/evidence/suite-results.txt
+9c7734f393bb386cb9a76527d1468e790b14c1f56383f21cc925e293273a097d  docs/records/audits/2026-10/mvp6-r4c-claims-ui-01/evidence/traps-browser.md
+3823d95936239c3f17ba31cc4ede295f83e2b36acf05cb9950b9dbc19a9b4572  docs/records/audits/2026-10/mvp6-r4c-claims-ui-01/evidence/traps-db.txt
+e5f6bd3d7d64c8ef9403ccb9fab2557c9da96e463466d54bec295928534ac229  docs/records/audits/2026-10/mvp6-r4c-claims-ui-01/evidence/web-claims-lines.txt

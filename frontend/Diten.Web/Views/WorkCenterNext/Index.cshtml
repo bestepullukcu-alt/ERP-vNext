@@ -42,6 +42,9 @@
        offcanvas drew a calendar icon over a plain text box and the user typed the due date by hand.
        flatpickr itself comes from _LayoutTenantShell, so this is the only half that was missing. *@
     <script src="~/assets/js/shared/diten-datefield.js" asp-append-version="true"></script>
+    @* WP-UI-CALENDAR-VIEW-01 — the calendar view: vendored FullCalendar 6.1.15 + zone helper + shared component +
+       its chrome strings. Loaded HERE, on the one page that draws a calendar; the tenant shell does not load it. *@
+    <partial name="~/Views/Shared/_CalendarAssets.cshtml" />
     @* Same reason as Details.cshtml: this page renders the very same checklist card in its detail pane, from the
        same component and the same app.js. Loading it on one of the two would make the row draggable on one
        surface and not the other — the exact split this round exists to close. *@

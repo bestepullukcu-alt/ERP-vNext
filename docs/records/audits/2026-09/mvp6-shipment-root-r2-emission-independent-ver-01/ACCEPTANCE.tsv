@@ -1,0 +1,13 @@
+id	result	controlling_evidence	boundary
+VER-01	PASS	FINAL-SOURCE-MANIFEST.tsv; raw evidence/source-comparison.tsv	354/354 entries match; only three owner-approved paths differ from overlay baseline
+VER-02	PASS	raw evidence/http-create-detail-replay.json	fresh create persists explicit LifecycleCorrelationId and detail returns the same authoritative root
+VER-03	PASS	raw evidence/ver-replay-concurrency.trx; http-create-detail-replay.json	same-key concurrency/replay produces no duplicate persistence; changed payload returns 409
+VER-04	PASS	raw evidence/ver-rollback-retry.trx	precommit failure rolls back and exact retry succeeds
+VER-05	PASS	raw evidence/http-create-detail-replay.json; ver-golden-pass.trx	audit/receipt/Pending outbox commit atomically with the authoritative root
+VER-06	PASS	raw evidence/restart-detail.json; restart-persistence.json	same database, fixture, binary hash and root survive real process restart
+VER-07	PASS	raw evidence/ver-storage.trx; legacy-runtime.json	missing/null/malformed/valid/stored-nil remain distinct; no read-time backfill
+VER-08	PASS	raw evidence/ver-scope-rbac.trx; legacy-runtime.json; http-create-detail-replay.json	tenant/LE 404, permission 403, soft-delete 404, scoped counts unchanged by reads/rejections
+VER-09	PASS	raw evidence/ver-shipment-regression.trx	12/12 Shipment regression; overlaps the four targeted Shipment tests and is not added to them
+VER-10	PASS	raw evidence/source-build-process.tsv	native .NET 8 fresh build to binary 754329d... and actual process PID/path binding
+VER-11	PASS	raw evidence/cleanup.tsv	lane-owned processes stopped and databases dropped; operational 27017 untouched
+VER-12	PASS	SOP-22-VER-REPORT.md	browser NEXT-HANDOFF may be marked READY only for this exact 354-entry source; no CT/full-module/G5 implication

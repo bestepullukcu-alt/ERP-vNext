@@ -1,0 +1,6 @@
+  Diten.BuildingBlocks.Security.Secrets -> /private/tmp/mvp6-a12-rtver02.S0rbZc/source/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/bin/Release/net8.0/Diten.BuildingBlocks.Security.Secrets.dll
+  Diten.Web -> /private/tmp/mvp6-a12-rtver02.S0rbZc/source/frontend/Diten.Web/bin/Release/net8.0/Diten.Web.dll
+Build succeeded.
+    15 Warning(s)
+    0 Error(s)
+Time Elapsed 00:00:46.62

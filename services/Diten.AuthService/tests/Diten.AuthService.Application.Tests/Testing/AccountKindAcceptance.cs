@@ -104,6 +104,9 @@ public static class AccountKindAcceptance
     /// <summary>Fixed per DB-010: dropped and recreated on every run, never suffixed with a Guid.</summary>
     public const string DatabaseName = "diten_auth_itest_account_kind";
 
+    /// <summary>BL-456/459 — the Platform base URL every test host gets: loopback port 9, where nothing listens.</summary>
+    public const string UnreachablePlatformBaseUrl = "http://127.0.0.1:9";
+
     public const string KindAdminRole = "kind-admin";
     public const string PmoRole = "pmo";
     public const string CreatorRole = "creator";
@@ -441,7 +444,12 @@ public static class AccountKindAcceptance
                         ["TenantResolution__DevBypassEnabled"] = "false",
                         ["Observability__Metrics__Enabled"] = "false",
                         ["ASPNETCORE_ENVIRONMENT"] = hostEnvironmentName,
-                        ["JwtSettings__Secret"] = jwtSecret
+                        ["JwtSettings__Secret"] = jwtSecret,
+                        // BL-456/459 — user writes now call Platform (audit append, quota consume/release). The checked-in
+                        // Development base URL is the LIVE dev Platform on 5057 and its shared database: a test must never
+                        // reach it. A refused loopback port instead — a derived host that wants a Platform replaces the
+                        // primary handler (ConfigureTestServices); every other host sees "Platform down", the best-effort path.
+                        ["PlatformService__BaseUrl"] = UnreachablePlatformBaseUrl
                     };
 
                     if (isAcceptanceHostPath)

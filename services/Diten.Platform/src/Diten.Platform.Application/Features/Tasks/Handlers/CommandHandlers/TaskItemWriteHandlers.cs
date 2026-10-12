@@ -180,6 +180,14 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
                         400, TaskReasonCodes.ValidationFailed, command.CorrelationId);
                 }
 
+                // B2 follow-up — the editor switching approval on starts it, and a starter cannot decide it.
+                if (manager == _currentUser.UserId)
+                {
+                    return Response<NoContent>.Fail(
+                        "You cannot be the approver of an approval you request.",
+                        400, TaskReasonCodes.ApprovalManagerIsSelf, command.CorrelationId);
+                }
+
                 task.ApprovalRequired = true;
                 task.ApprovalManagerUserId = manager;
                 startApproval = true;
@@ -196,6 +204,14 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
             && reassigned != Guid.Empty
             && reassigned != task.ApprovalManagerUserId)
         {
+            // B2 follow-up — the same rule for re-pointing: the editor cannot name themselves as the approver.
+            if (reassigned == _currentUser.UserId)
+            {
+                return Response<NoContent>.Fail(
+                    "You cannot be the approver of an approval you request.",
+                    400, TaskReasonCodes.ApprovalManagerIsSelf, command.CorrelationId);
+            }
+
             // Re-pointing the approver without touching the requirement: MOD-0023 owns the running instance's
             // assignee, so MOD-0024 records the intent only. Reassignment inside a live approval is Phase 3b.
             task.ApprovalManagerUserId = reassigned;

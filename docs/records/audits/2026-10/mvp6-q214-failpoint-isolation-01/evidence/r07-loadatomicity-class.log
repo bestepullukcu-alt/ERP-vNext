@@ -1,0 +1,18 @@
+Test run for /Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 17.11.1 (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:12.11]     Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.UnknownCommitResultRetriesAndCommitsExactlyOnce [FAIL]
+  Failed Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.UnknownCommitResultRetriesAndCommitsExactlyOnce [7 s]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: Created
+Actual:   ServiceUnavailable
+  Stack Trace:
+     at Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.UnknownCommitResultRetriesAndCommitsExactlyOnce() in /Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Loads/LoadAtomicityTests.cs:line 37
+   at Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests.UnknownCommitResultRetriesAndCommitsExactlyOnce() in /Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Loads/LoadAtomicityTests.cs:line 41
+--- End of stack trace from previous location ---
+Results File: /private/tmp/claude-501/-Users-natig-Projects-ERP-vNext-recovery/d055b718-e2c9-4712-a3ce-c6827969ffdf/scratchpad/q214/results/r07-loadatomicity-class.trx
+
+Failed!  - Failed:     1, Passed:     9, Skipped:     0, Total:    10, Duration: 18 s - Diten.SupplyChainService.Tests.dll (net8.0)

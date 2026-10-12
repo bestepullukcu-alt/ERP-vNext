@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="ReturnsTitle" xml:space="preserve"><value>Devoluciones</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Solicite, autorice y controle las devoluciones de mercancías enviadas.</value></data>
+  <data name="AddNewReturns" xml:space="preserve"><value>Agregar devolución</value></data>
+  <data name="ActionsHeader" xml:space="preserve"><value>Acciones</value></data>
+  <data name="RmaNumber" xml:space="preserve"><value>Número RMA</value></data>
+  <data name="ReturnId" xml:space="preserve"><value>ID de la devolución</value></data>
+  <data name="ShipmentId" xml:space="preserve"><value>ID de envío</value></data>
+  <data name="ShipmentIdHelp" xml:space="preserve"><value>Introduzca el UUID del envío.</value></data>
+  <data name="ReturnSummary" xml:space="preserve"><value>Resumen de la devolución</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Vista rápida</value></data>
+  <data name="QuickViewNote" xml:space="preserve"><value>Este resumen procede de la lista; no se cargan otros datos de la devolución.</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Ninguna devolución coincide con el filtro actual.</value></data>
+  <data name="ListErrorState" xml:space="preserve"><value>No se pudieron cargar las devoluciones.</value></data>
+  <data name="Retry" xml:space="preserve"><value>Reintentar</value></data>
+  <data name="NotProvided" xml:space="preserve"><value>No indicado</value></data>
+  <data name="SupportReference" xml:space="preserve"><value>Referencia de soporte</value></data>
+  <data name="CopyDone" xml:space="preserve"><value>Copiado al portapapeles.</value></data>
+  <data name="TotalLabel" xml:space="preserve"><value>Devoluciones devueltas</value></data>
+  <data name="StatusRequested" xml:space="preserve"><value>Solicitada</value></data>
+  <data name="StatusAuthorized" xml:space="preserve"><value>Autorizada</value></data>
+  <data name="StatusRejected" xml:space="preserve"><value>Rechazada</value></data>
+  <data name="StatusInTransit" xml:space="preserve"><value>En tránsito</value></data>
+  <data name="StatusReceived" xml:space="preserve"><value>Recibida</value></data>
+  <data name="StatusDispositioned" xml:space="preserve"><value>Con disposición</value></data>
+  <data name="StatusClosed" xml:space="preserve"><value>Cerrada</value></data>
+  <data name="StatusCancelled" xml:space="preserve"><value>Cancelada</value></data>
+  <data name="ShipmentStatusDraft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="ShipmentStatusPlanned" xml:space="preserve"><value>Planificado</value></data>
+  <data name="ShipmentStatusDispatched" xml:space="preserve"><value>Despachado</value></data>
+  <data name="ShipmentStatusInTransit" xml:space="preserve"><value>En tránsito</value></data>
+  <data name="ShipmentStatusDelivered" xml:space="preserve"><value>Entregado</value></data>
+  <data name="ShipmentStatusException" xml:space="preserve"><value>Incidencia</value></data>
+  <data name="ShipmentStatusClosed" xml:space="preserve"><value>Cerrado</value></data>
+  <data name="ShipmentStatusCancelled" xml:space="preserve"><value>Cancelado</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Nueva devolución</value></data>
+  <data name="Resolve" xml:space="preserve"><value>Consultar</value></data>
+  <data name="ResolveFirst" xml:space="preserve"><value>Busque el envío y seleccione al menos una línea antes de crear la devolución.</value></data>
+  <data name="ShipmentNumber" xml:space="preserve"><value>Número de envío</value></data>
+  <data name="ShipmentStatus" xml:space="preserve"><value>Estado del envío</value></data>
+  <data name="EligibilityNote" xml:space="preserve"><value>Se puede crear una devolución para envíos entregados o cerrados.</value></data>
+  <data name="ShipmentIneligible" xml:space="preserve"><value>El estado de este envío no permite una devolución.</value></data>
+  <data name="ReturnLines" xml:space="preserve"><value>Líneas devueltas</value></data>
+  <data name="ReturnLinesHelp" xml:space="preserve"><value>Seleccione cada línea del envío que se devuelve e introduzca su cantidad. La cantidad enviada es solo de referencia; no es la cantidad pendiente.</value></data>
+  <data name="SelectLine" xml:space="preserve"><value>Devolver esta línea</value></data>
+  <data name="LineNumber" xml:space="preserve"><value>Número de línea</value></data>
+  <data name="ShippedQuantity" xml:space="preserve"><value>Cantidad enviada</value></data>
+  <data name="ReturnQuantity" xml:space="preserve"><value>Cantidad devuelta</value></data>
+  <data name="ReturnQuantityHelp" xml:space="preserve"><value>Se envía tal como se escribe, por ejemplo 2 o 1.5.</value></data>
+  <data name="UomId" xml:space="preserve"><value>Unidad de medida</value></data>
+  <data name="NoShipmentLines" xml:space="preserve"><value>Este envío no tiene líneas para devolver.</value></data>
+  <data name="ReasonCode" xml:space="preserve"><value>Código de motivo</value></data>
+  <data name="EvidenceReferenceIds" xml:space="preserve"><value>Referencias de evidencia</value></data>
+  <data name="EvidenceReference" xml:space="preserve"><value>Referencia de evidencia</value></data>
+  <data name="AddEvidenceReference" xml:space="preserve"><value>Añadir referencia</value></data>
+  <data name="RemoveEvidenceReference" xml:space="preserve"><value>Quitar referencia</value></data>
+  <data name="EvidenceHelp" xml:space="preserve"><value>Opcional. Las referencias se envían en el orden mostrado.</value></data>
+  <data name="CreateReturn" xml:space="preserve"><value>Crear devolución</value></data>
+  <data name="ReturnCreated" xml:space="preserve"><value>Devolución creada.</value></data>
+  <data name="ReturnCreateReplayed" xml:space="preserve"><value>Esta devolución ya se creó con la misma solicitud y se muestra como completada.</value></data>
+  <data name="TransitionTitle" xml:space="preserve"><value>Cambiar estado de la devolución</value></data>
+  <data name="TransitionTarget" xml:space="preserve"><value>Nuevo estado</value></data>
+  <data name="ActionAuthorize" xml:space="preserve"><value>Autorizar</value></data>
+  <data name="ActionReject" xml:space="preserve"><value>Rechazar</value></data>
+  <data name="ActionMarkInTransit" xml:space="preserve"><value>Marcar en tránsito</value></data>
+  <data name="ActionCancelReturn" xml:space="preserve"><value>Cancelar devolución</value></data>
+  <data name="ActionReceive" xml:space="preserve"><value>Recibir (declaración manual)</value></data>
+  <data name="ActionDisposition" xml:space="preserve"><value>Asignar disposición</value></data>
+  <data name="ActionClose" xml:space="preserve"><value>Cerrar</value></data>
+  <data name="TargetReceivedLabel" xml:space="preserve"><value>Recibida (declaración manual)</value></data>
+  <data name="ReceivedManualNote" xml:space="preserve"><value>La recepción es solo una declaración manual. No es una recepción de almacén y no registra ningún movimiento de stock.</value></data>
+  <data name="OccurredAt" xml:space="preserve"><value>Ocurrido el</value></data>
+  <data name="OccurredAtHelp" xml:space="preserve"><value>Su fecha y hora locales. Se envían en UTC.</value></data>
+  <data name="OccurredAtInvalid" xml:space="preserve">
+    <value>Introduzca una fecha y hora válidas que existan en su zona horaria.</value>
+  </data>
+  <data name="DispositionCode" xml:space="preserve"><value>Código de disposición</value></data>
+  <data name="DispositionCodeHelp" xml:space="preserve"><value>Obligatorio para este estado. Se envía tal como se escribe.</value></data>
+  <data name="InventoryTransactionReferenceId" xml:space="preserve"><value>Referencia de transacción de inventario</value></data>
+  <data name="InventoryReferenceHelp" xml:space="preserve"><value>Opcional. Se guarda como texto y no se verifica con el inventario.</value></data>
+  <data name="SubmitTransition" xml:space="preserve"><value>Aplicar estado</value></data>
+  <data name="ConfirmTransition" xml:space="preserve"><value>¿Cambiar el estado de la devolución al valor seleccionado?</value></data>
+  <data name="TransitionCompleted" xml:space="preserve"><value>Estado de la devolución actualizado.</value></data>
+  <data name="TransitionReplayed" xml:space="preserve"><value>Este cambio de estado ya se aplicó con la misma solicitud y se muestra como completado.</value></data>
+  <data name="RequestPending" xml:space="preserve"><value>Todavía hay una solicitud en curso para esta acción.</value></data>
+  <data name="NoticeSessionEnded" xml:space="preserve"><value>Su sesión ha finalizado. Vuelva a iniciar sesión.</value></data>
+  <data name="NoticeForbidden" xml:space="preserve"><value>No está autorizado para esta acción.</value></data>
+  <data name="NoticeUnsupportedMedia" xml:space="preserve"><value>El formato de la solicitud no es compatible.</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>La solicitud no es válida. Revise los valores introducidos.</value></data>
+  <data name="ErrReturnNotFound" xml:space="preserve"><value>El registro no se encontró o no está disponible para usted.</value></data>
+  <data name="ErrShipmentNotFound" xml:space="preserve"><value>El registro no se encontró o no está disponible para usted.</value></data>
+  <data name="ErrShipmentLineNotFound" xml:space="preserve"><value>Una línea de envío seleccionada ya no existe en el envío.</value></data>
+  <data name="ErrInvalidReturnTransition" xml:space="preserve"><value>La devolución ha cambiado mientras tanto y este cambio de estado ya no es posible. La lista se ha recargado.</value></data>
+  <data name="ErrDispositionRequired" xml:space="preserve"><value>Introduzca un código de disposición para este estado.</value></data>
+  <data name="ErrInvalidReturnQuantity" xml:space="preserve"><value>Cada cantidad devuelta debe ser mayor que cero.</value></data>
+  <data name="ErrReturnQuantityExceeded" xml:space="preserve"><value>La cantidad devuelta supera la cantidad enviada aún disponible para devolución.</value></data>
+  <data name="ErrReturnUomMismatch" xml:space="preserve"><value>La unidad de medida no coincide con la línea del envío.</value></data>
+  <data name="ErrDuplicateReturnLine" xml:space="preserve"><value>La misma línea del envío aparece más de una vez.</value></data>
+  <data name="ErrShipmentNotReturnable" xml:space="preserve"><value>El estado del envío no permite una devolución.</value></data>
+  <data name="ErrCorrelationRootMismatch" xml:space="preserve"><value>La solicitud ya no coincide con el registro del envío.</value></data>
+  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>Esta solicitud ya se usó con otros valores. Inicie una nueva acción.</value></data>
+  <data name="ErrReturnSourceChanged" xml:space="preserve"><value>El envío ha cambiado desde su primera devolución. Revise el envío; no se ajustó nada automáticamente.</value></data>
+  <data name="ErrReturnShipmentRootInvalid" xml:space="preserve"><value>Los datos de referencia del envío no son válidos. Póngase en contacto con soporte.</value></data>
+  <data name="ErrDependencyResponseInvalid" xml:space="preserve"><value>Los datos del envío devueltos por el sistema de origen no son válidos. Póngase en contacto con soporte.</value></data>
+  <data name="ErrReturnShipmentRootUnavailable" xml:space="preserve"><value>Los datos de referencia del envío están incompletos. Vuelva a intentar la misma solicitud más tarde.</value></data>
+  <data name="ErrReferenceStateUnavailable" xml:space="preserve"><value>El estado del envío no está disponible temporalmente. Vuelva a intentar la misma solicitud.</value></data>
+  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>Los datos de referencia del envío no están disponibles temporalmente. Vuelva a intentar la misma solicitud.</value></data>
+  <data name="ErrPersistenceUnavailable" xml:space="preserve"><value>Las devoluciones no están disponibles temporalmente. El resultado no está confirmado; vuelva a intentar la misma solicitud.</value></data>
+  <data name="ErrInternalError" xml:space="preserve"><value>Se produjo un error inesperado. Puede reintentar la misma acción.</value></data>
+</root>

@@ -1,0 +1,21 @@
+path	action	half	project	bytes	lines
+scripts/test-env/mvp6-test-mongo-env.sh	add	Kit/CI	scripts (kit/CI)	2569	66
+services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/BusinessReferenceDataGskuCatalogLoadMongoTests.cs	modify	Platform	Diten.Platform.Application.Tests	23218	476
+services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/BusinessReferenceDataMongoResidueSweeperTests.cs	modify	Platform	Diten.Platform.Application.Tests	7278	149
+services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/BusinessReferenceDataPublishOperationMongoTests.cs	modify	Platform	Diten.Platform.Application.Tests	23954	504
+services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/BusinessReferenceDataTenantAssignmentMongoTests.cs	modify	Platform	Diten.Platform.Application.Tests	7443	158
+services/Diten.Platform/tests/Diten.Platform.Application.Tests/Persistence/MongoIntegrationHarness.cs	modify	Platform	Diten.Platform.Application.Tests	12388	258
+services/Diten.Platform/tests/Diten.Platform.Application.Tests/Persistence/PlatformMongoTestConnection.cs	add	Platform	Diten.Platform.Application.Tests	3224	78
+services/Diten.Platform/tests/Diten.Platform.Application.Tests/Persistence/PlatformMongoTestConnectionTests.cs	add	Platform	Diten.Platform.Application.Tests	1829	48
+services/Diten.Platform/tests/Diten.Platform.Application.Tests/Schema/PlatformSchemaContractMongoTests.cs	modify	Platform	Diten.Platform.Application.Tests	33536	576
+services/Diten.Platform/tests/Diten.Platform.Application.Tests/Workflow/WorkflowTransitionGateMongoRepositoryTests.cs	modify	Platform	Diten.Platform.Application.Tests	6098	125
+services/Diten.Platform/tests/Diten.Platform.BackgroundJobs.Tests/PlatformContainerValidationTests.cs	modify	Platform	Diten.Platform.BackgroundJobs.Tests	15542	259
+services/Diten.Platform/tests/Diten.Platform.Eventing.Tests/RabbitMqEventingIntegrationTests.cs	modify	Platform	Diten.Platform.Eventing.Tests	21286	514
+services/Diten.Platform/tests/Diten.Platform.Eventing.Tests/TenantLifecycleRabbitMqIntegrationTests.cs	modify	Platform	Diten.Platform.Eventing.Tests	31138	655
+services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs	modify	Capacity	Diten.SupplyChainService.Tests	28751	367
+services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityConcurrencyTests.cs	modify	Capacity	Diten.SupplyChainService.Tests	11911	131
+services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityIsolationTests.cs	modify	Capacity	Diten.SupplyChainService.Tests	3736	45
+services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityLeaseTests.cs	modify	Capacity	Diten.SupplyChainService.Tests	2917	39
+services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityRestartTests.cs	modify	Capacity	Diten.SupplyChainService.Tests	7134	103
+services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityTestMongo.cs	add	Capacity	Diten.SupplyChainService.Tests	4150	92
+services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityTestMongoTests.cs	add	Capacity	Diten.SupplyChainService.Tests	2049	57

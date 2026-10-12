@@ -161,7 +161,8 @@ describe("④ the reference dialog obeys its own placeholder rule", () => {
   it("uses the SAME example every other date box uses", () => {
     // Planla and the meeting scheduler already say `DatePlaceholder`; a second date format would be a second
     // answer to one question.
-    expect((APP.match(/placeholder: t\('DatePlaceholder'\)/g) || []).length).toBeGreaterThanOrEqual(2);
+    // WP-UI-CALENDAR-VIEW-01 — the plan dialog is a form now and writes the SAME key as an attribute.
+    expect((APP.match(/placeholder(: |="\$\{esc\()t\('DatePlaceholder'\)/g) || []).length).toBeGreaterThanOrEqual(2);
     LANGS.forEach((lang) => {
       const v = String(value(resx(lang), "DatePlaceholder") || "").trim();
       expect(v, `${lang}: DatePlaceholder missing`).not.toBe("");

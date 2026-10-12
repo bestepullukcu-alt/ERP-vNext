@@ -116,7 +116,17 @@ public static class PlatformSchemaMigrations
         // MOD-0022 E5B (FU-0022-E4-01) — the per-task UNIQUE e-signature index becomes a lookup index under a new name, so
         // a task can be re-signed. Dropped only when name AND options are exactly E2's; logged; a no-op once done.
         await ESignatureSchemaMigrations.RetireWorkflowTaskUniqueIndexAsync(database, cancellationToken: cancellationToken);
+
+        // MOD-0280-FU01 T1b v2 F8 — the entries' unique key gained SourceRef (a Meeting row per meeting) under a NEW
+        // name; the T1a index it replaces is retired here, before the manifest builds the new one. Without the drop
+        // the old, narrower key would keep refusing a second meeting row on the same day.
+        await DropIndexIfExistsAsync(
+            database.GetCollection<Domain.Entities.TimeEntry.TimeEntry>(PlatformCollections.TimeEntryEntries).Indexes,
+            RetiredTimeEntryEntriesIndex);
     }
+
+    /// <summary>The T1a entries index (no SourceRef) that v2 F8 retired — named so a test can pin the retirement.</summary>
+    public const string RetiredTimeEntryEntriesIndex = "ux_time_entry_entries_tenant_week_date_target_source";
 
     private static async Task DropIndexIfExistsAsync<TDocument>(
         IMongoIndexManager<TDocument> indexes,

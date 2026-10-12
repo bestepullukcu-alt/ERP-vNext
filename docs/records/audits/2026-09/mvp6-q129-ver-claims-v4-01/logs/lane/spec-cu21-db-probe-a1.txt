@@ -1,0 +1,8 @@
+audit fields: _id,TenantId,LegalEntityId,ClaimId,ActorId,Version,Before,After,CorrelationRoot,OccurredAt,ReceivedAt,CommittedAt,ResolutionCode,Note
+2026-09-27T13:35:48.3875540+00:00 claim 18631704 v1 - -> Open 
+2026-09-27T13:35:59.7875850+00:00 claim fa95b68b v2 Open -> Investigating 
+2026-09-27T13:36:03.9919320+00:00 claim fa95b68b v3 Investigating -> Rejected 
+spec-a2 window:
+2026-09-27T13:37:29.2580560+00:00 claim 95a769a8 v1 - -> Open 
+2026-09-27T13:37:40.5222740+00:00 claim f0261ae8 v2 Open -> Investigating 
+2026-09-27T13:37:43.0782120+00:00 claim f9f94ce5 v3 Investigating -> Approved approved=0

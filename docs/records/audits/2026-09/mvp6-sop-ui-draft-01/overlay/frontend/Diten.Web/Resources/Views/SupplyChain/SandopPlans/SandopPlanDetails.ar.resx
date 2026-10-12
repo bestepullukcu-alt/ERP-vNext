@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="SandopPlansTitle" xml:space="preserve"><value>خطط S&amp;OP</value></data>
+  <data name="PlanId" xml:space="preserve"><value>معرّف الخطة</value></data>
+  <data name="PlanName" xml:space="preserve"><value>اسم الخطة</value></data>
+  <data name="HorizonStart" xml:space="preserve"><value>بداية الأفق</value></data>
+  <data name="HorizonEnd" xml:space="preserve"><value>نهاية الأفق</value></data>
+  <data name="DemandPlanId" xml:space="preserve"><value>معرّف خطة الطلب</value></data>
+  <data name="DemandPlanVersion" xml:space="preserve"><value>إصدار خطة الطلب</value></data>
+  <data name="Status" xml:space="preserve"><value>حالة الخطة</value></data>
+  <data name="Status.Draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="Status.InReview" xml:space="preserve"><value>قيد المراجعة</value></data>
+  <data name="Status.Approved" xml:space="preserve"><value>معتمدة</value></data>
+  <data name="Status.Rejected" xml:space="preserve"><value>مرفوضة</value></data>
+  <data name="Status.Archived" xml:space="preserve"><value>مؤرشفة</value></data>
+  <data name="NotProvided" xml:space="preserve"><value>غير متوفر</value></data>
+  <data name="SupportReference" xml:space="preserve"><value>مرجع الدعم</value></data>
+  <data name="CopyDone" xml:space="preserve"><value>تم النسخ إلى الحافظة.</value></data>
+  <data name="RequestPending" xml:space="preserve"><value>لا يزال الطلب السابق قيد المعالجة.</value></data>
+  <data name="RequiredMissing" xml:space="preserve"><value>املأ جميع الحقول المطلوبة.</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>الطلب غير صالح. تحقّق من المدخلات وحاول مرة أخرى.</value></data>
+  <data name="ErrInvalidCorrelationId" xml:space="preserve"><value>تعذّر تتبّع الطلب. أعد تحميل الصفحة وحاول مرة أخرى.</value></data>
+  <data name="ErrUnauthenticated" xml:space="preserve"><value>انتهت جلستك. سجّل الدخول مرة أخرى.</value></data>
+  <data name="ErrForbidden" xml:space="preserve"><value>ليست لديك صلاحية لتنفيذ هذا الإجراء.</value></data>
+  <data name="ErrUnknownSandopPlan" xml:space="preserve"><value>لم يتم العثور على خطة S&amp;OP هذه أو أنها غير متاحة لك.</value></data>
+  <data name="ErrSandopPlanAlreadyExists" xml:space="preserve"><value>توجد بالفعل خطة S&amp;OP لهذا الأفق وإصدار خطة الطلب هذا.</value></data>
+  <data name="ErrSandopPlanStateConflict" xml:space="preserve"><value>لم تعد حالة الخطة تسمح بالتقاط لقطة. تمت إعادة تحميل الخطة.</value></data>
+  <data name="ErrSandopSignOffStateConflict" xml:space="preserve"><value>لم تعد حالة الخطة تسمح بتسجيل الاعتمادات. تمت إعادة تحميل الخطة.</value></data>
+  <data name="ErrSignOffAlreadyRecorded" xml:space="preserve"><value>تم تسجيل قرار بالفعل لهذا الدور وهذه اللقطة.</value></data>
+  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>سبق استخدام هذا الطلب بقيم مختلفة. غيّر المدخلات لإرسال طلب جديد.</value></data>
+  <data name="ErrInvalidDemandReference" xml:space="preserve"><value>مرجع خطة الطلب غير معروف أو غير منشور.</value></data>
+  <data name="ErrInvalidSnapshotReference" xml:space="preserve"><value>اللقطة المحددة لا تنتمي إلى هذه الخطة.</value></data>
+  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>الخدمة غير متاحة مؤقتًا. حاول مرة أخرى؛ سيتم إرسال الطلب نفسه.</value></data>
+  <data name="ErrCommitResultUnresolved" xml:space="preserve"><value>تعذّر تأكيد النتيجة. حاول مرة أخرى؛ سيتم إرسال الطلب نفسه ولن يُسجَّل أي شيء مرتين.</value></data>
+  <data name="PlanDetailsTitle" xml:space="preserve"><value>خطة S&amp;OP</value></data>
+  <data name="BackToPlans" xml:space="preserve"><value>العودة إلى خطط S&amp;OP</value></data>
+  <data name="PlanSummary" xml:space="preserve"><value>ملخص الخطة</value></data>
+  <data name="Horizon" xml:space="preserve"><value>أفق التخطيط</value></data>
+  <data name="DemandReference" xml:space="preserve"><value>مرجع الطلب</value></data>
+  <data name="CurrentSnapshot" xml:space="preserve"><value>اللقطة الحالية</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>تاريخ الإنشاء</value></data>
+  <data name="SummaryErrorState" xml:space="preserve"><value>تعذّر تحميل الخطة.</value></data>
+  <data name="Snapshots" xml:space="preserve"><value>لقطات المدخلات</value></data>
+  <data name="SnapshotId" xml:space="preserve"><value>معرّف اللقطة</value></data>
+  <data name="CaptureSnapshot" xml:space="preserve"><value>التقاط لقطة</value></data>
+  <data name="CaptureSnapshotTitle" xml:space="preserve"><value>التقاط لقطة للمدخلات</value></data>
+  <data name="SourceCapturedAt" xml:space="preserve"><value>وقت التقاط المصدر</value></data>
+  <data name="SourceCapturedAtHelp" xml:space="preserve"><value>التاريخ والوقت بتوقيت UTC، مثل 2026-09-26T12:00:00Z.</value></data>
+  <data name="SourceChecksum" xml:space="preserve"><value>المجموع الاختباري للمصدر</value></data>
+  <data name="SupplyInputRefs" xml:space="preserve"><value>مراجع مدخلات الإمداد</value></data>
+  <data name="SupplyInputRefsHelp" xml:space="preserve"><value>اختياري. يتطلب كل صف مصدرًا ومعرّف مورد وإصدار مورد؛ تُرسل الصفوف بالترتيب المعروض.</value></data>
+  <data name="SupplyInputRefCount" xml:space="preserve"><value>مراجع الإمداد</value></data>
+  <data name="Source" xml:space="preserve"><value>النظام المصدر</value></data>
+  <data name="ResourceId" xml:space="preserve"><value>معرّف المورد</value></data>
+  <data name="ResourceVersion" xml:space="preserve"><value>إصدار المورد</value></data>
+  <data name="AddRow" xml:space="preserve"><value>إضافة صف</value></data>
+  <data name="RemoveRow" xml:space="preserve"><value>إزالة الصف</value></data>
+  <data name="RowIncomplete" xml:space="preserve"><value>أكمِل كل صف من صفوف مراجع الإمداد أو أزِله.</value></data>
+  <data name="CapturedAt" xml:space="preserve"><value>وقت الالتقاط</value></data>
+  <data name="Provenance" xml:space="preserve"><value>مصدر بيانات الطلب</value></data>
+  <data name="CurrentMarker" xml:space="preserve"><value>الحالية</value></data>
+  <data name="EmptySnapshots" xml:space="preserve"><value>لم تُلتقط أي لقطات لهذه الخطة.</value></data>
+  <data name="SnapshotsErrorState" xml:space="preserve"><value>تعذّر تحميل اللقطات.</value></data>
+  <data name="SnapshotCaptured" xml:space="preserve"><value>تم التقاط اللقطة.</value></data>
+  <data name="SignOffs" xml:space="preserve"><value>الاعتمادات</value></data>
+  <data name="RecordSignOff" xml:space="preserve"><value>تسجيل اعتماد</value></data>
+  <data name="RecordSignOffTitle" xml:space="preserve"><value>تسجيل قرار الاعتماد</value></data>
+  <data name="Snapshot" xml:space="preserve"><value>لقطة المدخلات</value></data>
+  <data name="Role" xml:space="preserve"><value>دور الاعتماد</value></data>
+  <data name="Role.DemandPlanning" xml:space="preserve"><value>تخطيط الطلب</value></data>
+  <data name="Role.SupplyPlanning" xml:space="preserve"><value>تخطيط الإمداد</value></data>
+  <data name="Role.Finance" xml:space="preserve"><value>المالية</value></data>
+  <data name="Role.Operations" xml:space="preserve"><value>العمليات</value></data>
+  <data name="Role.Executive" xml:space="preserve"><value>الإدارة التنفيذية</value></data>
+  <data name="Decision" xml:space="preserve"><value>قرار الاعتماد</value></data>
+  <data name="Decision.Approved" xml:space="preserve"><value>معتمد</value></data>
+  <data name="Decision.Rejected" xml:space="preserve"><value>مرفوض</value></data>
+  <data name="Comment" xml:space="preserve"><value>تعليق القرار</value></data>
+  <data name="CommentHelp" xml:space="preserve"><value>اختياري، بحد أقصى 2000 حرف.</value></data>
+  <data name="CommentTooLong" xml:space="preserve"><value>يمكن أن يتضمن التعليق 2000 حرف كحد أقصى.</value></data>
+  <data name="DecidedBy" xml:space="preserve"><value>صاحب القرار</value></data>
+  <data name="DecidedAt" xml:space="preserve"><value>وقت القرار</value></data>
+  <data name="ConfirmSignOff" xml:space="preserve"><value>القرار نهائي ولا يمكن تغييره لهذا الدور وهذه اللقطة.</value></data>
+  <data name="SignOffRecorded" xml:space="preserve"><value>تم تسجيل الاعتماد.</value></data>
+  <data name="EmptySignOffs" xml:space="preserve"><value>لم تُسجَّل أي اعتمادات لهذه الخطة.</value></data>
+  <data name="SignOffsErrorState" xml:space="preserve"><value>تعذّر تحميل الاعتمادات.</value></data>
+  <data name="SignOffStatusNote" xml:space="preserve"><value>تسجيل الاعتمادات لا يغيّر حالة الخطة.</value></data>
+  <data name="Retry" xml:space="preserve"><value>إعادة المحاولة</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>اختر خيارًا</value></data>
+</root>

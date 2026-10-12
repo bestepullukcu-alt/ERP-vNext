@@ -1,0 +1,11 @@
+# FIX 1 live — SABOTAGE build (Program.cs = HEAD) — 2026-10-04T13:54:15Z — no cookie, Web on 5001
+## adapter endpoints ([JsonAdapterEndpoint])
+GET /SupplyChain/Shipments/api -> 302 | Location: http://localhost:5001/account/login?ReturnUrl=%2FSupplyChain%2FShipments%2Fapi | X-Correlation-Id: none | Content-Type: none | body: 
+GET /SupplyChain/Shipments/api/44444444-4444-4444-8444-444444444444 -> 302 | Location: http://localhost:5001/account/login?ReturnUrl=%2FSupplyChain%2FShipments%2Fapi%2F44444444-4444-4444-8444-444444444444 | X-Correlation-Id: none | Content-Type: none | body: 
+POST /SupplyChain/Shipments/api -> 302 | Location: http://localhost:5001/account/login?ReturnUrl=%2FSupplyChain%2FShipments%2Fapi | X-Correlation-Id: none | Content-Type: none | body: 
+POST /SupplyChain/Shipments/api/44444444-4444-4444-8444-444444444444/transition -> 302 | Location: http://localhost:5001/account/login?ReturnUrl=%2FSupplyChain%2FShipments%2Fapi%2F44444444-4444-4444-8444-444444444444%2Ftransition | X-Correlation-Id: none | Content-Type: none | body: 
+POST /SupplyChain/Shipments/api/44444444-4444-4444-8444-444444444444/pod -> 302 | Location: http://localhost:5001/account/login?ReturnUrl=%2FSupplyChain%2FShipments%2Fapi%2F44444444-4444-4444-8444-444444444444%2Fpod | X-Correlation-Id: none | Content-Type: none | body: 
+## pages
+GET /SupplyChain/Shipments -> 302 | Location: http://localhost:5001/account/login?ReturnUrl=%2FSupplyChain%2FShipments | X-Correlation-Id: none | Content-Type: none | body: 
+GET /SupplyChain/Shipments/Create -> 302 | Location: http://localhost:5001/account/login?ReturnUrl=%2FSupplyChain%2FShipments%2FCreate | X-Correlation-Id: none | Content-Type: none | body: 
+GET /SupplyChain/Shipments/Details/44444444-4444-4444-8444-444444444444 -> 302 | Location: http://localhost:5001/account/login?ReturnUrl=%2FSupplyChain%2FShipments%2FDetails%2F44444444-4444-4444-8444-444444444444 | X-Correlation-Id: none | Content-Type: none | body: 

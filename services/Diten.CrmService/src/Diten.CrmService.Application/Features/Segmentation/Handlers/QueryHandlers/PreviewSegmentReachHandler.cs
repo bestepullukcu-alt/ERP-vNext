@@ -81,11 +81,19 @@ public sealed class PreviewSegmentReachHandler
 
         // One resolve for the total and the sample. The resolver's MatchedCount is the whole reach (computed before
         // paging), so a single call with a small page yields both.
+        var draft = DraftSegment(tenantId, subjectType, matchMode, criteria);
         var fullOutcome = await _resolver.ResolveAsync(
-            tenantId, DraftSegment(tenantId, subjectType, matchMode, criteria),
-            effectiveAt, SampleLimit, 0, includeExcluded: false, cancellationToken);
+            tenantId, draft, effectiveAt, SampleLimit, 0, includeExcluded: false, cancellationToken);
 
+        // WP-E2E-FIX-3 (E1-B2) — past the ceiling, a FULLY NATIVE rule is still countable: its native filter is the rule
+        // itself, so the store counts it. No sample is loaded and no member list exists (membership keeps its ceiling).
+        long? storeCount = null;
         if (fullOutcome.CandidateCapExceeded || fullOutcome.Result is null)
+        {
+            storeCount = await _resolver.CountFullyNativeAsync(tenantId, draft, cancellationToken);
+        }
+
+        if (storeCount is null && (fullOutcome.CandidateCapExceeded || fullOutcome.Result is null))
         {
             // A rule too wide to count is narrowed, never partially answered — identical to /resolve.
             return Response<SegmentReachPreviewDto>.Fail(
@@ -99,6 +107,7 @@ public sealed class PreviewSegmentReachHandler
         }
 
         var full = fullOutcome.Result;
+        var counted = storeCount is not null;
 
         // Each predicate counted on its own — the funnel a matchMode=all rule narrows down from. Groups are not counted;
         // only leaf predicates carry a "reach on its own" meaning, and the editor rail shows one row per predicate.
@@ -118,20 +127,41 @@ public sealed class PreviewSegmentReachHandler
                 ? incoming
                 : node.NodeId;
 
+            var soloDraft = DraftSegment(tenantId, subjectType, matchMode, new List<SegmentCriteriaNode> { Solo(node) });
             var singleOutcome = await _resolver.ResolveAsync(
-                tenantId, DraftSegment(tenantId, subjectType, matchMode, new List<SegmentCriteriaNode> { Solo(node) }),
-                effectiveAt, 0, 0, includeExcluded: false, cancellationToken);
+                tenantId, soloDraft, effectiveAt, 0, 0, includeExcluded: false, cancellationToken);
 
             var capped = singleOutcome.CandidateCapExceeded || singleOutcome.Result is null;
+            var soloStoreCount = capped
+                ? await _resolver.CountFullyNativeAsync(tenantId, soloDraft, cancellationToken)
+                : null;
             conditionCounts.Add(new SegmentReachConditionDto(
                 reportedNodeId,
                 node.AttributeCode,
                 node.Label,
-                capped ? SegmentLimits.MaxCandidateSet : singleOutcome.Result!.MatchedCount,
-                capped));
+                soloStoreCount is { } soloCount
+                    ? ToInt(soloCount)
+                    : capped ? SegmentLimits.MaxCandidateSet : singleOutcome.Result!.MatchedCount,
+                capped && soloStoreCount is null));
         }
 
-        var sampleMembers = full.Members
+        if (counted)
+        {
+            return Response<SegmentReachPreviewDto>.Success(new SegmentReachPreviewDto(
+                subjectType,
+                matchMode,
+                effectiveAt,
+                TotalCount: ToInt(storeCount!.Value),
+                SampleLimit,
+                SegmentLimits.MaxCandidateSet,
+                conditionCounts,
+                Array.Empty<SegmentReachSampleMemberDto>(),
+                DateTimeOffset.UtcNow,
+                SegmentMembershipResolver.ResolverVersion,
+                CountedByStore: true));
+        }
+
+        var sampleMembers = full!.Members
             .Select(m => new SegmentReachSampleMemberDto(
                 m.SubjectId, m.SubjectType, m.SubjectDisplayName, m.SubjectSecondaryLabel))
             .ToList();
@@ -148,6 +178,8 @@ public sealed class PreviewSegmentReachHandler
             full.ResolvedAt,
             full.ResolverVersion));
     }
+
+    private static int ToInt(long count) => count > int.MaxValue ? int.MaxValue : (int)count;
 
     /// <summary>A transient, NEVER persisted segment the resolver treats exactly like a saved dynamic one: active and
     /// unconditionally in effect, so the only thing that shapes the answer is the rule itself.</summary>

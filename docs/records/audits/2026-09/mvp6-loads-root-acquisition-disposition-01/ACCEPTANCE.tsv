@@ -1,0 +1,19 @@
+id	scenario	expected_result	evidence_level_after_implementation
+LR01	Same tenant/LE list with read permission	200 row contains lifecycleCorrelationId equal to persisted Load CorrelationRoot; GET trace header may differ	E4 required
+LR02	Read permission absent	403; no row/root disclosed	E4 required
+LR03	Foreign tenant or LE	No foreign row in list; direct transition remains non-disclosing 404; no receipt/persistence access across scope	E4 required
+LR04	Read allowed but transition permission absent	Row may be read; UI renders no transition action; direct POST 403	E4 required
+LR05	Missing root in producer response	UI disables transition and records sanitized dependency/remediation state; sends no POST	E3/E4 required
+LR06	Null root in producer response	Same fail-closed behavior as missing; no nil substitution or backfill	E3/E4 required
+LR07	Malformed root in producer response	Response treated invalid; no transition; no user-editable fallback	E3/E4 required
+LR08	Persisted nil UUID explicitly present	Preserved as a UUID value only if producer proves field presence; never synthesized from absence	E4 required
+LR09	Same root/key/payload replay	Existing 200 replay, idempotentReplay=true, original result, no new audit/outbox/reference read	E4 required
+LR10	Same key/payload with different root	409 CORRELATION_ROOT_MISMATCH before fingerprint/lifecycle; persisted root unchanged and undisclosed	E4 required
+LR11	Same root/key with changed valid payload	409 IDEMPOTENCY_KEY_REUSED; no mutation	E4 required
+LR12	Stale row after delete/cross-scope change	404 LOAD_NOT_FOUND; no existence leak and no write	E4 required
+LR13	Stale row after lifecycle change	422 INVALID_LOAD_TRANSITION after exact root check; UI reloads current list	E4 required
+LR14	List persistence outage	Existing 503 PERSISTENCE_UNAVAILABLE; UI does not convert failure to empty list or guessed root	E4 required
+LR15	One Load with several Shipment IDs and different Shipment roots	Load transition acquisition uses only persisted Load root; no Shipment-root comparison/merge/rejection is introduced	E2 contract + separate future E4
+LR16	Separate detail/search lookup absent	Transition remains possible from the list row once root seam is live; no invented endpoint required	E3/E4 required
+LR17	Restart	Same persisted Load root is returned and accepted after process restart; GET remains no-write	E4 required
+

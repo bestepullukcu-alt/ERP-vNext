@@ -50,6 +50,27 @@ public sealed class Response<T>
             ReasonCode = reasonCode,
             CorrelationId = correlationId
         };
+
+    /// <summary>
+    /// A refusal that carries DATA the caller needs to act on — e.g. which block a plan collided with
+    /// (WP-TASK-CALENDAR-ENGINE-01, <c>TASK_PLAN_CONFLICT</c>). Named apart from <see cref="Fail(string,int,string?,string?)"/>
+    /// so it can never be picked by overload resolution by accident.
+    /// </summary>
+    public static Response<T> FailWithData(
+        string error,
+        int statusCode,
+        string? reasonCode,
+        T data,
+        string? correlationId = null) =>
+        new()
+        {
+            Data = data,
+            StatusCode = statusCode,
+            IsSuccessful = false,
+            Errors = [error],
+            ReasonCode = reasonCode,
+            CorrelationId = correlationId
+        };
 }
 
 public readonly record struct NoContent;

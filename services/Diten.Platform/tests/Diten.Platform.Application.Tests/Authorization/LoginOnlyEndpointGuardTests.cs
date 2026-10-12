@@ -35,6 +35,7 @@ public sealed class LoginOnlyEndpointGuardTests
     private static readonly HashSet<string> ExpectedLoginOnly = new(StringComparer.Ordinal)
     {
         "AccessExplainController.ExplainMyAccess",
+        "ConsumableReferenceDataController.GetPublishedValues",
         "MyNotificationsController.GetMine",
         "MyNotificationsController.MarkAllRead",
         "MyNotificationsController.MarkRead",
@@ -46,6 +47,9 @@ public sealed class LoginOnlyEndpointGuardTests
         "TenantReferenceDataController.GetPublishedValues",
         "TenantReferenceLookupsController.GetCountries",
         "TenantReferenceLookupsController.GetCurrencies",
+        // WP-TASK-CALENDAR-ENGINE-01 — the caller's own planned work + own meetings; no subject parameter,
+        // the same posture as WorkItemsController.GetMine (CT review item).
+        "WorkCalendarController.GetCalendar",
         "WorkItemsController.GetMine",
         "WorkItemsController.GetTeamAvailability"
     };

@@ -108,4 +108,7 @@
   <data name="SelectionMode_targeted" xml:space="preserve"><value>Targeted</value></data>
   <data name="AvailabilityWarning" xml:space="preserve"><value>The planned window is outside the contact availability (a warning, not a block).</value></data>
   <data name="QuickView" xml:space="preserve"><value>عرض سريع</value></data>
+  <data name="TargetUnknown" xml:space="preserve"><value>هدف غير معروف</value></data>
+  <data name="TargetInactive" xml:space="preserve"><value>غير نشط</value></data>
+  <data name="ResourceSelfHint" xml:space="preserve"><value>المندوب الذي سجّل الدخول؛ يحدده النظام.</value></data>
 </root>

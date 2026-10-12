@@ -1,0 +1,18 @@
+{
+  "workPackage": "MVP6-MOD0187-R14-APPLY-01",
+  "agentVerdict": "PASS",
+  "writerComplete": true,
+  "executionMode": "isolated-filesystem-snapshot",
+  "changedProductPaths": [
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs"
+  ],
+  "baselineSha256": "a72a05a5b7dc235cb68bb0bf7ad72cdc4889a49846ab6fdd4f01601285ab34a",
+  "patchSha256": "3423940b958c8a66c8300f71ecd5d3b9525103ab645662545fca8811905259f0",
+  "targetSha256": "11c586e04e12c7ecc9c543907414bf77a6c8fe3b23643ae5f42666c580c7b0f1",
+  "baselineValidUtf8AlreadyAccepted": true,
+  "targetTransportVerdict": "PASS",
+  "commonCheckoutProductMutation": false,
+  "commit": false,
+  "push": false,
+  "independentVerificationRequired": true
+}

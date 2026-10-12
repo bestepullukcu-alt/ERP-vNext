@@ -114,4 +114,34 @@
   <data name="FormValidationError" xml:space="preserve"><value>يرجى تعبئة جميع الحقول المطلوبة.</value></data>
   <data name="ManageTypes" xml:space="preserve"><value>أنواع الاجتماعات</value></data>
   <data name="ManageSeries" xml:space="preserve"><value>سلاسل الاجتماعات</value></data>
+  <data name="ViewSwitchLabel" xml:space="preserve">
+    <value>طريقة العرض</value>
+  </data>
+  <data name="ViewList" xml:space="preserve">
+    <value>قائمة</value>
+  </data>
+  <data name="ViewCalendar" xml:space="preserve">
+    <value>تقويم</value>
+  </data>
+  <data name="CalendarInvitesTitle" xml:space="preserve">
+    <value>دعواتي بانتظار الرد</value>
+  </data>
+  <data name="CalendarInvitesEmpty" xml:space="preserve">
+    <value>لا توجد دعوة بانتظار ردك.</value>
+  </data>
+  <data name="CalendarLegendAccepted" xml:space="preserve">
+    <value>قبلتها أو نظمتها</value>
+  </data>
+  <data name="CalendarLegendPending" xml:space="preserve">
+    <value>بانتظار ردي</value>
+  </data>
+  <data name="CalendarLegendOther" xml:space="preserve">
+    <value>اجتماعات أخرى</value>
+  </data>
+  <data name="CalendarLoadFailed" xml:space="preserve">
+    <value>تعذر تحميل التقويم.</value>
+  </data>
+  <data name="InviteAccepted" xml:space="preserve">
+    <value>تم قبول الدعوة.</value>
+  </data>
 </root>

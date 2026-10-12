@@ -29,6 +29,8 @@ public sealed class WorkflowActorBindingTests
 
     public static TheoryData<string> Actions => new() { "approve", "reject", "delegate", "request-info", "cancel" };
 
+    private static readonly string[] AllActions = ["approve", "reject", "delegate", "request-info", "cancel"];
+
     [Theory]
     [MemberData(nameof(Actions))]
     public async Task A_body_actor_that_is_not_the_caller_is_refused_with_403_and_nothing_is_sent(string action)
@@ -69,6 +71,56 @@ public sealed class WorkflowActorBindingTests
 
         Assert.IsType<OkObjectResult>(result);
         Assert.Equal(Caller.ToString(), Assert.Single(sent));
+    }
+
+    /// <summary>
+    /// WP-MVP1-SYNC1 — main's B4 (WP-WORKFLOW-APPROVAL-STATUS-01 v2) bound the actor with its own <c>TryBindActor</c>:
+    /// accept a blank body actor, or one that <c>Guid.TryParse</c>s (after Trim) to the caller's id; refuse everything else
+    /// with 403 <c>WORKFLOW_ACTOR_MISMATCH</c>. The merge keeps ONE binding, <see cref="WorkflowActorBinding"/>. These are
+    /// the inputs main accepted, in every spelling <c>Guid.TryParse</c> takes: each one is accepted here and bound to the
+    /// caller's id. (The only input accepted here that main refused is the caller's own e-mail — the case above.)
+    /// </summary>
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData("c0000000-0000-0000-0000-0000000000c1")]
+    [InlineData("C0000000-0000-0000-0000-0000000000C1")]
+    [InlineData("c00000000000000000000000000000c1")]
+    [InlineData("{c0000000-0000-0000-0000-0000000000c1}")]
+    [InlineData("(c0000000-0000-0000-0000-0000000000c1)")]
+    [InlineData("  c0000000-0000-0000-0000-0000000000c1  ")]
+    public async Task Sync1_every_body_actor_mains_binding_accepted_is_accepted_and_bound_to_the_caller(string? bodyActor)
+    {
+        foreach (var action in AllActions)
+        {
+            var (mediator, sent) = CapturingMediator();
+            var result = await Invoke(Controller(mediator), action, bodyActor!);
+
+            Assert.IsType<OkObjectResult>(result);
+            Assert.Equal(Caller.ToString(), Assert.Single(sent));
+        }
+    }
+
+    /// <summary>WP-MVP1-SYNC1 — and the inputs main refused stay refused here (403, nothing sent).</summary>
+    [Theory]
+    [InlineData("c0000000-0000-0000-0000-0000000000c2")]
+    [InlineData("user:c0000000-0000-0000-0000-0000000000c1")]
+    [InlineData("not-a-person")]
+    [InlineData("someone-else@tenant.test")]
+    public async Task Sync1_every_body_actor_mains_binding_refused_other_than_the_own_email_is_refused(string bodyActor)
+    {
+        foreach (var action in AllActions)
+        {
+            var mediator = new Mock<IMediator>(MockBehavior.Strict);
+            var result = await Invoke(Controller(mediator.Object), action, bodyActor);
+
+            var objectResult = Assert.IsAssignableFrom<ObjectResult>(result);
+            Assert.Equal(StatusCodes.Status403Forbidden, objectResult.StatusCode);
+            Assert.Equal(WorkflowReasonCodes.WorkflowActorMismatch,
+                Assert.IsType<Response<WorkflowTaskTransitionResponse>>(objectResult.Value).ReasonCode);
+            mediator.VerifyNoOtherCalls();
+        }
     }
 
     [Fact]

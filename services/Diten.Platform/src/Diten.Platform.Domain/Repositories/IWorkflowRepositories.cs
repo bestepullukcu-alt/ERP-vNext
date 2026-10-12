@@ -69,6 +69,13 @@ public interface IWorkflowInstanceRepository
         (await GetAllForTenantAsync(ct))
             .Where(x => string.Equals(x.ObjectType, objectType, StringComparison.Ordinal) && objectIds.Contains(x.ObjectId))
             .ToList();
+
+    // BL-484 — GetByIdAsync for several instances in ONE read (tenant scoped, non-deleted): an id that is not a live
+    // instance of this tenant is simply absent. Default = in-memory filter for test doubles.
+    async Task<IReadOnlyList<WorkflowInstance>> ListByIdsAsync(
+        IReadOnlyCollection<Guid> ids,
+        CancellationToken ct = default) =>
+        (await GetAllForTenantAsync(ct)).Where(x => ids.Contains(x.Id)).ToList();
 }
 
 public interface IApprovalTaskRepository
@@ -77,6 +84,28 @@ public interface IApprovalTaskRepository
     Task<ApprovalTask?> GetByIdAsync(Guid id, CancellationToken ct = default);
     Task<ApprovalTask?> GetFirstByInstanceIdAsync(Guid workflowInstanceId, CancellationToken ct = default);
     Task<ApprovalTask?> GetActiveByInstanceIdAsync(Guid workflowInstanceId, CancellationToken ct = default);
+
+    /// <summary>
+    /// BL-484 — <see cref="GetActiveByInstanceIdAsync"/> for several instances in ONE read: every open task of these
+    /// instances, NEWEST FIRST (ties by id, the same order the single read uses), so the first one listed for an instance
+    /// is the one <see cref="GetActiveByInstanceIdAsync"/> answers. The default asks one instance at a time (what an
+    /// in-memory double needs); the store overrides it.
+    /// </summary>
+    async Task<IReadOnlyList<ApprovalTask>> ListActiveByInstanceIdsAsync(
+        IReadOnlyCollection<Guid> workflowInstanceIds, CancellationToken ct = default)
+    {
+        var active = new List<ApprovalTask>();
+        foreach (var instanceId in workflowInstanceIds.Distinct())
+        {
+            if (await GetActiveByInstanceIdAsync(instanceId, ct) is { } task)
+            {
+                active.Add(task);
+            }
+        }
+
+        return active;
+    }
+
     Task<IReadOnlyList<ApprovalTask>> ListByInstanceIdAsync(Guid workflowInstanceId, CancellationToken ct = default);
     Task<IReadOnlyList<ApprovalTask>> GetAllForTenantAsync(CancellationToken ct = default);
     Task<IReadOnlyList<ApprovalTask>> ListOverdueTasksAsync(

@@ -424,9 +424,15 @@
     // Non-conforming consumes the WP-CT-BE-A diagnostics (a READ over the live, possibly unsaved spine — the backend
     // classifier is the single source; nothing is re-derived here) and the WP-CT-BE-B resolutions write ("Yok say").
     // Conformance is never enforced (D8): a resolution only records the decision, no relationship is changed or deleted.
-    // Actions are draft-only. Outputs (knowledge paths / journeys / visits) have no reverse reference to a chain
-    // template today, so they show "—" — never an invented count.
+    // Actions are draft-only.
+    // WP-KP-CH-1 — Outputs come from the CRM outputs read (paths whose KP-1 ChainRef is this chain, journeys using them
+    // by KP-3's usage rule, the COUNT of upcoming planned visits). "—" only when the read failed; a section the actor
+    // may not read in detail shows its count only. A new (unsaved) template has no outputs yet.
     let currentRow = null;           // the loaded template (null on create)
+    let outputs = null;              // last outputs payload, or null
+    let outputsState = 'idle';       // idle | loading | ready | error
+    let outputsAllVersions = false;  // "show other versions too"
+    let outputsSeq = 0;
     let ignoredIds = new Set();      // IgnoredNonConformingRelationshipIds (saved: persisted per click; new: Create payload)
     let diag = null;                 // last diagnostics payload { items, total, conformingCount, orderCount, outCount }
     let diagState = 'idle';          // idle | loading | ready | error
@@ -491,6 +497,64 @@
 
     const kv = (label, value) => `<div class="d-flex justify-content-between gap-2 small py-1 border-bottom">
             <span class="text-muted">${esc(label)}</span><span class="text-end text-heading">${value}</span></div>`;
+
+    // ─── WP-KP-CH-1: Outputs ────────────────────────────────────────────────────────────────────────────────────
+    const loadOutputs = async () => {
+        const id = currentRow?.conceptChainTemplateId;
+        if (!id) { outputs = null; outputsState = 'idle'; renderConnections(); return; }
+        const seq = ++outputsSeq;
+        outputsState = 'loading';
+        renderConnections();
+        try {
+            const data = await getJson(`/concept-chain-templates/${encodeURIComponent(id)}/outputs?includeOtherVersions=${outputsAllVersions ? 'true' : 'false'}`);
+            if (seq !== outputsSeq) return;
+            outputs = data; outputsState = 'ready';
+        } catch {
+            if (seq !== outputsSeq) return;
+            outputs = null; outputsState = 'error';
+        }
+        renderConnections();
+    };
+    const PATH_STATUS_KEYS = {
+        draft: 'PathStatusDraft', review: 'PathStatusReview', approved: 'PathStatusApproved',
+        published: 'PathStatusPublished', inactive: 'PathStatusInactive', archived: 'PathStatusArchived'
+    };
+    const PATH_STATUS_TONES = { draft: 'secondary', review: 'warning', approved: 'info', published: 'success', inactive: 'secondary', archived: 'secondary' };
+    const pathStatusBadge = status => {
+        const s = norm(status).toLowerCase();
+        return `<span class="badge bg-label-${PATH_STATUS_TONES[s] || 'secondary'}">${esc(L[PATH_STATUS_KEYS[s]] || s)}</span>`;
+    };
+    const outputsHtml = () => {
+        if (!currentRow?.conceptChainTemplateId) return `<div class="form-text">${esc(L.OutputsAfterSave || '')}</div>`;
+        if (outputsState !== 'ready' || !outputs) {
+            const value = outputsState === 'loading' ? `<span class="text-muted">${esc(L.Loading || '')}</span>` : dash;
+            return `${kv(L.KnowledgePaths || '', value)}${kv(L.Journeys || '', value)}${kv(L.Visits || '', value)}`;
+        }
+        const o = outputs;
+        const restrictedNote = `<div class="form-text">${esc(L.OutputsRestricted || '')}</div>`;
+        const pathRows = o.pathsRestricted ? restrictedNote : (o.paths || []).map(p => {
+            const meta = [p.countryCode, p.languageCode, p.pathVersion ? `v${p.pathVersion}` : '', outputsAllVersions && p.chainVersion ? fmtN(L.OutputsChainVersion || '{0}', p.chainVersion) : '']
+                .filter(Boolean).map(esc).join(' · ');
+            return `<li class="py-1 border-bottom">
+                    <a class="small fw-medium" href="/CRM/KnowledgePaths/${encodeURIComponent(p.pathId)}">${esc(p.pathCode)} — ${esc(p.pathName)}</a>
+                    <div class="d-flex flex-wrap align-items-center gap-1 small text-muted">${meta} ${pathStatusBadge(p.pathStatus)}${p.isCurrentRelease ? ` <span class="badge bg-label-success">${esc(L.OutputsCurrentRelease || '')}</span>` : ''}</div>
+                </li>`;
+        }).join('');
+        const journeyRows = o.journeysRestricted ? restrictedNote : (o.journeys || []).map(j => `<li class="py-1 border-bottom">
+                    <a class="small fw-medium" href="/CRM/ContentEngagementJourneys">${esc(j.journeyCode)} — ${esc(j.journeyName)}</a>
+                    <div class="small text-muted">${esc(L[`JourneyStatus_${norm(j.journeyStatus).toLowerCase()}`] || j.journeyStatus || '')}${j.languageCode ? ` · ${esc(j.languageCode)}` : ''} · ${esc(fmtN(L.OutputsStageCount || '{0}', j.stageCount))}</div>
+                </li>`).join('');
+        return `
+            ${kv(L.KnowledgePaths || '', esc(fmtN(L.OutputsPathCount || '{0} · {1}', o.pathCount, o.currentReleaseCount)))}
+            ${o.pathCount > 0 ? `<ul class="list-unstyled mb-2 js-outputs-paths">${pathRows}</ul>` : ''}
+            ${kv(L.Journeys || '', esc(String(o.journeyCount)))}
+            ${o.journeyCount > 0 ? `<ul class="list-unstyled mb-2 js-outputs-journeys">${journeyRows}</ul>` : ''}
+            ${kv(L.Visits || '', esc(fmtN(L.OutputsPlannedVisits || '{0}', o.plannedVisitCount)))}
+            <div class="form-check form-switch small mt-2">
+                <input class="form-check-input js-outputs-all-versions" type="checkbox" id="tplOutputsAllVersions"${outputsAllVersions ? ' checked' : ''}>
+                <label class="form-check-label" for="tplOutputsAllVersions">${esc(L.OutputsAllVersions || '')}</label>
+            </div>`;
+    };
     const renderConnections = () => {
         const host = document.getElementById('tplConnections');
         if (!host) return;
@@ -519,10 +583,7 @@
             ${kv(L.ForWhom || '', forWhomText)}
             ${kv(L.Moderator || '', moderator ? esc(moderatorLabel(moderator)) : dash)}
             <h6 class="small text-uppercase text-muted fw-semibold mt-3 mb-1">${esc(L.Outputs || '')}</h6>
-            ${kv(L.KnowledgePaths || '', dash)}
-            ${kv(L.Journeys || '', dash)}
-            ${kv(L.Visits || '', dash)}
-            <div class="form-text">${esc(L.OutputsNoSource || '')}</div>
+            ${outputsHtml()}
             <h6 class="small text-uppercase text-muted fw-semibold mt-3 mb-2">${esc(L.DataFlow || '')}</h6>
             <div class="d-flex flex-wrap align-items-center gap-1">${flow}</div>`;
     };
@@ -894,6 +955,7 @@
         renderPalette();
         renderConnections();
         void loadVersions();
+        void loadOutputs();   // WP-KP-CH-1
     };
 
     // ─── event wiring ─────────────────────────────────────────────────────────────
@@ -1025,6 +1087,12 @@
                 if (btn && window.bootstrap?.Tab) window.bootstrap.Tab.getOrCreateInstance(btn).show();
                 document.getElementById('tplSidePanel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
+        });
+        // WP-KP-CH-1 — "show other versions too" re-reads the outputs (renderConnections rebuilds the switch).
+        document.addEventListener('change', event => {
+            if (!event.target.matches?.('.js-outputs-all-versions')) return;
+            outputsAllVersions = event.target.checked;
+            void loadOutputs();
         });
         ['tplForWhom', 'tplModeratorRoleType'].forEach(id => {
             const el = document.getElementById(id);

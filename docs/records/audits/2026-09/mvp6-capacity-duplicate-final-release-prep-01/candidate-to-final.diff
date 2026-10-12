@@ -1,0 +1,49 @@
+diff --git a/sandop-capacity.openapi.yaml b/sandop-capacity.openapi.yaml
+--- a/sandop-capacity.openapi.yaml
++++ b/sandop-capacity.openapi.yaml
+@@ -8,10 +8,10 @@
+     provenance, never a second demand source of record. Tenant and LegalEntity
+     scope are resolved from authenticated server context and are never accepted
+     in request bodies.
+-  version: 3.0.0-rc.1
+-  x-status: CANDIDATE
++  version: 3.0.0
++  x-status: FROZEN
+   x-contract-version: v1
+-  x-semantics-annex: sandop-capacity-semantics-v3.0.0-rc.1.md
++  x-semantics-annex: sandop-capacity-semantics-v3.0.0.md
+   x-owner: [MOD-0190, MOD-0192]
+   x-consumes: [DEMAND]
+ servers:
+diff --git a/sandop-capacity-semantics.md b/sandop-capacity-semantics.md
+--- a/sandop-capacity-semantics.md
++++ b/sandop-capacity-semantics.md
+@@ -1,8 +1,8 @@
+-# SANDOP-CAPACITY semantics v3.0.0-rc.1 — UNAPPROVED successor candidate
++# SANDOP-CAPACITY semantics v3.0.0
+ 
+-This candidate succeeds the published SANDOP-CAPACITY 2.0.0 YAML and annex; it is not published and inherits no final artifact consent. Proposed metadata is `info.version: 3.0.0-rc.1`, `x-status: CANDIDATE`, with unchanged routes and wire `contractVersion: v1`. The conservative proposed major line flags exact-error-code consumer risk; metadata does not negotiate the same-route cutover. Final version, exact artifact consent, canonical publication and duplicate-name production implementation remain separate gates under the actual C decision of 2026-09-22.
++This annex specifies SANDOP-CAPACITY 3.0.0, succeeding the 2.0.0 contract. Metadata is `info.version: 3.0.0`, `x-status: FROZEN`, with unchanged routes and wire `contractVersion: v1`. The major line identifies exact-error-code consumer risk; metadata does not negotiate the same-route cutover. Publication, consumer consent and runtime application are recorded separately and are not established by this document's metadata.
+ 
+-The sole behavioral delta is the `createCapacityScenario` duplicate exact-name 409 described below. All other 2.0.0 operation, lifecycle, fixture, transport, idempotency, executor and event semantics are retained. Earlier 2.0.0 consent/publication applies only to its exact baseline bytes and is not transferred here. This candidate grants no runtime, pack promotion, consumer consent or release authority.
++The sole behavioral delta from 2.0.0 is the `createCapacityScenario` duplicate exact-name 409 described below. All other 2.0.0 operation, lifecycle, fixture, transport, idempotency, executor and event semantics are retained. Earlier exact-byte consent is not automatically portable to another artifact. Contract publication itself grants no runtime or pack-promotion authority.
+ 
+ Historical executor design provenance is unchanged: `DECISION.md` SHA-256 `cfddf953a1a98107869417ef8afbcad5f578fcfde2a8cad8e1d2b6b05197cc5d`; its exact source and retained rules appear in the executor section below. This successor adds no executor authority.
+ 
+@@ -47,13 +47,13 @@
+ 
+ For two otherwise valid different-key requests racing for the same active exact name in one eligible scope, one committed create returns 201 and the losing unique-name operation returns the same defined 409 as deterministic detection, with zero additional scenario, receipt, audit or Pending outbox for the loser. Roll back any staged losing write set. Resolve a same-key receipt before classifying a duplicate-key error: a receipt/index collision is not automatically a scenario-name collision. Revalidation must preserve target, receipt, lifecycle and fixture precedence. An arbitrary duplicate-key error, exhausted transient retries or unresolved commit is not proof of a name conflict. Existing known-failure 503 and receipt-first unknown-commit recovery remain unchanged: unresolved commit returns `COMMIT_RESULT_UNRESOLVED`, with no zero-write claim; a found receipt returns its original result. No speculative 409 may mask uncertain commit or reconciliation read failure.
+ 
+-These are candidate acceptance requirements, not evidence that the production unique-index race implementation is fixed. Source application requires the separately approved published successor and consumer/cutover decision.
++These are contract acceptance requirements, not evidence that the production unique-index race implementation is fixed. Source application requires this contract to be separately approved and published, separate runtime authorization, and the consumer/cutover decision.
+ 
+ ## Lifecycle/fixture boundary that published wire errors depend on
+ 
+-0190: Create Draft/null; capture from Draft or InReview appends immutable snapshot and sets InReview; sign-off only InReview against any same-plan snapshot, one decision per snapshot/role, no automatic plan Approved/Rejected even after all five roles approve. The sign-off state-conflict code is included in the published 2.0.0 contract. 0192: Capacity plan/scenario remain Draft in this bounded slice; evaluation alone may progress Accepted→Running→Completed/Failed under the **design-approved, not runtime-authorized** module-owned executor. The owner approved the startup+10-second scan, 30-second fenced lease and three-attempt **design for candidate preparation**, including the exact `DECISION.md` SHA-256 above; runtime implementation is still unauthorized. Terminal values come only from the exact fixture oracle `CAPACITY-EVAL-FIXTURE-192-01@1`; no live optimizer, supply-constraint source or Event Bus publisher. A Pending outbox event is written at terminal commit, no publisher delivery claim. Until Phase 1.5 and runtime DEV/VER authorization, terminal E4 acceptance remains HELD.
++0190: Create Draft/null; capture from Draft or InReview appends immutable snapshot and sets InReview; sign-off only InReview against any same-plan snapshot, one decision per snapshot/role, no automatic plan Approved/Rejected even after all five roles approve. The sign-off state-conflict code is included in the published 2.0.0 contract. 0192: Capacity plan/scenario remain Draft in this bounded slice; evaluation alone may progress Accepted→Running→Completed/Failed under the **design-approved** module-owned executor, with runtime authorization recorded separately. The owner approved the startup+10-second scan, 30-second fenced lease and three-attempt **design for candidate preparation**, including the exact `DECISION.md` SHA-256 above; this contract does not itself grant runtime implementation authority. Terminal values come only from the exact fixture oracle `CAPACITY-EVAL-FIXTURE-192-01@1`; no live optimizer, supply-constraint source or Event Bus publisher. A Pending outbox event is written at terminal commit, no publisher delivery claim. Terminal E4 acceptance requires separately recorded Phase 1.5 and runtime DEV/VER authorization and evidence.
+ 
+-The four approved scope limits are respected: exact tenant/LE test fixture for DEMAND with no producer endpoint; local trusted JWT actor/no Workflow; atomic Pending outbox/no publisher; Capacity fixture references/literal results only. A fixture PASS is not live DEMAND version/checksum or constraint producer validation. The 400/409/422/503 wire cases are included in the published amendment. Earlier executor/lifecycle/replay approvals were for candidate preparation; exact-hash consumer consent and publication were granted separately. Static candidate results alone do not prove runtime uptake.
++The four approved scope limits are respected: exact tenant/LE test fixture for DEMAND with no producer endpoint; local trusted JWT actor/no Workflow; atomic Pending outbox/no publisher; Capacity fixture references/literal results only. A fixture PASS is not live DEMAND version/checksum or constraint producer validation. The 400/409/422/503 wire cases are included in the published amendment. Earlier executor/lifecycle/replay approvals were for candidate preparation; exact-hash consumer consent and publication were granted separately. Static contract results alone do not prove runtime uptake.
+ 
+ 
+ ## MOD-0192 executor design bound to exact approved decision hash

@@ -1,0 +1,2 @@
+  Failed Diten.Web.Tests.Controllers.ShipmentJsonAdapterChallengeTests.Unauthenticated_adapter_uses_json_401_while_page_keeps_login_redirect [2 s]
+Failed!  - Failed:     1, Passed:   161, Skipped:     0, Total:   162, Duration: 6 s - Diten.Web.Tests.dll (net8.0)

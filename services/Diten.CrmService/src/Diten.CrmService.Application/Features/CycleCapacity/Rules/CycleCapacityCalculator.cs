@@ -11,14 +11,19 @@ namespace Diten.CrmService.Application.Features.CycleCapacity.Rules;
 ///
 /// <para><b>The formula (normative).</b> For each month <c>m</c>:</para>
 /// <code>
-/// fieldDays(m)        = max(0, wcWorkingDays(m) − meeting − training − vacation)
-/// availableMinutes(m) = DailyWorkMinutes × fieldDays(m)
-/// spendMinutes(m)     = (Traveling + Report + Quiz) × fieldDays(m)
-///                     + MicroTargetingDayCount(m) × MicroTargetingDuration(m)
-/// visitMinutes(m)     = max(0, availableMinutes(m) − spendMinutes(m))
-/// minutesPerVisit     = PromoProductTime + NonPromoProductTime          // write path guarantees &gt; 0
-/// TotalVisitNumber(m) = max(0, round(visitMinutes(m) ÷ minutesPerVisit × Fte, AwayFromZero))
+/// fieldDays(m)         = max(0, wcWorkingDays(m) − meeting − training − vacation)
+/// availableMinutes(m)  = DailyWorkMinutes × fieldDays(m)
+/// dailyFixedMinutes(m) = capacity.DailyFixedMinutes() × fieldDays(m)       // WP-CAP-MODEL: typical = travel + quiz
+/// microTargeting(m)    = min(MicroTargetingDayCount(m), fieldDays(m)) × MicroTargetingDuration(m)   // E8 clip
+/// spendMinutes(m)      = dailyFixedMinutes(m) + microTargeting(m)
+/// visitMinutes(m)      = max(0, availableMinutes(m) − spendMinutes(m))     // = RemainingMinutes
+/// minutesPerVisit      = capacity.TypicalVisitMinutes()                    // typical visit, or legacy promo + non-promo
+/// TotalVisitNumber(m)  = max(0, round(visitMinutes(m) ÷ minutesPerVisit × Fte, AwayFromZero))
 /// </code>
+/// <para><b>WP-CAP-MODEL — one visit-duration model.</b> The per-visit and per-day minutes come from the domain methods
+/// (<c>TypicalVisitMinutes</c> / <c>DailyFixedMinutes</c>) the visit planner also reads. A legacy row (no typical
+/// fields) still answers exactly its pre-WP-CAP-MODEL figure, except where E8's clip removes micro-targeting days a
+/// month could never hold.</para>
 ///
 /// <para><b>Weekends and public holidays are NOT subtracted here, and that is the point.</b>
 /// <c>wcWorkingDays</c> comes from the working calendar's <c>working-days-between</c>, which has already excluded
@@ -78,7 +83,30 @@ public static class CycleCapacityCalculator
         /// rather than to the cycle.</summary>
         decimal Fte,
 
-        int TotalVisitNumber);
+        int TotalVisitNumber,
+
+        /// <summary>WP-CAP-MODEL — the month's fixed per-day charges: <c>DailyFixedMinutes() × FieldDays</c>.</summary>
+        int DailyFixedMinutes,
+
+        /// <summary>WP-CAP-MODEL — minutes left for visits (the waterfall's last step; equals <see cref="VisitMinutes"/>).</summary>
+        int RemainingMinutes,
+
+        /// <summary>WP-CAP-MODEL — the per-visit divisor this month was divided by.</summary>
+        int TypicalVisitMinutes);
+
+    /// <summary>WP-CAP-MODEL — the cycle totals. Every figure is the SUM of the month rows (visits are rounded per
+    /// month and never re-rounded here); <see cref="AverageFte"/> is the plain mean of the months' FTE, rounded to two
+    /// decimals (AwayFromZero).</summary>
+    public sealed record CapacityTotals(
+        int WorkingDays,
+        int DeductedDays,
+        int FieldDays,
+        int AvailableMinutes,
+        int DailyFixedMinutes,
+        int MicroTargetingMinutes,
+        int RemainingMinutes,
+        int Visits,
+        decimal AverageFte);
 
     /// <summary>
     /// The whole answer. <see cref="TotalVisitNumber"/> is <c>null</c> — never <c>0</c> — whenever
@@ -87,6 +115,8 @@ public static class CycleCapacityCalculator
     /// <para><b>FU07 removed the cycle-wide <c>Fte</c>.</b> There is no such number any more: each month carries its
     /// own, and publishing a single one would have to invent an average nobody authored.</para>
     /// </summary>
+    /// <remarks>WP-CAP-MODEL — <see cref="Totals"/> is <c>null</c> on an unresolved answer for the same reason
+    /// <see cref="TotalVisitNumber"/> is.</remarks>
     public sealed record CapacityCalculation(
         string Resolution,
         bool IsEstimate,
@@ -94,12 +124,16 @@ public static class CycleCapacityCalculator
         int MinutesPerVisit,
         IReadOnlyList<MonthCalculation> Months,
         IReadOnlyList<string> ReasonCodes,
-        string Reason);
+        string Reason,
+        string VisitModel,
+        int TypicalVisitMinutes,
+        int DailyFixedMinutes,
+        CapacityTotals? Totals);
 
     public static CapacityCalculation Calculate(CapacityEntity capacity, IReadOnlyList<ResolvedMonth> resolvedMonths)
     {
-        var minutesPerVisit = capacity.MinutesPerVisit();
-        var dailySpend = capacity.DailySpendMinutes();
+        var minutesPerVisit = capacity.TypicalVisitMinutes();
+        var dailyFixed = capacity.DailyFixedMinutes();
 
         var byMonth = capacity.Months.ToDictionary(m => (m.Year, m.MonthNumber));
         var months = new List<MonthCalculation>(resolvedMonths.Count);
@@ -122,8 +156,10 @@ public static class CycleCapacityCalculator
             var calendarDays = (int)(resolved.Window.RangeEnd.UtcDateTime.Date
                                      - resolved.Window.RangeStart.UtcDateTime.Date).TotalDays + 1;
             var availableMinutes = capacity.DailyWorkMinutes * fieldDays;
-            var microTargetingMinutes = input.MicroTargetingMinutes();
-            var spendMinutes = (dailySpend * fieldDays) + microTargetingMinutes;
+            // E8 — micro-targeting days beyond the month's field days cannot happen, so they are clipped.
+            var microTargetingMinutes = input.MicroTargetingMinutes(fieldDays);
+            var dailyFixedMinutes = dailyFixed * fieldDays;
+            var spendMinutes = dailyFixedMinutes + microTargetingMinutes;
             var visitMinutes = Math.Max(0, availableMinutes - spendMinutes);
 
             months.Add(new MonthCalculation(
@@ -146,7 +182,10 @@ public static class CycleCapacityCalculator
                 input.Fte,
                 // FU07 — the row's OWN multiplier. Reading a cycle-wide FTE here was what made a seasonal field force
                 // unsayable.
-                Visits(visitMinutes, minutesPerVisit, input.Fte)));
+                Visits(visitMinutes, minutesPerVisit, input.Fte),
+                dailyFixedMinutes,
+                visitMinutes,
+                minutesPerVisit));
         }
 
         return new CapacityCalculation(
@@ -156,8 +195,27 @@ public static class CycleCapacityCalculator
             minutesPerVisit,
             months,
             new[] { CycleCapacityReasonCodes.CapacityOk },
-            "Capacity estimated from the published working calendar and the authored activity budget.");
+            "Capacity estimated from the published working calendar and the authored activity budget.",
+            capacity.VisitModel(),
+            minutesPerVisit,
+            dailyFixed,
+            Totals(months));
     }
+
+    /// <summary>WP-CAP-MODEL — the cycle totals, each the sum of the month rows.</summary>
+    public static CapacityTotals Totals(IReadOnlyList<MonthCalculation> months)
+        => new(
+            months.Sum(m => m.WorkingDays),
+            months.Sum(m => m.DeductedDays),
+            months.Sum(m => m.FieldDays),
+            months.Sum(m => m.AvailableMinutes),
+            months.Sum(m => m.DailyFixedMinutes),
+            months.Sum(m => m.MicroTargetingMinutes),
+            months.Sum(m => m.RemainingMinutes),
+            months.Sum(m => m.TotalVisitNumber),
+            months.Count == 0
+                ? 0m
+                : Math.Round(months.Average(m => m.Fte), 2, MidpointRounding.AwayFromZero));
 
     /// <summary>
     /// The honest empty answer. Used whenever ANY month failed to resolve — a partial table is never returned, mirroring
@@ -172,10 +230,14 @@ public static class CycleCapacityCalculator
             resolution,
             IsEstimate: true,
             TotalVisitNumber: null,
-            capacity.MinutesPerVisit(),
+            capacity.TypicalVisitMinutes(),
             Array.Empty<MonthCalculation>(),
             reasonCodes.Count == 0 ? new[] { CycleCapacityReasonCodes.CalendarUnresolved } : reasonCodes,
-            reason);
+            reason,
+            capacity.VisitModel(),
+            capacity.TypicalVisitMinutes(),
+            capacity.DailyFixedMinutes(),
+            Totals: null);
 
     /// <summary>
     /// Visits from minutes. <c>minutesPerVisit</c> is guaranteed positive by the write path; the guard is kept anyway

@@ -1,0 +1,24 @@
+item	verdict	evidence_or_limit
+v2 exact source binding	PASS	Manifest e96578d0... 21/21; patch 3c05dfdf...; Index da254157...
+Pack/BC/shared binding	PASS	Pack 28019ebe...; BC 422/422; shared 18/18
+Fresh v2 Web build	PASS	0 errors; 16 offline/baseline warnings
+Focused Carrier UI tests	PASS	12/12 rework handoff
+Navigation/Gateway/registration tests	PASS	7/7, 1/1, 3/3
+Authorized Carrier page	PASS	HTTP 200; DataTable/create/status surfaces present
+Real tenant login	PASS	Admin and no-role user both 200 through Web→Gateway→Auth
+JWT enforcement	PASS	Unauthenticated Gateway and SupplyChain Carrier calls 401
+UAS-001	PASS	No-role page 200; denial/remediation only; no DataTable/create; adapter 403
+Real admin Carrier permissions	PASS	Read/create/status.change claims present
+Real scoped MVC→Gateway flow	FAIL	Auth TokenService emits no legal_entity_id; adapter fails closed 403
+Diagnostic empty list	PASS diagnostic	200 through MVC→Gateway→SupplyChain with non-Auth-issued signed scope token
+Diagnostic create	PASS diagnostic	201 for disposable VER-CAR-001
+Diagnostic replay	PASS diagnostic	201 and idempotentReplay=true using same key
+Diagnostic status	PASS diagnostic	200; Active→Suspended
+Tenant/LE hiding	PARTIAL	Fail-closed missing claim verified; cross-scope 404 not exercised with Auth-issued identity
+DataTables verifier	PARTIAL	82 PASS/9 FAIL; classified separately
+Seven languages	PASS static	44-key sets match in en/tr/fr/es/zh/ar/ru
+Arabic RTL	PARTIAL	Static shell mapping only; no screenshot
+Browser screenshots	PARTIAL	No browser surface; native Chrome root-thread-only
+Process cleanup	PASS	5000/5001/5056/5057/5061 stopped
+No source change	PASS	v2 immutable snapshot stayed 21/21 exact
+Overall	PARTIAL	UI rework works; Auth-issued legal-entity scope and screenshots remain unresolved

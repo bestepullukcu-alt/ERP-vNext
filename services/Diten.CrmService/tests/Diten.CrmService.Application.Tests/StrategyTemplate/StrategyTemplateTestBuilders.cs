@@ -52,15 +52,21 @@ internal static class StrategyTemplateTestBuilders
         => new(StrategyFrequencyIntentModes.DeclaredIntent, null, frequencyType, requiredVisitCount, periodType,
             "Two touches a week during launch.");
 
-    /// <summary>A product-only line: the honest way to say "this play promotes a product with no SKU split".</summary>
-    public static StrategyTemplateProductLineInput ProductOnly(Guid globalProductId, int sortOrder = 10)
-        => new(globalProductId, "GP-001", null, StrategySkuAllocationModes.ProductOnly, null, sortOrder, null);
+    /// <summary>A product-only line: the honest way to say "this play promotes a product with no SKU split". WP-SB-3a:
+    /// a promo line told with the product's published journey (<see cref="StrategyTemplateTestDoubles.JourneyFor"/>)
+    /// unless the test says otherwise.</summary>
+    public static StrategyTemplateProductLineInput ProductOnly(
+        Guid globalProductId, int sortOrder = 10, string? role = StrategyProductLineRoles.Promo, Guid? journeyId = null,
+        bool withJourney = true)
+        => new(globalProductId, "GP-001", null, StrategySkuAllocationModes.ProductOnly, null, sortOrder, null,
+            role, journeyId ?? (withJourney ? StrategyTemplateTestDoubles.JourneyFor(globalProductId) : null));
 
     public static StrategyTemplateProductLineInput SkuAllocated(
         Guid globalProductId,
         IReadOnlyList<(Guid GskuId, decimal Percentage)> allocations,
         decimal? lineWeight = null,
-        int sortOrder = 10)
+        int sortOrder = 10,
+        string? role = StrategyProductLineRoles.Promo)
         => new(
             globalProductId,
             "GP-001",
@@ -70,7 +76,9 @@ internal static class StrategyTemplateTestBuilders
                 .Select((a, index) => new StrategyTemplateSkuAllocationInput(a.GskuId, null, a.Percentage, index * 10))
                 .ToList(),
             sortOrder,
-            null);
+            null,
+            role,
+            StrategyTemplateTestDoubles.JourneyFor(globalProductId));
 
     public static StrategyTemplateContentBindingInput KnowledgePath(Guid pathId, int sortOrder = 10)
         => new(StrategyContentRefTypes.KnowledgePath, pathId, sortOrder, null);

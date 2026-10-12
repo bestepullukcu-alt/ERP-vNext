@@ -1,0 +1,9 @@
+  Diten.BuildingBlocks.Security.Secrets -> /Users/natig/.codex/worktrees/shipment-integration-rework-exec-01/ERP-vNext-recovery/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/bin/Release/net8.0/Diten.BuildingBlocks.Security.Secrets.dll
+  Diten.Platform.Common -> /Users/natig/.codex/worktrees/shipment-integration-rework-exec-01/ERP-vNext-recovery/services/Diten.Platform.Common/src/Diten.Platform.Common/bin/Release/net8.0/Diten.Platform.Common.dll
+  Diten.ApiGateway -> /Users/natig/.codex/worktrees/shipment-integration-rework-exec-01/ERP-vNext-recovery/gateway/Diten.ApiGateway/bin/Release/net8.0/Diten.ApiGateway.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:11.32

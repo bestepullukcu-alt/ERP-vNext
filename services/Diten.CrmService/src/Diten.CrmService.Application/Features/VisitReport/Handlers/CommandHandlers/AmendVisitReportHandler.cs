@@ -19,9 +19,15 @@ public sealed class AmendVisitReportHandler : IRequestHandler<AmendVisitReportCo
     private readonly ITenantContext _tenant;
     private readonly IActorContext _actor;
     private readonly IVisitReportRepository _reports;
+    private readonly IPlannedVisitRepository _plannedVisits;
+    private readonly ICallerScope _caller;
 
-    public AmendVisitReportHandler(ITenantContext tenant, IActorContext actor, IVisitReportRepository reports)
+    public AmendVisitReportHandler(
+        ITenantContext tenant, IActorContext actor, IVisitReportRepository reports,
+        IPlannedVisitRepository plannedVisits, ICallerScope caller)
     {
+        _plannedVisits = plannedVisits;
+        _caller = caller;
         _tenant = tenant;
         _actor = actor;
         _reports = reports;
@@ -48,7 +54,9 @@ public sealed class AmendVisitReportHandler : IRequestHandler<AmendVisitReportCo
         }
 
         var report = await _reports.GetByIdAsync(tenantId, request.VisitReportId, cancellationToken);
-        if (report is null)
+        // WP-VP-2 (B-1) — only a report on the caller's OWN planned visit can be amended (else 404, nothing leaks).
+        var plan = report is null ? null : await _plannedVisits.GetByIdAsync(tenantId, report.PlannedVisitId, cancellationToken);
+        if (report is null || !_caller.MayAccess(Diten.CrmService.Application.Features.PlannedVisit.PlannedVisitPermissions.ReadAll, plan?.Resource.ResourceId))
         {
             return Fail(new VisitReportValidation.Failure(
                 "Visit report not found.", VisitReportErrorCodes.ReportNotFound, 404));

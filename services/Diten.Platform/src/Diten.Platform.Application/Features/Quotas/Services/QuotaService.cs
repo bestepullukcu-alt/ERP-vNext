@@ -1,4 +1,5 @@
 using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Contracts;
 using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Repositories;
@@ -14,6 +15,7 @@ public sealed class QuotaService : IQuotaService
     private readonly ISubscriptionPlanRepository _planRepository;
     private readonly ITenantRegistryRepository _tenantRepository;
     private readonly ITenantModuleEntitlementRepository _entitlementRepository;
+    private readonly ITenantUserCountReader _tenantUserCounts;
     private readonly ILogger<QuotaService> _logger;
 
     public QuotaService(
@@ -23,6 +25,7 @@ public sealed class QuotaService : IQuotaService
         ISubscriptionPlanRepository planRepository,
         ITenantRegistryRepository tenantRepository,
         ITenantModuleEntitlementRepository entitlementRepository,
+        ITenantUserCountReader tenantUserCounts,
         ILogger<QuotaService> logger)
     {
         _usageRepository = usageRepository;
@@ -31,6 +34,7 @@ public sealed class QuotaService : IQuotaService
         _planRepository = planRepository;
         _tenantRepository = tenantRepository;
         _entitlementRepository = entitlementRepository;
+        _tenantUserCounts = tenantUserCounts;
         _logger = logger;
     }
 
@@ -256,6 +260,11 @@ public sealed class QuotaService : IQuotaService
             return Response<QuotaMutationDto>.Fail(limits.ErrorCode ?? QuotaErrorCodes.ConfigurationMissing, limits.StatusCode);
         }
 
+        if (IsCountedKey(request.QuotaKey))
+        {
+            return await TryConsumeCountedAsync(session, request, ct);
+        }
+
         if (await IsDuplicateAsync(session, request.TenantId, request.QuotaKey, request.Source, request.OperationId, request.SourceReference, false, ct))
         {
             return Response<QuotaMutationDto>.Fail(QuotaErrorCodes.DuplicateOperation, 409);
@@ -292,6 +301,18 @@ public sealed class QuotaService : IQuotaService
         if (validation is not null)
         {
             return Response<QuotaMutationDto>.Fail(validation, 400);
+        }
+
+        // BL-459 F1 — a counted key has nothing to give back: its usage is the live count, and the user who left is
+        // simply no longer in it. A release is answered, changes nothing, and double releases cannot drift the number.
+        if (IsCountedKey(request.QuotaKey))
+        {
+            var row = session is null
+                ? await _usageRepository.GetByTenantAndKeyAsync(request.TenantId, NormalizeKey(request.QuotaKey), ct)
+                : await _usageRepository.GetByTenantAndKeyAsync(session, request.TenantId, NormalizeKey(request.QuotaKey), ct);
+            return Response<QuotaMutationDto>.Success(row is null
+                ? new QuotaMutationDto(request.TenantId, NormalizeKey(request.QuotaKey), 0, 0, 0, false, null)
+                : ToMutation(row, 0, false, null));
         }
 
         if (await IsDuplicateAsync(session, request.TenantId, request.QuotaKey, request.Source, request.OperationId, request.SourceReference, false, ct))
@@ -454,13 +475,8 @@ public sealed class QuotaService : IQuotaService
 
         if (string.Equals(quotaKey, QuotaKeys.UsersMax, StringComparison.OrdinalIgnoreCase))
         {
-            var tenant = await _tenantRepository.GetByIdAsync(tenantId, ct);
-            if (tenant is null)
-            {
-                return null;
-            }
-
-            return tenant.AdminUsers.Count(user => user.Status is TenantAdminUserStatus.Invited or TenantAdminUserStatus.Active);
+            // BL-459 F1 — the tenant's users live in AuthService; count them there (null = AuthService cannot answer).
+            return await CountSeatedUsersAsync(tenantId, ct);
         }
 
         if (string.Equals(quotaKey, QuotaKeys.StorageGbMax, StringComparison.OrdinalIgnoreCase))
@@ -475,6 +491,70 @@ public sealed class QuotaService : IQuotaService
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// BL-459 F1 — keys whose usage is a COUNT of live things, not a counter moved by consume/release. Today only
+    /// <see cref="QuotaKeys.UsersMax"/>: the counter drifted (users created before enforcement, users created while
+    /// Platform was away, releases of seats never taken, the same admin released from two screens).
+    /// </summary>
+    private static bool IsCountedKey(string quotaKey) =>
+        string.Equals(NormalizeKey(quotaKey), QuotaKeys.UsersMax, StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// The seats in use: AuthService's live Active + Invited users. Inactive is not a seat — the account cannot sign in
+    /// (deactivation revokes its sessions); switching it back on asks this same question in AuthService.
+    /// </summary>
+    private async Task<decimal?> CountSeatedUsersAsync(Guid tenantId, CancellationToken ct)
+    {
+        var counts = await _tenantUserCounts.GetCountsAsync(tenantId, ct);
+        return counts is null ? null : counts.Active + counts.Invited;
+    }
+
+    /// <summary>
+    /// BL-459 F1 — consume for a counted key: ask (count + amount ≤ limit), never add. The count is written onto the
+    /// usage row as a snapshot, so the status, the 409's numbers and the warning notifications read what was decided on.
+    /// AuthService unreachable → <see cref="QuotaErrorCodes.UsageUnknown"/> (503): the caller decides (AuthService's
+    /// user create proceeds, open by owner decision).
+    /// </summary>
+    private async Task<Response<QuotaMutationDto>> TryConsumeCountedAsync(IPlatformTransactionSession? session, TryConsumeQuotaRequest request, CancellationToken ct)
+    {
+        var key = NormalizeKey(request.QuotaKey);
+        var rejected = ReasonOrDefault(request.Reason, "Rejected quota consume.");
+
+        var counted = await CountSeatedUsersAsync(request.TenantId, ct);
+        if (counted is null)
+        {
+            await WriteEventAsync(session, request.TenantId, request.QuotaKey, request.Amount, request.Source, rejected, request.OperationId, request.SourceReference, true, QuotaErrorCodes.UsageUnknown, ct);
+            return Response<QuotaMutationDto>.Fail(QuotaErrorCodes.UsageUnknown, 503);
+        }
+
+        var usage = session is null
+            ? await _usageRepository.GetByTenantAndKeyAsync(request.TenantId, key, ct)
+            : await _usageRepository.GetByTenantAndKeyAsync(session, request.TenantId, key, ct);
+        if (usage is null)
+        {
+            await WriteEventAsync(session, request.TenantId, request.QuotaKey, request.Amount, request.Source, rejected, request.OperationId, request.SourceReference, true, QuotaErrorCodes.UsageNotFound, ct);
+            return Response<QuotaMutationDto>.Fail(QuotaErrorCodes.UsageNotFound, 404);
+        }
+
+        if (usage.CurrentValue != counted.Value)
+        {
+            var now = DateTimeOffset.UtcNow;
+            usage = (session is null
+                ? await _usageRepository.SetCurrentValueAsync(request.TenantId, key, counted.Value, now, ct)
+                : await _usageRepository.SetCurrentValueAsync(session, request.TenantId, key, counted.Value, now, ct)) ?? usage;
+        }
+
+        if (counted.Value + request.Amount > usage.LimitValue)
+        {
+            await WriteEventAsync(session, request.TenantId, request.QuotaKey, request.Amount, request.Source, rejected, request.OperationId, request.SourceReference, true, QuotaErrorCodes.LimitExceeded, ct);
+            return Response<QuotaMutationDto>.Fail(QuotaErrorCodes.LimitExceeded, 409);
+        }
+
+        usage = await SyncNotificationStateAsync(session, usage, request.Source, request.Reason, request.OperationId, request.SourceReference, ct);
+        await WriteEventAsync(session, request.TenantId, request.QuotaKey, request.Amount, request.Source, ReasonOrDefault(request.Reason, "Quota seat check."), request.OperationId, request.SourceReference, false, null, ct);
+        return Response<QuotaMutationDto>.Success(ToMutation(usage, request.Amount, true, null));
     }
 
     private async Task<QuotaUsage> SyncNotificationStateAsync(IPlatformTransactionSession? session, QuotaUsage usage, string source, string? reason, string? operationId, string? sourceReference, CancellationToken ct)

@@ -1,0 +1,5 @@
+item	delta_most_likely	ledger	evidence
+baseline	1128	frozen+forecast	docs/records/audits/2026-09/mvp6-ct-audit-2026-09-25.md line 54 (CT-accepted share under Rev2 rules)
+0183-R2-04 root browser regression (A12 VER-02)	4	frozen+forecast	docs/records/audits/2026-09/mvp6-ct-disposition-a12-ver02-2026-09-26.md
+0185-2 Loads root seam / 3.1.0 publication	8	frozen+forecast	docs/records/audits/2026-09/mvp6-ct-disposition-q25-q32-2026-09-26.md
+FC-SR-PACK self-registration pack/DCP sections	0	forecast	CT: no product credit for pack text (docs/records/audits/2026-09/mvp6-ct-disposition-q46-q47-q49-2026-09-26.md; docs/records/audits/2026-09/mvp6-ct-disposition-q53-q54-2026-09-26.md)

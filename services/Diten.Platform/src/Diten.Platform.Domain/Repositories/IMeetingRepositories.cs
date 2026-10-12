@@ -90,6 +90,15 @@ public interface IMeetingRepository
     /// already follows for the "tasks" side of the same registry).</summary>
     Task<IReadOnlyList<Meeting>> ListByIdsAsync(IReadOnlyCollection<Guid> ids, CancellationToken ct = default);
 
+    /// <summary>
+    /// MOD-0280-FU01 T1b v2 F9 — the meetings among <paramref name="ids"/> whose start lies in [<paramref name="fromUtc"/>,
+    /// <paramref name="toUtc"/>), filtered IN THE DATABASE by the real implementation (time entry reads one week, not a
+    /// person's whole meeting history). The default filters in memory so every existing double keeps compiling.
+    /// </summary>
+    async Task<IReadOnlyList<Meeting>> ListByIdsStartingBetweenAsync(
+        IReadOnlyCollection<Guid> ids, DateTimeOffset fromUtc, DateTimeOffset toUtc, CancellationToken ct = default)
+        => (await ListByIdsAsync(ids, ct)).Where(m => m.StartAt >= fromUtc && m.StartAt < toUtc).ToList();
+
     /// <summary>Whether ANY live meeting still references this type — the "in use" check
     /// <c>DeleteMeetingTypeCommand</c> refuses on (pack §13, <c>MEETING_TYPE_IN_USE</c>), without loading every
     /// meeting in the tenant just to answer one boolean.</summary>
@@ -136,6 +145,14 @@ public interface IMeetingAttendeeRepository
     /// user's Accept/Decline, across every meeting in the tenant. Filtered at the query, not in memory — an
     /// actor's own Pending set stays small regardless of how large the tenant's meeting history grows.</summary>
     Task<IReadOnlyList<MeetingAttendee>> ListPendingByUserIdAsync(Guid userId, CancellationToken ct = default);
+
+    /// <summary>
+    /// WP-TASK-CALENDAR-ENGINE-01 — every invitation this user has NOT declined (Pending or Accepted), across every
+    /// meeting in the tenant: the calendar feed and the plan-overlap warning read "my meetings" from here. READ-ONLY
+    /// and filtered at the query like <see cref="ListPendingByUserIdAsync"/>; the date window is applied in memory by
+    /// the caller because <c>Meeting.StartAt</c> is stored as a BSON [ticks, offset] array (BL-030).
+    /// </summary>
+    Task<IReadOnlyList<MeetingAttendee>> ListNotDeclinedByUserIdAsync(Guid userId, CancellationToken ct = default);
 
     /// <summary>BL-406 — the one write for <see cref="MeetingAttendee.MailUndeliveredAt"/>. No <c>expectedVersion</c>,
     /// same reasoning as <see cref="UpdateAttendanceStatusAsync"/>: nothing else writes this field, and re-marking

@@ -1,0 +1,25 @@
+{
+  "phase": "matrixdom",
+  "extra": "decide",
+  "startedAt": "2026-09-27T12:26:22.476Z",
+  "web": "http://127.0.0.1:5901",
+  "playwright": "1.59.1",
+  "cases": {},
+  "png": [],
+  "console": [],
+  "toasts": [],
+  "dialogs": [],
+  "rootLeak": [],
+  "foreign": [
+    {
+      "tag": "matrixdom-decide",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "matrixdom-decide",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    }
+  ],
+  "error": "locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('#dt-claims') to be visible\n",
+  "endedAt": "2026-09-27T12:26:53.599Z"
+}

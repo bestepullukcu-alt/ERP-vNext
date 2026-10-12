@@ -1,0 +1,22 @@
+acceptance	verdict	evidence_or_gap
+Exact v2 source binding	PASS	21/21 manifest e96578d0...; no source change
+Isolated port separation	PASS	Web/Gateway/Auth/Platform/SupplyChain 5201/5200/5256/5257/5261
+UAS-001	PASS	Denial and remediation only; dt/create/status absent; browser console error count 0
+Authorized Carrier page	PASS	200 render with Carrier title, description, navigation and dt-carriers
+DataTables v2 desktop	PASS	data-dt-standard=v2; search/filter/column visibility/page length/empty state rendered
+GoldenReferenceSlim create	PASS	Offcanvas opens with four approved fields; three required plus optional externalReference
+Status UI	PARTIAL	Markup and permission surface present; live row action requires Auth-issued LE-scoped list data
+Seven Carrier languages	PASS	en,tr,fr,es,zh,ar,ru module title/description/add/headers/empty state
+Arabic RTL	PASS	html lang=ar dir=rtl and RTL Carrier layout observed
+Shared shell localization	PARTIAL	Search [CTRL + K] remained English in Arabic page
+Console errors	PASS	No JavaScript errors
+Console warnings	PARTIAL	10 distinct missing L10n key warnings
+Same-origin and Gateway-only browser traffic	PARTIAL	Web 5201 origin and Web→Gateway 5200 logs proven; browser request ledger unavailable
+Responsive 768/390	PARTIAL	Viewport API requests did not change window.innerWidth from 1280
+Screenshot capture	PASS browser-session	Four browser screenshots visibly captured and SHA-256-bound
+Screenshot durable PNG archive	PARTIAL	Browser URL policy blocked in-tool export; no alternate mechanism used
+Auth-issued list/create/replay/status	OPEN	legal_entity_id absent; fail-closed 403 preserved
+Tenant/LE cross-scope hiding	OPEN	Requires Lane A Auth handoff
+No source mutation	PASS	Evidence directory and disposable runtime only
+Overall	PARTIAL	Browser-independent UI coverage closed; exact gaps remain above
+

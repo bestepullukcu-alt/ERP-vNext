@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve"><value>My Timesheet</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Where your working time went this week, day by day.</value></data>
+  <data name="Disclaimer" xml:space="preserve"><value>This timesheet is an allocation of effort; it is not a statutory working-time (overtime) record.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Loading…</value></data>
+  <data name="PrevWeek" xml:space="preserve"><value>Previous week</value></data>
+  <data name="NextWeek" xml:space="preserve"><value>Next week</value></data>
+  <data name="Today" xml:space="preserve"><value>Today</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="CopyPreviousWeek" xml:space="preserve"><value>Copy previous week</value></data>
+  <data name="FillFromPlan" xml:space="preserve"><value>Fill from plan</value></data>
+  <data name="ReviewSuggestions" xml:space="preserve"><value>Review suggestions</value></data>
+  <data name="SidePanel" xml:space="preserve"><value>Notices</value></data>
+  <data name="SideToggle" xml:space="preserve"><value>Show or hide notices</value></data>
+  <data name="WeekLabel" xml:space="preserve"><value>{week} · {from} – {to}</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Draft</value></data>
+  <data name="StatusSubmitted" xml:space="preserve"><value>Submitted</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>Approved</value></data>
+  <data name="StatusRejected" xml:space="preserve"><value>Rejected</value></data>
+  <data name="StatusCorrection" xml:space="preserve"><value>Correction draft</value></data>
+  <data name="StatusSuperseded" xml:space="preserve"><value>Superseded</value></data>
+  <data name="MissingDays" xml:space="preserve"><value>{count} day(s) below target so far</value></data>
+  <data name="SourceManual" xml:space="preserve"><value>Manual</value></data>
+  <data name="SourceTimer" xml:space="preserve"><value>Timer</value></data>
+  <data name="SourceMeeting" xml:space="preserve"><value>Meeting</value></data>
+  <data name="SourcePlan" xml:space="preserve"><value>From plan</value></data>
+  <data name="UnreadableTask" xml:space="preserve"><value>Inaccessible task</value></data>
+  <data name="UnknownPerson" xml:space="preserve"><value>someone</value></data>
+  <data name="ColumnWork" xml:space="preserve"><value>Work</value></data>
+  <data name="ColumnTotal" xml:space="preserve"><value>Total</value></data>
+  <data name="RowTotal" xml:space="preserve"><value>Total</value></data>
+  <data name="RowTarget" xml:space="preserve"><value>Target</value></data>
+  <data name="CellAria" xml:space="preserve"><value>{row}, {day}</value></data>
+  <data name="EmptyWeek" xml:space="preserve"><value>Nothing recorded this week yet. Add a task or category row to start.</value></data>
+  <data name="EmptyDay" xml:space="preserve"><value>Nothing recorded on this day.</value></data>
+  <data name="DaySummary" xml:space="preserve"><value>Recorded {recorded} · target {target}</value></data>
+  <data name="MarkEdited" xml:space="preserve"><value>corrected</value></data>
+  <data name="MarkOutsideHours" xml:space="preserve"><value>{value} outside working hours</value></data>
+  <data name="MarkMinutesConflict" xml:space="preserve"><value>the minutes say you did not attend</value></data>
+  <data name="MarkFlaggedDay" xml:space="preserve"><value>long day — your approver will see it</value></data>
+  <data name="ConfirmedByMinutes" xml:space="preserve"><value>confirmed by minutes</value></data>
+  <data name="AcceptPlanValue" xml:space="preserve"><value>Add this planned time</value></data>
+  <data name="Attended" xml:space="preserve"><value>Attended</value></data>
+  <data name="DidNotAttend" xml:space="preserve"><value>Did not attend</value></data>
+  <data name="RowNote" xml:space="preserve"><value>Note</value></data>
+  <data name="RowNoteTitle" xml:space="preserve"><value>Notes · {row}</value></data>
+  <data name="NoteNeedsTime" xml:space="preserve"><value>Enter time on a day first; a note belongs to a day's entry.</value></data>
+  <data name="Note" xml:space="preserve"><value>Note</value></data>
+  <data name="AddTaskRow" xml:space="preserve"><value>+ Task row</value></data>
+  <data name="AddCategoryRow" xml:space="preserve"><value>+ Category row</value></data>
+  <data name="PickTask" xml:space="preserve"><value>Choose a task…</value></data>
+  <data name="PickCategory" xml:space="preserve"><value>Choose a category…</value></data>
+  <data name="NoTaskOptions" xml:space="preserve"><value>No task you can record time on was found.</value></data>
+  <data name="NoCategoryOptions" xml:space="preserve"><value>No active category. Ask your time administrator.</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Close" xml:space="preserve"><value>Close</value></data>
+  <data name="Apply" xml:space="preserve"><value>Apply</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Save draft</value></data>
+  <data name="Saved" xml:space="preserve"><value>Draft saved.</value></data>
+  <data name="SubmitWeek" xml:space="preserve"><value>Submit for approval</value></data>
+  <data name="Resubmit" xml:space="preserve"><value>Submit again</value></data>
+  <data name="SubmitConfirm" xml:space="preserve"><value>Submit this week for approval?</value></data>
+  <data name="Submitted" xml:space="preserve"><value>Week submitted for approval.</value></data>
+  <data name="Withdraw" xml:space="preserve"><value>Withdraw</value></data>
+  <data name="WithdrawConfirm" xml:space="preserve"><value>Withdraw this week from approval? It becomes a draft again.</value></data>
+  <data name="Withdrawn" xml:space="preserve"><value>Week withdrawn; it is a draft again.</value></data>
+  <data name="RequestCorrection" xml:space="preserve"><value>Request a correction</value></data>
+  <data name="CorrectionReason" xml:space="preserve"><value>Why does this approved week need a correction?</value></data>
+  <data name="StartCorrection" xml:space="preserve"><value>Start correction</value></data>
+  <data name="CorrectionStarted" xml:space="preserve"><value>A correction draft was opened. The approved week stays in force until the correction is approved.</value></data>
+  <data name="DiscardCorrection" xml:space="preserve"><value>Discard correction</value></data>
+  <data name="DiscardCorrectionConfirm" xml:space="preserve"><value>Discard this correction draft? The approved week stays as it is.</value></data>
+  <data name="DiscardChangesConfirm" xml:space="preserve"><value>You have unsaved changes on this week. Leave without saving?</value></data>
+  <data name="RejectedBand" xml:space="preserve"><value>Returned by {name} on {when}: “{reason}”. Correct the week and submit it again.</value></data>
+  <data name="WaitingApprovalOf" xml:space="preserve"><value>Waiting for {name}'s approval.</value></data>
+  <data name="WaitingApprovalUnnamed" xml:space="preserve"><value>Waiting for approval.</value></data>
+  <data name="ApprovedBand" xml:space="preserve"><value>Approved. Changes now go through a correction request.</value></data>
+  <data name="CorrectionBand" xml:space="preserve"><value>Correction of approved revision {revision}: “{reason}”. The approved revision stays in force until this one is approved.</value></data>
+  <data name="ReopenedBand" xml:space="preserve"><value>Reopened by a time administrator: “{reason}”.</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>Approval history</value></data>
+  <data name="HistorySubmitted" xml:space="preserve"><value>Submitted by {name}</value></data>
+  <data name="HistoryRejected" xml:space="preserve"><value>Returned by {name}</value></data>
+  <data name="HistoryApproved" xml:space="preserve"><value>Approved by {name}</value></data>
+  <data name="CopiedRows" xml:space="preserve"><value>{count} row(s) copied from the previous week, without their time.</value></data>
+  <data name="NothingToCopy" xml:space="preserve"><value>Nothing new to copy from the previous week.</value></data>
+  <data name="PlanValuesShown" xml:space="preserve"><value>Planned time is shown in grey; add it cell by cell or through Review suggestions.</value></data>
+  <data name="NoPlanValues" xml:space="preserve"><value>Your plan has no time to add for this week.</value></data>
+  <data name="ReviewMeetingItem" xml:space="preserve"><value>{day} · {title} · {value}</value></data>
+  <data name="ReviewPlanItem" xml:space="preserve"><value>{day} · {title} · {value} (plan)</value></data>
+  <data name="NoSuggestions" xml:space="preserve"><value>There are no suggestions for this week.</value></data>
+  <data name="AddSelected" xml:space="preserve"><value>Add selected</value></data>
+  <data name="InvalidDuration" xml:space="preserve"><value>Not a duration. Use 1:30, 1,5, 1.5 or 90m.</value></data>
+  <data name="RoundedTo" xml:space="preserve"><value>Rounded to the nearest {step} minutes: {value}.</value></data>
+  <data name="NoticeMidnightTitle" xml:space="preserve"><value>Timer closed at midnight</value></data>
+  <data name="NoticeOutsideOpenWeekTitle" xml:space="preserve"><value>Timer time on a locked week — request a correction</value></data>
+  <data name="NoticeDraftPendingTitle" xml:space="preserve"><value>Timer time not yet in the draft</value></data>
+  <data name="TooShortTitle" xml:space="preserve"><value>Too short to count</value></data>
+  <data name="Seconds" xml:space="preserve"><value>{value} s</value></data>
+  <data name="SideEmpty" xml:space="preserve"><value>No notices.</value></data>
+  <data name="CorrectCapturedTitle" xml:space="preserve"><value>Correct captured time</value></data>
+  <data name="MeasuredValue" xml:space="preserve"><value>Measured: {value}</value></data>
+  <data name="CorrectedValue" xml:space="preserve"><value>Corrected time</value></data>
+  <data name="AccessDeniedTitle" xml:space="preserve"><value>You do not have access to My Timesheet</value></data>
+  <data name="AccessDeniedMessage" xml:space="preserve"><value>Ask your administrator for access to this module.</value></data>
+  <data name="TimerChipLabel" xml:space="preserve"><value>Running timer</value></data>
+  <data name="TimerChipStop" xml:space="preserve"><value>Stop</value></data>
+  <data name="OpenTask" xml:space="preserve"><value>Open the task</value></data>
+  <data name="TimerStopped" xml:space="preserve"><value>Timer stopped.</value></data>
+  <data name="TimerStopFailed" xml:space="preserve"><value>The timer could not be stopped. Try again.</value></data>
+  <data name="MidnightNotice" xml:space="preserve"><value>Your timer ran until midnight and was closed. Check yesterday on My Timesheet.</value></data>
+  <data name="ErrGeneric" xml:space="preserve"><value>Something went wrong. Try again.</value></data>
+  <data name="ErrForbidden" xml:space="preserve"><value>You do not have permission for this action.</value></data>
+  <data name="ErrStepInvalid" xml:space="preserve"><value>Time is entered in {step}-minute steps, at most {maxRowHours} hours per entry.</value></data>
+  <data name="ErrTimerDraftsUnavailable" xml:space="preserve"><value>Timer time could not be brought into the draft just now. Try again in a moment.</value></data>
+  <data name="ErrFutureDate" xml:space="preserve"><value>Time cannot be recorded for a future day.</value></data>
+  <data name="ErrDateOutsideWeek" xml:space="preserve"><value>That day does not belong to this week.</value></data>
+  <data name="ErrTargetInvalid" xml:space="preserve"><value>That task cannot be used — it does not exist or you cannot open it.</value></data>
+  <data name="ErrDuplicateRow" xml:space="preserve"><value>The same task or category appears twice on one day.</value></data>
+  <data name="ErrNoteTooLong" xml:space="preserve"><value>A note can be at most {noteMax} characters.</value></data>
+  <data name="ErrCategoryInactive" xml:space="preserve"><value>That category is no longer active.</value></data>
+  <data name="ErrDayImplausible" xml:space="preserve"><value>A day cannot hold more than {maxDayHours} hours.</value></data>
+  <data name="ErrWeekKeyInvalid" xml:space="preserve"><value>That week could not be read.</value></data>
+  <data name="ErrWeekNotFound" xml:space="preserve"><value>That week was not found.</value></data>
+  <data name="ErrWeekNotOpen" xml:space="preserve"><value>This week is not open for changes.</value></data>
+  <data name="ErrWeekOutsideEditWindow" xml:space="preserve"><value>This week is older than the edit window. Ask a time administrator to reopen it.</value></data>
+  <data name="ErrEmptyWeek" xml:space="preserve"><value>An empty week cannot be submitted.</value></data>
+  <data name="ErrNoApprover" xml:space="preserve"><value>No approver was found for you. Ask your time administrator.</value></data>
+  <data name="ErrApprovalStartFailed" xml:space="preserve"><value>The approval could not be started. Try again.</value></data>
+  <data name="ErrWithdrawTooLate" xml:space="preserve"><value>Your approver has already decided; the week can no longer be withdrawn.</value></data>
+  <data name="ErrCorrectionReasonRequired" xml:space="preserve"><value>Write why the correction is needed.</value></data>
+  <data name="ErrCorrectionAlreadyOpen" xml:space="preserve"><value>A correction of this week is already open.</value></data>
+  <data name="ErrCorrectionNotAllowed" xml:space="preserve"><value>Only an approved week can be corrected.</value></data>
+  <data name="ErrCorrectionDraftNotFound" xml:space="preserve"><value>There is no correction draft to discard.</value></data>
+  <data name="ErrReopenReasonRequired" xml:space="preserve"><value>A reason is required to reopen a week.</value></data>
+  <data name="ErrReopenNotNeeded" xml:space="preserve"><value>This week does not need reopening.</value></data>
+  <data name="ErrConcurrencyConflict" xml:space="preserve"><value>The week changed meanwhile. Reload and try again.</value></data>
+  <data name="ErrSelfDecisionRefused" xml:space="preserve"><value>A decision on your own week was not accepted; submit it again.</value></data>
+  <data name="ErrApprovalInstanceClosed" xml:space="preserve"><value>That approval is already closed.</value></data>
+  <data name="ErrReopenOwnWeek" xml:space="preserve"><value>You cannot reopen your own week.</value></data>
+  <data name="ErrPersonNotFound" xml:space="preserve"><value>That person was not found.</value></data>
+  <data name="ErrTimerSwitchConcurrencyConflict" xml:space="preserve"><value>The timer setting changed meanwhile. Reload and try again.</value></data>
+  <data name="ErrApprovalNotFound" xml:space="preserve"><value>That approval was not found.</value></data>
+  <data name="ErrCategoryNotFound" xml:space="preserve"><value>That category was not found.</value></data>
+  <data name="ErrCategoryCodeInvalid" xml:space="preserve"><value>The category code is not valid.</value></data>
+  <data name="ErrCategoryCodeReserved" xml:space="preserve"><value>That category code is reserved.</value></data>
+  <data name="ErrCategoryCodeDuplicate" xml:space="preserve"><value>A category with that code already exists.</value></data>
+  <data name="ErrCategoryCodeImmutable" xml:space="preserve"><value>A category code cannot be changed.</value></data>
+  <data name="ErrCategoryLabelRequired" xml:space="preserve"><value>A category needs a label.</value></data>
+  <data name="ErrCategoryDescriptionTooLong" xml:space="preserve"><value>The description is too long.</value></data>
+  <data name="ErrCategorySortOrderInvalid" xml:space="preserve"><value>The sort order must be between 0 and 999.</value></data>
+  <data name="ErrCategoryConcurrencyConflict" xml:space="preserve"><value>The category changed meanwhile. Reload and try again.</value></data>
+  <data name="ErrSettingsPositionNotFound" xml:space="preserve"><value>That position was not found.</value></data>
+  <data name="ErrSettingsConcurrencyConflict" xml:space="preserve"><value>The settings changed meanwhile. Reload and try again.</value></data>
+  <data name="ErrLegalEntityRequired" xml:space="preserve"><value>A legal entity is required.</value></data>
+  <data name="ErrTimerSwitchReasonRequired" xml:space="preserve"><value>A reason is required to switch the timer on.</value></data>
+  <data name="ErrTimerDisabledForLegalEntity" xml:space="preserve"><value>The timer is not switched on for your legal entity. You can still enter time by hand.</value></data>
+  <data name="ErrTimerTaskNotHeld" xml:space="preserve"><value>The timer runs only on a task you hold.</value></data>
+  <data name="ErrTimerTaskNotInProgress" xml:space="preserve"><value>The timer runs only on a task in progress.</value></data>
+  <data name="ErrTimerNotRunning" xml:space="preserve"><value>No timer is running.</value></data>
+  <data name="ErrTimerConcurrencyConflict" xml:space="preserve"><value>The timer changed meanwhile. Reload and try again.</value></data>
+  <data name="ErrTimerUndoExpired" xml:space="preserve"><value>It is too late to undo that switch.</value></data>
+  <data name="ErrSuggestionNotFound" xml:space="preserve"><value>That suggestion was not found.</value></data>
+  <data name="ErrSuggestionAlreadyDecided" xml:space="preserve"><value>That suggestion was already decided.</value></data>
+  <data name="ErrSuggestionWithdrawn" xml:space="preserve"><value>That suggestion is no longer offered — the minutes say you did not attend.</value></data>
+  <data name="ErrSourceInvalid" xml:space="preserve"><value>The row's source is not valid.</value></data>
+  <data name="ErrSourceRequired" xml:space="preserve"><value>Every row must say where its time came from.</value></data>
+  <data name="ErrCapturedRowNotFound" xml:space="preserve"><value>That timer or meeting row is no longer in the draft. Reload the week.</value></data>
+  <data name="ErrRejectCommentRequired" xml:space="preserve"><value>A reason is required when returning a timesheet.</value></data>
+  <data name="TimeEntry.Category.ADMINISTRATION" xml:space="preserve"><value>Administration</value></data>
+  <data name="TimeEntry.Category.INTERNAL_MEETING" xml:space="preserve"><value>Internal meeting</value></data>
+  <data name="TimeEntry.Category.TRAINING" xml:space="preserve"><value>Training</value></data>
+  <data name="TimeEntry.Category.SUPPORT" xml:space="preserve"><value>Support</value></data>
+  <data name="TimeEntry.Category.TRAVEL" xml:space="preserve"><value>Travel</value></data>
+  <data name="NoticeTooSmall" xml:space="preserve"><value>“{typed}” minutes would round to zero, so the cell kept its value. Type 0 or clear the cell to remove the time.</value></data>
+  <data name="BareHoursRead" xml:space="preserve"><value>{typed} → {value} (read as hours). For minutes, type e.g. 15m.</value></data>
+  <data name="PendingRow" xml:space="preserve"><value>not saved yet</value></data>
+  <data name="PendingRowHint" xml:space="preserve"><value>A row without time is not saved. Enter time on a day to keep it.</value></data>
+  <data name="PendingRowsLeaveConfirm" xml:space="preserve"><value>Rows without time are not saved and will be lost. Leave this week anyway?</value></data>
+  <data name="LeaveDirtyAndPendingConfirm" xml:space="preserve"><value>You have unsaved changes, and rows without time are not saved. Leave this week anyway?</value></data>
+  <data name="CapturedZeroNotAllowed" xml:space="preserve"><value>Captured time cannot be corrected to zero. Correct it to at least {step} minutes and explain in the note.</value></data>
+  <data name="SaveFailedKept" xml:space="preserve"><value>The draft was not saved. Your changes are still on the page.</value></data>
+  <data name="SegmentsTitle" xml:space="preserve"><value>Timer runs behind this row</value></data>
+  <data name="SegmentLine" xml:space="preserve"><value>{start}–{end} · {duration}</value></data>
+  <data name="SegmentCutAtMidnight" xml:space="preserve"><value>cut at midnight</value></data>
+  <data name="ErrApprovalsQueryInvalid" xml:space="preserve"><value>The approvals list could not be read with these settings. Reload the page.</value></data>
+  <data name="SubmitNeedsTime" xml:space="preserve"><value>Enter time before submitting the week.</value></data>
+</root>

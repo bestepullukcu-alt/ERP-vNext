@@ -187,4 +187,16 @@
   <data name="Common.DtInfoFiltered" xml:space="preserve"><value>_MAX_ kayit icinden filtrelendi</value></data>
   <data name="AuditLog.DenyOnlyBadge" xml:space="preserve"><value>Yalnız reddedilenler</value></data>
   <data name="AuditLog.DenyOnlyNotice" xml:space="preserve"><value>Bu kayıt yalnızca reddedilen (deny) erişim kararlarını gösterir. İzin verilen erişimler politika gereği kaydedilmez (yalnız-reddetme temeli).</value></data>
+  <!-- BL-456 — AuthService user-lifecycle events (RequestType), shown in the Operation column and the detail title. -->
+  <data name="AuditLog.Event.user_invited" xml:space="preserve"><value>Kullanıcı davet edildi</value></data>
+  <data name="AuditLog.Event.user_created" xml:space="preserve"><value>Kullanıcı oluşturuldu</value></data>
+  <data name="AuditLog.Event.user_deleted" xml:space="preserve"><value>Kullanıcı silindi</value></data>
+  <data name="AuditLog.Event.user_deactivated" xml:space="preserve"><value>Kullanıcı pasifleştirildi</value></data>
+  <data name="AuditLog.Event.user_activated" xml:space="preserve"><value>Kullanıcı etkinleştirildi</value></data>
+  <data name="AuditLog.Event.user_password_reset_by_admin" xml:space="preserve"><value>Parola yönetici tarafından sıfırlandı</value></data>
+  <data name="AuditLog.Event.user_invitation_resent" xml:space="preserve"><value>Davet yeniden gönderildi</value></data>
+  <data name="AuditLog.Event.user_updated" xml:space="preserve"><value>Kullanıcı güncellendi</value></data>
+  <data name="AuditLog.Event.user_role_assigned" xml:space="preserve"><value>Kullanıcıya rol atandı</value></data>
+  <data name="AuditLog.Event.user_role_removed" xml:space="preserve"><value>Kullanıcıdan rol kaldırıldı</value></data>
+  <data name="AuditLog.Event.user_account_kind_changed" xml:space="preserve"><value>Hesap türü değiştirildi</value></data>
 </root>

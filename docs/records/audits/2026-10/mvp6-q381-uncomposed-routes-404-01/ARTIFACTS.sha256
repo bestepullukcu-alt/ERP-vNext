@@ -1,0 +1,15 @@
+# verify from: cd docs/records/audits/2026-10/mvp6-q381-uncomposed-routes-404-01 && shasum -a 256 -c ARTIFACTS.sha256
+ea51df4e1be1ae59a147afacc5e45b13ccf6275fae6a1cb182ddc5bf81380265  ./REPORT.md
+7e9015146bdd8343e371f661fedbdef622583383a52fe05f4f792a9d106e251e  ./evidence/Program.before.cs.txt
+6f9a0e2f8a0e2f209465fe74da5d3fd3eb3a43176af4734159707a3c39e40e24  ./evidence/installed-GREEN.txt
+0f9bba2f05a2c4c7b724c012c6a66724cea56144aa22513baaa44714b8d0cb63  ./evidence/installed-RED.txt
+6f9a0e2f8a0e2f209465fe74da5d3fd3eb3a43176af4734159707a3c39e40e24  ./evidence/installed-RESTORED.txt
+0f9bba2f05a2c4c7b724c012c6a66724cea56144aa22513baaa44714b8d0cb63  ./evidence/installed-SABOTAGE.txt
+f7b5a8984c7392a71f60ec805a890e7e3252a3cac00ba98d09f9ed1ceb0794f3  ./evidence/probe.sh
+dac8010cf3175179fca5c021b7b36bd49ba76e531621fe6b744dd248f3ac905a  ./evidence/probes-GREEN.txt
+f9a727725abae081f414f9d4f5fc733ba0ffa5446b9911d6f00360818634e1ef  ./evidence/probes-RED.txt
+937cebe9442436d526ebb1d57dfa52571a723d5bfb12496ce6f8a3df7c63dc2f  ./evidence/probes-RESTORED.txt
+829f2d07a593b692d8b134ee30864b3f5afffaba69c3f1397b0dcae3ebc4dcbe  ./evidence/probes-SABOTAGE.txt
+e574fe90446a11f58c13e7694e9797a902079840b671a2e4a422ade414f58c6b  ./evidence/suite-run1.txt
+6cd4e96c6c46ea89a1223ab357ecee3419540e3c5c70859a26992b42614d2cf7  ./evidence/suite-run2.txt
+f247638045bd1e7e76eeb5eac3b0bb34e97e1214d27294fa942f147a73e4ab64  ../../../../../services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs

@@ -66,6 +66,9 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     /// <summary>Hand work to a different person. Code and endpoint are both <c>reassign</c>.</summary>
     private const string ActionReassignKey = "WorkAggregation_Action_Reassign";
     private const string ActionScheduleReviewMeetingKey = "WorkAggregation_Action_ScheduleReviewMeeting";
+    // MOD-0280-FU01 T2b (pack §19.2) — the holder's own timer on an InProgress task.
+    private const string ActionStartTimerKey = "WorkAggregation_Action_StartTimer";
+    private const string ActionStopTimerKey = "WorkAggregation_Action_StopTimer";
     private const string DisabledPermissionKey = "WorkAggregation_ActionDisabled_PermissionDenied";
     private const string DisabledApprovalKey = "WorkAggregation_ActionDisabled_ApprovalPending";
     private const string DisabledChecklistKey = "WorkAggregation_ActionDisabled_ChecklistIncomplete";
@@ -197,8 +200,23 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
          * on this constructor is: every existing test predates S9, and an absent reader can only ever resolve
          * every task's gate to "not unlocked" — which changes nothing for a type that is not Required.
          */
-        IReviewMeetingGateReader? reviewMeetingGate = null)
+        IReviewMeetingGateReader? reviewMeetingGate = null,
+        /*
+         * MOD-0280-FU01 D7 / §5.1 item 2 — where a task's spent time comes from (TaskItem.SpentHours has no writer).
+         * OPTIONAL for the same reason every seam above is: an absent source means "no approved time", a zero — never
+         * the entity's field. The time-tracking switch (§5.1 item 3) rides with it; absent means off.
+         */
+        ITaskSpentTimeSource? spentTime = null,
+        TaskTimeTrackingOptions? timeTracking = null,
+        /*
+         * MOD-0280-FU01 T2b — is the reader's timer switched on (D12, per legal entity)? OPTIONAL like every seam above:
+         * absent means "off", so startTimer/stopTimer are never offered — it can only narrow the projection.
+         */
+        TimeEntry.ITimeEntryTimerAvailability? timerAvailability = null)
     {
+        _spentTime = spentTime;
+        _timerAvailability = timerAvailability;
+        _timeTracking = timeTracking;
         _attachments = attachments;
         _recordLinks = recordLinks;
         _relatedRecordResolvers = relatedRecordResolvers;
@@ -251,6 +269,17 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     /// project from <see cref="_recordLinks"/> alone); every existing test predates this and passes neither.</summary>
     private readonly IMeetingRepository? _meetings;
 
+    /// <summary>MOD-0280-FU01 D7 — the approved (and submitted) minutes per task. Null ⇒ no task has spent time.</summary>
+    private readonly ITaskSpentTimeSource? _spentTime;
+
+    /// <summary>MOD-0280-FU01 §5.1 item 3 — whether <c>timeTracking</c> is declared (off until T2's card ships).</summary>
+    private readonly TaskTimeTrackingOptions? _timeTracking;
+
+    private bool DeclaresTimeTracking => _spentTime is not null && _timeTracking?.DeclareTimeTracking == true;
+
+    /// <summary>MOD-0280-FU01 T2b — the reader's timer switch. Null ⇒ off (no timer actions).</summary>
+    private readonly TimeEntry.ITimeEntryTimerAvailability? _timerAvailability;
+
     /// <summary>MOD-0357 S9 — the shared review-meeting gate (see the constructor parameter's own doc comment).
     /// Null ⇒ every task's gate resolves to "not unlocked" (fail-closed), which only bites a Required type.</summary>
     private readonly IReviewMeetingGateReader? _reviewMeetingGate;
@@ -279,7 +308,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         TaskPermissions.Cancel,     // cancel
         TaskPermissions.Delete,     // administrative authority to cancel someone else's task
         TaskPermissions.Assign,     // reassign — moving work onto another person IS assigning it
-        TaskPermissions.Read        // answer (BL-439) — the addressee needs no key beyond reading the task
+        TaskPermissions.Read,       // answer (BL-439) — the addressee needs no key beyond reading the task
+        TimeEntry.TimeEntryPermissions.TimesheetsUpdate  // startTimer / stopTimer (MOD-0280-FU01 T2b, §19.2)
     ];
 
     public async Task<IReadOnlyList<WorkItemProjectionDto>> GetWorkItemsAsync(
@@ -770,6 +800,29 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             ? new Dictionary<Guid, bool>()
             : await _reviewMeetingGate.ResolveUnlockedReviewMeetingsAsync(taskIds, ct);
 
+        /*
+         * MOD-0280-FU01 D7 — spent time for the whole page in ONE read, like every other container here. With time
+         * tracking declared (T2), the submitted totals and THIS reader's own timer and drafts ride the same batch.
+         */
+        IReadOnlyDictionary<Guid, TaskSpentTime> spentByTask = new Dictionary<Guid, TaskSpentTime>();
+        var readerTime = TaskReaderTime.None;
+        // T2b — one switch read per page, for the reader only (D12); absent seam or time tracking off ⇒ off.
+        var timerEnabled = DeclaresTimeTracking && _timerAvailability is not null
+                           && await _timerAvailability.IsTimerEnabledForAsync(actor.UserId, ct);
+        if (_spentTime is not null)
+        {
+            if (DeclaresTimeTracking)
+            {
+                spentByTask = await _spentTime.SpentTimeAsync(taskIds, ct);
+                readerTime = await _spentTime.ReaderTimeAsync(actor.UserId, taskIds, ct);
+            }
+            else
+            {
+                spentByTask = (await _spentTime.ApprovedMinutesAsync(taskIds, ct))
+                    .ToDictionary(pair => pair.Key, pair => new TaskSpentTime(pair.Value, 0));
+            }
+        }
+
         var edges = await _dependencies.ListByTaskIdsAsync(taskIds, ct);
         var edgeTaskIds = edges
             .SelectMany(edge => new[] { edge.TaskItemId, edge.DependsOnTaskItemId })
@@ -815,7 +868,10 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                     reviewMeetingByTask.TryGetValue(t.Id, out var reviewMeetingLink)
                         ? reviewMeetingLink
                         : ((RecordLink Link, Meeting? Meeting)?)null,
-                    reviewMeetingUnlockedByTask.GetValueOrDefault(t.Id));
+                    reviewMeetingUnlockedByTask.GetValueOrDefault(t.Id),
+                    spentByTask.GetValueOrDefault(t.Id, TaskSpentTime.None),
+                    readerTime,
+                    timerEnabled);
             })
             .ToList();
     }
@@ -863,8 +919,16 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         // MOD-0357 S9 (owner, 2026-09-13) — whether this task's review-meeting gate is already unlocked (see
         // IReviewMeetingGateReader). Defaults to false (fail-closed): only consulted at all when the task's own
         // TYPE says Required, so a caller/test that predates S9 sees no change for Optional/NotAllowed types.
-        bool reviewMeetingUnlocked = false)
+        bool reviewMeetingUnlocked = false,
+        // MOD-0280-FU01 D7 — this task's approved (and, with time tracking, submitted) minutes.
+        TaskSpentTime? spent = null,
+        // MOD-0280-FU01 §19.2 — THIS reader's running timer and own draft minutes (only read with time tracking on).
+        TaskReaderTime? readerTime = null,
+        // MOD-0280-FU01 T2b — the reader's timer is switched on for their legal entity (read once per page).
+        bool timerEnabled = false)
     {
+        spent ??= TaskSpentTime.None;
+        var spentHours = spent.ApprovedHours;
         var assignment = _assignmentResolver.Resolve(task);
         var normalized = _lifecycle.ToNormalizedStatus(
             task, approvalOutstanding, approvalRejected, reviewOutstanding, reviewRejected);
@@ -1043,6 +1107,27 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             }
         }
 
+        /*
+         * MOD-0280-FU01 T2b (pack §19.2, U1) — the holder's own timer. Offered ONLY on the reader's own InProgress task,
+         * with time tracking declared and the timer switched on for the reader's legal entity (D12); never on another
+         * person's item (D11). startTimer while it is not this task's timer that runs, stopTimer while it is. Whether the
+         * timer may run is still decided by the TimeEntry handlers the dispatcher calls; this only decides what to offer.
+         */
+        if (timerEnabled && DeclaresTimeTracking && !terminal
+            && task.AssigneeUserId == actor.UserId && task.Lifecycle == TaskLifecycle.InProgress)
+        {
+            var running = readerTime?.RunningTaskItemId == task.Id;
+            var timerCode = running ? "stopTimer" : "startTimer";
+            actions = actions
+                .Append(Build(timerCode, running ? ActionStopTimerKey : ActionStartTimerKey,
+                    actor.Has(TimeEntry.TimeEntryPermissions.TimesheetsUpdate)))
+                .ToList();
+            // BL-486 — the PLACEMENT stays what it was. A surface that draws a time card leaves the timer to the card
+            // (the Task Center does, in its own action filter); a consumer that renders by placement and has no card
+            // would otherwise lose the timer altogether.
+            overflowActionCodes = overflowActionCodes.Append(timerCode).ToList();
+        }
+
         return new WorkItemProjectionDto(
             FixtureKind: WorkItemContract.FixtureKindWorkItem,
             Id: task.Id.ToString(),
@@ -1054,7 +1139,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             NormalizedStatus: normalized,
             TaskLifecycle: task.Lifecycle.ToString(),
             ExecutionState: ResolveExecutionState(task),
-            TimerState: WorkItemContract.NotApplicable,
+            TimerState: ResolveTimerState(task, actor, readerTime),
             SystemState: WorkItemContract.SystemFresh,
             ActionDepth: WorkItemContract.DepthInline,
             // A DISPLAY label, not a resource one: unlike MOD-0023's ApprovalTask, a TaskItem carries a real
@@ -1078,7 +1163,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             LifecycleOwner: TaskProviderCode,
             WorkItemCapabilities: ResolveCapabilities(
                 dependencyList, checklistBlock, subtasks, businessContext,
-                task.EstimateHours, task.SpentHours, relatedRecords, attachmentsBlock),
+                task.EstimateHours, spentHours, relatedRecords, attachmentsBlock, DeclaresTimeTracking),
             Actions: actions,
             Concurrency: new WorkItemConcurrencyDto("version", task.Version.ToString()),
             WaitingContext: waiting is null
@@ -1206,6 +1291,21 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
              * the answer for the record.
              */
             InquiryAnswer: terminal ? null : ToInquiryAnswer(task, transitions, actor, displayNames),
+            // WP-TASK-CALENDAR-ENGINE-01 — the plan block, straight through, and the estimate left after it
+            // (derived by the same rule the plan write answers with; never stored).
+            PlannedStartAt: task.PlannedStartAt,
+            PlannedDurationMinutes: task.PlannedDurationMinutes,
+            RemainingMinutes: TaskPlanBlockRules.RemainingMinutes(task.EstimateHours, task.PlannedDurationMinutes),
+            // MOD-0280-FU01 §19.2 — the container ⇔ the capability, both ways (null ⇒ omitted from the wire).
+            TimeEntries: DeclaresTimeTracking
+                ? new WorkItemTimeEntriesDto(
+                    readerTime?.DraftMinutes.GetValueOrDefault(task.Id) ?? 0, spent.SubmittedMinutes, spent.ApprovedMinutes)
+                : null,
+            // The effort container, under the SAME condition ResolveCapabilities declares `taskContext` — the contract
+            // requires the one with the other, and a task without its container is dropped from the board.
+            Effort: task.EstimateHours is not null || spentHours != 0
+                ? new WorkItemEffortDto(task.EstimateHours ?? 0m, spentHours)
+                : null,
             /*
              * WHAT THE WORK IS. The form has collected these four since Phase 1 and none of them reached the
              * Task Center, so the detail page could say a task was fifteen days overdue without saying what it
@@ -1223,7 +1323,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
              * zero this projection avoids everywhere else — it reads as "nobody has worked on this" rather than
              * "this is not being tracked".
              */
-            SpentHours: task.EstimateHours is null && task.SpentHours == 0 ? null : task.SpentHours,
+            // MOD-0280-FU01 D7 — the APPROVED time, never TaskItem.SpentHours (no writer, always 0).
+            SpentHours: task.EstimateHours is null && spentHours == 0 ? null : spentHours,
             Tags: task.Tags is { Count: > 0 } ? task.Tags.ToList() : null,
             /*
              * WC-1 — the reader's own layer, or nothing at all.
@@ -1273,6 +1374,23 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     /// make. The notes still travel, so an overlay whose only content was an expired snooze collapses to null and
     /// the task carries no personal layer, which is exactly true.</para>
     /// </summary>
+    /// <summary>
+    /// MOD-0280-FU01 §16 D2 / §19.2 — the timer state, PER READER: <c>running</c> only on the reader's own running item,
+    /// <c>inactive</c> on the reader's other own InProgress items, <c>notApplicable</c> on everything else — above all on
+    /// another person's item, whoever that person is to the reader (no "who is running a timer" view, D11). <c>paused</c>
+    /// is never emitted: there is no pause state (BL-237). Without time tracking declared, <c>notApplicable</c> throughout
+    /// — the WC-1 contract refuses a running timer on an item that does not declare <c>timeTracking</c>.
+    /// </summary>
+    private string ResolveTimerState(TaskItem task, WorkItemActor actor, TaskReaderTime? readerTime)
+    {
+        if (!DeclaresTimeTracking || task.AssigneeUserId != actor.UserId || task.Lifecycle != TaskLifecycle.InProgress)
+        {
+            return WorkItemContract.NotApplicable;
+        }
+
+        return readerTime?.RunningTaskItemId == task.Id ? WorkItemContract.TimerRunning : WorkItemContract.TimerInactive;
+    }
+
     private static WorkItemPersonalDto? ToPersonal(TaskPersonalOverlay? overlay)
     {
         if (overlay is null)
@@ -1357,7 +1475,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         decimal? estimateHours,
         decimal spentHours,
         IReadOnlyList<WorkItemRelatedRecordDto>? relatedRecords,
-        WorkItemAttachmentsDto? attachments)
+        WorkItemAttachmentsDto? attachments,
+        bool timeTracking = false)
     {
         // Unconditional: MOD-0024 owns planning and execution for every task it projects.
         var capabilities = new List<string> { "planning", "execution" };
@@ -1423,6 +1542,15 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
          * timestamps a task happens to carry would omit accept/plan/claim/release/inquire silently.
          */
         capabilities.Add("activity");
+
+        /*
+         * MOD-0280-FU01 §5.1 item 3 — `timeTracking`, with its `timeEntries` container, only when the switch is on (T2).
+         * Declared for every task then: the card shows the task's approved and submitted totals whoever reads it.
+         */
+        if (timeTracking)
+        {
+            capabilities.Add("timeTracking");
+        }
 
         return capabilities;
     }
@@ -2447,16 +2575,12 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             }
 
             /*
-             * BL-361 — `plan` belongs here too: a plan date is the requester's note as much as the holder's, and
-             * this branch IS the requester (see above). Same condition the holder's own row uses further down
-             * (`openOrPlanned && !unclaimed`) — read directly rather than falling through to it, since this
-             * branch returns before that code is reached. `outboxPrimary` is left alone: reassign still leads
-             * when it is offered, matching the row's existing primary before this change.
+             * BL-449 (owner, 2026-09-29) — `plan` is NOT offered here any more. BL-361 put it on this row ("a plan
+             * date is the requester's note as much as the holder's"); the calendar decision made a plan a block of
+             * the HOLDER's own time, and the requester's lever is the due date. PlanTaskItemHandler refuses a
+             * non-holder with TASK_PLAN_NOT_HOLDER, so offering the button here would be a control that exists to
+             * be refused.
              */
-            if (openOrPlanned && !unclaimed)
-            {
-                outbox.Add(Build("plan", ActionPlanKey, actor.Has(TaskPermissions.Update)));
-            }
 
             outbox.Add(CancelAction(actor));
             return (outbox, outboxPrimary, outbox.Select(a => a.Code).Where(c => c != outboxPrimary).ToList());
@@ -2656,15 +2780,14 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         }
 
         /*
-         * Planning a personal date is available while the work has not started (Open ⇄ Planned on the server).
+         * Planning is available while the work has not started (Open ⇄ Planned on the server).
          *
-         * BL-361 — WIDER than the holder-only zone above, deliberately: a plan date is a note about when the
-         * work will happen, and both the person doing it and the person who asked for it have a legitimate
-         * reason to set one (the requester's own outbox row offers `plan` too — see the `initiatorOnly` branch's
-         * sibling instance further up, which this condition must keep matching). A bystander with neither
-         * relationship may not.
+         * BL-449 (owner, 2026-09-29) — HOLDER ONLY, like start/complete. BL-361 had made this wider ("holder or
+         * requester"); a plan is now a block of the holder's own time on their calendar, so nobody else places it
+         * — not the requester (whose lever is the due date), not a manager viewing Ekibim. Same rule as
+         * PlanTaskItemHandler, and the outbox branch above no longer offers it either.
          */
-        if (openOrPlanned && !unclaimed && (isHolder || isRequester))
+        if (openOrPlanned && !unclaimed && isHolder)
         {
             actions.Add(Build("plan", ActionPlanKey, actor.Has(TaskPermissions.Update)));
         }

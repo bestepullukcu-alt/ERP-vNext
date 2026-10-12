@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="CapacityPlansTitle" xml:space="preserve"><value>خطط السعة</value></data>
+  <data name="PlanId" xml:space="preserve"><value>معرّف الخطة</value></data>
+  <data name="PlanName" xml:space="preserve"><value>اسم الخطة</value></data>
+  <data name="HorizonStart" xml:space="preserve"><value>بداية الأفق</value></data>
+  <data name="HorizonEnd" xml:space="preserve"><value>نهاية الأفق</value></data>
+  <data name="DemandPlanId" xml:space="preserve"><value>معرّف خطة الطلب</value></data>
+  <data name="DemandPlanVersion" xml:space="preserve"><value>إصدار خطة الطلب</value></data>
+  <data name="SourceCapturedAt" xml:space="preserve"><value>وقت التقاط المصدر</value></data>
+  <data name="SourceChecksum" xml:space="preserve"><value>المجموع الاختباري للمصدر</value></data>
+  <data name="Status" xml:space="preserve"><value>حالة الخطة</value></data>
+  <data name="PlanStatus.Draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="PlanStatus.Evaluating" xml:space="preserve"><value>قيد التقييم</value></data>
+  <data name="PlanStatus.Ready" xml:space="preserve"><value>جاهزة</value></data>
+  <data name="PlanStatus.Approved" xml:space="preserve"><value>معتمدة</value></data>
+  <data name="PlanStatus.Archived" xml:space="preserve"><value>مؤرشفة</value></data>
+  <data name="NotProvided" xml:space="preserve"><value>غير متوفر</value></data>
+  <data name="SupportReference" xml:space="preserve"><value>مرجع الدعم</value></data>
+  <data name="CopyDone" xml:space="preserve"><value>تم النسخ إلى الحافظة.</value></data>
+  <data name="RequestPending" xml:space="preserve"><value>لا يزال الطلب السابق قيد المعالجة.</value></data>
+  <data name="RequiredMissing" xml:space="preserve"><value>املأ جميع الحقول المطلوبة.</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>الطلب غير صالح. تحقّق من المدخلات وحاول مرة أخرى.</value></data>
+  <data name="ErrInvalidCorrelationId" xml:space="preserve"><value>تعذّر تتبّع الطلب. أعد تحميل الصفحة وحاول مرة أخرى.</value></data>
+  <data name="ErrUnauthenticated" xml:space="preserve"><value>انتهت جلستك. سجّل الدخول مرة أخرى.</value></data>
+  <data name="ErrForbidden" xml:space="preserve"><value>ليست لديك صلاحية لتنفيذ هذا الإجراء.</value></data>
+  <data name="ErrUnknownCapacityPlan" xml:space="preserve"><value>لم يتم العثور على خطة السعة هذه أو أنها غير متاحة لك.</value></data>
+  <data name="ErrUnknownCapacityScenario" xml:space="preserve"><value>لم يتم العثور على هذا السيناريو أو أنه غير متاح لك.</value></data>
+  <data name="ErrUnknownCapacityEvaluation" xml:space="preserve"><value>لم يتم العثور على هذا التقييم أو أنه غير متاح لك.</value></data>
+  <data name="ErrCapacityPlanAlreadyExists" xml:space="preserve"><value>توجد بالفعل خطة سعة لهذا الأفق وإصدار خطة الطلب هذا.</value></data>
+  <data name="ErrCapacityScenarioNameConflict" xml:space="preserve"><value>يوجد بالفعل سيناريو بهذا الاسم في هذه الخطة.</value></data>
+  <data name="ErrCapacityPlanStateConflict" xml:space="preserve"><value>لم تعد حالة الخطة تسمح بسيناريو جديد. تمت إعادة تحميل الخطة.</value></data>
+  <data name="ErrEvaluationAlreadyActive" xml:space="preserve"><value>يوجد تقييم قيد التشغيل بالفعل لهذا السيناريو.</value></data>
+  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>سبق استخدام هذا الطلب بقيم مختلفة. غيّر المدخلات لإرسال طلب جديد.</value></data>
+  <data name="ErrInvalidDemandReference" xml:space="preserve"><value>مرجع خطة الطلب غير معروف أو غير منشور.</value></data>
+  <data name="ErrInvalidConstraintReference" xml:space="preserve"><value>مرجع القيد غير معروف أو غير صالح.</value></data>
+  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>الخدمة غير متاحة مؤقتًا. حاول مرة أخرى؛ سيتم إرسال الطلب نفسه.</value></data>
+  <data name="ErrCommitResultUnresolved" xml:space="preserve"><value>تعذّر تأكيد النتيجة. حاول مرة أخرى؛ سيتم إرسال الطلب نفسه ولن يُسجَّل أي شيء مرتين.</value></data>
+  <data name="PlanDetailsTitle" xml:space="preserve"><value>خطة السعة</value></data>
+  <data name="BackToPlans" xml:space="preserve"><value>العودة إلى خطط السعة</value></data>
+  <data name="PlanSummary" xml:space="preserve"><value>ملخص الخطة</value></data>
+  <data name="Horizon" xml:space="preserve"><value>أفق التخطيط</value></data>
+  <data name="Provenance" xml:space="preserve"><value>مصدر بيانات الطلب</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>تاريخ الإنشاء</value></data>
+  <data name="SummaryErrorState" xml:space="preserve"><value>تعذّر تحميل الخطة.</value></data>
+  <data name="Retry" xml:space="preserve"><value>إعادة المحاولة</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>اختر خيارًا</value></data>
+  <data name="Scenarios" xml:space="preserve"><value>سيناريو السعة</value></data>
+  <data name="CreateScenario" xml:space="preserve"><value>إنشاء سيناريو</value></data>
+  <data name="CreateScenarioTitle" xml:space="preserve"><value>سيناريو سعة جديد</value></data>
+  <data name="OpenScenario" xml:space="preserve"><value>فتح السيناريو</value></data>
+  <data name="ScenarioId" xml:space="preserve"><value>معرّف السيناريو</value></data>
+  <data name="ScenarioIdHelp" xml:space="preserve"><value>أدخل معرّف UUID للسيناريو كما ظهر بعد الإنشاء.</value></data>
+  <data name="ScenarioIdInvalid" xml:space="preserve"><value>أدخل معرّف سيناريو صالحًا (UUID).</value></data>
+  <data name="ScenarioName" xml:space="preserve"><value>اسم السيناريو</value></data>
+  <data name="ScenarioStatusLabel" xml:space="preserve"><value>حالة السيناريو</value></data>
+  <data name="ScenarioStatus.Draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="ScenarioStatus.Evaluating" xml:space="preserve"><value>قيد التقييم</value></data>
+  <data name="ScenarioStatus.Evaluated" xml:space="preserve"><value>تم التقييم</value></data>
+  <data name="ScenarioStatus.Archived" xml:space="preserve"><value>مؤرشف</value></data>
+  <data name="ScenarioEmptyState" xml:space="preserve"><value>لا يوجد سيناريو مفتوح. أنشئ سيناريو أو افتحه باستخدام معرّفه.</value></data>
+  <data name="ScenarioErrorState" xml:space="preserve"><value>تعذّر تحميل السيناريو.</value></data>
+  <data name="ScenarioCreated" xml:space="preserve"><value>تم إنشاء السيناريو.</value></data>
+  <data name="SessionIdNote" xml:space="preserve"><value>لا تُعرض السيناريوهات والتقييمات في قائمة. انسخ معرّفاتها لفتحها لاحقًا.</value></data>
+  <data name="ConstraintRefs" xml:space="preserve"><value>مراجع القيود</value></data>
+  <data name="ConstraintRefsHelp" xml:space="preserve"><value>تُرسل الصفوف بالترتيب المعروض؛ ويتطلب كل صف القيم الثلاث. إذا لم توجد صفوف تُرسل قائمة فارغة.</value></data>
+  <data name="ConstraintId" xml:space="preserve"><value>معرّف القيد</value></data>
+  <data name="Source" xml:space="preserve"><value>النظام المصدر</value></data>
+  <data name="SourceVersion" xml:space="preserve"><value>إصدار المصدر</value></data>
+  <data name="Adjustments" xml:space="preserve"><value>تعديلات السعة</value></data>
+  <data name="AdjustmentsHelp" xml:space="preserve"><value>تُرسل الصفوف بالترتيب المعروض؛ ويتطلب كل صف القيم الأربع. إذا لم توجد صفوف تُرسل قائمة فارغة.</value></data>
+  <data name="ResourceRef" xml:space="preserve"><value>مرجع المورد</value></data>
+  <data name="Period" xml:space="preserve"><value>فترة التخطيط</value></data>
+  <data name="AvailableCapacityDelta" xml:space="preserve"><value>التغيّر في السعة المتاحة</value></data>
+  <data name="AvailableCapacityDeltaHelp" xml:space="preserve"><value>رقم عشري يُرسل كما كُتب، مثل 10.5 أو ‎-2.</value></data>
+  <data name="DecimalInvalid" xml:space="preserve"><value>أدخل رقمًا عشريًا مثل 10.5 أو ‎-2 (أرقام مع علامة سالب ونقطة عشرية اختياريتين).</value></data>
+  <data name="UomId" xml:space="preserve"><value>وحدة القياس</value></data>
+  <data name="AddRow" xml:space="preserve"><value>إضافة صف</value></data>
+  <data name="RemoveRow" xml:space="preserve"><value>إزالة الصف</value></data>
+  <data name="RowIncomplete" xml:space="preserve"><value>أكمِل كل صف غير مكتمل أو أزِله.</value></data>
+  <data name="NoneListed" xml:space="preserve"><value>لا يوجد</value></data>
+  <data name="Evaluate" xml:space="preserve"><value>تشغيل التقييم</value></data>
+  <data name="EvaluateTitle" xml:space="preserve"><value>تقييم سعة السيناريو</value></data>
+  <data name="EvaluationMode" xml:space="preserve"><value>وضع التقييم</value></data>
+  <data name="EvaluationMode.Finite" xml:space="preserve"><value>محدودة</value></data>
+  <data name="EvaluationMode.Infinite" xml:space="preserve"><value>غير محدودة</value></data>
+  <data name="ResourceRefs" xml:space="preserve"><value>مراجع الموارد</value></data>
+  <data name="ResourceRefsHelp" xml:space="preserve"><value>مورد واحد على الأقل؛ تُرسل القيم بالترتيب المعروض.</value></data>
+  <data name="ResourceRefsMissing" xml:space="preserve"><value>أضف مرجع مورد واحدًا على الأقل واملأ كل صف.</value></data>
+  <data name="Evaluation" xml:space="preserve"><value>تقييم السعة</value></data>
+  <data name="EvaluationId" xml:space="preserve"><value>معرّف التقييم</value></data>
+  <data name="EvaluationStatusLabel" xml:space="preserve"><value>حالة التقييم</value></data>
+  <data name="EvaluationStatus.Accepted" xml:space="preserve"><value>مقبول</value></data>
+  <data name="EvaluationStatus.Running" xml:space="preserve"><value>قيد التشغيل</value></data>
+  <data name="EvaluationStatus.Completed" xml:space="preserve"><value>مكتمل</value></data>
+  <data name="EvaluationStatus.Failed" xml:space="preserve"><value>فشل</value></data>
+  <data name="SubmittedAt" xml:space="preserve"><value>وقت الإرسال</value></data>
+  <data name="CompletedAt" xml:space="preserve"><value>وقت الاكتمال</value></data>
+  <data name="EvaluationEmptyState" xml:space="preserve"><value>لم يُرسل أي تقييم لهذا السيناريو في هذه الجلسة.</value></data>
+  <data name="EvaluationErrorState" xml:space="preserve"><value>تعذّر تحميل التقييم.</value></data>
+  <data name="EvaluationSubmitted" xml:space="preserve"><value>تم إرسال التقييم.</value></data>
+  <data name="Refresh" xml:space="preserve"><value>تحديث الحالة</value></data>
+  <data name="RefreshNote" xml:space="preserve"><value>لا تتغير الحالة إلا عند الضغط على «تحديث الحالة»؛ لا يتم أي تحديث تلقائي.</value></data>
+  <data name="Bottlenecks" xml:space="preserve"><value>اختناقات السعة</value></data>
+  <data name="RequiredCapacity" xml:space="preserve"><value>السعة المطلوبة</value></data>
+  <data name="AvailableCapacity" xml:space="preserve"><value>السعة المتاحة</value></data>
+  <data name="Shortfall" xml:space="preserve"><value>عجز السعة</value></data>
+  <data name="EmptyBottlenecks" xml:space="preserve"><value>لم يُبلَّغ عن أي اختناقات لهذا التقييم.</value></data>
+</root>

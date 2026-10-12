@@ -51,6 +51,16 @@ public sealed class AccountRelationshipRepository : IAccountRelationshipReposito
         return await _collection.Find(filter).SortBy(r => r.RelationshipType).ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<AccountRelationship>> ListByAccountIdsAsync(
+        Guid tenantId, IReadOnlyCollection<Guid> accountIds, CancellationToken cancellationToken)
+    {
+        if (accountIds.Count == 0) return Array.Empty<AccountRelationship>();
+        var b = Builders<AccountRelationship>.Filter;
+        var ids = accountIds.Distinct().ToList();
+        var filter = ActiveTenant(tenantId) & (b.In(r => r.SourceAccountId, ids) | b.In(r => r.TargetAccountId, ids));
+        return await _collection.Find(filter).SortBy(r => r.RelationshipType).ToListAsync(cancellationToken);
+    }
+
     public async Task<IReadOnlyList<AccountRelationship>> ListAllAsync(Guid tenantId, CancellationToken cancellationToken)
         => await _collection.Find(ActiveTenant(tenantId)).SortBy(r => r.RelationshipType).ToListAsync(cancellationToken);
 

@@ -80,6 +80,24 @@ public sealed class CyclePeriodsController : CustomBaseController
         => CreateActionResultInstance(await _mediator.Send(
             new GetCyclePeriodScopeOptionsQuery(country, startDate, endDate), cancellationToken));
 
+    /// <summary>
+    /// WP-CAP-MODEL (K-2) — a SUGGESTED code for the next period of this scope and year
+    /// (<c>{ISO2|GM|LE-code|BU-code}-{YYYY}-{NN}</c>, NN = the first free sequence, closed periods included). A READ that
+    /// reserves nothing: the create call still sends its own code, and every code rule stays where it was.
+    /// </summary>
+    [HttpGet("api/crm/cycle-periods/code-suggestion")]
+    [HasPermission(Perms.ReadFallback)]
+    public async Task<IActionResult> CodeSuggestion(
+        [FromQuery] string? scopeType,
+        [FromQuery] string? countryScope,
+        [FromQuery] Guid? legalEntityId,
+        [FromQuery] string? businessUnitId,
+        [FromQuery] int? year,
+        CancellationToken cancellationToken = default)
+        => CreateActionResultInstance(await _mediator.Send(
+            new GetCyclePeriodCodeSuggestionQuery(scopeType, countryScope, legalEntityId, businessUnitId, year ?? 0),
+            cancellationToken));
+
     /// <summary>"Which period is in force at this instant, at the most specific address I named?" — the HTTP face of
     /// the read-only seam. <c>at</c> is required: defaulting it to "now" would make an audited answer depend on an
     /// unrecorded clock reading.</summary>
@@ -99,6 +117,17 @@ public sealed class CyclePeriodsController : CustomBaseController
     public async Task<IActionResult> Get(Guid cyclePeriodId, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
             new GetCyclePeriodByIdQuery(cyclePeriodId), cancellationToken));
+
+    /// <summary>
+    /// WP-CYC-UI-1 — what points at this period: its capacity, the campaigns bound to it, the planning sessions planning
+    /// it, their committed planned visits (by status) and the monthly demand (cancelled / archived excluded). A READ;
+    /// another tenant's id answers 404. No personal data beyond a session owner's display name.
+    /// </summary>
+    [HttpGet("api/crm/cycle-periods/{cyclePeriodId:guid}/usage")]
+    [HasPermission(Perms.ReadFallback)]
+    public async Task<IActionResult> Usage(Guid cyclePeriodId, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new GetCyclePeriodUsageQuery(cyclePeriodId), cancellationToken));
 
     [HttpPost("api/crm/cycle-periods")]
     [HasPermission(Perms.ManageFallback)]

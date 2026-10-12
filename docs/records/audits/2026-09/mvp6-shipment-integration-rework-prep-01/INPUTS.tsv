@@ -1,0 +1,5 @@
+path	sha256	bytes
+docs/records/audits/2026-09/mvp6-shipment-pod-ui-exec-01/BLOCKER-DISPOSITION.tsv	87b7026e898c2a0ede34050bf90bea3be79db5658a769af6fccc31d05dc80006	1180
+docs/records/audits/2026-09/mvp6-shipment-pod-ui-exec-01/UI-SOURCE-MANIFEST.tsv	e763807e48ff7d27cc715b8bee034fdc7533e1b83a8e6065101e13e4f9c2c765	3924
+docs/records/audits/2026-09/mvp6-bc-successor-exec-02/BC-SOURCE.tar.gz	ebd5d80ca00541235868b94ed9917a53fb63be6e15aa78d0450fa90f33737064	244907
+docs/records/audits/2026-09/mvp6-bc-successor-exec-02/SOURCE-MANIFEST.tsv	dec28b6aebd7552df82d380cf8b601aabc4d28c7d21349ff43807bd0747e4634	74155

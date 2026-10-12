@@ -1,0 +1,216 @@
+using Diten.BuildingBlocks.ModuleRegistration.Abstractions;
+using Diten.Platform.Application.Contracts;
+
+namespace Diten.Platform.Application.Features.TimeEntry.SelfRegistration;
+
+/// <summary>
+/// MOD-0280-FU01 (pack §9, §14, §19.3; A4) — the time-entry module's self-registration manifest: a catalog module,
+/// tenant-assignable, NOT baseline (entitlement-gated), in the existing "Human Capital" domain.
+///
+/// <para><b>Why pages exist before any screen (T1a).</b> Self-registration derives each permission's scope from a page
+/// route (§2c): a key first minted by the reflection worker would be stamped platform-admin and could never be granted
+/// to a tenant role. So the six T1a keys ride on the pages the pack names (§9) now — the MOD-0357 S2 / MOD-0024
+/// precedent.</para>
+///
+/// <para><b>Navigation, slice by slice.</b> T2a built <c>/TimeEntry</c> (<c>MY_TIMESHEET</c>); T2b built the approvals,
+/// categories and settings screens, so those three are visible too — each behind its OWN permission (the shell hides
+/// a page the reader lacks it for, UAS-001). The read-only approval detail is reached from its list, never from the
+/// menu. <c>Nav.Page.*</c> keys in seven languages.</para>
+///
+/// <para><b>Known gap, reported (the same one MOD-0357 S2 reported).</b>
+/// <c>NavManifestL10nGuardTests</c> derives a required <c>Nav.Module.TIMEENTRY</c> key from this file's module code,
+/// unconditionally, in all seven <c>SharedResource</c> files — and <c>frontend/**</c> is outside this slice. Left to
+/// Control Tower, not silently resolved.</para>
+///
+/// <para>The two T4 keys (<c>time-entry.team-totals.read</c>, <c>time-entry.person-reports.read</c>) are NOT declared
+/// here: they are minted with their endpoints in T4 (pack §14), after their explicit-grant enrolment.</para>
+/// </summary>
+public sealed class TimeEntryManifestProvider : IModuleManifestProvider
+{
+    public const string PageMyTimesheet = "MY_TIMESHEET";
+    public const string PageApprovals = "TIME_APPROVALS";
+    public const string PageApprovalDetail = "TIME_APPROVAL_DETAIL";
+    public const string PageCategories = "TIME_CATEGORIES";
+    public const string PageSettings = "TIME_SETTINGS";
+
+    public ModuleManifestDocument GetManifest() =>
+        new(
+            // A literal on purpose: NavManifestL10nGuardTests reads module codes from this file's TEXT.
+            ModuleCode: "time-entry",
+            ModuleName: "Time Entry",
+            DisplayName: "Zaman Çizelgem / My Timesheet",
+            Domain: "Human Capital", // SOFT: seeds once; → existing Nav.Domain.HUMANCAPITAL
+            Service: "DitenPlatform",
+            ModuleVersion: "1.0.0",
+            IsTenantAssignable: true,
+            SortOrder: 60,
+            Icon: "bx-time-five",
+            IsBaseline: false,
+            Pages:
+            [
+                // T2a — the screen exists, so this page is in the nav; the other pages stay hidden until T2b. (No comment on the
+                // flag's own line: NavManifestL10nGuardTests reads the value from this file's text.)
+                new ModuleManifestPage(
+                    PageCode: PageMyTimesheet,
+                    DisplayName: "My Timesheet",
+                    RoutePath: "/TimeEntry",
+                    RequiredPermission: TimeEntryPermissions.TimesheetsRead,
+                    ParentPageCode: null,
+                    IsNavigationVisible: true,
+                    PageType: "Detail",
+                    SortOrder: 10,
+                    Actions:
+                    [
+                        new ModuleManifestAction("SAVE", "Save Draft", TimeEntryPermissions.TimesheetsUpdate,
+                            "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
+                        new ModuleManifestAction("SUBMIT", "Submit Week", TimeEntryPermissions.TimesheetsUpdate,
+                            "Toolbar", 20, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
+                        new ModuleManifestAction("WITHDRAW", "Withdraw Week", TimeEntryPermissions.TimesheetsUpdate,
+                            "Toolbar", 30, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
+                        new ModuleManifestAction("REQUEST_CORRECTION", "Request Correction", TimeEntryPermissions.TimesheetsUpdate,
+                            "Toolbar", 40, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
+                        new ModuleManifestAction("DISCARD_CORRECTION", "Discard Correction", TimeEntryPermissions.TimesheetsUpdate,
+                            "Toolbar", 50, IsDangerous: true, IsToolbarAction: true, IsRowAction: false),
+                        // T1b — capture. No new key: the timer and the suggestions are the person's own sheet.
+                        new ModuleManifestAction("START_TIMER", "Start Timer", TimeEntryPermissions.TimesheetsUpdate,
+                            "Toolbar", 60, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
+                        new ModuleManifestAction("STOP_TIMER", "Stop Timer", TimeEntryPermissions.TimesheetsUpdate,
+                            "Toolbar", 70, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
+                        new ModuleManifestAction("UNDO_TIMER_SWITCH", "Undo Timer Switch", TimeEntryPermissions.TimesheetsUpdate,
+                            "Toolbar", 80, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
+                        new ModuleManifestAction("ACCEPT_SUGGESTION", "Accept Time Suggestion", TimeEntryPermissions.TimesheetsUpdate,
+                            "RowAction", 90, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("DISMISS_SUGGESTION", "Dismiss Time Suggestion", TimeEntryPermissions.TimesheetsUpdate,
+                            "RowAction", 100, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("FILL_FROM_PLAN", "Fill From Plan", TimeEntryPermissions.TimesheetsRead,
+                            "Toolbar", 110, IsDangerous: false, IsToolbarAction: true, IsRowAction: false)
+                    ]),
+
+                new ModuleManifestPage(
+                    PageCode: PageApprovals,
+                    DisplayName: "Timesheet Approvals",
+                    RoutePath: "/TimeEntry/Approvals",
+                    RequiredPermission: TimeEntryPermissions.ApprovalsRead,
+                    ParentPageCode: null,
+                    IsNavigationVisible: true,
+                    PageType: "List",
+                    SortOrder: 20,
+                    Actions:
+                    [
+                        new ModuleManifestAction("REOPEN", "Reopen Week", TimeEntryPermissions.WeeksReopen,
+                            "RowAction", 10, IsDangerous: false, IsToolbarAction: false, IsRowAction: true)
+                    ]),
+
+                new ModuleManifestPage(
+                    PageCode: PageApprovalDetail,
+                    DisplayName: "Timesheet Approval Detail",
+                    RoutePath: "/TimeEntry/Approvals/{id}",
+                    RequiredPermission: TimeEntryPermissions.ApprovalsRead,
+                    ParentPageCode: PageApprovals,
+                    IsNavigationVisible: false,
+                    PageType: "Detail",
+                    SortOrder: 21,
+                    Actions: []),
+
+                new ModuleManifestPage(
+                    PageCode: PageCategories,
+                    DisplayName: "Work Categories",
+                    RoutePath: "/TimeEntry/Categories",
+                    RequiredPermission: TimeEntryPermissions.CategoriesManage,
+                    ParentPageCode: null,
+                    IsNavigationVisible: true,
+                    PageType: "List",
+                    SortOrder: 30,
+                    Actions:
+                    [
+                        new ModuleManifestAction("CREATE", "Create Category", TimeEntryPermissions.CategoriesManage,
+                            "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
+                        new ModuleManifestAction("INSTALL_RECOMMENDED", "Install Recommended", TimeEntryPermissions.CategoriesManage,
+                            "Toolbar", 20, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
+                        new ModuleManifestAction("UPDATE", "Edit Category", TimeEntryPermissions.CategoriesManage,
+                            "RowAction", 30, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("ACTIVATE", "Activate Category", TimeEntryPermissions.CategoriesManage,
+                            "RowAction", 40, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("DEACTIVATE", "Deactivate Category", TimeEntryPermissions.CategoriesManage,
+                            "RowAction", 50, IsDangerous: true, IsToolbarAction: false, IsRowAction: true)
+                    ]),
+
+                new ModuleManifestPage(
+                    PageCode: PageSettings,
+                    DisplayName: "Timesheet Settings",
+                    RoutePath: "/TimeEntry/Settings",
+                    RequiredPermission: TimeEntryPermissions.SettingsManage,
+                    ParentPageCode: null,
+                    IsNavigationVisible: true,
+                    PageType: "Form",
+                    SortOrder: 40,
+                    Actions:
+                    [
+                        new ModuleManifestAction("UPDATE", "Save Settings", TimeEntryPermissions.SettingsManage,
+                            "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
+                        new ModuleManifestAction("SET_TIMER_SWITCH", "Set Legal Entity Timer Switch", TimeEntryPermissions.SettingsManage,
+                            "RowAction", 20, IsDangerous: true, IsToolbarAction: false, IsRowAction: true)
+                    ])
+            ],
+            NotificationEvents:
+            [
+                Event(TimeEntryNotificationEvents.WeekSubmitted, "NotificationEvent_TimeEntryWeekSubmitted", "Timesheet submitted",
+                    "Sent to the approver when a week is submitted.", PageApprovals, TimeEntryPermissions.ApprovalsRead),
+                Event(TimeEntryNotificationEvents.WeekApproved, "NotificationEvent_TimeEntryWeekApproved", "Timesheet approved",
+                    "Sent to the person when their week is approved.", PageMyTimesheet, TimeEntryPermissions.TimesheetsRead),
+                Event(TimeEntryNotificationEvents.WeekRejected, "NotificationEvent_TimeEntryWeekRejected", "Timesheet returned",
+                    "Sent to the person when their week is rejected, with the approver's reason.", PageMyTimesheet,
+                    TimeEntryPermissions.TimesheetsRead),
+                // L7 — linkless, the MOD-0357 "removed" pattern: once withdrawn, the week no longer opens for the approver, so
+                // there is no page to point at (LinkPolicy None, no TargetPageCode) and the template carries no link.
+                Event(TimeEntryNotificationEvents.WeekWithdrawn, "NotificationEvent_TimeEntryWeekWithdrawn", "Timesheet withdrawn",
+                    "Sent to the approver when the person withdraws a submitted week.", pageCode: null,
+                    TimeEntryPermissions.ApprovalsRead, linkPolicy: "None"),
+                Event(TimeEntryNotificationEvents.TimerAutoClosed, "NotificationEvent_TimeEntryTimerAutoClosed", "Timer closed at midnight",
+                    "Sent to the person the morning after their timer was closed at local midnight.", PageMyTimesheet,
+                    TimeEntryPermissions.TimesheetsRead),
+                Event(TimeEntryNotificationEvents.WeekReminder, "NotificationEvent_TimeEntryWeekReminder", "Timesheet reminder",
+                    "Sent to the person on Monday when last week is not yet submitted (tenant switch, off by default).",
+                    PageMyTimesheet, TimeEntryPermissions.TimesheetsRead),
+                Event(TimeEntryNotificationEvents.MinutesConflict, "NotificationEvent_TimeEntryMinutesConflict", "Minutes attendance to check",
+                    "Sent to the person only, when the minutes record them absent or excused from a meeting they booked time to.",
+                    PageMyTimesheet, TimeEntryPermissions.TimesheetsRead)
+            ]);
+
+    /// <summary>
+    /// The display-name keys (L1) follow the MOD-0024 / MOD-0357 <c>NotificationEvent_*</c> pattern. The manifest sync
+    /// writes <c>DisplayNameKey</c> only when it first CREATES an event (a SOFT, operator-owned field), so the keys must
+    /// be here before the first deploy; the English fallback name stays for a reader that resolves no key.
+    /// </summary>
+    public static readonly IReadOnlyList<string> DisplayNameKeys =
+    [
+        "NotificationEvent_TimeEntryWeekSubmitted", "NotificationEvent_TimeEntryWeekApproved",
+        "NotificationEvent_TimeEntryWeekRejected", "NotificationEvent_TimeEntryWeekWithdrawn",
+        "NotificationEvent_TimeEntryTimerAutoClosed", "NotificationEvent_TimeEntryWeekReminder",
+        "NotificationEvent_TimeEntryMinutesConflict"
+    ];
+
+    // T3 (pack §21.3 N7) — Active, with seven templates each (NotificationTemplateSeed). The required variables are the
+    // ones the dispatch sends and the template renders; all three come from TimeEntryNotificationVariables, and T3-06
+    // measures the manifest against the payloads actually dispatched.
+    private static ModuleManifestNotificationEvent Event(
+        string code, string displayNameKey, string fallbackName, string description, string? pageCode, string permission,
+        string linkPolicy = "TargetPage") =>
+        new(
+            EventCode: code,
+            Channel: "Email",
+            DefaultTemplateKey: code,
+            DisplayNameKey: displayNameKey,
+            FallbackDisplayName: fallbackName,
+            Description: description,
+            RequiredVariables: TimeEntryNotificationVariables.RequiredFor(code)
+                .Select(name => new ModuleManifestNotificationVariable(name))
+                .ToList(),
+            OptionalVariables: null,
+            TargetPageCode: pageCode,
+            RequiredPermissionKey: permission,
+            CanTenantOverride: false,
+            UsageType: "SystemEvent",
+            LinkPolicy: linkPolicy,
+            Status: "Active");
+}

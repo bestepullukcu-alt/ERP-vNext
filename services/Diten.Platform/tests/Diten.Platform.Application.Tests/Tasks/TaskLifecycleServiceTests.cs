@@ -163,15 +163,16 @@ public sealed class TaskLifecycleServiceTests
         var task = MakeTask(TaskLifecycle.InProgress);
 
         task.EstimateHours = null;
-        Assert.Null(_sut.CalculateRemainingHours(task));
+        Assert.Null(_sut.CalculateRemainingHours(task, 0m));
 
+        // MOD-0280-FU01 D7 — the spent figure is the APPROVED time handed in, never TaskItem.SpentHours: a decoy on the
+        // entity must not move the answer.
         task.EstimateHours = 8m;
-        task.SpentHours = 3m;
-        Assert.Equal(5m, _sut.CalculateRemainingHours(task));
+        task.SpentHours = 7m;
+        Assert.Equal(5m, _sut.CalculateRemainingHours(task, 3m));
 
         // Over-spend must never surface as a negative remaining.
-        task.SpentHours = 11m;
-        Assert.Equal(0m, _sut.CalculateRemainingHours(task));
+        Assert.Equal(0m, _sut.CalculateRemainingHours(task, 11m));
     }
 
     [Fact]

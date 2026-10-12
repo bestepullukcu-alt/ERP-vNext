@@ -10,5 +10,8 @@ public sealed record GetAccountListQuery(
     // AccountType): TerritoryNodeId carries current-coverage node ids, CountryScope carries owning-model `country`
     // scope codes. They are resolved to a current-coverage account-id set (both lifecycle gates at now) and ANDed
     // onto the account query — they are NOT stored Account fields.
-    string? TerritoryNodeId = null, string? CountryScope = null)
+    string? TerritoryNodeId = null, string? CountryScope = null,
+    // WP-VP-2B (mobile R2) — "true" / "false" (case-insensitive) or absent (today's result); anything else is a 400
+    // invalid_has_active_contacts. ANDed with every other filter.
+    string? HasActiveContacts = null)
     : IRequest<Response<PagedResult<AccountListItemDto>>>;

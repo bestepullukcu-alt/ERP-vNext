@@ -48,7 +48,13 @@ public sealed record UserListCriteria(
     UserListSort Sort,
     IReadOnlyList<string> Statuses,
     IReadOnlyList<AccountKind> AccountKinds,
-    IReadOnlyCollection<Guid>? RestrictToUserIds);
+    IReadOnlyCollection<Guid>? RestrictToUserIds,
+    /// <summary>
+    /// BL-452 export only: the row cap the caller will refuse above. The reader stops after the count when the count already
+    /// exceeds it (no 50 000-document read for a "no"), and <see cref="Take"/> is cap + 1 so a row that arrives between the
+    /// count and the read is seen as "more than the cap" instead of being silently cut off the file.
+    /// </summary>
+    int? RefuseAbove = null);
 
 /// <summary>One page of users plus how many users the criteria matched in the tenant (before paging).</summary>
 public sealed record UserListPage(IReadOnlyList<User> Items, long FilteredTotal);

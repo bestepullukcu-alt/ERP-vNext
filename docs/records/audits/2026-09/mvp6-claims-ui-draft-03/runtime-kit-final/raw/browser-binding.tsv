@@ -1,0 +1,8 @@
+kind	url_or_path	source_path	http	observed	expected	result
+served-asset	/assets/js/SupplyChain/Claims/index.js	frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/index.js	200	c8ef218e7c136a400a86a995d15ed16fc4174001c93803a79e687264b1bb5058	c8ef218e7c136a400a86a995d15ed16fc4174001c93803a79e687264b1bb5058	match
+served-asset	/assets/js/SupplyChain/Claims/index.l10n.js	frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/index.l10n.js	200	2a0ece421e85d95ffe57eaaf2847d6fc6db6029f46fea1f574f4cd745e352851	2a0ece421e85d95ffe57eaaf2847d6fc6db6029f46fea1f574f4cd745e352851	match
+served-asset	/assets/js/dt-defaults.js	frontend/Diten.Web/wwwroot/assets/js/dt-defaults.js	200	9637beb5f9906a1d48c59e3f4de3e4c8db861a5d5aaef0fdefb0d6e9c8ab1614	9637beb5f9906a1d48c59e3f4de3e4c8db861a5d5aaef0fdefb0d6e9c8ab1614	match
+browser-url	http://127.0.0.1:5801/SupplyChain/Claims	-	-	127.0.0.1:5801	127.0.0.1:5801	match
+browser-url	http://127.0.0.1:5801/SupplyChain/Claims?culture=ar&ui-culture=ar	-	-	127.0.0.1:5801	127.0.0.1:5801	match
+browser-url	http://127.0.0.1:5801/account/login	-	-	127.0.0.1:5801	127.0.0.1:5801	match
+served-override	q64e-v2-index-js-baseline	6a4c01cfb10e6ba2b1dc6dda9ae6bd8560a4089110a73a03372f37c1b43c6c53	-	6a4c01cfb10e6ba2b1dc6dda9ae6bd8560a4089110a73a03372f37c1b43c6c53	pre-serve record == every served body	match

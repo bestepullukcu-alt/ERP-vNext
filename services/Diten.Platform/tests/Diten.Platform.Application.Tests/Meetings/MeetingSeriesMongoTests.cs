@@ -46,14 +46,30 @@ public sealed class MeetingSeriesMongoTests : IAsyncLifetime
     /// <summary>The storage-level guarantee behind "two series with the same name in one tenant is impossible":
     /// drop <c>ux_meeting_series_tenant_name</c> and this test goes red — the second insert would succeed
     /// instead of throwing, and <see cref="MeetingSeriesRepository.CreateAsync"/> would return normally instead
-    /// of the driver rejecting the write.</summary>
+    /// of the driver rejecting the write.
+    ///
+    /// ⚠ BL-482: it proves the index EXISTS before it writes the duplicate, and it removes its own tenant's rows
+    /// whatever happens. Without both, a run in which the index was missing left an ACCEPTED duplicate in the
+    /// shared database, and every later build of this collection's indexes failed with E11000.</summary>
     [Fact]
     public async Task A_second_series_with_the_same_name_in_the_same_tenant_is_refused_by_the_real_unique_index()
     {
-        await _repository.CreateAsync(Series("Haftalık Kalite Toplantısı"));
+        var raw = _harness.Database.GetCollection<MeetingSeries>(PlatformCollections.MeetingSeries);
+        await UniqueIndexPrecondition.RequireAsync(raw, "ux_meeting_series_tenant_name");
 
-        await Assert.ThrowsAsync<MongoWriteException>(
-            () => _repository.CreateAsync(Series("Haftalık Kalite Toplantısı")));
+        try
+        {
+            await _repository.CreateAsync(Series("Haftalık Kalite Toplantısı"));
+
+            await Assert.ThrowsAsync<MongoWriteException>(
+                () => _repository.CreateAsync(Series("Haftalık Kalite Toplantısı")));
+        }
+        finally
+        {
+            // Hard delete on the raw collection, scoped to this harness's own tenant: the shared database is never
+            // dropped, so a duplicate that got in must not outlive the test that wrote it.
+            await raw.DeleteManyAsync(Builders<MeetingSeries>.Filter.Eq(x => x.TenantId, _harness.TenantId));
+        }
     }
 
     [Fact]

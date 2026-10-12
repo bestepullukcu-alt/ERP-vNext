@@ -12,8 +12,10 @@ public sealed class OutboxEventRepositoryIdempotencyTests
     [Fact]
     public async Task SameEventIdAndImmutableContentIsNoOp_ChangedPayloadIsConflict()
     {
+        // BL-482 (L6): underscores, not hyphens — a hyphenated scope fell outside the owned grammar, so its database
+        // was never swept and never healable. CreateIsolatedAsync now refuses such a scope.
         await using var harness = await MongoIntegrationHarness.CreateIsolatedAsync(
-            "eventing-outbox-idempotency",
+            "eventing_outbox_idempotency",
             SchemaProfile.Eventing);
         var repository = new OutboxEventRepository(harness.DbContext, harness.TenantContext);
         var metadata = new EventMetadata(

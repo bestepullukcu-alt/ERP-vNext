@@ -16,8 +16,9 @@ namespace Diten.Web.Controllers.CRM;
 /// 5000; the browser never sees a service URL or a bearer token. The CrmService runtime stays the authoritative
 /// validation and permission layer — nothing is decided here.
 /// <para>There is no delete surface (closing a play is Archive) and no apply/generate surface at all: applying a play
-/// to a period is MOD-0155. Every picker is a pass-through to a surface that ALREADY exists — no new endpoint is opened
-/// for this page, and no dropdown is ever fed from a hardcoded list.</para>
+/// to a period is MOD-0155. Every picker is a pass-through to a surface that ALREADY exists — no new CRM endpoint is
+/// opened for this page, and no dropdown is ever fed from a hardcoded list. The one composed read
+/// (<c>api/line-journeys</c>, WP-SB-3-UIa) joins two existing CRM lists as an option filter only.</para>
 /// </summary>
 [Authorize]
 [Route("CRM/StrategyTemplates")]
@@ -44,6 +45,7 @@ public sealed class StrategyTemplatesController : Controller
     private readonly HttpClient _httpClient;
     private readonly string _gatewayUrl;
     private readonly IStringLocalizer<SharedResource> _sharedLocalizer;
+    private readonly IStringLocalizer<Diten.Web.Views.CRM.StrategyTemplates.StrategyTemplatesIndex>? _pageLocalizer;
     private readonly ILogger<StrategyTemplatesController> _logger;
     private readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web) { PropertyNameCaseInsensitive = true };
 
@@ -51,8 +53,11 @@ public sealed class StrategyTemplatesController : Controller
         HttpClient httpClient,
         IConfiguration configuration,
         IStringLocalizer<SharedResource> sharedLocalizer,
-        ILogger<StrategyTemplatesController> logger)
+        ILogger<StrategyTemplatesController> logger,
+        // WP-E2E-FIX-3 (E5-B1) — the page's own resx, for the localized "why it was not activated" reason.
+        IStringLocalizer<Diten.Web.Views.CRM.StrategyTemplates.StrategyTemplatesIndex>? pageLocalizer = null)
     {
+        _pageLocalizer = pageLocalizer;
         _httpClient = httpClient;
         _gatewayUrl = configuration["GatewayUrl"]
             ?? throw new InvalidOperationException("GatewayUrl configuration is required.");
@@ -101,7 +106,7 @@ public sealed class StrategyTemplatesController : Controller
                 // WP-ST-EDIT-W — one-click "save + activate". Activate is a SEPARATE operation over the EXISTING endpoint;
                 // it runs ONLY after the save succeeded and ONLY when the actor holds the activate permission. A failed
                 // activate never rolls back the save — the play stays created and the author lands on Edit with a notice.
-                if (model.ActivateAfterSave && HasAnyPermission(ActivatePermission))
+                if (model.ActivateAfterSave && HasAnyPermission(ActivatePermission, ManagePermission, ManageFallback))
                     return await ActivateAfterSaveAsync(id, nameof(Edit), ct);
                 // A new play lands on Edit so the author can keep binding without a second navigation.
                 return RedirectToAction(nameof(Edit), new { id });
@@ -109,7 +114,7 @@ public sealed class StrategyTemplatesController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        AddGatewayErrors(await ExtractErrorsAsync(response, ct));
+        AddGatewayErrors(model, await ExtractErrorsAsync(response, ct));
         await PopulateOptionsAsync(model, ct);
         return View($"{ViewRoot}/Create.cshtml", model);
     }
@@ -150,12 +155,12 @@ public sealed class StrategyTemplatesController : Controller
             TempData["SuccessMessage"] = _sharedLocalizer["RecordUpdated"].Value;
             // WP-ST-EDIT-W — same one-click "save + activate" orchestration as Create. On a failed activate the update is
             // still saved; both outcomes land on Details, the failure adding a "saved, not activated" warning.
-            if (model.ActivateAfterSave && HasAnyPermission(ActivatePermission))
+            if (model.ActivateAfterSave && HasAnyPermission(ActivatePermission, ManagePermission, ManageFallback))
                 return await ActivateAfterSaveAsync(id, nameof(Details), ct);
             return RedirectToAction(nameof(Details), new { id });
         }
 
-        AddGatewayErrors(await ExtractErrorsAsync(response, ct));
+        AddGatewayErrors(model, await ExtractErrorsAsync(response, ct));
         await PopulateOptionsAsync(model, ct);
         return View($"{ViewRoot}/Edit.cshtml", model);
     }
@@ -255,6 +260,80 @@ public sealed class StrategyTemplatesController : Controller
             $"/api/crm/knowledge/content-engagement-journeys{Request.QueryString}",
             JourneyReadPermission, ct, ReadFallback);
 
+    /// <summary>
+    /// WP-SB-3-UIa — the journey picker of ONE product line: the tenant's PUBLISHED, non-archived engagement journeys
+    /// whose subject's primary <c>global-product</c> link is <paramref name="productId"/>. Composed from two EXISTING CRM
+    /// reads (journey list + subject list, both tenant-scoped by the JWT tenant header) — no new CRM endpoint.
+    /// <para>This is an OPTION FILTER only. The decision stays in CRM (409 <c>journey_not_published</c> /
+    /// <c>journey_product_mismatch</c>), so a stale option can never be saved. The product is resolved exactly like
+    /// <c>ChainContextResolver.PrimaryGlobalProduct</c>: SourceSystem <c>global-product</c>, IsPrimary, a Guid id.</para>
+    /// <para>When the subject list cannot be read (e.g. the author lacks <c>crm.knowledge.subject.read</c>) the published
+    /// journeys come back UNFILTERED with <c>productFilterApplied: false</c>, so the form can say the match is checked at
+    /// save — never a silently wrong "no journey".</para>
+    /// </summary>
+    [HttpGet("api/line-journeys")]
+    public async Task<IActionResult> LineJourneys([FromQuery] Guid? productId, CancellationToken ct)
+    {
+        if (RequireJson(JourneyReadPermission, ReadFallback) is { } denied) return denied;
+        if (productId is not { } product || product == Guid.Empty)
+            return Ok(new { data = new { items = Array.Empty<StrategyTemplateLineJourneyOption>(), productFilterApplied = true } });
+
+        var journeysResponse = await SendGatewayAsync(
+            HttpMethod.Get, "/api/crm/knowledge/content-engagement-journeys?status=published&includeArchived=false", null, ct);
+        if (journeysResponse is null || !journeysResponse.IsSuccessStatusCode)
+            return await ToProxyResultAsync(journeysResponse, ct);
+        var journeys = (await journeysResponse.Content
+            .ReadFromJsonAsync<StrategyTemplateGatewayResponse<StrategyTemplateItemsApiModel<StrategyTemplateJourneyApiModel>>>(_json, ct))
+            ?.Data?.Items ?? new();
+
+        var subjectsResponse = await SendGatewayAsync(
+            HttpMethod.Get, "/api/crm/knowledge/subjects?includeArchived=false", null, ct);
+        Dictionary<Guid, Guid>? productBySubject = null;
+        if (subjectsResponse is not null && subjectsResponse.IsSuccessStatusCode)
+        {
+            var subjects = (await subjectsResponse.Content
+                .ReadFromJsonAsync<StrategyTemplateGatewayResponse<StrategyTemplateItemsApiModel<StrategyTemplateSubjectApiModel>>>(_json, ct))
+                ?.Data?.Items ?? new();
+            productBySubject = subjects
+                .Select(s => (s.SubjectId, Product: PrimaryGlobalProduct(s)))
+                .Where(x => x.Product is not null)
+                .ToDictionary(x => x.SubjectId, x => x.Product!.Value);
+        }
+
+        var items = journeys
+            .Where(j => !j.IsArchived && string.Equals(j.JourneyStatus, "published", StringComparison.OrdinalIgnoreCase))
+            .Where(j => productBySubject is null
+                        || (productBySubject.TryGetValue(j.SubjectId, out var p) && p == product))
+            .OrderBy(j => j.JourneyCode, StringComparer.OrdinalIgnoreCase)
+            .Select(j => new StrategyTemplateLineJourneyOption
+            {
+                JourneyId = j.JourneyId,
+                JourneyCode = j.JourneyCode,
+                JourneyName = j.JourneyName,
+                LanguageCode = j.LanguageCode,
+                JourneyVersion = j.JourneyVersion
+            })
+            .ToList();
+        return Ok(new { data = new { items, productFilterApplied = productBySubject is not null } });
+    }
+
+    /// <summary>The subject's primary MDM Global Product link — the same rule as CRM's
+    /// <c>ChainContextResolver.PrimaryGlobalProduct</c> (SourceSystem <c>global-product</c>, IsPrimary, a Guid id).</summary>
+    private static Guid? PrimaryGlobalProduct(StrategyTemplateSubjectApiModel subject)
+    {
+        foreach (var reference in subject.ExternalReferences)
+        {
+            if (reference.IsPrimary
+                && string.Equals(reference.SourceSystem?.Trim(), "global-product", StringComparison.OrdinalIgnoreCase)
+                && Guid.TryParse(reference.ExternalId, out var id) && id != Guid.Empty)
+            {
+                return id;
+            }
+        }
+
+        return null;
+    }
+
     /// <summary>The product picker. Re-uses the EXISTING MDM global-product selector — the same surface the MOD-0167
     /// FU02 criteria editor and the MOD-0162 FU03 concept picker use. No new endpoint is opened here.</summary>
     [HttpGet("api/global-products")]
@@ -352,9 +431,54 @@ public sealed class StrategyTemplatesController : Controller
             return RedirectToAction(nameof(Details), new { id });
         }
 
-        // The save already succeeded; keep its success toast and add a warning about the activation.
-        TempData["WarningMessage"] = _sharedLocalizer["SavedNotActivated"].Value;
+        // The save already succeeded; keep its success toast and add a warning about the activation — WITH the reason
+        // (WP-E2E-FIX-3 E5-B1: e.g. a bound segment that is not active answers 409 segment_not_active).
+        var reason = await ActivationBlockedReasonAsync(activate, ct);
+        TempData["WarningMessage"] = string.IsNullOrWhiteSpace(reason)
+            ? _sharedLocalizer["SavedNotActivated"].Value
+            : $"{_sharedLocalizer["SavedNotActivated"].Value} {reason}";
         return RedirectToAction(failureAction, new { id });
+    }
+
+    /// <summary>WP-E2E-FIX-3 (E5-B1) — the activate refusal as a localized sentence: the response's error code
+    /// (<c>errors[0]</c> when the envelope carries [code, message]) → <c>ActivationBlocked_{code}</c> in the page resx;
+    /// an unknown code or a code-less refusal → the generic <c>ActivationBlocked</c>; no response at all → nothing.</summary>
+    private async Task<string?> ActivationBlockedReasonAsync(HttpResponseMessage? response, CancellationToken ct)
+    {
+        if (response is null || _pageLocalizer is null)
+        {
+            return null;
+        }
+
+        string? code = null;
+        try
+        {
+            using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
+            if (doc.RootElement.ValueKind == JsonValueKind.Object
+                && doc.RootElement.TryGetProperty("errors", out var errors)
+                && errors.ValueKind == JsonValueKind.Array
+                && errors.GetArrayLength() >= 2
+                && errors[0].ValueKind == JsonValueKind.String)
+            {
+                code = errors[0].GetString();
+            }
+        }
+        catch (JsonException)
+        {
+            // an unreadable body is still a refusal: the generic reason
+        }
+
+        if (!string.IsNullOrWhiteSpace(code))
+        {
+            var specific = _pageLocalizer[$"ActivationBlocked_{code}"];
+            if (!specific.ResourceNotFound)
+            {
+                return specific.Value;
+            }
+        }
+
+        var generic = _pageLocalizer["ActivationBlocked"];
+        return generic.ResourceNotFound ? null : generic.Value;
     }
 
     private async Task<IActionResult> ProxyGetAsync(
@@ -450,9 +574,100 @@ public sealed class StrategyTemplatesController : Controller
         return [string.IsNullOrWhiteSpace(raw) ? _sharedLocalizer["GatewayError"].Value : raw];
     }
 
-    private void AddGatewayErrors(IEnumerable<string> errors)
+    /// <summary>WP-SB-3-UIa — the SB-3a refusals (<see cref="StrategyTemplateErrorMap"/>) are anchored to the place they
+    /// concern and shown there, localised, by form.js; anything else is kept in the summary with the runtime's own text.
+    /// The CRM envelope carries a refusal as <c>[code, message]</c>; the message is used only to find the line (it names
+    /// the line's product or journey) and is then dropped, so a raw code never reaches the screen.</summary>
+    private void AddGatewayErrors(StrategyTemplateEditViewModel model, IReadOnlyList<string> errors)
     {
-        foreach (var error in errors) ModelState.AddModelError(string.Empty, error);
+        var anchored = MapFormErrors(errors, model.ProductLinesJson, out var rest);
+        model.FormErrorsJson = anchored.Count > 0 ? JsonSerializer.Serialize(anchored, _json) : null;
+        foreach (var error in rest) ModelState.AddModelError(string.Empty, error);
+    }
+
+    internal static List<StrategyTemplateFormError> MapFormErrors(
+        IReadOnlyList<string> errors, string? productLinesJson, out List<string> unmapped)
+    {
+        var anchored = new List<StrategyTemplateFormError>();
+        unmapped = new List<string>();
+        var lines = ReadPostedLines(productLinesJson);
+        for (var i = 0; i < errors.Count; i++)
+        {
+            var code = errors[i]?.Trim() ?? string.Empty;
+            if (!StrategyTemplateErrorMap.Scopes.TryGetValue(code, out var scope))
+            {
+                unmapped.Add(errors[i]);
+                continue;
+            }
+
+            // The message that travels with the code (CRM: code first, message second) names the line.
+            var message = i + 1 < errors.Count && !StrategyTemplateErrorMap.Scopes.ContainsKey(errors[i + 1]?.Trim() ?? "")
+                ? errors[++i]
+                : string.Empty;
+            anchored.Add(new StrategyTemplateFormError
+            {
+                Code = code,
+                Key = StrategyTemplateErrorMap.KeyFor(code),
+                Scope = scope,
+                LineIndex = scope == StrategyTemplateErrorMap.ScopeLine ? FindLine(lines, message) : null
+            });
+        }
+
+        return anchored;
+    }
+
+    /// <summary>The posted line a refusal message names: by product code / product id, else by journey id / code. Null
+    /// when the message names none (or names several) — the refusal is then shown at the head of the section.</summary>
+    private static int? FindLine(IReadOnlyList<(string? ProductCode, string ProductId, string? JourneyId, string? JourneyCode)> lines, string message)
+    {
+        if (string.IsNullOrWhiteSpace(message) || lines.Count == 0) return null;
+        bool Names(string? token) => !string.IsNullOrWhiteSpace(token)
+            && message.Contains($"'{token}'", StringComparison.OrdinalIgnoreCase);
+
+        var byProduct = Enumerable.Range(0, lines.Count)
+            .Where(i => Names(lines[i].ProductCode) || Names(lines[i].ProductId)).ToList();
+        if (byProduct.Count == 1) return byProduct[0];
+
+        var byJourney = Enumerable.Range(0, lines.Count)
+            .Where(i => Names(lines[i].JourneyId) || Names(lines[i].JourneyCode)).ToList();
+        return byJourney.Count == 1 ? byJourney[0] : null;
+    }
+
+    private static List<(string? ProductCode, string ProductId, string? JourneyId, string? JourneyCode)> ReadPostedLines(string? json)
+    {
+        var result = new List<(string?, string, string?, string?)>();
+        if (string.IsNullOrWhiteSpace(json)) return result;
+        try
+        {
+            using var document = JsonDocument.Parse(json);
+            if (document.RootElement.ValueKind != JsonValueKind.Array) return result;
+            foreach (var line in document.RootElement.EnumerateArray())
+            {
+                if (line.ValueKind != JsonValueKind.Object) continue;
+                result.Add((Text(line, "globalProductCodeDisplay"), Text(line, "globalProductId") ?? string.Empty,
+                    Text(line, "journeyId"), Text(line, "journeyCode")));
+            }
+        }
+        catch (JsonException)
+        {
+            // An unreadable list anchors nothing; the refusal still shows at the head of the section.
+        }
+
+        return result;
+
+        static string? Text(JsonElement element, string name)
+        {
+            foreach (var property in element.EnumerateObject())
+            {
+                if (string.Equals(property.Name, name, StringComparison.OrdinalIgnoreCase)
+                    && property.Value.ValueKind == JsonValueKind.String)
+                {
+                    return property.Value.GetString();
+                }
+            }
+
+            return null;
+        }
     }
 
     private object ToCreatePayload(StrategyTemplateEditViewModel m) => new

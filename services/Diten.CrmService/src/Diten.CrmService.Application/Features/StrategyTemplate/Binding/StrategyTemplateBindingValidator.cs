@@ -1,3 +1,4 @@
+using Diten.CrmService.Application.Features.Knowledge.Chain;
 using Diten.CrmService.Domain.Entities;
 using Diten.CrmService.Domain.Repositories;
 using TemplateEntity = Diten.CrmService.Domain.Entities.StrategyTemplate;
@@ -21,17 +22,22 @@ public sealed class StrategyTemplateBindingValidator
     private readonly IVisitFrequencyPolicyRepository _policies;
     private readonly IKnowledgePathRepository _paths;
     private readonly IContentEngagementJourneyRepository _journeys;
+    private readonly ISubjectRepository? _subjects;
 
+    /// <param name="subjects">WP-SB-3a — the journey's subject, whose primary global product must be the line's. Without
+    /// it a line journey cannot be proven and is refused (fail-closed).</param>
     public StrategyTemplateBindingValidator(
         ISegmentRepository segments,
         IVisitFrequencyPolicyRepository policies,
         IKnowledgePathRepository paths,
-        IContentEngagementJourneyRepository journeys)
+        IContentEngagementJourneyRepository journeys,
+        ISubjectRepository? subjects = null)
     {
         _segments = segments;
         _policies = policies;
         _paths = paths;
         _journeys = journeys;
+        _subjects = subjects;
     }
 
     /// <summary>
@@ -59,7 +65,59 @@ public sealed class StrategyTemplateBindingValidator
             return frequencyFailure;
         }
 
+        var lineFailure = await ValidateProductLineJourneysAsync(tenantId, template, cancellationToken);
+        if (lineFailure is not null)
+        {
+            return lineFailure;
+        }
+
         return await ValidateContentBindingsAsync(tenantId, template, cancellationToken);
+    }
+
+    /// <summary>
+    /// WP-SB-3a (DESIGN-SB-3 §3.1) — every line that names a journey names one that is in this tenant, not archived and
+    /// PUBLISHED (409 <c>journey_not_published</c>), and whose subject's primary global product — the single definition
+    /// shared with the knowledge path (<see cref="ChainContextResolver.PrimaryGlobalProduct"/>) — is the line's product
+    /// (409 <c>journey_product_mismatch</c>). A line without a journey is a pre-SB-3a line and is not judged here (the
+    /// write path decides whether a journey is required). Stamps <c>JourneyCodeDisplay</c> from the journey.
+    /// </summary>
+    private async Task<StrategyTemplateValidation.Failure?> ValidateProductLineJourneysAsync(
+        Guid tenantId, TemplateEntity template, CancellationToken cancellationToken)
+    {
+        foreach (var line in template.ProductLines)
+        {
+            if (line.JourneyId is not { } journeyId || journeyId == Guid.Empty)
+            {
+                continue;
+            }
+
+            var journey = await _journeys.GetByIdAsync(tenantId, journeyId, cancellationToken);
+            if (journey is null || journey.IsArchived() || !journey.IsPublished())
+            {
+                return new StrategyTemplateValidation.Failure(
+                    journey is null
+                        ? $"Engagement journey '{journeyId}' does not exist in this tenant."
+                        : $"Engagement journey '{journey.JourneyCode}' is not published; a line can only be told with a "
+                          + "published journey.",
+                    StrategyTemplateErrorCodes.JourneyNotPublished, 409);
+            }
+
+            var subject = _subjects is null
+                ? null
+                : await _subjects.GetByIdAsync(tenantId, journey.SubjectId, cancellationToken);
+            var product = ChainContextResolver.PrimaryGlobalProduct(subject);
+            if (product is not { } primary || primary.Id != line.GlobalProductId)
+            {
+                return new StrategyTemplateValidation.Failure(
+                    $"Engagement journey '{journey.JourneyCode}' tells another product than this line "
+                    + $"('{line.GlobalProductCodeDisplay ?? line.GlobalProductId.ToString()}').",
+                    StrategyTemplateErrorCodes.JourneyProductMismatch, 409);
+            }
+
+            line.JourneyCodeDisplay = journey.JourneyCode;
+        }
+
+        return null;
     }
 
     private async Task<StrategyTemplateValidation.Failure?> ValidateSegmentBindingsAsync(

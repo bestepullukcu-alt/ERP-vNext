@@ -1,0 +1,9 @@
+authorized_page
+623:        <table id="dt-carriers" data-dt-standard="v2" class="datatables-carriers table border-top">
+662:<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCreateEdit"
+663:     aria-labelledby="offcanvasCreateEditLabel">
+665:        <h5 id="offcanvasCreateEditLabel" class="offcanvas-title">Add Carrier</h5>
+712:        <button type="button" id="btnSaveCarrier" class="btn btn-primary">
+757:<script id="carrier-permissions" type="application/json">
+uas_page
+367:    <div class="card diten-access-denied" role="note">

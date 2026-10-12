@@ -114,4 +114,34 @@
   <data name="FormValidationError" xml:space="preserve"><value>Complete todos los campos obligatorios.</value></data>
   <data name="ManageTypes" xml:space="preserve"><value>Tipos de reunión</value></data>
   <data name="ManageSeries" xml:space="preserve"><value>Series de reuniones</value></data>
+  <data name="ViewSwitchLabel" xml:space="preserve">
+    <value>Vista</value>
+  </data>
+  <data name="ViewList" xml:space="preserve">
+    <value>Lista</value>
+  </data>
+  <data name="ViewCalendar" xml:space="preserve">
+    <value>Calendario</value>
+  </data>
+  <data name="CalendarInvitesTitle" xml:space="preserve">
+    <value>Mis invitaciones pendientes</value>
+  </data>
+  <data name="CalendarInvitesEmpty" xml:space="preserve">
+    <value>Ninguna invitación espera su respuesta.</value>
+  </data>
+  <data name="CalendarLegendAccepted" xml:space="preserve">
+    <value>Aceptadas u organizadas por mí</value>
+  </data>
+  <data name="CalendarLegendPending" xml:space="preserve">
+    <value>Pendientes de mi respuesta</value>
+  </data>
+  <data name="CalendarLegendOther" xml:space="preserve">
+    <value>Otras reuniones</value>
+  </data>
+  <data name="CalendarLoadFailed" xml:space="preserve">
+    <value>No se pudo cargar el calendario.</value>
+  </data>
+  <data name="InviteAccepted" xml:space="preserve">
+    <value>Invitación aceptada.</value>
+  </data>
 </root>

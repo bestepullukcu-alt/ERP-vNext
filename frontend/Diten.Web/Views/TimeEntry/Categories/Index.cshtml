@@ -1,0 +1,49 @@
+@using Diten.Web.Views.TimeEntry.Categories
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CategoriesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["CategoriesTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    MOD-0280-FU01 T2b — the work-category catalogue (Golden Reference Slim). UAS-001: without time-entry.categories.manage
+    nothing below is drawn. ⚠ Display only; Platform's [HasPermission] stays the authority.
+*@
+@if (!Perms.Has("time-entry.categories.manage"))
+{
+    <partial name="_AccessDenied" model="@Localizer["CategoriesTitle"].Value" />
+    return;
+}
+
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/TimeEntry/Categories/_Filter.cshtml" />
+
+<div class="mb-3 d-flex flex-wrap align-items-start justify-content-between gap-2">
+    <div>
+        <h5 class="mb-0">@Localizer["CategoriesTitle"]</h5>
+        <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+    </div>
+    <button type="button" class="btn btn-sm btn-label-primary" id="btnInstallRecommended">
+        <i class="bx bx-download me-1"></i>@Localizer["InstallRecommended"]
+    </button>
+</div>
+
+@* Contract markers are rendered by _DataTable.cshtml: the shared <partial name="_TableSkeleton" /> (which carries id="skeleton-loader"), <table id="dt-timecategories" data-dt-standard="v2"> *@
+<partial name="~/Views/TimeEntry/Categories/_DataTable.cshtml" />
+
+@* Contract marker rendered by _DetailsQuickView.cshtml: id="offcanvasDetailsPreview" *@
+<partial name="~/Views/TimeEntry/Categories/_DetailsQuickView.cshtml" />
+<partial name="~/Views/TimeEntry/Categories/_CreateEditOffcanvas.cshtml" />
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/TimeEntry/Categories/_IndexL10n.cshtml" />
+    <partial name="~/Views/TimeEntry/_ErrorL10n.cshtml" />
+    <script src="~/assets/js/TimeEntry/Categories/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/TimeEntry/core.js" asp-append-version="true"></script>
+    <script src="~/assets/js/TimeEntry/Categories/index.js" asp-append-version="true"></script>
+}

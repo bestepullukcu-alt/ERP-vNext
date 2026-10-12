@@ -28,6 +28,9 @@ public sealed class UpdatePlannedVisitHandler : IRequestHandler<UpdatePlannedVis
     private readonly PlannedVisitFrequencyProbe _frequencyProbe;
     private readonly PlannedVisitConsentProbe _consentProbe;
     private readonly PlannedVisitAvailabilityProbe _availabilityProbe;
+    private readonly ICallerScope _caller;
+    private readonly IUserDisplayNameResolver _userNames;
+    private readonly IVisitProvenanceDeriver _deriver;
 
     public UpdatePlannedVisitHandler(
         ITenantContext tenant,
@@ -37,8 +40,14 @@ public sealed class UpdatePlannedVisitHandler : IRequestHandler<UpdatePlannedVis
         PlannedVisitJourneyProbe journeyProbe,
         PlannedVisitFrequencyProbe frequencyProbe,
         PlannedVisitConsentProbe consentProbe,
-        PlannedVisitAvailabilityProbe availabilityProbe)
+        PlannedVisitAvailabilityProbe availabilityProbe,
+        ICallerScope caller,
+        IUserDisplayNameResolver userNames,
+        IVisitProvenanceDeriver deriver)
     {
+        _caller = caller;
+        _userNames = userNames;
+        _deriver = deriver;
         _tenant = tenant;
         _actor = actor;
         _repository = repository;
@@ -57,10 +66,26 @@ public sealed class UpdatePlannedVisitHandler : IRequestHandler<UpdatePlannedVis
         }
 
         var plan = await _repository.GetByIdAsync(tenantId, request.PlannedVisitId, cancellationToken);
-        if (plan is null)
+        // WP-VP-2 (B-1) — another rep's plan answers 404 unless the caller holds read-all.
+        if (plan is null || !_caller.MayAccess(PlannedVisitPermissions.ReadAll, plan.Resource.ResourceId))
         {
             return Response<bool>.Fail("Planned visit not found.", 404);
         }
+
+        // The resource stays the caller's (without read-all a different one is 403 resource_not_caller); an empty
+        // value keeps the plan's own resource.
+        var (resourceAllowed, requestedResource) = _caller.ResolveWriteResource(
+            PlannedVisitPermissions.ReadAll, string.IsNullOrWhiteSpace(request.ResourceId) ? plan.Resource.ResourceId : request.ResourceId);
+        if (!resourceAllowed || requestedResource is null)
+        {
+            return Fail(new PlannedVisitValidation.Failure(
+                "A planned visit can only be assigned to the signed-in resource.", VisitOwnership.ResourceNotCaller, 403));
+        }
+
+        var resourceId = requestedResource;
+        var resourceType = _caller.HasPermission(PlannedVisitPermissions.ReadAll) && !string.IsNullOrWhiteSpace(request.ResourceType)
+            ? request.ResourceType
+            : plan.Resource.ResourceType;
 
         if (plan.IsArchived())
         {
@@ -69,7 +94,7 @@ public sealed class UpdatePlannedVisitHandler : IRequestHandler<UpdatePlannedVis
         }
 
         var shapeFailure = PlannedVisitValidation.ValidateShape(
-            null, request.TargetType, request.TargetId, request.ResourceId, request.ResourceType,
+            null, request.TargetType, request.TargetId, resourceId, resourceType,
             request.PlannedStartTime, request.PlannedEndTime, request.PlannedDurationMinutes,
             request.VisitPurpose, request.VisitType, request.Objective, request.Notes, validateCode: false);
         if (shapeFailure is not null)
@@ -97,14 +122,14 @@ public sealed class UpdatePlannedVisitHandler : IRequestHandler<UpdatePlannedVis
                 "Target could not be resolved.", PlannedVisitErrorCodes.TargetNotFound));
         }
 
-        if (await _guards.ValidateCampaignAsync(tenantId, request.CampaignId, cancellationToken) is { } campaignFailure)
-        {
-            return Fail(campaignFailure);
-        }
+        // WP-VP-2 (B-3) — provenance is RE-DERIVED from the doctor on every update (the request's campaign / play /
+        // segment are ignored), so an update that omits them never erases it.
+        var derived = await PlannedVisitProvenance.DeriveAsync(
+            _deriver, targetResult.Target.ContactId, targetResult.Target.AccountId, date, cancellationToken);
 
         var journeyResult = await _journeyProbe.ResolveAsync(
             request.ContentEngagementJourneyId, request.ContentEngagementJourneyStageId,
-            request.ContentSource, request.StrategyTemplateId, cancellationToken);
+            request.ContentSource, derived.StrategyTemplateId, cancellationToken);
         if (journeyResult.Failure is { } journeyFailure)
         {
             return Fail(journeyFailure);
@@ -129,11 +154,15 @@ public sealed class UpdatePlannedVisitHandler : IRequestHandler<UpdatePlannedVis
         plan.PlannedStartTime = PlannedVisitValidation.Trim(request.PlannedStartTime);
         plan.PlannedEndTime = PlannedVisitValidation.Trim(request.PlannedEndTime);
         plan.PlannedDurationMinutes = request.PlannedDurationMinutes;
+        var previousDisplayName = string.Equals(plan.Resource.ResourceId, resourceId, StringComparison.Ordinal)
+            ? plan.Resource.DisplayName
+            : null;
         plan.Resource = new PlannedVisitResourceRef
         {
-            ResourceId = request.ResourceId.Trim(),
-            ResourceType = PlannedVisitResourceTypes.Normalize(request.ResourceType),
-            DisplayName = PlannedVisitValidation.Trim(request.ResourceDisplayName)
+            ResourceId = resourceId,
+            ResourceType = PlannedVisitResourceTypes.Normalize(resourceType),
+            DisplayName = await PlannedVisitProvenance.ResourceDisplayNameAsync(
+                _userNames, resourceId, previousDisplayName, cancellationToken)
         };
         plan.PositionCode = PlannedVisitValidation.Trim(request.PositionCode);
         plan.PositionId = request.PositionId;
@@ -144,17 +173,13 @@ public sealed class UpdatePlannedVisitHandler : IRequestHandler<UpdatePlannedVis
         plan.BusinessUnit = PlannedVisitValidation.Trim(request.BusinessUnit);
         plan.TerritoryNodeId = request.TerritoryNodeId;
         plan.TerritoryModelId = request.TerritoryModelId;
-        plan.CampaignId = request.CampaignId;
+        plan.CampaignId = derived.CampaignId;
         plan.Content = journeyResult.ContentRef;
-        plan.Selection = new PlannedVisitSelectionProvenance
-        {
-            SegmentId = request.SegmentId,
-            CampaignId = request.CampaignId,
-            StrategyTemplateId = request.StrategyTemplateId,
-            SelectionMode = PlannedVisitSelectionMode.Manual,
-            DecidedAt = plan.Selection?.DecidedAt ?? now,
-            DecidedBy = plan.Selection?.DecidedBy ?? actor
-        };
+        var selection = PlannedVisitProvenance.Selection(derived, actor, now);
+        selection.SelectionMode = plan.Selection?.SelectionMode ?? PlannedVisitSelectionMode.Manual;
+        selection.DecidedAt = plan.Selection?.DecidedAt ?? now;
+        selection.DecidedBy = plan.Selection?.DecidedBy ?? actor;
+        plan.Selection = selection;
 
         // Legacy planning guards (§21/L5-L6) — only when the plan is ACTIVE; self is excluded by id.
         if (plan.IsActivePlan())
@@ -171,7 +196,7 @@ public sealed class UpdatePlannedVisitHandler : IRequestHandler<UpdatePlannedVis
         }
 
         // Recompute the re-derivable provenance on the new shape (D5).
-        plan.Frequency = await _frequencyProbe.ResolveAsync(plan, request.SegmentId, cancellationToken);
+        plan.Frequency = await _frequencyProbe.ResolveAsync(plan, null, cancellationToken); // DET-P derives segments
         plan.Consent = await _consentProbe.EvaluateAsync(plan, cancellationToken);
         plan.Availability = await _availabilityProbe.CaptureAsync(plan, cancellationToken);
 

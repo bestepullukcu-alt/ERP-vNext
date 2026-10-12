@@ -121,6 +121,8 @@
   <data name="ErrorReviewMeetingRequired" xml:space="preserve"><value>在关联的评审会议纪要发布之前，此步骤无法关闭。</value></data>
   <data name="ErrorTaskInvalidState" xml:space="preserve"><value>该任务在当前状态下无法完成，请先启动它。</value></data>
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>只有提出该任务的人才能取消它。如果您不想接手，请退回。</value></data>
+  <data name="ErrorApprovalManagerIsSelf" xml:space="preserve"><value>您不能审批自己发起的审批。请选择其他人作为审批负责人。</value></data>
+  <data name="ErrorReviewerIsSubmitter" xml:space="preserve"><value>您不能审阅自己提交的工作。请让其他人审阅此任务。</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>请说明该任务在等待什么。</value></data>
   <data name="ErrorTitleRequired" xml:space="preserve"><value>请填写标题。</value></data>
   <data name="ErrorTitleTooLong" xml:space="preserve"><value>标题最多 200 个字符。</value></data>
@@ -260,5 +262,26 @@
   </data>
   <data name="ErrorInquiryNotAddressee" xml:space="preserve">
     <value>此问题已不再等待您的回答：它已被回答或撤回。请刷新列表。</value>
+  </data>
+  <data name="ErrorPlanNotHolder" xml:space="preserve">
+    <value>只有负责此任务的人员才能安排计划。作为请求人，请通过截止日期表达您的期望。</value>
+  </data>
+  <data name="ErrorPlanConflict" xml:space="preserve">
+    <value>该时间段与您已计划的另一项任务重叠。请选择其他时间，或移动另一项任务。</value>
+  </data>
+  <data name="ErrorPlanDurationInvalid" xml:space="preserve">
+    <value>计划时长至少为 15 分钟，并以 15 分钟为单位。</value>
+  </data>
+  <data name="ErrorUnplanNotAllowed" xml:space="preserve">
+    <value>只有已计划且尚未开始的任务才能从日历中移除。</value>
+  </data>
+  <data name="ErrorCalendarRangeInvalid" xml:space="preserve">
+    <value>日历一次最多显示 42 天。请选择更短的日期范围。</value>
+  </data>
+  <data name="WarningPlanOverlapsMeeting" xml:space="preserve">
+    <value>已保存，但该时间段与会议“{0}”重叠。</value>
+  </data>
+  <data name="WarningPlanOutsideWorkingHours" xml:space="preserve">
+    <value>已保存，但该时间段不在您的工作时间内。</value>
   </data>
 </root>

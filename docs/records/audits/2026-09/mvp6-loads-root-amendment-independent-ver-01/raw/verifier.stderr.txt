@@ -1,0 +1,6 @@
+/private/tmp/mvp6-loads-root-ver-tooldeps/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+/Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-ver-01/verify_candidate.py:109: DeprecationWarning: jsonschema.RefResolver is deprecated as of v4.18.0, in favor of the https://github.com/python-jsonschema/referencing library, which provides more compliant referencing behavior as well as more flexible APIs for customization. A future release will remove RefResolver. Please file a feature request (on referencing) if you are missing an API for the kind of customization you need.
+  resolver = jsonschema.RefResolver.from_schema(candidate)
+/Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-loads-root-amendment-independent-ver-01/verify_candidate.py:283: DeprecationWarning: Accessing jsonschema.__version__ is deprecated and will be removed in a future release. Use importlib.metadata directly to query for jsonschema's version.
+  "jsonschema": jsonschema.__version__ if hasattr(jsonschema, "__version__") else "unknown",

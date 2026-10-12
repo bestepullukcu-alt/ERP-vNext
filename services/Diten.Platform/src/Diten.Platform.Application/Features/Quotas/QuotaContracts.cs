@@ -84,6 +84,21 @@ public sealed record RecalculateQuotaUsageRequest(
     string? ActorId,
     string? CorrelationId);
 
+/// <summary>
+/// BL-459 — the S2S consume refusal at the limit, with the numbers: the <see cref="Common.Response{T}"/> envelope fields
+/// (same names on the wire) plus <see cref="Quota"/>. Only <c>POST /api/internal/quotas/consume</c> answers with it, and
+/// only for 409 <see cref="QuotaErrorCodes.LimitExceeded"/>, so a caller can tell a user "limit 10, in use 10" instead of
+/// a bare code. Every other answer of the endpoint is unchanged.
+/// </summary>
+public sealed record QuotaLimitExceededEnvelope(
+    object? Data,
+    int StatusCode,
+    bool IsSuccessful,
+    IReadOnlyList<string> Errors,
+    QuotaLimitSnapshot Quota);
+
+public sealed record QuotaLimitSnapshot(string QuotaKey, decimal LimitValue, decimal CurrentValue);
+
 public static class QuotaKeys
 {
     public const string UsersMax = "users.max";
@@ -123,4 +138,6 @@ public static class QuotaErrorCodes
     public const string ReleaseExceedsCurrentUsage = "QUOTA_RELEASE_EXCEEDS_CURRENT_USAGE";
     public const string DuplicateOperation = "QUOTA_DUPLICATE_OPERATION";
     public const string OperationReferenceRequired = "QUOTA_OPERATION_REFERENCE_REQUIRED";
+    /// <summary>BL-459 F1 — a counted key's usage could not be read (AuthService unreachable); nothing was decided.</summary>
+    public const string UsageUnknown = "QUOTA_USAGE_UNKNOWN";
 }

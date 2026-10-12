@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ApprovalsTitle" xml:space="preserve"><value>Aprobaciones de hojas de horas</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Semanas enviadas que esperan su decisión. Solo las semanas sin marcas se pueden aprobar juntas.</value></data>
+  <data name="ColPerson" xml:space="preserve"><value>Persona</value></data>
+  <data name="ColWeek" xml:space="preserve"><value>Semana</value></data>
+  <data name="ColTotal" xml:space="preserve"><value>Total</value></data>
+  <data name="ColMarks" xml:space="preserve"><value>Marcas</value></data>
+  <data name="ColSubmitted" xml:space="preserve"><value>Enviada</value></data>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Abrir</value></data>
+  <data name="MarkFlagged" xml:space="preserve"><value>Día de más de 11 h</value></data>
+  <data name="MarkAutoClosed" xml:space="preserve"><value>Temporizador cortado a medianoche</value></data>
+  <data name="MarkOutsideHours" xml:space="preserve"><value>Fuera del horario laboral</value></data>
+  <data name="MarkHoliday" xml:space="preserve"><value>Trabajo en festivo</value></data>
+  <data name="CorrectionBadge" xml:space="preserve"><value>Corrección de la revisión {0}</value></data>
+  <data name="NoMarks" xml:space="preserve"><value>Sin marcas</value></data>
+  <data name="BulkApprove" xml:space="preserve"><value>Aprobar seleccionadas</value></data>
+  <data name="BulkApproveConfirm" xml:space="preserve"><value>¿Aprobar {0} semana(s) seleccionada(s)? Las semanas marcadas nunca se aprueban en bloque.</value></data>
+  <data name="BulkApproveDone" xml:space="preserve"><value>{0} aprobadas, {1} omitidas.</value></data>
+  <data name="BulkMarkedHint" xml:space="preserve"><value>Las semanas marcadas no se pueden seleccionar: ábralas y decida una por una.</value></data>
+  <data name="BulkNothingSelected" xml:space="preserve"><value>Seleccione al menos una semana sin marcas.</value></data>
+  <data name="DetailTitle" xml:space="preserve"><value>Semana de la hoja de horas</value></data>
+  <data name="Revision" xml:space="preserve"><value>Revisión {0}</value></data>
+  <data name="SubmittedAt" xml:space="preserve"><value>Enviada el {0}</value></data>
+  <data name="Approve" xml:space="preserve"><value>Aprobar</value></data>
+  <data name="Reject" xml:space="preserve"><value>Devolver</value></data>
+  <data name="ApproveConfirm" xml:space="preserve"><value>¿Aprobar esta semana?</value></data>
+  <data name="RejectReason" xml:space="preserve"><value>¿Por qué se devuelve la semana? (obligatorio)</value></data>
+  <data name="RejectReasonRequired" xml:space="preserve"><value>Escriba por qué se devuelve la semana.</value></data>
+  <data name="ApprovedToast" xml:space="preserve"><value>Semana aprobada.</value></data>
+  <data name="RejectedToast" xml:space="preserve"><value>Semana devuelta a la persona.</value></data>
+  <data name="CorrectionChangesTitle" xml:space="preserve"><value>Qué cambia esta corrección</value></data>
+  <data name="ColDay" xml:space="preserve"><value>Día</value></data>
+  <data name="ColWork" xml:space="preserve"><value>Trabajo</value></data>
+  <data name="ColBefore" xml:space="preserve"><value>Antes</value></data>
+  <data name="ColAfter" xml:space="preserve"><value>Después</value></data>
+  <data name="Added" xml:space="preserve"><value>añadido</value></data>
+  <data name="Removed" xml:space="preserve"><value>eliminado</value></data>
+  <data name="NoChanges" xml:space="preserve"><value>Esta corrección no cambia nada respecto a la semana aprobada.</value></data>
+  <data name="CapturedValue" xml:space="preserve"><value>medido {0}</value></data>
+  <data name="Corrected" xml:space="preserve"><value>corregido</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Volver a aprobaciones</value></data>
+  <data name="UnreadableTask" xml:space="preserve"><value>Tarea inaccesible</value></data>
+  <data name="SourceManual" xml:space="preserve"><value>Manual</value></data>
+  <data name="SourceTimer" xml:space="preserve"><value>Temporizador</value></data>
+  <data name="SourceMeeting" xml:space="preserve"><value>Reunión</value></data>
+  <data name="SourcePlan" xml:space="preserve"><value>Del plan</value></data>
+  <data name="ApproverCannotEdit" xml:space="preserve"><value>Un aprobador no edita una semana. Para cambiar algo, devuélvala con el motivo.</value></data>
+  <data name="WeekNotAvailable" xml:space="preserve"><value>Esta semana no espera su aprobación.</value></data>
+  <data name="DecisionNotAllowed" xml:space="preserve"><value>No puede decidir sobre esta semana.</value></data>
+  <data name="RowTotal" xml:space="preserve"><value>Total</value></data>
+  <data name="RowTarget" xml:space="preserve"><value>Objetivo</value></data>
+  <data name="Loading" xml:space="preserve"><value>Cargando…</value></data>
+  <data name="NoApprovals" xml:space="preserve"><value>No hay semanas esperando su aprobación.</value></data>
+  <data name="ColumnWork" xml:space="preserve"><value>Trabajo</value></data>
+  <data name="ColumnTotal" xml:space="preserve"><value>Total</value></data>
+  <data name="InForceNote" xml:space="preserve"><value>La revisión aprobada {0} sigue vigente hasta que se apruebe esta corrección.</value></data>
+  <data name="MarksTitle" xml:space="preserve"><value>Marcas</value></data>
+</root>

@@ -34,7 +34,10 @@ public sealed record GoldenReferenceCompactListCriteria(
     IReadOnlyList<string>? ReferenceTypes = null,
     IReadOnlyList<string>? Categories = null,
     IReadOnlyList<string>? Owners = null,
-    int? Priority = null);
+    int? Priority = null,
+    /// <summary>BL-452 export only: refuse above this many matches — the repository stops after the count, and the caller asks
+    /// for cap + 1 rows so a row inserted between the count and the read is seen, never silently cut off the file.</summary>
+    int? RefuseAbove = null);
 
 /// <summary>
 /// A page: the rows, the tenant's whole list count (<see cref="Total"/>) and the count after search + filters

@@ -15,6 +15,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diten.DevEnablementService.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diten.DevEnablementService.Api", "src\Diten.DevEnablementService.Api\Diten.DevEnablementService.Api.csproj", "{70ADE24D-A7B6-40ED-BB52-1D76B16C134A}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{5293D127-2939-45E6-AD34-8D150F342A98}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diten.DevEnablementService.Api.Tests", "tests\Diten.DevEnablementService.Api.Tests\Diten.DevEnablementService.Api.Tests.csproj", "{5481B699-8648-4C5C-8BC9-FC1C29C1A421}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -44,6 +48,10 @@ Global
 		{70ADE24D-A7B6-40ED-BB52-1D76B16C134A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{70ADE24D-A7B6-40ED-BB52-1D76B16C134A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{70ADE24D-A7B6-40ED-BB52-1D76B16C134A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5481B699-8648-4C5C-8BC9-FC1C29C1A421}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5481B699-8648-4C5C-8BC9-FC1C29C1A421}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5481B699-8648-4C5C-8BC9-FC1C29C1A421}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5481B699-8648-4C5C-8BC9-FC1C29C1A421}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{ECA718EA-609F-4604-910A-7B7E1E04B114} = {792FA95E-83F8-4848-B2DE-A6225C0FB18F}
@@ -51,5 +59,6 @@ Global
 		{F818E1BD-E2D4-45A1-8DB8-2843EC078D76} = {792FA95E-83F8-4848-B2DE-A6225C0FB18F}
 		{F391E109-01CF-45F9-B9FA-F43D95C66096} = {792FA95E-83F8-4848-B2DE-A6225C0FB18F}
 		{70ADE24D-A7B6-40ED-BB52-1D76B16C134A} = {792FA95E-83F8-4848-B2DE-A6225C0FB18F}
+		{5481B699-8648-4C5C-8BC9-FC1C29C1A421} = {5293D127-2939-45E6-AD34-8D150F342A98}
 	EndGlobalSection
 EndGlobal

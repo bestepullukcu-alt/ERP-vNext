@@ -999,3 +999,84 @@ count 4→5, documented) rather than bypassed with a new raw dialog. `Diten.Plat
 suite: 1373/1373 green (was ~1370 per §17's stated baseline) — no existing test touched except the two
 constructor-signature call sites (`TaskCommentTests`, `TaskCommentTrailTests`, `TaskReadAccessWiringTests`) that
 had to learn the new constructor parameter.
+
+## 22. Kişisel plan bloğu (takvim) — WP-TASK-CALENDAR-ENGINE-01 (owner-approved 2026-09-29)
+
+> **Sahip kararları:** 2026-09-17 takvim tasarım konuşması; 2026-09-29 BL-451 (üç kabulün üçü de evet + karar
+> notu: tek dikiş `IWorkingHoursProvider`) ve BL-449 (`plan` yalnız işi tutan kişide). Bu bölüm **motor** dilimidir
+> (2a); takvim ekranı, FullCalendar ve WCN görünümleri 2b'nin işidir, burada yoktur.
+>
+> **Codex sınırı:** MOD-0024 yalnız **tek kişisel plan bloğu** tutar (bir görev = en çok bir gün ya da bir blok,
+> sahibi işi tutan kişi). Çok bloklu planlama, kapasite, kaynak yüklemesi ve zaman girişi DCP-003 / MOD-0117 (PPM,
+> Codex) ve DEC-002 / MOD-0280 (zaman girişi) yolundadır; bu bölüm onlara dokunmaz ve onların yerine geçmez.
+
+### Alanlar (`TaskItem`, hepsi opsiyonel; eski kayıtlar olduğu gibi okunur, migration yok)
+| alan | tip | anlam |
+|---|---|---|
+| `PlannedDate` | `DateTimeOffset?` | plan GÜNÜ (mevcut). Blokta kiracı saat dilimindeki yerel güne eşitlenir (yerel gece yarısı + o günün ofseti). |
+| `PlannedStartAt` | `DateTimeOffset?` (UTC) | blok başlangıcı. Gün planında null. Mutlak an: saatler sonradan değişirse plan taşınmaz, uyarı çıkar. |
+| `PlannedDurationMinutes` | `int?` | blok uzunluğu; 15'in katı, en az 15. `PlannedStartAt` ile birlikte null/dolu. |
+| *(remainingMinutes)* | türetilmiş | tahmin − blok (0'da tabanlanır). **Kaydedilmez**; plan yanıtında, projeksiyonda ve takvim akışında hesaplanır. |
+
+`Tenant.DefaultWorkdayStart` / `DefaultWorkdayEnd` (`TimeOnly`, varsayılan 09:00 / 18:00, öğle arası düşülmez) —
+mevcut kiracı ayarları API'si (`GET/PUT api/admin/tenants/{id}/settings`, mevcut PlatformActor politikası; yeni izin
+anahtarı yok) üzerinden okunur/yazılır; ikisi birlikte ya da hiç, başlangıç < bitiş.
+
+### Kurallar
+- **A — plan biçimleri.** `POST api/v1/tasks/{id}/plan` → `{expectedVersion, plannedDate}` (gün) ya da
+  `{expectedVersion, plannedStartAt, durationMinutes?}` (blok). Süre yoksa tahmin (15'e yukarı yuvarlanır), o da
+  yoksa 60 dk. Blok, başladığı günün çalışma penceresinin sonunu aşarsa orada kesilir (tam 15 dk adımına aşağı);
+  kalan `remainingMinutes` olarak döner. Plan asla başlatmaz (Open/Planned → Planned). Yanıt artık **200 + gövde**
+  (`PlanTaskItemResultDto`: kaydedilen gün/blok, `remainingMinutes`, `truncated`, `warnings[]`); gün planı body'si
+  tek başına eskisi gibi çalışır.
+- **A — unplan.** `POST api/v1/tasks/{id}/unplan` (ve Görev Merkezi eylemi `unplan`): gün + blok temizlenir,
+  Planned → Open; yalnız Planned'dan (aksi halde 409 `TASK_UNPLAN_NOT_ALLOWED`). Geçiş kaydı yeni tür
+  `Unplanned` / tel kodu `unplanned` (WCN `ACTIVITY_EVENT_CODES` + `AuditEventUnplanned` 7 dil).
+- **B — kim planlar (BL-449).** `plan` ve `unplan` yalnız `AssigneeUserId == çağıran`; talep sahibi dahil başkası
+  403 `TASK_PLAN_NOT_HOLDER`. Projeksiyon aynı kuralı söyler: talep sahibinin (Başlattıklarım / Ekibim) satırında
+  `plan` yoktur. BL-361'in "tutan veya talep sahibi" kuralı bu fiil için geri alınmıştır.
+- **C — çakışma.** Aynı kişinin tuttuğu, kapanmamış iki görevin blokları üst üste binerse **sert ret**
+  409 `TASK_PLAN_CONFLICT`; yanıt verisi `conflict {taskId, title, startAt, endAt}` taşır. Yarı açık aralık
+  (10:00'da biten ile 10:00'da başlayan çakışmaz). Gün planları çakışma sayılmaz. Başka kişinin bloğu sayılmaz.
+  Kabul edilmiş ya da yanıtlanmamış toplantıyla çakışma **ret değil**: plan kaydolur, `warnings[]` içinde
+  `TASK_PLAN_OVERLAPS_MEETING` (toplantı başlığı + saatleri) döner; reddedilen ya da iptal edilen toplantı sayılmaz.
+  Çalışma penceresi dışı (akşam, hafta sonu, tatil) → `TASK_PLAN_OUTSIDE_WORKING_HOURS` uyarısı; blok kesilmez.
+- **D — çalışma saati dikişi.** `IWorkingHoursProvider.GetWorkingWindowsAsync(userId, from, to)` → gün başına
+  pencereler (UTC), gün tipi (`workingDay` / `weekend` / `holiday` + ad), `resolvedFrom`, `calendarUnresolved`.
+  Zincir: kişi → atama → birim → tüzel kişi (`IWorkingHoursRing`, v1'de kayıtlı halka yok) → kiracı varsayılanı.
+  Gün tipi `IWorkingCalendarProvider`'dan (kiracı ülkesi + kişinin birincil biriminin birimi/tüzel kişisi);
+  çözülemezse çalışma günü sayılır ve `calendarUnresolved=true`. Saat dilimi: kiracının çalışma zamanı ayarı
+  (`Settings.Timezone`), boşsa `DefaultTimezone`; çözülemeyen kimlik UTC. **Koruma:** kiracı saat alanlarını
+  sağlayıcı ve kiracı ayarları ekranının iki işleyicisi dışında hiçbir tip okuyamaz (IL taraması); görev/takvim
+  kodunda sabit duvar saati yasak (kaynak taraması).
+- **E — takvim akışı.** `GET api/v1/work/calendar?from=YYYY-MM-DD&to=YYYY-MM-DD` (`[LoginOnly]`, en çok 42 gün;
+  aksi 400 `WORK_CALENDAR_RANGE_INVALID`): çağıranın tuttuğu kapanmamış planlı görevleri (gün ya da blok, bitiş,
+  `remainingMinutes`, `dueAt`, başlık, öncelik, `conflict`), kabul edilmiş/bekleyen toplantıları (reddedilen yok),
+  günleri ve pencereleri, kiracı saat dilimi kimliğini ve sol panel sayılarını (`unplannedCount`,
+  `planPassedCount`, `pendingInviteCount`) döner. Listeler mevcut `GET api/v1/work-items/mine` akışında kalır.
+  Saatler UTC. Kapsam dışında tek kayıt dönmez (kiracı depoda, kişi sorguda).
+- **F — kodlu metinler.** `TASK_PLAN_NOT_HOLDER`, `TASK_PLAN_CONFLICT`, `TASK_PLAN_DURATION_INVALID`,
+  `TASK_UNPLAN_NOT_ALLOWED`, `WORK_CALENDAR_RANGE_INVALID` ve iki uyarı kodu Görev Merkezi hata köprüsünde
+  (`Tasks/api.js` → `_IndexL10n.cshtml` → `TasksIndex.*.resx`, 7 dil). Uyarılar `TasksApi.planWarningMessage`.
+
+### Kabul kriterleri
+- [x] Gün planı; blok planı ve yerel güne eşitlenen `PlannedDate` (22:00Z = İstanbul'da ertesi gün).
+- [x] Süre yoksa tahmin (yukarı yuvarlanmış), o da yoksa 60 dk; 15'in katı olmayan süre 400.
+- [x] Gün sonunda kesme; `remainingMinutes` yanıtta ve projeksiyonda, ham belgede yok.
+- [x] Unplan (doğrudan ve Görev Merkezi eylemi); plan edilmemişte 409.
+- [x] Talep sahibi plan/unplan → 403 `TASK_PLAN_NOT_HOLDER`; talep sahibinin satırında `plan` yok, tutanın satırında var.
+- [x] İki blok çakışması 409 (diğer bloğu adıyla); arka arkaya bloklar, gün planları ve başka kişinin bloğu çakışmaz.
+- [x] Toplantı (kabul/bekleyen) → 200 + uyarı; reddedilen uyarmaz. Pencere dışı/hafta sonu → 200 + uyarı.
+- [x] Takvim akışı: görevler, toplantılar, pencereler, tatil adı, saat dilimi, sayılar; başka kişinin kaydı yok;
+  başka kiracının jetonu 0 kayıt; reddedilen toplantı yok; >42 gün / ters / eksik aralık 400; tam 42 gün 200.
+- [x] Kiracı pencere değişince plan kuralı ve akış birlikte değişir (dikiş gerçek); `TimeOnly` Mongo gidiş-dönüşü,
+  alanı olmayan eski kayıt varsayılanı okur.
+- [x] Korumalar: tek okuyucu (IL), sabit saat yasağı, kod ⇔ köprü ⇔ yük ⇔ 7 dil resx.
+- [ ] **Ağ geçidi rotası** `/api/v1/work/calendar` Ocelot'ta yok (`ocelot.json` korumalı yol, integration-agent);
+  2b ekranı bu rotayı ister. Bu dilimde açılmadı.
+
+### Test gate
+`TaskPlanCalendarHttpMongoTests` (atılabilir mongod, gerçek rotalar/JWT/kiracı çözümü/Mongo depoları),
+`TaskCalendarGuardTests`, `TaskPlanBlockRulesTests`, `plan-calendar-code-bridge.test.js`; BL-361 testleri BL-449'a
+çevrildi (`TaskOutboxTests`, `TaskTeamScopeTests`, `TaskLifecycleAuthorityHttpTests`), WCN golden fikstürü
+(`task-provider-review-meeting-matrix.json`) talep sahibi satırlarından `plan` düşürülerek yeniden üretildi.

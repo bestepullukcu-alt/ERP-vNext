@@ -185,6 +185,8 @@ public sealed class ClaimsV2ProxyTests
     [Fact]
     public async Task Tenant_scoped_reference_sets_are_read_with_the_jwt_tenant()
     {
+        // WP-BRD-TENANT-CRM-SETS step 2 — the consumable-sets route is asked first: no scope_key, the JWT tenant travels
+        // in X-Tenant-Id and the Platform scopes the read from the validated token.
         var gateway = new RoutingGateway((_, _) => (HttpStatusCode.OK,
             """{"data":{"items":[{"valueCode":"not-licensed","displayName":"Not licensed"}]}}"""));
         var controller = ControllerWith(gateway, Read);
@@ -192,7 +194,23 @@ public sealed class ClaimsV2ProxyTests
         var data = Data(await controller.V2LookupClosureReasons(default));
 
         Assert.Equal("not-licensed", data[0].GetProperty("code").GetString());
-        Assert.EndsWith($"/claim-country-closure-reason/published-values?scope_key={TenantId}", gateway.Requests.Single().Uri);
+        var request = gateway.Requests.Single();
+        Assert.Equal($"{Gateway}/api/lookups/reference-data/consumable-sets/claim-country-closure-reason/published-values", request.Uri);
+        Assert.Equal(TenantId.ToString(), request.Tenant);
+    }
+
+    [Fact]
+    public async Task A_claim_set_outside_the_consumable_list_is_read_on_the_old_path_with_the_jwt_tenant()
+    {
+        var gateway = new RoutingGateway((_, uri) => uri.Contains("/consumable-sets/")
+            ? (HttpStatusCode.NotFound, """{"errors":["reference_set_not_tenant_accessible"]}""")
+            : (HttpStatusCode.OK, """{"data":{"items":[{"valueCode":"adapted","displayName":"Adapted"}]}}"""));
+        var controller = ControllerWith(gateway, Read);
+
+        var data = Data(await controller.V2LookupAdaptationTypes(default));
+
+        Assert.Equal("adapted", data[0].GetProperty("code").GetString());
+        Assert.EndsWith($"/claim-adaptation-type/published-values?scope_key={TenantId}", gateway.Requests.Last().Uri);
     }
 
     [Fact]

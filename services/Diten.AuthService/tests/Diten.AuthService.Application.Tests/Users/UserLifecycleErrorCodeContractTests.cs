@@ -17,6 +17,13 @@ public sealed class UserLifecycleErrorCodeContractTests
     {
         [UserLifecycle.EmailTakenCode] = "ErrorUserEmailTaken",
         [UserLifecycle.InvitationPendingCode] = "ErrorUserInvitationPending",
+        [UserLifecycle.QuotaExceededCode] = "ErrorUserQuotaExceeded", // BL-459
+    };
+
+    // BL-459 — a code with numbers adds a second, numbered sentence: code ⇔ (key, the params it fills).
+    private static readonly IReadOnlyDictionary<string, (string Key, string[] Params)> ExpectedParamKeys = new Dictionary<string, (string, string[])>(StringComparer.Ordinal)
+    {
+        [UserLifecycle.QuotaExceededCode] = ("ErrorUserQuotaUsage", ["current", "max"]),
     };
 
     private static readonly string[] SupportedLanguages = ["en", "tr", "fr", "es", "zh", "ar", "ru"];
@@ -48,6 +55,37 @@ public sealed class UserLifecycleErrorCodeContractTests
             {
                 var keys = ResxKeys(Path.Combine(resourcesDir, $"UsersIndex.{language}.resx"));
                 Assert.True(keys.Contains(key), $"UsersIndex.{language}.resx is missing key: {key}");
+            }
+        }
+    }
+
+    [Fact]
+    public void A_numbered_code_fills_exactly_the_params_Auth_sends_in_all_seven_languages()
+    {
+        var root = RepoRoot();
+        var js = File.ReadAllText(Path.Combine(root, "frontend", "Diten.Web", "wwwroot", "assets", "js", "Governance", "Users", "index.js"));
+        var bridge = File.ReadAllText(Path.Combine(root, "frontend", "Diten.Web", "Views", "Governance", "Users", "_IndexL10n.cshtml"));
+        var resourcesDir = Path.Combine(root, "frontend", "Diten.Web", "Resources", "Views", "Governance", "Users");
+
+        // The params Auth really sends at the limit — read off the production refusal, not restated.
+        var sent = UserLifecycle.QuotaExceededRefusal<object>(10, 7).ErrorCodes.Single().Params!;
+
+        foreach (var (code, (key, parameters)) in ExpectedParamKeys)
+        {
+            Assert.Equal(parameters.OrderBy(p => p), sent.Keys.OrderBy(p => p));
+            var mapping = $"{code}: {{ key: '{key}', params: [{string.Join(", ", parameters.Select(p => $"'{p}'"))}] }}";
+            Assert.True(js.Contains(mapping, StringComparison.Ordinal), $"index.js ERROR_PARAM_KEYS lacks: {mapping}");
+            Assert.True(bridge.Contains($"{key} = Localizer[\"{key}\"].Value", StringComparison.Ordinal), $"_IndexL10n.cshtml does not publish {key}.");
+
+            foreach (var language in SupportedLanguages)
+            {
+                var text = XDocument.Load(Path.Combine(resourcesDir, $"UsersIndex.{language}.resx")).Root!.Elements("data")
+                    .SingleOrDefault(d => (string?)d.Attribute("name") == key)?.Element("value")?.Value;
+                Assert.False(string.IsNullOrWhiteSpace(text), $"UsersIndex.{language}.resx is missing {key}");
+                foreach (var p in parameters)
+                {
+                    Assert.True(text!.Contains("{" + p + "}", StringComparison.Ordinal), $"UsersIndex.{language}.resx {key} lacks {{{p}}}");
+                }
             }
         }
     }

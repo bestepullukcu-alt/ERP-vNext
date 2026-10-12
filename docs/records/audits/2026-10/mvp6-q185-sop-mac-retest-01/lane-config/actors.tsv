@@ -1,0 +1,4 @@
+label	email	tenant_id	expected_legal_entity_id	note
+full	john.doe.def@diten.com	00000000-0000-0000-0000-000000000001	-	S&OP full actor in the platform system tenant (module access without an entitlement row)
+fixadmin	alice.williams.def@diten.com	00000000-0000-0000-0000-000000000001	-	fixture admin (org setup) in the system tenant
+t1full	john.doe.t97@diten.com	97c59330-dbc4-4665-b29c-0c26dbb5cc93	-	contrast only: tenant 97c5 has no module entitlement in a lane

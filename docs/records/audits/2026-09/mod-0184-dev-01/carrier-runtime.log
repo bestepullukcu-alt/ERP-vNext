@@ -1,0 +1,2 @@
+PASS 33 Carrier HTTP probes; all response schemas; process restart; durable receipts/audit unchanged
+PASS 33 exact request snapshots; two process identities; restart snapshots identical

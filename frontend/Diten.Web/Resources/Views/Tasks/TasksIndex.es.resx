@@ -121,6 +121,8 @@
   <data name="ErrorReviewMeetingRequired" xml:space="preserve"><value>Este paso no se puede cerrar hasta que se publique el acta de la reunión de revisión vinculada.</value></data>
   <data name="ErrorTaskInvalidState" xml:space="preserve"><value>Esta tarea no se puede completar en este estado. Iníciela primero.</value></data>
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Solo quien solicitó esta tarea puede cancelarla. Si no quiere el trabajo, devuélvalo.</value></data>
+  <data name="ErrorApprovalManagerIsSelf" xml:space="preserve"><value>No puede ser el aprobador de una aprobación que usted solicita. Elija a otra persona como responsable de la aprobación.</value></data>
+  <data name="ErrorReviewerIsSubmitter" xml:space="preserve"><value>No puede revisar su propio envío. Pida a otra persona que revise esta tarea.</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>Indique qué está esperando la tarea.</value></data>
   <data name="ErrorTitleRequired" xml:space="preserve"><value>Se requiere un título.</value></data>
   <data name="ErrorTitleTooLong" xml:space="preserve"><value>El título puede tener como máximo 200 caracteres.</value></data>
@@ -260,5 +262,26 @@
   </data>
   <data name="ErrorInquiryNotAddressee" xml:space="preserve">
     <value>Esta pregunta ya no le espera: fue respondida o retirada. Actualice la lista.</value>
+  </data>
+  <data name="ErrorPlanNotHolder" xml:space="preserve">
+    <value>Solo la persona que tiene esta tarea puede planificarla. Como solicitante, indique su expectativa con la fecha de vencimiento.</value>
+  </data>
+  <data name="ErrorPlanConflict" xml:space="preserve">
+    <value>Este horario se solapa con otra tarea que ya ha planificado. Elija otro horario o mueva la otra tarea.</value>
+  </data>
+  <data name="ErrorPlanDurationInvalid" xml:space="preserve">
+    <value>La duración planificada debe ser de al menos 15 minutos, en intervalos de 15 minutos.</value>
+  </data>
+  <data name="ErrorUnplanNotAllowed" xml:space="preserve">
+    <value>Solo una tarea planificada que no se haya iniciado puede quitarse del calendario.</value>
+  </data>
+  <data name="ErrorCalendarRangeInvalid" xml:space="preserve">
+    <value>El calendario puede mostrar como máximo 42 días a la vez. Elija un intervalo de fechas más corto.</value>
+  </data>
+  <data name="WarningPlanOverlapsMeeting" xml:space="preserve">
+    <value>Guardado, pero este horario se solapa con la reunión «{0}».</value>
+  </data>
+  <data name="WarningPlanOutsideWorkingHours" xml:space="preserve">
+    <value>Guardado, pero este horario está fuera de su horario laboral.</value>
   </data>
 </root>

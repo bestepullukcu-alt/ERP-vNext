@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- BL-452 package 1 — the XLSX writer. The same package and version the repository already ships (MOD-0150,
+         Diten.CrmService.Application): one ClosedXML across the services, not a second spreadsheet library. -->
+    <PackageReference Include="ClosedXML" Version="0.102.2" />
+  </ItemGroup>
+</Project>

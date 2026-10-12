@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Diten.CrmService.Application.Features.ContentComposition.Claims;
+using Diten.CrmService.Application.Features.Knowledge.Path.Review;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -15,8 +16,10 @@ namespace Diten.CrmService.Infrastructure.Workflow;
 /// silently switched off.
 /// <para>Outcome mapping of a start: 404 / a template 409 / "no candidates" 400 → template missing; 401/403 →
 /// forbidden; 5xx, timeout or network failure → unavailable; any other 4xx → rejected (with MOD-0023's message).</para>
+/// <para>WP-KP-2 — the same client answers <see cref="IWorkflowDecisionClient"/> (knowledge path reviewer decisions):
+/// <c>tasks/mine</c>, <c>tasks/{id}/approve|reject</c> WITH the caller's comment, and <c>instances/{id}/history</c>.</para>
 /// </summary>
-public sealed class GatewayClaimWorkflowClient : IClaimWorkflowClient
+public sealed class GatewayClaimWorkflowClient : IClaimWorkflowClient, IWorkflowDecisionClient
 {
     private const string TenantHeaderName = "X-Tenant-Id";
     private const string AuthorizationHeaderName = "Authorization";
@@ -57,7 +60,8 @@ public sealed class GatewayClaimWorkflowClient : IClaimWorkflowClient
             objectRef = request.ObjectRef,
             // Candidates come from the template's positions (WP-ORG-02); CRM sends none.
             candidatePrincipalIds = Array.Empty<string>(),
-            reasonCode = ClaimReviewRules.SubmitReasonCode,
+            // WP-KP-5a-FIX-1 — the caller's kind decides the audit label; the claim code is only the default.
+            reasonCode = string.IsNullOrWhiteSpace(request.ReasonCode) ? ClaimReviewRules.SubmitReasonCode : request.ReasonCode,
             idempotencyKey = request.IdempotencyKey,
             commentRequired = false,
             evidenceRequired = false,
@@ -178,6 +182,77 @@ public sealed class GatewayClaimWorkflowClient : IClaimWorkflowClient
                 >= 500 => ClaimWorkflowCallOutcome.Unavailable,
                 _ => ClaimWorkflowCallOutcome.Rejected
             };
+    }
+
+    // ---------------- WP-KP-2 — IWorkflowDecisionClient ----------------
+
+    public async Task<IReadOnlyList<ClaimWorkflowTaskState>?> GetMyTasksAsync(CancellationToken ct)
+    {
+        var reply = await SendAsync(HttpMethod.Get, "/api/v1/workflow/tasks/mine", null, ct);
+        if (reply.Transport is not null || reply.Status is < 200 or >= 300
+            || reply.Data is not { ValueKind: JsonValueKind.Array } rows)
+        {
+            return null;
+        }
+
+        var tasks = new List<ClaimWorkflowTaskState>();
+        foreach (var row in rows.EnumerateArray())
+        {
+            if (row.TryGetProperty("workflowInstanceId", out var instance) && instance.TryGetGuid(out var instanceId)
+                && row.TryGetProperty("id", out var id) && id.TryGetGuid(out var taskId))
+            {
+                tasks.Add(new ClaimWorkflowTaskState(taskId, instanceId, Text(row, "stageCode") ?? string.Empty,
+                    Text(row, "stepCode") ?? string.Empty, Text(row, "status") ?? string.Empty, Text(row, "assigneeRef"),
+                    Text(row, "actionedBy"), Text(row, "actionReasonCode"), Date(row, "dueAt"), Date(row, "completedAt")));
+            }
+        }
+
+        return tasks;
+    }
+
+    public async Task<WorkflowDecisionResult> DecideTaskAsync(Guid taskId, bool approve, string actorId, string reasonCode,
+        string idempotencyKey, string? comment, CancellationToken ct)
+    {
+        var reply = await SendAsync(HttpMethod.Post, $"/api/v1/workflow/tasks/{taskId:D}/{(approve ? "approve" : "reject")}",
+            new { actorId, reasonCode, idempotencyKey, comment, evidenceRef = (string?)null }, ct);
+        if (reply.Transport is not null)
+        {
+            return new WorkflowDecisionResult(ClaimWorkflowCallOutcome.Unavailable, reply.Transport);
+        }
+
+        var outcome = reply.Status switch
+        {
+            >= 200 and < 300 => ClaimWorkflowCallOutcome.Ok,
+            401 or 403 => ClaimWorkflowCallOutcome.Forbidden,
+            404 => ClaimWorkflowCallOutcome.NotFound,
+            >= 500 => ClaimWorkflowCallOutcome.Unavailable,
+            _ => ClaimWorkflowCallOutcome.Rejected
+        };
+        return new WorkflowDecisionResult(outcome, reply.Message);
+    }
+
+    public async Task<IReadOnlyList<WorkflowHistoryEntry>?> GetInstanceHistoryAsync(Guid workflowInstanceId, CancellationToken ct)
+    {
+        var reply = await SendAsync(HttpMethod.Get, $"/api/v1/workflow/instances/{workflowInstanceId:D}/history", null, ct);
+        if (reply.Transport is not null || reply.Status is < 200 or >= 300
+            || reply.Data is not { ValueKind: JsonValueKind.Array } rows)
+        {
+            return null;
+        }
+
+        return rows.EnumerateArray()
+            .Where(r => r.ValueKind == JsonValueKind.Object)
+            .Select(r => new WorkflowHistoryEntry(
+                r.TryGetProperty("sequenceNo", out var seq) && seq.TryGetInt64(out var n) ? n : 0,
+                Text(r, "action") ?? string.Empty,
+                Text(r, "actorId"),
+                Text(r, "actorDisplay"),
+                Text(r, "fromStepCode") ?? Text(r, "toStepCode"),
+                Text(r, "stepName"),
+                Text(r, "comment"),
+                Text(r, "reasonCode"),
+                Date(r, "occurredAt") ?? DateTimeOffset.MinValue))
+            .ToList();
     }
 
     private sealed record Reply(int Status, JsonElement? Data, string? ReasonCode, string? Message, string? Transport);

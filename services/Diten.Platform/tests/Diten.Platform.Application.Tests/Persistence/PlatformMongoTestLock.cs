@@ -10,7 +10,8 @@ namespace Diten.Platform.Application.Tests.Persistence;
  * just by every class in one run, and several paths begin by clearing what they find:
  *   • MongoIntegrationHarness.CreateIsolatedAsync empties every collection of its scoped database on open;
  *   • PlatformSchemaContractMongoTests and WorkflowTransitionGateMongoRepositoryTests drop theirs on open;
- *   • BusinessReferenceDataMongoResidueSweeper drops another run's BRD database once it is ONE MINUTE old.
+ *   • BusinessReferenceDataMongoResidueSweeper dropped another run's BRD database once it was ONE MINUTE old
+ *     (until BL-482's second half: its tests now run on a private mongod and nothing calls it on the shared one).
  * Two worktrees running this project at the same time therefore wipe each other mid-assertion. The victim goes
  * red with rows or collections that "vanished", and green on rerun — which is why it read as flakiness.
  *
@@ -72,6 +73,19 @@ public static class PlatformMongoTestLock
     /// Nothing releases it in-process: the static task keeps the handle open until the process ends.
     /// </summary>
     public static Task EnsureHeldAsync() => Acquisition.Value;
+
+    /// <summary>
+    /// True only when THIS process holds the REAL machine-wide lock: acquired, on the real path, not redirected, and
+    /// not the lock-proof child. BL-482: the harness's two delete paths — the start-of-run sweep and the duplicate-key
+    /// heal — run only when this is true. A lock-proof child holds a PROOF lock while the parent's live run holds the
+    /// real one, so a child that swept or healed would be deleting under a run it does not exclude.
+    /// </summary>
+    internal static bool HoldsRealLock =>
+        _redirect is null
+        && !LockProofChild.IsThisProcess
+        && Acquisition.IsValueCreated
+        && Acquisition.Value.IsCompletedSuccessfully
+        && string.Equals(Acquisition.Value.Result.LockPath, LockPath, StringComparison.Ordinal);
 
     /// <summary>
     /// Points this process at a proof lock instead of the real one. Only a process started as the lock-proof

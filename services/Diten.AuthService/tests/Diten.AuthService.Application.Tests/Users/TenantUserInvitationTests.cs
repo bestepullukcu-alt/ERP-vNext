@@ -4,6 +4,8 @@ using Diten.AuthService.Application.Features.Users.Commands;
 using Diten.AuthService.Application.Features.Users.Handlers.CommandHandlers;
 using Diten.AuthService.Domain.Entities;
 using Microsoft.Extensions.Logging.Abstractions;
+using Diten.AuthService.Application.Features.Users.Services;
+using Diten.AuthService.Application.Tests.Testing;
 
 namespace Diten.AuthService.Application.Tests.Users;
 
@@ -38,6 +40,40 @@ public sealed class TenantUserInvitationTests
         Assert.InRange(created.PasswordResetTokenExpiresAt!.Value, before.AddDays(7).AddMinutes(-2), before.AddDays(7).AddMinutes(2));
         Assert.Single(email.Sends);                           // invitation email attempted
         Assert.Equal("invitee@acme.test", email.Sends[0].email);
+    }
+
+    // ── BL-459 — the plan's user seat around the create ──
+    [Fact]
+    public async Task At_the_quota_limit_nothing_is_written_and_no_invitation_leaves()
+    {
+        var repo = new InMemoryUserRepository([]);
+        var email = new FakeInvitationEmailService();
+        var quota = new RecordingUserQuotaClient { Decision = new UserQuotaDecision(UserQuotaOutcome.LimitExceeded, 3, 3) };
+
+        var result = await CreateUserHandler(repo, email, quota: quota)
+            .Handle(new CreateUserCommand("full@acme.test", null, "F", "L"), CancellationToken.None);
+
+        Assert.Equal(409, result.StatusCode);
+        var code = Assert.Single(result.ErrorCodes);
+        Assert.Equal(UserLifecycle.QuotaExceededCode, code.Code);
+        Assert.Equal("3", code.Params!["max"]);
+        Assert.Null(await repo.GetByEmailAndTenantAsync("full@acme.test", TenantA, CancellationToken.None));
+        Assert.Empty(email.Sends);
+    }
+
+    [Fact]
+    public async Task A_create_that_fails_after_the_question_gives_nothing_back()
+    {
+        // BL-459 F1 — the seat question reserves nothing (users.max is Platform's live count), so there is no release
+        // to forget or to double: the client has no release at all, and a refused create asked exactly once.
+        var quota = new RecordingUserQuotaClient();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => CreateUserHandler(new InMemoryUserRepository([]), new FakeInvitationEmailService(),
+                policy: new FakePasswordPolicyService { Refuse = true }, quota: quota)
+            .Handle(new CreateUserCommand("weak@acme.test", "weak", "W", "P"), CancellationToken.None));
+
+        Assert.Single(quota.Consumed);
+        Assert.DoesNotContain(typeof(IUserQuotaClient).GetMethods(), m => m.Name.Contains("Release", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -228,7 +264,8 @@ public sealed class TenantUserInvitationTests
         InMemoryUserRepository repo,
         FakeInvitationEmailService email,
         FakePasswordPolicyService? policy = null,
-        bool devEnvironment = true)
+        bool devEnvironment = true,
+        RecordingUserQuotaClient? quota = null)
     {
         return new CreateUserCommandHandler(
             repo,
@@ -239,6 +276,8 @@ public sealed class TenantUserInvitationTests
             new FakeRefreshTokenHasher(),
             new FakeHostEnvironment(devEnvironment),
             email,
+            UserAuditForTests.None(),
+            quota ?? new RecordingUserQuotaClient(),
             NullLogger<CreateUserCommandHandler>.Instance);
     }
 
@@ -270,6 +309,7 @@ public sealed class TenantUserInvitationTests
             hasher,
             email,
             new FakeHostEnvironment(isDevelopment: true),
+            UserAuditForTests.None(),
             NullLogger<ResendUserInvitationCommandHandler>.Instance);
     }
 
@@ -306,10 +346,12 @@ public sealed class TenantUserInvitationTests
 
     private sealed class FakePasswordPolicyService : IPasswordPolicyService
     {
+        public bool Refuse { get; init; }
         public List<(Guid tenantId, Guid? userId, string password, string context)> Calls { get; } = [];
         public Task ValidateTenantPasswordAsync(Guid tenantId, Guid? userId, string password, string context, CancellationToken ct)
         {
             Calls.Add((tenantId, userId, password, context));
+            if (Refuse) throw new InvalidOperationException("password policy refused");
             return Task.CompletedTask;
         }
         public string GenerateTemporaryPassword(TenantLoginSettingsSnapshot settings) => throw new NotSupportedException();

@@ -1,0 +1,9 @@
+step	command	exit	result
+package	sha256sum -c DEV SHA256SUMS	0	9/9 files match
+patch	git apply --check; git apply fault-test.patch (disposable)	0	43/43 source hashes match
+build	dotnet build Diten.SupplyChainService.Tests.csproj -c Debug --no-restore -m:1	0	zero warnings/errors; .NET8
+mongo	mongod --port 57192 --replSet rsmod192 --setParameter enableTestCommands=1	0	PRIMARY and test commands true
+fault	dotnet test --filter FullyQualifiedName~CapacityFaultTests	0	5/5 PASS; each failpoint hits=1
+capacity	dotnet test --filter FullyQualifiedName~CapacityPlans	0	16/16 PASS
+negative-audit	disposable-only audit delete before X07 assertion; targeted dotnet test	1	expected RED: audit expected 1 actual 0
+cleanup	mongosh admin.shutdownServer	1	connection closed by shutdown; no listener after

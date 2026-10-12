@@ -93,12 +93,6 @@
                 { id: 'TE-2', actor: 'Selin Aras', minutes: 130, at: '2026-07-24 14:40', note: '[FIXTURE] Şirketler arası eşleştirme' }
             ],
             /*
-             * ⚠ `loggedMinutes`, NOT `timesheet` (2026-08-24, Tur B). Measured: the mapper DERIVES `timesheet`
-             * from the `timeTracking` capability and reads the total from `loggedMinutes` — a `timesheet`
-             * object handed in by a fixture is overwritten and the card read "0sa 0dk" beside two real entries.
-             */
-            loggedMinutes: 225,
-            /*
              * ⚠ THE EFFORT CARD'S DATA (Tur B). `taskContext` is declared above; this is what it promises.
              * Live tasks get these two from `TaskItem.EstimateHours` / `SpentHours` through the projection —
              * a fixture states them directly, which is what the `taskContext: ['effort']` data rule asks for.
@@ -108,8 +102,8 @@
             requester: req('USR-201', 'Deniz Koç'),
             source: source('finance', 'CloseTask', 'FIN-7781'),
             concurrency: { kind: 'version', token: 'is-01' }, dueAt: '2026-07-25',
-            actions: [action('complete', { requiresConfirmation: true }), action('logTime', { input: 'minutes' }), action('requestInfo', { requiresReason: true }), action('reassign', { requiresReason: true })],
-            primaryActionCode: 'complete', secondaryActionCodes: [], overflowActionCodes: ['logTime', 'requestInfo', 'reassign'],
+            actions: [action('complete', { requiresConfirmation: true }), action('requestInfo', { requiresReason: true }), action('reassign', { requiresReason: true })],
+            primaryActionCode: 'complete', secondaryActionCodes: [], overflowActionCodes: ['requestInfo', 'reassign'],
             expectation: { surfaceMode: 'execution', readOnly: false, primaryActionCode: 'complete' }
         }),
         // Issue you've taken on — act-directly (Çöz), no accept gate.

@@ -1,0 +1,16 @@
+--- a/tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs
++++ b/tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs
+@@ -290,7 +290,12 @@
+             var paths = Record["canonicalTargets"]!.AsArray().Select(x => x!["path"]!.GetValue<string>())
+                 .Concat(Record["sealedInputs"]!.AsArray().Select(x => x!["path"]!.GetValue<string>()))
+                 .Concat(Record["sealedInputs"]!.AsArray().Select(x => x!["provenancePath"]!.GetValue<string>())).Distinct();
+-            foreach (var path in paths) Write(path, File.ReadAllText(Path.Combine(source, path)));
++            foreach (var path in paths)
++            {
++                var destination = Path.Combine(Root, path);
++                Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
++                File.Copy(Path.Combine(source, path), destination);
++            }
+             Write("witness.cs", "// docs/reference/architecture/\n");
+             Write("witness.ps1", "# docs/guides/operations/\n");
+             Approve();

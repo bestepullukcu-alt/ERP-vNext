@@ -121,7 +121,8 @@
             }
         });
         if (window.jQuery && window.jQuery.fn.select2) {
-            window.jQuery('.select2:not(:disabled)').each(function () {
+            // The product picker searches over ajax (setupProductPicker) — never the static init.
+            window.jQuery('.select2:not(:disabled):not([data-ajax-url])').each(function () {
                 const $s = window.jQuery(this);
                 $s.wrap('<div class="position-relative"></div>').select2({ dropdownParent: $s.parent(), width: '100%' });
             });
@@ -472,7 +473,44 @@
         load();
     };
 
-    const boot = () => { initWidgets(); setupCascade(); setupConceptCascade(); setupContentSource(); setupDocumentRefresh(); setupClaims(); };
+    // WP-E2E-FIX-2 (E2-B1) — Product: Select2 ajax over the MDM Global Product selector (taxonomy.js pattern), so the
+    // whole master is reachable by typing (the old server list stopped at the MDM page cap of 100). The stored product is
+    // the preselected <option> the server resolved; a { disabled, reason } body shows a note, never a silent empty list.
+    const setupProductPicker = () => {
+        const el = document.getElementById('ProductId');
+        if (!el || !el.dataset.ajaxUrl || !(jq && jq.fn && jq.fn.select2)) return;
+        const $p = jq(el);
+        const note = document.getElementById('productPickerNote');
+        const setNote = text => { if (note) { note.textContent = text || ''; note.classList.toggle('d-none', !text); } };
+        if (!$p.parent().hasClass('position-relative')) $p.wrap('<div class="position-relative"></div>');
+        $p.select2({
+            dropdownParent: $p.parent(),
+            width: '100%',
+            placeholder: el.dataset.placeholder || '',
+            allowClear: true,
+            minimumInputLength: 0,
+            ajax: {
+                url: el.dataset.ajaxUrl,
+                dataType: 'json',
+                delay: 250,
+                data: params => ({ search: params.term || '', pageNumber: 1, pageSize: 100 }),
+                processResults: body => {
+                    if (body && body.disabled) { setNote(el.dataset.unavailable); return { results: [] }; }
+                    setNote('');
+                    return { results: (body && body.options ? body.options : []).map(o => ({ id: o.value, text: o.label })) };
+                },
+                // Return the jqXHR so select2 can abort an in-flight search on the next keystroke.
+                transport: (params, success, failure) => {
+                    const request = jq.ajax(params);
+                    request.then(success);
+                    request.fail(xhr => { setNote(el.dataset.unavailable); failure(xhr); });
+                    return request;
+                }
+            }
+        });
+    };
+
+    const boot = () => { initWidgets(); setupProductPicker(); setupCascade(); setupConceptCascade(); setupContentSource(); setupDocumentRefresh(); setupClaims(); };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
     else boot();
 })(window, document);

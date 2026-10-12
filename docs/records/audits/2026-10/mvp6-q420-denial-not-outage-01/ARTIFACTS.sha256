@@ -1,0 +1,19 @@
+# verify from: repository root — shasum -a 256 -c docs/records/audits/2026-10/mvp6-q420-denial-not-outage-01/ARTIFACTS.sha256
+# Q420 · generated 2026-10-04 23:21:45 +0300 (Europe/Istanbul) · start 2026-10-04 22:58:20 +03 · HEAD cea01354e · git status --short 57 · staged 0
+e61122b627ada5a474a0d4434bc61e2fed05ae51d88f11805516c65bf2f0e947  services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Features/Returns/ReturnReferenceReader.cs
+ac532a6972c6540ebd00981daba6a3ff0ca4a0ad72bdf500fc0509349e5e3f67  services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Features/Claims/ClaimReferenceReader.cs
+0328b000ed849a224e35ca85e20f06357bade9ec705f92e4e398df2af749622f  docs/records/audits/2026-10/mvp6-q420-denial-not-outage-01/REPORT.md
+959efa8b563e67766819f3f196e4a9d4af1f460c2f9e426cb85795c3214bb5b0  docs/records/audits/2026-10/mvp6-q420-denial-not-outage-01/evidence/AFTER.txt
+88134a487781b5891e0c0eb65d23d06a5de60a42ed3a90623fbafb0eaeeb18bf  docs/records/audits/2026-10/mvp6-q420-denial-not-outage-01/evidence/BEFORE.txt
+6da73073f2a1ab87b20c7fb71fe7882e02aa47bf0539719b0a8e640c426b94d6  docs/records/audits/2026-10/mvp6-q420-denial-not-outage-01/evidence/DEPENDENCY.txt
+742deb3f536c6bce062356e29c0880382148e1f8454fc5656ebc0a2ccb054e04  docs/records/audits/2026-10/mvp6-q420-denial-not-outage-01/evidence/SABOTAGE-OVERMAP.txt
+5640b5d4a8921c7fd47f5a196600a813a038edbf1e82f28d13efd45aa0fdeb8e  docs/records/audits/2026-10/mvp6-q420-denial-not-outage-01/evidence/consumer-db-counts.txt
+5ed942aee6b372ad3c4329e9ddc6e9c2f91798814342f8058f6b40f2a821939f  docs/records/audits/2026-10/mvp6-q420-denial-not-outage-01/evidence/dep.py.txt
+b8ce94a6818ff04dd3e66fe576a83c0f5da2d1c9f2eb7b3d6f3686dcb8cff7a5  docs/records/audits/2026-10/mvp6-q420-denial-not-outage-01/evidence/mongo.sh.txt
+9af1f415a3774f93761f7444e0ee1284a675529a494c65e56dee8af788fbfc6d  docs/records/audits/2026-10/mvp6-q420-denial-not-outage-01/evidence/probe.py.txt
+0b7a99930d0b616913846fff55c76c1f4683f671a0bf2efa580b29cee6f20c8f  docs/records/audits/2026-10/mvp6-q420-denial-not-outage-01/evidence/readers.diff
+2d6863b255f0a6d0c8b22f825c2d6cdb47da0836932f0aa480ae387782726e91  docs/records/audits/2026-10/mvp6-q420-denial-not-outage-01/evidence/run-modules.sh.txt
+dae272c2d96bb25ef1c093580fb138581c86383f621bf5172b2e9e639c6758d8  docs/records/audits/2026-10/mvp6-q420-denial-not-outage-01/evidence/sabotage-overmap.diff
+8107b04526802ee4ae94630c978d59b4c3b7d6beddac7fc91098023b8313f379  docs/records/audits/2026-10/mvp6-q420-denial-not-outage-01/evidence/stop.sh.txt
+419ea2263ee222894b4dce3ade6615e193094b9e4f11ddaf679d4f9ff0bc4b97  docs/records/audits/2026-10/mvp6-q420-denial-not-outage-01/evidence/suite-results.txt
+4c2b37049c5378c0f03773ce4340b46165ea18d9cce0b65b92ca93c349f7ff8c  docs/records/audits/2026-10/mvp6-q420-denial-not-outage-01/evidence/svc.sh.txt

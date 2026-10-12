@@ -1,0 +1,9 @@
+step	command	exit	result
+baseline	verify R21 308-entry source manifest against isolated worktree	0	308 present; 0 missing; 0 mismatch before rework
+red	dotnet test --filter Reader_ProducerShipmentRootInvalid500_MapsToClaimReferenceInvalid	1	expected 502; actual 503
+build	dotnet build Diten.SupplyChainService.Api.csproj -t:Rebuild -m:1 /nr:false	0	0 warnings; 0 errors
+green-reference	dotnet test --filter FullyQualifiedName~ClaimReferenceTests	0	36 passed
+claims-regression	python3 run_claim_tests.py	0	128 passed; 0 failed; 0 skipped
+runtime	python3 runtime_probe.py	0	six real producer cases PASS; scoped persistence verified
+patch-check	git apply --check malformed-producer-map.patch	0	clean apply
+patch-apply	git apply malformed-producer-map.patch in disposable baseline	0	target hashes exact

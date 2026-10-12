@@ -126,6 +126,18 @@ public sealed record WorkItemActionPayloadDto(
         Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     string? Answer = null,
     /// <summary>
+    /// WP-TASK-CALENDAR-ENGINE-01 — MOD-0024 only, read only by <c>plan</c>: the START of a time block (a drop on
+    /// the week/day view). With it, <see cref="PlannedDate"/> is not needed — the day is derived from the start.
+    /// Trailing, defaulted and omitted when null, like the two above.
+    /// </summary>
+    [property: System.Text.Json.Serialization.JsonIgnore(
+        Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    DateTimeOffset? PlannedStartAt = null,
+    /// <summary>MOD-0024 only, read only by <c>plan</c>: the block's length in minutes (whole 15-minute steps).</summary>
+    [property: System.Text.Json.Serialization.JsonIgnore(
+        Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    int? PlannedDurationMinutes = null,
+    /// <summary>
     /// MOD-0022 E4 — the e-signature id an <c>approve</c> of a signature-required workflow step carries (ESIGN-BUNDLE
     /// x-workflow-addendum). Trailing, defaulted and omitted when null (byte-identical requests without it). The in-process
     /// workflow dispatcher passes it to the same MOD-0023 command the API uses; stripped on the way out to a remote module.
@@ -162,7 +174,42 @@ public sealed record WorkItemActionRequestDto(
 public sealed record WorkItemActionResultDto(
     string ItemId,
     string ProviderCode,
-    string ActionCode);
+    string ActionCode)
+{
+    /// <summary>
+    /// WP-TASK-CALENDAR-ENGINE-01 — non-blocking findings about a write that WAS carried out (today only MOD-0024's
+    /// plan: overlaps a meeting, outside working hours). Omitted when null, so every other action's answer is
+    /// byte-identical to before.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(
+        Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<WorkItemActionWarningDto>? Warnings { get; init; }
+
+    /// <summary>MOD-0024 plan only: what is left of the estimate after the block (derived, never stored).</summary>
+    [System.Text.Json.Serialization.JsonIgnore(
+        Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public int? RemainingMinutes { get; init; }
+
+    /// <summary>MOD-0024 plan only: true when the block was cut at the end of the working day (CT acceptance). Omitted otherwise.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(
+        Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public bool? Truncated { get; init; }
+
+    /// <summary>
+    /// MOD-0024 plan only, on a 409 <c>TASK_PLAN_CONFLICT</c> refusal: the caller's OTHER block this one would have
+    /// overlapped (title and hours), so the refusal can say which one.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(
+        Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public WorkItemActionWarningDto? Conflict { get; init; }
+}
+
+/// <summary>A stable warning code, plus the facts a sentence about it needs (e.g. which meeting).</summary>
+public sealed record WorkItemActionWarningDto(
+    string Code,
+    string? Title = null,
+    DateTimeOffset? StartAt = null,
+    DateTimeOffset? EndAt = null);
 
 /// <summary>One dispatch, with the actor resolved SERVER-side.</summary>
 public sealed record WorkItemActionDispatchRequest(

@@ -1,0 +1,25 @@
+captured_utc=2026-09-26T19:29:47Z
+uname_s=Darwin
+uname_m=arm64
+uname_r=25.5.0
+sw_vers_ProductName=macOS
+sw_vers_ProductVersion=26.5.2
+sw_vers_BuildVersion=25F84
+dotnet=8.0.417
+runtime=Microsoft.AspNetCore.App 8.0.23 [/Users/natig/.dotnet/shared/Microsoft.AspNetCore.App]
+runtime=Microsoft.NETCore.App 8.0.23 [/Users/natig/.dotnet/shared/Microsoft.NETCore.App]
+node=v25.5.0
+npm=11.8.0
+python3=Python 3.9.6
+venv_python=Python 3.9.6 bcrypt=5.0.0
+git=git version 2.50.1 (Apple Git-155)
+mongod=db version v8.0.18
+mongosh=2.6.0
+playwright_local=1.59.1
+playwright_test_local=1.59.1
+chromium=Google Chrome for Testing 147.0.7727.15 
+docker=MISSING podman=MISSING colima=MISSING
+disk_home=size=460Gi used=409Gi avail=19Gi cap=96%
+ram_bytes=8589934592
+cpu=Apple M1 cores=8
+operational_mongo_27017=/opt/homebrew/opt/mongodb-community@8.0/bin/mongod (not used by this lane)

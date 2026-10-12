@@ -1,0 +1,14 @@
+input	sha256	verification
+docs/records/audits/2026-09/mvp6-mod0190-test-oracle-rework-01/source.tar.gz	8fa00d40814a81472ec4221ad909321d058dea18a11f64dd2ac16ea800ecb745	PASS
+docs/records/audits/2026-09/mvp6-mod0190-test-oracle-rework-01/source-manifest.tsv	ae7ef59e0158113c22389ccd3eec84207418f3a859c40480e70b42ee888a9bef	PASS
+docs/records/audits/2026-09/mvp6-mod0192-x07-http-disposition-01/CAPACITY-43-SOURCE.tar.gz	753843251ea261473e308e5fb100de834b1e5ab88fa7576ff50ad22bf332274e	PASS
+docs/records/audits/2026-09/mvp6-mod0192-x07-http-disposition-01/CAPACITY-43-SOURCE-MANIFEST.tsv	36114191e1576b8b5654b9910f3347432d5d3bf36aac87339a4280cc85a852f8	PASS
+docs/records/audits/2026-09/mvp6-mod0192-x07-http-disposition-01/PROGRAM-COMPOSITION.patch	78cc0fa61dd37019f525c621c572d1dc2ef518eb0b4faf520a280f01909db82e	PASS
+docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-01/X07-LATER-READ-EVIDENCE-TEST.patch	b6744cddfd498536abeb4b350d8b8b2bd1c30c0824875757522026ed5f01df81	PASS
+docs/records/audits/2026-09/mvp6-mod0192-duplicate-name-uptake-prep-01/PROPOSED-UPTAKE.patch	f4fc82b44eb237d1dbc8bdd9c0d9633c948ca4e33cd2dcff91cd65f653780c8f	PASS
+docs/records/audits/2026-09/mvp6-mod0192-duplicate-name-uptake-prep-01/SOURCE-MANIFEST.tsv	d626c901babc89d6295cf26603616b91e3889d21a1064f87c393e16ccd1f7638	PASS
+docs/records/audits/2026-09/mvp6-three-scope-application-01/B-WRITER-EVIDENCE.tar.gz	765ea3cb3677ddd6c167bfce917ffd2c812308ef363bbe7b3d91371e41b06641	PASS
+docs/records/audits/2026-09/mvp6-three-scope-application-01/B-VER-RECOVERY-EVIDENCE.tar.gz	b1eed8f00104c1dabb175ed26323606cb23d33c342de6df57e39dad5699a2fdf	PASS
+docs/records/audits/2026-09/mvp6-three-scope-application-01/C-WRITER-EVIDENCE.tar.gz	2e0b6e05a0d377b0eaa99bc71e8f5e64c4c07df2022c6ab23ee303e378e42093	PASS
+docs/records/audits/2026-09/mvp6-three-scope-application-01/C-VER-EVIDENCE.tar.gz	a20f981ca0720c3c9078b6155aaeeccefea29d20122b8b9e2c4f32b0f45beeac	PASS
+

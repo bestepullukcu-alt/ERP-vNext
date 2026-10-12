@@ -157,17 +157,9 @@ describe("the effort card was connected, not invented", () => {
 });
 
 describe("the timesheet card gained a control, not an authority", () => {
-  it("draws Log time, and the rail no longer does", () => {
-    /*
-     * MUTATION GUARD: put `logTime` back in the rail and this goes red.
-     *
-     * Logging minutes changes no state — it is a personal measurement, not a lifecycle move — so standing it
-     * beside Complete and Pause misfiled it. One action, one home.
-     */
-    const card = APP.slice(APP.indexOf("const renderTimesheet"), APP.indexOf("const renderTimesheet") + 5200);
-    expect(card).toContain("wcn-ts-log");
-    expect(card).toContain("a.key === 'logTime'");
-    expect(code(APP), "the rail draws it again").toContain("if (a.key === 'logTime') { return false; }");
+  it("no longer draws the fake Log time button anywhere (BL-485)", () => {
+    // The dialog wrote an in-memory activity and toasted "(mock)"; real time is recorded on My Timesheet.
+    expect(code(APP)).not.toMatch(/logTime|openLogTime|wcn-ts-log/);
   });
 
   it("does NOT move start or pause into the card", () => {
@@ -182,7 +174,8 @@ describe("the timesheet card gained a control, not an authority", () => {
   });
 
   it("says what the timer is doing, in all seven languages", () => {
-    ["TimerStateRunning", "TimerStatePaused", "TimerFollowsStatusHint"].forEach((key) => {
+    // MOD-0280-FU01 T2b — the running line is the server's timer state; the paused line is the task's own state.
+    ["TimerRunningNow", "TimerStatePaused", "TimeDraftLabel", "TimeSubmittedLabel", "TimeApprovedLabel"].forEach((key) => {
       /*
        * ⚠ BY NAME, NOT BY CALL SHAPE. Two of the three are chosen through a computed `stateKey` and reach the
        * translator as `t(stateKey)`, so asserting on `t('TimerStateRunning')` would fail on working code —

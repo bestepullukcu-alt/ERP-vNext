@@ -66,7 +66,7 @@
         const [typesResult, attendeesResult, listResult] = await Promise.all([
             window.MeetingsApi.lookupTypes(),
             isEdit ? Promise.resolve({ ok: true, data: { people: [] } }) : window.MeetingsApi.lookupAttendees(),
-            isEdit ? Promise.resolve({ ok: true, data: { items: [] } }) : window.MeetingsApi.list('pageSize=1000')
+            isEdit ? Promise.resolve({ ok: true, data: { items: [] } }) : window.MeetingsApi.listQuery({ pageSize: 1000 })
         ]);
 
         const types = typesResult.ok ? (typesResult.data || []) : [];

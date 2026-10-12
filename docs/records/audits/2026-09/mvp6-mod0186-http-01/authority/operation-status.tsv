@@ -1,0 +1,4 @@
+path	method	operation	statuses
+/returns	get	queryReturns	200,400,401,403,404,500,503
+/returns	post	createReturn	201,400,401,403,404,409,415,422,500,502,503
+/returns/{returnId}/transition	post	transitionReturn	200,400,401,403,404,409,415,422,500,503

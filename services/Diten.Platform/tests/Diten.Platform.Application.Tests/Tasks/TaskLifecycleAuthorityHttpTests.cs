@@ -127,20 +127,28 @@ public sealed class TaskLifecycleAuthorityHttpTests
 
         var response = await host.PostPlanAsync(task.Id, ExpectedVersion(task));
 
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        // WP-TASK-CALENDAR-ENGINE-01 — a plan answers 200 with what it stored (warnings, remaining minutes).
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal(TaskLifecycle.Planned, host.Tasks.Items.Single().Lifecycle);
     }
 
     [Fact]
-    public async Task Plan_by_the_REQUESTER_who_does_NOT_hold_it_succeeds()
+    public async Task Plan_by_the_REQUESTER_who_does_NOT_hold_it_is_403_TASK_PLAN_NOT_HOLDER()
     {
+        /*
+         * BL-449 (owner, 2026-09-29) REVERSES BL-361 for this one verb: this test used to be
+         * Plan_by_the_REQUESTER_who_does_NOT_hold_it_succeeds. A plan is a block of the holder's own time; the
+         * requester's lever is the due date. Refused with its own code, and the task is untouched.
+         */
         using var host = new Host();
         var task = host.Seed(assignee: TaskTestData.Other, creator: TaskTestData.Me);
 
         var response = await host.PostPlanAsync(task.Id, ExpectedVersion(task));
 
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        Assert.Equal(TaskLifecycle.Planned, host.Tasks.Items.Single().Lifecycle);
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.Contains(TaskReasonCodes.PlanNotHolder, await response.Content.ReadAsStringAsync());
+        Assert.Equal(TaskLifecycle.Open, host.Tasks.Items.Single().Lifecycle);
+        Assert.Null(host.Tasks.Items.Single().PlannedDate);
     }
 
     [Fact]
@@ -164,7 +172,7 @@ public sealed class TaskLifecycleAuthorityHttpTests
         var task = host.Seed(assignee: TaskTestData.Me, creator: TaskTestData.Me);
 
         var planned = await host.PostPlanAsync(task.Id, ExpectedVersion(task));
-        Assert.Equal(HttpStatusCode.NoContent, planned.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, planned.StatusCode);
 
         var started = await host.PostAsync(
             $"/api/v1/tasks/{task.Id}/start", UpdateOnly, ExpectedVersion(host.Tasks.Items.Single()));
@@ -310,7 +318,8 @@ public sealed class TaskLifecycleAuthorityHttpTests
                 new FakeTaskApprovalService(),
                 NullLogger<SubmitTaskForReviewHandler>.Instance);
 
-            var planHandler = new PlanTaskItemHandler(Tasks, new TaskLifecycleService(), me);
+            var planHandler = new PlanTaskItemHandler(
+                Tasks, new TaskLifecycleService(), me, new FakeWorkingHoursProvider(), new FakeCalendarMeetingReader());
 
             return new RoutingMediator(transitionHandler, submitReviewHandler, planHandler);
         }

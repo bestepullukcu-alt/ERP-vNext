@@ -32,6 +32,7 @@ public static class DependencyInjection
         services.AddScoped<IPasswordPolicyService, PasswordPolicyService>();
         services.AddScoped<IFullCatalogPermissionGrantService, FullCatalogPermissionGrantService>();
         services.AddScoped<IRbacAuditRecorder, RbacAuditRecorder>(); // FEAT-AUDIT-RBAC
+        services.AddScoped<IUserAuditRecorder, UserAuditRecorder>(); // BL-456 — local authAuditLogs + Platform central log
         services.AddScoped<AccountKindWriter>(); // WP-AUTH-USER-KIND-UPDATE-01 — the one write path for an account's kind
 
         return services;

@@ -25,6 +25,8 @@
             Include="..\..\..\Diten.Building.Blocks\Diten.BuildingBlocks.Security.Secrets\Diten.BuildingBlocks.Security.Secrets.csproj" />
         <ProjectReference
             Include="..\..\..\Diten.Building.Blocks\src\Diten.BuildingBlocks.ModuleRegistration.Abstractions\Diten.BuildingBlocks.ModuleRegistration.Abstractions.csproj" />
+        <!-- BL-452 package 1: the shared list-export contract (CSV/XLSX writer, column whitelist, 50 000-row ceiling). -->
+        <ProjectReference Include="..\..\..\Diten.Building.Blocks\src\Diten.BuildingBlocks.ListExport\Diten.BuildingBlocks.ListExport.csproj" />
     </ItemGroup>
 
 </Project>

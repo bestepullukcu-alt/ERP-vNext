@@ -1,0 +1,11 @@
+surface	change	classification	gate
+info.version/status	3.0.0 FROZEN to 3.1.0-rc.1 CANDIDATE	candidate_metadata	final version owner decision
+queryLoads 200 example	adds lifecycleCorrelationId	additive_example	consumer review
+LoadSummary	optional nullable UUID lifecycleCorrelationId	wire_additive_for_tolerant_consumers	strict parser inventory and consent
+queryLoads/createLoadPlan/transitionLoad annex pointer	v2.0.0 to candidate annex	loads_only_normative_pointer	independent parity verification
+Load request schemas	unchanged	compatible	none
+LoadResponse success schema	unchanged	compatible	none
+Load event/shared schemas	unchanged	compatible	none
+Shipment/Carrier/Returns/Claims operations	unchanged	compatible	none
+producer emission	stored non-null root emitted	behavioral_uptake	producer DEV and independent runtime VER
+legacy missing/null/malformed	consumer fail-closed	behavioral_uptake	producer and UI/runtime VER

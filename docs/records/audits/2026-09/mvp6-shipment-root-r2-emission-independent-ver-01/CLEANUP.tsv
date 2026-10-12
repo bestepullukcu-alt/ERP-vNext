@@ -1,0 +1,7 @@
+resource	result	evidence
+api_5783	STOPPED	no listener after Ctrl-C
+mongo_db_diten_mod0183_root_ver01	DROPPED	dropDatabase ok=1
+mongo_db_diten_mod0183_tests	DROPPED	dropDatabase ok=1
+mongod_41132	STOPPED	shutdown closed the connection and final listener check was empty
+operational_mongo_27017	UNTOUCHED	existing PID 871 listener remained; no verifier command targeted port 27017
+repository_production_test_sources	UNCHANGED	three approved repository paths remain at controlling preimage hashes

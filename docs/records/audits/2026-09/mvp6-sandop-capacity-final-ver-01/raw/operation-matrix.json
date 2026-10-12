@@ -1,0 +1,224 @@
+[
+  {
+    "id": "createSandopPlan",
+    "method": "POST",
+    "path": "/sandop-plans",
+    "oldStatuses": [
+      "201",
+      "409",
+      "422"
+    ],
+    "finalStatuses": [
+      "201",
+      "400",
+      "401",
+      "403",
+      "409",
+      "422",
+      "503"
+    ]
+  },
+  {
+    "id": "getSandopPlan",
+    "method": "GET",
+    "path": "/sandop-plans/{sandopPlanId}",
+    "oldStatuses": [
+      "200",
+      "404"
+    ],
+    "finalStatuses": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404",
+      "503"
+    ]
+  },
+  {
+    "id": "captureSandopSnapshot",
+    "method": "POST",
+    "path": "/sandop-plans/{sandopPlanId}/snapshots",
+    "oldStatuses": [
+      "201",
+      "404",
+      "409",
+      "422"
+    ],
+    "finalStatuses": [
+      "201",
+      "400",
+      "401",
+      "403",
+      "404",
+      "409",
+      "422",
+      "503"
+    ]
+  },
+  {
+    "id": "listSandopSnapshots",
+    "method": "GET",
+    "path": "/sandop-plans/{sandopPlanId}/snapshots",
+    "oldStatuses": [
+      "200",
+      "404"
+    ],
+    "finalStatuses": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404",
+      "503"
+    ]
+  },
+  {
+    "id": "recordSandopSignOff",
+    "method": "POST",
+    "path": "/sandop-plans/{sandopPlanId}/sign-offs",
+    "oldStatuses": [
+      "201",
+      "404",
+      "409",
+      "422"
+    ],
+    "finalStatuses": [
+      "201",
+      "400",
+      "401",
+      "403",
+      "404",
+      "409",
+      "422",
+      "503"
+    ]
+  },
+  {
+    "id": "listSandopSignOffs",
+    "method": "GET",
+    "path": "/sandop-plans/{sandopPlanId}/sign-offs",
+    "oldStatuses": [
+      "200",
+      "404"
+    ],
+    "finalStatuses": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404",
+      "503"
+    ]
+  },
+  {
+    "id": "createCapacityPlan",
+    "method": "POST",
+    "path": "/capacity-plans",
+    "oldStatuses": [
+      "201",
+      "409",
+      "422"
+    ],
+    "finalStatuses": [
+      "201",
+      "400",
+      "401",
+      "403",
+      "409",
+      "422",
+      "503"
+    ]
+  },
+  {
+    "id": "getCapacityPlan",
+    "method": "GET",
+    "path": "/capacity-plans/{capacityPlanId}",
+    "oldStatuses": [
+      "200",
+      "404"
+    ],
+    "finalStatuses": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404",
+      "503"
+    ]
+  },
+  {
+    "id": "createCapacityScenario",
+    "method": "POST",
+    "path": "/capacity-plans/{capacityPlanId}/scenarios",
+    "oldStatuses": [
+      "201",
+      "404",
+      "409"
+    ],
+    "finalStatuses": [
+      "201",
+      "400",
+      "401",
+      "403",
+      "404",
+      "409",
+      "422",
+      "503"
+    ]
+  },
+  {
+    "id": "getCapacityScenario",
+    "method": "GET",
+    "path": "/capacity-plans/{capacityPlanId}/scenarios/{scenarioId}",
+    "oldStatuses": [
+      "200",
+      "404"
+    ],
+    "finalStatuses": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404",
+      "503"
+    ]
+  },
+  {
+    "id": "evaluateCapacityScenario",
+    "method": "POST",
+    "path": "/capacity-plans/{capacityPlanId}/scenarios/{scenarioId}/evaluations",
+    "oldStatuses": [
+      "202",
+      "404",
+      "409"
+    ],
+    "finalStatuses": [
+      "202",
+      "400",
+      "401",
+      "403",
+      "404",
+      "409",
+      "422",
+      "503"
+    ]
+  },
+  {
+    "id": "getCapacityEvaluation",
+    "method": "GET",
+    "path": "/capacity-plans/{capacityPlanId}/evaluations/{evaluationId}",
+    "oldStatuses": [
+      "200",
+      "404"
+    ],
+    "finalStatuses": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404",
+      "503"
+    ]
+  }
+]

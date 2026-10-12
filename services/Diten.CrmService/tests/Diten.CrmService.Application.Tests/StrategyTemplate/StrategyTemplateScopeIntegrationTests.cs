@@ -27,7 +27,7 @@ public sealed class StrategyTemplateScopeIntegrationTests
     private readonly CampaignScopeTestDoubles.FakeReferenceValidator _refData = new();
     private readonly CampaignScopeTestDoubles.FakeLegalEntityValidator _legalEntities = new();
 
-    private StrategyTemplateBindingValidator Bindings() => new(_segments, _policies, _paths, _journeys);
+    private StrategyTemplateBindingValidator Bindings() => new(_segments, _policies, _paths, _journeys, _journeys.Subjects);
     private StrategyTemplateScopeWriteValidator Scope() => new(_refData, _legalEntities);
 
     private CreateStrategyTemplateHandler Create() => new(

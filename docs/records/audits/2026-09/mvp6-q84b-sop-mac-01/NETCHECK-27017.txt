@@ -1,0 +1,46 @@
+Q84b NETCHECK 27017 — result: 0 connections to 27017 by any lane process during build, tests and runtime
+
+Window: sampler start 2026-09-30 22:25:39 +03 (before build) -> stop after lane cleanup (~22:56 +03)
+Owner dev mongod: pid 758, /opt/homebrew/etc/mongod.conf, listening 127.0.0.1:27017 + [::1]:27017 (not started, not touched by this lane)
+
+1. lsof sampler (tools/sampler.sh, once per second, ESTABLISHED TCP with local or remote port 27017)
+   samples: 1667 one-second samples (logs/net/27017-samples.txt)
+   baseline client ports at start: 18 (logs/net/27017-baseline.txt)
+   client ports seen during the run: 18; NEW client ports: 0
+   processes ever seen holding a 27017 connection: pid 758 only (the dev mongod's own side)
+
+2. dev mongod log (/opt/homebrew/var/log/mongodb/mongo.log) from line 1145673+1 to the end of the run: 40 lines (logs/net/devlog-during-run.log)
+   "Connection accepted" lines: 0
+
+3. kit netcheck (k06 netcheck: every lane service PID, ESTABLISHED connections to :27017)
+   kit-a3/raw/netcheck-a1.tsv:
+     service	pid	connections_to_27017	connections_to_lane_mongo
+     auth	45354	0	4
+     platform	45471	0	14
+     mdm	45747	0	3
+     supplychain	45814	0	3
+     gateway	45910	0	0
+     web	46022	0	0
+   kit-a3/raw/netcheck-a2.tsv:
+     service	pid	connections_to_27017	connections_to_lane_mongo
+     auth	45354	0	4
+     platform	45471	0	14
+     mdm	45747	0	3
+     supplychain	45814	0	0
+     gateway	45910	0	0
+     web	46022	0	0
+     supplychain	47008	0	3
+   kit-a3/raw/netcheck-a3.tsv:
+     service	pid	connections_to_27017	connections_to_lane_mongo
+     auth	45354	0	4
+     platform	45471	0	24
+     mdm	45747	0	3
+     supplychain	45814	0	0
+     gateway	45910	0	0
+     web	46022	0	0
+     supplychain	47008	0	5
+
+4. configuration: K04 check 'no 27017' PASS (kit-a3); tests got their URIs only from scripts/test-env/mvp6-test-mongo-env.sh --slot 8 (port 38994; the script refuses 27017-27021 and >= 49152, so 57192 is refused)
+   lane mongods used: 127.0.0.1:38994 only (test mongod rsq84bs8, then kit mongod rsSopQ84b01). 57192: never used.
+
+Positive control: not run — the prompt forbids connecting to 27017. Liveness of the detectors: the sampler recorded the 18 existing dev connections every second; the dev log grew by 40 lines during the window.

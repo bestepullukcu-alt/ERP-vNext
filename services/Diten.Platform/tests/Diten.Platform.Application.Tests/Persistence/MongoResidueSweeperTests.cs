@@ -69,6 +69,7 @@ public class MongoResidueSweeperTests
     [InlineData("x_diten_platform_itest")]         // not at the start
     [InlineData("diten_platform_itest_Task")]      // uppercase is not this grammar
     [InlineData("diten_platform_itest-scope")]     // hyphen is not this grammar
+    [InlineData("diten_platform_itest\n")]         // BL-482: `$` matched before a trailing newline; `\z` does not
     public void ANameThatMerelyResemblesThePrefixIsNeverSwept(string name)
     {
         // Near-misses are where a prefix check quietly becomes a substring check. `diten_platform_itestX` is

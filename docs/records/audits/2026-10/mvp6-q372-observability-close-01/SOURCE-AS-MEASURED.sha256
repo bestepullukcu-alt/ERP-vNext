@@ -1,0 +1,18 @@
+# from: repository root /Users/natig/Projects/ERP-vNext-recovery — RECORD ONLY, NOT FOR VERIFICATION. Never run shasum -c on this file (docs-organization K6).
+# Answers 'what did the code look like when measured'. Column 3: live-run = the scratch copy the live stack ran from (2026-10-04 11:00-12:48 UTC);
+# head-ff5777afe = lane-start HEAD (sabotage source); resume = the repository at 2026-10-04 ~20:05 UTC, which the suites ran on.
+5db37c670547d35e58067f713b1029e5ae56af5fa5b076f00c8b7772e694ea53  frontend/Diten.Web/Controllers/SupplyChainShipmentsController.cs  live-run (fixed and restored runs)
+9840bbfba25c32794988dba794a3c06cbe4e2d0994d2c8934d31c0967397140d  frontend/Diten.Web/Controllers/SupplyChainShipmentsController.cs  head-ff5777afe (sabotage run)
+5db37c670547d35e58067f713b1029e5ae56af5fa5b076f00c8b7772e694ea53  frontend/Diten.Web/Controllers/SupplyChainShipmentsController.cs  resume (= HEAD ca9330392)
+c8ba0ed394d3f163f9992fe02a1cb3c9a9672fb06914fa87ad767632bf4bfb13  frontend/Diten.Web/Program.cs  live-run (not changed by this lane)
+1f0b03e3215ad8899d827b9b6e109b2d13b338bfb71f142b765bf63477902726  frontend/Diten.Web/Program.cs  resume (Q394's change since; not this lane)
+f247638045bd1e7e76eeb5eac3b0bb34e97e1214d27294fa942f147a73e4ab64  services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs  live-run
+9126c910cfa2316f4e6ec4ade711a187e2641f477567e97fd64e197d0ab18002  services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs  resume
+f001f56486da96f1da93a24aa13a01bca06a64009ca852bb38f83b1747ffb3e3  services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Common/ShipmentTelemetry.cs  resume
+5da61bf175de6f52744bb39e8eff2b7170cf7d77889a457052526202f41d4e3c  services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Middleware/ShipmentContextMiddleware.cs  resume
+65be60d3666a40604756105c35693013d6e62289b9dd9c4d8263701d154d22fe  services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Shipments/ShipmentRepository.cs  resume
+c1c9a50fabc988465723962d09fcccfc689a9275d644cb0d9c2f81e57bc8cf19  services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Shipments/ShipmentOutboxStore.cs  resume
+851657772fbc5457b1193edbd43df7df9d066b0902cf4f490869617cf60976c0  services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/SourceIntake/WarehouseIntakeCoordinator.cs  resume
+5de854b49c4490be759b9120f455e4db1f61d5948f030c9cc6b3f31b4258b628  services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Eventing/ShipmentOutboxWorker.cs  resume
+44c00903577e14a8d4b4483dfca5ec1b8516a1bfab64366bda3ebcab3ce12853  services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Shipments/ShipmentTelemetryTests.cs  resume
+2285fe0d45dfbce5c75fda1e6ac46425d8dbe97a62bd42b089297c5be90c129e  execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md  resume

@@ -1,0 +1,130 @@
+Build started 22/09/2026 18:54:00.
+Test run for /private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 17.11.1 (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.8.2+699d445a1a (64-bit .NET 8.0.23)
+[xUnit.net 00:00:00.08]   Discovering: Diten.SupplyChainService.Tests
+[xUnit.net 00:00:00.14]   Discovered:  Diten.SupplyChainService.Tests
+[xUnit.net 00:00:00.14]   Starting:    Diten.SupplyChainService.Tests
+[xUnit.net 00:00:03.81]     Diten.SupplyChainService.Tests.CapacityPlans.CapacityRestartTests.Separate_processes_claim_once_and_restart_recovers_after_server_lease_expiry [FAIL]
+[xUnit.net 00:00:03.81]       Child exit 1: Build started 22/09/2026 18:54:02.
+[xUnit.net 00:00:03.81]       Test run for /private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll (.NETCoreApp,Version=v8.0)
+[xUnit.net 00:00:03.81]       VSTest version 17.11.1 (arm64)
+[xUnit.net 00:00:03.81]       
+[xUnit.net 00:00:03.81]       Starting test execution, please wait...
+[xUnit.net 00:00:03.81]       A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:03.81]       [xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.8.2+699d445a1a (64-bit .NET 8.0.23)
+[xUnit.net 00:00:03.81]       [xUnit.net 00:00:00.12]   Discovering: Diten.SupplyChainService.Tests
+[xUnit.net 00:00:03.81]       [xUnit.net 00:00:00.21]   Discovered:  Diten.SupplyChainService.Tests
+[xUnit.net 00:00:03.81]       [xUnit.net 00:00:00.22]   Starting:    Diten.SupplyChainService.Tests
+[xUnit.net 00:00:03.81]       [xUnit.net 00:00:00.86]       System.InvalidOperationException : Sequence contains no elements
+[xUnit.net 00:00:03.81]       [xUnit.net 00:00:00.86]       Stack Trace:
+[xUnit.net 00:00:03.81]       [xUnit.net 00:00:00.86]            at System.Linq.ThrowHelper.ThrowNoElementsException()
+[xUnit.net 00:00:03.81]       [xUnit.net 00:00:00.86]            at System.Linq.Enumerable.Single[TSource](IEnumerable`1 source)
+[xUnit.net 00:00:03.81]       [xUnit.net 00:00:00.86]            at MongoDB.Driver.IAsyncCursorExtensions.SingleAsync[TDocument](IAsyncCursor`1 cursor, CancellationToken cancellationToken)
+[xUnit.net 00:00:03.81]       [xUnit.net 00:00:00.86]            at MongoDB.Driver.IAsyncCursorSourceExtensions.SingleAsync[TDocument](IAsyncCursorSource`1 source, CancellationToken cancellationToken)
+[xUnit.net 00:00:03.81]       [xUnit.net 00:00:00.86]         /private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityRestartTests.cs(29,0): at Diten.SupplyChainService.Tests.CapacityPlans.CapacityRestartTests.ChildWorker()
+[xUnit.net 00:00:03.81]       [xUnit.net 00:00:00.86]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:03.81]       [xUnit.net 00:00:00.87]   Finished:    Diten.SupplyChainService.Tests
+[xUnit.net 00:00:03.81]         Failed Diten.SupplyChainService.Tests.CapacityPlans.CapacityRestartTests.ChildWorker [548 ms]
+[xUnit.net 00:00:03.81]         Error Message:
+[xUnit.net 00:00:03.81]          System.InvalidOperationException : Sequence contains no elements
+[xUnit.net 00:00:03.81]         Stack Trace:
+[xUnit.net 00:00:03.81]            at System.Linq.ThrowHelper.ThrowNoElementsException()
+[xUnit.net 00:00:03.81]          at System.Linq.Enumerable.Single[TSource](IEnumerable`1 source)
+[xUnit.net 00:00:03.81]          at MongoDB.Driver.IAsyncCursorExtensions.SingleAsync[TDocument](IAsyncCursor`1 cursor, CancellationToken cancellationToken)
+[xUnit.net 00:00:03.81]          at MongoDB.Driver.IAsyncCursorSourceExtensions.SingleAsync[TDocument](IAsyncCursorSource`1 source, CancellationToken cancellationToken)
+[xUnit.net 00:00:03.81]          at Diten.SupplyChainService.Tests.CapacityPlans.CapacityRestartTests.ChildWorker() in /private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityRestartTests.cs:line 29
+[xUnit.net 00:00:03.81]       --- End of stack trace from previous location ---
+[xUnit.net 00:00:03.81]       
+[xUnit.net 00:00:03.81]       Total tests: 1
+[xUnit.net 00:00:03.81]            Failed: 1
+[xUnit.net 00:00:03.81]        Total time: 1.7709 Seconds
+[xUnit.net 00:00:03.81]            1>Project "/private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Diten.SupplyChainService.Tests.csproj" on node 1 (VSTest target(s)).
+[xUnit.net 00:00:03.81]            1>_VSTestConsole:
+[xUnit.net 00:00:03.81]                MSB4181: The "VSTestTask" task returned false but did not log an error.
+[xUnit.net 00:00:03.81]            1>Done Building Project "/private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Diten.SupplyChainService.Tests.csproj" (VSTest target(s)) -- FAILED.
+[xUnit.net 00:00:03.81]       
+[xUnit.net 00:00:03.81]       Build FAILED.
+[xUnit.net 00:00:03.81]           0 Warning(s)
+[xUnit.net 00:00:03.81]           0 Error(s)
+[xUnit.net 00:00:03.81]       
+[xUnit.net 00:00:03.81]       Time Elapsed 00:00:02.53
+[xUnit.net 00:00:03.81]        [xUnit.net 00:00:00.86]     Diten.SupplyChainService.Tests.CapacityPlans.CapacityRestartTests.ChildWorker [FAIL]
+[xUnit.net 00:00:03.81]       Test Run Failed.
+[xUnit.net 00:00:03.81]       
+[xUnit.net 00:00:03.82]       Stack Trace:
+[xUnit.net 00:00:03.82]         /private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityRestartTests.cs(59,0): at Diten.SupplyChainService.Tests.CapacityPlans.CapacityRestartTests.AssertSuccess(Process process)
+[xUnit.net 00:00:03.82]         /private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityRestartTests.cs(78,0): at Diten.SupplyChainService.Tests.CapacityPlans.CapacityRestartTests.Separate_processes_claim_once_and_restart_recovers_after_server_lease_expiry()
+[xUnit.net 00:00:03.82]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:03.82]   Finished:    Diten.SupplyChainService.Tests
+  Failed Diten.SupplyChainService.Tests.CapacityPlans.CapacityRestartTests.Separate_processes_claim_once_and_restart_recovers_after_server_lease_expiry [3 s]
+  Error Message:
+   Child exit 1: Build started 22/09/2026 18:54:02.
+Test run for /private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 17.11.1 (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.8.2+699d445a1a (64-bit .NET 8.0.23)
+[xUnit.net 00:00:00.12]   Discovering: Diten.SupplyChainService.Tests
+[xUnit.net 00:00:00.21]   Discovered:  Diten.SupplyChainService.Tests
+[xUnit.net 00:00:00.22]   Starting:    Diten.SupplyChainService.Tests
+[xUnit.net 00:00:00.86]       System.InvalidOperationException : Sequence contains no elements
+[xUnit.net 00:00:00.86]       Stack Trace:
+[xUnit.net 00:00:00.86]            at System.Linq.ThrowHelper.ThrowNoElementsException()
+[xUnit.net 00:00:00.86]            at System.Linq.Enumerable.Single[TSource](IEnumerable`1 source)
+[xUnit.net 00:00:00.86]            at MongoDB.Driver.IAsyncCursorExtensions.SingleAsync[TDocument](IAsyncCursor`1 cursor, CancellationToken cancellationToken)
+[xUnit.net 00:00:00.86]            at MongoDB.Driver.IAsyncCursorSourceExtensions.SingleAsync[TDocument](IAsyncCursorSource`1 source, CancellationToken cancellationToken)
+[xUnit.net 00:00:00.86]         /private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityRestartTests.cs(29,0): at Diten.SupplyChainService.Tests.CapacityPlans.CapacityRestartTests.ChildWorker()
+[xUnit.net 00:00:00.86]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:00.87]   Finished:    Diten.SupplyChainService.Tests
+  Failed Diten.SupplyChainService.Tests.CapacityPlans.CapacityRestartTests.ChildWorker [548 ms]
+  Error Message:
+   System.InvalidOperationException : Sequence contains no elements
+  Stack Trace:
+     at System.Linq.ThrowHelper.ThrowNoElementsException()
+   at System.Linq.Enumerable.Single[TSource](IEnumerable`1 source)
+   at MongoDB.Driver.IAsyncCursorExtensions.SingleAsync[TDocument](IAsyncCursor`1 cursor, CancellationToken cancellationToken)
+   at MongoDB.Driver.IAsyncCursorSourceExtensions.SingleAsync[TDocument](IAsyncCursorSource`1 source, CancellationToken cancellationToken)
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityRestartTests.ChildWorker() in /private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityRestartTests.cs:line 29
+--- End of stack trace from previous location ---
+
+Total tests: 1
+     Failed: 1
+ Total time: 1.7709 Seconds
+     1>Project "/private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Diten.SupplyChainService.Tests.csproj" on node 1 (VSTest target(s)).
+     1>_VSTestConsole:
+         MSB4181: The "VSTestTask" task returned false but did not log an error.
+     1>Done Building Project "/private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Diten.SupplyChainService.Tests.csproj" (VSTest target(s)) -- FAILED.
+
+Build FAILED.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.53
+ [xUnit.net 00:00:00.86]     Diten.SupplyChainService.Tests.CapacityPlans.CapacityRestartTests.ChildWorker [FAIL]
+Test Run Failed.
+
+  Stack Trace:
+     at Diten.SupplyChainService.Tests.CapacityPlans.CapacityRestartTests.AssertSuccess(Process process) in /private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityRestartTests.cs:line 59
+   at Diten.SupplyChainService.Tests.CapacityPlans.CapacityRestartTests.Separate_processes_claim_once_and_restart_recovers_after_server_lease_expiry() in /private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityRestartTests.cs:line 78
+--- End of stack trace from previous location ---
+Results File: /private/tmp/mvp6-mod0192-core-dev-01/docs/records/audits/2026-09/mvp6-mod0192-restart-harness-rework-01/raw/rework-diagnostic.trx
+
+Test Run Failed.
+Total tests: 1
+     Failed: 1
+ Total time: 4.3784 Seconds
+     1>Project "/private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Diten.SupplyChainService.Tests.csproj" on node 1 (VSTest target(s)).
+     1>_VSTestConsole:
+         MSB4181: The "VSTestTask" task returned false but did not log an error.
+     1>Done Building Project "/private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Diten.SupplyChainService.Tests.csproj" (VSTest target(s)) -- FAILED.
+
+Build FAILED.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:04.89

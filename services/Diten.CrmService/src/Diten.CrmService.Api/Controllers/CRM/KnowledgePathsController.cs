@@ -2,6 +2,8 @@ using Diten.CrmService.Api.Models.CRM;
 using Diten.CrmService.Application.Features.Knowledge.Path;
 using Diten.CrmService.Application.Features.Knowledge.Path.Commands;
 using Diten.CrmService.Application.Features.Knowledge.Path.Queries;
+using Diten.CrmService.Application.Features.Knowledge.Path.Release;
+using Diten.CrmService.Application.Features.Knowledge.Path.Review;
 using Diten.CrmService.Infrastructure.Authorization;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -60,7 +62,8 @@ public sealed class KnowledgePathsController : CustomBaseController
             new CreateKnowledgePathCommand(
                 request.PathCode, request.PathName, request.SubjectId, request.Objective, request.PathVersion,
                 request.EffectiveFrom, request.Description, request.TopicId, request.AudienceProfileId,
-                request.LanguageCode, request.PathStatus, request.EffectiveTo, request.Source),
+                request.LanguageCode, request.PathStatus, request.EffectiveTo, request.Source,
+                ChainTemplateId: request.ChainTemplateId, CountryCode: request.CountryCode),
             cancellationToken));
 
     [HttpPut("api/crm/knowledge/paths/{pathId:guid}")]
@@ -72,7 +75,7 @@ public sealed class KnowledgePathsController : CustomBaseController
                 pathId, request.PathName, request.SubjectId, request.Objective, request.PathVersion,
                 request.EffectiveFrom, request.Description, request.TopicId, request.AudienceProfileId,
                 request.LanguageCode, request.PathStatus, request.EffectiveTo, request.Source,
-                StepsProvided: request.Steps is not null, request.ExpectedVersion),
+                StepsProvided: request.Steps is not null, request.ExpectedVersion, request.CountryCode),
             cancellationToken));
 
     [HttpPost("api/crm/knowledge/paths/{pathId:guid}/publish")]
@@ -117,7 +120,7 @@ public sealed class KnowledgePathsController : CustomBaseController
                 pathId, request.StepOrder, request.StepCode, request.StepTitle, request.StepType, request.ContentId,
                 request.IsRequired, request.VersionPinPolicy, request.CompletionRule, request.PrerequisiteStepId,
                 request.ConceptNodeId, request.EstimatedDurationMinutes, request.Notes,
-                MapBranch(request.BranchConditions), request.ExpectedVersion),
+                MapBranch(request.BranchConditions), request.ExpectedVersion, MapArrangement(request.Arrangement)),
             cancellationToken));
 
     [HttpPut("api/crm/knowledge/paths/{pathId:guid}/steps/{stepId:guid}")]
@@ -129,7 +132,7 @@ public sealed class KnowledgePathsController : CustomBaseController
                 pathId, stepId, request.StepOrder, request.StepCode, request.StepTitle, request.StepType,
                 request.ContentId, request.IsRequired, request.VersionPinPolicy, request.CompletionRule,
                 request.PrerequisiteStepId, request.ConceptNodeId, request.EstimatedDurationMinutes, request.Notes,
-                MapBranch(request.BranchConditions), request.ExpectedVersion),
+                MapBranch(request.BranchConditions), request.ExpectedVersion, MapArrangement(request.Arrangement)),
             cancellationToken));
 
     [HttpPost("api/crm/knowledge/paths/{pathId:guid}/steps/{stepId:guid}/archive")]
@@ -138,6 +141,135 @@ public sealed class KnowledgePathsController : CustomBaseController
         Guid pathId, Guid stepId, [FromQuery] int? expectedVersion, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
             new ArchiveKnowledgePathStepCommand(pathId, stepId, expectedVersion), cancellationToken));
+
+    // ---------------- WP-KP-1 studio: chain binding + claims (sub-resources of a path) ----------------
+
+    [HttpPost("api/crm/knowledge/paths/{pathId:guid}/bind-chain")]
+    [HasPermission(Perms.Manage)]
+    public async Task<IActionResult> BindChain(
+        Guid pathId, [FromBody] BindKnowledgePathChainRequest request, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new BindKnowledgePathChainCommand(
+                pathId, request.ChainTemplateId, request.CountryCode, request.LanguageCode, request.ExpectedVersion),
+            cancellationToken));
+
+    [HttpPost("api/crm/knowledge/paths/{pathId:guid}/claims")]
+    [HasPermission(Perms.Manage)]
+    public async Task<IActionResult> AddClaim(
+        Guid pathId, [FromBody] AddKnowledgePathClaimRequest request, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new AddKnowledgePathClaimCommand(
+                pathId, request.ClaimId, MapArrangement(request.Arrangement), request.ExpectedVersion),
+            cancellationToken));
+
+    [HttpPost("api/crm/knowledge/paths/{pathId:guid}/claims/{claimId:guid}/arrange")]
+    [HasPermission(Perms.Manage)]
+    public async Task<IActionResult> ArrangeClaim(
+        Guid pathId, Guid claimId, [FromBody] ArrangeKnowledgePathClaimRequest request,
+        CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new ArrangeKnowledgePathClaimCommand(pathId, claimId, request.Position, request.ExpectedVersion),
+            cancellationToken));
+
+    [HttpPost("api/crm/knowledge/paths/{pathId:guid}/claims/{claimId:guid}/remove")]
+    [HasPermission(Perms.Manage)]
+    public async Task<IActionResult> RemoveClaim(
+        Guid pathId, Guid claimId, [FromQuery] int? expectedVersion, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new RemoveKnowledgePathClaimCommand(pathId, claimId, expectedVersion), cancellationToken));
+
+    // ---------------- WP-KP-2 review: revision + MLR round (one channel), notes, history ----------------
+
+    [HttpPost("api/crm/knowledge/paths/{pathId:guid}/submit-review")]
+    [HasPermission(Perms.Manage)]
+    public async Task<IActionResult> SubmitReview(Guid pathId, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(new SubmitKnowledgePathReviewCommand(pathId), cancellationToken));
+
+    [HttpPost("api/crm/knowledge/paths/{pathId:guid}/withdraw-review")]
+    [HasPermission(Perms.Manage)]
+    public async Task<IActionResult> WithdrawReview(Guid pathId, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(new WithdrawKnowledgePathReviewCommand(pathId), cancellationToken));
+
+    // A reviewer needs only read here: MOD-0023 decides who may act on the task (its candidates + SoD).
+    [HttpPost("api/crm/knowledge/paths/{pathId:guid}/revisions/{revisionId:guid}/decision")]
+    [HasPermission(Perms.Read)]
+    public async Task<IActionResult> Decide(
+        Guid pathId, Guid revisionId, [FromBody] KnowledgePathDecisionRequest request, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new DecideKnowledgePathRevisionCommand(pathId, revisionId, request.Decision, request.Comment), cancellationToken));
+
+    [HttpPost("api/crm/knowledge/paths/{pathId:guid}/revisions/{revisionId:guid}/notes")]
+    [HasPermission(Perms.Read)]
+    public async Task<IActionResult> AddNote(
+        Guid pathId, Guid revisionId, [FromBody] KnowledgePathNoteRequest request, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new AddKnowledgePathRevisionNoteCommand(pathId, revisionId, request.PageRef, request.BlockRef, request.StepRef,
+                request.X, request.Y, request.Text), cancellationToken));
+
+    [HttpPost("api/crm/knowledge/paths/{pathId:guid}/revisions/{revisionId:guid}/notes/{noteId:guid}/resolve")]
+    [HasPermission(Perms.Read)]
+    public async Task<IActionResult> ResolveNote(Guid pathId, Guid revisionId, Guid noteId, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new ResolveKnowledgePathRevisionNoteCommand(pathId, revisionId, noteId,
+                PermissionClaims.HasPermission(User, Perms.Manage) || PermissionClaims.HasPermission(User, Perms.ManageFallback)),
+            cancellationToken));
+
+    [HttpGet("api/crm/knowledge/paths/{pathId:guid}/revisions")]
+    [HasPermission(Perms.Read)]
+    public async Task<IActionResult> ListRevisions(Guid pathId, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(new ListKnowledgePathRevisionsQuery(pathId), cancellationToken));
+
+    [HttpGet("api/crm/knowledge/paths/{pathId:guid}/revisions/{revisionId:guid}")]
+    [HasPermission(Perms.Read)]
+    public async Task<IActionResult> GetRevision(Guid pathId, Guid revisionId, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(new GetKnowledgePathRevisionQuery(pathId, revisionId), cancellationToken));
+
+    [HttpGet("api/crm/knowledge/paths/{pathId:guid}/review-history")]
+    [HasPermission(Perms.Read)]
+    public async Task<IActionResult> ReviewHistory(Guid pathId, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(new GetKnowledgePathReviewHistoryQuery(pathId), cancellationToken));
+
+    // ---------------- WP-KP-3 render / release / withdrawal / usage ----------------
+
+    [HttpPost("api/crm/knowledge/paths/{pathId:guid}/revisions/{revisionId:guid}/render")]
+    [HasPermission(Perms.Publish)]
+    public async Task<IActionResult> RenderRevision(Guid pathId, Guid revisionId, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(new RenderKnowledgePathRevisionCommand(pathId, revisionId), cancellationToken));
+
+    // The content id is resolved from the revision (never a client input — FU01 non-leakage); another tenant's or an
+    // unrendered revision is 404.
+    [HttpGet("api/crm/knowledge/paths/{pathId:guid}/revisions/{revisionId:guid}/artifact")]
+    [HasPermission(Perms.Read)]
+    public async Task<IActionResult> RevisionArtifact(
+        Guid pathId, Guid revisionId, [FromQuery] string? kind, CancellationToken cancellationToken)
+    {
+        var response = await _mediator.Send(new GetKnowledgePathRevisionArtifactQuery(pathId, revisionId, kind), cancellationToken);
+        return !response.IsSuccessful || response.Data is null
+            ? CreateActionResultInstance(response)
+            : File(response.Data.Content, response.Data.MediaType, response.Data.FileName);
+    }
+
+    [HttpPost("api/crm/knowledge/paths/{pathId:guid}/revisions/{revisionId:guid}/release")]
+    [HasPermission(Perms.Publish)]
+    public async Task<IActionResult> ReleaseRevision(Guid pathId, Guid revisionId, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(new ReleaseKnowledgePathRevisionCommand(pathId, revisionId), cancellationToken));
+
+    [HttpPost("api/crm/knowledge/paths/{pathId:guid}/revisions/{revisionId:guid}/withdraw")]
+    [HasPermission(Perms.Publish)]
+    public async Task<IActionResult> WithdrawRelease(
+        Guid pathId, Guid revisionId, [FromBody] KnowledgePathWithdrawRequest request, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new WithdrawKnowledgePathReleaseCommand(pathId, revisionId, request.Reason), cancellationToken));
+
+    [HttpGet("api/crm/knowledge/paths/{pathId:guid}/usage")]
+    [HasPermission(Perms.Read)]
+    public async Task<IActionResult> Usage(Guid pathId, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(new GetKnowledgePathUsageQuery(pathId), cancellationToken));
+
+    private static KnowledgePathArrangementInput? MapArrangement(KnowledgePathArrangementRequest? arrangement)
+        => arrangement is null
+            ? null
+            : new KnowledgePathArrangementInput(arrangement.ChainStepId, arrangement.BranchCode, arrangement.Position);
 
     private static IReadOnlyList<KnowledgePathBranchConditionInput>? MapBranch(
         IReadOnlyList<KnowledgePathBranchConditionRequest>? conditions)

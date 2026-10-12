@@ -130,7 +130,23 @@
         DtZeroRecords = Localizer["AuditLog.Empty"].Value,
         DtInfo = Localizer["Common.DtInfo"].Value,
         DtInfoEmpty = Localizer["Common.DtInfoEmpty"].Value,
-        DtInfoFiltered = Localizer["Common.DtInfoFiltered"].Value
+        DtInfoFiltered = Localizer["Common.DtInfoFiltered"].Value,
+        // BL-456 — labels for a source's own event name (RequestType). The keys are UserAuditEvents in AuthService;
+        // UserAuditEventLabelGuardTests keeps the three lists (AuthService vocabulary, this payload, both resx) equal.
+        AuditLogEventLabels = new Dictionary<string, string>
+        {
+            ["user_invited"] = Localizer["AuditLog.Event.user_invited"].Value,
+            ["user_created"] = Localizer["AuditLog.Event.user_created"].Value,
+            ["user_deleted"] = Localizer["AuditLog.Event.user_deleted"].Value,
+            ["user_deactivated"] = Localizer["AuditLog.Event.user_deactivated"].Value,
+            ["user_activated"] = Localizer["AuditLog.Event.user_activated"].Value,
+            ["user_password_reset_by_admin"] = Localizer["AuditLog.Event.user_password_reset_by_admin"].Value,
+            ["user_invitation_resent"] = Localizer["AuditLog.Event.user_invitation_resent"].Value,
+            ["user_updated"] = Localizer["AuditLog.Event.user_updated"].Value,
+            ["user_role_assigned"] = Localizer["AuditLog.Event.user_role_assigned"].Value,
+            ["user_role_removed"] = Localizer["AuditLog.Event.user_role_removed"].Value,
+            ["user_account_kind_changed"] = Localizer["AuditLog.Event.user_account_kind_changed"].Value
+        }
     };
 }
 <script id="audit-log-l10n" type="application/json">

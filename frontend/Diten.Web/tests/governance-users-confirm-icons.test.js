@@ -65,20 +65,20 @@ describe("every admin confirmation wears its own action's glyph", () => {
     });
   });
 
-  test("the account-type change keeps its glyph — and now there is only one door to it", () => {
+  test("the account type opens no dialog at all any more — it is a saved field on the edit form", () => {
     /*
-     * ⚠ UPDATED WITH THE DESIGN, NOT LOOSENED (2026-09-23). This used to demand the glyph TWICE, because the
-     * type was changed from two dialogs: the quick view's and one on the edit form. WP-AUTH-USER-KIND-UPDATE-01
-     * made the edit side a saved FIELD — the kind now rides the form's own "Update" — so the edit dialog and
-     * its button are gone. One dialog is left, and it still names the act it performs.
+     * ⚠ UPDATED WITH THE DESIGN, NOT LOOSENED (2026-09-24). 2026-09-23 left ONE door: the quick view's "Change
+     * type" dialog. The owner closed it in the control round ("hızlı görünümde tür değiştirmeye gerek var mı?"):
+     * the quick view is a preview, the kind is saved with the edit form's own "Update". So the id-card glyph has
+     * no dialog left to sit on — zero, and the edit form still asks no dialog either.
      */
     const source = JS_SOURCE();
     expect((source.match(/icon: 'bx-id-card'/g) || []).length,
-      "the quick view's type change lost its glyph").toBe(1);
-    // And the edit form asks no dialog at all: the field is saved with everything else.
+      "a type-change dialog came back").toBe(0);
     expect(read("Views", "Governance", "Users", "_CreateEditOffcanvas.cshtml"),
-      "the edit form grew a type dialog again — it is a saved field now")
-      .not.toContain("btnUserAccountKindChange");
+      "the edit form grew a type dialog again — it is a saved field now").not.toMatch(/ChangeAccountKind/);
+    expect(read("Views", "Governance", "Users", "_DetailsQuickView.cshtml"),
+      "the quick view grew the change control back").not.toMatch(/oc-btn-accountkind/);
   });
 
   test("every glyph named here exists in the icon set (BL-430)", () => {

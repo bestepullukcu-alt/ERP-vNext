@@ -89,13 +89,26 @@ public sealed class WorkingCalendarCodeUniquenessMongoTests : IAsyncLifetime
     [Fact]
     public async Task Two_live_rows_with_the_same_code_are_still_rejected_by_the_index()
     {
-        await Collection.InsertOneAsync(Row(WorkingCalendarStatus.Draft));
+        // BL-482: prove the index exists BEFORE writing the duplicate, and leave nothing behind either way. This
+        // database is emptied only AFTER the next schema build, so an accepted duplicate would fail that build
+        // with E11000 before the emptying could remove it.
+        await UniqueIndexPrecondition.RequireAsync(Collection, "ux_working_calendars_scope_country_year_code");
 
-        var duplicate = Row(WorkingCalendarStatus.Active);
-        var exception = await Record.ExceptionAsync(() => _repository.CreateAsync(duplicate));
+        try
+        {
+            await Collection.InsertOneAsync(Row(WorkingCalendarStatus.Draft));
 
-        var write = Assert.IsType<MongoWriteException>(exception);
-        Assert.Equal(ServerErrorCategory.DuplicateKey, write.WriteError.Category);
+            var duplicate = Row(WorkingCalendarStatus.Active);
+            var exception = await Record.ExceptionAsync(() => _repository.CreateAsync(duplicate));
+
+            var write = Assert.IsType<MongoWriteException>(exception);
+            Assert.Equal(ServerErrorCategory.DuplicateKey, write.WriteError.Category);
+        }
+        finally
+        {
+            // This class's own fixed-name isolated database — nobody else writes here.
+            await Collection.DeleteManyAsync(FilterDefinition<Wc>.Empty);
+        }
     }
 
     [Fact]

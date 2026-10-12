@@ -94,7 +94,9 @@ describe("the object of a confirmation is named once, in a box", () => {
      * MUTATION GUARD: stop passing `entityName` and this goes red.
      */
     const onAction = APP.slice(APP.indexOf("const stillOpen = action.code === 'complete'"), APP.indexOf("const executeTriggerAction"));
-    expect(onAction).toContain("entityName: esc(item.title)");
+    // Handed over as it is: the shared confirm writes the badge as text (WP-SHARED-CONFIRM-XSS-01); escaping the
+    // title here would show "R&amp;D" to the reader.
+    expect(onAction).toContain("entityName: item.title,");
     /*
      * ⚠ READ TO THE NEXT DECLARATION, not a fixed length (WP-PSS-MOD0024-FOLLOWUPS-02 grew this function by a
      * comment and a passthrough field, which pushed `entityName` past a `+ 4000` window — the exact fragility

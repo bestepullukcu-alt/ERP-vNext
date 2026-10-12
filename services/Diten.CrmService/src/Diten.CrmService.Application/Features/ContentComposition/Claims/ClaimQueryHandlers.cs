@@ -16,7 +16,6 @@ public sealed class ListClaimsHandler : IRequestHandler<ListClaimsQuery, Respons
     private readonly ClaimEvidenceReviewer? _evidence;
     private readonly IClaimCoverageSettings? _settings;
     private readonly IKnowledgeContentRepository? _contents;
-    private readonly IContentSetRepository? _sets;
     private readonly IKnowledgePathRepository? _paths;
     private readonly IContentEngagementJourneyRepository? _journeys;
 
@@ -24,13 +23,12 @@ public sealed class ListClaimsHandler : IRequestHandler<ListClaimsQuery, Respons
         ITenantContext tenant, IClaimRepository claims, IClaimCountryVersionRepository? countryVersions = null,
         ClaimReviewReconciler? reconciler = null, ClaimEvidenceReviewer? evidence = null,
         IClaimCoverageSettings? settings = null, IKnowledgeContentRepository? contents = null,
-        IContentSetRepository? sets = null, IKnowledgePathRepository? paths = null,
+        IKnowledgePathRepository? paths = null,
         IContentEngagementJourneyRepository? journeys = null)
     {
         _evidence = evidence;
         _settings = settings;
         _contents = contents;
-        _sets = sets;
         _paths = paths;
         _journeys = journeys;
         _tenant = tenant;
@@ -129,11 +127,11 @@ public sealed class ListClaimsHandler : IRequestHandler<ListClaimsQuery, Respons
             _settings?.ExpiringWindowDays ?? ClaimCoverageDefaults.ExpiringWindowDays);
 
         IReadOnlyDictionary<string, int>? usage = null;
-        if (_contents is not null && _sets is not null && _paths is not null && _journeys is not null)
+        if (_contents is not null && _paths is not null && _journeys is not null)
         {
             try
             {
-                usage = await ClaimListCounts.UsageAsync(tenantId, allClaims, _contents, _sets, _paths, _journeys, ct);
+                usage = await ClaimListCounts.UsageAsync(tenantId, allClaims, _contents, _paths, _journeys, ct);
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {

@@ -1,0 +1,39 @@
+[00:16:08 INF] User profile is available. Using '/Users/natig/.aspnet/DataProtection-Keys' as key repository; keys will not be encrypted at rest.
+[00:16:09 WRN] Shipment outbox transport is not registered. Durable events remain pending; integration is held.
+[00:16:09 INF] Now listening on: http://127.0.0.1:5061
+[00:16:09 INF] Application started. Press Ctrl+C to shut down.
+[00:16:09 INF] Hosting environment: Development
+[00:16:09 INF] Content root path: /private/tmp/claude-501/-Users-natig-Projects-ERP-vNext-recovery/5f00d263-158a-47ce-a153-fb154d05f9b9/scratchpad/q236/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api
+[00:16:09 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5061/health - null null
+[00:16:09 INF] Executing endpoint 'HTTP: GET /health'
+[00:16:09 INF] Setting HTTP status code 200.
+[00:16:09 INF] Writing value of type '<>f__AnonymousType2`4' as Json.
+[00:16:09 INF] Executed endpoint 'HTTP: GET /health'
+[00:16:09 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5061/health - 200 null application/json; charset=utf-8 54.677ms
+[00:16:09 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/shipments - null null
+[00:16:09 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/shipments - 400 null application/json; charset=utf-8 6.9986ms
+[00:16:09 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/shipments - null null
+[00:16:09 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/shipments - 401 null application/json; charset=utf-8 4.0237ms
+[00:16:09 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/claims - null null
+[00:16:09 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/claims - 400 null application/json; charset=utf-8 0.3ms
+[00:16:09 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/claims - null null
+[00:16:09 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/claims - 401 null application/json; charset=utf-8 0.371ms
+[00:16:09 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/carriers - null null
+[00:16:09 INF] Carrier request rejected 401 INVALID_REQUEST 5344bb91-e760-42d3-97d0-2de8fdd8f084
+[00:16:09 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/carriers - 401 null application/json; charset=utf-8 5.1418ms
+[00:16:09 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/loads - null null
+[00:16:09 INF] Load request rejected 401 INVALID_REQUEST 5344bb91-e760-42d3-97d0-2de8fdd8f084
+[00:16:09 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/loads - 401 null application/json; charset=utf-8 6.2722ms
+[00:16:09 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/returns - null null
+[00:16:09 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/returns - 401 null application/json; charset=utf-8 0.3153ms
+[00:16:09 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5061/api/supply-chain/capacity-plans/5344bb91-e760-42d3-97d0-2de8fdd8f084 - null null
+[00:16:09 INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+[00:16:09 INF] AuthenticationScheme: Bearer was challenged.
+[00:16:09 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5061/api/supply-chain/capacity-plans/5344bb91-e760-42d3-97d0-2de8fdd8f084 - 401 0 null 4.2155ms
+[00:16:09 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5061/api/supply-chain/sandop-plans/5344bb91-e760-42d3-97d0-2de8fdd8f084 - null null
+[00:16:09 INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+[00:16:09 INF] AuthenticationScheme: Bearer was challenged.
+[00:16:09 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5061/api/supply-chain/sandop-plans/5344bb91-e760-42d3-97d0-2de8fdd8f084 - 401 0 null 1.9005ms
+[00:16:39 INF] Application is shutting down...

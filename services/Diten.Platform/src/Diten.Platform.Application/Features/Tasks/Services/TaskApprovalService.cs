@@ -1,4 +1,5 @@
 using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Features.Workflow;
 using Diten.Platform.Application.Features.Workflow.Commands;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Tasks;
@@ -253,8 +254,9 @@ public sealed class TaskApprovalService : ITaskApprovalService
                         or WorkflowInstanceStatus.Active
                         or WorkflowInstanceStatus.Escalated
                         or WorkflowInstanceStatus.TimedOut,
-                    IsApproved: instance.Status is WorkflowInstanceStatus.Approved,
-                    IsRejected: instance.Status is WorkflowInstanceStatus.Rejected));
+                    // B1 — MOD-0023 closes an approved instance as Completed; Approved alone missed every real one.
+                    IsApproved: WorkflowInstanceOutcome.IsApproved(instance.Status),
+                    IsRejected: WorkflowInstanceOutcome.IsRejected(instance.Status)));
     }
 
     /// <summary>MOD-0024's object reference in the workflow engine's vocabulary.</summary>
