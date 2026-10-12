@@ -8398,6 +8398,34 @@ Gelecek regresyon riski: 🟡 (gerçek açıksa canlıda çift sayaç).
 
 ---
 
+### BL-624
+
+**Eski parola bağlantısı dizini (`ix_users_password_reset_token_hash`, seyrek) artık oluşturulmuyor ama veritabanlarında duruyor**
+
+DURUM: AÇIK · SAHİP: CT (Auth) · BULAN: WP-USERS-ROLES-CLOSE-FIX1 FIX3 (2026-10-12) · KAYIT: 2026-10-12 · 🟢
+
+FIX3 yerine kısmi `ix_users_password_reset_token_hash_v2` dizinini koydu ($type string; aramanın süzgeci aynı koşulu taşıyor). Eski seyrek dizin bilerek SİLİNMEDİ: aynı adla farklı seçenekli dizin çakışırdı ve canlı veritabanında dizin silmek sahip onayı ister.
+
+Yapılacak: v2 her ortama ulaştıktan sonra eski dizinin kontrollü kaldırılması. Küçük; canlı için sahip onayı gerekli.
+
+Gelecek regresyon riski: 🟢 eski dizin yalnız yazma maliyeti ve disk.
+
+---
+
+### BL-623
+
+**Platform giriş kapısında hesap kilidi yok (yalnız hız sınırı var)**
+
+DURUM: AÇIK · SAHİP: CT (Auth) · BULAN: WP-USERS-ROLES-CLOSE-FIX1 FIX3 ölçümü (2026-10-12) · KAYIT: 2026-10-12 · 🟡
+
+Ölçüm (`68c62688d`): kiracı kapısında N yanlış denemeden sonra hesap kilitleniyor. Platform kapısında (`api/platform-auth/login`, platform yöneticileri) kilit eskiden beri yok. FIX3 ile iki kapıya da istemci başına hız sınırı geldi (100 / 15 dk; istemci ayırt edilemiyorsa kapı başına dakikada 300), ama hesap başına kilit yok.
+
+Yapılacak: platform hesaplarına kiracı kapısıyla aynı kural. N yanlış denemede süreli kilit; kilitliyken her parolaya aynı cevap; deneme sayılır, kilit uzamaz. SAP / Oracle'da yönetici hesapları da kilit politikasına tabidir, çoğunlukla daha sıkı. Orta iş.
+
+Gelecek regresyon riski: 🟡 en yetkili hesaplarda kaba kuvvet yalnız hız sınırıyla yavaşlatılıyor.
+
+---
+
 ### BL-622
 
 **Giriş ve parola bağlantısı hız sınırı sayacı süreç belleğinde: yeniden başlatmada sıfırlanıyor, birden çok kopyada sınır kopya sayısıyla çarpılıyor**
