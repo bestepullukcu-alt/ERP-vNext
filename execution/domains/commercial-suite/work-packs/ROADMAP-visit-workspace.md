@@ -35,7 +35,7 @@
 | Planlanan ziyaret, takvim okuması, rapor (sonuç / gönder / düzelt, 60 dk) | **var** | genişler (4K + W3 / W4) |
 | E-posta / bildirim | **yok** (yalnız Auth SMTP OTP) | **yeni yetenek** (W5) — Platform düzeyinde olmalı |
 | Onay akışı | Workflow (MOD-0023) Web'de var, sipariş onayı için kullanılabilir mi doğrulanacak | W6 kararı |
-| Dosya / fotoğraf saklama | MOD-0262 ikili depo (WIP, park edilmiş dal) | **karar**: fotoğraf + imza nerede saklanacak (W3) |
+| Dosya / fotoğraf saklama | MOD-0262-FU01 ikili depo **main'de** (2026-10-12 CT kontrolü; SCMM-16A/B tüketiyor) | **karar**: fotoğraf + imza nerede saklanacak (W3) |
 | Farmakovijilans | `PvgService` **var** | advers olay yönlendirmesi oraya (W5) |
 | Sipariş / satış | **servis yok** | ön sipariş modülü **mimari karar** (W6) |
 | Endikasyon × hasta profili | MDM ürününde yalnız referans; endikasyon master **yok** | **yeni veri** (W4) |
@@ -49,7 +49,7 @@
 |---|---|---|
 | K-W1 | Ertelemenin sonucu: **A** yeni tarihte planlı ziyaret · **B** yalnız not — ✅ **KARAR (2026-10-09): A** — eski ziyaret "ertelendi" kapanır, yeni günde yeni planlı ziyaret oluşur, sıklıkta sayılır | W2 |
 | K-W2 | Kanıt: fotoğraf zorunlu mu, konum zorunlu mu; ek kanıtlar (imza / QR / süre / anti-fraud) hangileri — ✅ **KARAR (2026-10-09): kiracı ayarı**, varsayılan konum zorunlu + fotoğraf isteğe bağlı (ek kanıt seçenekleri W3 öncesi netleşir) | W3 |
-| K-W3 | Fotoğraf + imza saklama yeri (MOD-0262 ikili depo mu, başka) — ⏸ **ERTELENDİ (2026-10-09)**: W3 öncesi yeniden sorulacak; W1 / W2 etkilenmez | W3 |
+| K-W3 | Fotoğraf + imza saklama yeri (MOD-0262 ikili depo mu, başka) — ✅ **KARAR (2026-10-12): MOD-0262 ikili depo** (hazır değilse yalnız konum + zaman damgası). CT kontrolü: MOD-0262-FU01 main'de, SCMM-16A canlı E4 8/8, CRM `HttpContentArtifactStore` deseni var → **(a) geçerli**. Yeni kapsam `CrmVisitEvidence` + izin konusu W3 paketinde | W3 |
 | K-W4 | Bağlılık modeli: pay % · aşama · birleşik | W4 |
 | K-W5 | Hekim tipolojisi: benimseme · iletişim stili · ikisi | W4 |
 | K-W6 | Endikasyon × hasta profili ve rakip verisinin sahibi (MDM mi CRM mi) ve kim girer | W4 |
