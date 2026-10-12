@@ -5,7 +5,7 @@ info:
     MOD-0174 Lot/Batch/Serial Tracking — Wave-0 frozen (v1), additive v1.1.
     Lot uniqueness = surrogate LotId + business key Tenant+SKU(skuId+skuLevel)+LotNumber (DEC-INV-14 as changed by the owner 2026-10-05, K-G; v1.0.0 said Tenant+Item+LotNumber — behaviour change B-1).
     INVENTORY movement lotId/serialIds ile buna bağlanır. Tenant+LegalEntity scoped.
-  version: 1.3.0
+  version: 1.4.0
   x-status: FROZEN
   x-owner: MOD-0174
   x-owner-service: Diten.InventoryService (MOD-0174, in-process with MOD-0173)
@@ -15,6 +15,7 @@ info:
     - "1.1.0 behaviour changes — B-1: business key Tenant+SKU+LotNumber (the same lotNumber may exist twice under one itemId; LOT_ALREADY_EXISTS is per SKU). B-2: createLot without skuId+skuLevel → 422 LOT_SKU_REQUIRED (CT-D2). B-3: Expired is set automatically when expiryDate < today and can never be set or left by a caller."
     - "1.2.0 — additive (WP-0174-P4, CT decision K4-1 2026-10-06): new operation getManualLotMigrationStatus (GET /migration/status, trace.lots.read) answering whether the tenant's typed-lot entry is closed (manualLotEntryClosed, completedAt only when closed) — the Stock Ledger form and the W-UI-02 badges decide with the reader's own trace.lots.read. Every 1.0.0 / 1.1.0 element unchanged; contractVersion stays v1."
     - "1.3.0 — additive (WP-0174-ITEM; MOD-0173 PM1 CT acceptance O-PM1-1 / O-PM1-3, PRODUCT-MASTER 1.1 §8.5 Q-1): SkuLevel gains Item (a material item that is its own SKU, skuId == itemId, never serial-tracked) — the same four values as INVENTORY-BUNDLE SkuLevel; createLot x-error-codes gain PRODUCT_MASTER_DATA_INCOMPLETE (422, PRODUCT-MASTER does not state whether the SKU is lot-controlled — was 503 PRODUCT_MASTER_UNAVAILABLE under ASSUMPTION-0173-PM1-03) and SKU_LEVEL_NOT_STOCKABLE (422, PRODUCT-MASTER publishes the SKU stockable: false — owner decision 2026-10-09), both under the existing Unprocessable response. No path, parameter, property, type, required list or status code changed; contractVersion stays v1."
+    - "1.4.0 — additive (WP-0176-F2, MOD-0176 KF-D, CT-F6 / CT-F7): createLot and updateLot accept the optional dateOverride {overrideId, signatureId} — an expiry / retest date that differs from the suggestion (manufacturingDate + the SKU's shelfLifeDays / retestDays, PRODUCT-MASTER getSku) needs an override prepared with FEFO-BUNDLE createDateOverride (+ a MOD-0022 signature when the company mode is ReasonAndSignature); on updateLot only for a Draft lot (CT-Q17 for non-Draft unchanged). New x-error-codes on both: LOT_DATE_OVERRIDE_REQUIRED (422), LOT_DATE_OVERRIDE_SIGNATURE_REQUIRED (400), LOT_DATE_OVERRIDE_SIGNATURE_MISMATCH (409), LOT_DATE_OVERRIDE_MISMATCH (409), EXPIRY_DATE_OVERRIDE_NOT_USABLE (409); updateLot also PRODUCT_MASTER_UNAVAILABLE + response 503 (a Draft date change reads getSku). LotRef / LotDetail gain the optional suggestedExpiryDate, suggestedRetestDate and expiryOverride (reason + signature REFERENCE). LotChangeEntry.action gains ExpiryOverridden. A request without dateOverride keeps its idempotency fingerprint. No existing path, parameter, property, type, required list, status code or enum value changed; contractVersion stays v1."
   x-decisions: [DEC-INV-14, 18]
 servers: [{ url: /api/trace }]
 security: [{ bearerAuth: [] }]
@@ -37,7 +38,7 @@ paths:
       operationId: updateLot
       summary: "v1.1 — edit lot attributes (K-C). Draft: trace.lots.update. Non-Draft (Released / Blocked / Expired, CT-D8): trace.lots.update-released + reason ≥ 10. lotNumber / itemId / skuId / skuLevel / status are immutable here."
       x-permission: "trace.lots.update (Draft) | trace.lots.update-released (non-Draft)"
-      x-error-codes: [INVALID_REQUEST, LOT_KEY_IMMUTABLE, REASON_REQUIRED, LOT_DATES_INVALID, UNKNOWN_LOT, LOT_CONFLICT, LOT_NO_CHANGES]
+      x-error-codes: [INVALID_REQUEST, LOT_KEY_IMMUTABLE, REASON_REQUIRED, LOT_DATES_INVALID, UNKNOWN_LOT, LOT_CONFLICT, LOT_NO_CHANGES, LOT_DATE_OVERRIDE_REQUIRED, LOT_DATE_OVERRIDE_SIGNATURE_REQUIRED, LOT_DATE_OVERRIDE_SIGNATURE_MISMATCH, LOT_DATE_OVERRIDE_MISMATCH, EXPIRY_DATE_OVERRIDE_NOT_USABLE, PRODUCT_MASTER_UNAVAILABLE]
       parameters:
         - { name: lotId, in: path, required: true, schema: { type: string } }
         - { $ref: '#/components/parameters/IfMatch' }
@@ -54,6 +55,7 @@ paths:
         '404': { $ref: '#/components/responses/UnknownLot' }
         '409': { $ref: '#/components/responses/LotVersionConflict' }
         '422': { $ref: '#/components/responses/Unprocessable' }
+        '503': { $ref: '#/components/responses/ProductMasterUnavailable' }
   /lots:
     get:
       operationId: listLots
@@ -79,7 +81,7 @@ paths:
       operationId: createLot
       summary: Lot oluştur (GR sırasında 0142 çağırır)
       x-permission: trace.lots.create
-      x-error-codes: [INVALID_REQUEST, LOT_NUMBER_INVALID, LOT_DATES_INVALID, LOT_SKU_REQUIRED, LOT_SKU_MISMATCH, UNKNOWN_ITEM, PRODUCT_NOT_LOT_CONTROLLED, LOT_ALREADY_EXISTS, IDEMPOTENCY_KEY_REUSED, PRODUCT_MASTER_UNAVAILABLE, PRODUCT_MASTER_DATA_INCOMPLETE, SKU_LEVEL_NOT_STOCKABLE]
+      x-error-codes: [INVALID_REQUEST, LOT_NUMBER_INVALID, LOT_DATES_INVALID, LOT_SKU_REQUIRED, LOT_SKU_MISMATCH, UNKNOWN_ITEM, PRODUCT_NOT_LOT_CONTROLLED, LOT_ALREADY_EXISTS, IDEMPOTENCY_KEY_REUSED, PRODUCT_MASTER_UNAVAILABLE, PRODUCT_MASTER_DATA_INCOMPLETE, SKU_LEVEL_NOT_STOCKABLE, LOT_DATE_OVERRIDE_REQUIRED, LOT_DATE_OVERRIDE_SIGNATURE_REQUIRED, LOT_DATE_OVERRIDE_SIGNATURE_MISMATCH, LOT_DATE_OVERRIDE_MISMATCH, EXPIRY_DATE_OVERRIDE_NOT_USABLE]
       parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
       requestBody:
         required: true
@@ -306,6 +308,9 @@ components:
         expiryState: { type: string, enum: [None, Ok, ExpiringSoon, Expired], description: "v1.1 — computed, ExpiringSoon = within 90 days" }
         retestDue: { type: boolean, description: "v1.1 — retestDate < today (K-F)" }
         trackingMode: { type: string, enum: [Lot, LotAndSerial], description: v1.1 }
+        suggestedExpiryDate: { type: string, format: date-time, description: "1.4.0 (MOD-0176 KF-D) — manufacturingDate + the SKU's shelfLifeDays at creation; absent = no suggestion" }
+        suggestedRetestDate: { type: string, format: date-time, description: "1.4.0 — manufacturingDate + the SKU's retestDays; absent = no suggestion" }
+        expiryOverride: { $ref: '#/components/schemas/LotExpiryOverride' }
     LotStockSummary:
       type: object
       description: "v1.1 (K-A) — from the ledger per-lot projection, never summed per request; base UoM; all stock statuses; caller's company"
@@ -340,6 +345,9 @@ components:
         trackingMode: { type: string, enum: [Lot, LotAndSerial] }
         source: { $ref: '#/components/schemas/LotSource' }
         serialCount: { type: integer }
+        suggestedExpiryDate: { type: string, format: date-time, description: "1.4.0 — as LotRef" }
+        suggestedRetestDate: { type: string, format: date-time, description: "1.4.0 — as LotRef" }
+        expiryOverride: { $ref: '#/components/schemas/LotExpiryOverride' }
     LotSource:
       type: object
       properties:
@@ -352,7 +360,7 @@ components:
       properties:
         entryId: { type: string }
         lotId: { type: string }
-        action: { type: string, enum: [Created, Updated, StatusChanged, Linked, Migrated, SystemExpired] }
+        action: { type: string, enum: [Created, Updated, StatusChanged, Linked, Migrated, SystemExpired, ExpiryOverridden] }
         field: { type: string, nullable: true }
         oldValue: { type: string, nullable: true }
         newValue: { type: string, nullable: true }
@@ -410,6 +418,7 @@ components:
         skuId: { type: string, format: uuid, description: "v1.1 — required by the server rule B-2 (422 LOT_SKU_REQUIRED when absent)" }
         skuLevel: { $ref: '#/components/schemas/SkuLevel' }
         coaReference: { type: string, nullable: true, description: v1.1 }
+        dateOverride: { $ref: '#/components/schemas/LotDateOverrideRef' }
     UpdateLotRequest:
       type: object
       description: "v1.1 — absent member = unchanged; null = cleared"
@@ -422,6 +431,26 @@ components:
         countryOfOrigin: { type: string, nullable: true }
         coaReference: { type: string, nullable: true }
         reason: { type: string, description: "≥ 10 characters for a non-Draft lot" }
+        dateOverride: { $ref: '#/components/schemas/LotDateOverrideRef' }
+    LotDateOverrideRef:
+      type: object
+      description: "1.4.0 (MOD-0176 KF-D) — the override prepared with FEFO-BUNDLE createDateOverride for dates that differ from the suggestion, and the MOD-0022 signature id when the company mode is ReasonAndSignature"
+      required: [overrideId]
+      properties:
+        overrideId: { type: string, format: uuid }
+        signatureId: { type: string }
+    LotExpiryOverride:
+      type: object
+      description: "1.4.0 (MOD-0176 KF-D) — the override the lot dates were set with; the signature is a MOD-0022 reference only"
+      required: [overrideId, reason, by, atUtc]
+      properties:
+        overrideId: { type: string, format: uuid }
+        reason: { type: string }
+        signatureId: { type: string }
+        suggestedExpiry: { type: string, format: date-time }
+        suggestedRetest: { type: string, format: date-time }
+        by: { type: string, format: uuid }
+        atUtc: { type: string, format: date-time }
     ChangeLotStatusRequest:
       type: object
       required: [idempotencyKey, toStatus, reason]
