@@ -431,6 +431,45 @@ const UNMARKED_PANELS = {
   "PPM/Shared/_CreateEditOffcanvas.cshtml": "PPM, not touched by this WP"
 };
 
+/*
+ * WP-LANE-UX-GUARDS-01 (CT decision, ONE-TIME) — screens that arrived with the main-sync of 2026-10-12, owned by other
+ * teams: XMC-001, their views are not ours to mark. Named with the owner and the reason; the mark is the owner's work
+ * and is sent to them. This is not "the list grows": the latch test below pins every list's size, so the next unmarked
+ * panel is red again, whoever adds it and wherever.
+ */
+const SCE = "SCE / MVP-6 (gmg-10)";
+const CRM = "CRM";
+const MAIN_SYNC_WHY = "main-sync (2026-10-12) ile geldi; sahibi başka ekip; işaret sahibin işi";
+const MAIN_SYNC_UNMARKED = {
+  "CRM/CyclePeriods/_PeriodPanel.cshtml": { owner: CRM, why: MAIN_SYNC_WHY },
+  "CRM/KnowledgePaths/Workspace.cshtml": { owner: CRM, why: MAIN_SYNC_WHY },
+  "CRM/VisitPlanning/_DoctorPanel.cshtml": { owner: CRM, why: MAIN_SYNC_WHY },
+  "CRM/VisitPlanning/_NewPlanDrawer.cshtml": { owner: CRM, why: MAIN_SYNC_WHY },
+  "SupplyChain/Carriers/_ChangeStatusOffcanvas.cshtml": { owner: SCE, why: MAIN_SYNC_WHY },
+  "SupplyChain/Carriers/_CreateEditOffcanvas.cshtml": { owner: SCE, why: MAIN_SYNC_WHY },
+  "SupplyChain/Claims/Index.cshtml": { owner: SCE, why: MAIN_SYNC_WHY },
+  "SupplyChain/Claims/_CreateEditOffcanvas.cshtml": { owner: SCE, why: MAIN_SYNC_WHY },
+  "SupplyChain/Loads/_CreateEditOffcanvas.cshtml": { owner: SCE, why: MAIN_SYNC_WHY },
+  "SupplyChain/Returns/Index.cshtml": { owner: SCE, why: MAIN_SYNC_WHY },
+  "SupplyChain/Returns/_CreateEditOffcanvas.cshtml": { owner: SCE, why: MAIN_SYNC_WHY },
+  "SupplyChain/Shipments/_PodOffcanvas.cshtml": { owner: SCE, why: MAIN_SYNC_WHY },
+  "SupplyChain/Shipments/_TransitionOffcanvas.cshtml": { owner: SCE, why: MAIN_SYNC_WHY }
+};
+// The same main-sync screens: a consequential label that is not chord-marked — "chord olmalı, sahibine iletilecek".
+// Keyed by file + label (no line number, so an unrelated edit above the button does not move the key).
+const MAIN_SYNC_CONSEQUENTIAL = {
+  'SupplyChain/Carriers/_ChangeStatusOffcanvas.cshtml @Localizer["Confirm Status Change"]': { owner: SCE, why: `${MAIN_SYNC_WHY}; chord olmalı, sahibine iletilecek` },
+  'SupplyChain/Claims/Index.cshtml @Localizer["Submit Transition"]': { owner: SCE, why: `${MAIN_SYNC_WHY}; chord olmalı, sahibine iletilecek` },
+  'SupplyChain/Returns/Index.cshtml @Localizer["Submit Transition"]': { owner: SCE, why: `${MAIN_SYNC_WHY}; chord olmalı, sahibine iletilecek` },
+  'SupplyChain/Returns/_CreateEditOffcanvas.cshtml @Localizer["Create Return"]': { owner: SCE, why: `${MAIN_SYNC_WHY}; chord olmalı, sahibine iletilecek` },
+  'SupplyChain/Shipments/_PodOffcanvas.cshtml @Localizer["Confirm Action"]': { owner: SCE, why: `${MAIN_SYNC_WHY}; chord olmalı, sahibine iletilecek` },
+  'SupplyChain/Shipments/_TransitionOffcanvas.cshtml @Localizer["Confirm Action"]': { owner: SCE, why: `${MAIN_SYNC_WHY}; chord olmalı, sahibine iletilecek` }
+};
+// The latch: every list's size, pinned. A row added to any of them — named or not — is red here.
+const LIST_SIZES = { UNMARKED_PANELS: 5, NOT_CONSEQUENTIAL: 2, MAIN_SYNC_UNMARKED: 13, MAIN_SYNC_CONSEQUENTIAL: 6 };
+// "file:line label </button>" → "file label"
+const findingKey = (finding) => finding.replace(/^([^:]+):\d+ /, "$1 ").replace(/\s*<\/button>\s*$/, "").trim();
+
 // A FROZEN exception must really be on the FROZEN _Layout: the view itself, or EVERY view that renders the partial.
 const FROZEN_EXCEPTIONS = [
   "DeliveryExecutionManagement/Initiatives.cshtml",
@@ -523,7 +562,16 @@ describe("BL-586 / UX-COMMON-FIX2: every side panel with fields marks its primar
 
   test("R4: a panel with no explicit enter / chord mark is listed with its reason; the list only shrinks", () => {
     const unmarked = [...new Set(withFields.filter((b) => !marked(b.body)).map((b) => b.file))].sort();
-    expect(unmarked).toEqual(Object.keys(UNMARKED_PANELS).sort());
+    expect(unmarked).toEqual([...Object.keys(UNMARKED_PANELS), ...Object.keys(MAIN_SYNC_UNMARKED)].sort());
+  });
+
+  test("WP-LANE-UX-GUARDS-01: the latch — no exception list grows, and every main-sync row names its owner and reason", () => {
+    const lists = { UNMARKED_PANELS, NOT_CONSEQUENTIAL, MAIN_SYNC_UNMARKED, MAIN_SYNC_CONSEQUENTIAL };
+    Object.entries(LIST_SIZES).forEach(([name, size]) => expect(Object.keys(lists[name]).length, name).toBe(size));
+    const unnamed = Object.entries({ ...MAIN_SYNC_UNMARKED, ...MAIN_SYNC_CONSEQUENTIAL })
+      .filter(([, row]) => ![SCE, CRM].includes(row && row.owner) || !/^main-sync \(2026-10-12\)/.test((row && row.why) || ""))
+      .map(([key]) => key);
+    expect(unnamed, "a main-sync row without its owner or reason").toEqual([]);
   });
 
   test("every mark is one of the two values", () => {
@@ -549,7 +597,9 @@ describe("BL-586 / UX-COMMON-FIX2: every side panel with fields marks its primar
 
   test("a primary whose label is consequential is chord-marked, never enter (or named as an exception)", () => {
     const findings = withFields.filter((b) => !NOT_CONSEQUENTIAL[b.file]).flatMap(consequentialUnchorded);
-    expect(findings).toEqual([]);
+    expect(findings.filter((finding) => !MAIN_SYNC_CONSEQUENTIAL[findingKey(finding)])).toEqual([]);
+    // …and a main-sync row its owner fixed leaves the list (the list only shrinks).
+    expect(Object.keys(MAIN_SYNC_CONSEQUENTIAL).filter((key) => !findings.map(findingKey).includes(key))).toEqual([]);
   });
 
   test("positive control: the word check flags an enter-marked consequential label (every listed word)", () => {
@@ -583,6 +633,16 @@ describe("BL-586 / UX-COMMON-FIX2: every side panel with fields marks its primar
       ["Governance/Users/_CreateEditOffcanvas.cshtml", "btnSaveUser"],
       ["Platform/Administrators/_CreateEditOffcanvas.cshtml", "btnSaveAdministrator"]
     ].forEach(([file, id]) => expect(chord(file, id), `${file} #${id}`).toBe(true));
+  });
+
+  test("WP-LANE-UX-GUARDS-01: the three Stock behaviour panels save with a bare Enter (the save always asks to confirm)", () => {
+    ["FinishedGoods", "Gskus", "Lskus"].forEach((screen) => {
+      const body = withFields.find((b) => b.file === `MasterDataManagement/${screen}/_StockBehaviourOffcanvas.cshtml`).body;
+      expect(body, screen).toMatch(/id="btnSaveStockBehaviour"[^>]*data-dt-primary="enter"/);
+    });
+    // Why enter, not chord: add-only lists cannot be undone, but every save passes through this confirmation first.
+    const script = fs.readFileSync(path.resolve(__dirname, "..", "wwwroot/assets/js/MasterDataManagement/StockBehaviour/stock-behaviour.js"), "utf8");
+    expect(script).toMatch(/window\.showConfirm\(words\.SaveConfirmation, run,/);
   });
 
   test("FIX2, CT decision: Gskus saves with a bare Enter (it asks for confirmation in every mode)", () => {

@@ -231,4 +231,22 @@
   <data name="Help.USERROLES.Step4" xml:space="preserve">
     <value>Click “Remove” on an assigned role, or the x beside it under “Active Roles”, and confirm to take it away.</value>
   </data>
+  <data name="Help.ITEMS.Purpose" xml:space="preserve">
+    <value>This page lists the items (materials kept in stock: active ingredients, excipients, packaging, intermediates) with their identity, material type and stock behaviour. The master data team creates them here and takes each one through its statuses: “Draft”, “Awaiting approval”, “Active”, “Deactivated”, “Retired”.</value>
+  </data>
+  <data name="Help.ITEMS.Step1" xml:space="preserve">
+    <value>Narrow the list with the search box, or click “Filter”, choose “Status” or “Material type” and click “Apply”.</value>
+  </data>
+  <data name="Help.ITEMS.Step2" xml:space="preserve">
+    <value>Click “Add item”, fill in the identity and the stock behaviour, then click “Save”: the item is saved as “Draft”. Pressing Enter in a field saves the form too.</value>
+  </data>
+  <data name="Help.ITEMS.Step3" xml:space="preserve">
+    <value>Open a draft's “Actions” and choose “Send for approval”: the item stays “Awaiting approval” until it is approved, and only then becomes “Active”.</value>
+  </data>
+  <data name="Help.ITEMS.Step4" xml:space="preserve">
+    <value>“Deactivate” takes an active item out of new stock entries; “Request reactivation” goes through the same approval again; “Retire” is final, is allowed only for a deactivated item with zero stock, and the code is never reused. Each of them asks for a reason.</value>
+  </data>
+  <data name="Help.ITEMS.Step5" xml:space="preserve">
+    <value>On an active item only the name and the description change freely; a filled stock field needs an approved correction. Press “?” at any time to open this help with the page's shortcuts.</value>
+  </data>
 </root>

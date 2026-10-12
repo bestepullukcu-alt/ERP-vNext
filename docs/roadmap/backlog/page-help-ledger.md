@@ -2,7 +2,9 @@
 
 Kural: `.antigravity/rules/page-help-and-keyboard.md` (UXH-001) · Ölçen test: `frontend/Diten.Web/tests/page-help-ledger.test.js`
 
-**Tavan (yalnız azalır): kiracı 236 · platform 18 · frozen 99**
+**Tavan (yalnız azalır): kiracı 246 · platform 18 · frozen 99**
+
+- Tavan artışı (CT kararı): kiracı 236 → 246 — WP-LANE-UX-GUARDS-01, bir kerelik: main-sync (2026-10-12) ile gelen 11 Tedarik Zinciri / CRM sayfası (sahipleri satırlarında, metin sahiplerinin işi) eklendi; CRM'in kaldırdığı CONTENTSCOPES (WP-SB-1R) çıktı. Kural gevşemedi: bundan sonraki her yeni satır yine kırmızı.
 
 Tavan bu satırdadır, testte değil. UX-COMMON-FIX2: test satır sayısının bu sayılara **EŞİT** olduğunu ölçer; bir satır
 eklemek ya da silmek bu başlığı da düzenletir, böylece her değişiklik PR farkında başlık satırıyla görünür. Sayının bir
@@ -24,7 +26,7 @@ satır eklemek yasaktır — yeni bir sayfa metniyle birlikte gelir.
 
 Neden `roadmap/`: belge henüz yazılmamış metinleri anlatıyor (`docs-organization.md` §1, soru 3).
 
-## Kiracı sayfaları (236)
+## Kiracı sayfaları (246)
 
 | kod | menüdeki ad (en, `Nav.Page`) ya da manifest |
 |---|---|
@@ -53,6 +55,7 @@ Neden `roadmap/`: belge henüz yazılmamış metinleri anlatıyor (`docs-organiz
 | CANDIDATEDISPUTES | Candidate Disputes |
 | CANDIDATEPIPELINE | Candidate Pipeline |
 | CANDIDATEPROFILES | Candidate Profiles |
+| CARRIERS | Carriers — main-sync (2026-10-12) ile geldi; sahibi SCE / MVP-6 (gmg-10); yardım metni yok, main'den geldi (sahibine iletilecek) |
 | CLAIMS | Claims |
 | COMPENSATIONBENEFITS | Compensation &amp; Benefits |
 | COMPETENCYSKILLS | Competency &amp; Skills |
@@ -62,7 +65,6 @@ Neden `roadmap/`: belge henüz yazılmamış metinleri anlatıyor (`docs-organiz
 | CONTACT | Contact |
 | CONTACTS | Contacts |
 | CONTENTENGAGEMENTJOURNEYS | Content Engagement Journeys |
-| CONTENTSCOPES | Content Scopes |
 | CONTENTSETS | Content Sets |
 | CONTRACTS | Contracting &amp; Clause Library |
 | CONTROLLEDDOCUMENTS | Controlled Documents |
@@ -123,6 +125,8 @@ Neden `roadmap/`: belge henüz yazılmamış metinleri anlatıyor (`docs-organiz
 | KNOWLEDGESUBJECT | Knowledge Subject |
 | LEARNINGTRAINING | Learning &amp; Training |
 | LEGALENTITIES | Legal Entities |
+| LEGALPROFILES | Legal Profiles — main-sync (2026-10-12) ile geldi; sahibi CRM; yardım metni yok, main'den geldi (sahibine iletilecek) |
+| LOADS | Loads — main-sync (2026-10-12) ile geldi; sahibi SCE / MVP-6 (gmg-10); yardım metni yok, main'den geldi (sahibine iletilecek) |
 | LSKUS | Local SKUs |
 | MASTERREGISTER | Document Master Register |
 | MASTERREGISTERIMPORT | (menüde yok) DocumentManagementManifestProvider.cs |
@@ -196,7 +200,9 @@ Neden `roadmap/`: belge henüz yazılmamış metinleri anlatıyor (`docs-organiz
 | REPOSITORYASSESSMENT | Repository Assessments |
 | REQUISITIONS | Requisitions |
 | RESTRICTEDINTEGRITYREGISTRY | Restricted Integrity Registry |
+| RETURNS | Returns — main-sync (2026-10-12) ile geldi; sahibi SCE / MVP-6 (gmg-10); yardım metni yok, main'den geldi (sahibine iletilecek) |
 | REVIEWBOARD | Review Board |
+| SAFETYTEXTS | Safety Texts — main-sync (2026-10-12) ile geldi; sahibi CRM; yardım metni yok, main'den geldi (sahibine iletilecek) |
 | SECTORMOBILITYINTELLIGENCE | Sector Mobility Intelligence |
 | SECTORTALENTTRENDS | Sector Talent Trends |
 | SECURITYSETTINGS | Security Settings |
@@ -204,6 +210,10 @@ Neden `roadmap/`: belge henüz yazılmamış metinleri anlatıyor (`docs-organiz
 | SEGMENTS | Segments |
 | SELFSERVICE | Self Service |
 | SENSITIVEACCESS | Sensitive Access |
+| SHIPMENTCLAIMS | Shipment Claims — main-sync (2026-10-12) ile geldi; sahibi SCE / MVP-6 (gmg-10); yardım metni yok, main'den geldi (sahibine iletilecek) |
+| SHIPMENTCREATE | (menüde yok) manifest — main-sync (2026-10-12) ile geldi; sahibi SCE / MVP-6 (gmg-10); yardım metni yok, main'den geldi (sahibine iletilecek) |
+| SHIPMENTDETAILS | (menüde yok) manifest — main-sync (2026-10-12) ile geldi; sahibi SCE / MVP-6 (gmg-10); yardım metni yok, main'den geldi (sahibine iletilecek) |
+| SHIPMENTS | Shipments — main-sync (2026-10-12) ile geldi; sahibi SCE / MVP-6 (gmg-10); yardım metni yok, main'den geldi (sahibine iletilecek) |
 | SKILLSGAPHEATMAP | Skills Gap Heatmap |
 | SLARULES | (menüde yok) WorkflowManifestProvider.cs |
 | SOURCING | Sourcing |
@@ -247,7 +257,9 @@ Neden `roadmap/`: belge henüz yazılmamış metinleri anlatıyor (`docs-organiz
 | VERIFIEDCERTIFICATIONREGISTRY | Verified Certification Registry |
 | VERIFIEDPARTICIPANTS | Verified Participants |
 | VERSIONS | (menüde yok) WorkflowManifestProvider.cs |
+| VISITEXECUTION | Visit Execution — main-sync (2026-10-12) ile geldi; sahibi CRM; yardım metni yok, main'den geldi (sahibine iletilecek) |
 | VISITFREQUENCYPOLICIES | Visit Frequency Policies |
+| VISITPLANNING | Visit Planning — main-sync (2026-10-12) ile geldi; sahibi CRM; yardım metni yok, main'den geldi (sahibine iletilecek) |
 | VISUALDESIGNER | (menüde yok) WorkflowManifestProvider.cs |
 | WIZARDCREATE | (menüde yok) LegalEntityManifestProvider.cs |
 | WIZARDEDIT | (menüde yok) LegalEntityManifestProvider.cs |
