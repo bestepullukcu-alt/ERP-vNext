@@ -178,6 +178,11 @@ public static class DependencyInjection
         services.AddSingleton<
             Application.Features.Knowledge.Regulatory.IRegulatoryTextReviewSettings,
             Workflow.ConfigurationRegulatoryTextReviewSettings>();
+        // WP-VW-W3 (W3-BE-c) — the objection answer / evidence exception templates (Crm:ObjectionResponses:Workflow,
+        // Crm:VisitEvidenceExceptions:Workflow) on the SAME Gateway workflow client.
+        services.AddSingleton<
+            Application.Features.Approvals.IAuthoringApprovalSettings,
+            Workflow.ConfigurationAuthoringApprovalSettings>();
         services.AddScoped<Application.Features.Knowledge.Path.Review.IWorkflowDecisionClient>(sp =>
             (Application.Features.Knowledge.Path.Review.IWorkflowDecisionClient)
             sp.GetRequiredService<Application.Features.ContentComposition.Claims.IClaimWorkflowClient>());

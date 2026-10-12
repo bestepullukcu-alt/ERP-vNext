@@ -11,7 +11,10 @@ public static class VisitExecutionPermissions
     public const string Record = "crm.visit-execution.record";
     public const string PolicyManage = "crm.visit-evidence-policy.manage";
 
-    public static readonly IReadOnlyList<string> All = new[] { Read, Record, PolicyManage };
+    /// <summary>WP-VW-W3 (W3-BE-c) — read the evidence settings (policy, history, effective rules, reps) without managing.</summary>
+    public const string PolicyRead = "crm.visit-evidence-policy.read";
+
+    public static readonly IReadOnlyList<string> All = new[] { Read, Record, PolicyManage, PolicyRead };
 }
 
 /// <summary>WP-VW-W3 (BE-a) — the machine codes of the visit execution endpoints (§2.2, fixed: Web W3 and mobile read

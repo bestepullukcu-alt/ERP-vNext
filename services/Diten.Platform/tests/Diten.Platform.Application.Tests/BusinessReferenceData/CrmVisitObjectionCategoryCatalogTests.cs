@@ -131,15 +131,30 @@ public sealed class CrmVisitObjectionCategoryCatalogTests
     }
 
     [Fact]
-    public void The_crm_manifest_declares_the_objection_library_keys_outside_the_navigation()
+    public void The_crm_manifest_declares_the_objection_library_in_the_navigation_with_submit_not_approve()
     {
+        // WP-VW-W3 (W3-BE-c) — the W3-WEB-c screen is in the menu; approval is the Work Center task (submit, no approve key)
         var manifest = new CrmManifestProvider().GetManifest();
         var page = Assert.Single(manifest.Pages, p => p.PageCode == "OBJECTION_RESPONSES");
         Assert.Equal("crm.objection-response.read", page.RequiredPermission);
-        Assert.False(page.IsNavigationVisible); // W3-WEB-c brings the screen (mockup decision first)
+        Assert.True(page.IsNavigationVisible);
         Assert.Equal(
-            new[] { "crm.objection-response.manage", "crm.objection-response.approve" },
+            new[] { "crm.objection-response.manage", "crm.objection-response.submit" },
             page.Actions.OrderBy(a => a.SortOrder).Select(a => a.PermissionKey).ToArray());
         Assert.Equal("Objection Responses", page.DisplayName); // English
+    }
+
+    [Fact]
+    public void The_crm_manifest_declares_the_visit_evidence_settings_page_and_its_keys()
+    {
+        var manifest = new CrmManifestProvider().GetManifest();
+        var page = Assert.Single(manifest.Pages, p => p.PageCode == "VISIT_EVIDENCE_SETTINGS");
+        Assert.Equal("/CRM/VisitEvidenceSettings", page.RoutePath);
+        Assert.Equal("crm.visit-evidence-policy.read", page.RequiredPermission);
+        Assert.True(page.IsNavigationVisible);
+        Assert.Equal(
+            new[] { "crm.visit-evidence-policy.manage", "crm.visit-evidence-exception.read", "crm.visit-evidence-exception.manage" },
+            page.Actions.OrderBy(a => a.SortOrder).Select(a => a.PermissionKey).ToArray());
+        Assert.Equal("Visit Evidence Settings", page.DisplayName); // English
     }
 }

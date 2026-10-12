@@ -228,6 +228,9 @@ public static class KnowledgePathPresentationLimits
 
     /// <summary>400 — a linked objection answer is not one of this tenant's records.</summary>
     public const string ObjectionNotFound = "path_step_objection_not_found";
+
+    /// <summary>WP-VW-W3 (W3-BE-c, K-A4) — a linked answer that is not approved or not of the path's product.</summary>
+    public const string ObjectionInvalid = "path_step_objection_invalid";
 }
 
 public sealed class KnowledgePathBranchCondition

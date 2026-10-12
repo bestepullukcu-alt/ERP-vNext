@@ -1,6 +1,7 @@
 using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Artifacts;
 using Diten.CrmService.Application.Common.Models;
+using Diten.CrmService.Application.Features.VisitEvidence;
 using Diten.CrmService.Domain.Entities;
 using Diten.CrmService.Domain.Repositories;
 using MediatR;
@@ -16,11 +17,20 @@ public sealed class GetVisitExecutionContractHandler : IRequestHandler<GetVisitE
 
     private readonly ITenantContext _tenant;
     private readonly IVisitEvidencePolicyRepository _policies;
+    private readonly ICallerScope? _caller;
+    private readonly IVisitEvidencePolicyResolver _resolver;
+    private readonly TimeProvider _clock;
 
-    public GetVisitExecutionContractHandler(ITenantContext tenant, IVisitEvidencePolicyRepository policies)
+    /// <summary>WP-VW-W3 (W3-BE-c) — <c>policy</c> is the CALLER's effective rules (tenant ⊕ an approved exception active
+    /// today) through the one resolver the start uses; a caller without a resource id reads the tenant's.</summary>
+    public GetVisitExecutionContractHandler(ITenantContext tenant, IVisitEvidencePolicyRepository policies,
+        ICallerScope? caller = null, IVisitEvidencePolicyResolver? resolver = null, TimeProvider? clock = null)
     {
         _tenant = tenant;
         _policies = policies;
+        _caller = caller;
+        _resolver = resolver ?? new VisitEvidencePolicyResolver(policies);
+        _clock = clock ?? TimeProvider.System;
     }
 
     public async Task<Response<VisitExecutionContractDto>> Handle(GetVisitExecutionContractQuery request, CancellationToken cancellationToken)
@@ -30,10 +40,10 @@ public sealed class GetVisitExecutionContractHandler : IRequestHandler<GetVisitE
             return Response<VisitExecutionContractDto>.Fail("Tenant context is required.", 400);
         }
 
-        var (policy, isDefault) = await VisitExecutionAccess.PolicyAsync(_policies, tenantId, cancellationToken);
+        var effective = await _resolver.ResolveAsync(tenantId, _caller?.CallerResourceId, _clock.GetUtcNow(), cancellationToken);
         return Response<VisitExecutionContractDto>.Success(new VisitExecutionContractDto(
             ModuleId,
-            VisitExecutionRules.ToDto(policy, isDefault),
+            VisitExecutionRules.ToDto(effective.Policy, effective.IsDefault),
             VisitExecutionKinds.All,
             VisitInterestValues.All,
             VisitMarkFlags.All,
@@ -232,11 +242,13 @@ public sealed class GetVisitEvidencePolicyHandler : IRequestHandler<GetVisitEvid
 {
     private readonly ITenantContext _tenant;
     private readonly IVisitEvidencePolicyRepository _policies;
+    private readonly IVisitEvidenceRepRoster? _reps;
 
-    public GetVisitEvidencePolicyHandler(ITenantContext tenant, IVisitEvidencePolicyRepository policies)
+    public GetVisitEvidencePolicyHandler(ITenantContext tenant, IVisitEvidencePolicyRepository policies, IVisitEvidenceRepRoster? reps = null)
     {
         _tenant = tenant;
         _policies = policies;
+        _reps = reps;
     }
 
     public async Task<Response<VisitEvidencePolicyDto>> Handle(GetVisitEvidencePolicyQuery request, CancellationToken cancellationToken)
@@ -247,6 +259,8 @@ public sealed class GetVisitEvidencePolicyHandler : IRequestHandler<GetVisitEvid
         }
 
         var (policy, isDefault) = await VisitExecutionAccess.PolicyAsync(_policies, tenantId, cancellationToken);
-        return Response<VisitEvidencePolicyDto>.Success(VisitExecutionRules.ToDto(policy, isDefault));
+        // WP-VW-W3 (W3-BE-c) — how many reps it applies to (active primary territory assignment).
+        int? repCount = _reps is null ? null : (await _reps.ListAsync(tenantId, DateTimeOffset.UtcNow, cancellationToken)).Count;
+        return Response<VisitEvidencePolicyDto>.Success(VisitExecutionRules.ToDto(policy, isDefault) with { RepCount = repCount });
     }
 }

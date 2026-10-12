@@ -1,3 +1,4 @@
+using Diten.CrmService.Application.Features.Knowledge.Chain;
 using Diten.CrmService.Domain.Entities;
 using Diten.CrmService.Domain.Repositories;
 
@@ -26,12 +27,15 @@ public sealed record KnowledgePathStepPresentationDto(
 /// answers — else 400 <c>path_step_presentation_invalid</c>; every objection id must be one of THIS tenant's library
 /// records (any status: a draft may be linked while the deck is written; only approved ones ever reach a rep) — else 400
 /// <c>path_step_objection_not_found</c>. The frozen-path rule of the step write (published ⇒ 409) applies before this.
+/// <para>WP-VW-W3 (W3-BE-c, K-A4) — a linked answer must ALSO be APPROVED and of the PATH's product (the product the chain
+/// derives — <see cref="IKnowledgePathProductResolver"/>, the source the review snapshot uses); else 400
+/// <c>path_step_objection_invalid</c>. A path with no derivable product links no answer.</para>
 /// </summary>
 public static class KnowledgePathPresentation
 {
     public static async Task<string[]?> ValidateAsync(
         KnowledgePathStepPresentationInput? input, Guid tenantId, IObjectionResponseRepository? objections,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken, KnowledgePath? path = null, IKnowledgePathProductResolver? products = null)
     {
         if (input is null)
         {
@@ -58,16 +62,37 @@ public static class KnowledgePathPresentation
             return null;
         }
 
-        var found = objections is null
-            ? new HashSet<Guid>()
+        var records = objections is null
+            ? new Dictionary<Guid, ObjectionResponse>()
             : (await objections.ListByIdsAsync(tenantId, ids, cancellationToken))
                 .Where(o => o.TenantId == tenantId && !o.IsDeleted)
-                .Select(o => o.Id)
-                .ToHashSet();
-        var missing = ids.FirstOrDefault(id => !found.Contains(id));
-        return missing == Guid.Empty
+                .ToDictionary(o => o.Id);
+        var missing = ids.FirstOrDefault(id => !records.ContainsKey(id));
+        if (missing != Guid.Empty)
+        {
+            return new[] { KnowledgePathPresentationLimits.ObjectionNotFound, $"Objection answer {missing} is not one of this tenant's records." };
+        }
+
+        var pathProduct = path is null || products is null ? null : await products.ProductOfAsync(tenantId, path, cancellationToken);
+        if (pathProduct is null)
+        {
+            return new[]
+            {
+                KnowledgePathPresentationLimits.ObjectionInvalid,
+                "This path has no product (its chain derives none), so no objection answer can be linked."
+            };
+        }
+
+        var wrong = ids.Select(id => records[id]).FirstOrDefault(o => !o.IsApproved() || o.ProductId != pathProduct.Value);
+        return wrong is null
             ? null
-            : new[] { KnowledgePathPresentationLimits.ObjectionNotFound, $"Objection answer {missing} is not one of this tenant's records." };
+            : new[]
+            {
+                KnowledgePathPresentationLimits.ObjectionInvalid,
+                wrong.IsApproved()
+                    ? $"Objection answer {wrong.Id} is about another product than this path."
+                    : $"Objection answer {wrong.Id} is not approved ({wrong.Status}); only approved answers are linked."
+            };
     }
 
     /// <summary>The stored form: trimmed text, distinct ids; every field empty ⇒ null (no notes).</summary>
@@ -95,4 +120,25 @@ public static class KnowledgePathPresentation
     private static int Length(string? value) => value?.Trim().Length ?? 0;
 
     private static string? Trim(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+}
+
+/// <summary>
+/// WP-VW-W3 (W3-BE-c, K-A4) — the product of a knowledge path: the chain's derived product (the template subject's primary
+/// MDM Global Product link — the SAME source the review snapshot freezes). A legacy, chain-less path has none.
+/// </summary>
+public interface IKnowledgePathProductResolver
+{
+    Task<Guid?> ProductOfAsync(Guid tenantId, KnowledgePath path, CancellationToken cancellationToken);
+}
+
+public sealed class ChainKnowledgePathProductResolver : IKnowledgePathProductResolver
+{
+    private readonly IChainContextResolver _chains;
+
+    public ChainKnowledgePathProductResolver(IChainContextResolver chains) => _chains = chains;
+
+    public async Task<Guid?> ProductOfAsync(Guid tenantId, KnowledgePath path, CancellationToken cancellationToken)
+        => path.ChainTemplate is { } chain
+            ? (await _chains.ResolveAsync(tenantId, chain.ConceptChainTemplateId, cancellationToken)).ProductId
+            : null;
 }

@@ -20,7 +20,8 @@ public sealed class VisitExecutionEndpointTests
     [InlineData("POST", "api/crm/visit-execution/{id:guid}/signature", "crm.visit-execution.record")]
     [InlineData("GET", "api/crm/visit-execution/{id:guid}/photo", "crm.visit-execution.read")]
     [InlineData("GET", "api/crm/visit-execution/{id:guid}/signature", "crm.visit-execution.read")]
-    [InlineData("GET", "api/crm/visit-evidence-policy", "crm.visit-evidence-policy.manage")]
+    // W3-BE-c (K-C4) — the policy GET is read with .read OR .manage: an in-action check, no single-key attribute
+    // (pinned in VwW3AuthoringTests.The_policy_reads_need_read_or_manage).
     [InlineData("PUT", "api/crm/visit-evidence-policy", "crm.visit-evidence-policy.manage")]
     public void The_route_exists_with_its_key(string verb, string template, string key)
     {

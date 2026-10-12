@@ -117,6 +117,18 @@ public static class DependencyInjection
         services.AddScoped<Features.VisitWorkspace.VisitWorkspaceDays>();
         // WP-VW-W3 (W3-BE-b) — the objection library's content rules (category set, MDM product, approved claims).
         services.AddScoped<Features.Knowledge.ObjectionResponses.ObjectionResponseRules>();
+        // WP-VW-W3 (W3-BE-c) — approvals via MOD-0023 + the Work Center for the objection answer and the time-boxed
+        // evidence exception: the ONE outcome applier (event consumer, reconcile, withdraw), reconcile-on-read, the shared
+        // submit / withdraw / decide flow; the library reader; the path's product (K-A4); the evidence resolver (tenant ⊕
+        // active approved exception — the visit start and the contract read it), the rep roster, the exception service.
+        services.AddScoped<Features.Approvals.WorkflowApprovalOutcomeApplier>();
+        services.AddScoped<Features.Approvals.WorkflowApprovalReconciler>();
+        services.AddScoped<Features.Approvals.WorkflowApprovalFlow>();
+        services.AddScoped<Features.Knowledge.ObjectionResponses.ObjectionResponseReader>();
+        services.AddScoped<Features.Knowledge.Path.IKnowledgePathProductResolver, Features.Knowledge.Path.ChainKnowledgePathProductResolver>();
+        services.AddScoped<Features.VisitEvidence.IVisitEvidencePolicyResolver, Features.VisitEvidence.VisitEvidencePolicyResolver>();
+        services.AddScoped<Features.VisitEvidence.IVisitEvidenceRepRoster, Features.VisitEvidence.VisitEvidenceRepRoster>();
+        services.AddScoped<Features.VisitEvidence.VisitEvidenceExceptionService>();
         // W2-BE-c (C1) — the engine preview behind a tenant-keyed, bounded cache (session version + today + the rep's
         // written visits / reports stamp in the key); the calendar and the reschedule options share it.
         services.AddSingleton<Features.VisitWorkspace.WorkspacePreviewCache>();

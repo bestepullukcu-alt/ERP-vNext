@@ -32,7 +32,8 @@ public sealed class VisitPresentationObjectionTests
     {
         var w = new World();
         var (path, step) = w.Path(ProductA, steps: 1, published: false);
-        var objection = w.Objection(ProductA, "price", ObjectionResponseStatuses.Draft);
+        // W3-BE-c (K-A4) — only an APPROVED answer of the path's product is linked (VwW3AuthoringTests pins the refusals)
+        var objection = w.Objection(ProductA, "price", ObjectionResponseStatuses.Approved);
         var update = UpdateHandler(w);
 
         // out of bounds → 400, nothing written
@@ -108,17 +109,12 @@ public sealed class VisitPresentationObjectionTests
         Assert.True(created.IsSuccessful, string.Join(" / ", created.Errors ?? Array.Empty<string>()));
         var id = created.Data;
 
-        // SoD: the author (any case) cannot approve
-        var self = await new ApproveObjectionResponseHandler(w, new Actor("AUTHOR"), w.Objections, rules)
-            .Handle(new ApproveObjectionResponseCommand(id), default);
-        Assert.Equal(403, self.StatusCode); // the author is refused
-        Assert.Equal((403, ObjectionResponseErrors.SeparationOfDuties), (self.StatusCode, self.Errors![0]));
+        // W3-BE-c — the direct approve is retired: 409 approval_via_workflow_only, nothing changes. The approval (and its
+        // separation of duties) is the Work Center round's — pinned in VwW3AuthoringTests.
+        var direct = await new ApproveObjectionResponseHandler().Handle(new ApproveObjectionResponseCommand(id), default);
+        Assert.Equal((409, ObjectionResponseErrors.ApprovalViaWorkflowOnly), (direct.StatusCode, direct.Errors![0]));
         Assert.Equal(ObjectionResponseStatuses.Draft, w.Objections.Items.Single().Status);
-
-        var ok = await new ApproveObjectionResponseHandler(w, new Actor("approver"), w.Objections, rules)
-            .Handle(new ApproveObjectionResponseCommand(id), default);
-        Assert.True(ok.IsSuccessful);
-        Assert.Equal((ObjectionResponseStatuses.Approved, "approver"), (w.Objections.Items.Single().Status, w.Objections.Items.Single().ApprovedBy));
+        w.Objections.Items.Single().Status = ObjectionResponseStatuses.Approved; // as the approved round leaves it
 
         // an approved answer never changes: update is 409, it can only be retired
         var change = await new UpdateObjectionResponseHandler(w, new Actor("author"), w.Objections, rules)
@@ -207,7 +203,13 @@ public sealed class VisitPresentationObjectionTests
     // ── helpers ──────────────────────────────────────────────────────────────────────────────────────────────
 
     private static UpdateKnowledgePathStepHandler UpdateHandler(World w)
-        => new(w, new Actor("author"), w.Paths, w.Contents, null!, objections: w.Objections);
+        => new(w, new Actor("author"), w.Paths, w.Contents, null!, objections: w.Objections, pathProducts: new FixedPathProduct(ProductA));
+
+    /// <summary>W3-BE-c (K-A4) — every path of this world is ProductA's (the chain-derived product seam).</summary>
+    private sealed class FixedPathProduct(Guid product) : IKnowledgePathProductResolver
+    {
+        public Task<Guid?> ProductOfAsync(Guid tenantId, KnowledgePath path, CancellationToken cancellationToken) => Task.FromResult<Guid?>(product);
+    }
 
     private static UpdateKnowledgePathStepCommand Update(KnowledgePath path, KnowledgePathStep step, KnowledgePathStepPresentationInput? notes)
         => new(path.Id, step.StepId, step.StepOrder, step.StepCode, step.StepTitle, step.StepType, step.ContentId, step.IsRequired,

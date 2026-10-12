@@ -21,15 +21,17 @@ public sealed class AddKnowledgePathStepHandler : IRequestHandler<AddKnowledgePa
     private readonly IConceptChainTemplateRepository? _templates;
 
     private readonly IObjectionResponseRepository? _objections;
+    private readonly IKnowledgePathProductResolver? _pathProducts; // WP-VW-W3 (W3-BE-c, K-A4)
 
     public AddKnowledgePathStepHandler(
         ITenantContext tenant, IActorContext actor, IKnowledgePathRepository paths,
         IKnowledgeContentRepository contents, IConceptNodeRepository nodes,
         IConceptChainTemplateRepository? templates = null,
         // WP-VW-W3 (W3-BE-b) — the presentation notes' objection links are checked against this tenant's library.
-        IObjectionResponseRepository? objections = null)
+        IObjectionResponseRepository? objections = null, IKnowledgePathProductResolver? pathProducts = null)
     {
         _objections = objections;
+        _pathProducts = pathProducts;
         _tenant = tenant;
         _actor = actor;
         _paths = paths;
@@ -86,7 +88,7 @@ public sealed class AddKnowledgePathStepHandler : IRequestHandler<AddKnowledgePa
             return Response<Guid>.Fail(scalarError, 400);
         }
 
-        if (await KnowledgePathPresentation.ValidateAsync(request.Presentation, tenantId, _objections, cancellationToken)
+        if (await KnowledgePathPresentation.ValidateAsync(request.Presentation, tenantId, _objections, cancellationToken, path, _pathProducts)
                 is { } presentationError)
         {
             return Response<Guid>.Fail(presentationError, 400);
@@ -233,15 +235,17 @@ public sealed class UpdateKnowledgePathStepHandler : IRequestHandler<UpdateKnowl
     private readonly IConceptChainTemplateRepository? _templates;
 
     private readonly IObjectionResponseRepository? _objections;
+    private readonly IKnowledgePathProductResolver? _pathProducts; // WP-VW-W3 (W3-BE-c, K-A4)
 
     public UpdateKnowledgePathStepHandler(
         ITenantContext tenant, IActorContext actor, IKnowledgePathRepository paths,
         IKnowledgeContentRepository contents, IConceptNodeRepository nodes,
         IConceptChainTemplateRepository? templates = null,
         // WP-VW-W3 (W3-BE-b) — the presentation notes' objection links are checked against this tenant's library.
-        IObjectionResponseRepository? objections = null)
+        IObjectionResponseRepository? objections = null, IKnowledgePathProductResolver? pathProducts = null)
     {
         _objections = objections;
+        _pathProducts = pathProducts;
         _tenant = tenant;
         _actor = actor;
         _paths = paths;
@@ -303,7 +307,7 @@ public sealed class UpdateKnowledgePathStepHandler : IRequestHandler<UpdateKnowl
             return Response<bool>.Fail(scalarError, 400);
         }
 
-        if (await KnowledgePathPresentation.ValidateAsync(request.Presentation, tenantId, _objections, cancellationToken)
+        if (await KnowledgePathPresentation.ValidateAsync(request.Presentation, tenantId, _objections, cancellationToken, path, _pathProducts)
                 is { } presentationError)
         {
             return Response<bool>.Fail(presentationError, 400);

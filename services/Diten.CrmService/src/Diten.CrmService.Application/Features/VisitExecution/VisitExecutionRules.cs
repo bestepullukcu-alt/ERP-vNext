@@ -345,7 +345,7 @@ public static class VisitExecutionRules
     public static VisitEvidencePolicyDto ToDto(VisitEvidencePolicy policy, bool isDefault)
         => new(policy.LocationMode, policy.RadiusMeters, policy.MaxAccuracyMeters, policy.PhotoMode,
             policy.DoctorConfirmation, policy.DurationConsistency, policy.ShortVisitSeconds, policy.AccountWithoutLocation,
-            isDefault, policy.Version);
+            isDefault, policy.Version, policy.UpdatedBy, policy.UpdatedAt);
 
     // ── the client view ──────────────────────────────────────────────────────────────────────────────────────────
 
@@ -378,7 +378,9 @@ public static class VisitExecutionRules
                 .ToList(),
             e.ShortVisit,
             e.Flags.ToList(),
-            Diten.CrmService.Application.Features.VisitReport.VisitReportDeadline.For(plannedDate));
+            Diten.CrmService.Application.Features.VisitReport.VisitReportDeadline.For(plannedDate),
+            e.ExceptionId,
+            e.RelaxedRules.ToList());
     }
 
     // ── helpers ──────────────────────────────────────────────────────────────────────────────────────────────────

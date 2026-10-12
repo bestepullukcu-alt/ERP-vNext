@@ -46,6 +46,8 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
     private const string ClaimRead = "crm.claim.read";
     // WP-VW-W3 (W3-BE-b) — the objection library (approved answers to doctor objections; approve ≠ manage, SoD).
     private const string ObjectionResponseRead = "crm.objection-response.read";
+    // WP-VW-W3 (W3-BE-c) — the visit evidence settings page (read without managing, K-C4).
+    private const string VisitEvidencePolicyRead = "crm.visit-evidence-policy.read";
     private const string EligibilityRead = "crm.eligibility.read";
     private const string SafetyTextRead = "crm.safety-text.read";
     private const string CountryLegalProfileRead = "crm.country-legal-profile.read";
@@ -132,6 +134,15 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                     new ModuleManifestAction("EVIDENCE_READ", "Read Own Visit Evidence", DocumentRepositoryPermissions.VisitEvidenceRead, "RowAction", 50, false, false, true),
                     new ModuleManifestAction("EVIDENCE_READ_ALL", "Read All Visit Evidence (Tenant-Wide)", DocumentRepositoryPermissions.VisitEvidenceReadAll, "Toolbar", 60, false, true, false)
                 ]),
+                // WP-VW-W3 (W3-BE-c) — the visit evidence settings (tenant rules, effective rules of a rep, change history,
+                // time-boxed exceptions approved in the Work Center — template CRM-VISIT-EVIDENCE-EXC). Read without
+                // managing; the exception keys are separate (the approval itself is the workflow task's).
+                new ModuleManifestPage("VISIT_EVIDENCE_SETTINGS", "Visit Evidence Settings", "/CRM/VisitEvidenceSettings", VisitEvidencePolicyRead, null, true, "List", 67,
+                [
+                    new ModuleManifestAction("MANAGE_POLICY", "Manage Visit Evidence Policy", "crm.visit-evidence-policy.manage", "Toolbar", 10, false, true, false),
+                    new ModuleManifestAction("EXCEPTION_READ", "Read Time-Boxed Exceptions", "crm.visit-evidence-exception.read", "RowAction", 20, false, false, true),
+                    new ModuleManifestAction("EXCEPTION_MANAGE", "Manage Time-Boxed Exceptions", "crm.visit-evidence-exception.manage", "Toolbar", 30, false, true, false)
+                ]),
                 new ModuleManifestPage("VISIT_PLANNING", "Visit Planning", "/CRM/VisitPlanning", VisitPlanRead, null, true, "List", 64,
                 [
                     new ModuleManifestAction("GENERATE", "Generate Plan", "crm.visit-plan.generate", "Toolbar", 10, false, true, false),
@@ -196,13 +207,14 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                     new ModuleManifestAction("MANAGE", "New Claim", "crm.claim.manage", "Toolbar", 10, false, true, false),
                     new ModuleManifestAction("APPROVE", "Approve", "crm.claim.approve", "RowAction", 20, false, false, true)
                 ]),
-                // WP-VW-W3 (W3-BE-b) — the objection library's keys. NOT in the navigation yet: its authoring screen is
-                // W3-WEB-c (mockup decision first), so the page only declares the read / manage / approve keys for RBAC.
-                // approve is a SEPARATE key from manage (author-vs-approver SoD).
-                new ModuleManifestPage("OBJECTION_RESPONSES", "Objection Responses", "/CRM/ObjectionResponses", ObjectionResponseRead, null, false, "List", 145,
+                // WP-VW-W3 (W3-BE-b) — the objection library's keys.
+                // WP-VW-W3 (W3-BE-c) — now IN the navigation (the W3-WEB-c screen, Content Studio group next to Claims).
+                // The approval is the MOD-0023 task in the Work Center (template CRM-OBJ-RESP, MED-DIR): SUBMIT sends a
+                // draft to it (and withdraws it); the direct approve key is no longer declared (its endpoint answers 409).
+                new ModuleManifestPage("OBJECTION_RESPONSES", "Objection Responses", "/CRM/ObjectionResponses", ObjectionResponseRead, null, true, "List", 145,
                 [
                     new ModuleManifestAction("MANAGE", "New Objection Response", "crm.objection-response.manage", "Toolbar", 10, false, true, false),
-                    new ModuleManifestAction("APPROVE", "Approve", "crm.objection-response.approve", "RowAction", 20, false, false, true)
+                    new ModuleManifestAction("SUBMIT", "Submit for Approval", "crm.objection-response.submit", "RowAction", 20, false, false, true)
                 ]),
                 // WP-KP-5a-UI — the Regulatory-approved master data the page designer's locked blocks will read
                 // (DESIGN-KP-STUDIO §2.4): safety texts (product × country × language) and country legal profiles

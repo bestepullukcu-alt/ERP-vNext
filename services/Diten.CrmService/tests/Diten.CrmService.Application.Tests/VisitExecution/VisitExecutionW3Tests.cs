@@ -27,7 +27,7 @@ namespace Diten.CrmService.Application.Tests.VisitExecution;
 /// minutes, the report binding (W1 / W2 commands) and the tenant policy (defaults, bounds, a read writes nothing).
 /// The clock is fixed: "today" is Thursday 2026-10-15 (UTC).
 /// </summary>
-public sealed class VisitExecutionW3Tests
+public sealed partial class VisitExecutionW3Tests
 {
     private static readonly Guid Tenant = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
     private const string Rep = "11111111-1111-1111-1111-111111111111";
@@ -643,7 +643,7 @@ public sealed class VisitExecutionW3Tests
         Assert.Equal("visit-objection-category", contract.ObjectionCategorySet);
         Assert.Equal((2000, 1000, 3), (contract.MaxNoteLength, contract.MaxPersonalNoteLength, contract.MaxCoVisitors));
         Assert.Contains(VisitExecutionErrorCodes.LocationTooFar, contract.ErrorCodes);
-        Assert.Equal(new[] { "crm.visit-execution.read", "crm.visit-execution.record", "crm.visit-evidence-policy.manage" }, contract.Permissions);
+        Assert.Equal(new[] { "crm.visit-execution.read", "crm.visit-execution.record", "crm.visit-evidence-policy.manage", "crm.visit-evidence-policy.read" }, contract.Permissions); // W3-BE-c: + .read
         Assert.Equal(0, _policies.Writes); // reads never write
     }
 

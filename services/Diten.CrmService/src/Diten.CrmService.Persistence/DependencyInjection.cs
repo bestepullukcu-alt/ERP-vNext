@@ -275,6 +275,9 @@ public static class DependencyInjection
         // Neither exposes a delete: a started visit is evidence, and a policy is changed, never removed.
         services.AddScoped<IVisitExecutionRepository, VisitExecutionRepository>();
         services.AddScoped<IVisitEvidencePolicyRepository, VisitEvidencePolicyRepository>();
+        // WP-VW-W3 (W3-BE-c) — the evidence policy history and the time-boxed exceptions.
+        services.AddScoped<IVisitEvidencePolicyChangeRepository, VisitEvidencePolicyChangeRepository>();
+        services.AddScoped<IVisitEvidenceExceptionRepository, VisitEvidenceExceptionRepository>();
 
         TryEnsureIndexes(client.GetDatabase(databaseName));
 
@@ -628,6 +631,9 @@ public static class DependencyInjection
             map.GetMemberMap(x => x.ProductId).SetSerializer(stringGuid);
             map.GetMemberMap(x => x.ClaimIds)
                 .SetSerializer(new EnumerableInterfaceImplementerSerializer<List<Guid>, Guid>(stringGuid));
+            // WP-VW-W3 (W3-BE-c) — the copy source (string-Guid, the trap); ReviewRounds / Decisions reuse the
+            // ClaimReviewRound / RegulatoryTextDecision maps.
+            map.GetMemberMap(x => x.CopiedFromId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
         });
         Map<Claim>(map =>
         {
@@ -1258,7 +1264,12 @@ public static class DependencyInjection
         // timing / mark / note product + step ids) takes the string-Guid convention - an unmapped embedded Guid would be
         // written binary and every by-plan / by-id filter would silently find NOTHING (the CRM new-aggregate trap). The
         // types without a Guid are registered too, so the driver never treats them as anonymous.
-        Map<VisitExecution>(map => map.GetMemberMap(e => e.PlannedVisitId).SetSerializer(stringGuid));
+        Map<VisitExecution>(map =>
+        {
+            map.GetMemberMap(e => e.PlannedVisitId).SetSerializer(stringGuid);
+            // WP-VW-W3 (W3-BE-c) — the exception the start ran under (string-Guid, the trap).
+            map.GetMemberMap(e => e.ExceptionId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+        });
         if (!BsonClassMap.IsClassMapRegistered(typeof(VisitExecutionLocation)))
         {
             BsonClassMap.RegisterClassMap<VisitExecutionLocation>(map => map.AutoMap());
@@ -1314,6 +1325,16 @@ public static class DependencyInjection
         }
         // WP-VW-W3 (BE-a, K-W2) - the tenant's evidence policy: no Guid of its own beyond the base Id / TenantId.
         Map<VisitEvidencePolicy>(_ => { });
+
+        // WP-VW-W3 (W3-BE-c) - the time-boxed exceptions: the dates are DateOnly "yyyy-MM-dd" strings (the PlannedVisit
+        // convention), the rounds / decisions reuse the ClaimReviewRound / RegulatoryTextDecision maps; the policy
+        // history carries no Guid of its own beyond the base Id / TenantId.
+        Map<VisitEvidenceException>(map =>
+        {
+            map.GetMemberMap(e => e.StartDate).SetSerializer(dateOnlyString);
+            map.GetMemberMap(e => e.EndDate).SetSerializer(dateOnlyString);
+        });
+        Map<VisitEvidencePolicyChange>(_ => { });
 
         _classMapsRegistered = true;
     }

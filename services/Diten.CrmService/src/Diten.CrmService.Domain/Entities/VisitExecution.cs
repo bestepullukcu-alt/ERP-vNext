@@ -51,6 +51,11 @@ public sealed class VisitExecution : EntityBase
     /// <summary><see cref="VisitExecutionFlags"/> — the evidence warnings a manager sees.</summary>
     public List<string> Flags { get; set; } = new();
 
+    /// <summary>WP-VW-W3 (W3-BE-c) — the approved, active time-boxed exception the start ran under (null = none) and the
+    /// rules it relaxed (<see cref="VisitEvidenceExceptionRules"/>). Set by the start only.</summary>
+    public Guid? ExceptionId { get; set; }
+    public List<string> RelaxedRules { get; set; } = new();
+
     public string? CreatedBy { get; set; }
     public string? UpdatedBy { get; set; }
 
@@ -190,9 +195,12 @@ public static class VisitExecutionFlags
     public const string AccountLocationUnknown = "account_location_unknown";
     public const string ShortVisit = "short_visit";
 
+    /// <summary>WP-VW-W3 (W3-BE-c) — the start ran under an approved time-boxed exception (see ExceptionId / RelaxedRules).</summary>
+    public const string StartedWithException = "started_with_exception";
+
     public static readonly IReadOnlyList<string> All = new[]
     {
-        LocationFar, LocationMissing, LocationInaccurate, AccountLocationUnknown, ShortVisit
+        LocationFar, LocationMissing, LocationInaccurate, AccountLocationUnknown, ShortVisit, StartedWithException
     };
 }
 

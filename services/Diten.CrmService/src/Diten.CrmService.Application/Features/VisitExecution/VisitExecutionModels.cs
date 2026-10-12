@@ -27,7 +27,10 @@ public sealed record VisitExecutionDto(
     IReadOnlyList<VisitCoVisitorDto> CoVisitors,
     bool ShortVisit,
     IReadOnlyList<string> Flags,
-    DateTimeOffset ReportDeadline);
+    DateTimeOffset ReportDeadline,
+    // WP-VW-W3 (W3-BE-c, additive) — the approved time-boxed exception the start ran under (flag started_with_exception).
+    Guid? ExceptionId = null,
+    IReadOnlyList<string>? RelaxedRules = null);
 
 public sealed record VisitExecutionLocationDto(
     double? Latitude, double? Longitude, double? AccuracyMeters, int? DistanceMeters, int RadiusMeters, string Mode,
@@ -70,7 +73,12 @@ public sealed record VisitEvidencePolicyDto(
     int ShortVisitSeconds,
     string AccountWithoutLocation,
     bool IsDefault,
-    int Version);
+    int Version,
+    // WP-VW-W3 (W3-BE-c, additive) — who / when last changed it, and how many reps it applies to (active primary
+    // territory assignment; filled on the settings read only).
+    string? UpdatedBy = null,
+    DateTimeOffset? UpdatedAt = null,
+    int? RepCount = null);
 
 public sealed record VisitExecutionContractDto(
     string ModuleId,

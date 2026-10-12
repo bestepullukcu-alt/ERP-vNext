@@ -2,6 +2,7 @@ using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Artifacts;
 using Diten.CrmService.Application.Common.Models;
 using Diten.CrmService.Application.Common.ReferenceValidation;
+using Diten.CrmService.Application.Features.VisitEvidence;
 using Diten.CrmService.Application.Features.VisitReport;
 using Diten.CrmService.Domain.Entities;
 using Diten.CrmService.Domain.Repositories;
@@ -62,6 +63,9 @@ internal static class VisitExecutionAccess
 /// the location rule (<see cref="VisitExecutionRules.EvaluateLocation"/>); the photo rule. Then the photo is stored
 /// FIRST (fail-closed: a store failure → 503, nothing written), the record second; a record that cannot be written
 /// compensates the stored photo. <c>StartedAt</c> is the SERVER clock — no client instant is accepted.
+/// <para>WP-VW-W3 (W3-BE-c) — the rules are the rep's EFFECTIVE ones (<see cref="IVisitEvidencePolicyResolver"/>: the
+/// tenant policy ⊕ an approved exception active today). A start under an exception records it: flag
+/// <c>started_with_exception</c>, <c>ExceptionId</c>, <c>RelaxedRules</c>.</para>
 /// </summary>
 public sealed class StartVisitExecutionHandler : IRequestHandler<StartVisitExecutionCommand, Response<VisitExecutionDto>>
 {
@@ -75,13 +79,15 @@ public sealed class StartVisitExecutionHandler : IRequestHandler<StartVisitExecu
     private readonly IAccountRepository _accounts;
     private readonly IVisitEvidenceStore _store;
     private readonly TimeProvider _clock;
+    private readonly IVisitEvidencePolicyResolver _resolver;
 
     public StartVisitExecutionHandler(
         ITenantContext tenant, IActorContext actor, ICallerScope caller,
         IPlannedVisitRepository plans, IVisitReportRepository reports, IVisitExecutionRepository executions,
         IVisitEvidencePolicyRepository policies, IAccountRepository accounts, IVisitEvidenceStore store,
-        TimeProvider? clock = null)
+        TimeProvider? clock = null, IVisitEvidencePolicyResolver? resolver = null)
     {
+        _resolver = resolver ?? new VisitEvidencePolicyResolver(policies);
         _tenant = tenant;
         _actor = actor;
         _caller = caller;
@@ -158,7 +164,8 @@ public sealed class StartVisitExecutionHandler : IRequestHandler<StartVisitExecu
             return VisitExecutionAccess.Fail<VisitExecutionDto>(DeadlinePassed());
         }
 
-        var (policy, _) = await VisitExecutionAccess.PolicyAsync(_policies, tenantId, cancellationToken);
+        var effective = await _resolver.ResolveAsync(tenantId, plan.Resource.ResourceId, now, cancellationToken);
+        var policy = effective.Policy;
 
         var account = VisitExecutionRules.AccountOf(plan) is { } accountId
             ? await _accounts.GetByIdAsync(tenantId, accountId, cancellationToken)
@@ -197,6 +204,12 @@ public sealed class StartVisitExecutionHandler : IRequestHandler<StartVisitExecu
             CreatedAt = now,
             CreatedBy = _actor.ActorName
         };
+        if (effective.PrimaryException is { } exception)
+        {
+            execution.ExceptionId = exception.Id;
+            execution.RelaxedRules = effective.RelaxedRules.ToList();
+            execution.Flags.Add(VisitExecutionFlags.StartedWithException);
+        }
 
         // 1) the photo FIRST, in the document repository (fail-closed).
         if (request.Photo is { } photo)
@@ -572,12 +585,15 @@ public sealed class UpdateVisitEvidencePolicyHandler : IRequestHandler<UpdateVis
     private readonly ITenantContext _tenant;
     private readonly IActorContext _actor;
     private readonly IVisitEvidencePolicyRepository _policies;
+    private readonly IVisitEvidencePolicyChangeRepository? _changes;
 
-    public UpdateVisitEvidencePolicyHandler(ITenantContext tenant, IActorContext actor, IVisitEvidencePolicyRepository policies)
+    public UpdateVisitEvidencePolicyHandler(ITenantContext tenant, IActorContext actor, IVisitEvidencePolicyRepository policies,
+        IVisitEvidencePolicyChangeRepository? changes = null)
     {
         _tenant = tenant;
         _actor = actor;
         _policies = policies;
+        _changes = changes;
     }
 
     public async Task<Response<VisitEvidencePolicyDto>> Handle(UpdateVisitEvidencePolicyCommand request, CancellationToken cancellationToken)
@@ -588,6 +604,8 @@ public sealed class UpdateVisitEvidencePolicyHandler : IRequestHandler<UpdateVis
         }
 
         var stored = await _policies.GetAsync(tenantId, cancellationToken);
+        // WP-VW-W3 (W3-BE-c) — the before-image of the history rows (the defaults when the tenant had no document).
+        var before = VisitEvidencePolicyResolver.Copy(stored ?? VisitExecutionRules.Defaults(tenantId));
         var policy = stored ?? new VisitEvidencePolicy { Id = Guid.NewGuid(), TenantId = tenantId };
         if (stored is not null && request.Input.ExpectedVersion is { } expected && expected != stored.Version)
         {
@@ -604,7 +622,19 @@ public sealed class UpdateVisitEvidencePolicyHandler : IRequestHandler<UpdateVis
         var written = stored is null
             ? await _policies.InsertAsync(policy, cancellationToken)
             : await _policies.ReplaceAsync(policy, stored.Version, cancellationToken);
-        return written ? Response<VisitEvidencePolicyDto>.Success(VisitExecutionRules.ToDto(policy, isDefault: false)) : Conflict();
+        if (!written)
+        {
+            return Conflict();
+        }
+
+        // WP-VW-W3 (W3-BE-c) — one append-only history row per changed field (+ "created" for the first document).
+        if (_changes is not null)
+        {
+            await _changes.InsertManyAsync(VisitEvidencePolicyHistory.Rows(
+                tenantId, before, policy, stored is null, _actor.ActorName, policy.UpdatedAt ?? DateTimeOffset.UtcNow), cancellationToken);
+        }
+
+        return Response<VisitEvidencePolicyDto>.Success(VisitExecutionRules.ToDto(policy, isDefault: false));
     }
 
     private static Response<VisitEvidencePolicyDto> Conflict()

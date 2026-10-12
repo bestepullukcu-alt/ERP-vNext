@@ -102,11 +102,16 @@ public sealed class VisitExecutionController : CustomBaseController
     public Task<IActionResult> SignatureImage(Guid id, CancellationToken cancellationToken)
         => StreamAsync(id, VisitEvidenceKinds.Signature, cancellationToken);
 
-    /// <summary>K-W2 — the tenant's evidence rules (stored or the defaults; the read writes nothing).</summary>
+    /// <summary>K-W2 — the tenant's evidence rules (stored or the defaults; the read writes nothing). WP-VW-W3 (W3-BE-c,
+    /// K-C4) — read with crm.visit-evidence-policy.read OR .manage.</summary>
     [HttpGet("api/crm/visit-evidence-policy")]
-    [HasPermission(Perms.PolicyManage)]
     public async Task<IActionResult> GetPolicy(CancellationToken cancellationToken)
-        => CreateActionResultInstance(await _mediator.Send(new GetVisitEvidencePolicyQuery(), cancellationToken));
+        => VisitEvidenceSettingsController.MayReadPolicy(User)
+            ? CreateActionResultInstance(await _mediator.Send(new GetVisitEvidencePolicyQuery(), cancellationToken))
+            : CreateActionResultInstance(Diten.CrmService.Application.Common.Models.Response<object>.Fail(new[]
+            {
+                "Reading the visit evidence policy needs crm.visit-evidence-policy.read or .manage.", "permission_denied"
+            }, 403));
 
     [HttpPut("api/crm/visit-evidence-policy")]
     [HasPermission(Perms.PolicyManage)]
