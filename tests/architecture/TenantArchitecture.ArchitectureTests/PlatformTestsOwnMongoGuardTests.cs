@@ -18,9 +18,9 @@ namespace TenantArchitecture.ArchitectureTests;
  * NOT 27017, a fake endpoint that opens no connection, a regex inside another guard. A new file, a higher count or a
  * lower count (update the list) is red. An inline comment is counted too: a false positive is red, never a pass.
  *
- * No "not yet" entries. After the main sync every Platform test reaches Mongo through PlatformTestMongo, except main's
- * CompositionGuard.Tests: it fails closed on its own PLATFORM_COMPOSITION_GUARD_MONGO_URI (never a fallback), and is on
- * the CI guard's "not yet" list until its owner wires it.
+ * No "not yet" entries. Every Platform test reaches Mongo through PlatformTestMongo — main's CompositionGuard.Tests too
+ * since WP-PLATFORM-COMPOSITION-GUARD-OWNED-01: its own PLATFORM_COMPOSITION_GUARD_MONGO_URI first (main's check), else
+ * the same owned source. The scan root covers that project (Diten.Platform.CompositionGuard.Tests/ is under it).
  */
 public class PlatformTestsOwnMongoGuardTests
 {
@@ -44,7 +44,7 @@ public class PlatformTestsOwnMongoGuardTests
         ["Diten.Platform.Application.Tests/BusinessReferenceData/BusinessReferenceDataTestHarnessScopeTests.cs"] = (1, "a regex that refuses the shared address"),
         ["Diten.Platform.Application.Tests/Authorization/PhysicalEntitlementTransactionalArchitectureTests.cs"] = (2, "asserts a harness does not use port 27017"),
         ["Shared/PlatformTestMongo.cs"] = (2, "the protected port band, and the refusal message naming the shared instance it never uses"),
-        ["Diten.Platform.CompositionGuard.Tests/CompositionRootGuardTests.cs"] = (1, "main (MVP-6): its refusal message says 'never 27017'")
+        ["Diten.Platform.CompositionGuard.Tests/CompositionRootGuardSourceTests.cs"] = (2, "URIs on 27017 / localhost are refused by the guard's source")
     };
 
     [Fact]

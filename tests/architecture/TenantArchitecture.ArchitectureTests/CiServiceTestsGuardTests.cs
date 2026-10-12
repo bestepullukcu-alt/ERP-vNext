@@ -64,10 +64,9 @@ public class CiServiceTestsGuardTests
     /// </summary>
     private static readonly Dictionary<string, string> NotInThisJob = new(StringComparer.Ordinal)
     {
-        // Main sync (2026-10-11, PR #134 MVP-6): two projects that arrived with origin/main. Both fail closed on a Mongo URI
-        // of their own that no CI row provides; wiring them is their owners' change (XMC-001), not a merge resolution.
-        ["services/Diten.Platform/tests/Diten.Platform.CompositionGuard.Tests/Diten.Platform.CompositionGuard.Tests.csproj"] =
-            "main (MVP-6): needs PLATFORM_COMPOSITION_GUARD_MONGO_URI (a disposable mongod); could take PlatformTestMongo — owner's decision",
+        // Main sync (2026-10-11, PR #134 MVP-6): a project that arrived with origin/main and fails closed on a Mongo URI of
+        // its own that no CI row provides; wiring it is its owner's change (XMC-001), not a merge resolution. (Platform's
+        // CompositionGuard.Tests left this list: WP-PLATFORM-COMPOSITION-GUARD-OWNED-01, row platform-composition-guard.)
         ["services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Diten.SupplyChainService.Tests.csproj"] =
             "main (SCE / MVP-6): needs MVP6_MOD0192_MONGO_URI (its own replica set, CapacityTestMongo); SCE's file",
         ["services/Diten.CrmService/tests/Diten.CrmService.Application.Tests/Diten.CrmService.Application.Tests.csproj"] =

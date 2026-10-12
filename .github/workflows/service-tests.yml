@@ -48,6 +48,10 @@ jobs:
             project: services/Diten.Platform/tests/Diten.Platform.BackgroundJobs.Tests/Diten.Platform.BackgroundJobs.Tests.csproj
           - suite: platform-eventing
             project: services/Diten.Platform/tests/Diten.Platform.Eventing.Tests/Diten.Platform.Eventing.Tests.csproj
+          # WP-PLATFORM-COMPOSITION-GUARD-OWNED-01: main's composition-root guard (Q366). No URI on this row: the guard
+          # starts its own mongod from DITEN_TEST_MONGOD (PlatformTestMongo), like the other Platform rows.
+          - suite: platform-composition-guard
+            project: services/Diten.Platform/tests/Diten.Platform.CompositionGuard.Tests/Diten.Platform.CompositionGuard.Tests.csproj
           - suite: auth-app
             project: services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Diten.AuthService.Application.Tests.csproj
           - suite: auth-acceptance-host
