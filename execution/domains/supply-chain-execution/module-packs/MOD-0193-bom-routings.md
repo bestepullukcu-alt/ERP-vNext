@@ -291,6 +291,8 @@ Paylaşılan dosyaya yalnız bu iki rota eklenir (integration-agent rolü bu lan
 - F-0193-05 Merkezi denetim günlüğüne iletim — K4 ortak iletici geldiğinde (BL-501) yol b eklenir; yol c kalır.
 - F-0193-06 Routing'in iş merkezi master'ına (MOD-0192/0194) bağlanması; süre/kapasite alanları.
 - F-0193-07 Gerçek `ProductMaster:Mode=Http` entegrasyonu MOD-0290 `validate` canlı olunca (bugün permissive).
+- F-0193-08 Şirket yetkisi: MDM yalnız tüzel kişinin bu kiracıya ait ve ACTIVE olduğunu kanıtlar; kullanıcının o şirkette
+  yetkili olup olmadığı kontrol edilmez. Platform "yetkili şirketlerim" ucu gelince `LegalEntityValidationMiddleware`'e eklenir.
 
 ## 21. Audited Events (Denetlenen Olaylar) — AUD-001
 
@@ -345,4 +347,17 @@ CT verification record: `docs/records/audits/2026-10/mvp3-mod0193-bom-routings-0
 Deviations, stated: the list endpoint follows the platform list contract (BL-440) instead of the first draft's
 `page/pageSize`; the manifest's sidebar domain is `Manufacturing` (not `SupplyChainExecution`, which MVP-6's branch
 already adds — the same resx key twice would break the build at merge); `export` is a sixth permission (BL-452).
+
+**Re-verification (2026-10-12, branch `feature/mvp3-bom-routings`).** The table above is the 2026-10-06 state and stays as
+written; these rows supersede its numbers.
+
+| AC (§16) | evidence |
+|---|---|
+| 1–9 | service suite 77/77, 0 skipped, on a temporary Mongo replica set; live gateway run 15/15 and live MDM proof (M-3) |
+| 10 | **driven in a browser (M-5):** choose LE → create → release → second version → history → explode → Excel export → `ar` (RTL); two defects found there and fixed (history actor, untranslated field names); `BomsL10nTests` 4/4 |
+| 10 (UAS-001) | live: unentitled tenant Admin sees the in-shell denial, no redirect, no skeleton; gateway 403 (page itself answers 200 → BL-510, shared) |
+| 11 | `OcelotConfigurationTests` knows 5066 and 5067 after the main sync |
+| 12 | architecture 69/77 on the branch = 69/77 on main `a814bad0f` (the 8 reds are main's, byte-identical) |
+| Platform | self-registration; entitlement gives the tenant Admin exactly the 6 `manufacturing.bom.*` (M-4) |
+| AUD-001 | path c unchanged; central log via BL-501 pre-wired (§21), merge waits on BL-501 |
 
