@@ -113,4 +113,34 @@ public sealed class LskuIdentityWorkflowTenantPartitionDiscoveryRepository
                      .IdentitySettledByTheRequestersRepeat))
             | UnansweredWithdrawal(DateTimeOffset.UtcNow),
             cancellationToken: cancellationToken);
+
+    // BL-607: the oldest approval still open, by the moment the engine opened it. A number for one gauge, no tenant data.
+    // FIX1 item 4 — the rows the WORKER keeps asking about (DiscoverAsync's own rules: not deleted, the current storage
+    // version), at AwaitingDecision, minus a wait that reached its limit (RETRY_LIMIT_REACHED: a real outage, already counted
+    // as stuck by CountManualReconciliationAsync). A row the worker never scans cannot hold the alert forever; an outage is
+    // not reported as "a person has not decided". FIX1 item 1 — only a start that is not negative: a corrupt value would
+    // sort first and hide the real oldest approval. FIX1 item 2 — served by the partial index
+    // ix_mdm_lsku_identity_workflow_open_approval (only AwaitingDecision rows, by start), not a collection scan.
+    public static FilterDefinition<LskuIdentityWorkflowOperation> OpenApproval =>
+        Builders<LskuIdentityWorkflowOperation>.Filter.Eq(item => item.IsDeleted, false)
+        & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(item => item.TemporalStorageVersion,
+            LskuIdentityWorkflowOperation.CurrentTemporalStorageVersion)
+        & Builders<LskuIdentityWorkflowOperation>.Filter.Eq(item => item.Checkpoint,
+            LskuIdentityWorkflowCheckpoint.AwaitingDecision)
+        & Builders<LskuIdentityWorkflowOperation>.Filter.Ne(item => item.LastFailureCode,
+            Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow.LskuIdentityWorkflowProcessor.RetryLimitReached)
+        // "$gte 0" also leaves out a row with no start (null or missing never matches it). No upper bound: a value past
+        // DateTimeOffset.MaxValue sorts LAST and cannot hide the oldest; if it is all there is, the runner ignores it by name.
+        & Builders<LskuIdentityWorkflowOperation>.Filter.Gte(item => item.WorkflowStartedAtUtcTicksV1, 0L);
+
+    public async Task<long?> OldestOpenApprovalStartedAtUtcTicksAsync(CancellationToken cancellationToken = default)
+    {
+        var oldest = await _operations
+            .Find(OpenApproval)
+            .SortBy(item => item.WorkflowStartedAtUtcTicksV1)
+            .Limit(1)
+            .Project(item => item.WorkflowStartedAtUtcTicksV1)
+            .FirstOrDefaultAsync(cancellationToken);
+        return oldest;
+    }
 }

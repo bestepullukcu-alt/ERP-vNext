@@ -14,4 +14,8 @@ public interface ILskuIdentityWorkflowTenantPartitionDiscovery
     Task<long> CountManualReconciliationAsync(CancellationToken cancellationToken = default) => Task.FromResult(0L);
     // Of those, the ones the requester's repeat cannot settle — a person's (BL-530).
     Task<long> CountNeedingAPersonAsync(CancellationToken cancellationToken = default) => Task.FromResult(0L);
+    // BL-607: over all tenants, when the OLDEST approval still open (waiting for a person, AwaitingDecision) was opened by
+    // the engine (WorkflowStartedAtUtcTicksV1 — real progress, never the request time or the last look); null: none open.
+    Task<long?> OldestOpenApprovalStartedAtUtcTicksAsync(CancellationToken cancellationToken = default) =>
+        Task.FromResult<long?>(null);
 }

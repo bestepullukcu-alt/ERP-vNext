@@ -282,8 +282,16 @@ public sealed class LskuIdentityWorkflowOperationMongoTests : IAsyncLifetime
 
         var indexes = await (await _collection.Indexes.ListAsync()).ToListAsync();
         var owned = indexes.Where(x => x["name"].AsString.Contains("lsku_identity_workflow", StringComparison.Ordinal)).ToArray();
-        Assert.Equal(4, owned.Length);
-        Assert.All(owned, index => Assert.Equal("TenantId", index["key"].AsBsonDocument.GetElement(0).Name));
+        Assert.Equal(5, owned.Length);
+        // BL-607 FIX1 item 2 — ONE named exception: the open-approval gauge reads across tenants by design (a number per
+        // flow, no tenant data), so its index cannot start with TenantId. It must stay partial (only AwaitingDecision rows)
+        // and keyed by the start alone; every other index of this collection is still tenant-first.
+        const string openApproval = "ix_mdm_lsku_identity_workflow_open_approval";
+        var gauge = Assert.Single(owned, index => index["name"].AsString == openApproval);
+        Assert.Equal(new[] { nameof(LskuIdentityWorkflowOperation.WorkflowStartedAtUtcTicksV1) }, gauge["key"].AsBsonDocument.Names);
+        Assert.Equal(new[] { nameof(LskuIdentityWorkflowOperation.Checkpoint) }, gauge["partialFilterExpression"].AsBsonDocument.Names);
+        Assert.All(owned.Where(index => index["name"].AsString != openApproval),
+            index => Assert.Equal("TenantId", index["key"].AsBsonDocument.GetElement(0).Name));
     }
 
     [Fact]

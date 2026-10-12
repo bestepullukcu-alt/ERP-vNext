@@ -55,6 +55,10 @@ public sealed class FakeWorkflowEngine : IProductIdentityWorkflowClient
     /// <summary>FIX4 item 12: the next terminal-evidence read throws (a connection broken half-way).</summary>
     public bool NextTerminalEvidenceThrows { get; set; }
 
+    /// <summary>BL-607: while set, EVERY terminal-evidence read answers this — an engine outage that lasts (the test names
+    /// the outcome and the code; nothing is decided meanwhile).</summary>
+    public (ProductIdentityWorkflowTransportOutcome Outcome, string Code)? TerminalEvidenceFailure { get; set; }
+
     /// <summary>The next start answers this (once) — after creating the instance first when <c>Created</c>, the way an
     /// engine answers when the answer is lost or unreadable but the work was done.</summary>
     public (ProductIdentityWorkflowTransportOutcome Outcome, string Code, bool Created)? NextStartFailure { get; set; }
@@ -202,6 +206,9 @@ public sealed class FakeWorkflowEngine : IProductIdentityWorkflowClient
             NextTerminalEvidenceThrows = false;
             throw new IOException("the engine connection broke half-way");
         }
+        if (TerminalEvidenceFailure is { } outage)
+            return Task.FromResult(ProductIdentityWorkflowTransportResult<ProductIdentityWorkflowTerminalEvidence>.Fail(
+                outage.Outcome, outage.Code));
         // FIX5 item 1: what Platform's trusted evidence endpoint answers (GetTrustedWorkflowTerminalDecisionEvidenceHandler,
         // BL-547): no such instance → 404 NOT_FOUND_NON_LEAKAGE; cancelled / timed out without a decision → 409
         // WORKFLOW_INSTANCE_CLOSED_WITHOUT_DECISION; facts that contradict each other → 409 INCONSISTENT; open (an

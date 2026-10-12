@@ -253,6 +253,9 @@ builder.Services.AddOptions<LskuIdentityWorkflowWorkerOptions>()
     .Bind(builder.Configuration.GetSection(LskuIdentityWorkflowWorkerOptions.SectionName))
     .Validate(IsValidLskuIdentityWorkflowWorkerOptions,
         "LSKU_IDENTITY_WORKFLOW_WORKER_CONFIGURATION_INVALID")
+    // BL-607: the open-approval alert threshold against the backoff ceiling + poll interval — refused at start, by name.
+    .Validate(options => !options.Enabled || options.OpenApprovalAlertThresholdIsValid(),
+        "LSKU_IDENTITY_WORKFLOW_OPEN_APPROVAL_ALERT_THRESHOLD_INVALID")
     .ValidateOnStart();
 builder.Services.AddScoped(sp =>
 {

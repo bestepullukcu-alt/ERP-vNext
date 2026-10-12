@@ -24,6 +24,13 @@ public sealed class LskuIdentityWorkflowRecoveryRunner(
     ProductIdentityRecoveryMetrics? metrics = null)
 {
     public const string Flow = "LSKU_IDENTITY";
+    // BL-607 FIX1 item 3: an approval past the alert threshold is said when it crosses it, then at most once per this
+    // interval while it stays past (not every cycle: 15 s × 24 h = ~5,760 lines a day per replica for one approval). An
+    // hour keeps it in the day's log for whoever reads it, and the gauge carries the age between the lines.
+    public static readonly TimeSpan OpenApprovalAlertRepeat = TimeSpan.FromHours(1);
+    public const string OpenApprovalStartInvalid = "LSKU_IDENTITY_WORKFLOW_OPEN_APPROVAL_START_INVALID";
+    private readonly object _alertGate = new();
+    private DateTimeOffset? _openApprovalAlertedAt;
 
     public async Task<LskuIdentityWorkflowRecoveryRunResult> RunCycleAsync(
         CancellationToken cancellationToken = default,
@@ -129,7 +136,69 @@ public sealed class LskuIdentityWorkflowRecoveryRunner(
         cycle.Tenants = tenants;
         cycle.Log(logger, Flow);
         metrics?.Record(Flow, cycle.InManualReconciliation, cycle.NeedingAPerson);
+        await RecordOpenApprovalAsync(settings, cancellationToken);
         return new(tenants, operations, completed, deferred, failed) { Cycle = cycle };
+    }
+
+    /// <summary>
+    /// BL-607 FIX1 item 1 — THE OPEN-APPROVAL GAUGE NEVER TAKES THE CYCLE DOWN. Its read and its conversion run after the
+    /// cycle is counted and logged, in their own try / catch: a store that throws marks the gauge failed (the age is
+    /// dropped, never left stale) and says so once per cycle at Error; a start that is not a valid instant (below 0 or past
+    /// <see cref="DateTimeOffset.MaxValue"/>) is ignored by name, never thrown on every cycle. A cancellation still ends the
+    /// cycle.
+    /// </summary>
+    private async Task RecordOpenApprovalAsync(LskuIdentityWorkflowWorkerOptions settings, CancellationToken cancellationToken)
+    {
+        var alertAfter = TimeSpan.FromMinutes(settings.OpenApprovalAlertAfterMinutes);
+        TimeSpan? oldestOpenApproval = null;
+        try
+        {
+            long? openedAt;
+            await using (var scope = scopeFactory.CreateAsyncScope())
+                openedAt = await scope.ServiceProvider.GetRequiredService<ILskuIdentityWorkflowTenantPartitionDiscovery>()
+                    .OldestOpenApprovalStartedAtUtcTicksAsync(cancellationToken);
+            if (openedAt is { } ticks)
+            {
+                if (ticks < 0 || ticks > DateTimeOffset.MaxValue.UtcTicks)
+                    logger.LogError("{Flow}: the oldest open approval carries a start that is not an instant ({ResultCode}); it is ignored.",
+                        Flow, OpenApprovalStartInvalid);
+                else
+                    oldestOpenApproval = timeProvider.GetUtcNow() - new DateTimeOffset(ticks, TimeSpan.Zero);
+            }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
+        catch (Exception exception)
+        {
+            metrics?.RecordOpenApprovalReadFailed(Flow, alertAfter);
+            logger.LogError("{Flow}: the oldest open approval could not be read ({ErrorCode}); the cycle is counted, the open-approval gauge is marked failed.",
+                Flow, Safe(exception.GetType().Name.ToUpperInvariant()));
+            return;
+        }
+
+        metrics?.RecordOldestOpenApproval(Flow, oldestOpenApproval, alertAfter);
+        if (!ShouldSayOpenApprovalAlert(oldestOpenApproval > alertAfter))
+            return;
+        logger.LogWarning("{Flow}: the oldest approval still open has waited {AgeMinutes} min, past the alert threshold of {ThresholdMinutes} min (a person has not decided; nothing is stuck).",
+            Flow, (long)oldestOpenApproval!.Value.TotalMinutes, settings.OpenApprovalAlertAfterMinutes);
+    }
+
+    // BL-607 FIX1 item 3: said when the threshold is crossed, then at most once per OpenApprovalAlertRepeat while it stays
+    // crossed; once nothing is past the threshold the next crossing is said at once again.
+    private bool ShouldSayOpenApprovalAlert(bool past)
+    {
+        lock (_alertGate)
+        {
+            if (!past)
+            {
+                _openApprovalAlertedAt = null;
+                return false;
+            }
+            var now = timeProvider.GetUtcNow();
+            if (_openApprovalAlertedAt is { } said && now - said < OpenApprovalAlertRepeat)
+                return false;
+            _openApprovalAlertedAt = now;
+            return true;
+        }
     }
 
     // FIX3 item 2: a wait that reached its limit (still Retryable, still waiting) is stuck too — as in the gauge.

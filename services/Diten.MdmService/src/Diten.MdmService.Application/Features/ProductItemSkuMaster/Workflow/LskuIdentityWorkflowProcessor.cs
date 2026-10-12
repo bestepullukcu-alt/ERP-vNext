@@ -956,8 +956,15 @@ public sealed class LskuIdentityWorkflowProcessor(
             operation.TenantId,
             new(operation.WorkflowInstanceId.Value, operation.ObjectType, operation.ObjectId),
             cancellationToken);
-        if (result.Outcome is ProductIdentityWorkflowTransportOutcome.NonTerminal
-            or ProductIdentityWorkflowTransportOutcome.NotFound
+        // BL-607: NOT_TERMINAL (an escalated approval included) is an approval still open — a person has not decided yet.
+        // It is not a failure: it never counts toward the retry limit, and it is asked again on its own backoff.
+        if (result.Outcome is ProductIdentityWorkflowTransportOutcome.NonTerminal)
+        {
+            return await AwaitOpenApprovalAsync(operation, claim, result.ErrorCode, now, retryDelay, cancellationToken);
+        }
+        // A real fault (the provider unavailable, a refusal of this service, an answer that cannot be read) counts as
+        // before and reaches RETRY_LIMIT_REACHED.
+        if (result.Outcome is ProductIdentityWorkflowTransportOutcome.NotFound
             or ProductIdentityWorkflowTransportOutcome.Incomplete
             || Retryable(result.Outcome)
             || result.Outcome != ProductIdentityWorkflowTransportOutcome.Success
@@ -1291,6 +1298,8 @@ public sealed class LskuIdentityWorkflowProcessor(
     }
 
     public const string RetryLimitReached = "LSKU_IDENTITY_WORKFLOW_RETRY_LIMIT_REACHED";
+    // BL-607 FIX1: this flow's own "a person has not decided" — stored only when the engine's answer carried no code.
+    public const string DecisionPending = "LSKU_IDENTITY_WORKFLOW_DECISION_PENDING";
 
     /*
      * FIX3 item 2 (the retirement flow's RetryAsync): a wait is bounded and counted. Only the worker's attempts count
@@ -1337,6 +1346,40 @@ public sealed class LskuIdentityWorkflowProcessor(
                 RetryLimitCauseCode: cause),
             cancellationToken);
     }
+
+    /// <summary>
+    /// BL-607 — AN OPEN APPROVAL WAITS; IT IS NOT A FAILURE. Before, NOT_TERMINAL went through
+    /// <see cref="ScheduleRetryAsync"/> counted: thirty "not decided yet" answers (~6.5 h at the 15-min ceiling) made a
+    /// healthy approval RETRY_LIMIT_REACHED — "stuck", an operator alarm and a manual reconciliation. Now (the rule the GSKU
+    /// identity and correction flows already follow): the worker's streak is over (Reset — a run of real faults before this
+    /// answer is forgiven, as a success would), the limit is never reached by waiting, and the next look follows
+    /// <see cref="ProductIdentityOpenApprovalBackoff"/> — doubling, capped, from the moment the approval opened (the request's
+    /// creation when that moment is unknown); never a flat 30-second poll.
+    /// <para>FIX1 — only the WORKER reaches this step: the maker's interactive pass stops at AwaitingDecision before it claims
+    /// (<c>stopWhenAwaitingDecision: true</c>), so there is no uncounted caller and no "keep the limit" branch (it was dead
+    /// code). The stored code is the engine's own (WORKFLOW_DECISION_NOT_TERMINAL), as the GSKU correction and retirement
+    /// flows store it — one code for "a person has not decided" across the product-identity flows; this flow's
+    /// LSKU_IDENTITY_WORKFLOW_DECISION_PENDING only when the engine sent none.</para>
+    /// </summary>
+    private Task<bool> AwaitOpenApprovalAsync(
+        LskuIdentityWorkflowOperation operation,
+        LskuIdentityWorkflowClaim claim,
+        string? errorCode,
+        DateTimeOffset now,
+        TimeSpan retryDelay,
+        CancellationToken cancellationToken) =>
+        operations.AdvanceAsync(
+            claim,
+            new(
+                LskuIdentityWorkflowCheckpoint.AwaitingDecision,
+                ProductIdentityWorkflowRecoveryDisposition.Retryable,
+                now.UtcTicks,
+                ProductIdentityOpenApprovalBackoff.NextLookAtUtcTicks(
+                    operation.WorkflowStartedAtUtcTicksV1, operation.CreatedAtUtcTicksV1, now, retryDelay),
+                BoundedCode(errorCode, DecisionPending),
+                ReleaseLease: true,
+                Streak: RecoveryStreakWrite.Reset),
+            cancellationToken);
 
     private Task<bool> QuarantineAsync(
         LskuIdentityWorkflowClaim claim,

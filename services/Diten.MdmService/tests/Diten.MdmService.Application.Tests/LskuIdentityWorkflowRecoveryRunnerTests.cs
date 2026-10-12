@@ -125,6 +125,9 @@ public sealed class LskuIdentityWorkflowRecoveryRunnerTests
                 : method.Name is nameof(ILskuIdentityWorkflowTenantPartitionDiscovery.CountManualReconciliationAsync)
                     or nameof(ILskuIdentityWorkflowTenantPartitionDiscovery.CountNeedingAPersonAsync)
                 ? Task.FromResult(1L)
+                // BL-607: the oldest open approval (tenant-free) is read once per cycle too; none here.
+                : method.Name == nameof(ILskuIdentityWorkflowTenantPartitionDiscovery.OldestOpenApprovalStartedAtUtcTicksAsync)
+                ? Task.FromResult<long?>(null)
                 : throw new InvalidOperationException($"Unexpected tenant discovery call: {method.Name}"));
         var processor = new LskuIdentityWorkflowProcessor(
             operationRepository,

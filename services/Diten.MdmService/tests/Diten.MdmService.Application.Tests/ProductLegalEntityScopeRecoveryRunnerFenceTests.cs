@@ -133,7 +133,8 @@ public sealed class ProductLegalEntityScopeRecoveryRunnerFenceTests
 
     /// <summary>
     /// An interface answering only the calls named here; any other call fails the test loudly (it was not expected),
-    /// except the optional counts (a Task&lt;long&gt; answers 0).
+    /// except the optional counts (a Task&lt;long&gt; answers 0) and the optional oldest-open-approval read (BL-607: a
+    /// Task&lt;long?&gt; answers null — no approval open).
     /// </summary>
     private static T Fake<T>(params (string Method, Func<object?[]?, object> Answer)[] answers) where T : class
     {
@@ -150,6 +151,7 @@ public sealed class ProductLegalEntityScopeRecoveryRunnerFenceTests
         {
             if (targetMethod is not null && Answers.TryGetValue(targetMethod.Name, out var answer)) return answer(args);
             if (targetMethod?.ReturnType == typeof(Task<long>)) return Task.FromResult(0L);
+            if (targetMethod?.ReturnType == typeof(Task<long?>)) return Task.FromResult<long?>(null);
             throw new NotSupportedException($"Unexpected call: {targetMethod?.DeclaringType?.Name}.{targetMethod?.Name}");
         }
     }
