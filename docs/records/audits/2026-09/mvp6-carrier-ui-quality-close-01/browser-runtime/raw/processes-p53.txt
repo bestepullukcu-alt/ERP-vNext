@@ -1,0 +1,5 @@
+83016 82981 Wed Sep 23 21:07:16 2026     dotnet bin/Debug/net8.0/Diten.Platform.API.dll
+83115 83080 Wed Sep 23 21:07:33 2026     dotnet bin/Debug/net8.0/Diten.AuthService.Api.dll
+83185 83150 Wed Sep 23 21:08:02 2026     dotnet bin/Debug/net8.0/Diten.SupplyChainService.Api.dll --urls http://127.0.0.1:5361
+83256 83221 Wed Sep 23 21:08:17 2026     dotnet /private/tmp/mvp6-carrier-ui-quality-close-01/snapshot-v3/gateway/Diten.ApiGateway/bin/Debug/net8.0/Diten.ApiGateway.dll --urls http://127.0.0.1:5300 --contentRoot /private/tmp/mvp6-carrier-ui-quality-close-01/gateway-runtime
+83326 83291 Wed Sep 23 21:08:32 2026     dotnet bin/Debug/net8.0/Diten.Web.dll

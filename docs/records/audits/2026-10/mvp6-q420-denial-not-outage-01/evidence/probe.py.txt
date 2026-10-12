@@ -1,0 +1,51 @@
+# usage: probe.py <W> <label> <phase: seed|denial|outage>
+import base64, hashlib, hmac, json, sys, time, uuid, urllib.request, urllib.error
+W, label, phase = sys.argv[1:4]
+secret = open(W + '/secret/jwt.txt').read().strip().encode()
+T, LE, SUB = '42000000-0000-4000-8000-00000000000a', '42000000-0000-4000-8000-0000000000e1', '42000000-0000-4000-8000-0000000000c1'
+b64 = lambda b: base64.urlsafe_b64encode(b).rstrip(b'=')
+def token(perms):
+    now = int(time.time()); c = {'iss': 'diten-auth-service', 'aud': 'diten-erp', 'iat': now, 'nbf': now, 'exp': now + 900, 'sub': SUB,
+         'tenant_id': T, 'legal_entity_id': LE, 'actor_type': 'tenant_user', 'permission': perms}
+    h = b64(json.dumps({'alg': 'HS256', 'typ': 'JWT'}).encode()); p = b64(json.dumps(c).encode())
+    return (h + b'.' + p + b'.' + b64(hmac.new(secret, h + b'.' + p, hashlib.sha256).digest())).decode()
+def call(port, method, path, perms, body=None, correlation=None):
+    hdr = {'Authorization': 'Bearer ' + token(perms), 'X-Tenant-Id': T, 'X-Legal-Entity-Id': LE, 'X-Correlation-Id': correlation or str(uuid.uuid4())}
+    if body is not None: hdr.update({'Content-Type': 'application/json', 'Idempotency-Key': str(uuid.uuid4())})
+    req = urllib.request.Request(f'http://127.0.0.1:{port}{path}', method=method, headers=hdr, data=None if body is None else json.dumps(body).encode())
+    t0 = time.time()
+    try: r = urllib.request.urlopen(req, timeout=30); s, b = r.status, r.read().decode()
+    except urllib.error.HTTPError as e: s, b = e.code, e.read().decode()
+    return s, b, round(time.time() - t0, 2)
+state = W + '/state.json'
+if phase == 'seed':
+    s, b, _ = call(58421, 'POST', '/api/shipment-bundle/shipments', ['supplychain.shipments.create'], {
+        'sourceModule': 'MOD-0141', 'sourceType': 'SALES_ORDER', 'sourceDocumentId': 'SO-Q420', 'warehouseReferenceId': 'wh-01',
+        'shipToReference': 'CUST-1/ADDR-1', 'plannedShipAt': '2026-10-05T08:00:00Z',
+        'lines': [{'lineNumber': '1', 'itemId': str(uuid.uuid4()), 'skuId': str(uuid.uuid4()), 'quantity': '5', 'uomId': 'EA'}]})
+    sid = json.loads(b)['shipmentId']; s2, b2, _ = call(58421, 'GET', f'/api/shipment-bundle/shipments/{sid}', ['supplychain.shipments.read'])
+    root = json.loads(b2).get('lifecycleCorrelationId'); json.dump({'shipmentId': sid, 'root': root}, open(state, 'w'))
+    print(f'[{label}] seed: create {s}, read {s2}, shipmentId={sid}, lifecycleCorrelationId={root}'); sys.exit()
+st = json.load(open(state)); sid, root = st['shipmentId'], st['root']
+ret = {'shipmentId': sid, 'reasonCode': 'DAMAGED', 'lines': [{'shipmentLineNumber': '1', 'quantity': '1', 'uomId': 'EA'}]}
+clm = lambda carrier: dict({'shipmentId': sid, 'reasonCode': 'DAMAGED', 'claimedAmount': '250.00', 'currency': 'EUR'}, **({'carrierId': carrier} if carrier else {}))
+cases = {
+ 'denial': [
+  ('RETURN create, user WITHOUT shipments.read', 'POST', '/api/shipment-bundle/returns', ['supplychain.returns.create'], ret),
+  ('RETURN create, user WITH shipments.read (control: reaches business rules)', 'POST', '/api/shipment-bundle/returns', ['supplychain.returns.create', 'supplychain.shipments.read'], ret),
+  ('CLAIM create naming a carrier, user WITHOUT carriers.read', 'POST', '/api/shipment-bundle/claims', ['supplychain.claims.create', 'supplychain.shipments.read'], clm(str(uuid.uuid4()))),
+  ('CLAIM create, user WITHOUT shipments.read', 'POST', '/api/shipment-bundle/claims', ['supplychain.claims.create'], clm(None)),
+  ('CLAIM create naming a carrier, user WITH carriers.read (control)', 'POST', '/api/shipment-bundle/claims', ['supplychain.claims.create', 'supplychain.shipments.read', 'supplychain.carriers.read'], clm(str(uuid.uuid4()))),
+ ],
+ 'outage': [
+  ('RETURN create, fully granted, dependency DOWN', 'POST', '/api/shipment-bundle/returns', ['supplychain.returns.create', 'supplychain.shipments.read'], ret),
+  ('CLAIM create, fully granted, dependency DOWN', 'POST', '/api/shipment-bundle/claims', ['supplychain.claims.create', 'supplychain.shipments.read', 'supplychain.carriers.read'], clm(None)),
+ ]}
+if phase.startswith('outage'):
+    s, b, d = call(58421, 'GET', f'/api/shipment-bundle/shipments/{sid}', ['supplychain.shipments.read']) if phase == 'outage-5xx' else ('refused', '', 0)
+    print(f'[{label}] dependency itself (B, GET shipment, full grant): {s} {d}s {b[:160]}')
+for name, m, path, perms, body in cases['outage' if phase.startswith('outage') else phase]:
+    s, b, d = call(58420, m, path, perms, body, correlation=root)
+    try: e = json.loads(b).get('error', {}); summary = f"code={e.get('code')} message={e.get('message')!r}" if e else b[:200]
+    except Exception: summary = b[:200]
+    print(f'[{label}] {name}\n    -> {s} {summary} ({d}s)')

@@ -1,0 +1,15 @@
+observation	value
+source_manifest_sha256	3b7086f0cc839c33f0753076e732aa436b9a8e5cd186f1484f2b0225364d033c
+carrier_patch_sha256	57f90dadedd6e2304e3775fd1ea0bd7def29ad9d265ccbbeb892afdc04ba1adb
+browser_tool	Codex in-app browser viewport capability
+console_warning_error_count	0
+viewport_768	innerWidth=768; innerHeight=900; DPR=1; documentScrollWidth=768; bodyScrollWidth=768; dir=rtl
+viewport_768_table	x=16;y=204.6328125;width=736;height=103.65625
+viewport_768_offcanvas	x=0;y=0;width=400;height=900; four approved fields; no document overflow
+viewport_390	innerWidth=390; innerHeight=844; DPR=1; documentScrollWidth=390; bodyScrollWidth=390; dir=rtl
+viewport_390_table	x=16;y=204.6328125;width=358;height=121.53125
+viewport_390_search	x=108.015625;y=158.625;width=172.484375;height=38
+viewport_390_add	x=24;y=158.625;width=38.0078125;height=38.0078125
+viewport_390_offcanvas	x=0;y=0;width=390;height=844; four approved fields; no document overflow
+auth_boundary	Admin rendered shell/page but downstream list failed closed without usable LE context; no mutation acceptance claimed
+uas_rerun	Fresh UAS login unavailable; prior source-bound UAS PASS retained, not relabeled as fresh

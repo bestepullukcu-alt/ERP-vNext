@@ -1,0 +1,67 @@
+import sys, os, json
+sys.path.insert(0, os.path.expanduser("~/q26"))
+from guard_emulator import *
+OUT = os.path.expanduser("~/q26/out")
+B = "docs/records/audits/2026-09/"
+OLD_Y = "5dfe7c1bba32551bd8d4b532243878684e69a6d9560e667a4183bfd516b9d21c"
+NEW_Y = "6dc1dd486375130dc4225d59f08bc4ff05e62d148ac72aeeb2034731e7796aa2"
+PROV_PATH = B + "mvp6-loads-publication-guard-01/PROVENANCE.md"
+DEC_PATH = "docs/records/decisions/2026-09/mvp6-loads-publication-guard-owner-decision-01.json"
+DEC_ID = "MVP6-LOADS-PUBLICATION-GUARD-01"
+SEALS = [  # (path, kind) in fixed order
+ (B+"mvp6-loads-root-amendment-independent-ver-01/verify_candidate.py", "historical-tool"),
+ (B+"mvp6-loads-root-amendment-independent-ver-01/raw/raw-results.json", "historical-data"),
+ (B+"mvp6-loads-root-amendment-independent-ver-01/raw/verifier.stdout.json", "historical-data"),
+ (B+"mvp6-loads-root-amendment-independent-rever-01/verify_rever.py", "historical-tool"),
+ (B+"mvp6-loads-root-amendment-independent-rever-01/raw/results.json", "historical-data"),
+ (B+"mvp6-loads-root-amendment-release-prep-01/verify_release_prep.py", "historical-tool"),
+ (B+"mvp6-loads-root-amendment-release-prep-01/raw/validation-results.json", "historical-data"),
+ (B+"mvp6-loads-root-amendment-release-prep-01/raw/validator.stdout.json", "historical-data"),
+]
+nested = {"Diten.AuthService", "Diten.Platform", "publication"}
+rows = []
+for p, k in SEALS:
+    data = open(p, "rb").read()
+    hs = [(ln, x) for ln, x in file_hits(data, nested) if x not in FIVE]
+    assert hs, p
+    rows.append((p, k, sha(data), hs[0][0], [ln for ln, _ in hs]))
+# PROVENANCE.md (final bytes; stored here as PROVENANCE.md.txt)
+prov = ["# Exact provenance for 8 sealed Loads amendment evidence inputs (MVP6-LOADS-PUBLICATION-GUARD-01)", ""]
+for p, k, h, first, lines in rows:
+    extra = "" if len(lines) == 1 else f"; lines {', '.join(map(str, lines[1:]))} are further historical canonical pointers in the same sealed file"
+    prov.append(f"- `{p}:{first}`; baseline SHA256 `{h}` — immutable Loads root-amendment candidate/VER/release-prep evidence (24 Sep 2026); proposed `{k}`{extra}. Original bytes remain at this path.")
+prov_text = "\n".join(prov) + "\n"
+prov_bytes = prov_text.encode()
+prov_lines = prov_text.split("\n")
+seal_line = {}
+for p, *_ in rows:
+    seal_line[p] = next(i + 1 for i, l in enumerate(prov_lines) if l.startswith(f"- `{p}:"))
+prov_sha = sha(prov_bytes)
+# Candidate authority: current bytes, YAML target re-pinned, 8 seals appended, UNAPPROVED + decision null (precedent form)
+cur = open(AUTH, "r", encoding="utf-8", newline="").read()
+assert cur.count(OLD_Y) == 1
+t = cur.replace(OLD_Y, NEW_Y)
+tail = "\n    }\n  ]\n}\n"; assert t.endswith(tail)
+add = ""
+for p, k, h, first, lines in rows:
+    add += (",\n    {\n"
+      f'      "path": "{p}",\n      "sha256": "{h}",\n      "kind": "{k}",\n'
+      f'      "provenancePath": "{PROV_PATH}",\n      "provenanceSha256": "{prov_sha}",\n'
+      f'      "provenanceLine": {seal_line[p]},\n      "targets": []\n    }}')
+t = t[:-len(tail)] + "\n    }" + add + "\n  ]\n}\n"
+cur_head = '"status": "APPROVED",\n  "decision": {\n    "path": "docs/records/decisions/2026-09/mvp6-capacity-guard-single-disposition-owner-decision-01.json",\n    "sha256": "877c3878d9b38446fc437a384d5e61630ccbec601dc5dd025a536ea21aa20ae2"\n  },'
+assert t.count(cur_head) == 1
+cand = t.replace(cur_head, '"status": "UNAPPROVED",\n  "decision": null,')
+pl = payload(cand); pl_sha = sha(pl.encode())
+assert payload(t) == pl  # payload independent of status/decision
+dec_cand = ('{\n  "kind": "DOCS_PATH_OWNER_DECISION",\n  "status": "UNAPPROVED",\n'
+            f'  "decisionId": "{DEC_ID}",\n  "approvedBy": "PENDING-OWNER",\n  "payloadSha256": "{pl_sha}"\n}}\n')
+json.loads(cand); json.loads(dec_cand)
+for name, data in [("docs-path-authority.candidate.json.txt", cand), ("owner-decision.candidate.json.txt", dec_cand),
+                   ("PROVENANCE.md.txt", prov_text), ("authority-payload.txt", pl)]:
+    open(os.path.join(OUT, name), "w", encoding="utf-8", newline="").write(data)
+json.dump({"rows": rows, "seal_line": seal_line, "prov_sha": prov_sha, "payload_sha": pl_sha, "cur_head": cur_head,
+           "prov_path": PROV_PATH, "dec_path": DEC_PATH, "dec_id": DEC_ID}, open(os.path.join(OUT, "meta.json"), "w"), indent=1)
+for p, k, h, first, lines in rows: print(k, h[:12], p.split("2026-09/")[1], "prov-line", seal_line[p], "hit-lines", lines)
+print("provenance sha", prov_sha); print("payload sha", pl_sha, "payload bytes", len(pl.encode()))
+print("candidate authority sha", sha(cand.encode()), "decision candidate sha", sha(dec_cand.encode()))

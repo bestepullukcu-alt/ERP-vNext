@@ -1,5 +1,6 @@
 using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Models;
+using Diten.CrmService.Application.Features.StrategyTemplate.Binding;
 using Diten.CrmService.Application.Features.StrategyTemplate.Queries;
 using Diten.CrmService.Domain.Repositories;
 using MediatR;
@@ -13,11 +14,15 @@ public sealed class GetStrategyTemplateByIdHandler
 {
     private readonly ITenantContext _tenant;
     private readonly IStrategyTemplateRepository _templates;
+    private readonly StrategyTemplateLineJourneyReader? _journeys;
 
-    public GetStrategyTemplateByIdHandler(ITenantContext tenant, IStrategyTemplateRepository templates)
+    /// <param name="journeys">WP-SB-3a — each product line's journey name / status / hints (read-only).</param>
+    public GetStrategyTemplateByIdHandler(
+        ITenantContext tenant, IStrategyTemplateRepository templates, StrategyTemplateLineJourneyReader? journeys = null)
     {
         _tenant = tenant;
         _templates = templates;
+        _journeys = journeys;
     }
 
     public async Task<Response<StrategyTemplateDetailDto>> Handle(
@@ -29,8 +34,21 @@ public sealed class GetStrategyTemplateByIdHandler
         }
 
         var template = await _templates.GetByIdAsync(tenantId, request.TemplateId, cancellationToken);
-        return template is null
-            ? Response<StrategyTemplateDetailDto>.Fail("Strategy template not found.", 404)
-            : Response<StrategyTemplateDetailDto>.Success(StrategyTemplateMapper.ToDetail(template));
+        if (template is null)
+        {
+            return Response<StrategyTemplateDetailDto>.Fail("Strategy template not found.", 404);
+        }
+
+        var journeys = _journeys is null ? null : await _journeys.ReadAsync(tenantId, template, cancellationToken);
+        var detail = StrategyTemplateMapper.ToDetail(template, journeys);
+
+        // WP-E2E-FIX-3 (E5-B2) — "Yerini v{n} aldı": one read of the successor, only when there is one.
+        if (template.SupersededByTemplateId is { } next
+            && await _templates.GetByIdAsync(tenantId, next, cancellationToken) is { } successor)
+        {
+            detail = detail with { SupersededByTemplateVersion = successor.TemplateVersion };
+        }
+
+        return Response<StrategyTemplateDetailDto>.Success(detail);
     }
 }

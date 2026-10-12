@@ -1,0 +1,32 @@
+resource	check	result	utc
+browser-tabs-and-profiles	closed by operator (manual)	PASS: harness closed all contexts; 0 chromium processes on lane profiles; profiles deleted with workspace	2026-09-26T07:48:07Z
+web:16378	stop	stopped	2026-09-26T07:48:08Z
+gateway:16357	stop	stopped	2026-09-26T07:48:08Z
+supplychain:16336	stop	stopped	2026-09-26T07:48:09Z
+mdm:16319	stop	stopped	2026-09-26T07:48:09Z
+platform:16257	stop	stopped	2026-09-26T07:48:10Z
+auth:16224	stop	stopped	2026-09-26T07:48:10Z
+platform:16032	process	already-exited	2026-09-26T07:48:10Z
+platform:15995	process	already-exited	2026-09-26T07:48:10Z
+mdm:15912	process	already-exited	2026-09-26T07:48:10Z
+platform:15863	process	already-exited	2026-09-26T07:48:10Z
+auth:15830	process	already-exited	2026-09-26T07:48:10Z
+mongod:15795	stop	stopped	2026-09-26T07:48:12Z
+port:auth:5456	no listener	PASS	2026-09-26T07:48:12Z
+port:platform:5457	no listener	PASS	2026-09-26T07:48:12Z
+port:mdm:5459	no listener	PASS	2026-09-26T07:48:12Z
+port:supplychain:5461	no listener	PASS	2026-09-26T07:48:12Z
+port:gateway:5400	no listener	PASS	2026-09-26T07:48:12Z
+port:web:5401	no listener	PASS	2026-09-26T07:48:12Z
+port:sink:5499	no listener	PASS	2026-09-26T07:48:12Z
+port:mongo:34994	no listener	PASS	2026-09-26T07:48:12Z
+workspace:secrets	removed	PASS	2026-09-26T07:48:12Z
+workspace:env	removed	PASS	2026-09-26T07:48:12Z
+workspace:mongo	removed	PASS	2026-09-26T07:48:12Z
+workspace:source	removed	PASS	2026-09-26T07:48:15Z
+workspace:gateway-runtime	removed	PASS	2026-09-26T07:48:15Z
+workspace:logs	removed	PASS	2026-09-26T07:48:15Z
+workspace	removed	PASS	2026-09-26T07:48:15Z
+repo-head	4a8d4d4b339528a88e6220fb8402e5a2c771136c	PASS	2026-09-26T07:48:15Z
+repo-branch	feature/mvp6-logistics	PASS	2026-09-26T07:48:15Z
+repo-status	new entries: 2	FAIL	2026-09-26T07:48:22Z

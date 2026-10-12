@@ -1,0 +1,20 @@
+{
+  "actor": "readonly",
+  "role": "Q122Matrix-decide",
+  "requestedKeys": [
+    "supplychain.claims.decide",
+    "supplychain.claims.read",
+    "supplychain.shipments.read"
+  ],
+  "supplychainKeysBefore": [
+    "supplychain.claims.investigate",
+    "supplychain.claims.read",
+    "supplychain.shipments.read"
+  ],
+  "supplychainKeysAfter": [
+    "supplychain.claims.decide",
+    "supplychain.claims.read",
+    "supplychain.shipments.read"
+  ],
+  "membershipsSoftDeleted": 1
+}

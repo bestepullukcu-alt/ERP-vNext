@@ -1,0 +1,8 @@
+{
+  "measuredUtc": "2026-09-16T18:30:59.984037+00:00",
+  "branch": "feature/mvp6-logistics",
+  "head": "4a8d4d4b339528a88e6220fb8402e5a2c771136c",
+  "dirty": " M execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md\n?? docs/records/audits/2026-09/mod-0184-contract-owner-decisions-v1.0.md\n?? docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/carrier-semantics-v1.1.0.md\n?? docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/error-matrix.json\n?? docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/shipment-bundle-1.0.0-to-1.1.0.candidate.diff\n?? docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/shipment-bundle.openapi.candidate.yaml\n?? docs/records/audits/2026-09/mod-0184-prep-01-approval-v1.0.md\n?? docs/records/audits/2026-09/mod-0184-runtime-gate-review-v1.0.md\n?? docs/records/audits/2026-09/mvp6-continuation-review-2026-09-16/provenance.json\n?? docs/records/audits/2026-09/mvp6-continuation-review-2026-09-16/ver-04-report.md\n?? docs/records/audits/2026-09/mvp6-continuation-review-2026-09-16/ver-05-report.md\n?? docs/records/audits/2026-09/mvp6-continuation-review-2026-09-16/ver-06-report.md\n?? docs/records/audits/2026-09/mvp6-mod0183-ct-review-01-2026-09-16.md\n?? docs/roadmap/plans/mod-0184-dev-01-prompt-v1.0.md\n?? docs/roadmap/plans/mod-0184-ver-01-prompt-v1.0.md\n?? docs/roadmap/plans/mvp6-logistics-continuation-2026-09-16.md\n",
+  "canonicalSha256": "f6415bbfda42a61a9845e7e1fc843be087bf249cac6bcdc9cb678284766450a1",
+  "ownerDecisionSha256": "01988d8d57399d317f93633dac25a430a2a6af132b52b2b7510336c34b62f16a"
+}

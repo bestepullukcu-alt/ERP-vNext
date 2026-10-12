@@ -1,0 +1,14 @@
+id	requirement	evidence	result	classification
+RVR-01	Exact YAML/annex/patch hashes	raw/results.json#/hashes	PASS	FRESH
+RVR-02	Canonical preimages match 5dfe7c1b… and a2187c93…	raw/results.json#/hashes	PASS	FRESH
+RVR-03	git apply --check and apply exit 0	raw/results.json#/apply	PASS	FRESH
+RVR-04	Applied YAML byte-equals candidate-02	raw/results.json#/apply/yaml_byte_equal	PASS	FRESH
+RVR-05	Applied v3 annex byte-equals candidate-02 and v2 preimage is preserved	raw/results.json#/apply	PASS	FRESH
+RVR-06	Candidate-01 and candidate-02 YAML byte-identical	raw/results.json#/delta/yaml_byte_identical_candidate01_candidate02	PASS	FRESH
+RVR-07	Annex differs only at line 192 version token	raw/candidate01-to-02.diff; raw/results.json#/delta	PASS	FRESH
+RVR-08	Title/opening/normative version consistent; wire v1 and migration warning retained	SOP-22.md; candidate-02 annex lines 1-3 and 190-195	PASS	FRESH
+RVR-09	Root authority/error/status/permission/replay semantics unchanged outside one line	raw/results.json#/delta/annex_byte_equal_after_reversing_one_token	PASS	FRESH
+RVR-10	Full OAS 3.1/ref/example evidence bound to identical YAML hash	raw/inherited-evidence.json	PASS	INHERITED
+RVR-11	Optional-field consumer compatibility not presumed	RELEASE-GATES.md	OPEN	RELEASE_DECISION
+RVR-12	Publication/consent/runtime authority not granted	RELEASE-GATES.md	HELD	AUTHORITY
+

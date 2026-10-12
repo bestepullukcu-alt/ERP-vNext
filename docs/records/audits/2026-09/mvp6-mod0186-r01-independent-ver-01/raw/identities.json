@@ -1,0 +1,78 @@
+{
+  "main": {
+    "shipmentId": "dee43317-72c3-43f0-b412-8b28b002e7b5",
+    "root": "c0f56e72-b5fe-42bb-a967-03a2b9fe78b6"
+  },
+  "cap": {
+    "shipmentId": "954d938e-6e07-403c-9ba0-2d94cd58ad82",
+    "root": "7e349762-3592-4f3a-849a-8d2bcb174285"
+  },
+  "race66": {
+    "shipmentId": "38233f1a-59be-430e-9f9a-09a91cad352d",
+    "root": "62585c97-afd3-4ebe-bfd5-5988ae7b054c"
+  },
+  "race46": {
+    "shipmentId": "0490d9b6-d865-4c42-8e42-11b4844fc7dd",
+    "root": "eccdbc47-fa15-47c5-9c13-e873df1c9fc3"
+  },
+  "drift": {
+    "shipmentId": "adffb959-3ede-43f5-832f-636de9dd8b64",
+    "root": "59720770-4669-47f5-b180-7708471e140f"
+  },
+  "release": {
+    "shipmentId": "29838d6f-1984-4ce0-be38-ef8c1ae41cf2",
+    "root": "718d9e5e-f185-46d6-b280-d414faf2a444"
+  },
+  "soft-source": {
+    "shipmentId": "bb07aa60-43e7-4233-b42e-c0a4ed5b2f20",
+    "root": "2bab0501-c71e-4ad3-a469-3ef731239d18"
+  },
+  "response-loss": {
+    "shipmentId": "ba6c069f-3a9d-487f-ac52-a0869e227ec8",
+    "root": "bdb10360-7f81-49d4-9a6f-acd94d743f61"
+  },
+  "invalid-cancel": {
+    "shipmentId": "a7b3f953-aabf-44c0-9e40-3cd34ecd9d76",
+    "root": "d81923a3-714e-40b9-afa6-42f836bf197a"
+  },
+  "root-missing": {
+    "shipmentId": "31207d0f-6585-4c72-9f35-04ac46ec4c84",
+    "root": "26933399-f031-4f07-9c7f-48643e70c039"
+  },
+  "root-null": {
+    "shipmentId": "d0febf61-d088-41a5-a4b7-f2a078365cea",
+    "root": "25fa70a7-b770-4fa8-af1c-72244e9c2b6c"
+  },
+  "root-bad": {
+    "shipmentId": "b98ff9e2-1413-438c-8c0a-02bffa3b0d47",
+    "root": "2b25b1c6-b42b-4dcd-9512-134405e77f89"
+  },
+  "fault0": {
+    "shipmentId": "82d80283-9306-44a5-8ec9-5b71c13ca33d",
+    "root": "0c11e7ab-af49-4036-9cb0-d1862b4cb958"
+  },
+  "fault1": {
+    "shipmentId": "347ea242-9990-4483-9782-99e36c1e72bb",
+    "root": "9ce610da-c055-4a92-a635-12facd60e50b"
+  },
+  "fault2": {
+    "shipmentId": "b0312852-5b92-408c-8831-e8a25431592d",
+    "root": "f62ddde4-c697-4d46-bfa4-940c333fd1fb"
+  },
+  "fault3": {
+    "shipmentId": "6493f148-f1dd-4b26-9810-e24e882a7e76",
+    "root": "f0614179-ee93-4792-9d1f-4c788ce586bd"
+  },
+  "fault4": {
+    "shipmentId": "414875ab-5cf8-4730-8b2f-bb8463fc8b1f",
+    "root": "ea772add-6df8-424d-ad65-df24193f9337"
+  },
+  "unknown-recover": {
+    "shipmentId": "805c9750-bb83-46f1-8d30-bc2ef71f00cd",
+    "root": "23d1c244-f855-423c-8d9b-748ea136d55e"
+  },
+  "unknown-fail": {
+    "shipmentId": "ec06083d-a79c-4813-baad-322240e1f8a0",
+    "root": "c23ea8c2-ede0-4d0d-ac76-a3c722413f94"
+  }
+}

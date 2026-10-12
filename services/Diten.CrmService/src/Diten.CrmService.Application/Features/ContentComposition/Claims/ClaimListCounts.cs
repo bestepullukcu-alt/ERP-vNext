@@ -11,8 +11,8 @@ namespace Diten.CrmService.Application.Features.ContentComposition.Claims;
 /// <item><c>evidenceCount</c>: the record's OWN active MOD-0031 links, from the page's single bulk evidence read
 /// (the read-time evidence snapshot); null when MOD-0031 is unavailable.</item>
 /// <item><c>approvedCountryCount</c>: countries of the claim code with a live approved or review-required version.</item>
-/// <item><c>usageCount</c>: distinct contents + content sets + journeys using the claim code (the WP-CL-BE-6 usage
-/// rules, evaluated in memory over one tenant read of each source).</item>
+/// <item><c>usageCount</c>: distinct contents + knowledge paths (WP-KP-4, replacing the retired content sets) + journeys
+/// using the claim code (the WP-CL-BE-6 usage rules, evaluated in memory over one tenant read of each source).</item>
 /// <item><c>expiringCountryCodes</c>: countries whose live version's validity ends within the expiring window.</item>
 /// </list>
 /// </summary>
@@ -35,12 +35,11 @@ public static class ClaimListCounts
                     .OrderBy(c => c, StringComparer.Ordinal).ToList(),
                 StringComparer.Ordinal);
 
-    /// <summary>Usage per claim code (distinct contents + sets + journeys). One tenant read per source.</summary>
+    /// <summary>Usage per claim code (distinct contents + knowledge paths + journeys). One tenant read per source.</summary>
     public static async Task<IReadOnlyDictionary<string, int>> UsageAsync(
         Guid tenantId,
         IReadOnlyCollection<Claim> allClaims,
         IKnowledgeContentRepository contentsRepo,
-        IContentSetRepository setsRepo,
         IKnowledgePathRepository pathsRepo,
         IContentEngagementJourneyRepository journeysRepo,
         CancellationToken ct)
@@ -73,22 +72,22 @@ public static class ClaimListCounts
             }
         }
 
-        // content sets: a selected claim record id → its code
+        // knowledge paths (WP-KP-4): a placed claim record id → its code
         var codeById = allClaims.ToDictionary(c => c.Id, c => c.ClaimCode);
-        foreach (var set in (await setsRepo.ListAsync(tenantId, ct)).Where(s => !s.IsArchived()))
+        var paths = (await pathsRepo.ListAsync(tenantId, ct)).Where(p => !p.IsArchived()).ToList();
+        foreach (var path in paths)
         {
-            foreach (var code in set.SelectedClaims
-                         .Select(sc => codeById.TryGetValue(sc.ClaimId, out var code) ? code : null)
+            foreach (var code in path.Claims
+                         .Select(pc => codeById.TryGetValue(pc.ClaimId, out var code) ? code : null)
                          .OfType<string>().Distinct(StringComparer.Ordinal))
             {
-                Add(code, ClaimUsageItemTypes.ContentSet, set.Id);
+                Add(code, ClaimUsageItemTypes.KnowledgePath, path.Id);
             }
         }
 
         // journeys: stage → recommended path → active step → a matched content (BE-6 rule, per claim code)
         if (contentsByCode.Count > 0)
         {
-            var paths = (await pathsRepo.ListAsync(tenantId, ct)).Where(p => !p.IsArchived()).ToList();
             var journeys = (await journeysRepo.ListAsync(tenantId, ct)).Where(j => !j.IsArchived()).ToList();
             foreach (var (code, contents) in contentsByCode)
             {

@@ -234,7 +234,6 @@
   <data name="KnowledgePaths" xml:space="preserve"><value>Knowledge paths</value></data>
   <data name="Journeys" xml:space="preserve"><value>Journeys</value></data>
   <data name="Visits" xml:space="preserve"><value>Visits</value></data>
-  <data name="OutputsNoSource" xml:space="preserve"><value>No source links these records to a chain template yet.</value></data>
   <data name="DataFlow" xml:space="preserve"><value>Data flow</value></data>
   <data name="FlowSubject" xml:space="preserve"><value>Subject</value></data>
   <data name="FlowConceptGraph" xml:space="preserve"><value>Concept graph</value></data>
@@ -273,4 +272,24 @@
   <data name="ChainStatusDraft" xml:space="preserve"><value>Draft</value></data>
   <data name="ChainStatusPublished" xml:space="preserve"><value>Published</value></data>
   <data name="ChainStatusArchived" xml:space="preserve"><value>Archived</value></data>
+  <data name="OutputsAfterSave" xml:space="preserve"><value>Outputs appear once the template is saved.</value></data>
+  <data name="OutputsRestricted" xml:space="preserve"><value>Details hidden — you do not have permission to read them.</value></data>
+  <data name="OutputsChainVersion" xml:space="preserve"><value>chain {0}</value></data>
+  <data name="OutputsCurrentRelease" xml:space="preserve"><value>current release</value></data>
+  <data name="OutputsStageCount" xml:space="preserve"><value>{0} stages</value></data>
+  <data name="OutputsPathCount" xml:space="preserve"><value>{0} · {1} published</value></data>
+  <data name="OutputsPlannedVisits" xml:space="preserve"><value>{0} planned visits</value></data>
+  <data name="OutputsAllVersions" xml:space="preserve"><value>Show other versions too</value></data>
+  <data name="PathStatusDraft" xml:space="preserve"><value>Draft</value></data>
+  <data name="PathStatusReview" xml:space="preserve"><value>In review</value></data>
+  <data name="PathStatusApproved" xml:space="preserve"><value>Approved</value></data>
+  <data name="PathStatusPublished" xml:space="preserve"><value>Published</value></data>
+  <data name="PathStatusInactive" xml:space="preserve"><value>Inactive</value></data>
+  <data name="PathStatusArchived" xml:space="preserve"><value>Archived</value></data>
+  <data name="JourneyStatus_draft" xml:space="preserve"><value>Draft</value></data>
+  <data name="JourneyStatus_review" xml:space="preserve"><value>In review</value></data>
+  <data name="JourneyStatus_approved" xml:space="preserve"><value>Approved</value></data>
+  <data name="JourneyStatus_published" xml:space="preserve"><value>Published</value></data>
+  <data name="JourneyStatus_inactive" xml:space="preserve"><value>Inactive</value></data>
+  <data name="JourneyStatus_archived" xml:space="preserve"><value>Archived</value></data>
 </root>

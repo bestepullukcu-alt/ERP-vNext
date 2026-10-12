@@ -1,0 +1,30 @@
+{
+  "tokenPersistence": false,
+  "supplyRestarted": true,
+  "http": 200,
+  "body": {
+    "items": [
+      {
+        "carrierId": "48a8c339-eef6-484b-80cb-e8f90c1cfc77",
+        "carrierCode": "E2E-CARRIER-01",
+        "displayName": "Real Auth Carrier",
+        "status": "Suspended",
+        "supportedModes": [
+          "Road"
+        ]
+      },
+      {
+        "carrierId": "4c985945-8826-495e-868c-8a9b90c39049",
+        "carrierCode": "E2E-REPLAY-01",
+        "displayName": "Replay Carrier",
+        "status": "Active",
+        "supportedModes": [
+          "Road"
+        ]
+      }
+    ],
+    "total": 2,
+    "contractVersion": "v1"
+  },
+  "expectedCodesPresent": true
+}

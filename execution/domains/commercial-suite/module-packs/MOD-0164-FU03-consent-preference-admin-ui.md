@@ -94,7 +94,7 @@ setleri Submitted/Pending olsa bile bu UI için blocker değildir — UI runtime
 - Frequency, Knowledge, Brand/Product, Digital Detailing veya Recommendation runtime.
 - Workflow/approval, import/export engine veya patient data.
 - Hard delete veya HTTP `DELETE`.
-- Direct port `5061` business call.
+- Direct port `5065` business call.
 - Migration, Mongo hand-edit, RBAC seed/grant, MOD-0048 publish veya registry write.
 - `gateway/Diten.ApiGateway/**` değişikliği.
 - Contact/AccountContactLink runtime mutasyonu veya Contact üzerine flat ConsentStatus alanı.
@@ -227,7 +227,7 @@ hardcoded Consent & Preferences `<li>` kaldırılması ayrı follow-up'tır; çi
 ## 8. Runtime Constraints
 
 - Frontend browser veya MVC proxy tüm business çağrılarını Gateway `5000` üzerinden yapar.
-- Direct `http://localhost:5061`, `https://localhost:5061` veya herhangi bir `:5061` business URL yasaktır.
+- Direct `http://localhost:5065`, `https://localhost:5065` veya herhangi bir `:5065` business URL yasaktır.
 - Same-origin MVC proxy tercih edilir; HttpOnly access token server-side Gateway requestine aktarılır.
 - Payload içinde `TenantId` alanı oluşturulmaz/gönderilmez. Mevcut auth mekanizmasının tenant header/claim akışı korunur.
 - Consent/Preference lifecycle archive endpointleriyle yürür; `DELETE` kullanılmaz.
@@ -399,7 +399,7 @@ PUT    /api/crm/preferences/{preferenceId}
 POST   /api/crm/preferences/{preferenceId}/archive
 ```
 
-- Gateway base port `5000`; direct `5061` yok.
+- Gateway base port `5000`; direct `5065` yok.
 - HTTP `DELETE` yok.
 - TenantId payload yok.
 - Path param'lar `{consentId}` / `{preferenceId}` (guid) — actual FU02 route isimleri; `…RecordId` değil.
@@ -437,7 +437,7 @@ POST   /api/crm/preferences/{preferenceId}/archive
 - [ ] Contract flags actionları fail-closed enable/disable/hide eder.
 - [ ] Permission-controlled list/action/menu visibility mevcut resolver'a bağlıdır; seed/grant yoktur.
 - [ ] Tüm yeni visible text en/fr/es/zh/ar/ru/tr RESX/L10n parity taşır.
-- [ ] Frontend kodunda direct `5061`, Consent/Preference `DELETE`, TenantId payload veya §16 guard-listesi alanı yoktur.
+- [ ] Frontend kodunda direct `5065`, Consent/Preference `DELETE`, TenantId payload veya §16 guard-listesi alanı yoktur.
 - [ ] Diten.Web build, ilgili UI tests, DataTable verifier, RESX parity ve mümkünse authenticated tenant smoke PASS'tir.
 - [ ] Evidence raporu belirtilen 22 bölümü ve desteklenmeyen filtre/permission fallback/smoke sınırlamalarını içerir.
 - [ ] Backend, Gateway, registry, seed/grant, Mongo, MOD-0048 publish ve MOD-0155 değişmemiştir.
@@ -486,7 +486,7 @@ Minimum otomatik/statik doğrulama:
 11. Evaluate allowed/blocked/unknown badge; unknown "not allowed" copy; MatchedConsentId/MatchedPreferenceIds provenance; ReasonCodes render.
 12. SubjectPanel SubjectType/SubjectId ile render; Contact flat ConsentStatus alanı eklenmemiş.
 13. Yedi locale dosyasında aynı key seti.
-14. Frontend source'ta direct `5061`, forbidden `DELETE`, TenantId ve §16 guard-listesi alanı taraması temiz.
+14. Frontend source'ta direct `5065`, forbidden `DELETE`, TenantId ve §16 guard-listesi alanı taraması temiz.
 15. `dotnet build frontend/Diten.Web/Diten.Web.csproj -c Debug` PASS.
 16. `python3 .antigravity/scripts/verify_datatable_page.py . --area CRM --module ConsentPreferences --reference compact` PASS (python varsa).
 17. Mevcut frontend testleri etkilenmez.

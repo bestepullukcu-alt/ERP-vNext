@@ -45,4 +45,41 @@ public interface ISegmentCandidateSource
         Guid tenantId,
         IReadOnlyCollection<Guid> accountIds,
         CancellationToken cancellationToken);
+
+    /// <summary>WP-E2E-FIX-3 (E1-B2) — Phase 1 with the pre-filtered leaves (<see cref="SegmentCandidatePrefilter"/>):
+    /// NodeId → the subject ids that can satisfy that leaf, pushed as <c>_id IN</c>. Ignoring them (the default) is still
+    /// correct — the answer is merely a wider superset — so a source that cannot push them stays valid.</summary>
+    Task<SegmentCandidateLoad> LoadCandidatesAsync(
+        Guid tenantId,
+        string subjectType,
+        IReadOnlyList<SegmentCriteriaNode> criteria,
+        string matchMode,
+        int cap,
+        IReadOnlyDictionary<Guid, IReadOnlyCollection<Guid>> prefiltered,
+        CancellationToken cancellationToken)
+        => LoadCandidatesAsync(tenantId, subjectType, criteria, matchMode, cap, cancellationToken);
+
+    /// <summary>WP-E2E-FIX-3 — the contacts with a (not deleted) link to one of <paramref name="accountIds"/>; null when
+    /// more than <paramref name="max"/> (or when the source cannot answer — then nothing is narrowed).</summary>
+    Task<IReadOnlyCollection<Guid>?> ListContactIdsLinkedToAccountsAsync(
+        Guid tenantId, IReadOnlyCollection<Guid> accountIds, int max, CancellationToken cancellationToken)
+        => Task.FromResult<IReadOnlyCollection<Guid>?>(null);
+
+    /// <summary>WP-E2E-FIX-3 — the contacts with a (not deleted) link satisfying a <c>contact.account-role /
+    /// is-primary / account-type</c> leaf (a superset: link status is not filtered); null when more than
+    /// <paramref name="max"/> or when the source cannot answer.</summary>
+    Task<IReadOnlyCollection<Guid>?> ListContactIdsByLinkAsync(
+        Guid tenantId, SegmentCriteriaNode leaf, int max, CancellationToken cancellationToken)
+        => Task.FromResult<IReadOnlyCollection<Guid>?>(null);
+
+    /// <summary>WP-E2E-FIX-3 — the store's own count of a FULLY NATIVE rule (<see cref="SegmentPushdownRules.IsFullyNative"/>):
+    /// there the native filter is the rule itself, so the reach preview can answer past the candidate ceiling. Null when
+    /// the rule is not fully native or the source cannot count.</summary>
+    Task<long?> CountFullyNativeAsync(
+        Guid tenantId,
+        string subjectType,
+        IReadOnlyList<SegmentCriteriaNode> criteria,
+        string matchMode,
+        CancellationToken cancellationToken)
+        => Task.FromResult<long?>(null);
 }

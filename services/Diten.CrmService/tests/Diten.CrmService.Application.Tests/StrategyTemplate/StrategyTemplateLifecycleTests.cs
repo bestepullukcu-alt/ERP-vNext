@@ -21,7 +21,7 @@ public sealed class StrategyTemplateLifecycleTests
     private readonly FakeContentEngagementJourneyRepository _journeys = new();
     private readonly FakeStrategyReferenceValidator _references = new();
 
-    private StrategyTemplateBindingValidator Bindings() => new(_segments, _policies, _paths, _journeys);
+    private StrategyTemplateBindingValidator Bindings() => new(_segments, _policies, _paths, _journeys, _journeys.Subjects);
 
     private CreateStrategyTemplateHandler Create() => new(
         StrategyTemplateTestDoubles.Tenant(StrategyTemplateTestDoubles.TenantA),
@@ -195,7 +195,8 @@ public sealed class StrategyTemplateLifecycleTests
                             .Select(a => new StrategyTemplateSkuAllocationInput(
                                 a.GskuId, a.GskuCanonicalCodeDisplay, a.Percentage, a.SortOrder))
                             .ToList(),
-                        l.SortOrder, l.Notes))
+                        // WP-SB-3a — a full-document round trip carries the line's role + journey too.
+                        l.SortOrder, l.Notes, l.Role, l.JourneyId))
                     .ToList(),
                 current.ContentBindings
                     .Select(c => new StrategyTemplateContentBindingInput(

@@ -1,0 +1,2 @@
+[19:52:42 INF] Now listening on: http://127.0.0.1:58353 CorrelationId= TenantId= LegalEntityId=
+[19:52:42 INF] Module manifest self-registered with Platform. ModuleCode=shipment-tracking-pod Attempt=1 CorrelationId= TenantId= LegalEntityId=

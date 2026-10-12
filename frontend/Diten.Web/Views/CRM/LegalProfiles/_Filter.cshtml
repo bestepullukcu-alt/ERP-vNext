@@ -1,0 +1,45 @@
+@using Diten.Web.Views.CRM.LegalProfiles
+@using Diten.Web.Controllers.CRM
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LegalProfilesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div id="inlineFilterHost" class="dt-inline-filter-host">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                    @* Country / language: option values are the codes CRM stores, filled by index.js from the same
+                       country axis the form uses. *@
+                    <div class="filter-chip filter-country">
+                        <select id="filterCountry" class="form-select form-select-sm select2" data-placeholder="@Localizer["Country"]"></select>
+                    </div>
+                    <div class="filter-chip filter-language">
+                        <select id="filterLanguage" class="form-select form-select-sm select2" data-placeholder="@Localizer["Language"]"></select>
+                    </div>
+                    @* Values are CRM's lifecycle words (WP-KP-5a); labels are this screen's seven-language resx. *@
+                    <div class="filter-chip filter-status">
+                        <select id="filterStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@SharedLocalizer["Status"]">
+                            @foreach (var status in RegulatoryTextsControllerBase.Statuses)
+                            {
+                                <option value="@status">@Localizer["Status_" + status]</option>
+                            }
+                        </select>
+                    </div>
+                    @* Archived rows are hidden unless asked for (the archive switch). *@
+                    <div class="filter-chip filter-archived">
+                        <select id="filterIncludeArchived" class="form-select form-select-sm select2" data-placeholder="@Localizer["ArchivedFilter"]">
+                            <option value="">@Localizer["ArchivedHidden"]</option>
+                            <option value="true">@Localizer["ArchivedShown"]</option>
+                        </select>
+                    </div>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">@SharedLocalizer["Apply"]</button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">@SharedLocalizer["Reset"]</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

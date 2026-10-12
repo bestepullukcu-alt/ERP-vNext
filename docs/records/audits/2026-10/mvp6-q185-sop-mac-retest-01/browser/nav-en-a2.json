@@ -1,0 +1,121 @@
+{
+  "phase": "nav",
+  "locale": "en",
+  "startedAt": "2026-10-01T11:48:29.878Z",
+  "web": "http://127.0.0.1:5601",
+  "playwright": "1.59.1",
+  "cases": {
+    "N1": {
+      "result": "PASS",
+      "sidebarEntryHref": "/SupplyChain/SandopPlans",
+      "sidebarText": "S&OP Workflow & Sign-offs",
+      "expectedFromV3Fragment": "S&OP Workflow & Sign-offs",
+      "fragmentKeyShown": "Nav.Module.SOPWORKFLOWSIGNOFFS (single-page module: module name shown, page name hidden — product design)",
+      "rawKeyShown": false,
+      "englishFallbackInAr": "n/a",
+      "pageNameFromV3Fragment": "S&OP Plans",
+      "sidebarLinkCount": 3,
+      "htmlDir": "ltr",
+      "htmlLang": "en",
+      "note": "en: both fragment values equal the manifest English names, so en cannot tell a key hit from the fallback; ar is the discriminating locale",
+      "evidence": [
+        "png/n1-sidebar-en-2.png"
+      ]
+    },
+    "N2": {
+      "result": "PASS",
+      "query": "S&OP Plans",
+      "queryKey": "Nav.Page.SANDOPPLANS (v3 fragment value for the locale)",
+      "hitText": "S&OP Workflow & Sign-offs",
+      "searchDataStatus": 200,
+      "localizedNameInSearchData": true,
+      "results": [
+        {
+          "text": "S&OP Workflow & Sign-offs",
+          "href": "/SupplyChain/SandopPlans"
+        }
+      ],
+      "hitIndex": 0,
+      "openedPath": "/SupplyChain/SandopPlans",
+      "startPage": "/SupplyChain/Shipments",
+      "evidence": [
+        "png/n2-ctrlk-results-en-2.png",
+        "png/n2-ctrlk-opened-en-2.png"
+      ]
+    },
+    "N3": {
+      "result": "PASS",
+      "status": 200,
+      "title": "S&OP Plans",
+      "entryMarkup": 1,
+      "openForm": 1,
+      "pageErrors": 0,
+      "consoleErrors": [],
+      "nativeDialogs": 0,
+      "shell": {
+        "layoutWrappers": 1,
+        "layoutMenus": 1,
+        "navbars": 1,
+        "footers": 1,
+        "mainJs": 1,
+        "htmlDir": "ltr",
+        "htmlLang": "en"
+      },
+      "activeMenuItem": "S&OP Workflow & Sign-offs",
+      "evidence": [
+        "png/n3-sop-list-page-en-2.png"
+      ]
+    }
+  },
+  "png": [
+    {
+      "name": "n1-sidebar-en-2.png",
+      "sha256": "d44f5c64c1b6c0f7d71b1399201eff8770a07cb8578e52b117ff268f3dff7366",
+      "url": "/SupplyChain/Shipments",
+      "capturedAt": "2026-10-01T11:48:33.100Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "n2-ctrlk-results-en-2.png",
+      "sha256": "cd778738f4a44ae03d868d93e1a77f1ec4374db848b944992d07eb55638de575",
+      "url": "/SupplyChain/Shipments",
+      "capturedAt": "2026-10-01T11:48:34.340Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "n2-ctrlk-opened-en-2.png",
+      "sha256": "56c4d28b460ceddbe8914f4d09df1cfda58abe23c9bdcd499123ef7853d07d1b",
+      "url": "/SupplyChain/SandopPlans",
+      "capturedAt": "2026-10-01T11:48:35.945Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "n3-sop-list-page-en-2.png",
+      "sha256": "56c4d28b460ceddbe8914f4d09df1cfda58abe23c9bdcd499123ef7853d07d1b",
+      "url": "/SupplyChain/SandopPlans",
+      "capturedAt": "2026-10-01T11:48:37.659Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "info-tenant97c5-sidebar-en-2.png",
+      "sha256": "ddc0edbc33e82e850f43ee6a8b92f197a68ec40b76126b754689782c4038200a",
+      "url": "/SupplyChain/SandopPlans",
+      "capturedAt": "2026-10-01T11:48:39.881Z",
+      "tool": "playwright 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [],
+  "toasts": [],
+  "dialogs": [],
+  "foreign": [],
+  "net": [],
+  "shellFonts": 8,
+  "info": {
+    "contrast tenant 97c5 (no entitlement; informational)": {
+      "sopEntryInSidebar": false,
+      "sidebarLinkCount": 2,
+      "pageTitle": "S&OP Plans"
+    }
+  },
+  "endedAt": "2026-10-01T11:48:39.909Z"
+}

@@ -1,3 +1,4 @@
+using Diten.Platform.Tests.Shared;
 using Diten.Platform.Infrastructure.Persistence.Schema;
 using System.Text.Json;
 using Diten.BuildingBlocks.Eventing;
@@ -29,7 +30,7 @@ public sealed class RabbitMqEventingIntegrationTests
             "External/local RabbitMQ integration test is disabled. Set Eventing__RabbitMq__IntegrationTestsEnabled=true and configure Eventing__RabbitMq__Host/Port/VirtualHost/Username/Password.");
 
         var rabbitMq = RabbitMqTestSettings.FromEnvironment();
-        var mongo = MongoTestSettings.FromEnvironment();
+        var mongo = await MongoTestSettings.FromEnvironmentAsync();
 
         var mongoClient = new MongoClient(mongo.ConnectionString);
         /*
@@ -185,7 +186,7 @@ public sealed class RabbitMqEventingIntegrationTests
             "External/local RabbitMQ integration test is disabled. Set Eventing__RabbitMq__IntegrationTestsEnabled=true and configure Eventing__RabbitMq__Host/Port/VirtualHost/Username/Password.");
 
         var rabbitMq = RabbitMqTestSettings.FromEnvironment();
-        var mongo = MongoTestSettings.FromEnvironment();
+        var mongo = await MongoTestSettings.FromEnvironmentAsync();
 
         var mongoClient = new MongoClient(mongo.ConnectionString);
         /*
@@ -349,13 +350,16 @@ public sealed class RabbitMqEventingIntegrationTests
 
     private sealed record MongoTestSettings(string ConnectionString, string DatabaseName)
     {
-        public static MongoTestSettings FromEnvironment()
+        // Main sync (CT decision C): the ONE Platform test Mongo rule (PlatformTestMongo, linked) — a lane URI, else a
+        // mongod this test process starts from DITEN_TEST_MONGOD, else red by name; never 27017.
+        public static async Task<MongoTestSettings> FromEnvironmentAsync()
         {
             return new MongoTestSettings(
-                Get("Eventing__MongoDb__ConnectionString", Get("MongoDbSettings__ConnectionString", "mongodb://localhost:27017")),
+                await PlatformTestMongo.ConnectionStringAsync(),
                 Get("Eventing__MongoDb__DatabaseName", "eventing_mvp_tests"));
         }
     }
+
 
     private static string Get(string name, string defaultValue)
     {

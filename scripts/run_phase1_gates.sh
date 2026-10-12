@@ -171,6 +171,7 @@ dotnet build services/Diten.PvgService/tests/Diten.PvgService.CaseProcessing.Tes
 dotnet build services/Diten.PvgService/tests/Diten.PvgService.MeddraCoding.Tests/Diten.PvgService.MeddraCoding.Tests.csproj -c Debug
 dotnet build services/Diten.PvgService/tests/Diten.PvgService.RegPvBase.Tests/Diten.PvgService.RegPvBase.Tests.csproj -c Debug
 dotnet build services/Diten.PvgService/tests/Diten.PvgService.SignalManagement.Tests/Diten.PvgService.SignalManagement.Tests.csproj -c Debug
+dotnet build gateway/Diten.ApiGateway.Tests/Diten.ApiGateway.Tests.csproj -c Debug
 
 echo "[phase1] test tenancy"
 dotnet test tests/tenancy/TenantArchitecture.TenancyTests/TenantArchitecture.TenancyTests.csproj -c Debug

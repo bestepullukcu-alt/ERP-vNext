@@ -1,0 +1,805 @@
+[
+  {
+    "name": "JWT parser/auth 401",
+    "pass": true,
+    "detail": [
+      401,
+      {
+        "error": {
+          "code": "INVALID_REQUEST",
+          "message": "INVALID REQUEST",
+          "correlationId": "62a4eb1b-bf7c-4154-9a93-17b825b10b6e"
+        },
+        "contractVersion": "v1"
+      }
+    ]
+  },
+  {
+    "name": "RBAC create 403",
+    "pass": true,
+    "detail": [
+      403,
+      {
+        "error": {
+          "code": "INVALID_REQUEST",
+          "message": "INVALID REQUEST",
+          "correlationId": "f83e3c0a-e300-4fc8-ad9d-e7659371ed34"
+        },
+        "contractVersion": "v1"
+      }
+    ]
+  },
+  {
+    "name": "tenant mismatch 404",
+    "pass": true,
+    "detail": [
+      404,
+      {
+        "error": {
+          "code": "RETURN_NOT_FOUND",
+          "message": "RETURN NOT FOUND",
+          "correlationId": "ad40e626-d490-4c18-9733-fdacc79ae424"
+        },
+        "contractVersion": "v1"
+      }
+    ]
+  },
+  {
+    "name": "cross tenant matching context isolated",
+    "pass": true,
+    "detail": [
+      200,
+      {
+        "items": [],
+        "total": 0,
+        "contractVersion": "v1"
+      }
+    ]
+  },
+  {
+    "name": "cross LE matching context isolated",
+    "pass": true,
+    "detail": [
+      200,
+      {
+        "items": [],
+        "total": 0,
+        "contractVersion": "v1"
+      }
+    ]
+  },
+  {
+    "name": "real Shipment detail root",
+    "pass": true,
+    "detail": [
+      200,
+      {
+        "shipmentId": "de4a163a-2fca-45cb-982c-d0605c9a2a8d",
+        "shipmentNumber": "SHP-DE4A163A2FCA",
+        "sourceDocumentId": "OUT-de4a163a",
+        "status": "Delivered",
+        "carrierId": null,
+        "loadId": null,
+        "plannedShipAt": "2026-09-21T12:00:00+00:00",
+        "plannedDeliverAt": "2026-09-21T12:00:00+00:00",
+        "actualDeliverAt": "2026-09-21T12:00:00+00:00",
+        "sourceModule": "MOD-0178",
+        "sourceType": "WAREHOUSE_OUTBOUND",
+        "warehouseReferenceId": "WH-HTTP-01",
+        "shipToReference": "CUSTOMER-HTTP-01",
+        "lines": [
+          {
+            "lineNumber": "1",
+            "itemId": "dfe92ad9-1fa8-4997-b734-aceb3ab11f3b",
+            "skuId": "21898d7a-40e2-4590-893f-2e2b3c218e80",
+            "quantity": "10",
+            "uomId": "EA",
+            "inventoryReferenceId": null
+          }
+        ],
+        "pod": null,
+        "contractVersion": "v1",
+        "lifecycleCorrelationId": "f83e3c0a-e300-4fc8-ad9d-e7659371ed34"
+      }
+    ]
+  },
+  {
+    "name": "root mismatch 409",
+    "pass": true,
+    "detail": [
+      409,
+      {
+        "error": {
+          "code": "CORRELATION_ROOT_MISMATCH",
+          "message": "CORRELATION ROOT MISMATCH",
+          "correlationId": "faf341ba-4544-47d9-91bb-a876f0428552"
+        },
+        "contractVersion": "v1"
+      }
+    ]
+  },
+  {
+    "name": "create 201 UUID value equality",
+    "pass": true,
+    "detail": [
+      201,
+      {
+        "returnId": "47325401-d7cb-48d7-ad3b-f93850be678a",
+        "rmaNumber": "RMA-47325401D7CB48D7AD3BF93850BE678A",
+        "shipmentId": "de4a163a-2fca-45cb-982c-d0605c9a2a8d",
+        "status": "Requested",
+        "idempotentReplay": false,
+        "contractVersion": "v1"
+      }
+    ]
+  },
+  {
+    "name": "create replay numeric equivalent",
+    "pass": true,
+    "detail": [
+      201,
+      {
+        "returnId": "47325401-d7cb-48d7-ad3b-f93850be678a",
+        "rmaNumber": "RMA-47325401D7CB48D7AD3BF93850BE678A",
+        "shipmentId": "de4a163a-2fca-45cb-982c-d0605c9a2a8d",
+        "status": "Requested",
+        "idempotentReplay": true,
+        "contractVersion": "v1"
+      }
+    ]
+  },
+  {
+    "name": "root precedes payload drift",
+    "pass": true,
+    "detail": [
+      409,
+      {
+        "error": {
+          "code": "CORRELATION_ROOT_MISMATCH",
+          "message": "CORRELATION ROOT MISMATCH",
+          "correlationId": "064c0bf4-7aff-45c6-9bba-60e12cbd6fad"
+        },
+        "contractVersion": "v1"
+      }
+    ]
+  },
+  {
+    "name": "changed payload 409",
+    "pass": true,
+    "detail": [
+      409,
+      {
+        "error": {
+          "code": "IDEMPOTENCY_KEY_REUSED",
+          "message": "IDEMPOTENCY KEY REUSED",
+          "correlationId": "f83e3c0a-e300-4fc8-ad9d-e7659371ed34"
+        },
+        "contractVersion": "v1"
+      }
+    ]
+  },
+  {
+    "name": "list returns",
+    "pass": true,
+    "detail": [
+      200,
+      {
+        "items": [
+          {
+            "returnId": "47325401-d7cb-48d7-ad3b-f93850be678a",
+            "rmaNumber": "RMA-47325401D7CB48D7AD3BF93850BE678A",
+            "shipmentId": "de4a163a-2fca-45cb-982c-d0605c9a2a8d",
+            "status": "Requested"
+          }
+        ],
+        "total": 1,
+        "contractVersion": "v1"
+      }
+    ]
+  },
+  {
+    "name": "target grant 403",
+    "pass": true,
+    "detail": [
+      403,
+      {
+        "error": {
+          "code": "INVALID_REQUEST",
+          "message": "INVALID REQUEST",
+          "correlationId": "f83e3c0a-e300-4fc8-ad9d-e7659371ed34"
+        },
+        "contractVersion": "v1"
+      }
+    ]
+  },
+  {
+    "name": "transition Authorized",
+    "pass": true,
+    "detail": [
+      200,
+      {
+        "returnId": "47325401-d7cb-48d7-ad3b-f93850be678a",
+        "rmaNumber": "RMA-47325401D7CB48D7AD3BF93850BE678A",
+        "shipmentId": "de4a163a-2fca-45cb-982c-d0605c9a2a8d",
+        "status": "Authorized",
+        "idempotentReplay": false,
+        "contractVersion": "v1"
+      }
+    ]
+  },
+  {
+    "name": "transition replay instant equivalent",
+    "pass": true,
+    "detail": [
+      200,
+      {
+        "returnId": "47325401-d7cb-48d7-ad3b-f93850be678a",
+        "rmaNumber": "RMA-47325401D7CB48D7AD3BF93850BE678A",
+        "shipmentId": "de4a163a-2fca-45cb-982c-d0605c9a2a8d",
+        "status": "Authorized",
+        "idempotentReplay": true,
+        "contractVersion": "v1"
+      }
+    ]
+  },
+  {
+    "name": "transition InTransit",
+    "pass": true,
+    "detail": [
+      200,
+      {
+        "returnId": "47325401-d7cb-48d7-ad3b-f93850be678a",
+        "rmaNumber": "RMA-47325401D7CB48D7AD3BF93850BE678A",
+        "shipmentId": "de4a163a-2fca-45cb-982c-d0605c9a2a8d",
+        "status": "InTransit",
+        "idempotentReplay": false,
+        "contractVersion": "v1"
+      }
+    ]
+  },
+  {
+    "name": "transition Received",
+    "pass": true,
+    "detail": [
+      200,
+      {
+        "returnId": "47325401-d7cb-48d7-ad3b-f93850be678a",
+        "rmaNumber": "RMA-47325401D7CB48D7AD3BF93850BE678A",
+        "shipmentId": "de4a163a-2fca-45cb-982c-d0605c9a2a8d",
+        "status": "Received",
+        "idempotentReplay": false,
+        "contractVersion": "v1"
+      }
+    ]
+  },
+  {
+    "name": "invalid lifecycle",
+    "pass": true,
+    "detail": [
+      422,
+      {
+        "error": {
+          "code": "INVALID_RETURN_TRANSITION",
+          "message": "INVALID RETURN TRANSITION",
+          "correlationId": "f83e3c0a-e300-4fc8-ad9d-e7659371ed34"
+        },
+        "contractVersion": "v1"
+      }
+    ]
+  },
+  {
+    "name": "disposition whitespace accepted",
+    "pass": true,
+    "detail": [
+      200,
+      {
+        "returnId": "47325401-d7cb-48d7-ad3b-f93850be678a",
+        "rmaNumber": "RMA-47325401D7CB48D7AD3BF93850BE678A",
+        "shipmentId": "de4a163a-2fca-45cb-982c-d0605c9a2a8d",
+        "status": "Dispositioned",
+        "idempotentReplay": false,
+        "contractVersion": "v1"
+      }
+    ]
+  },
+  {
+    "name": "transition Closed",
+    "pass": true,
+    "detail": [
+      200,
+      {
+        "returnId": "47325401-d7cb-48d7-ad3b-f93850be678a",
+        "rmaNumber": "RMA-47325401D7CB48D7AD3BF93850BE678A",
+        "shipmentId": "de4a163a-2fca-45cb-982c-d0605c9a2a8d",
+        "status": "Closed",
+        "idempotentReplay": false,
+        "contractVersion": "v1"
+      }
+    ]
+  },
+  {
+    "name": "Received manual assertion audit",
+    "pass": true,
+    "detail": {
+      "evidenceType": "manual-assertion",
+      "inventoryReference": ""
+    }
+  },
+  {
+    "name": "forbidden cancel create",
+    "pass": true,
+    "detail": [
+      201,
+      {
+        "returnId": "f65e3f3d-3e88-421e-8d37-4527dad84474",
+        "rmaNumber": "RMA-F65E3F3D3E88421E8D374527DAD84474",
+        "shipmentId": "6edb9185-8fcf-4a41-98e3-01d5eecef6ae",
+        "status": "Requested",
+        "idempotentReplay": false,
+        "contractVersion": "v1"
+      }
+    ]
+  },
+  {
+    "name": "setup Authorized",
+    "pass": true,
+    "detail": [
+      200,
+      {
+        "returnId": "f65e3f3d-3e88-421e-8d37-4527dad84474",
+        "rmaNumber": "RMA-F65E3F3D3E88421E8D374527DAD84474",
+        "shipmentId": "6edb9185-8fcf-4a41-98e3-01d5eecef6ae",
+        "status": "Authorized",
+        "idempotentReplay": false,
+        "contractVersion": "v1"
+      }
+    ]
+  },
+  {
+    "name": "setup InTransit",
+    "pass": true,
+    "detail": [
+      200,
+      {
+        "returnId": "f65e3f3d-3e88-421e-8d37-4527dad84474",
+        "rmaNumber": "RMA-F65E3F3D3E88421E8D374527DAD84474",
+        "shipmentId": "6edb9185-8fcf-4a41-98e3-01d5eecef6ae",
+        "status": "InTransit",
+        "idempotentReplay": false,
+        "contractVersion": "v1"
+      }
+    ]
+  },
+  {
+    "name": "exact InTransit to Cancelled forbidden",
+    "pass": true,
+    "detail": [
+      422,
+      {
+        "error": {
+          "code": "INVALID_RETURN_TRANSITION",
+          "message": "INVALID RETURN TRANSITION",
+          "correlationId": "e6ce7b17-367e-4d5a-8e17-771587688015"
+        },
+        "contractVersion": "v1"
+      }
+    ]
+  },
+  {
+    "name": "producer exposes malformed persisted root",
+    "pass": true,
+    "detail": {
+      "expectedStatus": 500,
+      "expectedCode": "SHIPMENT_ROOT_INVALID",
+      "actualStatus": 500,
+      "actualCode": "SHIPMENT_ROOT_INVALID"
+    }
+  },
+  {
+    "name": "producer root-missing",
+    "pass": true,
+    "detail": [
+      503,
+      {
+        "error": {
+          "code": "RETURN_SHIPMENT_ROOT_UNAVAILABLE",
+          "message": "RETURN SHIPMENT ROOT UNAVAILABLE",
+          "correlationId": "a8725210-0d66-4ea2-9bf5-209b93efeb75"
+        },
+        "contractVersion": "v1"
+      }
+    ]
+  },
+  {
+    "name": "producer root-null",
+    "pass": true,
+    "detail": [
+      503,
+      {
+        "error": {
+          "code": "RETURN_SHIPMENT_ROOT_UNAVAILABLE",
+          "message": "RETURN SHIPMENT ROOT UNAVAILABLE",
+          "correlationId": "90f66cbb-1c5f-429c-ad90-a2f079f3b57d"
+        },
+        "contractVersion": "v1"
+      }
+    ]
+  },
+  {
+    "name": "producer root-bad",
+    "pass": true,
+    "detail": {
+      "expectedStatus": 502,
+      "expectedCode": "RETURN_SHIPMENT_ROOT_INVALID",
+      "actualStatus": 502,
+      "actualCode": "RETURN_SHIPMENT_ROOT_INVALID",
+      "classification": "real Shipment detail returns 500 SHIPMENT_ROOT_INVALID; Returns maps that exact producer error to 502 RETURN_SHIPMENT_ROOT_INVALID"
+    }
+  },
+  {
+    "name": "UoM mismatch",
+    "pass": true,
+    "detail": [
+      422,
+      {
+        "error": {
+          "code": "RETURN_UOM_MISMATCH",
+          "message": "RETURN UOM MISMATCH",
+          "correlationId": "2055bc7d-b904-4da8-9115-947b5ef19a72"
+        },
+        "contractVersion": "v1"
+      }
+    ]
+  },
+  {
+    "name": "cap first 6",
+    "pass": true,
+    "detail": [
+      201,
+      {
+        "returnId": "e3abbeeb-4713-4dd5-b9e1-37dc1c1b9dcf",
+        "rmaNumber": "RMA-E3ABBEEB47134DD5B9E137DC1C1B9DCF",
+        "shipmentId": "35903ca7-a899-4413-bdf2-75e30fd6acc9",
+        "status": "Requested",
+        "idempotentReplay": false,
+        "contractVersion": "v1"
+      }
+    ]
+  },
+  {
+    "name": "cap exceeds",
+    "pass": true,
+    "detail": [
+      422,
+      {
+        "error": {
+          "code": "RETURN_QUANTITY_EXCEEDED",
+          "message": "RETURN QUANTITY EXCEEDED",
+          "correlationId": "2055bc7d-b904-4da8-9115-947b5ef19a72"
+        },
+        "contractVersion": "v1"
+      }
+    ]
+  },
+  {
+    "name": "6+6 concurrency",
+    "pass": true,
+    "detail": [
+      [
+        201,
+        null
+      ],
+      [
+        422,
+        "RETURN_QUANTITY_EXCEEDED"
+      ]
+    ]
+  },
+  {
+    "name": "4+6 concurrency",
+    "pass": true,
+    "detail": [
+      201,
+      201
+    ]
+  },
+  {
+    "name": "drift initial",
+    "pass": true,
+    "detail": [
+      201,
+      {
+        "returnId": "78a34082-58f1-45f0-a571-332ebf45b76a",
+        "rmaNumber": "RMA-78A3408258F145F0A571332EBF45B76A",
+        "shipmentId": "729dddb3-295c-4120-b9ff-096531b87b82",
+        "status": "Requested",
+        "idempotentReplay": false,
+        "contractVersion": "v1"
+      }
+    ]
+  },
+  {
+    "name": "snapshot drift",
+    "pass": true,
+    "detail": [
+      409,
+      {
+        "error": {
+          "code": "RETURN_SOURCE_CHANGED",
+          "message": "RETURN SOURCE CHANGED",
+          "correlationId": "e09183fb-1eef-4f8b-ae25-f8d525d0a271"
+        },
+        "contractVersion": "v1"
+      }
+    ]
+  },
+  {
+    "name": "release create",
+    "pass": true,
+    "detail": [
+      201,
+      {
+        "returnId": "0d101b1b-c820-40cc-914e-8119e9a846b5",
+        "rmaNumber": "RMA-0D101B1BC82040CC914E8119E9A846B5",
+        "shipmentId": "bf5c9ed8-0113-4741-98a5-105d263f5244",
+        "status": "Requested",
+        "idempotentReplay": false,
+        "contractVersion": "v1"
+      }
+    ]
+  },
+  {
+    "name": "release rejected",
+    "pass": true,
+    "detail": [
+      200,
+      {
+        "returnId": "0d101b1b-c820-40cc-914e-8119e9a846b5",
+        "rmaNumber": "RMA-0D101B1BC82040CC914E8119E9A846B5",
+        "shipmentId": "bf5c9ed8-0113-4741-98a5-105d263f5244",
+        "status": "Rejected",
+        "idempotentReplay": false,
+        "contractVersion": "v1"
+      }
+    ]
+  },
+  {
+    "name": "released entitlement reusable",
+    "pass": true,
+    "detail": [
+      201,
+      {
+        "returnId": "d0fe979b-4973-4d6f-9cef-110fd88636a7",
+        "rmaNumber": "RMA-D0FE979B49734D6F9CEF110FD88636A7",
+        "shipmentId": "bf5c9ed8-0113-4741-98a5-105d263f5244",
+        "status": "Requested",
+        "idempotentReplay": false,
+        "contractVersion": "v1"
+      }
+    ]
+  },
+  {
+    "name": "soft deleted list hidden",
+    "pass": true,
+    "detail": [
+      200,
+      {
+        "items": [],
+        "total": 0,
+        "contractVersion": "v1"
+      }
+    ]
+  },
+  {
+    "name": "soft deleted transition 404",
+    "pass": true,
+    "detail": [
+      404,
+      {
+        "error": {
+          "code": "RETURN_NOT_FOUND",
+          "message": "RETURN NOT FOUND",
+          "correlationId": "f83e3c0a-e300-4fc8-ad9d-e7659371ed34"
+        },
+        "contractVersion": "v1"
+      }
+    ]
+  },
+  {
+    "name": "soft deleted Shipment source 404",
+    "pass": true,
+    "detail": [
+      404,
+      {
+        "error": {
+          "code": "SHIPMENT_NOT_FOUND",
+          "message": "SHIPMENT NOT FOUND",
+          "correlationId": "0bf5a08d-ee05-444e-acf7-f89308ce5dbf"
+        },
+        "contractVersion": "v1"
+      }
+    ]
+  },
+  {
+    "name": "rollback stage 0",
+    "pass": true,
+    "detail": {
+      "http": 503,
+      "code": "PERSISTENCE_UNAVAILABLE",
+      "before": {
+        "returns": 9,
+        "entitlements": 7,
+        "receipts": 17,
+        "audit": 17,
+        "outbox": 17
+      },
+      "after": {
+        "returns": 9,
+        "entitlements": 7,
+        "receipts": 17,
+        "audit": 17,
+        "outbox": 17
+      }
+    }
+  },
+  {
+    "name": "rollback stage 1",
+    "pass": true,
+    "detail": {
+      "http": 503,
+      "code": "PERSISTENCE_UNAVAILABLE",
+      "before": {
+        "returns": 9,
+        "entitlements": 7,
+        "receipts": 17,
+        "audit": 17,
+        "outbox": 17
+      },
+      "after": {
+        "returns": 9,
+        "entitlements": 7,
+        "receipts": 17,
+        "audit": 17,
+        "outbox": 17
+      }
+    }
+  },
+  {
+    "name": "rollback stage 2",
+    "pass": true,
+    "detail": {
+      "http": 503,
+      "code": "PERSISTENCE_UNAVAILABLE",
+      "before": {
+        "returns": 9,
+        "entitlements": 7,
+        "receipts": 17,
+        "audit": 17,
+        "outbox": 17
+      },
+      "after": {
+        "returns": 9,
+        "entitlements": 7,
+        "receipts": 17,
+        "audit": 17,
+        "outbox": 17
+      }
+    }
+  },
+  {
+    "name": "rollback stage 3",
+    "pass": true,
+    "detail": {
+      "http": 503,
+      "code": "PERSISTENCE_UNAVAILABLE",
+      "before": {
+        "returns": 9,
+        "entitlements": 7,
+        "receipts": 17,
+        "audit": 17,
+        "outbox": 17
+      },
+      "after": {
+        "returns": 9,
+        "entitlements": 7,
+        "receipts": 17,
+        "audit": 17,
+        "outbox": 17
+      }
+    }
+  },
+  {
+    "name": "rollback stage 4",
+    "pass": true,
+    "detail": {
+      "http": 503,
+      "code": "PERSISTENCE_UNAVAILABLE",
+      "before": {
+        "returns": 9,
+        "entitlements": 7,
+        "receipts": 17,
+        "audit": 17,
+        "outbox": 17
+      },
+      "after": {
+        "returns": 9,
+        "entitlements": 7,
+        "receipts": 17,
+        "audit": 17,
+        "outbox": 17
+      }
+    }
+  },
+  {
+    "name": "unknown commit recovered",
+    "pass": true,
+    "detail": [
+      201,
+      {
+        "returnId": "e4438de1-a252-4ad1-9449-185fc0e50e16",
+        "rmaNumber": "RMA-E4438DE1A2524AD19449185FC0E50E16",
+        "shipmentId": "72dcadf0-579b-49ce-8903-9b96008c2851",
+        "status": "Requested",
+        "idempotentReplay": false,
+        "contractVersion": "v1"
+      }
+    ]
+  },
+  {
+    "name": "unknown commit same receipt replay",
+    "pass": true,
+    "detail": [
+      201,
+      {
+        "returnId": "e4438de1-a252-4ad1-9449-185fc0e50e16",
+        "rmaNumber": "RMA-E4438DE1A2524AD19449185FC0E50E16",
+        "shipmentId": "72dcadf0-579b-49ce-8903-9b96008c2851",
+        "status": "Requested",
+        "idempotentReplay": true,
+        "contractVersion": "v1"
+      }
+    ]
+  },
+  {
+    "name": "unknown commit no receipt",
+    "pass": true,
+    "detail": {
+      "http": 503,
+      "code": "PERSISTENCE_UNAVAILABLE",
+      "before": {
+        "returns": 10,
+        "entitlements": 8,
+        "receipts": 18,
+        "audit": 18,
+        "outbox": 18
+      },
+      "after": {
+        "returns": 10,
+        "entitlements": 8,
+        "receipts": 18,
+        "audit": 18,
+        "outbox": 18
+      }
+    }
+  },
+  {
+    "name": "client response body discarded after commit",
+    "pass": true,
+    "detail": 201
+  },
+  {
+    "name": "response loss recovered by replay",
+    "pass": true,
+    "detail": [
+      201,
+      {
+        "returnId": "d389b81c-4293-4756-a6cf-fd4f2ff96e37",
+        "rmaNumber": "RMA-D389B81C42934756A6CFFD4F2FF96E37",
+        "shipmentId": "36d88cf3-7236-4024-8f6c-f92f1ba5a16c",
+        "status": "Requested",
+        "idempotentReplay": true,
+        "contractVersion": "v1"
+      }
+    ]
+  }
+]

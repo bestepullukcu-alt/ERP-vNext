@@ -1,0 +1,8 @@
+check	result	evidence
+branch	feature/mvp6-logistics	git branch baseline
+HEAD	4a8d4d4b339528a88e6220fb8402e5a2c771136c	/private/tmp/mvp6-carrier-auth-token-rework-ver02-yvxf17/evidence/repo-final-head.txt
+final 22 source inputs	22/22 hash match	evidence.tar.gz::build/final-22-check.txt
+build source inputs	3333/3333 hash match	evidence.tar.gz::build/build-source-check.txt
+product source edits by VER	none	all compilation/runtime occurred under /private/tmp/mvp6-carrier-auth-token-rework-ver02-yvxf17/source
+lane ports cleanup	37684/18559/18557/18556 released	evidence.tar.gz::runtime/cleanup.txt
+port 27017	not accessed	operator constraint; historical attempt assessed from immutable DEV record only

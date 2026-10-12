@@ -1,0 +1,15 @@
+  Diten.AuthService.Domain -> /private/tmp/mvp6-carrier-auth-le-candidate-V7EbGR/repo/services/Diten.AuthService/src/Diten.AuthService.Domain/bin/Debug/net8.0/Diten.AuthService.Domain.dll
+  Diten.AuthService.Application -> /private/tmp/mvp6-carrier-auth-le-candidate-V7EbGR/repo/services/Diten.AuthService/src/Diten.AuthService.Application/bin/Debug/net8.0/Diten.AuthService.Application.dll
+  Diten.BuildingBlocks.Security.Secrets -> /private/tmp/mvp6-carrier-auth-le-candidate-V7EbGR/repo/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/bin/Debug/net8.0/Diten.BuildingBlocks.Security.Secrets.dll
+  Diten.AuthService.Persistence -> /private/tmp/mvp6-carrier-auth-le-candidate-V7EbGR/repo/services/Diten.AuthService/src/Diten.AuthService.Persistence/bin/Debug/net8.0/Diten.AuthService.Persistence.dll
+  Diten.BuildingBlocks.Eventing -> /private/tmp/mvp6-carrier-auth-le-candidate-V7EbGR/repo/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/bin/Debug/net8.0/Diten.BuildingBlocks.Eventing.dll
+  Diten.Platform.Contracts -> /private/tmp/mvp6-carrier-auth-le-candidate-V7EbGR/repo/services/Diten.Platform.Contracts/bin/Debug/net8.0/Diten.Platform.Contracts.dll
+  Diten.AuthService.Infrastructure -> /private/tmp/mvp6-carrier-auth-le-candidate-V7EbGR/repo/services/Diten.AuthService/src/Diten.AuthService.Infrastructure/bin/Debug/net8.0/Diten.AuthService.Infrastructure.dll
+  Diten.Platform.Common -> /private/tmp/mvp6-carrier-auth-le-candidate-V7EbGR/repo/services/Diten.Platform.Common/src/Diten.Platform.Common/bin/Debug/net8.0/Diten.Platform.Common.dll
+  Diten.AuthService.Api -> /private/tmp/mvp6-carrier-auth-le-candidate-V7EbGR/repo/services/Diten.AuthService/src/Diten.AuthService.Api/bin/Debug/net8.0/Diten.AuthService.Api.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.10

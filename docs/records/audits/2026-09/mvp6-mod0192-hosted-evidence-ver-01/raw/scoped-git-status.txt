@@ -1,0 +1,16 @@
+?? docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-ver-01/raw/fresh-api-binary.sha256
+?? docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-ver-01/raw/fresh-build.log
+?? docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-ver-01/raw/input-bindings-recomputed.json
+?? docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-ver-01/raw/mongo-shutdown.log
+?? docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-ver-01/raw/port-cleanup.txt
+?? docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-ver-01/raw/rerun-summary.json
+?? docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-ver-01/raw/scoped-git-status.txt
+?? docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-ver-01/raw/ver-x01-x07-rerun.log
+?? docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-ver-01/raw/ver-x01-x07-rerun.trx
+?? docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-ver-01/raw/ver-x01-x07.log
+?? docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-ver-01/raw/ver-x01-x07.trx
+?? docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-ver-01/raw/verification-results.json
+?? docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-ver-01/raw/verification-transcript.txt
+?? docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-ver-01/raw/verifier-harness-isolation.patch
+?? docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-ver-01/raw/writer-seal-recomputed.json
+?? docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-ver-01/verify.py

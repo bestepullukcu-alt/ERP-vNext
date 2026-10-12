@@ -178,4 +178,13 @@
   <data name="Err_country_not_closed" xml:space="preserve"><value>该国家未标记为不开放。</value></data>
   <data name="Err_invalid_reference_value" xml:space="preserve"><value>请选择有效的原因。</value></data>
   <data name="Err_required" xml:space="preserve"><value>请选择原因。</value></data>
+  <data name="QvUsage" xml:space="preserve"><value>使用位置</value></data>
+  <data name="QvUsageNone" xml:space="preserve"><value>没有内容、知识路径或旅程使用此声明。</value></data>
+  <data name="QvUsageFailed" xml:space="preserve"><value>无法加载使用情况。</value></data>
+  <data name="UsageGlobal" xml:space="preserve"><value>全球（核心声明）</value></data>
+  <data name="UsageVia" xml:space="preserve"><value>通过 {0}</value></data>
+  <data name="UsageNeedsReview" xml:space="preserve"><value>此处使用的声明版本需要复核。</value></data>
+  <data name="UsageType_content" xml:space="preserve"><value>内容</value></data>
+  <data name="UsageType_knowledge-path" xml:space="preserve"><value>知识路径</value></data>
+  <data name="UsageType_journey" xml:space="preserve"><value>旅程</value></data>
 </root>

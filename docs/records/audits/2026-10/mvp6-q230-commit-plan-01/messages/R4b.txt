@@ -1,0 +1,5 @@
+docs(records): add MVP6 records: Returns / MOD-0186 and Claims / MOD-0187 (part b)
+
+10 folders/items, first 'mvp6-mod0186-r01-independent-ver-01', last 'mvp6-mod0187-e4-rework-scope-01'.
+Work packages: as named in each folder.
+448 files from pathspec/R4b.txt (Q230 commit plan).

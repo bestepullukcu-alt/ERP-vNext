@@ -1,0 +1,21 @@
+id	requirement	result	evidence	note
+V01	Writer artifact manifest and full-hash inputs	PASS	INPUTS.sha256; raw/artifact-check.txt	15/15 writer artifacts verified; no shortened hash used as identity
+V02	Immutable combined source identity	PASS	raw/source-check.json; raw/final-source-rehash.json	360/360 before and after
+V03	Twelve authorized target hashes	PASS	raw/target-and-preservation-check.json	12/12 exact target hashes
+V04	Three accepted accessibility files preserved	PASS	raw/target-and-preservation-check.json	3/3 byte-identical to accessibility successor
+V05	Native .NET 8 fresh build	PASS	raw/build-fresh.log; raw/build-exit.txt	SDK 8.0.417/runtime 8.0.23; 0 errors, 6 warnings
+V06	Focused Shipment/shared UI regression	PASS	raw/TestResults/focused-regression-escalated.trx; raw/focused-tests.json	19/19; independent run
+V07	Five unauthenticated JSON adapters	PASS	raw/pipeline/summary.json	401 INVALID_REQUEST/v1; no Location; matching correlation
+V08	Ordinary HTML page challenge	PASS	raw/pipeline/page.headers	302 login redirect, measured separately
+V09	Details/Close resources in seven cultures	PASS	raw/l10n-resource-values.json	All values non-empty
+V10	Seven cultures at real 390px	PASS	raw/browser-responsive.json	7/7 modal title/Close, row/action preservation, no overflow
+V11	Seven cultures at real 768px	PASS_APPLICABILITY	raw/browser-responsive.json	6 modal cases pass; zh fits all columns and exposes localized direct Details action
+V12	Arabic RTL	PASS	raw/browser-responsive.json	lang=ar, dir=rtl, التفاصيل/إغلاق
+V13	Final-source line accessibility browser regression	PASS	raw/browser-accessibility.json	Unique IDs/labels, keyboard focus, reindex, A/C retention, no name drift
+V14	Browser console	PASS	raw/browser-responsive.json	No error/warning entries
+A08	Transition race	NOT_RUN	SOP-22-VER.md	Read-only single-tenant fixture lacks concurrent mutation and persistence
+A09	Stale POD	NOT_RUN	SOP-22-VER.md	Read-only fixture cannot seed/observe stale mutation state
+A12	Cross-LE	NOT_RUN	SOP-22-VER.md	Fixture exposes one tenant/LE and no scoped persistence
+A10	Fault proxy	NOT_RUN_UNAUTHORIZED	SOP-22-VER.md	Explicitly unauthorized; not prepared or run
+PNG	Durable PNG	OPEN	SOP-22-VER.md	No supported export path; no bypass attempted
+

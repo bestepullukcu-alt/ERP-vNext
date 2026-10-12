@@ -1,0 +1,45 @@
+--- a/execution/domains/supply-chain-execution/module-packs/MOD-0190-sop-workflow-signoffs.md
++++ b/execution/domains/supply-chain-execution/module-packs/MOD-0190-sop-workflow-signoffs.md
+@@ -152,11 +152,11 @@
+ 
+ | Field/Header | Required | Rule | Pre-check |
+ |---|---|---|---|
+-| `Idempotency-Key` | Mutations | Trimmed, 1..200 | Tenant+operation replay key |
++| `Idempotency-Key` | Mutations | Frozen minimum 1; proposed trim/maximum 200 is pending owner + contract disposition | Tenant+operation replay key |
+ | `X-Correlation-Id` | All contract operations | UUID | Persist/echo through audit and events |
+-| `Name` | Create | Trimmed, 1..200 | — |
++| `Name` | Create | Frozen minimum 1; proposed trim/maximum 200 is pending owner + contract disposition | — |
+ | Horizon | Create | Valid dates; end >= start | — |
+-| Demand reference | Create/snapshot | Non-empty ID/version | Frozen DEMAND mock returns Published |
++| Demand reference | Create/snapshot | Non-empty ID/version in SANDOP-CAPACITY v1 | DEMAND v1 has no ID+version lookup; isolated fixture or producer amendment pending decision |
+ | Source checksum/time | Snapshot | Non-empty checksum, UTC time | DEMAND version must match plan |
+ | Snapshot ID | Sign-off | UUID | Exists in same tenant/legal entity and plan |
+ | Role/decision | Sign-off | Frozen enum values | No prior decision for same role/snapshot |
+@@ -219,8 +219,9 @@
+ - [x] Backend/contract initial slice, shell and golden-reference decisions are explicit.
+ - [x] Owned objects, paths, validation, failures and acceptance are specified.
+ - [x] `SANDOP-CAPACITY` v1 is frozen and DEMAND v1 consumption is reference-only.
++- [ ] SPEC-01 demand ID/version verification boundary and replay/validation contract parity are decided; no uncontracted endpoint or narrower header/name rule.
+ - [ ] Shipment lane freeze and independent verification evidence is recorded.
+-- [ ] Workflow and Event Bus consumed contracts/adapter boundaries are confirmed for implementation.
++- [ ] Workflow and Event Bus consumed contracts/adapter boundaries are confirmed for implementation; isolated local-actor/Pending-outbox scope, if chosen, is explicitly approved.
+ - [ ] Runtime allowed/protected paths are checked against current repository state.
+ - [ ] User/owner approves this pack for `ready-for-dev`.
+ 
+@@ -229,7 +230,7 @@
+ ## 19. Implementation Notes
+ 
+ - **ASSUMPTION:** runtime feature root will be `SandopPlans`, derived from the frozen route and owned aggregate.
+-- **ASSUMPTION:** recording the final required role decision drives plan status through domain policy; the frozen event
++- **OPEN OWNER DECISION:** whether and when role decisions change plan status; the frozen event
+   remains the sign-off record, and any additional plan-status event requires a versioned additive contract change.
+ - **ASSUMPTION:** `demandPlanVersion` is an opaque string because DEMAND v1 does not publish a stronger version type.
+ - MOD-0190 and MOD-0192 are parallel peers only after the shipment lane gate; neither may write the other's data.
+@@ -241,3 +242,7 @@
+ - Create an integration-agent WP for gateway and shared permission/registration changes.
+ - Define a separate tenant UI follow-up if product journeys require one.
+ - Complete G5 E5 integration across S&OP, capacity, logistics and source reconciliation.
++
++## 21. SPEC-01 pending disposition (proposal; not approved)
++
++See `docs/roadmap/plans/mod-0190-spec-01/` for the exact owner decision set, frozen operation parity, Phase 1.5 proposal and HELD DEV/VER drafts. This note does not change `status: draft`, grant runtime authority, or authorize a DEMAND/Workflow/Event Bus contract extension.

@@ -1,0 +1,10 @@
+  Determining projects to restore...
+  Restored /Users/natig/mvp6-env/q65b/ek-work-a1/source/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.InterfaceRegistry.Abstractions/Diten.BuildingBlocks.InterfaceRegistry.Abstractions.csproj (in 76 ms).
+  Restored /Users/natig/mvp6-env/q65b/ek-work-a1/source/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.ModuleRegistration.Abstractions/Diten.BuildingBlocks.ModuleRegistration.Abstractions.csproj (in 156 ms).
+  Restored /Users/natig/mvp6-env/q65b/ek-work-a1/source/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.BackgroundJobs/Diten.BuildingBlocks.BackgroundJobs.csproj (in 156 ms).
+  Restored /Users/natig/mvp6-env/q65b/ek-work-a1/source/services/Diten.PpmService/src/Diten.PpmService.Contracts/Diten.PpmService.Contracts.csproj (in 76 ms).
+  Restored /Users/natig/mvp6-env/q65b/ek-work-a1/source/services/Diten.Platform/src/Diten.Platform.Domain/Diten.Platform.Domain.csproj (in 548 ms).
+  Restored /Users/natig/mvp6-env/q65b/ek-work-a1/source/services/Diten.Platform/src/Diten.Platform.API/Diten.Platform.API.csproj (in 549 ms).
+  Restored /Users/natig/mvp6-env/q65b/ek-work-a1/source/services/Diten.Platform/src/Diten.Platform.Infrastructure/Diten.Platform.Infrastructure.csproj (in 549 ms).
+  Restored /Users/natig/mvp6-env/q65b/ek-work-a1/source/services/Diten.Platform/src/Diten.Platform.Application/Diten.Platform.Application.csproj (in 468 ms).
+  4 of 12 projects are up-to-date for restore.

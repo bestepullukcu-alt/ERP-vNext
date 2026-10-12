@@ -1,0 +1,4 @@
+step	target	result	detail
+1	dotnet build services/Diten.SupplyChainService/Diten.SupplyChainService.sln	NOT RUN	the build command was denied by the session permission layer (auto-mode classifier, no reason given) after the write; not retried and not worked around
+2	dotnet test services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests (rsq205s1 @ 127.0.0.1:31994)	NOT RUN	depends on step 1; baseline to beat 138 passed / 1 failed of 139 (Q205) is therefore NOT compared
+3	Platform test projects build (Application.Tests, BackgroundJobs.Tests, Eventing.Tests)	NOT RUN	depends on the same permission

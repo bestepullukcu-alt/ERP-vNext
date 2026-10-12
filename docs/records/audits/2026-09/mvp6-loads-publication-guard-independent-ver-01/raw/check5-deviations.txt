@@ -1,0 +1,37 @@
+## D2: executed script = recorded bytes
+cmp w345.py == raw/w345.py.txt: IDENTICAL
+ccf22f9bc5fd8f40b286185faa6339d01ea41a8bb3ea2c4520cf42748a55042a  /private/tmp/mvp6-q25-loadspub.4mTLMX/w345.py
+ccf22f9bc5fd8f40b286185faa6339d01ea41a8bb3ea2c4520cf42748a55042a  docs/records/audits/2026-09/mvp6-loads-publication-guard-01/raw/w345.py.txt
+## D1: TRX originals in temp = evidence copies
+BASELINE-ARCHITECTURE-FULL-attempt1.trx IDENTICAL
+ARCHITECTURE-FULL-attempt1.trx IDENTICAL
+PRODUCTION-DOCS-PATH-GUARD-attempt1.trx IDENTICAL
+REHEARSAL-DOCS-PATH-GUARD-attempt1.trx IDENTICAL
+total 656
+drwxr-xr-x  6 natig  wheel     192 26 Sep 11:22 .
+drwx------  8 natig  wheel     256 26 Sep 11:20 ..
+-rw-r--r--@ 1 natig  wheel   96910 26 Sep 11:22 ARCHITECTURE-FULL-attempt1.trx
+-rw-r--r--@ 1 natig  wheel  105459 26 Sep 11:19 BASELINE-ARCHITECTURE-FULL-attempt1.trx
+-rw-r--r--@ 1 natig  wheel   62900 26 Sep 11:22 PRODUCTION-DOCS-PATH-GUARD-attempt1.trx
+-rw-r--r--@ 1 natig  wheel   63836 26 Sep 11:21 REHEARSAL-DOCS-PATH-GUARD-attempt1.trx
+## D1: 23 Sep TRX untouched
+2026-09-23 11:26:03 62900 tests/architecture/TenantArchitecture.ArchitectureTests/TestResults/POST-PUBLICATION-DOCS-PATH-GUARD.trx
+2026-09-23 11:20:45 62900 tests/architecture/TenantArchitecture.ArchitectureTests/TestResults/PRODUCTION-DOCS-PATH-GUARD.trx
+34d593bf52763664f608cdc55bf71428ba70b4e8ef046495ab4ecd90ff059420  tests/architecture/TenantArchitecture.ArchitectureTests/TestResults/POST-PUBLICATION-DOCS-PATH-GUARD.trx
+460d32ee665ded6bde395f225d8f9093517a32eb488013f3bffd87ab0bc583a8  tests/architecture/TenantArchitecture.ArchitectureTests/TestResults/PRODUCTION-DOCS-PATH-GUARD.trx
+## rollback snapshot hashes
+total 600
+drwxr-xr-x  8 natig  wheel     256 26 Sep 11:24 .
+drwx------  8 natig  wheel     256 26 Sep 11:20 ..
+-rw-r--r--  1 natig  wheel   26923 26 Sep 11:24 status-final.txt
+-rw-r--r--  1 natig  wheel   26923 26 Sep 11:21 status-post-step2.txt
+-rw-r--r--  1 natig  wheel   26720 26 Sep 11:21 status-pre-step2.txt
+-rw-r--r--  1 natig  wheel   26720 26 Sep 11:18 status-start.txt
+-rw-r--r--@ 1 natig  staff  168515 20 Sep 14:57 W1-pre.shipment-bundle.openapi.yaml
+-rw-r--r--@ 1 natig  staff   17837 23 Sep 11:20 W5-pre.docs-path-authority.json
+6d3865f80707ff0e9ca7c9cf2e2343f34d2961be2916a3eceb37168d1b0a8167  /private/tmp/mvp6-q25-loadspub.4mTLMX/snap/W5-pre.docs-path-authority.json
+70e9e2b49bcdeb8618517d8f85f27d788419a5514279c41f87005db644870980  /private/tmp/mvp6-q25-loadspub.4mTLMX/snap/status-final.txt
+70e9e2b49bcdeb8618517d8f85f27d788419a5514279c41f87005db644870980  /private/tmp/mvp6-q25-loadspub.4mTLMX/snap/status-post-step2.txt
+a4e8806ad7a1d2c3ef55bbdd2612286744ad05845be3a68fc3cba2c4e95d7831  /private/tmp/mvp6-q25-loadspub.4mTLMX/snap/status-pre-step2.txt
+5dfe7c1bba32551bd8d4b532243878684e69a6d9560e667a4183bfd516b9d21c  /private/tmp/mvp6-q25-loadspub.4mTLMX/snap/W1-pre.shipment-bundle.openapi.yaml
+a4e8806ad7a1d2c3ef55bbdd2612286744ad05845be3a68fc3cba2c4e95d7831  /private/tmp/mvp6-q25-loadspub.4mTLMX/snap/status-start.txt

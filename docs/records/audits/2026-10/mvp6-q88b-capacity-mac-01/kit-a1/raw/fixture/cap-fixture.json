@@ -1,0 +1,131 @@
+{
+  "run": "a9bd98",
+  "tenants": {
+    "T1": "97c59330-dbc4-4665-b29c-0c26dbb5cc93",
+    "T2": "00000000-0000-0000-0000-000000000001"
+  },
+  "steps": [
+    {
+      "step": "mdm-create-le-A",
+      "status": 201,
+      "ok": true,
+      "id": "d9e882f5-1a6e-4127-917c-d71d00dd7077"
+    },
+    {
+      "step": "mdm-activate-le-A",
+      "status": 204,
+      "ok": true
+    },
+    {
+      "step": "mdm-get-fixture-le",
+      "status": 500,
+      "ok": false,
+      "id": null,
+      "error": {
+        "statusCode": 500,
+        "isSuccessful": false,
+        "errors": [
+          "An unexpected error occurred."
+        ]
+      }
+    }
+  ],
+  "catalogWaitSeconds": 2.9,
+  "catalogMissing": [],
+  "authRoles": {
+    "Q88bCapacityFull@19200000": {
+      "reused": false,
+      "keys": [
+        "supplychain.capacity-plans.read",
+        "supplychain.capacity-plans.create",
+        "supplychain.capacity-plans.scenario.create",
+        "supplychain.capacity-plans.evaluate"
+      ],
+      "grantsAdded": 4,
+      "members": [
+        "capfull"
+      ]
+    },
+    "Q88bCapacityReadOnly@19200000": {
+      "reused": false,
+      "keys": [
+        "supplychain.capacity-plans.read"
+      ],
+      "grantsAdded": 1,
+      "members": [
+        "capro"
+      ]
+    },
+    "Q88bNoCapacity@19200000": {
+      "reused": false,
+      "keys": [
+        "supplychain.shipments.read"
+      ],
+      "grantsAdded": 1,
+      "members": [
+        "capnoread"
+      ]
+    },
+    "Q88bFixtureAdmin@19200000": {
+      "reused": false,
+      "keys": [
+        "mdm.legal-entities.create",
+        "mdm.legal-entities.read",
+        "mdm.legal-entities.update",
+        "platform.organization-units.create",
+        "platform.organization-units.read",
+        "platform.positions.create",
+        "platform.positions.read",
+        "platform.position-assignments.create",
+        "platform.position-assignments.read",
+        "auth.users.lookup-validation"
+      ],
+      "grantsAdded": 10,
+      "members": [
+        "capadmin"
+      ]
+    },
+    "Q88bCapacityFull@00000000": {
+      "reused": false,
+      "keys": [
+        "supplychain.capacity-plans.read",
+        "supplychain.capacity-plans.create",
+        "supplychain.capacity-plans.scenario.create",
+        "supplychain.capacity-plans.evaluate"
+      ],
+      "grantsAdded": 4,
+      "members": [
+        "navfull"
+      ]
+    }
+  },
+  "userIds": {
+    "capfull": "fe4b3d8b-7958-412c-9986-6a5c510af1c3",
+    "capro": "d3b509ad-8cdb-4d05-bc0f-0342b6b1ca99",
+    "capnoread": "7618fb80-d631-48f2-8582-d7c8d6c1c5f4",
+    "capadmin": "f078a560-33b7-4b01-86fd-208fd11ed0d4",
+    "navfull": "5367c380-cd6c-4c1e-8ffc-35a5d5b1e6b0"
+  },
+  "adminLoginsBeforeOrg": [
+    {
+      "actor": "capadmin",
+      "tenantMatches": true,
+      "legalEntityId": null,
+      "sandopPermissions": [],
+      "shipmentsRead": false,
+      "permissionCount": 10
+    }
+  ],
+  "laneMdmLegalEntityClone": {
+    "dst": "19200000-0000-4000-8000-000000000002",
+    "collection": "mdm_legal_entities",
+    "idType": "uuid",
+    "before": 0,
+    "fieldsChanged": [
+      "_id",
+      "Code"
+    ],
+    "after": 1
+  },
+  "stopped": "step mdm-get-fixture-le failed 500"
+}

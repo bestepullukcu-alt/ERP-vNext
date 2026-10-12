@@ -1,0 +1,41 @@
+--- a/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Features/Claims/ClaimReferenceReader.cs
++++ b/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Features/Claims/ClaimReferenceReader.cs
+@@ -73,7 +73,9 @@
+         request.Headers.TryAddWithoutValidation("Authorization", context.Authorization);
+         request.Headers.Add("X-Tenant-Id", context.Scope.TenantId.ToString());
+         request.Headers.Add("X-Legal-Entity-Id", context.Scope.LegalEntityId.ToString());
+-        request.Headers.Add("X-Correlation-Id", context.CorrelationId.ToString());
++        // Dependency request tracing is transport metadata. It must not reuse or
++        // replace the authoritative Shipment lifecycle root carried by Claims.
++        request.Headers.Add("X-Correlation-Id", Guid.NewGuid().ToString());
+         try
+         {
+             using var response = await client.SendAsync(request, ct);
+--- a/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Claims/ClaimReferenceTests.cs
++++ b/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Claims/ClaimReferenceTests.cs
+@@ -23,12 +23,14 @@
+   var reader=Reader(json,out var transport,out _);var ex=await Assert.ThrowsAsync<ClaimFailureException>(()=>reader.ObserveAsync(new Claim{ShipmentId=id},default));
+   Assert.Equal(status,ex.Status);Assert.Equal(status==502?"CLAIM_REFERENCE_INVALID":"CLAIM_REFERENCE_INCOMPLETE",ex.Code);Assert.Single(transport.Requests);
+  }
+- [Fact] public async Task Reader_RealNilRoot_PreservesNilAndTrustedScope()
++ [Fact] public async Task Reader_RealNilRoot_PreservesNilAndUsesSeparateNonNilDependencyTrace()
+  {
+   var id=Guid.NewGuid();var reader=Reader(Shipment(id),out var transport,out var context);
++  context.CorrelationId=Guid.Empty;
+   var result=await reader.ObserveAsync(new Claim{ShipmentId=id},default);Assert.Equal(Guid.Empty,result.Root);
+   Assert.Single(transport.Requests);var request=transport.Requests[0];Assert.Equal("GET",request.Method);
+   Assert.Equal("/api/shipment-bundle/shipments/"+id,request.Path);Assert.Equal(context.Scope.TenantId.ToString(),request.Tenant);Assert.Equal(context.Scope.LegalEntityId.ToString(),request.Le);
++  Assert.NotEqual(Guid.Empty,Guid.Parse(request.Correlation));Assert.NotEqual(context.CorrelationId,Guid.Parse(request.Correlation));
+  }
+  [Fact] public async Task Reader_MismatchedIdentity_IsMalformedNotNotFound()
+  {
+@@ -100,7 +102,7 @@
+  }
+  internal sealed class ReferenceTransport(string body):HttpMessageHandler
+  {
+-  public List<(string Method,string Path,string Tenant,string Le)> Requests {get;}=[];
+-  protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage r,CancellationToken ct){Requests.Add((r.Method.Method,r.RequestUri!.PathAndQuery,r.Headers.GetValues("X-Tenant-Id").Single(),r.Headers.GetValues("X-Legal-Entity-Id").Single()));return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK){Content=new StringContent(body)});}
++  public List<(string Method,string Path,string Tenant,string Le,string Correlation)> Requests {get;}=[];
++  protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage r,CancellationToken ct){Requests.Add((r.Method.Method,r.RequestUri!.PathAndQuery,r.Headers.GetValues("X-Tenant-Id").Single(),r.Headers.GetValues("X-Legal-Entity-Id").Single(),r.Headers.GetValues("X-Correlation-Id").Single()));return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK){Content=new StringContent(body)});}
+  }
+ }

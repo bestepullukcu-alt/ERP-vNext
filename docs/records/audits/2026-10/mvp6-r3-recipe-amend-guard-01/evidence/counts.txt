@@ -1,0 +1,8 @@
+capacity-plans: enforced 4 / declared 0 | supplychain.capacity-plans.create supplychain.capacity-plans.evaluate supplychain.capacity-plans.read supplychain.capacity-plans.scenario.create
+carriers: enforced 3 / declared 3 | supplychain.carriers.create supplychain.carriers.read supplychain.carriers.status.change
+claims: enforced 5 / declared 0 | supplychain.claims.create supplychain.claims.decide supplychain.claims.investigate supplychain.claims.read supplychain.claims.settle
+loads: enforced 3 / declared 0 | supplychain.loads.create supplychain.loads.read supplychain.loads.transition
+returns: enforced 3 / declared 3 | supplychain.returns.create supplychain.returns.read supplychain.returns.transition
+sandop-plans: enforced 4 / declared 0 | supplychain.sandop-plans.create supplychain.sandop-plans.read supplychain.sandop-plans.sign-off.record supplychain.sandop-plans.snapshot.capture
+shipments: enforced 5 / declared 5 | supplychain.shipments.cancel supplychain.shipments.create supplychain.shipments.dispatch supplychain.shipments.pod.capture supplychain.shipments.read
+providers: CarrierManagementManifestProvider=carrier-management, ReverseLogisticsManifestProvider=reverse-logistics, ShipmentTrackingPodManifestProvider=shipment-tracking-pod

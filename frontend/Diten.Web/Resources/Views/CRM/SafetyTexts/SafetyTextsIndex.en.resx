@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Open</value></data>
+  <data name="OpenDetails" xml:space="preserve"><value>Open details</value></data>
+  <data name="OnlyActive" xml:space="preserve"><value>Active only</value></data>
+  <data name="Code" xml:space="preserve"><value>Code</value></data>
+  <data name="Country" xml:space="preserve"><value>Country</value></data>
+  <data name="Language" xml:space="preserve"><value>Language</value></data>
+  <data name="Version" xml:space="preserve"><value>Version</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Updated</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>Draft</value></data>
+  <data name="Status_in-review" xml:space="preserve"><value>In review</value></data>
+  <data name="Status_active" xml:space="preserve"><value>Active</value></data>
+  <data name="Status_superseded" xml:space="preserve"><value>Superseded</value></data>
+  <data name="Status_archived" xml:space="preserve"><value>Archived</value></data>
+  <data name="ArchivedFilter" xml:space="preserve"><value>Archived records</value></data>
+  <data name="ArchivedHidden" xml:space="preserve"><value>Hide archived</value></data>
+  <data name="ArchivedShown" xml:space="preserve"><value>Show archived</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>New draft</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Edit draft</value></data>
+  <data name="SectionIdentity" xml:space="preserve"><value>Identity</value></data>
+  <data name="IdentityLockedHint" xml:space="preserve"><value>The identity is fixed after creation</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Select…</value></data>
+  <data name="CharCountTpl" xml:space="preserve"><value>{0} / {1} characters</value></data>
+  <data name="FieldRequired" xml:space="preserve"><value>This field is required.</value></data>
+  <data name="PickerUnavailable" xml:space="preserve"><value>This list cannot be read right now.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Loading…</value></data>
+  <data name="NotFound" xml:space="preserve"><value>The record was not found.</value></data>
+  <data name="Created" xml:space="preserve"><value>Draft created.</value></data>
+  <data name="Updated" xml:space="preserve"><value>Draft saved.</value></data>
+  <data name="VersionHistory" xml:space="preserve"><value>Version history</value></data>
+  <data name="ThisVersion" xml:space="preserve"><value>this version</value></data>
+  <data name="NoVersions" xml:space="preserve"><value>No other versions.</value></data>
+  <data name="DecisionRecord" xml:space="preserve"><value>Decision record</value></data>
+  <data name="NoDecisions" xml:space="preserve"><value>No decision yet.</value></data>
+  <data name="DecisionPanelTitle" xml:space="preserve"><value>Regulatory decision</value></data>
+  <data name="DecisionComment" xml:space="preserve"><value>Comment</value></data>
+  <data name="DecisionCommentHint" xml:space="preserve"><value>Optional when approving; required when rejecting.</value></data>
+  <data name="DecisionCommentRequired" xml:space="preserve"><value>Write the reason for the rejection.</value></data>
+  <data name="DecisionOutcome_approve" xml:space="preserve"><value>Approved</value></data>
+  <data name="DecisionOutcome_reject" xml:space="preserve"><value>Rejected</value></data>
+  <data name="SubmittedTpl" xml:space="preserve"><value>Submitted by {0} · {1}</value></data>
+  <data name="SubmitForApproval" xml:space="preserve"><value>Submit for approval</value></data>
+  <data name="SubmitConfirm" xml:space="preserve"><value>Send this draft to Regulatory approval? It cannot be changed while in review.</value></data>
+  <data name="Withdraw" xml:space="preserve"><value>Withdraw</value></data>
+  <data name="WithdrawConfirm" xml:space="preserve"><value>Withdraw it from review? It returns to draft and the approval task is cancelled.</value></data>
+  <data name="NewVersion" xml:space="preserve"><value>New version</value></data>
+  <data name="NewVersionConfirm" xml:space="preserve"><value>Open a new draft version from this one?</value></data>
+  <data name="Archive" xml:space="preserve"><value>Archive</value></data>
+  <data name="ArchiveConfirm" xml:space="preserve"><value>Archive this record? It stays readable but can no longer be used.</value></data>
+  <data name="Approve" xml:space="preserve"><value>Approve</value></data>
+  <data name="Reject" xml:space="preserve"><value>Reject</value></data>
+  <data name="Submitted" xml:space="preserve"><value>Sent to Regulatory approval.</value></data>
+  <data name="Withdrawn" xml:space="preserve"><value>Withdrawn from review.</value></data>
+  <data name="Approved" xml:space="preserve"><value>Approved — this version is now active.</value></data>
+  <data name="Rejected" xml:space="preserve"><value>Rejected — the draft goes back to its author.</value></data>
+  <data name="Archived" xml:space="preserve"><value>Archived.</value></data>
+  <data name="VersionCreated" xml:space="preserve"><value>New draft version created.</value></data>
+  <data name="ReviewTemplateAdminNote" xml:space="preserve"><value>Ask your system administrator to define the Regulatory approval template (KP-REG) for this country.</value></data>
+  <data name="Err_safety_text_open_draft_exists" xml:space="preserve"><value>This product, country and language already has an open draft or a version in review.</value></data>
+  <data name="Err_legal_profile_open_draft_exists" xml:space="preserve"><value>This country and language already has an open draft or a version in review.</value></data>
+  <data name="Err_review_template_missing" xml:space="preserve"><value>No Regulatory approval template is defined for this country.</value></data>
+  <data name="Err_rejection_comment_required" xml:space="preserve"><value>A rejection needs a comment.</value></data>
+  <data name="Err_not_editable" xml:space="preserve"><value>Only a draft can be changed. Open a new version to change an active text.</value></data>
+  <data name="Err_self_decision_forbidden" xml:space="preserve"><value>You cannot decide on a record you submitted, or this task is not assigned to you.</value></data>
+  <data name="Err_country_invalid" xml:space="preserve"><value>This country is not in the country list.</value></data>
+  <data name="Err_language_not_in_country" xml:space="preserve"><value>This language is not a content language of the selected country.</value></data>
+  <data name="Err_reference_set_unavailable" xml:space="preserve"><value>The country list cannot be read right now; the country cannot be chosen.</value></data>
+  <data name="Err_product_not_found" xml:space="preserve"><value>This product is not in the MDM product catalogue.</value></data>
+  <data name="Err_dependency_unavailable" xml:space="preserve"><value>The product catalogue (MDM) cannot be reached right now; the product cannot be chosen.</value></data>
+  <data name="Err_decision_invalid" xml:space="preserve"><value>The decision must be Approve or Reject.</value></data>
+  <data name="SafetyTextsTitle" xml:space="preserve"><value>Safety Texts</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Regulatory-approved safety information per product, country and language — one active version per key.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>New Safety Text</value></data>
+  <data name="Product" xml:space="preserve"><value>Product</value></data>
+  <data name="SectionContent" xml:space="preserve"><value>Safety text</value></data>
+  <data name="Body" xml:space="preserve"><value>Full text</value></data>
+  <data name="ShortBody" xml:space="preserve"><value>Short text</value></data>
+  <data name="ShortBodyHint" xml:space="preserve"><value>For narrow layouts (e.g. a banner); leave empty if not needed.</value></data>
+  <data name="SectionSource" xml:space="preserve"><value>Source</value></data>
+  <data name="SourceDocumentRef" xml:space="preserve"><value>Source document</value></data>
+  <data name="SourceDate" xml:space="preserve"><value>Source date</value></data>
+  <data name="ApprovalReference" xml:space="preserve"><value>Local approval number</value></data>
+  <data name="UnknownUser" xml:space="preserve"><value>Unknown user</value></data>
+</root>

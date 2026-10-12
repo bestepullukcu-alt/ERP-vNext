@@ -123,7 +123,8 @@ public sealed class AddContentEngagementJourneyStageHandler
                 : ContentEngagementJourneyStageTypes.Normalize(request.StageType),
             RecommendedKnowledgePathId = request.RecommendedKnowledgePathId,
             PathCode = path!.PathCode,
-            PathVersionPinPolicy = ContentEngagementJourneyPathPin.Normalize(request.PathVersionPinPolicy),
+            // WP-SB-3b (S3-1) — a new stage without a policy follows the latest published path version.
+            PathVersionPinPolicy = ContentEngagementJourneyPathPin.NormalizeForNewStage(request.PathVersionPinPolicy),
             IsRequired = request.IsRequired,
             Repeatable = request.Repeatable,
             MinVisitNumber = request.MinVisitNumber,

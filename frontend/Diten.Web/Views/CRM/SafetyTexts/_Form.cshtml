@@ -1,0 +1,117 @@
+@model Diten.Web.Models.CRM.SafetyTextEditViewModel
+@using Diten.Web.Views.CRM.SafetyTexts
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SafetyTextsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var isEdit = Model.Id.HasValue;
+    var title = isEdit ? Localizer["FormTitleEdit"].Value : Localizer["FormTitleCreate"].Value;
+    var backUrl = isEdit ? $"/CRM/SafetyTexts/{Model.Id}" : "/CRM/SafetyTexts";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@title</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/CRM/SafetyTexts">@Localizer["SafetyTextsTitle"]</a></li>
+                <li class="breadcrumb-item active text-primary">@title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="@backUrl" class="btn btn-label-secondary">@SharedLocalizer["Cancel"]</a>
+        <button type="submit" form="regulatoryTextForm" class="btn btn-primary" id="btnRegulatorySave">@SharedLocalizer["Save"]</button>
+    </div>
+</div>
+
+@* Submitted as JSON by RegulatoryTexts/form.js through the same-origin proxy (POST create / PUT update). CRM decides;
+   its refusals are shown localised under the field they name (data-error-for) or at the head of the form. *@
+<form id="regulatoryTextForm" class="needs-validation" novalidate
+      data-kind="safety-text" data-endpoint="/CRM/SafetyTexts/api" data-resource="safety-texts"
+      data-details-url="/CRM/SafetyTexts/" data-id="@Model.Id" data-has-product="true">
+    @Html.AntiForgeryToken()
+    <div id="regulatoryFormAlert" class="alert alert-danger d-none" role="alert"></div>
+
+    <div class="row g-4">
+        <div class="col-12">
+            @* ① Identity — product × country × language. Fixed after create (CRM: a new key is a new record). *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionIdentity"]</h6>
+                    @if (isEdit)
+                    {
+                        <p class="text-muted small mb-3"><i class="bx bx-lock-alt me-1"></i>@Localizer["IdentityLockedHint"] · @Model.SafetyTextCode · v@(Model.Version)</p>
+                    }
+                    <div class="row g-3">
+                        <div class="col-12 col-md-4">
+                            <label asp-for="GlobalProductId" class="form-label fw-medium">@Localizer["Product"] <span class="text-danger">*</span></label>
+                            <select asp-for="GlobalProductId" class="form-select js-identity" data-field="globalProductId"
+                                    data-selected="@Model.GlobalProductId" data-selected-text="@Model.GlobalProductCodeDisplay" required disabled="@isEdit"></select>
+                            <div class="form-text d-none" data-note-for="globalProductId"></div>
+                            <div class="invalid-feedback d-block" data-error-for="globalProductId"></div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label asp-for="CountryCode" class="form-label fw-medium">@Localizer["Country"] <span class="text-danger">*</span></label>
+                            <select asp-for="CountryCode" class="form-select js-identity" data-field="countryCode"
+                                    data-selected="@Model.CountryCode" required disabled="@isEdit"></select>
+                            <div class="form-text d-none" data-note-for="countryCode"></div>
+                            <div class="invalid-feedback d-block" data-error-for="countryCode"></div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label asp-for="LanguageCode" class="form-label fw-medium">@Localizer["Language"] <span class="text-danger">*</span></label>
+                            <select asp-for="LanguageCode" class="form-select js-identity" data-field="languageCode"
+                                    data-selected="@Model.LanguageCode" required disabled="@isEdit"></select>
+                            <div class="invalid-feedback d-block" data-error-for="languageCode"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            @* ② Content — plain text (never HTML); paragraphs are kept as typed. *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionContent"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="Body" class="form-label fw-medium">@Localizer["Body"] <span class="text-danger">*</span></label>
+                            <textarea asp-for="Body" class="form-control regulatory-text js-counted" data-field="body" rows="12"
+                                      maxlength="@Diten.Web.Models.CRM.SafetyTextEditViewModel.BodyMaxLength" dir="auto" required></textarea>
+                            <div class="form-text text-end" data-count-for="body"></div>
+                            <div class="invalid-feedback d-block" data-error-for="body"></div>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="ShortBody" class="form-label fw-medium">@Localizer["ShortBody"]</label>
+                            <textarea asp-for="ShortBody" class="form-control regulatory-text js-counted" data-field="shortBody" rows="4"
+                                      maxlength="@Diten.Web.Models.CRM.SafetyTextEditViewModel.ShortBodyMaxLength" dir="auto"></textarea>
+                            <div class="form-text text-end" data-count-for="shortBody"></div>
+                            <div class="form-text">@Localizer["ShortBodyHint"]</div>
+                            <div class="invalid-feedback d-block" data-error-for="shortBody"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            @* ③ Source — where the text comes from (SmPC / KÜB version), its date and the local approval number. *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionSource"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label asp-for="SourceDocumentRef" class="form-label fw-medium">@Localizer["SourceDocumentRef"]</label>
+                            <input asp-for="SourceDocumentRef" class="form-control" data-field="sourceDocumentRef" maxlength="500" />
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <label asp-for="SourceDate" class="form-label fw-medium">@Localizer["SourceDate"]</label>
+                            <input asp-for="SourceDate" type="date" class="form-control" data-field="sourceDate" value="@(Model.SourceDate?.ToString("yyyy-MM-dd"))" />
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <label asp-for="ApprovalReference" class="form-label fw-medium">@Localizer["ApprovalReference"]</label>
+                            <input asp-for="ApprovalReference" class="form-control" data-field="approvalReference" maxlength="200" />
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</form>

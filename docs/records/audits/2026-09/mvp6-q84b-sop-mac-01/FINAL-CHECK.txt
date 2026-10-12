@@ -1,0 +1,16 @@
+Q84b FINAL-CHECK — 2026-09-30 22:59:45 +03
+uname -s: Darwin
+HEAD: 4a8d4d4b339528a88e6220fb8402e5a2c771136c (expected 4a8d4d4b339528a88e6220fb8402e5a2c771136c)
+branch: feature/mvp6-logistics
+.git/index.lock: absent
+git status --porcelain entries: start 558 (sha256 0a23228b723a61cf6c63577525d72e680fce424d319efc70d49459393f0efe06) · end 559
+entries added vs start:
+  > ?? docs/records/audits/2026-09/mvp6-q84b-sop-mac-01/
+entries removed vs start: 0
+
+lane processes left: 0
+lane port listeners (5800-5899, 38994): 0
+27017 listener: owner dev mongod pid 758 only (not started/stopped/touched by this lane): 758
+57192 listener: 0
+
+No git diff / add / commit / push. No tracked file edited. No ledger write. Writes only in ~/mvp6-env/q84b/ and docs/records/audits/2026-09/mvp6-q84b-sop-mac-01/ (new files).

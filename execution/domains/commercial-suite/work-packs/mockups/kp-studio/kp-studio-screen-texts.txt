@@ -1,0 +1,1134 @@
+KP-STUDIO MOCKUP — GÖRÜNÜR ARAYÜZ METİNLERİ (ekran bazında)
+Kaynak: template.txt (çözülmüş) + mantık betiği. {{ x }} = dinamik değer; sondaki "DİNAMİK METİNLER" bölümü betikteki sabit/mesaj metinlerini verir.
+
+=== 0. Prototip kontrol çubuğu (tüm ekranlar) ===
+Prototip kontrolleri:
+Rol
+[seçenek] Düzenleyici (gönderen)
+[seçenek] Hukuk inceleyici
+[seçenek] Yayın sorumlusu
+[seçenek] Yetkisiz kullanıcı
+Öneriler · {{ oneriCount }}
+
+=== 1. LİSTE ekranı — Bilgi Yolları (isList) ===
+İçerik /
+Bilgi Yolları
+Bilgi Yolu, temsilcinin doktor ziyaretinde tablette gösterdiği anlatıdır. Bir yol 5 adımda hazırlanır:
+kurgu → sayfa tasarımı → uyum kontrolü → MLR onayı → yayın
+. Yalnız yayındaki yollar sahada kullanılabilir.
+{{ k.label }}
+{{ k.v }}
+{{ k.sub }}
+Filtreler
+[seçenek] Ürün seçin
+[seçenek] ALMIBA
+[seçenek] FEROXA
+[seçenek] NEURAVIT
+[seçenek] Ülke seçin
+[seçenek] Türkiye
+[seçenek] Belarus
+[seçenek] Özbekistan
+[seçenek] Gürcistan
+[seçenek] Azerbaycan
+[seçenek] Dil seçin
+[seçenek] Türkçe
+[seçenek] Rusça
+[seçenek] Özbekçe
+[seçenek] Gürcüce
+[seçenek] Azerice
+[seçenek] Durum seçin
+[seçenek] Taslak
+[seçenek] İncelemede
+[seçenek] Onaylı
+[seçenek] Yayında
+[seçenek] Geri çekildi
+[seçenek] Arşiv
+[yer tutucu] Yol ara (ad veya kod)
+Yalnız onaysız eski yollar ({{ legacyCount }})
+Dışa aktar
+Yeni yol
+Yol
+Ürün
+Ülke / dil
+Zincir şablonu
+Sürüm
+Durum
+Son revizyon
+Yolculuk
+{{ r.initials }}
+{{ r.name }}
+{{ r.code }}
+Onaysız — sahada kullanılamaz
+Zincire bağla ve onaya gönder
+{{ r.product }}
+{{ r.countryName }}
+{{ r.lang }}
+{{ r.chain }}
+{{ r.ver }}
+{{ r.st.label }}
+{{ r.stSub }}
+{{ r.rev }}
+{{ r.jour }}
+[ipucu] Aç
+Bu filtrelerle eşleşen yol yok.
+{{ rowsInfo }}
+1
+
+=== 2. YETKİSİZ durum (wsDenied) ===
+Bu yolu görüntüleme yetkiniz yok
+Yol düzenleme veya inceleme izni olan bir pozisyon gerekir. Erişim için sistem yöneticinize başvurun.
+Bilgi Yollarına dön
+
+=== 3. ÇALIŞMA ALANI — üst bilgi, bağlam, sekmeler, eylem menüsü, sıradaki-adım bandı (wsOk) ===
+[ipucu] Bilgi Yollarına dön
+AL
+ALMIBA — HD Karnitin Detay Yolu
+BY-ALM-001 / v2.0 · kaydedildi {{ savedAt }}
+Taslak
+{{ lastRev.label }}
+Sahada v1.0
+{{ cx.k }}
+[ipucu] Ülke / dil düzenle
+{{ cx.v }}
+Ülke
+[seçenek] Türkiye
+[seçenek] Belarus
+[seçenek] Özbekistan
+[seçenek] Türkmenistan
+[seçenek] Gürcistan
+[seçenek] Azerbaycan
+Dil
+[seçenek] {{ lo }}
+Ülke ve dil yalnız taslakta değişir. Zincir sabitlenmiştir; ürün ve kitle zincirden gelir.
+{{ t.label }}
+{{ t.n }}
+{{ primary.label }}
+[ipucu] Diğer eylemler
+{{ mi.label }}
+Öneri
+{{ tabIntro }}
+{{ next.title }}
+{{ next.btn }}
+
+=== 3a. Sekme: Kurgu ===
+Yolun dili {{ lang }} olarak değişti. Türkçe içerikler bu yolda kullanılamaz; her birini {{ lang }} sürümüyle değiştirin.
+Dal
+Ayrı bir anlatı hattı. A dalı her ziyarette gösterilir; B dalı yalnız koşulu oluşursa.
+Adım
+Zincirin bir bölümü. Kartı tutup sürükleyerek sırasını veya dalını değiştirin.
+İçerik ve iddia
+Her adıma Bilgi Bankası içeriği ve onaylı iddia eklenir; Sayfa tasarımında sayfaya dönüşür.
+Sahadaki sıra:
+{{ sq.label }}
+{{ col.name }}
+{{ col.cond }}
+{{ col.total }}
+[ipucu] Sürükle
+{{ st.label }}
+{{ st.name }}
+{{ st.reqTag.label }}
+[ipucu] Adım ayarları
+≈ {{ st.dur }} dk
+Ön koşul: {{ st.pre }}
+{{ st.limit }}
+Gösterim
+{{ st.reqSwitch }}
+Tahmini süre
+−
+{{ st.dur }} dk
++
+Ön koşul adımı
+[seçenek] {{ po.l }}
+En az / en çok öğe
+{{ st.min }}
+/
+{{ st.max }}
+Adımı çıkar
+{{ it.title }}
+{{ it.stText }}
+[ipucu] Adımdan çıkar
+Henüz öğe yok.
+{{ is.text }}
+İçerik veya iddia ekle
+Adımı buraya bırakın
+
+=== 3b. Sekme: Sayfa tasarımı ===
+Salt okunur: tasarım düzenleme yetkiniz yok. Bloklara tıklayarak özelliklerini görebilirsiniz.
+Sayfalar · {{ pageCount }}
+{{ th.n }} · {{ th.stepCode }}
+[ipucu] İhlal var
+{{ th.title }}
+{{ th.branchLabel }}
++ Sayfa
+↑ Taşı
+↓ Taşı
+Sayfayı sil
+[ipucu] Geri al (Ctrl+Z)
+Geri al
+[ipucu] Yinele (Ctrl+Y)
+Yinele
+{{ d.label }}
+Sayfa şablonları
+Şablon: {{ curPage.tpl }} · {{ curPage.step }} · kaydedildi {{ savedAt }}
+{{ tp.name }}
+Marka onaylı
+Blok ekle
+{{ pb.label }}
+[ipucu] Ülkenin zorunlu yasal öğeleri her sayfaya otomatik eklenir
+Yasal altbilgi · otomatik
+Kilitli bölge
+Düzenlenebilir
+İhlal
+{{ flowNote }}
+Sürükle: taşı · köşe tutamacı: boyutlandır · ok tuşları: 8 px kaydır · Delete: sil · Ctrl+Z / Ctrl+Y
+{{ selV.label }}
+{{ selV.id }}
+X
+{{ selV.x }}
+Y
+{{ selV.y }}
+G
+{{ selV.w }}
+{{ selV.h }}
+Metin, onaylı iddianın Türkiye / Türkçe sürümünden gelir ve düzenlenemez.
+İddia:
+{{ selV.code }} · {{ selV.claimName }}
+Sürüm:
+{{ selV.claimVer }}
+Niteleyici (zorunlu, yanında):
+{{ selV.qual }}
+Dipnot ve kaynakça (otomatik):
+{{ selV.ev }}
+{{ selV.claimTag.label }}
+Kaynak: Belge Yönetimi · onaylı varlık kütüphanesi. Yalnız onaylı varlıklar seçilebilir.
+Alternatif metin:
+{{ selV.alt }}
+Yazı boyutu
+−
+{{ selV.fs }} pt
++
+en küçük 10
+{{ selV.colorLabel }} · ALMIBA paleti
+Şu anki renk {{ selV.curColor }} paletin dışında. Bir palet rengi seçin.
+Bloğu sil
+Bu sayfanın uyumu
+{{ pvSum.label }}
+{{ pv.tag.label }} · {{ pv.rule }}
+{{ pv.msg }}
+Tüm uyum kontrolü →
+Yerleşim önerisi
+Öneri
+Yapay zekâ, adımın içerik ve iddialarına göre marka onaylı bir yerleşim önerir: başlık üstte, iddia ile görsel yan yana. Kurallar kilitli kaldığı için öneri ihlal üretmez; tasarım süresini kısaltır.
+Bu sayfaya uygula
+
+=== 3c. Sekme: Uyum kontrolü ===
+{{ vCount.err }}
+Engelleyici
+{{ vCount.warn }}
+Uyarı
+{{ vCount.pur }}
+Erişilebilirlik · Öneri
+Kurallar düzenlerken anında, onaya gönderirken engelleyici kontrol listesi olarak çalışır. Engelleyiciler çözülmeden onaya gönderilemez; uyarılar gönderimi durdurmaz. Satırdaki düğme ilgili bloğu açar.
+Uyum kontrolü
+Önem
+Kural
+Sayfa › blok
+İhlal ve düzeltme
+{{ v.tag.label }}
+{{ v.rule }}
+{{ v.where }}
+{{ v.msg }}
+Düzeltme: {{ v.fix }}
+{{ v.goLabel }}
+Uyum kontrolü temiz.
+
+=== 3d. Sekme: MLR onayı ===
+Onay akışı · Rev 3
+{{ ev.title }}
+{{ ev.tag.label }}
+{{ ev.date }}
+{{ ev.desc }}
+{{ ev.ini }}
+{{ ev.who }}
+{{ ev.role }}
+"{{ ev.note }}"
+İnceleyici görünümü
+Hatırlat
+Özet
+{{ ms.k }}
+{{ ms.v }}
+Kurallar
+Sıra Medikal → Hukuk → Ruhsat. Her adım bir öncekinin onayından sonra açılır ve Görev Merkezi’ne iş öğesi olarak düşer. Gönderen kendi yolunu onaylayamaz; ret için gerekçe zorunludur.
+
+=== 3e. Sekme: Çıktı ve yayın ===
+Çıktılar
+Rev 3 · çıktı yok
+{{ outDisabledReason }}
+Çıktı oluştur
+Rev 2 · v1.0 onaylı revizyondan
+HTML saha sunumu
+almiba-hd-v1.0-rev2.zip · 4,2 MB · 10.03.2026 · sha256 9f3a…c21e
+Önizle
+İndir
+Arşiv PDF’i
+almiba-hd-v1.0-rev2.pdf · 6 sayfa · 1,8 MB · sha256 9f3a…c21e
+İki çıktı aynı onaylı revizyondan: Rev 2 · aynı parmak izi.
+Yayınla · Rev 3
+Yayınla
+{{ p.t }}
+{{ p.d }}
+v2.0 yayınlandığında v1.0 "yerini aldı" olur. v1.0’ı kullanan 2 yolculuk aşaması var: Nefroloji HD Yolculuğu 2026 › Aşama 2, Yeni nefrolog tanışma › Aşama 3.
+Yayındaki sürüm · v1.0 (Rev 2)
+Yayında · Oğuz B. · 10.03.2026
+Geri çekildi
+[yer tutucu] Geri çekme gerekçesi (zorunlu)
+Geri çek
+{{ wdErr }}
+Geri çekilen sürüm yolculuk aşamalarında seçilemez; kullanan aşamaların sahiplerine bildirim gider.
+
+=== 3f. Sekme: Revizyonlar ===
+Sahada kullanılan
+{{ fieldRev }}
+Onayda
+v2.0 · Rev 3
+Üzerinde çalışılan
+v2.0 · Taslak
+Sürüm
+(v1.0, v2.0) yolun yayınlanan hâlidir.
+Revizyon
+(Rev 1, 2, 3) bir sürümün onaya gönderilen, dondurulmuş kopyasıdır. Reddedilen revizyon düzeltilip yeniden gönderilir, bu yüzden bir sürümün birden çok revizyonu olabilir.
+Revizyon geçmişi
+En yeni üstte
+{{ rv.title }}
+{{ rv.tag.label }}
+SAHADA
+{{ rv.date }}
+{{ rv.desc }}
+{{ d.s }}
+· {{ d.who }} ·
+{{ d.st }}
+— "{{ d.note }}"
+HTML saha sunumu
+Arşiv PDF’i
+{{ rv.out }}
+{{ rv.diffLabel }}
+
+=== 3g. Sekme: Saha önizleme ===
+{{ d.label }}
+{{ prevSource }}
+← → tuşlarıyla sayfa değiştirin · etkileşimler çalışır
+Onaysız revizyon: "taslak önizleme" filigranıyla açılır ve sahaya gönderilemez.
+[ipucu] Önceki sayfa
+[ipucu] Sonraki sayfa
+{{ d.sub }}
+
+=== 3h. Sekme: Kullanım ===
+Nerede kullanılıyor
+Nefroloji HD Yolculuğu 2026
+Aşama 2 · Detay ziyareti · v1.0 · 18 temsilci
+Yeni nefrolog tanışma
+Aşama 3 · Kanıt ziyareti · v1.0 · 7 temsilci
+Bağlı strateji şablonları
+Nefroloji 2026 H2 Stratejisi
+HD merkezleri kapsama planı
+Saha etkisi uyarısı
+Öneri
+Güvenlilik bilgisi sayfası ortalama 6 sn gösteriliyor; zorunlu sayfalar için eşik 10 sn. Dengeli sunumun sahada da yapıldığını izlemek için eşik altı sayfalar işaretlenir ve bölge müdürüne raporlanır.
+Sahadan dönen veri
+v1.0 · Rev 2 · son 90 gün · 412 ziyaret
+Sayfa
+Gösterim
+Ort. süre
+{{ x.t }}
+{{ x.v }}
+{{ x.sec }}
+
+=== 4. İNCELEYİCİ GÖRÜNÜMÜ (isReview) ===
+← Çalışma alanı
+İnceleyici görünümü · Rev 3 · v2.0
+Dondurulmuş revizyon · gönderen Ceren T. · Hukuk adımı: {{ hukukSt }}
+İddia veya güvenlilik bloğuna tıklayın: kanıt belgesi yan panelde açılır.
+Sayfalar
+{{ rp.label }}
+{{ rp.n }}
+Kanıt · {{ ev.code }}
+{{ ev.tag.label }} · {{ ev.cver }}
+{{ ev.text }}
+Belge:
+{{ ev.doc }}
+Sürüm:
+{{ ev.ver }}
+Belge sayfası önizlemesi
+Alıntı:
+"{{ ev.quote }}"
+Notlar · {{ revTitle }}
+Öneri: yorum akışı
+{{ n.n }}
+{{ n.who }}
+{{ n.stTag.label }}
+{{ n.text }}
+{{ rp.who }}:
+{{ rp.text }}
+{{ n.toggleLabel }}
+Bu sayfada not yok.
+[yer tutucu] Sayfaya iğnelenecek not
+İğnele
+Notlar revizyonla birlikte saklanır; çözülmemiş notlar sonraki revizyona taşınır. Ret gerekçelerinin kaybolmasını önler.
+Karar · Hukuk
+Bu revizyonu siz gönderdiniz. Gönderen kendi yolunu onaylayamaz.
+Karar yetkisi Görev Merkezi’nde Hukuk pozisyonuna atanmış kullanıcıdadır.
+[yer tutucu] Not / gerekçe (ret için zorunlu)
+{{ decErr }}
+Onayla
+Reddet
+{{ decMsg }}
+
+=== 5. MODAL: Onaya gönder (isSubmit) ===
+Onaya gönder
+Gönderim, taslağın şu anki halinden dondurulmuş Rev 4’ü oluşturur ve Medikal → Hukuk → Ruhsat akışını başlatır. Taslak düzenlenmeye devam eder.
+{{ c.t }}
+{{ l.text }}
+Değişiklik özeti (Rev 3 → Rev 4)
+Öneri
+İnceleyiciye otomatik not: 4 sayfa değişti, 1 sayfa eklendi (B1). MLR yalnız değişen sayfalara odaklanır.
+{{ blockers }} engel çözülmeden gönderilemez. Satıra tıklayınca ilgili bloğa gidersiniz.
+Engelleyici kural yok.
+Vazgeç
+Rev 4’ü gönder
+
+=== 6. MODAL: Zincire bağla ve onaya gönder — 4 adımlı sihirbaz (isLegacy) ===
+Zincire bağla ve onaya gönder
+BY-ALM-LEG-07 · Almiba genel tanıtım (2024) · Gürcistan · Gürcüce
+{{ l.label }}
+Yolun bağlanacağı zincir şablonu. Ürün ve kitle zincirden gelir.
+{{ c.t }}
+{{ c.d }}
+Eski yolun bölümleri zincir adımlarına eşlenir. Karşılığı olmayan bölüm çıkarılır.
+Giriş
+A1 · İhtiyaç
+Nasıl çalışır
+A2 · Mekanizma
+Çalışmalar
+A3 · Klinik kanıt
+Yorgunluk vakaları
+B1 · Yorgunluk
+Doz tablosu
+Zincirde karşılığı yok · çıkarılacak
+Gürcistan kuralları ile ön kontrol:
+Serbest metindeki 2 ifade, onaylı iddialara (CLM-ALMIBA-02, CLM-ALMIBA-07 GE v1.0) bağlandı.
+A4 · Güvenlilik adımı KÜB özetiyle dolduruldu (dengeli sunum).
+Gürcistan yasal altbilgisi ve ruhsat sahibi Grand Medical Georgia kaydından eklendi.
+1 görsel onaylı varlık kütüphanesinde bulundu; 1 görsel yeniden seçilmeli (uyarı).
+Yol,
+Almiba Hemodiyaliz Karnitin Zinciri v1.2
+’ye bağlanıp v1.1 taslağı olarak kaydedilecek; Rev 1 dondurulup Medikal onayına gönderilecek. Onaylanana kadar yol sahada kullanılamaz.
+Geri
+Devam
+
+=== 7. MODAL: Başka ülke / dile uyarla — Öneri (isAdapt) ===
+Başka ülke / dile uyarla
+Öneri
+Kopyalamadan önce hedef ülkede hangi iddia ve içeriğin onaylı karşılığı olduğunu gösterir.
+Hedef ülke
+{{ d.label }}
+Dil: {{ adaptLang }}
+{{ r.k }}
+{{ r.a }}
+{{ r.b }}
+{{ r.tag.label }}
+{{ adaptMissing }} öğe hazır değil. Uyarlanmış taslakta bu öğeler kurguda işaretli gelir; tasarım korunur, yasal öğeler ülkeye göre değişir.
+Vazgeç
+{{ adaptName }} taslağını oluştur
+
+=== 8. YAN PANEL: Adıma ekle (addOpen) ===
+Adıma ekle
+Hedef adım: {{ addTarget }}
+{{ t.label }}
+Yalnız yolun dilindeki ({{ lang }}) içerikler eklenebilir. Yayında olmayan içerik eklenebilir ama yayını engeller.
+{{ pi.title }}
+{{ pi.lang }} · {{ pi.type }} · {{ pi.pub }}
+{{ pi.note }}
+{{ pi.btn }}
+[yer tutucu] İddia ara: metin, kod veya kanıt belgesi
+Öneri
+Yalnız Türkiye’de onaylı sürümü olan iddialar sahada kullanılabilir. Metin onaylı iddiadan gelir ve değiştirilemez.
+{{ cr.code }}
+{{ cr.text }}
+{{ cr.tag.label }} · {{ cr.ver }}
+{{ cr.btn }}
+
+=== 9. YAN PANEL: Revizyon farkı (diffOpen) ===
+{{ diffTitle }}
+Sayfa sayfa değişiklikler
+Fark, iki revizyon arasında hangi sayfada neyin değiştiğini gösterir. İnceleyici yalnız değişen sayfalara odaklanır.
+{{ d.p }}
+{{ d.tag.label }}
+{{ i.sign }}
+{{ i.t }}
+
+=== 10. YAN PANEL: Yeni Bilgi Yolu (np.open) ===
+Yeni Bilgi Yolu
+Önce yolun kimliğini belirleyin. Adımlar seçtiğiniz zincir şablonundan gelir; içerik ve sayfaları bir sonraki adımda eklersiniz.
+Kimlik
+Yol adı *
+[yer tutucu] örn. ALMIBA — HD kısa hatırlatma yolu
+{{ np.err }}
+Zincir şablonu *
+[seçenek] {{ c.n }}
+Ürün
+{{ np.product }}
+Kitle
+{{ np.aud }}
+Adımlar
+{{ np.steps }}
+Ürün, kitle ve adımlar zincirden gelir, değiştirilemez.
+Ülke *
+[seçenek] Türkiye
+[seçenek] Belarus
+[seçenek] Özbekistan
+[seçenek] Türkmenistan
+[seçenek] Gürcistan
+[seçenek] Azerbaycan
+Dil *
+[seçenek] {{ l }}
+Tek dil kuralı: yola yalnız bu dildeki içerikler eklenebilir. Yasal altbilgi ve ruhsat sahibi ülkeden otomatik gelir.
+Geçerlilik
+Başlangıç
+Bitiş
+Oluştur
+Vazgeç
+
+=== 11. YAN PANEL: Öneriler çekmecesi (drawer) ===
+Öneriler
+İstenen kapsamın dışında; mockup’ta "Öneri" etiketiyle işaretli.
+Öneri
+{{ o.t }}
+{{ o.r }}
+{{ o.w }} → göster
+
+=== 12. Bildirim (toast) ===
+{{ toast }}
+
+=== DİNAMİK METİNLER (mantık betiği sabitleri) ===
+--- INTRO ---
+Yolun anlatısını kurun: adımları dallara yerleştirin, her adıma içerik ve onaylı iddia ekleyin.
+Her adımı bir veya birkaç sayfaya dönüştürün. Blokları sürükleyip boyutlandırın; yasal alanlar ve onay kodu kilitli, otomatik gelir.
+Onaylı revizyondan HTML saha sunumu ve arşiv PDF’i oluşturun, ön koşullar tamamsa yayınlayın.
+Onaya göndermeden önce bütün kural ihlallerini burada görün. Her satır ilgili bloğa götürür ve nasıl düzelteceğinizi yazar.
+Gönderilen revizyon Medikal → Hukuk → Ruhsat sırasıyla incelenir. Kimin beklediği ve verilen notlar burada.
+Yolun onaya gönderilen her kopyası ve verilen kararlar. Hangi revizyonun sahada olduğunu burada görürsünüz.
+Temsilcinin tablette göreceği sunum. Onaysız taslak filigranla açılır.
+Bu yolu kullanan yolculuklar ve sahadan dönen sayfa başına gösterim verisi.
+
+--- ONERI ---
+İddia arama
+Kurgu
+kurgu
+Onaylı iddiayı kodu bilinmeden, metin veya kanıt belgesiyle bulur ve yalnız yolun ülke/dilindeki durumu gösterir. Başka ülkeye ait ya da eski iddianın seçilmesini önler.
+Yapay zekâ yerleşim önerisi
+Sayfa tasarımı
+tasarim
+Adımın içerik ve iddialarına göre marka onaylı yerleşimi uygular. Kurallar kilitli kaldığı için öneri ihlal üretmez; tasarım süresini kısaltır.
+Sayfa bazlı yorum akışı
+İnceleyici görünümü
+review
+İğneli notlar yanıtlanır ve çözüldü olarak işaretlenir. Ret gerekçeleri ve düzeltmeler revizyonlar arasında kaybolmaz.
+Erişilebilirlik kontrolü
+Uyum kontrolü
+uyum
+Alternatif metin ve kontrast gibi kontrolleri uyum listesine öneri olarak ekler; tablette okunurluğu artırır, onayı engellemez.
+Ülke / dile uyarlama akışı
+Kopyala menüsü
+adapt
+Yolu başka ülkeye kopyalamadan önce hangi iddianın ve içeriğin hedef ülkede onaylı karşılığı olduğunu gösterir; yasal öğeleri ülke şirketinden getirir.
+Gönderimde değişiklik özeti
+Onaya gönder
+submit
+Son onaylı revizyona göre sayfa sayfa farkı inceleyiciye otomatik not olarak ekler; MLR yalnız değişen yere bakar.
+Saha etkisi uyarısı
+Kullanım
+kullanim
+Zorunlu güvenlilik sayfası sahada çok kısa gösteriliyorsa işaretler; dengeli sunumun sahada da yapıldığını izler.
+
+--- LBL ---
+Başlık
+Metin
+Görsel
+Grafik / tablo
+İkon
+Ayırıcı
+İddia bloğu
+Kaynakça
+Güvenlilik bilgisi
+Etkileşim · açılır bölüm
+
+--- ST ---
+Taslak
+mute
+İncelemede
+info
+Onaylı
+Yayında
+Geri çekildi
+err
+Arşiv
+
+--- MLR0 ---
+Medikal
+Dr. Ayşe Kaya
+Onayladı
+Mekanizma cümlesi uygun.
+Hukuk
+Av. Mert Demir
+Bekliyor
+2 gündür bekliyor
+Ruhsat
+Selin Aksoy
+Sırada
+
+--- NOTES0 ---
+Dr. Ayşe Kaya · Medikal
+Mekanizma cümlesi uygun.
+Ayrıntı satırı KÜB 4.2 ile tutarlı, Hukuk da baksın.
+Ceren T.
+Hukuk notuna ekledim.
+
+--- DIFF ---
+rev2-rev3
+Kapak
+Aynı
+İhtiyaç
+Etki mekanizması
+Değişti
+del
+CLM-ALMIBA-02 TR v0.9: "Levokarnitin enerji metabolizmasında görev alır."
+add
+CLM-ALMIBA-02 TR v1.0: "Levokarnitin, uzun zincirli yağ asitlerini mitokondriye taşıyarak enerji metabolizmasını destekler."
+Etkileşim bloğu: "Mitokondriyal taşıma — ayrıntı"
+Klinik kanıt
+Güvenlilik bilgisi
+Ayrıntı metni 9 pt
+Ayrıntı metni 10 pt
+Özet ve kaynakça
+Kaynak 1: GMG-QMS-SOP-0014 s.1 (iddiadan otomatik)
+rev3-draft
+Metne eklendi: "Levokarnitin tedavisi yorgunluğu kesin olarak ortadan kaldırır."
+Grafik arka planı #E9F5F3, tam genişlik
+Grafik arka planı #E4572E
+İddia bloğu CLM-ALMIBA-05 (onaysız)
+Ayrıntı metni 8 pt
+Diyaliz sonrası yorgunluk (B1)
+Yeni
+B dalı sayfası eklendi: metin, CLM-ALMIBA-07, görsel
+Kaynak 2: GMG-CLN-REP-0031 s.4
+
+--- STATS ---
+Kapak
+İhtiyaç
+Etki mekanizması
+Klinik kanıt
+Güvenlilik bilgisi
+Özet ve kaynakça
+
+--- ADAPT ---
+Belarus
+Rusça
+İddia
+CLM-ALMIBA-02
+BY v1.0 onaylı
+CLM-ALMIBA-03
+CLM-ALMIBA-05
+Belarus sürümü yok
+err
+CLM-ALMIBA-S01
+İçerik
+Levokarnitinin etki mekanizması
+RU yayında
+Hemodiyalizde karnitin kaybı
+RU çeviri taslak
+warn
+Yasal
+Altbilgi, ruhsat sahibi
+Grand Medical Belarus kaydından otomatik
+Gürcistan
+Gürcüce
+GE v1.0 onaylı
+CLM-ALMIBA-07
+Gürcistan sürümü yok
+KA çeviri yok
+Grand Medical Georgia kaydından otomatik
+Özbekistan
+Özbekçe
+UZ v1.0 onaylı
+UZ yayında
+Grand Medical Uzbekistan kaydından otomatik
+
+--- FOOT ---
+Reçeteyle satılır. Şüpheli advers reaksiyonları TÜFAM’a bildiriniz. Ayrıntılı bilgi için KÜB/KT’ye bakınız.
+Grand Medical Türkiye
+Отпускается по рецепту. Сообщайте о нежелательных реакциях. См. инструкцию по применению.
+Grand Medical Belarus
+[Özbekistan zorunlu yasal metni]
+Grand Medical Uzbekistan
+[Türkmenistan zorunlu yasal metni]
+Grand Medical Turkmenistan
+[Gürcistan zorunlu yasal metni]
+Grand Medical Georgia
+[Azerbaycan zorunlu yasal metni]
+Grand Medical Azerbaijan
+
+--- COUNTRIES ---
+Türkçe
+Rusça
+Belarusça
+Özbekçe
+Türkmence
+Gürcüce
+Azerice
+
+--- CHAINS ---
+Almiba Hemodiyaliz Karnitin Zinciri v1.2
+ALMIBA
+ALMIBA (levokarnitin)
+Nefroloji / Doktor
+A: İhtiyaç → Mekanizma → Klinik kanıt → Güvenlilik · B: Yorgunluk
+met
+Almiba Metabolik Zincir v1.0
+Pediatri / Metabolizma
+İhtiyaç → Mekanizma → Güvenlilik
+frx
+Feroxa Anemi Zinciri v2.0
+FEROXA
+FEROXA (demir)
+Hematoloji / Doktor
+İhtiyaç → Klinik kanıt → Güvenlilik
+
+--- ROWS ---
+BY-ALM-001
+ALMIBA — HD Karnitin Detay Yolu
+ALMIBA
+Türkçe
+Almiba Hemodiyaliz Karnitin Zinciri v1.2
+v2.0
+taslak
+v1.0 yayında
+Rev 3 · Hukuk bekliyor
+warn
+BY-ALM-002
+ALMIBA — HD Karnitin Detay Yolu (RU)
+Rusça
+v1.0
+yayinda
+Rev 2 · Onaylı
+BY-ALM-003
+ALMIBA — Metabolik kısa yol
+Almiba Metabolik Zincir v1.0
+v1.1
+incelemede
+Rev 1 · Medikal bekliyor
+BY-FRX-010
+FEROXA — Demir eksikliği detay yolu
+FEROXA
+Özbekçe
+Feroxa Anemi Zinciri v2.0
+v3.0
+onayli
+çıktı bekliyor
+Rev 5 · Onaylı
+BY-ALM-LEG-07
+Almiba genel tanıtım (2024)
+Gürcüce
+Zincire bağlı değil
+MLR kaydı yok
+err
+BY-NRV-004
+NEURAVIT — B12 nöropati yolu
+NEURAVIT
+Azerice
+Neuravit Nöropati Zinciri v1.0
+v1.2
+geri
+etiket güncellemesi
+Rev 3 · Onaylı
+BY-ALM-000
+ALMIBA — HD tanıtım 2025
+Almiba Hemodiyaliz Karnitin Zinciri v1.0
+arsiv
+Rev 4 · Onaylı
+
+--- BR0 ---
+A dalı · Ana anlatı
+Her ziyarette
+İhtiyaç
+ALMIBA — Hemodiyalizde karnitin kaybı (nefroloji)
+Slayt
+Yayında
+CLM-ALMIBA-03
+Mekanizma
+ALMIBA — Levokarnitinin etki mekanizması (nefroloji)
+CLM-ALMIBA-02
+Klinik kanıt
+ALMIBA — Hemodiyaliz anemi çalışması özeti
+Belge
+CLM-ALMIBA-05
+Güvenlilik
+ALMIBA — Güvenlilik profili ve KÜB özeti
+CLM-ALMIBA-S01
+B dalı · Yorgunluk odaklı
+Hekim diyaliz sonrası yorgunluğu gündeme getirirse
+Yorgunluk
+ALMIBA — Diyaliz sonrası yorgunluk vaka serisi
+Taslak
+CLM-ALMIBA-07
+Destekleyici kanıt
+
+--- LIB ---
+ALMIBA — Karnitin düzeyi ölçümü rehberi
+Belge
+Yayında
+ALMIBA — Mechanism of action (nephrology)
+Slayt
+ALMIBA — Diyetisyen için karnitin notu
+Metin
+Taslak
+ALMIBA — Hemodiyaliz merkezi sık sorular
+
+--- CLAIMS ---
+CLM-ALMIBA-02
+Etki mekanizması
+Levokarnitin, uzun zincirli yağ asitlerini mitokondriye taşıyarak enerji metabolizmasını destekler.
+Reçeteyle satılır.
+GMG-QMS-SOP-0014 "ALMIBA — Etki Mekanizması" s.1
+Belge sürümü 2.0 · sabitlenmiş
+Levokarnitin, uzun zincirli yağ asitlerinin açil-karnitin olarak iç mitokondri zarından geçişini sağlar.
+TR v1.0
+Onaylı
+CLM-ALMIBA-05
+Anemi yönetimi
+Levokarnitin, hemodiyaliz hastalarında eritropoetin dozunun azaltılmasına katkı sağlayabilir.
+Reçeteyle satılır. Sonuçlar hasta grubuna göre değişebilir.
+GMG-CLN-REP-0031 "Hemodiyaliz anemi çalışması" s.4
+Belge sürümü 1.1 · sabitlenmiş
+12 aylık izlemde EPO dozunda azalma gözlendi.
+TR v0.3
+Onaysız · Medikal incelemede
+err
+CLM-ALMIBA-05 onaylı değil (TR v0.3, Medikal incelemede).
+İddianın onaylanmasını bekleyin ya da bloğu kaldırın.
+CLM-ALMIBA-07
+Egzersiz kapasitesi
+Levokarnitin, diyaliz hastalarında egzersiz kapasitesini destekleyebilir.
+GMG-CLN-REP-0044 s.2
+Belge sürümü 1.0
+Yalnız GE v1.0
+Türkiye sürümü yok
+CLM-ALMIBA-07’nin Türkiye’de onaylı sürümü yok (yalnız Gürcistan v1.0).
+İddia yönetiminden Türkiye sürümünü talep edin ya da bloğu kaldırın.
+CLM-ALMIBA-S01
+Güvenlilik özeti
+Advers etkiler, kontrendikasyonlar ve uyarılar için KÜB bölüm 4.3–4.8’e bakınız. Tedaviye hekim değerlendirmesiyle başlanır.
+ALMIBA KÜB, bölüm 4.3–4.8
+KÜB 06/2026
+TR v1.1
+CLM-ALMIBA-03
+Karnitin kaybı
+Hemodiyaliz, serbest karnitinin diyalizata geçmesine bağlı olarak plazma düzeylerini düşürebilir.
+GMG-QMS-SOP-0014 s.2
+Belge sürümü 2.0
+
+--- PALN ---
+Lacivert
+Turkuaz
+Açık turkuaz
+Amber
+Koyu gri
+Beyaz
+
+--- Uyum kuralları, ön koşullar, zaman çizelgesi, toast ve hata metinleri (renderVals/viol) ---
+Marka kiti · renk
+Arka plan ${b.bg} ALMIBA paletinde yok.
+Özellikler › Renk bölümünden palet rengi seçin.
+Yazı rengi ${b.color} ALMIBA paletinde yok.
+Palet rengi seçin.
+Marka kiti · en küçük yazı
+Yazı boyutu ${b.fs} pt; ALMIBA için en küçük 10 pt.
+Yazı boyutunu en az 10 pt yapın.
+Onaylı mesaj
+İddiaya benzeyen ifade
+"${m[0]}" ifadesi onaysız bir iddia gibi okunuyor.
+Onaylı iddia bloğu kullanın ya da ifadeyi nötr yazın.
+Erişilebilirlik
+Görselin alternatif metni yok.
+Belge Yönetimi kaydındaki açıklamayı alternatif metin olarak kullanın.
+Dengeli sunum
+${br} dalında etkinlik iddiası var, güvenlilik bilgisi bloğu yok.
+Bu dala Güvenlilik bilgisi bloğu ekleyin.
+Yayında
+İçerik yayında değil
+"${c.title}" Bilgi Bankası’nda ${c.pub.toLowerCase()} durumda.
+İçeriği yayınlatın ya da adımdan çıkarın.
+Türkçe
+Tek dil kuralı
+"${c.title}" Türkçe; yolun dili ${this.state.lang}.
+İçeriğin ${this.state.lang} sürümünü kullanın.
+Adım gereksinimi
+${st.id} ${st.name}: en az ${st.min} öğe bekleniyor, ${n} var.
+Kurguda adıma içerik ya da iddia ekleyin.
+Ruhsat sahibi: 
+Onay kodu: onaydan sonra atanır
+Onaylı iddia · 
+Onaysız iddia · 
+ · kilitli metin
+Uyarı
+Öneri
+İçerik
+Gösterge Paneli
+Bilgi Bankası
+Belge Yönetimi
+Bilgi Yolları
+Marka Kitleri
+Etkileşim Yolculukları
+Strateji Şablonları
+Görev Merkezi
+Yönetim
+Almiba Hemodiyaliz Karnitin Zinciri v1.2
+Rev 1 · Medikal bekliyor
+Türkiye
+Özbekistan
+Türkmenistan
+Gürcistan
+Prototipte çalışma alanı yalnız BY-ALM-001 için açılır.
+İncelemede
+Onaylı
+Geri çekildi
+Arşiv
+Onayladı
+Rev 4 · Medikal bekliyor
+Rev 3 · 
+ reddetti
+Rev 3 · Onaylı
+ bekliyor
+Sayfa tasarımı
+Uyum kontrolü
+MLR onayı
+Çıktı ve yayın
+Saha önizleme
+Kullanım
+ adım · ≈ 
+Yayını engeller:
+"${c.title}" yayında değil (${c.pub}).
+Bu adım en az ${st.min} öğe bekliyor, ${n} var.
+Bu adım en çok ${st.max} öğe alır, ${n} var.
+Bilgi Bankası · 
+ · yayında değil
+İddia
+Eklenemez: yolun dili Türkçe, bu içerik İngilizce. Bir yolda tek dil kullanılır; Türkçe sürümünü Bilgi Bankası’nda oluşturun.
+Eklenebilir, ancak yayında olmadığı için yayını engeller.
+İçerik 
+ adımına eklendi.
+${n} / en az ${st.min}, en çok ${st.max}
+Yayını engeller
+Hazır
+İsteğe bağlı
+${n} öğe · en az ${st.min}, en çok ${st.max}
+ adımı çıkarıldı. Sayfaları Sayfa tasarımında kalır.
+Sağdaki iddia aramadan seçin; 
+ adımına eklenir.
+ adımına ekle
+A dalı
+B dalı
+Kapanış
+— eksik
+Arka plan
+Yazı rengi
+Başlık
+Görsel
+Grafik / tablo
+Ayırıcı
+Kaynakça
+Güvenlilik bilgisi
+Etkileşim
+Tablet yatay
+Tablet dikey
+Çalışma sonucu
+Grafikli kanıt
+Güvenlilik
+" şablonu uygulandı. Kilitli bölgeler korunur.
+Revizyon MLR onaylı
+Üç adım onaylandı.
+Rev 3 henüz onaylanmadı: 
+) bekliyor.
+ reddetti.
+Çıktı hazır
+Çıktı yok. Onaydan sonra HTML saha sunumu ve arşiv PDF’i oluşturulmalı.
+Tüm iddialar onaylı
+Rev 3’teki 4 iddia Türkiye’de onaylı.
+Tüm içerikler yayında
+Rev 3’teki 4 içerik yayında.
+Uyum kontrolü temiz
+Rev 3 gönderimde temizdi. Taslaktaki ihlaller Rev 4’te denetlenir.
+Onay kodu TR-ALM-2603-02 · Geçerlilik 03/2027
+Tüm iddialar onaylı ve Türkiye sürümü var
+Tüm içerikler yayında ve tek dilde
+Tüm içerikler yayında.
+Marka kiti (renk, yazı boyutu)
+Marka kiti
+Renk ve yazı kuralları uygun.
+Etkinlik iddiası olan her dalda güvenlilik bilgisi var.
+Ülke zorunlu yasal öğeler
+Yasal altbilgi, "Reçeteyle satılır", TÜFAM bildirim satırı, KÜB/KT atfı ve ruhsat sahibi her sayfada otomatik.
+Onay kodu ve geçerlilik
+Onaydan sonra her sayfaya otomatik yazılır.
+Adım gereksinimleri ve serbest metin (uyarı)
+Uyarı yok.
+ engel var
+ sayfa
+ engelleyici
+Çıktı yok · v1.0 yayında
+Sıradaki adım: Hukuk incelemesi sizi bekliyor
+İncelemeyi aç
+Sıradaki adım: çıktı oluşturup yayınlayın
+Rev 3 henüz onaylanmadı; onaydan sonra çıktı oluşturup yayınlayabilirsiniz
+Sıradaki adım: 
+ engeli düzeltip onaya gönderin
+Engelleri göster
+Taslak hazır: onaya gönderebilirsiniz
+Onaya gönder
+Adım taşındı. Sahadaki sıra güncellendi.
+" yayında değil.
+En az 
+ öğe bekleniyor, 
+ var.
+En çok 
+ öğe alır, 
+ öğe (en az 
+, en çok 
+Zorunlu → isteğe bağlı yap
+İsteğe bağlı → zorunlu yap
+ adımı çıkarıldı.
+İçerik · 
+ · yayında
+, yayında değil
+İddia · 
+Eklenemez: yolun dili Türkçe, bu içerik İngilizce. Önce Bilgi Bankası’nda Türkçe sürümünü oluşturun.
+Yayında değil: eklenebilir ama yayını engeller.
+Gönderildi
+Rev 3 onaya gönderildi
+v2.0 taslağının o anki hâli donduruldu; taslak düzenlenmeye devam ediyor.
+Ceren T.
+Ürün müdürü · gönderen
+ onayladı
+ incelemesi bekleniyor
+ sırada
+İş öğesi Görev Merkezi’nde. Karar verilince sıradaki adım açılır.
+Sırada
+Önceki adım onaylanınca açılır.
+ adımı tamamlandı.
+ inceleyici
+Rev 3 · v2.0
+Gönderen
+Gönderim
+Şu an bekleyen
+Tamamlandı
+ / 3 adım
+Taslak · v2.0
+Gönderilmedi
+son kayıt 
+Rev 3 gönderildikten sonra yapılan değişiklikler. Onaya gönderilince Rev 4 olur.
+Rev 3 ile farkı gör
+v2.0’ın ilk revizyonu. Medikal onayladı, Hukuk inceliyor.
+Rev 2 ile farkı gör
+Rev 2 · v1.0
+Rev 1’deki ret düzeltildi. Oğuz B. 10.03.2026’da yayınladı.
+Dr. Ayşe Kaya
+Av. Mert Demir
+Selin Aksoy
+aynı kaynaktan · sha256 9f3a…c21e
+Rev 1 · v1.0
+v1.0’ın ilk gönderimi.
+Yan etki bildirim satırı eksik.
+Ceren T. · Düzenleyici
+Mert D. · Hukuk
+Oğuz B. · Yayın sorumlusu
+Kopya oluşturuldu: BY-ALM-001-K · v0.1 taslak.
+Arşivlemek için önce yayındaki v1.0 geri çekilmeli.
+Tablet yatay · 1024×768 hedef
+Önizleme: bloklar yukarıdan aşağı yeniden akar; düzenleme tablet yatayda.
+Yeni sayfa
+Bloğa git
+Sayfaya git
+Kurguya git
+Gönderen Ceren T. · 27.09.2026 16:10 · Taslak düzenlenmeye devam ediyor
+Çıktı oluşturulabilir.
+Rev 3 onaylanmadan çıktı oluşturulamaz.
+Çıktı oluşturuluyor…
+Çıktı yok: Rev 3 henüz onaylanmadı (
+Yayınlanamaz: revizyon onaylı değil ve çıktı yok.
+Geri çekme için gerekçe zorunludur.
+v1.0 geri çekildi. 2 yolculuk aşaması bilgilendirildi.
+Çözüldü
+Yeniden aç
+Çözüldü işaretle
+Av. Mert Demir · Hukuk
+Hukuk onayı kaydedildi. Sıradaki adım: Ruhsat (Selin Aksoy). İş öğesi Görev Merkezi’ne düştü.
+Ret için gerekçe zorunludur. Hangi sayfa ve blokta ne değişmeli, yazın.
+Ret kaydedildi. Gönderen bilgilendirildi; düzeltme yeni revizyonla gönderilecek.
+Rev 2 · v1.0 onaylı · parmak izi sha256 9f3a…c21e
+Taslak · onaysız, sahada kullanılamaz
+Rev 2 · v1.0 onaylı
+Taslak (v2.0)
+Rev 2 → Rev 3
+Rev 3 → Taslak
+Değişti
+Rev 3
+Rev 2
+Medikal · Dr. Ayşe Kaya · Onayladı · 05.03
+Hukuk · Av. Mert Demir · Onayladı · 07.03
+Ruhsat · Selin Aksoy · Onayladı · 09.03
+HTML + PDF · 9f3a…c21e
+Oğuz B. · 10.03.2026
+Rev 1
+Medikal · Dr. Ayşe Kaya · Onayladı · 19.02
+Hukuk · Av. Mert Demir · Reddetti — "Yan etki bildirim satırı eksik."
+Zincir seç
+Adımları eşle
+Gönder
+Ürün ve kitle eşleşiyor · 4 adım + B dalı
+Almiba Metabolik Zincir v1.0
+Kitle farklı: Pediatri / Metabolizma
+BY-ALM-LEG-07 zincire bağlandı · v1.1 Rev 1 Medikal onayına gönderildi.
+Rev 4 dondurularak oluşturuldu ve Medikal onayına gönderildi.
+Eksik çeviri
+Karşılığı yok
+ için uyarlanmış taslak oluşturuldu; eksikler kurguda işaretli.
+Yok (geri çekildi)
+v1.0 · Rev 2
+Hatırlatma gönderildi: 
+İçerik (Bilgi Bankası)
+Onaylı iddia
+Rev 2 → Rev 3 farkı
+Rev 3 → Taslak farkı
+ kayıttan 
+ gösteriliyor
+Toplam yol
+tüm ülkeler
+sahada kullanılabilir
+Onay bekleyen
+MLR akışında
+Onaysız eski yol
+sahada kullanılamaz
+Yol adı zorunludur.
+Bitiş tarihi başlangıçtan önce olamaz.
+Henüz gönderilmedi
+ taslak olarak oluşturuldu. Sıradaki adım: kurgu.
+Uygunluğu kontrol et
+Aynı ülke ve dilde kopyala
+Başka ülke / dile uyarla
+Arşivle
+Yeni sürüm
+v2.0 taslağı zaten açık. Yeni sürüm onaylı bir sürümden açılır.
+Ülke / dil düzenle
+Almiba HD Karnitin Zinciri v1.2
+Nefroloji / Doktor
+ konu · 
+göster

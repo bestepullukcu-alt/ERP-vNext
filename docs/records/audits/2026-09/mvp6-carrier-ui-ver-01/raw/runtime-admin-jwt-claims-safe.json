@@ -1,0 +1,15 @@
+{
+  "aud": "diten-erp",
+  "carrierPermissions": [
+    "supplychain.carriers.read",
+    "supplychain.carriers.create",
+    "supplychain.carriers.status.change"
+  ],
+  "exp": 1790181240,
+  "iss": "diten-auth-service",
+  "legal_entity_id": null,
+  "permissionCount": 262,
+  "role": null,
+  "sub": "11111111-1111-1111-1111-111111111111",
+  "tenant_id": "00000000-0000-0000-0000-000000000001"
+}

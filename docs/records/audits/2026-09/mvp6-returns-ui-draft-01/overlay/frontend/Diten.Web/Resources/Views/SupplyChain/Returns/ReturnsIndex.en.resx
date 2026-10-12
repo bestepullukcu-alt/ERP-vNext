@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="ReturnsTitle" xml:space="preserve"><value>Returns</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Request, authorize and track returns of shipped goods.</value></data>
+  <data name="AddNewReturns" xml:space="preserve"><value>Add Return</value></data>
+  <data name="ActionsHeader" xml:space="preserve"><value>Actions</value></data>
+  <data name="RmaNumber" xml:space="preserve"><value>RMA Number</value></data>
+  <data name="ReturnId" xml:space="preserve"><value>Return ID</value></data>
+  <data name="ShipmentId" xml:space="preserve"><value>Shipment ID</value></data>
+  <data name="ShipmentIdHelp" xml:space="preserve"><value>Enter the shipment’s UUID.</value></data>
+  <data name="ReturnSummary" xml:space="preserve"><value>Return Summary</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Quick View</value></data>
+  <data name="QuickViewNote" xml:space="preserve"><value>This summary comes from the list; no other return data is loaded.</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>No returns match the current filter.</value></data>
+  <data name="ListErrorState" xml:space="preserve"><value>Returns could not be loaded.</value></data>
+  <data name="Retry" xml:space="preserve"><value>Try Again</value></data>
+  <data name="NotProvided" xml:space="preserve"><value>Not provided</value></data>
+  <data name="SupportReference" xml:space="preserve"><value>Support reference</value></data>
+  <data name="CopyDone" xml:space="preserve"><value>Copied to clipboard.</value></data>
+  <data name="TotalLabel" xml:space="preserve"><value>Returns returned</value></data>
+  <data name="StatusRequested" xml:space="preserve"><value>Requested</value></data>
+  <data name="StatusAuthorized" xml:space="preserve"><value>Authorized</value></data>
+  <data name="StatusRejected" xml:space="preserve"><value>Rejected</value></data>
+  <data name="StatusInTransit" xml:space="preserve"><value>In Transit</value></data>
+  <data name="StatusReceived" xml:space="preserve"><value>Received</value></data>
+  <data name="StatusDispositioned" xml:space="preserve"><value>Dispositioned</value></data>
+  <data name="StatusClosed" xml:space="preserve"><value>Closed</value></data>
+  <data name="StatusCancelled" xml:space="preserve"><value>Cancelled</value></data>
+  <data name="ShipmentStatusDraft" xml:space="preserve"><value>Draft</value></data>
+  <data name="ShipmentStatusPlanned" xml:space="preserve"><value>Planned</value></data>
+  <data name="ShipmentStatusDispatched" xml:space="preserve"><value>Dispatched</value></data>
+  <data name="ShipmentStatusInTransit" xml:space="preserve"><value>In Transit</value></data>
+  <data name="ShipmentStatusDelivered" xml:space="preserve"><value>Delivered</value></data>
+  <data name="ShipmentStatusException" xml:space="preserve"><value>Exception</value></data>
+  <data name="ShipmentStatusClosed" xml:space="preserve"><value>Closed</value></data>
+  <data name="ShipmentStatusCancelled" xml:space="preserve"><value>Cancelled</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>New Return</value></data>
+  <data name="Resolve" xml:space="preserve"><value>Look Up</value></data>
+  <data name="ResolveFirst" xml:space="preserve"><value>Look up the shipment and select at least one line before creating the return.</value></data>
+  <data name="ShipmentNumber" xml:space="preserve"><value>Shipment Number</value></data>
+  <data name="ShipmentStatus" xml:space="preserve"><value>Shipment Status</value></data>
+  <data name="EligibilityNote" xml:space="preserve"><value>A return can be created for shipments that are Delivered or Closed.</value></data>
+  <data name="ShipmentIneligible" xml:space="preserve"><value>This shipment’s status does not allow a return.</value></data>
+  <data name="ReturnLines" xml:space="preserve"><value>Returned Lines</value></data>
+  <data name="ReturnLinesHelp" xml:space="preserve"><value>Select each shipment line to return and enter its quantity. The shipped quantity is shown for reference only; it is not the remaining quantity.</value></data>
+  <data name="SelectLine" xml:space="preserve"><value>Return this line</value></data>
+  <data name="LineNumber" xml:space="preserve"><value>Line Number</value></data>
+  <data name="ShippedQuantity" xml:space="preserve"><value>Shipped Quantity</value></data>
+  <data name="ReturnQuantity" xml:space="preserve"><value>Return Quantity</value></data>
+  <data name="ReturnQuantityHelp" xml:space="preserve"><value>Sent exactly as typed, for example 2 or 1.5.</value></data>
+  <data name="UomId" xml:space="preserve"><value>Unit of Measure</value></data>
+  <data name="NoShipmentLines" xml:space="preserve"><value>This shipment has no lines to return.</value></data>
+  <data name="ReasonCode" xml:space="preserve"><value>Reason Code</value></data>
+  <data name="EvidenceReferenceIds" xml:space="preserve"><value>Evidence References</value></data>
+  <data name="EvidenceReference" xml:space="preserve"><value>Evidence reference</value></data>
+  <data name="AddEvidenceReference" xml:space="preserve"><value>Add Reference</value></data>
+  <data name="RemoveEvidenceReference" xml:space="preserve"><value>Remove reference</value></data>
+  <data name="EvidenceHelp" xml:space="preserve"><value>Optional. References are sent in the order shown.</value></data>
+  <data name="CreateReturn" xml:space="preserve"><value>Create Return</value></data>
+  <data name="ReturnCreated" xml:space="preserve"><value>Return created.</value></data>
+  <data name="ReturnCreateReplayed" xml:space="preserve"><value>This return was already created by the same request and is shown as completed.</value></data>
+  <data name="TransitionTitle" xml:space="preserve"><value>Change Return Status</value></data>
+  <data name="TransitionTarget" xml:space="preserve"><value>New Status</value></data>
+  <data name="ActionAuthorize" xml:space="preserve"><value>Authorize</value></data>
+  <data name="ActionReject" xml:space="preserve"><value>Reject</value></data>
+  <data name="ActionMarkInTransit" xml:space="preserve"><value>Mark In Transit</value></data>
+  <data name="ActionCancelReturn" xml:space="preserve"><value>Cancel Return</value></data>
+  <data name="ActionReceive" xml:space="preserve"><value>Receive (manual assertion)</value></data>
+  <data name="ActionDisposition" xml:space="preserve"><value>Disposition</value></data>
+  <data name="ActionClose" xml:space="preserve"><value>Close</value></data>
+  <data name="TargetReceivedLabel" xml:space="preserve"><value>Received (manual assertion)</value></data>
+  <data name="ReceivedManualNote" xml:space="preserve"><value>Receiving is a manual assertion only. It is not a warehouse receipt and posts no stock movement.</value></data>
+  <data name="OccurredAt" xml:space="preserve"><value>Occurred At</value></data>
+  <data name="OccurredAtHelp" xml:space="preserve"><value>Date and time with offset, for example 2026-09-26T14:30:00+03:00.</value></data>
+  <data name="DispositionCode" xml:space="preserve"><value>Disposition Code</value></data>
+  <data name="DispositionCodeHelp" xml:space="preserve"><value>Required for this status. Sent exactly as typed.</value></data>
+  <data name="InventoryTransactionReferenceId" xml:space="preserve"><value>Inventory Transaction Reference</value></data>
+  <data name="InventoryReferenceHelp" xml:space="preserve"><value>Optional. Stored as text and not verified against inventory.</value></data>
+  <data name="SubmitTransition" xml:space="preserve"><value>Apply Status</value></data>
+  <data name="ConfirmTransition" xml:space="preserve"><value>Change the return status to the selected value?</value></data>
+  <data name="TransitionCompleted" xml:space="preserve"><value>Return status updated.</value></data>
+  <data name="TransitionReplayed" xml:space="preserve"><value>This status change was already applied by the same request and is shown as completed.</value></data>
+  <data name="RequestPending" xml:space="preserve"><value>A request for this action is still in progress.</value></data>
+  <data name="NoticeSessionEnded" xml:space="preserve"><value>Your session has ended. Please sign in again.</value></data>
+  <data name="NoticeForbidden" xml:space="preserve"><value>You are not authorized for this action.</value></data>
+  <data name="NoticeUnsupportedMedia" xml:space="preserve"><value>The request format is not supported.</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>The request is not valid. Check the entered values.</value></data>
+  <data name="ErrReturnNotFound" xml:space="preserve"><value>The record was not found or is not available to you.</value></data>
+  <data name="ErrShipmentNotFound" xml:space="preserve"><value>The record was not found or is not available to you.</value></data>
+  <data name="ErrShipmentLineNotFound" xml:space="preserve"><value>A selected shipment line no longer exists on the shipment.</value></data>
+  <data name="ErrInvalidReturnTransition" xml:space="preserve"><value>The return has changed in the meantime and this status change is no longer possible. The list has been reloaded.</value></data>
+  <data name="ErrDispositionRequired" xml:space="preserve"><value>Enter a disposition code for this status.</value></data>
+  <data name="ErrInvalidReturnQuantity" xml:space="preserve"><value>Each return quantity must be greater than zero.</value></data>
+  <data name="ErrReturnQuantityExceeded" xml:space="preserve"><value>The return quantity exceeds the shipped quantity still open for return.</value></data>
+  <data name="ErrReturnUomMismatch" xml:space="preserve"><value>The unit of measure does not match the shipment line.</value></data>
+  <data name="ErrDuplicateReturnLine" xml:space="preserve"><value>The same shipment line appears more than once.</value></data>
+  <data name="ErrShipmentNotReturnable" xml:space="preserve"><value>The shipment’s status does not allow a return.</value></data>
+  <data name="ErrCorrelationRootMismatch" xml:space="preserve"><value>The request no longer matches the shipment record.</value></data>
+  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>This request was already used with different values. Start a new action.</value></data>
+  <data name="ErrReturnSourceChanged" xml:space="preserve"><value>The shipment has changed since the first return for it. Review the shipment; nothing was adjusted automatically.</value></data>
+  <data name="ErrReturnShipmentRootInvalid" xml:space="preserve"><value>The shipment reference data is invalid. Please contact support.</value></data>
+  <data name="ErrDependencyResponseInvalid" xml:space="preserve"><value>The shipment data returned by the source system is invalid. Please contact support.</value></data>
+  <data name="ErrReturnShipmentRootUnavailable" xml:space="preserve"><value>The shipment reference data is incomplete. Try the same request again later.</value></data>
+  <data name="ErrReferenceStateUnavailable" xml:space="preserve"><value>The shipment state is temporarily unavailable. Try the same request again.</value></data>
+  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>The shipment reference data is temporarily unavailable. Try the same request again.</value></data>
+  <data name="ErrPersistenceUnavailable" xml:space="preserve"><value>Returns are temporarily unavailable. The outcome is not confirmed; try the same request again.</value></data>
+  <data name="ErrInternalError" xml:space="preserve"><value>An unexpected error occurred. You can retry the same action.</value></data>
+</root>

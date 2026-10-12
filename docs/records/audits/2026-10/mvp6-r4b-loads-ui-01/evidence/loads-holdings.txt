@@ -1,0 +1,16 @@
+{
+  Admin: [
+    'carriers.create(1:carrier-management)',
+    'carriers.read(1:carrier-management)',
+    'carriers.status.change(1:carrier-management)',
+    'loads.create(1:routing-load-planning)',
+    'loads.read(1:routing-load-planning)',
+    'loads.transition(1:routing-load-planning)',
+    'shipments.read(0:null)'
+  ],
+  Viewer: [
+    'carriers.read(0:null)',
+    'loads.read(0:null)',
+    'shipments.read(0:null)'
+  ]
+}

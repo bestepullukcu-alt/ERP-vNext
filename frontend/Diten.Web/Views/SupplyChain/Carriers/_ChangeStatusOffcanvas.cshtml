@@ -1,0 +1,43 @@
+@model Diten.Web.Models.SupplyChain.Carriers.ChangeCarrierStatusViewModel
+@using Diten.Web.Views.SupplyChain.Carriers
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CarriersIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasChangeStatus"
+     aria-labelledby="offcanvasChangeStatusLabel">
+    <div class="offcanvas-header p-4">
+        <h5 id="offcanvasChangeStatusLabel" class="offcanvas-title">@Localizer["ChangeStatusTitle"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
+                aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+    <div class="offcanvas-body border-top p-4">
+        <div id="statusCarrierAlert" class="alert alert-danger d-none" role="alert"></div>
+        <form id="formCarrierStatus" class="pt-0" novalidate>
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="statusCarrierId" />
+            <div class="row g-4">
+                <div class="col-12">
+                    <label asp-for="TargetStatus" class="form-label fw-medium">
+                        @Localizer["TargetStatus"] <span class="text-danger">*</span>
+                    </label>
+                    <select asp-for="TargetStatus" id="targetStatus" class="form-select" required></select>
+                </div>
+                <div class="col-12">
+                    <label asp-for="ReasonCode" class="form-label fw-medium">@Localizer["ReasonCode"]</label>
+                    <input asp-for="ReasonCode" id="reasonCode" class="form-control"
+                           placeholder="@Localizer["ReasonCodePlaceholder"]" />
+                    <div class="form-text">@Localizer["ReasonCodeHelp"]</div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">
+            @SharedLocalizer["Cancel"]
+        </button>
+        <button type="button" id="btnConfirmStatus" class="btn btn-primary">
+            @Localizer["ConfirmStatusChange"]
+        </button>
+    </div>
+</div>

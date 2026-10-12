@@ -1,0 +1,42 @@
+# Q446 measurement (read-only): the four lanes' own service logs, kept in their scratch folders outside the repository.
+# Counts only; no matched text is printed. Secrets = each lane's JWT signing secret and its actors' passwords (files in the lane folder).
+# Paths: ~/mvp6-env/<lane>/log/{web*,gateway,supplychain*}.log, as they stood on 2026-10-05.
+
+## Row 9: secrets and PII in logs
+MOD-0186 Returns (R-2): secrets checked 7
+  gateway.log                                    lines=168   jwt=0 bearer=0 email(@example.test)=0 laneSecrets=0
+  supplychain-run1.log                           lines=17    jwt=0 bearer=0 email(@example.test)=0 laneSecrets=0
+  supplychain.log                                lines=583   jwt=0 bearer=0 email(@example.test)=0 laneSecrets=0
+  web.log                                        lines=1499  jwt=0 bearer=0 email(@example.test)=0 laneSecrets=0
+MOD-0184 Carriers (R-4a): secrets checked 4
+  gateway.log                                    lines=106   jwt=0 bearer=0 email(@example.test)=0 laneSecrets=0
+  supplychain-run1.log                           lines=274   jwt=0 bearer=0 email(@example.test)=0 laneSecrets=0
+  supplychain.log                                lines=42    jwt=0 bearer=0 email(@example.test)=0 laneSecrets=0
+  web-run1.log                                   lines=480   jwt=0 bearer=0 email(@example.test)=0 laneSecrets=0
+  web-run2.log                                   lines=272   jwt=0 bearer=0 email(@example.test)=0 laneSecrets=0
+  web.log                                        lines=326   jwt=0 bearer=0 email(@example.test)=0 laneSecrets=0
+MOD-0185 Loads (R-4b): secrets checked 4
+  gateway.log                                    lines=119   jwt=0 bearer=0 email(@example.test)=0 laneSecrets=0
+  supplychain-run1-no-loads-reference-url.log    lines=87    jwt=0 bearer=0 email(@example.test)=0 laneSecrets=0
+  supplychain-run2.log                           lines=441   jwt=0 bearer=0 email(@example.test)=0 laneSecrets=0
+  supplychain.log                                lines=69    jwt=0 bearer=0 email(@example.test)=0 laneSecrets=0
+  web.log                                        lines=1026  jwt=0 bearer=0 email(@example.test)=0 laneSecrets=0
+MOD-0187 Claims (R-4c): secrets checked 4
+  gateway.log                                    lines=188   jwt=0 bearer=0 email(@example.test)=0 laneSecrets=0
+  supplychain.log                                lines=122   jwt=0 bearer=0 email(@example.test)=0 laneSecrets=0
+  web.log                                        lines=1678  jwt=0 bearer=0 email(@example.test)=0 laneSecrets=0
+
+## Row 13: service-side log signals (operation / result / correlation / replay), SupplyChain logs of each lane
+MOD-0186 Returns (R-2): SupplyChain lines=600; operation lines 'Handling <op>'=36 (with CorrelationId 36) ops=['CreateReturnCommand', 'GetReturnListQuery', 'TransitionReturnCommand']; result lines '<Return> request completed|rejected'=36 (with correlation 36); outcome lines with replay field=0
+MOD-0184 Carriers (R-4a): SupplyChain lines=316; operation lines 'Handling <op>'=26 (with CorrelationId 26) ops=['ChangeCarrierStatusCommand', 'CreateCarrierCommand', 'GetCarrierListQuery']; result lines '<Carrier> request completed|rejected'=26 (with correlation 26); outcome lines with replay field=26
+MOD-0185 Loads (R-4b): SupplyChain lines=597; operation lines 'Handling <op>'=24 (with CorrelationId 24) ops=['CreateLoadCommand', 'GetLoadListQuery']; result lines '<Load> request completed|rejected'=24 (with correlation 24); outcome lines with replay field=0
+MOD-0187 Claims (R-4c): SupplyChain lines=122; operation lines 'Handling <op>'=8 (with CorrelationId 8) ops=['GetClaimListQuery', 'TransitionClaimCommand']; result lines '<Claim> request completed|rejected'=0 (with correlation 0); outcome lines with replay field=0
+
+## Log templates in code (static, E1)
+Carriers: CarriersController.cs:24 'Carrier outcome {TenantId} {LegalEntityId} {CorrelationId} {Status} {ErrorCode} {IdempotentReplay}'; CarrierContextMiddleware.cs:50,84 rejected/completed {Status} {CorrelationId}
+Loads:    LoadContextMiddleware.cs:50,86 'Load request rejected|completed {Status} [{Code}] {CorrelationId}' — no replay field
+Returns:  ReturnContextMiddleware.cs:57,110 'Return request rejected|completed {Status} [{Code}] {CorrelationId}' — no replay field
+Claims:   ClaimContextMiddleware.cs — no log call at all; result and replay are not logged
+All:      LoggingBehavior.cs:10 'Handling {Operation}' (MediatR), carrying the correlation through the SupplyChain enricher
+
+Caveat: R-4c's first SupplyChain run log was overwritten by its start script (R-4c F-R4c-7); the Claims counts cover the second run only.

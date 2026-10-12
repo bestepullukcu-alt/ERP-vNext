@@ -1,0 +1,7 @@
+  Determining projects to restore...
+  Restored /Users/natig/mvp6-env/q64e/ek-work-final/source/services/Diten.MdmService/src/Diten.MdmService.Domain/Diten.MdmService.Domain.csproj (in 79 ms).
+  Restored /Users/natig/mvp6-env/q64e/ek-work-final/source/services/Diten.MdmService/src/Diten.MdmService.Application/Diten.MdmService.Application.csproj (in 223 ms).
+  Restored /Users/natig/mvp6-env/q64e/ek-work-final/source/services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Diten.MdmService.Infrastructure.csproj (in 223 ms).
+  Restored /Users/natig/mvp6-env/q64e/ek-work-final/source/services/Diten.MdmService/src/Diten.MdmService.Persistence/Diten.MdmService.Persistence.csproj (in 242 ms).
+  Restored /Users/natig/mvp6-env/q64e/ek-work-final/source/services/Diten.MdmService/src/Diten.MdmService.Api/Diten.MdmService.Api.csproj (in 242 ms).
+  2 of 7 projects are up-to-date for restore.

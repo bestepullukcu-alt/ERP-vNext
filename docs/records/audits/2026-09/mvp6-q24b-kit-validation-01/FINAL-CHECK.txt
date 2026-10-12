@@ -1,0 +1,14 @@
+final_check_utc=2026-09-26T20:08:56Z
+branch=feature/mvp6-logistics
+head=4a8d4d4b339528a88e6220fb8402e5a2c771136c
+index_lock=absent
+diff_name_only_count=19
+diff_name_only_sha256=be53b81991dfbf4ee44ca8d18afb923ec2f6585f314141cdcf8d20d7b327272a
+new_untracked_by_this_lane:
+?? docs/records/audits/2026-09/mvp6-q24b-kit-validation-01/
+?? docs/records/audits/2026-09/mvp6-q64b-claims-build-01/
+lane_processes=0
+lane_listeners=0
+mvp6_env_kept=yes
+diff_set_vs_preflight=identical (19 paths, same list)
+pack_MOD-0187_sha256=96c9a0aeb94d6941141c6a8cb96d159c29991c8a8eeb589db909ab2677471ae2 (unchanged)

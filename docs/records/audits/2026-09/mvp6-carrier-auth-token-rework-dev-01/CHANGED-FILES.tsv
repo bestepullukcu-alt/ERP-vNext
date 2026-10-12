@@ -1,0 +1,4 @@
+scope	path
+isolated-source	services/Diten.MdmService/src/Diten.MdmService.Api/Security/PlatformServiceTokenValidator.cs
+isolated-source	services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/PlatformServiceTokenValidatorTests.cs
+permanent-audit	docs/records/audits/2026-09/mvp6-carrier-auth-token-rework-dev-01/

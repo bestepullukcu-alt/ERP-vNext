@@ -1,0 +1,20 @@
+  Determining projects to restore...
+/Users/natig/.dotnet/sdk/8.0.417/NuGet.targets(745,5): error : File '/Users/natig/Projects/ERP-vNext-recovery/NuGet.Config' does not exist. [/private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.CrmService/src/Diten.CrmService.Application/Diten.CrmService.Application.csproj]
+/Users/natig/.dotnet/sdk/8.0.417/NuGet.targets(745,5): error : File '/Users/natig/Projects/ERP-vNext-recovery/NuGet.Config' does not exist. [/private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.CrmService/src/Diten.CrmService.Infrastructure/Diten.CrmService.Infrastructure.csproj]
+/Users/natig/.dotnet/sdk/8.0.417/NuGet.targets(745,5): error : File '/Users/natig/Projects/ERP-vNext-recovery/NuGet.Config' does not exist. [/private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.CrmService/src/Diten.CrmService.Persistence/Diten.CrmService.Persistence.csproj]
+/Users/natig/.dotnet/sdk/8.0.417/NuGet.targets(745,5): error : File '/Users/natig/Projects/ERP-vNext-recovery/NuGet.Config' does not exist. [/private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/Diten.BuildingBlocks.Security.Secrets.csproj]
+/Users/natig/.dotnet/sdk/8.0.417/NuGet.targets(745,5): error : File '/Users/natig/Projects/ERP-vNext-recovery/NuGet.Config' does not exist. [/private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.CrmService/src/Diten.CrmService.Domain/Diten.CrmService.Domain.csproj]
+/Users/natig/.dotnet/sdk/8.0.417/NuGet.targets(745,5): error : File '/Users/natig/Projects/ERP-vNext-recovery/NuGet.Config' does not exist. [/private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.CrmService/src/Diten.CrmService.Api/Diten.CrmService.Api.csproj]
+
+Build FAILED.
+
+/Users/natig/.dotnet/sdk/8.0.417/NuGet.targets(745,5): error : File '/Users/natig/Projects/ERP-vNext-recovery/NuGet.Config' does not exist. [/private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.CrmService/src/Diten.CrmService.Application/Diten.CrmService.Application.csproj]
+/Users/natig/.dotnet/sdk/8.0.417/NuGet.targets(745,5): error : File '/Users/natig/Projects/ERP-vNext-recovery/NuGet.Config' does not exist. [/private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.CrmService/src/Diten.CrmService.Infrastructure/Diten.CrmService.Infrastructure.csproj]
+/Users/natig/.dotnet/sdk/8.0.417/NuGet.targets(745,5): error : File '/Users/natig/Projects/ERP-vNext-recovery/NuGet.Config' does not exist. [/private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.CrmService/src/Diten.CrmService.Persistence/Diten.CrmService.Persistence.csproj]
+/Users/natig/.dotnet/sdk/8.0.417/NuGet.targets(745,5): error : File '/Users/natig/Projects/ERP-vNext-recovery/NuGet.Config' does not exist. [/private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/Diten.BuildingBlocks.Security.Secrets.csproj]
+/Users/natig/.dotnet/sdk/8.0.417/NuGet.targets(745,5): error : File '/Users/natig/Projects/ERP-vNext-recovery/NuGet.Config' does not exist. [/private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.CrmService/src/Diten.CrmService.Domain/Diten.CrmService.Domain.csproj]
+/Users/natig/.dotnet/sdk/8.0.417/NuGet.targets(745,5): error : File '/Users/natig/Projects/ERP-vNext-recovery/NuGet.Config' does not exist. [/private/tmp/mvp6-shipment-integration-ver-01/source/services/Diten.CrmService/src/Diten.CrmService.Api/Diten.CrmService.Api.csproj]
+    0 Warning(s)
+    6 Error(s)
+
+Time Elapsed 00:00:03.01

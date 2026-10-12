@@ -1,0 +1,61 @@
+view	state	finding
+frontend/Diten.Web/Views/SupplyChain/Shipments/Index.cshtml	loading	delegated to _DataTable
+frontend/Diten.Web/Views/SupplyChain/Shipments/Index.cshtml	empty	delegated to _DataTable
+frontend/Diten.Web/Views/SupplyChain/Shipments/Index.cshtml	validation error	n/a (no input)
+frontend/Diten.Web/Views/SupplyChain/Shipments/Index.cshtml	denied	PRESENT — Index.cshtml:9-13 renders only _AccessDenied; create button only with the key (:17-18)
+frontend/Diten.Web/Views/SupplyChain/Shipments/Index.cshtml	save-failed	n/a (no save)
+frontend/Diten.Web/Views/SupplyChain/Shipments/Index.cshtml	conflict	n/a
+frontend/Diten.Web/Views/SupplyChain/Shipments/_DataTable.cshtml	loading	PARTIAL — DataTables processing indicator (index.js:67). The skeleton element at _DataTable.cshtml:4 is display:none and no script shows it
+frontend/Diten.Web/Views/SupplyChain/Shipments/_DataTable.cshtml	empty	PRESENT — index.js:77 (EmptyState text)
+frontend/Diten.Web/Views/SupplyChain/Shipments/_DataTable.cshtml	validation error	n/a
+frontend/Diten.Web/Views/SupplyChain/Shipments/_DataTable.cshtml	denied	DEFECT — a 403 from the list API gives a toast and an empty table (index.js:28,35,51); UAS-001 §6 forbids both
+frontend/Diten.Web/Views/SupplyChain/Shipments/_DataTable.cshtml	save-failed	DEFECT (load-failed) — any failed list load is drawn as an empty table plus a toast (index.js:51, :57-59); error and empty are not distinct
+frontend/Diten.Web/Views/SupplyChain/Shipments/_DataTable.cshtml	conflict	n/a
+frontend/Diten.Web/Views/SupplyChain/Shipments/_Filter.cshtml	loading	n/a
+frontend/Diten.Web/Views/SupplyChain/Shipments/_Filter.cshtml	empty	n/a
+frontend/Diten.Web/Views/SupplyChain/Shipments/_Filter.cshtml	validation error	ABSENT — free-text source filter, no check
+frontend/Diten.Web/Views/SupplyChain/Shipments/_Filter.cshtml	denied	n/a
+frontend/Diten.Web/Views/SupplyChain/Shipments/_Filter.cshtml	save-failed	n/a
+frontend/Diten.Web/Views/SupplyChain/Shipments/_Filter.cshtml	conflict	n/a
+frontend/Diten.Web/Views/SupplyChain/Shipments/Create.cshtml	loading	n/a (static form)
+frontend/Diten.Web/Views/SupplyChain/Shipments/Create.cshtml	empty	n/a
+frontend/Diten.Web/Views/SupplyChain/Shipments/Create.cshtml	validation error	delegated to _Form
+frontend/Diten.Web/Views/SupplyChain/Shipments/Create.cshtml	denied	PRESENT — Create.cshtml:10-14
+frontend/Diten.Web/Views/SupplyChain/Shipments/Create.cshtml	save-failed	PRESENT — alert in _Form (create.js:56-62, :81); button disabled while sending (:71,:82)
+frontend/Diten.Web/Views/SupplyChain/Shipments/Create.cshtml	conflict	PRESENT — IDEMPOTENCY_KEY_REUSED message, new intent (create.js:59,63)
+frontend/Diten.Web/Views/SupplyChain/Shipments/_Form.cshtml	loading	n/a
+frontend/Diten.Web/Views/SupplyChain/Shipments/_Form.cshtml	empty	n/a
+frontend/Diten.Web/Views/SupplyChain/Shipments/_Form.cshtml	validation error	PARTIAL — one generic message in the alert at _Form.cshtml:7 (create.js:68); no field-level messages; form is novalidate (:5)
+frontend/Diten.Web/Views/SupplyChain/Shipments/_Form.cshtml	denied	n/a (page-level)
+frontend/Diten.Web/Views/SupplyChain/Shipments/_Form.cshtml	save-failed	PARTIAL — a backend 500 or 403 arrives with code INVALID_REQUEST and is shown as "Check the entered values" (create.js:59-60)
+frontend/Diten.Web/Views/SupplyChain/Shipments/_Form.cshtml	conflict	as Create.cshtml
+frontend/Diten.Web/Views/SupplyChain/Shipments/_LineEditor.cshtml	loading	n/a — the file is a one-line comment; lines come from the template in _Form.cshtml:23
+frontend/Diten.Web/Views/SupplyChain/Shipments/_LineEditor.cshtml	empty	n/a
+frontend/Diten.Web/Views/SupplyChain/Shipments/_LineEditor.cshtml	validation error	n/a
+frontend/Diten.Web/Views/SupplyChain/Shipments/_LineEditor.cshtml	denied	n/a
+frontend/Diten.Web/Views/SupplyChain/Shipments/_LineEditor.cshtml	save-failed	n/a
+frontend/Diten.Web/Views/SupplyChain/Shipments/_LineEditor.cshtml	conflict	n/a
+frontend/Diten.Web/Views/SupplyChain/Shipments/Details.cshtml	loading	PARTIAL — "Loading…" text in the heading (Details.cshtml:18) while both cards, the lines table and "Unavailable" under Proof of Delivery are already drawn (:22-27)
+frontend/Diten.Web/Views/SupplyChain/Shipments/Details.cshtml	empty	PRESENT — safe not-found hides every surface and action (details.js:23-45); POD absent → "Unavailable" (Details.cshtml:26)
+frontend/Diten.Web/Views/SupplyChain/Shipments/Details.cshtml	validation error	n/a
+frontend/Diten.Web/Views/SupplyChain/Shipments/Details.cshtml	denied	PRESENT — Details.cshtml:11-15; actions built only for held keys (details.js:70-85)
+frontend/Diten.Web/Views/SupplyChain/Shipments/Details.cshtml	save-failed	PRESENT (load-failed) — alert at Details.cshtml:21 (details.js:107,110)
+frontend/Diten.Web/Views/SupplyChain/Shipments/Details.cshtml	conflict	n/a (read)
+frontend/Diten.Web/Views/SupplyChain/Shipments/_TransitionOffcanvas.cshtml	loading	n/a
+frontend/Diten.Web/Views/SupplyChain/Shipments/_TransitionOffcanvas.cshtml	empty	n/a
+frontend/Diten.Web/Views/SupplyChain/Shipments/_TransitionOffcanvas.cshtml	validation error	DEFECT — no client check; empty date throws in the handler and shows nothing (details.js:132). Server 400 → generic message in the alert
+frontend/Diten.Web/Views/SupplyChain/Shipments/_TransitionOffcanvas.cshtml	denied	PRESENT — 403 → access-denied text in the alert (details.js:52)
+frontend/Diten.Web/Views/SupplyChain/Shipments/_TransitionOffcanvas.cshtml	save-failed	PARTIAL — network failure message (details.js:124); backend 500 shown as "Check the entered values" (:49-52)
+frontend/Diten.Web/Views/SupplyChain/Shipments/_TransitionOffcanvas.cshtml	conflict	PRESENT — INVALID_SHIPMENT_TRANSITION → "current status no longer permits" + reload (details.js:49,121)
+frontend/Diten.Web/Views/SupplyChain/Shipments/_PodOffcanvas.cshtml	loading	n/a
+frontend/Diten.Web/Views/SupplyChain/Shipments/_PodOffcanvas.cshtml	empty	n/a
+frontend/Diten.Web/Views/SupplyChain/Shipments/_PodOffcanvas.cshtml	validation error	DEFECT — no client check; empty date throws (details.js:136); evidence box accepts any text
+frontend/Diten.Web/Views/SupplyChain/Shipments/_PodOffcanvas.cshtml	denied	PRESENT — as transition
+frontend/Diten.Web/Views/SupplyChain/Shipments/_PodOffcanvas.cshtml	save-failed	PARTIAL — as transition
+frontend/Diten.Web/Views/SupplyChain/Shipments/_PodOffcanvas.cshtml	conflict	PRESENT — POD_ALREADY_CAPTURED → message + reload (details.js:50,121)
+frontend/Diten.Web/Views/SupplyChain/Shipments/_IndexL10n.cshtml	loading	n/a — localization bridge only
+frontend/Diten.Web/Views/SupplyChain/Shipments/_IndexL10n.cshtml	empty	n/a — localization bridge only
+frontend/Diten.Web/Views/SupplyChain/Shipments/_IndexL10n.cshtml	validation error	n/a — localization bridge only
+frontend/Diten.Web/Views/SupplyChain/Shipments/_IndexL10n.cshtml	denied	n/a — localization bridge only
+frontend/Diten.Web/Views/SupplyChain/Shipments/_IndexL10n.cshtml	save-failed	n/a — localization bridge only
+frontend/Diten.Web/Views/SupplyChain/Shipments/_IndexL10n.cshtml	conflict	n/a — localization bridge only

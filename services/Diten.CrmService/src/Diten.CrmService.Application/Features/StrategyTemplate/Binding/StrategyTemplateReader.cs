@@ -48,18 +48,45 @@ public sealed class StrategyTemplateReader : IStrategyTemplateReader
         }
 
         var rows = await _templates.ListAsync(tenantId, cancellationToken);
-        return rows
+        var byId = rows.GroupBy(t => t.Id).ToDictionary(g => g.Key, g => g.First());
+        var candidates = rows
             .Where(t => t.IsActive()
                         && t.IsEffectiveAt(effectiveAt)
+                        && !IsReplacedAt(t, byId, effectiveAt)
                         && t.SegmentBindings.Any(b => b.SegmentId == segmentId))
-            .OrderBy(t => t.TemplateCode, StringComparer.OrdinalIgnoreCase)
-            .ThenBy(t => t.TemplateVersion)
-            .Take(StrategyTemplateLimits.MaxTemplatesPerSegment)
             .Select(t => new StrategyTemplateSummary(
                 t.Id, t.TemplateCode, t.TemplateName, t.TemplateStatus, t.TemplateVersion,
-                t.EffectiveFrom, t.EffectiveTo))
+                t.EffectiveFrom, t.EffectiveTo));
+        return InPreferenceOrder(candidates)
+            .Take(StrategyTemplateLimits.MaxTemplatesPerSegment)
             .ToList();
     }
+
+    /// <summary>
+    /// WP-E2E-FIX-3 (E5-B2) — THE rule for "which play is in force" when a play is picked from a segment (never from an
+    /// explicit template id): the first of this order wins. Highest <c>TemplateVersion</c> first, then the code and the id
+    /// (ordinal) so ties are deterministic. Every consumer that picks a play from segments uses THIS order rather than its
+    /// own sort — an ascending sort here was how v1 kept beating v2 on the same segment.
+    /// </summary>
+    public static IEnumerable<StrategyTemplateSummary> InPreferenceOrder(IEnumerable<StrategyTemplateSummary> plays)
+        => plays
+            .OrderByDescending(p => p.TemplateVersion)
+            .ThenBy(p => p.TemplateCode, StringComparer.Ordinal)
+            .ThenBy(p => p.TemplateId);
+
+    /// <summary>
+    /// A template is out of force once it is superseded (<see cref="TemplateEntity.IsSuperseded"/>) AND its successor is
+    /// itself in force at the instant (active, not archived, effective). A successor that is a draft, archived or not yet
+    /// effective takes nothing over: the predecessor stays in force until the successor goes live (activation is what
+    /// stamps the mark, so this only matters when the successor is later archived or its window has not started). The
+    /// status set is untouched — "superseded" stays a mark, not a status.
+    /// </summary>
+    public static bool IsReplacedAt(
+        TemplateEntity template, IReadOnlyDictionary<Guid, TemplateEntity> byId, DateTimeOffset effectiveAt)
+        => template.IsSuperseded()
+           && byId.TryGetValue(template.SupersededByTemplateId!.Value, out var successor)
+           && successor.IsActive()
+           && successor.IsEffectiveAt(effectiveAt);
 
     /// <summary>Deterministic order everywhere: SortOrder then the child id, never a DateTimeOffset (they are stored as
     /// BSON arrays, and sorting two of them together is the parallel-array trap).</summary>
@@ -98,7 +125,11 @@ public sealed class StrategyTemplateReader : IStrategyTemplateReader
                         .Select(a => new StrategyTemplateSkuShare(a.GskuId, a.Percentage, a.SortOrder))
                         .ToList(),
                     StrategyTemplateAllocationRules.TotalOf(l),
-                    ContainmentVerified: false))
+                    ContainmentVerified: false,
+                    Role: l.EffectiveRole(),
+                    JourneyId: l.JourneyId,
+                    SortOrder: l.SortOrder,
+                    GlobalProductCodeDisplay: l.GlobalProductCodeDisplay))
                 .ToList(),
             template.ContentBindings
                 .OrderBy(c => c.SortOrder).ThenBy(c => c.BindingId)

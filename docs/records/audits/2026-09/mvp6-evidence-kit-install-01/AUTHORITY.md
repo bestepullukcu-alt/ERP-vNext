@@ -1,0 +1,7 @@
+# Authority — MVP6-WP-EVIDENCE-KIT-INSTALL-01 (Q24a, chat lane)
+
+- A1 (pilot, validated first): `docs/records/decisions/2026-09/mvp6-evidence-kit-adoption-owner-decision-01.md` (`2c1cdd8e…1a1a`). Terms kept: pilot status; the one §5 guide line quoted in A1; identity method only inside a lane's isolated Auth DB (never 27017); no product, `.antigravity`, gateway, contract, pack, guard or evidence change; no reinterpretation of existing approvals; durable PNG separate.
+- V1 (kit v1.2 replaces v1.0/v1.1 bytes for installation): recorded by this lane at `docs/records/decisions/2026-09/mvp6-evidence-kit-v1-2-adoption-owner-decision-01.md`, bound to `ADOPTION-DECISION-v1.2.md` `3a5ea48f…59d2` and proposal-03 `SHA256SUMS` `e8bec4d7…caad`. Decided ~13:22 by the owner (CEO Natig Yusubov), CT conversation, question tool.
+- Split (owner, ~13:43): install (Q24a) in a chat lane without commit; validation run + commit (Q24b) in the first local Mac session. Until Q24b passes and CT reviews it, the kit is installed but not validated and **not yet required** for runtime lanes.
+- Precondition met: independent re-check `docs/records/audits/2026-09/mvp6-evidence-kit-v1-2-recheck-01/SOP-22-VER.md` (`01dab415…a3`), PASS, recommendation V1.
+- Lane limits (Q24a v1.0): writes only to PLACEMENT.tsv install paths, the one §5 guide line, the V1 decision record, this folder, and the listed ledger edits; `GIT_OPTIONAL_LOCKS=0` read-only git; no git writes; no kit/service/Mongo/browser run; stop on any hash mismatch or existing different target.

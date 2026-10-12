@@ -44,6 +44,14 @@
         for (const key of Object.keys(raw)) {
             normalized[toPascalCase(key)] = raw[key];
         }
+        // WP-CYC-UI-1 — the shared-list keys of the new screens (already PascalCase; see CyclePeriodsL10nKeys).
+        const ext = document.getElementById('cycleperiods-l10n-ext');
+        if (ext) {
+            const extRaw = JSON.parse(ext.textContent || '{}');
+            for (const key of Object.keys(extRaw)) {
+                normalized[toPascalCase(key)] = extRaw[key];
+            }
+        }
         window.L10n = Object.assign({}, window.L10n || {}, normalized);
         logMissingKeys(window.L10n);
     } catch (error) {

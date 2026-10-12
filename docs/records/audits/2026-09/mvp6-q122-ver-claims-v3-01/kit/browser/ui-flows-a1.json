@@ -1,0 +1,219 @@
+{
+  "phase": "ui-flows",
+  "extra": null,
+  "startedAt": "2026-09-27T12:07:35.850Z",
+  "web": "http://127.0.0.1:5901",
+  "playwright": "1.59.1",
+  "cases": {
+    "D-02-single-shell": {
+      "result": "PASS",
+      "dom": {
+        "layoutWrappers": 1,
+        "navbars": 1,
+        "footers": 1,
+        "mainJs": 1,
+        "menuJs": 1,
+        "htmlInBody": 0
+      },
+      "newJsErrors": 0
+    },
+    "D-01-create-then-reload": {
+      "result": "PASS",
+      "createStatus": 201,
+      "reloadRequestAfterCreate": true,
+      "rowShowsAmount": true,
+      "newJsErrors": 0
+    },
+    "CU-02-filter": {
+      "result": "PASS",
+      "applyRequestSent": true,
+      "queryKeys": [
+        "shipmentId"
+      ],
+      "rowsAfterApply": 3,
+      "resetReloaded": true,
+      "resetQuery": "",
+      "newJsErrors": 0
+    },
+    "D-01-filter-reload": {
+      "result": "PASS",
+      "note": "Apply and Reset each issued a fresh list GET without an xhr.abort error"
+    },
+    "CU-31-quickview": {
+      "result": "PASS",
+      "adapterCallsDuringQuickView": 0
+    },
+    "CU-08-open-to-investigating": {
+      "result": "PASS",
+      "claimId": "28cf3e0f-653a-42b0-8b06-4b9d6dcba1d5",
+      "offeredTargetsForOpen": [
+        "Investigating",
+        "Withdrawn"
+      ],
+      "status": 200,
+      "sentBody": "{\"targetStatus\":\"Investigating\",\"occurredAt\":\"2026-09-27T12:07:46+00:00\"}",
+      "approvedFieldVisibleForInvestigating": false,
+      "occurredAtHasOffset": true,
+      "reloadAfter": true,
+      "newJsErrors": 0
+    },
+    "D-01-transition-reload": {
+      "result": "PASS"
+    },
+    "CU-21-stale-transition": {
+      "result": "PASS",
+      "claimId": "0bd990cf-0476-4e3e-b7d3-5a196c14fe79",
+      "approve": 200,
+      "approvedAmountInResponse": "10.00",
+      "stale": 422,
+      "code": "INVALID_CLAIM_TRANSITION",
+      "supportRefShown": true,
+      "messageSeen": " The claim has changed in the meantime and this status change is no longer possible. The list has been reloaded. Support reference: 86acc3f3-50ee-4bd3-86d0-10cc0d97c2ec",
+      "reloadAfter": true
+    }
+  },
+  "png": [
+    {
+      "name": "d02-single-shell-en.png",
+      "sha256": "53ae238924e64f19fea1b2148ffd6c411d5a0c380779235e2e9d37770a103d51",
+      "url": "http://127.0.0.1:5901/SupplyChain/Claims",
+      "capturedAt": "2026-09-27T12:07:37.564Z",
+      "phase": "ui-flows",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "d01-create-reload-en.png",
+      "sha256": "8d80f589d3fa424f1cef35d85125ebe3925ad98c0ee7895d5e864712f408c67a",
+      "url": "http://127.0.0.1:5901/SupplyChain/Claims",
+      "capturedAt": "2026-09-27T12:07:40.467Z",
+      "phase": "ui-flows",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu02-filter-applied-en.png",
+      "sha256": "458662703d196b9897a6ddd72bc675aae9092d4e5f7d5fa0069f1cd356369dbb",
+      "url": "http://127.0.0.1:5901/SupplyChain/Claims",
+      "capturedAt": "2026-09-27T12:07:42.546Z",
+      "phase": "ui-flows",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu31-quickview-en.png",
+      "sha256": "c3ae93f020bad51a855a4d0b75aec2f4d9dc95ae21bc2701010f6c49c80642fc",
+      "url": "http://127.0.0.1:5901/SupplyChain/Claims",
+      "capturedAt": "2026-09-27T12:07:44.760Z",
+      "phase": "ui-flows",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu08-transition-investigating-en.png",
+      "sha256": "8c006fc84a639fb0afab323980cbc9b5b55f93be97b7ad3a5721690ec50b2027",
+      "url": "http://127.0.0.1:5901/SupplyChain/Claims",
+      "capturedAt": "2026-09-27T12:07:48.142Z",
+      "phase": "ui-flows",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu21-stale-transition-422-en.png",
+      "sha256": "543c57e9cf0d11fcb628019778015fe6823cba70b79dc14c953dc6ea098f52c7",
+      "url": "http://127.0.0.1:5901/SupplyChain/Claims",
+      "capturedAt": "2026-09-27T12:07:54.034Z",
+      "phase": "ui-flows",
+      "tool": "playwright 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [
+    {
+      "tag": "stale-b",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 422 (Unprocessable Entity)"
+    }
+  ],
+  "toasts": [
+    {
+      "tag": "create",
+      "text": "Claim created.",
+      "type": "success",
+      "at": "2026-09-27T12:07:39.517Z"
+    },
+    {
+      "tag": "transition",
+      "text": "Claim status updated.",
+      "type": "success",
+      "at": "2026-09-27T12:07:47.584Z"
+    },
+    {
+      "tag": "stale-a",
+      "text": "Claim status updated. Approved amount: 10.00",
+      "type": "success",
+      "at": "2026-09-27T12:07:53.030Z"
+    },
+    {
+      "tag": "stale-b",
+      "text": "The claim has changed in the meantime and this status change is no longer possible. The list has been reloaded. Support reference: 86acc3f3-50ee-4bd3-86d0-10cc0d97c2ec",
+      "type": "warning",
+      "at": "2026-09-27T12:07:53.157Z"
+    }
+  ],
+  "dialogs": [],
+  "rootLeak": [],
+  "foreign": [
+    {
+      "tag": "d02",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "d02",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    },
+    {
+      "tag": "create",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "create",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    },
+    {
+      "tag": "filter",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "filter",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    },
+    {
+      "tag": "quickview",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "quickview",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    },
+    {
+      "tag": "transition",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "transition",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    },
+    {
+      "tag": "stale-a",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "stale-a",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    },
+    {
+      "tag": "stale-b",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "stale-b",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    }
+  ],
+  "endedAt": "2026-09-27T12:07:54.059Z"
+}

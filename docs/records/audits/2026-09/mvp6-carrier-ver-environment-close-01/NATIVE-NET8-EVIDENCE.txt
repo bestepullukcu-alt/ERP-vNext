@@ -1,0 +1,22 @@
+Host: macOS 26.5.2, arm64
+Explicit executable: /Users/natig/.dotnet/dotnet
+Executable file type: Mach-O 64-bit executable arm64
+Executable SHA256: 6d06c4a53676021a7572c989528067a3fe1195f569c27fbcac25e5302dc0d72c
+SDK: 8.0.417 at /Users/natig/.dotnet/sdk/8.0.417
+Host runtime: 8.0.23 arm64
+Microsoft.NETCore.App: 8.0.23 at /Users/natig/.dotnet/shared/Microsoft.NETCore.App
+Microsoft.AspNetCore.App: 8.0.23 at /Users/natig/.dotnet/shared/Microsoft.AspNetCore.App
+SDK dotnet.dll SHA256: 6b3b196455297f2872900a42e5f9128f666c99db3728538a7547f854f159f4bb
+Core libhostpolicy.dylib SHA256: 520fba27d9c3936123d4ccb5acf3aa1300e9f215a30e9f5d80567490ce3690f2
+ASP.NET Microsoft.AspNetCore.dll SHA256: 98457b7f4e7154253329ab8081c8f47e9188499058233f54ac41fa3788a726a1
+
+Fresh explicit check with DOTNET_ROLL_FORWARD removed:
+  DOTNET_ROOT=/Users/natig/.dotnet
+  PATH=/Users/natig/.dotnet:/usr/bin:/bin:/usr/sbin:/sbin
+  /Users/natig/.dotnet/dotnet --version => 8.0.417
+  /Users/natig/.dotnet/dotnet --list-runtimes => Microsoft.AspNetCore.App 8.0.23; Microsoft.NETCore.App 8.0.23
+
+Successor launch prefix:
+  env -u DOTNET_ROLL_FORWARD -u DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX DOTNET_ROOT=/Users/natig/.dotnet PATH=/Users/natig/.dotnet:/usr/bin:/bin:/usr/sbin:/sbin /Users/natig/.dotnet/dotnet
+
+The system /usr/local/share/dotnet host is .NET 10 and lacks Microsoft.AspNetCore.App 8. A process using that host with DOTNET_ROLL_FORWARD=Major is not native .NET 8 evidence.

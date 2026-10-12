@@ -1,0 +1,6 @@
+command	exit	disposition
+native dotnet test baseline+new tests	1	RED: 3 string NumericDate failures
+native dotnet test candidate	0	GREEN: 33/33
+candidate HTTP/profiler matrix attempt 1	1	45/49; profiler timing produced four inconsistent read counts; not controlling
+candidate HTTP/profiler matrix attempt 2	0	49/49 after 150ms profile flush; controlling candidate evidence
+git apply --check	0	exact two-file patch applies to final DEV source baseline

@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# CANDIDATE — NOT APPROVED. Step 7: launch one service from the exact built binary and bind
+# source -> binary -> process (PID, port, cwd, mapped DLL, mapped runtime). Secrets reach the process only
+# through its environment at exec time; they never appear on a command line, in a log or in evidence.
+# Usage: 07-launch-bind.sh <service> <evidence_dir>      (run in KIT_SERVICES order)
+source "$(dirname "$0")/kit-lib.sh"
+svc="${1:?}"; E="${2:?}"; require_workspace
+row="$(printf '%s\n' "${KIT_SERVICES[@]}" | grep "^$svc|")" || die "unknown service $svc"
+IFS='|' read -r name canon proj asm <<< "$row"
+port="$(lane_port "$canon")"
+[[ -z "$(listening_pids "$port")" ]] || die "$svc port $port busy"
+bindir="$W/source/$proj/bin/Release/net8.0"; [[ "$svc" == gateway ]] && bindir="$W/runtime/gateway"
+dll="$bindir/$asm.dll"; [[ -f "$dll" ]] || die "$svc binary missing"
+built_sha="$(sha "$W/source/$proj/bin/Release/net8.0/$asm.dll")"; run_sha="$(sha "$dll")"
+[[ "$built_sha" == "$run_sha" ]] || die "$svc runtime dll differs from built dll"
+(
+  cd "$bindir"
+  set -a; source "$W/env/$svc.env"; set +a
+  # resolve @secret:NAME placeholders from the 0600 secrets file inside this subshell only
+  while IFS='=' read -r k v; do
+    v="${v#\'}"; v="${v%\'}"
+    [[ "$v" == @secret:* ]] || continue
+    n="${v#@secret:}"; val="$(grep -m1 "^$n=" "$W/secrets/lane.env" | cut -d= -f2-)"
+    [[ -n "$val" ]] || { echo "missing secret $n" >&2; exit 1; }
+    export "$k=$val"
+  done < "$W/env/$svc.env"
+  exec "${DOTNET_BIN:?}" "$dll" --urls "http://127.0.0.1:$port" < /dev/null \
+    > >(python3 "$KIT/06-redact.py" filter --workspace "$W" > "$W/logs/$svc.log") 2>&1
+) &
+for _ in $(seq 1 90); do pid="$(listening_pids "$port" | head -1)"; [[ -n "$pid" ]] && break; sleep 1; done
+[[ -n "${pid:-}" ]] || die "$svc did not listen on $port"
+lstart="$(ps -o lstart= -p "$pid" | sed 's/  */ /g')"
+cwd="$(lsof -a -p "$pid" -d cwd -Fn 2>/dev/null | sed -n 's/^n//p')"
+mapped_dll="$(lsof -p "$pid" -Fn 2>/dev/null | sed -n 's/^n//p' | grep -F "/$asm.dll" | head -1)"
+runtime="$(lsof -p "$pid" -Fn 2>/dev/null | sed -n 's/^n//p' | grep -Eo 'Microsoft\.NETCore\.App/[0-9.]+' | sort -u | head -1)"
+[[ "$mapped_dll" == "$dll" ]] || die "$svc mapped dll is not the hashed dll"
+[[ "$runtime" == Microsoft.NETCore.App/${EXPECT_RUNTIME_MAJOR:-8}.* ]] || die "$svc runs on $runtime (major roll-forward refused)"
+[[ -z "$(lsof -nP -a -p "$pid" -iTCP:27017 2>/dev/null)" ]] || die "$svc connected to 27017"
+printf '%s\t%s\t%s\t%s\n' "$svc" "$pid" "$port" "$lstart" >> "$W/pids.tsv"
+printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$svc" "$built_sha" "$pid" "127.0.0.1:$port" "${cwd/#$W/<W>}" "$runtime" "$lstart" \
+  >> "$E/SOURCE-BINARY-PROCESS.tsv"      # header: service dll_sha256 pid listener cwd runtime started
+log "PASS $svc pid=$pid port=$port"

@@ -1,0 +1,11 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  TenantArchitecture.ArchitectureTests -> /Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/bin/Debug/net8.0/TenantArchitecture.ArchitectureTests.dll
+Test run for /Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/bin/Debug/net8.0/TenantArchitecture.ArchitectureTests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 17.11.1 (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+Results File: /Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-loads-publication-guard-independent-ver-01/VER-DOCS-PATH-GUARD-attempt1.trx
+
+Passed!  - Failed:     0, Passed:    39, Skipped:     0, Total:    39, Duration: 5 s - TenantArchitecture.ArchitectureTests.dll (net8.0)

@@ -502,7 +502,8 @@ public sealed class AuditIntentTemporalMigrationMongoTests(
     private AuditIntentTemporalMigrationRepository Repository(
         IMongoDatabase database,
         IAuditIntentTemporalMigrationFailureInjector? injector = null) =>
-        new(database, new ManualTimeProvider(new DateTimeOffset(2026, 8, 28, 12, 0, 0, TimeSpan.Zero)), injector);
+        new(database, new ManualTimeProvider(new DateTimeOffset(2026, 8, 28, 12, 0, 0, TimeSpan.Zero)),
+            injector is null ? Array.Empty<IAuditIntentTemporalMigrationFailureInjector>() : new[] { injector });
 
     private static AuditIntentTemporalMigrationRequest Request(bool verify = false, bool activate = false) => new(
         "mdm-fu02-test-runner",

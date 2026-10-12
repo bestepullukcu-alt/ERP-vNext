@@ -1,0 +1,320 @@
+{
+  "phase": "checks-neg",
+  "startedAt": "2026-09-26T19:41:28.120Z",
+  "web": "http://127.0.0.1:5501",
+  "cases": {
+    "401-json-adapter": {
+      "result": "PASS",
+      "api": {
+        "status": 401,
+        "requestCorrelation": "accb4d9b-4045-4b37-b11d-dcfa6e6e0064",
+        "responseCorrelation": "accb4d9b-4045-4b37-b11d-dcfa6e6e0064",
+        "location": null,
+        "contentType": "application/json; charset=utf-8",
+        "antiforgeryTokenUsed": false,
+        "errorCode": "INVALID_REQUEST",
+        "errorCorrelation": "accb4d9b-4045-4b37-b11d-dcfa6e6e0064",
+        "errorMessage": "Authentication required.",
+        "okKeys": null,
+        "items": null,
+        "rootLeak": []
+      },
+      "pageStatus": 302,
+      "pageLocationPath": "/account/login"
+    },
+    "CU-06-noread": {
+      "result": "PASS",
+      "pageStatus": 200,
+      "finalPath": "/SupplyChain/Claims",
+      "dom": {
+        "table": 0,
+        "skeleton": 0,
+        "filter": 0,
+        "addNew": 0,
+        "title": [
+          "You don't have access to Claims",
+          "Theming",
+          "Layout"
+        ]
+      },
+      "listAdapter": {
+        "status": 403,
+        "requestCorrelation": "f93bbd7b-8885-425b-aee6-098ca264b6d8",
+        "responseCorrelation": "f93bbd7b-8885-425b-aee6-098ca264b6d8",
+        "location": null,
+        "contentType": "application/json; charset=utf-8",
+        "antiforgeryTokenUsed": false,
+        "errorCode": "FORBIDDEN",
+        "errorCorrelation": "f93bbd7b-8885-425b-aee6-098ca264b6d8",
+        "errorMessage": "Required permission is missing.",
+        "okKeys": null,
+        "items": null,
+        "rootLeak": []
+      },
+      "resolveAdapter": {
+        "status": 403,
+        "requestCorrelation": "9baff011-a00f-4eae-881c-4370f8ce4d61",
+        "responseCorrelation": "9baff011-a00f-4eae-881c-4370f8ce4d61",
+        "location": null,
+        "contentType": "application/json; charset=utf-8",
+        "antiforgeryTokenUsed": false,
+        "errorCode": "FORBIDDEN",
+        "errorCorrelation": "9baff011-a00f-4eae-881c-4370f8ce4d61",
+        "errorMessage": "Required permission is missing.",
+        "okKeys": null,
+        "items": null,
+        "rootLeak": []
+      },
+      "browserAdapterCalls": 0
+    },
+    "CU-07-readonly": {
+      "result": "PASS",
+      "dom": {
+        "addNew": 0,
+        "actions": 0,
+        "rows": 4
+      },
+      "directCreate": {
+        "status": 403,
+        "requestCorrelation": "161b07cc-33ac-405d-8289-9d07648cda74",
+        "responseCorrelation": "161b07cc-33ac-405d-8289-9d07648cda74",
+        "location": null,
+        "contentType": "application/json; charset=utf-8",
+        "antiforgeryTokenUsed": true,
+        "errorCode": "FORBIDDEN",
+        "errorCorrelation": "161b07cc-33ac-405d-8289-9d07648cda74",
+        "errorMessage": "Required permission is missing.",
+        "okKeys": null,
+        "items": null,
+        "rootLeak": []
+      },
+      "directTransition": {
+        "status": 403,
+        "requestCorrelation": "c6ad5fdc-5b3c-4714-a0a6-77c8b5a2c119",
+        "responseCorrelation": "c6ad5fdc-5b3c-4714-a0a6-77c8b5a2c119",
+        "location": null,
+        "contentType": "application/json; charset=utf-8",
+        "antiforgeryTokenUsed": true,
+        "errorCode": "FORBIDDEN",
+        "errorCorrelation": "c6ad5fdc-5b3c-4714-a0a6-77c8b5a2c119",
+        "errorMessage": "Required permission is missing.",
+        "okKeys": null,
+        "items": null,
+        "rootLeak": []
+      }
+    },
+    "CU-16-cross-LE-list": {
+      "result": "PASS",
+      "lebListCount": 0,
+      "lebFilteredBySeedShipment": 0
+    },
+    "isolation-cross-tenant-list": {
+      "result": "PASS",
+      "t2ListClaimIds": [
+        "40c8fb9c-a7de-41a9-8721-a579b862c7be"
+      ],
+      "fullListContainsT2Claim": false,
+      "fullListCount": 4,
+      "fullListContainsSoftDeletedClaim": false
+    },
+    "soft-deleted-claim-not-listed": {
+      "result": "PASS",
+      "softDeletedClaimId": "481aa578-da23-47a7-a4e7-874474f9ea18"
+    },
+    "CU-14-safe-not-found-identical": {
+      "result": "PASS",
+      "cases": {
+        "unknown": {
+          "status": 404,
+          "requestCorrelation": "87da9f5c-4fc3-4da8-a407-3029ae2e2085",
+          "responseCorrelation": "87da9f5c-4fc3-4da8-a407-3029ae2e2085",
+          "location": null,
+          "contentType": "application/json; charset=utf-8",
+          "antiforgeryTokenUsed": false,
+          "errorCode": "CLAIM_NOT_FOUND",
+          "errorCorrelation": "87da9f5c-4fc3-4da8-a407-3029ae2e2085",
+          "errorMessage": "The requested record was not found.",
+          "okKeys": null,
+          "items": null,
+          "rootLeak": []
+        },
+        "foreignTenant": {
+          "status": 404,
+          "requestCorrelation": "d312eb8e-753e-4ce4-b8e6-ee527be659c3",
+          "responseCorrelation": "d312eb8e-753e-4ce4-b8e6-ee527be659c3",
+          "location": null,
+          "contentType": "application/json; charset=utf-8",
+          "antiforgeryTokenUsed": false,
+          "errorCode": "CLAIM_NOT_FOUND",
+          "errorCorrelation": "d312eb8e-753e-4ce4-b8e6-ee527be659c3",
+          "errorMessage": "The requested record was not found.",
+          "okKeys": null,
+          "items": null,
+          "rootLeak": []
+        },
+        "softDeleted": {
+          "status": 404,
+          "requestCorrelation": "da358b5c-7788-43f4-82c6-0b9b7473e5ed",
+          "responseCorrelation": "da358b5c-7788-43f4-82c6-0b9b7473e5ed",
+          "location": null,
+          "contentType": "application/json; charset=utf-8",
+          "antiforgeryTokenUsed": false,
+          "errorCode": "CLAIM_NOT_FOUND",
+          "errorCorrelation": "da358b5c-7788-43f4-82c6-0b9b7473e5ed",
+          "errorMessage": "The requested record was not found.",
+          "okKeys": null,
+          "items": null,
+          "rootLeak": []
+        },
+        "foreignLeFromLeb": {
+          "status": 404,
+          "requestCorrelation": "5c6c6ba2-f800-4e06-be30-9b2d87459737",
+          "responseCorrelation": "5c6c6ba2-f800-4e06-be30-9b2d87459737",
+          "location": null,
+          "contentType": "application/json; charset=utf-8",
+          "antiforgeryTokenUsed": false,
+          "errorCode": "CLAIM_NOT_FOUND",
+          "errorCorrelation": "5c6c6ba2-f800-4e06-be30-9b2d87459737",
+          "errorMessage": "The requested record was not found.",
+          "okKeys": null,
+          "items": null,
+          "rootLeak": []
+        },
+        "foreignTenantFromT2": {
+          "status": 404,
+          "requestCorrelation": "9265488b-abb3-47ec-b29b-3a3f888ecde7",
+          "responseCorrelation": "9265488b-abb3-47ec-b29b-3a3f888ecde7",
+          "location": null,
+          "contentType": "application/json; charset=utf-8",
+          "antiforgeryTokenUsed": false,
+          "errorCode": "CLAIM_NOT_FOUND",
+          "errorCorrelation": "9265488b-abb3-47ec-b29b-3a3f888ecde7",
+          "errorMessage": "The requested record was not found.",
+          "okKeys": null,
+          "items": null,
+          "rootLeak": []
+        }
+      }
+    },
+    "CU-15-transition-safe-not-found": {
+      "result": "PASS",
+      "cases": {
+        "softDeletedClaim": {
+          "status": 404,
+          "requestCorrelation": "4b839318-e948-48aa-9b5f-d0e936d1b497",
+          "responseCorrelation": "4b839318-e948-48aa-9b5f-d0e936d1b497",
+          "location": null,
+          "contentType": "application/json; charset=utf-8",
+          "antiforgeryTokenUsed": true,
+          "errorCode": "CLAIM_NOT_FOUND",
+          "errorCorrelation": "4b839318-e948-48aa-9b5f-d0e936d1b497",
+          "errorMessage": "Claim or referenced resource was not found.",
+          "okKeys": null,
+          "items": null,
+          "rootLeak": []
+        },
+        "foreignTenantClaim": {
+          "status": 404,
+          "requestCorrelation": "ec891219-191d-4a6e-8f01-7346be6a24d0",
+          "responseCorrelation": "ec891219-191d-4a6e-8f01-7346be6a24d0",
+          "location": null,
+          "contentType": "application/json; charset=utf-8",
+          "antiforgeryTokenUsed": true,
+          "errorCode": "CLAIM_NOT_FOUND",
+          "errorCorrelation": "ec891219-191d-4a6e-8f01-7346be6a24d0",
+          "errorMessage": "Claim or referenced resource was not found.",
+          "okKeys": null,
+          "items": null,
+          "rootLeak": []
+        },
+        "foreignLeClaimFromLeb": {
+          "status": 404,
+          "requestCorrelation": "5c82c71c-f367-40c8-a4c5-d8376d7018ed",
+          "responseCorrelation": "5c82c71c-f367-40c8-a4c5-d8376d7018ed",
+          "location": null,
+          "contentType": "application/json; charset=utf-8",
+          "antiforgeryTokenUsed": true,
+          "errorCode": "CLAIM_NOT_FOUND",
+          "errorCorrelation": "5c82c71c-f367-40c8-a4c5-d8376d7018ed",
+          "errorMessage": "The requested record was not found.",
+          "okKeys": null,
+          "items": null,
+          "rootLeak": []
+        }
+      }
+    },
+    "CU-17-direct-ineligible-422": {
+      "result": "PASS",
+      "draft": {
+        "status": 422,
+        "requestCorrelation": "9596185b-674e-4971-aaf9-7aadff66a98a",
+        "responseCorrelation": "9596185b-674e-4971-aaf9-7aadff66a98a",
+        "location": null,
+        "contentType": "application/json; charset=utf-8",
+        "antiforgeryTokenUsed": true,
+        "errorCode": "CLAIM_SHIPMENT_INELIGIBLE",
+        "errorCorrelation": "9596185b-674e-4971-aaf9-7aadff66a98a",
+        "errorMessage": "Shipment is not eligible for a claim.",
+        "okKeys": null,
+        "items": null,
+        "rootLeak": []
+      }
+    },
+    "CU-23-support-ref-not-root": {
+      "result": "PASS",
+      "pairs": [
+        [
+          "87da9f5c-4fc3-4da8-a407-3029ae2e2085",
+          "87da9f5c-4fc3-4da8-a407-3029ae2e2085"
+        ],
+        [
+          "d312eb8e-753e-4ce4-b8e6-ee527be659c3",
+          "d312eb8e-753e-4ce4-b8e6-ee527be659c3"
+        ],
+        [
+          "da358b5c-7788-43f4-82c6-0b9b7473e5ed",
+          "da358b5c-7788-43f4-82c6-0b9b7473e5ed"
+        ],
+        [
+          "5c6c6ba2-f800-4e06-be30-9b2d87459737",
+          "5c6c6ba2-f800-4e06-be30-9b2d87459737"
+        ],
+        [
+          "9265488b-abb3-47ec-b29b-3a3f888ecde7",
+          "9265488b-abb3-47ec-b29b-3a3f888ecde7"
+        ],
+        [
+          "4b839318-e948-48aa-9b5f-d0e936d1b497",
+          "4b839318-e948-48aa-9b5f-d0e936d1b497"
+        ],
+        [
+          "ec891219-191d-4a6e-8f01-7346be6a24d0",
+          "ec891219-191d-4a6e-8f01-7346be6a24d0"
+        ],
+        [
+          "5c82c71c-f367-40c8-a4c5-d8376d7018ed",
+          "5c82c71c-f367-40c8-a4c5-d8376d7018ed"
+        ],
+        [
+          "9596185b-674e-4971-aaf9-7aadff66a98a",
+          "9596185b-674e-4971-aaf9-7aadff66a98a"
+        ]
+      ]
+    }
+  },
+  "png": [
+    {
+      "name": "uas001-noread-access-denied-en.png",
+      "sha256": "3ce2d84809b50a9415708c26953cf456e6166a06d9580cf152f510320f1e33a4",
+      "url": "http://127.0.0.1:5501/SupplyChain/Claims"
+    },
+    {
+      "name": "readonly-list-no-cta-en.png",
+      "sha256": "c1a5f9330d5915e815d45cd6954fa402e455c64c8be02a88ac771b712971fb4c",
+      "url": "http://127.0.0.1:5501/SupplyChain/Claims"
+    }
+  ],
+  "console": [],
+  "rootLeak": [],
+  "endedAt": "2026-09-26T19:41:37.407Z"
+}

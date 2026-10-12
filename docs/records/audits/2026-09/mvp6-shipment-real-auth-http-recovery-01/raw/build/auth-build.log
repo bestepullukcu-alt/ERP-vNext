@@ -1,0 +1,9 @@
+/Users/natig/.dotnet/sdk/8.0.417/Sdks/Microsoft.NET.Sdk/targets/Microsoft.PackageDependencyResolution.targets(266,5): error NETSDK1004: Assets file '/private/tmp/mvp6-shipment-real-auth-http-recovery-01/source/services/Diten.AuthService/src/Diten.AuthService.Api/obj/project.assets.json' not found. Run a NuGet package restore to generate this file. [/private/tmp/mvp6-shipment-real-auth-http-recovery-01/source/services/Diten.AuthService/src/Diten.AuthService.Api/Diten.AuthService.Api.csproj]
+
+Build FAILED.
+
+/Users/natig/.dotnet/sdk/8.0.417/Sdks/Microsoft.NET.Sdk/targets/Microsoft.PackageDependencyResolution.targets(266,5): error NETSDK1004: Assets file '/private/tmp/mvp6-shipment-real-auth-http-recovery-01/source/services/Diten.AuthService/src/Diten.AuthService.Api/obj/project.assets.json' not found. Run a NuGet package restore to generate this file. [/private/tmp/mvp6-shipment-real-auth-http-recovery-01/source/services/Diten.AuthService/src/Diten.AuthService.Api/Diten.AuthService.Api.csproj]
+    0 Warning(s)
+    1 Error(s)
+
+Time Elapsed 00:00:01.30

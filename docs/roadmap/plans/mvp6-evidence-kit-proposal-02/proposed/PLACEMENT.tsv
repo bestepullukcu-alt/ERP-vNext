@@ -1,0 +1,30 @@
+candidate_in_this_proposal	adopted_path	docs-organization / repo rule	change_type_on_adoption
+proposed/guide/mvp6-evidence-kit-v1.0.md	docs/guides/operations/mvp6-evidence-kit-v1.0.md	§1 question 4 "teaches how to do a job" → guides/; operations/ holds dev-environment and agent-usage guides	new file
+proposed/kit/run-kit.sh	scripts/evidence-kit/run-kit.sh	Runnable code lives with repo scripts (scripts/), not under docs/ (§3.1: code-adjacent material stays with code; DocsPathGuard scans code files anywhere)	new file (mode 755)
+proposed/kit/ek_lib.sh	scripts/evidence-kit/ek_lib.sh	as above	new file (mode 644, sourced)
+proposed/kit/k00_supervisor.py	scripts/evidence-kit/k00_supervisor.py	as above; v1.1 D4 lane supervisor (holds lane secrets in memory only)	new file (mode 755)
+proposed/kit/k00_ctl.py	scripts/evidence-kit/k00_ctl.py	as above; v1.1 D4 client for the supervisor socket	new file (mode 755)
+proposed/kit/k01_source.py	scripts/evidence-kit/k01_source.py	as above	new file (mode 755)
+proposed/kit/k02_runtime.sh	scripts/evidence-kit/k02_runtime.sh	as above	new file (mode 755)
+proposed/kit/k03_ports.py	scripts/evidence-kit/k03_ports.py	as above	new file (mode 755)
+proposed/kit/k04_config.py	scripts/evidence-kit/k04_config.py	as above	new file (mode 755)
+proposed/kit/k04b_gateway_routes.py	scripts/evidence-kit/k04b_gateway_routes.py	as above; reads gateway/Diten.ApiGateway/ocelot.json from the disposable source copy only	new file (mode 755)
+proposed/kit/k05_mongo.sh	scripts/evidence-kit/k05_mongo.sh	as above	new file (mode 755)
+proposed/kit/k06_build_launch.sh	scripts/evidence-kit/k06_build_launch.sh	as above	new file (mode 755)
+proposed/kit/k07_identity.py	scripts/evidence-kit/k07_identity.py	as above	new file (mode 755)
+proposed/kit/k08_redact_scan.py	scripts/evidence-kit/k08_redact_scan.py	as above	new file (mode 755)
+proposed/kit/k09_binding.py	scripts/evidence-kit/k09_binding.py	as above	new file (mode 755)
+proposed/kit/k10_db_snapshot.js	scripts/evidence-kit/k10_db_snapshot.js	as above	new file (mode 644, mongosh --file)
+proposed/kit/k10_db_diff.py	scripts/evidence-kit/k10_db_diff.py	as above	new file (mode 755)
+proposed/kit/k10_snap.sh	scripts/evidence-kit/k10_snap.sh	as above; v1.1 G3 attempt-suffixed snapshot wrapper	new file (mode 755)
+proposed/kit/k11_cleanup.sh	scripts/evidence-kit/k11_cleanup.sh	as above	new file (mode 755)
+proposed/kit/service-map.tsv	scripts/evidence-kit/service-map.tsv	data read by the kit; versioned with it	new file
+proposed/kit/lane.env.example	scripts/evidence-kit/lane.env.example	as above	new file
+proposed/templates/overlays.tsv	scripts/evidence-kit/templates/overlays.tsv	as above	new file
+proposed/templates/actors.tsv	scripts/evidence-kit/templates/actors.tsv	as above	new file
+proposed/templates/overrides.tsv	scripts/evidence-kit/templates/overrides.tsv	as above	new file
+proposed/templates/served-asset-hash.js	scripts/evidence-kit/templates/served-asset-hash.js	as above; v1.1 G1 Playwright helper that hashes served bytes	new file (mode 644, required by the lane harness)
+(decision record, written only when the owner decides)	docs/records/decisions/2026-09/mvp6-evidence-kit-v1-1-adoption-owner-decision-01.md	§1 question 2 dated decision → records/decisions/<yyyy-mm>/ (pattern: mvp6-evidence-kit-adoption-owner-decision-01.md)	new file
+(optional, only with DECISION A option "link")	docs/guides/operations/mvp6-development-process-v1.0.md §5	one added line pointing to the kit guide — a content change to an in-use guide, so it is named in the decision	one-line addition (exact text in ADOPTION-DECISION-v1.1.md)
+(each lane)	docs/records/audits/<yyyy-mm>/<lane-id>/evidence/	§1 question 2 dated record; ek_require_env refuses any evidence path outside docs/records/	created per lane
+(this proposal)	stays at docs/roadmap/plans/mvp6-evidence-kit-proposal-02/	§1 question 3 not yet happened; not moved (K8: no move without protocol)	unchanged

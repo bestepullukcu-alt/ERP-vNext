@@ -1,0 +1,7 @@
+# verify from: repository root — shasum -a 256 -c docs/records/audits/2026-10/mvp6-q449-scope-intent-01/ARTIFACTS.sha256
+# mvp6-q449-scope-intent-01 · generated 2026-10-05 01:16:22 +0300 (Europe/Istanbul) · start 2026-10-05 01:08:44 +03 · HEAD cea01354e · staged 0
+8ef88492f33480a1bc5870e304192adc72cc2a8295445fd1b64a8c444c1af651  docs/roadmap/plans/mvp6-ui-pack-drafts-01/returns/SCOPE.md
+66f6c697cbcc132e86d9f6e2e2090187390167c4d8ccab03845c7e4b4310776a  docs/records/audits/2026-10/mvp6-q449-scope-intent-01/REPORT.md
+29fb88ac7d4d62a46312e49c92501296d8783fec58f993f4d12a53f2b6941ab2  docs/records/audits/2026-10/mvp6-q449-scope-intent-01/evidence/SCOPE.md.diff
+e90ebea0a325251042cc629f29b980b8b7ddfef3a29a43b3e83ced3fe253e908  docs/records/audits/2026-10/mvp6-q449-scope-intent-01/evidence/package-sha256sums-check.txt
+e21614d6f6f3c886caebaa2856d63be818cfa32400a5a4bcec3aca710dcb38a6  docs/records/audits/2026-10/mvp6-q449-scope-intent-01/evidence/scope-sweep.txt

@@ -1,0 +1,22 @@
+{
+  "AGENTS.md": "51d92c75b761e5c7195eda102d08f2b7f472b979d9940bdf21ae72cb7cab7fcb",
+  "docs/guides/operations/control-tower-sop.md": "e85854bd1ecb4895406d8e5a1276adbc82a2af250dc304abad796a2ae7a4de36",
+  "execution/domains/supply-chain-execution/domain-config.md": "c49ec37a45b492e22988fdf7225aaa90b68c7a09fa4d0491dea06fe7cd793fe3",
+  "docs/analysis/workpackages/WP-MVP6-logistics.md": "28646bdeef8e2c13a2f0db1314c504522d54b062c46968a35e00b82ebf4c71c5",
+  "docs/analysis/contracts/inventory-bundle.openapi.yaml": "456f63589ee1141dbe1ad999eda090b22c22af3ae1de07e1fcd0616ce44db4d8",
+  "docs/analysis/contracts/shipment-bundle.openapi.yaml": "93c696e2fba13dbc8fbfcf2cd1ae0ae0bd93cd9d0935b3ee743229e810163571",
+  "docs/analysis/contracts/supplier-performance.openapi.yaml": "9100d106527947a0a842bc5c4b580fbb2c3b6a288949798b8416a08d352e0088",
+  "docs/analysis/contracts/supplier.openapi.yaml": "87a297edfb8eabf9ecc8beff7870955f46b38413a1490a05a36e3f255d77bb00",
+  "docs/analysis/contracts/loads-semantics-v2.0.0.md": "a2187c934cf9176cae4cb8b9c70dfd1298154e5124cdc197d3029103636c2be1",
+  "docs/analysis/contracts/sandop-capacity.openapi.yaml": "c255e92923ba91714cec8daf229262101b5d45648b7f714a03ab402811db683c",
+  "docs/analysis/contracts/trace.openapi.yaml": "2fa5e20b8de84deba16533c24bc9e1a090847c9494d73a1752522e1f69ea2297",
+  "docs/analysis/contracts/demand.openapi.yaml": "3c77262e411976e311bcf9b65be131e2035fd18a33215d24075f87209f87bb9d",
+  "docs/analysis/contracts/README.md": "c1071d61dd59c42c7f87f50a4dffe44ec9a7b9b56dda1dd8ef72a06dbfcb8a78",
+  "docs/analysis/contracts/warehouse-outbound.openapi.yaml": "2389ce2064570812b8f7efda249af0c1d261f21841443bd88414eda8fb72ba6c",
+  "docs/analysis/contracts/product-master-bundle.openapi.yaml": "8c5ed4679319be39f73ad6b03fa89beb734ea16d8607cdb1c5b53844a383ca3a",
+  "docs/analysis/contracts/bom.openapi.yaml": "8c2b41829123296743ec55e628557d4df8f1d5d333bb71bab3eebd9ec01f32d9",
+  "docs/analysis/contracts/grn-event.openapi.yaml": "3f3c2243fa2da637b20d5b51ea679b8b274282a77f500057dc1b50a9623bd390",
+  "docs/analysis/contracts/location.openapi.yaml": "90cbdd1bfa02e1f1020944f1c96229ee64e0a79fc75b9379dcc9ee0493150f67",
+  "docs/analysis/contracts/carrier-semantics-v1.1.0.md": "87557ef9f5b5a4427862effbece2bb528ebc1b95361c29416373709223021fee",
+  "docs/analysis/contracts/atp-bundle.openapi.yaml": "1b43709a9d404fa2ea0c91d1d607ceb82e77265557839f226f6a4ff4b2600064"
+}

@@ -13,6 +13,12 @@ public sealed class ContactRepository : IContactRepository
         _collection = database.GetCollection<Contact>("contacts");
     }
 
+    /// <summary>WP-VP-2B (R2) — the soft-deleted contacts' ids only.</summary>
+    public async Task<IReadOnlyCollection<Guid>> ListDeletedIdsAsync(Guid tenantId, CancellationToken cancellationToken)
+        => await _collection.Find(Builders<Contact>.Filter.Where(c => c.TenantId == tenantId && c.IsDeleted))
+            .Project(c => c.Id)
+            .ToListAsync(cancellationToken);
+
     private static FilterDefinition<Contact> ActiveTenant(Guid tenantId)
         => Builders<Contact>.Filter.Where(c => c.TenantId == tenantId && !c.IsDeleted);
 
@@ -42,7 +48,8 @@ public sealed class ContactRepository : IContactRepository
         var hasSearch = !string.IsNullOrWhiteSpace(search);
         if (hasSearch)
         {
-            var term = search!.Trim();
+            // WP-VP-FIX-2 (F-1) — literal, Turkish-insensitive "contains" ("şirin" finds "ŞİRİN").
+            var term = Application.Common.TurkishInsensitivePattern.Build(search!.Trim());
             var regex = Builders<Contact>.Filter.Regex(c => c.DisplayName, new MongoDB.Bson.BsonRegularExpression(term, "i"))
                         | Builders<Contact>.Filter.Regex(c => c.FirstName, new MongoDB.Bson.BsonRegularExpression(term, "i"))
                         | Builders<Contact>.Filter.Regex(c => c.LastName, new MongoDB.Bson.BsonRegularExpression(term, "i"))

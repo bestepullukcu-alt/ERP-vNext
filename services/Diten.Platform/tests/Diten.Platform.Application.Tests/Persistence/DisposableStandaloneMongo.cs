@@ -8,6 +8,10 @@ namespace Diten.Platform.Application.Tests.Persistence;
 
 public sealed class DisposableStandaloneMongo : IAsyncDisposable
 {
+    // DB-010: one fixed database per disposable standalone mongod. Every instance owns a fresh port and a
+    // temporary dbpath, so the process isolates each test; the database name no longer carries a GUID.
+    private const string StandaloneDatabaseName = "diten_platform_standalone";
+
     private readonly Process _process;
     private readonly string _root;
     private readonly MongoClient _client;
@@ -22,7 +26,7 @@ public sealed class DisposableStandaloneMongo : IAsyncDisposable
 
     public int Port { get; }
     public IMongoClient Client => _client;
-    public IMongoDatabase CreateDatabase() => _client.GetDatabase("diten_platform_standalone_" + Guid.NewGuid().ToString("N"));
+    public IMongoDatabase CreateDatabase() => _client.GetDatabase(StandaloneDatabaseName);
 
     public static async Task<DisposableStandaloneMongo> StartAsync(CancellationToken ct = default)
     {
@@ -71,7 +75,7 @@ public sealed class DisposableStandaloneMongo : IAsyncDisposable
     {
         try
         {
-            foreach (var name in (await _client.ListDatabaseNames().ToListAsync()).Where(x => x.StartsWith("diten_platform_standalone_", StringComparison.Ordinal)))
+            foreach (var name in (await _client.ListDatabaseNames().ToListAsync()).Where(x => string.Equals(x, StandaloneDatabaseName, StringComparison.Ordinal)))
                 await _client.DropDatabaseAsync(name);
         }
         finally

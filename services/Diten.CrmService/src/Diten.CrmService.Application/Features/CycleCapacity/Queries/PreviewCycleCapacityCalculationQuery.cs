@@ -11,9 +11,8 @@ namespace Diten.CrmService.Application.Features.CycleCapacity.Queries;
 /// nothing and returns nothing that could be mistaken for a saved record — there is no id in the answer to save
 /// against.</para>
 ///
-/// <para><b>It carries no <c>Fte</c>.</b> Exactly like create and update: the interim configured average is stamped
-/// server-side, so the preview is built on the SAME number the save will store. A preview that let the browser choose
-/// its own FTE would show a figure the saved record then contradicts.</para>
+/// <para><b>FTE (WP-CAP-MODEL, K-5).</b> A month FTE the form holds is used as authored, exactly as the save would store
+/// it; an omitted one takes the configured interim average the save would stamp.</para>
 ///
 /// <para><b>It is not a shortcut past validation.</b> The write path still enforces the divisor rule, the day budget
 /// and the month-window rule; this only answers "what would the arithmetic say". An input the write path would refuse
@@ -28,4 +27,9 @@ public sealed record PreviewCycleCapacityCalculationQuery(
     int TravelingTime,
     int ReportDuration,
     int QuizDuration,
-    IReadOnlyList<CycleCapacityMonthInput> Months) : IRequest<Response<CycleCapacityCalculationDto>>;
+    IReadOnlyList<CycleCapacityMonthInput> Months,
+    // WP-CAP-MODEL — the typical visit (all three → typical model, report per visit) and the month FTEs the form holds
+    // (CycleCapacityMonthInput.Fte), so the live figure uses the same model the save will store.
+    int? TypicalPromoCount = null,
+    int? TypicalNonPromoCount = null,
+    int? ReportMinutesPerVisit = null) : IRequest<Response<CycleCapacityCalculationDto>>;

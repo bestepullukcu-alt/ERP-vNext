@@ -91,7 +91,10 @@ public sealed record ClaimWorkflowStartRequest(
     string ObjectId,
     string ObjectRef,
     string IdempotencyKey,
-    ClaimWorkflowDisplayContext DisplayContext);
+    ClaimWorkflowDisplayContext DisplayContext,
+    // WP-KP-5a-FIX-1 — the audit reason code of the start. Null = the claim's own code (CRM_CLAIM_SUBMITTED), so the
+    // claim flow is unchanged; the knowledge path revision and the regulatory texts send their own.
+    string? ReasonCode = null);
 
 public sealed record ClaimWorkflowStartResult(ClaimWorkflowCallOutcome Outcome, Guid? WorkflowInstanceId, string? Detail);
 

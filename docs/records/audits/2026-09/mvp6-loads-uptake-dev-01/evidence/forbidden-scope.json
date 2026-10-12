@@ -1,0 +1,19 @@
+{
+  "owned_count": 12,
+  "violations": [],
+  "pass": true,
+  "owned_paths": [
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Loads/Handlers/QueryHandlers/GetLoadListHandler.cs",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Loads/LoadModels.cs",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Loads/ILoadRepository.cs",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Loads/LoadReadResult.cs",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Loads/LoadRepository.cs",
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Loads/LoadRootMaterializer.cs",
+    "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Loads/LoadContractTests.cs",
+    "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Loads/LoadRootQueryTests.cs",
+    "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Loads/LoadRootStorageTests.cs",
+    "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Loads/LoadRootTransitionTests.cs",
+    "services/Diten.SupplyChainService/tests/loads/runtime_probe.py",
+    "services/Diten.SupplyChainService/tests/loads/verify_evidence.py"
+  ]
+}

@@ -1,0 +1,9 @@
+evidence	criterion	decision(inherit|rerun)	changed_input	reason	decided_by	date
+a08-a09-a12-01 browser runs	UI183-A08, A09-409, A09-422	rerun (targeted regression)	Shipments/details.js load() and render paths (A12 patch b3c7dcbb)	Changed load() is the refresh path used by stale-transition and stale-POD flows	CT	2026-09-25
+a08-a09-a12-01 API/DB isolation	UI183-A12 data/API isolation	rerun as part of A12 VER	same	A12 VER re-executes cross-LE/unknown/deleted anyway	CT	2026-09-25
+line-accessibility CT (PRES-183-01)	Line accessibility	inherit	none (create.js, _Form.cshtml, ShipmentFormContractTests.cs not in A12 delta)	No source/contract/config/fixture impact	CT	2026-09-25
+shared-ui CT (A03, PRES-183-02)	JSON 401 adapters; DataTables modal L10n	inherit	none (12 shared-UI files not in A12 delta)	No source/contract/config/fixture impact	CT	2026-09-25
+354-source UI acceptance evidence (A01, A02, A04–A07, A15, A03 missing-read)	UI183-A01, A02, A03-MISSING-READ, A04, A05, A06, A07, A15	rerun (final Shipment UI VER)	shared-UI 12 files (controller, Program.cs, dt-defaults.js, shared resx) and A12 details.js	Inputs of the accepted flows changed after acceptance	CT	2026-09-25
+2026-09-26	mvp6-shipment-a12-runtime-independent-ver-02 browser runs	UI183-A08, A09-409, A09-422	rerun done (targeted regression)	details.js load() changed by A12	Terminal lane / CT
+2026-09-26	mvp6-shipment-a12-runtime-independent-ver-02	UI183-A12 data/API isolation + safe-not-found DOM	rerun done	new A12 VER	Terminal lane / CT
+2026-09-26	PRES-183-01, A03/PRES-183-02	accessibility, JSON 401 adapters, DataTables modal L10n	inherited (not rerun)	no A12 impact	Terminal lane / CT

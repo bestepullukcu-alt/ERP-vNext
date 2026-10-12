@@ -1,0 +1,11 @@
+== fixed tree, full suite
+Passed!  - Failed:     0, Passed:   164, Skipped:     0, Total:   164, Duration: 5 s - Diten.Web.Tests.dll (net8.0)
+== fixed tree, ShipmentJsonAdapterChallengeTests
+Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: < 1 ms - Diten.Web.Tests.dll (net8.0)
+== sabotage (Program.cs = HEAD), ShipmentJsonAdapterChallengeTests
+Expected: Unauthorized
+Actual:   Found
+Failed!  - Failed:     1, Passed:     0, Skipped:     0, Total:     1, Duration: < 1 ms - Diten.Web.Tests.dll (net8.0)
+== Q394 alone: Program.cs fixed, SupplyChainShipmentsController.cs = HEAD (without Q372-R2's edit), all provider sources present
+Passed!  - Failed:     0, Passed:   164, Skipped:     0, Total:   164, Duration: 5 s - Diten.Web.Tests.dll (net8.0)
+   (first attempt in that copy without the service sources: 160/4/164, the four NavManifestL10nGuardTests — Q382 F-Q382-5's copy trap, not a defect)

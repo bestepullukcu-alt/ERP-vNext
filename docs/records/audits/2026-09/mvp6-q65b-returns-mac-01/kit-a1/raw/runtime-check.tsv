@@ -1,0 +1,7 @@
+field	value
+dotnet	/Users/natig/.dotnet/dotnet
+sdk	8.0.417
+runtime_expected	8.0.23
+host_architecture	arm64
+launch_roll_forward	LatestPatch
+result	PASS

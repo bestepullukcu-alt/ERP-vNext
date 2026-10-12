@@ -1,0 +1,3 @@
+namespace Diten.SupplyChainService.Domain.Features.SandopPlans;
+public sealed class SandopPlan
+{ public Guid Id {get;set;} public Guid TenantId {get;set;} public Guid LegalEntityId {get;set;} public string Name {get;set;}=""; public string HorizonStart {get;set;}=""; public string HorizonEnd {get;set;}=""; public string DemandPlanId {get;set;}=""; public string DemandPlanVersion {get;set;}=""; public string Status {get;set;}="Draft"; public Guid? CurrentSnapshotId {get;set;} public long Version {get;set;}=1; public bool IsDeleted {get;set;} public DateTimeOffset? DeletedAt {get;set;} public DateTimeOffset CreatedAt {get;set;} public Guid CreatedBy {get;set;} }

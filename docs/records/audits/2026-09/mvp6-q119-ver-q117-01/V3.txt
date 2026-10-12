@@ -1,0 +1,13 @@
+files 14567 added 1 removed 0 changed 10
+ADDED   added initializer	services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/TestAssemblyBsonSetup.cs
+CHANGED csproj reference	services/Diten.HumanCapitalService/src/Diten.HumanCapitalService.Api/Diten.HumanCapitalService.Api.csproj
+CHANGED named (N2 HCM)	services/Diten.HumanCapitalService/src/Diten.HumanCapitalService.Api/Program.cs
+CHANGED named (N2 MDM)	services/Diten.MdmService/src/Diten.MdmService.Api/Security/PlatformServiceTokenValidator.cs
+CHANGED MDM tests (file with 2 changed tests)	services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/PlatformServiceTokenValidatorTests.cs
+CHANGED named (N1)	services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityRestartTests.cs
+CHANGED extra probe	services/Diten.SupplyChainService/tests/loads/failure_probe.py
+CHANGED extra probe	services/Diten.SupplyChainService/tests/loads/restart_probe.py
+CHANGED named (F02)	services/Diten.SupplyChainService/tests/loads/runtime_probe.py
+CHANGED csproj reference	services/Diten.TalentEcosystemService/src/Diten.TalentEcosystemService.Api/Diten.TalentEcosystemService.Api.csproj
+CHANGED named (N2 Talent)	services/Diten.TalentEcosystemService/src/Diten.TalentEcosystemService.Api/Program.cs
+unlisted 0

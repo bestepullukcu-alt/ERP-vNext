@@ -1,0 +1,6 @@
+entitle SHIPMENT-TRACKING-POD 201 {"data":"0db5f3d5-7228-43d2-8c36-3668d98d0085","statusCode":201,"isSuccessful":true,"errors":[],"reason_code":null,"correlation_id":null}
+tenant-activated 200 {"status":"processed"}
+entitle CARRIER-MANAGEMENT 201 {"data":"6276feb5-8956-49f1-9ee9-e8a2948e4d56","statusCode":201,"isSuccessful":true,"errors":[],"reason_code":null,"correlation_id":null}
+tenant-activated 200 {"status":"processed"}
+entitle CLAIMS-MANAGEMENT 201 {"data":"6c5ee090-b0ca-4896-ae8b-4e4c6ba09eea","statusCode":201,"isSuccessful":true,"errors":[],"reason_code":null,"correlation_id":null}
+tenant-activated 200 {"status":"processed"}

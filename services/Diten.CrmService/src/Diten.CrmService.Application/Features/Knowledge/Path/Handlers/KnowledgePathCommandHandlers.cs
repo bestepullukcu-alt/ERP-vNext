@@ -1,5 +1,7 @@
 using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Models;
+using Diten.CrmService.Application.Common.ReferenceValidation;
+using Diten.CrmService.Application.Features.Knowledge.Chain;
 using Diten.CrmService.Application.Features.Knowledge.Path.Commands;
 using Diten.CrmService.Domain.Entities;
 using Diten.CrmService.Domain.Repositories;
@@ -139,10 +141,15 @@ public sealed class CreateKnowledgePathHandler : IRequestHandler<CreateKnowledge
     private readonly ISubjectRepository _subjects;
     private readonly ITopicRepository _topics;
     private readonly IAudienceProfileRepository _profiles;
+    private readonly IConceptChainTemplateRepository? _templates;
+    private readonly IReferenceDataCatalogReader? _catalog;
+    private readonly IChainContextResolver? _chainContext;
 
     public CreateKnowledgePathHandler(
         ITenantContext tenant, IActorContext actor, IKnowledgePathRepository paths,
-        ISubjectRepository subjects, ITopicRepository topics, IAudienceProfileRepository profiles)
+        ISubjectRepository subjects, ITopicRepository topics, IAudienceProfileRepository profiles,
+        IConceptChainTemplateRepository? templates = null, IReferenceDataCatalogReader? catalog = null,
+        IChainContextResolver? chainContext = null)
     {
         _tenant = tenant;
         _actor = actor;
@@ -150,6 +157,9 @@ public sealed class CreateKnowledgePathHandler : IRequestHandler<CreateKnowledge
         _subjects = subjects;
         _topics = topics;
         _profiles = profiles;
+        _templates = templates;
+        _catalog = catalog;
+        _chainContext = chainContext;
     }
 
     public async Task<Response<Guid>> Handle(CreateKnowledgePathCommand request, CancellationToken cancellationToken)
@@ -159,7 +169,48 @@ public sealed class CreateKnowledgePathHandler : IRequestHandler<CreateKnowledge
             return Response<Guid>.Fail("Tenant context is required.", 400);
         }
 
-        var error = KnowledgePathValidation.ValidatePathCode(request.PathCode)
+        // WP-KP-1 — a chain-bound path: chain + country + language together (a chain or a country given ⇒ all three
+        // required). The subject is the chain's, the audience is derived, and the code may be server-issued.
+        var chained = request.ChainTemplateId is not null || !string.IsNullOrWhiteSpace(request.CountryCode);
+        var subjectId = request.SubjectId;
+        var pathCodeInput = request.PathCode;
+        var languageCode = KnowledgePathValidation.Trim(request.LanguageCode);
+        var audienceProfileId = request.AudienceProfileId;
+        KnowledgePathChainRef? chainRef = null;
+        string? countryCode = null;
+        if (chained)
+        {
+            var (template, chainFailure) = await KnowledgePathStudio.BindableChainAsync(
+                _templates, tenantId, request.ChainTemplateId, cancellationToken);
+            if (chainFailure is not null)
+            {
+                return chainFailure.To<Guid>();
+            }
+
+            var context = await ChainContextValidation.ValidateAsync(
+                _catalog, request.CountryCode, request.LanguageCode, cancellationToken);
+            if (!context.IsValid)
+            {
+                return Response<Guid>.Fail(context.Errors!, context.StatusCode);
+            }
+
+            var derived = await (_chainContext ?? new ChainContextResolver(_templates!, _subjects, _profiles))
+                .ResolveAsync(tenantId, template, cancellationToken);
+            subjectId = template!.SubjectId;
+            languageCode = context.Language;
+            countryCode = context.Country;
+            audienceProfileId = derived.SingleAudienceProfileId;
+            chainRef = new KnowledgePathChainRef
+            {
+                ConceptChainTemplateId = template.Id, ChainVersion = template.ChainVersion
+            };
+            if (string.IsNullOrWhiteSpace(pathCodeInput))
+            {
+                pathCodeInput = await KnowledgePathStudio.NewPathCodeAsync(_paths, tenantId, cancellationToken);
+            }
+        }
+
+        var error = KnowledgePathValidation.ValidatePathCode(pathCodeInput)
             ?? KnowledgePathValidation.ValidatePathName(request.PathName)
             ?? KnowledgePathValidation.ValidateObjective(request.Objective)
             ?? KnowledgePathValidation.ValidateDescription(request.Description)
@@ -168,7 +219,7 @@ public sealed class CreateKnowledgePathHandler : IRequestHandler<CreateKnowledge
             ?? KnowledgePathValidation.ValidateSource(request.Source)
             ?? KnowledgeValidation.ValidateEffectiveFrom(request.EffectiveFrom)
             ?? KnowledgeValidation.ValidateEffectiveRange(request.EffectiveFrom, request.EffectiveTo)
-            ?? KnowledgeValidation.ValidateRequiredSubject(request.SubjectId);
+            ?? KnowledgeValidation.ValidateRequiredSubject(subjectId);
         if (error is not null)
         {
             return Response<Guid>.Fail(error, 400);
@@ -181,15 +232,21 @@ public sealed class CreateKnowledgePathHandler : IRequestHandler<CreateKnowledge
             return Response<Guid>.Fail("A path cannot be created as published; use the publish endpoint (D4).", 400);
         }
 
+        // WP-KP-2 — approved (and, on a chain-bound path, review) belong to the MLR workflow, never to a payload.
+        if (status == KnowledgePathStatuses.Approved || (chained && status == KnowledgePathStatuses.Review))
+        {
+            return Review.KnowledgePathReviewRules.ApprovalViaWorkflowOnly<Guid>();
+        }
+
         var referenceError = await KnowledgePathWrite.ValidateReferencesAsync(
-            _subjects, _topics, _profiles, tenantId, request.SubjectId, request.TopicId,
-            request.AudienceProfileId, cancellationToken);
+            _subjects, _topics, _profiles, tenantId, subjectId, request.TopicId,
+            audienceProfileId, cancellationToken);
         if (referenceError is not null)
         {
             return Response<Guid>.Fail(referenceError, 400);
         }
 
-        var code = request.PathCode.Trim();
+        var code = pathCodeInput.Trim();
         var version = request.PathVersion.Trim();
         var existing = await _paths.ListByCodeAsync(tenantId, code, cancellationToken);
         if (existing.Any(p => !p.IsArchived()
@@ -206,17 +263,19 @@ public sealed class CreateKnowledgePathHandler : IRequestHandler<CreateKnowledge
             PathCode = code,
             PathName = request.PathName.Trim(),
             Description = KnowledgePathValidation.Trim(request.Description),
-            SubjectId = request.SubjectId,
+            SubjectId = subjectId,
             TopicId = request.TopicId,
-            AudienceProfileId = request.AudienceProfileId,
+            AudienceProfileId = audienceProfileId,
             Objective = request.Objective.Trim(),
-            LanguageCode = KnowledgePathValidation.Trim(request.LanguageCode),
+            LanguageCode = languageCode,
             PathVersion = version,
             PathStatus = status,
             EffectiveFrom = request.EffectiveFrom,
             EffectiveTo = request.EffectiveTo,
             Source = KnowledgePathSources.Normalize(request.Source),
             StudioOrigin = request.StudioOrigin,
+            ChainTemplate = chainRef,
+            CountryCode = countryCode,
             CreatedAt = now,
             CreatedBy = _actor.ActorName
         };
@@ -277,6 +336,35 @@ public sealed class UpdateKnowledgePathHandler : IRequestHandler<UpdateKnowledge
             return Response<bool>.Fail("The path was modified by another writer; reload and retry.", 409);
         }
 
+        // WP-KP-1 (D-KP-3) — on a chain-bound path country + language are the identity and the subject is the chain's:
+        // a different value is refused, an omitted one is kept; the audience stays the chain-derived one.
+        var languageCode = KnowledgePathValidation.Trim(request.LanguageCode);
+        var audienceProfileId = request.AudienceProfileId;
+        if (path.ChainTemplate is not null)
+        {
+            if ((!string.IsNullOrWhiteSpace(request.CountryCode)
+                 && !string.Equals(request.CountryCode.Trim(), path.CountryCode, StringComparison.OrdinalIgnoreCase))
+                || (languageCode is not null
+                    && !string.Equals(languageCode, path.LanguageCode, StringComparison.OrdinalIgnoreCase)))
+            {
+                return Response<bool>.Fail(new[] { KnowledgePathStudioErrors.PathIdentityLocked,
+                    "The country and language of a chain-bound path are its identity and cannot change (D-KP-3)." }, 409);
+            }
+
+            if (request.SubjectId != path.SubjectId)
+            {
+                return Response<bool>.Fail(new[] { KnowledgePathStudioErrors.ChainSubjectMismatch,
+                    "The subject of a chain-bound path is the chain's subject and cannot change." }, 409);
+            }
+
+            languageCode = path.LanguageCode;
+            audienceProfileId = path.AudienceProfileId;
+        }
+        else if (!string.IsNullOrWhiteSpace(request.CountryCode))
+        {
+            return KnowledgePathStudio.ChainRequired("A country").To<bool>();
+        }
+
         var newStatus = KnowledgePathStatuses.Normalize(request.PathStatus ?? path.PathStatus);
 
         // V-P12 — publish is a separate endpoint; Update may not transition to published.
@@ -284,6 +372,16 @@ public sealed class UpdateKnowledgePathHandler : IRequestHandler<UpdateKnowledge
             && !path.IsPublished())
         {
             return Response<bool>.Fail("Use the publish endpoint to publish a path (V-P12 / D4).", 400);
+        }
+
+        // WP-KP-2 — the V-P12 pattern for approval: nothing becomes approved through Update, and a chain-bound path's
+        // review / approved / draft status follows its MLR round only (a lifecycle close — inactive / archived — stays).
+        if (newStatus != path.PathStatus
+            && (newStatus == KnowledgePathStatuses.Approved
+                || (path.ChainTemplate is not null
+                    && newStatus is not (KnowledgePathStatuses.Inactive or KnowledgePathStatuses.Archived))))
+        {
+            return Review.KnowledgePathReviewRules.ApprovalViaWorkflowOnly<bool>();
         }
 
         var scalarError = KnowledgePathValidation.ValidatePathName(request.PathName)
@@ -307,9 +405,9 @@ public sealed class UpdateKnowledgePathHandler : IRequestHandler<UpdateKnowledge
                 path.PathName == request.PathName.Trim()
                 && path.SubjectId == request.SubjectId
                 && path.TopicId == request.TopicId
-                && path.AudienceProfileId == request.AudienceProfileId
+                && path.AudienceProfileId == audienceProfileId
                 && path.Objective == request.Objective.Trim()
-                && string.Equals(path.LanguageCode, KnowledgePathValidation.Trim(request.LanguageCode))
+                && string.Equals(path.LanguageCode, languageCode)
                 && string.Equals(path.PathVersion, request.PathVersion.Trim(), StringComparison.OrdinalIgnoreCase)
                 && string.Equals(path.Description, KnowledgePathValidation.Trim(request.Description))
                 && string.Equals(path.Source, KnowledgePathSources.Normalize(request.Source), StringComparison.Ordinal)
@@ -329,7 +427,7 @@ public sealed class UpdateKnowledgePathHandler : IRequestHandler<UpdateKnowledge
         {
             var referenceError = await KnowledgePathWrite.ValidateReferencesAsync(
                 _subjects, _topics, _profiles, tenantId, request.SubjectId, request.TopicId,
-                request.AudienceProfileId, cancellationToken);
+                audienceProfileId, cancellationToken);
             if (referenceError is not null)
             {
                 return Response<bool>.Fail(referenceError, 400);
@@ -340,9 +438,9 @@ public sealed class UpdateKnowledgePathHandler : IRequestHandler<UpdateKnowledge
         path.Description = KnowledgePathValidation.Trim(request.Description);
         path.SubjectId = request.SubjectId;
         path.TopicId = request.TopicId;
-        path.AudienceProfileId = request.AudienceProfileId;
+        path.AudienceProfileId = audienceProfileId;
         path.Objective = request.Objective.Trim();
-        path.LanguageCode = KnowledgePathValidation.Trim(request.LanguageCode);
+        path.LanguageCode = languageCode;
         path.PathVersion = request.PathVersion.Trim();
         path.PathStatus = newStatus;
         path.EffectiveFrom = request.EffectiveFrom;
@@ -402,6 +500,13 @@ public sealed class PublishKnowledgePathHandler : IRequestHandler<PublishKnowled
         if (path.IsPublished())
         {
             return Response<bool>.Success(true); // idempotent — already published + frozen
+        }
+
+        // WP-KP-2 — a chain-bound path is never published directly: approval is the MLR workflow, the release is KP-3
+        // (from the approved revision). A legacy (chain-less) path keeps today's behaviour until KP-3 / KP-4.
+        if (path.ChainTemplate is not null)
+        {
+            return Review.KnowledgePathReviewRules.ApprovalViaWorkflowOnly<bool>();
         }
 
         // V-P11 — a published path must carry at least one active, required step.
@@ -530,6 +635,7 @@ public sealed class CreateKnowledgePathVersionHandler
                 Description = b.Description,
                 TargetStepId = b.TargetStepId is { } t && idMap.TryGetValue(t, out var nt) ? nt : b.TargetStepId
             }).ToList(),
+            Arrangement = s.Arrangement is null ? null : KnowledgePathStudio.Copy(s.Arrangement),
             StepStatus = s.StepStatus,
             ArchivedAt = s.ArchivedAt,
             ArchivedBy = s.ArchivedBy,
@@ -556,6 +662,20 @@ public sealed class CreateKnowledgePathVersionHandler
             Steps = copiedSteps,
             SupersedesPathId = source.Id,
             StudioOrigin = request.StudioOrigin,
+            // WP-KP-1 (D-KP-3) — the identity and the pinned chain carry over unchanged (no chain upgrade here); the
+            // placed claims travel with the steps.
+            ChainTemplate = source.ChainTemplate is null
+                ? null
+                : new KnowledgePathChainRef
+                {
+                    ConceptChainTemplateId = source.ChainTemplate.ConceptChainTemplateId,
+                    ChainVersion = source.ChainTemplate.ChainVersion
+                },
+            CountryCode = source.CountryCode,
+            Claims = source.Claims.Select(c => new KnowledgePathClaim
+            {
+                ClaimId = c.ClaimId, ClaimCode = c.ClaimCode, Arrangement = KnowledgePathStudio.Copy(c.Arrangement)
+            }).ToList(),
             StepSetFrozenAt = null,
             PublishedAt = null,
             PublishedBy = null,

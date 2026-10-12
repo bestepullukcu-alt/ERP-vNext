@@ -15,9 +15,10 @@
     A page that wants its OWN wording still wins — dt-defaults reads `window.L10n` first, key by key.
 *@
 @{
-    // BL-515: the list's own failure sentences ride the same payload (DtLoadFailed, DtLoadForbidden, DtRetry).
+    // BL-515: the list's own failure sentences ride the same payload (DtLoadFailed, DtLoadForbidden, DtRetry);
+    // main (2026-10): the row-detail labels (Details, Close).
     string[] dtKeys = ["DtInfo", "DtInfoEmpty", "DtInfoFiltered", "DtEmptyTable", "DtNoRecords", "DtZeroRecords",
-        "DtLoadFailed", "DtLoadForbidden", "DtRetry"];
+        "DtLoadFailed", "DtLoadForbidden", "DtRetry", "Details", "Close"];
     var dtPayload = new Dictionary<string, string>();
     foreach (var key in dtKeys)
     {

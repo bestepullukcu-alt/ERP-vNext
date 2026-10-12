@@ -1,0 +1,142 @@
+{
+  "phase": "crafted",
+  "startedAt": "2026-09-26T21:18:05.148Z",
+  "web": "http://127.0.0.1:5701",
+  "playwright": "1.59.1",
+  "cases": {
+    "CU-03-envelope-absent-fields": {
+      "result": "PASS",
+      "rows": 2,
+      "notProvidedCount": 2,
+      "actionsOnRowWithoutClaimId": 0,
+      "malformed": {
+        "errorStateVisible": true,
+        "tableHidden": true,
+        "skeletonHidden": true
+      }
+    },
+    "CU-04-exact-amount": {
+      "result": "PASS",
+      "cells": [
+        {
+          "text": "999999999999…(80 chars)",
+          "bdiDir": "ltr"
+        },
+        {
+          "text": "000250.00",
+          "bdiDir": "ltr"
+        }
+      ],
+      "long80Length": 80
+    },
+    "CU-05-skeleton-empty-error": {
+      "result": "FAIL",
+      "empty": {
+        "tableVisible": true,
+        "errorVisible": false,
+        "skeletonVisible": false,
+        "text": "No data available in table"
+      },
+      "error503": {
+        "tableVisible": false,
+        "errorVisible": true,
+        "skeletonVisible": false,
+        "message": "Claims are temporarily unavailable. The outcome is not confirmed; try the same request again.",
+        "reference": "11111111-2222-4333-8444-555555555555",
+        "retry": true
+      },
+      "skeleton": {
+        "skeletonVisibleWhileLoading": false,
+        "tableVisibleWhileLoading": false,
+        "skeletonHiddenAfter": true
+      }
+    },
+    "CU-13-resolve-stale-guard": {
+      "result": "PASS",
+      "responseOrder": [
+        {
+          "k": 2,
+          "url": "58bc000b-90c2-496b-9a9f-bf68e9e5feb7",
+          "at": "2026-09-26T21:18:24.352Z"
+        },
+        {
+          "k": 1,
+          "url": "54ab51e8-7dc1-4332-b0fa-75966adff5da",
+          "at": "2026-09-26T21:18:26.788Z"
+        }
+      ],
+      "inputAfter": "58bc000b-90c2-496b-9a9f-bf68e9e5feb7",
+      "shipmentNumberShown": "SHP-58bc000b90c2496b9a9fbf68e9e5feb7",
+      "note": "the delayed first response (SEED) arrived last and did not replace the DISPATCHED result"
+    }
+  },
+  "png": [
+    {
+      "name": "cu03-absent-fields-en.png",
+      "sha256": "bab163682c29ec5a7560d4326bed471a5b9893d2e553276612c06fbca8625a52",
+      "url": "http://127.0.0.1:5701/SupplyChain/Claims",
+      "capturedAt": "2026-09-26T21:18:08.087Z",
+      "phase": "crafted",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu03-malformed-envelope-en.png",
+      "sha256": "b3ee71da88ca411169a4a9d69f873308dcf5e0126fbf950f0f5a94631f842c1f",
+      "url": "http://127.0.0.1:5701/SupplyChain/Claims",
+      "capturedAt": "2026-09-26T21:18:10.445Z",
+      "phase": "crafted",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu04-exact-amount-en.png",
+      "sha256": "18b04ff71e86b46a68a6ef746c0e7ef684fca9f361f2ff9eba557c0cabae2dd9",
+      "url": "http://127.0.0.1:5701/SupplyChain/Claims",
+      "capturedAt": "2026-09-26T21:18:12.832Z",
+      "phase": "crafted",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu05-empty-en.png",
+      "sha256": "6fb057b2c384fcda833ed41fecd88ed696f7010e47a37e7faaaa836c9058ab76",
+      "url": "http://127.0.0.1:5701/SupplyChain/Claims",
+      "capturedAt": "2026-09-26T21:18:15.280Z",
+      "phase": "crafted",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu05-error-503-en.png",
+      "sha256": "083f8878b92174fa2bd72e3fc4ed8a2272b7529fbf3abde9282cf23a2a5e5661",
+      "url": "http://127.0.0.1:5701/SupplyChain/Claims",
+      "capturedAt": "2026-09-26T21:18:17.645Z",
+      "phase": "crafted",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu05-skeleton-en.png",
+      "sha256": "3f34982c1f2720584225a270df6d592c78877367c24ce9fffdd53b9e7d44c55b",
+      "url": "http://127.0.0.1:5701/SupplyChain/Claims",
+      "capturedAt": "2026-09-26T21:18:19.259Z",
+      "phase": "crafted",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu13-stale-resolve-en.png",
+      "sha256": "d910ea2132f6a672b19c117b8412ec0122b454f9d284fa7d2af3f32134e7b823",
+      "url": "http://127.0.0.1:5701/SupplyChain/Claims",
+      "capturedAt": "2026-09-26T21:18:28.501Z",
+      "phase": "crafted",
+      "tool": "playwright 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [
+    {
+      "tag": "cu05b",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    }
+  ],
+  "toasts": [],
+  "dialogs": [],
+  "rootLeak": [],
+  "endedAt": "2026-09-26T21:18:28.526Z"
+}

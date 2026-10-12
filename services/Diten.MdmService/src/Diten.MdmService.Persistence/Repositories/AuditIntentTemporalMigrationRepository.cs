@@ -32,15 +32,23 @@ public sealed class AuditIntentTemporalMigrationRepository : IAuditIntentTempora
     private readonly TimeProvider _clock;
     private readonly IAuditIntentTemporalMigrationFailureInjector? _failureInjector;
 
+    public AuditIntentTemporalMigrationRepository(IMongoDatabase database, TimeProvider clock)
+        : this(database, clock, [])
+    {
+    }
+
+    // The failure injector is a test seam. It is a collection, not an optional "= null" parameter: production registers
+    // none, so the container hands an empty one, and main's CompositionRootGuard (Q366) never meets an optional
+    // Diten.* dependency that silently resolves to null (WP-CT-LANE-MAIN-SYNC-01 FIX1, the same shape as item A).
     public AuditIntentTemporalMigrationRepository(
         IMongoDatabase database,
         TimeProvider clock,
-        IAuditIntentTemporalMigrationFailureInjector? failureInjector = null)
+        IEnumerable<IAuditIntentTemporalMigrationFailureInjector> failureInjectors)
     {
         _database = database;
         _states = database.GetCollection<AuditIntentTemporalMigrationState>(StateCollectionName);
         _clock = clock;
-        _failureInjector = failureInjector;
+        _failureInjector = failureInjectors.SingleOrDefault();
     }
 
     public async Task<AuditIntentTemporalMigrationState?> GetValidatedStateAsync(

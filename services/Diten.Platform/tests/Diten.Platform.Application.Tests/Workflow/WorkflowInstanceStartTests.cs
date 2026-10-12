@@ -331,6 +331,7 @@ public sealed class WorkflowInstanceStartTests
             logs,
             tenantContext,
             new FakeCurrentUserContext(),
+            sequentialWritesForTests: [],
             transactions: new SequentialTestTransactionExecutor());
         return new TestFixture(tenantContext, templates, versions, instances, tasks, snapshots, logs, handler);
     }

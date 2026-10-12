@@ -1,0 +1,3 @@
+attempt	status	reason	evidence
+sandboxed-runtime-p53	DISCARDED	CODEX_SANDBOX_NETWORK_DISABLED=1 prevented Mongo/socket startup; five processes produced zero-byte logs and no listeners	initial PIDs 81701/81762/82067/82138/82453 were terminated before accepted run
+

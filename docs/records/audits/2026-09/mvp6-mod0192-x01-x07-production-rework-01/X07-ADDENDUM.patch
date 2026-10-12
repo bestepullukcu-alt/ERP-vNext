@@ -1,0 +1,124 @@
+--- a/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/CapacityPlans/CapacityLeaseStore.cs
++++ b/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/CapacityPlans/CapacityLeaseStore.cs
+@@ -122,14 +122,25 @@
+         {
+             var persisted=await evaluations.Find(Scope(scope)&Builders<CapacityEvaluation>.Filter.Eq(x=>x.Id,id)).FirstOrDefaultAsync(ct);
+             if(persisted is null || persisted.Status!=status || persisted.CompletedAt is null) return false;
+-            var eventFilter=new BsonDocument{{"TenantId",scope.TenantId.ToString()},{"LegalEntityId",scope.LegalEntityId.ToString()},
+-                {"AggregateId",id.ToString()},{"EventType","capacity.evaluation.completed.v1"},{"EvaluationStatus",status},
+-                {"Status","Pending"},{"CorrelationId",persisted.CorrelationId.ToString()}};
+-            var auditFilter=new BsonDocument{{"TenantId",scope.TenantId.ToString()},{"LegalEntityId",scope.LegalEntityId.ToString()},
+-                {"TargetId",id.ToString()},{"Operation","terminalCapacityEvaluation"},{"Status",status},
+-                {"CorrelationId",persisted.CorrelationId.ToString()}};
+-            return await outbox.CountDocumentsAsync(eventFilter,cancellationToken:ct)==1 &&
+-                await audit.CountDocumentsAsync(auditFilter,cancellationToken:ct)==1;
++            var eventScope=new BsonDocument{{"TenantId",scope.TenantId.ToString()},{"LegalEntityId",scope.LegalEntityId.ToString()},
++                {"AggregateId",id.ToString()},{"EventType","capacity.evaluation.completed.v1"}};
++            var eventFilter=new BsonDocument(eventScope){{"EvaluationStatus",status},{"Status","Pending"},
++                {"CorrelationId",persisted.CorrelationId.ToString()},{"CausationId",persisted.CausationId.ToString()},
++                {"OccurredAt",persisted.CompletedAt.Value},{"ContractVersion","v1"},
++                {"Payload",new BsonDocument{{"capacityPlanId",persisted.CapacityPlanId.ToString()},
++                    {"scenarioId",persisted.ScenarioId.ToString()},{"evaluationId",id.ToString()},{"status",status}}}};
++            var auditScope=new BsonDocument{{"TenantId",scope.TenantId.ToString()},{"LegalEntityId",scope.LegalEntityId.ToString()},
++                {"TargetId",id.ToString()},{"Operation","terminalCapacityEvaluation"}};
++            var auditFilter=new BsonDocument(auditScope){{"Status",status},
++                {"CorrelationId",persisted.CorrelationId.ToString()},{"OccurredAt",persisted.CompletedAt.Value}};
++            var slotFilter=new BsonDocument{{"TenantId",scope.TenantId.ToString()},{"LegalEntityId",scope.LegalEntityId.ToString()},
++                {"PlanId",persisted.CapacityPlanId.ToString()},{"ScenarioId",persisted.ScenarioId.ToString()},
++                {"EvaluationId",id.ToString()}};
++            return await outbox.CountDocumentsAsync(eventScope,cancellationToken:ct)==1 &&
++                await outbox.CountDocumentsAsync(eventFilter,cancellationToken:ct)==1 &&
++                await audit.CountDocumentsAsync(auditScope,cancellationToken:ct)==1 &&
++                await audit.CountDocumentsAsync(auditFilter,cancellationToken:ct)==1 &&
++                await slots.CountDocumentsAsync(slotFilter,cancellationToken:ct)==0;
+         }
+         catch(Exception ex) when(ex is MongoException or TimeoutException)
+         {
+--- a/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs
++++ b/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs
+@@ -149,6 +149,85 @@
+         await db.GetCollection<BsonDocument>(collection).CountDocumentsAsync(filter??FilterDefinition<BsonDocument>.Empty);
+     private static BsonDocument Target(Guid id)=>new("TargetId",id.ToString());
+     private static BsonDocument Event(Guid id)=>new("AggregateId",id.ToString());
++    private static async Task<bool> Reconcile(CapacityLeaseStore store,Guid id)
++    {
++        var method=typeof(CapacityLeaseStore).GetMethod("ReconcileTerminalAsync",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic);
++        Assert.NotNull(method);
++        return await (Task<bool>)method.Invoke(store,[Scope,id,"Completed",CancellationToken.None])!;
++    }
++
++    [Theory]
++    [InlineData("event-missing")]
++    [InlineData("event-status")]
++    [InlineData("event-correlation")]
++    [InlineData("event-causation")]
++    [InlineData("event-time")]
++    [InlineData("event-payload")]
++    [InlineData("event-duplicate")]
++    [InlineData("audit-missing")]
++    [InlineData("audit-status")]
++    [InlineData("audit-correlation")]
++    [InlineData("audit-time")]
++    [InlineData("audit-duplicate")]
++    [InlineData("slot-not-released")]
++    public async Task X07_Scoped_terminal_reconciliation_rejects_inexact_effects(string mutant)
++    {
++        var db=await Reset("mod192-x07-exact-"+mutant);
++        var (store,lease,id)=await TerminalSetup(db);
++        Assert.True(await store.TerminalAsync(Scope,id,lease.Version,lease.Fence,"Completed",[],false,CancellationToken.None));
++        Assert.True(await Reconcile(store,id));
++        var events=db.GetCollection<BsonDocument>("capacity_outbox");
++        var audits=db.GetCollection<BsonDocument>("capacity_audit");
++        var eventRow=await events.Find(Event(id)).SingleAsync();
++        var auditRow=await audits.Find(Target(id)).SingleAsync();
++        switch(mutant)
++        {
++            case "event-missing": await events.DeleteOneAsync(Event(id)); break;
++            case "event-status": await events.UpdateOneAsync(Event(id),Builders<BsonDocument>.Update.Set("Status","Sent")); break;
++            case "event-correlation": await events.UpdateOneAsync(Event(id),Builders<BsonDocument>.Update.Set("CorrelationId",Guid.NewGuid().ToString())); break;
++            case "event-causation": await events.UpdateOneAsync(Event(id),Builders<BsonDocument>.Update.Set("CausationId",Guid.NewGuid().ToString())); break;
++            case "event-time": await events.UpdateOneAsync(Event(id),Builders<BsonDocument>.Update.Set("OccurredAt",DateTime.UtcNow.AddMinutes(1))); break;
++            case "event-payload": await events.UpdateOneAsync(Event(id),Builders<BsonDocument>.Update.Set("Payload.status","Failed")); break;
++            // A corrupted fixture must bypass the unique terminal-effect index explicitly.
++            // The production index remains a separate first line of defense.
++            case "event-duplicate": await events.Indexes.DropOneAsync("ux_capacity_terminal_effect");
++                eventRow["_id"]=Guid.NewGuid().ToString();await events.InsertOneAsync(eventRow); break;
++            case "audit-missing": await audits.DeleteOneAsync(Target(id)); break;
++            case "audit-status": await audits.UpdateOneAsync(Target(id),Builders<BsonDocument>.Update.Set("Status","Failed")); break;
++            case "audit-correlation": await audits.UpdateOneAsync(Target(id),Builders<BsonDocument>.Update.Set("CorrelationId",Guid.NewGuid().ToString())); break;
++            case "audit-time": await audits.UpdateOneAsync(Target(id),Builders<BsonDocument>.Update.Set("OccurredAt",DateTime.UtcNow.AddMinutes(1))); break;
++            case "audit-duplicate": auditRow["_id"]=Guid.NewGuid().ToString();await audits.InsertOneAsync(auditRow); break;
++            case "slot-not-released": await db.GetCollection<BsonDocument>("capacity_active_slots").InsertOneAsync(new BsonDocument {
++                {"_id",Guid.NewGuid().ToString()},{"TenantId",Scope.TenantId.ToString()},{"LegalEntityId",Scope.LegalEntityId.ToString()},
++                {"PlanId",lease.CapacityPlanId.ToString()},{"ScenarioId",lease.ScenarioId.ToString()},{"EvaluationId",id.ToString()}});break;
++        }
++        Assert.False(await Reconcile(store,id));
++    }
++
++    [Fact]
++    public async Task X07_Scoped_reconciliation_read_failure_is_not_success()
++    {
++        const string app="mod192-x07-read-failure";var db=await Reset(app);
++        var (store,lease,id)=await TerminalSetup(db);
++        Assert.True(await store.TerminalAsync(Scope,id,lease.Version,lease.Fence,"Completed",[],false,CancellationToken.None));
++        var before=(await Fail(app,"find",4)).GetValue("count",0).ToInt32();
++        try {await Assert.ThrowsAsync<InvalidOperationException>(()=>Reconcile(store,id));}
++        finally {var hits=await StopFail()-before;output.WriteLine($"X07 reconciliation read failure hits={hits}");Assert.True(hits>=1);}
++    }
++
++    [Fact]
++    public async Task X01_Unknown_commit_without_receipt_stays_unresolved()
++    {
++        const string app="mod192-x01-unknown";var db=await Reset(app);
++        var (repo,evaluation,planId,scenarioId)=await EvaluationSetup(db);
++        var before=(await Fail(app,"commitTransaction",2,unknown:true)).GetValue("count",0).ToInt32();
++        CapacityMutation<CapacityEvaluation> result;
++        try {result=await repo.EvaluateAsync(Scope,planId,scenarioId,"x01-unknown-key","x01-unknown-fp",evaluation.CorrelationId,evaluation,CancellationToken.None);}
++        finally {var hits=await StopFail()-before;output.WriteLine($"X01 uncertain commit hits={hits}");Assert.True(hits>=1);}
++        Assert.Equal(503,result.StatusCode);Assert.Equal("COMMIT_RESULT_UNRESOLVED",result.ErrorCode);
++        Assert.Equal(0,await Count(db,"capacity_evaluations"));Assert.Equal(0,await Count(db,"capacity_active_slots"));
++        Assert.Equal(0,await Count(db,"capacity_receipts"));Assert.Equal(0,await Count(db,"capacity_audit"));Assert.Equal(0,await Count(db,"capacity_outbox"));
++    }
+ 
+     [Fact]
+     public async Task X01_Accepted_precommit_failure_has_no_partial_writes_then_same_key_recovers()

@@ -1,6 +1,7 @@
 using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Models;
 using Diten.CrmService.Application.Features.CyclePeriod.Queries;
+using Diten.CrmService.Application.Features.CyclePeriod.Read;
 using Diten.CrmService.Application.Features.CyclePeriod.Rules;
 using Diten.CrmService.Domain.Entities;
 using Diten.CrmService.Domain.Repositories;
@@ -23,11 +24,16 @@ public sealed class GetCyclePeriodListHandler : IRequestHandler<GetCyclePeriodLi
 {
     private readonly ITenantContext _tenant;
     private readonly ICyclePeriodRepository _periods;
+    private readonly ICyclePeriodUsageReader? _usage;
 
-    public GetCyclePeriodListHandler(ITenantContext tenant, ICyclePeriodRepository periods)
+    /// <param name="usage">WP-CYC-UI-1 — the batch usage read for the row summaries. Optional: without it (or when the
+    /// read fails) the summary fields stay null — "unknown", never a fabricated 0.</param>
+    public GetCyclePeriodListHandler(
+        ITenantContext tenant, ICyclePeriodRepository periods, ICyclePeriodUsageReader? usage = null)
     {
         _tenant = tenant;
         _periods = periods;
+        _usage = usage;
     }
 
     public async Task<Response<CyclePeriodListDto>> Handle(
@@ -123,6 +129,40 @@ public sealed class GetCyclePeriodListHandler : IRequestHandler<GetCyclePeriodLi
             .Select(CyclePeriodMapper.ToListItem)
             .ToList();
 
+        items = await WithUsageAsync(tenantId, items, cancellationToken);
+
         return Response<CyclePeriodListDto>.Success(new CyclePeriodListDto(items, items.Count));
+    }
+
+    /// <summary>WP-CYC-UI-1 — one usage read for the whole page (never one per row). A failed read leaves the summary
+    /// null: the grid still loads, and "unknown" is not shown as "none".</summary>
+    private async Task<List<CyclePeriodListItemDto>> WithUsageAsync(
+        Guid tenantId, List<CyclePeriodListItemDto> items, CancellationToken cancellationToken)
+    {
+        if (_usage is null || items.Count == 0)
+        {
+            return items;
+        }
+
+        CyclePeriodUsageSnapshot snapshot;
+        try
+        {
+            snapshot = await _usage.ReadAsync(tenantId, items.Select(i => i.CyclePeriodId).ToList(), cancellationToken);
+        }
+        catch (Exception) when (!cancellationToken.IsCancellationRequested)
+        {
+            return items;
+        }
+
+        return items.Select(i =>
+        {
+            var summary = CyclePeriodUsageRules.Summarize(i.CyclePeriodId, snapshot);
+            return i with
+            {
+                HasCapacity = summary.HasCapacity,
+                CampaignCount = summary.CampaignCount,
+                PlannedVisitCount = summary.PlannedVisitCount
+            };
+        }).ToList();
     }
 }

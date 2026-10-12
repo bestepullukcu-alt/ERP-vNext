@@ -1,0 +1,5 @@
+docs(records): add MVP6 records: Carrier / MOD-0184 (part a)
+
+30 folders/items, first '(files at month level)', last 'mvp6-carrier-ui-quality-close-01'.
+Work packages: as named in each folder.
+446 files from pathspec/R2a.txt (Q230 commit plan).

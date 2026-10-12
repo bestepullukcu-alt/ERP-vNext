@@ -1,0 +1,8 @@
+gate	required_state	observed_state	verdict	exact_evidence
+NumericDate owner authority	Approved exact bytes	OWNER-DECISION-TEXT.md says UNAPPROVED	BLOCKED	patch 180143bccc08ad3316eb89f79a3e9386da2ce881b9a4b02f00a725b0be27ef4b; decision file SHA 395c3746db4c88aac94964b447c112181c2508573fde04d895bb412cbb19f923
+NumericDate writer-complete	Applied final 22-path source with writer-complete	Only candidate-ready package exists	BLOCKED	candidate final manifest b9713185aba02bf325a9149b37a8cc6ffe3b1dd0e979febdaa773946ae9b1731
+Independent Auth successor VER	PASS after writer completion	Newest independent verdict REWORK; Carrier handoff HELD	BLOCKED	mvp6-carrier-auth-token-rework-ver-02/SOP-22-VER.md SHA 81372008d538a19c6a5d5d1bd41b9dd5f7ee00e4f8f04d90f4c7eac84b2657e2
+Candidate runtime matrix	Not sufficient as start authority	49/49 candidate evidence exists	N/A	mvp6-carrier-numericdate-rework-01 candidate-only E2 evidence
+Final Carrier UI	Exact manifest 3b7086f0...	21/21 fresh worktree rehash	PASS	FINAL-UI-SOURCE.tsv SHA 3b7086f0cc839c33f0753076e732aa436b9a8e5cd186f1484f2b0225364d033c
+Native runtime environment	Native .NET 8 available	SDK 8.0.417/runtime 8.0.23 documented	READY_NOT_USED	mvp6-carrier-ver-environment-close-01
+Overall start gate	All mandatory Auth inputs PASS	Writer-complete and later independent PASS absent	BLOCKED	No process or browser launch permitted

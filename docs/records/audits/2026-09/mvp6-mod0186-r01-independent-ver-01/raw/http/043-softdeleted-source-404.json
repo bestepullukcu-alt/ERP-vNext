@@ -1,0 +1,34 @@
+{
+  "name": "softdeleted-source-404",
+  "request": {
+    "bodyUtf8": "{\"shipmentId\":\"bb07aa60-43e7-4233-b42e-c0a4ed5b2f20\",\"reasonCode\":\"DAMAGED\",\"lines\":[{\"shipmentLineNumber\":\"1\",\"quantity\":\"1\",\"uomId\":\"EA\"}]}",
+    "headers": {
+      "Authorization": "Bearer <redacted>",
+      "Content-Type": "application/json",
+      "Idempotency-Key": "soft-source",
+      "X-Correlation-Id": "2bab0501-c71e-4ad3-a469-3ef731239d18",
+      "X-Legal-Entity-Id": "22222222-2222-4222-8222-222222222222",
+      "X-Tenant-Id": "11111111-1111-4111-8111-111111111111"
+    },
+    "method": "POST",
+    "path": "/api/shipment-bundle/returns"
+  },
+  "response": {
+    "body": {
+      "contractVersion": "v1",
+      "error": {
+        "code": "SHIPMENT_NOT_FOUND",
+        "correlationId": "2bab0501-c71e-4ad3-a469-3ef731239d18",
+        "message": "SHIPMENT NOT FOUND"
+      }
+    },
+    "headers": {
+      "Content-Type": "application/json; charset=utf-8",
+      "Date": "Mon, 21 Sep 2026 17:05:34 GMT",
+      "Server": "Kestrel",
+      "Transfer-Encoding": "chunked",
+      "X-Correlation-Id": "2bab0501-c71e-4ad3-a469-3ef731239d18"
+    },
+    "status": 404
+  }
+}

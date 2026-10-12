@@ -1,0 +1,18 @@
+# PROPOSED ONLY — apply to execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md after owner/CT gates.
+# This patch is intentionally held; it does not alter the repository pack.
+# Proposed frontmatter/status delta:
+@@
+-status: draft
+-status_note: "MVP6-MOD0186-PREP-02 v1.0: owner decision set D186-01..06 prepared; amendment and Phase1.5 OPEN; DEV/VER HELD."
++status: draft
++status_note: "FINAL-PACK-DELTA-01 proposal: Returns R2 rework and Root R2 producer evidence are accepted only in bounded evidence scope; final contract/annex publication, consumer consent, Phase 1.5 and CT pack promotion remain open; DEV/VER HELD."
+@@
+-## 28. PREP-02 v1.0 — current authority and one owner decision set
++## 28. PREP-02 v1.0 — current authority and one owner decision set
+@@
++# FINAL-PACK-DELTA-01 proposed binding (not approved)
++# Final-release proposal inputs: mvp6-combined-final-release-pack-01 and VER-01.
++# Candidate/proposal only; no canonical publication or consumer uptake is implied.
++# Preserve D186-01..06, Root/Returns UUID value semantics, manual Received,
++# opaque Inventory reference, exact error/replay matrix and Pending-only outbox.
++# Keep status draft until owner/CT publishes the exact Returns annex and binds its hash.

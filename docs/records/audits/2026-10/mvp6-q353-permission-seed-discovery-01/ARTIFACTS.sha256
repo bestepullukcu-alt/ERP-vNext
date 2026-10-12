@@ -1,0 +1,15 @@
+0b92c2e35b896b046a5e2f346b8e08d3ae8f1d33280b5dc962d425a512b34a3c  docs/records/audits/2026-10/mvp6-q353-permission-seed-discovery-01/REPORT.md
+91f7c5bd66c23a95dbcd97878857bc33a02cb0e5c65c8aafff33cfb083cc6bdb  docs/records/audits/2026-10/mvp6-q353-permission-seed-discovery-01/evidence/auth-run1-supplychain-lines.log
+01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b  docs/records/audits/2026-10/mvp6-q353-permission-seed-discovery-01/evidence/auth-run2-supplychain-lines.log
+f900262bc57c88a14f7d81fdfd229a186c98961dbff010765c5459dab8637188  docs/records/audits/2026-10/mvp6-q353-permission-seed-discovery-01/evidence/db/db-auth-after.txt
+e2742b8d06bb59ca3999b5dd82790ed98aa15cf3a0b2b4b39a9cfa5d73051de4  docs/records/audits/2026-10/mvp6-q353-permission-seed-discovery-01/evidence/db/db-auth-before.txt
+3685bf6e02db2fe4fc6ba5c86612138e164f78242d8ac9da5aa4e3278c3d78c4  docs/records/audits/2026-10/mvp6-q353-permission-seed-discovery-01/evidence/db/db-platform-after.txt
+a5bebeab9b706527251de75d8cfe11af2cc1f21af446f17fbdcfa4659ea7a5d9  docs/records/audits/2026-10/mvp6-q353-permission-seed-discovery-01/evidence/db/db-platform-module.txt
+ace51a16cb996a40f622805e990f37a26627ed1b6a5f867be88f3b819e934e33  docs/records/audits/2026-10/mvp6-q353-permission-seed-discovery-01/evidence/db/db-roles-after-auth-restart.txt
+86684cb25c383dda3377771f59ae2669df1c0f338e5dd9f778223f1542afb547  docs/records/audits/2026-10/mvp6-q353-permission-seed-discovery-01/evidence/db/db-roles-after-sync.txt
+adb68fd0ee4c0328c2a561136e39b18d060fe3c10a7f0d07989a9d0f70e0ff21  docs/records/audits/2026-10/mvp6-q353-permission-seed-discovery-01/evidence/platform-shipment-lines.log
+c38d8e391b9a6e2f3d0ccca059d36bbd19ed3d65a495d378716936a183c6a011  docs/records/audits/2026-10/mvp6-q353-permission-seed-discovery-01/evidence/queries/q-auth.js
+0fed34ed26c68b73267c40fc0ba268d23323bfffa4cabccb7cdad65e40ec5fee  docs/records/audits/2026-10/mvp6-q353-permission-seed-discovery-01/evidence/queries/q-platform.js
+9c1b308c920c43c2704e734fdc3392d56a13add8adaa9feb17ee4466c2edf146  docs/records/audits/2026-10/mvp6-q353-permission-seed-discovery-01/evidence/queries/q-roles.js
+41a879306007dc6f03dd1484b528a68dfa40d8d0a327a186bc8a86498269f232  docs/records/audits/2026-10/mvp6-q353-permission-seed-discovery-01/evidence/queries/start.sh
+da39aa2192c4dd4f321f11a37eb2daa4082972d1cc9abfb71bbc26a6d32f05dd  docs/records/audits/2026-10/mvp6-q353-permission-seed-discovery-01/evidence/supplychain-registration.log

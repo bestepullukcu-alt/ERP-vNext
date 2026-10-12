@@ -1,0 +1,91 @@
+--- /private/tmp/mvp6-shipment-a12-red-src/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/details.js	2026-09-24 20:32:26
++++ /private/tmp/mvp6-shipment-a12-rework-src/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/details.js	2026-09-25 21:16:14
+@@ -19,6 +19,30 @@
+     const date = (value) => value ? new Intl.DateTimeFormat(document.documentElement.lang || 'en', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) : L.unavailable;
+     const readPermissions = () => { try { permissions = Object.assign(permissions, JSON.parse(document.getElementById('shipment-permissions')?.textContent || '{}')); } catch (_) { } };
+     const showError = (message, id = 'detailsAlert') => { const el = document.getElementById(id); el.textContent = message; el.classList.remove('d-none'); el.focus?.(); };
++    let loadVersion = 0;
++    const setDetailSurfaceVisible = (visible) => {
++        const elements = [
++            document.querySelector('#shipment-details .row.g-6'),
++            document.getElementById('shipmentActions'),
++            document.getElementById('offcanvasTransition'),
++            document.getElementById('offcanvasPod')
++        ].filter(Boolean);
++        elements.forEach((element) => {
++            element.hidden = !visible;
++            element.toggleAttribute('inert', !visible);
++            element.setAttribute('aria-hidden', visible ? 'false' : 'true');
++        });
++        if (!visible) {
++            document.querySelectorAll('#offcanvasTransition, #offcanvasPod').forEach((element) => window.bootstrap?.Offcanvas.getInstance(element)?.hide());
++            document.getElementById('shipmentActions')?.replaceChildren();
++        }
++    };
++    const renderSafeNotFound = (message) => {
++        shipment = null;
++        text('shipmentNumber', L.notFound);
++        setDetailSurfaceVisible(false);
++        showError(message);
++    };
+     const error = async (response, alertId) => {
+         let body = null; try { body = await response.json(); } catch (_) { }
+         const code = body?.error?.code || '';
+@@ -61,14 +85,28 @@
+         }
+     };
+     const render = (data) => {
++        setDetailSurfaceVisible(true);
++        document.getElementById('detailsAlert')?.classList.add('d-none');
+         shipment = data; text('shipmentNumber', data.shipmentNumber); text('detailStatus', data.status);
+         text('detailSource', data.sourceDocumentId); text('detailWarehouse', data.warehouseReferenceId); text('detailShipTo', data.shipToReference);
+         text('detailRoot', data.lifecycleCorrelationId); text('detailPlannedShip', date(data.plannedShipAt)); text('detailPlannedDeliver', date(data.plannedDeliverAt));
+         text('detailCarrier', data.carrierId); text('detailLoad', data.loadId); renderLines(data.lines); renderPod(data.pod); renderActions();
+     };
+     const load = async () => {
++        const version = ++loadVersion;
+         try { const response = await fetch(`/SupplyChain/Shipments/api/${shipmentId}`, { credentials: 'same-origin', headers: { 'X-Correlation-Id': uuid() } });
+-            if (!response.ok) { await error(response); return; } render(await response.json()); }
++            if (version !== loadVersion) return;
++            if (!response.ok) {
++                let body = null; try { body = await response.clone().json(); } catch (_) { }
++                const code = body?.error?.code || '';
++                if (response.status === 404 || code === 'SHIPMENT_NOT_FOUND') {
++                    const correlation = body?.error?.correlationId || response.headers.get('X-Correlation-Id');
++                    renderSafeNotFound(`${L.notFound}${correlation ? ` ${L.supportReference}: ${correlation}` : ''}`);
++                    return;
++                }
++                await error(response); return;
++            }
++            render(await response.json()); }
+         catch (_) { showError(L.persistenceUnavailable); }
+     };
+     const send = async (kind, payload, form, alertId) => {
+--- /private/tmp/mvp6-shipment-a12-red-src/frontend/Diten.Web.Tests/JavaScript/ShipmentDetailActionTests.cs	2026-09-24 20:32:26
++++ /private/tmp/mvp6-shipment-a12-rework-src/frontend/Diten.Web.Tests/JavaScript/ShipmentDetailActionTests.cs	2026-09-25 21:16:26
+@@ -11,6 +11,25 @@
+     [Fact] public void UsesSharedModalAndDoesNotUploadOrStoreSecrets() { Assert.Contains("window.showConfirm?.", _details); Assert.Contains("window.showToast?.", _details); Assert.DoesNotContain("Swal.fire", _details); Assert.DoesNotContain("window.confirm", _details); Assert.DoesNotContain("FormData", _details); Assert.DoesNotContain("localStorage", _details + _create); Assert.DoesNotContain(":5061", _details + _create); }
+     [Fact] public void CorrelationAndLifecycleRootRemainSeparate() { Assert.Contains("data.lifecycleCorrelationId", _details); Assert.Contains("body?.error?.correlationId", _details); Assert.DoesNotContain("lifecycleCorrelationId ||", _details); }
+     [Fact] public void MutationsUseOnlyValidatedAuthoritativeRoot() { Assert.Contains("const authoritativeRoot", _details); Assert.Contains("uuidPattern.test(shipment.lifecycleCorrelationId)", _details); Assert.Contains("if (!correlationId)", _details); Assert.Contains("'X-Correlation-Id': intent.correlationId", _details); Assert.DoesNotContain("'X-Correlation-Id': uuid() }, body: intent.body", _details); }
++    [Fact] public void SafeNotFoundHidesShipmentSurfacesAndActions()
++    {
++        Assert.Contains("const renderSafeNotFound", _details);
++        Assert.Contains("document.querySelector('#shipment-details .row.g-6')", _details);
++        Assert.Contains("document.getElementById('shipmentActions')", _details);
++        Assert.Contains("document.getElementById('offcanvasTransition')", _details);
++        Assert.Contains("document.getElementById('offcanvasPod')", _details);
++        Assert.Contains("element.hidden = !visible", _details);
++        Assert.Contains("element.toggleAttribute('inert', !visible)", _details);
++        Assert.Contains("document.getElementById('shipmentActions')?.replaceChildren()", _details);
++        Assert.Contains("renderSafeNotFound(`${L.notFound}${correlation ? ` ${L.supportReference}: ${correlation}` : ''}`)", _details);
++        Assert.DoesNotContain("window.location", _details);
++    }
++    [Fact] public void DetailLoadIgnoresLateAsyncResponses()
++    {
++        Assert.Contains("let loadVersion = 0", _details);
++        Assert.Contains("const version = ++loadVersion", _details);
++        Assert.Contains("if (version !== loadVersion) return", _details);
++    }
+     private static string Read(string path) => File.ReadAllText(Path.Combine(Root(), path));
+     private static string Root() { var dir = new DirectoryInfo(AppContext.BaseDirectory); while (dir is not null && !File.Exists(Path.Combine(dir.FullName, "AGENTS.md"))) dir = dir.Parent; return dir?.FullName ?? throw new DirectoryNotFoundException(); }
+ }

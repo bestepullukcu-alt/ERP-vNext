@@ -105,8 +105,12 @@ public static class KnowledgePathMapper
             step.CreatedBy,
             step.UpdatedAt,
             step.UpdatedBy,
-            step.IsArchived());
+            step.IsArchived(),
+            ToDto(step.Arrangement));
     }
+
+    public static KnowledgePathArrangementDto? ToDto(KnowledgePathArrangement? a)
+        => a is null ? null : new KnowledgePathArrangementDto(a.ChainStepId, a.BranchCode, a.Position);
 
     /// <summary>Ordered active steps (StepOrder → StepCode); archived steps included only when
     /// <paramref name="includeArchived"/> (kept at the tail, still ordered).</summary>
@@ -123,7 +127,8 @@ public static class KnowledgePathMapper
         return ordered;
     }
 
-    public static KnowledgePathDto ToDto(KnowledgePath path, ResolutionContext ctx, DateTimeOffset effectiveAt)
+    public static KnowledgePathDto ToDto(
+        KnowledgePath path, ResolutionContext ctx, DateTimeOffset effectiveAt, KnowledgePathStudioView? studio = null)
     {
         var steps = ToStepDtos(path, ctx, effectiveAt, includeArchived: true);
         var activeSteps = steps.Where(s => !s.IsArchived).ToList();
@@ -173,11 +178,29 @@ public static class KnowledgePathMapper
             path.UpdatedBy,
             path.ArchivedAt,
             path.ArchivedBy,
-            path.IsArchived());
+            path.IsArchived(),
+            studio?.ChainTemplate ?? ChainRefDto(path, null),
+            path.CountryCode,
+            studio?.DerivedContext,
+            path.IsLegacyUnapproved(),
+            IdentityLocked: !path.IsLegacyUnapproved(),
+            studio?.Claims ?? Array.Empty<KnowledgePathClaimDto>(),
+            studio?.ChainConformance ?? Array.Empty<KnowledgePathChainConformanceDto>());
     }
 
-    public static KnowledgePathListItemDto ToListItem(KnowledgePath path, ResolutionContext ctx, DateTimeOffset effectiveAt)
+    /// <summary>WP-KP-1 — the chain ref with the template's live code / name when it could be read.</summary>
+    public static KnowledgePathChainTemplateDto? ChainRefDto(KnowledgePath path, ConceptChainTemplate? template)
+        => path.ChainTemplate is not { } chain
+            ? null
+            : new KnowledgePathChainTemplateDto(
+                chain.ConceptChainTemplateId, template?.ChainCode, template?.ChainName, chain.ChainVersion);
+
+    public static KnowledgePathListItemDto ToListItem(
+        KnowledgePath path, ResolutionContext ctx, DateTimeOffset effectiveAt,
+        IReadOnlyDictionary<Guid, ConceptChainTemplate>? templates = null)
     {
+        var template = path.ChainTemplate is { } chain && templates is not null
+            && templates.TryGetValue(chain.ConceptChainTemplateId, out var t) ? t : null;
         var active = path.Steps.Where(s => !s.IsArchived()).ToList();
         var hasUnresolved = active.Any(s =>
             Resolve(s, ctx, effectiveAt).Status == KnowledgePathContentResolutionStatuses.Unresolved);
@@ -204,6 +227,10 @@ public static class KnowledgePathMapper
             path.UpdatedAt,
             path.UpdatedBy,
             path.ArchivedAt,
-            path.IsArchived());
+            path.IsArchived(),
+            path.CountryCode,
+            path.ChainTemplate?.ConceptChainTemplateId,
+            template?.ChainCode,
+            path.IsLegacyUnapproved());
     }
 }

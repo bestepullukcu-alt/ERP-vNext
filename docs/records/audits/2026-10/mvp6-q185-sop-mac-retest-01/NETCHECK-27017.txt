@@ -1,0 +1,26 @@
+Q185 NETCHECK 27017 — result: 0 connections to 27017 by any lane process during tests (step 3) and runtime (step 4)
+
+Window: sampler start 2026-10-01 13:32:51 +0200 (before compose/build) -> stop after lane cleanup
+Owner dev mongod: pid 758, 127.0.0.1:27017 + [::1]:27017 — not started, stopped or touched by this lane
+
+1. lsof sampler (1/s): 864 samples; baseline client ports 24; seen 24; NEW 0; processes seen: pid 758 only
+2. dev mongod log from line 1147026+1: 57 lines; "Connection accepted": 0
+3. kit netcheck (every lane PID):
+   kit-a1/raw/netcheck-a1.tsv
+     service	pid	connections_to_27017	connections_to_lane_mongo
+     auth	89139	0	4
+     platform	89249	0	12
+     mdm	89433	0	3
+     supplychain	89492	0	3
+     gateway	89575	0	0
+     web	89660	0	0
+   kit-a1/raw/netcheck-a2.tsv
+     service	pid	connections_to_27017	connections_to_lane_mongo
+     auth	89139	0	4
+     platform	89249	0	19
+     mdm	89433	0	3
+     supplychain	89492	0	3
+     gateway	89575	0	0
+     web	89660	0	0
+4. config: K04 'no 27017' PASS. Web.Tests ran with the URIs exported by mvp6-test-mongo-env.sh --slot 6 (36994) and use no database. Runtime lane mongod: 127.0.0.1:36994 only (kit K05, same slot formula). 57192 never used.
+Positive control: not run (the prompt forbids connecting to 27017).

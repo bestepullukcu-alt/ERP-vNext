@@ -1,0 +1,17 @@
+kind	path	sha256	disposition
+repo_head	git:4a8d4d4b339528a88e6220fb8402e5a2c771136c	4a8d4d4b339528a88e6220fb8402e5a2c771136c	immutable frontend/shared source tree
+controlling_scope	docs/roadmap/plans/mvp6-shipment-pod-ui-scope-01/ARTIFACTS.sha256	13bd4f866e1db440e7a0efc6a5e0278169b9d3f012ffbbf82ad847fb9a1221c2	13/13 verified
+module_pack	execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md	32381634163a2acff440475f4582c05defc8261957386dfa43d5c8fc7eaf962e	pack delta preimage
+contract	docs/analysis/contracts/shipment-bundle.openapi.yaml	5dfe7c1bba32551bd8d4b532243878684e69a6d9560e667a4183bfd516b9d21c	published frozen input
+root_annex	docs/analysis/contracts/shipment-root-semantics-v3.0.0.md	7d1327a12b9775a594631dd9eb3c3c4c90e7f8429581f9ff7f42dde419f7b8af	published frozen input
+mod0183_ct	docs/records/audits/2026-09/mvp6-mod0183-ct-review-01-2026-09-16.md	3f345b04c4017f87e967c158ce7f186f9f1384410483cd3a47c5c429cbaee92b	bounded backend acceptance
+root_ct	docs/records/audits/2026-09/mvp6-root-r2-producer-ct-accept-01/README.md	4cca61682757ae1a3f615cfa40027fd8a4dc39fe38f6a2421a64c092b80c4102	bounded root producer acceptance
+backend_donor_archive	docs/records/audits/2026-09/mvp6-mod0190-test-oracle-rework-01/source.tar.gz	8fa00d40814a81472ec4221ad909321d058dea18a11f64dd2ac16ea800ecb745	durable donor containing all 40 Shipment rows
+backend_donor_manifest	docs/records/audits/2026-09/mvp6-mod0190-test-oracle-rework-01/source-manifest.tsv	ae7ef59e0158113c22389ccd3eec84207418f3a859c40480e70b42ee888a9bef	379-row source index
+backend_transfer	docs/roadmap/plans/mvp6-shipment-pod-ui-dispatch-close-01/BACKEND-TRANSFER-MANIFEST.tsv	0cd90929fb7d2816443db05234a60e1895a5c057f271249a49ec14c7b737ae05	40 exact Shipment rows
+carrier_shared_candidate	docs/roadmap/plans/mvp6-carrier-ui-dispatch-close-01/candidates/INTEGRATION-CANDIDATE.patch	3fdc9188f635a2428e3ffc5c4ef07c9c4b747b2f74a4196d8e6207cd85ccf1d5	predecessor candidate; do not replay concurrently
+carrier_target_verification	/Users/natig/.codex/worktrees/mvp6-carrier-ui-dev/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-carrier-ui-dev-01/integration/SHARED-TARGET-VERIFICATION.tsv	8b727462abfddcb8b054b8d75b40f6e3029cc84e57462190d9950850c62757ed	18 target hashes read-only
+pack_delta	docs/roadmap/plans/mvp6-shipment-pod-ui-dispatch-close-01/PACK-DELTA.patch	20eacc55cb5bd7e76fc4db61e26d73b0d8c5f8c9849e2a4f5c3f93f8844f630c	unapplied
+shared_successor	docs/roadmap/plans/mvp6-shipment-pod-ui-dispatch-close-01/SHIPMENT-SHARED-SUCCESSOR.patch	6d9cad8e59cdab9559a3c822a1b0135672b1a4672d7988235586983cb45ba1bd	unapplied
+shared_target_manifest	docs/roadmap/plans/mvp6-shipment-pod-ui-dispatch-close-01/SHARED-BASELINE-TARGET.tsv	1adbb4d946ac38dcc01bedf10e131e85f8713ca3485c8a490626e79dd3673b15	12 exact paths
+ui_preimages	docs/roadmap/plans/mvp6-shipment-pod-ui-dispatch-close-01/UI-PREIMAGE-MANIFEST.tsv	9bbad7bb3d01f8500711ae75c30cf1fbcb238b9af77c009fdacfb4b29efd3dfe	28/28 ABSENT at immutable HEAD

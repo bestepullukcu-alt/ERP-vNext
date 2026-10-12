@@ -1,0 +1,5 @@
+loads/failure_probe.py:2:"""Isolated A04/A07 failure-path probe; never uses operational Mongo 27017."""
+Diten.SupplyChainService.Tests/SandopPlans/SandopContractTests.cs:5:{ var uri=Environment.GetEnvironmentVariable("MVP6_MOD0190_MONGO_URI")??throw new InvalidOperationException("Set lane-local MVP6_MOD
+Diten.SupplyChainService.Tests/Returns/ReturnAtomicityTests.cs:52:  var url=MongoUrl.Create(uri);if(url.Servers.Any(s=>s.Port==27017)||url.Servers.Any(s=>s.Host is not("127.0.0.1" or "localhost")))thr
+Diten.SupplyChainService.Tests/Claims/ClaimAtomicityTests.cs:76:  var parsed=new MongoUrl(url); if(parsed.Servers.Any(s=>s.Port==27017||!(s.Host=="localhost"||s.Host=="127.0.0.1")))throw new InvalidOp
+returns/runtime_probe.py:8:if ':27017' in uri: raise SystemExit('Operational Mongo port is forbidden')

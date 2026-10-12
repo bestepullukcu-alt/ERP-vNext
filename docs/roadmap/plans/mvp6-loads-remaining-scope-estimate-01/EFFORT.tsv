@@ -1,0 +1,9 @@
+id	module	category	deliverable	disposition	optimistic_hours	most_likely_hours	pessimistic_hours	overlap	net_optimistic	net_most_likely	net_pessimistic	confidence
+0185-RS-01	0185	Frontend	Transition UI with exact lifecycle/root/replay/error behavior	MANDATORY_DEFINED	16	28	48	None with first-slice list/create frontend	16	28	48	MEDIUM
+0185-RS-02	0185	Integration	Transition route/permission/root handoff after seam publication	MANDATORY_DEFINED	4	8	16	0185-5-LIVE-REMAINING 12/20/32	0	0	0	MEDIUM
+0185-RS-03	0185	Test/VER	Real-Auth browser transition lifecycle/replay/root/restart evidence	MANDATORY_DEFINED	8	16	28	0185-6-LIVE-REMAINING 8/16/28	0	0	0	MEDIUM
+0185-RS-04	0185	Contract	Root access disposition/candidate/repin preparation	MANDATORY_DECISION_ONLY	4	8	16	0185-2-REMAINING 4.8/8/12.8	0	0	UNALLOCATED_3.2	LOW
+0185-RS-05	0185	Producer/backend	Chosen authoritative Load-root read implementation	MANDATORY_UNDECIDED	UNESTIMATED	UNESTIMATED	UNESTIMATED	0185-3 and 0185-5 LIVE reserves may overlap after exact choice	UNESTIMATED	UNESTIMATED	UNESTIMATED	NONE
+0185-RS-06	0185	Frontend	Separate detail surface	OPEN_SCOPE_DECISION	UNESTIMATED	UNESTIMATED	UNESTIMATED	No approved scope	UNESTIMATED	UNESTIMATED	UNESTIMATED	NONE
+0185-RS-07	0185	Frontend/integration	Searchable reference lookup UX	OPEN_SCOPE_DECISION	UNESTIMATED	UNESTIMATED	UNESTIMATED	First-slice manual-ID work already in 48/84/144	UNESTIMATED	UNESTIMATED	UNESTIMATED	NONE
+0183-R2-DEFECT	0183	Backend/Test	Persist and emit authoritative Shipment LifecycleCorrelationId	SEPARATE_UNESTIMATED_DEFECT	UNESTIMATED	UNESTIMATED	UNESTIMATED	Parallel Shipment rework; no Loads charge	UNESTIMATED	UNESTIMATED	UNESTIMATED	NONE

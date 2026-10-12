@@ -1,0 +1,8 @@
+Test run for /private/tmp/mvp6-shipment-integration-ver-01/source/gateway/Diten.ApiGateway.Tests/bin/Release/net8.0/Diten.ApiGateway.Tests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 17.11.1 (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+Results File: /private/tmp/mvp6-shipment-integration-ver-01/raw/route-tests-recorded.trx
+
+Passed!  - Failed:     0, Passed:    24, Skipped:     0, Total:    24, Duration: 215 ms - Diten.ApiGateway.Tests.dll (net8.0)

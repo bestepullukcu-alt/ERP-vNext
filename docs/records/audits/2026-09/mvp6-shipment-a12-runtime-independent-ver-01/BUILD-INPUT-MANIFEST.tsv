@@ -1,0 +1,2 @@
+path	sha256	origin	role	status
+# NOT RUN: build-input composition (HEAD archive + A12 360 overlay + Auth 22 overlay) was not performed; native runtime unreachable from verifier shell. See SOP-22.md Blocker.

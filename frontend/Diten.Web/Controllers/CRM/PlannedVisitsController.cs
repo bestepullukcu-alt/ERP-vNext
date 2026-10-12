@@ -23,6 +23,9 @@ public sealed class PlannedVisitsController : Controller
     private const string ManagePermission = "crm.planned-visit.manage";
     private const string ConfirmPermission = "crm.planned-visit.confirm";
 
+    /// <summary>WP-VP-2 (B-1) — explicit-grant-only tenant-wide key; only its holder may plan for another resource.</summary>
+    internal const string ReadAllPermission = "crm.planned-visit.read-all";
+
     /// <summary>Documented DEV-ONLY fallback until F-RBAC lands. It widens no guard: the CrmService still enforces
     /// tenant isolation, the lifecycle, the consent guard and the overlap ban behind it.</summary>
     private const string ReadFallback = "crm.territory.read";
@@ -72,11 +75,15 @@ public sealed class PlannedVisitsController : Controller
         return View($"{ViewRoot}/Create.cshtml", new PlannedVisitEditViewModel
         {
             TargetType = "account",
-            ResourceType = "person",
+            // WP-VP-2 (B-1) — the signed-in rep (CRM writes the caller; these are shown, not authority).
+            ResourceId = CallerId() ?? string.Empty,
+            ResourceType = "user",
+            ResourceDisplayName = CallerName(),
             PlanStatus = "draft",
             Source = "manual",
             PlannedDate = DateTimeOffset.UtcNow,
-            CanManage = true
+            CanManage = true,
+            CanReadAll = HasAnyPermission(ReadAllPermission)
         });
     }
 
@@ -90,6 +97,7 @@ public sealed class PlannedVisitsController : Controller
         }
 
         model.CanManage = true;
+        model.CanReadAll = HasAnyPermission(ReadAllPermission);
         if (!ModelState.IsValid)
         {
             return View($"{ViewRoot}/Create.cshtml", model);
@@ -124,6 +132,7 @@ public sealed class PlannedVisitsController : Controller
 
         var model = ToEditModel(detail);
         model.CanManage = true;
+        model.CanReadAll = HasAnyPermission(ReadAllPermission);
         return View($"{ViewRoot}/Edit.cshtml", model);
     }
 
@@ -139,6 +148,7 @@ public sealed class PlannedVisitsController : Controller
 
         model.PlannedVisitId = plannedVisitId;
         model.CanManage = true;
+        model.CanReadAll = HasAnyPermission(ReadAllPermission);
         if (!ModelState.IsValid)
         {
             return View($"{ViewRoot}/Edit.cshtml", model);
@@ -239,7 +249,9 @@ public sealed class PlannedVisitsController : Controller
 
     /// <summary>The write payload. <c>TenantId</c> is absent by construction; only the journey/stage of the derive-or-
     /// override content-position ref are sent, and only the reference relevant to the chosen target.</summary>
-    private static object ToPayload(PlannedVisitEditViewModel model, bool includeExpectedVersion) => new
+    /// <para>WP-VP-2 — without read-all the resource is NOT sent (CRM writes the caller); no campaign is ever sent
+    /// (CRM derives it). </para>
+    public static object ToPayload(PlannedVisitEditViewModel model, bool includeExpectedVersion) => new
     {
         visitCode = Clean(model.VisitCode),
         targetType = Clean(model.TargetType),
@@ -248,9 +260,9 @@ public sealed class PlannedVisitsController : Controller
         plannedStartTime = Clean(model.PlannedStartTime),
         plannedEndTime = Clean(model.PlannedEndTime),
         plannedDurationMinutes = model.PlannedDurationMinutes,
-        resourceId = Clean(model.ResourceId),
-        resourceType = Clean(model.ResourceType),
-        resourceDisplayName = Clean(model.ResourceDisplayName),
+        resourceId = model.CanReadAll ? Clean(model.ResourceId) : null,
+        resourceType = model.CanReadAll ? Clean(model.ResourceType) : null,
+        resourceDisplayName = (string?)null,
         visitPurpose = Clean(model.VisitPurpose),
         visitType = Clean(model.VisitType),
         objective = Clean(model.Objective),
@@ -258,7 +270,6 @@ public sealed class PlannedVisitsController : Controller
         businessUnit = Clean(model.BusinessUnit),
         territoryNodeId = model.TerritoryNodeId,
         territoryModelId = model.TerritoryModelId,
-        campaignId = model.CampaignId,
         contentEngagementJourneyId = model.ContentEngagementJourneyId,
         contentEngagementJourneyStageId = model.ContentEngagementJourneyStageId,
         contentSource = Clean(model.ContentSource),
@@ -275,8 +286,9 @@ public sealed class PlannedVisitsController : Controller
         VisitCode = detail.VisitCode,
         TargetType = detail.TargetType,
         TargetId = detail.TargetId,
+        TargetDisplay = detail.TargetDisplayName,
         ResourceId = detail.Resource.ResourceId,
-        ResourceType = string.IsNullOrWhiteSpace(detail.Resource.ResourceType) ? "person" : detail.Resource.ResourceType,
+        ResourceType = string.IsNullOrWhiteSpace(detail.Resource.ResourceType) ? "user" : detail.Resource.ResourceType,
         ResourceDisplayName = detail.Resource.DisplayName,
         PlannedDate = ParseDay(detail.PlannedDate),
         PlannedStartTime = detail.PlannedStartTime,
@@ -289,7 +301,6 @@ public sealed class PlannedVisitsController : Controller
         BusinessUnit = detail.BusinessUnit,
         TerritoryNodeId = detail.TerritoryNodeId,
         TerritoryModelId = detail.TerritoryModelId,
-        CampaignId = detail.CampaignId,
         ContentEngagementJourneyId = detail.Content?.JourneyId ?? detail.ContentEngagementJourneyId,
         ContentEngagementJourneyStageId = detail.Content?.StageId ?? detail.ContentEngagementJourneyStageId,
         ContentSource = detail.Content?.ContentSource,
@@ -457,6 +468,12 @@ public sealed class PlannedVisitsController : Controller
     private string? GetTenantId() => User.Claims.FirstOrDefault(x =>
         x.Type == "tenantId" || x.Type == "tenant_id" ||
         x.Type.EndsWith("/tenantId", StringComparison.OrdinalIgnoreCase))?.Value;
+
+    private string? CallerId() =>
+        User.FindFirst("sub")?.Value ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+    private string? CallerName() =>
+        User.FindFirst("name")?.Value ?? User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value ?? User.Identity?.Name;
 
     private bool HasAnyPermission(params string[] permissions) =>
         permissions.Any(x => PermissionClaims.HasPermission(User, x));

@@ -1,0 +1,6 @@
+HTTP/1.1 400 Bad Request
+Content-Type: application/problem+json
+Date: Wed, 30 Sep 2026 19:42:36 GMT
+Server: Kestrel
+Transfer-Encoding: chunked
+

@@ -320,9 +320,9 @@ public sealed class ProductLegalEntityScopeOperationalRunnerTests
         var atBind = new Pause();
         var atCommit = new Pause();
 
-        var a = Task.Run(() => Runner(scope, options, decorate: inner => new PauseAt(inner, bind: atBind)).RunAsync());
+        var a = Task.Run(() => Runner(scope, options, decorate: inner => new PauseAt(inner, bind: atBind, commit: null)).RunAsync());
         await atBind.Reached.Task.WaitAsync(TimeSpan.FromSeconds(60));
-        var b = Task.Run(() => Runner(scope, options, decorate: inner => new PauseAt(inner, commit: atCommit)).RunAsync());
+        var b = Task.Run(() => Runner(scope, options, decorate: inner => new PauseAt(inner, bind: null, commit: atCommit)).RunAsync());
         await atCommit.Reached.Task.WaitAsync(TimeSpan.FromSeconds(60));
 
         atBind.Go.SetResult();
@@ -452,7 +452,7 @@ public sealed class ProductLegalEntityScopeOperationalRunnerTests
     }
 
     /// <summary>Holds a run just before it binds its snapshots, or just before it commits, until the test lets it go.</summary>
-    private sealed class PauseAt(IProductLegalEntityScopeRolloutStateRepository inner, Pause? bind = null, Pause? commit = null)
+    private sealed class PauseAt(IProductLegalEntityScopeRolloutStateRepository inner, Pause? bind, Pause? commit)
         : DelegatingRolloutRepository(inner)
     {
         public override async Task<bool> BindFenceSnapshotsAsync(string fenceToken, ProductLegalEntityScopeInventorySnapshot first,

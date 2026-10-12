@@ -1,0 +1,45 @@
+[23:18:12 INF] User profile is available. Using '/Users/natig/.aspnet/DataProtection-Keys' as key repository; keys will not be encrypted at rest.
+[23:18:14 WRN] Shipment outbox transport is not registered. Durable events remain pending; integration is held.
+[23:18:14 INF] Now listening on: http://127.0.0.1:5061
+[23:18:14 INF] Application started. Press Ctrl+C to shut down.
+[23:18:14 INF] Hosting environment: Production
+[23:18:14 INF] Content root path: /private/tmp/claude-501/-Users-natig-Projects-ERP-vNext-recovery/d055b718-e2c9-4712-a3ce-c6827969ffdf/scratchpad/q232-20261002-2318/tree/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api
+[23:18:14 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5061/health - null null
+[23:18:15 INF] Executing endpoint 'HTTP: GET /health'
+[23:18:15 INF] Setting HTTP status code 200.
+[23:18:15 INF] Writing value of type '<>f__AnonymousType2`4' as Json.
+[23:18:15 INF] Executed endpoint 'HTTP: GET /health'
+[23:18:15 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5061/health - 200 null application/json; charset=utf-8 54.2146ms
+[23:18:15 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/shipments - null null
+[23:18:15 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/shipments - 401 null application/json; charset=utf-8 6.8298ms
+[23:18:15 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/claims - null null
+[23:18:15 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/claims - 401 null application/json; charset=utf-8 3.04ms
+[23:18:15 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/returns - null null
+[23:18:15 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/returns - 401 null application/json; charset=utf-8 0.3002ms
+[23:18:15 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/carriers - null null
+[23:18:15 INF] Carrier request rejected 401 INVALID_REQUEST 11111111-2222-4333-8444-555555555555
+[23:18:15 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/carriers - 401 null application/json; charset=utf-8 5.1271ms
+[23:18:15 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/loads - null null
+[23:18:15 INF] Load request rejected 401 INVALID_REQUEST 11111111-2222-4333-8444-555555555555
+[23:18:15 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/loads - 401 null application/json; charset=utf-8 4.525ms
+[23:18:15 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5061/api/supply-chain/sandop-plans/aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee - null null
+[23:18:15 INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+[23:18:15 INF] AuthenticationScheme: Bearer was challenged.
+[23:18:15 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5061/api/supply-chain/sandop-plans/aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee - 401 0 null 4.0647ms
+[23:18:15 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5061/api/supply-chain/capacity-plans/aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee - null null
+[23:18:15 INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+[23:18:15 INF] AuthenticationScheme: Bearer was challenged.
+[23:18:15 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5061/api/supply-chain/capacity-plans/aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee - 401 0 null 1.6643ms
+[23:18:15 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/shipments - null null
+[23:18:15 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/shipments - 400 null application/json; charset=utf-8 0.272ms
+[23:18:15 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/claims - null null
+[23:18:15 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5061/api/shipment-bundle/claims - 400 null application/json; charset=utf-8 0.2732ms
+[23:18:45 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5061/health - null null
+[23:18:45 INF] Executing endpoint 'HTTP: GET /health'
+[23:18:45 INF] Setting HTTP status code 200.
+[23:18:45 INF] Writing value of type '<>f__AnonymousType2`4' as Json.
+[23:18:45 INF] Executed endpoint 'HTTP: GET /health'
+[23:18:45 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5061/health - 200 null application/json; charset=utf-8 9.5208ms
+[23:24:47 INF] Application is shutting down...

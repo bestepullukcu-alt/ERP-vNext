@@ -1,0 +1,35 @@
+# verify from: repository root
+# NOT FOR VERIFICATION (K6) — never shasum -c this file.
+# Records the bytes of every path Q435 MEASURED, at 2026-10-05.
+# THE MERGE WAS NOT PERFORMED: this lane touched NO repo path. Nothing below was changed.
+# The 8 marked BLOCKER rows are working-tree bytes that no commit records — the reason the lane stopped.
+#
+# --- the 28 overlapping files, as they stood at measurement ---
+90247ddc689b1e06ab02ba33c9dd379ded45881f1c58fade0971c7ec3a78f044  .antigravity/agents/frontend-ui-ux.md
+ce8c12ad80f93bb5601d98f525836e2775949db39c69b2dff64e508159bf5b92  AGENTS.md
+14cff38541f224fa02e84e3e389f47c0193338e88817befa41a336a1a12affdd  docs/guides/operations/control-tower-sop.md    # BLOCKER (uncommitted)
+3b39aa0fa823a83b49c02e1b75c3a513c785fc633e73481fb8a0f789b9ff6304  docs/roadmap/backlog/product-backlog.md
+2bb1ec738881263420abbd6409e94e9aa11755042a303de912a3cb80c3f94285  frontend/Diten.Web/Resources/SharedResource.ar.resx    # BLOCKER (uncommitted)
+d8107e7f6ec5e2e97c885c840721cdbc99acf61ccfcfb07083ecff4874c1f276  frontend/Diten.Web/Resources/SharedResource.en.resx    # BLOCKER (uncommitted)
+78e4510c54486e783a8640a2c282d7096bfcc780d9d9400ba94c6690afaa953d  frontend/Diten.Web/Resources/SharedResource.es.resx    # BLOCKER (uncommitted)
+af269752dd21aba5227556407eaf13023b39e82f4d627ab68d675eed20079045  frontend/Diten.Web/Resources/SharedResource.fr.resx    # BLOCKER (uncommitted)
+e57edb27fea7bb65bce5e0c3e531a0d6f6a6429084136e49b81aa340f0dbf7be  frontend/Diten.Web/Resources/SharedResource.ru.resx    # BLOCKER (uncommitted)
+99a7552437788da9a18a58aded875f643b530565b6ffde00e2ee70b43817ddbb  frontend/Diten.Web/Resources/SharedResource.tr.resx    # BLOCKER (uncommitted)
+ba8c492c991ee15453c028e433f6e62981ab90c16fc8a5f77b630ba89c4dc1ac  frontend/Diten.Web/Resources/SharedResource.zh.resx    # BLOCKER (uncommitted)
+9637beb5f9906a1d48c59e3f4de3e4c8db861a5d5aaef0fdefb0d6e9c8ab1614  frontend/Diten.Web/wwwroot/assets/js/dt-defaults.js
+69cce06cc3c7f4194056ab06cbe7d7eb8c9c747311cfc887b16060e8bb879bbf  gateway/Diten.ApiGateway/ocelot.json
+265d818614db2c66c7b1d91a457ed255ff2f14505fce9b129fc2d9882d2b0fdb  services/Diten.AuthService/src/Diten.AuthService.Infrastructure/DependencyInjection.cs
+8f6778cdccc9539f60ec292137e167557a8ed402c196b9b4921ddb3803772b8a  services/Diten.CrmService/src/Diten.CrmService.Api/Controllers/CRM/KnowledgeContentsController.cs
+dc265da0af92d8ff3c0ec25ec4f159f4adf11d6d5366ef50363e5330097d9983  services/Diten.CrmService/src/Diten.CrmService.Api/appsettings.Development.json
+e439219871a130954592399d28591deb59567f75af573c69289300b10829a42d  services/Diten.HumanCapitalService/src/Diten.HumanCapitalService.Api/Diten.HumanCapitalService.Api.csproj
+466a5b1701476a53c531b07405135abb55122a4142cfe34fe527312cc46a9424  services/Diten.HumanCapitalService/src/Diten.HumanCapitalService.Api/Program.cs
+4f9590045b69718f37850fb934feba10feaa1487731868b1411f45f1f2ddf287  services/Diten.Platform/src/Diten.Platform.Infrastructure/DependencyInjection.cs
+28df170a41a2d439cc3afbc8a53008fe8c52fb24ac76f8db7cef8f1026cd34f1  services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/BusinessReferenceDataGskuCatalogLoadMongoTests.cs
+bde7a130bae89e1238ef3d49b6cf73ad3bb1b55b083b350c1d3680cfb29522f4  services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/BusinessReferenceDataMongoResidueSweeperTests.cs
+9482272fb72e6826d0f6fce0ea12614cca277c1fc51a2360fe57373087cea389  services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/BusinessReferenceDataPublishOperationMongoTests.cs
+08d553d832443cf5a4a0336eda7b493494cb385da16c1e063a6203429a425714  services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/BusinessReferenceDataTenantAssignmentMongoTests.cs
+b2cc6e0807ed4409797c0eb86fd40380237dc197132f033f20a0cc957c294cd0  services/Diten.Platform/tests/Diten.Platform.Application.Tests/Persistence/MongoIntegrationHarness.cs
+22ae17b81218264e2cb36a4bbf4b70fcf0618fd95d79762dd3eaf645ead72510  services/Diten.Platform/tests/Diten.Platform.Application.Tests/Schema/PlatformSchemaContractMongoTests.cs
+bc5008509a778da4abe98bc3dde90619875eac967fb600f531d4e07631715d22  services/Diten.Platform/tests/Diten.Platform.Application.Tests/Workflow/WorkflowTransitionGateMongoRepositoryTests.cs
+2a1d608c17ca882c94831a6093931e06563f82a291ef93df883ec62a80f4e82b  services/Diten.TalentEcosystemService/src/Diten.TalentEcosystemService.Api/Diten.TalentEcosystemService.Api.csproj
+2e2344cffd733899fd31d2fb4a0c697d9049538fff5f6fe26eab8800190ae6f0  services/Diten.TalentEcosystemService/src/Diten.TalentEcosystemService.Api/Program.cs

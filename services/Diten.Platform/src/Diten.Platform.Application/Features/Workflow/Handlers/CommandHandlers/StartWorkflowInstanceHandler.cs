@@ -38,16 +38,20 @@ public sealed class StartWorkflowInstanceHandler
         IWorkflowTransitionLogRepository transitionLogRepository,
         ITenantContext tenantContext,
         ICurrentUserContext currentUserContext,
+        // Main sync FIX1 (CT decision A): the tests-only seam is a REQUIRED enumerable — empty in production (nothing
+        // registers it), one instance where a test host asks for sequential writes by name. It was an optional (= null)
+        // Diten.* parameter, which main's composition-root guard (Q366) rightly refuses: an optional dependency that is
+        // never registered resolves to null silently.
+        IEnumerable<SequentialWorkflowStartWritesForTests> sequentialWritesForTests,
         IPositionAssignmentRepository? positionAssignmentRepository = null,
         ISlaEscalationRuleRepository? slaRules = null,
         IPositionRepository? positionRepository = null,
-        IPlatformTransactionExecutor? transactions = null,
-        SequentialWorkflowStartWritesForTests? sequentialWritesForTests = null)
+        IPlatformTransactionExecutor? transactions = null)
     {
         // FIX3 item 2 — the claim and the start rows commit in one transaction (FIX2 item 1). No SILENT fallback: without the
         // executor this handler is built only where a test asked for sequential writes by name; anywhere else it refuses.
         _transactions = transactions;
-        if (transactions is null && sequentialWritesForTests is null)
+        if (transactions is null && !sequentialWritesForTests.Any())
         {
             throw new ArgumentNullException(
                 nameof(transactions), "MOD-0023's start needs IPlatformTransactionExecutor: its claim and rows commit together.");

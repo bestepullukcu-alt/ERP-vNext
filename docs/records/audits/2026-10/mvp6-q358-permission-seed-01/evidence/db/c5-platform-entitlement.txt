@@ -1,0 +1,9 @@
+{
+  TenantId: 'db0dae78-f721-414c-8b51-1cbd7c866c54',
+  ModuleCode: 'SHIPMENT-TRACKING-POD',
+  Source: 1,
+  IsEnabled: true,
+  Status: undefined
+}
+audit_outbox pending/total: 0/38
+outbox_events pending/total: 21/22

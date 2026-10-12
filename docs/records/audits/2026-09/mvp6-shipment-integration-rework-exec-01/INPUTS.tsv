@@ -1,0 +1,7 @@
+kind	path	sha256	use
+prep_manifest	docs/records/audits/2026-09/mvp6-shipment-integration-rework-prep-01/ARTIFACTS.sha256	c85f0fecb1520ae398d0286e84796344e8feeca88c78a86f82fda00be2119d55	exact successor package
+closure_archive	docs/records/audits/2026-09/mvp6-shipment-integration-rework-prep-01/BC-SOURCE-CLOSURE.tar.gz	dce1a67688e16b776adb8b087e4bee219f913b321561f57c46fc4c2b7dcf4cd2	258 absent sources only
+closure_manifest	docs/records/audits/2026-09/mvp6-shipment-integration-rework-prep-01/SOURCE-TRANSFER-MANIFEST.tsv	f2f79dc6046a913c3efdea1090725fdf19843f9e449a914f0bb3b69db94620a2	exact transfer membership
+successor_patch	docs/records/audits/2026-09/mvp6-shipment-integration-rework-prep-01/shipment-integration-successor.patch	b3d0cd5b00a1c24819df765c3d1b834cd06dc1d306de1c20799616d9bcd191fd	two gateway files only
+carrier_auth_handoff	docs/records/audits/2026-09/mvp6-carrier-auth-chain-recovery-01/CARRIER-REAL-AUTH-E2E-HANDOFF.md	95dafe0fbfdfdf490f9ecdb57f65582d0146da435ad938f1df13c11105586cd2	current real-Auth PASS dependency
+carrier_real_auth_e2e	docs/records/audits/2026-09/mvp6-carrier-real-auth-e2e-exec-01/CARRIER-REAL-AUTH-E2E-CT-HANDOFF.md	111a50136d1405cb09f716f451d0ba8ba304e13ac85c8bc95b0797c1eeb776af	latest downstream evidence boundary; PNG remains open

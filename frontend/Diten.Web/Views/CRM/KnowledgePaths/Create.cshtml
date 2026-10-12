@@ -1,39 +1,123 @@
-@model Diten.Web.Models.CRM.KnowledgePathEditViewModel
 @using Diten.Web.Views.CRM.KnowledgePaths
 @using Microsoft.AspNetCore.Mvc.Localization
-@inject IHtmlLocalizer<KnowledgePathsIndex> Localizer
+@inject IHtmlLocalizer<KnowledgePathStudio> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 @{
-    ViewData["Title"] = Localizer["CreatePath"].Value;
+    ViewData["Title"] = Localizer["CreateTitle"].Value;
     Layout = "_LayoutTenantShell";
 }
 
-<div class="d-flex align-items-center justify-content-between mb-3">
-    <div>
-        <h5 class="mb-0">@Localizer["CreatePath"]</h5>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="/CRM/KnowledgePaths">@Localizer["KnowledgePathsTitle"]</a></li>
-                <li class="breadcrumb-item active text-primary">@Localizer["CreatePath"]</li>
-            </ol>
-        </nav>
+@* WP-KP-UI-1 — new knowledge path (mockup v2 "Yeni Bilgi Yolu"): identity first — chain (published + branched only),
+   country (name), language (the country's languages, native name). Subject / product / audience / steps are a read-only
+   preview of the chain. The code is issued by CRM (KP-…). Saving opens the workspace. *@
+<div class="kp-studio" id="kpCreateRoot">
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-3 row-gap-4">
+        <div>
+            <h5 class="mb-0">@Localizer["CreateTitle"]</h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/CRM/KnowledgePaths">@Localizer["StudioTitle"]</a></li>
+                    <li class="breadcrumb-item active text-primary">@Localizer["CreateTitle"]</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="/CRM/KnowledgePaths" class="btn btn-label-secondary">@SharedLocalizer["Cancel"]</a>
+            <button type="submit" form="kpCreateForm" class="btn btn-primary" id="kpCreateSubmit">@Localizer["CreateSubmit"]</button>
+        </div>
     </div>
-    <div class="d-flex align-items-center gap-2">
-        <a href="/CRM/KnowledgePaths" class="btn btn-label-secondary">@Localizer["Cancel"]</a>
-        <button type="submit" form="knowledgePathForm" class="btn btn-primary">@Localizer["Save"]</button>
-    </div>
+
+    <p class="text-muted">@Localizer["CreateIntro"]</p>
+    <div id="kpCreateAlert" class="alert alert-danger d-none" role="alert"></div>
+
+    <form id="kpCreateForm" novalidate data-no-tracker>
+        <div class="row g-4">
+            <div class="col-12 col-lg-7">
+                <section class="card mb-4">
+                    <div class="card-body">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["SectionIdentity"]</h6>
+                        <div class="mb-3">
+                            <label class="form-label" for="kpName">@Localizer["FieldPathName"] <span class="text-danger" aria-hidden="true">*</span></label>
+                            <input id="kpName" class="form-control" maxlength="200" required placeholder="@Localizer["FieldPathNamePlaceholder"]" />
+                        </div>
+                        <div class="mb-1">
+                            <label class="form-label" for="kpChain">@Localizer["FieldChain"] <span class="text-danger" aria-hidden="true">*</span></label>
+                            <select id="kpChain" class="form-select" required></select>
+                            <small class="text-muted d-none" id="kpNoChain">@Localizer["NoChains"]</small>
+                        </div>
+                        <small class="text-muted d-block">@Localizer["CodeNote"]</small>
+                    </div>
+                </section>
+
+                <section class="card mb-4">
+                    <div class="card-body">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["SectionContext"]</h6>
+                        <div class="row g-3">
+                            <div class="col-12 col-md-6">
+                                <label class="form-label" for="kpCountry">@Localizer["FieldCountry"] <span class="text-danger" aria-hidden="true">*</span></label>
+                                <select id="kpCountry" class="form-select" required></select>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label class="form-label" for="kpLanguage">@Localizer["FieldLanguage"] <span class="text-danger" aria-hidden="true">*</span></label>
+                                <select id="kpLanguage" class="form-select" required disabled></select>
+                            </div>
+                        </div>
+                        <small class="text-muted d-block mt-2">@Localizer["LanguageNote"]</small>
+                        <small class="text-muted d-block"><i class="bx bx-lock-alt me-1" aria-hidden="true"></i>@Localizer["IdentityNote"]</small>
+                    </div>
+                </section>
+
+                <section class="card mb-4">
+                    <div class="card-body">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["SectionDescription"]</h6>
+                        <div class="mb-3">
+                            <label class="form-label" for="kpObjective">@Localizer["FieldObjective"] <span class="text-danger" aria-hidden="true">*</span></label>
+                            <textarea id="kpObjective" class="form-control" rows="2" maxlength="500" required></textarea>
+                        </div>
+                        <div>
+                            <label class="form-label" for="kpDescription">@Localizer["FieldDescription"]</label>
+                            <textarea id="kpDescription" class="form-control" rows="3" maxlength="2000"></textarea>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card mb-4">
+                    <div class="card-body">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["SectionValidity"]</h6>
+                        <div class="row g-3">
+                            <div class="col-12 col-md-6">
+                                <label class="form-label" for="kpFrom">@Localizer["FieldEffectiveFrom"] <span class="text-danger" aria-hidden="true">*</span></label>
+                                <input id="kpFrom" type="date" class="form-control" required />
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label class="form-label" for="kpTo">@Localizer["FieldEffectiveTo"]</label>
+                                <input id="kpTo" type="date" class="form-control" />
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div class="col-12 col-lg-5">
+                <section class="card mb-4" aria-live="polite">
+                    <div class="card-body">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["SectionPreview"]</h6>
+                        <dl class="row mb-0 small">
+                            <dt class="col-5 fw-medium">@Localizer["PreviewSubject"]</dt><dd class="col-7" id="kpPrevSubject">—</dd>
+                            <dt class="col-5 fw-medium">@Localizer["PreviewProduct"]</dt><dd class="col-7" id="kpPrevProduct">—</dd>
+                            <dt class="col-5 fw-medium">@Localizer["PreviewAudience"]</dt><dd class="col-7" id="kpPrevAudience">—</dd>
+                            <dt class="col-5 fw-medium">@Localizer["PreviewSteps"]</dt><dd class="col-7" id="kpPrevSteps">—</dd>
+                        </dl>
+                        <small class="text-muted d-block mt-2"><i class="bx bx-lock-alt me-1" aria-hidden="true"></i>@Localizer["PreviewNote"]</small>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </form>
 </div>
 
-<form asp-action="Create" method="post" id="knowledgePathForm" class="needs-validation" novalidate>
-    @Html.AntiForgeryToken()
-    <partial name="~/Views/CRM/KnowledgePaths/_Form.cshtml" model="Model" />
-</form>
-
-@section Styles {
-    <link rel="stylesheet" href="~/assets/vendor/libs/flatpickr/flatpickr.css" />
-}
-
 @section Scripts {
-    <script src="~/assets/vendor/libs/flatpickr/flatpickr.js"></script>
-    <partial name="_ValidationScriptsPartial" />
-    <script src="~/assets/js/CRM/KnowledgePaths/form.js" asp-append-version="true"></script>
+    <partial name="~/Views/CRM/KnowledgePaths/_StudioL10n.cshtml" />
+    <script src="~/assets/js/CRM/KnowledgePaths/studio-common.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/KnowledgePaths/create.js" asp-append-version="true"></script>
 }

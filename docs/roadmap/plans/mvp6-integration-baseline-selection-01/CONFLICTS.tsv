@@ -1,0 +1,10 @@
+surface	location	identical	missing	conflict	exact_conflict_or_limit	disposition
+selected-422	common checkout	247	174	1	Program.cs actual 7fdb5ef0d322c3b9c814fab709dcfbaf1c9a2904f3d9a39e6f90bce077f204d8 expected 50c48a2b895804162f36740703bca20d3f0c3f96f2511133e843d75fcf7830f0	Do not overwrite; use a new authorized integration checkout
+selected-422	/private/tmp/mvp6-mod0190-http-integration-01	378	43	1	Program.cs actual a2a216be15d07fa656f5fd7da43711aa989c4a8d52cd51c58e8ded48d5d735e5 expected 50c48a2b895804162f36740703bca20d3f0c3f96f2511133e843d75fcf7830f0	Valid 379 source donor evidence; not the final integration target
+selected-422	/private/tmp/mvp6-mod0190-http-integration-02	377	43	2	Program.cs actual 0f6bf84e…; SandopAtomicity actual 55d2522b… expected eba2da6f…	Superseded test/composition bytes
+selected-422	/private/tmp/mvp6-mod0192-core-dev-01	289	131	2	Program.cs actual 7fdb5ef0…; CapacityAtomicity actual 91999330… expected 2c133ac1…	Core donor only; not integration target
+selected-422	/private/tmp/mvp6-mod0192-http-integration-01	420	0	2	SandopAtomicity actual 55d2522b… expected eba2da6f…; CapacityAtomicity actual 3953b09a… expected 2c133ac1…	Closest checkout, but two accepted successor test bytes are stale
+ownership	MOD-0190 38 vs MOD-0192 43	0	0	0	Owned-path intersection is zero	Parallel feature transfer is structurally safe after authority; Program remains separate
+shared writer	Program.cs	0	0	1	Only shared product source selected; exact baseline/patch/target is pinned	Exactly one integration owner
+shared permission	shared permission registry	0	0	0	No approved diff or transfer artifact	Protected; separate permission owner if a concrete gap appears
+gateway	gateway/Diten.ApiGateway/**/ocelot.json	0	0	0	No approved diff; integration-agent-only path	Protected and excluded

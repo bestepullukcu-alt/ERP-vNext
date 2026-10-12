@@ -1,0 +1,7 @@
+log	uuid	occurrences	note
+Web (logs/web-run1.log)	800cad66-7372-494b-bc5a-f004b112082c	0	The one shipment request this user can cause (list XHR, sent from the signed-in page) was answered 403 by the Web adapter with this X-Correlation-Id. The Web log does not record it.
+Gateway (logs/gateway-run1.log)	800cad66-7372-494b-bc5a-f004b112082c	0	The request never reached the gateway.
+SupplyChain (logs/supplychain-run1.log)	800cad66-7372-494b-bc5a-f004b112082c	0	The request never reached the service.
+SUPPLEMENTARY Web	40027f20-1cb3-41a0-bdbe-62ad0334275b	0	Not a browser action: one curl to the gateway with this X-Correlation-Id and no token (12:55:30). Not sent through Web.
+SUPPLEMENTARY Gateway	40027f20-1cb3-41a0-bdbe-62ad0334275b	2	logs/gateway-run1.log lines 9-10 (RequestId = the correlation id).
+SUPPLEMENTARY SupplyChain	40027f20-1cb3-41a0-bdbe-62ad0334275b	0	The service received it (request lines at 12:55:30, 401) and echoed it in the response header and body, but its log lines carry no correlation id.

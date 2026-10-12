@@ -1,0 +1,4 @@
+service	pid	port	binary_sha256	command_redacted
+MDM	53677	18859	461b1991d173ae1bcca556a0f4ef8ce41485108769a1d36bf2e0ae80e9b9239f	/Users/natig/.dotnet/dotnet Diten.MdmService.Api.dll
+Mongo-primary	53471	37984	-	mongod --config <lane>/mongod.conf
+Mongo-fixture-copy	54680	37985	-	mongod --config <lane>/fixture-mongod.conf

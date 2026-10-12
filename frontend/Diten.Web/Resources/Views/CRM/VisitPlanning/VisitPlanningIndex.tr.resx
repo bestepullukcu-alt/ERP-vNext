@@ -4,55 +4,26 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
-  <data name="PageTitle" xml:space="preserve"><value>Visit Planning</value></data>
-  <data name="PageDescription" xml:space="preserve"><value>Turn a rep's selection into a scheduled plan — pick a period, accounts and doctors, preview a Day/Week grid, then apply.</value></data>
-  <data name="EngineNotice" xml:space="preserve"><value>The engine reads content, route, cadence, capacity, consent, availability and territory from the shipped modules. It computes nothing itself: preview is a dry-run, apply writes the plan atoms.</value></data>
-  <data name="SessionsPanel" xml:space="preserve"><value>My draft plans</value></data>
-  <data name="NewSession" xml:space="preserve"><value>New session</value></data>
-  <data name="PeriodPanel" xml:space="preserve"><value>Period</value></data>
-  <data name="CyclePeriod" xml:space="preserve"><value>Cycle period</value></data>
-  <data name="Resource" xml:space="preserve"><value>Rep (resource id)</value></data>
-  <data name="ResourcePlaceholder" xml:space="preserve"><value>e.g. rep-1</value></data>
-  <data name="Segment" xml:space="preserve"><value>Segment filter</value></data>
-  <data name="NoSegmentFilter" xml:space="preserve"><value>No segment filter</value></data>
-  <data name="SegmentHint" xml:space="preserve"><value>Segment narrows the eligible doctor universe; the pick stays manual.</value></data>
-  <data name="AccountsPanel" xml:space="preserve"><value>Accounts (clinics / hospitals)</value></data>
-  <data name="AccountsHint" xml:space="preserve"><value>Out-of-territory accounts are warned, never hidden.</value></data>
-  <data name="ContactsPanel" xml:space="preserve"><value>Doctors</value></data>
-  <data name="ContactsHint" xml:space="preserve"><value>Manual multi-select from the eligible universe.</value></data>
-  <data name="SaveSelection" xml:space="preserve"><value>Save selection</value></data>
-  <data name="Preview" xml:space="preserve"><value>Preview</value></data>
-  <data name="SupplyDemandPanel" xml:space="preserve"><value>Supply vs demand</value></data>
-  <data name="NoPreviewYet" xml:space="preserve"><value>Run a preview to see the plan.</value></data>
-  <data name="ContentPanel" xml:space="preserve"><value>Content preview (per doctor)</value></data>
-  <data name="Doctor" xml:space="preserve"><value>Doctor</value></data>
-  <data name="Stage" xml:space="preserve"><value>Next stage</value></data>
-  <data name="Duration" xml:space="preserve"><value>Duration</value></data>
-  <data name="Consent" xml:space="preserve"><value>Consent</value></data>
-  <data name="GridPanel" xml:space="preserve"><value>Day / Week grid</value></data>
-  <data name="Week" xml:space="preserve"><value>Week</value></data>
-  <data name="Date" xml:space="preserve"><value>Date</value></data>
-  <data name="Slot" xml:space="preserve"><value>Slot</value></data>
-  <data name="Target" xml:space="preserve"><value>Target</value></data>
-  <data name="Order" xml:space="preserve"><value>Order</value></data>
-  <data name="Apply" xml:space="preserve"><value>Apply</value></data>
-  <data name="Replan" xml:space="preserve"><value>Re-plan</value></data>
-  <data name="SavedSession" xml:space="preserve"><value>Session saved.</value></data>
-  <data name="PreviewFailed" xml:space="preserve"><value>Preview failed.</value></data>
-  <data name="Applied" xml:space="preserve"><value>Plan applied.</value></data>
-  <data name="Replanned" xml:space="preserve"><value>Subset re-planned.</value></data>
-  <data name="SelectSession" xml:space="preserve"><value>Select a session first.</value></data>
-  <data name="NoContentResolved" xml:space="preserve"><value>No content resolved (report-only).</value></data>
-  <data name="OutOfTerritory" xml:space="preserve"><value>Out of territory</value></data>
-  <data name="Unscheduled" xml:space="preserve"><value>Unscheduled</value></data>
-  <data name="SessionsTitle" xml:space="preserve"><value>Taslak planlarım</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Haftanızı planlayın: dönemi ve haftayı seçin, ziyaret edeceğiniz klinik ve doktorları ekleyin, rotayı oluşturun ve haftanın planı olarak kaydedin.</value></data>
+  <data name="NewSession" xml:space="preserve"><value>Yeni plan</value></data>
+  <data name="CyclePeriod" xml:space="preserve"><value>Dönem</value></data>
+  <data name="AccountsPanel" xml:space="preserve"><value>Kurumlar (klinik / hastane)</value></data>
+  <data name="AccountsHint" xml:space="preserve"><value>Bölge dışı hesaplar gizlenmez; uyarıyla gösterilir.</value></data>
+  <data name="ContactsPanel" xml:space="preserve"><value>Doktorlar</value></data>
+  <data name="NoPreviewYet" xml:space="preserve"><value>Planı görmek için rotayı oluşturun.</value></data>
+  <data name="Replan" xml:space="preserve"><value>Yeniden planla</value></data>
+  <data name="PreviewFailed" xml:space="preserve"><value>Rota oluşturulamadı.</value></data>
+  <data name="Applied" xml:space="preserve"><value>Haftanın planı olarak kaydedildi.</value></data>
+  <data name="Replanned" xml:space="preserve"><value>Ziyaretler yeniden planlandı.</value></data>
+  <data name="OutOfTerritory" xml:space="preserve"><value>Bölge dışı</value></data>
+  <data name="SessionsTitle" xml:space="preserve"><value>Benim planlarım</value></data>
   <data name="Plan" xml:space="preserve"><value>Plan</value></data>
   <data name="Rep" xml:space="preserve"><value>Temsilci</value></data>
   <data name="Targets" xml:space="preserve"><value>Hedefler</value></data>
   <data name="Updated" xml:space="preserve"><value>Güncellendi</value></data>
   <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
   <data name="QuickView" xml:space="preserve"><value>Hızlı görünüm</value></data>
-  <data name="RouteAction" xml:space="preserve"><value>Route oluştur</value></data>
+  <data name="RouteAction" xml:space="preserve"><value>Rota oluştur</value></data>
   <data name="DeleteSession" xml:space="preserve"><value>Sil</value></data>
   <data name="DeleteSessionConfirm" xml:space="preserve"><value>Bu taslak plan silinsin mi?</value></data>
   <data name="RecordDeleted" xml:space="preserve"><value>Taslak plan silindi.</value></data>
@@ -64,14 +35,9 @@
   <data name="TargetsSection" xml:space="preserve"><value>Hedefler</value></data>
   <data name="RouteSection" xml:space="preserve"><value>Rota</value></data>
   <data name="RepUser" xml:space="preserve"><value>Temsilci (kullanıcı)</value></data>
-  <data name="StrategyTemplate" xml:space="preserve"><value>Strateji şablonu</value></data>
-  <data name="StrategyTemplateNone" xml:space="preserve"><value>Strateji şablonu yok</value></data>
-  <data name="StrategyTemplatesUnavailable" xml:space="preserve"><value>Strateji şablonları kullanılamıyor.</value></data>
-  <data name="UsersUnavailable" xml:space="preserve"><value>Kullanıcı dizini kullanılamıyor; temsilciyi platformdan girin.</value></data>
   <data name="WeekLabel" xml:space="preserve"><value>Hafta</value></data>
-  <data name="RouteHint" xml:space="preserve"><value>Rota, plan kaydedildikten sonra Ayrıntılar'dan oluşturulur.</value></data>
   <data name="RouteEmpty" xml:space="preserve"><value>Bu hafta için rota yok.</value></data>
-  <data name="SelectAccountFirst" xml:space="preserve"><value>Önce clinic/hospital seç</value></data>
+  <data name="SelectAccountFirst" xml:space="preserve"><value>Önce bir klinik / hastane seçin</value></data>
   <data name="WeekScopeHint" xml:space="preserve"><value>Bu planın hedeflediği hafta (rota görünümü için varsayılan).</value></data>
   <data name="SaveTargets" xml:space="preserve"><value>Hedefleri kaydet</value></data>
   <data name="TargetsSaved" xml:space="preserve"><value>Hedefler kaydedildi.</value></data>
@@ -135,7 +101,6 @@
   <data name="ColType" xml:space="preserve"><value>Tür</value></data>
   <data name="ColCity" xml:space="preserve"><value>Şehir / Bölge</value></data>
   <data name="ColContact" xml:space="preserve"><value>Doktor</value></data>
-  <data name="ColLinked" xml:space="preserve"><value>Bağlantı</value></data>
   <data name="ColSelected" xml:space="preserve"><value>Seçili</value></data>
   <data name="AddAccount" xml:space="preserve"><value>Klinik / hastane ekle</value></data>
   <data name="RemoveTarget" xml:space="preserve"><value>Kaldır</value></data>
@@ -143,22 +108,623 @@
   <data name="PickAccountForContacts" xml:space="preserve"><value>Doktorları görmek için bir hesap seçin.</value></data>
   <data name="Country" xml:space="preserve"><value>Ülke</value></data>
   <data name="SelectCountryFirst" xml:space="preserve"><value>Önce ülke seç</value></data>
-  <data name="Segments" xml:space="preserve"><value>Segmentler</value></data>
-  <data name="SegmentSingleNote" xml:space="preserve"><value>Şimdilik yalnızca ilk segment uygulanır (backend tek segment).</value></data>
   <data name="WeekNumberLabel" xml:space="preserve"><value>{0}. Hafta</value></data>
   <data name="ColSpecialty" xml:space="preserve"><value>Uzmanlık</value></data>
   <data name="ResetOptimal" xml:space="preserve"><value>Optimal rotaya dön</value></data>
   <data name="SaveWeekPlan" xml:space="preserve"><value>Bu haftanın planı olarak kaydet</value></data>
-  <data name="SupplyLabel" xml:space="preserve">
-    <value>Arz</value>
+  <data name="SupplyLabel" xml:space="preserve"><value>Arz</value></data>
+  <data name="DemandLabel" xml:space="preserve"><value>Talep</value></data>
+  <data name="ScheduledLabel" xml:space="preserve"><value>Planlanan</value></data>
+  <data name="UnscheduledLabel" xml:space="preserve"><value>Planlanmayan</value></data>
+  <data name="TargetCountFormat" xml:space="preserve"><value>{0} doktor · {1} eczane</value></data>
+  <data name="ReadOnlyNotice" xml:space="preserve"><value>Bu plan onaylı ve salt okunur.</value></data>
+  <data name="CalendarUnresolvedWarning" xml:space="preserve"><value>Çalışma takvimi okunamadı; tatiller dikkate alınmadı.</value></data>
+  <data name="Status_generated" xml:space="preserve"><value>Oluşturuldu</value></data>
+  <data name="Status_archived" xml:space="preserve"><value>Arşivlendi</value></data>
+  <data name="RepSelfHint" xml:space="preserve"><value>Planlar oturumu açan temsilci için yapılır.</value></data>
+  <data name="TerritoryUnassignedBanner" xml:space="preserve"><value>Size bölge atanmamış; tüm hesaplar gösteriliyor. Yöneticinize başvurun.</value></data>
+  <data name="AddOutOfTerritory" xml:space="preserve"><value>Bölge dışı hesap ekle</value></data>
+  <data name="ApplyConfirm" xml:space="preserve"><value>{0} ziyaret planlanacak ve plan kilitlenecek. Devam edilsin mi?</value></data>
+  <data name="ApplyConfirmButton" xml:space="preserve"><value>Evet, planı kaydet</value></data>
+  <data name="ApplyWeekConfirm" xml:space="preserve"><value>{0} ziyaret bu haftanın planı olarak kaydedilecek ve hafta kilitlenecek. Devam edilsin mi?</value></data>
+  <data name="WeekEmptyBlocked" xml:space="preserve"><value>Bu haftada onaylanacak ziyaret yok.</value></data>
+  <data name="WeekLocked" xml:space="preserve"><value>Bu hafta onaylandı; ziyaretleri kilitli.</value></data>
+  <data name="MyPlans" xml:space="preserve"><value>Benim planlarım</value></data>
+  <data name="TeamView" xml:space="preserve"><value>Ekip</value></data>
+  <data name="TeamViewSoon" xml:space="preserve"><value>Yönetici görünümü yakında</value></data>
+  <data name="ViewSwitchLabel" xml:space="preserve"><value>Plan görünümü</value></data>
+  <data name="WeeksSection" xml:space="preserve"><value>Haftalar</value></data>
+  <data name="WeekCountFormat" xml:space="preserve"><value>{0} onaylı · {1} taslak</value></data>
+  <data name="ApprovedWeekCountFormat" xml:space="preserve"><value>{0} onaylı</value></data>
+  <data name="EmptyDraftBadge" xml:space="preserve"><value>boş taslak</value></data>
+  <data name="LegacyPlanBadge" xml:space="preserve"><value>Tüm dönem onaylı (eski plan)</value></data>
+  <data name="EmptyDraftsNotice" xml:space="preserve"><value>{0} boş taslak (0 hedef) var. Her dönem için tek plan tutulur.</value></data>
+  <data name="DeleteEmptyDrafts" xml:space="preserve"><value>Boş taslakları sil</value></data>
+  <data name="DeleteEmptyDraftsConfirm" xml:space="preserve"><value>{0} boş taslak silinecek.</value></data>
+  <data name="EmptyDraftsDeleted" xml:space="preserve"><value>{0} boş taslak silindi.</value></data>
+  <data name="ListEmptyTitle" xml:space="preserve"><value>Henüz planınız yok.</value></data>
+  <data name="ListEmptyAction" xml:space="preserve"><value>Bu dönem için plan oluştur</value></data>
+  <data name="ListLoadError" xml:space="preserve"><value>Planlar yüklenemedi.</value></data>
+  <data name="NoActivePeriodBand" xml:space="preserve"><value>Aktif dönem yok. Şu an açık bir dönem bulunmadığı için yeni plan oluşturulamaz; dönem tanımı için yöneticinize başvurun.</value></data>
+  <data name="NewPlanTitle" xml:space="preserve"><value>Yeni plan</value></data>
+  <data name="NewPlanPeriodHint" xml:space="preserve"><value>Aktif dönem seçildi. Yalnız aktif ve gelecek dönemler listelenir.</value></data>
+  <data name="NewPlanNoPeriod" xml:space="preserve"><value>Aktif dönem bulunamadı</value></data>
+  <data name="NewPlanWeek" xml:space="preserve"><value>Açılış haftası</value></data>
+  <data name="NewPlanWeekHint" xml:space="preserve"><value>Geçmiş haftalar seçilemez.</value></data>
+  <data name="NewPlanCreate" xml:space="preserve"><value>Planı oluştur</value></data>
+  <data name="PlanExists" xml:space="preserve"><value>Bu dönem için planınız var.</value></data>
+  <data name="GoToPlan" xml:space="preserve"><value>Plana git</value></data>
+  <data name="ApproveWeek" xml:space="preserve"><value>Haftayı onayla</value></data>
+  <data name="ApproveWeekHint" xml:space="preserve"><value>Yalnız bu haftanın ziyaretleri Planlanan Ziyaretler'e yazılır.</value></data>
+  <data name="ReopenWeek" xml:space="preserve"><value>Haftayı yeniden aç</value></data>
+  <data name="NextWeek" xml:space="preserve"><value>Sonraki haftayı aç</value></data>
+  <data name="WeekStatusPast" xml:space="preserve"><value>Geçmiş</value></data>
+  <data name="WeekStatusApproved" xml:space="preserve"><value>Onaylı</value></data>
+  <data name="WeekStatusDraft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="WeekStatusEmpty" xml:space="preserve"><value>Boş</value></data>
+  <data name="PastWeekBand" xml:space="preserve"><value>Geçmiş hafta: salt okunur.</value></data>
+  <data name="LegacyPlanBand" xml:space="preserve"><value>Bu plan tüm dönem için onaylanmış (eski plan); salt okunur.</value></data>
+  <data name="WeekCapacity" xml:space="preserve"><value>Bu haftanın kapasitesi</value></data>
+  <data name="WeekPlanned" xml:space="preserve"><value>Bu hafta planlanan</value></data>
+  <data name="PeriodCapacity" xml:space="preserve"><value>Dönem kapasitesi</value></data>
+  <data name="PeriodPlanned" xml:space="preserve"><value>Dönemde planlanan</value></data>
+  <data name="HoursFormat" xml:space="preserve"><value>{0} sa</value></data>
+  <data name="CapacityDefaultHours" xml:space="preserve"><value>Dönemin kapasitesi tanımlı değil; varsayılan çalışma saatleri kullanıldı.</value></data>
+  <data name="ReopenTitle" xml:space="preserve"><value>{0} yeniden açılsın mı?</value></data>
+  <data name="ReopenBody" xml:space="preserve"><value>Hafta taslağa döner; raporu olmayan ziyaretleri iptal edilir.</value></data>
+  <data name="ReopenReasonLabel" xml:space="preserve"><value>Gerekçe</value></data>
+  <data name="ReopenReasonHint" xml:space="preserve"><value>En az 10 karakter. Gerekçe haftanın geçmişine kaydedilir.</value></data>
+  <data name="ReopenConfirm" xml:space="preserve"><value>Yeniden aç</value></data>
+  <data name="ReopenDone" xml:space="preserve"><value>Hafta yeniden açıldı; gerekçe kaydedildi.</value></data>
+  <data name="ReopenUnavailable" xml:space="preserve"><value>Yeniden açma şu an kullanılamıyor.</value></data>
+  <data name="DetailLoadError" xml:space="preserve"><value>Plan yüklenemedi.</value></data>
+  <data name="TargetsLockedBand" xml:space="preserve">
+    <value>Seçili hafta onaylı ya da geçmiş; hedefler burada salt okunur.</value>
   </data>
-  <data name="DemandLabel" xml:space="preserve">
-    <value>Talep</value>
+  <data name="AddOutOfTerritoryShort" xml:space="preserve">
+    <value>Bölge dışı ekle</value>
   </data>
-  <data name="ScheduledLabel" xml:space="preserve">
-    <value>Planlanan</value>
+  <data name="OutOfTerritoryDialogHint" xml:space="preserve">
+    <value>Buradan eklenen hesap "bölge dışı" rozetiyle işaretlenir.</value>
   </data>
-  <data name="UnscheduledLabel" xml:space="preserve">
-    <value>Planlanmayan</value>
+  <data name="BulkApplyProducts" xml:space="preserve">
+    <value>Ürün uygula ({0})</value>
+  </data>
+  <data name="QuickFiltersLabel" xml:space="preserve">
+    <value>Hızlı filtreler</value>
+  </data>
+  <data name="QuickFilterAll" xml:space="preserve">
+    <value>Tümü</value>
+  </data>
+  <data name="QuickFilterDue" xml:space="preserve">
+    <value>Bu hafta görülmesi gerekenler</value>
+  </data>
+  <data name="QuickFilterNever" xml:space="preserve">
+    <value>Hiç görülmeyenler</value>
+  </data>
+  <data name="ColFrequency" xml:space="preserve">
+    <value>Sıklık</value>
+  </data>
+  <data name="ColDoneRemaining" xml:space="preserve">
+    <value>Yapılan / kalan</value>
+  </data>
+  <data name="ColLastVisit" xml:space="preserve">
+    <value>Son ziyaret</value>
+  </data>
+  <data name="ColProducts" xml:space="preserve">
+    <value>Ürünler</value>
+  </data>
+  <data name="LegendPromo" xml:space="preserve">
+    <value>tanıtım</value>
+  </data>
+  <data name="LegendNonPromo" xml:space="preserve">
+    <value>hatırlatma</value>
+  </data>
+  <data name="LegendPlay" xml:space="preserve">
+    <value>önerilen</value>
+  </data>
+  <data name="LegendLastVisit" xml:space="preserve">
+    <value>son ziyaret</value>
+  </data>
+  <data name="LegendRepPick" xml:space="preserve">
+    <value>sizin seçiminiz</value>
+  </data>
+  <data name="LegendPortfolio" xml:space="preserve">
+    <value>portföy</value>
+  </data>
+  <data name="NoApprovedContent" xml:space="preserve">
+    <value>Bu ürün için onaylı içerik yok</value>
+  </data>
+  <data name="FrequencyPerPeriod" xml:space="preserve">
+    <value>dönemde {0}</value>
+  </data>
+  <data name="FrequencyNone" xml:space="preserve">
+    <value>sıklık yok</value>
+  </data>
+  <data name="PlannedCountHint" xml:space="preserve">
+    <value>{0} planlı</value>
+  </data>
+  <data name="LastVisitNever" xml:space="preserve">
+    <value>hiç</value>
+  </data>
+  <data name="BadgeConsentBlocked" xml:space="preserve">
+    <value>İzin yok</value>
+  </data>
+  <data name="ConsentBlockedHint" xml:space="preserve">
+    <value>Ziyaret izni engelli; bu doktor seçilemez.</value>
+  </data>
+  <data name="BadgeInactive" xml:space="preserve">
+    <value>Pasif</value>
+  </data>
+  <data name="SegmentBadgeHint" xml:space="preserve">
+    <value>Segment (yalnız bilgi)</value>
+  </data>
+  <data name="SpecialtyAll" xml:space="preserve">
+    <value>Tüm uzmanlıklar</value>
+  </data>
+  <data name="SpecialtySelected" xml:space="preserve">
+    <value>{0} uzmanlık</value>
+  </data>
+  <data name="NoDoctorsForFilter" xml:space="preserve">
+    <value>Bu filtreye uyan doktor yok.</value>
+  </data>
+  <data name="AccountSelectedOf" xml:space="preserve">
+    <value>{0} / {1} seçili</value>
+  </data>
+  <data name="AccountSelectedCount" xml:space="preserve">
+    <value>{0} seçili</value>
+  </data>
+  <data name="AccountDueThisWeek" xml:space="preserve">
+    <value>{0} bu hafta</value>
+  </data>
+  <data name="EstimatedWeek" xml:space="preserve">
+    <value>Bu hafta ≈ {0} (ürünlere göre)</value>
+  </data>
+  <data name="EstimatedWeekShare" xml:space="preserve">
+    <value>haftalık süre: %{0}</value>
+  </data>
+  <data name="EstimatedOver" xml:space="preserve">
+    <value>Haftalık süre {0} aşılıyor.</value>
+  </data>
+  <data name="ProductDistribution" xml:space="preserve">
+    <value>Ürün dağılımı</value>
+  </data>
+  <data name="DoctorsWithoutProducts" xml:space="preserve">
+    <value>{0} seçili doktorda ürün yok.</value>
+  </data>
+  <data name="NoProductBadge" xml:space="preserve">
+    <value>ürün yok</value>
+  </data>
+  <data name="PickProducts" xml:space="preserve">
+    <value>Ürün seç</value>
+  </data>
+  <data name="EditProducts" xml:space="preserve">
+    <value>Ürünleri değiştir</value>
+  </data>
+  <data name="DoctorPanelPeriod" xml:space="preserve">
+    <value>Dönem görünümü</value>
+  </data>
+  <data name="RolePromo" xml:space="preserve">
+    <value>Tanıtım</value>
+  </data>
+  <data name="RoleNonPromo" xml:space="preserve">
+    <value>Hatırlatma</value>
+  </data>
+  <data name="ProductsS1Note" xml:space="preserve">
+    <value>Değişiklikler bu doktorun onaylanmamış sonraki ziyaretlerine uygulanır.</value>
+  </data>
+  <data name="ProductsBulkNote" xml:space="preserve">
+    <value>Seçtiğiniz ürünler {0} doktorun mevcut ürünlerine eklenir. Var olan ürünler korunur.</value>
+  </data>
+  <data name="ProductsSuggestedNote" xml:space="preserve">
+    <value>Önerilen ürünler sistemden gelir. Yanına ürün ekleyebilirsiniz. Önerilen bir ürünü çıkarmak yalnız tek ziyarette, Planlanan Ziyaret ekranında yapılır.</value>
+  </data>
+  <data name="ProductsNoneNote" xml:space="preserve">
+    <value>Bu doktor için ürün yok; ziyaret süresi hesaplanamıyor. Aşağıdan ürün seçin.</value>
+  </data>
+  <data name="PortfolioUndefinedNote" xml:space="preserve">
+    <value>Ürün portföyünüz tanımlı değil. Tüm ürünler listeleniyor.</value>
+  </data>
+  <data name="AllProducts" xml:space="preserve">
+    <value>Tüm ürünler</value>
+  </data>
+  <data name="ProductSearch" xml:space="preserve">
+    <value>Ürün adı ya da kodu ara</value>
+  </data>
+  <data name="ProductLimitLine" xml:space="preserve">
+    <value>Tanıtım {0} / {1} · Hatırlatma {2} / {3}</value>
+  </data>
+  <data name="DurationLine" xml:space="preserve">
+    <value>{0} tanıtım + {1} hatırlatma + rapor ≈ {2} dk</value>
+  </data>
+  <data name="DurationUnknown" xml:space="preserve">
+    <value>Ziyaret süresi hesaplanamıyor (dönem kapasitesi okunamadı).</value>
+  </data>
+  <data name="LimitExceeded" xml:space="preserve">
+    <value>Sınır aşıldı: ziyarette en fazla {0} tanıtım + {1} hatırlatma ürünü olabilir (dönem kapasitesi). Fazla ürünler ziyarete sığmayabilir.</value>
+  </data>
+  <data name="PlayLimitFull" xml:space="preserve">
+    <value>Sınır dolu — eklediğiniz ürün sığmıyor, sonraki ziyarete kalır.</value>
+  </data>
+  <data name="SuggestedLockHint" xml:space="preserve">
+    <value>Önerilen ürün; yalnız Planlanan Ziyaret ekranında çıkarılabilir</value>
+  </data>
+  <data name="NoProductMatches" xml:space="preserve">
+    <value>Aramaya uyan ürün yok.</value>
+  </data>
+  <data name="ProductsDone" xml:space="preserve">
+    <value>Tamam</value>
+  </data>
+  <data name="ApplyToSelected" xml:space="preserve">
+    <value>Seçili {0} doktora uygula</value>
+  </data>
+  <data name="BulkLimitExceeded" xml:space="preserve">
+    <value>{0} doktorda sınır aşıldı; fazla ürünler sonraki ziyarete kalır.</value>
+  </data>
+  <data name="ProductsSaved" xml:space="preserve">
+    <value>Ürünler kaydedildi.</value>
+  </data>
+  <data name="ProductsUnavailable" xml:space="preserve">
+    <value>Ürün listesi şu anda okunamıyor.</value>
+  </data>
+  <data name="RulesTitle" xml:space="preserve">
+    <value>Ziyaretin ürün listesi nasıl oluşur?</value>
+  </data>
+  <data name="RuleSourceOrder" xml:space="preserve">
+    <value>Her ziyaretin ürün listesi sırayla dolar: önerilen ürünler → sizin seçiminiz → son ziyarette sunulanlar → ürün portföyünüz. Ziyaret süresi bu listeden hesaplanır.</value>
+  </data>
+  <data name="RuleMixedOrder" xml:space="preserve">
+    <value>Karışık sıra: sonraki ziyaretlerde aynı ürün seti, sırası bir kayarak gelir (A, B, C → B, C, A).</value>
+  </data>
+  <data name="RuleOverflow" xml:space="preserve">
+    <value>Ziyaretin sınırına sığmayan ürün doktorun sonraki ziyaretine kalır.</value>
+  </data>
+  <data name="RuleUnknownFrequency" xml:space="preserve">
+    <value>Sıklığı bilinmeyen hedef "dönemde 1" sayılır ve sıklık yok rozetiyle gösterilir.</value>
+  </data>
+  <data name="StatusTextDraft" xml:space="preserve">
+    <value>Taslak hafta — onaylayana kadar düzenleyebilirsiniz.</value>
+  </data>
+  <data name="StatusTextApproved" xml:space="preserve">
+    <value>Bu hafta onaylı ve salt okunur.</value>
+  </data>
+  <data name="StatusTextPast" xml:space="preserve">
+    <value>Geçmiş hafta. Değişiklik yapılamaz.</value>
+  </data>
+  <data name="StatusTextEmpty" xml:space="preserve">
+    <value>Bu hafta için henüz taslak yok.</value>
+  </data>
+  <data name="GenerateWeek" xml:space="preserve">
+    <value>Bu haftayı üret</value>
+  </data>
+  <data name="WeekCapacityNote" xml:space="preserve">
+    <value>%{0} dolu · Dönem kapasitesinin haftaya düşen payı.</value>
+  </data>
+  <data name="WeekCapacityHolidaysNote" xml:space="preserve">
+    <value>Tatil ve yarım günler düşüldü.</value>
+  </data>
+  <data name="PeriodCapacityNote" xml:space="preserve">
+    <value>%{0} · {1} haftanın {2} haftası planlı</value>
+  </data>
+  <data name="CapacityMissingWeek" xml:space="preserve">
+    <value>Dönemin kapasitesi tanımlı değil; doluluk hesaplanamıyor.</value>
+  </data>
+  <data name="CapacityMissingPeriod" xml:space="preserve">
+    <value>Kapasite tanımı için yöneticinize başvurun.</value>
+  </data>
+  <data name="PeriodWeeksTitle" xml:space="preserve">
+    <value>Dönem haftaları</value>
+  </data>
+  <data name="PeriodWeeksSummary" xml:space="preserve">
+    <value>{0} hafta · {1} onaylı · {2} taslak · {3} boş · {4} geçmiş</value>
+  </data>
+  <data name="AutoDraftRulesTitle" xml:space="preserve">
+    <value>Otomatik taslak nasıl oluşur?</value>
+  </data>
+  <data name="AutoDraftRuleApprove" xml:space="preserve">
+    <value>Bir hafta onaylanınca sonraki haftalar her hedefin ziyaret sıklığına göre doldurulur.</value>
+  </data>
+  <data name="AutoDraftRuleEven" xml:space="preserve">
+    <value>Ziyaretler dönem içinde eşit aralıklarla dağıtılır.</value>
+  </data>
+  <data name="AutoDraftRuleDays" xml:space="preserve">
+    <value>Günler günlük sınır içinde bölgeye göre dengelenir; hafta sonu ve tatillere ziyaret düşmez.</value>
+  </data>
+  <data name="TodayLabel" xml:space="preserve">
+    <value>BUGÜN</value>
+  </data>
+  <data name="VisitCountShort" xml:space="preserve">
+    <value>{0} ziyaret</value>
+  </data>
+  <data name="LegacyWeekLabel" xml:space="preserve">
+    <value>onaylı (eski plan)</value>
+  </data>
+  <data name="HalfDayLabel" xml:space="preserve">
+    <value>yarım gün</value>
+  </data>
+  <data name="SlipTitle" xml:space="preserve">
+    <value>Kaydırılan / sığmayan</value>
+  </data>
+  <data name="SlipTitleCount" xml:space="preserve">
+    <value>Kaydırılan / sığmayan hedefler ve ürünler ({0})</value>
+  </data>
+  <data name="NoSlips" xml:space="preserve">
+    <value>Bu haftada kaydırılan hedef yok.</value>
+  </data>
+  <data name="MovedToWeek" xml:space="preserve">
+    <value>taşındı → {0}</value>
+  </data>
+  <data name="MovedToDay" xml:space="preserve">
+    <value>taşındı → {0}</value>
+  </data>
+  <data name="NotPlanned" xml:space="preserve">
+    <value>planlanmadı</value>
+  </data>
+  <data name="ToNextVisit" xml:space="preserve">
+    <value>→ sonraki ziyarete</value>
+  </data>
+  <data name="ReasonCapacityFull" xml:space="preserve">
+    <value>hafta dolu</value>
+  </data>
+  <data name="ReasonHoliday" xml:space="preserve">
+    <value>tatil</value>
+  </data>
+  <data name="ReasonHalfDay" xml:space="preserve">
+    <value>yarım gün</value>
+  </data>
+  <data name="ReasonPinOverflow" xml:space="preserve">
+    <value>sabit gün dolu, haftada yer yok</value>
+  </data>
+  <data name="ReasonConsentBlocked" xml:space="preserve">
+    <value>izin engelli</value>
+  </data>
+  <data name="ReasonPeriodExhausted" xml:space="preserve">
+    <value>dönem sonu</value>
+  </data>
+  <data name="ReasonMissingLocation" xml:space="preserve">
+    <value>konum yok</value>
+  </data>
+  <data name="ReasonNoAvailability" xml:space="preserve">
+    <value>doktorun müsait saatleri dışında</value>
+  </data>
+  <data name="ReasonTooLong" xml:space="preserve">
+    <value>bir iş gününden uzun</value>
+  </data>
+  <data name="ReasonPinDayFull" xml:space="preserve">
+    <value>sabitlenen gün doluydu</value>
+  </data>
+  <data name="ReasonPinAvailability" xml:space="preserve">
+    <value>sabitlenen günde müsaitlik dışında</value>
+  </data>
+  <data name="ReasonMaxPromo" xml:space="preserve">
+    <value>tanıtım sınırı doldu</value>
+  </data>
+  <data name="ReasonMaxNonPromo" xml:space="preserve">
+    <value>hatırlatma sınırı doldu</value>
+  </data>
+  <data name="ReasonOther" xml:space="preserve">
+    <value>diğer neden</value>
+  </data>
+  <data name="DayByDay" xml:space="preserve">
+    <value>Gün gün ziyaret</value>
+  </data>
+  <data name="DayCapacityFormat" xml:space="preserve">
+    <value>{0} / {1} ziyaret</value>
+  </data>
+  <data name="IdleTime" xml:space="preserve">
+    <value>boş {0}</value>
+  </data>
+  <data name="OverCapacity" xml:space="preserve">
+    <value>kapasite aşıldı</value>
+  </data>
+  <data name="NoVisitThisDay" xml:space="preserve">
+    <value>Bu güne ziyaret düşmüyor.</value>
+  </data>
+  <data name="HolidayNoVisit" xml:space="preserve">
+    <value>Tatil — ziyaret yok.</value>
+  </data>
+  <data name="NoVisitThisWeek" xml:space="preserve">
+    <value>Bu hafta için plan yok.</value>
+  </data>
+  <data name="MoreDoctors" xml:space="preserve">
+    <value>+{0} doktor daha</value>
+  </data>
+  <data name="ApproxMinutes" xml:space="preserve">
+    <value>≈ {0} dk</value>
+  </data>
+  <data name="PinnedHint" xml:space="preserve">
+    <value>Bu güne siz sabitlediniz</value>
+  </data>
+  <data name="AutoPinnedHint" xml:space="preserve">
+    <value>Otomatik taşındı: sabitlenen gün doluydu</value>
+  </data>
+  <data name="Unpin" xml:space="preserve">
+    <value>Sabiti kaldır</value>
+  </data>
+  <data name="MoveToDay" xml:space="preserve">
+    <value>Güne taşı…</value>
+  </data>
+  <data name="MoveInstitution" xml:space="preserve">
+    <value>Kurumu başka güne taşı…</value>
+  </data>
+  <data name="MoveHint" xml:space="preserve">
+    <value>Bir ziyareti ya da kurumu başka güne sürükleyin veya Güne taşı… menüsünü kullanın.</value>
+  </data>
+  <data name="MoveLockedHint" xml:space="preserve">
+    <value>Değiştirmek için haftayı yeniden açın.</value>
+  </data>
+  <data name="MoveDayLabel" xml:space="preserve">
+    <value>Gün</value>
+  </data>
+  <data name="MoveAllQuestion" xml:space="preserve">
+    <value>Bu kurumdaki diğer ziyaretleri de ({0} doktor, {1} eczane) taşıyayım mı?</value>
+  </data>
+  <data name="MoveAll" xml:space="preserve">
+    <value>Hepsini taşı</value>
+  </data>
+  <data name="MoveOnlyThis" xml:space="preserve">
+    <value>Yalnız bu doktor</value>
+  </data>
+  <data name="MoveConfirm" xml:space="preserve">
+    <value>Taşı</value>
+  </data>
+  <data name="DayPinSaved" xml:space="preserve">
+    <value>Gün değiştirildi.</value>
+  </data>
+  <data name="PinOverflowMessage" xml:space="preserve">
+    <value>{0} ziyaret bu güne sığmadı → {1} gününe taşındı</value>
+  </data>
+  <data name="PinOverflowNextWeek" xml:space="preserve">
+    <value>{0} ziyaret bu haftaya sığmadı → sonraki haftaya kaydı</value>
+  </data>
+  <data name="ProductVisitsTitle" xml:space="preserve">
+    <value>Ürün başına haftalık ziyaret</value>
+  </data>
+  <data name="ProductVisitsSplit" xml:space="preserve">
+    <value>tanıtım {0} · hatırlatma {1}</value>
+  </data>
+  <data name="NoProductVisits" xml:space="preserve">
+    <value>Bu haftada ürünlü ziyaret yok.</value>
+  </data>
+  <data name="MixedOrderNote" xml:space="preserve">
+    <value>Karışık sıra: ürün seti aynı kalır, sırası her ziyarette bir kayar. Bir ziyarette A, B, C sunulduysa sonrakinde B, C, A gelir.</value>
+  </data>
+  <data name="OpenRoute" xml:space="preserve">
+    <value>Rotayı aç</value>
+  </data>
+  <data name="RebuildWeek" xml:space="preserve">
+    <value>Bu haftayı yeniden üret</value>
+  </data>
+  <data name="WeekDoctorsTitle" xml:space="preserve">
+    <value>Bu haftadaki doktorlar ({0})</value>
+  </data>
+  <data name="WeekDoctorsHint" xml:space="preserve">
+    <value>Satıra tıklayın: doktorun dönem boyunca hangi haftalarda planlı olduğu açılır.</value>
+  </data>
+  <data name="NoDoctorsThisWeek" xml:space="preserve">
+    <value>Bu haftada planlı doktor yok.</value>
+  </data>
+  <data name="StatePresented" xml:space="preserve">
+    <value>sunuldu</value>
+  </data>
+  <data name="StateApproved" xml:space="preserve">
+    <value>onaylı</value>
+  </data>
+  <data name="StateDraft" xml:space="preserve">
+    <value>taslak</value>
+  </data>
+  <data name="StateProjected" xml:space="preserve">
+    <value>öngörülen</value>
+  </data>
+  <data name="WeekHistoryTitle" xml:space="preserve">
+    <value>Hafta geçmişi</value>
+  </data>
+  <data name="HistoryApproved" xml:space="preserve">
+    <value>Onaylandı</value>
+  </data>
+  <data name="HistoryReopened" xml:space="preserve">
+    <value>Yeniden açıldı</value>
+  </data>
+  <data name="HistoryYou" xml:space="preserve">
+    <value>siz</value>
+  </data>
+  <data name="HistoryOtherUser" xml:space="preserve">
+    <value>başka kullanıcı</value>
+  </data>
+  <data name="FrequencyTarget" xml:space="preserve">
+    <value>Sıklık hedefi</value>
+  </data>
+  <data name="DoneLabel" xml:space="preserve">
+    <value>Yapılan</value>
+  </data>
+  <data name="RemainingLabel" xml:space="preserve">
+    <value>Kalan</value>
+  </data>
+  <data name="NextVisitProducts" xml:space="preserve">
+    <value>Sıradaki ziyaretin ürünleri</value>
+  </data>
+  <data name="SourceLine" xml:space="preserve">
+    <value>Kaynak: {0}</value>
+  </data>
+  <data name="NoProductsNoTime" xml:space="preserve">
+    <value>Ziyaret süresi hesaplanamıyor. Ürün seçin.</value>
+  </data>
+  <data name="ProductHistoryTitle" xml:space="preserve">
+    <value>Dönem boyunca · ürün geçmişi</value>
+  </data>
+  <data name="HistoryPresented" xml:space="preserve">
+    <value>Sunuldu</value>
+  </data>
+  <data name="HistoryPlanned" xml:space="preserve">
+    <value>Planlandı</value>
+  </data>
+  <data name="HistoryProjected" xml:space="preserve">
+    <value>Öngörülen</value>
+  </data>
+  <data name="NoVisitsInPeriod" xml:space="preserve">
+    <value>Bu doktora dönemde planlı ziyaret yok.</value>
+  </data>
+  <data name="MyAccountsTitle" xml:space="preserve">
+    <value>Hesaplarım (bölgem)</value>
+  </data>
+  <data name="AccountSearch" xml:space="preserve">
+    <value>Hesap ara…</value>
+  </data>
+  <data name="ColStatus" xml:space="preserve">
+    <value>Durum</value>
+  </data>
+  <data name="NoAccountsFound" xml:space="preserve">
+    <value>Eşleşen hesap yok.</value>
+  </data>
+  <data name="DueThisWeekBadge" xml:space="preserve">
+    <value>Bu hafta</value>
+  </data>
+  <data name="EditWeekTargets" xml:space="preserve">
+    <value>Bu haftanın hedeflerini düzenle</value>
+  </data>
+  <data name="EmptyWeekHint" xml:space="preserve">
+    <value>Önceki hafta onaylandığında otomatik oluşur. Şimdi sıklık kurallarıyla üretebilirsiniz.</value>
+  </data>
+  <data name="FrequencyDefaultOne" xml:space="preserve">
+    <value>dönemde 1 (varsayılan)</value>
+  </data>
+  <data name="NextContentSoon" xml:space="preserve">
+    <value>Sıradaki içerik: yakında</value>
+  </data>
+  <data name="NoTimeShort" xml:space="preserve">
+    <value>süre yok</value>
+  </data>
+  <data name="ShowAllCount" xml:space="preserve">
+    <value>Tümünü göster ({0})</value>
+  </data>
+  <data name="ShowLess" xml:space="preserve">
+    <value>Daha az göster</value>
+  </data>
+  <data name="WeekDoctorsHeading" xml:space="preserve">
+    <value>Bu haftadaki doktorlar</value>
+  </data>
+  <data name="HistoryStateDone" xml:space="preserve">
+    <value>Yapıldı</value>
+  </data>
+  <data name="HistoryStateApproved" xml:space="preserve">
+    <value>Planlı · onaylı</value>
+  </data>
+  <data name="HistoryStateDraft" xml:space="preserve">
+    <value>Taslak</value>
+  </data>
+  <data name="HistoryStateProjected" xml:space="preserve">
+    <value>Öngörülen</value>
+  </data>
+  <data name="ReasonNoNearDay" xml:space="preserve">
+    <value>yakın gün yok</value>
+  </data>
+  <data name="StateDone" xml:space="preserve">
+    <value>yapıldı</value>
+  </data>
+  <data name="WeekSubApproved" xml:space="preserve">
+    <value>Onaylı · Planlanan Ziyaretler'e yazıldı · salt okunur</value>
+  </data>
+  <data name="WeekSubEmpty" xml:space="preserve">
+    <value>Henüz üretilmedi</value>
   </data>
 </root>

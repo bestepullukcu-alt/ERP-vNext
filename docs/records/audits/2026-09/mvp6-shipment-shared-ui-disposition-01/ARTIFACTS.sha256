@@ -1,0 +1,14 @@
+08906865d9f062b756c5d1e2c316258c9446d6ff07e7bc2685a489c4438a210f  docs/records/audits/2026-09/mvp6-shipment-shared-ui-disposition-01/A03-JSON-CHALLENGE.patch
+25e7bfd2e7933b60da555a16f23d0dc85849e40511d9105a99506e00b2769511  docs/records/audits/2026-09/mvp6-shipment-shared-ui-disposition-01/AUTHORITY.md
+0a8b1e48d53630070bacbce61294bc8ecf5d82961ab7196dea0794dd81c47470  docs/records/audits/2026-09/mvp6-shipment-shared-ui-disposition-01/BASELINE-PATCH-TARGET.tsv
+1e53a3a63661e85b6a165dcf8aaf48451cc077af85713234e22496ec6e861c45  docs/records/audits/2026-09/mvp6-shipment-shared-ui-disposition-01/COMBINED-SHARED-UI-CANDIDATE.patch
+67b3b8c3d64e2ecfca98bea763979b2bfa743f074d6edfe37acfa18004852eca  docs/records/audits/2026-09/mvp6-shipment-shared-ui-disposition-01/FINDING-DISPOSITION.tsv
+1890ab80cc7c973d8bd838e5a9b746e6c4246f41016ab85f7c426969f8c76cc6  docs/records/audits/2026-09/mvp6-shipment-shared-ui-disposition-01/INDEPENDENT-VER-PROMPT.md
+dd4339a9db3128e7a94f5bbaa3a36e9ac9e4f83e8adf8a0ad065376be2e43ebb  docs/records/audits/2026-09/mvp6-shipment-shared-ui-disposition-01/OWNER-DECISION-TEXT.md
+9f4b036b85d06144490ec43d536dc2b8b560822e081551823eb3c1eac9d541be  docs/records/audits/2026-09/mvp6-shipment-shared-ui-disposition-01/PRES-183-02-DATATABLE-L10N.patch
+8e6af8ba57ef55799af55dd81304476f06196dc3ffdb3a27f48adcc4fe7041e4  docs/records/audits/2026-09/mvp6-shipment-shared-ui-disposition-01/REGRESSION-SCOPE.tsv
+33e8038e3e85bfe012c1a708774176570f99706c845b0409bebc9af5ef449f73  docs/records/audits/2026-09/mvp6-shipment-shared-ui-disposition-01/SOP-22.md
+7f9598583474f24a4f25d0b7e3a0437b0bdf5adbbcc325f1f6f5df177732e17f  docs/records/audits/2026-09/mvp6-shipment-shared-ui-disposition-01/raw/green-regression.trx
+14d7acab60c222f6302e4ea4b512bfd16007388f5e8b4e4dc04eb35cf2cb8e74  docs/records/audits/2026-09/mvp6-shipment-shared-ui-disposition-01/raw/patch-apply-byte-equality.tsv
+190af0e799212fd9905a2f25371176b4f78e9168587c3b60774cbecefbf61ad2  docs/records/audits/2026-09/mvp6-shipment-shared-ui-disposition-01/raw/red-a03-unauth-list.headers
+ca20c4f0ef55e088b28811def813170bd4401fed1715f6786dd195d368049acb  docs/records/audits/2026-09/mvp6-shipment-shared-ui-disposition-01/raw/red-presentation-browser-measurements.json

@@ -24,3 +24,12 @@ execution/DASHBOARD.md
 # MOD-0033-FU02 §F.3 — Development-only local settings (disposable keys, service-client secret). Never tracked.
 appsettings.Development.local.json
 appsettings.Development.local.json.*.tmp
+
+# Generated test and tooling output — never committed (Q348, 2026-10-03).
+TestResults/
+*.trx
+*.bak-*
+/rework-results.json
+
+# Per-developer Claude Code permission overrides — local only (R-5, PR #134).
+.claude/settings.local.json

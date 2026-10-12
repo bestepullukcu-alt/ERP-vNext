@@ -1,0 +1,19 @@
+id	fact	evidence	interpretation
+E01	Only published Loads read is queryLoads	docs/analysis/contracts/shipment-bundle.openapi.yaml:410-447	Reuse list; no by-ID/detail endpoint may be assumed
+E02	LoadSummary omits root	docs/analysis/contracts/shipment-bundle.openapi.yaml:3188-3195	Existing row cannot acquire authoritative transition root
+E03	LoadResponse omits root	docs/analysis/contracts/shipment-bundle.openapi.yaml:3196-3204	Mutation body does not create a durable read seam
+E04	Transition requires correlation and idempotency headers	docs/analysis/contracts/shipment-bundle.openapi.yaml:992-1029	Root remains an existing header input, not a new body field
+E05	Persisted Load owns CorrelationRoot	services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Loads/LoadPlan.cs:3-16	Producer already has the authoritative value
+E06	Create persists accepted request root	services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Loads/LoadRepository.cs:33-40	Load root is local create correlation
+E07	Fresh transition compares stored root before lifecycle	services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Loads/LoadRepository.cs:41-46	Wrong/stale root uses existing 409 behavior
+E08	List projection omits persisted root	services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Loads/Handlers/QueryHandlers/GetLoadListHandler.cs:6-8	Minimum producer change is a list projection field
+E09	Root checked before fingerprint/lifecycle	docs/analysis/contracts/loads-semantics-v2.0.0.md:62-72	Existing precedence is preserved
+E10	Replay/error outcomes are already defined	docs/analysis/contracts/loads-semantics-v2.0.0.md:75-96;123-139	No new transition error code is needed
+E11	All Load events use first create correlation	docs/analysis/contracts/loads-semantics-v2.0.0.md:141-154	Shipment root cannot substitute for Load root
+E12	Shipment detail root is producer-persisted, optional/nullable	docs/analysis/contracts/shipment-root-semantics-v3.0.0.md:1-6	Useful for Shipment consumers, not a mapping to Load root
+E13	Multi-Shipment root policy remains separate	docs/roadmap/plans/mvp6-audit-and-acceleration-2026-09-20.md:51-54	Do not forbid consolidation or invent multi-root events
+E14	Bounded Loads acceptance excludes root/live/multi-root/UI	docs/records/audits/2026-09/mvp6-mod0185-acceptance-consolidation-02/SOP-22.md:3-8	Existing backend acceptance is not UI/root acceptance
+E15	Current UI plan explicitly forbids manual/cache root workarounds	docs/roadmap/plans/mvp6-loads-ui-scope-01/ACCEPTANCE.md:19-20	Fail closed until a producer seam is published
+E16	Root decision estimate and overlap already exist	docs/roadmap/plans/mvp6-loads-remaining-scope-estimate-01/EFFORT.tsv:2-9	Do not add the same reserves again
+E17	Shipment new-create root emission remains application-held	docs/records/audits/2026-09/mvp6-shipment-root-r2-emission-rework-01/SOP-22.md:3-15;59-63	Do not claim complete live root uptake
+

@@ -1,0 +1,4 @@
+kind	url_or_path	source_path	http	observed	expected	result
+served-asset	/assets/js/SupplyChain/CapacityPlans/index.js	frontend/Diten.Web/wwwroot/assets/js/SupplyChain/CapacityPlans/index.js	200	bb213d72f76476c82787fb6820adcf5ab6b752709398e0baf936028ad709a2fc	bb213d72f76476c82787fb6820adcf5ab6b752709398e0baf936028ad709a2fc	match
+served-asset	/assets/js/SupplyChain/CapacityPlans/details.js	frontend/Diten.Web/wwwroot/assets/js/SupplyChain/CapacityPlans/details.js	200	582156de10e0ffe1bea9f31cb1b8fd5a08a46945113ebfbff8185f6dac7b29c3	582156de10e0ffe1bea9f31cb1b8fd5a08a46945113ebfbff8185f6dac7b29c3	match
+browser-url	http://127.0.0.1:5501/SupplyChain/CapacityPlans	-	-	127.0.0.1:5501	127.0.0.1:5501	match

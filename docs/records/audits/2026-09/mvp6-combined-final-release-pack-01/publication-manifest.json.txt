@@ -1,0 +1,22 @@
+[
+  {
+    "path": "docs/analysis/contracts/shipment-bundle.openapi.yaml",
+    "sha256": "5dfe7c1bba32551bd8d4b532243878684e69a6d9560e667a4183bfd516b9d21c",
+    "before": "93c696e2fba13dbc8fbfcf2cd1ae0ae0bd93cd9d0935b3ee743229e810163571"
+  },
+  {
+    "path": "docs/analysis/contracts/shipment-root-semantics-v3.0.0.md",
+    "sha256": "7d1327a12b9775a594631dd9eb3c3c4c90e7f8429581f9ff7f42dde419f7b8af",
+    "before": "ABSENT"
+  },
+  {
+    "path": "docs/analysis/contracts/returns-semantics-v3.0.0.md",
+    "sha256": "00990a289069d25a62f7c883aac718e08b96b0386a572e7d1f93f0e447e98a11",
+    "before": "ABSENT"
+  },
+  {
+    "path": "docs/analysis/contracts/claims-semantics-v3.0.0.md",
+    "sha256": "16e65c26faeb53887607dd16de0de34bad61dcc89d3beb7f6b8adca0ec4eeb63",
+    "before": "ABSENT"
+  }
+]

@@ -1,0 +1,29 @@
+@using Diten.Web.Views.CRM.LegalProfiles
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LegalProfilesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    // SERVER data: the Web proxy pages, searches, sorts and filters the CRM rows (api/legal-profiles) and answers
+    // { items, total, filteredTotal }; the JS declares the same mode.
+    // NO SELECTION COLUMN, deliberately: there is no bulk operation on a legal profile (no bulk delete — it is archived).
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-legalprofiles",
+        DataMode = "server",
+        Slug = "legalprofiles",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["Code"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["Country"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Language"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Version"].Value },
+            new DataTableColumnViewModel { Header = SharedLocalizer["Status"].Value },
+            new DataTableColumnViewModel { Header = Localizer["UpdatedAt"].Value }
+        ],
+        ActionsHeader = Localizer["Actions"].Value
+    };
+}
+
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />

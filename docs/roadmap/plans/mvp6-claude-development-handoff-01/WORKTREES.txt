@@ -1,0 +1,77 @@
+worktree /Users/natig/Projects/ERP-vNext-recovery
+HEAD 4a8d4d4b339528a88e6220fb8402e5a2c771136c
+branch refs/heads/feature/mvp6-logistics
+
+worktree /private/tmp/mvp6-integration-baseline-422-01
+HEAD 4a8d4d4b339528a88e6220fb8402e5a2c771136c
+detached
+prunable gitdir file points to non-existent location
+
+worktree /private/tmp/mvp6-mod0186-http-integration-01
+HEAD 4a8d4d4b339528a88e6220fb8402e5a2c771136c
+detached
+prunable gitdir file points to non-existent location
+
+worktree /private/tmp/mvp6-mod0186-r01-rework-01
+HEAD 4a8d4d4b339528a88e6220fb8402e5a2c771136c
+branch refs/heads/codex/mod-0186-r01-rework-01
+prunable gitdir file points to non-existent location
+
+worktree /private/tmp/mvp6-mod0187-malformed-map-rework-01
+HEAD 4a8d4d4b339528a88e6220fb8402e5a2c771136c
+detached
+prunable gitdir file points to non-existent location
+
+worktree /private/tmp/mvp6-mod0190-http-integration-01
+HEAD 4a8d4d4b339528a88e6220fb8402e5a2c771136c
+detached
+prunable gitdir file points to non-existent location
+
+worktree /private/tmp/mvp6-mod0190-http-integration-02
+HEAD 4a8d4d4b339528a88e6220fb8402e5a2c771136c
+detached
+prunable gitdir file points to non-existent location
+
+worktree /private/tmp/mvp6-mod0192-capacity-uptake-01
+HEAD 4a8d4d4b339528a88e6220fb8402e5a2c771136c
+detached
+prunable gitdir file points to non-existent location
+
+worktree /private/tmp/mvp6-mod0192-core-dev-01
+HEAD 4a8d4d4b339528a88e6220fb8402e5a2c771136c
+branch refs/heads/codex/mod-0192-core-dev-01
+prunable gitdir file points to non-existent location
+
+worktree /private/tmp/mvp6-mod0192-http-integration-01
+HEAD 4a8d4d4b339528a88e6220fb8402e5a2c771136c
+detached
+prunable gitdir file points to non-existent location
+
+worktree /private/tmp/mvp6-shipment-pod-ui-exec-01
+HEAD 4a8d4d4b339528a88e6220fb8402e5a2c771136c
+detached
+prunable gitdir file points to non-existent location
+
+worktree /Users/natig/.codex/worktrees/claims-dev-start-01/ERP-vNext-recovery
+HEAD 4a8d4d4b339528a88e6220fb8402e5a2c771136c
+branch refs/heads/codex/mod-0187-claims-dev-start-01
+
+worktree /Users/natig/.codex/worktrees/mod-0190-isolated-dev-01/ERP-vNext-recovery
+HEAD 4a8d4d4b339528a88e6220fb8402e5a2c771136c
+detached
+
+worktree /Users/natig/.codex/worktrees/mvp6-carrier-ui-dev/ERP-vNext-recovery
+HEAD 4a8d4d4b339528a88e6220fb8402e5a2c771136c
+detached
+
+worktree /Users/natig/.codex/worktrees/mvp6-mod0190-core/ERP-vNext-recovery
+HEAD 4a8d4d4b339528a88e6220fb8402e5a2c771136c
+detached
+
+worktree /Users/natig/.codex/worktrees/returns-phase15-close-01/ERP-vNext-recovery
+HEAD 4a8d4d4b339528a88e6220fb8402e5a2c771136c
+branch refs/heads/codex/mod-0186-phase15-core-dev-01
+
+worktree /Users/natig/.codex/worktrees/shipment-integration-rework-exec-01/ERP-vNext-recovery
+HEAD 4a8d4d4b339528a88e6220fb8402e5a2c771136c
+detached

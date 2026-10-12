@@ -1,0 +1,5 @@
+tree	suite	exit	summary
+treeB	web-tests	0	Passed!  - Failed:     0, Passed:   257, Skipped:     0, Total:   257, Duration: 7 s - Diten.Web.Tests.dll (net8.0)
+treeB	supplychain-tests	1	Failed!  - Failed:     2, Passed:   424, Skipped:     0, Total:   426, Duration: 4 m 39 s - Diten.SupplyChainService.Tests.dll (net8.0)
+treeA	web-tests	0	Passed!  - Failed:     0, Passed:   158, Skipped:     0, Total:   158, Duration: 13 s - Diten.Web.Tests.dll (net8.0)
+treeA	supplychain-tests	1	Failed!  - Failed:     2, Passed:   415, Skipped:     0, Total:   417, Duration: 4 m 36 s - Diten.SupplyChainService.Tests.dll (net8.0)

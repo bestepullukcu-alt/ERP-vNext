@@ -1,0 +1,245 @@
+# Q117 FIXES.patch — WP-MVP6-FIX-117 · overlay on BASE a8a236de82a9f2b5d4c0f3560aa13894c3740c6e187cb0140f5da1b08109c661
+# Unified diff vs BASE (~/mvp6-env/base/src), paths repo-relative (a/ = BASE, b/ = Q117). The archive q117-fixes-overlay.tar.gz is
+# authoritative; in the three Loads probe hunks the REMOVED lines carry the exposed Q101-F02 value, which is replaced by a
+# redaction marker, so those hunks apply only after the marker is swapped for the original text in memory (done by Q117, see README).
+#
+# REASON services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityRestartTests.cs: N1 (owner A): guard the child-process registration like Persistence/DependencyInjection.cs — TryRegisterSerializer, so a process that already holds the String Guid/DateTimeOffset serializers does not throw.
+--- a/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityRestartTests.cs
++++ b/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityRestartTests.cs
+@@ -29,8 +29,10 @@
+         // Match the parent record before constructing a typed collection.
+         if(raw["_id"].BsonType==BsonType.String)
+         {
+-            BsonSerializer.RegisterSerializer(new GuidSerializer(BsonType.String));
+-            BsonSerializer.RegisterSerializer(new DateTimeOffsetSerializer(BsonType.String));
++            // Guarded like Persistence/DependencyInjection.cs: the process-wide registry may already hold these
++            // serializers, and a second RegisterSerializer throws for every later test in the process (Q103-N1).
++            BsonSerializer.TryRegisterSerializer(new GuidSerializer(BsonType.String));
++            BsonSerializer.TryRegisterSerializer(new DateTimeOffsetSerializer(BsonType.String));
+         }
+         else
+         {
+#
+# REASON services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/TestAssemblyBsonSetup.cs: N1 root cause (owner choice in Q117): [ModuleInitializer] runs the product AddPersistence serializer registration before any test, so a Capacity test that touches Guid serialization first can no longer make every later AddPersistence throw (Q103 run 3: 264/408). Test-only; no client is created.
+--- /dev/null
++++ b/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/TestAssemblyBsonSetup.cs
+@@ -0,0 +1,21 @@
++using System.Runtime.CompilerServices;
++using Microsoft.Extensions.Configuration;
++using Microsoft.Extensions.DependencyInjection;
++namespace Diten.SupplyChainService.Tests;
++// Q117 (Q103-N1): BSON serializers are process-wide. Persistence/DependencyInjection registers the String Guid and
++// DateTimeOffset serializers once, but that throws if a Guid serializer was already looked up — which a typed
++// collection in an earlier test does (the Capacity tests never call AddPersistence). When those tests happen to run
++// first, every later AddPersistence fails ("There is already a serializer registered for type Guid"): 264/408 in
++// Q103 run 3. Running the product's own registration before any test makes a single-process run order-independent.
++// No client is created: the service provider is never built, so nothing connects.
++internal static class TestAssemblyBsonSetup
++{
++    [ModuleInitializer]
++    internal static void RegisterPersistenceSerializers() =>
++        Diten.SupplyChainService.Persistence.DependencyInjection.AddPersistence(new ServiceCollection(),
++            new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
++            {
++                ["Mongo:ConnectionString"] = "mongodb://127.0.0.1:1/?serverSelectionTimeoutMS=1",
++                ["Mongo:DatabaseName"] = "unused-module-initializer"
++            }).Build());
++}
+#
+# REASON services/Diten.HumanCapitalService/src/Diten.HumanCapitalService.Api/Program.cs: N2 (owner B): JwtClockSkew guard — ClockSkew = JwtValidationDefaults.ClockSkew (was TimeSpan.Zero; now the shared 30 s, BL-296).
+--- a/services/Diten.HumanCapitalService/src/Diten.HumanCapitalService.Api/Program.cs
++++ b/services/Diten.HumanCapitalService/src/Diten.HumanCapitalService.Api/Program.cs
+@@ -1,6 +1,7 @@
+ using Diten.HumanCapitalService.Application;
+ using Diten.HumanCapitalService.Infrastructure;
+ using Diten.HumanCapitalService.Persistence;
++using Diten.BuildingBlocks.Security.Secrets;
+ using Microsoft.AspNetCore.Authentication.JwtBearer;
+ using Microsoft.IdentityModel.Tokens;
+ using Microsoft.OpenApi.Models;
+@@ -29,7 +30,7 @@
+             ValidIssuer = jwtIssuer,
+             ValidAudience = jwtAudience,
+             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret ?? string.Empty)),
+-            ClockSkew = TimeSpan.Zero
++            ClockSkew = JwtValidationDefaults.ClockSkew
+         };
+     });
+ 
+#
+# REASON services/Diten.HumanCapitalService/src/Diten.HumanCapitalService.Api/Diten.HumanCapitalService.Api.csproj: N2: reference Diten.BuildingBlocks.Security.Secrets so Program.cs can name the shared constant (owner-approved in Q117).
+--- a/services/Diten.HumanCapitalService/src/Diten.HumanCapitalService.Api/Diten.HumanCapitalService.Api.csproj
++++ b/services/Diten.HumanCapitalService/src/Diten.HumanCapitalService.Api/Diten.HumanCapitalService.Api.csproj
+@@ -14,5 +14,6 @@
+     <ProjectReference Include="..\Diten.HumanCapitalService.Application\Diten.HumanCapitalService.Application.csproj" />
+     <ProjectReference Include="..\Diten.HumanCapitalService.Infrastructure\Diten.HumanCapitalService.Infrastructure.csproj" />
+     <ProjectReference Include="..\Diten.HumanCapitalService.Persistence\Diten.HumanCapitalService.Persistence.csproj" />
++    <ProjectReference Include="..\..\..\Diten.Building.Blocks\Diten.BuildingBlocks.Security.Secrets\Diten.BuildingBlocks.Security.Secrets.csproj" />
+   </ItemGroup>
+ </Project>
+#
+# REASON services/Diten.TalentEcosystemService/src/Diten.TalentEcosystemService.Api/Program.cs: N2 (owner B): same as HumanCapital (TimeSpan.Zero -> JwtValidationDefaults.ClockSkew).
+--- a/services/Diten.TalentEcosystemService/src/Diten.TalentEcosystemService.Api/Program.cs
++++ b/services/Diten.TalentEcosystemService/src/Diten.TalentEcosystemService.Api/Program.cs
+@@ -1,6 +1,7 @@
+ using Diten.TalentEcosystemService.Application;
+ using Diten.TalentEcosystemService.Infrastructure;
+ using Diten.TalentEcosystemService.Persistence;
++using Diten.BuildingBlocks.Security.Secrets;
+ using Microsoft.AspNetCore.Authentication.JwtBearer;
+ using Microsoft.IdentityModel.Tokens;
+ using System.Text;
+@@ -28,7 +29,7 @@
+             ValidIssuer = jwtIssuer,
+             ValidAudience = jwtAudience,
+             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret ?? string.Empty)),
+-            ClockSkew = TimeSpan.Zero
++            ClockSkew = JwtValidationDefaults.ClockSkew
+         };
+     });
+ 
+#
+# REASON services/Diten.TalentEcosystemService/src/Diten.TalentEcosystemService.Api/Diten.TalentEcosystemService.Api.csproj: N2: reference Diten.BuildingBlocks.Security.Secrets (owner-approved in Q117).
+--- a/services/Diten.TalentEcosystemService/src/Diten.TalentEcosystemService.Api/Diten.TalentEcosystemService.Api.csproj
++++ b/services/Diten.TalentEcosystemService/src/Diten.TalentEcosystemService.Api/Diten.TalentEcosystemService.Api.csproj
+@@ -13,5 +13,6 @@
+     <ProjectReference Include="..\Diten.TalentEcosystemService.Application\Diten.TalentEcosystemService.Application.csproj" />
+     <ProjectReference Include="..\Diten.TalentEcosystemService.Infrastructure\Diten.TalentEcosystemService.Infrastructure.csproj" />
+     <ProjectReference Include="..\Diten.TalentEcosystemService.Persistence\Diten.TalentEcosystemService.Persistence.csproj" />
++    <ProjectReference Include="..\..\..\Diten.Building.Blocks\Diten.BuildingBlocks.Security.Secrets\Diten.BuildingBlocks.Security.Secrets.csproj" />
+   </ItemGroup>
+ </Project>
+#
+# REASON services/Diten.MdmService/src/Diten.MdmService.Api/Security/PlatformServiceTokenValidator.cs: N2 (owner B, option "shared 30 s everywhere"): lifetime validation and the iat check use JwtValidationDefaults.ClockSkew; the S2S tolerance widens from the configured <=10 s to 30 s. The ClockSkewSeconds option keeps only its range check.
+--- a/services/Diten.MdmService/src/Diten.MdmService.Api/Security/PlatformServiceTokenValidator.cs
++++ b/services/Diten.MdmService/src/Diten.MdmService.Api/Security/PlatformServiceTokenValidator.cs
+@@ -2,6 +2,7 @@
+ using System.Security.Claims;
+ using System.Text;
+ using System.Text.Json;
++using Diten.BuildingBlocks.Security.Secrets;
+ using Microsoft.Extensions.Options;
+ using Microsoft.IdentityModel.Tokens;
+ 
+@@ -50,7 +51,7 @@
+                 ValidateAudience = true,
+                 ValidAudience = _options.Audience,
+                 ValidateLifetime = true,
+-                ClockSkew = TimeSpan.FromSeconds(_options.ClockSkewSeconds),
++                ClockSkew = JwtValidationDefaults.ClockSkew,
+                 RequireExpirationTime = true,
+                 ValidateIssuerSigningKey = true,
+                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.Secret))
+@@ -70,7 +71,7 @@
+                 || !TryGetExactlyOneNumericDate(jwt, JwtRegisteredClaimNames.Nbf, out var notBefore)
+                 || !TryGetExactlyOneNumericDate(jwt, JwtRegisteredClaimNames.Exp, out var expiresAt)
+                 || issuedAt != notBefore
+-                || issuedAt > DateTimeOffset.UtcNow.ToUnixTimeSeconds() + _options.ClockSkewSeconds
++                || issuedAt > DateTimeOffset.UtcNow.ToUnixTimeSeconds() + (long)JwtValidationDefaults.ClockSkew.TotalSeconds
+                 || expiresAt <= issuedAt
+                 || expiresAt - issuedAt > _options.MaximumTokenLifetimeSeconds)
+             {
+#
+# REASON services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/PlatformServiceTokenValidatorTests.cs: N2 consequence (owner-approved in Q117): the two tests that prove rejection outside the skew move their offsets beyond 30 s (nbf +40 s; expired -40 s). Future-iat and inside-skew tests are unchanged and still hold.
+--- a/services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/PlatformServiceTokenValidatorTests.cs
++++ b/services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/PlatformServiceTokenValidatorTests.cs
+@@ -119,9 +119,10 @@
+     [Fact]
+     public void Future_nbf_outside_skew_is_rejected()
+     {
+-        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+-        Assert.False(CreateValidator(clockSkewSeconds: 5).IsAuthorized(
+-            CreateToken(iat: now + 20, nbf: now + 20, exp: now + 40), TenantId, ActorId, LegalEntityId));
++        // Offsets lie beyond JwtValidationDefaults.ClockSkew (30 s), the one clock the validator now uses (Q117, BL-296).
++        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
++        Assert.False(CreateValidator(clockSkewSeconds: 5).IsAuthorized(
++            CreateToken(iat: now + 40, nbf: now + 40, exp: now + 60), TenantId, ActorId, LegalEntityId));
+     }
+ 
+     [Fact]
+@@ -135,9 +136,10 @@
+     [Fact]
+     public void Expired_token_outside_declared_skew_is_rejected()
+     {
+-        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+-        Assert.False(CreateValidator(clockSkewSeconds: 5).IsAuthorized(
+-            CreateToken(iat: now - 20, nbf: now - 20, exp: now - 10), TenantId, ActorId, LegalEntityId));
++        // Expired 40 s ago: outside JwtValidationDefaults.ClockSkew (30 s) (Q117, BL-296).
++        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
++        Assert.False(CreateValidator(clockSkewSeconds: 5).IsAuthorized(
++            CreateToken(iat: now - 50, nbf: now - 50, exp: now - 40), TenantId, ActorId, LegalEntityId));
+     }
+ 
+     [Theory]
+#
+# REASON services/Diten.SupplyChainService/tests/loads/runtime_probe.py: F02: the static signing value is removed (treated as exposed). One value per run from MOD0185_PROBE_JWT_SECRET (lane env, for an external API) or secrets.token_urlsafe(48); an external API without the env value now stops with a message. Removed line redacted below.
+--- a/services/Diten.SupplyChainService/tests/loads/runtime_probe.py
++++ b/services/Diten.SupplyChainService/tests/loads/runtime_probe.py
+@@ -1,10 +1,13 @@
+ #!/usr/bin/env python3
+ """Bounded MOD-0185 HTTP runtime probe. Requires isolated Mongo replica set and built API."""
+-import argparse, base64, hashlib, hmac, http.server, json, os, pathlib, socket, subprocess, sys, tempfile, threading, time, urllib.error, urllib.request, uuid
++import argparse, base64, hashlib, hmac, http.server, json, os, pathlib, secrets, socket, subprocess, sys, tempfile, threading, time, urllib.error, urllib.request, uuid
+ 
+ ROOT = pathlib.Path(__file__).resolve().parents[4]
+ API_DLL = ROOT / "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Debug/net8.0/Diten.SupplyChainService.Api.dll"
+-SECRET = b"<REDACTED: Q101-F02 exposed value, never reproduced>"
++# Q101 F02: the former static signing secret is treated as exposed and is gone. One value per run, never printed:
++# MOD0185_PROBE_JWT_SECRET from the lane environment when an already-running API must accept the tokens,
++# otherwise generated here and handed only to the API process this probe starts.
++SECRET = (os.environ.get("MOD0185_PROBE_JWT_SECRET") or secrets.token_urlsafe(48)).encode()
+ 
+ class ReferenceHandler(http.server.BaseHTTPRequestHandler):
+     captures = []
+@@ -54,6 +57,7 @@
+ def main():
+     p=argparse.ArgumentParser(); p.add_argument("--mongo",default=os.getenv("MOD0185_TEST_MONGO")); p.add_argument("--api-base",default="http://127.0.0.1:5061"); p.add_argument("--evidence",required=True); p.add_argument("--start-local",action="store_true"); a=p.parse_args()
+     if not a.mongo or "127.0.0.1:27785" not in a.mongo: raise SystemExit("Provide isolated MOD0185_TEST_MONGO on port 27785; no fallback is allowed.")
++    if not a.start_local and not os.environ.get("MOD0185_PROBE_JWT_SECRET"): raise SystemExit("external API: set MOD0185_PROBE_JWT_SECRET to the lane signing value (never printed)")
+     if not API_DLL.is_file(): raise SystemExit(f"Build API first; missing {API_DLL}")
+     mock=None; api=None; logs=None
+     try:
+#
+# REASON services/Diten.SupplyChainService/tests/loads/failure_probe.py: F02 (same exposed value, K4: no half fix): the API it starts gets runtime_probe.SECRET instead of the literal. Removed line redacted below.
+--- a/services/Diten.SupplyChainService/tests/loads/failure_probe.py
++++ b/services/Diten.SupplyChainService/tests/loads/failure_probe.py
+@@ -2,7 +2,7 @@
+ """Isolated A04/A07 failure-path probe; never uses operational Mongo 27017."""
+ import argparse, hashlib, json, os, pathlib, subprocess, tempfile, threading, time, uuid
+ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+-from runtime_probe import API_DLL, ROOT, request, token
++from runtime_probe import API_DLL, ROOT, request, token, SECRET
+ 
+ DB_NAME = 'diten_mod0185_failure_probe'
+ COLLECTIONS = ('loads', 'load_assignments', 'loads_receipts', 'loads_audit', 'loads_outbox')
+@@ -101,7 +101,7 @@
+             auth={'Authorization':'Bearer '+token(tenant,le,actor),'X-Tenant-Id':tenant,'X-Legal-Entity-Id':le,'X-Correlation-Id':correlation,'Idempotency-Key':idempotency}
+             body={'carrierId':str(uuid.uuid4()),'shipmentIds':[str(uuid.uuid4())],'mode':'Road','plannedDepartAt':'2030-01-01T00:00:00Z','stops':[{'sequence':1,'locationReferenceId':'','action':'Pickup'},{'sequence':2,'locationReferenceId':'dest','action':'Delivery'}]}
+             before=scoped_counts(a.mongo, tenant, le, f'{name}-before')
+-            env=os.environ.copy(); env.update({'ASPNETCORE_URLS':'http://127.0.0.1:5061','Mongo__ConnectionString':a.mongo,'Mongo__DatabaseName':'diten_mod0185_failure_probe','JwtSettings__Secret':'<REDACTED: Q101-F02 exposed value, never reproduced>','JwtSettings__Issuer':'mod0185-runtime','JwtSettings__Audience':'mod0185-runtime','Loads__ReferenceBaseUrl':url})
++            env=os.environ.copy(); env.update({'ASPNETCORE_URLS':'http://127.0.0.1:5061','Mongo__ConnectionString':a.mongo,'Mongo__DatabaseName':'diten_mod0185_failure_probe','JwtSettings__Secret':SECRET.decode(),'JwtSettings__Issuer':'mod0185-runtime','JwtSettings__Audience':'mod0185-runtime','Loads__ReferenceBaseUrl':url})
+             proc=subprocess.Popen(['dotnet',str(API_DLL)],cwd=ROOT,env=env,stdout=logs,stderr=subprocess.STDOUT)
+             try:
+                 deadline=time.time()+25
+#
+# REASON services/Diten.SupplyChainService/tests/loads/restart_probe.py: F02 (same exposed value): as failure_probe.py. Removed line redacted below.
+--- a/services/Diten.SupplyChainService/tests/loads/restart_probe.py
++++ b/services/Diten.SupplyChainService/tests/loads/restart_probe.py
+@@ -2,7 +2,7 @@
+ """Create in process one, restart the API, then replay and list through process two."""
+ import json, os, pathlib, subprocess, sys, tempfile, threading, time, uuid
+ from urllib.parse import urlsplit, urlunsplit
+-from runtime_probe import API_DLL, ROOT, ReferenceHandler, fingerprints, request, token
++from runtime_probe import API_DLL, ROOT, ReferenceHandler, fingerprints, request, token, SECRET
+ 
+ def main():
+     if len(sys.argv)!=3: raise SystemExit("usage: restart_probe.py isolated-mongo-uri evidence.json")
+@@ -12,7 +12,7 @@
+     from http.server import ThreadingHTTPServer
+     mock=ThreadingHTTPServer(("127.0.0.1",0),ReferenceHandler); threading.Thread(target=mock.serve_forever,daemon=True).start()
+     # Production port is fixed by the approved service contract. No other DB or listener is used.
+-    api_url="http://127.0.0.1:5061"; env=os.environ.copy(); env.update({"ASPNETCORE_URLS":api_url,"Mongo__ConnectionString":mongo,"Mongo__DatabaseName":"diten_mod0185_restart_probe","JwtSettings__Secret":"<REDACTED: Q101-F02 exposed value, never reproduced>","JwtSettings__Issuer":"mod0185-runtime","JwtSettings__Audience":"mod0185-runtime","Loads__ReferenceBaseUrl":f"http://127.0.0.1:{mock.server_port}/"})
++    api_url="http://127.0.0.1:5061"; env=os.environ.copy(); env.update({"ASPNETCORE_URLS":api_url,"Mongo__ConnectionString":mongo,"Mongo__DatabaseName":"diten_mod0185_restart_probe","JwtSettings__Secret":SECRET.decode(),"JwtSettings__Issuer":"mod0185-runtime","JwtSettings__Audience":"mod0185-runtime","Loads__ReferenceBaseUrl":f"http://127.0.0.1:{mock.server_port}/"})
+     logs=tempfile.TemporaryFile(mode="w+b"); processes=[]
+     try:
+         tenant,le,actor,correlation=[str(uuid.uuid4()) for _ in range(4)]; shipment=ReferenceHandler.shipment_id; carrier=ReferenceHandler.carrier_id

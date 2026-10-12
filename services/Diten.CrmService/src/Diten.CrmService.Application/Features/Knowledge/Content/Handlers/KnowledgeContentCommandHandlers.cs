@@ -352,6 +352,8 @@ public sealed class UpdateKnowledgeContentHandler : IRequestHandler<UpdateKnowle
             return Response<bool>.Fail("Knowledge content not found.", 404);
         }
 
+        var expectedVersion = content.Version;
+
         if (content.IsArchived())
         {
             return Response<bool>.Fail(
@@ -464,7 +466,18 @@ public sealed class UpdateKnowledgeContentHandler : IRequestHandler<UpdateKnowle
         content.UpdatedAt = now;
         content.UpdatedBy = _actor.ActorName;
 
-        await _repository.UpdateAsync(content, cancellationToken);
+        // WP-E2E-FIX-2 — every update is a new technical version, written only against the version this handler read
+        // (the command carries no version; the Web / mobile contract is unchanged). A concurrent writer in between →
+        // 409, nothing is overwritten.
+        content.Version = expectedVersion + 1;
+        if (!await _repository.ReplaceAsync(content, expectedVersion, cancellationToken))
+        {
+            return Response<bool>.Fail(new[]
+            {
+                KnowledgeReasonCodes.ContentConcurrencyConflict,
+                "The content was modified by another writer; reload and retry."
+            }, 409);
+        }
 
         if (refsChanged && _audit is not null)
         {

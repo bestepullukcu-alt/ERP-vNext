@@ -104,6 +104,40 @@ class PageHelpCeilingTests(unittest.TestCase):
         self.assertEqual(0, code)
         self.assertIn("*** SKIPPED *** — no base branch", out.getvalue())
 
+    # Main sync (CI follow-up 3 review): the real --base path — `git show <ref>:<ledger>` in a throwaway repository.
+    def test_the_base_ref_is_read_from_git(self):
+        import subprocess
+        with tempfile.TemporaryDirectory() as repo:
+            def git(*args):
+                subprocess.run(["git", *args], cwd=repo, check=True, capture_output=True, text=True)
+            git("init", "-q")
+            git("config", "user.email", "ci@example.invalid")
+            git("config", "user.name", "ci")
+            ledger_path = os.path.join(repo, script.LEDGER)
+            os.makedirs(os.path.dirname(ledger_path))
+            with open(ledger_path, "w", encoding="utf-8") as handle:
+                handle.write(ledger(236))
+            git("add", script.LEDGER)
+            git("commit", "-q", "-m", "base")
+            base = subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True).stdout.strip()
+            git("commit", "-q", "--allow-empty", "-m", "unrelated")
+            same_base = subprocess.run(["git", "rev-parse", "HEAD~1"], cwd=repo, check=True, capture_output=True, text=True).stdout.strip()
+
+            cwd = os.getcwd()
+            os.chdir(repo)
+            try:
+                for head, expected in ((ledger(240), 1), (ledger(236), 0), (ledger(230), 0)):
+                    with open(ledger_path, "w", encoding="utf-8") as handle:
+                        handle.write(head)
+                    out = io.StringIO()
+                    with redirect_stdout(out):
+                        code = script.main(["--base", base])
+                    self.assertEqual(expected, code, out.getvalue())
+                self.assertIsNone(script.read_base("no-such-ref"))
+                self.assertEqual(ledger(236), script.read_base(same_base))
+            finally:
+                os.chdir(cwd)
+
     def test_the_header_reader_matches_the_real_ledger_line(self):
         self.assertEqual({"kiracı": 236, "platform": 18, "frozen": 99},
                          script.ceilings("**Tavan (yalnız azalır): kiracı 236 · platform 18 · frozen 99**\n", "real"))

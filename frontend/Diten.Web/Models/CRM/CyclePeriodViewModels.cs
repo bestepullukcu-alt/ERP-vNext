@@ -1,11 +1,13 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
 
 namespace Diten.Web.Models.CRM;
 
 /// <summary>
-/// MOD-0165 FU06/FU07 — the create/edit form. FU07 added the discriminated scope (level + exactly one reference), which
-/// took the user-field count from 8 to 11 and moved this module from the Golden <b>Slim</b> reference to the Golden
-/// <b>Compact</b> one: a separate Create / Edit / Details page instead of an offcanvas.
+/// MOD-0165 FU06/FU07 — the create/edit payload. FU07 added the discriminated scope (level + exactly one reference),
+/// which took the user-field count from 8 to 11 (Golden <b>Compact</b>). WP-CYC-UI-1: the form is a right-side panel
+/// posting JSON to the same-origin proxy — a known deviation from Compact's separate pages, chosen by the product owner
+/// (2026-10-05) to follow the mockup.
 /// <para><c>CycleStatus</c> is deliberately NOT a form field: the lifecycle moves only through the Activate and Close
 /// actions, and showing a status in the form would suggest an author can put a period live by editing it — which would
 /// also bypass the moment the overlap ban is checked. <c>BusinessUnitSource</c> is not one either: provenance is
@@ -83,11 +85,6 @@ public sealed class CyclePeriodEditViewModel
 
     public bool IsClosed => string.Equals(CycleStatus, "closed", StringComparison.OrdinalIgnoreCase);
 
-    /// <summary>True while the period is still editable — an active period accepts only its name and description, and
-    /// a closed one accepts nothing.</summary>
-    public bool CanEditWindow => !IsActive && !IsClosed;
-
-    public CyclePeriodScopeOptionsViewModel ScopeOptions { get; set; } = new();
 }
 
 /// <summary>
@@ -135,6 +132,84 @@ public sealed class CyclePeriodIndexViewModel
     public bool CanManage { get; set; }
     public bool CanActivate { get; set; }
     public string? ContractError { get; set; }
+
+    /// <summary>WP-CYC-UI-1 — the panel's option lists (loaded only for an author).</summary>
+    public CyclePeriodScopeOptionsViewModel ScopeOptions { get; set; } = new();
+}
+
+/// <summary>WP-CYC-UI-1 — the details page: the period, which lifecycle actions the status and permissions offer, the
+/// calendar country its days are counted in, and the panel's option lists for an author.</summary>
+public sealed class CyclePeriodDetailsViewModel
+{
+    public CyclePeriodDetailApiModel Period { get; set; } = new();
+    public bool CanManage { get; set; }
+    public bool CanActivate { get; set; }
+    public Diten.Web.Views.CRM.CyclePeriods.CyclePeriodActions Actions { get; set; } = new(false, false, false);
+    public string? CalendarCountry { get; set; }
+    public CyclePeriodScopeOptionsViewModel ScopeOptions { get; set; } = new();
+
+    public string ScopeRef => Diten.Web.Views.CRM.CyclePeriods.CyclePeriodScreenRules.NormalizeScope(Period.ScopeType) switch
+    {
+        "country" => Period.CountryScope ?? string.Empty,
+        "legal-entity" => Period.LegalEntityId?.ToString() ?? string.Empty,
+        "business-unit" => Period.BusinessUnitId ?? string.Empty,
+        _ => string.Empty
+    };
+}
+
+/// <summary>WP-CYC-UI-1 — what the panel sends while the author types, for the live checks.</summary>
+public sealed class CyclePeriodDraftRequest
+{
+    public Guid? CyclePeriodId { get; set; }
+    public int? Year { get; set; }
+    public int? SequenceInYear { get; set; }
+    public string? StartDate { get; set; }
+    public string? EndDate { get; set; }
+    public string? ScopeType { get; set; }
+    public string? CountryScope { get; set; }
+    public Guid? LegalEntityId { get; set; }
+    public string? BusinessUnitId { get; set; }
+}
+
+/// <summary>The API list as the computed endpoints read it (with the WP-CYC-UI-1 usage summary).</summary>
+public sealed class CyclePeriodListApiModel
+{
+    public List<CyclePeriodListItemApiModel> Items { get; set; } = [];
+    public int TotalCount { get; set; }
+}
+
+public sealed class CyclePeriodListItemApiModel
+{
+    public Guid CyclePeriodId { get; set; }
+    public string CycleCode { get; set; } = string.Empty;
+    public string CycleName { get; set; } = string.Empty;
+    public int Year { get; set; }
+    public int SequenceInYear { get; set; }
+    public DateTimeOffset StartDate { get; set; }
+    public DateTimeOffset EndDate { get; set; }
+    public string ScopeType { get; set; } = string.Empty;
+    public string? ScopeRef { get; set; }
+    public string CycleStatus { get; set; } = string.Empty;
+    public bool? HasCapacity { get; set; }
+    public int? CampaignCount { get; set; }
+    public int? PlannedVisitCount { get; set; }
+}
+
+/// <summary>The API's resolve-active answer.</summary>
+public sealed class CyclePeriodResolutionApiModel
+{
+    public string Outcome { get; set; } = string.Empty;
+    public string? ResolvedScopeType { get; set; }
+    public JsonElement? Period { get; set; }
+    public List<Guid>? CandidateIds { get; set; }
+    public string? Reason { get; set; }
+}
+
+/// <summary>The platform working calendar's range answer.</summary>
+public sealed class CyclePeriodWorkingDaysApiModel
+{
+    public string Resolution { get; set; } = string.Empty;
+    public int? WorkingDayCount { get; set; }
 }
 
 /// <summary>The gateway envelope, mirrored so the proxy can read <c>data</c> / <c>errors</c> without a shared package.
@@ -167,6 +242,12 @@ public sealed class CyclePeriodDetailApiModel
     public string? Description { get; set; }
     public string CycleStatus { get; set; } = string.Empty;
     public int Version { get; set; }
+    public DateTimeOffset? ActivatedAt { get; set; }
+    public string? ActivatedBy { get; set; }
+    public DateTimeOffset? ClosedAt { get; set; }
+    public string? ClosedBy { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+    public string? CreatedBy { get; set; }
 }
 
 /// <summary>The scope-options payload as the API publishes it.</summary>

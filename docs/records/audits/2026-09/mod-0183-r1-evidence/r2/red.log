@@ -1,0 +1,89 @@
+Test run for /Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 17.11.1 (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.24]     Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"···, expected: True) [FAIL]
+[xUnit.net 00:00:00.24]     Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: "😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀"···, expected: True) [FAIL]
+  Failed Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"···, expected: True) [1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: True
+Actual:   False
+  Stack Trace:
+     at Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(String note, Boolean expected) in /Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentValidatorContractTests.cs:line 55
+   at InvokeStub_ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: "😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀"···, expected: True) [< 1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: True
+Actual:   False
+  Stack Trace:
+     at Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(String note, Boolean expected) in /Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentValidatorContractTests.cs:line 55
+   at InvokeStub_ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:00.26]     Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "３０.０００", expected: False) [FAIL]
+[xUnit.net 00:00:00.26]     Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "٣٠.٠٠٠", expected: False) [FAIL]
+  Failed Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "３０.０００", expected: False) [2 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: False
+Actual:   True
+  Stack Trace:
+     at Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(String quantity, Boolean expected) in /Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentValidatorContractTests.cs:line 26
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+  Failed Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "٣٠.٠٠٠", expected: False) [< 1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: False
+Actual:   True
+  Stack Trace:
+     at Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(String quantity, Boolean expected) in /Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentValidatorContractTests.cs:line 26
+   at InvokeStub_ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:00.26]     Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "۳۰.۰۰۰", expected: False) [FAIL]
+[xUnit.net 00:00:00.26]     Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "3٠.000", expected: False) [FAIL]
+[xUnit.net 00:00:00.26]     Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"···, expected: True) [FAIL]
+  Failed Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "۳۰.۰۰۰", expected: False) [< 1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: False
+Actual:   True
+  Stack Trace:
+     at Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(String quantity, Boolean expected) in /Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentValidatorContractTests.cs:line 26
+   at InvokeStub_ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "3٠.000", expected: False) [< 1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: False
+Actual:   True
+  Stack Trace:
+     at Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(String quantity, Boolean expected) in /Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentValidatorContractTests.cs:line 26
+   at InvokeStub_ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"···, expected: True) [6 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: True
+Actual:   False
+  Stack Trace:
+     at Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(String note, Boolean expected) in /Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentValidatorContractTests.cs:line 47
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:00.26]     Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: "😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀"···, expected: True) [FAIL]
+  Failed Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: "😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀a😀"···, expected: True) [< 1 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: True
+Actual:   False
+  Stack Trace:
+     at Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(String note, Boolean expected) in /Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentValidatorContractTests.cs:line 47
+   at InvokeStub_ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+WARNING: Overwriting results file: /private/tmp/mod0183-dev-r2/regressions-red.trx
+Results File: /private/tmp/mod0183-dev-r2/regressions-red.trx
+
+Failed!  - Failed:     8, Passed:    24, Skipped:     0, Total:    32, Duration: 50 ms - Diten.SupplyChainService.Tests.dll (net8.0)

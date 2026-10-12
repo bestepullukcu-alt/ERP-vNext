@@ -1,0 +1,17 @@
+--- a/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs
++++ b/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs
+@@ -27,7 +27,13 @@
+ using Serilog;
+ 
+ var builder = WebApplication.CreateBuilder(args);
+-builder.WebHost.ConfigureKestrel(o => o.Limits.MaxRequestHeadersTotalSize = 64 * 1024);
++var strictUtf8RequestHeaders = new UTF8Encoding(false, true);
++builder.WebHost.ConfigureKestrel(o =>
++{
++    o.Limits.MaxRequestHeadersTotalSize = 64 * 1024;
++    o.RequestHeaderEncodingSelector = name =>
++        name.Equals("Idempotency-Key", StringComparison.OrdinalIgnoreCase) ? strictUtf8RequestHeaders : null;
++});
+ builder.Host.UseSerilog((context, logger) => logger.MinimumLevel.Information().Enrich.FromLogContext().WriteTo.Console());
+ string Required(string key) => !string.IsNullOrWhiteSpace(builder.Configuration[key]) ? builder.Configuration[key]! : throw new InvalidOperationException(key + " is required.");
+ var secret = Required("JwtSettings:Secret");

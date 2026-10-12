@@ -1,0 +1,3 @@
+test	passes	failures	timeouts	per_run_outcome_1_to_N	assertion_when_failed	per_run_duration_mm:ss.f
+Claims.ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery	0	10	0	F F F F F F F F F F	System.InvalidOperationException : Explicit write/read restart mode required; exclude from ordinary suite. @ Claims/ClaimReplayTests.cs:46 (x10)	00:00.0 00:00.0 00:00.0 00:00.0 00:00.0 00:00.0 00:00.0 00:00.0 00:00.0 00:00.0
+Loads.LoadAtomicityTests.UnknownCommitResultRetriesAndCommitsExactlyOnce	3	7	0	F P F F F F P P F F	Assert.Equal() Failure: Values differ Expected: Created Actual: ServiceUnavailable @ Loads/LoadAtomicityTests.cs:37 (x7)	00:07.2 00:00.2 00:06.8 00:06.0 00:06.5 00:05.8 00:04.0 00:01.9 00:05.6 00:06.4

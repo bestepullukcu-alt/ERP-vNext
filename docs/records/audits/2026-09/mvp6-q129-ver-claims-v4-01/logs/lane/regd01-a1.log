@@ -1,0 +1,4 @@
+{"ok": true, "rc": 0, "log": "run-harness-claims_runtime-a8.log"}
+phase regd01 rc 0
+K10 PASS: regd01-after
+pair regd01 rc 0

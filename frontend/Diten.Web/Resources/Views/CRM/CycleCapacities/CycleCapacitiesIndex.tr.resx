@@ -7,7 +7,7 @@
   <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
   <data name="QuickView" xml:space="preserve"><value>Hızlı görünüm</value></data>
   <data name="CycleCapacitiesTitle" xml:space="preserve"><value>Dönem Kapasitesi</value></data>
-  <data name="PageDescription" xml:space="preserve"><value>Bir dönemde kaç ziyaret sığar. Yayınlanmış çalışma takvimi ve girilen aktivite bütçesi üzerinden kurulan bir tahmindir.</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Bir temsilcinin dönemde yapabileceği ziyaret sayısı: yayınlanmış çalışma takvimi ve girilen aktivite bütçesi üzerinden kurulan bir tahmin. Her dönem için tek kapasite.</value></data>
   <data name="ContractUnavailable" xml:space="preserve"><value>Dönem kapasitesi servisi kullanılamıyor.</value></data>
   <data name="CreateCycleCapacity" xml:space="preserve"><value>Yeni kapasite</value></data>
   <data name="FormTitleCreate" xml:space="preserve"><value>Yeni dönem kapasitesi</value></data>
@@ -78,4 +78,141 @@
   <data name="FieldDays" xml:space="preserve"><value>Saha günü</value></data>
   <data name="VisitMinutes" xml:space="preserve"><value>Ziyaret dakikası</value></data>
   <data name="NoFieldDays" xml:space="preserve"><value>Saha günü yok</value></data>
+  <data name="MaxPromoProducts" xml:space="preserve"><value>Ziyaret başına en fazla promo ürün</value></data>
+  <data name="MaxNonPromoProducts" xml:space="preserve"><value>Ziyaret başına en fazla non-promo ürün</value></data>
+  <data name="MaxProductsHint" xml:space="preserve"><value>1–10. Boş bırakılırsa kayıttaki değer korunur (yeni kayıtta 3).</value></data>
+  <data name="Err_max_products_out_of_range" xml:space="preserve"><value>Ziyaret başına ürün sayısı 1 ile 10 arasında olmalı.</value></data>
+  <data name="DetailsTitleFormat" xml:space="preserve"><value>Kapasite · {0}</value></data>
+  <data name="HoursMinutesFormat" xml:space="preserve"><value>{h} sa {m} dk</value></data>
+  <data name="UnitMinutesShort" xml:space="preserve"><value>dk</value></data>
+  <data name="UnitDaysShort" xml:space="preserve"><value>gün</value></data>
+  <data name="Total" xml:space="preserve"><value>Toplam</value></data>
+  <data name="Retry" xml:space="preserve"><value>Yeniden dene</value></data>
+  <data name="ColPeriod" xml:space="preserve"><value>Dönem</value></data>
+  <data name="ColEstimatedVisits" xml:space="preserve"><value>Tahmini ziyaret (temsilci başına)</value></data>
+  <data name="ColTypicalVisit" xml:space="preserve"><value>Tipik ziyaret süresi</value></data>
+  <data name="ColAverageFte" xml:space="preserve"><value>Ort. FTE</value></data>
+  <data name="ColProductLimits" xml:space="preserve"><value>En fazla ürün (promo / non-promo)</value></data>
+  <data name="FilterYear" xml:space="preserve"><value>Yıl</value></data>
+  <data name="LegacyBadge" xml:space="preserve"><value>eski model</value></data>
+  <data name="StatusEditable" xml:space="preserve"><value>Düzenlenebilir</value></data>
+  <data name="StatusNotCalculable" xml:space="preserve"><value>Hesaplanamadı</value></data>
+  <data name="Calculating" xml:space="preserve"><value>Hesaplanıyor…</value></data>
+  <data name="FormLiveHint" xml:space="preserve"><value>Girdileri değiştirdikçe sağdaki özet ve aylık tablo sunucu tarafından yeniden hesaplanır.</value></data>
+  <data name="ReadOnlyTitle" xml:space="preserve"><value>Salt okunur.</value></data>
+  <data name="ReadOnlyClosedBody" xml:space="preserve"><value>Dönem kapatıldı: kapalı dönemin kapasitesi ve onu kullanan planlar değiştirilemez.</value></data>
+  <data name="ReadOnlyArchivedBody" xml:space="preserve"><value>Bu kapasite arşivlendi ve değiştirilemez. Dönem için yeni bir kapasite oluşturun.</value></data>
+  <data name="LegacyBandTitle" xml:space="preserve"><value>Bu kapasite eski süre modeliyle hesaplanıyor.</value></data>
+  <data name="LegacyBandBody" xml:space="preserve"><value>Tipik ziyareti (promo sayısı, non-promo sayısı, ziyaret başına rapor dakikası) doldurup kaydedince yeni modele geçer. Tipik ziyaret boş kaydedilirse eski model korunur.</value></data>
+  <data name="LegacyBandNumberMayChange" xml:space="preserve"><value>Geçişten sonra tahmini ziyaret sayısı değişebilir: rapor artık gün başına değil ziyaret başına düşülür.</value></data>
+  <data name="PeriodLockedHint" xml:space="preserve"><value>Dönem, kapasite oluşturulduktan sonra değiştirilemez.</value></data>
+  <data name="PeriodPickHint" xml:space="preserve"><value>Oluşturduktan sonra değişmez. Kapalı dönemler ve kapasitesi olan dönemler için kayıt yapılamaz.</value></data>
+  <data name="DailyTimeSection" xml:space="preserve"><value>Günlük zaman</value></data>
+  <data name="DailyTimeHint" xml:space="preserve"><value>Gün başına dakika. Yol ve sınav her saha gününden düşülür; toplamları iş gününden az olmalıdır.</value></data>
+  <data name="LegacyReportPerDay" xml:space="preserve"><value>Eski model: gün başına rapor</value></data>
+  <data name="VisitDurationSection" xml:space="preserve"><value>Ziyaret süresi</value></data>
+  <data name="VisitDurationHint" xml:space="preserve"><value>Ürün başına süre × tipik ziyaretteki ürün sayısı + ziyaret başına rapor. Kapasite bu tipik ziyaret süresiyle hesaplanır.</value></data>
+  <data name="PerProductHint" xml:space="preserve"><value>Ürün başına dakika.</value></data>
+  <data name="ReportMinutesPerVisit" xml:space="preserve"><value>Ziyaret başına rapor</value></data>
+  <data name="TypicalVisitTitle" xml:space="preserve"><value>Tipik ziyaret</value></data>
+  <data name="TypicalVisitHint" xml:space="preserve"><value>Tipik bir ziyarette kaç ürün anlatılır. İki sayıyı ve ziyaret başına raporu birlikte doldurun.</value></data>
+  <data name="TypicalPromoCount" xml:space="preserve"><value>Promo ürün sayısı</value></data>
+  <data name="TypicalNonPromoCount" xml:space="preserve"><value>Non-promo ürün sayısı</value></data>
+  <data name="TypicalCountHint" xml:space="preserve"><value>Ziyaret başına ürün sınırını aşamaz.</value></data>
+  <data name="TypicalVisitMinutesLabel" xml:space="preserve"><value>Tipik ziyaret süresi</value></data>
+  <data name="BufferInfo" xml:space="preserve"><value>Tampon kapasite sayısını değiştirmez; ziyaret planlamada rotaya eklenir.</value></data>
+  <data name="ProductLimitsSection" xml:space="preserve"><value>Ziyaret başına ürün sınırı</value></data>
+  <data name="ProductLimitsHint" xml:space="preserve"><value>Planlamada bir ziyarete en fazla bu kadar ürün eklenebilir. Tipik ziyaret bu sınırları aşamaz.</value></data>
+  <data name="LiveSummaryTitle" xml:space="preserve"><value>Canlı hesap</value></data>
+  <data name="SummaryLoading" xml:space="preserve"><value>Hesaplanıyor…</value></data>
+  <data name="SummaryError" xml:space="preserve"><value>Hesap yüklenemedi. Girdileriniz korunuyor.</value></data>
+  <data name="SummaryIdle" xml:space="preserve"><value>Hesabı görmek için bir dönem seçin.</value></data>
+  <data name="VisitsPerRep" xml:space="preserve"><value>ziyaret / temsilci</value></data>
+  <data name="RemainingMinutes" xml:space="preserve"><value>Ziyarete kalan (dk)</value></data>
+  <data name="DivideByTypicalVisit" xml:space="preserve"><value>÷ Tipik ziyaret</value></data>
+  <data name="TimesAverageFte" xml:space="preserve"><value>× Ort. FTE</value></data>
+  <data name="BlocksTitle" xml:space="preserve"><value>Kaydetmeyi engelleyenler</value></data>
+  <data name="WarningsTitle" xml:space="preserve"><value>Uyarılar</value></data>
+  <data name="SummaryAllOk" xml:space="preserve"><value>Uyarı yok. Hesap kaydedilmeye hazır.</value></data>
+  <data name="TeamSupplyLater" xml:space="preserve"><value>Sayı temsilci başınadır. Ekip arzı (temsilci sayısı) sonraki bir sürümde gelecek.</value></data>
+  <data name="ApplyToAllMonths" xml:space="preserve"><value>Tüm aylara uygula</value></data>
+  <data name="PartialMonth" xml:space="preserve"><value>kısmi</value></data>
+  <data name="PartialMonthTitle" xml:space="preserve"><value>Ay, dönem sınırında kırpıldı.</value></data>
+  <data name="MonthZeroedBadge" xml:space="preserve"><value>ay sıfırlandı</value></data>
+  <data name="FteSourceAuthored" xml:space="preserve"><value>girildi</value></data>
+  <data name="FteSourceDefault" xml:space="preserve"><value>varsayılan</value></data>
+  <data name="NoNumberBlocked" xml:space="preserve"><value>Girdiler bu hâliyle kaydedilemediği için sayı gösterilmiyor — aşağıdaki maddeleri giderin.</value></data>
+  <data name="CalendarResolvedShort" xml:space="preserve"><value>Takvim bulundu</value></data>
+  <data name="CalendarUnresolvedShort" xml:space="preserve"><value>Takvim yok</value></data>
+  <data name="CalendarForbiddenShort" xml:space="preserve"><value>Yetki yok</value></data>
+  <data name="CalendarUnknownShort" xml:space="preserve"><value>Bilinmiyor</value></data>
+  <data name="GoToPeriod" xml:space="preserve"><value>Döneme git</value></data>
+  <data name="ViewInputs" xml:space="preserve"><value>Girdileri görüntüle</value></data>
+  <data name="CalendarStatusTitle" xml:space="preserve"><value>Takvim durumu</value></data>
+  <data name="CalendarResolvedBody" xml:space="preserve"><value>Çalışma takvimi bulundu. Hafta sonları ve resmî tatiller iş gününden zaten düşüldü.</value></data>
+  <data name="CalculationUnavailableBody" xml:space="preserve"><value>Sunucu yanıt vermedi. Sayfayı yenileyin; sorun sürerse yöneticinize başvurun.</value></data>
+  <data name="NoNumberCalendar" xml:space="preserve"><value>Sayı yok: takvim yanıt vermedi.</value></data>
+  <data name="KpiVisits" xml:space="preserve"><value>Tahmini ziyaret / temsilci</value></data>
+  <data name="KpiTypicalVisit" xml:space="preserve"><value>Tipik ziyaret süresi</value></data>
+  <data name="BufferOnRoute" xml:space="preserve"><value>tampon {0} dk (rotada)</value></data>
+  <data name="KpiFieldOverWorking" xml:space="preserve"><value>Saha günü / iş günü</value></data>
+  <data name="KpiAverageFte" xml:space="preserve"><value>Ortalama FTE</value></data>
+  <data name="WaterfallTitle" xml:space="preserve"><value>Hesap şelalesi</value></data>
+  <data name="WaterfallHint" xml:space="preserve"><value>Dönem toplamı, temsilci başına. İş gününden ziyarete kalan süreye iner; ziyaret süresine bölünerek ziyaret sayısı bulunur.</value></data>
+  <data name="WfWorkingDays" xml:space="preserve"><value>İş günü</value></data>
+  <data name="WfDeductedDays" xml:space="preserve"><value>Düşülen gün (toplantı, eğitim, izin)</value></data>
+  <data name="WfFieldDays" xml:space="preserve"><value>Saha günü</value></data>
+  <data name="WfAvailableMinutes" xml:space="preserve"><value>Kullanılabilir dakika</value></data>
+  <data name="WfDailyFixedMinutes" xml:space="preserve"><value>Günlük sabit işler (yol, sınav)</value></data>
+  <data name="WfMicroTargetingMinutes" xml:space="preserve"><value>Mikro-hedefleme</value></data>
+  <data name="WfRemainingMinutes" xml:space="preserve"><value>Ziyarete kalan</value></data>
+  <data name="WfDivide" xml:space="preserve"><value>÷ {0} dk tipik ziyaret</value></data>
+  <data name="WfMultiply" xml:space="preserve"><value>× {0} ort. FTE</value></data>
+  <data name="MonthlyChartTitle" xml:space="preserve"><value>Ay ay kapasite</value></data>
+  <data name="ChartVisits" xml:space="preserve"><value>Ziyaret</value></data>
+  <data name="ChartFieldDays" xml:space="preserve"><value>Saha günü</value></data>
+  <data name="SupplyDemandTitle" xml:space="preserve"><value>Arz / talep</value></data>
+  <data name="SupplyDemandPerRepNote" xml:space="preserve"><value>Temsilci başına: her ayın kapasitesi, dönemin planlama oturumlarında planlanan ziyaretle karşılaştırılır. Ekip / temsilci sayısı henüz yok (sonraki iş).</value></data>
+  <data name="Planned" xml:space="preserve"><value>Planlanan</value></data>
+  <data name="Capacity" xml:space="preserve"><value>kapasite</value></data>
+  <data name="CapacityLegend" xml:space="preserve"><value>Kapasite (yapılabilir)</value></data>
+  <data name="PlannedLegend" xml:space="preserve"><value>Planlanan (talep)</value></data>
+  <data name="Overage" xml:space="preserve"><value>Aşım</value></data>
+  <data name="OverWarning" xml:space="preserve"><value>{0} ayında planlanan ziyaret kapasiteyi geçiyor. Planlama oturumlarında ziyaretleri diğer aylara kaydırın ya da kapasite girdilerini gözden geçirin.</value></data>
+  <data name="FreeCapacity" xml:space="preserve"><value>Boş kapasite (ziyaret)</value></data>
+  <data name="SupplyUnavailableCalendar" xml:space="preserve"><value>Takvim yanıt vermediği için karşılaştırılacak kapasite yok: yalnız planlanan ziyaretler gösteriliyor.</value></data>
+  <data name="UsageUnavailable" xml:space="preserve"><value>Dönemin planlama verisi okunamadı; arz ve talep şu an karşılaştırılamıyor.</value></data>
+  <data name="NoDemandYet" xml:space="preserve"><value>Bu dönem için henüz ziyaret planlanmadı.</value></data>
+  <data name="SessionsTitle" xml:space="preserve"><value>Bu kapasiteyi kullanan planlama oturumları</value></data>
+  <data name="NoSessions" xml:space="preserve"><value>Bu dönemi kullanan bir planlama oturumu henüz yok.</value></data>
+  <data name="SessionName" xml:space="preserve"><value>Oturum</value></data>
+  <data name="SessionOwner" xml:space="preserve"><value>Sorumlu</value></data>
+  <data name="SessionVisits" xml:space="preserve"><value>Planlanan ziyaret</value></data>
+  <data name="Code_typical_visit_required" xml:space="preserve"><value>Tipik ziyareti doldurun (promo sayısı, non-promo sayısı, ziyaret başına rapor): yeni kapasite tipik ziyaret modelini kullanır.</value></data>
+  <data name="Code_typical_visit_incomplete" xml:space="preserve"><value>Tipik ziyaret eksik: üç alanın hepsini doldurun ya da hiçbirini.</value></data>
+  <data name="Code_typical_visit_empty" xml:space="preserve"><value>Tipik ziyaret en az bir ürün içermelidir.</value></data>
+  <data name="Code_typical_count_exceeds_max" xml:space="preserve"><value>Tipik ürün sayısı ziyaret başına ürün sınırını aşıyor.</value></data>
+  <data name="Code_visit_minutes_zero" xml:space="preserve"><value>Ziyaret süresi 0 dakika; ürün başına dakikayı girin.</value></data>
+  <data name="Code_cycle_capacity_daily_spend_exceeds_day" xml:space="preserve"><value>Günlük sabit işler iş gününü tüketiyor; ziyarete zaman kalmıyor.</value></data>
+  <data name="Code_month_zeroed" xml:space="preserve"><value>düşülen gün iş gününü aşıyor; ay 0 sayılıyor.</value></data>
+  <data name="Code_micro_targeting_clipped" xml:space="preserve"><value>saha gününden fazla mikro-hedefleme günü var; fazlası dikkate alınmıyor.</value></data>
+  <data name="Code_calendar_unresolved" xml:space="preserve"><value>Bu ülke ve yıl için yayınlanmış bir çalışma takvimi yok.</value></data>
+  <data name="Code_calendar_forbidden" xml:space="preserve"><value>Çalışma takvimini okuma yetkiniz yok.</value></data>
+  <data name="Code_country_underivable" xml:space="preserve"><value>Takvim ülkesi belirlenemedi; bir takvim ülkesi seçin.</value></data>
+  <data name="Code_cycle_capacity_months_required" xml:space="preserve"><value>Dönemde hesaplanacak ay yok.</value></data>
+  <data name="Code_cycle_capacity_period_not_found" xml:space="preserve"><value>Dönem bulunamadı.</value></data>
+  <data name="Code_unknown" xml:space="preserve"><value>Hesap tamamlanamadı.</value></data>
+  <data name="Err_typical_visit_empty" xml:space="preserve"><value>Tipik ziyaret en az bir ürün içermelidir.</value></data>
+  <data name="Err_typical_visit_incomplete" xml:space="preserve"><value>Tipik ziyaretin üç alanını birlikte doldurun ya da hiçbirini doldurmayın.</value></data>
+  <data name="Err_typical_count_exceeds_max" xml:space="preserve"><value>Tipik ürün sayısı ziyaret başına ürün sınırını aşamaz.</value></data>
+  <data name="Err_cycle_capacity_month_fte_invalid" xml:space="preserve"><value>Bir ayın FTE değeri geçerli aralığın dışında.</value></data>
+  <data name="Err_period_closed" xml:space="preserve"><value>Dönem kapalı; kapasitesi artık değiştirilemez.</value></data>
+  <data name="GoToDetails" xml:space="preserve"><value>Ayrıntıya git</value></data>
+  <data name="WfDailyFixedMinutesLegacy" xml:space="preserve"><value>Günlük sabit işler (yol, rapor, sınav)</value></data>
+  <data name="UnitMinutesPerDay" xml:space="preserve"><value>dk/gün</value></data>
+  <data name="SessionStatus_draft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="SessionStatus_generated" xml:space="preserve"><value>Oluşturuldu</value></data>
+  <data name="SessionStatus_committed" xml:space="preserve"><value>Uygulandı</value></data>
+  <data name="SessionStatus_archived" xml:space="preserve"><value>Arşivlendi</value></data>
+  <data name="SessionStatus_unknown" xml:space="preserve"><value>Bilinmiyor</value></data>
 </root>

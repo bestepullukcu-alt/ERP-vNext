@@ -1,0 +1,11 @@
+final_check_local=2026-09-27T02:07:29+0300
+branch=feature/mvp6-logistics
+head=4a8d4d4b339528a88e6220fb8402e5a2c771136c
+index_lock=absent
+diff_name_only_count=19
+diff_name_only_sha256=be53b81991dfbf4ee44ca8d18afb923ec2f6585f314141cdcf8d20d7b327272a (preflight be53b819…)
+base_manifest_sha256=a8a236de82a9f2b5d4c0f3560aa13894c3740c6e187cb0140f5da1b08109c661
+base_src_verify=14566/14566 match, extra 0
+lane_processes=0
+port_57192_listeners=0
+repo_writes=this folder only

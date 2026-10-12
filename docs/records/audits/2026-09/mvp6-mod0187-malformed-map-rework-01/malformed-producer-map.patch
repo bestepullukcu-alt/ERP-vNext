@@ -1,0 +1,93 @@
+--- a/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Features/Claims/ClaimReferenceReader.cs
++++ b/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Features/Claims/ClaimReferenceReader.cs
+@@ -65,6 +65,24 @@
+             if (!ids.Add(Guid.Parse(carrier.GetProperty("carrierId").GetString()!))) Invalid();
+         }
+     }
++    private static async Task<bool> IsShipmentRootInvalid(HttpContent content, CancellationToken ct)
++    {
++        try
++        {
++            using var body = JsonDocument.Parse(await content.ReadAsStringAsync(ct));
++            if (body.RootElement.ValueKind != JsonValueKind.Object ||
++                !body.RootElement.TryGetProperty("contractVersion", out var version) || !Values(version, "v1") ||
++                !body.RootElement.TryGetProperty("error", out var error) || error.ValueKind != JsonValueKind.Object ||
++                !error.TryGetProperty("code", out var code) || !Values(code, "SHIPMENT_ROOT_INVALID") ||
++                !error.TryGetProperty("message", out var message) || !Text(message) ||
++                !error.TryGetProperty("correlationId", out var correlation) || !Uuid(correlation)) return false;
++            return true;
++        }
++        catch (JsonException)
++        {
++            return false;
++        }
++    }
+     private async Task<JsonElement> Get(string path, CancellationToken ct)
+     {
+         if (!Uri.TryCreate(configuration["Claims:ReferenceBaseUrl"], UriKind.Absolute, out var root) || root.Scheme is not ("http" or "https"))
+@@ -80,6 +98,8 @@
+         {
+             using var response = await client.SendAsync(request, ct);
+             if (response.StatusCode == HttpStatusCode.NotFound) throw new ClaimFailureException(404, "CLAIM_NOT_FOUND");
++            if (response.StatusCode == HttpStatusCode.InternalServerError && await IsShipmentRootInvalid(response.Content, ct))
++                throw new ClaimFailureException(502, "CLAIM_REFERENCE_INVALID");
+             if ((int)response.StatusCode >= 500 || response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
+                 throw new ClaimFailureException(503, "CLAIM_REFERENCE_UNAVAILABLE");
+             if (response.StatusCode != HttpStatusCode.OK) Invalid();
+--- a/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Claims/ClaimReferenceTests.cs
++++ b/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Claims/ClaimReferenceTests.cs
+@@ -73,26 +73,52 @@
+   var ex=await Assert.ThrowsAsync<ClaimFailureException>(()=>BranchReader(handler).ObserveAsync(new Claim {ShipmentId=id,CarrierId=Guid.NewGuid()},default));
+   Assert.Equal(503,ex.Status);Assert.Equal("CLAIM_REFERENCE_INCOMPLETE",ex.Code);Assert.Single(handler.Paths);
+  }
+- [Theory][InlineData("timeout",503,"CLAIM_REFERENCE_UNAVAILABLE")][InlineData("invalid-json",502,"CLAIM_REFERENCE_INVALID")][InlineData("not-found",404,"CLAIM_NOT_FOUND")]
++ [Theory][InlineData("refusal",503,"CLAIM_REFERENCE_UNAVAILABLE")][InlineData("timeout",503,"CLAIM_REFERENCE_UNAVAILABLE")][InlineData("invalid-json",502,"CLAIM_REFERENCE_INVALID")][InlineData("not-found",404,"CLAIM_NOT_FOUND")]
+  public async Task Reader_TransportFailures_MapWithoutRawErrorLeak(string fault,int status,string code)
+  {
+   var handler=new BranchTransport("{", "{}") {Fault=fault};
+   var ex=await Assert.ThrowsAsync<ClaimFailureException>(()=>BranchReader(handler).ObserveAsync(new Claim {ShipmentId=Guid.NewGuid()},default));
+   Assert.Equal(status,ex.Status);Assert.Equal(code,ex.Code);Assert.DoesNotContain("private-source-error",ex.Message);
+  }
++ [Fact] public async Task Reader_ProducerShipmentRootInvalid500_MapsToClaimReferenceInvalid()
++ {
++  var handler=new ProducerFailureTransport(HttpStatusCode.InternalServerError,
++   "{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\",\"message\":\"SHIPMENT_ROOT_INVALID\",\"correlationId\":\"aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa\"},\"contractVersion\":\"v1\"}");
++  var ex=await Assert.ThrowsAsync<ClaimFailureException>(()=>BranchReader(handler).ObserveAsync(new Claim{ShipmentId=Guid.NewGuid()},default));
++  Assert.Equal(502,ex.Status);Assert.Equal("CLAIM_REFERENCE_INVALID",ex.Code);Assert.DoesNotContain("SHIPMENT_ROOT_INVALID",ex.Message);
++ }
++ [Theory]
++ [InlineData(500,"{\"error\":{\"code\":\"INTERNAL_ERROR\",\"message\":\"private-source-error\",\"correlationId\":\"aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa\"},\"contractVersion\":\"v1\"}")]
++ [InlineData(500,"not-json")]
++ [InlineData(500,"{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\"},\"contractVersion\":\"v1\"}")]
++ [InlineData(500,"{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\",\"message\":\"SHIPMENT_ROOT_INVALID\",\"correlationId\":\"not-a-uuid\"},\"contractVersion\":\"v1\"}")]
++ [InlineData(500,"{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\",\"message\":\"SHIPMENT_ROOT_INVALID\",\"correlationId\":\"aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa\"},\"contractVersion\":\"v2\"}")]
++ [InlineData(501,"{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\",\"message\":\"SHIPMENT_ROOT_INVALID\",\"correlationId\":\"aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa\"},\"contractVersion\":\"v1\"}")]
++ public async Task Reader_OtherProducer5xx_RemainReferenceUnavailable(int status,string body)
++ {
++  var handler=new ProducerFailureTransport((HttpStatusCode)status,body);
++  var ex=await Assert.ThrowsAsync<ClaimFailureException>(()=>BranchReader(handler).ObserveAsync(new Claim{ShipmentId=Guid.NewGuid()},default));
++  Assert.Equal(503,ex.Status);Assert.Equal("CLAIM_REFERENCE_UNAVAILABLE",ex.Code);Assert.DoesNotContain("private-source-error",ex.Message);
++ }
+  private static JsonObject Carriers(Guid id,string status)=>new(){["items"]=new JsonArray(new JsonObject{["carrierId"]=id.ToString(),["carrierCode"]="C1",["displayName"]="Carrier",["status"]=status,["supportedModes"]=new JsonArray("Road")}),["total"]=1,["contractVersion"]="v1"};
+- private static ClaimReferenceReader BranchReader(BranchTransport handler)=>new(new HttpClient(handler),new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string,string?>{["Claims:ReferenceBaseUrl"]="http://reference.invalid/"}).Build(),new ClaimRequestContext {Scope=new(Guid.NewGuid(),Guid.NewGuid(),Guid.NewGuid()),CorrelationId=Guid.NewGuid(),Authorization="Bearer test-only"});
++ private static ClaimReferenceReader BranchReader(HttpMessageHandler handler)=>new(new HttpClient(handler),new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string,string?>{["Claims:ReferenceBaseUrl"]="http://reference.invalid/"}).Build(),new ClaimRequestContext {Scope=new(Guid.NewGuid(),Guid.NewGuid(),Guid.NewGuid()),CorrelationId=Guid.NewGuid(),Authorization="Bearer test-only"});
+  private sealed class BranchTransport(string shipment,string carriers):HttpMessageHandler
+  {
+   public string? Fault {get;init;} public List<string> Paths {get;}=[];
+   protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,CancellationToken ct)
+   {
+    Assert.Equal(HttpMethod.Get,request.Method);var path=request.RequestUri!.PathAndQuery;Paths.Add(path);
++   if(Fault=="refusal")throw new HttpRequestException("private-source-error");
+    if(Fault=="timeout")throw new TaskCanceledException("private-source-error");
+    var status=Fault=="not-found"?HttpStatusCode.NotFound:HttpStatusCode.OK;
+    var body=path=="/api/shipment-bundle/carriers"?carriers:shipment;
+    return Task.FromResult(new HttpResponseMessage(status){Content=new StringContent(body)});
+   }
++ }
++ private sealed class ProducerFailureTransport(HttpStatusCode status,string body):HttpMessageHandler
++ {
++  protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,CancellationToken ct)=>
++   Task.FromResult(new HttpResponseMessage(status){Content=new StringContent(body)});
+  }
+  private static JsonObject Shipment(Guid id)=>new(){["shipmentId"]=id.ToString(),["status"]="Delivered",["sourceModule"]="MOD-0141",["sourceType"]="SALES_ORDER",["warehouseReferenceId"]="w",["shipToReference"]="s",["lines"]=new JsonArray(),["contractVersion"]="v1",["lifecycleCorrelationId"]=Guid.Empty.ToString()};
+  private static ClaimReferenceReader Reader(JsonObject shipment,out ReferenceTransport transport,out ClaimRequestContext context)

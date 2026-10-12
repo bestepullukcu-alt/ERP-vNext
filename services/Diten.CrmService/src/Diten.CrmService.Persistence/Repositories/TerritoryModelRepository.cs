@@ -39,7 +39,8 @@ public sealed class TerritoryModelRepository : ITerritoryModelRepository
         var filter = ActiveTenant(tenantId);
         if (!string.IsNullOrWhiteSpace(search))
         {
-            var term = search.Trim();
+            // WP-E2E-FIX-3 (Turkish search follow-up) — the term was an UNESCAPED regex; now escaped + Turkish i-insensitive.
+            var term = Application.Common.TurkishInsensitivePattern.Build(search.Trim());
             var regex = Builders<TerritoryModel>.Filter.Regex(m => m.Name, new MongoDB.Bson.BsonRegularExpression(term, "i"))
                         | Builders<TerritoryModel>.Filter.Regex(m => m.ModelCode, new MongoDB.Bson.BsonRegularExpression(term, "i"));
             filter &= regex;
@@ -88,7 +89,7 @@ public sealed class TerritoryModelRepository : ITerritoryModelRepository
             .Where(s => !string.IsNullOrWhiteSpace(s))
             .Select(s => Builders<TerritoryModel>.Filter.Regex(
                 m => m.CountryScope,
-                new MongoDB.Bson.BsonRegularExpression($"^{System.Text.RegularExpressions.Regex.Escape(s.Trim())}$", "i")))
+                new MongoDB.Bson.BsonRegularExpression($"^{Application.Common.TurkishInsensitivePattern.Build(s.Trim())}$", "i")))
             .ToList();
         if (scopeFilters.Count == 0) return [];
         var filter = ActiveTenant(tenantId) & Builders<TerritoryModel>.Filter.Or(scopeFilters);

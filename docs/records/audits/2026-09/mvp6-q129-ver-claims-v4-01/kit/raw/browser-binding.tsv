@@ -1,0 +1,9 @@
+kind	url_or_path	source_path	http	observed	expected	result
+served-asset	/assets/js/SupplyChain/Claims/index.js	frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/index.js	200	77733718f5976c90016b1efd79a11a6fb8106dfa3ae75ccf14e8c4c46da6f39c	77733718f5976c90016b1efd79a11a6fb8106dfa3ae75ccf14e8c4c46da6f39c	match
+served-asset	/assets/js/SupplyChain/Claims/index.l10n.js	frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Claims/index.l10n.js	200	2a0ece421e85d95ffe57eaaf2847d6fc6db6029f46fea1f574f4cd745e352851	2a0ece421e85d95ffe57eaaf2847d6fc6db6029f46fea1f574f4cd745e352851	match
+served-asset	/assets/js/personalization-client.js	frontend/Diten.Web/wwwroot/assets/js/personalization-client.js	200	e80cd857881aee96004bf02dba69d6c17d6b4bf48d24ce9fdf90a62a1caef8de	e80cd857881aee96004bf02dba69d6c17d6b4bf48d24ce9fdf90a62a1caef8de	match
+served-asset	/assets/js/dt-defaults.js	frontend/Diten.Web/wwwroot/assets/js/dt-defaults.js	200	9637beb5f9906a1d48c59e3f4de3e4c8db861a5d5aaef0fdefb0d6e9c8ab1614	9637beb5f9906a1d48c59e3f4de3e4c8db861a5d5aaef0fdefb0d6e9c8ab1614	match
+browser-url	http://127.0.0.1:5801/SupplyChain/Claims	-	-	127.0.0.1:5801	127.0.0.1:5801	match
+browser-url	http://127.0.0.1:5801/SupplyChain/Claims?culture=en&ui-culture=en	-	-	127.0.0.1:5801	127.0.0.1:5801	match
+browser-url	http://127.0.0.1:5801/SupplyChain/Claims?culture=ar&ui-culture=ar	-	-	127.0.0.1:5801	127.0.0.1:5801	match
+browser-url	http://127.0.0.1:5801/account/login?tenantId=97c59330-dbc4-4665-b29c-0c26dbb5cc93&returnUrl=%2FSupplyChain%2FClaims	-	-	127.0.0.1:5801	127.0.0.1:5801	match

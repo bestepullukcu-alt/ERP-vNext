@@ -1,0 +1,85 @@
+{
+  "phase": "cu05",
+  "mode": "v2",
+  "startedAt": "2026-09-27T09:55:40.250Z",
+  "web": "http://127.0.0.1:5801",
+  "playwright": "1.59.1",
+  "cases": {
+    "CU-05-skeleton-empty-error": {
+      "result": "FAIL",
+      "skeletonDuringLoad": {
+        "skeletonVisible": false,
+        "tableVisible": false,
+        "errorVisible": false,
+        "skeletonDisplay": "none"
+      },
+      "afterLoad": {
+        "skeletonVisible": false,
+        "tableVisible": true
+      },
+      "empty": {
+        "tableVisible": true,
+        "skeletonVisible": false,
+        "errorVisible": false,
+        "text": "No data available in table"
+      },
+      "error503": {
+        "errorVisible": true,
+        "tableVisible": false,
+        "skeletonVisible": false,
+        "message": "Claims are temporarily unavailable. The outcome is not confirmed; try the same request again.",
+        "reference": "11111111-2222-4333-8444-555555555555",
+        "retryVisible": true
+      }
+    }
+  },
+  "png": [
+    {
+      "name": "cu05-skeleton-v2.png",
+      "sha256": "3f34982c1f2720584225a270df6d592c78877367c24ce9fffdd53b9e7d44c55b",
+      "url": "http://127.0.0.1:5801/SupplyChain/Claims",
+      "capturedAt": "2026-09-27T09:55:42.592Z",
+      "phase": "cu05",
+      "mode": "v2",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu05-after-load-v2.png",
+      "sha256": "8546ae1da05d2bc9e8f2a30049596f760161098340ecdb098d0cc3e2adc30db8",
+      "url": "http://127.0.0.1:5801/SupplyChain/Claims",
+      "capturedAt": "2026-09-27T09:55:45.868Z",
+      "phase": "cu05",
+      "mode": "v2",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu05-empty-v2.png",
+      "sha256": "6fb057b2c384fcda833ed41fecd88ed696f7010e47a37e7faaaa836c9058ab76",
+      "url": "http://127.0.0.1:5801/SupplyChain/Claims",
+      "capturedAt": "2026-09-27T09:55:48.444Z",
+      "phase": "cu05",
+      "mode": "v2",
+      "tool": "playwright 1.59.1 page.screenshot"
+    },
+    {
+      "name": "cu05-error-503-v2.png",
+      "sha256": "083f8878b92174fa2bd72e3fc4ed8a2272b7529fbf3abde9282cf23a2a5e5661",
+      "url": "http://127.0.0.1:5801/SupplyChain/Claims",
+      "capturedAt": "2026-09-27T09:55:50.976Z",
+      "phase": "cu05",
+      "mode": "v2",
+      "tool": "playwright 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [
+    {
+      "tag": "cu05-error",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    }
+  ],
+  "toasts": [],
+  "dialogs": [],
+  "rootLeak": [],
+  "endedAt": "2026-09-27T09:55:51.002Z"
+}

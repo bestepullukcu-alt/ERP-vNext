@@ -1,0 +1,23 @@
+{
+ "log": [
+  {
+   "t": "2026-10-04T20:13:10.975Z",
+   "key": "e6dd42f7-36eb-4b45-bd7f-68169c779ffd",
+   "correlation": "79e7f33b-12a2-4ee0-a8fd-37c83b0220a1",
+   "bodySha": "51edbc83da8d",
+   "status": 201,
+   "body": "{\"shipmentId\":\"1a579bf9-12a7-44ee-8045-da861f7577ba\",\"shipmentNumber\":\"SHP-1a579bf912a744ee8045da861f7577ba\",\"status\":\"Draft\",\"idempotentReplay\":false,\"contractVersion\":\"v1\"}",
+   "dropped": true
+  },
+  {
+   "t": "2026-10-04T20:13:13.980Z",
+   "key": "e6dd42f7-36eb-4b45-bd7f-68169c779ffd",
+   "correlation": "dfe58fa6-3dcb-4e8d-9fbf-b4d4250c4a6d",
+   "bodySha": "51edbc83da8d",
+   "status": 400,
+   "body": "{\"error\":{\"code\":\"INVALID_REQUEST\",\"message\":\"INVALID_REQUEST\",\"correlationId\":\"dfe58fa6-3dcb-4e8d-9fbf-b4d4250c4a6d\"},\"contractVersion\":\"v1\"}"
+  }
+ ],
+ "dropNext": false,
+ "run": "Q419-RED-A-muu9cwfm"
+}

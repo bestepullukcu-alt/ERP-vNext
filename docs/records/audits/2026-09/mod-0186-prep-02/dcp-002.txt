@@ -1,0 +1,3 @@
+OK  MOD-0186: proven against Blueprint/registry.
+
+exit=0

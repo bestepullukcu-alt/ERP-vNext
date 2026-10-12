@@ -1,0 +1,115 @@
+{
+  "phase": "extra",
+  "extra": null,
+  "startedAt": "2026-09-27T12:28:40.109Z",
+  "web": "http://127.0.0.1:5901",
+  "playwright": "1.59.1",
+  "cases": {
+    "CU-10-unchecked-and-mismatch": {
+      "result": "FAIL",
+      "checkboxEnabled": true,
+      "checkedByDefault": false,
+      "uncheckedSentBody": "{\"shipmentId\":\"22f981c7-0ddc-4f29-846a-8a9a55ada01f\",\"reasonCode\":\"UNCHECKED\",\"claimedAmount\":\"41.00\",\"currency\":\"EUR\"}",
+      "uncheckedStatus": 201,
+      "mismatch": {
+        "status": 404,
+        "code": "CLAIM_NOT_FOUND"
+      }
+    },
+    "CU-11-lexical-full": {
+      "result": "PASS",
+      "http": {
+        "amount \"1e2\"": {
+          "status": 400,
+          "code": "INVALID_REQUEST"
+        },
+        "amount \"+1\"": {
+          "status": 400,
+          "code": "INVALID_REQUEST"
+        },
+        "amount \" 1\"": {
+          "status": 400,
+          "code": "INVALID_REQUEST"
+        },
+        "amount \"1.\"": {
+          "status": 400,
+          "code": "INVALID_REQUEST"
+        },
+        "amount \".1\"": {
+          "status": 400,
+          "code": "INVALID_REQUEST"
+        },
+        "amount \"0\"": {
+          "status": 422,
+          "code": "CLAIM_AMOUNT_INVALID"
+        },
+        "amount \"-0\"": {
+          "status": 422,
+          "code": "CLAIM_AMOUNT_INVALID"
+        },
+        "amount \"-1\"": {
+          "status": 422,
+          "code": "CLAIM_AMOUNT_INVALID"
+        },
+        "currency \"usd\"": {
+          "status": 400,
+          "code": "INVALID_REQUEST"
+        },
+        "currency \"ZZZ\"": {
+          "status": 201,
+          "code": null
+        },
+        "amount as JSON number 5": {
+          "status": 400,
+          "code": "INVALID_REQUEST"
+        }
+      },
+      "ui": {
+        "sentBody": "{\"shipmentId\":\"c8312c99-24be-4b2f-a683-a417a0ae4a25\",\"reasonCode\":\"LEX-UI\",\"claimedAmount\":\"1e2\",\"currency\":\"usd\"}",
+        "status": 400,
+        "alert": "The request is not valid. Check the entered values.\nSupport reference: 5dce1518-76e2-4f49-ba79-a6957d2520dd",
+        "amountKept": "1e2",
+        "currencyKept": "usd"
+      }
+    }
+  },
+  "png": [
+    {
+      "name": "cu11-lexical-400-en.png",
+      "sha256": "104d8d92f0322af419b7037f2c73bce62ee84f1ebfc0bfec596559caf6164127",
+      "url": "http://127.0.0.1:5901/SupplyChain/Claims",
+      "capturedAt": "2026-09-27T12:28:44.666Z",
+      "phase": "extra",
+      "tool": "playwright 1.59.1 page.screenshot"
+    }
+  ],
+  "console": [
+    {
+      "tag": "extra",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 (Bad Request)"
+    }
+  ],
+  "toasts": [
+    {
+      "tag": "extra",
+      "text": "Claim created.",
+      "type": "success",
+      "at": "2026-09-27T12:28:42.549Z"
+    }
+  ],
+  "dialogs": [],
+  "rootLeak": [],
+  "foreign": [
+    {
+      "tag": "extra",
+      "url": "https://fonts.googleapis.com/css2"
+    },
+    {
+      "tag": "extra",
+      "url": "https://fonts.gstatic.com/s/publicsans/v21/ijwRs572Xtc6ZYQws9YVwnNGfJ7QwOk1.woff2"
+    }
+  ],
+  "error": "locator.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('.add-new')\n    - locator resolved to <button tabindex=\"0\" type=\"button\" aria-controls=\"dt-claims\" class=\"btn add-new btn-primary shadow-none\">…</button>\n  - attempting click action\n    2 × waiting for element to be visible, enabled and stable\n      - element is visible, enabled and stable\n      - scrolling into view if needed\n      - done scrolling\n      - <div class=\"small mt-1\">…</div> from <div tabindex=\"-1\" role=\"dialog\" aria-modal=\"true\" id=\"offcanvasCreateEdit\" class=\"offcanvas offcanvas-end show\" aria-labelledby=\"offcanvasCreateEditLabel\">…</div> subtree intercepts pointer events\n    - retrying click action\n    - waiting 20ms\n    2 × waiting for element to be visible, enabled and stable\n      - element is visible, enabled and stable\n      - scrolling into view if needed\n      - done scrolling\n      - <div class=\"small mt-1\">…</div> from <div tabindex=\"-1\" role=\"dialog\" aria-modal=\"true\" id=\"offcanvasCreateEdit\" class=\"offcanvas offcanvas-end show\" aria-labelledby=\"offcanvasCreateEditLabel\">…</div> subtree intercepts pointer events\n    - retrying click action\n      - waiting 100ms\n    - waiting for element to be visible, enabled and stable\n    - element is not stable\n  14 × retrying click action\n       - waiting 500ms\n       - waiting for element to be visible, enabled and stable\n       - element is visible, enabled and stable\n       - scrolling into view if needed\n       - done scrolling\n      ",
+  "endedAt": "2026-09-27T12:29:15.327Z"
+}

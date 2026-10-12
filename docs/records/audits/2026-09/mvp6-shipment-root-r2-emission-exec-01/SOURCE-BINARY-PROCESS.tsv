@@ -1,0 +1,7 @@
+kind	path_or_value	sha256_or_value
+source_manifest	FINAL-SOURCE-MANIFEST.tsv	7b6d2f6a679275b74ab88989f5ca943b139e7f1a365b5ab99d6f1285ceb1acae
+candidate_patch	docs/records/audits/2026-09/mvp6-shipment-root-r2-emission-rework-01/candidate.patch	2d44f0d3b61b29c5bf34437fa12564d29319fd64beaded366f443b08b1a0319e
+baseline_overlay	docs/records/audits/2026-09/mvp6-shipment-integration-rework-exec-01/final-source-overlay.tar.gz	8aba3d890f160cbed88eecc284cdcba78eda03b6b0955cf3061199a62171112e
+binary	services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Release/net8.0/Diten.SupplyChainService.Api.dll	fa829d3aa1467ba811a81be6944f94c73d735c7570634c57eb6abb1ded0a3090
+process_command	ASPNETCORE_ENVIRONMENT=Testing ASPNETCORE_URLS=http://127.0.0.1:5772 dotnet Diten.SupplyChainService.Api.dll	redacted-env-recorded
+mongo	127.0.0.1:41020 / rsShipmentRootR2Exec01 / diten_mod0183_root_exec	isolated-no-27017

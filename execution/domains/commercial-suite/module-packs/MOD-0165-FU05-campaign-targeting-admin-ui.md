@@ -86,7 +86,7 @@ FU04 contract'ının frontend consumer'ıdır.
 - Frequency, Knowledge, Brand/Product, Digital Detailing veya Recommendation runtime.
 - Workflow/approval, import/export engine veya patient data.
 - Hard delete veya HTTP `DELETE`.
-- Direct port `5061` business call.
+- Direct port `5065` business call.
 - Migration, Mongo hand-edit, RBAC seed/grant, MOD-0048 publish veya registry write.
 - `gateway/Diten.ApiGateway/**` değişikliği.
 - API'de olmayan master/display resolution veya fake preview/filter.
@@ -222,7 +222,7 @@ hardcoded Campaign `<li>` kaldırılması ayrı follow-up'tır; çift menü kabu
 ## 8. Runtime Constraints
 
 - Frontend browser veya MVC proxy tüm business çağrılarını Gateway `5000` üzerinden yapar.
-- Direct `http://localhost:5061`, `https://localhost:5061` veya herhangi bir `:5061` business URL yasaktır.
+- Direct `http://localhost:5065`, `https://localhost:5065` veya herhangi bir `:5065` business URL yasaktır.
 - Same-origin MVC proxy tercih edilir; HttpOnly access token server-side Gateway requestine aktarılır.
 - Payload içinde `TenantId` alanı oluşturulmaz/gönderilmez. Mevcut auth mekanizmasının tenant header/claim akışı korunur.
 - Campaign/Target lifecycle archive endpointleriyle yürür; `DELETE` kullanılmaz.
@@ -381,7 +381,7 @@ POST   /api/crm/campaigns/{campaignId}/targets/snapshot
 GET    /api/crm/campaigns/contract
 ```
 
-- Gateway base port `5000`; direct `5061` yok.
+- Gateway base port `5000`; direct `5065` yok.
 - HTTP `DELETE` yok.
 - TenantId payload yok.
 - Backend error/reasonCodes UI toast/detail panelinde görünür.
@@ -415,7 +415,7 @@ GET    /api/crm/campaigns/contract
 - [ ] Contract flags actionları fail-closed enable/disable/hide eder.
 - [ ] Permission-controlled list/action/menu visibility mevcut resolver'a bağlıdır; seed/grant yoktur.
 - [ ] Tüm yeni visible text en/fr/es/zh/ar/ru/tr RESX/L10n parity taşır.
-- [ ] Frontend kodunda direct `5061`, Campaign/Target `DELETE`, TenantId payload veya yasak response alanı yoktur.
+- [ ] Frontend kodunda direct `5065`, Campaign/Target `DELETE`, TenantId payload veya yasak response alanı yoktur.
 - [ ] Diten.Web build, ilgili UI tests, DataTable verifier, RESX parity ve mümkünse authenticated tenant smoke PASS'tir.
 - [ ] Evidence raporu belirtilen 24 bölümü ve desteklenmeyen filtre/permission fallback/smoke sınırlamalarını içerir.
 - [ ] Backend, Gateway, registry, seed/grant, Mongo ve MOD-0155 değişmemiştir.
@@ -436,7 +436,7 @@ Minimum otomatik/statik doğrulama:
 10. Consent badge/provenance; consent/preference payload absence.
 11. Contract feature flags ve permission hidden/disabled states.
 12. Yedi locale dosyasında aynı key seti.
-13. Frontend source'ta direct `5061`, forbidden `DELETE`, TenantId ve §17 yasak field guard taraması.
+13. Frontend source'ta direct `5065`, forbidden `DELETE`, TenantId ve §17 yasak field guard taraması.
 14. `dotnet build frontend/Diten.Web/Diten.Web.csproj -c Debug` PASS.
 15. `python3 .antigravity/scripts/verify_datatable_page.py . --area CRM --module Campaigns --reference compact` PASS.
 16. Mevcut frontend testleri etkilenmez.

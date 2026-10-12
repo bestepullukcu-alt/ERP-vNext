@@ -1,0 +1,8 @@
+before	after	before_file	after_file	expect	totals	state	allow_unlisted	result	detail	totals_exempt
+fixture-before	fixture-after	fixture-before-a1.json	fixture-after-a1.json	claims=+5 claims_receipts=+6 claims_audit=+6 claims_outbox=+6	carrier_audit=+1 carrier_idempotency=+1 carriers=+1 claims=+5 claims_audit=+6 claims_outbox=+6 claims_receipts=+6 sce_shipment_audit=+16 sce_shipment_history=+16 sce_shipment_outbox=+16 sce_shipment_receipts=+16 sce_shipments=+6	-	-	PASS	-	-
+cu05v2-before	cu05v2-after	cu05v2-before-a1.json	cu05v2-after-a1.json	claims=0 claims_receipts=0 claims_audit=0 claims_outbox=0	claims=0 claims_receipts=0 claims_audit=0 claims_outbox=0	-	-	PASS	-	-
+cu05v3-before	cu05v3-after	cu05v3-before-a1.json	cu05v3-after-a1.json	claims=0 claims_receipts=0 claims_audit=0 claims_outbox=0	claims=0 claims_receipts=0 claims_audit=0 claims_outbox=0	-	-	PASS	-	-
+diagv3-before	diagv3-after	diagv3-before-a1.json	diagv3-after-a1.json	claims=0 claims_receipts=0 claims_audit=0 claims_outbox=0	claims=0 claims_receipts=0 claims_audit=0 claims_outbox=0	-	-	PASS	-	-
+cu25v2-before	cu25v2-after	cu25v2-before-a1.json	cu25v2-after-a1.json	claims=0 claims_receipts=0 claims_audit=0 claims_outbox=0	claims=0 claims_receipts=0 claims_audit=0 claims_outbox=0	-	-	PASS	-	-
+cu25v3-before	cu25v3-after	cu25v3-before-a1.json	cu25v3-after-a1.json	claims=0 claims_receipts=0 claims_audit=0 claims_outbox=0	claims=0 claims_receipts=0 claims_audit=0 claims_outbox=0	-	-	PASS	-	-
+regression-before	regression-after	regression-before-a1.json	regression-after-a1.json	claims=+1 claims_receipts=+2 claims_audit=+2 claims_outbox=+2	claims=+1 claims_receipts=+2 claims_audit=+2 claims_outbox=+2	-	-	PASS	-	-

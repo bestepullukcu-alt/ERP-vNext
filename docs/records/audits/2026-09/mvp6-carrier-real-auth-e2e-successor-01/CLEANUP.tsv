@@ -1,0 +1,7 @@
+resource	result	note
+Web/Gateway/Auth/Platform/MDM/SupplyChain processes	N/A	No process started by this lane
+Lane Mongo	N/A	No database or mongod started by this lane
+Ports	N/A	No port bound by this lane
+Browser session	N/A	No browser tab or session created
+Temporary checksum file	NON-PRODUCT	/private/tmp/mvp6-carrier-successor-ui.sha256 only; contains hashes and paths, no secret
+Repository source	UNCHANGED	Audit-only output

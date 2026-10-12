@@ -1,0 +1,53 @@
+{
+  "case": "restart-detail",
+  "method": "GET",
+  "path": "/api/shipment-bundle/shipments/0857dd87-b133-4b2e-8d90-92ed4aa0bcbd",
+  "requestHeaders": {
+    "X-Tenant-Id": "00000000-0000-0000-0000-000000000001",
+    "X-Legal-Entity-Id": "10000000-0000-0000-0000-000000000001",
+    "X-Correlation-Id": "3f80584c-8196-425f-a391-0bda555e0892"
+  },
+  "requestBody": null,
+  "requestBytes": 0,
+  "status": 200,
+  "responseHeaders": {
+    "Content-Type": "application/json; charset=utf-8",
+    "X-Correlation-Id": "3f80584c-8196-425f-a391-0bda555e0892"
+  },
+  "responseBody": {
+    "shipmentId": "0857dd87-b133-4b2e-8d90-92ed4aa0bcbd",
+    "shipmentNumber": "SHP-0857dd87b1334b2e8d9092ed4aa0bcbd",
+    "sourceDocumentId": "SRA-OUT-001",
+    "status": "Delivered",
+    "carrierId": null,
+    "loadId": null,
+    "plannedShipAt": "2026-09-24T15:06:25.005646+00:00",
+    "plannedDeliverAt": "2026-09-24T16:06:25.005646+00:00",
+    "actualDeliverAt": "2026-09-24T14:16:25.005646+00:00",
+    "sourceModule": "MOD-0178",
+    "sourceType": "WAREHOUSE_OUTBOUND",
+    "warehouseReferenceId": "SRA-WH-001",
+    "shipToReference": "SRA-SHIPTO-001",
+    "lines": [
+      {
+        "lineNumber": "1",
+        "itemId": "20fa2637-8de0-41d8-bc18-616cfc4df1fc",
+        "skuId": "eba92f61-7aae-4eb3-9c24-5ca77a57c939",
+        "quantity": "2.000",
+        "uomId": "EA",
+        "inventoryReferenceId": "SRA-INV-001"
+      }
+    ],
+    "pod": {
+      "recipientName": "Test Recipient",
+      "receivedAt": "2026-09-24T14:16:25.005646+00:00",
+      "evidenceReferenceIds": [
+        "SRA-POD-001"
+      ],
+      "note": "delivered"
+    },
+    "contractVersion": "v1",
+    "lifecycleCorrelationId": null
+  },
+  "responseBytes": 876
+}

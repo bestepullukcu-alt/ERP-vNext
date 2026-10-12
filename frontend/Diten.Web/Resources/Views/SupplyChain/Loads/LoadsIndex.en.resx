@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="LoadsTitle" xml:space="preserve"><value>Loads</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>View load plans and create a load plan from existing carrier and shipment references.</value></data>
+  <data name="AddNewLoad" xml:space="preserve"><value>Add Load</value></data>
+  <data name="LoadNumber" xml:space="preserve"><value>Load Number</value></data>
+  <data name="CarrierId" xml:space="preserve"><value>Carrier ID</value></data>
+  <data name="CarrierIdHelp" xml:space="preserve"><value>The carrier’s UUID. It must be an active carrier that supports the selected mode.</value></data>
+  <data name="ShipmentIds" xml:space="preserve"><value>Shipments</value></data>
+  <data name="ShipmentId" xml:space="preserve"><value>Shipment ID</value></data>
+  <data name="ShipmentIdsHelp" xml:space="preserve"><value>At least one shipment UUID. Shipments must be Draft or Planned; the order you enter is kept.</value></data>
+  <data name="AddShipment" xml:space="preserve"><value>Add Shipment</value></data>
+  <data name="RemoveShipment" xml:space="preserve"><value>Remove shipment</value></data>
+  <data name="Mode" xml:space="preserve"><value>Mode</value></data>
+  <data name="ModeRoad" xml:space="preserve"><value>Road</value></data>
+  <data name="ModeAir" xml:space="preserve"><value>Air</value></data>
+  <data name="ModeSea" xml:space="preserve"><value>Sea</value></data>
+  <data name="ModeRail" xml:space="preserve"><value>Rail</value></data>
+  <data name="ModeParcel" xml:space="preserve"><value>Parcel</value></data>
+  <data name="PlannedDepartAt" xml:space="preserve"><value>Planned Departure</value></data>
+  <data name="PlannedDepartAtHelp" xml:space="preserve"><value>Your local date and time. It is sent in UTC.</value></data>
+  <data name="PlannedDepartAtInvalid" xml:space="preserve"><value>Enter a valid date and time that exists in your time zone.</value></data>
+  <data name="Stops" xml:space="preserve"><value>Stops</value></data>
+  <data name="StopsHelp" xml:space="preserve"><value>At least two stops, numbered 1 to N, with at least one Pickup and one Delivery.</value></data>
+  <data name="StopSequence" xml:space="preserve"><value>Sequence</value></data>
+  <data name="StopLocationReferenceId" xml:space="preserve"><value>Location Reference</value></data>
+  <data name="StopAction" xml:space="preserve"><value>Action</value></data>
+  <data name="ActionPickup" xml:space="preserve"><value>Pickup</value></data>
+  <data name="ActionDelivery" xml:space="preserve"><value>Delivery</value></data>
+  <data name="ActionReturn" xml:space="preserve"><value>Return</value></data>
+  <data name="AddStop" xml:space="preserve"><value>Add Stop</value></data>
+  <data name="RemoveStop" xml:space="preserve"><value>Remove stop</value></data>
+  <data name="FilterCarrierId" xml:space="preserve"><value>Carrier ID (UUID)</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Draft</value></data>
+  <data name="StatusPlanned" xml:space="preserve"><value>Planned</value></data>
+  <data name="StatusTendered" xml:space="preserve"><value>Tendered</value></data>
+  <data name="StatusAccepted" xml:space="preserve"><value>Accepted</value></data>
+  <data name="StatusDispatched" xml:space="preserve"><value>Dispatched</value></data>
+  <data name="StatusCompleted" xml:space="preserve"><value>Completed</value></data>
+  <data name="StatusCancelled" xml:space="preserve"><value>Cancelled</value></data>
+  <data name="EmptyList" xml:space="preserve"><value>No loads were found.</value></data>
+  <data name="NotProvided" xml:space="preserve"><value>Not provided</value></data>
+  <data name="SupportReference" xml:space="preserve"><value>Support reference</value></data>
+  <data name="ListUnavailable" xml:space="preserve"><value>Loads could not be loaded. Try again later.</value></data>
+  <data name="ValidationError" xml:space="preserve"><value>Check the entered values and try again.</value></data>
+  <data name="AccessDenied" xml:space="preserve"><value>You do not have permission for this action.</value></data>
+  <data name="CreateSuccess" xml:space="preserve"><value>Load plan created successfully.</value></data>
+  <data name="CreateReplaySuccess" xml:space="preserve"><value>This load plan request was already completed successfully.</value></data>
+  <data name="RetrySameRequest" xml:space="preserve"><value>Retry without changing the form to preserve the request identity.</value></data>
+  <data name="ErrCarrierNotFound" xml:space="preserve"><value>No active carrier with this ID was found in your scope.</value></data>
+  <data name="ErrCarrierModeUnsupported" xml:space="preserve"><value>The carrier does not support the selected mode.</value></data>
+  <data name="ErrShipmentNotFound" xml:space="preserve"><value>A shipment with this ID was not found in your scope.</value></data>
+  <data name="ErrShipmentNotEligible" xml:space="preserve"><value>Only Draft or Planned shipments can be added to a load.</value></data>
+  <data name="ErrShipmentCarrierMismatch" xml:space="preserve"><value>A shipment is already assigned to a different carrier.</value></data>
+  <data name="ErrShipmentAlreadyAssigned" xml:space="preserve"><value>A shipment already belongs to another load.</value></data>
+  <data name="ErrDuplicateShipment" xml:space="preserve"><value>The same shipment is listed more than once.</value></data>
+  <data name="ErrInvalidLoadStops" xml:space="preserve"><value>Stops must be numbered 1 to N and include at least one Pickup and one Delivery.</value></data>
+  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>This request was already received with different values. To make a different request, close this form and open a new one.</value></data>
+  <data name="ErrCorrelationRootMismatch" xml:space="preserve"><value>This request no longer matches the load it started. Close this form and open a new one.</value></data>
+  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>Carrier or shipment data is temporarily unavailable. Try the same request again.</value></data>
+  <data name="ErrDependencyResponseInvalid" xml:space="preserve"><value>Carrier or shipment data could not be read. Contact support with the reference.</value></data>
+  <data name="ErrReferenceStateUnavailable" xml:space="preserve"><value>The shipment’s current state could not be confirmed. Try the same request again later.</value></data>
+  <data name="ErrPersistenceUnavailable" xml:space="preserve"><value>The request outcome is unavailable.</value></data>
+  <data name="ErrInternalError" xml:space="preserve"><value>An unexpected error occurred. Contact support with the reference.</value></data>
+</root>

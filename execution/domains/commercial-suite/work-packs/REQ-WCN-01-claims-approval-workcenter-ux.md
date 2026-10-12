@@ -68,3 +68,23 @@ CRM'deki **iddialar** (promosyon/medikal ifadeler) yayına girmeden önce üç a
    - W-3: detayda "Atanmamış";
    - W-2: "Onayla" penceresinde yorum yok;
    - W-4: detaydan onaylayınca "bulunamadı".
+
+---
+
+## 5. Görev Merkezi / Platform cevabı (2026-10-01) — iş paketi `WP-WCN-APPROVAL-UX-01`
+| # | Cevap | Not |
+|---|---|---|
+| W-1 Adım adı | **KABUL** | Adımın görünen adı **ayrı rozet** olarak (şablondaki ad). Başlık DisplayContext'teki haliyle kalır. |
+| W-2 Yorum | **KISMEN VAR + KABUL** | Ret bugün de zorunlu gerekçe soruyor. Adımda `commentRequired` işaretliyse onay da zorunlu yorum soruyor. **Eksik olan:** zorunlu değilken isteğe bağlı not alanı → Onayla penceresine eklenecek. Yorum `GET instances/{id}/history` → `comment` alanında. **Kapsam dışı:** Görev Merkezi Etkinlik akışında görünmesi. |
+| W-3 Atanmamış | **KABUL** | Kişi atanmamışsa "Onay bekleyen: Medikal Direktör, Medikal Uzman". "Havuzda" ifadesi kullanılmayacak. |
+| W-4 Bulunamadı | **KABUL** | Başarılı karardan sonra listeye dönüş, bildirim korunur. Sıradaki adımın otomatik açılması yok. |
+| Bilgi | — | "3 iş öğesi sözleşme hatası" onlarda; düzeltme main'i bekliyor. Başlık dili ve kaynak bağlantısı: onlarda iş yok. |
+
+**Bizim tarafa etkisi:**
+- Bilgi Yolu (KP-2) kendi inceleyici görünümünde yorumu ve adım adını history ucundan gösteriyor, uyumlu.
+- MLR şablonlarında (`CLAIM-*`, `KP-MLR-*`) `commentRequired: false` kalır. Ret yorumu motor + CRM'de zaten zorunlu.
+
+**Onlardan bize karar sorusu:** "Aynı kişi aynı kayıtta birden fazla MLR adımını onaylayamaz" kuralı gerekli mi? Gerekliyse şablon bazında açılabilir seçenek olarak motora ayrı iş yazacaklar.
+- **CT önerisi:** şablon bazında seçenek olarak **iste**, varsayılan **kapalı**. Bizim MLR şablonlarımızda şimdilik **kapalı** kalır.
+- **Gerekçe:** organizasyon kararı (2026-09-28): bir kişi birden fazla MLR fonksiyonunu üstlenebilir; canlıda üç pozisyon tek kişide (sema). Ekip büyüyünce (ayrı Medikal / Hukuk / Ruhsat kişileri) `KP-MLR-*` ve `CLAIM-*` şablonlarında açılır.
+- **Karar:** kullanıcı onayı bekleniyor.

@@ -1,0 +1,15 @@
+  Diten.AuthService.Domain -> /private/tmp/mvp6-carrier-real-auth-e2e-exec-01-20260924-133913/snapshot/services/Diten.AuthService/src/Diten.AuthService.Domain/bin/Release/net8.0/Diten.AuthService.Domain.dll
+  Diten.AuthService.Application -> /private/tmp/mvp6-carrier-real-auth-e2e-exec-01-20260924-133913/snapshot/services/Diten.AuthService/src/Diten.AuthService.Application/bin/Release/net8.0/Diten.AuthService.Application.dll
+  Diten.BuildingBlocks.Security.Secrets -> /private/tmp/mvp6-carrier-real-auth-e2e-exec-01-20260924-133913/snapshot/services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/bin/Release/net8.0/Diten.BuildingBlocks.Security.Secrets.dll
+/private/tmp/mvp6-carrier-real-auth-e2e-exec-01-20260924-133913/snapshot/services/Diten.AuthService/src/Diten.AuthService.Persistence/DependencyInjection.cs(61,9): warning CS0618: 'MongoClientSettings.GuidRepresentation' is obsolete: 'Configure serializers instead.' [/private/tmp/mvp6-carrier-real-auth-e2e-exec-01-20260924-133913/snapshot/services/Diten.AuthService/src/Diten.AuthService.Persistence/Diten.AuthService.Persistence.csproj]
+  Diten.AuthService.Persistence -> /private/tmp/mvp6-carrier-real-auth-e2e-exec-01-20260924-133913/snapshot/services/Diten.AuthService/src/Diten.AuthService.Persistence/bin/Release/net8.0/Diten.AuthService.Persistence.dll
+  Diten.BuildingBlocks.Eventing -> /private/tmp/mvp6-carrier-real-auth-e2e-exec-01-20260924-133913/snapshot/services/Diten.Building.Blocks/src/Diten.BuildingBlocks.Eventing/bin/Release/net8.0/Diten.BuildingBlocks.Eventing.dll
+Attempting to cancel the build...
+
+Build FAILED.
+
+/private/tmp/mvp6-carrier-real-auth-e2e-exec-01-20260924-133913/snapshot/services/Diten.AuthService/src/Diten.AuthService.Persistence/DependencyInjection.cs(61,9): warning CS0618: 'MongoClientSettings.GuidRepresentation' is obsolete: 'Configure serializers instead.' [/private/tmp/mvp6-carrier-real-auth-e2e-exec-01-20260924-133913/snapshot/services/Diten.AuthService/src/Diten.AuthService.Persistence/Diten.AuthService.Persistence.csproj]
+    1 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:01:54.65

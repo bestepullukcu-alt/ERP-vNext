@@ -1,0 +1,195 @@
+--- index.fixed.js
++++ index.draft.js
+@@ -2,7 +2,7 @@
+ 
+ /**
+  * MOD-0187 Claims — tenant list page (pack §32, golden-reference slim, bounded DataTables v2 profile).
+- * Built by R-4c from the September draft v4 (mvp6-claims-ui-draft-04), held against MODULE-RECIPE.md.
++ * DRAFT overlay — not built, not runtime-verified, not writer-complete.
+  *
+  * Bound operations only (pack §32.3): queryClaims (list/filter/reload), createClaim (create offcanvas),
+  * transitionClaim (row action) and the Shipment resolve projection. Every request goes to the same-origin adapter
+@@ -12,10 +12,8 @@
+  * server paging/search/sort (CU-SCR-04), multi-select status (CU-SCR-05), by-ID claim GET and Details page (§32.3).
+  *
+  * Payload rule (pack §32.6/§32.8): values are sent exactly as typed — no trim, no uppercase, no number conversion.
+- * One pending request per intent. An intent is one opened create form or transition panel, not one payload (Q403,
+- * MODULE-RECIPE 3.1): the Idempotency-Key is minted when the form or panel opens and kept across edits, failures and
+- * retries until it closes. An edited retry after a lost response therefore answers 409 IDEMPOTENCY_KEY_REUSED instead of
+- * creating a second claim, and the form stops there (R-4c; the September draft re-minted the key per payload).
++ * One pending request per intent; a retry after network/500/503 re-sends the same Idempotency-Key with identical body
++ * text; an edited payload is a new intent with a new key.
+  */
+ const ClaimsList = (function () {
+     const endpoint = '/SupplyChain/Claims/api';
+@@ -105,14 +103,14 @@
+     const permissions = readPermissions();
+ 
+     // Create intent and resolve state.
+-    let createIntent = null;           // { key, blocked, blockedFailure } — minted when the form opens
++    let createIntent = null;           // { key, bodyText, blocked }
+     let createPending = false;
+     let resolveSequence = 0;
+     let resolvedShipment = null;       // { shipmentId (exact typed text), shipmentNumber, status, carrierId }
+ 
+     // Transition intent and state.
+     let transitionContext = null;      // { claimId, shipmentId, claimNumber, fromStatus }
+-    let transitionIntent = null;       // { claimId, key, blocked, blockedFailure } — minted when the panel opens
++    let transitionIntent = null;       // { claimId, key, bodyText, blocked }
+     let transitionPending = false;
+ 
+     // ─── Basics ──────────────────────────────────────────────────────────────
+@@ -140,7 +138,6 @@
+     };
+     const t = (key) => L[key] || '';
+     const uuid = () => crypto.randomUUID();
+-    const newIntent = (extra) => Object.assign({ key: uuid(), blocked: false, blockedFailure: null }, extra);
+     const escapeHtml = (value) => String(value ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;')
+         .replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;');
+     const isText = (value) => typeof value === 'string';
+@@ -287,10 +284,8 @@
+         const errorHost = document.getElementById('claims-error-state');
+         errorHost?.classList.toggle('d-none', state !== 'error');
+         if (state === 'error' && failure) {
+-            // MODULE-RECIPE 3.11: a failed read uses read wording. The write texts ("the outcome is not confirmed; try the
+-            // same request again") belong to an intent, and a list load has none (R-4c; the draft chose them by code).
+-            const message = document.getElementById('claims-error-message');
+-            if (message) message.textContent = t('ListErrorState');
++            const message = document.getElementById('claims-error-message');
++            if (message) message.textContent = failure.code ? failureText(failure) : t('ListErrorState');
+             const referenceRow = document.getElementById('claims-error-reference');
+             const referenceValue = document.getElementById('claims-error-reference-value');
+             const referenceCopy = document.getElementById('claims-error-reference-copy');
+@@ -302,14 +297,6 @@
+         }
+     };
+ 
+-    // MODULE-RECIPE 3.6: a 403 on the list is the denied card inside the shell, never the error state or a toast.
+-    const showListDenied = () => {
+-        const surface = document.getElementById('claimsListSurface');
+-        const denied = document.getElementById('claimsListDenied');
+-        if (!surface || !denied) return;
+-        surface.hidden = true; surface.setAttribute('inert', ''); denied.hidden = false;
+-    };
+-
+     const isListEnvelope = (body) => body !== null && typeof body === 'object' && Array.isArray(body.items)
+         && body.items.every((item) => item !== null && typeof item === 'object' && !Array.isArray(item));
+ 
+@@ -331,7 +318,6 @@
+             if (!response.ok) {
+                 const failure = await readFailure(response);
+                 if (response.status === 401) handleUnauthorized();
+-                if (response.status === 403) { showListDenied(); callback({ data: [] }); return; }
+                 setListState('error', failure);
+                 callback({ data: [] });
+                 return;
+@@ -461,7 +447,7 @@
+         if (list) list.replaceChildren();
+         hideAlert('formClaimAlert');
+         clearResolvedShipment();
+-        createIntent = newIntent();
++        createIntent = null;
+         createOpener = document.activeElement instanceof HTMLElement && document.activeElement !== document.body
+             ? document.activeElement : document.querySelector('.add-new');
+         offcanvas('offcanvasCreateEdit')?.show();
+@@ -552,8 +538,9 @@
+         if (!ELIGIBLE_SHIPMENT_STATUSES.has(resolvedShipment.status)) return;
+         hideAlert('formClaimAlert');
+         const bodyText = buildCreateBody();
+-        if (!createIntent) createIntent = newIntent();
+-        if (createIntent.blocked) {
++        if (!createIntent || createIntent.bodyText !== bodyText) {
++            createIntent = { key: uuid(), bodyText, blocked: false };
++        } else if (createIntent.blocked) {
+             showAlert('formClaimAlert', createIntent.blockedFailure);
+             return;
+         }
+@@ -563,7 +550,7 @@
+         if (save) save.disabled = true;
+         try {
+             const response = await fetch(endpoint, {
+-                method: 'POST', credentials: 'same-origin', headers: mutationHeaders(intent.key), body: bodyText
++                method: 'POST', credentials: 'same-origin', headers: mutationHeaders(intent.key), body: intent.bodyText
+             });
+             if (response.ok) {
+                 let result = null;
+@@ -607,8 +594,8 @@
+                 showAlert('formClaimAlert', failure);
+                 return;
+             default:
+-                // 400/415/422 keep the inputs; 500/502/503 keep the outcome open. The key stays with the opened form either
+-                // way: only closing the form ends the intent (Q403).
++                // 400/415/422: inputs kept. 500/502/503: same key + identical body on the explicit retry.
++                if (!retryable(failure) && failure.status !== 422 && failure.status !== 400) createIntent = null;
+                 showAlert('formClaimAlert', failure);
+         }
+     };
+@@ -620,7 +607,7 @@
+         const targets = allowedTargets(row);
+         if (!targets.includes(target)) return;
+         transitionContext = { claimId, shipmentId: row.shipmentId, claimNumber: row.claimNumber, fromStatus: row.status };
+-        transitionIntent = newIntent({ claimId });
++        transitionIntent = null;
+         hideAlert('formClaimTransitionAlert');
+         const number = document.getElementById('transitionClaimNumber');
+         if (number) number.textContent = isText(row.claimNumber) ? row.claimNumber : t('NotProvided');
+@@ -689,8 +676,9 @@
+         if (!context || transitionPending) return;
+         hideAlert('formClaimTransitionAlert');
+         const { target, bodyText } = buildTransitionBody();
+-        if (!transitionIntent || transitionIntent.claimId !== context.claimId) transitionIntent = newIntent({ claimId: context.claimId });
+-        if (transitionIntent.blocked) {
++        if (!transitionIntent || transitionIntent.claimId !== context.claimId || transitionIntent.bodyText !== bodyText) {
++            transitionIntent = { claimId: context.claimId, key: uuid(), bodyText, blocked: false };
++        } else if (transitionIntent.blocked) {
+             showAlert('formClaimTransitionAlert', transitionIntent.blockedFailure);
+             return;
+         }
+@@ -701,7 +689,7 @@
+         const url = `${endpoint}/${encodeURIComponent(context.claimId)}/transition?shipmentId=${encodeURIComponent(context.shipmentId)}`;
+         try {
+             const response = await fetch(url, {
+-                method: 'POST', credentials: 'same-origin', headers: mutationHeaders(intent.key), body: bodyText
++                method: 'POST', credentials: 'same-origin', headers: mutationHeaders(intent.key), body: intent.bodyText
+             });
+             if (response.ok) {
+                 let result = null;
+@@ -1096,9 +1084,8 @@
+             el.addEventListener('show.bs.offcanvas', () => { el.inert = false; });
+             el.addEventListener('hidden.bs.offcanvas', () => {
+                 el.inert = true;
+-                if (id === 'offcanvasClaimTransition') { transitionContext = null; transitionIntent = null; }
++                if (id === 'offcanvasClaimTransition') transitionContext = null;
+                 if (id === 'offcanvasCreateEdit') {
+-                    createIntent = null;
+                     clearResolvedShipment();
+                     restoreCreateOpener();
+                 }
+--- index.fixed.js
++++ index.sab-skeleton.js
+@@ -278,10 +278,7 @@
+             // Q64d-D1: the shared .backbone-skeleton rule is display:none, so toggling d-none alone never shows it; and the
+             // shared DtDefaults drawCallback fades the skeleton out on DataTables' first draw, before any data exists
+             // (Q64e rc1 timeline). Stop that fade and own the display here.
+-            window.jQuery?.(skeleton).stop(true);
+-            skeleton.style.opacity = '';
+-            skeleton.classList.toggle('d-none', state !== 'skeleton');
+-            skeleton.style.display = state === 'skeleton' ? 'block' : 'none';
++            skeleton.classList.toggle('d-none', state !== 'skeleton'); // SABOTAGE: no display override, no stop of the shared fade
+         }
+         document.getElementById('claims-table-host')?.classList.toggle('d-none', state !== 'table');
+         const errorHost = document.getElementById('claims-error-state');
+--- index.fixed.js
++++ index.sab-utcclock.js
+@@ -205,8 +205,9 @@
+         const offset = -d.getTimezoneOffset();
+         const sign = offset >= 0 ? '+' : '-';
+         const abs = Math.abs(offset);
+-        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:`
+-            + `${pad(d.getMinutes())}:${pad(d.getSeconds())}${sign}${pad(Math.floor(abs / 60))}:${pad(abs % 60)}`;
++        // SABOTAGE (Q374 shape): the UTC wall clock written next to the local offset
++        return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}T${pad(d.getUTCHours())}:`
++            + `${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}${sign}${pad(Math.floor(abs / 60))}:${pad(abs % 60)}`;
+     };
+ 
+     // ─── Failure envelope → localized message + support reference ────────────
