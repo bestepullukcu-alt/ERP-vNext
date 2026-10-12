@@ -1562,6 +1562,19 @@ O-ITEM-4, FU-0022-CT-01 CLOSED. Fast-forwarded into the MVP-1 branch. The two BL
 - **Port (OD-P1):** InventoryService 5066 → **5067**; `/api/quarantine` and the other three route families follow.
 - **Evidence.** `docs/records/audits/2026-10/mvp1-sync1-evidence-2026-10-12.md`, `-scripts-2026-10-12.md`.
 
+**SYNC1 — CT acceptance (2026-10-12).** `feature/mvp1-sync1` = MVP-1 branch + `origin/main` (`a814bad0f`); `HEAD..origin/main` = 0 at
+acceptance (fresh fetch). The CT re-measured the merged tree: Platform filtered (ESign + Workflow + WorkAggregation + WorkCenter +
+ModuleRegistration + ModulePages) **699/699** with main's test environment (`DITEN_TEST_MONGOD` + `DITEN_PLATFORM_TEST_MONGO_URI` on an own
+replica set with `enableTestCommands=1`; without the URI the same 9 Mongo tests fail at 1 ms — environment), Inventory **839/839**, Web
+**1429/1429**, gateway 110/111 (the known 5064 / 5065 port red, FU-INT1-01), architecture 69/77 — the SAME 8 reds measured on `origin/main`
+itself (DocsPathGuard × 5, MongoTestDatabaseGuard, AuditTrailStandard × 2). Ports: 8 MVP-1 routes on 5067, main's 2 `/api/shipment-bundle`
+routes on 5066. CT sabotage (own): the WorkCenter approval dispatcher stops passing `payload.SignatureId` → 2 red in
+`WorkflowESignatureGateTests`, restored, porcelain clean. Accepted: owner decision B (old instances keep main's starter comparison), one
+actor binding (ours), tolerant `StartedByUserId` map, `SchemaProfile.ESignature = 13`, OD-P1 Inventory 5067, the Windows guard in main's
+`DisposableStandaloneMongo` (c7314b856). Fast-forwarded into the MVP-1 branch. Follow-ups: **FU-SYNC1-AUDIT** (main's audit-trail standard
+now also counts 33 MVP-1 write commands: Inventory 27, Auth 3, Platform 3), **FU-SYNC1-ENV** (main's tests need `DITEN_PLATFORM_TEST_MONGO_URI`,
+`AUTH_COMPOSITION_GUARD_MONGO_URI`, `DevSeeds:MockUsers` for seeded users — every future prompt states them).
+
 ## 20. Follow-up Items
 
 - **FU-0175-WF-SOD (MOD-0023):** store `StartedByUserId` and compare user ids in SoD; add an integration test that starts
