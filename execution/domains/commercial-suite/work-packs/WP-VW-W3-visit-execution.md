@@ -22,14 +22,14 @@
 1. **Mesafe eşiği:** kiracı ayarında `radiusMeters` (varsayılan **300 m**), `maxAccuracyMeters` (varsayılan **150 m**).
 2. **Masaüstü muafiyeti YOK.** Cihaz türü istemcinin beyanıdır, sunucu güvenemez. Konum "zorunlu" ise her cihazda konum gerekir; kiracı "bilgi" seçerse kaydedilir ve işaretlenir.
 3. **Konumu olmayan kurum** (Account'ta enlem/boylam yok): `accountWithoutLocation = allow_flagged` (varsayılan; başlatılır, `account_location_unknown` işareti, yönetici görür) | `block`.
-4. **QR ve anti-fraud W3'te YOK.** Kurum QR kodu verisi ve mobil anti-fraud modülü yok. Ayar alanları da eklenmez; ayrı iş.
-5. **Kiracı ayar ekranı W3'te YOK.** Varsayılanlar geçerli; ayar API ile değişir. Yönetim ekranı ayrı iş.
+4. **QR ve anti-fraud W3'te YOK.** Kurum QR kodu verisi ve mobil anti-fraud modülü yok. Ayar alanları da eklenmez; yol haritasında **W3E · Ek kanıtlar** (W4'ten sonra, öneri).
+5. **Kiracı ayar ekranı 2. turda YOK.** Varsayılanlar geçerli; ayar API ile değişir. Yönetim ekranı **W3-WEB-d** (mockup yaptırılıyor, kullanıcı 2026-10-12).
 6. **PIN:** temsilci doktor moduna geçerken 4 haneli PIN belirler. PIN yalnız tarayıcı belleğinde (özet) tutulur, sunucuya gitmez. PIN ile çıkış **ziyareti bitirmez**, temsilci panelini açar. Bitirme, panelde ayrı bir düğmedir (mockup boşluğu kapatılır).
 7. **"Bu doktor için"** W3'te mevcut rapor verisinden basit özet: son ziyaret tarihi, sonuç, takip notu, verilen numune. Bağlılık, ilgi eğilimi ve iletişim stili W4.
 8. **Slayt görseli:** içerik görseli temsilciye yeni Platform izni vermeden okunabiliyorsa gösterilir; okunamıyorsa yer tutucu ("onaylı içerik görseli"), follow-up.
 9. **Rakip kartı ve pazar payı** W3'te YOK (K-W6 / W7). İtiraz yanıtı yalnız onaylı metin ve iddia referanslarıdır.
 10. **JourneyProgress ilerletme (SB-3c)** W3'te YOK. Rapor gönderimine bağlanır (W4).
-11. **İtiraz kütüphanesi ve sunum notu yazım ekranı** (Content Studio) bu turda YOK. Yeni sayfa olduğu için önce mockup kararı sorulur → W3-WEB-c.
+11. **İtiraz kütüphanesi ve sunum notu yazım ekranı** (Content Studio) bu turlarda YOK → **W3-WEB-c**. Kullanıcı (2026-10-12): **mockup yaptıracak**; brief [BRIEF-W3-authoring-and-evidence-settings](mockups/visit-workspace/BRIEF-W3-authoring-and-evidence-settings.md).
 
 **Kapsam dışı:** rapor ekranı (W4), e-postalar (W5), ön sipariş (W6), satış payı (W7), çevrimdışı kuyruk (mobil uygulamanın işi).
 
@@ -41,7 +41,8 @@
 | 1 | **W3-BE-b** · CRM: sunum notları + itiraz kütüphanesi + ziyaret sunum okuması | `C:\tmp\vw-w3-be-b` / `wp/vw-w3-be-b` | — |
 | 2 | **W3-WEB-a** · Çalışma alanı: başlat (E3), `in_progress`, eylemler | `C:\tmp\vw-w3-web-a` / `wp/vw-w3-web-a` | 1. tur test dalında |
 | 2 | **W3-WEB-b** · Sunum sayfası: doktor ekranı (E4a), kumanda (E4b), bitiş + imza (E4c) | `C:\tmp\vw-w3-web-b` / `wp/vw-w3-web-b` | 1. tur test dalında |
-| sonra | W3-WEB-c · Content Studio yazım ekranları | — | mockup kararı |
+| 3 | W3-WEB-c · Content Studio yazım ekranları (itiraz kütüphanesi + adım sunum notları) | — | mockup (brief hazır) + BE-b |
+| 3 | W3-WEB-d · Ziyaret kanıtı ayarları ekranı | — | mockup (aynı brief §C) + BE-a |
 | CT | W3 mobil notu | — | 1. tur |
 
 1. turun üç promptu paraleldir. Ortak adlar §2'de **sabittir**; ajan değiştirmez, değiştirmek zorunda kalırsa DURUR ve raporlar.
