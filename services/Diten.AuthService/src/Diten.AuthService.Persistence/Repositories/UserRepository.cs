@@ -194,6 +194,9 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
 
     public object CaptureState(User user) => user.ToBsonDocument();
 
+    /// <summary>WP-USERS-ROLES-CLOSE-FIX1 item 6 — test seam (see RecordLoginFailureAsync).</summary>
+    internal Func<Task>? AfterFailureCounted { get; set; }
+
     public async Task<bool> TryWriteChangesAsync(User user, object capturedState, Guid tenantId, UserWriteCondition condition, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(user);
@@ -221,7 +224,7 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
                 : Builders<User>.Filter.Ne(u => u.DeactivatedByAdministrator, true));
         }
         if (condition.PasswordResetTokenHash is { } link) filters.Add(Builders<User>.Filter.Eq(u => u.PasswordResetTokenHash, link));
-        if (condition.IsPlatformAccount is { } platform) filters.Add(platform ? PlatformAccountFilter.IsPlatformAccount : NotAPlatformAccount);
+        if (condition.ExcludePlatformAccounts) filters.Add(NotAPlatformAccount);
         var filter = Builders<User>.Filter.And(filters);
 
         // Only the elements whose value differs from the state read — never the whole document.
@@ -279,18 +282,23 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
             return new LoginFailureOutcome(counted.FailedLoginAttempts, counted.LockoutEnd);
         }
 
+        // WP-USERS-ROLES-CLOSE-FIX1 item 6 — test seam: between the count and the lockout write (the lockout write carries the
+        // same filter, the platform-account exclusion included).
+        if (AfterFailureCounted is { } hook) await hook();
+
         var lockoutEnd = DateTime.UtcNow.AddMinutes(lockoutDurationMinutes);
-        await Collection.UpdateOneAsync(filter, Builders<User>.Update.Set(u => u.LockoutEnd, lockoutEnd), cancellationToken: ct);
-        return new LoginFailureOutcome(counted.FailedLoginAttempts, lockoutEnd);
+        var locked = await Collection.UpdateOneAsync(filter, Builders<User>.Update.Set(u => u.LockoutEnd, lockoutEnd), cancellationToken: ct);
+        return new LoginFailureOutcome(counted.FailedLoginAttempts, locked.MatchedCount == 1 ? lockoutEnd : counted.LockoutEnd);
     }
 
-    public async Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct)
+    public Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct)
+        => SoftDeleteAsync(id, tenantId, excludePlatformAccounts: false, ct);
+
+    // WP-USERS-ROLES-CLOSE-FIX1 item 6 — the delete takes the platform-account exclusion IN the filter too (the decorator's
+    // hidden caller): an account Platform made a platform account after the load is not deleted.
+    public async Task SoftDeleteAsync(Guid id, Guid tenantId, bool excludePlatformAccounts, CancellationToken ct)
     {
-        var filter = Builders<User>.Filter.And(
-            Builders<User>.Filter.Eq(u => u.Id, id),
-            Builders<User>.Filter.Eq(u => u.TenantId, tenantId),
-            Builders<User>.Filter.Eq(u => u.IsDeleted, false)
-        );
+        var filter = LiveAccount(id, tenantId, excludePlatformAccounts);
         var update = Builders<User>.Update
             .Set(u => u.IsDeleted, true)
             .Set(u => u.UpdatedAt, (DateTimeOffset?)DateTimeOffset.UtcNow);

@@ -38,7 +38,7 @@ const LoginPage = (function () {
         const rememberMe = document.getElementById('remember-me')?.checked === true;
 
         if (!email || !password) {
-            showError(window.L10n?.LoginErrorRequired || 'Email ve şifre zorunludur.');
+            showError(window.L10n?.LoginErrorRequired || '');
             return;
         }
 
@@ -73,12 +73,7 @@ const LoginPage = (function () {
             });
 
             if (!response.ok) {
-                const problem = await response.json();
-                let errMsg = problem.detail || problem.title || 'Giriş başarısız. Lütfen bilgilerinizi kontrol edin.';
-                if (errMsg === 'Invalid credentials.') {
-                    errMsg = window.L10n?.LoginError || 'Geçersiz e-posta veya şifre';
-                }
-                throw new Error(errMsg);
+                throw new Error(await refusalSentence(response));
             }
 
             const data = await response.json();
@@ -132,8 +127,7 @@ const LoginPage = (function () {
             });
 
             if (!response.ok) {
-                const problem = await response.json();
-                throw new Error(problem.detail || problem.title || 'Verification failed.');
+                throw new Error(await refusalSentence(response));
             }
 
             const data = await response.json();
@@ -166,8 +160,7 @@ const LoginPage = (function () {
             });
 
             if (!response.ok) {
-                const problem = await response.json();
-                throw new Error(problem.detail || problem.title || 'Verification code could not be resent.');
+                throw new Error(await refusalSentence(response));
             }
 
             const data = await response.json();
@@ -177,7 +170,7 @@ const LoginPage = (function () {
                     icon: 'success',
                     title: window.L10n?.MfaResentTitle || 'Code sent',
                     text: window.L10n?.MfaResentMessage || 'A new verification code has been sent.',
-                    confirmButtonText: 'Tamam'
+                    confirmButtonText: window.L10n?.ConfirmButton || 'OK'
                 });
             }
         } catch (error) {
@@ -198,6 +191,15 @@ const LoginPage = (function () {
         document.getElementById('mfaCode')?.focus();
     }
 
+    // WP-USERS-ROLES-CLOSE-FIX1 item 2 (BL-496) — a refusal is said through the shared bridge (diten-refusal.js): the Web
+    // door already answers in the reader's language ({ errors:[sentence], local:true }); anything else (no body, an
+    // unexpected shape) is the general sentence — never the service's English, never a raw code.
+    async function refusalSentence(response) {
+        const problem = await response.json().catch(() => ({}));
+        if (window.DitenRefusal) return window.DitenRefusal.message(problem, {}, window.L10n, 'login');
+        return (problem && problem.local === true && problem.detail) || window.L10n?.ErrorOccurred || '';
+    }
+
     function resolveTenantIdForLogin() {
         // FIX-LOGIN-TENANT-FALLBACK — prefer ?tenantId= (invite link); otherwise fall back to the Development-only
         // DefaultTenant injected by the server. In Production devDefaultTenantId is null, so the guard below still
@@ -209,10 +211,10 @@ const LoginPage = (function () {
     function showError(message) {
         if (typeof Swal !== 'undefined') {
             Swal.fire({
-                title: window.L10n?.LoginErrorTitle || 'Hata',
+                title: window.L10n?.LoginErrorTitle || '',
                 html: `<div class="mb-1 text-muted">${message}</div>`,
                 iconHtml: '<div class="swal-icon-circle bg-label-danger border-danger border-opacity-25" style="display: flex; align-items: center; justify-content: center; width: 80px; height: 80px; border-radius: 50%; background: rgba(255, 76, 81, 0.12); border: 2px solid rgba(255, 76, 81, 0.25); margin: 0 auto !important;"><i class="bx bx-error-circle text-danger" style="font-size: 2.5rem; color: #ff4c51;"></i></div>',
-                confirmButtonText: 'Tamam',
+                confirmButtonText: window.L10n?.ConfirmButton || 'OK',
                 width: '400px',
                 padding: '2.5rem 1.5rem 2rem',
                 customClass: {

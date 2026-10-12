@@ -58,12 +58,12 @@ public sealed class PlatformLoginCommandHandler : IRequestHandler<PlatformLoginC
 
         if (user is null || !_passwordHasher.Verify(request.Password, user.PasswordHash))
         {
-            return Response<AuthResponse>.Fail("Invalid credentials.", 401);
+            return Response<AuthResponse>.Fail("Invalid credentials.", [new ResponseError(AuthRefusalCodes.InvalidCredentials)], 401);
         }
 
         if (!user.IsActive)
         {
-            return Response<AuthResponse>.Fail("User is inactive.", 401);
+            return Response<AuthResponse>.Fail("User is inactive.", [new ResponseError(AuthRefusalCodes.AccountDeactivated)], 401);
         }
 
         // BL-521 FIX2 item 1 — the actor type of the token comes from the administrator's Platform RECORD, never from
@@ -74,13 +74,13 @@ public sealed class PlatformLoginCommandHandler : IRequestHandler<PlatformLoginC
         if (record.Verdict == PlatformAdministratorRecordVerdict.Unavailable)
         {
             _logger.LogWarning("Platform login refused: platform administrator status unavailable. UserId={UserId}", user.Id);
-            return Response<AuthResponse>.Fail(PlatformAdministratorRecordAnswer.UnavailableMessage, 503);
+            return Response<AuthResponse>.Fail(PlatformAdministratorRecordAnswer.UnavailableMessage, [new ResponseError(AuthRefusalCodes.LoginUnavailable)], 503);
         }
 
         if (record.Verdict != PlatformAdministratorRecordVerdict.Confirmed)
         {
             _logger.LogWarning("Platform login denied by platform administrator status. UserId={UserId} Email={Email}", user.Id, user.Email);
-            return Response<AuthResponse>.Fail("Platform administrator account is inactive.", 401);
+            return Response<AuthResponse>.Fail("Platform administrator account is inactive.", [new ResponseError(AuthRefusalCodes.AccountDeactivated)], 401);
         }
 
         // BL-521 FIX7 item 1 - the record is the authority and it says this is a platform administrator: Auth's own copy of the
@@ -93,7 +93,7 @@ public sealed class PlatformLoginCommandHandler : IRequestHandler<PlatformLoginC
             user.TemporaryPasswordExpiresAt.HasValue &&
             user.TemporaryPasswordExpiresAt.Value <= DateTime.UtcNow)
         {
-            return Response<AuthResponse>.Fail("Temporary password has expired. Please reset your password.", 401);
+            return Response<AuthResponse>.Fail("Temporary password has expired. Please reset your password.", [new ResponseError(AuthRefusalCodes.TemporaryPasswordExpired)], 401);
         }
 
         // BL-521 FIX4 item 2 — the roles this token is minted with follow the RECORD: Auth's copy is converged to the roles
@@ -122,7 +122,7 @@ public sealed class PlatformLoginCommandHandler : IRequestHandler<PlatformLoginC
         if (!isPlatformAdmin)
         {
             _logger.LogWarning("Platform login denied. UserId={UserId} Email={Email}", user.Id, user.Email);
-            return Response<AuthResponse>.Fail("Platform admin privileges are required.", 403);
+            return Response<AuthResponse>.Fail("Platform admin privileges are required.", [new ResponseError(AuthRefusalCodes.PlatformPrivilegesRequired)], 403);
         }
 
         var roleIds = await ResolveRoleIdsAsync(roles, PlatformTenantId, ct);
@@ -163,7 +163,7 @@ public sealed class PlatformLoginCommandHandler : IRequestHandler<PlatformLoginC
         // outlive it (the answer is the wrong-password one: the password checked is no longer the account's).
         if (!await IssuedSessionGuard.StillValidAsync(_userRepository, _refreshTokenRepository, user.Id, PlatformTenantId, user.PasswordHash, refreshTokenStr, ct))
         {
-            return Response<AuthResponse>.Fail("Invalid credentials.", 401);
+            return Response<AuthResponse>.Fail("Invalid credentials.", [new ResponseError(AuthRefusalCodes.InvalidCredentials)], 401);
         }
 
         // BL-529 — only the sign-in's own fields: a whole-account write here could undo a reset that landed meanwhile.

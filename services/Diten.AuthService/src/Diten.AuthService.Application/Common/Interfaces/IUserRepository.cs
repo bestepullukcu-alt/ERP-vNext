@@ -80,10 +80,11 @@ public sealed record UserWriteCondition(
     bool? IsActive = null,
     bool? DeactivatedByAdministrator = null,
     string? PasswordResetTokenHash = null,
-    // Merge WP-CT-LANE-BL521-MERGE-01 FIX1 (small 2) — false: the STORED account must not be a platform account (the one
-    // shared filter, PlatformAccountFilter; never the copy in memory), so a write that a tenant actor prepared against an
-    // ordinary user cannot land on an account Platform made a platform account meanwhile.
-    bool? IsPlatformAccount = null)
+    // Merge WP-CT-LANE-BL521-MERGE-01 FIX1 (small 2); WP-USERS-ROLES-CLOSE-FIX1 item 6 — true: the STORED account must not be a
+    // platform account (the one shared filter, PlatformAccountFilter; never the copy in memory), so a write that a tenant actor
+    // prepared against an ordinary user cannot land on an account Platform made a platform account meanwhile. (The unused
+    // "must BE a platform account" branch of the earlier bool? is gone.)
+    bool ExcludePlatformAccounts = false)
 {
     public static UserWriteCondition None { get; } = new();
 }

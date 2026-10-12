@@ -81,12 +81,12 @@ public sealed class ForcedChangeTenantPasswordCommandHandler
 
         if (user is null || !user.IsActive || user.IsPlatformAccount)
         {
-            return Response<AuthResponse>.Fail("Unauthorized.", 401);
+            return Response<AuthResponse>.Fail("Unauthorized.", [new ResponseError(AuthRefusalCodes.SessionEnded)], 401);
         }
 
         if (!_passwordHasher.Verify(request.CurrentPassword, user.PasswordHash))
         {
-            return Response<AuthResponse>.Fail("Current password is incorrect.", 401);
+            return Response<AuthResponse>.Fail("Current password is incorrect.", [new ResponseError(AuthRefusalCodes.CurrentPasswordIncorrect)], 401);
         }
 
         // Enforce the tenant password policy (throws ValidationException → 400 via the pipeline, like the platform flow).

@@ -59,7 +59,8 @@ public sealed class PasswordDoorRefusalBridgeTests
     [Fact]
     public async Task The_account_controller_passes_a_rate_limited_forgot_password_on_as_429()
     {
-        var controller = new AccountController(new RefusingGateway(), null!, null!, new StubEnvironment())
+        using var _ = new CultureScope("en"); // WP-USERS-ROLES-CLOSE-FIX1 — the door now says its own localized sentence
+        var controller = new AccountController(new RefusingGateway(), null!, null!, new StubEnvironment(), Localizer())
         {
             ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
         };
@@ -101,6 +102,7 @@ public sealed class PasswordDoorRefusalBridgeTests
         public Task<AuthBridgeResult> ChangeTenantPasswordAsync(string currentPassword, string newPassword, bool rememberMe = false, CancellationToken ct = default) => throw new NotSupportedException();
         public Task<AuthBridgeResult> ResetPlatformPasswordAsync(string email, string token, string newPassword, CancellationToken ct = default) => throw new NotSupportedException();
         public Task<AuthBridgeResult> ResetTenantPasswordAsync(string email, string token, string newPassword, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<AuthBridgeResult> CheckTenantPasswordLinkAsync(string email, string token, CancellationToken ct = default) => throw new NotSupportedException();
         public Task<AuthBridgeResult> RefreshAsync(string accessToken, string refreshToken, Guid? tenantId, CancellationToken ct = default) => throw new NotSupportedException();
         public Task LogoutAsync(string accessToken, string refreshToken, Guid? tenantId, CancellationToken ct = default) => throw new NotSupportedException();
     }

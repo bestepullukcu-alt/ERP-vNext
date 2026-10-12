@@ -214,6 +214,36 @@ public sealed class UsersController : CustomBaseController
         return CreateActionResultInstance(result);
     }
 
+    // WP-USERS-ROLES-CLOSE-FIX1 item 3 (KR4) — the set-password page's READ-ONLY pre-check: which face to draw before anyone
+    // types a password (the form, "deactivated", or "this link is no longer valid"). The same reader as the redemption above,
+    // so it says nothing the redemption would not; nothing is written. POST, so the link stays out of the URL (and of every
+    // access log). As the platform link door (BL-529 FIX5): a valid link is never counted; a link that does not match is
+    // counted per client / address and can earn the 429 — a pre-check cannot be used to sweep links faster than the door.
+    [HttpPost("set-password/check")]
+    [AllowAnonymous]
+    public async Task<IActionResult> CheckSetPasswordLink(
+        [FromBody] CheckSetPasswordLinkRequest request,
+        [FromServices] Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter passwordDoors,
+        [FromServices] Diten.AuthService.Infrastructure.Security.ClientAddressResolver clientAddress,
+        CancellationToken ct)
+    {
+        var result = await _mediator.Send(new CheckTenantPasswordLinkQuery(request.Email, request.Token), ct);
+        if (result.StatusCode == 400)
+        {
+            var asking = clientAddress.Identify(HttpContext);
+            if (!passwordDoors.TryCountInvalidLinkAttempt(asking.Key, request.Email, asking.Identified))
+            {
+                Response.Headers.RetryAfter = ((int)passwordDoors.Window.TotalSeconds).ToString(System.Globalization.CultureInfo.InvariantCulture);
+                return CreateActionResultInstance(Response<NoContent>.Fail(
+                    "Too many requests. Try again later.",
+                    [new ResponseError(AuthRefusalCodes.TooManyRequests)],
+                    429));
+            }
+        }
+
+        return CreateActionResultInstance(result);
+    }
+
     // Re-issue a fresh set-password token for a pending invited user and re-send the invitation email.
     [HttpPost("resend-invite/{id:guid}")]
     [HasPermission("auth.users.create")]

@@ -30,13 +30,15 @@ namespace Diten.AuthService.Application.Tests.Users;
 /// request at exactly that point until the test has run the reset.</para>
 /// </summary>
 [Collection("AccountKindAcceptance")]
-public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminResetInvalidatesEndpointTests.Host>
+public sealed partial class AdminResetInvalidatesEndpointTests : IClassFixture<AdminResetInvalidatesEndpointTests.Host>
 {
     private static readonly Guid PlatformTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
     private const string OldPassword = "Old!Passw0rd-529";
     private const string NewPassword = "New!Passw0rd-529";
     private const string WrongPassword = "Wrong!Passw0rd-529";
-    private const string LoginRefused = """{"data":null,"statusCode":401,"isSuccessful":false,"errors":["Invalid email or password."],"errorCodes":[]}""";
+    // WP-USERS-ROLES-CLOSE-FIX1 item 2 (BL-496) — the one sign-in refusal now carries its code (the same for a wrong password
+    // and an old one); the sentence and the status are what they were.
+    private const string LoginRefused = """{"data":null,"statusCode":401,"isSuccessful":false,"errors":["Invalid email or password."],"errorCodes":[{"code":"AUTH_INVALID_CREDENTIALS","params":null}]}""";
 
     private readonly Host _host;
 
@@ -1133,6 +1135,51 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
         Assert.Equal(admin.PasswordHash, after.PasswordHash);                       // the new password was not written
         Assert.True(after.MustChangePassword);
         Assert.Empty((await LiveRefreshTokensAsync(admin.Id, PlatformTenantId)).Where(t => !liveBefore.Contains(t.Id))); // no new session
+    }
+
+    /// <summary>WP-USERS-ROLES-CLOSE-FIX1 item 6 (c) — the SECOND race point of the platform forced change: after the password
+    /// write, held right before the new session's token is written. A deactivation that lands there: the token just written is
+    /// ended and the answer is the existing 401 "User is inactive." — no live session is left. (The password write itself had
+    /// already landed; only the session is refused.)</summary>
+    [Fact]
+    public async Task A_platform_forced_change_held_before_its_token_write_while_a_deactivation_lands_keeps_no_session()
+    {
+        var email = await ProvisionedPlatformAdminAsync(OldPassword);
+        await WriteAccountAsync(await PlatformUserAsync(email), a => a.RequirePasswordChange(null));
+        var session = await PlatformSessionAsync(email, OldPassword);
+        using var client = _host.Client(session.AccessToken);
+        var admin = await PlatformUserAsync(email);
+
+        var change = await RaceAsync("create:" + admin.Id,
+            () => client.PostAsJsonAsync("api/platform-auth/change-password/forced", new { currentPassword = OldPassword, newPassword = NewPassword, rememberMe = false }),
+            async () => await WriteAccountAsync(await PlatformUserAsync(email), a => a.DeactivateByAdministrator()));
+
+        var body = await change.Content.ReadAsStringAsync();
+        Assert.True(change.StatusCode == HttpStatusCode.Unauthorized, $"{(int)change.StatusCode}: {body}");
+        Assert.Contains("User is inactive.", body, StringComparison.Ordinal);
+        Assert.DoesNotContain("accessToken\":\"ey", body, StringComparison.Ordinal);
+        Assert.Empty(await LiveRefreshTokensAsync(admin.Id, PlatformTenantId));
+    }
+
+    /// <summary>WP-USERS-ROLES-CLOSE-FIX1 item 6 (c) — the same point, an administrator's RESET (the re-invitation) instead:
+    /// the doors' IssuedSessionGuard sees the password moved and ends the token just written — "The session was ended."</summary>
+    [Fact]
+    public async Task A_platform_forced_change_held_before_its_token_write_while_a_reset_lands_keeps_no_session()
+    {
+        var email = await ProvisionedPlatformAdminAsync(OldPassword);
+        await WriteAccountAsync(await PlatformUserAsync(email), a => a.RequirePasswordChange(null));
+        var session = await PlatformSessionAsync(email, OldPassword);
+        using var client = _host.Client(session.AccessToken);
+        var admin = await PlatformUserAsync(email);
+
+        var change = await RaceAsync("create:" + admin.Id,
+            () => client.PostAsJsonAsync("api/platform-auth/change-password/forced", new { currentPassword = OldPassword, newPassword = NewPassword, rememberMe = false }),
+            async () => await AssertOkAsync(await ProvisionPlatformAdminAsync(email)));
+
+        var body = await change.Content.ReadAsStringAsync();
+        Assert.True(change.StatusCode == HttpStatusCode.Unauthorized, $"{(int)change.StatusCode}: {body}");
+        Assert.Contains("The session was ended.", body, StringComparison.Ordinal);
+        Assert.Empty(await LiveRefreshTokensAsync(admin.Id, PlatformTenantId));
     }
 
     [Fact]

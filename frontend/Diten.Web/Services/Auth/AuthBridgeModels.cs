@@ -14,7 +14,10 @@ public sealed record AuthBridgeResult(
     DateTime? MfaExpiresAt = null,
     bool RequiresPasswordChange = false,
     bool ReauthRequired = false,
-    int? StatusCode = null);
+    int? StatusCode = null,
+    // WP-USERS-ROLES-CLOSE-FIX1 item 2 (BL-496) — true when ErrorMessage is the reader's language (a code the bridge knows);
+    // false = the service's own sentence, which a page must not show (the door says its own localized sentence instead).
+    bool ErrorLocalized = false);
 
 public sealed record AuthBridgeUser(
     Guid Id,

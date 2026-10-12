@@ -65,8 +65,9 @@ public sealed class PasswordPolicyDoorEndpointTests : IClassFixture<PasswordPoli
         Assert.Equal(HttpStatusCode.BadRequest, wrongToken.StatusCode);
         Assert.Equal(HttpStatusCode.BadRequest, unknown.StatusCode);
         Assert.Equal(unknownBody, wrongTokenBody); // an existing account is not told apart from a missing one
-        // The envelope it always was — the password is never judged before the token, so no policy code can leak.
-        Assert.Equal("""{"data":{},"statusCode":400,"isSuccessful":false,"errors":["Password reset token is invalid or expired."],"errorCodes":[]}""", wrongTokenBody);
+        // The envelope it always was — the password is never judged before the token, so no policy code can leak; the only code
+        // is the link's own (WP-USERS-ROLES-CLOSE-FIX1 item 2, BL-496), the same for both answers.
+        Assert.Equal("""{"data":{},"statusCode":400,"isSuccessful":false,"errors":["Password reset token is invalid or expired."],"errorCodes":[{"code":"AUTH_LINK_INVALID","params":null}]}""", wrongTokenBody);
     }
 
     [Fact]
@@ -89,7 +90,8 @@ public sealed class PasswordPolicyDoorEndpointTests : IClassFixture<PasswordPoli
         var response = await client.PostAsJsonAsync("api/platform-auth/change-password/forced", new { currentPassword = "not-it", newPassword = Weak, rememberMe = false });
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-        Assert.Equal("""{"data":null,"statusCode":401,"isSuccessful":false,"errors":["Current password is incorrect."],"errorCodes":[]}""", await response.Content.ReadAsStringAsync());
+        // WP-USERS-ROLES-CLOSE-FIX1 item 2 (BL-496) — the same sentence and status, now with its code.
+        Assert.Equal("""{"data":null,"statusCode":401,"isSuccessful":false,"errors":["Current password is incorrect."],"errorCodes":[{"code":"AUTH_CURRENT_PASSWORD_INCORRECT","params":null}]}""", await response.Content.ReadAsStringAsync());
     }
 
     /// <summary>

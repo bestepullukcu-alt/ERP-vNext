@@ -404,6 +404,7 @@ public sealed class TokenBridgeTests
         public Task<AuthBridgeResult> ForgotPlatformPasswordAsync(string email, CancellationToken ct = default) => throw Unexpected();
         public Task<AuthBridgeResult> ResetPlatformPasswordAsync(string email, string token, string newPassword, CancellationToken ct = default) => NotUsed();
         public Task<AuthBridgeResult> ResetTenantPasswordAsync(string email, string token, string newPassword, CancellationToken ct = default) => NotUsed();
+        public Task<AuthBridgeResult> CheckTenantPasswordLinkAsync(string email, string token, CancellationToken ct = default) => NotUsed();
         public Task LogoutAsync(string accessToken, string refreshToken, Guid? tenantId, CancellationToken ct = default) => throw Unexpected();
 
         private static Task<AuthBridgeResult> NotUsed() => throw Unexpected();

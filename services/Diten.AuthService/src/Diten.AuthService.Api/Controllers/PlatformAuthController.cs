@@ -399,12 +399,12 @@ public sealed class PlatformAuthController : CustomBaseController
         var user = await ResolveCurrentPlatformUserAsync(ct);
         if (user is null)
         {
-            return CreateActionResultInstance(Response<AuthResponse>.Fail("Unauthorized.", 401));
+            return CreateActionResultInstance(Response<AuthResponse>.Fail("Unauthorized.", [new ResponseError(AuthRefusalCodes.SessionEnded)], 401));
         }
 
         if (!user.IsActive)
         {
-            return CreateActionResultInstance(Response<AuthResponse>.Fail("User is inactive.", 401));
+            return CreateActionResultInstance(Response<AuthResponse>.Fail("User is inactive.", [new ResponseError(AuthRefusalCodes.AccountDeactivated)], 401));
         }
 
         // Only a pending FORCED change opens this door (the flag login sets on the token); an ordinary change has its own.
@@ -431,18 +431,18 @@ public sealed class PlatformAuthController : CustomBaseController
         var record = await _platformAdministratorStatusClient.GetActiveActorTypeAsync(user.Email, ct);
         if (record.Verdict == PlatformAdministratorRecordVerdict.Unavailable)
         {
-            return CreateActionResultInstance(Response<AuthResponse>.Fail(PlatformAdministratorRecordAnswer.UnavailableMessage, 503));
+            return CreateActionResultInstance(Response<AuthResponse>.Fail(PlatformAdministratorRecordAnswer.UnavailableMessage, [new ResponseError(AuthRefusalCodes.LoginUnavailable)], 503));
         }
 
         if (record.Verdict != PlatformAdministratorRecordVerdict.Confirmed)
         {
             await _refreshTokenRepository.RevokeAllByUserAsync(user.Id, PlatformTenantId, ct);
-            return CreateActionResultInstance(Response<AuthResponse>.Fail("Platform administrator account is inactive.", 401));
+            return CreateActionResultInstance(Response<AuthResponse>.Fail("Platform administrator account is inactive.", [new ResponseError(AuthRefusalCodes.AccountDeactivated)], 401));
         }
 
         if (!_passwordHasher.Verify(request.CurrentPassword, user.PasswordHash))
         {
-            return CreateActionResultInstance(Response<AuthResponse>.Fail("Current password is incorrect.", 401));
+            return CreateActionResultInstance(Response<AuthResponse>.Fail("Current password is incorrect.", [new ResponseError(AuthRefusalCodes.CurrentPasswordIncorrect)], 401));
         }
 
         // BL-521 FIX5 item 12 — the new password is checked FIRST: a change the policy refuses must not have rewritten the
@@ -475,7 +475,7 @@ public sealed class PlatformAuthController : CustomBaseController
             var now = await _userRepository.GetByIdAndTenantAsync(user.Id, PlatformTenantId, ct);
             if (now is null || !now.IsActive)
             {
-                return CreateActionResultInstance(Response<AuthResponse>.Fail("User is inactive.", 401));
+                return CreateActionResultInstance(Response<AuthResponse>.Fail("User is inactive.", [new ResponseError(AuthRefusalCodes.AccountDeactivated)], 401));
             }
 
             return CreateActionResultInstance(Response<AuthResponse>.Fail(
@@ -491,12 +491,12 @@ public sealed class PlatformAuthController : CustomBaseController
         if (!await IssuedSessionGuard.StillValidAsync(_userRepository, _refreshTokenRepository, user.Id, PlatformTenantId,
                 user.PasswordHash, authResponse.RefreshToken!, ct))
         {
-            return CreateActionResultInstance(Response<AuthResponse>.Fail("The session was ended. Please sign in again.", 401));
+            return CreateActionResultInstance(Response<AuthResponse>.Fail("The session was ended. Please sign in again.", [new ResponseError(AuthRefusalCodes.SessionEnded)], 401));
         }
         if (await _userRepository.GetByIdAndTenantAsync(user.Id, PlatformTenantId, ct) is not { IsActive: true })
         {
             await _refreshTokenRepository.RevokeIfLiveAsync(authResponse.RefreshToken!, SessionRevocationReasons.PasswordChanged, ct);
-            return CreateActionResultInstance(Response<AuthResponse>.Fail("User is inactive.", 401));
+            return CreateActionResultInstance(Response<AuthResponse>.Fail("User is inactive.", [new ResponseError(AuthRefusalCodes.AccountDeactivated)], 401));
         }
         return CreateActionResultInstance(Response<AuthResponse>.Success(authResponse));
     }
@@ -560,12 +560,12 @@ public sealed class PlatformAuthController : CustomBaseController
                 return TooManyRequests();
             }
 
-            return CreateActionResultInstance(Response<NoContent>.Fail("Password reset token is invalid or expired.", 400));
+            return CreateActionResultInstance(Response<NoContent>.Fail("Password reset token is invalid or expired.", [new ResponseError(AuthRefusalCodes.LinkInvalid)], 400));
         }
 
         if (!await _platformAdministratorStatusClient.IsActiveAsync(user!.Email, ct))
         {
-            return CreateActionResultInstance(Response<NoContent>.Fail("Password reset token is invalid or expired.", 400));
+            return CreateActionResultInstance(Response<NoContent>.Fail("Password reset token is invalid or expired.", [new ResponseError(AuthRefusalCodes.LinkInvalid)], 400));
         }
 
         // BL-529 FIX7 item 4 — as the tenant door: an account an administrator deactivated (an invitation's included — the
@@ -592,7 +592,7 @@ public sealed class PlatformAuthController : CustomBaseController
         // parallel redemption).
         if (!await _userRepository.TryWriteChangesAsync(user, redeemState, PlatformTenantId, new UserWriteCondition(PasswordResetTokenHash: redeemedTokenHash, IsActive: wasActive, DeactivatedByAdministrator: false), ct))
         {
-            return CreateActionResultInstance(Response<NoContent>.Fail("Password reset token is invalid or expired.", 400));
+            return CreateActionResultInstance(Response<NoContent>.Fail("Password reset token is invalid or expired.", [new ResponseError(AuthRefusalCodes.LinkInvalid)], 400));
         }
         await _refreshTokenRepository.RevokeLiveSessionsAsync(user.Id, PlatformTenantId, SessionRevocationReasons.PasswordChanged, ct);
         return CreateActionResultInstance(Response<NoContent>.Success(204));
