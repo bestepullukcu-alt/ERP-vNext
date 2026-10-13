@@ -8398,6 +8398,25 @@ Gelecek regresyon riski: 🟡 (gerçek açıksa canlıda çift sayaç).
 
 ---
 
+### BL-626
+
+**İstemci ayırt edilemeyen modda (canlıda `TrustedProxies` boşsa) giriş kotaları atlatılabiliyor ya da tek kovaya düşüyor**
+
+DURUM: AÇIK · SAHİP: CT (Auth) + sahip (canlı yapılandırma) · BULAN: WP-USERS-ROLES-CLOSE-FIX1 FIX4 bağımsız güvenlik incelemesi (2026-10-13) · KAYIT: 2026-10-13 · 🟡
+
+Ölçüm (`4a8b0367e`): istemci kimliği ayırt edilemiyorsa (Auth önündeki vekil adresleri `TrustedProxies`'te yoksa) giriş kotası kiracı başına kaba bir kovaya düşüyor (dakikada 300). Üç zayıflık:
+1. **Kiracı kimliğini saldırgan seçiyor.** `X-Tenant-Id` başlığı doğrulanmadan anahtara giriyor (Auth `TenantResolutionMiddleware.cs:124-132`, ağ geçidi :281). Her istekte yeni bir GUID yeni bir kova demek, tavan aşılıyor. CPU'yu eşzamanlılık yuvası koruyor, ama her bilinmeyen kiracı önbelleksiz bir Platform çağrısına mal oluyor.
+2. **MFA tek kovada.** Web MFA isteklerini kiracısız gönderiyor (`AuthGateway.cs:194-212`); bütün kiracılar tek bir `tenant-mfa|tenant:none` kovasında.
+3. **Platform giriş ve parola unutma kapıları tek kova.** Saniyede ~5 çöp istek yönetici girişini ve parola kurtarmayı kapatır.
+
+Yapılacak:
+- **canlı şartı (sahip):** Auth'un önündeki Web ve ağ geçidi adresleri `Security:TrustedProxies`'e yazılmalı; o zaman istemci başına sınırlar devreye girer ve bu yollar kullanılmaz. Canlıya geçiş kontrol listesine eklenir.
+- **kod:** bilinen kiracı / negatif önbellek (bilinmeyen kimlikler tek kovaya iner), yüksek genel tavan, MFA'nın kiracıyı taşıması, platform kapılarına istemci ayrımı olmadan da çalışan ikinci bir sınır. Orta.
+
+Gelecek regresyon riski: 🟡 yanlış yapılandırılmış canlıda giriş hizmet dışı bırakılabilir. Doğru yapılandırmada etkisiz.
+
+---
+
 ### BL-625
 
 **MDM'de iki "en eski açık onay" göstergesi yan yana: LSKU onayı (BL-607) ve kalem etkinleştirme onayı (S2)**
