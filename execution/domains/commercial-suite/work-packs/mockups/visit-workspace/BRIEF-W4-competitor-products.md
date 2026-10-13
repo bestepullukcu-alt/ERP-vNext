@@ -137,5 +137,11 @@ R1 liste · R1 boş · R1 öneriler · R2 yeni · R2 düzenle (ülke tablosu dol
 - **Temsilcinin rapordaki rakip seçimi ve "Listede yok, rakip ekle":** 03-rapor'da çizili.
 
 ## Kararlar (ürün sahibi, 2026-10-13)
-1. **Öneriyi onaylayan / birleştiren:** "rakip ürün yönetimi" yetkisi olan kullanıcı (pazarlama / tıbbi). **Workflow onayı yok**; bu bir ana veri düzeltmesidir, MLR içerik onayı değildir.
-2. **Etken madde** serbest etiket (ileride sözlük). **Geri ödeme durumu** yeni referans veri seti (kiracı uyarlar).
+1. **Temsilci önerisi Workflow ile onaylanır; onay MDM'de çalışır.** MDM'ye Workflow bağlantısı kurulur (W3 CRM onay çekirdeği deseni).
+   - Pazarlama / tıbbi kullanıcı kararı hazırlar: yeni kayıt olarak tamamla · var olan kayıtla birleştir · reddet.
+   - "Onaya gönder" → onay **Satış Operasyon** (POS-SALES-OPS) pozisyonuna, Görev Merkezi'nde.
+   - Görev ayrılığı: hazırlayan onaylayamaz. Onaylanınca karar uygulanır.
+   - **Mockup'a ek:** R4 / R5 / R6'nın sonunda düğme "Onaya gönder" olur. Öneri satırında durum çipi "Onay bekliyor · kişi, tarih"; onaylayıcı görünümü; "Taslağa geri gönder" notlu; hazırlayan için SoD bilgi kutusu (W3 itiraz ekranlarındaki gibi).
+2. **Doğrudan kayıt / düzenleme** (temsilci önerisi olmadan; yeni rakip, fiyat ve geri ödeme güncellemesi) onaya **gitmez**. "Rakip ürün yönetimi" yetkisi yeter; değişiklik geçmişiyle denetlenir.
+3. **Etken madde** serbest etiket (ileride sözlük). **Geri ödeme durumu** yeni referans veri seti (kiracı uyarlar).
+4. **Birleştirilen kayıt silinmez.** "Birleştirildi → hayatta kalan" işaretçisi tutar. CRM rapordaki eski değeri okurken hayatta kalan kayda yönlenir; geçmiş veri yeniden yazılmaz.

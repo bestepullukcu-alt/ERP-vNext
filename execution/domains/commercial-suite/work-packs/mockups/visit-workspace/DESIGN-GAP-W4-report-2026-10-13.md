@@ -46,9 +46,9 @@ Mockup: **Genel → ürün başına bir adım (A Sunum ve ilgi · B Pazar ve rak
 | Rakip · doktorun kullandığı (çipler) + "Rakip kullanmıyor" | ✅ | Liste MDM rakip ürünlerinden: ürünümüzün rakibi + endikasyon. |
 | Rakip kartı: etken madde, form / doz, fiyat (kutu), geri ödeme | ✅ | Ülke = temsilcinin ülkesi (MDM ülke tablosundan). |
 | Rakip kartı: **pazar payı (kurum / bölge)** | ⏭ | Pazar verisi W7. W4'te gösterilmez. |
-| "Listede yok, rakip ekle" (ad + firma) · "temsilci ekledi · onay bekliyor" | ✅ | **Önerilen rakip** kararı: öneren temsilci hemen kullanır; pazarlama / tıbbi onaylar, birleştirir ya da reddeder. |
-| **"Bu doktorda bu rakibi kullanan hasta (%)"** | ❓ | Doktorun tutamayacağı bir sayı (bizim pay için yüzde kaldırıldı). CT önerisi: **kaldır** (soru S2). |
-| "Rakibe göre: + avantaj / − dezavantaj" (Etkinlik, Güvenlik, Doz kolaylığı…) | ❓ | Kararlarda yok. CT önerisi: **isteğe bağlı kalsın** (soru S2). |
+| "Listede yok, rakip ekle" (ad + firma) · "temsilci ekledi · onay bekliyor" | ✅ | **Önerilen rakip:** öneren temsilci hemen kullanır. Pazarlama / tıbbi kararı hazırlar (tamamla / birleştir / reddet) → **MDM Workflow onayı, Satış Operasyon**. |
+| **"Bu doktorda bu rakibi kullanan hasta (%)"** | ➖ | Doktorun tutamayacağı bir sayı (bizim pay için yüzde kaldırıldı). CT önerisi: **kaldır** (soru S2). |
+| "Rakibe göre: + avantaj / − dezavantaj" (Etkinlik, Güvenlik, Doz kolaylığı…) | ✅ isteğe bağlı | Kararlarda yok. CT önerisi: **isteğe bağlı kalsın** (soru S2). |
 
 ### 1.4 C · Talepler ve sonraki adım (ürün başına)
 | alan | durum | not |
@@ -85,7 +85,7 @@ Mockup adımları: **Genel → Stok ve raf → Sipariş ve satış → Rakip ve 
 | Stok: ürün başına stok düzeyi, miadı yakın, iade sorunu | ✅ | Ürün = GSKU |
 | Raf / görünürlük, materyal / stand, **raf fotoğrafı** | ✅ | Fotoğraf W3 kanıt deposu (MOD-0262), aynı yetki deseni |
 | Sipariş: "Ön sipariş oluştur / Siparişi aç" | ⏭ | **W6.** W4'te pasif düğme + "yakında" |
-| Satış: ürün başına **kutu / ay** + eğilim | ❓ | Eczacıdan sayı almak güvenilir değil. CT önerisi: **yalnız eğilim** (artıyor / aynı / azalıyor), sayı isteğe bağlı (soru S3). |
+| Satış: ürün başına **kutu / ay** + eğilim | ✏️ eğilim zorunlu, sayı isteğe bağlı | Eczacıdan sayı almak güvenilir değil. CT önerisi: **yalnız eğilim** (artıyor / aynı / azalıyor), sayı isteğe bağlı (soru S3). |
 | Rakip (eczanede öne çıkan) + kart | ✅ | MDM rakip listesi, öneri akışı aynı |
 | Tavsiye ve reçete akışı (tavsiye düzeyi, bağlı doktorlar) | ✅ | Bağlı doktor = CRM Contact (bölgedeki) |
 | Eğitim / materyal ve talepler | ✅ | BRD seti |
@@ -116,7 +116,7 @@ Mockup adımları: **Genel → Stok ve raf → Sipariş ve satış → Rakip ve 
 - **W4-WEB-c** rakip ürün yönetimi: **mockup gelince**.
 - **Eşik ayar ekranı:** standart CRM ayar deseni; BE-c'nin Web eşi küçük sayfa (WEB-b ile ya da ayrı küçük paket).
 
-## 6. Açık sorular (ürün sahibi)
-- **S1.** Mockup'taki "Etkinlik ★ — mesaj karşılık buldu mu" yerine K-W4'teki **ziyaret başarısı** (Ulaşıldı / Kısmen / Ulaşılamadı) gelir, yıldız kalkar. CT önerisi: evet.
-- **S2.** Rakip bölümünde "Bu doktorda bu rakibi kullanan hasta (%)" ve "Rakibe göre + / − avantaj". CT önerisi: yüzde **kalksın** (doktor tutamaz; bizim pay da kovaya döndü); avantaj / dezavantaj **isteğe bağlı kalsın**.
-- **S3.** Eczane satışında "kutu / ay" sayısı. CT önerisi: **eğilim zorunlu** (artıyor / aynı / azalıyor), sayı isteğe bağlı.
+## 6. Kararlar (ürün sahibi, 2026-10-13) — eski açık sorular
+- ✅ **S1 KABUL.** Mockup'taki "Etkinlik ★ — mesaj karşılık buldu mu" yerine K-W4'teki **ziyaret başarısı** (Ulaşıldı / Kısmen / Ulaşılamadı) gelir, yıldız kalkar. CT önerisi: evet.
+- ✅ **S2 KABUL.** Rakip bölümünde "Bu doktorda bu rakibi kullanan hasta (%)" ve "Rakibe göre + / − avantaj". CT önerisi: yüzde **kalksın** (doktor tutamaz; bizim pay da kovaya döndü); avantaj / dezavantaj **isteğe bağlı kalsın**.
+- ✅ **S3 KABUL.** Eczane satışında "kutu / ay" sayısı. CT önerisi: **eğilim zorunlu** (artıyor / aynı / azalıyor), sayı isteğe bağlı.
