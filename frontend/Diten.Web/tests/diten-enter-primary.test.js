@@ -509,6 +509,9 @@ const LIST_KEYS = {
 const OWNER_BY_PATH = [["SupplyChain/", SCE], ["CRM/", CRM]];
 const WHY_BY_LIST = { MAIN_SYNC_UNMARKED: MAIN_SYNC_WHY, MAIN_SYNC_CONSEQUENTIAL: `${MAIN_SYNC_WHY}; chord olmalı, sahibine iletilecek` };
 // "file:line label </button>" → "file label #n", n = its place among the same label in the same file (document order).
+// The rows a list still holds although nothing in the tree produces them any more: the owner fixed it, so the row
+// must leave (the list only shrinks). Used by the real check and by its synthetic test, so the test drives the rule.
+const staleRows = (listed, keys) => Object.keys(listed).filter((key) => !keys.includes(key));
 const findingKeys = (findings) => {
   const seen = new Map();
   return findings.map((finding) => {
@@ -653,7 +656,7 @@ describe("BL-586 / UX-COMMON-FIX2: every side panel with fields marks its primar
     const keys = findingKeys(findings);
     expect(findings.filter((finding, i) => !MAIN_SYNC_CONSEQUENTIAL[keys[i]])).toEqual([]);
     // …and a main-sync row its owner fixed leaves the list (the list only shrinks).
-    expect(Object.keys(MAIN_SYNC_CONSEQUENTIAL).filter((key) => !keys.includes(key))).toEqual([]);
+    expect(staleRows(MAIN_SYNC_CONSEQUENTIAL, keys)).toEqual([]);
   });
 
   test("FIX1: two same-labelled buttons in one file are two keys, and fixing one forces a row out (no line numbers)", () => {
@@ -663,8 +666,11 @@ describe("BL-586 / UX-COMMON-FIX2: every side panel with fields marks its primar
       'Y/Q.cshtml @Localizer["Confirm"] #1']);
     // an unrelated edit above moves the line numbers, not the keys
     expect(findingKeys(two.map((f) => f.replace(/:(\d+) /, (_, n) => `:${Number(n) + 7} `)))).toEqual(findingKeys(two));
-    // one of the pair is chord-marked by its owner: only #1 is left, so a list still holding #2 is stale (red above)
-    expect(findingKeys([two[1], two[2]])).not.toContain('X/P.cshtml @Localizer["Confirm"] #2');
+    // one of the pair is chord-marked by its owner: only #1 is left, so the SAME staleRows the real check uses names
+    // the #2 row the list still holds — the list is forced to shrink
+    const listed = Object.fromEntries(findingKeys(two).map((key) => [key, { owner: "x", why: "y" }]));
+    expect(staleRows(listed, findingKeys(two))).toEqual([]);
+    expect(staleRows(listed, findingKeys([two[1], two[2]]))).toEqual(['X/P.cshtml @Localizer["Confirm"] #2']);
   });
 
   test("positive control: the word check flags an enter-marked consequential label (every listed word)", () => {

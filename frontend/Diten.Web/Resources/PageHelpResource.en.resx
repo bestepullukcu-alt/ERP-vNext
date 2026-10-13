@@ -238,10 +238,10 @@
     <value>Narrow the list with the search box, or click “Filter”, choose “Status” or “Material type” and click “Apply”.</value>
   </data>
   <data name="Help.ITEMS.Step2" xml:space="preserve">
-    <value>Click “Add item”, fill in the identity and the stock behaviour on its full-page form, then click “Save”: the item is saved as “Draft”. While you are in a field of that form, Enter saves it too. Later, on an active item only the name and the description change freely; a filled stock field needs an approved correction.</value>
+    <value>Click “Add item”, fill in the identity and the stock behaviour on its full-page form, then click “Save”: the item is saved as “Draft”. In a single-line field of that form, Enter saves it too (in the “Description” box Enter starts a new line). Later, on an active item only the name and the description change freely; a filled stock field needs an approved correction.</value>
   </data>
   <data name="Help.ITEMS.Step3" xml:space="preserve">
-    <value>Open a draft's “Actions” and choose “Send for approval”: the item stays “Awaiting approval” until it is approved, and only then becomes “Active”.</value>
+    <value>Open a draft's “Actions” and choose “Send for approval”: the item stays “Awaiting approval” until it is approved, and only then becomes “Active”. While it is awaiting approval, the person who sent the request can choose “Withdraw Approval Request” in its “Actions”: the item goes back to its previous status.</value>
   </data>
   <data name="Help.ITEMS.Step4" xml:space="preserve">
     <value>“Deactivate” takes an active item out of new stock entries; “Request reactivation” goes through the same approval again; “Retire” is final, is allowed only for a deactivated item with zero stock, and the code is never reused. Each of them asks for a reason.</value>
