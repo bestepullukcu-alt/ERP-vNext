@@ -86,6 +86,35 @@ public sealed class DemandHistoryImportBatchesController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    [HttpPost("{batchId:guid}/rows/{rowNumber:int}/accept")]
+    [HasPermission("demand.history-imports.accept")]
+    public async Task<IActionResult> AcceptRow(Guid batchId, int rowNumber,
+        [FromBody] AcceptHistoryRowForm form,
+        [FromHeader(Name = "X-Legal-Entity-Id")] Guid? selectedLegalEntityHint,
+        [FromHeader(Name = "Idempotency-Key")] string? idempotencyKey,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetScope(out var tenantId, out var actorId)) return Forbid();
+        var response = await _sender.Send(new AcceptDemandHistoryRowsCommand(
+            tenantId, actorId, batchId, rowNumber, selectedLegalEntityHint ?? Guid.Empty,
+            User.HasClaim("permission", "demand.history-imports.accept"),
+            form.Reason, idempotencyKey ?? string.Empty), cancellationToken);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpGet("accepted-rows/{acceptedRowId:guid}")]
+    [HasPermission("demand.history.read")]
+    public async Task<IActionResult> GetAcceptedRow(Guid acceptedRowId,
+        [FromHeader(Name = "X-Legal-Entity-Id")] Guid? selectedLegalEntityHint,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetScope(out var tenantId, out var actorId)) return Forbid();
+        var response = await _sender.Send(new GetAcceptedDemandHistoryRowQuery(
+            tenantId, actorId, acceptedRowId, selectedLegalEntityHint ?? Guid.Empty,
+            User.HasClaim("permission", "demand.history.read")), cancellationToken);
+        return CreateActionResultInstance(response);
+    }
+
     private bool TryGetScope(out Guid tenantId, out Guid actorId)
     {
         tenantId = HttpContext.Items["DemandPlanning.TenantId"] is Guid scope ? scope : Guid.Empty;
@@ -108,6 +137,12 @@ public sealed class CreateHistoryImportForm
 public sealed class ReviewHistoryImportForm
 {
     public Diten.PlanningService.Domain.Features.DemandPlanning.ImportBatchReviewState Decision { get; set; }
+    public string Reason { get; set; } = string.Empty;
+}
+
+[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
+public sealed class AcceptHistoryRowForm
+{
     public string Reason { get; set; } = string.Empty;
 }
 

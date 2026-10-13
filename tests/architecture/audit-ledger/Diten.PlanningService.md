@@ -6,6 +6,9 @@ BL-501 bekliyor: CreatePlanningCycleCommand, CreateDemandHistoryImportBatchComma
 
 Bu defter mevcut Mongo işlem-içi iş audit'ini merkezi Platform audit ile eşdeğer ilan etmez. AUD-001 ölçümündeki yeni borç kırmızısı, BL-501 bağlantısı veya ayrı Control Tower kararı gelene kadar açık kalır.
 
+`AcceptDemandHistoryRowsCommand`: c yolu — geçici, CT kabulü (Ali, 2026-10-13); kabul ve değiştirilemez satır izi aynı Mongo işleminde yazılacak, audit hatasında sıfır kabul ve kontrollü hata verilecek. İzinli kiracı kullanıcısının izi kabul edilmiş satırın kendi ekranında okuyabilmesi ve çalışan kod/test kanıtı tamamlanmadan bu karar `## İzler` tablosunda teslim edilmiş iz sayılmaz.
+`AcceptDemandHistoryRowsCommand`: BL-501 bekliyor (merkezi ekip, MVP'ler sonrası); merkezî kayıt daha sonra yerel izin yanına eklenecek, yerel iz kaldırılmayacak.
+
 ## İzler
 
 | iz | yol | tür | belirteç |

@@ -86,4 +86,12 @@ public sealed class DemandHistoryImportBatch : EntityBase
         !FileIssues.Any(x => x.Severity == ImportIssueSeverity.Blocking) &&
         !Rows.Any(x => x.Issues.Any(y => y.Severity == ImportIssueSeverity.Blocking)) &&
         !QuarantineCases.Any(x => x.State == "Open");
+
+    public bool IsEligibleForAcceptedHistory() =>
+        ReviewState == ImportBatchReviewState.Approved && !ApprovalBlocked &&
+        ValidationState != ImportBatchValidationState.Blocked &&
+        !FileIssues.Any(x => x.Severity == ImportIssueSeverity.Blocking) &&
+        !Rows.Any(x => x.Issues.Any(y => y.Severity == ImportIssueSeverity.Blocking)) &&
+        !QuarantineCases.Any(x => x.State == "Open") &&
+        AuditTrail.Any(x => x.Action == "BatchApproved" && x.ActorId == ReviewedByActorId);
 }

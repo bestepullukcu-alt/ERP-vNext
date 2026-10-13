@@ -87,6 +87,7 @@ module pack `approved` / `ready-for-dev` olduktan ve açık kullanıcı onayı v
 | Procurement Service | 5065 | `services/Diten.ProcurementService/src/Diten.ProcurementService.Api` |
 | SupplyChain Service | 5066 | `services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api` |
 | Inventory Service | 5067 | `services/Diten.InventoryService/src/Diten.InventoryService.Api` |
+| Planning Service | 5068 | `services/Diten.PlanningService/src/Diten.PlanningService.Api` |
 | Manufacturing Service | 5070 | `services/Diten.ManufacturingService/src/Diten.ManufacturingService.Api` |
 | MongoDB | 27017 | yerel çalışmalı |
 

@@ -149,6 +149,8 @@ JWT + `[Authorize]` + `[HasPermission]`; anahtarlar PKS-001 biçiminde küçük 
 | `demand.history-imports.import` | Dosya batch yükleme. |
 | `demand.history-integrations.import` | Sınırlı integration actor canlı kayıt alma; plan onay/yayın yetkisi vermez. |
 | `demand.history-imports.review` | Başkasının batch'ini onay/red ve karantina inceleme; yükleyen kendi batch'ini onaylayamaz. |
+| `demand.history-imports.accept` | Onaylanmış dosya batch'inin doğrulanmış satırlarını ayrı işlemle kabul edilmiş geçmişe alma; batch inceleme izni bunun yerine geçmez. |
+| `demand.history.read` | Yetkili kapsamda kabul edilmiş satırı ve o satırın kabul izini aynı kayıtta okuma. |
 | `demand.forecast-policies.update` | Sürümlü tahmin politikası yönetimi. |
 | `demand.forecast-runs.create` | Uygun geçmişle koşu başlatma. |
 | `demand.drafts.create` / `demand.drafts.update` | Draft hazırlama, gerekçeli manuel edit/seri dışlama ve doğrulanmış adaylardan seri bazlı yöntem seçimi veya açık toplu uygulama; dışlama inceleme bitmeden yalnız planlayıcıca yapılır. Yöntem değişimi önemli edit ve görev ayrılığı denetimine girer. |
@@ -159,6 +161,14 @@ JWT + `[Authorize]` + `[HasPermission]`; anahtarlar PKS-001 biçiminde küçük 
 | `demand.audit.read` | Tarihsel/audit içerik, Invalidated uyarısıyla. |
 
 Hazırlayan ve tüm önemli manuel editör kimlikleri revision'a bağlanır; yalnız son editöre bakılmaz. Yalnız açıklama/yorum/gösterim metni düzeltmesi önemli edit değildir. Demand işlem izni ve Tenant sınırı sunucuda, doğrudan API erişiminde de denetlenir. Geçici LegalEntity sınırı MDM'nin aynı-tenant aktif şirket doğrulamasıdır; kullanıcının pozisyon bazlı şirket yetkisi sonraki Platform bağlantısına kadar uygulanmaz. UI seçimi veya gönderilen şirket kimliği tek başına doğrulama kanıtı değildir.
+
+### Audited Events — S1 satır kabulü
+
+| Komut | İz ve kapsam | Yazma hatası | Açık borç |
+|---|---|---|---|
+| `AcceptDemandHistoryRowsCommand` | Yalnız S1 için Ali'nin 2026-10-13 Control Tower kabulü: PlanningService'in değiştirilemez geçici yerel izi, AUD-001 `c` yolu. Her kabul edilen satır için Tenant, LegalEntity, batch, satır/iş kimliği, karar, aktör ve UTC zaman kaydedilir. İz, izinli kiracı kullanıcısına kabul edilmiş kaydın kendi görünümünde okunabilir olmalıdır. | Kabul edilmiş satır ve audit aynı Mongo transaction'ında yazılır; audit yazılamazsa işlem bütünüyle geri alınır ve kontrollü kapalı hata döner. İdempotent tekrar ikinci satır veya iz oluşturmaz. | `BL-501 bekliyor` (merkezî ekip, MVP'ler sonrası). Merkezî kayıt daha sonra yerel izin yanına eklenir; yerel iz kaldırılmaz. Bu karar başka yazma komutlarına uygulanmaz. |
+
+Yerel iz, merkezi Platform denetim günlüğüyle eşdeğer **değildir**. AUD-001 `c` kabulünün kiracıya görünür okuma ve defter/test kanıtı S1'in teslim kapısıdır; yalnız Mongo yazısı bu kapıyı kapatmaz.
 
 ### Revision durum geçişleri
 
