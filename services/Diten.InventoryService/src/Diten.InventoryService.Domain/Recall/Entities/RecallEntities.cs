@@ -99,6 +99,11 @@ public sealed class RecallCase : EntityBase
 
     public RecallScopeSeal? SubmittedScope { get; set; }
 
+    /// <summary>R2 (pack §8.3): the trace snapshot sealed at submit / at approval (insert-only records).</summary>
+    public Guid? SubmittedSnapshotId { get; set; }
+
+    public Guid? ApprovedSnapshotId { get; set; }
+
     public RecallScopeSeal? ApprovedScope { get; set; }
 
     public Guid? ScopeSubmittedBy { get; set; }
@@ -272,6 +277,12 @@ public sealed class RecallScopeItem : EntityBase
 
     public string? ExclusionReason { get; set; }
 
+    /// <summary>R2: a trace item is reconciled with the trace at submit; a manual item is kept.</summary>
+    public RecallScopeItemOrigin Origin { get; set; }
+
+    /// <summary>R2: added by the re-trace of the last submit ("yeni", pack §8.3 step 3).</summary>
+    public bool IsNew { get; set; }
+
     public Guid AddedBy { get; set; }
 
     public DateTimeOffset AddedAtUtc { get; set; }
@@ -435,4 +446,42 @@ public sealed class RecallAuditRecord : EntityBase
     public string? LeSource { get; set; }
 
     public DateTimeOffset OccurredAt { get; set; }
+}
+
+/// <summary>
+/// Pack §4.4 — the trace sealed at submit / approval (canonical <c>rt-v1</c> + SHA-256). INSERT ONLY: later data never changes it; the
+/// approved snapshot is what every read of an approved case shows and what the live re-trace is compared with.
+/// </summary>
+public sealed class RecallTraceSnapshot : EntityBase
+{
+    public Guid CaseId { get; set; }
+
+    public int Revision { get; set; }
+
+    public RecallSnapshotPurpose Purpose { get; set; }
+
+    public string RootLotId { get; set; } = string.Empty;
+
+    public string Direction { get; set; } = string.Empty;
+
+    public string CanonicalVersion { get; set; } = string.Empty;
+
+    public string Sha256 { get; set; } = string.Empty;
+
+    /// <summary>The canonical JSON itself (what the hash is of).</summary>
+    public string Canonical { get; set; } = string.Empty;
+
+    public List<string> NodeKeys { get; set; } = [];
+
+    public int NodeCount { get; set; }
+
+    public int GapCount { get; set; }
+
+    public bool Truncated { get; set; }
+
+    public DateTimeOffset ComputedAtUtc { get; set; }
+
+    public long DurationMs { get; set; }
+
+    public Guid CreatedBy { get; set; }
 }

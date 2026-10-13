@@ -45,7 +45,7 @@ public sealed class RecallCaseApiTests : IClassFixture<RecallApiFactory>
         Assert.True(scope.GetProperty("editable").GetBoolean());
 
         Assert.Single(s.Audit("recall.case.opened"));
-        Assert.Equal(["Opened"], Kinds(await s.ExpectAsync(HttpMethod.Get, $"/api/recall/cases/{id}/timeline", s.Qa1Token, null, 200)));
+        Assert.Equal(["Opened", "TraceRun"], Kinds(await s.ExpectAsync(HttpMethod.Get, $"/api/recall/cases/{id}/timeline", s.Qa1Token, null, 200)));
 
         var (dup, dupBody, _) = await s.PostOpenAsync(s.Qa1Token, RecallScenario.Open(lot));
         Assert.Equal(409, dup);
@@ -200,7 +200,7 @@ public sealed class RecallCaseApiTests : IClassFixture<RecallApiFactory>
 
         // closure releases the lot; the timeline is complete; audit rows per step
         Assert.False((await s.ExpectAsync(HttpMethod.Get, $"/api/recall/lots/{lot}/status", s.DepoToken, null, 200)).GetProperty("underRecall").GetBoolean());
-        Assert.Equal(["Opened", "ScopeItemsAdded", "ScopeSubmitted", "ScopeApproved", "CustomerNotified", "ConsumptionDeclared", "SegregationConfirmed",
+        Assert.Equal(["Opened", "TraceRun", "ScopeItemsAdded", "ScopeSubmitted", "TraceRun", "ScopeApproved", "CustomerNotified", "ConsumptionDeclared", "SegregationConfirmed",
                 "EffectivenessStarted", "EffectivenessCompleted", "Closed"],
             Kinds(await s.ExpectAsync(HttpMethod.Get, $"/api/recall/cases/{id}/timeline", s.Qa1Token, null, 200)));
         foreach (var action in new[] { "recall.scope.submitted", "recall.scope.approved", "recall.effectiveness.completed", "recall.case.closed" })

@@ -54,6 +54,8 @@ public sealed class SingleSystemOfRecordArchitectureTests
             ["recall_case_events", "recall_cases", "recall_consumption_declarations", "recall_counters", "recall_lot_blocks", "recall_notifications",
              "recall_scope_items", "recall_segregations", "recall_settings", "recall_settings_history"],
             Diten.InventoryService.Persistence.Recall.RecallCollections.All.OrderBy(x => x).ToList());
+        // MOD-0177 (WP-0177-R2) — the insert-only trace snapshots (pack §8.3), declared beside the R1 set
+        Assert.Equal(["recall_trace_snapshots"], Diten.InventoryService.Persistence.Recall.RecallCollections.SinceR2.OrderBy(x => x).ToList());
     }
 
     [Fact]
@@ -63,6 +65,7 @@ public sealed class SingleSystemOfRecordArchitectureTests
         var declared = InventoryCollections.All.Concat(Diten.InventoryService.Persistence.Traceability.TraceCollections.All)
             .Concat(Diten.InventoryService.Persistence.Traceability.TraceCollections.LedgerProjections)
             .Concat(Diten.InventoryService.Persistence.Recall.RecallCollections.All) // MOD-0177 (WP-0177-R1)
+            .Concat(Diten.InventoryService.Persistence.Recall.RecallCollections.SinceR2) // MOD-0177 (WP-0177-R2)
             .Concat(Diten.InventoryService.Persistence.Quarantine.QuarantineCollections.All)
             .Concat(Diten.InventoryService.Persistence.Expiry.ExpiryCollections.All).ToList();
         var named = persistence

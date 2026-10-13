@@ -73,5 +73,23 @@ public enum RecallCaseEventKind
     EffectivenessStarted,
     EffectivenessCompleted,
     Closed,
-    Cancelled
+    Cancelled,
+
+    // R2 (pack §8.3, §8.12)
+    TraceRun,
+    OutOfScopeFinding
+}
+
+/// <summary>Where a scope item came from: entered by hand (R1, kept at re-trace) or from the trace (R2, reconciled at submit).</summary>
+public enum RecallScopeItemOrigin
+{
+    Manual,
+    Trace
+}
+
+/// <summary>Why a trace snapshot was stored (pack §4.4).</summary>
+public enum RecallSnapshotPurpose
+{
+    Submitted,
+    Approved
 }

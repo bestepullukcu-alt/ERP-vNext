@@ -38,4 +38,15 @@ public static class RecallCollections
 
     public static readonly IReadOnlyList<string> All =
         [Settings, SettingsHistory, Cases, CaseEvents, ScopeItems, LotBlocks, Notifications, ConsumptionDeclarations, Segregations, Counters];
+
+    /// <summary>R2 (pack §4.4) — the trace snapshots sealed at submit / approval. Insert-only.</summary>
+    public const string TraceSnapshots = "recall_trace_snapshots";
+
+    /// <summary>
+    /// The collections added after R1. Kept apart from <see cref="All"/> because the shared single-SoR test pins <see cref="All"/> line by
+    /// line and the WP-0177-R2 PARALEL KURAL allows only new lines there (the test declares this list on its own new line).
+    /// </summary>
+    public static readonly IReadOnlyList<string> SinceR2 = [TraceSnapshots];
+
+    public static IEnumerable<string> Everything => All.Concat(SinceR2);
 }

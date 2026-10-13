@@ -43,6 +43,9 @@ public sealed class RecallReadinessManifestProvider : IModuleManifestProvider
                 new ModuleManifestPermission(RecallPermissions.SettingsRead, "Read the recall settings", "Tenant"),
                 new ModuleManifestPermission(RecallPermissions.SettingsManage, "Change the recall settings", "Tenant"),
                 // API-only by design (pack §14.2): the lot / movement screens of 0174 / 0173 read it; it has no page of its own
-                new ModuleManifestPermission(RecallPermissions.LotsStatusRead, "Read whether a lot is under recall", "Tenant")
+                new ModuleManifestPermission(RecallPermissions.LotsStatusRead, "Read whether a lot is under recall", "Tenant"),
+                // WP-0177-R2: the trace (pack §8.2) — API-only until the R6 "İzleme" page
+                new ModuleManifestPermission(RecallPermissions.TraceRun, "Run a recall trace", "Tenant"),
+                new ModuleManifestPermission(RecallPermissions.TraceExport, "Export a recall trace as CSV", "Tenant")
             ]);
 }

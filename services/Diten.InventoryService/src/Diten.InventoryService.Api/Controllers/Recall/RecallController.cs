@@ -91,6 +91,27 @@ public sealed class RecallController : CustomBaseController
     public async Task<IActionResult> GetLotRecallStatus(string lotId, CancellationToken ct)
         => CreateActionResultInstance(await _mediator.Send(new GetLotRecallStatusQuery(lotId), ct));
 
+    // ── trace (R2, pack §8.2) ────────────────────────────────────────────────────────────────────────────
+
+    [HttpGet("trace")]
+    [HasPermission(RecallPermissions.TraceRun)]
+    public async Task<IActionResult> RunTrace([FromQuery] string? rootLotId, [FromQuery] string? direction, [FromQuery] string? asOfUtc, CancellationToken ct)
+        => CreateActionResultInstance(await _mediator.Send(new RunRecallTraceCommand(rootLotId, direction, asOfUtc), ct));
+
+    [HttpGet("trace/export")]
+    [HasPermission(RecallPermissions.TraceExport)]
+    public async Task<IActionResult> ExportTrace([FromQuery] string? rootLotId, [FromQuery] string? direction, [FromQuery] string? format, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new ExportRecallTraceCommand(rootLotId, direction, format), ct);
+        if (!response.IsSuccessful || response.Data is not { } csv) return CreateActionResultInstance(response);
+        return File(new System.Text.UTF8Encoding(false).GetBytes(csv.Content), "text/csv; charset=utf-8", csv.FileName);
+    }
+
+    [HttpGet("cases/{caseId}/scope/diff")]
+    [HasPermission(RecallPermissions.CasesRead)]
+    public async Task<IActionResult> GetCaseScopeDiff(string caseId, CancellationToken ct)
+        => await CompanyChecked(caseId, CreateActionResultInstance(await _mediator.Send(new DiffRecallScopeCommand(caseId), ct)), ct);
+
     // ── cases (writes) ───────────────────────────────────────────────────────────────────────────────────
 
     [HttpPost("cases")]

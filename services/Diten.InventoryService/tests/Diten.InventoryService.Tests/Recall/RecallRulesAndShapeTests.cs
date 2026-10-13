@@ -168,7 +168,7 @@ public sealed class RecallRulesTests
 }
 
 /// <summary>
-/// WP-0177-R1 item 6 — <c>recall.openapi.yaml</c> 1.0.0 = the CT-accepted proposal + pack §19.7, measured against the PROPOSAL FILE and the
+/// WP-0177-R1 item 6 (+ R2: 1.1.0, additive) — <c>recall.openapi.yaml</c> = the CT-accepted proposal + pack §19.7, measured against the PROPOSAL FILE and the
 /// production controller: every proposal operation is in the yaml; the R1 controller serves exactly the R1 operations (path, method,
 /// permission) and the rest are listed as not yet implemented; every owned error code is declared; SoD / scope-changed where §19.7 says.
 /// </summary>
@@ -190,16 +190,18 @@ public sealed class RecallContractTests
     private static List<string> Strings(JsonNode? node) => node!.AsArray().Select(v => v!.GetValue<string>()).ToList();
 
     [Fact]
-    public void The_contract_is_frozen_1_0_0_owned_by_MOD_0177_with_the_CT_additions()
+    public void The_contract_is_frozen_1_1_0_owned_by_MOD_0177_with_the_CT_additions()
     {
         var info = Yaml.Value["info"]!;
-        Assert.Equal("1.0.0", info["version"]!.GetValue<string>());
+        Assert.Equal("1.1.0", info["version"]!.GetValue<string>());
         Assert.Equal("FROZEN", info["x-status"]!.GetValue<string>());
         Assert.Equal("MOD-0177", info["x-owner"]!.GetValue<string>());
         Assert.Equal("/api/recall", Yaml.Value["servers"]![0]!["url"]!.GetValue<string>());
         var changelog = string.Join(" ", Strings(info["x-changelog"]));
         Assert.All(new[] { "CT-R1", "RECALL_SOD_VIOLATION", "RECALL_SCOPE_CHANGED", "CT-R5", "CT-R6", "CT-R7", "CT-R16", "CT-R17", "CT-R18" },
             t => Assert.Contains(t, changelog, StringComparison.Ordinal));
+        // R2 (1.1.0): the trace seal form and the reconciliations R2-1…R2-7
+        Assert.All(new[] { "1.1.0", "rt-v1", "R2-1", "R2-4", "R2-7", "SnapshotRef" }, t => Assert.Contains(t, changelog, StringComparison.Ordinal));
         Assert.Equal(RecallPermissions.All.OrderBy(k => k), Strings(Yaml.Value["x-permissions"]!["owned"]).OrderBy(k => k));
         Assert.Equal("APPROVE", Yaml.Value["x-signable-actions"]!["defaultMeaningCode"]!.GetValue<string>());
         var settingsAction = Yaml.Value["x-signable-actions"]!["actions"]!.AsArray().Single(a => a!["actionCode"]!.GetValue<string>() == "recall.settings.update");
@@ -218,16 +220,17 @@ public sealed class RecallContractTests
     }
 
     [Fact]
-    public void The_R1_controller_serves_exactly_the_R1_operations_with_their_permission()
+    public void The_controller_serves_exactly_the_R1_and_R2_operations_with_their_permission()
     {
         var served = typeof(RecallController).GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
             .SelectMany(m => m.GetCustomAttributes<HttpMethodAttribute>().SelectMany(a => a.HttpMethods.Select(v =>
                 (Path: "/" + a.Template, Method: v.ToLowerInvariant(), Permission: m.GetCustomAttribute<HasPermissionAttribute>()!.Policy!["Permission:".Length..]))))
             .ToList();
-        Assert.Equal(22, served.Count);
+        Assert.Equal(25, served.Count); // R1 22 + R2 runTrace, exportTrace, getCaseScopeDiff
 
         var byRoute = Operations().ToDictionary(o => (o.Path, o.Method));
-        var r1 = Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R1"]);
+        var r1 = Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R1"]).Concat(Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R2"])).ToList();
+        Assert.Equal(["runTrace", "exportTrace", "getCaseScopeDiff"], Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R2"]));
         foreach (var (path, method, permission) in served)
         {
             Assert.True(byRoute.TryGetValue((path, method), out var op), $"{method} {path} is not in recall.openapi.yaml");
@@ -290,7 +293,10 @@ public sealed class RecallArchitectureTests
         Assert.Equal(177, manifest.SortOrder);
         Assert.Empty(manifest.Pages);
         Assert.Equal(enforced.OrderBy(k => k, StringComparer.Ordinal), (manifest.ApiPermissions ?? []).Select(p => p.PermissionKey).OrderBy(k => k, StringComparer.Ordinal));
-        Assert.Equal(RecallPermissions.R1.OrderBy(k => k, StringComparer.Ordinal), enforced.OrderBy(k => k, StringComparer.Ordinal));
+        Assert.Equal(RecallPermissions.Implemented.OrderBy(k => k, StringComparer.Ordinal), enforced.OrderBy(k => k, StringComparer.Ordinal));
+        Assert.Equal(RecallPermissions.R1Only.Concat([RecallPermissions.TraceRun, RecallPermissions.TraceExport]).OrderBy(k => k, StringComparer.Ordinal),
+            RecallPermissions.Implemented.OrderBy(k => k, StringComparer.Ordinal));
+        Assert.Same(RecallPermissions.Implemented, RecallPermissions.R1); // the shared namespace test pins R1 (PARALEL KURAL) — an alias, not a copy
         Assert.All(manifest.ApiPermissions!, p => Assert.Equal("Tenant", p.Scope));
     }
 
@@ -314,22 +320,46 @@ public sealed class RecallArchitectureTests
     {
         var entities = typeof(EntityBase).Assembly.GetTypes()
             .Where(t => typeof(EntityBase).IsAssignableFrom(t) && t.Namespace?.Contains(".Recall", StringComparison.Ordinal) == true).ToList();
-        Assert.Equal(10, entities.Count); // R1: settings, history, case, event, scope item, lot block, notification, consumption, segregation, audit
+        Assert.Equal(11, entities.Count); // R1: settings, history, case, event, scope item, lot block, notification, consumption, segregation, audit; R2: trace snapshot
         Assert.DoesNotContain(entities, t => t.Name.Contains("Signature", StringComparison.Ordinal));
         Assert.Contains(typeof(IRecallSignature), typeof(FailClosedRecallSignature).GetInterfaces());
         Assert.False(await new FailClosedRecallSignature().VerifyAsync(new RecallSignatureVerification("s", "recall.scope.approve", "APPROVE", Guid.NewGuid(),
             "recall.case", Guid.NewGuid(), "x", DateTimeOffset.UtcNow)));
     }
 
+    /// <summary>
+    /// WP-0177-R2 narrows the R1 rule "no sourceModule": the trace READS it only to identify a node — the MVP-6 shipment (== MOD-0183), the
+    /// production document of a produced lot (the inputs read) — and carries it on the movement reference. No handler, service or rule file
+    /// names it, so no exemption or authorization can hang on it; no recall type posts a movement.
+    /// </summary>
+    private static readonly string[] TraceReadFiles =
+    [
+        "Features/Recall/Ports/IRecallTraceSource.cs", "Features/Recall/RecallModels.cs", "Features/Recall/Trace/RecallTraceEngine.cs",
+        "Features/Recall/Trace/RecallTraceService.cs", "Recall/RecallTraceSource.cs"
+    ];
+
     [Fact]
-    public void No_recall_type_reads_sourceModule_or_posts_a_movement()
+    public void No_recall_type_decides_on_sourceModule_or_posts_a_movement()
     {
         foreach (var file in SourceScan.Production("Diten.InventoryService.Application").Concat(SourceScan.Production("Diten.InventoryService.Persistence"))
                      .Where(f => f.RelativePath.Contains("Recall", StringComparison.Ordinal)))
         {
-            Assert.DoesNotContain("SourceModule", file.Body, StringComparison.Ordinal);
+            if (!TraceReadFiles.Any(t => file.RelativePath.EndsWith(t, StringComparison.Ordinal)))
+            {
+                Assert.DoesNotContain("SourceModule", file.Body, StringComparison.Ordinal);
+            }
+
             Assert.DoesNotContain("PostAsync", file.Body, StringComparison.Ordinal);
             Assert.DoesNotContain("InternalMovementPostingService", file.Body, StringComparison.Ordinal);
+        }
+
+        var engine = SourceScan.Production("Diten.InventoryService.Application").Single(f => f.RelativePath.EndsWith("Trace/RecallTraceEngine.cs", StringComparison.Ordinal));
+        foreach (var line in engine.Body.Split('\n').Where(l => l.Contains("SourceModule", StringComparison.Ordinal) && !l.TrimStart().StartsWith("//", StringComparison.Ordinal)))
+        {
+            Assert.True(line.Contains("SourceModule: TraceRules.ShipmentModule", StringComparison.Ordinal)
+                        || line.Contains("TransactionsOfDocumentAsync(source.SourceModule, source.SourceDocumentId", StringComparison.Ordinal)
+                        || line.Contains("t.SourceModule, t.SourceDocumentId)", StringComparison.Ordinal),
+                $"the trace uses sourceModule beyond identifying a node: {line.Trim()}");
         }
     }
 }

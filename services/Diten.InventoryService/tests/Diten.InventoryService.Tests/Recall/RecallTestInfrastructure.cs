@@ -61,6 +61,9 @@ public class RecallApiFactory : TraceApiFactory
 
     public TestRecallSignature Signature { get; } = new();
 
+    /// <summary>WP-0177-R2: the MVP-6 shipment read lands here (the Gateway client of <c>IShipmentReader</c> gets this primary handler).</summary>
+    public ShipmentBundleDouble Shipments { get; } = new();
+
     protected virtual bool UseTestSignature => true;
 
     public void TrackRecallTenant(Guid tenant) => _recallTenants.Add(tenant);
@@ -70,6 +73,7 @@ public class RecallApiFactory : TraceApiFactory
         base.ConfigureWebHost(builder);
         builder.ConfigureTestServices(services =>
         {
+            services.AddHttpClient(nameof(IShipmentReader)).ConfigurePrimaryHttpMessageHandler(() => Shipments);
             if (UseTestSignature)
             {
                 services.RemoveAll<IRecallSignature>();
@@ -83,7 +87,7 @@ public class RecallApiFactory : TraceApiFactory
         if (disposing && !_recallTenants.IsEmpty)
         {
             var tenants = new BsonArray(_recallTenants.Select(t => t.ToString()));
-            foreach (var name in RecallCollections.All)
+            foreach (var name in RecallCollections.Everything)
             {
                 Collection(name).DeleteMany(new BsonDocument("TenantId", new BsonDocument("$in", tenants)));
             }
@@ -100,7 +104,7 @@ public sealed class ProductionSignatureRecallApiFactory : RecallApiFactory
 }
 
 /// <summary>
-/// Every RECALL-BUNDLE response of an R1 operation is checked against <c>recall.openapi.yaml</c> (status allowed, body schema — closed objects,
+/// Every RECALL-BUNDLE response of an R1 / R2 operation is checked against <c>recall.openapi.yaml</c> (status allowed, body schema — closed objects,
 /// formats enforced — ETag where the contract declares it, correlation id). Other calls of the same client pass through.
 /// </summary>
 public sealed class RecallContractValidatingHandler : DelegatingHandler
@@ -135,8 +139,15 @@ public sealed class RecallContractValidatingHandler : DelegatingHandler
         Op("POST", "/api/recall/cases/{id}/effectiveness/start", [200, 400, 401, 403, 404, 409, 503], "CaseDetail", etag: true),
         Op("POST", "/api/recall/cases/{id}/effectiveness/complete", [200, 400, 401, 403, 404, 409, 503], "CaseDetail", etag: true),
         Op("POST", "/api/recall/cases/{id}/close", [200, 400, 401, 403, 404, 409, 503], "CaseDetail", etag: true),
-        Op("GET", "/api/recall/lots/{id}/status", [200, 400, 401, 403, 404, 503], "LotRecallStatus")
+        Op("GET", "/api/recall/lots/{id}/status", [200, 400, 401, 403, 404, 503], "LotRecallStatus"),
+        // R2
+        Op("GET", "/api/recall/trace", [200, 400, 401, 403, 404, 503], "TraceResult"),
+        Op("GET", "/api/recall/trace/export", [200, 400, 401, 403, 404, 503], Csv),
+        Op("GET", "/api/recall/cases/{id}/scope/diff", [200, 400, 401, 403, 404, 409, 503], "ScopeDiff")
     ];
+
+    /// <summary>exportTrace answers text/csv (UTF-8 BOM, ';') — checked for its media type and BOM, not a JSON schema.</summary>
+    private const string Csv = "text/csv";
 
     private static readonly Regex WeakETag = new("^W/\"\\d+\"$", RegexOptions.Compiled);
 
@@ -157,6 +168,21 @@ public sealed class RecallContractValidatingHandler : DelegatingHandler
         }
 
         var schema = status is 200 or 201 ? operation.Schema : "Error";
+        if (schema == Csv)
+        {
+            var raw = await response.Content.ReadAsByteArrayAsync(cancellationToken);
+            if (response.Content.Headers.ContentType?.MediaType != Csv || raw.Length < 3 || raw[0] != 0xEF || raw[1] != 0xBB || raw[2] != 0xBF)
+            {
+                throw new ContractViolationException($"{request.Method} {path} {status} is not a UTF-8 BOM text/csv body ({response.Content.Headers.ContentType}).");
+            }
+
+            Validated.AddOrUpdate($"{request.Method} {operation.Path} {status} → recall:{schema}", 1, (_, n) => n + 1);
+            var csv = new ByteArrayContent(raw);
+            foreach (var header in response.Content.Headers) csv.Headers.TryAddWithoutValidation(header.Key, header.Value);
+            response.Content = csv;
+            return response;
+        }
+
         var errors = ContractSchemas.ValidateRecall(schema, body);
         if (errors.Count > 0)
         {

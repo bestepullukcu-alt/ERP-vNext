@@ -118,7 +118,9 @@ public sealed record RecallCaseDetailDto(
     RecallClosureDto? Closure,
     RecallCancellationDto? Cancellation,
     RecallPendingActionDto? PendingAction,
-    RecallCaseCountsDto Counts);
+    RecallCaseCountsDto Counts,
+    RecallSnapshotRefDto? SubmittedSnapshot = null,
+    RecallSnapshotRefDto? ApprovedSnapshot = null);
 
 public sealed record RecallScopeItemDto(
     string NodeKey,
@@ -136,7 +138,9 @@ public sealed record RecallScopeItemDto(
     string? BaseUomId,
     bool Included,
     bool EffectivelyIncluded,
-    string? ExclusionReason);
+    string? ExclusionReason,
+    string? Origin = null,
+    bool? New = null);
 
 public sealed record RecallScopeViewDto(
     string CaseId,
@@ -145,7 +149,8 @@ public sealed record RecallScopeViewDto(
     int ExcludedCount,
     string Sha256,
     IReadOnlyList<RecallScopeItemDto> Items,
-    int Version);
+    int Version,
+    RecallSnapshotRefDto? Snapshot = null);
 
 public sealed record RecallTimelineEntryDto(
     long Seq,
@@ -233,3 +238,94 @@ public sealed record RecallScopeItemInput(
     string? BaseUomId);
 
 public sealed record RecallScopeMarkInput(string NodeKey, bool Included, string? ExclusionReason);
+
+// ── R2 (RECALL-BUNDLE 1.1.0): trace, snapshots, scope diff ──────────────────────────────────────────────────
+
+public sealed record RecallSnapshotRefDto(
+    string SnapshotId,
+    int Revision,
+    string Purpose,
+    string Sha256,
+    string CanonicalVersion,
+    int NodeCount,
+    int GapCount,
+    bool Truncated,
+    string ComputedAtUtc);
+
+public sealed record RecallTraceLimitsDto(int MaxDepth, int MaxNodes);
+
+public sealed record RecallTraceMovementDto(string TransactionId, string? TransactionNumber, string MovementType, string PostingDate, string SourceModule, string? SourceDocumentId);
+
+public sealed record RecallTraceShipmentDto(string Read, string? Status, string? ActualDeliverAt, string? ShipToReference);
+
+public sealed record RecallTraceNodeDto(
+    string NodeKey,
+    string? ParentKey,
+    int Level,
+    string Side,
+    string Kind,
+    RecallLotRefDto? Lot,
+    RecallItemRefDto? Item,
+    bool Untracked,
+    string? WarehouseId,
+    string? LocationId,
+    string? StockStatus,
+    decimal? Quantity,
+    string? BaseUomId,
+    RecallTraceMovementDto? Movement,
+    RecallTraceShipmentDto? Shipment,
+    string? CustomerRef,
+    IReadOnlyList<string> Serials,
+    string? GapCode,
+    long? Count,
+    string? Text);
+
+public sealed record RecallTraceEdgeDto(string From, string To, string Kind, string? TransformationReference, string? QuantityConsumed, string? UomId, bool Cycle);
+
+public sealed record RecallTraceGapDto(
+    string Code,
+    string NodeKey,
+    string Text,
+    string? TransactionId,
+    string? TransactionNumber,
+    string? SkuId,
+    decimal? Quantity,
+    string? BaseUomId,
+    string? Date,
+    long? Count);
+
+public sealed record RecallTraceQuantityDto(string SkuId, string BaseUomId, decimal Quantity, int Count);
+
+public sealed record RecallTraceSummaryDto(
+    int FinishedGoodLots,
+    IReadOnlyList<RecallTraceQuantityDto> Stock,
+    IReadOnlyList<RecallTraceQuantityDto> Shipped,
+    int InTransitShipments,
+    int GapCount,
+    long OtherCompanyActivityCount);
+
+public sealed record RecallTraceDto(
+    string RootLotId,
+    string RootLotNumber,
+    string Direction,
+    string AsOfUtc,
+    string ComputedAtUtc,
+    long DurationMs,
+    bool Truncated,
+    RecallTraceLimitsDto Limits,
+    IReadOnlyList<RecallTraceNodeDto> Nodes,
+    IReadOnlyList<RecallTraceEdgeDto> Edges,
+    IReadOnlyList<RecallTraceGapDto> Gaps,
+    RecallTraceSummaryDto Summary,
+    string CanonicalVersion,
+    string Sha256);
+
+public sealed record RecallScopeDiffDto(
+    string ApprovedSha256,
+    string LiveSha256,
+    IReadOnlyList<RecallTraceNodeDto> Added,
+    IReadOnlyList<string> Removed,
+    string ComputedAtUtc);
+
+/// <summary>exportTrace — the CSV text and its file name.</summary>
+public sealed record RecallTraceCsvDto(string FileName, string Content);

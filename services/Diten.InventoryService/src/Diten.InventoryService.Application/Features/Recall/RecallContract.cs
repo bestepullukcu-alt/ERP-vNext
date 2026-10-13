@@ -50,6 +50,13 @@ public static class RecallContract
     public const string AuditEffectivenessCompleted = "recall.effectiveness.completed";
     public const string AuditCaseClosed = "recall.case.closed";
 
+    // R2 (pack §8.12)
+    public const string AuditTraceRun = "recall.trace.run";
+    public const string AuditScopeDiffed = "recall.scope.diffed";
+    public const string AuditOutOfScopeFinding = "recall.scope.out-of-scope-finding";
+
+    public const string SubjectTrace = "recall.trace";
+
     public const string SubjectSettings = "recall.settings";
     public const string SubjectCase = "recall.case";
 

@@ -105,6 +105,13 @@ public static class RecallIndexConfiguration
             new(Builders<RecallConsumptionDeclaration>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.CaseId), new CreateIndexOptions { Name = "ix_recall_consumption_case" })
         ], ct);
 
+        // R2: the snapshots of a case (pack §4.4)
+        await database.GetCollection<RecallTraceSnapshot>(RecallCollections.TraceSnapshots).Indexes.CreateOneAsync(
+            new CreateIndexModel<RecallTraceSnapshot>(
+                Builders<RecallTraceSnapshot>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.CaseId).Ascending(x => x.Purpose),
+                new CreateIndexOptions { Name = "ix_recall_snapshot_case" }),
+            cancellationToken: ct);
+
         await database.GetCollection<RecallSegregationConfirmation>(RecallCollections.Segregations).Indexes.CreateManyAsync(
         [
             new(Builders<RecallSegregationConfirmation>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.ConfirmedBy).Ascending(x => x.IdempotencyKey),

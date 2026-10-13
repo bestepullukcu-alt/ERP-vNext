@@ -28,7 +28,13 @@ public sealed class RecallReads
         var notifications = await _repository.NotificationsAsync(c.Id, ct);
         var consumptions = await _repository.ConsumptionsAsync(c.Id, ct);
         var segregations = await _repository.SegregationsAsync(c.Id, ct);
-        return RecallMapping.Detail(c, items, notifications, Effective(consumptions), segregations, _support.Now());
+        var submitted = c.SubmittedSnapshotId is { } sid ? await _repository.FindSnapshotAsync(sid, ct) : null;
+        var approved = c.ApprovedSnapshotId is { } aid ? await _repository.FindSnapshotAsync(aid, ct) : null;
+        return RecallMapping.Detail(c, items, notifications, Effective(consumptions), segregations, _support.Now()) with
+        {
+            SubmittedSnapshot = Trace.RecallTraceService.SnapshotRef(submitted),
+            ApprovedSnapshot = Trace.RecallTraceService.SnapshotRef(approved)
+        };
     }
 
     public async Task<Response<RecallCaseDetailDto>> CurrentAsync(Guid caseId, CancellationToken ct)
@@ -36,8 +42,13 @@ public sealed class RecallReads
             ? Response<RecallCaseDetailDto>.Success(await DetailAsync(c, ct))
             : RecallSupport.CaseNotFound<RecallCaseDetailDto>();
 
+    /// <summary>R2: the scope with the snapshot that governs it (the approved one once approved, else the submitted one).</summary>
     public async Task<RecallScopeViewDto> ScopeAsync(RecallCase c, CancellationToken ct)
-        => RecallMapping.Scope(c, await _repository.ScopeItemsAsync(c.Id, c.ScopeRevision, ct));
+    {
+        var snapshotId = c.ApprovedSnapshotId ?? c.SubmittedSnapshotId;
+        var snapshot = snapshotId is { } id ? await _repository.FindSnapshotAsync(id, ct) : null;
+        return RecallMapping.Scope(c, await _repository.ScopeItemsAsync(c.Id, c.ScopeRevision, ct)) with { Snapshot = Trace.RecallTraceService.SnapshotRef(snapshot) };
+    }
 
     public async Task<Response<RecallScopeViewDto>> CurrentScopeAsync(Guid caseId, CancellationToken ct)
         => await _repository.FindCaseAsync(caseId, ct) is { } c
@@ -170,7 +181,9 @@ public static class RecallMapping
         i.BaseUomId,
         i.Included,
         effective,
-        i.Included ? null : i.ExclusionReason);
+        i.Included ? null : i.ExclusionReason,
+        i.Origin.ToString(),
+        i.IsNew);
 
     public static RecallEffectivenessDto Effectiveness(RecallEffectivenessResult e) => new(
         e.Class, e.TargetPercent, e.Rows.Select(Row).ToList(), e.Totals.Select(Row).ToList(), RecallSupport.Wire(e.ComputedAtUtc));

@@ -57,6 +57,12 @@ public interface IRecallRepository
 
     Task<IReadOnlyList<RecallScopeItem>> ScopeItemsAsync(Guid caseId, int revision, CancellationToken cancellationToken = default);
 
+    /// <summary>R2: the items of a revision INCLUDING those a re-trace removed (soft-removed, so a node that comes back is restored).</summary>
+    Task<IReadOnlyList<RecallScopeItem>> ScopeItemsWithRemovedAsync(Guid caseId, int revision, CancellationToken cancellationToken = default);
+
+    /// <summary>R2: one trace snapshot of the caller's company.</summary>
+    Task<RecallTraceSnapshot?> FindSnapshotAsync(Guid snapshotId, CancellationToken cancellationToken = default);
+
     /// <summary>Scope items of many cases at once (list rows: affected quantity per SKU + unit).</summary>
     Task<IReadOnlyList<RecallScopeItem>> ScopeItemsOfCasesAsync(IReadOnlyCollection<Guid> caseIds, CancellationToken cancellationToken = default);
 
@@ -126,4 +132,7 @@ public interface IRecallWriteSession
     Task InsertSegregationAsync(RecallSegregationConfirmation confirmation, CancellationToken cancellationToken = default);
 
     Task InsertAuditAsync(RecallAuditRecord record, CancellationToken cancellationToken = default);
+
+    /// <summary>R2: a trace snapshot (insert-only).</summary>
+    Task InsertSnapshotAsync(RecallTraceSnapshot snapshot, CancellationToken cancellationToken = default);
 }

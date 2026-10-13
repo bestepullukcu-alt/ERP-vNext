@@ -26,13 +26,15 @@ public sealed class OpenRecallCaseHandler : IRequestHandler<OpenRecallCaseComman
     private readonly ILotRepository _lots;
     private readonly RecallReads _reads;
     private readonly RecallSupport _support;
+    private readonly Trace.RecallTraceService _trace;
 
-    public OpenRecallCaseHandler(IRecallRepository repository, ILotRepository lots, RecallReads reads, RecallSupport support)
+    public OpenRecallCaseHandler(IRecallRepository repository, ILotRepository lots, RecallReads reads, RecallSupport support, Trace.RecallTraceService trace)
     {
         _repository = repository;
         _lots = lots;
         _reads = reads;
         _support = support;
+        _trace = trace;
     }
 
     public async Task<Response<RecallCaseDetailDto>> Handle(OpenRecallCaseCommand request, CancellationToken ct)
@@ -104,13 +106,18 @@ public sealed class OpenRecallCaseHandler : IRequestHandler<OpenRecallCaseComman
             AddedAtUtc = now
         };
 
+        // R2 (pack §8.3 step 1): the live trace seeds the scope — root + forward lots, their stock and shipments, all included
+        var trace = await _trace.RunAsync(lot.Id, request.Direction, null, ct);
+        var items = trace is null ? [root] : Trace.RecallTraceService.ScopeItems(trace, recallCase.Id, 1, _support.UserId, now);
+        if (items.Count == 0 || items.All(i => !i.IsRoot)) items.Insert(0, root);
+
         try
         {
             await _repository.InTransactionAsync<bool>(async (session, c) =>
             {
                 recallCase.Number = await session.NextCaseNumberAsync(now.UtcDateTime.Year, c);
                 await session.InsertCaseAsync(recallCase, c);
-                await session.InsertScopeItemsAsync([root], c);
+                await session.InsertScopeItemsAsync(items, c);
                 await session.InsertEventAsync(_support.Event(recallCase.Id, RecallCaseEventKind.Opened, now, reason,
                     new Dictionary<string, string?> { ["rootLotId"] = lotId, ["rootLotNumber"] = lot.LotNumber, ["reasonReference"] = reference },
                     idempotencyKey: request.IdempotencyKey, fingerprint: fingerprint), c);
@@ -122,6 +129,12 @@ public sealed class OpenRecallCaseHandler : IRequestHandler<OpenRecallCaseComman
                         ["level"] = request.Level.ToString(),
                         ["reason"] = reason
                     }), c);
+                if (trace is not null)
+                {
+                    await session.InsertEventAsync(_support.Event(recallCase.Id, RecallCaseEventKind.TraceRun, now, null, TraceRefs(trace)), c);
+                    await session.InsertAuditAsync(RecallTraceAudit.Of(_support, trace, "openCase", recallCase.Id, recallCase.Number, now, request.IdempotencyKey), c);
+                }
+
                 return true;
             }, ct);
         }
@@ -139,6 +152,15 @@ public sealed class OpenRecallCaseHandler : IRequestHandler<OpenRecallCaseComman
 
         return Response<RecallCaseDetailDto>.Success(await _reads.DetailAsync(recallCase, ct), 201);
     }
+
+    internal static Dictionary<string, string?> TraceRefs(Domain.Recall.Trace.TraceResult t) => new()
+    {
+        ["sha256"] = t.Sha256,
+        ["nodes"] = t.Nodes.Count.ToString(System.Globalization.CultureInfo.InvariantCulture),
+        ["gaps"] = t.Summary.GapCount.ToString(System.Globalization.CultureInfo.InvariantCulture),
+        ["truncated"] = t.Truncated ? "true" : "false",
+        ["durationMs"] = t.DurationMs.ToString(System.Globalization.CultureInfo.InvariantCulture)
+    };
 
     private static Response<RecallCaseDetailDto> AlreadyOpen(Guid existing)
         => Response<RecallCaseDetailDto>.Fail(RecallErrorCodes.CaseAlreadyOpen, "A recall case that is not closed or cancelled already exists for this root lot.", 409,
@@ -503,9 +525,10 @@ public sealed class MarkRecallScopeItemsHandler : RecallCaseCommandHandler, IReq
 /// </summary>
 public sealed class SubmitRecallScopeHandler : RecallCaseCommandHandler, IRequestHandler<SubmitRecallScopeCommand, Response<RecallCaseDetailDto>>
 {
-    public SubmitRecallScopeHandler(IRecallRepository repository, RecallReads reads, RecallSupport support) : base(repository, reads, support)
-    {
-    }
+    private readonly Trace.RecallTraceService _trace;
+
+    public SubmitRecallScopeHandler(IRecallRepository repository, RecallReads reads, RecallSupport support, Trace.RecallTraceService trace)
+        : base(repository, reads, support) => _trace = trace;
 
     public async Task<Response<RecallCaseDetailDto>> Handle(SubmitRecallScopeCommand request, CancellationToken ct)
     {
@@ -519,8 +542,15 @@ public sealed class SubmitRecallScopeHandler : RecallCaseCommandHandler, IReques
         if (!RecallCaseRules.CanSubmit(c.Status)) return RecallSupport.InvalidTransition<RecallCaseDetailDto>($"A case in status {c.Status} cannot be submitted.");
         if (c.Version != request.ExpectedVersion) return RecallSupport.Conflict<RecallCaseDetailDto>();
 
+        // R2 (pack §8.3 step 3): re-trace, reconcile the trace items (manual items stay), seal the trace (rt-v1) and the scope (rs-scope-v1)
         var now = Support.Now();
-        var items = await Repository.ScopeItemsAsync(c.Id, c.ScopeRevision, ct);
+        var trace = await _trace.RunAsync(Guid.Parse(c.RootLotId), c.Direction, null, ct);
+        if (trace is null) return RecallSupport.Fail<RecallCaseDetailDto>(RecallErrorCodes.UnknownLot, "The root lot no longer exists for the tenant.", 404);
+        var stored = await Repository.ScopeItemsWithRemovedAsync(c.Id, c.ScopeRevision, ct);
+        var (inserts, replaces) = Trace.RecallTraceService.Reconcile(stored, Trace.RecallTraceService.ScopeItems(trace, c.Id, c.ScopeRevision, Support.UserId, now), now);
+        var items = stored.Where(i => !i.IsDeleted).Concat(inserts).ToList();
+        var snapshot = _trace.Snapshot(trace, c, RecallSnapshotPurpose.Submitted, now);
+        c.SubmittedSnapshotId = snapshot.Id;
         c.SubmittedScope = new RecallScopeSeal
         {
             Revision = c.ScopeRevision,
@@ -538,7 +568,16 @@ public sealed class SubmitRecallScopeHandler : RecallCaseCommandHandler, IReques
                 new Dictionary<string, string?> { ["scopeSha256"] = c.SubmittedScope.Sha256, ["items"] = items.Count.ToString(System.Globalization.CultureInfo.InvariantCulture) },
                 idempotencyKey: request.IdempotencyKey, fingerprint: fingerprint),
             Support.Audit(RecallContract.AuditScopeSubmitted, RecallContract.SubjectCase, c.Id, c.Number, now, request.IdempotencyKey,
-                Detail(c, ("scopeSha256", c.SubmittedScope.Sha256), ("revision", c.ScopeRevision.ToString(System.Globalization.CultureInfo.InvariantCulture)))), ct);
+                Detail(c, ("scopeSha256", c.SubmittedScope.Sha256), ("traceSha256", trace.Sha256), ("newItems", inserts.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+                    ("revision", c.ScopeRevision.ToString(System.Globalization.CultureInfo.InvariantCulture)))), ct,
+            async (session, tx) =>
+            {
+                foreach (var item in replaces) await session.ReplaceScopeItemAsync(item, tx);
+                await session.InsertScopeItemsAsync(inserts, tx);
+                await session.InsertSnapshotAsync(snapshot, tx);
+                await session.InsertEventAsync(Support.Event(c.Id, RecallCaseEventKind.TraceRun, now, null, OpenRecallCaseHandler.TraceRefs(trace)), tx);
+                await session.InsertAuditAsync(RecallTraceAudit.Of(Support, trace, "submitScope", c.Id, c.Number, now, request.IdempotencyKey), tx);
+            });
     }
 }
 
@@ -564,6 +603,7 @@ public sealed class ReturnRecallScopeHandler : RecallCaseCommandHandler, IReques
         var now = Support.Now();
         c.Status = RecallCaseStatus.Draft;
         c.SubmittedScope = null;
+        c.SubmittedSnapshotId = null;
         c.ScopeSubmittedBy = null;
         c.ScopeSubmittedAtUtc = null;
         c.PendingAction = null;
@@ -583,12 +623,14 @@ public sealed class PrepareRecallCaseActionHandler : IRequestHandler<PrepareReca
     private readonly IRecallRepository _repository;
     private readonly IRecallSignature _signature;
     private readonly RecallSupport _support;
+    private readonly Trace.RecallTraceService _trace;
 
-    public PrepareRecallCaseActionHandler(IRecallRepository repository, IRecallSignature signature, RecallSupport support)
+    public PrepareRecallCaseActionHandler(IRecallRepository repository, IRecallSignature signature, RecallSupport support, Trace.RecallTraceService trace)
     {
         _repository = repository;
         _signature = signature;
         _support = support;
+        _trace = trace;
     }
 
     public async Task<Response<RecallPendingActionResponseDto>> Handle(PrepareRecallCaseActionCommand request, CancellationToken ct)
@@ -637,6 +679,8 @@ public sealed class PrepareRecallCaseActionHandler : IRequestHandler<PrepareReca
         {
             scopeSha = RecallScopeRules.Sha256(await _repository.ScopeItemsAsync(c.Id, c.ScopeRevision, ct), c.ScopeRevision);
             if (!string.Equals(scopeSha, c.SubmittedScope?.Sha256, StringComparison.Ordinal)) return ScopeChanged(c, scopeSha);
+            var (_, drift) = await RecallScopeDrift.CheckAsync(_trace, _repository, c, ct);
+            if (drift is not null) return RecallScopeDrift.Refusal<RecallPendingActionResponseDto>(drift);
         }
 
         if (request.Action == RecallPendingActionKind.Close && RecallEffectivenessRule.HasOpenQuantity(c.Effectiveness!) && acceptance is null)
@@ -699,8 +743,14 @@ public sealed class ApproveRecallScopeHandler : RecallCaseCommandHandler, IReque
 {
     private readonly IRecallSignature _signature;
 
-    public ApproveRecallScopeHandler(IRecallRepository repository, RecallReads reads, RecallSupport support, IRecallSignature signature)
-        : base(repository, reads, support) => _signature = signature;
+    private readonly Trace.RecallTraceService _trace;
+
+    public ApproveRecallScopeHandler(IRecallRepository repository, RecallReads reads, RecallSupport support, IRecallSignature signature, Trace.RecallTraceService trace)
+        : base(repository, reads, support)
+    {
+        _signature = signature;
+        _trace = trace;
+    }
 
     public async Task<Response<RecallCaseDetailDto>> Handle(ApproveRecallScopeCommand request, CancellationToken ct)
     {
@@ -729,6 +779,10 @@ public sealed class ApproveRecallScopeHandler : RecallCaseCommandHandler, IReque
             return PrepareRecallCaseActionHandler.ScopeChangedOf<RecallCaseDetailDto>(c, sealNow);
         }
 
+        // R2 (pack §8.3 step 4): the LIVE re-trace must equal the submitted snapshot — the approver never signs a stale trace
+        var (live, drift) = await RecallScopeDrift.CheckAsync(_trace, Repository, c, ct);
+        if (drift is not null) return RecallScopeDrift.Refusal<RecallCaseDetailDto>(drift);
+
         if (await SignatureRefusalAsync<RecallCaseDetailDto>(_signature, c, RecallPendingActionKind.ApproveScope, signatureId, Support.UserId, ct) is { } signatureRefusal)
         {
             return signatureRefusal;
@@ -744,6 +798,8 @@ public sealed class ApproveRecallScopeHandler : RecallCaseCommandHandler, IReque
                 Id = Guid.NewGuid(), CreatedAt = now, LotId = lotId, CaseId = c.Id, CaseNumber = c.Number, Active = true, ActivatedAtUtc = now
             }).ToList();
 
+        var approvedSnapshot = live is null ? null : _trace.Snapshot(live, c, RecallSnapshotPurpose.Approved, now);
+        c.ApprovedSnapshotId = approvedSnapshot?.Id;
         c.Status = RecallCaseStatus.Active;
         c.ApprovedScope = new RecallScopeSeal
         {
@@ -759,7 +815,12 @@ public sealed class ApproveRecallScopeHandler : RecallCaseCommandHandler, IReque
                 signatureId, request.IdempotencyKey, fingerprint),
             Support.Audit(RecallContract.AuditScopeApproved, RecallContract.SubjectCase, c.Id, c.Number, now, request.IdempotencyKey,
                 Detail(c, ("scopeSha256", sealNow), ("signatureId", signatureId), ("blockedLots", string.Join(",", blocks.Select(b => b.LotId))))),
-            ct, (session, tx) => session.InsertLotBlocksAsync(blocks, tx));
+            ct, async (session, tx) =>
+            {
+                await session.InsertLotBlocksAsync(blocks, tx);
+                if (approvedSnapshot is not null) await session.InsertSnapshotAsync(approvedSnapshot, tx);
+                if (live is not null) await session.InsertAuditAsync(RecallTraceAudit.Of(Support, live, "approveScope", c.Id, c.Number, now, request.IdempotencyKey), tx);
+            });
     }
 }
 

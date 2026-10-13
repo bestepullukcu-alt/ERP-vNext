@@ -32,6 +32,7 @@ public sealed class RecallRepository : IRecallRepository
     private readonly IMongoCollection<RecallSegregationConfirmation> _segregations;
     private readonly IMongoCollection<BsonDocument> _counters;
     private readonly IMongoCollection<RecallAuditRecord> _audit;
+    private readonly IMongoCollection<RecallTraceSnapshot> _snapshots;
     private readonly TransactionRetryCounter _retries;
     private readonly ILogger<RecallRepository> _logger;
     private readonly Guid _tenantId;
@@ -51,6 +52,7 @@ public sealed class RecallRepository : IRecallRepository
         _segregations = database.GetCollection<RecallSegregationConfirmation>(RecallCollections.Segregations);
         _counters = database.GetCollection<BsonDocument>(RecallCollections.Counters);
         _audit = database.GetCollection<RecallAuditRecord>(InventoryCollections.Audit);
+        _snapshots = database.GetCollection<RecallTraceSnapshot>(RecallCollections.TraceSnapshots);
         _retries = retries;
         _logger = logger;
         _tenantId = tenant.TenantId;
@@ -138,6 +140,14 @@ public sealed class RecallRepository : IRecallRepository
         => await _items.Find(Scope<RecallScopeItem>() & Builders<RecallScopeItem>.Filter.Eq(x => x.CaseId, caseId)
                              & Builders<RecallScopeItem>.Filter.Eq(x => x.Revision, revision))
             .Sort(Builders<RecallScopeItem>.Sort.Ascending(x => x.NodeKey)).ToListAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<RecallScopeItem>> ScopeItemsWithRemovedAsync(Guid caseId, int revision, CancellationToken cancellationToken = default)
+        => await _items.Find(Builders<RecallScopeItem>.Filter.Eq(x => x.TenantId, _tenantId) & Builders<RecallScopeItem>.Filter.Eq(x => x.LegalEntityId, _legalEntityId)
+                             & Builders<RecallScopeItem>.Filter.Eq(x => x.CaseId, caseId) & Builders<RecallScopeItem>.Filter.Eq(x => x.Revision, revision))
+            .Sort(Builders<RecallScopeItem>.Sort.Ascending(x => x.NodeKey)).ToListAsync(cancellationToken);
+
+    public async Task<RecallTraceSnapshot?> FindSnapshotAsync(Guid snapshotId, CancellationToken cancellationToken = default)
+        => await _snapshots.Find(Scope<RecallTraceSnapshot>() & Builders<RecallTraceSnapshot>.Filter.Eq(x => x.Id, snapshotId)).FirstOrDefaultAsync(cancellationToken);
 
     public async Task<IReadOnlyList<RecallScopeItem>> ScopeItemsOfCasesAsync(IReadOnlyCollection<Guid> caseIds, CancellationToken cancellationToken = default)
         => caseIds.Count == 0
@@ -304,8 +314,10 @@ public sealed class RecallRepository : IRecallRepository
         public Task ReplaceScopeItemAsync(RecallScopeItem item, CancellationToken cancellationToken = default)
         {
             _owner.Stamp(item);
+            // R2: no IsDeleted filter — a re-trace soft-removes an item and may restore it (tenant + company still bind it)
             return _owner._items.ReplaceOneAsync(_session,
-                _owner.Scope<RecallScopeItem>() & Builders<RecallScopeItem>.Filter.Eq(x => x.Id, item.Id), item, cancellationToken: cancellationToken);
+                Builders<RecallScopeItem>.Filter.Eq(x => x.TenantId, _owner._tenantId) & Builders<RecallScopeItem>.Filter.Eq(x => x.LegalEntityId, _owner._legalEntityId)
+                & Builders<RecallScopeItem>.Filter.Eq(x => x.Id, item.Id), item, cancellationToken: cancellationToken);
         }
 
         public Task InsertLotBlocksAsync(IReadOnlyList<RecallLotBlock> blocks, CancellationToken cancellationToken = default)
@@ -352,6 +364,12 @@ public sealed class RecallRepository : IRecallRepository
         {
             _owner.Stamp(record);
             return _owner._audit.InsertOneAsync(_session, record, cancellationToken: cancellationToken);
+        }
+
+        public Task InsertSnapshotAsync(RecallTraceSnapshot snapshot, CancellationToken cancellationToken = default)
+        {
+            _owner.Stamp(snapshot);
+            return _owner._snapshots.InsertOneAsync(_session, snapshot, cancellationToken: cancellationToken);
         }
     }
 }
