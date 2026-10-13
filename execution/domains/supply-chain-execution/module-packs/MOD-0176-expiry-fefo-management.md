@@ -967,6 +967,21 @@ reds; gateway 134/135. Sabotage s1 → 2 red, s2 → 2 red (3(d) stays green: th
 AVAILABLE → none). **Open: O-FIX1-2** — the F2 p95 test is unstable in the full suite on this machine (3 of 6 red before, 1 of 3 after the
 interleaving fix); the budget is unchanged, CT to decide how p95 is measured.
 
+**F2 + F2-FIX1 — CT acceptance (2026-10-13).** F2 commits `f6b6ee435` (INVENTORY 1.3.0, MOD-0173 owner step), `c580823ea`
+(TRACE 1.4.0, MOD-0174 owner step), `3b7056a6c`, `41256aeb8`, `120cf7666`; FIX1 `bc7f520e9`, `476f4f6e2`, `859bc6fcb`. F2 was put on CT
+HOLD for **O-F2-2**: `ExpiryHookScope.For` exempted `sourceModule == "MOD-0175"`, and `sourceModule` comes from the HTTP body
+(`MovementRequestReader.cs:97`) — any poster could skip FEFO / KF-C. FIX1 removes it; MOD-0175's movements are exempt by type only
+(measured: `QuarantineApplyEngine.cs:111`, `StockActionHandlers.cs:153` → STATUS_TRANSFER, SCRAP, SUPPLIER_RETURN, LOCATION_TRANSFER).
+CT re-measured: F2 Inventory **972/972**, FIX1 **979/979** (full run). CT sabotages (own): F2 — `Scrap` removed from the type exemption
+→ hook-scope test red (1); FIX1 — a variant bypass "any non-empty `sourceModule` skips the issue hook" → **18 of 150** expiry tests
+red; both restored, `git diff` empty. (A CT probe of `WAREHOUSE_TRANSFER` stayed green — it is never `AVAILABLE → none`, so the
+exemption entry is redundant, not a test gap.) Decisions: **O-F2-1** accepted (suggested dates in the TRACE 422 message; data on
+`createDateOverride` and the lot). **O-F2-3** accepted (signed KF-D success opens with F3). **O-F2-4** done by FIX1 (pack §8.3 /
+§8.3.2 / §8.3.4 aligned to CT-F1). **O-F2-5** accepted (`GOODS_ISSUE_PROD` from AVAILABLE is in scope). **O-FIX1-2 (p95 test flaky in
+the full suite on this machine):** the 50 ms budget stays; the test moves out of the default run behind `INVENTORY_PERF_TESTS=1`
+(explicit skip reason otherwise) and the CT runs it alone at each acceptance — first item of F3. Fast-forwarded into the MVP-1 branch;
+the owner's 5067 now enforces the FEFO issue rule (KF-B default RequireReason); KF-C / KF-D stay inactive until MDM serves the day fields.
+
 ## 20. Follow-up Items
 
 | ID | Item | Owner |
