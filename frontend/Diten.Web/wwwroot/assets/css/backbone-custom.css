@@ -5421,7 +5421,11 @@ form .diten-field:has(.is-invalid) ~ .invalid-tooltip {
    and ties this selector's specificity, so without a more specific focus entry
    here the icon room collapsed the instant the user clicked in — measured as the
    text jumping from 72px to 48px. */
+/* WP-LANE-GUARDS-02 (CT acceptance): a NATIVE <select class="form-select"> inside .diten-field (the stock-behaviour
+   panels, Product Legal Entity Scopes) needs the same room, or the glyph sits on the selected text and takes the
+   clicks on the select's left edge. Only the text side is set; the arrow side stays Bootstrap's. */
 .diten-field .form-control,
+.diten-field .form-select,
 .diten-field tags.diten-tags,
 .diten-field tags.diten-tags:focus-within,
 .diten-field tags.diten-tags.tagify--focus {

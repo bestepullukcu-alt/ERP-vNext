@@ -253,13 +253,28 @@ describe("WCN-FIX-03: the edges of the typed-text rule", () => {
     const f = field("plain");
     f.fp.config.onChange.push(() => { throw new Error("a page hook that fails"); });
     const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    /*
+     * WP-LANE-GUARDS-02 — the hook throws INSIDE an event listener (flatpickr's click / blur), so the try / catch
+     * below never sees it: jsdom reports it on `window`, and with no listener there vitest counts it as an unhandled
+     * error and fails the run. The expected failure is taken here, by its message, and counted; anything else passes.
+     */
+    const hookFailures = [];
+    const takeHookFailure = (event) => {
+      if (event.error && event.error.message === "a page hook that fails") { hookFailures.push(event.error); event.preventDefault(); }
+    };
+    window.addEventListener("error", takeHookFailure);
     try {
-      f.pick(2026, 0, 15);
-    } catch (error) { /* the page hook's own failure */ }
-    await Promise.resolve(); // the reader's typing is always a later task than the click
-    f.type("2026-02-31");
-    try { f.tab(); } catch (error) { /* the page hook fails again on the commit */ }
-    errors.mockRestore();
+      try {
+        f.pick(2026, 0, 15);
+      } catch (error) { /* the page hook's own failure */ }
+      await Promise.resolve(); // the reader's typing is always a later task than the click
+      f.type("2026-02-31");
+      try { f.tab(); } catch (error) { /* the page hook fails again on the commit */ }
+    } finally {
+      window.removeEventListener("error", takeHookFailure);
+      errors.mockRestore();
+    }
+    expect(hookFailures.length, "the page hook never failed — the case is not exercised").toBeGreaterThan(0);
     expect(f.el.value).toBe("");
     expect(f.box.classList.contains("is-invalid")).toBe(true);
   });

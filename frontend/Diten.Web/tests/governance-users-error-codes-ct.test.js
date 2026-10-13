@@ -55,7 +55,10 @@ const SENTENCE_OF = {
   USER_FIRST_NAME_REQUIRED: "ErrorUserFirstNameRequired",
   USER_FIRST_NAME_TOO_LONG: "ErrorUserFirstNameTooLong",
   USER_LAST_NAME_REQUIRED: "ErrorUserLastNameRequired",
-  USER_LAST_NAME_TOO_LONG: "ErrorUserLastNameTooLong"
+  USER_LAST_NAME_TOO_LONG: "ErrorUserLastNameTooLong",
+  // BL-529 FIX1 (7c7668acd) — no self-reset, and a reset that met a concurrent change; AuthService's UserErrorCodes.
+  USER_RESET_SELF: "ErrorUserResetSelf",
+  USER_RESET_CONFLICT: "ErrorUserResetConflict"
 };
 
 describe("each code has ITS sentence", () => {

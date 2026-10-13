@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const { PROCUREMENT, MAIN_SYNC_WHY, misnamedRows } = require("./main-sync-owners");
 
 /*
  * A3 — EVERY DIALOG IN THIS MODULE SPEAKS THE PRODUCT'S ONE VISUAL LANGUAGE (2026-08-24, owner decision (b)).
@@ -222,12 +223,23 @@ describe("eight dialogs, four moved and four dressed", () => {
     // THE RULE: `inputOptions` is opt-in, so only a caller that names it may pass it.
     // WP-WC-SHARED-UI-01 (M2) added the second one: Meetings' reassign-organizer dialog, modeled directly on
     // this module's own `openCreateInSource` (a select seeded through `didOpen`, same as this one).
+    // WP-LANE-GUARDS-02 — the two Procurement callers came with main (XMC-001): named with their owner, not ours to
+    // change. The list stays exact: a new caller, or one that stopped passing it, is red until this list changes too.
+    const MAIN_SYNC_INPUT_OPTIONS = {
+      "frontend/Diten.Web/wwwroot/assets/js/Procurement/InvoiceMatch/details.js": { owner: PROCUREMENT, why: MAIN_SYNC_WHY },
+      "frontend/Diten.Web/wwwroot/assets/js/Procurement/InvoiceMatch/index.js": { owner: PROCUREMENT, why: MAIN_SYNC_WHY }
+    };
     const passing = callers.filter((f) => /inputOptions/.test(fs.readFileSync(f, "utf8")));
-    expect(passing.map((f) => path.relative(repoRoot, f)).sort(),
+    expect(passing.map((f) => path.relative(repoRoot, f).split(path.sep).join("/")).sort(),
       "an unnamed caller started passing inputOptions").toEqual([
       "frontend/Diten.Web/wwwroot/assets/js/Meetings/form.js",
+      "frontend/Diten.Web/wwwroot/assets/js/Procurement/InvoiceMatch/details.js",
+      "frontend/Diten.Web/wwwroot/assets/js/Procurement/InvoiceMatch/index.js",
       "frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/app.js"
     ]);
+    expect(misnamedRows(MAIN_SYNC_INPUT_OPTIONS), "a main-sync row without its path's owner or the main-sync reason").toEqual([]);
+    expect(passing.map((f) => path.relative(repoRoot, f).split(path.sep).join("/")).filter((f) => /\/Procurement\//.test(f)).sort(),
+      "a Procurement caller is not on the main-sync list").toEqual(Object.keys(MAIN_SYNC_INPUT_OPTIONS).sort());
   });
 });
 
