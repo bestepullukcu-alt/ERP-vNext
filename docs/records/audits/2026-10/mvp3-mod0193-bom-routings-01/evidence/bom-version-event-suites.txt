@@ -1,0 +1,13 @@
+# feature/mvp3-bom-version-event @ c2b6ee6e2 vs origin/main 4aeae0671 — same machine, SDK 10.0.112, 2026-10-13T12:29:42Z
+
+| suite | branch | main | new red |
+|---|---|---|---|
+| architecture | 69/77 | 69/77 | 0 |
+| tenancy | 3/3 | 3/3 | 0 |
+| gateway | 110/111 | 110/111 | 0 |
+| web | 1433/1433 | 1433/1433 | 0 |
+| service (temporary Mongo 28117 + local RabbitMQ) | 82/82, 0 skipped | — | 0 |
+
+- architecture: same 8 reds as main, failure text byte-identical; test lists identical (TRX).
+- gateway: same single red, port lists identical (5063 x46, 5064 x62, 5065 x14 — 5065 is PR #136).
+- web, tenancy: identical test lists, all green.
