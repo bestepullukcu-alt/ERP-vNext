@@ -63,6 +63,11 @@ $services = @(
     @{ Key = "humancapital";       Port = 5063; Proj = "services\Diten.HumanCapitalService\src\Diten.HumanCapitalService.Api\Diten.HumanCapitalService.Api.csproj" },
     @{ Key = "talent";             Port = 5064; Proj = "services\Diten.TalentEcosystemService\src\Diten.TalentEcosystemService.Api\Diten.TalentEcosystemService.Api.csproj" },
     @{ Key = "procurement";        Port = 5065; Proj = "services\Diten.ProcurementService\src\Diten.ProcurementService.Api\Diten.ProcurementService.Api.csproj" },
+    # Yeni servisler (origin/main). CreateBuilder (IIS entegrasyonu dahil) -> in-process. Gateway bunlara 5067/5066/5070 ile gider.
+    # Prod config: config-SECRETS\<ad>\ (make-new-service-config.ps1 ile olusturulur). Her biri YENI Mongo DB kullanir.
+    @{ Key = "inventory";          Port = 5067; Proj = "services\Diten.InventoryService\src\Diten.InventoryService.Api\Diten.InventoryService.Api.csproj" },
+    @{ Key = "supplychain";        Port = 5066; Proj = "services\Diten.SupplyChainService\src\Diten.SupplyChainService.Api\Diten.SupplyChainService.Api.csproj" },
+    @{ Key = "manufacturing";      Port = 5070; Proj = "services\Diten.ManufacturingService\src\Diten.ManufacturingService.Api\Diten.ManufacturingService.Api.csproj" },
     @{ Key = "enterprisestrategy"; Port = 5004; Health = "/healthz"; Proj = "services\Diten.EnterpriseStrategyService\src\Diten.EnterpriseStrategy.API\Diten.WebAPI.csproj" },
     @{ Key = "gateway";            Port = 5000; Proj = "gateway\Diten.ApiGateway\Diten.ApiGateway.csproj" },
     @{ Key = "web";                Port = 5001; Proj = "frontend\Diten.Web\Diten.Web.csproj" }
