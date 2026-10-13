@@ -9,22 +9,29 @@ namespace Diten.InventoryService.Tests.Expiry;
 
 /// <summary>
 /// WP-0176-F2 — the posting cost of the expiry hooks (pack §11: p95 added ≤ 50 ms with 200 lots per SKU). The same world — 200 released lots
-/// of one SKU with AVAILABLE stock in one warehouse — is posted against the host WITH the hooks (<see cref="ExpiryApiFactory"/>) and the
-/// ledger's default "no hook" (<see cref="NoExpiryHookApiFactory"/>), through the real posting endpoint. Measured: a compliant issue (FEFO
-/// read + snapshot), a reasoned bypass (FEFO read + exception + snapshot) and a GOODS_RECEIPT_PO (minimum check).
+/// of one SKU with AVAILABLE stock in one warehouse — is built on the host WITH the hooks (<see cref="ExpiryApiFactory"/>) and on the ledger's
+/// default "no hook" host (<see cref="NoExpiryHookApiFactory"/>) and posted through the real endpoint. Measured: a compliant issue (FEFO read +
+/// snapshot), a reasoned bypass (FEFO read + exception + snapshot) and a GOODS_RECEIPT_PO (minimum check).
+/// <para>WP-0176-F2-FIX1 — the samples are INTERLEAVED (no-hook request, then hook request, per sample) and the class runs in a non-parallel
+/// collection. Measured at bc7f520e9: with the two sides measured one after the other, an environment stall of the shared test mongod during
+/// one phase shifted that whole phase (3 diagnostic full runs: compliant-issue p50 35.8 / 81.4 / 34.9 ms with the hooks, 16.6 / 15.5 / 15.6
+/// without; the candidate read itself p95 10–12 ms in all three) and the suite went red 3 of 6 runs although the code path did not change.
+/// Interleaving puts such a stall on both sides.</para>
 /// </summary>
+[Collection(ExpiryPerformanceCollection.Name)]
 public sealed class ExpiryHookPerformanceTests
 {
     private const int Lots = 200;
     private const int Samples = 60;
     private const int WarmUp = 8;
     private const double BudgetMs = 50;
+    private const string BypassReason = "Performans olcumu: FEFO disi bilincli cikis";
 
     private readonly ITestOutputHelper _output;
 
     public ExpiryHookPerformanceTests(ITestOutputHelper output) => _output = output;
 
-    private sealed record Measured(double Issue, double Bypass, double Receipt);
+    private sealed record World(ExpiryScenario S, List<string> Lots);
 
     private static double P95(List<double> values)
     {
@@ -32,7 +39,7 @@ public sealed class ExpiryHookPerformanceTests
         return sorted[(int)Math.Ceiling(0.95 * sorted.Count) - 1];
     }
 
-    private static async Task<Measured> MeasureAsync(ExpiryApiFactory factory)
+    private static async Task<World> BuildAsync(ExpiryApiFactory factory)
     {
         var s = new ExpiryScenario(factory);
         factory.ShelfLife[s.Ledger.Sku] = (null, null, 30);
@@ -45,48 +52,60 @@ public sealed class ExpiryHookPerformanceTests
             lots.Add(lot);
         }
 
-        async Task<List<double>> Run(Func<int, Dictionary<string, object?>> body)
-        {
-            var times = new List<double>();
-            for (var i = 0; i < WarmUp + Samples; i++)
-            {
-                var request = body(i);
-                var watch = Stopwatch.StartNew();
-                await s.Lots.PostAsync(request, 201);
-                watch.Stop();
-                if (i >= WarmUp) times.Add(watch.Elapsed.TotalMilliseconds);
-            }
+        return new World(s, lots);
+    }
 
-            return times;
+    private static async Task<double> TimeAsync(World w, Dictionary<string, object?> body)
+    {
+        var watch = Stopwatch.StartNew();
+        await w.S.Lots.PostAsync(body, 201);
+        watch.Stop();
+        return watch.Elapsed.TotalMilliseconds;
+    }
+
+    /// <summary>One phase, interleaved: per sample the no-hook request, then the hook request (same shape on each side's own world).</summary>
+    private static async Task<(List<double> Without, List<double> With)> PhaseAsync(World plain, World hooked, Func<World, int, Dictionary<string, object?>> body)
+    {
+        var without = new List<double>();
+        var with = new List<double>();
+        for (var i = 0; i < WarmUp + Samples; i++)
+        {
+            var a = await TimeAsync(plain, body(plain, i));
+            var b = await TimeAsync(hooked, body(hooked, i));
+            if (i < WarmUp) continue;
+            without.Add(a);
+            with.Add(b);
         }
 
-        var issue = await Run(_ => s.Lots.Issue("1", lots[0]));
-        var bypass = await Run(i =>
-        {
-            var b = s.Lots.Issue("1", lots[Lots - 1 - (i % 50)]);
-            b["fefoBypassReason"] = "Performans olcumu: FEFO disi bilincli cikis";
-            return b;
-        });
-        var receipt = await Run(i => s.Lots.Receipt("1", lots[i % Lots]));
-        return new Measured(P95(issue), P95(bypass), P95(receipt));
+        return (without, with);
     }
 
     [Fact]
     public async Task The_hooks_add_at_most_50_ms_p95_with_200_lots_per_SKU()
     {
-        Measured baseline, hooked;
-        using (var plain = new NoExpiryHookApiFactory()) baseline = await MeasureAsync(plain);
-        using (var hooks = new ExpiryApiFactory()) hooked = await MeasureAsync(hooks);
+        using var plainHost = new NoExpiryHookApiFactory();
+        using var hookHost = new ExpiryApiFactory();
+        var plain = await BuildAsync(plainHost);
+        var hooked = await BuildAsync(hookHost);
+
+        var issue = await PhaseAsync(plain, hooked, (w, _) => w.S.Lots.Issue("1", w.Lots[0]));
+        var bypass = await PhaseAsync(plain, hooked, (w, i) =>
+        {
+            var b = w.S.Lots.Issue("1", w.Lots[Lots - 1 - (i % 50)]);
+            b["fefoBypassReason"] = BypassReason;
+            return b;
+        });
+        var receipt = await PhaseAsync(plain, hooked, (w, i) => w.S.Lots.Receipt("1", w.Lots[i % Lots]));
 
         var rows = new[]
         {
-            ("GOODS_ISSUE_SALES compliant", baseline.Issue, hooked.Issue),
-            ("GOODS_ISSUE_SALES bypass + reason", baseline.Issue, hooked.Bypass),
-            ("GOODS_RECEIPT_PO (minimum check)", baseline.Receipt, hooked.Receipt)
+            ("GOODS_ISSUE_SALES compliant", P95(issue.Without), P95(issue.With)),
+            ("GOODS_ISSUE_SALES bypass + reason", P95(bypass.Without), P95(bypass.With)),
+            ("GOODS_RECEIPT_PO (minimum check)", P95(receipt.Without), P95(receipt.With))
         };
         foreach (var (name, without, with) in rows)
         {
-            _output.WriteLine($"P95 | {name} | lots={Lots} n={Samples} | no hook {without:F1} ms | hook {with:F1} ms | added {with - without:F1} ms");
+            _output.WriteLine($"P95 | {name} | lots={Lots} n={Samples} interleaved | no hook {without:F1} ms | hook {with:F1} ms | added {with - without:F1} ms");
         }
 
         Assert.All(rows, r => Assert.True(r.Item3 - r.Item2 <= BudgetMs, $"{r.Item1}: the hooks add {r.Item3 - r.Item2:F1} ms p95 (budget {BudgetMs} ms)."));
@@ -131,4 +150,11 @@ public sealed class ExpiryHookPerformanceTests
         Assert.Equal(20, stats["nReturned"].ToInt32());
         Assert.Equal(20, stats["totalDocsExamined"].ToInt32());
     }
+}
+
+/// <summary>Timing measurements run alone: xUnit starts a DisableParallelization collection after the parallel ones have finished.</summary>
+[CollectionDefinition(Name, DisableParallelization = true)]
+public sealed class ExpiryPerformanceCollection
+{
+    public const string Name = "expiry-performance (not parallel)";
 }
