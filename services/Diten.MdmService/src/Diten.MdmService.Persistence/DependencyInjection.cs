@@ -61,6 +61,10 @@ public static class DependencyInjection
         services.AddScoped<IBrandRepository, BrandRepository>();
         services.AddScoped<IProductRepository, ProductRepository>();
 
+        // WP-VW-W4 (W4-BE-b1) — the MOD-0023 outcome event inbox (one row per EventId). Approvable kinds use
+        // MongoWorkflowApprovalStore<T> (explicit tenant + CAS); W4-BE-b2 registers the competitor proposal's store.
+        services.AddScoped<IMdmEventInboxRepository, MdmEventInboxRepository>();
+
         return services;
     }
 
