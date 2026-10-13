@@ -27,7 +27,7 @@
                 @foreach (var (value, icon, tone) in new[] { ("AcceptedWithReason", "bx-check-circle", "success"), ("Fixed", "bx-wrench", "info"), ("Cancelled", "bx-x-circle", "secondary") })
                 {
                     <label class="form-check custom-option custom-option-basic d-flex gap-3 p-3 mb-2 border rounded">
-                        <input class="form-check-input mt-1" type="radio" name="ex-drawer-resolution" value="@value" />
+                        <input class="form-check-input mt-1 ms-0 flex-shrink-0" type="radio" name="ex-drawer-resolution" value="@value" />
                         <span class="d-flex flex-column">
                             <span class="fw-medium"><i class="bx @icon text-@tone me-1"></i>@Localizer["Expiry.Resolution." + value]</span>
                             <small class="text-muted">@Localizer["Expiry.Drawer.ResolutionHelp." + value]</small>

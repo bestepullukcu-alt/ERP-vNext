@@ -10,7 +10,7 @@
     const { t, esc } = ui;
     const tableEl = document.querySelector('.datatables-expiry-exceptions');
     const filterFields = [
-        { id: 'filterTab', key: 'tab', kind: 'single' },
+        { id: 'filterTab', key: 'tab', kind: 'text' }, // hidden: set by the tabs, never a select2
         { id: 'filterType', key: 'type', kind: 'single' },
         { id: 'filterStatus', key: 'status', kind: 'single' },
         { id: 'filterWarehouse', key: 'warehouseId', kind: 'single' },
@@ -92,10 +92,10 @@
                 ],
                 columnDefs: [
                     { targets: 0, className: 'control', searchable: false, orderable: false, responsivePriority: 2, render: () => '' },
-                    { targets: 1, render: (data, type, full) => `<a class="fw-medium font-monospace" href="${detailUrl(full.exceptionId)}">${esc(data)}</a>` },
+                    { targets: 1, render: (data, type, full) => `<a class="fw-medium font-monospace text-nowrap" href="${detailUrl(full.exceptionId)}">${esc(data)}</a>` },
                     { targets: 2, render: (data) => ui.typeBadge(data) },
                     { targets: 3, render: (data, type, full) => ui.productCell(full) },
-                    { targets: 4, render: (data, type, full) => `<div class="d-flex flex-column">${ui.lotLink({ lotId: full.lot?.lotId, lotNumber: full.lot?.lotNumber })}`
+                    { targets: 4, render: (data, type, full) => `<div class="d-flex flex-column text-nowrap">${ui.lotLink({ lotId: full.lot?.lotId, lotNumber: full.lot?.lotNumber })}`
                         + `<small class="text-muted">${esc(full.warehouseLabel || '—')}</small></div>` },
                     { targets: 5, render: (data) => `<small dir="ltr">${esc(ui.dateTime(data))}</small>` },
                     { targets: 6, render: (data, type, full) => ui.slaCell(full) },

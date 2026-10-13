@@ -95,6 +95,15 @@ window.ExpiryUi = (function () {
     const typeBadge = (type) => `<span class="badge ${TYPE[type] || 'bg-label-secondary'}">${esc(t('Expiry.Type.' + type) || type)}</span>`;
     const caseStatusBadge = (status) => `<span class="badge ${STATUS[status] || 'bg-label-secondary'}">${esc(t('Expiry.Status.' + status) || status)}</span>`;
     const resolutionText = (resolution) => (resolution ? t('Expiry.Resolution.' + resolution) || resolution : '');
+    /** A policy history row in the reader's words (the settings history and the evidence pack show it alike): field label, value + unit. */
+    const POLICY_MODES = ['fefoOutboundMode', 'belowMinRemainingMode', 'dateOverrideMode'];
+    const policyField = (field) => (String(field).startsWith('slaHours.') ? t('Expiry.Policy.SlaOf', t('Expiry.Type.' + field.slice(9)))
+        : t('Expiry.Policy.Field.' + field) || field);
+    const policyValue = (field, value) => {
+        if (value === null || value === undefined || value === '') return '—';
+        if (POLICY_MODES.includes(field)) return t('Expiry.Policy.Mode.' + value) || value;
+        return String(field).startsWith('slaHours.') ? t('Expiry.Policy.Hours', value) : t('Expiry.Common.Days', value);
+    };
     const dateTime = (wire) => {
         if (!wire) return '';
         const d = new Date(wire);
@@ -217,6 +226,6 @@ window.ExpiryUi = (function () {
     return {
         t, has, can, esc, qty, date, byId, get, showError, hideError, severityBadge, reasonBadge, statusCell, amount, unit, productCell, lotLink, orderUrl, shelfBar, loadWarehouses, rowActions,
         // F5
-        call, write, newKey, codeOf, errorText, typeBadge, caseStatusBadge, resolutionText, dateTime, duration, slaCell, person, openModal
+        call, write, newKey, codeOf, errorText, typeBadge, caseStatusBadge, resolutionText, policyField, policyValue, dateTime, duration, slaCell, person, openModal
     };
 })();

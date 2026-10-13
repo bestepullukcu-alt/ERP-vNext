@@ -33,12 +33,8 @@
             : t('Expiry.Policy.UpdatedBy', ui.dateTime(p.updatedAtUtc), ui.person(p.updatedBy));
     };
 
-    const label = (field) => (field.startsWith('slaHours.') ? t('Expiry.Policy.SlaOf', t('Expiry.Type.' + field.slice(9))) : t('Expiry.Policy.Field.' + field));
-    const shown = (field, value) => {
-        if (value === null || value === undefined || value === '') return '—';
-        if (MODES.includes(field)) return t('Expiry.Policy.Mode.' + value) || value;
-        return field.startsWith('slaHours.') ? t('Expiry.Policy.Hours', value) : t('Expiry.Common.Days', value);
-    };
+    const label = ui.policyField;
+    const shown = ui.policyValue;
     const diff = () => {
         const before = state.policy;
         const after = read();

@@ -55,7 +55,7 @@
         ui.byId('ex-ev-policy-count').textContent = ui.qty(changes.length);
         ui.byId('ex-ev-policy').querySelector('tbody').innerHTML = changes.length
             ? changes.map((h) => `<tr><td><small dir="ltr">${esc(ui.dateTime(h.changedAtUtc))}</small><br><small class="text-muted">${esc(ui.person(h.changedBy))}</small></td>`
-                + `<td>${esc(h.field)}</td><td>${esc(h.oldValue ?? '—')} → <strong>${esc(h.newValue ?? '—')}</strong></td><td class="small">${esc(h.reason)}</td></tr>`).join('')
+                + `<td>${esc(ui.policyField(h.field))}</td><td>${esc(ui.policyValue(h.field, h.oldValue))} → <strong>${esc(ui.policyValue(h.field, h.newValue))}</strong></td><td class="small">${esc(h.reason)}</td></tr>`).join('')
             : empty(4, 'Expiry.Evidence.NoPolicyChanges');
 
         const bypasses = p.fefoBypasses || [];
