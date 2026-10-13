@@ -36,17 +36,13 @@ public sealed class PasswordDoorRateLimiter : IDisposable
     // address would lock the victim out). FIX4 item 1 — the coarse ceiling is per TENANT on the tenant doors (FIX3's one
     // bucket for everybody let ~5 junk requests a second close every tenant's sign-in), per door on the platform door: 300
     // a minute lets a 3,000-person tenant sign in within ten minutes behind a single proxy; the CPU is guarded separately
-    // (DefaultConcurrentVerifications), so one tenant's flood takes its own minute, not the others'.
+    // (PasswordWorkGate, FIX5 addendum), so one tenant's flood takes its own minute, not the others'.
     public const int DefaultUnidentifiedPerMinute = 300;
     public static readonly TimeSpan UnidentifiedWindow = TimeSpan.FromMinutes(1);
     // FIX4 item 1 — the set-password link doors carry no tenant before the store is read (the link resolves it), so without
     // client identity they count per ADDRESS bucket — but 60 a minute, not FIX2's 5 a quarter-hour: holding one person's link
     // shut takes a request a second, sustained, while a flood of random addresses spreads over 4096 buckets.
     public const int DefaultUnidentifiedLinkPerMinute = 60;
-    // FIX4 item 1 — at most this many sign-ins verify a BCrypt hash at once in this process (the CPU guard), with a short
-    // queue; a full queue is a 429. BCrypt is CPU-bound: one verification per core.
-    public static readonly int DefaultConcurrentVerifications = Math.Max(2, Environment.ProcessorCount);
-    public static int DefaultVerificationQueue => 2 * DefaultConcurrentVerifications;
     public static readonly TimeSpan DefaultWindow = TimeSpan.FromMinutes(15);
 
     /// <summary>BL-529 FIX6 — how many per-address buckets the set-password link has while clients cannot be told apart.</summary>
@@ -55,10 +51,12 @@ public sealed class PasswordDoorRateLimiter : IDisposable
     private readonly PartitionedRateLimiter<string> _perAddress;
     private readonly PartitionedRateLimiter<string> _perClient;
     private readonly PartitionedRateLimiter<string> _loginPerClient;
-    private readonly PartitionedRateLimiter<string> _loginFailures;
+    // FIX5 addendum (small item) — the wrong-attempt count keeps its window's start, so a refusal says the time LEFT.
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<string, FailureWindow> _loginFailures = new();
+    private readonly object _failuresLock = new();
+    private const int FailureWindowsBeforePrune = 4096;
     private readonly PartitionedRateLimiter<string> _unidentified;
     private readonly PartitionedRateLimiter<string> _linkUnidentified;
-    private readonly ConcurrencyLimiter _verifications;
 
     public PasswordDoorRateLimiter()
         : this(DefaultPerAddressLimit, DefaultPerClientLimit, DefaultWindow)
@@ -71,15 +69,8 @@ public sealed class PasswordDoorRateLimiter : IDisposable
         _perAddress = Fixed(perAddressLimit, window);
         _perClient = Fixed(perClientLimit, window);
         _loginPerClient = Fixed(DefaultLoginPerClientLimit, window);
-        _loginFailures = Fixed(DefaultLoginFailuresPerClientLimit, window);
         _unidentified = Fixed(DefaultUnidentifiedPerMinute, UnidentifiedWindow);
         _linkUnidentified = Fixed(DefaultUnidentifiedLinkPerMinute, UnidentifiedWindow);
-        _verifications = new ConcurrencyLimiter(new ConcurrencyLimiterOptions
-        {
-            PermitLimit = DefaultConcurrentVerifications,
-            QueueLimit = DefaultVerificationQueue,
-            QueueProcessingOrder = QueueProcessingOrder.OldestFirst
-        });
     }
 
     public TimeSpan Window { get; }
@@ -125,13 +116,17 @@ public sealed class PasswordDoorRateLimiter : IDisposable
     /// 64 random bytes, not this count, are what keep it from being guessed. Per client when clients can be told apart.
     /// FIX3 item 3 — when they CANNOT, no per-address count any more (5 junk requests for a victim's address locked the
     /// victim's real link out for 15 minutes, again and again): the coarse ceiling for everybody instead. True = go on;
-    /// false = 429.</summary>
-    public bool TryAcquireTenantLinkDoor(TenantLinkDoor door, string client, string? email, bool countPerClient)
+    /// false = 429.
+    /// FIX5 addendum (small item) — the answer carries the window that refused: the per-minute address bucket says 60 s, not
+    /// the per-client 15 minutes.</summary>
+    public DoorVerdict TryAcquireTenantLinkDoor(TenantLinkDoor door, string client, string? email, bool countPerClient)
     {
         var prefix = door == TenantLinkDoor.Check ? "tenant-link-check" : "tenant-link-set";
         return countPerClient
-            ? TryAcquire(_perClient, $"{prefix}|client|{client}")
-            : TryAcquire(_linkUnidentified, $"{prefix}|address-bucket|{AddressBucket(email)}");
+            ? (TryAcquire(_perClient, $"{prefix}|client|{client}") ? DoorVerdict.Go : new(false, Window))
+            : (TryAcquire(_linkUnidentified, $"{prefix}|address-bucket|{AddressBucket(email)}")
+                ? DoorVerdict.Go
+                : new(false, UnidentifiedWindow));
     }
 
     /// <summary>A door's answer: go on, or 429 with the length of the window that refused (FIX4 item 4: Retry-After says
@@ -152,7 +147,7 @@ public sealed class PasswordDoorRateLimiter : IDisposable
         if (countPerClient)
         {
             if (!TryAcquire(_loginPerClient, $"{prefix}|client|{client}")) return new(false, Window);
-            return FailuresUsedUp(prefix, client) ? new(false, Window) : DoorVerdict.Go;
+            return FailuresLeftFor(prefix, client) is { } left ? new(false, left) : DoorVerdict.Go;
         }
 
         var scope = door == LoginDoor.Platform ? "platform" : $"tenant:{(tenantId is { } id ? id.ToString("N") : "none")}";
@@ -161,16 +156,36 @@ public sealed class PasswordDoorRateLimiter : IDisposable
 
     /// <summary>FIX4 item 4 — a WRONG attempt (the door answered 401), counted per client AFTER verification: a success never
     /// uses this count up. Without client identity there is no client to count.</summary>
-    public void RecordLoginFailure(LoginDoor door, string client) => TryAcquire(_loginFailures, $"{Prefix(door)}|failures|client|{client}");
+    public void RecordLoginFailure(LoginDoor door, string client)
+    {
+        var key = Key($"{Prefix(door)}|failures|client|{client}");
+        var now = DateTime.UtcNow;
+        lock (_failuresLock)
+        {
+            if (_loginFailures.Count >= FailureWindowsBeforePrune)
+            {
+                foreach (var ended in _loginFailures.Where(entry => entry.Value.EndsAt <= now).Select(entry => entry.Key).ToList())
+                    _loginFailures.TryRemove(ended, out _);
+            }
 
-    private bool FailuresUsedUp(string prefix, string client) =>
-        _loginFailures.GetStatistics(Key($"{prefix}|failures|client|{client}")) is { CurrentAvailablePermits: <= 0 };
+            _loginFailures[key] = _loginFailures.TryGetValue(key, out var open) && open.EndsAt > now
+                ? open with { Count = open.Count + 1 }
+                : new FailureWindow(now + Window, 1);
+        }
+    }
 
-    /// <summary>FIX4 item 1 — the CPU guard: at most <see cref="DefaultConcurrentVerifications"/> sign-ins verify at once, the
-    /// next <see cref="DefaultVerificationQueue"/> wait their turn, any more are refused (lease not acquired → 429). Dispose
-    /// the lease when the request is done.</summary>
-    public ValueTask<RateLimitLease> AcquireVerificationAsync(CancellationToken cancellationToken)
-        => _verifications.AcquireAsync(1, cancellationToken);
+    /// <summary>FIX5 addendum (small item) — the time left in the client's wrong-attempt window when it is used up, else
+    /// null.</summary>
+    private TimeSpan? FailuresLeftFor(string prefix, string client)
+    {
+        var now = DateTime.UtcNow;
+        return _loginFailures.TryGetValue(Key($"{prefix}|failures|client|{client}"), out var open)
+               && open.EndsAt > now && open.Count >= DefaultLoginFailuresPerClientLimit
+            ? open.EndsAt - now
+            : null;
+    }
+
+    private readonly record struct FailureWindow(DateTime EndsAt, int Count);
 
     private static string Prefix(LoginDoor door) => door switch
     {
@@ -193,10 +208,8 @@ public sealed class PasswordDoorRateLimiter : IDisposable
         _perAddress.Dispose();
         _perClient.Dispose();
         _loginPerClient.Dispose();
-        _loginFailures.Dispose();
         _unidentified.Dispose();
         _linkUnidentified.Dispose();
-        _verifications.Dispose();
     }
 
     private static PartitionedRateLimiter<string> Fixed(int permits, TimeSpan window) =>

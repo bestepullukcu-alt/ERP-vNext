@@ -187,8 +187,8 @@ internal sealed class InMemoryUserRepository : IUserRepository
     public Task<bool> TryClaimSignInAsync(Guid userId, Guid tenantId, int maxFailedAttempts, CancellationToken ct)
     {
         var user = _users.FirstOrDefault(u => u.Id == userId && u.TenantId == tenantId && !u.IsDeleted);
-        if (user is null || user.LockoutEnd > DateTime.UtcNow || user.FailedLoginAttempts >= maxFailedAttempts)
-            return Task.FromResult(false);
+        if (user is null || user.LockoutEnd > DateTime.UtcNow)
+            return Task.FromResult(false); // FIX5 — "not locked" is the whole condition
         user.ClearLockout();
         return Task.FromResult(true);
     }
@@ -198,16 +198,15 @@ internal sealed class InMemoryUserRepository : IUserRepository
     {
         var user = _users.FirstOrDefault(u => u.Id == userId && u.TenantId == tenantId && !u.IsDeleted);
         if (user is null) return Task.FromResult(new LoginFailureOutcome(0, null));
-        // WP-USERS-ROLES-CLOSE-FIX1 FIX3 — as the store: a running lock is not extended (the failure is only counted), and
-        // the outcome says when THIS failure started a lockout.
+        // WP-USERS-ROLES-CLOSE-FIX1 FIX5 — as the store: a locked account's attempt is not counted; the failure that reaches the
+        // threshold sets the lock and starts the count over.
         if (user.LockoutEnd is { } end && end > DateTime.UtcNow)
-        {
-            user.RecordLoginFailure(int.MaxValue, 0);
+            return Task.FromResult(new LoginFailureOutcome(0, null));
+        user.RecordLoginFailure(int.MaxValue, 0);
+        if (user.FailedLoginAttempts < maxFailedAttempts)
             return Task.FromResult(new LoginFailureOutcome(user.FailedLoginAttempts, user.LockoutEnd));
-        }
-        user.RecordLoginFailure(maxFailedAttempts, lockoutDurationMinutes);
-        return Task.FromResult(new LoginFailureOutcome(user.FailedLoginAttempts, user.LockoutEnd,
-            LockoutStarted: user.FailedLoginAttempts >= maxFailedAttempts));
+        user.LockOut(lockoutDurationMinutes);
+        return Task.FromResult(new LoginFailureOutcome(0, user.LockoutEnd, LockoutStarted: true));
     }
 
     public Task<bool> SetPlatformActorTypeAsync(Guid userId, Guid tenantId, string actorType, CancellationToken ct)

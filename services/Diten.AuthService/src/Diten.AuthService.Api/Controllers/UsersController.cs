@@ -217,10 +217,11 @@ public sealed class UsersController : CustomBaseController
     {
         // WP-USERS-ROLES-CLOSE-FIX1 FIX2 item 4 — the redemption is limited too (it had no limit), with its own prefix.
         var asking = clientAddress.Identify(HttpContext);
-        if (!passwordDoors.TryAcquireTenantLinkDoor(Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.TenantLinkDoor.Redeem,
-                asking.Key, request.Email, asking.Identified))
+        var door = passwordDoors.TryAcquireTenantLinkDoor(Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.TenantLinkDoor.Redeem,
+            asking.Key, request.Email, asking.Identified);
+        if (!door.Allowed)
         {
-            return TenantLinkDoorTooManyRequests(passwordDoors);
+            return TenantLinkDoorTooManyRequests(door.RetryAfter);
         }
 
         var result = await _mediator.Send(new SetTenantPasswordCommand(request.Email, request.Token, request.NewPassword), ct);
@@ -244,10 +245,11 @@ public sealed class UsersController : CustomBaseController
     {
         // FIX2 item 4 — counted FIRST (every request, the valid link's too), before the store is read.
         var asking = clientAddress.Identify(HttpContext);
-        if (!passwordDoors.TryAcquireTenantLinkDoor(Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.TenantLinkDoor.Check,
-                asking.Key, request.Email, asking.Identified))
+        var door = passwordDoors.TryAcquireTenantLinkDoor(Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.TenantLinkDoor.Check,
+            asking.Key, request.Email, asking.Identified);
+        if (!door.Allowed)
         {
-            return TenantLinkDoorTooManyRequests(passwordDoors);
+            return TenantLinkDoorTooManyRequests(door.RetryAfter);
         }
 
         return CreateActionResultInstance(await _mediator.Send(new CheckTenantPasswordLinkQuery(request.Email, request.Token), ct));
@@ -255,9 +257,10 @@ public sealed class UsersController : CustomBaseController
 
     internal const long AnonymousLinkBodyLimit = 8 * 1024;
 
-    private IActionResult TenantLinkDoorTooManyRequests(Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter passwordDoors)
+    // FIX5 addendum (small item) — Retry-After is the window that refused: 60 s for the per-minute address bucket, not 900.
+    private IActionResult TenantLinkDoorTooManyRequests(TimeSpan retryAfter)
     {
-        Response.Headers.RetryAfter = ((int)passwordDoors.Window.TotalSeconds).ToString(System.Globalization.CultureInfo.InvariantCulture);
+        Response.Headers.RetryAfter = ((int)Math.Ceiling(retryAfter.TotalSeconds)).ToString(System.Globalization.CultureInfo.InvariantCulture);
         return CreateActionResultInstance(Response<NoContent>.Fail(
             "Too many requests. Try again later.",
             [new ResponseError(AuthRefusalCodes.TooManyRequests)],

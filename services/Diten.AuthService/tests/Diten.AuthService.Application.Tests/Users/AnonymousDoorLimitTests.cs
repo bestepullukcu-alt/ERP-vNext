@@ -1,5 +1,6 @@
 using Diten.AuthService.Application.Common.Services;
 using Diten.AuthService.Infrastructure.Security;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Diten.AuthService.Application.Tests.Users;
 
@@ -20,10 +21,28 @@ public sealed class AnonymousDoorLimitTests
         using var doors = new PasswordDoorRateLimiter();
 
         for (var i = 0; i < 4 * PasswordDoorRateLimiter.DefaultPerAddressLimit; i++)
-            Assert.True(doors.TryAcquireTenantLinkDoor(PasswordDoorRateLimiter.TenantLinkDoor.Check, "proxy", "victim@acme.test", countPerClient: false));
+            Assert.True(doors.TryAcquireTenantLinkDoor(PasswordDoorRateLimiter.TenantLinkDoor.Check, "proxy", "victim@acme.test", countPerClient: false).Allowed);
 
-        Assert.True(doors.TryAcquireTenantLinkDoor(PasswordDoorRateLimiter.TenantLinkDoor.Check, "proxy", "victim@acme.test", countPerClient: false));
-        Assert.True(doors.TryAcquireTenantLinkDoor(PasswordDoorRateLimiter.TenantLinkDoor.Redeem, "proxy", "victim@acme.test", countPerClient: false));
+        Assert.True(doors.TryAcquireTenantLinkDoor(PasswordDoorRateLimiter.TenantLinkDoor.Check, "proxy", "victim@acme.test", countPerClient: false).Allowed);
+        Assert.True(doors.TryAcquireTenantLinkDoor(PasswordDoorRateLimiter.TenantLinkDoor.Redeem, "proxy", "victim@acme.test", countPerClient: false).Allowed);
+    }
+
+    /// <summary>FIX5 addendum (small item) — a link door refused by the per-minute address bucket says that minute (60 s),
+    /// not the per-client quarter-hour (900 s) it said before; the per-client refusal says its own window.</summary>
+    [Fact]
+    public void A_refused_link_door_says_the_window_that_refused_it()
+    {
+        using var doors = new PasswordDoorRateLimiter();
+
+        for (var i = 0; i < PasswordDoorRateLimiter.DefaultUnidentifiedLinkPerMinute; i++)
+            Assert.True(doors.TryAcquireTenantLinkDoor(PasswordDoorRateLimiter.TenantLinkDoor.Check, "proxy", "victim@acme.test", countPerClient: false).Allowed);
+        var bucket = doors.TryAcquireTenantLinkDoor(PasswordDoorRateLimiter.TenantLinkDoor.Check, "proxy", "victim@acme.test", countPerClient: false);
+        Assert.Equal((false, PasswordDoorRateLimiter.UnidentifiedWindow), (bucket.Allowed, bucket.RetryAfter));
+
+        for (var i = 0; i < PasswordDoorRateLimiter.DefaultPerClientLimit; i++)
+            Assert.True(doors.TryAcquireTenantLinkDoor(PasswordDoorRateLimiter.TenantLinkDoor.Redeem, "10.0.0.9", "a@acme.test", countPerClient: true).Allowed);
+        var client = doors.TryAcquireTenantLinkDoor(PasswordDoorRateLimiter.TenantLinkDoor.Redeem, "10.0.0.9", "a@acme.test", countPerClient: true);
+        Assert.Equal((false, doors.Window), (client.Allowed, client.RetryAfter));
     }
 
     /// <summary>FIX4 item 1 — without client identity the coarse ceiling is per TENANT on the tenant doors: one tenant's flood
@@ -46,7 +65,7 @@ public sealed class AnonymousDoorLimitTests
 
     /// <summary>FIX4 item 4 — with client identity every attempt counts against a high ceiling (an office behind one NAT signs
     /// in all morning), and only the WRONG attempts against the low one: 31 successful sign-ins never refuse the client;
-    /// 30 wrong ones do, for the client's window.</summary>
+    /// 30 wrong ones do, for what is LEFT of the client's window (FIX5 addendum: the time left, not the whole window).</summary>
     [Fact]
     public void With_client_identity_only_wrong_attempts_use_up_the_guessing_count()
     {
@@ -60,8 +79,27 @@ public sealed class AnonymousDoorLimitTests
 
         var refused = doors.TryAcquireLoginDoor(PasswordDoorRateLimiter.LoginDoor.Tenant, "10.0.0.2", countPerClient: true, null);
         Assert.False(refused.Allowed);
-        Assert.Equal(doors.Window, refused.RetryAfter);
+        Assert.InRange(refused.RetryAfter, doors.Window - TimeSpan.FromSeconds(30), doors.Window);
         Assert.True(doors.TryAcquireLoginDoor(PasswordDoorRateLimiter.LoginDoor.Tenant, "10.0.0.1", countPerClient: true, null).Allowed);
+    }
+
+    /// <summary>FIX5 addendum (small item) — the wrong-attempt refusal says the time LEFT in the window opened by the client's
+    /// first wrong attempt: a 2-second window refused after 1.2 s says at most 0.8 s, and once it ends the client is let in.</summary>
+    [Fact]
+    public async Task The_wrong_attempt_refusal_says_the_time_left_and_lets_the_client_in_when_the_window_ends()
+    {
+        using var doors = new PasswordDoorRateLimiter(PasswordDoorRateLimiter.DefaultPerAddressLimit,
+            PasswordDoorRateLimiter.DefaultPerClientLimit, TimeSpan.FromSeconds(2));
+        for (var i = 0; i < PasswordDoorRateLimiter.DefaultLoginFailuresPerClientLimit; i++)
+            doors.RecordLoginFailure(PasswordDoorRateLimiter.LoginDoor.Tenant, "10.0.0.3");
+
+        await Task.Delay(TimeSpan.FromMilliseconds(1200));
+        var refused = doors.TryAcquireLoginDoor(PasswordDoorRateLimiter.LoginDoor.Tenant, "10.0.0.3", countPerClient: true, null);
+        Assert.False(refused.Allowed);
+        Assert.InRange(refused.RetryAfter, TimeSpan.FromMilliseconds(1), TimeSpan.FromMilliseconds(800));
+
+        await Task.Delay(refused.RetryAfter + TimeSpan.FromMilliseconds(100));
+        Assert.True(doors.TryAcquireLoginDoor(PasswordDoorRateLimiter.LoginDoor.Tenant, "10.0.0.3", countPerClient: true, null).Allowed);
     }
 
     [Fact]
@@ -76,32 +114,90 @@ public sealed class AnonymousDoorLimitTests
         Assert.True(doors.TryAcquireLoginDoor(PasswordDoorRateLimiter.LoginDoor.Platform, "10.0.0.2", countPerClient: true, null).Allowed);
     }
 
-    /// <summary>FIX4 item 1 — the CPU guard: at most <c>DefaultConcurrentVerifications</c> verifications at once, a short queue,
-    /// and past the queue no slot (the door answers 429); a slot that is given back lets a waiting one in.</summary>
+    /// <summary>FIX5 addendum item 1 — the CPU guard is the password hasher's (<see cref="PasswordWorkGate"/>): at most
+    /// <c>Slots</c> pieces of work at once, at most <c>QueueLength</c> waiting, each refused once it has waited
+    /// <c>QueueTimeout</c>; past the queue the refusal is immediate; a slot given back lets a waiting one in.</summary>
     [Fact]
-    public async Task The_verification_slots_are_limited_with_a_short_queue()
+    public async Task The_password_work_slots_are_limited_with_a_short_queue_that_times_out()
     {
-        using var doors = new PasswordDoorRateLimiter();
-        var held = new List<System.Threading.RateLimiting.RateLimitLease>();
-        for (var i = 0; i < PasswordDoorRateLimiter.DefaultConcurrentVerifications; i++)
+        using var gate = new PasswordWorkGate(slots: 2, queueLength: 2, queueTimeout: TimeSpan.FromMilliseconds(300));
+        var held = new[] { gate.Enter(), gate.Enter() };
+
+        // Waited its turn, then refused — on a task, so a queue without a timeout fails here instead of hanging the run.
+        var timer = System.Diagnostics.Stopwatch.StartNew();
+        var waited = Task.Run(() => gate.Enter());
+        try
         {
-            var lease = await doors.AcquireVerificationAsync(CancellationToken.None);
-            Assert.True(lease.IsAcquired);
-            held.Add(lease);
+            await Assert.ThrowsAsync<Diten.AuthService.Application.Common.Exceptions.PasswordWorkCapacityExceededException>(
+                () => waited.WaitAsync(TimeSpan.FromSeconds(5)));
         }
-        var queued = Enumerable.Range(0, PasswordDoorRateLimiter.DefaultVerificationQueue)
-            .Select(_ => doors.AcquireVerificationAsync(CancellationToken.None).AsTask()).ToList();
-        Assert.All(queued, task => Assert.False(task.IsCompleted));
+        finally
+        {
+            if (!waited.IsCompleted) { foreach (var slot in held) slot.Dispose(); (await waited).Dispose(); }
+        }
+        Assert.InRange(timer.Elapsed, TimeSpan.FromMilliseconds(250), TimeSpan.FromSeconds(5));
 
-        using var refused = await doors.AcquireVerificationAsync(CancellationToken.None);
-        Assert.False(refused.IsAcquired);
+        using var slowGate = new PasswordWorkGate(slots: 1, queueLength: 2, queueTimeout: TimeSpan.FromSeconds(10));
+        var slow = slowGate.Enter();
+        using var started = new CountdownEvent(2);
+        var queued = Enumerable.Range(0, 2).Select(_ => Task.Run(() => { started.Signal(); return slowGate.Enter(); })).ToList();
+        Assert.True(started.Wait(TimeSpan.FromSeconds(5)));
+        await Task.Delay(100);
+        timer.Restart();
+        Assert.Throws<Diten.AuthService.Application.Common.Exceptions.PasswordWorkCapacityExceededException>(() => slowGate.Enter());
+        Assert.True(timer.Elapsed < TimeSpan.FromSeconds(2), "past the queue the refusal does not wait");
 
-        held[0].Dispose();
-        var first = await queued[0].WaitAsync(TimeSpan.FromSeconds(5));
-        Assert.True(first.IsAcquired);
-        first.Dispose();
-        foreach (var lease in held.Skip(1)) lease.Dispose();
-        foreach (var task in queued.Skip(1)) (await task.WaitAsync(TimeSpan.FromSeconds(5))).Dispose();
+        slow.Dispose();
+        var first = await Task.WhenAny(queued).WaitAsync(TimeSpan.FromSeconds(5));
+        (await first).Dispose();
+        foreach (var task in queued.Where(task => task != first)) (await task.WaitAsync(TimeSpan.FromSeconds(5))).Dispose();
+        foreach (var slot in held) slot.Dispose();
+    }
+
+    /// <summary>FIX5 addendum item 1 — THE DOOR'S FILTER TAKES NO PASSWORD-WORK SLOT. Everything after the filter (reading and
+    /// binding the body, the Platform call, the store) runs inside <c>next()</c>; with a gate of ONE slot, <c>next()</c> takes
+    /// it at once — had the filter taken it first (FIX4: before the body was read, held for the whole request; a trickled body
+    /// held it ~34 s), <c>next()</c> would be refused. Measured on the filter itself: the test server did not start the
+    /// pipeline before a trickled body was complete, so an HTTP trickle test could not tell the two apart (its sabotage stayed
+    /// green).</summary>
+    [Fact]
+    public async Task The_door_filter_takes_no_password_work_slot_before_the_request_is_bound()
+    {
+        using var gate = new PasswordWorkGate(slots: 1, queueLength: 0, queueTimeout: TimeSpan.FromMilliseconds(10));
+        using var doors = new PasswordDoorRateLimiter();
+        var services = new Microsoft.Extensions.DependencyInjection.ServiceCollection()
+            .AddSingleton(gate).AddSingleton(doors).AddSingleton(new ClientAddressResolver([]))
+            .BuildServiceProvider();
+        var http = new Microsoft.AspNetCore.Http.DefaultHttpContext { RequestServices = services };
+        var action = new Microsoft.AspNetCore.Mvc.ActionContext(http, new Microsoft.AspNetCore.Routing.RouteData(),
+            new Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor());
+        var executing = new Microsoft.AspNetCore.Mvc.Filters.ResourceExecutingContext(action,
+            new List<Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata>(), new List<Microsoft.AspNetCore.Mvc.ModelBinding.IValueProviderFactory>());
+        var filter = new Diten.AuthService.Api.Controllers.Common.AnonymousDoorLimitAttribute(PasswordDoorRateLimiter.LoginDoor.Tenant);
+
+        var slotFreeInsideNext = false;
+        await filter.OnResourceExecutionAsync(executing, () =>
+        {
+            using (gate.Enter()) slotFreeInsideNext = true; // throws if the filter holds the only slot
+            return Task.FromResult(new Microsoft.AspNetCore.Mvc.Filters.ResourceExecutedContext(action,
+                new List<Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata>()));
+        });
+
+        Assert.True(slotFreeInsideNext);
+    }
+
+    /// <summary>FIX5 addendum item 1 — the production default waits at most 2 s, and the production hasher goes through it.</summary>
+    [Fact]
+    public void The_production_gate_waits_two_seconds_and_bounds_the_hasher()
+    {
+        using var gate = new PasswordWorkGate();
+        Assert.Equal(TimeSpan.FromSeconds(2), gate.QueueTimeout);
+        Assert.Equal(Math.Max(2, Environment.ProcessorCount), gate.Slots);
+
+        using var shut = new PasswordWorkGate(slots: 1, queueLength: 0, queueTimeout: TimeSpan.FromMilliseconds(10));
+        using var held = shut.Enter();
+        var hasher = new BoundedPasswordHasher(new Diten.AuthService.Infrastructure.Services.PasswordHasher(), shut);
+        Assert.Throws<Diten.AuthService.Application.Common.Exceptions.PasswordWorkCapacityExceededException>(() => hasher.Verify("x", "y"));
     }
 
     /// <summary>FIX4 item 2 — the platform forgot-password door without client identity: fresh addresses each time meet the

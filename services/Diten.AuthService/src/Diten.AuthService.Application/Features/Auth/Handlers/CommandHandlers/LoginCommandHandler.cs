@@ -116,9 +116,9 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Response
         var passwordMatches = _passwordHasher.Verify(request.Password, user.PasswordHash);
         if (IsLocked(user))
         {
-            // The password was verified (the same time either way) and its result is thrown away: locked is locked.
+            // The password was verified (the same time either way) and its result is thrown away: locked is locked. FIX5 —
+            // the attempt is AUDITED, not counted: it neither extends the lock nor is carried past it (Identity's model).
             await _authAuditService.WriteAsync("tenant_login_blocked_by_lockout", user.Id, _tenantContext.TenantId, "{}", ct);
-            await HandleLoginFailure(user, settings, ct);
             return InvalidCredentials();
         }
 
@@ -142,7 +142,9 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Response
         // refused and counted like them.
         if (!await _userRepository.TryClaimSignInAsync(user.Id, _tenantContext.TenantId, settings.MaxFailedLoginAttempts, ct))
         {
-            await HandleLoginFailure(user, settings, ct);
+            // FIX5 — the stored row was locked meanwhile (parallel wrong guesses reached the threshold): this attempt is the
+            // locked account's — audited, not counted.
+            await _authAuditService.WriteAsync("tenant_login_blocked_by_lockout", user.Id, _tenantContext.TenantId, "{}", ct);
             return InvalidCredentials();
         }
 

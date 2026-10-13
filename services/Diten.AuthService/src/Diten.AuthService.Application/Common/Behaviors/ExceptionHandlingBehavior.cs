@@ -49,6 +49,17 @@ public sealed class ExceptionHandlingBehavior<TRequest, TResponse> : IPipelineBe
 
             throw;
         }
+        catch (Exceptions.PasswordWorkCapacityExceededException capacity)
+        {
+            // WP-USERS-ROLES-CLOSE-FIX1 FIX5 addendum item 1 — the password-work gate is full: the coded 429, not the 500 below.
+            var busy = TryCreateFailureResponse(capacity.Message, [new ResponseError(AuthRefusalCodes.TooManyRequests)], 429);
+            if (busy is not null)
+            {
+                return busy;
+            }
+
+            throw;
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unhandled exception for request {RequestType}", typeof(TRequest).Name);

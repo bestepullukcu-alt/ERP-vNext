@@ -35,22 +35,32 @@ public sealed class AnonymousDoorLimitAttribute(PasswordDoorRateLimiter.LoginDoo
             return;
         }
 
-        // FIX4 item 1 — the CPU guard: a verification slot, or a short wait in the queue, or a 429.
-        using var slot = await doors.AcquireVerificationAsync(http.RequestAborted);
-        if (!slot.IsAcquired)
+        // FIX5 addendum item 1 — NO CPU slot here: the slot is the password hasher's own (PasswordWorkGate), taken only for
+        // the BCrypt call. Held here it covered the body read, the Platform call and the store too (a trickled body held
+        // it ~34 s). A 429 from that gate (the coded refusal the pipeline returns) says when to try again: set as the response
+        // starts (the result has been written by the time next() returns).
+        http.Response.OnStarting(() =>
         {
-            context.Result = TooManyRequests(http, TimeSpan.FromSeconds(1));
-            return;
-        }
-
+            if (http.Response.StatusCode == StatusCodes.Status429TooManyRequests && !http.Response.Headers.ContainsKey("Retry-After"))
+                http.Response.Headers.RetryAfter = "1";
+            return Task.CompletedTask;
+        });
         var executed = await next();
 
-        // FIX4 item 4 — only a WRONG attempt uses up the client's guessing count (a 401 from the door).
-        if (asking.Identified && Door != PasswordDoorRateLimiter.LoginDoor.Register
-            && (executed.Result as IStatusCodeActionResult)?.StatusCode == StatusCodes.Status401Unauthorized)
+        // FIX4 item 4, FIX5 addendum item 2 — only a WRONG CREDENTIAL uses up the client's guessing count: the 401 that says
+        // "invalid credentials" or "invalid verification code" — never "sign-in unavailable", "e-mail sign-in off" or
+        // "deactivated" (a Platform outage must not burn an office's allowance).
+        if (asking.Identified && Door != PasswordDoorRateLimiter.LoginDoor.Register && IsWrongCredential(executed.Result))
         {
             doors.RecordLoginFailure(Door, asking.Key);
         }
+    }
+
+    private static bool IsWrongCredential(IActionResult? result)
+    {
+        if (result is not ObjectResult { StatusCode: StatusCodes.Status401Unauthorized, Value: { } value }) return false;
+        var codes = value.GetType().GetProperty(nameof(Response<NoContent>.ErrorCodes))?.GetValue(value) as IEnumerable<ResponseError>;
+        return codes?.Any(code => code.Code is AuthRefusalCodes.InvalidCredentials or AuthRefusalCodes.InvalidVerificationCode) == true;
     }
 
     private static ObjectResult TooManyRequests(HttpContext http, TimeSpan retryAfter)

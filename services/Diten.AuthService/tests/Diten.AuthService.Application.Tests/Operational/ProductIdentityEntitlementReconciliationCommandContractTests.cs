@@ -102,6 +102,9 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
     //     targeted write behind it (UserRepository Collection.UpdateOneAsync 6 → 7). It clears the failure count and the lock
     //     ONLY where the stored row is not locked and below the threshold — a stricter form of the reset RecordLoginOutcomeAsync
     //     already made; it never grants, never widens a session or a role.
+    //   WP-USERS-ROLES-CLOSE-FIX1 FIX5 (2026-10-13, owner correction by hand) — the failure count and the lockout became ONE
+    //     atomic write (the existing Collection.FindOneAndUpdateAsync, now a pipeline update that sets the lock and starts the
+    //     count over at the threshold); the separate lockout UpdateOneAsync is gone: UserRepository UpdateOneAsync 7 → 6.
     //   THIS ROUND (FIX1 small 6) — PlatformAuthController _refreshTokenRepository.RevokeIfLiveAsync: the platform forced change
     //     revokes the token it just issued when the account was deactivated meanwhile (only ever NARROWS access).
     //   Older, now visible — Users quota _quota.TryConsumeUserSeatAsync (f0ac41e5a: CreateUser, SetUserActiveStatus,
@@ -431,7 +434,7 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/RolePermissionRepository.cs|RolePermission|Collection.DeleteOneAsync|2
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/RoleRepository.cs|Role|Collection.UpdateOneAsync|2
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/UserRepository.cs|User|Collection.FindOneAndUpdateAsync|1
-    services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/UserRepository.cs|User|Collection.UpdateOneAsync|7
+    services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/UserRepository.cs|User|Collection.UpdateOneAsync|6
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/UserRoleRepository.cs|UserRole|Collection.DeleteManyAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/UserRoleRepository.cs|UserRole|Collection.UpdateOneAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs|Permission+Role|col.BulkWriteAsync|6

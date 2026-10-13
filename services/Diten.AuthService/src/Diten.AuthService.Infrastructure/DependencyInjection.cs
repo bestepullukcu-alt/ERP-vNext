@@ -65,7 +65,11 @@ public static class DependencyInjection
         services.AddScoped<Diten.AuthService.Application.Common.Interfaces.ICurrentUserAccessor, Services.CurrentUserAccessor>(); // FEAT-AUDIT-RBAC
         services.AddScoped<IPlatformAccountVisibility, Services.HttpPlatformAccountVisibility>(); // BL-521 FIX6 item 13 (D')
         services.AddScoped<PasswordHasher>(); // concrete class registration
-        services.AddScoped<IPasswordHasher>(sp => sp.GetRequiredService<PasswordHasher>());
+        // WP-USERS-ROLES-CLOSE-FIX1 FIX5 addendum item 1 — every hash and verification takes a slot of the process-wide gate,
+        // for the BCrypt call only.
+        services.AddSingleton<Security.PasswordWorkGate>();
+        services.AddScoped<IPasswordHasher>(sp => new Security.BoundedPasswordHasher(
+            sp.GetRequiredService<PasswordHasher>(), sp.GetRequiredService<Security.PasswordWorkGate>()));
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IRefreshTokenHasher, RefreshTokenHasher>();
         services.AddScoped<IInternalEventAuthService, InternalEventAuthService>();

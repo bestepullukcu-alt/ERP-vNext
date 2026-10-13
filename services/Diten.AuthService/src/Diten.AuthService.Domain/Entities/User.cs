@@ -197,6 +197,13 @@ public sealed class User : EntityBase
         RecordLoginFailure(5, 15);
     }
 
+    /// <summary>WP-USERS-ROLES-CLOSE-FIX1 FIX5 — the lockout as the store writes it: the lock starts and the count starts over.</summary>
+    public void LockOut(int lockoutDurationMinutes)
+    {
+        LockoutEnd = DateTime.UtcNow.AddMinutes(lockoutDurationMinutes);
+        FailedLoginAttempts = 0;
+    }
+
     public void RecordLoginFailure(int maxFailedAttempts, int lockoutDurationMinutes)
     {
         FailedLoginAttempts++;

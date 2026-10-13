@@ -88,8 +88,10 @@ public sealed partial class AdminResetInvalidatesEndpointTests
         }
 
         var lockedAfter = await ReadUserAsync(locked.Id);
-        Assert.Equal(6, lockedAfter.FailedLoginAttempts);                 // counted …
-        Assert.Equal(lockEndBefore, lockedAfter.LockoutEnd);              // … the running lockout not extended
+        // FIX5 — a locked account's attempt is AUDITED, not counted (Identity's model): the count stays where it was and the
+        // running lockout is not extended (FIX3 had counted it: 6).
+        Assert.Equal(5, lockedAfter.FailedLoginAttempts);
+        Assert.Equal(lockEndBefore, lockedAfter.LockoutEnd);
         Assert.Equal(1, (await ReadUserAsync(deactivated.Id)).FailedLoginAttempts);
 
         // FIX3 item 1 — a LOCK is never said, the right password included (FIX2 said "locked" to the right one: the lock
@@ -140,7 +142,9 @@ public sealed partial class AdminResetInvalidatesEndpointTests
 
         Assert.Equal("401|Invalid email or password.|" + AuthRefusalCodes.InvalidCredentials, await RefusalOfAsync(answer));
         Assert.Equal(1, GatedHasher.Verifications.GetValueOrDefault(password));
-        Assert.Equal(6, (await ReadUserAsync(account.Id)).FailedLoginAttempts);
+        Assert.Equal(5, (await ReadUserAsync(account.Id)).FailedLoginAttempts); // FIX5 — audited, not counted
+        Assert.Contains(await _host.Database.GetCollection<AuthAuditLog>("authAuditLogs")
+            .Find(r => r.EventName == "tenant_login_blocked_by_lockout" && r.UserId == account.Id).ToListAsync(), _ => true);
         Assert.Empty(await LiveRefreshTokensAsync(account.Id, tenantId));
     }
 
@@ -160,7 +164,9 @@ public sealed partial class AdminResetInvalidatesEndpointTests
         var rows = await _host.Database.GetCollection<AuthAuditLog>("authAuditLogs")
             .Find(r => r.EventName == "tenant_login_lockout_started" && r.UserId == user.Id).ToListAsync();
         Assert.Single(rows);
-        Assert.Equal(7, (await ReadUserAsync(user.Id)).FailedLoginAttempts);
+        // FIX5 — the failure that reached the threshold set the lock and started the count over; the two attempts made while
+        // locked were audited, not counted (FIX3: 7).
+        Assert.Equal(0, (await ReadUserAsync(user.Id)).FailedLoginAttempts);
     }
 
     /// <summary>FIX3 item 2 — the three sign-in doors are counted BEFORE the request is validated (and before any password is
@@ -249,12 +255,115 @@ public sealed partial class AdminResetInvalidatesEndpointTests
         Assert.Equal("401|Invalid email or password.|" + AuthRefusalCodes.InvalidCredentials, await RefusalOfAsync(right));
         var after = await ReadUserAsync(account.Id);
         Assert.True(after.LockoutEnd > DateTime.UtcNow, "the lock the wrong guesses built is still there");
-        Assert.True(after.FailedLoginAttempts >= 6);
+        Assert.Equal(0, after.FailedLoginAttempts); // FIX5 — the threshold failure set the lock and started the count over
         Assert.Empty(await LiveRefreshTokensAsync(account.Id, tenantId));
     }
 
+    // ── FIX5: the lockout model (ASP.NET Core Identity's) — a lock ends, and the account opens again ─────────────────────
+
+    private async Task<(User Account, string Password)> FreshAccountAsync(int failed = 0, DateTime? lockoutEnd = null)
+    {
+        var tenantId = _host.Seeded.TenantId;
+        var password = "Lock5!" + Guid.NewGuid().ToString("N")[..12];
+        var account = new User($"lock5.{Guid.NewGuid():N}@reset.test", new PasswordHasher().Hash(password), "Lock", "Five", tenantId);
+        account.ConfirmEmail();
+        await _host.Database.GetCollection<User>("users").InsertOneAsync(account);
+        await _host.Database.GetCollection<User>("users").UpdateOneAsync(u => u.Id == account.Id,
+            Builders<User>.Update.Set(u => u.FailedLoginAttempts, failed).Set(u => u.LockoutEnd, lockoutEnd));
+        return (account, password);
+    }
+
+    private Task EndTheLockAsync(Guid accountId) => _host.Database.GetCollection<User>("users").UpdateOneAsync(u => u.Id == accountId,
+        Builders<User>.Update.Set(u => u.LockoutEnd, DateTime.UtcNow.AddMinutes(-1)));
+
+    /// <summary>FIX5 property 1 (the blocker) — locked by five wrong attempts, the lock ENDS, and the right password signs in.
+    /// FIX4 never reset the count at the lock, and its claim refused a count at the threshold: the right password was refused,
+    /// counted, and locked the account again — for good.</summary>
+    [Fact]
+    public async Task After_the_lock_ends_the_right_password_signs_in()
+    {
+        var tenantId = _host.Seeded.TenantId;
+        var (account, password) = await FreshAccountAsync();
+        for (var i = 0; i < 5; i++)
+            Assert.Equal(HttpStatusCode.Unauthorized, (await TenantLoginAsync(tenantId, account.Email, WrongPassword)).StatusCode);
+        var locked = await ReadUserAsync(account.Id);
+        Assert.True(locked.LockoutEnd > DateTime.UtcNow);
+        Assert.Equal(0, locked.FailedLoginAttempts); // the lock started the count over
+
+        await EndTheLockAsync(account.Id);
+
+        Assert.Equal(HttpStatusCode.OK, (await TenantLoginAsync(tenantId, account.Email, password)).StatusCode);
+    }
+
+    /// <summary>FIX5 property 2 — a row written BEFORE FIX5 (count at or past the threshold, its lock ended) signs in with the
+    /// right password, and the claim normalizes its count to 0 in the same write.</summary>
+    [Fact]
+    public async Task A_row_left_over_with_a_count_past_the_threshold_and_an_ended_lock_signs_in_and_is_normalized()
+    {
+        var tenantId = _host.Seeded.TenantId;
+        var (account, password) = await FreshAccountAsync(failed: 7, lockoutEnd: DateTime.UtcNow.AddHours(-2));
+
+        Assert.Equal(HttpStatusCode.OK, (await TenantLoginAsync(tenantId, account.Email, password)).StatusCode);
+        var after = await ReadUserAsync(account.Id);
+        Assert.Equal(0, after.FailedLoginAttempts);
+        Assert.Null(after.LockoutEnd);
+    }
+
+    /// <summary>FIX5 property 4 — the flood on a LATER lock: an account that was locked before and whose lock ended (a fresh
+    /// one, and one left over from before FIX5) — the right guess held after its verification while five wrong ones arrive:
+    /// they lock it, the right guess gets the one answer, no session, the lock stays. An ended LockoutEnd is no gate.</summary>
+    [Theory]
+    [InlineData(0)]
+    [InlineData(5)]
+    public async Task A_flood_on_an_account_whose_earlier_lock_ended_still_locks_it_and_refuses_the_right_guess(int leftOverCount)
+    {
+        var tenantId = _host.Seeded.TenantId;
+        var (account, password) = await FreshAccountAsync(failed: leftOverCount, lockoutEnd: DateTime.UtcNow.AddMinutes(-5));
+
+        var right = await RaceAsync("verify:" + password,
+            () => TenantLoginAsync(tenantId, account.Email, password),
+            async () =>
+            {
+                for (var i = 0; i < 5; i++)
+                    Assert.Equal(HttpStatusCode.Unauthorized, (await TenantLoginAsync(tenantId, account.Email, WrongPassword)).StatusCode);
+            });
+
+        Assert.Equal("401|Invalid email or password.|" + AuthRefusalCodes.InvalidCredentials, await RefusalOfAsync(right));
+        Assert.True((await ReadUserAsync(account.Id)).LockoutEnd > DateTime.UtcNow, "the flood locked it again");
+        Assert.Empty(await LiveRefreshTokensAsync(account.Id, tenantId));
+    }
+
+    /// <summary>FIX5 properties 5 and 6 — attempts made WHILE locked are audited, not counted: the lock is not extended and they
+    /// are not carried past it (four wrong attempts after the lock ended do not lock it again); the fifth does.</summary>
+    [Fact]
+    public async Task Attempts_while_locked_are_audited_not_counted_and_five_after_the_lock_lock_it_again()
+    {
+        var tenantId = _host.Seeded.TenantId;
+        var lockedUntil = DateTime.UtcNow.AddMinutes(10);
+        var (account, _) = await FreshAccountAsync(failed: 0, lockoutEnd: lockedUntil);
+        var lockEnd = (await ReadUserAsync(account.Id)).LockoutEnd;
+
+        for (var i = 0; i < 3; i++)
+            Assert.Equal(HttpStatusCode.Unauthorized, (await TenantLoginAsync(tenantId, account.Email, WrongPassword)).StatusCode);
+
+        var whileLocked = await ReadUserAsync(account.Id);
+        Assert.Equal((0, lockEnd), (whileLocked.FailedLoginAttempts, whileLocked.LockoutEnd));
+        Assert.Equal(3, (await _host.Database.GetCollection<AuthAuditLog>("authAuditLogs")
+            .Find(r => r.EventName == "tenant_login_blocked_by_lockout" && r.UserId == account.Id).ToListAsync()).Count);
+
+        await EndTheLockAsync(account.Id);
+        for (var i = 0; i < 4; i++)
+            Assert.Equal(HttpStatusCode.Unauthorized, (await TenantLoginAsync(tenantId, account.Email, WrongPassword)).StatusCode);
+        var fourAfter = await ReadUserAsync(account.Id);
+        Assert.Equal(4, fourAfter.FailedLoginAttempts);
+        Assert.False(fourAfter.LockoutEnd > DateTime.UtcNow, "four attempts after the lock must not lock it (none carried over)");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, (await TenantLoginAsync(tenantId, account.Email, WrongPassword)).StatusCode);
+        Assert.True((await ReadUserAsync(account.Id)).LockoutEnd > DateTime.UtcNow, "the fifth locks it again");
+    }
+
     /// <summary>FIX4 items 4 and 6 — a client whose WRONG attempts are used up is refused BEFORE anything is verified (a 429
-    /// costs no BCrypt), with Retry-After of its own window; another client is not affected.</summary>
+    /// costs no BCrypt), with Retry-After of what is left of its window; another client is not affected.</summary>
     [Fact]
     public async Task A_client_out_of_wrong_attempts_is_refused_before_any_verification()
     {
@@ -269,8 +378,9 @@ public sealed partial class AdminResetInvalidatesEndpointTests
 
         Assert.Equal((HttpStatusCode)429, refused.StatusCode);
         Assert.Equal(0, GatedHasher.Verifications.GetValueOrDefault(password));
-        Assert.Equal((int)Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.DefaultWindow.TotalSeconds,
-            int.Parse(Assert.Single(refused.Headers.GetValues("Retry-After"))));
+        // FIX5 addendum (small item) — the time LEFT in the client's window (it opened with the first wrong attempt above).
+        Assert.InRange(int.Parse(Assert.Single(refused.Headers.GetValues("Retry-After"))),
+            1, (int)Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.DefaultWindow.TotalSeconds);
         Assert.Equal(HttpStatusCode.Unauthorized, (await DoorPostAsync(RandomPeer(), "api/tenant-auth/login", true,
             $$"""{"email":"nobody.{{Guid.NewGuid():N}}@reset.test","password":"x"}""")).StatusCode);
     }
@@ -287,6 +397,64 @@ public sealed partial class AdminResetInvalidatesEndpointTests
         for (var i = 0; i <= Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.DefaultLoginFailuresPerClientLimit; i++)
             Assert.Equal(HttpStatusCode.OK, (await DoorPostAsync(peer, "api/tenant-auth/login", true,
                 $$"""{"email":"{{user.Email}}","password":"{{OldPassword}}"}""")).StatusCode);
+    }
+
+    /// <summary>FIX5 property 5, at the store — a wrong guess that read the account BEFORE the lock (a parallel flood) reaches
+    /// the failure write AFTER it: the write does not count it, does not extend the lock and does not start another. The door
+    /// never calls the write for an account it already saw locked, so only this test sees the store's own condition.</summary>
+    [Fact]
+    public async Task A_wrong_attempt_that_reaches_the_store_while_the_account_is_locked_is_not_counted()
+    {
+        var tenantId = _host.Seeded.TenantId;
+        var lockedUntil = DateTime.UtcNow.AddMinutes(10);
+        var (account, _) = await FreshAccountAsync(lockoutEnd: lockedUntil);
+        using var scope = _host.Factory.Services.CreateScope();
+        var users = scope.ServiceProvider.GetRequiredService<Diten.AuthService.Persistence.Repositories.UserRepository>();
+
+        for (var i = 0; i < 6; i++)
+            Assert.False((await users.RecordLoginFailureAsync(account.Id, tenantId, 5, 15, CancellationToken.None)).LockoutStarted);
+
+        var after = await ReadUserAsync(account.Id);
+        Assert.Equal(0, after.FailedLoginAttempts);
+        Assert.Equal(lockedUntil, after.LockoutEnd!.Value, TimeSpan.FromMilliseconds(5));
+    }
+
+    /// <summary>FIX5 addendum item 2 — only a WRONG credential uses up the client's guessing count. A deactivated account's
+    /// right password is a 401 too ("Account is disabled."), but it guessed nothing: one client asks more times than its
+    /// wrong-attempt allowance and is never refused (FIX4 counted every 401).</summary>
+    [Fact]
+    public async Task A_deactivated_accounts_answers_do_not_use_up_the_clients_guessing_count()
+    {
+        var tenantId = _host.Seeded.TenantId;
+        var disabled = await SeedTenantUserAsync(tenantId);
+        await WriteAccountAsync(disabled, a => a.DeactivateByAdministrator());
+        var peer = RandomPeer();
+
+        for (var i = 0; i <= Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.DefaultLoginFailuresPerClientLimit; i++)
+            Assert.Equal("401|Account is disabled.|" + AuthRefusalCodes.AccountDeactivated, await RefusalOfAsync(await DoorPostAsync(peer,
+                "api/tenant-auth/login", true, $$"""{"email":"{{disabled.Email}}","password":"{{OldPassword}}"}""")));
+    }
+
+    /// <summary>FIX5 addendum item 3 — the success write carries the sign-in time ONLY. A sign-in held after its claim (right
+    /// before its session is written) while a lock lands on the stored row: the write that follows leaves the lock and the
+    /// count as they are (FIX4 wrote the loaded copy's 0 / null over them).</summary>
+    [Fact]
+    public async Task A_sign_ins_success_write_leaves_a_lock_set_after_its_claim_in_place()
+    {
+        var tenantId = _host.Seeded.TenantId;
+        var (account, password) = await FreshAccountAsync();
+        var lockedUntil = DateTime.UtcNow.AddMinutes(10);
+
+        var signIn = await RaceAsync("create:" + account.Id,
+            () => TenantLoginAsync(tenantId, account.Email, password),
+            () => _host.Database.GetCollection<User>("users").UpdateOneAsync(u => u.Id == account.Id,
+                Builders<User>.Update.Set(u => u.FailedLoginAttempts, 3).Set(u => u.LockoutEnd, lockedUntil)));
+
+        Assert.Equal(HttpStatusCode.OK, signIn.StatusCode);
+        var after = await ReadUserAsync(account.Id);
+        Assert.Equal(3, after.FailedLoginAttempts);
+        Assert.True(after.LockoutEnd > DateTime.UtcNow, "the lock that landed after the claim is still there");
+        Assert.NotNull(after.LastLoginAt);
     }
 
     /// <summary>FIX4 item 5 — the second factor's rows without a user (a resend for an unknown challenge) go through the

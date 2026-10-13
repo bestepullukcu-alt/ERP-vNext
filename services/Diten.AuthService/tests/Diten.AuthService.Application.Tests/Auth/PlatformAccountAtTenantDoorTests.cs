@@ -353,13 +353,14 @@ public sealed class PlatformAccountAtTenantDoorTests : IClassFixture<PlatformAcc
         Assert.Null(await inner.GetByIdAndTenantAsync(ordinary.Id, tenant, ct));
     }
 
-    /// <summary>WP-USERS-ROLES-CLOSE-FIX1 item 6 — the LOCKOUT is the second write of a failure: the count lands on an ordinary
-    /// user, Platform marks the account before the lockout write (the repository's seam), and the lockout does not land and
-    /// is not reported. The control (nobody in between) is locked as before.</summary>
+    /// <summary>WP-USERS-ROLES-CLOSE-FIX1 item 6, reworked in FIX5 — the count and the lockout are now ONE write (the lock is set
+    /// by the failure that reaches the threshold, and the count starts over), so there is no gap between them for Platform's
+    /// marking to fall into (FIX1's seam is gone). What remains: a hidden caller's failure write never counts or locks a stored
+    /// platform account, even at the threshold; the ordinary control is locked by its threshold failure, its count reset.</summary>
     [Theory]
     [InlineData("platform_admin")]
     [InlineData("partner_admin")]
-    public async Task The_lockout_write_does_not_land_on_an_account_marked_after_the_failure_was_counted(string actorType)
+    public async Task A_hidden_callers_failure_write_neither_counts_nor_locks_a_stored_platform_account(string actorType)
     {
         var tenant = Guid.NewGuid();
         var ct = CancellationToken.None;
@@ -369,22 +370,18 @@ public sealed class PlatformAccountAtTenantDoorTests : IClassFixture<PlatformAcc
         var inner = sp.GetRequiredService<UserRepository>();
         var target = await inner.CreateAsync(new User($"l.{Guid.NewGuid():N}@bl521.test", "hash:before", "Lock", "Target", tenant), ct);
         var control = await inner.CreateAsync(new User($"k.{Guid.NewGuid():N}@bl521.test", "hash:before", "Lock", "Control", tenant), ct);
-        try
-        {
-            inner.AfterFailureCounted = async () => Assert.True(await inner.SetPlatformActorTypeAsync(target.Id, tenant, actorType, ct));
-            var outcome = await inner.RecordLoginFailureAsync(target.Id, tenant, 1, 15, excludePlatformAccounts: true, ct);
-            Assert.Equal((1, (DateTime?)null), (outcome.FailedLoginAttempts, outcome.LockoutEnd));
-            Assert.Null((await inner.GetByIdAndTenantAsync(target.Id, tenant, ct))!.LockoutEnd);
+        Assert.True(await inner.SetPlatformActorTypeAsync(target.Id, tenant, actorType, ct));
 
-            inner.AfterFailureCounted = null;
-            var locked = await inner.RecordLoginFailureAsync(control.Id, tenant, 1, 15, excludePlatformAccounts: true, ct);
-            Assert.NotNull(locked.LockoutEnd);
-            Assert.NotNull((await inner.GetByIdAndTenantAsync(control.Id, tenant, ct))!.LockoutEnd);
-        }
-        finally
-        {
-            inner.AfterFailureCounted = null;
-        }
+        var outcome = await inner.RecordLoginFailureAsync(target.Id, tenant, 1, 15, excludePlatformAccounts: true, ct);
+        Assert.Equal((0, (DateTime?)null, false), (outcome.FailedLoginAttempts, outcome.LockoutEnd, outcome.LockoutStarted));
+        var stored = (await inner.GetByIdAndTenantAsync(target.Id, tenant, ct))!;
+        Assert.Equal((0, (DateTime?)null), (stored.FailedLoginAttempts, stored.LockoutEnd));
+
+        var locked = await inner.RecordLoginFailureAsync(control.Id, tenant, 1, 15, excludePlatformAccounts: true, ct);
+        Assert.True(locked.LockoutStarted);
+        var controlStored = (await inner.GetByIdAndTenantAsync(control.Id, tenant, ct))!;
+        Assert.NotNull(controlStored.LockoutEnd);
+        Assert.Equal(0, controlStored.FailedLoginAttempts);
     }
 
     /// <summary>

@@ -113,6 +113,40 @@ public sealed class ClientAddressProductionDefaultsTests : IClassFixture<ClientA
         Assert.Equal(PasswordDoorRateLimiter.DefaultWindow, _host.Factory.Services.GetRequiredService<PasswordDoorRateLimiter>().Window);
     }
 
+    // ── FIX5 addendum item 1: the CPU slot is the password hasher's, taken for the BCrypt call only ─────────────────────
+
+    /// <summary>FIX5 addendum item 1 — work that verifies no password takes no slot: with EVERY slot held, a body that fails
+    /// validation is answered 400 at once (FIX4's filter queued it for a slot first); a sign-in that does verify waits the
+    /// queue's 2 s and is refused 429 with Retry-After: 1.</summary>
+    [Fact]
+    public async Task With_every_slot_held_only_password_work_waits_and_is_refused_with_retry_after_one()
+    {
+        var gate = _host.Factory.Services.GetRequiredService<PasswordWorkGate>();
+        var slots = Enumerable.Range(0, gate.Slots).Select(_ => gate.Enter()).ToList();
+        try
+        {
+            using var client = _host.Client(null, Guid.NewGuid());
+            var timer = System.Diagnostics.Stopwatch.StartNew();
+            var invalid = await client.PostAsync("api/tenant-auth/login", new StringContent("{}", System.Text.Encoding.UTF8, "application/json"));
+            Assert.Equal(HttpStatusCode.BadRequest, invalid.StatusCode);
+            Assert.True(timer.Elapsed < PasswordWorkGate.DefaultQueueTimeout, $"no slot was waited for ({timer.Elapsed})");
+
+            timer.Restart();
+            // On its own task and bounded: the test server runs the request on the caller's thread, so a queue without a
+            // timeout would block this test for good (a token cannot free it); here it fails, and `finally` frees the slots.
+            var verifying = await Task.Run(() => client.PostAsJsonAsync("api/tenant-auth/login",
+                new { email = $"busy.{Guid.NewGuid():N}@defaults.test", password = "x" })).WaitAsync(TimeSpan.FromSeconds(20));
+            Assert.Equal((HttpStatusCode)429, verifying.StatusCode);
+            Assert.Equal("1", Assert.Single(verifying.Headers.GetValues("Retry-After")));
+            Assert.Contains(AuthRefusalCodes.TooManyRequests, await verifying.Content.ReadAsStringAsync(), StringComparison.Ordinal);
+            Assert.InRange(timer.Elapsed, PasswordWorkGate.DefaultQueueTimeout - TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(20));
+        }
+        finally
+        {
+            foreach (var slot in slots) slot.Dispose();
+        }
+    }
+
     // ── the configuration itself, read at registration ──────────────────────────────────────────────────────
 
     // ── FIX5: the link door — the valid link is never counted, junk never locks it, junk never reaches Platform ──

@@ -32,10 +32,12 @@ public interface IUserRepository
 
     /// <summary>
     /// WP-USERS-ROLES-CLOSE-FIX1 FIX4 item 3 — A SIGN-IN THAT VERIFIED THE RIGHT PASSWORD CLAIMS THE ACCOUNT BEFORE ANYTHING IS
-    /// ISSUED: the failure count and the lockout are cleared ONLY while the STORED account is not locked and its count is below
-    /// <paramref name="maxFailedAttempts"/>. A flood of parallel guesses all read the account before the fifth failure was
-    /// written; without this, a right guess among them cleared the lock the wrong ones were building (~100 guesses a window
-    /// instead of 5). False: the stored row is locked or at the threshold — the sign-in is refused like a wrong password.
+    /// ISSUED: the failure count and the lockout are cleared ONLY while the STORED account is not locked. A flood of parallel
+    /// guesses all read the account before the fifth failure was written; without this, a right guess among them cleared the
+    /// lock the wrong ones were building (~100 guesses a window instead of 5). FIX5 — "not locked" is enough because the write
+    /// that reaches the threshold sets the lock itself (and resets the count); <paramref name="maxFailedAttempts"/> is no
+    /// longer read (FIX4's "below the threshold" shut an account for good once it had been locked). False: the stored row is
+    /// locked — the sign-in is refused like a wrong password.
     /// (No default implementation that answers true: a store or a decorator that forgot it must fail loudly, not let the
     /// flood through.)
     /// </summary>
