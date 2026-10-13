@@ -238,10 +238,10 @@
     <value>Listeyi arama kutusuyla daraltın ya da “Filtrele”ye tıklayıp “Durum” veya “Malzeme türü” seçin ve “Uygula”ya tıklayın.</value>
   </data>
   <data name="Help.ITEMS.Step2" xml:space="preserve">
-    <value>“Kalem ekle”ye tıklayın, tam sayfa formda kimlik ve stok davranışı alanlarını doldurun, ardından “Kaydet”e tıklayın: kalem “Taslak” olarak kaydedilir. Bu formun bir alanındayken Enter da formu kaydeder. Daha sonra, etkin bir kalemde yalnız ad ve açıklama serbestçe değişir; dolu bir stok alanı onaylı bir düzeltme ister.</value>
+    <value>“Kalem ekle”ye tıklayın, tam sayfa formda kimlik ve stok davranışı alanlarını doldurun, ardından “Kaydet”e tıklayın: kalem “Taslak” olarak kaydedilir. Bu formun tek satırlı bir alanındayken Enter da formu kaydeder (“Açıklama” kutusunda Enter yeni satır açar). Daha sonra, etkin bir kalemde yalnız ad ve açıklama serbestçe değişir; dolu bir stok alanı onaylı bir düzeltme ister.</value>
   </data>
   <data name="Help.ITEMS.Step3" xml:space="preserve">
-    <value>Taslağın “İşlemler” menüsünden “Onaya gönder”i seçin: kalem onaylanana kadar “Onay bekliyor” durumunda kalır ve ancak o zaman “Etkin” olur.</value>
+    <value>Taslağın “İşlemler” menüsünden “Onaya gönder”i seçin: kalem onaylanana kadar “Onay bekliyor” durumunda kalır ve ancak o zaman “Etkin” olur. Kalem onay beklerken isteği gönderen kişi “İşlemler” menüsünden “Onay İsteğini Geri Çek”i seçebilir: kalem önceki durumuna döner.</value>
   </data>
   <data name="Help.ITEMS.Step4" xml:space="preserve">
     <value>“Kullanım dışı bırak” etkin bir kalemi yeni stok girişlerinden çıkarır; “Yeniden etkinleştirme iste” aynı onaydan yeniden geçer; “Emekliye ayır” kesindir, yalnız stoğu sıfır olan kullanım dışı bir kalemde yapılabilir ve kod bir daha kullanılmaz. Her biri bir gerekçe ister.</value>
