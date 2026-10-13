@@ -70,14 +70,15 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Response
         }
         catch
         {
-            await _authAuditService.WriteAsync("tenant_login_settings_read_failed", null, _tenantContext.TenantId, "{}", ct);
-            return Response<AuthResponse>.Fail("Login is temporarily unavailable.", 401);
+            // FIX2 item 3 / FIX3 item 4 — anonymous: written within the door's global budget, never once per request.
+            await WriteAnonymousAuditAsync("tenant_login_settings_read_failed", "{}", ct);
+            return Response<AuthResponse>.Fail("Login is temporarily unavailable.", [new ResponseError(AuthRefusalCodes.LoginUnavailable)], 401);
         }
 
         if (!settings.EmailLoginEnabled)
         {
-            await _authAuditService.WriteAsync("tenant_login_denied_by_settings", null, _tenantContext.TenantId, "{\"reason\":\"email_login_disabled\"}", ct);
-            return Response<AuthResponse>.Fail("Email login is disabled for this tenant.", 401);
+            await WriteAnonymousAuditAsync("tenant_login_denied_by_settings", "{\"reason\":\"email_login_disabled\"}", ct);
+            return Response<AuthResponse>.Fail("Email login is disabled for this tenant.", [new ResponseError(AuthRefusalCodes.EmailLoginDisabled)], 401);
         }
 
         var user = await _userRepository.GetByEmailAndTenantAsync(request.Email, _tenantContext.TenantId, ct);
@@ -90,24 +91,41 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Response
         // answer is this door's own generic 401, given BEFORE the password is looked at: an account of that kind and a
         // stranger's address are the same answer, no failed-attempt count, no audit row, nothing to tell them apart. The
         // ordinary users of the same tenant are untouched.
-        if (user == null) return Response<AuthResponse>.Fail("Invalid email or password.", 401);
+        // WP-USERS-ROLES-CLOSE-FIX1 FIX2 items 1–2, FIX3 item 1 — ONE ANSWER UNTIL THE PASSWORD IS RIGHT, AND A LOCK SAYS
+        // NOTHING AT ALL. An unknown address, a platform account at this door, a deactivated account, an invitation not yet
+        // accepted, a LOCKED account (whatever the password — the right one included) and a wrong password are the same 401,
+        // code and body, and take as long: every branch verifies the submitted password exactly once (against SignInTiming's
+        // fixed hash when there is no account to check), and a lock never lets the result through. FIX2 had checked the
+        // password BEFORE the lock and answered "locked" to the right one — a lock that confirmed the guess it was meant to
+        // stop (FIX3 review, blocker). Only an UNLOCKED account with the right password learns more: "deactivated" (the
+        // password is already known to whoever learns that). Every attempt on an existing account is counted; a running lock
+        // is not extended (UserRepository.RecordLoginFailureAsync).
+        if (user == null)
+        {
+            await SignInTiming.VerifyAgainstNoAccountAsync(_passwordHasher, request.Password, ct);
+            return InvalidCredentials();
+        }
         if (user.IsPlatformAccount)
         {
             // FIX7 item 5 - one warning (event code, door, tenant id - no e-mail, no user id); the answer is the same 401.
             TenantDoorPlatformAccountRefusal.Log(_logger, TenantDoorPlatformAccountRefusal.SignInDoor, _tenantContext.TenantId);
-            return Response<AuthResponse>.Fail("Invalid email or password.", 401);
+            await SignInTiming.VerifyAgainstNoAccountAsync(_passwordHasher, request.Password, ct);
+            return InvalidCredentials();
         }
 
-        var lockoutFailure = await CheckLockout(user, ct);
-        if (lockoutFailure is not null)
+        var passwordMatches = await _passwordHasher.VerifyAsync(request.Password, user.PasswordHash, ct);
+        if (IsLocked(user))
         {
-            return lockoutFailure;
+            // The password was verified (the same time either way) and its result is thrown away: locked is locked. FIX5 —
+            // the attempt is AUDITED, not counted: it neither extends the lock nor is carried past it (Identity's model).
+            await _authAuditService.WriteAsync("tenant_login_blocked_by_lockout", user.Id, _tenantContext.TenantId, "{}", ct);
+            return InvalidCredentials();
         }
 
-        if (!_passwordHasher.Verify(request.Password, user.PasswordHash))
+        if (!passwordMatches)
         {
             await HandleLoginFailure(user, settings, ct);
-            return Response<AuthResponse>.Fail("Invalid email or password.", 401);
+            return InvalidCredentials();
         }
 
         // Disabled accounts cannot log in. Checked AFTER password verify so it stays enumeration-safe.
@@ -116,7 +134,18 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Response
         if (!user.IsActive)
         {
             await _authAuditService.WriteAsync("tenant_login_denied_inactive", user.Id, _tenantContext.TenantId, "{}", ct);
-            return Response<AuthResponse>.Fail("Account is disabled.", 401);
+            return Response<AuthResponse>.Fail("Account is disabled.", [new ResponseError(AuthRefusalCodes.AccountDeactivated)], 401);
+        }
+
+        // FIX4 item 3 — the right password claims the account against the STORED row (not locked, below the threshold)
+        // before a challenge or a token: parallel wrong guesses that reached the threshold meanwhile win, and this one is
+        // refused and counted like them.
+        if (!await _userRepository.TryClaimSignInAsync(user.Id, _tenantContext.TenantId, ct))
+        {
+            // FIX5 — the stored row was locked meanwhile (parallel wrong guesses reached the threshold): this attempt is the
+            // locked account's — audited, not counted.
+            await _authAuditService.WriteAsync("tenant_login_blocked_by_lockout", user.Id, _tenantContext.TenantId, "{}", ct);
+            return InvalidCredentials();
         }
 
         if (settings.MfaRequired)
@@ -137,20 +166,21 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Response
 
         var success = await HandleLoginSuccess(user, request, settings, ct);
         return success is null
-            ? Response<AuthResponse>.Fail("Invalid email or password.", 401)
+            ? InvalidCredentials()
             : Response<AuthResponse>.Success(success);
     }
 
-    private async Task<Response<AuthResponse>?> CheckLockout(User user, CancellationToken ct)
-    {
-        if (user.LockoutEnd.HasValue && user.LockoutEnd > DateTime.UtcNow)
-        {
-            await _authAuditService.WriteAsync("tenant_login_blocked_by_lockout", user.Id, _tenantContext.TenantId, "{}", ct);
-            return Response<AuthResponse>.Fail("Account is locked. Please try again later.", 401);
-        }
+    /// <summary>WP-USERS-ROLES-CLOSE-FIX1 item 2 (BL-496) — the ONE answer of every sign-in that did not match (no such address, a
+    /// platform account at this door, a wrong password, a session undone meanwhile): same sentence, same code.</summary>
+    internal static Response<AuthResponse> InvalidCredentials()
+        => Response<AuthResponse>.Fail("Invalid email or password.", [new ResponseError(AuthRefusalCodes.InvalidCredentials)], 401);
 
-        return null;
-    }
+    // FIX3 item 4 — every row the door writes WITHOUT a user goes through one budget; a dropped row is said in the log (the
+    // first of a window, and how many the last window dropped), so a real settings fault never goes unseen.
+    private Task WriteAnonymousAuditAsync(string eventName, string metadata, CancellationToken ct)
+        => AnonymousAuditBudget.SignInDoor.WriteAsync(_authAuditService, _logger, eventName, _tenantContext.TenantId, metadata, ct);
+
+    private static bool IsLocked(User user) => user.LockoutEnd.HasValue && user.LockoutEnd > DateTime.UtcNow;
 
     private async Task HandleLoginFailure(User user, TenantLoginSettingsSnapshot settings, CancellationToken ct)
     {
@@ -160,7 +190,7 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Response
         var failure = await _userRepository.RecordLoginFailureAsync(
             user.Id, _tenantContext.TenantId, settings.MaxFailedLoginAttempts, settings.LockoutDurationMinutes, ct);
         await _authAuditService.WriteAsync("tenant_login_password_failed", user.Id, _tenantContext.TenantId, "{}", ct);
-        if (failure.LockoutEnd.HasValue && failure.LockoutEnd > DateTime.UtcNow)
+        if (failure.LockoutStarted)
         {
             await _authAuditService.WriteAsync("tenant_login_lockout_started", user.Id, _tenantContext.TenantId, "{}", ct);
         }

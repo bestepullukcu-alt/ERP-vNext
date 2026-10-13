@@ -97,6 +97,14 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
     //     AdminResetPassword) — the ONE reset path.
     //   BL-521 decorator forwards (a59560dc4, this merge) — _inner.TryWriteChangesAsync / RecordLoginOutcomeAsync /
     //     RecordLoginFailureAsync (each guarded for a hidden caller, on the stored row since FIX1 small 2).
+    //   WP-USERS-ROLES-CLOSE-FIX1 FIX4 item 3 (2026-10-13, owner correction by hand, not a regeneration) — the sign-in CLAIM:
+    //     LoginCommandHandler _userRepository.TryClaimSignInAsync, its decorator forward _inner.TryClaimSignInAsync, and the one
+    //     targeted write behind it (UserRepository Collection.UpdateOneAsync 6 → 7). It clears the failure count and the lock
+    //     ONLY where the stored row is not locked and below the threshold — a stricter form of the reset RecordLoginOutcomeAsync
+    //     already made; it never grants, never widens a session or a role.
+    //   WP-USERS-ROLES-CLOSE-FIX1 FIX5 (2026-10-13, owner correction by hand) — the failure count and the lockout became ONE
+    //     atomic write (the existing Collection.FindOneAndUpdateAsync, now a pipeline update that sets the lock and starts the
+    //     count over at the threshold); the separate lockout UpdateOneAsync is gone: UserRepository UpdateOneAsync 7 → 6.
     //   THIS ROUND (FIX1 small 6) — PlatformAuthController _refreshTokenRepository.RevokeIfLiveAsync: the platform forced change
     //     revokes the token it just issued when the account was deactivated meanwhile (only ever NARROWS access).
     //   Older, now visible — Users quota _quota.TryConsumeUserSeatAsync (f0ac41e5a: CreateUser, SetUserActiveStatus,
@@ -351,6 +359,7 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
     services/Diten.AuthService/src/Diten.AuthService.Application/Features/Auth/Handlers/CommandHandlers/LoginCommandHandler.cs|IRefreshTokenRepository|_refreshTokenRepository.CreateAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Application/Features/Auth/Handlers/CommandHandlers/LoginCommandHandler.cs|IUserRepository|_userRepository.RecordLoginFailureAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Application/Features/Auth/Handlers/CommandHandlers/LoginCommandHandler.cs|IUserRepository|_userRepository.RecordLoginOutcomeAsync|1
+    services/Diten.AuthService/src/Diten.AuthService.Application/Features/Auth/Handlers/CommandHandlers/LoginCommandHandler.cs|IUserRepository|_userRepository.TryClaimSignInAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Application/Features/Auth/Handlers/CommandHandlers/LogoutCommandHandler.cs|IRefreshTokenRepository|_refreshTokenRepository.UpdateAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Application/Features/Auth/Handlers/CommandHandlers/PlatformLoginCommandHandler.cs|IRefreshTokenRepository|_refreshTokenRepository.CreateAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Application/Features/Auth/Handlers/CommandHandlers/PlatformLoginCommandHandler.cs|IUserRepository|_userRepository.RecordLoginOutcomeAsync|1
@@ -410,6 +419,7 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/PlatformAccountScopedUserRepository.cs|UserRepository|_inner.CreateAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/PlatformAccountScopedUserRepository.cs|UserRepository|_inner.RecordLoginFailureAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/PlatformAccountScopedUserRepository.cs|UserRepository|_inner.RecordLoginOutcomeAsync|1
+    services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/PlatformAccountScopedUserRepository.cs|UserRepository|_inner.TryClaimSignInAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/PlatformAccountScopedUserRepository.cs|UserRepository|_inner.SetPasswordResetTokenAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/PlatformAccountScopedUserRepository.cs|UserRepository|_inner.SetPlatformActorTypeAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/PlatformAccountScopedUserRepository.cs|UserRepository|_inner.SoftDeleteAsync|1

@@ -51,6 +51,30 @@ public sealed class ClientAddressProductionDefaultsTests : IClassFixture<ClientA
         }
     }
 
+    /// <summary>WP-USERS-ROLES-CLOSE-FIX1 FIX4 items 1 and 6 — the sign-in door with NO trusted proxy (every request through
+    /// one peer): one tenant's flood closes that tenant's door for its minute (Retry-After 60 — that ceiling's window, not
+    /// 900), and another tenant still signs in. Before, one bucket for everybody: ~5 junk requests a second closed every
+    /// tenant's sign-in.</summary>
+    [Fact]
+    public async Task With_no_trusted_proxy_one_tenants_flood_closes_only_its_own_sign_in_door()
+    {
+        Guid flooded = Guid.NewGuid(), other = Guid.NewGuid();
+        using (var junk = _host.Client(null, flooded))
+        {
+            for (var i = 0; i < Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.DefaultUnidentifiedPerMinute; i++)
+                Assert.NotEqual((HttpStatusCode)429, (await junk.PostAsync("api/tenant-auth/login",
+                    new StringContent("{}", System.Text.Encoding.UTF8, "application/json"))).StatusCode);
+        }
+
+        using var floodedClient = _host.Client(null, flooded);
+        var refused = await floodedClient.PostAsJsonAsync("api/tenant-auth/login", new { email = "a@b.test", password = "x" });
+        Assert.Equal((HttpStatusCode)429, refused.StatusCode);
+        Assert.Equal("60", Assert.Single(refused.Headers.GetValues("Retry-After")));
+
+        using var otherClient = _host.Client(null, other);
+        Assert.NotEqual((HttpStatusCode)429, (await otherClient.PostAsJsonAsync("api/tenant-auth/login", new { email = "a@b.test", password = "x" })).StatusCode);
+    }
+
     [Fact]
     public void With_no_trusted_proxy_the_resolver_cannot_tell_clients_apart_and_the_host_warned_once()
     {
@@ -89,6 +113,40 @@ public sealed class ClientAddressProductionDefaultsTests : IClassFixture<ClientA
         Assert.Equal(PasswordDoorRateLimiter.DefaultWindow, _host.Factory.Services.GetRequiredService<PasswordDoorRateLimiter>().Window);
     }
 
+    // ── FIX5 addendum item 1: the CPU slot is the password hasher's, taken for the BCrypt call only ─────────────────────
+
+    /// <summary>FIX5 addendum item 1 — work that verifies no password takes no slot: with EVERY slot held, a body that fails
+    /// validation is answered 400 at once (FIX4's filter queued it for a slot first); a sign-in that does verify waits the
+    /// queue's 2 s and is refused 429 with Retry-After: 1.</summary>
+    [Fact]
+    public async Task With_every_slot_held_only_password_work_waits_and_is_refused_with_retry_after_one()
+    {
+        var gate = _host.Factory.Services.GetRequiredService<PasswordWorkGate>();
+        var slots = Enumerable.Range(0, gate.Slots).Select(_ => gate.Enter()).ToList();
+        try
+        {
+            using var client = _host.Client(null, Guid.NewGuid());
+            var timer = System.Diagnostics.Stopwatch.StartNew();
+            var invalid = await client.PostAsync("api/tenant-auth/login", new StringContent("{}", System.Text.Encoding.UTF8, "application/json"));
+            Assert.Equal(HttpStatusCode.BadRequest, invalid.StatusCode);
+            Assert.True(timer.Elapsed < PasswordWorkGate.DefaultQueueTimeout, $"no slot was waited for ({timer.Elapsed})");
+
+            timer.Restart();
+            // On its own task and bounded: the test server runs the request on the caller's thread, so a queue without a
+            // timeout would block this test for good (a token cannot free it); here it fails, and `finally` frees the slots.
+            var verifying = await Task.Run(() => client.PostAsJsonAsync("api/tenant-auth/login",
+                new { email = $"busy.{Guid.NewGuid():N}@defaults.test", password = "x" })).WaitAsync(TimeSpan.FromSeconds(20));
+            Assert.Equal((HttpStatusCode)429, verifying.StatusCode);
+            Assert.Equal("1", Assert.Single(verifying.Headers.GetValues("Retry-After")));
+            Assert.Contains(AuthRefusalCodes.TooManyRequests, await verifying.Content.ReadAsStringAsync(), StringComparison.Ordinal);
+            Assert.InRange(timer.Elapsed, PasswordWorkGate.DefaultQueueTimeout - TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(20));
+        }
+        finally
+        {
+            foreach (var slot in slots) slot.Dispose();
+        }
+    }
+
     // ── the configuration itself, read at registration ──────────────────────────────────────────────────────
 
     // ── FIX5: the link door — the valid link is never counted, junk never locks it, junk never reaches Platform ──
@@ -115,6 +173,33 @@ public sealed class ClientAddressProductionDefaultsTests : IClassFixture<ClientA
 
         Assert.Equal((HttpStatusCode)429, junk!.StatusCode); // the junk is stopped …
         Assert.Equal(HttpStatusCode.NoContent, (await LinkAsync(email, _host.Links.LastTokenFor(email), "Fresh!Passw0rd-529")).StatusCode); // … the owner is not
+    }
+
+    /// <summary>FIX6 N3 — the platform controller hashes outside MediatR: with every password-work slot held, redeeming a VALID
+    /// platform link is the doors' coded 429 with Retry-After: 1 (it was the exception handler's 500), and nothing was written
+    /// — the same link works once the slots are free.</summary>
+    [Fact]
+    public async Task A_platform_link_redeemed_while_every_slot_is_held_is_the_coded_429_and_the_link_still_works()
+    {
+        var email = await ProvisionedAdministratorAsync();
+        var token = _host.Links.LastTokenFor(email);
+        var gate = _host.Factory.Services.GetRequiredService<PasswordWorkGate>();
+
+        var slots = Enumerable.Range(0, gate.Slots).Select(_ => gate.Enter()).ToList();
+        HttpResponseMessage busy;
+        try
+        {
+            busy = await Task.Run(() => LinkAsync(email, token, "Fresh!Passw0rd-529")).WaitAsync(TimeSpan.FromSeconds(20));
+        }
+        finally
+        {
+            foreach (var slot in slots) slot.Dispose();
+        }
+
+        Assert.Equal((HttpStatusCode)429, busy.StatusCode);
+        Assert.Equal("1", Assert.Single(busy.Headers.GetValues("Retry-After")));
+        Assert.Contains(AuthRefusalCodes.TooManyRequests, await busy.Content.ReadAsStringAsync(), StringComparison.Ordinal);
+        Assert.Equal(HttpStatusCode.NoContent, (await LinkAsync(email, token, "Fresh!Passw0rd-529")).StatusCode);
     }
 
     [Fact]

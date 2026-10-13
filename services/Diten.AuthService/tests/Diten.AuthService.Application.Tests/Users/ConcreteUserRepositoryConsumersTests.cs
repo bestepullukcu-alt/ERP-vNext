@@ -27,6 +27,7 @@ public sealed class ConcreteUserRepositoryConsumersTests
         ["services/Diten.AuthService/src/Diten.AuthService.Persistence/ServiceClientOperationalPersistenceRegistration.cs"] = 1
     };
 
+    private const string OwnDeclaration = "services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/UserRepository.cs";
     private static readonly Regex Concrete = new(@"(?<![A-Za-z0-9_])UserRepository(?![A-Za-z0-9_])", RegexOptions.Compiled);
     private static readonly Regex Comments = new(@"//[^\r\n]*|/\*[\s\S]*?\*/", RegexOptions.Compiled);
 
@@ -36,12 +37,16 @@ public sealed class ConcreteUserRepositoryConsumersTests
         var root = new DirectoryInfo(AppContext.BaseDirectory);
         while (!File.Exists(Path.Combine(root.FullName, "AGENTS.md"))) root = root.Parent ?? throw new InvalidOperationException("Checkout required");
         var src = Path.Combine(root.FullName, "services", "Diten.AuthService", "src");
+        Assert.True(File.Exists(Path.Combine(root.FullName, OwnDeclaration)), "the exempted declaration moved: " + OwnDeclaration);
 
         var found = Directory.EnumerateFiles(src, "*.cs", SearchOption.AllDirectories)
             .Where(path => !path.Split(Path.DirectorySeparatorChar).Any(part => part is "obj" or "bin"))
-            .Where(path => Path.GetFileName(path) != "UserRepository.cs") // the type's own declaration
-            .Select(path => (File: Path.GetRelativePath(root.FullName, path).Replace('\\', '/'),
-                Count: Concrete.Matches(Comments.Replace(File.ReadAllText(path), string.Empty)).Count))
+            .Select(path => (Path: path, File: Path.GetRelativePath(root.FullName, path).Replace('\\', '/')))
+            // WP-USERS-ROLES-CLOSE-FIX1 item 6 (e) — the type's own declaration, by its FULL relative path: any other file that
+            // happens to be named UserRepository.cs is measured like every other file.
+            .Where(item => item.File != OwnDeclaration)
+            .Select(item => (item.File,
+                Count: Concrete.Matches(Comments.Replace(File.ReadAllText(item.Path), string.Empty)).Count))
             .Where(item => item.Count > 0)
             .ToDictionary(item => item.File, item => item.Count, StringComparer.Ordinal);
 

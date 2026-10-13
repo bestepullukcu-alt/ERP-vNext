@@ -246,6 +246,25 @@ public sealed class PlatformAdminSyncTests : IClassFixture<PlatformAdminSyncTest
         Assert.Equal(after, (await ByIdAsync(user.Id))!.PlatformActorType);
     }
 
+    /// <summary>WP-USERS-ROLES-CLOSE-FIX1 item 6 (d) — the provision of an EXISTING account (Platform's re-invitation, BL-529's
+    /// reset) writes the record's actor type onto the STORED row too (a different one, and none at all), read before any
+    /// sign-in: the marker line inside the re-invitation is pinned, not left to a later sign-in's repair.</summary>
+    [Theory]
+    [InlineData(null, "PartnerAdmin", "partner_admin")]
+    [InlineData("platform_admin", "PartnerAdmin", "partner_admin")]
+    [InlineData(null, "PlatformAdmin", "platform_admin")]
+    public async Task A_re_invited_existing_account_is_stored_with_the_records_actor_type_before_any_sign_in(string? before, string recordType, string after)
+    {
+        var user = await SeedAsync(storedActorType: before);
+
+        var response = await ProvisionAsync(user.Email, recordType);
+
+        Assert.True(response.IsSuccessStatusCode, $"{(int)response.StatusCode}: {await response.Content.ReadAsStringAsync()}");
+        var stored = (await ByIdAsync(user.Id))!;
+        Assert.Equal(after, stored.PlatformActorType);
+        Assert.NotNull(stored.PasswordResetTokenHash); // it went through the re-invitation, not a new account
+    }
+
     private async Task<User> SeedAsync(bool active = true, bool emailConfirmed = true, string[]? roles = null, Guid? tenantId = null, string? userName = null,
         string? storedActorType = "platform_admin")
     {
@@ -329,6 +348,7 @@ public sealed class PlatformAdminSyncTests : IClassFixture<PlatformAdminSyncTest
         public Task<long> GetCountByTenantAsync(Guid tenantId, CancellationToken ct) => inner.GetCountByTenantAsync(tenantId, ct);
         public Task<User> CreateAsync(User user, CancellationToken ct) => inner.CreateAsync(user, ct);
         public Task RecordLoginOutcomeAsync(User user, Guid tenantId, CancellationToken ct) => inner.RecordLoginOutcomeAsync(user, tenantId, ct);
+        public Task<bool> TryClaimSignInAsync(Guid userId, Guid tenantId, CancellationToken ct) => inner.TryClaimSignInAsync(userId, tenantId, ct);
         public object CaptureState(User user) => inner.CaptureState(user);
         public Task<bool> SetPasswordResetTokenAsync(Guid userId, Guid tenantId, string tokenHash, DateTime expiresAtUtc, CancellationToken ct) => inner.SetPasswordResetTokenAsync(userId, tenantId, tokenHash, expiresAtUtc, ct);
         public Task<LoginFailureOutcome> RecordLoginFailureAsync(Guid userId, Guid tenantId, int maxFailedAttempts, int lockoutDurationMinutes, CancellationToken ct) => inner.RecordLoginFailureAsync(userId, tenantId, maxFailedAttempts, lockoutDurationMinutes, ct);

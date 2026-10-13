@@ -886,8 +886,11 @@ yaşar. Bu yüzden kural kiracıya değil **hesaba** bağlıdır: Auth kaydında
   ayarı, varsayılan 60 dk) dolana kadar o belirteç **içine gömülü izinleriyle** sıradan kullanıcılar ve roller üzerinde işlem
   yapabilir ve öteki servisler tarafından kabul edilir. Bu bir **penceredir**; "hiçbir şeyi yönetemez" değildir. Kapanması için
   belirtecin süresinin dolması ya da o hesabın oturumlarının elle iptali gerekir.
-  (c) **Anonim `POST api/tenant-auth/register`, bir platform hesabının adresine aynı 409'u verir** (`RegisterCommandHandler`: adres
-  zaten kullanımda). Bu yoklama belirteç gerektirmez; (a)'daki yoklamanın belirteçsiz hâlidir ve aynı nedenle kaçınılmazdır.
+  (c) **Anonim `POST api/tenant-auth/register` (ve `api/auth/register`) PLATFORM kiracısında artık her adrese aynı 403'ü verir**
+  (WP-USERS-ROLES-CLOSE-FIX1 FIX3 madde 5: `RegisterCommandHandler` platform kiracısında adrese bakmadan reddeder; kendi kendine
+  platform hesabı açılmaz, yönetici adresi yoklanamaz). Kayıt ucu istemci başına / kiracı başına sayılır, gövde 8 KB. **Kalan:**
+  başka bir kiracıda var olan bir adres hâlâ 409 "kullanımda" alır — o kiracının hesapları için belirteçsiz bir yoklama; tekleştirilmesi
+  karar bekliyor (BL-621).
   (d) **İşaretsiz bir hesabın kiracı oturumu yenilemede reddedilmez.** Kiracı yenilemesinin platform hesabını reddetmesi (A')
   işarete bağlıdır; işareti eksik hesabın kiracı oturumu, hesap bir platform basımından geçip işaretlenene kadar yenilenmeye devam
   eder ve böylece `SessionTimeoutMinutes`'ı aşar (yenileme ömrü kadar). İşaretin yalnız platform basımında onarılması (FIX7) ile

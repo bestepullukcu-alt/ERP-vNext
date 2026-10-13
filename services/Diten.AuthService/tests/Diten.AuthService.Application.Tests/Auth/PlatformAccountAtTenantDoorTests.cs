@@ -306,6 +306,84 @@ public sealed class PlatformAccountAtTenantDoorTests : IClassFixture<PlatformAcc
         Assert.Equal(actorType, stored.PlatformActorType);
     }
 
+    /// <summary>WP-USERS-ROLES-CLOSE-FIX1 item 6 (a, b) — THE DECORATOR'S OWN FORWARDING. The hidden caller's in-memory pre-check
+    /// passes (the account is ordinary); Platform marks the account BETWEEN that check and the write (the decorator's seam):
+    /// the link write, the failure count and the delete each land on 0 rows, because the decorator itself hands the write the
+    /// stored-row exclusion. Before this, the pre-check answered every case and the forwarded flag never ran.</summary>
+    [Theory]
+    [InlineData("platform_admin")]
+    [InlineData("partner_admin")]
+    public async Task A_hidden_callers_write_after_its_pre_check_does_not_land_on_an_account_marked_in_between(string actorType)
+    {
+        var tenant = Guid.NewGuid();
+        var ct = CancellationToken.None;
+        using var scope = _host.Factory.Services.CreateScope();
+        var sp = scope.ServiceProvider;
+        sp.GetRequiredService<TenantContext>().SetTenant(tenant);
+        var inner = sp.GetRequiredService<UserRepository>();
+        var hidden = new PlatformAccountScopedUserRepository(inner, new HideAccountsFromCaller());
+
+        async Task<User> MarkedInBetweenAsync()
+        {
+            var target = await inner.CreateAsync(new User($"g.{Guid.NewGuid():N}@bl521.test", "hash:before", "Gap", "Target", tenant), ct);
+            hidden.AfterPlatformPreCheck = async () => Assert.True(await inner.SetPlatformActorTypeAsync(target.Id, tenant, actorType, ct));
+            return target;
+        }
+
+        var linked = await MarkedInBetweenAsync();
+        Assert.False(await hidden.SetPasswordResetTokenAsync(linked.Id, tenant, "link", DateTime.UtcNow.AddHours(1), ct));
+        Assert.Null((await inner.GetByIdAndTenantAsync(linked.Id, tenant, ct))!.PasswordResetTokenHash);
+
+        var counted = await MarkedInBetweenAsync();
+        Assert.Equal(0, (await hidden.RecordLoginFailureAsync(counted.Id, tenant, 5, 15, ct)).FailedLoginAttempts);
+        Assert.Equal(0, (await inner.GetByIdAndTenantAsync(counted.Id, tenant, ct))!.FailedLoginAttempts);
+
+        var deleted = await MarkedInBetweenAsync();
+        await hidden.SoftDeleteAsync(deleted.Id, tenant, ct);
+        var stillThere = await inner.GetByIdAndTenantAsync(deleted.Id, tenant, ct);
+        Assert.NotNull(stillThere);
+        Assert.Equal(actorType, stillThere!.PlatformActorType);
+
+        // The control: with no one marking in between, the same three writes land on an ordinary user.
+        hidden.AfterPlatformPreCheck = null;
+        var ordinary = await inner.CreateAsync(new User($"c.{Guid.NewGuid():N}@bl521.test", "hash:before", "Gap", "Control", tenant), ct);
+        Assert.True(await hidden.SetPasswordResetTokenAsync(ordinary.Id, tenant, "link", DateTime.UtcNow.AddHours(1), ct));
+        Assert.Equal(1, (await hidden.RecordLoginFailureAsync(ordinary.Id, tenant, 5, 15, ct)).FailedLoginAttempts);
+        await hidden.SoftDeleteAsync(ordinary.Id, tenant, ct);
+        Assert.Null(await inner.GetByIdAndTenantAsync(ordinary.Id, tenant, ct));
+    }
+
+    /// <summary>WP-USERS-ROLES-CLOSE-FIX1 item 6, reworked in FIX5 — the count and the lockout are now ONE write (the lock is set
+    /// by the failure that reaches the threshold, and the count starts over), so there is no gap between them for Platform's
+    /// marking to fall into (FIX1's seam is gone). What remains: a hidden caller's failure write never counts or locks a stored
+    /// platform account, even at the threshold; the ordinary control is locked by its threshold failure, its count reset.</summary>
+    [Theory]
+    [InlineData("platform_admin")]
+    [InlineData("partner_admin")]
+    public async Task A_hidden_callers_failure_write_neither_counts_nor_locks_a_stored_platform_account(string actorType)
+    {
+        var tenant = Guid.NewGuid();
+        var ct = CancellationToken.None;
+        using var scope = _host.Factory.Services.CreateScope();
+        var sp = scope.ServiceProvider;
+        sp.GetRequiredService<TenantContext>().SetTenant(tenant);
+        var inner = sp.GetRequiredService<UserRepository>();
+        var target = await inner.CreateAsync(new User($"l.{Guid.NewGuid():N}@bl521.test", "hash:before", "Lock", "Target", tenant), ct);
+        var control = await inner.CreateAsync(new User($"k.{Guid.NewGuid():N}@bl521.test", "hash:before", "Lock", "Control", tenant), ct);
+        Assert.True(await inner.SetPlatformActorTypeAsync(target.Id, tenant, actorType, ct));
+
+        var outcome = await inner.RecordLoginFailureAsync(target.Id, tenant, 1, 15, excludePlatformAccounts: true, ct);
+        Assert.Equal((0, (DateTime?)null, false), (outcome.FailedLoginAttempts, outcome.LockoutEnd, outcome.LockoutStarted));
+        var stored = (await inner.GetByIdAndTenantAsync(target.Id, tenant, ct))!;
+        Assert.Equal((0, (DateTime?)null), (stored.FailedLoginAttempts, stored.LockoutEnd));
+
+        var locked = await inner.RecordLoginFailureAsync(control.Id, tenant, 1, 15, excludePlatformAccounts: true, ct);
+        Assert.True(locked.LockoutStarted);
+        var controlStored = (await inner.GetByIdAndTenantAsync(control.Id, tenant, ct))!;
+        Assert.NotNull(controlStored.LockoutEnd);
+        Assert.Equal(0, controlStored.FailedLoginAttempts);
+    }
+
     /// <summary>
     /// Merge WP-CT-LANE-BL521-MERGE-01 FIX1 (CT survivor M3) — BL-529's binding holds for PLATFORM actors too: a platform
     /// session that is not bound to the current password (minted before the binding, or the password changed since) is
@@ -362,12 +440,14 @@ public sealed class PlatformAccountAtTenantDoorTests : IClassFixture<PlatformAcc
         return await client.PostAsJsonAsync("api/auth/refresh-token", new { accessToken, refreshToken = raw });
     }
 
-    /// <summary>Registration mints a token only for the account it CREATES. An address that belongs to a platform account is
-    /// "already in use" — the same 409 an ordinary user's address gets — and creates, mints and writes nothing.</summary>
+    /// <summary>Registration mints a token only for the account it CREATES. An address that belongs to a platform account gets
+    /// the same answer an ordinary user's address gets, and creates, mints and writes nothing. WP-USERS-ROLES-CLOSE-FIX1 FIX3
+    /// item 5 — in the PLATFORM tenant (this class's business-and-platform tenant) that answer is now the 403 every address
+    /// gets (nobody signs themselves up where the platform administrators are), no longer the 409.</summary>
     [Theory]
     [InlineData("platform_admin")]
     [InlineData("partner_admin")]
-    public async Task Registering_the_address_of_a_platform_account_is_the_ordinary_409_and_mints_nothing(string actorType)
+    public async Task Registering_the_address_of_a_platform_account_gets_the_ordinary_answer_and_mints_nothing(string actorType)
     {
         var platformAccount = await SeedAsync(BusinessAndPlatformTenant, platform: true, actorType: actorType);
         var ordinary = await SeedAsync(BusinessAndPlatformTenant);
@@ -376,7 +456,7 @@ public sealed class PlatformAccountAtTenantDoorTests : IClassFixture<PlatformAcc
         var platformAnswer = await RegisterAsync(platformAccount.Email);
         var ordinaryAnswer = await RegisterAsync(ordinary.Email);
 
-        Assert.Equal(HttpStatusCode.Conflict, platformAnswer.Status);
+        Assert.Equal(HttpStatusCode.Forbidden, platformAnswer.Status);
         Assert.Equal(ordinaryAnswer.Status, platformAnswer.Status);
         Assert.Equal(ordinaryAnswer.Errors, platformAnswer.Errors);
         Assert.False(platformAnswer.HasToken);

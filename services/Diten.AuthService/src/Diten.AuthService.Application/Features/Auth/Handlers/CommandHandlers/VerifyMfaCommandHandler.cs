@@ -64,7 +64,7 @@ public sealed class VerifyMfaCommandHandler : IRequestHandler<VerifyMfaCommand, 
         }
         catch
         {
-            return Response<AuthResponse>.Fail("Invalid verification code.", 401);
+            return Response<AuthResponse>.Fail("Invalid verification code.", [new ResponseError(AuthRefusalCodes.InvalidVerificationCode)], 401);
         }
 
         var settings = await _tenantLoginSettingsClient.GetAsync(challenge.TenantId, ct);
@@ -79,7 +79,7 @@ public sealed class VerifyMfaCommandHandler : IRequestHandler<VerifyMfaCommand, 
 
         if (user is null || !user.IsActive || user.IsPlatformAccount)
         {
-            return Response<AuthResponse>.Fail("Invalid verification code.", 401);
+            return Response<AuthResponse>.Fail("Invalid verification code.", [new ResponseError(AuthRefusalCodes.InvalidVerificationCode)], 401);
         }
 
         // BL-529 FIX2 — the code proves the second factor, not the password: if the password changed since the password
@@ -87,7 +87,7 @@ public sealed class VerifyMfaCommandHandler : IRequestHandler<VerifyMfaCommand, 
         if (!_mfaChallengeService.IsBoundToCurrentPassword(challenge, user))
         {
             await _authAuditService.WriteAsync("tenant_login_mfa_password_changed", user.Id, challenge.TenantId, "{}", ct);
-            return Response<AuthResponse>.Fail("Invalid verification code.", 401);
+            return Response<AuthResponse>.Fail("Invalid verification code.", [new ResponseError(AuthRefusalCodes.InvalidVerificationCode)], 401);
         }
 
         var roles = (await _userRoleRepository.GetRolesByUserAsync(user.Id, challenge.TenantId, ct))
@@ -124,7 +124,7 @@ public sealed class VerifyMfaCommandHandler : IRequestHandler<VerifyMfaCommand, 
         // and only the sign-in's own fields are written (never the whole account, which could undo that reset).
         if (!await IssuedSessionGuard.StillValidAsync(_userRepository, _refreshTokenRepository, user.Id, challenge.TenantId, user.PasswordHash, refreshTokenStr, ct))
         {
-            return Response<AuthResponse>.Fail("Invalid verification code.", 401);
+            return Response<AuthResponse>.Fail("Invalid verification code.", [new ResponseError(AuthRefusalCodes.InvalidVerificationCode)], 401);
         }
 
         user.RecordLoginSuccess();

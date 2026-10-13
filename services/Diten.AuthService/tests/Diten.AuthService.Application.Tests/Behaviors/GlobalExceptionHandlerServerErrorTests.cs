@@ -37,6 +37,18 @@ public sealed class GlobalExceptionHandlerServerErrorTests
         Assert.Contains(log.Exceptions, e => e.Message == Leak);
     }
 
+    /// <summary>WP-USERS-ROLES-CLOSE-FIX1 FIX4 item 6 — a body past an anonymous door's [RequestSizeLimit] is Kestrel's 413, said as
+    /// 413 — never a 500 (and never a stack trace).</summary>
+    [Fact]
+    public async Task A_request_body_past_its_limit_is_413_not_500()
+    {
+        var (status, body, _) = await HandleAsync(new BadHttpRequestException("Request body too large. The max request body size is 8192 bytes.",
+            StatusCodes.Status413PayloadTooLarge));
+
+        Assert.Equal(413, status);
+        Assert.DoesNotContain("   at ", body.GetRawText());
+    }
+
     [Fact]
     public async Task A_status_exception_of_5xx_is_treated_the_same_way()
     {

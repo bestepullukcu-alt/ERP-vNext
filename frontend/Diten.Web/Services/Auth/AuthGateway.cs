@@ -28,6 +28,16 @@ public sealed class AuthGateway : IAuthGateway
         ["AUTH_TOO_MANY_REQUESTS"] = "Auth.Error.TooManyRequests",
         ["AUTH_PASSWORD_CHANGED_MEANWHILE"] = "Auth.Error.PasswordChangedMeanwhile",
         ["AUTH_ACCOUNT_DEACTIVATED"] = "Auth.Error.AccountDeactivated",
+        // WP-USERS-ROLES-CLOSE-FIX1 item 2 (BL-496) — every refusal of the sign-in, forced-change and set-password doors.
+        ["AUTH_INVALID_CREDENTIALS"] = "Auth.Error.InvalidCredentials",
+        ["AUTH_LOGIN_UNAVAILABLE"] = "Auth.Error.LoginUnavailable",
+        ["AUTH_EMAIL_LOGIN_DISABLED"] = "Auth.Error.EmailLoginDisabled",
+        ["AUTH_TEMPORARY_PASSWORD_EXPIRED"] = "Auth.Error.TemporaryPasswordExpired",
+        ["AUTH_PLATFORM_PRIVILEGES_REQUIRED"] = "Auth.Error.PlatformPrivilegesRequired",
+        ["AUTH_INVALID_VERIFICATION_CODE"] = "Auth.Error.InvalidVerificationCode",
+        ["AUTH_CURRENT_PASSWORD_INCORRECT"] = "Auth.Error.CurrentPasswordIncorrect",
+        ["AUTH_SESSION_ENDED"] = "Auth.Error.SessionEnded",
+        ["AUTH_LINK_INVALID"] = "Auth.Error.LinkInvalid",
     };
 
     // User-facing message when the auth service / gateway is unreachable. Plain (non-localized) by design — the
@@ -121,7 +131,7 @@ public sealed class AuthGateway : IAuthGateway
         var response = await _httpClient.SendAsync(request, ct);
         return response.IsSuccessStatusCode
             ? new AuthBridgeResult(true, null, null, null, null, null)
-            : new AuthBridgeResult(false, null, null, null, null, await TryReadErrorAsync(response, ct), StatusCode: (int)response.StatusCode);
+            : await FailedAsync(response, ct);
     }
 
     public async Task<AuthBridgeResult> ResetPlatformPasswordAsync(string email, string token, string newPassword, CancellationToken ct = default)
@@ -134,7 +144,7 @@ public sealed class AuthGateway : IAuthGateway
         var response = await _httpClient.SendAsync(request, ct);
         return response.IsSuccessStatusCode
             ? new AuthBridgeResult(true, null, null, null, null, null)
-            : new AuthBridgeResult(false, null, null, null, null, await TryReadErrorAsync(response, ct), StatusCode: (int)response.StatusCode);
+            : await FailedAsync(response, ct);
     }
 
     public async Task<AuthBridgeResult> ResetTenantPasswordAsync(string email, string token, string newPassword, CancellationToken ct = default)
@@ -149,7 +159,36 @@ public sealed class AuthGateway : IAuthGateway
         var response = await _httpClient.SendAsync(request, ct);
         return response.IsSuccessStatusCode
             ? new AuthBridgeResult(true, null, null, null, null, null)
-            : new AuthBridgeResult(false, null, null, null, null, await TryReadErrorAsync(response, ct), StatusCode: (int)response.StatusCode);
+            : await FailedAsync(response, ct);
+    }
+
+    public async Task<AuthBridgeResult> CheckTenantPasswordLinkAsync(string email, string token, CancellationToken ct = default)
+    {
+        // WP-USERS-ROLES-CLOSE-FIX1 item 3 — POST, so the link never sits in a URL on its way to AuthService.
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/users/set-password/check")
+        {
+            Content = JsonContent.Create(new { email, token })
+        };
+        AddClientMetadataHeaders(request);
+        try
+        {
+            var response = await _httpClient.SendAsync(request, ct);
+            return response.IsSuccessStatusCode
+                ? new AuthBridgeResult(true, null, null, null, null, null, StatusCode: (int)response.StatusCode)
+                : await FailedAsync(response, ct);
+        }
+        catch (Exception ex) when (ex is HttpRequestException || (ex is TaskCanceledException && !ct.IsCancellationRequested))
+        {
+            // The link itself is never logged (only the door's name).
+            _logger.LogWarning(ex, "Auth bridge set-password link pre-check failed: authentication service is unreachable.");
+            return new AuthBridgeResult(false, null, null, null, null, AuthServiceUnavailableMessage, StatusCode: StatusCodes.Status503ServiceUnavailable);
+        }
+    }
+
+    private async Task<AuthBridgeResult> FailedAsync(HttpResponseMessage response, CancellationToken ct)
+    {
+        var (message, localized) = await ReadRefusalAsync(response, ct);
+        return new AuthBridgeResult(false, null, null, null, null, message, StatusCode: (int)response.StatusCode, ErrorLocalized: localized);
     }
 
     public Task<AuthBridgeResult> VerifyTenantMfaAsync(string challengeId, string code, CancellationToken ct = default)
@@ -269,15 +308,17 @@ public sealed class AuthGateway : IAuthGateway
                     || response.StatusCode == System.Net.HttpStatusCode.Forbidden;
             }
 
+            var (refusal, localized) = await ReadRefusalAsync(response, ct);
             return new AuthBridgeResult(
                 Success: false,
                 AccessToken: null,
                 RefreshToken: null,
                 ExpiresAt: null,
                 User: null,
-                ErrorMessage: await TryReadErrorAsync(response, ct),
+                ErrorMessage: refusal,
                 ReauthRequired: reauthRequired,
-                StatusCode: (int)response.StatusCode);
+                StatusCode: (int)response.StatusCode,
+                ErrorLocalized: localized);
         }
 
         var authResponse = await ReadAuthBridgeResultAsync(response, ct);
@@ -316,11 +357,15 @@ public sealed class AuthGateway : IAuthGateway
     }
 
     private async Task<string?> TryReadErrorAsync(HttpResponseMessage response, CancellationToken ct)
+        => (await ReadRefusalAsync(response, ct)).Message;
+
+    // WP-USERS-ROLES-CLOSE-FIX1 item 2 — the refusal and whether it is already in the reader's language (a known code).
+    private async Task<(string? Message, bool Localized)> ReadRefusalAsync(HttpResponseMessage response, CancellationToken ct)
     {
         var content = await response.Content.ReadAsStringAsync(ct);
         if (string.IsNullOrWhiteSpace(content))
         {
-            return response.ReasonPhrase ?? $"HTTP {((int)response.StatusCode)}";
+            return (response.ReasonPhrase ?? $"HTTP {((int)response.StatusCode)}", false);
         }
 
         try
@@ -341,18 +386,18 @@ public sealed class AuthGateway : IAuthGateway
                     var refusal = GatewayRefusal.Read(content);
                     var unsaid = refusal.HasUncoded || refusal.Codes.Any(c => !ErrorCodeResourceKeys.ContainsKey(c.Code));
                     var general = unsaid ? _localizer["ErrorOccurred"] : null;
-                    return general is { ResourceNotFound: false } ? $"{localized} {general.Value}" : localized;
+                    return (general is { ResourceNotFound: false } ? $"{localized} {general.Value}" : localized, true);
                 }
             }
 
             if (document.RootElement.TryGetProperty("detail", out var detail) && detail.ValueKind == JsonValueKind.String)
             {
-                return NormalizeValidationError(detail.GetString());
+                return (NormalizeValidationError(detail.GetString()), false);
             }
 
             if (document.RootElement.TryGetProperty("title", out var title) && title.ValueKind == JsonValueKind.String)
             {
-                return NormalizeValidationError(title.GetString());
+                return (NormalizeValidationError(title.GetString()), false);
             }
 
             if (document.RootElement.TryGetProperty("errors", out var errors) && errors.ValueKind == JsonValueKind.Array)
@@ -366,16 +411,16 @@ public sealed class AuthGateway : IAuthGateway
 
                 if (messages.Length > 0)
                 {
-                    return NormalizeValidationError(string.Join(" ", messages));
+                    return (NormalizeValidationError(string.Join(" ", messages)), false);
                 }
             }
         }
         catch
         {
-            return NormalizeValidationError(content);
+            return (NormalizeValidationError(content), false);
         }
 
-        return NormalizeValidationError(content);
+        return (NormalizeValidationError(content), false);
     }
 
     private static string? NormalizeValidationError(string? message)

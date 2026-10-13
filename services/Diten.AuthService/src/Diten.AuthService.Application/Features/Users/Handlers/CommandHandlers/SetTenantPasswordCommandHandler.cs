@@ -1,6 +1,7 @@
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.Features.Users.Commands;
+using Diten.AuthService.Application.Features.Users.Services;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -10,8 +11,6 @@ namespace Diten.AuthService.Application.Features.Users.Handlers.CommandHandlers;
 // the (anonymous) caller has no tenant header/JWT, so the user is resolved by token hash.
 public sealed class SetTenantPasswordCommandHandler : IRequestHandler<SetTenantPasswordCommand, Response<NoContent>>
 {
-    private const string InvalidTokenMessage = "Password setup link is invalid or expired.";
-
     private readonly IUserRepository _userRepository;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IPasswordPolicyService _passwordPolicyService;
@@ -37,42 +36,31 @@ public sealed class SetTenantPasswordCommandHandler : IRequestHandler<SetTenantP
 
     public async Task<Response<NoContent>> Handle(SetTenantPasswordCommand request, CancellationToken ct)
     {
-        var normalizedEmail = (request.Email ?? string.Empty).Trim().ToLowerInvariant();
-        var tokenHash = _refreshTokenHasher.Hash(request.Token);
-        var user = await _userRepository.GetByPasswordResetTokenHashAsync(tokenHash, ct);
-
-        // Generic failure for every mismatch (don't reveal which check failed). The email is
-        // re-verified against the token-owner so a leaked token alone can't target a different email.
-        if (user is null ||
-            string.IsNullOrWhiteSpace(user.PasswordResetTokenHash) ||
-            user.PasswordResetTokenExpiresAt is null ||
-            user.PasswordResetTokenExpiresAt <= DateTime.UtcNow ||
-            // BL-529 FIX7 item 5 — constant-time, as the platform door (hygiene: the stored value is a keyed hash).
-            !System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(
-                System.Text.Encoding.UTF8.GetBytes(user.PasswordResetTokenHash),
-                System.Text.Encoding.UTF8.GetBytes(tokenHash)) ||
-            !string.Equals(user.Email, normalizedEmail, StringComparison.OrdinalIgnoreCase))
+        // WP-USERS-ROLES-CLOSE-FIX1 item 3 — the link is read by the one reader the page's pre-check reads it with
+        // (TenantPasswordLink): the same three answers, in the same order — the pre-check cannot say more than this door.
+        var (linkState, linkUser, linkHash) = await TenantPasswordLink.ReadAsync(_userRepository, _refreshTokenHasher, request.Email, request.Token, ct);
+        if (linkState == TenantPasswordLinkState.Invalid)
         {
-            return Response<NoContent>.Fail(InvalidTokenMessage, 400);
+            return TenantPasswordLink.InvalidAnswer();
         }
 
         // BL-529 FIX2 — an account an administrator deactivated is not switched back on by a link (an invitation's
         // included: the link activates the account, the deactivation would be undone from outside).
         // FIX8 item 1 (b) — marked, or switched off before BL-529 (inactive, no mark, not a pending invitation). The link is
         // kept: once an administrator activates the account, the same link sets the password.
-        if (user.IsDeactivatedByAdministrator())
+        if (linkState == TenantPasswordLinkState.Deactivated)
         {
-            return Response<NoContent>.Fail(
-                "This account has been deactivated by an administrator.",
-                [new ResponseError(AuthRefusalCodes.AccountDeactivated)],
-                409);
+            return TenantPasswordLink.DeactivatedAnswer();
         }
+
+        var user = linkUser!;
+        var tokenHash = linkHash!;
 
         await _passwordPolicyService.ValidateTenantPasswordAsync(user.TenantId, user.Id, request.NewPassword, "tenant_set_password", ct);
 
         var state = _userRepository.CaptureState(user);
         var wasActive = user.IsActive;
-        user.UpdatePassword(_passwordHasher.Hash(request.NewPassword));
+        user.UpdatePassword(await _passwordHasher.HashAsync(request.NewPassword, ct));
         user.ClearPasswordChangeRequirement(); // also clears the one-time token (single use)
         // BL-529 — a password set through the link starts clean: the lockout the old password's failures (or an attacker
         // guessing at it) built up does not outlive it.
@@ -87,7 +75,7 @@ public sealed class SetTenantPasswordCommandHandler : IRequestHandler<SetTenantP
         // (a pending invitation reads false and still matches).
         if (!await _userRepository.TryWriteChangesAsync(user, state, user.TenantId, new UserWriteCondition(PasswordResetTokenHash: tokenHash, IsActive: wasActive, DeactivatedByAdministrator: false), ct))
         {
-            return Response<NoContent>.Fail(InvalidTokenMessage, 400);
+            return TenantPasswordLink.InvalidAnswer();
         }
         await _refreshTokenRepository.RevokeLiveSessionsAsync(user.Id, user.TenantId, SessionRevocationReasons.PasswordChanged, ct);
 

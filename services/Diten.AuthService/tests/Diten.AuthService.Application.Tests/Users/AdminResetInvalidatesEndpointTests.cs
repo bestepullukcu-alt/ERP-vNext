@@ -30,13 +30,15 @@ namespace Diten.AuthService.Application.Tests.Users;
 /// request at exactly that point until the test has run the reset.</para>
 /// </summary>
 [Collection("AccountKindAcceptance")]
-public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminResetInvalidatesEndpointTests.Host>
+public sealed partial class AdminResetInvalidatesEndpointTests : IClassFixture<AdminResetInvalidatesEndpointTests.Host>
 {
     private static readonly Guid PlatformTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
     private const string OldPassword = "Old!Passw0rd-529";
     private const string NewPassword = "New!Passw0rd-529";
     private const string WrongPassword = "Wrong!Passw0rd-529";
-    private const string LoginRefused = """{"data":null,"statusCode":401,"isSuccessful":false,"errors":["Invalid email or password."],"errorCodes":[]}""";
+    // WP-USERS-ROLES-CLOSE-FIX1 item 2 (BL-496) — the one sign-in refusal now carries its code (the same for a wrong password
+    // and an old one); the sentence and the status are what they were.
+    private const string LoginRefused = """{"data":null,"statusCode":401,"isSuccessful":false,"errors":["Invalid email or password."],"errorCodes":[{"code":"AUTH_INVALID_CREDENTIALS","params":null}]}""";
 
     private readonly Host _host;
 
@@ -1267,14 +1269,14 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
     // ── Item 8 (H1): the replacement hash is unguessable ────────────────────────────────────────────────────────
 
     [Fact]
-    public void The_unusable_hash_is_random_and_matches_no_known_password()
+    public async Task The_unusable_hash_is_random_and_matches_no_known_password()
     {
         using var scope = _host.Factory.Services.CreateScope();
         var tokens = scope.ServiceProvider.GetRequiredService<ITokenService>();
         var hasher = new PasswordHasher(); // the production BCrypt hasher, not a double that accepts anything
 
-        var first = AdminPasswordReset.UnusableHash(hasher, tokens);
-        var second = AdminPasswordReset.UnusableHash(hasher, tokens);
+        var first = await AdminPasswordReset.UnusableHashAsync(hasher, tokens, CancellationToken.None);
+        var second = await AdminPasswordReset.UnusableHashAsync(hasher, tokens, CancellationToken.None);
 
         Assert.NotEqual(first, second);
         Assert.StartsWith("$2", first, StringComparison.Ordinal); // a real BCrypt hash
@@ -1472,6 +1474,51 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
         Assert.Equal(admin.PasswordHash, after.PasswordHash);                       // the new password was not written
         Assert.True(after.MustChangePassword);
         Assert.Empty((await LiveRefreshTokensAsync(admin.Id, PlatformTenantId)).Where(t => !liveBefore.Contains(t.Id))); // no new session
+    }
+
+    /// <summary>WP-USERS-ROLES-CLOSE-FIX1 item 6 (c) — the SECOND race point of the platform forced change: after the password
+    /// write, held right before the new session's token is written. A deactivation that lands there: the token just written is
+    /// ended and the answer is the existing 401 "User is inactive." — no live session is left. (The password write itself had
+    /// already landed; only the session is refused.)</summary>
+    [Fact]
+    public async Task A_platform_forced_change_held_before_its_token_write_while_a_deactivation_lands_keeps_no_session()
+    {
+        var email = await ProvisionedPlatformAdminAsync(OldPassword);
+        await WriteAccountAsync(await PlatformUserAsync(email), a => a.RequirePasswordChange(null));
+        var session = await PlatformSessionAsync(email, OldPassword);
+        using var client = _host.Client(session.AccessToken);
+        var admin = await PlatformUserAsync(email);
+
+        var change = await RaceAsync("create:" + admin.Id,
+            () => client.PostAsJsonAsync("api/platform-auth/change-password/forced", new { currentPassword = OldPassword, newPassword = NewPassword, rememberMe = false }),
+            async () => await WriteAccountAsync(await PlatformUserAsync(email), a => a.DeactivateByAdministrator()));
+
+        var body = await change.Content.ReadAsStringAsync();
+        Assert.True(change.StatusCode == HttpStatusCode.Unauthorized, $"{(int)change.StatusCode}: {body}");
+        Assert.Contains("User is inactive.", body, StringComparison.Ordinal);
+        Assert.DoesNotContain("accessToken\":\"ey", body, StringComparison.Ordinal);
+        Assert.Empty(await LiveRefreshTokensAsync(admin.Id, PlatformTenantId));
+    }
+
+    /// <summary>WP-USERS-ROLES-CLOSE-FIX1 item 6 (c) — the same point, an administrator's RESET (the re-invitation) instead:
+    /// the doors' IssuedSessionGuard sees the password moved and ends the token just written — "The session was ended."</summary>
+    [Fact]
+    public async Task A_platform_forced_change_held_before_its_token_write_while_a_reset_lands_keeps_no_session()
+    {
+        var email = await ProvisionedPlatformAdminAsync(OldPassword);
+        await WriteAccountAsync(await PlatformUserAsync(email), a => a.RequirePasswordChange(null));
+        var session = await PlatformSessionAsync(email, OldPassword);
+        using var client = _host.Client(session.AccessToken);
+        var admin = await PlatformUserAsync(email);
+
+        var change = await RaceAsync("create:" + admin.Id,
+            () => client.PostAsJsonAsync("api/platform-auth/change-password/forced", new { currentPassword = OldPassword, newPassword = NewPassword, rememberMe = false }),
+            async () => await AssertOkAsync(await ProvisionPlatformAdminAsync(email)));
+
+        var body = await change.Content.ReadAsStringAsync();
+        Assert.True(change.StatusCode == HttpStatusCode.Unauthorized, $"{(int)change.StatusCode}: {body}");
+        Assert.Contains("The session was ended.", body, StringComparison.Ordinal);
+        Assert.Empty(await LiveRefreshTokensAsync(admin.Id, PlatformTenantId));
     }
 
     [Fact]
@@ -1818,14 +1865,20 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
 
     // ── FIX3 items 5 + 6: the client is who connects; the link door does not count by address alone ─────────────
 
+    /// <summary>WP-USERS-ROLES-CLOSE-FIX1 FIX4 item 2 — a made-up X-Forwarded-For from a peer OUTSIDE the trusted list never buys
+    /// a fresh client (FIX3 item 5's rule, unchanged), but such a peer is no longer one "identified" client either: it is
+    /// UNIDENTIFIED (a stale or incomplete list must not turn the whole platform into one client). What still holds for it:
+    /// the per-address count (the 6th request for one address is refused) — and the door's coarse ceiling
+    /// (AnonymousDoorLimitTests).</summary>
     [Fact]
-    public async Task One_client_is_refused_past_its_limit_whatever_addresses_and_forwarded_headers_it_sends()
+    public async Task A_client_sending_forwarded_headers_from_outside_the_list_is_unidentified_and_still_limited_per_address()
     {
         var peer = RandomPeer();
+        var email = $"x.{Guid.NewGuid():N}@reset.test";
         HttpResponseMessage? last = null;
-        for (var i = 0; i <= Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.DefaultPerClientLimit; i++)
+        for (var i = 0; i <= Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.DefaultPerAddressLimit; i++)
         {
-            last = await PeerPostAsync(peer, "api/platform-auth/forgot-password", new { email = $"x{i}.{Guid.NewGuid():N}@reset.test" },
+            last = await PeerPostAsync(peer, "api/platform-auth/forgot-password", new { email },
                 forwardedFor: $"203.0.113.{i % 250}"); // a fresh made-up forwarded address each time: never believed
         }
 
@@ -3329,10 +3382,14 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
     {
         private readonly PasswordHasher _inner = new();
 
+        // FIX2 item 2 — how many times each submitted password was verified (the door's timing-safe branches included).
+        public static ConcurrentDictionary<string, int> Verifications { get; } = new(StringComparer.Ordinal);
+
         public string Hash(string password) => _inner.Hash(password);
 
         public bool Verify(string password, string hash)
         {
+            Verifications.AddOrUpdate(password, 1, (_, count) => count + 1);
             var ok = _inner.Verify(password, hash);
             gate.Pass("verify:" + password);
             return ok;
@@ -3477,6 +3534,7 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
         public Task<bool> SetPlatformActorTypeAsync(Guid userId, Guid tenantId, string actorType, CancellationToken ct) => inner.SetPlatformActorTypeAsync(userId, tenantId, actorType, ct);
         public Task<IReadOnlyCollection<Guid>> VisibleUserIdsAsync(Guid tenantId, IReadOnlyCollection<Guid> userIds, CancellationToken ct) => inner.VisibleUserIdsAsync(tenantId, userIds, ct);
         public Task RecordLoginOutcomeAsync(User user, Guid tenantId, CancellationToken ct) => inner.RecordLoginOutcomeAsync(user, tenantId, ct);
+        public Task<bool> TryClaimSignInAsync(Guid userId, Guid tenantId, CancellationToken ct) => inner.TryClaimSignInAsync(userId, tenantId, ct);
         public object CaptureState(User user) => inner.CaptureState(user);
         public Task<bool> TryWriteChangesAsync(User user, object capturedState, Guid tenantId, UserWriteCondition condition, CancellationToken ct)
         {

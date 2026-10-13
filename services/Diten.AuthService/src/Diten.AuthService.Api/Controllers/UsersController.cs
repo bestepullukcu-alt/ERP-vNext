@@ -208,10 +208,63 @@ public sealed class UsersController : CustomBaseController
     // No tenant header/JWT is required — see TenantResolutionMiddleware public-path allowance.
     [HttpPost("set-password")]
     [AllowAnonymous]
-    public async Task<IActionResult> SetPassword([FromBody] SetTenantPasswordRequest request, CancellationToken ct)
+    [RequestSizeLimit(AnonymousLinkBodyLimit)] // FIX2 item 5 — an anonymous body is small: an address, a link, a password
+    public async Task<IActionResult> SetPassword(
+        [FromBody] SetTenantPasswordRequest request,
+        [FromServices] Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter passwordDoors,
+        [FromServices] Diten.AuthService.Infrastructure.Security.ClientAddressResolver clientAddress,
+        CancellationToken ct)
     {
+        // WP-USERS-ROLES-CLOSE-FIX1 FIX2 item 4 — the redemption is limited too (it had no limit), with its own prefix.
+        var asking = clientAddress.Identify(HttpContext);
+        var door = passwordDoors.TryAcquireTenantLinkDoor(Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.TenantLinkDoor.Redeem,
+            asking.Key, request.Email, asking.Identified);
+        if (!door.Allowed)
+        {
+            return TenantLinkDoorTooManyRequests(door.RetryAfter);
+        }
+
         var result = await _mediator.Send(new SetTenantPasswordCommand(request.Email, request.Token, request.NewPassword), ct);
         return CreateActionResultInstance(result);
+    }
+
+    // WP-USERS-ROLES-CLOSE-FIX1 item 3 (KR4) — the set-password page's READ-ONLY pre-check: which face to draw before anyone
+    // types a password (the form, "deactivated", or "this link is no longer valid"). The same reader as the redemption above,
+    // so it says nothing the redemption would not; nothing is written. POST, so the link stays out of the URL (and of every
+    // access log). FIX2 item 4 — EVERY request is counted (per client, or per address bucket when clients cannot be told
+    // apart), before the store is read, under its own prefix — the valid link's too: a pre-check cannot be used to sweep
+    // links, nor to fill the store with reads. The link's 64 random bytes remain the real control.
+    [HttpPost("set-password/check")]
+    [AllowAnonymous]
+    [RequestSizeLimit(AnonymousLinkBodyLimit)]
+    public async Task<IActionResult> CheckSetPasswordLink(
+        [FromBody] CheckSetPasswordLinkRequest request,
+        [FromServices] Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter passwordDoors,
+        [FromServices] Diten.AuthService.Infrastructure.Security.ClientAddressResolver clientAddress,
+        CancellationToken ct)
+    {
+        // FIX2 item 4 — counted FIRST (every request, the valid link's too), before the store is read.
+        var asking = clientAddress.Identify(HttpContext);
+        var door = passwordDoors.TryAcquireTenantLinkDoor(Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.TenantLinkDoor.Check,
+            asking.Key, request.Email, asking.Identified);
+        if (!door.Allowed)
+        {
+            return TenantLinkDoorTooManyRequests(door.RetryAfter);
+        }
+
+        return CreateActionResultInstance(await _mediator.Send(new CheckTenantPasswordLinkQuery(request.Email, request.Token), ct));
+    }
+
+    internal const long AnonymousLinkBodyLimit = 8 * 1024;
+
+    // FIX5 addendum (small item) — Retry-After is the window that refused: 60 s for the per-minute address bucket, not 900.
+    private IActionResult TenantLinkDoorTooManyRequests(TimeSpan retryAfter)
+    {
+        Response.Headers.RetryAfter = ((int)Math.Ceiling(retryAfter.TotalSeconds)).ToString(System.Globalization.CultureInfo.InvariantCulture);
+        return CreateActionResultInstance(Response<NoContent>.Fail(
+            "Too many requests. Try again later.",
+            [new ResponseError(AuthRefusalCodes.TooManyRequests)],
+            429));
     }
 
     // Re-issue a fresh set-password token for a pending invited user and re-send the invitation email.

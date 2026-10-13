@@ -83,6 +83,15 @@ public sealed class ClientAddressResolver
             return new ClientIdentity(peer is null ? "unknown" : Normalize(peer).ToString(), Identified: false);
         }
 
+        // WP-USERS-ROLES-CLOSE-FIX1 FIX4 item 2 — a peer outside the list that forwards for others is a proxy nobody listed
+        // (the gateway after an address change, a new load balancer): every client behind it would be ONE "identified"
+        // client and share one per-client count — the whole platform locked out by a stale list. It is not identified: the
+        // doors fall back to their coarse ceilings (and the line naming the peer is still written once, in Resolve).
+        if (!IsTrusted(peer) && context.Request.Headers.ContainsKey("X-Forwarded-For"))
+        {
+            return new ClientIdentity(Resolve(context), Identified: false);
+        }
+
         return new ClientIdentity(Resolve(context), Identified: true);
     }
 
@@ -196,8 +205,9 @@ public sealed class ClientAddressStartupWarning(ClientAddressResolver resolver, 
         if (!resolver.IdentifiesClients)
         {
             logger.LogWarning(
-                "{Key} is empty: the per-client rate limit of the anonymous platform password doors is OFF (the per-address limits " +
-                "still apply). List the Web server's and the gateway's addresses to switch it on.",
+                "{Key} is empty: the per-client rate limits of the anonymous doors are OFF — the sign-in doors, self-registration and " +
+                "the set-password link doors fall back to one coarse ceiling for everybody, the platform password doors to their " +
+                "per-address limits. List the Web server's and the gateway's addresses to switch the per-client limits on.",
                 ClientAddressResolver.TrustedProxiesKey);
         }
 

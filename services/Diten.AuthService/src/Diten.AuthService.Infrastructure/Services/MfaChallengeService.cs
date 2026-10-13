@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
+using Diten.AuthService.Application.Common.Services;
 using Diten.AuthService.Domain.Entities;
 using Diten.AuthService.Infrastructure.Settings;
 using Microsoft.Extensions.Options;
@@ -19,6 +20,7 @@ public sealed class MfaChallengeService : IMfaChallengeService
     private readonly IAuthAuditService _authAuditService;
     private readonly ITenantContext _tenantContext;
     private readonly MfaOptions _options;
+    private readonly Microsoft.Extensions.Logging.ILogger _logger;
 
     public MfaChallengeService(
         IMfaChallengeRepository repository,
@@ -26,8 +28,10 @@ public sealed class MfaChallengeService : IMfaChallengeService
         IUserRepository userRepository,
         IAuthAuditService authAuditService,
         ITenantContext tenantContext,
-        IOptions<MfaOptions> options)
+        IOptions<MfaOptions> options,
+        Microsoft.Extensions.Logging.ILogger<MfaChallengeService>? logger = null)
     {
+        _logger = (Microsoft.Extensions.Logging.ILogger?)logger ?? Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance;
         _repository = repository;
         _deliveryService = deliveryService;
         _userRepository = userRepository;
@@ -68,7 +72,8 @@ public sealed class MfaChallengeService : IMfaChallengeService
         var challenge = await _repository.GetByChallengeIdHashAsync(ComputeHash(challengeId), ct);
         if (challenge is null || challenge.IsConsumed || challenge.IsExpired || !string.Equals(challenge.Channel, "email", StringComparison.OrdinalIgnoreCase))
         {
-            await _authAuditService.WriteAsync("tenant_login_mfa_resend_requested", null, Guid.Empty, "{\"result\":\"rejected\"}", ct);
+            // FIX4 item 5 — no user: within the anonymous budget.
+            await AnonymousAuditBudget.SignInDoor.WriteAsync(_authAuditService, _logger, "tenant_login_mfa_resend_requested", Guid.Empty, "{\"result\":\"rejected\"}", ct);
             throw new UnauthorizedAccessException("Verification challenge is not available.");
         }
 
@@ -101,7 +106,11 @@ public sealed class MfaChallengeService : IMfaChallengeService
         var challenge = await _repository.GetByChallengeIdHashAsync(ComputeHash(challengeId), ct);
         if (challenge is null || challenge.IsConsumed || challenge.IsExpired || !challenge.HasAttemptsRemaining)
         {
-            await _authAuditService.WriteAsync("tenant_login_mfa_verify_failed", challenge?.UserId, challenge?.TenantId ?? Guid.Empty, "{\"reason\":\"challenge_unavailable\"}", ct);
+            // FIX4 item 5 — with no challenge there is no user: within the anonymous budget; a known one is the user's row.
+            if (challenge is null)
+                await AnonymousAuditBudget.SignInDoor.WriteAsync(_authAuditService, _logger, "tenant_login_mfa_verify_failed", Guid.Empty, "{\"reason\":\"challenge_unavailable\"}", ct);
+            else
+                await _authAuditService.WriteAsync("tenant_login_mfa_verify_failed", challenge.UserId, challenge.TenantId, "{\"reason\":\"challenge_unavailable\"}", ct);
             throw new UnauthorizedAccessException("Invalid verification code.");
         }
 

@@ -60,12 +60,17 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
 
         // Intentionally NOT tenant-scoped: the anonymous set-password caller has no tenant context.
         // The token hash is a cryptographically-random unique value, so it maps to one user + tenant.
-        var filter = Builders<User>.Filter.And(
-            Builders<User>.Filter.Eq(u => u.PasswordResetTokenHash, tokenHash),
-            Builders<User>.Filter.Eq(u => u.IsDeleted, false));
+        var filter = PasswordResetTokenLookup(tokenHash);
 
         return await Collection.Find(filter).FirstOrDefaultAsync(ct);
     }
+
+    // WP-USERS-ROLES-CLOSE-FIX1 FIX3 item 7 — the link lookup states the partial index's own filter ($type: string), so the
+    // planner can always use ix_users_password_reset_token_hash_v2 (it serves only a query that implies its filter).
+    public static FilterDefinition<User> PasswordResetTokenLookup(string tokenHash) => Builders<User>.Filter.And(
+        Builders<User>.Filter.Type(u => u.PasswordResetTokenHash, MongoDB.Bson.BsonType.String),
+        Builders<User>.Filter.Eq(u => u.PasswordResetTokenHash, tokenHash),
+        Builders<User>.Filter.Eq(u => u.IsDeleted, false));
 
     public Task<IEnumerable<User>> GetAllByTenantAsync(Guid tenantId, int page, int pageSize, CancellationToken ct)
         => GetAllByTenantAsync(tenantId, page, pageSize, excludePlatformAccounts: false, ct);
@@ -183,16 +188,32 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
 
     public async Task RecordLoginOutcomeAsync(User user, Guid tenantId, bool excludePlatformAccounts, CancellationToken ct)
     {
+        // FIX5 addendum item 3 — the success write carries ONLY the sign-in time. The count and the lock are reset by the
+        // claim's conditional write alone; writing the loaded copy's 0 / null here would erase a lock a flood set between the
+        // claim and this write.
         var filter = LiveAccount(user.Id, tenantId, excludePlatformAccounts);
-        var update = Builders<User>.Update
-            .Set(u => u.FailedLoginAttempts, user.FailedLoginAttempts)
-            .Set(u => u.LockoutEnd, user.LockoutEnd)
-            .Set(u => u.LastLoginAt, user.LastLoginAt);
+        var update = Builders<User>.Update.Set(u => u.LastLoginAt, user.LastLoginAt);
 
         await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
     }
 
+    public Task<bool> TryClaimSignInAsync(Guid userId, Guid tenantId, CancellationToken ct)
+        => TryClaimSignInAsync(userId, tenantId, excludePlatformAccounts: false, ct);
+
+    public async Task<bool> TryClaimSignInAsync(Guid userId, Guid tenantId, bool excludePlatformAccounts, CancellationToken ct)
+    {
+        // FIX5 — "not locked" is the whole condition. The lock is set by the very write that reaches the threshold (with the
+        // count reset), so a flood that reached it has locked the account before this claim can land; a count at or past the
+        // threshold with no running lock is a row written before FIX5 — its lock ended, its right password may sign in (and
+        // this write normalizes it to 0). FIX4's "count below the threshold" condition shut such an account for good.
+        var claimable = LiveAccount(userId, tenantId, excludePlatformAccounts) & NotLockedAt(DateTime.UtcNow);
+        var claimed = await Collection.UpdateOneAsync(claimable,
+            Builders<User>.Update.Set(u => u.FailedLoginAttempts, 0).Set(u => u.LockoutEnd, null), cancellationToken: ct);
+        return claimed.MatchedCount == 1;
+    }
+
     public object CaptureState(User user) => user.ToBsonDocument();
+
 
     public async Task<bool> TryWriteChangesAsync(User user, object capturedState, Guid tenantId, UserWriteCondition condition, CancellationToken ct)
     {
@@ -221,7 +242,7 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
                 : Builders<User>.Filter.Ne(u => u.DeactivatedByAdministrator, true));
         }
         if (condition.PasswordResetTokenHash is { } link) filters.Add(Builders<User>.Filter.Eq(u => u.PasswordResetTokenHash, link));
-        if (condition.IsPlatformAccount is { } platform) filters.Add(platform ? PlatformAccountFilter.IsPlatformAccount : NotAPlatformAccount);
+        if (condition.ExcludePlatformAccounts) filters.Add(NotAPlatformAccount);
         var filter = Builders<User>.Filter.And(filters);
 
         // Only the elements whose value differs from the state read — never the whole document.
@@ -259,38 +280,59 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
         Guid userId, Guid tenantId, int maxFailedAttempts, int lockoutDurationMinutes, CancellationToken ct)
         => RecordLoginFailureAsync(userId, tenantId, maxFailedAttempts, lockoutDurationMinutes, excludePlatformAccounts: false, ct);
 
+    /// <summary>
+    /// WP-USERS-ROLES-CLOSE-FIX1 FIX5 — THE LOCKOUT MODEL (ASP.NET Core Identity's): ONE atomic write. While the account is
+    /// locked an attempt is NOT counted (the caller audits it): it neither extends the lock nor is carried past it. Otherwise
+    /// the count goes up by one, and the write that reaches <paramref name="maxFailedAttempts"/> sets the lock AND resets the
+    /// count to 0 in the same operation. Before (FIX2–FIX4) the count was never reset at the lock and the claim refused a count
+    /// at the threshold: once locked, an account stayed shut after its lock ended — the right password was refused, counted,
+    /// and locked it again (CT, FIX5 blocker). One write also leaves no gap between the count and the lock (FIX1's seam is gone).
+    /// </summary>
     public async Task<LoginFailureOutcome> RecordLoginFailureAsync(
         Guid userId, Guid tenantId, int maxFailedAttempts, int lockoutDurationMinutes, bool excludePlatformAccounts, CancellationToken ct)
     {
-        var filter = LiveAccount(userId, tenantId, excludePlatformAccounts);
+        var now = DateTime.UtcNow;
+        var lockoutEnd = now.AddMinutes(lockoutDurationMinutes);
+        var counting = LiveAccount(userId, tenantId, excludePlatformAccounts) & NotLockedAt(now);
 
-        var counted = await Collection.FindOneAndUpdateAsync(
-            filter,
-            Builders<User>.Update.Inc(u => u.FailedLoginAttempts, 1),
-            new FindOneAndUpdateOptions<User> { ReturnDocument = ReturnDocument.After },
-            ct);
+        // FIX6 S1 — a row WITHOUT the field (written before it existed) counts from 0, as `$inc` did: `$add` on a missing
+        // field is null, so it would never reach the threshold (no lock, ever) and `$set` would write null into an int —
+        // every later read of the account would fail.
+        var stored = new BsonDocument("$ifNull", new BsonArray { "$" + nameof(User.FailedLoginAttempts), 0 });
+        var next = new BsonDocument("$add", new BsonArray { stored, 1 });
+        var reaches = new BsonDocument("$gte", new BsonArray { next, maxFailedAttempts });
+        var count = PipelineDefinition<User, User>.Create(new[]
+        {
+            new BsonDocument("$set", new BsonDocument
+            {
+                { nameof(User.FailedLoginAttempts), new BsonDocument("$cond", new BsonArray { reaches, 0, next }) },
+                { nameof(User.LockoutEnd), new BsonDocument("$cond", new BsonArray { reaches, new BsonDateTime(lockoutEnd), "$" + nameof(User.LockoutEnd) }) }
+            })
+        });
+
+        var counted = await Collection.FindOneAndUpdateAsync(counting, Builders<User>.Update.Pipeline(count),
+            new FindOneAndUpdateOptions<User> { ReturnDocument = ReturnDocument.After }, ct);
         if (counted is null)
         {
-            return new LoginFailureOutcome(0, null);
+            return new LoginFailureOutcome(0, null); // locked (not counted), or no such account for this caller
         }
 
-        if (counted.FailedLoginAttempts < maxFailedAttempts)
-        {
-            return new LoginFailureOutcome(counted.FailedLoginAttempts, counted.LockoutEnd);
-        }
-
-        var lockoutEnd = DateTime.UtcNow.AddMinutes(lockoutDurationMinutes);
-        await Collection.UpdateOneAsync(filter, Builders<User>.Update.Set(u => u.LockoutEnd, lockoutEnd), cancellationToken: ct);
-        return new LoginFailureOutcome(counted.FailedLoginAttempts, lockoutEnd);
+        // The filter required "not locked": a lock in the written row is the one THIS write set.
+        var started = counted.LockoutEnd is { } end && end > now;
+        return new LoginFailureOutcome(counted.FailedLoginAttempts, counted.LockoutEnd, LockoutStarted: started);
     }
 
-    public async Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct)
+    private static FilterDefinition<User> NotLockedAt(DateTime now) =>
+        Builders<User>.Filter.Eq(u => u.LockoutEnd, null) | Builders<User>.Filter.Lte(u => u.LockoutEnd, now);
+
+    public Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct)
+        => SoftDeleteAsync(id, tenantId, excludePlatformAccounts: false, ct);
+
+    // WP-USERS-ROLES-CLOSE-FIX1 item 6 — the delete takes the platform-account exclusion IN the filter too (the decorator's
+    // hidden caller): an account Platform made a platform account after the load is not deleted.
+    public async Task SoftDeleteAsync(Guid id, Guid tenantId, bool excludePlatformAccounts, CancellationToken ct)
     {
-        var filter = Builders<User>.Filter.And(
-            Builders<User>.Filter.Eq(u => u.Id, id),
-            Builders<User>.Filter.Eq(u => u.TenantId, tenantId),
-            Builders<User>.Filter.Eq(u => u.IsDeleted, false)
-        );
+        var filter = LiveAccount(id, tenantId, excludePlatformAccounts);
         var update = Builders<User>.Update
             .Set(u => u.IsDeleted, true)
             .Set(u => u.UpdatedAt, (DateTimeOffset?)DateTimeOffset.UtcNow);

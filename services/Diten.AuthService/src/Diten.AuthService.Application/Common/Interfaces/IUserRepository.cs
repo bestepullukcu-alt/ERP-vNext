@@ -31,6 +31,20 @@ public interface IUserRepository
     Task RecordLoginOutcomeAsync(User user, Guid tenantId, CancellationToken ct);
 
     /// <summary>
+    /// WP-USERS-ROLES-CLOSE-FIX1 FIX4 item 3 — A SIGN-IN THAT VERIFIED THE RIGHT PASSWORD CLAIMS THE ACCOUNT BEFORE ANYTHING IS
+    /// ISSUED: the failure count and the lockout are cleared ONLY while the STORED account is not locked. A flood of parallel
+    /// guesses all read the account before the fifth failure was written; without this, a right guess among them cleared the
+    /// lock the wrong ones were building (~100 guesses a window instead of 5). FIX5 — "not locked" is enough because the write
+    /// that reaches the threshold sets the lock itself (and resets the count); FIX4's "below the threshold" shut an account for
+    /// good once it had been locked (FIX6 N4: its threshold parameter is gone). False: the stored row is locked — the sign-in
+    /// is refused like a wrong password.
+    /// (No default implementation that answers true: a store or a decorator that forgot it must fail loudly, not let the
+    /// flood through.)
+    /// </summary>
+    Task<bool> TryClaimSignInAsync(Guid userId, Guid tenantId, CancellationToken ct)
+        => throw new NotSupportedException("This user store does not implement the sign-in claim (WP-USERS-ROLES-CLOSE-FIX1 FIX4).");
+
+    /// <summary>
     /// BL-529 FIX3 — the state of <paramref name="user"/> as it was read, opaque to the caller; hand it back to
     /// <see cref="TryWriteChangesAsync"/> after changing the entity.
     /// </summary>
@@ -52,9 +66,12 @@ public interface IUserRepository
     Task<bool> SetPasswordResetTokenAsync(Guid userId, Guid tenantId, string tokenHash, DateTime expiresAtUtc, CancellationToken ct);
 
     /// <summary>
-    /// BL-529 — one failed sign-in: the counter is INCREMENTED in the store (<c>$inc</c>), never set from the copy the
-    /// attempt read, so parallel wrong passwords each count; reaching <paramref name="maxFailedAttempts"/> starts the
-    /// lockout. Returns the stored count and lockout end after the attempt.
+    /// BL-529, WP-USERS-ROLES-CLOSE-FIX1 FIX5 / FIX6 N4 — one failed sign-in, ONE atomic write in the store (never set from
+    /// the copy the attempt read, so parallel wrong passwords each count): while the stored account is locked the attempt is
+    /// not counted (no extension, nothing carried past the lock); otherwise the count goes up by one (a row without the field
+    /// counts from 0), and the write that reaches <paramref name="maxFailedAttempts"/> sets the lock AND starts the count over
+    /// at 0 — exactly one such write per lock (<see cref="LoginFailureOutcome.LockoutStarted"/>). Returns the stored count and
+    /// lockout end after the attempt.
     /// </summary>
     Task<LoginFailureOutcome> RecordLoginFailureAsync(Guid userId, Guid tenantId, int maxFailedAttempts, int lockoutDurationMinutes, CancellationToken ct);
 
@@ -70,7 +87,8 @@ public interface IUserRepository
     Task<IReadOnlyCollection<Guid>> VisibleUserIdsAsync(Guid tenantId, IReadOnlyCollection<Guid> userIds, CancellationToken ct);
 }
 
-public sealed record LoginFailureOutcome(int FailedLoginAttempts, DateTime? LockoutEnd);
+// WP-USERS-ROLES-CLOSE-FIX1 FIX2 — LockoutStarted: THIS failure started a lockout (not one already running).
+public sealed record LoginFailureOutcome(int FailedLoginAttempts, DateTime? LockoutEnd, bool LockoutStarted = false);
 
 /// <summary>
 /// BL-529 FIX3 — what the stored account must still look like for a targeted write to land (null = not checked).
@@ -80,10 +98,11 @@ public sealed record UserWriteCondition(
     bool? IsActive = null,
     bool? DeactivatedByAdministrator = null,
     string? PasswordResetTokenHash = null,
-    // Merge WP-CT-LANE-BL521-MERGE-01 FIX1 (small 2) — false: the STORED account must not be a platform account (the one
-    // shared filter, PlatformAccountFilter; never the copy in memory), so a write that a tenant actor prepared against an
-    // ordinary user cannot land on an account Platform made a platform account meanwhile.
-    bool? IsPlatformAccount = null)
+    // Merge WP-CT-LANE-BL521-MERGE-01 FIX1 (small 2); WP-USERS-ROLES-CLOSE-FIX1 item 6 — true: the STORED account must not be a
+    // platform account (the one shared filter, PlatformAccountFilter; never the copy in memory), so a write that a tenant actor
+    // prepared against an ordinary user cannot land on an account Platform made a platform account meanwhile. (The unused
+    // "must BE a platform account" branch of the earlier bool? is gone.)
+    bool ExcludePlatformAccounts = false)
 {
     public static UserWriteCondition None { get; } = new();
 }

@@ -41,8 +41,9 @@ public static class AdminPasswordReset
 
     /// <summary>A password nobody knows — the hash of a fresh random secret that is never shown, the same placeholder an
     /// invitation starts with. The old password then fails exactly like a wrong one (401, the lockout counter counts).</summary>
-    public static string UnusableHash(IPasswordHasher passwordHasher, ITokenService tokenService)
-        => passwordHasher.Hash(tokenService.GenerateRefreshToken());
+    /// FIX6 S2 — through the hasher's asynchronous door (no thread held while it waits for its CPU slot).
+    public static Task<string> UnusableHashAsync(IPasswordHasher passwordHasher, ITokenService tokenService, CancellationToken ct)
+        => passwordHasher.HashAsync(tokenService.GenerateRefreshToken(), ct);
 
     /// <summary>How a reset ended: done (<see cref="User"/> set), the account vanished, or it kept changing under it.</summary>
     public sealed record Outcome(User? User, long SessionsRevoked, bool Conflict)
@@ -61,7 +62,7 @@ public static class AdminPasswordReset
         User user,
         Guid tenantId,
         AdminResetVia via,
-        Func<User, string> replacementHash,
+        Func<User, CancellationToken, Task<string>> replacementHash,
         Action<User> apply,
         Func<CancellationToken, Task<User?>> reload,
         Func<User, CancellationToken, Task<bool>>? afterWrite,
@@ -99,7 +100,7 @@ public static class AdminPasswordReset
 
                 var readHash = current.PasswordHash;
                 var state = users.CaptureState(current);
-                var newHash = replacementHash(current); // first: the slow part happens before anything is written
+                var newHash = await replacementHash(current, ct); // first: the slow part happens before anything is written
                 current.UpdatePassword(newHash);
                 apply(current);
 

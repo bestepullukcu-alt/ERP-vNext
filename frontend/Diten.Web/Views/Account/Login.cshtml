@@ -66,16 +66,18 @@
             LoginErrorTitle: "@SharedLocalizer["Login.ErrorTitle"]",
             LoginErrorRequired: "@SharedLocalizer["Login.ErrorRequired"]",
             LoginError: "@SharedLocalizer["Login.Error"]",
-            TenantLoginMissingTenant: "Tenant login link is missing tenant information. Please use the invitation link again.",
+            TenantLoginMissingTenant: "@SharedLocalizer["Auth.Error.TenantMissing"]",
             LoginSubmit: "@SharedLocalizer["Login.Submit"]",
             LoginLoading: "@SharedLocalizer["Login.Loading"]",
-            MfaRequired: "Verification code is required.",
-            MfaVerify: "Verify",
-            MfaVerifying: "Verifying...",
-            MfaChallengeRequired: "Verification challenge is required.",
-            MfaResending: "Sending...",
-            MfaResentTitle: "Code sent",
-            MfaResentMessage: "A new verification code has been sent."
+            MfaRequired: "@SharedLocalizer["Auth.Error.VerificationCodeRequired"]",
+            MfaVerifying: "@SharedLocalizer["Auth.Mfa.Verifying"]",
+            MfaChallengeRequired: "@SharedLocalizer["Auth.Error.VerificationChallengeRequired"]",
+            MfaResending: "@SharedLocalizer["Auth.Mfa.Resending"]",
+            MfaResentTitle: "@SharedLocalizer["Auth.Mfa.ResentTitle"]",
+            MfaResentMessage: "@SharedLocalizer["Auth.Mfa.ResentMessage"]",
+            // WP-USERS-ROLES-CLOSE-FIX1 item 2 (BL-496) — the general sentence diten-refusal.js falls back to, and the button.
+            ErrorOccurred: "@SharedLocalizer["ErrorOccurred"]",
+            ConfirmButton: "@SharedLocalizer["Auth.Dialog.Ok"]"
         };
     </script>
 </head>
@@ -144,19 +146,19 @@
                         </form>
                         <form id="mfaForm" class="mb-3 d-none">
                             <div class="text-center mb-4">
-                                <h4 class="mb-2">Two-step Verification</h4>
-                                <p class="mb-0">Enter the verification code sent to <span id="mfaDestination" class="fw-medium"></span></p>
+                                <h4 class="mb-2">@SharedLocalizer["Auth.Mfa.Title"]</h4>
+                                <p class="mb-0">@SharedLocalizer["Auth.Mfa.Prompt"] <span id="mfaDestination" class="fw-medium"></span></p>
                             </div>
                             <input type="hidden" id="mfaChallengeId" />
                             <div class="mb-3">
-                                <label for="mfaCode" class="form-label">Verification Code</label>
+                                <label for="mfaCode" class="form-label">@SharedLocalizer["Auth.Mfa.CodeLabel"]</label>
                                 <input type="text" class="form-control text-center fs-4" id="mfaCode" name="mfaCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" />
                             </div>
                             <div class="mb-3">
                                 <button class="btn btn-primary d-grid w-100" type="submit">@SharedLocalizer["Login.Submit"]</button>
                             </div>
                             <div class="text-center">
-                                <button class="btn btn-link p-0" type="button" id="resendMfaCode">Resend code</button>
+                                <button class="btn btn-link p-0" type="button" id="resendMfaCode">@SharedLocalizer["Auth.Mfa.Resend"]</button>
                             </div>
                         </form>
                     </div>
@@ -178,6 +180,7 @@
     <script src="~/assets/js/main.js" asp-append-version="true"></script>
 
     <!-- Page JS -->
+    <script src="~/assets/js/shared/diten-refusal.js" asp-append-version="true"></script>
     <script src="~/assets/js/Account/login.js" asp-append-version="true"></script>
 </body>
 </html>

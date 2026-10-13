@@ -80,9 +80,12 @@ public sealed class PlatformAccountScopedUserRepository : IUserRepository
             {
                 return; // nothing a tenant actor may delete
             }
+
+            if (AfterPlatformPreCheck is { } hook) await hook();
         }
 
-        await _inner.SoftDeleteAsync(id, tenantId, ct);
+        // WP-USERS-ROLES-CLOSE-FIX1 item 6 — and on the STORED row: an account Platform marked after the check is not deleted.
+        await _inner.SoftDeleteAsync(id, tenantId, excludePlatformAccounts: Hides, ct);
     }
 
     public Task<User?> GetByEmailAndTenantAsync(string email, Guid tenantId, CancellationToken ct) => _inner.GetByEmailAndTenantAsync(email, tenantId, ct);
@@ -102,6 +105,10 @@ public sealed class PlatformAccountScopedUserRepository : IUserRepository
     // write never reaches a platform account — it writes nothing and answers as for an account that is not there. The writes of
     // a loaded object are checked on the object (it may have been loaded through a lookup that is deliberately NOT hidden — by
     // e-mail or user name); the writes by id load first, as SoftDeleteAsync does.
+    // FIX4 item 3 — the claim carries the hidden caller's stored-row exclusion like every targeted write.
+    public Task<bool> TryClaimSignInAsync(Guid userId, Guid tenantId, CancellationToken ct)
+        => _inner.TryClaimSignInAsync(userId, tenantId, excludePlatformAccounts: Hides, ct);
+
     public Task RecordLoginOutcomeAsync(User user, Guid tenantId, CancellationToken ct)
         => Hides && user.IsPlatformAccount
             ? Task.CompletedTask
@@ -114,7 +121,7 @@ public sealed class PlatformAccountScopedUserRepository : IUserRepository
         => Hides && user.IsPlatformAccount
             ? Task.FromResult(false)
             : _inner.TryWriteChangesAsync(user, capturedState, tenantId,
-                Hides ? condition with { IsPlatformAccount = false } : condition, ct); // FIX1: the STORED row, not the copy
+                Hides ? condition with { ExcludePlatformAccounts = true } : condition, ct); // FIX1: the STORED row, not the copy
 
     public async Task<LoginFailureOutcome> RecordLoginFailureAsync(Guid userId, Guid tenantId, int maxFailedAttempts, int lockoutDurationMinutes, CancellationToken ct)
     {
@@ -122,6 +129,8 @@ public sealed class PlatformAccountScopedUserRepository : IUserRepository
         {
             return new LoginFailureOutcome(0, null); // nothing counted on an account this caller may not reach
         }
+
+        if (Hides && AfterPlatformPreCheck is { } hook) await hook();
 
         return await _inner.RecordLoginFailureAsync(userId, tenantId, maxFailedAttempts, lockoutDurationMinutes,
             excludePlatformAccounts: Hides, ct);
@@ -136,8 +145,13 @@ public sealed class PlatformAccountScopedUserRepository : IUserRepository
             return false;
         }
 
+        if (Hides && AfterPlatformPreCheck is { } hook) await hook();
         return await _inner.SetPasswordResetTokenAsync(userId, tenantId, tokenHash, expiresAtUtc, excludePlatformAccounts: Hides, ct);
     }
+
+    /// <summary>WP-USERS-ROLES-CLOSE-FIX1 item 6 — test seam: between the in-memory pre-check and the write, for a hidden caller
+    /// (where Platform can mark the account meanwhile); proves the write itself carries the stored-row exclusion.</summary>
+    internal Func<Task>? AfterPlatformPreCheck { get; set; }
 
     private async Task<bool> IsPlatformAccountOrAbsentAsync(Guid userId, Guid tenantId, CancellationToken ct)
         => await _inner.GetByIdAndTenantAsync(userId, tenantId, ct) is not { IsPlatformAccount: false };

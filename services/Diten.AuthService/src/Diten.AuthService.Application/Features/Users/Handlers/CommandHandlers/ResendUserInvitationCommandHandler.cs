@@ -134,7 +134,7 @@ public sealed class ResendUserInvitationCommandHandler : IRequestHandler<ResendU
             user,
             tenantId,
             AdminResetVia.ResendInvitation,
-            _ => AdminPasswordReset.UnusableHash(_passwordHasher, _tokenService),
+            (_, c) => AdminPasswordReset.UnusableHashAsync(_passwordHasher, _tokenService, c),
             u =>
             {
                 u.SetPasswordResetToken(_refreshTokenHasher.Hash(setupToken), DateTime.UtcNow.Add(InvitationTokenLifetime));

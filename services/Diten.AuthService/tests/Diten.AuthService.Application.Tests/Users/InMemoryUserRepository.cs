@@ -183,13 +183,27 @@ internal sealed class InMemoryUserRepository : IUserRepository
         return Task.FromResult(true);
     }
 
-    // Mirrors the store's $inc: the stored row counts, whatever copy the caller holds.
+    // FIX4 item 3 — as the store: cleared only while not locked and below the threshold.
+    public Task<bool> TryClaimSignInAsync(Guid userId, Guid tenantId, CancellationToken ct)
+    {
+        var user = _users.FirstOrDefault(u => u.Id == userId && u.TenantId == tenantId && !u.IsDeleted);
+        if (user is null || user.LockoutEnd > DateTime.UtcNow)
+            return Task.FromResult(false); // FIX5 — "not locked" is the whole condition
+        user.ClearLockout();
+        return Task.FromResult(true);
+    }
+
+    // Mirrors the store's one write: the stored row counts, whatever copy the caller holds.
     public Task<LoginFailureOutcome> RecordLoginFailureAsync(Guid userId, Guid tenantId, int maxFailedAttempts, int lockoutDurationMinutes, CancellationToken ct)
     {
         var user = _users.FirstOrDefault(u => u.Id == userId && u.TenantId == tenantId && !u.IsDeleted);
         if (user is null) return Task.FromResult(new LoginFailureOutcome(0, null));
-        user.RecordLoginFailure(maxFailedAttempts, lockoutDurationMinutes);
-        return Task.FromResult(new LoginFailureOutcome(user.FailedLoginAttempts, user.LockoutEnd));
+        // WP-USERS-ROLES-CLOSE-FIX1 FIX5 — as the store: a locked account's attempt is not counted; the failure that reaches the
+        // threshold sets the lock and starts the count over.
+        if (user.LockoutEnd is { } end && end > DateTime.UtcNow)
+            return Task.FromResult(new LoginFailureOutcome(0, null));
+        var started = user.RecordLoginFailure(maxFailedAttempts, lockoutDurationMinutes); // FIX6 N4 — the domain's rule is the store's
+        return Task.FromResult(new LoginFailureOutcome(user.FailedLoginAttempts, user.LockoutEnd, LockoutStarted: started));
     }
 
     public Task<bool> SetPlatformActorTypeAsync(Guid userId, Guid tenantId, string actorType, CancellationToken ct)

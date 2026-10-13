@@ -22,6 +22,8 @@ public sealed class TenantAuthController : CustomBaseController
 
     [HttpPost("login")]
     [AllowAnonymous]
+    [AnonymousDoorLimit(Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.LoginDoor.Tenant)]
+    [RequestSizeLimit(AnonymousDoorBody.Limit)] // FIX3 — an anonymous body is small
     public async Task<IActionResult> Login([FromBody] TenantLoginRequest request, CancellationToken ct)
     {
         var command = new LoginCommand(request.Email, request.Password, ResolveRequestIp(HttpContext), ResolveUserAgent(HttpContext), request.RememberMe);
@@ -31,6 +33,8 @@ public sealed class TenantAuthController : CustomBaseController
 
     [HttpPost("mfa/verify")]
     [AllowAnonymous]
+    [AnonymousDoorLimit(Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.LoginDoor.Mfa)]
+    [RequestSizeLimit(AnonymousDoorBody.Limit)] // FIX4 item 5 — an anonymous body is small
     public async Task<IActionResult> VerifyMfa([FromBody] VerifyMfaRequest request, CancellationToken ct)
     {
         var command = new VerifyMfaCommand(request.ChallengeId, request.Code, ResolveRequestIp(HttpContext), ResolveUserAgent(HttpContext));
@@ -40,6 +44,8 @@ public sealed class TenantAuthController : CustomBaseController
 
     [HttpPost("mfa/resend")]
     [AllowAnonymous]
+    [AnonymousDoorLimit(Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.LoginDoor.Mfa)]
+    [RequestSizeLimit(AnonymousDoorBody.Limit)] // FIX4 item 5 — an anonymous body is small
     public async Task<IActionResult> ResendMfa([FromBody] ResendMfaRequest request, CancellationToken ct)
     {
         var command = new ResendMfaCommand(request.ChallengeId, ResolveRequestIp(HttpContext), ResolveUserAgent(HttpContext));
@@ -49,6 +55,8 @@ public sealed class TenantAuthController : CustomBaseController
 
     [HttpPost("register")]
     [AllowAnonymous]
+    [AnonymousDoorLimit(Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.LoginDoor.Register)]
+    [RequestSizeLimit(AnonymousDoorBody.Limit)] // FIX3 — an anonymous body is small
     public async Task<IActionResult> Register([FromBody] RegisterRequest request, CancellationToken ct)
     {
         var command = new RegisterCommand(
@@ -72,7 +80,8 @@ public sealed class TenantAuthController : CustomBaseController
         var tenantIdString = User.FindFirst("tenant_id")?.Value;
         if (!Guid.TryParse(userIdString, out var userId) || !Guid.TryParse(tenantIdString, out var tenantId))
         {
-            return CreateActionResultInstance(Response<AuthResponse>.Fail("Unauthorized.", 401));
+            // FIX2 item 6 — coded: the forced-change page says "your session has ended" in the reader's language.
+            return CreateActionResultInstance(Response<AuthResponse>.Fail("Unauthorized.", [new ResponseError(AuthRefusalCodes.SessionEnded)], 401));
         }
 
         var command = new ForcedChangeTenantPasswordCommand(

@@ -211,18 +211,32 @@ public sealed class User : EntityBase
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
-    public void RecordLoginFailure()
+    /// <summary>WP-USERS-ROLES-CLOSE-FIX1 FIX5 — the lockout as the store writes it: the lock starts and the count starts over.</summary>
+    public void LockOut(int lockoutDurationMinutes)
     {
-        RecordLoginFailure(5, 15);
+        LockoutEnd = DateTime.UtcNow.AddMinutes(lockoutDurationMinutes);
+        FailedLoginAttempts = 0;
     }
 
-    public void RecordLoginFailure(int maxFailedAttempts, int lockoutDurationMinutes)
+    /// <summary>WP-USERS-ROLES-CLOSE-FIX1 FIX6 N4 — one failed sign-in on this copy, by the store's rule (FIX5): while locked it
+    /// is not counted; otherwise the count goes up, and the failure that reaches the threshold locks the account and starts the
+    /// count over. True when THIS failure started the lock. (Before, the count was never reset: a caller that used this would
+    /// bring the permanent lock back.)</summary>
+    public bool RecordLoginFailure(int maxFailedAttempts, int lockoutDurationMinutes)
     {
-        FailedLoginAttempts++;
-        if (FailedLoginAttempts >= maxFailedAttempts)
+        if (LockoutEnd is { } end && end > DateTime.UtcNow)
         {
-            LockoutEnd = DateTime.UtcNow.AddMinutes(lockoutDurationMinutes);
+            return false;
         }
+
+        FailedLoginAttempts++;
+        if (FailedLoginAttempts < maxFailedAttempts)
+        {
+            return false;
+        }
+
+        LockOut(lockoutDurationMinutes);
+        return true;
     }
 
     public void UpdatePassword(string newHashedPassword)
