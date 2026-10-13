@@ -118,4 +118,5 @@ internal static class BomCollections
 {
     public const string Boms = "mfg_boms";
     public const string History = "mfg_bom_history";
+    public const string Outbox = "mfg_bom_outbox";
 }

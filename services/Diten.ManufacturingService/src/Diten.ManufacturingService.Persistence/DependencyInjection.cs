@@ -1,3 +1,4 @@
+using Diten.BuildingBlocks.Eventing;
 using Diten.BuildingBlocks.Security.Secrets;
 using Diten.ManufacturingService.Domain.Repositories;
 using Diten.ManufacturingService.Persistence.Repositories;
@@ -44,6 +45,8 @@ public static class DependencyInjection
 
         services.AddScoped<IBomRepository, BomRepository>();
         services.AddScoped<IBomHistoryJournal, BomHistoryJournal>();
+        // BOM-version outbox (contract v1.2.0) for the shared EventOutboxPublisherProcessor — rows come only from the journal.
+        services.AddSingleton<IEventOutboxStore>(_ => new BomOutboxStore(client.GetDatabase(databaseName)));
 
         services.AddHostedService<MongoIndexInitializerHostedService>();
         return services;

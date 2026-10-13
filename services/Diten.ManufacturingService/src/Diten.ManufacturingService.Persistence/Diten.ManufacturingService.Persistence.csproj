@@ -19,6 +19,8 @@
             Include="..\Diten.ManufacturingService.Application\Diten.ManufacturingService.Application.csproj" />
         <ProjectReference
             Include="..\..\..\Diten.Building.Blocks\Diten.BuildingBlocks.Security.Secrets\Diten.BuildingBlocks.Security.Secrets.csproj" />
+        <ProjectReference
+            Include="..\..\..\Diten.Building.Blocks\src\Diten.BuildingBlocks.Eventing\Diten.BuildingBlocks.Eventing.csproj" />
     </ItemGroup>
 
 </Project>
