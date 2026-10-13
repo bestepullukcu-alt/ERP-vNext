@@ -16,7 +16,7 @@ namespace Diten.CrmService.Application.Features.VisitPlanning.TargetStatus;
 /// <para>Cost, whatever the plan size: session (1) + period (1) + accounts by id (1, institutions ∪ pharmacies ∪ the
 /// doctors' institutions) + contacts by id (1) + <see cref="ContactPeriodStatusReader"/> (bulk).</para>
 /// </summary>
-public sealed record GetSessionTargetsQuery(Guid PlanningSessionId) : IRequest<Response<SessionTargetsDto>>;
+public sealed record GetSessionTargetsQuery(Guid PlanningSessionId, string? WeekStart = null) : IRequest<Response<SessionTargetsDto>>;
 
 public sealed class GetSessionTargetsQueryHandler : IRequestHandler<GetSessionTargetsQuery, Response<SessionTargetsDto>>
 {
@@ -66,6 +66,15 @@ public sealed class GetSessionTargetsQueryHandler : IRequestHandler<GetSessionTa
         var now = DateTimeOffset.UtcNow;
         var period = TargetStatusPeriods.From(await _periods.GetByIdAsync(session.CyclePeriodId, cancellationToken));
         var selection = session.Selection;
+        // WP-VP-4M (1) — "this week" is the selected week when one is asked (a Monday of the plan's period).
+        if (!TargetStatusPeriods.TryParseSelectedWeek(request.WeekStart, period, out var selectedWeek))
+        {
+            return Response<SessionTargetsDto>.Fail(new[]
+            {
+                Handlers.CommandHandlers.PlanningSessionErrorCodes.InvalidWeek,
+                "weekStart must be a Monday (yyyy-MM-dd) of a week of the plan's period."
+            }, 400);
+        }
 
         var accountIds = selection.SelectedAccountIds
             .Concat(selection.SelectedPharmacyIds)
@@ -96,7 +105,7 @@ public sealed class GetSessionTargetsQueryHandler : IRequestHandler<GetSessionTa
         var statuses = await _status.ReadAsync(
             new ContactPeriodStatusRequest(
                 tenantId, session.ResourceId, period, contactIds,
-                DateOnly.FromDateTime(now.UtcDateTime), now, contacts),
+                DateOnly.FromDateTime(now.UtcDateTime), now, contacts, selectedWeek),
             cancellationToken);
 
         SessionTargetAccountDto ToTarget(Guid id) => accounts.TryGetValue(id, out var a)
@@ -112,9 +121,10 @@ public sealed class GetSessionTargetsQueryHandler : IRequestHandler<GetSessionTa
             .Select(c => contactById.TryGetValue(c.ContactId, out var contact)
                 ? new SessionTargetDoctorDto(
                     c.ContactId, c.AccountId, c.AccountContactLinkId, true, contact.DisplayName, contact.Specialty,
-                    statuses[c.ContactId], PlanningSessionMapper.ProductsOf(c, productNames))
+                    TargetStatusPeriods.WithExtraWeek(statuses[c.ContactId], session, request.WeekStart), PlanningSessionMapper.ProductsOf(c, productNames))
                 : new SessionTargetDoctorDto(
-                    c.ContactId, c.AccountId, c.AccountContactLinkId, false, null, null, statuses[c.ContactId],
+                    c.ContactId, c.AccountId, c.AccountContactLinkId, false, null, null,
+                    TargetStatusPeriods.WithExtraWeek(statuses[c.ContactId], session, request.WeekStart),
                     PlanningSessionMapper.ProductsOf(c, productNames)))
             .ToList();
 

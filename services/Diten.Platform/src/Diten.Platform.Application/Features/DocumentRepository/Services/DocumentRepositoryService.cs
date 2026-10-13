@@ -35,20 +35,89 @@ public sealed class DocumentRepositoryService
     private readonly ITenantContext _tenantContext;
     private readonly ICurrentUserContext _currentUser;
     private readonly ILogger<DocumentRepositoryService> _logger;
+    private readonly IActorPermissionContext? _permissions;
 
+    /// <param name="permissions">WP-VW-W3-PLT — the caller's permissions, asked by the <c>*ForCallerAsync</c>
+    /// methods (the HTTP surface). Optional so in-process consumers that authorise for themselves (MOD-0024 task
+    /// attachments) construct the service unchanged; when absent, every <c>*ForCallerAsync</c> decision is a
+    /// denial (fail-closed).</param>
     public DocumentRepositoryService(
         IContentStorageGateway storage,
         IRepositoryObjectRepository objects,
         ITenantContext tenantContext,
         ICurrentUserContext currentUser,
-        ILogger<DocumentRepositoryService> logger)
+        ILogger<DocumentRepositoryService> logger,
+        IActorPermissionContext? permissions = null)
     {
         _storage = storage;
         _objects = objects;
         _tenantContext = tenantContext;
         _currentUser = currentUser;
         _logger = logger;
+        _permissions = permissions;
     }
+
+    // ── WP-VW-W3-PLT — the HTTP surface. Each call decides general-or-scope-bound access HERE (AD-5), through
+    //    DocumentRepositoryAccessPolicy, then runs the same operation as the in-process methods below. A refused
+    //    write to the wrong scope is 403 (the caller named the scope, nothing leaks); a refused read or
+    //    compensation is 404, indistinguishable from another tenant's object (non-leakage).
+
+    public async Task<Response<RepositoryObjectModel>> StoreForCallerAsync(
+        StoreRepositoryObjectInput input, string correlationId, CancellationToken ct)
+    {
+        TenantGuard.RequireTenant(_tenantContext);
+
+        if (!DocumentRepositoryAccessPolicy.CanWrite(_permissions, input.Scope))
+        {
+            return Response<RepositoryObjectModel>.Fail(
+                "Permission denied for this storage scope.", 403, DocumentRepositoryReasonCodes.Forbidden, correlationId);
+        }
+
+        return await StoreAsync(input, correlationId, ct);
+    }
+
+    public async Task<Response<RepositoryObjectModel>> GetForCallerAsync(Guid contentId, string correlationId, CancellationToken ct)
+    {
+        TenantGuard.RequireTenant(_tenantContext);
+
+        var row = await _objects.GetByContentIdAsync(contentId, ct);
+        if (row is null || !DocumentRepositoryAccessPolicy.CanRead(_permissions, row, _currentUser.ActorName))
+        {
+            return NotFound<RepositoryObjectModel>(correlationId);
+        }
+
+        return Response<RepositoryObjectModel>.Success(ToModel(row), correlationId: correlationId);
+    }
+
+    public async Task<Response<RepositoryObjectContentHandle>> OpenReadForCallerAsync(
+        Guid contentId, string correlationId, CancellationToken ct)
+    {
+        TenantGuard.RequireTenant(_tenantContext);
+
+        var row = await _objects.GetByContentIdAsync(contentId, ct);
+        if (row is null || !DocumentRepositoryAccessPolicy.CanRead(_permissions, row, _currentUser.ActorName))
+        {
+            return NotFound<RepositoryObjectContentHandle>(correlationId);
+        }
+
+        return await OpenRowAsync(row, correlationId, ct);
+    }
+
+    public async Task<Response<NoContent>> CompensateForCallerAsync(Guid contentId, string correlationId, CancellationToken ct)
+    {
+        TenantGuard.RequireTenant(_tenantContext);
+
+        var row = await _objects.GetByContentIdAsync(contentId, ct);
+        if (row is null || !DocumentRepositoryAccessPolicy.CanCompensate(_permissions, row, _currentUser.ActorName))
+        {
+            return NotFound<NoContent>(correlationId);
+        }
+
+        return await CompensateRowAsync(row, correlationId, ct);
+    }
+
+    // ── In-process consumers (MOD-0024 task attachments) — they authorise against their own aggregate before
+    //    calling; the tenant is still re-established here on every call.
 
     public async Task<Response<RepositoryObjectModel>> StoreAsync(
         StoreRepositoryObjectInput input, string correlationId, CancellationToken ct)
@@ -161,6 +230,13 @@ public sealed class DocumentRepositoryService
                 "Content not found.", 404, DocumentRepositoryReasonCodes.NotFoundNonLeakage, correlationId);
         }
 
+        return await OpenRowAsync(row, correlationId, ct);
+    }
+
+    private async Task<Response<RepositoryObjectContentHandle>> OpenRowAsync(
+        RepositoryObject row, string correlationId, CancellationToken ct)
+    {
+        var contentId = row.ContentId;
         var stream = await _storage.OpenReadAsync(row.StorageProvider, row.ObjectKey, ct);
         if (!stream.IsSuccessful || stream.Data is null)
         {
@@ -201,6 +277,12 @@ public sealed class DocumentRepositoryService
                 "Content not found.", 404, DocumentRepositoryReasonCodes.NotFoundNonLeakage, correlationId);
         }
 
+        return await CompensateRowAsync(row, correlationId, ct);
+    }
+
+    private async Task<Response<NoContent>> CompensateRowAsync(RepositoryObject row, string correlationId, CancellationToken ct)
+    {
+        var contentId = row.ContentId;
         await _objects.MarkCompensatedAsync(contentId, ct);
 
         if (!await _storage.TryDeleteAsync(row.StorageProvider, row.ObjectKey, ct))
@@ -212,6 +294,9 @@ public sealed class DocumentRepositoryService
 
         return Response<NoContent>.Success(204, correlationId);
     }
+
+    private static Response<T> NotFound<T>(string correlationId) =>
+        Response<T>.Fail("Content not found.", 404, DocumentRepositoryReasonCodes.NotFoundNonLeakage, correlationId);
 
     private static RepositoryObjectModel ToModel(RepositoryObject r) => new(
         r.ContentId,

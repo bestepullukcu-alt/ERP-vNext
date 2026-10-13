@@ -129,7 +129,8 @@ public static class ContentEngagementJourneyMapper
             stage.CreatedBy,
             stage.UpdatedAt,
             stage.UpdatedBy,
-            stage.IsArchived());
+            stage.IsArchived(),
+            stage.AdoptionStageCode);
     }
 
     /// <summary>Ordered active stages (StageOrder → StageCode); archived stages included only when

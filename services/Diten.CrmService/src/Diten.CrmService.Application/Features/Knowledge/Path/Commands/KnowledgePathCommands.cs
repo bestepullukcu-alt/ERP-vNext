@@ -100,7 +100,9 @@ public sealed record AddKnowledgePathStepCommand(
     IReadOnlyList<KnowledgePathBranchConditionInput>? BranchConditions = null,
     int? ExpectedVersion = null,
     // WP-KP-1: required on a chain-bound path (the client StepOrder is then ignored — the server computes it).
-    KnowledgePathArrangementInput? Arrangement = null) : IRequest<Response<Guid>>;
+    KnowledgePathArrangementInput? Arrangement = null,
+    // WP-VW-W3 (W3-BE-b) — the step's presentation notes (null = none).
+    KnowledgePathStepPresentationInput? Presentation = null) : IRequest<Response<Guid>>;
 
 public sealed record UpdateKnowledgePathStepCommand(
     Guid PathId,
@@ -120,7 +122,10 @@ public sealed record UpdateKnowledgePathStepCommand(
     IReadOnlyList<KnowledgePathBranchConditionInput>? BranchConditions = null,
     int? ExpectedVersion = null,
     // WP-KP-1: required on a chain-bound path; only Position may change once placed.
-    KnowledgePathArrangementInput? Arrangement = null) : IRequest<Response<bool>>;
+    KnowledgePathArrangementInput? Arrangement = null,
+    // WP-VW-W3 (W3-BE-b) — the step's presentation notes: null = KEEP the stored ones (an older client never wipes
+    // them); an object replaces them; an object with every field empty clears them.
+    KnowledgePathStepPresentationInput? Presentation = null) : IRequest<Response<bool>>;
 
 public sealed record ArchiveKnowledgePathStepCommand(
     Guid PathId, Guid StepId, int? ExpectedVersion = null) : IRequest<Response<bool>>;

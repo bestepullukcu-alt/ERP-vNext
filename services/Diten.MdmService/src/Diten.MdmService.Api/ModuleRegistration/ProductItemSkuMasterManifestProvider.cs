@@ -24,6 +24,9 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
     private const string ProductAbbreviationsCorrect = "mdm.product-abbreviations.correct";
     private const string ProductAbbreviationsRetire = "mdm.product-abbreviations.retire";
     private const string ProductAbbreviationsAudit = "mdm.product-abbreviations.audit";
+    private const string CompetitorProductsRead = "mdm.competitor-products.read";
+    private const string CompetitorProductsManage = "mdm.competitor-products.manage";
+    private const string CompetitorProductsPropose = "mdm.competitor-products.propose";
 
     public ModuleManifestDocument GetManifest() =>
         new(
@@ -127,7 +130,27 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
                     IsNavigationVisible: true,
                     PageType: "List",
                     SortOrder: 5,
-                    Actions: [])
+                    Actions: []),
+
+                // WP-VW-W4 (W4-BE-b2, §2.7) — competitor products (a separate MOD-0290 record; the marketing / medical team's
+                // screen — WEB-c draws it). RequiredPermission + the actions are the verbatim keys CompetitorProductsController
+                // enforces: read the list, manage (direct writes + the proposal decision), propose (a rep's "not in the list"
+                // from the visit report — declared here so the key is part of this module's set).
+                new ModuleManifestPage(
+                    PageCode: "COMPETITOR_PRODUCTS",
+                    DisplayName: "Competitor Products",
+                    RoutePath: "/MasterDataManagement/CompetitorProducts",
+                    RequiredPermission: CompetitorProductsRead,
+                    ParentPageCode: null,
+                    IsNavigationVisible: true,
+                    PageType: "List",
+                    SortOrder: 15,
+                    Actions:
+                    [
+                        new ModuleManifestAction("ADD_NEW", "Add New", CompetitorProductsManage, "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
+                        new ModuleManifestAction("VIEW_DETAILS", "View Details", CompetitorProductsRead, "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("PROPOSE", "Propose Competitor", CompetitorProductsPropose, "Action", 30, IsDangerous: false, IsToolbarAction: false, IsRowAction: false)
+                    ])
             ],
             Icon: "bx-package",
             IsBaseline: false);

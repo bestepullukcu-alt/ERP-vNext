@@ -20,6 +20,8 @@ public static class DependencyInjection
         // (validation/exception failures short-circuit before reaching it).
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(Behaviors.AuditForwardingBehavior<,>));
         services.AddValidatorsFromAssembly(assembly);
+        // WP-VW-W4 (W4-BE-b2) — the competitor products service (the handlers are thin calls onto it).
+        services.AddScoped<Features.CompetitorProducts.CompetitorProductService>();
         services.AddScoped<ProductAbbreviationAuthorization>();
         services.AddScoped<ProductAbbreviationWorkflow>();
 

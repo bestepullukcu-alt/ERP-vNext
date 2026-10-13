@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+    <data name="PageTitle" xml:space="preserve"><value>عرض الزيارة</value></data>
+  <data name="BackLabel" xml:space="preserve"><value>العودة إلى التقويم</value></data>
+  <data name="KindLabel" xml:space="preserve"><value>نوع الزيارة</value></data>
+  <data name="Loading" xml:space="preserve"><value>جارٍ التحميل…</value></data>
+  <data name="DoctorScreen" xml:space="preserve"><value>شاشة الطبيب</value></data>
+  <data name="RepPanel" xml:space="preserve"><value>جهاز تحكم المندوب</value></data>
+  <data name="ActionFailed" xml:space="preserve"><value>تعذر إتمام الإجراء. حاول مرة أخرى.</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>تعذر تحميل الزيارة.</value></data>
+  <data name="NotStartedTitle" xml:space="preserve"><value>لم تبدأ الزيارة بعد.</value></data>
+  <data name="NotStartedText" xml:space="preserve"><value>ابدأها من مساحة عمل الزيارات وأنت في المؤسسة.</value></data>
+  <data name="BackToWorkspace" xml:space="preserve"><value>العودة إلى مساحة عمل الزيارات</value></data>
+  <data name="NoSlides" xml:space="preserve"><value>لا يوجد محتوى معتمد لعرضه في هذه الزيارة.</value></data>
+  <data name="StartedLine" xml:space="preserve"><value>{0} · بدأت {1}</value></data>
+  <data name="LiveChip" xml:space="preserve"><value>قيد التنفيذ · {0}</value></data>
+  <data name="Kind_in_person" xml:space="preserve"><value>حضوري</value></data>
+  <data name="Kind_remote" xml:space="preserve"><value>عن بُعد</value></data>
+  <data name="DoctorScreenHint" xml:space="preserve"><value>شاشة الطبيب · ملاحظات المندوب مخفية</value></data>
+  <data name="ExitHold" xml:space="preserve"><value>خروج: اضغط مطولًا</value></data>
+  <data name="RepTitle" xml:space="preserve"><value>المندوب · التحكم</value></data>
+  <data name="BackToDoctor" xml:space="preserve"><value>العودة إلى وضع الطبيب</value></data>
+  <data name="DoctorMode" xml:space="preserve"><value>التبديل إلى وضع الطبيب</value></data>
+  <data name="TotalLabel" xml:space="preserve"><value>الإجمالي {0}</value></data>
+  <data name="DoctorSees" xml:space="preserve"><value>يرى الطبيب · {0}</value></data>
+  <data name="PrevSlide" xml:space="preserve"><value>السابق</value></data>
+  <data name="NextSlide" xml:space="preserve"><value>التالي</value></data>
+  <data name="SkipProduct" xml:space="preserve"><value>تخطي المنتج</value></data>
+  <data name="LastProduct" xml:space="preserve"><value>هذا هو المنتج الأخير.</value></data>
+  <data name="TabNotes" xml:space="preserve"><value>الملاحظات</value></data>
+  <data name="TabMarks" xml:space="preserve"><value>العلامات</value></data>
+  <data name="TabNote" xml:space="preserve"><value>تدوين ملاحظة</value></data>
+  <data name="KeyMessage" xml:space="preserve"><value>الرسالة الرئيسية</value></data>
+  <data name="ThisSlide" xml:space="preserve"><value>هذه الشريحة {0}</value></data>
+  <data name="TargetLabel" xml:space="preserve"><value>الهدف ≈ {0}</value></data>
+  <data name="TargetSeconds" xml:space="preserve"><value>{0} ث</value></data>
+  <data name="TargetMinutes" xml:space="preserve"><value>{0} د</value></data>
+  <data name="TalkTrack" xml:space="preserve"><value>نص الحديث · معتمد</value></data>
+  <data name="ForThisDoctor" xml:space="preserve"><value>لهذا الطبيب</value></data>
+  <data name="BriefLastVisit" xml:space="preserve"><value>آخر زيارة: {0}</value></data>
+  <data name="BriefOutcome" xml:space="preserve"><value>النتيجة: {0}</value></data>
+  <data name="BriefFollowUp" xml:space="preserve"><value>المتابعة: {0}</value></data>
+  <data name="BriefSamples" xml:space="preserve"><value>العينات المسلّمة: {0}</value></data>
+  <data name="Objections" xml:space="preserve"><value>الاعتراضات المتوقعة · الرد المعتمد</value></data>
+  <data name="MyNote" xml:space="preserve"><value>ملاحظتي · {0} · تراها أنت فقط</value></data>
+  <data name="MyNotePlaceholder" xml:space="preserve"><value>ملاحظة لنفسك عن هذا المنتج</value></data>
+  <data name="TransitionHeading" xml:space="preserve"><value>الانتقال</value></data>
+  <data name="QuickMarks" xml:space="preserve"><value>علامات سريعة · {0}</value></data>
+  <data name="Interest_interested" xml:space="preserve"><value>مهتم</value></data>
+  <data name="Interest_neutral" xml:space="preserve"><value>محايد</value></data>
+  <data name="Interest_not_interested" xml:space="preserve"><value>غير مهتم</value></data>
+  <data name="Flag_question" xml:space="preserve"><value>طرح سؤالًا</value></data>
+  <data name="Flag_objection" xml:space="preserve"><value>اعترض</value></data>
+  <data name="Flag_sample_request" xml:space="preserve"><value>طلب عينة</value></data>
+  <data name="Flag_literature_request" xml:space="preserve"><value>طلب مراجع / معلومات</value></data>
+  <data name="Flag_follow_up" xml:space="preserve"><value>يلزم متابعة</value></data>
+  <data name="ObjectionCategory" xml:space="preserve"><value>فئة الاعتراض</value></data>
+  <data name="ObjectionWith" xml:space="preserve"><value>{0}: {1}</value></data>
+  <data name="VisitNote" xml:space="preserve"><value>ملاحظة الزيارة</value></data>
+  <data name="VisitNotePlaceholder" xml:space="preserve"><value>ملاحظة حرة (لا يراها الطبيب) · تُنقل إلى التقرير</value></data>
+  <data name="VoiceNote" xml:space="preserve"><value>ملاحظة صوتية</value></data>
+  <data name="Listening" xml:space="preserve"><value>جارٍ الاستماع…</value></data>
+  <data name="JointVisit" xml:space="preserve"><value>مع مديري (زيارة مشتركة)</value></data>
+  <data name="CoVisitorsPlaceholder" xml:space="preserve"><value>اختر المرافقين</value></data>
+  <data name="CoVisitorsMax" xml:space="preserve"><value>{0} أشخاص كحد أقصى.</value></data>
+  <data name="NoPeople" xml:space="preserve"><value>لا يوجد أحد للاختيار.</value></data>
+  <data name="DurationConsistency" xml:space="preserve"><value>اتساق المدة مفعّل: تُسجَّل أوقات الشرائح؛ وتُعلَّم الزيارة الأقصر من {0}.</value></data>
+  <data name="FinishVisit" xml:space="preserve"><value>إنهاء الزيارة</value></data>
+  <data name="FinishConfirmTitle" xml:space="preserve"><value>إنهاء الزيارة؟</value></data>
+  <data name="FinishConfirmText" xml:space="preserve"><value>يُؤخذ وقت الانتهاء من الخادم؛ ولا يمكن تغيير العرض بعد ذلك.</value></data>
+  <data name="FinishConfirmYes" xml:space="preserve"><value>نعم، إنهاء</value></data>
+  <data name="CancelButton" xml:space="preserve"><value>إلغاء</value></data>
+  <data name="PinSetTitle" xml:space="preserve"><value>عيّن رمز PIN من 4 أرقام للمندوب</value></data>
+  <data name="PinConfirmTitle" xml:space="preserve"><value>أدخل رمز PIN مرة أخرى</value></data>
+  <data name="PinUnlockTitle" xml:space="preserve"><value>رمز PIN للمندوب</value></data>
+  <data name="PinMismatch" xml:space="preserve"><value>رمزا PIN غير متطابقين. أعد التعيين.</value></data>
+  <data name="PinWrong" xml:space="preserve"><value>رمز PIN غير صحيح.</value></data>
+  <data name="SummaryTitle" xml:space="preserve"><value>انتهت الزيارة</value></data>
+  <data name="SummaryLine" xml:space="preserve"><value>{0} · {1} · {2}–{3}</value></data>
+  <data name="DurationHeading" xml:space="preserve"><value>المدة</value></data>
+  <data name="RolePromo" xml:space="preserve"><value>ترويج</value></data>
+  <data name="RoleReminder" xml:space="preserve"><value>تذكير</value></data>
+  <data name="MinutesClock" xml:space="preserve"><value>{0} د</value></data>
+  <data name="ShortVisitWarning" xml:space="preserve"><value>كانت الزيارة أقصر من {0}؛ وتم تعليمها لاتساق المدة.</value></data>
+  <data name="NotesHeading" xml:space="preserve"><value>الملاحظات</value></data>
+  <data name="CoVisitorsLine" xml:space="preserve"><value>زيارة مشتركة: {0}</value></data>
+  <data name="SignatureTitleApproval" xml:space="preserve"><value>تأكيد الطبيب</value></data>
+  <data name="SignatureTitleSample" xml:space="preserve"><value>تسليم العينة · توقيع الطبيب</value></data>
+  <data name="SignatureTextApproval" xml:space="preserve"><value>تطلب شركتك تأكيد الطبيب للزيارة.</value></data>
+  <data name="SignatureTextSample" xml:space="preserve"><value>طُلبت عينة: يوقّع الطبيب عند التسليم.</value></data>
+  <data name="ClearSignature" xml:space="preserve"><value>مسح</value></data>
+  <data name="ConfirmVisit" xml:space="preserve"><value>أؤكد الزيارة (الطبيب)</value></data>
+  <data name="SignatureSave" xml:space="preserve"><value>حفظ التوقيع</value></data>
+  <data name="SignatureSaved" xml:space="preserve"><value>تم حفظ التوقيع.</value></data>
+  <data name="Signed" xml:space="preserve"><value>تم تسجيل توقيع الطبيب.</value></data>
+  <data name="EnterReport" xml:space="preserve"><value>إدخال التقرير</value></data>
+  <data name="Later" xml:space="preserve"><value>سأدخله لاحقًا</value></data>
+  <data name="LaterHint" xml:space="preserve"><value>خلال 48 ساعة · العودة إلى التقويم</value></data>
+  <data name="CaptureFailed" xml:space="preserve"><value>تعذر حفظ العرض؛ ستتم إعادة المحاولة.</value></data>
+  <data name="ImagePlaceholder" xml:space="preserve"><value>صورة محتوى معتمدة</value></data>
+  <data name="Err_visit_execution_finished" xml:space="preserve"><value>انتهت الزيارة بالفعل.</value></data>
+  <data name="Err_visit_execution_not_finished" xml:space="preserve"><value>أنهِ الزيارة أولًا.</value></data>
+  <data name="Err_visit_signature_exists" xml:space="preserve"><value>الزيارة موقّعة بالفعل.</value></data>
+  <data name="Err_visit_report_deadline_passed" xml:space="preserve"><value>انتهت مهلة الـ48 ساعة للزيارة.</value></data>
+  <data name="Err_visit_capture_invalid" xml:space="preserve"><value>بعض البيانات المُدخلة غير صالحة.</value></data>
+  <data name="Err_visit_co_visitor_invalid" xml:space="preserve"><value>تعذرت إضافة المرافق (3 مستخدمين كحد أقصى، وليس أنت).</value></data>
+  <data name="Err_visit_evidence_store_unavailable" xml:space="preserve"><value>مخزن الأدلة غير متاح. حاول مرة أخرى.</value></data>
+  <data name="Err_visit_already_reported" xml:space="preserve"><value>تم إرسال تقرير الزيارة بالفعل.</value></data>
+  <data name="Err_visit_execution_not_found" xml:space="preserve"><value>تعذر العثور على الزيارة.</value></data>
+  <data name="Err_visit_execution_concurrency_conflict" xml:space="preserve"><value>تغيّرت الزيارة على شاشة أخرى. أعد تحميل الصفحة.</value></data>
+  <data name="Err_resource_not_caller" xml:space="preserve"><value>لا يسجّل الزيارة إلا مندوبها.</value></data>
+</root>

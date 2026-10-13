@@ -15,6 +15,34 @@ public interface IUserDisplayNameResolver
         IReadOnlyCollection<Guid> userIds, CancellationToken cancellationToken = default);
 }
 
+/// <summary>
+/// WP-VW-W3-FIX (F5) — the <c>displayNames</c> map of a read DTO (id "D" → name), as the objection response detail
+/// builds it: the distinct GUID-shaped ids asked in ONE call; null when there is no resolver, no id or the call fails
+/// (fail-open — a name is display only; the screen falls back to a short id).
+/// </summary>
+public static class UserDisplayNames
+{
+    public static async Task<IReadOnlyDictionary<string, string>?> MapAsync(
+        IUserDisplayNameResolver? resolver, IEnumerable<string?> ids, CancellationToken ct)
+    {
+        var guids = ids.Select(v => Guid.TryParse(v, out var g) ? g : Guid.Empty).Where(g => g != Guid.Empty).Distinct().ToList();
+        if (resolver is null || guids.Count == 0)
+        {
+            return null;
+        }
+
+        try
+        {
+            var resolved = await resolver.ResolveAsync(guids, ct);
+            return resolved.ToDictionary(kv => kv.Key.ToString("D"), kv => kv.Value);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            return null;
+        }
+    }
+}
+
 /// <summary>Default seam used by tests and non-HTTP hosts: resolves nothing, so provenance names stay absent.</summary>
 public sealed class NullUserDisplayNameResolver : IUserDisplayNameResolver
 {

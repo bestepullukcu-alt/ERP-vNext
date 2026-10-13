@@ -80,6 +80,9 @@ public static class DependencyInjection
             Application.Features.Knowledge.Path.Release.IKnowledgePathRevisionRenderer,
             ContentComposition.Rendering.PdfSharpKnowledgePathRevisionRenderer>();
         services.AddHttpClient<Application.Common.Artifacts.IContentArtifactStore, Artifacts.HttpContentArtifactStore>();
+        // WP-VW-W3 (BE-a, K-W3) — the visit evidence (photo, signature) in the document repository, scope CrmVisitEvidence,
+        // as the signed-in user (the Platform's scoped keys decide). Fail-closed store, never-throwing compensation.
+        services.AddHttpClient<Application.Common.Artifacts.IVisitEvidenceStore, Artifacts.HttpVisitEvidenceStore>();
 
         // MOD-0167 FU02 - class-X criterion VALUE proof (MDM global product / product / brand) over the Gateway.
         // Deliberately cacheless, 3s budget, one transient retry; 404 makes the rule un-authorable (400) and an
@@ -99,6 +102,8 @@ public static class DependencyInjection
         // WP-VP-4G (F4-4) - product NAMES for read models over the same MDM selector the play editor reads; one bulk read
         // per call, fail-open (no name ⇒ the code is shown; a plan read never fails on it).
         services.AddHttpClient<Application.Common.IProductNameReader, StrategyTemplate.MdmProductNameReader>();
+        // WP-VW-W4 (W4-BE-a) — the MDM competitor products (report lookup, proposals, merged survivors) with the caller's token.
+        services.AddHttpClient<Application.Features.VisitReport.V2.IMdmCompetitorClient, Mdm.GatewayMdmCompetitorClient>();
 
         // MOD-0165 FU07 - the CyclePeriod legal-entity scope. Same fail-closed profile as the working calendar's own
         // validator and MOD-0167 FU02's: cacheless, 3s budget, one transient retry, always through the Gateway. It runs
@@ -175,6 +180,15 @@ public static class DependencyInjection
         services.AddSingleton<
             Application.Features.Knowledge.Regulatory.IRegulatoryTextReviewSettings,
             Workflow.ConfigurationRegulatoryTextReviewSettings>();
+        // WP-VW-W3 (W3-BE-c) — the objection answer / evidence exception templates (Crm:ObjectionResponses:Workflow,
+        // Crm:VisitEvidenceExceptions:Workflow) on the SAME Gateway workflow client.
+        services.AddSingleton<
+            Application.Features.Approvals.IAuthoringApprovalSettings,
+            Workflow.ConfigurationAuthoringApprovalSettings>();
+        // WP-VW-W4 (W4-BE-c) — the Concept Graph type codes of the indication / patient profile nodes (tenant data).
+        services.AddSingleton<
+            Application.Features.DoctorInsights.IDoctorInsightsSettings,
+            Workflow.ConfigurationDoctorInsightsSettings>();
         services.AddScoped<Application.Features.Knowledge.Path.Review.IWorkflowDecisionClient>(sp =>
             (Application.Features.Knowledge.Path.Review.IWorkflowDecisionClient)
             sp.GetRequiredService<Application.Features.ContentComposition.Claims.IClaimWorkflowClient>());

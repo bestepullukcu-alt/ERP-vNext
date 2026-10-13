@@ -1,5 +1,6 @@
 using Diten.BuildingBlocks.ModuleRegistration.Abstractions;
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Application.Features.DocumentRepository;
 
 namespace Diten.Platform.Application.Features.Crm.SelfRegistration;
 
@@ -43,6 +44,10 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
     private const string KnowledgePathRead = "crm.knowledge.path.read";
     private const string ContentEngagementJourneyRead = "crm.knowledge.content-engagement-journey.read";
     private const string ClaimRead = "crm.claim.read";
+    // WP-VW-W3 (W3-BE-b) — the objection library (approved answers to doctor objections; approve ≠ manage, SoD).
+    private const string ObjectionResponseRead = "crm.objection-response.read";
+    // WP-VW-W3 (W3-BE-c) — the visit evidence settings page (read without managing, K-C4).
+    private const string VisitEvidencePolicyRead = "crm.visit-evidence-policy.read";
     private const string EligibilityRead = "crm.eligibility.read";
     private const string SafetyTextRead = "crm.safety-text.read";
     private const string CountryLegalProfileRead = "crm.country-legal-profile.read";
@@ -107,6 +112,48 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                 // WP-VP-FIX-1 (D7) — MOD-0155 FU05 Visit Planning console (the rep's week plan → apply writes FU01 atoms)
                 // and FU02 Visit Execution calendar (record / amend the immutable Visit Report). Both pages existed with
                 // no sidebar entry. Planning sits right before Planned Visits (65), Execution right after it.
+                // WP-VW-W2 (CT, WEB-a) — the Visit Workspace: one calendar to plan, run and report visits (MOD-0155 VW).
+                // Above Visit Planning; the older pages stay until W9. The page itself also needs crm.visit-plan.read
+                // (its own UAS-001 notice otherwise).
+                // WP-VW-W3 (BE-a) — the visit execution keys (start / capture / finish / signature, the reads) and the tenant's
+                // evidence policy (K-W2); declared here so a role can receive them from the role-permission screen (no seed).
+                new ModuleManifestPage("VISIT_WORKSPACE", "Visit Workspace", "/CRM/VisitWorkspace", VisitReportRead, null, true, "List", 63,
+                [
+                    new ModuleManifestAction("EXECUTION_READ", "Read Visit Execution", "crm.visit-execution.read", "RowAction", 10, false, false, true),
+                    new ModuleManifestAction("EXECUTION_RECORD", "Start and Record Visit", "crm.visit-execution.record", "RowAction", 20, false, false, true),
+                    new ModuleManifestAction("EVIDENCE_POLICY", "Manage Visit Evidence Policy", "crm.visit-evidence-policy.manage", "Toolbar", 30, false, true, false),
+                    // WP-VW-W3-AUTH — the document repository's scope-bound visit-evidence keys (W3-PLT), declared on this
+                    // tenant route so the manifest sync carries Scope=Tenant for them. Without a page home they reach Auth
+                    // only through the scopeless A1 auto-registration, which stamps every new platform.* key PlatformAdmin,
+                    // and no tenant role can then be granted them. They open ONLY the CrmVisitEvidence scope:
+                    //   write    — stores visit evidence (photo, signature); compensation-deletes only evidence the caller created.
+                    //   read     — reads only visit evidence the caller created.
+                    //   read-all — reads every visit evidence object in the tenant (manager / reviewer).
+                    // The general platform.document-repository.read / .manage are deliberately NOT declared here.
+                    new ModuleManifestAction("EVIDENCE_WRITE", "Store Own Visit Evidence (Photo, Signature)", DocumentRepositoryPermissions.VisitEvidenceWrite, "RowAction", 40, false, false, true),
+                    new ModuleManifestAction("EVIDENCE_READ", "Read Own Visit Evidence", DocumentRepositoryPermissions.VisitEvidenceRead, "RowAction", 50, false, false, true),
+                    new ModuleManifestAction("EVIDENCE_READ_ALL", "Read All Visit Evidence (Tenant-Wide)", DocumentRepositoryPermissions.VisitEvidenceReadAll, "Toolbar", 60, false, true, false)
+                ]),
+                // WP-VW-W3 (W3-BE-c) — the visit evidence settings (tenant rules, effective rules of a rep, change history,
+                // time-boxed exceptions approved in the Work Center — template CRM-VISIT-EVIDENCE-EXC). Read without
+                // managing; the exception keys are separate (the approval itself is the workflow task's).
+                new ModuleManifestPage("VISIT_EVIDENCE_SETTINGS", "Visit Evidence Settings", "/CRM/VisitEvidenceSettings", VisitEvidencePolicyRead, null, true, "List", 67,
+                [
+                    new ModuleManifestAction("MANAGE_POLICY", "Manage Visit Evidence Policy", "crm.visit-evidence-policy.manage", "Toolbar", 10, false, true, false),
+                    new ModuleManifestAction("EXCEPTION_READ", "Read Time-Boxed Exceptions", "crm.visit-evidence-exception.read", "RowAction", 20, false, false, true),
+                    new ModuleManifestAction("EXCEPTION_MANAGE", "Manage Time-Boxed Exceptions", "crm.visit-evidence-exception.manage", "Toolbar", 30, false, true, false)
+                ]),
+                // WP-VW-W4 (W4-BE-c) — the per-product potential thresholds (Low / Medium / High, marketing). The doctor
+                // insights keys live on this page so a role can receive them from the role-permission screen: the report
+                // and the doctor card read with .read (own + team doctors), .read-all is the whole tenant, .read-aggregate
+                // the marketing counts without a doctor's identity, .manage a hand edit of the doctor profile.
+                new ModuleManifestPage("CRM_DOCTOR_INSIGHT_THRESHOLDS", "Potential Thresholds", "/CRM/PotentialThresholds", "crm.doctor-insights.thresholds.manage", null, true, "List", 68,
+                [
+                    new ModuleManifestAction("INSIGHTS_READ", "Read Doctor Insights", "crm.doctor-insights.read", "RowAction", 10, false, false, true),
+                    new ModuleManifestAction("INSIGHTS_MANAGE", "Edit Doctor Profiles", "crm.doctor-insights.manage", "Toolbar", 20, false, true, false),
+                    new ModuleManifestAction("INSIGHTS_READ_ALL", "Read All Doctors' Insights", "crm.doctor-insights.read-all", "RowAction", 30, false, false, true),
+                    new ModuleManifestAction("INSIGHTS_READ_AGGREGATE", "Read Aggregated Doctor Insights", "crm.doctor-insights.read-aggregate", "RowAction", 40, false, false, true)
+                ]),
                 new ModuleManifestPage("VISIT_PLANNING", "Visit Planning", "/CRM/VisitPlanning", VisitPlanRead, null, true, "List", 64,
                 [
                     new ModuleManifestAction("GENERATE", "Generate Plan", "crm.visit-plan.generate", "Toolbar", 10, false, true, false),
@@ -119,7 +166,10 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                 new ModuleManifestPage("VISIT_EXECUTION", "Visit Execution", "/CRM/VisitExecution", VisitReportRead, null, true, "List", 66,
                 [
                     new ModuleManifestAction("RECORD", "Record Visit", "crm.visit-report.record", "RowAction", 10, false, false, true),
-                    new ModuleManifestAction("AMEND", "Amend Report", "crm.visit-report.amend", "RowAction", 20, false, false, true)
+                    new ModuleManifestAction("AMEND", "Amend Report", "crm.visit-report.amend", "RowAction", 20, false, false, true),
+                    // WP-VW-W4 (W4-BE-a, G2) — competitor usage counts from the reports (no doctor identity, cells under 5
+                    // hidden); the MDM competitor screens read it.
+                    new ModuleManifestAction("READ_AGGREGATE", "Read Report Usage Counts", "crm.visit-report.read-aggregate", "RowAction", 30, false, false, true)
                 ]),
                 // MOD-0155-FU01 Visit Planning / Planned Visit — the field team's planning atom. confirm is a SEPARATE
                 // key from manage (author-vs-confirmer SoD); there is no delete/bulk-delete surface (cancel/archive).
@@ -170,6 +220,15 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                 [
                     new ModuleManifestAction("MANAGE", "New Claim", "crm.claim.manage", "Toolbar", 10, false, true, false),
                     new ModuleManifestAction("APPROVE", "Approve", "crm.claim.approve", "RowAction", 20, false, false, true)
+                ]),
+                // WP-VW-W3 (W3-BE-b) — the objection library's keys.
+                // WP-VW-W3 (W3-BE-c) — now IN the navigation (the W3-WEB-c screen, Content Studio group next to Claims).
+                // The approval is the MOD-0023 task in the Work Center (template CRM-OBJ-RESP, MED-DIR): SUBMIT sends a
+                // draft to it (and withdraws it); the direct approve key is no longer declared (its endpoint answers 409).
+                new ModuleManifestPage("OBJECTION_RESPONSES", "Objection Responses", "/CRM/ObjectionResponses", ObjectionResponseRead, null, true, "List", 145,
+                [
+                    new ModuleManifestAction("MANAGE", "New Objection Response", "crm.objection-response.manage", "Toolbar", 10, false, true, false),
+                    new ModuleManifestAction("SUBMIT", "Submit for Approval", "crm.objection-response.submit", "RowAction", 20, false, false, true)
                 ]),
                 // WP-KP-5a-UI — the Regulatory-approved master data the page designer's locked blocks will read
                 // (DESIGN-KP-STUDIO §2.4): safety texts (product × country × language) and country legal profiles

@@ -51,7 +51,16 @@ public sealed record VisitReportDetailDto(
     DateTimeOffset CreatedAt,
     string? CreatedBy,
     DateTimeOffset? UpdatedAt,
-    string? UpdatedBy);
+    string? UpdatedBy,
+    // WP-VW-W4 (W4-BE-a, additive) — the schema (1 | 2), the v2 kind and sections (null / empty on a v1 report).
+    int SchemaVersion = 1,
+    string? ReportKind = null,
+    Domain.Entities.VisitReportGeneral? General = null,
+    IReadOnlyList<Domain.Entities.VisitReportProductSection>? ProductSections = null,
+    Domain.Entities.VisitReportDoctorLevel? Doctor = null,
+    Domain.Entities.VisitReportPharmacy? Pharmacy = null,
+    Domain.Entities.VisitReportSafety? Safety = null,
+    Domain.Entities.VisitReportFollowUp? FollowUp = null);
 
 public sealed record VisitReportContentActualsDto(
     Guid? JourneyId,
@@ -68,7 +77,9 @@ public sealed record VisitReportFeedbackDto(
     string? DoctorFeedback, string OutcomeCode, bool FollowUpRequired, string? FollowUpNotes);
 
 public sealed record VisitReportAmendmentDto(
-    DateTimeOffset At, string ByResourceId, string Reason, IReadOnlyList<string> ChangedFields);
+    DateTimeOffset At, string ByResourceId, string Reason, IReadOnlyList<string> ChangedFields,
+    // WP-VW-W4 (W4-BE-a, additive) — every changed value with its old and new JSON value.
+    IReadOnlyList<Domain.Entities.VisitReportAmendmentChange>? Changes = null);
 
 // ── calendar read (D-CALENDAR-UI = A) ──────────────────────────────────────────────────────────────────────────
 
@@ -99,7 +110,18 @@ public sealed record VisitCalendarItemDto(
     bool TargetInactive = false,
     // WP-E2E-FIX-1 (E9-B2, additive) — "what do I present": a summary of the plan atom's ContentItems (product, role,
     // journey, stage, step titles). Read from the atom itself, no extra query. Empty when the atom carries no items.
-    IReadOnlyList<VisitCalendarPlannedContentDto>? PlannedContent = null);
+    IReadOnlyList<VisitCalendarPlannedContentDto>? PlannedContent = null,
+    // WP-VW-W1 (additive) — the plan's cancellation reason (incl. week_reopened); the derived work status (never stored,
+    // see VisitWorkStatus), the report deadline (UTC, last reportable second) and the "lock + notify manager" flag.
+    string? CancellationReason = null,
+    string? WorkStatus = null,
+    DateTimeOffset? ReportDeadline = null,
+    bool ManagerAttention = false,
+    // WP-VW-W3 (BE-a, additive) — the visit's execution: id, started | finished, and the SERVER instants.
+    Guid? ExecutionId = null,
+    string? ExecutionStatus = null,
+    DateTimeOffset? StartedAt = null,
+    DateTimeOffset? FinishedAt = null);
 
 /// <summary>WP-E2E-FIX-1 — one planned content item of a calendar cell (one product line of the plan atom).</summary>
 public sealed record VisitCalendarPlannedContentDto(
@@ -112,9 +134,13 @@ public sealed record VisitCalendarPlannedContentDto(
     int StageIndex,
     string? StageCode,
     string? StageName,
-    IReadOnlyList<VisitCalendarPlannedStepDto> Steps);
+    IReadOnlyList<VisitCalendarPlannedStepDto> Steps,
+    // WP-VW-W1 (additive) — the product's name: the snapshot frozen at approval (4G), else one bulk MDM read (fail-open).
+    string? ProductName = null);
 
-public sealed record VisitCalendarPlannedStepDto(string? Title, string? Type);
+/// <summary>One step of a planned product. WP-VW-W3 (BE-a, additive) — the step's planned minutes (the path step's
+/// estimate frozen on the plan) and the knowledge content it shows.</summary>
+public sealed record VisitCalendarPlannedStepDto(string? Title, string? Type, int? Minutes = null, Guid? ContentId = null);
 
 public sealed record VisitCalendarDto(
     string From, string To, IReadOnlyList<VisitCalendarItemDto> Items, int TotalCount);

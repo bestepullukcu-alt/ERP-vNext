@@ -114,4 +114,16 @@
   <data name="Err_content_engagement_journey_overlapping_published_version" xml:space="preserve"><value>Otra versión publicada de este código de recorrido (mismo idioma) ya cubre estas fechas. Cambie las fechas de vigencia o archive la otra versión.</value></data>
   <data name="Err_content_engagement_journey_archived_no_mutation" xml:space="preserve"><value>Un recorrido archivado no se puede publicar.</value></data>
   <data name="Err_content_engagement_journey_concurrency_conflict" xml:space="preserve"><value>Otra persona modificó el recorrido mientras tanto. Recargue la página e inténtelo de nuevo.</value></data>
+  <data name="AdoptionStage" xml:space="preserve">
+    <value>Etapa de adopción</value>
+  </data>
+  <data name="AdoptionStageHelp" xml:space="preserve">
+    <value>El representante informa la etapa de adopción del médico; el recorrido avanza a la primera etapa asignada posterior.</value>
+  </data>
+  <data name="AdoptionStageNone" xml:space="preserve">
+    <value>Sin asignar</value>
+  </data>
+  <data name="AdoptionStageUnavailable" xml:space="preserve">
+    <value>No se pudo leer la lista de etapas de adopción.</value>
+  </data>
 </root>

@@ -703,6 +703,9 @@
   <data name="Nav.Page.LEGALPROFILES" xml:space="preserve">
     <value>الملفات القانونية</value>
   </data>
+  <data name="Nav.Page.VISITWORKSPACE" xml:space="preserve">
+    <value>مساحة عمل الزيارات</value>
+  </data>
   <data name="Nav.Page.VISITPLANNING" xml:space="preserve">
     <value>تخطيط الزيارات</value>
   </data>
@@ -747,6 +750,9 @@
   </data>
   <data name="Nav.Page.BRANDS" xml:space="preserve">
     <value>العلامات التجارية</value>
+  </data>
+  <data name="Nav.Page.COMPETITORPRODUCTS" xml:space="preserve">
+    <value>منتجات المنافسين</value>
   </data>
   <data name="PlannedVisitsMenu" xml:space="preserve"><value>الزيارات المخططة</value></data>
   <data name="Nav.Page.PLANNEDVISITS" xml:space="preserve"><value>الزيارات المخططة</value></data>
@@ -1054,6 +1060,15 @@
   <data name="Nav.Page.BOMS" xml:space="preserve"><value>قوائم المواد</value></data>
   <data name="Loading" xml:space="preserve">
     <value>جارٍ التحميل...</value>
+  </data>
+  <data name="Nav.Page.OBJECTIONRESPONSES" xml:space="preserve">
+    <value>مكتبة الاعتراضات</value>
+  </data>
+  <data name="Nav.Page.VISITEVIDENCESETTINGS" xml:space="preserve">
+    <value>إثبات الزيارة</value>
+  </data>
+  <data name="Nav.Page.CRMDOCTORINSIGHTTHRESHOLDS" xml:space="preserve">
+    <value>حدود الإمكانات</value>
   </data>
   <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>تنفيذ سلسلة الإمداد</value></data>
   <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>إدارة شركات النقل</value></data>
