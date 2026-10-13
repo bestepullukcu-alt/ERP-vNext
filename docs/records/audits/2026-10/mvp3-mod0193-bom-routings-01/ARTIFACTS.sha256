@@ -1,6 +1,7 @@
 # verify from: repository root
 b29982696deff0bffacdb1a352674ecb994b355086c814cce18a8474e44a4fa9  docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/REPORT.md
 73e8fa4206eb9150b7e0fdfaa57e93df00619063c3676a7011733da9cbf93c38  docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/evidence/architecture-suite.txt
+11e73fc7fed71e4de9b65795711ee485f4d4dd796a99cb7b3b494d3ab8fad0b8  docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/evidence/bom-version-event-suites.txt
 6808056da0e8a60af3bc218a23bd0a269d01d4f196e25e376d24da54fa8cd096  docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/evidence/bom-version-event.txt
 5f9acc9b1c3e5d735181e9483136e493f7bc8b1096cbe62c0a0ae8b685321fc3  docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/evidence/dcp002.txt
 5b77e87ab4198b0de56712029b365f2079847d7c98147515c48c0f09fa0fbeec  docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/evidence/gateway-e2e.py
