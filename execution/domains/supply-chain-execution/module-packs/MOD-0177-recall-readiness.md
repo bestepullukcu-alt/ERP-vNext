@@ -1307,6 +1307,17 @@ pins `R1`); **O-R2-3** reconciliations R2-1…R2-7; **O-R2-4** the R1 `sourceMod
 the APIs refuse are seeded as clones of real rows; **O-R2-6** `TraceRun` events on open / submit only, no drift check for pre-R2 submissions;
 **O-R2-7** Backward still lists the root's own stock / outbound; **O-R2-8** CSV `\r\n` fixed.
 
+**R2 — CT acceptance (2026-10-13).** Commits `12a383b74` + `d299ae682` (base `0bc76ccf7`, tree clean, 37 files +3801 / −41, deletions only in
+MOD-0177's own R1 files and 4 lines of `recall.openapi.yaml` → 1.1.0). The CT re-measured Inventory **1109 + 4 skipped** (full run). CT sabotage
+(own): the `X-Legal-Entity-Id` header removed from `ShipmentBundleHttpReader` → 2 red (`Reads_go_through_the_gateway_path_with_the_callers_company`,
+the multi-level API trace with the MVP-6 shipment); restored, `git diff` empty. Decisions: **`reviseScope` → R3** accepted (a revision changes the lot
+blocks R3 enforces). **O-R2-2** accepted (`RecallPermissions.R1` alias of `Implemented` — rename when the shared test is next touched, FU-0177-PERM-ALIAS).
+**O-R2-4** accepted: `sourceModule` is read only in the five trace files and only to recognise the shipment node kind; no exemption / authorisation
+decision reads it (the R1 guard narrowed accordingly). **O-R2-5** accepted (rows the APIs refuse by design are seeded by cloning real rows).
+**R2-1…R2-7** accepted; note R2-x: `WAREHOUSE_TRANSFER` is not an outbound leg (the stock stays in the company and appears as a Stock node), and the
+customer is carried on the Shipment node (no separate Customer node) — R6 renders the customer row from the shipment node's fields. Fast-forwarded
+into the MVP-1 branch. Live: R2 adds DI / handlers — the owner's Inventory window needs the CT restart (with approval) together with F5.
+
 ## 20. Follow-up Items
 
 | ID | Item | Owner |
