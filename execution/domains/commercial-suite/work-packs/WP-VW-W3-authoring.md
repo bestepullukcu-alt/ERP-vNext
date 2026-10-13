@@ -489,3 +489,57 @@ Geri alma: `db.rolePermissions.deleteMany({CreatedBy: "manual-grant-w3-authoring
 - İstisna şablonunun süresi tıbbi adımdan alındı (4320 / 2880).
 
 **Sıradaki:** kullanıcı betiği `--apply` ile çalıştırır ve yeniden giriş yapar → CT canlı E4: itiraz akışı + istisna akışı (sema onayı) + mockup görsel karşılaştırması.
+
+## Canlı E4 — W3 yazım ekranları (CT, 2026-10-13)
+
+**Kurulum:**
+- Grant betiği kullanıcı tarafından `--apply` ile çalıştırıldı ve yeniden giriş yapıldı.
+- Ayrı sekmede 1440 px; mockup `mockups-workspace` sunucusunda (5098) yan yana açıldı.
+- Kayıt oluşturma kullanıcı onayıyla yapıldı (1, 2, 3).
+
+**CT düzeltmeleri** (canlıda bulundu, kullanıcı onayıyla yapıldı):
+1. `f8293c2f5` — itiraz sayfalarının L10n köprüsü hiç çalışmıyordu.
+   - `_L10n.cshtml` içinde `Object.assign(` kapanış parantezi eksikti; Razor, `@Html.Raw(...)` parantezlerini yuttuğu için derleme geçti ama tarayıcı SyntaxError verdi.
+   - Sonuç: üç sayfada tüm istemci etiketleri boştu (durum çipi ham "draft" gösteriyordu).
+   - Koruma testi `RazorInlineScriptSyntaxTests` eklendi: `Views/` altındaki tüm satır içi köprü betiklerinin parantez dengesini denetliyor. Sabotajda kırmızı.
+2. `9f37e0875` — itiraz listesinde Durum ve Son değişiklik sütunları 1440 px'te "+" altına katlanıyordu.
+   - Soru sütunu artık iki satıra kaydırılıyor; Durum ve Son değişiklik sütunlarına öncelik verildi.
+   - Test eklendi; sabotajda kırmızı.
+   - Web **950/0**.
+
+**Akış sonuçları:**
+
+| Adım | Sonuç |
+|---|---|
+| İtiraz (ALMIBA — TUTUKON'da onaylı iddia yok) taslak → kaydet → onaya gönder (Admin) | ✅ "Onay bekliyor · Admin User…", Geri çek, SoD notu, geçmiş |
+| Görev sema'ya (MED-DIR) düştü | ✅ `approval_tasks.AssigneeRef` = sema |
+| Yorumsuz ret | ✅ "Neden girilmesi zorunludur." |
+| Onay (sema) → CRM `approved`, `approvedBy` = sema | ✅ A3 onaylı: salt okunur, Emekliye ayır + Kopyasından yeni taslak |
+| İstisna formu: zaten gevşek kurallar pasif | ✅ |
+| İstisna formu: 31 gün | ✅ "En çok 30 gün; seçilen aralık 31 gün.", istek gitmedi |
+| İstisna 14 Ekim + 13 Ekim → onaya gönder → sema (POS-SALES-OPS, ikincil atama) onayladı | ✅ planned / active |
+| Etkin ayar (Admin User) | ✅ konum = Bilgi, kaynak İstisna; aktif istisna şeridi; diğer alanlar Kiracı |
+| Arapça RTL: itiraz listesi + kanıt ayarları | ✅ etiketler AR, kategori BRD'den AR; kültür tr'ye döndü |
+
+**Görsel karşılaştırma:**
+- A1 boş, A1 liste, A2 yeni / düzenle, A3 kendi kaydı (SoD), A3 onaylı, B3 yayınlanmış, C1, C1 etkin ayar, C4 liste, C4 yeni, C4 ayrıntı, AR A1, AR C2 → uyumlu.
+- Bilinen ve kabul edilen farklar:
+  - süzgeçler Golden Slim sağ panelinde;
+  - B düzenleyicisi mevcut KP Studio çekmecesinde;
+  - tüzel kişilik / iş birimi katmanları pasif;
+  - temsilci arama kutusu fazladan;
+  - ürün formu yok.
+- Küçük açıklar (sonra toplu): A2 soru / yanıt örnek yer tutucuları yok; yeni kayıtta "Oluşturan —"; A3 başlığında "Taslak" çipi yok (yalnız "Onay bekliyor").
+- **Platform (bizim değil):** Görev Merkezi bildiriminde `&#39;Onayla&#39;` çift kodlama.
+
+**Test edilmedi** (kayıt ya da veri gerektiriyor):
+- C3 değişiklik geçmişi (politika kaydetme);
+- B1 düzenlenebilir sunum notları (taslak yol sürümü);
+- A3 emekli;
+- yetkisiz kullanıcı (UAS-001, birim testleri var).
+
+**Test verisi** (kullanıcı isteğiyle iptal edilmedi):
+- itiraz `c9ef2056…` (onaylı);
+- istisnalar 13 Ekim (aktif) ve 14 Ekim (planlı), temsilci Admin User.
+
+**Sonuç: W3 yazım ekranları canlıda kabul edildi → W3 tamam (katmanlar PLT-ORG-SEAT sonrası).**
