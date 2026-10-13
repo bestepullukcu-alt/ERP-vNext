@@ -1262,6 +1262,20 @@ R3 (CT-R11); **O-R1-3** `RECALL_SCOPE_CHANGED` proven by a direct DB change unti
 route with the decision's own key checked in the controller — accepted; the 15 new write commands join FU-SYNC1-AUDIT (Inventory 50).
 R6 must delete the `PagelessUntil` entry when it adds the first page (the guard forces it). Fast-forwarded into the MVP-1 branch.
 
+### 19.11 WP-0177-INT (INT-RECALL) — agent result, pending CT (2026-10-13)
+
+Branch `feature/int/mod-0177-recall-routes` (base `32267f884`). Evidence `docs/records/audits/2026-10/mod-0177-int-evidence-2026-10-13.md`.
+`ocelot.json`: `/api/recall` (`:1071`) + `/api/recall/{everything}` (`:1089`) → localhost:5067, GET / POST / PUT / OPTIONS (the methods of
+`recall.openapi.yaml` 1.0.0, measured: 22 GET, 26 POST, 2 PUT — no PATCH / DELETE), clones of the `/api/expiry` blocks (no
+AuthenticationOptions, no header transform, no rate limit), placed right after `/api/expiry/{everything}` (D-INT-1 pattern; no block moved).
+`MvpOneRecallRouteTests` (30): all 50 operations of the contract (R1 served + R2–R7 not yet implemented) → exactly one route
+(`/api/recall/{everything}`) with their method, the R4 subject-provider path `/api/recall/esign-subjects/…` and `getLotRecallStatus`
+(`/api/recall/lots/{lotId}/status`) shown separately, no DELETE / PATCH, `/api/recallX` look-alikes miss, neighbours (`/api/expiry`,
+`/api/quarantine`, `/api/trace`, `/api/inventory` → 5067, `/api/v1/esign` → 5057, `/api/bom` → 5070) unchanged. Gateway tests 134/135 →
+**164/165** (the known 5065 port red unchanged). Sabotage a/b/c → 15 / 7 / 5 new reds, restored green, `ocelot.json` SHA-identical. Probe:
+own gateway copy on 5100 → `GET /api/recall/settings` (random `X-Tenant-Id`, no token) **401 from localhost:5067** (Ocelot log),
+`/api/recallX` 404 (no route).
+
 ## 20. Follow-up Items
 
 | ID | Item | Owner |
