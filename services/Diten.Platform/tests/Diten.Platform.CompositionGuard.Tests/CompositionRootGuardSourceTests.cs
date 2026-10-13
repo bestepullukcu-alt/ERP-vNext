@@ -69,7 +69,8 @@ public sealed class CompositionRootGuardSourceTests
     [Fact]
     public void Host_takes_its_mongo_from_MongoAddress_with_the_owned_platform_source()
     {
-        var host = HostConstructor(File.ReadAllText(GuardSource()));
+        // CRLF on a Windows checkout (no eol rule in .gitattributes) must not blind the pin: normalized like CiServiceTestsGuardTests.Text.
+        var host = HostConstructor(File.ReadAllText(GuardSource()).Replace("\r\n", "\n"));
 
         Assert.Single(Regex.Matches(host,
             @"(?m)^\s*var mongo = MongoAddress\(Environment\.GetEnvironmentVariable\(MongoVariable\), PlatformTestMongo\.ConnectionStringAsync\);\s*$"));
@@ -83,7 +84,7 @@ public sealed class CompositionRootGuardSourceTests
     // The body of `public Host()` — from its signature to the matching closing brace.
     private static string HostConstructor(string source)
     {
-        var start = source.IndexOf("        public Host()\n", StringComparison.Ordinal);
+        var start = source.IndexOf("public Host()\n", StringComparison.Ordinal);
         Assert.True(start >= 0, "public Host() not found — the pin is blind");
         var open = source.IndexOf('{', start);
         var depth = 0;
