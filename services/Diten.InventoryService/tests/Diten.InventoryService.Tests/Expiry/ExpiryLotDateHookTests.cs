@@ -354,8 +354,8 @@ public sealed class ExpiryLotDateHookTests : IClassFixture<ExpiryApiFactory>
 }
 
 /// <summary>
-/// CT-F6 on the PRODUCTION signature gate (<see cref="Diten.InventoryService.Application.Features.Expiry.Ports.FailClosedLotDateOverrideSignature"/>):
-/// until F3 brings the MOD-0022 verification, a signed override in mode ReasonAndSignature is refused 409 and an unsigned one 400.
+/// CT-F6 on the PRODUCTION signature gate (since F3 the MOD-0022 <c>ESignLotDateOverrideSignature</c>): a caller MOD-0022 refuses (no
+/// <c>esign.*</c> key) and an unknown signature id → 409; unsigned in mode ReasonAndSignature → 400. Signed success: <see cref="ExpiryESignTests"/>.
 /// </summary>
 public sealed class ExpiryLotDateProductionSignatureTests : IClassFixture<ProductionSignatureExpiryApiFactory>
 {

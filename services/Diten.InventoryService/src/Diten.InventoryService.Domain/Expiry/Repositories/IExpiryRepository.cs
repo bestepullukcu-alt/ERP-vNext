@@ -58,6 +58,9 @@ public interface IExpiryRepository
     /// <summary>F2 (KF-D): the caller's earlier prepared override with this idempotency key, if any.</summary>
     Task<LotDateOverride?> FindDateOverrideByKeyAsync(Guid createdBy, string idempotencyKey, CancellationToken cancellationToken = default);
 
+    /// <summary>F3 (KF-D subject): one override of the caller's company by id (the provider and the gate read it).</summary>
+    Task<LotDateOverride?> FindDateOverrideAsync(Guid overrideId, CancellationToken cancellationToken = default);
+
     Task<T> InTransactionAsync<T>(Func<IExpiryWriteSession, CancellationToken, Task<T>> work, CancellationToken cancellationToken = default);
 }
 

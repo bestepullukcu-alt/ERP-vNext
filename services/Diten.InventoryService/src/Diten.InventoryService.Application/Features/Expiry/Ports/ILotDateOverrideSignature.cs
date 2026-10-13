@@ -1,22 +1,35 @@
+using Diten.InventoryService.Domain.Expiry.Entities;
+
 namespace Diten.InventoryService.Application.Features.Expiry.Ports;
 
 /// <summary>
+/// What MOD-0022's effective policy says about <c>expiry.lot-date.override</c> for one override. <see cref="PolicyRead"/> false = MOD-0022
+/// could not answer: the gate then fails closed. CT-F6: under <c>ReasonAndSignature</c> the signature is required REGARDLESS of
+/// <see cref="Required"/> — the row only supplies the meaning (and the visual mode for the dialog).
+/// </summary>
+public sealed record LotDateOverrideSignatureRequirement(bool Required, string? MeaningCode, bool PolicyRead);
+
+/// <summary>
 /// KF-D signature of a lot-date override (MOD-0022 action <c>expiry.lot-date.override</c>, subject <c>expiry.date-override/{overrideId}</c>).
-/// F2 ships the FAIL-CLOSED production default (<see cref="FailClosedLotDateOverrideSignature"/>); F3 brings the MOD-0022 verification. 0176
-/// stores only the signature id (KF-E).
+/// F3: <c>ESignLotDateOverrideSignature</c> (getSignature + the local <c>do-v1</c> hash, CT decision F3-A). 0176 stores only the
+/// signature id (KF-E).
 /// </summary>
 public interface ILotDateOverrideSignature
 {
-    /// <summary>true only when MOD-0022 confirms <paramref name="signatureId"/> is <paramref name="signer"/>'s signature of this override.</summary>
-    Task<bool> VerifyAsync(string signatureId, Guid overrideId, Guid signer, CancellationToken cancellationToken = default);
+    Task<LotDateOverrideSignatureRequirement> RequirementAsync(LotDateOverride dateOverride, CancellationToken cancellationToken = default);
+
+    /// <summary>true only when MOD-0022's record binds <paramref name="signatureId"/> to <paramref name="signer"/> and exactly this override.</summary>
+    Task<bool> VerifyAsync(string signatureId, LotDateOverride dateOverride, Guid signer, LotDateOverrideSignatureRequirement requirement,
+        CancellationToken cancellationToken = default);
 }
 
-/// <summary>
-/// Until F3 nothing verifies a signature, so a signed override is refused (409 <c>LOT_DATE_OVERRIDE_SIGNATURE_MISMATCH</c>; unsigned in mode
-/// ReasonAndSignature: 400). CT-F6 (WP-0176-F2): between F2 and F3 a lot with dates apart from the suggestion is created only in mode Reason.
-/// </summary>
+/// <summary>The F2 production default, kept as the fallback of a host without MOD-0022: nothing verifies, a signed override is refused.</summary>
 public sealed class FailClosedLotDateOverrideSignature : ILotDateOverrideSignature
 {
-    public Task<bool> VerifyAsync(string signatureId, Guid overrideId, Guid signer, CancellationToken cancellationToken = default)
+    public Task<LotDateOverrideSignatureRequirement> RequirementAsync(LotDateOverride dateOverride, CancellationToken cancellationToken = default)
+        => Task.FromResult(new LotDateOverrideSignatureRequirement(true, null, false));
+
+    public Task<bool> VerifyAsync(string signatureId, LotDateOverride dateOverride, Guid signer, LotDateOverrideSignatureRequirement requirement,
+        CancellationToken cancellationToken = default)
         => Task.FromResult(false);
 }

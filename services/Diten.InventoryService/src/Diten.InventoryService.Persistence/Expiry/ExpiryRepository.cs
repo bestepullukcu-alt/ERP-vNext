@@ -130,6 +130,9 @@ public sealed class ExpiryRepository : IExpiryRepository
         => await _overrides.Find(Scope<LotDateOverride>() & Builders<LotDateOverride>.Filter.Eq(x => x.CreatedBy, createdBy)
                                  & Builders<LotDateOverride>.Filter.Eq(x => x.IdempotencyKey, idempotencyKey)).FirstOrDefaultAsync(cancellationToken);
 
+    public async Task<LotDateOverride?> FindDateOverrideAsync(Guid overrideId, CancellationToken cancellationToken = default)
+        => await _overrides.Find(Scope<LotDateOverride>() & Builders<LotDateOverride>.Filter.Eq(x => x.Id, overrideId)).FirstOrDefaultAsync(cancellationToken);
+
     public async Task<bool> ExistsInAnotherCompanyAsync(Guid caseId, CancellationToken cancellationToken = default)
         => await _cases.Find(Builders<FefoExceptionCase>.Filter.Eq(x => x.TenantId, _tenantId) & Builders<FefoExceptionCase>.Filter.Ne(x => x.LegalEntityId, _legalEntityId)
                              & Builders<FefoExceptionCase>.Filter.Eq(x => x.Id, caseId)).AnyAsync(cancellationToken);

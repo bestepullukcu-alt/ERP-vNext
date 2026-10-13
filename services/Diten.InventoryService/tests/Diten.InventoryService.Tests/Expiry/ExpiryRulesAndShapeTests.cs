@@ -181,7 +181,7 @@ public sealed class ExpiryContractTests
     public void The_contract_is_frozen_1_0_0_owned_by_MOD_0176_with_the_CT_additions()
     {
         var info = Yaml.Value["info"]!;
-        Assert.Equal("1.0.1", info["version"]!.GetValue<string>()); // WP-0176-F2: description-only step (x-implemented-by-slice)
+        Assert.Equal("1.0.2", info["version"]!.GetValue<string>()); // WP-0176-F2 / F3: description-only steps (x-implemented-by-slice)
         Assert.Equal("FROZEN", info["x-status"]!.GetValue<string>());
         Assert.Equal("MOD-0176", info["x-owner"]!.GetValue<string>());
         Assert.Equal("/api/expiry", Yaml.Value["servers"]![0]!["url"]!.GetValue<string>());
@@ -219,8 +219,18 @@ public sealed class ExpiryContractTests
         }
 
         Assert.Equal(f1.Count, served.Count);
+
+        // F3: the MOD-0022 subject provider is its own controller (the MOD-0175 pattern; the key depends on the subject type, checked inside)
+        var f3 = Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["F3"]);
+        Assert.Equal(["getSignableSubject"], f3);
+        var provider = typeof(ExpiryESignSubjectsController).GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+            .SelectMany(m => m.GetCustomAttributes<HttpMethodAttribute>().SelectMany(a => a.HttpMethods.Select(v => (Path: "/esign-subjects/" + a.Template, Method: v.ToLowerInvariant()))))
+            .ToList();
+        Assert.Equal("getSignableSubject", byRoute[Assert.Single(provider)].Op["operationId"]!.GetValue<string>());
+        Assert.Equal("api/expiry/esign-subjects", typeof(ExpiryESignSubjectsController).GetCustomAttribute<Microsoft.AspNetCore.Mvc.RouteAttribute>()!.Template);
+
         var notYet = Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["not-yet-implemented"]);
-        Assert.Equal(Operations().Select(o => o.Op["operationId"]!.GetValue<string>()).Except(f1).OrderBy(x => x), notYet.OrderBy(x => x));
+        Assert.Equal(Operations().Select(o => o.Op["operationId"]!.GetValue<string>()).Except(f1).Except(f3).OrderBy(x => x), notYet.OrderBy(x => x));
         Assert.Equal("api/expiry", typeof(ExpiryController).GetCustomAttribute<Microsoft.AspNetCore.Mvc.RouteAttribute>()!.Template);
     }
 
