@@ -220,10 +220,10 @@ public sealed class DevTrustBootstrapTests
         var entries = platform.RootElement.GetProperty("TrustedWorkflowStartAuthorization").GetProperty("Entries")
             .EnumerateArray().Select(entry => (entry.GetProperty("ObjectType").GetString(), entry.GetProperty("TemplateCode").GetString()))
             .ToArray();
-        // LSKU FIX1 (B4): the two LSKU starts follow, in the tracked order.
+        // LSKU FIX1 (B4): the two LSKU starts follow, in the tracked order; S2 item activation approval: then the item start.
         Assert.Equal([("GlobalProduct", "GLOBAL-PRODUCT-IDENTITY"), ("gsku", "GSKU-IDENTITY"),
             ("GskuCorrection", "GSKU-CORRECTION"), ("GskuRetirementRequest", "GSKU-RETIREMENT-REQUEST"),
-            ("lsku", "LSKU-IDENTITY"), ("LskuRetirementRequest", "LSKU-RETIREMENT-REQUEST")], entries);
+            ("lsku", "LSKU-IDENTITY"), ("LskuRetirementRequest", "LSKU-RETIREMENT-REQUEST"), ("Item", "ITEM-ACTIVATION")], entries);
     }
 
     // WP-MDM-LSKU-ACCEPT-01 FIX1 (B4): the LSKU identity and retirement-request flows and their workers are switched on
