@@ -1037,6 +1037,15 @@ issue over the HTTP posting route is 201 with no reason and no case. Sabotage (f
 `FEFO_BYPASS_REASON_REQUIRED` naming B's lot), panel test green as expected; restored green, `git diff` empty. Inventory 1060+2 → 1062+2.
 Evidence `docs/records/audits/2026-10/mvp1-fix-f4r1-evidence-2026-10-13.md`.
 
+**F4 + FIX-F4R1 — CT acceptance (2026-10-13).** Integration: F4 (`dbefa2a3a`…`b2e8fb12b`) and R1 (`1d79e4ed8`) ran in parallel under the PARALEL KURAL; the CT merged both in its own worktree (`ct/mvp1-int-f4-r1`, `dd682caf9` + `1e15e3d59`, the one conflict = the contracts README row, both rows kept). Merged-tree measurement: Inventory **1060 + 2 skipped**, architecture 69/77 (same 8), gateway 134/135, **Web 1438/1440** — the two `NavManifestL10nGuardTests` reds came from R1's page-less `RECALL-READINESS` manifest; the CT notes that the same two reds existed from 0176 F1 until F4 because the CT did not run the Web suite at F1 acceptance (process gap; the CT now runs Web at every acceptance). WP-MVP1-FIX-F4R1 (`823fb8425`, `c20c4d86a`, `12545ffff`, tests + 7 resx lines only) fixed it: `Nav.Module.RECALLREADINESS` in 7 languages (normalised key) and a self-expiring page-less exception (`RECALL-READINESS — API-only until WP-0177-R6`; red the moment the manifest declares a page). After the fix the CT re-measured Web **1441/1441**; CT sabotage (own): the zh `Nav.Module.RECALLREADINESS` value emptied → the seven-language guard red; restored, `git diff` empty.
+F4-specific: CT sabotage (own) — `LegalEntityId` removed from `FefoCandidateReader` → **all 179 Expiry tests stayed green** (no guard);
+FIX-F4R1 added a two-company test (same `WarehouseId`, same SKU): FEFO order (a) and the F2 issue hook (b) each turn red under that
+sabotage. The CT viewed the static-preview screenshots (dashboard, FEFO order allocation) — 1:1 with the mockup except §21.3. Open points:
+**O-F4-1** (material-type filter, chart grouping, panel horizon selectors need data the contract lacks) → FU-0176-F4-UI; **O-F4-2** accepted;
+**O-F4-3** accepted for MVP-1 (lot × warehouse rows; mixed units are not converted — the panel says "tüm birimler"); **O-F4-4** → F5;
+**O-F4-5** accepted; **O-F4-6** the CT checks live after the owner-approved Inventory + Web restart; **O-F4-7** (same dark-tab / filter
+placeholder defects on the Quarantine screens) → FU-0175-UI-THEME-01. Fast-forwarded into the MVP-1 branch.
+
 ## 20. Follow-up Items
 
 | ID | Item | Owner |

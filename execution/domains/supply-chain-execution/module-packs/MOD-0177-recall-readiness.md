@@ -1252,6 +1252,16 @@ guard accepts ONE named page-less module — `PagelessUntil["RECALL-READINESS"] 
 manifest emptied) each red → green, `git diff` empty. Web 1438/1440 → 1441/1441. Evidence
 `docs/records/audits/2026-10/mvp1-fix-f4r1-evidence-2026-10-13.md`.
 
+### 19.10 R1 + FIX-F4R1 — CT acceptance (2026-10-13)
+
+Integration: F4 (`dbefa2a3a`…`b2e8fb12b`) and R1 (`1d79e4ed8`) ran in parallel under the PARALEL KURAL; the CT merged both in its own worktree (`ct/mvp1-int-f4-r1`, `dd682caf9` + `1e15e3d59`, the one conflict = the contracts README row, both rows kept). Merged-tree measurement: Inventory **1060 + 2 skipped**, architecture 69/77 (same 8), gateway 134/135, **Web 1438/1440** — the two `NavManifestL10nGuardTests` reds came from R1's page-less `RECALL-READINESS` manifest; the CT notes that the same two reds existed from 0176 F1 until F4 because the CT did not run the Web suite at F1 acceptance (process gap; the CT now runs Web at every acceptance). WP-MVP1-FIX-F4R1 (`823fb8425`, `c20c4d86a`, `12545ffff`, tests + 7 resx lines only) fixed it: `Nav.Module.RECALLREADINESS` in 7 languages (normalised key) and a self-expiring page-less exception (`RECALL-READINESS — API-only until WP-0177-R6`; red the moment the manifest declares a page). After the fix the CT re-measured Web **1441/1441**; CT sabotage (own): the zh `Nav.Module.RECALLREADINESS` value emptied → the seven-language guard red; restored, `git diff` empty.
+R1-specific: CT sabotage (own) — the scope-exclusion reason check bypassed → `CT_R6_excluding_a_derived_lot_…_needs_a_reason…` red; restored.
+Open points: **O-R1-1** reconciliations R-1…R-12 accepted (R-2 `addScopeItems` for the manual R1 scope; R-12 `item` instead of `product`,
+Model-B type rule); **O-R1-2** lot block rows written at scope approval and read by `getLotRecallStatus` — enforced as the exit block in
+R3 (CT-R11); **O-R1-3** `RECALL_SCOPE_CHANGED` proven by a direct DB change until R2's live re-trace; **O-R1-4** one `prepareCaseAction`
+route with the decision's own key checked in the controller — accepted; the 15 new write commands join FU-SYNC1-AUDIT (Inventory 50).
+R6 must delete the `PagelessUntil` entry when it adds the first page (the guard forces it). Fast-forwarded into the MVP-1 branch.
+
 ## 20. Follow-up Items
 
 | ID | Item | Owner |
