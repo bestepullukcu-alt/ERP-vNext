@@ -165,7 +165,7 @@
 | 5 | **W3-BE-d** katmanlı ayar (tüzel kişilik × iş birimi), çözümleyici dolar | 1 | PLT-ORG-SEAT sonrası |
 | 5 | **W3-WEB-e** kanıt ayarında tüzel kişilik / iş birimi ağacı + miras | 1 | BE-d ile |
 | — | Veri: temsilcilere Platform pozisyon ataması (İK) + bölge atamasında iş birimi (CRM yöneticisi) | 0 | kullanıcı / veri sahibi |
-| 6 | **W4** rapor v2: BE-a rapor modeli (CRM) · BE-b1 MDM Workflow bağlantısı · BE-b2 MDM rakip ürün (öneri / birleştir / ülke fiyat) · BE-c doktor profili + potansiyel + fırsat · WEB-a hekim raporu · WEB-b eczane raporu + eşik ekranı · WEB-c rakip yönetimi (**mockup sonrası**) · CFG (şablon MDM-COMP-PROPOSAL → POS-SALES-OPS + yetki) | 8 | kararlar ✅ (K-W4…K-W7, fark belgesi DESIGN-GAP-W4-report-2026-10-13.md) |
+| 6 | **W4** rapor v2: BE-a rapor modeli (CRM) · BE-b1 MDM Workflow bağlantısı · BE-b2 MDM rakip ürün (öneri / birleştir / ülke fiyat) · BE-c doktor profili + potansiyel + fırsat · WEB-a hekim raporu · WEB-b eczane raporu + eşik ekranı · WEB-c rakip yönetimi (**mockup sonrası**) · CFG (şablon MDM-COMP-PROPOSAL → POS-SALES-OPS + yetki) | 8 | paketlendi: WP-VW-W4-report-v2.md (1. tur BE-c ∥ BE-b1 promptları hazır) |
 | 7 | **W3E** ek kanıtlar (QR + anti-fraud alıcı uç) | 2 | W4'ten sonra (karar) |
 | 8 | **W5** bildirimler (Platform e-posta + olaylar) | 2 | K-W8, K-W9 |
 | 8 | **W6** eczane ön siparişi | 3 | K-W10; W5 ile paralel |
