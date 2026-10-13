@@ -23,18 +23,44 @@ x-scope-rules:
   - Draft routes currently use X-Legal-Entity-Id as an untrusted hint; central transport and live Platform/MDM authority contract remain open.
   - Every API response, cursor and event is bound to resolved Tenant, LegalEntity and data scope.
 x-retention-policy: Published, Superseded and Invalidated revisions are not auto-deleted until enterprise retention policy is set.
+x-checksum-canonicalization: >-
+  MOD0188-CANONICAL-1/SHA-256 hashes a binary stream of ordered string fields.
+  Each field is its nonnegative UTF-8 byte length as Int32 little-endian,
+  followed by those UTF-8 bytes; no separator, BOM, JSON serialization or Unicode
+  normalization is added. UUIDs use lowercase D format; dates yyyy-MM-dd;
+  timestamps converted to UTC and emitted in round-trip O format with +00:00
+  offset; integers invariant decimal without grouping;
+  quantities invariant decimal G29; enum values use their case-sensitive names.
+  The ordered manifest fields are literal MOD0188-CANONICAL-1, tenantId,
+  legalEntityId, revisionId, planningCycleId, planningPeriodKey, asOfDate,
+  calendarId, calendarVersion, timeZoneId, horizonStart, horizonEnd,
+  contentVersion, expectedPartCount, expectedRowCount, preparedBy,
+  significantEditorIds count and IDs sorted by lowercase UUID ordinal,
+  reviewedBy, reviewedAt, reviewReason, publishedBy, publishedAt.
+  Next come 52 calendar weeks in weekNumber order, each as weekNumber,
+  weekStart, weekEnd. Next come excludedSeries count and each exclusion sorted
+  by lowercase skuId then warehouseId using ordinal string order, as skuId,
+  warehouseId, reason, excludedBy, excludedAt. Next come selected series sorted
+  by the same keys, each as skuId, warehouseId, baseUomId followed by exactly
+  52 rows in weekNumber order. Each row is weekNumber, weekStart, weekEnd,
+  valueKind, grossQuantityBaseUom, origin, manualReason, manualActorId, manualAt.
+  Current publisher accepts only Known/Manual rows. Physical part IDs, state,
+  stateVersion and later invalidation/supersession timestamps are excluded.
+  SHA-256 bytes are encoded as uppercase hexadecimal. Missing fields, duplicate
+  rows/parts or different ordering fail verification; consumers must receive
+  every required field before independently recomputing the digest.
 x-implementation-gaps:
   - Current-Published-by-period lookup is implemented only with fixture authority; live Platform/data-scope authority is unconfigured and fails closed.
   - Cycle and history-import HTTP operations are implemented in PlanningService but are not yet modeled in this revision-focused DRAFT contract.
   - Superseded content reading awaits approved evidence of a bound MRP run; status reading alone does not grant content access.
+  - Current HTTP row projection omits manualActorId/manualAt and week boundaries; this DRAFT checksum contract is not yet externally reproducible from its responses.
+  - Current publish transaction persists a Superseded state/audit but only a Published outbox record; separate Superseded outbox intent remains to be implemented and tested.
 x-open-design-decisions:
-  - Checksum algorithm, canonical byte representation and definition identifier.
   - Stable row ordering definition and opaque cursor encoding and expiry.
   - Atomic persistence, outbox and monotonic status fencing mechanism.
   - Idempotency retention and exact replay transport semantics.
   - Live LegalEntity selection, Platform assignment/exclusion and MDM company-reference contracts.
   - Evidence that an MRP run is already bound to a Superseded revision.
-  - Superseded notification by a separate event or an equivalent verifiable state change.
   - Event transport, topic and retry timing; no duration target is fixed here.
 paths:
   /revisions:
@@ -386,11 +412,12 @@ paths:
         Separation of duties, all-series and part/row/checksum validation,
         and one current Published baseline per Tenant x LegalEntity x
         planningPeriodKey are mandatory. A successful new publication
-        atomically supersedes the previous current baseline and emits one
-        outbox publication event. Whether the prior revision also emits a
-        Superseded event or exposes an equivalent verifiable status change is
-        reserved for central review; its authoritative state and stateVersion
-        must change either way. Failure creates no Published state or event.
+        atomically supersedes the previous current baseline. The DRAFT producer
+        contract requires separate Published and, when a prior baseline exists,
+        Superseded outbox intents in the same Mongo transaction as both state
+        changes and audit. Persisting outbox intent is not event delivery; the
+        current implementation has only the Published intent and does not yet
+        meet this requirement. Failure creates no Published state or event.
       x-required-permission: demand.plans.publish
       parameters:
         - { $ref: '#/components/parameters/RevisionId' }
@@ -828,6 +855,7 @@ components:
         significantEditorIds: { type: array, uniqueItems: true, items: { type: string, format: uuid } }
         reviewedBy: { type: string, format: uuid }
         reviewedAt: { type: string, format: date-time }
+        reviewReason: { type: string, description: Required with a valid published approval for independent checksum recomputation. }
         publishedBy: { type: string, format: uuid }
         publishedAt: { type: string, format: date-time }
       allOf:
@@ -839,6 +867,8 @@ components:
           then: { required: [publishedAt] }
         - if: { required: [publishedAt] }
           then: { required: [publishedBy] }
+        - if: { required: [publishedBy] }
+          then: { required: [reviewReason] }
     InvalidationDetails:
       type: object
       required: [impactCode, reason, evidenceReference, actorId, occurredAt, stateVersion]
@@ -857,14 +887,14 @@ components:
       type: object
       required: [definitionId, digest]
       description: >-
-        The definition must let both parties compute the same whole-snapshot
-        checksum. Concrete algorithm and canonicalization are open.
+        MOD0188-CANONICAL-1/SHA-256; use the exact x-checksum-canonicalization
+        definition above and every manifest and row field it names.
       properties:
-        definitionId: { type: string }
-        digest: { type: string }
+        definitionId: { type: string, const: MOD0188-CANONICAL-1/SHA-256 }
+        digest: { type: string, pattern: '^[0-9A-F]{64}$' }
     RevisionManifest:
       type: object
-      required: [contractVersion, revisionId, planningCycleId, tenantId, legalEntityId, planningPeriodKey, baselineKind, state, stateVersion, scopeSummary, actorTrace, calendar, selectedSeries, excludedSeries, demandSetState, expectedPartCount, expectedRowCount, orderingDefinitionId, integrity]
+      required: [contractVersion, revisionId, planningCycleId, tenantId, legalEntityId, planningPeriodKey, baselineKind, state, stateVersion, contentVersion, scopeSummary, actorTrace, calendar, selectedSeries, excludedSeries, demandSetState, expectedPartCount, expectedRowCount, orderingDefinitionId, integrity]
       properties:
         contractVersion: { type: string, const: v2 }
         revisionId: { type: string, format: uuid }
@@ -875,6 +905,7 @@ components:
         baselineKind: { type: string, const: Official }
         state: { $ref: '#/components/schemas/RevisionState' }
         stateVersion: { type: integer, minimum: 0 }
+        contentVersion: { type: integer, minimum: 0, description: Immutable source content version included in checksum. }
         calendar: { $ref: '#/components/schemas/CalendarSnapshot' }
         selectedSeries: { type: array, items: { $ref: '#/components/schemas/SeriesScope' } }
         excludedSeries: { type: array, items: { $ref: '#/components/schemas/ExcludedSeries' } }
@@ -897,12 +928,14 @@ components:
           then: { not: { required: [invalidation] } }
     RevisionRow:
       type: object
-      required: [skuId, warehouseId, weekNumber, valueKind, origin]
+      required: [skuId, warehouseId, weekNumber, weekStart, weekEnd, valueKind, origin]
       description: Unique key is revisionId plus skuId plus warehouseId plus weekNumber.
       properties:
         skuId: { type: string, format: uuid }
         warehouseId: { type: string }
         weekNumber: { type: integer, minimum: 1, maximum: 52 }
+        weekStart: { type: string, format: date }
+        weekEnd: { type: string, format: date }
         valueKind: { type: string, enum: [Known, Missing, Unknown] }
         grossQuantityBaseUom:
           type: string
@@ -910,13 +943,15 @@ components:
           description: Required only when Known; string zero is a real zero. Absent for Missing/Unknown.
         origin: { type: string, enum: [Method, Manual] }
         manualReason: { type: string, description: Required for manually entered/edited weeks. }
+        manualActorId: { type: string, format: uuid, description: Original manual author; required for the current Published checksum. }
+        manualAt: { type: string, format: date-time, description: Original manual entry time; required for the current Published checksum. }
       allOf:
         - if: { properties: { valueKind: { const: Known } }, required: [valueKind] }
           then: { required: [grossQuantityBaseUom] }
         - if: { properties: { valueKind: { enum: [Missing, Unknown] } }, required: [valueKind] }
           then: { not: { required: [grossQuantityBaseUom] } }
         - if: { properties: { origin: { const: Manual } }, required: [origin] }
-          then: { required: [manualReason] }
+          then: { required: [manualReason, manualActorId, manualAt] }
     RevisionRowPage:
       type: object
       required: [contractVersion, revisionId, planningCycleId, tenantId, legalEntityId, stateVersion, orderingDefinitionId, returnedRowCount, expectedRowCount, integrity, items]

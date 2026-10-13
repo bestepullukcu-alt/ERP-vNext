@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "MOD-0188 Demand v2 revision state event (DRAFT)",
-  "description": "Producer outbox event schema draft. Not frozen or published. Events contain a revision reference, scope and integrity summary, never 52-week rows. Delivery may repeat, lag or reorder; the authoritative v2 status API decides current state. MOD-0189 owns its own MRP work and reconciliation. Superseded event is a candidate shape only; central review will decide separate event versus equivalent verifiable status change.",
+  "description": "Producer outbox event schema draft. Not frozen or published. Events contain a revision reference, scope and integrity summary, never 52-week rows. A new Published revision requires a separate Superseded outbox intent for the prior current revision in the same state-and-audit transaction. Outbox persistence is not delivery. Delivery may repeat, lag or reorder; the authoritative v2 status API decides current state. MOD-0189 is the bound consumer and owns its MRP work and reconciliation; MOD-0191, S&OP and Capacity are candidate consumers pending confirmation.",
   "x-status": "DRAFT",
   "x-owner": "MOD-0188",
   "x-central-freeze-required": true,
@@ -128,10 +128,12 @@
         },
         "definitionId": {
           "type": "string",
-          "description": "Jointly reproducible whole-snapshot checksum definition; algorithm and canonical encoding open."
+          "const": "MOD0188-CANONICAL-1/SHA-256",
+          "description": "Whole-snapshot checksum using the exact ordered, length-prefixed UTF-8 canonicalization specified by demand-v2.openapi.yaml x-checksum-canonicalization."
         },
         "digest": {
-          "type": "string"
+          "type": "string",
+          "pattern": "^[0-9A-F]{64}$"
         },
         "verificationState": {
           "type": "string",
@@ -283,9 +285,9 @@
   "x-consumer-semantics": [
     "Same eventId replay has no second business effect.",
     "Delivery order does not decide state; compare stateVersion and recheck authoritative status.",
-    "Publication occurs only after full part/row/checksum verification; outbox creation follows the committed whole revision.",
+    "Publication occurs only after full part/row/checksum verification; Published and, when replacing a baseline, separate Superseded outbox intents are persisted atomically with both states and audit. Current producer code still lacks the Superseded intent; neither intent proves delivery.",
     "Invalidation forbids new consumption. MOD-0189 owns stopping or marking its own runs and downstream proposals.",
     "Tenant, LegalEntity and data scope must match the request context and pinned manifest; failure closes access.",
-    "The Superseded event shape is optional pending central choice of separate event or equivalent verifiable status change; event transport, topic and exact retry timing remain open."
+    "A separate Superseded event for the replaced revision is required by the approved DRAFT design; event transport, topic and exact retry timing remain open."
   ]
 }
