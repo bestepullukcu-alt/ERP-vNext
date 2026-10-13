@@ -485,7 +485,7 @@ Her set kodu **üç yerde** tüketilebilir listeye eklenir (drift testleri yeşi
 - `requestedObjectType: mdm.competitor-proposal`.
 
 **Grant betiği** `scripts/rbac/grant_w4_report_rbac_97c5.py` (W3-CFG deseni):
-- Admin'e yeni CRM + MDM anahtarları;
+- Admin'e yeni CRM + MDM anahtarları; **`crm.doctor-insights.read-all` açık-atama listesinde** (karar 2026-10-13: otomatik yol vermez, Admin'ler yine görsün) → betik Admin'e **açıkça** verir;
 - temsilci rolüne `mdm.competitor-products.propose` + `read`, `crm.doctor-insights.read`;
 - pazarlama rolüne `read-aggregate` + `thresholds.manage` + `mdm.competitor-products.manage` (rol yoksa DUR + raporla).
 
@@ -596,7 +596,7 @@ Repository: C:\tmp\vw-w4-cfg (worktree, test/crm-content-visit-e2e güncel baş�
 
 Paket belgesi: execution/domains/commercial-suite/work-packs/WP-VW-W4-report-v2.md — "W4-CFG" + §2.6 + §2.7 + BE-b2 §37 notu. DESEN: WP-VW-W3-authoring.md "W3-CFG" + §37 W3-CFG (aynı akış: POST api/v1/workflow/definitions → publish; kök options.rejectCommentRequired; idempotent; parmak izi) + scripts/rbac/grant_w3_authoring_rbac_97c5.py (dry-run, subtype-4 GUID, tarih biçimi yerel belgeden, marker, rol / izin OLUŞTURMAZ). Ön koşul: kullanıcı fleet'i yeniden başlatmış ve yerleşik tarayıcıda giriş yapmış olmalı.
 VERİ YAZMA YETKİSİ (yalnız): (1) MDM-COMP-PROPOSAL şablonunun oluşturulması + yayınlanması; (2) betiğin YAZILMASI (çalıştırmayı kullanıcı yapar).
-NE: şablon tek aşama / tek adım sales_ops "Satış operasyon onayı", aday POS-SALES-OPS (c1acdf12-40d2-4b2c-a2a4-afe1bdd7681d — canlıdan doğrula), SLA 4320 / 2880, rejectCommentRequired: true, requestedObjectType mdm.competitor-proposal; betik scripts/rbac/grant_w4_report_rbac_97c5.py: Admin'e W4 CRM + MDM anahtarları (crm.doctor-insights.*, crm.visit-report.read-aggregate, mdm.competitor-products.read|manage|propose) + MDM'nin Workflow çağrısı için platform.workflow.instances.start / view, tasks.approve / reject / cancel (eksikse); temsilci / pazarlama rolleri varsa "W4-CFG" listesi, yoksa DUR + raporla. Auth kataloğunda anahtarların varlığını önce doğrula.
+NE: şablon tek aşama / tek adım sales_ops "Satış operasyon onayı", aday POS-SALES-OPS (c1acdf12-40d2-4b2c-a2a4-afe1bdd7681d — canlıdan doğrula), SLA 4320 / 2880, rejectCommentRequired: true, requestedObjectType mdm.competitor-proposal; betik scripts/rbac/grant_w4_report_rbac_97c5.py: Admin'e W4 CRM + MDM anahtarları (crm.doctor-insights.* — read-all ExplicitGrantOnly olduğu için yalnız bu betikle Admin'e gider, unutma; crm.visit-report.read-aggregate, mdm.competitor-products.read|manage|propose) + MDM'nin Workflow çağrısı için platform.workflow.instances.start / view, tasks.approve / reject / cancel (eksikse); temsilci / pazarlama rolleri varsa "W4-CFG" listesi, yoksa DUR + raporla. Auth kataloğunda anahtarların varlığını önce doğrula.
 KORU/YAPMA: kod değişikliği YOK; diğer şablonlara DOKUNMA (parmak izi önce / sonra aynı); örnek başlatma YOK.
 DOĞRULA: şablon Published + tek adım + doğru aday + options.rejectCommentRequired; diğer şablon parmak izleri aynı; betik dry-run çıktısı rapora.
 Commit: "chore(mdm): WP-VW-W4-CFG — workflow template MDM-COMP-PROPOSAL (live) + RBAC grant script (dry-run default)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22), kullanıcıya --apply + yeniden giriş talimatı. K13.

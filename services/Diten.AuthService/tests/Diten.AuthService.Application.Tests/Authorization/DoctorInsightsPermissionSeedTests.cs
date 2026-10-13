@@ -38,8 +38,11 @@ public sealed class DoctorInsightsPermissionSeedTests
     [Fact]
     public void The_keys_are_catalog_rows_only_no_grant_is_seeded()
     {
-        // read-all is NOT (yet) explicit-grant-only: that list is owner-decided (AccountKindTests pins it) — raised in the
-        // W4-BE-c report as an open decision.
+        // read-all is explicit-grant-only (owner decision 2026-10-13): no automatic path grants it; Admin gets it by the
+        // W4-CFG script.
+        Assert.Contains("crm.doctor-insights.read-all", Diten.AuthService.Domain.Authorization.ExplicitGrantOnlyPermissions.Keys);
+        foreach (var other in new[] { "read", "manage", "read-aggregate", "thresholds.manage" })
+            Assert.DoesNotContain("crm.doctor-insights." + other, Diten.AuthService.Domain.Authorization.ExplicitGrantOnlyPermissions.Keys);
         var source = File.ReadAllText(SeederPath());
         // catalog rows only — no role allowlist names a doctor insights key
         Assert.Equal(5, CountOf(source, "moduleOverride: \"crm-doctor-insights\""));

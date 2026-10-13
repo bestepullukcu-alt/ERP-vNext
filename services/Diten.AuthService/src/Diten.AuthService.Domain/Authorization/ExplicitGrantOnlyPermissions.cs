@@ -69,10 +69,18 @@ public static class ExplicitGrantOnlyPermissions
     /// </summary>
     public const string VisitPlanReadAll = "crm.visit-plan.read-all";
 
+    /// <summary>
+    /// WP-VW-W4 (BE-c) — every doctor's insights in the tenant (profile, patient potential, share, opportunity). Without it a
+    /// rep sees their own doctors and a manager their territory subtree (K-W7); if the module-entitlement sync handed it to
+    /// every tenant Admin, that visibility rule would have nothing left to enforce. Admins still get it — by an explicit
+    /// grant (W4-CFG script), a person's decision (owner decision, 2026-10-13).
+    /// </summary>
+    public const string DoctorInsightsReadAll = "crm.doctor-insights.read-all";
+
     public static readonly IReadOnlySet<string> Keys =
         new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             PortfoliosAssignOwner, UsersAccountKindManage, TasksReadAll, WorkReportReadTenantWide,
-            TimeEntryTeamTotalsRead, TimeEntryPersonReportsRead, PlannedVisitReadAll, VisitPlanReadAll
+            TimeEntryTeamTotalsRead, TimeEntryPersonReportsRead, PlannedVisitReadAll, VisitPlanReadAll, DoctorInsightsReadAll
         };
 }
