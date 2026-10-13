@@ -1267,6 +1267,36 @@ public static class DependencyInjection
             BsonClassMap.RegisterClassMap<VisitReportAmendment>(map => map.AutoMap());
         }
 
+        // WP-VW-W4 (W4-BE-a) - the report v2 sections. Every embedded type is registered (the new-aggregate trap) and every
+        // Guid - product, step, concept node, competitor, objection answer, GSKU, met contact, evidence, linked contacts -
+        // takes the string-Guid convention; the request / follow-up days are DateOnly "yyyy-MM-dd" strings.
+        var nullableStringGuidV2 = new NullableSerializer<Guid>(stringGuid);
+        var nullableDateOnlyV2 = new NullableSerializer<DateOnly>(dateOnlyString);
+        Map<VisitReportGeneral>(map => map.GetMemberMap(g => g.MetContactId).SetSerializer(nullableStringGuidV2));
+        Map<VisitReportProductSection>(map => map.GetMemberMap(p => p.ProductId).SetSerializer(stringGuid));
+        Map<VisitReportPresentedStep>(map => map.GetMemberMap(s => s.StepId).SetSerializer(stringGuid));
+        Map<VisitReportPotential>(_ => { });
+        Map<VisitReportPotentialRow>(map =>
+        {
+            map.GetMemberMap(r => r.IndicationNodeId).SetSerializer(stringGuid);
+            map.GetMemberMap(r => r.ProfileNodeId).SetSerializer(nullableStringGuidV2);
+        });
+        Map<VisitReportCompetitor>(map => map.GetMemberMap(c => c.CompetitorProductId).SetSerializer(nullableStringGuidV2));
+        Map<VisitReportObjection>(map => map.GetMemberMap(o => o.ObjectionResponseId).SetSerializer(nullableStringGuidV2));
+        Map<VisitReportRequest>(map => map.GetMemberMap(r => r.DueDate).SetSerializer(nullableDateOnlyV2));
+        Map<VisitReportV2Sample>(map => map.GetMemberMap(s => s.GskuId).SetSerializer(stringGuid));
+        Map<VisitReportDoctorLevel>(_ => { });
+        Map<VisitReportPharmacy>(_ => { });
+        Map<VisitReportStockRow>(map => map.GetMemberMap(s => s.GskuId).SetSerializer(stringGuid));
+        Map<VisitReportShelf>(map => map.GetMemberMap(s => s.PhotoEvidenceId).SetSerializer(nullableStringGuidV2));
+        Map<VisitReportSalesRow>(map => map.GetMemberMap(s => s.GskuId).SetSerializer(stringGuid));
+        Map<VisitReportRecommendation>(map => map.GetMemberMap(r => r.LinkedContactIds)
+            .SetSerializer(new EnumerableInterfaceImplementerSerializer<List<Guid>, Guid>(stringGuid)));
+        Map<VisitReportTraining>(_ => { });
+        Map<VisitReportSafety>(_ => { });
+        Map<VisitReportFollowUp>(map => map.GetMemberMap(f => f.SuggestedDate).SetSerializer(nullableDateOnlyV2));
+        Map<VisitReportAmendmentChange>(_ => { });
+
         // WP-VW-W3 (BE-a) - VisitExecution and its embedded types. Every Guid (the plan FK, the evidence content ids, the
         // timing / mark / note product + step ids) takes the string-Guid convention - an unmapped embedded Guid would be
         // written binary and every by-plan / by-id filter would silently find NOTHING (the CRM new-aggregate trap). The

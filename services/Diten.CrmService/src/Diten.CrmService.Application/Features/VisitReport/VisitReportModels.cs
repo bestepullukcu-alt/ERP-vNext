@@ -51,7 +51,16 @@ public sealed record VisitReportDetailDto(
     DateTimeOffset CreatedAt,
     string? CreatedBy,
     DateTimeOffset? UpdatedAt,
-    string? UpdatedBy);
+    string? UpdatedBy,
+    // WP-VW-W4 (W4-BE-a, additive) — the schema (1 | 2), the v2 kind and sections (null / empty on a v1 report).
+    int SchemaVersion = 1,
+    string? ReportKind = null,
+    Domain.Entities.VisitReportGeneral? General = null,
+    IReadOnlyList<Domain.Entities.VisitReportProductSection>? ProductSections = null,
+    Domain.Entities.VisitReportDoctorLevel? Doctor = null,
+    Domain.Entities.VisitReportPharmacy? Pharmacy = null,
+    Domain.Entities.VisitReportSafety? Safety = null,
+    Domain.Entities.VisitReportFollowUp? FollowUp = null);
 
 public sealed record VisitReportContentActualsDto(
     Guid? JourneyId,
@@ -68,7 +77,9 @@ public sealed record VisitReportFeedbackDto(
     string? DoctorFeedback, string OutcomeCode, bool FollowUpRequired, string? FollowUpNotes);
 
 public sealed record VisitReportAmendmentDto(
-    DateTimeOffset At, string ByResourceId, string Reason, IReadOnlyList<string> ChangedFields);
+    DateTimeOffset At, string ByResourceId, string Reason, IReadOnlyList<string> ChangedFields,
+    // WP-VW-W4 (W4-BE-a, additive) — every changed value with its old and new JSON value.
+    IReadOnlyList<Domain.Entities.VisitReportAmendmentChange>? Changes = null);
 
 // ── calendar read (D-CALENDAR-UI = A) ──────────────────────────────────────────────────────────────────────────
 

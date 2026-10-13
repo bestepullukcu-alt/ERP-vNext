@@ -166,7 +166,10 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                 new ModuleManifestPage("VISIT_EXECUTION", "Visit Execution", "/CRM/VisitExecution", VisitReportRead, null, true, "List", 66,
                 [
                     new ModuleManifestAction("RECORD", "Record Visit", "crm.visit-report.record", "RowAction", 10, false, false, true),
-                    new ModuleManifestAction("AMEND", "Amend Report", "crm.visit-report.amend", "RowAction", 20, false, false, true)
+                    new ModuleManifestAction("AMEND", "Amend Report", "crm.visit-report.amend", "RowAction", 20, false, false, true),
+                    // WP-VW-W4 (W4-BE-a, G2) — competitor usage counts from the reports (no doctor identity, cells under 5
+                    // hidden); the MDM competitor screens read it.
+                    new ModuleManifestAction("READ_AGGREGATE", "Read Report Usage Counts", "crm.visit-report.read-aggregate", "RowAction", 30, false, false, true)
                 ]),
                 // MOD-0155-FU01 Visit Planning / Planned Visit — the field team's planning atom. confirm is a SEPARATE
                 // key from manage (author-vs-confirmer SoD); there is no delete/bulk-delete surface (cancel/archive).

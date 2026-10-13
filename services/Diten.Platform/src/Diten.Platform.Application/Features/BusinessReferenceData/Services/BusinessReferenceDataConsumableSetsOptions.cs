@@ -97,7 +97,18 @@ public sealed class BusinessReferenceDataConsumableSetsOptions
         "crm-share-bucket",
         "crm-adoption-typology",
         "crm-communication-style",
-        "crm-kol-level"
+        "crm-kol-level",
+        // WP-VW-W4 (W4-BE-a) — the report v2 sets (CrmService validates the report on submit / amend; the wizard reads).
+        "crm-visit-success",
+        "crm-doctor-commitment",
+        "crm-visit-interest",
+        "crm-visit-request-type",
+        "crm-competitor-advantage",
+        "crm-pharmacy-met-role",
+        "crm-pharmacy-stock-level",
+        "crm-shelf-position",
+        "crm-sales-trend",
+        "crm-recommendation-level"
     ];
 
     /// <summary>The configured list when it names at least one set, otherwise the code default.</summary>

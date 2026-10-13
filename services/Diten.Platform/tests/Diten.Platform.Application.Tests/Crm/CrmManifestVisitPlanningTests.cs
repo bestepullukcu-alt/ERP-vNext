@@ -95,7 +95,8 @@ public sealed class CrmManifestVisitPlanningTests
         Assert.Equal(66, page.SortOrder);
 
         Assert.Equal(
-            new[] { "crm.visit-report.record", "crm.visit-report.amend" },
+            // WP-VW-W4 (W4-BE-a) — + the competitor usage counts (read-aggregate).
+            new[] { "crm.visit-report.record", "crm.visit-report.amend", "crm.visit-report.read-aggregate" },
             page.Actions.OrderBy(a => a.SortOrder).Select(a => a.PermissionKey).ToArray());
         Assert.All(page.Actions, a => Assert.True(a.IsRowAction));
     }

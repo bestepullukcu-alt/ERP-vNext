@@ -102,6 +102,8 @@ public static class DependencyInjection
         // WP-VP-4G (F4-4) - product NAMES for read models over the same MDM selector the play editor reads; one bulk read
         // per call, fail-open (no name ⇒ the code is shown; a plan read never fails on it).
         services.AddHttpClient<Application.Common.IProductNameReader, StrategyTemplate.MdmProductNameReader>();
+        // WP-VW-W4 (W4-BE-a) — the MDM competitor products (report lookup, proposals, merged survivors) with the caller's token.
+        services.AddHttpClient<Application.Features.VisitReport.V2.IMdmCompetitorClient, Mdm.GatewayMdmCompetitorClient>();
 
         // MOD-0165 FU07 - the CyclePeriod legal-entity scope. Same fail-closed profile as the working calendar's own
         // validator and MOD-0167 FU02's: cacheless, 3s budget, one transient retry, always through the Gateway. It runs

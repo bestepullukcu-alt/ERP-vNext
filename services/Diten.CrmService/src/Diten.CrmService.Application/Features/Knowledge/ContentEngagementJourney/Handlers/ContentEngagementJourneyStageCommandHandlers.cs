@@ -1,5 +1,6 @@
 using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Models;
+using Diten.CrmService.Application.Common.ReferenceValidation;
 using Diten.CrmService.Application.Features.Knowledge.ContentEngagementJourney.Commands;
 using Diten.CrmService.Domain.Entities;
 using Diten.CrmService.Domain.Repositories;
@@ -18,11 +19,13 @@ public sealed class AddContentEngagementJourneyStageHandler
     private readonly IActorContext _actor;
     private readonly IContentEngagementJourneyRepository _journeys;
     private readonly ContentEngagementJourneyPathResolver _pathResolver;
+    private readonly IReferenceDataValidator? _codes;
 
     public AddContentEngagementJourneyStageHandler(
         ITenantContext tenant, IActorContext actor, IContentEngagementJourneyRepository journeys,
-        ContentEngagementJourneyPathResolver pathResolver)
+        ContentEngagementJourneyPathResolver pathResolver, IReferenceDataValidator? codes = null)
     {
+        _codes = codes;
         _tenant = tenant;
         _actor = actor;
         _journeys = journeys;
@@ -85,6 +88,17 @@ public sealed class AddContentEngagementJourneyStageHandler
             return Response<Guid>.Fail(dup, 409);
         }
 
+        // WP-VW-W4 (W4-BE-a, K-W4) — the adoption stage: a known code, once per journey, an active BRD value.
+        if (ContentEngagementJourneyValidation.ValidateAdoptionStage(journey, request.AdoptionStageCode, null) is { } adoption)
+        {
+            return Response<Guid>.Fail(adoption, 400);
+        }
+
+        if (await AdoptionStageBrd.CheckAsync(_codes, request.AdoptionStageCode, cancellationToken) is { } brd)
+        {
+            return Response<Guid>.Fail(brd.Message, brd.Status);
+        }
+
         // V-S05/S06 — the stage binds to a published + effective KnowledgePath (read-only FU04 access).
         var path = await _pathResolver.GetPathAsync(
             tenantId, request.RecommendedKnowledgePathId, cancellationToken);
@@ -121,6 +135,7 @@ public sealed class AddContentEngagementJourneyStageHandler
             StageType = string.IsNullOrWhiteSpace(request.StageType)
                 ? null
                 : ContentEngagementJourneyStageTypes.Normalize(request.StageType),
+            AdoptionStageCode = ContentEngagementJourneyValidation.NormalizeAdoptionStage(request.AdoptionStageCode),
             RecommendedKnowledgePathId = request.RecommendedKnowledgePathId,
             PathCode = path!.PathCode,
             // WP-SB-3b (S3-1) — a new stage without a policy follows the latest published path version.
@@ -158,11 +173,13 @@ public sealed class UpdateContentEngagementJourneyStageHandler
     private readonly IActorContext _actor;
     private readonly IContentEngagementJourneyRepository _journeys;
     private readonly ContentEngagementJourneyPathResolver _pathResolver;
+    private readonly IReferenceDataValidator? _codes;
 
     public UpdateContentEngagementJourneyStageHandler(
         ITenantContext tenant, IActorContext actor, IContentEngagementJourneyRepository journeys,
-        ContentEngagementJourneyPathResolver pathResolver)
+        ContentEngagementJourneyPathResolver pathResolver, IReferenceDataValidator? codes = null)
     {
+        _codes = codes;
         _tenant = tenant;
         _actor = actor;
         _journeys = journeys;
@@ -229,6 +246,17 @@ public sealed class UpdateContentEngagementJourneyStageHandler
             return Response<bool>.Fail(dup, 409);
         }
 
+        // WP-VW-W4 (W4-BE-a, K-W4) — the adoption stage: a known code, once per journey, an active BRD value.
+        if (ContentEngagementJourneyValidation.ValidateAdoptionStage(journey, request.AdoptionStageCode, request.StageId) is { } adoption)
+        {
+            return Response<bool>.Fail(adoption, 400);
+        }
+
+        if (await AdoptionStageBrd.CheckAsync(_codes, request.AdoptionStageCode, cancellationToken) is { } brd)
+        {
+            return Response<bool>.Fail(brd.Message, brd.Status);
+        }
+
         // V-S07 dirty-check — re-validate the path binding ONLY when RecommendedKnowledgePathId actually changed. An
         // untouched binding is never re-validated, so a path that later left its window does not break an edit of an
         // unrelated field (FU03 V22 / FU04 V-S07 precedent).
@@ -263,6 +291,7 @@ public sealed class UpdateContentEngagementJourneyStageHandler
         stage.StageCode = request.StageCode.Trim();
         stage.StageName = request.StageName.Trim();
         stage.StageObjective = request.StageObjective.Trim();
+        stage.AdoptionStageCode = ContentEngagementJourneyValidation.NormalizeAdoptionStage(request.AdoptionStageCode);
         stage.StageType = string.IsNullOrWhiteSpace(request.StageType)
             ? null
             : ContentEngagementJourneyStageTypes.Normalize(request.StageType);
@@ -367,5 +396,22 @@ public sealed class ArchiveContentEngagementJourneyStageHandler
         return ok
             ? Response<bool>.Success(true)
             : Response<bool>.Fail("The journey was modified by another writer; reload and retry.", 409);
+    }
+}
+
+/// <summary>WP-VW-W4 (W4-BE-a) — a given adoption stage code is an active <c>crm-adoption-stage</c> value (fail-closed when
+/// the set cannot be read; skipped when no validator is wired, e.g. a unit test without BRD).</summary>
+internal static class AdoptionStageBrd
+{
+    public static async Task<(string Message, int Status)?> CheckAsync(IReferenceDataValidator? codes, string? code, CancellationToken ct)
+    {
+        if (codes is null || string.IsNullOrWhiteSpace(code)) return null;
+        var verdict = await codes.ValidateAsync(DoctorInsightsReferenceSets.AdoptionStage, code.Trim().ToLowerInvariant(), ct);
+        return verdict.Status switch
+        {
+            ReferenceValidationStatus.SetMissing => ("The adoption stage list could not be read. Nothing was saved.", 503),
+            ReferenceValidationStatus.InvalidValue => ($"'{code}' is not an active crm-adoption-stage value.", 400),
+            _ => null
+        };
     }
 }

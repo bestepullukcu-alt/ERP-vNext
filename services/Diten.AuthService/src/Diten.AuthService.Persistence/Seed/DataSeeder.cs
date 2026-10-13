@@ -559,6 +559,10 @@ public static class DataSeeder
             new("crm", "doctor-insights", "read-aggregate", "CRM Doctor Insights Read Aggregate", "Permission to view aggregated potential, share and opportunity counts without any doctor's identity (cells under five doctors are hidden)", moduleOverride: "crm-doctor-insights"),
             new("crm", "doctor-insights", "thresholds.manage", "CRM Doctor Insights Thresholds Manage", "Permission to set the per-product Low / Medium / High potential thresholds", moduleOverride: "crm-doctor-insights"),
 
+            // WP-VW-W4 (W4-BE-a, G2) — competitor usage counts from the visit reports (no doctor identity; cells under five
+            // hidden). Tenant-scoped ("crm-visit-report" ∉ PlatformAdminModules). Catalog only: granted to no role here.
+            new("crm", "visit-report", "read-aggregate", "CRM Visit Report Read Aggregate", "Permission to view aggregated competitor usage counts from visit reports without any doctor's identity (cells under five are hidden)", moduleOverride: "crm-visit-report"),
+
             new("mod0251", "employee", "search", "Search Employees", "Permission to search MOD-0251 employee registry records"),
             new("mod0251", "employee", "view", "View Employee", "Permission to view MOD-0251 employee records"),
             new("mod0251", "employee", "view_sensitive", "View Sensitive Employee Fields", "Permission to view sensitive MOD-0251 employee fields when masking policy allows"),

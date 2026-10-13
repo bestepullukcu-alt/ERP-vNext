@@ -123,22 +123,30 @@ public sealed class AmendVisitReportHandler : IRequestHandler<AmendVisitReportCo
         var now = DateTimeOffset.UtcNow;
 
         // Apply the optional corrections, tracking which fields the amendment changed (append-only trail).
+        // WP-VW-W4 (W4-BE-a) — and every changed value with its OLD and NEW value (no longer only the field name).
         var changed = new List<string>();
+        var changes = new List<VisitReportAmendmentChange>();
         if (request.ContentActuals is not null)
         {
-            report.ContentActuals = VisitReportMapper.FromInput(request.ContentActuals);
+            var next = VisitReportMapper.FromInput(request.ContentActuals);
+            changes.AddRange(V2.VisitReportV2Rules.Diff(report.ContentActuals, next, "contentActuals"));
+            report.ContentActuals = next;
             changed.Add("ContentActuals");
         }
 
         if (request.Samples is not null)
         {
-            report.Samples = VisitReportMapper.FromInput(request.Samples);
+            var next = VisitReportMapper.FromInput(request.Samples);
+            changes.AddRange(V2.VisitReportV2Rules.Diff(new { items = report.Samples }, new { items = next }, "samples").Select(c => { c.Path = "samples"; return c; }));
+            report.Samples = next;
             changed.Add("Samples");
         }
 
         if (request.Feedback is not null)
         {
-            report.Feedback = VisitReportMapper.FromInput(request.Feedback);
+            var next = VisitReportMapper.FromInput(request.Feedback);
+            changes.AddRange(V2.VisitReportV2Rules.Diff(report.Feedback, next, "feedback"));
+            report.Feedback = next;
             changed.Add("Feedback");
         }
 
@@ -147,7 +155,8 @@ public sealed class AmendVisitReportHandler : IRequestHandler<AmendVisitReportCo
             At = now,
             ByResourceId = resourceId!,
             Reason = reason,
-            ChangedFields = changed
+            ChangedFields = changed,
+            Changes = changes
         });
         report.ReportStatus = VisitReportStatus.Amended;
         report.AmendedAt = now;

@@ -435,6 +435,11 @@ public sealed class VisitWorkspaceW1Tests
         { nameof(VisitReportController.RecordOutcome), new[] { VisitReportPermissions.Record, VisitReportPermissions.PlannedVisitManage } },
         { nameof(VisitReportController.Submit), new[] { VisitReportPermissions.Record, VisitReportPermissions.PlannedVisitManage } },
         { nameof(VisitReportController.Amend), new[] { VisitReportPermissions.Amend } },
+        // WP-VW-W4 (W4-BE-a) — the report v2 endpoints keep the canonical keys; the usage counts have their own.
+        { nameof(VisitReportController.PrefillV2), new[] { VisitReportPermissions.Read } },
+        { nameof(VisitReportController.DraftV2), new[] { VisitReportPermissions.Record, VisitReportPermissions.PlannedVisitManage } },
+        { nameof(VisitReportController.SubmitV2), new[] { VisitReportPermissions.Record, VisitReportPermissions.PlannedVisitManage } },
+        { nameof(VisitReportController.CompetitorUsage), new[] { Diten.CrmService.Application.Features.VisitReport.V2.VisitReportV2Permissions.ReadAggregate } },
     };
 
     [Theory]

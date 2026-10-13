@@ -1,6 +1,7 @@
 using Diten.CrmService.Api.Models.CRM;
 using Diten.CrmService.Application.Features.VisitReport.Commands;
 using Diten.CrmService.Application.Features.VisitReport.Queries;
+using Diten.CrmService.Application.Features.VisitReport.V2;
 using Diten.CrmService.Infrastructure.Authorization;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -83,15 +84,68 @@ public sealed class VisitReportController : CustomBaseController
                 request.ExecutedAt, request.ReportedByResourceId, request.ExpectedVersion, request.ExecutionOutcome),
             cancellationToken));
 
-    /// <summary>Files an append-only amendment to a finalised report (D-EDIT-WINDOW).</summary>
+    /// <summary>Files an append-only amendment to a finalised report (D-EDIT-WINDOW). WP-VW-W4: a <c>v2</c> part amends a
+    /// v2 report (old / new values recorded).</summary>
     [HttpPost("api/crm/visit-report/{visitReportId:guid}/amend")]
     [HasPermission(Perms.Amend)]
     public async Task<IActionResult> Amend(
         Guid visitReportId, [FromBody] AmendVisitReportRequest request, CancellationToken cancellationToken)
-        => CreateActionResultInstance(await _mediator.Send(
+        => request.V2 is { } v2
+            ? CreateActionResultInstance(await _mediator.Send(new AmendVisitReportV2Command(
+                visitReportId, request.Reason, v2.ToBody(), IfMatch() ?? request.ExpectedVersion ?? v2.ExpectedVersion, request.ReportedByResourceId), cancellationToken))
+            : CreateActionResultInstance(await _mediator.Send(
             new AmendVisitReportCommand(
                 visitReportId, request.Reason, request.ReportedByResourceId,
                 request.ContentActuals, request.Samples, request.Feedback, request.ExpectedVersion,
                 request.RescheduleToDate),
             cancellationToken));
+
+    // ---------------- WP-VW-W4 (W4-BE-a, §2.5) — report v2 ----------------
+
+    /// <summary>Pre-fill from the execution + previous values + the doctor's profile / potentials (isDue) + indication rows
+    /// + MDM competitor options + option sets + the report kind (doctor | pharmacy).</summary>
+    [HttpGet("api/crm/visit-report/v2/prefill")]
+    [HasPermission(Perms.Read)]
+    public async Task<IActionResult> PrefillV2([FromQuery] Guid plannedVisitId, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(new GetVisitReportV2PrefillQuery(plannedVisitId), cancellationToken));
+
+    /// <summary>Saves a v2 draft (free; the version from <c>If-Match</c> or the body).</summary>
+    [HttpPut("api/crm/visit-report/v2/draft")]
+    [HasPermission(Perms.Record)]
+    [HasPermission(Perms.PlannedVisitManage)]
+    public async Task<IActionResult> DraftV2([FromBody] VisitReportV2Request request, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new SaveVisitReportV2DraftCommand(request.PlannedVisitId, request.ToBody(), IfMatch() ?? request.ExpectedVersion), cancellationToken));
+
+    /// <summary>Submits a v2 report: a missing answer → 400 <c>report_incomplete</c> with <c>data.missing[]</c>.</summary>
+    [HttpPost("api/crm/visit-report/v2/submit")]
+    [HasPermission(Perms.Record)]
+    [HasPermission(Perms.PlannedVisitManage)]
+    public async Task<IActionResult> SubmitV2([FromBody] VisitReportV2Request request, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new SubmitVisitReportV2Command(request.PlannedVisitId, request.ToBody(), IfMatch() ?? request.ExpectedVersion, request.ReportedByResourceId),
+            cancellationToken));
+
+    /// <summary>Competitor usage counts from the reports (no doctor identity; a cell under 5 is "&lt;5"; a merged record counts
+    /// as its survivor). <c>crm.visit-report.read-aggregate</c>.</summary>
+    [HttpGet("api/crm/visit-report/v2/competitor-usage")]
+    [HasPermission(VisitReportV2Permissions.ReadAggregate)]
+    public async Task<IActionResult> CompetitorUsage([FromQuery] string? competitorIds, [FromQuery] int? months, CancellationToken cancellationToken)
+    {
+        var ids = new List<Guid>();
+        foreach (var part in (competitorIds ?? string.Empty).Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            if (!Guid.TryParse(part, out var id))
+            {
+                return CreateActionResultInstance(VisitReportV2Service.Fail<object>(VisitReportV2Errors.Invalid, "competitorIds is a comma-separated list of ids.", 400));
+            }
+
+            ids.Add(id);
+        }
+
+        return CreateActionResultInstance(await _mediator.Send(new GetCompetitorUsageQuery(ids, months), cancellationToken));
+    }
+
+    /// <summary><c>If-Match: "3"</c> / <c>W/"3"</c> / <c>3</c> → 3.</summary>
+    private int? IfMatch() => DoctorInsightsController.IfMatch(Request.Headers.IfMatch.ToString());
 }

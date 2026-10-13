@@ -71,6 +71,9 @@ crm.doctor-insights.read,0
 crm.doctor-insights.read-aggregate,0
 crm.doctor-insights.read-all,0
 crm.doctor-insights.thresholds.manage,0
+# WP-VW-W4 (W4-BE-a) — the competitor usage counts key, stated Tenant (0): moduleOverride "crm-visit-report" is not in
+# PlatformAdminModules.
+crm.visit-report.read-aggregate,0
 # SCMM-12-API / SCMM-14 / SCMM-11-follow-API — 10 content-composition keys, stated Tenant (0): moduleOverride
 # "crm-content-composition" is not in PlatformAdminModules; live diten_auth_v3 Scope=0 (verified 2026-09-25). These
 # were seeded without a baseline row, so Baseline_covers_every_seeded_permission_and_nothing_else was already red.

@@ -1,4 +1,6 @@
 using Diten.CrmService.Application.Features.VisitReport;
+using Diten.CrmService.Application.Features.VisitReport.V2;
+using Diten.CrmService.Domain.Entities;
 
 namespace Diten.CrmService.Api.Models.CRM;
 
@@ -56,4 +58,24 @@ public sealed class AmendVisitReportRequest
 
     /// <summary>WP-VW-W2 — frozen once the reschedule created its visit (409 visit_reschedule_already_applied).</summary>
     public string? RescheduleToDate { get; set; }
+
+    /// <summary>WP-VW-W4 (W4-BE-a) — a v2 report is amended with its v2 sections (old / new values are kept).</summary>
+    public VisitReportV2Request? V2 { get; set; }
+}
+
+/// <summary>WP-VW-W4 (W4-BE-a, §2.5) — the v2 draft / submit body (and the <c>v2</c> part of an amendment). The version
+/// comes from <c>If-Match</c> or <see cref="ExpectedVersion"/>.</summary>
+public sealed class VisitReportV2Request
+{
+    public Guid PlannedVisitId { get; set; }
+    public VisitReportGeneral? General { get; set; }
+    public List<VisitReportProductSection>? ProductSections { get; set; }
+    public VisitReportDoctorLevel? Doctor { get; set; }
+    public VisitReportPharmacy? Pharmacy { get; set; }
+    public VisitReportSafety? Safety { get; set; }
+    public VisitReportFollowUp? FollowUp { get; set; }
+    public string? ReportedByResourceId { get; set; }
+    public int? ExpectedVersion { get; set; }
+
+    public VisitReportV2Body ToBody() => new(General, ProductSections, Doctor, Pharmacy, Safety, FollowUp);
 }
