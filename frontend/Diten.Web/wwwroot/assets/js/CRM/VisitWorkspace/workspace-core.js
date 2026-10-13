@@ -42,6 +42,7 @@
  *   canStart(v, perms) / visitActions(v, today, perms)   today + approved + no execution => Start (+ not done /
  *                                     reschedule / cancel); in_progress => back to the presentation + finish; else W2
  *   presentationUrl(base, id, summary)   /CRM/VisitPresentation?plannedVisitId=...[&phase=summary]
+ *   reportUrl(base, id)                  /CRM/VisitReport?plannedVisitId=... (W4: the report wizard v2)
  *   evidenceNeeds(policy) / startMissing(policy, ev) / canBegin(policy, ev)   the E3 Start button: the tenant
  *                                     setting (contract.policy) x what is still missing (photo, location)
  *   locationView(loc, policy)         the location box: pending / ok / inaccurate / denied / unavailable / timeout
@@ -551,6 +552,9 @@
         return actionsFor(v, today, p);
     };
 
+    /** WP-VW-W4 (W4-WEB-a) — the report wizard v2 of a visit ("Raporu yaz"); the v1 screen stays for reading v1 reports. */
+    const reportUrl = (base, plannedVisitId) => (base || '/CRM/VisitReport') + '?plannedVisitId=' + encodeURIComponent(plannedVisitId || '');
+
     /** The presentation page of a visit; the finish opens its summary (that page calls finish). */
     const presentationUrl = (base, plannedVisitId, summary) => (base || '/CRM/VisitPresentation')
         + '?plannedVisitId=' + encodeURIComponent(plannedVisitId || '') + (summary ? '&phase=summary' : '');
@@ -679,7 +683,7 @@
         canPlanWeek, PIN_STEP, roundToStep, pinFromDrop, pinsWith, PIN_CODES, pinKey, pinText, pinMoveCode,
         dragItem, parseDragItem, accountOptions, unplacedRows, sessionVersionOf,
         compactCard, tinyCard, cardModel, stepMinutes, estimate, monthCell, DIALOG_TABS, dialogTabs, dayHead, LEGEND, productDistribution, alertFor, isPromo,
-        minutesSince, clockOf, canStart, visitActions, presentationUrl, evidenceNeeds, startMissing, canBegin, locationView,
+        minutesSince, clockOf, canStart, visitActions, presentationUrl, reportUrl, evidenceNeeds, startMissing, canBegin, locationView,
         geoErrorStatus, startFields, PHOTO_MAX_EDGE, PHOTO_QUALITY, PHOTO_TYPE, photoSize, cameraConstraints, cameraErrorKey,
         START_CODES, startError, distanceParts
     };

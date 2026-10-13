@@ -25,7 +25,7 @@
 <div id="vp-root" class="vp-root"
      data-api-base="/CRM/VisitPresentation/api"
      data-workspace-url="/CRM/VisitWorkspace"
-     data-report-url="/CRM/VisitExecution"
+     data-report-url="/CRM/VisitReport"
      data-planned-visit-id="@(Model.PlannedVisitId?.ToString() ?? string.Empty)"
      data-phase="@(Model.Summary ? "summary" : "run")"
      data-can-record="@Model.CanRecord.ToString().ToLowerInvariant()"

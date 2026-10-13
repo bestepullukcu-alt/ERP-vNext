@@ -114,4 +114,16 @@
   <data name="Err_content_engagement_journey_overlapping_published_version" xml:space="preserve"><value>Bu yolculuk kodunun aynı dilde yayımlanmış başka bir sürümü bu tarihleri zaten kapsıyor. Geçerlilik tarihlerini değiştirin ya da diğer sürümü arşivleyin.</value></data>
   <data name="Err_content_engagement_journey_archived_no_mutation" xml:space="preserve"><value>Arşivlenmiş yolculuk yayımlanamaz.</value></data>
   <data name="Err_content_engagement_journey_concurrency_conflict" xml:space="preserve"><value>Yolculuk bu arada başka biri tarafından değiştirildi. Sayfayı yenileyip tekrar deneyin.</value></data>
+  <data name="AdoptionStage" xml:space="preserve">
+    <value>Kullanım aşaması</value>
+  </data>
+  <data name="AdoptionStageHelp" xml:space="preserve">
+    <value>Temsilci doktorun kullanım aşamasını raporlar; yolculuk ondan sonraki ilk eşlenmiş aşamaya ilerler.</value>
+  </data>
+  <data name="AdoptionStageNone" xml:space="preserve">
+    <value>Eşlenmedi</value>
+  </data>
+  <data name="AdoptionStageUnavailable" xml:space="preserve">
+    <value>Kullanım aşaması listesi okunamadı.</value>
+  </data>
 </root>

@@ -114,4 +114,16 @@
   <data name="Err_content_engagement_journey_overlapping_published_version" xml:space="preserve"><value>Another published version of this journey code (same language) already covers these dates. Change the effective dates or archive the other version.</value></data>
   <data name="Err_content_engagement_journey_archived_no_mutation" xml:space="preserve"><value>An archived journey cannot be published.</value></data>
   <data name="Err_content_engagement_journey_concurrency_conflict" xml:space="preserve"><value>The journey was changed by someone else in the meantime. Reload the page and try again.</value></data>
+  <data name="AdoptionStage" xml:space="preserve">
+    <value>Adoption stage</value>
+  </data>
+  <data name="AdoptionStageHelp" xml:space="preserve">
+    <value>The rep reports the doctor's adoption stage; the journey moves to the first stage mapped after it.</value>
+  </data>
+  <data name="AdoptionStageNone" xml:space="preserve">
+    <value>Not mapped</value>
+  </data>
+  <data name="AdoptionStageUnavailable" xml:space="preserve">
+    <value>The adoption stage list could not be read.</value>
+  </data>
 </root>

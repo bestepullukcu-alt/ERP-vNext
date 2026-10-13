@@ -14,7 +14,7 @@
     const L = window.VisitPresentationL10n || {};
     const base = root.getAttribute('data-api-base') || '';
     const workspaceUrl = root.getAttribute('data-workspace-url') || '/CRM/VisitWorkspace';
-    const reportUrl = root.getAttribute('data-report-url') || '/CRM/VisitExecution';
+    const reportUrl = root.getAttribute('data-report-url') || '/CRM/VisitReport';
     const plannedVisitId = root.getAttribute('data-planned-visit-id') || '';
     const summaryAsked = root.getAttribute('data-phase') === 'summary';
     const perms = {
@@ -685,7 +685,7 @@
                 break;
             }
             case 'save-signature': saveSignature(); break;
-            case 'report': window.location.href = reportUrl; break;
+            case 'report': window.location.href = reportUrl + (reportUrl.indexOf('?') > -1 ? '&' : '?') + 'plannedVisitId=' + encodeURIComponent(plannedVisitId); break; // WP-VW-W4: the wizard v2
             case 'later': window.location.href = workspaceUrl; break;
         }
     });

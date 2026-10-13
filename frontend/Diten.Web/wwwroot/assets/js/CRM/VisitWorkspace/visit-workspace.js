@@ -40,6 +40,7 @@
         execute: root.getAttribute('data-can-execute') === 'true' // WP-VW-W3 — crm.visit-execution.read + record
     };
     const presentationBase = root.getAttribute('data-presentation-url') || '/CRM/VisitPresentation';
+    const reportBase = root.getAttribute('data-report-url') || '/CRM/VisitReport'; // WP-VW-W4 (W4-WEB-a)
 
     // ── tiny helpers ─────────────────────────────────────────────────────────────────────────────────────────
     const el = id => document.getElementById(id);
@@ -537,6 +538,8 @@
             }
             if (k === 'locked') { return '<div class="vw-locked-note"><i class="bx bx-lock-alt"></i> ' + esc(L.LockedInfo || '') + '</div>'; }
             const a = ACTION[k];
+            // WP-VW-W4 (W4-WEB-a) — "send the report" opens the report wizard v2 of this visit; "result" (today, no execution) stays v1
+            if (k === 'sendReport' && v.plannedVisitId) { return '<a class="btn btn-' + a.tone + ' flex-fill" href="' + esc(C.reportUrl(reportBase, v.plannedVisitId)) + '"><i class="bx ' + a.icon + '"></i> ' + esc(L[a.label] || '') + '</a>'; }
             if (k === 'result' || k === 'sendReport') { return '<a class="btn btn-' + a.tone + ' flex-fill" href="' + esc(executionUrl) + '"><i class="bx ' + a.icon + '"></i> ' + esc(L[a.label] || '') + '</a>'; }
             if (k === 'plan') {
                 const w = weekOf(v.weekStart);

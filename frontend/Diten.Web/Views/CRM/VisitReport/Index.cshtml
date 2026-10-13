@@ -1,0 +1,66 @@
+@model Diten.Web.Models.CRM.VisitReportIndexViewModel
+@using Diten.Web.Views.CRM.VisitReport
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<VisitReportIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["PageTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    // No menu entry of its own (reached from the workspace / the presentation): the sidebar opens the CRM group at Visit Workspace.
+    Context.Items["NavActivePath"] = "/CRM/VisitWorkspace";
+}
+
+@*
+    WP-VW-W4 (W4-WEB-a) — the visit report wizard v2 (mockup 03-rapor + DESIGN-GAP-W4-report §1). Steps: general → one
+    step per product (A presentation + interest · B market + competitor · C requests + next step) → follow-up + safety →
+    the doctor profile card → summary + send. Every call is a same-origin proxy under /CRM/VisitReport/api/*. UAS-001:
+    without crm.visit-report.read NOTHING but the access notice — no skeleton, no redirect.
+*@
+@if (!Model.CanRead)
+{
+    <partial name="_AccessDenied" model="@Localizer["PageTitle"].Value" />
+    return;
+}
+
+<div id="vr-root" class="vr-root"
+     data-api-base="/CRM/VisitReport/api"
+     data-workspace-url="/CRM/VisitWorkspace"
+     data-planned-visit-id="@(Model.PlannedVisitId?.ToString() ?? string.Empty)"
+     data-can-record="@Model.CanRecord.ToString().ToLowerInvariant()"
+     data-can-amend="@Model.CanAmend.ToString().ToLowerInvariant()"
+     data-can-read-visit="@Model.CanReadVisit.ToString().ToLowerInvariant()"
+     data-can-read-execution="@Model.CanReadExecution.ToString().ToLowerInvariant()"
+     data-can-read-insights="@Model.CanReadInsights.ToString().ToLowerInvariant()"
+     data-can-lookup-competitors="@Model.CanLookupCompetitors.ToString().ToLowerInvariant()"
+     data-can-propose-competitors="@Model.CanProposeCompetitors.ToString().ToLowerInvariant()"
+     data-can-read-gskus="@Model.CanReadGskus.ToString().ToLowerInvariant()"
+     data-can-pick-products="@Model.CanPickProducts.ToString().ToLowerInvariant()">
+    <div class="vr-page">
+        <div class="vr-head">
+            <a class="vr-back" href="/CRM/VisitWorkspace" aria-label="@Localizer["BackLabel"]"><i class="bx bx-arrow-back vr-flip"></i></a>
+            <div class="vr-head-text">
+                <h4 class="vr-title" id="vr-title"></h4>
+                <div class="vr-sub" id="vr-sub"></div>
+            </div>
+        </div>
+        <div class="vr-chips" id="vr-chips"></div>
+        <div class="alert alert-warning d-none" id="vr-notice" role="status"></div>
+        <div class="vr-small vr-muted" id="vr-loading">@Localizer["Loading"]</div>
+        <div id="vr-banner"></div>
+        <div class="vr-steps" id="vr-steps" role="tablist" aria-label="@Localizer["StepsLabel"]"></div>
+        <div class="vr-body" id="vr-body"></div>
+    </div>
+    <div class="vr-bar d-none" id="vr-bar"></div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/js/CRM/VisitReport/visit-report.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script>
+        window.VisitReportL10n = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+            VisitReportIndex.ScriptKeys.ToDictionary(k => k, k => Localizer[k].Value)));
+    </script>
+    <script src="~/assets/js/CRM/VisitReport/report-core.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/VisitReport/visit-report.js" asp-append-version="true"></script>
+}
