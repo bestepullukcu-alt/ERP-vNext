@@ -703,3 +703,46 @@ Commit: "chore(mdm): WP-VW-W4-CFG — workflow template MDM-COMP-PROPOSAL (live)
 - (2) **Eczane raf fotoğrafı için yükleme ucu yok** (yalnız `PhotoEvidenceId` alanı). WEB-b'ye küçük bir CRM ucu eklenir: W3 başlatma fotoğrafı deseni, MOD-0262 `CrmVisitEvidence`, `[DisableFormValueModelBinding]` vekil.
 
 **Sıradaki:** 3. tur — W4-WEB-a ∥ W4-WEB-b.
+
+## §37 CT kabul — W4-WEB-a + W4-WEB-b E2 ACCEPTED (koşullu, 2026-10-13)
+
+**Kaynak:** kullanıcının ajanları, çakışmasız birleşti.
+- WEB-a `3ec56bf64` → test dalında `/CRM/VisitReport` hekim sihirbazı + yolculuk aşamasına "Kullanım aşaması" seçici.
+- WEB-b `07a7ff6cf` → test dalında `/CRM/PharmacyReport/{id}` eczane raporu + `/CRM/PotentialThresholds` + CRM raf fotoğrafı ucu.
+
+**CT ölçümü (birlikte):**
+
+| takım | sonuç |
+|---|---|
+| CRM | **2738/0/5** |
+| Web | **1001/0** (955 + 24 + 22) |
+| Gateway | **147/1** (bilinen 5063–5065) |
+| Mimari | denetimsiz **53** (+ `UploadShelfPhotoCommand`) |
+
+**CT sabotajları** (betik kaynaktan okunur, `--no-build`; `.bak` + touch ile geri alındı):
+- WEB-a `report-core.js` fırsat önizlemesinde Orta × Hiç–Ara sıra → `low_priority` → `A2` kırmızı.
+- WEB-b `report-pharmacy-core.js` stok düzeyi zorunluluğu kalktı → `B9` kırmızı.
+
+**Paralel yazımın sonucu:** WEB-b, WEB-a'nın `report-core.js`'ini göremediği için eczaneyi **ayrı sayfa + ayrı çekirdek** olarak yazdı. WEB-a'nın eczane kancaları (`pharmacySteps` / `pharmacyHtml`) boş kaldı. Kabul edildi: iki sayfa bağımsız ve testli. **Ama birleşme boşlukları var:**
+- **I1 · Eczane girişi:** çalışma alanı / sunum "Raporu gönder" → `/CRM/VisitReport` açıyor. Eczane ziyaretinde yalnız "eczane raporu" uyarısı çıkıyor (`visit-report.js:68`), `/CRM/PharmacyReport/{id}`'ye **yönlendirmiyor**.
+  - Çözüm: `reportKind === 'pharmacy'` → `location.replace('/CRM/PharmacyReport/' + id)` + test.
+- **I2 · Eczane rakip önerisi MDM'ye hiç ulaşmıyor** (BE-a hatası, WEB-b bildirdi, CT doğruladı).
+  - `ForwardProposalsAsync` eczane rakiplerini `Guid.Empty` ürünle iletiyor (`VisitReportV2Handlers.cs:333`); MDM `ProposeAsync` ürün kimliği boşsa 400 dönüyor → öneri sonsuza dek `competitor_proposal_pending`.
+  - Çözüm: eczanede planın ilk ürünü (lookup ile aynı kural); plan ürünsüzse öneri yerel kalır + uyarı. Test.
+
+**Kabul edilen sapmalar:**
+- **WEB-a:**
+  - adımlar mockup'taki gibi üstte yatay;
+  - ortak ziyaretçi salt okunur;
+  - avantaj çipleri rakip kartında;
+  - endikasyon "doğruluk" etiketi yok (sunucuda alan yok);
+  - numune sunum işaretinden ön dolmuyor;
+  - 15 form `Form_*` Web anahtarı (MDM form BRD'si yok).
+- **WEB-b:**
+  - GSKU satırları `mdm.gskus.read` ile okunuyor; temsilcide yoksa bilgi mesajı (**W4-CFG'de temsilci rolüne `mdm.gskus.read` önerilir**);
+  - stok adet / fiyat gözlemi / materyal çipleri / 48 sa sayacı yok (sunucuda alan yok).
+
+**Sıradaki:**
+- I1 + I2 küçük düzeltmesi (kullanıcı kararı).
+- 4. tur: W4-WEB-c (rakip yönetimi) + W4-CFG (şablon + yetkiler; read-all açık atama, temsilciye gskus.read).
+- Ardından W4 canlı E4.
