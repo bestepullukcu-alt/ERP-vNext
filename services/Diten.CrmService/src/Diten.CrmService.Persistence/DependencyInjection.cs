@@ -278,6 +278,13 @@ public static class DependencyInjection
         // WP-VW-W3 (W3-BE-c) — the evidence policy history and the time-boxed exceptions.
         services.AddScoped<IVisitEvidencePolicyChangeRepository, VisitEvidencePolicyChangeRepository>();
         services.AddScoped<IVisitEvidenceExceptionRepository, VisitEvidenceExceptionRepository>();
+        // WP-VW-W4 (W4-BE-c) — doctor profile + potential + thresholds and their append-only histories.
+        services.AddScoped<IDoctorProfileRepository, DoctorProfileRepository>();
+        services.AddScoped<IDoctorProfileChangeRepository, DoctorProfileChangeRepository>();
+        services.AddScoped<IDoctorProductPotentialRepository, DoctorProductPotentialRepository>();
+        services.AddScoped<IDoctorProductPotentialChangeRepository, DoctorProductPotentialChangeRepository>();
+        services.AddScoped<IProductPotentialThresholdRepository, ProductPotentialThresholdRepository>();
+        services.AddScoped<IProductPotentialThresholdChangeRepository, ProductPotentialThresholdChangeRepository>();
 
         TryEnsureIndexes(client.GetDatabase(databaseName));
 
@@ -1335,6 +1342,29 @@ public static class DependencyInjection
             map.GetMemberMap(e => e.EndDate).SetSerializer(dateOnlyString);
         });
         Map<VisitEvidencePolicyChange>(_ => { });
+
+        // WP-VW-W4 (W4-BE-c) - the doctor insights: every Guid FK as a string (the GUID trap: a type missing here stores
+        // its Guids binary and the string-Guid queries come back EMPTY silently).
+        var nullableStringGuid = new NullableSerializer<Guid>(stringGuid);
+        Map<DoctorProfile>(map => map.GetMemberMap(p => p.ContactId).SetSerializer(stringGuid));
+        Map<DoctorProfileChange>(map => map.GetMemberMap(c => c.ContactId).SetSerializer(stringGuid));
+        Map<DoctorProductPotential>(map =>
+        {
+            map.GetMemberMap(p => p.ContactId).SetSerializer(stringGuid);
+            map.GetMemberMap(p => p.GlobalProductId).SetSerializer(stringGuid);
+        });
+        Map<DoctorPotentialRow>(map =>
+        {
+            map.GetMemberMap(r => r.IndicationNodeId).SetSerializer(stringGuid);
+            map.GetMemberMap(r => r.ProfileNodeId).SetSerializer(nullableStringGuid);
+        });
+        Map<DoctorProductPotentialChange>(map =>
+        {
+            map.GetMemberMap(c => c.ContactId).SetSerializer(stringGuid);
+            map.GetMemberMap(c => c.GlobalProductId).SetSerializer(stringGuid);
+        });
+        Map<ProductPotentialThreshold>(map => map.GetMemberMap(t => t.GlobalProductId).SetSerializer(nullableStringGuid));
+        Map<ProductPotentialThresholdChange>(map => map.GetMemberMap(c => c.GlobalProductId).SetSerializer(nullableStringGuid));
 
         _classMapsRegistered = true;
     }

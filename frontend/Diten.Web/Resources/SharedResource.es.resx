@@ -1058,4 +1058,7 @@
   <data name="Nav.Page.VISITEVIDENCESETTINGS" xml:space="preserve">
     <value>Evidencias de visita</value>
   </data>
+  <data name="Nav.Page.CRMDOCTORINSIGHTTHRESHOLDS" xml:space="preserve">
+    <value>Umbrales de potencial</value>
+  </data>
 </root>

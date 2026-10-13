@@ -549,6 +549,16 @@ public static class DataSeeder
             new("crm", "planned-visit", "read-all", "CRM Planned Visit Read All", "Permission to read every planned visit and visit report in the tenant and act on them with the existing write permissions (explicit grant only; never granted automatically)", moduleOverride: "crm-planned-visit"),
             new("crm", "visit-plan", "read-all", "CRM Visit Plan Read All", "Permission to read, preview, apply and re-plan every visit planning session in the tenant and plan for another representative (explicit grant only; never granted automatically)", moduleOverride: "crm-visit-plan"),
 
+            // WP-VW-W4 (W4-BE-c, §2.7) — doctor insights (profile, product potential, opportunity, thresholds). Tenant-scoped
+            // ("crm-doctor-insights" ∉ PlatformAdminModules). read = own + team doctors; read-all = the whole tenant
+            // (EXPLICIT-GRANT-ONLY); read-aggregate = counts without a doctor's identity; thresholds.manage = the
+            // per-product Low / Medium / High boundaries. Catalog only: granted to no role here.
+            new("crm", "doctor-insights", "read", "CRM Doctor Insights Read", "Permission to view the profile, product potential and opportunity of the doctors in the caller's own and team territories", moduleOverride: "crm-doctor-insights"),
+            new("crm", "doctor-insights", "manage", "CRM Doctor Insights Manage", "Permission to edit a doctor profile (adoption typology, communication style, KOL level, monthly patients) by hand", moduleOverride: "crm-doctor-insights"),
+            new("crm", "doctor-insights", "read-all", "CRM Doctor Insights Read All", "Permission to view the profile, product potential and opportunity of every doctor in the tenant (explicit grant only; never granted automatically)", moduleOverride: "crm-doctor-insights"),
+            new("crm", "doctor-insights", "read-aggregate", "CRM Doctor Insights Read Aggregate", "Permission to view aggregated potential, share and opportunity counts without any doctor's identity (cells under five doctors are hidden)", moduleOverride: "crm-doctor-insights"),
+            new("crm", "doctor-insights", "thresholds.manage", "CRM Doctor Insights Thresholds Manage", "Permission to set the per-product Low / Medium / High potential thresholds", moduleOverride: "crm-doctor-insights"),
+
             new("mod0251", "employee", "search", "Search Employees", "Permission to search MOD-0251 employee registry records"),
             new("mod0251", "employee", "view", "View Employee", "Permission to view MOD-0251 employee records"),
             new("mod0251", "employee", "view_sensitive", "View Sensitive Employee Fields", "Permission to view sensitive MOD-0251 employee fields when masking policy allows"),

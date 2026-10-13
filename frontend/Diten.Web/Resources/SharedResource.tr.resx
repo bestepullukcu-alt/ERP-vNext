@@ -1114,4 +1114,7 @@
   <data name="Nav.Page.VISITEVIDENCESETTINGS" xml:space="preserve">
     <value>Ziyaret Kanıtı</value>
   </data>
+  <data name="Nav.Page.CRMDOCTORINSIGHTTHRESHOLDS" xml:space="preserve">
+    <value>Potansiyel Eşikleri</value>
+  </data>
 </root>

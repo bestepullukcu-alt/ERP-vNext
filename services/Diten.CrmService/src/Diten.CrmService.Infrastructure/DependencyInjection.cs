@@ -183,6 +183,10 @@ public static class DependencyInjection
         services.AddSingleton<
             Application.Features.Approvals.IAuthoringApprovalSettings,
             Workflow.ConfigurationAuthoringApprovalSettings>();
+        // WP-VW-W4 (W4-BE-c) — the Concept Graph type codes of the indication / patient profile nodes (tenant data).
+        services.AddSingleton<
+            Application.Features.DoctorInsights.IDoctorInsightsSettings,
+            Workflow.ConfigurationDoctorInsightsSettings>();
         services.AddScoped<Application.Features.Knowledge.Path.Review.IWorkflowDecisionClient>(sp =>
             (Application.Features.Knowledge.Path.Review.IWorkflowDecisionClient)
             sp.GetRequiredService<Application.Features.ContentComposition.Claims.IClaimWorkflowClient>());

@@ -143,6 +143,17 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                     new ModuleManifestAction("EXCEPTION_READ", "Read Time-Boxed Exceptions", "crm.visit-evidence-exception.read", "RowAction", 20, false, false, true),
                     new ModuleManifestAction("EXCEPTION_MANAGE", "Manage Time-Boxed Exceptions", "crm.visit-evidence-exception.manage", "Toolbar", 30, false, true, false)
                 ]),
+                // WP-VW-W4 (W4-BE-c) — the per-product potential thresholds (Low / Medium / High, marketing). The doctor
+                // insights keys live on this page so a role can receive them from the role-permission screen: the report
+                // and the doctor card read with .read (own + team doctors), .read-all is the whole tenant, .read-aggregate
+                // the marketing counts without a doctor's identity, .manage a hand edit of the doctor profile.
+                new ModuleManifestPage("CRM_DOCTOR_INSIGHT_THRESHOLDS", "Potential Thresholds", "/CRM/PotentialThresholds", "crm.doctor-insights.thresholds.manage", null, true, "List", 68,
+                [
+                    new ModuleManifestAction("INSIGHTS_READ", "Read Doctor Insights", "crm.doctor-insights.read", "RowAction", 10, false, false, true),
+                    new ModuleManifestAction("INSIGHTS_MANAGE", "Edit Doctor Profiles", "crm.doctor-insights.manage", "Toolbar", 20, false, true, false),
+                    new ModuleManifestAction("INSIGHTS_READ_ALL", "Read All Doctors' Insights", "crm.doctor-insights.read-all", "RowAction", 30, false, false, true),
+                    new ModuleManifestAction("INSIGHTS_READ_AGGREGATE", "Read Aggregated Doctor Insights", "crm.doctor-insights.read-aggregate", "RowAction", 40, false, false, true)
+                ]),
                 new ModuleManifestPage("VISIT_PLANNING", "Visit Planning", "/CRM/VisitPlanning", VisitPlanRead, null, true, "List", 64,
                 [
                     new ModuleManifestAction("GENERATE", "Generate Plan", "crm.visit-plan.generate", "Toolbar", 10, false, true, false),

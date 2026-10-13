@@ -1114,4 +1114,7 @@
   <data name="Nav.Page.VISITEVIDENCESETTINGS" xml:space="preserve">
     <value>Visit Evidence</value>
   </data>
+  <data name="Nav.Page.CRMDOCTORINSIGHTTHRESHOLDS" xml:space="preserve">
+    <value>Potential Thresholds</value>
+  </data>
 </root>

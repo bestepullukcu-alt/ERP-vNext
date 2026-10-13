@@ -90,7 +90,14 @@ public sealed class BusinessReferenceDataConsumableSetsOptions
         // WP-VW-W2 — the visit workspace cancel / not-done / reschedule reasons (CrmService validates; Web + mobile read).
         "visit-outcome-reason",
         // WP-VW-W3 — the doctor objection categories (CrmService validates the objection library; the presentation reads).
-        "visit-objection-category"
+        "visit-objection-category",
+        // WP-VW-W4 (W4-BE-c) — the doctor profile / potential sets (CrmService validates the profile, the potential and the
+        // report recorder; the report v2 and the thresholds page read).
+        "crm-adoption-stage",
+        "crm-share-bucket",
+        "crm-adoption-typology",
+        "crm-communication-style",
+        "crm-kol-level"
     ];
 
     /// <summary>The configured list when it names at least one set, otherwise the code default.</summary>

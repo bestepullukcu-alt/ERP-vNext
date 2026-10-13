@@ -129,6 +129,15 @@ public static class DependencyInjection
         services.AddScoped<Features.VisitEvidence.IVisitEvidencePolicyResolver, Features.VisitEvidence.VisitEvidencePolicyResolver>();
         services.AddScoped<Features.VisitEvidence.IVisitEvidenceRepRoster, Features.VisitEvidence.VisitEvidenceRepRoster>();
         services.AddScoped<Features.VisitEvidence.VisitEvidenceExceptionService>();
+        // WP-VW-W4 (W4-BE-c) — doctor insights: the team scope (subtree assignments), the visibility (own / team /
+        // read-all, 404 outside), the Concept Graph indication × profile reader, the ONE writer (manual edit + the report's
+        // recorder seam for BE-a) and the shared read plumbing.
+        services.AddScoped<Features.DoctorInsights.TeamScopeResolver>();
+        services.AddScoped<Features.DoctorInsights.DoctorInsightsVisibility>();
+        services.AddScoped<Features.DoctorInsights.ProductIndicationProfileReader>();
+        services.AddScoped<Features.DoctorInsights.DoctorInsightsRecorder>();
+        services.AddScoped<Features.DoctorInsights.IDoctorInsightsRecorder>(sp => sp.GetRequiredService<Features.DoctorInsights.DoctorInsightsRecorder>());
+        services.AddScoped<Features.DoctorInsights.DoctorInsightsReader>();
         // W2-BE-c (C1) — the engine preview behind a tenant-keyed, bounded cache (session version + today + the rep's
         // written visits / reports stamp in the key); the calendar and the reschedule options share it.
         services.AddSingleton<Features.VisitWorkspace.WorkspacePreviewCache>();

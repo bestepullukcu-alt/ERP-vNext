@@ -3197,6 +3197,39 @@
       "UpstreamScheme": "http"
     },
     {
+      "DownstreamPathTemplate": "/api/crm/doctor-insights",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5061
+        }
+      ],
+      "UpstreamPathTemplate": "/api/crm/doctor-insights",
+      "UpstreamHttpMethod": [
+        "GET",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/crm/doctor-insights/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5061
+        }
+      ],
+      "UpstreamPathTemplate": "/api/crm/doctor-insights/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "PUT",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
       "DownstreamPathTemplate": "/api/crm/cycle-periods",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [

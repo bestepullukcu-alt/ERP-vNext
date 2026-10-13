@@ -1,0 +1,617 @@
+{
+  "catalog_version": "2026.10.13-crm-visit-report-v2-reference",
+  "module": "BusinessReferenceData",
+  "note": "WP-VW-W4 (visit report v2): the doctor profile / potential sets (W4-BE-c). The report sets are added to this file by W4-BE-a. Tenant-scoped; display_name = English, label_* = the other six languages. Labels belong to the data owner and are corrected from the Reference Data screen, never patched by a script.",
+  "sets": [
+    {
+      "set_code": "crm-adoption-stage",
+      "set_name": "CRM Adoption Stage",
+      "scope_type": "tenant",
+      "status": "Active",
+      "description": "A doctor's adoption stage of one of our products (WP-VW-W4, K-W4). The same list as the content journey stages: the visit report records it per product and the next visit's content follows it. Tenant-scoped.",
+      "attribute_definitions": [
+        {
+          "attribute_code": "label_tr",
+          "display_name": "Label (Turkish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_fr",
+          "display_name": "Label (French)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_es",
+          "display_name": "Label (Spanish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_zh",
+          "display_name": "Label (Chinese)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ar",
+          "display_name": "Label (Arabic)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ru",
+          "display_name": "Label (Russian)",
+          "data_type": "string",
+          "is_required": true
+        }
+      ],
+      "values": [
+        {
+          "value_code": "unaware",
+          "display_name": "Unaware",
+          "description": "Has not heard of the product.",
+          "is_active": true,
+          "sort_order": 10,
+          "attributes": {
+            "label_tr": "Farkında değil",
+            "label_fr": "Pas informé",
+            "label_es": "No informado",
+            "label_zh": "未知晓",
+            "label_ar": "غير مدرك",
+            "label_ru": "Не осведомлён"
+          }
+        },
+        {
+          "value_code": "aware",
+          "display_name": "Aware",
+          "description": "Knows the product.",
+          "is_active": true,
+          "sort_order": 20,
+          "attributes": {
+            "label_tr": "Farkında",
+            "label_fr": "Informé",
+            "label_es": "Informado",
+            "label_zh": "已知晓",
+            "label_ar": "مدرك",
+            "label_ru": "Осведомлён"
+          }
+        },
+        {
+          "value_code": "evaluating",
+          "display_name": "Evaluating",
+          "description": "Weighs the product for their patients.",
+          "is_active": true,
+          "sort_order": 30,
+          "attributes": {
+            "label_tr": "Değerlendiriyor",
+            "label_fr": "En évaluation",
+            "label_es": "Evaluando",
+            "label_zh": "评估中",
+            "label_ar": "يقيّم",
+            "label_ru": "Оценивает"
+          }
+        },
+        {
+          "value_code": "trying",
+          "display_name": "Trying",
+          "description": "Tries the product on some patients.",
+          "is_active": true,
+          "sort_order": 40,
+          "attributes": {
+            "label_tr": "Deniyor",
+            "label_fr": "En essai",
+            "label_es": "Probando",
+            "label_zh": "试用中",
+            "label_ar": "يجرّب",
+            "label_ru": "Пробует"
+          }
+        },
+        {
+          "value_code": "regular",
+          "display_name": "Regular user",
+          "description": "Prescribes the product regularly.",
+          "is_active": true,
+          "sort_order": 50,
+          "attributes": {
+            "label_tr": "Düzenli kullanıyor",
+            "label_fr": "Utilisateur régulier",
+            "label_es": "Usuario habitual",
+            "label_zh": "常规使用",
+            "label_ar": "يستخدم بانتظام",
+            "label_ru": "Использует регулярно"
+          }
+        },
+        {
+          "value_code": "advocate",
+          "display_name": "Advocate",
+          "description": "Recommends the product to peers.",
+          "is_active": true,
+          "sort_order": 60,
+          "attributes": {
+            "label_tr": "Savunucu",
+            "label_fr": "Ambassadeur",
+            "label_es": "Defensor",
+            "label_zh": "倡导者",
+            "label_ar": "مناصر",
+            "label_ru": "Сторонник"
+          }
+        }
+      ]
+    },
+    {
+      "set_code": "crm-share-bucket",
+      "set_name": "CRM Share Bucket",
+      "scope_type": "tenant",
+      "status": "Active",
+      "description": "How much of a doctor's patients in the product's indications get our product (WP-VW-W4, K-W4): a choice, never a percentage. The opportunity matrix reads it with the potential class. Tenant-scoped.",
+      "attribute_definitions": [
+        {
+          "attribute_code": "label_tr",
+          "display_name": "Label (Turkish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_fr",
+          "display_name": "Label (French)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_es",
+          "display_name": "Label (Spanish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_zh",
+          "display_name": "Label (Chinese)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ar",
+          "display_name": "Label (Arabic)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ru",
+          "display_name": "Label (Russian)",
+          "data_type": "string",
+          "is_required": true
+        }
+      ],
+      "values": [
+        {
+          "value_code": "none",
+          "display_name": "None",
+          "description": "None of the patients.",
+          "is_active": true,
+          "sort_order": 10,
+          "attributes": {
+            "label_tr": "Hiç",
+            "label_fr": "Jamais",
+            "label_es": "Nunca",
+            "label_zh": "从不",
+            "label_ar": "أبداً",
+            "label_ru": "Никогда"
+          }
+        },
+        {
+          "value_code": "occasional",
+          "display_name": "Occasionally",
+          "description": "A few of the patients.",
+          "is_active": true,
+          "sort_order": 20,
+          "attributes": {
+            "label_tr": "Ara sıra",
+            "label_fr": "Occasionnellement",
+            "label_es": "Ocasionalmente",
+            "label_zh": "偶尔",
+            "label_ar": "أحياناً",
+            "label_ru": "Иногда"
+          }
+        },
+        {
+          "value_code": "half",
+          "display_name": "About half",
+          "description": "About half of the patients.",
+          "is_active": true,
+          "sort_order": 30,
+          "attributes": {
+            "label_tr": "Yarı yarıya",
+            "label_fr": "À moitié",
+            "label_es": "La mitad",
+            "label_zh": "大约一半",
+            "label_ar": "حوالي النصف",
+            "label_ru": "Примерно половина"
+          }
+        },
+        {
+          "value_code": "mostly",
+          "display_name": "Mostly",
+          "description": "Most of the patients.",
+          "is_active": true,
+          "sort_order": 40,
+          "attributes": {
+            "label_tr": "Çoğunlukla",
+            "label_fr": "La plupart du temps",
+            "label_es": "Mayormente",
+            "label_zh": "大多数",
+            "label_ar": "غالباً",
+            "label_ru": "В основном"
+          }
+        },
+        {
+          "value_code": "always",
+          "display_name": "Always",
+          "description": "All of the patients.",
+          "is_active": true,
+          "sort_order": 50,
+          "attributes": {
+            "label_tr": "Hep",
+            "label_fr": "Toujours",
+            "label_es": "Siempre",
+            "label_zh": "总是",
+            "label_ar": "دائماً",
+            "label_ru": "Всегда"
+          }
+        }
+      ]
+    },
+    {
+      "set_code": "crm-adoption-typology",
+      "set_name": "CRM Adoption Typology",
+      "scope_type": "tenant",
+      "status": "Active",
+      "description": "A doctor's adoption typology (WP-VW-W4, K-W5): kept on the doctor profile, suggested by the rep in the visit report, history kept. Tenant-scoped.",
+      "attribute_definitions": [
+        {
+          "attribute_code": "label_tr",
+          "display_name": "Label (Turkish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_fr",
+          "display_name": "Label (French)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_es",
+          "display_name": "Label (Spanish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_zh",
+          "display_name": "Label (Chinese)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ar",
+          "display_name": "Label (Arabic)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ru",
+          "display_name": "Label (Russian)",
+          "data_type": "string",
+          "is_required": true
+        }
+      ],
+      "values": [
+        {
+          "value_code": "innovator",
+          "display_name": "Innovator",
+          "description": "Adopts new treatments first.",
+          "is_active": true,
+          "sort_order": 10,
+          "attributes": {
+            "label_tr": "Yenilikçi",
+            "label_fr": "Innovateur",
+            "label_es": "Innovador",
+            "label_zh": "创新者",
+            "label_ar": "مبتكر",
+            "label_ru": "Новатор"
+          }
+        },
+        {
+          "value_code": "early_adopter",
+          "display_name": "Early adopter",
+          "description": "Adopts early, after the evidence.",
+          "is_active": true,
+          "sort_order": 20,
+          "attributes": {
+            "label_tr": "Erken benimseyen",
+            "label_fr": "Adopteur précoce",
+            "label_es": "Adoptador temprano",
+            "label_zh": "早期采用者",
+            "label_ar": "متبنٍّ مبكر",
+            "label_ru": "Ранний последователь"
+          }
+        },
+        {
+          "value_code": "early_majority",
+          "display_name": "Early majority",
+          "description": "Adopts once peers do.",
+          "is_active": true,
+          "sort_order": 30,
+          "attributes": {
+            "label_tr": "Erken çoğunluk",
+            "label_fr": "Majorité précoce",
+            "label_es": "Mayoría temprana",
+            "label_zh": "早期大众",
+            "label_ar": "الأغلبية المبكرة",
+            "label_ru": "Раннее большинство"
+          }
+        },
+        {
+          "value_code": "late_majority",
+          "display_name": "Late majority",
+          "description": "Adopts after most peers.",
+          "is_active": true,
+          "sort_order": 40,
+          "attributes": {
+            "label_tr": "Geç çoğunluk",
+            "label_fr": "Majorité tardive",
+            "label_es": "Mayoría tardía",
+            "label_zh": "后期大众",
+            "label_ar": "الأغلبية المتأخرة",
+            "label_ru": "Позднее большинство"
+          }
+        },
+        {
+          "value_code": "laggard",
+          "display_name": "Laggard",
+          "description": "Keeps established treatments.",
+          "is_active": true,
+          "sort_order": 50,
+          "attributes": {
+            "label_tr": "Geride kalan",
+            "label_fr": "Retardataire",
+            "label_es": "Rezagado",
+            "label_zh": "落后者",
+            "label_ar": "متأخر",
+            "label_ru": "Отстающий"
+          }
+        }
+      ]
+    },
+    {
+      "set_code": "crm-communication-style",
+      "set_name": "CRM Communication Style",
+      "scope_type": "tenant",
+      "status": "Active",
+      "description": "A doctor's communication style (WP-VW-W4, K-W5): kept on the doctor profile, suggested by the rep in the visit report, history kept. Tenant-scoped.",
+      "attribute_definitions": [
+        {
+          "attribute_code": "label_tr",
+          "display_name": "Label (Turkish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_fr",
+          "display_name": "Label (French)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_es",
+          "display_name": "Label (Spanish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_zh",
+          "display_name": "Label (Chinese)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ar",
+          "display_name": "Label (Arabic)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ru",
+          "display_name": "Label (Russian)",
+          "data_type": "string",
+          "is_required": true
+        }
+      ],
+      "values": [
+        {
+          "value_code": "analytical",
+          "display_name": "Analytical",
+          "description": "Wants data and evidence.",
+          "is_active": true,
+          "sort_order": 10,
+          "attributes": {
+            "label_tr": "Analitik",
+            "label_fr": "Analytique",
+            "label_es": "Analítico",
+            "label_zh": "分析型",
+            "label_ar": "تحليلي",
+            "label_ru": "Аналитик"
+          }
+        },
+        {
+          "value_code": "driver",
+          "display_name": "Driver",
+          "description": "Wants the result, briefly.",
+          "is_active": true,
+          "sort_order": 20,
+          "attributes": {
+            "label_tr": "Sonuç odaklı",
+            "label_fr": "Directif",
+            "label_es": "Dominante",
+            "label_zh": "驱动型",
+            "label_ar": "حازم",
+            "label_ru": "Лидер"
+          }
+        },
+        {
+          "value_code": "amiable",
+          "display_name": "Amiable",
+          "description": "Values the relationship.",
+          "is_active": true,
+          "sort_order": 30,
+          "attributes": {
+            "label_tr": "Uyumlu",
+            "label_fr": "Aimable",
+            "label_es": "Afable",
+            "label_zh": "亲和型",
+            "label_ar": "ودود",
+            "label_ru": "Дружелюбный"
+          }
+        },
+        {
+          "value_code": "expressive",
+          "display_name": "Expressive",
+          "description": "Values ideas and stories.",
+          "is_active": true,
+          "sort_order": 40,
+          "attributes": {
+            "label_tr": "Dışavurumcu",
+            "label_fr": "Expressif",
+            "label_es": "Expresivo",
+            "label_zh": "表现型",
+            "label_ar": "معبّر",
+            "label_ru": "Экспрессивный"
+          }
+        }
+      ]
+    },
+    {
+      "set_code": "crm-kol-level",
+      "set_name": "CRM KOL Level",
+      "scope_type": "tenant",
+      "status": "Active",
+      "description": "A doctor's key opinion leader level (WP-VW-W4, K-W5): kept on the doctor profile, suggested by the rep in the visit report, history kept. Tenant-scoped.",
+      "attribute_definitions": [
+        {
+          "attribute_code": "label_tr",
+          "display_name": "Label (Turkish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_fr",
+          "display_name": "Label (French)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_es",
+          "display_name": "Label (Spanish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_zh",
+          "display_name": "Label (Chinese)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ar",
+          "display_name": "Label (Arabic)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ru",
+          "display_name": "Label (Russian)",
+          "data_type": "string",
+          "is_required": true
+        }
+      ],
+      "values": [
+        {
+          "value_code": "none",
+          "display_name": "None",
+          "description": "Not an opinion leader.",
+          "is_active": true,
+          "sort_order": 10,
+          "attributes": {
+            "label_tr": "Yok",
+            "label_fr": "Aucun",
+            "label_es": "Ninguno",
+            "label_zh": "无",
+            "label_ar": "لا يوجد",
+            "label_ru": "Нет"
+          }
+        },
+        {
+          "value_code": "local",
+          "display_name": "Local",
+          "description": "An opinion leader in their institution or town.",
+          "is_active": true,
+          "sort_order": 20,
+          "attributes": {
+            "label_tr": "Yerel",
+            "label_fr": "Local",
+            "label_es": "Local",
+            "label_zh": "本地",
+            "label_ar": "محلي",
+            "label_ru": "Местный"
+          }
+        },
+        {
+          "value_code": "regional",
+          "display_name": "Regional",
+          "description": "An opinion leader in the region.",
+          "is_active": true,
+          "sort_order": 30,
+          "attributes": {
+            "label_tr": "Bölgesel",
+            "label_fr": "Régional",
+            "label_es": "Regional",
+            "label_zh": "区域",
+            "label_ar": "إقليمي",
+            "label_ru": "Региональный"
+          }
+        },
+        {
+          "value_code": "national",
+          "display_name": "National",
+          "description": "An opinion leader in the country.",
+          "is_active": true,
+          "sort_order": 40,
+          "attributes": {
+            "label_tr": "Ulusal",
+            "label_fr": "National",
+            "label_es": "Nacional",
+            "label_zh": "全国",
+            "label_ar": "وطني",
+            "label_ru": "Национальный"
+          }
+        },
+        {
+          "value_code": "international",
+          "display_name": "International",
+          "description": "An opinion leader beyond the country.",
+          "is_active": true,
+          "sort_order": 50,
+          "attributes": {
+            "label_tr": "Uluslararası",
+            "label_fr": "International",
+            "label_es": "Internacional",
+            "label_zh": "国际",
+            "label_ar": "دولي",
+            "label_ru": "Международный"
+          }
+        }
+      ]
+    }
+  ]
+}
