@@ -1241,6 +1241,17 @@ lot blocks written in R1 (read by the status, enforced from R3); **O-R1-4** the 
 live trace); **O-R1-5** a Prism start-up timeout flake in one full run (green alone and on re-run); **O-R1-6** `prepareCaseAction` checks the
 decision's key in the controller (R-6).
 
+### 19.9 WP-MVP1-FIX-F4R1 finding 2 — agent result, pending CT (2026-10-13)
+
+The page-less `RECALL-READINESS` manifest left `frontend/Diten.Web.Tests` at 1438/1440 (`NavManifestL10nGuardTests`: no module key; "no pages
+parsed"). Branch `fix/mvp1-f4r1` from `1e15e3d59`; no manifest or production change. `Nav.Module.RECALLREADINESS` (the key
+`NavNameLocalizer.Normalize("RECALL-READINESS")` yields — the WP's dashed spelling is read by nobody) in all 7 `SharedResource` resx. The
+guard accepts ONE named page-less module — `PagelessUntil["RECALL-READINESS"] = "RECALL-READINESS — API-only until WP-0177-R6 (CT FIX-F4R1)"`
+— and the new `A_pageless_exception_expires_the_moment_its_manifest_declares_a_page` turns red the moment the recall manifest declares a page
+(**R6 must delete the entry with its first page**). Sabotage s1 (ar key) / s2 (entry) / s3 (page added, entry kept) / s4 (another
+manifest emptied) each red → green, `git diff` empty. Web 1438/1440 → 1441/1441. Evidence
+`docs/records/audits/2026-10/mvp1-fix-f4r1-evidence-2026-10-13.md`.
+
 ## 20. Follow-up Items
 
 | ID | Item | Owner |

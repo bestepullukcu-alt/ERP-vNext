@@ -1028,6 +1028,15 @@ Seeded KPIs equal the formulas; FEFO order's first lot = F2's `firstEligibleLotI
 PIDs unchanged. PARALEL: only `docs/analysis/contracts/README.md:15` (new line). Screenshots are a static preview (real Razor + real JS +
 seed-equivalent JSON), not a live authorized session. Open points O-F4-1 … O-F4-7 in the evidence §11.
 
+### 19.14 WP-MVP1-FIX-F4R1 finding 1 — agent result, pending CT (2026-10-13)
+
+CT sabotage: without the `LegalEntityId` filter of `FefoCandidateReader` (the one candidate read of the FEFO order and the F2 hook) all Expiry
+tests stayed green. Branch `fix/mvp1-f4r1` from `1e15e3d59`; production code unchanged. `ExpiryReadTests` gains two tests on a two-company
+seed (company B's earlier lot under A's SAME warehouse id and SKU, written to the store): (a) A's `getFefoOrder` lists A's lot only; (b) A's
+issue over the HTTP posting route is 201 with no reason and no case. Sabotage (filter removed) → (a) and (b) red ((b): 422
+`FEFO_BYPASS_REASON_REQUIRED` naming B's lot), panel test green as expected; restored green, `git diff` empty. Inventory 1060+2 → 1062+2.
+Evidence `docs/records/audits/2026-10/mvp1-fix-f4r1-evidence-2026-10-13.md`.
+
 ## 20. Follow-up Items
 
 | ID | Item | Owner |
