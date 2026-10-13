@@ -12,7 +12,7 @@ info:
     shadow stock balance tutmaz. ASSUMPTION: lifecycle gecisleri optimistic concurrency
     yerine idempotent command + mevcut durum kontroluyle korunur. CONSUMES:
     WAREHOUSE-SHIPMENT-TRIGGER (merkez üretecek)
-  version: 3.2.0
+  version: 3.3.0
   x-status: FROZEN
   x-shipment-root-semantics: shipment-root-semantics-v3.0.0.md
   x-owner: [MOD-0183, MOD-0184, MOD-0185, MOD-0186, MOD-0187]
@@ -3039,6 +3039,20 @@ components:
     LoadStatus: { type: string, enum: [Draft, Planned, Tendered, Accepted, Dispatched, Completed, Cancelled] }
     ReturnStatus: { type: string, enum: [Requested, Authorized, Rejected, InTransit, Received, Dispositioned, Closed, Cancelled] }
     ClaimStatus: { type: string, enum: [Open, Investigating, Approved, Rejected, Settled, Closed, Withdrawn] }
+    RealizedLineStatus:
+      type: string
+      enum: [NotRealized, Dispatched]
+      description: >
+        3.3.0 eki. SATIR duzeyinde gerceklesme. ShipmentStatus YENIDEN KULLANILMAZ: o sevkiyat kokunun
+        durumudur, Dispatched koku anlatir, satirin gercekten ciktigini anlatmaz. Iptal ve duzeltme birer
+        DURUM degil, ayri kayitlardir (bkz. DemandHistoryRecordKind), cunku orijinal satir ezilmez.
+    DemandHistoryRecordKind:
+      type: string
+      enum: [Realization, Correction, Cancellation]
+      description: >
+        3.3.0 eki. Bir RealizedShipmentLine kaydinin turu. Realization orijinal gerceklesme; Correction ve
+        Cancellation orijinali EZMEYEN ek kayitlardir ve relatedShipmentLineId ile ona baglanir. IADE
+        baglantisi 3.3.0 kapsaminda DEGILDIR: MOD-0186'nin sozlesme celiskisi cozuldukten sonra ayri ek.
     ShipmentLine:
       type: object
       additionalProperties: false
@@ -3121,9 +3135,153 @@ components:
             warehouseReferenceId: { type: string }
             shipToReference: { type: string }
             lines: { type: array, items: { $ref: '#/components/schemas/ShipmentLine' } }
+            realizedLines:
+              type: array
+              description: >
+                3.3.0 eki, YALNIZ CEVAP. MOD-0188 talep gecmisi projeksiyonu. ShipmentLine'a EKLENMEDI: o
+                sema CreateShipmentCommand.lines tarafindan da kullaniliyor ve additionalProperties: false
+                tasiyor, dolayisiyla oraya eklenen her alan create ISTEGINDE de kabul edilir hale gelirdi -
+                sunucu turetimli ve sevk sonrasi degismez alanlar icin bu yanlis olurdu. lines alani ve
+                ShipmentLine semasi 3.2.0'daki haliyle aynen korunur.
+              items: { $ref: '#/components/schemas/RealizedShipmentLine' }
             pod: { anyOf: [{ $ref: '#/components/schemas/PodView' }, { type: 'null' }] }
             lifecycleCorrelationId: { type: [string, 'null'], format: uuid, description: 'Authoritative persisted root correlation UUID; producer emits it explicitly. No derivation or backfill.' }
             contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    UomConversionReference:
+      type: object
+      additionalProperties: false
+      required: [ruleId, ruleVersion]
+      description: >
+        3.3.0 eki. Kullanilan birim donusum kuralina YALNIZ REFERANS. Donusum kuralinin kendisi, carpani ve
+        temel birim tanimi MDM'nin (MOD-0290 PRODUCT-MASTER) yetkisindedir ve bu sozlesmeye KONULMAZ; bu
+        bundle INVENTORY'i de yalniz referans olarak okur ve shadow stock balance tutmaz (info.description).
+        Tuketici, orijinal miktari kaybetmeden temel birime cevirmek icin bu kimlik ve surumle MDM'ye gider.
+      properties:
+        ruleId:
+          type: string
+          description: MDM donusum kuralinin kimligi.
+        ruleVersion:
+          type: string
+          description: >
+            Kuralin uygulandigi andaki surumu. Sonradan degisen bir kural, gecmis kaydi etkilemez.
+    RealizedShipmentLine:
+      type: object
+      additionalProperties: false
+      required:
+        - tenantId
+        - legalEntityId
+        - shipmentId
+        - shipmentLineId
+        - lineNumber
+        - sourceVersion
+        - recordKind
+        - realizationStatus
+        - itemId
+        - skuId
+        - uomId
+        - warehouseReferenceId
+        - canonicalContentVersion
+        - contractVersion
+      description: >
+        3.3.0 eki, YALNIZ CEVAP. MOD-0188 Talep Planlama'nin gerceklesmis sevkiyat SATIRINI talep gecmisi
+        olarak okumasi icin projeksiyon (AC D05-D08). 3.2.0'da tanimli hicbir alan, yanit ya da kod
+        degismedi: ShipmentLine semasi ve ShipmentDetail.lines oldugu gibi durur, bu sema onlarin YANINA
+        eklenir. STOKSUZLUK (stockout / karsilanmamis talep) KAPSAM DISIDIR: bu bundle stok tutmaz,
+        dolayisiyla sifir sevkiyati sifir talepten ya da bilinmeyen kayip satistan ayirt edecek yetkili
+        kaynak degildir; o kanit ayri ve yetkili bir kaynaktan gelir.
+      properties:
+        tenantId:
+          type: string
+          format: uuid
+          description: Yetkili kiraci kapsami. Sunucuda JWT baglamindan turetilir, istekle gelmez.
+        legalEntityId:
+          type: string
+          format: uuid
+          description: >
+            Yetkili sirket kapsami. Istekle gelir ve servis onu MDM'den tenant'a aitligi ve Active oldugu
+            icin dogrular (R-2, PR #134); dogrulanamayan durumda istek reddedilir.
+        shipmentId:
+          type: string
+          format: uuid
+          description: Sevkiyat koku. Satir anahtari olarak TEK BASINA yetersizdir.
+        shipmentLineId:
+          type: string
+          format: uuid
+          description: >
+            Degismez sevkiyat SATIRI kimligi; okumalar ve yeniden denemeler boyunca sabit kalir. lineNumber
+            bunun yerine GECMEZ ve 3.2.0'daki anlamiyla aynen korunur.
+        lineNumber:
+          type: string
+          description: >
+            ShipmentLine.lineNumber ile ayni deger. Anlami degismedi: goruntu ve sira numarasidir, degismez
+            is kimligi DEGILDIR.
+        sourceRecordKey:
+          type: [string, 'null']
+          description: >
+            Ice aktarilan dosya satirini TEK bir gerceklesmis satira esleyen anahtar. Eslesmeyen ya da
+            belirsiz dosya satiri karantinada kalir. Bu alan null ise o satir dosya gecmisiyle
+            birlestirilemez; tuketici onu sessizce eslestirmez.
+        sourceVersion:
+          type: integer
+          minimum: 1
+          description: >
+            Kaynak duzeltmelerini ayirt eden ve bayat olanin yenisini ezmesini onleyen, monoton artan surum.
+            contractVersion ile karistirilmamalidir: o sema surumudur (v1), bu ise kaydin revizyonudur.
+        recordKind:
+          $ref: '#/components/schemas/DemandHistoryRecordKind'
+        relatedShipmentLineId:
+          type: [string, 'null']
+          format: uuid
+          description: >
+            recordKind Correction ya da Cancellation ise ZORUNLU ve orijinal Realization kaydinin
+            shipmentLineId degerini tasir; Realization icin null. Orijinal kayit hicbir zaman ezilmez.
+        realizationStatus:
+          $ref: '#/components/schemas/RealizedLineStatus'
+        realizedAt:
+          type: [string, 'null']
+          format: date-time
+          description: >
+            Is etkili sevk ani, UTC. realizationStatus Dispatched ise ZORUNLU, NotRealized ise null.
+            TransitionShipmentCommand.occurredAt bir ISTEK alanidir ve bunun yerine gecmez.
+        realizedQuantity:
+          anyOf:
+            - $ref: '#/components/schemas/Decimal'
+            - type: 'null'
+          description: >
+            Gercekten cikan miktar; sevk sonrasi DEGISMEZ. realizationStatus Dispatched ise ZORUNLU,
+            NotRealized ise null. ShipmentLine.quantity'nin tanimina DOKUNULMADI: o planlanan miktardir ve
+            3.2.0'daki anlamiyla kalir.
+        itemId:
+          type: string
+          format: uuid
+          description: ShipmentLine.itemId ile ayni deger ve anlam.
+        skuId:
+          type: string
+          format: uuid
+          description: Sevk edilen SKU. ShipmentLine.skuId ile ayni deger ve anlam.
+        uomId:
+          type: string
+          description: Gerceklesmenin kaydedildigi birim. ShipmentLine.uomId ile ayni anlam.
+        uomConversion:
+          anyOf:
+            - $ref: '#/components/schemas/UomConversionReference'
+            - type: 'null'
+          description: Temel birime donusum izi, yalniz referans. Donusum gerekmiyorsa null.
+        warehouseReferenceId:
+          type: string
+          description: >
+            3.2.0'daki haliyle OPAK referans. Kanonik depo eslemesi bu eke KONULMADI; BAGIMLILIK:
+            WAREHOUSE-SHIPMENT-TRIGGER (merkez / MVP-5). O sozlesme gelene kadar belirsiz bir depo
+            referansi tuketici tarafinda reddedilir, tahmin edilmez.
+        canonicalContentVersion:
+          type: string
+          description: >
+            Ayni anahtar/ayni is icerigi ile ayni anahtar/celisen icerik ayrimini yapmak icin kullanilan
+            kanonik alan setinin surumu. Set: shipmentLineId, skuId, warehouseReferenceId, realizedAt,
+            realizedQuantity, uomId, recordKind. Deger bu seti adlandirir, ornegin
+            'v1:lineId,sku,warehouse,realizedAt,qty,uom,kind'.
+        contractVersion:
+          $ref: '#/components/schemas/ContractVersion'
     ShipmentListResponse:
       type: object
       required: [items, page, pageSize, total, contractVersion]
