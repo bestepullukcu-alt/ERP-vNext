@@ -1,0 +1,7 @@
+base HEAD 4a8d4d4b339528a88e6220fb8402e5a2c771136c branch feature/mvp6-logistics; head.tar sha256 96ae026a23c64bde643fb62147c83b568d511137d449dfaf3671268a4ba8ba2f; files 14251; dirty status entries NOT used: 388
+overlay 1 docs/records/audits/2026-09/mvp6-shipment-a12-safe404-rework-01/successor-source.tar.gz sha256 7b6a0d1abea649d920040a039972c5d4928825e9cf2cc185487b1fe5f0f3314d: files 360, wrapper-stripped 'mvp6-shipment-a12-rework-src/', appledouble skipped 503; manifest rows 360; manifest-rows-not-in-archive 0; after-overlay match 360/360
+overlay 2 docs/records/audits/2026-09/mvp6-carrier-numericdate-exec-01/final-source.tar.gz sha256 f50350b8e541a4c1cbc640926c581cf510b4c2dbb57b31ef4193bf4c25c9e2cd: files 3333, wrapper-stripped '', appledouble skipped 3333; manifest rows 22; manifest-rows-not-in-archive 0; after-overlay match 22/22
+overlap overlay1∩overlay2: archive paths 0, manifest paths 0
+final docs/records/audits/2026-09/mvp6-shipment-a12-safe404-rework-01/SUCCESSOR-360-SOURCE-MANIFEST.tsv: 360/360 match
+final docs/records/audits/2026-09/mvp6-carrier-numericdate-exec-01/FINAL-22-SOURCE-MANIFEST.tsv: 22/22 match
+COMPOSE PASS tree_manifest_sha256=e4528e14d63a3c0bf70c9e1aa10dc54937b61cd547ce0d508f523044aa14b162

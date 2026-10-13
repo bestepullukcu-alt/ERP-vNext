@@ -1,0 +1,10 @@
+kind	path	sha256	disposition
+integration-disposition	docs/records/audits/2026-09/mvp6-mod0192-x07-http-disposition-01/SHA256SUMS	657fe1925001aec6aec0b61229fcec7a5f17f72942b4ab6a42c21eca000b3903	verified input index
+capacity-source-manifest	docs/records/audits/2026-09/mvp6-mod0192-x07-http-disposition-01/CAPACITY-43-SOURCE-MANIFEST.tsv	36114191e1576b8b5654b9910f3347432d5d3bf36aac87339a4280cc85a852f8	exact owner-approved transfer manifest
+capacity-source-archive	docs/records/audits/2026-09/mvp6-mod0192-x07-http-disposition-01/CAPACITY-43-SOURCE.tar.gz	753843251ea261473e308e5fb100de834b1e5ab88fa7576ff50ad22bf332274e	exact owner-approved transfer archive
+program-patch	docs/records/audits/2026-09/mvp6-mod0192-x07-http-disposition-01/PROGRAM-COMPOSITION.patch	78cc0fa61dd37019f525c621c572d1dc2ef518eb0b4faf520a280f01909db82e	exact owner-approved Program.cs patch
+mod0190-baseline-archive	docs/records/audits/2026-09/mvp6-mod0190-http-dev-02/source.tar.gz	f4d1b79d7aa74f8db86f782ac638cc6d606c8cbfcf0c183e50d5ace1ff02c3e5	preserved baseline input
+mod0190-baseline-manifest	docs/records/audits/2026-09/mvp6-mod0190-http-dev-02/source-manifest.tsv	83966e5e641546ba094e47f8585d7e2ce7affb7001b1e909fe220e7811fdac14	379-path baseline manifest
+published-contract-yaml	docs/analysis/contracts/sandop-capacity.openapi.yaml	9543e3f295dcabb9f7c1ab464fadfacfcbc53ada2f9bec9d32deb8f52cb02ff3	published contract input
+published-contract-annex	docs/analysis/contracts/sandop-capacity-semantics-v2.0.0.md	eb1df1383e637c744179abe4c8faa3b3b7ebe4cccd19738aadf41896a9311bda	published annex input
+promoted-module-pack	/private/tmp/mvp6-mod0192-core-dev-01/execution/domains/supply-chain-execution/module-packs/MOD-0192-capacity-planning.md	d01bf7a050472a9708a989d7bd4d13ab0a41a81984a272bbb15848f93fcac6e0	ready-for-dev authority input

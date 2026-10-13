@@ -1,0 +1,133 @@
+﻿{
+    "measuredAt":  "2026-10-02T11:32:36.5310578+03:00",
+    "fastForward":  "11:29 — git merge --ff-only efba9b9ed in C:\\Users\\Ali\\erp-vnext (bc27dda23 -\u003e efba9b9ed); the only change the main worktree received from this WP",
+    "observed":  [
+                     "11:29:08-11:29:14 every dotnet watch window of the fleet started a rebuild at the same moment (dotnet build of Gateway, Auth, Platform, MDM, HCM, CRM, DevEnablement, Inventory; Web followed) — not only the two projects whose sources changed (Web 5001, InventoryService 5066).",
+                     "11:29:50 first measurement: only 4010, 5001 (old process, still serving), 27017 listening; the eight others were rebuilding.",
+                     "11:30:28-11:31:38 every port listening again with new processes started by the users own watch windows (table below). This WP stopped / started / killed nothing; the watch hosts (dotnet-watch.dll) are the same processes as before.",
+                     "Expected one reload of 5001/5066 (README note 1); measured one simultaneous rebuild of the whole fleet, ~2.5 min, self-recovered. Same pattern as the 10:15 rebuild (e2-fleet-rebuild-1015-origin.json): a single change set in the main worktree restarts every watch window. Reported, not hidden."
+                 ],
+    "listeners":  [
+                      {
+                          "port":  4010,
+                          "pidBeforeFF":  1392,
+                          "pidAfterFF":  1392,
+                          "name":  "node.exe",
+                          "startedAfterFF":  "09:50:27",
+                          "restarted":  false,
+                          "healthGet":  null
+                      },
+                      {
+                          "port":  5000,
+                          "pidBeforeFF":  28604,
+                          "pidAfterFF":  16972,
+                          "name":  "Diten.ApiGateway.exe",
+                          "startedAfterFF":  "11:30:28",
+                          "restarted":  true,
+                          "healthGet":  200
+                      },
+                      {
+                          "port":  5001,
+                          "pidBeforeFF":  22772,
+                          "pidAfterFF":  35808,
+                          "name":  "Diten.Web.exe",
+                          "startedAfterFF":  "11:31:38",
+                          "restarted":  true,
+                          "healthGet":  404
+                      },
+                      {
+                          "port":  5056,
+                          "pidBeforeFF":  41208,
+                          "pidAfterFF":  22600,
+                          "name":  "Diten.AuthService.Api.exe",
+                          "startedAfterFF":  "11:30:51",
+                          "restarted":  true,
+                          "healthGet":  503
+                      },
+                      {
+                          "port":  5057,
+                          "pidBeforeFF":  8636,
+                          "pidAfterFF":  25400,
+                          "name":  "dotnet.exe",
+                          "startedAfterFF":  "11:31:08",
+                          "restarted":  true,
+                          "healthGet":  503
+                      },
+                      {
+                          "port":  5058,
+                          "pidBeforeFF":  26120,
+                          "pidAfterFF":  1932,
+                          "name":  "Diten.DevEnablementService.Api.exe",
+                          "startedAfterFF":  "11:30:50",
+                          "restarted":  true,
+                          "healthGet":  404
+                      },
+                      {
+                          "port":  5059,
+                          "pidBeforeFF":  28356,
+                          "pidAfterFF":  25588,
+                          "name":  "Diten.MdmService.Api.exe",
+                          "startedAfterFF":  "11:30:57",
+                          "restarted":  true,
+                          "healthGet":  200
+                      },
+                      {
+                          "port":  5060,
+                          "pidBeforeFF":  21548,
+                          "pidAfterFF":  18704,
+                          "name":  "Diten.HcmService.Api.exe",
+                          "startedAfterFF":  "11:30:51",
+                          "restarted":  true,
+                          "healthGet":  200
+                      },
+                      {
+                          "port":  5061,
+                          "pidBeforeFF":  33776,
+                          "pidAfterFF":  22184,
+                          "name":  "Diten.CrmService.Api.exe",
+                          "startedAfterFF":  "11:30:50",
+                          "restarted":  true,
+                          "healthGet":  200
+                      },
+                      {
+                          "port":  5066,
+                          "pidBeforeFF":  26152,
+                          "pidAfterFF":  26232,
+                          "name":  "Diten.InventoryService.Api.exe",
+                          "startedAfterFF":  "11:30:45",
+                          "restarted":  true,
+                          "healthGet":  200
+                      },
+                      {
+                          "port":  27017,
+                          "pidBeforeFF":  5380,
+                          "pidAfterFF":  5380,
+                          "name":  "mongod.exe",
+                          "startedAfterFF":  "11:18:43",
+                          "restarted":  false,
+                          "healthGet":  null
+                      }
+                  ],
+    "loc2ChainPorts_allStopped":  [
+                                      {
+                                          "port":  5067,
+                                          "listening":  false
+                                      },
+                                      {
+                                          "port":  5090,
+                                          "listening":  false
+                                      },
+                                      {
+                                          "port":  5091,
+                                          "listening":  false
+                                      },
+                                      {
+                                          "port":  4099,
+                                          "listening":  false
+                                      }
+                                  ],
+    "healthNotes":  [
+                        "5056 Auth / 5057 Platform /health 503: the only Unhealthy check is masstransit-bus \"Not ready: not started\" (self + mongodb Healthy) — RabbitMQ 5672 is not listening, the known machine state the WP says not to fix. No baseline /health was recorded before the WP, so this is stated, not compared.",
+                        "5001 Web and 5058 DevEnablement have no /health route (404); Web /Account/Login answered 200 after the restart."
+                    ]
+}

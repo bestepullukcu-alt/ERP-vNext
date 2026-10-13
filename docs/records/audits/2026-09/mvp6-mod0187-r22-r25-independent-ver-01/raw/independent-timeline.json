@@ -1,0 +1,1639 @@
+{
+  "events": [
+    {
+      "step": "initial-transaction-status",
+      "utc": "2026-09-22T06:15:19.686983+00:00",
+      "monotonic": 1.35700075,
+      "server": {
+        "limit": 60,
+        "transactions": {
+          "retriedCommandsCount": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "retriedStatementsCount": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "transactionsCollectionWriteCount": {
+            "low": 15,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentActive": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentInactive": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentOpen": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalAborted": {
+            "low": 153,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalCommitted": {
+            "low": 3,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalStarted": {
+            "low": 156,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPrepared": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPreparedThenCommitted": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPreparedThenAborted": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentPrepared": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "lastCommittedTransaction": {
+            "operationCount": {
+              "low": 4,
+              "high": 0,
+              "unsigned": false
+            },
+            "oplogOperationBytes": {
+              "low": 5430,
+              "high": 0,
+              "unsigned": false
+            },
+            "writeConcern": {
+              "w": "majority",
+              "wtimeout": 0,
+              "provenance": "clientSupplied"
+            }
+          }
+        }
+      }
+    },
+    {
+      "step": "api-first-started",
+      "utc": "2026-09-22T06:15:21.884255+00:00",
+      "monotonic": 3.553566958,
+      "launch": {
+        "label": "indver-251-first",
+        "mode": "ClaimsEvidence",
+        "pid": 26669,
+        "port": 51925,
+        "fixedIdConfigured": true,
+        "faultStage": null,
+        "binary": "/private/tmp/mvp6-mod0187-r22-r25-independent-ver-01-bp1jJM/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Debug/net8.0/Diten.SupplyChainService.Api.dll",
+        "log": "/private/tmp/mvp6-mod0187-r22-r25-independent-ver-01-bp1jJM/evidence/logs/api-indver-251-first.log",
+        "health": "health=200",
+        "startedAt": "2026-09-22T06:15:20Z",
+        "exitCode": 0,
+        "stoppedAt": "2026-09-22T06:15:29Z"
+      }
+    },
+    {
+      "step": "failpoint-enabled",
+      "utc": "2026-09-22T06:15:22.962472+00:00",
+      "monotonic": 4.631772208,
+      "reply": {
+        "count": 9,
+        "ok": 1,
+        "$clusterTime": {
+          "clusterTime": {
+            "$timestamp": "7688239369647292417"
+          },
+          "signature": {
+            "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+            "keyId": {
+              "low": 0,
+              "high": 0,
+              "unsigned": false
+            }
+          }
+        },
+        "operationTime": {
+          "$timestamp": "7688239369647292417"
+        }
+      }
+    },
+    {
+      "step": "first-request",
+      "utc": "2026-09-22T06:15:23.297372+00:00",
+      "monotonic": 4.966638916,
+      "response": {
+        "status": 503,
+        "correlation": "b17e6c8a-24a4-44b7-abcb-69c91679acdd",
+        "body": {
+          "error": {
+            "code": "CLAIM_STORAGE_UNAVAILABLE",
+            "message": "Claim storage is unavailable.",
+            "correlationId": "b17e6c8a-24a4-44b7-abcb-69c91679acdd"
+          },
+          "contractVersion": "v1"
+        },
+        "requestBodySha256": "08ffbdfc1dba7f419547801d84b9337a9463e3823624095f588749e5685e3edf"
+      },
+      "request": {
+        "shipmentId": "e12b2149-e821-4f61-9e8a-d3fedb26e554",
+        "reasonCode": "DAMAGED",
+        "claimedAmount": "10.00",
+        "currency": "USD",
+        "evidenceReferenceIds": []
+      }
+    },
+    {
+      "step": "db-after-first",
+      "utc": "2026-09-22T06:15:26.187448+00:00",
+      "monotonic": 7.8568125,
+      "counts": {
+        "claims": 0,
+        "receipts": 0,
+        "audit": 0,
+        "outbox": 0
+      },
+      "server": {
+        "limit": 60,
+        "transactions": {
+          "retriedCommandsCount": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "retriedStatementsCount": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "transactionsCollectionWriteCount": {
+            "low": 16,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentActive": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentInactive": {
+            "low": 1,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentOpen": {
+            "low": 1,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalAborted": {
+            "low": 158,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalCommitted": {
+            "low": 3,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalStarted": {
+            "low": 162,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPrepared": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPreparedThenCommitted": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPreparedThenAborted": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentPrepared": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "lastCommittedTransaction": {
+            "operationCount": {
+              "low": 4,
+              "high": 0,
+              "unsigned": false
+            },
+            "oplogOperationBytes": {
+              "low": 5430,
+              "high": 0,
+              "unsigned": false
+            },
+            "writeConcern": {
+              "w": "majority",
+              "wtimeout": 0,
+              "provenance": "clientSupplied"
+            }
+          }
+        }
+      }
+    },
+    {
+      "step": "failpoint-disabled",
+      "utc": "2026-09-22T06:15:27.417564+00:00",
+      "monotonic": 9.086891083,
+      "reply": {
+        "count": 12,
+        "ok": 1,
+        "$clusterTime": {
+          "clusterTime": {
+            "$timestamp": "7688239369647292417"
+          },
+          "signature": {
+            "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+            "keyId": {
+              "low": 0,
+              "high": 0,
+              "unsigned": false
+            }
+          }
+        },
+        "operationTime": {
+          "$timestamp": "7688239369647292417"
+        }
+      }
+    },
+    {
+      "step": "api-first-stopped",
+      "utc": "2026-09-22T06:15:29.126336+00:00",
+      "monotonic": 10.795658416,
+      "launch": {
+        "label": "indver-251-first",
+        "mode": "ClaimsEvidence",
+        "pid": 26669,
+        "port": 51925,
+        "fixedIdConfigured": true,
+        "faultStage": null,
+        "binary": "/private/tmp/mvp6-mod0187-r22-r25-independent-ver-01-bp1jJM/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Debug/net8.0/Diten.SupplyChainService.Api.dll",
+        "log": "/private/tmp/mvp6-mod0187-r22-r25-independent-ver-01-bp1jJM/evidence/logs/api-indver-251-first.log",
+        "health": "health=200",
+        "startedAt": "2026-09-22T06:15:20Z",
+        "exitCode": 0,
+        "stoppedAt": "2026-09-22T06:15:29Z"
+      }
+    },
+    {
+      "step": "api-restarted",
+      "utc": "2026-09-22T06:15:32.083191+00:00",
+      "monotonic": 13.752528833,
+      "launch": {
+        "label": "indver-251-restart",
+        "mode": "ClaimsEvidence",
+        "pid": 26679,
+        "port": 51925,
+        "fixedIdConfigured": true,
+        "faultStage": null,
+        "binary": "/private/tmp/mvp6-mod0187-r22-r25-independent-ver-01-bp1jJM/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Debug/net8.0/Diten.SupplyChainService.Api.dll",
+        "log": "/private/tmp/mvp6-mod0187-r22-r25-independent-ver-01-bp1jJM/evidence/logs/api-indver-251-restart.log",
+        "health": "health=200",
+        "startedAt": "2026-09-22T06:15:30Z",
+        "exitCode": 0,
+        "stoppedAt": "2026-09-22T06:15:40Z"
+      },
+      "server": {
+        "limit": 60,
+        "transactions": {
+          "retriedCommandsCount": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "retriedStatementsCount": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "transactionsCollectionWriteCount": {
+            "low": 16,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentActive": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentInactive": {
+            "low": 1,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentOpen": {
+            "low": 1,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalAborted": {
+            "low": 163,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalCommitted": {
+            "low": 3,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalStarted": {
+            "low": 167,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPrepared": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPreparedThenCommitted": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPreparedThenAborted": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentPrepared": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "lastCommittedTransaction": {
+            "operationCount": {
+              "low": 4,
+              "high": 0,
+              "unsigned": false
+            },
+            "oplogOperationBytes": {
+              "low": 5430,
+              "high": 0,
+              "unsigned": false
+            },
+            "writeConcern": {
+              "w": "majority",
+              "wtimeout": 0,
+              "provenance": "clientSupplied"
+            }
+          }
+        }
+      }
+    },
+    {
+      "step": "first-same-key-retry",
+      "utc": "2026-09-22T06:15:40.492170+00:00",
+      "monotonic": 22.161517333,
+      "response": {
+        "status": 503,
+        "correlation": "b17e6c8a-24a4-44b7-abcb-69c91679acdd",
+        "body": {
+          "error": {
+            "code": "CLAIM_STORAGE_UNAVAILABLE",
+            "message": "Claim storage is unavailable.",
+            "correlationId": "b17e6c8a-24a4-44b7-abcb-69c91679acdd"
+          },
+          "contractVersion": "v1"
+        },
+        "requestBodySha256": "08ffbdfc1dba7f419547801d84b9337a9463e3823624095f588749e5685e3edf"
+      },
+      "counts": {
+        "claims": 0,
+        "receipts": 0,
+        "audit": 0,
+        "outbox": 0
+      },
+      "server": {
+        "limit": 60,
+        "transactions": {
+          "retriedCommandsCount": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "retriedStatementsCount": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "transactionsCollectionWriteCount": {
+            "low": 16,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentActive": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentInactive": {
+            "low": 1,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentOpen": {
+            "low": 1,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalAborted": {
+            "low": 227,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalCommitted": {
+            "low": 3,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalStarted": {
+            "low": 231,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPrepared": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPreparedThenCommitted": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPreparedThenAborted": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentPrepared": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "lastCommittedTransaction": {
+            "operationCount": {
+              "low": 4,
+              "high": 0,
+              "unsigned": false
+            },
+            "oplogOperationBytes": {
+              "low": 5430,
+              "high": 0,
+              "unsigned": false
+            },
+            "writeConcern": {
+              "w": "majority",
+              "wtimeout": 0,
+              "provenance": "clientSupplied"
+            }
+          }
+        }
+      }
+    },
+    {
+      "step": "api-restart-stopped",
+      "utc": "2026-09-22T06:15:40.514684+00:00",
+      "monotonic": 22.184000708,
+      "launch": {
+        "label": "indver-251-restart",
+        "mode": "ClaimsEvidence",
+        "pid": 26679,
+        "port": 51925,
+        "fixedIdConfigured": true,
+        "faultStage": null,
+        "binary": "/private/tmp/mvp6-mod0187-r22-r25-independent-ver-01-bp1jJM/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Debug/net8.0/Diten.SupplyChainService.Api.dll",
+        "log": "/private/tmp/mvp6-mod0187-r22-r25-independent-ver-01-bp1jJM/evidence/logs/api-indver-251-restart.log",
+        "health": "health=200",
+        "startedAt": "2026-09-22T06:15:30Z",
+        "exitCode": 0,
+        "stoppedAt": "2026-09-22T06:15:40Z"
+      }
+    },
+    {
+      "step": "transaction-poll",
+      "utc": "2026-09-22T06:15:41.403653+00:00",
+      "monotonic": 23.073091625,
+      "server": {
+        "limit": 60,
+        "transactions": {
+          "retriedCommandsCount": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "retriedStatementsCount": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "transactionsCollectionWriteCount": {
+            "low": 16,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentActive": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentInactive": {
+            "low": 1,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentOpen": {
+            "low": 1,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalAborted": {
+            "low": 227,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalCommitted": {
+            "low": 3,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalStarted": {
+            "low": 231,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPrepared": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPreparedThenCommitted": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPreparedThenAborted": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentPrepared": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "lastCommittedTransaction": {
+            "operationCount": {
+              "low": 4,
+              "high": 0,
+              "unsigned": false
+            },
+            "oplogOperationBytes": {
+              "low": 5430,
+              "high": 0,
+              "unsigned": false
+            },
+            "writeConcern": {
+              "w": "majority",
+              "wtimeout": 0,
+              "provenance": "clientSupplied"
+            }
+          }
+        }
+      }
+    },
+    {
+      "step": "transaction-poll",
+      "utc": "2026-09-22T06:15:47.240605+00:00",
+      "monotonic": 28.909974875,
+      "server": {
+        "limit": 60,
+        "transactions": {
+          "retriedCommandsCount": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "retriedStatementsCount": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "transactionsCollectionWriteCount": {
+            "low": 16,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentActive": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentInactive": {
+            "low": 1,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentOpen": {
+            "low": 1,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalAborted": {
+            "low": 227,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalCommitted": {
+            "low": 3,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalStarted": {
+            "low": 231,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPrepared": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPreparedThenCommitted": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPreparedThenAborted": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentPrepared": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "lastCommittedTransaction": {
+            "operationCount": {
+              "low": 4,
+              "high": 0,
+              "unsigned": false
+            },
+            "oplogOperationBytes": {
+              "low": 5430,
+              "high": 0,
+              "unsigned": false
+            },
+            "writeConcern": {
+              "w": "majority",
+              "wtimeout": 0,
+              "provenance": "clientSupplied"
+            }
+          }
+        }
+      }
+    },
+    {
+      "step": "transaction-poll",
+      "utc": "2026-09-22T06:15:53.065463+00:00",
+      "monotonic": 34.734850458,
+      "server": {
+        "limit": 60,
+        "transactions": {
+          "retriedCommandsCount": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "retriedStatementsCount": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "transactionsCollectionWriteCount": {
+            "low": 16,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentActive": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentInactive": {
+            "low": 1,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentOpen": {
+            "low": 1,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalAborted": {
+            "low": 227,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalCommitted": {
+            "low": 3,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalStarted": {
+            "low": 231,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPrepared": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPreparedThenCommitted": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPreparedThenAborted": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentPrepared": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "lastCommittedTransaction": {
+            "operationCount": {
+              "low": 4,
+              "high": 0,
+              "unsigned": false
+            },
+            "oplogOperationBytes": {
+              "low": 5430,
+              "high": 0,
+              "unsigned": false
+            },
+            "writeConcern": {
+              "w": "majority",
+              "wtimeout": 0,
+              "provenance": "clientSupplied"
+            }
+          }
+        }
+      }
+    },
+    {
+      "step": "transaction-poll",
+      "utc": "2026-09-22T06:15:58.915618+00:00",
+      "monotonic": 40.585026041,
+      "server": {
+        "limit": 60,
+        "transactions": {
+          "retriedCommandsCount": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "retriedStatementsCount": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "transactionsCollectionWriteCount": {
+            "low": 16,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentActive": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentInactive": {
+            "low": 1,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentOpen": {
+            "low": 1,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalAborted": {
+            "low": 227,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalCommitted": {
+            "low": 3,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalStarted": {
+            "low": 231,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPrepared": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPreparedThenCommitted": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPreparedThenAborted": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentPrepared": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "lastCommittedTransaction": {
+            "operationCount": {
+              "low": 4,
+              "high": 0,
+              "unsigned": false
+            },
+            "oplogOperationBytes": {
+              "low": 5430,
+              "high": 0,
+              "unsigned": false
+            },
+            "writeConcern": {
+              "w": "majority",
+              "wtimeout": 0,
+              "provenance": "clientSupplied"
+            }
+          }
+        }
+      }
+    },
+    {
+      "step": "transaction-poll",
+      "utc": "2026-09-22T06:16:04.745920+00:00",
+      "monotonic": 46.415340875,
+      "server": {
+        "limit": 60,
+        "transactions": {
+          "retriedCommandsCount": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "retriedStatementsCount": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "transactionsCollectionWriteCount": {
+            "low": 16,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentActive": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentInactive": {
+            "low": 1,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentOpen": {
+            "low": 1,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalAborted": {
+            "low": 227,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalCommitted": {
+            "low": 3,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalStarted": {
+            "low": 231,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPrepared": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPreparedThenCommitted": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPreparedThenAborted": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentPrepared": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "lastCommittedTransaction": {
+            "operationCount": {
+              "low": 4,
+              "high": 0,
+              "unsigned": false
+            },
+            "oplogOperationBytes": {
+              "low": 5430,
+              "high": 0,
+              "unsigned": false
+            },
+            "writeConcern": {
+              "w": "majority",
+              "wtimeout": 0,
+              "provenance": "clientSupplied"
+            }
+          }
+        }
+      }
+    },
+    {
+      "step": "transaction-poll",
+      "utc": "2026-09-22T06:16:11.261652+00:00",
+      "monotonic": 52.931117916,
+      "server": {
+        "limit": 60,
+        "transactions": {
+          "retriedCommandsCount": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "retriedStatementsCount": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "transactionsCollectionWriteCount": {
+            "low": 16,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentActive": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentInactive": {
+            "low": 1,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentOpen": {
+            "low": 1,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalAborted": {
+            "low": 227,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalCommitted": {
+            "low": 3,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalStarted": {
+            "low": 231,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPrepared": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPreparedThenCommitted": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPreparedThenAborted": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentPrepared": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "lastCommittedTransaction": {
+            "operationCount": {
+              "low": 4,
+              "high": 0,
+              "unsigned": false
+            },
+            "oplogOperationBytes": {
+              "low": 5430,
+              "high": 0,
+              "unsigned": false
+            },
+            "writeConcern": {
+              "w": "majority",
+              "wtimeout": 0,
+              "provenance": "clientSupplied"
+            }
+          }
+        }
+      }
+    },
+    {
+      "step": "transaction-poll",
+      "utc": "2026-09-22T06:16:17.936409+00:00",
+      "monotonic": 59.605965291,
+      "server": {
+        "limit": 60,
+        "transactions": {
+          "retriedCommandsCount": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "retriedStatementsCount": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "transactionsCollectionWriteCount": {
+            "low": 16,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentActive": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentInactive": {
+            "low": 1,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentOpen": {
+            "low": 1,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalAborted": {
+            "low": 227,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalCommitted": {
+            "low": 3,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalStarted": {
+            "low": 231,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPrepared": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPreparedThenCommitted": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPreparedThenAborted": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentPrepared": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "lastCommittedTransaction": {
+            "operationCount": {
+              "low": 4,
+              "high": 0,
+              "unsigned": false
+            },
+            "oplogOperationBytes": {
+              "low": 5430,
+              "high": 0,
+              "unsigned": false
+            },
+            "writeConcern": {
+              "w": "majority",
+              "wtimeout": 0,
+              "provenance": "clientSupplied"
+            }
+          }
+        }
+      }
+    },
+    {
+      "step": "transaction-poll",
+      "utc": "2026-09-22T06:16:23.800866+00:00",
+      "monotonic": 65.470362208,
+      "server": {
+        "limit": 60,
+        "transactions": {
+          "retriedCommandsCount": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "retriedStatementsCount": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "transactionsCollectionWriteCount": {
+            "low": 16,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentActive": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentInactive": {
+            "low": 1,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentOpen": {
+            "low": 1,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalAborted": {
+            "low": 227,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalCommitted": {
+            "low": 3,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalStarted": {
+            "low": 231,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPrepared": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPreparedThenCommitted": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPreparedThenAborted": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentPrepared": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "lastCommittedTransaction": {
+            "operationCount": {
+              "low": 4,
+              "high": 0,
+              "unsigned": false
+            },
+            "oplogOperationBytes": {
+              "low": 5430,
+              "high": 0,
+              "unsigned": false
+            },
+            "writeConcern": {
+              "w": "majority",
+              "wtimeout": 0,
+              "provenance": "clientSupplied"
+            }
+          }
+        }
+      }
+    },
+    {
+      "step": "transaction-poll",
+      "utc": "2026-09-22T06:16:29.679210+00:00",
+      "monotonic": 71.348740541,
+      "server": {
+        "limit": 60,
+        "transactions": {
+          "retriedCommandsCount": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "retriedStatementsCount": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "transactionsCollectionWriteCount": {
+            "low": 16,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentActive": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentInactive": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentOpen": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalAborted": {
+            "low": 228,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalCommitted": {
+            "low": 3,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalStarted": {
+            "low": 231,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPrepared": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPreparedThenCommitted": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPreparedThenAborted": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentPrepared": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "lastCommittedTransaction": {
+            "operationCount": {
+              "low": 4,
+              "high": 0,
+              "unsigned": false
+            },
+            "oplogOperationBytes": {
+              "low": 5430,
+              "high": 0,
+              "unsigned": false
+            },
+            "writeConcern": {
+              "w": "majority",
+              "wtimeout": 0,
+              "provenance": "clientSupplied"
+            }
+          }
+        }
+      }
+    },
+    {
+      "step": "same-key-after-transaction-end",
+      "utc": "2026-09-22T06:16:33.604970+00:00",
+      "monotonic": 75.274520041,
+      "response": {
+        "status": 201,
+        "correlation": "b17e6c8a-24a4-44b7-abcb-69c91679acdd",
+        "body": {
+          "claimId": "30303030-3030-4030-8030-303030303030",
+          "claimNumber": "CLM-30303030303040308030303030303030",
+          "shipmentId": "e12b2149-e821-4f61-9e8a-d3fedb26e554",
+          "status": "Open",
+          "approvedAmount": null,
+          "idempotentReplay": false,
+          "contractVersion": "v1"
+        },
+        "requestBodySha256": "08ffbdfc1dba7f419547801d84b9337a9463e3823624095f588749e5685e3edf"
+      },
+      "counts": {
+        "claims": 1,
+        "receipts": 1,
+        "audit": 1,
+        "outbox": 1
+      },
+      "documents": {
+        "claims": [
+          {
+            "_id": "30303030-3030-4030-8030-303030303030",
+            "TenantId": "84c665ec-0cbc-4e6a-8154-390b8f3406ed",
+            "IsDeleted": false,
+            "DeletedAt": null,
+            "CreatedAt": "2026-09-22T06:16:30.635203+00:00",
+            "UpdatedAt": null,
+            "Version": 1,
+            "LegalEntityId": "81d2750a-9ee4-4a1e-bebf-79f40178291c",
+            "CreatedBy": "76e85abe-15f9-4244-b579-45a18cf08973",
+            "UpdatedBy": null,
+            "ClaimNumber": "CLM-30303030303040308030303030303030",
+            "ShipmentId": "e12b2149-e821-4f61-9e8a-d3fedb26e554",
+            "CarrierId": null,
+            "ReasonCode": "DAMAGED",
+            "ClaimedAmount": "10.00",
+            "Currency": "USD",
+            "ApprovedAmount": null,
+            "EvidenceReferenceIds": [],
+            "Status": "Open",
+            "CorrelationRoot": "b17e6c8a-24a4-44b7-abcb-69c91679acdd",
+            "LastEventId": "99dbc5cb-d72f-4b5c-90d1-b439f639dab0",
+            "ReferenceSnapshot": {
+              "ShipmentId": "e12b2149-e821-4f61-9e8a-d3fedb26e554",
+              "ShipmentStatus": "Delivered",
+              "ShipmentCarrierId": null,
+              "CarrierStatus": null,
+              "Root": "b17e6c8a-24a4-44b7-abcb-69c91679acdd",
+              "ObservedAt": "2026-09-22T06:16:30.759115+00:00"
+            }
+          }
+        ],
+        "receipts": [
+          {
+            "_id": "ad6a86fa-04df-4180-a85d-ef9a60781b35",
+            "TenantId": "84c665ec-0cbc-4e6a-8154-390b8f3406ed",
+            "LegalEntityId": "81d2750a-9ee4-4a1e-bebf-79f40178291c",
+            "Operation": "createClaim",
+            "TargetId": "create",
+            "IdempotencyKey": "indver-r25-251-unknown",
+            "Fingerprint": "0cf33e3a77bf2a980b0b2f1282b09dcf6d157c2f02ad2e21c684a381d93e3a0e",
+            "CorrelationRoot": "b17e6c8a-24a4-44b7-abcb-69c91679acdd",
+            "ClaimId": "30303030-3030-4030-8030-303030303030",
+            "ClaimNumber": "CLM-30303030303040308030303030303030",
+            "ShipmentId": "e12b2149-e821-4f61-9e8a-d3fedb26e554",
+            "ResultingStatus": "Open",
+            "ApprovedAmount": null,
+            "ActorId": "76e85abe-15f9-4244-b579-45a18cf08973",
+            "StatusCode": 201
+          }
+        ],
+        "audit": [
+          {
+            "_id": "1df89bb0-b1e2-45ae-957c-b147b1b3099d",
+            "TenantId": "84c665ec-0cbc-4e6a-8154-390b8f3406ed",
+            "LegalEntityId": "81d2750a-9ee4-4a1e-bebf-79f40178291c",
+            "ClaimId": "30303030-3030-4030-8030-303030303030",
+            "ActorId": "76e85abe-15f9-4244-b579-45a18cf08973",
+            "Version": 1,
+            "Before": null,
+            "After": {
+              "_id": "30303030-3030-4030-8030-303030303030",
+              "TenantId": "84c665ec-0cbc-4e6a-8154-390b8f3406ed",
+              "IsDeleted": false,
+              "DeletedAt": null,
+              "CreatedAt": "2026-09-22T06:16:30.635203+00:00",
+              "UpdatedAt": null,
+              "Version": 1,
+              "LegalEntityId": "81d2750a-9ee4-4a1e-bebf-79f40178291c",
+              "CreatedBy": "76e85abe-15f9-4244-b579-45a18cf08973",
+              "UpdatedBy": null,
+              "ClaimNumber": "CLM-30303030303040308030303030303030",
+              "ShipmentId": "e12b2149-e821-4f61-9e8a-d3fedb26e554",
+              "CarrierId": null,
+              "ReasonCode": "DAMAGED",
+              "ClaimedAmount": "10.00",
+              "Currency": "USD",
+              "ApprovedAmount": null,
+              "EvidenceReferenceIds": [],
+              "Status": "Open",
+              "CorrelationRoot": "b17e6c8a-24a4-44b7-abcb-69c91679acdd",
+              "LastEventId": "99dbc5cb-d72f-4b5c-90d1-b439f639dab0",
+              "ReferenceSnapshot": {
+                "ShipmentId": "e12b2149-e821-4f61-9e8a-d3fedb26e554",
+                "ShipmentStatus": "Delivered",
+                "ShipmentCarrierId": null,
+                "CarrierStatus": null,
+                "Root": "b17e6c8a-24a4-44b7-abcb-69c91679acdd",
+                "ObservedAt": "2026-09-22T06:16:30.759115+00:00"
+              }
+            },
+            "CorrelationRoot": "b17e6c8a-24a4-44b7-abcb-69c91679acdd",
+            "OccurredAt": "2026-09-22T06:16:30.6352030+00:00",
+            "ReceivedAt": "2026-09-22T06:16:30.6352030+00:00",
+            "CommittedAt": "2026-09-22T06:16:30.8063620+00:00",
+            "ResolutionCode": null,
+            "Note": null
+          }
+        ],
+        "outbox": [
+          {
+            "_id": "05b2892f-f124-4895-bf9a-3e92221d8215",
+            "TenantId": "84c665ec-0cbc-4e6a-8154-390b8f3406ed",
+            "LegalEntityId": "81d2750a-9ee4-4a1e-bebf-79f40178291c",
+            "ClaimId": "30303030-3030-4030-8030-303030303030",
+            "EventId": "99dbc5cb-d72f-4b5c-90d1-b439f639dab0",
+            "Status": "Pending",
+            "Envelope": {
+              "eventId": "99dbc5cb-d72f-4b5c-90d1-b439f639dab0",
+              "eventType": "ClaimOpened",
+              "occurredAt": "2026-09-22T06:16:30.6352030+00:00",
+              "correlationId": "b17e6c8a-24a4-44b7-abcb-69c91679acdd",
+              "causationId": null,
+              "aggregateType": "Claim",
+              "aggregateId": "30303030-3030-4030-8030-303030303030",
+              "payload": {
+                "claimId": "30303030-3030-4030-8030-303030303030",
+                "claimNumber": "CLM-30303030303040308030303030303030",
+                "shipmentId": "e12b2149-e821-4f61-9e8a-d3fedb26e554",
+                "status": "Open",
+                "approvedAmount": null
+              },
+              "contractVersion": "v1"
+            }
+          }
+        ]
+      },
+      "server": {
+        "limit": 60,
+        "transactions": {
+          "retriedCommandsCount": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "retriedStatementsCount": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "transactionsCollectionWriteCount": {
+            "low": 17,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentActive": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentInactive": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentOpen": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalAborted": {
+            "low": 233,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalCommitted": {
+            "low": 4,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalStarted": {
+            "low": 237,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPrepared": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPreparedThenCommitted": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "totalPreparedThenAborted": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "currentPrepared": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "lastCommittedTransaction": {
+            "operationCount": {
+              "low": 4,
+              "high": 0,
+              "unsigned": false
+            },
+            "oplogOperationBytes": {
+              "low": 5425,
+              "high": 0,
+              "unsigned": false
+            },
+            "writeConcern": {
+              "w": "majority",
+              "wtimeout": 0,
+              "provenance": "clientSupplied"
+            }
+          }
+        }
+      }
+    },
+    {
+      "step": "api-third-stopped",
+      "utc": "2026-09-22T06:16:33.628474+00:00",
+      "monotonic": 75.297968791,
+      "launch": {
+        "label": "indver-251-after-lifetime",
+        "mode": "ClaimsEvidence",
+        "pid": 26924,
+        "port": 51925,
+        "fixedIdConfigured": true,
+        "faultStage": null,
+        "binary": "/private/tmp/mvp6-mod0187-r22-r25-independent-ver-01-bp1jJM/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Debug/net8.0/Diten.SupplyChainService.Api.dll",
+        "log": "/private/tmp/mvp6-mod0187-r22-r25-independent-ver-01-bp1jJM/evidence/logs/api-indver-251-after-lifetime.log",
+        "health": "health=200",
+        "startedAt": "2026-09-22T06:16:30Z",
+        "exitCode": 0,
+        "stoppedAt": "2026-09-22T06:16:33Z"
+      }
+    }
+  ],
+  "scope": {
+    "tenant": "84c665ec-0cbc-4e6a-8154-390b8f3406ed",
+    "legalEntity": "81d2750a-9ee4-4a1e-bebf-79f40178291c",
+    "shipment": "e12b2149-e821-4f61-9e8a-d3fedb26e554",
+    "root": "b17e6c8a-24a4-44b7-abcb-69c91679acdd",
+    "key": "indver-r25-251-unknown",
+    "fixedId": "30303030-3030-4030-8030-303030303030"
+  }
+}

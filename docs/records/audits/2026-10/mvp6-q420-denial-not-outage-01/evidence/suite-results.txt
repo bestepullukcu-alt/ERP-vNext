@@ -1,0 +1,12 @@
+before Returns: Passed!  - Failed:     0, Passed:    78, Skipped:     0, Total:    78, Duration: 1 m 28 s
+before Claims: Failed!  - Failed:     1, Passed:   128, Skipped:     0, Total:   129, Duration: 1 s
+      Failed Diten.SupplyChainService.Tests.Claims.ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery [1 ms]
+after Shipments: Passed!  - Failed:     0, Passed:    90, Skipped:     0, Total:    90, Duration: 8 s
+after Carriers: Passed!  - Failed:     0, Passed:    36, Skipped:     0, Total:    36, Duration: 6 s
+after Loads: Passed!  - Failed:     0, Passed:    33, Skipped:     0, Total:    33, Duration: 59 s
+after Returns: Failed!  - Failed:     1, Passed:    77, Skipped:     0, Total:    78, Duration: 1 m 32 s
+      Failed Diten.SupplyChainService.Tests.Returns.ReturnReferenceTests.OtherProducerFailures_RemainDependencyUnavailable(status: 403, body: "{\"error\":{\"code\":\"SHIPMENT_ROOT_INVALID\"},\""···
+after Claims: Failed!  - Failed:     1, Passed:   128, Skipped:     0, Total:   129, Duration: 3 s
+      Failed Diten.SupplyChainService.Tests.Claims.ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery [3 ms]
+after SandopPlans: Passed!  - Failed:     0, Passed:    19, Skipped:     0, Total:    19, Duration: 19 s
+after CapacityPlans: Passed!  - Failed:     0, Passed:    48, Skipped:     0, Total:    48, Duration: 2 m 16 s

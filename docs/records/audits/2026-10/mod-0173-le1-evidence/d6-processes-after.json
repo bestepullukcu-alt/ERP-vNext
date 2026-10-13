@@ -1,0 +1,65 @@
+﻿{
+    "started":  [
+                    {
+                        "name":  "prism-product-master",
+                        "pid":  33716,
+                        "started":  "2026-10-01T14:52:57.7305843+03:00"
+                    },
+                    {
+                        "name":  "prism-location",
+                        "pid":  40768,
+                        "started":  "2026-10-01T14:52:57.7786258+03:00"
+                    },
+                    {
+                        "name":  "inventory-service",
+                        "pid":  37376,
+                        "started":  "2026-10-01T14:52:57.8256659+03:00"
+                    },
+                    {
+                        "name":  "diten-web",
+                        "pid":  32940,
+                        "started":  "2026-10-01T14:52:57.8602199+03:00"
+                    },
+                    {
+                        "name":  "inventory-service (LE master unreachable, L5)",
+                        "pid":  37712
+                    }
+                ],
+    "note":  "run 1 (Prism without the header-size flag) was stopped the same way before run 2; the run-2 inventory-service was replaced by the L5 instance",
+    "startedPidsStillAlive":  [
+
+                              ],
+    "listenersLeftOnOwnPorts":  [
+
+                                ],
+    "leftoverStartedProcesses":  [
+
+                                 ],
+    "userServicesUntouched":  [
+                                  {
+                                      "port":  5000,
+                                      "listening":  true,
+                                      "pid":  29116
+                                  },
+                                  {
+                                      "port":  5001,
+                                      "listening":  false,
+                                      "pid":  null
+                                  },
+                                  {
+                                      "port":  5056,
+                                      "listening":  true,
+                                      "pid":  26108
+                                  },
+                                  {
+                                      "port":  5057,
+                                      "listening":  true,
+                                      "pid":  28696
+                                  },
+                                  {
+                                      "port":  5059,
+                                      "listening":  true,
+                                      "pid":  36224
+                                  }
+                              ]
+}

@@ -1,0 +1,37 @@
+@model string
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.ESignature.ESignature> Localizer
+@*
+    MOD-0022 E5W1 — the drawing area (pack §11.2, mockup v2 "padSign" / "padMine", v2.app.js:136-175). MODEL: the element id.
+    esign-pad.js attaches to [data-esign-pad]: Pointer Events (mouse, pen, touch in one path), strokes normalized 0..1, redrawn
+    on resize, PNG on demand. The baseline, the "× name" mark and the hint are the mockup's; the name is the signer's own
+    (set by the script from the server's answer, never typed by the host). The styles are emitted once per page.
+*@
+@if (Context.Items["ESignPadStyles"] is not true)
+{
+    Context.Items["ESignPadStyles"] = true;
+    <style>
+        .esign-pad-surface { position: relative; height: 150px; border: 1px solid var(--bs-border-color, #d9dee3); border-radius: .375rem; background: #fff; touch-action: none; overflow: hidden; }
+        .esign-pad-surface.is-invalid { border-color: var(--bs-danger, #ff3e1d); }
+        .esign-pad-surface canvas { position: absolute; inset: 0; width: 100%; height: 100%; cursor: crosshair; touch-action: none; }
+        .esign-pad-line { position: absolute; inset-inline: 24px; bottom: 34px; border-bottom: 1px dashed #c3c7cc; pointer-events: none; }
+        .esign-pad-name { position: absolute; inset-inline-start: 24px; bottom: 12px; font-size: 12px; color: #a7acb2; pointer-events: none; }
+        .esign-pad-hint { position: absolute; inset: 0; display: grid; place-content: center; font-size: 13px; color: #a7acb2; pointer-events: none; }
+        .esign-pad-fullscreen { position: fixed; inset: 0; z-index: 1100; background: #fff; display: flex; flex-direction: column; }
+        .esign-pad-fullscreen .esign-pad { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 0 16px 16px; }
+        .esign-pad-fullscreen .esign-pad-surface { flex: 1; min-height: 0; height: auto; }
+        @@media (max-width: 575.98px) { .esign-pad-surface { height: 130px; } }
+    </style>
+}
+<div class="esign-pad" id="@Model" data-esign-pad>
+    <div class="esign-pad-surface" data-esign-pad-surface>
+        <span class="esign-pad-line" aria-hidden="true"></span>
+        <span class="esign-pad-name" data-esign-pad-name aria-hidden="true"></span>
+        <span class="esign-pad-hint" data-esign-pad-hint>@Localizer["ESign.Pad.Hint"]</span>
+        <canvas data-esign-pad-canvas role="img" aria-label="@Localizer["ESign.Pad.Area"]"></canvas>
+    </div>
+    <div class="d-flex flex-wrap align-items-center gap-2 mt-2" data-esign-pad-tools>
+        <button type="button" class="btn btn-sm btn-label-secondary" data-esign-pad-undo disabled><i class="bx bx-undo me-1"></i>@Localizer["ESign.Pad.Undo"]</button>
+        <button type="button" class="btn btn-sm btn-label-secondary" data-esign-pad-clear disabled><i class="bx bx-eraser me-1"></i>@Localizer["ESign.Pad.Clear"]</button>
+    </div>
+</div>

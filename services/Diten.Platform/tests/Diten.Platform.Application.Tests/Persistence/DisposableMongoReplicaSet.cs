@@ -82,7 +82,13 @@ public sealed class DisposableMongoReplicaSet : IAsyncDisposable
         startInfo.ArgumentList.Add("127.0.0.1");
         startInfo.ArgumentList.Add("--replSet");
         startInfo.ArgumentList.Add("rs0");
-        startInfo.ArgumentList.Add("--nounixsocket");
+        // Unix-domain sockets do not exist in mongod's Windows build: the option is rejected there (exit code 2,
+        // BadValue) and the harness never starts — measured 2026-10-08 (MOD-0022 E2). It is only passed off Windows.
+        if (!OperatingSystem.IsWindows())
+        {
+            startInfo.ArgumentList.Add("--nounixsocket");
+        }
+
         startInfo.ArgumentList.Add("--logpath");
         startInfo.ArgumentList.Add(Path.Combine(root, "mongod.log"));
 

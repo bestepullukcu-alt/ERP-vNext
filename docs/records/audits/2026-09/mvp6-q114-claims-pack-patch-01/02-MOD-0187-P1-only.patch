@@ -1,0 +1,12 @@
+--- a/execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md
++++ b/execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md
+@@ -559,7 +559,8 @@
+ 
+ ### 32.2 Layout and shell contract
+ 
+-- `shell: tenant` → every Claims `.cshtml` states `Layout = "_LayoutTenantShell";` explicitly; `_ViewStart.cshtml` unchanged.
++- `shell: tenant` → the Claims page view (`Index.cshtml`) states `Layout = "_LayoutTenantShell";` explicitly; partial views (`_*.cshtml`)
++  set no `Layout`, because an explicit Layout on a partial renders a second shell (Q64b D-02); `_ViewStart.cshtml` unchanged.
+ - View folder `frontend/Diten.Web/Views/SupplyChain/Claims/`; route `/SupplyChain/Claims`; no `/Platform` prefix; no `Areas/`.
+ - Skeleton, empty and error are three distinct states (VIEW-001 §3.1); no spinner or "Loading" text.
+ 

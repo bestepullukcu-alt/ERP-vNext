@@ -1,0 +1,348 @@
+{
+  "schemaVersion": 1,
+  "status": "APPROVED",
+  "decision": {
+    "path": "docs/records/decisions/2026-09/mvp6-capacity-guard-single-disposition-owner-decision-01.json",
+    "sha256": "877c3878d9b38446fc437a384d5e61630ccbec601dc5dd025a536ea21aa20ae2"
+  },
+  "canonicalTargets": [
+    {
+      "path": "docs/analysis/contracts/shipment-bundle.openapi.yaml",
+      "sha256": "5dfe7c1bba32551bd8d4b532243878684e69a6d9560e667a4183bfd516b9d21c"
+    },
+    {
+      "path": "docs/analysis/contracts/carrier-semantics-v1.1.0.md",
+      "sha256": "87557ef9f5b5a4427862effbece2bb528ebc1b95361c29416373709223021fee"
+    }
+  ],
+  "sealedInputs": [
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/independent-results.json",
+      "sha256": "bd3964bc7a6e715b02e68ce88a579c1f9753afed47328b49edc6664e90055bb0",
+      "kind": "historical-data",
+      "provenancePath": "docs/records/audits/2026-09/mod-0184-dev-01/architecture-baseline-proof.md",
+      "provenanceSha256": "261b3d6e8b1aeb3a23befe86ebb78e4150e83984ad59950021b70675c1855e0b",
+      "provenanceLine": 7,
+      "targets": []
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/no-change.json",
+      "sha256": "b1ca8c4ad2d7f236a282fd7cf4dfe90c7ed7c69f1c5712def6b315c442f47b10",
+      "kind": "historical-data",
+      "provenancePath": "docs/records/audits/2026-09/mod-0184-dev-01/architecture-baseline-proof.md",
+      "provenanceSha256": "261b3d6e8b1aeb3a23befe86ebb78e4150e83984ad59950021b70675c1855e0b",
+      "provenanceLine": 25,
+      "targets": []
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/VERIFIER-MANIFEST.json",
+      "sha256": "872068cc58f793fb19a3e2955e1fd2612c3727c90469ae04daabe513ffcfe1c1",
+      "kind": "historical-data",
+      "provenancePath": "docs/records/audits/2026-09/mod-0184-dev-01/architecture-baseline-proof.md",
+      "provenanceSha256": "261b3d6e8b1aeb3a23befe86ebb78e4150e83984ad59950021b70675c1855e0b",
+      "provenanceLine": 28,
+      "targets": []
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-published-uptake/check_uptake.py",
+      "sha256": "fae8cf70d5a4b2e0e8113bd0b1721b2cc601605bc890b0d9e8bd1147b184b971",
+      "kind": "active-tool",
+      "provenancePath": "docs/records/audits/2026-09/mod-0184-dev-01/architecture-baseline-proof.md",
+      "provenanceSha256": "261b3d6e8b1aeb3a23befe86ebb78e4150e83984ad59950021b70675c1855e0b",
+      "provenanceLine": 44,
+      "targets": [
+        "docs/analysis/contracts/shipment-bundle.openapi.yaml",
+        "docs/analysis/contracts/carrier-semantics-v1.1.0.md"
+      ]
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-published-uptake/results.json",
+      "sha256": "00d17972bdb152e7bcd8917da5d1fcfd88b0d43a22580baf6abeb0ba5e316359",
+      "kind": "historical-data",
+      "provenancePath": "docs/records/audits/2026-09/mod-0184-dev-01/architecture-baseline-proof.md",
+      "provenanceSha256": "261b3d6e8b1aeb3a23befe86ebb78e4150e83984ad59950021b70675c1855e0b",
+      "provenanceLine": 49,
+      "targets": []
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/proposed-publication-hashes.json",
+      "sha256": "c886e515f36485522aea2622ba697470bfc39095873cea68038c2f946c3a6616",
+      "kind": "historical-data",
+      "provenancePath": "docs/records/audits/2026-09/mod-0184-dev-01/architecture-baseline-proof.md",
+      "provenanceSha256": "261b3d6e8b1aeb3a23befe86ebb78e4150e83984ad59950021b70675c1855e0b",
+      "provenanceLine": 53,
+      "targets": []
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/check_consumer.py",
+      "sha256": "48f17177bf5116bcfc84880113c4cfb9e89ea64df6136cd4ebf569e50886bb70",
+      "kind": "active-tool",
+      "provenancePath": "docs/records/audits/2026-09/mod-0184-dev-01/architecture-baseline-proof.md",
+      "provenanceSha256": "261b3d6e8b1aeb3a23befe86ebb78e4150e83984ad59950021b70675c1855e0b",
+      "provenanceLine": 55,
+      "targets": [
+        "docs/analysis/contracts/shipment-bundle.openapi.yaml"
+      ]
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/validate.py",
+      "sha256": "145a80e228a5a67dcb3de9696384e30a53e393702efb794c2419bffc181b2439",
+      "kind": "active-tool",
+      "provenancePath": "docs/records/audits/2026-09/mod-0184-dev-01/architecture-baseline-proof.md",
+      "provenanceSha256": "261b3d6e8b1aeb3a23befe86ebb78e4150e83984ad59950021b70675c1855e0b",
+      "provenanceLine": 56,
+      "targets": [
+        "docs/analysis/contracts/shipment-bundle.openapi.yaml"
+      ]
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/proposed-publication-hashes.json",
+      "sha256": "62db411da5bfd1587a72b853ab03d89b9f85cdf5bfdce9f16960bc840b312e7c",
+      "kind": "historical-data",
+      "provenancePath": "docs/records/audits/2026-09/mod-0184-dev-01/architecture-baseline-proof.md",
+      "provenanceSha256": "261b3d6e8b1aeb3a23befe86ebb78e4150e83984ad59950021b70675c1855e0b",
+      "provenanceLine": 59,
+      "targets": []
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/validate.py",
+      "sha256": "145a80e228a5a67dcb3de9696384e30a53e393702efb794c2419bffc181b2439",
+      "kind": "active-tool",
+      "provenancePath": "docs/records/audits/2026-09/mod-0184-dev-01/architecture-baseline-proof.md",
+      "provenanceSha256": "261b3d6e8b1aeb3a23befe86ebb78e4150e83984ad59950021b70675c1855e0b",
+      "provenanceLine": 61,
+      "targets": [
+        "docs/analysis/contracts/shipment-bundle.openapi.yaml"
+      ]
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-consumer-technical-evidence/dependents/results.json",
+      "sha256": "08266336bb1828649f3b07ccd90835518457728bfc2b27395c6291f8aea396be",
+      "kind": "historical-data",
+      "provenancePath": "docs/records/audits/2026-09/mod-0184-dev-01/architecture-baseline-proof.md",
+      "provenanceSha256": "261b3d6e8b1aeb3a23befe86ebb78e4150e83984ad59950021b70675c1855e0b",
+      "provenanceLine": 64,
+      "targets": []
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-consumer-technical-evidence/dependents/verify.py",
+      "sha256": "f0e7846f54a4ad64035600bfb1da8cf757f54dde4698be763c0d2797bc7deb82",
+      "kind": "active-tool",
+      "provenancePath": "docs/records/audits/2026-09/mod-0184-dev-01/architecture-baseline-proof.md",
+      "provenanceSha256": "261b3d6e8b1aeb3a23befe86ebb78e4150e83984ad59950021b70675c1855e0b",
+      "provenanceLine": 66,
+      "targets": [
+        "docs/analysis/contracts/shipment-bundle.openapi.yaml"
+      ]
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-consumer-technical-evidence/carrier/results.json",
+      "sha256": "2c0453649a247e7fbc11afe9df4e669fc9a75938ef5e5dab8816609b67dd3560",
+      "kind": "historical-data",
+      "provenancePath": "docs/records/audits/2026-09/mod-0184-dev-01/architecture-baseline-proof.md",
+      "provenanceSha256": "261b3d6e8b1aeb3a23befe86ebb78e4150e83984ad59950021b70675c1855e0b",
+      "provenanceLine": 67,
+      "targets": []
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-consumer-technical-evidence/carrier/check_consumer.py",
+      "sha256": "7eec131cf04d54b8d10b77a845e921cfdd362142de62fec69fe103ff25431bf4",
+      "kind": "active-tool",
+      "provenancePath": "docs/records/audits/2026-09/mod-0184-dev-01/architecture-baseline-proof.md",
+      "provenanceSha256": "261b3d6e8b1aeb3a23befe86ebb78e4150e83984ad59950021b70675c1855e0b",
+      "provenanceLine": 68,
+      "targets": [
+        "docs/analysis/contracts/shipment-bundle.openapi.yaml"
+      ]
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-consumer-technical-evidence/mod0183/results.json",
+      "sha256": "bb86c17af70d8a155d16c5d163efe529436c0aea176771f94c88889c307c8f90",
+      "kind": "historical-data",
+      "provenancePath": "docs/records/audits/2026-09/mod-0184-dev-01/architecture-baseline-proof.md",
+      "provenanceSha256": "261b3d6e8b1aeb3a23befe86ebb78e4150e83984ad59950021b70675c1855e0b",
+      "provenanceLine": 69,
+      "targets": []
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/before/results.json",
+      "sha256": "2c0453649a247e7fbc11afe9df4e669fc9a75938ef5e5dab8816609b67dd3560",
+      "kind": "historical-data",
+      "provenancePath": "docs/records/audits/2026-09/mod-0184-dev-01/architecture-baseline-proof.md",
+      "provenanceSha256": "261b3d6e8b1aeb3a23befe86ebb78e4150e83984ad59950021b70675c1855e0b",
+      "provenanceLine": 71,
+      "targets": []
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/after/results.json",
+      "sha256": "7741fa239556ab0d0447ae38ab8516e9c35068b99382c6c90471c44a1081c2f8",
+      "kind": "historical-data",
+      "provenancePath": "docs/records/audits/2026-09/mod-0184-dev-01/architecture-baseline-proof.md",
+      "provenanceSha256": "261b3d6e8b1aeb3a23befe86ebb78e4150e83984ad59950021b70675c1855e0b",
+      "provenanceLine": 72,
+      "targets": []
+    },
+    {
+      "path": "docs/roadmap/plans/mod-0183-root-uptake-recovery-01/input-manifest.json",
+      "sha256": "a70f79d7892d83ddbe772653a06cb009ebfe7e2b72549d11dd956f72ab9f83fe",
+      "kind": "historical-data",
+      "provenancePath": "docs/records/audits/2026-09/mvp6-guard-complete-disposition-01/provenance.md",
+      "provenanceSha256": "ca2e631a892699711faf48853f3855daabfcc91ac6c64ed9c020e6e7963b7ac2",
+      "provenanceLine": 3,
+      "targets": []
+    },
+    {
+      "path": "docs/roadmap/plans/mod-0183-root-uptake-recovery-01/baseline.json",
+      "sha256": "74e31359aaeb662645d224d9602cb801f8f81a433cc75cf09840d852fd2e878e",
+      "kind": "historical-data",
+      "provenancePath": "docs/records/audits/2026-09/mvp6-guard-complete-disposition-01/provenance.md",
+      "provenanceSha256": "ca2e631a892699711faf48853f3855daabfcc91ac6c64ed9c020e6e7963b7ac2",
+      "provenanceLine": 4,
+      "targets": []
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0185-dev-02/changed-files.json",
+      "sha256": "f9eb90fa8fdf341f92540cbb12acb0f281be504be98ce612f93530d9efd4ddf0",
+      "kind": "historical-data",
+      "provenancePath": "docs/records/audits/2026-09/mvp6-guard-complete-disposition-01/provenance.md",
+      "provenanceSha256": "ca2e631a892699711faf48853f3855daabfcc91ac6c64ed9c020e6e7963b7ac2",
+      "provenanceLine": 5,
+      "targets": []
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0185-dev-03/changed-files.json",
+      "sha256": "f3343d7f963841988e55a4a20a51524fc8dcc2c87a2d6f046f1cf5968ba8316a",
+      "kind": "historical-data",
+      "provenancePath": "docs/records/audits/2026-09/mvp6-guard-complete-disposition-01/provenance.md",
+      "provenanceSha256": "ca2e631a892699711faf48853f3855daabfcc91ac6c64ed9c020e6e7963b7ac2",
+      "provenanceLine": 6,
+      "targets": []
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0186-prep-02/input-hashes.json",
+      "sha256": "9557f3499533dbcb9477e1f16d5f455e495702e7ace10e13d2bee8299bbe68bb",
+      "kind": "historical-data",
+      "provenancePath": "docs/records/audits/2026-09/mvp6-guard-complete-disposition-01/provenance.md",
+      "provenanceSha256": "ca2e631a892699711faf48853f3855daabfcc91ac6c64ed9c020e6e7963b7ac2",
+      "provenanceLine": 7,
+      "targets": []
+    },
+    {
+      "path": "docs/records/audits/2026-09/mvp6-sandop-capacity-final-release-pack-01/verification-results.json",
+      "sha256": "d75570c08b61266fb7935de0215b1fae44415c41aa5b3fd2e65c154c96663bdc",
+      "kind": "historical-data",
+      "provenancePath": "docs/records/audits/2026-09/mvp6-sandop-publication-guard-disposition-01/PROVENANCE.md",
+      "provenanceSha256": "dc7aa123eef262014ded3bc90c325b92df71aaaf7ed668cfa732a903fe8f9f57",
+      "provenanceLine": 3,
+      "targets": []
+    },
+    {
+      "path": "docs/records/audits/2026-09/mvp6-sandop-capacity-final-release-pack-01/build_final.py",
+      "sha256": "0aa65ec9b1174a1b5862a3b6202ff981e3c3bd71028d57fe736af180184e49d6",
+      "kind": "historical-tool",
+      "provenancePath": "docs/records/audits/2026-09/mvp6-sandop-publication-guard-disposition-01/PROVENANCE.md",
+      "provenanceSha256": "dc7aa123eef262014ded3bc90c325b92df71aaaf7ed668cfa732a903fe8f9f57",
+      "provenanceLine": 4,
+      "targets": []
+    },
+    {
+      "path": "docs/records/audits/2026-09/mvp6-sandop-capacity-final-release-pack-01/candidate-to-final.json",
+      "sha256": "19c3e03192614ee8d86ceb2003635f4f2c62c40e6413ee1d582d773c491e84f4",
+      "kind": "historical-data",
+      "provenancePath": "docs/records/audits/2026-09/mvp6-sandop-publication-guard-disposition-01/PROVENANCE.md",
+      "provenanceSha256": "dc7aa123eef262014ded3bc90c325b92df71aaaf7ed668cfa732a903fe8f9f57",
+      "provenanceLine": 5,
+      "targets": []
+    },
+    {
+      "path": "docs/records/audits/2026-09/mvp6-sandop-capacity-final-release-pack-01/verify_final.py",
+      "sha256": "7b9a10151f0fe6c0978530d541e1cdd116714788f4eb031df7257c4612a0a9c9",
+      "kind": "historical-tool",
+      "provenancePath": "docs/records/audits/2026-09/mvp6-sandop-publication-guard-disposition-01/PROVENANCE.md",
+      "provenanceSha256": "dc7aa123eef262014ded3bc90c325b92df71aaaf7ed668cfa732a903fe8f9f57",
+      "provenanceLine": 6,
+      "targets": []
+    },
+    {
+      "path": "docs/records/audits/2026-09/mvp6-mod0186-http-composition-01/inputs.json",
+      "sha256": "b928f920a24624869f55ca9e4bd74847a7a9693f94e06fc3641afb5f2cabbfa1",
+      "kind": "historical-data",
+      "provenancePath": "docs/records/audits/2026-09/mvp6-sandop-publication-guard-disposition-01/PROVENANCE.md",
+      "provenanceSha256": "dc7aa123eef262014ded3bc90c325b92df71aaaf7ed668cfa732a903fe8f9f57",
+      "provenanceLine": 7,
+      "targets": []
+    },
+    {
+      "path": "docs/records/audits/2026-09/mvp6-sandop-capacity-amendment-01/verify_candidate.py",
+      "sha256": "8d65e6c64c3dc8c1bd3c96090e4e61f4f011012c3ae76b59d77b6f43fe69969c",
+      "kind": "historical-tool",
+      "provenancePath": "docs/records/audits/2026-09/mvp6-sandop-publication-guard-disposition-01/PROVENANCE.md",
+      "provenanceSha256": "dc7aa123eef262014ded3bc90c325b92df71aaaf7ed668cfa732a903fe8f9f57",
+      "provenanceLine": 8,
+      "targets": []
+    },
+    {
+      "path": "docs/records/audits/2026-09/mvp6-sandop-capacity-amendment-01/MANIFEST.json",
+      "sha256": "994c8b8f47bb4cd5ccd0425907e453a67c698246221cfd36fdb316d28fb35647",
+      "kind": "historical-data",
+      "provenancePath": "docs/records/audits/2026-09/mvp6-sandop-publication-guard-disposition-01/PROVENANCE.md",
+      "provenanceSha256": "dc7aa123eef262014ded3bc90c325b92df71aaaf7ed668cfa732a903fe8f9f57",
+      "provenanceLine": 9,
+      "targets": []
+    },
+    {
+      "path": "docs/records/audits/2026-09/mvp6-sandop-capacity-amendment-candidate-01/verify_candidate.py",
+      "sha256": "aefbf9693dc45ebe040a7d61b85da914abb004f8c1da58177e7fc5301681db7f",
+      "kind": "historical-tool",
+      "provenancePath": "docs/records/audits/2026-09/mvp6-sandop-publication-guard-disposition-01/PROVENANCE.md",
+      "provenanceSha256": "dc7aa123eef262014ded3bc90c325b92df71aaaf7ed668cfa732a903fe8f9f57",
+      "provenanceLine": 10,
+      "targets": []
+    },
+    {
+      "path": "docs/records/audits/2026-09/mvp6-sandop-capacity-amendment-r2-01/verify_candidate.py",
+      "sha256": "f6fdd5a292a8b4cef499a705a4f637c2543d417e9f1eb59639ec63b606c0f3ae",
+      "kind": "historical-tool",
+      "provenancePath": "docs/records/audits/2026-09/mvp6-sandop-publication-guard-disposition-01/PROVENANCE.md",
+      "provenanceSha256": "dc7aa123eef262014ded3bc90c325b92df71aaaf7ed668cfa732a903fe8f9f57",
+      "provenanceLine": 11,
+      "targets": []
+    },
+    {
+      "path": "docs/records/audits/2026-09/mvp6-sandop-capacity-final-ver-01/raw/results.json",
+      "sha256": "9bd3a86dbbbab9105247303a1703681a8d7dbee2293e46a5213220e200e3e24a",
+      "kind": "historical-data",
+      "provenancePath": "docs/records/audits/2026-09/mvp6-sandop-publication-guard-disposition-01/PROVENANCE.md",
+      "provenanceSha256": "dc7aa123eef262014ded3bc90c325b92df71aaaf7ed668cfa732a903fe8f9f57",
+      "provenanceLine": 12,
+      "targets": []
+    },
+    {
+      "path": "docs/records/audits/2026-09/mvp6-sandop-capacity-final-ver-01/raw/manifest-A-input-output.json",
+      "sha256": "bda77a164111f1aa48665f1481cbf4ae0ad7ca3e73023e9e47fde23bc00e89fa",
+      "kind": "historical-data",
+      "provenancePath": "docs/records/audits/2026-09/mvp6-sandop-publication-guard-disposition-01/PROVENANCE.md",
+      "provenanceSha256": "dc7aa123eef262014ded3bc90c325b92df71aaaf7ed668cfa732a903fe8f9f57",
+      "provenanceLine": 13,
+      "targets": []
+    },
+    {
+      "path": "docs/records/audits/2026-09/mvp6-sandop-capacity-final-ver-01/raw/verify.py",
+      "sha256": "c8946421d4ea5ceca491dd056dec307c4d3d624ccf23ed47cb5eed62cc273776",
+      "kind": "historical-tool",
+      "provenancePath": "docs/records/audits/2026-09/mvp6-sandop-publication-guard-disposition-01/PROVENANCE.md",
+      "provenanceSha256": "dc7aa123eef262014ded3bc90c325b92df71aaaf7ed668cfa732a903fe8f9f57",
+      "provenanceLine": 14,
+      "targets": []
+    },
+    {
+      "path": "docs/records/audits/2026-09/mvp6-mod0192-hosted-evidence-ver-01/raw/input-bindings-recomputed.json",
+      "sha256": "edfeaace44b96c2699e62da3bd8fe9f16b6f836e5ef5d1988ced3f657b43d21a",
+      "kind": "historical-data",
+      "provenancePath": "docs/records/audits/2026-09/mvp6-capacity-guard-single-disposition-01/PROVENANCE.md",
+      "provenanceSha256": "401174ea2ff6e12861a9f2e375f5990f42bd879623ecc20b8c83e21f93f2ceda",
+      "provenanceLine": 3,
+      "targets": []
+    }
+  ]
+}

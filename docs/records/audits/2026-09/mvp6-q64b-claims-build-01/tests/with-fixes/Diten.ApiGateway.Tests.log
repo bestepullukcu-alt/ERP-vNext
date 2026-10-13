@@ -1,0 +1,8 @@
+Test run for /Users/natig/mvp6-env/claims-fixes/gateway/Diten.ApiGateway.Tests/bin/Debug/net8.0/Diten.ApiGateway.Tests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 17.11.1 (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+Results File: /Users/natig/mvp6-env/test-results/with-fixes/Diten.ApiGateway.Tests.trx
+
+Passed!  - Failed:     0, Passed:    87, Skipped:     0, Total:    87, Duration: 321 ms - Diten.ApiGateway.Tests.dll (net8.0)

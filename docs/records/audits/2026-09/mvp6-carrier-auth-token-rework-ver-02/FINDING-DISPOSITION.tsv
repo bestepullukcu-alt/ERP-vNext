@@ -1,0 +1,3 @@
+finding	verdict	exact reason
+F-01	CLOSED	46 of 49 raw HTTP scenarios passed overall; every exact-cardinality rejection had HTTP 401 and zero scoped repository reads. The three failures belong only to F-02 type enforcement.
+F-02	OPEN / REWORK	PlatformServiceTokenValidator.TryGetExactlyOneNumericDate uses long.TryParse over claim.Value, so string NumericDates are accepted. Independent cases numericdate-string-iat, -nbf and -exp each returned 200 and one repository read.

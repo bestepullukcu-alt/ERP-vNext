@@ -1,0 +1,38 @@
+@using Diten.Web.Views.Inventory.StockMovements
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<StockMovementsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    // The table card is a component (BL-440): the page describes it, _ListShell renders it. Every header is
+    // localized HERE, the shell produces no text.
+    //
+    // SERVER data through the proxy profile (pack §8): /StockMovements/api translates paging for INVENTORY-BUNDLE.
+    // NO SELECTION COLUMN (pack §11): transactions are append-only; the one row action is Reversal.
+    // "From" and "Recorded by" are not columns: the contract does not carry them (BG-05, ASSUMPTION-UI-07).
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-stockmovements",
+        DataMode = "server",
+        Slug = "stockmovements",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["ColTransactionNo"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["ColMovementType"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColReason"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColProductSku"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColQuantity"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColBaseQuantity"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColTo"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColLot"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColStatusChange"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColSource"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColTransactionDate"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColPostingDate"].Value }
+        ],
+        ActionsHeader = Localizer["Actions"].Value
+    };
+}
+
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />

@@ -1,0 +1,13 @@
+operationId	method	path	change
+createSandopPlan	POST	/sandop-plans	UNCHANGED
+getSandopPlan	GET	/sandop-plans/{sandopPlanId}	UNCHANGED
+captureSandopSnapshot	POST	/sandop-plans/{sandopPlanId}/snapshots	UNCHANGED
+listSandopSnapshots	GET	/sandop-plans/{sandopPlanId}/snapshots	UNCHANGED
+recordSandopSignOff	POST	/sandop-plans/{sandopPlanId}/sign-offs	UNCHANGED
+listSandopSignOffs	GET	/sandop-plans/{sandopPlanId}/sign-offs	UNCHANGED
+createCapacityPlan	POST	/capacity-plans	UNCHANGED
+getCapacityPlan	GET	/capacity-plans/{capacityPlanId}	UNCHANGED
+createCapacityScenario	POST	/capacity-plans/{capacityPlanId}/scenarios	only resolved 409 description/code/example
+getCapacityScenario	GET	/capacity-plans/{capacityPlanId}/scenarios/{scenarioId}	UNCHANGED
+evaluateCapacityScenario	POST	/capacity-plans/{capacityPlanId}/scenarios/{scenarioId}/evaluations	UNCHANGED
+getCapacityEvaluation	GET	/capacity-plans/{capacityPlanId}/evaluations/{evaluationId}	UNCHANGED

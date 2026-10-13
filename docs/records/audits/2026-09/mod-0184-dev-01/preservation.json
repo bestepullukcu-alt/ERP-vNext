@@ -1,0 +1,8 @@
+{
+  "baselineCount": 14327,
+  "protectedCount": 14326,
+  "protectedUnchanged": true,
+  "authorizedChanged": [
+    "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs"
+  ]
+}

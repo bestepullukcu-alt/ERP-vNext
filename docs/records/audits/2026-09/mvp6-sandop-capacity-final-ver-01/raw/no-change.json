@@ -1,0 +1,16 @@
+{
+  "branch": "feature/mvp6-logistics",
+  "head": "4a8d4d4b339528a88e6220fb8402e5a2c771136c",
+  "baselineStatusRows": 1443,
+  "finalStatusRowsExcludingOwned": 1446,
+  "ambientAdded": [
+    "?? docs/roadmap/plans/mvp6-mod0190-0192-phase15-gap-check-01/MONGO-SERVER-TIME-SMOKE.json",
+    "?? docs/roadmap/plans/mvp6-mod0190-0192-phase15-gap-check-01/OWNED-PATHS.md",
+    "?? docs/roadmap/plans/mvp6-mod0190-0192-phase15-gap-check-01/OWNED-PATHS.tsv"
+  ],
+  "ambientRemoved": [],
+  "staged": [],
+  "canonicalSha256": "c255e92923ba91714cec8daf229262101b5d45648b7f714a03ab402811db683c",
+  "yamlASha256": "9543e3f295dcabb9f7c1ab464fadfacfcbc53ada2f9bec9d32deb8f52cb02ff3",
+  "yamlBSha256": "9543e3f295dcabb9f7c1ab464fadfacfcbc53ada2f9bec9d32deb8f52cb02ff3"
+}

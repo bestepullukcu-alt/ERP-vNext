@@ -1,0 +1,132 @@
+--- a/services/Diten.MdmService/src/Diten.MdmService.Api/Security/PlatformServiceTokenValidator.cs
++++ b/services/Diten.MdmService/src/Diten.MdmService.Api/Security/PlatformServiceTokenValidator.cs
+@@ -1,6 +1,7 @@
+ using System.IdentityModel.Tokens.Jwt;
+ using System.Security.Claims;
+ using System.Text;
++using System.Text.Json;
+ using Microsoft.Extensions.Options;
+ using Microsoft.IdentityModel.Tokens;
+ 
+@@ -116,10 +117,24 @@
+         out long value)
+     {
+         value = default;
+-        var values = token.Claims
+-            .Where(claim => string.Equals(claim.Type, type, StringComparison.Ordinal))
+-            .Select(claim => claim.Value)
+-            .ToArray();
+-        return values.Length == 1 && long.TryParse(values[0], out value);
++        if (token.Claims.Count(claim => string.Equals(claim.Type, type, StringComparison.Ordinal)) != 1)
++            return false;
++
++        try
++        {
++            using var payload = JsonDocument.Parse(Base64UrlEncoder.Decode(token.RawPayload));
++            var matchingProperties = payload.RootElement
++                .EnumerateObject()
++                .Where(property => string.Equals(property.Name, type, StringComparison.Ordinal))
++                .ToArray();
++
++            return matchingProperties.Length == 1
++                   && matchingProperties[0].Value.ValueKind == JsonValueKind.Number
++                   && matchingProperties[0].Value.TryGetInt64(out value);
++        }
++        catch (JsonException)
++        {
++            return false;
++        }
+     }
+ }
+--- a/services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/PlatformServiceTokenValidatorTests.cs
++++ b/services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/PlatformServiceTokenValidatorTests.cs
+@@ -1,6 +1,8 @@
+ using System.IdentityModel.Tokens.Jwt;
+ using System.Security.Claims;
++using System.Security.Cryptography;
+ using System.Text;
++using System.Text.Json;
+ using Diten.MdmService.Api.Security;
+ using Microsoft.Extensions.Options;
+ using Microsoft.IdentityModel.Tokens;
+@@ -138,6 +140,35 @@
+             CreateToken(iat: now - 20, nbf: now - 20, exp: now - 10), TenantId, ActorId, LegalEntityId));
+     }
+ 
++    [Theory]
++    [InlineData(JwtRegisteredClaimNames.Iat)]
++    [InlineData(JwtRegisteredClaimNames.Nbf)]
++    [InlineData(JwtRegisteredClaimNames.Exp)]
++    public void Numeric_dates_encoded_as_json_strings_are_rejected(string stringClaim)
++    {
++        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
++        Assert.False(CreateValidator().IsAuthorized(
++            CreateTokenWithRawNumericDates(now, stringClaim), TenantId, ActorId, LegalEntityId));
++    }
++
++    [Fact]
++    public void Fractional_numeric_date_is_rejected()
++    {
++        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
++        Assert.False(CreateValidator().IsAuthorized(
++            CreateTokenWithRawNumericDates(now, JwtRegisteredClaimNames.Iat, now + 0.5m),
++            TenantId, ActorId, LegalEntityId));
++    }
++
++    [Fact]
++    public void Numeric_date_outside_int64_range_is_rejected()
++    {
++        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
++        Assert.False(CreateValidator().IsAuthorized(
++            CreateTokenWithRawNumericDates(now, JwtRegisteredClaimNames.Iat, ulong.MaxValue),
++            TenantId, ActorId, LegalEntityId));
++    }
++
+     private static PlatformServiceTokenValidator CreateValidator(int clockSkewSeconds = 0)
+     {
+         var options = ValidOptions();
+@@ -157,6 +188,44 @@
+         ClockSkewSeconds = 0
+     };
+ 
++    private static string CreateTokenWithRawNumericDates(
++        long issuedAt,
++        string overriddenClaim,
++        object? overriddenValue = null)
++    {
++        var numericDates = new Dictionary<string, object>
++        {
++            [JwtRegisteredClaimNames.Iat] = issuedAt,
++            [JwtRegisteredClaimNames.Nbf] = issuedAt,
++            [JwtRegisteredClaimNames.Exp] = issuedAt + 30
++        };
++        numericDates[overriddenClaim] = overriddenValue ?? numericDates[overriddenClaim].ToString()!;
++
++        var headerBytes = JsonSerializer.SerializeToUtf8Bytes(new Dictionary<string, object>
++        {
++            ["alg"] = SecurityAlgorithms.HmacSha256,
++            ["typ"] = "JWT",
++            ["kid"] = "platform-mdm-2026-09"
++        });
++        var payloadBytes = JsonSerializer.SerializeToUtf8Bytes(new Dictionary<string, object>
++        {
++            [JwtRegisteredClaimNames.Iss] = "diten-platform-service",
++            [JwtRegisteredClaimNames.Aud] = "diten-mdm-reference-validation",
++            [JwtRegisteredClaimNames.Sub] = "Diten.Platform",
++            ["scope"] = "mdm.legal-entities.reference.validate",
++            ["tenant_id"] = TenantId.ToString("D"),
++            ["actor_id"] = ActorId.ToString("D"),
++            ["legal_entity_id"] = LegalEntityId.ToString("D"),
++            [JwtRegisteredClaimNames.Jti] = Guid.NewGuid().ToString("D"),
++            [JwtRegisteredClaimNames.Iat] = numericDates[JwtRegisteredClaimNames.Iat],
++            [JwtRegisteredClaimNames.Nbf] = numericDates[JwtRegisteredClaimNames.Nbf],
++            [JwtRegisteredClaimNames.Exp] = numericDates[JwtRegisteredClaimNames.Exp]
++        });
++        var unsignedToken = $"{Base64UrlEncoder.Encode(headerBytes)}.{Base64UrlEncoder.Encode(payloadBytes)}";
++        var signature = HMACSHA256.HashData(Encoding.UTF8.GetBytes(Secret), Encoding.ASCII.GetBytes(unsignedToken));
++        return $"{unsignedToken}.{Base64UrlEncoder.Encode(signature)}";
++    }
++
+     private static string CreateToken(
+         string caller = "Diten.Platform",
+         string scope = "mdm.legal-entities.reference.validate",

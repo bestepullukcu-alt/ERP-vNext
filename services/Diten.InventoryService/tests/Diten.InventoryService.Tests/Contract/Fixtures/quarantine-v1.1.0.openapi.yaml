@@ -1,0 +1,924 @@
+openapi: 3.1.0
+info:
+  title: QUARANTINE-BUNDLE
+  description: >
+    MOD-0175 Quarantine / Blocked Stock — quality decision layer on top of the MOD-0173 ledger (quarantine states, release
+    approvals, audit hooks; Blueprint 8.1 row 176). Frozen from the CT-accepted proposal drafts/quarantine-bundle-v1-proposal.md
+    (WP-0175-Q1). MOD-0175 keeps no balance and defines no stock status and no movement type: every stock change is an
+    INVENTORY-BUNDLE 1.0.1 movement (STATUS_TRANSFER, SCRAP, SUPPLIER_RETURN, LOCATION_TRANSFER) posted by the owner service after
+    Workflow approval (DEC-INV-08, KQ-F); "Numune / Referans" is BLOCKED stock at a sample location (KQ-E). Tenant from the token,
+    company from the W-0173-02 scope (X-Legal-Entity-Id validated against MDM); another company → 403 CROSS_LE_FORBIDDEN,
+    another tenant → 404. Success bodies are the schemas below; failures are the INVENTORY Error schema.
+  version: 1.1.0
+  x-status: FROZEN
+  x-owner: MOD-0175
+  x-owner-service: Diten.InventoryService (MOD-0175, in-process with MOD-0173 / MOD-0174)
+  x-changelog:
+    - "1.0.0 — frozen by WP-0175-Q1 from the accepted proposal (2026-10-08). Reconciliations of the freeze (evidence §2): R-1 the envelope is the measured INVENTORY / TRACE wire (unwrapped success body, Error on failure) — proposal rule 3 names 'the shape used by INVENTORY / TRACE'; R-2 a bucket carries an optional lotId (a lot-controlled stock row cannot be addressed otherwise; quarantineStock keeps the top-level lotId for mode Retest); R-3 settings are the scope company's (contract rule 2; the scope middleware refuses a legalEntityId query member) — no legalEntityId request member; R-4 Decision.disposition shows the resolved sampleLocationId."
+    - "1.1.0 — additive (WP-0174-ITEM; MOD-0173 PM1 CT acceptance O-PM1-1): SkuLevel gains Item (a material item that is its own SKU, skuId == itemId) — the same four values as INVENTORY-BUNDLE / TRACE-BUNDLE SkuLevel, so an Item-level bucket can be quarantined, blocked and decided and every hold / blocked / decision body carrying it stays valid. Nothing else changed: no path, parameter, property, type, required list, status code or other enum value; the qd-v1 signable field list is unchanged."
+  x-decisions: [DEC-INV-08, KQ-A, KQ-B, KQ-C, KQ-D, KQ-E, KQ-F, KQ-G, KQ-H, KQ-I, CT-Q6, CT-Q8, CT-Q9]
+servers: [{ url: /api/quarantine }]
+security: [{ bearerAuth: [] }]
+x-rules:
+  - "Every write takes the Idempotency-Key header equal to body idempotencyKey (8–100). Same key + same body → the first result (200); same key + different body → 400 IDEMPOTENCY_KEY_REUSED."
+  - "Mutable records (hold, blocked stock, settings, block reason) need If-Match W/\"<version>\" where stated; stale → 409 QUARANTINE_CONFLICT."
+  - "No call moves stock directly except the no-workflow safety actions quarantineStock and blockStock. Every release / reject / block decision, disposition, unblock and lot release moves stock only after Workflow approval."
+  - "Every command writes an audit row and a history entry. Signatures are MOD-0022 references only (signatureId)."
+  - "Stock statuses and movement types are INVENTORY-BUNDLE values; this contract defines no new value of either."
+x-permissions:
+  owned: [quarantine.holds.read, quarantine.holds.create, quarantine.holds.review, quarantine.decisions.create, quarantine.decisions.withdraw, quarantine.decisions.apply, quarantine.blocked.dispose, quarantine.blocked.unblock, quarantine.blocked.block, quarantine.settings.manage]
+  external: [platform.workflow.instances.start, platform.workflow.instances.view, platform.workflow.tasks.cancel, platform.workflow.definitions.manage, platform.workflow.definitions.publish, esign.signatures.sign, trace.lots.change-status]
+paths:
+  /holds:
+    get:
+      operationId: listHolds
+      x-permission: quarantine.holds.read
+      summary: "Quarantine queue — page + KPI cards. Side effect: read-time reconciliation of pending decisions (best effort, never fails the read)."
+      parameters:
+        - { name: q, in: query, schema: { type: string } }
+        - { name: warehouseId, in: query, schema: { type: string, format: uuid } }
+        - { name: stockStatus, in: query, schema: { type: string, enum: [QUARANTINE, QUALITY_INSPECTION] } }
+        - { name: source, in: query, schema: { $ref: '#/components/schemas/HoldSource' } }
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/HoldStatus' } }
+        - { name: reviewState, in: query, schema: { $ref: '#/components/schemas/ReviewState' } }
+        - { name: lateOnly, in: query, schema: { type: boolean } }
+        - { name: lotId, in: query, schema: { type: string } }
+        - { name: sourceDocumentId, in: query, schema: { type: string } }
+        - { name: page, in: query, schema: { type: integer, minimum: 1 } }
+        - { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 100 } }
+        - { name: sort, in: query, schema: { type: string } }
+      responses:
+        '200': { description: Holds, content: { application/json: { schema: { $ref: '#/components/schemas/HoldList' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+    post:
+      operationId: quarantineStock
+      x-permission: quarantine.holds.create
+      summary: "Karantinaya Al (no workflow — safety direction). Posts STATUS_TRANSFER AVAILABLE→QUARANTINE per bucket (sourceType QUARANTINE_HOLD). mode Retest takes lotId and quarantines every AVAILABLE bucket of the lot; mode Manual takes explicit buckets."
+      x-error-codes: [INVALID_REQUEST, REASON_REQUIRED, IDEMPOTENCY_KEY_REUSED, QUARANTINE_STOCK_RESERVED, QUARANTINE_NOTHING_AVAILABLE, QUARANTINE_SIGNATURE_REQUIRED, INSUFFICIENT_STOCK, LOT_BLOCKED, LOT_EXPIRED, LOT_RETEST_DUE, POSTING_PERIOD_CLOSED, UNKNOWN_LOCATION]
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/QuarantineStockRequest' } } } }
+      responses:
+        '201': { description: Holds created, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/HoldRef' } } } } }
+        '200': { description: Replay, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/HoldRef' } } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+  /holds/by-source:
+    get:
+      operationId: listHoldsBySource
+      x-permission: quarantine.holds.read
+      summary: "Holds of a source document (MOD-0142 GRN, MOD-0194), ≤ 200."
+      parameters:
+        - { name: sourceModule, in: query, required: true, schema: { type: string } }
+        - { name: sourceDocumentId, in: query, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Holds, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/HoldRef' } } } } }
+  /holds/{holdId}:
+    get:
+      operationId: getHold
+      x-permission: quarantine.holds.read
+      summary: "Hold detail (reconciles the active decision, best effort)."
+      x-error-codes: [QUARANTINE_HOLD_NOT_FOUND]
+      parameters: [{ $ref: '#/components/parameters/HoldId' }]
+      responses:
+        '200': { description: Hold, headers: { ETag: { $ref: '#/components/headers/ETag' } }, content: { application/json: { schema: { $ref: '#/components/schemas/HoldDetail' } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      operationId: updateHold
+      x-permission: quarantine.holds.review
+      summary: "Analysis note / attachment references while the hold is open."
+      x-error-codes: [QUARANTINE_HOLD_CLOSED, QUARANTINE_CONFLICT]
+      parameters: [{ $ref: '#/components/parameters/HoldId' }, { $ref: '#/components/parameters/IfMatch' }, { $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/UpdateHoldRequest' } } } }
+      responses:
+        '200': { description: Hold, content: { application/json: { schema: { $ref: '#/components/schemas/HoldDetail' } } } }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /holds/{holdId}/review:
+    post:
+      operationId: startReview
+      x-permission: quarantine.holds.review
+      summary: "İncelemeye al (no stock movement)."
+      x-error-codes: [QUARANTINE_HOLD_CLOSED, QUARANTINE_CONFLICT, QUARANTINE_HOLD_NOT_FOUND]
+      parameters: [{ $ref: '#/components/parameters/HoldId' }, { $ref: '#/components/parameters/IfMatch' }, { $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/ReviewRequest' } } } }
+      responses:
+        '200': { description: Hold in review, headers: { ETag: { $ref: '#/components/headers/ETag' } }, content: { application/json: { schema: { $ref: '#/components/schemas/HoldRef' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /decisions:
+    post:
+      operationId: createDecision
+      x-permission: "quarantine.decisions.create (HoldDecision) | quarantine.blocked.dispose (Disposition) | quarantine.blocked.unblock (Unblock)"
+      summary: "Draft decision — nothing moves. lines only for HoldDecision (1, or 2 when partial, KQ-A); disposition only for Disposition; Unblock uses reason only. LotRelease decisions are created by the lot gate only."
+      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, QUARANTINE_DECISION_INVALID, QUARANTINE_PARTIAL_SUM_MISMATCH, REASON_REQUIRED, QUARANTINE_COA_NOT_CONFIRMED, QUARANTINE_BLOCK_REASON_REQUIRED, QUARANTINE_RETEST_DATE_REQUIRED, LOT_DATES_INVALID, QUARANTINE_QUANTITY_INVALID, QUARANTINE_SUPPLIER_REQUIRED, QUARANTINE_DESTRUCTION_METHOD_REQUIRED, QUARANTINE_HOLD_NOT_FOUND, QUARANTINE_BLOCKED_NOT_FOUND, QUARANTINE_DECISION_ALREADY_PENDING, QUARANTINE_HOLD_CLOSED, QUARANTINE_BLOCKED_CLOSED, QUARANTINE_LOT_HELD, QUARANTINE_SAMPLE_LOCATION_NOT_SET, QUARANTINE_SAMPLE_LOCATION_INVALID, QUARANTINE_REVIEW_NOT_COMPLETED, QUARANTINE_STOCK_CHANGED]
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/DecisionRequest' } } } }
+      responses:
+        '201': { description: Draft, content: { application/json: { schema: { $ref: '#/components/schemas/Decision' } } } }
+        '200': { description: Replay, content: { application/json: { schema: { $ref: '#/components/schemas/Decision' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /decisions/{decisionId}:
+    get:
+      operationId: getDecision
+      x-permission: quarantine.holds.read
+      x-error-codes: [QUARANTINE_DECISION_NOT_FOUND]
+      parameters: [{ $ref: '#/components/parameters/DecisionId' }]
+      responses:
+        '200': { description: Decision, content: { application/json: { schema: { $ref: '#/components/schemas/Decision' } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /decisions/{decisionId}/submit:
+    post:
+      operationId: submitDecision
+      x-permission: "the kind's key (as createDecision); caller = the decider"
+      summary: "Starts the Workflow (template INV-QUARANTINE-RELEASE, objectType quarantine.decision, idempotencyKey quarantine:quarantine.decision:{decisionId}:r1). 202 PendingApproval; replay → same result. Nothing moves before approval."
+      x-error-codes: [QUARANTINE_SIGNATURE_REQUIRED, QUARANTINE_SIGNATURE_MISMATCH, QUARANTINE_APPROVERS_NOT_CONFIGURED, QUARANTINE_WORKFLOW_TEMPLATE_MISSING, QUARANTINE_DECISION_NOT_DRAFT, QUARANTINE_STOCK_CHANGED, QUARANTINE_WORKFLOW_FORBIDDEN, QUARANTINE_WORKFLOW_REJECTED, QUARANTINE_WORKFLOW_UNAVAILABLE, QUARANTINE_NOT_DECIDER, QUARANTINE_DECISION_NOT_FOUND]
+      parameters: [{ $ref: '#/components/parameters/DecisionId' }, { $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/SubmitRequest' } } } }
+      responses:
+        '202': { description: Pending approval, content: { application/json: { schema: { $ref: '#/components/schemas/Decision' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /decisions/{decisionId}/refresh:
+    post:
+      operationId: refreshDecision
+      x-permission: quarantine.holds.read
+      summary: "Durumu yenile — workflow instances/by-objects (+ history for the approver); a terminal outcome is applied. Idempotent."
+      x-error-codes: [QUARANTINE_WORKFLOW_UNAVAILABLE, QUARANTINE_DECISION_NOT_FOUND]
+      parameters: [{ $ref: '#/components/parameters/DecisionId' }]
+      responses:
+        '200': { description: Decision, content: { application/json: { schema: { $ref: '#/components/schemas/Decision' } } } }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /decisions/{decisionId}/withdraw:
+    post:
+      operationId: withdrawDecision
+      x-permission: quarantine.decisions.withdraw
+      summary: "Kararı geri çek — decider only; cancels the open workflow task with the caller's token."
+      x-error-codes: [QUARANTINE_NOT_DECIDER, QUARANTINE_DECISION_NOT_PENDING, REASON_REQUIRED]
+      parameters: [{ $ref: '#/components/parameters/DecisionId' }, { $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/ReasonRequest' } } } }
+      responses:
+        '200': { description: Withdrawn, content: { application/json: { schema: { $ref: '#/components/schemas/Decision' } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /decisions/{decisionId}/apply:
+    post:
+      operationId: reapplyDecision
+      x-permission: quarantine.decisions.apply
+      summary: "Yeniden uygula — only an ApplyFailed decision; re-runs the apply engine with the same ledger idempotency keys (quarantine:{decisionId}:{lineNo}), so a posted line is never posted twice."
+      x-error-codes: [QUARANTINE_DECISION_NOT_APPLICABLE, QUARANTINE_DECISION_NOT_FOUND, INSUFFICIENT_STOCK, LOT_BLOCKED, LOT_EXPIRED, POSTING_PERIOD_CLOSED, UNKNOWN_LOCATION]
+      parameters: [{ $ref: '#/components/parameters/DecisionId' }]
+      responses:
+        '200': { description: Applied, content: { application/json: { schema: { $ref: '#/components/schemas/Decision' } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+  /blocked:
+    get:
+      operationId: listBlocked
+      x-permission: quarantine.holds.read
+      summary: "Blocked stock. Includes virtual LotBlocked rows (blockedId null, allowedActions [Dispose:Destroy], CT-D4)."
+      parameters:
+        - { name: q, in: query, schema: { type: string } }
+        - { name: blockReasonCode, in: query, schema: { type: string } }
+        - { name: pendingOnly, in: query, schema: { type: boolean } }
+        - { name: origin, in: query, schema: { $ref: '#/components/schemas/BlockedOrigin' } }
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/BlockedStatus' } }
+        - { name: warehouseId, in: query, schema: { type: string, format: uuid } }
+        - { name: page, in: query, schema: { type: integer, minimum: 1 } }
+        - { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 100 } }
+      responses:
+        '200': { description: Blocked stock, content: { application/json: { schema: { $ref: '#/components/schemas/BlockedList' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+    post:
+      operationId: blockStock
+      x-permission: quarantine.blocked.block
+      summary: "Stoğu bloke et (manual block, no workflow — safety direction). Posts STATUS_TRANSFER AVAILABLE→BLOCKED per bucket (sourceType QUARANTINE_BLOCK); origin ManualBlock, reviewed false."
+      x-error-codes: [INVALID_REQUEST, REASON_REQUIRED, IDEMPOTENCY_KEY_REUSED, QUARANTINE_BLOCK_REASON_REQUIRED, QUARANTINE_STOCK_RESERVED, QUARANTINE_NOTHING_AVAILABLE, QUARANTINE_SIGNATURE_REQUIRED, INSUFFICIENT_STOCK, LOT_BLOCKED, LOT_EXPIRED, POSTING_PERIOD_CLOSED, UNKNOWN_LOCATION]
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/BlockStockRequest' } } } }
+      responses:
+        '201': { description: Blocked records created, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/BlockedStockRef' } } } } }
+        '200': { description: Replay, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/BlockedStockRef' } } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+  /blocked/{blockedId}:
+    get:
+      operationId: getBlocked
+      x-permission: quarantine.holds.read
+      x-error-codes: [QUARANTINE_BLOCKED_NOT_FOUND]
+      parameters: [{ $ref: '#/components/parameters/BlockedId' }]
+      responses:
+        '200': { description: Blocked record, headers: { ETag: { $ref: '#/components/headers/ETag' } }, content: { application/json: { schema: { $ref: '#/components/schemas/BlockedStockDetail' } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /blocked/{blockedId}/review-complete:
+    post:
+      operationId: completeBlockedReview
+      x-permission: quarantine.holds.review
+      summary: "İncelemeyi tamamla — reviewed = true (opens Unblock, V14)."
+      x-error-codes: [QUARANTINE_BLOCKED_CLOSED, QUARANTINE_CONFLICT, REASON_REQUIRED, QUARANTINE_BLOCKED_NOT_FOUND]
+      parameters: [{ $ref: '#/components/parameters/BlockedId' }, { $ref: '#/components/parameters/IfMatch' }, { $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/ReasonRequest' } } } }
+      responses:
+        '200': { description: Reviewed, headers: { ETag: { $ref: '#/components/headers/ETag' } }, content: { application/json: { schema: { $ref: '#/components/schemas/BlockedStockRef' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /retest:
+    get:
+      operationId: listRetest
+      x-permission: quarantine.holds.read
+      summary: "Retest queue (KQ-H): lots with RetestDate < today + horizonDays and AVAILABLE stock."
+      parameters:
+        - { name: horizonDays, in: query, schema: { type: integer, minimum: 1, maximum: 90, default: 30 } }
+        - { name: state, in: query, schema: { type: string, enum: [Upcoming, DueClosed, Quarantined] } }
+        - { name: warehouseId, in: query, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Retest items, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/RetestItem' } } } } }
+  /settings:
+    get:
+      operationId: getSettings
+      x-permission: quarantine.holds.read
+      summary: "The scope company's settings (defaults at version 0 before the first save)."
+      responses:
+        '200': { description: Settings, headers: { ETag: { $ref: '#/components/headers/ETag' } }, content: { application/json: { schema: { $ref: '#/components/schemas/Settings' } } } }
+    put:
+      operationId: saveSettings
+      x-permission: quarantine.settings.manage
+      summary: "If-Match W/\"<version>\" (W/\"0\" before the first save). A member left out keeps its value."
+      x-error-codes: [INVALID_REQUEST, QUARANTINE_SAMPLE_LOCATION_INVALID, QUARANTINE_CONFLICT]
+      parameters: [{ $ref: '#/components/parameters/IfMatch' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/SettingsRequest' } } } }
+      responses:
+        '200': { description: Settings, headers: { ETag: { $ref: '#/components/headers/ETag' } }, content: { application/json: { schema: { $ref: '#/components/schemas/Settings' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /settings/workflow-template:
+    post:
+      operationId: prepareWorkflowTemplate
+      x-permission: "quarantine.settings.manage (+ the caller's platform.workflow.definitions.manage / publish)"
+      summary: "Creates (DUPLICATE_TEMPLATE_CODE = already exists) and publishes the shipped INV-QUARANTINE-RELEASE JSON with the caller's token."
+      x-error-codes: [QUARANTINE_WORKFLOW_FORBIDDEN, QUARANTINE_WORKFLOW_UNAVAILABLE]
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/KeyRequest' } } } }
+      responses:
+        '200': { description: Template, content: { application/json: { schema: { $ref: '#/components/schemas/WorkflowTemplateResult' } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /block-reasons:
+    get:
+      operationId: listBlockReasons
+      x-permission: quarantine.holds.read
+      parameters: [{ name: activeOnly, in: query, schema: { type: boolean } }]
+      responses:
+        '200': { description: Block reasons, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/BlockReason' } } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+    post:
+      operationId: createBlockReason
+      x-permission: quarantine.settings.manage
+      x-error-codes: [INVALID_REQUEST, QUARANTINE_BLOCK_REASON_LANGUAGE_MISSING, QUARANTINE_BLOCK_REASON_EXISTS]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/BlockReasonRequest' } } } }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/BlockReason' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /block-reasons/{code}:
+    put:
+      operationId: updateBlockReason
+      x-permission: quarantine.settings.manage
+      summary: "Names / active flag; the code never changes. Deactivating a used code → 409 QUARANTINE_BLOCK_REASON_IN_USE."
+      x-error-codes: [INVALID_REQUEST, QUARANTINE_BLOCK_REASON_LANGUAGE_MISSING, QUARANTINE_BLOCK_REASON_IN_USE, QUARANTINE_CONFLICT]
+      parameters: [{ name: code, in: path, required: true, schema: { type: string } }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/BlockReasonRequest' } } } }
+      responses:
+        '200': { description: Updated, content: { application/json: { schema: { $ref: '#/components/schemas/BlockReason' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /lots/{lotId}/quality-status:
+    get:
+      operationId: getLotQualityStatus
+      x-permission: quarantine.holds.read
+      summary: "Consumers 0142 / 0176 / 0177 and the Lot pages."
+      x-error-codes: [UNKNOWN_LOT]
+      parameters: [{ name: lotId, in: path, required: true, schema: { type: string } }]
+      responses:
+        '200': { description: Lot quality status, content: { application/json: { schema: { $ref: '#/components/schemas/LotQualityStatus' } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /esign-subjects/{subjectType}/{subjectId}:
+    get:
+      operationId: getSignableSubject
+      x-permission: "quarantine.holds.read (the signer's JWT; the company must match the decision's)"
+      summary: "Called by Platform (MOD-0022 ESIGN §6). subjectType ∈ {quarantine.decision}; field list qd-v1."
+      parameters:
+        - { name: subjectType, in: path, required: true, schema: { type: string, enum: [quarantine.decision] } }
+        - { name: subjectId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Signable subject, content: { application/json: { schema: { $ref: '#/components/schemas/SignableSubject' } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+x-lot-release-gate: "KQ-I has no path here: TRACE POST /api/trace/lots/{lotId}/status answers 202 PendingApproval { lotId, pendingRequestId, contractVersion } (TRACE 1.2.0); pendingRequestId = the QUARANTINE decisionId (kind LotRelease, state Draft); the requester then calls submitDecision."
+x-state-machine:
+  - "Draft --submit--> Submitted --workflow accepted--> PendingApproval"
+  - "Submitted --start error--> StartFailed --submit (same key)--> Submitted"
+  - "PendingApproval --approved--> Approved --apply ok--> Applied | --apply error--> ApplyFailed --apply--> Applied | --approver == decider & fourEyes--> FourEyesViolation"
+  - "PendingApproval --rejected / cancelled / timed-out--> Rejected / Cancelled / TimedOut; --withdraw--> Withdrawn; Draft --24 h--> Withdrawn"
+  - "Terminal: Applied, Rejected, Cancelled, TimedOut, Withdrawn, FourEyesViolation. On every terminal state except Applied the hold / blocked record is reopened. No movement is posted before Approved."
+x-events:
+  consumed: "platform.workflow.instance.completed.v1 (MOD-0023), objectType quarantine.decision; inbox quarantine_event_inbox (_id = eventId); applied only if the instance id equals the decision's; transport only when Eventing:Transport = RabbitMQ; read-time reconciliation is the guaranteed path."
+  published: "none in v1 (consumers read getLotQualityStatus / listHoldsBySource)."
+x-workflow-template:
+  code: INV-QUARANTINE-RELEASE
+  schemaVersion: workflow_schema_v1
+  expressionVersion: workflow_expr_v1
+  definition: '{ "stages": [ { "code": "QA", "steps": [ { "code": "QA_APPROVAL", "name": "QA onayı", "type": "approval", "assignment": { "candidatePrincipalIds": [] }, "requirements": { "commentRequired": false, "evidenceRequired": false, "signatureRequired": true, "signatureMeaning": "APPROVE" }, "sla": { "dueInMinutes": 14400 } } ] } ] }'
+x-error-codes:
+  QUARANTINE_HOLD_NOT_FOUND: 404
+  QUARANTINE_BLOCKED_NOT_FOUND: 404
+  QUARANTINE_DECISION_NOT_FOUND: 404
+  CROSS_LE_FORBIDDEN: 403
+  QUARANTINE_CONFLICT: 409
+  IDEMPOTENCY_KEY_REUSED: 400
+  REASON_REQUIRED: 400
+  QUARANTINE_DECISION_INVALID: 400
+  QUARANTINE_PARTIAL_SUM_MISMATCH: 400
+  QUARANTINE_COA_NOT_CONFIRMED: 400
+  QUARANTINE_BLOCK_REASON_REQUIRED: 400
+  QUARANTINE_RETEST_DATE_REQUIRED: 400
+  QUARANTINE_QUANTITY_INVALID: 400
+  QUARANTINE_SUPPLIER_REQUIRED: 400
+  QUARANTINE_DESTRUCTION_METHOD_REQUIRED: 400
+  QUARANTINE_SIGNATURE_REQUIRED: 400
+  QUARANTINE_SIGNATURE_MISMATCH: 409
+  QUARANTINE_DECISION_ALREADY_PENDING: 409
+  QUARANTINE_DECISION_NOT_DRAFT: 409
+  QUARANTINE_DECISION_NOT_PENDING: 409
+  QUARANTINE_DECISION_NOT_APPLICABLE: 409
+  QUARANTINE_NOT_DECIDER: 403
+  QUARANTINE_HOLD_CLOSED: 409
+  QUARANTINE_BLOCKED_CLOSED: 409
+  QUARANTINE_LOT_HELD: 409
+  QUARANTINE_SAMPLE_LOCATION_NOT_SET: 409
+  QUARANTINE_SAMPLE_LOCATION_INVALID: 400
+  QUARANTINE_REVIEW_NOT_COMPLETED: 409
+  QUARANTINE_STOCK_CHANGED: 409
+  QUARANTINE_STOCK_RESERVED: 409
+  QUARANTINE_NOTHING_AVAILABLE: 409
+  QUARANTINE_APPROVERS_NOT_CONFIGURED: 409
+  QUARANTINE_WORKFLOW_TEMPLATE_MISSING: 409
+  QUARANTINE_WORKFLOW_FORBIDDEN: 403
+  QUARANTINE_WORKFLOW_REJECTED: 400
+  QUARANTINE_WORKFLOW_UNAVAILABLE: 503
+  QUARANTINE_BLOCK_REASON_LANGUAGE_MISSING: 400
+  QUARANTINE_BLOCK_REASON_EXISTS: 409
+  QUARANTINE_BLOCK_REASON_IN_USE: 409
+  "ledger codes (INSUFFICIENT_STOCK, LOT_BLOCKED, LOT_EXPIRED, LOT_RETEST_DUE, POSTING_PERIOD_CLOSED, UNKNOWN_LOCATION, …)": 422
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  headers:
+    ETag: { description: 'Record version, W/"<version>"', schema: { type: string } }
+  parameters:
+    IdempotencyKey: { name: Idempotency-Key, in: header, required: true, schema: { type: string, minLength: 8, maxLength: 100 } }
+    IfMatch: { name: If-Match, in: header, required: true, schema: { type: string } }
+    HoldId: { name: holdId, in: path, required: true, schema: { type: string, format: uuid } }
+    DecisionId: { name: decisionId, in: path, required: true, schema: { type: string, format: uuid } }
+    BlockedId: { name: blockedId, in: path, required: true, schema: { type: string, format: uuid } }
+  schemas:
+    StockStatus: { type: string, enum: [AVAILABLE, QUALITY_INSPECTION, QUARANTINE, BLOCKED, IN_TRANSIT, DAMAGED, EXPIRED], description: "INVENTORY-BUNDLE StockStatus (inventory-bundle.openapi.yaml) — not owned here." }
+    MovementType: { type: string, enum: [OPENING_BALANCE, GOODS_RECEIPT_PO, GOODS_RECEIPT_PROD, GOODS_ISSUE_SALES, GOODS_ISSUE_PROD, WAREHOUSE_TRANSFER, LOCATION_TRANSFER, STATUS_TRANSFER, CUSTOMER_RETURN, SUPPLIER_RETURN, COUNT_GAIN, COUNT_LOSS, SCRAP, WRITE_OFF, REVERSAL], description: "INVENTORY-BUNDLE MovementType — not owned here." }
+    SkuLevel: { type: string, enum: [Gsku, Lsku, FinishedGood, Item] }
+    HoldSource: { type: string, enum: [GoodsReceipt, Production, CustomerReturn, Manual, Retest, Rework, OtherInbound] }
+    HoldStatus: { type: string, enum: [Open, DecisionPending, Decided] }
+    ReviewState: { type: string, enum: [Waiting, InReview] }
+    DecisionKind: { type: string, enum: [HoldDecision, Disposition, Unblock, LotRelease] }
+    LineDecision: { type: string, enum: [Release, Reject, Block] }
+    DispositionKind: { type: string, enum: [Destroy, ReturnToSupplier, Rework, Sample] }
+    DecisionState: { type: string, enum: [Draft, Submitted, PendingApproval, Approved, Applied, Rejected, Cancelled, TimedOut, Withdrawn, StartFailed, ApplyFailed, FourEyesViolation] }
+    BlockedOrigin: { type: string, enum: [QuarantineDecision, ManualBlock, Rework, OtherInbound, LotBlocked] }
+    BlockedStatus: { type: string, enum: [Open, Closed, SampleRetained] }
+    HistoryAction: { type: string, enum: [Quarantined, ReviewStarted, DecisionSubmitted, Approved, Rejected, Cancelled, TimedOut, Withdrawn, Applied, ApplyFailed, FourEyesViolation, Blocked, ReviewCompleted, Disposed, Unblocked, SampleRetained] }
+    EsignActionCode: { type: string, enum: [quarantine.hold.release, quarantine.hold.reject, quarantine.hold.block, quarantine.blocked.dispose, quarantine.blocked.unblock, quarantine.hold.create, quarantine.lot.release] }
+    UserRef:
+      type: object
+      required: [userId]
+      properties: { userId: { type: string, format: uuid }, name: { type: string } }
+    ItemRef:
+      type: object
+      required: [itemId, skuId, skuLevel]
+      properties: { itemId: { type: string, format: uuid }, skuId: { type: string, format: uuid }, skuLevel: { $ref: '#/components/schemas/SkuLevel' }, skuCode: { type: string }, name: { type: string } }
+    LotInfo:
+      type: object
+      required: [lotId]
+      properties:
+        lotId: { type: string }
+        lotNumber: { type: string }
+        expiryDate: { type: string, format: date-time }
+        retestDate: { type: string, format: date-time }
+        coaReference: { type: string }
+        lotStatus: { type: string, enum: [Draft, Released, Blocked, Expired] }
+    WarehouseRef:
+      type: object
+      required: [id]
+      properties: { id: { type: string, format: uuid }, code: { type: string }, name: { type: string } }
+    LocationRef:
+      type: object
+      required: [id]
+      properties: { id: { type: string, format: uuid }, code: { type: string } }
+    UomRef:
+      type: object
+      required: [id]
+      properties: { id: { type: string }, code: { type: string } }
+    SourceDocument:
+      type: object
+      properties: { module: { type: string }, type: { type: string }, id: { type: string }, number: { type: string }, text: { type: string } }
+    ActiveDecision:
+      type: object
+      required: [decisionId, decisionNumber, state]
+      properties: { decisionId: { type: string, format: uuid }, decisionNumber: { type: string }, state: { $ref: '#/components/schemas/DecisionState' } }
+    DecisionRef:
+      type: object
+      required: [decisionId, decisionNumber, kind, state]
+      properties: { decisionId: { type: string, format: uuid }, decisionNumber: { type: string }, kind: { $ref: '#/components/schemas/DecisionKind' }, state: { $ref: '#/components/schemas/DecisionState' } }
+    Attachment:
+      type: object
+      required: [name, dmsRef]
+      properties: { name: { type: string }, dmsRef: { type: string } }
+    HistoryEntry:
+      type: object
+      required: [atUtc, by, action]
+      properties:
+        atUtc: { type: string, format: date-time }
+        by: { $ref: '#/components/schemas/UserRef' }
+        action: { $ref: '#/components/schemas/HistoryAction' }
+        reason: { type: string }
+        decisionId: { type: string, format: uuid }
+        signatureId: { type: string }
+        approverSignatureId: { type: string }
+    MovementLink:
+      type: object
+      description: "The INVENTORY transaction (sourceModule MOD-0175, sourceDocumentId = decision / hold / blocked number; or the intake transaction)."
+      required: [transactionId, transactionNumber, movementType, atUtc, quantity]
+      properties:
+        transactionId: { type: string, format: uuid }
+        transactionNumber: { type: string }
+        movementType: { $ref: '#/components/schemas/MovementType' }
+        atUtc: { type: string, format: date-time }
+        fromStockStatus: { $ref: '#/components/schemas/StockStatus' }
+        toStockStatus: { $ref: '#/components/schemas/StockStatus' }
+        fromLocationId: { type: string }
+        toLocationId: { type: string }
+        quantity: { type: number }
+        byUserName: { type: string }
+    HoldRef:
+      type: object
+      required: [holdId, holdNumber, legalEntityId, item, warehouse, location, stockStatus, quantity, baseUom, source, enteredAtUtc, createdBy, reviewState, status, waitDays, targetDays, late, version]
+      properties:
+        holdId: { type: string, format: uuid }
+        holdNumber: { type: string, pattern: '^KRN-\d{4}-\d{4,}$' }
+        legalEntityId: { type: string, format: uuid }
+        item: { $ref: '#/components/schemas/ItemRef' }
+        lot: { $ref: '#/components/schemas/LotInfo' }
+        warehouse: { $ref: '#/components/schemas/WarehouseRef' }
+        location: { $ref: '#/components/schemas/LocationRef' }
+        stockStatus: { type: string, enum: [QUARANTINE, QUALITY_INSPECTION] }
+        quantity: { type: number, exclusiveMinimum: 0 }
+        baseUom: { $ref: '#/components/schemas/UomRef' }
+        source: { $ref: '#/components/schemas/HoldSource' }
+        sourceDocument: { $ref: '#/components/schemas/SourceDocument' }
+        enteredAtUtc: { type: string, format: date-time }
+        createdBy: { $ref: '#/components/schemas/UserRef' }
+        reviewState: { $ref: '#/components/schemas/ReviewState' }
+        status: { $ref: '#/components/schemas/HoldStatus' }
+        waitDays: { type: integer, minimum: 0 }
+        targetDays: { type: integer, minimum: 1 }
+        late: { type: boolean }
+        activeDecision: { $ref: '#/components/schemas/ActiveDecision' }
+        version: { type: integer, minimum: 0 }
+    HoldDetail:
+      type: object
+      description: "HoldRef + analysisNote, attachments, review facts, history, movements, decisions."
+      required: [holdId, holdNumber, legalEntityId, item, warehouse, location, stockStatus, quantity, baseUom, source, enteredAtUtc, createdBy, reviewState, status, waitDays, targetDays, late, version, attachments, history, movements, decisions]
+      properties:
+        holdId: { type: string, format: uuid }
+        holdNumber: { type: string, pattern: '^KRN-\d{4}-\d{4,}$' }
+        legalEntityId: { type: string, format: uuid }
+        item: { $ref: '#/components/schemas/ItemRef' }
+        lot: { $ref: '#/components/schemas/LotInfo' }
+        warehouse: { $ref: '#/components/schemas/WarehouseRef' }
+        location: { $ref: '#/components/schemas/LocationRef' }
+        stockStatus: { type: string, enum: [QUARANTINE, QUALITY_INSPECTION] }
+        quantity: { type: number, exclusiveMinimum: 0 }
+        baseUom: { $ref: '#/components/schemas/UomRef' }
+        source: { $ref: '#/components/schemas/HoldSource' }
+        sourceDocument: { $ref: '#/components/schemas/SourceDocument' }
+        enteredAtUtc: { type: string, format: date-time }
+        createdBy: { $ref: '#/components/schemas/UserRef' }
+        reviewState: { $ref: '#/components/schemas/ReviewState' }
+        status: { $ref: '#/components/schemas/HoldStatus' }
+        waitDays: { type: integer, minimum: 0 }
+        targetDays: { type: integer, minimum: 1 }
+        late: { type: boolean }
+        activeDecision: { $ref: '#/components/schemas/ActiveDecision' }
+        version: { type: integer, minimum: 0 }
+        analysisNote: { type: string, maxLength: 2000 }
+        attachments: { type: array, maxItems: 20, items: { $ref: '#/components/schemas/Attachment' } }
+        reviewStartedAtUtc: { type: string, format: date-time }
+        reviewStartedBy: { $ref: '#/components/schemas/UserRef' }
+        decidedAtUtc: { type: string, format: date-time }
+        history: { type: array, items: { $ref: '#/components/schemas/HistoryEntry' } }
+        movements: { type: array, items: { $ref: '#/components/schemas/MovementLink' } }
+        decisions: { type: array, items: { $ref: '#/components/schemas/DecisionRef' } }
+    HoldKpis:
+      type: object
+      required: [openCount, inReviewCount, quantityByUom, lateCount, expirySoonCount]
+      properties:
+        openCount: { type: integer, minimum: 0 }
+        inReviewCount: { type: integer, minimum: 0 }
+        quantityByUom:
+          type: array
+          items: { type: object, required: [uomCode, quantity], properties: { uomCode: { type: string }, quantity: { type: number } } }
+        lateCount: { type: integer, minimum: 0 }
+        expirySoonCount: { type: integer, minimum: 0 }
+    HoldList:
+      type: object
+      required: [items, total, kpis]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/HoldRef' } }
+        total: { type: integer, minimum: 0 }
+        kpis: { $ref: '#/components/schemas/HoldKpis' }
+    Bucket:
+      type: object
+      description: "One stock row (R-2: lotId names the lot of the row; quarantineStock falls back to the request lotId)."
+      required: [itemId, skuId, skuLevel, warehouseId, locationId, quantity]
+      properties:
+        itemId: { type: string, format: uuid }
+        skuId: { type: string, format: uuid }
+        skuLevel: { $ref: '#/components/schemas/SkuLevel' }
+        warehouseId: { type: string, format: uuid }
+        locationId: { type: string, format: uuid }
+        quantity: { type: number, exclusiveMinimum: 0 }
+        lotId: { type: string }
+    QuarantineStockRequest:
+      type: object
+      required: [mode, reason, idempotencyKey]
+      properties:
+        mode: { type: string, enum: [Manual, Retest] }
+        lotId: { type: string }
+        buckets: { type: array, minItems: 1, maxItems: 50, items: { $ref: '#/components/schemas/Bucket' } }
+        reason: { type: string, minLength: 10, maxLength: 1000 }
+        signatureId: { type: string }
+        idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+    BlockStockRequest:
+      type: object
+      required: [buckets, blockReasonCode, reason, idempotencyKey]
+      properties:
+        buckets: { type: array, minItems: 1, maxItems: 50, items: { $ref: '#/components/schemas/Bucket' } }
+        blockReasonCode: { type: string }
+        note: { type: string, maxLength: 2000 }
+        reason: { type: string, minLength: 10, maxLength: 1000 }
+        signatureId: { type: string }
+        idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+    UpdateHoldRequest:
+      type: object
+      required: [idempotencyKey]
+      properties:
+        analysisNote: { type: string, maxLength: 2000 }
+        attachments: { type: array, maxItems: 20, items: { $ref: '#/components/schemas/Attachment' } }
+        idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+    ReviewRequest:
+      type: object
+      required: [idempotencyKey]
+      properties: { note: { type: string, maxLength: 2000 }, idempotencyKey: { type: string, minLength: 8, maxLength: 100 } }
+    ReasonRequest:
+      type: object
+      required: [reason, idempotencyKey]
+      properties: { reason: { type: string, minLength: 10, maxLength: 1000 }, idempotencyKey: { type: string, minLength: 8, maxLength: 100 } }
+    KeyRequest:
+      type: object
+      required: [idempotencyKey]
+      properties: { idempotencyKey: { type: string, minLength: 8, maxLength: 100 } }
+    DecisionRequestLine:
+      type: object
+      required: [lineNo, decision, quantity]
+      properties: { lineNo: { type: integer, minimum: 1, maximum: 2 }, decision: { $ref: '#/components/schemas/LineDecision' }, quantity: { type: number, exclusiveMinimum: 0 } }
+    DispositionRequest:
+      type: object
+      required: [kind, quantity]
+      properties:
+        kind: { $ref: '#/components/schemas/DispositionKind' }
+        quantity: { type: number, exclusiveMinimum: 0 }
+        supplierId: { type: string, format: uuid }
+        returnDocumentNo: { type: string }
+        destructionMethod: { type: string }
+        destructionDate: { type: string, format: date }
+    DecisionRequest:
+      type: object
+      required: [kind, targetId, reason, idempotencyKey]
+      properties:
+        kind: { type: string, enum: [HoldDecision, Disposition, Unblock] }
+        targetId: { type: string, format: uuid }
+        lines: { type: array, maxItems: 2, items: { $ref: '#/components/schemas/DecisionRequestLine' } }
+        blockReasonCode: { type: string }
+        reason: { type: string, minLength: 10, maxLength: 1000 }
+        coaChecked: { type: boolean }
+        newRetestDate: { type: string, format: date }
+        disposition: { $ref: '#/components/schemas/DispositionRequest' }
+        idempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+    SubmitRequest:
+      type: object
+      required: [idempotencyKey]
+      properties: { signatureId: { type: string }, idempotencyKey: { type: string, minLength: 8, maxLength: 100 } }
+    DecisionLine:
+      type: object
+      required: [lineNo, decision, quantity, toStockStatus]
+      properties:
+        lineNo: { type: integer, minimum: 1, maximum: 2 }
+        decision: { $ref: '#/components/schemas/LineDecision' }
+        quantity: { type: number, exclusiveMinimum: 0 }
+        toStockStatus: { $ref: '#/components/schemas/StockStatus' }
+    DispositionInfo:
+      type: object
+      required: [kind, quantity]
+      properties:
+        kind: { $ref: '#/components/schemas/DispositionKind' }
+        quantity: { type: number, exclusiveMinimum: 0 }
+        supplierId: { type: string, format: uuid }
+        returnDocumentNo: { type: string }
+        destructionMethod: { type: string }
+        destructionDate: { type: string, format: date }
+        sampleLocationId: { type: string, format: uuid, description: "R-4: the company's sample location of the warehouse (KQ-E), resolved and checked at draft time." }
+    PlannedMovement:
+      type: object
+      description: "Pack §8 stock-effect table, computed at draft time (\"Onaylanınca oluşacak hareket\")."
+      required: [lineNo, movementType, fromLocationId, quantity]
+      properties:
+        lineNo: { type: integer, minimum: 1 }
+        movementType: { $ref: '#/components/schemas/MovementType' }
+        fromStockStatus: { $ref: '#/components/schemas/StockStatus' }
+        toStockStatus: { $ref: '#/components/schemas/StockStatus' }
+        fromLocationId: { type: string }
+        toLocationId: { type: string }
+        quantity: { type: number, exclusiveMinimum: 0 }
+    WorkflowInfo:
+      type: object
+      required: [templateCode]
+      properties:
+        instanceId: { type: string }
+        templateCode: { type: string, enum: [INV-QUARANTINE-RELEASE] }
+        outcome: { type: string, enum: [approved, rejected, cancelled, timed-out] }
+        approver: { $ref: '#/components/schemas/UserRef' }
+        approverSignatureId: { type: string }
+        completedAtUtc: { type: string, format: date-time }
+    DecisionError:
+      type: object
+      required: [code]
+      properties: { code: { type: string }, message: { type: string } }
+    Decision:
+      type: object
+      required: [decisionId, decisionNumber, kind, legalEntityId, fromStockStatus, lines, reason, coaChecked, plannedMovements, decider, decidedAtUtc, state, appliedMovementIds]
+      properties:
+        decisionId: { type: string, format: uuid }
+        decisionNumber: { type: string, pattern: '^QKR-\d{4}-\d{4,}$' }
+        kind: { $ref: '#/components/schemas/DecisionKind' }
+        holdId: { type: string, format: uuid }
+        blockedStockId: { type: string, format: uuid }
+        lotId: { type: string }
+        legalEntityId: { type: string, format: uuid }
+        fromStockStatus: { $ref: '#/components/schemas/StockStatus' }
+        lines: { type: array, maxItems: 2, items: { $ref: '#/components/schemas/DecisionLine' } }
+        blockReasonCode: { type: string }
+        reason: { type: string }
+        coaChecked: { type: boolean }
+        coaReference: { type: string }
+        newRetestDate: { type: string, format: date }
+        disposition: { $ref: '#/components/schemas/DispositionInfo' }
+        lotStatusTarget: { type: string, enum: [Released] }
+        plannedMovements: { type: array, items: { $ref: '#/components/schemas/PlannedMovement' } }
+        decider: { $ref: '#/components/schemas/UserRef' }
+        decidedAtUtc: { type: string, format: date-time }
+        deciderSignatureId: { type: string }
+        esignActionCode: { $ref: '#/components/schemas/EsignActionCode' }
+        signatureRequired: { type: boolean }
+        state: { $ref: '#/components/schemas/DecisionState' }
+        workflow: { $ref: '#/components/schemas/WorkflowInfo' }
+        appliedMovementIds: { type: array, items: { type: string } }
+        error: { $ref: '#/components/schemas/DecisionError' }
+    BlockReasonRef:
+      type: object
+      required: [code]
+      properties: { code: { type: string }, name: { type: string } }
+    OriginRef:
+      type: object
+      properties: { holdNumber: { type: string }, decisionNumber: { type: string } }
+    AllowedAction: { type: string, enum: ['Dispose:Destroy', 'Dispose:ReturnToSupplier', 'Dispose:Rework', 'Dispose:Sample', Unblock, CompleteReview] }
+    BlockedStockRef:
+      type: object
+      description: "origin LotBlocked rows are virtual (read from the lot): blockedId absent, allowedActions [Dispose:Destroy] (CT-D4)."
+      required: [legalEntityId, item, warehouse, location, quantity, baseUom, blockedAtUtc, origin, pendingDisposition, reviewed, status, allowedActions, version]
+      properties:
+        blockedId: { type: string, format: uuid }
+        blockedNumber: { type: string, pattern: '^BLK-\d{4}-\d{4,}$' }
+        legalEntityId: { type: string, format: uuid }
+        item: { $ref: '#/components/schemas/ItemRef' }
+        lot: { $ref: '#/components/schemas/LotInfo' }
+        warehouse: { $ref: '#/components/schemas/WarehouseRef' }
+        location: { $ref: '#/components/schemas/LocationRef' }
+        quantity: { type: number, minimum: 0 }
+        baseUom: { $ref: '#/components/schemas/UomRef' }
+        blockReason: { $ref: '#/components/schemas/BlockReasonRef' }
+        note: { type: string }
+        blockedAtUtc: { type: string, format: date-time }
+        origin: { $ref: '#/components/schemas/BlockedOrigin' }
+        originRef: { $ref: '#/components/schemas/OriginRef' }
+        pendingDisposition: { type: boolean }
+        reviewed: { type: boolean }
+        status: { $ref: '#/components/schemas/BlockedStatus' }
+        allowedActions: { type: array, items: { $ref: '#/components/schemas/AllowedAction' } }
+        activeDecision: { $ref: '#/components/schemas/ActiveDecision' }
+        version: { type: integer, minimum: 0 }
+    BlockedStockDetail:
+      type: object
+      description: "BlockedStockRef + history, movements, decisions (getBlocked)."
+      required: [legalEntityId, item, warehouse, location, quantity, baseUom, blockedAtUtc, origin, pendingDisposition, reviewed, status, allowedActions, version, history, movements, decisions]
+      properties:
+        blockedId: { type: string, format: uuid }
+        blockedNumber: { type: string, pattern: '^BLK-\d{4}-\d{4,}$' }
+        legalEntityId: { type: string, format: uuid }
+        item: { $ref: '#/components/schemas/ItemRef' }
+        lot: { $ref: '#/components/schemas/LotInfo' }
+        warehouse: { $ref: '#/components/schemas/WarehouseRef' }
+        location: { $ref: '#/components/schemas/LocationRef' }
+        quantity: { type: number, minimum: 0 }
+        baseUom: { $ref: '#/components/schemas/UomRef' }
+        blockReason: { $ref: '#/components/schemas/BlockReasonRef' }
+        note: { type: string }
+        blockedAtUtc: { type: string, format: date-time }
+        origin: { $ref: '#/components/schemas/BlockedOrigin' }
+        originRef: { $ref: '#/components/schemas/OriginRef' }
+        pendingDisposition: { type: boolean }
+        reviewed: { type: boolean }
+        status: { $ref: '#/components/schemas/BlockedStatus' }
+        allowedActions: { type: array, items: { $ref: '#/components/schemas/AllowedAction' } }
+        activeDecision: { $ref: '#/components/schemas/ActiveDecision' }
+        version: { type: integer, minimum: 0 }
+        history: { type: array, items: { $ref: '#/components/schemas/HistoryEntry' } }
+        movements: { type: array, items: { $ref: '#/components/schemas/MovementLink' } }
+        decisions: { type: array, items: { $ref: '#/components/schemas/DecisionRef' } }
+    BlockedList:
+      type: object
+      required: [items, total]
+      properties: { items: { type: array, items: { $ref: '#/components/schemas/BlockedStockRef' } }, total: { type: integer, minimum: 0 } }
+    RetestItem:
+      type: object
+      required: [lotId, item, retestDate, daysRelative, state, availableQuantity, baseUom, buckets, holdIds]
+      properties:
+        lotId: { type: string }
+        lotNumber: { type: string }
+        item: { $ref: '#/components/schemas/ItemRef' }
+        retestDate: { type: string, format: date-time }
+        daysRelative: { type: integer }
+        state: { type: string, enum: [Upcoming, DueClosed, Quarantined] }
+        availableQuantity: { type: number, minimum: 0 }
+        baseUom: { $ref: '#/components/schemas/UomRef' }
+        buckets:
+          type: array
+          items: { type: object, required: [warehouseId, locationId, quantity], properties: { warehouseId: { type: string }, locationId: { type: string }, quantity: { type: number } } }
+        holdIds: { type: array, items: { type: string, format: uuid } }
+    WorkflowTemplate:
+      type: object
+      required: [code, status]
+      properties: { code: { type: string, enum: [INV-QUARANTINE-RELEASE] }, publishedVersion: { type: integer }, status: { type: string, enum: [Published, Missing] } }
+    Settings:
+      type: object
+      required: [waitTargetDays, fourEyes, approverCandidates, sampleLocations, lotReleaseRequiresApproval, reconcileAfterSeconds, version]
+      properties:
+        legalEntityId: { type: string, format: uuid }
+        waitTargetDays: { type: integer, minimum: 1, maximum: 60 }
+        fourEyes: { type: boolean }
+        approverCandidates: { type: array, maxItems: 10, items: { type: string, pattern: '^(position|user):' } }
+        sampleLocations: { type: object, description: "warehouseId → sample locationId (KQ-E)", additionalProperties: { type: string } }
+        lotReleaseRequiresApproval: { type: boolean }
+        reconcileAfterSeconds: { type: integer, minimum: 0 }
+        workflowTemplate: { $ref: '#/components/schemas/WorkflowTemplate' }
+        version: { type: integer, minimum: 0 }
+    SettingsRequest:
+      type: object
+      description: "Settings without workflowTemplate / version / legalEntityId (R-3: the scope company). A member left out keeps its value."
+      properties:
+        waitTargetDays: { type: integer, minimum: 1, maximum: 60 }
+        fourEyes: { type: boolean }
+        approverCandidates: { type: array, minItems: 1, maxItems: 10, items: { type: string, pattern: '^(position|user):' } }
+        sampleLocations: { type: object, additionalProperties: { type: string, format: uuid } }
+        lotReleaseRequiresApproval: { type: boolean }
+        reconcileAfterSeconds: { type: integer, minimum: 0 }
+    WorkflowTemplateResult:
+      type: object
+      required: [code, templateId, publishedVersion, created]
+      properties: { code: { type: string }, templateId: { type: string }, publishedVersion: { type: integer }, created: { type: boolean } }
+    LanguageNames:
+      type: object
+      description: "The seven tenant languages (CT-Q8)."
+      required: [en, tr, fr, es, zh, ar, ru]
+      properties: { en: { type: string }, tr: { type: string }, fr: { type: string }, es: { type: string }, zh: { type: string }, ar: { type: string }, ru: { type: string } }
+    BlockReason:
+      type: object
+      required: [code, names, isActive, isLocked]
+      properties:
+        code: { type: string, pattern: '^[A-Z][A-Z0-9_]{1,31}$' }
+        names: { $ref: '#/components/schemas/LanguageNames' }
+        isActive: { type: boolean }
+        isLocked: { type: boolean }
+    BlockReasonRequest:
+      type: object
+      properties:
+        code: { type: string, pattern: '^[A-Z][A-Z0-9_]{1,31}$' }
+        names: { $ref: '#/components/schemas/LanguageNames' }
+        isActive: { type: boolean }
+    LotQualityStatus:
+      type: object
+      required: [lotId, retestDue, quarantinedQuantity, qualityInspectionQuantity, blockedQuantity, openHolds, openBlocked]
+      properties:
+        lotId: { type: string }
+        retestDue: { type: boolean }
+        quarantinedQuantity: { type: number }
+        qualityInspectionQuantity: { type: number }
+        blockedQuantity: { type: number }
+        openHolds: { type: array, items: { $ref: '#/components/schemas/HoldRef' } }
+        openBlocked: { type: array, items: { $ref: '#/components/schemas/BlockedStockRef' } }
+        pendingLotRelease: { type: object, required: [decisionId, decisionNumber], properties: { decisionId: { type: string, format: uuid }, decisionNumber: { type: string } } }
+    SignableSubject:
+      type: object
+      description: "ESIGN-BUNDLE §6 subject, subjectType quarantine.decision, field list qd-v1. Every fields key is always present (null when not applicable); values are strings (decimals invariant culture, dates UTC 'O', booleans true/false). Field names are frozen; a change is a new subjectVersion."
+      required: [display, summary, legalEntityId, fields]
+      properties:
+        display: { type: string }
+        summary: { type: array, maxItems: 20, items: { type: object, required: [label, value], properties: { label: { type: string }, value: { type: string } } } }
+        legalEntityId: { type: string, format: uuid }
+        fields:
+          type: object
+          required: [subjectVersion, decisionNumber, decisionKind, holdNumber, blockedNumber, legalEntityId, itemId, skuId, skuCode, lotId, lotNumber, warehouseCode, locationCode, fromStockStatus, line1.decision, line1.quantity, line1.toStockStatus, line2.decision, line2.quantity, line2.toStockStatus, baseUom, blockReasonCode, reason, coaChecked, coaReference, dispositionKind, dispositionQuantity, supplierId, returnDocumentNo, destructionMethod, destructionDate, sampleLocationCode, newRetestDate, lotStatusTarget, deciderUserId]
+          additionalProperties: false
+          properties:
+            subjectVersion: { type: string, enum: [qd-v1] }
+            decisionNumber: { type: [string, 'null'] }
+            decisionKind: { type: [string, 'null'] }
+            holdNumber: { type: [string, 'null'] }
+            blockedNumber: { type: [string, 'null'] }
+            legalEntityId: { type: [string, 'null'] }
+            itemId: { type: [string, 'null'] }
+            skuId: { type: [string, 'null'] }
+            skuCode: { type: [string, 'null'] }
+            lotId: { type: [string, 'null'] }
+            lotNumber: { type: [string, 'null'] }
+            warehouseCode: { type: [string, 'null'] }
+            locationCode: { type: [string, 'null'] }
+            fromStockStatus: { type: [string, 'null'] }
+            line1.decision: { type: [string, 'null'] }
+            line1.quantity: { type: [string, 'null'] }
+            line1.toStockStatus: { type: [string, 'null'] }
+            line2.decision: { type: [string, 'null'] }
+            line2.quantity: { type: [string, 'null'] }
+            line2.toStockStatus: { type: [string, 'null'] }
+            baseUom: { type: [string, 'null'] }
+            blockReasonCode: { type: [string, 'null'] }
+            reason: { type: [string, 'null'] }
+            coaChecked: { type: [string, 'null'] }
+            coaReference: { type: [string, 'null'] }
+            dispositionKind: { type: [string, 'null'] }
+            dispositionQuantity: { type: [string, 'null'] }
+            supplierId: { type: [string, 'null'] }
+            returnDocumentNo: { type: [string, 'null'] }
+            destructionMethod: { type: [string, 'null'] }
+            destructionDate: { type: [string, 'null'] }
+            sampleLocationCode: { type: [string, 'null'] }
+            newRetestDate: { type: [string, 'null'] }
+            lotStatusTarget: { type: [string, 'null'] }
+            deciderUserId: { type: [string, 'null'] }
+    ReservationLine:
+      type: object
+      description: "One entry of QUARANTINE_STOCK_RESERVED error.details.reservations (CT-Q6)."
+      required: [reservationId, sourceModule, remainingQuantity]
+      properties: { reservationId: { type: string, format: uuid }, sourceModule: { type: string }, sourceDocumentId: { type: string }, remainingQuantity: { type: number } }
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details: { type: object, additionalProperties: true }
+            correlationId: { type: string }
+        contractVersion: { type: string }
+  responses:
+    BadRequest: { description: Malformed request or a shape / rule code, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    Forbidden: { description: Missing key / other company (CROSS_LE_FORBIDDEN) / not the decider, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    NotFound: { description: Unknown or another tenant's record, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    Conflict: { description: A state / version / stock rule refused (see x-error-codes), content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    Unprocessable: { description: A ledger rule refused the movement (INVENTORY code passed through), content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    Unavailable: { description: Platform workflow unreachable (QUARANTINE_WORKFLOW_UNAVAILABLE), content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }

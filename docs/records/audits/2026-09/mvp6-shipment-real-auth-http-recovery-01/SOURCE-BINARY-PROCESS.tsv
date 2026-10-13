@@ -1,0 +1,5 @@
+component	source_identity	binary_sha256	port	result
+Auth	AUTH-22-SOURCE-MANIFEST.tsv	dbb58c0cc245f0d1157c518adc5b73beab6ac310ae9878e9a580d07de25487f8	5756	fresh build and process
+Platform	AUTH-22-SOURCE-MANIFEST.tsv	93f1c480631b11c328a1901ba9ba6a55314be0cd2b16083a9313ce7981eb1b60	5757	fresh build and process; aggregate health 503 retained
+MDM	AUTH-22-SOURCE-MANIFEST.tsv	f04081ed7a4292858490fbeec177b24292b1e92856d0647e0f956b70a7f108e0	5759	fresh build and process
+SupplyChain	SHIPMENT-351-SOURCE-MANIFEST.tsv	554e115715d282a04cfb3203246eafaa53e71a1c98da54cefa3cfe6d2cb201d2	5761	fresh build; restarted same binary

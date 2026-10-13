@@ -93,7 +93,7 @@ public sealed class WorkflowApprovalWorkItemActionDispatcher : IWorkItemActionDi
                 return Map(await _mediator.Send(
                     new ApproveWorkflowTaskCommand(
                         request.ItemId,
-                        new ApproveWorkflowTaskRequest(actorId, reasonCode, idempotencyKey, comment, payload.EvidenceRef),
+                        new ApproveWorkflowTaskRequest(actorId, reasonCode, idempotencyKey, comment, payload.EvidenceRef, payload.SignatureId),
                         request.CorrelationId), ct), request);
 
             case "reject":

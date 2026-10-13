@@ -1,0 +1,26 @@
+@using Diten.Web.Views.Traceability.Serials
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SerialsIndex> Localizer
+@{
+    // Seri Gezgini columns (pack §11.3). Server mode (/Serials/api → listSerials). No selection, no bulk, no export.
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-serials",
+        DataMode = "server",
+        Slug = "serials",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["Col.Serial"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["Col.Product"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Col.Lot"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Col.Status"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Col.Where"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Col.LastMove"].Value }
+        ],
+        ActionsHeader = Localizer["Col.Actions"].Value
+    };
+}
+
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />

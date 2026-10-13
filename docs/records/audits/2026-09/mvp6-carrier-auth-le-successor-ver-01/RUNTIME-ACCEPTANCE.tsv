@@ -1,0 +1,30 @@
+case	phase1_result	phase2_result	closure_requirement
+package root manifest	PASS	NOT RUN	9/9 exact input hashes retained
+source overlay targets	PASS	NOT RUN	22/22 target hashes retained in immutable final source
+patch applicability	PASS	NOT RUN	Corrected replacement patch applies to exact baseline
+internal key before tenant binding	PASS_STATIC	NOT RUN	Wrong/missing key returns 401 with no bind/resolver/repository call
+correct internal key tenant scoped resolution	PASS_STATIC	NOT RUN	Real Platform request reaches only tenant-scoped resolver
+service token signature and algorithm	PASS_STATIC	NOT RUN	Wrong signature/algorithm rejected before repository
+key id and rotation	PASS_STATIC	NOT RUN	Wrong/rotated key id and disabled identity rejected
+caller exact cardinality	FAIL	NOT RUN	Expected-only passes; missing/wrong/duplicate-conflicting caller rejects
+audience exact cardinality	FAIL	NOT RUN	Expected-only passes; expected-plus-extra audience rejects
+scope exact cardinality	FAIL	NOT RUN	Expected-only passes; missing/wrong/duplicate-conflicting scope rejects
+tenant actor LE exact cardinality	FAIL	NOT RUN	Every missing/wrong/duplicate-conflicting tuple claim rejects
+header-only authority	PASS_STATIC	NOT RUN	Matching headers without valid signed identity return 401, zero reads
+future iat and nbf	FAIL	NOT RUN	Declared temporal policy enforced independently for iat and nbf
+expired token and clock skew	PARTIAL	NOT RUN	Inside/outside skew results match declared acceptance
+excessive effective lifetime	PARTIAL	NOT RUN	Effective issuance-to-expiry window cannot exceed configured maximum
+exactly one active authorized LE	NOT RUN	NOT RUN	Real Auth-issued token contains exact legal_entity_id
+zero authorized LE	NOT RUN	NOT RUN	Auth-issued token omits legal_entity_id
+multiple authorized LE	NOT RUN	NOT RUN	Auth-issued token omits legal_entity_id
+inactive LE	NOT RUN	NOT RUN	Auth-issued token omits legal_entity_id
+revoked scope	NOT RUN	NOT RUN	Auth-issued token omits legal_entity_id and performs no unauthorized read
+login issuance	NOT RUN	NOT RUN	Positive and omission branches executed
+refresh issuance	NOT RUN	NOT RUN	Scope is re-resolved; stale legal_entity_id is not copied
+MFA issuance	NOT RUN	NOT RUN	Positive and omission branches executed
+forced-password issuance	NOT RUN	NOT RUN	Positive and omission branches executed
+Platform refusal timeout config failure	NOT RUN	NOT RUN	Fail-closed result, correlation and zero unauthorized reads
+MDM refusal timeout config failure	NOT RUN	NOT RUN	Fail-closed result, correlation and zero unauthorized reads
+Carrier missing LE	INHERITED_ONLY	NOT RUN	Real Auth-issued omission retains Carrier 403
+Carrier valid LE	NOT RUN	NOT RUN	Real Auth-issued exact claim succeeds only in matching tenant/LE
+

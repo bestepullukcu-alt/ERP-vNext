@@ -1,0 +1,121 @@
+{
+  "phase": "a08",
+  "startedAt": "2026-09-26T07:45:09.297Z",
+  "cases": {
+    "login-actor-a": {
+      "loggedInNow": false,
+      "landedOn": "/SupplyChain/Shipments",
+      "loginResponses": [],
+      "cookieNames": [
+        ".AspNetCore.Antiforgery.RWrGJ5r5OIg",
+        "access_token",
+        "refresh_token"
+      ]
+    },
+    "login-actor-b": {
+      "loggedInNow": true,
+      "landedOn": "/SupplyChain/Shipments",
+      "loginResponses": [
+        {
+          "status": 200,
+          "path": "/account/login?ReturnUrl=%2FSupplyChain%2FShipments"
+        },
+        {
+          "status": 200,
+          "path": "/account/login?tenantId=97c59330-dbc4-4665-b29c-0c26dbb5cc93&returnUrl=%2FSupplyChain%2FShipments"
+        },
+        {
+          "status": 200,
+          "path": "/account/login"
+        }
+      ],
+      "cookieNames": [
+        ".AspNetCore.Antiforgery.RWrGJ5r5OIg",
+        "access_token",
+        "refresh_token"
+      ]
+    },
+    "A08-stale-transition": {
+      "verdict": "PASS",
+      "checks": {
+        "bothRenderedDraft": true,
+        "actorACommitted": true,
+        "actorBGot422": true,
+        "actorBRootReference": true,
+        "actorBRefreshedToPlanned": true,
+        "actorBActionsAfterRefresh": true,
+        "db": true
+      },
+      "initial": {
+        "a": "Draft",
+        "b": "Draft"
+      },
+      "actorBAlert": "The current status no longer permits this transition. Support reference: a7b8b8fe-bccd-44db-82e4-34e1b9ed9ddb",
+      "actorBRequest": {
+        "at": "2026-09-26T07:45:17.815Z",
+        "method": "POST",
+        "path": "/SupplyChain/Shipments/api/42ff0a64-8685-4e68-ae8b-b1613d50e237/transition",
+        "status": 422,
+        "requestCorrelation": "a7b8b8fe-bccd-44db-82e4-34e1b9ed9ddb",
+        "idempotencyKey": "0e67df70-1eab-4e84-a1a3-0e71af420c39",
+        "responseCorrelation": "a7b8b8fe-bccd-44db-82e4-34e1b9ed9ddb",
+        "errorCode": "INVALID_SHIPMENT_TRANSITION",
+        "bodyCorrelation": "a7b8b8fe-bccd-44db-82e4-34e1b9ed9ddb",
+        "okShape": null
+      },
+      "actorARequest": {
+        "at": "2026-09-26T07:45:16.060Z",
+        "method": "POST",
+        "path": "/SupplyChain/Shipments/api/42ff0a64-8685-4e68-ae8b-b1613d50e237/transition",
+        "status": 200,
+        "requestCorrelation": "a7b8b8fe-bccd-44db-82e4-34e1b9ed9ddb",
+        "idempotencyKey": "bf96953e-4315-44d6-b87c-fcdb3aabaf78",
+        "responseCorrelation": "a7b8b8fe-bccd-44db-82e4-34e1b9ed9ddb",
+        "errorCode": null,
+        "bodyCorrelation": null,
+        "okShape": {
+          "shipmentId": "42ff0a64-8685-4e68-ae8b-b1613d50e237",
+          "status": "Planned",
+          "idempotentReplay": false
+        }
+      }
+    }
+  },
+  "db": [
+    {
+      "name": "a08-actor-a-commit",
+      "before": "a08-before-actor-a",
+      "after": "a08-after-actor-a",
+      "expect": "{\"counts\":{\"sce_shipment_history\":1,\"sce_shipment_receipts\":1,\"sce_shipment_audit\":1,\"sce_shipment_outbox\":1},\"state\":{\"status\":\"Planned\"}}",
+      "result": "PASS",
+      "detail": "{\"counts\":{\"sce_shipment_history\":1,\"sce_shipment_receipts\":1,\"sce_shipment_audit\":1,\"sce_shipment_outbox\":1},\"state\":{\"status\":\"Planned\"}}"
+    },
+    {
+      "name": "a08-actor-b-stale-zero-write",
+      "before": "a08-after-actor-a",
+      "after": "a08-after-actor-b",
+      "expect": "zero",
+      "result": "PASS",
+      "detail": "entire SupplyChain DB fingerprint, shipment counts and state unchanged"
+    }
+  ],
+  "png": [
+    {
+      "file": "png/a08-actor-b-after-stale-transition.png",
+      "sha256": "92086a3ef3b897ba23e8860b6d9b1df91955e7a27f56233c42234920c53899d1",
+      "bytes": 129236,
+      "url": "http://127.0.0.1:5401/SupplyChain/Shipments/Details/42ff0a64-8685-4e68-ae8b-b1613d50e237",
+      "capturedAt": "2026-09-26T07:45:18.661Z",
+      "method": "page.screenshot({path, fullPage:true})"
+    }
+  ],
+  "console": [
+    {
+      "actor": "actor-b",
+      "tag": "a08-b",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 422 (Unprocessable Entity)"
+    }
+  ],
+  "finishedAt": "2026-09-26T07:45:19.503Z"
+}

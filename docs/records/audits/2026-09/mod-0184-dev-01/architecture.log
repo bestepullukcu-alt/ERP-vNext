@@ -1,0 +1,113 @@
+Test run for /Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/bin/Debug/net8.0/TenantArchitecture.ArchitectureTests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 17.11.1 (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:01.80]     TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests.NoTestCreatesItsOwnDatabasePerRun [FAIL]
+[xUnit.net 00:00:01.89]     TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.NoProductionValidatorWritesItsOwnClockSkew [FAIL]
+  Failed TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests.NoTestCreatesItsOwnDatabasePerRun [660 ms]
+  Error Message:
+   a Mongo test named its database with a fresh Guid — share one database and isolate by TenantId, or add the file to KnownPerRunDatabase with a reason:
+services/Diten.Platform/tests/Diten.Platform.Application.Tests/Audit/PpmAuditRetentionPolicySeedMongoTests.cs
+services/Diten.Platform/tests/Diten.Platform.Application.Tests/Persistence/DisposableStandaloneMongo.cs
+  Stack Trace:
+     at TenantArchitecture.ArchitectureTests.MongoTestDatabaseGuardTests.NoTestCreatesItsOwnDatabasePerRun() in /Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/MongoTestDatabaseGuardTests.cs:line 126
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Failed TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.NoProductionValidatorWritesItsOwnClockSkew [1 s]
+  Error Message:
+   a JWT validator wrote its own ClockSkew instead of using JwtValidationDefaults.ClockSkew — that is BL-296 coming back: the same token judged differently by two services, 30 seconds wide and invisible from the symptom. Use the shared constant; if the value itself is wrong, change it in services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets/JwtValidationDefaults.cs so every service moves together:
+services/Diten.HumanCapitalService/src/Diten.HumanCapitalService.Api/Program.cs
+services/Diten.TalentEcosystemService/src/Diten.TalentEcosystemService.Api/Program.cs
+  Stack Trace:
+     at TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.NoProductionValidatorWritesItsOwnClockSkew() in /Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/JwtClockSkewGuardTests.cs:line 76
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:02.83]     TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.EveryLifetimeValidatingFileDeclaresTheSharedSkew [FAIL]
+[xUnit.net 00:00:03.12]     TenantArchitecture.ArchitectureTests.DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders [FAIL]
+  Failed TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.EveryLifetimeValidatingFileDeclaresTheSharedSkew [940 ms]
+  Error Message:
+   this file validates token lifetime but never names JwtValidationDefaults.ClockSkew. With no ClockSkew set, Microsoft.IdentityModel applies its own default of FIVE MINUTES — silently looser than every other validator in this system:
+services/Diten.HumanCapitalService/src/Diten.HumanCapitalService.Api/Program.cs
+services/Diten.TalentEcosystemService/src/Diten.TalentEcosystemService.Api/Program.cs
+  Stack Trace:
+     at TenantArchitecture.ArchitectureTests.JwtClockSkewGuardTests.EveryLifetimeValidatingFileDeclaresTheSharedSkew() in /Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/JwtClockSkewGuardTests.cs:line 93
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Failed TenantArchitecture.ArchitectureTests.DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders [3 s]
+  Error Message:
+   code points into docs/ outside vendor · records · roadmap · guides · reference. Each of these fails the day it runs, not the day the docs moved:
+docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/independent-results.json:55 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/independent-results.json:56 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/independent-results.json:78 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/independent-results.json:79 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/independent-results.json:80 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/independent-results.json:81 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/independent-results.json:82 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/independent-results.json:83 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/independent-results.json:84 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/independent-results.json:85 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/independent-results.json:86 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/independent-results.json:87 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/independent-results.json:88 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/independent-results.json:89 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/independent-results.json:90 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/independent-results.json:91 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/independent-results.json:104 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/independent-results.json:105 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/no-change.json:14 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/no-change.json:14 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/no-change.json:16 → docs/backlog-idpill-stash — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/VERIFIER-MANIFEST.json:25 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/VERIFIER-MANIFEST.json:26 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/VERIFIER-MANIFEST.json:77 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/VERIFIER-MANIFEST.json:78 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/VERIFIER-MANIFEST.json:79 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/VERIFIER-MANIFEST.json:80 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/VERIFIER-MANIFEST.json:81 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/VERIFIER-MANIFEST.json:82 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/VERIFIER-MANIFEST.json:83 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/VERIFIER-MANIFEST.json:84 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/VERIFIER-MANIFEST.json:85 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/VERIFIER-MANIFEST.json:86 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/VERIFIER-MANIFEST.json:87 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/VERIFIER-MANIFEST.json:88 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/VERIFIER-MANIFEST.json:89 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-publication-gate-r1-evidence/VERIFIER-MANIFEST.json:90 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-published-uptake/check_uptake.py:8 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-published-uptake/check_uptake.py:9 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-published-uptake/check_uptake.py:16 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-published-uptake/check_uptake.py:17 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-published-uptake/check_uptake.py:17 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-published-uptake/results.json:423 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-published-uptake/results.json:424 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-published-uptake/results.json:439 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-published-uptake/results.json:440 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/proposed-publication-hashes.json:3 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/proposed-publication-hashes.json:4 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/check_consumer.py:98 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/validate.py:9 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/validate.py:99 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/validate.py:100 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/proposed-publication-hashes.json:3 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/proposed-publication-hashes.json:4 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/validate.py:9 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/validate.py:99 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0/validate.py:100 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-consumer-technical-evidence/dependents/results.json:5 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-consumer-technical-evidence/dependents/results.json:98 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-consumer-technical-evidence/dependents/verify.py:10 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-consumer-technical-evidence/carrier/results.json:500 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-consumer-technical-evidence/carrier/check_consumer.py:95 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-consumer-technical-evidence/mod0183/results.json:58 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-consumer-technical-evidence/mod0183/results.json:62 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/before/results.json:500 → docs/analysis — bkz. docs-organization.md §4
+docs/records/audits/2026-09/mod-0184-contract-publication-v1.1.0-r1/after/results.json:427 → docs/analysis — bkz. docs-organization.md §4
+  Stack Trace:
+     at TenantArchitecture.ArchitectureTests.DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders() in /Users/natig/Projects/ERP-vNext-recovery/tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs:line 120
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+WARNING: Overwriting results file: /private/tmp/mod0184-dev02-tests/carrier-architecture.trx
+Results File: /private/tmp/mod0184-dev02-tests/carrier-architecture.trx
+
+Failed!  - Failed:     4, Passed:    14, Skipped:     0, Total:    18, Duration: 3 s - TenantArchitecture.ArchitectureTests.dll (net8.0)

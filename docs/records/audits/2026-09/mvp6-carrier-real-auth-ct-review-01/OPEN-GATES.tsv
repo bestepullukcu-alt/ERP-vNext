@@ -1,0 +1,7 @@
+gate	status	effect	required closure
+Durable PNG	OPEN	Blocks complete bounded UI evidence acceptance	Supported durable screenshot save/export bound to exact UI manifest
+Common-checkout integration	OPEN / OUT OF SCOPE	Accepted isolated bytes are not present in root checkout	Separate authorized integration and verification
+Platform aggregate health	OBSERVED 503	No Platform aggregate-health PASS	Resolve business_reference_data_provider only under its owner; not required to relabel this Carrier flow
+Shared Search localization	OUT OF CARRIER-OWNED SCOPE	No Carrier-owned waiver or acceptance	Shared integration owner disposition
+Gateway/shared permission catalog	OUT OF SCOPE	No shared-surface acceptance	Separate integration-owner authorization and evidence
+Operational rollout and E5/G5	OUT OF SCOPE	No production/full-module claim	Separate rollout and higher-level evidence gates

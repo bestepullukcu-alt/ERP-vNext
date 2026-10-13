@@ -1,0 +1,32 @@
+@using Diten.Web.Views.SupplyChain.Shipments
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ShipmentsIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["ShipmentsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+@if (!Perms.Has("supplychain.shipments.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["ShipmentsTitle"].Value" />
+    return;
+}
+
+<div id="shipmentsListSurface">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 row-gap-3">
+    <div><h5 class="mb-0">@Localizer["ShipmentsTitle"]</h5><p class="mb-0 text-muted">@Localizer["PageDescription"]</p></div>
+    @if (Perms.Has("supplychain.shipments.create"))
+    { <a asp-action="CreatePage" class="btn btn-primary"><i class="bx bx-plus me-1" aria-hidden="true"></i>@Localizer["CreateShipment"]</a> }
+</div>
+<partial name="~/Views/SupplyChain/Shipments/_Filter.cshtml" />
+<div id="shipmentsLoadError" class="alert alert-danger d-none" role="alert"></div>
+<partial name="~/Views/SupplyChain/Shipments/_DataTable.cshtml" />
+</div>
+@* Shown only when the list API answers 403 although the page-level key was present (UAS-001). *@
+<div id="shipmentsListDenied" hidden><partial name="_AccessDenied" model="@Localizer["ShipmentsTitle"].Value" /></div>
+<script id="shipment-permissions" type="application/json">@Json.Serialize(new { canCreate = Perms.Has("supplychain.shipments.create"), canDispatch = Perms.Has("supplychain.shipments.dispatch"), canCancel = Perms.Has("supplychain.shipments.cancel"), canCapturePod = Perms.Has("supplychain.shipments.pod.capture") })</script>
+@section Scripts {
+    <partial name="~/Views/SupplyChain/Shipments/_IndexL10n.cshtml" />
+    <script src="~/assets/js/SupplyChain/Shipments/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/SupplyChain/Shipments/index.js" asp-append-version="true"></script>
+}

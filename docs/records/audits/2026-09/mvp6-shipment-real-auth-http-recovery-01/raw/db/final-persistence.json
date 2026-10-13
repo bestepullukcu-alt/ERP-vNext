@@ -1,0 +1,30 @@
+{
+  "queryExit": 0,
+  "counts": {
+    "sce_shipments": 1,
+    "sce_shipment_history": 4,
+    "sce_shipment_audit": 4,
+    "sce_shipment_outbox": 5,
+    "sce_shipment_receipts": 4
+  },
+  "outboxByStatus": [],
+  "shipment": {
+    "_id": "0857dd87-b133-4b2e-8d90-92ed4aa0bcbd",
+    "TenantId": "00000000-0000-0000-0000-000000000001",
+    "Version": 4,
+    "LegalEntityId": "10000000-0000-0000-0000-000000000001",
+    "Status": "Delivered",
+    "CorrelationId": "f87ab867-ce62-49a5-bb8a-bbd6abe1d84b",
+    "Pod": {
+      "_id": "949cf2fb-0eb0-4505-be3d-729f9a272868",
+      "ReceivedAt": "2026-09-24T14:16:25.005646+00:00",
+      "RecipientName": "Test Recipient",
+      "EvidenceReferenceIds": [
+        "SRA-POD-001"
+      ],
+      "Note": "delivered",
+      "CorrelationId": "f87ab867-ce62-49a5-bb8a-bbd6abe1d84b"
+    }
+  },
+  "lifecycleCorrelationFieldPresent": false
+}

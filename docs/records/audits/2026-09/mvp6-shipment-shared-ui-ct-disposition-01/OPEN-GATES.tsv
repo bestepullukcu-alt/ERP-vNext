@@ -1,0 +1,8 @@
+gate	status	reason
+UI183-A08	OPEN_NOT_RUN	Transition race fixture and persistence conditions absent
+UI183-A09	OPEN_NOT_RUN	Stale POD fixture and persistence conditions absent
+UI183-A12	OPEN_NOT_RUN	Multi-LE real-Auth/persistence fixture absent
+UI183-A10	OPEN_UNAUTHORIZED	Fault proxy explicitly unauthorized
+UI183-A14	OPEN_POLICY	Bounded scope-aware profile decision/evidence remains open; historical 49 PASS / 35 FAIL preserved
+PNG	OPEN	No supported durable PNG export path
+full_ui	OPEN	This disposition accepts only A03 and PRES-183-02

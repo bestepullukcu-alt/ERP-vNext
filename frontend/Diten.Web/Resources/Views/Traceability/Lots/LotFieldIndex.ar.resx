@@ -1,0 +1,139 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+    <data name="Lot.BlockedDisabled" xml:space="preserve">
+    <value>محظورة — لا يمكن استلام مخزون فيها</value>
+  </data>
+  <data name="Lot.Created" xml:space="preserve">
+    <value>أُنشئت التشغيلة {0} كمسودة وتم اختيارها.</value>
+  </data>
+  <data name="Lot.ExpiredDisabled" xml:space="preserve">
+    <value>منتهية الصلاحية — لا يمكن استلام مخزون فيها</value>
+  </data>
+  <data name="Lot.FromSource" xml:space="preserve">
+    <value>التشغيلة مأخوذة من صف المصدر.</value>
+  </data>
+  <data name="Lot.NewLot" xml:space="preserve">
+    <value>+ تشغيلة جديدة</value>
+  </data>
+  <data name="Lot.None" xml:space="preserve">
+    <value>لا توجد تشغيلة مسجّلة لوحدة التخزين (SKU) هذه بعد.</value>
+  </data>
+  <data name="Lot.Picker" xml:space="preserve">
+    <value>التشغيلة</value>
+  </data>
+  <data name="Lot.Placeholder" xml:space="preserve">
+    <value>اختر تشغيلة مسجّلة</value>
+  </data>
+  <data name="Lot.RetestConfirm" xml:space="preserve">
+    <value>أؤكد استخدام هذه التشغيلة رغم انقضاء تاريخ إعادة اختبارها.</value>
+  </data>
+  <data name="Lot.RetestConfirmRequired" xml:space="preserve">
+    <value>أكّد استخدام تشغيلة انقضى تاريخ إعادة اختبارها.</value>
+  </data>
+  <data name="Lot.RetestWarn" xml:space="preserve">
+    <value>انقضى تاريخ إعادة الاختبار لهذه التشغيلة ({0}).</value>
+  </data>
+  <data name="Lot.TypedBadge" xml:space="preserve">
+    <value>تشغيلة مُدخلة يدويًا</value>
+  </data>
+  <data name="Lot.TypedHint" xml:space="preserve">
+    <value>خلال الفترة الانتقالية لا يزال نص التشغيلة المُدخل يدويًا مقبولًا (W-UI-02)؛ يُفضَّل اختيار تشغيلة مسجّلة.</value>
+  </data>
+  <data name="Lot.Unavailable" xml:space="preserve">
+    <value>تعذّر عرض التشغيلات المسجّلة الآن.</value>
+  </data>
+  <data name="Serial.Add" xml:space="preserve">
+    <value>إضافة</value>
+  </data>
+  <data name="Serial.Added" xml:space="preserve">
+    <value>تمت إضافة {0} من الأرقام التسلسلية.</value>
+  </data>
+  <data name="Serial.BadFormat" xml:space="preserve">
+    <value>رقم تسلسلي غير صالح (من 3 إلى 24 حرفًا من A–Z و0–9 و-): {0}</value>
+  </data>
+  <data name="Serial.CheckUnavailable" xml:space="preserve">
+    <value>تعذّر التحقق من الرمز الآن.</value>
+  </data>
+  <data name="Serial.Clear" xml:space="preserve">
+    <value>مسح</value>
+  </data>
+  <data name="Serial.Counter" xml:space="preserve">
+    <value>{0} / {1}</value>
+  </data>
+  <data name="Serial.CounterMore" xml:space="preserve">
+    <value>ينقص {0} من الأرقام التسلسلية.</value>
+  </data>
+  <data name="Serial.CounterOk" xml:space="preserve">
+    <value>عدد الأرقام التسلسلية يساوي الكمية.</value>
+  </data>
+  <data name="Serial.CounterOver" xml:space="preserve">
+    <value>يزيد {0} من الأرقام التسلسلية.</value>
+  </data>
+  <data name="Serial.Duplicates" xml:space="preserve">
+    <value>موجودة في القائمة بالفعل، تم تخطيها: {0}</value>
+  </data>
+  <data name="Serial.Empty" xml:space="preserve">
+    <value>لم تتم إضافة أي رقم تسلسلي بعد.</value>
+  </data>
+  <data name="Serial.GtinSkippedWarning" xml:space="preserve">
+    <value>ليس للمنتج رمز GTIN في البيانات الرئيسية: لم يتم التحقق من GTIN؛ وتم التحقق من التشغيلة وتاريخ انتهاء الصلاحية.</value>
+  </data>
+  <data name="Serial.Methods.Range" xml:space="preserve">
+    <value>نطاق</value>
+  </data>
+  <data name="Serial.Methods.Scan" xml:space="preserve">
+    <value>رمز DataMatrix (GS1)</value>
+  </data>
+  <data name="Serial.Methods.Single" xml:space="preserve">
+    <value>واحدًا تلو الآخر</value>
+  </data>
+  <data name="Serial.Mismatch.Expiry" xml:space="preserve">
+    <value>يحمل الرمز تاريخ انتهاء صلاحية مختلفًا.</value>
+  </data>
+  <data name="Serial.Mismatch.Gtin" xml:space="preserve">
+    <value>ينتمي الرمز إلى منتج آخر (GTIN).</value>
+  </data>
+  <data name="Serial.Mismatch.Lot" xml:space="preserve">
+    <value>يحمل الرمز تشغيلة مختلفة.</value>
+  </data>
+  <data name="Serial.RangeAdd" xml:space="preserve">
+    <value>إضافة نطاق</value>
+  </data>
+  <data name="Serial.RangeEnd" xml:space="preserve">
+    <value>آخر رقم تسلسلي</value>
+  </data>
+  <data name="Serial.RangeHint" xml:space="preserve">
+    <value>البادئة نفسها وعدد الخانات نفسه، 5,000 كحد أقصى.</value>
+  </data>
+  <data name="Serial.RangeMax" xml:space="preserve">
+    <value>يمكن أن يضم النطاق 5,000 رقم تسلسلي كحد أقصى.</value>
+  </data>
+  <data name="Serial.RangeOrder" xml:space="preserve">
+    <value>لا يمكن أن يكون آخر رقم تسلسلي أصغر من الأول.</value>
+  </data>
+  <data name="Serial.RangePrefix" xml:space="preserve">
+    <value>يجب أن يتشارك أول وآخر رقم تسلسلي البادئة وعدد الخانات.</value>
+  </data>
+  <data name="Serial.RangePreview" xml:space="preserve">
+    <value>{0} من الأرقام التسلسلية: {1} … {2}</value>
+  </data>
+  <data name="Serial.RangeStart" xml:space="preserve">
+    <value>أول رقم تسلسلي</value>
+  </data>
+  <data name="Serial.ScanHint" xml:space="preserve">
+    <value>امسح رمز GS1 / ITS أو الصقه ثم اضغط Enter.</value>
+  </data>
+  <data name="Serial.ScanNeedsLot" xml:space="preserve">
+    <value>اختر التشغيلة قبل المسح.</value>
+  </data>
+  <data name="Serial.Unreadable" xml:space="preserve">
+    <value>تعذّرت قراءة الرمز.</value>
+  </data>
+  <data name="Lot.RetestRequired" xml:space="preserve">
+    <value>انقضى تاريخ إعادة الاختبار لهذه التشغيلة: أكّد التحذير في حقل التشغيلة قبل الحفظ.</value>
+  </data>
+</root>

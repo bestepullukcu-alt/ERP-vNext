@@ -1,0 +1,44 @@
+{
+  "mode": "restart",
+  "detail": {
+    "status": 200,
+    "body": {
+      "shipmentId": "d1fe7e6e-684c-46aa-bf27-516477762f1d",
+      "shipmentNumber": "SHP-d1fe7e6e684c46aabf27516477762f1d",
+      "sourceDocumentId": "R2-EMISSION-1",
+      "status": "Draft",
+      "carrierId": null,
+      "loadId": null,
+      "plannedShipAt": "2026-09-24T18:00:00+00:00",
+      "plannedDeliverAt": "2026-09-25T18:00:00+00:00",
+      "actualDeliverAt": null,
+      "sourceModule": "MOD-0141",
+      "sourceType": "SALES_ORDER",
+      "warehouseReferenceId": "WH-1",
+      "shipToReference": "DEST-1",
+      "lines": [
+        {
+          "lineNumber": "1",
+          "itemId": "4eeac1fb-ac30-413f-bbf7-43184757b5b4",
+          "skuId": "b5aa1faa-9350-4c61-83ff-525cc5491485",
+          "quantity": "1.000",
+          "uomId": "EA",
+          "inventoryReferenceId": "INV-1"
+        }
+      ],
+      "pod": null,
+      "contractVersion": "v1",
+      "lifecycleCorrelationId": "c82174ce-72d3-4aa0-bb6d-9c87e243c0e4"
+    },
+    "headers": {
+      "X-Correlation-Id": "d42184a2-dcb5-4cfe-99a4-a661e4df4983"
+    },
+    "requestBytes": 0
+  },
+  "persistence": {
+    "root": "c82174ce-72d3-4aa0-bb6d-9c87e243c0e4",
+    "trace": "c82174ce-72d3-4aa0-bb6d-9c87e243c0e4",
+    "outbox": 1
+  },
+  "pass": true
+}

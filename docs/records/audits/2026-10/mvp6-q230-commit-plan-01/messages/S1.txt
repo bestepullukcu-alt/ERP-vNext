@@ -1,0 +1,5 @@
+feat(supply-chain): add MOD-0184 Carrier bounded source
+
+Carrier feature source, tests and probes as they stand in the working tree.
+Work packages: MOD-0184 WPs; Q202a for files it wrote.
+37 files from pathspec/S1.txt (Q230 commit plan).

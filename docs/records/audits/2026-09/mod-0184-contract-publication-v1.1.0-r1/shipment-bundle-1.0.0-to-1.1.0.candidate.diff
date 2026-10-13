@@ -1,0 +1,835 @@
+--- a/docs/analysis/contracts/shipment-bundle.openapi.yaml
++++ b/docs/analysis/contracts/shipment-bundle.openapi.yaml
+@@ -10,8 +10,9 @@
+     shadow stock balance tutmaz. ASSUMPTION: lifecycle gecisleri optimistic concurrency
+     yerine idempotent command + mevcut durum kontroluyle korunur. CONSUMES:
+     WAREHOUSE-SHIPMENT-TRIGGER (merkez üretecek)
+-  version: 1.0.0
+-  x-status: FROZEN
++  version: 1.1.0
++  x-status: CANDIDATE
++  x-publication-status: NOT_PUBLISHED
+   x-owner: [MOD-0183, MOD-0184, MOD-0185, MOD-0186, MOD-0187]
+   x-consumes:
+     - INVENTORY
+@@ -201,66 +202,210 @@
+         '422': { $ref: '#/components/responses/Unprocessable' }
+   /carriers:
+     get:
+-      tags: [Carriers]
++      tags:
++      - Carriers
+       operationId: queryCarriers
+       summary: Carrier listesi sorgula
+       parameters:
+-        - { $ref: '#/components/parameters/CorrelationId' }
+-        - { name: status, in: query, schema: { $ref: '#/components/schemas/CarrierStatus' } }
++      - $ref: '#/components/parameters/CorrelationId'
++      - name: status
++        in: query
++        schema:
++          $ref: '#/components/schemas/CarrierStatus'
+       responses:
+         '200':
+           description: Carrier listesi
+           content:
+             application/json:
+-              schema: { $ref: '#/components/schemas/CarrierListResponse' }
+-              example: { items: [{ carrierId: 18400000-0000-0000-0000-000000000001, carrierCode: CARR-01, displayName: North Star Logistics, status: Active, supportedModes: [Road] }], total: 1, contractVersion: v1 }
++              schema:
++                $ref: '#/components/schemas/CarrierListResponse'
++              example:
++                items:
++                - carrierId: 18400000-0000-0000-0000-000000000001
++                  carrierCode: CARR-01
++                  displayName: North Star Logistics
++                  status: Active
++                  supportedModes:
++                  - Road
++                total: 1
++                contractVersion: v1
++          headers:
++            X-Correlation-Id:
++              $ref: '#/components/headers/CarrierResponseCorrelation'
++        '400':
++          $ref: '#/components/responses/CarrierQError400'
++        '401':
++          $ref: '#/components/responses/CarrierQError401'
++        '403':
++          $ref: '#/components/responses/CarrierQError403'
++        '404':
++          $ref: '#/components/responses/CarrierQError404'
++        '500':
++          $ref: '#/components/responses/CarrierQError500'
++        '503':
++          $ref: '#/components/responses/CarrierQError503'
++      description: 'Carrier-only normative semantics: carrier-semantics-v1.1.0.md (CO-184-04-01 §§3–5 and CO-184-05-01
++        §§6–7). Apply the annex first-failing-stage precedence, signed tenant/LE/actor context and exact operation
++        permission. All application responses MUST include X-Correlation-Id: current valid request UUID (lowercase
++        hyphenated), or one generated rejection trace UUID when missing/invalid/ambiguous. Nil UUID is valid. Transport/router/startup
++        failures outside this operation are excluded; errors use Error, never an outer envelope.'
++      x-normative-annex: carrier-semantics-v1.1.0.md
+     post:
+-      tags: [Carriers]
++      tags:
++      - Carriers
+       operationId: createCarrier
+       summary: Carrier olustur
+       parameters:
+-        - { $ref: '#/components/parameters/CorrelationId' }
+-        - { $ref: '#/components/parameters/IdempotencyKey' }
++      - $ref: '#/components/parameters/CorrelationId'
++      - $ref: '#/components/parameters/IdempotencyKey'
+       requestBody:
+         required: true
+         content:
+           application/json:
+-            schema: { $ref: '#/components/schemas/CreateCarrierCommand' }
+-            example: { carrierCode: CARR-01, displayName: North Star Logistics, supportedModes: [Road], externalReference: EXT-CARR-88 }
++            schema:
++              $ref: '#/components/schemas/CreateCarrierCommand'
++            example:
++              carrierCode: CARR-01
++              displayName: North Star Logistics
++              supportedModes:
++              - Road
++              externalReference: EXT-CARR-88
+       responses:
+         '201':
+           description: Carrier olusturuldu
+           content:
+             application/json:
+-              schema: { $ref: '#/components/schemas/CarrierResponse' }
+-              example: { carrierId: 18400000-0000-0000-0000-000000000001, carrierCode: CARR-01, status: Active, idempotentReplay: false, contractVersion: v1 }
+-        '409': { $ref: '#/components/responses/Conflict' }
+-        '422': { $ref: '#/components/responses/Unprocessable' }
++              schema:
++                $ref: '#/components/schemas/CarrierResponse'
++              examples:
++                first:
++                  value:
++                    carrierId: 18400000-0000-0000-0000-000000000001
++                    carrierCode: CARR-01
++                    status: Active
++                    idempotentReplay: false
++                    contractVersion: v1
++                replay:
++                  summary: Current response correlation is in header; original audit remains unchanged.
++                  value:
++                    carrierId: 18400000-0000-0000-0000-000000000001
++                    carrierCode: CARR-01
++                    status: Active
++                    idempotentReplay: true
++                    contractVersion: v1
++          headers:
++            X-Correlation-Id:
++              $ref: '#/components/headers/CarrierResponseCorrelation'
++        '409':
++          $ref: '#/components/responses/CarrierCError409'
++        '422':
++          $ref: '#/components/responses/CarrierCreateUnprocessable'
++        '400':
++          $ref: '#/components/responses/CarrierCError400'
++        '401':
++          $ref: '#/components/responses/CarrierCError401'
++        '403':
++          $ref: '#/components/responses/CarrierCError403'
++        '404':
++          $ref: '#/components/responses/CarrierCError404'
++        '415':
++          $ref: '#/components/responses/CarrierCError415'
++        '500':
++          $ref: '#/components/responses/CarrierCError500'
++        '503':
++          $ref: '#/components/responses/CarrierCError503'
++      description: 'Carrier-only normative semantics: carrier-semantics-v1.1.0.md (CO-184-04-01 §§3–5 and CO-184-05-01
++        §§6–7). Apply the annex first-failing-stage precedence, signed tenant/LE/actor context and exact operation
++        permission. All application responses MUST include X-Correlation-Id: current valid request UUID (lowercase
++        hyphenated), or one generated rejection trace UUID when missing/invalid/ambiguous. Nil UUID is valid. Transport/router/startup
++        failures outside this operation are excluded; errors use Error, never an outer envelope. Durable replay is
++        scoped by tenant, LE, operationId, target and exact parsed key; authorize and validate before lookup. The
++        response header carries CURRENT request correlation; ORIGINAL committed correlation/actor remain in audit.
++        Replay returns the original success snapshot with idempotentReplay=true and original HTTP status (create 201,
++        status 200). No success-body fields are added. Different valid payload under a committed key returns 409 IDEMPOTENCY_KEY_REUSED.
++        No receipt for failed requests, no TTL, no new mutation/audit on replay. Unknown commit uses 503 and same-key
++        recovery.'
++      x-normative-annex: carrier-semantics-v1.1.0.md
+   /carriers/{carrierId}/status:
+     post:
+-      tags: [Carriers]
++      tags:
++      - Carriers
+       operationId: changeCarrierStatus
+       summary: Carrier durumunu degistir
+-      description: Active<->Suspended; Retired terminal durumdur.
+-      parameters:
+-        - { name: carrierId, in: path, required: true, schema: { type: string, format: uuid } }
+-        - { $ref: '#/components/parameters/CorrelationId' }
+-        - { $ref: '#/components/parameters/IdempotencyKey' }
++      description: 'Active<->Suspended; Retired terminal durumdur. Carrier-only normative semantics: carrier-semantics-v1.1.0.md
++        (CO-184-04-01 §§3–5 and CO-184-05-01 §§6–7). Apply the annex first-failing-stage precedence, signed tenant/LE/actor
++        context and exact operation permission. All application responses MUST include X-Correlation-Id: current valid
++        request UUID (lowercase hyphenated), or one generated rejection trace UUID when missing/invalid/ambiguous.
++        Nil UUID is valid. Transport/router/startup failures outside this operation are excluded; errors use Error,
++        never an outer envelope. Durable replay is scoped by tenant, LE, operationId, target and exact parsed key;
++        authorize and validate before lookup. The response header carries CURRENT request correlation; ORIGINAL committed
++        correlation/actor remain in audit. Replay returns the original success snapshot with idempotentReplay=true
++        and original HTTP status (create 201, status 200). No success-body fields are added. Different valid payload
++        under a committed key returns 409 IDEMPOTENCY_KEY_REUSED. No receipt for failed requests, no TTL, no new mutation/audit
++        on replay. Unknown commit uses 503 and same-key recovery.'
++      parameters:
++      - name: carrierId
++        in: path
++        required: true
++        schema:
++          type: string
++          format: uuid
++      - $ref: '#/components/parameters/CorrelationId'
++      - $ref: '#/components/parameters/IdempotencyKey'
+       requestBody:
+         required: true
+         content:
+           application/json:
+-            schema: { $ref: '#/components/schemas/ChangeCarrierStatusCommand' }
+-            example: { targetStatus: Suspended, reasonCode: COMPLIANCE_HOLD }
++            schema:
++              $ref: '#/components/schemas/ChangeCarrierStatusCommand'
++            example:
++              targetStatus: Suspended
++              reasonCode: COMPLIANCE_HOLD
+       responses:
+         '200':
+           description: Carrier durumu degisti
+           content:
+             application/json:
+-              schema: { $ref: '#/components/schemas/CarrierResponse' }
+-              example: { carrierId: 18400000-0000-0000-0000-000000000001, carrierCode: CARR-01, status: Suspended, idempotentReplay: false, contractVersion: v1 }
+-        '404': { $ref: '#/components/responses/NotFound' }
+-        '422': { $ref: '#/components/responses/Unprocessable' }
++              schema:
++                $ref: '#/components/schemas/CarrierResponse'
++              examples:
++                first:
++                  value:
++                    carrierId: 18400000-0000-0000-0000-000000000001
++                    carrierCode: CARR-01
++                    status: Suspended
++                    idempotentReplay: false
++                    contractVersion: v1
++                replay:
++                  summary: Current response correlation is in header; original audit remains unchanged.
++                  value:
++                    carrierId: 18400000-0000-0000-0000-000000000001
++                    carrierCode: CARR-01
++                    status: Suspended
++                    idempotentReplay: true
++                    contractVersion: v1
++          headers:
++            X-Correlation-Id:
++              $ref: '#/components/headers/CarrierResponseCorrelation'
++        '404':
++          $ref: '#/components/responses/CarrierSError404'
++        '422':
++          $ref: '#/components/responses/CarrierSError422'
++        '400':
++          $ref: '#/components/responses/CarrierSError400'
++        '401':
++          $ref: '#/components/responses/CarrierSError401'
++        '403':
++          $ref: '#/components/responses/CarrierSError403'
++        '409':
++          $ref: '#/components/responses/CarrierSError409'
++        '415':
++          $ref: '#/components/responses/CarrierSError415'
++        '500':
++          $ref: '#/components/responses/CarrierSError500'
++        '503':
++          $ref: '#/components/responses/CarrierSError503'
++      x-normative-annex: carrier-semantics-v1.1.0.md
+   /loads:
+     get:
+       tags: [Loads]
+@@ -956,3 +1101,583 @@
+           examples:
+             inventory: { value: { error: { code: INVENTORY_UNAVAILABLE, message: Frozen INVENTORY mock erisilemez, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
+             warehouseGap: { value: { error: { code: WAREHOUSE_SHIPMENT_TRIGGER_UNAVAILABLE, message: 'GAP: merkez CT WAREHOUSE-SHIPMENT-TRIGGER uretmeli', correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
++    CarrierQError400:
++      description: Carrier-only 400; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
++        MUST be present.
++      headers:
++        X-Correlation-Id:
++          $ref: '#/components/headers/CarrierResponseCorrelation'
++      content:
++        application/json:
++          schema:
++            $ref: '#/components/schemas/Error'
++          examples:
++            E04_0:
++              summary: E04 correlation header
++              value:
++                error:
++                  code: INVALID_REQUEST
++                  message: X-Correlation-Id must contain exactly one UUID value.
++                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                contractVersion: v1
++            E04_1:
++              summary: E04 tenant header
++              value:
++                error:
++                  code: INVALID_REQUEST
++                  message: X-Tenant-Id must contain exactly one UUID value.
++                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                contractVersion: v1
++            E04_2:
++              summary: E04 LE header
++              value:
++                error:
++                  code: INVALID_REQUEST
++                  message: X-Legal-Entity-Id must contain exactly one UUID value.
++                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                contractVersion: v1
++            E06_3:
++              summary: E06 malformed path/query/JSON/schema
++              value:
++                error:
++                  code: INVALID_REQUEST
++                  message: Request schema validation failed.
++                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                contractVersion: v1
++    CarrierQError401:
++      description: Carrier-only 401; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
++        MUST be present.
++      headers:
++        X-Correlation-Id:
++          $ref: '#/components/headers/CarrierResponseCorrelation'
++        WWW-Authenticate:
++          description: MUST be present; no validator details.
++          schema:
++            type: string
++            const: Bearer
++          example: Bearer
++      content:
++        application/json:
++          schema:
++            $ref: '#/components/schemas/Error'
++          examples:
++            E02_0:
++              summary: E02 authentication
++              value:
++                error:
++                  code: INVALID_REQUEST
++                  message: Authentication required.
++                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                contractVersion: v1
++    CarrierQError403:
++      description: Carrier-only 403; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
++        MUST be present.
++      headers:
++        X-Correlation-Id:
++          $ref: '#/components/headers/CarrierResponseCorrelation'
++      content:
++        application/json:
++          schema:
++            $ref: '#/components/schemas/Error'
++          examples:
++            E03_0:
++              summary: E03 unusable claims veya missing permission
++              value:
++                error:
++                  code: INVALID_REQUEST
++                  message: Required authorization context or permission is missing.
++                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                contractVersion: v1
++    CarrierQError404:
++      description: Carrier-only 404; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
++        MUST be present.
++      headers:
++        X-Correlation-Id:
++          $ref: '#/components/headers/CarrierResponseCorrelation'
++      content:
++        application/json:
++          schema:
++            $ref: '#/components/schemas/Error'
++          examples:
++            E05_0:
++              summary: E05 header/claim mismatch
++              value:
++                error:
++                  code: CARRIER_NOT_FOUND
++                  message: Carrier not found.
++                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                contractVersion: v1
++    CarrierQError500:
++      description: Carrier-only 500; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
++        MUST be present.
++      headers:
++        X-Correlation-Id:
++          $ref: '#/components/headers/CarrierResponseCorrelation'
++      content:
++        application/json:
++          schema:
++            $ref: '#/components/schemas/Error'
++          examples:
++            E13_0:
++              summary: E13 unexpected internal error
++              value:
++                error:
++                  code: INTERNAL_ERROR
++                  message: An unexpected internal error occurred.
++                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                contractVersion: v1
++    CarrierQError503:
++      description: Carrier-only 503; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
++        MUST be present.
++      headers:
++        X-Correlation-Id:
++          $ref: '#/components/headers/CarrierResponseCorrelation'
++      content:
++        application/json:
++          schema:
++            $ref: '#/components/schemas/Error'
++          examples:
++            E12_0:
++              summary: E12 unavailable persistence / exhausted safe retry / unresolved commit
++              value:
++                error:
++                  code: PERSISTENCE_UNAVAILABLE
++                  message: Persistence outcome is unavailable; retry the request using the same idempotency key when
++                    applicable.
++                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                contractVersion: v1
++    CarrierCError400:
++      description: Carrier-only 400; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
++        MUST be present.
++      headers:
++        X-Correlation-Id:
++          $ref: '#/components/headers/CarrierResponseCorrelation'
++      content:
++        application/json:
++          schema:
++            $ref: '#/components/schemas/Error'
++          examples:
++            E04_0:
++              summary: E04 correlation header
++              value:
++                error:
++                  code: INVALID_REQUEST
++                  message: X-Correlation-Id must contain exactly one UUID value.
++                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                contractVersion: v1
++            E04_1:
++              summary: E04 tenant header
++              value:
++                error:
++                  code: INVALID_REQUEST
++                  message: X-Tenant-Id must contain exactly one UUID value.
++                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                contractVersion: v1
++            E04_2:
++              summary: E04 LE header
++              value:
++                error:
++                  code: INVALID_REQUEST
++                  message: X-Legal-Entity-Id must contain exactly one UUID value.
++                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                contractVersion: v1
++            E04_3:
++              summary: E04 key header
++              value:
++                error:
++                  code: INVALID_REQUEST
++                  message: Idempotency-Key must contain exactly one string value of length 1 to 128.
++                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                contractVersion: v1
++            E06_4:
++              summary: E06 malformed path/query/JSON/schema
++              value:
++                error:
++                  code: INVALID_REQUEST
++                  message: Request schema validation failed.
++                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                contractVersion: v1
++    CarrierCError401:
++      description: Carrier-only 401; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
++        MUST be present.
++      headers:
++        X-Correlation-Id:
++          $ref: '#/components/headers/CarrierResponseCorrelation'
++        WWW-Authenticate:
++          description: MUST be present; no validator details.
++          schema:
++            type: string
++            const: Bearer
++          example: Bearer
++      content:
++        application/json:
++          schema:
++            $ref: '#/components/schemas/Error'
++          examples:
++            E02_0:
++              summary: E02 authentication
++              value:
++                error:
++                  code: INVALID_REQUEST
++                  message: Authentication required.
++                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                contractVersion: v1
++    CarrierCError403:
++      description: Carrier-only 403; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
++        MUST be present.
++      headers:
++        X-Correlation-Id:
++          $ref: '#/components/headers/CarrierResponseCorrelation'
++      content:
++        application/json:
++          schema:
++            $ref: '#/components/schemas/Error'
++          examples:
++            E03_0:
++              summary: E03 unusable claims veya missing permission
++              value:
++                error:
++                  code: INVALID_REQUEST
++                  message: Required authorization context or permission is missing.
++                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                contractVersion: v1
++    CarrierCError404:
++      description: Carrier-only 404; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
++        MUST be present.
++      headers:
++        X-Correlation-Id:
++          $ref: '#/components/headers/CarrierResponseCorrelation'
++      content:
++        application/json:
++          schema:
++            $ref: '#/components/schemas/Error'
++          examples:
++            E05_0:
++              summary: E05 header/claim mismatch
++              value:
++                error:
++                  code: CARRIER_NOT_FOUND
++                  message: Carrier not found.
++                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                contractVersion: v1
++    CarrierCError409:
++      description: Carrier-only 409; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
++        MUST be present.
++      headers:
++        X-Correlation-Id:
++          $ref: '#/components/headers/CarrierResponseCorrelation'
++      content:
++        application/json:
++          schema:
++            $ref: '#/components/schemas/Error'
++          examples:
++            E09_0:
++              summary: E09 committed scoped key / different validated payload
++              value:
++                error:
++                  code: IDEMPOTENCY_KEY_REUSED
++                  message: Idempotency-Key was used with a different payload.
++                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                contractVersion: v1
++            E10_1:
++              summary: E10 reserved same-scope code
++              value:
++                error:
++                  code: CARRIER_CODE_CONFLICT
++                  message: Carrier code is already reserved.
++                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                contractVersion: v1
++    CarrierCError415:
++      description: Carrier-only 415; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
++        MUST be present.
++      headers:
++        X-Correlation-Id:
++          $ref: '#/components/headers/CarrierResponseCorrelation'
++      content:
++        application/json:
++          schema:
++            $ref: '#/components/schemas/Error'
++          examples:
++            E07_0:
++              summary: E07 unsupported request media type
++              value:
++                error:
++                  code: INVALID_REQUEST
++                  message: Request content type is not supported.
++                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                contractVersion: v1
++    CarrierCError500:
++      description: Carrier-only 500; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
++        MUST be present.
++      headers:
++        X-Correlation-Id:
++          $ref: '#/components/headers/CarrierResponseCorrelation'
++      content:
++        application/json:
++          schema:
++            $ref: '#/components/schemas/Error'
++          examples:
++            E13_0:
++              summary: E13 unexpected internal error
++              value:
++                error:
++                  code: INTERNAL_ERROR
++                  message: An unexpected internal error occurred.
++                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                contractVersion: v1
++    CarrierCError503:
++      description: Carrier-only 503; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
++        MUST be present.
++      headers:
++        X-Correlation-Id:
++          $ref: '#/components/headers/CarrierResponseCorrelation'
++      content:
++        application/json:
++          schema:
++            $ref: '#/components/schemas/Error'
++          examples:
++            E12_0:
++              summary: E12 unavailable persistence / exhausted safe retry / unresolved commit
++              value:
++                error:
++                  code: PERSISTENCE_UNAVAILABLE
++                  message: Persistence outcome is unavailable; retry the request using the same idempotency key when
++                    applicable.
++                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                contractVersion: v1
++    CarrierCreateUnprocessable:
++      description: Is kurali veya lifecycle gecisi gecersiz; preserved existing create422, no new Carrier create business
++        rule. X-Correlation-Id MUST be present.
++      content:
++        application/json:
++          schema:
++            $ref: '#/components/schemas/Error'
++      headers:
++        X-Correlation-Id:
++          $ref: '#/components/headers/CarrierResponseCorrelation'
++    CarrierSError400:
++      description: Carrier-only 400; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
++        MUST be present.
++      headers:
++        X-Correlation-Id:
++          $ref: '#/components/headers/CarrierResponseCorrelation'
++      content:
++        application/json:
++          schema:
++            $ref: '#/components/schemas/Error'
++          examples:
++            E04_0:
++              summary: E04 correlation header
++              value:
++                error:
++                  code: INVALID_REQUEST
++                  message: X-Correlation-Id must contain exactly one UUID value.
++                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                contractVersion: v1
++            E04_1:
++              summary: E04 tenant header
++              value:
++                error:
++                  code: INVALID_REQUEST
++                  message: X-Tenant-Id must contain exactly one UUID value.
++                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                contractVersion: v1
++            E04_2:
++              summary: E04 LE header
++              value:
++                error:
++                  code: INVALID_REQUEST
++                  message: X-Legal-Entity-Id must contain exactly one UUID value.
++                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                contractVersion: v1
++            E04_3:
++              summary: E04 key header
++              value:
++                error:
++                  code: INVALID_REQUEST
++                  message: Idempotency-Key must contain exactly one string value of length 1 to 128.
++                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                contractVersion: v1
++            E06_4:
++              summary: E06 malformed path/query/JSON/schema
++              value:
++                error:
++                  code: INVALID_REQUEST
++                  message: Request schema validation failed.
++                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                contractVersion: v1
++    CarrierSError401:
++      description: Carrier-only 401; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
++        MUST be present.
++      headers:
++        X-Correlation-Id:
++          $ref: '#/components/headers/CarrierResponseCorrelation'
++        WWW-Authenticate:
++          description: MUST be present; no validator details.
++          schema:
++            type: string
++            const: Bearer
++          example: Bearer
++      content:
++        application/json:
++          schema:
++            $ref: '#/components/schemas/Error'
++          examples:
++            E02_0:
++              summary: E02 authentication
++              value:
++                error:
++                  code: INVALID_REQUEST
++                  message: Authentication required.
++                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                contractVersion: v1
++    CarrierSError403:
++      description: Carrier-only 403; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
++        MUST be present.
++      headers:
++        X-Correlation-Id:
++          $ref: '#/components/headers/CarrierResponseCorrelation'
++      content:
++        application/json:
++          schema:
++            $ref: '#/components/schemas/Error'
++          examples:
++            E03_0:
++              summary: E03 unusable claims veya missing permission
++              value:
++                error:
++                  code: INVALID_REQUEST
++                  message: Required authorization context or permission is missing.
++                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                contractVersion: v1
++    CarrierSError404:
++      description: Carrier-only 404; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
++        MUST be present.
++      headers:
++        X-Correlation-Id:
++          $ref: '#/components/headers/CarrierResponseCorrelation'
++      content:
++        application/json:
++          schema:
++            $ref: '#/components/schemas/Error'
++          examples:
++            E05_0:
++              summary: E05 header/claim mismatch
++              value:
++                error:
++                  code: CARRIER_NOT_FOUND
++                  message: Carrier not found.
++                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                contractVersion: v1
++            E08_1:
++              summary: E08 target unavailable in scope
++              value:
++                error:
++                  code: CARRIER_NOT_FOUND
++                  message: Carrier not found.
++                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                contractVersion: v1
++    CarrierSError409:
++      description: Carrier-only 409; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
++        MUST be present.
++      headers:
++        X-Correlation-Id:
++          $ref: '#/components/headers/CarrierResponseCorrelation'
++      content:
++        application/json:
++          schema:
++            $ref: '#/components/schemas/Error'
++          examples:
++            E09_0:
++              summary: E09 committed scoped key / different validated payload
++              value:
++                error:
++                  code: IDEMPOTENCY_KEY_REUSED
++                  message: Idempotency-Key was used with a different payload.
++                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                contractVersion: v1
++    CarrierSError415:
++      description: Carrier-only 415; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
++        MUST be present.
++      headers:
++        X-Correlation-Id:
++          $ref: '#/components/headers/CarrierResponseCorrelation'
++      content:
++        application/json:
++          schema:
++            $ref: '#/components/schemas/Error'
++          examples:
++            E07_0:
++              summary: E07 unsupported request media type
++              value:
++                error:
++                  code: INVALID_REQUEST
++                  message: Request content type is not supported.
++                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                contractVersion: v1
++    CarrierSError422:
++      description: Carrier-only 422; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
++        MUST be present.
++      headers:
++        X-Correlation-Id:
++          $ref: '#/components/headers/CarrierResponseCorrelation'
++      content:
++        application/json:
++          schema:
++            $ref: '#/components/schemas/Error'
++          examples:
++            E11_0:
++              summary: E11 invalid lifecycle / new-key same-state
++              value:
++                error:
++                  code: INVALID_CARRIER_TRANSITION
++                  message: Carrier lifecycle transition is invalid.
++                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                contractVersion: v1
++    CarrierSError500:
++      description: Carrier-only 500; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
++        MUST be present.
++      headers:
++        X-Correlation-Id:
++          $ref: '#/components/headers/CarrierResponseCorrelation'
++      content:
++        application/json:
++          schema:
++            $ref: '#/components/schemas/Error'
++          examples:
++            E13_0:
++              summary: E13 unexpected internal error
++              value:
++                error:
++                  code: INTERNAL_ERROR
++                  message: An unexpected internal error occurred.
++                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                contractVersion: v1
++    CarrierSError503:
++      description: Carrier-only 503; exact conditions and first-failure precedence in carrier-semantics-v1.1.0.md. X-Correlation-Id
++        MUST be present.
++      headers:
++        X-Correlation-Id:
++          $ref: '#/components/headers/CarrierResponseCorrelation'
++      content:
++        application/json:
++          schema:
++            $ref: '#/components/schemas/Error'
++          examples:
++            E12_0:
++              summary: E12 unavailable persistence / exhausted safe retry / unresolved commit
++              value:
++                error:
++                  code: PERSISTENCE_UNAVAILABLE
++                  message: Persistence outcome is unavailable; retry the request using the same idempotency key when
++                    applicable.
++                  correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
++                contractVersion: v1
++  headers:
++    CarrierResponseCorrelation:
++      description: MUST be present on every Carrier application response. Current valid request UUID on success/replay;
++        C_trace on error. Original audit correlation is never rewritten. See normative annex.
++      schema:
++        type: string
++        format: uuid
++      example: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa

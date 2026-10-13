@@ -1,0 +1,15 @@
+### D4-3 tenant/LE isolation guard — SABOTAGED (InventoryLedgerRepository.BalanceScope Tenant+LE predicate removed)
+-        => Builders<InventoryBalance>.Filter.Eq(x => x.TenantId, (Guid?)_tenantId)
+-           & Builders<InventoryBalance>.Filter.Eq(x => x.LegalEntityId, (Guid?)_legalEntityId)
+-           & Builders<InventoryBalance>.Filter.Eq(x => x.IsDeleted, false);
++        => Builders<InventoryBalance>.Filter.Eq(x => x.IsDeleted, false); // SABOTAGE D4-3: Tenant + LE predicate removed
+  Başarısız Diten.InventoryService.Tests.Api.IsolationTests.Same_tenant_other_legal_entity_is_isolated_too [31 ms]
+  Hata İletisi:
+   Assert.Empty() Failure: Collection was not empty
+  Başarısız Diten.InventoryService.Tests.Api.IsolationTests.Tenant_A_stock_is_invisible_to_tenant_B_on_every_read [40 ms]
+  Hata İletisi:
+   Assert.Equal() Failure: Values differ
+  Başarısız Diten.InventoryService.Tests.Api.IsolationTests.Persisted_documents_carry_the_token_scope_only [17 ms]
+  Hata İletisi:
+   Assert.Single() Failure: The collection was empty
+Başarısız! - Başarısız:     3, Başarılı:    13, Atlanan:     0, Toplam:    16, Süre: 1 s - Diten.InventoryService.Tests.dll (net8.0)

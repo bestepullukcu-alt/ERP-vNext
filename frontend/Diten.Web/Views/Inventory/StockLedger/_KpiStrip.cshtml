@@ -1,0 +1,58 @@
+@using Diten.Web.Views.Inventory.StockLedger
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<StockLedgerIndex> Localizer
+@*
+    KPI strip (pack §4, UI-026). The values come from the contract availability operation, folded by the list adapter
+    into the SAME response as the page of rows (data.summary) — never counted from the rows in hand, which are one
+    page. BG-07: there is no unfiltered aggregate, so without a product / SKU filter the cards say how to get one
+    (ASSUMPTION-UI-03) instead of showing a zero that would be a lie.
+*@
+<div class="row g-4 mb-4" id="stockledger-kpis">
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card h-100">
+            <div class="card-body d-flex align-items-center gap-3 p-3">
+                <div class="avatar"><span class="avatar-initial rounded bg-label-primary"><i class="bx bx-package"></i></span></div>
+                <div>
+                    <small class="text-muted">@Localizer["KpiOnHand"]</small>
+                    <h5 id="kpi-stock-onhand" class="mb-0 font-monospace" data-kpi="onHand">—</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card h-100">
+            <div class="card-body d-flex align-items-center gap-3 p-3">
+                <div class="avatar"><span class="avatar-initial rounded bg-label-success"><i class="bx bx-check-circle"></i></span></div>
+                <div>
+                    <small class="text-muted">@Localizer["KpiAvailable"]</small>
+                    <h5 id="kpi-stock-available" class="mb-0 font-monospace" data-kpi="available">—</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card h-100">
+            <div class="card-body d-flex align-items-center gap-3 p-3">
+                <div class="avatar"><span class="avatar-initial rounded bg-label-info"><i class="bx bx-search-alt"></i></span></div>
+                <div>
+                    <small class="text-muted">@Localizer["KpiQualityInspection"]</small>
+                    <h5 id="kpi-stock-qi" class="mb-0 font-monospace" data-kpi="qualityInspection">—</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card h-100">
+            <div class="card-body d-flex align-items-center gap-3 p-3">
+                <div class="avatar"><span class="avatar-initial rounded bg-label-warning"><i class="bx bx-block"></i></span></div>
+                <div>
+                    <small class="text-muted">@Localizer["KpiQuarantineBlocked"]</small>
+                    <h5 id="kpi-stock-blocked" class="mb-0 font-monospace" data-kpi="quarantineBlocked">—</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12">
+        <small id="stockledger-kpi-hint" class="text-muted">@Localizer["KpiSelectProduct"]</small>
+    </div>
+</div>

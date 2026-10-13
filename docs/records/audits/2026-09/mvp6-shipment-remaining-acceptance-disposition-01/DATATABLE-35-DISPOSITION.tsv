@@ -1,0 +1,36 @@
+fail_no	raw_fail	classification	bounded_scope_reason	required_disposition
+01	Compact reference has Edit.cshtml	OUT_OF_SCOPE_FULL_CRUD_EXPECTATION	UI183-A14 explicitly requires unsupported edit to remain absent	Do not add Edit.cshtml
+02	Index.cshtml includes literal <partial name="_Filter" />	COMMENT_OR_OWNER_DECISION_CONFLICT	Approved source uses an equivalent absolute partial path and browser evidence rendered the bounded filter	Quality-gate owner must accept semantic partial resolution in bounded profile
+03	Compact _Form.cshtml matches Details.cshtml section/card map	COMMENT_OR_OWNER_DECISION_CONFLICT	Shipment create and detail expose different approved bounded information; generic parity is not an acceptance rule	Bounded profile must use UI183-A05/A06 rather than generic section parity
+04	Index.cshtml includes literal <partial name="_IndexL10n" />	COMMENT_OR_OWNER_DECISION_CONFLICT	Approved source uses equivalent absolute partial inclusion and live localization evidence exists	Quality-gate owner must accept semantic partial resolution in bounded profile
+05	_IndexL10n.cshtml provides Active	OUT_OF_SCOPE_FULL_CRUD_EXPECTATION	Shipment uses frozen lifecycle states, not generic Active/Passive	Do not add generic status token
+06	_IndexL10n.cshtml provides Passive	OUT_OF_SCOPE_FULL_CRUD_EXPECTATION	Shipment uses frozen lifecycle states, not generic Active/Passive	Do not add generic status token
+07	_IndexL10n.cshtml provides Unknown	OUT_OF_SCOPE_FULL_CRUD_EXPECTATION	No approved generic Unknown state/affordance exists	Do not invent status behavior
+08	_IndexL10n.cshtml provides Actions	EVIDENCE_GAP	Bounded responsive action column rendered and localized, but declaration is supplied outside the exact generic key check	Scope-aware profile must verify rendered/localized action heading
+09	_IndexL10n.cshtml provides Edit	OUT_OF_SCOPE_FULL_CRUD_EXPECTATION	Edit is expressly unsupported by UI183-A14	Do not add key or action
+10	_IndexL10n.cshtml provides ViewDetails	EVIDENCE_GAP	Detail action is bounded and rendered, but the generic key location is not the only approved localization carrier	Verify rendered seven-language detail action in bounded profile
+11	_IndexL10n.cshtml provides QuickView	OUT_OF_SCOPE_FULL_CRUD_EXPECTATION	QuickView is expressly unsupported by UI183-A14	Do not add key or action
+12	_IndexL10n.cshtml provides BulkDelete	OUT_OF_SCOPE_FULL_CRUD_EXPECTATION	Bulk/delete is expressly unsupported by UI183-A14	Do not add key or action
+13	_IndexL10n.cshtml provides BulkDeleteConfirm	OUT_OF_SCOPE_FULL_CRUD_EXPECTATION	Bulk/delete is expressly unsupported by UI183-A14	Do not add key or confirmation
+14	_IndexL10n.cshtml provides AreYouSure	OUT_OF_SCOPE_FULL_CRUD_EXPECTATION	Failure belongs to generic destructive CRUD checks; Shipment has only approved transition/POD confirmations	Do not add generic delete confirmation; verify bounded SweetAlert text separately
+15	_IndexL10n.cshtml provides Cancel	EVIDENCE_GAP	Cancel is a bounded lifecycle action with existing localized UI, but generic declaration location is not proven	Verify rendered target-specific Cancel text in bounded profile
+16	_IndexL10n.cshtml provides Search	EVIDENCE_GAP	DataTables search chrome may be supplied by shared DtDefaults rather than module payload	Verify localized rendered search control across seven cultures
+17	_IndexL10n.cshtml provides Export	OUT_OF_SCOPE_FULL_CRUD_EXPECTATION	No export operation is approved in the bounded pack	Do not add export
+18	_IndexL10n.cshtml provides Import	OUT_OF_SCOPE_FULL_CRUD_EXPECTATION	No import operation is approved in the bounded pack	Do not add import
+19	_IndexL10n.cshtml provides Filter	EVIDENCE_GAP	Bounded filter rendered and was keyboard-tested; exact generic declaration is missing	Verify rendered label and control binding in bounded profile
+20	_IndexL10n.cshtml provides Apply	EVIDENCE_GAP	Bounded Apply control rendered and was keyboard-tested; exact generic declaration is missing	Verify rendered localized button in bounded profile
+21	_IndexL10n.cshtml provides Reset	EVIDENCE_GAP	Bounded Reset control rendered and was keyboard-tested; exact generic declaration is missing	Verify rendered localized button in bounded profile
+22	_IndexL10n.cshtml provides ShowAll	OUT_OF_SCOPE_FULL_CRUD_EXPECTATION	No ShowAll affordance is required by UI183-A01–A16	Do not add optional tool
+23	_IndexL10n.cshtml provides SaveView	OUT_OF_SCOPE_FULL_CRUD_EXPECTATION	No saved-view feature is approved	Do not add feature
+24	_IndexL10n.cshtml provides ColumnVisibility	OUT_OF_SCOPE_FULL_CRUD_EXPECTATION	No column-visibility tool is approved	Do not add feature
+25	_IndexL10n.cshtml provides Status	EVIDENCE_GAP	Status filter/column is bounded and rendered, but generic declaration location is not the only localization path	Verify rendered seven-language status label in bounded profile
+26	index.js includes .js-quick-view selector	OUT_OF_SCOPE_FULL_CRUD_EXPECTATION	QuickView is expressly unsupported	Keep selector absent
+27	index.js uses QuickView event delegation	OUT_OF_SCOPE_FULL_CRUD_EXPECTATION	QuickView is expressly unsupported	Keep wiring absent
+28	direct-gateway profile uses window.API service base	COMMENT_OR_OWNER_DECISION_CONFLICT	UI183-A01 requires same-origin MVC with downstream traffic through Gateway; browser JS must not call Gateway directly	Bounded profile must assert same-origin adapter, not direct-Gateway code
+29	_DataTable.cshtml has select-all checkbox header	OUT_OF_SCOPE_FULL_CRUD_EXPECTATION	Bulk selection is unsupported	Keep checkbox absent
+30	index.js declares bulk action config	OUT_OF_SCOPE_FULL_CRUD_EXPECTATION	Bulk actions are unsupported	Keep config absent
+31	index.js wires bulk selection	OUT_OF_SCOPE_FULL_CRUD_EXPECTATION	Bulk actions are unsupported	Keep wiring absent
+32	index.js calls bulk endpoint	OUT_OF_SCOPE_FULL_CRUD_EXPECTATION	No Shipment bulk endpoint is approved	Keep endpoint absent
+33	index.js wires bulk delete trigger	OUT_OF_SCOPE_FULL_CRUD_EXPECTATION	Bulk delete is unsupported	Keep trigger absent
+34	index.js uses shared reload-with-toast delete lifecycle	OUT_OF_SCOPE_FULL_CRUD_EXPECTATION	Delete is unsupported; lifecycle applies only when delete exists	Do not add delete lifecycle
+35	index.js wires clear-selection	OUT_OF_SCOPE_FULL_CRUD_EXPECTATION	Bulk selection is unsupported	Keep control absent

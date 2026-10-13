@@ -1,0 +1,14 @@
+{
+  "binary": "/var/folders/f_/xfqgm56x3msgx1mh0s8j7zq40000gn/T/mvp6-mod0187-normal-ver-ftmpk8e2/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Debug/net8.0/Diten.SupplyChainService.Api.dll",
+  "binarySha256": "4673a6b970a4ee31c3413325b4024349ad91773262fb6e56e84eebbd1106fb8b",
+  "apiPid": 30183,
+  "mongoPid": 30178,
+  "apiPort": 5187,
+  "proxyPort": 5287,
+  "mongoPort": 27987,
+  "mongoDatabase": "diten_claims_normal_ver",
+  "replicaSet": "claims_normal_ver",
+  "claimsReferenceTarget": "forward-only proxy -> http://127.0.0.1:5187/",
+  "jwtSecretRecorded": false,
+  "bearerRecorded": false
+}

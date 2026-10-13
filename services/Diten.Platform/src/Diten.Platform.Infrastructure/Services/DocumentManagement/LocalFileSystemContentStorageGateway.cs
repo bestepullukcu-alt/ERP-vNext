@@ -240,6 +240,8 @@ public sealed class LocalFileSystemContentStorageGateway : IContentStorageGatewa
             // `_ => "documents"` default silently files it under the documents partition with no way to tell them
             // apart on disk. That is the exact MOD-0024 trap called out above; ContentMessagingArtifacts gets its own.
             ContentStorageScope.ContentMessagingArtifacts => "content-messaging-artifacts",
+            // MOD-0022 (CT-D4) — signature images get their own segment for the same reason.
+            ContentStorageScope.ESignatureImages => "esign-images",
             // WP-VW-W3-PLT — same rule: visit evidence (photo/signature) gets its own partition, never "documents".
             ContentStorageScope.CrmVisitEvidence => "crm-visit-evidence",
             _ => "documents"

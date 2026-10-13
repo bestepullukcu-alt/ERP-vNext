@@ -1,0 +1,4 @@
+{"ok": true, "rc": 0, "log": "run-harness-claims_runtime-a3.log"}
+phase flows rc 0
+K10 PASS: flows-after
+pair flows rc 0

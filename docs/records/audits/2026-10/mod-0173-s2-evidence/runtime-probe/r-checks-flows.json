@@ -1,0 +1,199 @@
+{
+  "phase": "flows",
+  "passed": 48,
+  "failed": 0,
+  "checks": [
+    {
+      "check": "AC2 opening \u2192 201",
+      "passed": true
+    },
+    {
+      "check": "AC2 snapshot onHand 100.000",
+      "passed": true
+    },
+    {
+      "check": "AC2 snapshot available 100.000",
+      "passed": true
+    },
+    {
+      "check": "AC2 exactly 1 transaction persisted",
+      "passed": true
+    },
+    {
+      "check": "AC2 exactly 1 balance row",
+      "passed": true
+    },
+    {
+      "check": "AC2 GET /balance onHand 100.000",
+      "passed": true
+    },
+    {
+      "check": "AC2 GET /availability available 100.000",
+      "passed": true
+    },
+    {
+      "check": "AC3 issue \u2192 201",
+      "passed": true
+    },
+    {
+      "check": "AC3 snapshot onHand 80.000",
+      "passed": true
+    },
+    {
+      "check": "AC3 first transaction byte-identical (SHA-256 of BSON)",
+      "passed": true
+    },
+    {
+      "check": "AC4 replay \u2192 200",
+      "passed": true
+    },
+    {
+      "check": "AC4 replay idempotentReplay:true",
+      "passed": true
+    },
+    {
+      "check": "AC4 replay returns the original transactionId",
+      "passed": true
+    },
+    {
+      "check": "AC4 replay wrote nothing (tx/balance version/audit/outbox unchanged)",
+      "passed": true
+    },
+    {
+      "check": "AC4 key reuse \u2192 400 IDEMPOTENCY_KEY_REUSED",
+      "passed": true
+    },
+    {
+      "check": "AC4 key reuse wrote nothing",
+      "passed": true
+    },
+    {
+      "check": "AC5 \u2192 422 INSUFFICIENT_STOCK",
+      "passed": true
+    },
+    {
+      "check": "AC5 details.available 80.000 / requested 1000.000",
+      "passed": true
+    },
+    {
+      "check": "AC5 wrote nothing",
+      "passed": true
+    },
+    {
+      "check": "AC7 \u2192 201",
+      "passed": true
+    },
+    {
+      "check": "AC7 snapshot OnHand 100 / Available 0 / QI 100",
+      "passed": true
+    },
+    {
+      "check": "AC9 5 BOX \u2192 baseQuantity 50.000 EA",
+      "passed": true
+    },
+    {
+      "check": "AC7 byStatus QUALITY_INSPECTION 100.000",
+      "passed": true
+    },
+    {
+      "check": "AC7 byStatus AVAILABLE 50.000",
+      "passed": true
+    },
+    {
+      "check": "AC7 byStatus reports QUARANTINE/BLOCKED/IN_TRANSIT",
+      "passed": true
+    },
+    {
+      "check": "AC7 available excludes QI (50.000)",
+      "passed": true
+    },
+    {
+      "check": "AC10 tenant B availability \u2192 200 zeros (FU-S1-01), never A\u0027s 100",
+      "passed": true
+    },
+    {
+      "check": "AC10 tenant B balance rows empty",
+      "passed": true
+    },
+    {
+      "check": "AC10 tenant B transactions empty",
+      "passed": true
+    },
+    {
+      "check": "AC10 foreign X-Legal-Entity-Id \u2192 403 CROSS_LE_FORBIDDEN",
+      "passed": true
+    },
+    {
+      "check": "AC10 POST foreign X-Legal-Entity-Id \u2192 403 CROSS_LE_FORBIDDEN",
+      "passed": true
+    },
+    {
+      "check": "AC10 tenantId in query \u2192 400",
+      "passed": true
+    },
+    {
+      "check": "AC10 tenant A still has exactly its 1 transaction",
+      "passed": true
+    },
+    {
+      "check": "AC-R1 reserve \u2192 201 availableAfter 70.000 etag W/\u00221\u0022",
+      "passed": true
+    },
+    {
+      "check": "AC-R1 availability reserved 30.000 / available 70.000",
+      "passed": true
+    },
+    {
+      "check": "AC-R2 over-reserve \u2192 422 INSUFFICIENT_AVAILABLE (available 70.000 / requested 80.000)",
+      "passed": true
+    },
+    {
+      "check": "AC-R4 reserved stock protected \u2192 422 INSUFFICIENT_STOCK",
+      "passed": true
+    },
+    {
+      "check": "AC-R2/R4 refusals wrote nothing",
+      "passed": true
+    },
+    {
+      "check": "AC-R5 consumption \u2192 201, reservation ACTIVE with 10 remaining",
+      "passed": true
+    },
+    {
+      "check": "AC-R6 stale ETag \u2192 409 RESERVATION_CONFLICT",
+      "passed": true
+    },
+    {
+      "check": "AC-R6 current ETag \u2192 200 RELEASED availableAfter 80.000",
+      "passed": true
+    },
+    {
+      "check": "reserve B \u2192 201 availableAfter 55.000",
+      "passed": true
+    },
+    {
+      "check": "AC-R8 replay \u2192 200 same reservationId",
+      "passed": true
+    },
+    {
+      "check": "AC-R9 position AvailableOnHand 80 / Reserved 25",
+      "passed": true
+    },
+    {
+      "check": "AC-R14 audit Created\u00D72 \u002B PartiallyConsumed \u002B Released",
+      "passed": true
+    },
+    {
+      "check": "AC-R14 consumption audit carries the movement\u0027s correlation id",
+      "passed": true
+    },
+    {
+      "check": "AC-R14 reservation outbox events Pending",
+      "passed": true
+    },
+    {
+      "check": "AC-R11 known SKU without stock \u2192 200 zeros",
+      "passed": true
+    }
+  ]
+}

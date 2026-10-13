@@ -1,0 +1,24 @@
+[00:14:57 INF] Request starting HTTP/1.1 POST http://127.0.0.1:5761/api/shipment-bundle/shipments/95b46889-b01d-46f8-8900-9ee348ca8ec7/transition - application/json 104
+[00:14:57 INF] Request finished HTTP/1.1 POST http://127.0.0.1:5761/api/shipment-bundle/shipments/95b46889-b01d-46f8-8900-9ee348ca8ec7/transition - 200 null application/json; charset=utf-8 8.9597ms
+[00:14:57 INF] Request starting HTTP/1.1 POST http://127.0.0.1:5761/api/shipment-bundle/shipments/95b46889-b01d-46f8-8900-9ee348ca8ec7/transition - application/json 107
+[00:14:57 INF] Request finished HTTP/1.1 POST http://127.0.0.1:5761/api/shipment-bundle/shipments/95b46889-b01d-46f8-8900-9ee348ca8ec7/transition - 200 null application/json; charset=utf-8 11.6902ms
+[00:14:57 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5761/api/shipment-bundle/shipments/95b46889-b01d-46f8-8900-9ee348ca8ec7 - null null
+[00:14:57 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5761/api/shipment-bundle/shipments/95b46889-b01d-46f8-8900-9ee348ca8ec7 - 200 null application/json; charset=utf-8 1.864ms
+[00:14:57 INF] Request starting HTTP/1.1 POST http://127.0.0.1:5761/api/shipment-bundle/shipments/e326dda5-2c5a-4134-88c5-7ad872badb13/transition - application/json 104
+[00:14:57 INF] Request finished HTTP/1.1 POST http://127.0.0.1:5761/api/shipment-bundle/shipments/e326dda5-2c5a-4134-88c5-7ad872badb13/transition - 200 null application/json; charset=utf-8 9.7675ms
+[00:14:57 INF] Request starting HTTP/1.1 POST http://127.0.0.1:5761/api/shipment-bundle/shipments/e326dda5-2c5a-4134-88c5-7ad872badb13/transition - application/json 107
+[00:14:57 INF] Request finished HTTP/1.1 POST http://127.0.0.1:5761/api/shipment-bundle/shipments/e326dda5-2c5a-4134-88c5-7ad872badb13/transition - 200 null application/json; charset=utf-8 10.0205ms
+[00:14:57 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5761/api/shipment-bundle/shipments/e326dda5-2c5a-4134-88c5-7ad872badb13 - null null
+[00:14:57 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5761/api/shipment-bundle/shipments/e326dda5-2c5a-4134-88c5-7ad872badb13 - 200 null application/json; charset=utf-8 1.6137ms
+[00:15:58 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5761/api/shipment-bundle/shipments/95b46889-b01d-46f8-8900-9ee348ca8ec7 - null null
+[00:15:58 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5761/api/shipment-bundle/shipments/95b46889-b01d-46f8-8900-9ee348ca8ec7 - 200 null application/json; charset=utf-8 1.7581ms
+[00:15:58 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5761/api/shipment-bundle/shipments/e326dda5-2c5a-4134-88c5-7ad872badb13 - null null
+[00:15:58 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5761/api/shipment-bundle/shipments/e326dda5-2c5a-4134-88c5-7ad872badb13 - 200 null application/json; charset=utf-8 1.7644ms
+[00:20:26 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5761/api/shipment-bundle/shipments/95b46889-b01d-46f8-8900-9ee348ca8ec7 - null null
+[00:20:26 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5761/api/shipment-bundle/shipments/95b46889-b01d-46f8-8900-9ee348ca8ec7 - 200 null application/json; charset=utf-8 7.7948ms
+[00:20:28 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5761/api/shipment-bundle/shipments/e326dda5-2c5a-4134-88c5-7ad872badb13 - null null
+[00:20:28 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5761/api/shipment-bundle/shipments/e326dda5-2c5a-4134-88c5-7ad872badb13 - 500 null application/json; charset=utf-8 1.5582ms
+[00:20:29 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5761/api/shipment-bundle/shipments/95b46889-b01d-46f8-8900-9ee348ca8ec7 - null null
+[00:20:29 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5761/api/shipment-bundle/shipments/95b46889-b01d-46f8-8900-9ee348ca8ec7 - 200 null application/json; charset=utf-8 2.3571ms
+[00:20:29 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5761/api/shipment-bundle/shipments/e326dda5-2c5a-4134-88c5-7ad872badb13 - null null
+[00:20:29 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5761/api/shipment-bundle/shipments/e326dda5-2c5a-4134-88c5-7ad872badb13 - 500 null application/json; charset=utf-8 1.2015ms

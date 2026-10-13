@@ -1,0 +1,15 @@
+kind	identity	sha256_or_result	note
+source-manifest	FINAL-354-SOURCE-MANIFEST.tsv	e6551f4552bd05682dcd9f2753044aa0b803dd4df90875952cca89608ab98ab3	354/354 matched
+source-manifest	BUILD-SOURCE-MANIFEST.tsv	516ba828bed602e4355a5cc6871501cbb3b3c72d60473fa7ec73d135bbadf911	3333/3333 matched
+source-manifest	FINAL-22-SOURCE-MANIFEST.tsv	b9713185aba02bf325a9149b37a8cc6ffe3b1dd0e979febdaa773946ae9b1731	22/22 matched
+binary	Diten.Web.dll	840e2e78597914dfd5583c21718c9abfd5ada04e253c41854d843bf074589e07	Release/native net8.0
+binary	Diten.SupplyChainService.Api.dll	d46e8a2ff47bfde4bf0e651c8c403b7a4ed559d02c974e39fd07575ee554e4c5	Release/native net8.0
+binary	Diten.ApiGateway.dll	59dae13392b35c07f2c984961d54609ed725a0ef9d97146017c1c45613224363	Release/native net8.0
+binary	Diten.AuthService.Api.dll	3b90002bb1bb64d64cd0caebca2271f2c3061696fb95b0257cfa4a21c09642d6	Release/native net8.0
+binary	Diten.Platform.API.dll	3b6af11bbc976571b7ce70b61edd219c67b36784fa274ae04688b523bd6a667f	Release/native net8.0
+binary	Diten.MdmService.Api.dll	a54c62ee984e2bca9a67d2d5af433bdd6b2ffa68d26f99a6b65e4163f3fffad1	Release/native net8.0
+process	Mongo	127.0.0.1:42314 / rsShipmentPolicy01	PRIMARY; isolated; 27017 untouched
+process	Auth/Platform/MDM/Supply/Gateway/Web	5056/5057/5059/5061/6040/6041	commands and PIDs in evidence archive
+browser	fresh real Auth session	PASS	no token or secret archived
+browser	PNG	OPEN	unsupported durable export
+

@@ -1,0 +1,39 @@
+Build started 22/09/2026 19:29:56.
+Test run for /private/tmp/mvp6-mod0192-core-dev-01/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 17.11.1 (arm64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.8.2+699d445a1a (64-bit .NET 8.0.23)
+[xUnit.net 00:00:00.22]   Discovering: Diten.SupplyChainService.Tests
+[xUnit.net 00:00:00.37]   Discovered:  Diten.SupplyChainService.Tests
+[xUnit.net 00:00:00.38]   Starting:    Diten.SupplyChainService.Tests
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityAtomicityTests.Fixture_mutations_and_fenced_terminal_are_durable_and_single_effect [5 s]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X01_Accepted_commit_ack_loss_recovers_original_scoped_receipt [825 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X06_Terminal_fault_after_staged_update_and_slot_delete_rolls_back_then_fence_recovers [702 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X01_Accepted_precommit_failure_has_no_partial_writes_then_same_key_recovers [686 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Unknown_terminal_commit_no_commit_is_reconciled_before_fenced_retry [888 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityFaultTests.X07_Unknown_terminal_commit_ack_loss_keeps_one_scoped_terminal_effect [3 s]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityConcurrencyTests.Twenty_distinct_keys_produce_one_active_evaluation [1 s]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityIsolationTests.Invalid_fixture_and_foreign_or_deleted_scope_create_no_visible_data [5 s]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityLeaseTests.Renewal_advances_version_without_attempt_and_rejects_old_terminal [3 s]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityRestartTests.Separate_processes_claim_once_and_restart_recovers_after_server_lease_expiry [1 m 8 s]
+[xUnit.net 00:01:32.51]   Finished:    Diten.SupplyChainService.Tests
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityRestartTests.ChildWorker [11 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityReplayTests.Fingerprint_uses_decoded_business_body_and_exact_target [82 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityContractTests.Request_does_not_accept_client_scope_or_unknown_fields [17 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityContractTests.Plan_projection_has_published_wire_keys_and_provenance [16 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityLifecycleTests.Approved_literal_oracle_only_emits_fixture_result(mode: "Infinite", count: 0) [8 ms]
+  Passed Diten.SupplyChainService.Tests.CapacityPlans.CapacityLifecycleTests.Approved_literal_oracle_only_emits_fixture_result(mode: "Finite", count: 1) [6 ms]
+Results File: /private/tmp/mvp6-mod0192-core-dev-01/docs/records/audits/2026-09/mvp6-mod0192-executor-fault-rework-01/raw/targeted-final.trx
+
+Test Run Successful.
+Total tests: 16
+     Passed: 16
+ Total time: 1.5723 Minutes
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:01:36.36

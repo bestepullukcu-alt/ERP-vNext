@@ -300,13 +300,13 @@ platform.workflow.definitions.publish,1
 platform.workflow.definitions.view,1
 platform.workflow.escalations.manage,1
 platform.workflow.escalations.run,1
-platform.workflow.instances.start,1
-platform.workflow.instances.view,1
-platform.workflow.tasks.approve,1
-platform.workflow.tasks.cancel,1
-platform.workflow.tasks.delegate,1
-platform.workflow.tasks.reject,1
-platform.workflow.tasks.request-info,1
+platform.workflow.instances.start,0
+platform.workflow.instances.view,0
+platform.workflow.tasks.approve,0
+platform.workflow.tasks.cancel,0
+platform.workflow.tasks.delegate,0
+platform.workflow.tasks.reject,0
+platform.workflow.tasks.request-info,0
 platform.workflow.transitions.evaluate,1
 # --- MOD-0288-FU02 (merge d1735755, seed commit 04e212de) — organization unit custom fields + reporting line.
 # Added to the baseline AFTER this guard caught them missing. Scope is STATED, not inferred: all four are tenant

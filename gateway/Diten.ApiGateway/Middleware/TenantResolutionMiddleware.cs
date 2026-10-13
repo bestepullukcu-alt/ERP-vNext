@@ -167,6 +167,23 @@ public sealed class TenantResolutionMiddleware
         }
 
         var resolution = Resolve(jwtTenant, headerTenant, subdomainTenant, context);
+        if (IsServiceDecidedHeaderConflict(context.Request.Path, resolution))
+        {
+            // Owner ruling Q257 (applied by Q290): for this family the tenant decision belongs to the service. It
+            // validates the token itself and answers a token/header disagreement with its own contract error
+            // (404 without existence leakage; Claims 403 per its annex). The header is forwarded exactly as sent —
+            // overwriting it with the token tenant would turn a cross-tenant request into a same-tenant one.
+            if (!string.IsNullOrWhiteSpace(actorType)
+                && !string.Equals(actorType, "tenant_user", StringComparison.OrdinalIgnoreCase))
+            {
+                await WriteProblemDetails(context, StatusCodes.Status403Forbidden, "Forbidden Actor", "Tenant endpoints require tenant_user tokens.");
+                return;
+            }
+
+            await _next(context);
+            return;
+        }
+
         if (resolution.IsConflict)
         {
             await WriteTenantMismatch(context, resolution);
@@ -328,6 +345,21 @@ public sealed class TenantResolutionMiddleware
         }
 
         return Guid.TryParse(parts[0], out var parsed) ? parsed : null;
+    }
+
+    /*
+     * The ONLY exception to the BL-324 refusal above, and deliberately narrow:
+     *   - only the /api/shipment-bundle family (segment match, so /api/shipment-bundleXYZ is not in it), whose
+     *     five service middlewares (Shipment, Carrier, Load, Return, Claim) each compare the token tenant with
+     *     X-Tenant-Id and fail closed;
+     *   - only a HEADER contradiction. A SUBDOMAIN contradiction is still refused here: the service never sees
+     *     the host, so nothing downstream would catch it.
+     */
+    private static bool IsServiceDecidedHeaderConflict(PathString path, TenantResolution resolution)
+    {
+        return resolution.ConflictingSignals is { Count: 1 } signals
+               && signals[0] == HeaderSignal
+               && path.StartsWithSegments("/api/shipment-bundle", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsNonTenantPath(PathString path)

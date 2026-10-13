@@ -1,0 +1,3 @@
+git_apply_check=PASS
+byte_identical_yaml=PASS
+byte_identical_annex=PASS

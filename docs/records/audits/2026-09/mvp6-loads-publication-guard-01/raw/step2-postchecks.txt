@@ -1,0 +1,18 @@
+6dc1dd486375130dc4225d59f08bc4ff05e62d148ac72aeeb2034731e7796aa2  docs/analysis/contracts/shipment-bundle.openapi.yaml
+9d8a370664abb8221d5f8b23038f7c506e0621fadb2e5c83450ad93e63cf5034  docs/analysis/contracts/loads-semantics-v3.1.0.md
+84f07a6b6dde53954f2c7e2302d8a3f0a2b762b5dffd94309175a1ed89306f0a  docs/records/audits/2026-09/mvp6-loads-publication-guard-01/PROVENANCE.md
+64db811693d3a25143ebe94435114739ac8016d289c8d26a296c12d516491234  docs/records/decisions/2026-09/mvp6-loads-publication-guard-owner-decision-01.json
+65a8ccbdd09acb97be8bed0195b3732fba241667e494a314d4dc4a192b660a4e  docs/reference/architecture/docs-path-authority.json
+a2187c934cf9176cae4cb8b9c70dfd1298154e5124cdc197d3029103636c2be1  docs/analysis/contracts/loads-semantics-v2.0.0.md
+W1 byte-equal PKG artifact
+W2 byte-equal PKG artifact
+W4 {'kind': 'DOCS_PATH_OWNER_DECISION', 'status': 'APPROVED', 'decisionId': 'MVP6-LOADS-PUBLICATION-GUARD-01', 'approvedBy': 'current-role-user-message-2026-09-26', 'payloadSha256': 'a77538b4784e1749b7ebe2e7d38d2e8400803c63ec8e6f49d3382929d7d611e0'}
+W5 status APPROVED decision {'path': 'docs/records/decisions/2026-09/mvp6-loads-publication-guard-owner-decision-01.json', 'sha256': '64db811693d3a25143ebe94435114739ac8016d289c8d26a296c12d516491234'} targets 2 seals 43
+W5.decision.sha256 == sha256(W4): True
+## porcelain diff vs pre-step2 snapshot
+20a21
+> ?? docs/analysis/contracts/loads-semantics-v3.1.0.md
+121a123
+> ?? docs/records/audits/2026-09/mvp6-loads-publication-guard-01/
+285a288
+> ?? docs/records/decisions/2026-09/mvp6-loads-publication-guard-owner-decision-01.json

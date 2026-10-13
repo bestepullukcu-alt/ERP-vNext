@@ -1,0 +1,20 @@
+record	type	requested_path	status	observed_sha256	note
+02	runtime	/private/tmp/mod0185-dev02-runtime/runtime.json	MISSING		No accessible copy found; no reconstruction performed
+02	restart	/private/tmp/mod0185-dev02-runtime/restart.json	MISSING		No accessible copy found
+02	failurePaths	/private/tmp/mod0185-dev02-runtime/failure-paths.json	MISSING		No accessible copy found
+02	verifierRed	/private/tmp/mod0185-dev02-audit/verifier-old.out	MISSING		No accessible copy found
+02	verifierGreen	/private/tmp/mod0185-dev02-audit/verifier-green.out	MISSING		No accessible copy found
+03	runtime	/private/tmp/mod0185-dev03-runtime/runtime.json	MISSING		No accessible copy found
+03	restart	/private/tmp/mod0185-dev03-runtime/restart.json	MISSING		No accessible copy found
+03	failurePaths	/private/tmp/mod0185-dev03-runtime/failure-paths.json	MISSING		No accessible copy found
+03	standalone	/private/tmp/mod0185-dev03/a07-standalone-api.log	MISSING		No accessible copy found
+03	unavailable	/private/tmp/mod0185-dev03/a07-unavailable-api.log	MISSING		No accessible copy found
+03	indexFailure	/private/tmp/mod0185-dev03/a07-index-api.log	MISSING		No accessible copy found
+VER/CT	evidence	/private/tmp/mod0185-ver02-runtime/runtime.json	MISSING		No accessible copy found
+VER/CT	evidence	/private/tmp/mod0185-ver02-runtime/restart.json	MISSING		No accessible copy found
+VER/CT	evidence	/private/tmp/mod0185-a04-rework02-runtime/SOP-22-DEV-HANDOFF.md	MISSING		No accessible copy found
+VER/CT	evidence	/private/tmp/mod0185-a04-rework02-runtime/changed-files.json	MISSING		No accessible copy found
+VER/CT	evidence	/private/tmp/mod0185-a04-ver02-runtime/SOP-22-VER-REPORT.md	MISSING		No accessible copy found
+VER/CT	evidence	/private/tmp/mod0185-a04-ver02-runtime/manifest.json	MISSING		No accessible copy found
+VER/CT	evidence	/private/tmp/mod0185-a04-ver02-runtime/failure-paths.json	MISSING		No accessible copy found
+VER/CT	evidence	/private/tmp/mod0185-a04-ver02-runtime/independent-query.json	MISSING		No accessible copy found

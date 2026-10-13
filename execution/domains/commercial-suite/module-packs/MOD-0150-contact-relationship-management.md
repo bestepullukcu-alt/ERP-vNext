@@ -151,7 +151,7 @@ No CRM local seed, no hardcoded fallback.
 
 ## 7. Repo Scope (implementation, after approval)
 
-Reuse **`Diten.CrmService`** (same 5-layer service as MOD-0149, port 5061) — new `Contact` / `AccountContactLink` /
+Reuse **`Diten.CrmService`** (same 5-layer service as MOD-0149, port 5065) — new `Contact` / `AccountContactLink` /
 `AccountRelationship` aggregates under `Features/Contact` and `Features/Relationship`. **No separate service.** This
 keeps Account↔Contact↔Relationship in one bounded context (all CRM Core), reusing the Gateway route prefix `/api/crm/*`,
 the Guid-as-string class-map convention, and the reference-validator seam.
@@ -160,7 +160,7 @@ the Guid-as-string class-map convention, and the reference-validator seam.
 
 - No Account entity pollution (no Contact fields on `Account`). No Zone/MicroZone/Territory/SalesRep anywhere.
 - Reference values via MOD-0048 consumer only. No CRM local reference seed. No hardcoded fallback.
-- Frontend calls Gateway (5000); never CrmService (5061) directly. Golden Reference **Compact** pattern.
+- Frontend calls Gateway (5000); never CrmService (5065) directly. Golden Reference **Compact** pattern.
 - Consent/preference are **read-only reference seams** until MOD-0164 exists; MOD-0150 builds no consent engine.
 
 ## 9. Proposed Domain Model
@@ -561,7 +561,7 @@ flag is introduced here.
   deactivate/archive path works and **no delete path compiles**.
 - **Guard:** `Contact` aggregate carries **no** availability field; no route / visit / plan / frequency / cadence /
   GPS type exists in MOD-0150; no territory or `ContactTerritoryAssignment` write; `Account` master untouched;
-  no permission seed/grant; no `TenantId` in request payloads; frontend never calls 5061 directly.
+  no permission seed/grant; no `TenantId` in request payloads; frontend never calls 5065 directly.
 - **Frontend:** Availability tab + link panel render, Compact verifier, DataTable v2 contract, 7-language RESX parity,
   no route/visit/GPS action anywhere on the surface.
 - **Authenticated Gateway-only smoke:** link A gets Mon 09:00–13:00 + Wed 14:00–17:00 with preferred 10:00–12:00 and
@@ -577,4 +577,4 @@ GPS validation · visit report · digital detailing · survey · campaign engine
 territory assignment · `ContactTerritoryAssignment` · Account master mutation · territory model mutation · workflow
 approval · ChangeRequest · MOD-0023 integration · evidence pack · new import/export scope · Brand/Product master ·
 patient data · hard delete · Mongo hand-edit · RBAC seed/grant (unless separately authorized) · MOD-0048 publish
-(unless separately authorized) · `TenantId` in request payloads · direct port 5061 business API calls.
+(unless separately authorized) · `TenantId` in request payloads · direct port 5065 business API calls.

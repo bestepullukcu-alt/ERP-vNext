@@ -1,0 +1,155 @@
+STATIC-CHECKS — MVP6 evidence kit v1.2 proposal (Q66, AL-MVP6-KIT-V12-01)
+run_at_istanbul	2026-09-26T12:53:37+03:00
+host	Linux cloud workspace (chat lane); GNU bash, version 5.2.21(1)-release (x86; Python 3.11.15; node v22.22.2; shellcheck 0.11.0; lsof, curl, xz present
+scope	all 28 files under proposed/; scratch only under /tmp (removed); no .NET, Mongo or browser; fake values only (FAKE-prefixed, generated per run)
+inputs	#9 uses the real composed a08 source: HEAD-identical Web/Gateway files + the two sealed overlays (combined-source.tar.gz sha256 490d51be…b3a3, final-source.tar.gz f50350b8…e2cd), staged read-only; no user-secrets. #9 v1.0 map = proposal-01/proposed/kit/service-map.tsv; v1.1 = proposal-02 bytes.
+tests	#10 uses a fake 'dotnet' (a Python HTTP server) to exercise launch, loopback check, abort and expiry; #10 reveal uses a real pseudo-terminal as the caller's controlling tty.
+
+# 1 bash -n
+OK    bash -n kit/ek_lib.sh
+OK    bash -n kit/k02_runtime.sh
+OK    bash -n kit/k05_mongo.sh
+OK    bash -n kit/k06_build_launch.sh
+OK    bash -n kit/k10_snap.sh
+OK    bash -n kit/k11_cleanup.sh
+OK    bash -n kit/run-kit.sh
+# 2 Python syntax (ast.parse + in-memory compile; no __pycache__ written)
+OK    python kit/k00_ctl.py
+OK    python kit/k00_supervisor.py
+OK    python kit/k01_source.py
+OK    python kit/k03_ports.py
+OK    python kit/k04_config.py
+OK    python kit/k04b_gateway_routes.py
+OK    python kit/k07_identity.py
+OK    python kit/k08_redact_scan.py
+OK    python kit/k09_binding.py
+OK    python kit/k10_db_diff.py
+OK    python kit/tests/test_k04_pairing.py
+# 3 node --check
+OK    node --check kit/k10_db_snapshot.js
+OK    node --check templates/served-asset-hash.js
+# 4 shellcheck version: 0.11.0
+OK    shellcheck -S warning -x: 0 findings (7 files)
+      info-level notes (not defects):  4 SC2015; 6 SC2094;
+# 5 repository-safety greps
+OK    no proposed file names docs/analysis/ (DocsPathGuard)
+OK    F5 every shell git call goes through ek_git (read-only allow-list, GIT_OPTIONAL_LOCKS=0, --no-optional-locks)
+OK    F5 python git calls only via git_argv (rev-parse/status/archive)
+OK    no __pycache__/.pyc in the proposal
+# 6 secret-scanner self-tests (fake values planted in /tmp)
+      planted 1 raw lane secret in a log                  -> caught (exact raw)
+      planted 2 base64url actor password in a PNG         -> caught (exact b64url-nopad)
+      planted 3 bearer JWT pattern in an HTTP capture     -> caught (pattern jwt/bearer-header)
+      planted 4 value base64-encoded at an odd offset inside a zip member (Playwright trace) -> caught (exact b64-core, via zip)
+      controls clean.txt and trace resources/page.html   -> not flagged
+      report contains no planted value
+OK    self-test plain 3/3 caught, exit 1
+OK    self-test zip 1/1 caught (F3: v1.1 missed this)
+OK    v1.1 scanner misses the same zip value (defect reproduced)
+OK    F3 plain .gz value caught; an unsupported container (xz) is a HIT (unscannable), not a silent PASS
+OK    --exact with no lane values fails (no vacuous PASS)
+# 7 F9 seal verifies ARTIFACTS.sha256
+OK    seal FAILS when an evidence file is not listed (raw/b.txt)
+OK    seal FAILS on a hash mismatch (evidence-relative paths)
+OK    seal PASS with a complete, correct ARTIFACTS.sha256 (earlier SECRET-SCAN-FINAL-* excluded)
+# 8 pairing unit tests (F1): tests/test_k04_pairing.py
+      test_citation_states (__main__.PairingTests.test_citation_states) ... ok
+      test_v11_required_pairs_uncited_fail_closed (__main__.PairingTests.test_v11_required_pairs_uncited_fail_closed) ... ok
+      test_v11_wrong_table_fails (__main__.PairingTests.test_v11_wrong_table_fails) ... ok
+      test_v12_table_passes (__main__.PairingTests.test_v12_table_passes) ... ok
+OK    unit tests 4/4: v1.2 table PASS; v1.1 wrong table FAIL; v1.1 REQUIRED_PAIRS uncited -> fail closed; citation states
+# 9 K04 on the real composed a08 source (HEAD + templates/overlays.tsv inputs), no user-secrets
+      == v12: k04 check rc=0
+      auth-platform	secret	PASS (6 keys, one effective value)
+      jwt	secret	PASS (6 keys, one effective value)
+      mdm-registration-id	value	PASS (2 keys, one effective value)
+      platform-mdm-active	secret	PASS (2 keys, one effective value)
+      svcid	secret	PASS (2 keys, one effective value)
+      svcid-audience	value	PASS (2 keys, one effective value)
+      svcid-callerid	value	PASS (2 keys, one effective value)
+      svcid-enabled	value	PASS (2 keys, one effective value)
+      svcid-issuer	value	PASS (2 keys, one effective value)
+      svcid-kid	value	PASS (2 keys, one effective value)
+           57 cited
+OK    K04 v12 map: exit 0 as expected (all pairings PASS; 57/57 citations cited)
+      == v11: k04 check rc=1
+      auth-platform	secret	FAIL
+      jwt	secret	PASS (6 keys, one effective value)
+      mdm-registration-id	value	PASS (2 keys, one effective value)
+      platform-mdm-active	secret	FAIL
+      svcid	secret	PASS (2 keys, one effective value)
+      svcid-audience	value	PASS (2 keys, one effective value)
+      svcid-callerid	value	PASS (2 keys, one effective value)
+      svcid-enabled	value	PASS (2 keys, one effective value)
+      svcid-issuer	value	PASS (2 keys, one effective value)
+      svcid-kid	value	PASS (2 keys, one effective value)
+      F1 pairing auth-platform: members resolve to DIFFERENT values (platform:AuthService__InternalApiKey=sha256:644098ff73, auth:InternalEventAuth__ApiKey=sha256:644098ff73, auth:PlatformService__Int
+      F1 pairing platform-mdm-active: members resolve to DIFFERENT values (platform:ModuleRegistrationCredentials__Mdm__ActiveSecret=sha256:a75c3be69a, mdm:PlatformRegistration__ModuleRegistrationCred
+           57 cited
+OK    K04 v11 map: exit 1 as expected (pairing FAIL detected)
+      == v10: k04 check rc=1
+      auth-platform	secret	FAIL
+      jwt	secret	PASS (6 keys, one effective value)
+      mdm-registration-id	value	PASS (2 keys, one effective value)
+      platform-mdm-active	secret	FAIL
+      svcid	secret	FAIL
+      svcid-audience	value	PASS (2 keys, one effective value)
+      svcid-callerid	value	PASS (2 keys, one effective value)
+      svcid-enabled	value	PASS (2 keys, one effective value)
+      svcid-issuer	value	PASS (2 keys, one effective value)
+      svcid-kid	value	FAIL
+      F1 pairing auth-platform: missing/empty in supplychain:PlatformRegistration__InternalApiKey
+      F1 pairing platform-mdm-active: members resolve to DIFFERENT values (platform:ModuleRegistrationCredentials__Mdm__ActiveSecret=sha256:a75c3be69a, mdm:PlatformRegistration__ModuleRegistrationCred
+      F1 pairing svcid: missing/empty in platform:MdmServiceIdentity__Secret,mdm:PlatformServiceIdentity__Secret
+      F1 pairing svcid-kid: missing/empty in platform:MdmServiceIdentity__KeyId,mdm:PlatformServiceIdentity__KeyId
+           57 cited
+OK    K04 v10 map: exit 1 as expected (pairing FAIL detected)
+# 10 supervisor security tests (F2 F4 F6 F7 F8 F10 F14)
+      OK    F7 socket folder that is group/world-writable (like /tmp) refused
+      OK    F7 existing non-socket path at the socket location refused (not unlinked: kept)
+      OK    supervisor up (socket mode 600)
+      OK    F8 supervisor RLIMIT_CORE soft limit = 0 (children inherit)
+      OK    F4 second supervisor refused while a live one owns the socket; first still answers
+      OK    F2 raw-socket requests refused: free argv, unknown task, path escape, bad harness arg, reveal without arm (5/5; no password in any reply)
+      OK    F2 harness task gets actor passwords only (actor 1, lane 0)
+      OK    F2 reveal refused by the supervisor for a caller without a terminal
+      OK    F2 reveal on a terminal: one-time code shown on the tty, password written to the tty, reply carries no password
+      OK    revealed password not present in any evidence or workspace file
+      OK    F10 request over 64 KiB refused
+      OK    F14 auth listens on 127.0.0.1 only (recorded in processes.tsv: 127.0.0.1:5856)
+      OK    F14 service bound to all interfaces (lsof *:port) -> launch not ok (NOT LOOPBACK-ONLY recorded)
+      OK    F4/F6 abort: launched service stopped, supervisor exited, socket and fallback log folder removed
+      OK    F4 stale socket (no live supervisor) replaced
+      OK    F4 idle expiry: supervisor stopped its service, cleared values and exited by itself
+      OK    COMMANDS.tsv: 15 one-line rows, 6 fields each
+      # supervisor tests: ALL OK
+OK    supervisor tests: ALL OK
+# 11 driver tests (F4 failure path, F5)
+      OK    failed up (K01) -> abort path: K11 ran (CLEANUP.tsv), workspace removed, exit 1
+      OK    up refused while a live supervisor owns the socket (no K01, supervisor untouched)
+      OK    run-kit.sh abort: supervisor stopped and socket removed; K11 cleanup ran (exit 1)
+      OK    F5 no .git/index.lock after K11 (read-only ek_git)
+      OK    F5 ek_git refuses a write subcommand (commit)
+      OK    F5 k01 git_argv refuses git add
+      OK    COMMANDS.tsv rows all 6 fields (7 lines)
+      # driver tests: ALL OK
+OK    driver tests: ALL OK
+# 12 K01 tests (D3, F13)
+      OK    K01 PASS: wrapper stripped, HEAD-top kept, new top-level tools/ kept — overlays (order wrapper matched rows): 1 wrap-src/ 2 2;2 - 1 1;3 - 1 1;
+      OK    previous K01 fails the same input (new top-level tools/ stripped: 3 tools/ 0 1)
+      OK    ambiguous wrapper layout refused
+      OK    no index.lock in the test repo after K01
+      # K01 tests: ALL OK
+OK    K01 tests: ALL OK
+# 13 K10 (G3, G5, F12)
+OK    G5 unasserted whole-DB delta (async job collection +2) FAILS
+OK    F12 --totals-exempt without --exempt-reason refused
+OK    F12 exempted async collection PASSES and is recorded with its delta and reason
+OK    G3 reused snapshot files refused
+# 14 G1/G2 carried checks
+OK    G2 ek_run: one one-line row per command, exit codes 3 and 0
+OK    G1 record-served row written
+# RESULT: ALL OK
+# 15 pattern scan of this proposal folder (copy in /tmp, k08 v1.2 rules)
+OK    32 files scanned, 0 hits
+# RESULT (incl. #15): ALL OK

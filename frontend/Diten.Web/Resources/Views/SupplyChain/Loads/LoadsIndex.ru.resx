@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="LoadsTitle" xml:space="preserve"><value>Рейсы</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Просматривайте планы рейсов и создавайте план рейса по существующим ссылкам на перевозчика и отгрузки.</value></data>
+  <data name="AddNewLoad" xml:space="preserve"><value>Добавить рейс</value></data>
+  <data name="LoadNumber" xml:space="preserve"><value>Номер рейса</value></data>
+  <data name="CarrierId" xml:space="preserve"><value>ID перевозчика</value></data>
+  <data name="CarrierIdHelp" xml:space="preserve"><value>UUID перевозчика. Перевозчик должен быть активен и поддерживать выбранный вид транспорта.</value></data>
+  <data name="ShipmentIds" xml:space="preserve"><value>Отгрузки</value></data>
+  <data name="ShipmentId" xml:space="preserve"><value>ID отгрузки</value></data>
+  <data name="ShipmentIdsHelp" xml:space="preserve"><value>Хотя бы один UUID отгрузки. Отгрузки должны быть в статусе черновика или запланированы; введённый порядок сохраняется.</value></data>
+  <data name="AddShipment" xml:space="preserve"><value>Добавить отгрузку</value></data>
+  <data name="RemoveShipment" xml:space="preserve"><value>Удалить отгрузку</value></data>
+  <data name="Mode" xml:space="preserve"><value>Вид транспорта</value></data>
+  <data name="ModeRoad" xml:space="preserve"><value>Автодорожный</value></data>
+  <data name="ModeAir" xml:space="preserve"><value>Воздушный</value></data>
+  <data name="ModeSea" xml:space="preserve"><value>Морской</value></data>
+  <data name="ModeRail" xml:space="preserve"><value>Железнодорожный</value></data>
+  <data name="ModeParcel" xml:space="preserve"><value>Посылочный</value></data>
+  <data name="PlannedDepartAt" xml:space="preserve"><value>Плановое отправление</value></data>
+  <data name="PlannedDepartAtHelp" xml:space="preserve"><value>Ваши местные дата и время. Они отправляются в UTC.</value></data>
+  <data name="PlannedDepartAtInvalid" xml:space="preserve"><value>Введите действительные дату и время, существующие в вашем часовом поясе.</value></data>
+  <data name="Stops" xml:space="preserve"><value>Остановки</value></data>
+  <data name="StopsHelp" xml:space="preserve"><value>Не менее двух остановок с номерами от 1 до N, включая хотя бы одну погрузку и одну доставку.</value></data>
+  <data name="StopSequence" xml:space="preserve"><value>Порядок</value></data>
+  <data name="StopLocationReferenceId" xml:space="preserve"><value>Ссылка на место</value></data>
+  <data name="StopAction" xml:space="preserve"><value>Действие</value></data>
+  <data name="ActionPickup" xml:space="preserve"><value>Погрузка</value></data>
+  <data name="ActionDelivery" xml:space="preserve"><value>Доставка</value></data>
+  <data name="ActionReturn" xml:space="preserve"><value>Возврат</value></data>
+  <data name="AddStop" xml:space="preserve"><value>Добавить остановку</value></data>
+  <data name="RemoveStop" xml:space="preserve"><value>Удалить остановку</value></data>
+  <data name="FilterCarrierId" xml:space="preserve"><value>ID перевозчика (UUID)</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="StatusPlanned" xml:space="preserve"><value>Запланирован</value></data>
+  <data name="StatusTendered" xml:space="preserve"><value>Предложен</value></data>
+  <data name="StatusAccepted" xml:space="preserve"><value>Принят</value></data>
+  <data name="StatusDispatched" xml:space="preserve"><value>Отправлен</value></data>
+  <data name="StatusCompleted" xml:space="preserve"><value>Завершён</value></data>
+  <data name="StatusCancelled" xml:space="preserve"><value>Отменён</value></data>
+  <data name="EmptyList" xml:space="preserve"><value>Рейсы не найдены.</value></data>
+  <data name="NotProvided" xml:space="preserve"><value>Не указано</value></data>
+  <data name="SupportReference" xml:space="preserve"><value>Номер обращения</value></data>
+  <data name="ListUnavailable" xml:space="preserve"><value>Не удалось загрузить рейсы. Повторите попытку позже.</value></data>
+  <data name="ValidationError" xml:space="preserve"><value>Проверьте введённые значения и повторите попытку.</value></data>
+  <data name="AccessDenied" xml:space="preserve"><value>У вас нет разрешения на это действие.</value></data>
+  <data name="CreateSuccess" xml:space="preserve"><value>План рейса успешно создан.</value></data>
+  <data name="CreateReplaySuccess" xml:space="preserve"><value>Этот запрос на план рейса уже был успешно выполнен.</value></data>
+  <data name="RetrySameRequest" xml:space="preserve"><value>Повторите попытку без изменения формы, чтобы сохранить идентификатор запроса.</value></data>
+  <data name="ErrCarrierNotFound" xml:space="preserve"><value>В вашей области не найден активный перевозчик с этим ID.</value></data>
+  <data name="ErrCarrierModeUnsupported" xml:space="preserve"><value>Перевозчик не поддерживает выбранный вид транспорта.</value></data>
+  <data name="ErrShipmentNotFound" xml:space="preserve"><value>В вашей области не найдена отгрузка с этим ID.</value></data>
+  <data name="ErrShipmentNotEligible" xml:space="preserve"><value>В рейс можно добавить только черновые или запланированные отгрузки.</value></data>
+  <data name="ErrShipmentCarrierMismatch" xml:space="preserve"><value>Одна из отгрузок уже назначена другому перевозчику.</value></data>
+  <data name="ErrShipmentAlreadyAssigned" xml:space="preserve"><value>Одна из отгрузок уже входит в другой рейс.</value></data>
+  <data name="ErrDuplicateShipment" xml:space="preserve"><value>Одна и та же отгрузка указана несколько раз.</value></data>
+  <data name="ErrInvalidLoadStops" xml:space="preserve"><value>Остановки должны быть пронумерованы от 1 до N и включать хотя бы одну погрузку и одну доставку.</value></data>
+  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>Этот запрос уже был получен с другими значениями. Чтобы отправить другой запрос, закройте эту форму и откройте новую.</value></data>
+  <data name="ErrCorrelationRootMismatch" xml:space="preserve"><value>Этот запрос больше не соответствует созданному им рейсу. Закройте эту форму и откройте новую.</value></data>
+  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>Данные перевозчика или отгрузки временно недоступны. Повторите тот же запрос.</value></data>
+  <data name="ErrDependencyResponseInvalid" xml:space="preserve"><value>Не удалось прочитать данные перевозчика или отгрузки. Обратитесь в поддержку, указав номер.</value></data>
+  <data name="ErrReferenceStateUnavailable" xml:space="preserve"><value>Не удалось подтвердить текущее состояние отгрузки. Повторите тот же запрос позже.</value></data>
+  <data name="ErrPersistenceUnavailable" xml:space="preserve"><value>Результат запроса сейчас недоступен.</value></data>
+  <data name="ErrInternalError" xml:space="preserve"><value>Произошла непредвиденная ошибка. Обратитесь в поддержку, указав номер.</value></data>
+</root>

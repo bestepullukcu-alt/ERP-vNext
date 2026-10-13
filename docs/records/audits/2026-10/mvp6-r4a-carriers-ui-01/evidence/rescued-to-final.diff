@@ -1,0 +1,577 @@
+--- rescued/frontend/Diten.Web/Controllers/SupplyChainCarriersController.cs
++++ final/frontend/Diten.Web/Controllers/SupplyChainCarriersController.cs
+@@ -43,6 +43,7 @@
+     public IActionResult Index() => View("~/Views/SupplyChain/Carriers/Index.cshtml");
+ 
+     [HttpGet("api")]
++    [JsonAdapterEndpoint] // R-4a (MODULE-RECIPE 2.4): without it Q394's challenge cannot tell this endpoint from a page — 302, not JSON 401
+     public Task<IActionResult> List([FromQuery] string? status, CancellationToken cancellationToken)
+     {
+         if (!HasPermission(ReadPermission))
+@@ -56,6 +57,7 @@
+     }
+ 
+     [HttpPost("api")]
++    [JsonAdapterEndpoint] // R-4a (MODULE-RECIPE 2.4): without it Q394's challenge cannot tell this endpoint from a page — 302, not JSON 401
+     [ValidateAntiForgeryToken]
+     public Task<IActionResult> Create([FromBody] CreateCarrierViewModel model, CancellationToken cancellationToken)
+     {
+@@ -73,6 +75,7 @@
+     }
+ 
+     [HttpPost("api/{carrierId:guid}/status")]
++    [JsonAdapterEndpoint] // R-4a (MODULE-RECIPE 2.4): without it Q394's challenge cannot tell this endpoint from a page — 302, not JSON 401
+     [ValidateAntiForgeryToken]
+     public Task<IActionResult> ChangeStatus(
+         Guid carrierId,
+@@ -102,6 +105,9 @@
+         if (!TryCreateGatewayRequest(method, targetUrl, content, includeIdempotencyKey, out var request, out var localStatus))
+             return ContractFailure(localStatus);
+ 
++        // R-4a (MODULE-RECIPE 2.3): every line below carries the trace the browser sent, so one user action can be followed
++        // through the Web, Gateway and service logs by the same value.
++        var trace = ResolveTraceCorrelation();
+         try
+         {
+             using (request)
+@@ -109,6 +115,16 @@
+             {
+                 CopyCorrelationHeader(response);
+                 var body = await response.Content.ReadAsStringAsync(cancellationToken);
++                // R-4a (MODULE-RECIPE 2.1, Q371): a gateway 5xx with no contract body (service down) is the same case as an
++                // unreachable gateway, so it gets the same envelope; passed through, the page found no error code.
++                if ((int)response.StatusCode >= 500 && !HasContractError(body))
++                {
++                    _logger.LogWarning("Carrier Gateway answered {StatusCode} without a contract error for {TargetUrl}; correlation {CorrelationId}.",
++                        (int)response.StatusCode, targetUrl, trace);
++                    return ContractFailure(StatusCodes.Status503ServiceUnavailable);
++                }
++                _logger.LogInformation("Carrier Gateway answered {StatusCode} for {Method} {TargetUrl}; correlation {CorrelationId}.",
++                    (int)response.StatusCode, method.Method, targetUrl, trace);
+                 return new ContentResult
+                 {
+                     StatusCode = (int)response.StatusCode,
+@@ -119,17 +135,17 @@
+         }
+         catch (TaskCanceledException exception) when (!cancellationToken.IsCancellationRequested)
+         {
+-            _logger.LogWarning(exception, "Carrier Gateway request timed out for {TargetUrl}.", targetUrl);
++            _logger.LogWarning(exception, "Carrier Gateway request timed out for {TargetUrl}; correlation {CorrelationId}.", targetUrl, trace);
+             return ContractFailure(StatusCodes.Status503ServiceUnavailable);
+         }
+         catch (HttpRequestException exception)
+         {
+-            _logger.LogError(exception, "Carrier Gateway request failed for {TargetUrl}.", targetUrl);
++            _logger.LogError(exception, "Carrier Gateway request failed for {TargetUrl}; correlation {CorrelationId}.", targetUrl, trace);
+             return ContractFailure(StatusCodes.Status503ServiceUnavailable);
+         }
+         catch (Exception exception)
+         {
+-            _logger.LogError(exception, "Unexpected Carrier proxy failure for {TargetUrl}.", targetUrl);
++            _logger.LogError(exception, "Unexpected Carrier proxy failure for {TargetUrl}; correlation {CorrelationId}.", targetUrl, trace);
+             return ContractFailure(StatusCodes.Status500InternalServerError);
+         }
+     }
+@@ -233,5 +249,23 @@
+         return Guid.NewGuid();
+     }
+ 
++    private static bool HasContractError(string body)
++    {
++        if (string.IsNullOrWhiteSpace(body)) return false;
++        try
++        {
++            using var document = JsonDocument.Parse(body);
++            return document.RootElement.ValueKind == JsonValueKind.Object
++                && document.RootElement.TryGetProperty("error", out var error)
++                && error.ValueKind == JsonValueKind.Object
++                && error.TryGetProperty("code", out var code)
++                && code.ValueKind == JsonValueKind.String;
++        }
++        catch (JsonException)
++        {
++            return false;
++        }
++    }
++
+     private bool HasPermission(string permission) => PermissionClaims.HasPermission(User, permission);
+ }
+--- rescued/frontend/Diten.Web/Views/SupplyChain/Carriers/Index.cshtml
++++ final/frontend/Diten.Web/Views/SupplyChain/Carriers/Index.cshtml
+@@ -14,6 +14,10 @@
+     return;
+ }
+ 
++@* R-4a (MODULE-RECIPE 3.6/4.1): the list has three distinct states — skeleton while the first load runs, the table, and a
++   failed load shown as an alert in place of the table (a 403 shows the denied card instead). A failed load used to leave
++   an empty table under a toast, which reads as "no carriers" (Q231 D-2 shape, measured live by R-4a). *@
++<div id="carriersListSurface">
+ @* Contract marker: <partial name="_Filter" /> *@
+ <partial name="~/Views/SupplyChain/Carriers/_Filter.cshtml" />
+ 
+@@ -22,7 +26,10 @@
+     <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+ </div>
+ 
++<div id="carriersLoadError" class="alert alert-danger d-none" role="alert"></div>
+ <partial name="~/Views/SupplyChain/Carriers/_DataTable.cshtml" />
++</div>
++<div id="carriersListDenied" hidden><partial name="_AccessDenied" model="@Localizer["CarriersTitle"].Value" /></div>
+ 
+ <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasDetailsPreview"
+      aria-labelledby="carrierQuickViewTitle">
+--- rescued/frontend/Diten.Web/Views/SupplyChain/Carriers/_DataTable.cshtml
++++ final/frontend/Diten.Web/Views/SupplyChain/Carriers/_DataTable.cshtml
+@@ -4,7 +4,7 @@
+ @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+ 
+ <div class="card">
+-    <div id="skeleton-loader" class="backbone-skeleton p-4">
++    <div id="carriersSkeleton" class="backbone-skeleton p-4" aria-hidden="true">
+         <div class="shimmer skeleton-row skeleton-row-lg"></div>
+         <div class="shimmer skeleton-row"></div>
+         <div class="shimmer skeleton-row"></div>
+--- rescued/frontend/Diten.Web/Views/SupplyChain/Carriers/_IndexL10n.cshtml
++++ final/frontend/Diten.Web/Views/SupplyChain/Carriers/_IndexL10n.cshtml
+@@ -3,62 +3,65 @@
+ @inject IHtmlLocalizer<CarriersIndex> Localizer
+ @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+ 
++@* R-4a (MODULE-RECIPE 5.3): a Dictionary, not an anonymous object — Json.Serialize camel-cases an anonymous object's property
++   names (Q371), and the page must receive these keys exactly as the resx names them. *@
+ <script id="carriers-l10n" type="application/json">
+-    @Json.Serialize(new
++    @Json.Serialize(new Dictionary<string, string>
+     {
+-        Active = SharedLocalizer["Active"].Value,
+-        Passive = SharedLocalizer["Passive"].Value,
+-        Unknown = SharedLocalizer["Unknown"].Value,
+-        Actions = Localizer["Actions"].Value,
+-        Edit = SharedLocalizer["Edit"].Value,
+-        ViewDetails = SharedLocalizer["ViewDetails"].Value,
+-        QuickView = Localizer["QuickView"].Value,
+-        BulkDelete = SharedLocalizer["BulkDelete"].Value,
+-        BulkDeleteConfirm = SharedLocalizer["BulkDeleteConfirm"].Value,
+-        AreYouSure = SharedLocalizer["AreYouSure"].Value,
+-        Cancel = SharedLocalizer["Cancel"].Value,
+-        Search = SharedLocalizer["Search"].Value,
+-        Export = SharedLocalizer["Export"].Value,
+-        Import = SharedLocalizer["Import"].Value,
+-        Filter = SharedLocalizer["Filter"].Value,
+-        Apply = SharedLocalizer["Apply"].Value,
+-        Reset = SharedLocalizer["Reset"].Value,
+-        ShowAll = SharedLocalizer["ShowAll"].Value,
+-        SaveView = SharedLocalizer["SaveView"].Value,
+-        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+-        Status = SharedLocalizer["Status"].Value,
+-        Save = SharedLocalizer["Save"].Value,
+-        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+-        RecordSaved = SharedLocalizer["RecordSaved"].Value,
+-        AddNewCarrier = Localizer["AddNewCarrier"].Value,
+-        CarrierCode = Localizer["CarrierCode"].Value,
+-        DisplayName = Localizer["DisplayName"].Value,
+-        SupportedModes = Localizer["SupportedModes"].Value,
+-        StatusActive = Localizer["StatusActive"].Value,
+-        StatusSuspended = Localizer["StatusSuspended"].Value,
+-        StatusRetired = Localizer["StatusRetired"].Value,
+-        ModeRoad = Localizer["ModeRoad"].Value,
+-        ModeAir = Localizer["ModeAir"].Value,
+-        ModeSea = Localizer["ModeSea"].Value,
+-        ModeRail = Localizer["ModeRail"].Value,
+-        ModeParcel = Localizer["ModeParcel"].Value,
+-        ChangeStatus = Localizer["ChangeStatus"].Value,
+-        StatusChangeConfirm = Localizer["StatusChangeConfirm"].Value,
+-        ConfirmStatusChange = Localizer["ConfirmStatusChange"].Value,
+-        CreateSuccess = Localizer["CreateSuccess"].Value,
+-        CreateReplaySuccess = Localizer["CreateReplaySuccess"].Value,
+-        StatusSuccess = Localizer["StatusSuccess"].Value,
+-        StatusReplaySuccess = Localizer["StatusReplaySuccess"].Value,
+-        ValidationError = Localizer["ValidationError"].Value,
+-        AccessDenied = Localizer["AccessDenied"].Value,
+-        CarrierNotFound = Localizer["CarrierNotFound"].Value,
+-        CarrierCodeConflict = Localizer["CarrierCodeConflict"].Value,
+-        IdempotencyKeyReused = Localizer["IdempotencyKeyReused"].Value,
+-        InvalidCarrierTransition = Localizer["InvalidCarrierTransition"].Value,
+-        PersistenceUnavailable = Localizer["PersistenceUnavailable"].Value,
+-        InternalError = Localizer["InternalError"].Value,
+-        RetrySameRequest = Localizer["RetrySameRequest"].Value,
+-        SupportReference = Localizer["SupportReference"].Value,
+-        EmptyList = Localizer["EmptyList"].Value
++        ["Active"] = SharedLocalizer["Active"].Value,
++        ["Passive"] = SharedLocalizer["Passive"].Value,
++        ["Unknown"] = SharedLocalizer["Unknown"].Value,
++        ["Actions"] = Localizer["Actions"].Value,
++        ["Edit"] = SharedLocalizer["Edit"].Value,
++        ["ViewDetails"] = SharedLocalizer["ViewDetails"].Value,
++        ["QuickView"] = Localizer["QuickView"].Value,
++        ["BulkDelete"] = SharedLocalizer["BulkDelete"].Value,
++        ["BulkDeleteConfirm"] = SharedLocalizer["BulkDeleteConfirm"].Value,
++        ["AreYouSure"] = SharedLocalizer["AreYouSure"].Value,
++        ["Cancel"] = SharedLocalizer["Cancel"].Value,
++        ["Search"] = SharedLocalizer["Search"].Value,
++        ["Export"] = SharedLocalizer["Export"].Value,
++        ["Import"] = SharedLocalizer["Import"].Value,
++        ["Filter"] = SharedLocalizer["Filter"].Value,
++        ["Apply"] = SharedLocalizer["Apply"].Value,
++        ["Reset"] = SharedLocalizer["Reset"].Value,
++        ["ShowAll"] = SharedLocalizer["ShowAll"].Value,
++        ["SaveView"] = SharedLocalizer["SaveView"].Value,
++        ["ColumnVisibility"] = SharedLocalizer["ColumnVisibility"].Value,
++        ["Status"] = SharedLocalizer["Status"].Value,
++        ["Save"] = SharedLocalizer["Save"].Value,
++        ["ErrorOccurred"] = SharedLocalizer["ErrorOccurred"].Value,
++        ["RecordSaved"] = SharedLocalizer["RecordSaved"].Value,
++        ["AddNewCarrier"] = Localizer["AddNewCarrier"].Value,
++        ["CarrierCode"] = Localizer["CarrierCode"].Value,
++        ["DisplayName"] = Localizer["DisplayName"].Value,
++        ["SupportedModes"] = Localizer["SupportedModes"].Value,
++        ["StatusActive"] = Localizer["StatusActive"].Value,
++        ["StatusSuspended"] = Localizer["StatusSuspended"].Value,
++        ["StatusRetired"] = Localizer["StatusRetired"].Value,
++        ["ModeRoad"] = Localizer["ModeRoad"].Value,
++        ["ModeAir"] = Localizer["ModeAir"].Value,
++        ["ModeSea"] = Localizer["ModeSea"].Value,
++        ["ModeRail"] = Localizer["ModeRail"].Value,
++        ["ModeParcel"] = Localizer["ModeParcel"].Value,
++        ["ChangeStatus"] = Localizer["ChangeStatus"].Value,
++        ["StatusChangeConfirm"] = Localizer["StatusChangeConfirm"].Value,
++        ["ConfirmStatusChange"] = Localizer["ConfirmStatusChange"].Value,
++        ["CreateSuccess"] = Localizer["CreateSuccess"].Value,
++        ["CreateReplaySuccess"] = Localizer["CreateReplaySuccess"].Value,
++        ["StatusSuccess"] = Localizer["StatusSuccess"].Value,
++        ["StatusReplaySuccess"] = Localizer["StatusReplaySuccess"].Value,
++        ["ValidationError"] = Localizer["ValidationError"].Value,
++        ["AccessDenied"] = Localizer["AccessDenied"].Value,
++        ["CarrierNotFound"] = Localizer["CarrierNotFound"].Value,
++        ["CarrierCodeConflict"] = Localizer["CarrierCodeConflict"].Value,
++        ["IdempotencyKeyReused"] = Localizer["IdempotencyKeyReused"].Value,
++        ["InvalidCarrierTransition"] = Localizer["InvalidCarrierTransition"].Value,
++        ["PersistenceUnavailable"] = Localizer["PersistenceUnavailable"].Value,
++        ["ListUnavailable"] = Localizer["ListUnavailable"].Value,
++        ["InternalError"] = Localizer["InternalError"].Value,
++        ["RetrySameRequest"] = Localizer["RetrySameRequest"].Value,
++        ["SupportReference"] = Localizer["SupportReference"].Value,
++        ["EmptyList"] = Localizer["EmptyList"].Value
+     })
+ </script>
+--- rescued/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Carriers/index.js
++++ final/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Carriers/index.js
+@@ -259,21 +259,52 @@
+         if (response.status === 403 && options?.offcanvas)
+             bootstrap.Offcanvas.getInstance(options.offcanvas)?.hide();
+         return { code, payload };
++    };
++    // R-4a (MODULE-RECIPE 3.6, 3.11, 4.1): skeleton until the first load ends (owned by this page: the shared
++    // `.backbone-skeleton` is display:none and DtDefaults fades #skeleton-loader on its own); a failed load is an alert in
++    // place of the table, worded as a read failure, never an empty table under a toast; a 403 is the denied card.
++    const tableCard = () => document.getElementById('dt-carriers')?.closest('.card-datatable');
++    const setSkeleton = (visible) => {
++        const skeleton = document.getElementById('carriersSkeleton');
++        if (skeleton) skeleton.style.display = visible ? 'block' : 'none';
++        const card = tableCard();
++        if (card) card.classList.toggle('d-none', visible);
+     };
++    const showDenied = () => {
++        const surface = document.getElementById('carriersListSurface'); const denied = document.getElementById('carriersListDenied');
++        if (!surface || !denied) return;
++        surface.hidden = true; surface.setAttribute('inert', ''); denied.hidden = false;
++    };
++    const showLoadFailure = (correlation) => {
++        const alert = document.getElementById('carriersLoadError'); if (!alert) return;
++        alert.textContent = `${L.ListUnavailable}${correlation ? ` ${L.SupportReference}: ${correlation}` : ''}`;
++        alert.classList.remove('d-none'); tableCard()?.classList.add('d-none');
++    };
++    const clearLoadFailure = () => {
++        document.getElementById('carriersLoadError')?.classList.add('d-none'); tableCard()?.classList.remove('d-none');
++    };
++    let firstLoad = true;
+     const loadRows = async (_request, callback) => {
++        if (firstLoad) setSkeleton(true);
+         try {
+             const response = await fetch(buildListUrl(), { credentials: 'same-origin', headers: getAuthHeaders() });
+             if (!response.ok) {
+-                await notifyFailure(response);
++                if (response.status === 401) { handleUnauthorized(); callback({ data: [] }); return; }
++                if (response.status === 403) { showDenied(); callback({ data: [] }); return; }
++                const payload = await readJson(response);
++                showLoadFailure(payload?.error?.correlationId || response.headers.get('X-Correlation-Id'));
+                 callback({ data: [] });
+                 return;
+             }
+             const payload = await response.json();
++            clearLoadFailure();
+             callback({ data: Array.isArray(payload?.items) ? payload.items : [] });
+         } catch (error) {
+             console.error('[Carriers] List request failed.', error);
+-            window.showToast?.(L.PersistenceUnavailable, 'error');
++            showLoadFailure(null);
+             callback({ data: [] });
++        } finally {
++            if (firstLoad) { firstLoad = false; setSkeleton(false); if (!document.getElementById('carriersLoadError')?.classList.contains('d-none')) tableCard()?.classList.add('d-none'); }
+         }
+     };
+ 
+@@ -295,6 +326,7 @@
+         ? ['Suspended', 'Retired'] : status === 'Suspended' ? ['Active', 'Retired'] : [];
+     const openStatus = (row) => {
+         if (!row || !permissions.canChangeStatus) return;
++        statusIntents.set(row.carrierId, newIntent());
+         const select = document.getElementById('targetStatus');
+         select.replaceChildren(...availableStatusTargets(row.status).map((status) =>
+             new Option(statusLabels()[status] || status, status)));
+@@ -307,12 +339,15 @@
+         if (!permissions.canCreate) return;
+         const form = document.getElementById('formCarrier');
+         form.reset();
++        createIntent = newIntent();
+         $('#supportedModes').val([]).trigger('change');
+         document.getElementById('formCarrierAlert').classList.add('d-none');
+         bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('offcanvasCreateEdit')).show();
+     };
+-    const ensureIntent = (existing, signature) => existing?.signature === signature
+-        ? existing : { signature, key: createUuid() };
++    // R-4a (MODULE-RECIPE 3.1; MOD-0184 §32.3 as applied, Q403): an intent is one opened create form or status panel, not
++    // one payload. The key is minted when the form or panel opens and kept across edits, failures and retries until it
++    // closes. After 409 IDEMPOTENCY_KEY_REUSED the intent is spent: the form stops and never mints a key to get past it.
++    const newIntent = () => ({ key: createUuid(), blocked: false });
+     const requestHeaders = (form, intent) => Object.assign(getAuthHeaders(), {
+         'Content-Type': 'application/json',
+         'RequestVerificationToken': getAntiForgeryToken(form),
+@@ -344,7 +379,11 @@
+             return;
+         }
+         const signature = JSON.stringify(payload);
+-        createIntent = ensureIntent(createIntent, signature);
++        if (!createIntent) createIntent = newIntent();
++        if (createIntent.blocked) {
++            showFormError('formCarrierAlert', L.IdempotencyKeyReused);
++            return;
++        }
+         setBusy(button, true);
+         try {
+             const response = await fetch(endpoint, {
+@@ -353,7 +392,7 @@
+             });
+             if (!response.ok) {
+                 const failure = await notifyFailure(response, { offcanvas: document.getElementById('offcanvasCreateEdit') });
+-                if (failure.code === 'IDEMPOTENCY_KEY_REUSED') createIntent = null;
++                if (failure.code === 'IDEMPOTENCY_KEY_REUSED') createIntent.blocked = true;
+                 if (response.status === 400 || response.status === 415 || response.status === 409)
+                     showFormError('formCarrierAlert', messageForError(failure.code, response.status));
+                 return;
+@@ -384,8 +423,12 @@
+             return;
+         }
+         const signature = JSON.stringify(payload);
+-        const intent = ensureIntent(statusIntents.get(carrierId), signature);
++        const intent = statusIntents.get(carrierId) || newIntent();
+         statusIntents.set(carrierId, intent);
++        if (intent.blocked) {
++            showFormError('statusCarrierAlert', L.IdempotencyKeyReused);
++            return;
++        }
+         const run = async () => {
+             setBusy(button, true);
+             try {
+@@ -395,7 +438,7 @@
+                 });
+                 if (!response.ok) {
+                     const failure = await notifyFailure(response, { offcanvas: document.getElementById('offcanvasChangeStatus') });
+-                    if (failure.code === 'IDEMPOTENCY_KEY_REUSED') statusIntents.delete(carrierId);
++                    if (failure.code === 'IDEMPOTENCY_KEY_REUSED') intent.blocked = true;
+                     return;
+                 }
+                 const result = await response.json();
+@@ -471,7 +514,9 @@
+         readPermissions();
+         await loadDefaultView();
+         dt = new DataTable(tableElement, window.DtDefaults.create({
+-            ajax: loadRows,
++            // R-4a (Returns draft UI-PM-03): DataTables calls .abort() on whatever ajax returns; an async function returns a
++            // Promise, so every ajax.reload() threw after a committed create and the page reported "outcome unavailable".
++            ajax: (data, callback) => { void loadRows(data, callback); },
+             stateSave: false,
+             order: baseOrder,
+             colReorder: { columns: ':gt(0):not(:last-child)' },
+--- rescued/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Carriers/index.l10n.js
++++ final/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Carriers/index.l10n.js
+@@ -9,7 +9,8 @@
+         'CreateSuccess', 'DisplayName', 'EmptyList', 'ErrorOccurred', 'Filter',
+         'IdempotencyKeyReused', 'InternalError', 'InvalidCarrierTransition',
+         'ModeAir', 'ModeParcel', 'ModeRail', 'ModeRoad', 'ModeSea', 'Passive',
+-        'PersistenceUnavailable', 'QuickView', 'RecordSaved', 'Reset', 'RetrySameRequest',
++        'PersistenceUnavailable',
++        'ListUnavailable', 'QuickView', 'RecordSaved', 'Reset', 'RetrySameRequest',
+         'Save', 'SaveView', 'Search', 'ShowAll', 'Status', 'StatusActive',
+         'StatusChangeConfirm', 'StatusReplaySuccess', 'StatusRetired',
+         'StatusSuccess', 'StatusSuspended', 'SupportReference', 'SupportedModes',
+--- rescued/frontend/Diten.Web/Resources/Views/SupplyChain/Carriers/CarriersIndex.en.resx
++++ final/frontend/Diten.Web/Resources/Views/SupplyChain/Carriers/CarriersIndex.en.resx
+@@ -41,9 +41,10 @@
+   <data name="AccessDenied" xml:space="preserve"><value>You no longer have permission for this action.</value></data>
+   <data name="CarrierNotFound" xml:space="preserve"><value>The carrier could not be found.</value></data>
+   <data name="CarrierCodeConflict" xml:space="preserve"><value>This carrier code is already reserved.</value></data>
+-  <data name="IdempotencyKeyReused" xml:space="preserve"><value>The request identity belongs to different content. Start the action again.</value></data>
++  <data name="IdempotencyKeyReused" xml:space="preserve"><value>This request was already received with different values. To make a different request, close this form and open a new one.</value></data>
+   <data name="InvalidCarrierTransition" xml:space="preserve"><value>The current carrier status no longer permits this change.</value></data>
+   <data name="PersistenceUnavailable" xml:space="preserve"><value>The request outcome is unavailable.</value></data>
++  <data name="ListUnavailable" xml:space="preserve"><value>Carriers could not be loaded. Try again later.</value></data>
+   <data name="InternalError" xml:space="preserve"><value>An unexpected error occurred.</value></data>
+   <data name="RetrySameRequest" xml:space="preserve"><value>Retry without changing the form to preserve the request identity.</value></data>
+   <data name="SupportReference" xml:space="preserve"><value>Support reference</value></data>
+--- rescued/frontend/Diten.Web/Resources/Views/SupplyChain/Carriers/CarriersIndex.tr.resx
++++ final/frontend/Diten.Web/Resources/Views/SupplyChain/Carriers/CarriersIndex.tr.resx
+@@ -7,5 +7,6 @@
+   <data name="StatusActive" xml:space="preserve"><value>Etkin</value></data><data name="StatusSuspended" xml:space="preserve"><value>Askıya Alındı</value></data><data name="StatusRetired" xml:space="preserve"><value>Kullanımdan Kaldırıldı</value></data><data name="ModeRoad" xml:space="preserve"><value>Karayolu</value></data><data name="ModeAir" xml:space="preserve"><value>Havayolu</value></data><data name="ModeSea" xml:space="preserve"><value>Denizyolu</value></data><data name="ModeRail" xml:space="preserve"><value>Demiryolu</value></data><data name="ModeParcel" xml:space="preserve"><value>Paket</value></data>
+   <data name="ChangeStatus" xml:space="preserve"><value>Durumu Değiştir</value></data><data name="ChangeStatusTitle" xml:space="preserve"><value>Taşıyıcı Durumunu Değiştir</value></data><data name="TargetStatus" xml:space="preserve"><value>Hedef Durum</value></data><data name="ReasonCode" xml:space="preserve"><value>Neden Kodu</value></data><data name="ReasonCodePlaceholder" xml:space="preserve"><value>Bir neden girin veya boş bırakın</value></data><data name="ReasonCodeHelp" xml:space="preserve"><value>Bu komut için boş neden geçerlidir.</value></data><data name="StatusChangeConfirm" xml:space="preserve"><value>Bu taşıyıcı durum değişikliği uygulansın mı?</value></data><data name="ConfirmStatusChange" xml:space="preserve"><value>Durumu Uygula</value></data>
+   <data name="CreateSuccess" xml:space="preserve"><value>Taşıyıcı başarıyla oluşturuldu.</value></data><data name="CreateReplaySuccess" xml:space="preserve"><value>Bu taşıyıcı isteği daha önce başarıyla tamamlandı.</value></data><data name="StatusSuccess" xml:space="preserve"><value>Taşıyıcı durumu başarıyla değiştirildi.</value></data><data name="StatusReplaySuccess" xml:space="preserve"><value>Bu durum isteği daha önce başarıyla tamamlandı.</value></data>
+-  <data name="ValidationError" xml:space="preserve"><value>Girilen değerleri kontrol edip yeniden deneyin.</value></data><data name="AccessDenied" xml:space="preserve"><value>Bu işlem için artık yetkiniz yok.</value></data><data name="CarrierNotFound" xml:space="preserve"><value>Taşıyıcı bulunamadı.</value></data><data name="CarrierCodeConflict" xml:space="preserve"><value>Bu taşıyıcı kodu zaten ayrılmış.</value></data><data name="IdempotencyKeyReused" xml:space="preserve"><value>İstek kimliği farklı bir içeriğe ait. İşlemi yeniden başlatın.</value></data><data name="InvalidCarrierTransition" xml:space="preserve"><value>Taşıyıcının güncel durumu bu değişikliğe artık izin vermiyor.</value></data><data name="PersistenceUnavailable" xml:space="preserve"><value>İsteğin sonucu şu anda belirlenemiyor.</value></data><data name="InternalError" xml:space="preserve"><value>Beklenmeyen bir hata oluştu.</value></data><data name="RetrySameRequest" xml:space="preserve"><value>İstek kimliğini korumak için formu değiştirmeden yeniden deneyin.</value></data><data name="SupportReference" xml:space="preserve"><value>Destek referansı</value></data><data name="EmptyList" xml:space="preserve"><value>Taşıyıcı bulunamadı.</value></data>
++  <data name="ValidationError" xml:space="preserve"><value>Girilen değerleri kontrol edip yeniden deneyin.</value></data><data name="AccessDenied" xml:space="preserve"><value>Bu işlem için artık yetkiniz yok.</value></data><data name="CarrierNotFound" xml:space="preserve"><value>Taşıyıcı bulunamadı.</value></data><data name="CarrierCodeConflict" xml:space="preserve"><value>Bu taşıyıcı kodu zaten ayrılmış.</value></data><data name="IdempotencyKeyReused" xml:space="preserve"><value>Bu istek farklı değerlerle zaten alındı. Farklı bir istek için bu formu kapatıp yeni bir form açın.</value></data><data name="InvalidCarrierTransition" xml:space="preserve"><value>Taşıyıcının güncel durumu bu değişikliğe artık izin vermiyor.</value></data><data name="PersistenceUnavailable" xml:space="preserve"><value>İsteğin sonucu şu anda belirlenemiyor.</value></data>
++  <data name="ListUnavailable" xml:space="preserve"><value>Taşıyıcılar yüklenemedi. Daha sonra tekrar deneyin.</value></data><data name="InternalError" xml:space="preserve"><value>Beklenmeyen bir hata oluştu.</value></data><data name="RetrySameRequest" xml:space="preserve"><value>İstek kimliğini korumak için formu değiştirmeden yeniden deneyin.</value></data><data name="SupportReference" xml:space="preserve"><value>Destek referansı</value></data><data name="EmptyList" xml:space="preserve"><value>Taşıyıcı bulunamadı.</value></data>
+ </root>
+--- rescued/frontend/Diten.Web/Resources/Views/SupplyChain/Carriers/CarriersIndex.fr.resx
++++ final/frontend/Diten.Web/Resources/Views/SupplyChain/Carriers/CarriersIndex.fr.resx
+@@ -4,5 +4,6 @@
+   <data name="CarriersTitle" xml:space="preserve"><value>Transporteurs</value></data><data name="PageDescription" xml:space="preserve"><value>Consultez les transporteurs, créez-en un et gérez son statut de cycle de vie.</value></data><data name="AddNewCarrier" xml:space="preserve"><value>Ajouter un transporteur</value></data><data name="CarrierCode" xml:space="preserve"><value>Code du transporteur</value></data><data name="CarrierCodePlaceholder" xml:space="preserve"><value>Saisissez le code du transporteur</value></data><data name="DisplayName" xml:space="preserve"><value>Nom d’affichage</value></data><data name="DisplayNamePlaceholder" xml:space="preserve"><value>Saisissez le nom d’affichage</value></data><data name="SupportedModes" xml:space="preserve"><value>Modes pris en charge</value></data><data name="SupportedModesPlaceholder" xml:space="preserve"><value>Sélectionnez un ou plusieurs modes</value></data><data name="ExternalReference" xml:space="preserve"><value>Référence externe</value></data><data name="ExternalReferencePlaceholder" xml:space="preserve"><value>Saisissez une référence externe facultative</value></data><data name="Actions" xml:space="preserve"><value>Actions</value></data><data name="QuickView" xml:space="preserve"><value>Aperçu rapide</value></data>
+   <data name="StatusActive" xml:space="preserve"><value>Actif</value></data><data name="StatusSuspended" xml:space="preserve"><value>Suspendu</value></data><data name="StatusRetired" xml:space="preserve"><value>Retiré</value></data><data name="ModeRoad" xml:space="preserve"><value>Route</value></data><data name="ModeAir" xml:space="preserve"><value>Aérien</value></data><data name="ModeSea" xml:space="preserve"><value>Maritime</value></data><data name="ModeRail" xml:space="preserve"><value>Ferroviaire</value></data><data name="ModeParcel" xml:space="preserve"><value>Colis</value></data>
+   <data name="ChangeStatus" xml:space="preserve"><value>Modifier le statut</value></data><data name="ChangeStatusTitle" xml:space="preserve"><value>Modifier le statut du transporteur</value></data><data name="TargetStatus" xml:space="preserve"><value>Statut cible</value></data><data name="ReasonCode" xml:space="preserve"><value>Code motif</value></data><data name="ReasonCodePlaceholder" xml:space="preserve"><value>Saisissez un motif ou laissez vide</value></data><data name="ReasonCodeHelp" xml:space="preserve"><value>Un motif vide est valide pour cette commande.</value></data><data name="StatusChangeConfirm" xml:space="preserve"><value>Appliquer ce changement de statut du transporteur ?</value></data><data name="ConfirmStatusChange" xml:space="preserve"><value>Appliquer le statut</value></data>
+-  <data name="CreateSuccess" xml:space="preserve"><value>Le transporteur a été créé.</value></data><data name="CreateReplaySuccess" xml:space="preserve"><value>Cette demande de transporteur a déjà abouti.</value></data><data name="StatusSuccess" xml:space="preserve"><value>Le statut du transporteur a été modifié.</value></data><data name="StatusReplaySuccess" xml:space="preserve"><value>Cette demande de statut a déjà abouti.</value></data><data name="ValidationError" xml:space="preserve"><value>Vérifiez les valeurs saisies puis réessayez.</value></data><data name="AccessDenied" xml:space="preserve"><value>Vous n’avez plus l’autorisation d’effectuer cette action.</value></data><data name="CarrierNotFound" xml:space="preserve"><value>Le transporteur est introuvable.</value></data><data name="CarrierCodeConflict" xml:space="preserve"><value>Ce code de transporteur est déjà réservé.</value></data><data name="IdempotencyKeyReused" xml:space="preserve"><value>L’identité de la demande appartient à un autre contenu. Recommencez l’action.</value></data><data name="InvalidCarrierTransition" xml:space="preserve"><value>Le statut actuel du transporteur ne permet plus cette modification.</value></data><data name="PersistenceUnavailable" xml:space="preserve"><value>Le résultat de la demande n’est pas disponible.</value></data><data name="InternalError" xml:space="preserve"><value>Une erreur inattendue s’est produite.</value></data><data name="RetrySameRequest" xml:space="preserve"><value>Réessayez sans modifier le formulaire afin de conserver l’identité de la demande.</value></data><data name="SupportReference" xml:space="preserve"><value>Référence d’assistance</value></data><data name="EmptyList" xml:space="preserve"><value>Aucun transporteur trouvé.</value></data>
++  <data name="CreateSuccess" xml:space="preserve"><value>Le transporteur a été créé.</value></data><data name="CreateReplaySuccess" xml:space="preserve"><value>Cette demande de transporteur a déjà abouti.</value></data><data name="StatusSuccess" xml:space="preserve"><value>Le statut du transporteur a été modifié.</value></data><data name="StatusReplaySuccess" xml:space="preserve"><value>Cette demande de statut a déjà abouti.</value></data><data name="ValidationError" xml:space="preserve"><value>Vérifiez les valeurs saisies puis réessayez.</value></data><data name="AccessDenied" xml:space="preserve"><value>Vous n’avez plus l’autorisation d’effectuer cette action.</value></data><data name="CarrierNotFound" xml:space="preserve"><value>Le transporteur est introuvable.</value></data><data name="CarrierCodeConflict" xml:space="preserve"><value>Ce code de transporteur est déjà réservé.</value></data><data name="IdempotencyKeyReused" xml:space="preserve"><value>Cette demande a déjà été reçue avec des valeurs différentes. Pour une autre demande, fermez ce formulaire et ouvrez-en un nouveau.</value></data><data name="InvalidCarrierTransition" xml:space="preserve"><value>Le statut actuel du transporteur ne permet plus cette modification.</value></data><data name="PersistenceUnavailable" xml:space="preserve"><value>Le résultat de la demande n’est pas disponible.</value></data>
++  <data name="ListUnavailable" xml:space="preserve"><value>Les transporteurs n’ont pas pu être chargés. Réessayez plus tard.</value></data><data name="InternalError" xml:space="preserve"><value>Une erreur inattendue s’est produite.</value></data><data name="RetrySameRequest" xml:space="preserve"><value>Réessayez sans modifier le formulaire afin de conserver l’identité de la demande.</value></data><data name="SupportReference" xml:space="preserve"><value>Référence d’assistance</value></data><data name="EmptyList" xml:space="preserve"><value>Aucun transporteur trouvé.</value></data>
+ </root>
+--- rescued/frontend/Diten.Web/Resources/Views/SupplyChain/Carriers/CarriersIndex.es.resx
++++ final/frontend/Diten.Web/Resources/Views/SupplyChain/Carriers/CarriersIndex.es.resx
+@@ -4,5 +4,6 @@
+   <data name="CarriersTitle" xml:space="preserve"><value>Transportistas</value></data><data name="PageDescription" xml:space="preserve"><value>Consulte transportistas, cree uno y gestione su estado de ciclo de vida.</value></data><data name="AddNewCarrier" xml:space="preserve"><value>Añadir transportista</value></data><data name="CarrierCode" xml:space="preserve"><value>Código del transportista</value></data><data name="CarrierCodePlaceholder" xml:space="preserve"><value>Introduzca el código del transportista</value></data><data name="DisplayName" xml:space="preserve"><value>Nombre visible</value></data><data name="DisplayNamePlaceholder" xml:space="preserve"><value>Introduzca el nombre visible</value></data><data name="SupportedModes" xml:space="preserve"><value>Modos admitidos</value></data><data name="SupportedModesPlaceholder" xml:space="preserve"><value>Seleccione uno o varios modos</value></data><data name="ExternalReference" xml:space="preserve"><value>Referencia externa</value></data><data name="ExternalReferencePlaceholder" xml:space="preserve"><value>Introduzca una referencia externa opcional</value></data><data name="Actions" xml:space="preserve"><value>Acciones</value></data><data name="QuickView" xml:space="preserve"><value>Vista rápida</value></data>
+   <data name="StatusActive" xml:space="preserve"><value>Activo</value></data><data name="StatusSuspended" xml:space="preserve"><value>Suspendido</value></data><data name="StatusRetired" xml:space="preserve"><value>Retirado</value></data><data name="ModeRoad" xml:space="preserve"><value>Carretera</value></data><data name="ModeAir" xml:space="preserve"><value>Aéreo</value></data><data name="ModeSea" xml:space="preserve"><value>Marítimo</value></data><data name="ModeRail" xml:space="preserve"><value>Ferroviario</value></data><data name="ModeParcel" xml:space="preserve"><value>Paquetería</value></data>
+   <data name="ChangeStatus" xml:space="preserve"><value>Cambiar estado</value></data><data name="ChangeStatusTitle" xml:space="preserve"><value>Cambiar estado del transportista</value></data><data name="TargetStatus" xml:space="preserve"><value>Estado de destino</value></data><data name="ReasonCode" xml:space="preserve"><value>Código de motivo</value></data><data name="ReasonCodePlaceholder" xml:space="preserve"><value>Introduzca un motivo o déjelo vacío</value></data><data name="ReasonCodeHelp" xml:space="preserve"><value>Un motivo vacío es válido para este comando.</value></data><data name="StatusChangeConfirm" xml:space="preserve"><value>¿Aplicar este cambio de estado del transportista?</value></data><data name="ConfirmStatusChange" xml:space="preserve"><value>Aplicar estado</value></data>
+-  <data name="CreateSuccess" xml:space="preserve"><value>El transportista se creó correctamente.</value></data><data name="CreateReplaySuccess" xml:space="preserve"><value>Esta solicitud de transportista ya se completó correctamente.</value></data><data name="StatusSuccess" xml:space="preserve"><value>El estado del transportista se cambió correctamente.</value></data><data name="StatusReplaySuccess" xml:space="preserve"><value>Esta solicitud de estado ya se completó correctamente.</value></data><data name="ValidationError" xml:space="preserve"><value>Revise los valores introducidos e inténtelo de nuevo.</value></data><data name="AccessDenied" xml:space="preserve"><value>Ya no tiene permiso para esta acción.</value></data><data name="CarrierNotFound" xml:space="preserve"><value>No se encontró el transportista.</value></data><data name="CarrierCodeConflict" xml:space="preserve"><value>Este código de transportista ya está reservado.</value></data><data name="IdempotencyKeyReused" xml:space="preserve"><value>La identidad de la solicitud pertenece a otro contenido. Inicie de nuevo la acción.</value></data><data name="InvalidCarrierTransition" xml:space="preserve"><value>El estado actual del transportista ya no permite este cambio.</value></data><data name="PersistenceUnavailable" xml:space="preserve"><value>El resultado de la solicitud no está disponible.</value></data><data name="InternalError" xml:space="preserve"><value>Se produjo un error inesperado.</value></data><data name="RetrySameRequest" xml:space="preserve"><value>Reintente sin modificar el formulario para conservar la identidad de la solicitud.</value></data><data name="SupportReference" xml:space="preserve"><value>Referencia de soporte</value></data><data name="EmptyList" xml:space="preserve"><value>No se encontraron transportistas.</value></data>
++  <data name="CreateSuccess" xml:space="preserve"><value>El transportista se creó correctamente.</value></data><data name="CreateReplaySuccess" xml:space="preserve"><value>Esta solicitud de transportista ya se completó correctamente.</value></data><data name="StatusSuccess" xml:space="preserve"><value>El estado del transportista se cambió correctamente.</value></data><data name="StatusReplaySuccess" xml:space="preserve"><value>Esta solicitud de estado ya se completó correctamente.</value></data><data name="ValidationError" xml:space="preserve"><value>Revise los valores introducidos e inténtelo de nuevo.</value></data><data name="AccessDenied" xml:space="preserve"><value>Ya no tiene permiso para esta acción.</value></data><data name="CarrierNotFound" xml:space="preserve"><value>No se encontró el transportista.</value></data><data name="CarrierCodeConflict" xml:space="preserve"><value>Este código de transportista ya está reservado.</value></data><data name="IdempotencyKeyReused" xml:space="preserve"><value>Esta solicitud ya se recibió con valores diferentes. Para hacer otra solicitud, cierre este formulario y abra uno nuevo.</value></data><data name="InvalidCarrierTransition" xml:space="preserve"><value>El estado actual del transportista ya no permite este cambio.</value></data><data name="PersistenceUnavailable" xml:space="preserve"><value>El resultado de la solicitud no está disponible.</value></data>
++  <data name="ListUnavailable" xml:space="preserve"><value>No se pudieron cargar los transportistas. Inténtelo de nuevo más tarde.</value></data><data name="InternalError" xml:space="preserve"><value>Se produjo un error inesperado.</value></data><data name="RetrySameRequest" xml:space="preserve"><value>Reintente sin modificar el formulario para conservar la identidad de la solicitud.</value></data><data name="SupportReference" xml:space="preserve"><value>Referencia de soporte</value></data><data name="EmptyList" xml:space="preserve"><value>No se encontraron transportistas.</value></data>
+ </root>
+--- rescued/frontend/Diten.Web/Resources/Views/SupplyChain/Carriers/CarriersIndex.zh.resx
++++ final/frontend/Diten.Web/Resources/Views/SupplyChain/Carriers/CarriersIndex.zh.resx
+@@ -4,5 +4,6 @@
+   <data name="CarriersTitle" xml:space="preserve"><value>承运商</value></data><data name="PageDescription" xml:space="preserve"><value>查看并创建承运商，以及管理其生命周期状态。</value></data><data name="AddNewCarrier" xml:space="preserve"><value>添加承运商</value></data><data name="CarrierCode" xml:space="preserve"><value>承运商代码</value></data><data name="CarrierCodePlaceholder" xml:space="preserve"><value>输入承运商代码</value></data><data name="DisplayName" xml:space="preserve"><value>显示名称</value></data><data name="DisplayNamePlaceholder" xml:space="preserve"><value>输入显示名称</value></data><data name="SupportedModes" xml:space="preserve"><value>支持的运输方式</value></data><data name="SupportedModesPlaceholder" xml:space="preserve"><value>选择一种或多种运输方式</value></data><data name="ExternalReference" xml:space="preserve"><value>外部参考</value></data><data name="ExternalReferencePlaceholder" xml:space="preserve"><value>输入可选的外部参考</value></data><data name="Actions" xml:space="preserve"><value>操作</value></data><data name="QuickView" xml:space="preserve"><value>快速查看</value></data>
+   <data name="StatusActive" xml:space="preserve"><value>有效</value></data><data name="StatusSuspended" xml:space="preserve"><value>已暂停</value></data><data name="StatusRetired" xml:space="preserve"><value>已停用</value></data><data name="ModeRoad" xml:space="preserve"><value>公路</value></data><data name="ModeAir" xml:space="preserve"><value>航空</value></data><data name="ModeSea" xml:space="preserve"><value>海运</value></data><data name="ModeRail" xml:space="preserve"><value>铁路</value></data><data name="ModeParcel" xml:space="preserve"><value>包裹</value></data>
+   <data name="ChangeStatus" xml:space="preserve"><value>更改状态</value></data><data name="ChangeStatusTitle" xml:space="preserve"><value>更改承运商状态</value></data><data name="TargetStatus" xml:space="preserve"><value>目标状态</value></data><data name="ReasonCode" xml:space="preserve"><value>原因代码</value></data><data name="ReasonCodePlaceholder" xml:space="preserve"><value>输入原因或留空</value></data><data name="ReasonCodeHelp" xml:space="preserve"><value>此命令允许原因为空。</value></data><data name="StatusChangeConfirm" xml:space="preserve"><value>是否应用此承运商状态变更？</value></data><data name="ConfirmStatusChange" xml:space="preserve"><value>应用状态</value></data>
+-  <data name="CreateSuccess" xml:space="preserve"><value>承运商创建成功。</value></data><data name="CreateReplaySuccess" xml:space="preserve"><value>此承运商请求此前已成功完成。</value></data><data name="StatusSuccess" xml:space="preserve"><value>承运商状态更改成功。</value></data><data name="StatusReplaySuccess" xml:space="preserve"><value>此状态请求此前已成功完成。</value></data><data name="ValidationError" xml:space="preserve"><value>请检查输入值后重试。</value></data><data name="AccessDenied" xml:space="preserve"><value>您已无权执行此操作。</value></data><data name="CarrierNotFound" xml:space="preserve"><value>找不到承运商。</value></data><data name="CarrierCodeConflict" xml:space="preserve"><value>此承运商代码已被保留。</value></data><data name="IdempotencyKeyReused" xml:space="preserve"><value>请求标识属于其他内容，请重新开始此操作。</value></data><data name="InvalidCarrierTransition" xml:space="preserve"><value>承运商当前状态已不允许此变更。</value></data><data name="PersistenceUnavailable" xml:space="preserve"><value>目前无法确定请求结果。</value></data><data name="InternalError" xml:space="preserve"><value>发生意外错误。</value></data><data name="RetrySameRequest" xml:space="preserve"><value>请勿更改表单并重试，以保留请求标识。</value></data><data name="SupportReference" xml:space="preserve"><value>支持参考号</value></data><data name="EmptyList" xml:space="preserve"><value>未找到承运商。</value></data>
++  <data name="CreateSuccess" xml:space="preserve"><value>承运商创建成功。</value></data><data name="CreateReplaySuccess" xml:space="preserve"><value>此承运商请求此前已成功完成。</value></data><data name="StatusSuccess" xml:space="preserve"><value>承运商状态更改成功。</value></data><data name="StatusReplaySuccess" xml:space="preserve"><value>此状态请求此前已成功完成。</value></data><data name="ValidationError" xml:space="preserve"><value>请检查输入值后重试。</value></data><data name="AccessDenied" xml:space="preserve"><value>您已无权执行此操作。</value></data><data name="CarrierNotFound" xml:space="preserve"><value>找不到承运商。</value></data><data name="CarrierCodeConflict" xml:space="preserve"><value>此承运商代码已被保留。</value></data><data name="IdempotencyKeyReused" xml:space="preserve"><value>此请求已使用不同的值接收。如需提交不同的请求，请关闭此表单并打开新表单。</value></data><data name="InvalidCarrierTransition" xml:space="preserve"><value>承运商当前状态已不允许此变更。</value></data><data name="PersistenceUnavailable" xml:space="preserve"><value>目前无法确定请求结果。</value></data>
++  <data name="ListUnavailable" xml:space="preserve"><value>无法加载承运商。请稍后重试。</value></data><data name="InternalError" xml:space="preserve"><value>发生意外错误。</value></data><data name="RetrySameRequest" xml:space="preserve"><value>请勿更改表单并重试，以保留请求标识。</value></data><data name="SupportReference" xml:space="preserve"><value>支持参考号</value></data><data name="EmptyList" xml:space="preserve"><value>未找到承运商。</value></data>
+ </root>
+--- rescued/frontend/Diten.Web/Resources/Views/SupplyChain/Carriers/CarriersIndex.ar.resx
++++ final/frontend/Diten.Web/Resources/Views/SupplyChain/Carriers/CarriersIndex.ar.resx
+@@ -4,5 +4,6 @@
+   <data name="CarriersTitle" xml:space="preserve"><value>شركات النقل</value></data><data name="PageDescription" xml:space="preserve"><value>اعرض شركات النقل وأنشئ شركة جديدة وأدر حالة دورة حياتها.</value></data><data name="AddNewCarrier" xml:space="preserve"><value>إضافة شركة نقل</value></data><data name="CarrierCode" xml:space="preserve"><value>رمز شركة النقل</value></data><data name="CarrierCodePlaceholder" xml:space="preserve"><value>أدخل رمز شركة النقل</value></data><data name="DisplayName" xml:space="preserve"><value>اسم العرض</value></data><data name="DisplayNamePlaceholder" xml:space="preserve"><value>أدخل اسم العرض</value></data><data name="SupportedModes" xml:space="preserve"><value>وسائط النقل المدعومة</value></data><data name="SupportedModesPlaceholder" xml:space="preserve"><value>اختر وسيلة نقل واحدة أو أكثر</value></data><data name="ExternalReference" xml:space="preserve"><value>المرجع الخارجي</value></data><data name="ExternalReferencePlaceholder" xml:space="preserve"><value>أدخل مرجعاً خارجياً اختيارياً</value></data><data name="Actions" xml:space="preserve"><value>الإجراءات</value></data><data name="QuickView" xml:space="preserve"><value>عرض سريع</value></data>
+   <data name="StatusActive" xml:space="preserve"><value>نشط</value></data><data name="StatusSuspended" xml:space="preserve"><value>معلّق</value></data><data name="StatusRetired" xml:space="preserve"><value>متقاعد</value></data><data name="ModeRoad" xml:space="preserve"><value>بري</value></data><data name="ModeAir" xml:space="preserve"><value>جوي</value></data><data name="ModeSea" xml:space="preserve"><value>بحري</value></data><data name="ModeRail" xml:space="preserve"><value>سكك حديدية</value></data><data name="ModeParcel" xml:space="preserve"><value>طرود</value></data>
+   <data name="ChangeStatus" xml:space="preserve"><value>تغيير الحالة</value></data><data name="ChangeStatusTitle" xml:space="preserve"><value>تغيير حالة شركة النقل</value></data><data name="TargetStatus" xml:space="preserve"><value>الحالة المستهدفة</value></data><data name="ReasonCode" xml:space="preserve"><value>رمز السبب</value></data><data name="ReasonCodePlaceholder" xml:space="preserve"><value>أدخل سبباً أو اتركه فارغاً</value></data><data name="ReasonCodeHelp" xml:space="preserve"><value>يُقبل السبب الفارغ لهذا الأمر.</value></data><data name="StatusChangeConfirm" xml:space="preserve"><value>هل تريد تطبيق تغيير حالة شركة النقل؟</value></data><data name="ConfirmStatusChange" xml:space="preserve"><value>تطبيق الحالة</value></data>
+-  <data name="CreateSuccess" xml:space="preserve"><value>تم إنشاء شركة النقل بنجاح.</value></data><data name="CreateReplaySuccess" xml:space="preserve"><value>اكتمل طلب شركة النقل هذا بنجاح من قبل.</value></data><data name="StatusSuccess" xml:space="preserve"><value>تم تغيير حالة شركة النقل بنجاح.</value></data><data name="StatusReplaySuccess" xml:space="preserve"><value>اكتمل طلب الحالة هذا بنجاح من قبل.</value></data><data name="ValidationError" xml:space="preserve"><value>تحقق من القيم المدخلة ثم أعد المحاولة.</value></data><data name="AccessDenied" xml:space="preserve"><value>لم يعد لديك إذن لتنفيذ هذا الإجراء.</value></data><data name="CarrierNotFound" xml:space="preserve"><value>تعذر العثور على شركة النقل.</value></data><data name="CarrierCodeConflict" xml:space="preserve"><value>رمز شركة النقل هذا محجوز بالفعل.</value></data><data name="IdempotencyKeyReused" xml:space="preserve"><value>هوية الطلب مرتبطة بمحتوى مختلف. ابدأ الإجراء من جديد.</value></data><data name="InvalidCarrierTransition" xml:space="preserve"><value>لم تعد حالة شركة النقل الحالية تسمح بهذا التغيير.</value></data><data name="PersistenceUnavailable" xml:space="preserve"><value>نتيجة الطلب غير متاحة حالياً.</value></data><data name="InternalError" xml:space="preserve"><value>حدث خطأ غير متوقع.</value></data><data name="RetrySameRequest" xml:space="preserve"><value>أعد المحاولة دون تغيير النموذج للحفاظ على هوية الطلب.</value></data><data name="SupportReference" xml:space="preserve"><value>مرجع الدعم</value></data><data name="EmptyList" xml:space="preserve"><value>لم يتم العثور على شركات نقل.</value></data>
++  <data name="CreateSuccess" xml:space="preserve"><value>تم إنشاء شركة النقل بنجاح.</value></data><data name="CreateReplaySuccess" xml:space="preserve"><value>اكتمل طلب شركة النقل هذا بنجاح من قبل.</value></data><data name="StatusSuccess" xml:space="preserve"><value>تم تغيير حالة شركة النقل بنجاح.</value></data><data name="StatusReplaySuccess" xml:space="preserve"><value>اكتمل طلب الحالة هذا بنجاح من قبل.</value></data><data name="ValidationError" xml:space="preserve"><value>تحقق من القيم المدخلة ثم أعد المحاولة.</value></data><data name="AccessDenied" xml:space="preserve"><value>لم يعد لديك إذن لتنفيذ هذا الإجراء.</value></data><data name="CarrierNotFound" xml:space="preserve"><value>تعذر العثور على شركة النقل.</value></data><data name="CarrierCodeConflict" xml:space="preserve"><value>رمز شركة النقل هذا محجوز بالفعل.</value></data><data name="IdempotencyKeyReused" xml:space="preserve"><value>تم استلام هذا الطلب بالفعل بقيم مختلفة. لتقديم طلب مختلف، أغلق هذا النموذج وافتح نموذجًا جديدًا.</value></data><data name="InvalidCarrierTransition" xml:space="preserve"><value>لم تعد حالة شركة النقل الحالية تسمح بهذا التغيير.</value></data><data name="PersistenceUnavailable" xml:space="preserve"><value>نتيجة الطلب غير متاحة حالياً.</value></data>
++  <data name="ListUnavailable" xml:space="preserve"><value>تعذّر تحميل شركات النقل. حاول مرة أخرى لاحقًا.</value></data><data name="InternalError" xml:space="preserve"><value>حدث خطأ غير متوقع.</value></data><data name="RetrySameRequest" xml:space="preserve"><value>أعد المحاولة دون تغيير النموذج للحفاظ على هوية الطلب.</value></data><data name="SupportReference" xml:space="preserve"><value>مرجع الدعم</value></data><data name="EmptyList" xml:space="preserve"><value>لم يتم العثور على شركات نقل.</value></data>
+ </root>
+--- rescued/frontend/Diten.Web/Resources/Views/SupplyChain/Carriers/CarriersIndex.ru.resx
++++ final/frontend/Diten.Web/Resources/Views/SupplyChain/Carriers/CarriersIndex.ru.resx
+@@ -4,5 +4,6 @@
+   <data name="CarriersTitle" xml:space="preserve"><value>Перевозчики</value></data><data name="PageDescription" xml:space="preserve"><value>Просматривайте и создавайте перевозчиков, а также управляйте их статусом.</value></data><data name="AddNewCarrier" xml:space="preserve"><value>Добавить перевозчика</value></data><data name="CarrierCode" xml:space="preserve"><value>Код перевозчика</value></data><data name="CarrierCodePlaceholder" xml:space="preserve"><value>Введите код перевозчика</value></data><data name="DisplayName" xml:space="preserve"><value>Отображаемое имя</value></data><data name="DisplayNamePlaceholder" xml:space="preserve"><value>Введите отображаемое имя</value></data><data name="SupportedModes" xml:space="preserve"><value>Поддерживаемые виды перевозки</value></data><data name="SupportedModesPlaceholder" xml:space="preserve"><value>Выберите один или несколько видов</value></data><data name="ExternalReference" xml:space="preserve"><value>Внешняя ссылка</value></data><data name="ExternalReferencePlaceholder" xml:space="preserve"><value>Введите необязательную внешнюю ссылку</value></data><data name="Actions" xml:space="preserve"><value>Действия</value></data><data name="QuickView" xml:space="preserve"><value>Быстрый просмотр</value></data>
+   <data name="StatusActive" xml:space="preserve"><value>Активен</value></data><data name="StatusSuspended" xml:space="preserve"><value>Приостановлен</value></data><data name="StatusRetired" xml:space="preserve"><value>Выведен из эксплуатации</value></data><data name="ModeRoad" xml:space="preserve"><value>Автодорожный</value></data><data name="ModeAir" xml:space="preserve"><value>Воздушный</value></data><data name="ModeSea" xml:space="preserve"><value>Морской</value></data><data name="ModeRail" xml:space="preserve"><value>Железнодорожный</value></data><data name="ModeParcel" xml:space="preserve"><value>Посылочный</value></data>
+   <data name="ChangeStatus" xml:space="preserve"><value>Изменить статус</value></data><data name="ChangeStatusTitle" xml:space="preserve"><value>Изменение статуса перевозчика</value></data><data name="TargetStatus" xml:space="preserve"><value>Целевой статус</value></data><data name="ReasonCode" xml:space="preserve"><value>Код причины</value></data><data name="ReasonCodePlaceholder" xml:space="preserve"><value>Введите причину или оставьте поле пустым</value></data><data name="ReasonCodeHelp" xml:space="preserve"><value>Для этой команды допускается пустая причина.</value></data><data name="StatusChangeConfirm" xml:space="preserve"><value>Применить это изменение статуса перевозчика?</value></data><data name="ConfirmStatusChange" xml:space="preserve"><value>Применить статус</value></data>
+-  <data name="CreateSuccess" xml:space="preserve"><value>Перевозчик успешно создан.</value></data><data name="CreateReplaySuccess" xml:space="preserve"><value>Этот запрос на создание перевозчика уже был успешно выполнен.</value></data><data name="StatusSuccess" xml:space="preserve"><value>Статус перевозчика успешно изменён.</value></data><data name="StatusReplaySuccess" xml:space="preserve"><value>Этот запрос на изменение статуса уже был успешно выполнен.</value></data><data name="ValidationError" xml:space="preserve"><value>Проверьте введённые значения и повторите попытку.</value></data><data name="AccessDenied" xml:space="preserve"><value>У вас больше нет разрешения на это действие.</value></data><data name="CarrierNotFound" xml:space="preserve"><value>Перевозчик не найден.</value></data><data name="CarrierCodeConflict" xml:space="preserve"><value>Этот код перевозчика уже зарезервирован.</value></data><data name="IdempotencyKeyReused" xml:space="preserve"><value>Идентификатор запроса относится к другому содержимому. Начните действие заново.</value></data><data name="InvalidCarrierTransition" xml:space="preserve"><value>Текущий статус перевозчика больше не допускает это изменение.</value></data><data name="PersistenceUnavailable" xml:space="preserve"><value>Результат запроса сейчас недоступен.</value></data><data name="InternalError" xml:space="preserve"><value>Произошла непредвиденная ошибка.</value></data><data name="RetrySameRequest" xml:space="preserve"><value>Повторите попытку без изменения формы, чтобы сохранить идентификатор запроса.</value></data><data name="SupportReference" xml:space="preserve"><value>Номер обращения</value></data><data name="EmptyList" xml:space="preserve"><value>Перевозчики не найдены.</value></data>
++  <data name="CreateSuccess" xml:space="preserve"><value>Перевозчик успешно создан.</value></data><data name="CreateReplaySuccess" xml:space="preserve"><value>Этот запрос на создание перевозчика уже был успешно выполнен.</value></data><data name="StatusSuccess" xml:space="preserve"><value>Статус перевозчика успешно изменён.</value></data><data name="StatusReplaySuccess" xml:space="preserve"><value>Этот запрос на изменение статуса уже был успешно выполнен.</value></data><data name="ValidationError" xml:space="preserve"><value>Проверьте введённые значения и повторите попытку.</value></data><data name="AccessDenied" xml:space="preserve"><value>У вас больше нет разрешения на это действие.</value></data><data name="CarrierNotFound" xml:space="preserve"><value>Перевозчик не найден.</value></data><data name="CarrierCodeConflict" xml:space="preserve"><value>Этот код перевозчика уже зарезервирован.</value></data><data name="IdempotencyKeyReused" xml:space="preserve"><value>Этот запрос уже был получен с другими значениями. Чтобы отправить другой запрос, закройте эту форму и откройте новую.</value></data><data name="InvalidCarrierTransition" xml:space="preserve"><value>Текущий статус перевозчика больше не допускает это изменение.</value></data><data name="PersistenceUnavailable" xml:space="preserve"><value>Результат запроса сейчас недоступен.</value></data>
++  <data name="ListUnavailable" xml:space="preserve"><value>Не удалось загрузить перевозчиков. Повторите попытку позже.</value></data><data name="InternalError" xml:space="preserve"><value>Произошла непредвиденная ошибка.</value></data><data name="RetrySameRequest" xml:space="preserve"><value>Повторите попытку без изменения формы, чтобы сохранить идентификатор запроса.</value></data><data name="SupportReference" xml:space="preserve"><value>Номер обращения</value></data><data name="EmptyList" xml:space="preserve"><value>Перевозчики не найдены.</value></data>
+ </root>
+--- rescued/frontend/Diten.Web.Tests/Controllers/SupplyChainCarriersControllerTests.cs
++++ final/frontend/Diten.Web.Tests/Controllers/SupplyChainCarriersControllerTests.cs
+@@ -103,6 +103,47 @@
+         Assert.Equal(0, handler.CallCount);
+     }
+ 
++    // R-4a (MODULE-RECIPE 2.1, Q371): a gateway 5xx with no contract body (service down) must reach the page as
++    // PERSISTENCE_UNAVAILABLE, not as an empty body; a 5xx that carries the contract envelope passes through untouched.
++    [Theory]
++    [InlineData(HttpStatusCode.BadGateway, "")]
++    [InlineData(HttpStatusCode.ServiceUnavailable, "")]
++    [InlineData(HttpStatusCode.GatewayTimeout, "<html>gateway timeout</html>")]
++    public async Task UpstreamServerFailureWithoutContractBody_BecomesPersistenceUnavailable(HttpStatusCode upstream, string body)
++    {
++        var handler = new CaptureHandler(_ => Response(upstream, body));
++        var controller = CreateController(handler, "supplychain.carriers.read");
++        var failure = Assert.IsType<ObjectResult>(await controller.List(null, CancellationToken.None));
++        Assert.Equal(StatusCodes.Status503ServiceUnavailable, failure.StatusCode);
++        Assert.Contains("PERSISTENCE_UNAVAILABLE", System.Text.Json.JsonSerializer.Serialize(failure.Value));
++        Assert.Contains(CorrelationId.ToString("D"), System.Text.Json.JsonSerializer.Serialize(failure.Value));
++    }
++
++    [Fact]
++    public async Task UpstreamServerFailureWithContractBody_PassesThroughUnchanged()
++    {
++        const string envelope = "{\"error\":{\"code\":\"INTERNAL_ERROR\",\"message\":\"x\",\"correlationId\":\"33333333-3333-4333-8333-333333333333\"},\"contractVersion\":\"v1\"}";
++        var handler = new CaptureHandler(_ => Response(HttpStatusCode.InternalServerError, envelope));
++        var controller = CreateController(handler, "supplychain.carriers.read");
++        var result = Assert.IsType<ContentResult>(await controller.List(null, CancellationToken.None));
++        Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
++        Assert.Equal(envelope, result.Content);
++    }
++
++    // R-4a (MODULE-RECIPE 2.4): the rescued adapter carried no [JsonAdapterEndpoint], so an unauthenticated call to
++    // /SupplyChain/Carriers/api was answered 302 to the login page instead of JSON 401 (measured live). Every api action
++    // must carry the marker Q394's cookie challenge reads.
++    [Fact]
++    public void EveryAdapterActionCarriesTheJsonAdapterMarker()
++    {
++        var actions = typeof(SupplyChainCarriersController).GetMethods()
++            .Where(m => m.GetCustomAttributes(typeof(Microsoft.AspNetCore.Mvc.Routing.HttpMethodAttribute), true)
++                .Cast<Microsoft.AspNetCore.Mvc.Routing.HttpMethodAttribute>().Any(h => h.Template?.StartsWith("api", StringComparison.Ordinal) == true))
++            .ToArray();
++        Assert.Equal(3, actions.Length);
++        Assert.All(actions, m => Assert.True(m.IsDefined(typeof(Diten.Web.Security.JsonAdapterEndpointAttribute), true), m.Name));
++    }
++
+     private static SupplyChainCarriersController CreateController(
+         CaptureHandler handler,
+         string permission,
+--- rescued/frontend/Diten.Web.Tests/JavaScript/CarrierIndexBehaviorTests.cs
++++ final/frontend/Diten.Web.Tests/JavaScript/CarrierIndexBehaviorTests.cs
+@@ -33,10 +33,18 @@
+     }
+ 
+     [Fact]
+-    public void KeepsStablePerPayloadIntentAndUsesSharedModalPrimitives()
++    // R-4a (MODULE-RECIPE 3.1/8.3; MOD-0184 §32.3 as applied, Q403): this test pinned a key re-minted per payload — the
++    // defect R-2 measured creating two records from one intent. It now pins one key per opened form or status panel, and a
++    // 409 IDEMPOTENCY_KEY_REUSED that blocks the form instead of minting a fresh key.
++    public void KeepsOneIntentPerOpenedFormAndUsesSharedModalPrimitives()
+     {
+-        Assert.Contains("existing?.signature === signature", _script);
+-        Assert.Contains("createIntent = ensureIntent(createIntent, signature)", _script);
++        Assert.Contains("const newIntent = () => ({ key: createUuid(), blocked: false });", _script);
++        Assert.Contains("createIntent = newIntent();", _script);
++        Assert.Contains("statusIntents.set(row.carrierId, newIntent());", _script);
++        Assert.Contains("if (failure.code === 'IDEMPOTENCY_KEY_REUSED') createIntent.blocked = true;", _script);
++        Assert.Contains("if (failure.code === 'IDEMPOTENCY_KEY_REUSED') intent.blocked = true;", _script);
++        Assert.DoesNotContain("signature === signature", _script);
++        Assert.DoesNotContain("createIntent = null;\n                if", _script);
+         Assert.Contains("statusIntents.set(carrierId, intent)", _script);
+         Assert.Contains("'Idempotency-Key': intent.key", _script);
+         Assert.Contains("window.showConfirm?.(L.StatusChangeConfirm", _script);
+@@ -64,6 +72,21 @@
+         Assert.DoesNotContain("dictionary[key] === key", _localizationScript);
+     }
+ 
++    // R-4a (MODULE-RECIPE 3.6, 3.11, 4.1; Returns draft UI-PM-03): measured live in the rescued code — a committed create
++    // reported as "outcome unavailable" because ajax.reload() threw on an async ajax option; no skeleton while loading; a
++    // failed load left an empty table under a toast worded as a write failure.
++    [Fact]
++    public void ListStatesAndReloadAreSafe()
++    {
++        Assert.Contains("ajax: (data, callback) => { void loadRows(data, callback); },", _script);
++        Assert.DoesNotContain("ajax: loadRows,", _script);
++        Assert.Contains("document.getElementById('carriersSkeleton')", _script);
++        Assert.Contains("const showLoadFailure = (correlation) =>", _script);
++        Assert.Contains("if (response.status === 403) { showDenied(); callback({ data: [] }); return; }", _script);
++        Assert.Contains("L.ListUnavailable", _script);
++        Assert.DoesNotContain("window.showToast?.(L.PersistenceUnavailable, 'error');\n            callback({ data: [] });", _script);
++    }
++
+     private static string FindRepoRoot()
+     {
+         var directory = new DirectoryInfo(AppContext.BaseDirectory);

@@ -1,0 +1,18 @@
+[19:20:52 INF] User profile is available. Using '/Users/natig/.aspnet/DataProtection-Keys' as key repository; keys will not be encrypted at rest. CorrelationId= TenantId= LegalEntityId=
+[19:20:53 WRN] Shipment outbox transport is not registered. Durable events remain pending; integration is held. CorrelationId= TenantId= LegalEntityId=
+[19:20:53 INF] Start processing HTTP request POST http://127.0.0.1:58340/api/internal/module-catalog/register-manifest CorrelationId= TenantId= LegalEntityId=
+[19:20:53 INF] Sending HTTP request POST http://127.0.0.1:58340/api/internal/module-catalog/register-manifest CorrelationId= TenantId= LegalEntityId=
+[19:20:53 INF] Received HTTP response headers after 22.7288ms - 200 CorrelationId= TenantId= LegalEntityId=
+[19:20:53 INF] End processing HTTP request after 30.6208ms - 200 CorrelationId= TenantId= LegalEntityId=
+[19:20:53 INF] Module manifest self-registered with Platform. ModuleCode=shipment-tracking-pod Attempt=1 CorrelationId= TenantId= LegalEntityId=
+[19:20:53 INF] Now listening on: http://127.0.0.1:58339 CorrelationId= TenantId= LegalEntityId=
+[19:20:53 INF] Application started. Press Ctrl+C to shut down. CorrelationId= TenantId= LegalEntityId=
+[19:20:53 INF] Hosting environment: Development CorrelationId= TenantId= LegalEntityId=
+[19:20:53 INF] Content root path: /Users/natig/mvp6-env/q339r2-20261003-1919/src/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api CorrelationId= TenantId= LegalEntityId=
+[19:20:57 INF] Request starting HTTP/1.1 GET http://127.0.0.1:58339/health - null null CorrelationId= TenantId= LegalEntityId=
+[19:20:57 INF] Executing endpoint 'HTTP: GET /health' CorrelationId= TenantId= LegalEntityId=
+[19:20:57 INF] Setting HTTP status code 200. CorrelationId= TenantId= LegalEntityId=
+[19:20:57 INF] Writing value of type '<>f__AnonymousType2`4' as Json. CorrelationId= TenantId= LegalEntityId=
+[19:20:57 INF] Executed endpoint 'HTTP: GET /health' CorrelationId= TenantId= LegalEntityId=
+[19:20:57 INF] Request finished HTTP/1.1 GET http://127.0.0.1:58339/health - 200 null application/json; charset=utf-8 43.4795ms CorrelationId= TenantId= LegalEntityId=
+[19:20:57 INF] Application is shutting down... CorrelationId= TenantId= LegalEntityId=

@@ -1,0 +1,437 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Quarantine.Common.Crumb.Root" xml:space="preserve"><value>Kalite</value></data>
+  <data name="Quarantine.Common.Company.Label" xml:space="preserve"><value>Şirket</value></data>
+  <data name="Quarantine.Common.Company.Placeholder" xml:space="preserve"><value>Şirket seçin</value></data>
+  <data name="Quarantine.Common.Company.Required" xml:space="preserve"><value>Karantina kayıtlarını görmek için çalıştığınız şirketi seçin.</value></data>
+  <data name="Quarantine.Common.Company.Unavailable" xml:space="preserve"><value>Şirket listesi yüklenemedi. Biraz sonra yeniden deneyin.</value></data>
+  <data name="Quarantine.Common.NamesUnavailable" xml:space="preserve"><value>Ürün ve lokasyon adları şu an alınamadı; kimlikler gösteriliyor. Miktarlar doğrudur.</value></data>
+  <data name="Quarantine.Common.Back" xml:space="preserve"><value>Geri</value></data>
+  <data name="Quarantine.Common.Cancel" xml:space="preserve"><value>Vazgeç</value></data>
+  <data name="Quarantine.Common.Close" xml:space="preserve"><value>Kapat</value></data>
+  <data name="Quarantine.Common.Save" xml:space="preserve"><value>Kaydet</value></data>
+  <data name="Quarantine.Common.Select" xml:space="preserve"><value>Seçin</value></data>
+  <data name="Quarantine.Common.Yes" xml:space="preserve"><value>Evet</value></data>
+  <data name="Quarantine.Common.No" xml:space="preserve"><value>Hayır</value></data>
+  <data name="Quarantine.Common.Days" xml:space="preserve"><value>{0} gün</value></data>
+  <data name="Quarantine.Common.DaysLeft" xml:space="preserve"><value>{0} gün kaldı</value></data>
+  <data name="Quarantine.Common.DaysPast" xml:space="preserve"><value>{0} gün geçti</value></data>
+  <data name="Quarantine.Common.Target" xml:space="preserve"><value>Hedef {0} gün · şirket</value></data>
+  <data name="Quarantine.Common.ReasonCounter" xml:space="preserve"><value>{0} / en az 10</value></data>
+  <data name="Quarantine.Common.ReasonMin" xml:space="preserve"><value>Gerekçe en az 10 karakter olmalı.</value></data>
+  <data name="Quarantine.Tabs.Queue" xml:space="preserve"><value>Karantina Kuyruğu</value></data>
+  <data name="Quarantine.Tabs.Blocked" xml:space="preserve"><value>Bloke Stok</value></data>
+  <data name="Quarantine.Tabs.Retest" xml:space="preserve"><value>Yeniden Test Kuyruğu</value></data>
+  <data name="Quarantine.Tabs.Settings" xml:space="preserve"><value>Karantina Ayarları</value></data>
+  <data name="Quarantine.Col.Product" xml:space="preserve"><value>Ürün</value></data>
+  <data name="Quarantine.Col.Lot" xml:space="preserve"><value>Lot</value></data>
+  <data name="Quarantine.Col.LotNo" xml:space="preserve"><value>Lot No</value></data>
+  <data name="Quarantine.Col.Expiry" xml:space="preserve"><value>SKT</value></data>
+  <data name="Quarantine.Col.WarehouseLocation" xml:space="preserve"><value>Depo / Lokasyon</value></data>
+  <data name="Quarantine.Col.StockStatus" xml:space="preserve"><value>Stok durumu</value></data>
+  <data name="Quarantine.Col.Quantity" xml:space="preserve"><value>Miktar</value></data>
+  <data name="Quarantine.Col.EnteredAt" xml:space="preserve"><value>Giriş tarihi</value></data>
+  <data name="Quarantine.Col.Wait" xml:space="preserve"><value>Bekleme</value></data>
+  <data name="Quarantine.Col.Source" xml:space="preserve"><value>Kaynak / Belge</value></data>
+  <data name="Quarantine.Col.Status" xml:space="preserve"><value>Durum</value></data>
+  <data name="Quarantine.Col.Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="Quarantine.Col.BlockReason" xml:space="preserve"><value>Bloke nedeni</value></data>
+  <data name="Quarantine.Col.BlockedAt" xml:space="preserve"><value>Bloke tarihi</value></data>
+  <data name="Quarantine.Col.Pending" xml:space="preserve"><value>Karar bekliyor mu</value></data>
+  <data name="Quarantine.Col.RetestDate" xml:space="preserve"><value>Yeniden test tarihi</value></data>
+  <data name="Quarantine.Col.OnHand" xml:space="preserve"><value>Eldeki stok</value></data>
+  <data name="Quarantine.Col.MoveNo" xml:space="preserve"><value>Hareket no</value></data>
+  <data name="Quarantine.Col.Date" xml:space="preserve"><value>Tarih</value></data>
+  <data name="Quarantine.Col.MoveType" xml:space="preserve"><value>Hareket tipi</value></data>
+  <data name="Quarantine.Col.StatusChange" xml:space="preserve"><value>Durum değişikliği</value></data>
+  <data name="Quarantine.Col.User" xml:space="preserve"><value>Kullanıcı</value></data>
+  <data name="Quarantine.Field.Reason" xml:space="preserve"><value>Gerekçe</value></data>
+  <data name="Quarantine.Field.BlockReason" xml:space="preserve"><value>Bloke nedeni</value></data>
+  <data name="Quarantine.Filter.AllWarehouses" xml:space="preserve"><value>Tüm depolar</value></data>
+  <data name="Quarantine.Filter.AllStockStatuses" xml:space="preserve"><value>Tüm stok durumları</value></data>
+  <data name="Quarantine.Filter.AllSources" xml:space="preserve"><value>Tüm kaynaklar</value></data>
+  <data name="Quarantine.Filter.LateOnly" xml:space="preserve"><value>Yalnız gecikenler</value></data>
+  <data name="Quarantine.Filter.Clear" xml:space="preserve"><value>Temizle</value></data>
+  <data name="Quarantine.Action.Decide" xml:space="preserve"><value>Karar Ver</value></data>
+  <data name="Quarantine.Action.Detail" xml:space="preserve"><value>Detay</value></data>
+  <data name="Quarantine.Action.Dispose" xml:space="preserve"><value>Disposition Kararı</value></data>
+  <data name="Quarantine.Action.Unblock" xml:space="preserve"><value>Blokeyi Kaldır</value></data>
+  <data name="Quarantine.Action.CompleteReview" xml:space="preserve"><value>İncelemeyi tamamla</value></data>
+  <data name="Quarantine.Action.BlockStock" xml:space="preserve"><value>Stoğu bloke et</value></data>
+  <data name="Quarantine.Action.Quarantine" xml:space="preserve"><value>Karantinaya Al</value></data>
+  <data name="Quarantine.Status.AVAILABLE" xml:space="preserve"><value>Kullanılabilir</value></data>
+  <data name="Quarantine.Status.QUALITY_INSPECTION" xml:space="preserve"><value>Kalite Kontrol</value></data>
+  <data name="Quarantine.Status.QUARANTINE" xml:space="preserve"><value>Karantina</value></data>
+  <data name="Quarantine.Status.BLOCKED" xml:space="preserve"><value>Bloke</value></data>
+  <data name="Quarantine.Status.IN_TRANSIT" xml:space="preserve"><value>Yolda</value></data>
+  <data name="Quarantine.Status.DAMAGED" xml:space="preserve"><value>Hasarlı</value></data>
+  <data name="Quarantine.Status.EXPIRED" xml:space="preserve"><value>Süresi dolmuş</value></data>
+  <data name="Quarantine.HoldState.Waiting" xml:space="preserve"><value>Bekliyor</value></data>
+  <data name="Quarantine.HoldState.InReview" xml:space="preserve"><value>İncelemede</value></data>
+  <data name="Quarantine.HoldState.Pending" xml:space="preserve"><value>Onay bekliyor</value></data>
+  <data name="Quarantine.HoldState.Decided" xml:space="preserve"><value>Karar Verildi</value></data>
+  <data name="Quarantine.Workflow.Draft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="Quarantine.Workflow.Submitted" xml:space="preserve"><value>Gönderildi</value></data>
+  <data name="Quarantine.Workflow.PendingApproval" xml:space="preserve"><value>Onay bekliyor</value></data>
+  <data name="Quarantine.Workflow.Approved" xml:space="preserve"><value>Onaylandı · uygulanmayı bekliyor</value></data>
+  <data name="Quarantine.Workflow.Applied" xml:space="preserve"><value>Uygulandı</value></data>
+  <data name="Quarantine.Workflow.Rejected" xml:space="preserve"><value>Reddedildi</value></data>
+  <data name="Quarantine.Workflow.Cancelled" xml:space="preserve"><value>İptal edildi</value></data>
+  <data name="Quarantine.Workflow.TimedOut" xml:space="preserve"><value>Zaman aşımı</value></data>
+  <data name="Quarantine.Workflow.Withdrawn" xml:space="preserve"><value>Geri çekildi</value></data>
+  <data name="Quarantine.Workflow.StartFailed" xml:space="preserve"><value>Onaya gönderilemedi</value></data>
+  <data name="Quarantine.Workflow.ApplyFailed" xml:space="preserve"><value>Uygulanamadı</value></data>
+  <data name="Quarantine.Workflow.FourEyesViolation" xml:space="preserve"><value>Dört göz ihlali</value></data>
+  <data name="Quarantine.DecisionKind.HoldDecision" xml:space="preserve"><value>Karantina kararı</value></data>
+  <data name="Quarantine.DecisionKind.Disposition" xml:space="preserve"><value>Disposition</value></data>
+  <data name="Quarantine.DecisionKind.Unblock" xml:space="preserve"><value>Blokeyi kaldırma</value></data>
+  <data name="Quarantine.DecisionKind.LotRelease" xml:space="preserve"><value>Lot serbest bırakma</value></data>
+  <data name="Quarantine.LineDecision.Release" xml:space="preserve"><value>Serbest Bırak</value></data>
+  <data name="Quarantine.LineDecision.Reject" xml:space="preserve"><value>Reddet</value></data>
+  <data name="Quarantine.LineDecision.Block" xml:space="preserve"><value>Bloke Et</value></data>
+  <data name="Quarantine.Source.GoodsReceipt" xml:space="preserve"><value>Mal kabul</value></data>
+  <data name="Quarantine.Source.Production" xml:space="preserve"><value>Üretim</value></data>
+  <data name="Quarantine.Source.CustomerReturn" xml:space="preserve"><value>İade</value></data>
+  <data name="Quarantine.Source.Manual" xml:space="preserve"><value>Elle</value></data>
+  <data name="Quarantine.Source.Retest" xml:space="preserve"><value>Yeniden test</value></data>
+  <data name="Quarantine.Source.Rework" xml:space="preserve"><value>Yeniden işleme</value></data>
+  <data name="Quarantine.Source.OtherInbound" xml:space="preserve"><value>Diğer giriş</value></data>
+  <data name="Quarantine.Origin.QuarantineDecision" xml:space="preserve"><value>Karantina kararı</value></data>
+  <data name="Quarantine.Origin.ManualBlock" xml:space="preserve"><value>Elle bloke</value></data>
+  <data name="Quarantine.Origin.Rework" xml:space="preserve"><value>Yeniden işleme</value></data>
+  <data name="Quarantine.Origin.OtherInbound" xml:space="preserve"><value>Diğer giriş</value></data>
+  <data name="Quarantine.Origin.LotBlocked" xml:space="preserve"><value>Bloke lot</value></data>
+  <data name="Quarantine.LotStatus.Draft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="Quarantine.LotStatus.Released" xml:space="preserve"><value>Serbest</value></data>
+  <data name="Quarantine.LotStatus.Blocked" xml:space="preserve"><value>Bloke</value></data>
+  <data name="Quarantine.LotStatus.Expired" xml:space="preserve"><value>Süresi dolmuş</value></data>
+  <data name="Quarantine.MovementType.OPENING_BALANCE" xml:space="preserve"><value>Açılış bakiyesi</value></data>
+  <data name="Quarantine.MovementType.GOODS_RECEIPT_PO" xml:space="preserve"><value>Satın alma girişi</value></data>
+  <data name="Quarantine.MovementType.GOODS_RECEIPT_PROD" xml:space="preserve"><value>Üretimden giriş</value></data>
+  <data name="Quarantine.MovementType.GOODS_ISSUE_SALES" xml:space="preserve"><value>Satış çıkışı</value></data>
+  <data name="Quarantine.MovementType.GOODS_ISSUE_PROD" xml:space="preserve"><value>Üretime çıkış</value></data>
+  <data name="Quarantine.MovementType.WAREHOUSE_TRANSFER" xml:space="preserve"><value>Depolar arası transfer</value></data>
+  <data name="Quarantine.MovementType.LOCATION_TRANSFER" xml:space="preserve"><value>Lokasyon transferi</value></data>
+  <data name="Quarantine.MovementType.STATUS_TRANSFER" xml:space="preserve"><value>Durum değişikliği</value></data>
+  <data name="Quarantine.MovementType.CUSTOMER_RETURN" xml:space="preserve"><value>Müşteri iadesi</value></data>
+  <data name="Quarantine.MovementType.SUPPLIER_RETURN" xml:space="preserve"><value>İade çıkışı</value></data>
+  <data name="Quarantine.MovementType.COUNT_GAIN" xml:space="preserve"><value>Sayım fazlası</value></data>
+  <data name="Quarantine.MovementType.COUNT_LOSS" xml:space="preserve"><value>Sayım eksiği</value></data>
+  <data name="Quarantine.MovementType.SCRAP" xml:space="preserve"><value>Hurda çıkışı</value></data>
+  <data name="Quarantine.MovementType.WRITE_OFF" xml:space="preserve"><value>Kayıttan düşme</value></data>
+  <data name="Quarantine.MovementType.REVERSAL" xml:space="preserve"><value>Ters kayıt</value></data>
+  <data name="Quarantine.History.Quarantined" xml:space="preserve"><value>Karantinaya alındı</value></data>
+  <data name="Quarantine.History.ReviewStarted" xml:space="preserve"><value>İncelemeye alındı</value></data>
+  <data name="Quarantine.History.DecisionSubmitted" xml:space="preserve"><value>Karar onaya gönderildi</value></data>
+  <data name="Quarantine.History.Approved" xml:space="preserve"><value>Onaylandı</value></data>
+  <data name="Quarantine.History.Rejected" xml:space="preserve"><value>Onay reddedildi</value></data>
+  <data name="Quarantine.History.Cancelled" xml:space="preserve"><value>İptal edildi</value></data>
+  <data name="Quarantine.History.TimedOut" xml:space="preserve"><value>Zaman aşımı</value></data>
+  <data name="Quarantine.History.Withdrawn" xml:space="preserve"><value>Karar geri çekildi</value></data>
+  <data name="Quarantine.History.Applied" xml:space="preserve"><value>Stok hareketi uygulandı</value></data>
+  <data name="Quarantine.History.ApplyFailed" xml:space="preserve"><value>Uygulanamadı</value></data>
+  <data name="Quarantine.History.FourEyesViolation" xml:space="preserve"><value>Dört göz ihlali · hareket yok</value></data>
+  <data name="Quarantine.History.Blocked" xml:space="preserve"><value>Bloke edildi</value></data>
+  <data name="Quarantine.History.ReviewCompleted" xml:space="preserve"><value>İnceleme tamamlandı</value></data>
+  <data name="Quarantine.History.Disposed" xml:space="preserve"><value>Disposition uygulandı</value></data>
+  <data name="Quarantine.History.Unblocked" xml:space="preserve"><value>Bloke kaldırıldı</value></data>
+  <data name="Quarantine.History.SampleRetained" xml:space="preserve"><value>Numune olarak ayrıldı</value></data>
+  <data name="Quarantine.Queue.Title" xml:space="preserve"><value>Karantina Kuyruğu</value></data>
+  <data name="Quarantine.Queue.Kpi.Pending" xml:space="preserve"><value>Karar bekleyen satır</value></data>
+  <data name="Quarantine.Queue.Kpi.InReview" xml:space="preserve"><value>{0} satır incelemede</value></data>
+  <data name="Quarantine.Queue.Kpi.Quantity" xml:space="preserve"><value>Toplam miktar · birim bazında</value></data>
+  <data name="Quarantine.Queue.Kpi.Late" xml:space="preserve"><value>Gecikme hedefini aşan</value></data>
+  <data name="Quarantine.Queue.Kpi.ExpirySoon" xml:space="preserve"><value>SKT'si 90 gün içinde dolacak: {0}</value></data>
+  <data name="Quarantine.Queue.Empty" xml:space="preserve"><value>Filtreye uyan karantina kaydı yok.</value></data>
+  <data name="Quarantine.Queue.Footer" xml:space="preserve"><value>{0} kayıt gösteriliyor</value></data>
+  <data name="Quarantine.Queue.Legend.Late" xml:space="preserve"><value>Bekleme hedefi aşıldı</value></data>
+  <data name="Quarantine.Queue.Legend.Expiry" xml:space="preserve"><value>SKT ≤ 90 gün</value></data>
+  <data name="Quarantine.Details.Title" xml:space="preserve"><value>Karantina kaydı</value></data>
+  <data name="Quarantine.Details.BackToQueue" xml:space="preserve"><value>Kuyruğa dön</value></data>
+  <data name="Quarantine.Details.GoToLot" xml:space="preserve"><value>Lot'a Git</value></data>
+  <data name="Quarantine.Details.LateAlert" xml:space="preserve"><value>Bekleme süresi hedefi aşıldı: {0} gün (hedef {1} gün · şirket).</value></data>
+  <data name="Quarantine.Details.Fact.Lot" xml:space="preserve"><value>Lot No</value></data>
+  <data name="Quarantine.Details.Fact.Expiry" xml:space="preserve"><value>SKT</value></data>
+  <data name="Quarantine.Details.Fact.Quantity" xml:space="preserve"><value>Miktar</value></data>
+  <data name="Quarantine.Details.Fact.Where" xml:space="preserve"><value>Depo / Lokasyon</value></data>
+  <data name="Quarantine.Details.Fact.Wait" xml:space="preserve"><value>Bekleme süresi</value></data>
+  <data name="Quarantine.Details.Fact.Source" xml:space="preserve"><value>Kaynak</value></data>
+  <data name="Quarantine.Details.Fact.CreatedBy" xml:space="preserve"><value>Kaydı oluşturan</value></data>
+  <data name="Quarantine.Details.Quality.Title" xml:space="preserve"><value>Kalite bilgileri</value></data>
+  <data name="Quarantine.Details.Quality.Coa" xml:space="preserve"><value>CoA referansı (Lot'tan)</value></data>
+  <data name="Quarantine.Details.Quality.LotStatus" xml:space="preserve"><value>Lot durumu</value></data>
+  <data name="Quarantine.Details.Quality.Note" xml:space="preserve"><value>Analiz sonucu notu</value></data>
+  <data name="Quarantine.Details.Quality.NoNote" xml:space="preserve"><value>Analiz notu girilmemiş.</value></data>
+  <data name="Quarantine.Details.Quality.Attachments" xml:space="preserve"><value>Ek belgeler · yalnız referans</value></data>
+  <data name="Quarantine.Details.History.Title" xml:space="preserve"><value>Karar geçmişi</value></data>
+  <data name="Quarantine.Details.History.Empty" xml:space="preserve"><value>Henüz kayıt yok.</value></data>
+  <data name="Quarantine.Details.History.Signature" xml:space="preserve"><value>e-imza · {0}</value></data>
+  <data name="Quarantine.Details.History.ApproverSignature" xml:space="preserve"><value>onaylayan imzası · {0}</value></data>
+  <data name="Quarantine.Details.Moves.Title" xml:space="preserve"><value>Stok hareketleri</value></data>
+  <data name="Quarantine.Details.Moves.Subtitle" xml:space="preserve"><value>Bu kaydın Stok Defteri'nde oluşturduğu durum değişiklikleri</value></data>
+  <data name="Quarantine.Details.Moves.Empty" xml:space="preserve"><value>Bu kayıt için stok hareketi yok.</value></data>
+  <data name="Quarantine.Details.StartReview" xml:space="preserve"><value>İncelemeye al</value></data>
+  <data name="Quarantine.Details.StartReviewText" xml:space="preserve"><value>Kayıt "İncelemede" durumuna geçer; stok hareket etmez.</value></data>
+  <data name="Quarantine.Details.ReviewNote" xml:space="preserve"><value>İnceleme notu (isteğe bağlı)</value></data>
+  <data name="Quarantine.Details.ReviewStarted" xml:space="preserve"><value>Kayıt incelemeye alındı.</value></data>
+  <data name="Quarantine.Workflow.Box" xml:space="preserve"><value>İş akışı</value></data>
+  <data name="Quarantine.Workflow.NoDecision" xml:space="preserve"><value>Onayda bekleyen karar yok.</value></data>
+  <data name="Quarantine.Workflow.LastDecision" xml:space="preserve"><value>Son karar</value></data>
+  <data name="Quarantine.Workflow.Decision" xml:space="preserve"><value>Karar</value></data>
+  <data name="Quarantine.Workflow.Decider" xml:space="preserve"><value>Kararı veren</value></data>
+  <data name="Quarantine.Workflow.Approver" xml:space="preserve"><value>Onaylayan</value></data>
+  <data name="Quarantine.Workflow.Instance" xml:space="preserve"><value>Akış</value></data>
+  <data name="Quarantine.Workflow.DeciderSignature" xml:space="preserve"><value>Karar veren imzası</value></data>
+  <data name="Quarantine.Workflow.ApproverSignature" xml:space="preserve"><value>Onaylayan imzası</value></data>
+  <data name="Quarantine.Workflow.Refresh" xml:space="preserve"><value>Durumu yenile</value></data>
+  <data name="Quarantine.Workflow.Refreshed" xml:space="preserve"><value>Durum güncellendi: {0}</value></data>
+  <data name="Quarantine.Workflow.Withdraw" xml:space="preserve"><value>Kararı geri çek</value></data>
+  <data name="Quarantine.Workflow.WithdrawTitle" xml:space="preserve"><value>Karar geri çekilsin mi?</value></data>
+  <data name="Quarantine.Workflow.WithdrawText" xml:space="preserve"><value>Onay görevi iptal edilir ve kayıt yeniden açılır. Stok hareket etmez.</value></data>
+  <data name="Quarantine.Workflow.WithdrawDone" xml:space="preserve"><value>Karar geri çekildi.</value></data>
+  <data name="Quarantine.Workflow.Reapply" xml:space="preserve"><value>Yeniden uygula</value></data>
+  <data name="Quarantine.Workflow.ReapplyText" xml:space="preserve"><value>Onaylanmış karar aynı hareket anahtarlarıyla yeniden uygulanır; kaydedilmiş bir satır iki kez kaydedilmez.</value></data>
+  <data name="Quarantine.Workflow.Reapplied" xml:space="preserve"><value>Karar yeniden uygulandı.</value></data>
+  <data name="Quarantine.Workflow.SubmitLink" xml:space="preserve"><value>İmzala ve gönder</value></data>
+  <data name="Quarantine.Decide.PageTitle" xml:space="preserve"><value>Karar ver</value></data>
+  <data name="Quarantine.Decide.Title" xml:space="preserve"><value>Karar ver · {0}</value></data>
+  <data name="Quarantine.Decide.Step.Decision" xml:space="preserve"><value>Karar</value></data>
+  <data name="Quarantine.Decide.Step.Sign" xml:space="preserve"><value>Elektronik imza</value></data>
+  <data name="Quarantine.Decide.Step.Skipped" xml:space="preserve"><value>politika kapalı · bu adım atlanır</value></data>
+  <data name="Quarantine.Decide.FourEyes.On" xml:space="preserve"><value>Dört göz kuralı açık: bu kararı başka bir QA kullanıcısı onaylar; kararı veren kendi kararını onaylayamaz.</value></data>
+  <data name="Quarantine.Decide.FourEyes.Off" xml:space="preserve"><value>Şirket politikasında dört göz kuralı kapalı; yine de onay iş akışı kararı verenden başka biri tarafından yapılır.</value></data>
+  <data name="Quarantine.Decide.Partial.Label" xml:space="preserve"><value>Kısmi karar</value></data>
+  <data name="Quarantine.Decide.Partial.Hint" xml:space="preserve"><value>Miktarın bir kısmını serbest bırak, kalanına başka karar ver</value></data>
+  <data name="Quarantine.Decide.Field.Decision" xml:space="preserve"><value>Karar</value></data>
+  <data name="Quarantine.Decide.Option.Release" xml:space="preserve"><value>Stok satış ve rezervasyona açılır.</value></data>
+  <data name="Quarantine.Decide.Option.Reject" xml:space="preserve"><value>Bloke Stok listesine düşer; ardından Disposition kararı gerekir.</value></data>
+  <data name="Quarantine.Decide.Option.Block" xml:space="preserve"><value>Stok bloke edilir; inceleme sürer.</value></data>
+  <data name="Quarantine.Decide.Field.Lines" xml:space="preserve"><value>Miktar dağılımı</value></data>
+  <data name="Quarantine.Decide.Lines.Pick" xml:space="preserve"><value>Karar seçin</value></data>
+  <data name="Quarantine.Decide.Lines.Release" xml:space="preserve"><value>Serbest Bırak → Kullanılabilir</value></data>
+  <data name="Quarantine.Decide.Lines.Reject" xml:space="preserve"><value>Reddet → Bloke</value></data>
+  <data name="Quarantine.Decide.Lines.Block" xml:space="preserve"><value>Bloke Et → Bloke</value></data>
+  <data name="Quarantine.Decide.Lines.Sum" xml:space="preserve"><value>Toplam / mevcut miktar</value></data>
+  <data name="Quarantine.Decide.Field.Coa" xml:space="preserve"><value>CoA / analiz sonucu kontrol edildi</value></data>
+  <data name="Quarantine.Decide.Field.NewRetest" xml:space="preserve"><value>Yeni yeniden test tarihi</value></data>
+  <data name="Quarantine.Decide.NewRetest.Hint" xml:space="preserve"><value>Yeniden test tarihi geçmiş lotun serbest bırakılması yeni bir tarih ister (bugünden sonra, SKT'den önce).</value></data>
+  <data name="Quarantine.Decide.Err.Decision" xml:space="preserve"><value>Bir karar seçin.</value></data>
+  <data name="Quarantine.Decide.Err.Lines" xml:space="preserve"><value>İki satır farklı kararda olmalı, her miktar sıfırdan büyük ve toplam mevcut miktara eşit olmalı.</value></data>
+  <data name="Quarantine.Decide.Err.BlockReason" xml:space="preserve"><value>Bloke nedeni seçin.</value></data>
+  <data name="Quarantine.Decide.Err.Coa" xml:space="preserve"><value>Serbest bırakma için CoA / analiz sonucunun kontrol edildiğini onaylayın.</value></data>
+  <data name="Quarantine.Decide.Err.Retest" xml:space="preserve"><value>Yeni yeniden test tarihini girin.</value></data>
+  <data name="Quarantine.Decide.Closed" xml:space="preserve"><value>Bu kayıt için şu an karar verilemez ({0}).</value></data>
+  <data name="Quarantine.Decide.Button.Next" xml:space="preserve"><value>İleri: Elektronik imza</value></data>
+  <data name="Quarantine.Decide.Button.SignSend" xml:space="preserve"><value>İmzala ve gönder</value></data>
+  <data name="Quarantine.Decide.Button.Send" xml:space="preserve"><value>Onaya gönder</value></data>
+  <data name="Quarantine.Sign.Summary" xml:space="preserve"><value>İmzalanacak karar</value></data>
+  <data name="Quarantine.Sign.Info" xml:space="preserve"><value>İmza; kullanıcı, tarih-saat ve imza anlamıyla karar kaydına eklenir. Karar onaya gider; stok yalnız onaydan sonra hareket eder.</value></data>
+  <data name="Quarantine.Sign.NotRequired" xml:space="preserve"><value>Politika bu karar için imza istemiyor; karar imzasız onaya gönderilir. Stok yalnız onaydan sonra hareket eder.</value></data>
+  <data name="Quarantine.Sign.Movement" xml:space="preserve"><value>Onaylanınca stok hareketi</value></data>
+  <data name="Quarantine.Sign.ReasonLine" xml:space="preserve"><value>Gerekçe: "{0}"</value></data>
+  <data name="Quarantine.Sign.Cancelled" xml:space="preserve"><value>İmza iptal edildi; karar gönderilmedi.</value></data>
+  <data name="Quarantine.Sent.Toast" xml:space="preserve"><value>Onaya gönderildi</value></data>
+  <data name="Quarantine.Sent.Title" xml:space="preserve"><value>Onaya gönderildi</value></data>
+  <data name="Quarantine.Sent.Text" xml:space="preserve"><value>{0} onay bekliyor. Stok, onaylayan kararı onayladıktan sonra hareket eder.</value></data>
+  <data name="Quarantine.Disposition.PageTitle" xml:space="preserve"><value>Disposition kararı</value></data>
+  <data name="Quarantine.Disposition.Title" xml:space="preserve"><value>Disposition kararı · {0}</value></data>
+  <data name="Quarantine.Disposition.Step" xml:space="preserve"><value>Disposition</value></data>
+  <data name="Quarantine.Disposition.BlockedQty" xml:space="preserve"><value>Bloke {0}</value></data>
+  <data name="Quarantine.Disposition.Field.Kind" xml:space="preserve"><value>Disposition</value></data>
+  <data name="Quarantine.Disposition.Destroy" xml:space="preserve"><value>İmha</value></data>
+  <data name="Quarantine.Disposition.ReturnToSupplier" xml:space="preserve"><value>Tedarikçiye İade</value></data>
+  <data name="Quarantine.Disposition.Rework" xml:space="preserve"><value>Yeniden İşleme</value></data>
+  <data name="Quarantine.Disposition.Sample" xml:space="preserve"><value>Numune / Referans olarak ayır</value></data>
+  <data name="Quarantine.Disposition.Move.Destroy" xml:space="preserve"><value>Hurda çıkışı</value></data>
+  <data name="Quarantine.Disposition.Move.ReturnToSupplier" xml:space="preserve"><value>İade çıkışı</value></data>
+  <data name="Quarantine.Disposition.Move.Rework" xml:space="preserve"><value>Yeniden işleme transferi (Bloke → Karantina)</value></data>
+  <data name="Quarantine.Disposition.Move.Sample" xml:space="preserve"><value>Numune lokasyonuna transfer (durum Bloke kalır)</value></data>
+  <data name="Quarantine.Disposition.Move.Title" xml:space="preserve"><value>Onaylanınca Stok Defteri'nde oluşacak hareket</value></data>
+  <data name="Quarantine.Disposition.Move.Line" xml:space="preserve"><value>{0} · {1} · {2}</value></data>
+  <data name="Quarantine.Disposition.Field.Quantity" xml:space="preserve"><value>Miktar</value></data>
+  <data name="Quarantine.Disposition.Qty.Hint" xml:space="preserve"><value>En fazla {0} · kalan miktar Bloke'de kalır</value></data>
+  <data name="Quarantine.Disposition.Field.Supplier" xml:space="preserve"><value>Tedarikçi</value></data>
+  <data name="Quarantine.Disposition.SuppliersUnavailable" xml:space="preserve"><value>Tedarikçi listesi alınamadı.</value></data>
+  <data name="Quarantine.Disposition.Field.ReturnDoc" xml:space="preserve"><value>İade belge no</value></data>
+  <data name="Quarantine.Disposition.Field.Method" xml:space="preserve"><value>İmha yöntemi</value></data>
+  <data name="Quarantine.Disposition.Method.INCINERATION" xml:space="preserve"><value>Yakma · lisanslı tesis</value></data>
+  <data name="Quarantine.Disposition.Method.CHEMICAL_NEUTRALIZATION" xml:space="preserve"><value>Kimyasal nötralizasyon</value></data>
+  <data name="Quarantine.Disposition.Method.LICENSED_MEDICAL_WASTE" xml:space="preserve"><value>Lisanslı tıbbi atık firmasına teslim</value></data>
+  <data name="Quarantine.Disposition.Field.Date" xml:space="preserve"><value>İmha tarihi</value></data>
+  <data name="Quarantine.Disposition.SampleMissing" xml:space="preserve"><value>Bu depo için numune lokasyonu tanımlı değil. Karantina Ayarları'ndan bir numune lokasyonu seçin.</value></data>
+  <data name="Quarantine.Disposition.Closed" xml:space="preserve"><value>Bu kayıt için şu an disposition kararı verilemez.</value></data>
+  <data name="Quarantine.Disposition.Err.Kind" xml:space="preserve"><value>Bir disposition türü seçin.</value></data>
+  <data name="Quarantine.Disposition.Err.Qty" xml:space="preserve"><value>Sıfırdan büyük ve en fazla {0} olan bir miktar girin.</value></data>
+  <data name="Quarantine.Disposition.Err.Supplier" xml:space="preserve"><value>Tedarikçi seçin.</value></data>
+  <data name="Quarantine.Disposition.Err.ReturnDoc" xml:space="preserve"><value>İade belge numarasını girin.</value></data>
+  <data name="Quarantine.Disposition.Err.Method" xml:space="preserve"><value>İmha yöntemini seçin.</value></data>
+  <data name="Quarantine.Disposition.Err.Date" xml:space="preserve"><value>İmha tarihini girin.</value></data>
+  <data name="Quarantine.Blocked.Title" xml:space="preserve"><value>Bloke Stok</value></data>
+  <data name="Quarantine.Blocked.Filter.AllReasons" xml:space="preserve"><value>Tüm bloke nedenleri</value></data>
+  <data name="Quarantine.Blocked.Filter.PendingOnly" xml:space="preserve"><value>Yalnız disposition bekleyenler</value></data>
+  <data name="Quarantine.Blocked.Pending.Yes" xml:space="preserve"><value>Evet · disposition bekliyor</value></data>
+  <data name="Quarantine.Blocked.Pending.NoReviewed" xml:space="preserve"><value>Hayır · inceleme tamamlandı</value></data>
+  <data name="Quarantine.Blocked.Pending.NoReviewing" xml:space="preserve"><value>Hayır · inceleme sürüyor</value></data>
+  <data name="Quarantine.Blocked.ActivePending" xml:space="preserve"><value>Karar onay bekliyor · {0}</value></data>
+  <data name="Quarantine.Blocked.UnblockDisabled" xml:space="preserve"><value>İnceleme tamamlanmadan bloke kaldırılamaz</value></data>
+  <data name="Quarantine.Blocked.Info" xml:space="preserve"><value>Blokeyi Kaldır yalnız incelemesi tamamlanmış kayıtlarda açılır. Bloke kaldırma bir karardır: imzalanır, onaya gider ve stok onaydan sonra Kullanılabilir olur.</value></data>
+  <data name="Quarantine.Blocked.Empty" xml:space="preserve"><value>Filtreye uyan bloke stok yok.</value></data>
+  <data name="Quarantine.Unblock.Title" xml:space="preserve"><value>Bloke kaldırılsın mı?</value></data>
+  <data name="Quarantine.Unblock.Text" xml:space="preserve"><value>Onaylanınca stok Bloke → Kullanılabilir durumuna geçer ve satış/rezervasyona açılır. Karar imzalanır ve onaya gönderilir; bu işlem karar geçmişine yazılır.</value></data>
+  <data name="Quarantine.Unblock.Confirm" xml:space="preserve"><value>Blokeyi kaldır</value></data>
+  <data name="Quarantine.CompleteReview.Title" xml:space="preserve"><value>İnceleme tamamlansın mı?</value></data>
+  <data name="Quarantine.CompleteReview.Done" xml:space="preserve"><value>İnceleme tamamlandı; bloke kaldırma artık açık.</value></data>
+  <data name="Quarantine.BlockStock.Title" xml:space="preserve"><value>Stoğu bloke et</value></data>
+  <data name="Quarantine.BlockStock.Warn" xml:space="preserve"><value>Seçilen kullanılabilir stok hemen Bloke durumuna geçer (güvenli yön; onay iş akışı yoktur).</value></data>
+  <data name="Quarantine.BlockStock.Lot" xml:space="preserve"><value>Lot</value></data>
+  <data name="Quarantine.BlockStock.LotSearch" xml:space="preserve"><value>Lot numarası ara</value></data>
+  <data name="Quarantine.BlockStock.Row" xml:space="preserve"><value>Stok satırı (Kullanılabilir)</value></data>
+  <data name="Quarantine.BlockStock.NoRows" xml:space="preserve"><value>Bu lotun kullanılabilir stoğu yok.</value></data>
+  <data name="Quarantine.BlockStock.Quantity" xml:space="preserve"><value>Miktar</value></data>
+  <data name="Quarantine.BlockStock.QtyInvalid" xml:space="preserve"><value>Seçilen satırın miktarını aşmayan, sıfırdan büyük bir miktar girin.</value></data>
+  <data name="Quarantine.BlockStock.Note" xml:space="preserve"><value>Not</value></data>
+  <data name="Quarantine.BlockStock.Confirm" xml:space="preserve"><value>Bloke et</value></data>
+  <data name="Quarantine.BlockStock.Done" xml:space="preserve"><value>Stok bloke edildi · {0}</value></data>
+  <data name="Quarantine.Retest.Title" xml:space="preserve"><value>Yeniden Test Kuyruğu</value></data>
+  <data name="Quarantine.Retest.Info" xml:space="preserve"><value>Yeniden test tarihi geçmiş lot, kalite kararı verilene kadar satış, rezervasyon ve çıkışta kullanılamaz.</value></data>
+  <data name="Quarantine.Retest.Horizon" xml:space="preserve"><value>Tarihi geçmiş ya da {0} gün içinde gelecek lotlar</value></data>
+  <data name="Quarantine.Retest.State.Upcoming" xml:space="preserve"><value>Yaklaşıyor</value></data>
+  <data name="Quarantine.Retest.State.DueClosed" xml:space="preserve"><value>Tarihi geçti · kullanıma kapalı</value></data>
+  <data name="Quarantine.Retest.State.Quarantined" xml:space="preserve"><value>Karantinada</value></data>
+  <data name="Quarantine.Retest.Open" xml:space="preserve"><value>Karantina kaydını aç</value></data>
+  <data name="Quarantine.Retest.Confirm.Title" xml:space="preserve"><value>Lot karantinaya alınsın mı?</value></data>
+  <data name="Quarantine.Retest.Confirm.Text" xml:space="preserve"><value>{0} lotunun kullanılabilir stoğu ({1}) hemen Karantina durumuna geçer ve Karantina Kuyruğu'na eklenir.</value></data>
+  <data name="Quarantine.Retest.Confirm.DefaultReason" xml:space="preserve"><value>Yeniden test tarihi {0} · numune QC laboratuvarına</value></data>
+  <data name="Quarantine.Retest.Done" xml:space="preserve"><value>{0} karantinaya alındı · {1} Karantina Kuyruğu'na eklendi.</value></data>
+  <data name="Quarantine.Retest.Empty" xml:space="preserve"><value>Yeniden test kuyruğunda lot yok.</value></data>
+  <data name="Quarantine.Submit.PageTitle" xml:space="preserve"><value>Karar gönder</value></data>
+  <data name="Quarantine.Submit.Title" xml:space="preserve"><value>Karar gönder · {0}</value></data>
+  <data name="Quarantine.Submit.Step" xml:space="preserve"><value>Karar</value></data>
+  <data name="Quarantine.Submit.Intro" xml:space="preserve"><value>Bu karar taslak durumda: imzalayıp onaya gönderin. Stok onaydan sonra hareket eder.</value></data>
+  <data name="Quarantine.Submit.NotDraft" xml:space="preserve"><value>Bu karar artık gönderilemez ({0}).</value></data>
+  <data name="Quarantine.Submit.LotRelease" xml:space="preserve"><value>Lot {0} → Serbest</value></data>
+  <data name="Quarantine.Settings.Title" xml:space="preserve"><value>Karantina Ayarları</value></data>
+  <data name="Quarantine.Settings.Description" xml:space="preserve"><value>Şirketin karantina kuralları, onaylayıcıları, numune lokasyonları ve bloke nedenleri.</value></data>
+  <data name="Quarantine.Settings.Section.General" xml:space="preserve"><value>Genel</value></data>
+  <data name="Quarantine.Settings.WaitTarget" xml:space="preserve"><value>Bekleme hedefi (gün)</value></data>
+  <data name="Quarantine.Settings.WaitTarget.Hint" xml:space="preserve"><value>1–60 gün; kuyrukta bu süreyi aşan satırlar işaretlenir.</value></data>
+  <data name="Quarantine.Settings.WaitTarget.Invalid" xml:space="preserve"><value>1 ile 60 arasında bir gün sayısı girin.</value></data>
+  <data name="Quarantine.Settings.Reconcile" xml:space="preserve"><value>Yeniden okuma aralığı (saniye)</value></data>
+  <data name="Quarantine.Settings.Reconcile.Hint" xml:space="preserve"><value>Bekleyen bir kararın onay durumu ekranlar okunurken en çok bu sıklıkla sorulur.</value></data>
+  <data name="Quarantine.Settings.FourEyes" xml:space="preserve"><value>Dört göz</value></data>
+  <data name="Quarantine.Settings.FourEyes.Hint" xml:space="preserve"><value>Kararı veren aynı kararı onaylayamaz; onay anında yeniden denetlenir.</value></data>
+  <data name="Quarantine.Settings.LotRelease" xml:space="preserve"><value>Lot serbest bırakma onayı</value></data>
+  <data name="Quarantine.Settings.LotRelease.Hint" xml:space="preserve"><value>Taslak veya bloke bir lot Serbest'e geçerken kalite onayı istenir.</value></data>
+  <data name="Quarantine.Settings.Approvers" xml:space="preserve"><value>Onaylayıcı adaylar</value></data>
+  <data name="Quarantine.Settings.Approvers.Hint" xml:space="preserve"><value>Pozisyon veya kullanıcı; en fazla 10. Kararı veren kendisi aday olarak gönderilmez.</value></data>
+  <data name="Quarantine.Settings.Approvers.Kind" xml:space="preserve"><value>Tür</value></data>
+  <data name="Quarantine.Settings.Approvers.Value" xml:space="preserve"><value>Aday</value></data>
+  <data name="Quarantine.Settings.Approvers.Position" xml:space="preserve"><value>Pozisyon</value></data>
+  <data name="Quarantine.Settings.Approvers.User" xml:space="preserve"><value>Kullanıcı</value></data>
+  <data name="Quarantine.Settings.Approvers.Empty" xml:space="preserve"><value>Aday yok — karar onaya gönderilemez.</value></data>
+  <data name="Quarantine.Settings.Approvers.Invalid" xml:space="preserve"><value>Bir pozisyon seçin ya da geçerli bir kullanıcı kimliği girin.</value></data>
+  <data name="Quarantine.Settings.Approvers.Max" xml:space="preserve"><value>En fazla 10 aday tanımlanabilir.</value></data>
+  <data name="Quarantine.Settings.SampleLocations" xml:space="preserve"><value>Numune lokasyonları</value></data>
+  <data name="Quarantine.Settings.SampleLocations.Hint" xml:space="preserve"><value>Depo başına bir stoklanabilir lokasyon; numuneye ayrılan stok burada Bloke kalır.</value></data>
+  <data name="Quarantine.Settings.SampleLocations.Empty" xml:space="preserve"><value>Numune lokasyonu tanımlı değil.</value></data>
+  <data name="Quarantine.Settings.Sample.Warehouse" xml:space="preserve"><value>Depo</value></data>
+  <data name="Quarantine.Settings.Sample.Location" xml:space="preserve"><value>Numune lokasyonu</value></data>
+  <data name="Quarantine.Settings.Add" xml:space="preserve"><value>Ekle</value></data>
+  <data name="Quarantine.Settings.Remove" xml:space="preserve"><value>Kaldır</value></data>
+  <data name="Quarantine.Settings.Saved" xml:space="preserve"><value>Ayarlar kaydedildi.</value></data>
+  <data name="Quarantine.Settings.Template.Section" xml:space="preserve"><value>Onay şablonu</value></data>
+  <data name="Quarantine.Settings.Template.Code" xml:space="preserve"><value>Şablon kodu</value></data>
+  <data name="Quarantine.Settings.Template.Status" xml:space="preserve"><value>Durum</value></data>
+  <data name="Quarantine.Settings.Template.Version" xml:space="preserve"><value>Yayınlanan sürüm</value></data>
+  <data name="Quarantine.Settings.Template.Published" xml:space="preserve"><value>Yayında</value></data>
+  <data name="Quarantine.Settings.Template.Missing" xml:space="preserve"><value>Yok</value></data>
+  <data name="Quarantine.Settings.Template.Prepare" xml:space="preserve"><value>Onay şablonunu hazırla</value></data>
+  <data name="Quarantine.Settings.Template.Text" xml:space="preserve"><value>INV-QUARANTINE-RELEASE şablonu sizin yetkinizle oluşturulur ve yayınlanır; zaten varsa mevcut sürüm bildirilir.</value></data>
+  <data name="Quarantine.Settings.Template.Created" xml:space="preserve"><value>Şablon yayınlandı · sürüm {0}</value></data>
+  <data name="Quarantine.Settings.Template.Existing" xml:space="preserve"><value>Şablon zaten yayında · sürüm {0}</value></data>
+  <data name="Quarantine.Settings.Section.BlockReasons" xml:space="preserve"><value>Bloke nedenleri</value></data>
+  <data name="Quarantine.Settings.BR.Code" xml:space="preserve"><value>Kod</value></data>
+  <data name="Quarantine.Settings.BR.CodeHint" xml:space="preserve"><value>Büyük harf, rakam ve alt çizgi; harfle başlar (ör. QC_REJECT). Sonradan değişmez.</value></data>
+  <data name="Quarantine.Settings.BR.CodeInvalid" xml:space="preserve"><value>Kod biçimi geçersiz (ör. QC_REJECT).</value></data>
+  <data name="Quarantine.Settings.BR.Name" xml:space="preserve"><value>Ad</value></data>
+  <data name="Quarantine.Settings.BR.Active" xml:space="preserve"><value>Aktif</value></data>
+  <data name="Quarantine.Settings.BR.Locked" xml:space="preserve"><value>Kullanımda</value></data>
+  <data name="Quarantine.Settings.BR.Add" xml:space="preserve"><value>Bloke nedeni ekle</value></data>
+  <data name="Quarantine.Settings.BR.Edit" xml:space="preserve"><value>Bloke nedenini düzenle</value></data>
+  <data name="Quarantine.Settings.BR.Saved" xml:space="preserve"><value>Bloke nedeni kaydedildi.</value></data>
+  <data name="Quarantine.Settings.Lang.tr" xml:space="preserve"><value>Türkçe</value></data>
+  <data name="Quarantine.Settings.Lang.en" xml:space="preserve"><value>İngilizce</value></data>
+  <data name="Quarantine.Settings.Lang.fr" xml:space="preserve"><value>Fransızca</value></data>
+  <data name="Quarantine.Settings.Lang.es" xml:space="preserve"><value>İspanyolca</value></data>
+  <data name="Quarantine.Settings.Lang.zh" xml:space="preserve"><value>Çince</value></data>
+  <data name="Quarantine.Settings.Lang.ar" xml:space="preserve"><value>Arapça</value></data>
+  <data name="Quarantine.Settings.Lang.ru" xml:space="preserve"><value>Rusça</value></data>
+  <data name="Quarantine.Errors.GENERIC" xml:space="preserve"><value>İşlem tamamlanamadı. Lütfen yeniden deneyin.</value></data>
+  <data name="Quarantine.Errors.FORBIDDEN" xml:space="preserve"><value>Bu işlem için yetkiniz yok.</value></data>
+  <data name="Quarantine.Errors.UNAUTHORIZED" xml:space="preserve"><value>Oturumunuz sona erdi. Yeniden giriş yapın.</value></data>
+  <data name="Quarantine.Errors.SERVICE_UNAVAILABLE" xml:space="preserve"><value>Karantina servisine şu an ulaşılamıyor. Biraz sonra yeniden deneyin.</value></data>
+  <data name="Quarantine.Errors.ESIGN_UNAVAILABLE" xml:space="preserve"><value>İmza penceresi yüklenemedi; karar gönderilmedi.</value></data>
+  <data name="Quarantine.Errors.COMPANY_NOT_SELECTED" xml:space="preserve"><value>Önce çalıştığınız şirketi seçin.</value></data>
+  <data name="Quarantine.Errors.INVALID_REQUEST" xml:space="preserve"><value>İstek eksik ya da hatalı. Alanları kontrol edin.</value></data>
+  <data name="Quarantine.Errors.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>Aynı işlem farklı içerikle tekrarlandı. Sayfayı yenileyip yeniden deneyin.</value></data>
+  <data name="Quarantine.Errors.REASON_REQUIRED" xml:space="preserve"><value>Gerekçe 10–1000 karakter olmalı.</value></data>
+  <data name="Quarantine.Errors.CROSS_LE_FORBIDDEN" xml:space="preserve"><value>Bu kayıt başka bir şirkete ait.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_HOLD_NOT_FOUND" xml:space="preserve"><value>Karantina kaydı bulunamadı.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_BLOCKED_NOT_FOUND" xml:space="preserve"><value>Bloke stok kaydı bulunamadı.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_DECISION_NOT_FOUND" xml:space="preserve"><value>Karar bulunamadı.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_CONFLICT" xml:space="preserve"><value>Kayıt siz bakarken değişti. Sayfayı yenileyip yeniden deneyin.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_DECISION_INVALID" xml:space="preserve"><value>Karar geçersiz: tek kararda bir satır ve kaydın tüm miktarı olmalı.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_PARTIAL_SUM_MISMATCH" xml:space="preserve"><value>Kısmi kararın toplamı kaydın miktarına eşit olmalı.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_COA_NOT_CONFIRMED" xml:space="preserve"><value>Serbest bırakma için CoA kontrolü onaylanmalı.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_BLOCK_REASON_REQUIRED" xml:space="preserve"><value>Reddet / Bloke Et için aktif bir bloke nedeni gerekli.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_RETEST_DATE_REQUIRED" xml:space="preserve"><value>Bu serbest bırakma yeni bir yeniden test tarihi ister (bugünden sonra, SKT'den önce).</value></data>
+  <data name="Quarantine.Errors.LOT_DATES_INVALID" xml:space="preserve"><value>Lot tarihleri tutarsız (yeniden test tarihi SKT'den sonra olamaz).</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_QUANTITY_INVALID" xml:space="preserve"><value>Miktar sıfırdan büyük ve bloke miktarı aşmamalı.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_SUPPLIER_REQUIRED" xml:space="preserve"><value>Tedarikçiye iade için tedarikçi ve iade belge numarası gerekli.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_DESTRUCTION_METHOD_REQUIRED" xml:space="preserve"><value>İmha için yöntem ve son 30 gün içinde ya da ileri bir tarih gerekli.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_SIGNATURE_REQUIRED" xml:space="preserve"><value>Politika bu karar için elektronik imza istiyor.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_SIGNATURE_MISMATCH" xml:space="preserve"><value>İmza bu karara, size veya politikanın anlamına ait değil. Yeniden imzalayın.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_DECISION_ALREADY_PENDING" xml:space="preserve"><value>Bu kayıt için onay bekleyen başka bir karar var.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_DECISION_NOT_DRAFT" xml:space="preserve"><value>Bu karar taslak değil; yeniden gönderilemez.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_DECISION_NOT_PENDING" xml:space="preserve"><value>Karar artık onay beklemiyor.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_DECISION_NOT_APPLICABLE" xml:space="preserve"><value>Yalnız uygulanamamış (ApplyFailed) bir karar yeniden uygulanabilir.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_NOT_DECIDER" xml:space="preserve"><value>Bu işlemi yalnız kararı veren yapabilir.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_HOLD_CLOSED" xml:space="preserve"><value>Karantina kaydı kapanmış.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_BLOCKED_CLOSED" xml:space="preserve"><value>Bloke stok kaydı kapanmış.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_LOT_HELD" xml:space="preserve"><value>Lot bloke ya da süresi dolmuş; yalnız imha seçilebilir.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_SAMPLE_LOCATION_NOT_SET" xml:space="preserve"><value>Bu depo için numune lokasyonu tanımlı değil (Karantina Ayarları).</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_SAMPLE_LOCATION_INVALID" xml:space="preserve"><value>Numune lokasyonu aynı depoda, aktif ve stoklanabilir olmalı.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_REVIEW_NOT_COMPLETED" xml:space="preserve"><value>İnceleme tamamlanmadan bloke kaldırılamaz.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_STOCK_CHANGED" xml:space="preserve"><value>Stok karar verilirken değişti. Kaydı yeniden açın.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_STOCK_RESERVED" xml:space="preserve"><value>Stoğun bir kısmı rezerve; rezervasyonlar açıkta kalacağı için işlem yapılamaz.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_NOTHING_AVAILABLE" xml:space="preserve"><value>Bu lotun kullanılabilir stoğu yok.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_APPROVERS_NOT_CONFIGURED" xml:space="preserve"><value>Sizden başka onaylayıcı aday tanımlı değil (Karantina Ayarları). Karar gönderilmedi.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_WORKFLOW_TEMPLATE_MISSING" xml:space="preserve"><value>Onay şablonu yayında değil. Karantina Ayarları'ndan "Onay şablonunu hazırla".</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_WORKFLOW_FORBIDDEN" xml:space="preserve"><value>Onay akışı başlatma yetkiniz yok.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_WORKFLOW_REJECTED" xml:space="preserve"><value>İş akışı servisi isteği reddetti.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_WORKFLOW_UNAVAILABLE" xml:space="preserve"><value>İş akışı servisine ulaşılamıyor; hiçbir şey gönderilmedi.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_BLOCK_REASON_LANGUAGE_MISSING" xml:space="preserve"><value>Bloke nedeninin yedi dilde de adı olmalı.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_BLOCK_REASON_EXISTS" xml:space="preserve"><value>Bu kodla bir bloke nedeni zaten var.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_BLOCK_REASON_IN_USE" xml:space="preserve"><value>Kullanılmış bir bloke nedeni pasifleştirilemez.</value></data>
+  <data name="Quarantine.Errors.UNKNOWN_LOT" xml:space="preserve"><value>Lot bulunamadı.</value></data>
+  <data name="Quarantine.Errors.INSUFFICIENT_STOCK" xml:space="preserve"><value>Stok yeterli değil.</value></data>
+  <data name="Quarantine.Errors.LOT_BLOCKED" xml:space="preserve"><value>Lot bloke; bu hareket yapılamaz.</value></data>
+  <data name="Quarantine.Errors.LOT_EXPIRED" xml:space="preserve"><value>Lotun süresi dolmuş; bu hareket yapılamaz.</value></data>
+  <data name="Quarantine.Errors.LOT_RETEST_DUE" xml:space="preserve"><value>Lotun yeniden test tarihi geçti; kalite kararı verilene kadar kullanılamaz.</value></data>
+  <data name="Quarantine.Errors.POSTING_PERIOD_CLOSED" xml:space="preserve"><value>Kayıt dönemi kapalı.</value></data>
+  <data name="Quarantine.Errors.UNKNOWN_LOCATION" xml:space="preserve"><value>Lokasyon bulunamadı ya da kullanılamıyor.</value></data>
+  <data name="Quarantine.Common.UnknownUser" xml:space="preserve"><value>bilinmeyen kullanıcı</value></data>
+  <data name="Quarantine.Level.Gsku" xml:space="preserve"><value>Küresel SKU</value></data>
+  <data name="Quarantine.Level.Lsku" xml:space="preserve"><value>Yerel SKU</value></data>
+  <data name="Quarantine.Level.FinishedGood" xml:space="preserve"><value>Mamul</value></data>
+  <data name="Quarantine.Level.Item" xml:space="preserve"><value>Malzeme kalemi</value></data>
+  <data name="Quarantine.Details.Quality.EditNote" xml:space="preserve"><value>Notu düzenle</value></data>
+  <data name="Quarantine.Details.Quality.NoteSaved" xml:space="preserve"><value>Analiz sonucu notu kaydedildi.</value></data>
+  <data name="Quarantine.History.NoteUpdated" xml:space="preserve"><value>Analiz notu güncellendi</value></data>
+  <data name="Quarantine.Details.Quality.NoteLocked" xml:space="preserve"><value>Bu kayıt için onay ya da uygulama bekleyen bir karar varken not düzenlenemez.</value></data>
+  <data name="Quarantine.Details.History.NoteChange" xml:space="preserve"><value>Not: {0} → {1} karakter · Ek: {2} → {3}</value></data>
+</root>

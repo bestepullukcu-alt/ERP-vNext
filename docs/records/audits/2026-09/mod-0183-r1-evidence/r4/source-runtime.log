@@ -1,0 +1,1 @@
+PASS: two service OS processes preserve all eight collections including source identity, snapshots and drift

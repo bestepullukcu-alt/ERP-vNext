@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="ClaimsTitle" xml:space="preserve"><value>Претензии</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Регистрируйте, расследуйте и решайте претензии к перевозчикам по отгрузкам.</value></data>
+  <data name="AddNewClaims" xml:space="preserve"><value>Добавить претензию</value></data>
+  <data name="ActionsHeader" xml:space="preserve"><value>Действия</value></data>
+  <data name="ClaimNumber" xml:space="preserve"><value>Номер претензии</value></data>
+  <data name="ClaimId" xml:space="preserve"><value>Идентификатор претензии</value></data>
+  <data name="ShipmentId" xml:space="preserve"><value>Идентификатор отгрузки</value></data>
+  <data name="ShipmentIdHelp" xml:space="preserve"><value>Введите UUID отгрузки.</value></data>
+  <data name="ClaimedAmount" xml:space="preserve"><value>Заявленная сумма</value></data>
+  <data name="CurrencyLabel" xml:space="preserve"><value>Валюта</value></data>
+  <data name="ClaimSummary" xml:space="preserve"><value>Сводка по претензии</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Быстрый просмотр</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Нет претензий, соответствующих текущему фильтру.</value></data>
+  <data name="ListErrorState" xml:space="preserve"><value>Не удалось загрузить претензии.</value></data>
+  <data name="Retry" xml:space="preserve"><value>Повторить</value></data>
+  <data name="NotProvided" xml:space="preserve"><value>Не указано</value></data>
+  <data name="SupportReference" xml:space="preserve"><value>Код для поддержки</value></data>
+  <data name="CopyDone" xml:space="preserve"><value>Скопировано в буфер обмена.</value></data>
+  <data name="TotalLabel" xml:space="preserve"><value>Получено претензий</value></data>
+  <data name="ApprovedAmountNotListed" xml:space="preserve"><value>Утверждённая сумма не входит в данные списка; она показывается в подтверждении после утверждения.</value></data>
+  <data name="StatusOpen" xml:space="preserve"><value>Открыта</value></data>
+  <data name="StatusInvestigating" xml:space="preserve"><value>Расследуется</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>Утверждена</value></data>
+  <data name="StatusRejected" xml:space="preserve"><value>Отклонена</value></data>
+  <data name="StatusSettled" xml:space="preserve"><value>Урегулирована</value></data>
+  <data name="StatusClosed" xml:space="preserve"><value>Закрыта</value></data>
+  <data name="StatusWithdrawn" xml:space="preserve"><value>Отозвана</value></data>
+  <data name="ShipmentStatusDraft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="ShipmentStatusPlanned" xml:space="preserve"><value>Запланирована</value></data>
+  <data name="ShipmentStatusDispatched" xml:space="preserve"><value>Отправлена</value></data>
+  <data name="ShipmentStatusInTransit" xml:space="preserve"><value>В пути</value></data>
+  <data name="ShipmentStatusDelivered" xml:space="preserve"><value>Доставлена</value></data>
+  <data name="ShipmentStatusException" xml:space="preserve"><value>Исключение</value></data>
+  <data name="ShipmentStatusClosed" xml:space="preserve"><value>Закрыта</value></data>
+  <data name="ShipmentStatusCancelled" xml:space="preserve"><value>Отменена</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Новая претензия</value></data>
+  <data name="Resolve" xml:space="preserve"><value>Найти</value></data>
+  <data name="ResolveFirst" xml:space="preserve"><value>Найдите отгрузку перед созданием претензии.</value></data>
+  <data name="ShipmentNumber" xml:space="preserve"><value>Номер отгрузки</value></data>
+  <data name="ShipmentStatus" xml:space="preserve"><value>Статус отгрузки</value></data>
+  <data name="EligibilityNote" xml:space="preserve"><value>Претензию можно создать для отгрузок в статусе «Отправлена», «В пути», «Доставлена», «Исключение» или «Закрыта».</value></data>
+  <data name="ShipmentIneligible" xml:space="preserve"><value>Статус этой отгрузки не позволяет создать претензию.</value></data>
+  <data name="LinkShipmentCarrier" xml:space="preserve"><value>Привязать перевозчика отгрузки</value></data>
+  <data name="NoShipmentCarrier" xml:space="preserve"><value>Доступно, только если у найденной отгрузки есть перевозчик.</value></data>
+  <data name="ReasonCode" xml:space="preserve"><value>Код причины</value></data>
+  <data name="AmountHelp" xml:space="preserve"><value>Отправляется в точности как введено, например 250.00.</value></data>
+  <data name="CurrencyHelp" xml:space="preserve"><value>Трёхбуквенный код, отправляется как введено, например EUR.</value></data>
+  <data name="EvidenceReferenceIds" xml:space="preserve"><value>Ссылки на доказательства</value></data>
+  <data name="EvidenceReference" xml:space="preserve"><value>Ссылка на доказательство</value></data>
+  <data name="AddEvidenceReference" xml:space="preserve"><value>Добавить ссылку</value></data>
+  <data name="RemoveEvidenceReference" xml:space="preserve"><value>Удалить ссылку</value></data>
+  <data name="EvidenceHelp" xml:space="preserve"><value>Необязательно. Ссылки отправляются в показанном порядке.</value></data>
+  <data name="CreateClaim" xml:space="preserve"><value>Создать претензию</value></data>
+  <data name="ClaimCreated" xml:space="preserve"><value>Претензия создана.</value></data>
+  <data name="ClaimCreateReplayed" xml:space="preserve"><value>Эта претензия уже создана тем же запросом и показана как выполненная.</value></data>
+  <data name="TransitionTitle" xml:space="preserve"><value>Изменить статус претензии</value></data>
+  <data name="TransitionTarget" xml:space="preserve"><value>Новый статус</value></data>
+  <data name="ActionInvestigate" xml:space="preserve"><value>Начать расследование</value></data>
+  <data name="ActionWithdraw" xml:space="preserve"><value>Отозвать</value></data>
+  <data name="ActionApprove" xml:space="preserve"><value>Утвердить</value></data>
+  <data name="ActionReject" xml:space="preserve"><value>Отклонить</value></data>
+  <data name="ActionSettle" xml:space="preserve"><value>Урегулировать (без проведения оплаты)</value></data>
+  <data name="ActionClose" xml:space="preserve"><value>Закрыть</value></data>
+  <data name="TargetSettledLabel" xml:space="preserve"><value>Урегулирована (операционный статус, оплата не проводится)</value></data>
+  <data name="SettledNoPaymentNote" xml:space="preserve"><value>Урегулирование меняет только статус претензии. Оплата, кредиторская или дебиторская задолженность не проводятся.</value></data>
+  <data name="OccurredAt" xml:space="preserve"><value>Время события</value></data>
+  <data name="OccurredAtHelp" xml:space="preserve"><value>Дата и время со смещением, например 2026-09-26T14:30:00+03:00.</value></data>
+  <data name="ApprovedAmount" xml:space="preserve"><value>Утверждённая сумма</value></data>
+  <data name="ApprovedAmountHelp" xml:space="preserve"><value>Обязательно для утверждения; от нуля до заявленной суммы.</value></data>
+  <data name="ResolutionCode" xml:space="preserve"><value>Код решения</value></data>
+  <data name="NoteLabel" xml:space="preserve"><value>Примечание</value></data>
+  <data name="SubmitTransition" xml:space="preserve"><value>Применить статус</value></data>
+  <data name="ConfirmTransition" xml:space="preserve"><value>Изменить статус претензии на выбранный?</value></data>
+  <data name="TransitionCompleted" xml:space="preserve"><value>Статус претензии обновлён.</value></data>
+  <data name="TransitionReplayed" xml:space="preserve"><value>Это изменение статуса уже применено тем же запросом и показано как выполненное.</value></data>
+  <data name="ApprovedAmountResult" xml:space="preserve"><value>Утверждённая сумма</value></data>
+  <data name="RequestPending" xml:space="preserve"><value>Запрос для этого действия ещё выполняется.</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>Запрос недействителен. Проверьте введённые значения.</value></data>
+  <data name="ErrUnauthenticated" xml:space="preserve"><value>Сеанс завершён. Войдите снова.</value></data>
+  <data name="ErrForbidden" xml:space="preserve"><value>У вас нет прав на это действие.</value></data>
+  <data name="ErrClaimNotFound" xml:space="preserve"><value>Запись не найдена или недоступна вам.</value></data>
+  <data name="ErrUnsupportedMediaType" xml:space="preserve"><value>Формат запроса не поддерживается.</value></data>
+  <data name="ErrClaimShipmentIneligible" xml:space="preserve"><value>Статус отгрузки не позволяет создать претензию.</value></data>
+  <data name="ErrClaimCarrierMismatch" xml:space="preserve"><value>Перевозчик не совпадает с перевозчиком отгрузки или не может быть использован.</value></data>
+  <data name="ErrClaimAmountInvalid" xml:space="preserve"><value>Заявленная сумма должна быть больше нуля.</value></data>
+  <data name="ErrClaimApprovalAmountInvalid" xml:space="preserve"><value>Утверждённая сумма должна быть от нуля до заявленной суммы.</value></data>
+  <data name="ErrClaimApprovedAmountNotAllowed" xml:space="preserve"><value>Утверждённую сумму можно отправить только при утверждении.</value></data>
+  <data name="ErrInvalidClaimTransition" xml:space="preserve"><value>Претензия тем временем изменилась, и это изменение статуса больше невозможно. Список перезагружен.</value></data>
+  <data name="ErrClaimCorrelationMismatch" xml:space="preserve"><value>Запрос больше не соответствует записи об отгрузке.</value></data>
+  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>Этот запрос уже был получен с другими значениями. Чтобы отправить другой запрос, закройте эту форму и откройте новую.</value></data>
+  <data name="ErrClaimReferenceInvalid" xml:space="preserve"><value>Справочные данные отгрузки недействительны. Обратитесь в поддержку.</value></data>
+  <data name="ErrClaimReferenceIncomplete" xml:space="preserve"><value>Справочные данные отгрузки неполные. Повторите тот же запрос позже.</value></data>
+  <data name="ErrClaimReferenceUnavailable" xml:space="preserve"><value>Справочные данные отгрузки временно недоступны. Повторите тот же запрос.</value></data>
+  <data name="ErrClaimStorageUnavailable" xml:space="preserve"><value>Претензии временно недоступны. Результат не подтверждён; повторите тот же запрос.</value></data>
+  <data name="ErrInternalError" xml:space="preserve"><value>Произошла непредвиденная ошибка. Можно повторить то же действие.</value></data>
+</root>

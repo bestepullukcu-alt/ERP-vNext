@@ -14,7 +14,7 @@ namespace Diten.CrmService.Api.Controllers.CRM;
 /// MOD-0165 FU04 — Campaign + CampaignTarget authoring and the static target snapshot.
 /// <para>
 /// <b>Routing:</b> canonical under <c>/api/crm/campaigns</c>. The Gateway exposes the same paths through the dedicated
-/// <c>campaigns</c> ocelot routes; there is no direct-to-5061 business surface.
+/// <c>campaigns</c> ocelot routes; there is no direct-to-5065 business surface.
 /// </para>
 /// <para>
 /// <b>Permissions:</b> canonical keys are <c>crm.campaign.read</c> / <c>.manage</c> /

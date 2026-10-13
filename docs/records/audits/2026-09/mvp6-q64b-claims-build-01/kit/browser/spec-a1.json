@@ -1,0 +1,67 @@
+{
+  "phase": "spec",
+  "startedAt": "2026-09-26T19:38:30.391Z",
+  "web": "http://127.0.0.1:5501",
+  "cases": {
+    "spec": {
+      "result": "FAIL",
+      "exit": 1,
+      "specSha256": "e421b2f65d83a525fee23aa025c6fa2148ca8f3207dfad48350e2002499169ff",
+      "stdoutTail": ".4s)\n  ✘   2 claims-ui.spec.mjs:44:3 › Claims list (CU-01…CU-05, CU-31) › filter sends only status and shipmentId (1.0m)\n  -   3 claims-ui.spec.mjs:55:3 › Claims list (CU-01…CU-05, CU-31) › QuickView makes no by-ID request (CU-31)\n  ✓   4 claims-ui.spec.mjs:72:3 › Create (CU-VS1, CU-09…CU-14, CU-17) › create positive: 250.00 EUR on a Dispatched shipment; body is exact text (2.7s)\n  ✓   5 claims-ui.spec.mjs:94:3 › Create (CU-VS1, CU-09…CU-14, CU-17) › create negative: lowercase currency → localized 400, inputs kept (CU-11) (2.3s)\n  ✓   6 claims-ui.spec.mjs:111:3 › Create (CU-VS1, CU-09…CU-14, CU-17) › ineligible shipment: note + disabled submit (CU-17) (2.0s)\n  ✓   7 claims-ui.spec.mjs:120:3 › Create (CU-VS1, CU-09…CU-14, CU-17) › carrier checkbox enabled only when the shipment has a carrier (CU-10) (2.2s)\n  ✓   8 claims-ui.spec.mjs:131:3 › Create (CU-VS1, CU-09…CU-14, CU-17) › unknown shipment → one safe not-found text, no shipment data (CU-14) (1.8s)\n  -   9 claims-ui.spec.mjs:146:3 › Transition (CU-08, CU-20…CU-22) › allowed transition Open → Investigating returns 200 and reloads\n  ✘  10 claims-ui.spec.mjs:159:3 › Transition (CU-08, CU-20…CU-22) › stale transition → 422 INVALID_CLAIM_TRANSITION shows conflict + reload (CU-21) (1.0m)\n  -  11 claims-ui.spec.mjs:184:3 › Transition (CU-08, CU-20…CU-22) › reused key with a changed body → 409 IDEMPOTENCY_KEY_REUSED, retry stops (CU-19)\n  ✓  12 claims-ui.spec.mjs:191:3 › Scope and permissions (CU-06, CU-07, CU-15, CU-16) › without read: only _AccessDenied inside the shell (941ms)\n  ✓  13 claims-ui.spec.mjs:205:3 › Scope and permissions (CU-06, CU-07, CU-15, CU-16) › read-only: no create CTA and no row actions (1.3s)\n  ✓  14 claims-ui.spec.mjs:215:3 › Scope and permissions (CU-06, CU-07, CU-15, CU-16) › cross-LE: LE-B list excludes LE-A claims; ?shipmentId=<LE-A> → empty (130ms)\n  ✓  15 claims-ui.spec.mjs:225:3 › Scope and permissions (CU-06, CU-07, CU-15, CU-16) › cross-LE: resolve of an LE-A shipment from LE-B → 404 safe-not-found (115ms)\n  ✓  16 claims-ui.spec.mjs:238:5 › Languages (CU-24, CU-25) › screen in tr (2.7s)\n  ✓  17 claims-ui.spec.mjs:238:5 › Languages (CU-24, CU-25) › screen in ar (RTL) (2.9s)\n\n\n  1) claims-ui.spec.mjs:44:3 › Claims list (CU-01…CU-05, CU-31) › filter sends only status and shipmentId \n\n    \u001b[31mTest timeout of 60000ms exceeded.\u001b[39m\n\n    Error: page.waitForRequest: Test timeout of 60000ms exceeded.\n\n      46 |     await page.locator('.dt-filter-btn').click();\n      47 |     await page.locator('#filterShipmentId').fill(env('CLAIMS_SHIPMENT_DISPATCHED'));\n    > 48 |     const filtered = page.waitForRequest((r) => r.url().includes('/SupplyChain/Claims/api?'));\n         |                           ^\n      49 |     await page.locator('#btnFilterApply').click();\n      50 |     const url = new URL((await filtered).url());\n      51 |     expect([...url.searchParams.keys()].sort()).toEqual(['shipmentId']);\n        at /Users/natig/mvp6-env/runtime/claims-ui.spec.mjs:48:27\n\n    Error Context: test-output/claims-ui-Claims-list-CU-0-b1c0f--only-status-and-shipmentId/error-context.md\n\n  2) claims-ui.spec.mjs:159:3 › Transition (CU-08, CU-20…CU-22) › stale transition → 422 INVALID_CLAIM_TRANSITION shows conflict + reload (CU-21) \n\n    \u001b[31mTest timeout of 60000ms exceeded.\u001b[39m\n\n    Error: locator.click: Test ended.\n    Call log:\n    \u001b[2m  - waiting for locator('.dropdown-toggle').first()\u001b[22m\n    \u001b[2m    - locator resolved to <a data-bs-toggle=\"dropdown\" href=\"javascript:void(0);\" class=\"nav-link dropdown-toggle hide-arrow\">…</a>\u001b[22m\n    \u001b[2m  - attempting click action\u001b[22m\n    \u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n    \u001b[2m      - element is visible, enabled and stable\u001b[22m\n    \u001b[2m      - scrolling into view if needed\u001b[22m\n    \u001b[2m      - done scrolling\u001b[22m\n    \u001b[2m      - <i class=\"icon-base bx bx-globe icon-md\"></i> from <div class=\"layout-wrapper layout-content-navbar\">…</div> subtree intercepts pointer events\u001b[22m\n    \u001b[2m    - retrying click action\u001b[22m\n    \u001b[2m    - waiting 20ms\u001b[22m\n    \u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n    \u001b[2m      - element is visible, enabled and stable\u001b[22m\n    \u001b[2m      - scrolling into view if needed\u001b[22m\n    \u001b[2m      - done scrolling\u001b[22m\n    \u001b[2m      - <i class=\"icon-base bx bx-globe icon-md\"></i> from <div class=\"layout-wrapper layout-content-navbar\">…</div> subtree intercepts pointer events\u001b[22m\n    \u001b[2m    - retrying click action\u001b[22m\n    \u001b[2m      - waiting 100ms\u001b[22m\n    \u001b[2m    107 × waiting for element to be visible, enabled and stable\u001b[22m\n    \u001b[2m        - element is visible, enabled and stable\u001b[22m\n    \u001b[2m        - scrolling into view if needed\u001b[22m\n    \u001b[2m        - done scrolling\u001b[22m\n    \u001b[2m        - <i class=\"icon-base bx bx-globe icon-md\"></i> from <div class=\"layout-wrapper layout-content-navbar\">…</div> subtree intercepts pointer events\u001b[22m\n    \u001b[2m      - retrying click action\u001b[22m\n    \u001b[2m        - waiting 500ms\u001b[22m\n\n\n      165 |     const approve = pa.locator('.js-transition[data-target-status=\"Approved\"]').first();\n      166 |     test.skip(!(await approve.count()), 'no Investigating claim seeded');\n    > 167 |     await pb.locator('.dropdown-toggle').first().click();\n          |                                                  ^\n      168 |     await pb.locator('.js-transition[data-target-status=\"Rejected\"]').first().click();\n      169 |     await pa.locator('.dropdown-toggle').first().click();\n      170 |     await approve.click();\n        at /Users/natig/mvp6-env/runtime/claims-ui.spec.mjs:167:50\n\n    Error Context: test-output/claims-ui-Transition-CU-08-7f481-hows-conflict-reload-CU-21-/error-context.md\n\n  2 failed\n    claims-ui.spec.mjs:44:3 › Claims list (CU-01…CU-05, CU-31) › filter sends only status and shipmentId \n    claims-ui.spec.mjs:159:3 › Transition (CU-08, CU-20…CU-22) › stale transition → 422 INVALID_CLAIM_TRANSITION shows conflict + reload (CU-21) \n  3 skipped\n  12 passed (2.5m)\n",
+      "stderrTail": ""
+    }
+  },
+  "png": [
+    {
+      "name": "spec/01-list-en.png",
+      "sha256": "2fbf5f4268153ba3332b58e6733cac1792408a0983f1c21ac68a3adde68d8015"
+    },
+    {
+      "name": "spec/02-create-201.png",
+      "sha256": "411a288d725b060bcb8b92871662da7ea142ab6c7695f1124044cbe6b0661bed"
+    },
+    {
+      "name": "spec/03-create-400.png",
+      "sha256": "a3fe4746523e6fb73dfb46fde97807220970c8db8abd7032a65404314f9037e7"
+    },
+    {
+      "name": "spec/05-access-denied.png",
+      "sha256": "3ce2d84809b50a9415708c26953cf456e6166a06d9580cf152f510320f1e33a4"
+    },
+    {
+      "name": "spec/06-ar-1024.png",
+      "sha256": "00d03a897075f1d76f93d1ee83ba37183ddb68a2c75e5d437257ffde92efbfff"
+    },
+    {
+      "name": "spec/06-ar-1440.png",
+      "sha256": "ac0c22357fb0301eebd6f929495fcab52576248c34be5819f62e6196830061cf"
+    },
+    {
+      "name": "spec/06-ar-390.png",
+      "sha256": "9357a2f4d4ada8bab2b46d61f050e4e5e62862b5d170cfbec29f40710fda100b"
+    },
+    {
+      "name": "spec/06-ar-768.png",
+      "sha256": "a94858cf6dfda50b836190876788b9e7d93f4f57ecf91e5dfbc2feae6aba6c21"
+    },
+    {
+      "name": "spec/06-tr-1024.png",
+      "sha256": "1e25c49bd503d58a644c6729b016559103fbf03431b2d245f937fd5951edab75"
+    },
+    {
+      "name": "spec/06-tr-1440.png",
+      "sha256": "3fdedee9f2985ed6c99a368f3d5c3984bc3868aa514a28494b6243b580c99c8e"
+    },
+    {
+      "name": "spec/06-tr-390.png",
+      "sha256": "3ccc3a2bcfff5d10749775222e17d015901ada74e43c3482fbd917b6a188a00d"
+    },
+    {
+      "name": "spec/06-tr-768.png",
+      "sha256": "77a99c25f5040aa54c7dad267fdbac24ab45372279674935d3194f6ac7bface6"
+    }
+  ],
+  "console": [],
+  "rootLeak": [],
+  "endedAt": "2026-09-26T19:40:58.851Z"
+}

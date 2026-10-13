@@ -1,0 +1,75 @@
+diff --git a/execution/domains/supply-chain-execution/module-packs/MOD-0185-routing-load-planning.md b/execution/domains/supply-chain-execution/module-packs/MOD-0185-routing-load-planning.md
+index 4f44ba2..5f1b94b 100644
+--- a/execution/domains/supply-chain-execution/module-packs/MOD-0185-routing-load-planning.md
++++ b/execution/domains/supply-chain-execution/module-packs/MOD-0185-routing-load-planning.md
+@@ -537,3 +537,70 @@ Versioned DEV: docs/roadmap/plans/mod-0185-dev-01-prompt-v1.0.md (READY by curre
+ Versioned VER: docs/roadmap/plans/mod-0185-ver-01-prompt-v1.0.md (HELD until completed DEV handoff).
+ Protected: frozen contracts/17seals/authority, other modules/source/tests, gateway, UI, shared catalogs,
+ DCP/registry/board and .antigravity. No commit/push/stash. No E5/G5 or integrated consumer acceptance.
++
++## 29. Self-registration — after Loads UI approval (PATCH PROPOSAL — NOT APPROVED until owner sign-off)
++
++**Authority:** `docs/records/decisions/2026-09/mvp6-self-registration-design-owner-decision-01.md` (D1–D5 = A; pack preparation only). **Design:** [`mvp6-self-registration-prep-01`](../../../../docs/roadmap/plans/mvp6-self-registration-prep-01/MANIFESTS.md) (MANIFESTS.md, NAV-L10N-KEYS.tsv, TEST-PLAN.md).
++**Foundation:** DCP-009 §21 (interface, hosted service, options, `PlatformRegistration` settings via the existing `X-Internal-Api-Key`, project reference and `Program.cs` lines — single integration owner).
++This section specifies; it authorizes no code, `Program.cs`, `.csproj`, appsettings, `SharedResource`, Platform or gateway change, no new permission key or ID, and no commit, push or stash.
++
++> **After Loads UI approval.** Nothing in this section is actionable until the Loads UI scope (`mvp6-loads-ui-scope-01`, HELD) is approved by the owner and built. Until then no provider, no `AddSingleton` line and no `Nav.Module.ROUTINGLOADPLANNING` / `Nav.Page.LOADS` values ship.
++
++### Identity (D3 = A)
++
++| Field | Value |
++|---|---|
++| ModuleCode / ModuleName / DisplayName | `routing-load-planning` / `RoutingLoadPlanning` / `Routing & Load Planning` |
++| Domain / Service | `SupplyChainExecution` / `DitenSupplyChainService` |
++| ModuleVersion / IsTenantAssignable / IsBaseline | `1.0.0` / true / false |
++| SortOrder / Icon (SOFT, seed-once) | 410 / `bx-map-alt` |
++| Provider / tests (proposed paths) | `services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/ModuleRegistration/RoutingLoadPlanningManifestProvider.cs` / `services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ModuleRegistration/RoutingLoadPlanningManifestProviderTests.cs` |
++| Scope | every RoutePath starts with `/SupplyChain/`, none with `/Platform/` → Tenant |
++
++### Pages
++
++| PageCode | DisplayName | RoutePath | RequiredPermission | Parent | Nav | PageType | Sort |
++|---|---|---|---|---|---|---|---|
++| `LOADS` | Loads | `/SupplyChain/Loads` (proposed; not a route yet) | `supplychain.loads.read` | — | **true** | List | 10 |
++
++### Actions
++
++| Page | ActionCode | DisplayName | PermissionKey | Placement | Dangerous |
++|---|---|---|---|---|---|
++| `LOADS` | `CREATE` | Create | `supplychain.loads.create` | Toolbar | no |
++
++All keys are existing constants in `Infrastructure/Features/Loads/LoadPermissions.cs`. Not modeled: `supplychain.loads.transition` (the prepared UI scope has no transition button, ROOT-UI-01).
++
++### Navigation keys (NAV-L10N-KEYS.tsv; 0/7 present today)
++
++| Key | Required languages | Ships with |
++|---|---|---|
++| `Nav.Module.ROUTINGLOADPLANNING` | en, tr, fr, es, zh, ar, ru | this provider, only after the Loads UI is approved and built |
++| `Nav.Page.LOADS` | en, tr, fr, es, zh, ar, ru | this provider, only after the Loads UI is approved and built |
++
++Values are added to `frontend/Diten.Web/Resources/SharedResource.{lang}.resx` by the integration owner and reviewed by the l10n agent (no empty value, no English placeholder, no key echoing its own name). This pack does not supply or approve values.
++
++### Tests (TEST-PLAN.md §2; all required before the module counts as closed)
++
++| ID | Pass condition |
++|---|---|
++| M-01 | Identity exactly as above; `IsTenantAssignable` true |
++| M-02 | Every manifest `RequiredPermission` / `PermissionKey` is in the reflected `public const string` fields of `LoadPermissions` |
++| M-03 | Every reflected key is in the manifest or on the API-only allow-list with a reason: `supplychain.loads.transition` (no UI button in the prepared scope) |
++| M-04 | Manifest RoutePaths = the frontend view-route set of the Loads controller (to be built), counts equal (cross-checked by W-01) |
++| M-05 | The action table above equals the manifest actions per page (code, key, placement, dangerous flag) |
++| M-06 | PageCodes, RoutePaths and ActionCodes (per page) unique, case-insensitive |
++| M-07 | Exactly one `IsNavigationVisible` page, with a null parent; every other page has a parent |
++| M-08 | No RoutePath starts with `/Platform/` |
++
++Shared guards W-01…W-04 and reconcile-state R-01…R-04 (DCP-009 §21.3) must also be green for this module.
++
++### Ship rule (D4 = A)
++
++The provider, its `AddSingleton<IModuleManifestProvider, …>` line and its navigation keys ship **together with this module's UI** in the integrated target (Q14/Q15), never ahead of it. For this module that means: only after the Loads UI is approved **and** built.
++
++### Open gaps (carried, not solved)
++
++1. Loads UI scope is HELD and unbuilt; the RoutePath and the action table are proposals and must be re-checked against the approved UI before this section is applied.
++2. If a transition button is later approved, `supplychain.loads.transition` moves from the allow-list into the action table.
++3. Runtime tests R-02…R-04 need a native executor and the integrated target.

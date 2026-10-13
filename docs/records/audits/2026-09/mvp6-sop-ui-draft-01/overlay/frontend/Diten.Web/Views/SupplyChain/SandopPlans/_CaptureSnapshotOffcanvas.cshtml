@@ -1,0 +1,107 @@
+@using Diten.Web.Views.SupplyChain.SandopPlans
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SandopPlanDetails> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    // Pack §23.2: every S&OP .cshtml states the tenant shell. Rendered as a partial view, so Razor does not apply it.
+    Layout = "_LayoutTenantShell";
+}
+
+@* Capture snapshot (pack §23.6, CaptureSandopSnapshotRequest): 4 mandatory text fields + an optional ordered repeater of
+   supply input references (source, resourceId, resourceVersion — each row all three). supplyInputRefs is always sent,
+   as [] when there is no row. Values are sent exactly as typed; no maxlength/pattern/required attributes. *@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCaptureSnapshot" aria-labelledby="offcanvasCaptureSnapshotLabel">
+    <div class="offcanvas-header p-4">
+        <h5 id="offcanvasCaptureSnapshotLabel" class="offcanvas-title">@Localizer["CaptureSnapshotTitle"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Close"]"></button>
+    </div>
+
+    <div class="offcanvas-body border-top p-4">
+        <div id="formCaptureSnapshotAlert" class="alert alert-danger d-none" role="alert" aria-live="assertive"></div>
+
+        <form id="formCaptureSnapshot" class="pt-0" novalidate>
+            @Html.AntiForgeryToken()
+            <div class="row g-4">
+                <div class="col-12">
+                    <label for="captureDemandPlanId" class="form-label fw-medium">@Localizer["DemandPlanId"] <span class="text-danger">*</span></label>
+                    <div class="diten-field">
+                        <i class="bx bx-line-chart diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" id="captureDemandPlanId" class="form-control" dir="ltr" autocomplete="off" spellcheck="false" />
+                    </div>
+                </div>
+                <div class="col-12">
+                    <label for="captureDemandPlanVersion" class="form-label fw-medium">@Localizer["DemandPlanVersion"] <span class="text-danger">*</span></label>
+                    <div class="diten-field">
+                        <i class="bx bx-git-commit diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" id="captureDemandPlanVersion" class="form-control" dir="ltr" autocomplete="off" spellcheck="false" />
+                    </div>
+                </div>
+                <div class="col-12">
+                    <label for="captureSourceCapturedAt" class="form-label fw-medium">@Localizer["SourceCapturedAt"] <span class="text-danger">*</span></label>
+                    <div class="diten-field">
+                        <i class="bx bx-time-five diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" id="captureSourceCapturedAt" class="form-control" dir="ltr" autocomplete="off" spellcheck="false"
+                               aria-describedby="captureSourceCapturedAtHelp" />
+                    </div>
+                    <div id="captureSourceCapturedAtHelp" class="form-text">@Localizer["SourceCapturedAtHelp"]</div>
+                </div>
+                <div class="col-12">
+                    <label for="captureSourceChecksum" class="form-label fw-medium">@Localizer["SourceChecksum"] <span class="text-danger">*</span></label>
+                    <div class="diten-field">
+                        <i class="bx bx-fingerprint diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" id="captureSourceChecksum" class="form-control font-monospace" dir="ltr" autocomplete="off" spellcheck="false" />
+                    </div>
+                </div>
+                <div class="col-12">
+                    <fieldset aria-describedby="captureSupplyRefsHelp">
+                        <legend class="form-label fw-medium fs-6 mb-1">@Localizer["SupplyInputRefs"]</legend>
+                        <div id="captureSupplyRefsHelp" class="form-text mt-0 mb-2">@Localizer["SupplyInputRefsHelp"]</div>
+                        <div id="captureSupplyRefs" class="d-flex flex-column gap-3"></div>
+                        <button type="button" class="btn btn-sm btn-label-secondary mt-3" id="btnAddSupplyRef">
+                            <i class="bx bx-plus me-1" aria-hidden="true"></i>@Localizer["AddRow"]
+                        </button>
+                    </fieldset>
+                </div>
+            </div>
+        </form>
+
+        @* Row template: cloned by details.js (no inline handler, no string-built user text). *@
+        <template id="supplyRefRowTemplate">
+            <div class="border rounded p-3 sandop-supply-ref-row">
+                <div class="row g-3">
+                    <div class="col-12 col-md-4">
+                        <label class="form-label small mb-1 js-label-source">@Localizer["Source"] <span class="text-danger">*</span></label>
+                        <div class="diten-field">
+                            <i class="bx bx-server diten-field-icon" aria-hidden="true"></i>
+                            <input type="text" class="form-control js-ref-source" dir="ltr" autocomplete="off" spellcheck="false" />
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label class="form-label small mb-1 js-label-resource-id">@Localizer["ResourceId"] <span class="text-danger">*</span></label>
+                        <div class="diten-field">
+                            <i class="bx bx-hash diten-field-icon" aria-hidden="true"></i>
+                            <input type="text" class="form-control js-ref-resource-id" dir="ltr" autocomplete="off" spellcheck="false" />
+                        </div>
+                    </div>
+                    <div class="col-10 col-md-3">
+                        <label class="form-label small mb-1 js-label-resource-version">@Localizer["ResourceVersion"] <span class="text-danger">*</span></label>
+                        <div class="diten-field">
+                            <i class="bx bx-git-commit diten-field-icon" aria-hidden="true"></i>
+                            <input type="text" class="form-control js-ref-resource-version" dir="ltr" autocomplete="off" spellcheck="false" />
+                        </div>
+                    </div>
+                    <div class="col-2 col-md-1 d-flex align-items-end justify-content-end">
+                        <button type="button" class="btn btn-icon btn-text-danger js-remove-supply-ref" aria-label="@Localizer["RemoveRow"]">
+                            <i class="bx bx-trash" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <button type="button" id="btnSubmitCaptureSnapshot" class="btn btn-primary">@Localizer["CaptureSnapshot"]</button>
+    </div>
+</div>

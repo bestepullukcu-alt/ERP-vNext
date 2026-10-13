@@ -1,0 +1,4 @@
+{"ok": true, "rc": 0, "log": "run-harness-claims_runtime-a6.log"}
+phase kbd rc 0
+K10 PASS: kbd-after
+pair kbd rc 0

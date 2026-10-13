@@ -1,0 +1,10 @@
+--- a/execution/domains/supply-chain-execution/module-packs/MOD-0190-sop-workflow-signoffs.md
++++ b/execution/domains/supply-chain-execution/module-packs/MOD-0190-sop-workflow-signoffs.md
+@@ -547,6 +547,6 @@
+ ### Open gaps (carried, not solved)
+ 
+ 1. `SandopPermissions.cs` exists only in the accepted isolated source, not in the common checkout.
+-2. DCP-009 §21.1 still lists MOD-0190 as excluded ("no UI scope"); a separate DCP patch by its owner is required.
++2. Closed: DCP-009 §21.1 no longer excludes MOD-0190 (applied DCP-009 text SHA-256 `ab728d67662037cd6bb73a8f5ad89f82c8fac64f2faf364d72d874cd21328fdf`; approved in `docs/records/decisions/2026-09/mvp6-text-patch-q83-signoff-owner-decision-01.md` (SHA-256 `d27458e19cda13c7453bd3c5378c22286078b3551f081ae5d91f0db1aff381da`)).
+ 3. The S&OP UI is scoped (§23) but not built; routes and actions are re-checked against the built UI (M-04/M-05, W-01/W-02).
+ 4. Runtime tests R-02…R-04 need a native executor and the integrated target.

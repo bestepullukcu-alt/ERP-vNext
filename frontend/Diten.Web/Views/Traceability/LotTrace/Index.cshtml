@@ -1,0 +1,105 @@
+@model Diten.Web.Models.Traceability.LotPageViewModel
+@using Diten.Web.Views.Traceability.LotTrace
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LotTraceIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["Page.Title"].Value;
+    Layout = "_LayoutTenantShell";
+}
+@*
+    MOD-0174 P3 — İzlenebilirlik (pack §11.1/§11.3): lot selector; "Etkilenen toplam miktar" PER UNIT (never summed across
+    units); stat cards; backward 2 levels, forward 2 levels; clicking a lot card re-roots the flow. Not a DataTable.
+    MVP-1 reality notes are shown on the page (backward = receipt source until MOD-0194; forward = document numbers only).
+    UAS-001: nothing without trace.lots.read.
+*@
+@if (!Perms.Has("trace.lots.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["Page.Title"].Value" />
+    return;
+}
+@{
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["Company.Label"].Value;
+    company.Placeholder = Localizer["Company.Placeholder"].Value;
+    company.SelectHint = Localizer["Company.Required"].Value;
+    company.UnavailableText = Localizer["Company.Unavailable"].Value;
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["Page.Title"]</h5>
+    <p class="mb-0 text-muted">@Localizer["Page.Description"]</p>
+</div>
+
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready)
+{
+    <div id="lottrace" data-lot-id="@Model.LotId">
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+            <div style="min-width: 18rem">
+                <select id="lotTraceLot" class="form-select form-select-sm" data-placeholder="@Localizer["Filter.Lot"]" aria-label="@Localizer["Filter.Lot"]"><option value=""></option></select>
+            </div>
+            <small class="text-muted">@Localizer["Hint.Reroot"]</small>
+        </div>
+        <div id="lottrace-error" class="alert alert-danger d-none" role="alert"></div>
+        <p class="text-muted" id="lottrace-empty">@Localizer["Empty.PickLot"]</p>
+
+        <div id="lottrace-body" class="d-none">
+            <section class="card mb-4" id="lottrace-total">
+                <div class="card-body p-4">
+                    <h6 class="card-section-title mb-1"><i class="bx bx-target-lock"></i>@Localizer["Total.Title"]</h6>
+                    <p class="card-section-desc mb-3">@Localizer["Total.Sub"]</p>
+                    <div class="d-flex flex-wrap gap-4" data-totals></div>
+                </div>
+            </section>
+            <div class="row g-3 mb-4" id="lottrace-stats">
+                <div class="col-12 col-md-4"><div class="card"><div class="card-body p-3"><small class="text-muted d-block">@Localizer["Stat.OnHand"]</small><span class="fs-5 fw-medium" dir="ltr" data-stat="onHand">—</span><small class="d-block text-muted">@Localizer["Stat.OnHandSub"]</small></div></div></div>
+                <div class="col-12 col-md-4"><div class="card"><div class="card-body p-3"><small class="text-muted d-block">@Localizer["Stat.Shipped"]</small><span class="fs-5 fw-medium" dir="ltr" data-stat="shipped">—</span><small class="d-block text-muted">@Localizer["Stat.ShippedSub"]</small></div></div></div>
+                <div class="col-12 col-md-4"><div class="card"><div class="card-body p-3"><small class="text-muted d-block">@Localizer["Stat.Lots"]</small><span class="fs-5 fw-medium" data-stat="lots">—</span><small class="d-block text-muted">@Localizer["Stat.LotsSub"]</small></div></div></div>
+            </div>
+            <div class="row g-3">
+                <partial name="~/Views/Traceability/LotTrace/_FlowColumn.cshtml" model="@(new Diten.Web.Views.Traceability.LotTrace.FlowColumn("back2", Localizer["Back.Level2"].Value))" />
+                <partial name="~/Views/Traceability/LotTrace/_FlowColumn.cshtml" model="@(new Diten.Web.Views.Traceability.LotTrace.FlowColumn("back1", Localizer["Back.Level1"].Value))" />
+                <div class="col-12 col-xl">
+                    <div class="card border-primary h-100" id="lottrace-root">
+                        <div class="card-body p-3">
+                            <small class="text-muted d-block">@Localizer["Root.Title"]</small>
+                            <div class="fw-medium font-monospace" data-root="lotNumber"></div>
+                            <div class="small" data-root="product"></div>
+                            <div class="small" data-root="status"></div>
+                            <div class="small">@Localizer["Root.Expiry"]: <span data-root="expiry"></span></div>
+                            <div class="small">@Localizer["Root.OnHand"]: <span dir="ltr" data-root="onHand"></span></div>
+                            @if (Diten.Web.Models.Traceability.TraceActions.Allowed(Perms, "TRACELOTDETAIL"))
+                            {
+                                <a class="btn btn-xs btn-label-primary mt-2" data-trace-action="TRACELOTDETAIL" data-root="detail" href="/Lots">@Localizer["Action.TRACELOTDETAIL"]</a>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <partial name="~/Views/Traceability/LotTrace/_FlowColumn.cshtml" model="@(new Diten.Web.Views.Traceability.LotTrace.FlowColumn("fwd1", Localizer["Fwd.Level1"].Value))" />
+                <partial name="~/Views/Traceability/LotTrace/_FlowColumn.cshtml" model="@(new Diten.Web.Views.Traceability.LotTrace.FlowColumn("fwd2", Localizer["Fwd.Level2"].Value))" />
+            </div>
+            <div class="small text-muted mt-3">
+                <div>@Localizer["Reality.BackwardReceiptOnly"]</div>
+                <div>@Localizer["Reality.ForwardDocumentOnly"]</div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    <partial name="~/Views/Traceability/Lots/_TraceActions.cshtml" />
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/Traceability/LotTrace/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Traceability/LotTrace/index.l10n.js" asp-append-version="true"></script>
+    @if (company.Ready)
+    {
+        <script src="~/assets/js/Traceability/trace-ui.js" asp-append-version="true"></script>
+        <script src="~/assets/js/Traceability/LotTrace/index.js" asp-append-version="true"></script>
+    }
+}

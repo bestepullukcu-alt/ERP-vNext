@@ -1,0 +1,58 @@
+{
+ "firstLogin": {
+  "admin": {
+   "requiresPasswordChange": true
+  },
+  "fix": {
+   "requiresPasswordChange": true
+  },
+  "nokey": {
+   "requiresPasswordChange": true
+  }
+ },
+ "partA": {
+  "orgKeys": 10,
+  "nokeyAdminRolesRemoved": 1,
+  "nokeyRolesLeft": 0
+ },
+ "fixLogin": {
+  "legal_entity_id": null,
+  "pwd_change_required": "false",
+  "shipmentKeys": [
+   "supplychain.shipments.cancel",
+   "supplychain.shipments.create",
+   "supplychain.shipments.dispatch",
+   "supplychain.shipments.pod.capture",
+   "supplychain.shipments.read"
+  ],
+  "permissionCount": 54
+ },
+ "legalEntityId": "07d0f6c5-3d22-48d6-aaf9-4bec8bbe62ea",
+ "orgUnitId": "32365fd5-c97b-4bea-948f-d43267e25148",
+ "userIds": {
+  "admin": "0ab08d1a-67b6-44ed-9aef-b700fde69252",
+  "fix": "4d2f782e-5f8f-4097-9d87-4d94c2e17e8f",
+  "nokey": "5af6bc49-2ec0-401c-a695-15d6095c522c"
+ },
+ "actorLogins": {
+  "admin": {
+   "legal_entity_id": "07d0f6c5-3d22-48d6-aaf9-4bec8bbe62ea",
+   "pwd_change_required": "false",
+   "shipmentKeys": [
+    "supplychain.shipments.cancel",
+    "supplychain.shipments.create",
+    "supplychain.shipments.dispatch",
+    "supplychain.shipments.pod.capture",
+    "supplychain.shipments.read"
+   ],
+   "permissionCount": 48
+  },
+  "nokey": {
+   "legal_entity_id": "07d0f6c5-3d22-48d6-aaf9-4bec8bbe62ea",
+   "pwd_change_required": "false",
+   "shipmentKeys": [],
+   "permissionCount": 0
+  }
+ },
+ "result": "PASS"
+}

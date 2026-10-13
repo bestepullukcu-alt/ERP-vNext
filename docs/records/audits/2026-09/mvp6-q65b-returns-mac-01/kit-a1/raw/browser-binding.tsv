@@ -1,0 +1,4 @@
+kind	url_or_path	source_path	http	observed	expected	result
+served-asset	/assets/js/SupplyChain/Returns/index.js	frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Returns/index.js	200	1549e984af159ccb8dce6bb8e65c0aefb6c4fd4e0c57f7e9939febb1462ff1fb	1549e984af159ccb8dce6bb8e65c0aefb6c4fd4e0c57f7e9939febb1462ff1fb	match
+served-asset	/assets/js/SupplyChain/Returns/index.l10n.js	frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Returns/index.l10n.js	200	7b63fb0c7acb90bb7c3c1b4eeb5bb2d1facbf15711ddcf3901eb0c60ed9caf69	7b63fb0c7acb90bb7c3c1b4eeb5bb2d1facbf15711ddcf3901eb0c60ed9caf69	match
+browser-url	http://127.0.0.1:5701/SupplyChain/Returns	-	-	127.0.0.1:5701	127.0.0.1:5701	match

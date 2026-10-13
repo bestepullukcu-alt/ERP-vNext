@@ -5,9 +5,13 @@ info:
     Shared Location/Storage Master (DEC-INV-03 Option B) — Wave-0 frozen (v1).
     Fiziksel yer hiyerarşisi Site→Warehouse→StorageLocation→Zone→Bin. READ-ONLY consumers.
     NOT OrganizationUnit (K6). Tenant+LegalEntity scoped.
-  version: 1.0.0
+  version: 1.1.0
   x-status: FROZEN
-  x-owner: Location Master (MOD-? candidate)
+  x-owner: MOD-0173-FU02
+  x-owner-service: Diten.InventoryService (MOD-0173)
+  x-changelog:
+    - "1.0.0 — Wave-0 frozen read contract: getLocation, listLocations, getLocationPath, validateLocations (unchanged in 1.1.0)."
+    - "1.1.0 — additive owner operations (MOD-0173-FU02 §15, WP-0173-LOC1): createLocation, updateLocation, changeLocationStatus, bulkCreateBins, searchLocations, getLocationHistory, getLocationStockPresence. v1 consumers are unaffected; contractVersion stays v1."
   x-decisions: [DEC-INV-03, 18]
 servers: [{ url: /api/locations }]
 security: [{ bearerAuth: [] }]
@@ -24,6 +28,25 @@ paths:
               schema: { $ref: '#/components/schemas/LocationRef' }
               example: { locationId: loc-A-12-3, code: A-12-3, name: "Raf A-12-3", type: Bin, parentId: zone-A, legalEntityId: le-tr, status: Active, isStockable: true, operatingMode: internal, contractVersion: v1 }
         '404': { $ref: '#/components/responses/UnknownLocation' }
+    patch:
+      operationId: updateLocation
+      summary: "v1.1 owner — edit a location (absent member = unchanged; type is immutable; a parentId change is a move, K-07)"
+      x-permission: inventory.locations.manage
+      x-error-codes: [INVALID_REQUEST, UNKNOWN_LOCATION, CROSS_LE_FORBIDDEN, LOCATION_CODE_TAKEN, LOCATION_CONFLICT, LOCATION_ARCHIVED, LOCATION_LEVEL_INVALID, LOCATION_MOVE_INTO_SUBTREE, LOCATION_HAS_STOCK, LOCATION_PARENT_INACTIVE, ORG_UNIT_INVALID, ORG_UNIT_DIRECTORY_UNAVAILABLE]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { $ref: '#/components/parameters/IfMatch' }
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/LocationUpdateRequest' } } }
+      responses:
+        '200': { $ref: '#/components/responses/LocationDetail' }
+        '400': { $ref: '#/components/responses/LocationError' }
+        '403': { $ref: '#/components/responses/LocationError' }
+        '404': { $ref: '#/components/responses/UnknownLocation' }
+        '409': { $ref: '#/components/responses/LocationError' }
+        '422': { $ref: '#/components/responses/LocationError' }
+        '503': { $ref: '#/components/responses/LocationError' }
   /:
     get:
       operationId: listLocations
@@ -37,6 +60,25 @@ paths:
           content:
             application/json:
               schema: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/LocationRef' } }, total: { type: integer }, contractVersion: { type: string } } }
+    post:
+      operationId: createLocation
+      summary: "v1.1 owner — create a location; the company is the caller's (Site) or the parent's (below), never a body field (K-03)"
+      x-permission: inventory.locations.manage
+      x-error-codes: [INVALID_REQUEST, IDEMPOTENCY_KEY_REUSED, CROSS_LE_FORBIDDEN, UNKNOWN_LOCATION, LOCATION_CODE_TAKEN, LOCATION_ARCHIVED, LOCATION_LEVEL_INVALID, LOCATION_PARENT_INACTIVE, ORG_UNIT_INVALID, ORG_UNIT_DIRECTORY_UNAVAILABLE]
+      parameters:
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/LocationCreateRequest' } } }
+      responses:
+        '201': { $ref: '#/components/responses/LocationDetail' }
+        '200': { $ref: '#/components/responses/LocationDetail' }
+        '400': { $ref: '#/components/responses/LocationError' }
+        '403': { $ref: '#/components/responses/LocationError' }
+        '404': { $ref: '#/components/responses/UnknownLocation' }
+        '409': { $ref: '#/components/responses/LocationError' }
+        '422': { $ref: '#/components/responses/LocationError' }
+        '503': { $ref: '#/components/responses/LocationError' }
   /{id}/path:
     get:
       operationId: getLocationPath
@@ -60,7 +102,104 @@ paths:
           content:
             application/json:
               example: { results: [ { locationId: loc-A-12-3, exists: true, isStockable: true }, { locationId: loc-x, exists: false } ], contractVersion: v1 }
+  /search:
+    get:
+      operationId: searchLocations
+      summary: "v1.1 owner — paged search for the location list (L-2)"
+      x-permission: inventory.locations.read
+      x-error-codes: [INVALID_REQUEST]
+      parameters:
+        - { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+        - { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 200, default: 50 } }
+        - { name: search, in: query, description: "case-insensitive, matches code or name", schema: { type: string, maxLength: 100 } }
+        - { name: type, in: query, style: form, explode: true, schema: { type: array, items: { $ref: '#/components/schemas/LocationType' } } }
+        - { name: status, in: query, style: form, explode: true, schema: { type: array, items: { $ref: '#/components/schemas/LocationStatus' } } }
+        - { name: isStockable, in: query, schema: { type: boolean } }
+        - { name: parentId, in: query, schema: { type: string, format: uuid } }
+        - { name: orderBy, in: query, schema: { type: string, enum: [code, name, type, status], default: code } }
+        - { name: orderDir, in: query, schema: { type: string, enum: [asc, desc], default: asc } }
+      responses:
+        '200':
+          description: Page of locations
+          content: { application/json: { schema: { $ref: '#/components/schemas/LocationSearchPage' } } }
+        '400': { $ref: '#/components/responses/LocationError' }
+  /{id}/status:
+    post:
+      operationId: changeLocationStatus
+      summary: "v1.1 owner — Active ⇄ Inactive, Active/Inactive → Archived (terminal), K-04…K-06"
+      x-permission: inventory.locations.manage
+      x-dangerous: true
+      x-error-codes: [INVALID_REQUEST, UNKNOWN_LOCATION, LOCATION_ARCHIVED, LOCATION_CONFLICT, LOCATION_HAS_STOCK, LOCATION_HAS_ACTIVE_CHILDREN, LOCATION_PARENT_INACTIVE]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { $ref: '#/components/parameters/IfMatch' }
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/LocationStatusRequest' } } }
+      responses:
+        '200': { $ref: '#/components/responses/LocationDetail' }
+        '400': { $ref: '#/components/responses/LocationError' }
+        '404': { $ref: '#/components/responses/UnknownLocation' }
+        '409': { $ref: '#/components/responses/LocationError' }
+        '422': { $ref: '#/components/responses/LocationError' }
+  /{id}/bins/bulk:
+    post:
+      operationId: bulkCreateBins
+      summary: "v1.1 owner — create bins {AISLE}-{RACK:00}-{LEVEL:00}-{POS:00} under a Zone or StorageLocation (K-12); dryRun previews without writing"
+      x-permission: inventory.locations.manage
+      x-error-codes: [INVALID_REQUEST, LOCATION_BULK_LIMIT, IDEMPOTENCY_KEY_REUSED, UNKNOWN_LOCATION, LOCATION_ARCHIVED, LOCATION_CODE_TAKEN, LOCATION_LEVEL_INVALID, LOCATION_PARENT_INACTIVE]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/BulkBinsRequest' } } }
+      responses:
+        '200':
+          description: "dryRun preview, or the replay of a committed batch (same Idempotency-Key and body)"
+          content: { application/json: { schema: { oneOf: [ { $ref: '#/components/schemas/BulkBinsPreview' }, { $ref: '#/components/schemas/BulkBinsResult' } ] } } }
+        '201':
+          description: Bins created in one transaction
+          content: { application/json: { schema: { $ref: '#/components/schemas/BulkBinsResult' } } }
+        '400': { $ref: '#/components/responses/LocationError' }
+        '404': { $ref: '#/components/responses/UnknownLocation' }
+        '409': { $ref: '#/components/responses/LocationError' }
+        '422': { $ref: '#/components/responses/LocationError' }
+  /{id}/history:
+    get:
+      operationId: getLocationHistory
+      summary: "v1.1 owner — append-only change history (K-11), newest first"
+      x-permission: inventory.locations.read
+      x-error-codes: [INVALID_REQUEST, UNKNOWN_LOCATION]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+        - { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 200, default: 50 } }
+      responses:
+        '200':
+          description: Page of change rows
+          content: { application/json: { schema: { $ref: '#/components/schemas/LocationHistoryPage' } } }
+        '400': { $ref: '#/components/responses/LocationError' }
+        '404': { $ref: '#/components/responses/UnknownLocation' }
+  /{id}/stock-presence:
+    get:
+      operationId: getLocationStockPresence
+      summary: "v1.1 owner — does the ledger hold stock (OnHand ≠ 0, any status) on the node / below it (K-10); never a quantity"
+      x-permission: inventory.locations.read
+      x-error-codes: [UNKNOWN_LOCATION]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Stock presence
+          content: { application/json: { schema: { $ref: '#/components/schemas/LocationStockPresence' } } }
+        '404': { $ref: '#/components/responses/UnknownLocation' }
 components:
+  parameters:
+    IdempotencyKey: { name: Idempotency-Key, in: header, required: true, description: "equals body idempotencyKey; replay → 200 with the original result, other body → 400 IDEMPOTENCY_KEY_REUSED", schema: { type: string, minLength: 1, maxLength: 128 } }
+    IfMatch: { name: If-Match, in: header, required: true, description: "W/\"<version>\" from the ETag of the last read; missing → 400 INVALID_REQUEST, stale → 409 LOCATION_CONFLICT", schema: { type: string } }
+  headers:
+    ETag: { description: "W/\"<version>\" — optimistic concurrency token of the location", schema: { type: string } }
   securitySchemes: { bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT } }
   schemas:
     LocationType: { type: string, enum: [Site, Warehouse, StorageLocation, Zone, Bin] }
@@ -80,7 +219,140 @@ components:
         costCenterCode: { type: string, nullable: true }
         contractVersion: { type: string }
     Error: { type: object, properties: { error: { type: object, properties: { code: { type: string }, message: { type: string }, correlationId: { type: string } } }, contractVersion: { type: string } } }
+    LocationStatus: { type: string, enum: [Active, Inactive, Archived] }
+    LocationDetail:
+      type: object
+      description: "v1.1 — LocationRef + owner fields (version = the ETag value)"
+      required: [locationId, code, name, type, legalEntityId, status, isStockable, version, createdAt, createdBy, contractVersion]
+      properties:
+        locationId: { type: string, format: uuid }
+        code: { type: string }
+        name: { type: string }
+        type: { $ref: '#/components/schemas/LocationType' }
+        parentId: { type: string, format: uuid, nullable: true }
+        legalEntityId: { type: string, format: uuid }
+        status: { $ref: '#/components/schemas/LocationStatus' }
+        isStockable: { type: boolean }
+        operatingMode: { type: string, enum: [internal, external-integrated], nullable: true }
+        orgUnitRef: { type: string, format: uuid, nullable: true }
+        costCenterCode: { type: string, nullable: true }
+        version: { type: integer, minimum: 1 }
+        createdAt: { type: string, format: date-time }
+        createdBy: { type: string, format: uuid }
+        updatedAt: { type: string, format: date-time, nullable: true }
+        updatedBy: { type: string, format: uuid, nullable: true }
+        contractVersion: { type: string }
+    LocationCreateRequest:
+      type: object
+      additionalProperties: false
+      required: [idempotencyKey, code, name, type]
+      properties:
+        idempotencyKey: { type: string, minLength: 1, maxLength: 128 }
+        code: { type: string, pattern: '^[A-Za-z0-9._/-]{1,40}$', description: "unique per company, case-insensitive, every status (K-02)" }
+        name: { type: string, minLength: 1, maxLength: 120 }
+        type: { $ref: '#/components/schemas/LocationType' }
+        parentId: { type: string, format: uuid, nullable: true, description: "required unless Site (K-01: Warehouse→Site, StorageLocation→Warehouse, Zone→StorageLocation, Bin→Zone|StorageLocation)" }
+        isStockable: { type: boolean, description: "default Bin true, others false; only Bin / StorageLocation may be true" }
+        operatingMode: { type: string, enum: [internal, external-integrated], nullable: true, description: "Site / Warehouse only; default internal" }
+        orgUnitRef: { type: string, format: uuid, nullable: true, description: "Active, non-archived Platform OrganizationUnit of the same company (soft link)" }
+        costCenterCode: { type: string, pattern: '^[A-Za-z0-9._-]{1,40}$', nullable: true }
+    LocationUpdateRequest:
+      type: object
+      additionalProperties: false
+      description: "absent member = unchanged; null clears an optional field; type is not accepted"
+      properties:
+        code: { type: string, pattern: '^[A-Za-z0-9._/-]{1,40}$' }
+        name: { type: string, minLength: 1, maxLength: 120 }
+        parentId: { type: string, format: uuid }
+        isStockable: { type: boolean }
+        operatingMode: { type: string, enum: [internal, external-integrated], nullable: true }
+        orgUnitRef: { type: string, format: uuid, nullable: true }
+        costCenterCode: { type: string, pattern: '^[A-Za-z0-9._-]{1,40}$', nullable: true }
+    LocationStatusRequest:
+      type: object
+      additionalProperties: false
+      required: [status]
+      properties:
+        status: { $ref: '#/components/schemas/LocationStatus' }
+    BulkBinsRequest:
+      type: object
+      additionalProperties: false
+      required: [idempotencyKey, aisleFrom, aisleTo, rackFrom, rackTo, levelFrom, levelTo, positionsPerLevel]
+      description: "count = aisles × racks × levels × positions, 1…1000 (else 400 LOCATION_BULK_LIMIT); existing codes (any status) are skipped"
+      properties:
+        idempotencyKey: { type: string, minLength: 1, maxLength: 128 }
+        aisleFrom: { type: string, pattern: '^([A-Za-z]|[0-9]{1,3})$' }
+        aisleTo: { type: string, pattern: '^([A-Za-z]|[0-9]{1,3})$' }
+        rackFrom: { type: integer, minimum: 1, maximum: 99 }
+        rackTo: { type: integer, minimum: 1, maximum: 99 }
+        levelFrom: { type: integer, minimum: 1, maximum: 99 }
+        levelTo: { type: integer, minimum: 1, maximum: 99 }
+        positionsPerLevel: { type: integer, minimum: 1, maximum: 99 }
+        isStockable: { type: boolean, default: true }
+        dryRun: { type: boolean, default: false }
+    BulkBinsPreview:
+      type: object
+      required: [toCreate, skipped, count]
+      properties:
+        toCreate: { type: array, items: { type: string } }
+        skipped: { type: array, items: { type: string } }
+        count: { type: integer, minimum: 0 }
+        contractVersion: { type: string }
+    BulkBinsResult:
+      type: object
+      required: [created, skipped, count]
+      properties:
+        created: { type: array, items: { $ref: '#/components/schemas/LocationRef' } }
+        skipped: { type: array, items: { type: string } }
+        count: { type: integer, minimum: 0 }
+        contractVersion: { type: string }
+    LocationSearchPage:
+      type: object
+      required: [items, total, page, pageSize]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/LocationRef' } }
+        total: { type: integer, minimum: 0 }
+        page: { type: integer, minimum: 1 }
+        pageSize: { type: integer, minimum: 1, maximum: 200 }
+        contractVersion: { type: string }
+    LocationChange:
+      type: object
+      required: [changeId, action, actorUserId, occurredAt, correlationId]
+      properties:
+        changeId: { type: string, format: uuid }
+        action: { type: string, enum: [Created, Updated, Moved, StatusChanged, BulkCreated] }
+        field: { type: string, enum: [code, name, parentId, status, isStockable, operatingMode, orgUnitRef, costCenterCode], nullable: true }
+        oldValue: { type: string, nullable: true }
+        newValue: { type: string, nullable: true }
+        actorUserId: { type: string, format: uuid }
+        occurredAt: { type: string, format: date-time }
+        correlationId: { type: string, format: uuid }
+    LocationHistoryPage:
+      type: object
+      required: [items, total, page, pageSize]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/LocationChange' } }
+        total: { type: integer, minimum: 0 }
+        page: { type: integer, minimum: 1 }
+        pageSize: { type: integer, minimum: 1, maximum: 200 }
+        contractVersion: { type: string }
+    LocationStockPresence:
+      type: object
+      required: [locationId, hasStock, subtreeHasStock]
+      description: "K-10 — booleans from the ledger balance rows; no quantity"
+      properties:
+        locationId: { type: string, format: uuid }
+        hasStock: { type: boolean }
+        subtreeHasStock: { type: boolean }
+        contractVersion: { type: string }
   responses:
     UnknownLocation:
       description: Lokasyon bulunamadı
       content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: UNKNOWN_LOCATION, message: "location bulunamadı", correlationId: req-1 }, contractVersion: v1 } } }
+    LocationDetail:
+      description: "Location (v1.1 detail) with its version as ETag"
+      headers: { ETag: { $ref: '#/components/headers/ETag' } }
+      content: { application/json: { schema: { $ref: '#/components/schemas/LocationDetail' } } }
+    LocationError:
+      description: "Refusal — error.code per the operation's x-error-codes"
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: LOCATION_HAS_STOCK, message: "stock is held at or below this location", correlationId: "0f8c2c86-8a69-4c55-9a2f-2b8c8c1a8e10" }, contractVersion: v1 } } }

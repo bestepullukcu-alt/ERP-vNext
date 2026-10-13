@@ -76,7 +76,7 @@ public sealed class CrmVisitEvidenceScopeTests : IDisposable
     [Fact]
     public void CrmVisitEvidence_is_value_4_and_projected_by_name()
     {
-        Assert.Equal(4, (int)ContentStorageScope.CrmVisitEvidence);
+        Assert.Equal(5, (int)ContentStorageScope.CrmVisitEvidence); // 4 is main's ESignatureImages (MOD-0022) since the 2026-10-13 merge; the scope travels by NAME
         Assert.Equal("CrmVisitEvidence", ContentStorageScope.CrmVisitEvidence.ToString());
     }
 

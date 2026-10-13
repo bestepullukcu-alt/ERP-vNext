@@ -1,0 +1,3 @@
+Disposable Mongo replica set: mvp6r2ver on 127.0.0.1:27118, DB-010 isolated verification workspace.
+Replica state observed PRIMARY before tests. Shutdown requested after tests.
+Operational Mongo27017 was not used.

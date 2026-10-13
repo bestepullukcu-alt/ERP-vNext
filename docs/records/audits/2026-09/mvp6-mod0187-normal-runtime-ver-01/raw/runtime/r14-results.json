@@ -1,0 +1,214 @@
+{
+  "phase": "target",
+  "wireEncoding": "raw TCP; test Unicode values encoded with Python strict UTF-8",
+  "scalarVsBytes": {
+    "eacute128": {
+      "scalars": 128,
+      "utf8Bytes": 256
+    },
+    "emoji128": {
+      "scalars": 128,
+      "utf8Bytes": 512
+    }
+  },
+  "results": {
+    "ascii-1": {
+      "status": 404,
+      "responseCorrelation": "44444444-4444-4444-8444-444444444444",
+      "errorCode": "CLAIM_NOT_FOUND",
+      "errorCorrelation": "44444444-4444-4444-8444-444444444444",
+      "contractVersion": "v1",
+      "bodyUtf8": "{\"error\":{\"code\":\"CLAIM_NOT_FOUND\",\"message\":\"Claim or referenced resource was not found.\",\"correlationId\":\"44444444-4444-4444-8444-444444444444\"},\"contractVersion\":\"v1\"}",
+      "requestSha256": "86deef60a16dd1e036c17bb864a033e20e5efd17ab9df48f82e244e59067cd9f",
+      "responseSha256": "aa301c700942f0a32f03e2a190e4ab5b705d0b2a995f38268cfd03f139ac19a6",
+      "requestHeaderBytes": 886,
+      "rawResponseBytes": 411
+    },
+    "ascii-128": {
+      "status": 404,
+      "responseCorrelation": "44444444-4444-4444-8444-444444444444",
+      "errorCode": "CLAIM_NOT_FOUND",
+      "errorCorrelation": "44444444-4444-4444-8444-444444444444",
+      "contractVersion": "v1",
+      "bodyUtf8": "{\"error\":{\"code\":\"CLAIM_NOT_FOUND\",\"message\":\"Claim or referenced resource was not found.\",\"correlationId\":\"44444444-4444-4444-8444-444444444444\"},\"contractVersion\":\"v1\"}",
+      "requestSha256": "6a02335512d86cb06b47ec514cfa034004ee60ec1a59cc5ae289559a3c907a52",
+      "responseSha256": "aa301c700942f0a32f03e2a190e4ab5b705d0b2a995f38268cfd03f139ac19a6",
+      "requestHeaderBytes": 1013,
+      "rawResponseBytes": 411
+    },
+    "ascii-129": {
+      "status": 400,
+      "responseCorrelation": "44444444-4444-4444-8444-444444444444",
+      "errorCode": "INVALID_REQUEST",
+      "errorCorrelation": "44444444-4444-4444-8444-444444444444",
+      "contractVersion": "v1",
+      "bodyUtf8": "{\"error\":{\"code\":\"INVALID_REQUEST\",\"message\":\"Request schema or context is invalid.\",\"correlationId\":\"44444444-4444-4444-8444-444444444444\"},\"contractVersion\":\"v1\"}",
+      "requestSha256": "fae5065fcab6623446f85ae04461183d1b93d4155605a69e6d6332c875924b54",
+      "responseSha256": "7f32b5f4901e3f53d51f34925ff8549fc4052d9cd64ac1069278f716f1ad4099",
+      "requestHeaderBytes": 1014,
+      "rawResponseBytes": 407
+    },
+    "utf8-eacute-128": {
+      "status": 404,
+      "responseCorrelation": "44444444-4444-4444-8444-444444444444",
+      "errorCode": "CLAIM_NOT_FOUND",
+      "errorCorrelation": "44444444-4444-4444-8444-444444444444",
+      "contractVersion": "v1",
+      "bodyUtf8": "{\"error\":{\"code\":\"CLAIM_NOT_FOUND\",\"message\":\"Claim or referenced resource was not found.\",\"correlationId\":\"44444444-4444-4444-8444-444444444444\"},\"contractVersion\":\"v1\"}",
+      "requestSha256": "27832fed77373bcc95bedd54f3255827e8e157129dc50f902d8553b89040fa91",
+      "responseSha256": "aa301c700942f0a32f03e2a190e4ab5b705d0b2a995f38268cfd03f139ac19a6",
+      "requestHeaderBytes": 1141,
+      "rawResponseBytes": 411
+    },
+    "utf8-eacute-129": {
+      "status": 400,
+      "responseCorrelation": "44444444-4444-4444-8444-444444444444",
+      "errorCode": "INVALID_REQUEST",
+      "errorCorrelation": "44444444-4444-4444-8444-444444444444",
+      "contractVersion": "v1",
+      "bodyUtf8": "{\"error\":{\"code\":\"INVALID_REQUEST\",\"message\":\"Request schema or context is invalid.\",\"correlationId\":\"44444444-4444-4444-8444-444444444444\"},\"contractVersion\":\"v1\"}",
+      "requestSha256": "e04498ad2da9d510a71fc44f8e5d2cd973945195e0aa9918f236838df84e350f",
+      "responseSha256": "7f32b5f4901e3f53d51f34925ff8549fc4052d9cd64ac1069278f716f1ad4099",
+      "requestHeaderBytes": 1143,
+      "rawResponseBytes": 407
+    },
+    "utf8-emoji-128-lowercase-name": {
+      "status": 404,
+      "responseCorrelation": "44444444-4444-4444-8444-444444444444",
+      "errorCode": "CLAIM_NOT_FOUND",
+      "errorCorrelation": "44444444-4444-4444-8444-444444444444",
+      "contractVersion": "v1",
+      "bodyUtf8": "{\"error\":{\"code\":\"CLAIM_NOT_FOUND\",\"message\":\"Claim or referenced resource was not found.\",\"correlationId\":\"44444444-4444-4444-8444-444444444444\"},\"contractVersion\":\"v1\"}",
+      "requestSha256": "8f268b837d5e153ae46a48fcb6f10ff577c90bc1023cae7e7a9fd338735f8c43",
+      "responseSha256": "aa301c700942f0a32f03e2a190e4ab5b705d0b2a995f38268cfd03f139ac19a6",
+      "requestHeaderBytes": 1397,
+      "rawResponseBytes": 411
+    },
+    "utf8-emoji-129": {
+      "status": 400,
+      "responseCorrelation": "44444444-4444-4444-8444-444444444444",
+      "errorCode": "INVALID_REQUEST",
+      "errorCorrelation": "44444444-4444-4444-8444-444444444444",
+      "contractVersion": "v1",
+      "bodyUtf8": "{\"error\":{\"code\":\"INVALID_REQUEST\",\"message\":\"Request schema or context is invalid.\",\"correlationId\":\"44444444-4444-4444-8444-444444444444\"},\"contractVersion\":\"v1\"}",
+      "requestSha256": "f7271211dd4f3b6cfaab77e4a4a4f480bfd75069f70e263e2b15173b2ea9e35a",
+      "responseSha256": "7f32b5f4901e3f53d51f34925ff8549fc4052d9cd64ac1069278f716f1ad4099",
+      "requestHeaderBytes": 1401,
+      "rawResponseBytes": 407
+    },
+    "invalid-utf8-idempotency": {
+      "status": 400,
+      "responseCorrelation": null,
+      "errorCode": null,
+      "errorCorrelation": null,
+      "contractVersion": null,
+      "bodyUtf8": "",
+      "requestSha256": "0a83b3eafde70a618ab68d19b95725891e98f8f099d5af01af3dea6ae859e1a1",
+      "responseSha256": "65d781211021819d3ec2de19ded80b0b2562caaa58b72369e47288f0f7aa2fe4",
+      "requestHeaderBytes": 891,
+      "rawResponseBytes": 120
+    },
+    "duplicate-idempotency": {
+      "status": 400,
+      "responseCorrelation": "44444444-4444-4444-8444-444444444444",
+      "errorCode": "INVALID_REQUEST",
+      "errorCorrelation": "44444444-4444-4444-8444-444444444444",
+      "contractVersion": "v1",
+      "bodyUtf8": "{\"error\":{\"code\":\"INVALID_REQUEST\",\"message\":\"Request schema or context is invalid.\",\"correlationId\":\"44444444-4444-4444-8444-444444444444\"},\"contractVersion\":\"v1\"}",
+      "requestSha256": "119da6a8f7d7d7268ed622e54c9160b7261ff721da93b920b5e08f8a5c0bac25",
+      "responseSha256": "7f32b5f4901e3f53d51f34925ff8549fc4052d9cd64ac1069278f716f1ad4099",
+      "requestHeaderBytes": 915,
+      "rawResponseBytes": 407
+    },
+    "missing-idempotency": {
+      "status": 400,
+      "responseCorrelation": "44444444-4444-4444-8444-444444444444",
+      "errorCode": "INVALID_REQUEST",
+      "errorCorrelation": "44444444-4444-4444-8444-444444444444",
+      "contractVersion": "v1",
+      "bodyUtf8": "{\"error\":{\"code\":\"INVALID_REQUEST\",\"message\":\"Request schema or context is invalid.\",\"correlationId\":\"44444444-4444-4444-8444-444444444444\"},\"contractVersion\":\"v1\"}",
+      "requestSha256": "fc9c66760042983c22c675e025321c8c8753e236a920d87cb7108285a3691d3c",
+      "responseSha256": "7f32b5f4901e3f53d51f34925ff8549fc4052d9cd64ac1069278f716f1ad4099",
+      "requestHeaderBytes": 866,
+      "rawResponseBytes": 407
+    },
+    "ascii-other-header": {
+      "status": 404,
+      "responseCorrelation": "44444444-4444-4444-8444-444444444444",
+      "errorCode": "CLAIM_NOT_FOUND",
+      "errorCorrelation": "44444444-4444-4444-8444-444444444444",
+      "contractVersion": "v1",
+      "bodyUtf8": "{\"error\":{\"code\":\"CLAIM_NOT_FOUND\",\"message\":\"Claim or referenced resource was not found.\",\"correlationId\":\"44444444-4444-4444-8444-444444444444\"},\"contractVersion\":\"v1\"}",
+      "requestSha256": "cbea90e3776038b4964fd505297d7f8233af87b9f19a805f5006e8f57da3cfb7",
+      "responseSha256": "aa301c700942f0a32f03e2a190e4ab5b705d0b2a995f38268cfd03f139ac19a6",
+      "requestHeaderBytes": 912,
+      "rawResponseBytes": 411
+    },
+    "utf8-other-header": {
+      "status": 404,
+      "responseCorrelation": "44444444-4444-4444-8444-444444444444",
+      "errorCode": "CLAIM_NOT_FOUND",
+      "errorCorrelation": "44444444-4444-4444-8444-444444444444",
+      "contractVersion": "v1",
+      "bodyUtf8": "{\"error\":{\"code\":\"CLAIM_NOT_FOUND\",\"message\":\"Claim or referenced resource was not found.\",\"correlationId\":\"44444444-4444-4444-8444-444444444444\"},\"contractVersion\":\"v1\"}",
+      "requestSha256": "61ebf58d288605577a31f5d315c00b11fb6121fce957460ce54f176c55ce688a",
+      "responseSha256": "aa301c700942f0a32f03e2a190e4ab5b705d0b2a995f38268cfd03f139ac19a6",
+      "requestHeaderBytes": 909,
+      "rawResponseBytes": 411
+    }
+  },
+  "expectations": {
+    "ascii-1": [
+      404,
+      "CLAIM_NOT_FOUND"
+    ],
+    "ascii-128": [
+      404,
+      "CLAIM_NOT_FOUND"
+    ],
+    "ascii-129": [
+      400,
+      "INVALID_REQUEST"
+    ],
+    "utf8-eacute-128": [
+      404,
+      "CLAIM_NOT_FOUND"
+    ],
+    "utf8-eacute-129": [
+      400,
+      "INVALID_REQUEST"
+    ],
+    "utf8-emoji-128-lowercase-name": [
+      404,
+      "CLAIM_NOT_FOUND"
+    ],
+    "utf8-emoji-129": [
+      400,
+      "INVALID_REQUEST"
+    ],
+    "invalid-utf8-idempotency": [
+      400,
+      null
+    ],
+    "duplicate-idempotency": [
+      400,
+      "INVALID_REQUEST"
+    ],
+    "missing-idempotency": [
+      400,
+      "INVALID_REQUEST"
+    ],
+    "ascii-other-header": [
+      404,
+      "CLAIM_NOT_FOUND"
+    ],
+    "utf8-other-header": [
+      404,
+      "CLAIM_NOT_FOUND"
+    ]
+  },
+  "failures": {},
+  "status": "PASS",
+  "secretsRecorded": false,
+  "tokenRecorded": false
+}

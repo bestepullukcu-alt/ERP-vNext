@@ -12,13 +12,13 @@
   Optional:
       -BaseUrl http://localhost:5000  -TenantId 97c59330-dbc4-4665-b29c-0c26dbb5cc93
 
-  All business calls go through the Gateway (5000). Direct 5061 is used ONLY for /health.
+  All business calls go through the Gateway (5000). Direct 5065 is used ONLY for /health.
 #>
 [CmdletBinding()]
 param(
     [string]$BaseUrl  = "http://localhost:5000",
     [string]$TenantId = "97c59330-dbc4-4665-b29c-0c26dbb5cc93",
-    [string]$CrmDirect = "http://localhost:5061"
+    [string]$CrmDirect = "http://localhost:5065"
 )
 
 $ErrorActionPreference = "Stop"
@@ -48,7 +48,7 @@ $emptyTarget   = [guid]::NewGuid().Guid   # a target that has NO policy (for the
 Write-Host "== MOD-0165-FU03 authenticated smoke ($run) ==" -ForegroundColor Cyan
 
 # ---------------- A. Preflight ----------------
-foreach ($p in @(5000,5001,5056,5057,5061)) {
+foreach ($p in @(5000,5001,5056,5057,5065)) {
     $code = Status "http://localhost:$p/"
     Add-Result "Preflight port $p up" "reachable" $code ($code -ne -1)
 }

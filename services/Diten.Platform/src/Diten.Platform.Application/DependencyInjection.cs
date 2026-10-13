@@ -228,6 +228,20 @@ public static class DependencyInjection
         // MOD-0029-FU23 — document-control scoped electronic signature foundation. NOT a regulated/qualified
         // e-signature capability: no external provider, no certificate validation, no compliance claim.
         services.AddScoped<Features.DocumentManagementElectronicSignature.Services.DocumentSignableSubjectResolver>();
+
+        // MOD-0022 E2 — e-Signature Service. Subject providers: in-process ones register ISignableSubjectProvider; remote
+        // owners are reached through IRemoteSignableSubjectClient (Infrastructure, operator-configured base URLs).
+        services.AddScoped<Features.ESignature.Services.ISignableSubjectProvider, Features.ESignature.Providers.DocumentManagementSignableSubjectProvider>();
+        // MOD-0022 E4 — the workflow-task subject (ASSUMPTION-0022-05) and the approval gate MOD-0023 calls in-process.
+        services.AddScoped<Features.ESignature.Services.ISignableSubjectProvider, Features.ESignature.Providers.WorkflowTaskSignableSubjectProvider>();
+        services.AddScoped<Features.ESignature.Services.IESignatureGate, Features.ESignature.Services.ESignatureGate>();
+        services.AddScoped<Features.ESignature.Services.ISignableSubjectRegistry, Features.ESignature.Services.SignableSubjectRegistry>();
+        services.AddScoped<Features.ESignature.Services.IESignActorAccessor, Features.ESignature.Services.ESignActorAccessor>();
+        services.AddScoped<Features.ESignature.Services.IESignatureCatalog, Features.ESignature.Services.ESignatureCatalog>();
+        services.AddScoped<Features.ESignature.Services.IESignatureVerifier, Features.ESignature.Services.ESignatureVerifier>();
+        services.AddScoped<Features.ESignature.Services.IESignatureVisibility, Features.ESignature.Services.ESignatureVisibility>();
+        // MOD-0022 E3 — signature samples (the signing handler's Sample port resolves through this).
+        services.AddScoped<Features.ESignature.Services.IESignatureSampleBook, Features.ESignature.Services.ESignatureSampleBook>();
         services.AddScoped<Features.DocumentManagementElectronicSignature.Services.DocumentSignatureBoundaryEvaluator>();
         services.AddScoped<Features.DocumentManagementElectronicSignature.Services.DocumentSignaturePolicyService>();
         services.AddScoped<Features.DocumentManagementElectronicSignature.Services.DocumentSignatureRequestService>();
@@ -314,6 +328,8 @@ public static class DependencyInjection
         services.AddScoped<EmailDispatchJob>();
         services.AddScoped<EmailDispatchSweepJob>();
         services.AddScoped<Features.Workflow.BackgroundJobs.WorkflowEscalationSweepJob>();
+        // MOD-0022 — e-signature request expiry sweep (runs only when BackgroundJobs:EnabledJobs switches it on).
+        services.AddScoped<Features.ESignature.BackgroundJobs.ESignatureRequestExpirySweepJob>();
         // WC-4 — the ONE place a task notification is sent from (opt-out, actor skip, real addresses,
         // never fails the write).
         services.AddScoped<Features.Tasks.Services.ITaskNotificationService,
@@ -466,6 +482,8 @@ public static class DependencyInjection
         // MC-3b — Platform-internal modules that self-register their catalog manifest in-process. Collected by
         // PlatformModuleSelfRegistrationWorker at startup. Add a line here for each new self-registering module.
         services.AddSingleton<Contracts.IModuleManifestProvider, Features.Workflow.SelfRegistration.WorkflowManifestProvider>();
+        // MOD-0022 — e-Signature: its own baseline module "e-İmza" (CT-D8 / CT-D10); every key esign.*.
+        services.AddSingleton<Contracts.IModuleManifestProvider, Features.ESignature.SelfRegistration.ESignManifestProvider>();
         services.AddSingleton<Contracts.IModuleManifestProvider, Features.Organization.SelfRegistration.OrganizationManifestProvider>();
         services.AddSingleton<Contracts.IModuleManifestProvider, Features.DocumentManagement.SelfRegistration.DocumentManagementManifestProvider>();
         services.AddSingleton<Contracts.IModuleManifestProvider, Features.ReferenceData.SelfRegistration.ReferenceDataManifestProvider>();

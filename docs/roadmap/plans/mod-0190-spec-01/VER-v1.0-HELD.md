@@ -1,0 +1,7 @@
+# HELD — MVP6-MOD0190-VER-01 / v1.0
+
+Target: independent testing-agent/read-only-auditor that did not write MOD-0190 DEV. Agent Lane: VER; Profile B; Risk HIGH; Evidence E4. **Do not dispatch until the approved DEV writer is complete and an exact immutable source/evidence manifest exists.**
+
+Read AGENTS.md, CT SOP, approved pack, final D190 owner record, published SANDOP-CAPACITY and DEMAND hashes, DEV handoff and REPORT.md. Reproduce in a separate disposable snapshot and isolated DB-010 replica set; never share mutable source/ports with the writer or MOD-0192. Validate allowed-path diff and protected hashes, source→fresh build→binary→PID→authenticated HTTP/DB chain, all six operation shapes, three event payloads, tenant/LE/RBAC, immutable snapshot/sign-off, unique index/race, idempotent replay, changed-payload policy **only as actually approved**, rollback and restart.
+
+Classify controlled DEMAND fixture evidence separately from real producer uptake. If D190-01 chose bounded mock, verify no invented Demand endpoint and no false plan-version validation claim. If D190-02/03 chose local actor/Pending outbox, verify zero Workflow calls and no worker/publisher; do not call that live integration PASS. Inspect any separate Program.cs/permission/gateway integration evidence only if independently authorized and applied. Report PASS/PARTIAL/FAIL per AC, exact gaps and source hashes. No product/pack/contract repair, promotion, commit/push/stash, E5/G5 or CT acceptance.

@@ -1,0 +1,10 @@
+# D3b — argument-form check of the scripts' Prism command on a free port (4099, not 4010), 8 s, killed by timeout. 2026-10-02T10:02:18+03:00
+$ node --max-http-header-size=65536 C:\Users\Ali\AppData\Local/npm-cache/_npx/aa6973f8d4bc9dda/node_modules/@stoplight/prism-cli/dist/index.js mock docs/analysis/contracts/product-master-bundle.openapi.yaml --port 4099 --host 127.0.0.1
+[10:02:22] » [CLI] ...  awaiting  Starting Prism…
+[10:02:22] » [CLI] i  info      GET        http://127.0.0.1:4099/products/29b5eb6e-105e-cb09-b1e6-3b9a4b6cdc63
+[10:02:22] » [CLI] i  info      GET        http://127.0.0.1:4099/skus/ba82367e-8b5d-1392-d990-aa79966310c3?level=FinishedGood
+[10:02:22] » [CLI] i  info      GET        http://127.0.0.1:4099/skus/fb469b54-ee83-7fe3-7b80-e62d46651741/product?level=Gsku
+[10:02:22] » [CLI] i  info      GET        http://127.0.0.1:4099/skus/605ef308-3133-3728-5d60-86a803ccb0be/uom
+[10:02:22] » [CLI] i  info      POST       http://127.0.0.1:4099/validate
+[10:02:22] » [CLI] ►  start     Prism is listening on http://127.0.0.1:4099
+# exit 124 (124 = stopped by timeout while serving)

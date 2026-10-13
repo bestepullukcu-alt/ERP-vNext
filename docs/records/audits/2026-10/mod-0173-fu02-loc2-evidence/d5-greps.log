@@ -1,0 +1,33 @@
+# WP-0173-LOC2 D5 greps — 2026-10-02T11:24:24+03:00, worktree at the evidence state
+
+## AC-21 — explicit tenant layout on the two NEW pages
+$ grep -rn "Layout = \"_LayoutTenantShell\";" frontend/Diten.Web/Views/Inventory/LocationTree frontend/Diten.Web/Views/Inventory/Locations
+frontend/Diten.Web/Views/Inventory/LocationTree/Index.cshtml:12:    Layout = "_LayoutTenantShell";
+frontend/Diten.Web/Views/Inventory/Locations/Index.cshtml:10:    Layout = "_LayoutTenantShell";
+hits: 2
+
+## AC-21 — L-2 data_mode: page marker = factory call (pack data_mode: server)
+16:        DataMode = "server",
+145:            dataMode: 'server',
+10:data_mode: server
+
+## AC-18 / UAS-001 — no technical refusal text in the new views / scripts
+$ grep -rn "Permission denied\|Forbidden" <location views + js>
+hits: 0
+
+## Browser code never names the service, its port, the Gateway or /api/locations
+$ grep -rnE "/api/locations|/api/inventory|5066|5000|window\.API" <location js + views>
+code hits (comments excluded): 0
+
+## Server-mode page JS writes none of: serverSide, ajax.data, ext.search, matches:, pageSize=, importBtn
+hits: 0
+
+## No raw Swal.fire in the location scripts (one dialog implementation)
+hits: 0
+
+## No delete path, no quantity on location screens (K-04, K-10)
+$ grep -rnwE "HttpDelete|DELETE|onHand|reserved|baseQuantity" <location controllers + js>  (word match; the two K-10 comments say "never a quantity")
+hits: 0
+
+## Areas folder
+ls: cannot access 'frontend/Diten.Web/Areas': No such file or directory

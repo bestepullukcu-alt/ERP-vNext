@@ -1,0 +1,24 @@
+id	acceptance	verdict	evidence_or_exact_gap
+RA2-01	Auth successor independent runtime PASS exists	BLOCKED	NumericDate final application writer-complete + subsequent independent real Auth runtime PASS unavailable; candidate only; prior VER F-02 REWORK
+RA2-02	Successor DEV writer complete	BLOCKED	Prior DEV writer-complete is predecessor, not NumericDate final source writer-complete
+RA2-03	Final UI exact identity	PASS	Fresh manifest hash and 21 UI source hashes checked; see UI-SOURCE-REHASH.tsv
+RA2-04	Closed seven-language L10n remains bound	PASS_INHERITED	Historical bounded evidence hash-bound in INPUT-HASHES.tsv; not rerun; source equality in UI-SOURCE-REHASH.tsv
+RA2-05	Closed 768/390 responsive checks remain bound	PASS_INHERITED	Historical bounded evidence hash-bound in INPUT-HASHES.tsv; not rerun; source equality in UI-SOURCE-REHASH.tsv
+RA2-06	Fresh native source→binary→process chain	NOT RUN	NOT RUN: NumericDate final writer-complete and subsequent independent Auth runtime PASS gate unmet
+RA2-07	Real Auth-issued legal_entity_id	NOT RUN	NOT RUN: NumericDate final writer-complete and subsequent independent Auth runtime PASS gate unmet
+RA2-08	MVC→Gateway→Carrier list	NOT RUN	NOT RUN: NumericDate final writer-complete and subsequent independent Auth runtime PASS gate unmet
+RA2-09	MVC→Gateway→Carrier create	NOT RUN	NOT RUN: NumericDate final writer-complete and subsequent independent Auth runtime PASS gate unmet
+RA2-10	Same-key replay and conflict	NOT RUN	NOT RUN: NumericDate final writer-complete and subsequent independent Auth runtime PASS gate unmet
+RA2-11	Status transition	NOT RUN	NOT RUN: NumericDate final writer-complete and subsequent independent Auth runtime PASS gate unmet
+RA2-12	Status offcanvas from persisted row	NOT RUN	NOT RUN: NumericDate final writer-complete and subsequent independent Auth runtime PASS gate unmet
+RA2-13	Read/create/status permission isolation	NOT RUN	NOT RUN: NumericDate final writer-complete and subsequent independent Auth runtime PASS gate unmet
+RA2-14	Tenant isolation	NOT RUN	NOT RUN: NumericDate final writer-complete and subsequent independent Auth runtime PASS gate unmet
+RA2-15	Legal Entity isolation	NOT RUN	NOT RUN: NumericDate final writer-complete and subsequent independent Auth runtime PASS gate unmet
+RA2-16	Create/replay/status persistence	NOT RUN	NOT RUN: NumericDate final writer-complete and subsequent independent Auth runtime PASS gate unmet
+RA2-17	Fresh UAS-001 denial/remediation	NOT RUN	NOT RUN: NumericDate final writer-complete and subsequent independent Auth runtime PASS gate unmet
+RA2-18	Durable PNG archive	OPEN	No screenshot taken/exported in this run; historical supported-save gap retained; no bypass attempted
+RA2-19	Auth PASS as automatic Carrier PASS	N/A	Explicitly prohibited; each Carrier row requires its own evidence
+RA2-20	Full-module E5 G5 rollout	N/A	Outside bounded verifier scope
+OVERALL	MVP6 Carrier real-Auth E2E successor	BLOCKED	User-required start gate unmet; no Carrier real Auth run
+CLOSE-21	Missing-LE fail-closed real Auth	NOT RUN	Start gate unmet; behavior not modified, no fresh PASS
+CLOSE-22	Required process restart and durable replay	NOT RUN	No services started/restarted; start gate unmet

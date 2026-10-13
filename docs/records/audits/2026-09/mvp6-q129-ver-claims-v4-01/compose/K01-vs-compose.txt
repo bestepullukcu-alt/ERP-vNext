@@ -1,0 +1,3 @@
+K01 source root: /Users/natig/mvp6-env/q129/ek-work/source
+K01 files 16329, my v4 compose 14590; only-K01 1739 ['frontend/Diten.Web/bin/Release/net8.0/Diten.BuildingBlocks.Security.Secrets.dll', 'frontend/Diten.Web/bin/Release/net8.0/Diten.BuildingBlocks.Security.Secrets.pdb', 'frontend/Diten.Web/bin/Release/net8.0/Diten.Web', 'frontend/Diten.Web/bin/Release/net8.0/Diten.Web.deps.json', 'frontend/Diten.Web/bin/Release/net8.0/Diten.Web.dll']; only-compose 0 []; differing 0
+K01 non-bin/obj files == compose (14590), 0 only-compose, 0 differing

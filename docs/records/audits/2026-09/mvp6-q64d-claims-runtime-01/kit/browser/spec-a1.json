@@ -1,0 +1,14 @@
+{
+  "phase": "spec",
+  "startedAt": "2026-09-26T21:24:35.513Z",
+  "web": "http://127.0.0.1:5701",
+  "playwright": "1.59.1",
+  "cases": {},
+  "png": [],
+  "console": [],
+  "toasts": [],
+  "dialogs": [],
+  "rootLeak": [],
+  "error": "Package subpath './cli.js' is not defined by \"exports\" in /Users/natig/mvp6-env/node_modules/@playwright/test/package.json",
+  "endedAt": "2026-09-26T21:24:35.514Z"
+}

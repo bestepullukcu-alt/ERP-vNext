@@ -1,0 +1,20 @@
+[AFTER] RETURN create, user WITHOUT shipments.read
+    -> 403 code=INVALID_REQUEST message='INVALID REQUEST' (1.29s)
+[AFTER] RETURN create, user WITH shipments.read (control: reaches business rules)
+    -> 422 code=SHIPMENT_NOT_RETURNABLE message='SHIPMENT NOT RETURNABLE' (0.5s)
+[AFTER] CLAIM create naming a carrier, user WITHOUT carriers.read
+    -> 403 code=FORBIDDEN message='The requested operation is not permitted.' (0.65s)
+[AFTER] CLAIM create, user WITHOUT shipments.read
+    -> 403 code=FORBIDDEN message='The requested operation is not permitted.' (0.07s)
+[AFTER] CLAIM create naming a carrier, user WITH carriers.read (control)
+    -> 404 code=CLAIM_NOT_FOUND message='Claim or referenced resource was not found.' (0.18s)
+[AFTER] dependency itself (B, GET shipment, full grant): 500 1.55s {"error":{"code":"INTERNAL_ERROR","message":"Operation could not be completed.","correlationId":"1daae57a-05ac-4448-a097-6b8db251aea9"},"contractVersion":"v1"}
+[AFTER] RETURN create, fully granted, dependency DOWN
+    -> 503 code=DEPENDENCY_UNAVAILABLE message='DEPENDENCY UNAVAILABLE' (1.56s)
+[AFTER] CLAIM create, fully granted, dependency DOWN
+    -> 503 code=CLAIM_REFERENCE_UNAVAILABLE message='Reference service is unavailable.' (1.52s)
+[AFTER] dependency itself (B, GET shipment, full grant): refused 0s 
+[AFTER] RETURN create, fully granted, dependency DOWN
+    -> 503 code=DEPENDENCY_UNAVAILABLE message='DEPENDENCY UNAVAILABLE' (0.02s)
+[AFTER] CLAIM create, fully granted, dependency DOWN
+    -> 503 code=CLAIM_REFERENCE_UNAVAILABLE message='Reference service is unavailable.' (0.01s)

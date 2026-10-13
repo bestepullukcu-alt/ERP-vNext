@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="ReturnsTitle" xml:space="preserve"><value>المرتجعات</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>اطلب مرتجعات البضائع المشحونة واعتمدها وتابعها.</value></data>
+  <data name="AddNewReturns" xml:space="preserve"><value>إضافة مرتجع</value></data>
+  <data name="ActionsHeader" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="RmaNumber" xml:space="preserve"><value>رقم RMA</value></data>
+  <data name="ReturnId" xml:space="preserve"><value>معرّف المرتجع</value></data>
+  <data name="ShipmentId" xml:space="preserve"><value>معرّف الشحنة</value></data>
+  <data name="ShipmentIdHelp" xml:space="preserve"><value>أدخل معرّف UUID الخاص بالشحنة.</value></data>
+  <data name="ReturnSummary" xml:space="preserve"><value>ملخص المرتجع</value></data>
+  <data name="QuickView" xml:space="preserve"><value>عرض سريع</value></data>
+  <data name="QuickViewNote" xml:space="preserve"><value>هذا الملخص مأخوذ من القائمة؛ لا يتم تحميل أي بيانات أخرى للمرتجع.</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>لا توجد مرتجعات تطابق عامل التصفية الحالي.</value></data>
+  <data name="ListErrorState" xml:space="preserve"><value>تعذّر تحميل المرتجعات.</value></data>
+  <data name="Retry" xml:space="preserve"><value>إعادة المحاولة</value></data>
+  <data name="NotProvided" xml:space="preserve"><value>غير متوفر</value></data>
+  <data name="SupportReference" xml:space="preserve"><value>مرجع الدعم</value></data>
+  <data name="CopyDone" xml:space="preserve"><value>تم النسخ إلى الحافظة.</value></data>
+  <data name="TotalLabel" xml:space="preserve"><value>عدد المرتجعات المُعادة</value></data>
+  <data name="StatusRequested" xml:space="preserve"><value>مطلوب</value></data>
+  <data name="StatusAuthorized" xml:space="preserve"><value>مُعتمد</value></data>
+  <data name="StatusRejected" xml:space="preserve"><value>مرفوض</value></data>
+  <data name="StatusInTransit" xml:space="preserve"><value>قيد النقل</value></data>
+  <data name="StatusReceived" xml:space="preserve"><value>مُستلم</value></data>
+  <data name="StatusDispositioned" xml:space="preserve"><value>تم التصرف فيه</value></data>
+  <data name="StatusClosed" xml:space="preserve"><value>مغلق</value></data>
+  <data name="StatusCancelled" xml:space="preserve"><value>ملغى</value></data>
+  <data name="ShipmentStatusDraft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="ShipmentStatusPlanned" xml:space="preserve"><value>مخططة</value></data>
+  <data name="ShipmentStatusDispatched" xml:space="preserve"><value>مُرسلة</value></data>
+  <data name="ShipmentStatusInTransit" xml:space="preserve"><value>قيد النقل</value></data>
+  <data name="ShipmentStatusDelivered" xml:space="preserve"><value>تم التسليم</value></data>
+  <data name="ShipmentStatusException" xml:space="preserve"><value>استثناء</value></data>
+  <data name="ShipmentStatusClosed" xml:space="preserve"><value>مغلقة</value></data>
+  <data name="ShipmentStatusCancelled" xml:space="preserve"><value>ملغاة</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>مرتجع جديد</value></data>
+  <data name="Resolve" xml:space="preserve"><value>استعلام</value></data>
+  <data name="ResolveFirst" xml:space="preserve"><value>ابحث عن الشحنة واختر سطرًا واحدًا على الأقل قبل إنشاء المرتجع.</value></data>
+  <data name="ShipmentNumber" xml:space="preserve"><value>رقم الشحنة</value></data>
+  <data name="ShipmentStatus" xml:space="preserve"><value>حالة الشحنة</value></data>
+  <data name="EligibilityNote" xml:space="preserve"><value>يمكن إنشاء مرتجع للشحنات المسلّمة أو المغلقة فقط.</value></data>
+  <data name="ShipmentIneligible" xml:space="preserve"><value>حالة هذه الشحنة لا تسمح بالإرجاع.</value></data>
+  <data name="ReturnLines" xml:space="preserve"><value>الأسطر المرتجعة</value></data>
+  <data name="ReturnLinesHelp" xml:space="preserve"><value>اختر كل سطر شحنة سيتم إرجاعه وأدخل كميته. الكمية المشحونة للاطلاع فقط وليست الكمية المتبقية.</value></data>
+  <data name="SelectLine" xml:space="preserve"><value>إرجاع هذا السطر</value></data>
+  <data name="LineNumber" xml:space="preserve"><value>رقم السطر</value></data>
+  <data name="ShippedQuantity" xml:space="preserve"><value>الكمية المشحونة</value></data>
+  <data name="ReturnQuantity" xml:space="preserve"><value>الكمية المرتجعة</value></data>
+  <data name="ReturnQuantityHelp" xml:space="preserve"><value>تُرسل كما كُتبت تمامًا، مثل 2 أو 1.5.</value></data>
+  <data name="UomId" xml:space="preserve"><value>وحدة القياس</value></data>
+  <data name="NoShipmentLines" xml:space="preserve"><value>لا تحتوي هذه الشحنة على أسطر للإرجاع.</value></data>
+  <data name="ReasonCode" xml:space="preserve"><value>رمز السبب</value></data>
+  <data name="EvidenceReferenceIds" xml:space="preserve"><value>مراجع الأدلة</value></data>
+  <data name="EvidenceReference" xml:space="preserve"><value>مرجع دليل</value></data>
+  <data name="AddEvidenceReference" xml:space="preserve"><value>إضافة مرجع</value></data>
+  <data name="RemoveEvidenceReference" xml:space="preserve"><value>إزالة المرجع</value></data>
+  <data name="EvidenceHelp" xml:space="preserve"><value>اختياري. تُرسل المراجع بالترتيب المعروض.</value></data>
+  <data name="CreateReturn" xml:space="preserve"><value>إنشاء المرتجع</value></data>
+  <data name="ReturnCreated" xml:space="preserve"><value>تم إنشاء المرتجع.</value></data>
+  <data name="ReturnCreateReplayed" xml:space="preserve"><value>تم إنشاء هذا المرتجع مسبقًا بالطلب نفسه ويُعرض على أنه مكتمل.</value></data>
+  <data name="TransitionTitle" xml:space="preserve"><value>تغيير حالة المرتجع</value></data>
+  <data name="TransitionTarget" xml:space="preserve"><value>الحالة الجديدة</value></data>
+  <data name="ActionAuthorize" xml:space="preserve"><value>اعتماد</value></data>
+  <data name="ActionReject" xml:space="preserve"><value>رفض</value></data>
+  <data name="ActionMarkInTransit" xml:space="preserve"><value>وضع علامة قيد النقل</value></data>
+  <data name="ActionCancelReturn" xml:space="preserve"><value>إلغاء المرتجع</value></data>
+  <data name="ActionReceive" xml:space="preserve"><value>استلام (إقرار يدوي)</value></data>
+  <data name="ActionDisposition" xml:space="preserve"><value>التصرف</value></data>
+  <data name="ActionClose" xml:space="preserve"><value>إغلاق</value></data>
+  <data name="TargetReceivedLabel" xml:space="preserve"><value>مُستلم (إقرار يدوي)</value></data>
+  <data name="ReceivedManualNote" xml:space="preserve"><value>الاستلام مجرد إقرار يدوي. ليس استلامًا مستودعيًا ولا يسجّل أي حركة مخزون.</value></data>
+  <data name="OccurredAt" xml:space="preserve"><value>وقت الحدوث</value></data>
+  <data name="OccurredAtHelp" xml:space="preserve"><value>التاريخ والوقت المحليان لديك. يُرسلان بتوقيت UTC.</value></data>
+  <data name="OccurredAtInvalid" xml:space="preserve">
+    <value>أدخل تاريخًا ووقتًا صالحين موجودين في منطقتك الزمنية.</value>
+  </data>
+  <data name="DispositionCode" xml:space="preserve"><value>رمز التصرف</value></data>
+  <data name="DispositionCodeHelp" xml:space="preserve"><value>مطلوب لهذه الحالة. يُرسل كما كُتب تمامًا.</value></data>
+  <data name="InventoryTransactionReferenceId" xml:space="preserve"><value>مرجع حركة المخزون</value></data>
+  <data name="InventoryReferenceHelp" xml:space="preserve"><value>اختياري. يُحفظ كنص ولا يتم التحقق منه مقابل المخزون.</value></data>
+  <data name="SubmitTransition" xml:space="preserve"><value>تطبيق الحالة</value></data>
+  <data name="ConfirmTransition" xml:space="preserve"><value>هل تريد تغيير حالة المرتجع إلى القيمة المحددة؟</value></data>
+  <data name="TransitionCompleted" xml:space="preserve"><value>تم تحديث حالة المرتجع.</value></data>
+  <data name="TransitionReplayed" xml:space="preserve"><value>تم تطبيق تغيير الحالة هذا مسبقًا بالطلب نفسه ويُعرض على أنه مكتمل.</value></data>
+  <data name="RequestPending" xml:space="preserve"><value>لا يزال هناك طلب قيد التنفيذ لهذا الإجراء.</value></data>
+  <data name="NoticeSessionEnded" xml:space="preserve"><value>انتهت جلستك. يُرجى تسجيل الدخول مرة أخرى.</value></data>
+  <data name="NoticeForbidden" xml:space="preserve"><value>ليس لديك تفويض لتنفيذ هذا الإجراء.</value></data>
+  <data name="NoticeUnsupportedMedia" xml:space="preserve"><value>تنسيق الطلب غير مدعوم.</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>الطلب غير صالح. تحقق من القيم المدخلة.</value></data>
+  <data name="ErrReturnNotFound" xml:space="preserve"><value>لم يتم العثور على السجل أو أنه غير متاح لك.</value></data>
+  <data name="ErrShipmentNotFound" xml:space="preserve"><value>لم يتم العثور على السجل أو أنه غير متاح لك.</value></data>
+  <data name="ErrShipmentLineNotFound" xml:space="preserve"><value>لم يعد أحد أسطر الشحنة المحددة موجودًا في الشحنة.</value></data>
+  <data name="ErrInvalidReturnTransition" xml:space="preserve"><value>تغيّر المرتجع في هذه الأثناء ولم يعد تغيير الحالة هذا ممكنًا. تمت إعادة تحميل القائمة.</value></data>
+  <data name="ErrDispositionRequired" xml:space="preserve"><value>أدخل رمز التصرف لهذه الحالة.</value></data>
+  <data name="ErrInvalidReturnQuantity" xml:space="preserve"><value>يجب أن تكون كل كمية مرتجعة أكبر من صفر.</value></data>
+  <data name="ErrReturnQuantityExceeded" xml:space="preserve"><value>تتجاوز الكمية المرتجعة الكمية المشحونة المتاحة للإرجاع.</value></data>
+  <data name="ErrReturnUomMismatch" xml:space="preserve"><value>وحدة القياس لا تطابق سطر الشحنة.</value></data>
+  <data name="ErrDuplicateReturnLine" xml:space="preserve"><value>يظهر سطر الشحنة نفسه أكثر من مرة.</value></data>
+  <data name="ErrShipmentNotReturnable" xml:space="preserve"><value>حالة الشحنة لا تسمح بالإرجاع.</value></data>
+  <data name="ErrCorrelationRootMismatch" xml:space="preserve"><value>لم يعد الطلب مطابقًا لسجل الشحنة.</value></data>
+  <data name="ErrIdempotencyKeyReused" xml:space="preserve"><value>استُخدم هذا الطلب مسبقًا بقيم مختلفة. ابدأ إجراءً جديدًا.</value></data>
+  <data name="ErrReturnSourceChanged" xml:space="preserve"><value>تغيّرت الشحنة منذ أول مرتجع لها. راجع الشحنة؛ لم يتم تعديل أي شيء تلقائيًا.</value></data>
+  <data name="ErrReturnShipmentRootInvalid" xml:space="preserve"><value>بيانات مرجع الشحنة غير صالحة. يُرجى التواصل مع الدعم.</value></data>
+  <data name="ErrDependencyResponseInvalid" xml:space="preserve"><value>بيانات الشحنة التي أعادها النظام المصدر غير صالحة. يُرجى الاتصال بالدعم.</value></data>
+  <data name="ErrReturnShipmentRootUnavailable" xml:space="preserve"><value>بيانات مرجع الشحنة غير مكتملة. أعد محاولة الطلب نفسه لاحقًا.</value></data>
+  <data name="ErrReferenceStateUnavailable" xml:space="preserve"><value>حالة الشحنة غير متاحة مؤقتًا. أعد محاولة الطلب نفسه.</value></data>
+  <data name="ErrDependencyUnavailable" xml:space="preserve"><value>بيانات مرجع الشحنة غير متاحة مؤقتًا. أعد محاولة الطلب نفسه.</value></data>
+  <data name="ErrPersistenceUnavailable" xml:space="preserve"><value>المرتجعات غير متاحة مؤقتًا. لم يتم تأكيد النتيجة؛ أعد محاولة الطلب نفسه.</value></data>
+  <data name="ErrInternalError" xml:space="preserve"><value>حدث خطأ غير متوقع. يمكنك إعادة محاولة الإجراء نفسه.</value></data>
+</root>

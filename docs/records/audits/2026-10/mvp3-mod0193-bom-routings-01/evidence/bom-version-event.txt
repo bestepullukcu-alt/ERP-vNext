@@ -1,0 +1,44 @@
+# BOM-version event (contract v1.2.0) — branch feature/mvp3-bom-version-event @ 876e35aff, 2026-10-13T12:17:11Z
+# temporary Mongo replica set 127.0.0.1:28117 (outside 27017-27021, <49152); local RabbitMQ 3.12.1 on 5672 (guest, localhost only)
+
+## service suite (incl. the broker delivery test)
+Total tests: 82
+     Passed: 82
+skipped: 0
+  passed BomEventBrokerDeliveryTests.A_release_reaches_the_broker_and_the_outbox_row_is_marked_published
+  passed BomVersionEventTests.Without_a_configured_transport_nothing_claims_to_deliver
+  passed BomVersionEventTests.A_transport_failure_keeps_the_event_for_a_retry_and_dead_letters_it_after_the_last_attempt
+  passed BomVersionEventTests.An_enabled_transport_without_a_broker_address_fails_at_startup
+  passed BomVersionEventTests.Release_announces_the_new_effective_version_and_the_one_it_supersedes
+  passed BomVersionEventTests.The_payload_carries_exactly_the_contract_fields_and_no_bom_lines
+  passed BomVersionEventTests.The_shared_publisher_delivers_through_the_transport_and_marks_the_row_published
+  passed BomVersionEventTests.No_event_is_written_when_the_change_is_not
+  passed BomVersionEventTests.If_the_outbox_cannot_be_written_the_bom_and_its_history_are_not_written_either
+
+## sabotage (each restored; production code)
+## S1: journal no longer writes the outbox
+  Failed A_transport_failure_keeps_the_event_for_a_retry_and_dead_letters_it_after_the_last_attempt 
+  Failed Release_announces_the_new_effective_version_and_the_one_it_supersedes 
+  Failed The_payload_carries_exactly_the_contract_fields_and_no_bom_lines 
+  Failed The_shared_publisher_delivers_through_the_transport_and_marks_the_row_published 
+  Failed If_the_outbox_cannot_be_written_the_bom_and_its_history_are_not_written_either 
+Failed!  - Failed:     5, Passed:     3, Skipped:     0, Total:     8
+## S2: outbox written OUTSIDE the transaction (no session)
+  Failed If_the_outbox_cannot_be_written_the_bom_and_its_history_are_not_written_either 
+Failed!  - Failed:     1, Passed:     7, Skipped:     0, Total:     8
+## S3: payload also carries the component lines
+  Failed The_payload_carries_exactly_the_contract_fields_and_no_bom_lines 
+Failed!  - Failed:     1, Passed:     7, Skipped:     0, Total:     8
+## S4: release no longer announces the superseded version
+  Failed Release_announces_the_new_effective_version_and_the_one_it_supersedes 
+Failed!  - Failed:     1, Passed:     7, Skipped:     0, Total:     8
+## restored
+Passed!  - Failed:     0, Passed:     8, Skipped:     0, Total:     8
+## S5: transport reports success but sends nothing
+   event f276d354-8dbe-4fbd-b9d4-016abce38caa did not reach RabbitMQ within 30 s
+Failed!  - Failed:     1, Passed:     0, Skipped:     0, Total:     1
+## restored
+Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1
+
+## broker delivery (measured, not inferred)
+BomEventBrokerDeliveryTests: release over HTTP -> outbox row -> production BomOutboxPublisherWorker + MassTransitBomEventTransportPublisher -> RabbitMQ; a probe queue bound to 'Diten.BuildingBlocks.Eventing:EventTransportMessage' received the message with the same eventId, eventName, tenantId, correlationId and the exact payload bytes; the outbox row became Published. S5 (transport claims success, sends nothing) -> red.

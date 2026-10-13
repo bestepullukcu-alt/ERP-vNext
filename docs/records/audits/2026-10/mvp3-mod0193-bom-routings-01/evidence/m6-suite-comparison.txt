@@ -1,0 +1,15 @@
+# main sync 77cd61a44 (PR #139) + port 5070 — suites on the branch vs origin/main baseline (same machine, SDK 10.0.112, 2026-10-12T12:55:00Z)
+# main = worktree of origin/main 77cd61a44 · branch = feature/mvp3-bom-routings @ 872d41105 (merge 9e25c6843, port change 872d41105; HEAD..origin/main = 0)
+
+| suite | branch | main | new red |
+|---|---|---|---|
+| architecture | 69/77 | 69/77 | 0 |
+| tenancy | 3/3 | 3/3 | 0 |
+| gateway | 110/111 | 110/111 | 0 |
+| web | 1433/1433 | 1429/1429 | 0 |
+| service (ManufacturingService, temporary Mongo replica set 28117) | 73/73, 0 skipped | — (not on main) | 0 |
+
+- architecture: the same 8 reds on both sides (DocsPathGuard x5, MongoTestDatabaseGuard x1, AuditTrailStandard x2); test names identical (TRX), failure text byte-identical, 0 lines mention Manufacturing.
+- gateway: the same 1 red on both sides, listing 5063 x46, 5064 x62, 5065 x14; 5066, 5067 (Inventory) and 5070 (Manufacturing) x0. Test names identical (TRX).
+- web: +4 on the branch (TRX) = MVP-3 BomsL10nTests.
+- temporary Mongo shut down and its data deleted after the run. Live port check: port-5070-live.txt.

@@ -1,0 +1,238 @@
+﻿{
+    "measuredAt":  "2026-10-02T13:02:59.9082910+03:00",
+    "database":  "diten_personalization_dev (Platform, user fleet 5057)",
+    "note":  "Pushed by the probe InventoryService (:5067, this branch) at every start of the probe chain (started 5 times in this WP); the last start log shows the self-registration line below.",
+    "lastStartSelfRegistrationLines":  1,
+    "pages":  8,
+    "actions":  19,
+    "duplicatePageCodes":  0,
+    "duplicatePageActionPairs":  0,
+    "pageRows":  [
+                     {
+                         "pageCode":  "STOCKLEDGER",
+                         "route":  "/StockLedger",
+                         "permission":  "inventory.stock.read",
+                         "parent":  null,
+                         "nav":  true,
+                         "status":  2,
+                         "deleted":  false
+                     },
+                     {
+                         "pageCode":  "STOCKMOVEMENTS",
+                         "route":  "/StockMovements",
+                         "permission":  "inventory.stock.read",
+                         "parent":  "STOCKLEDGER",
+                         "nav":  false,
+                         "status":  2,
+                         "deleted":  false
+                     },
+                     {
+                         "pageCode":  "LOCATIONTREE",
+                         "route":  "/LocationTree",
+                         "permission":  "inventory.locations.read",
+                         "parent":  null,
+                         "nav":  true,
+                         "status":  2,
+                         "deleted":  false
+                     },
+                     {
+                         "pageCode":  "LOCATIONS",
+                         "route":  "/Locations",
+                         "permission":  "inventory.locations.read",
+                         "parent":  "LOCATIONTREE",
+                         "nav":  false,
+                         "status":  2,
+                         "deleted":  false
+                     },
+                     {
+                         "pageCode":  "STOCKMOVEMENTCREATE",
+                         "route":  "/StockMovements/Create",
+                         "permission":  "inventory.movements.create",
+                         "parent":  "STOCKMOVEMENTS",
+                         "nav":  false,
+                         "status":  2,
+                         "deleted":  false
+                     },
+                     {
+                         "pageCode":  "STOCKMOVEMENTEDIT",
+                         "route":  "/StockMovements/Edit",
+                         "permission":  "inventory.movements.create",
+                         "parent":  "STOCKMOVEMENTS",
+                         "nav":  false,
+                         "status":  2,
+                         "deleted":  false
+                     },
+                     {
+                         "pageCode":  "STOCKMOVEMENTDETAILS",
+                         "route":  "/StockMovements/Details",
+                         "permission":  "inventory.movements.create",
+                         "parent":  "STOCKMOVEMENTS",
+                         "nav":  false,
+                         "status":  2,
+                         "deleted":  false
+                     },
+                     {
+                         "pageCode":  "STOCKLEDGERCREATE",
+                         "route":  "/StockLedger/Create",
+                         "permission":  "inventory.movements.create",
+                         "parent":  "STOCKLEDGER",
+                         "nav":  false,
+                         "status":  2,
+                         "deleted":  false
+                     }
+                 ],
+    "actionRows":  [
+                       {
+                           "pageCode":  "STOCKLEDGER",
+                           "actionCode":  "ROWHISTORY",
+                           "permission":  "inventory.stock.read",
+                           "dangerous":  false,
+                           "status":  1,
+                           "deleted":  false
+                       },
+                       {
+                           "pageCode":  "STOCKMOVEMENTS",
+                           "actionCode":  "REVERSAL",
+                           "permission":  "inventory.movements.create",
+                           "dangerous":  true,
+                           "status":  1,
+                           "deleted":  false
+                       },
+                       {
+                           "pageCode":  "LOCATIONTREE",
+                           "actionCode":  "NEWLOCATION",
+                           "permission":  "inventory.locations.manage",
+                           "dangerous":  false,
+                           "status":  1,
+                           "deleted":  false
+                       },
+                       {
+                           "pageCode":  "LOCATIONTREE",
+                           "actionCode":  "EDITLOCATION",
+                           "permission":  "inventory.locations.manage",
+                           "dangerous":  false,
+                           "status":  1,
+                           "deleted":  false
+                       },
+                       {
+                           "pageCode":  "LOCATIONTREE",
+                           "actionCode":  "ADDCHILDLOCATION",
+                           "permission":  "inventory.locations.manage",
+                           "dangerous":  false,
+                           "status":  1,
+                           "deleted":  false
+                       },
+                       {
+                           "pageCode":  "LOCATIONTREE",
+                           "actionCode":  "CHANGELOCATIONSTATUS",
+                           "permission":  "inventory.locations.manage",
+                           "dangerous":  true,
+                           "status":  1,
+                           "deleted":  false
+                       },
+                       {
+                           "pageCode":  "LOCATIONTREE",
+                           "actionCode":  "BULKBINS",
+                           "permission":  "inventory.locations.manage",
+                           "dangerous":  false,
+                           "status":  1,
+                           "deleted":  false
+                       },
+                       {
+                           "pageCode":  "LOCATIONTREE",
+                           "actionCode":  "LOCATIONHISTORY",
+                           "permission":  "inventory.locations.read",
+                           "dangerous":  false,
+                           "status":  1,
+                           "deleted":  false
+                       },
+                       {
+                           "pageCode":  "LOCATIONTREE",
+                           "actionCode":  "VIEWLOCATIONSTOCK",
+                           "permission":  "inventory.stock.read",
+                           "dangerous":  false,
+                           "status":  1,
+                           "deleted":  false
+                       },
+                       {
+                           "pageCode":  "LOCATIONS",
+                           "actionCode":  "NEWLOCATION",
+                           "permission":  "inventory.locations.manage",
+                           "dangerous":  false,
+                           "status":  1,
+                           "deleted":  false
+                       },
+                       {
+                           "pageCode":  "LOCATIONS",
+                           "actionCode":  "EDITLOCATION",
+                           "permission":  "inventory.locations.manage",
+                           "dangerous":  false,
+                           "status":  1,
+                           "deleted":  false
+                       },
+                       {
+                           "pageCode":  "LOCATIONS",
+                           "actionCode":  "ADDCHILDLOCATION",
+                           "permission":  "inventory.locations.manage",
+                           "dangerous":  false,
+                           "status":  1,
+                           "deleted":  false
+                       },
+                       {
+                           "pageCode":  "LOCATIONS",
+                           "actionCode":  "CHANGELOCATIONSTATUS",
+                           "permission":  "inventory.locations.manage",
+                           "dangerous":  true,
+                           "status":  1,
+                           "deleted":  false
+                       },
+                       {
+                           "pageCode":  "LOCATIONS",
+                           "actionCode":  "LOCATIONHISTORY",
+                           "permission":  "inventory.locations.read",
+                           "dangerous":  false,
+                           "status":  1,
+                           "deleted":  false
+                       },
+                       {
+                           "pageCode":  "LOCATIONS",
+                           "actionCode":  "VIEWLOCATIONSTOCK",
+                           "permission":  "inventory.stock.read",
+                           "dangerous":  false,
+                           "status":  1,
+                           "deleted":  false
+                       },
+                       {
+                           "pageCode":  "STOCKLEDGER",
+                           "actionCode":  "NEWMOVEMENT",
+                           "permission":  "inventory.movements.create",
+                           "dangerous":  false,
+                           "status":  1,
+                           "deleted":  false
+                       },
+                       {
+                           "pageCode":  "STOCKLEDGER",
+                           "actionCode":  "ROWMOVEMENT",
+                           "permission":  "inventory.movements.create",
+                           "dangerous":  false,
+                           "status":  1,
+                           "deleted":  false
+                       },
+                       {
+                           "pageCode":  "STOCKMOVEMENTS",
+                           "actionCode":  "NEWMOVEMENT",
+                           "permission":  "inventory.movements.create",
+                           "dangerous":  false,
+                           "status":  1,
+                           "deleted":  false
+                       },
+                       {
+                           "pageCode":  "STOCKMOVEMENTS",
+                           "actionCode":  "CORRECTION",
+                           "permission":  "inventory.movements.create",
+                           "dangerous":  true,
+                           "status":  1,
+                           "deleted":  false
+                       }
+                   ]
+}

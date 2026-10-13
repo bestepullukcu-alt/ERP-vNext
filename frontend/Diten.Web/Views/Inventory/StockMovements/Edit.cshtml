@@ -1,0 +1,28 @@
+@model Diten.Web.Models.Inventory.StockMovementFormViewModel
+@using Diten.Web.Views.Inventory.StockMovements
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<StockMovementsIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["FormTitleCorrect"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    MOD-0173-FU01 Edit = "Correct" (KD-1 compliant mapping, pack §19). A movement is NEVER edited (append-only, parent
+    §8): this page posts (1) a REVERSAL of the original and (2) the corrected movement — two records, two keys — with
+    an explicit partial-correction state if (2) is refused after (1). UAS-001 on inventory.movements.create.
+*@
+@if (!Perms.Has("inventory.movements.create"))
+{
+    <partial name="_AccessDenied" model="@Localizer["FormTitleCorrect"].Value" />
+    return;
+}
+
+<partial name="~/Views/Inventory/StockMovements/_Form.cshtml" model="Model" />
+
+@section Scripts {
+    <partial name="~/Views/Inventory/StockMovements/_FormL10n.cshtml" />
+    <script src="~/assets/js/shared/diten-datefield.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Inventory/StockMovements/form.js" asp-append-version="true"></script>
+}

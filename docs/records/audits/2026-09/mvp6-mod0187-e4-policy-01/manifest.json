@@ -1,0 +1,53 @@
+{
+  "workPackage": "MVP6-MOD0187-E4-POLICY-01",
+  "role": "Claims evidence DEV",
+  "date": "2026-09-21",
+  "verdict": "FAIL",
+  "rowSummary": {
+    "pass": 16,
+    "partial": 1,
+    "fail": 2,
+    "notAssessed": ["R19", "R20", "R22", "R23", "R24", "R25", "R26"]
+  },
+  "failures": ["F-E4-01", "F-E4-02"],
+  "partial": {
+    "row": "R08",
+    "handoff": "MOD0187-E4-PERSISTENCE-01"
+  },
+  "source": {
+    "archiveSha256": "eaf786e647ef019f862c7dcc4f0b2ab29b2b5a36ff1bee98d2cca8d2863cc766",
+    "manifestSha256": "4ae0f286479761512f50216e5bd8be721e48ae4839c062b57cfdd29696e2daa8",
+    "entries": 97,
+    "matchedBefore": 97,
+    "matchedAfter": 97,
+    "programSha256": "a72a05a5e185e04d70ba221f086baacb8c8fca11ea061f289cb4b54fd430254c"
+  },
+  "publishedInputs": {
+    "openapiSha256": "5dfe7c1bba32551bd8d4b532243878684e69a6d9560e667a4183bfd516b9d21c",
+    "claimsAnnexSha256": "16e65c26faeb53887607dd16de0de34bad61dcc89d3beb7f6b8adca0ec4eeb63",
+    "independentMatrixSha256": "b3eb448d923eeb5d6b8eca3c6c4b51c10e963cc89d639d1e74175c3af182135e"
+  },
+  "freshBuild": {
+    "restoreExit": 0,
+    "buildExit": 0,
+    "apiDllSha256": "d9449651bbdda031dc403d1932beef0927f9e09641e63194900e912b8effcfcd",
+    "testDllSha256": "76a00ee6713de3ad2040d2fc8d33907934d35966d6e78f20e029665634e0facb"
+  },
+  "execution": {
+    "mainNamedTests": 172,
+    "mainResultsSha256": "f624dc7afcfe57d21d4721eb8e856733bfec2f7b2fbdbf7e0cdbcb7fcb56a4d5",
+    "controlledFixturePort": 18087,
+    "fixtureApiPort": 5072,
+    "producerApiPort": 5071,
+    "mongoPort": 27931,
+    "replicaSet": "claims_e4_policy",
+    "database": "diten_claims_e4_policy",
+    "operational27017Used": false
+  },
+  "evidenceArchiveSha256": "67a1340cb896daf6061cd3f7a4df5d7a2a3d9718ca323aa3f04b0294ed6dd140",
+  "productSourceChanges": [],
+  "programChanges": [],
+  "canonicalChanges": [],
+  "gitOperations": [],
+  "writerComplete": true
+}

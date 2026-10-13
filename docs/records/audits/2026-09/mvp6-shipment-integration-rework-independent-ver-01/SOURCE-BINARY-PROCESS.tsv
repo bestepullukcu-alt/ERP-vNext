@@ -1,0 +1,8 @@
+component	source_binding	binary_binding	process_or_result
+SupplyChain	WRITER-FINAL-SOURCE-MANIFEST.tsv 351/351	raw/runtime-binaries.sha256	127.0.0.1:5061; health 200; restarted once
+Gateway	WRITER-FINAL-SOURCE-MANIFEST.tsv 351/351	raw/runtime-binaries.sha256	127.0.0.1:5800; health 200; anonymous Shipment 401
+CRM	WRITER-FINAL-SOURCE-MANIFEST.tsv 351/351	raw/runtime-binaries.sha256	fresh Release build only; no runtime required for Shipment route proof
+Web	WRITER-FINAL-SOURCE-MANIFEST.tsv 351/351	raw/runtime-binaries.sha256	127.0.0.1:5801; anonymous Shipment page 302 login
+Auth successor	AUTH-FINAL-22-SOURCE-MANIFEST.tsv 22/22	inherited Carrier handoff only	No live session/token/fixture carried into this VER
+MongoDB	runtime/mongod.conf	N/A	127.0.0.1:39994 replica set; cleaned
+

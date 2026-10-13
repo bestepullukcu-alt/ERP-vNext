@@ -1,0 +1,5 @@
+docs(records): add MVP6 records: Loads / MOD-0185
+
+23 folders/items, first '(files at month level)', last 'mvp6-mod0185-r2-candidate-handoff'.
+Work packages: as named in each folder.
+186 files from pathspec/R3.txt (Q230 commit plan).

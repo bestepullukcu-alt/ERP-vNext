@@ -1,0 +1,289 @@
+[{
+	"_id": "cae6cd22-e8f4-4a87-a125-1dcb2f6abb96",
+	"TenantId": "00000000-0000-0000-0000-000000000001",
+	"LegalEntityId": "099219a0-9780-454a-9580-a216f0fe33d0",
+	"CreatedAt": {
+		"$date": "2026-10-02T09:38:38.011Z"
+	},
+	"UpdatedAt": null,
+	"Version": 0,
+	"IsDeleted": false,
+	"DeletedAt": null,
+	"Action": "InventoryMovementPosted",
+	"TransactionId": "77027043-06c8-4b92-8e97-29bc8c522460",
+	"TransactionNumber": "INV-2026-0000001",
+	"MovementType": "OpeningBalance",
+	"ItemId": "006bfd79-7146-42eb-beb7-7977f271871a",
+	"SkuId": "a0a0a0a0-0000-4000-8000-0000000000a1",
+	"BaseQuantity": {
+		"$numberDecimal": "24"
+	},
+	"BaseUomId": "ADET",
+	"ActorUserId": "11111111-1111-1111-1111-111111111111",
+	"CorrelationId": "6696b009-3110-4912-8e4e-deeba2373195",
+	"IdempotencyKey": "movement-4db3216d90f94b7aa671d62998dd1bfc",
+	"SourceModule": "MOD-0173",
+	"SourceDocumentId": "SAYIM-UI2-01",
+	"SourceSystem": null,
+	"LeSource": "header-unverified-membership",
+	"OccurredAt": {
+		"$date": "2026-10-02T09:38:38.011Z"
+	}
+},
+{
+	"_id": "94164d39-8df9-41e8-adc7-2471e69815ea",
+	"TenantId": "00000000-0000-0000-0000-000000000001",
+	"LegalEntityId": "099219a0-9780-454a-9580-a216f0fe33d0",
+	"CreatedAt": {
+		"$date": "2026-10-02T09:46:26.587Z"
+	},
+	"UpdatedAt": null,
+	"Version": 0,
+	"IsDeleted": false,
+	"DeletedAt": null,
+	"Action": "InventoryMovementPosted",
+	"TransactionId": "c4bcef48-f9f0-46b7-af64-163b7b6857a1",
+	"TransactionNumber": "INV-2026-0000002",
+	"MovementType": "CountGain",
+	"ItemId": "006bfd79-7146-42eb-beb7-7977f271871a",
+	"SkuId": "a0a0a0a0-0000-4000-8000-0000000000a1",
+	"BaseQuantity": {
+		"$numberDecimal": "480"
+	},
+	"BaseUomId": "ADET",
+	"ActorUserId": "11111111-1111-1111-1111-111111111111",
+	"CorrelationId": "5982dcc2-ea09-4a46-93b3-482ed414f6c2",
+	"IdempotencyKey": "movement-173bfbd8d15b488fb420425a956aecae",
+	"SourceModule": "MOD-0173",
+	"SourceDocumentId": "SAYIM-UI2-02",
+	"SourceSystem": null,
+	"LeSource": "header-unverified-membership",
+	"OccurredAt": {
+		"$date": "2026-10-02T09:46:26.587Z"
+	}
+},
+{
+	"_id": "f0a86361-cf46-4e10-9e79-dd41dbc4fe8c",
+	"TenantId": "00000000-0000-0000-0000-000000000001",
+	"LegalEntityId": "099219a0-9780-454a-9580-a216f0fe33d0",
+	"CreatedAt": {
+		"$date": "2026-10-02T09:47:56.055Z"
+	},
+	"UpdatedAt": null,
+	"Version": 0,
+	"IsDeleted": false,
+	"DeletedAt": null,
+	"Action": "InventoryMovementPosted",
+	"TransactionId": "ff22d931-eb07-4cbc-830f-a0bbf47751e2",
+	"TransactionNumber": "INV-2026-0000003",
+	"MovementType": "WarehouseTransfer",
+	"ItemId": "006bfd79-7146-42eb-beb7-7977f271871a",
+	"SkuId": "a0a0a0a0-0000-4000-8000-0000000000a1",
+	"BaseQuantity": {
+		"$numberDecimal": "24"
+	},
+	"BaseUomId": "ADET",
+	"ActorUserId": "11111111-1111-1111-1111-111111111111",
+	"CorrelationId": "5fb991f4-a544-4ee3-9177-43e58fd28af7",
+	"IdempotencyKey": "movement-55dda828a7fc4d798fa5fc7e8c3e5b01",
+	"SourceModule": "MOD-0173",
+	"SourceDocumentId": null,
+	"SourceSystem": null,
+	"LeSource": "header-unverified-membership",
+	"OccurredAt": {
+		"$date": "2026-10-02T09:47:56.055Z"
+	}
+},
+{
+	"_id": "df672c91-1c89-4e92-a700-660b8c3926c5",
+	"TenantId": "00000000-0000-0000-0000-000000000001",
+	"LegalEntityId": "099219a0-9780-454a-9580-a216f0fe33d0",
+	"CreatedAt": {
+		"$date": "2026-10-02T09:48:43.355Z"
+	},
+	"UpdatedAt": null,
+	"Version": 0,
+	"IsDeleted": false,
+	"DeletedAt": null,
+	"Action": "InventoryMovementPosted",
+	"TransactionId": "9aec630d-643a-4863-aee7-d9b50fac845d",
+	"TransactionNumber": "INV-2026-0000004",
+	"MovementType": "LocationTransfer",
+	"ItemId": "006bfd79-7146-42eb-beb7-7977f271871a",
+	"SkuId": "a0a0a0a0-0000-4000-8000-0000000000a1",
+	"BaseQuantity": {
+		"$numberDecimal": "12"
+	},
+	"BaseUomId": "ADET",
+	"ActorUserId": "11111111-1111-1111-1111-111111111111",
+	"CorrelationId": "938e4c22-a171-401e-af38-84d8ef461bcf",
+	"IdempotencyKey": "movement-7dbcebba88eb478c8a49a939fde88fa2",
+	"SourceModule": "MOD-0173",
+	"SourceDocumentId": null,
+	"SourceSystem": null,
+	"LeSource": "header-unverified-membership",
+	"OccurredAt": {
+		"$date": "2026-10-02T09:48:43.355Z"
+	}
+},
+{
+	"_id": "49ad6189-35a2-4ac2-a1af-4502af3e0787",
+	"TenantId": "00000000-0000-0000-0000-000000000001",
+	"LegalEntityId": "099219a0-9780-454a-9580-a216f0fe33d0",
+	"CreatedAt": {
+		"$date": "2026-10-02T09:50:20.752Z"
+	},
+	"UpdatedAt": null,
+	"Version": 0,
+	"IsDeleted": false,
+	"DeletedAt": null,
+	"Action": "InventoryMovementPosted",
+	"TransactionId": "3898097c-da07-41d7-9b91-5857369ca8b9",
+	"TransactionNumber": "INV-2026-0000005",
+	"MovementType": "GoodsReceiptPo",
+	"ItemId": "006bfd79-7146-42eb-beb7-7977f271871a",
+	"SkuId": "a0a0a0a0-0000-4000-8000-0000000000a1",
+	"BaseQuantity": {
+		"$numberDecimal": "10"
+	},
+	"BaseUomId": "ADET",
+	"ActorUserId": "1c0c2000-0000-4000-8000-0000000000c4",
+	"CorrelationId": "bc703dd3-c1af-4999-b3e3-610118df250f",
+	"IdempotencyKey": "ui2-grpo-8c27eab8-98fa-442d-adc3-3367d36fff74",
+	"SourceModule": "MOD-0142",
+	"SourceDocumentId": "GRN-UI2-1",
+	"SourceSystem": null,
+	"LeSource": "token",
+	"OccurredAt": {
+		"$date": "2026-10-02T09:50:20.752Z"
+	}
+},
+{
+	"_id": "e5172d3c-eb91-4e45-82c6-b0ac66928be6",
+	"TenantId": "00000000-0000-0000-0000-000000000001",
+	"LegalEntityId": "099219a0-9780-454a-9580-a216f0fe33d0",
+	"CreatedAt": {
+		"$date": "2026-10-02T09:51:31.927Z"
+	},
+	"UpdatedAt": null,
+	"Version": 0,
+	"IsDeleted": false,
+	"DeletedAt": null,
+	"Action": "InventoryMovementReversed",
+	"TransactionId": "be2248a1-e615-4068-8293-fdfa62f52609",
+	"TransactionNumber": "INV-2026-0000006",
+	"MovementType": "Reversal",
+	"ItemId": "006bfd79-7146-42eb-beb7-7977f271871a",
+	"SkuId": "a0a0a0a0-0000-4000-8000-0000000000a1",
+	"BaseQuantity": {
+		"$numberDecimal": "12"
+	},
+	"BaseUomId": "ADET",
+	"ActorUserId": "11111111-1111-1111-1111-111111111111",
+	"CorrelationId": "52b5db31-1435-41b3-8e07-acdb553e7401",
+	"IdempotencyKey": "reversal-ca521db910fb4595ba171e042f21326d",
+	"SourceModule": "MOD-0173",
+	"SourceDocumentId": "9aec630d-643a-4863-aee7-d9b50fac845d",
+	"SourceSystem": null,
+	"LeSource": "header-unverified-membership",
+	"OccurredAt": {
+		"$date": "2026-10-02T09:51:31.927Z"
+	}
+},
+{
+	"_id": "7ca3891f-77c6-4f2c-b1ab-7c04e2a11f57",
+	"TenantId": "00000000-0000-0000-0000-000000000001",
+	"LegalEntityId": "099219a0-9780-454a-9580-a216f0fe33d0",
+	"CreatedAt": {
+		"$date": "2026-10-02T09:52:04.686Z"
+	},
+	"UpdatedAt": null,
+	"Version": 0,
+	"IsDeleted": false,
+	"DeletedAt": null,
+	"Action": "InventoryMovementPosted",
+	"TransactionId": "9d8855c6-3503-4cec-bb50-b86229440b90",
+	"TransactionNumber": "INV-2026-0000007",
+	"MovementType": "LocationTransfer",
+	"ItemId": "006bfd79-7146-42eb-beb7-7977f271871a",
+	"SkuId": "a0a0a0a0-0000-4000-8000-0000000000a1",
+	"BaseQuantity": {
+		"$numberDecimal": "12"
+	},
+	"BaseUomId": "ADET",
+	"ActorUserId": "11111111-1111-1111-1111-111111111111",
+	"CorrelationId": "5edda966-7eb6-4aeb-b046-3629adf487ab",
+	"IdempotencyKey": "movement-a9f8223104e84698bf2df5eae0da9b52",
+	"SourceModule": "MOD-0173",
+	"SourceDocumentId": null,
+	"SourceSystem": null,
+	"LeSource": "header-unverified-membership",
+	"OccurredAt": {
+		"$date": "2026-10-02T09:52:04.686Z"
+	}
+},
+{
+	"_id": "7884a864-a475-4dd8-b831-31f6afc4d7f2",
+	"TenantId": "00000000-0000-0000-0000-000000000001",
+	"LegalEntityId": "099219a0-9780-454a-9580-a216f0fe33d0",
+	"CreatedAt": {
+		"$date": "2026-10-02T09:55:51.78Z"
+	},
+	"UpdatedAt": null,
+	"Version": 0,
+	"IsDeleted": false,
+	"DeletedAt": null,
+	"Action": "InventoryMovementPosted",
+	"TransactionId": "063d0a35-a252-45a8-abd2-8ba191823843",
+	"TransactionNumber": "INV-2026-0000008",
+	"MovementType": "OpeningBalance",
+	"ItemId": "006bfd79-7146-42eb-beb7-7977f271871a",
+	"SkuId": "a0a0a0a0-0000-4000-8000-0000000000a1",
+	"BaseQuantity": {
+		"$numberDecimal": "2"
+	},
+	"BaseUomId": "ADET",
+	"ActorUserId": "11111111-1111-1111-1111-111111111111",
+	"CorrelationId": "d05b6fdb-1b34-4ccb-a718-d290f6cb0c51",
+	"IdempotencyKey": "movement-93e5e0183042414cb9d58671656bee6a",
+	"SourceModule": "MOD-0173",
+	"SourceDocumentId": null,
+	"SourceSystem": null,
+	"LeSource": "header-unverified-membership",
+	"OccurredAt": {
+		"$date": "2026-10-02T09:55:51.78Z"
+	}
+},
+{
+	"_id": "c2b7c19f-2530-44b4-82ba-cda3fb9ff87c",
+	"TenantId": "00000000-0000-0000-0000-000000000001",
+	"LegalEntityId": "099219a0-9780-454a-9580-a216f0fe33d0",
+	"CreatedAt": {
+		"$date": "2026-10-02T09:59:08.091Z"
+	},
+	"UpdatedAt": null,
+	"Version": 0,
+	"IsDeleted": false,
+	"DeletedAt": null,
+	"Action": "InventoryMovementPosted",
+	"TransactionId": "93b43e45-c0ce-488e-8767-bae4c37ca696",
+	"TransactionNumber": "INV-2026-0000009",
+	"MovementType": "OpeningBalance",
+	"ItemId": "006bfd79-7146-42eb-beb7-7977f271871a",
+	"SkuId": "a0a0a0a0-0000-4000-8000-0000000000a1",
+	"BaseQuantity": {
+		"$numberDecimal": "12"
+	},
+	"BaseUomId": "ADET",
+	"ActorUserId": "11111111-1111-1111-1111-111111111111",
+	"CorrelationId": "1102d52a-d136-45d2-b7ac-f59ab76ee767",
+	"IdempotencyKey": "movement-08cf86ab30fc4b93b741f837a0561adc",
+	"SourceModule": "MOD-0173",
+	"SourceDocumentId": "SAYIM-UI2-503",
+	"SourceSystem": null,
+	"LeSource": "header-unverified-membership",
+	"OccurredAt": {
+		"$date": "2026-10-02T09:59:08.091Z"
+	}
+}]
+

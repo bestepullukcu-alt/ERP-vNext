@@ -1,0 +1,51 @@
+{
+  "phase": "diag",
+  "mode": "v3",
+  "startedAt": "2026-09-27T10:05:27.128Z",
+  "web": "http://127.0.0.1:5801",
+  "playwright": "1.59.1",
+  "cases": {
+    "DIAG-skeleton-timeline": {
+      "result": "PASS",
+      "servedIndexHasD1Fix": true,
+      "servedSha256": "c8ef218e7c136a400a86a995d15ed16fc4174001c93803a79e687264b1bb5058",
+      "changes": [
+        {
+          "t": 3251,
+          "why": "DOMContentLoaded",
+          "inline": null,
+          "cls": "backbone-skeleton p-4",
+          "computed": "none"
+        },
+        {
+          "t": 3254,
+          "why": "mutation",
+          "inline": "display: block;",
+          "cls": "backbone-skeleton p-4",
+          "computed": "block"
+        },
+        {
+          "t": 3323,
+          "why": "mutation",
+          "inline": "display: block;",
+          "cls": "backbone-skeleton p-4",
+          "computed": "block"
+        },
+        {
+          "t": 5904,
+          "why": "mutation",
+          "inline": "display: none;",
+          "cls": "backbone-skeleton p-4 d-none",
+          "computed": "none"
+        }
+      ],
+      "pollSamples": "3353:block 3453:block 3554:block 3654:block 3752:block 3853:block 3954:block 4053:block 4154:block 4253:block 4353:block 4453:block 4553:block 4653:block 4753:block 4854:block 4951:block 5053:block 5154:block 5253:block 5353:block 5453:block 5554:block 5654:block 5753:block 5908:none 5951:none 6053:none 6153:none 6253:none 6354:none 6454:none 6553:none 6653:none 6753:none 6853:none 6951:none 7054:none 7154:none 7253:none"
+    }
+  },
+  "png": [],
+  "console": [],
+  "toasts": [],
+  "dialogs": [],
+  "rootLeak": [],
+  "endedAt": "2026-09-27T10:05:34.956Z"
+}

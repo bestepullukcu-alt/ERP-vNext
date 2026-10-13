@@ -1,0 +1,3 @@
+id	module	area	finding	state	numeric_estimate_effect	existing_reserve_relation	evidence
+RW-03-01	0183	Composition/Program.cs	Approved Carrier predecessor Program target requires feature sources outside the authorized 40+18 transfer scope	OPEN	UNESTIMATED	0183-5-REMAINING 24h remains; no silent consumption or addition	docs/records/audits/2026-09/mvp6-shipment-pod-ui-exec-01/BLOCKER-DISPOSITION.tsv#B-01
+RW-03-02	0183	Gateway topology	CRM migration target moves Carrier routes from required 5061 to 5065	OPEN	UNESTIMATED	0183-5-REMAINING 24h remains; no silent consumption or addition	docs/records/audits/2026-09/mvp6-shipment-pod-ui-exec-01/BLOCKER-DISPOSITION.tsv#B-02

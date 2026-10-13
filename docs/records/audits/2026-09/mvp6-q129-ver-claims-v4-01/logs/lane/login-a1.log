@@ -1,0 +1,4 @@
+{"ok": true, "rc": 0, "log": "run-harness-claims_runtime-a1.log"}
+phase login rc 0
+K10 PASS: login-after
+pair login rc 0

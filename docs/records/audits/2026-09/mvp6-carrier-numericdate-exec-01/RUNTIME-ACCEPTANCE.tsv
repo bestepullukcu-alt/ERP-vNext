@@ -1,0 +1,16 @@
+item	result	evidence
+owner decision	PASS	OWNER-AUTHORIZATION.md
+preimage and patch apply	PASS	APPLIED-DELTA-MANIFEST.tsv
+final 22 paths	22/22 PASS	FINAL-22-SOURCE-MANIFEST.tsv
+complete build source	3333/3333 PASS	BUILD-SOURCE-MANIFEST.tsv
+native toolchain	SDK 8.0.417 / runtime 8.0.23	evidence.tar.gz::evidence/runtime/dotnet-info.txt
+fresh MDM API build	PASS; 0 errors; 5 inherited warnings	evidence.tar.gz::evidence/build-final.log
+validator regression	33/33 PASS	evidence.tar.gz::evidence/tests/numericdate-writer-escalated.trx
+first HTTP matrix	48/49; timing-confounded expired-inside-skew	evidence.tar.gz::evidence/runtime/numericdate-results.json
+controlling HTTP matrix	49/49 PASS	evidence.tar.gz::evidence/runtime/numericdate-results-v2.json
+string iat/nbf/exp	each 401 and zero scoped reads	evidence.tar.gz::evidence/runtime/numericdate-results-v2.json
+F-01 cardinality	CLOSED preserved	evidence.tar.gz::evidence/runtime/numericdate-results-v2.json
+F-02 raw JSON type	writer GREEN; independent VER pending	evidence.tar.gz::evidence/runtime/numericdate-results-v2.json
+real Auth login/refresh	NOT RUN fresh in writer lane	independent verifier must execute
+operational Mongo 27017	NOT USED	lane Mongo 37884 only
+cleanup	PASS	evidence.tar.gz::evidence/runtime/cleanup.tsv

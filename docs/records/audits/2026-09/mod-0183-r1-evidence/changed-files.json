@@ -1,0 +1,762 @@
+{
+  "branch": "feature/mvp6-logistics",
+  "HEAD": "bc109afa4c016877dc4ecf203f8a8e91b512e4dd",
+  "workPackage": "MVP6-MOD0183-DEV-06-R1",
+  "files": [
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-dev-r2-report-2026-09-16.md",
+      "change": "new since HEAD",
+      "sha256": "6f4d277ff7290348f439a1bef9462829c1ea164c004ddfd8d55dc42738e20715"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-dev-r3-report-2026-09-16.md",
+      "change": "new since HEAD",
+      "sha256": "3a9232c5ed965098690158048dec26ed49986cf82d49d7474c98de8c8fc8cd25"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-dev-r4-report-2026-09-16.md",
+      "change": "new since HEAD",
+      "sha256": "8b9328a16f49290f4c8f55e9583b68ccbff2bb7efd866275dd2918b3ae12d98f"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/README.md",
+      "change": "new since HEAD",
+      "sha256": "02eed392d72809751d7984fd58fa0e360ac57efb59ea36cfdfaa9008fba93c62"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/architecture.trx",
+      "change": "new since HEAD",
+      "sha256": "08081165c0014fa82856fddf2ae07dd92434e875f32839b681d80a6e658bcfbb"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/baseline-preservation.json.txt",
+      "change": "new since HEAD",
+      "sha256": "66fa3dbdcd88e53c5aed9a6e071071033a641328d33cf24fe9d62e222ef7c6e1"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/build.log",
+      "change": "new since HEAD",
+      "sha256": "b2434e8e3cd7dff0a5547bee29cc8ed9fdc5ff0fd959cfb33cd5145d4641bfc4"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/changed-files.json",
+      "change": "new since HEAD",
+      "sha256": null
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/identity-gate.log",
+      "change": "new since HEAD",
+      "sha256": "2f8b2d41f605e986573e0b489e9a0c24427e908a8e49a18d5149174b17a14080"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/mod0183-r1.trx",
+      "change": "new since HEAD",
+      "sha256": "c9fe71bcfac166263a00414a2b3c0a47749610dd440e38fea01333c262ac882f"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/persisted-state.json",
+      "change": "new since HEAD",
+      "sha256": "011c7eb9bd67fa7c16495cb22e66c8452a84ee6ba6dc9740b0cc64c1f51b15c2"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r2/architecture.log",
+      "change": "new since HEAD",
+      "sha256": "6561c384ce28348e9ec20d2e273f0f9d9ad95020e19516b25bb4b500e0012e05"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r2/architecture.trx",
+      "change": "new since HEAD",
+      "sha256": "68fe94fdfcad29c60f82e40875a9a4d9276947d3751bb2c2f592786d66ec135b"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r2/build.log",
+      "change": "new since HEAD",
+      "sha256": "c28e0f5885b3f93779cbfdbc2bd798aa71ad43a1509d4d8a4352f310e94c98ce"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r2/green.log",
+      "change": "new since HEAD",
+      "sha256": "10464b91cd914e5f43d6f3ea0af2556f2b3e8ac6a5048174f5af4997770237d2"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r2/identity.log",
+      "change": "new since HEAD",
+      "sha256": "2f8b2d41f605e986573e0b489e9a0c24427e908a8e49a18d5149174b17a14080"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r2/preflight.txt",
+      "change": "new since HEAD",
+      "sha256": "8c2840f44b481b4f0f708f1b3fd6ed8f63d0646bbbd665fd777cf0555f78d41d"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r2/red.log",
+      "change": "new since HEAD",
+      "sha256": "735e45e2497ddc0c8551edb009e3e8563e2d1aeaf4bea4eb28b3d6807d266cbd"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r2/regressions-red.trx",
+      "change": "new since HEAD",
+      "sha256": "947bfbc3a446f77456b4ff3e10abc3fbe2fb5a42bd2424f172ef8bd29d8007a8"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r2/runtime.log",
+      "change": "new since HEAD",
+      "sha256": "beae4e23c1db60f701d943afc63c4c584444997112124fae38bb8c452340e9e5"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r2/runtime/actual-sent.json",
+      "change": "new since HEAD",
+      "sha256": "c902af5d278ff78240139cd2cf6affaff9ad8565480b0ba5ea0de14ac7992871"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r2/runtime/golden/persisted-state.json",
+      "change": "new since HEAD",
+      "sha256": "5bd183bd58a4039dd55cf18639de7958b726572bf03537e67ec3b2de0e313486"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r2/runtime/golden/runtime.json",
+      "change": "new since HEAD",
+      "sha256": "5350066b542b28d9ea3499ef3940c8fbd472d2bbf7a50c071f8d0225639a9bd7"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r2/runtime/golden/service.log",
+      "change": "new since HEAD",
+      "sha256": "8fd280be0f8dc864227eef14544a671b5700b7e5e75c2890753f9c7977979a9e"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r2/runtime/regression-state.json",
+      "change": "new since HEAD",
+      "sha256": "5fa9289fbd8407b06cc0d4bbec25d073608a22a25d9953b70dfc6534ff36a791"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r2/runtime/regressions.json",
+      "change": "new since HEAD",
+      "sha256": "587e28c85c30fc3f388d2bc8a713c7c1697b82a546bcc1389d9d7dbadf9d1b60"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r2/runtime/sent-body-comparison.json",
+      "change": "new since HEAD",
+      "sha256": "f3fe918b684721255cee187192208955d326f3d048ee141a00998777cde4c5bb"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r2/service-green.trx",
+      "change": "new since HEAD",
+      "sha256": "22b303faf0401f18ffd42f0a6e2c87b7212ccfc55e40e01cedf05790adeae6f8"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r3/architecture.log",
+      "change": "new since HEAD",
+      "sha256": "5b368784e1e8554cd31032181a215a9b840d974fe8bce86a4e0be22dfb72361f"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r3/architecture.trx",
+      "change": "new since HEAD",
+      "sha256": "508abaae90e71eb66a7f25f99cfb4e6a20a5201f6abad3444317f6a8dbe61e04"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r3/build.log",
+      "change": "new since HEAD",
+      "sha256": "0a45bd7c5fb3824f5bf2fe358d4fe5bf5811e8f2636caf5eb1d508b602db30bb"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r3/capture-green.log",
+      "change": "new since HEAD",
+      "sha256": "0c9a1f5d5faf62ee2b4f0f6038553f9bc5e062561fa4e3ee9f26975b0fd79b2e"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r3/capture-red.log",
+      "change": "new since HEAD",
+      "sha256": "ff6e218595caed2f82ecab1e19cd340da234ce9f32cde54622d041ddea7fa582"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r3/identity.log",
+      "change": "new since HEAD",
+      "sha256": "2f8b2d41f605e986573e0b489e9a0c24427e908a8e49a18d5149174b17a14080"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r3/preflight.json.txt",
+      "change": "new since HEAD",
+      "sha256": "85401bfe065c5d8b471139fa9e00776144c620e5375e11ad8418aea80650fdbe"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r3/scope-check.json.txt",
+      "change": "new since HEAD",
+      "sha256": "eced9037f60136b9da8a94609480e8e56314eb5465bf1ebfd8447606eccf4daa"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r3/service-green.log",
+      "change": "new since HEAD",
+      "sha256": "50287c7b70b5c5fb3ec4c49e3fdbb1ed6268f9c9650e03b12ed62ae4011278d5"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r3/service-green.trx",
+      "change": "new since HEAD",
+      "sha256": "481065fc51807a4860d05125741a345151f5d2a02b4055e1937bbc28d2f299a2"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r3/six-record-correction.json",
+      "change": "new since HEAD",
+      "sha256": "44935e1aceea6afd0c4f8a94db061406ad790e435e8329405597efe77e5cb53a"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r4/architecture.log",
+      "change": "new since HEAD",
+      "sha256": "6895c43fd3167eef682cb1e483fecd3055dbf442f61cc32c6ad364eeaed5e600"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r4/architecture.trx",
+      "change": "new since HEAD",
+      "sha256": "ec3408d3f70e46c85507d81ece3464ab730a05fe754d1ac8b4c9d51dffdca555"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r4/build.log",
+      "change": "new since HEAD",
+      "sha256": "10c2c806d660efca3b33b9272daf6457c9c035d67afaa65d43a7e9de54f8be73"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r4/capture.log",
+      "change": "new since HEAD",
+      "sha256": "96dff2c2e678e0fe409d8ecfc267d856ab36c0a74fb7c4cde262a1e510b0c3e4"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r4/core-runtime.log",
+      "change": "new since HEAD",
+      "sha256": "debaceee22bbe0cd5cd24184ed1da81d26eec06bd74982f5b783d50f73bd1162"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r4/core-runtime/actual-sent.json",
+      "change": "new since HEAD",
+      "sha256": "2938b54ec77cfe912ddb3b31cc0484e8562055dfeb061f588cacf4ae0cffad9a"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r4/core-runtime/golden/persisted-state.json",
+      "change": "new since HEAD",
+      "sha256": "42010111b0fe3c876a8479dcf59936d677e65f2786dd728f416a84d7cf4a0d34"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r4/core-runtime/golden/runtime.json",
+      "change": "new since HEAD",
+      "sha256": "3a1fa6c58484acfb2e287d2e13f11ab22a6ff8d495c71f86ad4f5e318aad53f7"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r4/core-runtime/golden/service.log",
+      "change": "new since HEAD",
+      "sha256": "bd0a5a2f9ef88c5c25f426c4dfbd570522a1ef1835261df163b1ae1b3fa98e03"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r4/core-runtime/regression-state.json",
+      "change": "new since HEAD",
+      "sha256": "2963b10668b7076bbc40b9a1bafe82bff5ee96344239afaf9265e68a72796231"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r4/core-runtime/regressions.json",
+      "change": "new since HEAD",
+      "sha256": "7076d9f0120641ac73a2899983bff52d305e9d0b0f17e6c49f29530e9dbfa3c9"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r4/core-runtime/sent-body-comparison.json",
+      "change": "new since HEAD",
+      "sha256": "f3fe918b684721255cee187192208955d326f3d048ee141a00998777cde4c5bb"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r4/frozen-examples.json",
+      "change": "new since HEAD",
+      "sha256": "8c43ea3e0f5cc5262c97580763e2261edf6bef85949a26f8b31cfd819c96d215"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r4/identity.log",
+      "change": "new since HEAD",
+      "sha256": "2f8b2d41f605e986573e0b489e9a0c24427e908a8e49a18d5149174b17a14080"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r4/preflight.json.txt",
+      "change": "new since HEAD",
+      "sha256": "365bf1fa4a1650fdc41bcb705af2970ba1a49101279cd8d01615eb911b287fbd"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r4/runtime/actual-sent.json",
+      "change": "new since HEAD",
+      "sha256": "f1ede516836e17fcb09c946429cbbe81084a6c375093f58c65ce03c7d48187c8"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r4/runtime/golden/persisted-state.json",
+      "change": "new since HEAD",
+      "sha256": "a85c6d834228d578fbc8c0b2dcb2ec2732eda5c624de594cb2fc40c75be7c964"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r4/runtime/golden/runtime.json",
+      "change": "new since HEAD",
+      "sha256": "c7a29e8a9c5313701eccf7a717747d7c87a928da5d5f66407bd9baed7d1ddca3"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r4/runtime/golden/service.log",
+      "change": "new since HEAD",
+      "sha256": "1ade15fba9560e0912922065bada651ff65af59353f0e0e9241f288b667b1d04"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r4/runtime/regression-state.json",
+      "change": "new since HEAD",
+      "sha256": "b4fde28775e1315c9c87d45fe7720dd46c526dd51da74d4ba3f0cea5cdf43cdf"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r4/runtime/regressions.json",
+      "change": "new since HEAD",
+      "sha256": "6454553507a0d69a8300d0b498058ef312468ca9b0a9f7d6075509c4a489a653"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r4/runtime/sent-body-comparison.json",
+      "change": "new since HEAD",
+      "sha256": "f3fe918b684721255cee187192208955d326f3d048ee141a00998777cde4c5bb"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r4/scope-check.json.txt",
+      "change": "new since HEAD",
+      "sha256": "9d5b0550f39cb8432e38dec10235b039889793e93970103243db191b92e20365"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r4/service.log",
+      "change": "new since HEAD",
+      "sha256": "1e28e1829ff96dd0e2c59f93f0e2773d130742c1a56ccf0629a3ab0a02f9f4ff"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r4/service.trx",
+      "change": "new since HEAD",
+      "sha256": "77731a3979906cc291d47b02f0c37fd29f300f04eef8bbc3a21fd5083794623c"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r4/source-runtime.log",
+      "change": "new since HEAD",
+      "sha256": "f9a0d875893b18d022013b26c3c089fc4023c076dcb83bbb1301476d32c67e23"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r4/source-runtime/persisted-state.json",
+      "change": "new since HEAD",
+      "sha256": "644c428614e9c0df12f064bda30bd2a260ca9204aff19be21f762a6d85a1c530"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r4/source-runtime/restart.json",
+      "change": "new since HEAD",
+      "sha256": "aa3d7bc08305e2b509292e3a9c1b129f61d2faa9db2fbfd942c2de91214b9680"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/r4/source-runtime/service.log",
+      "change": "new since HEAD",
+      "sha256": "6b3006404fbf7bda05b6f730222ecb588674c8aa8e772c7b624930ee921a0519"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/runtime.json",
+      "change": "new since HEAD",
+      "sha256": "3666867b8bb807d9722df5af4f2ff74c5e9d44cecb1a0e6565322253c508f536"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/service.log",
+      "change": "new since HEAD",
+      "sha256": "242ce7c56beea3763ca467b4f5c2251ec36a8b3404ad36b70e8df1f89e5d696f"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-evidence/startup-rejection.log",
+      "change": "new since HEAD",
+      "sha256": "f57252a5d1cdde4835d065cdb96fd90f975414944dde3c63a8c64a709c47286c"
+    },
+    {
+      "path": "docs/records/audits/2026-09/mod-0183-r1-implementation-report-2026-09-16.md",
+      "change": "new since HEAD",
+      "sha256": "b56a4d8a996ab463d67e501ebb42f5ea2cdc192ff9ed1b17ac1f0accb6e9b7b2"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/Diten.SupplyChainService.sln",
+      "change": "new since HEAD",
+      "sha256": "4aff7ba721fe3c8528f33e2024d9cfb658733280a3f0228dcc09ebe5f370f72e"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/README.md",
+      "change": "new since HEAD",
+      "sha256": "7ca4cff26ad346be0314a9c4b478aff4c82abe55963585b3c4fa84743f5c236f"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Controllers/CustomBaseController.cs",
+      "change": "new since HEAD",
+      "sha256": "321ee43cad27806f6e9cac06f88a9ffd350a6dde050b4042d7f2ae5d66b07ff6"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Controllers/ShipmentsController.cs",
+      "change": "new since HEAD",
+      "sha256": "149150b2f2e76eb7443415b0600e728600c8c9d89fcaba0bdafc461beb9e5793"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Diten.SupplyChainService.Api.csproj",
+      "change": "new since HEAD",
+      "sha256": "538e96c6af15637e2e476350ac1982a596c3e140f1e8f7f89fd92ec6a014d985"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Middleware/ContractError.cs",
+      "change": "new since HEAD",
+      "sha256": "e1075090637ecde25ba458859e5b592b52adcdba2462b97e1ef3d28ad828d4d7"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Middleware/ShipmentContextMiddleware.cs",
+      "change": "new since HEAD",
+      "sha256": "5db994141d70f033d0421ed4eea3cea21aeedf2562a75e7eeb1b2f5d8737ff50"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs",
+      "change": "new since HEAD",
+      "sha256": "74d2d2007cb89976c41e5460ca841f442e24b9d4e6290daf5b59f7929e069736"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/appsettings.json",
+      "change": "new since HEAD",
+      "sha256": "8bd8b168db554080fbf101ade9796cb19171a7771b85bdea89e6be6f6ed7f0a5"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Behaviors/ExceptionHandlingBehavior.cs",
+      "change": "new since HEAD",
+      "sha256": "ad77113956c6052fda52f632cc81824f28d9a4b5c5f8a19fb9591cb176d0481e"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Behaviors/LoggingBehavior.cs",
+      "change": "new since HEAD",
+      "sha256": "2302db846e5376df1a0eac25d8e6b73fe740e1dda5dd6a344eec1cd9464b1f9f"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Behaviors/PerformanceBehavior.cs",
+      "change": "new since HEAD",
+      "sha256": "ee9a4759ce74eba26a8599f61b7d8320d33ff1a067b82cdcead69bb73a3b5cd6"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Behaviors/ValidationBehavior.cs",
+      "change": "new since HEAD",
+      "sha256": "2f7d2705cf167b421bb416b4fc12ad7a53e9a7dcfa5552bacfdd1ac5afaa253e"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Common/IResponse.cs",
+      "change": "new since HEAD",
+      "sha256": "4f891deabdd6c21e2919d47dc557b4e7b2af39cb40348a3b350f5bb9627a3d4c"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Common/RequestContext.cs",
+      "change": "new since HEAD",
+      "sha256": "46cd3aeb5b425d71e4fa4e83191e0299df5ea485cac2a9d5946488b386ead7e8"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Common/Response.cs",
+      "change": "new since HEAD",
+      "sha256": "e9b2595c74c28027faf0c8f7c9d6a724e9b9732db5aef7f689255eeab2310776"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/DependencyInjection.cs",
+      "change": "new since HEAD",
+      "sha256": "b17792801495c58fd3d7a46c5cf9197f4761da8acd5753465282830d432cc3b2"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Diten.SupplyChainService.Application.csproj",
+      "change": "new since HEAD",
+      "sha256": "74b6362d25cd2ef91b6e5f33be75a818b8549b4a4b0803e5682bcb38659f3037"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Commands/CapturePodCommand.cs",
+      "change": "new since HEAD",
+      "sha256": "a7505f307c56c950116ccba54646dd1d8bd597f7f7759dcc9173819019b9da80"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Commands/CreateShipmentCommand.cs",
+      "change": "new since HEAD",
+      "sha256": "940c20661b333917421eddd326a4e718490721bb979bc0830403e4009ccdc6a0"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Commands/TransitionShipmentCommand.cs",
+      "change": "new since HEAD",
+      "sha256": "561602ffe5c066145e2f20cf989ad528608f0e041988ebdac193589d9e57286e"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Handlers/CommandHandlers/CapturePodHandler.cs",
+      "change": "new since HEAD",
+      "sha256": "56d635da6d183d30dbe999767088c1436080067d4a43480cacf102d200e2f37c"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Handlers/CommandHandlers/CreateShipmentHandler.cs",
+      "change": "new since HEAD",
+      "sha256": "96f9d319377b45087b2af142f32f0190dc064b901b3d96e751b7c9d3aea96676"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Handlers/CommandHandlers/TransitionShipmentHandler.cs",
+      "change": "new since HEAD",
+      "sha256": "d1901667f138886f64bf481c09afd3119f42433084b9a72fe9f65d29f2c9a152"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Handlers/QueryHandlers/GetShipmentByIdHandler.cs",
+      "change": "new since HEAD",
+      "sha256": "d9a1aecdd3f51439b135d364a6fcb574a6a9c88853239ba6a38351aaf974d32f"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Handlers/QueryHandlers/GetShipmentListHandler.cs",
+      "change": "new since HEAD",
+      "sha256": "6f19b899606655674bd5bb37ab484c76698ce1583123ec2eae50520e79ea264c"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Queries/GetShipmentByIdQuery.cs",
+      "change": "new since HEAD",
+      "sha256": "cc1056ce4ddceacd80ff911701a067141f5b96483e3240fedbb29306d295da86"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Queries/GetShipmentListQuery.cs",
+      "change": "new since HEAD",
+      "sha256": "582f45644a7e0f4b26e9a27e1107b57dd18527ccc2d58de8bbec92837ab85dfa"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/RequestFingerprint.cs",
+      "change": "new since HEAD",
+      "sha256": "7446f1eed56ec208d0762d0a52f15bda198d3f08e437976bb47abb1e7ac89fc0"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/ShipmentModels.cs",
+      "change": "new since HEAD",
+      "sha256": "21b358b5f0b4af2f54e36a8cb2c219c68a433ea2faed9451ccc03a921a23a6c4"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/ShipmentProjection.cs",
+      "change": "new since HEAD",
+      "sha256": "33beb3132db4bfaa7fe47c37069ac6e51f80487d7c90a4c0927aa2c57574d178"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Validators/CapturePodValidator.cs",
+      "change": "new since HEAD",
+      "sha256": "2134888eb5931647f859674058fa22ff28f1b3344457ede8df81798047baf8ea"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Validators/CreateShipmentValidator.cs",
+      "change": "new since HEAD",
+      "sha256": "1a6fd6ce369101141466ac581f189bc7f9e8b2e2f60184a391a600f7ddda040a"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Validators/GetShipmentListValidator.cs",
+      "change": "new since HEAD",
+      "sha256": "d50359e100618c4a278ae4bdd9830f9a3f89232b2bd6833ff6449640c8b55a96"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Validators/ShipmentLineValidator.cs",
+      "change": "new since HEAD",
+      "sha256": "f726c1c01d3c8de6d9cfa1353666e95c85f5c8312071871d11d09bf8ddbb32c5"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Validators/ShipmentNoteRules.cs",
+      "change": "new since HEAD",
+      "sha256": "d5a16a25b67907199830b6ae1c9be81e15655f02af99c0a5f0c51e8a4db768d3"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Validators/TransitionShipmentValidator.cs",
+      "change": "new since HEAD",
+      "sha256": "73e34cea323e3f90c54b1e6c0e84a9a34ba593f85b52cb496ebd19236c478931"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/SourceIntake/Contracts/SourceClients.cs",
+      "change": "new since HEAD",
+      "sha256": "3c391d0becd4a022e10d70232e23bbfc807fabbda78bd5c6c337ec9b5d6f2973"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/SourceIntake/WarehouseIntakeCoordinator.cs",
+      "change": "new since HEAD",
+      "sha256": "954dfbdf5825ee5609e777f59c76cb55ec0ffd9e280f152e834500e9d9c3d072"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/SourceIntake/WarehouseShipmentMapper.cs",
+      "change": "new since HEAD",
+      "sha256": "040251b4cb96ef9fd578f748ea30b95a2e135e99f541683088c6bf8b693ca415"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Common/EntityBase.cs",
+      "change": "new since HEAD",
+      "sha256": "a1f313b526c459542226d2693d73998a393b119fe3a0ae0c735b092c738bec6e"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Diten.SupplyChainService.Domain.csproj",
+      "change": "new since HEAD",
+      "sha256": "dfa8aef748834f47f0135ddb4d626c71985810b048546bbcadc084968399108b"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/IShipmentRepository.cs",
+      "change": "new since HEAD",
+      "sha256": "51a52c90cad2e6225f585cc742c9742ae242a230b13ec5d972cb172815f4e41e"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/ProofOfDelivery.cs",
+      "change": "new since HEAD",
+      "sha256": "280a37e4cc2a67b6174ab44c2977dc143a95da947e74c6eb82b9ea956bd5cecc"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/Shipment.cs",
+      "change": "new since HEAD",
+      "sha256": "a6c4f67cd95c10b5e3163efc97bb0c9dda924cb031d87088319e839ba716b325"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/ShipmentChange.cs",
+      "change": "new since HEAD",
+      "sha256": "d04b1346e3e2c508d85c974d3a9ca4d3df77fb48c55be77e1092a0d86bee95cc"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/ShipmentLifecycle.cs",
+      "change": "new since HEAD",
+      "sha256": "73812d110d02773db442f29287a0f37a12e07b665c5ca9748d71d53dd9fd1b68"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/ShipmentLifecycleEntry.cs",
+      "change": "new since HEAD",
+      "sha256": "cbd26f07baf8e392de1f653ba0a7d6a329a1c8e71903b212e0578944303d741e"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/ShipmentLine.cs",
+      "change": "new since HEAD",
+      "sha256": "d56f98d643af7f9cea110f7ed649dd494e05154d0915be6ac420125bc498ffb6"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/ShipmentMutationResult.cs",
+      "change": "new since HEAD",
+      "sha256": "0c5b6847c2022749c593671461097b32969f069dc9bf07ce3c47cf4ff05d553d"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/ShipmentScope.cs",
+      "change": "new since HEAD",
+      "sha256": "2db360cfc96578ff478558443c07ba6117a25ee2fde87f0dc265659c3e406701"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/ShipmentStatus.cs",
+      "change": "new since HEAD",
+      "sha256": "d979c1ccaf90980c5fc1900af103a375fbc2ca96e25e92cbf37cdfffacc9de15"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/SourceIntake/SourceIntent.cs",
+      "change": "new since HEAD",
+      "sha256": "d2cf0ed240275a629abd0fe9f139859881989b582eaa59707216a765eb93f91b"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Authorization/HasPermissionAttribute.cs",
+      "change": "new since HEAD",
+      "sha256": "0b31e354aa118df875aba9f03b097afef08360a851e071f6becfcdaa2a41322d"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Authorization/ShipmentPermissions.cs",
+      "change": "new since HEAD",
+      "sha256": "46f9cebff09e584ab29d7d351c2d816d6ebff616287a569fbe9109d887e05525"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Diten.SupplyChainService.Infrastructure.csproj",
+      "change": "new since HEAD",
+      "sha256": "b598894f4741ed773e1c4ae015ce584a47d3c2e48e29aefdd3e722c280888f1d"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/Eventing/ShipmentOutboxWorker.cs",
+      "change": "new since HEAD",
+      "sha256": "5de854b49c4490be759b9120f455e4db1f61d5948f030c9cc6b3f31b4258b628"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/SourceIntake/FrozenReadSchema.cs",
+      "change": "new since HEAD",
+      "sha256": "9cd82faa0dca83b13613f5d08d6344f262704a56d2269f5c8103efcf60175a1c"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Infrastructure/SourceIntake/ReadOnlySourceClients.cs",
+      "change": "new since HEAD",
+      "sha256": "080e8ded77d2fbc0c279c03140fecb04f6a83cdf047454fec2dd05a19acb2bbb"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/DependencyInjection.cs",
+      "change": "new since HEAD",
+      "sha256": "ac0b00e29ca40fea365794fbdc41ee9e27b4fff6a9f10a869f33ebabb8bac0dd"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Diten.SupplyChainService.Persistence.csproj",
+      "change": "new since HEAD",
+      "sha256": "97f68ac32c8336d0467d7bc2028b0b0c38a031c22640b8e2df6ba864182f6c11"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Shipments/IShipmentCommitProbe.cs",
+      "change": "new since HEAD",
+      "sha256": "9a0d3f76497df9e792ef8d7a77abe5e1d268fcc9cf600c00183b4cc41efbb6d0"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Shipments/NoOpShipmentCommitProbe.cs",
+      "change": "new since HEAD",
+      "sha256": "142442b288870f9691e342606513ff511b077f0e8bfa2b30a83f239faad8d521"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Shipments/ShipmentOutboxStore.cs",
+      "change": "new since HEAD",
+      "sha256": "6ca3231614b59652273c1a9dfe2b5527dc308249dcde81c024361e08d628c831"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Shipments/ShipmentRepository.cs",
+      "change": "new since HEAD",
+      "sha256": "f0c3f2943712c7e32d2ef4abd6e02a3544ed56ec79d8968915451d5018975df1"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Shipments/SourceIntakeStore.cs",
+      "change": "new since HEAD",
+      "sha256": "c1294f5b43fed2253bebb2bca47150ac8bb059ee3076dc7019fc34b6a82bbe83"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/ShipmentSchema.cs",
+      "change": "new since HEAD",
+      "sha256": "df9fe448332d79820d3149344f78d6ddd14247a5f0dc9ec8132ca0f596584549"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Diten.SupplyChainService.Tests.csproj",
+      "change": "new since HEAD",
+      "sha256": "90457f887b527421ed544285b3c4113bc412bf159c90432c6a3a9328aac698a3"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentTests.cs",
+      "change": "new since HEAD",
+      "sha256": "4399366cd95b5754f7115a067cadda221bb219fc39c0f1417b5589ae742f4bd5"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentValidatorContractTests.cs",
+      "change": "new since HEAD",
+      "sha256": "835a1738c87d67e1c9aabde0e0a5d459eba1523c92e4ac2b9055441ce8d370e9"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/SourceClientTests.cs",
+      "change": "new since HEAD",
+      "sha256": "e04f0c220c558c826517fdd2ea36d875bd655e0febdb749862b90a280fbee6e0"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/SourceIntakeTests.cs",
+      "change": "new since HEAD",
+      "sha256": "05bd1128e31a7598d615bd649f7d13f6c20303768e4127ef3f2737e766c977f9"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/tests/contract_regression_probe.py",
+      "change": "new since HEAD",
+      "sha256": "3d16d2b2511577d1504fc7f7f04ccb80767e890c893196a0f501135e55f6f35e"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/tests/runtime_probe.py",
+      "change": "new since HEAD",
+      "sha256": "5a4d88ec602faf93e8b06ada29b8b05da720a2ab5eaad086f90be0c28588d552"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/tests/sent_body_probe.py",
+      "change": "new since HEAD",
+      "sha256": "e390694644201c0d3e797d486d1abb015cdc4286d7bfbb09842af2cac8121e97"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/tests/source_restart_probe.py",
+      "change": "new since HEAD",
+      "sha256": "51c83e4f18fdb003a705c51ee3678b3ef7975c47bf8845d1807ec56fc5d3ceb8"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/tests/startup_probe.py",
+      "change": "new since HEAD",
+      "sha256": "1f9155d7a0cb11ef80972f7e0babc7f0944bd341ebfa2844c777b8ddfac13be5"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/tests/test_runtime_capture.py",
+      "change": "new since HEAD",
+      "sha256": "ea50dec116662f4b3458e14f1aa4e75d10fcbf9050d5ce9fd2b207e68986f473"
+    },
+    {
+      "path": "services/Diten.SupplyChainService/tests/verify_evidence.py",
+      "change": "new since HEAD",
+      "sha256": "b05167a33a0ecacb21745e0e26fa5ae48b84b6da0490517f41e9c4d6b95bf1ef"
+    }
+  ]
+}

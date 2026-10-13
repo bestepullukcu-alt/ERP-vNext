@@ -1,0 +1,31 @@
+PASS source docs/roadmap/plans/mvp6-loads-remaining-scope-estimate-01/REPORT.md expected=c580f62b0a9351d260e7c5cc930b0ec4882758d43d3c19bd27e0ad9b1a67460f actual=c580f62b0a9351d260e7c5cc930b0ec4882758d43d3c19bd27e0ad9b1a67460f
+PASS source docs/roadmap/plans/mvp6-loads-remaining-scope-estimate-01/EFFORT.tsv expected=5bf33e91688c2ef9917c2bbda2c7260332610158f9d0a2f600b6ff057426ae83 actual=5bf33e91688c2ef9917c2bbda2c7260332610158f9d0a2f600b6ff057426ae83
+PASS source docs/roadmap/plans/mvp6-loads-remaining-scope-estimate-01/PORTFOLIO-IMPACT.tsv expected=daf1ff6df703ff4edd064c72e3aa03cf0c1355cc80018bd3d522d0a258628c15 actual=daf1ff6df703ff4edd064c72e3aa03cf0c1355cc80018bd3d522d0a258628c15
+PASS source docs/roadmap/plans/mvp6-loads-remaining-scope-estimate-01/SCENARIOS.tsv expected=83166fc47d245d53301997adaf99fa5a146b45945370067016f93a7e97a56403 actual=83166fc47d245d53301997adaf99fa5a146b45945370067016f93a7e97a56403
+PASS source docs/roadmap/plans/mvp6-loads-remaining-scope-estimate-01/ASSUMPTIONS.md expected=908483a2be197eb9bbe075ed2f8f71493ebcefbb15def67f027e5fd304e4c462 actual=908483a2be197eb9bbe075ed2f8f71493ebcefbb15def67f027e5fd304e4c462
+PASS source docs/roadmap/plans/mvp6-loads-remaining-scope-estimate-01/ARTIFACTS.sha256 expected=81e08bfd7203cca434fdc6b0e49be8440e0dcf7b72e75fbac354122b99b00377 actual=81e08bfd7203cca434fdc6b0e49be8440e0dcf7b72e75fbac354122b99b00377
+PASS source docs/roadmap/plans/mvp6-effort-shipment-loads-update-06/EFFORT.tsv expected=47db9c81f5ff4700cc3c09dd5c510eb0f0cebab1c0468f2f3605837b0b95e652 actual=47db9c81f5ff4700cc3c09dd5c510eb0f0cebab1c0468f2f3605837b0b95e652
+PASS source docs/roadmap/plans/mvp6-effort-shipment-loads-update-06/REPORT.md expected=3f34ccc970b75513a49208b2a131c786fc622003902a254a0becf548eca4f670 actual=3f34ccc970b75513a49208b2a131c786fc622003902a254a0becf548eca4f670
+PASS source docs/roadmap/plans/mvp6-effort-shipment-loads-update-06/UNESTIMATED-SCOPE.tsv expected=a66b3124c9abcd29ac7d709671e5f6bb590b753da5ec18cb787182aa2da8175e actual=a66b3124c9abcd29ac7d709671e5f6bb590b753da5ec18cb787182aa2da8175e
+PASS source docs/records/audits/2026-09/mvp6-shipment-root-r2-emission-rework-01/SOP-22.md expected=028e2dc0d35dba692efcfd5ffc9c223ef90c5315f3329bf605c9b5e6d5f9e9fd actual=028e2dc0d35dba692efcfd5ffc9c223ef90c5315f3329bf605c9b5e6d5f9e9fd
+PASS source docs/records/audits/2026-09/mvp6-shipment-root-r2-emission-rework-01/ACCEPTANCE.tsv expected=7d83cf3ff4a039d02ec0a9133fd86ef4614236b0a3cadccca8543924134670e1 actual=7d83cf3ff4a039d02ec0a9133fd86ef4614236b0a3cadccca8543924134670e1
+PASS source docs/records/audits/2026-09/mvp6-shipment-root-r2-emission-rework-01/target-manifest.tsv expected=b39d00079306f87500f280f4e9e2c5c6c270827503e5bb85992571c7b847cb5d actual=b39d00079306f87500f280f4e9e2c5c6c270827503e5bb85992571c7b847cb5d
+PASS source docs/records/audits/2026-09/mvp6-shipment-root-r2-emission-rework-01/ARTIFACTS.sha256 expected=5982e702afd7c7bcb28e8de23a159984afcfdcb665e7a612c6e5e1838f0ac028 actual=5982e702afd7c7bcb28e8de23a159984afcfdcb665e7a612c6e5e1838f0ac028
+PASS source execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md expected=32381634163a2acff440475f4582c05defc8261957386dfa43d5c8fc7eaf962e actual=32381634163a2acff440475f4582c05defc8261957386dfa43d5c8fc7eaf962e
+PASS gross gross_optimistic_hours actual=12 expected=12
+PASS gross gross_most_likely_hours actual=24 expected=24
+PASS gross gross_pessimistic_hours actual=44 expected=44
+PASS net net_new_optimistic_hours actual=0 expected=0
+PASS net net_new_most_likely_hours actual=0 expected=0
+PASS net net_new_pessimistic_hours actual=0 expected=0
+PASS overlap 0183-3-REMAINING optimistic reserve=9.6 allocation=4 remaining=5.6
+PASS overlap 0183-3-REMAINING most_likely reserve=16 allocation=8 remaining=8
+PASS overlap 0183-3-REMAINING pessimistic reserve=25.6 allocation=16 remaining=9.6
+PASS overlap 0183-6-REMAINING optimistic reserve=20 allocation=8 remaining=12
+PASS overlap 0183-6-REMAINING most_likely reserve=36 allocation=16 remaining=20
+PASS overlap 0183-6-REMAINING pessimistic reserve=64 allocation=28 remaining=36
+PASS portfolio O delivered/remaining/total = 1052.2/838.8/1891.0
+PASS portfolio M delivered/remaining/total = 1432/1410/2842
+PASS portfolio P delivered/remaining/total = 1859.8/2628/4487.8
+PASS portfolio ML tahminlenmiş kapsam endeksi = 1432/2842 = 50.4%
+PASS Shipment ML tahminlenmiş kapsam endeksi = 228/294 = 77.6%

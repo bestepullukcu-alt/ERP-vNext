@@ -1,0 +1,250 @@
+info: Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager[63]
+      User profile is available. Using 'C:\Users\Ali\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+      MOD-0173 Mongo indexes ensured on database diten_inventory_mock.
+info: Diten.InventoryService.Persistence.InventoryIndexInitializerHostedService[0]
+info: Diten.InventoryService.Persistence.InventoryIndexInitializerHostedService[0]
+      MOD-0173 SKU positions rebuilt from ledger + reservations: 13.
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5066
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Mock
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: C:\Users\Ali\erp-vnext\services\Diten.InventoryService\src\Diten.InventoryService.Api\bin\Debug\net8.0
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5066/health - - -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'HTTP: GET /health'
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]
+      Setting HTTP status code 200.
+info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]
+      Writing value of type '<>f__AnonymousType0`2' as Json.
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'HTTP: GET /health'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5066/health - 200 - application/json;+charset=utf-8 75.2269ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 POST http://localhost:5066/api/inventory/movements - application/json;+charset=utf-8 416
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'Diten.InventoryService.Api.Controllers.InventoryController.PostMovement (Diten.InventoryService.Api)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "PostMovement", controller = "Inventory"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] PostMovement(System.Threading.CancellationToken) on controller Diten.InventoryService.Api.Controllers.InventoryController (Diten.InventoryService.Api).
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling PostMovementCommand
+      Start processing HTTP request POST http://127.0.0.1:4010/validate
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+      Sending HTTP request POST http://127.0.0.1:4010/validate
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+      Received HTTP response headers after 73.0038ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+      End processing HTTP request after 81.1968ms - 200
+      Start processing HTTP request GET http://127.0.0.1:4010/products/b1f2c3d4-0000-0000-0000-000000000001
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4010/products/b1f2c3d4-0000-0000-0000-000000000001
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+      Received HTTP response headers after 16.1621ms - 200
+      End processing HTTP request after 16.2935ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4010/skus/c3d4e5f6-0000-0000-0000-000000000002?level=Lsku
+      Start processing HTTP request GET http://127.0.0.1:4010/skus/c3d4e5f6-0000-0000-0000-000000000002?level=Lsku
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+      Received HTTP response headers after 6.563ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+      End processing HTTP request after 6.6635ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4010/skus/c3d4e5f6-0000-0000-0000-000000000002/uom
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4010/skus/c3d4e5f6-0000-0000-0000-000000000002/uom
+      Received HTTP response headers after 6.2114ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+      End processing HTTP request after 6.3154ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[100]
+      Start processing HTTP request POST http://127.0.0.1:4011/validate
+      Sending HTTP request POST http://127.0.0.1:4011/validate
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[100]
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[101]
+      Received HTTP response headers after 25.4191ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[101]
+      End processing HTTP request after 25.531ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4011/loc-A-12-3
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4011/loc-A-12-3
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[101]
+      Received HTTP response headers after 9.3826ms - 200
+      End processing HTTP request after 9.4961ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[101]
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4011/loc-A-12-3/path
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4011/loc-A-12-3/path
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[101]
+      Received HTTP response headers after 3.233ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[101]
+      End processing HTTP request after 3.3434ms - 200
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled PostMovementCommand in 429ms
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor[1]
+      Executing ObjectResult, writing value of type 'Diten.InventoryService.Application.Features.Inventory.MovementResponseDto'.
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+      Executed action Diten.InventoryService.Api.Controllers.InventoryController.PostMovement (Diten.InventoryService.Api) in 499.5669ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'Diten.InventoryService.Api.Controllers.InventoryController.PostMovement (Diten.InventoryService.Api)'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 POST http://localhost:5066/api/inventory/movements - 201 - application/json;+charset=utf-8 564.5201ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 POST http://localhost:5066/api/inventory/movements - application/json;+charset=utf-8 416
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'Diten.InventoryService.Api.Controllers.InventoryController.PostMovement (Diten.InventoryService.Api)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "PostMovement", controller = "Inventory"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] PostMovement(System.Threading.CancellationToken) on controller Diten.InventoryService.Api.Controllers.InventoryController (Diten.InventoryService.Api).
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling PostMovementCommand
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled PostMovementCommand in 21ms
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor[1]
+      Executing ObjectResult, writing value of type 'Diten.InventoryService.Application.Features.Inventory.MovementResponseDto'.
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+      Executed action Diten.InventoryService.Api.Controllers.InventoryController.PostMovement (Diten.InventoryService.Api) in 27.1269ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'Diten.InventoryService.Api.Controllers.InventoryController.PostMovement (Diten.InventoryService.Api)'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 POST http://localhost:5066/api/inventory/movements - 200 - application/json;+charset=utf-8 38.8006ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5066/api/inventory/availability?skuId=c3d4e5f6-0000-0000-0000-000000000002 - - -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'Diten.InventoryService.Api.Controllers.InventoryController.GetAvailability (Diten.InventoryService.Api)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "GetAvailability", controller = "Inventory"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetAvailability(System.String, System.String, System.String, System.String, System.String, System.Threading.CancellationToken) on controller Diten.InventoryService.Api.Controllers.InventoryController (Diten.InventoryService.Api).
+      Handling GetAvailabilityQuery
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled GetAvailabilityQuery in 18ms
+      Executing ObjectResult, writing value of type 'Diten.InventoryService.Application.Features.Inventory.AvailabilityViewDto'.
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor[1]
+      Executed action Diten.InventoryService.Api.Controllers.InventoryController.GetAvailability (Diten.InventoryService.Api) in 26.5819ms
+      Executed endpoint 'Diten.InventoryService.Api.Controllers.InventoryController.GetAvailability (Diten.InventoryService.Api)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+      Request finished HTTP/1.1 GET http://localhost:5066/api/inventory/availability?skuId=c3d4e5f6-0000-0000-0000-000000000002 - 200 - application/json;+charset=utf-8 33.2299ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 POST http://localhost:5066/api/inventory/reservations - application/json;+charset=utf-8 279
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'Diten.InventoryService.Api.Controllers.InventoryController.CreateReservation (Diten.InventoryService.Api)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "CreateReservation", controller = "Inventory"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] CreateReservation(System.Threading.CancellationToken) on controller Diten.InventoryService.Api.Controllers.InventoryController (Diten.InventoryService.Api).
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling CreateReservationCommand
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled CreateReservationCommand in 59ms
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor[1]
+      Executing ObjectResult, writing value of type 'Diten.InventoryService.Application.Features.Inventory.ReservationResponseDto'.
+      Executed action Diten.InventoryService.Api.Controllers.InventoryController.CreateReservation (Diten.InventoryService.Api) in 67.2706ms
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'Diten.InventoryService.Api.Controllers.InventoryController.CreateReservation (Diten.InventoryService.Api)'
+      Request finished HTTP/1.1 POST http://localhost:5066/api/inventory/reservations - 201 - application/json;+charset=utf-8 70.2593ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 POST http://localhost:5066/api/inventory/reservations/086669f3-bd8f-47a3-9be9-0a5dd4a0a1af/release - - 0
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'Diten.InventoryService.Api.Controllers.InventoryController.ReleaseReservation (Diten.InventoryService.Api)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "ReleaseReservation", controller = "Inventory"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] ReleaseReservation(System.String, System.Threading.CancellationToken) on controller Diten.InventoryService.Api.Controllers.InventoryController (Diten.InventoryService.Api).
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor[1]
+      Executing ObjectResult, writing value of type 'Diten.InventoryService.Application.Common.Models.ContractError'.
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+      Executed endpoint 'Diten.InventoryService.Api.Controllers.InventoryController.ReleaseReservation (Diten.InventoryService.Api)'
+      Executed action Diten.InventoryService.Api.Controllers.InventoryController.ReleaseReservation (Diten.InventoryService.Api) in 9.8998ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 POST http://localhost:5066/api/inventory/reservations/086669f3-bd8f-47a3-9be9-0a5dd4a0a1af/release - 400 - application/json;+charset=utf-8 14.2349ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 POST http://localhost:5066/api/inventory/reservations/086669f3-bd8f-47a3-9be9-0a5dd4a0a1af/release - - 0
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'Diten.InventoryService.Api.Controllers.InventoryController.ReleaseReservation (Diten.InventoryService.Api)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "ReleaseReservation", controller = "Inventory"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] ReleaseReservation(System.String, System.Threading.CancellationToken) on controller Diten.InventoryService.Api.Controllers.InventoryController (Diten.InventoryService.Api).
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling ReleaseReservationCommand
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled ReleaseReservationCommand in 14ms
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor[1]
+      Executing ObjectResult, writing value of type 'Diten.InventoryService.Application.Common.Models.ContractError'.
+      Executed action Diten.InventoryService.Api.Controllers.InventoryController.ReleaseReservation (Diten.InventoryService.Api) in 16.3547ms
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'Diten.InventoryService.Api.Controllers.InventoryController.ReleaseReservation (Diten.InventoryService.Api)'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 POST http://localhost:5066/api/inventory/reservations/086669f3-bd8f-47a3-9be9-0a5dd4a0a1af/release - 409 - application/json;+charset=utf-8 16.9022ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 POST http://localhost:5066/api/inventory/reservations/086669f3-bd8f-47a3-9be9-0a5dd4a0a1af/release - - 0
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'Diten.InventoryService.Api.Controllers.InventoryController.ReleaseReservation (Diten.InventoryService.Api)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "ReleaseReservation", controller = "Inventory"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] ReleaseReservation(System.String, System.Threading.CancellationToken) on controller Diten.InventoryService.Api.Controllers.InventoryController (Diten.InventoryService.Api).
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling ReleaseReservationCommand
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled ReleaseReservationCommand in 13ms
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor[1]
+      Executing ObjectResult, writing value of type 'Diten.InventoryService.Application.Features.Inventory.ReservationResponseDto'.
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+      Executed action Diten.InventoryService.Api.Controllers.InventoryController.ReleaseReservation (Diten.InventoryService.Api) in 14.7901ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'Diten.InventoryService.Api.Controllers.InventoryController.ReleaseReservation (Diten.InventoryService.Api)'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 POST http://localhost:5066/api/inventory/reservations/086669f3-bd8f-47a3-9be9-0a5dd4a0a1af/release - 200 - application/json;+charset=utf-8 15.3036ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 POST http://localhost:5066/api/inventory/reservations/086669f3-bd8f-47a3-9be9-0a5dd4a0a1af/release - - 0
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'Diten.InventoryService.Api.Controllers.InventoryController.ReleaseReservation (Diten.InventoryService.Api)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "ReleaseReservation", controller = "Inventory"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] ReleaseReservation(System.String, System.Threading.CancellationToken) on controller Diten.InventoryService.Api.Controllers.InventoryController (Diten.InventoryService.Api).
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling ReleaseReservationCommand
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled ReleaseReservationCommand in 6ms
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor[1]
+      Executing ObjectResult, writing value of type 'Diten.InventoryService.Application.Common.Models.ContractError'.
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+      Executed action Diten.InventoryService.Api.Controllers.InventoryController.ReleaseReservation (Diten.InventoryService.Api) in 7.361ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'Diten.InventoryService.Api.Controllers.InventoryController.ReleaseReservation (Diten.InventoryService.Api)'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 POST http://localhost:5066/api/inventory/reservations/086669f3-bd8f-47a3-9be9-0a5dd4a0a1af/release - 409 - application/json;+charset=utf-8 7.9982ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5066/api/inventory/balance?skuId=c3d4e5f6-0000-0000-0000-000000000002 - - -
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]
+      Executing endpoint 'Diten.InventoryService.Api.Controllers.InventoryController.GetBalance (Diten.InventoryService.Api)'
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[102]
+      Route matched with {action = "GetBalance", controller = "Inventory"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetBalance(System.String, System.String, System.String, System.String, System.String, System.String, System.String, System.String, System.String, System.Threading.CancellationToken) on controller Diten.InventoryService.Api.Controllers.InventoryController (Diten.InventoryService.Api).
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling GetBalanceQuery
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled GetBalanceQuery in 12ms
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ObjectResultExecutor[1]
+      Executing ObjectResult, writing value of type 'Diten.InventoryService.Application.Features.Inventory.BalancePageDto'.
+info: Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker[105]
+      Executed action Diten.InventoryService.Api.Controllers.InventoryController.GetBalance (Diten.InventoryService.Api) in 18.6561ms
+info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]
+      Executed endpoint 'Diten.InventoryService.Api.Controllers.InventoryController.GetBalance (Diten.InventoryService.Api)'
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5066/api/inventory/balance?skuId=c3d4e5f6-0000-0000-0000-000000000002 - 200 - application/json;+charset=utf-8 24.4141ms
+info: Microsoft.AspNetCore.Hosting.Diagnostics[1]
+      Request starting HTTP/1.1 GET http://localhost:5066/api/inventory/balance?skuId=c3d4e5f6-0000-0000-0000-000000000002 - - -
+info: Microsoft.AspNetCore.Authorization.DefaultAuthorizationService[2]
+      Authorization failed. These requirements were not met:
+      DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+      Diten.InventoryService.Infrastructure.Authorization.PermissionRequirement
+info: Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerHandler[12]
+      AuthenticationScheme: Bearer was challenged.
+info: Microsoft.AspNetCore.Hosting.Diagnostics[2]
+      Request finished HTTP/1.1 GET http://localhost:5066/api/inventory/balance?skuId=c3d4e5f6-0000-0000-0000-000000000002 - 401 - application/json 6.6975ms

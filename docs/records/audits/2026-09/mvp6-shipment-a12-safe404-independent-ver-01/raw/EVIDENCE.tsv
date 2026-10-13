@@ -1,0 +1,14 @@
+check	result	evidence
+artifact_hashes	PASS	`shasum -a 256 -c ARTIFACTS.sha256` returned OK for all seven listed package artifacts.
+successor_archive_hash	PASS	`successor-source.tar.gz` SHA-256 `7b6a0d1abea649d920040a039972c5d4928825e9cf2cc185487b1fe5f0f3314d`.
+successor_manifest_hash	PASS	`SUCCESSOR-360-SOURCE-MANIFEST.tsv` SHA-256 `8ffa6c96d29f8004940f310ed704a2c05eaa38ffa501d6114a5f9251e6e00d36`.
+patch_hash	PASS	Corrected `shipment-a12-safe404.patch` SHA-256 `b3c7dcbb68636b123f3ea3ad7c3c902709fef6a9775c66cc3d464073653ecefb`.
+archive_manifest_binding	PASS	360 manifest rows; 360 archive files; missing 0; mismatched 0; extra 0.
+baseline_to_successor_delta	PASS	Compared input `COMBINED-360-SOURCE-MANIFEST.tsv` to successor manifest: added 0; removed 0; changed 2.
+changed_file_1	PASS	`frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/details.js` baseline `1f7b36fc63719a1f54597812879f7576ee4c220ec23c7cc66ed0e7b158fab0bd`; target `69626e6143855b0f0929d6079c7b85b43fd63b46ec0519eaf3e49c9d34ae3bda`.
+changed_file_2	PASS	`frontend/Diten.Web.Tests/JavaScript/ShipmentDetailActionTests.cs` baseline `69c37a6ff8a1c510909fe4537b4346d2691d29273bb4f2aa1fd81d08d78998a9`; target `01585cc845da27053e0cbb10d01f2502d8b0334c3fb6e1f82d8ec4e32b7d5307`.
+patch_scope	PASS_AFTER_CORRECTION	`shipment-a12-safe404.patch` contains unified diffs for both changed files: `details.js` and `ShipmentDetailActionTests.cs`.
+node_check	PASS	`node --check` passed for extracted `details.js`.
+safe_state_static	PASS	Static inspection found `renderSafeNotFound`, hidden/inert/aria-hidden handling, action cleanup, support-reference correlation presentation, no `window.location`, and `loadVersion` stale-response guard.
+selector_binding_static	PASS	Extracted `Details.cshtml` contains all IDs/classes targeted by `details.js`.
+runtime_browser	NOT RUN	Successor archive lacks frontend, frontend test, gateway, gateway test, and referenced service project files required to launch the browser/runtime flow.

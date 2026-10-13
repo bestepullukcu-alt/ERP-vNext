@@ -1,0 +1,143 @@
+@using Diten.Web.Views.Inventory.Locations
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LocationsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@*
+    L-3 — the ONE location form (Golden Reference Slim offcanvas, 8 fields — pack §4/§12), rendered on L-1 and L-2 and
+    driven by js/Inventory/Locations/form.js. Rendered only for inventory.locations.manage (the pages decide).
+
+    Required = Code, Name, Type (create) and Parent (every type but Site) — the same four the service refuses without
+    (pack §12). The company is NOT a field (K-03/K-14). Type is fixed after create (LOC-04). "Can hold stock" only for
+    a Bin / StorageLocation (LOC1-04), operating mode only for a Site / Warehouse (DEC-INV-19): form.js shows a field
+    only where the contract accepts it, so nothing the service would refuse is offered.
+*@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasLocationForm" aria-labelledby="offcanvasLocationFormLabel">
+    <div class="offcanvas-header p-4">
+        <h5 id="offcanvasLocationFormLabel" class="offcanvas-title">@Localizer["FormTitleCreate"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+
+    <div class="offcanvas-body border-top p-4">
+        @* Refusals that belong to no single field (conflict, stock, company) — with the reference in a disclosure. *@
+        <div id="locationFormAlert" class="alert alert-danger d-none" role="alert"></div>
+
+        <form id="formLocation" class="pt-0" novalidate>
+            @Html.AntiForgeryToken()
+
+            <div class="row g-4">
+                <div class="col-12">
+                    <label for="locCode" class="form-label fw-medium">
+                        @Localizer["FieldCode"] <span class="text-danger">*</span>
+                    </label>
+                    <div class="diten-field">
+                        <i class="bx bx-hash diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" id="locCode" name="code" class="form-control" maxlength="40" pattern="[A-Za-z0-9._\/\-]{1,40}" placeholder="@Localizer["CodePlaceholder"]" required aria-describedby="locCodeHint" />
+                    </div>
+                    <div class="invalid-feedback" data-field-error="code"></div>
+                    <small id="locCodeHint" class="form-text text-muted">@Localizer["HintCode"]</small>
+                </div>
+
+                <div class="col-12">
+                    <label for="locName" class="form-label fw-medium">
+                        @Localizer["FieldName"] <span class="text-danger">*</span>
+                    </label>
+                    <div class="diten-field">
+                        <i class="bx bx-text diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" id="locName" name="name" class="form-control" maxlength="120" placeholder="@Localizer["NamePlaceholder"]" required />
+                    </div>
+                    <div class="invalid-feedback" data-field-error="name"></div>
+                </div>
+
+                <div class="col-12" id="locTypeGroup">
+                    <label for="locType" class="form-label fw-medium">
+                        @Localizer["FieldType"] <span class="text-danger">*</span>
+                    </label>
+                    <div class="diten-field">
+                        <i class="bx bx-category diten-field-icon" aria-hidden="true"></i>
+                        <select id="locType" name="type" class="form-select" required>
+                            <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                            <option value="Site">@Localizer["TypeSite"]</option>
+                            <option value="Warehouse">@Localizer["TypeWarehouse"]</option>
+                            <option value="StorageLocation">@Localizer["TypeStorageLocation"]</option>
+                            <option value="Zone">@Localizer["TypeZone"]</option>
+                            <option value="Bin">@Localizer["TypeBin"]</option>
+                        </select>
+                    </div>
+                    <div class="invalid-feedback" data-field-error="type"></div>
+                    <small id="locTypeFixed" class="form-text text-muted d-none">@Localizer["HintTypeFixed"]</small>
+                </div>
+
+                <div class="col-12" id="locParentGroup">
+                    <label for="locParent" class="form-label fw-medium">
+                        @Localizer["FieldParent"] <span class="text-danger">*</span>
+                    </label>
+                    <div class="diten-field">
+                        <i class="bx bx-sitemap diten-field-icon" aria-hidden="true"></i>
+                        <select id="locParent" name="parentId" class="form-select" data-placeholder="@Localizer["ParentPlaceholder"]">
+                            <option value=""></option>
+                        </select>
+                    </div>
+                    <div class="invalid-feedback" data-field-error="parentId"></div>
+                    <small id="locParentHint" class="form-text text-muted"></small>
+                </div>
+                <div class="col-12 d-none" id="locSiteNote">
+                    <small class="form-text text-muted">@Localizer["HintParentSite"]</small>
+                </div>
+
+                <div class="col-12 d-none" id="locStockableGroup">
+                    <div class="form-check form-switch">
+                        <input type="checkbox" id="locStockable" name="isStockable" class="form-check-input" role="switch" value="true" />
+                        <label for="locStockable" class="form-check-label ms-2">@Localizer["FieldStockable"]</label>
+                    </div>
+                    <div class="invalid-feedback d-block" data-field-error="isStockable"></div>
+                </div>
+
+                <div class="col-12 d-none" id="locModeGroup">
+                    <label for="locMode" class="form-label fw-medium">@Localizer["FieldOperatingMode"]</label>
+                    <div class="diten-field">
+                        <i class="bx bx-transfer diten-field-icon" aria-hidden="true"></i>
+                        <select id="locMode" name="operatingMode" class="form-select">
+                            <option value="internal">@Localizer["ModeInternal"]</option>
+                            <option value="external-integrated">@Localizer["ModeExternal"]</option>
+                        </select>
+                    </div>
+                    <div class="invalid-feedback" data-field-error="operatingMode"></div>
+                </div>
+
+                <div class="col-12">
+                    <label for="locOrgUnit" class="form-label fw-medium">@Localizer["FieldOrgUnit"] <small class="text-muted fw-normal">(@Localizer["Optional"])</small></label>
+                    <div class="diten-field">
+                        <i class="bx bx-buildings diten-field-icon" aria-hidden="true"></i>
+                        <select id="locOrgUnit" name="orgUnitRef" class="form-select" data-placeholder="@Localizer["OrgUnitPlaceholder"]">
+                            <option value=""></option>
+                        </select>
+                    </div>
+                    <div class="invalid-feedback" data-field-error="orgUnitRef"></div>
+                    <small id="locOrgUnitUnavailable" class="form-text text-warning d-none" role="status"></small>
+                </div>
+
+                <div class="col-12">
+                    <label for="locCostCenter" class="form-label fw-medium">@Localizer["FieldCostCenter"] <small class="text-muted fw-normal">(@Localizer["Optional"])</small></label>
+                    <div class="diten-field">
+                        <i class="bx bx-wallet diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" id="locCostCenter" name="costCenterCode" class="form-control" maxlength="40" pattern="[A-Za-z0-9._\-]{1,40}" placeholder="@Localizer["CostCenterPlaceholder"]" />
+                    </div>
+                    <div class="invalid-feedback" data-field-error="costCenterCode"></div>
+                </div>
+
+                <div class="col-12">
+                    <small class="form-text text-muted d-block">@Localizer["HintCompany"]</small>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">
+            @SharedLocalizer["Cancel"]
+        </button>
+        <button type="button" id="btnSaveLocation" class="btn btn-primary">
+            @SharedLocalizer["Save"]
+        </button>
+    </div>
+</div>

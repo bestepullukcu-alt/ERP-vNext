@@ -1,0 +1,62 @@
+@model Diten.Web.Models.Traceability.LotPageViewModel
+@using Diten.Web.Views.Traceability.Serials
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SerialsIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["Page.Title"].Value;
+    Layout = "_LayoutTenantShell";
+}
+@*
+    MOD-0174 P3 — Seri Gezgini (pack §11.1/§11.3): server-mode list of TRACE listSerials, 15 rows per page. "Bloke" is
+    derived by the service from the serial's lot. UAS-001: nothing without trace.serials.read. Read-only screen.
+*@
+@if (!Perms.Has("trace.serials.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["Page.Title"].Value" />
+    return;
+}
+@{
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["Company.Label"].Value;
+    company.Placeholder = Localizer["Company.Placeholder"].Value;
+    company.SelectHint = Localizer["Company.Required"].Value;
+    company.UnavailableText = Localizer["Company.Unavailable"].Value;
+}
+
+@* Contract marker: <partial name="_Filter" /> *@
+@if (company.Ready)
+{
+    <partial name="~/Views/Traceability/Serials/_Filter.cshtml" />
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["Page.Title"]</h5>
+    <p class="mb-0 text-muted">@Localizer["Page.Description"]</p>
+</div>
+
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready)
+{
+    <div id="serials-list-error" class="alert alert-danger d-none" role="alert"></div>
+    <div id="serials-context" data-lot-id="@Model.LotId"></div>
+    @* Contract markers are rendered by _DataTable.cshtml: <partial name="_TableSkeleton" /> (id="skeleton-loader"), <table id="dt-serials" data-dt-standard="v2"> *@
+    <partial name="~/Views/Traceability/Serials/_DataTable.cshtml" />
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    <partial name="~/Views/Traceability/Lots/_TraceActions.cshtml" />
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/Traceability/Serials/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Traceability/Serials/index.l10n.js" asp-append-version="true"></script>
+    @if (company.Ready)
+    {
+        <script src="~/assets/js/Traceability/trace-ui.js" asp-append-version="true"></script>
+        <script src="~/assets/js/Traceability/Serials/index.js" asp-append-version="true"></script>
+    }
+}

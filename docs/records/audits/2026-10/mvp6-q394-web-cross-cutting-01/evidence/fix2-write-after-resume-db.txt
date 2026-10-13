@@ -1,0 +1,15 @@
+{
+  collection: 'sce_shipments',
+  q394write1: 0,
+  receipts: [
+    'loads_receipts',
+    'sce_shipment_receipts',
+    'carrier_idempotency',
+    'claims_receipts',
+    'returns_receipts'
+  ]
+}
+{
+  q394write1_shipments: 1,
+  receipts_total: 1
+}

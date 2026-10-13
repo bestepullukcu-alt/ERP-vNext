@@ -1,0 +1,139 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+    <data name="Lot.BlockedDisabled" xml:space="preserve">
+    <value>Bloqueado — no puede recibir existencias</value>
+  </data>
+  <data name="Lot.Created" xml:space="preserve">
+    <value>Lote {0} creado como borrador y seleccionado.</value>
+  </data>
+  <data name="Lot.ExpiredDisabled" xml:space="preserve">
+    <value>Caducado — no puede recibir existencias</value>
+  </data>
+  <data name="Lot.FromSource" xml:space="preserve">
+    <value>El lote procede de la fila de origen.</value>
+  </data>
+  <data name="Lot.NewLot" xml:space="preserve">
+    <value>+ Nuevo lote</value>
+  </data>
+  <data name="Lot.None" xml:space="preserve">
+    <value>Todavía no hay ningún lote registrado para esta SKU.</value>
+  </data>
+  <data name="Lot.Picker" xml:space="preserve">
+    <value>Lote</value>
+  </data>
+  <data name="Lot.Placeholder" xml:space="preserve">
+    <value>Elija un lote registrado</value>
+  </data>
+  <data name="Lot.RetestConfirm" xml:space="preserve">
+    <value>Confirmo el uso de este lote aunque su fecha de reanálisis haya vencido.</value>
+  </data>
+  <data name="Lot.RetestConfirmRequired" xml:space="preserve">
+    <value>Confirme el uso de un lote cuya fecha de reanálisis ha vencido.</value>
+  </data>
+  <data name="Lot.RetestWarn" xml:space="preserve">
+    <value>La fecha de reanálisis de este lote ({0}) ha vencido.</value>
+  </data>
+  <data name="Lot.TypedBadge" xml:space="preserve">
+    <value>Lote introducido manualmente</value>
+  </data>
+  <data name="Lot.TypedHint" xml:space="preserve">
+    <value>Durante la transición todavía se acepta un texto de lote introducido manualmente (W-UI-02); prefiera un lote registrado.</value>
+  </data>
+  <data name="Lot.Unavailable" xml:space="preserve">
+    <value>No se pueden listar los lotes registrados en este momento.</value>
+  </data>
+  <data name="Serial.Add" xml:space="preserve">
+    <value>Añadir</value>
+  </data>
+  <data name="Serial.Added" xml:space="preserve">
+    <value>{0} números de serie añadidos.</value>
+  </data>
+  <data name="Serial.BadFormat" xml:space="preserve">
+    <value>Número de serie no válido (de 3 a 24 caracteres A–Z, 0–9, -): {0}</value>
+  </data>
+  <data name="Serial.CheckUnavailable" xml:space="preserve">
+    <value>No se puede comprobar el código en este momento.</value>
+  </data>
+  <data name="Serial.Clear" xml:space="preserve">
+    <value>Borrar</value>
+  </data>
+  <data name="Serial.Counter" xml:space="preserve">
+    <value>{0} / {1}</value>
+  </data>
+  <data name="Serial.CounterMore" xml:space="preserve">
+    <value>Faltan {0} números de serie.</value>
+  </data>
+  <data name="Serial.CounterOk" xml:space="preserve">
+    <value>La cantidad de números de serie coincide con la cantidad.</value>
+  </data>
+  <data name="Serial.CounterOver" xml:space="preserve">
+    <value>Sobran {0} números de serie.</value>
+  </data>
+  <data name="Serial.Duplicates" xml:space="preserve">
+    <value>Ya están en la lista, omitidos: {0}</value>
+  </data>
+  <data name="Serial.Empty" xml:space="preserve">
+    <value>Todavía no se ha añadido ningún número de serie.</value>
+  </data>
+  <data name="Serial.GtinSkippedWarning" xml:space="preserve">
+    <value>El producto no tiene GTIN en los datos maestros: no se comprobó el GTIN; sí se comprobaron el lote y la fecha de caducidad.</value>
+  </data>
+  <data name="Serial.Methods.Range" xml:space="preserve">
+    <value>Rango</value>
+  </data>
+  <data name="Serial.Methods.Scan" xml:space="preserve">
+    <value>Código DataMatrix (GS1)</value>
+  </data>
+  <data name="Serial.Methods.Single" xml:space="preserve">
+    <value>Uno a uno</value>
+  </data>
+  <data name="Serial.Mismatch.Expiry" xml:space="preserve">
+    <value>El código lleva otra fecha de caducidad.</value>
+  </data>
+  <data name="Serial.Mismatch.Gtin" xml:space="preserve">
+    <value>El código pertenece a otro producto (GTIN).</value>
+  </data>
+  <data name="Serial.Mismatch.Lot" xml:space="preserve">
+    <value>El código lleva otro lote.</value>
+  </data>
+  <data name="Serial.RangeAdd" xml:space="preserve">
+    <value>Añadir rango</value>
+  </data>
+  <data name="Serial.RangeEnd" xml:space="preserve">
+    <value>Último número de serie</value>
+  </data>
+  <data name="Serial.RangeHint" xml:space="preserve">
+    <value>Mismo prefijo y mismo número de dígitos, 5.000 como máximo.</value>
+  </data>
+  <data name="Serial.RangeMax" xml:space="preserve">
+    <value>Un rango puede contener como máximo 5.000 números de serie.</value>
+  </data>
+  <data name="Serial.RangeOrder" xml:space="preserve">
+    <value>El último número de serie no puede ser menor que el primero.</value>
+  </data>
+  <data name="Serial.RangePrefix" xml:space="preserve">
+    <value>El primer y el último número de serie deben tener el mismo prefijo y el mismo número de dígitos.</value>
+  </data>
+  <data name="Serial.RangePreview" xml:space="preserve">
+    <value>{0} números de serie: {1} … {2}</value>
+  </data>
+  <data name="Serial.RangeStart" xml:space="preserve">
+    <value>Primer número de serie</value>
+  </data>
+  <data name="Serial.ScanHint" xml:space="preserve">
+    <value>Escanee o pegue el código DataMatrix GS1 / ITS y pulse Intro.</value>
+  </data>
+  <data name="Serial.ScanNeedsLot" xml:space="preserve">
+    <value>Elija el lote antes de escanear.</value>
+  </data>
+  <data name="Serial.Unreadable" xml:space="preserve">
+    <value>No se pudo leer el código.</value>
+  </data>
+  <data name="Lot.RetestRequired" xml:space="preserve">
+    <value>La fecha de reanálisis de este lote ha vencido: confirme la advertencia del campo de lote antes de guardar.</value>
+  </data>
+</root>

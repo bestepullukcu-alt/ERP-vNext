@@ -1,0 +1,8 @@
+COMMAND   PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME
+mongod  14135 natig    8u  IPv4  0x53928cd788df9fe      0t0  TCP 127.0.0.1:42994 (LISTEN)
+dotnet  15102 natig  300u  IPv4 0x3d5995468048f6e6      0t0  TCP 127.0.0.1:5901 (LISTEN)
+dotnet  15308 natig  325u  IPv4 0x88d5f9102982b32f      0t0  TCP 127.0.0.1:5959 (LISTEN)
+dotnet  15379 natig  418u  IPv4 0x35db1d0eca306df8      0t0  TCP 127.0.0.1:5957 (LISTEN)
+dotnet  15448 natig  366u  IPv4 0xb8ba1b958f775e2f      0t0  TCP 127.0.0.1:5956 (LISTEN)
+dotnet  15677 natig  314u  IPv4 0x4b7ddbbe7c69431c      0t0  TCP 127.0.0.1:5961 (LISTEN)
+dotnet  17621 natig  304u  IPv4 0xfe7505d07b6a8a6e      0t0  TCP 127.0.0.1:5900 (LISTEN)

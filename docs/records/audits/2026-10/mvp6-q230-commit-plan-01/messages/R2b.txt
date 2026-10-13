@@ -1,0 +1,5 @@
+docs(records): add MVP6 records: Carrier / MOD-0184 (part b)
+
+4 folders/items, first 'mvp6-carrier-ui-ver-01', last 'mvp6-shipment-carrier-predecessor-pin-01'.
+Work packages: as named in each folder.
+79 files from pathspec/R2b.txt (Q230 commit plan).

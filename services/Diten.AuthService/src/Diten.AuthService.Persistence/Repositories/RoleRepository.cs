@@ -86,6 +86,41 @@ public sealed class RoleRepository : RepositoryBase<Role>, IRoleRepository
         throw new InvalidOperationException($"System role upsert failed for tenant '{tenantId}' and role '{name}'.");
     }
 
+    public async Task<SystemRoleProvisioning> CreateSystemRoleIfMissingAsync(string name, string displayName, string? description, Guid tenantId, CancellationToken ct)
+    {
+        var filter = Builders<Role>.Filter.And(
+            Builders<Role>.Filter.Eq(r => r.TenantId, tenantId),
+            Builders<Role>.Filter.Eq(r => r.Name, name),
+            Builders<Role>.Filter.Eq(r => r.IsDeleted, false));
+
+        var created = false;
+        try
+        {
+            var update = Builders<Role>.Update
+                .SetOnInsert(r => r.Id, Guid.NewGuid())
+                .SetOnInsert(r => r.TenantId, tenantId)
+                .SetOnInsert(r => r.Name, name)
+                .SetOnInsert(r => r.DisplayName, displayName)
+                .SetOnInsert(r => r.Description, description)
+                .SetOnInsert(r => r.IsSystem, true)
+                .SetOnInsert(r => r.IsDeleted, false)
+                .SetOnInsert(r => r.CreatedAt, DateTimeOffset.UtcNow)
+                .SetOnInsert(r => r.CreatedBy, "system");
+
+            // Only the upsert that INSERTED reports an UpsertedId; a matched role (it already existed) reports none.
+            var result = await Collection.UpdateOneAsync(filter, update, new UpdateOptions { IsUpsert = true }, ct);
+            created = result.UpsertedId is not null;
+        }
+        catch (MongoWriteException ex) when (ex.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+        {
+            // A concurrent provisioner inserted it first (unique index): this call did not create it.
+        }
+
+        var role = await Collection.Find(filter).FirstOrDefaultAsync(ct)
+                   ?? throw new InvalidOperationException($"System role provisioning failed for tenant '{tenantId}' and role '{name}'.");
+        return new SystemRoleProvisioning(role, created);
+    }
+
     public async Task<Role> UpdateAsync(Role role, CancellationToken ct)
     {
         return await ReplaceOneAsync(role, ct);

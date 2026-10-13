@@ -1,0 +1,27 @@
+# scope files under docs/roadmap/plans (find -iname '*scope*.md'), and per-payload hits
+docs/roadmap/plans/mod-0183-root-uptake-recovery-01/scope-and-phase-1.5.md
+docs/roadmap/plans/mod-0187-prep-02/phase-1.5-and-scope.md
+docs/roadmap/plans/mvp6-loads-ui-scope-01/SCOPE.md
+docs/roadmap/plans/mvp6-ui-pack-drafts-01/claims/SCOPE.md
+docs/roadmap/plans/mvp6-ui-pack-drafts-01/returns/SCOPE.md
+docs/roadmap/plans/mvp6-ui-scope-190-192-01/UI-SCOPE-0190.md
+docs/roadmap/plans/mvp6-ui-scope-190-192-01/UI-SCOPE-0192.md
+
+# grep -n -i -E 'payload starts|editing the payload|edited payload|new intent|per[- ]payload|re-?mint' over those files:
+docs/roadmap/plans/mvp6-ui-pack-drafts-01/returns/SCOPE.md:114:   "Editing the payload starts a new intent."). The UI mints the `Idempotency-Key` when that form or panel
+docs/roadmap/plans/mvp6-ui-pack-drafts-01/returns/SCOPE.md:119:   Measured by R-2 (`docs/records/audits/2026-10/mvp6-r2-returns-ui-01/evidence/traps-browser.md` §T2): a key re-minted per payload created **two Returns from one intent**; one key per opened form gave 409 and **one** Return.
+
+# the same rule outside *SCOPE*.md (tracked UI scope packages and patches):
+docs/roadmap/plans/mvp6-shipment-pod-ui-scope-01/PROPOSED-PACK.patch:69:+changed payload is a new intent. Replay is accepted only from the response and is followed by a current-state reload.
+docs/roadmap/plans/mvp6-shipment-pod-ui-scope-01/SOP-22.md:81:and body. A changed payload is a new intent; same-key changed payload stays a 409 conflict. The UI does not infer state from
+docs/roadmap/plans/mvp6-ui-pack-revisions-01/claims/ui-revision.patch:145:+Per intent: one pending request; the same key and **identical body text** on network/500/503 retry; an edited payload is a new
+docs/roadmap/plans/mvp6-ui-pack-drafts-01/returns/SCOPE.md:114:   "Editing the payload starts a new intent."). The UI mints the `Idempotency-Key` when that form or panel
+docs/roadmap/plans/mvp6-pack-alignment-03-returns/ui-revision.patch:143:+Per intent: one pending request; the same key and identical body on network/500/503 retry; an edited payload is a new intent. A 201/200
+docs/roadmap/plans/mvp6-carrier-ui-scope-01/PROPOSED-PACK.patch:69:+A changed payload is a new intent and key. Replay success uses the original 201/200 body with
+docs/roadmap/plans/mvp6-carrier-ui-scope-01/SCREEN-FLOW.md:24:Create begins in backend status `Active`; status is not a create field. The adapter sends the exact JSON body plus a stable per-intent `Idempotency-Key`. Double-click is suppressed while in flight. 
+docs/roadmap/plans/mvp6-carrier-ui-scope-01/ACCEPTANCE.md:10:| UI184-A06 | A same-scope duplicate code returns 409 `CARRIER_CODE_CONFLICT`, retains input, and produces no false success. Editing the payload creates a new request intent/key. |
+docs/roadmap/plans/mvp6-shipment-pod-ui-dispatch-close-01/PACK-DELTA.patch:69:+changed payload is a new intent. Replay is accepted only from the response and is followed by a current-state reload.
+docs/roadmap/plans/mvp6-ui-pack-patch-190-192-01/patches/02-MOD-0192-ui-revision.patch:146:+Per intent: one pending request; the same key and **identical body text** on network/503 retry; an edited payload is a new intent.
+docs/roadmap/plans/mvp6-ui-pack-patch-190-192-01/patches/02-MOD-0192-ui-revision.patch:201:+| CP-14 | Idempotency: same key and body on retry; replay shown as completed; edited payload new intent; `IDEMPOTENCY_KEY_REUSED` stops | BLOCKED (DN-01) |
+docs/roadmap/plans/mvp6-ui-pack-patch-190-192-01/patches/01-MOD-0190-ui-revision.patch:146:+Per intent: one pending request; the same key and **identical body text** on network/503 retry; an edited payload is a new intent.
+docs/roadmap/plans/mvp6-ui-pack-patch-190-192-01/patches/01-MOD-0190-ui-revision.patch:200:+| SU-14 | Idempotency: same key and body on retry; replay shown as completed; edited payload new intent; `IDEMPOTENCY_KEY_REUSED` stops | BLOCKED (DN-01) |

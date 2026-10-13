@@ -1,0 +1,4 @@
+COMMAND   PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME
+Python  69711 natig    4u  IPv4 0x4b41d44ce3c1c553      0t0  TCP 127.0.0.1:6030 (LISTEN)
+COMMAND   PID  USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME
+dotnet  69712 natig  300u  IPv4 0xc0b8198b37bbbdeb      0t0  TCP 127.0.0.1:6031 (LISTEN)

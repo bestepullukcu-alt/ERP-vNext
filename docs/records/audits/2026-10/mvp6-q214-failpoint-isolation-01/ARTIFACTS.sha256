@@ -1,0 +1,32 @@
+# Q214 mvp6-q214-failpoint-isolation-01 — ARTIFACTS.sha256 (last write)
+# start 2026-10-02 19:57:03 +03 · end 2026-10-02 20:12:25 +03 (Europe/Istanbul)
+# branch feature/mvp6-logistics · HEAD 4a8d4d4b339528a88e6220fb8402e5a2c771136c
+# no-change: git status --porcelain before = after, byte-identical (sha256 01ef1f7fe7d9b0e91795cef4a4bdf728669428b5dee4fccb3f80c8144f2f9d5e); 665 lines = 89 M + 576 ?? + 0 staged; git diff not run
+# written by this lane: this folder (inside the already-untracked docs/records/audits/2026-10/) + git-ignored bin/ obj/ of the SupplyChain test build
+# verify: cd docs/records/audits/2026-10/mvp6-q214-failpoint-isolation-01 && grep -v '^#' ARTIFACTS.sha256 | shasum -a 256 -c
+998a6cbeb7056aa2b78beb48b22ffd9ed260c2d95bc45e64153b636c2da48a60  BLAST-RADIUS.tsv
+d7cd427ecfc0f1c7c4d1879c2189c2ff959cd2f8f5b90960a77d4514c3b6b9e8  FLIP-REPRODUCTION.tsv
+1e1a75e9495450551bc402e299362d4b1b71bb5488fe486893ce05c3315e537a  MECHANISM.md
+5fbbdc6d47b13d56a649387d65bd44dc5573b8c8291d6a7a9b2ed41518fd90a0  RECOMMENDATION.md
+ef5eacb922b3cb17099720c598a36414bebbaea5ce7d55a178dae199ae2ce67c  SOP-22.md
+ea4e6276619a1217ef7d9640067fc19dbb2c117783f5d8bb9b0c4cab45e8cc9b  evidence/build.log
+276fa60ae46e33be99786c713ff7540ce39b9870bf55d8406a6ffae303e7c95c  evidence/failpoint-episodes.tsv
+2316668f10acb138ece69eaccc599e6c83359564e9d93626d94a649047579477  evidence/harness.tsv
+9d058d80982cb04252f5c3d7722952ab53dbfa59689b21ef2c33ded9e44d3456  evidence/mongod-failpoint-and-commit-lines.log.gz
+7fc9cf7d06496f0a7ce4177051abcaa85b6c5e068d763c8ff17f3e42a6af07c7  evidence/r01-alone.log
+7b3b2262f9e81bade4f0acadad252fa6396ade6ec304862851fa21066349f989  evidence/r01-alone.trx
+03376f670e5dec6499206cc09b856a8e5392ede987ce95accb8a691d5b6d0f47  evidence/r02-alone.log
+8805a8462565f89797c96fd3ed3f07f246a23bc66c7a7a8e3cf5b01f59c47140  evidence/r03-alone-sst30000.log
+738ddccbb75b9e14f2d8c822087be3bd5944dc93503c0dda88a81dc31a2bd6cb  evidence/r04-alone-hb1000.log
+1140d8bd50ffe8997116c9a66363dfdcc5198dd5fbd65f9b2d5344055d20ba9e  evidence/r05-alone-nosst.log
+2053d15ce91d955964ce5ef708d705f24d6084be94396d779bbc5e75219c690e  evidence/r06-loads-folder.log
+a8ec46bf6fa08cb6f84bb1482dba0ef631149cc95a81e25edf397b796eccdae0  evidence/r07-loadatomicity-class.log
+510af402f8e0c6a7157408af5cc92b0900df50ea3d0c6f780bfe616268e78cb4  evidence/r07-loadatomicity-class.trx
+75273334183cab2d81af2f6d86a9f51b2c29aee2644bbfe2c51c9cabfe063a14  evidence/r08-full-outcomes.tsv
+49a918a905924d486412ea805ccf188c1d50ece057ccc97e7f4ed3f44da5fb05  evidence/r08-full.log
+f8b3888a90cc0c5e6b1496b30c7dd85f7cc2faf354654e9c8e989ddba5f2ada9  evidence/runs.tsv
+1c47502d0294c90b17cf23c930daa9b02a63e46f705cab95e7011a6a90df043f  tools/failpoints.py
+e97a09e52c130691c9d8169d3adda0eedf28af1ad389121eea7a4e2fe2f4e720  tools/harness/Program.cs.txt
+8e0bcc4cb532459251b634da42c731161d07ca87d7418043aaae3f7853e459e2  tools/harness/harness.csproj.txt
+d07b1916e8c4424f6c835054f767c036217e705cb8ba449472e556f6fdf80f39  tools/mlog.py
+746997489cb0aade3ad82d4dabbae282aeaf191506f80686f94165a6ad87c360  tools/run.sh
