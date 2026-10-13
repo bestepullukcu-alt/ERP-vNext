@@ -8398,6 +8398,25 @@ Gelecek regresyon riski: 🟡 (gerçek açıksa canlıda çift sayaç).
 
 ---
 
+### BL-631
+
+**Kalemler sayfası: üç küçük S2 artığı (oturum cümlesi gölgede, motorun geri çekme reddi eşlenmemiş, liste ucunda geri çek testi yok)**
+
+DURUM: AÇIK · SAHİP: CT (MDM) · BULAN: S2 FIX1 bağımsız incelemesi (2026-10-13) · KAYIT: 2026-10-13 · 🟢
+
+Ölçüm (`5661cb5a3`, hatta `a126b132f`):
+1. `Items/index.js:85` 401'de gövdeyi okumadan genel "oturumunuz sona erdi" cümlesini veriyor; yeni `SESSION_EXPIRED` cümlesi ekrana hiç ulaşmıyor. Anlamı aynı, zararsız.
+2. Motor bir geri çekmeyi kendi koduyla reddederse (`ItemActivationWorkflowProcessor.cs:364`) kod eşlenmemiş. Okuyan genel çakışma cümlesini görür, günlükte "unmapped" uyarısı çıkar; ham kod ekrana gelmez.
+3. MDM'de `WITHDRAW_APPROVAL` eylemi yalnız ayrıntı ucunda testli, liste ucunda değil.
+
+Ayrıca geri çekmede 202 kabulü şu an ulaşılmaz (MDM geri çekmeyi yalnız tamamlanınca başarı sayıyor); zararsız.
+
+Yapılacak: 2 ve 3 için eşleme + test. 1 için gövdeyi okuyup kodlu cümleyi tercih etmek isteğe bağlı. Küçük.
+
+Gelecek regresyon riski: 🟢
+
+---
+
 ### BL-630
 
 **Organizasyon birimi: idari (matris) üst birim aynı şirket grubundaki başka bir şirketten seçilebilsin**
