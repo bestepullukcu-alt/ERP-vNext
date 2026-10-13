@@ -23,11 +23,14 @@
                 <h6 id="sb-group-serial" class="text-uppercase text-heading fw-semibold mb-3">@Stock["GroupStorageControl"]</h6>
                 <div class="mb-3">
                     <label for="sb-input-serial" class="form-label fw-medium">@Stock["SerialControlled"]</label>
-                    <select id="sb-input-serial" class="form-select" data-sb-input="serialControlled" aria-describedby="sb-help-serial">
-                        <option value="">@Stock["NotSet"]</option>
-                        <option value="true">@Stock["Yes"]</option>
-                        <option value="false">@Stock["No"]</option>
-                    </select>
+                    <div class="diten-field">
+                        <i class="bx bx-hash diten-field-icon" aria-hidden="true"></i>
+                        <select id="sb-input-serial" class="form-select" data-sb-input="serialControlled" aria-describedby="sb-help-serial">
+                            <option value="">@Stock["NotSet"]</option>
+                            <option value="true">@Stock["Yes"]</option>
+                            <option value="false">@Stock["No"]</option>
+                        </select>
+                    </div>
                     <div id="sb-help-serial" class="form-text">@Stock["LskuInheritsHelp"]</div>
                     <div class="form-text text-warning d-none" data-sb-lock-reason="serialControlled"><i class="bx bx-lock-alt me-1"></i>@Stock["LockedReason"]</div>
                 </div>

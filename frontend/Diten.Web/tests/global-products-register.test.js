@@ -101,13 +101,18 @@ describe("MOD-0290 Global Product Register", () => {
         expect(source).toContain('exportColumns: saveViewColumnIndexes');
     });
 
-    // Baseline red (one of the 27, unchanged): the shared dt-defaults.js no longer declares print / pdf with `extend`
-    // (they are the controlled copy, BL-452 package 2). Only that shared pin is left here.
+    // WP-LANE-GUARDS-02 — this pin was a baseline red since BL-452 package 2 (c3de1c02c): print and PDF are no longer
+    // DataTables' `extend` buttons but the controlled copy (screen, company, filters, rows, uncontrolled mark). All five
+    // shared Action exports are still pinned — csv / excel / copy as `extend`, print / pdf as the controlled copy.
     it("omits the forbidden fake import while preserving the real shared Action exports", () => {
         const defaults = dataTableDefaults();
 
-        ['print', 'csv', 'excel', 'pdf', 'copy']
+        ['csv', 'excel', 'copy']
             .forEach((format) => expect(defaults).toContain(`extend: '${format}'`));
+        ['print', 'pdf'].forEach((format) => {
+            expect(defaults).toContain(`attr: { 'data-export-format': '${format}' },\n                    action: function (e, dt) { return runControlledCopy('${format}', dt, exportOptions, controlledCopy); }`);
+        });
+        expect((defaults.match(/className: 'dropdown-item dt-controlled-copy'/g) || []).length).toBe(2);
     });
 
     it("orchestrates reservation and draft creation on the MVC server", () => {

@@ -37,8 +37,11 @@
                 <h6 id="sb-group-shelf-life" class="text-uppercase text-heading fw-semibold mb-3">@Stock["GroupShelfLife"]</h6>
                 <div class="mb-3">
                     <label for="sb-input-shelf-life" class="form-label fw-medium">@Stock["ShelfLife"]</label>
-                    <input type="number" id="sb-input-shelf-life" class="form-control" min="1" max="3650" step="1" inputmode="numeric"
-                           data-sb-input="shelfLifeDays" aria-describedby="sb-help-shelf-life" />
+                    <div class="diten-field">
+                        <i class="bx bx-time-five diten-field-icon" aria-hidden="true"></i>
+                        <input type="number" id="sb-input-shelf-life" class="form-control" min="1" max="3650" step="1" inputmode="numeric"
+                               data-sb-input="shelfLifeDays" aria-describedby="sb-help-shelf-life" />
+                    </div>
                     <div id="sb-help-shelf-life" class="form-text">@Stock["ShelfLifeFromGskuHelp"]</div>
                     <div class="form-text text-warning d-none" data-sb-lock-reason="shelfLifeDays"><i class="bx bx-lock-alt me-1"></i>@Stock["LockedReason"]</div>
                 </div>
@@ -48,8 +51,11 @@
                 <div class="mb-3">
                     <label for="sb-input-storage" class="form-label fw-medium">@Stock["StorageConditions"]</label>
                     <div class="d-flex flex-wrap gap-1 mb-2" data-sb-existing="storageConditionCodes"></div>
-                    <select id="sb-input-storage" class="form-select" multiple disabled data-sb-input="storageConditionCodes"
-                            data-placeholder="@Stock["StorageConditions"]" aria-describedby="sb-help-storage"></select>
+                    <div class="diten-field">
+                        <i class="bx bx-box diten-field-icon" aria-hidden="true"></i>
+                        <select id="sb-input-storage" class="form-select" multiple disabled data-sb-input="storageConditionCodes"
+                                data-placeholder="@Stock["StorageConditions"]" aria-describedby="sb-help-storage"></select>
+                    </div>
                     <div id="sb-help-storage" class="form-text">@Stock["StorageHelp"]</div>
                     <div id="sb-storage-temperature-note" class="form-text text-danger d-none" role="alert"></div>
                     <div class="form-text text-warning d-none" data-sb-options-reason></div>
@@ -57,29 +63,38 @@
                 </div>
                 <div class="mb-3">
                     <label for="sb-input-lot" class="form-label fw-medium">@Stock["LotControlled"]</label>
-                    <select id="sb-input-lot" class="form-select" data-sb-input="lotControlled">
-                        <option value="">@Stock["NotSet"]</option>
-                        <option value="true">@Stock["Yes"]</option>
-                        <option value="false">@Stock["No"]</option>
-                    </select>
+                    <div class="diten-field">
+                        <i class="bx bx-barcode diten-field-icon" aria-hidden="true"></i>
+                        <select id="sb-input-lot" class="form-select" data-sb-input="lotControlled">
+                            <option value="">@Stock["NotSet"]</option>
+                            <option value="true">@Stock["Yes"]</option>
+                            <option value="false">@Stock["No"]</option>
+                        </select>
+                    </div>
                     <div class="form-text text-warning d-none" data-sb-lock-reason="lotControlled"><i class="bx bx-lock-alt me-1"></i>@Stock["LockedReason"]</div>
                 </div>
                 <div class="mb-3">
                     <label for="sb-input-serial" class="form-label fw-medium">@Stock["SerialControlled"]</label>
-                    <select id="sb-input-serial" class="form-select" data-sb-input="serialControlled">
-                        <option value="">@Stock["NotSet"]</option>
-                        <option value="true">@Stock["Yes"]</option>
-                        <option value="false">@Stock["No"]</option>
-                    </select>
+                    <div class="diten-field">
+                        <i class="bx bx-hash diten-field-icon" aria-hidden="true"></i>
+                        <select id="sb-input-serial" class="form-select" data-sb-input="serialControlled">
+                            <option value="">@Stock["NotSet"]</option>
+                            <option value="true">@Stock["Yes"]</option>
+                            <option value="false">@Stock["No"]</option>
+                        </select>
+                    </div>
                     <div class="form-text text-warning d-none" data-sb-lock-reason="serialControlled"><i class="bx bx-lock-alt me-1"></i>@Stock["LockedReason"]</div>
                 </div>
                 <div class="mb-3">
                     <label for="sb-input-stockable" class="form-label fw-medium">@Stock["Stockable"]</label>
-                    <select id="sb-input-stockable" class="form-select" data-sb-input="stockable">
-                        <option value="">@Stock["NotSet"]</option>
-                        <option value="true">@Stock["Yes"]</option>
-                        <option value="false">@Stock["No"]</option>
-                    </select>
+                    <div class="diten-field">
+                        <i class="bx bx-package diten-field-icon" aria-hidden="true"></i>
+                        <select id="sb-input-stockable" class="form-select" data-sb-input="stockable">
+                            <option value="">@Stock["NotSet"]</option>
+                            <option value="true">@Stock["Yes"]</option>
+                            <option value="false">@Stock["No"]</option>
+                        </select>
+                    </div>
                     <div class="form-text text-warning d-none" data-sb-lock-reason="stockable"><i class="bx bx-lock-alt me-1"></i>@Stock["LockedReason"]</div>
                 </div>
             </section>
@@ -87,8 +102,11 @@
                 <h6 id="sb-group-gtin" class="text-uppercase text-heading fw-semibold mb-3">@Stock["GroupGtin"]</h6>
                 <div class="mb-3">
                     <label for="sb-input-gtin" class="form-label fw-medium">@Stock["Gtin"]</label>
-                    <input type="text" id="sb-input-gtin" class="form-control" maxlength="14" inputmode="numeric" autocomplete="off"
-                           data-sb-input="gtin" aria-describedby="sb-help-gtin" />
+                    <div class="diten-field">
+                        <i class="bx bx-barcode-reader diten-field-icon" aria-hidden="true"></i>
+                        <input type="text" id="sb-input-gtin" class="form-control" maxlength="14" inputmode="numeric" autocomplete="off"
+                               data-sb-input="gtin" aria-describedby="sb-help-gtin" />
+                    </div>
                     <div id="sb-help-gtin" class="form-text">@Stock["GtinHelp"]</div>
                     <div class="form-text text-warning d-none" data-sb-lock-reason="gtin"><i class="bx bx-lock-alt me-1"></i>@Stock["LockedReason"]</div>
                 </div>

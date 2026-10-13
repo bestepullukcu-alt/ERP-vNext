@@ -127,15 +127,11 @@ const UsersList = (function () {
     // select2 inside an offcanvas needs `dropdownParent` = that panel, or the list opens BEHIND it (appended to <body>).
     const initOffcanvasSelect2 = () => {
         if (!window.jQuery || !$.fn.select2) return;
-        [
-            { panel: '#offcanvasCreateEdit', select: '#userAccountKind', width: '100%', selectionCssClass: 'form-select' }
-        ].forEach(({ panel, select, width, selectionCssClass }) => {
-            const $panel = $(panel);
-            const $el = $panel.find(select);
-            if (!$el.length) return; // Razor draws the select only with auth.users.account-kind.manage.
-            if ($el.hasClass('select2-hidden-accessible')) $el.select2('destroy');
-            $el.select2({ dropdownParent: $panel, width, selectionCssClass, minimumResultsForSearch: Infinity });
-        });
+        const $panel = $('#offcanvasCreateEdit');
+        const $el = $panel.find('#userAccountKind');
+        if (!$el.length) return; // Razor draws the select only with auth.users.account-kind.manage.
+        if ($el.hasClass('select2-hidden-accessible')) $el.select2('destroy');
+        $el.select2({ dropdownParent: $panel, width: '100%', selectionCssClass: 'form-select', minimumResultsForSearch: Infinity });
     };
     // select2 paints its own box: a bare `.value` write leaves it showing the previous choice. Every write goes here.
     const setSelectValue = (el, value) => {
