@@ -163,24 +163,24 @@ public enum ExpiryHookKind
 
 /// <summary>
 /// Pack §8.3 + CT-F3 / CT-F5 — which hook a posting is under. Exempt first: REVERSAL, SCRAP, WRITE_OFF (CT-D4), STATUS_TRANSFER,
-/// LOCATION_TRANSFER, WAREHOUSE_TRANSFER (CT-F3), COUNT_GAIN, COUNT_LOSS, SUPPLIER_RETURN, and every movement of MOD-0175. Then: an
-/// outbound movement from AVAILABLE with a lot is an ISSUE (what is left: GOODS_ISSUE_SALES, GOODS_ISSUE_PROD — whoever posts it, the
-/// MVP-6 shipment included); a GOODS_RECEIPT_PO with a lot is a RECEIPT (KF-C, CT-F5). Everything else: no hook.
+/// LOCATION_TRANSFER, WAREHOUSE_TRANSFER (CT-F3), COUNT_GAIN, COUNT_LOSS, SUPPLIER_RETURN. Then: an outbound movement from AVAILABLE
+/// with a lot is an ISSUE (what is left: GOODS_ISSUE_SALES, GOODS_ISSUE_PROD — whoever posts it, the MVP-6 shipment included); a
+/// GOODS_RECEIPT_PO with a lot is a RECEIPT (KF-C, CT-F5). Everything else: no hook.
+/// <para>MOD-0175's movements (STATUS_TRANSFER, SCRAP, SUPPLIER_RETURN, LOCATION_TRANSFER) are exempt by TYPE. <c>sourceModule</c> is
+/// caller data (INVENTORY <c>MovementRequest.sourceModule</c>) and never exempts — WP-0176-F2-FIX1, CT finding O-F2-2.</para>
 /// </summary>
 public static class ExpiryHookScope
 {
-    public const string QuarantineModule = "MOD-0175";
-
     private static readonly HashSet<MovementType> Exempt =
     [
         MovementType.Reversal, MovementType.Scrap, MovementType.WriteOff, MovementType.StatusTransfer, MovementType.LocationTransfer,
         MovementType.WarehouseTransfer, MovementType.CountGain, MovementType.CountLoss, MovementType.SupplierReturn
     ];
 
+    /// <param name="sourceModule">Kept for the callers' shape; it does not enter the decision (O-F2-2).</param>
     public static ExpiryHookKind For(MovementType type, StockStatus? from, StockStatus? to, string? sourceModule, bool hasRegisteredLot)
     {
         if (!hasRegisteredLot || Exempt.Contains(type)) return ExpiryHookKind.None;
-        if (string.Equals(sourceModule, QuarantineModule, StringComparison.Ordinal)) return ExpiryHookKind.None;
         if (from == StockStatus.Available && to is null) return ExpiryHookKind.Issue;
         return type == MovementType.GoodsReceiptPo && to is not null ? ExpiryHookKind.Receipt : ExpiryHookKind.None;
     }

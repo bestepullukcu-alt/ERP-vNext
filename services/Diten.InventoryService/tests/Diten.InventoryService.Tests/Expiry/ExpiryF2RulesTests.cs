@@ -112,7 +112,8 @@ public sealed class ExpiryF2RulesTests
     [InlineData(MovementType.GoodsIssueSales, StockStatus.Available, null, "MOD-0183", ExpiryHookKind.Issue)]
     [InlineData(MovementType.GoodsIssueProd, StockStatus.Available, null, "MOD-TEST", ExpiryHookKind.Issue)]
     [InlineData(MovementType.GoodsIssueSales, StockStatus.Quarantine, null, "MOD-TEST", ExpiryHookKind.None)]
-    [InlineData(MovementType.GoodsIssueSales, StockStatus.Available, null, "MOD-0175", ExpiryHookKind.None)]
+    [InlineData(MovementType.GoodsIssueSales, StockStatus.Available, null, "MOD-0175", ExpiryHookKind.Issue)] // FIX1: sourceModule never exempts
+    [InlineData(MovementType.GoodsReceiptPo, null, StockStatus.Available, "MOD-0175", ExpiryHookKind.Receipt)]
     [InlineData(MovementType.GoodsReceiptPo, null, StockStatus.Available, "MOD-TEST", ExpiryHookKind.Receipt)]
     [InlineData(MovementType.GoodsReceiptPo, null, StockStatus.Quarantine, "MOD-TEST", ExpiryHookKind.Receipt)]
     [InlineData(MovementType.OpeningBalance, null, StockStatus.Available, "MOD-TEST", ExpiryHookKind.None)]

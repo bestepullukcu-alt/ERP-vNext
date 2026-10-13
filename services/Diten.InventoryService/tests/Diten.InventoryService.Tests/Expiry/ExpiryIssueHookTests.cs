@@ -193,7 +193,7 @@ public sealed class ExpiryIssueHookTests : IClassFixture<ExpiryApiFactory>
     [Fact]
     public async Task A_quarantine_status_transfer_of_a_later_lot_is_not_checked()
     {
-        // pack §13 #10: MOD-0175 moves a later lot AVAILABLE → QUALITY_INSPECTION while an earlier lot is eligible
+        // pack §13 #10: MOD-0175 moves a later lot AVAILABLE → QUALITY_INSPECTION while an earlier lot is eligible — exempt by TYPE (FIX1)
         var (s, _, l2) = await TwoLotsAsync();
         var transfer = s.Lots.StatusTransfer("4", l2);
         transfer["sourceModule"] = "MOD-0175";
@@ -204,18 +204,44 @@ public sealed class ExpiryIssueHookTests : IClassFixture<ExpiryApiFactory>
     }
 
     [Fact]
-    public async Task Transfers_and_quarantine_movements_are_exempt()
+    public async Task A_location_transfer_of_a_later_lot_is_exempt()
     {
         var (s, _, l2) = await TwoLotsAsync();
         var transfer = await s.Lots.PostAsync(s.Lots.Transfer("1", l2), 201); // LOCATION_TRANSFER
         Assert.False(transfer.TryGetProperty("expiryChecks", out _));
-
-        // a GOODS_ISSUE_SALES posted by MOD-0175 (sourceModule) — K3 sabotage (i): drop the MOD-0175 exemption → 422
-        var byQuarantine = s.Lots.Issue("1", l2);
-        byQuarantine["sourceModule"] = "MOD-0175";
-        var posted = await s.Lots.PostAsync(byQuarantine, 201);
-        Assert.False(posted.TryGetProperty("expiryChecks", out _));
         Assert.Empty(s.Persisted("expiry_fefo_issue_snapshots"));
+    }
+
+    // ── WP-0176-F2-FIX1 (CT O-F2-2): sourceModule is caller data and never exempts ─────────────────────
+
+    [Fact]
+    public async Task FIX1_a_an_issue_claiming_sourceModule_MOD_0175_still_needs_a_reason()
+    {
+        var (s, l1, l2) = await TwoLotsAsync();
+        var claimed = s.Lots.Issue("1", l2);
+        claimed["sourceModule"] = "MOD-0175";
+
+        // K3 sabotage (s1): put the sourceModule exemption back → 201 without reason, no exception, no snapshot
+        var refused = await s.Lots.PostAsync(claimed, 422);
+        Assert.Equal("FEFO_BYPASS_REASON_REQUIRED", Code(refused));
+        Assert.Equal(l1, refused.GetProperty("error").GetProperty("details").GetProperty("firstEligibleLotId").GetString());
+        Assert.Equal(2, s.Persisted("inventory_transactions").Count);
+        Assert.Empty(s.Persisted("expiry_fefo_issue_snapshots"));
+        Assert.Single(s.Audit("expiry.fefo.refused"));
+    }
+
+    [Fact]
+    public async Task FIX1_b_the_same_issue_with_a_reason_posts_with_exception_and_snapshot()
+    {
+        var (s, _, l2) = await TwoLotsAsync();
+        var claimed = WithReason(s.Lots.Issue("1", l2), Reason);
+        claimed["sourceModule"] = "MOD-0175";
+        var posted = await s.Lots.PostAsync(claimed, 201);
+        Assert.Equal("Bypassed", posted.GetProperty("expiryChecks").GetProperty("fefo").GetString());
+        var c = Assert.Single(Cases(s, "FefoBypass"));
+        Assert.Equal("MOD-0175", c["SourceMovement"]["SourceModule"].AsString);
+        Assert.Equal(s.Ledger.User.ToString(), c["OriginUserId"].AsString);
+        Assert.True(Assert.Single(s.Persisted("expiry_fefo_issue_snapshots"))["Bypassed"].AsBoolean);
     }
 
     [Fact]

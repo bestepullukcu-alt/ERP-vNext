@@ -98,6 +98,20 @@ public sealed class ExpiryReceiptHookTests : IClassFixture<ExpiryApiFactory>
     }
 
     [Fact]
+    public async Task FIX1_c_a_receipt_claiming_sourceModule_MOD_0175_is_checked_like_any_other()
+    {
+        // WP-0176-F2-FIX1 (CT O-F2-2) — K3 sabotage (s1): put the sourceModule exemption back → 201 into AVAILABLE below the minimum
+        var s = World();
+        var claimed = s.Lots.Receipt("5", await s.LotAsync(BelowExpiry));
+        claimed["sourceModule"] = "MOD-0175";
+        var refused = await s.Lots.PostAsync(claimed, 422);
+        Assert.Equal("LOT_BELOW_MIN_REMAINING_SHELF_LIFE", ExpiryScenario.Code(refused));
+        Assert.Equal("QUARANTINE", refused.GetProperty("error").GetProperty("details").GetProperty("requiredToStockStatus").GetString());
+        Assert.Empty(s.Persisted("inventory_transactions"));
+        Assert.Empty(Below(s));
+    }
+
+    [Fact]
     public async Task AutoQuarantine_into_QUALITY_INSPECTION_posts_with_exception()
     {
         var s = World();
