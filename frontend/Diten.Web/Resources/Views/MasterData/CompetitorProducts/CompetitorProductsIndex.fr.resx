@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>Produits concurrents</value></data>
+  <data name="Loading" xml:space="preserve"><value>Chargement…</value></data>
+  <data name="Crumb" xml:space="preserve"><value>MDM</value></data>
+  <data name="Title" xml:space="preserve"><value>Produits concurrents</value></data>
+  <data name="CrumbFull" xml:space="preserve"><value>MDM / Produits concurrents</value></data>
+  <data name="CrumbProposals" xml:space="preserve"><value>Produits concurrents / Propositions des délégués</value></data>
+  <data name="ReadOnly" xml:space="preserve"><value>Lecture seule</value></data>
+  <data name="NewButton" xml:space="preserve"><value>Nouveau produit concurrent</value></data>
+  <data name="TabRecords" xml:space="preserve"><value>Produits concurrents</value></data>
+  <data name="TabProposals" xml:space="preserve"><value>Propositions des délégués</value></data>
+  <data name="FiltersTitle" xml:space="preserve"><value>Filtres</value></data>
+  <data name="AllOption" xml:space="preserve"><value>Tous</value></data>
+  <data name="FilterOurs" xml:space="preserve"><value>Notre produit</value></data>
+  <data name="FilterCompany" xml:space="preserve"><value>Laboratoire</value></data>
+  <data name="FilterIngredient" xml:space="preserve"><value>Principe actif</value></data>
+  <data name="FilterCountry" xml:space="preserve"><value>Pays</value></data>
+  <data name="FilterReimbursement" xml:space="preserve"><value>Remboursement</value></data>
+  <data name="FilterStatus" xml:space="preserve"><value>Statut</value></data>
+  <data name="SearchPlaceholder" xml:space="preserve"><value>Rechercher un nom ou un autre nom</value></data>
+  <data name="ExportButton" xml:space="preserve"><value>Exporter</value></data>
+  <data name="ColName" xml:space="preserve"><value>Produit concurrent</value></data>
+  <data name="ColCompany" xml:space="preserve"><value>Laboratoire</value></data>
+  <data name="ColIngredient" xml:space="preserve"><value>Principe actif</value></data>
+  <data name="ColForm" xml:space="preserve"><value>Forme / dosage</value></data>
+  <data name="ColOurs" xml:space="preserve"><value>Nos produits</value></data>
+  <data name="ColCountries" xml:space="preserve"><value>Pays</value></data>
+  <data name="ColUsage" xml:space="preserve"><value>Dans les rapports</value></data>
+  <data name="ColStatus" xml:space="preserve"><value>Statut</value></data>
+  <data name="ColLast" xml:space="preserve"><value>Dernière modification</value></data>
+  <data name="ColActions" xml:space="preserve"><value>Actions</value></data>
+  <data name="Aka" xml:space="preserve"><value>aussi :</value></data>
+  <data name="PricedText" xml:space="preserve"><value>{0}/{1} avec prix</value></data>
+  <data name="UsageNoAccess" xml:space="preserve"><value>L'utilisation dans les rapports nécessite l'autorisation des rapports agrégés.</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Détails</value></data>
+  <data name="EditButton" xml:space="preserve"><value>Modifier</value></data>
+  <data name="EmptyTitle" xml:space="preserve"><value>Aucun produit concurrent pour l'instant</value></data>
+  <data name="EmptyText" xml:space="preserve"><value>Les produits concurrents sont choisis dans la partie « Marché et concurrent » du rapport du délégué. Ajoutez le premier ; les concurrents proposés par les délégués figurent dans « Propositions des délégués ».</value></data>
+  <data name="NoResults" xml:space="preserve"><value>Aucun enregistrement ne correspond aux filtres.</value></data>
+  <data name="FooterText" xml:space="preserve"><value>{0}–{1} sur {2}</value></data>
+  <data name="PrevPage" xml:space="preserve"><value>Page précédente</value></data>
+  <data name="NextPage" xml:space="preserve"><value>Page suivante</value></data>
+  <data name="ProposalsTitle" xml:space="preserve"><value>Propositions en attente</value></data>
+  <data name="ProposalsText" xml:space="preserve"><value>Une proposition est utilisée tout de suite dans les rapports de son délégué ; elle n'est pas proposée aux autres avant la décision.</value></data>
+  <data name="NoProposals" xml:space="preserve"><value>Aucune proposition en attente</value></data>
+  <data name="PropName" xml:space="preserve"><value>Nom proposé</value></data>
+  <data name="PropCompany" xml:space="preserve"><value>Laboratoire saisi</value></data>
+  <data name="PropBy" xml:space="preserve"><value>Proposé par</value></data>
+  <data name="PropProduct" xml:space="preserve"><value>Dans le rapport de notre produit</value></data>
+  <data name="PropUsage" xml:space="preserve"><value>Utilisation</value></data>
+  <data name="InReports" xml:space="preserve"><value>dans {0} rapports</value></data>
+  <data name="SimilarRecords" xml:space="preserve"><value>Enregistrements similaires :</value></data>
+  <data name="NoSimilar" xml:space="preserve"><value>Aucun enregistrement similaire · peut être approuvé comme nouveau</value></data>
+  <data name="OpenDecision" xml:space="preserve"><value>Décision</value></data>
+  <data name="ActComplete" xml:space="preserve"><value>Approuver et compléter</value></data>
+  <data name="ActMerge" xml:space="preserve"><value>Fusionner avec un enregistrement existant</value></data>
+  <data name="ActReject" xml:space="preserve"><value>Rejeter</value></data>
+  <data name="State_waiting" xml:space="preserve"><value>En attente de décision</value></data>
+  <data name="State_draft" xml:space="preserve"><value>Décision en brouillon · {0}</value></data>
+  <data name="State_in_review" xml:space="preserve"><value>En attente d'approbation · {0}, {1}</value></data>
+  <data name="State_returned" xml:space="preserve"><value>Renvoyée en brouillon · {0}</value></data>
+  <data name="State_returned_sod" xml:space="preserve"><value>Renvoyée : l'auteur ne peut pas approuver sa propre décision</value></data>
+  <data name="State_returned_withdrawn" xml:space="preserve"><value>Retirée · de nouveau en brouillon</value></data>
+  <data name="State_applied" xml:space="preserve"><value>Appliquée · {0}, {1}</value></data>
+  <data name="Decision_complete" xml:space="preserve"><value>Compléter</value></data>
+  <data name="Decision_merge" xml:space="preserve"><value>Fusionner</value></data>
+  <data name="Decision_reject" xml:space="preserve"><value>Rejeter</value></data>
+  <data name="FormNewTitle" xml:space="preserve"><value>Nouveau produit concurrent</value></data>
+  <data name="FormEditTitle" xml:space="preserve"><value>Modifier</value></data>
+  <data name="FormCompleteTitle" xml:space="preserve"><value>Approuver et compléter la proposition</value></data>
+  <data name="FormNewSub" xml:space="preserve"><value>Un enregistrement que les délégués choisissent dans leurs rapports</value></data>
+  <data name="FormCompleteSub" xml:space="preserve"><value>La décision est enregistrée en brouillon et envoyée pour approbation (Opérations commerciales).</value></data>
+  <data name="CancelButton" xml:space="preserve"><value>Annuler</value></data>
+  <data name="SaveButton" xml:space="preserve"><value>Enregistrer</value></data>
+  <data name="SaveDecision" xml:space="preserve"><value>Enregistrer la décision</value></data>
+  <data name="SendForApproval" xml:space="preserve"><value>Envoyer pour approbation</value></data>
+  <data name="ProposalBanner" xml:space="preserve"><value>Proposition du délégué · {0}, {1} · utilisée dans {2} rapports</value></data>
+  <data name="ProposalBannerText" xml:space="preserve"><value>Une fois approuvée, la proposition devient Active et la valeur des rapports pointe vers cet enregistrement. Saisi : « {0} », laboratoire « {1} ».</value></data>
+  <data name="FormErrors" xml:space="preserve"><value>Non enregistré. Remplissez les champs obligatoires signalés.</value></data>
+  <data name="SectionIdentity" xml:space="preserve"><value>Identité</value></data>
+  <data name="SectionCompetition" xml:space="preserve"><value>Concurrence</value></data>
+  <data name="SectionCountries" xml:space="preserve"><value>Prix et remboursement par pays</value></data>
+  <data name="FieldName" xml:space="preserve"><value>Nom du produit concurrent</value></data>
+  <data name="NameHelp" xml:space="preserve"><value>Un laboratoire ne peut pas avoir deux enregistrements du même nom.</value></data>
+  <data name="FieldCompany" xml:space="preserve"><value>Laboratoire</value></data>
+  <data name="FieldAliases" xml:space="preserve"><value>Autres noms</value></data>
+  <data name="AliasPlaceholder" xml:space="preserve"><value>Saisissez un nom et appuyez sur Entrée</value></data>
+  <data name="AliasHelp" xml:space="preserve"><value>Variantes d'orthographe et anciens noms ; la recherche les lit aussi. Ceux marqués viennent d'une fusion.</value></data>
+  <data name="FromMerge" xml:space="preserve"><value>issu d'une fusion</value></data>
+  <data name="FieldIngredients" xml:space="preserve"><value>Principe(s) actif(s)</value></data>
+  <data name="IngredientPlaceholder" xml:space="preserve"><value>p. ex. amlodipine</value></data>
+  <data name="IngredientHelp" xml:space="preserve"><value>Ajoutez chaque substance d'une association séparément ; le rapport affiche « amlodipine + valsartan ».</value></data>
+  <data name="FieldForm" xml:space="preserve"><value>Forme</value></data>
+  <data name="ChooseOption" xml:space="preserve"><value>Choisir</value></data>
+  <data name="FormsUnavailable" xml:space="preserve"><value>La liste des formes MDM n'a pas pu être lue (autorisation de lecture des marques requise).</value></data>
+  <data name="FieldStrength" xml:space="preserve"><value>Dosage</value></data>
+  <data name="FieldAtc" xml:space="preserve"><value>Code ATC</value></data>
+  <data name="FieldOurs" xml:space="preserve"><value>Nos produits concurrencés</value></data>
+  <data name="OursHelp" xml:space="preserve"><value>Depuis les produits globaux ; au moins un. Le concurrent figure dans les rapports de ces produits.</value></data>
+  <data name="ProductsNoAccess" xml:space="preserve"><value>Nos produits nécessitent l'autorisation de lecture des produits globaux.</value></data>
+  <data name="FieldIndications" xml:space="preserve"><value>Indications</value></data>
+  <data name="Optional" xml:space="preserve"><value>(facultatif)</value></data>
+  <data name="IndicationHelp" xml:space="preserve"><value>Graphe de concepts › indications des produits choisis. Le rapport montre le concurrent dans ces indications.</value></data>
+  <data name="IndicationsNoAccess" xml:space="preserve"><value>La liste des indications nécessite une autorisation « connaissance médecin » (CRM).</value></data>
+  <data name="IndicationsPickProduct" xml:space="preserve"><value>Choisissez d'abord l'un de nos produits.</value></data>
+  <data name="NoIndications" xml:space="preserve"><value>Aucune indication n'est définie pour ces produits.</value></data>
+  <data name="UnknownIndication" xml:space="preserve"><value>Indication (plus dans la liste)</value></data>
+  <data name="CountriesHelp" xml:space="preserve"><value>Un changement de prix n'ouvre pas de ligne ; il démarre une période et l'ancien prix passe dans l'historique.</value></data>
+  <data name="AddCountry" xml:space="preserve"><value>Ajouter un pays</value></data>
+  <data name="CountrySearch" xml:space="preserve"><value>Rechercher un pays</value></data>
+  <data name="MarketsUnavailable" xml:space="preserve"><value>La liste des marchés n'a pas pu être lue ; saisissez un code pays ISO.</value></data>
+  <data name="AddButton" xml:space="preserve"><value>Ajouter</value></data>
+  <data name="HistoryCount" xml:space="preserve"><value>Historique ({0})</value></data>
+  <data name="NoHistory" xml:space="preserve"><value>Pas d'historique</value></data>
+  <data name="RemoveRow" xml:space="preserve"><value>Supprimer la ligne</value></data>
+  <data name="RemoveLabel" xml:space="preserve"><value>Supprimer</value></data>
+  <data name="BoxPrice" xml:space="preserve"><value>Prix par boîte</value></data>
+  <data name="CurrencyLabel" xml:space="preserve"><value>Devise</value></data>
+  <data name="Reimbursement" xml:space="preserve"><value>Statut de remboursement</value></data>
+  <data name="ValidFrom" xml:space="preserve"><value>Valable à partir du</value></data>
+  <data name="Source" xml:space="preserve"><value>Source / note</value></data>
+  <data name="SourcePlaceholder" xml:space="preserve"><value>p. ex. liste nationale des médicaments</value></data>
+  <data name="NewPeriod" xml:space="preserve"><value>Une nouvelle période va s'ouvrir : {0} → {1} {2}. L'ancien prix passe dans l'historique.</value></data>
+  <data name="NewPeriodDate" xml:space="preserve"><value>Avancez la date de début.</value></data>
+  <data name="NoCountries" xml:space="preserve"><value>Aucun pays ajouté</value></data>
+  <data name="NoCountriesText" xml:space="preserve"><value>Saisissez le prix par boîte et le remboursement de chaque pays. Le délégué voit la ligne de son pays.</value></data>
+  <data name="ErrMarkets_duplicate" xml:space="preserve"><value>Un pays ne peut être ajouté qu'une fois.</value></data>
+  <data name="ErrMarkets_price" xml:space="preserve"><value>Chaque pays doit avoir un prix par boîte (0 ou plus).</value></data>
+  <data name="ErrMarkets_currency" xml:space="preserve"><value>Chaque pays doit avoir un code devise à trois lettres.</value></data>
+  <data name="PreviousPeriods" xml:space="preserve"><value>Périodes précédentes · lecture seule</value></data>
+  <data name="PeriodLabel" xml:space="preserve"><value>Période</value></data>
+  <data name="PreviewTitle" xml:space="preserve"><value>Vue du délégué</value></data>
+  <data name="PreviewSub" xml:space="preserve"><value>La carte « Marché et concurrent » du rapport</value></data>
+  <data name="PreviewAs" xml:space="preserve"><value>Aperçu pour {0}</value></data>
+  <data name="CompetitorTag" xml:space="preserve"><value>Concurrent</value></data>
+  <data name="FormStrength" xml:space="preserve"><value>Forme / dosage</value></data>
+  <data name="OurProduct" xml:space="preserve"><value>Notre produit</value></data>
+  <data name="PriceIn" xml:space="preserve"><value>Prix par boîte · {0}</value></data>
+  <data name="Since" xml:space="preserve"><value>depuis le {0}</value></data>
+  <data name="NoPriceFor" xml:space="preserve"><value>Aucun prix saisi pour {0}. Le délégué voit la carte sans prix.</value></data>
+  <data name="ShownIndications" xml:space="preserve"><value>Affiché dans les indications :</value></data>
+  <data name="ConflictTitle" xml:space="preserve"><value>Quelqu'un d'autre a modifié l'enregistrement ; actualisez-le.</value></data>
+  <data name="ConflictText" xml:space="preserve"><value>Vos modifications n'ont pas été enregistrées ; saisissez-les de nouveau après actualisation.</value></data>
+  <data name="RefreshButton" xml:space="preserve"><value>Actualiser</value></data>
+  <data name="Saved" xml:space="preserve"><value>Enregistré.</value></data>
+  <data name="ErrNameRequired" xml:space="preserve"><value>Le nom est obligatoire (ou le laboratoire l'a déjà).</value></data>
+  <data name="ErrCompanyRequired" xml:space="preserve"><value>Le laboratoire est obligatoire.</value></data>
+  <data name="ErrIngredientsRequired" xml:space="preserve"><value>Saisissez au moins un principe actif.</value></data>
+  <data name="ErrProductsRequired" xml:space="preserve"><value>Choisissez au moins l'un de nos produits.</value></data>
+  <data name="LeaveTitle" xml:space="preserve"><value>Quitter sans enregistrer ?</value></data>
+  <data name="LeaveText" xml:space="preserve"><value>Vos modifications sur cette page seront perdues.</value></data>
+  <data name="StayButton" xml:space="preserve"><value>Rester</value></data>
+  <data name="LeaveButton" xml:space="preserve"><value>Quitter</value></data>
+  <data name="DetailSub" xml:space="preserve"><value>{0} · dernière modification {1}, {2}</value></data>
+  <data name="MergeOther" xml:space="preserve"><value>Fusionner avec un autre enregistrement</value></data>
+  <data name="DeactivateButton" xml:space="preserve"><value>Désactiver</value></data>
+  <data name="DeactivateTitle" xml:space="preserve"><value>Désactiver {0} ?</value></data>
+  <data name="DeactivateText" xml:space="preserve"><value>Il ne peut plus être choisi dans les nouveaux rapports ; les anciens ne sont pas touchés.</value></data>
+  <data name="Deactivated" xml:space="preserve"><value>Désactivé.</value></data>
+  <data name="MergedInto" xml:space="preserve"><value>Cet enregistrement a été fusionné dans</value></data>
+  <data name="IndicationCount" xml:space="preserve"><value>{0} indications</value></data>
+  <data name="CountryLabel" xml:space="preserve"><value>Pays</value></data>
+  <data name="SectionHistory" xml:space="preserve"><value>Historique des modifications</value></data>
+  <data name="SectionUsage" xml:space="preserve"><value>Utilisation dans les rapports</value></data>
+  <data name="LastThreeMonths" xml:space="preserve"><value>3 derniers mois</value></data>
+  <data name="UsageNone" xml:space="preserve"><value>Pas encore utilisé dans les rapports.</value></data>
+  <data name="UsageUnavailable" xml:space="preserve"><value>Les décomptes des rapports n'ont pas pu être lus.</value></data>
+  <data name="DoctorsLabel" xml:space="preserve"><value>médecins</value></data>
+  <data name="ReportsLabel" xml:space="preserve"><value>rapports</value></data>
+  <data name="ByProduct" xml:space="preserve"><value>Par notre produit</value></data>
+  <data name="ByCountry" xml:space="preserve"><value>Par pays</value></data>
+  <data name="UnknownCountry" xml:space="preserve"><value>Inconnu</value></data>
+  <data name="UsagePrivacy" xml:space="preserve"><value>Décomptes agrégés. Aucun médecin n'est identifié ; un nombre inférieur à 5 s'affiche « &lt;5 ».</value></data>
+  <data name="SectionMergeTrace" xml:space="preserve"><value>Trace des fusions</value></data>
+  <data name="TraceLine" xml:space="preserve"><value>Proposé par {0} · fusionné le {1}</value></data>
+  <data name="NoMergeTrace" xml:space="preserve"><value>Aucun enregistrement n'a été fusionné dans celui-ci.</value></data>
+  <data name="MarketSoon" xml:space="preserve"><value>Données de marché · bientôt</value></data>
+  <data name="MarketSoonText" xml:space="preserve"><value>La part de marché et les ventes arriveront avec W7.</value></data>
+  <data name="MergeTitle" xml:space="preserve"><value>Fusionner</value></data>
+  <data name="MergeSource" xml:space="preserve"><value>Sera fusionné</value></data>
+  <data name="MergeSourceLine" xml:space="preserve"><value>laboratoire « {0} » · proposé par {1}, {2}</value></data>
+  <data name="StepN" xml:space="preserve"><value>Étape {0}/3</value></data>
+  <data name="MergeStepTarget" xml:space="preserve"><value>Choisir la cible</value></data>
+  <data name="MergeStepTargetSub" xml:space="preserve"><value>l'enregistrement conservé</value></data>
+  <data name="MergeStepCompare" xml:space="preserve"><value>Comparer</value></data>
+  <data name="MergeStepCompareSub" xml:space="preserve"><value>champs et pays</value></data>
+  <data name="MergeStepEffect" xml:space="preserve"><value>Effet</value></data>
+  <data name="MergeStepEffectSub" xml:space="preserve"><value>confirmer</value></data>
+  <data name="SearchSurvivor" xml:space="preserve"><value>Rechercher l'enregistrement conservé</value></data>
+  <data name="SimilarBySimilarity" xml:space="preserve"><value>Enregistrements similaires · par similarité de nom</value></data>
+  <data name="NoCandidates" xml:space="preserve"><value>Aucun enregistrement actif ne correspond.</value></data>
+  <data name="NextButton" xml:space="preserve"><value>Suivant</value></data>
+  <data name="BackButton" xml:space="preserve"><value>Retour</value></data>
+  <data name="CompareHelp" xml:space="preserve"><value>Les valeurs de l'enregistrement conservé sont gardées. Les champs différents sont signalés.</value></data>
+  <data name="FieldColumn" xml:space="preserve"><value>Champ</value></data>
+  <data name="WillMerge" xml:space="preserve"><value>Sera fusionné · {0}</value></data>
+  <data name="Survivor" xml:space="preserve"><value>Conservé · {0}</value></data>
+  <data name="WillMergeShort" xml:space="preserve"><value>Sera fusionné</value></data>
+  <data name="SurvivorShort" xml:space="preserve"><value>Conservé</value></data>
+  <data name="DifferentTag" xml:space="preserve"><value>différent</value></data>
+  <data name="CountryRows" xml:space="preserve"><value>Lignes pays</value></data>
+  <data name="CountryRowsHelp" xml:space="preserve"><value>Un pays absent de l'enregistrement conservé peut être déplacé. S'il est dans les deux, la ligne conservée reste.</value></data>
+  <data name="MoveColumn" xml:space="preserve"><value>Déplacer</value></data>
+  <data name="MoveLabel" xml:space="preserve"><value>déplacer</value></data>
+  <data name="KeptLabel" xml:space="preserve"><value>conservé</value></data>
+  <data name="NoneLabel" xml:space="preserve"><value>aucun</value></data>
+  <data name="EffectTitle" xml:space="preserve"><value>L'effet de la fusion</value></data>
+  <data name="EffectReports" xml:space="preserve"><value>La valeur concurrent de {0} rapports pointera vers « {1} ».</value></data>
+  <data name="EffectAlias" xml:space="preserve"><value>Le nom « {0} » sera ajouté aux autres noms.</value></data>
+  <data name="EffectMove" xml:space="preserve"><value>Les lignes pays {0} seront déplacées vers l'enregistrement conservé.</value></data>
+  <data name="EffectNoMove" xml:space="preserve"><value>Aucune ligne pays n'est déplacée.</value></data>
+  <data name="EffectStatusProposal" xml:space="preserve"><value>La proposition passe à « Fusionnée » et ne reste qu'en trace.</value></data>
+  <data name="EffectStatusRecord" xml:space="preserve"><value>Cet enregistrement passe à « Fusionné » et ne reste qu'en trace.</value></data>
+  <data name="EffectApproval" xml:space="preserve"><value>Elle s'applique quand les Opérations commerciales l'approuvent dans le centre de tâches.</value></data>
+  <data name="Irreversible" xml:space="preserve"><value>Cette action est irréversible.</value></data>
+  <data name="AckText" xml:space="preserve"><value>J'ai lu l'effet et je confirme la fusion.</value></data>
+  <data name="MergeButton" xml:space="preserve"><value>Fusionner</value></data>
+  <data name="Merged" xml:space="preserve"><value>Fusionné.</value></data>
+  <data name="SectionProposal" xml:space="preserve"><value>Proposition</value></data>
+  <data name="SectionDecision" xml:space="preserve"><value>Décision</value></data>
+  <data name="SectionDecisionHistory" xml:space="preserve"><value>Historique d'approbation</value></data>
+  <data name="NoDecision" xml:space="preserve"><value>Aucune décision n'a encore été préparée.</value></data>
+  <data name="DecisionKind" xml:space="preserve"><value>Décision</value></data>
+  <data name="PreparedBy" xml:space="preserve"><value>Préparée par</value></data>
+  <data name="MergeTarget" xml:space="preserve"><value>Enregistrement cible</value></data>
+  <data name="MovedCountries" xml:space="preserve"><value>Pays à déplacer</value></data>
+  <data name="MergeEffectShort" xml:space="preserve"><value>Le nom proposé rejoint les autres noms de la cible ; les rapports pointent vers elle.</value></data>
+  <data name="RejectReason" xml:space="preserve"><value>Motif</value></data>
+  <data name="AppliedLine" xml:space="preserve"><value>Appliquée · {0} · approuvée par {1}, {2}</value></data>
+  <data name="WithdrawButton" xml:space="preserve"><value>Retirer</value></data>
+  <data name="ApproveButton" xml:space="preserve"><value>Approuver</value></data>
+  <data name="ReturnToDraft" xml:space="preserve"><value>Renvoyer en brouillon</value></data>
+  <data name="SodNote" xml:space="preserve"><value>Vous avez préparé cette décision ; quelqu'un d'autre l'approuve dans le centre de tâches.</value></data>
+  <data name="HistSubmitted" xml:space="preserve"><value>Tour {0} envoyé pour approbation par {1}</value></data>
+  <data name="HistRound_approved" xml:space="preserve"><value>Approuvé · {0}</value></data>
+  <data name="HistRound_rejected" xml:space="preserve"><value>Renvoyé · {0}</value></data>
+  <data name="HistRound_cancelled" xml:space="preserve"><value>Retiré · {0}</value></data>
+  <data name="HistRound_timed_out" xml:space="preserve"><value>Délai dépassé</value></data>
+  <data name="HistRound_closed" xml:space="preserve"><value>Clôturé · {0}</value></data>
+  <data name="HistDecision_approve" xml:space="preserve"><value>Décision : approuver · {0}</value></data>
+  <data name="HistDecision_return" xml:space="preserve"><value>Décision : renvoyer en brouillon · {0}</value></data>
+  <data name="DecisionSaved" xml:space="preserve"><value>La décision a été enregistrée en brouillon.</value></data>
+  <data name="Sent" xml:space="preserve"><value>Envoyée pour approbation.</value></data>
+  <data name="RejectTitle" xml:space="preserve"><value>Rejeter la proposition : {0}</value></data>
+  <data name="RejectPlaceholder" xml:space="preserve"><value>p. ex. Absent de ce marché ; pas une faute de frappe d'un autre produit.</value></data>
+  <data name="RejectInfo" xml:space="preserve"><value>Il reste dans les rapports comme concurrent non vérifié (texte simple) ; il n'est pas proposé aux délégués.</value></data>
+  <data name="ErrReasonRequired" xml:space="preserve"><value>Le motif est obligatoire.</value></data>
+  <data name="ErrTooLong" xml:space="preserve"><value>500 caractères au maximum.</value></data>
+  <data name="ReturnTitle" xml:space="preserve"><value>Renvoyer la décision en brouillon</value></data>
+  <data name="ReturnNote" xml:space="preserve"><value>Note à l'auteur</value></data>
+  <data name="ErrNoteRequired" xml:space="preserve"><value>Une note est obligatoire.</value></data>
+  <data name="UserShort" xml:space="preserve"><value>utilisateur {0}</value></data>
+  <data name="UnknownProduct" xml:space="preserve"><value>Produit sans nom</value></data>
+  <data name="ActionFailed" xml:space="preserve"><value>L'action a échoué. Réessayez.</value></data>
+  <data name="Status_proposed" xml:space="preserve"><value>Proposé</value></data>
+  <data name="Status_active" xml:space="preserve"><value>Actif</value></data>
+  <data name="Status_inactive" xml:space="preserve"><value>Inactif</value></data>
+  <data name="Status_merged" xml:space="preserve"><value>Fusionné</value></data>
+  <data name="Status_rejected" xml:space="preserve"><value>Rejeté</value></data>
+  <data name="Field_name" xml:space="preserve"><value>Nom</value></data>
+  <data name="Field_company" xml:space="preserve"><value>Laboratoire</value></data>
+  <data name="Field_aliases" xml:space="preserve"><value>Autres noms</value></data>
+  <data name="Field_activeIngredients" xml:space="preserve"><value>Principe actif</value></data>
+  <data name="Field_formCode" xml:space="preserve"><value>Forme</value></data>
+  <data name="Field_strength" xml:space="preserve"><value>Dosage</value></data>
+  <data name="Field_atcCode" xml:space="preserve"><value>Code ATC</value></data>
+  <data name="Field_competesWith" xml:space="preserve"><value>Nos produits</value></data>
+  <data name="Field_indications" xml:space="preserve"><value>Indications</value></data>
+  <data name="Field_created" xml:space="preserve"><value>Créé</value></data>
+  <data name="Field_proposed" xml:space="preserve"><value>Proposé par un délégué</value></data>
+  <data name="Field_status" xml:space="preserve"><value>Statut</value></data>
+  <data name="Field_countryPrices" xml:space="preserve"><value>Prix pays · {0}</value></data>
+  <data name="Err_concurrency_conflict" xml:space="preserve"><value>Quelqu'un d'autre a modifié l'enregistrement ; actualisez et réessayez.</value></data>
+  <data name="Err_forbidden" xml:space="preserve"><value>Vous n'avez pas l'autorisation pour cette action.</value></data>
+  <data name="Err_service_unavailable" xml:space="preserve"><value>Un service est injoignable. Rien n'a été modifié.</value></data>
+  <data name="Err_gateway_unavailable" xml:space="preserve"><value>Le serveur est injoignable. Réessayez.</value></data>
+  <data name="Err_workflow_template_missing" xml:space="preserve"><value>Le circuit d'approbation (MDM-COMP-PROPOSAL) n'est pas encore configuré. La décision est enregistrée en brouillon ; demandez à l'administrateur de publier le modèle.</value></data>
+  <data name="Err_approval_forbidden" xml:space="preserve"><value>Vous n'êtes pas autorisé à lancer le circuit d'approbation.</value></data>
+  <data name="Err_workflow_unavailable" xml:space="preserve"><value>Le service d'approbation est injoignable. Rien n'a été modifié.</value></data>
+  <data name="Err_workflow_request_rejected" xml:space="preserve"><value>Le circuit d'approbation a refusé la demande.</value></data>
+  <data name="Err_no_open_review" xml:space="preserve"><value>Aucune approbation ouverte pour cette décision.</value></data>
+  <data name="Err_withdraw_not_possible" xml:space="preserve"><value>Elle ne peut plus être retirée.</value></data>
+  <data name="Err_decision_invalid" xml:space="preserve"><value>La décision est approuver ou renvoyer.</value></data>
+  <data name="Err_rejection_comment_required" xml:space="preserve"><value>Une note est obligatoire pour la renvoyer.</value></data>
+  <data name="Err_competitor_duplicate" xml:space="preserve"><value>Ce laboratoire a déjà un enregistrement de ce nom.</value></data>
+  <data name="Err_competitor_market_duplicate" xml:space="preserve"><value>Un pays ne peut figurer qu'une fois.</value></data>
+  <data name="Err_competitor_market_invalid" xml:space="preserve"><value>Un pays n'est pas dans le catalogue des marchés vérifiés.</value></data>
+  <data name="Err_competitor_reimbursement_invalid" xml:space="preserve"><value>Un statut de remboursement n'est pas dans sa liste.</value></data>
+  <data name="Err_competitor_currency_invalid" xml:space="preserve"><value>Une devise n'est pas un code à trois lettres.</value></data>
+  <data name="Err_competitor_form_invalid" xml:space="preserve"><value>La forme n'est pas dans la liste des formes MDM.</value></data>
+  <data name="Err_competitor_invalid" xml:space="preserve"><value>Certaines valeurs manquent ou sont trop longues.</value></data>
+  <data name="Err_competitor_not_found" xml:space="preserve"><value>L'enregistrement est introuvable.</value></data>
+  <data name="Err_competitor_not_editable" xml:space="preserve"><value>Cet enregistrement ne peut pas être modifié dans ce statut.</value></data>
+  <data name="Err_competitor_not_selectable" xml:space="preserve"><value>La cible doit être un enregistrement actif.</value></data>
+  <data name="Err_competitor_not_proposal" xml:space="preserve"><value>La proposition a déjà été tranchée.</value></data>
+  <data name="Err_competitor_decision_locked" xml:space="preserve"><value>La décision est verrouillée pendant l'approbation.</value></data>
+  <data name="Err_competitor_decision_missing" xml:space="preserve"><value>Préparez et enregistrez d'abord une décision.</value></data>
+  <data name="Err_competitor_proposal_sod" xml:space="preserve"><value>L'auteur ne peut pas approuver sa propre décision.</value></data>
+  <data name="Err_competitor_merge_confirm_required" xml:space="preserve"><value>Confirmez avoir lu l'effet de la fusion.</value></data>
+  <data name="Err_competitor_merge_self" xml:space="preserve"><value>Un enregistrement ne peut pas être fusionné avec lui-même.</value></data>
+  <data name="Err_reference_data_unavailable" xml:space="preserve"><value>Une liste de référence n'a pas pu être lue. Rien n'a été enregistré.</value></data>
+  <data name="Err_tenant_supplied" xml:space="preserve"><value>La demande a été refusée.</value></data>
+  <data name="Form_tablet" xml:space="preserve"><value>comprimé</value></data>
+  <data name="Form_capsule" xml:space="preserve"><value>gélule</value></data>
+  <data name="Form_syrup" xml:space="preserve"><value>sirop</value></data>
+  <data name="Form_injection" xml:space="preserve"><value>injectable</value></data>
+  <data name="Form_ointment" xml:space="preserve"><value>pommade</value></data>
+  <data name="Form_cream" xml:space="preserve"><value>crème</value></data>
+  <data name="Form_drops" xml:space="preserve"><value>gouttes</value></data>
+  <data name="Form_inhaler" xml:space="preserve"><value>inhalateur</value></data>
+  <data name="Form_patch" xml:space="preserve"><value>patch</value></data>
+  <data name="Form_other" xml:space="preserve"><value>autre forme</value></data>
+  <data name="Form_film_coated_tablet" xml:space="preserve"><value>comprimé pelliculé</value></data>
+  <data name="Form_modified_release_tablet" xml:space="preserve"><value>comprimé à libération modifiée</value></data>
+  <data name="Form_extended_release_tablet" xml:space="preserve"><value>comprimé à libération prolongée</value></data>
+  <data name="Form_modified_release_capsule" xml:space="preserve"><value>gélule à libération modifiée</value></data>
+  <data name="Form_ampoule" xml:space="preserve"><value>ampoule</value></data>
+</root>

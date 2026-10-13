@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>竞品</value></data>
+  <data name="Loading" xml:space="preserve"><value>正在加载…</value></data>
+  <data name="Crumb" xml:space="preserve"><value>MDM</value></data>
+  <data name="Title" xml:space="preserve"><value>竞品</value></data>
+  <data name="CrumbFull" xml:space="preserve"><value>MDM / 竞品</value></data>
+  <data name="CrumbProposals" xml:space="preserve"><value>竞品 / 代表建议</value></data>
+  <data name="ReadOnly" xml:space="preserve"><value>只读</value></data>
+  <data name="NewButton" xml:space="preserve"><value>新建竞品</value></data>
+  <data name="TabRecords" xml:space="preserve"><value>竞品</value></data>
+  <data name="TabProposals" xml:space="preserve"><value>代表建议</value></data>
+  <data name="FiltersTitle" xml:space="preserve"><value>筛选</value></data>
+  <data name="AllOption" xml:space="preserve"><value>全部</value></data>
+  <data name="FilterOurs" xml:space="preserve"><value>我方产品</value></data>
+  <data name="FilterCompany" xml:space="preserve"><value>公司</value></data>
+  <data name="FilterIngredient" xml:space="preserve"><value>活性成分</value></data>
+  <data name="FilterCountry" xml:space="preserve"><value>国家</value></data>
+  <data name="FilterReimbursement" xml:space="preserve"><value>报销</value></data>
+  <data name="FilterStatus" xml:space="preserve"><value>状态</value></data>
+  <data name="SearchPlaceholder" xml:space="preserve"><value>搜索名称或别名</value></data>
+  <data name="ExportButton" xml:space="preserve"><value>导出</value></data>
+  <data name="ColName" xml:space="preserve"><value>竞品</value></data>
+  <data name="ColCompany" xml:space="preserve"><value>公司</value></data>
+  <data name="ColIngredient" xml:space="preserve"><value>活性成分</value></data>
+  <data name="ColForm" xml:space="preserve"><value>剂型 / 规格</value></data>
+  <data name="ColOurs" xml:space="preserve"><value>我方产品</value></data>
+  <data name="ColCountries" xml:space="preserve"><value>国家</value></data>
+  <data name="ColUsage" xml:space="preserve"><value>报告中</value></data>
+  <data name="ColStatus" xml:space="preserve"><value>状态</value></data>
+  <data name="ColLast" xml:space="preserve"><value>最近修改</value></data>
+  <data name="ColActions" xml:space="preserve"><value>操作</value></data>
+  <data name="Aka" xml:space="preserve"><value>又名：</value></data>
+  <data name="PricedText" xml:space="preserve"><value>{0}/{1} 已定价</value></data>
+  <data name="UsageNoAccess" xml:space="preserve"><value>报告使用情况需要汇总报告权限。</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>详情</value></data>
+  <data name="EditButton" xml:space="preserve"><value>编辑</value></data>
+  <data name="EmptyTitle" xml:space="preserve"><value>尚无竞品</value></data>
+  <data name="EmptyText" xml:space="preserve"><value>竞品在代表报告的“市场与竞品”部分中选择。请添加第一条记录；代表建议的竞品列在“代表建议”中。</value></data>
+  <data name="NoResults" xml:space="preserve"><value>没有符合筛选条件的记录。</value></data>
+  <data name="FooterText" xml:space="preserve"><value>第 {0}–{1} 条，共 {2} 条</value></data>
+  <data name="PrevPage" xml:space="preserve"><value>上一页</value></data>
+  <data name="NextPage" xml:space="preserve"><value>下一页</value></data>
+  <data name="ProposalsTitle" xml:space="preserve"><value>待处理的代表建议</value></data>
+  <data name="ProposalsText" xml:space="preserve"><value>建议会立即用于提议代表的报告中；在作出决定前不会推荐给其他代表。</value></data>
+  <data name="NoProposals" xml:space="preserve"><value>没有待处理的建议</value></data>
+  <data name="PropName" xml:space="preserve"><value>建议名称</value></data>
+  <data name="PropCompany" xml:space="preserve"><value>填写的公司</value></data>
+  <data name="PropBy" xml:space="preserve"><value>建议人</value></data>
+  <data name="PropProduct" xml:space="preserve"><value>所属我方产品报告</value></data>
+  <data name="PropUsage" xml:space="preserve"><value>使用情况</value></data>
+  <data name="InReports" xml:space="preserve"><value>{0} 份报告中</value></data>
+  <data name="SimilarRecords" xml:space="preserve"><value>相似记录：</value></data>
+  <data name="NoSimilar" xml:space="preserve"><value>无相似记录 · 可作为新记录批准</value></data>
+  <data name="OpenDecision" xml:space="preserve"><value>决定</value></data>
+  <data name="ActComplete" xml:space="preserve"><value>批准并补全</value></data>
+  <data name="ActMerge" xml:space="preserve"><value>与现有记录合并</value></data>
+  <data name="ActReject" xml:space="preserve"><value>拒绝</value></data>
+  <data name="State_waiting" xml:space="preserve"><value>待决定</value></data>
+  <data name="State_draft" xml:space="preserve"><value>决定草稿 · {0}</value></data>
+  <data name="State_in_review" xml:space="preserve"><value>待审批 · {0}，{1}</value></data>
+  <data name="State_returned" xml:space="preserve"><value>已退回草稿 · {0}</value></data>
+  <data name="State_returned_sod" xml:space="preserve"><value>已退回：准备人不能批准自己的决定</value></data>
+  <data name="State_returned_withdrawn" xml:space="preserve"><value>已撤回 · 重新为草稿</value></data>
+  <data name="State_applied" xml:space="preserve"><value>已执行 · {0}，{1}</value></data>
+  <data name="Decision_complete" xml:space="preserve"><value>补全</value></data>
+  <data name="Decision_merge" xml:space="preserve"><value>合并</value></data>
+  <data name="Decision_reject" xml:space="preserve"><value>拒绝</value></data>
+  <data name="FormNewTitle" xml:space="preserve"><value>新建竞品</value></data>
+  <data name="FormEditTitle" xml:space="preserve"><value>编辑</value></data>
+  <data name="FormCompleteTitle" xml:space="preserve"><value>批准并补全建议</value></data>
+  <data name="FormNewSub" xml:space="preserve"><value>代表将在报告中选择的记录</value></data>
+  <data name="FormCompleteSub" xml:space="preserve"><value>决定保存为草稿并提交审批（销售运营）。</value></data>
+  <data name="CancelButton" xml:space="preserve"><value>取消</value></data>
+  <data name="SaveButton" xml:space="preserve"><value>保存</value></data>
+  <data name="SaveDecision" xml:space="preserve"><value>保存决定</value></data>
+  <data name="SendForApproval" xml:space="preserve"><value>提交审批</value></data>
+  <data name="ProposalBanner" xml:space="preserve"><value>代表建议 · {0}，{1} · 已用于 {2} 份报告</value></data>
+  <data name="ProposalBannerText" xml:space="preserve"><value>批准后建议变为“有效”，报告中的值将关联到此记录。报告中的写法：“{0}”，公司“{1}”。</value></data>
+  <data name="FormErrors" xml:space="preserve"><value>未保存。请填写标记的必填字段。</value></data>
+  <data name="SectionIdentity" xml:space="preserve"><value>基本信息</value></data>
+  <data name="SectionCompetition" xml:space="preserve"><value>竞争</value></data>
+  <data name="SectionCountries" xml:space="preserve"><value>各国价格与报销</value></data>
+  <data name="FieldName" xml:space="preserve"><value>竞品名称</value></data>
+  <data name="NameHelp" xml:space="preserve"><value>同一公司不能有两条同名记录。</value></data>
+  <data name="FieldCompany" xml:space="preserve"><value>公司</value></data>
+  <data name="FieldAliases" xml:space="preserve"><value>其他名称</value></data>
+  <data name="AliasPlaceholder" xml:space="preserve"><value>输入名称后按回车</value></data>
+  <data name="AliasHelp" xml:space="preserve"><value>拼写变体和旧名称；搜索也会匹配。带标记的来自合并。</value></data>
+  <data name="FromMerge" xml:space="preserve"><value>来自合并</value></data>
+  <data name="FieldIngredients" xml:space="preserve"><value>活性成分</value></data>
+  <data name="IngredientPlaceholder" xml:space="preserve"><value>如：氨氯地平</value></data>
+  <data name="IngredientHelp" xml:space="preserve"><value>复方请逐一添加每种成分；报告中显示为“氨氯地平 + 缬沙坦”。</value></data>
+  <data name="FieldForm" xml:space="preserve"><value>剂型</value></data>
+  <data name="ChooseOption" xml:space="preserve"><value>请选择</value></data>
+  <data name="FormsUnavailable" xml:space="preserve"><value>无法读取 MDM 剂型列表（需要品牌读取权限）。</value></data>
+  <data name="FieldStrength" xml:space="preserve"><value>规格 / 剂量</value></data>
+  <data name="FieldAtc" xml:space="preserve"><value>ATC 编码</value></data>
+  <data name="FieldOurs" xml:space="preserve"><value>与之竞争的我方产品</value></data>
+  <data name="OursHelp" xml:space="preserve"><value>来自全球产品；至少选一个。该竞品会列在这些产品的报告中。</value></data>
+  <data name="ProductsNoAccess" xml:space="preserve"><value>我方产品需要全球产品读取权限。</value></data>
+  <data name="FieldIndications" xml:space="preserve"><value>适应症</value></data>
+  <data name="Optional" xml:space="preserve"><value>（可选）</value></data>
+  <data name="IndicationHelp" xml:space="preserve"><value>概念图 › 所选产品的适应症概念。报告会在这些适应症中显示该竞品。</value></data>
+  <data name="IndicationsNoAccess" xml:space="preserve"><value>适应症列表需要医生洞察权限（CRM）。</value></data>
+  <data name="IndicationsPickProduct" xml:space="preserve"><value>请先选择一个我方产品。</value></data>
+  <data name="NoIndications" xml:space="preserve"><value>这些产品未定义适应症。</value></data>
+  <data name="UnknownIndication" xml:space="preserve"><value>适应症（已不在列表中）</value></data>
+  <data name="CountriesHelp" xml:space="preserve"><value>价格变更不会新增行，而是开启新周期，旧价格移入历史。</value></data>
+  <data name="AddCountry" xml:space="preserve"><value>添加国家</value></data>
+  <data name="CountrySearch" xml:space="preserve"><value>搜索国家</value></data>
+  <data name="MarketsUnavailable" xml:space="preserve"><value>无法读取市场列表；请输入 ISO 国家代码。</value></data>
+  <data name="AddButton" xml:space="preserve"><value>添加</value></data>
+  <data name="HistoryCount" xml:space="preserve"><value>历史（{0}）</value></data>
+  <data name="NoHistory" xml:space="preserve"><value>无历史</value></data>
+  <data name="RemoveRow" xml:space="preserve"><value>移除此行</value></data>
+  <data name="RemoveLabel" xml:space="preserve"><value>移除</value></data>
+  <data name="BoxPrice" xml:space="preserve"><value>每盒价格</value></data>
+  <data name="CurrencyLabel" xml:space="preserve"><value>货币</value></data>
+  <data name="Reimbursement" xml:space="preserve"><value>报销状态</value></data>
+  <data name="ValidFrom" xml:space="preserve"><value>生效日期</value></data>
+  <data name="Source" xml:space="preserve"><value>来源 / 备注</value></data>
+  <data name="SourcePlaceholder" xml:space="preserve"><value>如：国家药品目录</value></data>
+  <data name="NewPeriod" xml:space="preserve"><value>将开启新周期：{0} → {1} {2}。旧价格移入历史。</value></data>
+  <data name="NewPeriodDate" xml:space="preserve"><value>请更新生效日期。</value></data>
+  <data name="NoCountries" xml:space="preserve"><value>尚未添加国家</value></data>
+  <data name="NoCountriesText" xml:space="preserve"><value>请为每个国家填写每盒价格和报销状态。代表看到本国的那一行。</value></data>
+  <data name="ErrMarkets_duplicate" xml:space="preserve"><value>同一国家只能添加一次。</value></data>
+  <data name="ErrMarkets_price" xml:space="preserve"><value>每个国家都需要每盒价格（0 或以上）。</value></data>
+  <data name="ErrMarkets_currency" xml:space="preserve"><value>每个国家都需要三字母货币代码。</value></data>
+  <data name="PreviousPeriods" xml:space="preserve"><value>以往周期 · 只读</value></data>
+  <data name="PeriodLabel" xml:space="preserve"><value>周期</value></data>
+  <data name="PreviewTitle" xml:space="preserve"><value>代表视图</value></data>
+  <data name="PreviewSub" xml:space="preserve"><value>报告中的“市场与竞品”卡片</value></data>
+  <data name="PreviewAs" xml:space="preserve"><value>以 {0} 预览</value></data>
+  <data name="CompetitorTag" xml:space="preserve"><value>竞品</value></data>
+  <data name="FormStrength" xml:space="preserve"><value>剂型 / 规格</value></data>
+  <data name="OurProduct" xml:space="preserve"><value>我方产品</value></data>
+  <data name="PriceIn" xml:space="preserve"><value>每盒价格 · {0}</value></data>
+  <data name="Since" xml:space="preserve"><value>自 {0} 起</value></data>
+  <data name="NoPriceFor" xml:space="preserve"><value>{0} 未填写价格。代表看到的卡片无价格。</value></data>
+  <data name="ShownIndications" xml:space="preserve"><value>显示于以下适应症：</value></data>
+  <data name="ConflictTitle" xml:space="preserve"><value>该记录已被他人修改，请刷新。</value></data>
+  <data name="ConflictText" xml:space="preserve"><value>您的更改未保存；刷新后需要重新输入。</value></data>
+  <data name="RefreshButton" xml:space="preserve"><value>刷新</value></data>
+  <data name="Saved" xml:space="preserve"><value>已保存。</value></data>
+  <data name="ErrNameRequired" xml:space="preserve"><value>竞品名称为必填（或该公司已有同名记录）。</value></data>
+  <data name="ErrCompanyRequired" xml:space="preserve"><value>公司为必填。</value></data>
+  <data name="ErrIngredientsRequired" xml:space="preserve"><value>请至少填写一种活性成分。</value></data>
+  <data name="ErrProductsRequired" xml:space="preserve"><value>请至少选择一个我方产品。</value></data>
+  <data name="LeaveTitle" xml:space="preserve"><value>不保存就离开？</value></data>
+  <data name="LeaveText" xml:space="preserve"><value>本页的更改将丢失。</value></data>
+  <data name="StayButton" xml:space="preserve"><value>留下</value></data>
+  <data name="LeaveButton" xml:space="preserve"><value>离开</value></data>
+  <data name="DetailSub" xml:space="preserve"><value>{0} · 最近修改 {1}，{2}</value></data>
+  <data name="MergeOther" xml:space="preserve"><value>与其他记录合并</value></data>
+  <data name="DeactivateButton" xml:space="preserve"><value>停用</value></data>
+  <data name="DeactivateTitle" xml:space="preserve"><value>停用 {0}？</value></data>
+  <data name="DeactivateText" xml:space="preserve"><value>新报告中将无法选择；以往报告不受影响。</value></data>
+  <data name="Deactivated" xml:space="preserve"><value>已停用。</value></data>
+  <data name="MergedInto" xml:space="preserve"><value>此记录已合并到</value></data>
+  <data name="IndicationCount" xml:space="preserve"><value>{0} 个适应症</value></data>
+  <data name="CountryLabel" xml:space="preserve"><value>国家</value></data>
+  <data name="SectionHistory" xml:space="preserve"><value>变更历史</value></data>
+  <data name="SectionUsage" xml:space="preserve"><value>报告中的使用情况</value></data>
+  <data name="LastThreeMonths" xml:space="preserve"><value>最近 3 个月</value></data>
+  <data name="UsageNone" xml:space="preserve"><value>尚未在报告中使用。</value></data>
+  <data name="UsageUnavailable" xml:space="preserve"><value>无法读取报告统计。</value></data>
+  <data name="DoctorsLabel" xml:space="preserve"><value>名医生</value></data>
+  <data name="ReportsLabel" xml:space="preserve"><value>份报告</value></data>
+  <data name="ByProduct" xml:space="preserve"><value>按我方产品</value></data>
+  <data name="ByCountry" xml:space="preserve"><value>按国家</value></data>
+  <data name="UnknownCountry" xml:space="preserve"><value>未知</value></data>
+  <data name="UsagePrivacy" xml:space="preserve"><value>汇总统计，不显示医生身份；小于 5 显示为“&lt;5”。</value></data>
+  <data name="SectionMergeTrace" xml:space="preserve"><value>合并记录</value></data>
+  <data name="TraceLine" xml:space="preserve"><value>建议人 {0} · 合并于 {1}</value></data>
+  <data name="NoMergeTrace" xml:space="preserve"><value>没有记录合并到此记录。</value></data>
+  <data name="MarketSoon" xml:space="preserve"><value>市场数据 · 即将推出</value></data>
+  <data name="MarketSoonText" xml:space="preserve"><value>市场份额和销售数据将在 W7 提供。</value></data>
+  <data name="MergeTitle" xml:space="preserve"><value>合并</value></data>
+  <data name="MergeSource" xml:space="preserve"><value>将被合并</value></data>
+  <data name="MergeSourceLine" xml:space="preserve"><value>公司“{0}” · 建议人 {1}，{2}</value></data>
+  <data name="StepN" xml:space="preserve"><value>第 {0}/3 步</value></data>
+  <data name="MergeStepTarget" xml:space="preserve"><value>选择目标</value></data>
+  <data name="MergeStepTargetSub" xml:space="preserve"><value>保留的记录</value></data>
+  <data name="MergeStepCompare" xml:space="preserve"><value>比较</value></data>
+  <data name="MergeStepCompareSub" xml:space="preserve"><value>字段和国家</value></data>
+  <data name="MergeStepEffect" xml:space="preserve"><value>影响</value></data>
+  <data name="MergeStepEffectSub" xml:space="preserve"><value>确认</value></data>
+  <data name="SearchSurvivor" xml:space="preserve"><value>搜索要保留的记录</value></data>
+  <data name="SimilarBySimilarity" xml:space="preserve"><value>相似记录 · 按名称相似度</value></data>
+  <data name="NoCandidates" xml:space="preserve"><value>没有匹配的有效记录。</value></data>
+  <data name="NextButton" xml:space="preserve"><value>下一步</value></data>
+  <data name="BackButton" xml:space="preserve"><value>上一步</value></data>
+  <data name="CompareHelp" xml:space="preserve"><value>以保留记录的值为准。不同字段已标记。</value></data>
+  <data name="FieldColumn" xml:space="preserve"><value>字段</value></data>
+  <data name="WillMerge" xml:space="preserve"><value>将被合并 · {0}</value></data>
+  <data name="Survivor" xml:space="preserve"><value>保留 · {0}</value></data>
+  <data name="WillMergeShort" xml:space="preserve"><value>将被合并</value></data>
+  <data name="SurvivorShort" xml:space="preserve"><value>保留</value></data>
+  <data name="DifferentTag" xml:space="preserve"><value>不同</value></data>
+  <data name="CountryRows" xml:space="preserve"><value>国家行</value></data>
+  <data name="CountryRowsHelp" xml:space="preserve"><value>保留记录中没有的国家行可以迁移；两者都有时保留保留记录的行。</value></data>
+  <data name="MoveColumn" xml:space="preserve"><value>迁移</value></data>
+  <data name="MoveLabel" xml:space="preserve"><value>迁移</value></data>
+  <data name="KeptLabel" xml:space="preserve"><value>保留</value></data>
+  <data name="NoneLabel" xml:space="preserve"><value>无</value></data>
+  <data name="EffectTitle" xml:space="preserve"><value>合并的影响</value></data>
+  <data name="EffectReports" xml:space="preserve"><value>{0} 份报告中的竞品值将关联到“{1}”。</value></data>
+  <data name="EffectAlias" xml:space="preserve"><value>名称“{0}”将加入其他名称。</value></data>
+  <data name="EffectMove" xml:space="preserve"><value>国家行 {0} 将迁移到保留记录。</value></data>
+  <data name="EffectNoMove" xml:space="preserve"><value>不迁移任何国家行。</value></data>
+  <data name="EffectStatusProposal" xml:space="preserve"><value>建议变为“已合并”，仅作为记录保留。</value></data>
+  <data name="EffectStatusRecord" xml:space="preserve"><value>此记录变为“已合并”，仅作为记录保留。</value></data>
+  <data name="EffectApproval" xml:space="preserve"><value>销售运营在任务中心批准后执行。</value></data>
+  <data name="Irreversible" xml:space="preserve"><value>此操作不可撤销。</value></data>
+  <data name="AckText" xml:space="preserve"><value>我已阅读影响并确认合并。</value></data>
+  <data name="MergeButton" xml:space="preserve"><value>合并</value></data>
+  <data name="Merged" xml:space="preserve"><value>已合并。</value></data>
+  <data name="SectionProposal" xml:space="preserve"><value>建议</value></data>
+  <data name="SectionDecision" xml:space="preserve"><value>决定</value></data>
+  <data name="SectionDecisionHistory" xml:space="preserve"><value>审批历史</value></data>
+  <data name="NoDecision" xml:space="preserve"><value>尚未准备决定。</value></data>
+  <data name="DecisionKind" xml:space="preserve"><value>决定</value></data>
+  <data name="PreparedBy" xml:space="preserve"><value>准备人</value></data>
+  <data name="MergeTarget" xml:space="preserve"><value>目标记录</value></data>
+  <data name="MovedCountries" xml:space="preserve"><value>迁移的国家</value></data>
+  <data name="MergeEffectShort" xml:space="preserve"><value>建议名称加入目标的其他名称；报告关联到目标。</value></data>
+  <data name="RejectReason" xml:space="preserve"><value>理由</value></data>
+  <data name="AppliedLine" xml:space="preserve"><value>已执行 · {0} · 批准人 {1}，{2}</value></data>
+  <data name="WithdrawButton" xml:space="preserve"><value>撤回</value></data>
+  <data name="ApproveButton" xml:space="preserve"><value>批准</value></data>
+  <data name="ReturnToDraft" xml:space="preserve"><value>退回草稿</value></data>
+  <data name="SodNote" xml:space="preserve"><value>此决定由您准备；需由他人在任务中心批准。</value></data>
+  <data name="HistSubmitted" xml:space="preserve"><value>第 {0} 轮由 {1} 提交审批</value></data>
+  <data name="HistRound_approved" xml:space="preserve"><value>已批准 · {0}</value></data>
+  <data name="HistRound_rejected" xml:space="preserve"><value>已退回 · {0}</value></data>
+  <data name="HistRound_cancelled" xml:space="preserve"><value>已撤回 · {0}</value></data>
+  <data name="HistRound_timed_out" xml:space="preserve"><value>已超时</value></data>
+  <data name="HistRound_closed" xml:space="preserve"><value>已关闭 · {0}</value></data>
+  <data name="HistDecision_approve" xml:space="preserve"><value>决定：批准 · {0}</value></data>
+  <data name="HistDecision_return" xml:space="preserve"><value>决定：退回草稿 · {0}</value></data>
+  <data name="DecisionSaved" xml:space="preserve"><value>决定已保存为草稿。</value></data>
+  <data name="Sent" xml:space="preserve"><value>已提交审批。</value></data>
+  <data name="RejectTitle" xml:space="preserve"><value>拒绝建议：{0}</value></data>
+  <data name="RejectPlaceholder" xml:space="preserve"><value>如：该市场没有此产品；不是其他产品的拼写错误。</value></data>
+  <data name="RejectInfo" xml:space="preserve"><value>在报告中作为未验证竞品（纯文本）保留；不会推荐给代表。</value></data>
+  <data name="ErrReasonRequired" xml:space="preserve"><value>理由为必填。</value></data>
+  <data name="ErrTooLong" xml:space="preserve"><value>最多 500 个字符。</value></data>
+  <data name="ReturnTitle" xml:space="preserve"><value>将决定退回草稿</value></data>
+  <data name="ReturnNote" xml:space="preserve"><value>给准备人的备注</value></data>
+  <data name="ErrNoteRequired" xml:space="preserve"><value>必须填写备注。</value></data>
+  <data name="UserShort" xml:space="preserve"><value>用户 {0}</value></data>
+  <data name="UnknownProduct" xml:space="preserve"><value>未命名产品</value></data>
+  <data name="ActionFailed" xml:space="preserve"><value>操作失败，请重试。</value></data>
+  <data name="Status_proposed" xml:space="preserve"><value>已建议</value></data>
+  <data name="Status_active" xml:space="preserve"><value>有效</value></data>
+  <data name="Status_inactive" xml:space="preserve"><value>停用</value></data>
+  <data name="Status_merged" xml:space="preserve"><value>已合并</value></data>
+  <data name="Status_rejected" xml:space="preserve"><value>已拒绝</value></data>
+  <data name="Field_name" xml:space="preserve"><value>名称</value></data>
+  <data name="Field_company" xml:space="preserve"><value>公司</value></data>
+  <data name="Field_aliases" xml:space="preserve"><value>其他名称</value></data>
+  <data name="Field_activeIngredients" xml:space="preserve"><value>活性成分</value></data>
+  <data name="Field_formCode" xml:space="preserve"><value>剂型</value></data>
+  <data name="Field_strength" xml:space="preserve"><value>规格</value></data>
+  <data name="Field_atcCode" xml:space="preserve"><value>ATC 编码</value></data>
+  <data name="Field_competesWith" xml:space="preserve"><value>我方产品</value></data>
+  <data name="Field_indications" xml:space="preserve"><value>适应症</value></data>
+  <data name="Field_created" xml:space="preserve"><value>已创建</value></data>
+  <data name="Field_proposed" xml:space="preserve"><value>代表建议</value></data>
+  <data name="Field_status" xml:space="preserve"><value>状态</value></data>
+  <data name="Field_countryPrices" xml:space="preserve"><value>国家价格 · {0}</value></data>
+  <data name="Err_concurrency_conflict" xml:space="preserve"><value>该记录已被他人修改；请刷新后重试。</value></data>
+  <data name="Err_forbidden" xml:space="preserve"><value>您没有执行此操作的权限。</value></data>
+  <data name="Err_service_unavailable" xml:space="preserve"><value>无法连接某项服务。未做任何更改。</value></data>
+  <data name="Err_gateway_unavailable" xml:space="preserve"><value>无法连接服务器，请重试。</value></data>
+  <data name="Err_workflow_template_missing" xml:space="preserve"><value>审批流程（MDM-COMP-PROPOSAL）尚未配置。决定已保存为草稿；请联系管理员发布模板。</value></data>
+  <data name="Err_approval_forbidden" xml:space="preserve"><value>您无权启动审批流程。</value></data>
+  <data name="Err_workflow_unavailable" xml:space="preserve"><value>无法连接审批服务。未做任何更改。</value></data>
+  <data name="Err_workflow_request_rejected" xml:space="preserve"><value>审批流程拒绝了该请求。</value></data>
+  <data name="Err_no_open_review" xml:space="preserve"><value>此决定没有待审批项。</value></data>
+  <data name="Err_withdraw_not_possible" xml:space="preserve"><value>已无法撤回。</value></data>
+  <data name="Err_decision_invalid" xml:space="preserve"><value>决定只能是批准或退回。</value></data>
+  <data name="Err_rejection_comment_required" xml:space="preserve"><value>退回时必须填写备注。</value></data>
+  <data name="Err_competitor_duplicate" xml:space="preserve"><value>该公司已有同名记录。</value></data>
+  <data name="Err_competitor_market_duplicate" xml:space="preserve"><value>同一国家只能出现一次。</value></data>
+  <data name="Err_competitor_market_invalid" xml:space="preserve"><value>某国家不在已验证的市场目录中。</value></data>
+  <data name="Err_competitor_reimbursement_invalid" xml:space="preserve"><value>某报销状态不在列表中。</value></data>
+  <data name="Err_competitor_currency_invalid" xml:space="preserve"><value>某货币不是三字母代码。</value></data>
+  <data name="Err_competitor_form_invalid" xml:space="preserve"><value>剂型不在 MDM 剂型列表中。</value></data>
+  <data name="Err_competitor_invalid" xml:space="preserve"><value>部分值缺失或过长。</value></data>
+  <data name="Err_competitor_not_found" xml:space="preserve"><value>未找到该记录。</value></data>
+  <data name="Err_competitor_not_editable" xml:space="preserve"><value>此状态下无法修改该记录。</value></data>
+  <data name="Err_competitor_not_selectable" xml:space="preserve"><value>目标必须是有效记录。</value></data>
+  <data name="Err_competitor_not_proposal" xml:space="preserve"><value>该建议已作出决定。</value></data>
+  <data name="Err_competitor_decision_locked" xml:space="preserve"><value>决定在待审批期间被锁定。</value></data>
+  <data name="Err_competitor_decision_missing" xml:space="preserve"><value>请先准备并保存决定。</value></data>
+  <data name="Err_competitor_proposal_sod" xml:space="preserve"><value>准备人不能批准自己的决定。</value></data>
+  <data name="Err_competitor_merge_confirm_required" xml:space="preserve"><value>请确认已阅读合并的影响。</value></data>
+  <data name="Err_competitor_merge_self" xml:space="preserve"><value>记录不能与自身合并。</value></data>
+  <data name="Err_reference_data_unavailable" xml:space="preserve"><value>无法读取参考列表。未保存任何内容。</value></data>
+  <data name="Err_tenant_supplied" xml:space="preserve"><value>请求被拒绝。</value></data>
+  <data name="Form_tablet" xml:space="preserve"><value>片剂</value></data>
+  <data name="Form_capsule" xml:space="preserve"><value>胶囊</value></data>
+  <data name="Form_syrup" xml:space="preserve"><value>糖浆</value></data>
+  <data name="Form_injection" xml:space="preserve"><value>注射剂</value></data>
+  <data name="Form_ointment" xml:space="preserve"><value>软膏</value></data>
+  <data name="Form_cream" xml:space="preserve"><value>乳膏</value></data>
+  <data name="Form_drops" xml:space="preserve"><value>滴剂</value></data>
+  <data name="Form_inhaler" xml:space="preserve"><value>吸入剂</value></data>
+  <data name="Form_patch" xml:space="preserve"><value>贴剂</value></data>
+  <data name="Form_other" xml:space="preserve"><value>其他剂型</value></data>
+  <data name="Form_film_coated_tablet" xml:space="preserve"><value>薄膜衣片</value></data>
+  <data name="Form_modified_release_tablet" xml:space="preserve"><value>调释片</value></data>
+  <data name="Form_extended_release_tablet" xml:space="preserve"><value>缓释片</value></data>
+  <data name="Form_modified_release_capsule" xml:space="preserve"><value>调释胶囊</value></data>
+  <data name="Form_ampoule" xml:space="preserve"><value>安瓿</value></data>
+</root>

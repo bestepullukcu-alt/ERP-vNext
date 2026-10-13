@@ -1,0 +1,10 @@
+@using Diten.Web.Views.MasterData.CompetitorProducts
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CompetitorProductsIndex> Localizer
+
+@* WP-VW-W4 (W4-WEB-c) — the ONE bridge of the competitor products pages: window.CompetitorL10n = exactly
+   CompetitorProductsIndex.ScriptKeys (the tests check that list in seven languages). *@
+<script>
+    window.CompetitorL10n = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+        CompetitorProductsIndex.ScriptKeys.ToDictionary(k => k, k => Localizer[k].Value)));
+</script>

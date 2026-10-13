@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>Rakip ürünler</value></data>
+  <data name="Loading" xml:space="preserve"><value>Yükleniyor…</value></data>
+  <data name="Crumb" xml:space="preserve"><value>MDM</value></data>
+  <data name="Title" xml:space="preserve"><value>Rakip ürünler</value></data>
+  <data name="CrumbFull" xml:space="preserve"><value>MDM / Rakip ürünler</value></data>
+  <data name="CrumbProposals" xml:space="preserve"><value>Rakip ürünler / Temsilci önerileri</value></data>
+  <data name="ReadOnly" xml:space="preserve"><value>Salt okuma</value></data>
+  <data name="NewButton" xml:space="preserve"><value>Yeni rakip ürün</value></data>
+  <data name="TabRecords" xml:space="preserve"><value>Rakip ürünler</value></data>
+  <data name="TabProposals" xml:space="preserve"><value>Temsilci önerileri</value></data>
+  <data name="FiltersTitle" xml:space="preserve"><value>Süzgeçler</value></data>
+  <data name="AllOption" xml:space="preserve"><value>Tümü</value></data>
+  <data name="FilterOurs" xml:space="preserve"><value>Ürünümüz</value></data>
+  <data name="FilterCompany" xml:space="preserve"><value>Firma</value></data>
+  <data name="FilterIngredient" xml:space="preserve"><value>Etken madde</value></data>
+  <data name="FilterCountry" xml:space="preserve"><value>Ülke</value></data>
+  <data name="FilterReimbursement" xml:space="preserve"><value>Geri ödeme</value></data>
+  <data name="FilterStatus" xml:space="preserve"><value>Durum</value></data>
+  <data name="SearchPlaceholder" xml:space="preserve"><value>Ad veya diğer adlarda ara</value></data>
+  <data name="ExportButton" xml:space="preserve"><value>Dışa aktar</value></data>
+  <data name="ColName" xml:space="preserve"><value>Rakip ürün</value></data>
+  <data name="ColCompany" xml:space="preserve"><value>Firma</value></data>
+  <data name="ColIngredient" xml:space="preserve"><value>Etken madde</value></data>
+  <data name="ColForm" xml:space="preserve"><value>Form / doz</value></data>
+  <data name="ColOurs" xml:space="preserve"><value>Ürünlerimiz</value></data>
+  <data name="ColCountries" xml:space="preserve"><value>Ülkeler</value></data>
+  <data name="ColUsage" xml:space="preserve"><value>Raporlarda</value></data>
+  <data name="ColStatus" xml:space="preserve"><value>Durum</value></data>
+  <data name="ColLast" xml:space="preserve"><value>Son değişiklik</value></data>
+  <data name="ColActions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="Aka" xml:space="preserve"><value>ayrıca:</value></data>
+  <data name="PricedText" xml:space="preserve"><value>{0}/{1} fiyatlı</value></data>
+  <data name="UsageNoAccess" xml:space="preserve"><value>Raporlarda kullanım toplu rapor yetkisi ister.</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Ayrıntı</value></data>
+  <data name="EditButton" xml:space="preserve"><value>Düzenle</value></data>
+  <data name="EmptyTitle" xml:space="preserve"><value>Henüz rakip ürün yok</value></data>
+  <data name="EmptyText" xml:space="preserve"><value>Rakip ürünler temsilci raporunun "Pazar ve rakip" bölümünde seçilir. İlk kaydı ekleyin; temsilcilerin önerdiği rakipler "Temsilci önerileri" sekmesinde listelenir.</value></data>
+  <data name="NoResults" xml:space="preserve"><value>Süzgeçlere uyan kayıt yok.</value></data>
+  <data name="FooterText" xml:space="preserve"><value>{0}–{1} / {2}</value></data>
+  <data name="PrevPage" xml:space="preserve"><value>Önceki sayfa</value></data>
+  <data name="NextPage" xml:space="preserve"><value>Sonraki sayfa</value></data>
+  <data name="ProposalsTitle" xml:space="preserve"><value>Bekleyen temsilci önerileri</value></data>
+  <data name="ProposalsText" xml:space="preserve"><value>Öneri, öneren temsilcinin raporlarında hemen kullanılır; karar verilene kadar diğer temsilcilere önerilmez.</value></data>
+  <data name="NoProposals" xml:space="preserve"><value>Bekleyen öneri yok</value></data>
+  <data name="PropName" xml:space="preserve"><value>Önerilen ad</value></data>
+  <data name="PropCompany" xml:space="preserve"><value>Yazılan firma</value></data>
+  <data name="PropBy" xml:space="preserve"><value>Öneren temsilci</value></data>
+  <data name="PropProduct" xml:space="preserve"><value>Hangi ürünümüzün raporunda</value></data>
+  <data name="PropUsage" xml:space="preserve"><value>Kullanım</value></data>
+  <data name="InReports" xml:space="preserve"><value>{0} raporda</value></data>
+  <data name="SimilarRecords" xml:space="preserve"><value>Benzer kayıtlar:</value></data>
+  <data name="NoSimilar" xml:space="preserve"><value>Benzer kayıt yok · yeni kayıt olarak onaylanabilir</value></data>
+  <data name="OpenDecision" xml:space="preserve"><value>Karar</value></data>
+  <data name="ActComplete" xml:space="preserve"><value>Onayla ve tamamla</value></data>
+  <data name="ActMerge" xml:space="preserve"><value>Var olan kayıtla birleştir</value></data>
+  <data name="ActReject" xml:space="preserve"><value>Reddet</value></data>
+  <data name="State_waiting" xml:space="preserve"><value>Karar bekliyor</value></data>
+  <data name="State_draft" xml:space="preserve"><value>Taslak karar · {0}</value></data>
+  <data name="State_in_review" xml:space="preserve"><value>Onay bekliyor · {0}, {1}</value></data>
+  <data name="State_returned" xml:space="preserve"><value>Taslağa geri gönderildi · {0}</value></data>
+  <data name="State_returned_sod" xml:space="preserve"><value>Geri döndü: hazırlayan kendi kararını onaylayamaz</value></data>
+  <data name="State_returned_withdrawn" xml:space="preserve"><value>Geri çekildi · yeniden taslak</value></data>
+  <data name="State_applied" xml:space="preserve"><value>Uygulandı · {0}, {1}</value></data>
+  <data name="Decision_complete" xml:space="preserve"><value>Tamamla</value></data>
+  <data name="Decision_merge" xml:space="preserve"><value>Birleştir</value></data>
+  <data name="Decision_reject" xml:space="preserve"><value>Reddet</value></data>
+  <data name="FormNewTitle" xml:space="preserve"><value>Yeni rakip ürün</value></data>
+  <data name="FormEditTitle" xml:space="preserve"><value>Düzenle</value></data>
+  <data name="FormCompleteTitle" xml:space="preserve"><value>Öneriyi onayla ve tamamla</value></data>
+  <data name="FormNewSub" xml:space="preserve"><value>Temsilcilerin raporda seçeceği kayıt</value></data>
+  <data name="FormCompleteSub" xml:space="preserve"><value>Karar taslak olarak kaydedilir ve onaya gönderilir (Satış Operasyon).</value></data>
+  <data name="CancelButton" xml:space="preserve"><value>Vazgeç</value></data>
+  <data name="SaveButton" xml:space="preserve"><value>Kaydet</value></data>
+  <data name="SaveDecision" xml:space="preserve"><value>Kararı kaydet</value></data>
+  <data name="SendForApproval" xml:space="preserve"><value>Onaya gönder</value></data>
+  <data name="ProposalBanner" xml:space="preserve"><value>Temsilci önerisi · {0}, {1} · {2} raporda kullanıldı</value></data>
+  <data name="ProposalBannerText" xml:space="preserve"><value>Onaylandığında öneri Aktif olur ve raporlardaki değer bu kayda bağlanır. Rapordaki yazım: "{0}", firma "{1}".</value></data>
+  <data name="FormErrors" xml:space="preserve"><value>Kaydedilemedi. İşaretli zorunlu alanları doldurun.</value></data>
+  <data name="SectionIdentity" xml:space="preserve"><value>Kimlik</value></data>
+  <data name="SectionCompetition" xml:space="preserve"><value>Rekabet</value></data>
+  <data name="SectionCountries" xml:space="preserve"><value>Ülke bazında fiyat ve geri ödeme</value></data>
+  <data name="FieldName" xml:space="preserve"><value>Rakip ürün adı</value></data>
+  <data name="NameHelp" xml:space="preserve"><value>Aynı firma ve adla ikinci kayıt açılamaz.</value></data>
+  <data name="FieldCompany" xml:space="preserve"><value>Firma</value></data>
+  <data name="FieldAliases" xml:space="preserve"><value>Diğer adlar</value></data>
+  <data name="AliasPlaceholder" xml:space="preserve"><value>Ad yazıp Enter'a basın</value></data>
+  <data name="AliasHelp" xml:space="preserve"><value>Yazım farkları ve eski adlar; arama bu adları da tarar. İşaretliler birleştirmeden geldi.</value></data>
+  <data name="FromMerge" xml:space="preserve"><value>birleştirmeden geldi</value></data>
+  <data name="FieldIngredients" xml:space="preserve"><value>Etken madde(ler)</value></data>
+  <data name="IngredientPlaceholder" xml:space="preserve"><value>örn. amlodipin</value></data>
+  <data name="IngredientHelp" xml:space="preserve"><value>Kombinasyonlarda her maddeyi ayrı ekleyin; raporda "amlodipin + valsartan" olarak görünür.</value></data>
+  <data name="FieldForm" xml:space="preserve"><value>Form</value></data>
+  <data name="ChooseOption" xml:space="preserve"><value>Seçin</value></data>
+  <data name="FormsUnavailable" xml:space="preserve"><value>MDM form listesi okunamadı (marka okuma yetkisi gerekir).</value></data>
+  <data name="FieldStrength" xml:space="preserve"><value>Güç / doz</value></data>
+  <data name="FieldAtc" xml:space="preserve"><value>ATC kodu</value></data>
+  <data name="FieldOurs" xml:space="preserve"><value>Rakibi olduğu ürünlerimiz</value></data>
+  <data name="OursHelp" xml:space="preserve"><value>Global Ürünler'den; en az bir ürün seçin. Rakip, bu ürünlerin raporlarında listelenir.</value></data>
+  <data name="ProductsNoAccess" xml:space="preserve"><value>Ürünlerimiz Global Ürünler okuma yetkisi ister.</value></data>
+  <data name="FieldIndications" xml:space="preserve"><value>Endikasyonlar</value></data>
+  <data name="Optional" xml:space="preserve"><value>(isteğe bağlı)</value></data>
+  <data name="IndicationHelp" xml:space="preserve"><value>Kavram Grafiği › seçili ürünlerin endikasyon kavramları. Raporda bu endikasyonda gösterilir.</value></data>
+  <data name="IndicationsNoAccess" xml:space="preserve"><value>Endikasyon listesi doktor içgörüleri yetkisi ister (CRM).</value></data>
+  <data name="IndicationsPickProduct" xml:space="preserve"><value>Önce ürünlerimizden birini seçin.</value></data>
+  <data name="NoIndications" xml:space="preserve"><value>Bu ürün için endikasyon tanımlı değil.</value></data>
+  <data name="UnknownIndication" xml:space="preserve"><value>Endikasyon (artık listede değil)</value></data>
+  <data name="CountriesHelp" xml:space="preserve"><value>Fiyat değişikliği yeni satır açmaz, yeni dönem başlatır; önceki fiyat geçmişe taşınır.</value></data>
+  <data name="AddCountry" xml:space="preserve"><value>Ülke ekle</value></data>
+  <data name="CountrySearch" xml:space="preserve"><value>Ülke ara</value></data>
+  <data name="MarketsUnavailable" xml:space="preserve"><value>Pazar listesi okunamadı; ISO ülke kodunu yazın.</value></data>
+  <data name="AddButton" xml:space="preserve"><value>Ekle</value></data>
+  <data name="HistoryCount" xml:space="preserve"><value>Geçmiş ({0})</value></data>
+  <data name="NoHistory" xml:space="preserve"><value>Geçmiş yok</value></data>
+  <data name="RemoveRow" xml:space="preserve"><value>Satırı kaldır</value></data>
+  <data name="RemoveLabel" xml:space="preserve"><value>Kaldır</value></data>
+  <data name="BoxPrice" xml:space="preserve"><value>Kutu fiyatı</value></data>
+  <data name="CurrencyLabel" xml:space="preserve"><value>Para birimi</value></data>
+  <data name="Reimbursement" xml:space="preserve"><value>Geri ödeme durumu</value></data>
+  <data name="ValidFrom" xml:space="preserve"><value>Geçerlilik başlangıcı</value></data>
+  <data name="Source" xml:space="preserve"><value>Kaynak / not</value></data>
+  <data name="SourcePlaceholder" xml:space="preserve"><value>örn. SGK ilaç listesi</value></data>
+  <data name="NewPeriod" xml:space="preserve"><value>Yeni dönem açılacak: {0} → {1} {2}. Önceki fiyat geçmişe taşınır.</value></data>
+  <data name="NewPeriodDate" xml:space="preserve"><value>Geçerlilik başlangıcını güncelleyin.</value></data>
+  <data name="NoCountries" xml:space="preserve"><value>Henüz ülke eklenmedi</value></data>
+  <data name="NoCountriesText" xml:space="preserve"><value>Her ülke için kutu fiyatı ve geri ödeme durumunu girin. Temsilci, kendi ülkesinin satırını görür.</value></data>
+  <data name="ErrMarkets_duplicate" xml:space="preserve"><value>Aynı ülke iki kez eklenemez.</value></data>
+  <data name="ErrMarkets_price" xml:space="preserve"><value>Her ülkenin kutu fiyatı olmalı (0 veya üstü).</value></data>
+  <data name="ErrMarkets_currency" xml:space="preserve"><value>Her ülkenin üç harfli para birimi kodu olmalı.</value></data>
+  <data name="PreviousPeriods" xml:space="preserve"><value>Önceki dönemler · salt okunur</value></data>
+  <data name="PeriodLabel" xml:space="preserve"><value>Dönem</value></data>
+  <data name="PreviewTitle" xml:space="preserve"><value>Temsilci görünümü</value></data>
+  <data name="PreviewSub" xml:space="preserve"><value>Rapordaki "Pazar ve rakip" kartı</value></data>
+  <data name="PreviewAs" xml:space="preserve"><value>{0} olarak önizle</value></data>
+  <data name="CompetitorTag" xml:space="preserve"><value>Rakip</value></data>
+  <data name="FormStrength" xml:space="preserve"><value>Form / doz</value></data>
+  <data name="OurProduct" xml:space="preserve"><value>Ürünümüz</value></data>
+  <data name="PriceIn" xml:space="preserve"><value>Kutu fiyatı · {0}</value></data>
+  <data name="Since" xml:space="preserve"><value>{0} tarihinden beri</value></data>
+  <data name="NoPriceFor" xml:space="preserve"><value>{0} için fiyat girilmemiş. Temsilci kartı fiyatsız görür.</value></data>
+  <data name="ShownIndications" xml:space="preserve"><value>Gösterildiği endikasyonlar:</value></data>
+  <data name="ConflictTitle" xml:space="preserve"><value>Kayıt başkası tarafından değiştirildi, yenileyin.</value></data>
+  <data name="ConflictText" xml:space="preserve"><value>Değişiklikleriniz kaydedilmedi; yeniledikten sonra tekrar girmeniz gerekir.</value></data>
+  <data name="RefreshButton" xml:space="preserve"><value>Yenile</value></data>
+  <data name="Saved" xml:space="preserve"><value>Kaydedildi.</value></data>
+  <data name="ErrNameRequired" xml:space="preserve"><value>Rakip ürün adı zorunlu (ya da bu firmada aynı adlı kayıt var).</value></data>
+  <data name="ErrCompanyRequired" xml:space="preserve"><value>Firma zorunlu.</value></data>
+  <data name="ErrIngredientsRequired" xml:space="preserve"><value>En az bir etken madde girin.</value></data>
+  <data name="ErrProductsRequired" xml:space="preserve"><value>En az bir ürünümüzü seçin.</value></data>
+  <data name="LeaveTitle" xml:space="preserve"><value>Kaydetmeden çıkılsın mı?</value></data>
+  <data name="LeaveText" xml:space="preserve"><value>Bu sayfadaki değişiklikleriniz kaybolacak.</value></data>
+  <data name="StayButton" xml:space="preserve"><value>Kal</value></data>
+  <data name="LeaveButton" xml:space="preserve"><value>Çık</value></data>
+  <data name="DetailSub" xml:space="preserve"><value>{0} · son değişiklik {1}, {2}</value></data>
+  <data name="MergeOther" xml:space="preserve"><value>Başka kayıtla birleştir</value></data>
+  <data name="DeactivateButton" xml:space="preserve"><value>Pasife al</value></data>
+  <data name="DeactivateTitle" xml:space="preserve"><value>{0} pasife alınsın mı?</value></data>
+  <data name="DeactivateText" xml:space="preserve"><value>Yeni raporlarda seçilemez; geçmiş raporlar etkilenmez.</value></data>
+  <data name="Deactivated" xml:space="preserve"><value>Pasife alındı.</value></data>
+  <data name="MergedInto" xml:space="preserve"><value>Bu kayıt şu kayda birleştirildi:</value></data>
+  <data name="IndicationCount" xml:space="preserve"><value>{0} endikasyon</value></data>
+  <data name="CountryLabel" xml:space="preserve"><value>Ülke</value></data>
+  <data name="SectionHistory" xml:space="preserve"><value>Değişiklik geçmişi</value></data>
+  <data name="SectionUsage" xml:space="preserve"><value>Raporlarda kullanım</value></data>
+  <data name="LastThreeMonths" xml:space="preserve"><value>Son 3 ay</value></data>
+  <data name="UsageNone" xml:space="preserve"><value>Henüz raporlarda kullanılmadı.</value></data>
+  <data name="UsageUnavailable" xml:space="preserve"><value>Rapor sayıları okunamadı.</value></data>
+  <data name="DoctorsLabel" xml:space="preserve"><value>doktor</value></data>
+  <data name="ReportsLabel" xml:space="preserve"><value>rapor</value></data>
+  <data name="ByProduct" xml:space="preserve"><value>Ürünümüze göre</value></data>
+  <data name="ByCountry" xml:space="preserve"><value>Ülkeye göre</value></data>
+  <data name="UnknownCountry" xml:space="preserve"><value>Bilinmiyor</value></data>
+  <data name="UsagePrivacy" xml:space="preserve"><value>Toplu sayılar. Doktor kimliği gösterilmez; 5'in altı "&lt;5" görünür.</value></data>
+  <data name="SectionMergeTrace" xml:space="preserve"><value>Birleştirme izi</value></data>
+  <data name="TraceLine" xml:space="preserve"><value>Öneren {0} · birleştirme {1}</value></data>
+  <data name="NoMergeTrace" xml:space="preserve"><value>Bu kayda katılan kayıt yok.</value></data>
+  <data name="MarketSoon" xml:space="preserve"><value>Pazar verisi · yakında</value></data>
+  <data name="MarketSoonText" xml:space="preserve"><value>Pazar payı ve satış verisi W7 ile gelecek.</value></data>
+  <data name="MergeTitle" xml:space="preserve"><value>Birleştir</value></data>
+  <data name="MergeSource" xml:space="preserve"><value>Birleşecek</value></data>
+  <data name="MergeSourceLine" xml:space="preserve"><value>firma "{0}" · öneren {1}, {2}</value></data>
+  <data name="StepN" xml:space="preserve"><value>Adım {0}/3</value></data>
+  <data name="MergeStepTarget" xml:space="preserve"><value>Hedef seç</value></data>
+  <data name="MergeStepTargetSub" xml:space="preserve"><value>hayatta kalacak kayıt</value></data>
+  <data name="MergeStepCompare" xml:space="preserve"><value>Karşılaştır</value></data>
+  <data name="MergeStepCompareSub" xml:space="preserve"><value>alanlar ve ülkeler</value></data>
+  <data name="MergeStepEffect" xml:space="preserve"><value>Etkisi</value></data>
+  <data name="MergeStepEffectSub" xml:space="preserve"><value>onayla</value></data>
+  <data name="SearchSurvivor" xml:space="preserve"><value>Hayatta kalacak kaydı arayın</value></data>
+  <data name="SimilarBySimilarity" xml:space="preserve"><value>Benzer kayıtlar · ad benzerliğine göre</value></data>
+  <data name="NoCandidates" xml:space="preserve"><value>Uyan aktif kayıt yok.</value></data>
+  <data name="NextButton" xml:space="preserve"><value>İleri</value></data>
+  <data name="BackButton" xml:space="preserve"><value>Geri</value></data>
+  <data name="CompareHelp" xml:space="preserve"><value>Alan değerlerinde hayatta kalan kayıt esas alınır. Farklı alanlar işaretlidir.</value></data>
+  <data name="FieldColumn" xml:space="preserve"><value>Alan</value></data>
+  <data name="WillMerge" xml:space="preserve"><value>Birleşecek · {0}</value></data>
+  <data name="Survivor" xml:space="preserve"><value>Hayatta kalan · {0}</value></data>
+  <data name="WillMergeShort" xml:space="preserve"><value>Birleşecek</value></data>
+  <data name="SurvivorShort" xml:space="preserve"><value>Hayatta kalan</value></data>
+  <data name="DifferentTag" xml:space="preserve"><value>farklı</value></data>
+  <data name="CountryRows" xml:space="preserve"><value>Ülke satırları</value></data>
+  <data name="CountryRowsHelp" xml:space="preserve"><value>Hayatta kalanda olmayan ülke satırı taşınabilir. Her iki kayıtta olan ülkede hayatta kalanın satırı korunur.</value></data>
+  <data name="MoveColumn" xml:space="preserve"><value>Taşı</value></data>
+  <data name="MoveLabel" xml:space="preserve"><value>taşı</value></data>
+  <data name="KeptLabel" xml:space="preserve"><value>korunur</value></data>
+  <data name="NoneLabel" xml:space="preserve"><value>yok</value></data>
+  <data name="EffectTitle" xml:space="preserve"><value>Birleştirmenin etkisi</value></data>
+  <data name="EffectReports" xml:space="preserve"><value>{0} rapordaki rakip değeri '{1}' kaydına bağlanacak.</value></data>
+  <data name="EffectAlias" xml:space="preserve"><value>'{0}' adı diğer adlar listesine eklenecek.</value></data>
+  <data name="EffectMove" xml:space="preserve"><value>{0} ülke satırı hayatta kalana taşınacak.</value></data>
+  <data name="EffectNoMove" xml:space="preserve"><value>Ülke satırı taşınmayacak.</value></data>
+  <data name="EffectStatusProposal" xml:space="preserve"><value>Öneri "Birleştirildi" durumuna geçer; yalnız iz olarak kalır.</value></data>
+  <data name="EffectStatusRecord" xml:space="preserve"><value>Bu kayıt "Birleştirildi" durumuna geçer; yalnız iz olarak kalır.</value></data>
+  <data name="EffectApproval" xml:space="preserve"><value>Satış Operasyon Görev Merkezi'nde onaylayınca uygulanır.</value></data>
+  <data name="Irreversible" xml:space="preserve"><value>Geri alınamaz.</value></data>
+  <data name="AckText" xml:space="preserve"><value>Etkisini okudum, birleştirmeyi onaylıyorum.</value></data>
+  <data name="MergeButton" xml:space="preserve"><value>Birleştir</value></data>
+  <data name="Merged" xml:space="preserve"><value>Birleştirildi.</value></data>
+  <data name="SectionProposal" xml:space="preserve"><value>Öneri</value></data>
+  <data name="SectionDecision" xml:space="preserve"><value>Karar</value></data>
+  <data name="SectionDecisionHistory" xml:space="preserve"><value>Onay geçmişi</value></data>
+  <data name="NoDecision" xml:space="preserve"><value>Henüz karar hazırlanmadı.</value></data>
+  <data name="DecisionKind" xml:space="preserve"><value>Karar</value></data>
+  <data name="PreparedBy" xml:space="preserve"><value>Hazırlayan</value></data>
+  <data name="MergeTarget" xml:space="preserve"><value>Hedef kayıt</value></data>
+  <data name="MovedCountries" xml:space="preserve"><value>Taşınacak ülkeler</value></data>
+  <data name="MergeEffectShort" xml:space="preserve"><value>Önerilen ad hedefin diğer adlarına eklenir; raporlar hedefe bağlanır.</value></data>
+  <data name="RejectReason" xml:space="preserve"><value>Gerekçe</value></data>
+  <data name="AppliedLine" xml:space="preserve"><value>Uygulandı · {0} · onaylayan {1}, {2}</value></data>
+  <data name="WithdrawButton" xml:space="preserve"><value>Geri çek</value></data>
+  <data name="ApproveButton" xml:space="preserve"><value>Onayla</value></data>
+  <data name="ReturnToDraft" xml:space="preserve"><value>Taslağa geri gönder</value></data>
+  <data name="SodNote" xml:space="preserve"><value>Bu kararı siz hazırladınız; Görev Merkezi'nde başka biri onaylar.</value></data>
+  <data name="HistSubmitted" xml:space="preserve"><value>{0}. tur {1} tarafından onaya gönderildi</value></data>
+  <data name="HistRound_approved" xml:space="preserve"><value>Onaylandı · {0}</value></data>
+  <data name="HistRound_rejected" xml:space="preserve"><value>Geri gönderildi · {0}</value></data>
+  <data name="HistRound_cancelled" xml:space="preserve"><value>Geri çekildi · {0}</value></data>
+  <data name="HistRound_timed_out" xml:space="preserve"><value>Süre doldu</value></data>
+  <data name="HistRound_closed" xml:space="preserve"><value>Kapandı · {0}</value></data>
+  <data name="HistDecision_approve" xml:space="preserve"><value>Karar: onay · {0}</value></data>
+  <data name="HistDecision_return" xml:space="preserve"><value>Karar: taslağa geri · {0}</value></data>
+  <data name="DecisionSaved" xml:space="preserve"><value>Karar taslak olarak kaydedildi.</value></data>
+  <data name="Sent" xml:space="preserve"><value>Onaya gönderildi.</value></data>
+  <data name="RejectTitle" xml:space="preserve"><value>Öneriyi reddet: {0}</value></data>
+  <data name="RejectPlaceholder" xml:space="preserve"><value>örn. Türkiye pazarında bulunmuyor; farklı bir ürünün yazım hatası değil.</value></data>
+  <data name="RejectInfo" xml:space="preserve"><value>Raporlarda doğrulanmamış rakip olarak düz metin kalır; temsilciye önerilmez.</value></data>
+  <data name="ErrReasonRequired" xml:space="preserve"><value>Gerekçe zorunlu.</value></data>
+  <data name="ErrTooLong" xml:space="preserve"><value>En fazla 500 karakter.</value></data>
+  <data name="ReturnTitle" xml:space="preserve"><value>Kararı taslağa geri gönder</value></data>
+  <data name="ReturnNote" xml:space="preserve"><value>Hazırlayana not</value></data>
+  <data name="ErrNoteRequired" xml:space="preserve"><value>Not zorunlu.</value></data>
+  <data name="UserShort" xml:space="preserve"><value>kullanıcı {0}</value></data>
+  <data name="UnknownProduct" xml:space="preserve"><value>Adı bilinmeyen ürün</value></data>
+  <data name="ActionFailed" xml:space="preserve"><value>İşlem başarısız. Tekrar deneyin.</value></data>
+  <data name="Status_proposed" xml:space="preserve"><value>Önerilen</value></data>
+  <data name="Status_active" xml:space="preserve"><value>Aktif</value></data>
+  <data name="Status_inactive" xml:space="preserve"><value>Pasif</value></data>
+  <data name="Status_merged" xml:space="preserve"><value>Birleştirildi</value></data>
+  <data name="Status_rejected" xml:space="preserve"><value>Reddedildi</value></data>
+  <data name="Field_name" xml:space="preserve"><value>Ad</value></data>
+  <data name="Field_company" xml:space="preserve"><value>Firma</value></data>
+  <data name="Field_aliases" xml:space="preserve"><value>Diğer adlar</value></data>
+  <data name="Field_activeIngredients" xml:space="preserve"><value>Etken madde</value></data>
+  <data name="Field_formCode" xml:space="preserve"><value>Form</value></data>
+  <data name="Field_strength" xml:space="preserve"><value>Güç / doz</value></data>
+  <data name="Field_atcCode" xml:space="preserve"><value>ATC kodu</value></data>
+  <data name="Field_competesWith" xml:space="preserve"><value>Ürünlerimiz</value></data>
+  <data name="Field_indications" xml:space="preserve"><value>Endikasyonlar</value></data>
+  <data name="Field_created" xml:space="preserve"><value>Oluşturuldu</value></data>
+  <data name="Field_proposed" xml:space="preserve"><value>Temsilci önerdi</value></data>
+  <data name="Field_status" xml:space="preserve"><value>Durum</value></data>
+  <data name="Field_countryPrices" xml:space="preserve"><value>Ülke fiyatı · {0}</value></data>
+  <data name="Err_concurrency_conflict" xml:space="preserve"><value>Kayıt başkası tarafından değiştirildi; yenileyip tekrar deneyin.</value></data>
+  <data name="Err_forbidden" xml:space="preserve"><value>Bu işlem için yetkiniz yok.</value></data>
+  <data name="Err_service_unavailable" xml:space="preserve"><value>Bir servise ulaşılamıyor. Hiçbir şey değişmedi.</value></data>
+  <data name="Err_gateway_unavailable" xml:space="preserve"><value>Sunucuya ulaşılamıyor. Tekrar deneyin.</value></data>
+  <data name="Err_workflow_template_missing" xml:space="preserve"><value>Onay akışı (MDM-COMP-PROPOSAL) henüz kurulmamış. Karar taslak olarak kaydedildi; şablonun yayımlanması için yöneticinize başvurun.</value></data>
+  <data name="Err_approval_forbidden" xml:space="preserve"><value>Onay akışını başlatma yetkiniz yok.</value></data>
+  <data name="Err_workflow_unavailable" xml:space="preserve"><value>Onay servisine ulaşılamıyor. Hiçbir şey değişmedi.</value></data>
+  <data name="Err_workflow_request_rejected" xml:space="preserve"><value>Onay akışı isteği reddetti.</value></data>
+  <data name="Err_no_open_review" xml:space="preserve"><value>Bu karar için açık onay yok.</value></data>
+  <data name="Err_withdraw_not_possible" xml:space="preserve"><value>Artık geri çekilemez.</value></data>
+  <data name="Err_decision_invalid" xml:space="preserve"><value>Karar onay ya da geri gönderme olmalı.</value></data>
+  <data name="Err_rejection_comment_required" xml:space="preserve"><value>Geri göndermek için not zorunlu.</value></data>
+  <data name="Err_competitor_duplicate" xml:space="preserve"><value>Bu firmada aynı adlı kayıt zaten var.</value></data>
+  <data name="Err_competitor_market_duplicate" xml:space="preserve"><value>Bir ülke yalnız bir kez yer alabilir.</value></data>
+  <data name="Err_competitor_market_invalid" xml:space="preserve"><value>Bir ülke doğrulanmış pazar kataloğunda yok.</value></data>
+  <data name="Err_competitor_reimbursement_invalid" xml:space="preserve"><value>Bir geri ödeme durumu listesinde yok.</value></data>
+  <data name="Err_competitor_currency_invalid" xml:space="preserve"><value>Bir para birimi üç harfli kod değil.</value></data>
+  <data name="Err_competitor_form_invalid" xml:space="preserve"><value>Form MDM form listesinde yok.</value></data>
+  <data name="Err_competitor_invalid" xml:space="preserve"><value>Bazı değerler eksik ya da çok uzun.</value></data>
+  <data name="Err_competitor_not_found" xml:space="preserve"><value>Kayıt bulunamadı.</value></data>
+  <data name="Err_competitor_not_editable" xml:space="preserve"><value>Bu kayıt bu durumda değiştirilemez.</value></data>
+  <data name="Err_competitor_not_selectable" xml:space="preserve"><value>Hedef aktif bir kayıt olmalı.</value></data>
+  <data name="Err_competitor_not_proposal" xml:space="preserve"><value>Öneri için zaten karar verildi.</value></data>
+  <data name="Err_competitor_decision_locked" xml:space="preserve"><value>Karar onay beklerken kilitlidir.</value></data>
+  <data name="Err_competitor_decision_missing" xml:space="preserve"><value>Önce bir karar hazırlayıp kaydedin.</value></data>
+  <data name="Err_competitor_proposal_sod" xml:space="preserve"><value>Hazırlayan kendi kararını onaylayamaz.</value></data>
+  <data name="Err_competitor_merge_confirm_required" xml:space="preserve"><value>Birleştirmenin etkisini okuduğunuzu onaylayın.</value></data>
+  <data name="Err_competitor_merge_self" xml:space="preserve"><value>Kayıt kendisiyle birleştirilemez.</value></data>
+  <data name="Err_reference_data_unavailable" xml:space="preserve"><value>Bir referans listesi okunamadı. Hiçbir şey kaydedilmedi.</value></data>
+  <data name="Err_tenant_supplied" xml:space="preserve"><value>İstek reddedildi.</value></data>
+  <data name="Form_tablet" xml:space="preserve"><value>tablet</value></data>
+  <data name="Form_capsule" xml:space="preserve"><value>kapsül</value></data>
+  <data name="Form_syrup" xml:space="preserve"><value>şurup</value></data>
+  <data name="Form_injection" xml:space="preserve"><value>enjeksiyon</value></data>
+  <data name="Form_ointment" xml:space="preserve"><value>merhem</value></data>
+  <data name="Form_cream" xml:space="preserve"><value>krem</value></data>
+  <data name="Form_drops" xml:space="preserve"><value>damla</value></data>
+  <data name="Form_inhaler" xml:space="preserve"><value>inhaler</value></data>
+  <data name="Form_patch" xml:space="preserve"><value>flaster</value></data>
+  <data name="Form_other" xml:space="preserve"><value>diğer form</value></data>
+  <data name="Form_film_coated_tablet" xml:space="preserve"><value>film kaplı tablet</value></data>
+  <data name="Form_modified_release_tablet" xml:space="preserve"><value>değiştirilmiş salımlı tablet</value></data>
+  <data name="Form_extended_release_tablet" xml:space="preserve"><value>uzatılmış salımlı tablet</value></data>
+  <data name="Form_modified_release_capsule" xml:space="preserve"><value>değiştirilmiş salımlı kapsül</value></data>
+  <data name="Form_ampoule" xml:space="preserve"><value>ampul</value></data>
+</root>

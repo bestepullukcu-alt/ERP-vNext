@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>Продукты конкурентов</value></data>
+  <data name="Loading" xml:space="preserve"><value>Загрузка…</value></data>
+  <data name="Crumb" xml:space="preserve"><value>MDM</value></data>
+  <data name="Title" xml:space="preserve"><value>Продукты конкурентов</value></data>
+  <data name="CrumbFull" xml:space="preserve"><value>MDM / Продукты конкурентов</value></data>
+  <data name="CrumbProposals" xml:space="preserve"><value>Продукты конкурентов / Предложения представителей</value></data>
+  <data name="ReadOnly" xml:space="preserve"><value>Только чтение</value></data>
+  <data name="NewButton" xml:space="preserve"><value>Новый продукт конкурента</value></data>
+  <data name="TabRecords" xml:space="preserve"><value>Продукты конкурентов</value></data>
+  <data name="TabProposals" xml:space="preserve"><value>Предложения представителей</value></data>
+  <data name="FiltersTitle" xml:space="preserve"><value>Фильтры</value></data>
+  <data name="AllOption" xml:space="preserve"><value>Все</value></data>
+  <data name="FilterOurs" xml:space="preserve"><value>Наш продукт</value></data>
+  <data name="FilterCompany" xml:space="preserve"><value>Компания</value></data>
+  <data name="FilterIngredient" xml:space="preserve"><value>Действующее вещество</value></data>
+  <data name="FilterCountry" xml:space="preserve"><value>Страна</value></data>
+  <data name="FilterReimbursement" xml:space="preserve"><value>Возмещение</value></data>
+  <data name="FilterStatus" xml:space="preserve"><value>Статус</value></data>
+  <data name="SearchPlaceholder" xml:space="preserve"><value>Поиск по названию и другим названиям</value></data>
+  <data name="ExportButton" xml:space="preserve"><value>Экспорт</value></data>
+  <data name="ColName" xml:space="preserve"><value>Продукт конкурента</value></data>
+  <data name="ColCompany" xml:space="preserve"><value>Компания</value></data>
+  <data name="ColIngredient" xml:space="preserve"><value>Действующее вещество</value></data>
+  <data name="ColForm" xml:space="preserve"><value>Форма / дозировка</value></data>
+  <data name="ColOurs" xml:space="preserve"><value>Наши продукты</value></data>
+  <data name="ColCountries" xml:space="preserve"><value>Страны</value></data>
+  <data name="ColUsage" xml:space="preserve"><value>В отчётах</value></data>
+  <data name="ColStatus" xml:space="preserve"><value>Статус</value></data>
+  <data name="ColLast" xml:space="preserve"><value>Последнее изменение</value></data>
+  <data name="ColActions" xml:space="preserve"><value>Действия</value></data>
+  <data name="Aka" xml:space="preserve"><value>также:</value></data>
+  <data name="PricedText" xml:space="preserve"><value>{0}/{1} с ценой</value></data>
+  <data name="UsageNoAccess" xml:space="preserve"><value>Для использования в отчётах нужно право на сводные отчёты.</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Подробнее</value></data>
+  <data name="EditButton" xml:space="preserve"><value>Изменить</value></data>
+  <data name="EmptyTitle" xml:space="preserve"><value>Пока нет продуктов конкурентов</value></data>
+  <data name="EmptyText" xml:space="preserve"><value>Продукты конкурентов выбираются в разделе «Рынок и конкурент» отчёта представителя. Добавьте первую запись; предложенные конкуренты видны во вкладке «Предложения представителей».</value></data>
+  <data name="NoResults" xml:space="preserve"><value>Нет записей по фильтрам.</value></data>
+  <data name="FooterText" xml:space="preserve"><value>{0}–{1} из {2}</value></data>
+  <data name="PrevPage" xml:space="preserve"><value>Предыдущая страница</value></data>
+  <data name="NextPage" xml:space="preserve"><value>Следующая страница</value></data>
+  <data name="ProposalsTitle" xml:space="preserve"><value>Ожидающие предложения</value></data>
+  <data name="ProposalsText" xml:space="preserve"><value>Предложение сразу используется в отчётах его автора; другим представителям оно не предлагается до решения.</value></data>
+  <data name="NoProposals" xml:space="preserve"><value>Нет ожидающих предложений</value></data>
+  <data name="PropName" xml:space="preserve"><value>Предложенное название</value></data>
+  <data name="PropCompany" xml:space="preserve"><value>Указанная компания</value></data>
+  <data name="PropBy" xml:space="preserve"><value>Предложил</value></data>
+  <data name="PropProduct" xml:space="preserve"><value>В отчёте по нашему продукту</value></data>
+  <data name="PropUsage" xml:space="preserve"><value>Использование</value></data>
+  <data name="InReports" xml:space="preserve"><value>в отчётах: {0}</value></data>
+  <data name="SimilarRecords" xml:space="preserve"><value>Похожие записи:</value></data>
+  <data name="NoSimilar" xml:space="preserve"><value>Похожих нет · можно одобрить как новую запись</value></data>
+  <data name="OpenDecision" xml:space="preserve"><value>Решение</value></data>
+  <data name="ActComplete" xml:space="preserve"><value>Одобрить и дополнить</value></data>
+  <data name="ActMerge" xml:space="preserve"><value>Объединить с существующей записью</value></data>
+  <data name="ActReject" xml:space="preserve"><value>Отклонить</value></data>
+  <data name="State_waiting" xml:space="preserve"><value>Ожидает решения</value></data>
+  <data name="State_draft" xml:space="preserve"><value>Черновик решения · {0}</value></data>
+  <data name="State_in_review" xml:space="preserve"><value>Ждёт одобрения · {0}, {1}</value></data>
+  <data name="State_returned" xml:space="preserve"><value>Возвращено в черновик · {0}</value></data>
+  <data name="State_returned_sod" xml:space="preserve"><value>Возвращено: автор не может одобрить своё решение</value></data>
+  <data name="State_returned_withdrawn" xml:space="preserve"><value>Отозвано · снова черновик</value></data>
+  <data name="State_applied" xml:space="preserve"><value>Применено · {0}, {1}</value></data>
+  <data name="Decision_complete" xml:space="preserve"><value>Дополнить</value></data>
+  <data name="Decision_merge" xml:space="preserve"><value>Объединить</value></data>
+  <data name="Decision_reject" xml:space="preserve"><value>Отклонить</value></data>
+  <data name="FormNewTitle" xml:space="preserve"><value>Новый продукт конкурента</value></data>
+  <data name="FormEditTitle" xml:space="preserve"><value>Редактирование</value></data>
+  <data name="FormCompleteTitle" xml:space="preserve"><value>Одобрить и дополнить предложение</value></data>
+  <data name="FormNewSub" xml:space="preserve"><value>Запись, которую представители выбирают в отчётах</value></data>
+  <data name="FormCompleteSub" xml:space="preserve"><value>Решение сохраняется как черновик и отправляется на одобрение (отдел продаж).</value></data>
+  <data name="CancelButton" xml:space="preserve"><value>Отмена</value></data>
+  <data name="SaveButton" xml:space="preserve"><value>Сохранить</value></data>
+  <data name="SaveDecision" xml:space="preserve"><value>Сохранить решение</value></data>
+  <data name="SendForApproval" xml:space="preserve"><value>Отправить на одобрение</value></data>
+  <data name="ProposalBanner" xml:space="preserve"><value>Предложение представителя · {0}, {1} · в отчётах: {2}</value></data>
+  <data name="ProposalBannerText" xml:space="preserve"><value>После одобрения предложение станет активным, а значение в отчётах будет связано с этой записью. В отчёте: «{0}», компания «{1}».</value></data>
+  <data name="FormErrors" xml:space="preserve"><value>Не сохранено. Заполните отмеченные обязательные поля.</value></data>
+  <data name="SectionIdentity" xml:space="preserve"><value>Идентификация</value></data>
+  <data name="SectionCompetition" xml:space="preserve"><value>Конкуренция</value></data>
+  <data name="SectionCountries" xml:space="preserve"><value>Цена и возмещение по странам</value></data>
+  <data name="FieldName" xml:space="preserve"><value>Название продукта конкурента</value></data>
+  <data name="NameHelp" xml:space="preserve"><value>У компании не может быть двух записей с одинаковым названием.</value></data>
+  <data name="FieldCompany" xml:space="preserve"><value>Компания</value></data>
+  <data name="FieldAliases" xml:space="preserve"><value>Другие названия</value></data>
+  <data name="AliasPlaceholder" xml:space="preserve"><value>Введите название и нажмите Enter</value></data>
+  <data name="AliasHelp" xml:space="preserve"><value>Варианты написания и старые названия; поиск учитывает и их. Отмеченные пришли из объединения.</value></data>
+  <data name="FromMerge" xml:space="preserve"><value>из объединения</value></data>
+  <data name="FieldIngredients" xml:space="preserve"><value>Действующее вещество(а)</value></data>
+  <data name="IngredientPlaceholder" xml:space="preserve"><value>напр. амлодипин</value></data>
+  <data name="IngredientHelp" xml:space="preserve"><value>Добавляйте каждое вещество комбинации отдельно; в отчёте будет «амлодипин + валсартан».</value></data>
+  <data name="FieldForm" xml:space="preserve"><value>Форма</value></data>
+  <data name="ChooseOption" xml:space="preserve"><value>Выберите</value></data>
+  <data name="FormsUnavailable" xml:space="preserve"><value>Не удалось прочитать список форм MDM (нужно право чтения брендов).</value></data>
+  <data name="FieldStrength" xml:space="preserve"><value>Дозировка</value></data>
+  <data name="FieldAtc" xml:space="preserve"><value>Код АТХ</value></data>
+  <data name="FieldOurs" xml:space="preserve"><value>Наши продукты, с которыми конкурирует</value></data>
+  <data name="OursHelp" xml:space="preserve"><value>Из глобальных продуктов; хотя бы один. Конкурент показывается в отчётах по этим продуктам.</value></data>
+  <data name="ProductsNoAccess" xml:space="preserve"><value>Для наших продуктов нужно право чтения глобальных продуктов.</value></data>
+  <data name="FieldIndications" xml:space="preserve"><value>Показания</value></data>
+  <data name="Optional" xml:space="preserve"><value>(необязательно)</value></data>
+  <data name="IndicationHelp" xml:space="preserve"><value>Граф понятий › показания выбранных продуктов. В отчёте конкурент показывается по этим показаниям.</value></data>
+  <data name="IndicationsNoAccess" xml:space="preserve"><value>Для списка показаний нужно право «сведения о врачах» (CRM).</value></data>
+  <data name="IndicationsPickProduct" xml:space="preserve"><value>Сначала выберите наш продукт.</value></data>
+  <data name="NoIndications" xml:space="preserve"><value>Для этих продуктов показания не заданы.</value></data>
+  <data name="UnknownIndication" xml:space="preserve"><value>Показание (больше нет в списке)</value></data>
+  <data name="CountriesHelp" xml:space="preserve"><value>Изменение цены не создаёт новую строку, а начинает новый период; старая цена уходит в историю.</value></data>
+  <data name="AddCountry" xml:space="preserve"><value>Добавить страну</value></data>
+  <data name="CountrySearch" xml:space="preserve"><value>Поиск страны</value></data>
+  <data name="MarketsUnavailable" xml:space="preserve"><value>Не удалось прочитать список рынков; введите код страны ISO.</value></data>
+  <data name="AddButton" xml:space="preserve"><value>Добавить</value></data>
+  <data name="HistoryCount" xml:space="preserve"><value>История ({0})</value></data>
+  <data name="NoHistory" xml:space="preserve"><value>Истории нет</value></data>
+  <data name="RemoveRow" xml:space="preserve"><value>Удалить строку</value></data>
+  <data name="RemoveLabel" xml:space="preserve"><value>Удалить</value></data>
+  <data name="BoxPrice" xml:space="preserve"><value>Цена за упаковку</value></data>
+  <data name="CurrencyLabel" xml:space="preserve"><value>Валюта</value></data>
+  <data name="Reimbursement" xml:space="preserve"><value>Статус возмещения</value></data>
+  <data name="ValidFrom" xml:space="preserve"><value>Действует с</value></data>
+  <data name="Source" xml:space="preserve"><value>Источник / заметка</value></data>
+  <data name="SourcePlaceholder" xml:space="preserve"><value>напр. национальный перечень лекарств</value></data>
+  <data name="NewPeriod" xml:space="preserve"><value>Откроется новый период: {0} → {1} {2}. Прежняя цена уйдёт в историю.</value></data>
+  <data name="NewPeriodDate" xml:space="preserve"><value>Сдвиньте дату начала вперёд.</value></data>
+  <data name="NoCountries" xml:space="preserve"><value>Страны ещё не добавлены</value></data>
+  <data name="NoCountriesText" xml:space="preserve"><value>Укажите цену за упаковку и возмещение для каждой страны. Представитель видит строку своей страны.</value></data>
+  <data name="ErrMarkets_duplicate" xml:space="preserve"><value>Страну можно добавить только один раз.</value></data>
+  <data name="ErrMarkets_price" xml:space="preserve"><value>Для каждой страны нужна цена (0 и больше).</value></data>
+  <data name="ErrMarkets_currency" xml:space="preserve"><value>Для каждой страны нужен трёхбуквенный код валюты.</value></data>
+  <data name="PreviousPeriods" xml:space="preserve"><value>Прежние периоды · только чтение</value></data>
+  <data name="PeriodLabel" xml:space="preserve"><value>Период</value></data>
+  <data name="PreviewTitle" xml:space="preserve"><value>Вид представителя</value></data>
+  <data name="PreviewSub" xml:space="preserve"><value>Карточка «Рынок и конкурент» в отчёте</value></data>
+  <data name="PreviewAs" xml:space="preserve"><value>Предпросмотр: {0}</value></data>
+  <data name="CompetitorTag" xml:space="preserve"><value>Конкурент</value></data>
+  <data name="FormStrength" xml:space="preserve"><value>Форма / дозировка</value></data>
+  <data name="OurProduct" xml:space="preserve"><value>Наш продукт</value></data>
+  <data name="PriceIn" xml:space="preserve"><value>Цена за упаковку · {0}</value></data>
+  <data name="Since" xml:space="preserve"><value>с {0}</value></data>
+  <data name="NoPriceFor" xml:space="preserve"><value>Для {0} цена не указана. Представитель видит карточку без цены.</value></data>
+  <data name="ShownIndications" xml:space="preserve"><value>Показывается по показаниям:</value></data>
+  <data name="ConflictTitle" xml:space="preserve"><value>Запись изменил другой пользователь; обновите её.</value></data>
+  <data name="ConflictText" xml:space="preserve"><value>Ваши изменения не сохранены; после обновления введите их снова.</value></data>
+  <data name="RefreshButton" xml:space="preserve"><value>Обновить</value></data>
+  <data name="Saved" xml:space="preserve"><value>Сохранено.</value></data>
+  <data name="ErrNameRequired" xml:space="preserve"><value>Название обязательно (или у компании уже есть такая запись).</value></data>
+  <data name="ErrCompanyRequired" xml:space="preserve"><value>Компания обязательна.</value></data>
+  <data name="ErrIngredientsRequired" xml:space="preserve"><value>Укажите хотя бы одно действующее вещество.</value></data>
+  <data name="ErrProductsRequired" xml:space="preserve"><value>Выберите хотя бы один наш продукт.</value></data>
+  <data name="LeaveTitle" xml:space="preserve"><value>Уйти без сохранения?</value></data>
+  <data name="LeaveText" xml:space="preserve"><value>Изменения на этой странице будут потеряны.</value></data>
+  <data name="StayButton" xml:space="preserve"><value>Остаться</value></data>
+  <data name="LeaveButton" xml:space="preserve"><value>Уйти</value></data>
+  <data name="DetailSub" xml:space="preserve"><value>{0} · последнее изменение {1}, {2}</value></data>
+  <data name="MergeOther" xml:space="preserve"><value>Объединить с другой записью</value></data>
+  <data name="DeactivateButton" xml:space="preserve"><value>Деактивировать</value></data>
+  <data name="DeactivateTitle" xml:space="preserve"><value>Деактивировать {0}?</value></data>
+  <data name="DeactivateText" xml:space="preserve"><value>Её нельзя будет выбрать в новых отчётах; прошлые отчёты не затрагиваются.</value></data>
+  <data name="Deactivated" xml:space="preserve"><value>Деактивировано.</value></data>
+  <data name="MergedInto" xml:space="preserve"><value>Эта запись объединена с</value></data>
+  <data name="IndicationCount" xml:space="preserve"><value>Показаний: {0}</value></data>
+  <data name="CountryLabel" xml:space="preserve"><value>Страна</value></data>
+  <data name="SectionHistory" xml:space="preserve"><value>История изменений</value></data>
+  <data name="SectionUsage" xml:space="preserve"><value>Использование в отчётах</value></data>
+  <data name="LastThreeMonths" xml:space="preserve"><value>Последние 3 месяца</value></data>
+  <data name="UsageNone" xml:space="preserve"><value>Пока не используется в отчётах.</value></data>
+  <data name="UsageUnavailable" xml:space="preserve"><value>Не удалось прочитать счётчики отчётов.</value></data>
+  <data name="DoctorsLabel" xml:space="preserve"><value>врачей</value></data>
+  <data name="ReportsLabel" xml:space="preserve"><value>отчётов</value></data>
+  <data name="ByProduct" xml:space="preserve"><value>По нашему продукту</value></data>
+  <data name="ByCountry" xml:space="preserve"><value>По стране</value></data>
+  <data name="UnknownCountry" xml:space="preserve"><value>Неизвестно</value></data>
+  <data name="UsagePrivacy" xml:space="preserve"><value>Сводные данные. Врачи не указываются; значения меньше 5 показаны как «&lt;5».</value></data>
+  <data name="SectionMergeTrace" xml:space="preserve"><value>История объединений</value></data>
+  <data name="TraceLine" xml:space="preserve"><value>Предложил {0} · объединено {1}</value></data>
+  <data name="NoMergeTrace" xml:space="preserve"><value>С этой записью ничего не объединялось.</value></data>
+  <data name="MarketSoon" xml:space="preserve"><value>Рыночные данные · скоро</value></data>
+  <data name="MarketSoonText" xml:space="preserve"><value>Доля рынка и продажи появятся в W7.</value></data>
+  <data name="MergeTitle" xml:space="preserve"><value>Объединение</value></data>
+  <data name="MergeSource" xml:space="preserve"><value>Будет объединено</value></data>
+  <data name="MergeSourceLine" xml:space="preserve"><value>компания «{0}» · предложил {1}, {2}</value></data>
+  <data name="StepN" xml:space="preserve"><value>Шаг {0}/3</value></data>
+  <data name="MergeStepTarget" xml:space="preserve"><value>Выбор цели</value></data>
+  <data name="MergeStepTargetSub" xml:space="preserve"><value>запись, которая останется</value></data>
+  <data name="MergeStepCompare" xml:space="preserve"><value>Сравнение</value></data>
+  <data name="MergeStepCompareSub" xml:space="preserve"><value>поля и страны</value></data>
+  <data name="MergeStepEffect" xml:space="preserve"><value>Последствия</value></data>
+  <data name="MergeStepEffectSub" xml:space="preserve"><value>подтверждение</value></data>
+  <data name="SearchSurvivor" xml:space="preserve"><value>Найдите запись, которая останется</value></data>
+  <data name="SimilarBySimilarity" xml:space="preserve"><value>Похожие записи · по сходству названия</value></data>
+  <data name="NoCandidates" xml:space="preserve"><value>Подходящих активных записей нет.</value></data>
+  <data name="NextButton" xml:space="preserve"><value>Далее</value></data>
+  <data name="BackButton" xml:space="preserve"><value>Назад</value></data>
+  <data name="CompareHelp" xml:space="preserve"><value>Сохраняются значения оставшейся записи. Отличающиеся поля отмечены.</value></data>
+  <data name="FieldColumn" xml:space="preserve"><value>Поле</value></data>
+  <data name="WillMerge" xml:space="preserve"><value>Будет объединено · {0}</value></data>
+  <data name="Survivor" xml:space="preserve"><value>Остаётся · {0}</value></data>
+  <data name="WillMergeShort" xml:space="preserve"><value>Будет объединено</value></data>
+  <data name="SurvivorShort" xml:space="preserve"><value>Остаётся</value></data>
+  <data name="DifferentTag" xml:space="preserve"><value>отличается</value></data>
+  <data name="CountryRows" xml:space="preserve"><value>Строки стран</value></data>
+  <data name="CountryRowsHelp" xml:space="preserve"><value>Страну, которой нет у оставшейся записи, можно перенести. Если она есть в обеих, сохраняется строка оставшейся.</value></data>
+  <data name="MoveColumn" xml:space="preserve"><value>Перенос</value></data>
+  <data name="MoveLabel" xml:space="preserve"><value>перенести</value></data>
+  <data name="KeptLabel" xml:space="preserve"><value>сохраняется</value></data>
+  <data name="NoneLabel" xml:space="preserve"><value>нет</value></data>
+  <data name="EffectTitle" xml:space="preserve"><value>Последствия объединения</value></data>
+  <data name="EffectReports" xml:space="preserve"><value>Значение конкурента в {0} отчётах будет связано с «{1}».</value></data>
+  <data name="EffectAlias" xml:space="preserve"><value>Название «{0}» будет добавлено в другие названия.</value></data>
+  <data name="EffectMove" xml:space="preserve"><value>Строки стран {0} перейдут к оставшейся записи.</value></data>
+  <data name="EffectNoMove" xml:space="preserve"><value>Строки стран не переносятся.</value></data>
+  <data name="EffectStatusProposal" xml:space="preserve"><value>Предложение станет «Объединено» и останется только в истории.</value></data>
+  <data name="EffectStatusRecord" xml:space="preserve"><value>Эта запись станет «Объединено» и останется только в истории.</value></data>
+  <data name="EffectApproval" xml:space="preserve"><value>Применяется после одобрения отделом продаж в Центре задач.</value></data>
+  <data name="Irreversible" xml:space="preserve"><value>Это необратимо.</value></data>
+  <data name="AckText" xml:space="preserve"><value>Я ознакомился с последствиями и подтверждаю объединение.</value></data>
+  <data name="MergeButton" xml:space="preserve"><value>Объединить</value></data>
+  <data name="Merged" xml:space="preserve"><value>Объединено.</value></data>
+  <data name="SectionProposal" xml:space="preserve"><value>Предложение</value></data>
+  <data name="SectionDecision" xml:space="preserve"><value>Решение</value></data>
+  <data name="SectionDecisionHistory" xml:space="preserve"><value>История одобрения</value></data>
+  <data name="NoDecision" xml:space="preserve"><value>Решение ещё не подготовлено.</value></data>
+  <data name="DecisionKind" xml:space="preserve"><value>Решение</value></data>
+  <data name="PreparedBy" xml:space="preserve"><value>Подготовил</value></data>
+  <data name="MergeTarget" xml:space="preserve"><value>Целевая запись</value></data>
+  <data name="MovedCountries" xml:space="preserve"><value>Переносимые страны</value></data>
+  <data name="MergeEffectShort" xml:space="preserve"><value>Предложенное название добавится к другим названиям цели; отчёты будут связаны с ней.</value></data>
+  <data name="RejectReason" xml:space="preserve"><value>Причина</value></data>
+  <data name="AppliedLine" xml:space="preserve"><value>Применено · {0} · одобрил {1}, {2}</value></data>
+  <data name="WithdrawButton" xml:space="preserve"><value>Отозвать</value></data>
+  <data name="ApproveButton" xml:space="preserve"><value>Одобрить</value></data>
+  <data name="ReturnToDraft" xml:space="preserve"><value>Вернуть в черновик</value></data>
+  <data name="SodNote" xml:space="preserve"><value>Это решение подготовили вы; одобряет его другой сотрудник в Центре задач.</value></data>
+  <data name="HistSubmitted" xml:space="preserve"><value>Раунд {0} отправил на одобрение {1}</value></data>
+  <data name="HistRound_approved" xml:space="preserve"><value>Одобрено · {0}</value></data>
+  <data name="HistRound_rejected" xml:space="preserve"><value>Возвращено · {0}</value></data>
+  <data name="HistRound_cancelled" xml:space="preserve"><value>Отозвано · {0}</value></data>
+  <data name="HistRound_timed_out" xml:space="preserve"><value>Истёк срок</value></data>
+  <data name="HistRound_closed" xml:space="preserve"><value>Закрыто · {0}</value></data>
+  <data name="HistDecision_approve" xml:space="preserve"><value>Решение: одобрить · {0}</value></data>
+  <data name="HistDecision_return" xml:space="preserve"><value>Решение: вернуть в черновик · {0}</value></data>
+  <data name="DecisionSaved" xml:space="preserve"><value>Решение сохранено как черновик.</value></data>
+  <data name="Sent" xml:space="preserve"><value>Отправлено на одобрение.</value></data>
+  <data name="RejectTitle" xml:space="preserve"><value>Отклонить предложение: {0}</value></data>
+  <data name="RejectPlaceholder" xml:space="preserve"><value>напр. Нет на этом рынке; не опечатка другого продукта.</value></data>
+  <data name="RejectInfo" xml:space="preserve"><value>В отчётах останется непроверенным конкурентом (простой текст); представителям не предлагается.</value></data>
+  <data name="ErrReasonRequired" xml:space="preserve"><value>Причина обязательна.</value></data>
+  <data name="ErrTooLong" xml:space="preserve"><value>Не более 500 символов.</value></data>
+  <data name="ReturnTitle" xml:space="preserve"><value>Вернуть решение в черновик</value></data>
+  <data name="ReturnNote" xml:space="preserve"><value>Заметка автору</value></data>
+  <data name="ErrNoteRequired" xml:space="preserve"><value>Заметка обязательна.</value></data>
+  <data name="UserShort" xml:space="preserve"><value>пользователь {0}</value></data>
+  <data name="UnknownProduct" xml:space="preserve"><value>Продукт без названия</value></data>
+  <data name="ActionFailed" xml:space="preserve"><value>Действие не выполнено. Повторите попытку.</value></data>
+  <data name="Status_proposed" xml:space="preserve"><value>Предложено</value></data>
+  <data name="Status_active" xml:space="preserve"><value>Активно</value></data>
+  <data name="Status_inactive" xml:space="preserve"><value>Неактивно</value></data>
+  <data name="Status_merged" xml:space="preserve"><value>Объединено</value></data>
+  <data name="Status_rejected" xml:space="preserve"><value>Отклонено</value></data>
+  <data name="Field_name" xml:space="preserve"><value>Название</value></data>
+  <data name="Field_company" xml:space="preserve"><value>Компания</value></data>
+  <data name="Field_aliases" xml:space="preserve"><value>Другие названия</value></data>
+  <data name="Field_activeIngredients" xml:space="preserve"><value>Действующее вещество</value></data>
+  <data name="Field_formCode" xml:space="preserve"><value>Форма</value></data>
+  <data name="Field_strength" xml:space="preserve"><value>Дозировка</value></data>
+  <data name="Field_atcCode" xml:space="preserve"><value>Код АТХ</value></data>
+  <data name="Field_competesWith" xml:space="preserve"><value>Наши продукты</value></data>
+  <data name="Field_indications" xml:space="preserve"><value>Показания</value></data>
+  <data name="Field_created" xml:space="preserve"><value>Создано</value></data>
+  <data name="Field_proposed" xml:space="preserve"><value>Предложено представителем</value></data>
+  <data name="Field_status" xml:space="preserve"><value>Статус</value></data>
+  <data name="Field_countryPrices" xml:space="preserve"><value>Цена страны · {0}</value></data>
+  <data name="Err_concurrency_conflict" xml:space="preserve"><value>Запись изменил другой пользователь; обновите и повторите.</value></data>
+  <data name="Err_forbidden" xml:space="preserve"><value>У вас нет прав на это действие.</value></data>
+  <data name="Err_service_unavailable" xml:space="preserve"><value>Сервис недоступен. Ничего не изменено.</value></data>
+  <data name="Err_gateway_unavailable" xml:space="preserve"><value>Сервер недоступен. Повторите попытку.</value></data>
+  <data name="Err_workflow_template_missing" xml:space="preserve"><value>Процесс одобрения (MDM-COMP-PROPOSAL) ещё не настроен. Решение сохранено как черновик; попросите администратора опубликовать шаблон.</value></data>
+  <data name="Err_approval_forbidden" xml:space="preserve"><value>Вам нельзя запускать процесс одобрения.</value></data>
+  <data name="Err_workflow_unavailable" xml:space="preserve"><value>Сервис одобрения недоступен. Ничего не изменено.</value></data>
+  <data name="Err_workflow_request_rejected" xml:space="preserve"><value>Процесс одобрения отклонил запрос.</value></data>
+  <data name="Err_no_open_review" xml:space="preserve"><value>Для этого решения нет открытого одобрения.</value></data>
+  <data name="Err_withdraw_not_possible" xml:space="preserve"><value>Отозвать уже нельзя.</value></data>
+  <data name="Err_decision_invalid" xml:space="preserve"><value>Решение: одобрить или вернуть.</value></data>
+  <data name="Err_rejection_comment_required" xml:space="preserve"><value>Для возврата нужна заметка.</value></data>
+  <data name="Err_competitor_duplicate" xml:space="preserve"><value>У этой компании уже есть запись с таким названием.</value></data>
+  <data name="Err_competitor_market_duplicate" xml:space="preserve"><value>Страна может встречаться только один раз.</value></data>
+  <data name="Err_competitor_market_invalid" xml:space="preserve"><value>Страны нет в каталоге проверенных рынков.</value></data>
+  <data name="Err_competitor_reimbursement_invalid" xml:space="preserve"><value>Статуса возмещения нет в списке.</value></data>
+  <data name="Err_competitor_currency_invalid" xml:space="preserve"><value>Валюта — не трёхбуквенный код.</value></data>
+  <data name="Err_competitor_form_invalid" xml:space="preserve"><value>Формы нет в списке форм MDM.</value></data>
+  <data name="Err_competitor_invalid" xml:space="preserve"><value>Некоторые значения отсутствуют или слишком длинные.</value></data>
+  <data name="Err_competitor_not_found" xml:space="preserve"><value>Запись не найдена.</value></data>
+  <data name="Err_competitor_not_editable" xml:space="preserve"><value>В этом статусе запись изменить нельзя.</value></data>
+  <data name="Err_competitor_not_selectable" xml:space="preserve"><value>Цель должна быть активной записью.</value></data>
+  <data name="Err_competitor_not_proposal" xml:space="preserve"><value>По предложению уже принято решение.</value></data>
+  <data name="Err_competitor_decision_locked" xml:space="preserve"><value>Пока решение ждёт одобрения, оно заблокировано.</value></data>
+  <data name="Err_competitor_decision_missing" xml:space="preserve"><value>Сначала подготовьте и сохраните решение.</value></data>
+  <data name="Err_competitor_proposal_sod" xml:space="preserve"><value>Автор не может одобрить своё решение.</value></data>
+  <data name="Err_competitor_merge_confirm_required" xml:space="preserve"><value>Подтвердите, что ознакомились с последствиями объединения.</value></data>
+  <data name="Err_competitor_merge_self" xml:space="preserve"><value>Запись нельзя объединить с самой собой.</value></data>
+  <data name="Err_reference_data_unavailable" xml:space="preserve"><value>Не удалось прочитать справочник. Ничего не сохранено.</value></data>
+  <data name="Err_tenant_supplied" xml:space="preserve"><value>Запрос отклонён.</value></data>
+  <data name="Form_tablet" xml:space="preserve"><value>таблетка</value></data>
+  <data name="Form_capsule" xml:space="preserve"><value>капсула</value></data>
+  <data name="Form_syrup" xml:space="preserve"><value>сироп</value></data>
+  <data name="Form_injection" xml:space="preserve"><value>инъекция</value></data>
+  <data name="Form_ointment" xml:space="preserve"><value>мазь</value></data>
+  <data name="Form_cream" xml:space="preserve"><value>крем</value></data>
+  <data name="Form_drops" xml:space="preserve"><value>капли</value></data>
+  <data name="Form_inhaler" xml:space="preserve"><value>ингалятор</value></data>
+  <data name="Form_patch" xml:space="preserve"><value>пластырь</value></data>
+  <data name="Form_other" xml:space="preserve"><value>другая форма</value></data>
+  <data name="Form_film_coated_tablet" xml:space="preserve"><value>таблетка, покрытая оболочкой</value></data>
+  <data name="Form_modified_release_tablet" xml:space="preserve"><value>таблетка с модифицированным высвобождением</value></data>
+  <data name="Form_extended_release_tablet" xml:space="preserve"><value>таблетка пролонгированного действия</value></data>
+  <data name="Form_modified_release_capsule" xml:space="preserve"><value>капсула с модифицированным высвобождением</value></data>
+  <data name="Form_ampoule" xml:space="preserve"><value>ампула</value></data>
+</root>
