@@ -135,6 +135,8 @@ public sealed class ExpiryF2RulesTests
 
     private static string FixturePath => Path.Combine(RepoPaths.ServiceRoot, "tests", "Diten.InventoryService.Tests", "Contract", "Fixtures", "fefo-v1.0.0.openapi.yaml");
 
+    private static string FixtureV101Path => Path.Combine(RepoPaths.ServiceRoot, "tests", "Diten.InventoryService.Tests", "Contract", "Fixtures", "fefo-v1.0.1.openapi.yaml");
+
     private static JsonObject Load(string path)
     {
         var raw = new DeserializerBuilder().Build().Deserialize<object>(File.ReadAllText(path));
@@ -152,7 +154,7 @@ public sealed class ExpiryF2RulesTests
     public void The_1_0_1_change_is_the_implemented_by_slice_note_and_nothing_else()
     {
         var before = Load(FixturePath);
-        var after = Load(ContractSchemas.FefoContractPath);
+        var after = Load(FixtureV101Path); // F3 moved the yaml on to 1.0.2; the 1.0.0 → 1.0.1 step is measured on the pinned 1.0.1 file
         Assert.Equal("1.0.0", before["info"]!["version"]!.GetValue<string>());
         Assert.Equal("1.0.1", after["info"]!["version"]!.GetValue<string>());
 

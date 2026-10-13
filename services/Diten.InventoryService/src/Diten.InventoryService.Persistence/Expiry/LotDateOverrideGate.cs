@@ -81,16 +81,18 @@ public sealed class LotDateOverrideGate : ILotDateOverrideGate
         var signatureId = string.IsNullOrWhiteSpace(request.Override.SignatureId) ? null : request.Override.SignatureId.Trim();
         if (policy.DateOverrideMode == DateOverrideMode.ReasonAndSignature)
         {
+            // CT-F6: the company mode requires the signature; the MOD-0022 row only supplies the meaning (its `required` is not consulted).
+            var requirement = await _signature.RequirementAsync(stored, cancellationToken);
             if (signatureId is null)
             {
                 return Refused(TraceErrorCodes.LotDateOverrideSignatureRequired,
                     "This company requires an e-signature on a lot date apart from the suggestion (KF-D).", 400);
             }
 
-            if (!await _signature.VerifyAsync(signatureId, stored.Id, _tenant.UserId, cancellationToken))
+            if (!await _signature.VerifyAsync(signatureId, stored, _tenant.UserId, requirement, cancellationToken))
             {
                 return Refused(TraceErrorCodes.LotDateOverrideSignatureMismatch,
-                    "The signature does not belong to this date override (signer, action or subject).", 409);
+                    "The signature does not belong to this date override (signer, action, meaning, subject or time), or MOD-0022 could not confirm it.", 409);
             }
         }
 

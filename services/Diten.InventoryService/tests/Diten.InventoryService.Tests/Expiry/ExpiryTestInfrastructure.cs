@@ -63,8 +63,8 @@ public sealed class TestExpirySignature : IExpiryResolutionSignature
 }
 
 /// <summary>
-/// F2 test double of the KF-D lot-date signature (MOD-0022 verification arrives in F3): a signature it issued verifies for exactly its signer
-/// and override. <see cref="ProductionSignatureExpiryApiFactory"/> keeps the production fail-closed default.
+/// Test double of the KF-D lot-date signature for the F2 hook tests: a signature it issued verifies for exactly its signer and override.
+/// <see cref="ProductionSignatureExpiryApiFactory"/> runs the production MOD-0022 implementation over <see cref="FakeESignGateway"/>.
 /// </summary>
 public sealed class TestLotDateOverrideSignature : ILotDateOverrideSignature
 {
@@ -77,14 +77,19 @@ public sealed class TestLotDateOverrideSignature : ILotDateOverrideSignature
         return id;
     }
 
-    public Task<bool> VerifyAsync(string signatureId, Guid overrideId, Guid signer, CancellationToken cancellationToken = default)
-        => Task.FromResult(_issued.TryGetValue(signatureId, out var issued) && issued.Signer == signer && issued.Override == overrideId);
+    public Task<LotDateOverrideSignatureRequirement> RequirementAsync(Diten.InventoryService.Domain.Expiry.Entities.LotDateOverride dateOverride,
+        CancellationToken cancellationToken = default)
+        => Task.FromResult(new LotDateOverrideSignatureRequirement(true, ExpiryContract.DefaultMeaningCode, true));
+
+    public Task<bool> VerifyAsync(string signatureId, Diten.InventoryService.Domain.Expiry.Entities.LotDateOverride dateOverride, Guid signer,
+        LotDateOverrideSignatureRequirement requirement, CancellationToken cancellationToken = default)
+        => Task.FromResult(_issued.TryGetValue(signatureId, out var issued) && issued.Signer == signer && issued.Override == dateOverride.Id);
 }
 
 /// <summary>
 /// The REAL host (Program.cs, real middleware incl. the scope resolution, real MediatR pipeline, real Mongo repositories on the suite's
 /// own replica set) of <see cref="TraceApiFactory"/>, with the e-signature gate replaced by <see cref="TestExpirySignature"/> and a
-/// <see cref="MutableClock"/>. <see cref="ProductionSignatureExpiryApiFactory"/> keeps the production fail-closed gate.
+/// <see cref="MutableClock"/>. <see cref="ProductionSignatureExpiryApiFactory"/> keeps the production MOD-0022 gates (F3) over <see cref="FakeESignGateway"/>.
 /// The expiry records of the tenants it created are removed on dispose (DB-010).
 /// </summary>
 public class ExpiryApiFactory : TraceApiFactory
@@ -117,6 +122,9 @@ public class ExpiryApiFactory : TraceApiFactory
         {
             services.RemoveAll<TimeProvider>();
             services.AddSingleton<TimeProvider>(Clock);
+
+            // F3: the expiry MOD-0022 client (production GatewayExpiryESignClient) runs over the suite's in-memory MOD-0022 (FakeESignGateway)
+            services.AddHttpClient(nameof(IExpiryESignClient)).ConfigurePrimaryHttpMessageHandler(() => new FakeESignHandler(ESign));
             if (UseTestSignature)
             {
                 services.RemoveAll<IExpiryResolutionSignature>();
@@ -173,7 +181,7 @@ public class ExpiryApiFactory : TraceApiFactory
     }
 }
 
-/// <summary>The production e-signature gate (fail-closed until F3) — WP-0176-F1 §4, K3 sabotage (g).</summary>
+/// <summary>The production e-signature gates (F3: MOD-0022 over the in-memory <see cref="FakeESignGateway"/>) — WP-0176-F1 §4 / F3.</summary>
 public sealed class ProductionSignatureExpiryApiFactory : ExpiryApiFactory
 {
     protected override bool UseTestSignature => false;
@@ -208,7 +216,9 @@ public sealed class ExpiryContractValidatingHandler : DelegatingHandler
         Op("POST", "/api/expiry/exceptions/{id}/resolve", [200, 400, 401, 403, 404, 409, 503], _ => "ExceptionDetail", etag: true),
         Op("POST", "/api/expiry/exceptions/{id}/close", [200, 400, 401, 403, 404, 409, 503], _ => "ExceptionDetail", etag: true),
         // F2 (KF-D)
-        Op("POST", "/api/expiry/date-overrides", [200, 201, 400, 401, 403, 422, 503], _ => "DateOverride")
+        Op("POST", "/api/expiry/date-overrides", [200, 201, 400, 401, 403, 422, 503], _ => "DateOverride"),
+        // F3 (the MOD-0022 subject provider; every refusal is 404)
+        Op("GET", "/api/expiry/esign-subjects/{id}/{id}", [200, 401, 404], _ => "SignableSubject")
     ];
 
     private static readonly Regex WeakETag = new("^W/\"\\d+\"$", RegexOptions.Compiled);

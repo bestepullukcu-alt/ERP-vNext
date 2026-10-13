@@ -181,10 +181,12 @@ public sealed class InventoryScopeResolutionMiddleware
         await _next(context);
     }
 
-    /// <summary>MOD-0175 Q3: <c>GET /api/quarantine/esign-subjects/…</c> (the MOD-0022 subject provider, read-only).</summary>
+    /// <summary>MOD-0175 Q3: <c>GET /api/quarantine/esign-subjects/…</c>; MOD-0176 F3: <c>GET /api/expiry/esign-subjects/…</c> (the MOD-0022
+    /// subject providers, read-only).</summary>
     private static bool IsSubjectProvider(HttpContext context)
         => HttpMethods.IsGet(context.Request.Method)
-           && context.Request.Path.StartsWithSegments(Application.Features.Quarantine.QuarantineContract.BasePath + "/esign-subjects", StringComparison.OrdinalIgnoreCase);
+           && (context.Request.Path.StartsWithSegments(Application.Features.Quarantine.QuarantineContract.BasePath + "/esign-subjects", StringComparison.OrdinalIgnoreCase)
+               || context.Request.Path.StartsWithSegments(Application.Features.Expiry.ExpiryContract.BasePath + "/esign-subjects", StringComparison.OrdinalIgnoreCase));
 
     /// <summary>The frozen LOCATION v1 <c>listLocations</c> filter <c>legalEntityId</c> on <c>GET /api/locations</c> only.</summary>
     private static bool IsFrozenListFilter(HttpContext context, string key)

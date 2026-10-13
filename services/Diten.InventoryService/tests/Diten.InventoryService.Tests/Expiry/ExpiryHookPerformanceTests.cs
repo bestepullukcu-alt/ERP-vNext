@@ -80,7 +80,7 @@ public sealed class ExpiryHookPerformanceTests
         return (without, with);
     }
 
-    [Fact]
+    [PerformanceFact]
     public async Task The_hooks_add_at_most_50_ms_p95_with_200_lots_per_SKU()
     {
         using var plainHost = new NoExpiryHookApiFactory();
@@ -157,4 +157,22 @@ public sealed class ExpiryHookPerformanceTests
 public sealed class ExpiryPerformanceCollection
 {
     public const string Name = "expiry-performance (not parallel)";
+}
+
+/// <summary>
+/// WP-0176-F3 item 0 (CT decision O-FIX1-2): the p95 budget test is timing-sensitive and was unstable next to the rest of the suite on the
+/// MVP-1 machine. It runs only with <c>INVENTORY_PERF_TESTS=1</c> (alone); otherwise it is skipped with an explicit reason. The 50 ms budget
+/// is unchanged; the CT runs it at each acceptance.
+/// </summary>
+public sealed class PerformanceFactAttribute : FactAttribute
+{
+    public const string EnvironmentVariable = "INVENTORY_PERF_TESTS";
+
+    public PerformanceFactAttribute()
+    {
+        if (Environment.GetEnvironmentVariable(EnvironmentVariable) != "1")
+        {
+            Skip = "performance test — run alone with INVENTORY_PERF_TESTS=1, CT measures at acceptance";
+        }
+    }
 }

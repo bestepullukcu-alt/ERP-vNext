@@ -428,9 +428,10 @@ public sealed class ExpiryExceptionApiTests : IClassFixture<ExpiryApiFactory>
 }
 
 /// <summary>
-/// WP-0176-F1 §4 — the PRODUCTION e-signature gate until F3 is fail-closed: KF-E's default policy requires a signature on all three
-/// resolutions and nothing can verify one yet, so no exception is resolved in production — without a signature 400, with one 409.
-/// K3 sabotage (g): make the production default "allow" → this test is red.
+/// WP-0176-F1 §4, since F3 on the MOD-0022 implementation — the PRODUCTION gate is fail-closed for a resolver MOD-0022 refuses: the QA token
+/// here carries no <c>esign.*</c> key, so the effective policy cannot be read (403) → required, and no signature can be read → refused
+/// (without a signature 400, with one 409). F1 K3 sabotage (g) "production default allows" still turns it red. The F3 binding rules:
+/// <see cref="ExpiryESignTests"/>.
 /// </summary>
 public sealed class ExpiryFailClosedSignatureTests : IClassFixture<ProductionSignatureExpiryApiFactory>
 {
