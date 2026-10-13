@@ -117,8 +117,8 @@ const ObjectionList = (function () {
                     },
                     { targets: 4, orderable: false, render: (data, type) => { const n = (data || []).length; return type === 'display' ? `<span class="text-nowrap"><i class="bx bx-check-shield text-muted me-1" aria-hidden="true"></i>${n}</span>` : n; } },
                     { targets: 5, orderable: false, render: (data, type) => { const n = data || 0; return type === 'display' ? `<span class="text-nowrap ${n ? '' : 'text-muted'}"><i class="bx bx-slideshow me-1" aria-hidden="true"></i>${n}</span>` : n; } },
-                    { targets: 6, orderable: false, render: (data, type) => type === 'display' ? statusBadge(data) : (L['Status_' + data] || data || '') },
-                    { targets: 7, orderable: false, render: (data, type, full) => { const at = data || full.createdAt; return type === 'display' ? `<small class="text-nowrap">${esc(date(at))}</small>` : (at ?? ''); } },
+                    { targets: 6, orderable: false, responsivePriority: 1, render: (data, type) => type === 'display' ? statusBadge(data) : (L['Status_' + data] || data || '') },
+                    { targets: 7, orderable: false, responsivePriority: 3, render: (data, type, full) => { const at = data || full.createdAt; return type === 'display' ? `<small class="text-nowrap">${esc(date(at))}</small>` : (at ?? ''); } },
                     {
                         targets: -1, title: L.ColActions, searchable: false, orderable: false, className: 'cell-fit all',
                         render: (data, type, full) => {

@@ -537,6 +537,19 @@ public sealed class ObjectionLibraryWebTests
         return controller;
     }
 
+    /// <summary>CT (W3 live E4): at 1440 px the one-line question pushed Status and Last change under the responsive "+";
+    /// the mockup shows both. Status outranks the question, and the question wraps (two-line clamp) instead of nowrap.</summary>
+    [Fact]
+    public void A1_list_keeps_status_visible_the_question_wraps()
+    {
+        var list = Script("ObjectionResponses", "objection-list.js");
+        Assert.Matches(@"targets: 6, orderable: false, responsivePriority: 1,", list);
+        var css = Script("ObjectionResponses", "objection-responses.css");
+        var rule = Regex.Match(css, @"\.or-question \{[^}]*\}").Value;
+        Assert.Contains("white-space: normal", rule);
+        Assert.DoesNotContain("nowrap", rule);
+    }
+
     private static JsonElement? Smoke(string scenario)
     {
         var smoke = Path.Combine(Path.GetDirectoryName(WebRoot())!, "Diten.Web.Tests", "Js", "objection-library-smoke.js").Replace("\\", "/");

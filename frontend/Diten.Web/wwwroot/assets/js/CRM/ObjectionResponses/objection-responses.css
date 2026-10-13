@@ -1,7 +1,8 @@
 /* WP-VW-W3 (W3-WEB-c) — the objection library pages. Colours are the theme's variables (light / dark), spacing uses
    logical properties only, so every rule mirrors under RTL (ar). */
 .or-empty-text { max-inline-size: 28rem; }
-.or-question { display: inline-block; max-inline-size: 28rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; }
+/* Wraps to at most two lines (CT, W3 E4): a one-line question pushed Status and Last change under the "+" at desktop width. */
+.or-question { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; white-space: normal; min-inline-size: 14rem; max-inline-size: 28rem; }
 .or-cat { white-space: normal; text-align: start; }
 .or-prewrap { white-space: pre-wrap; }
 .or-claim { cursor: pointer; background: var(--bs-paper-bg, var(--bs-card-bg)); }
