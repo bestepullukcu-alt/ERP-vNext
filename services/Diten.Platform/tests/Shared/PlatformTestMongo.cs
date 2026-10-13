@@ -9,8 +9,8 @@ namespace Diten.Platform.Tests.Shared;
 /*
  * THE ONE SOURCE OF THE PLATFORM TESTS' MONGO (WP-CT-LANE-MAIN-SYNC-01, CT decision C; BL-595 + main's Q131a).
  *
- * Linked (not copied) into Diten.Platform.Application.Tests, .BackgroundJobs.Tests and .Eventing.Tests — they do not
- * reference each other, and one rule in three copies drifts. In order:
+ * Linked (not copied) into Diten.Platform.Application.Tests, .BackgroundJobs.Tests, .Eventing.Tests and
+ * .CompositionGuard.Tests — they do not reference each other, and one rule in four copies drifts. In order:
  *
  *   1. DITEN_PLATFORM_TEST_MONGO_URI given → that URI, through main's fail-closed check UNCHANGED (Q131a, PR #134):
  *      plain mongodb://, no credentials, every host loopback, no port in 27017–27021 (an omitted port counts as 27017),
@@ -42,7 +42,7 @@ internal static class PlatformTestMongo
     public sealed record Choice(string? Uri, string? Executable, string? Failure);
 
     /// <summary>
-    /// Main's Q131a check, verbatim (moved here from PlatformMongoTestConnection so all three projects share it). Pure:
+    /// Main's Q131a check, verbatim (moved here from PlatformMongoTestConnection so all four projects share it). Pure:
     /// its tests never change the process environment. Messages never repeat the URI.
     /// </summary>
     internal static string ValidateUri(string? connectionString) => ValidateUri(connectionString, UriVariable);

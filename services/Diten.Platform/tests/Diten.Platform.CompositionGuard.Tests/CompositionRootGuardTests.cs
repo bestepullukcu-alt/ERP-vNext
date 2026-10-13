@@ -22,12 +22,13 @@ namespace Diten.Platform.CompositionGuard.Tests;
 /// (2) an OPTIONAL (= null) Diten.* constructor parameter of any registered type or controller — an optional
 ///     dependency that is never registered fails silently instead of loudly (MdmLegalEntityReferenceValidator, Q362).
 /// Platform runs migrations against Mongo while Program.cs registers services, so the guard needs a real, disposable
-/// mongod: set PLATFORM_COMPOSITION_GUARD_MONGO_URI. Unset, the guard FAILS — a guard that skips is not a guard.
-/// WP-PLATFORM-COMPOSITION-GUARD-OWNED-01 (CT decision B, as Auth / MDM in the main sync FIX1): only the CONNECTION
-/// SOURCE changed. A given PLATFORM_COMPOSITION_GUARD_MONGO_URI is used, through main's Q131a check (loopback, no
-/// credentials, no port in 27017–27021). Unset, the guard takes the Platform tests' one source (PlatformTestMongo,
-/// CT decision C): a lane DITEN_PLATFORM_TEST_MONGO_URI, else a mongod it starts from DITEN_TEST_MONGOD. Neither:
-/// OWNED_TEST_MONGO_UNAVAILABLE, red by name, never the shared instance. The assertions are main's, unchanged.
+/// mongod — and it never skips: a guard that skips is not a guard. WP-PLATFORM-COMPOSITION-GUARD-OWNED-01 (CT decision
+/// B, as Auth / MDM in the main sync FIX1) changed only the CONNECTION SOURCE, in this order: a given
+/// PLATFORM_COMPOSITION_GUARD_MONGO_URI, through main's Q131a check (loopback, no credentials, no port in 27017–27021;
+/// an empty value is red); unset, the Platform tests' one source (PlatformTestMongo, CT decision C) — a lane
+/// DITEN_PLATFORM_TEST_MONGO_URI, else a mongod it starts from DITEN_TEST_MONGOD; neither, OWNED_TEST_MONGO_UNAVAILABLE —
+/// the guard FAILS by name, never the shared instance. Host() takes its address from MongoAddress with exactly that
+/// source (CompositionRootGuardSourceTests pins the line). The assertions are main's, unchanged.
 /// No hosted service runs and no request is sent; the host is only built, once per process (Platform registers
 /// process-global BSON serializers, so a second build in the same process throws).
 /// </summary>
