@@ -75,6 +75,10 @@
         </div>
     </div>
     <script id="diten-tour-l10n" type="application/json">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(tourStrings))</script>
+    @* WP-UX-TOUR-DRIVERJS-01 — the tour library, vendored (1.8.0, MIT; assets/vendor/libs/driverjs/README.md), never a
+       CDN. Before the layer that is its only caller; DitenTour looks it up at call time, so the order is for reading. *@
+    <link rel="stylesheet" href="~/assets/vendor/libs/driverjs/driver.css" asp-append-version="true" />
+    <script src="~/assets/vendor/libs/driverjs/driver.js.iife.js" asp-append-version="true"></script>
     <script src="~/assets/js/shared/diten-tour.js" asp-append-version="true"></script>
     <script src="~/assets/js/shared/diten-tour-catalog.js" asp-append-version="true"></script>
     <script src="~/assets/js/shared/diten-help.js" asp-append-version="true"></script>
