@@ -601,3 +601,55 @@ KORU/YAPMA: kod değişikliği YOK; diğer şablonlara DOKUNMA (parmak izi önce
 DOĞRULA: şablon Published + tek adım + doğru aday + options.rejectCommentRequired; diğer şablon parmak izleri aynı; betik dry-run çıktısı rapora.
 Commit: "chore(mdm): WP-VW-W4-CFG — workflow template MDM-COMP-PROPOSAL (live) + RBAC grant script (dry-run default)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22), kullanıcıya --apply + yeniden giriş talimatı. K13.
 ```
+
+---
+
+## §37 CT kabul — W4-BE-c + W4-BE-b1 E2 ACCEPTED (2026-10-13)
+
+**Kaynak:** kullanıcının ajanları.
+- BE-c `02544ce27` (`wp/vw-w4-be-c`) → test dalında `2a07d0864`.
+- BE-b1 `9ff6e07a0` (`wp/vw-w4-be-b1`) → test dalında `5f4f79f78`. Çakışma yok: b1 yalnız MDM'ye dokunuyor.
+
+**CT ölçümü (ikisi birlikte, test dalı başında):**
+
+| takım | sonuç |
+|---|---|
+| CRM | **2681/0/5** (2643 + 38) |
+| MDM | **484/3**; 3 kırmızı (`ProductItemSkuMasterManifestProviderTests`) tabanda da var |
+| Web | **955/0** (Nav L10n yeşil) |
+| Gateway | **122/1** (yalnız önceden var olan 5063–5065) |
+| Auth | **1120/0** |
+| Platform (BRD + CRM manifest süzgeci) | 241/14: 9 Mongo (yerel `mongod` yok, ortam) + 5 `VerifiedMarket` / `VerifiedGsku` uygunluk testi. **CT, bu 5 testi taban commit'te ayrı çalışma klasöründe koştu: aynı 5 kırmızı.** Yeni seed dosyasından kaynaklanmıyor. |
+| Mimari | denetimsiz **47 → 49** (`UpdateDoctorProfileCommand`, `UpdatePotentialThresholdCommand`; borç satırı yok, Faz 8) |
+
+**CT kod okuması:**
+- **BE-c:**
+  - `OpportunityRules.Classify` §2.3 tablosuyla birebir.
+  - Görünürlük her adımda `TenantId` süzüyor. Ataması olmayan, `read-all`'ı da olmayan kullanıcı → `Nobody` (sızdırmaz).
+  - Ekip = `territory-subtree` atamasının alt ağacı.
+- **BE-b1:**
+  - Tüketici yalnız `platform.workflow.instance.completed.v1` + `mdm.*` alır. Zarf / yük kiracısı eşleşmesi zorunlu; inbox tekrarları eler.
+  - CAS deposu açık kiracı + sürüm filtreli.
+  - Not: olay uygulanmadan önce inbox'a yazılıyor; uygulama çökerse olay kaybolur, okumadaki 120 sn uzlaştırma telafi eder (CRM ile aynı desen).
+
+**CT sabotajları** (`.bak` + touch ile geri alındı; ayrı `-o` çıktısı):
+- BE-c `IsDue` sınırı `>` → `>=` → "90 günlük değer güncel" testi kırmızı.
+- BE-b1 tüketicide inbox tekrar denetimi devre dışı → "tekrar olay tek uygulanır" testi kırmızı.
+
+**Kabul edilen sapmalar:**
+- **BE-c:**
+  - setler yeni `crm-visit-report-v2-reference.json` dosyasında (BE-a buraya ekler);
+  - `no_indications` ayrı neden;
+  - anahtarlar hem DataSeeder hem manifestte.
+- **BE-b1:**
+  - tek `IMdmWorkflowClient`;
+  - tür başına kayıt deseni (b2 rakip öneri kararını kaydeder);
+  - 409 `concurrency_conflict` kodu;
+  - açık turda yeniden gönderim 409;
+  - boş `Gateway:BaseUrl` → yerel varsayılan.
+
+**Açık:**
+- **`crm.doctor-insights.read-all` açık-atama listesinde değil** (`ExplicitGrantOnlyPermissions`). Modül yetki senkronizasyonu Admin'lere otomatik verebilir → Admin tüm doktorları görür. Öneri: `crm.planned-visit.read-all` gibi listeye eklensin (kullanıcı kararı bekleniyor).
+- **BE-b2'ye not:** b1'in Görev Merkezi derin bağlantısı geçici (`/MDM/CompetitorProducts/Proposals/{id}`). Asıl sayfa `/MasterDataManagement/CompetitorProducts` (§2.7). b2 bağlantıyı bu yola göre kesinleştirir (ör. `/MasterDataManagement/CompetitorProducts/Proposals/{id}`), WEB-c aynı yolu kullanır.
+
+**Sıradaki:** 2. tur — W4-BE-a ∥ W4-BE-b2.
