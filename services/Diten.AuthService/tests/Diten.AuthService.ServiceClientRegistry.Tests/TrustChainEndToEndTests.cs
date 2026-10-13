@@ -227,11 +227,11 @@ public sealed class TrustChainEndToEndTests(OwnedMongo mongo)
         var policy = new ConfiguredTrustedWorkflowStartAuthorizationPolicy(Options.Create(authorization));
 
         // Four since GSKU FIX1 (B6): Global Product and the three GSKU starts; six since LSKU FIX1 (B4): and the two
-        // LSKU starts — all for the new client.
-        Assert.Equal(6, authorization.Entries.Count);
+        // LSKU starts; seven since the S2 item activation approval: and the item start — all for the new client.
+        Assert.Equal(7, authorization.Entries.Count);
         Assert.True(policy.IsAuthorized(Request(clientCode, mdmTemplateCode)));
         Assert.False(policy.IsAuthorized(Request(DevTrustBootstrapCommand.DefaultClientCode, mdmTemplateCode)));
-        foreach (var (objectType, templateCode) in DevTrustBootstrapCommand.GskuStarts.Concat(DevTrustBootstrapCommand.LskuStarts))
+        foreach (var (objectType, templateCode) in DevTrustBootstrapCommand.GskuStarts.Concat(DevTrustBootstrapCommand.LskuStarts).Concat(DevTrustBootstrapCommand.ItemStarts))
         {
             Assert.True(policy.IsAuthorized(new(ServiceClientIdentityIds.FromClientCode(clientCode),
                 DevTrustBootstrapCommand.ServiceName, DevTrustBootstrapCommand.Audience, objectType, null, templateCode)));

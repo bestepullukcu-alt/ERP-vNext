@@ -97,6 +97,9 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
     //     AdminResetPassword) — the ONE reset path.
     //   BL-521 decorator forwards (a59560dc4, this merge) — _inner.TryWriteChangesAsync / RecordLoginOutcomeAsync /
     //     RecordLoginFailureAsync (each guarded for a hidden caller, on the stored row since FIX1 small 2).
+    //   WP-EMAIL-LANG-01 (2026-10-13, CT lane merge, owner correction by hand) — UpdateMyPreferencesCommandHandler
+    //     users.TryWriteChangesAsync: the signed-in user's own preferred e-mail language (tenant_user only, one field,
+    //     audited); written on its own branch, it met this inventory only when both reached the lane. Never grants.
     //   WP-USERS-ROLES-CLOSE-FIX1 FIX4 item 3 (2026-10-13, owner correction by hand, not a regeneration) — the sign-in CLAIM:
     //     LoginCommandHandler _userRepository.TryClaimSignInAsync, its decorator forward _inner.TryClaimSignInAsync, and the one
     //     targeted write behind it (UserRepository Collection.UpdateOneAsync 6 → 7). It clears the failure count and the lock
@@ -406,6 +409,7 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
     services/Diten.AuthService/src/Diten.AuthService.Application/Features/Users/Handlers/CommandHandlers/SetUserActiveStatusCommandHandler.cs|IRefreshTokenRepository|_refreshTokenRepository.RevokeAllByUserAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Application/Features/Users/Handlers/CommandHandlers/SetUserActiveStatusCommandHandler.cs|IUserQuotaClient|_quota.TryConsumeUserSeatAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Application/Features/Users/Handlers/CommandHandlers/SetUserActiveStatusCommandHandler.cs|IUserRepository|_userRepository.TryWriteChangesAsync|1
+    services/Diten.AuthService/src/Diten.AuthService.Application/Features/Users/Handlers/CommandHandlers/UpdateMyPreferencesCommandHandler.cs|IUserRepository|users.TryWriteChangesAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Application/Features/Users/Handlers/CommandHandlers/UpdateUserCommandHandler.cs|AccountKindWriter|_kindWriter.RecordAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Application/Features/Users/Handlers/CommandHandlers/UpdateUserCommandHandler.cs|IRefreshTokenRepository|_refreshTokens.RevokeAllByUserAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Application/Features/Users/Handlers/CommandHandlers/UpdateUserCommandHandler.cs|IUserQuotaClient|_quota.TryConsumeUserSeatAsync|1

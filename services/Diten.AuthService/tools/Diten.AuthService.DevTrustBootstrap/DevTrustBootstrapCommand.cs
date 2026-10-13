@@ -51,6 +51,16 @@ public static class DevTrustBootstrapCommand
         ("LskuRetirementRequest", "LSKU-RETIREMENT-REQUEST")
     ];
 
+    /// <summary>
+    /// MOD-0290-FU04 S2 (item activation approval): the item start — object type the item processor sends and the tracked
+    /// Development template code. It follows the LSKU entries in Platform's tracked list (entry 6), so a bootstrapped
+    /// client replaces it like the others.
+    /// </summary>
+    public static readonly (string ObjectType, string TemplateCode)[] ItemStarts =
+    [
+        ("Item", "ITEM-ACTIVATION")
+    ];
+
     public const int Success = 0;
     public const int UsageError = 2;
     public const int StateConflict = 3;
@@ -183,9 +193,9 @@ public static class DevTrustBootstrapCommand
                 writer.WriteString("ObjectType", GlobalProductObjectType);
                 writer.WriteString("TemplateCode", DefaultTemplateCode);
                 writer.WriteEndObject();
-                // Entries 1–5, in the tracked file's order: they replace the tracked GSKU and LSKU entries, which carry the
-                // default client's id.
-                foreach (var (objectType, templateCode) in GskuStarts.Concat(LskuStarts))
+                // Entries 1–6, in the tracked file's order: they replace the tracked GSKU, LSKU and item entries, which carry
+                // the default client's id.
+                foreach (var (objectType, templateCode) in GskuStarts.Concat(LskuStarts).Concat(ItemStarts))
                 {
                     writer.WriteStartObject();
                     writer.WriteString("ClientId", ServiceClientIdentityIds.FromClientCode(options.ClientCode).ToString("D"));
