@@ -653,3 +653,53 @@ Commit: "chore(mdm): WP-VW-W4-CFG — workflow template MDM-COMP-PROPOSAL (live)
 - **BE-b2'ye not:** b1'in Görev Merkezi derin bağlantısı geçici (`/MDM/CompetitorProducts/Proposals/{id}`). Asıl sayfa `/MasterDataManagement/CompetitorProducts` (§2.7). b2 bağlantıyı bu yola göre kesinleştirir (ör. `/MasterDataManagement/CompetitorProducts/Proposals/{id}`), WEB-c aynı yolu kullanır.
 
 **Sıradaki:** 2. tur — W4-BE-a ∥ W4-BE-b2.
+
+## §37 CT kabul — W4-BE-a + W4-BE-b2 E2 ACCEPTED (koşullu, 2026-10-13)
+
+**Kaynak:**
+- BE-a `256053368` → test dalında `5279e19a2`.
+- BE-b2 `4725ebcde` → test dalında `df3ab1d6e`.
+- Birleştirmede çakışma yalnız BRD tüketilebilir listelerinde çıktı (`appsettings.json`, `appsettings.Development.json`, `BusinessReferenceDataConsumableSetsOptions`); iki tarafın setleri birleştirilerek CT çözdü.
+
+**CT ölçümü (ikisi birlikte):**
+
+| takım | sonuç |
+|---|---|
+| CRM | **2703/0/5** |
+| MDM | **504/3** (bilinen manifest kırmızıları) |
+| Web | **955/0** |
+| Auth | **1122/0** |
+| Gateway | **145/1** (bilinen 5063–5065) |
+| Platform (BRD + CRM + Lookups süzgeci) | **335/14** (aynı 14 bilinen: 9 Mongo + 5 Verified uygunluk) |
+| Mimari | denetimsiz **52** (49 + 3 BE-a rapor komutu; BE-b2 MDM komutları denetimli, artış yok) |
+
+**CT kod okuması:**
+- **BE-b2, b1 çekirdeğine `ApplyEffectsAsync` kancası ekledi.** SoD + ek ret kontrollerinden sonra, kaydın kendisi değiştirilmeden önce çalışır; ret dönerse hiçbir şey değişmez.
+- Görev Merkezi bağlantısı `/MasterDataManagement/CompetitorProducts/Proposals/{id}` (§2.7 ile uyumlu, WEB-c aynı yolu kullanır).
+- BE-a ↔ BE-b2 sözleşmesi: lookup kartı alanı `country`; öneri `POST {name, company, productId, reportId}` → `{id, status, existing}`.
+
+**CT sabotajları:**
+- **BE-b2 ✅:** lookup'ta pasif kayıt da gelsin → 2 kırmızı (pasif lookup'ta yok + yalnız önerene görünür). Geri alındı.
+- **BE-a ⚠ yakalanmadı:** `shareBucketCode` zorunluluğu kaldırıldı → **18/18 yeşil**. Test yorumu "her ürün alanı adlandırılır" diyor ama yalnız `visitSuccessCode`, `sample`, `adverseEventNote` sınanıyor. `commitmentCode`, `interestCode`, `adoptionStageCode`, `shareBucketCode`, `competitors | noCompetitor`, `objections | noObjection`, `requests | noRequest`, `nextMessage` için koruma yok. Kod doğru; eksik olan test.
+- **Kapanış:** tam gövdeden her zorunlu alanı tek tek boşaltan veri güdümlü test (ürün + eczane) — kullanıcı kararıyla CT ya da WEB-a öncesi küçük iş.
+
+**Kabul edilen sapmalar:**
+- **BE-a:**
+  - MDM yanıtı esnek okunuyor;
+  - öneri metni anahtar olarak geliyor (Web çevirir);
+  - önceki değer yalnız aynı temsilcinin raporundan;
+  - eczane rakip sorusu planın ilk ürünüyle;
+  - düzeltme içgörüleri yeniden yazmıyor;
+  - rakip kullanım sayımı bellekte (büyük hacimde iyileştirme gerekebilir).
+- **BE-b2:**
+  - tekillik kodda (`$ne` kısmi indeks yasak);
+  - öneride firma isteğe bağlı;
+  - 5 form MDM sözlüğüne eklendi;
+  - menü sayfası WEB-c'den önce görünür;
+  - kullanım sayısı MDM'de 0, Web CRM ucundan birleştirir.
+
+**Açık:**
+- (1) BE-a zorunluluk testi (yukarıda).
+- (2) **Eczane raf fotoğrafı için yükleme ucu yok** (yalnız `PhotoEvidenceId` alanı). WEB-b'ye küçük bir CRM ucu eklenir: W3 başlatma fotoğrafı deseni, MOD-0262 `CrmVisitEvidence`, `[DisableFormValueModelBinding]` vekil.
+
+**Sıradaki:** 3. tur — W4-WEB-a ∥ W4-WEB-b.
