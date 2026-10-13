@@ -246,9 +246,13 @@ Allowed (new files only, unless listed as a seam):
 | `…Application/Common/InventoryErrorCodes.cs` | `All` set `:67-75` | new codes (with INVENTORY 1.3.0) | F2 |
 | `…/Traceability/…/TraceErrorCodes.cs` | `:12-46` | new codes (with TRACE 1.4.0) | F2/F3 |
 | `services/Diten.InventoryService/src/Diten.InventoryService.Api/Program.cs` | `:41-46` (manifest registrations) | register `ExpiryFefoManifestProvider` + `AddExpiry()` | F1 |
-| `frontend/Diten.Web/Views/Inventory/StockMovements/_Form.cshtml` + `wwwroot/assets/js/Inventory/StockMovements/form.js` | lot block `:285`, retest warn pattern `:304-311`, `onLotChanged` `:315-326`, `check()` `:645-647` | FEFO / min-remaining bands | F5 |
+| `frontend/Diten.Web/Views/Inventory/StockMovements/_Form.cshtml` + `wwwroot/assets/js/Inventory/StockMovements/form.js` | `currentLot` `:283-286`, `onLotChanged` `:314-326`, `onSourceChanged` `:348` (the FEFO band hooks here — CT decision A), `readBody` `:592`, `check()` lot rules `:640-648`, `post` `:685`, source listener `:829` (measured at `32267f884`; the CT-given lines replace the P0 ones `:285 / :304-311 / :315-326 / :645-647`) | FEFO / min-remaining bands; CT-F1 resubmission into QUARANTINE only on `details.requiredToStockStatus` | F5 |
 | `frontend/Diten.Web/Views/Traceability/Lots/_Form.cshtml` `:132-151`, `Lots/form.js:184`, `_LotQuickCreateModal.cshtml:38-44` | | suggestion + override band | F5 |
-| `frontend/Diten.Web/Controllers/InventoryGovernanceController.cs`, `Views/InventoryGovernance/**`, `_Layout.cshtml:217-222`, `ManagementGovernanceRegistry.cs:207` | | removal / redirect (CT-F12) | F5 |
+| `frontend/Diten.Web/Models/Inventory/MovementFormViewModels.cs` | `MovementSubmitViewModel` `:175-188` | **CT decision A (F5):** add `FefoBypassReason` | F5 |
+| `frontend/Diten.Web/Models/Inventory/MovementRules.cs` | after `sourceDocumentId` `:278` | **CT decision A (F5):** `fefoBypassReason` only when filled — without it the body is byte-identical (K3 (i)) | F5 |
+| `frontend/Diten.Web/Controllers/StockMovementsController.cs` | `MovementRefusal` `:503` | **CT decision A (F5):** `details` for `FEFO_BYPASS_REASON_REQUIRED` / `FEFO_ORDER_VIOLATION` / `LOT_BELOW_MIN_REMAINING_SHELF_LIFE` only, whitelisted keys only (K3 (j)) | F5 |
+| `frontend/Diten.Web/Controllers/LotsController.cs` + `Models/Traceability/LotFormRules.cs` | `CreateLot` `:179`, Draft `EditLot` `:217`; `LotFormInput` `:23` | **CT decision A (F5):** `dateOverride {overrideId, signatureId}` only when sent; `LOT_DATE_OVERRIDE_*` code + message pass through (K3 (k)) | F5 |
+| `frontend/Diten.Web/Controllers/InventoryGovernanceController.cs`, `Views/InventoryGovernance/**`, `Models/InventoryGovernanceViewModel.cs`, `_Layout.cshtml:217-222`, `ManagementGovernanceRegistry.cs:207` | | removal (CT-F12; F5: removed, `/InventoryGovernance` → 404 with no redirect; the registry card → `/Expiry`) | F5 |
 
 ## 6. Protected Paths
 
@@ -1045,6 +1049,24 @@ sabotage. The CT viewed the static-preview screenshots (dashboard, FEFO order al
 **O-F4-3** accepted for MVP-1 (lot × warehouse rows; mixed units are not converted — the panel says "tüm birimler"); **O-F4-4** → F5;
 **O-F4-5** accepted; **O-F4-6** the CT checks live after the owner-approved Inventory + Web restart; **O-F4-7** (same dark-tab / filter
 placeholder defects on the Quarantine screens) → FU-0175-UI-THEME-01. Fast-forwarded into the MVP-1 branch.
+
+### 19.15 WP-0176-F5 — agent result, pending CT (2026-10-13)
+
+**BLOCKED → CT decision A.** First measurement: the Web's MVC whitelists drop `fefoBypassReason` (movement payload), the refusal
+`details` (CT-F1 needs `requiredToStockStatus`) and `dateOverride` (createLot) — the bands could not work through the existing seams.
+CT decision A: four ADD-ONLY Web seams (§5 rows "CT decision A"), CT-F1 decided from `details.requiredToStockStatus` only, the FEFO band
+on `onSourceChanged`, PDFsharp-MigraDoc 6.1.1 (MIT) with Platform's `IFontResolver` pattern copied (Platform untouched), sabotages
+(i) (j) (k) added.
+
+Commits on `feature/sce/mod-0176-expiry-fefo` (base `32267f884`): `4017893d9` Kanıt Paketi backend (previewEvidence, CSV / PDF export —
+SHA-256 of the stored file bytes, same key → same file and hash, ≤ 366 days, company scope, audit `expiry.evidence.exported`, file
+endpoint, export log; FEFO-BUNDLE **1.2.0** additive, 1.1.0 pinned as a fixture); `c5a6d3062` CT-F12 removal (`/InventoryGovernance` 404,
+no redirect); `9ddd2c790` Web (İstisna Kutusu, İstisna Detayı + two-step drawer + the shared MOD-0022 dialog, Ayarlar, Kanıt Paketi, the
+three bands, O-F4-4 badge link, 7 languages); `569c09b3d` createEvidenceExport out of `.Queries` (audit rule) + SSoR collections;
+`03d54ccf9` five UI fixes from the screenshots. Inventory 1062+2 → **1068+2**; Web 1445 → **1458/1458**; architecture 69/77 same 8;
+gateway 134/135; 0 new warnings. Sabotage a–k **11/11** red → green, `git diff` empty. Probe 5167 + 5101: F5 service calls 401, Web pages
+302 → login without skeleton, `/InventoryGovernance` 404, fleet PIDs unchanged. Screenshots are a static preview (real Razor + real JS
++ fixed JSON). Evidence `docs/records/audits/2026-10/mod-0176-f5-evidence-2026-10-13.md`; open points O-F5-1 … in its §12.
 
 ## 20. Follow-up Items
 
