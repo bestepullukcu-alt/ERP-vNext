@@ -1283,6 +1283,30 @@ own gateway copy on 5100 → `GET /api/recall/settings` (random `X-Tenant-Id`, n
 `/api/recall/{everything}` → **9 of 30** recall route tests red; restored, `git diff` empty. No Web / service file touched. Fast-forwarded
 into the MVP-1 branch; the owner's gateway reloads `ocelot.json` on change (`reloadOnChange: true`).
 
+### 19.12 WP-0177-R2 — agent result, pending CT (2026-10-13)
+
+Work branch `feature/sce/mod-0177-recall-readiness` (fast-forwarded to base `0bc76ccf7`). Evidence
+`docs/records/audits/2026-10/mod-0177-r2-evidence-2026-10-13.md` (+ scripts). Delivered: the §8.2 trace engine over in-process reads (one
+batched link query per level, visited set + `cycle` edges, Backward / Forward / Both, settings limits 20 / 5000 → `truncated` + `LIMIT_REACHED`,
+"Takip dışı" inputs never gaps, the six gap rules, serials, per SKU + unit totals, reversals netted); CT-R8 (genealogy tenant-wide, ledger
+reads in the caller's company, other companies as one `OTHER_COMPANY_ACTIVITY` count — no lot, quantity or document); rule-10 order +
+canonical `rt-v1` + SHA-256 (shipment reads and timing outside the seal; golden `7318b1d8…9133a`); `IShipmentReader` through the Gateway with
+the caller's token + `X-Legal-Entity-Id`, no cache, 2 s, ≤ 8 in flight, degrade 200 / 401-403 / 404 / timeout-5xx, the trace always
+continues, shipment line quantities never read; scope freezing §8.3 (open from trace, submit → `RecallTraceSnapshot(Submitted)`, prepare and
+approve re-trace → 409 `RECALL_SCOPE_CHANGED` with the node-key diff, approve → `Approved` snapshot shown by the reads, insert-only;
+"Yeniden izle" `getCaseScopeDiff` → `OutOfScopeFinding` events once per node); CSV `exportTrace` (BOM, `;`, rule-10, no evidence log); keys
+`recall.trace.run` / `recall.trace.export` in the manifest; `recall.openapi.yaml` **1.1.0** additive (reconciliations R2-1…R2-7).
+`reviseScope` → **R3** (§1 R2 row is the diff; a revision changes the lot blocks R3 enforces). Inventory 1062 + 2 skipped → **1109 + 4
+skipped**; perf (gated) 535 nodes p95 159 ms, 4973 nodes 886 ms; architecture **69/77** same 8 reds (audit list 50 → 53, FU-SYNC1-AUDIT);
+gateway 164/165; Web 1445/1445. Sabotage a–i: each red, restored 132/132, sources SHA-identical. Probe 5168 + own mongod 27517: `/health`
+200, all 25 R1 + R2 routes 401. Shared files: additions only (`InventoryIndexConfiguration.cs:41-43`,
+`SingleSystemOfRecordArchitectureTests.cs:57-58,68`, contracts `README.md:17`).
+
+Open for CT (evidence §11): **O-R2-1** audit debt +3; **O-R2-2** `RecallPermissions.R1` is an alias of `Implemented` (shared namespace test
+pins `R1`); **O-R2-3** reconciliations R2-1…R2-7; **O-R2-4** the R1 `sourceModule` guard narrowed to node identification; **O-R2-5** test rows
+the APIs refuse are seeded as clones of real rows; **O-R2-6** `TraceRun` events on open / submit only, no drift check for pre-R2 submissions;
+**O-R2-7** Backward still lists the root's own stock / outbound; **O-R2-8** CSV `\r\n` fixed.
+
 ## 20. Follow-up Items
 
 | ID | Item | Owner |
