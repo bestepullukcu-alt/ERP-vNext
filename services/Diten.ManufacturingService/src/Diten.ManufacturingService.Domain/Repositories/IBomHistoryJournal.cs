@@ -16,14 +16,16 @@ public interface IBomHistoryJournal
 
 /// <summary>
 /// Tek işlemde yazılacak değişiklik. <see cref="Inserted"/> yeni sürüm; <see cref="Updated"/> mevcut sürümlerin yeni
-/// hali ve her birinin beklenen eşzamanlılık belirteci (yazımdan ÖNCEKİ <c>Version</c>).
+/// hali ve her birinin beklenen eşzamanlılık belirteci (yazımdan ÖNCEKİ <c>Version</c>). <see cref="Events"/>
+/// (v1.2.0): değişikliği duyuran BOM-version olayları — outbox'a AYNI işlemde yazılır; değişiklik yazılmazsa olay da yok.
 /// </summary>
 public sealed record BomChangeSet(
     Guid TenantId,
     Guid LegalEntityId,
     BomVersion? Inserted,
     IReadOnlyList<(BomVersion Entity, int ExpectedVersion)> Updated,
-    IReadOnlyList<BomHistoryEntry> History);
+    IReadOnlyList<BomHistoryEntry> History,
+    IReadOnlyList<BomOutboxEvent>? Events = null);
 
 public enum BomCommitResult
 {

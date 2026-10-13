@@ -7,7 +7,8 @@ namespace Diten.ManufacturingService.Persistence;
 
 /// <summary>
 /// MOD-0193 index'leri (pack §4). İkisi kural taşır: item başına TEK Effective sürüm (kısmi eşsiz) ve item başına
-/// eşsiz revizyon numarası. Diğerleri kiracı + LE kapsamlı okuma yollarıdır.
+/// eşsiz revizyon numarası. Diğerleri kiracı + LE kapsamlı okuma yollarıdır. Outbox (v1.2.0): yayıncının sırayla
+/// talep ettiği kuyruk + bir sürümün olaylarını bulan kapsamlı yol.
 /// </summary>
 public static class BomIndexConfiguration
 {
@@ -37,5 +38,17 @@ public static class BomIndexConfiguration
         await history.Indexes.CreateOneAsync(new CreateIndexModel<BomHistoryEntry>(
             Builders<BomHistoryEntry>.IndexKeys.Ascending(h => h.TenantId).Ascending(h => h.LegalEntityId).Ascending(h => h.BomVersionId).Ascending(h => h.OccurredAtUtc),
             new CreateIndexOptions { Name = "ix_scope_version_time" }), cancellationToken: ct);
+
+        var outbox = database.GetCollection<BomOutboxEvent>(BomCollections.Outbox);
+        var outboxKeys = Builders<BomOutboxEvent>.IndexKeys;
+        await outbox.Indexes.CreateManyAsync(
+        [
+            new CreateIndexModel<BomOutboxEvent>(
+                outboxKeys.Ascending(e => e.Status).Ascending(e => e.NextAttemptAtUtc).Ascending(e => e.OccurredAtUtc),
+                new CreateIndexOptions { Name = "ix_outbox_claim" }),
+            new CreateIndexModel<BomOutboxEvent>(
+                outboxKeys.Ascending(e => e.TenantId).Ascending(e => e.LegalEntityId).Ascending(e => e.BomVersionId),
+                new CreateIndexOptions { Name = "ix_outbox_scope_version" })
+        ], ct);
     }
 }

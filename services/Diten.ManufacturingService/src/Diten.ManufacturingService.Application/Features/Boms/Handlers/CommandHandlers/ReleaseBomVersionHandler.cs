@@ -13,7 +13,8 @@ namespace Diten.ManufacturingService.Application.Features.Boms.Handlers.CommandH
 /// Taslağı yürürlüğe alır (ASSUMPTION-BOM-01: hemen, <c>effectiveFrom = now</c>). Aynı item'ın o anki Effective
 /// sürümü AYNI işlemde Superseded olur ve <c>effectiveTo</c> = yeni <c>effectiveFrom</c>. Her iki değişikliğin geçmişi
 /// de aynı işlemde yazılır. Değişiklik kontrolü referansı MOD-0209 seam'inden geçmeli; yürürlükteki yapıda döngü
-/// oluşturacak sürüm reddedilir (409 <c>BOM_CYCLE</c>).
+/// oluşturacak sürüm reddedilir (409 <c>BOM_CYCLE</c>). Contract v1.2.0: yeni sürüm için <c>BomVersionEffective</c>,
+/// yerine geçilen için <c>BomVersionSuperseded</c> olayı outbox'a AYNI işlemde yazılır.
 /// </summary>
 public sealed class ReleaseBomVersionHandler(
     IBomRepository repository,
@@ -66,6 +67,7 @@ public sealed class ReleaseBomVersionHandler(
         var now = clock.UtcNowMs();
         var updates = new List<(BomVersion, int)>();
         var history = new List<BomHistoryEntry>();
+        var events = new List<BomOutboxEvent>();
 
         var previous = await repository.GetCurrentEffectiveAsync(tenantId, legalEntityId, bom.ItemId, ct);
         if (previous is not null)
@@ -78,6 +80,7 @@ public sealed class ReleaseBomVersionHandler(
             previous.Version++;
             updates.Add((previous, previousExpected));
             history.Add(BomDraftSupport.History(previous, BomHistoryOperation.Superseded, BomStatus.Effective.ToString(), ["status", "effectiveTo"], user, correlation, now));
+            events.Add(BomVersionEvents.Superseded(previous, correlation.CorrelationId, now));
         }
 
         var expected = bom.Version;
@@ -93,8 +96,9 @@ public sealed class ReleaseBomVersionHandler(
         // index sees each write inside the transaction and would refuse the reverse order.
         updates.Add((bom, expected));
         history.Insert(0, BomDraftSupport.History(bom, BomHistoryOperation.Released, BomStatus.Draft.ToString(), ["status", "effectiveFrom", "changeControlRef"], user, correlation, now));
+        events.Insert(0, BomVersionEvents.Effective(bom, correlation.CorrelationId, now));
 
-        var result = await journal.CommitAsync(new BomChangeSet(tenantId, legalEntityId, null, updates, history), ct);
+        var result = await journal.CommitAsync(new BomChangeSet(tenantId, legalEntityId, null, updates, history, events), ct);
         return result == BomCommitResult.Committed
             ? Response<BomView>.Success(bom.ToView())
             : Response<BomView>.Fail(BomErrorCodes.ConcurrencyConflict, 409);
