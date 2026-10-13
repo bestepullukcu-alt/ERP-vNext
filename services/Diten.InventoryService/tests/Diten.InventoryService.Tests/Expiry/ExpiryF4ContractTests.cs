@@ -18,6 +18,9 @@ public sealed class ExpiryF4ContractTests
 
     private static string FixtureV102Path => Path.Combine(RepoPaths.ServiceRoot, "tests", "Diten.InventoryService.Tests", "Contract", "Fixtures", "fefo-v1.0.2.openapi.yaml");
 
+    /// <summary>WP-0176-F5: the 1.1.0 file is pinned (the current contract is 1.2.0), so this step stays measured on the frozen pair.</summary>
+    internal static string FixtureV110Path => Path.Combine(RepoPaths.ServiceRoot, "tests", "Diten.InventoryService.Tests", "Contract", "Fixtures", "fefo-v1.1.0.openapi.yaml");
+
     private static JsonObject Load(string path)
     {
         var raw = new DeserializerBuilder().Build().Deserialize<object>(File.ReadAllText(path));
@@ -34,7 +37,7 @@ public sealed class ExpiryF4ContractTests
     public void The_1_1_0_change_is_the_optional_baseUomId_of_openException_and_the_F4_slice_note()
     {
         var before = Load(FixtureV102Path);
-        var after = Load(ContractSchemas.FefoContractPath);
+        var after = Load(FixtureV110Path);
         Assert.Equal("1.0.2", before["info"]!["version"]!.GetValue<string>());
         Assert.Equal("1.1.0", after["info"]!["version"]!.GetValue<string>());
 

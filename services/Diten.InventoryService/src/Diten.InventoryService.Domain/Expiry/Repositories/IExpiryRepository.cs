@@ -19,6 +19,8 @@ public sealed record ExpiryExceptionPage(IReadOnlyList<FefoExceptionCase> Items,
 
 public sealed record ExpiryPolicyHistoryPage(IReadOnlyList<ExpiryPolicyHistoryEntry> Items, long Total);
 
+public sealed record ExpiryEvidenceExportPage(IReadOnlyList<ExpiryEvidenceExport> Items, long Total);
+
 /// <summary>A write refused by a unique index (a create key, the active-case key, a once-only event, a reused signature id).</summary>
 public sealed class ExpiryDuplicateException(string index) : Exception($"Duplicate on {index}.")
 {
@@ -61,6 +63,27 @@ public interface IExpiryRepository
     /// <summary>F3 (KF-D subject): one override of the caller's company by id (the provider and the gate read it).</summary>
     Task<LotDateOverride?> FindDateOverrideAsync(Guid overrideId, CancellationToken cancellationToken = default);
 
+    /// <summary>F5 (Kanıt Paketi): the company's cases OPENED in [from, toExclusive), optionally of these warehouses / types (a warehouse filter
+    /// leaves out the cases without a warehouse — EXPIRY_DATE_OVERRIDE), oldest first.</summary>
+    Task<IReadOnlyList<FefoExceptionCase>> CasesOpenedBetweenAsync(DateTimeOffset from, DateTimeOffset toExclusive, IReadOnlyCollection<string> warehouseIds,
+        IReadOnlyCollection<ExpiryExceptionType> types, CancellationToken cancellationToken = default);
+
+    /// <summary>F5: the company's policy history rows changed in [from, toExclusive), oldest first.</summary>
+    Task<IReadOnlyList<ExpiryPolicyHistoryEntry>> PolicyHistoryBetweenAsync(DateTimeOffset from, DateTimeOffset toExclusive, CancellationToken cancellationToken = default);
+
+    /// <summary>F5: the caller's earlier export with this idempotency key, if any.</summary>
+    Task<ExpiryEvidenceExport?> FindEvidenceExportByKeyAsync(Guid exportedBy, string idempotencyKey, CancellationToken cancellationToken = default);
+
+    Task<ExpiryEvidenceExport?> FindEvidenceExportAsync(Guid exportId, CancellationToken cancellationToken = default);
+
+    /// <summary>F5: the company's export log, newest first.</summary>
+    Task<ExpiryEvidenceExportPage> ListEvidenceExportsAsync(int page, int pageSize, CancellationToken cancellationToken = default);
+
+    Task<ExpiryEvidenceFile?> FindEvidenceFileAsync(Guid exportId, CancellationToken cancellationToken = default);
+
+    /// <summary>V23 pattern for the export file: the id names an export of ANOTHER company of the caller's tenant (→ 403, not 404).</summary>
+    Task<bool> EvidenceExportExistsInAnotherCompanyAsync(Guid exportId, CancellationToken cancellationToken = default);
+
     Task<T> InTransactionAsync<T>(Func<IExpiryWriteSession, CancellationToken, Task<T>> work, CancellationToken cancellationToken = default);
 }
 
@@ -88,4 +111,7 @@ public interface IExpiryWriteSession
 
     /// <summary>F2 (KF-D): a prepared lot-date override.</summary>
     Task InsertDateOverrideAsync(LotDateOverride dateOverride, CancellationToken cancellationToken = default);
+
+    /// <summary>F5: one export-log row and its file bytes (same id).</summary>
+    Task InsertEvidenceExportAsync(ExpiryEvidenceExport export, ExpiryEvidenceFile file, CancellationToken cancellationToken = default);
 }

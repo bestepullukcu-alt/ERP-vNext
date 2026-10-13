@@ -9,7 +9,7 @@ info:
     movement type. The FEFO order is read-only (KF-F). Tenant from the token, company from the W-0173-02 scope (X-Legal-Entity-Id
     validated against MDM); another company → 403 CROSS_LE_FORBIDDEN, another tenant → 404. Success bodies are the schemas below
     (unwrapped); failures are the INVENTORY Error schema.
-  version: 1.1.0
+  version: 1.2.0
   x-status: FROZEN
   x-owner: MOD-0176
   x-owner-service: Diten.InventoryService (MOD-0176, in-process with MOD-0173 / MOD-0174 / MOD-0175)
@@ -18,13 +18,15 @@ info:
     - "1.0.1 — description only (WP-0176-F2): info.x-implemented-by-slice gains F2 = [createDateOverride] (KF-D, served from F2 on) and not-yet-implemented loses it. No path, parameter, schema, error code or permission changed."
     - "1.0.2 — description only (WP-0176-F3): info.x-implemented-by-slice gains F3 = [getSignableSubject] (the MOD-0022 subject provider, fx-v1 / do-v1, served from F3 on) and not-yet-implemented loses it. No path, parameter, schema, error code or permission changed. Resolution / lot-date signatures are verified with ESIGN getSignature + the local subject hash (CT decision F3-A), never verifySignature."
     - "1.1.0 — additive (WP-0176-F4): openException accepts the optional baseUomId (FU-0176-F1-UOM: the unit of quantity; omitted → read from the lot's stock, unreadable → none); ExceptionRef / ExceptionDetail already carry baseUomId. info.x-implemented-by-slice gains F4 = [getDashboard, listApproaching, listExpired, getFefoOrder] and not-yet-implemented loses them. No existing path, parameter, property, type, required list, status code or enum value changed."
+    - "1.2.0 — additive (WP-0176-F5): ExceptionRef gains the optional resolutionReason, resolutionSignatureId and resolvedAtUtc (filled by previewEvidence: the Kanıt Paketi shows each resolution with its MOD-0022 signature id; listExceptions leaves them out); getEvidenceExportFile lists EXPIRY_EVIDENCE_EXPORT_NOT_FOUND (404, new registry code). info.x-implemented-by-slice gains F5 = [previewEvidence, listEvidenceExports, createEvidenceExport, getEvidenceExportFile]; not-yet-implemented is empty. sha256 of an export is the SHA-256 of the produced file bytes; the same idempotency key answers the same stored file. No existing path, parameter, property, type, required list, status code or enum value changed."
   x-decisions: [KF-A, KF-B, KF-C, KF-D, KF-E, KF-F, KF-G, KF-H, CT-F1, CT-F8, CT-F10, CT-F11, CT-F14]
   x-implemented-by-slice:
     F1: [getPolicy, getPolicyHistory, updatePolicy, listExceptions, getException, openException, takeException, commentException, prepareResolution, resolveException, closeException]
     F2: [createDateOverride]
     F3: [getSignableSubject]
     F4: [getDashboard, listApproaching, listExpired, getFefoOrder]
-    not-yet-implemented: [previewEvidence, listEvidenceExports, createEvidenceExport, getEvidenceExportFile]
+    F5: [previewEvidence, listEvidenceExports, createEvidenceExport, getEvidenceExportFile]
+    not-yet-implemented: []
 servers: [{ url: /api/expiry }]
 security: [{ bearerAuth: [] }]
 x-rules:
@@ -395,7 +397,7 @@ paths:
     get:
       operationId: getEvidenceExportFile
       x-permission: expiry.evidence.export
-      x-error-codes: [CROSS_LE_FORBIDDEN]
+      x-error-codes: [CROSS_LE_FORBIDDEN, EXPIRY_EVIDENCE_EXPORT_NOT_FOUND]
       parameters: [{ name: exportId, in: path, required: true, schema: { type: string, format: uuid } }]
       responses:
         '200': { description: The file, content: { text/csv: { schema: { type: string } }, application/pdf: { schema: { type: string, format: binary } } } }
@@ -559,6 +561,9 @@ components:
         dueSoon: { type: boolean }
         assignee: { $ref: '#/components/schemas/UserRef' }
         version: { type: integer, minimum: 0 }
+        resolutionReason: { type: string, description: "1.2.0 (F5) — present in previewEvidence for a resolved case" }
+        resolutionSignatureId: { type: string, description: "1.2.0 (F5) — the MOD-0022 signature id of the resolution (previewEvidence)" }
+        resolvedAtUtc: { type: string, format: date-time, description: "1.2.0 (F5) — previewEvidence" }
     ExceptionPage:
       type: object
       required: [items, total, page, pageSize]
@@ -844,6 +849,7 @@ x-error-codes:
   EXPIRY_EXCEPTION_ALREADY_OPEN: 409
   EXPIRY_SOD_VIOLATION: 409
   EXPIRY_EXCEPTION_NOT_FOUND: 404
+  EXPIRY_EVIDENCE_EXPORT_NOT_FOUND: 404
   EXPIRY_DATE_OVERRIDE_NOT_USABLE: 409
   EXPIRY_NO_SUGGESTION: 422
   EXPIRY_DATE_EQUALS_SUGGESTION: 422

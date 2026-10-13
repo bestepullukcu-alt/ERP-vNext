@@ -55,7 +55,16 @@ public sealed record ExpiryExceptionRefDto(
     bool Late,
     bool DueSoon,
     ExpiryUserRefDto? Assignee,
-    int Version);
+    int Version)
+{
+    /// <summary>FEFO-BUNDLE 1.2.0 (additive, F5): the decision of a resolved case — filled by previewEvidence (the Kanıt Paketi shows the
+    /// resolutions and their MOD-0022 signature ids); listExceptions leaves them out.</summary>
+    public string? ResolutionReason { get; init; }
+
+    public string? ResolutionSignatureId { get; init; }
+
+    public string? ResolvedAtUtc { get; init; }
+}
 
 public sealed record ExpiryExceptionPageDto(IReadOnlyList<ExpiryExceptionRefDto> Items, long Total, int Page, int PageSize);
 

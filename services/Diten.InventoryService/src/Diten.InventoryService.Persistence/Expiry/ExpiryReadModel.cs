@@ -126,6 +126,27 @@ public sealed class ExpiryReadModel : IExpiryReadModel
         return new ExpiryExceptionFigures(open, late, avg);
     }
 
+    public async Task<ExpiryEvidenceFigures> EvidenceFiguresAsync(DateTimeOffset now, DateTimeOffset from, DateTimeOffset toExclusive,
+        IReadOnlyCollection<string> warehouseIds, CancellationToken cancellationToken = default)
+    {
+        var s = Builders<FefoIssueSnapshot>.Filter;
+        var issueFilter = Scope<FefoIssueSnapshot>() & s.Gte(x => x.PostedAtUtc, from) & s.Lt(x => x.PostedAtUtc, toExclusive);
+        if (warehouseIds.Count > 0) issueFilter &= s.In(x => x.WarehouseId, warehouseIds);
+        var issues = (int)await _snapshots.CountDocumentsAsync(issueFilter, cancellationToken: cancellationToken);
+        var compliant = (int)await _snapshots.CountDocumentsAsync(issueFilter & s.Eq(x => x.Compliant, true), cancellationToken: cancellationToken);
+
+        var c = Builders<FefoExceptionCase>.Filter;
+        var scope = Scope<FefoExceptionCase>();
+        if (warehouseIds.Count > 0) scope &= c.In(x => x.WarehouseId, warehouseIds);
+        var active = scope & c.In(x => x.Status, Active);
+        var open = (int)await _cases.CountDocumentsAsync(active, cancellationToken: cancellationToken);
+        var late = (int)await _cases.CountDocumentsAsync(active & c.Lt(x => x.DueAtUtc, now), cancellationToken: cancellationToken);
+        var resolved = await _cases.Find(scope & c.Ne(x => x.ResolvedAtUtc, null) & c.Gte(x => x.ResolvedAtUtc, from) & c.Lt(x => x.ResolvedAtUtc, toExclusive))
+            .Project(x => new { x.OpenedAtUtc, x.ResolvedAtUtc }).ToListAsync(cancellationToken);
+        double? avg = resolved.Count == 0 ? null : resolved.Average(r => (r.ResolvedAtUtc!.Value - r.OpenedAtUtc).TotalHours);
+        return new ExpiryEvidenceFigures(issues, compliant, open, late, avg);
+    }
+
     public async Task<IReadOnlyDictionary<(string LotId, string? WarehouseId), Guid>> ActiveCasesAsync(CancellationToken cancellationToken = default)
     {
         var cases = await _cases.Find(Scope<FefoExceptionCase>() & Builders<FefoExceptionCase>.Filter.In(x => x.Status, Active))

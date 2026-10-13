@@ -49,14 +49,20 @@ public static class ExpiryPermissions
     /// manifest namespace test compares the manifest with this list as a multiset; <c>Implemented.Distinct()</c> = the keys the
     /// controllers enforce. F1 keys and F2 <c>date-overrides.create</c> (API) + the F4 pages (3 × dashboard.read, fefo-order.read) and
     /// buttons (3 × exceptions.create "İstisna aç", 2 × fefo-order.read "FEFO sırasını gör", 2 × dashboard.read CSV, fefo-order.read
-    /// "Sırayı hesapla").
+    /// "Sırayı hesapla"). WP-0176-F5: the pages İstisna Kutusu + Detayı (2 × exceptions.read), Ayarlar (policies.read), Kanıt Paketi
+    /// (evidence.export) and their buttons ("İstisna aç", "İncelemeye al", "Yorum ekle", "Karar ver", "İstisnayı kapat", "Kaydet",
+    /// "CSV / PDF indir") replace the F1 API permissions; only <c>date-overrides.create</c> stays API (pack §14.4).
     /// </summary>
     public static readonly IReadOnlyList<string> Implemented =
     [
-        DashboardRead, DashboardRead, DashboardRead, FefoOrderRead,                // pages
+        DashboardRead, DashboardRead, DashboardRead, FefoOrderRead,                // F4 pages
         ExceptionsCreate, ExceptionsCreate, ExceptionsCreate,                      // "İstisna aç"
         FefoOrderRead, FefoOrderRead, DashboardRead, DashboardRead, FefoOrderRead, // view order ×2, CSV ×2, calculate
-        PoliciesRead, PoliciesManage, ExceptionsRead, ExceptionsComment, ExceptionsReview, ExceptionsResolve, ExceptionsClose, // API until F5
+        ExceptionsRead, ExceptionsRead, PoliciesRead, EvidenceExport,              // F5 pages (inbox, detail, settings, evidence)
+        ExceptionsCreate,                                                          // inbox "İstisna aç"
+        ExceptionsReview, ExceptionsComment, ExceptionsResolve, ExceptionsClose,   // detail buttons
+        PoliciesManage,                                                            // settings "Kaydet"
+        EvidenceExport,                                                            // "CSV / PDF indir"
         DateOverridesCreate                                                        // API by design (F2)
     ];
 }

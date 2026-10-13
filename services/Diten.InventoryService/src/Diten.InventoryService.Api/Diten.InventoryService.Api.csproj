@@ -15,6 +15,8 @@
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.11" />
         <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.16.0" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+        <!-- WP-0176-F5 Kanıt Paketi PDF: PDFsharp-MigraDoc 6.1.1 (MIT, CT-R14) — the version CrmService / Platform already ship. -->
+        <PackageReference Include="PDFsharp-MigraDoc" Version="6.1.1" />
     </ItemGroup>
 
     <ItemGroup>

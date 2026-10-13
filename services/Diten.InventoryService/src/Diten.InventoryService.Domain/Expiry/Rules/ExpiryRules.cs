@@ -24,6 +24,9 @@ public static class ExpiryErrorCodes
     public const string DateOverrideNotUsable = "EXPIRY_DATE_OVERRIDE_NOT_USABLE";
     public const string NoSuggestion = "EXPIRY_NO_SUGGESTION";
     public const string DateEqualsSuggestion = "EXPIRY_DATE_EQUALS_SUGGESTION";
+
+    // FEFO-BUNDLE 1.2.0 (F5).
+    public const string EvidenceExportNotFound = "EXPIRY_EVIDENCE_EXPORT_NOT_FOUND";
 }
 
 /// <summary>A refused request: contract code, message, HTTP status.</summary>

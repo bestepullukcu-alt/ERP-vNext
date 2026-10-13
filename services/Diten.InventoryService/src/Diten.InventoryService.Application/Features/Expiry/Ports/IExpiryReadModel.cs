@@ -16,6 +16,9 @@ public sealed record LotStockRow(Lot Lot, string WarehouseId, string BaseUomId, 
 /// <summary>Exception figures of the panel (pack §8.8): active (Open / InReview), of which past due; mean resolution time in the period.</summary>
 public sealed record ExpiryExceptionFigures(int Open, int Late, double? AvgResolutionHours);
 
+/// <summary>F5 Kanıt Paketi summary: issue snapshots and resolutions in [from, toExclusive), active / late cases now — for a warehouse set (empty = all).</summary>
+public sealed record ExpiryEvidenceFigures(int Issues, int Compliant, int Open, int Late, double? AvgResolutionHours);
+
 /// <summary>
 /// WP-0176-F4 — the reads behind the panel, the lists and the FEFO order. Every read is scoped to the caller's tenant AND company
 /// (pack §8.8, §13 #8); the FEFO candidates are the SAME read the posting hook uses (one candidate reader, one <see cref="FefoOrderRule"/>).
@@ -35,4 +38,7 @@ public interface IExpiryReadModel
 
     /// <summary>The active (Open / InReview) case per lot + warehouse — the row link "İstisna" (EXPIRED_ON_HAND first).</summary>
     Task<IReadOnlyDictionary<(string LotId, string? WarehouseId), Guid>> ActiveCasesAsync(CancellationToken cancellationToken = default);
+
+    Task<ExpiryEvidenceFigures> EvidenceFiguresAsync(DateTimeOffset now, DateTimeOffset from, DateTimeOffset toExclusive, IReadOnlyCollection<string> warehouseIds,
+        CancellationToken cancellationToken = default);
 }

@@ -26,5 +26,11 @@ public static class ExpiryCollections
     /// <summary>F2 — prepared lot-date overrides (KF-D, pack §4.6).</summary>
     public const string DateOverrides = "expiry_date_overrides";
 
-    public static readonly IReadOnlyList<string> All = [Policies, PolicyHistory, Exceptions, ExceptionEvents, Counters, FefoIssueSnapshots, DateOverrides];
+    /// <summary>F5 — the Kanıt Paketi export log (pack §4.7); insert-only.</summary>
+    public const string EvidenceExports = "expiry_evidence_exports";
+
+    /// <summary>F5 — the produced file bytes of each export (same id); insert-only.</summary>
+    public const string EvidenceFiles = "expiry_evidence_files";
+
+    public static readonly IReadOnlyList<string> All = [Policies, PolicyHistory, Exceptions, ExceptionEvents, Counters, FefoIssueSnapshots, DateOverrides, EvidenceExports, EvidenceFiles];
 }

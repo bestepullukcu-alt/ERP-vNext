@@ -50,6 +50,14 @@ public static class ExpiryRequestReader
 
         public Guid? OptionalUuid(string name) => String(name) is null ? null : Uuid(name);
 
+        /// <summary>F5: an optional array of strings (absent / null → empty).</summary>
+        public IReadOnlyList<string> Strings(string name)
+        {
+            if (!Root.TryGetProperty(name, out var v) || v.ValueKind == JsonValueKind.Null) return [];
+            if (v.ValueKind != JsonValueKind.Array) throw new FormatException($"{name} must be an array of strings.");
+            return v.EnumerateArray().Select(e => e.ValueKind == JsonValueKind.String ? e.GetString()! : throw new FormatException($"{name} must be an array of strings.")).ToList();
+        }
+
         public T Enum<T>(string name) where T : struct, Enum
             => ExpiryWire.TryParseName<T>(String(name), out var value)
                 ? value
@@ -140,6 +148,9 @@ public static class ExpiryRequestReader
     public static readonly HashSet<string> ResolveMembers = new(StringComparer.Ordinal) { "idempotencyKey", "resolution", "reason", "signatureId" };
 
     public static readonly HashSet<string> CloseMembers = new(StringComparer.Ordinal) { "idempotencyKey", "note" };
+
+    public static readonly HashSet<string> EvidenceExportMembers = new(StringComparer.Ordinal)
+        { "idempotencyKey", "preset", "from", "to", "warehouseIds", "types", "format" };
 
     public static readonly HashSet<string> DateOverrideMembers = new(StringComparer.Ordinal)
         { "idempotencyKey", "itemId", "skuId", "skuLevel", "lotNumber", "manufacturingDate", "expiryDate", "retestDate", "reason" };
