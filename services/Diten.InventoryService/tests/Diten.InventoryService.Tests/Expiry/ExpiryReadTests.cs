@@ -255,14 +255,12 @@ public sealed class ExpiryReadTests : IClassFixture<ExpiryApiFactory>
     /// (real location tree), so B cannot post there through the API: B's lot and balance row are written straight into the store (a clone of
     /// A's row with B's company), exactly the shape the reader filters. (a) A's FEFO order lists A's lots only; (b) A's issue from its own
     /// lot is compliant (201, no reason, no case) — B's lot is never "the first eligible". Sabotage: drop
-    /// <c>b.Eq(x => x.LegalEntityId, _tenant.LegalEntityId)</c> from the reader → (a) and (b) red. The panel / lists read is guarded by
-    /// <see cref="Another_company_and_another_tenant_see_none_of_it"/> (F4 sabotage b).
+    /// <c>b.Eq(x => x.LegalEntityId, _tenant.LegalEntityId)</c> from the reader → (a) and (b) red, each in its own test. The panel / lists
+    /// read is guarded by <see cref="Another_company_and_another_tenant_see_none_of_it"/> (F4 sabotage b).
     /// </summary>
-    [Fact]
-    public async Task Another_companys_earlier_lot_under_the_same_warehouse_id_is_neither_ordered_nor_first_eligible()
+    private async Task<(ExpiryScenario S, string Mine, string Foreign)> SeedTwoCompaniesOneWarehouseAsync()
     {
         var s = new ExpiryScenario(_factory);
-        var reader = s.Mint(s.Qa, ReaderKeys);
         var mine = await s.Lots.CreateLotAsync(expiryDate: Day(120), manufacturingDate: "2026-05-01T00:00:00Z");
         await s.Lots.ReleaseAsync(mine);
         await s.Lots.PostOkAsync(s.Lots.Receipt("10", mine, postingDate: Posting));
@@ -283,14 +281,25 @@ public sealed class ExpiryReadTests : IClassFixture<ExpiryApiFactory>
         await balances.InsertOneAsync(clone);
         Assert.Equal(s.Ledger.Warehouse, clone["WarehouseId"].AsString);
         Assert.Equal(s.Ledger.Sku.ToString(), clone["SkuId"].AsString);
+        return (s, mine, foreign);
+    }
 
+    [Fact]
+    public async Task Another_companys_earlier_lot_under_the_same_warehouse_id_is_not_in_the_FEFO_order()
+    {
         // (a) A's order: only A's lot — B's earlier lot is neither eligible nor excluded
+        var (s, mine, foreign) = await SeedTwoCompaniesOneWarehouseAsync();
         var query = $"/api/expiry/fefo-order?warehouseId={s.Ledger.Warehouse}&itemId={s.Ledger.Item}&skuId={s.Ledger.Sku}&skuLevel=Lsku&asOf={Posting[..10]}";
-        var order = await GetAsync(s, query, reader);
+        var order = await GetAsync(s, query, s.Mint(s.Qa, ReaderKeys));
         Assert.Equal([mine], order.GetProperty("eligible").EnumerateArray().Select(e => e.GetProperty("lotId").GetString()));
         Assert.DoesNotContain(foreign, order.GetProperty("excluded").EnumerateArray().Select(e => e.GetProperty("lotId").GetString()));
+    }
 
+    [Fact]
+    public async Task Another_companys_earlier_lot_under_the_same_warehouse_id_is_not_first_eligible_for_an_issue()
+    {
         // (b) the F2 posting hook over the HTTP posting route: A's issue from its own lot is compliant — 201, no reason, no case
+        var (s, mine, _) = await SeedTwoCompaniesOneWarehouseAsync();
         await s.Lots.PostAsync(s.Lots.Issue("1", mine, postingDate: Posting), 201);
         Assert.Empty(s.Persisted("expiry_exceptions"));
     }
