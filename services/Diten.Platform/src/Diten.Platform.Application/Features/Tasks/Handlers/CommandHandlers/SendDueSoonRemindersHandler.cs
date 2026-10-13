@@ -65,6 +65,7 @@ public sealed class SendDueSoonRemindersHandler
         var alreadyReminded = 0;
         var notDelivered = 0;
         var failed = 0;
+        var partial = 0;
 
         foreach (var task in candidates)
         {
@@ -133,6 +134,11 @@ public sealed class SendDueSoonRemindersHandler
                     case TaskNotificationOutcome.Dispatched:
                         sent++;
                         break;
+                    case TaskNotificationOutcome.PartiallyDispatched:
+                        // FIX2 — some readers have their reminder: the claim is KEPT (a retry would mail them again), and
+                        // the run says that others did not get theirs.
+                        partial++;
+                        break;
                     case TaskNotificationOutcome.Failed:
                         failed++;
                         await ReleaseClaimAsync(task, outcome.ToString(), ct);
@@ -156,7 +162,7 @@ public sealed class SendDueSoonRemindersHandler
         }
 
         return Response<SendDueSoonRemindersResponse>.Success(
-            new SendDueSoonRemindersResponse(candidates.Count, sent, alreadyReminded, notDelivered, failed),
+            new SendDueSoonRemindersResponse(candidates.Count, sent, alreadyReminded, notDelivered, failed, partial),
             correlationId: command.CorrelationId);
     }
 

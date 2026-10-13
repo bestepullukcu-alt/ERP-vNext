@@ -147,7 +147,8 @@ public sealed class InternalUsersController : ControllerBase
 
     /// <summary>
     /// <c>GET internal/users/contacts?tenantId={guid}&amp;ids=guid,guid</c> →
-    /// <c>[{ "id": "...", "displayName": "...", "email": "..." }]</c>.
+    /// <c>[{ "id": "...", "displayName": "...", "email": "...", "preferredLanguage": "fr" | null }]</c> (WP-EMAIL-LANG-01: the
+    /// language the person's mail is written in; null = none, the tenant's applies).
     ///
     /// <para><b>A SIBLING of display-names, not a widening of it.</b> That endpoint's contract is deliberately
     /// "id and display name — the entire contract", and adding an address to it would hand an email to every
@@ -208,7 +209,8 @@ public sealed class InternalUsersController : ControllerBase
                 resolved.Add(new InternalUserContactDto(
                     user.Id,
                     BuildDisplayName(user.FirstName, user.LastName, user.UserName),
-                    user.Email));
+                    user.Email,
+                    user.PreferredLanguage));
             }
 
             if (batch.Count < SweepPageSize)
@@ -257,8 +259,10 @@ public sealed record InternalUserDisplayNameDto(Guid Id, string DisplayName);
 /// <summary>
 /// Id, display name and DELIVERABLE ADDRESS. Separate from <see cref="InternalUserDisplayNameDto"/> on purpose:
 /// a caller that needs a label must not receive an address as a side effect of asking for one.
+/// <para>WP-EMAIL-LANG-01 (CT decision 2026-10-09) — plus the language the user wants mail in (null = the tenant's
+/// applies): the mailers that read this write to each person in their language. Low sensitivity.</para>
 /// </summary>
-public sealed record InternalUserContactDto(Guid Id, string DisplayName, string Email);
+public sealed record InternalUserContactDto(Guid Id, string DisplayName, string Email, string? PreferredLanguage = null);
 
 /// <summary>BL-459 — a tenant's live users by lifecycle status. Counts only.</summary>
 public sealed record InternalTenantUserCountsDto(Guid TenantId, long Total, long Active, long Invited, long Inactive);

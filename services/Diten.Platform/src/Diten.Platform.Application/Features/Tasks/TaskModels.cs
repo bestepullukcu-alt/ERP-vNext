@@ -1639,7 +1639,9 @@ public sealed record SendDueSoonRemindersResponse(
     /// <summary>Attempted and NOT delivered (refused, nobody reachable): the claim was released for a retry.</summary>
     int NotDelivered,
     /// <summary>The send threw. Also released for a retry.</summary>
-    int Failed);
+    int Failed,
+    /// <summary>WP-EMAIL-LANG-01 FIX2 — sent to SOME readers only (a language group was refused): the claim is kept.</summary>
+    int Partial = 0);
 
 
 // ── DCP-005 slice 1: task types ─────────────────────────────────────────────

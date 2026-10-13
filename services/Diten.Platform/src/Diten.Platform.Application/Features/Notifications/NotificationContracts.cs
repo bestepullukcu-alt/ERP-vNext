@@ -104,9 +104,13 @@ public sealed record RenderedEmailTemplateDto(
     string? BodyHtmlFramed = null,
     string? BodyTextFramed = null);
 
+/// <param name="Locale">WP-EMAIL-LANG-01 — the language THIS recipient reads (their own preference), when the producer
+/// knows it; null = the tenant's language. Read only by the event-code dispatch adapter, which writes to each language
+/// group separately; never forwarded below it.</param>
 public sealed record EmailRecipientDto(
     string Email,
-    string? DisplayName);
+    string? DisplayName,
+    string? Locale = null);
 
 public sealed record EmailMessageDto(
     IReadOnlyList<EmailRecipientDto> To,

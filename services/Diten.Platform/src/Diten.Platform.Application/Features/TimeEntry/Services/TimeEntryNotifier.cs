@@ -267,7 +267,7 @@ public sealed class TimeEntryNotifier : ITimeEntryNotifier
                     var result = await _dispatch.DispatchByEventCodeAsync(new NotificationEventDispatchRequest(
                         _tenantContext.TenantId,
                         eventCode,
-                        [new EmailRecipientDto(recipient.Email, recipient.DisplayName)],
+                        [new EmailRecipientDto(recipient.Email, recipient.DisplayName, recipient.PreferredLanguage)],
                         variables,
                         CausationId: causationId), ct);
                     sent++;

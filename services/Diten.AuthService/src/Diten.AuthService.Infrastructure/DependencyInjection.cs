@@ -73,6 +73,8 @@ public static class DependencyInjection
         // BL-529 FIX2 — the two anonymous platform password doors (forgot-password, set-password link) are rate-limited.
         // FIX3 — the parameterless constructor is the production one (the other is for tests); stated, not left to DI.
         services.AddSingleton(_ => new Security.PasswordDoorRateLimiter());
+        // WP-EMAIL-LANG-01 FIX1 — a user's own writes (me/preferences), per user.
+        services.AddSingleton(_ => new Security.SelfServiceRateLimiter());
         // FIX4 — the trusted-proxy list is read and validated HERE, at registration: a bad entry stops the start.
         var trustedProxies = Security.ClientAddressResolver.ParseTrustedProxies(configuration);
         services.AddSingleton(sp => new Security.ClientAddressResolver(

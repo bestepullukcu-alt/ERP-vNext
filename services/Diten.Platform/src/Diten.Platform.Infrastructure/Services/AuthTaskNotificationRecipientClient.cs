@@ -127,7 +127,8 @@ public sealed class AuthTaskNotificationRecipientClient : ITaskNotificationRecip
                     .Select(group => new TaskNotificationRecipient(
                         group.Key,
                         group.First().Email,
-                        string.IsNullOrWhiteSpace(group.First().DisplayName) ? null : group.First().DisplayName))
+                        string.IsNullOrWhiteSpace(group.First().DisplayName) ? null : group.First().DisplayName,
+                        string.IsNullOrWhiteSpace(group.First().PreferredLanguage) ? null : group.First().PreferredLanguage.Trim()))
                     .ToList();
         }
         catch (Exception ex)
@@ -139,5 +140,6 @@ public sealed class AuthTaskNotificationRecipientClient : ITaskNotificationRecip
         }
     }
 
-    private sealed record AuthUserContact(Guid Id, string DisplayName, string Email);
+    // WP-EMAIL-LANG-01 — PreferredLanguage is absent from an AuthService older than this field: it reads as null.
+    private sealed record AuthUserContact(Guid Id, string DisplayName, string Email, string? PreferredLanguage = null);
 }

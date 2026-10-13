@@ -67,6 +67,7 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
             services.AddScoped<IUserRoleRepository>(sp => new FailingOnceUserRoles(
                 ActivatorUtilities.CreateInstance<Diten.AuthService.Persistence.Repositories.UserRoleRepository>(sp), FailOnce));
             services.AddSingleton<IOtpDeliveryService>(Otp);
+            services.AddSingleton(new Diten.AuthService.Infrastructure.Security.SelfServiceRateLimiter(PreferencesLimit, TimeSpan.FromMinutes(5), PreferencesClock));
             services.Configure<Diten.AuthService.Infrastructure.Settings.MfaOptions>(o => o.HashSecret = MfaSecret);
             // FIX3 — the production refresh-token repository with two hold points: before a session is written
             // (create:{user}) and before the reset's sweep (scan:{user}).
@@ -82,6 +83,12 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
         }
 
         public CapturingOtp Otp { get; } = new();
+
+        /// <summary>WP-EMAIL-LANG-01 FIX1 — the per-user limit of me/preferences, low enough to reach in a test.</summary>
+        public const int PreferencesLimit = 3;
+
+        /// <summary>FIX3 — the limiter's clock: it moves only when a test moves it, so the time left in a window is exact.</summary>
+        public ManualClock PreferencesClock { get; } = new(DateTimeOffset.Parse("2026-10-12T09:00:00Z"));
 
         /// <summary>BL-454 stage D FIX3 (3) — "create:{email}" / "assign:{tenantId}": the next such write throws, once.</summary>
         public ConcurrentDictionary<string, bool> FailOnce { get; } = new();
@@ -420,6 +427,338 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
         Assert.Equal(HttpStatusCode.NoContent, first.StatusCode);
         Assert.Equal(HttpStatusCode.BadRequest, second.StatusCode);
         Assert.Equal(HttpStatusCode.OK, (await TenantLoginAsync(tenantId, user.Email, NewPassword)).StatusCode);
+    }
+
+    // ── WP-EMAIL-LANG-01: a user's own mail language (PUT api/auth/me/preferences) ───────────────────────────────
+
+    private async Task<HttpResponseMessage> SetMyPreferencesAsync(string accessToken, Guid tenantId, object body)
+    {
+        using var client = _host.Client(accessToken, tenantId);
+        return await client.PutAsJsonAsync("api/auth/me/preferences", body);
+    }
+
+    [Fact]
+    public async Task A_user_sets_their_own_mail_language_and_the_change_is_audited_by_field_name()
+    {
+        var tenantId = Guid.NewGuid();
+        var user = await SeedTenantUserAsync(tenantId);
+        var session = await TenantSessionAsync(tenantId, user.Email, OldPassword);
+
+        var set = await SetMyPreferencesAsync(session.AccessToken, tenantId, new { preferredLanguage = "fr" });
+
+        Assert.Equal(HttpStatusCode.OK, set.StatusCode);
+        Assert.Equal("fr", (await ReadUserAsync(user.Id)).PreferredLanguage);
+        var row = Assert.Single(await _host.Database.GetCollection<AuthAuditLog>("authAuditLogs")
+            .Find(r => r.EventName == UserAuditEvents.Updated && r.TenantId == tenantId).ToListAsync());
+        Assert.Contains(user.Id.ToString(), row.Metadata, StringComparison.OrdinalIgnoreCase);
+        using var metadata = JsonDocument.Parse(row.Metadata);
+        Assert.Equal("preferredLanguage", Assert.Single(metadata.RootElement.GetProperty("changedFields").EnumerateArray()).GetString());
+        Assert.Equal(JsonValueKind.Null, metadata.RootElement.GetProperty("previousPreferredLanguage").ValueKind);
+        Assert.Equal("fr", metadata.RootElement.GetProperty("preferredLanguage").GetString());
+    }
+
+    [Theory]
+    [InlineData("de")]
+    [InlineData("fr-FR")]
+    [InlineData("xx")]
+    public async Task A_language_outside_the_seven_is_refused_with_400_and_nothing_is_written(string language)
+    {
+        var tenantId = Guid.NewGuid();
+        var user = await SeedTenantUserAsync(tenantId);
+        var session = await TenantSessionAsync(tenantId, user.Email, OldPassword);
+
+        var set = await SetMyPreferencesAsync(session.AccessToken, tenantId, new { preferredLanguage = language });
+
+        Assert.Equal(HttpStatusCode.BadRequest, set.StatusCode);
+        Assert.Contains("USER_PREFERRED_LANGUAGE_INVALID", await set.Content.ReadAsStringAsync());
+        Assert.Null((await ReadUserAsync(user.Id)).PreferredLanguage);
+    }
+
+    [Fact]
+    public async Task Null_clears_the_users_mail_language()
+    {
+        var tenantId = Guid.NewGuid();
+        var user = await SeedTenantUserAsync(tenantId);
+        var session = await TenantSessionAsync(tenantId, user.Email, OldPassword);
+        Assert.Equal(HttpStatusCode.OK, (await SetMyPreferencesAsync(session.AccessToken, tenantId, new { preferredLanguage = "zh" })).StatusCode);
+
+        var cleared = await SetMyPreferencesAsync(session.AccessToken, tenantId, new { preferredLanguage = (string?)null });
+
+        Assert.Equal(HttpStatusCode.OK, cleared.StatusCode);
+        Assert.Null((await ReadUserAsync(user.Id)).PreferredLanguage);
+    }
+
+    [Fact]
+    public async Task The_body_cannot_name_another_user_or_tenant_or_set_any_other_field()
+    {
+        // Mass assignment: whatever else the body says, only the caller's own language changes.
+        var tenantId = Guid.NewGuid();
+        var me = await SeedTenantUserAsync(tenantId);
+        var other = await SeedTenantUserAsync(tenantId);
+        var session = await TenantSessionAsync(tenantId, me.Email, OldPassword);
+        var before = await ReadUserAsync(me.Id);
+
+        var set = await SetMyPreferencesAsync(session.AccessToken, tenantId, new
+        {
+            preferredLanguage = "es",
+            userId = other.Id,
+            id = other.Id,
+            tenantId = Guid.NewGuid(),
+            firstName = "Changed",
+            isActive = false,
+            email = "someone.else@lang.test",
+            mustChangePassword = true
+        });
+
+        Assert.Equal(HttpStatusCode.OK, set.StatusCode);
+        var after = await ReadUserAsync(me.Id);
+        Assert.Equal("es", after.PreferredLanguage);
+        Assert.Equal(before.FirstName, after.FirstName);
+        Assert.Equal(before.Email, after.Email);
+        Assert.Equal(before.IsActive, after.IsActive);
+        Assert.Equal(before.MustChangePassword, after.MustChangePassword);
+        Assert.Equal(tenantId, after.TenantId);
+        Assert.Null((await ReadUserAsync(other.Id)).PreferredLanguage); // the other user is untouched
+    }
+
+    [Fact]
+    public async Task A_platform_administrators_token_cannot_set_preferences_here()
+    {
+        var token = await PlatformCallerTokenAsync();
+
+        using var client = _host.Client(token);
+        var set = await client.PutAsJsonAsync("api/auth/me/preferences", new { preferredLanguage = "fr" });
+
+        Assert.Equal(HttpStatusCode.Forbidden, set.StatusCode);
+    }
+
+    [Fact]
+    public async Task An_account_written_before_the_field_existed_reads_as_no_choice_and_can_set_one()
+    {
+        // Mongo new-field rule: a document without the field is "no choice" (null), never unreadable.
+        var tenantId = Guid.NewGuid();
+        var user = await SeedTenantUserAsync(tenantId);
+        var raw = _host.Database.GetCollection<BsonDocument>("users");
+        var id = new BsonDocument("_id", new BsonBinaryData(user.Id, GuidRepresentation.Standard));
+        await raw.UpdateOneAsync(id, new BsonDocument("$unset", new BsonDocument("PreferredLanguage", "")));
+        Assert.False((await raw.Find(id).SingleAsync()).Contains("PreferredLanguage"));
+
+        Assert.Null((await ReadUserAsync(user.Id)).PreferredLanguage);
+        var session = await TenantSessionAsync(tenantId, user.Email, OldPassword); // the account still signs in
+        Assert.Equal(HttpStatusCode.OK, (await SetMyPreferencesAsync(session.AccessToken, tenantId, new { preferredLanguage = "ru" })).StatusCode);
+        Assert.Equal("ru", (await ReadUserAsync(user.Id)).PreferredLanguage);
+    }
+
+    // ── WP-EMAIL-LANG-01 FIX1 ────────────────────────────────────────────────────────────────────────────────
+
+    [Theory]
+    [InlineData("{}")]
+    [InlineData("{\"preferedLanguage\":\"fr\"}")]  // misspelled
+    [InlineData("{\"preferredLanguage\":7}")]
+    [InlineData("[]")]
+    public async Task A_body_that_does_not_name_the_language_is_refused_and_never_clears_it(string body)
+    {
+        var tenantId = Guid.NewGuid();
+        var user = await SeedTenantUserAsync(tenantId);
+        var session = await TenantSessionAsync(tenantId, user.Email, OldPassword);
+        Assert.Equal(HttpStatusCode.OK, (await SetMyPreferencesAsync(session.AccessToken, tenantId, new { preferredLanguage = "fr" })).StatusCode);
+
+        using var client = _host.Client(session.AccessToken, tenantId);
+        var refused = await client.PutAsync("api/auth/me/preferences", new StringContent(body, System.Text.Encoding.UTF8, "application/json"));
+
+        Assert.Equal(HttpStatusCode.BadRequest, refused.StatusCode);
+        Assert.Equal("fr", (await ReadUserAsync(user.Id)).PreferredLanguage);
+    }
+
+    [Theory]
+    [InlineData("")]   // empty
+    [InlineData("{")]  // broken JSON
+    public async Task An_empty_or_broken_body_gets_the_same_coded_400(string body)
+    {
+        // FIX2 — read by the door, not bound by the framework: the same code as every other wrong body.
+        var tenantId = Guid.NewGuid();
+        var user = await SeedTenantUserAsync(tenantId);
+        var session = await TenantSessionAsync(tenantId, user.Email, OldPassword);
+
+        using var client = _host.Client(session.AccessToken, tenantId);
+        var refused = await client.PutAsync("api/auth/me/preferences", new StringContent(body, System.Text.Encoding.UTF8, "application/json"));
+
+        Assert.Equal(HttpStatusCode.BadRequest, refused.StatusCode);
+        Assert.Contains("USER_PREFERENCES_BODY_INVALID", await refused.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task The_field_name_is_read_whatever_its_case()
+    {
+        var tenantId = Guid.NewGuid();
+        var user = await SeedTenantUserAsync(tenantId);
+        var session = await TenantSessionAsync(tenantId, user.Email, OldPassword);
+
+        using var client = _host.Client(session.AccessToken, tenantId);
+        var set = await client.PutAsync("api/auth/me/preferences",
+            new StringContent("{\"PreferredLanguage\":\"zh\"}", System.Text.Encoding.UTF8, "application/json"));
+
+        Assert.Equal(HttpStatusCode.OK, set.StatusCode);
+        Assert.Equal("zh", (await ReadUserAsync(user.Id)).PreferredLanguage);
+    }
+
+    [Fact]
+    public async Task Too_many_preference_writes_from_one_user_are_refused_with_429()
+    {
+        var tenantId = Guid.NewGuid();
+        var user = await SeedTenantUserAsync(tenantId);
+        var other = await SeedTenantUserAsync(tenantId);
+        var session = await TenantSessionAsync(tenantId, user.Email, OldPassword);
+
+        for (var i = 0; i < Host.PreferencesLimit; i++)
+        {
+            Assert.Equal(HttpStatusCode.OK, (await SetMyPreferencesAsync(session.AccessToken, tenantId, new { preferredLanguage = i % 2 == 0 ? "fr" : "es" })).StatusCode);
+        }
+
+        var refused = await SetMyPreferencesAsync(session.AccessToken, tenantId, new { preferredLanguage = "ru" });
+
+        Assert.Equal((HttpStatusCode)429, refused.StatusCode);
+        Assert.True(refused.Headers.RetryAfter?.Delta is { } wait && wait > TimeSpan.Zero && wait <= TimeSpan.FromMinutes(5),
+            $"Retry-After: {refused.Headers.RetryAfter}");
+        Assert.NotEqual("ru", (await ReadUserAsync(user.Id)).PreferredLanguage);
+        // Per USER: another person of the same tenant is not refused.
+        var otherSession = await TenantSessionAsync(tenantId, other.Email, OldPassword);
+        Assert.Equal(HttpStatusCode.OK, (await SetMyPreferencesAsync(otherSession.AccessToken, tenantId, new { preferredLanguage = "ru" })).StatusCode);
+    }
+
+    [Fact]
+    public async Task Retry_After_is_the_time_left_in_the_window_rounded_up()
+    {
+        // FIX3 (F3) — the window opened at the first write; 1.5 s later the refusal says 300 − 1.5 = 298.5 → 299 s.
+        var tenantId = Guid.NewGuid();
+        var user = await SeedTenantUserAsync(tenantId);
+        var session = await TenantSessionAsync(tenantId, user.Email, OldPassword);
+        for (var i = 0; i < Host.PreferencesLimit; i++)
+        {
+            Assert.Equal(HttpStatusCode.OK, (await SetMyPreferencesAsync(session.AccessToken, tenantId, new { preferredLanguage = "fr" })).StatusCode);
+        }
+
+        _host.PreferencesClock.Advance(TimeSpan.FromMilliseconds(1500));
+        var refused = await SetMyPreferencesAsync(session.AccessToken, tenantId, new { preferredLanguage = "ru" });
+
+        Assert.Equal((HttpStatusCode)429, refused.StatusCode);
+        Assert.Equal(TimeSpan.FromSeconds(299), refused.Headers.RetryAfter?.Delta);
+    }
+
+    [Theory]
+    [InlineData("{\"preferredLanguage\":\"\\ud800\"}")]                 // a value that is not text
+    [InlineData("{\"x\\ud800\":1,\"preferredLanguage\":\"fr\"}")]     // a NAME that is not text
+    public async Task A_lone_surrogate_is_the_coded_400_never_a_500(string body)
+    {
+        // FIX3 — GetString() / property.Name throw InvalidOperationException on "\ud800"; the door refuses it like any wrong body.
+        var tenantId = Guid.NewGuid();
+        var user = await SeedTenantUserAsync(tenantId);
+        var session = await TenantSessionAsync(tenantId, user.Email, OldPassword);
+
+        using var client = _host.Client(session.AccessToken, tenantId);
+        var refused = await client.PutAsync("api/auth/me/preferences", new StringContent(body, System.Text.Encoding.UTF8, "application/json"));
+
+        Assert.Equal(HttpStatusCode.BadRequest, refused.StatusCode);
+        Assert.Contains(Diten.AuthService.Api.Controllers.AuthController.PreferencesBodyInvalidCode, await refused.Content.ReadAsStringAsync());
+        Assert.Null((await ReadUserAsync(user.Id)).PreferredLanguage);
+    }
+
+    [Fact]
+    public async Task A_body_that_is_not_json_is_a_coded_415()
+    {
+        var tenantId = Guid.NewGuid();
+        var user = await SeedTenantUserAsync(tenantId);
+        var session = await TenantSessionAsync(tenantId, user.Email, OldPassword);
+
+        using var client = _host.Client(session.AccessToken, tenantId);
+        var refused = await client.PutAsync("api/auth/me/preferences",
+            new StringContent("preferredLanguage=fr", System.Text.Encoding.UTF8, "application/x-www-form-urlencoded"));
+
+        Assert.Equal(HttpStatusCode.UnsupportedMediaType, refused.StatusCode);
+        Assert.Contains(Diten.AuthService.Api.Controllers.AuthController.PreferencesMediaTypeInvalidCode, await refused.Content.ReadAsStringAsync());
+        Assert.Null((await ReadUserAsync(user.Id)).PreferredLanguage);
+    }
+
+    [Fact]
+    public async Task A_body_over_the_limit_is_a_coded_413()
+    {
+        // FIX3 — past the limit the server stops the read with BadHttpRequestException(413); TestServer does not enforce
+        // the limit, so the test host's filter answers the read exactly so (X-Test-Body-Over-Limit).
+        var tenantId = Guid.NewGuid();
+        var user = await SeedTenantUserAsync(tenantId);
+        var session = await TenantSessionAsync(tenantId, user.Email, OldPassword);
+
+        using var client = _host.Client(session.AccessToken, tenantId);
+        client.DefaultRequestHeaders.Add("X-Test-Body-Over-Limit", "1");
+        var refused = await client.PutAsJsonAsync("api/auth/me/preferences", new { preferredLanguage = "fr" });
+
+        Assert.Equal(HttpStatusCode.RequestEntityTooLarge, refused.StatusCode);
+        Assert.Contains(Diten.AuthService.Api.Controllers.AuthController.PreferencesBodyTooLargeCode, await refused.Content.ReadAsStringAsync());
+        Assert.Null((await ReadUserAsync(user.Id)).PreferredLanguage);
+    }
+
+    [Fact]
+    public void The_door_reads_at_most_four_kilobytes()
+    {
+        var limit = typeof(Diten.AuthService.Api.Controllers.AuthController)
+            .GetMethod(nameof(Diten.AuthService.Api.Controllers.AuthController.UpdateMyPreferences))!
+            .GetCustomAttributes(typeof(Microsoft.AspNetCore.Mvc.RequestSizeLimitAttribute), inherit: false);
+
+        var attribute = Assert.Single(limit);
+        Assert.Equal(4096L, ((Microsoft.AspNetCore.Http.Metadata.IRequestSizeLimitMetadata)attribute).MaxRequestBodySize);
+    }
+
+    [Theory]
+    [InlineData(true, false)]  // tenant_user without tenant_id
+    [InlineData(false, true)]  // no actor_type at all
+    public async Task A_token_without_its_tenant_or_its_actor_type_is_refused(bool withActorType, bool withTenant)
+    {
+        var tenantId = Guid.NewGuid();
+        var user = await SeedTenantUserAsync(tenantId);
+        var claims = new List<System.Security.Claims.Claim> { new("sub", user.Id.ToString()) };
+        if (withActorType) claims.Add(new("actor_type", "tenant_user"));
+        if (withTenant) claims.Add(new("tenant_id", tenantId.ToString()));
+
+        using var client = _host.Client(SignedToken(claims), tenantId);
+        var set = await client.PutAsJsonAsync("api/auth/me/preferences", new { preferredLanguage = "fr" });
+
+        Assert.Equal(withActorType ? HttpStatusCode.Unauthorized : HttpStatusCode.Forbidden, set.StatusCode);
+        Assert.Null((await ReadUserAsync(user.Id)).PreferredLanguage);
+    }
+
+    [Theory]
+    [InlineData(false)] // no tenant header: the middleware takes the token's (empty) tenant
+    [InlineData(true)]  // the header copied from the token, as the web tier's proxy does: both empty, no mismatch
+    public async Task A_tenant_users_token_whose_tenant_is_the_empty_id_is_refused_with_401(bool headerFromToken)
+    {
+        // CT K6 — tenant_id = 00000000-0000-0000-0000-000000000000 is no tenant. Measured: a header naming a REAL tenant
+        // next to it is refused earlier, 400 "Tenant mismatch" (TenantResolutionMiddleware); without that contradiction
+        // the request reaches the door, and only the door's own Guid.Empty check stops it: 401, nothing looked up.
+        var tenantId = Guid.NewGuid();
+        var user = await SeedTenantUserAsync(tenantId);
+        var token = SignedToken([new("sub", user.Id.ToString()), new("actor_type", "tenant_user"), new("tenant_id", Guid.Empty.ToString())]);
+
+        using var client = _host.Client(token);
+        if (headerFromToken)
+        {
+            client.DefaultRequestHeaders.Add("X-Tenant-Id", Guid.Empty.ToString());
+        }
+
+        var set = await client.PutAsJsonAsync("api/auth/me/preferences", new { preferredLanguage = "fr" });
+
+        Assert.Equal(HttpStatusCode.Unauthorized, set.StatusCode);
+        Assert.Null((await ReadUserAsync(user.Id)).PreferredLanguage);
+    }
+
+    // A token signed with the host's own key, carrying exactly the claims given.
+    private string SignedToken(IEnumerable<System.Security.Claims.Claim> claims)
+    {
+        var settings = _host.Factory.Services.GetRequiredService<Microsoft.Extensions.Options.IOptions<Diten.AuthService.Infrastructure.Settings.JwtSettings>>().Value;
+        var key = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(settings.Secret));
+        var token = new System.IdentityModel.Tokens.Jwt.JwtSecurityToken(
+            settings.Issuer, settings.Audience, claims, expires: DateTime.UtcNow.AddMinutes(10),
+            signingCredentials: new Microsoft.IdentityModel.Tokens.SigningCredentials(key, Microsoft.IdentityModel.Tokens.SecurityAlgorithms.HmacSha256));
+        return new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler().WriteToken(token);
     }
 
     // ── BL-454 stage D FIX1: the tenant-created event only CREATES ──────────────────────────────────────────────
@@ -2936,10 +3275,32 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
                     context.Connection.RemoteIpAddress = context.Request.Headers.TryGetValue("X-Test-Peer", out var named)
                         ? System.Net.IPAddress.Parse(named.ToString())
                         : new System.Net.IPAddress(Guid.NewGuid().ToByteArray()[..4]);
+                    if (context.Request.Headers.ContainsKey("X-Test-Body-Over-Limit"))
+                    {
+                        context.Request.Body = new OverLimitBody();
+                    }
                     await nextMiddleware();
                 });
                 next(app);
             };
+    }
+
+    /// <summary>WP-EMAIL-LANG-01 FIX3 — a request body read past the server's limit: what Kestrel throws.</summary>
+    private sealed class OverLimitBody : MemoryStream
+    {
+        private static Exception TooLarge() =>
+            new Microsoft.AspNetCore.Http.BadHttpRequestException("Request body too large.", Microsoft.AspNetCore.Http.StatusCodes.Status413PayloadTooLarge);
+        public override int Read(byte[] buffer, int offset, int count) => throw TooLarge();
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) => throw TooLarge();
+        public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default) => throw TooLarge();
+    }
+
+    /// <summary>WP-EMAIL-LANG-01 FIX3 — a clock that moves only when told to.</summary>
+    public sealed class ManualClock(DateTimeOffset start) : TimeProvider
+    {
+        private DateTimeOffset _now = start;
+        public override DateTimeOffset GetUtcNow() => _now;
+        public void Advance(TimeSpan by) => _now += by;
     }
 
     /// <summary>FIX3 — the production refresh-token repository, held before a session is written or before a sweep.</summary>

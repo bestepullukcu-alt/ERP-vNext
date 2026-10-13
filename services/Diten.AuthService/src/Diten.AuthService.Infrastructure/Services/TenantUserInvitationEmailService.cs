@@ -91,7 +91,8 @@ public sealed class TenantUserInvitationEmailService : ITenantUserInvitationEmai
             _logger.LogWarning("tenant.invitation.reply_to_refused TenantId={TenantId}. The reply address is not a single valid address.", tenantId);
         }
 
-        var language = identity?.Language;
+        // WP-EMAIL-LANG-01 — the recipient's own language first, then the tenant's, then en.
+        var language = Diten.AuthService.Domain.Entities.UserLanguages.ForRecipient(user?.PreferredLanguage, identity?.Language);
         var rendered = TenantUserInvitationEmailTemplate.Render(
             language, identity?.DisplayName, firstName, BuildTenantSetPasswordUrl(email!, setupToken), replyTo, isPasswordReset);
 
@@ -147,7 +148,8 @@ public sealed class TenantUserInvitationEmailService : ITenantUserInvitationEmai
 
         try
         {
-            return await _users.GetByEmailAndTenantAsync(email, tenantId, ct);
+            // FIX1 — the same normalised form the sign-in code's lookup uses (stored addresses are lower case).
+            return await _users.GetByEmailAndTenantAsync(email.Trim().ToLowerInvariant(), tenantId, ct);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
