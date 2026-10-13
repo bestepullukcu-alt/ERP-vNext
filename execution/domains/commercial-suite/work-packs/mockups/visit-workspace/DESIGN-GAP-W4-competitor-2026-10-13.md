@@ -36,7 +36,7 @@
 
 ## 2. Kararla değişenler (✏️ / ➕)
 ### G1 · Workflow onayı (karar 2026-10-13: temsilci önerisinin kararı MDM'de Workflow ile, Satış Operasyon onaylar)
-Mockup brifin ilk sürümüyle çizilmiş; Workflow öğeleri yok. **Bizde, W3 itiraz kütüphanesi deseniyle** (canlıda doğrulandı):
+Mockup brifin ilk sürümüyle çizilmiş; Workflow öğeleri yok. ✅ **Karar (kullanıcı 2026-10-13): mockup yeniden yaptırılmaz; bizde, W3 itiraz kütüphanesi deseniyle** (canlıda doğrulandı):
 - **R4 / R5 / R6 son düğmeleri:** "Onayla ve kaydet" / "Birleştir" / "Reddet" → **"Onaya gönder"**.
   - Karar taslak olarak kaydedilir ("Kararı kaydet") ve onaya gönderilir.
   - R5'teki "Etkisini okudum" onay kutusu korunur; gönderim için zorunlu.
