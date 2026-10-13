@@ -243,6 +243,23 @@ public static class ItemRefusalSentences
         ["ITEM_ACTIVATION_WORKFLOW_CONFIGURATION_INVALID"] = "RefusalApprovalNeedsCheck",
         ["ITEM_ACTIVATION_WORKFLOW_START_FACTS_INVALID"] = "RefusalApprovalNeedsCheck",
         ["ITEM_ACTIVATION_WORKFLOW_OPERATION_LOST"] = "RefusalApprovalNeedsCheck",
+        // S2 lane merge FIX1: the approval store's own contract checks (ItemWorkflowOperationRepository), passed on by the
+        // processor's Fail(…, 409).
+        ["ITEM_ACTIVATION_WORKFLOW_OPERATION_INVALID"] = "RefusalApprovalNeedsCheck",
+        ["ITEM_ACTIVATION_LOCAL_PENDING_CONTRACT_INVALID"] = "RefusalApprovalNeedsCheck",
+        ["ITEM_ACTIVATION_WITHDRAWAL_CONTRACT_INVALID"] = "RefusalApprovalNeedsCheck",
+        ["ITEM_ACTIVATION_END_CONTRACT_INVALID"] = "RefusalApprovalNeedsCheck",
+        // S2 lane merge FIX1: the product-identity family's maker codes (ProductIdentityWorkflowMakerCodes.IsMakerCode) —
+        // the engine sent the start back to the person who is present (401 / 403 / 409 / 503). The first-setup faults
+        // (no approver on the position, a template not published, an expired session) each say what to do; the sentences
+        // are GSKU's own (GskuRefusals), copied per language.
+        ["PRODUCT_IDENTITY_WORKFLOW_SESSION_EXPIRED"] = "RefusalApprovalSessionExpired",
+        ["PRODUCT_IDENTITY_WORKFLOW_START_PERMISSION_REQUIRED"] = "RefusalApprovalForbidden",
+        ["PRODUCT_IDENTITY_WORKFLOW_APPROVER_NOT_ASSIGNED"] = "RefusalApprovalSetupIncomplete",
+        ["PRODUCT_IDENTITY_WORKFLOW_DEFINITION_NOT_READY"] = "RefusalApprovalSetupIncomplete",
+        ["PRODUCT_IDENTITY_WORKFLOW_SERVICE_UNAVAILABLE_RESUBMIT"] = "RefusalApprovalResubmit",
+        ["PRODUCT_IDENTITY_WORKFLOW_MAKER_REPLAY_REQUIRED"] = "RefusalApprovalResubmit",
+        ["PRODUCT_IDENTITY_WORKFLOW_APPROVAL_CHANGING"] = "RefusalApprovalBusy",
         ["ITEM_ACTIVATION_WORKFLOW_START_REFUSED"] = "RefusalApprovalStartRefused",
         ["ITEM_ACTIVATION_SELF_APPROVAL_IGNORED"] = "RefusalApprovalSelf",
         // The submit freezes the item lists (S2 FIX1): a value went away or changed, or the lists cannot be checked.
@@ -273,7 +290,7 @@ public static class ItemRefusalSentences
     {
         ["ITEM_ACTIVATION"] = "the flow name (metrics, logs), never an answer",
         ["ITEM_ACTIVATION_WORKFLOW_DECISION_PENDING"] = "the worker's state between polls, never a body",
-        ["ITEM_ACTIVATION_WORKFLOW_MAKER_REPLAY_REQUIRED"] = "HTTP carries PRODUCT_IDENTITY_WORKFLOW_MAKER_REPLAY_REQUIRED (202: the same form saved again)",
+        ["ITEM_ACTIVATION_WORKFLOW_MAKER_REPLAY_REQUIRED"] = "the operation's state; HTTP carries PRODUCT_IDENTITY_WORKFLOW_MAKER_REPLAY_REQUIRED (409, mapped)",
         ["ITEM_ACTIVATION_WORKFLOW_STUCK_ON_RECORD_ANSWER"] = "the worker's quarantine reason, read by the operator",
         ["ITEM_ACTIVATION_WITHDRAWAL_EVIDENCE_INVALID"] = "the worker's check of the engine's withdrawal answer",
         ["ITEM_ACTIVATION_WITHDRAWN_BY_MAKER"] = "the operation's end reason, written to its record",

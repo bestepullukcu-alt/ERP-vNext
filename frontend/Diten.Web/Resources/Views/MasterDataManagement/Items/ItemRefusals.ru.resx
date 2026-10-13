@@ -21,4 +21,7 @@
   <data name="RefusalReferenceValueChanged" xml:space="preserve"><value>Значение списка, используемое этой позицией, было удалено или изменено. Исправьте позицию и отправьте её снова.</value></data>
   <data name="RefusalReferenceCheckUnavailable" xml:space="preserve"><value>Списки позиции сейчас нельзя проверить. Попробуйте снова через минуту.</value></data>
   <data name="RefusalOrphanRepairInvalid" xml:space="preserve"><value>Запрос на исправление кода недействителен.</value></data>
+  <data name="RefusalApprovalSessionExpired" xml:space="preserve"><value>Служба утверждения не приняла ваш сеанс. Войдите снова и повторите действие.</value></data>
+  <data name="RefusalApprovalSetupIncomplete" xml:space="preserve"><value>Настройка утверждения для этого действия не завершена. Сообщите администратору.</value></data>
+  <data name="RefusalApprovalResubmit" xml:space="preserve"><value>Запрос не дошёл до службы утверждения. Отправьте тот же запрос ещё раз.</value></data>
 </root>

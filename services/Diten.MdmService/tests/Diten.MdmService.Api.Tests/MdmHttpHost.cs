@@ -352,7 +352,6 @@ public class MdmHttpHost : IAsyncLifetime
         }
     }
 
-    /// <summary>A tenant user's token as AuthService writes it (sub, actor_type, tenant_id, one claim per permission).</summary>
     /// <summary>
     /// WP-MDM-BL598-01 — a second host built like this one (same settings, same fakes, same token key) with some services
     /// replaced (e.g. a Mongo client that cannot reach its server). The caller disposes it.
@@ -379,6 +378,7 @@ public class MdmHttpHost : IAsyncLifetime
         }
     }
 
+    /// <summary>A tenant user's token as AuthService writes it (sub, actor_type, tenant_id, one claim per permission).</summary>
     public string Token(Guid tenantId, Guid userId, params string[] permissions) =>
         TokenOf("tenant_user", tenantId, userId, permissions);
 

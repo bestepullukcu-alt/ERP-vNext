@@ -133,4 +133,7 @@
   <data name="RefusalInternal" xml:space="preserve"><value>Kalem hizmeti iç bir tutarsızlık bildirdi. Lütfen yöneticinize bildirin.</value></data>
   <data name="RefusalOptionsUnavailable" xml:space="preserve"><value>Malzeme türü, birim ve saklama koşulu listeleri şu anda yüklenemiyor; bu alanlar seçilemez. Biraz sonra tekrar deneyin.</value></data>
   <data name="RefusalOptionsTimeout" xml:space="preserve"><value>Malzeme türü, birim ve saklama koşulu listeleri zamanında yüklenemedi; bu alanlar seçilemez. Biraz sonra tekrar deneyin.</value></data>
+  <data name="WithdrawApproval" xml:space="preserve"><value>Onay İsteğini Geri Çek</value></data>
+  <data name="WithdrawApprovalConfirmation" xml:space="preserve"><value>Bu kalemin etkinleştirme onayı isteği geri çekilsin mi?</value></data>
+  <data name="WithdrawApprovalSuccess" xml:space="preserve"><value>Onay isteği geri çekildi. Kalem önceki durumuna döndü.</value></data>
 </root>

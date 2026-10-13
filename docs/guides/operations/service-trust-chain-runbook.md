@@ -411,7 +411,10 @@ A non-default `--client-code` gets no Platform `Item` entry from the bootstrap (
    `position:<ApproverPositionId>` MDM sends, and MDM does not check that the person who decides holds the QA Manager
    position — a definition with its own candidates silently changes who may approve.
 3. MDM local file: the JSON above; restart MDM.
-4. Item keys: `mdm.items.submit`, `.withdraw` reach roles with the module manifest (S5); until then grant them by hand.
+4. Item keys: `mdm.items.submit` (manifest 1.1.0, S5) and `mdm.items.withdraw` (manifest 1.2.0, ITEMS `WITHDRAW_APPROVAL`,
+   S2 lane merge FIX1) are declared by MDM's module manifest; once MDM has registered it, grant them to roles in the
+   Role screens. The Items page offers "Withdraw Approval Request" only to the person who submitted, holding
+   `mdm.items.withdraw`.
 
 **The worker reads the item lists with MDM's service identity** (S2 FIX1): no user is present when the approval is
 applied, so the reference check runs with the trusted service token for the tenant (audience

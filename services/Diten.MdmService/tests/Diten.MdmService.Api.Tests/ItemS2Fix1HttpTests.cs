@@ -817,6 +817,30 @@ public sealed class ItemS2Fix1HttpTests(ItemActivationHttpHost host) : IAsyncLif
             && entry.Message.Contains(ItemReferenceEvidence.ProviderConfigurationError, StringComparison.Ordinal));
     }
 
+    // S2 lane merge FIX1 (CT addendum 3): WITHDRAW_APPROVAL is offered on a pending approval to the person who requested it
+    // and holds mdm.items.withdraw — never to another holder of the key, never to the requester without it (GSKU pattern).
+    [Fact]
+    public async Task S2MergeFix1_Withdraw_is_offered_to_its_requester_with_the_key_only()
+    {
+        var id = await PendingAsync("Sodium lauryl sulfate");
+        async Task<string[]> ActionsAsync(HttpClient client)
+        {
+            using var detail = JsonDocument.Parse(await client.GetStringAsync($"{Items}/{id}"));
+            var data = detail.RootElement.TryGetProperty("data", out var lower) ? lower : detail.RootElement.GetProperty("Data");
+            return data.GetProperty("availableActions").EnumerateArray().Select(x => x.GetString()!).ToArray();
+        }
+
+        Assert.Contains("WITHDRAW_APPROVAL", await ActionsAsync(Client()));
+        Assert.DoesNotContain("WITHDRAW_APPROVAL",
+            await ActionsAsync(host.Client(host.Token(_tenant, _maker, All.Where(x => x != "mdm.items.withdraw").ToArray()))));
+        Assert.DoesNotContain("WITHDRAW_APPROVAL", await ActionsAsync(host.Client(host.Token(_tenant, Guid.NewGuid(), All))));
+
+        // The offered action works: the requester withdraws, the item is back in Draft and the action is gone.
+        var withdrawn = await PostAsync(id, "withdraw", Lifecycle(1));
+        Assert.True(withdrawn.IsSuccessStatusCode, await withdrawn.Content.ReadAsStringAsync());
+        Assert.DoesNotContain("WITHDRAW_APPROVAL", await ActionsAsync(Client()));
+    }
+
     // Item 3: the gauge is the OLDEST open approval's age, in seconds. (The fake engine stamps its start with the real
     // clock, so the old one's start is set back five days — every other open approval in this host is younger.)
     [Fact]

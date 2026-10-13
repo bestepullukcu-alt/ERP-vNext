@@ -21,4 +21,7 @@
   <data name="RefusalReferenceValueChanged" xml:space="preserve"><value>此物料使用的某个列表值已被删除或更改。请更正物料，然后重新提交。</value></data>
   <data name="RefusalReferenceCheckUnavailable" xml:space="preserve"><value>目前无法检查物料列表。请稍后再试。</value></data>
   <data name="RefusalOrphanRepairInvalid" xml:space="preserve"><value>代码修复请求无效。</value></data>
+  <data name="RefusalApprovalSessionExpired" xml:space="preserve"><value>审批服务未接受您的会话。请重新登录并重复该操作。</value></data>
+  <data name="RefusalApprovalSetupIncomplete" xml:space="preserve"><value>此操作的审批设置不完整。请通知您的管理员。</value></data>
+  <data name="RefusalApprovalResubmit" xml:space="preserve"><value>请求未到达审批服务。请再次发送相同的请求。</value></data>
 </root>

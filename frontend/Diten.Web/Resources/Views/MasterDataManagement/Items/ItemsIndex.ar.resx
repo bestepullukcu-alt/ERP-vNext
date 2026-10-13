@@ -133,4 +133,7 @@
   <data name="RefusalInternal" xml:space="preserve"><value>أبلغت خدمة الأصناف عن عدم اتساق داخلي. يُرجى إبلاغ المسؤول.</value></data>
   <data name="RefusalOptionsUnavailable" xml:space="preserve"><value>تعذر تحميل قوائم أنواع المواد والوحدات وظروف التخزين الآن، لذا لا يمكن اختيار هذه الحقول. حاول مرة أخرى بعد قليل.</value></data>
   <data name="RefusalOptionsTimeout" xml:space="preserve"><value>لم يتم تحميل قوائم أنواع المواد والوحدات وظروف التخزين في الوقت المحدد، لذا لا يمكن اختيار هذه الحقول. حاول مرة أخرى بعد قليل.</value></data>
+  <data name="WithdrawApproval" xml:space="preserve"><value>سحب طلب الموافقة</value></data>
+  <data name="WithdrawApprovalConfirmation" xml:space="preserve"><value>هل تريد سحب طلب موافقة تفعيل هذا الصنف؟</value></data>
+  <data name="WithdrawApprovalSuccess" xml:space="preserve"><value>تم سحب طلب الموافقة. عاد الصنف إلى حالته السابقة.</value></data>
 </root>

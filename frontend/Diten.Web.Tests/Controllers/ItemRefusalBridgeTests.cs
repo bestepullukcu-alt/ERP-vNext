@@ -19,7 +19,10 @@ public sealed class ItemRefusalBridgeTests
 
     // Upper-case literals in that code that are NOT answers: the six material type values (ItemRules, the reference set's
     // own values) — they are a label key's suffix (MaterialType_…), never a refusal.
-    private static readonly HashSet<string> NotRefusals = new(ItemRefusalSentences.MaterialTypes, StringComparer.Ordinal);
+    // S2 lane merge FIX1: + the action vocabulary's one code-shaped name (ItemActions' WITHDRAW_APPROVAL) — an action the
+    // screen draws, never a refusal.
+    private static readonly HashSet<string> NotRefusals = new(ItemRefusalSentences.MaterialTypes.Append("WITHDRAW_APPROVAL"),
+        StringComparer.Ordinal);
 
     [Fact]
     public void Every_code_of_mdms_item_code_has_a_sentence()
@@ -58,6 +61,7 @@ public sealed class ItemRefusalBridgeTests
     public void S2Merge_No_approval_or_internal_code_is_an_orphan_and_none_is_in_two_lists()
     {
         var known = MdmItemCodes();
+        known.UnionWith(MakerCodes());
         var orphans = ItemRefusalSentences.ApprovalKeys.Keys.Concat(ItemRefusalSentences.InternalCodes.Keys)
             .Where(code => !known.Contains(code)).ToArray();
         Assert.True(orphans.Length == 0, "Approval / internal codes MDM never writes: " + string.Join(", ", orphans));
@@ -65,6 +69,37 @@ public sealed class ItemRefusalBridgeTests
             .GroupBy(code => code, StringComparer.Ordinal).Where(group => group.Count() > 1).Select(group => group.Key).ToArray();
         Assert.True(twice.Length == 0, "Codes in two lists: " + string.Join(", ", twice));
         Assert.All(ItemRefusalSentences.InternalCodes, entry => Assert.False(string.IsNullOrWhiteSpace(entry.Value), entry.Key));
+    }
+
+    // S2 lane merge FIX1: an item submit / reactivation passes the product-identity family's maker codes on (the processor
+    // answers ProductIdentityWorkflowMakerCodes.IsMakerCode's codes with their status). Each one — read from that very
+    // predicate, not a copy — has an approval sentence; the first-setup faults name what to do.
+    [Fact]
+    public void S2MergeFix1_Every_maker_code_an_item_request_can_answer_has_a_sentence()
+    {
+        var makers = MakerCodes();
+        Assert.True(makers.Count >= 7, $"Only {makers.Count} maker codes read — the scan no longer sees IsMakerCode.");
+        var missing = makers.Where(code => !ItemRefusalSentences.ApprovalKeys.ContainsKey(code)).Order(StringComparer.Ordinal).ToArray();
+        Assert.True(missing.Length == 0, "Maker codes without a sentence: " + string.Join(", ", missing));
+        Assert.Equal("RefusalApprovalSetupIncomplete", ItemRefusalSentences.ApprovalKeys["PRODUCT_IDENTITY_WORKFLOW_APPROVER_NOT_ASSIGNED"]);
+        Assert.Equal("RefusalApprovalSetupIncomplete", ItemRefusalSentences.ApprovalKeys["PRODUCT_IDENTITY_WORKFLOW_DEFINITION_NOT_READY"]);
+        Assert.Equal("RefusalApprovalSessionExpired", ItemRefusalSentences.ApprovalKeys["PRODUCT_IDENTITY_WORKFLOW_SESSION_EXPIRED"]);
+    }
+
+    // The codes ProductIdentityWorkflowMakerCodes.IsMakerCode accepts: its constant names resolved to their values.
+    private static HashSet<string> MakerCodes()
+    {
+        var policy = File.ReadAllText(Path.Combine(RepoRoot(), "services", "Diten.MdmService", "src", "Diten.MdmService.Application",
+            "Features", "ProductItemSkuMaster", "Workflow", "ProductIdentityWorkflowFaultPolicy.cs"));
+        var constants = Regex.Matches(policy, "public const string (\\w+) = \"([A-Z_]+)\"")
+            .ToDictionary(match => match.Groups[1].Value, match => match.Groups[2].Value, StringComparer.Ordinal);
+        var predicate = Regex.Match(policy, "IsMakerCode\\(string\\? code\\) => code is (?<names>[^;]+);");
+        Assert.True(predicate.Success, "IsMakerCode was not found.");
+        return Regex.Matches(predicate.Groups["names"].Value, "\\b([A-Z]\\w+)\\b")
+            .Select(match => match.Groups[1].Value)
+            .Where(name => name != "or")
+            .Select(name => constants.TryGetValue(name, out var value) ? value : throw new InvalidOperationException("unresolved " + name))
+            .ToHashSet(StringComparer.Ordinal);
     }
 
     // S2: the activation gate's code and the field names it lists, read from MDM's own gate.
@@ -220,7 +255,9 @@ public sealed class ItemRefusalBridgeTests
                 SearchOption.AllDirectories)
             .Concat([
                 Path.Combine(src, "Diten.MdmService.Api", "Controllers", "ItemsController.cs"),
-                Path.Combine(src, "Diten.MdmService.Persistence", "Repositories", "ItemRepository.cs")
+                Path.Combine(src, "Diten.MdmService.Persistence", "Repositories", "ItemRepository.cs"),
+                // S2 lane merge FIX1: the approval's store (its contract codes reach HTTP through the processor's Fail).
+                Path.Combine(src, "Diten.MdmService.Persistence", "Repositories", "ItemWorkflowOperationRepository.cs")
             ])
             .Concat(Directory.EnumerateFiles(Path.Combine(src, "Diten.MdmService.Infrastructure", "Inventory"), "*.cs"))
             .Concat(Directory.EnumerateFiles(Path.Combine(src, "Diten.MdmService.Application", "Contracts", "Inventory"), "*.cs"))

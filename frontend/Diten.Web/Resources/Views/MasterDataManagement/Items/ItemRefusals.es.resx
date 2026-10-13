@@ -21,4 +21,7 @@
   <data name="RefusalReferenceValueChanged" xml:space="preserve"><value>Se eliminó o cambió un valor de lista que usa este artículo. Corrija el artículo y vuelva a enviarlo.</value></data>
   <data name="RefusalReferenceCheckUnavailable" xml:space="preserve"><value>No se pueden comprobar las listas del artículo en este momento. Inténtelo de nuevo en un momento.</value></data>
   <data name="RefusalOrphanRepairInvalid" xml:space="preserve"><value>La solicitud de reparación del código no es válida.</value></data>
+  <data name="RefusalApprovalSessionExpired" xml:space="preserve"><value>El servicio de aprobación no aceptó su sesión. Inicie sesión de nuevo y repita la acción.</value></data>
+  <data name="RefusalApprovalSetupIncomplete" xml:space="preserve"><value>La configuración de aprobación de esta acción está incompleta. Informe a su administrador.</value></data>
+  <data name="RefusalApprovalResubmit" xml:space="preserve"><value>La solicitud no llegó al servicio de aprobación. Envíe la misma solicitud de nuevo.</value></data>
 </root>

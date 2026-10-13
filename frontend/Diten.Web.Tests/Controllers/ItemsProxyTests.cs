@@ -311,10 +311,68 @@ public sealed class ItemsProxyTests(WebApplicationFactory<Program> factory) : IC
         Assert.False(sent.RootElement.TryGetProperty("reason", out _));
     }
 
+    // S2 lane merge FIX1 (CT blocker): MDM answers the approval's requests 202 while the approval is still being started
+    // (its normal waiting state) — that is success, passed on with MDM's body; the item is pending, not an error.
+    [Theory]
+    [InlineData("Submit", "mdm.items.submit", "submit")]
+    [InlineData("RequestReactivation", "mdm.items.submit", "reactivation-requests")]
+    [InlineData("WithdrawApproval", "mdm.items.withdraw", "withdraw")]
+    public async Task S2MergeFix1_An_accepted_approval_request_is_a_success_with_mdms_body(string action, string permission,
+        string suffix)
+    {
+        var accepted = AcceptedEnvelope(version: 2, status: 2);
+        var wire = new RecordingHandler(HttpStatusCode.Accepted, accepted);
+        var controller = Controller(wire, [permission], "");
+
+        var result = Assert.IsType<ContentResult>(await InvokeApproval(controller, action, 1));
+
+        Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+        Assert.Equal(accepted, result.Content);
+        Assert.Equal($"{Gateway}/api/mdm/items/{ItemId:D}/{suffix}", Assert.Single(wire.Requests).Url);
+    }
+
+    // ... and never a mix: a 202 whose envelope says 200 (or the reverse), or a 202 on a write that is not an approval
+    // request, is not MDM's own answer.
+    [Fact]
+    public async Task S2MergeFix1_A_202_is_success_only_on_an_approval_request_with_a_matching_envelope()
+    {
+        var mixed = Controller(new RecordingHandler(HttpStatusCode.Accepted, ItemDtoEnvelope(version: 2, status: 2)),
+            ["mdm.items.submit"], "");
+        var reverse = Controller(new RecordingHandler(HttpStatusCode.OK, AcceptedEnvelope(version: 2, status: 2)),
+            ["mdm.items.submit"], "");
+        var deactivate = Controller(new RecordingHandler(HttpStatusCode.Accepted, AcceptedEnvelope(version: 2, status: 4)),
+            ["mdm.items.deactivate"], "");
+
+        Assert.Equal(StatusCodes.Status502BadGateway,
+            Assert.IsType<ObjectResult>(await mixed.Submit(ItemId, 1, CancellationToken.None)).StatusCode);
+        Assert.Equal(StatusCodes.Status502BadGateway,
+            Assert.IsType<ObjectResult>(await reverse.Submit(ItemId, 1, CancellationToken.None)).StatusCode);
+        Assert.Equal(StatusCodes.Status502BadGateway,
+            Assert.IsType<ObjectResult>(await deactivate.Deactivate(ItemId, 1, "r", CancellationToken.None)).StatusCode);
+    }
+
+    // The withdraw's reason is optional; when given it travels trimmed.
+    [Fact]
+    public async Task S2MergeFix1_The_withdraw_posts_the_version_and_an_optional_reason()
+    {
+        var wire = new RecordingHandler(HttpStatusCode.OK, ItemDtoEnvelope(version: 3, status: 1));
+        var controller = Controller(wire, ["mdm.items.withdraw"], "");
+
+        Assert.Equal(StatusCodes.Status200OK,
+            Assert.IsType<ContentResult>(await controller.WithdrawApproval(ItemId, 2, null, CancellationToken.None)).StatusCode);
+        await controller.WithdrawApproval(ItemId, 2, "  wrong lot rule  ", CancellationToken.None);
+
+        using var first = JsonDocument.Parse(wire.Requests[0].Body!);
+        using var second = JsonDocument.Parse(wire.Requests[1].Body!);
+        Assert.Equal(2, first.RootElement.GetProperty("expectedVersion").GetInt32());
+        Assert.False(first.RootElement.TryGetProperty("reason", out _));
+        Assert.Equal("wrong lot rule", second.RootElement.GetProperty("reason").GetString());
+    }
+
     [Fact]
     public void Every_write_endpoint_validates_the_antiforgery_token()
     {
-        foreach (var name in new[] { "CreateItem", "UpdateItem", "Submit", "RequestReactivation", "Deactivate", "Retire" })
+        foreach (var name in new[] { "CreateItem", "UpdateItem", "Submit", "RequestReactivation", "WithdrawApproval", "Deactivate", "Retire" })
         {
             var method = typeof(ItemsController).GetMethod(name)!;
             Assert.True(method.GetCustomAttribute<ValidateAntiForgeryTokenAttribute>() is not null, name);
@@ -464,6 +522,10 @@ public sealed class ItemsProxyTests(WebApplicationFactory<Program> factory) : IC
             ("Reactivate", await reader.RequestReactivation(ItemId, 1, "r", CancellationToken.None)),
             ("Deactivate", await reader.Deactivate(ItemId, 1, "r", CancellationToken.None)),
             ("Retire", await reader.Retire(ItemId, 1, "r", CancellationToken.None)),
+            // S2 lane merge FIX1: the withdraw needs its OWN key — the submit key (the request's) is not it.
+            ("Withdraw", await reader.WithdrawApproval(ItemId, 1, null, CancellationToken.None)),
+            ("Withdraw (submit key)", await Controller(wire, ["mdm.items.read", "mdm.items.submit"], "")
+                .WithdrawApproval(ItemId, 1, null, CancellationToken.None)),
             ("Options (read key)", await reader.Options(CancellationToken.None)),
             ("Options (other read key)", await nobody.Options(CancellationToken.None))
         };
@@ -762,6 +824,17 @@ public sealed class ItemsProxyTests(WebApplicationFactory<Program> factory) : IC
     private static string ItemDtoEnvelope(int version, int status) =>
         "{\"isSuccessful\":true,\"statusCode\":200,\"data\":{\"id\":\"" + ItemId + "\",\"version\":" + version
         + ",\"lifecycleStatus\":" + status + "}}";
+
+    private static string AcceptedEnvelope(int version, int status) =>
+        "{\"isSuccessful\":true,\"statusCode\":202,\"data\":{\"id\":\"" + ItemId + "\",\"version\":" + version
+        + ",\"lifecycleStatus\":" + status + "}}";
+
+    private static Task<IActionResult> InvokeApproval(ItemsController controller, string action, int version) => action switch
+    {
+        "Submit" => controller.Submit(ItemId, version, CancellationToken.None),
+        "RequestReactivation" => controller.RequestReactivation(ItemId, version, "back in use", CancellationToken.None),
+        _ => controller.WithdrawApproval(ItemId, version, null, CancellationToken.None)
+    };
 
     private static Task<IActionResult> Invoke(ItemsController controller, string action, Guid id, int? version, string? reason) =>
         action switch

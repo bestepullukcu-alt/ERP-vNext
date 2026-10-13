@@ -133,4 +133,7 @@
   <data name="RefusalInternal" xml:space="preserve"><value>物料服务报告了内部不一致。请通知您的管理员。</value></data>
   <data name="RefusalOptionsUnavailable" xml:space="preserve"><value>物料类型、单位和储存条件列表暂时无法加载，因此无法选择这些字段。请稍后重试。</value></data>
   <data name="RefusalOptionsTimeout" xml:space="preserve"><value>物料类型、单位和储存条件列表未能及时加载，因此无法选择这些字段。请稍后重试。</value></data>
+  <data name="WithdrawApproval" xml:space="preserve"><value>撤回审批申请</value></data>
+  <data name="WithdrawApprovalConfirmation" xml:space="preserve"><value>是否撤回此物料的启用审批申请？</value></data>
+  <data name="WithdrawApprovalSuccess" xml:space="preserve"><value>审批申请已撤回。物料已恢复为之前的状态。</value></data>
 </root>

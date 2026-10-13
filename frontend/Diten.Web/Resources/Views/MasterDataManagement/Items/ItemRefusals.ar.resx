@@ -21,4 +21,7 @@
   <data name="RefusalReferenceValueChanged" xml:space="preserve"><value>أُزيلت أو تغيّرت قيمة قائمة يستخدمها هذا الصنف. صحّح الصنف، ثم أرسله مرة أخرى.</value></data>
   <data name="RefusalReferenceCheckUnavailable" xml:space="preserve"><value>لا يمكن التحقق من قوائم الصنف الآن. حاول مرة أخرى بعد قليل.</value></data>
   <data name="RefusalOrphanRepairInvalid" xml:space="preserve"><value>طلب إصلاح الرمز غير صالح.</value></data>
+  <data name="RefusalApprovalSessionExpired" xml:space="preserve"><value>لم تقبل خدمة الموافقات جلستك. سجّل الدخول مرة أخرى وكرّر الإجراء.</value></data>
+  <data name="RefusalApprovalSetupIncomplete" xml:space="preserve"><value>إعدادات الموافقة لهذا الإجراء غير مكتملة. يرجى إبلاغ المسؤول.</value></data>
+  <data name="RefusalApprovalResubmit" xml:space="preserve"><value>لم يصل الطلب إلى خدمة الموافقات. أرسل الطلب نفسه مرة أخرى.</value></data>
 </root>
