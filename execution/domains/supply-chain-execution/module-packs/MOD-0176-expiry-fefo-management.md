@@ -1001,6 +1001,19 @@ body byte-identical (golden SHA-256); golden vectors fx-v1 / do-v1; Inventory 97
 reds; gateway 134/135; Platform ESign filter 163/163 (Platform source unchanged). Sabotage a–j 10/10 red → green, `git diff` empty. p95 alone
 +24.1 / +26.3 / +0.6 ms. Probe on 5167: provider / prepare / resolve / createLot without a token 401, fleet PIDs unchanged.
 
+**F3 — CT acceptance (2026-10-13).** Commits `66f87dd44`, `8233eb714`, `9fe2113a4`, `636ae7595` (base `78da50309`). The agent stopped
+BLOCKED (ESIGN `VerificationResult` carries no signer / action / meaning / `signedAtUtc` — CT re-read `esign.openapi.yaml:697-707`); the CT
+chose **F3-A** (MOD-0175 pattern: `getSignature` + 0176's own `fx-v1` / `do-v1` hash from the same function as the provider; no ESIGN or
+Platform change, no `esign.signatures.verify` grant). CT re-measured: Inventory **1000 passed + 1 skipped** (the p95 test, now behind
+`INVENTORY_PERF_TESTS=1`); the p95 test run alone by the CT with the variable **passed** (hooked postings ~14 ms each); the only Platform diff
+is the 3-line `ESign:SubjectProviders:expiry:BaseUrl` in `appsettings.Development.json`. CT sabotages (own, beyond a–j): the `action` check
+and then the `meaning` check removed from `ExpirySignatureBinding.Refusal` → each turns `Action_and_meaning_must_be_the_resolutions` red;
+restored, `git diff` empty. Decisions: **O-F3-1** the CT checks end to end on the owner's fleet after the owner-approved Platform restart
+(expiry actions listed in the tenant's e-sign settings; one signed resolution). **O-F3-2** fail-closed as 400 / 409 accepted (no 503 in the
+frozen operations). **O-F3-3** resolvers need `esign.signatures.sign` + `.read` (MOD-0175 rule) — role templates (ROLE1, new tenants only)
+get them in the L10n / roles follow-up; existing tenants by the owner. **O-F3-4** accepted (same as `qd-v1`); a filled `skuCode` needs
+`fx-v2` (FU-0176-FX2). **O-F3-5** accepted. Merged (`--no-ff`) into the MVP-1 branch. Next: F4 (UI) — and MOD-0177 R1 may now start.
+
 ## 20. Follow-up Items
 
 | ID | Item | Owner |
