@@ -246,6 +246,8 @@
                             </div>
                             <div class="form-text" data-hint-for="source"></div>
                             <div class="invalid-feedback d-block" data-error-for="source"></div>
+                            @* WP-0176-F5: the outbound FEFO band (KF-B) *@
+                            <partial name="~/Views/Shared/Expiry/_FefoBand.cshtml" />
                         </div>
                         <div class="col-12 col-md-6" data-matrix="target-warehouse">
                             <label for="toWarehouseId" class="form-label fw-medium">@Localizer["FieldTargetWarehouse"] <span class="text-danger">*</span></label>
@@ -320,6 +322,8 @@
                                 <div class="form-text d-none" id="lotTypedHint">@LotField["Lot.TypedHint"]</div>
                             }
                             <div class="invalid-feedback d-block" data-error-for="lotId"></div>
+                            @* WP-0176-F5: the goods-receipt minimum remaining shelf life band (KF-C, CT-F1) *@
+                            <partial name="~/Views/Shared/Expiry/_MinRemainingBand.cshtml" />
                         </div>
                     </div>
                 </div>
@@ -476,3 +480,5 @@
 {
     <partial name="~/Views/Traceability/Lots/_LotQuickCreateModal.cshtml" />
 }
+@* WP-0176-F5: the bands' vocabulary, token, MOD-0022 dialog and script (rendered once) *@
+<partial name="~/Views/Shared/Expiry/_ExpiryBandAssets.cshtml" />

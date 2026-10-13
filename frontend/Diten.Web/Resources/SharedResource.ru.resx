@@ -1093,4 +1093,8 @@
   <data name="Nav.Page.EXPIRYAPPROACHING" xml:space="preserve"><value>Истекающие сроки</value></data>
   <data name="Nav.Page.EXPIREDSTOCK" xml:space="preserve"><value>Просроченный запас</value></data>
   <data name="Nav.Page.FEFOORDER" xml:space="preserve"><value>Порядок FEFO</value></data>
+  <data name="Nav.Page.EXPIRYEXCEPTIONS" xml:space="preserve"><value>Входящие исключения</value></data>
+  <data name="Nav.Page.EXPIRYEXCEPTIONDETAILS" xml:space="preserve"><value>Карточка исключения</value></data>
+  <data name="Nav.Page.EXPIRYPOLICY" xml:space="preserve"><value>Правила сроков годности и настройки</value></data>
+  <data name="Nav.Page.EXPIRYEVIDENCE" xml:space="preserve"><value>Пакет доказательств</value></data>
 </root>

@@ -1150,4 +1150,8 @@
   <data name="Nav.Page.EXPIRYAPPROACHING" xml:space="preserve"><value>Approaching expiry</value></data>
   <data name="Nav.Page.EXPIREDSTOCK" xml:space="preserve"><value>Expired stock</value></data>
   <data name="Nav.Page.FEFOORDER" xml:space="preserve"><value>FEFO order</value></data>
+  <data name="Nav.Page.EXPIRYEXCEPTIONS" xml:space="preserve"><value>Exception inbox</value></data>
+  <data name="Nav.Page.EXPIRYEXCEPTIONDETAILS" xml:space="preserve"><value>Exception detail</value></data>
+  <data name="Nav.Page.EXPIRYPOLICY" xml:space="preserve"><value>Shelf-life rules and settings</value></data>
+  <data name="Nav.Page.EXPIRYEVIDENCE" xml:space="preserve"><value>Evidence pack</value></data>
 </root>

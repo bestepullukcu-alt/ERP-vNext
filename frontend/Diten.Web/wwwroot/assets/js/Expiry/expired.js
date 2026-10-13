@@ -75,7 +75,10 @@
                     { targets: 6, className: 'text-end', render: (data) => ui.amount(data?.available, data) },
                     { targets: 7, className: 'text-end', render: (data) => Number(data?.held) ? ui.amount(data.held, data) : '<span class="text-muted">—</span>' },
                     { targets: 8, render: (data, type, full) => ui.statusCell(full) },
-                    { targets: 9, render: (data) => data ? `<span class="badge bg-label-danger"><i class="bx bx-error-alt me-1"></i>${esc(t('Expiry.Col.Exception'))}</span>` : '<span class="text-muted">—</span>' },
+                    { targets: 9, render: (data) => !data ? '<span class="text-muted">—</span>'
+                        // O-F4-4 (F5): the badge opens the case where the reader may read cases
+                        : ui.can('EXPIRY_EXCEPTIONS_VIEW') ? `<a class="badge bg-label-danger" href="/Expiry/Exceptions/Details/${encodeURIComponent(data)}"><i class="bx bx-error-alt me-1"></i>${esc(t('Expiry.Col.Exception'))}</a>`
+                        : `<span class="badge bg-label-danger"><i class="bx bx-error-alt me-1"></i>${esc(t('Expiry.Col.Exception'))}</span>` },
                     { targets: -1, title: t('Expiry.Col.Actions'), searchable: false, orderable: false, className: 'cell-fit all', render: (data, type, full) => ui.rowActions(full, '/Quarantine/Blocked') }
                 ]
             }

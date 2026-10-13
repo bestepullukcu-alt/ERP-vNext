@@ -1,0 +1,137 @@
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.Expiry.Expiry> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["Expiry.Tabs.Exceptions"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    MOD-0176 F5 — FEFO İstisna Kutusu (EXPIRYEXCEPTIONS, pack §11.1 / §11.3; mockup "inbox"). DataTable v2, SERVER mode: /Expiry/list/exceptions →
+    FEFO-BUNDLE listExceptions (newest first). Tabs Tümü · Açık + İnceleniyor · SLA geçti · Sonuçlanan with their counts (the server's totals);
+    filters type, status, warehouse, "Bana atananlar". A row opens İstisna Detayı. "İstisna aç" only with expiry.exceptions.create (D-10).
+    UAS-001 — nothing below is drawn without expiry.exceptions.read. No redirect.
+*@
+@if (!Perms.Has("expiry.exceptions.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["Expiry.Tabs.Exceptions"].Value" />
+    return;
+}
+
+@{
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["Expiry.Common.Company.Label"].Value;
+    company.Placeholder = Localizer["Expiry.Common.Company.Placeholder"].Value;
+    company.SelectHint = Localizer["Expiry.Common.Company.Required"].Value;
+    company.UnavailableText = Localizer["Expiry.Common.Company.Unavailable"].Value;
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-expiry-exceptions",
+        DataMode = "server",
+        Slug = "expiry-exceptions",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["Expiry.Col.ExceptionNo"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["Expiry.Col.Type"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["Expiry.Col.Product"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Expiry.Col.LotWarehouse"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Expiry.Col.Opened"].Value, CssClass = "min-tablet-l" },
+            new DataTableColumnViewModel { Header = Localizer["Expiry.Col.Sla"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["Expiry.Col.Assignee"].Value, CssClass = "min-tablet-l" },
+            new DataTableColumnViewModel { Header = Localizer["Expiry.Col.Status"].Value, CssClass = "all" }
+        ],
+        ActionsHeader = Localizer["Expiry.Col.Actions"].Value
+    };
+}
+
+<partial name="~/Views/Expiry/_Header.cshtml" model="@("EXPIRYEXCEPTIONS")" />
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready)
+{
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+        <p class="text-muted mb-0" id="ex-subtitle">@Localizer["Expiry.Inbox.Subtitle"]</p>
+        @if (Perms.Has("expiry.exceptions.create"))
+        {
+            <button type="button" class="btn btn-primary btn-sm" id="ex-inbox-open" data-ex-open="{}"><i class="bx bx-plus me-1"></i>@Localizer["Expiry.Action.OpenException"]</button>
+        }
+    </div>
+
+    <ul class="nav nav-pills flex-wrap gap-2 mb-3" id="ex-inbox-tabs" role="tablist">
+        @foreach (var (tab, key) in new[] { ("all", "Expiry.Inbox.Tab.All"), ("active", "Expiry.Inbox.Tab.Active"), ("late", "Expiry.Inbox.Tab.Late"), ("done", "Expiry.Inbox.Tab.Done") })
+        {
+            <li class="nav-item">
+                <button type="button" class="nav-link d-flex align-items-center gap-2 @(tab == "all" ? "active" : "shadow-sm")" style="@(tab == "all" ? null : "background-color: var(--bs-paper-bg)")"
+                        data-ex-tab="@tab" aria-pressed="@(tab == "all" ? "true" : "false")">
+                    <span>@Localizer[key]</span><span class="badge rounded-pill bg-label-secondary" data-ex-count="@tab">…</span>
+                </button>
+            </li>
+        }
+    </ul>
+
+    <div id="inlineFilterHost">
+        <div class="collapse show" id="inlineFilterCollapse">
+            <div class="pt-0 pb-3">
+                <form class="m-0" id="filterForm" data-no-tracker>
+                    <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                        <input type="hidden" id="filterTab" value="all" />
+                        <div class="filter-chip">
+                            <select id="filterType" class="form-select form-select-sm" aria-label="@Localizer["Expiry.Inbox.AllTypes"]" data-placeholder="@Localizer["Expiry.Inbox.AllTypes"]">
+                                <option value="">@Localizer["Expiry.Inbox.AllTypes"]</option>
+                                @foreach (var type in new[] { "FEFO_BYPASS", "BELOW_MIN_REMAINING", "EXPIRY_DATE_OVERRIDE", "EXPIRED_ON_HAND" })
+                                {
+                                    <option value="@type">@Localizer["Expiry.Type." + type]</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="filter-chip">
+                            <select id="filterStatus" class="form-select form-select-sm" aria-label="@Localizer["Expiry.Approaching.AllStatuses"]" data-placeholder="@Localizer["Expiry.Approaching.AllStatuses"]">
+                                <option value="">@Localizer["Expiry.Approaching.AllStatuses"]</option>
+                                @foreach (var status in new[] { "Open", "InReview", "Accepted", "Fixed", "Closed", "Cancelled" })
+                                {
+                                    <option value="@status">@Localizer["Expiry.Status." + status]</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="filter-chip">
+                            <select id="filterWarehouse" class="form-select form-select-sm" aria-label="@Localizer["Expiry.Common.AllWarehouses"]" data-placeholder="@Localizer["Expiry.Common.AllWarehouses"]">
+                                <option value="">@Localizer["Expiry.Common.AllWarehouses"]</option>
+                            </select>
+                        </div>
+                        <div class="filter-chip">
+                            <select id="filterAssigned" class="form-select form-select-sm" aria-label="@Localizer["Expiry.Inbox.AllAssignees"]" data-placeholder="@Localizer["Expiry.Inbox.AllAssignees"]">
+                                <option value="">@Localizer["Expiry.Inbox.AllAssignees"]</option>
+                                <option value="true">@Localizer["Expiry.Inbox.AssignedToMe"]</option>
+                            </select>
+                        </div>
+                        <div class="ms-auto d-flex gap-3">
+                            <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">@Localizer["Expiry.Common.Apply"]</button>
+                            <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">@Localizer["Expiry.Common.Clear"]</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="ex-labels-unavailable" class="alert alert-warning d-none" role="status">@Localizer["Expiry.Common.NamesUnavailable"]</div>
+    <div id="ex-list-error" class="alert alert-danger d-none" role="alert"></div>
+    <partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />
+}
+
+<partial name="~/Views/Expiry/_OpenExceptionModal.cshtml" />
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    <partial name="~/Views/Expiry/_ExpiryActions.cshtml" />
+    <partial name="~/Views/Expiry/_ExpiryL10n.cshtml" />
+    @if (company.Ready)
+    {
+        <script src="~/assets/js/Expiry/exceptions.js" asp-append-version="true"></script>
+    }
+}

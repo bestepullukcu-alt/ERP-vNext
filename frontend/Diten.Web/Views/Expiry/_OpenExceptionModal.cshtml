@@ -8,7 +8,7 @@
 *@
 @if (Perms.Has("expiry.exceptions.create"))
 {
-    <form id="ex-antiforgery" class="d-none">@Html.AntiForgeryToken()</form>
+    <partial name="~/Views/Expiry/_ExpiryAntiforgery.cshtml" />
     <div class="modal fade" id="ex-open-modal" tabindex="-1" aria-hidden="true" aria-labelledby="ex-open-title">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -19,6 +19,16 @@
                 <div class="modal-body">
                     <p class="small text-muted mb-3" id="ex-open-subject"></p>
                     <div id="ex-open-error" class="alert alert-danger d-none" role="alert"></div>
+                    @* F5: from the inbox (no row) the lot is picked — warehouse → SKU with lot stock there → lot (TRACE listLots, the SKU's lots) *@
+                    <div id="ex-open-pick" class="d-none">
+                        <label class="form-label" for="ex-open-warehouse">@Localizer["Expiry.Col.Warehouse"] *</label>
+                        <select class="form-select mb-3" id="ex-open-warehouse"><option value=""></option></select>
+                        <label class="form-label" for="ex-open-sku">@Localizer["Expiry.Order.Sku"] *</label>
+                        <select class="form-select mb-3" id="ex-open-sku" disabled><option value=""></option></select>
+                        <label class="form-label" for="ex-open-lot">@Localizer["Expiry.Col.LotNo"] *</label>
+                        <select class="form-select mb-1" id="ex-open-lot" disabled><option value=""></option></select>
+                        <div class="form-text text-danger mb-3" data-err="lot"></div>
+                    </div>
                     <label class="form-label" for="ex-open-type">@Localizer["Expiry.Modal.Type"] *</label>
                     <select class="form-select mb-3" id="ex-open-type">
                         @foreach (var type in new[] { "FEFO_BYPASS", "BELOW_MIN_REMAINING", "EXPIRY_DATE_OVERRIDE", "EXPIRED_ON_HAND" })

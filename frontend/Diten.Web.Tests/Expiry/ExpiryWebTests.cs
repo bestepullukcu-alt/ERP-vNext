@@ -31,7 +31,10 @@ public sealed class ExpiryWebTests : IClassFixture<WebApplicationFactory<Program
     {
         "Expiry.Col.Actions", "Expiry.Col.Exception", "Expiry.Severity.Ok", "Expiry.Modal.Description", "Expiry.Approaching.Horizon",
         "Expiry.Kpi.Lots", "Expiry.Col.Unit", "Expiry.Modal.Type.FEFO_BYPASS", "Expiry.Modal.Type.BELOW_MIN_REMAINING",
-        "Expiry.Modal.Type.EXPIRY_DATE_OVERRIDE", "Expiry.Modal.Type.EXPIRED_ON_HAND", "Expiry.Order.SeeQuarantine"
+        "Expiry.Modal.Type.EXPIRY_DATE_OVERRIDE", "Expiry.Modal.Type.EXPIRED_ON_HAND", "Expiry.Order.SeeQuarantine",
+        // F5: the same word in French ("Signature", "Type", "Exception"), the acronym SLA / the loanword "Retest" in Turkish, number-only templates
+        "Expiry.Col.Signature", "Expiry.Col.Type", "Expiry.Detail.Heading", "Expiry.Evidence.LotsQuantity", "Expiry.Col.Sla", "Expiry.Policy.Retest",
+        "Expiry.Policy.SlaOf", "Expiry.Evidence.PeriodLine"
     };
 
     /// <summary>The 4 pages of pack §11.1: view, page key (UAS-001), a marker the page must NOT draw without that key.</summary>
@@ -113,7 +116,8 @@ public sealed class ExpiryWebTests : IClassFixture<WebApplicationFactory<Program
             .Where(m => m.ReturnType == typeof(IActionResult))
             .SelectMany(m => m.GetCustomAttributes<Microsoft.AspNetCore.Mvc.Routing.HttpMethodAttribute>())
             .Select(a => "/" + prefix + (string.IsNullOrEmpty(a.Template) ? string.Empty : "/" + a.Template)).ToList();
-        Assert.Equal(["/Expiry", "/Expiry/Approaching", "/Expiry/Expired", "/Expiry/FefoOrder"], pages);
+        Assert.Equal(["/Expiry", "/Expiry/Approaching", "/Expiry/Expired", "/Expiry/FefoOrder", "/Expiry/Exceptions", "/Expiry/Exceptions/Details/{id}",
+            "/Expiry/Policy", "/Expiry/Evidence"], pages); // F5: + inbox, detail, settings, evidence
 
         var manifest = Read(TraceViewRenderer.RepoRoot(), "services", "Diten.InventoryService", "src", "Diten.InventoryService.Api", "Expiry", "ExpiryFefoManifestProvider.cs");
         var routes = Regex.Matches(manifest, @"RoutePath:\s*""([^""]+)""").Select(m => m.Groups[1].Value).ToList();

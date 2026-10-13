@@ -73,6 +73,20 @@ public sealed class ExpiryController : Controller
     [HttpGet("FefoOrder")]
     public IActionResult FefoOrder() => View($"{ViewRoot}/FefoOrder.cshtml");
 
+    // WP-0176-F5 (pack §11.1): İstisna Kutusu, İstisna Detayı (+ the decision drawer), Ayarlar, Kanıt Paketi.
+
+    [HttpGet("Exceptions")]
+    public IActionResult Exceptions() => View($"{ViewRoot}/Exceptions.cshtml");
+
+    [HttpGet("Exceptions/Details/{id}")]
+    public IActionResult ExceptionDetails(string id) => View($"{ViewRoot}/ExceptionDetails.cshtml", Guid.TryParse(id, out var g) ? g.ToString("D") : string.Empty);
+
+    [HttpGet("Policy")]
+    public IActionResult Policy() => View($"{ViewRoot}/Policy.cshtml");
+
+    [HttpGet("Evidence")]
+    public IActionResult Evidence() => View($"{ViewRoot}/Evidence.cshtml");
+
     // ── FEFO-BUNDLE proxy ────────────────────────────────────────────────────────────────────────────────────────
 
     [HttpGet("api/{**everything}")]
@@ -81,6 +95,11 @@ public sealed class ExpiryController : Controller
     [HttpPost("api/{**everything}")]
     [ValidateAntiForgeryToken]
     public Task<IActionResult> ProxyWrite(string? everything) => ProxyAsync(everything);
+
+    /// <summary>F5: updatePolicy is the contract's one PUT (If-Match + Idempotency-Key + antiforgery, like every write).</summary>
+    [HttpPut("api/{**everything}")]
+    [ValidateAntiForgeryToken]
+    public Task<IActionResult> ProxyReplace(string? everything) => ProxyAsync(everything);
 
     // ── server-mode lists ───────────────────────────────────────────────────────────────────────────────────────
 
@@ -244,7 +263,262 @@ public sealed class ExpiryController : Controller
         }
     }
 
+    // ── F5 doors: İstisna Kutusu / Detayı, Ayarlar, Kanıt Paketi ──────────────────────────────────────────────────
+
+    /// <summary>İstisna Kutusu — listExceptions as a server-mode DataTable door (+ names of products, warehouses and assignees).</summary>
+    [HttpGet("list/exceptions")]
+    public async Task<IActionResult> ListExceptions(CancellationToken ct)
+    {
+        if (!_permissions.Has(ExpiryKeys.ExceptionsRead)) return Refuse(403, null);
+        var (page, size) = Paging();
+        // the inbox tabs (mockup): Tümü · Açık + İnceleniyor · SLA geçti · Sonuçlanan — a status filter of the page wins over its tab
+        var tab = Request.Query["tab"].ToString();
+        var statuses = StatusFilter().ToList();
+        if (statuses.Count == 0)
+            statuses = tab switch
+            {
+                "active" or "late" => ["Open", "InReview"],
+                "done" => ["Accepted", "Fixed", "Closed", "Cancelled"],
+                _ => []
+            };
+        var late = tab == "late" ? "true" : Request.Query["late"].ToString();
+        var query = new QueryBuilder().Add("page", page).Add("pageSize", size).Add("q", Search()).Add("type", Request.Query["type"])
+            .Add("late", late).Add("warehouseId", Request.Query["warehouseId"]).Add("assignedToMe", Request.Query["assignedToMe"])
+            .Add("sort", Request.Query["sort"].ToString() is { Length: > 0 } sort ? sort : "-openedAtUtc").ToString();
+        foreach (var status in statuses) query += (query.Length == 0 ? "?" : "&") + "status=" + Uri.EscapeDataString(status);
+        var reply = await SendAsync(HttpMethod.Get, $"{ApiBase}/exceptions{query}", null, null, ct);
+        if (!reply.IsSuccess) return Failed("listExceptions", reply);
+        var root = JsonNode.Parse(reply.Body) as JsonObject ?? new JsonObject();
+        var items = root["items"] as JsonArray ?? new JsonArray();
+        var labels = await LabelsAsync(items, ct);
+        Decorate(items, labels);
+        await PeopleAsync(ct, items);
+        var total = (int?)root["total"] ?? items.Count;
+        var data = new JsonObject { ["items"] = items.DeepClone(), ["total"] = total, ["filteredTotal"] = total };
+        return Json(new JsonObject { ["data"] = data, ["labelsAvailable"] = labels.Available });
+    }
+
+    /// <summary>İstisna Detayı — getException (+ the ETag the page writes with) + names of the product, warehouse and every person.</summary>
+    [HttpGet("data/exception/{id}")]
+    public async Task<IActionResult> ExceptionData(string id, CancellationToken ct)
+    {
+        if (!_permissions.Has(ExpiryKeys.ExceptionsRead)) return Refuse(403, null);
+        if (!Guid.TryParse(id, out var exceptionId)) return Refuse(404, "EXPIRY_EXCEPTION_NOT_FOUND");
+        var reply = await SendAsync(HttpMethod.Get, $"{ApiBase}/exceptions/{exceptionId:D}", null, null, ct);
+        if (!reply.IsSuccess) return Failed("getException", reply);
+        var record = JsonNode.Parse(reply.Body) as JsonObject ?? new JsonObject();
+        var rows = new JsonArray(record.DeepClone());
+        var labels = await LabelsAsync(rows, ct);
+        Decorate(rows, labels);
+        var decorated = (JsonObject)rows[0]!;
+        await PeopleAsync(ct, decorated);
+        if (reply.ETag is not null) Response.Headers.ETag = reply.ETag;
+        return Json(new JsonObject { ["exception"] = decorated.DeepClone(), ["etag"] = reply.ETag, ["labelsAvailable"] = labels.Available });
+    }
+
+    /// <summary>Ayarlar — getPolicy (+ the ETag of the save) and the change history with the names of who changed what.</summary>
+    [HttpGet("data/policy")]
+    public async Task<IActionResult> PolicyData(CancellationToken ct)
+    {
+        if (!_permissions.Has(ExpiryKeys.PoliciesRead)) return Refuse(403, null);
+        var reply = await SendAsync(HttpMethod.Get, $"{ApiBase}/policy", null, null, ct);
+        if (!reply.IsSuccess) return Failed("getPolicy", reply);
+        var history = await SendAsync(HttpMethod.Get,
+            $"{ApiBase}/policy/history{new QueryBuilder().Add("page", Request.Query["page"]).Add("pageSize", Request.Query["pageSize"])}", null, null, ct);
+        var policy = JsonNode.Parse(reply.Body) as JsonObject ?? new JsonObject();
+        var page = history.IsSuccess ? JsonNode.Parse(history.Body) as JsonObject : null;
+        await PeopleAsync(ct, policy, page);
+        return Json(new JsonObject { ["policy"] = policy.DeepClone(), ["etag"] = reply.ETag, ["history"] = page?.DeepClone() });
+    }
+
+    /// <summary>
+    /// Ayarlar · "Ürün bazında görünüm" (read-only, MDM is the owner): the SKUs that hold lot stock in the company (at most 50) with
+    /// PRODUCT-MASTER getSku's <c>shelfLifeDays</c> / <c>retestDays</c> / <c>minRemainingShelfLifeDays</c>; a missing value is shown
+    /// "Tanımsız" (the rule is not applied — KF-C). Corrected in MDM, never here.
+    /// </summary>
+    [HttpGet("data/policy/products")]
+    public async Task<IActionResult> PolicyProducts(CancellationToken ct)
+    {
+        if (!_permissions.Has(ExpiryKeys.PoliciesRead)) return Refuse(403, null);
+        var ledger = InventoryProxy.Gateway(_httpClient, _gatewayUrl, Request, User);
+        if (ledger is null) return Refuse(401, null);
+        var balance = await ledger.GetAsync("/api/inventory/balance?page=1&pageSize=200", ct);
+        if (!balance.IsSuccess) return Failed("data.policy.products", balance);
+        var skus = (JsonNode.Parse(balance.Body)?["rows"] as JsonArray ?? new JsonArray()).OfType<JsonObject>()
+            .Where(r => !string.IsNullOrEmpty((string?)r["lotId"]))
+            .Select(r => ((string?)r["itemId"], (string?)r["skuId"], (string?)r["skuLevel"]))
+            .Where(s => s.Item2 is not null && s.Item3 is not null).Distinct().Take(50).ToList();
+        var labels = await MasterLabelResolver.ResolveAsync(ledger, skus.Select(s => s.Item1), skus.Select(s => (s.Item2, s.Item3)), [], ct);
+        var items = new JsonArray();
+        var available = labels.Available;
+        foreach (var (itemId, skuId, level) in skus)
+        {
+            var reply = await ledger.GetAsync($"/api/product-master/skus/{Uri.EscapeDataString(skuId!)}?level={Uri.EscapeDataString(level!)}", ct);
+            JsonNode? sku = null;
+            if (reply.IsSuccess) sku = JsonNode.Parse(reply.Body);
+            else available = false;
+            var data = sku?["data"] ?? sku;
+            items.Add(new JsonObject
+            {
+                ["itemId"] = itemId, ["skuId"] = skuId, ["skuLevel"] = level,
+                ["itemLabel"] = labels.Product(itemId) ?? itemId, ["skuLabel"] = labels.Sku(skuId),
+                ["read"] = reply.IsSuccess,
+                ["shelfLifeDays"] = data?["shelfLifeDays"]?.DeepClone(),
+                ["retestDays"] = data?["retestDays"]?.DeepClone(),
+                ["minRemainingShelfLifeDays"] = data?["minRemainingShelfLifeDays"]?.DeepClone()
+            });
+        }
+
+        return Json(new JsonObject { ["items"] = items, ["available"] = available });
+    }
+
+    /// <summary>Kanıt Paketi — previewEvidence with the names of the products / warehouses of its two case sections and of the policy editors.</summary>
+    [HttpGet("data/evidence/preview")]
+    public async Task<IActionResult> EvidencePreview(CancellationToken ct)
+    {
+        if (!_permissions.Has(ExpiryKeys.EvidenceExport)) return Refuse(403, null);
+        var query = new QueryBuilder().Add("preset", Request.Query["preset"]).Add("from", Request.Query["from"]).Add("to", Request.Query["to"]).ToString();
+        foreach (var (name, values) in new[] { ("warehouseIds", Request.Query["warehouseIds"]), ("types", Request.Query["types"]) })
+            foreach (var value in values.Where(v => !string.IsNullOrWhiteSpace(v)))
+                query += (query.Length == 0 ? "?" : "&") + name + "=" + Uri.EscapeDataString(value!);
+        var reply = await SendAsync(HttpMethod.Get, $"{ApiBase}/evidence/preview{query}", null, null, ct);
+        if (!reply.IsSuccess) return Failed("previewEvidence", reply);
+        var preview = JsonNode.Parse(reply.Body) as JsonObject ?? new JsonObject();
+        var cases = new JsonArray();
+        foreach (var section in new[] { "exceptions", "fefoBypasses" })
+            foreach (var row in (preview[section] as JsonArray ?? new JsonArray()).OfType<JsonObject>())
+                cases.Add(row.DeepClone());
+        var labels = await LabelsAsync(cases, ct);
+        foreach (var section in new[] { "exceptions", "fefoBypasses" })
+            if (preview[section] is JsonArray rows) Decorate(rows, labels);
+        await PeopleAsync(ct, preview["policyChanges"]);
+        return Json(new JsonObject { ["preview"] = preview.DeepClone(), ["labelsAvailable"] = labels.Available });
+    }
+
+    /// <summary>The export log with the exporter's name (the hash is shown shortened; the full value stays copyable on the page).</summary>
+    [HttpGet("data/evidence/exports")]
+    public async Task<IActionResult> EvidenceExports(CancellationToken ct)
+    {
+        if (!_permissions.Has(ExpiryKeys.EvidenceExport)) return Refuse(403, null);
+        var reply = await SendAsync(HttpMethod.Get,
+            $"{ApiBase}/evidence/exports{new QueryBuilder().Add("page", Request.Query["page"]).Add("pageSize", Request.Query["pageSize"])}", null, null, ct);
+        if (!reply.IsSuccess) return Failed("listEvidenceExports", reply);
+        var page = JsonNode.Parse(reply.Body) as JsonObject ?? new JsonObject();
+        await PeopleAsync(ct, page);
+        return Json(page);
+    }
+
+    /// <summary>getEvidenceExportFile — the STORED bytes, passed through unchanged (the hash in the log is of exactly these bytes).</summary>
+    [HttpGet("evidence/file/{exportId}")]
+    public async Task<IActionResult> EvidenceFile(string exportId, CancellationToken ct)
+    {
+        if (!_permissions.Has(ExpiryKeys.EvidenceExport)) return Refuse(403, null);
+        if (!Guid.TryParse(exportId, out var id)) return Refuse(404, "EXPIRY_EVIDENCE_EXPORT_NOT_FOUND");
+        var file = await SendFileAsync($"{ApiBase}/evidence/exports/{id:D}/file", ct);
+        if (file.Bytes is null) return Refuse(file.Status == 0 ? 503 : file.Status, file.Code);
+        return File(file.Bytes, file.ContentType ?? "application/octet-stream", file.FileName ?? $"expiry-evidence-{id:N}");
+    }
+
+    /// <summary>
+    /// WP-0176-F5 bands (pack §8.3; the movement form and the lot forms of MOD-0173 / MOD-0174): what a band needs to SAY before the post —
+    /// the SKU's shelf-life days (PRODUCT-MASTER getSku), the company's modes when the reader may read the policy, and the FEFO order of the
+    /// warehouse when the reader may read it. Informational only: the posting / createLot hooks decide (their 422s are the authority).
+    /// </summary>
+    [HttpGet("band/context")]
+    public async Task<IActionResult> BandContext([FromQuery] string? itemId, [FromQuery] string? skuId, [FromQuery] string? skuLevel,
+        [FromQuery] string? warehouseId, CancellationToken ct)
+    {
+        if (!_permissions.Has(Diten.Web.Models.Inventory.InventoryPermissionKeys.CreateMovements) && !_permissions.Has(Diten.Web.Models.Traceability.TracePermissionKeys.LotsCreate)
+            && !_permissions.Has(ExpiryKeys.DashboardRead))
+            return Refuse(403, null);
+        if (!Guid.TryParse(skuId, out var sku) || string.IsNullOrWhiteSpace(skuLevel)) return Refuse(400, "INVALID_REQUEST");
+        var ledger = InventoryProxy.Gateway(_httpClient, _gatewayUrl, Request, User);
+        if (ledger is null) return Refuse(401, null);
+
+        var skuReply = await ledger.GetAsync($"/api/product-master/skus/{sku:D}?level={Uri.EscapeDataString(skuLevel)}", ct);
+        var skuNode = skuReply.IsSuccess ? JsonNode.Parse(skuReply.Body) : null;
+        skuNode = skuNode?["data"] ?? skuNode;
+        var policy = await SendAsync(HttpMethod.Get, $"{ApiBase}/policy", null, null, ct);
+        var policyNode = policy.IsSuccess ? JsonNode.Parse(policy.Body) : null;
+        JsonNode? order = null;
+        if (Guid.TryParse(warehouseId, out var warehouse) && Guid.TryParse(itemId, out var item))
+        {
+            var reply = await SendAsync(HttpMethod.Get,
+                $"{ApiBase}/fefo-order{new QueryBuilder().Add("warehouseId", warehouse.ToString("D")).Add("itemId", item.ToString("D")).Add("skuId", sku.ToString("D")).Add("skuLevel", skuLevel)}",
+                null, null, ct);
+            order = reply.IsSuccess ? JsonNode.Parse(reply.Body) : null;
+        }
+
+        return Json(new JsonObject
+        {
+            ["sku"] = skuNode is null ? null : new JsonObject
+            {
+                ["shelfLifeDays"] = skuNode["shelfLifeDays"]?.DeepClone(),
+                ["retestDays"] = skuNode["retestDays"]?.DeepClone(),
+                ["minRemainingShelfLifeDays"] = skuNode["minRemainingShelfLifeDays"]?.DeepClone()
+            },
+            ["policy"] = policyNode is null ? null : new JsonObject
+            {
+                ["fefoOutboundMode"] = policyNode["fefoOutboundMode"]?.DeepClone(),
+                ["belowMinRemainingMode"] = policyNode["belowMinRemainingMode"]?.DeepClone(),
+                ["dateOverrideMode"] = policyNode["dateOverrideMode"]?.DeepClone()
+            },
+            ["order"] = order?.DeepClone()
+        });
+    }
+
     // ── plumbing ─────────────────────────────────────────────────────────────────────────────────────────────────
+
+    private IEnumerable<string> StatusFilter() => Request.Query["status"].Where(s => !string.IsNullOrWhiteSpace(s)).Select(s => s!);
+
+    /// <summary>Every <c>{ userId }</c> of the trees gets its display name (AuthService display-label, the caller's token) — FU-0175-Q5-02.</summary>
+    private async Task PeopleAsync(CancellationToken ct, params JsonNode?[] roots)
+    {
+        var ids = Diten.Web.Models.Quarantine.QuarantinePeople.UserIds(roots);
+        if (ids.Count == 0) return;
+        var names = await Diten.Web.Models.Quarantine.QuarantinePeople.ResolveAsync(ids, async (path, c) =>
+        {
+            var reply = await SendAsync(HttpMethod.Get, path, null, null, c);
+            return (reply.StatusCode, reply.Body);
+        }, ct);
+        Diten.Web.Models.Quarantine.QuarantinePeople.Fill(names, roots);
+    }
+
+    private async Task<(int Status, byte[]? Bytes, string? ContentType, string? FileName, string? Code)> SendFileAsync(string path, CancellationToken ct)
+    {
+        var token = Diten.Web.Services.Auth.AuthTokenCookies.GetAccessToken(Request);
+        var tenantId = string.IsNullOrWhiteSpace(token) ? null : ResolveTenantId(token);
+        if (tenantId is null) return (401, null, null, null, "UNAUTHORIZED");
+        Guid? selected = null;
+        if (CompanySelection.TokenLegalEntity(User) is null)
+        {
+            selected = CompanySelection.SelectedCompany(Request, User);
+            if (selected is null) return (403, null, null, null, InventoryGatewayClient.CompanyNotSelected);
+        }
+
+        try
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Get, _gatewayUrl + path);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            request.Headers.TryAddWithoutValidation(TenantHeaderName, tenantId);
+            request.Headers.TryAddWithoutValidation(CorrelationHeaderName, HttpContext.TraceIdentifier);
+            if (selected is not null) request.Headers.TryAddWithoutValidation(CompanySelection.LegalEntityHeader, selected.Value.ToString("D"));
+            using var response = await _httpClientFactory.CreateClient().SendAsync(request, ct);
+            if (!response.IsSuccessStatusCode)
+            {
+                var text = await response.Content.ReadAsStringAsync(ct);
+                return ((int)response.StatusCode, null, null, null, new Reply((int)response.StatusCode, text, null).Code);
+            }
+
+            return (200, await response.Content.ReadAsByteArrayAsync(ct), response.Content.Headers.ContentType?.ToString(),
+                response.Content.Headers.ContentDisposition?.FileNameStar ?? response.Content.Headers.ContentDisposition?.FileName?.Trim('"'), null);
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException && !ct.IsCancellationRequested)
+        {
+            _logger.LogWarning("Expiry evidence file unreachable. path={Path}", path);
+            return (503, null, null, null, "SERVICE_UNAVAILABLE");
+        }
+    }
 
     private string ApproachingQuery(int page, int size)
         => new QueryBuilder().Add("page", page).Add("pageSize", size).Add("q", Search())
@@ -307,6 +581,8 @@ public sealed class ExpiryController : Controller
             if (selected is not null) request.Headers.TryAddWithoutValidation(CompanySelection.LegalEntityHeader, selected.Value.ToString("D"));
             if (Header("Accept-Language") is { } language) request.Headers.TryAddWithoutValidation("Accept-Language", language);
             if (idempotencyKey is not null) request.Headers.TryAddWithoutValidation("Idempotency-Key", idempotencyKey);
+            // F5: the version of a case / the policy travels with every state change (FEFO-BUNDLE §1, 409 EXPIRY_CONFLICT when stale)
+            if (Header("If-Match") is { } ifMatch) request.Headers.TryAddWithoutValidation("If-Match", ifMatch);
             if (body is not null) request.Content = new StringContent(body, Encoding.UTF8, "application/json");
 
             using var response = await _httpClientFactory.CreateClient().SendAsync(request, ct);
@@ -483,6 +759,15 @@ public static class ExpiryKeys
     public const string ExceptionsCreate = "expiry.exceptions.create";
     public const string PoliciesRead = "expiry.policies.read";
     public const string QuarantineHoldsCreate = "quarantine.holds.create";
+    // WP-0176-F5
+    public const string ExceptionsReview = "expiry.exceptions.review";
+    public const string ExceptionsComment = "expiry.exceptions.comment";
+    public const string ExceptionsResolve = "expiry.exceptions.resolve";
+    public const string ExceptionsClose = "expiry.exceptions.close";
+    public const string PoliciesManage = "expiry.policies.manage";
+    public const string EvidenceExport = "expiry.evidence.export";
+    /// <summary>MOD-0022's key (the shared signature dialog) — display only: without it the drawer says signing is not possible.</summary>
+    public const string ESignSign = "esign.signatures.sign";
 
     public static readonly IReadOnlyDictionary<string, string> Actions = new Dictionary<string, string>(StringComparer.Ordinal)
     {
@@ -490,7 +775,15 @@ public static class ExpiryKeys
         ["EXPIRY_FEFO_ORDER_VIEW"] = FefoOrderRead,
         ["EXPIRY_LIST_EXPORT"] = DashboardRead,
         ["EXPIRY_FEFO_ORDER_CALCULATE"] = FefoOrderRead,
-        ["QUARANTINE_LINK"] = QuarantineHoldsCreate
+        ["QUARANTINE_LINK"] = QuarantineHoldsCreate,
+        ["EXPIRY_EXCEPTION_TAKE"] = ExceptionsReview,
+        ["EXPIRY_EXCEPTION_COMMENT"] = ExceptionsComment,
+        ["EXPIRY_EXCEPTION_RESOLVE"] = ExceptionsResolve,
+        ["EXPIRY_EXCEPTION_CLOSE"] = ExceptionsClose,
+        ["EXPIRY_POLICY_SAVE"] = PoliciesManage,
+        ["EXPIRY_EVIDENCE_EXPORT"] = EvidenceExport,
+        ["ESIGN_SIGN"] = ESignSign,
+        ["EXPIRY_EXCEPTIONS_VIEW"] = ExceptionsRead // the inbox / detail are readable (a new case opens on its page)
     };
 
     public static IReadOnlyDictionary<string, bool> For(IPermissionSnapshot permissions)
