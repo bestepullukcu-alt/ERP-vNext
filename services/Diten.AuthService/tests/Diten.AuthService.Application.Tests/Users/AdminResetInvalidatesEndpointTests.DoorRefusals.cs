@@ -225,6 +225,89 @@ public sealed partial class AdminResetInvalidatesEndpointTests
         return await client.PostAsync(path, new StringContent(json, System.Text.Encoding.UTF8, "application/json"));
     }
 
+    /// <summary>FIX4 item 3 — A FLOOD OF PARALLEL GUESSES CANNOT GO AROUND THE LOCK. The right guess is held right after its
+    /// verification (it read the account BEFORE any failure); meanwhile five wrong guesses reach the threshold and lock the
+    /// account. Released, the right guess must not clear the lock its siblings built: it claims the STORED row (not locked,
+    /// below the threshold), finds it locked, and gets the one answer — no session, the lock stays.</summary>
+    [Fact]
+    public async Task A_right_guess_held_while_parallel_wrong_ones_lock_the_account_gets_the_one_answer_and_the_lock_stays()
+    {
+        var tenantId = _host.Seeded.TenantId;
+        var password = "Flood!" + Guid.NewGuid().ToString("N")[..12];
+        var account = new User($"flood.{Guid.NewGuid():N}@reset.test", new PasswordHasher().Hash(password), "Flood", "Target", tenantId);
+        account.ConfirmEmail();
+        await _host.Database.GetCollection<User>("users").InsertOneAsync(account);
+
+        var right = await RaceAsync("verify:" + password,
+            () => TenantLoginAsync(tenantId, account.Email, password),
+            async () =>
+            {
+                for (var i = 0; i < 5; i++)
+                    Assert.Equal(HttpStatusCode.Unauthorized, (await TenantLoginAsync(tenantId, account.Email, WrongPassword)).StatusCode);
+            });
+
+        Assert.Equal("401|Invalid email or password.|" + AuthRefusalCodes.InvalidCredentials, await RefusalOfAsync(right));
+        var after = await ReadUserAsync(account.Id);
+        Assert.True(after.LockoutEnd > DateTime.UtcNow, "the lock the wrong guesses built is still there");
+        Assert.True(after.FailedLoginAttempts >= 6);
+        Assert.Empty(await LiveRefreshTokensAsync(account.Id, tenantId));
+    }
+
+    /// <summary>FIX4 items 4 and 6 — a client whose WRONG attempts are used up is refused BEFORE anything is verified (a 429
+    /// costs no BCrypt), with Retry-After of its own window; another client is not affected.</summary>
+    [Fact]
+    public async Task A_client_out_of_wrong_attempts_is_refused_before_any_verification()
+    {
+        var tenantId = _host.Seeded.TenantId;
+        var peer = RandomPeer();
+        for (var i = 0; i < Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.DefaultLoginFailuresPerClientLimit; i++)
+            Assert.Equal(HttpStatusCode.Unauthorized, (await DoorPostAsync(peer, "api/tenant-auth/login", true,
+                $$"""{"email":"nobody.{{Guid.NewGuid():N}}@reset.test","password":"Wrong!{{i}}"}""")).StatusCode);
+
+        var password = "Untried!" + Guid.NewGuid().ToString("N")[..12];
+        var refused = await DoorPostAsync(peer, "api/tenant-auth/login", true, $$"""{"email":"nobody.{{Guid.NewGuid():N}}@reset.test","password":"{{password}}"}""");
+
+        Assert.Equal((HttpStatusCode)429, refused.StatusCode);
+        Assert.Equal(0, GatedHasher.Verifications.GetValueOrDefault(password));
+        Assert.Equal((int)Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.DefaultWindow.TotalSeconds,
+            int.Parse(Assert.Single(refused.Headers.GetValues("Retry-After"))));
+        Assert.Equal(HttpStatusCode.Unauthorized, (await DoorPostAsync(RandomPeer(), "api/tenant-auth/login", true,
+            $$"""{"email":"nobody.{{Guid.NewGuid():N}}@reset.test","password":"x"}""")).StatusCode);
+    }
+
+    /// <summary>FIX4 item 4 — successful sign-ins never use up the guessing count: one client signs in more times than its
+    /// wrong-attempt allowance and is never refused.</summary>
+    [Fact]
+    public async Task Successful_sign_ins_do_not_use_up_the_clients_guessing_count()
+    {
+        var tenantId = _host.Seeded.TenantId;
+        var user = await SeedTenantUserAsync(tenantId);
+        var peer = RandomPeer();
+
+        for (var i = 0; i <= Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.DefaultLoginFailuresPerClientLimit; i++)
+            Assert.Equal(HttpStatusCode.OK, (await DoorPostAsync(peer, "api/tenant-auth/login", true,
+                $$"""{"email":"{{user.Email}}","password":"{{OldPassword}}"}""")).StatusCode);
+    }
+
+    /// <summary>FIX4 item 5 — the second factor's rows without a user (a resend for an unknown challenge) go through the
+    /// anonymous budget: a flood of them writes at most one window's worth.</summary>
+    [Fact]
+    public async Task Second_factor_rows_without_a_user_stay_within_the_anonymous_budget()
+    {
+        var audit = _host.Database.GetCollection<AuthAuditLog>("authAuditLogs");
+        long Rejected() => audit.CountDocuments(r => r.EventName == "tenant_login_mfa_resend_requested" && r.UserId == Guid.Empty);
+        var before = Rejected();
+
+        for (var i = 0; i < 3 * Diten.AuthService.Application.Common.Services.AnonymousAuditBudget.RowsPerWindow; i++)
+        {
+            using var client = _host.Client(null, MfaTenantId);
+            client.DefaultRequestHeaders.Add("X-Test-Peer", RandomPeer());
+            Assert.Equal(HttpStatusCode.Unauthorized, (await client.PostAsJsonAsync("api/tenant-auth/mfa/resend", new { challengeId = "no-such-" + i })).StatusCode);
+        }
+
+        Assert.InRange(Rejected() - before, 0, Diten.AuthService.Application.Common.Services.AnonymousAuditBudget.RowsPerWindow);
+    }
+
     /// <summary>The refusals said only AFTER the password matched (so they tell nothing about who exists) carry their own
     /// codes; the forced change's wrong current password too.</summary>
     [Fact]

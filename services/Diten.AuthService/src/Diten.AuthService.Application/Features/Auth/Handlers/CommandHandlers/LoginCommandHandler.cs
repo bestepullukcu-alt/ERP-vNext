@@ -137,6 +137,15 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Response
             return Response<AuthResponse>.Fail("Account is disabled.", [new ResponseError(AuthRefusalCodes.AccountDeactivated)], 401);
         }
 
+        // FIX4 item 3 — the right password claims the account against the STORED row (not locked, below the threshold)
+        // before a challenge or a token: parallel wrong guesses that reached the threshold meanwhile win, and this one is
+        // refused and counted like them.
+        if (!await _userRepository.TryClaimSignInAsync(user.Id, _tenantContext.TenantId, settings.MaxFailedLoginAttempts, ct))
+        {
+            await HandleLoginFailure(user, settings, ct);
+            return InvalidCredentials();
+        }
+
         if (settings.MfaRequired)
         {
             var challenge = await _mfaChallengeService.CreateEmailChallengeAsync(user, request.RequestIp, request.UserAgent, ct);
@@ -166,19 +175,8 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Response
 
     // FIX3 item 4 — every row the door writes WITHOUT a user goes through one budget; a dropped row is said in the log (the
     // first of a window, and how many the last window dropped), so a real settings fault never goes unseen.
-    private async Task WriteAnonymousAuditAsync(string eventName, string metadata, CancellationToken ct)
-    {
-        if (AnonymousAuditBudget.SignInDoor.TryTake(out var firstDrop, out var droppedInLastWindow))
-        {
-            if (droppedInLastWindow > 0)
-                _logger.LogWarning("Anonymous sign-in audit budget: {Dropped} rows were dropped in the last window.", droppedInLastWindow);
-            await _authAuditService.WriteAsync(eventName, null, _tenantContext.TenantId, metadata, ct);
-            return;
-        }
-        if (firstDrop)
-            _logger.LogWarning("Anonymous sign-in audit budget is full ({Rows} rows a minute); further {EventName} rows are dropped until the window ends.",
-                AnonymousAuditBudget.RowsPerWindow, eventName);
-    }
+    private Task WriteAnonymousAuditAsync(string eventName, string metadata, CancellationToken ct)
+        => AnonymousAuditBudget.SignInDoor.WriteAsync(_authAuditService, _logger, eventName, _tenantContext.TenantId, metadata, ct);
 
     private static bool IsLocked(User user) => user.LockoutEnd.HasValue && user.LockoutEnd > DateTime.UtcNow;
 

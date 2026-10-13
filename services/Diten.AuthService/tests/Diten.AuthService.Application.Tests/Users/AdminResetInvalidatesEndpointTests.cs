@@ -1526,14 +1526,20 @@ public sealed partial class AdminResetInvalidatesEndpointTests : IClassFixture<A
 
     // ── FIX3 items 5 + 6: the client is who connects; the link door does not count by address alone ─────────────
 
+    /// <summary>WP-USERS-ROLES-CLOSE-FIX1 FIX4 item 2 — a made-up X-Forwarded-For from a peer OUTSIDE the trusted list never buys
+    /// a fresh client (FIX3 item 5's rule, unchanged), but such a peer is no longer one "identified" client either: it is
+    /// UNIDENTIFIED (a stale or incomplete list must not turn the whole platform into one client). What still holds for it:
+    /// the per-address count (the 6th request for one address is refused) — and the door's coarse ceiling
+    /// (AnonymousDoorLimitTests).</summary>
     [Fact]
-    public async Task One_client_is_refused_past_its_limit_whatever_addresses_and_forwarded_headers_it_sends()
+    public async Task A_client_sending_forwarded_headers_from_outside_the_list_is_unidentified_and_still_limited_per_address()
     {
         var peer = RandomPeer();
+        var email = $"x.{Guid.NewGuid():N}@reset.test";
         HttpResponseMessage? last = null;
-        for (var i = 0; i <= Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.DefaultPerClientLimit; i++)
+        for (var i = 0; i <= Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.DefaultPerAddressLimit; i++)
         {
-            last = await PeerPostAsync(peer, "api/platform-auth/forgot-password", new { email = $"x{i}.{Guid.NewGuid():N}@reset.test" },
+            last = await PeerPostAsync(peer, "api/platform-auth/forgot-password", new { email },
                 forwardedFor: $"203.0.113.{i % 250}"); // a fresh made-up forwarded address each time: never believed
         }
 
@@ -3167,6 +3173,7 @@ public sealed partial class AdminResetInvalidatesEndpointTests : IClassFixture<A
         public Task<bool> SetPlatformActorTypeAsync(Guid userId, Guid tenantId, string actorType, CancellationToken ct) => inner.SetPlatformActorTypeAsync(userId, tenantId, actorType, ct);
         public Task<IReadOnlyCollection<Guid>> VisibleUserIdsAsync(Guid tenantId, IReadOnlyCollection<Guid> userIds, CancellationToken ct) => inner.VisibleUserIdsAsync(tenantId, userIds, ct);
         public Task RecordLoginOutcomeAsync(User user, Guid tenantId, CancellationToken ct) => inner.RecordLoginOutcomeAsync(user, tenantId, ct);
+        public Task<bool> TryClaimSignInAsync(Guid userId, Guid tenantId, int maxFailedAttempts, CancellationToken ct) => inner.TryClaimSignInAsync(userId, tenantId, maxFailedAttempts, ct);
         public object CaptureState(User user) => inner.CaptureState(user);
         public Task<bool> TryWriteChangesAsync(User user, object capturedState, Guid tenantId, UserWriteCondition condition, CancellationToken ct)
         {

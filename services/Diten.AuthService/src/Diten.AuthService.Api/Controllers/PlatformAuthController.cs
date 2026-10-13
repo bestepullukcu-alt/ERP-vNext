@@ -507,6 +507,7 @@ public sealed class PlatformAuthController : CustomBaseController
 
     [HttpPost("forgot-password")]
     [AllowAnonymous]
+    [RequestSizeLimit(AnonymousDoorBody.Limit)] // FIX4 item 5 — an anonymous body is small
     public async Task<IActionResult> ForgotPassword([FromBody] PlatformForgotPasswordRequest request, CancellationToken ct)
     {
         var normalizedEmail = NormalizeEmail(request.Email);
@@ -541,6 +542,7 @@ public sealed class PlatformAuthController : CustomBaseController
 
     [HttpPost("reset-password")]
     [AllowAnonymous]
+    [RequestSizeLimit(AnonymousDoorBody.Limit)] // FIX4 item 5 — an anonymous body is small
     public async Task<IActionResult> ResetPassword([FromBody] PlatformResetPasswordRequest request, CancellationToken ct)
     {
         var normalizedEmail = NormalizeEmail(request.Email);

@@ -83,6 +83,15 @@ public sealed class ClientAddressResolver
             return new ClientIdentity(peer is null ? "unknown" : Normalize(peer).ToString(), Identified: false);
         }
 
+        // WP-USERS-ROLES-CLOSE-FIX1 FIX4 item 2 — a peer outside the list that forwards for others is a proxy nobody listed
+        // (the gateway after an address change, a new load balancer): every client behind it would be ONE "identified"
+        // client and share one per-client count — the whole platform locked out by a stale list. It is not identified: the
+        // doors fall back to their coarse ceilings (and the line naming the peer is still written once, in Resolve).
+        if (!IsTrusted(peer) && context.Request.Headers.ContainsKey("X-Forwarded-For"))
+        {
+            return new ClientIdentity(Resolve(context), Identified: false);
+        }
+
         return new ClientIdentity(Resolve(context), Identified: true);
     }
 

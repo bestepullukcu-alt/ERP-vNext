@@ -54,4 +54,23 @@ public sealed class AnonymousAuditBudget
     }
 
     public bool TryTake() => TryTake(out _, out _);
+
+    /// <summary>FIX4 item 5 — one way to write an anonymous row (the sign-in door, the second factor): within this budget; a
+    /// dropped row is said in the log (the first of a window, and how many the last window dropped).</summary>
+    public async Task WriteAsync(Interfaces.IAuthAuditService audit, Microsoft.Extensions.Logging.ILogger logger, string eventName,
+        Guid tenantId, string metadata, CancellationToken ct)
+    {
+        if (TryTake(out var firstDrop, out var droppedInLastWindow))
+        {
+            if (droppedInLastWindow > 0)
+                Microsoft.Extensions.Logging.LoggerExtensions.LogWarning(logger,
+                    "Anonymous sign-in audit budget: {Dropped} rows were dropped in the last window.", droppedInLastWindow);
+            await audit.WriteAsync(eventName, null, tenantId, metadata, ct);
+            return;
+        }
+        if (firstDrop)
+            Microsoft.Extensions.Logging.LoggerExtensions.LogWarning(logger,
+                "Anonymous sign-in audit budget is full ({Rows} rows a minute); further {EventName} rows are dropped until the window ends.",
+                RowsPerWindow, eventName);
+    }
 }

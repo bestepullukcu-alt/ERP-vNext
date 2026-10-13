@@ -197,6 +197,20 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
         await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
     }
 
+    public Task<bool> TryClaimSignInAsync(Guid userId, Guid tenantId, int maxFailedAttempts, CancellationToken ct)
+        => TryClaimSignInAsync(userId, tenantId, maxFailedAttempts, excludePlatformAccounts: false, ct);
+
+    public async Task<bool> TryClaimSignInAsync(Guid userId, Guid tenantId, int maxFailedAttempts, bool excludePlatformAccounts, CancellationToken ct)
+    {
+        var now = DateTime.UtcNow;
+        var claimable = LiveAccount(userId, tenantId, excludePlatformAccounts)
+            & (Builders<User>.Filter.Eq(u => u.LockoutEnd, null) | Builders<User>.Filter.Lte(u => u.LockoutEnd, now))
+            & Builders<User>.Filter.Lt(u => u.FailedLoginAttempts, maxFailedAttempts);
+        var claimed = await Collection.UpdateOneAsync(claimable,
+            Builders<User>.Update.Set(u => u.FailedLoginAttempts, 0).Set(u => u.LockoutEnd, null), cancellationToken: ct);
+        return claimed.MatchedCount == 1;
+    }
+
     public object CaptureState(User user) => user.ToBsonDocument();
 
     /// <summary>WP-USERS-ROLES-CLOSE-FIX1 item 6 — test seam (see RecordLoginFailureAsync).</summary>

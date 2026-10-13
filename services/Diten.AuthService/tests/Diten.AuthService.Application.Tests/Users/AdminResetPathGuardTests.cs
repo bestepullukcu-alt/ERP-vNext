@@ -129,8 +129,10 @@ public sealed class AdminResetPathGuardTests
         // interface no longer has one, so no caller can make one; a new write method must be added here on purpose.
         // Merge WP-CT-LANE-BL521-MERGE-01 — BL-521's two members: SetPlatformActorTypeAsync is TARGETED (one field, by id and
         // tenant; FIX7 item 1 / FIX8 item 1), VisibleUserIdsAsync reads (FIX7 item 3). Neither is a whole-document write.
+        // WP-USERS-ROLES-CLOSE-FIX1 FIX4 item 3 — TryClaimSignInAsync is TARGETED (two fields, conditional on the stored row: not
+        // locked, below the threshold); not a whole-document write.
         string[] writes = ["CreateAsync", "SoftDeleteAsync", "RecordLoginOutcomeAsync", "TryWriteChangesAsync", "SetPasswordResetTokenAsync", "RecordLoginFailureAsync",
-            "SetPlatformActorTypeAsync"];
+            "SetPlatformActorTypeAsync", "TryClaimSignInAsync"];
         string[] reads = ["GetByEmailAndTenantAsync", "GetByUserNameAndTenantAsync", "GetByIdAndTenantAsync", "GetByPasswordResetTokenHashAsync",
             "GetAllByTenantAsync", "SearchActiveAsync", "GetCountByTenantAsync", "CaptureState", "VisibleUserIdsAsync"];
 

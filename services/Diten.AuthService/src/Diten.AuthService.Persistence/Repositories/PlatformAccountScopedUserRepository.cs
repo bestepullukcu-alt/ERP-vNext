@@ -105,6 +105,10 @@ public sealed class PlatformAccountScopedUserRepository : IUserRepository
     // write never reaches a platform account — it writes nothing and answers as for an account that is not there. The writes of
     // a loaded object are checked on the object (it may have been loaded through a lookup that is deliberately NOT hidden — by
     // e-mail or user name); the writes by id load first, as SoftDeleteAsync does.
+    // FIX4 item 3 — the claim carries the hidden caller's stored-row exclusion like every targeted write.
+    public Task<bool> TryClaimSignInAsync(Guid userId, Guid tenantId, int maxFailedAttempts, CancellationToken ct)
+        => _inner.TryClaimSignInAsync(userId, tenantId, maxFailedAttempts, excludePlatformAccounts: Hides, ct);
+
     public Task RecordLoginOutcomeAsync(User user, Guid tenantId, CancellationToken ct)
         => Hides && user.IsPlatformAccount
             ? Task.CompletedTask

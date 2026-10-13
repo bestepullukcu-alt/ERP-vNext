@@ -26,13 +26,27 @@ public sealed class PasswordDoorRateLimiter : IDisposable
     public const int DefaultPerClientLimit = 30;
     // WP-USERS-ROLES-CLOSE-FIX1 FIX3 items 2–3 — the sign-in doors per client: higher than the link doors' 30, because one
     // office behind one NAT address is one "client" here; the per-ACCOUNT lockout (5) still caps the guesses at an account.
-    public const int DefaultLoginPerClientLimit = 100;
-    // When clients CANNOT be told apart there is no per-address count on these doors (a junk request for a victim's address
-    // would lock the victim out): one coarse ceiling for everybody, per door, per minute — the CPU guard (a sign-in verifies
-    // a BCrypt hash, ~250 ms: 300 a minute is ~1.25 cores) that still lets a 3,000-person organisation sign in within ten
-    // minutes behind a single proxy (120 would throttle a mid-size office's morning).
+    // FIX4 item 4 — counted BEFORE verification, every attempt (a success too): high, because an office behind one NAT
+    // address is one client and its colleagues sign in all morning (FIX3's 100 locked such an office out).
+    public const int DefaultLoginPerClientLimit = 300;
+    // FIX4 item 4 — only the WRONG attempts, per client, counted AFTER verification: the guessing brake (30 per window; the
+    // per-account lockout caps any one account at 5 on top).
+    public const int DefaultLoginFailuresPerClientLimit = 30;
+    // When clients CANNOT be told apart there is no per-address count on the sign-in doors (a junk request for a victim's
+    // address would lock the victim out). FIX4 item 1 — the coarse ceiling is per TENANT on the tenant doors (FIX3's one
+    // bucket for everybody let ~5 junk requests a second close every tenant's sign-in), per door on the platform door: 300
+    // a minute lets a 3,000-person tenant sign in within ten minutes behind a single proxy; the CPU is guarded separately
+    // (DefaultConcurrentVerifications), so one tenant's flood takes its own minute, not the others'.
     public const int DefaultUnidentifiedPerMinute = 300;
     public static readonly TimeSpan UnidentifiedWindow = TimeSpan.FromMinutes(1);
+    // FIX4 item 1 — the set-password link doors carry no tenant before the store is read (the link resolves it), so without
+    // client identity they count per ADDRESS bucket — but 60 a minute, not FIX2's 5 a quarter-hour: holding one person's link
+    // shut takes a request a second, sustained, while a flood of random addresses spreads over 4096 buckets.
+    public const int DefaultUnidentifiedLinkPerMinute = 60;
+    // FIX4 item 1 — at most this many sign-ins verify a BCrypt hash at once in this process (the CPU guard), with a short
+    // queue; a full queue is a 429. BCrypt is CPU-bound: one verification per core.
+    public static readonly int DefaultConcurrentVerifications = Math.Max(2, Environment.ProcessorCount);
+    public static int DefaultVerificationQueue => 2 * DefaultConcurrentVerifications;
     public static readonly TimeSpan DefaultWindow = TimeSpan.FromMinutes(15);
 
     /// <summary>BL-529 FIX6 — how many per-address buckets the set-password link has while clients cannot be told apart.</summary>
@@ -41,7 +55,10 @@ public sealed class PasswordDoorRateLimiter : IDisposable
     private readonly PartitionedRateLimiter<string> _perAddress;
     private readonly PartitionedRateLimiter<string> _perClient;
     private readonly PartitionedRateLimiter<string> _loginPerClient;
+    private readonly PartitionedRateLimiter<string> _loginFailures;
     private readonly PartitionedRateLimiter<string> _unidentified;
+    private readonly PartitionedRateLimiter<string> _linkUnidentified;
+    private readonly ConcurrencyLimiter _verifications;
 
     public PasswordDoorRateLimiter()
         : this(DefaultPerAddressLimit, DefaultPerClientLimit, DefaultWindow)
@@ -54,7 +71,15 @@ public sealed class PasswordDoorRateLimiter : IDisposable
         _perAddress = Fixed(perAddressLimit, window);
         _perClient = Fixed(perClientLimit, window);
         _loginPerClient = Fixed(DefaultLoginPerClientLimit, window);
+        _loginFailures = Fixed(DefaultLoginFailuresPerClientLimit, window);
         _unidentified = Fixed(DefaultUnidentifiedPerMinute, UnidentifiedWindow);
+        _linkUnidentified = Fixed(DefaultUnidentifiedLinkPerMinute, UnidentifiedWindow);
+        _verifications = new ConcurrencyLimiter(new ConcurrencyLimiterOptions
+        {
+            PermitLimit = DefaultConcurrentVerifications,
+            QueueLimit = DefaultVerificationQueue,
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst
+        });
     }
 
     public TimeSpan Window { get; }
@@ -69,8 +94,14 @@ public sealed class PasswordDoorRateLimiter : IDisposable
     /// </summary>
     /// <param name="countPerClient">REQUIRED (FIX5) — the caller states whether the client is told apart
     /// (<see cref="ClientIdentity.Identified"/>); no default can quietly make a global bucket.</param>
+    /// <para>WP-USERS-ROLES-CLOSE-FIX1 FIX4 item 2 — a client behind an UNLISTED forwarder (or one that sends a made-up
+    /// X-Forwarded-For from outside the list) is no longer "identified": without the per-client count, a stream of fresh
+    /// addresses would meet no limit at all (each one a store read). The door's coarse ceiling bounds it; the per-address
+    /// count still caps the mails to any one address.</para>
     public bool TryAcquireForgotPassword(string client, string? email, bool countPerClient)
-        => (!countPerClient || TryAcquire(_perClient, $"forgot-password|client|{client}"))
+        => (countPerClient
+               ? TryAcquire(_perClient, $"forgot-password|client|{client}")
+               : TryAcquire(_unidentified, "forgot-password|platform|all-clients"))
            && TryAcquire(_perAddress, $"forgot-password|address|{Normalize(email)}");
 
     /// <summary>
@@ -100,27 +131,56 @@ public sealed class PasswordDoorRateLimiter : IDisposable
         var prefix = door == TenantLinkDoor.Check ? "tenant-link-check" : "tenant-link-set";
         return countPerClient
             ? TryAcquire(_perClient, $"{prefix}|client|{client}")
-            : TryAcquire(_unidentified, $"{prefix}|all-clients");
+            : TryAcquire(_linkUnidentified, $"{prefix}|address-bucket|{AddressBucket(email)}");
     }
 
-    /// <summary>WP-USERS-ROLES-CLOSE-FIX1 FIX3 items 2 and 5 — the sign-in doors (tenant, platform) and self-registration are
-    /// counted BEFORE the request is validated or the store is read: per client when clients can be told apart
-    /// (<see cref="DefaultLoginPerClientLimit"/> / window), otherwise the coarse ceiling for everybody
-    /// (<see cref="DefaultUnidentifiedPerMinute"/> a minute) — never per address. Each door has its own prefix.</summary>
-    public bool TryAcquireLoginDoor(LoginDoor door, string client, bool countPerClient)
+    /// <summary>A door's answer: go on, or 429 with the length of the window that refused (FIX4 item 4: Retry-After says
+    /// THAT window — 60 s for a per-minute ceiling, never the 15-minute one).</summary>
+    public readonly record struct DoorVerdict(bool Allowed, TimeSpan RetryAfter)
     {
-        var prefix = door switch
-        {
-            LoginDoor.Tenant => "tenant-login",
-            LoginDoor.Platform => "platform-login",
-            _ => "tenant-register"
-        };
-        return countPerClient
-            ? TryAcquire(_loginPerClient, $"{prefix}|client|{client}")
-            : TryAcquire(_unidentified, $"{prefix}|all-clients");
+        public static DoorVerdict Go => new(true, TimeSpan.Zero);
     }
 
-    public enum LoginDoor { Tenant, Platform, Register }
+    /// <summary>WP-USERS-ROLES-CLOSE-FIX1 FIX3 items 2 and 5, FIX4 items 1 and 4 — the sign-in doors (tenant, platform, the
+    /// second factor) and self-registration are counted BEFORE the request is validated or the store is read. Per client when
+    /// clients can be told apart: every attempt against <see cref="DefaultLoginPerClientLimit"/>, and refused at once while
+    /// the client's WRONG attempts (<see cref="RecordLoginFailure"/>) are used up. Otherwise the coarse ceiling, per tenant on
+    /// the tenant doors (the tenant the request names — no read), per door on the platform door — never per address.</summary>
+    public DoorVerdict TryAcquireLoginDoor(LoginDoor door, string client, bool countPerClient, Guid? tenantId)
+    {
+        var prefix = Prefix(door);
+        if (countPerClient)
+        {
+            if (!TryAcquire(_loginPerClient, $"{prefix}|client|{client}")) return new(false, Window);
+            return FailuresUsedUp(prefix, client) ? new(false, Window) : DoorVerdict.Go;
+        }
+
+        var scope = door == LoginDoor.Platform ? "platform" : $"tenant:{(tenantId is { } id ? id.ToString("N") : "none")}";
+        return TryAcquire(_unidentified, $"{prefix}|{scope}|all-clients") ? DoorVerdict.Go : new(false, UnidentifiedWindow);
+    }
+
+    /// <summary>FIX4 item 4 — a WRONG attempt (the door answered 401), counted per client AFTER verification: a success never
+    /// uses this count up. Without client identity there is no client to count.</summary>
+    public void RecordLoginFailure(LoginDoor door, string client) => TryAcquire(_loginFailures, $"{Prefix(door)}|failures|client|{client}");
+
+    private bool FailuresUsedUp(string prefix, string client) =>
+        _loginFailures.GetStatistics(Key($"{prefix}|failures|client|{client}")) is { CurrentAvailablePermits: <= 0 };
+
+    /// <summary>FIX4 item 1 — the CPU guard: at most <see cref="DefaultConcurrentVerifications"/> sign-ins verify at once, the
+    /// next <see cref="DefaultVerificationQueue"/> wait their turn, any more are refused (lease not acquired → 429). Dispose
+    /// the lease when the request is done.</summary>
+    public ValueTask<RateLimitLease> AcquireVerificationAsync(CancellationToken cancellationToken)
+        => _verifications.AcquireAsync(1, cancellationToken);
+
+    private static string Prefix(LoginDoor door) => door switch
+    {
+        LoginDoor.Tenant => "tenant-login",
+        LoginDoor.Platform => "platform-login",
+        LoginDoor.Mfa => "tenant-mfa",
+        _ => "tenant-register"
+    };
+
+    public enum LoginDoor { Tenant, Platform, Register, Mfa }
 
     public enum TenantLinkDoor { Check, Redeem }
 
@@ -133,7 +193,10 @@ public sealed class PasswordDoorRateLimiter : IDisposable
         _perAddress.Dispose();
         _perClient.Dispose();
         _loginPerClient.Dispose();
+        _loginFailures.Dispose();
         _unidentified.Dispose();
+        _linkUnidentified.Dispose();
+        _verifications.Dispose();
     }
 
     private static PartitionedRateLimiter<string> Fixed(int permits, TimeSpan window) =>
@@ -152,7 +215,9 @@ public sealed class PasswordDoorRateLimiter : IDisposable
     // Every partition key is a fixed-length SHA-256: no caller-chosen string is kept, whatever its length.
     private static bool TryAcquire(PartitionedRateLimiter<string> limiter, string key)
     {
-        using var lease = limiter.AttemptAcquire(Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(key))));
+        using var lease = limiter.AttemptAcquire(Key(key));
         return lease.IsAcquired;
     }
+
+    private static string Key(string key) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(key)));
 }

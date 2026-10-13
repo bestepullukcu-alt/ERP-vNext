@@ -2,6 +2,7 @@ using Diten.AuthService.Application.Common;
 using Diten.AuthService.Infrastructure.Security;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace Diten.AuthService.Api.Controllers.Common;
 
@@ -19,22 +20,48 @@ public sealed class AnonymousDoorLimitAttribute(PasswordDoorRateLimiter.LoginDoo
 
     public async Task OnResourceExecutionAsync(ResourceExecutingContext context, ResourceExecutionDelegate next)
     {
-        var services = context.HttpContext.RequestServices;
+        var http = context.HttpContext;
+        var services = http.RequestServices;
         var doors = services.GetRequiredService<PasswordDoorRateLimiter>();
-        var asking = services.GetRequiredService<ClientAddressResolver>().Identify(context.HttpContext);
-        if (!doors.TryAcquireLoginDoor(Door, asking.Key, asking.Identified))
+        var asking = services.GetRequiredService<ClientAddressResolver>().Identify(http);
+        // FIX4 item 1 — the tenant the request names (resolved by the tenant middleware from the request, nothing read).
+        var tenantContext = services.GetService<Diten.AuthService.Application.Common.ITenantContext>();
+        Guid? tenantId = tenantContext is { IsResolved: true } ? tenantContext.TenantId : null;
+
+        var verdict = doors.TryAcquireLoginDoor(Door, asking.Key, asking.Identified, tenantId);
+        if (!verdict.Allowed)
         {
-            context.HttpContext.Response.Headers.RetryAfter =
-                ((int)doors.Window.TotalSeconds).ToString(System.Globalization.CultureInfo.InvariantCulture);
-            context.Result = new ObjectResult(Response<NoContent>.Fail(
-                "Too many requests. Try again later.",
-                [new ResponseError(AuthRefusalCodes.TooManyRequests)],
-                StatusCodes.Status429TooManyRequests))
-            { StatusCode = StatusCodes.Status429TooManyRequests };
+            context.Result = TooManyRequests(http, verdict.RetryAfter);
             return;
         }
 
-        await next();
+        // FIX4 item 1 — the CPU guard: a verification slot, or a short wait in the queue, or a 429.
+        using var slot = await doors.AcquireVerificationAsync(http.RequestAborted);
+        if (!slot.IsAcquired)
+        {
+            context.Result = TooManyRequests(http, TimeSpan.FromSeconds(1));
+            return;
+        }
+
+        var executed = await next();
+
+        // FIX4 item 4 — only a WRONG attempt uses up the client's guessing count (a 401 from the door).
+        if (asking.Identified && Door != PasswordDoorRateLimiter.LoginDoor.Register
+            && (executed.Result as IStatusCodeActionResult)?.StatusCode == StatusCodes.Status401Unauthorized)
+        {
+            doors.RecordLoginFailure(Door, asking.Key);
+        }
+    }
+
+    private static ObjectResult TooManyRequests(HttpContext http, TimeSpan retryAfter)
+    {
+        http.Response.Headers.RetryAfter =
+            ((int)Math.Ceiling(retryAfter.TotalSeconds)).ToString(System.Globalization.CultureInfo.InvariantCulture);
+        return new ObjectResult(Response<NoContent>.Fail(
+            "Too many requests. Try again later.",
+            [new ResponseError(AuthRefusalCodes.TooManyRequests)],
+            StatusCodes.Status429TooManyRequests))
+        { StatusCode = StatusCodes.Status429TooManyRequests };
     }
 }
 

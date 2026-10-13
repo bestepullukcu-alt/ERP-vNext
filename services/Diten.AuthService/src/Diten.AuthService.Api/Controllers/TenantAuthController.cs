@@ -33,6 +33,8 @@ public sealed class TenantAuthController : CustomBaseController
 
     [HttpPost("mfa/verify")]
     [AllowAnonymous]
+    [AnonymousDoorLimit(Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.LoginDoor.Mfa)]
+    [RequestSizeLimit(AnonymousDoorBody.Limit)] // FIX4 item 5 — an anonymous body is small
     public async Task<IActionResult> VerifyMfa([FromBody] VerifyMfaRequest request, CancellationToken ct)
     {
         var command = new VerifyMfaCommand(request.ChallengeId, request.Code, ResolveRequestIp(HttpContext), ResolveUserAgent(HttpContext));
@@ -42,6 +44,8 @@ public sealed class TenantAuthController : CustomBaseController
 
     [HttpPost("mfa/resend")]
     [AllowAnonymous]
+    [AnonymousDoorLimit(Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.LoginDoor.Mfa)]
+    [RequestSizeLimit(AnonymousDoorBody.Limit)] // FIX4 item 5 — an anonymous body is small
     public async Task<IActionResult> ResendMfa([FromBody] ResendMfaRequest request, CancellationToken ct)
     {
         var command = new ResendMfaCommand(request.ChallengeId, ResolveRequestIp(HttpContext), ResolveUserAgent(HttpContext));

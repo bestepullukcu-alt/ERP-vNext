@@ -183,6 +183,16 @@ internal sealed class InMemoryUserRepository : IUserRepository
         return Task.FromResult(true);
     }
 
+    // FIX4 item 3 — as the store: cleared only while not locked and below the threshold.
+    public Task<bool> TryClaimSignInAsync(Guid userId, Guid tenantId, int maxFailedAttempts, CancellationToken ct)
+    {
+        var user = _users.FirstOrDefault(u => u.Id == userId && u.TenantId == tenantId && !u.IsDeleted);
+        if (user is null || user.LockoutEnd > DateTime.UtcNow || user.FailedLoginAttempts >= maxFailedAttempts)
+            return Task.FromResult(false);
+        user.ClearLockout();
+        return Task.FromResult(true);
+    }
+
     // Mirrors the store's $inc: the stored row counts, whatever copy the caller holds.
     public Task<LoginFailureOutcome> RecordLoginFailureAsync(Guid userId, Guid tenantId, int maxFailedAttempts, int lockoutDurationMinutes, CancellationToken ct)
     {

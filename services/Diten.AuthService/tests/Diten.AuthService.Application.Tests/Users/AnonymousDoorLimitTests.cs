@@ -26,30 +26,95 @@ public sealed class AnonymousDoorLimitTests
         Assert.True(doors.TryAcquireTenantLinkDoor(PasswordDoorRateLimiter.TenantLinkDoor.Redeem, "proxy", "victim@acme.test", countPerClient: false));
     }
 
+    /// <summary>FIX4 item 1 — without client identity the coarse ceiling is per TENANT on the tenant doors: one tenant's flood
+    /// closes its own door for the minute (Retry-After: that minute), not another tenant's, nor the platform door.</summary>
     [Fact]
-    public void Without_client_identity_each_door_has_one_coarse_ceiling_for_everybody()
+    public void Without_client_identity_the_coarse_ceiling_is_per_tenant_and_says_its_own_minute()
+    {
+        using var doors = new PasswordDoorRateLimiter();
+        Guid tenantA = Guid.NewGuid(), tenantB = Guid.NewGuid();
+
+        for (var i = 0; i < PasswordDoorRateLimiter.DefaultUnidentifiedPerMinute; i++)
+            Assert.True(doors.TryAcquireLoginDoor(PasswordDoorRateLimiter.LoginDoor.Tenant, "proxy", countPerClient: false, tenantA).Allowed);
+
+        var refused = doors.TryAcquireLoginDoor(PasswordDoorRateLimiter.LoginDoor.Tenant, "another-proxy", countPerClient: false, tenantA);
+        Assert.False(refused.Allowed);
+        Assert.Equal(PasswordDoorRateLimiter.UnidentifiedWindow, refused.RetryAfter);
+        Assert.True(doors.TryAcquireLoginDoor(PasswordDoorRateLimiter.LoginDoor.Tenant, "proxy", countPerClient: false, tenantB).Allowed);
+        Assert.True(doors.TryAcquireLoginDoor(PasswordDoorRateLimiter.LoginDoor.Platform, "proxy", countPerClient: false, null).Allowed);
+    }
+
+    /// <summary>FIX4 item 4 — with client identity every attempt counts against a high ceiling (an office behind one NAT signs
+    /// in all morning), and only the WRONG attempts against the low one: 31 successful sign-ins never refuse the client;
+    /// 30 wrong ones do, for the client's window.</summary>
+    [Fact]
+    public void With_client_identity_only_wrong_attempts_use_up_the_guessing_count()
     {
         using var doors = new PasswordDoorRateLimiter();
 
-        for (var i = 0; i < PasswordDoorRateLimiter.DefaultUnidentifiedPerMinute; i++)
-            Assert.True(doors.TryAcquireLoginDoor(PasswordDoorRateLimiter.LoginDoor.Tenant, "proxy", countPerClient: false));
+        for (var i = 0; i <= PasswordDoorRateLimiter.DefaultLoginFailuresPerClientLimit; i++)
+            Assert.True(doors.TryAcquireLoginDoor(PasswordDoorRateLimiter.LoginDoor.Tenant, "10.0.0.1", countPerClient: true, null).Allowed); // successes
 
-        Assert.False(doors.TryAcquireLoginDoor(PasswordDoorRateLimiter.LoginDoor.Tenant, "another-proxy", countPerClient: false));
-        // its own count: the other doors are not used up
-        Assert.True(doors.TryAcquireLoginDoor(PasswordDoorRateLimiter.LoginDoor.Platform, "proxy", countPerClient: false));
-        Assert.True(doors.TryAcquireTenantLinkDoor(PasswordDoorRateLimiter.TenantLinkDoor.Check, "proxy", "a@b.test", countPerClient: false));
+        for (var i = 0; i < PasswordDoorRateLimiter.DefaultLoginFailuresPerClientLimit; i++)
+            doors.RecordLoginFailure(PasswordDoorRateLimiter.LoginDoor.Tenant, "10.0.0.2");
+
+        var refused = doors.TryAcquireLoginDoor(PasswordDoorRateLimiter.LoginDoor.Tenant, "10.0.0.2", countPerClient: true, null);
+        Assert.False(refused.Allowed);
+        Assert.Equal(doors.Window, refused.RetryAfter);
+        Assert.True(doors.TryAcquireLoginDoor(PasswordDoorRateLimiter.LoginDoor.Tenant, "10.0.0.1", countPerClient: true, null).Allowed);
     }
 
     [Fact]
-    public void With_client_identity_the_sign_in_door_counts_per_client()
+    public void With_client_identity_every_attempt_counts_against_the_high_ceiling()
     {
         using var doors = new PasswordDoorRateLimiter();
 
         for (var i = 0; i < PasswordDoorRateLimiter.DefaultLoginPerClientLimit; i++)
-            Assert.True(doors.TryAcquireLoginDoor(PasswordDoorRateLimiter.LoginDoor.Platform, "10.0.0.1", countPerClient: true));
+            Assert.True(doors.TryAcquireLoginDoor(PasswordDoorRateLimiter.LoginDoor.Platform, "10.0.0.1", countPerClient: true, null).Allowed);
 
-        Assert.False(doors.TryAcquireLoginDoor(PasswordDoorRateLimiter.LoginDoor.Platform, "10.0.0.1", countPerClient: true));
-        Assert.True(doors.TryAcquireLoginDoor(PasswordDoorRateLimiter.LoginDoor.Platform, "10.0.0.2", countPerClient: true));
+        Assert.False(doors.TryAcquireLoginDoor(PasswordDoorRateLimiter.LoginDoor.Platform, "10.0.0.1", countPerClient: true, null).Allowed);
+        Assert.True(doors.TryAcquireLoginDoor(PasswordDoorRateLimiter.LoginDoor.Platform, "10.0.0.2", countPerClient: true, null).Allowed);
+    }
+
+    /// <summary>FIX4 item 1 — the CPU guard: at most <c>DefaultConcurrentVerifications</c> verifications at once, a short queue,
+    /// and past the queue no slot (the door answers 429); a slot that is given back lets a waiting one in.</summary>
+    [Fact]
+    public async Task The_verification_slots_are_limited_with_a_short_queue()
+    {
+        using var doors = new PasswordDoorRateLimiter();
+        var held = new List<System.Threading.RateLimiting.RateLimitLease>();
+        for (var i = 0; i < PasswordDoorRateLimiter.DefaultConcurrentVerifications; i++)
+        {
+            var lease = await doors.AcquireVerificationAsync(CancellationToken.None);
+            Assert.True(lease.IsAcquired);
+            held.Add(lease);
+        }
+        var queued = Enumerable.Range(0, PasswordDoorRateLimiter.DefaultVerificationQueue)
+            .Select(_ => doors.AcquireVerificationAsync(CancellationToken.None).AsTask()).ToList();
+        Assert.All(queued, task => Assert.False(task.IsCompleted));
+
+        using var refused = await doors.AcquireVerificationAsync(CancellationToken.None);
+        Assert.False(refused.IsAcquired);
+
+        held[0].Dispose();
+        var first = await queued[0].WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.True(first.IsAcquired);
+        first.Dispose();
+        foreach (var lease in held.Skip(1)) lease.Dispose();
+        foreach (var task in queued.Skip(1)) (await task.WaitAsync(TimeSpan.FromSeconds(5))).Dispose();
+    }
+
+    /// <summary>FIX4 item 2 — the platform forgot-password door without client identity: fresh addresses each time meet the
+    /// door's coarse ceiling (each one would otherwise be an unlimited store read).</summary>
+    [Fact]
+    public void Without_client_identity_fresh_addresses_meet_the_forgot_password_doors_ceiling()
+    {
+        using var doors = new PasswordDoorRateLimiter();
+
+        for (var i = 0; i < PasswordDoorRateLimiter.DefaultUnidentifiedPerMinute; i++)
+            Assert.True(doors.TryAcquireForgotPassword("proxy", $"x{i}@acme.test", countPerClient: false));
+
+        Assert.False(doors.TryAcquireForgotPassword("proxy", "fresh@acme.test", countPerClient: false));
     }
 
     [Fact]

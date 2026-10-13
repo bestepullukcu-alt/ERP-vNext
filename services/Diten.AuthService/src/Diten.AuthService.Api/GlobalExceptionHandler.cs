@@ -28,6 +28,9 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
             UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, "Unauthorized"),
             HttpStatusException httpStatusException => (httpStatusException.StatusCode, "Request failed"),
             ValidationException => (StatusCodes.Status400BadRequest, "Validation failed"),
+            // WP-USERS-ROLES-CLOSE-FIX1 FIX4 item 6 — Kestrel's refusal of the request itself (a body past [RequestSizeLimit] is
+            // 413) keeps its own status; it used to fall through to 500.
+            Microsoft.AspNetCore.Http.BadHttpRequestException badRequest => (badRequest.StatusCode, "Bad request"),
             _ => (StatusCodes.Status500InternalServerError, "Server error")
         };
 

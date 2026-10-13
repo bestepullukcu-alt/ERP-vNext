@@ -31,6 +31,18 @@ public interface IUserRepository
     Task RecordLoginOutcomeAsync(User user, Guid tenantId, CancellationToken ct);
 
     /// <summary>
+    /// WP-USERS-ROLES-CLOSE-FIX1 FIX4 item 3 — A SIGN-IN THAT VERIFIED THE RIGHT PASSWORD CLAIMS THE ACCOUNT BEFORE ANYTHING IS
+    /// ISSUED: the failure count and the lockout are cleared ONLY while the STORED account is not locked and its count is below
+    /// <paramref name="maxFailedAttempts"/>. A flood of parallel guesses all read the account before the fifth failure was
+    /// written; without this, a right guess among them cleared the lock the wrong ones were building (~100 guesses a window
+    /// instead of 5). False: the stored row is locked or at the threshold — the sign-in is refused like a wrong password.
+    /// (No default implementation that answers true: a store or a decorator that forgot it must fail loudly, not let the
+    /// flood through.)
+    /// </summary>
+    Task<bool> TryClaimSignInAsync(Guid userId, Guid tenantId, int maxFailedAttempts, CancellationToken ct)
+        => throw new NotSupportedException("This user store does not implement the sign-in claim (WP-USERS-ROLES-CLOSE-FIX1 FIX4).");
+
+    /// <summary>
     /// BL-529 FIX3 — the state of <paramref name="user"/> as it was read, opaque to the caller; hand it back to
     /// <see cref="TryWriteChangesAsync"/> after changing the entity.
     /// </summary>

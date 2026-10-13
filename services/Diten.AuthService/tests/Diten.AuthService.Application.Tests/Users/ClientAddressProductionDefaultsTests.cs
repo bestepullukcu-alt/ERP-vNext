@@ -51,6 +51,30 @@ public sealed class ClientAddressProductionDefaultsTests : IClassFixture<ClientA
         }
     }
 
+    /// <summary>WP-USERS-ROLES-CLOSE-FIX1 FIX4 items 1 and 6 — the sign-in door with NO trusted proxy (every request through
+    /// one peer): one tenant's flood closes that tenant's door for its minute (Retry-After 60 — that ceiling's window, not
+    /// 900), and another tenant still signs in. Before, one bucket for everybody: ~5 junk requests a second closed every
+    /// tenant's sign-in.</summary>
+    [Fact]
+    public async Task With_no_trusted_proxy_one_tenants_flood_closes_only_its_own_sign_in_door()
+    {
+        Guid flooded = Guid.NewGuid(), other = Guid.NewGuid();
+        using (var junk = _host.Client(null, flooded))
+        {
+            for (var i = 0; i < Diten.AuthService.Infrastructure.Security.PasswordDoorRateLimiter.DefaultUnidentifiedPerMinute; i++)
+                Assert.NotEqual((HttpStatusCode)429, (await junk.PostAsync("api/tenant-auth/login",
+                    new StringContent("{}", System.Text.Encoding.UTF8, "application/json"))).StatusCode);
+        }
+
+        using var floodedClient = _host.Client(null, flooded);
+        var refused = await floodedClient.PostAsJsonAsync("api/tenant-auth/login", new { email = "a@b.test", password = "x" });
+        Assert.Equal((HttpStatusCode)429, refused.StatusCode);
+        Assert.Equal("60", Assert.Single(refused.Headers.GetValues("Retry-After")));
+
+        using var otherClient = _host.Client(null, other);
+        Assert.NotEqual((HttpStatusCode)429, (await otherClient.PostAsJsonAsync("api/tenant-auth/login", new { email = "a@b.test", password = "x" })).StatusCode);
+    }
+
     [Fact]
     public void With_no_trusted_proxy_the_resolver_cannot_tell_clients_apart_and_the_host_warned_once()
     {
