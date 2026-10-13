@@ -79,19 +79,33 @@ public sealed class PlatformItemReferenceResolverClient : IItemReferenceResolver
             || string.IsNullOrWhiteSpace(delegated.Parameter))
             return ItemReferenceResolveResult.Fail(401, "REFERENCE_UNAUTHENTICATED");
 
-        using var request = new HttpRequestMessage(HttpMethod.Post, new Uri(_options.PlatformBaseAddress!, RelativePath));
-        request.Headers.Authorization = delegated;
-        request.Headers.TryAddWithoutValidation(CredentialIdHeader, _options.CredentialIdentifier);
-        request.Headers.TryAddWithoutValidation(CredentialSecretHeader, _options.CredentialSecret);
+        return (await SendAsync(_httpClient, _options, delegated, wanted, _logger, cancellationToken)).Result;
+    }
+
+    /// <summary>
+    /// S2 FIX1 item 1 — ONE send and ONE trust rule for both callers (the user's request with the user's token, the
+    /// approval worker with MDM's service token): the resolver credential + audience headers, the bounded budget, the exact
+    /// answer check. The HTTP status Platform answered travels beside the result (the worker reads a 401 to refresh its
+    /// identity once).
+    /// </summary>
+    internal static async Task<(int RawStatus, ItemReferenceResolveResult Result)> SendAsync(HttpClient httpClient,
+        VerifiedGskuResolverOptions options, AuthenticationHeaderValue bearer, IReadOnlyList<ItemReferenceRequest> wanted,
+        ILogger logger, CancellationToken cancellationToken)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, new Uri(options.PlatformBaseAddress!, RelativePath));
+        request.Headers.Authorization = bearer;
+        request.Headers.TryAddWithoutValidation(CredentialIdHeader, options.CredentialIdentifier);
+        request.Headers.TryAddWithoutValidation(CredentialSecretHeader, options.CredentialSecret);
         request.Headers.TryAddWithoutValidation(AudienceHeader, Audience);
         request.Content = JsonContent.Create(new ResolveRequest(
             wanted.Select(item => new ResolveSelectionRequest(item.SetCode, item.ValueCode, "LATEST")).ToList()));
 
         using var budget = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        budget.CancelAfter(_options.Timeout);
+        budget.CancelAfter(options.Timeout);
         try
         {
-            using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, budget.Token);
+            using var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, budget.Token);
+            var status = (int)response.StatusCode;
             Envelope? envelope;
             try
             {
@@ -99,17 +113,17 @@ public sealed class PlatformItemReferenceResolverClient : IItemReferenceResolver
             }
             catch (System.Text.Json.JsonException)
             {
-                return (int)response.StatusCode >= 500
+                return (status, status >= 500
                     ? ItemReferenceResolveResult.Fail(503, "REFERENCE_PROVIDER_UNAVAILABLE")
-                    : ItemReferenceResolveResult.Fail(503, ItemReferenceCheck.UntrustedAnswer);
+                    : ItemReferenceResolveResult.Fail(503, ItemReferenceCheck.UntrustedAnswer));
             }
 
             if (response.IsSuccessStatusCode)
             {
-                return envelope?.IsSuccessful == true && envelope.Data?.Selections is { } selections
+                return (status, envelope?.IsSuccessful == true && envelope.Data?.Selections is { } selections
                        && Trusted(wanted, selections)
                     ? ItemReferenceResolveResult.Success(selections.Select(Map).ToList())
-                    : ItemReferenceResolveResult.Fail(503, ItemReferenceCheck.UntrustedAnswer);
+                    : ItemReferenceResolveResult.Fail(503, ItemReferenceCheck.UntrustedAnswer));
             }
 
             if (response.StatusCode == HttpStatusCode.NotFound
@@ -117,29 +131,29 @@ public sealed class PlatformItemReferenceResolverClient : IItemReferenceResolver
             {
                 // Named: every missing pair is one we asked for — otherwise the answer is not trusted.
                 var missing = envelope.Data?.NotFound;
-                return missing is { Count: > 0 } && missing.All(pair => pair is not null
+                return (status, missing is { Count: > 0 } && missing.All(pair => pair is not null
                            && wanted.Contains(new ItemReferenceRequest(pair.SetCode, pair.ValueCode)))
                     ? ItemReferenceResolveResult.Missing(
                         missing.Select(pair => new ItemReferenceRequest(pair!.SetCode, pair.ValueCode)).ToList())
-                    : ItemReferenceResolveResult.Fail(503, ItemReferenceCheck.UntrustedAnswer);
+                    : ItemReferenceResolveResult.Fail(503, ItemReferenceCheck.UntrustedAnswer));
             }
 
-            return MapFailure(response.StatusCode, envelope?.ReasonCode);
+            return (status, MapFailure(response.StatusCode, envelope?.ReasonCode));
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
-            return ItemReferenceResolveResult.Fail(503, "REFERENCE_PROVIDER_TIMEOUT");
+            return (0, ItemReferenceResolveResult.Fail(503, "REFERENCE_PROVIDER_TIMEOUT"));
         }
         catch (HttpRequestException)
         {
-            return ItemReferenceResolveResult.Fail(503, "REFERENCE_PROVIDER_UNAVAILABLE");
+            return (0, ItemReferenceResolveResult.Fail(503, "REFERENCE_PROVIDER_UNAVAILABLE"));
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
             // FIX1 M2: anything else (an HTML error page, an unreadable body) is an outage by name — the type only in the
             // log, never a header, a token or the body.
-            _logger.LogWarning("Item reference provider answer could not be read ({ExceptionType}).", exception.GetType().Name);
-            return ItemReferenceResolveResult.Fail(503, "REFERENCE_PROVIDER_UNAVAILABLE");
+            logger.LogWarning("Item reference provider answer could not be read ({ExceptionType}).", exception.GetType().Name);
+            return (0, ItemReferenceResolveResult.Fail(503, "REFERENCE_PROVIDER_UNAVAILABLE"));
         }
     }
 

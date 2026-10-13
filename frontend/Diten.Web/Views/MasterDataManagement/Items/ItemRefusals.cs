@@ -1,6 +1,13 @@
 namespace Diten.Web.Views.MasterDataManagement.Items;
 
 /// <summary>
+/// The resource class of the item ACTIVATION APPROVAL's sentences (Resources/Views/MasterDataManagement/Items/
+/// ItemRefusals.*.resx, seven languages) — S2's own file, kept as a second localizer at the S2 lane merge so the approval's
+/// sentences sit apart from the item screen's (ItemsIndex) and the two never edit the same resx.
+/// </summary>
+public sealed class ItemRefusals;
+
+/// <summary>
 /// MOD-0290-FU04 S5 (§18): every code an item endpoint of MDM can answer with, bound to the sentence the reader sees
 /// (ItemsIndex resx, seven languages). A code in none of these lists is said with the status's general sentence, logged,
 /// and flagged for the browser console (it is a missing mapping). ItemRefusalBridgeTests holds MDM's item code, this map
@@ -141,7 +148,10 @@ public static class ItemRefusalSentences
         ["REFERENCE_FORBIDDEN"] = "RefusalOptionsUnavailable",
         ["REFERENCE_UNAUTHENTICATED"] = "ErrorUnauthorized",
         ["ITEM_REFERENCE_PROVIDER_NOT_AVAILABLE"] = "RefusalOptionsUnavailable",
-        ["UNTRUSTED_ANSWER"] = "RefusalOptionsUnavailable"
+        ["UNTRUSTED_ANSWER"] = "RefusalOptionsUnavailable",
+        // S2 FIX1: the Platform client's refusal of MDM's service identity (the worker's read); should it ever reach the
+        // options read, it is "the lists cannot be loaded" like every other provider answer.
+        ["REFERENCE_SERVICE_IDENTITY_REFUSED"] = "RefusalOptionsUnavailable"
     };
 
     public const string OptionsCodePrefix = "REFERENCE_";
@@ -182,5 +192,94 @@ public static class ItemRefusalSentences
         ["material-type"] = "MaterialType",
         ["item-uom"] = "UnitCode",
         ["storage-condition"] = "StorageConditionCodes"
+    };
+
+    /// <summary>
+    /// MOD-0290-FU04 S2 — the activation approval's answers (submit, reactivation request, withdrawal, the guarded writes
+    /// while a submit is in flight, the operator's orphan-code repair) → their sentence in <see cref="ItemRefusals"/>'s
+    /// resx (the second localizer; seven languages). ItemRefusalBridgeTests reads these codes from MDM's source.
+    /// </summary>
+    public static readonly IReadOnlyDictionary<string, string> ApprovalKeys = new Dictionary<string, string>(StringComparer.Ordinal)
+    {
+        // Who may act on the approval.
+        ["ITEM_ACTIVATION_FORBIDDEN"] = "RefusalApprovalForbidden",
+        ["ITEM_ACTIVATION_WITHDRAWAL_NOT_REQUESTER"] = "RefusalApprovalNotRequester",
+        // The approval moved on under the request: reload and act again.
+        ["ITEM_ACTIVATION_SUBMIT_ABANDONED"] = "RefusalApprovalChanged",
+        ["ITEM_ACTIVATION_DECISION_NOT_APPLICABLE"] = "RefusalApprovalChanged",
+        ["ITEM_ACTIVATION_SUBMIT_TARGET_CHANGED"] = "RefusalApprovalChanged",
+        ["ITEM_ACTIVATION_STATE_CONFLICT"] = "RefusalApprovalChanged",
+        ["ITEM_ACTIVATION_WORKFLOW_STATE_CONFLICT"] = "RefusalApprovalChanged",
+        ["ITEM_ACTIVATION_WORKFLOW_BINDING_CONFLICT"] = "RefusalApprovalChanged",
+        ["ITEM_ACTIVATION_WITHDRAWAL_OPERATION_CONFLICT"] = "RefusalApprovalChanged",
+        ["ITEM_ACTIVATION_WORKFLOW_OPERATION_CONFLICT"] = "RefusalApprovalChanged",
+        ["ITEM_ACTIVATION_WORKFLOW_CONCURRENCY_CONFLICT"] = "RefusalApprovalChanged",
+        ["ITEM_ACTIVATION_CLOSED_WITHOUT_DECISION"] = "RefusalApprovalChanged",
+        ["ITEM_ACTIVATION_RECONCILED_NOTHING_STARTED"] = "RefusalApprovalChanged",
+        // Being processed: the same request, later.
+        ["ITEM_ACTIVATION_WORKFLOW_BUSY"] = "RefusalApprovalBusy",
+        ["ITEM_ACTIVATION_WITHDRAWAL_UNDER_WAY"] = "RefusalApprovalBusy",
+        ["ITEM_ACTIVATION_SUBMIT_IN_FLIGHT"] = "RefusalApprovalSubmitInFlight",
+        ["ITEM_ACTIVATION_WORKFLOW_IDEMPOTENCY_CONFLICT"] = "RefusalApprovalRepeatDiffers",
+        ["ITEM_ACTIVATION_WITHDRAWAL_INVALID"] = "RefusalApprovalWithdrawalInvalid",
+        ["ITEM_ACTIVATION_WITHDRAWAL_REFUSED"] = "RefusalApprovalWithdrawalRefused",
+        // The approval engine cannot be reached now (503).
+        ["ITEM_ACTIVATION_WORKFLOW_STEP_BUDGET_EXCEEDED"] = "RefusalApprovalUnavailable",
+        ["ITEM_ACTIVATION_WORKFLOW_RETRY_LIMIT_REACHED"] = "RefusalApprovalUnavailable",
+        ["ITEM_ACTIVATION_WORKFLOW_PROVIDER_UNAVAILABLE"] = "RefusalApprovalUnavailable",
+        ["ITEM_ACTIVATION_WORKFLOW_RETRY_SCHEDULED"] = "RefusalApprovalUnavailable",
+        ["ITEM_ACTIVATION_WORKFLOW_START_FAILED"] = "RefusalApprovalUnavailable",
+        ["ITEM_ACTIVATION_WITHDRAWAL_FAILED"] = "RefusalApprovalUnavailable",
+        // The approval and the item disagree: nobody at the screen can fix it, an administrator checks.
+        ["ITEM_ACTIVATION_WORKFLOW_MANUAL_RECONCILIATION_NEEDED"] = "RefusalApprovalNeedsCheck",
+        ["ITEM_ACTIVATION_WORKFLOW_RECONCILIATION_REQUIRED"] = "RefusalApprovalNeedsCheck",
+        ["ITEM_ACTIVATION_WORKFLOW_START_PROOF_INVALID"] = "RefusalApprovalNeedsCheck",
+        ["ITEM_ACTIVATION_WORKFLOW_LOCAL_PENDING_INCONSISTENT"] = "RefusalApprovalNeedsCheck",
+        ["ITEM_ACTIVATION_WORKFLOW_EVIDENCE_CONFLICT"] = "RefusalApprovalNeedsCheck",
+        ["ITEM_ACTIVATION_WORKFLOW_APPROVAL_PROOF_INVALID"] = "RefusalApprovalNeedsCheck",
+        ["ITEM_ACTIVATION_WORKFLOW_DECISION_INCONSISTENT"] = "RefusalApprovalNeedsCheck",
+        ["ITEM_ACTIVATION_DECISION_CONTRACT_INVALID"] = "RefusalApprovalNeedsCheck",
+        ["ITEM_ACTIVATION_WORKFLOW_START_INVALID"] = "RefusalApprovalNeedsCheck",
+        ["ITEM_ACTIVATION_WORKFLOW_CONFIGURATION_INVALID"] = "RefusalApprovalNeedsCheck",
+        ["ITEM_ACTIVATION_WORKFLOW_START_FACTS_INVALID"] = "RefusalApprovalNeedsCheck",
+        ["ITEM_ACTIVATION_WORKFLOW_OPERATION_LOST"] = "RefusalApprovalNeedsCheck",
+        ["ITEM_ACTIVATION_WORKFLOW_START_REFUSED"] = "RefusalApprovalStartRefused",
+        ["ITEM_ACTIVATION_SELF_APPROVAL_IGNORED"] = "RefusalApprovalSelf",
+        // The submit freezes the item lists (S2 FIX1): a value went away or changed, or the lists cannot be checked.
+        ["ITEM_REFERENCE_VALUE_REMOVED"] = "RefusalReferenceValueChanged",
+        ["ITEM_REFERENCE_VALUE_CHANGED"] = "RefusalReferenceValueChanged",
+        ["ITEM_REFERENCE_CONTRACT_CONFLICT"] = "RefusalReferenceCheckUnavailable",
+        ["ITEM_REFERENCE_PROVIDER_CONFIGURATION_ERROR"] = "RefusalReferenceCheckUnavailable",
+        // The operator repair (POST orphan-code-repairs).
+        ["ITEM_ORPHAN_CODE_REPAIR_INVALID"] = "RefusalOrphanRepairInvalid",
+        // The activation gate (R-04): its field names follow the code and are said with FieldKeys.
+        ["ITEM_STOCK_FIELDS_REQUIRED_FOR_ACTIVATION"] = "RefusalStockFieldsRequired"
+    };
+
+    /// <summary>The activation gate's field names (MDM's ItemActivationGate.FieldNames, after its code) → their label.</summary>
+    public static readonly IReadOnlyDictionary<string, string> FieldKeys = new Dictionary<string, string>(StringComparer.Ordinal)
+    {
+        ["lotControlled"] = "FieldLotControlled",
+        ["baseUomCode"] = "FieldBaseUom",
+        ["storageConditionCodes"] = "FieldStorageConditions",
+        ["uomConversions"] = "FieldUomConversions"
+    };
+
+    /// <summary>
+    /// Upper-case literals of MDM's item code that never reach a reader, each with its reason (the S2 code table): the
+    /// bridge test accepts them without a sentence, and fails on any MDM stops writing.
+    /// </summary>
+    public static readonly IReadOnlyDictionary<string, string> InternalCodes = new Dictionary<string, string>(StringComparer.Ordinal)
+    {
+        ["ITEM_ACTIVATION"] = "the flow name (metrics, logs), never an answer",
+        ["ITEM_ACTIVATION_WORKFLOW_DECISION_PENDING"] = "the worker's state between polls, never a body",
+        ["ITEM_ACTIVATION_WORKFLOW_MAKER_REPLAY_REQUIRED"] = "HTTP carries PRODUCT_IDENTITY_WORKFLOW_MAKER_REPLAY_REQUIRED (202: the same form saved again)",
+        ["ITEM_ACTIVATION_WORKFLOW_STUCK_ON_RECORD_ANSWER"] = "the worker's quarantine reason, read by the operator",
+        ["ITEM_ACTIVATION_WITHDRAWAL_EVIDENCE_INVALID"] = "the worker's check of the engine's withdrawal answer",
+        ["ITEM_ACTIVATION_WITHDRAWN_BY_MAKER"] = "the operation's end reason, written to its record",
+        ["ITEM_ORPHAN_CODES_BURNED"] = "the operator repair's audit outcome (200)",
+        ["ITEM_ORPHAN_CODES_NONE_BURNED"] = "the operator repair's audit outcome (200)",
+        ["ITEM_ORPHAN_CODE_REPAIRED"] = "the operator repair's audit operation",
+        ["ITEM_VERSION_CONFLICT"] = "always answered as ITEM_CONCURRENCY_CONFLICT"
     };
 }

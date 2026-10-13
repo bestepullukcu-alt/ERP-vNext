@@ -1067,9 +1067,7 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
     // An approval engine refusal of the start that it gives before processing it (a request it rejects, a tenant it
     // will not serve this service for): nothing was started.
     private static bool RefusedBeforeProcessing(ProductIdentityWorkflowTransportOutcome outcome, string? code) =>
-        outcome == ProductIdentityWorkflowTransportOutcome.Invalid
-            && code is not (ProductIdentityWorkflowFaultPolicy.ResponseUnreadable or ProductIdentityWorkflowFaultPolicy.ResponseInvalid)
-        || outcome == ProductIdentityWorkflowTransportOutcome.Forbidden;
+        IdentityApprovalBinding.RefusedBeforeProcessing(outcome, code);
 
     private Task<bool> AbandonAsync(FirstGskuIdentityWorkflowClaim claim, string code, DateTimeOffset now,
         CancellationToken cancellationToken)
@@ -2534,25 +2532,15 @@ public sealed class FirstGskuIdentityWorkflowProcessor(
         && operation.ObjectType == FirstGskuIdentityWorkflowStartRequestFactory.ObjectType
         && operation.ObjectId == gskuId.ToString("D");
 
-    private static bool TryMapDecision(string action, out ProductIdentityDecisionKind decision)
-    {
-        if (action == "Approve") { decision = ProductIdentityDecisionKind.Approved; return true; }
-        if (action == "Reject") { decision = ProductIdentityDecisionKind.Rejected; return true; }
-        decision = default;
-        return false;
-    }
+    // FU04 S2: the shared binding part (IdentityApprovalBinding) — the same rules, one place.
+    private static bool TryMapDecision(string action, out ProductIdentityDecisionKind decision) =>
+        IdentityApprovalBinding.TryMapDecision(action, out decision);
 
     private static bool ExactTerminalStatuses(
-        ProductIdentityDecisionKind decision, string taskStatus, string instanceStatus) => decision switch
-        {
-            ProductIdentityDecisionKind.Approved => taskStatus == "Approved" && instanceStatus == "Completed",
-            ProductIdentityDecisionKind.Rejected => taskStatus == "Rejected" && instanceStatus == "Rejected",
-            _ => false
-        };
+        ProductIdentityDecisionKind decision, string taskStatus, string instanceStatus) =>
+        IdentityApprovalBinding.ExactTerminalStatuses(decision, taskStatus, instanceStatus);
 
-    private static string BoundedCode(string? code, string fallback) =>
-        !string.IsNullOrWhiteSpace(code) && code.Length <= 128 && code.All(character => !char.IsControl(character))
-            ? code : fallback;
+    private static string BoundedCode(string? code, string fallback) => IdentityApprovalBinding.BoundedCode(code, fallback);
 
     private static FirstGskuIdentityWorkflowProcessingResult Success(
         FirstGskuIdentityWorkflowOperation operation, bool replay) => new(true, operation, null, 200, replay);

@@ -455,6 +455,10 @@ const ItemsPage = (function () {
         });
     };
 
+    // S2 (R-04): a lot flag never filled (a legacy draft: null) is drawn indeterminate and sent as null until the reader
+    // sets it — MDM then names it (ITEM_LOT_CONTROLLED_REQUIRED), never a silent "no". A click clears indeterminate.
+    const flagOf = (input) => (input?.indeterminate ? null : input?.checked === true);
+
     // What the form sends: MDM's eleven fields (the proxy forwards exactly these). A fully empty conversion row is no row.
     const readForm = () => ({
         name: String(field('Name')?.value ?? '').trim(),
@@ -462,7 +466,7 @@ const ItemsPage = (function () {
         materialType: String(field('MaterialType')?.value ?? '').trim(),
         baseUomCode: String(field('BaseUomCode')?.value ?? '').trim(),
         storageConditionCodes: selectedCodes(field('StorageConditionCodes')),
-        lotControlled: field('LotControlled')?.checked === true,
+        lotControlled: flagOf(field('LotControlled')),
         stockable: field('Stockable')?.checked === true,
         shelfLifeDays: readDays('ShelfLifeDays'),
         retestDays: readDays('RetestDays'),
@@ -483,7 +487,9 @@ const ItemsPage = (function () {
         fillSelect(field('StorageConditionCodes'), 'storageConditions', (valueOf(item, 'storageConditionCodes') || []).map(String));
         formState.storage = selectedCodes(field('StorageConditionCodes'));
         if (optionState.ready) enforceOneTemperature();
-        field('LotControlled').checked = valueOf(item, 'lotControlled') === true;
+        const lotControlled = valueOf(item, 'lotControlled');
+        field('LotControlled').checked = lotControlled === true;
+        field('LotControlled').indeterminate = lotControlled !== true && lotControlled !== false;
         field('Stockable').checked = valueOf(item, 'stockable') === true;
         ['ShelfLifeDays', 'RetestDays', 'MinRemainingShelfLifeDays'].forEach((name) => {
             const value = valueOf(item, name.charAt(0).toLowerCase() + name.slice(1));

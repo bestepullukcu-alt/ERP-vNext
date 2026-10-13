@@ -12,9 +12,9 @@
       "sets": [
         {
           "set_code": "item-uom",
-          "catalog_version": "ITEM-UNIVERSAL-V1",
-          "catalog_version_id": "c3f1d0a4-6b2e-4f0a-9d71-2e5b7a1c0001",
-          "catalog_version_number": 1,
+          "catalog_version": "ITEM-UNIVERSAL-V2",
+          "catalog_version_id": "c3f1d0a4-6b2e-4f0a-9d71-2e5b7a1c0004",
+          "catalog_version_number": 2,
           "values": [
             {
               "value_code": "C62",
@@ -23,7 +23,8 @@
               "attributes": {
                 "DimensionCode": "COUNT",
                 "MaximumDecimalPrecision": "0",
-                "FactorToDimensionBase": "1"
+                "FactorToDimensionBase": "1",
+                "CodeStandard": "UNECE_REC20"
               }
             },
             {
@@ -33,7 +34,8 @@
               "attributes": {
                 "DimensionCode": "MASS",
                 "MaximumDecimalPrecision": "3",
-                "FactorToDimensionBase": "0.000000001"
+                "FactorToDimensionBase": "0.000000001",
+                "CodeStandard": "UNECE_REC20"
               }
             },
             {
@@ -43,7 +45,8 @@
               "attributes": {
                 "DimensionCode": "MASS",
                 "MaximumDecimalPrecision": "3",
-                "FactorToDimensionBase": "0.000001"
+                "FactorToDimensionBase": "0.000001",
+                "CodeStandard": "UNECE_REC20"
               }
             },
             {
@@ -53,7 +56,8 @@
               "attributes": {
                 "DimensionCode": "MASS",
                 "MaximumDecimalPrecision": "3",
-                "FactorToDimensionBase": "0.001"
+                "FactorToDimensionBase": "0.001",
+                "CodeStandard": "UNECE_REC20"
               }
             },
             {
@@ -63,7 +67,19 @@
               "attributes": {
                 "DimensionCode": "MASS",
                 "MaximumDecimalPrecision": "3",
-                "FactorToDimensionBase": "1"
+                "FactorToDimensionBase": "1",
+                "CodeStandard": "UNECE_REC20"
+              }
+            },
+            {
+              "value_code": "IU",
+              "display_name": "International unit",
+              "sort_order": 45,
+              "attributes": {
+                "DimensionCode": "BIOLOGICAL_ACTIVITY",
+                "MaximumDecimalPrecision": "0",
+                "FactorToDimensionBase": "1",
+                "CodeStandard": "LOCAL"
               }
             },
             {
@@ -73,7 +89,8 @@
               "attributes": {
                 "DimensionCode": "VOLUME",
                 "MaximumDecimalPrecision": "3",
-                "FactorToDimensionBase": "0.001"
+                "FactorToDimensionBase": "0.001",
+                "CodeStandard": "UNECE_REC20"
               }
             },
             {
@@ -83,7 +100,8 @@
               "attributes": {
                 "DimensionCode": "VOLUME",
                 "MaximumDecimalPrecision": "3",
-                "FactorToDimensionBase": "1"
+                "FactorToDimensionBase": "1",
+                "CodeStandard": "UNECE_REC20"
               }
             },
             {
@@ -93,7 +111,8 @@
               "attributes": {
                 "DimensionCode": "LENGTH",
                 "MaximumDecimalPrecision": "3",
-                "FactorToDimensionBase": "1"
+                "FactorToDimensionBase": "1",
+                "CodeStandard": "UNECE_REC20"
               }
             },
             {
@@ -103,7 +122,8 @@
               "attributes": {
                 "DimensionCode": "AREA",
                 "MaximumDecimalPrecision": "3",
-                "FactorToDimensionBase": "1"
+                "FactorToDimensionBase": "1",
+                "CodeStandard": "UNECE_REC20"
               }
             },
             {
@@ -113,7 +133,8 @@
               "attributes": {
                 "DimensionCode": "PACKAGE",
                 "MaximumDecimalPrecision": "0",
-                "FactorToDimensionBase": null
+                "FactorToDimensionBase": null,
+                "CodeStandard": "UNECE_REC20"
               }
             },
             {
@@ -123,7 +144,8 @@
               "attributes": {
                 "DimensionCode": "PACKAGE",
                 "MaximumDecimalPrecision": "0",
-                "FactorToDimensionBase": null
+                "FactorToDimensionBase": null,
+                "CodeStandard": "UNECE_REC20"
               }
             },
             {
@@ -133,14 +155,15 @@
               "attributes": {
                 "DimensionCode": "PACKAGE",
                 "MaximumDecimalPrecision": "0",
-                "FactorToDimensionBase": null
+                "FactorToDimensionBase": null,
+                "CodeStandard": "UNECE_REC20"
               }
             }
           ]
         },
         {
           "set_code": "storage-condition",
-          "catalog_version": "ITEM-UNIVERSAL-V1",
+          "catalog_version": "ITEM-UNIVERSAL-V2",
           "catalog_version_id": "c3f1d0a4-6b2e-4f0a-9d71-2e5b7a1c0002",
           "catalog_version_number": 1,
           "values": [
@@ -208,7 +231,7 @@
         },
         {
           "set_code": "material-type",
-          "catalog_version": "ITEM-UNIVERSAL-V1",
+          "catalog_version": "ITEM-UNIVERSAL-V2",
           "catalog_version_id": "c3f1d0a4-6b2e-4f0a-9d71-2e5b7a1c0003",
           "catalog_version_number": 1,
           "values": [

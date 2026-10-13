@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader><resheader name="version"><value>2.0</value></resheader><resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader><resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="RefusalStockFieldsRequired" xml:space="preserve"><value>Cet article ne peut pas encore être activé : renseignez les champs de stock ci-dessous, puis soumettez-le à nouveau.</value></data>
+  <data name="FieldLotControlled" xml:space="preserve"><value>Géré par lot</value></data>
+  <data name="FieldBaseUom" xml:space="preserve"><value>Unité de base</value></data>
+  <data name="FieldStorageConditions" xml:space="preserve"><value>Conditions de stockage (au moins une)</value></data>
+  <data name="FieldUomConversions" xml:space="preserve"><value>Conversions d'unités (chaque unité à quatre étapes au plus de l'unité de base)</value></data>
+  <data name="RefusalApprovalForbidden" xml:space="preserve"><value>Vous n'êtes pas autorisé à soumettre, demander ou retirer l'activation de cet article.</value></data>
+  <data name="RefusalApprovalNotRequester" xml:space="preserve"><value>Seule la personne qui a soumis cet article pour activation peut la retirer.</value></data>
+  <data name="RefusalApprovalChanged" xml:space="preserve"><value>L'approbation de cet article a changé pendant que vous travailliez. Rechargez l'article et réessayez.</value></data>
+  <data name="RefusalApprovalBusy" xml:space="preserve"><value>L'approbation de cet article est en cours de traitement. Réessayez dans un instant.</value></data>
+  <data name="RefusalApprovalSubmitInFlight" xml:space="preserve"><value>La demande d'activation de cet article est encore en cours de traitement. Réessayez dans un instant.</value></data>
+  <data name="RefusalApprovalRepeatDiffers" xml:space="preserve"><value>Cette demande a déjà été envoyée avec des informations différentes. Rouvrez l'article et recommencez.</value></data>
+  <data name="RefusalApprovalWithdrawalInvalid" xml:space="preserve"><value>Le retrait n'a pas pu être lu. Rouvrez l'article et réessayez.</value></data>
+  <data name="RefusalApprovalWithdrawalRefused" xml:space="preserve"><value>L'approbation n'a pas pu être retirée. Une décision a peut-être déjà été prise. Rechargez l'article.</value></data>
+  <data name="RefusalApprovalUnavailable" xml:space="preserve"><value>Le service d'approbation est inaccessible pour le moment. Réessayez dans un instant.</value></data>
+  <data name="RefusalApprovalNeedsCheck" xml:space="preserve"><value>L'approbation de cet article doit être vérifiée par un administrateur. Votre demande n'a pas été appliquée.</value></data>
+  <data name="RefusalApprovalStartRefused" xml:space="preserve"><value>L'approbation n'a pas pu être lancée. Demandez à votre administrateur de vérifier le paramétrage des approbations.</value></data>
+  <data name="RefusalApprovalSelf" xml:space="preserve"><value>Vous ne pouvez pas approuver votre propre demande. Un autre approbateur doit décider.</value></data>
+  <data name="RefusalReferenceValueChanged" xml:space="preserve"><value>Une valeur de liste utilisée par cet article a été supprimée ou modifiée. Corrigez l'article, puis soumettez-le à nouveau.</value></data>
+  <data name="RefusalReferenceCheckUnavailable" xml:space="preserve"><value>Les listes de l'article ne peuvent pas être vérifiées pour le moment. Réessayez dans un instant.</value></data>
+  <data name="RefusalOrphanRepairInvalid" xml:space="preserve"><value>La demande de réparation du code n'est pas valide.</value></data>
+</root>

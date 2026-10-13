@@ -11,9 +11,10 @@ namespace Diten.Web.Views.MasterDataManagement.StockBehaviour;
 /// </summary>
 public sealed class StockBehaviourText
 {
-    /// <summary>The units of MOD-0048's item-uom list at S5b. A code arriving later (IU) is shown as its code.</summary>
+    /// <summary>The units of MOD-0048's item-uom list (ITEM-UNIVERSAL-V2: IU added at the S2 lane merge). A code arriving
+    /// later is shown as its code until its label is added here.</summary>
     public static readonly IReadOnlyList<string> UomCodes =
-        ["C62", "MC", "MGM", "GRM", "KGM", "MLT", "LTR", "MTR", "MTK", "XBX", "XCS", "XRO"];
+        ["C62", "MC", "MGM", "GRM", "KGM", "IU", "MLT", "LTR", "MTR", "MTK", "XBX", "XCS", "XRO"];
 
     /// <summary>The storage conditions of MOD-0048's storage-condition list at S5b.</summary>
     public static readonly IReadOnlyList<string> StorageConditionCodes =

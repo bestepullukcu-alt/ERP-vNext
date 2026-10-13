@@ -28,6 +28,8 @@ public sealed class ItemFormViewModel
     // Several storage-condition codes in one text field (no screen list of the values exists yet — see ItemsController).
     public string? StorageConditionCodes { get; set; }
 
+    // Drawn as a switch (asp-for needs bool); the value itself is MDM's bool? (S2 R-04: null = never filled) — index.js
+    // draws a null indeterminate and sends it as null, so it is never saved as a silent "no".
     public bool LotControlled { get; set; }
 
     public bool Stockable { get; set; }

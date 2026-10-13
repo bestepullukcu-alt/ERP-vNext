@@ -29,13 +29,32 @@ public static class ItemAudit
     // FIX1-EK (CT decision, AUD-001 §3): the free-text reason never enters the audit record — only whether one was given.
     // The text stays on the item. A coded reason list (S5) brings "reasonCode" back as a list code.
     public const string ReasonProvided = "reasonProvided";
+    // S2 FIX1 item 6 (CT decision A): a reactivation's reason enters the record only as "given" and its length.
+    public const string ReasonLength = "reasonLength";
     public const string Replay = "replay";
     public const string Lifecycle = "lifecycle";
     public const string StockCheck = "stockCheck";
 
+    // FU04 S2 (§21): the approval's facts — the request (operation, kind), the decision's evidence (who, when, which task,
+    // which transition) and the coded outcome. Ids and codes only.
+    public const string OperationId = "operationId";
+    public const string ActivationKind = "activationKind";
+    public const string Decision = "decision";
+    public const string DecisionActorId = "decisionActorId";
+    // S2 FIX2 (minor M2): whose request a worker's move completes — the maker (pending) or the requester (withdrawal).
+    public const string MakerId = "makerId";
+    public const string RequesterId = "requesterId";
+    public const string DecisionAt = "decisionAt";
+    public const string ApprovalTaskId = "approvalTaskId";
+    public const string TransitionSequence = "transitionSequence";
+    public const string OutcomeCode = "outcomeCode";
+    public const string MissingFields = "missingFields";
+
     public static readonly IReadOnlySet<string> MetadataKeys = new HashSet<string>(StringComparer.Ordinal)
     {
-        FirstFill, ReasonProvided, Replay, Lifecycle, StockCheck, AuditDetails.RefusalCodeKey
+        FirstFill, ReasonProvided, ReasonLength, Replay, Lifecycle, StockCheck, AuditDetails.RefusalCodeKey,
+        OperationId, ActivationKind, Decision, DecisionActorId, MakerId, RequesterId, DecisionAt, ApprovalTaskId, TransitionSequence, OutcomeCode,
+        MissingFields
     };
 
     // The audited values of a row (codes and plain values; conversions as "FROM>TO=N/D", sorted).

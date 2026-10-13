@@ -376,6 +376,82 @@ it — refused before processing, no definition (`PRODUCT_IDENTITY_WORKFLOW_DEFI
 decision, decided by its maker, or its decision no longer applicable. An answer that is lost or cannot be read keeps
 the lock and the start is looked up again (an approval may exist in the Task Center).
 
+### 11. Item — the activation approval (MOD-0290-FU04 S2, flow `ITEM_ACTIVATION`)
+
+The item's activation (Draft → Active) and reactivation (Deactivated → Active) go through one approval on the same chain:
+the same client, token and Platform endpoints as the flows above. What differs:
+
+| | Value |
+|---|---|
+| MDM section (switch, approver, template) | `ItemActivationWorkflow` — `:Enabled`, `:TemplateCode` (tracked: `ITEM-ACTIVATION`), `:ApproverPositionId`, `:ReasonCode` (tracked: `ITEM_ACTIVATION_APPROVAL`), optional `:DueAfterSeconds` |
+| MDM worker section | `ItemActivationWorkflowWorker` — `:Enabled`, `:LeaseOwner` (tracked: `mdm-dev-local-item`), `:StartSettleSeconds` (120; 1–600) |
+| Platform `ObjectType` / template code | `Item` / `ITEM-ACTIVATION` — Platform's `TrustedWorkflowStartAuthorization` lists exactly `{Diten.MDM, TRUSTED_WORKFLOW_CONSUMER, Item, ITEM-ACTIVATION}` for the default client (tracked in `appsettings.Development.json`) |
+| Approver | the **QA Manager position** (OD-7). MDM sends the candidate `position:{ApproverPositionId}`; the engine resolves the position's current holders and the first one decides (GP-1b). The id is configuration — never code. A vacant position: Platform answers the start 503 "candidates required" (`WorkflowInstanceStartCoordinator`, an empty seat is transient); the operation waits for the maker's replay (`AwaitingMakerReplay`) and **the submit fence is held** — the item stays Draft / Deactivated and refuses edits (`ITEM_ACTIVATION_SUBMIT_IN_FLIGHT`) until the maker submits again; `manual_reconciliation` counts it. Fill the seat, then the maker submits again (the LSKU behaviour). The id is one value for the whole deployment: a tenant whose QA Manager position has another id fails closed (known limit). |
+| Maker ≠ approver | the maker's own decision is never applied: the item goes back (Draft, or Deactivated for a reactivation) with `ITEM_ACTIVATION_SELF_APPROVAL_IGNORED`. The engine also drops the starter from the candidates. |
+
+**Not written by the bootstrap.** `setup-service-trust.*` writes the switches and approvers of the GP / GSKU / LSKU flows
+only; the item flow's `Enabled`, `ApproverPositionId` and the worker's `Enabled` go to the git-ignored
+`appsettings.Development.local.json` by hand:
+
+```json
+{
+  "ItemActivationWorkflow": { "Enabled": true, "ApproverPositionId": "<the QA Manager position's id>" },
+  "ItemActivationWorkflowWorker": { "Enabled": true }
+}
+```
+
+A non-default `--client-code` gets no Platform `Item` entry from the bootstrap (named gap, `DevTrustBootstrapCommand.cs`
+`GskuStarts` / `LskuStarts`): add the entry by hand for that client.
+
+**Dev set-up, in order (the owner enters shared dev data; CT measures):**
+1. Organisation → Positions: create (or pick) the **QA Manager** position in the tenant, Active; assign at least one person
+   who is NOT the item's maker (two people are proposed, OD-7). Copy the position's id.
+2. Platform → Workflow definitions: create `ITEM-ACTIVATION` and publish it with one approval step (step 4 above). The
+   step **must NOT define candidates** (`assignment.candidatePrincipalIds` empty): a step's candidates win over the
+   `position:<ApproverPositionId>` MDM sends, and MDM does not check that the person who decides holds the QA Manager
+   position — a definition with its own candidates silently changes who may approve.
+3. MDM local file: the JSON above; restart MDM.
+4. Item keys: `mdm.items.submit`, `.withdraw` reach roles with the module manifest (S5); until then grant them by hand.
+
+**The worker reads the item lists with MDM's service identity** (S2 FIX1): no user is present when the approval is
+applied, so the reference check runs with the trusted service token for the tenant (audience
+`TRUSTED_REFERENCE_DATA_CONSUMER`, the GSKU workflow resolver's identity provider `AuthWorkflowVerifiedMarketServiceIdentityProvider`
+and the `VerifiedGskuResolver` credential). Platform's item-universal endpoint accepts it. If Platform or Auth refuses it
+(401 after one refresh, 403, or no identity issued), the approval waits with `ITEM_REFERENCE_PROVIDER_CONFIGURATION_ERROR`
+(an error line, `needing_a_person`) and the item stays PendingActivation; it is asked again every hour, uncounted, so it
+heals by itself once the identity / credential configuration is fixed (no one has to submit again). This wait is the
+worker's only: a refusal of the maker's own token on their repeat answers the maker 503 and the operation stays on its
+ordinary retry. An outage (5xx,
+timeout) only waits. An instance that runs the item approval worker checks this identity's configuration at start
+(`ITEM_ACTIVATION_SERVICE_IDENTITY_CONFIGURATION_INVALID` stops the start). A user's request (the maker's repeat) reads
+the lists with the user's own token — the service identity is the worker's only.
+
+**Approval on, worker off** (S2 FIX1): not refused at start (in a multi-instance deployment one instance carries the
+worker). Each instance with the approval on and its worker off says so once at start (Warning). The gauge
+`ITEM_ACTIVATION_UNPROCESSED` (flow tag on the recovery gauges) counts approvals the worker should be carrying with no real
+move (a checkpoint write — a claim alone is not progress) for `ItemActivationGauge:UnprocessedAfterMinutes` (default 90,
+20–1440, and above the longest planned wait — the 1-hour configuration retry — + the worker's poll interval + lease;
+checked at start, an invalid value stops the start).
+An open approval is asked again at half its age, from the retry delay up to every 15 minutes (never counted toward the
+retry limit). `mdm.product_identity.recovery.oldest_open_approval_age` (unit `s`) is the age of the oldest approval still waiting
+for its decision (a number, no tenant).
+
+**The activation gate** (contract draft.11 "Etkinleştirme kuralı", R-04): at the submit and again when the approval is
+applied, the item needs `lotControlled` filled, a base unit, at least one storage condition unless it is packaging (O-25),
+and conversions that pass the chain rules (≤ 4 edges from the base unit). `serialControlled` is always false for an
+item. Missing → 422 `ITEM_STOCK_FIELDS_REQUIRED_FOR_ACTIVATION` with the missing field names (at the submit), or the
+approval is not applied and the item goes back with that code (at the decision).
+
+**Every state has a way out:**
+
+| Where the request stands | Item | Way out |
+|---|---|---|
+| on its way to the engine | Draft / Deactivated, edits refused (`ITEM_ACTIVATION_SUBMIT_IN_FLIGHT`) | automatic — the worker learns what the engine holds |
+| never received by the engine | as before | the maker submits again |
+| the engine may hold it (manual reconciliation) | **held** — PendingActivation, not editable | the **maker's same submit** re-reads the engine (start there → goes on; nothing there after the settle window → ends); otherwise a person (`needing_a_person`) |
+| pending, the engine open | PendingActivation | the approver decides, or the maker withdraws (`POST /api/mdm/items/{id}/withdraw`) |
+| rejected / closed without a decision / decided by the maker / gate no longer met | back: Draft, or **Deactivated** for a reactivation | the maker fixes and submits again |
+
 ---
 
 ## Live — for IT
@@ -448,6 +524,13 @@ disabled; a different hash does **not** replace the stored one.
 | `GskuCorrectionWorkflowWorker:QuarantineAfterFailedAttempts` (30), `:MaxRetryDelaySeconds` (900), `:RetryDelaySeconds`, `:StartSettleSeconds` (120; 1–600, larger stops the host at start); the same under `GskuRetirementRequestWorkflowWorker` | each retry waits twice as long, never longer than the ceiling (a ceiling below `RetryDelaySeconds` is raised to it and logged once as a Warning). After this many worker attempts in a row (0 = never) an operation is marked `*_RETRY_LIMIT_REACHED` with one Error line: if the cause is transient (engine / Platform unreachable, timeout, 5xx) it is **never** quarantined — it keeps retrying at the ceiling and heals by itself when the engine is back; any other cause goes to manual reconciliation, whose way out is the requester's same request (the Web offers it as *Repeat request*). Only the worker's attempts count — the requester's repeats neither count nor jump the wait. `StartSettleSeconds`: how long after a start whose answer was lost the worker trusts "the engine has no such instance" and ends the request |
 
 Restart MDM last. Then create and publish the definition (Development step 4) and assign the roles (step 5).
+
+**Item activation (MOD-0290-FU04 S2) — live deployment steps:** Platform `TrustedWorkflowStartAuthorization:Entries[]`
+gets `{ClientId, Diten.MDM, TRUSTED_WORKFLOW_CONSUMER, Item, ITEM-ACTIVATION}` (the live base `appsettings.json` lists no
+entry — every environment configures its own); MDM gets `ItemActivationWorkflow:Enabled`, `:TemplateCode`,
+`:ApproverPositionId` (the live QA Manager position's id), `:ReasonCode`, and `ItemActivationWorkflowWorker:Enabled`,
+`:LeaseOwner`; the `ITEM-ACTIVATION` definition is published in the live tenant. Without the worker a decision is never
+applied (production runs with background jobs off — decide it with the owner).
 
 ### 5a. What to watch (WP-MDM-GSKU-ACCEPT-01 FIX3 B13, FIX4)
 
@@ -601,6 +684,29 @@ Restart MDM last. Then create and publish the definition (Development step 4) an
     `mdm_global_product_retirement_request_operations` and `mdm_global_product_identity_workflow_operations`;
   - back to 1c7cb196b (guard for correction and retirement only, flow 2): `mdm_global_product_identity_workflow_operations`
     — its identity map has no guard and the identity fields came in flow 3 (23fb2d85f).
+
+### 5c. Item approval — what to watch (MOD-0290-FU04 S2)
+
+- Gauges (meter `Diten.MdmService.ProductIdentityRecovery`, tag `flow`), counted every 5 minutes by their own worker
+  (`ItemActivationGauge:Enabled`, on by default — independent of the recovery worker):
+  - `flow=ITEM_ACTIVATION` `…manual_reconciliation` — stuck item approvals: manual reconciliation, waiting for the maker's
+    replay, or a wait at its retry limit (`ITEM_ACTIVATION_WORKFLOW_RETRY_LIMIT_REACHED`). Each holds its item.
+  - `flow=ITEM_ACTIVATION` `…needing_a_person` — of those, the ones the maker's repeat cannot settle (BL-530), and
+    withdrawals whose cancel has been unanswered for over an hour. **Alert on it.**
+  - `flow=ITEM_ORPHAN_CODE` `…manual_reconciliation` — `IT-` codes held for more than 15 minutes with no item row. Swept by
+    `POST /api/mdm/items/operator/orphan-code-repairs?limit=…&minimumAgeMinutes=…` (key
+    `mdm.product-identity.lifecycle-operations.recover`): a consumed code is burned (never reused); a reserved-but-never-
+    consumed code is counted, not burned. `minimumAgeMinutes` is 15–525600 (the gauge's own age is the floor: a younger
+    code may still be consumed by its create's repeat); outside → 400 `ITEM_ORPHAN_CODE_REPAIR_INVALID`.
+  - `flow=ITEM_ACTIVATION_UNPROCESSED` `…manual_reconciliation` — approvals the worker should be carrying with no real move
+    for `ItemActivationGauge:UnprocessedAfterMinutes` (default 90; above the 1-hour configuration retry + poll + lease,
+    checked at start): the approval is on and no worker runs it.
+  - `mdm.product_identity.recovery.oldest_open_approval_age` (`flow=ITEM_ACTIVATION`, unit `s`) — the age of the oldest
+    approval still waiting for its decision (0: none). Its own gauge, never on `manual_reconciliation`; a failed read sets
+    `count_failed` for `flow=ITEM_ACTIVATION_OLDEST_OPEN_APPROVAL_SECONDS`. Alert on an age past what the QA Manager seat
+    should take (e.g. several days).
+  - `…count_failed` = 1 for a flow: its last count failed, the numbers above are stale.
+- Newly stuck operations are logged once (Error) by the recovery cycle: `ITEM_ACTIVATION operation … is stuck (…)`.
 
 ### 5b. Finished Good sales-box GTIN index (WP-MDM-ITEM-MASTER S3)
 

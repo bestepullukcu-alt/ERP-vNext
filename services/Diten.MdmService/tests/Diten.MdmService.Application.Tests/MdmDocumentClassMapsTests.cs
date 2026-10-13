@@ -303,11 +303,13 @@ public sealed class MdmDocumentClassMapsTests : IClassFixture<AuditIntentTempora
 
     // Brand / Product: their explicit maps ignored extra elements BEFORE this work, and ProductRepository replaces whole —
     // a pre-existing risk, NOT changed here (CT backlog; 🟡 in the report).
-    // Item (CT merge reconciliation, 2026-10-08): FU04 S1 was accepted with a lenient Item map and ItemRepository's
-    // whole-document ReplaceAsync — the same pre-existing risk; FU04 S2 moves the item update to a targeted $set before it
-    // adds fields (S1 report carry-forward, pack §19). Item is not live yet.
+    // Item: FU04 S2 moved the item update from the whole-document ReplaceAsync to a field-level $set (S1 carry-over b), so
+    // Item itself is no longer here — a whole write of an Item is red again. What remains is narrower and named: an edit
+    // replaces the item's two lists of classes whole when it writes them — its unit conversions (ItemUomConversion) and its
+    // storage selections (ReferenceCatalogSelection) — so a sub-field a later binary added to an ELEMENT of those lists is
+    // lost on an older binary's edit of that item (FU04 S2 report, 🟡).
     private static readonly HashSet<string> KnownPreExistingLenientWholeWrites =
-        ["Brand", "Product", "BrandProductExternalReference", "Item"];
+        ["Brand", "Product", "BrandProductExternalReference", "ItemUomConversion", "ReferenceCatalogSelection"];
 
     // ---------------------------------------------------------------------------------------------- FIX1 M2 / M4
 
@@ -449,7 +451,7 @@ public sealed class MdmDocumentClassMapsTests : IClassFixture<AuditIntentTempora
 #pragma warning restore CS0618
         settings.ServerSelectionTimeout = TimeSpan.FromSeconds(5);
         var client = new MongoClient(settings);
-        Assert.All(client.Settings.Servers, server => Assert.NotEqual(27017, server.Port));
+        Assert.All(client.Settings.Servers, server => Assert.NotEqual(MdmTestMongo.SharedPort, server.Port));
         return client.GetDatabase(ProductLegalEntityScopeMongoCollection.DatabaseName);
     }
 

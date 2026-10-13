@@ -65,7 +65,8 @@ public static class ItemModels
         string BaseUomCode,
         IReadOnlyList<ItemUomConversionDto> UomConversions,
         IReadOnlyList<string> StorageConditionCodes,
-        bool LotControlled,
+        // FU04 S2 (R-04): null = not filled (a legacy draft); an Active item never shows null.
+        bool? LotControlled,
         bool Stockable,
         int? ShelfLifeDays,
         int? RetestDays,
@@ -73,7 +74,10 @@ public static class ItemModels
         ItemLifecycleStatus LifecycleStatus,
         int Version,
         DateTimeOffset CreatedAt,
-        DateTimeOffset? UpdatedAt)
+        DateTimeOffset? UpdatedAt,
+        // S2 FIX1 item 6 (CT decision A): the pending reactivation's reason — the detail only (mdm.items.read), null in
+        // a list and once the reactivation is decided.
+        string? PendingReactivationReason = null)
     {
         // MOD-0290-FU04 S5: the reader's actions on this item (ItemActions); null where the answer is not a read.
         public IReadOnlyList<string>? AvailableActions { get; init; }

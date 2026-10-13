@@ -59,6 +59,8 @@ public sealed class ItemsController : Controller
     private readonly string _gatewayUrl;
     private readonly ITimeLimitedDataProtector _formAttemptProtector;
     private readonly IStringLocalizer<ItemsIndex> _localizer;
+    // S2 lane merge: the activation approval's sentences (ItemRefusals resx, seven languages).
+    private readonly IStringLocalizer<ItemRefusals> _approval;
     private readonly ILogger<ItemsController> _logger;
     private readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web)
     {
@@ -70,6 +72,7 @@ public sealed class ItemsController : Controller
         IConfiguration configuration,
         IDataProtectionProvider dataProtectionProvider,
         IStringLocalizer<ItemsIndex> localizer,
+        IStringLocalizer<ItemRefusals> approvalLocalizer,
         ILogger<ItemsController> logger)
     {
         _httpClient = httpClient;
@@ -79,6 +82,7 @@ public sealed class ItemsController : Controller
             .CreateProtector("Diten.Web", "MOD-0290-FU04", "ItemFormAttempt", "v1")
             .ToTimeLimitedDataProtector();
         _localizer = localizer;
+        _approval = approvalLocalizer;
         _logger = logger;
     }
 
@@ -796,6 +800,7 @@ public sealed class ItemsController : Controller
         var status = NormalizedStatus(response.StatusCode);
         var sentences = new List<string>();
         var unmapped = false;
+        string? lastCode = null;
         for (var index = 0; index < items.Length; index++)
         {
             var code = items[index];
@@ -803,9 +808,19 @@ public sealed class ItemsController : Controller
             // A detail-bearing code owns the ONE item after it, whatever its shape (SAME_UOM, "item-uom:XYZ").
             if (ItemRefusalSentences.DetailBearing.ContainsKey(code) && index + 1 < items.Length)
                 detail = items[++index];
+            // S2: the activation gate's field names follow its code — each known one is said as its label (the sentence
+            // says "the fields listed below"); an unknown name is skipped like any other detail.
+            else if (!IsCode(code) && lastCode == GateCode && ItemRefusalSentences.FieldKeys.TryGetValue(code, out var fieldKey))
+            {
+                var label = _approval[fieldKey].Value;
+                if (!sentences.Contains(label, StringComparer.Ordinal))
+                    sentences.Add(label);
+                continue;
+            }
             // Any other non-code item after a code is that code's detail — never an unmapped code.
             else if (!IsCode(code) && index > 0)
                 continue;
+            lastCode = code;
 
             var sentence = (options ? OptionsSentence(code) : null) ?? Sentence(code, detail);
             if (sentence is null)
@@ -838,8 +853,13 @@ public sealed class ItemsController : Controller
         return null;
     }
 
+    private const string GateCode = "ITEM_STOCK_FIELDS_REQUIRED_FOR_ACTIVATION";
+
     private string? Sentence(string code, string? detail)
     {
+        // S2: the activation approval's answers are said from their own resx (the second localizer).
+        if (ItemRefusalSentences.ApprovalKeys.TryGetValue(code, out var approvalKey))
+            return _approval[approvalKey].Value;
         if (!ItemRefusalSentences.Keys.TryGetValue(code, out var key))
             return null;
         if (detail is null)

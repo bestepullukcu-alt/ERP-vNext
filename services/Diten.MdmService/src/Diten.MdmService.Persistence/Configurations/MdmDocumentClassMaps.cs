@@ -47,7 +47,9 @@ public static class MdmDocumentClassMaps
         typeof(Brand), typeof(Product), typeof(LocalAuditIntent), typeof(LocalAuditIntentReceipt),
         // CT merge reconciliation (BL-576 → takeover, 2026-10-08): FU04 S1's Item. ItemMasterClassMaps maps it first (same
         // AutoMap + flag); the walk then covers what it embeds.
-        typeof(Item)
+        typeof(Item),
+        // FU04 S2: the item activation operation (mdm_item_workflow_operations).
+        typeof(ItemWorkflowOperation)
     ]);
 
     /// <summary>The document types the repositories read and write (collections, raw deserializations, projections) that

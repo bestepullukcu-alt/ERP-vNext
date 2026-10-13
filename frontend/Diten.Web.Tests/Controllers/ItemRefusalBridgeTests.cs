@@ -27,7 +27,9 @@ public sealed class ItemRefusalBridgeTests
         var missing = MdmItemCodes()
             .Where(code => !NotRefusals.Contains(code)
                            && !ItemRefusalSentences.KnownDetails.Contains(code)
-                           && !ItemRefusalSentences.Keys.ContainsKey(code))
+                           && !ItemRefusalSentences.Keys.ContainsKey(code)
+                           && !ItemRefusalSentences.ApprovalKeys.ContainsKey(code)
+                           && !ItemRefusalSentences.InternalCodes.ContainsKey(code))
             .Order(StringComparer.Ordinal)
             .ToArray();
 
@@ -48,6 +50,55 @@ public sealed class ItemRefusalBridgeTests
         Assert.Empty(ItemRefusalSentences.KnownDetails.Where(detail => !known.Contains(detail)));
         Assert.Empty(ItemRefusalSentences.KnownDetails.Where(ItemRefusalSentences.Keys.ContainsKey));
         Assert.All(ItemRefusalSentences.DetailBearing.Keys, code => Assert.True(ItemRefusalSentences.Keys.ContainsKey(code), code));
+    }
+
+    // S2 lane merge: the approval's map and the named internal codes are read from the same source — none is an orphan,
+    // and a code is in exactly one of the three (the page's map, the approval's map, internal).
+    [Fact]
+    public void S2Merge_No_approval_or_internal_code_is_an_orphan_and_none_is_in_two_lists()
+    {
+        var known = MdmItemCodes();
+        var orphans = ItemRefusalSentences.ApprovalKeys.Keys.Concat(ItemRefusalSentences.InternalCodes.Keys)
+            .Where(code => !known.Contains(code)).ToArray();
+        Assert.True(orphans.Length == 0, "Approval / internal codes MDM never writes: " + string.Join(", ", orphans));
+        var twice = ItemRefusalSentences.ApprovalKeys.Keys.Concat(ItemRefusalSentences.InternalCodes.Keys).Concat(ItemRefusalSentences.Keys.Keys)
+            .GroupBy(code => code, StringComparer.Ordinal).Where(group => group.Count() > 1).Select(group => group.Key).ToArray();
+        Assert.True(twice.Length == 0, "Codes in two lists: " + string.Join(", ", twice));
+        Assert.All(ItemRefusalSentences.InternalCodes, entry => Assert.False(string.IsNullOrWhiteSpace(entry.Value), entry.Key));
+    }
+
+    // S2: the activation gate's code and the field names it lists, read from MDM's own gate.
+    [Fact]
+    public void The_gate_code_and_every_field_it_names_have_a_sentence()
+    {
+        var gate = File.ReadAllText(Path.Combine(RepoRoot(), "services", "Diten.MdmService", "src",
+            "Diten.MdmService.Application", "Features", "ItemMaster", "Activation", "ItemActivationGate.cs"));
+        var code = Regex.Match(gate, "StockFieldsRequired = \"([A-Z_]+)\"").Groups[1].Value;
+        var fields = Regex.Matches(gate, "Field = \"([a-zA-Z]+)\"").Select(match => match.Groups[1].Value).ToArray();
+
+        Assert.Equal("ITEM_STOCK_FIELDS_REQUIRED_FOR_ACTIVATION", code);
+        Assert.True(ItemRefusalSentences.ApprovalKeys.ContainsKey(code), "the gate's code has no sentence");
+        Assert.True(fields.Length == 4, "the scan no longer sees the gate's field names");
+        Assert.True(fields.ToHashSet(StringComparer.Ordinal).SetEquals(ItemRefusalSentences.FieldKeys.Keys),
+            "gate fields and labels differ: " + string.Join(", ", fields));
+    }
+
+    // S2: the approval's resx (the second localizer) holds exactly its map's keys in all seven languages, none empty, no raw
+    // code or status word in a sentence.
+    [Fact]
+    public void Every_item_refusal_key_is_in_all_seven_languages_and_no_language_has_more()
+    {
+        var keys = ItemRefusalSentences.ApprovalKeys.Values.Concat(ItemRefusalSentences.FieldKeys.Values).ToHashSet(StringComparer.Ordinal);
+        foreach (var language in Languages)
+        {
+            var file = XDocument.Load(Path.Combine(RepoRoot(), "frontend", "Diten.Web", "Resources", "Views",
+                    "MasterDataManagement", "Items", $"ItemRefusals.{language}.resx")).Root!.Elements("data")
+                .ToDictionary(data => (string)data.Attribute("name")!, data => (string?)data.Element("value") ?? "",
+                    StringComparer.Ordinal);
+            Assert.True(keys.SetEquals(file.Keys), $"ItemRefusals.{language}.resx differs from the map.");
+            Assert.All(file, entry => Assert.False(string.IsNullOrWhiteSpace(entry.Value), $"{language}:{entry.Key} is empty"));
+            Assert.All(file, entry => Assert.DoesNotMatch(@"\b(403|409|503|Forbidden|ITEM_[A-Z_]+|[a-z]+[A-Z][a-zA-Z]*Codes?)\b", entry.Value));
+        }
     }
 
     // The task's list (S5 prompt) and §18's new codes: each one, by name, is said.

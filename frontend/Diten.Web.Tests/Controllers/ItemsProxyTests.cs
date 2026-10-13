@@ -378,6 +378,48 @@ public sealed class ItemsProxyTests(WebApplicationFactory<Program> factory) : IC
         Assert.DoesNotContain("unmapped", locked + reference);
     }
 
+    // S2 lane merge: the activation approval's answers are said from ITS resx (the second localizer); the gate's field
+    // names after its code are each said as their label, in MDM's order; an unknown field name is skipped, never shown.
+    [Theory]
+    [InlineData(422, "[\"ITEM_STOCK_FIELDS_REQUIRED_FOR_ACTIVATION\",\"lotControlled\",\"baseUomCode\",\"someNewField\"]",
+        "approval:RefusalStockFieldsRequired|approval:FieldLotControlled|approval:FieldBaseUom")]
+    [InlineData(409, "[\"ITEM_ACTIVATION_WORKFLOW_BUSY\"]", "approval:RefusalApprovalBusy")]
+    [InlineData(403, "[\"ITEM_ACTIVATION_WITHDRAWAL_NOT_REQUESTER\"]", "approval:RefusalApprovalNotRequester")]
+    [InlineData(503, "[\"ITEM_REFERENCE_PROVIDER_CONFIGURATION_ERROR\"]", "approval:RefusalReferenceCheckUnavailable")]
+    [InlineData(409, "[\"ITEM_ACTIVATION_SUBMIT_IN_FLIGHT\"]", "approval:RefusalApprovalSubmitInFlight")]
+    public async Task S2Merge_An_approval_answer_is_its_own_sentence_and_the_gates_fields_are_named(int status, string errors,
+        string expected)
+    {
+        var wire = new RecordingHandler((HttpStatusCode)status, $"{{\"isSuccessful\":false,\"statusCode\":{status},\"errors\":{errors}}}");
+
+        var result = Assert.IsType<ObjectResult>(await Controller(wire, ["mdm.items.submit"], "").Submit(ItemId, 1, CancellationToken.None));
+
+        Assert.Equal(status, result.StatusCode);
+        using var reply = JsonDocument.Parse(JsonSerializer.Serialize(result.Value));
+        Assert.Equal(expected.Split('|'), reply.RootElement.GetProperty("errors").EnumerateArray().Select(item => item.GetString()!));
+        Assert.False(reply.RootElement.TryGetProperty("unmapped", out _));
+    }
+
+    [Fact]
+    public async Task S2Merge_The_gate_refusal_reaches_a_turkish_reader_as_turkish_sentences()
+    {
+        CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("tr");
+        var wire = new RecordingHandler(HttpStatusCode.UnprocessableEntity,
+            "{\"errors\":[\"ITEM_STOCK_FIELDS_REQUIRED_FOR_ACTIVATION\",\"storageConditionCodes\"]}");
+        using var scope = factory.Services.CreateScope();
+        var controller = Controller(wire, ["mdm.items.submit"], "",
+            scope.ServiceProvider.GetRequiredService<IStringLocalizer<ItemsIndex>>(),
+            scope.ServiceProvider.GetRequiredService<IStringLocalizer<ItemRefusals>>());
+
+        var text = JsonSerializer.Serialize(Assert.IsType<ObjectResult>(await controller.Submit(ItemId, 1, CancellationToken.None)).Value,
+            new JsonSerializerOptions { Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
+
+        Assert.Contains("etkinleştirilemez", text);
+        Assert.Contains("Saklama koşulları", text);
+        Assert.DoesNotContain("ITEM_STOCK_FIELDS", text);
+        Assert.DoesNotContain("storageConditionCodes", text);
+    }
+
     [Fact]
     public async Task An_unknown_code_is_the_status_sentence_flagged_unmapped_and_never_shown()
     {
@@ -738,7 +780,7 @@ public sealed class ItemsProxyTests(WebApplicationFactory<Program> factory) : IC
     };
 
     private static ItemsController Controller(HttpMessageHandler wire, string[] permissions, string query,
-        IStringLocalizer<ItemsIndex>? localizer = null)
+        IStringLocalizer<ItemsIndex>? localizer = null, IStringLocalizer<ItemRefusals>? approvalLocalizer = null)
     {
         var gateway = new ConfigurationBuilder().AddInMemoryCollection(
             new Dictionary<string, string?> { ["GatewayUrl"] = Gateway }).Build();
@@ -756,7 +798,7 @@ public sealed class ItemsProxyTests(WebApplicationFactory<Program> factory) : IC
         context.Request.Headers.Cookie = "access_token=synthetic-items-proxy";
         context.Request.QueryString = new QueryString(query);
         return new ItemsController(new HttpClient(wire), gateway, new EphemeralDataProtectionProvider(),
-            localizer ?? new EchoLocalizer(), NullLogger<ItemsController>.Instance)
+            localizer ?? new EchoLocalizer(), approvalLocalizer ?? new EchoApprovalLocalizer(), NullLogger<ItemsController>.Instance)
         { ControllerContext = new ControllerContext { HttpContext = context } };
     }
 
@@ -788,6 +830,14 @@ public sealed class ItemsProxyTests(WebApplicationFactory<Program> factory) : IC
     {
         public LocalizedString this[string name] => new(name, name);
         public LocalizedString this[string name, params object[] arguments] => new(name, name);
+        public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) => [];
+    }
+
+    // S2 lane merge: the approval's localizer, told apart from the page's by its prefix.
+    private sealed class EchoApprovalLocalizer : IStringLocalizer<ItemRefusals>
+    {
+        public LocalizedString this[string name] => new(name, "approval:" + name);
+        public LocalizedString this[string name, params object[] arguments] => new(name, "approval:" + name);
         public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) => [];
     }
 }

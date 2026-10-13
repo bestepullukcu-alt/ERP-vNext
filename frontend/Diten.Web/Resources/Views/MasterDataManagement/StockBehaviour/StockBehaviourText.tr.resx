@@ -59,6 +59,7 @@
   <data name="Uom_MGM" xml:space="preserve"><value>Miligram (mg)</value></data>
   <data name="Uom_GRM" xml:space="preserve"><value>Gram (g)</value></data>
   <data name="Uom_KGM" xml:space="preserve"><value>Kilogram (kg)</value></data>
+  <data name="Uom_IU" xml:space="preserve"><value>Uluslararası birim (IU)</value></data>
   <data name="Uom_MLT" xml:space="preserve"><value>Mililitre (mL)</value></data>
   <data name="Uom_LTR" xml:space="preserve"><value>Litre (L)</value></data>
   <data name="Uom_MTR" xml:space="preserve"><value>Metre (m)</value></data>

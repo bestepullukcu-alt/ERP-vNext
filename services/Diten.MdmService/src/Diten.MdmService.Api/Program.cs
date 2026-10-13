@@ -1,3 +1,6 @@
+using Diten.MdmService.Api.Services.ItemMaster;
+using Diten.MdmService.Application.Features.ItemMaster.Activation;
+using Diten.MdmService.Application.Features.ItemMaster.Handlers.CommandHandlers;
 using System.Text;
 using Diten.BuildingBlocks.Security.Secrets;
 using Diten.MdmService.Api.Configuration;
@@ -275,6 +278,63 @@ builder.Services.AddScoped(sp =>
 builder.Services.AddScoped<LskuIdentityWorkflowProcessor>();
 builder.Services.AddSingleton<LskuIdentityWorkflowRecoveryRunner>();
 builder.Services.AddHostedService<LskuIdentityWorkflowRecoveryWorker>();
+// MOD-0290-FU04 S2: the item activation approval (flow ITEM_ACTIVATION, the QA Manager position). Off by default — a
+// submit answers 503 ITEM_ACTIVATION_APPROVAL_UNAVAILABLE and writes nothing (S1's answer).
+builder.Services.AddOptions<ItemActivationWorkflowOptions>()
+    .Bind(builder.Configuration.GetSection(ItemActivationWorkflowOptions.SectionName))
+    .Validate(options => options.IsValid(), ItemActivationWorkflowStartRequestFactory.ConfigurationInvalid)
+    .ValidateOnStart();
+builder.Services.AddOptions<ItemActivationWorkflowWorkerOptions>()
+    .Bind(builder.Configuration.GetSection(ItemActivationWorkflowWorkerOptions.SectionName))
+    .Validate(IsValidItemActivationWorkflowWorkerOptions, "ITEM_ACTIVATION_WORKFLOW_WORKER_CONFIGURATION_INVALID")
+    .ValidateOnStart();
+builder.Services.AddSingleton(sp =>
+    new ItemActivationAvailability(sp.GetRequiredService<IOptions<ItemActivationWorkflowOptions>>().Value.Enabled));
+builder.Services.AddScoped(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<ItemActivationWorkflowOptions>>().Value;
+    var configuration = options.Enabled ? options.ToStartConfiguration()
+        : new ItemActivationWorkflowStartConfiguration(null, null, Guid.Empty, string.Empty, false, false, null);
+    return new ItemActivationWorkflowStartRequestFactory(configuration, sp.GetRequiredService<TimeProvider>());
+});
+builder.Services.AddScoped(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<ItemActivationWorkflowWorkerOptions>>().Value;
+    return new ItemActivationWorkflowExecutionConfiguration(TimeSpan.FromSeconds(options.LeaseSeconds),
+        TimeSpan.FromSeconds(options.RetryDelaySeconds), TimeSpan.FromSeconds(options.StartSettleSeconds));
+});
+builder.Services.AddScoped<IItemActivationDecisionWriter, MediatorItemActivationDecisionWriter>();
+builder.Services.AddScoped<ItemActivationWorkflowProcessor>();
+builder.Services.AddScoped<ItemActivationRequests>();
+builder.Services.AddSingleton<ItemActivationWorkflowRecoveryRunner>();
+builder.Services.AddHostedService<ItemActivationWorkflowRecoveryWorker>();
+builder.Services.AddSingleton<ItemActivationGauge>();
+builder.Services.AddOptions<ItemActivationGaugeOptions>()
+    .Bind(builder.Configuration.GetSection(ItemActivationGaugeOptions.SectionName))
+    // S2 FIX2 item 2: the threshold is checked against the worker's poll and lease at start — invalid stops the start.
+    .Validate<IOptions<ItemActivationWorkflowWorkerOptions>>((gauge, worker) => gauge.IsValid(worker.Value),
+        ItemActivationGaugeOptions.ConfigurationInvalid)
+    .ValidateOnStart();
+builder.Services.AddHostedService<ItemActivationGaugeWorker>();
+// S2 FIX2 (minor M4): an instance that runs the item approval worker needs MDM's service identity for the item lists —
+// its configuration is checked at start (invalid stops the start, by name), never first at an approved item.
+builder.Services.AddOptions<Diten.MdmService.Infrastructure.ReferenceData.AuthWorkflowVerifiedMarketServiceIdentityProviderOptions>()
+    .Validate<IOptions<ItemActivationWorkflowOptions>, IOptions<ItemActivationWorkflowWorkerOptions>>((identity, approval, worker) =>
+    {
+        if (!approval.Value.Enabled || !worker.Value.Enabled) return true;
+        try
+        {
+            Diten.MdmService.Infrastructure.ReferenceData.AuthWorkflowVerifiedMarketServiceIdentityProvider.EnsureValidConfiguration(identity);
+            return true;
+        }
+        catch (Diten.MdmService.Application.Contracts.ReferenceData.WorkflowVerifiedMarketServiceIdentityException)
+        {
+            return false;
+        }
+    }, "ITEM_ACTIVATION_SERVICE_IDENTITY_CONFIGURATION_INVALID")
+    .ValidateOnStart();
+// S2 FIX1 item 2: the approval on with this instance's worker off is said at start (not refused).
+builder.Services.AddHostedService<ItemActivationWorkerOffWarning>();
 builder.Services.AddOptions<LskuRetirementRequestWorkflowOptions>()
     .Bind(builder.Configuration.GetSection(LskuRetirementRequestWorkflowOptions.SectionName))
     .Validate(options => !options.Enabled || IsValidLskuRetirementRequestOptions(options,
@@ -577,6 +637,12 @@ app.MapGet("/health", () => Results.Ok(new { status = "Healthy" })).AllowAnonymo
 app.MapControllers();
 
 app.Run();
+
+static bool IsValidItemActivationWorkflowWorkerOptions(ItemActivationWorkflowWorkerOptions options)
+{
+    try { options.EnsureValidWhenEnabled(); return true; }
+    catch (InvalidOperationException) { return false; }
+}
 
 static bool IsValidLskuIdentityWorkflowWorkerOptions(LskuIdentityWorkflowWorkerOptions options)
 {

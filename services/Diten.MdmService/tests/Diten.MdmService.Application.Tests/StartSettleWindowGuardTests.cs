@@ -15,13 +15,15 @@ public sealed class StartSettleWindowGuardTests
 {
     // FIX1 M1: EVERY member of an *Options type in the Api and Application assemblies whose name says "Settle" (int or
     // TimeSpan, any visibility, instance) — so a settle window that is not StartSettleSeconds, or lives in another
-    // assembly, cannot appear unseen. Today they are exactly the seven workers' StartSettleSeconds.
+    // assembly, cannot appear unseen. Today they are exactly the eight workers' StartSettleSeconds (FU04 S2 added the item
+    // activation worker's — validated by the same StartSettleWindow rule).
     private static readonly string[] KnownSettleMembers =
     [
         nameof(GlobalProductCorrectionWorkflowWorkerOptions) + ".StartSettleSeconds",
         nameof(GlobalProductRetirementRequestWorkflowWorkerOptions) + ".StartSettleSeconds",
         nameof(GskuCorrectionWorkflowWorkerOptions) + ".StartSettleSeconds",
         nameof(GskuRetirementRequestWorkflowWorkerOptions) + ".StartSettleSeconds",
+        nameof(ItemActivationWorkflowWorkerOptions) + ".StartSettleSeconds",
         nameof(LskuIdentityWorkflowWorkerOptions) + ".StartSettleSeconds",
         nameof(LskuRetirementRequestWorkflowWorkerOptions) + ".StartSettleSeconds",
         nameof(ProductIdentityWorkflowWorkerOptions) + ".StartSettleSeconds"

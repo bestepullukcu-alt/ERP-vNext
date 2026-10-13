@@ -59,6 +59,7 @@
   <data name="Uom_MGM" xml:space="preserve"><value>Миллиграмм (мг)</value></data>
   <data name="Uom_GRM" xml:space="preserve"><value>Грамм (г)</value></data>
   <data name="Uom_KGM" xml:space="preserve"><value>Килограмм (кг)</value></data>
+  <data name="Uom_IU" xml:space="preserve"><value>Международная единица (МЕ)</value></data>
   <data name="Uom_MLT" xml:space="preserve"><value>Миллилитр (мл)</value></data>
   <data name="Uom_LTR" xml:space="preserve"><value>Литр (л)</value></data>
   <data name="Uom_MTR" xml:space="preserve"><value>Метр (м)</value></data>

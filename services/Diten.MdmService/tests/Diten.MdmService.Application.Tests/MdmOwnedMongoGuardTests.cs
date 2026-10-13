@@ -20,14 +20,12 @@ public sealed class MdmOwnedMongoGuardTests
     private const string TestsRoot = "services/Diten.MdmService/tests";
 
     // Files that still name the shared Mongo, each with its reason; a listed file that no longer does is red — take it
-    // off. FIX1: down to two. Both only REFUSE the port (no connection to it) and both change on open branches
-    // (S2 item-activation, BL-598 bl598-lazy-index), so they move after those merge.
+    // off. FIX1: down to two. S2 lane merge (S2 and BL-598 both in): MdmDocumentClassMapsTests moved to
+    // MdmTestMongo.SharedPort; one left, it only REFUSES the port (no connection to it).
     private static readonly Dictionary<string, string> NotYetMoved = new(StringComparer.Ordinal)
     {
         [TestsRoot + "/Diten.MdmService.Api.Tests/MdmHttpHost.cs"] =
-            "names the port only to refuse it (its own EphemeralMongo); Api.Tests has no reference to this helper; changes on S2 / BL-598",
-        [TestsRoot + "/Diten.MdmService.Application.Tests/MdmDocumentClassMapsTests.cs"] =
-            "only a NotEqual(port) assertion; changes on S2 / BL-598"
+            "names the port only to refuse it (its own EphemeralMongo); Api.Tests has no reference to this helper"
     };
 
     // The helper names the port (to refuse it); this file holds the pattern's own examples. Nothing else.

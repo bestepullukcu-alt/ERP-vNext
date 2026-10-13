@@ -476,5 +476,10 @@ public sealed partial class ProductMasterS4HttpTests
             throw new NotSupportedException();
         public Task<ItemWriteResult> ReplaceAsync(Item item, int expectedVersion, CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
+        // S2 lane merge: the activation approval's two item writes (never reached by these read tests).
+        public Task<ItemWriteResult> UpdateFieldsAsync(Item item, int expectedVersion, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+        public Task<bool> FenceActivationSubmitAsync(Guid itemId, int expectedVersion, ItemLifecycleStatus sourceStatus,
+            Guid operationId, CancellationToken cancellationToken = default) => throw new NotSupportedException();
     }
 }

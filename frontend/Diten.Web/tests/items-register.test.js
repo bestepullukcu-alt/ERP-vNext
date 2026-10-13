@@ -376,6 +376,28 @@ describe('Items form option lists (S5b)', () => {
         });
     });
 
+    // S2 lane merge (R-04): a legacy draft's lot flag is null — drawn indeterminate and sent as null (MDM names it),
+    // never a silent false; once the reader sets it, the set value is sent.
+    it('S2 merge: a never-filled lot flag is indeterminate and sent as null until the reader sets it', async () => {
+        const item = { id, name: 'Old', materialType: 'EXCIPIENT', baseUomCode: 'KGM', storageConditionCodes: ['COOL_2_8'],
+            uomConversions: [], lotControlled: null, stockable: false, lifecycleStatus: 1, version: 3, availableActions: ['DETAILS', 'EDIT'] };
+        const sent = [];
+        const h = harness('edit', {
+            [`GET ${optionsUrl}`]: ok(options), [`GET /MasterDataManagement/Items/api/${id}`]: ok(item),
+            [`PUT /MasterDataManagement/Items/api/${id}`]: (init) => { sent.push(JSON.parse(init.body)); return ok(item); }
+        });
+        await h.api.initForm();
+
+        expect($('[name="LotControlled"]').indeterminate).toBe(true);
+        expect($('[name="LotControlled"]').checked).toBe(false);
+        await h.api.submitForm(new Event('submit'));
+        expect(sent[0].lotControlled).toBeNull();
+
+        $('[name="LotControlled"]').click();
+        await h.api.submitForm(new Event('submit'));
+        expect(sent[1].lotControlled).toBe(true);
+    });
+
     it('sends the chosen codes: the material type, the base unit, the storage conditions and the conversion units', async () => {
         let sent;
         const h = harness('create', {
