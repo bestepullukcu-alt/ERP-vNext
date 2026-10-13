@@ -699,7 +699,7 @@ Commit: "chore(mdm): WP-VW-W4-CFG — workflow template MDM-COMP-PROPOSAL (live)
   - kullanım sayısı MDM'de 0, Web CRM ucundan birleştirir.
 
 **Açık:**
-- (1) BE-a zorunluluk testi (yukarıda).
+- (1) ✅ **KAPANDI (CT, kullanıcı onayı):** `VwW4ReportV2CompletenessTests`. Tam hekim / eczane raporu geçerli; 21 hekim + 6 eczane cevabı tek tek boşaltılınca yalnız o alan eksik çıkıyor; "yok" seçenekleri listelerin yerini tutuyor; kurallara karşılığı olmayan yeni bir zorunluluk eklenirse test kırmızı. Sabotaj (pay + eczane rakip zorunluluğu kalktı) → 2 kırmızı. CRM 2733/0/5.
 - (2) **Eczane raf fotoğrafı için yükleme ucu yok** (yalnız `PhotoEvidenceId` alanı). WEB-b'ye küçük bir CRM ucu eklenir: W3 başlatma fotoğrafı deseni, MOD-0262 `CrmVisitEvidence`, `[DisableFormValueModelBinding]` vekil.
 
 **Sıradaki:** 3. tur — W4-WEB-a ∥ W4-WEB-b.
