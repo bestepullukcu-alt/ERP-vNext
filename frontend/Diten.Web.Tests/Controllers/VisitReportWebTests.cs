@@ -70,7 +70,13 @@ public sealed class VisitReportWebTests
         var manifest = File.ReadAllText(Path.Combine(RepoRoot(), "services", "Diten.Platform", "src", "Diten.Platform.Application",
             "Features", "Crm", "SelfRegistration", "CrmManifestProvider.cs"));
         Assert.DoesNotContain("/CRM/VisitReport", manifest); // reached from the workspace / the presentation only
-        Assert.DoesNotContain("location.replace", Script("visit-report.js"));
+        // UAS-001: no redirect for a refused user. The ONE location.replace is the pharmacy handover (CT, W4 K13 I1), reached only
+        // after the pre-fill answered (an authorised read) — the access notice path never redirects.
+        var page = Script("visit-report.js");
+        Assert.Equal(1, System.Text.RegularExpressions.Regex.Matches(page, @"location\.replace\(").Count);
+        var handover = page.IndexOf("location.replace(C.pharmacyReportUrl(", StringComparison.Ordinal);
+        Assert.True(handover > page.IndexOf("if (p.reportKind === 'pharmacy')", StringComparison.Ordinal)
+                    && page.IndexOf("if (p.reportKind === 'pharmacy')", StringComparison.Ordinal) > page.IndexOf("if (!pre.ok || !pre.data)", StringComparison.Ordinal));
         Assert.DoesNotContain("pharmacy-stock", Script("visit-report.js")); // the pharmacy report is WEB-b
     }
 
@@ -517,6 +523,18 @@ public sealed class VisitReportWebTests
         // the v1 screen stays (reading v1 reports; "result" of a visit without an execution)
         Assert.True(File.Exists(Path.Combine(WebRoot(), "Views", "CRM", "VisitExecution", "Index.cshtml")));
         Assert.Contains("if (k === 'result' || k === 'sendReport') { return '<a class=\"btn btn-' + a.tone + ' flex-fill\" href=\"' + esc(executionUrl)", ws);
+    }
+
+    /// <summary>CT (W4 K13 I1): every entry still opens the wizard; for a pharmacy visit it forwards to the pharmacy report
+    /// page (W4-WEB-b) instead of a dead-end notice — nothing else is asked or drawn.</summary>
+    [Fact]
+    public void A8b_a_pharmacy_visit_is_forwarded_to_the_pharmacy_report_page()
+    {
+        Assert.Contains("data-pharmacy-url=\"/CRM/PharmacyReport\"", View("Index.cshtml"));
+        if (Smoke("pharmacy") is not { } r) { return; }
+        Assert.Equal(new[] { "/CRM/PharmacyReport/pv1" }, r.GetProperty("redirects").EnumerateArray().Select(x => x.GetString()).ToArray());
+        Assert.Equal(new[] { "GET /api/prefill/pv1" }, r.GetProperty("calls").EnumerateArray().Select(x => x.GetString()).ToArray());
+        Assert.Equal(string.Empty, r.GetProperty("body").GetString());
     }
 
     [Fact]

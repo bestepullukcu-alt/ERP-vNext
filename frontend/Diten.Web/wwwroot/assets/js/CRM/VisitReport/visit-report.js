@@ -16,6 +16,7 @@
     const L = window.VisitReportL10n || {};
     const base = root.getAttribute('data-api-base') || '';
     const workspaceUrl = root.getAttribute('data-workspace-url') || '/CRM/VisitWorkspace';
+    const pharmacyUrl = root.getAttribute('data-pharmacy-url') || '/CRM/PharmacyReport';
     const plannedVisitId = root.getAttribute('data-planned-visit-id') || '';
     const flag = name => root.getAttribute('data-' + name) === 'true';
     const perms = {
@@ -65,7 +66,12 @@
         const pre = await api('GET', '/prefill/' + encodeURIComponent(plannedVisitId));
         if (!pre.ok || !pre.data) { return notice(pre.status === 404 ? L.NotFoundTitle : L.LoadFailed, pre.status === 404 ? L.NotFoundText : C.errorText(pre.errors, L)); }
         const p = pre.data;
-        if (p.reportKind === 'pharmacy' && typeof C.pharmacySteps !== 'function') { return notice(L.PharmacyTitle, L.PharmacyText); }
+        // CT (W4 K13 I1): a pharmacy visit opens the pharmacy report page (W4-WEB-b) — every entry (workspace, presentation)
+        // keeps pointing here, the wizard forwards; the notice stays only for a page without that route.
+        if (p.reportKind === 'pharmacy') {
+            if (window.location && typeof window.location.replace === 'function') { window.location.replace(C.pharmacyReportUrl(pharmacyUrl, plannedVisitId)); return; }
+            return notice(L.PharmacyTitle, L.PharmacyText);
+        }
         state.prefill = p;
         state.body = C.bodyOf(p);
         state.ctx = C.contextOf(p);

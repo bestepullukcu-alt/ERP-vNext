@@ -742,7 +742,11 @@ Commit: "chore(mdm): WP-VW-W4-CFG — workflow template MDM-COMP-PROPOSAL (live)
   - GSKU satırları `mdm.gskus.read` ile okunuyor; temsilcide yoksa bilgi mesajı (**W4-CFG'de temsilci rolüne `mdm.gskus.read` önerilir**);
   - stok adet / fiyat gözlemi / materyal çipleri / 48 sa sayacı yok (sunucuda alan yok).
 
+**I1 + I2 KAPANDI (CT, kullanıcı onayı, 2026-10-13):**
+- **I1:** sihirbaz eczane ziyaretini `/CRM/PharmacyReport/{id}`'ye devrediyor. `report-core.js` `pharmacyReportUrl`, view `data-pharmacy-url`; yalnız ön doldurma başarılıysa (UAS-001 korunur, A1 daraltıldı: tek `location.replace` = eczane devri). Duman testi `pharmacy`: yalnız prefill isteği + yönlendirme, çizim yok. Sabotaj → A8b kırmızı.
+- **I2:** `ForwardProposalsAsync` eczane önerisini planın ilk ürünüyle iletiyor (`PharmacyProposalProduct`, lookup ile aynı kural); ürünsüz planda MDM'ye gönderilmez, `competitor_proposal_pending` uyarısı. Sabotaj (ürün yine boş) → kırmızı.
+- Web **1002/0**, CRM **2739/0/5**.
+
 **Sıradaki:**
-- I1 + I2 küçük düzeltmesi (kullanıcı kararı).
 - 4. tur: W4-WEB-c (rakip yönetimi) + W4-CFG (şablon + yetkiler; read-all açık atama, temsilciye gskus.read).
 - Ardından W4 canlı E4.

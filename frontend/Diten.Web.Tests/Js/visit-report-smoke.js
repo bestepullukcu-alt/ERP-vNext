@@ -51,7 +51,7 @@ if (submitted) {
   body.safety = { adverseEvent: false, adverseEventNote: null, offLabelRequest: false };
 }
 const prefill = {
-  plannedVisitId: 'pv1', reportKind: 'doctor', contactId: 'c1', accountId: 'a1', visitReportId: submitted ? 'r1' : null,
+  plannedVisitId: 'pv1', reportKind: scenario === 'pharmacy' ? 'pharmacy' : 'doctor', contactId: 'c1', accountId: 'a1', visitReportId: submitted ? 'r1' : null,
   reportStatus: submitted ? 'submitted' : null, version: submitted ? 4 : 0, executionStatus: 'finished',
   startedAt: '2026-10-15T09:00:00Z', finishedAt: '2026-10-15T09:21:00Z', sampleSigned: true, body,
   previous: { visitReportId: 'r0', executedAt: '2026-07-01T09:00:00Z', productSections: [{ productId: A, adoptionStageCode: 'aware' }], doctor: null },
@@ -106,7 +106,9 @@ global.fetch = (url, o) => {
   else if (url.endsWith('/amend')) data = { visitReportId: 'r1', version: 5, reportStatus: 'amended', missing: [], warnings: [] };
   return Promise.resolve({ ok: status < 400, status, text: () => Promise.resolve(JSON.stringify({ data, errors })) });
 };
-global.window = { document: global.document, showToast: (m, t) => toasts.push({ m, t }), scrollTo() {} };
+const redirects = [];
+global.window = { document: global.document, showToast: (m, t) => toasts.push({ m, t }), scrollTo() {},
+  location: { replace: u => redirects.push(u) } };
 global.window.VisitReportCore = require(dir + '/VisitReport/report-core.js');
 global.window.VisitReportL10n = {
   StepGeneral: 'Genel', StepSafety: 'Takip ve güvenlik', StepDoctor: 'Doktor profili', StepSummary: 'Özet ve gönder', StepMissing: '{0} eksik',
@@ -133,6 +135,13 @@ const missingChip = () => el('vr-chips').innerHTML;
 (async () => {
   await settle();
   const out = { scenario };
+  if (scenario === 'pharmacy') {                     // CT (W4 K13 I1): the wizard hands a pharmacy visit to its own page
+    out.redirects = redirects;
+    out.calls = calls.map(c => c.method + ' ' + c.url);
+    out.body = html();
+    process.stdout.write(JSON.stringify(out));
+    return;
+  }
   out.steps = el('vr-steps').innerHTML;
   out.general = html();
   out.title = el('vr-sub').textContent;

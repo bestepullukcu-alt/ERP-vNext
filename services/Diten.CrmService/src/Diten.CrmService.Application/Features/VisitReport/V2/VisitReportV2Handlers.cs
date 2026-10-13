@@ -325,16 +325,33 @@ public sealed class VisitReportV2Service
 
     // ---------------- side effects of a submit ----------------
 
-    /// <summary>Forwards the rep's new competitor proposals to MDM (before the save: the ids land in the same write).</summary>
-    public async Task<List<string>> ForwardProposalsAsync(VisitReportV2Body body, Guid reportId, CancellationToken ct)
+    /// <summary>
+    /// The product a PHARMACY competitor proposal is filed under: the plan's first product — the same product the pharmacy
+    /// competitor list is looked up with (<see cref="CheckContextAsync"/>). MDM requires a product on every proposal; a plan
+    /// without products has none (CT, W4 K13 I2: the pharmacy proposals went with an empty id and MDM refused them all).
+    /// </summary>
+    public static Guid? PharmacyProposalProduct(Domain.Entities.PlannedVisit plan)
+        => (plan.ContentItems ?? new List<PlannedVisitContentItem>()).Select(i => i.ProductId).FirstOrDefault(id => id != Guid.Empty) is var first
+           && first != Guid.Empty ? first : null;
+
+    /// <summary>Forwards the rep's new competitor proposals to MDM (before the save: the ids land in the same write). A
+    /// proposal without a product (a pharmacy plan without products) is not sent: it stays on the report, pending.</summary>
+    public async Task<List<string>> ForwardProposalsAsync(VisitReportV2Body body, Guid reportId, Guid? pharmacyProductId, CancellationToken ct)
     {
         var warnings = new List<string>();
         var lists = (body.ProductSections ?? Array.Empty<VisitReportProductSection>()).Select(s => (Product: s.ProductId, s.Competitors)).ToList();
-        if (body.Pharmacy is { } pharmacy) lists.Add((Guid.Empty, pharmacy.Competitors));
+        if (body.Pharmacy is { } pharmacy) lists.Add((pharmacyProductId ?? Guid.Empty, pharmacy.Competitors));
         foreach (var (product, competitors) in lists)
         {
             foreach (var c in competitors.Where(c => c.Proposed && c.CompetitorProductId is null))
             {
+                if (product == Guid.Empty)
+                {
+                    c.ProposalForwarded = false;
+                    warnings.Add("competitor_proposal_pending:" + c.NameSnapshot.Trim());
+                    continue;
+                }
+
                 var result = await _competitors.ProposeAsync(c.NameSnapshot.Trim(), (c.Company ?? string.Empty).Trim(), product, reportId, ct);
                 c.ProposalForwarded = result.Available && result.Id is not null;
                 c.CompetitorProductId = result.Id;
@@ -578,7 +595,7 @@ public sealed class VisitReportV2Handlers :
         {
             Id = Guid.NewGuid(), TenantId = tenantId, PlannedVisitId = plan.Id, CreatedAt = now, CreatedBy = _s.Actor
         };
-        var warnings = await _s.ForwardProposalsAsync(body, report.Id, ct);
+        var warnings = await _s.ForwardProposalsAsync(body, report.Id, VisitReportV2Service.PharmacyProposalProduct(plan), ct);
         var version = report.Version;
         report.ExecutionOutcome = VisitExecutionOutcome.Completed;
         report.ReasonCode = null;
@@ -647,7 +664,7 @@ public sealed class VisitReportV2Handlers :
         var body = await _s.NormalizeAsync(tenantId, plan, request.Body, ct);
         if (await _s.CodesAsync<VisitReportV2SaveResultDto>(body, ct) is { } badCode) return badCode;
 
-        var warnings = await _s.ForwardProposalsAsync(body, report.Id, ct);
+        var warnings = await _s.ForwardProposalsAsync(body, report.Id, VisitReportV2Service.PharmacyProposalProduct(plan), ct);
         var before = VisitReportV2Rules.BodyOf(report);
         var changes = VisitReportV2Rules.DiffBodies(before, body);
         var now = _s.Now;

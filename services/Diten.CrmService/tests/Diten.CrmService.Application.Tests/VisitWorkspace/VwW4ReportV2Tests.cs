@@ -304,6 +304,36 @@ public sealed class VwW4ReportV2Tests
         Assert.False(w2.Reports.Items.Single().ProductSections[0].Competitors.Single().ProposalForwarded);
     }
 
+    /// <summary>CT (W4 K13 I2): a pharmacy proposal went to MDM with an empty product and MDM refused every one. It is filed
+    /// under the plan's first product (the product the pharmacy list is looked up with); a plan without products keeps it pending.</summary>
+    [Fact]
+    public async Task A_pharmacy_competitor_proposal_goes_to_mdm_under_the_plans_first_product_or_stays_pending_without_one()
+    {
+        static VisitReportV2Body PharmacyBody(string proposal) => new(
+            new VisitReportGeneral { VisitKindCode = "in_person", MetRoleCode = "pharmacist" }, null, null,
+            new VisitReportPharmacy { Competitors = { new VisitReportCompetitor { NameSnapshot = proposal, Company = "Firma", Proposed = true } } },
+            new VisitReportSafety { AdverseEvent = false }, new VisitReportFollowUp());
+
+        var w = new World();
+        w.Mdm.Available = true;
+        var plan = w.PharmacyPlan();
+        plan.ContentItems.Add(new PlannedVisitContentItem { ProductId = ProductA, Order = 1 });
+        var ok = await w.Handlers().Handle(new SubmitVisitReportV2Command(plan.Id, PharmacyBody("Eczane Rakip"), null), default);
+        Assert.True(ok.IsSuccessful);
+        var proposal = Assert.Single(w.Mdm.Proposals);
+        Assert.Equal(("Eczane Rakip", ProductA), (proposal.Name, proposal.ProductId));
+        Assert.True(w.Reports.Items.Single().Pharmacy!.Competitors.Single().ProposalForwarded);
+
+        var w2 = new World();
+        w2.Mdm.Available = true;
+        var bare = w2.PharmacyPlan();
+        var pending = await w2.Handlers().Handle(new SubmitVisitReportV2Command(bare.Id, PharmacyBody("Ürünsüz Rakip"), null), default);
+        Assert.True(pending.IsSuccessful);
+        Assert.Empty(w2.Mdm.Proposals);                                       // never an empty product to MDM
+        Assert.Contains("competitor_proposal_pending:Ürünsüz Rakip", pending.Data!.Warnings);
+        Assert.False(w2.Reports.Items.Single().Pharmacy!.Competitors.Single().ProposalForwarded);
+    }
+
     [Fact]
     public async Task The_sixty_minute_rule_holds_for_v2_and_a_draft_is_free_then_locked_after_submit()
     {

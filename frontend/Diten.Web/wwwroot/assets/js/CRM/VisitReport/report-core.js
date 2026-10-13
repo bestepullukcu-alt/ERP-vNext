@@ -445,6 +445,10 @@
         return String(template == null ? '' : template).replace(/\{(\d+)\}/g, (m, i) => (args[i] == null ? '' : String(args[i])));
     }
 
+    /** CT (W4 K13 I1): a pharmacy visit's report is its own page (W4-WEB-b) — the wizard hands the visit over to it. */
+    const pharmacyReportUrl = (pharmacyBase, plannedVisitId) =>
+        String(pharmacyBase || '/CRM/PharmacyReport').replace(/\/+$/, '') + '/' + encodeURIComponent(plannedVisitId || '');
+
     const api = {
         EDIT_WINDOW_MINUTES, MIN_MINUTES, MAX_MINUTES, MAX_NEXT_MESSAGE, MAX_GENERAL_NOTE, MAX_SAMPLE,
         ADOPTION_STAGES, SHARE_BUCKETS, RESOLUTIONS, KINDS, SETS,
@@ -454,7 +458,7 @@
         missing, missingDoctor, steps, stepOf, missingByStep, groupCounts,
         editWindow, hoursLeft, minutesBetween,
         cycleAdvantage, advantageOf, toggleCompetitor, addProposal, libraryAnswers, gskuOptions,
-        changesOf, requestBody, amendBody, errorText, fmt
+        changesOf, requestBody, amendBody, errorText, fmt, pharmacyReportUrl
     };
     return api;
 }));

@@ -24,6 +24,7 @@
 <div id="vr-root" class="vr-root"
      data-api-base="/CRM/VisitReport/api"
      data-workspace-url="/CRM/VisitWorkspace"
+     data-pharmacy-url="/CRM/PharmacyReport"
      data-planned-visit-id="@(Model.PlannedVisitId?.ToString() ?? string.Empty)"
      data-can-record="@Model.CanRecord.ToString().ToLowerInvariant()"
      data-can-amend="@Model.CanAmend.ToString().ToLowerInvariant()"
