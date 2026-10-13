@@ -1,0 +1,9 @@
+item	expected	result	disposition
+base HEAD	4a8d4d4b339528a88e6220fb8402e5a2c771136c	MATCH	registered detached checkout /private/tmp/mvp6-shipment-pod-ui-exec-01
+pack delta	20eacc55cb5bd7e76fc4db61e26d73b0d8c5f8c9849e2a4f5c3f93f8844f630c	PASS	preimage 323816... -> target 464d10...
+backend transfer	0cd90929fb7d2816443db05234a60e1895a5c057f271249a49ec14c7b737ae05	40/40 PASS	exact archive 8fa00d40814a81472ec4221ad909321d058dea18a11f64dd2ac16ea800ecb745 rows only
+Carrier predecessor	5b1badb9a22e44046ec1e77e0c17a8dc149ae4916f07a31830c9a4cf425d5131	18/18 PASS	exact archive f83d4c607441d286ff3e3439d662e51d54764e6830fc46642d01348eceac0bc7 rows only
+CRM port migration	70dfa5b55b7cd255a109b8f1c8fe8b5437888ed4b0cdef6a0ce6f3d4109a0a43 / manifest 826a95cbb2af672395935ce2c95dd82255bd297089b1bbc0effe80c5c8a7ca58	35/35 target hashes PASS	semantic blocker B-02 found after application
+Shipment shared successor	ef895ba69fc7eac4c251f4c2b672fb7f325a0ed226f5dbcf88a40a086a69982a / manifest bfa84f57d836d2539db221c2ca1f4989cf554023686a473a779d6eee1576aa36	12/12 target hashes PASS	regenerated after-port patch
+UI preimages	9bbad7bb3d01f8500711ae75c30cf1fbcb238b9af77c009fdacfb4b29efd3dfe	28/28 ABSENT	verified before write
+UI writer	UI-SOURCE-MANIFEST.tsv	28/28 PRESENT	single writer; no allowlist expansion

@@ -1,0 +1,14 @@
+0eaff863249654ff2dbe1990ebdcae0f610b0f3ee2bf31f197d5d8b5a744e2a9  .antigravity/rules/docs-organization.md
+da5ec0cc0f180d7237bdf599c7d71eb1fb96962ed14496427a1ea789b18c5050  tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs
+e618a1f06ebca5028157a90fab8b7d799c6fde187802003de5056e21c8476654  docs/records/decisions/2026-09/mvp6-sandop-publication-guard-owner-decision-01.json
+063e0cde7c436cf0926101ac9a300b9b1e6147dd5bea5c7dbfd100e65a868fe9  docs/reference/architecture/docs-path-authority.json
+eb1df1383e637c744179abe4c8faa3b3b7ebe4cccd19738aadf41896a9311bda  docs/analysis/contracts/sandop-capacity-semantics-v2.0.0.md
+9543e3f295dcabb9f7c1ab464fadfacfcbc53ada2f9bec9d32deb8f52cb02ff3  docs/analysis/contracts/sandop-capacity.openapi.yaml
+1a77c6da9c188c3d9d06413ddd108545accaa90a45124923d12e84fc0cf22527  docs/records/audits/2026-09/mvp6-sandop-publication-guard-disposition-01/historical-tool-policy-proposed.patch
+dc7aa123eef262014ded3bc90c325b92df71aaaf7ed668cfa732a903fe8f9f57  docs/records/audits/2026-09/mvp6-sandop-publication-guard-disposition-01/PROVENANCE.md
+5d66663f0983e0022f5d8f1b1aaaf6e28148c417be29217f54b48edfc82204b0  docs/records/audits/2026-09/mvp6-sandop-annex-status-disposition-01/annex-status.patch
+8f0fa7a9e7e33dbd588b2c21ebfb396d62d61f9dd2839c07dcc110adbd9fd761  docs/records/audits/2026-09/mvp6-sandop-publication-gate-close-01/SOP-22.md
+e4c7b543acc0db6f99efd2a89a9a4abacca8f779abdb0c62f24b1a84014ace71  docs/records/audits/2026-09/mvp6-sandop-publication-gate-close-01/CONSENT-REPIN.md
+4114a40df65f8d07bbb7696c8841727d5cfee427bd7addefc1d2c402b2754564  docs/records/audits/2026-09/mvp6-sandop-publication-gate-close-01/disposable-guard.trx
+6bc3bbe7309e727ac34ca1e57036fdf059d5e963d133da771fced407941333f6  docs/records/audits/2026-09/mvp6-sandop-publication-gate-close-01/checkout-guard.trx
+0779ba5e297ff6a17ff0f6ebc2f510d85fe25a9cbdd2e8cc15709b7c04ab410e  docs/records/audits/2026-09/mvp6-sandop-publication-gate-close-01/checkout-architecture.trx

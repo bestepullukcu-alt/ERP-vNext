@@ -20,7 +20,7 @@
         // WP-CYC-UI-2
         'LegacyBadge', 'StatusEditable', 'StatusNotCalculable', 'Calculating', 'UnitMinutesShort', 'HoursMinutesFormat',
         'NoNumberBlocked', 'CalendarResolvedShort', 'CalendarUnresolvedShort', 'CalendarForbiddenShort',
-        'CalendarUnknownShort', 'Codes'
+        'CalendarUnknownShort', 'Codes', 'WfDailyFixedMinutes', 'WfDailyFixedMinutesLegacy', 'UnitMinutesPerDay'
     ];
 
     const logMissingKeys = (dictionary) => {

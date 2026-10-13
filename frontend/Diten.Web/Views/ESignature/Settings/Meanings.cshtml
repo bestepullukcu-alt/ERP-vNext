@@ -1,0 +1,134 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@using Diten.Web.Models.DataTable
+@inject IHtmlLocalizer<Diten.Web.Views.ESignature.ESignature> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["ESign.Meanings.Title"].Value;
+    Layout = "_LayoutTenantShell";
+    var canManage = Perms.Has("esign.meanings.manage");
+    // KS-12: the seven tenant languages, ar right-to-left.
+    var languages = new[] { "tr", "en", "fr", "es", "zh", "ar", "ru" };
+}
+@*
+    MOD-0022 E5W2 — İmza anlamları (ESIGN_MEANINGS, /ESignature/Settings/Meanings, esign.meanings.read; pack §11.1, §11.3; mockup
+    v2 tab 6 + "MODAL · İMZA ANLAMI"). §17.3 (evidence §0): Table-bulk golden slim CLIENT list (a tenant has a handful of
+    meanings; listMeanings is unpaged) — emsal Views/DevEnablement/GoldenReferenceSlim + a Sneat modal form (emsal
+    Views/Traceability/Lots/_LotQuickCreateModal.cshtml): code (locked once used), 7 names (all required, KS-12), description.
+    Activate / deactivate: activateMeaning / deactivateMeaning (409 ESIGN_MEANING_IN_USE while a policy row uses it).
+    Without esign.meanings.manage the list is read-only: no New, no toggle, the modal opens read-only ("Görüntüle"). UAS-001.
+*@
+@if (!Perms.Has("esign.meanings.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["ESign.Meanings.Title"].Value" />
+    return;
+}
+@{
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-esign-meanings",
+        DataMode = "client",
+        Slug = "esign-meanings",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["ESign.Meanings.Col.Code"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["ESign.Meanings.Col.Name"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ESign.Meanings.Col.Description"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ESign.Meanings.Col.Usage"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ESign.Common.Status"].Value }
+        ],
+        ActionsHeader = Localizer["ESign.Common.Actions"].Value
+    };
+}
+
+@* Contract marker: <partial name="_Filter" /> *@
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                    <div class="filter-chip">
+                        <select id="filterStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["ESign.Common.Status"]">
+                            <option value="active">@Localizer["ESign.Meanings.Active"]</option>
+                            <option value="inactive">@Localizer["ESign.Meanings.Inactive"]</option>
+                        </select>
+                    </div>
+                    <div class="filter-chip">
+                        <select id="filterLocked" class="form-select form-select-sm select2" data-placeholder="@Localizer["ESign.Meanings.Col.Usage"]">
+                            <option value="">@SharedLocalizer["ShowAll"]</option>
+                            <option value="used">@Localizer["ESign.Meanings.Used"]</option>
+                            <option value="unused">@Localizer["ESign.Meanings.Unused"]</option>
+                        </select>
+                    </div>
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">@SharedLocalizer["Apply"]</button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">@SharedLocalizer["Reset"]</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="mb-3" id="esignMeaningsRoot" data-can-manage="@(canManage ? "true" : "false")">
+    <h5 class="mb-0">@Localizer["ESign.Meanings.Title"]</h5>
+    <p class="mb-0 text-muted">@Localizer["ESign.Meanings.Sub"]</p>
+</div>
+
+@* Contract markers are rendered by _ListShell: <partial name="_TableSkeleton" />, <table id="dt-esign-meanings" data-dt-standard="v2"> *@
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />
+
+<div class="modal fade" id="esignMeaningModal" tabindex="-1" aria-hidden="true" aria-labelledby="esignMeaningModalTitle" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <form class="modal-content" id="esignMeaningForm" novalidate autocomplete="off">
+            <div class="modal-header">
+                <div><h5 class="modal-title mb-0" id="esignMeaningModalTitle"></h5><small class="text-muted">@Localizer["ESign.Meanings.Modal.Sub"]</small></div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["ESign.Dialog.Close"]"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger d-none" role="alert" id="esignMeaningError"></div>
+                <div class="row g-3">
+                    <div class="col-12 col-md-4">
+                        <label class="form-label" for="esignMeaningCode">@Localizer["ESign.Meanings.Col.Code"] <span class="text-danger">*</span></label>
+                        <input class="form-control font-monospace text-uppercase" id="esignMeaningCode" maxlength="32" placeholder="VERIFY" spellcheck="false" />
+                        <div class="invalid-feedback" data-esign-error="code"></div>
+                        <small class="text-muted d-none" id="esignMeaningCodeLocked"><i class="bx bx-lock-alt me-1"></i>@Localizer["ESign.Meanings.CodeLocked"]</small>
+                    </div>
+                    <div class="col-12 col-md-8">
+                        <label class="form-label" for="esignMeaningDescription">@Localizer["ESign.Meanings.Col.Description"]</label>
+                        <input class="form-control" id="esignMeaningDescription" maxlength="500" />
+                    </div>
+                    <div class="col-12"><span class="form-label d-block mb-0">@Localizer["ESign.Meanings.Col.Name"] <span class="text-danger">*</span></span></div>
+                    @foreach (var lang in languages)
+                    {
+                        <div class="col-12 col-md-6">
+                            <label class="form-label" for="esignMeaningName-@lang"><span class="badge bg-label-secondary me-1">@lang.ToUpperInvariant()</span>@Localizer[$"ESign.Meanings.Lang.{lang}"]</label>
+                            <input class="form-control" id="esignMeaningName-@lang" data-esign-lang="@lang" maxlength="100" dir="@(lang == "ar" ? "rtl" : "ltr")" />
+                            <div class="invalid-feedback">@Localizer["ESign.Meanings.NameRequired"]</div>
+                        </div>
+                    }
+                </div>
+                <div class="alert alert-warning d-flex gap-2 align-items-start mt-3 mb-0 d-none" role="note" id="esignMeaningUsageWarn"><i class="bx bx-error fs-5"></i><span></span></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal" id="esignMeaningCancel">@Localizer["ESign.Dialog.Cancel"]</button>
+                @if (canManage)
+                {
+                    <button type="submit" class="btn btn-primary" id="esignMeaningSave"><i class="bx bx-save me-1"></i>@Localizer["ESign.Common.Save"]</button>
+                }
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/ESignature/_ESignatureL10n.cshtml" />
+    <partial name="~/Views/ESignature/_ESignatureListL10n.cshtml" />
+    <script src="~/assets/js/shared/premium-modal.js" asp-append-version="true"></script>
+    <script src="~/assets/js/ESignature/esign-dialog.js" asp-append-version="true"></script>
+    <script src="~/assets/js/ESignature/esign-pages.js" asp-append-version="true"></script>
+    <script src="~/assets/js/ESignature/meanings.js" asp-append-version="true"></script>
+}

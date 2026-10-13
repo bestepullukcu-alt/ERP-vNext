@@ -1,0 +1,67 @@
+--- docs/records/audits/2026-09/mvp6-combined-final-release-pack-01/publication/docs/analysis/contracts/shipment-bundle.openapi.yaml	2026-09-20 14:03:41
++++ docs/analysis/contracts/shipment-bundle.openapi.yaml	2026-09-26 11:21:32
+@@ -10,7 +10,7 @@
+     shadow stock balance tutmaz. ASSUMPTION: lifecycle gecisleri optimistic concurrency
+     yerine idempotent command + mevcut durum kontroluyle korunur. CONSUMES:
+     WAREHOUSE-SHIPMENT-TRIGGER (merkez üretecek)
+-  version: 3.0.0
++  version: 3.1.0
+   x-status: FROZEN
+   x-shipment-root-semantics: shipment-root-semantics-v3.0.0.md
+   x-owner: [MOD-0183, MOD-0184, MOD-0185, MOD-0186, MOD-0187]
+@@ -453,6 +453,7 @@
+                   shipmentIds:
+                   - 18300000-0000-0000-0000-000000000001
+                   status: Planned
++                  lifecycleCorrelationId: 18500000-0000-0000-0000-0000000000aa
+                 total: 1
+                 contractVersion: v1
+           headers:
+@@ -606,8 +607,8 @@
+                       message: Request rejected.
+                       correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                     contractVersion: v1
+-      x-loads-semantics: loads-semantics-v2.0.0.md
+-      description: ' Normative Loads candidate: loads-semantics-v2.0.0.md. Publication HELD; D185-01..05 approved
++      x-loads-semantics: loads-semantics-v3.1.0.md
++      description: ' Normative Loads candidate: loads-semantics-v3.1.0.md. Publication HELD; D185-01..05 approved
+         design only.'
+     post:
+       tags:
+@@ -986,8 +987,8 @@
+                       message: Request rejected.
+                       correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                     contractVersion: v1
+-      x-loads-semantics: loads-semantics-v2.0.0.md
+-      description: ' Normative Loads candidate: loads-semantics-v2.0.0.md. Publication HELD; D185-01..05 approved
++      x-loads-semantics: loads-semantics-v3.1.0.md
++      description: ' Normative Loads candidate: loads-semantics-v3.1.0.md. Publication HELD; D185-01..05 approved
+         design only.'
+   /loads/{loadId}/transition:
+     post:
+@@ -997,7 +998,7 @@
+       summary: Load lifecycle durumunu ilerlet
+       description: "Izinli gecisler: Draft->Planned|Cancelled; Planned->Tendered|Cancelled; Tendered->Accepted|Cancelled;\
+         \ Accepted->Dispatched|Cancelled; Dispatched->Completed. Diger gecisler INVALID_LOAD_TRANSITION ile reddedilir.\n\
+-        \ Normative Loads candidate: loads-semantics-v2.0.0.md. Publication HELD; D185-01..05 approved design only."
++        \ Normative Loads candidate: loads-semantics-v3.1.0.md. Publication HELD; D185-01..05 approved design only."
+       parameters:
+       - name: loadId
+         in: path
+@@ -1359,7 +1360,7 @@
+                       message: Request rejected.
+                       correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+                     contractVersion: v1
+-      x-loads-semantics: loads-semantics-v2.0.0.md
++      x-loads-semantics: loads-semantics-v3.1.0.md
+   /returns:
+     get:
+       tags:
+@@ -3193,6 +3194,7 @@
+         carrierId: { type: string, format: uuid }
+         shipmentIds: { type: array, items: { type: string, format: uuid } }
+         status: { $ref: '#/components/schemas/LoadStatus' }
++        lifecycleCorrelationId: { type: [string, 'null'], format: uuid, description: 'Authoritative persisted LoadPlan.CorrelationRoot. Upgraded producers emit the stored value when present; no derivation or backfill.' }
+     LoadResponse:
+       type: object
+       required: [loadId, loadNumber, status, idempotentReplay, contractVersion]

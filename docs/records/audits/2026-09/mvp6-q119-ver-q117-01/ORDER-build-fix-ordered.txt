@@ -1,0 +1,41 @@
+1	CapacityMongo
+2	Test collection for Diten.SupplyChainService.Tests.CapacityPlans.CapacityContractTests
+3	Test collection for Diten.SupplyChainService.Tests.CapacityPlans.CapacityLifecycleTests
+4	Test collection for Diten.SupplyChainService.Tests.CapacityPlans.CapacityReplayTests
+5	Test collection for Diten.SupplyChainService.Tests.ShipmentRootHttpTests
+6	Test collection for Diten.SupplyChainService.Tests.ShipmentRootStorageTests
+7	Test collection for Diten.SupplyChainService.Tests.ShipmentTests
+8	Test collection for Diten.SupplyChainService.Tests.ShipmentValidatorContractTests
+9	Test collection for Diten.SupplyChainService.Tests.SourceClientTests
+10	Test collection for Diten.SupplyChainService.Tests.SourceIntakeTests
+11	Test collection for Diten.SupplyChainService.Tests.Shipments.ShipmentTrackingPodManifestProviderTests
+12	SandopMongoFailpoint
+13	Test collection for Diten.SupplyChainService.Tests.SandopPlans.SandopConcurrencyTests
+14	Test collection for Diten.SupplyChainService.Tests.SandopPlans.SandopContractTests
+15	Test collection for Diten.SupplyChainService.Tests.SandopPlans.SandopIsolationTests
+16	Test collection for Diten.SupplyChainService.Tests.SandopPlans.SandopLifecycleTests
+17	Test collection for Diten.SupplyChainService.Tests.SandopPlans.SandopReplayTests
+18	Returns Mongo
+19	Test collection for Diten.SupplyChainService.Tests.Returns.ReturnContractTests
+20	Test collection for Diten.SupplyChainService.Tests.Loads.LoadAtomicityTests
+21	Test collection for Diten.SupplyChainService.Tests.Loads.LoadConcurrencyTests
+22	Test collection for Diten.SupplyChainService.Tests.Loads.LoadContractTests
+23	Test collection for Diten.SupplyChainService.Tests.Loads.LoadIsolationTests
+24	Test collection for Diten.SupplyChainService.Tests.Loads.LoadLifecycleTests
+25	Test collection for Diten.SupplyChainService.Tests.Loads.LoadReferenceTests
+26	Test collection for Diten.SupplyChainService.Tests.Loads.LoadReplayTests
+27	Test collection for Diten.SupplyChainService.Tests.Claims.ClaimAmountTests
+28	Test collection for Diten.SupplyChainService.Tests.Claims.ClaimAtomicityTests
+29	Test collection for Diten.SupplyChainService.Tests.Claims.ClaimConcurrencyTests
+30	Test collection for Diten.SupplyChainService.Tests.Claims.ClaimContractTests
+31	Test collection for Diten.SupplyChainService.Tests.Claims.ClaimIsolationTests
+32	Test collection for Diten.SupplyChainService.Tests.Claims.ClaimLifecycleTests
+33	Test collection for Diten.SupplyChainService.Tests.Claims.ClaimOutboxTests
+34	Test collection for Diten.SupplyChainService.Tests.Claims.ClaimPermissionTests
+35	Test collection for Diten.SupplyChainService.Tests.Claims.ClaimReferenceTests
+36	Test collection for Diten.SupplyChainService.Tests.Claims.ClaimReplayTests
+37	Test collection for Diten.SupplyChainService.Tests.Carriers.CarrierContractTests
+38	Test collection for Diten.SupplyChainService.Tests.Carriers.CarrierManagementManifestProviderTests
+39	Test collection for Diten.SupplyChainService.Tests.Carriers.CarrierModuleRegistrationHostedServiceTests
+1	CapacityMongo
+1	CapacityMongo

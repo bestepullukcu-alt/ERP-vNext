@@ -1,0 +1,52 @@
+--- a/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/CapacityPlans/CapacityRepository.cs
++++ b/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/CapacityPlans/CapacityRepository.cs
+@@ -20,6 +20,11 @@
+     }
+     private static BsonDocument ReceiptKey(CapacityScope s,string operation,string target,string key) => new() {
+         {"TenantId",s.TenantId.ToString()},{"LegalEntityId",s.LegalEntityId.ToString()}, {"Operation",operation}, {"Target",target},{"Key",key} };
++    // A server-rejected commit command without an unknown-result label is a definite failure.
++    // Network, timeout and write-concern outcomes remain uncertain after commit was attempted.
++    private static string CommitFailureCode(Exception ex,bool commitAttempted) =>
++        !commitAttempted || (ex is MongoCommandException command && !command.HasErrorLabel("UnknownTransactionCommitResult"))
++            ? "DEPENDENCY_UNAVAILABLE" : "COMMIT_RESULT_UNRESOLVED";
+     private static CapacityMutation<T> Error<T>(int status,string code) => new(default,status,code);
+     private async Task<CapacityMutation<T>?> Replay<T>(IClientSessionHandle? session, BsonDocument key, string fingerprint, CancellationToken ct) where T:class
+     {
+@@ -93,7 +98,7 @@
+             catch(Exception ex) when(ex is MongoException or TimeoutException)
+             {
+                 var recovered=await SafeReplay<CapacityPlan>(rk,fingerprint,ct);
+-                return recovered ?? Error<CapacityPlan>(503,commitAttempted ? "COMMIT_RESULT_UNRESOLVED" : "DEPENDENCY_UNAVAILABLE");
++                return recovered ?? Error<CapacityPlan>(503,CommitFailureCode(ex,commitAttempted));
+             }
+         }
+         return Error<CapacityPlan>(503,"DEPENDENCY_UNAVAILABLE");
+@@ -131,7 +136,7 @@
+             catch(MongoException ex) when(!commitAttempted && (ex.HasErrorLabel("TransientTransactionError") || ex is MongoWriteException { WriteError.Category:ServerErrorCategory.DuplicateKey }))
+             {await Task.Delay(10*(attempt+1),ct);}
+             catch(Exception ex) when(ex is MongoException or TimeoutException)
+-            {var recovered=await SafeReplay<CapacityScenario>(rk,fingerprint,ct);return recovered??Error<CapacityScenario>(503,commitAttempted ? "COMMIT_RESULT_UNRESOLVED" : "DEPENDENCY_UNAVAILABLE");}
++            {var recovered=await SafeReplay<CapacityScenario>(rk,fingerprint,ct);return recovered??Error<CapacityScenario>(503,CommitFailureCode(ex,commitAttempted));}
+         }
+         return Error<CapacityScenario>(503,"DEPENDENCY_UNAVAILABLE");
+     }
+@@ -167,7 +172,7 @@
+             catch(MongoException ex) when(!commitAttempted && (ex.HasErrorLabel("TransientTransactionError") || ex is MongoWriteException { WriteError.Category:ServerErrorCategory.DuplicateKey }))
+             {await Task.Delay(10*(attempt+1),ct);}
+             catch(Exception ex) when(ex is MongoException or TimeoutException)
+-            {var recovered=await SafeReplay<CapacityEvaluation>(rk,fingerprint,ct);return recovered??Error<CapacityEvaluation>(503,commitAttempted ? "COMMIT_RESULT_UNRESOLVED" : "DEPENDENCY_UNAVAILABLE");}
++            {var recovered=await SafeReplay<CapacityEvaluation>(rk,fingerprint,ct);return recovered??Error<CapacityEvaluation>(503,CommitFailureCode(ex,commitAttempted));}
+         }
+         return Error<CapacityEvaluation>(503,"DEPENDENCY_UNAVAILABLE");
+     }
+--- a/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs
++++ b/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/CapacityPlans/CapacityAtomicityTests.cs
+@@ -160,7 +160,7 @@
+         try {result=await repo.EvaluateAsync(Scope,planId,scenarioId,"x01-key","x01-fp",evaluation.CorrelationId,evaluation,CancellationToken.None);}
+         finally {var hits=await StopFail()-before;output.WriteLine($"X01 definite commit cut hits={hits}");Assert.True(hits>=1);}
+         Assert.Equal(503,result.StatusCode);
+-        Assert.Equal("COMMIT_RESULT_UNRESOLVED",result.ErrorCode);
++        Assert.Equal("DEPENDENCY_UNAVAILABLE",result.ErrorCode);
+         Assert.Equal(0,await Count(db,"capacity_evaluations"));Assert.Equal(0,await Count(db,"capacity_active_slots"));
+         Assert.Equal(0,await Count(db,"capacity_receipts"));Assert.Equal(0,await Count(db,"capacity_audit"));
+         Assert.Equal(0,await Count(db,"capacity_outbox"));

@@ -152,7 +152,7 @@
                                             @s.StageName
                                             @if (s.IsCrossSubjectStage) { <span class="badge bg-label-secondary ms-1">@Localizer["CrossSubject"]</span> }
                                             @if (s.IsCrossLanguageStage) { <span class="badge bg-label-secondary ms-1">@Localizer["CrossLanguage"]</span> }
-                                            @if (s.PathUsageCountInJourney > 1) { <span class="badge bg-label-secondary ms-1">@Localizer["Repeated"]</span> }
+                                            @if (s.PathUsageCountInJourney > 1) { <span class="badge bg-label-secondary ms-1" title="@Localizer["RepeatedHint"]">@Localizer["Repeated"]</span> }
                                         </td>
                                         <td>
                                             <div>@Show(s.ResolvedPathName ?? s.PathCode)</div>

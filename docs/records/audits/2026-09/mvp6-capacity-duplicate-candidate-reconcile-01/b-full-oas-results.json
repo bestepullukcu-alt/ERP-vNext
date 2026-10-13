@@ -1,0 +1,11 @@
+{
+  "artifact": "/Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-capacity-duplicate-name-contract-candidate-01/sandop-capacity.openapi.candidate.yaml",
+  "sha256": "206a5976303719b930ad850d83653fbc7d7161e6dabed3c022a0baaf15a57ff6",
+  "validator": "0.7.2",
+  "oas31_semantic_errors": [],
+  "oas31_meta_errors": [],
+  "resolved_local_refs": 204,
+  "schema_bound_examples": 47,
+  "embedded_schema_examples": 6,
+  "result": "PASS"
+}

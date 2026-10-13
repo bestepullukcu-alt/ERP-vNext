@@ -28,6 +28,7 @@ public sealed class WorkflowInstance : TenantScopedEntity
 
     public string? CorrelationId { get; set; }
     public string? IdempotencyKey { get; set; }
+    /// <summary>Display identity of the starter (e-mail first) — for people, not for comparisons.</summary>
     public string? StartedBy { get; set; }
 
     /// <summary>WP-WORKFLOW-APPROVAL-STATUS-01 (B2) — the starter's USER ID. <see cref="StartedBy"/> holds the actor

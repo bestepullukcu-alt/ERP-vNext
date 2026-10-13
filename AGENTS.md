@@ -83,12 +83,19 @@ module pack `approved` / `ready-for-dev` olduktan ve açık kullanıcı onayı v
 | DevEnablement Service | 5058 | `services/Diten.DevEnablementService/src/Diten.DevEnablementService.Api` |
 | MDM Service | 5059 | `services/Diten.MdmService/src/Diten.MdmService.Api` |
 | HCM Service | 5060 | `services/Diten.HcmService/src/Diten.HcmService.Api` |
-| SupplyChain Service | 5061 | `services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api` |
+| CRM Service | 5061 | `services/Diten.CrmService/src/Diten.CrmService.Api` |
 | Procurement Service | 5065 | `services/Diten.ProcurementService/src/Diten.ProcurementService.Api` |
+| SupplyChain Service | 5066 | `services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api` |
+| Inventory Service | 5067 | `services/Diten.InventoryService/src/Diten.InventoryService.Api` |
+| Manufacturing Service | 5070 | `services/Diten.ManufacturingService/src/Diten.ManufacturingService.Api` |
 | MongoDB | 27017 | yerel çalışmalı |
 
 > **Not (2026-09-11):** Mikroservis bandı 5011–5060'tan **5061'e uzatıldı** — `SupplyChain Service` (DCP-009, supply-chain-execution domain, kullanıcı onaylı). Sonraki mikroservisler 5062+ kullanır.
 > **Not (2026-09-16, revize 2026-09-17):** `Procurement Service` (DCP-010, procurement domain, kullanıcı onaylı) **port 5065**. İlk atama 5062'ydi; 2026-09-17 ölçümünde 5062 çakışması bulundu (OD-5): 5062'yi `Diten.DataKnowledgeService` (çalışıyor) + `Diten.PpmService` (config) kullanıyor; 5063 `HumanCapitalService`, 5064 `TalentEcosystemService`. En yeni servis (Procurement, henüz fleet'te çalışmıyor) en düşük boş porta (**5065**) taşındı — çalışan/başka-domain servisleri bozulmadı. **Sonraki mikroservisler 5066+ kullanır.**
+> **Not (2026-09-30):** `Inventory Service` (DCP-009 OD-5, supply-chain-execution domain, kullanıcı onaylı) **port 5066** — MOD-0173…0177 (stok defteri + izlenebilirlik) `Diten.SupplyChainService`'ten ayrılıp kendi servisine alındı. 5066 ölçümü: HEAD'de ve tüm remote dallarda config/launchSettings/script kullanımı yok. **Sonraki mikroservisler 5067+ kullanır.**
+> ⚠ **Drift (2026-09-30 ölçümü):** `services/Diten.CrmService/.../launchSettings.json` **5061** kullanıyor — tabloda `SupplyChain Service`'e ayrılı port. SupplyChainService henüz main'de değil; MVP-6 servisi main'e inmeden önce çözülmeli (EA / MVP-6 kararı).
+> **Not (2026-10-12, sahip kararı OD-P1 — yukarıdaki drift'i kapatır):** MVP-6 main'e indiğinde `SupplyChain Service` fiilen **5066**'da çalışıyordu (`appsettings.json` `Urls`, gateway `/api/shipment-bundle` → 5066) ve `Inventory Service` ile çakıştı. Karar: SupplyChain **5066**'da kalır, `Inventory Service` **5067**'ye taşındı (WP-MVP1-SYNC1, gateway'de bizim 8 rotamız 5067'de). 5061 = **CRM Service** (fiili kullanım). Kanıt: `docs/roadmap/plans/mvp1-mvp6-integration-2026-10-12.md`. **Sonraki mikroservisler 5068+ kullanır.**
+> **Not (2026-10-06, revize 2026-10-12):** `Manufacturing Service` (MOD-0193 BOM & Routings, MVP-3, DCP-009, ürün sahibi onaylı ayrı servis) **port 5070**. İlk atama 5067'ydi; OD-P1 (2026-10-12) ile **5067 Inventory'nin**, Manufacturing **5070**'e taşındı (5070 ölçümü: tüm remote dallarda config/launchSettings/script kullanımı yok). 5068 ve 5069 boş kalır.
 > ⚠ **Drift (EA reconciliation gerek):** yukarıdaki tablo `PpmService (5062)`, `DataKnowledgeService (5062, çalışıyor)`, `HumanCapitalService (5063)`, `TalentEcosystemService (5064)` satırlarını içermiyor; bu servisler §3 port authority'sine kayıtlı değil ve 5062 config-seviyesinde Ppm+Procurement tarafından çift-talep edildi. Bu satırların canonical port tahsisi + §3'e eklenmesi ilgili domain owner'lar/EA kararıdır (procurement sınırı dışı).
 
 **Kural:** Frontend (5001) asla doğrudan servis portlarına (5056/5057/5058) istek atmaz. Her istek Gateway (5000) üzerinden geçer.

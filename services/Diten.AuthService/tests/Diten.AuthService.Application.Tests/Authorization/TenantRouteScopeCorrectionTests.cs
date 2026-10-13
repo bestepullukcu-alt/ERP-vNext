@@ -15,6 +15,8 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using PlatformModulePages = PlatformProducer::Diten.Platform.Application.Features.ModulePages;
 using PlatformTasks = PlatformProducer::Diten.Platform.Application.Features.Tasks.SelfRegistration;
+using PlatformWorkflow = PlatformProducer::Diten.Platform.Application.Features.Workflow.SelfRegistration;
+using PlatformContracts = PlatformProducer::Diten.Platform.Application.Contracts;
 
 namespace Diten.AuthService.Application.Tests.Authorization;
 
@@ -30,12 +32,68 @@ public sealed class TenantRouteScopeCorrectionTests
 
     internal static readonly ModuleManifestDocument TasksManifest = new PlatformTasks.TaskManifestProvider().GetManifest();
 
+    internal static readonly ModuleManifestDocument WorkflowManifest = new PlatformWorkflow.WorkflowManifestProvider().GetManifest();
+
     [Fact]
-    public void The_allowlist_is_exactly_the_two_BL411_template_keys()
+    public void The_allowlist_is_exactly_the_two_BL411_template_keys_and_the_seven_WP0023FX_workflow_runtime_keys()
     {
         Assert.Equal(
-            new[] { ChecklistTemplatesManage, TemplatesManage },
+            new[] { ChecklistTemplatesManage, TemplatesManage }.Concat(WorkflowRuntimeKeys).OrderBy(key => key, StringComparer.Ordinal),
             TenantRouteScopeCorrections.Allowlist.Select(entry => entry.PermissionKey).OrderBy(key => key, StringComparer.Ordinal));
+
+        Assert.All(TenantRouteScopeCorrections.Allowlist.Where(e => e.Kind == TenantRouteScopeCorrections.RegistrationKind.TenantPageRoute),
+            e => Assert.Contains(e.PermissionKey, new[] { ChecklistTemplatesManage, TemplatesManage }));
+        Assert.All(TenantRouteScopeCorrections.Allowlist.Where(e => e.Kind == TenantRouteScopeCorrections.RegistrationKind.TenantApiPermission),
+            e => Assert.Contains(e.PermissionKey, WorkflowRuntimeKeys));
+    }
+
+    // WP-0023-FX — each API entry is measured against the PRODUCTION Workflow manifest: declared there as a Tenant API
+    // permission, and on no page or page action of ANY Platform manifest (a /Platform page would make the catalog sync
+    // keep or re-raise it PlatformAdmin). A design key (definitions.publish, …) added to the list fails here, because the
+    // manifest declares it on a /Platform page and not as a Tenant API permission.
+    [Fact]
+    public void Each_api_allowlisted_key_is_a_Tenant_api_permission_of_the_production_Workflow_manifest_and_on_no_page()
+    {
+        var apiEntries = TenantRouteScopeCorrections.Allowlist
+            .Where(e => e.Kind == TenantRouteScopeCorrections.RegistrationKind.TenantApiPermission)
+            .ToList();
+        Assert.NotEmpty(apiEntries);
+
+        var declared = (WorkflowManifest.ApiPermissions ?? []).ToDictionary(p => p.PermissionKey, p => p.Scope, StringComparer.Ordinal);
+        var everyPlatformManifest = typeof(PlatformWorkflow.WorkflowManifestProvider).Assembly.GetTypes()
+            .Where(t => !t.IsAbstract && typeof(PlatformContracts.IModuleManifestProvider).IsAssignableFrom(t) && t.GetConstructor(Type.EmptyTypes) is not null)
+            .Select(t => ((PlatformContracts.IModuleManifestProvider)Activator.CreateInstance(t)!).GetManifest())
+            .ToList();
+        Assert.Contains(everyPlatformManifest, m => m.ModuleCode == "workflow");
+
+        foreach (var entry in apiEntries)
+        {
+            Assert.Null(entry.RegisteredRoutePath);
+            Assert.Equal(WorkflowManifest.ModuleCode, entry.DeclaringModuleCode);
+            Assert.True(declared.TryGetValue(entry.PermissionKey, out var scope), $"{entry.PermissionKey} is not an API permission of the Workflow manifest");
+            Assert.Equal("Tenant", scope);
+
+            var onPages = everyPlatformManifest
+                .SelectMany(m => m.Pages.SelectMany(p => p.Actions.Select(a => (Key: a.PermissionKey, Where: $"{m.ModuleCode}:{p.RoutePath}"))
+                    .Append((Key: p.RequiredPermission, Where: $"{m.ModuleCode}:{p.RoutePath}"))))
+                .Where(d => d.Key == entry.PermissionKey)
+                .Select(d => d.Where)
+                .ToList();
+            Assert.True(onPages.Count == 0, $"{entry.PermissionKey} is still declared on page(s): {string.Join(", ", onPages)}");
+        }
+
+        // …and the manifest declares no other Tenant API permission that this list does not cover (both directions).
+        Assert.Equal(
+            apiEntries.Select(e => e.PermissionKey).OrderBy(k => k, StringComparer.Ordinal),
+            declared.Where(kv => kv.Value == "Tenant").Select(kv => kv.Key).OrderBy(k => k, StringComparer.Ordinal));
+    }
+
+    [Fact]
+    public void Every_workflow_design_key_stays_PlatformAdmin_in_the_seed_and_every_runtime_key_is_Tenant()
+    {
+        var seeded = DataSeeder.BuildCanonicalPermissions().ToDictionary(p => p.Key, p => p.Scope, StringComparer.Ordinal);
+        Assert.All(WorkflowDesignKeys, key => Assert.Equal(PermissionScope.PlatformAdmin, seeded[key]));
+        Assert.All(WorkflowRuntimeKeys, key => Assert.Equal(PermissionScope.Tenant, seeded[key]));
     }
 
     // Gate 3 (registered route must be a tenant route) is unreachable with today's allowlist — both entries are tenant
@@ -43,7 +101,7 @@ public sealed class TenantRouteScopeCorrectionTests
     [Fact]
     public void Each_allowlisted_key_is_registered_by_the_production_Tasks_manifest_on_its_listed_tenant_route_and_nowhere_on_a_platform_route()
     {
-        foreach (var entry in TenantRouteScopeCorrections.Allowlist)
+        foreach (var entry in TenantRouteScopeCorrections.Allowlist.Where(e => e.Kind == TenantRouteScopeCorrections.RegistrationKind.TenantPageRoute))
         {
             var page = Assert.Single(TasksManifest.Pages, p => p.RequiredPermission == entry.PermissionKey);
             Assert.Equal(entry.RegisteredRoutePath, page.RoutePath);
@@ -93,6 +151,43 @@ public sealed class TenantRouteScopeCorrectionTests
     public void A_blank_route_never_qualifies_as_a_tenant_route(string? route)
     {
         Assert.False(TenantRouteScopeCorrections.IsTenantRoute(route));
+    }
+
+    // WP-0023-FX — workflow RUNTIME keys (start, view instances/tasks, act on a task) are what a QA user needs to
+    // decide and approve; they were PlatformAdmin only because the manifest declared them on /Platform/Workflow pages.
+    // Template design / publish / SLA / escalation / transition-gate keys stay PlatformAdmin.
+    internal static readonly string[] WorkflowRuntimeKeys =
+    [
+        "platform.workflow.instances.start",
+        "platform.workflow.instances.view",
+        "platform.workflow.tasks.approve",
+        "platform.workflow.tasks.cancel",
+        "platform.workflow.tasks.delegate",
+        "platform.workflow.tasks.reject",
+        "platform.workflow.tasks.request-info",
+    ];
+
+    internal static readonly string[] WorkflowDesignKeys =
+    [
+        "platform.workflow.definitions.manage",
+        "platform.workflow.definitions.publish",
+        "platform.workflow.definitions.view",
+        "platform.workflow.escalations.manage",
+        "platform.workflow.escalations.run",
+        "platform.workflow.transitions.evaluate",
+    ];
+
+    [Fact]
+    public void Fx_the_workflow_runtime_keys_are_planned_PlatformAdmin_to_Tenant_and_no_design_key_is()
+    {
+        var catalog = WorkflowRuntimeKeys.Concat(WorkflowDesignKeys)
+            .Select(key => new Permission("platform", string.Join('.', key.Split('.')[1..^1]), key.Split('.')[^1], key, description: null,
+                moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin))
+            .ToList();
+
+        var planned = TenantRouteScopeCorrections.Plan(catalog).Select(c => c.PermissionKey).OrderBy(k => k, StringComparer.Ordinal);
+
+        Assert.Equal(WorkflowRuntimeKeys.OrderBy(k => k, StringComparer.Ordinal), planned);
     }
 }
 
@@ -314,7 +409,9 @@ public sealed class TenantRouteScopeCorrectionMongoTests : IClassFixture<Account
         [
             CatalogRow(ChecklistTemplatesManage, PermissionScope.PlatformAdmin),
             CatalogRow(TemplatesManage, PermissionScope.PlatformAdmin),
-            CatalogRow(UnlistedTenantRouteKey, PermissionScope.PlatformAdmin)
+            CatalogRow(UnlistedTenantRouteKey, PermissionScope.PlatformAdmin),
+            // WP-0023-FX — the measured live state of the workflow runtime rows before the fix.
+            .. TenantRouteScopeCorrectionTests.WorkflowRuntimeKeys.Select(key => CatalogRow(key, PermissionScope.PlatformAdmin))
         ]);
 
         await DataSeeder.SeedAsync(database);
@@ -322,8 +419,32 @@ public sealed class TenantRouteScopeCorrectionMongoTests : IClassFixture<Account
         Assert.Equal(PermissionScope.Tenant, (await permissions.Find(p => p.Key == ChecklistTemplatesManage).SingleAsync()).Scope);
         Assert.Equal(PermissionScope.Tenant, (await permissions.Find(p => p.Key == TemplatesManage).SingleAsync()).Scope);
         Assert.Equal(PermissionScope.PlatformAdmin, (await permissions.Find(p => p.Key == UnlistedTenantRouteKey).SingleAsync()).Scope);
-        // A seeded platform-admin key (permission-scope-baseline.csv: 1) is still PlatformAdmin after the full seed.
-        Assert.Equal(PermissionScope.PlatformAdmin, (await permissions.Find(p => p.Key == "platform.workflow.tasks.approve").SingleAsync()).Scope);
+        // WP-0023-FX — the workflow runtime keys are Tenant; every workflow design key (baseline: 1) is still PlatformAdmin.
+        foreach (var key in TenantRouteScopeCorrectionTests.WorkflowRuntimeKeys)
+        {
+            Assert.Equal(PermissionScope.Tenant, (await permissions.Find(p => p.Key == key).SingleAsync()).Scope);
+        }
+
+        foreach (var key in TenantRouteScopeCorrectionTests.WorkflowDesignKeys)
+        {
+            Assert.Equal(PermissionScope.PlatformAdmin, (await permissions.Find(p => p.Key == key).SingleAsync()).Scope);
+        }
+
+        // Every row the startup correction changed is audited once (2 BL-411 + 7 WP-0023-FX), with its decision.
+        var audit = database.GetCollection<AuthAuditLog>("authAuditLogs");
+        var corrected = await audit.Find(a => a.EventName == "permission_scope_corrected").ToListAsync();
+        Assert.Equal(9, corrected.Count);
+        Assert.Equal(7, corrected.Count(a => a.Metadata.Contains("\"decision\":\"WP-0023-FX\"")));
+        Assert.All(TenantRouteScopeCorrectionTests.WorkflowRuntimeKeys, key =>
+            Assert.Single(corrected, a => a.Metadata.Contains($"\"permissionKey\":\"{key}\"")));
+
+        // A second startup changes nothing and audits nothing (idempotent).
+        var before = await RawExceptKeysAsync(database, []);
+        await DataSeeder.SeedAsync(database);
+        Assert.Equal(9, await audit.CountDocumentsAsync(a => a.EventName == "permission_scope_corrected"));
+        Assert.Equal(
+            before.Select(d => (d["Key"].AsString, d["Scope"].ToString())),
+            (await RawExceptKeysAsync(database, [])).Select(d => (d["Key"].AsString, d["Scope"].ToString())));
     }
 
     // (d) ─────────────────────────────────────────────────────────────────────────────────────────────
@@ -351,7 +472,7 @@ public sealed class TenantRouteScopeCorrectionMongoTests : IClassFixture<Account
 
         // The host's own seeded catalog (the production seeder already ran at host start, correction included): a seeded
         // platform-admin key is PlatformAdmin before and after — neither startup nor this run lowered anything else.
-        const string seededPlatformAdminKey = "platform.workflow.tasks.approve";
+        const string seededPlatformAdminKey = "platform.workflow.definitions.publish";
         Assert.Equal(PermissionScope.PlatformAdmin, (await hostPermissions.Find(p => p.Key == seededPlatformAdminKey).SingleAsync()).Scope);
 
         var applied = await DataSeeder.ApplyTenantRouteScopeCorrectionsAsync(hostPermissions);
@@ -368,6 +489,31 @@ public sealed class TenantRouteScopeCorrectionMongoTests : IClassFixture<Account
 
             var grant = Assert.Single(await grants.Find(rp => rp.RoleId == roleId && rp.PermissionId == permissionId && rp.TenantId == admin.TenantId).ToListAsync());
             Assert.Equal(admin.UserId.ToString(), grant.AssignedBy);
+        }
+    }
+
+    // WP-0023-FX — after the host's own startup seed, a tenant administrator grants the workflow RUNTIME keys to a
+    // custom (QA) role through the real AssignPermission path; the template design keys are still refused (403).
+    [Fact]
+    public async Task Fx_a_tenant_role_can_be_granted_the_workflow_runtime_keys_but_not_the_design_keys()
+    {
+        var hostPermissions = _host.Database.GetCollection<Permission>("permissions");
+        var admin = await SeedRolesAdminAsync();
+        using var client = _host.Client(admin.Token, admin.TenantId);
+        var roleId = await CreateRoleAsync(client, admin.TenantId);
+
+        foreach (var key in TenantRouteScopeCorrectionTests.WorkflowRuntimeKeys)
+        {
+            var permissionId = (await hostPermissions.Find(p => p.Key == key).SingleAsync()).Id;
+            var granted = await client.PostAsJsonAsync($"api/roles/{roleId}/permissions", new { permissionId });
+            Assert.True(granted.StatusCode == HttpStatusCode.NoContent, $"{key}: {(int)granted.StatusCode} {await granted.Content.ReadAsStringAsync()}");
+        }
+
+        foreach (var key in TenantRouteScopeCorrectionTests.WorkflowDesignKeys)
+        {
+            var permissionId = (await hostPermissions.Find(p => p.Key == key).SingleAsync()).Id;
+            var refused = await client.PostAsJsonAsync($"api/roles/{roleId}/permissions", new { permissionId });
+            Assert.True(refused.StatusCode == HttpStatusCode.Forbidden, $"{key}: {(int)refused.StatusCode} {await refused.Content.ReadAsStringAsync()}");
         }
     }
 
@@ -393,7 +539,7 @@ public sealed class TenantRouteScopeCorrectionMongoTests : IClassFixture<Account
         var rolePermissions = sp.GetRequiredService<IRolePermissionRepository>();
         var sync = sp.GetRequiredService<IEntitlementPermissionSyncService>();
 
-        await sp.GetRequiredService<IRoleProvisioningService>().EnsureDefaultRolesAsync(tenantId, CancellationToken.None);
+        await sp.GetRequiredService<IRoleProvisioningService>().EnsureDefaultRolesAsync(tenantId, DefaultRoleProvisioningTriggers.TenantActivated, CancellationToken.None);
         var adminRole = await roles.GetByNameAndTenantAsync(DefaultRolePermissionTemplate.AdminRole, tenantId, CancellationToken.None)
             ?? throw new InvalidOperationException("provisioning created no Admin role");
         var viewerRole = await roles.GetByNameAndTenantAsync(DefaultRolePermissionTemplate.ViewerRole, tenantId, CancellationToken.None)

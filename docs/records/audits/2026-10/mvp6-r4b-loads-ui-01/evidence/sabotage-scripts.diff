@@ -1,0 +1,46 @@
+--- index.fixed.js
++++ index.sab-correlation.js
+@@ -288,8 +288,9 @@
+     // CORRELATION_ROOT_MISMATCH (LoadRepository.cs:16). After 409 IDEMPOTENCY_KEY_REUSED the intent is spent: the form stops
+     // and never mints a key to get past it.
+     const newIntent = () => ({ key: createUuid(), correlation: createUuid(), blocked: false });
++    // SABOTAGE S1: a fresh correlation per request (Shipments' Q393 shape)
+     const mutationHeaders = (form, intent) => ({
+-        'X-Requested-With': 'XMLHttpRequest', 'X-Correlation-Id': intent.correlation, 'Content-Type': 'application/json',
++        'X-Requested-With': 'XMLHttpRequest', 'X-Correlation-Id': createUuid(), 'Content-Type': 'application/json',
+         'RequestVerificationToken': getAntiForgeryToken(form), 'Idempotency-Key': intent.key
+     });
+     const setBusy = (button, busy) => { if (!button) return; button.disabled = busy; button.setAttribute('aria-busy', String(busy)); };
+--- index.fixed.js
++++ index.sab-perpayload.js
+@@ -385,6 +385,10 @@
+         const problem = validate(payload);
+         if (problem) { showFormError(problem); form.querySelector('.is-invalid')?.focus({ preventScroll: true }); return; }
+         hideFormError();
++        // SABOTAGE S2: key re-minted whenever the payload changes (the drafts' per-payload shape)
++        const text = JSON.stringify(payload.body);
++        if (createIntent.bodyText !== undefined && createIntent.bodyText !== text) createIntent = { key: createUuid(), correlation: createIntent.correlation, blocked: false };
++        createIntent.bodyText = text;
+         const intent = createIntent;
+         setBusy(button, true);
+         try {
+--- index.fixed.js
++++ index.sab-liststates.js
+@@ -243,7 +243,7 @@
+     };
+     const showLoadFailure = (reference) => {
+         const alert = document.getElementById('loadsLoadError'); if (!alert) return;
+-        alert.textContent = withReference(L.ListUnavailable, reference);
++        alert.textContent = withReference(L.ErrPersistenceUnavailable, reference); // SABOTAGE: write wording
+         alert.classList.remove('d-none'); tableCard()?.classList.add('d-none');
+     };
+     const clearLoadFailure = () => {
+@@ -251,7 +251,7 @@
+     };
+     let firstLoad = true;
+     const loadRows = async (_request, callback) => {
+-        if (firstLoad) setSkeleton(true);
++        // SABOTAGE: no skeleton on the first load
+         try {
+             const response = await fetch(buildListUrl(), { credentials: 'same-origin', headers: getAuthHeaders() });
+             if (!response.ok) {

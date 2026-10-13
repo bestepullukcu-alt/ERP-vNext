@@ -1,0 +1,171 @@
+{
+  "tenant": "97c59330-dbc4-4665-b29c-0c26dbb5cc93",
+  "steps": [
+    {
+      "step": "mdm-create-le-A",
+      "status": 201,
+      "ok": true,
+      "dataId": "8a786dac-c3f5-4ee2-8769-909f83173901"
+    },
+    {
+      "step": "mdm-activate-le-A",
+      "status": 204,
+      "ok": true
+    },
+    {
+      "step": "mdm-lookup-validation-le-A",
+      "status": 200,
+      "ok": true,
+      "dataId": null
+    },
+    {
+      "step": "mdm-create-le-B",
+      "status": 201,
+      "ok": true,
+      "dataId": "5255c5eb-3b74-45d2-8e90-cd6d011f08ea"
+    },
+    {
+      "step": "mdm-activate-le-B",
+      "status": 204,
+      "ok": true
+    },
+    {
+      "step": "mdm-lookup-validation-le-B",
+      "status": 200,
+      "ok": true,
+      "dataId": null
+    },
+    {
+      "step": "platform-create-ou-A",
+      "status": 201,
+      "ok": true,
+      "dataId": "b662368e-e03b-49fa-aca3-6d441ea1f6bb"
+    },
+    {
+      "step": "platform-create-position-A",
+      "status": 201,
+      "ok": true,
+      "dataId": "8a9b3694-1f7a-4943-8f78-ec31aed96814"
+    },
+    {
+      "step": "platform-create-ou-B",
+      "status": 201,
+      "ok": true,
+      "dataId": "851de5cc-9850-4286-bbaa-5f0a8bb04c9d"
+    },
+    {
+      "step": "platform-create-position-B",
+      "status": 201,
+      "ok": true,
+      "dataId": "0818b1f9-104e-4ff0-b597-2b599d1fd95e"
+    },
+    {
+      "step": "platform-assign-A-to-A",
+      "status": 404,
+      "ok": false,
+      "dataId": "00000000-0000-0000-0000-000000000000",
+      "body": {
+        "statusCode": 404,
+        "isSuccessful": false,
+        "errors": [
+          "User is not referenceable."
+        ],
+        "reason_code": null,
+        "correlation_id": null
+      }
+    }
+  ],
+  "platformTenantFixture": {
+    "tenantCreated": false,
+    "status": 1,
+    "tenantType": 0,
+    "isDeleted": false
+  },
+  "authFixture": {
+    "users": {
+      "A": {
+        "email": "john.doe.t97@diten.com",
+        "userId": "eca6c699-21d1-4370-9f80-250ed26c3371",
+        "preconditions": {
+          "isActive": true,
+          "emailConfirmed": true,
+          "mustChange": false,
+          "lockedOut": false
+        },
+        "previousHashWasSharedSeedHash": false,
+        "rotated": true
+      },
+      "B": {
+        "email": "jane.smith.t97@diten.com",
+        "userId": "ceca3320-f450-4f55-b040-85e2be8f41ba",
+        "preconditions": {
+          "isActive": true,
+          "emailConfirmed": true,
+          "mustChange": false,
+          "lockedOut": false
+        },
+        "previousHashWasSharedSeedHash": false,
+        "rotated": true
+      },
+      "LEB": {
+        "email": "bob.johnson.t97@diten.com",
+        "userId": "10fba98a-031e-46ee-ad2e-621200df8a3e",
+        "preconditions": {
+          "isActive": true,
+          "emailConfirmed": true,
+          "mustChange": false,
+          "lockedOut": false
+        },
+        "previousHashWasSharedSeedHash": false,
+        "rotated": true
+      },
+      "ADM": {
+        "email": "alice.williams.t97@diten.com",
+        "userId": "11e9121d-7be6-47c4-9bcd-23750ef6363a",
+        "preconditions": {
+          "isActive": true,
+          "emailConfirmed": true,
+          "mustChange": false,
+          "lockedOut": false
+        },
+        "previousHashWasSharedSeedHash": false,
+        "rotated": true
+      }
+    },
+    "roles": {
+      "A12VerShipmentOperator": {
+        "roleId": "3caa5c24-287d-433d-8d23-892440d78426",
+        "reused": true
+      },
+      "A12VerFixtureAdmin": {
+        "roleId": "ad37d340-47ef-476c-81be-f062db14767b",
+        "reused": true
+      }
+    }
+  },
+  "fixtureAdminLogin": {
+    "actor": "ADM",
+    "status": 200,
+    "claimNames": [
+      "actor_type",
+      "aud",
+      "email",
+      "exp",
+      "family_name",
+      "given_name",
+      "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
+      "iss",
+      "permission",
+      "pwd_change_required",
+      "sub",
+      "tenant_id"
+    ],
+    "tenantMatches": true,
+    "legalEntityId": null,
+    "shipmentPermissions": [],
+    "otherPermissionCount": 9
+  },
+  "codeSuffix": "a7d10b",
+  "leAReferenceable": true,
+  "leBReferenceable": true
+}

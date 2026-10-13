@@ -8,6 +8,10 @@ namespace Diten.Platform.Application.Tests.Persistence;
 
 public sealed class DisposableStandaloneMongo : IAsyncDisposable
 {
+    // DB-010: one fixed database per disposable standalone mongod. Every instance owns a fresh port and a
+    // temporary dbpath, so the process isolates each test; the database name no longer carries a GUID.
+    private const string StandaloneDatabaseName = "diten_platform_standalone";
+
     private readonly Process _process;
     private readonly string _root;
     private readonly MongoClient _client;
@@ -22,7 +26,7 @@ public sealed class DisposableStandaloneMongo : IAsyncDisposable
 
     public int Port { get; }
     public IMongoClient Client => _client;
-    public IMongoDatabase CreateDatabase() => _client.GetDatabase("diten_platform_standalone_" + Guid.NewGuid().ToString("N"));
+    public IMongoDatabase CreateDatabase() => _client.GetDatabase(StandaloneDatabaseName);
 
     public static async Task<DisposableStandaloneMongo> StartAsync(CancellationToken ct = default)
     {
@@ -34,8 +38,14 @@ public sealed class DisposableStandaloneMongo : IAsyncDisposable
         var data = Path.Combine(root, "data");
         Directory.CreateDirectory(data);
         var start = new ProcessStartInfo { FileName = binary, UseShellExecute = false, CreateNoWindow = true };
-        foreach (var argument in new[] { "--dbpath", data, "--port", port.ToString(), "--bind_ip", "127.0.0.1", "--nounixsocket" })
+        foreach (var argument in new[] { "--dbpath", data, "--port", port.ToString(), "--bind_ip", "127.0.0.1" })
             start.ArgumentList.Add(argument);
+        // WP-MVP1-SYNC1 — the same guard DisposableMongoReplicaSet has (MOD-0022 E2, measured 2026-10-08): Unix-domain sockets
+        // do not exist in mongod's Windows build, the option is rejected there (exit code 2) and no test of this class starts.
+        if (!OperatingSystem.IsWindows())
+        {
+            start.ArgumentList.Add("--nounixsocket");
+        }
         var process = Process.Start(start) ?? throw new InvalidOperationException("Failed to start standalone mongod.");
         var settings = MongoClientSettings.FromConnectionString($"mongodb://127.0.0.1:{port}/?directConnection=true");
         settings.ServerSelectionTimeout = TimeSpan.FromMilliseconds(500);
@@ -71,7 +81,7 @@ public sealed class DisposableStandaloneMongo : IAsyncDisposable
     {
         try
         {
-            foreach (var name in (await _client.ListDatabaseNames().ToListAsync()).Where(x => x.StartsWith("diten_platform_standalone_", StringComparison.Ordinal)))
+            foreach (var name in (await _client.ListDatabaseNames().ToListAsync()).Where(x => string.Equals(x, StandaloneDatabaseName, StringComparison.Ordinal)))
                 await _client.DropDatabaseAsync(name);
         }
         finally

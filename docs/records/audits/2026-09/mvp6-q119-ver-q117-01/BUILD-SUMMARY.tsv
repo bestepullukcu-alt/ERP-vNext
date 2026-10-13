@@ -1,0 +1,11 @@
+tree	target	exit	warnings	errors
+build-fix	services/Diten.SupplyChainService/Diten.SupplyChainService.sln	0	0	0
+build-fix	services/Diten.MdmService/Diten.MdmService.sln	0	6	0
+build-fix	services/Diten.HumanCapitalService/src/Diten.HumanCapitalService.Api/Diten.HumanCapitalService.Api.csproj	0	1	0
+build-fix	services/Diten.TalentEcosystemService/src/Diten.TalentEcosystemService.Api/Diten.TalentEcosystemService.Api.csproj	0	1	0
+build-fix	services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets.Tests/Diten.BuildingBlocks.Security.Secrets.Tests.csproj	0	0	0
+build-fix	frontend/Diten.Web.Tests/Diten.Web.Tests.csproj	0	18	0
+build-fix	gateway/Diten.ApiGateway.Tests/Diten.ApiGateway.Tests.csproj	0	5	0
+build-fix	tests/architecture/TenantArchitecture.ArchitectureTests/TenantArchitecture.ArchitectureTests.csproj	0	0	0
+build-fix-ordered	services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Diten.SupplyChainService.Tests.csproj	0	0	0
+build-base-ordered	services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Diten.SupplyChainService.Tests.csproj	0	0	0

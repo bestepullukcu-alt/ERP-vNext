@@ -212,6 +212,24 @@ public sealed class KnowledgePathReviewTests
         Assert.Equal((409, ClaimErrorCodes.NoOpenReview), Code(await fx.Withdraw(id)));
     }
 
+    // WP-E2E-FIX-2 (acceptance 6, E3-B4) — withdrawing is the submitter's act; a manager who did not submit cannot.
+    [Fact]
+    public async Task A_manager_who_did_not_submit_cannot_withdraw_403_and_the_round_stays_open()
+    {
+        var fx = new Fixture();
+        var id = await fx.ReadyPathAsync();
+        await fx.Submit(id);
+
+        fx.Actor.Name = Reviewer;                              // holds Manage (the route), is not the submitter
+        Assert.Equal((403, KnowledgePathReviewErrors.WithdrawNotSubmitter), Code(await fx.Withdraw(id)));
+        Assert.Empty(fx.Workflow.Cancels);                     // nothing was cancelled in MOD-0023
+        Assert.True(fx.Revisions.Items.Single().IsOpen());
+
+        fx.Actor.Name = Author.ToUpperInvariant();             // the submitter (person-based, case-insensitive)
+        Assert.True((await fx.Withdraw(id)).IsSuccessful);
+        Assert.Equal(KnowledgePathRevisionStatuses.Withdrawn, fx.Revisions.Items.Single().Status);
+    }
+
     // ================================================================ decision (one channel)
 
     [Fact]

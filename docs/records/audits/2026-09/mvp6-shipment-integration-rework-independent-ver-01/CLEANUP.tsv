@@ -1,0 +1,7 @@
+resource	final_listener_count	result
+MongoDB_39994	0	PASS
+SupplyChain_5061	0	PASS
+Gateway_5800	0	PASS
+Web_5801	0	PASS
+operational_Mongo_27017	not_contacted	PASS
+

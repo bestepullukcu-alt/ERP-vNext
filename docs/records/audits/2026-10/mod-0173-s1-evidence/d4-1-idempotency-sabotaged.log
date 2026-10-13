@@ -1,0 +1,12 @@
+### D4-1 idempotency guard — SABOTAGED (PostMovementHandler.Replay fingerprint check disabled)
+warning: in the working copy of 'services/Diten.InventoryService/src/Diten.InventoryService.Application/Features/Inventory/Handlers/CommandHandlers/PostMovementHandler.cs', LF will be replaced by CRLF the next time Git touches it
+ .../Features/Inventory/Handlers/CommandHandlers/PostMovementHandler.cs  | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+warning: in the working copy of 'services/Diten.InventoryService/src/Diten.InventoryService.Application/Features/Inventory/Handlers/CommandHandlers/PostMovementHandler.cs', LF will be replaced by CRLF the next time Git touches it
+-        if (!string.Equals(committed.RequestFingerprint, fingerprint, StringComparison.Ordinal))
++        if (false && !string.Equals(committed.RequestFingerprint, fingerprint, StringComparison.Ordinal)) // SABOTAGE D4
+    0 Hata
+  Başarısız Diten.InventoryService.Tests.Api.IdempotencyTests.Same_key_with_a_different_payload_is_400_IDEMPOTENCY_KEY_REUSED_and_writes_nothing [993 ms]
+  Hata İletisi:
+   expected 400, got 200: {"transactionId":"f434d4f8-94cd-45bf-9bab-2843257bfc2f","transactionNumber":"INV-2026-0000001","postedAt":"2026-09-30T15:01:18.648Z","idempotentReplay":true,"balanceSnapshot":{"itemId":"2ffe4462-bd08-4316-abd9-918739775bdd","skuId":"62dc76ac-dfc4-4f71-a5fd-2e8cb67a87f6","skuLevel":"Lsku","legalEntityId":"997e98b6-8a5c-4579-864a-ce22d4ce1c78","warehouseId":"wh-d2c12015","locationId":"bin-a-d2c12015","stockStatus":"AVAILABLE","onHand":"100.000","reserved":"0.000","available":"100.000","inTransit":"0.000","blocked":"0.000","qualityInspection":"0.000","baseUomId":"EA","baseQuantity":"100.000","lastMovementId":"f434d4f8-94cd-45bf-9bab-2843257bfc2f","lastPostingDate":"2026-09-30T10:00:00.000Z"},"contractVersion":"v1"}
+Başarısız! - Başarısız:     1, Başarılı:     8, Atlanan:     0, Toplam:     9, Süre: 1 s - Diten.InventoryService.Tests.dll (net8.0)

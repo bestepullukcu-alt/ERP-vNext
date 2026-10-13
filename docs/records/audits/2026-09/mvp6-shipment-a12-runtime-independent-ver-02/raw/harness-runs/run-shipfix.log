@@ -1,0 +1,216 @@
+{
+  "actor": "actor-a",
+  "tenant": "97c59330-dbc4-4665-b29c-0c26dbb5cc93",
+  "actorLegalEntityClaim": "06df9bbb-22c3-4f69-b0f7-b7fca6f32d46",
+  "run": "1fe655fb",
+  "fixtures": {
+    "VS": {
+      "shipmentId": "47ed1778-6654-4468-9cb4-ccd548bef351",
+      "root": "0f63460f-7dc3-4e13-b183-f3b847489536",
+      "sourceDocumentId": "S-VS-1fe655fb",
+      "status": "Draft",
+      "lastEventAt": "2026-09-26T07:37:29.880Z"
+    },
+    "NORMAL": {
+      "shipmentId": "eacd617a-0575-4246-9736-1acd0c25ed6b",
+      "root": "a8ecf00b-8e66-40c4-ada0-dca8e3c9c8bb",
+      "sourceDocumentId": "S-NORMAL-1fe655fb",
+      "status": "Draft",
+      "lastEventAt": "2026-09-26T07:37:29.880Z"
+    },
+    "PODVIEW": {
+      "shipmentId": "41713e0d-77b1-4df1-a042-94b11facd592",
+      "root": "fe59568a-6d36-49ef-bb00-7726922b282c",
+      "sourceDocumentId": "S-PODVIEW-1fe655fb",
+      "status": "Delivered",
+      "lastEventAt": "2026-09-26T07:52:29.880Z"
+    },
+    "DELETED": {
+      "shipmentId": "d99987f9-85b2-4cf3-b360-fefe2ff6fee2",
+      "root": "e364281a-9c35-481a-bd4f-f3673b4b17ab",
+      "sourceDocumentId": "S-DELETED-1fe655fb",
+      "status": "Draft",
+      "lastEventAt": "2026-09-26T07:37:29.880Z"
+    },
+    "LATE": {
+      "shipmentId": "62aec508-a67e-491b-8046-758313b50549",
+      "root": "b38bf35b-0786-4f15-b089-32958d165a46",
+      "sourceDocumentId": "S-LATE-1fe655fb",
+      "status": "Draft",
+      "lastEventAt": "2026-09-26T07:37:29.880Z"
+    },
+    "A08": {
+      "shipmentId": "42ff0a64-8685-4e68-ae8b-b1613d50e237",
+      "root": "a7b8b8fe-bccd-44db-82e4-34e1b9ed9ddb",
+      "sourceDocumentId": "S-A08-1fe655fb",
+      "status": "Draft",
+      "lastEventAt": "2026-09-26T07:37:29.880Z"
+    },
+    "A09DUP": {
+      "shipmentId": "362aa0ca-f884-4024-9a74-451598694975",
+      "root": "e3c1965f-8f73-496d-94ae-ef90428e4b9e",
+      "sourceDocumentId": "S-A09DUP-1fe655fb",
+      "status": "Dispatched",
+      "lastEventAt": "2026-09-26T07:47:29.880Z"
+    },
+    "A09STATE": {
+      "shipmentId": "8140c050-6ca5-47c3-88ab-1158bae0f0fb",
+      "root": "cafff9d3-4fc0-4455-86b2-b83a312050d8",
+      "sourceDocumentId": "S-A09STATE-1fe655fb",
+      "status": "Dispatched",
+      "lastEventAt": "2026-09-26T07:47:29.880Z"
+    }
+  },
+  "calls": [
+    {
+      "fixture": "VS",
+      "op": "create",
+      "status": 201,
+      "responseCorrelation": "0f63460f-7dc3-4e13-b183-f3b847489536",
+      "requestCorrelation": "0f63460f-7dc3-4e13-b183-f3b847489536",
+      "key": "K-VS-1fe655fb-CREATE",
+      "payloadSha256": "56c81174b8677b5e8421a3d091c59a653dbe7587b1cb0edbfa377101b9e4d094",
+      "errorCode": null
+    },
+    {
+      "fixture": "NORMAL",
+      "op": "create",
+      "status": 201,
+      "responseCorrelation": "a8ecf00b-8e66-40c4-ada0-dca8e3c9c8bb",
+      "requestCorrelation": "a8ecf00b-8e66-40c4-ada0-dca8e3c9c8bb",
+      "key": "K-NORMAL-1fe655fb-CREATE",
+      "payloadSha256": "df69d5c0269510a5a4ed34af4c055142c0396790dd10ed069619a3a998f458cc",
+      "errorCode": null
+    },
+    {
+      "fixture": "PODVIEW",
+      "op": "create",
+      "status": 201,
+      "responseCorrelation": "fe59568a-6d36-49ef-bb00-7726922b282c",
+      "requestCorrelation": "fe59568a-6d36-49ef-bb00-7726922b282c",
+      "key": "K-PODVIEW-1fe655fb-CREATE",
+      "payloadSha256": "9633d06735d2c15c85c2018c399f2e8f476a96b5ea35b44eaeb805e08a857044",
+      "errorCode": null
+    },
+    {
+      "fixture": "PODVIEW",
+      "op": "Planned",
+      "status": 200,
+      "responseCorrelation": "fe59568a-6d36-49ef-bb00-7726922b282c",
+      "requestCorrelation": "fe59568a-6d36-49ef-bb00-7726922b282c",
+      "key": "K-PODVIEW-1fe655fb-PLANNED",
+      "payloadSha256": "73ebbea39be4eecddcccf602636498929fb0573ca5cc02be16198447b86b47c8",
+      "errorCode": null
+    },
+    {
+      "fixture": "PODVIEW",
+      "op": "Dispatched",
+      "status": 200,
+      "responseCorrelation": "fe59568a-6d36-49ef-bb00-7726922b282c",
+      "requestCorrelation": "fe59568a-6d36-49ef-bb00-7726922b282c",
+      "key": "K-PODVIEW-1fe655fb-DISPATCHED",
+      "payloadSha256": "3d52ba85df4f55d20cc606177cb800f7f162716e8672d3973a529bd9b525b4a0",
+      "errorCode": null
+    },
+    {
+      "fixture": "PODVIEW",
+      "op": "POD",
+      "status": 201,
+      "responseCorrelation": "fe59568a-6d36-49ef-bb00-7726922b282c",
+      "requestCorrelation": "fe59568a-6d36-49ef-bb00-7726922b282c",
+      "key": "K-PODVIEW-1fe655fb-POD",
+      "payloadSha256": "9c25e5045f3a6628906a520acb328b7cfe7ccb9db7c3366bdfdc9d833ba3c7be",
+      "errorCode": null
+    },
+    {
+      "fixture": "DELETED",
+      "op": "create",
+      "status": 201,
+      "responseCorrelation": "e364281a-9c35-481a-bd4f-f3673b4b17ab",
+      "requestCorrelation": "e364281a-9c35-481a-bd4f-f3673b4b17ab",
+      "key": "K-DELETED-1fe655fb-CREATE",
+      "payloadSha256": "65e81523c99fb97530e603574fb14e97d41c185dd02c20de7f7147e03d107254",
+      "errorCode": null
+    },
+    {
+      "fixture": "LATE",
+      "op": "create",
+      "status": 201,
+      "responseCorrelation": "b38bf35b-0786-4f15-b089-32958d165a46",
+      "requestCorrelation": "b38bf35b-0786-4f15-b089-32958d165a46",
+      "key": "K-LATE-1fe655fb-CREATE",
+      "payloadSha256": "580b545b7ff5d8a9026f4fee9af90246b838ea710a221e46a96394c979967bf2",
+      "errorCode": null
+    },
+    {
+      "fixture": "A08",
+      "op": "create",
+      "status": 201,
+      "responseCorrelation": "a7b8b8fe-bccd-44db-82e4-34e1b9ed9ddb",
+      "requestCorrelation": "a7b8b8fe-bccd-44db-82e4-34e1b9ed9ddb",
+      "key": "K-A08-1fe655fb-CREATE",
+      "payloadSha256": "cd4d0516a66609bd3dfa5f026d908c6d89e2e850840f1d8b229a60977ee996e5",
+      "errorCode": null
+    },
+    {
+      "fixture": "A09DUP",
+      "op": "create",
+      "status": 201,
+      "responseCorrelation": "e3c1965f-8f73-496d-94ae-ef90428e4b9e",
+      "requestCorrelation": "e3c1965f-8f73-496d-94ae-ef90428e4b9e",
+      "key": "K-A09DUP-1fe655fb-CREATE",
+      "payloadSha256": "8b0f733832f1d5e96e136ee0667fd8104808d23ec2077ea544d4469bb0756551",
+      "errorCode": null
+    },
+    {
+      "fixture": "A09DUP",
+      "op": "Planned",
+      "status": 200,
+      "responseCorrelation": "e3c1965f-8f73-496d-94ae-ef90428e4b9e",
+      "requestCorrelation": "e3c1965f-8f73-496d-94ae-ef90428e4b9e",
+      "key": "K-A09DUP-1fe655fb-PLANNED",
+      "payloadSha256": "73ebbea39be4eecddcccf602636498929fb0573ca5cc02be16198447b86b47c8",
+      "errorCode": null
+    },
+    {
+      "fixture": "A09DUP",
+      "op": "Dispatched",
+      "status": 200,
+      "responseCorrelation": "e3c1965f-8f73-496d-94ae-ef90428e4b9e",
+      "requestCorrelation": "e3c1965f-8f73-496d-94ae-ef90428e4b9e",
+      "key": "K-A09DUP-1fe655fb-DISPATCHED",
+      "payloadSha256": "3d52ba85df4f55d20cc606177cb800f7f162716e8672d3973a529bd9b525b4a0",
+      "errorCode": null
+    },
+    {
+      "fixture": "A09STATE",
+      "op": "create",
+      "status": 201,
+      "responseCorrelation": "cafff9d3-4fc0-4455-86b2-b83a312050d8",
+      "requestCorrelation": "cafff9d3-4fc0-4455-86b2-b83a312050d8",
+      "key": "K-A09STATE-1fe655fb-CREATE",
+      "payloadSha256": "cf789655276805928c338be8e1d9c5925a7917d058341daf6525649ebf203dd3",
+      "errorCode": null
+    },
+    {
+      "fixture": "A09STATE",
+      "op": "Planned",
+      "status": 200,
+      "responseCorrelation": "cafff9d3-4fc0-4455-86b2-b83a312050d8",
+      "requestCorrelation": "cafff9d3-4fc0-4455-86b2-b83a312050d8",
+      "key": "K-A09STATE-1fe655fb-PLANNED",
+      "payloadSha256": "73ebbea39be4eecddcccf602636498929fb0573ca5cc02be16198447b86b47c8",
+      "errorCode": null
+    },
+    {
+      "fixture": "A09STATE",
+      "op": "Dispatched",
+      "status": 200,
+      "responseCorrelation": "cafff9d3-4fc0-4455-86b2-b83a312050d8",
+      "requestCorrelation": "cafff9d3-4fc0-4455-86b2-b83a312050d8",
+      "key": "K-A09STATE-1fe655fb-DISPATCHED",
+      "payloadSha256": "3d52ba85df4f55d20cc606177cb800f7f162716e8672d3973a529bd9b525b4a0",
+      "errorCode": null
+    }
+  ]
+}

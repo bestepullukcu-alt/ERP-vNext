@@ -28,7 +28,11 @@ public sealed record ModuleManifestDocument(
     // callers and existing serialized payloads are unaffected (default null → old JSON deserializes with no field,
     // no exception). Consumers MUST coalesce null → empty (?? Array.Empty<ModuleManifestNotificationEvent>()).
     // Do not reorder/retype existing params; do not remove Icon/IsBaseline.
-    IReadOnlyList<ModuleManifestNotificationEvent>? NotificationEvents = null);
+    IReadOnlyList<ModuleManifestNotificationEvent>? NotificationEvents = null,
+    // FU-RSV-01 (WP-0173-RSV1) — API-only permissions. ADDITIVE + OPTIONAL, appended LAST (same rule as above):
+    // old JSON without the field deserializes to null; consumers MUST coalesce null → empty
+    // (?? Array.Empty<ModuleManifestPermission>()). Do not reorder/retype existing params.
+    IReadOnlyList<ModuleManifestPermission>? ApiPermissions = null);
 
 public sealed record ModuleManifestPage(
     string PageCode,
@@ -50,6 +54,18 @@ public sealed record ModuleManifestAction(
     bool IsDangerous,
     bool IsToolbarAction,
     bool IsRowAction);
+
+/// <summary>
+/// FU-RSV-01 — an API-ONLY permission: a key that a controller enforces with <c>[HasPermission]</c> but that has NO
+/// UI page or button (e.g. an endpoint other modules call). The Platform reconcile syncs it to the AuthService
+/// permission catalog like a page/action key, so a tenant admin can grant it; it creates no catalog page/action.
+/// Anything with a UI stays a page / action — this list is never a substitute for them.
+/// <paramref name="Scope"/> is exactly "Tenant" or "PlatformAdmin"; any other value is skipped by the reconcile.
+/// </summary>
+public sealed record ModuleManifestPermission(
+    string PermissionKey,
+    string DisplayName,
+    string Scope = "Tenant");
 
 /// <summary>
 /// MOD-0027-FU03 — a producer module's declaration that it emits a notification event bound to a template slot.

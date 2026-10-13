@@ -24,6 +24,41 @@
         return Array.from(node.selectedOptions || []).map((o) => o.value).filter(Boolean);
     };
 
+    /*
+     * MOD-0022 E4/E5W1 — "İmza gerekli" + meaning on an approval step (pack §16 E4 designer item). The step carries
+     * requirements.signatureRequired / signatureMeaning in DefinitionJson (WorkflowDefinitionRuntimePlan reads exactly these);
+     * the meanings are the tenant's ACTIVE ones from the server (GET /api/v1/esign/meanings?activeOnly=true through the tenant
+     * e-signature proxy, esign.meanings.read | esign.signatures.sign). Publish refuses a flagged step without an active meaning
+     * (400 ESIGN_MEANING_NOT_ALLOWED) — the designer asks for one first.
+     */
+    let signatureMeanings = null;
+    const signatureLang = ((document.documentElement.getAttribute('lang') || 'tr').slice(0, 2) || 'tr').toLowerCase();
+    const loadSignatureMeanings = async () => {
+        if (signatureMeanings) return signatureMeanings;
+        try {
+            const res = await fetch('/ESignature/api/meanings?activeOnly=true', { credentials: 'same-origin', headers: { Accept: 'application/json' } });
+            const body = res.ok ? await res.json() : null;
+            const list = body && Array.isArray(body.data) ? body.data : (Array.isArray(body) ? body : null);
+            signatureMeanings = (list || []).filter((m) => m && m.isActive !== false);
+            if (!list) console.warn('[Workflow] e-signature meanings unavailable', res.status);
+        } catch (err) {
+            console.warn('[Workflow] e-signature meanings unavailable', err);
+            signatureMeanings = [];
+        }
+        return signatureMeanings;
+    };
+    const fillSignatureMeanings = async (select, selected) => {
+        if (!select) return;
+        const list = await loadSignatureMeanings();
+        const names = (m) => (m.names && (m.names[signatureLang] || m.names.en)) || m.code;
+        const esc = (v) => String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        const options = list.map((m) => `<option value="${esc(m.code)}">${esc(names(m))} (${esc(m.code)})</option>`);
+        if (selected && !list.some((m) => m.code === selected)) options.push(`<option value="${esc(selected)}">${esc(selected)}</option>`);
+        select.innerHTML = `<option value="">${esc(t('Workflow.Designer.SignatureMeaningSelect', 'Select a meaning'))}</option>` + options.join('');
+        select.value = selected || '';
+        if (!list.length) select.setAttribute('title', t('Workflow.Designer.SignatureMeaningsUnavailable', 'The signature meanings could not be loaded.'));
+    };
+
     const escapeHtml = (value) => {
         if (value === null || value === undefined) return '';
         return String(value)
@@ -166,6 +201,15 @@
             card.querySelector('.wf-dz-esc-type'),
             t('EscalationPrincipalIds', 'Escalation Principal IDs'));
 
+        const signatureSwitch = card.querySelector('.wf-dz-signaturerequired');
+        const meaningWrap = card.querySelector('.wf-dz-signature-meaning-wrap');
+        if (signatureSwitch && meaningWrap) {
+            signatureSwitch.addEventListener('change', () => {
+                meaningWrap.classList.toggle('d-none', !signatureSwitch.checked);
+                if (signatureSwitch.checked) fillSignatureMeanings(card.querySelector('.wf-dz-signaturemeaning'), qv(card, '.wf-dz-signaturemeaning'));
+            });
+        }
+
         reindexSteps();
         if (focus && nameInput) nameInput.focus();
     };
@@ -201,6 +245,11 @@
                     evidenceRequired: qc(card, '.wf-dz-evidencerequired')
                 }
             };
+            // MOD-0022 E4: written only when on, so an unflagged step's JSON stays byte-identical to before
+            if (qc(card, '.wf-dz-signaturerequired')) {
+                step.requirements.signatureRequired = true;
+                step.requirements.signatureMeaning = qv(card, '.wf-dz-signaturemeaning');
+            }
             const due = qv(card, '.wf-dz-due');
             if (due !== '') {
                 const sla = { dueInMinutes: Number(due) };
@@ -238,6 +287,9 @@
         if (!val('wf-dz-stagename')) return { ok: false, message: t('StageNameRequired', 'Stage Name is required.') };
         for (const card of cards) {
             if (!qv(card, '.wf-dz-stepname')) return { ok: false, message: t('StepNameRequired', 'Step Name is required.') };
+            if (qc(card, '.wf-dz-signaturerequired') && !qv(card, '.wf-dz-signaturemeaning')) {
+                return { ok: false, message: t('Workflow.Designer.SignatureMeaningRequired', 'Select an active signature meaning for every step that requires a signature.') };
+            }
             if (readSel(card, '.wf-dz-candidates').length === 0) {
                 return { ok: false, message: t('CandidatesRequired', 'At least one Candidate Principal Id is required.') };
             }

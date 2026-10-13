@@ -1,0 +1,177 @@
+--- execution/domains/supply-chain-execution/module-packs/MOD-0183-shipment-tracking-pod.md	2026-09-26 15:00:14
++++ docs/records/audits/2026-10/mvp6-q233-q234-pack-reconcile-01/proposed/MOD-0183-shipment-tracking-pod.md.txt	2026-10-02 23:21:14
+@@ -3,8 +3,8 @@
+ name: Shipment Tracking & POD
+ domain: supply-chain-execution
+ service: Diten.SupplyChainService
+-shell: none
+-golden_reference: none
++shell: tenant
++golden_reference: compact
+ entity_base: EntityBase
+ status: ready-for-dev
+ status_note: "Phase A spec approved by owner on 2026-09-15; first executable slice is backend/contract only. WAREHOUSE-OUTBOUND v1 is present; adapter compatibility and integrated acceptance remain separately gated."
+@@ -12,7 +12,7 @@
+ branch: feature/mvp6-logistics
+ started: 2026-09-15
+ target: 2026-09-30
+-form_field_count: 0
++form_field_count: 13
+ ---
+ 
+ # MOD-0183 — Shipment Tracking & POD
+@@ -393,3 +393,154 @@
+ 3. The details action bar is a page-level bar; `Toolbar` is the nearest supported placement.
+ 4. `supplychain.shipments.read` is also a UI prerequisite of Returns/Claims create and transition (G-SHIPREAD); the single-key action model cannot express that conjunction.
+ 5. Runtime tests R-02…R-04 need a native executor and the integrated target.
++
++## 23. Tenant UI declaration (Q234, 2026-10-02) — record of the UI that is in the tree
++
++**Evidence:** `docs/records/audits/2026-10/mvp6-q231-mod0183-18-0-gap-01/` (F-Q231-3: this pack said the module has no UI while the tree holds one) and the files read for
++`docs/records/audits/2026-10/mvp6-q233-q234-pack-reconcile-01/MOD0183-UI-DECLARATION.md`. Every row below is derived from a file in the tree; no screen and no field is
++declared that has no view behind it.
++
++**What this section is.** A record of what exists and what is missing. It accepts nothing, ticks no checkbox and authorizes no code,
++gateway, permission, navigation or contract change. `status` is unchanged. No backend, contract or business rule in §§1–22 is changed.
++The frontmatter values `shell: tenant`, `golden_reference: compact` and `form_field_count: 13` describe the UI. For the UI, the opening
++ASSUMPTION ("backend-only … `shell: none`"), §9 ("`shell: none`"), §11 ("Not applicable in the first slice"), the §18 line "Backend-only
++first slice selected; no UI/form pattern invented", the §20 item "Separate UI follow-up" and §22 open gap 1 ("The Shipment UI is not in the
++common checkout") are superseded by this section; for the backend they remain as written. The UI files are untracked working-tree files
++(they arrived through Q202a, per Q231 `SLICE-GATE-MATRIX.tsv` row 14); acceptance is for CT and the owner (SOP §32 K13).
++
++### 23.1 Layout and shell — as in the tree
++
++- `shell: tenant`: each of the three page views states `Layout = "_LayoutTenantShell";` explicitly — `Index.cshtml:7`, `Create.cshtml:8`,
++  `Details.cshtml:8`. No partial (`_*.cshtml`) in the folder sets a `Layout`.
++- View folder `frontend/Diten.Web/Views/SupplyChain/Shipments/`; route base `/SupplyChain/Shipments` (`SupplyChainShipmentsController.cs:12`); no `/Platform` prefix.
++
++### 23.2 Screens and routes — as in the tree
++
++Browser → same-origin MVC adapter → `{GatewayUrl}/api/shipment-bundle/…`. All paths are `frontend/Diten.Web/Controllers/SupplyChainShipmentsController.cs`.
++
++| Surface | MVC route (controller line) | View / form | UI gate in the tree | Adapter target |
++|---|---|---|---|---|
++| List page | GET `/SupplyChain/Shipments` (`:39`) | `Index.cshtml` + `_Filter.cshtml` + `_DataTable.cshtml` | `supplychain.shipments.read` (`Index.cshtml:9`); Create button only with `.create` (`:17`) | — |
++| Create page | GET `/SupplyChain/Shipments/Create` (`:42`) | `Create.cshtml` + `_Form.cshtml` | `supplychain.shipments.create` (`Create.cshtml:10`) | — |
++| Details page | GET `/SupplyChain/Shipments/Details/{shipmentId:guid}` (`:45`) | `Details.cshtml` | `supplychain.shipments.read` (`Details.cshtml:11`) | — |
++| Change Status (form on the Details page) | — | `_TransitionOffcanvas.cshtml` | button built only when a target is allowed for the current status and the key is held (`details.js:70-80`) | — |
++| Capture POD (form on the Details page) | — | `_PodOffcanvas.cshtml` | `.pod.capture` and status Dispatched or InTransit (`details.js:81`) | — |
++| List adapter | GET `…/api?status=&sourceDocumentId=&page=&pageSize=` (`:52`) | — | `.read`; `pageSize` 1–200 | GET `/api/shipment-bundle/shipments` |
++| Detail adapter | GET `…/api/{shipmentId:guid}` (`:67`) | — | `.read` | GET `/api/shipment-bundle/shipments/{shipmentId}` |
++| Create adapter | POST `…/api` (`:75`) | — | `.create`; antiforgery | POST `/api/shipment-bundle/shipments` |
++| Transition adapter | POST `…/api/{shipmentId:guid}/transition` (`:86`) | — | `.cancel` when the target is `Cancelled`, otherwise `.dispatch`; antiforgery | POST `/api/shipment-bundle/shipments/{shipmentId}/transition` |
++| POD adapter | POST `…/api/{shipmentId:guid}/pod` (`:100`) | — | `.pod.capture`; antiforgery | POST `/api/shipment-bundle/shipments/{shipmentId}/pod` |
++
++These are the five frozen operations of §21 and nothing else. No edit, delete, bulk, import or export screen exists in the tree; none is declared.
++The three pages equal the three pages of §22.
++
++### 23.3 Create form — the field count that decides the golden reference
++
++Counted from `_Form.cshtml` (inputs) and `CreateShipmentViewModel` / `CreateShipmentLineViewModel` (`frontend/Diten.Web/Models/SupplyChain/Shipments/ShipmentViewModels.cs:5-25`).
++Rule: AGENTS.md §6 — only fields the user fills in the create form; `Id`, `TenantId`, `IsDeleted`, `CreatedAt`, `UpdatedAt`, audit fields and
++DataTable checkbox/action columns are not counted. The repeatable line container is not counted; its field types are counted once each
++(the same rule MOD-0186 §32.6 states).
++
++| # | Field | Where | Required in the form | Input |
++|---|---|---|---|---|
++| 1 | `sourceModule` | `_Form.cshtml:10` | yes | text |
++| 2 | `sourceType` | `:11` | yes | text |
++| 3 | `sourceDocumentId` | `:12` | yes | text |
++| 4 | `warehouseReferenceId` | `:13` | yes | text |
++| 5 | `shipToReference` | `:14` | yes | text |
++| 6 | `plannedShipAt` | `:17` | yes | date-time picker |
++| 7 | `plannedDeliverAt` | `:18` | no | date-time picker |
++| 8 | `lines[].lineNumber` | `:23` (line template) | yes | text |
++| 9 | `lines[].itemId` | `:23` | yes | text (UUID checked in `create.js:54`) |
++| 10 | `lines[].skuId` | `:23` | yes | text (UUID checked in `create.js:54`) |
++| 11 | `lines[].quantity` | `:23` | yes | text, `inputmode=decimal`, sent as a string |
++| 12 | `lines[].uomId` | `:23` | yes | text |
++| 13 | `lines[].inventoryReferenceId` | `:23` | no | text |
++
++`form_field_count: 13`. 13 is more than 8 → **`golden_reference: compact`** (AGENTS.md §6). The tree is consistent with that: separate
++`Create.cshtml`, `Details.cshtml` and `_Form.cshtml`, and no create/edit offcanvas in `Index.cshtml`.
++Sensitivity, recorded and not hidden: if only the seven header fields were counted the result would be 7 and the rule would say `slim`.
++The count of 13 follows the stated rule; CT may rule otherwise (F-Q234-1). Not counted: `shipmentNumber` and `status` (server-set).
++
++### 23.4 The two other forms (Details page)
++
++| Form | Field | Required attribute | Note |
++|---|---|---|---|
++| Change Status (`_TransitionOffcanvas.cshtml:4`) | `targetStatus` | yes | options built from the current status and the held keys (`details.js:11-13`, `:70-71`) |
++| | `occurredAt` | yes | `datetime-local`, defaulted to now |
++| | `reasonCode` | no | text |
++| | `note` | no | `maxlength="2000"` — see G183-UI-10 |
++| Capture POD (`_PodOffcanvas.cshtml:4`) | `recipientName` | yes | text |
++| | `receivedAt` | yes | `datetime-local`, defaulted to now |
++| | `evidenceReferenceIds` | yes | free text, split on line breaks and commas (`details.js:137`) — see G183-UI-06 |
++| | `note` | no | `maxlength="2000"` — see G183-UI-10 |
++
++Both forms are `novalidate` (G183-UI-05). Both submit through `window.showConfirm` (`details.js:128`).
++
++### 23.5 List — as in the tree
++
++`data-dt-standard="v2"` (`_DataTable.cshtml:4`); `DtDefaults.create` with `serverSide: true`, `stateSave: false`, `searching: false`
++(`index.js:66-67`). Columns: responsive control, `shipmentNumber`, `sourceDocumentId`, `status`, `plannedShipAt`, `plannedDeliverAt`,
++details link (`index.js:69-76`). Filter (`_Filter.cshtml:4`): `status` select with eight values, `sourceDocumentId` text, Apply and Reset.
++No checkbox column, no BulkActionBar, and the export collection button is filtered out (`index.js:64-65`).
++
++### 23.6 Frontend file contract — the files that exist
++
++- Views (10 `.cshtml`): `Index`, `Create`, `Details`, `_Form`, `_Filter`, `_DataTable`, `_IndexL10n`, `_LineEditor`, `_TransitionOffcanvas`, `_PodOffcanvas`; marker class `ShipmentsIndex.cs`.
++- Controller `frontend/Diten.Web/Controllers/SupplyChainShipmentsController.cs`; models `frontend/Diten.Web/Models/SupplyChain/Shipments/ShipmentViewModels.cs`.
++- Scripts (4) in `frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/`: `index.js`, `index.l10n.js`, `create.js`, `details.js`.
++- Resources (7): `frontend/Diten.Web/Resources/Views/SupplyChain/Shipments/ShipmentsIndex.{en,tr,fr,es,zh,ar,ru}.resx`, 63 keys each (counted for Q234; Q231 L10n row).
++- Tests (4) in `frontend/Diten.Web.Tests/`: `Controllers/ShipmentJsonAdapterChallengeTests.cs`, `Forms/ShipmentFormContractTests.cs`, `JavaScript/ShipmentDetailActionTests.cs`, `JavaScript/ShipmentIndexBehaviorTests.cs`.
++
++Differences from the Compact file set of `module-pack-standard.md` §5, recorded and not decided here (F-Q234-2):
++
++- No `Edit.cshtml`. The frozen contract has no update operation (§21: five operations), so there is nothing for an edit page to call.
++- Change Status and Capture POD are offcanvas forms on the Details page. They are action forms, not the `_CreateEditOffcanvas.cshtml` / `_DetailsQuickView.cshtml` that Compact forbids; whether they fit the Compact contract is for CT.
++- `_LineEditor.cshtml` is a one-line comment; the line editor is the `<template>` inside `_Form.cshtml:23`.
++- `verify_datatable_page.py . --area SupplyChain --module Shipments --reference compact` and `quality-gate-datatable` have not been run by any record read here.
++
++### 23.7 UI acceptance rows — none accepted, none ticked
++
++Derived from the tree. "State" is what Q231 measured by reading (E1); nothing here was run.
++
++| ID | Criterion | Derived from | State (Q231, static) |
++|---|---|---|---|
++| SU-01 | Each of the three page views states `Layout = "_LayoutTenantShell";` and no partial sets a Layout | §23.1 | present by reading |
++| SU-02 | UAS-001: without the page permission only `_AccessDenied` renders inside the shell — no heading, filter, table, button or redirect — on all three pages | `Index.cshtml:9-13`, `Create.cshtml:10-14`, `Details.cshtml:11-15` | static MET (matrix row 8); live check open (Q231 R-03); list-API 403 path NOT MET → G183-UI-07 |
++| SU-03 | The list loads through the same-origin adapter and the Gateway, with `status` / `sourceDocumentId` filter and server paging | `index.js`; controller `:52-65` | NOT MET — G183-UI-02 |
++| SU-04 | Create sends the 13 fields of §23.3 with at least one line, one idempotency key per unchanged payload, and opens Details on success | `create.js:44-80` | not run; blocked by G183-UI-02, G183-UI-03 |
++| SU-05 | Details shows summary, schedule, lines and POD; an unknown or foreign shipment shows the safe not-found text with a support reference | `Details.cshtml:23-26`; `details.js:95-109` | not run |
++| SU-06 | Change Status offers only the targets allowed for the current status and the held keys; `Cancelled` needs `.cancel`, every other target `.dispatch` | `details.js:11-13,70-71`; controller `:92-93` | not run; G183-UI-05 |
++| SU-07 | Capture POD is offered only in Dispatched or InTransit with `.pod.capture`; evidence references are sent as a list | `details.js:81,134-138` | not run; G183-UI-05, G183-UI-06 |
++| SU-08 | A server failure or a denied save is distinguishable from a validation error | `create.js:56-60`; `details.js:49-52` | NOT MET — G183-UI-04 |
++| SU-09 | Loading, empty and error are three distinct states on the list and on Details | `index.js:51,57-59`; `_DataTable.cshtml:4` | NOT MET — G183-UI-07 |
++| SU-10 | Seven languages: every key present and non-empty in en, tr, fr, es, zh, ar, ru; status names localized | 7 `.resx`, 63 keys each; `_Filter.cshtml:4` | keys MET (matrix row L10n); status names NOT MET — G183-UI-09 |
++| SU-11 | The note limit is the same in the UI, the adapter and the service | `ShipmentViewModels.cs:34,42`; §4 | NOT MET — G183-UI-10 |
++| SU-12 | Confirmations use the shared premium wrapper (`window.showConfirm`, MOD-0013); no native dialog | `details.js:128` | present by reading |
++| SU-13 | DataTable verifier and `quality-gate-datatable` results are recorded against `--reference compact` | §23.6 | not run |
++| SU-14 | A real user can hold the six keys and reach the three pages from the navigation | §22; `Program.cs` | NOT MET — G183-UI-03 |
++
++### 23.8 Open items — the SOP §18.0 rows Q231 measured as NOT MET, and two further measured gaps
++
++Source: `docs/records/audits/2026-10/mvp6-q231-mod0183-18-0-gap-01/SLICE-GATE-MATRIX.tsv` and `SOP-22.md`. Recorded, not decided and not fixed here.
++
++| Item | §18.0 row / subject | Finding | What is missing |
++|---|---|---|---|
++| G183-UI-01 | Golden flow | F-Q231-8 | No golden-flow document with the five SOP §18.0 elements (actor, trigger, interaction sequence, expected response, success result). The backend sequence is one sentence in the readiness record; the UI journey list → create → details → change status → capture POD is unwritten. |
++| G183-UI-02 | No-shell: gateway has 0 routes | F-Q231-1 | Every UI adapter calls `{GatewayUrl}/api/shipment-bundle/…`; `ocelot.json` has no route for that family. Backend wired, frontend wired, the link between them missing (SOP K4). Gateway edits belong to `integration-agent` only (§6, §15). |
++| G183-UI-03 | No-shell: permission seed | F-Q231-2 | Nothing gives a user the six `supplychain.shipments.*` keys: no seed outside the service, and the manifest provider / registration hosted service are not registered in the service `Program.cs`. With the UAS gate in place every user would get the access-denied panel. Needs a run to confirm (Q231 R-02). |
++| G183-UI-04 | Contract blocker: error-code mismatch | F-Q231-4 | The backend sends `INVALID_REQUEST` for 500 and for 403; the UI maps `INTERNAL_ERROR` and `PERSISTENCE_UNAVAILABLE`, which the backend never sends. A server failure or a denied save is shown as "Check the entered values". The other half of this §18.0 row — a UI with no UI contract in the pack (F-Q231-3) — is what this §23 records; whether that half is thereby closed is for CT. |
++| G183-UI-05 | Validation: no client validation on Change Status and Capture POD | F-Q231-6 | Both offcanvas forms are `novalidate` and have no script check; an empty date throws inside the submit handler and the user sees nothing. Server validation is authoritative and tested. |
++| G183-UI-06 | Audit / evidence for POD | F-Q231-7 | POD evidence is a free-text list of reference strings that nothing resolves or verifies; no shared evidence service is called. §4 and §12 of this pack prescribe "reference only", and the readiness record calls POD regulated: an owner decision, not a coding slip. |
++| G183-UI-07 | UX states | F-Q231-5, F-Q231-12 | The list shows a failed load as an empty table plus a toast; if the list API answers 403 the page shows a toast and an empty table, which UAS-001 §6 forbids. The details page draws its cards before data arrives under a "Loading…" heading; the skeleton element in `_DataTable.cshtml` is never shown by a script; no field-level validation messages. |
++| G183-UI-08 | Observability | F-Q231-9 | No metrics and no traces in the service. SOP §18.0 asks for "required" ones; none is defined for this module in this pack or in the readiness record. |
++| G183-UI-09 | Hard-coded status names | F-Q231-11 | The eight shipment status names are hard-coded English in `_Filter.cshtml` and shown raw in the list badge, the details status and the target-status dropdown, in all seven languages. |
++| G183-UI-10 | Note length mismatch 2000 vs 1000 | F-Q231-10 | Note is max 2000 in the UI (`ShipmentViewModels.cs:34,42`; `maxlength="2000"` in both offcanvas files) and max 1000 on the server (§4 of this pack; `ShipmentNoteRules.cs:15`). A 1500-character note passes the UI and the adapter and is rejected by the service. |
++
++Not carried into this table: the Low findings F-Q231-13 to F-Q231-16 (see the Q231 `SOP-22.md`). The contract version this pack names
++("`SHIPMENT-BUNDLE` v1", no version, no hash — F-Q218-10) is not changed by this section.
++
++### 23.9 Not authorized by this section
++
++UI code changes; gateway, permission-seed, navigation or shared-resource edits (single integration owner); contract changes; a `status`
++change; ticking any acceptance or checklist box; commit or push. `execution/registries/module-implementation-status.md` is a separate path and is not updated here.

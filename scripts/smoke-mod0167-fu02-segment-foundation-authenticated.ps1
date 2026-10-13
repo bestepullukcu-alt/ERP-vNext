@@ -11,7 +11,7 @@
   Optional:
       -BaseUrl http://localhost:5000  -TenantId 97c59330-dbc4-4665-b29c-0c26dbb5cc93
 
-  All business calls go through the Gateway (5000). Direct 5061 is used ONLY for /health. Nothing is hard-deleted:
+  All business calls go through the Gateway (5000). Direct 5065 is used ONLY for /health. Nothing is hard-deleted:
   every record is closed with ARCHIVE. The script asserts the load-bearing FU02 promises:
     * a segment is a DEFINITION - resolve persists NOTHING (document counts and timestamps are compared around it)
     * resolution is DETERMINISTIC (three consecutive runs are compared bit for bit)
@@ -23,7 +23,7 @@
     * there is no DELETE and no PATCH surface anywhere
 
   PREREQUISITES (data, not code):
-    * The Gateway must route /api/crm/segments and /api/crm/subjects to 5061 (follow-up F-GATEWAY). Without those
+    * The Gateway must route /api/crm/segments and /api/crm/subjects to 5065 (follow-up F-GATEWAY). Without those
       routes EVERY call answers 404 with an empty {} body - that is a missing route, not a code defect.
     * The fleet must be running the FU02 build.
     * For the POSITIVE concept.affinity scenario the tenant needs a concept graph chain
@@ -36,7 +36,7 @@
 param(
     [string]$BaseUrl   = "http://localhost:5000",
     [string]$TenantId  = "97c59330-dbc4-4665-b29c-0c26dbb5cc93",
-    [string]$CrmDirect = "http://localhost:5061"
+    [string]$CrmDirect = "http://localhost:5065"
 )
 
 $ErrorActionPreference = "Stop"
@@ -64,7 +64,7 @@ $nowIso  = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
 
 Write-Host "== MOD-0167-FU02 authenticated segment foundation smoke ($run) ==" -ForegroundColor Cyan
 
-foreach ($p in @(5000, 5061)) {
+foreach ($p in @(5000, 5065)) {
     $code = Status "http://localhost:$p/"
     Add-Result "Preflight port $p up" "reachable" $code ($code -ne -1)
 }

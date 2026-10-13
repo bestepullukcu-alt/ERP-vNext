@@ -155,7 +155,7 @@ audit store (MOD-0021) — hepsi **tüketilir**, sahiplenilmez.
 | SoR | territories, assignments, territory change approvals | §5 Scope; `SoR_Map` collision count = **0** |
 | SoR Primary Object(s) | territories | `TerritoryNode` + `TerritoryModel` |
 | Integration Contract | DOMAIN-APP-BASE | tenant isolation + authz + audit + health taban kontratı |
-| Deployment Unit | Domain Applications | `Diten.CrmService` (port 5061), Gateway-only erişim |
+| Deployment Unit | Domain Applications | `Diten.CrmService` (port 5065), Gateway-only erişim |
 | Build / Buy / Partner | **Buy/Partner** | ⚠️ §4-D6 governance sapma notu |
 | SLO Tier | Tier 2 | Planlama modülü; runtime-critical değil |
 | Support Model | L1 Service Desk; L2 Domain App Ops; L3 Vendor / Partner | Frontmatter birebir Excel'den |
@@ -837,7 +837,7 @@ alanı taşımaz (yalnız `ContactId` / display name / link referansı).
 ## 18. UI Surfaces
 
 Golden Reference **Compact** (MOD-0149 / MOD-0150 ile aynı) · **offcanvas/quickview create-edit yasak** ·
-**Gateway-only** (tarayıcı 5061'e asla gitmez) · **fake UI / mock data yasak** (backend hazır olmadan sayfa açılmaz) ·
+**Gateway-only** (tarayıcı 5065'e asla gitmez) · **fake UI / mock data yasak** (backend hazır olmadan sayfa açılmaz) ·
 **7 dil `.resx`** + `window.L10n` bridge · DataTable v2 kontratı.
 
 ### Blueprint-zorunlu 3 sayfa
@@ -1124,7 +1124,7 @@ atama geçmişi yalnız MOD-0151 collection/aggregate'inde tutulur.
 `MicroZoneId` ekleme; resource assignment mutation; workflow submit/approve/reject ve MOD-0023 entegrasyonu;
 approval trace; evidence pack; import/export; visit/route planning veya readiness; Brand Scope; Product/Brand master;
 hard delete; Mongo hand-edit; RBAC seed/grant; MOD-0048 publish; `crm.territory.delete`;
-`crm.micro-zone.manage`; request payload'ında `TenantId`; direct port 5061 business API çağrısı.
+`crm.micro-zone.manage`; request payload'ında `TenantId`; direct port 5065 business API çağrısı.
 
 **FU06 boundary:** FU05 assignment apply bir workflow approval değildir. FU06 ayrıca submit/approve/reject,
 workflow trace, MOD-0023 integration ve gerekiyorsa approval-governed controlled activation getirir. FU05 bu
@@ -1366,7 +1366,7 @@ boş response, birden fazla sonuç integrity conflict üretir; proposed kayıt h
   kullanılır.
 - Contract resource lifecycle/current/history capability'lerini doğru bildirir; workflow/evidence/import-export/
   visit-route flag'leri açılmaz.
-- Frontend bütün business çağrılarını Gateway/same-origin proxy üzerinden yapar; direct `:5061` çağrısı ve payload
+- Frontend bütün business çağrılarını Gateway/same-origin proxy üzerinden yapar; direct `:5065` çağrısı ve payload
   `TenantId` alanı yoktur.
 - Tenant isolation cross-tenant ID'lerde 404; Account/Contact master mutation yolu yok; hard delete yoktur.
 
@@ -1388,7 +1388,7 @@ boş response, birden fazla sonuç integrity conflict üretir; proposed kayıt h
 workflow approval, submit/approve/reject veya MOD-0023 entegrasyonu; approval trace; evidence pack; import/export;
 visit/route planning implementation; Brand Scope; Product/Brand master; hard delete; Mongo hand-edit; RBAC
 seed/grant; MOD-0048 publish; `crm.territory.delete`; `crm.micro-zone.manage`; request payload'ında `TenantId`;
-direct port 5061 business API çağrısı.
+direct port 5065 business API çağrısı.
 
 **FU05–FU09 boundary:** FU04A resource responsibility lifecycle sahibidir. FU05 Account assignment sahibidir; FU06
 workflow approval sahibidir; FU07 evidence pack; FU08 import/export; FU09 yalnız MOD-0155 readiness/coverage API
@@ -1501,7 +1501,7 @@ Aşağıdakiler FU04B kapsamında **kesinlikle yasaktır**:
 - Brand Scope · Product/Brand master
 - Hard delete · Mongo hand-edit
 - RBAC seed/grant (ayrıca yetkilendirilmedikçe) · MOD-0048 publish (ayrıca yetkilendirilmedikçe)
-- `crm.territory.delete` · `crm.micro-zone.manage` · request payload'ında `TenantId` · direct port 5061 çağrısı
+- `crm.territory.delete` · `crm.micro-zone.manage` · request payload'ında `TenantId` · direct port 5065 çağrısı
 - **Yeni bağımsız ana menü sayfası** — global Resource Change Monitor future follow-up'tır
 - Diff projection cache / materialized read model (D-FU04B-7)
 
@@ -1566,7 +1566,7 @@ MOD-0150 için zaten çalışan XLSX parse / dry-run / apply altyapısı yeniden
 1. **Export (read-only).** Territory Model metadata · Territory Node'lar · hiyerarşi (parent/level/sort) · Business
    Unit scope'ları · Assignment Rule'lar · Account Assignment current + history · CoverageSummary · Resource
    Assignment current + history · Plan vs Current. Format **XLSX**, satır bazlı açık kolonlar. Tenant **claim'den**
-   okunur; export payload'ında/çıktısında `TenantId` **yer almaz**; çağrılar Gateway üzerinden yapılır, direct 5061
+   okunur; export payload'ında/çıktısında `TenantId` **yer almaz**; çağrılar Gateway üzerinden yapılır, direct 5065
    business API çağrısı yoktur.
 2. **Import template generation.** Sistem, doldurulabilir çok-sheet'li bir XLSX şablon üretir: `Model` · `Nodes` ·
    `AssignmentRules` · `AccountAssignments` · `ResourceAssignments` · `ReferenceValues` (lookup) · `ValidationNotes`
@@ -1714,7 +1714,7 @@ contract yüzeyinde de görünür kılar.
   kolonu yok sayılır + uyarı.
 - **Guard:** Account/Contact master mutasyonu yok; `ContactTerritoryAssignment` yok; CoverageSummary/Plan vs Current
   import endpoint'i **yok** (derlenebilir bir yolu bulunmamalı); resource assignment apply yolu **yok**; hard delete
-  yok; workflow/approval/ChangeRequest yok; `crm.territory.delete` / `crm.micro-zone.manage` yok; direct 5061 yok;
+  yok; workflow/approval/ChangeRequest yok; `crm.territory.delete` / `crm.micro-zone.manage` yok; direct 5065 yok;
   request payload'ında `TenantId` yok.
 - **Frontend:** Import/Export sayfası render'ı, dry-run sonuç tablosu (severity/blocking ayrımı), apply onay akışı,
   run history listesi, 7 dil RESX parity, Compact DataTable v2 verifier.
@@ -1736,7 +1736,7 @@ survey; GPS check-in/out; Brand Scope; Product/Brand master; Account master muta
 `ContactTerritoryAssignment` eklemek; **CoverageSummary import**; **Plan vs Current import**; **resource assignment
 apply (FU08A)**; yeni import framework yazmak; hard delete; Mongo hand-edit; RBAC seed/grant (ayrıca
 yetkilendirilmedikçe); MOD-0048 publish (ayrıca yetkilendirilmedikçe); `crm.territory.delete`;
-`crm.micro-zone.manage`; request payload'ında `TenantId`; direct port 5061 business API çağrısı.
+`crm.micro-zone.manage`; request payload'ında `TenantId`; direct port 5065 business API çağrısı.
 
 ### 22.6 FU09A — Visit/Route Readiness: Coverage, Contact Availability and Frequency Input Boundaries
 
@@ -1976,7 +1976,7 @@ Mevcut flag'ler **korunur**: `supportsCoverageSummary`, `supportsCoverageSummary
   `ContactTerritoryAssignment` yok; Contact/Account master mutasyonu yok; `ContactAvailability` /
   `VisitFrequencyPolicy` / visit / route / visit-history **aggregate'i MOD-0151'de yok**; response'ta rota
   sırası/mesafe/optimizasyon alanı yok; cadence compliance hesabı yok; hard delete yok; `crm.territory.delete` /
-  `crm.micro-zone.manage` yok; request payload'ında `TenantId` yok; direct 5061 yok.
+  `crm.micro-zone.manage` yok; request payload'ında `TenantId` yok; direct 5065 yok.
 - **Authenticated Gateway-only smoke:** active model + account assignment mevcut → account coverage readiness doğru
   node/resource döner → model deactivate edilir → aynı account `coverage_not_current` ile candidate dışına düşer ve
   history bozulmaz → çok-account'lu contact iki coverage satırı döner → resource readiness current sahibi gösterir →
@@ -1998,7 +1998,7 @@ yetkilendirilmedikçe); MOD-0150 Contact master mutasyonu; Account master mutasy
 hasta (patient) verisi; workflow approval; ChangeRequest; MOD-0023 entegrasyonu; evidence pack; import/export yeni
 scope; Brand/Product master; coverage roll-up (FU09); hard delete; Mongo hand-edit; RBAC seed/grant (ayrıca
 yetkilendirilmedikçe); MOD-0048 publish (ayrıca yetkilendirilmedikçe); `crm.territory.delete`;
-`crm.micro-zone.manage`; request payload'ında `TenantId`; direct port 5061 business API çağrısı.
+`crm.micro-zone.manage`; request payload'ında `TenantId`; direct port 5065 business API çağrısı.
 
 ---
 

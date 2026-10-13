@@ -1,0 +1,39 @@
+{
+  "wp": "WP-0173-PM0",
+  "measuredAt": "2026-10-02T13:49–13:52+03:00",
+  "chain": {
+    "web": "Diten.Web Release, http://localhost:5091, ASPNETCORE_ENVIRONMENT=Development, Inventory__ProductMasterBaseUrl=http://127.0.0.1:4011/ (env only; no appsettings value)",
+    "gatewayCopy": "http://localhost:5090 (worktree gateway, override = inventory routes only; NO product-master route)",
+    "inventoryService": "http://localhost:5067, DB diten_inventory_pm0_smoke",
+    "prism": "http://127.0.0.1:4011 (frozen product-master spec, lot fixture d6-prism-spec-lot.openapi.yaml)",
+    "modelAMock": "http://127.0.0.1:4012",
+    "userFleet": "untouched (4010/5000/5001/5056–5061/5066 PIDs: d7-fleet-before.json)"
+  },
+  "credentials": "seed user from dev-runbook, typed only into localhost:5091; not recorded. Tokens: gateway logs them as [REDACTED].",
+  "checks": [
+    {
+      "id": "D5-1 gateway has no product-master route (control)",
+      "observed": "gateway-copy log: GET /api/product-master/products/006bfd79-… responded 404 (UnableToFindDownstreamRouteError) — the only product-master hit on the gateway, the manual probe",
+      "result": "PASS"
+    },
+    {
+      "id": "D5-2 S-3 product select shows units + lot flag via the bridge",
+      "observed": "S-3 form: units ADET/KOLI/PALET/DESTE, lotRequired=true (lot field mandatory), hint '2 KOLI = 24 ADET'. Web log: 7× GET 4011/products/006bfd79-…, 4× GET 4011/skus/a0a0…a1/uom, 3× GET 4011/skus/a0a0…a1?level=Gsku — prefix /api/product-master stripped. Prism log: 18 'Request received', all 200.",
+      "screenshots": ["screenshots/01-s3-product-and-sku-via-bridge.jpg", "screenshots/02-s3-unit-hint-and-stock-effect-via-bridge.jpg"],
+      "result": "PASS"
+    },
+    {
+      "id": "D5-3 opening balance → 201",
+      "observed": "MVC success, INV-2026-0000001, receipt balance 24 ADET, lot LOT-PM0/01; gateway-copy: POST /api/inventory/movements responded 201 (13:51:09)",
+      "result": "PASS"
+    },
+    {
+      "id": "D5-4 S-2 Reversal network retry → replay (FU-UI2-05)",
+      "sent": { "idempotencyKey": "af18504d-a26d-4a29-bfee-0704c43d2c95", "reversalAt": "2026-10-02T10:51:27.399Z (minted when the dialog opened)" },
+      "first": { "httpStatus": 200, "success": true, "transactionNumber": "INV-2026-0000002", "transactionId": "b11ca76f-b138-4a66-bdb0-5f040604f732", "idempotentReplay": false, "gateway": "POST /api/inventory/movements responded 201 (13:51:34)" },
+      "retry": { "note": "same URL, same headers, same body, sent ~6 s later", "httpStatus": 200, "success": true, "transactionNumber": "INV-2026-0000002", "transactionId": "b11ca76f-b138-4a66-bdb0-5f040604f732", "idempotentReplay": true, "gateway": "POST /api/inventory/movements responded 200 (13:51:40)" },
+      "screenshots": ["screenshots/03-s2-reversal-then-replay.jpg"],
+      "result": "PASS"
+    }
+  ]
+}

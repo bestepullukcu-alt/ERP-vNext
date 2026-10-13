@@ -485,4 +485,6 @@
   <data name="Err_decision_invalid" xml:space="preserve"><value>Onayla ya da reddet seçin.</value></data>
   <data name="Err_note_text_required" xml:space="preserve"><value>Not metnini yazın.</value></data>
   <data name="Err_note_not_found" xml:space="preserve"><value>Not bulunamadı; sayfayı yenileyin.</value></data>
+  <data name="DecisionApprovedFinal" xml:space="preserve"><value>Onay kaydedildi. İnceleme tamamlandı.</value></data>
+  <data name="Err_withdraw_not_submitter" xml:space="preserve"><value>İncelemeyi yalnızca gönderen kişi geri çekebilir.</value></data>
 </root>

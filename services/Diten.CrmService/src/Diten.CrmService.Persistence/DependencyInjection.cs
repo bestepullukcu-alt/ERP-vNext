@@ -186,6 +186,8 @@ public static class DependencyInjection
         services.AddScoped<
             Application.Features.Segmentation.Resolution.ISegmentAttributeSourceReader,
             Application.Features.Segmentation.Resolution.SegmentAttributeSourceReader>();
+        // WP-E2E-FIX-3 (E1-B2) — territory / link id pre-queries that narrow the candidate query (superset only).
+        services.AddScoped<Application.Features.Segmentation.Resolution.SegmentCandidatePrefilter>();
         services.AddScoped<Application.Features.Segmentation.Resolution.SegmentMembershipResolver>();
         // The read-only consumption seam MOD-0167-FU01 and a future MOD-0165 snapshot read. It reports and never
         // writes: no CampaignTarget, no VisitFrequencyPolicy, nothing.
@@ -1105,9 +1107,55 @@ public static class DependencyInjection
                 map.GetMemberMap(c => c.AccountContactLinkId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
             });
         }
+        // WP-VP-3C (K-7, S-4) — the rep's per-doctor product pick: a new embedded type, so its Guid is mapped here (the
+        // CRM new-type GUID trap). A session written before 3C has no "Products" and reads as an empty list.
+        if (!BsonClassMap.IsClassMapRegistered(typeof(PlanningSessionSelectedProduct)))
+        {
+            BsonClassMap.RegisterClassMap<PlanningSessionSelectedProduct>(map =>
+            {
+                map.AutoMap();
+                map.SetIgnoreExtraElements(true);
+                map.GetMemberMap(p => p.ProductId).SetSerializer(stringGuid);
+            });
+        }
         if (!BsonClassMap.IsClassMapRegistered(typeof(PlanningSessionGenerationState)))
         {
             BsonClassMap.RegisterClassMap<PlanningSessionGenerationState>(map => map.AutoMap());
+        }
+        // WP-VP-3A — the stored (approved / reopened) weeks + their history. New embedded types are registered here or
+        // their Guid lists would be written binary while every other id is a string (the CRM new-type GUID trap). An
+        // older session document without "Weeks" reads as an empty list (the property initialiser).
+        if (!BsonClassMap.IsClassMapRegistered(typeof(PlanningWeek)))
+        {
+            BsonClassMap.RegisterClassMap<PlanningWeek>(map =>
+            {
+                map.AutoMap();
+                map.SetIgnoreExtraElements(true);
+                map.GetMemberMap(w => w.PlannedVisitIds)
+                    .SetSerializer(new EnumerableInterfaceImplementerSerializer<List<Guid>, Guid>(stringGuid));
+                map.GetMemberMap(w => w.ManualVisitOrder)
+                    .SetSerializer(new EnumerableInterfaceImplementerSerializer<List<Guid>, Guid>(stringGuid));
+            });
+        }
+        if (!BsonClassMap.IsClassMapRegistered(typeof(PlanningWeekHistoryEntry)))
+        {
+            BsonClassMap.RegisterClassMap<PlanningWeekHistoryEntry>(map =>
+            {
+                map.AutoMap();
+                map.SetIgnoreExtraElements(true);
+            });
+        }
+        // WP-VP-4E — the rep's day pins: a new embedded type, so its Guids take the string-Guid convention here (the CRM
+        // new-type GUID trap). An older session without "DayPins" reads as an empty list.
+        if (!BsonClassMap.IsClassMapRegistered(typeof(PlanningDayPin)))
+        {
+            BsonClassMap.RegisterClassMap<PlanningDayPin>(map =>
+            {
+                map.AutoMap();
+                map.SetIgnoreExtraElements(true);
+                map.GetMemberMap(p => p.TargetId).SetSerializer(stringGuid);
+                map.GetMemberMap(p => p.ContactId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+            });
         }
         if (!BsonClassMap.IsClassMapRegistered(typeof(PlanningSessionProvenance)))
         {

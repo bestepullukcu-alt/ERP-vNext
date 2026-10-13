@@ -68,7 +68,9 @@
         no_open_review: () => t('Err_no_open_review'),
         decision_invalid: () => t('Err_decision_invalid'),
         note_text_required: () => t('Err_note_text_required'),
-        note_not_found: () => t('Err_note_not_found')
+        note_not_found: () => t('Err_note_not_found'),
+        // WP-E2E-FIX-2 (E3-B4) — only the submitter withdraws a review round.
+        withdraw_not_submitter: () => t('Err_withdraw_not_submitter')
     };
 
     /** The user text of a failed response body ({ errors: [code, message, …] }). The CRM message is never shown for a

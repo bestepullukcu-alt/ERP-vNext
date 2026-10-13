@@ -16,14 +16,11 @@
     const esc = v => String(v ?? '').replace(/[&<>'"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[ch]));
 
     const safe = fn => { try { return fn(); } catch (e) { return null; } };
-    const toDate = v => {
-        if (!v) return null;
-        // "yyyy-MM-dd" is a calendar day: read it as UTC midnight so it never drifts by the reader's offset.
-        const d = /^\d{4}-\d{2}-\d{2}$/.test(String(v)) ? new Date(`${v}T00:00:00Z`) : new Date(v);
-        return Number.isNaN(d.getTime()) ? null : d;
-    };
-    const day = v => { const d = toDate(v); return d ? (safe(() => d.toLocaleDateString(locale, { year: 'numeric', month: 'short', day: '2-digit', timeZone: 'UTC' })) || d.toISOString().slice(0, 10)) : '—'; };
-    const stamp = v => { const d = toDate(v); return d ? (safe(() => d.toLocaleString(locale, { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' })) || d.toISOString()) : '—'; };
+    // WP-CYC-UI-FIX-2 — ONE date formatter for both cycle modules (cycle-dates.js, loaded before this file).
+    const D = window.CycleDates;
+    const toDate = D.toDate;
+    const day = D.day;
+    const stamp = D.stamp;
     const number = v => (v === null || v === undefined || v === '') ? '—' : (safe(() => new Intl.NumberFormat(locale).format(Number(v))) || String(v));
     const plain = v => (v === null || v === undefined || v === '') ? '—' : String(v);
     const monthName = (year, month) => safe(() => new Date(Date.UTC(year, month - 1, 1)).toLocaleDateString(locale, { month: 'long', year: 'numeric', timeZone: 'UTC' })) || `${year}-${String(month).padStart(2, '0')}`;
@@ -37,6 +34,13 @@
         'legal-entity': L().ScopeTypeLegalEntity,
         'business-unit': L().ScopeTypeBusinessUnit
     }[v] || v || '—');
+    /**
+     * WP-CYC-UI-FIX-2 — how far (physical pixels, + = right) the timeline must scroll so today's line sits in the
+     * middle of the visible area. Pure arithmetic on two bounding rects, so it holds for right-to-left pages too:
+     * scrollBy({ left: delta }) moves the content by the same physical distance in either direction.
+     */
+    const timelineCentreDelta = (lineRect, scrollerRect) =>
+        Math.round((lineRect.left + lineRect.width / 2) - (scrollerRect.left + scrollerRect.width / 2));
     const badge = (text, tone) => `<span class="badge bg-label-${esc(tone)}">${esc(text)}</span>`;
 
     /** Reads the gateway envelope; a non-2xx throws with the runtime's own messages (they name the blocking period). */
@@ -69,7 +73,7 @@
 
     window.CyclePeriodsShared = {
         L, locale, endpoint, esc, day, stamp, number, plain, monthName, isoDay, toDate,
-        statusLabel, statusTone, scopeLabel, badge, envelope, getJson, sendJson, formatAll,
+        statusLabel, statusTone, scopeLabel, timelineCentreDelta, badge, envelope, getJson, sendJson, formatAll,
         canManage: !!flags.canManage, canActivate: !!flags.canActivate
     };
 })(window, document);

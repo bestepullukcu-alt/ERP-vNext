@@ -1,0 +1,6 @@
+id	surface	evidence	disposition
+UI183-C01	common checkout	SupplyChain Program current dirty hash 7fdb5ef0... differs from accepted source 50c48a2b...	Do not transfer into common checkout; use new registered isolated target.
+UI183-C02	shared writer	Carrier lane already targets gateway, Program, registration infrastructure and seven SharedResource files	Shipment patch is successor-only over Carrier target hashes; one integration owner; HELD until Carrier predecessor is frozen.
+UI183-C03	Gateway port 5061	Carrier/SupplyChain and 34 CRM route descriptors point to 5061 in predecessor config	Existing deployment collision; Shipment patch does not edit CRM. Integration owner must record environment disposition before composed runtime acceptance.
+UI183-C04	backend transfer	40 donor rows are already identical in Carrier shared worktree, but that mutable worktree is not Shipment transfer authority	Use durable donor archive plus exact transfer manifest; any non-identical target preimage stops transfer.
+UI183-C05	pack	Pack preimage 323816...; pack patch 20eacc... remains unapplied	Separate owner artifact decision required.

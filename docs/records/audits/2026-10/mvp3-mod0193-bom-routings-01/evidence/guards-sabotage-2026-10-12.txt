@@ -1,0 +1,24 @@
+# Guards added 2026-10-12 — each sabotaged red, then restored green (production code, not a copy)
+
+## 1. CurrentUserContextTests (b67b13f7f) — sabotage: UserName falls back to "unknown" (the old behaviour)
+  Failed Diten.ManufacturingService.Tests.Tenancy.CurrentUserContextTests.Email_names_the_actor_when_the_token_has_no_person_name [7 ms]
+  Failed Diten.ManufacturingService.Tests.Tenancy.CurrentUserContextTests.An_auth_service_token_is_named_by_given_and_family_name [< 1 ms]
+Failed!  - Failed:     2, Passed:    71, Skipped:     0, Total:    73, Duration: 2 s - Diten.ManufacturingService.Tests.dll (net8.0)
+restored: 73/73 at that commit
+
+## 2. BomsL10nTests.Every_history_field_name_the_service_writes_has_a_translated_label (d6af82f2d) — sabotage: the "status" label arm removed from Details.cshtml
+Collection: ["status"]
+Failed!  - Failed:     1, Passed:     3, Skipped:     0, Total:     4, Duration: 44 ms - Diten.Web.Tests.dll (net8.0)
+restored: 4/4
+
+## 3. CentralAuditDeclarationTests (82ebedeb4) — BL-501 pre-wiring  [HISTORICAL: the declarations and these 4 tests were removed by 730a7fa1f — BL-501 deferred after the MVPs]
+## S1: DeleteBomDraftCommand no longer declares (interface removed, members kept)
+services/Diten.ManufacturingService/tests/Diten.ManufacturingService.Tests/Registration/CentralAuditDeclarationTests.cs(82,9): error CS0029: Cannot implicitly convert type 'Diten.ManufacturingService.Application.Features.Boms.Commands.DeleteBomDraftCommand' to 'Diten.ManufacturingService.Application.Common.ICentralAuditDeclaration' [/home/user/ERP-vNext/services/Diten.ManufacturingService/tests/Diten.ManufacturingService.Tests/Diten.ManufacturingService.Tests.csproj]
+## S2: release declared as 'Release' (not a Platform AuditOperation)
+  Failed Diten.ManufacturingService.Tests.Registration.CentralAuditDeclarationTests.Category_and_operation_are_values_platform_defines_and_the_source_is_the_registered_module 
+Failed!  - Failed:     1, Passed:     3, Skipped:     0, Total:     4, Duration: 80 ms - Diten.ManufacturingService.Tests.dll (net8.0)
+## S3: a per-service forwarder copy appears
+  Failed Diten.ManufacturingService.Tests.Registration.CentralAuditDeclarationTests.The_service_carries_no_forwarder_of_its_own 
+Failed!  - Failed:     1, Passed:     3, Skipped:     0, Total:     4, Duration: 141 ms - Diten.ManufacturingService.Tests.dll (net8.0)
+## restored
+Passed!  - Failed:     0, Passed:     4, Skipped:     0, Total:     4, Duration: 163 ms - Diten.ManufacturingService.Tests.dll (net8.0)

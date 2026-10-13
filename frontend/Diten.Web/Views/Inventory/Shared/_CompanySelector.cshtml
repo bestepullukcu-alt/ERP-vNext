@@ -1,0 +1,57 @@
+@model Diten.Web.Models.Inventory.CompanySelectorViewModel
+@*
+    COMPANY SELECTOR — pack §19 waiver W-0173-02 (owner 2026-10-01). AuthService issues no legal_entity_id claim, so a
+    claim-less user picks the company (legal entity) the inventory screens work in. The list is the tenant's ACTIVE
+    legal entities from MDM, read SERVER-SIDE through the Gateway (CompanySelection.ResolveAsync) — the browser never
+    calls the Gateway. The choice is a same-origin cookie holding the id only (company-selector.js); MOD-0173 checks it
+    against MDM on every request. A token that carries the claim wins: nothing is drawn here.
+
+    ⚠ One isolated component (this partial + company-selector.js + Models/Inventory/CompanySelection.cs) so the
+    permanent fix (FU-LE-01: user↔LE assignment + the claim) can remove it in one place. It produces no text of its
+    own — the page hands in its localized words.
+*@
+@if (Model.State == Diten.Web.Models.Inventory.CompanySelectorState.FromToken)
+{
+    return;
+}
+
+<div class="card mb-4" id="inventory-company-selector" data-company-state="@Model.State.ToString().ToLowerInvariant()" data-company-cookie="@Model.CookieName">
+    <div class="card-body d-flex flex-wrap align-items-center gap-3 p-3">
+        <div class="avatar"><span class="avatar-initial rounded bg-label-primary"><i class="bx bx-buildings"></i></span></div>
+        @if (Model.State == Diten.Web.Models.Inventory.CompanySelectorState.Unavailable)
+        {
+            <div class="flex-grow-1" role="status">
+                <small class="text-muted d-block">@Model.Label</small>
+                <span class="text-warning fw-medium" id="inventory-company-unavailable">@Model.UnavailableText</span>
+            </div>
+        }
+        else
+        {
+            <div class="flex-grow-1">
+                <label class="form-label mb-1" for="inventoryCompany">@Model.Label</label>
+                <select id="inventoryCompany" class="form-select form-select-sm" style="max-width: 28rem" aria-describedby="inventory-company-hint">
+                    @if (Model.SelectedId is null)
+                    {
+                        <option value="" selected>@Model.Placeholder</option>
+                    }
+                    @foreach (var company in Model.Companies)
+                    {
+                        if (company.Id == Model.SelectedId)
+                        {
+                            <option value="@company.Id" selected>@company.Name</option>
+                        }
+                        else
+                        {
+                            <option value="@company.Id">@company.Name</option>
+                        }
+                    }
+                </select>
+                @if (!Model.Ready)
+                {
+                    <small class="text-muted d-block mt-1" id="inventory-company-hint">@Model.SelectHint</small>
+                }
+            </div>
+        }
+    </div>
+</div>
+<script src="~/assets/js/Inventory/company-selector.js" asp-append-version="true"></script>

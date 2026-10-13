@@ -1,0 +1,19 @@
+{
+  "tokenPersistence": false,
+  "loginHttp": 200,
+  "initialLegalEntityClaimPresent": true,
+  "fixtureMutation": "position assignment IsDeleted set true; restored false",
+  "refreshHttp": 200,
+  "refreshedAccessTokenIssued": true,
+  "refreshedLegalEntityClaimPresent": false,
+  "consumerHttp": 403,
+  "consumerBody": {
+    "error": {
+      "code": "INVALID_REQUEST",
+      "message": "Required authorization context or permission is missing.",
+      "correlationId": "63000000-0000-0000-0000-000000000001"
+    },
+    "contractVersion": "v1"
+  },
+  "fixtureRestored": true
+}

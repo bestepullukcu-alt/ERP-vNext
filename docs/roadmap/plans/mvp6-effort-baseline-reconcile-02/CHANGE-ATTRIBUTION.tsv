@@ -1,0 +1,4 @@
+change_class	delivered_most_likely_delta_hours	remaining_most_likely_delta_hours	total_estimate_delta_hours	interpretation
+completed_work	0	0	0	UI scope preparation is evidenced complete, but no measured or separately elicited effort exists; no numeric credit invented.
+estimate_correction	0	14	14	Four exact 76/132/224 h reserves replace old 70.8/118/211.2 h reserves.
+scope_change	0	0	0	Same first usable bounded UI; excluded upload/lookup/edit/delete/bulk/live producer/E5/G5 remain excluded.

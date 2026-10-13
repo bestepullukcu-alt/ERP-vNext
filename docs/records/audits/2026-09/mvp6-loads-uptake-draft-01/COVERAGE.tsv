@@ -1,0 +1,20 @@
+id	criterion	tests (overlay)	level	mac_runtime_plan
+LU-01	Fresh create then list	LoadRootQueryTests.CreatedLoadListsItsOwnCreateRootAndNeverTheGetTrace; LoadContractTests.FrozenThreeOperationWireAndSuccessfulCreateList (value parity)	E3 integration	Mac Q77b: runtime_probe.py (patched) + verify_evidence.py (E4)
+LU-02	Item shape	LoadContractTests.FrozenThreeOperationWireAndSuccessfulCreateList (exact item keys); LoadRootSeed.Items (key present on every item, value or null)	E3 integration	Mac Q77b
+LU-03	Stored valid UUID (legacy)	LoadRootQueryTests.LegacyStoredRootStatesListTogetherWithoutFailingOrBackfilling (valid, uppercase); LoadRootStorageTests.PresenceAwareRootStatesAreDistinct(valid, uppercase)	E3 unit + integration	Mac Q77b
+LU-04	Stored nil UUID	LoadRootStorageTests(nil); LoadRootQueryTests.Legacy…(nil); LoadRootTransitionTests.StoredNilRootIsAPresentRootAndMatchesNilInboundCorrelation	E3 unit + integration	Mac Q77b
+LU-05	Field missing	LoadRootStorageTests(missing), MissingRootIsNotSynthesizedAsNil; LoadRootQueryTests.Legacy…(missing; field still absent after GET)	E3 unit + integration	Mac Q77b
+LU-06	Explicit BSON null	LoadRootStorageTests(null); LoadRootQueryTests.Legacy…(null)	E3 unit + integration	Mac Q77b
+LU-07	Malformed / wrong type	LoadRootStorageTests(malformed, braced, empty, int32, binary-uuid); LoadRootQueryTests.Legacy…(malformed, int32, binary-uuid; list 200, other rows unaffected)	E3 unit + integration	Mac Q77b
+LU-08	No derivation	LoadRootQueryTests.CreatedLoadListsItsOwnCreateRootAndNeverTheGetTrace (GET trace ≠ value); handler projects only the classified stored value (STATIC-CHECKS C#-05)	E3 integration + static	Mac Q77b
+LU-09	Scope and permission	LoadRootQueryTests.RootIsListedOnlyInsideTrustedScopeAndOnlyWithReadPermission; existing LoadIsolationTests	E3 integration	Mac Q77b
+LU-10	Transition unchanged (valid root)	Existing LoadReplayTests, LoadLifecycleTests, LoadAtomicityTests, LoadConcurrencyTests, LoadIsolationTests, LoadReferenceTests (run only); LoadRootTransitionTests.ValidStoredRootKeepsExistingTransitionBehaviour. Rows without an authoritative root change by owner decision F-1 (FN-03)	E3 integration	Mac Q77b
+LU-11	No new route / no write on read	LoadRootQueryTests (snapshot before = after on both list tests); existing LoadContractTests.SchemaUnknownFieldsAndNoExtraRoutesAreRejected; STATIC-CHECKS route/permission/config delta 0	E3 integration + static	Mac Q77b
+LU-12	Restart	LoadRootQueryTests.ListedRootsSurviveApiRestart (RestartApi, same DB)	E3 integration	Mac Q77b: restart_probe.py regression + manual list check after restart (restart_probe.py does not assert the field; not an owned path — FN-05)
+LU-13	Contract pins	verify_evidence.py repinned (6dc1dd48… / 9d8a3706…); self-test here 6/6 as expected (STATIC-CHECKS PY-03)	static here; E4 on Mac	Mac Q77b: verify_evidence.py on real runtime evidence
+LU-14	Build and suites	— (cannot run here)	Mac only	Mac Q77b: dotnet build 0 errors; full SupplyChain test project; TRX; pre-existing failures by name
+LU-15	Independent VER	— (separate session)	Mac only	Independent Mac session re-runs LU-01…LU-14 and F1-01…F1-04 on the frozen source
+F1-01	Missing stored root + nil inbound correlation → rejected, no writes	LoadRootTransitionTests.MissingStoredRootAndNilInboundCorrelationIsRejected	E3 integration	Mac Q77b
+F1-02	No authoritative root (missing/null/malformed/int32/binary) × inbound {nil, create root, random} → 409, no writes, no dependency reads	LoadRootTransitionTests.TransitionWithoutAuthoritativeStoredRootIsRejectedForEveryInboundCorrelation	E3 integration	Mac Q77b
+F1-03	Valid stored root → unchanged (mismatch 409, match 200, replay)	LoadRootTransitionTests.ValidStoredRootKeepsExistingTransitionBehaviour + LU-10 suites	E3 integration	Mac Q77b
+F1-04	Stored nil root is a present root	LoadRootTransitionTests.StoredNilRootIsAPresentRootAndMatchesNilInboundCorrelation	E3 integration	Mac Q77b

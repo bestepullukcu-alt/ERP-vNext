@@ -56,10 +56,23 @@ public static class ExplicitGrantOnlyPermissions
     /// </summary>
     public const string TimeEntryPersonReportsRead = "time-entry.person-reports.read";
 
+    /// <summary>
+    /// WP-VP-2 (B-1) — every planned visit and visit report in the tenant. Without it a field rep sees and acts on
+    /// only their own planned visits (a foreign one answers 404); if the module-entitlement sync handed it to every
+    /// tenant Admin, that ownership rule would have nothing left to enforce (owner decision, 2026-10-06).
+    /// </summary>
+    public const string PlannedVisitReadAll = "crm.planned-visit.read-all";
+
+    /// <summary>
+    /// WP-VP-2 (B-1) — every visit planning session in the tenant, and planning for another representative. Same
+    /// reasoning as <see cref="PlannedVisitReadAll"/>: the rep plans their own week (K-1) unless explicitly widened.
+    /// </summary>
+    public const string VisitPlanReadAll = "crm.visit-plan.read-all";
+
     public static readonly IReadOnlySet<string> Keys =
         new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             PortfoliosAssignOwner, UsersAccountKindManage, TasksReadAll, WorkReportReadTenantWide,
-            TimeEntryTeamTotalsRead, TimeEntryPersonReportsRead
+            TimeEntryTeamTotalsRead, TimeEntryPersonReportsRead, PlannedVisitReadAll, VisitPlanReadAll
         };
 }

@@ -1,0 +1,147 @@
+{
+  "phase": "vs",
+  "startedAt": "2026-09-26T07:41:32.497Z",
+  "cases": {
+    "login-actor-a": {
+      "loggedInNow": true,
+      "landedOn": "/SupplyChain/Shipments",
+      "loginResponses": [
+        {
+          "status": 200,
+          "path": "/account/login?ReturnUrl=%2FSupplyChain%2FShipments"
+        },
+        {
+          "status": 200,
+          "path": "/account/login?tenantId=97c59330-dbc4-4665-b29c-0c26dbb5cc93&returnUrl=%2FSupplyChain%2FShipments"
+        },
+        {
+          "status": 200,
+          "path": "/account/login"
+        }
+      ],
+      "cookieNames": [
+        ".AspNetCore.Antiforgery.RWrGJ5r5OIg",
+        "access_token",
+        "refresh_token"
+      ]
+    },
+    "vertical-slice-normal-detail": {
+      "actor": "actor-a",
+      "shipmentId": "47ed1778-6654-4468-9cb4-ccd548bef351",
+      "shellStatus": 200,
+      "verdict": "PASS",
+      "checks": {
+        "http200": true,
+        "correlationEchoed": true,
+        "heading": true,
+        "summary": true,
+        "lines": true,
+        "pod": true,
+        "actions": true,
+        "surfacesVisible": true,
+        "alertHidden": true,
+        "keyboardReachesActions": true
+      },
+      "probe": {
+        "lang": "en",
+        "dir": "ltr",
+        "shipmentNumber": "SHP-47ed1778665444689cb4ccd548bef351",
+        "alertVisible": false,
+        "alertText": "",
+        "row": {
+          "visible": true,
+          "hidden": false,
+          "inert": false,
+          "ariaHidden": "false",
+          "focusables": 0
+        },
+        "actions": {
+          "visible": true,
+          "hidden": false,
+          "inert": false,
+          "ariaHidden": "false",
+          "focusables": 1,
+          "buttons": [
+            "Change Status"
+          ]
+        },
+        "offTransition": {
+          "visible": false,
+          "hidden": false,
+          "inert": false,
+          "ariaHidden": "false",
+          "focusables": 7
+        },
+        "offPod": {
+          "visible": false,
+          "hidden": false,
+          "inert": false,
+          "ariaHidden": "false",
+          "focusables": 7
+        },
+        "detail": {
+          "status": "Draft",
+          "source": "S-VS-1fe655fb",
+          "warehouse": "WH-A12V02",
+          "root": "0f63460f-7dc3-4e13-b183-f3b847489536",
+          "lineRows": 2,
+          "podEmptyVisible": true,
+          "podDetailsVisible": false,
+          "podRecipient": "",
+          "podEvidence": ""
+        },
+        "l10n": {
+          "notFound": "The shipment could not be found.",
+          "supportReference": "Support reference"
+        },
+        "loadingVisibleAnywhere": false,
+        "visibleDetailText": "SHP-47ed1778665444689cb4ccd548bef351\nShipments\nShipment Details\nBack to List\nShipment Summary\nStatus\nDraft\nSource Document\nS-VS-1fe655fb\nWarehouse Reference\nWH-A12V02\nShip-to Reference\nSHIP-TO-VS\nLifecycle Root\n0f63460f-7dc3-4e13-b183-f3b847489536\nSchedule and Assignment\nPlanned Ship Time\nSep 26, 2026, 8:37 AM\nPlanned Delivery Time\nSep 27, 2026, 7:37 AM\nCarrier\nUnavailable\nLoad\nUnavailable\nShipment Lines\nLINE NUMBER\tITEM ID\tSKU ID\tQUANTITY\tUNIT OF MEASURE\tINVENTORY REFERENCE\n1\te7240286-f5b9-4b43-ba9f-602a047eaf6b\t90916758-e281-419e-bbf5-e7d800dee8b9\t2\tEA\tUnavailable\n2\ta34039b9-4748-4844-866e-087c2eb69023\te0515584-b354-4581-81d2-052993fc13c9\t1\tEA\tUnavailable\nProof of Delivery\nUnavailable\nChange Status"
+      },
+      "keyboard": {
+        "reachedDetailSurface": 2
+      },
+      "network": [
+        {
+          "at": "2026-09-26T07:41:37.438Z",
+          "method": "GET",
+          "path": "/SupplyChain/Shipments/api/47ed1778-6654-4468-9cb4-ccd548bef351",
+          "status": 200,
+          "requestCorrelation": "64251129-066d-42b4-a751-9e32357bbbff",
+          "idempotencyKey": null,
+          "responseCorrelation": "64251129-066d-42b4-a751-9e32357bbbff",
+          "errorCode": null,
+          "bodyCorrelation": null,
+          "okShape": {
+            "shipmentId": "47ed1778-6654-4468-9cb4-ccd548bef351",
+            "status": "Draft",
+            "lifecycleCorrelationId": "0f63460f-7dc3-4e13-b183-f3b847489536",
+            "idempotentReplay": null
+          }
+        }
+      ],
+      "dbZeroWrite": true
+    }
+  },
+  "db": [
+    {
+      "name": "vertical-slice-normal-detail",
+      "before": "vs-vertical-slice-normal-detail-before",
+      "after": "vs-vertical-slice-normal-detail-after",
+      "expect": "zero",
+      "result": "PASS",
+      "detail": "entire SupplyChain DB fingerprint, shipment counts and state unchanged"
+    }
+  ],
+  "png": [
+    {
+      "file": "png/vs-vertical-slice-normal-detail.png",
+      "sha256": "07aeada358379a695b06ba0a710ff0d414d374d35ea45affe7c3c3ec3d72d8ba",
+      "bytes": 132923,
+      "url": "http://127.0.0.1:5401/SupplyChain/Shipments/Details/47ed1778-6654-4468-9cb4-ccd548bef351",
+      "capturedAt": "2026-09-26T07:41:38.060Z",
+      "method": "page.screenshot({path, fullPage:true})"
+    }
+  ],
+  "console": [],
+  "finishedAt": "2026-09-26T07:41:38.888Z"
+}

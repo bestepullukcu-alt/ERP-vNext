@@ -302,4 +302,16 @@
   <data name="RecipeJourneysTpl" xml:space="preserve"><value>{n} 个旅程</value></data>
   <data name="RetiredBindingsCountTpl" xml:space="preserve"><value>{n} 个旧绑定</value></data>
   <data name="LinesWithoutJourneyTpl" xml:space="preserve"><value>{n} 行无旅程</value></data>
+  <data name="SupersededByVersion" xml:space="preserve"><value>已被 v{0} 取代</value></data>
+  <data name="ArchivedSegmentSuffix" xml:space="preserve"><value>（已归档）</value></data>
+  <data name="ActivationBlocked" xml:space="preserve"><value>激活被拒绝。</value></data>
+  <data name="ActivationBlocked_segment_not_active" xml:space="preserve"><value>绑定的细分未激活——请先激活该细分。</value></data>
+  <data name="ActivationBlocked_segment_archived" xml:space="preserve"><value>绑定的细分已归档——请替换为有效的细分。</value></data>
+  <data name="ActivationBlocked_segment_reference_not_found" xml:space="preserve"><value>绑定的细分已不存在。</value></data>
+  <data name="ActivationBlocked_frequency_policy_not_active" xml:space="preserve"><value>引用的拜访频率策略未激活。</value></data>
+  <data name="ActivationBlocked_journey_not_published" xml:space="preserve"><value>某产品行的互动旅程尚未发布。</value></data>
+  <data name="ActivationBlocked_journey_product_mismatch" xml:space="preserve"><value>某产品行的互动旅程对应的是其他产品。</value></data>
+  <data name="ActivationBlocked_product_line_journey_required" xml:space="preserve"><value>每个产品行都需要一个互动旅程。</value></data>
+  <data name="ActivationBlocked_content_not_published" xml:space="preserve"><value>绑定的内容尚未发布。</value></data>
+  <data name="ActivationBlocked_content_archived" xml:space="preserve"><value>绑定的内容已归档。</value></data>
 </root>

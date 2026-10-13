@@ -1,0 +1,5 @@
+using Microsoft.Extensions.DependencyInjection;using MongoDB.Driver;using Diten.SupplyChainService.Domain.Features.SandopPlans;
+namespace Diten.SupplyChainService.Persistence.Features.SandopPlans;
+public static class SandopPersistenceRegistration
+{ public static IServiceCollection AddSandopPersistence(this IServiceCollection services)
+{ services.AddScoped<ISandopRepository,SandopRepository>();return services; } }

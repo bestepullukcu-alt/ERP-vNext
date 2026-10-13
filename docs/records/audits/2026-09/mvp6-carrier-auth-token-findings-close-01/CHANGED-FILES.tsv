@@ -1,0 +1,14 @@
+kind	path
+permanent-audit	SOP-22.md
+permanent-audit	FINDING-DISPOSITION.tsv
+permanent-audit	OWNER-DECISION-TEXT.md
+permanent-audit	INDEPENDENT-VER-PROMPT-HELD.md
+permanent-audit	token-findings-successor.patch
+permanent-audit	DELTA-MANIFEST.tsv
+permanent-audit	FINAL-22-SOURCE-MANIFEST.tsv
+permanent-audit	BUILD-SOURCE-MANIFEST.tsv
+permanent-audit	build-source.tar.gz
+permanent-audit	evidence.tar.gz
+permanent-audit	INPUT-HASHES.tsv
+permanent-audit	CHANGED-FILES.tsv
+permanent-audit	ARTIFACTS.sha256

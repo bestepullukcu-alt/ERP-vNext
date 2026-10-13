@@ -1,0 +1,3 @@
+git apply --check: exit 0
+git apply in isolated baseline: exit 0
+Applied guard/rule bytes equal tested candidate; applied UNAPPROVED authority equals delivered artifact.

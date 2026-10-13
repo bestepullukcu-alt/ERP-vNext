@@ -1,0 +1,12 @@
+59339 closed (dead port)
+== p3b pid=65742 now_listening=yes after_s=1
+== p3b GET /health -> 200
+== p3b alive_before_stop=yes
+== p3b stopped; 58339 free
+[19:21:39 INF] Now listening on: http://127.0.0.1:58339 CorrelationId= TenantId= LegalEntityId=
+[19:21:39 WRN] Module self-registration attempt 1 could not reach Platform; will retry. ModuleCode=shipment-tracking-pod CorrelationId= TenantId= LegalEntityId=
+[19:21:41 WRN] Module self-registration attempt 2 could not reach Platform; will retry. ModuleCode=shipment-tracking-pod CorrelationId= TenantId= LegalEntityId=
+[19:21:45 WRN] Module self-registration attempt 3 could not reach Platform; will retry. ModuleCode=shipment-tracking-pod CorrelationId= TenantId= LegalEntityId=
+[19:21:53 WRN] Module self-registration attempt 4 could not reach Platform; will retry. ModuleCode=shipment-tracking-pod CorrelationId= TenantId= LegalEntityId=
+[19:22:09 WRN] Module self-registration attempt 5 could not reach Platform; will retry. ModuleCode=shipment-tracking-pod CorrelationId= TenantId= LegalEntityId=
+[19:22:09 WRN] Module self-registration gave up after 5 attempts (Platform unreachable?). ModuleCode=shipment-tracking-pod CorrelationId= TenantId= LegalEntityId=

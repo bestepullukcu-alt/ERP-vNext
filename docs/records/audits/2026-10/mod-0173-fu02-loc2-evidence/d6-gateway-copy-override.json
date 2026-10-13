@@ -1,0 +1,12 @@
+﻿{
+    "committedSha256":  "D637CB135B36F7D0DF265E613CA568CCD8BFBA133FAE8B964354111307E2288B",
+    "copiedBeforeOverrideSha256":  "D637CB135B36F7D0DF265E613CA568CCD8BFBA133FAE8B964354111307E2288B",
+    "servicePort":  5067,
+    "changedLines":  [
+                         "line 812: \u0027\"Port\": 5066\u0027 -\u003e \u0027\"Port\": 5067\u0027",
+                         "line 829: \u0027\"Port\": 5066\u0027 -\u003e \u0027\"Port\": 5067\u0027",
+                         "line 846: \u0027\"Port\": 5066\u0027 -\u003e \u0027\"Port\": 5067\u0027",
+                         "line 864: \u0027\"Port\": 5066\u0027 -\u003e \u0027\"Port\": 5067\u0027"
+                     ],
+    "copiedAfterOverrideSha256":  "7381571DD92943758B342327A0BCDD43E0A0695AE7D14D1B5EE57757F62A26BC"
+}

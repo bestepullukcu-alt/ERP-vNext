@@ -429,8 +429,9 @@
                     <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-git-merge dt-card-icon" aria-hidden="true"></i>@Localizer["EditorSectionConflict"]</h6>
                     <p class="text-muted small mb-3">@Localizer["ConflictIntro"]</p>
                     <label class="form-label fw-medium">@Localizer["ConflictWeightLabel"] <span class="text-danger">*</span></label>
+                    @* WP-E2E-FIX-3 (E6-B1) — the band group's error sits immediately ABOVE the group; form.js frames the group. *@
+                    <div class="vfp-error mb-2" id="vfpPriorityError"></div>
                     <div class="vfp-bandlist" id="vfpBandCards"></div>
-                    <div class="vfp-error" id="vfpPriorityError"></div>
                     <div class="mt-3">
                         <label class="form-label fw-medium" for="vfpSource">@Localizer["ConflictSourceLabel"] <span class="text-danger">*</span></label>
                         <select class="form-select select2" id="vfpSource"></select>

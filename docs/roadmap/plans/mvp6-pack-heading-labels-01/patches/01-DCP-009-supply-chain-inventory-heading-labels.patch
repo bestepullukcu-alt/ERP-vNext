@@ -1,0 +1,14 @@
+diff --git a/execution/portfolio/delivery-capability-packs/DCP-009-supply-chain-inventory.md b/execution/portfolio/delivery-capability-packs/DCP-009-supply-chain-inventory.md
+--- a/execution/portfolio/delivery-capability-packs/DCP-009-supply-chain-inventory.md
++++ b/execution/portfolio/delivery-capability-packs/DCP-009-supply-chain-inventory.md
+@@ -101,7 +101,9 @@ External-integration adapter (DEC-INV-19) · special-stock/ownership (P2) · mat
+ ## 20. Audit and reconciliation notes
+ DCP-002 preflight: MOD-0173/0174/0178 exit 0 (proven). Registry rows added 2026-09-11 (identity-only). Reconciliation `reconciled` statüsünde doldurulacak. Contract'lar `docs/analysis/contracts/` — frozen-ready, owner+consumer review pending.
+ 
+-## 21. Follow-up — Supply Chain module self-registration foundation (PATCH PROPOSAL — NOT APPROVED until owner sign-off)
++## 21. Follow-up — Supply Chain module self-registration foundation
++
++Approved: `docs/records/decisions/2026-09/mvp6-self-registration-patches-signoff-owner-decision-01.md`
+ 
+ **Authority:** `docs/records/decisions/2026-09/mvp6-self-registration-design-owner-decision-01.md` (D1–D5 = A; design for pack/DCP preparation only).
+ **Design package:** [`mvp6-self-registration-prep-01`](../../../docs/roadmap/plans/mvp6-self-registration-prep-01/README.md) (MANIFESTS.md, NAV-L10N-KEYS.tsv, TEST-PLAN.md, OWNED-PATHS.md, EFFORT.md).

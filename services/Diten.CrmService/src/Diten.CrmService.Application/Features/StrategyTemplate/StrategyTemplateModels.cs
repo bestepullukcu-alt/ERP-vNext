@@ -48,7 +48,10 @@ public sealed record StrategyTemplateListItemDto(
     // carry no journey yet (fixed with a new version).
     int PromoLineCount = 0,
     int NonPromoLineCount = 0,
-    int LinesWithoutJourneyCount = 0);
+    int LinesWithoutJourneyCount = 0,
+    // WP-E2E-FIX-3 (E5-B2) — the version of the template that superseded this one ("Yerini v{n} aldı"); null when
+    // not superseded or the successor is unreadable. A read-time projection, nothing is stored.
+    int? SupersededByTemplateVersion = null);
 
 public sealed record StrategyTemplateListDto(
     IReadOnlyList<StrategyTemplateListItemDto> Items,
@@ -109,7 +112,10 @@ public sealed record StrategyTemplateDetailDto(
     // carry no journey yet (fixed with a new version).
     int PromoLineCount = 0,
     int NonPromoLineCount = 0,
-    int LinesWithoutJourneyCount = 0);
+    int LinesWithoutJourneyCount = 0,
+    // WP-E2E-FIX-3 (E5-B2) — the version of the template that superseded this one ("Yerini v{n} aldı"); null when
+    // not superseded or the successor is unreadable. A read-time projection, nothing is stored.
+    int? SupersededByTemplateVersion = null);
 
 public sealed record StrategyTemplateSegmentBindingDto(
     Guid BindingId,

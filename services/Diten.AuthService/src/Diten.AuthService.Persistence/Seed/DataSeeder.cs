@@ -6,6 +6,19 @@ using MongoDB.Driver;
 
 namespace Diten.AuthService.Persistence.Seed;
 
+/// <summary>
+/// Start-up seed of the AuthService catalog and of the development seed tenant (<c>00000000-…-0001</c>).
+/// <para>
+/// <b>Default roles of the seed tenant — WP-0018-ROLE1 (owner decision 2026-10-10).</b> SuperAdmin / Admin / Viewer get the default
+/// role template ONCE, on the start-up that creates them (<c>DefaultRoleProvisioningRule</c>, the same rule the runtime provisioning
+/// uses; one <c>default_role_provisioned</c> audit row each). Later start-ups do NOT complete these roles any more: a permission added
+/// to the catalog or to <c>DefaultRolePermissionTemplate</c> after the seed tenant exists is <b>granted by hand</b> in a development
+/// environment (role screen, or the role-permission API), exactly as in every other existing tenant. A fresh development database
+/// still starts with the whole template.
+/// </para>
+/// Not changed by WP-0018-ROLE1 (measured in its evidence, decisions CT / owner): the Admin self-service reconcile
+/// (<see cref="ReconcileTenantAdminSelfServiceGrantsAsync"/>) and the module / tenant-97c5 / entitled-module grant seeds below.
+/// </summary>
 public static class DataSeeder
 {
     private static readonly Guid DefaultTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
@@ -214,7 +227,9 @@ public static class DataSeeder
         await ReconcilePermissionSegmentsFromSeedAsync(col, permissions);
         await ReconcilePermissionScopesAsync(col, permissions);
         // BL-411 — allowlisted PlatformAdmin → Tenant correction for synced-only keys the seed-list reconcile cannot reach.
-        await ApplyTenantRouteScopeCorrectionsAsync(col);
+        // WP-0023-FX — also the ONLY path that lowers the allowlisted workflow runtime keys (seeded ones included; the
+        // seed reconcile above skips that move), and every applied row is audited in authAuditLogs.
+        await ApplyTenantRouteScopeCorrectionsAsync(col, database.GetCollection<AuthAuditLog>("authAuditLogs"));
         await ReconcilePermissionModuleCasingAsync(col);
         await ReconcileServiceNamespaceModuleAttributionAsync(col);
         await ReconcilePermissionSegmentSpellingAsync(col);
@@ -543,6 +558,11 @@ public static class DataSeeder
             new("crm", "planned-visit", "read", "CRM Planned Visit Read", "Permission to view CRM planned visits and the planned-visit contract", moduleOverride: "crm-planned-visit"),
             new("crm", "planned-visit", "manage", "CRM Planned Visit Manage", "Permission to create/update/cancel/archive CRM planned visits", moduleOverride: "crm-planned-visit"),
             new("crm", "planned-visit", "confirm", "CRM Planned Visit Confirm", "Permission to confirm CRM planned visits (separate from manage for SoD)", moduleOverride: "crm-planned-visit"),
+            // WP-VP-2 (B-1) — Tier-3 tenant-wide reads of the visit features. EXPLICIT-GRANT-ONLY
+            // (ExplicitGrantOnlyPermissions): seeded into the catalog so an authorized person can assign them, granted to
+            // NO role here or by any automatic path. Without them a rep sees only their own visits, plans and reports.
+            new("crm", "planned-visit", "read-all", "CRM Planned Visit Read All", "Permission to read every planned visit and visit report in the tenant and act on them with the existing write permissions (explicit grant only; never granted automatically)", moduleOverride: "crm-planned-visit"),
+            new("crm", "visit-plan", "read-all", "CRM Visit Plan Read All", "Permission to read, preview, apply and re-plan every visit planning session in the tenant and plan for another representative (explicit grant only; never granted automatically)", moduleOverride: "crm-visit-plan"),
 
             new("mod0251", "employee", "search", "Search Employees", "Permission to search MOD-0251 employee registry records"),
             new("mod0251", "employee", "view", "View Employee", "Permission to view MOD-0251 employee records"),
@@ -836,13 +856,13 @@ public static class DataSeeder
             new("platform", "workflow.definitions", "view", "View Workflow Definitions", "Permission to view workflow approval templates and versions", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
             new("platform", "workflow.definitions", "manage", "Manage Workflow Definitions", "Permission to create and edit workflow approval templates", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
             new("platform", "workflow.definitions", "publish", "Publish Workflow Definition", "Permission to publish an immutable workflow template version", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
-            new("platform", "workflow.instances", "start", "Start Workflow Instance", "Permission to start a workflow approval instance", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
-            new("platform", "workflow.instances", "view", "View Workflow Instances", "Permission to view workflow instances and approval tasks", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
-            new("platform", "workflow.tasks", "approve", "Approve Workflow Task", "Permission to approve a workflow approval task", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
-            new("platform", "workflow.tasks", "reject", "Reject Workflow Task", "Permission to reject a workflow approval task", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
-            new("platform", "workflow.tasks", "delegate", "Delegate Workflow Task", "Permission to delegate a workflow approval task", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
-            new("platform", "workflow.tasks", "request-info", "Request Info on Workflow Task", "Permission to request additional information on a workflow approval task", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
-            new("platform", "workflow.tasks", "cancel", "Cancel Workflow Task", "Permission to cancel a workflow approval task", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
+            new("platform", "workflow.instances", "start", "Start Workflow Instance", "Permission to start a workflow approval instance", moduleOverride: "workflow", scope: PermissionScope.Tenant),
+            new("platform", "workflow.instances", "view", "View Workflow Instances", "Permission to view workflow instances and approval tasks", moduleOverride: "workflow", scope: PermissionScope.Tenant),
+            new("platform", "workflow.tasks", "approve", "Approve Workflow Task", "Permission to approve a workflow approval task", moduleOverride: "workflow", scope: PermissionScope.Tenant),
+            new("platform", "workflow.tasks", "reject", "Reject Workflow Task", "Permission to reject a workflow approval task", moduleOverride: "workflow", scope: PermissionScope.Tenant),
+            new("platform", "workflow.tasks", "delegate", "Delegate Workflow Task", "Permission to delegate a workflow approval task", moduleOverride: "workflow", scope: PermissionScope.Tenant),
+            new("platform", "workflow.tasks", "request-info", "Request Info on Workflow Task", "Permission to request additional information on a workflow approval task", moduleOverride: "workflow", scope: PermissionScope.Tenant),
+            new("platform", "workflow.tasks", "cancel", "Cancel Workflow Task", "Permission to cancel a workflow approval task", moduleOverride: "workflow", scope: PermissionScope.Tenant),
             new("platform", "workflow.transitions", "evaluate", "Evaluate Workflow Transition Gate", "Permission to evaluate the workflow integration transition gate", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
             new("platform", "workflow.escalations", "manage", "Manage Workflow SLA Rules", "Permission to create and view workflow SLA escalation rules", moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin),
             new("platform", "workflow.escalations", "run", "Run Workflow Escalations", "Permission to run the workflow escalation/timeout processor")
@@ -921,6 +941,13 @@ public static class DataSeeder
         var writes = new List<WriteModel<Permission>>();
         foreach (var p in permissions)
         {
+            // WP-0023-FX — a seeded key on the TenantRouteScopeCorrections allowlist is moved PlatformAdmin → Tenant only
+            // by the allowlisted, audited correction (ApplyTenantRouteScopeCorrectionsAsync), never silently here.
+            if (p.Scope == PermissionScope.Tenant && TenantRouteScopeCorrections.IsAllowlisted(p.Key))
+            {
+                continue;
+            }
+
             var filter = Builders<Permission>.Filter.And(
                 Builders<Permission>.Filter.Eq(x => x.Key, p.Key),
                 Builders<Permission>.Filter.Ne(x => x.Scope, p.Scope));
@@ -956,12 +983,21 @@ public static class DataSeeder
     /// receives read actions only). MOD-0024 templates are tenant configuration maintained by the tenant's
     /// administrators. Pinned by TenantRouteScopeCorrectionMongoTests.</para>
     ///
-    /// <para>Returns the rows actually changed; each is logged once, on the run that changes it.</para>
+    /// <para>WP-0023-FX — the same correction moves the seven workflow runtime keys (Tenant API permissions of the
+    /// Workflow manifest). Their grant effect: ModulePermissionResolver already gives a workflow-entitled tenant's Admin
+    /// every workflow key regardless of scope (PlatformHostedTenantModules) and Viewer the read actions, so the
+    /// entitlement grants do not change; what changes is that a tenant administrator may now grant the runtime keys to
+    /// any tenant role through AssignPermission.</para>
+    ///
+    /// <para>Returns the rows actually changed; each is logged once, on the run that changes it, and — when
+    /// <paramref name="audit"/> is given (the startup seed passes authAuditLogs) — audited once.</para>
     /// </summary>
-    public static async Task<IReadOnlyList<TenantRouteScopeCorrections.Correction>> ApplyTenantRouteScopeCorrectionsAsync(IMongoCollection<Permission> col)
+    public static async Task<IReadOnlyList<TenantRouteScopeCorrections.Correction>> ApplyTenantRouteScopeCorrectionsAsync(
+        IMongoCollection<Permission> col,
+        IMongoCollection<AuthAuditLog>? audit = null)
     {
         var all = await col.Find(FilterDefinition<Permission>.Empty).ToListAsync();
-        return await ApplyPlannedTenantRouteScopeCorrectionsAsync(col, TenantRouteScopeCorrections.Plan(all));
+        return await ApplyPlannedTenantRouteScopeCorrectionsAsync(col, TenantRouteScopeCorrections.Plan(all), audit);
     }
 
     /// <summary>
@@ -970,7 +1006,8 @@ public static class DataSeeder
     /// </summary>
     public static async Task<IReadOnlyList<TenantRouteScopeCorrections.Correction>> ApplyPlannedTenantRouteScopeCorrectionsAsync(
         IMongoCollection<Permission> col,
-        IReadOnlyList<TenantRouteScopeCorrections.Correction> plan)
+        IReadOnlyList<TenantRouteScopeCorrections.Correction> plan,
+        IMongoCollection<AuthAuditLog>? audit = null)
     {
         var applied = new List<TenantRouteScopeCorrections.Correction>();
 
@@ -990,7 +1027,23 @@ public static class DataSeeder
             {
                 applied.Add(correction);
                 Console.WriteLine(
-                    $"BL-411 scope correction: {correction.PermissionKey} PlatformAdmin -> Tenant (registered route {correction.RegisteredRoutePath}).");
+                    $"{correction.Decision} scope correction: {correction.PermissionKey} PlatformAdmin -> Tenant (registered {correction.RegisteredRoutePath}).");
+
+                // WP-0023-FX — one audit row per row actually changed (global catalog: no tenant, system actor).
+                if (audit is not null)
+                {
+                    var metadata = System.Text.Json.JsonSerializer.Serialize(new
+                    {
+                        permissionKey = correction.PermissionKey,
+                        permissionId = correction.PermissionId,
+                        fromScope = nameof(PermissionScope.PlatformAdmin),
+                        toScope = nameof(PermissionScope.Tenant),
+                        registration = correction.RegisteredRoutePath,
+                        decision = correction.Decision,
+                        actor = SystemUser
+                    });
+                    await audit.InsertOneAsync(new AuthAuditLog("permission_scope_corrected", Guid.Empty, Guid.Empty, metadata));
+                }
             }
         }
 
@@ -1003,17 +1056,22 @@ public static class DataSeeder
         var permCol = database.GetCollection<Permission>("permissions");
         var rpCol = database.GetCollection<RolePermission>("rolePermissions");
 
+        // WP-0018-ROLE1 (owner decision 2026-10-10): the template reaches a seed-tenant role ONCE — on the start-up that creates
+        // the role (DefaultRoleProvisioningRule). Later start-ups leave the role as it is: a permission added to the catalog or
+        // the template after that is granted by hand in a development environment, like in every other tenant.
+        var auditCol = database.GetCollection<AuthAuditLog>("authAuditLogs");
+
         // SuperAdmin
-        var superAdmin = await EnsureRole(roleCol, "SuperAdmin", "Super Administrator", "All system permissions");
-        await AssignBaselineAsync(permCol, rpCol, superAdmin);
+        var (superAdmin, superAdminCreated) = await EnsureRole(roleCol, "SuperAdmin", "Super Administrator", "All system permissions");
+        await AssignBaselineAsync(permCol, rpCol, auditCol, superAdmin, superAdminCreated);
 
         // Admin
-        var admin = await EnsureRole(roleCol, "Admin", "Administrator", "Auth and MDM administration");
-        await AssignBaselineAsync(permCol, rpCol, admin);
+        var (admin, adminCreated) = await EnsureRole(roleCol, "Admin", "Administrator", "Auth and MDM administration");
+        await AssignBaselineAsync(permCol, rpCol, auditCol, admin, adminCreated);
 
         // Viewer
-        var viewer = await EnsureRole(roleCol, "Viewer", "Viewer", "Read-only permissions");
-        await AssignBaselineAsync(permCol, rpCol, viewer);
+        var (viewer, viewerCreated) = await EnsureRole(roleCol, "Viewer", "Viewer", "Read-only permissions");
+        await AssignBaselineAsync(permCol, rpCol, auditCol, viewer, viewerCreated);
 
         await AssignMod0251ModuleGrantsAsync(permCol, rpCol, admin, viewer);
         await AssignMod0251PlatformIntegrationGrantsAsync(permCol, rpCol, admin);
@@ -1119,38 +1177,59 @@ public static class DataSeeder
         }
     }
 
-    private static async Task<Role> EnsureRole(IMongoCollection<Role> col, string name, string display, string desc)
+    // WP-0018-ROLE1 — returns the seed tenant's role and whether THIS start-up created it. The insert is the decision: a second
+    // AuthService starting at the same moment hits uq_roles_tenant_name_active and reads the role back as not created.
+    private static async Task<(Role Role, bool Created)> EnsureRole(IMongoCollection<Role> col, string name, string display, string desc)
     {
         var roles = await col.Find(r => r.Name == name).ToListAsync();
         var role = roles.FirstOrDefault(r => r.TenantId == DefaultTenantId);
-        
-        if (role == null)
+        if (role != null) return (role, false);
+
+        role = new Role(name, display, desc, DefaultTenantId);
+        role.MarkAsSystem();
+        try
         {
-            role = new Role(name, display, desc, DefaultTenantId);
-            role.MarkAsSystem();
             await col.InsertOneAsync(role);
             Console.WriteLine($"Created role {name}");
+            return (role, true);
         }
-        return role;
+        catch (MongoWriteException ex) when (ex.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+        {
+            var existing = await col.Find(r => r.Name == name && r.TenantId == DefaultTenantId && !r.IsDeleted).FirstAsync();
+            return (existing, false);
+        }
     }
 
-    // Baseline grant wiring for the default tenant. Uses the same shared template as the runtime
-    // RoleProvisioningService so the default-tenant seed and per-tenant provisioning never drift
-    // (OD-FE9-03 Option B). Grants are System-sourced and idempotent (existing pairs are skipped).
-    private static async Task AssignBaselineAsync(IMongoCollection<Permission> pCol, IMongoCollection<RolePermission> rpCol, Role role)
+    // Baseline grant wiring for the default tenant: the same shared template and the same once-only rule as the runtime
+    // RoleProvisioningService (DefaultRoleProvisioningRule), so the seed tenant and every provisioned tenant never drift.
+    // A role this start-up created gets the whole template (System source) and one audit row; an existing role gets nothing.
+    private static async Task AssignBaselineAsync(
+        IMongoCollection<Permission> pCol, IMongoCollection<RolePermission> rpCol, IMongoCollection<AuthAuditLog> auditCol, Role role, bool created)
     {
         var catalog = await pCol.Find(_ => true).ToListAsync();
-        var baseline = DefaultRolePermissionTemplate.SelectFor(role.Name, catalog);
-        if (baseline.Count == 0) return;
+        var baseline = DefaultRoleProvisioningRule.GrantsFor(role.Name, catalog, created);
 
-        var currentRPs = await rpCol.Find(rp => rp.RoleId == role.Id).ToListAsync();
-
-        foreach (var p in baseline)
+        var granted = 0;
+        if (baseline.Count > 0)
         {
-            if (!currentRPs.Any(rp => rp.PermissionId == p.Id))
+            var currentRPs = await rpCol.Find(rp => rp.RoleId == role.Id).ToListAsync();
+            foreach (var p in baseline)
             {
-                await rpCol.InsertOneAsync(RolePermission.SystemGrant(role.Id, p.Id, DefaultTenantId, SystemUser));
+                if (!currentRPs.Any(rp => rp.PermissionId == p.Id))
+                {
+                    await rpCol.InsertOneAsync(RolePermission.SystemGrant(role.Id, p.Id, DefaultTenantId, SystemUser));
+                    granted++;
+                }
             }
+        }
+
+        if (created)
+        {
+            var metadata = System.Text.Json.JsonSerializer.Serialize(new
+            {
+                roleId = role.Id, roleName = role.Name, permissionCount = granted, trigger = DefaultRoleProvisioningTriggers.Seed, actorId = (string?)null
+            });
+            await auditCol.InsertOneAsync(new AuthAuditLog(DefaultRoleProvisioningRule.AuditEvent, Guid.Empty, DefaultTenantId, metadata));
         }
     }
 

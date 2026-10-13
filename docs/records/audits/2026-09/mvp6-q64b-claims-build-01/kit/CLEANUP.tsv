@@ -1,0 +1,28 @@
+resource	check	result	utc
+browser-tabs-and-profiles	closed by operator (manual)	NOT-RECORDED	2026-09-26T19:32:00Z
+web:35954	ownership	SKIPPED: pid no longer belongs to lane	2026-09-26T19:32:00Z
+gateway:35891	ownership	SKIPPED: pid no longer belongs to lane	2026-09-26T19:32:00Z
+supplychain:35824	ownership	SKIPPED: pid no longer belongs to lane	2026-09-26T19:32:00Z
+mdm:35771	ownership	SKIPPED: pid no longer belongs to lane	2026-09-26T19:32:00Z
+platform:35661	ownership	SKIPPED: pid no longer belongs to lane	2026-09-26T19:32:00Z
+auth:35589	process	already-exited	2026-09-26T19:32:00Z
+mongod:35508	stop	stopped	2026-09-26T19:32:02Z
+port:auth:5556	no listener	PASS	2026-09-26T19:32:02Z
+port:platform:5557	no listener	PASS	2026-09-26T19:32:02Z
+port:mdm:5559	no listener	PASS	2026-09-26T19:32:02Z
+port:supplychain:5561	no listener	PASS	2026-09-26T19:32:02Z
+port:gateway:5500	no listener	PASS	2026-09-26T19:32:02Z
+port:web:5501	no listener	PASS	2026-09-26T19:32:02Z
+port:sink:5599	no listener	PASS	2026-09-26T19:32:02Z
+port:mongo:35994	no listener	PASS	2026-09-26T19:32:02Z
+workspace:shared	removed	PASS	2026-09-26T19:32:02Z
+workspace:env	removed	PASS	2026-09-26T19:32:02Z
+workspace:mongo	removed	PASS	2026-09-26T19:32:02Z
+workspace:source	removed	PASS	2026-09-26T19:32:05Z
+workspace:gateway-runtime	removed	PASS	2026-09-26T19:32:05Z
+workspace:logs	removed	PASS	2026-09-26T19:32:05Z
+workspace	removed	PASS	2026-09-26T19:32:06Z
+repo-head	4a8d4d4b339528a88e6220fb8402e5a2c771136c	PASS	2026-09-26T19:32:06Z
+repo-branch	feature/mvp6-logistics	PASS	2026-09-26T19:32:06Z
+repo-status	no new entries outside evidence	PASS	2026-09-26T19:32:06Z
+supervisor	not running (final exact scan must already have run)	INFO	2026-09-26T19:32:06Z

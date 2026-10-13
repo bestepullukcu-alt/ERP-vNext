@@ -1,0 +1,8 @@
+{
+  "purpose": "CU-10 run 2 only (P2 deferred); lane Auth DB",
+  "role": "Q122ClaimsFull@T1",
+  "grantAdded": "supplychain.carriers.read",
+  "alreadyPresent": false,
+  "grantsBefore": 6,
+  "grantsAfter": 7
+}

@@ -1,0 +1,29 @@
+--- a/execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md
++++ b/execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md
+@@ -549,7 +549,7 @@
+ **no** business, contract, backend, owned-backend-path or acceptance rule in §§1–31. The frontmatter changes `shell: tenant`,
+ `golden_reference: slim` and `form_field_count: 6` apply to the UI only. For the UI, §9 ("`shell: none`") and §11 ("not applicable")
+ are superseded by this section; for the backend they remain as written. `status` stays `ready-for-dev` (backend scope, per §§30–31);
+-UI code is **not** authorized by this section alone (§32.14).
++UI code is authorized only as §32.14 states.
+ 
+ ### 32.1 Identity
+ 
+@@ -733,8 +733,15 @@
+ frontend 30/50/84; shared integration 8/16/28; independent UI VER 14/24/40; **total 56/98/168**; with the non-UI remainders 68/118/200
+ (net +6.8/+16/+14.4 against the old rows). Joint delivery with Returns lowers the shared parts (draft README).
+ 
+-Not authorized by this section: UI code until an integrated target exists and a versioned UI dispatch is released; gateway, permission,
+-navigation, L10n or icon-map edits except by the single integration owner; contract changes; `done` status; commit or push.
++Authorized UI work (owner decisions of 2026-09-26): Phase 1.5 table PH15-UI-187 (`docs/records/decisions/2026-09/mvp6-claims-ui-ph15-owner-decision-01.md`,
++SHA-256 `95a5c4f40d1a912c29b95d82c5c83fc817ed9fef578d885ae064e480de30f74e`); module-first delivery in an isolated environment with integration at the end
++(`docs/records/audits/2026-09/mvp6-ct-owner-decisions-modules-first-2026-09-26.md`, SHA-256 `63e8601ec5bf28225fa0793e1a882e533139adc4696c4af2fa32ebb378d9df32`);
++DRAFT code overlays written in chat lanes and built, tested and runtime-verified later on the Mac, not writer-complete
++(`docs/records/decisions/2026-09/mvp6-draft-overlays-owner-decision-01.md`, SHA-256 `050336246812218e2f22bb9cfb40529b6969d1ab96717113599a7efbaf8da67c`).
++UI code is written only through a CT-dispatched lane; applying it to the shared target waits for the final integration.
++
++Not authorized by this section: gateway, permission, navigation, L10n or icon-map edits except by the single integration owner; contract
++changes; `done` status; commit or push.
+ 
+ ## 33. Self-registration
+ 

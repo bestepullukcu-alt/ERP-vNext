@@ -60,6 +60,10 @@ crm.knowledge.subject.read,0
 crm.planned-visit.confirm,0
 crm.planned-visit.manage,0
 crm.planned-visit.read,0
+# WP-VP-2 (B-1) — the two explicit-grant-only tenant-wide visit reads, stated Tenant (0): moduleOverride
+# "crm-planned-visit" / "crm-visit-plan" are not platform-admin modules; a tenant role must be able to hold them.
+crm.planned-visit.read-all,0
+crm.visit-plan.read-all,0
 # SCMM-12-API / SCMM-14 / SCMM-11-follow-API — 10 content-composition keys, stated Tenant (0): moduleOverride
 # "crm-content-composition" is not in PlatformAdminModules; live diten_auth_v3 Scope=0 (verified 2026-09-25). These
 # were seeded without a baseline row, so Baseline_covers_every_seeded_permission_and_nothing_else was already red.
@@ -281,13 +285,13 @@ platform.workflow.definitions.publish,1
 platform.workflow.definitions.view,1
 platform.workflow.escalations.manage,1
 platform.workflow.escalations.run,1
-platform.workflow.instances.start,1
-platform.workflow.instances.view,1
-platform.workflow.tasks.approve,1
-platform.workflow.tasks.cancel,1
-platform.workflow.tasks.delegate,1
-platform.workflow.tasks.reject,1
-platform.workflow.tasks.request-info,1
+platform.workflow.instances.start,0
+platform.workflow.instances.view,0
+platform.workflow.tasks.approve,0
+platform.workflow.tasks.cancel,0
+platform.workflow.tasks.delegate,0
+platform.workflow.tasks.reject,0
+platform.workflow.tasks.request-info,0
 platform.workflow.transitions.evaluate,1
 # --- MOD-0288-FU02 (merge d1735755, seed commit 04e212de) — organization unit custom fields + reporting line.
 # Added to the baseline AFTER this guard caught them missing. Scope is STATED, not inferred: all four are tenant

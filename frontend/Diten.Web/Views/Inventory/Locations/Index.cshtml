@@ -1,0 +1,98 @@
+@using Diten.Web.Views.Inventory.Locations
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LocationsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["LocationsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    MOD-0173-FU02 L-2 Location list (Golden Reference Slim, server mode, proxy profile — pack §11).
+
+    UAS-001 — nothing below is drawn without inventory.locations.read: no heading, no tabs, no filter, no empty table,
+    no button. No redirect: the address stays.
+
+    ⚠ Display only. InventoryService's [HasPermission] remains the authority (UAS-001 §4): a read-only user gets no
+    New / Edit / Add child / status / bulk control here — absent, not disabled — and the service refuses them anyway.
+*@
+@if (!Perms.Has("inventory.locations.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["LocationsTitle"].Value" />
+    return;
+}
+
+@{
+    // W-0173-02 company selector (FU01 component, reused as is): the token's company, or the user's choice among the
+    // tenant's active companies. Without one, the data part of the page is not drawn and no location call is made.
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["CompanyLabel"].Value;
+    company.Placeholder = Localizer["CompanyPlaceholder"].Value;
+    company.SelectHint = Localizer["CompanySelectHint"].Value;
+    company.UnavailableText = Localizer["CompanyUnavailable"].Value;
+    var canManage = Perms.Has("inventory.locations.manage");
+}
+
+@* Contract marker: <partial name="_Filter" /> *@
+@if (company.Ready)
+{
+    <partial name="~/Views/Inventory/Locations/_Filter.cshtml" />
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["LocationsTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+@* Two real routes styled as pills (pack §9) — not client tabs. *@
+<div class="nav-align-top mb-4">
+    <ul class="nav nav-pills d-inline-flex gap-2 flex-wrap">
+        <li class="nav-item">
+            <a class="nav-link small border shadow-none wc-tab-compact" href="/LocationTree">
+                <i class="bx bx-sitemap me-1 wc-tab-icon"></i>@Localizer["TabTree"]
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active small border shadow-none wc-tab-compact" href="/Locations" aria-current="page">
+                <i class="bx bx-list-ul me-1 wc-tab-icon"></i>@Localizer["TabList"]
+            </a>
+        </li>
+    </ul>
+</div>
+
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready)
+{
+    @* The list's own failure surface (index.js writes the localized sentence). *@
+    <div id="locations-list-error" class="alert alert-danger d-none" role="alert"></div>
+
+    @* No bulk action bar: no selection column, no bulk delete — a location is never deleted (K-04, pack §11). *@
+    @* Contract markers are rendered by _DataTable.cshtml: the shared <partial name="_TableSkeleton" /> (which carries id="skeleton-loader"), <table id="dt-locations" data-dt-standard="v2"> *@
+    <partial name="~/Views/Inventory/Locations/_DataTable.cshtml" />
+
+    @if (canManage)
+    {
+        @* L-3 — the ONE create / edit form (also rendered on L-1); only for a user who may write. Its anti-forgery
+           token also signs the status changes. L-4 bulk bins lives on L-1 only (pack §11). *@
+        <partial name="~/Views/Inventory/Locations/_CreateEditOffcanvas.cshtml" />
+    }
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/Inventory/Locations/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Inventory/Locations/index.l10n.js" asp-append-version="true"></script>
+    @if (company.Ready)
+    {
+        @* form.js also carries the shared badges/formatters; its form and status dialog act only when the form is on
+           the page (inventory.locations.manage). *@
+        <script src="~/assets/js/Inventory/Locations/form.js" asp-append-version="true"></script>
+        <script src="~/assets/js/Inventory/Locations/index.js" asp-append-version="true"></script>
+    }
+}

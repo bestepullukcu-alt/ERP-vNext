@@ -1,0 +1,30 @@
+[20:07:52 INF] User profile is available. Using '/Users/natig/.aspnet/DataProtection-Keys' as key repository; keys will not be encrypted at rest.
+[20:07:52 WRN] Shipment outbox transport is not registered. Durable events remain pending; integration is held.
+[20:07:52 INF] Now listening on: http://127.0.0.1:51863
+[20:07:52 INF] Application started. Press Ctrl+C to shut down.
+[20:07:52 INF] Hosting environment: Development
+[20:07:52 INF] Content root path: /private/tmp/mvp6-mod0186-r01-independent-ver-01/source
+[20:08:11 INF] Request starting HTTP/1.1 GET http://127.0.0.1:51863/health - null null
+[20:08:12 INF] Executing endpoint 'HTTP: GET /health'
+[20:08:12 INF] Setting HTTP status code 200.
+[20:08:12 INF] Writing value of type '<>f__AnonymousType2`4' as Json.
+[20:08:12 INF] Executed endpoint 'HTTP: GET /health'
+[20:08:12 INF] Request finished HTTP/1.1 GET http://127.0.0.1:51863/health - 200 null application/json; charset=utf-8 143.7845ms
+[20:08:36 INF] Request starting HTTP/1.1 POST http://127.0.0.1:51863/api/shipment-bundle/returns - application/json 141
+[20:08:36 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Returns.ReturnsController.Create (Diten.SupplyChainService.Api)'
+[20:08:36 INF] Route matched with {action = "Create", controller = "Returns"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(System.Text.Json.JsonElement, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Returns.ReturnsController (Diten.SupplyChainService.Api).
+[20:08:36 INF] Handling CreateReturnCommand
+[20:08:36 INF] Executing ObjectResult, writing value of type 'Diten.SupplyChainService.Application.Features.Returns.ReturnResponse'.
+[20:08:36 INF] Executed action Diten.SupplyChainService.Api.Features.Returns.ReturnsController.Create (Diten.SupplyChainService.Api) in 119.9329ms
+[20:08:36 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Returns.ReturnsController.Create (Diten.SupplyChainService.Api)'
+[20:08:36 INF] Return request completed 201 eccdbc47-fa15-47c5-9c13-e873df1c9fc3
+[20:08:36 INF] Request finished HTTP/1.1 POST http://127.0.0.1:51863/api/shipment-bundle/returns - 201 null application/json; charset=utf-8 275.8801ms
+[20:08:36 INF] Request starting HTTP/1.1 GET http://127.0.0.1:51863/api/shipment-bundle/returns?shipmentId=0490d9b6-d865-4c42-8e42-11b4844fc7dd - null null
+[20:08:36 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Returns.ReturnsController.List (Diten.SupplyChainService.Api)'
+[20:08:36 INF] Route matched with {action = "List", controller = "Returns"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] List(System.String, System.String, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Returns.ReturnsController (Diten.SupplyChainService.Api).
+[20:08:36 INF] Handling GetReturnListQuery
+[20:08:36 INF] Executing ObjectResult, writing value of type 'Diten.SupplyChainService.Application.Features.Returns.ReturnListResponse'.
+[20:08:36 INF] Executed action Diten.SupplyChainService.Api.Features.Returns.ReturnsController.List (Diten.SupplyChainService.Api) in 89.3912ms
+[20:08:36 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Returns.ReturnsController.List (Diten.SupplyChainService.Api)'
+[20:08:36 INF] Return request completed 200 ed4fb9a2-2008-4a6f-9dbf-b3c2e57975f0
+[20:08:36 INF] Request finished HTTP/1.1 GET http://127.0.0.1:51863/api/shipment-bundle/returns?shipmentId=0490d9b6-d865-4c42-8e42-11b4844fc7dd - 200 null application/json; charset=utf-8 110.9065ms

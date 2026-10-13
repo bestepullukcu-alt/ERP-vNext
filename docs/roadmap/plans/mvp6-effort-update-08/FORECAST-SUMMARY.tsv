@@ -1,0 +1,12 @@
+scope	delivered_most_likely	remaining_most_likely	total_most_likely	delivered_index_percent	ct_accepted_most_likely	ct_accepted_percent
+0183	252	48	300	84.0	not split per module	N/A
+0184	180	32	212	84.9	not split per module	N/A
+0185	144	167	311	46.3	not split per module	N/A
+0186	172	137	309	55.7	not split per module	N/A
+0187	200	135	335	59.7	not split per module	N/A
+0190	148	136	284	52.1	not split per module	N/A
+0192	220	144	364	60.4	not split per module	N/A
+0147	20	248	268	7.5	not split per module	N/A
+0148	20	232	252	7.9	not split per module	N/A
+SHARED	113	206	319	35.4	not split per module	N/A
+portfolio	1469	1485	2954	49.7	1140	38.6

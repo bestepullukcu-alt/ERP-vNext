@@ -1,0 +1,2 @@
+TOOLS.tar.gz holds the lane scripts as run, EXCEPT tools/test-neg-sab.sh line 23: its deliberate fake sabotage userinfo ("x:y", case S3) is replaced by <FAKE-USERINFO-REDACTED>
+so the evidence folder carries no credential-shaped string. The script as executed is kept at ~/mvp6-env/q154/tools/test-neg-sab.sh, sha256 a227693fab603c55b0ccb8cdc49c04ebc9c30e92d2565510a0a929c3b223d972.

@@ -1,0 +1,28 @@
+acceptance	mod0147_scope	prospective_test	level	exact_oracle	dependency_state	evidence_class
+AC-01	shared-applicable	OwnershipPlacementGate	static-governance	SCE/SupplyChain is only a policy target; governance and pack bytes unchanged; no ready-for-dev	Enterprise/domain concurrence open	DECLARATION
+AC-02	shared-applicable	SupplierBasePointerContractTest	contract-static	Exact SUPPLIER v1 hash consumed; no local Supplier master/profile fields	MOD-0140 consumer concurrence open	STATIC
+AC-03	applicable	SupplierStatusEligibilityMatrixTests	application-integration	Evaluation create/first publish Active only; risk create all four statuses; each command requires getSupplier plus affirmative LE eligibility	LE authority open	FUTURE-EXECUTABLE
+AC-04	applicable	SupplierDependencyFailClosedTests	application-integration	No LE proof, timeout, malformed or mismatched identity yields dependency failure and zero mutation side effects	Exact 503/correlation carrier open	FUTURE-EXECUTABLE
+AC-05	not-mod0147	MOD0148PortalSuspensionMatrixTests	delegated	Portal-only status/content denial	MOD-0148 split	DELEGATED
+AC-06	future-shared-only	SupplierBulkResultIntegrityContractTests	contract-fixture	Order-independent ID match; missing/duplicate/extra/unknown enum fails closed; empty is not unknown	No bulk MOD-0147 operation	SIMULATED-ONLY
+AC-07	shared-applicable	FrozenContractNoChangeGuard	static-hash	SUPPLIER and SUPPLIER-PERFORMANCE bytes equal exact input hashes	Any successor owned by CT seam writer	STATIC
+AC-08	not-mod0147	MOD0148BindingCardinalityTests	delegated	Portal actor binding only	MOD-0148 split	DELEGATED
+AC-09	not-mod0147	MOD0148AuthPrecedenceTests	delegated	Portal authentication/mapping precedence only	Security concurrence open	DELEGATED
+AC-10	not-mod0147	MOD0148OwnRecordIsolationTests	delegated	Portal own-record only	MOD-0148 split	DELEGATED
+AC-11	not-mod0147	MOD0148RevocationFenceTests	delegated	Portal binding revocation only	Security seam open	DELEGATED
+AC-12	not-mod0147	MOD0148ScopeOverrideTests	delegated	Portal actor-derived scope only	MOD-0148 split	DELEGATED
+AC-13	not-mod0147	MOD0148CreateReplayTests	delegated	Portal receipt tuple only	MOD-0148 split	DELEGATED
+AC-14	not-mod0147	MOD0148SubmitReplayPrecedenceTests	delegated	Portal submit replay only	MOD-0148 split	DELEGATED
+AC-15	not-mod0147	MOD0148FingerprintConflictTests	delegated	Portal fingerprint conflict only	MOD-0148 split and contract writer	DELEGATED
+AC-16	not-mod0147	MOD0148RemapReceiptIsolationTests	delegated	Portal actor/remap receipt scope only	MOD-0148 split	DELEGATED
+AC-17	not-mod0147	MOD0148ConcurrentReceiptTests	delegated	Portal concurrent receipt only	MOD-0148 split	DELEGATED
+AC-18	applicable	WeightedScoreAndBandTests	domain-unit	94*60% + 98*40% = 95.60 LOW; server result ignores client aggregate	Metric and Risk band concurrence open	FUTURE-EXECUTABLE
+AC-19	applicable	RawAggregateBandBoundaryTests	domain-unit	89.995=>90.00/MEDIUM; 90=>LOW; 74.995=>75.00/HIGH; 49.995=>50.00/CRITICAL	Risk band concurrence open	FUTURE-EXECUTABLE
+AC-20	applicable	DecimalScaleAndHalfEvenTests	domain-unit	1.225=>1.22; 1.235=>1.24; scale>4, weights!=100, duplicate code or zero weight =>422	Metric concurrence open	FUTURE-EXECUTABLE
+AC-21	applicable	MetricAuthorityFailureMatrixTests	adapter-integration	Known unsupported code/unit/direction=>422; unavailable/missing/stale authority=>503; zero state/receipt/success-audit/outbox	Live Metric pointer and 503 wire open	FUTURE-EXECUTABLE
+AC-22	applicable	MetricRevisionSnapshotTests	persistence-integration	R1 create remains R1 after R2; withdrawn=>422; unverifiable authenticity=>503; scorecard immutable	Metric revision carrier open	FUTURE-EXECUTABLE
+AC-23	applicable	RiskLinearLifecycleTests	domain-persistence	OPEN v1 to ACKNOWLEDGED v2 to MITIGATED v3 to CLOSED v4; one event each; resolvedAt set then preserved	Risk concurrence open	FUTURE-EXECUTABLE
+AC-24	applicable	RiskTransitionPrecedenceTests	domain-persistence	Skip/reopen/self/empty note=>422; stale version=>409 first; successful replay adds no event/version	Exact MOD-0147 receipt spec pending Phase 1.5	FUTURE-EXECUTABLE
+AC-25	applicable	RiskSourceScopeTests	application-integration	Same-scope published SCORECARD and PORTAL_SUBMISSION in SUBMITTED/UNDER_REVIEW/ACCEPTED/REJECTED accepted; foreign/DRAFT/MANUAL/EXTERNAL_SIGNAL=>generic422	MOD-0148 source resolver and Risk concurrence open	FUTURE-EXECUTABLE
+AC-26	applicable	RiskTaxonomyOutageBoundaryTests	adapter-integration	Registration taxonomy outage=>503; existing lifecycle from stored snapshot=>200; no automatic risk create/level mutation	Risk pointer and 503 wire open	FUTURE-EXECUTABLE
+AC-27	shared-applicable	SupplierExactPolicyFixtureConformance	fixture-contract	All fixture results marked SIMULATED; no producer/G5/ready-for-dev/runtime conclusion	Separate fixture WP and all seam concurrence open	SIMULATED-ONLY

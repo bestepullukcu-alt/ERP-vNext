@@ -208,4 +208,11 @@
   <data name="Err_cycle_capacity_month_fte_invalid" xml:space="preserve"><value>Bir ayın FTE değeri geçerli aralığın dışında.</value></data>
   <data name="Err_period_closed" xml:space="preserve"><value>Dönem kapalı; kapasitesi artık değiştirilemez.</value></data>
   <data name="GoToDetails" xml:space="preserve"><value>Ayrıntıya git</value></data>
+  <data name="WfDailyFixedMinutesLegacy" xml:space="preserve"><value>Günlük sabit işler (yol, rapor, sınav)</value></data>
+  <data name="UnitMinutesPerDay" xml:space="preserve"><value>dk/gün</value></data>
+  <data name="SessionStatus_draft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="SessionStatus_generated" xml:space="preserve"><value>Oluşturuldu</value></data>
+  <data name="SessionStatus_committed" xml:space="preserve"><value>Uygulandı</value></data>
+  <data name="SessionStatus_archived" xml:space="preserve"><value>Arşivlendi</value></data>
+  <data name="SessionStatus_unknown" xml:space="preserve"><value>Bilinmiyor</value></data>
 </root>

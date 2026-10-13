@@ -82,6 +82,27 @@ right boundary AUTOMATICALLY — no hand-classification. This makes **RoutePath 
 - If a page's route genuinely can't express its scope (rare — e.g. a tenant-facing feature that must stay
   platform-admin), that is a deliberate boundary decision: flag it to the owner, don't paper over it with a route hack.
 
+### 2d. API-only permissions (FU-RSV-01, WP-0173-RSV1)
+Some keys are enforced with `[HasPermission]` but have **no page and no button** — an endpoint other modules call (e.g.
+stock reserve / release, consumed by MOD-0175 / MOD-0177). §2 keeps them out of pages/actions, and A1 auto-registration
+only scans the Platform assembly, so such a key never reached the AuthService catalog: no role could be given it, every
+caller got 403 (measured G1 live run, 2026-10-02).
+
+- **Rule:** declare each such key in the manifest's optional `ApiPermissions` list —
+  `new ModuleManifestPermission(PermissionKey, DisplayName, Scope)` — with `Scope` exactly `"Tenant"` or
+  `"PlatformAdmin"` (there is no route to derive it from, so it is declared; §2c applies to the choice). The Platform
+  reconcile syncs it like a page/action key (normalized key, module code, declared scope); it creates **no** catalog
+  page/action; removing it from the manifest deletes nothing (permissions are additive). An unknown scope is skipped
+  with a warning — never defaulted, never assumed PlatformAdmin. Get the scope right on the FIRST push: AuthService
+  never lowers an existing key's scope.
+- **Do NOT use it** for anything the UI shows (that stays a page / action — never move a UI key here to dodge §2/§3),
+  to invent a key no controller enforces, or as a substitute for a missing UI (no fake page/button for an API-only key
+  either). The completeness test (§3) must cover it: every `[HasPermission]` key of the module's controllers is
+  reachable from a page, an action or `ApiPermissions`.
+- **Example (INVENTORY-LEDGER):**
+  `ApiPermissions: [ new ModuleManifestPermission(InventoryPermissions.ManageReservations, "Manage stock reservations", "Tenant") ]`
+  — guarded by `InventoryLedgerManifestCompletenessTests.Every_enforced_permission_is_reachable_from_the_manifest`.
+
 ## 3. Completeness test (MANDATORY)
 Tests must assert BOTH directions, else missing pages/actions slip through silently:
 1. **Every manifest page/action permission is a real `*Permissions` constant** (reflected). [already common]

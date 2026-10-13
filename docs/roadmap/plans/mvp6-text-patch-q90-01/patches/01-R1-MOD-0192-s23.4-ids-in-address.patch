@@ -1,0 +1,43 @@
+--- a/execution/domains/supply-chain-execution/module-packs/MOD-0192-capacity-planning.md
++++ b/execution/domains/supply-chain-execution/module-packs/MOD-0192-capacity-planning.md
+@@ -318,7 +318,7 @@
+ | Surface | MVC route | Gateway downstream | UI display gate | Backend |
+ |---|---|---|---|---|
+ | Entry page | GET `/SupplyChain/CapacityPlans` | — | `supplychain.capacity-plans.read` | — ("Create plan", "Open plan by ID"; **no list**, F192-LIST) |
+-| Plan workspace page | GET `/SupplyChain/CapacityPlans/Details/{capacityPlanId:guid}` | — | read | — (plan summary; "Create scenario"; "Open scenario by ID"; scenario and evaluation panels) |
++| Plan workspace page | GET `/SupplyChain/CapacityPlans/Details/{capacityPlanId:guid}`, optional query `?scenarioId={uuid}&evaluationId={uuid}` | — | read | — (plan summary; "Create scenario"; "Open scenario by ID"; scenario and evaluation panels; the optional IDs reopen those panels) |
+ | Get plan adapter | GET `/SupplyChain/CapacityPlans/api/{capacityPlanId:guid}` | GET `/api/supply-chain/capacity-plans/{capacityPlanId}` | read | `getCapacityPlan` |
+ | Create plan adapter | POST `/SupplyChain/CapacityPlans/api` | POST `/api/supply-chain/capacity-plans` | `.create` | `createCapacityPlan` |
+ | Create scenario adapter | POST `/SupplyChain/CapacityPlans/api/{capacityPlanId:guid}/scenarios` | POST `/api/supply-chain/capacity-plans/{capacityPlanId}/scenarios` | `.scenario.create` | `createCapacityScenario` |
+@@ -334,6 +334,12 @@
+ per-intent key forwarded exactly (§12). Tenant and legal entity never come from the browser (§2). Antiforgery on every POST.
+ "Open plan/scenario by ID" rejects a malformed UUID client-side without a request.
+ 
++Details address (owner decision F-Q79-05 = A, `docs/records/decisions/2026-09/mvp6-capacity-ui-ids-in-address-owner-decision-01.md`): when a scenario is opened or created and when an evaluation is submitted or
++opened, the page writes its ID into the query (`scenarioId`, `evaluationId`) with `history.replaceState`, so a reload or a shared link
++reopens the same view through the get-scenario and get-evaluation adapters above. Each value must be a UUID; an invalid value is
++ignored with a localized message and sends no request. Unknown, foreign-scope or soft-deleted IDs give the safe-not-found of §23.8.
++No new endpoint, field, permission or route segment; no browser storage; the manifest RoutePath (§24) is unchanged.
++
+ ### 23.5 Workspace panels — bounded table profile (no lists)
+ 
+ The entry page has no DataTable (F192-LIST). The workspace shows the plan summary (name, horizon, provenance, localized status, created);
+@@ -455,6 +461,9 @@
+ | CP-18 | Family routing `/capacity-plansXYZ`; regression incl. Capacity backend suites on target | BLOCKED |
+ | CP-19 | Source→binary→process→browser binding | READY |
+ | CP-20 | PNG via supported export only | BLOCKED (PRES-183-04) |
++| CP-21 | Reload of `/Details/{capacityPlanId}?scenarioId=…&evaluationId=…` reopens the same scenario and evaluation panels (one get-scenario and one get-evaluation request); the IDs are written to the address when a scenario is opened/created and an evaluation submitted/opened | READY |
++| CP-22 | A shared link opened by another actor with `.read` in the same tenant and legal entity shows the same view; a foreign-scope actor gets the safe-not-found per resource | READY |
++| CP-23 | A `scenarioId` or `evaluationId` that is not a UUID shows a localized message and sends no backend request; the plan still loads | READY |
+ 
+ OUT at the start (scope rows, approved as option A): CP-SCR-01 plan / scenario / evaluation lists, search, paging — **no list: the
+ contract has no list operation** (O-01, F192-LIST); CP-SCR-02 edit or delete plan/scenario, approve/archive plan (O-02); CP-SCR-03 cancel
+@@ -476,7 +485,7 @@
+ - **F192-LIST:** no plan, scenario or evaluation browsing; a user reaches them only by returned or pasted IDs. Lists need a versioned contract change (§5).
+ - **F192-DEMAND:** provenance, constraint references, resource refs and UoM are free text, usable with the exact fixtures only.
+ - **F192-POLL:** manual Refresh only; automatic polling is an owner choice and a scope amendment.
+-- **Session memory:** scenario and evaluation IDs created in a session are lost on reload unless the user copies them (consequence of F192-LIST).
++- **Session memory:** resolved by F-Q79-05 = A — scenario and evaluation IDs are carried in the Details address (§23.4; CP-21…CP-23).
+ - **Verifier tension:** the generic DataTable verifier expects a list page; record-only until a scope-aware profile (DN-02 / PRES-183-03) exists.
+ - G-TARGET integrated target; Capacity backend and executor absent from the common checkout; DN-01 retry policy; PNG; nav codes; DCP-009 §21.1 exclusion; G-ICONMAP.
+ 

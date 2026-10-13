@@ -1,0 +1,23 @@
+only-before 38
+  Diten.Platform.Application.Tests.Audit.BizCriticalAuditRejectionTests.GroupA_append_is_accepted_under_real_platform_admin_context(command: ActivateModuleCatalogItemCommand { Id = c168e0cc-f30a-4178-84
+  Diten.Platform.Application.Tests.Audit.BizCriticalAuditRejectionTests.GroupA_append_is_accepted_under_real_platform_admin_context(command: AssignPlatformAdministratorRolesCommand { Id = 7326403d-9800-
+  Diten.Platform.Application.Tests.Audit.BizCriticalAuditRejectionTests.GroupA_append_is_accepted_under_real_platform_admin_context(command: DeactivateModuleCatalogItemCommand { Id = 35ca58dc-8444-4226-
+  Diten.Platform.Application.Tests.Audit.BizCriticalAuditRejectionTests.GroupA_append_is_accepted_under_real_platform_admin_context(command: DeleteModuleCatalogItemCommand { Id = f4c69391-efef-4e58-b3d4
+  Diten.Platform.Application.Tests.Audit.BizCriticalAuditRejectionTests.GroupA_append_is_accepted_under_real_platform_admin_context(command: DeletePlatformAdministratorCommand { Id = 14486970-53d9-4df7-
+  Diten.Platform.Application.Tests.Audit.BizCriticalAuditRejectionTests.GroupA_append_is_accepted_under_real_platform_admin_context(command: ReactivatePlatformAdministratorCommand { Id = ce559573-7dbd-4
+  Diten.Platform.Application.Tests.Audit.BizCriticalAuditRejectionTests.GroupA_append_is_accepted_under_real_platform_admin_context(command: UpdateModuleCatalogItemCommand { Id = 3e551268-6d11-4da6-bf8f
+  Diten.Platform.Application.Tests.Audit.BizCriticalAuditRejectionTests.GroupA_append_is_accepted_under_real_platform_admin_context(command: UpdatePlatformAdministratorCommand { Id = f5bd10c1-b8f3-4a0d-
+  Diten.Platform.Application.Tests.Audit.BizCriticalAuditRejectionTests.GroupA_append_is_accepted_without_tenant_context(command: ActivateModuleCatalogItemCommand { Id = 2fd8382b-fbde-4da1-82eb-918dc593
+  Diten.Platform.Application.Tests.Audit.BizCriticalAuditRejectionTests.GroupA_append_is_accepted_without_tenant_context(command: AssignPlatformAdministratorRolesCommand { Id = 2dcc0806-046e-4193-86cd-1
+only-after 38
+  Diten.Platform.Application.Tests.Audit.BizCriticalAuditRejectionTests.GroupA_append_is_accepted_under_real_platform_admin_context(command: ActivateModuleCatalogItemCommand { Id = b10d9609-c98a-42c5-bf
+  Diten.Platform.Application.Tests.Audit.BizCriticalAuditRejectionTests.GroupA_append_is_accepted_under_real_platform_admin_context(command: AssignPlatformAdministratorRolesCommand { Id = 55388564-0052-
+  Diten.Platform.Application.Tests.Audit.BizCriticalAuditRejectionTests.GroupA_append_is_accepted_under_real_platform_admin_context(command: DeactivateModuleCatalogItemCommand { Id = dfd3a6dd-a51c-4547-
+  Diten.Platform.Application.Tests.Audit.BizCriticalAuditRejectionTests.GroupA_append_is_accepted_under_real_platform_admin_context(command: DeleteModuleCatalogItemCommand { Id = 7301ffe6-1161-4fe8-9b20
+  Diten.Platform.Application.Tests.Audit.BizCriticalAuditRejectionTests.GroupA_append_is_accepted_under_real_platform_admin_context(command: DeletePlatformAdministratorCommand { Id = 39d37da6-de91-4ab9-
+  Diten.Platform.Application.Tests.Audit.BizCriticalAuditRejectionTests.GroupA_append_is_accepted_under_real_platform_admin_context(command: ReactivatePlatformAdministratorCommand { Id = 00a35d9f-06c5-4
+  Diten.Platform.Application.Tests.Audit.BizCriticalAuditRejectionTests.GroupA_append_is_accepted_under_real_platform_admin_context(command: UpdateModuleCatalogItemCommand { Id = 6516291b-2ab4-47d5-b36e
+  Diten.Platform.Application.Tests.Audit.BizCriticalAuditRejectionTests.GroupA_append_is_accepted_under_real_platform_admin_context(command: UpdatePlatformAdministratorCommand { Id = 6f070d5c-e10d-442b-
+  Diten.Platform.Application.Tests.Audit.BizCriticalAuditRejectionTests.GroupA_append_is_accepted_without_tenant_context(command: ActivateModuleCatalogItemCommand { Id = e2f75c6e-b99a-4255-8745-1e99ccd2
+  Diten.Platform.Application.Tests.Audit.BizCriticalAuditRejectionTests.GroupA_append_is_accepted_without_tenant_context(command: AssignPlatformAdministratorRolesCommand { Id = ec970901-1a7b-40db-81a9-f
+after normalising dates/guids/numbers equal: True

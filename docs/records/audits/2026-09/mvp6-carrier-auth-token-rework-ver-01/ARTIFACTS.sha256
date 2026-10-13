@@ -1,0 +1,14 @@
+e30a6a718946ce982a35ad8fbf09c152415b6d035aa848376a5f35db459a335f  docs/records/audits/2026-09/mvp6-carrier-auth-token-rework-ver-01/FINDING-DISPOSITION.tsv
+8c46b4efb29717f82be3d155a9251e6d51b5ab712460904125c5c8ccc0e4bacd  docs/records/audits/2026-09/mvp6-carrier-auth-token-rework-ver-01/INDEPENDENT-SCENARIOS.tsv
+351b79ff0b51293f1fd2c56b41bf068c28bd292c685fd6f7596812c26e2a3037  docs/records/audits/2026-09/mvp6-carrier-auth-token-rework-ver-01/INPUT-HASHES.tsv
+8381702d91bf2d6a92f5d35363115a720d43f6a84d1b7330bf1fad7e51cc8da5  docs/records/audits/2026-09/mvp6-carrier-auth-token-rework-ver-01/NO-CHANGE.tsv
+b9e452973d3a23da249090a3526b95294d31f6e2ae893eefebd2880ae9581770  docs/records/audits/2026-09/mvp6-carrier-auth-token-rework-ver-01/SOP-22.md
+eb466a4f318a20d09bd6e8998249a2bc3d85239fc45ecc7cf4c526ed6b2243e2  docs/records/audits/2026-09/mvp6-carrier-auth-token-rework-ver-01/SOURCE-BINARY-PROCESS.tsv
+5082f48abcb30bedc6515b9d5a96a62b9ba001225239354bfc8ae8b65ede0487  docs/records/audits/2026-09/mvp6-carrier-auth-token-rework-ver-01/WRITER-GATE.tsv
+f606cb2aa68a85f372f3c23993021ce95ec7165c115863fad8f409351bb4aea3  docs/records/audits/2026-09/mvp6-carrier-auth-token-rework-ver-01/raw/build-source-3333-check.txt
+cf12130b90fc0bcd6eb55cc1fcd84b7d806735fee4290ddf2ed8d71ad46438f7  docs/records/audits/2026-09/mvp6-carrier-auth-token-rework-ver-01/raw/final-22-check.txt
+0e0e56b520f242c54718cc86e472c6ef36e2e14fc8aa11098a080705b2819b2d  docs/records/audits/2026-09/mvp6-carrier-auth-token-rework-ver-01/raw/package-artifacts-check.txt
+a30c5e78b6598be081ddf6acfb41404deb97c929d6179c770aff92bd756ff5c1  docs/records/audits/2026-09/mvp6-carrier-auth-token-rework-ver-01/raw/patch-stat.txt
+99375d5d421dfe46f4ccc7c18a66bc034f10131e511bf8c4c1baf01cbee7f622  docs/records/audits/2026-09/mvp6-carrier-auth-token-rework-ver-01/raw/test-count-summary.txt
+45582f728098023fa4eab3d1c67778c9d4d25e04e5dc6ff98b41ea1da6d61383  docs/records/audits/2026-09/mvp6-carrier-auth-token-rework-ver-01/raw/tests-excerpt.txt
+15872b1c55f41e0ad25ac14582274ea3f37184d7eb08dd25e4c900f7dadc91ac  docs/records/audits/2026-09/mvp6-carrier-auth-token-rework-ver-01/raw/validator-excerpt.txt

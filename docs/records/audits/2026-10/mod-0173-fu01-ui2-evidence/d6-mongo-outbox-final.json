@@ -1,0 +1,397 @@
+[{
+	"_id": "4deb5b3e-2871-4874-89ab-8d08e480dd6a",
+	"TenantId": "00000000-0000-0000-0000-000000000001",
+	"LegalEntityId": "099219a0-9780-454a-9580-a216f0fe33d0",
+	"CreatedAt": {
+		"$date": "2026-10-02T09:38:38.011Z"
+	},
+	"UpdatedAt": null,
+	"Version": 0,
+	"IsDeleted": false,
+	"DeletedAt": null,
+	"EventName": "InventoryMovementPosted",
+	"EventVersion": 1,
+	"AggregateId": "77027043-06c8-4b92-8e97-29bc8c522460",
+	"CorrelationId": "6696b009-3110-4912-8e4e-deeba2373195",
+	"Status": "Pending",
+	"AttemptCount": 0,
+	"OccurredAt": {
+		"$date": "2026-10-02T09:38:38.011Z"
+	},
+	"Payload": {
+		"TransactionId": "77027043-06c8-4b92-8e97-29bc8c522460",
+		"TransactionNumber": "INV-2026-0000001",
+		"MovementType": "OpeningBalance",
+		"ItemId": "006bfd79-7146-42eb-beb7-7977f271871a",
+		"SkuId": "a0a0a0a0-0000-4000-8000-0000000000a1",
+		"SkuLevel": "Gsku",
+		"FromWarehouseId": null,
+		"FromLocationId": null,
+		"ToWarehouseId": "074d9099-4d24-4cfd-8af3-954940fdba2c",
+		"ToLocationId": "84d7cfe3-04c6-4e21-8bbf-34c9bd1ad4ce",
+		"LotId": "LOT-UI2/01",
+		"FromStockStatus": null,
+		"ToStockStatus": "Available",
+		"BaseQuantity": {
+			"$numberDecimal": "24"
+		},
+		"BaseUomId": "ADET",
+		"ReversesTransactionId": null,
+		"PostingDate": {
+			"$date": "2026-10-02T09:36:51Z"
+		}
+	}
+},
+{
+	"_id": "b523c203-3d1f-4ce2-b3e0-4679c273eccd",
+	"TenantId": "00000000-0000-0000-0000-000000000001",
+	"LegalEntityId": "099219a0-9780-454a-9580-a216f0fe33d0",
+	"CreatedAt": {
+		"$date": "2026-10-02T09:46:26.587Z"
+	},
+	"UpdatedAt": null,
+	"Version": 0,
+	"IsDeleted": false,
+	"DeletedAt": null,
+	"EventName": "InventoryMovementPosted",
+	"EventVersion": 1,
+	"AggregateId": "c4bcef48-f9f0-46b7-af64-163b7b6857a1",
+	"CorrelationId": "5982dcc2-ea09-4a46-93b3-482ed414f6c2",
+	"Status": "Pending",
+	"AttemptCount": 0,
+	"OccurredAt": {
+		"$date": "2026-10-02T09:46:26.587Z"
+	},
+	"Payload": {
+		"TransactionId": "c4bcef48-f9f0-46b7-af64-163b7b6857a1",
+		"TransactionNumber": "INV-2026-0000002",
+		"MovementType": "CountGain",
+		"ItemId": "006bfd79-7146-42eb-beb7-7977f271871a",
+		"SkuId": "a0a0a0a0-0000-4000-8000-0000000000a1",
+		"SkuLevel": "Gsku",
+		"FromWarehouseId": null,
+		"FromLocationId": null,
+		"ToWarehouseId": "074d9099-4d24-4cfd-8af3-954940fdba2c",
+		"ToLocationId": "62ce6118-6770-4354-b9ea-2849ebc72e53",
+		"LotId": "LOT-UI2/01",
+		"FromStockStatus": null,
+		"ToStockStatus": "Available",
+		"BaseQuantity": {
+			"$numberDecimal": "480"
+		},
+		"BaseUomId": "ADET",
+		"ReversesTransactionId": null,
+		"PostingDate": {
+			"$date": "2026-10-02T09:45:20Z"
+		}
+	}
+},
+{
+	"_id": "cc8f5fc6-52e2-4e66-a4f7-cdeb8d71a19d",
+	"TenantId": "00000000-0000-0000-0000-000000000001",
+	"LegalEntityId": "099219a0-9780-454a-9580-a216f0fe33d0",
+	"CreatedAt": {
+		"$date": "2026-10-02T09:47:56.055Z"
+	},
+	"UpdatedAt": null,
+	"Version": 0,
+	"IsDeleted": false,
+	"DeletedAt": null,
+	"EventName": "InventoryMovementPosted",
+	"EventVersion": 1,
+	"AggregateId": "ff22d931-eb07-4cbc-830f-a0bbf47751e2",
+	"CorrelationId": "5fb991f4-a544-4ee3-9177-43e58fd28af7",
+	"Status": "Pending",
+	"AttemptCount": 0,
+	"OccurredAt": {
+		"$date": "2026-10-02T09:47:56.055Z"
+	},
+	"Payload": {
+		"TransactionId": "ff22d931-eb07-4cbc-830f-a0bbf47751e2",
+		"TransactionNumber": "INV-2026-0000003",
+		"MovementType": "WarehouseTransfer",
+		"ItemId": "006bfd79-7146-42eb-beb7-7977f271871a",
+		"SkuId": "a0a0a0a0-0000-4000-8000-0000000000a1",
+		"SkuLevel": "Gsku",
+		"FromWarehouseId": "074d9099-4d24-4cfd-8af3-954940fdba2c",
+		"FromLocationId": "62ce6118-6770-4354-b9ea-2849ebc72e53",
+		"ToWarehouseId": "9b108296-e056-436f-a6af-6e9a534acc9c",
+		"ToLocationId": "0fe4da31-9c0c-4c78-b94e-8d3c7abfd6c7",
+		"LotId": "LOT-UI2/01",
+		"FromStockStatus": "Available",
+		"ToStockStatus": "Available",
+		"BaseQuantity": {
+			"$numberDecimal": "24"
+		},
+		"BaseUomId": "ADET",
+		"ReversesTransactionId": null,
+		"PostingDate": {
+			"$date": "2026-10-02T09:47:42Z"
+		}
+	}
+},
+{
+	"_id": "403bd3d0-1640-45ed-839b-f0d4f4a292c4",
+	"TenantId": "00000000-0000-0000-0000-000000000001",
+	"LegalEntityId": "099219a0-9780-454a-9580-a216f0fe33d0",
+	"CreatedAt": {
+		"$date": "2026-10-02T09:48:43.355Z"
+	},
+	"UpdatedAt": null,
+	"Version": 0,
+	"IsDeleted": false,
+	"DeletedAt": null,
+	"EventName": "InventoryMovementPosted",
+	"EventVersion": 1,
+	"AggregateId": "9aec630d-643a-4863-aee7-d9b50fac845d",
+	"CorrelationId": "938e4c22-a171-401e-af38-84d8ef461bcf",
+	"Status": "Pending",
+	"AttemptCount": 0,
+	"OccurredAt": {
+		"$date": "2026-10-02T09:48:43.355Z"
+	},
+	"Payload": {
+		"TransactionId": "9aec630d-643a-4863-aee7-d9b50fac845d",
+		"TransactionNumber": "INV-2026-0000004",
+		"MovementType": "LocationTransfer",
+		"ItemId": "006bfd79-7146-42eb-beb7-7977f271871a",
+		"SkuId": "a0a0a0a0-0000-4000-8000-0000000000a1",
+		"SkuLevel": "Gsku",
+		"FromWarehouseId": "074d9099-4d24-4cfd-8af3-954940fdba2c",
+		"FromLocationId": "84d7cfe3-04c6-4e21-8bbf-34c9bd1ad4ce",
+		"ToWarehouseId": "074d9099-4d24-4cfd-8af3-954940fdba2c",
+		"ToLocationId": "62ce6118-6770-4354-b9ea-2849ebc72e53",
+		"LotId": "LOT-UI2/01",
+		"FromStockStatus": "Available",
+		"ToStockStatus": "Available",
+		"BaseQuantity": {
+			"$numberDecimal": "12"
+		},
+		"BaseUomId": "ADET",
+		"ReversesTransactionId": null,
+		"PostingDate": {
+			"$date": "2026-10-02T09:48:14Z"
+		}
+	}
+},
+{
+	"_id": "7e7233df-6b7e-4dc1-a3b8-f253372367e4",
+	"TenantId": "00000000-0000-0000-0000-000000000001",
+	"LegalEntityId": "099219a0-9780-454a-9580-a216f0fe33d0",
+	"CreatedAt": {
+		"$date": "2026-10-02T09:50:20.752Z"
+	},
+	"UpdatedAt": null,
+	"Version": 0,
+	"IsDeleted": false,
+	"DeletedAt": null,
+	"EventName": "InventoryMovementPosted",
+	"EventVersion": 1,
+	"AggregateId": "3898097c-da07-41d7-9b91-5857369ca8b9",
+	"CorrelationId": "bc703dd3-c1af-4999-b3e3-610118df250f",
+	"Status": "Pending",
+	"AttemptCount": 0,
+	"OccurredAt": {
+		"$date": "2026-10-02T09:50:20.752Z"
+	},
+	"Payload": {
+		"TransactionId": "3898097c-da07-41d7-9b91-5857369ca8b9",
+		"TransactionNumber": "INV-2026-0000005",
+		"MovementType": "GoodsReceiptPo",
+		"ItemId": "006bfd79-7146-42eb-beb7-7977f271871a",
+		"SkuId": "a0a0a0a0-0000-4000-8000-0000000000a1",
+		"SkuLevel": "Gsku",
+		"FromWarehouseId": null,
+		"FromLocationId": null,
+		"ToWarehouseId": "074d9099-4d24-4cfd-8af3-954940fdba2c",
+		"ToLocationId": "84d7cfe3-04c6-4e21-8bbf-34c9bd1ad4ce",
+		"LotId": "LOT-UI2-PO",
+		"FromStockStatus": null,
+		"ToStockStatus": "Available",
+		"BaseQuantity": {
+			"$numberDecimal": "10"
+		},
+		"BaseUomId": "ADET",
+		"ReversesTransactionId": null,
+		"PostingDate": {
+			"$date": "2026-10-02T09:50:20.658Z"
+		}
+	}
+},
+{
+	"_id": "db8af869-5702-4cd3-abfb-34262747b3b6",
+	"TenantId": "00000000-0000-0000-0000-000000000001",
+	"LegalEntityId": "099219a0-9780-454a-9580-a216f0fe33d0",
+	"CreatedAt": {
+		"$date": "2026-10-02T09:51:31.927Z"
+	},
+	"UpdatedAt": null,
+	"Version": 0,
+	"IsDeleted": false,
+	"DeletedAt": null,
+	"EventName": "InventoryMovementPosted",
+	"EventVersion": 1,
+	"AggregateId": "be2248a1-e615-4068-8293-fdfa62f52609",
+	"CorrelationId": "52b5db31-1435-41b3-8e07-acdb553e7401",
+	"Status": "Pending",
+	"AttemptCount": 0,
+	"OccurredAt": {
+		"$date": "2026-10-02T09:51:31.927Z"
+	},
+	"Payload": {
+		"TransactionId": "be2248a1-e615-4068-8293-fdfa62f52609",
+		"TransactionNumber": "INV-2026-0000006",
+		"MovementType": "Reversal",
+		"ItemId": "006bfd79-7146-42eb-beb7-7977f271871a",
+		"SkuId": "a0a0a0a0-0000-4000-8000-0000000000a1",
+		"SkuLevel": "Gsku",
+		"FromWarehouseId": "074d9099-4d24-4cfd-8af3-954940fdba2c",
+		"FromLocationId": "62ce6118-6770-4354-b9ea-2849ebc72e53",
+		"ToWarehouseId": "074d9099-4d24-4cfd-8af3-954940fdba2c",
+		"ToLocationId": "84d7cfe3-04c6-4e21-8bbf-34c9bd1ad4ce",
+		"LotId": "LOT-UI2/01",
+		"FromStockStatus": "Available",
+		"ToStockStatus": "Available",
+		"BaseQuantity": {
+			"$numberDecimal": "12"
+		},
+		"BaseUomId": "ADET",
+		"ReversesTransactionId": "9aec630d-643a-4863-aee7-d9b50fac845d",
+		"PostingDate": {
+			"$date": "2026-10-02T09:50:42Z"
+		}
+	}
+},
+{
+	"_id": "7fe3f7e6-2ed7-436a-bedd-2d1aef1c099c",
+	"TenantId": "00000000-0000-0000-0000-000000000001",
+	"LegalEntityId": "099219a0-9780-454a-9580-a216f0fe33d0",
+	"CreatedAt": {
+		"$date": "2026-10-02T09:52:04.686Z"
+	},
+	"UpdatedAt": null,
+	"Version": 0,
+	"IsDeleted": false,
+	"DeletedAt": null,
+	"EventName": "InventoryMovementPosted",
+	"EventVersion": 1,
+	"AggregateId": "9d8855c6-3503-4cec-bb50-b86229440b90",
+	"CorrelationId": "5edda966-7eb6-4aeb-b046-3629adf487ab",
+	"Status": "Pending",
+	"AttemptCount": 0,
+	"OccurredAt": {
+		"$date": "2026-10-02T09:52:04.686Z"
+	},
+	"Payload": {
+		"TransactionId": "9d8855c6-3503-4cec-bb50-b86229440b90",
+		"TransactionNumber": "INV-2026-0000007",
+		"MovementType": "LocationTransfer",
+		"ItemId": "006bfd79-7146-42eb-beb7-7977f271871a",
+		"SkuId": "a0a0a0a0-0000-4000-8000-0000000000a1",
+		"SkuLevel": "Gsku",
+		"FromWarehouseId": "074d9099-4d24-4cfd-8af3-954940fdba2c",
+		"FromLocationId": "84d7cfe3-04c6-4e21-8bbf-34c9bd1ad4ce",
+		"ToWarehouseId": "074d9099-4d24-4cfd-8af3-954940fdba2c",
+		"ToLocationId": "62ce6118-6770-4354-b9ea-2849ebc72e53",
+		"LotId": "LOT-UI2/01",
+		"FromStockStatus": "Available",
+		"ToStockStatus": "Available",
+		"BaseQuantity": {
+			"$numberDecimal": "12"
+		},
+		"BaseUomId": "ADET",
+		"ReversesTransactionId": null,
+		"PostingDate": {
+			"$date": "2026-10-02T09:50:43Z"
+		}
+	}
+},
+{
+	"_id": "171b2253-8110-4909-8d27-a01c2d09e168",
+	"TenantId": "00000000-0000-0000-0000-000000000001",
+	"LegalEntityId": "099219a0-9780-454a-9580-a216f0fe33d0",
+	"CreatedAt": {
+		"$date": "2026-10-02T09:55:51.78Z"
+	},
+	"UpdatedAt": null,
+	"Version": 0,
+	"IsDeleted": false,
+	"DeletedAt": null,
+	"EventName": "InventoryMovementPosted",
+	"EventVersion": 1,
+	"AggregateId": "063d0a35-a252-45a8-abd2-8ba191823843",
+	"CorrelationId": "d05b6fdb-1b34-4ccb-a718-d290f6cb0c51",
+	"Status": "Pending",
+	"AttemptCount": 0,
+	"OccurredAt": {
+		"$date": "2026-10-02T09:55:51.78Z"
+	},
+	"Payload": {
+		"TransactionId": "063d0a35-a252-45a8-abd2-8ba191823843",
+		"TransactionNumber": "INV-2026-0000008",
+		"MovementType": "OpeningBalance",
+		"ItemId": "006bfd79-7146-42eb-beb7-7977f271871a",
+		"SkuId": "a0a0a0a0-0000-4000-8000-0000000000a1",
+		"SkuLevel": "Gsku",
+		"FromWarehouseId": null,
+		"FromLocationId": null,
+		"ToWarehouseId": "074d9099-4d24-4cfd-8af3-954940fdba2c",
+		"ToLocationId": "62ce6118-6770-4354-b9ea-2849ebc72e53",
+		"LotId": null,
+		"FromStockStatus": null,
+		"ToStockStatus": "Available",
+		"BaseQuantity": {
+			"$numberDecimal": "2"
+		},
+		"BaseUomId": "ADET",
+		"ReversesTransactionId": null,
+		"PostingDate": {
+			"$date": "2026-10-02T09:55:23Z"
+		}
+	}
+},
+{
+	"_id": "65e36f5f-e4fa-4082-ac33-254718e76fcc",
+	"TenantId": "00000000-0000-0000-0000-000000000001",
+	"LegalEntityId": "099219a0-9780-454a-9580-a216f0fe33d0",
+	"CreatedAt": {
+		"$date": "2026-10-02T09:59:08.091Z"
+	},
+	"UpdatedAt": null,
+	"Version": 0,
+	"IsDeleted": false,
+	"DeletedAt": null,
+	"EventName": "InventoryMovementPosted",
+	"EventVersion": 1,
+	"AggregateId": "93b43e45-c0ce-488e-8767-bae4c37ca696",
+	"CorrelationId": "1102d52a-d136-45d2-b7ac-f59ab76ee767",
+	"Status": "Pending",
+	"AttemptCount": 0,
+	"OccurredAt": {
+		"$date": "2026-10-02T09:59:08.091Z"
+	},
+	"Payload": {
+		"TransactionId": "93b43e45-c0ce-488e-8767-bae4c37ca696",
+		"TransactionNumber": "INV-2026-0000009",
+		"MovementType": "OpeningBalance",
+		"ItemId": "006bfd79-7146-42eb-beb7-7977f271871a",
+		"SkuId": "a0a0a0a0-0000-4000-8000-0000000000a1",
+		"SkuLevel": "Gsku",
+		"FromWarehouseId": null,
+		"FromLocationId": null,
+		"ToWarehouseId": "074d9099-4d24-4cfd-8af3-954940fdba2c",
+		"ToLocationId": "62ce6118-6770-4354-b9ea-2849ebc72e53",
+		"LotId": "LOT-UI2/04",
+		"FromStockStatus": null,
+		"ToStockStatus": "Available",
+		"BaseQuantity": {
+			"$numberDecimal": "12"
+		},
+		"BaseUomId": "ADET",
+		"ReversesTransactionId": null,
+		"PostingDate": {
+			"$date": "2026-10-02T09:58:23Z"
+		}
+	}
+}]
+

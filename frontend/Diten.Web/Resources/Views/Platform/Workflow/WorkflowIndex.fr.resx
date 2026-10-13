@@ -209,4 +209,10 @@
   <data name="BpmnImportFailed" xml:space="preserve"><value>Could not import the BPMN XML.</value></data>
   <data name="ExclusiveGatewayWarning" xml:space="preserve"><value>Exclusive gateways are accepted in the diagram but not yet mapped to runtime branches.</value></data>
   <data name="BpmnLibraryMissing" xml:space="preserve"><value>The BPMN designer library failed to load.</value></data>
+  <data name="Workflow.Designer.SignatureRequired" xml:space="preserve"><value>Signature requise</value></data>
+  <data name="Workflow.Designer.SignatureMeaning" xml:space="preserve"><value>Signification de la signature</value></data>
+  <data name="Workflow.Designer.SignatureMeaningSelect" xml:space="preserve"><value>Sélectionnez une signification</value></data>
+  <data name="Workflow.Designer.SignatureMeaningRequired" xml:space="preserve"><value>Sélectionnez une signification active pour chaque étape qui exige une signature.</value></data>
+  <data name="Workflow.Designer.SignatureHint" xml:space="preserve"><value>L'approbateur signe électroniquement lors de l'approbation dans WorkCenter (mot de passe + signification).</value></data>
+  <data name="Workflow.Designer.SignatureMeaningsUnavailable" xml:space="preserve"><value>Les significations de signature n'ont pas pu être chargées.</value></data>
 </root>

@@ -1,0 +1,3 @@
+7fdb5ef0d322c3b9c814fab709dcfbaf1c9a2904f3d9a39e6f90bce077f204d8  /Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs
+a72a05a5e185e04d70ba221f086baacb8c8fca11ea061f289cb4b54fd430254c  /private/tmp/mvp6-mod0187-auth05-01/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs
+a72a05a5e185e04d70ba221f086baacb8c8fca11ea061f289cb4b54fd430254c  /private/tmp/mvp6-mod0187-r22-r25-evidence-02/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs

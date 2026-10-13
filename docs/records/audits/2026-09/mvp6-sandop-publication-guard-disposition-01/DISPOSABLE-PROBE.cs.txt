@@ -1,0 +1,21 @@
+using System.Reflection;
+using Xunit;
+namespace TenantArchitecture.ArchitectureTests;
+public class CandidateProbeTests
+{
+    static string Root(string suffix) => Path.Combine(Environment.GetEnvironmentVariable("GUARD_DISPOSABLE_ROOT")!, suffix);
+    static Exception? Run(string suffix)
+    {
+        var m = typeof(DocsPathGuardTests).GetMethod("VerifyRoot", BindingFlags.NonPublic | BindingFlags.Static)!;
+        try { m.Invoke(null, new object[] { Root(suffix), true }); return null; }
+        catch (TargetInvocationException ex) { return ex.InnerException; }
+    }
+    [Fact] public void CandidatePositive() => Assert.Null(Run("fixture"));
+    [Theory]
+    [InlineData("fixture-bad-hash")]
+    [InlineData("fixture-unsealed")]
+    [InlineData("fixture-wrong-kind")]
+    [InlineData("fixture-target-misuse")]
+    [InlineData("fixture-wrong-proof")]
+    public void CandidateNegatives(string suffix) { var ex = Run(suffix); Console.WriteLine(suffix + " => " + ex?.Message.Split('\n')[0]); Assert.NotNull(ex); }
+}

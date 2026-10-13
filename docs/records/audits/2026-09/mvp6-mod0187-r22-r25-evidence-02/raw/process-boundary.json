@@ -1,0 +1,896 @@
+{
+  "environment": {
+    "api": "http://127.0.0.1:5066",
+    "mongo": "mongodb://127.0.0.1:27894/?replicaSet=claims_r22r25_e02",
+    "database": "diten_claims_r22r25_e02",
+    "replicaSet": "claims_r22r25_e02"
+  },
+  "configSelection": [
+    {
+      "label": "normal-invalid-ignored",
+      "mode": "Production",
+      "response": {
+        "status": 200,
+        "correlation": "fd716f3c-7571-4e17-b7e1-bf2be8da7154",
+        "body": {
+          "items": [],
+          "total": 0,
+          "contractVersion": "v1"
+        },
+        "requestBodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "expectedStatus": 200,
+      "expectedObserved": true,
+      "boundedRejectionMessageObserved": null,
+      "log": "/private/tmp/mvp6-mod0187-r22-r25-evidence-02/evidence/logs/api-normal-invalid-ignored.log"
+    },
+    {
+      "label": "evidence-missing",
+      "mode": "ClaimsEvidence",
+      "response": {
+        "status": 500,
+        "correlation": "7b43568a-6756-47bb-b48b-7c2acccaa96d",
+        "body": {
+          "error": {
+            "code": "INTERNAL_ERROR",
+            "message": "An internal error occurred.",
+            "correlationId": "7b43568a-6756-47bb-b48b-7c2acccaa96d"
+          },
+          "contractVersion": "v1"
+        },
+        "requestBodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "expectedStatus": 500,
+      "expectedObserved": true,
+      "boundedRejectionMessageObserved": null,
+      "log": "/private/tmp/mvp6-mod0187-r22-r25-evidence-02/evidence/logs/api-evidence-missing.log"
+    },
+    {
+      "label": "evidence-invalid-fixed",
+      "mode": "ClaimsEvidence",
+      "response": {
+        "status": 500,
+        "correlation": "2d5e3bd9-479a-4756-a8fe-03e9179a7571",
+        "body": {
+          "error": {
+            "code": "INTERNAL_ERROR",
+            "message": "An internal error occurred.",
+            "correlationId": "2d5e3bd9-479a-4756-a8fe-03e9179a7571"
+          },
+          "contractVersion": "v1"
+        },
+        "requestBodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "expectedStatus": 500,
+      "expectedObserved": true,
+      "boundedRejectionMessageObserved": null,
+      "log": "/private/tmp/mvp6-mod0187-r22-r25-evidence-02/evidence/logs/api-evidence-invalid-fixed.log"
+    },
+    {
+      "label": "evidence-invalid-stage",
+      "mode": "ClaimsEvidence",
+      "response": {
+        "status": 500,
+        "correlation": "56627722-046a-44cf-8d4e-95d5b2c40eba",
+        "body": {
+          "error": {
+            "code": "INTERNAL_ERROR",
+            "message": "An internal error occurred.",
+            "correlationId": "56627722-046a-44cf-8d4e-95d5b2c40eba"
+          },
+          "contractVersion": "v1"
+        },
+        "requestBodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "expectedStatus": 500,
+      "expectedObserved": true,
+      "boundedRejectionMessageObserved": null,
+      "log": "/private/tmp/mvp6-mod0187-r22-r25-evidence-02/evidence/logs/api-evidence-invalid-stage.log"
+    }
+  ],
+  "R22": {
+    "fixedId": "22222222-2222-4222-8222-222222222222",
+    "seedId": "8f01c2a3-4bb6-4165-ac9e-1ce7c86282c6",
+    "claimNumber": "CLM-22222222222242228222222222222222",
+    "request": {
+      "shipmentId": "4fab2c21-c2bf-4a9d-8a01-16d489c326da",
+      "reasonCode": "DAMAGED",
+      "claimedAmount": "10.00",
+      "currency": "USD",
+      "evidenceReferenceIds": []
+    },
+    "response": {
+      "status": 503,
+      "correlation": "264eb217-ce45-4b6f-bc0b-c70957db8730",
+      "body": {
+        "error": {
+          "code": "CLAIM_STORAGE_UNAVAILABLE",
+          "message": "Claim storage is unavailable.",
+          "correlationId": "264eb217-ce45-4b6f-bc0b-c70957db8730"
+        },
+        "contractVersion": "v1"
+      },
+      "requestBodySha256": "fbf2cb784ca23eabda78267dd42c9f4542b6522ef3dc973fc1a8bb9ebf180653"
+    },
+    "before": {
+      "claims": 1,
+      "receipts": 0,
+      "audit": 0,
+      "outbox": 0
+    },
+    "after": {
+      "claims": 1,
+      "receipts": 0,
+      "audit": 0,
+      "outbox": 0
+    },
+    "scopedDocuments": {
+      "claims": [
+        {
+          "_id": "8f01c2a3-4bb6-4165-ac9e-1ce7c86282c6",
+          "TenantId": "83a9c377-7004-469d-b9e6-7e1aa03ea4ff",
+          "LegalEntityId": "aba5f300-9ea2-4b82-9aa8-e3f966a13f9a",
+          "ClaimNumber": "CLM-22222222222242228222222222222222",
+          "IsDeleted": false
+        }
+      ],
+      "receipts": [],
+      "audit": [],
+      "outbox": []
+    },
+    "mongoClaimNumberIndexInLog": false,
+    "expected": {
+      "status": 503,
+      "code": "CLAIM_STORAGE_UNAVAILABLE",
+      "countsUnchanged": true
+    },
+    "launch": {
+      "label": "r22-claim-number-collision",
+      "mode": "ClaimsEvidence",
+      "pid": 10998,
+      "port": 5066,
+      "fixedIdConfigured": true,
+      "faultStage": null,
+      "binary": "/private/tmp/mvp6-mod0187-r22-r25-evidence-02/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Debug/net8.0/Diten.SupplyChainService.Api.dll",
+      "log": "/private/tmp/mvp6-mod0187-r22-r25-evidence-02/evidence/logs/api-r22-claim-number-collision.log",
+      "health": "health=200",
+      "startedAt": "2026-09-21T19:05:05Z",
+      "exitCode": 0,
+      "stoppedAt": "2026-09-21T19:05:12Z"
+    },
+    "status": "PASS"
+  },
+  "R25Stages": {
+    "aggregate": {
+      "status": "PASS",
+      "request": {
+        "shipmentId": "ec4d0610-1c96-46b9-ba65-8208beba6c8b",
+        "reasonCode": "DAMAGED",
+        "claimedAmount": "10.00",
+        "currency": "USD",
+        "evidenceReferenceIds": []
+      },
+      "response": {
+        "status": 503,
+        "correlation": "7cdb7265-2d9c-4ef2-af00-a3b6e479f6ca",
+        "body": {
+          "error": {
+            "code": "CLAIM_STORAGE_UNAVAILABLE",
+            "message": "Claim storage is unavailable.",
+            "correlationId": "7cdb7265-2d9c-4ef2-af00-a3b6e479f6ca"
+          },
+          "contractVersion": "v1"
+        },
+        "requestBodySha256": "15b1fdf7708a007c26c10217a284e19fbea2fb1dd1b06660dd6fb39a18b5a3c2"
+      },
+      "counts": {
+        "claims": 0,
+        "receipts": 0,
+        "audit": 0,
+        "outbox": 0
+      },
+      "scopedDocuments": {
+        "claims": [],
+        "receipts": [],
+        "audit": [],
+        "outbox": []
+      },
+      "stageLogObserved": true,
+      "committed": false,
+      "classification": "injected bounded stage exception; not Mongo unknown commit",
+      "launch": {
+        "label": "r25-stage-aggregate",
+        "mode": "ClaimsEvidence",
+        "pid": 11004,
+        "port": 5066,
+        "fixedIdConfigured": false,
+        "faultStage": "aggregate",
+        "binary": "/private/tmp/mvp6-mod0187-r22-r25-evidence-02/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Debug/net8.0/Diten.SupplyChainService.Api.dll",
+        "log": "/private/tmp/mvp6-mod0187-r22-r25-evidence-02/evidence/logs/api-r25-stage-aggregate.log",
+        "health": "health=200",
+        "startedAt": "2026-09-21T19:05:12Z",
+        "exitCode": 0,
+        "stoppedAt": "2026-09-21T19:05:17Z"
+      }
+    },
+    "receipt": {
+      "status": "PASS",
+      "request": {
+        "shipmentId": "e5e7d399-6639-4a59-bea6-0c488ee97f97",
+        "reasonCode": "DAMAGED",
+        "claimedAmount": "10.00",
+        "currency": "USD",
+        "evidenceReferenceIds": []
+      },
+      "response": {
+        "status": 503,
+        "correlation": "16cabc05-cc80-47ab-84d0-aacb808fd09a",
+        "body": {
+          "error": {
+            "code": "CLAIM_STORAGE_UNAVAILABLE",
+            "message": "Claim storage is unavailable.",
+            "correlationId": "16cabc05-cc80-47ab-84d0-aacb808fd09a"
+          },
+          "contractVersion": "v1"
+        },
+        "requestBodySha256": "047922adf3b0e0ea6a0d8dde3d167d5fc1eee1129b39c344a359cc7548d46126"
+      },
+      "counts": {
+        "claims": 0,
+        "receipts": 0,
+        "audit": 0,
+        "outbox": 0
+      },
+      "scopedDocuments": {
+        "claims": [],
+        "receipts": [],
+        "audit": [],
+        "outbox": []
+      },
+      "stageLogObserved": true,
+      "committed": false,
+      "classification": "injected bounded stage exception; not Mongo unknown commit",
+      "launch": {
+        "label": "r25-stage-receipt",
+        "mode": "ClaimsEvidence",
+        "pid": 11024,
+        "port": 5066,
+        "fixedIdConfigured": false,
+        "faultStage": "receipt",
+        "binary": "/private/tmp/mvp6-mod0187-r22-r25-evidence-02/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Debug/net8.0/Diten.SupplyChainService.Api.dll",
+        "log": "/private/tmp/mvp6-mod0187-r22-r25-evidence-02/evidence/logs/api-r25-stage-receipt.log",
+        "health": "health=200",
+        "startedAt": "2026-09-21T19:05:18Z",
+        "exitCode": 0,
+        "stoppedAt": "2026-09-21T19:05:22Z"
+      }
+    },
+    "audit": {
+      "status": "PASS",
+      "request": {
+        "shipmentId": "ab97d38a-0929-443f-932d-640b488e0085",
+        "reasonCode": "DAMAGED",
+        "claimedAmount": "10.00",
+        "currency": "USD",
+        "evidenceReferenceIds": []
+      },
+      "response": {
+        "status": 503,
+        "correlation": "fe9e86e8-43d6-40e4-b488-e6c80c8801bb",
+        "body": {
+          "error": {
+            "code": "CLAIM_STORAGE_UNAVAILABLE",
+            "message": "Claim storage is unavailable.",
+            "correlationId": "fe9e86e8-43d6-40e4-b488-e6c80c8801bb"
+          },
+          "contractVersion": "v1"
+        },
+        "requestBodySha256": "1064ce9a26199a360869e4b50ace64044234ca7366f26f8e7729aa39f4e65f62"
+      },
+      "counts": {
+        "claims": 0,
+        "receipts": 0,
+        "audit": 0,
+        "outbox": 0
+      },
+      "scopedDocuments": {
+        "claims": [],
+        "receipts": [],
+        "audit": [],
+        "outbox": []
+      },
+      "stageLogObserved": true,
+      "committed": false,
+      "classification": "injected bounded stage exception; not Mongo unknown commit",
+      "launch": {
+        "label": "r25-stage-audit",
+        "mode": "ClaimsEvidence",
+        "pid": 11031,
+        "port": 5066,
+        "fixedIdConfigured": false,
+        "faultStage": "audit",
+        "binary": "/private/tmp/mvp6-mod0187-r22-r25-evidence-02/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Debug/net8.0/Diten.SupplyChainService.Api.dll",
+        "log": "/private/tmp/mvp6-mod0187-r22-r25-evidence-02/evidence/logs/api-r25-stage-audit.log",
+        "health": "health=200",
+        "startedAt": "2026-09-21T19:05:23Z",
+        "exitCode": 0,
+        "stoppedAt": "2026-09-21T19:05:27Z"
+      }
+    },
+    "outbox": {
+      "status": "PASS",
+      "request": {
+        "shipmentId": "2b3e962c-6244-4b58-8613-e0b20f726b2d",
+        "reasonCode": "DAMAGED",
+        "claimedAmount": "10.00",
+        "currency": "USD",
+        "evidenceReferenceIds": []
+      },
+      "response": {
+        "status": 503,
+        "correlation": "06a7255e-82a4-461c-9973-19f8478536a4",
+        "body": {
+          "error": {
+            "code": "CLAIM_STORAGE_UNAVAILABLE",
+            "message": "Claim storage is unavailable.",
+            "correlationId": "06a7255e-82a4-461c-9973-19f8478536a4"
+          },
+          "contractVersion": "v1"
+        },
+        "requestBodySha256": "a4b16fb9da7433217b0b3982b1c87e83c4443cbe73878290274fb688504e6fa5"
+      },
+      "counts": {
+        "claims": 0,
+        "receipts": 0,
+        "audit": 0,
+        "outbox": 0
+      },
+      "scopedDocuments": {
+        "claims": [],
+        "receipts": [],
+        "audit": [],
+        "outbox": []
+      },
+      "stageLogObserved": true,
+      "committed": false,
+      "classification": "injected bounded stage exception; not Mongo unknown commit",
+      "launch": {
+        "label": "r25-stage-outbox",
+        "mode": "ClaimsEvidence",
+        "pid": 11047,
+        "port": 5066,
+        "fixedIdConfigured": false,
+        "faultStage": "outbox",
+        "binary": "/private/tmp/mvp6-mod0187-r22-r25-evidence-02/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Debug/net8.0/Diten.SupplyChainService.Api.dll",
+        "log": "/private/tmp/mvp6-mod0187-r22-r25-evidence-02/evidence/logs/api-r25-stage-outbox.log",
+        "health": "health=200",
+        "startedAt": "2026-09-21T19:05:28Z",
+        "exitCode": 0,
+        "stoppedAt": "2026-09-21T19:05:32Z"
+      }
+    },
+    "beforeCommit": {
+      "status": "PASS",
+      "request": {
+        "shipmentId": "741dce9f-3aa0-4bed-9629-b4e956be4c61",
+        "reasonCode": "DAMAGED",
+        "claimedAmount": "10.00",
+        "currency": "USD",
+        "evidenceReferenceIds": []
+      },
+      "response": {
+        "status": 503,
+        "correlation": "74ccdacb-c7a4-47ee-a72e-714541d00479",
+        "body": {
+          "error": {
+            "code": "CLAIM_STORAGE_UNAVAILABLE",
+            "message": "Claim storage is unavailable.",
+            "correlationId": "74ccdacb-c7a4-47ee-a72e-714541d00479"
+          },
+          "contractVersion": "v1"
+        },
+        "requestBodySha256": "b05d1621a074dea72bbf0ac5c27d9d4d1ea7f722272379bdd063b0b01b078564"
+      },
+      "counts": {
+        "claims": 0,
+        "receipts": 0,
+        "audit": 0,
+        "outbox": 0
+      },
+      "scopedDocuments": {
+        "claims": [],
+        "receipts": [],
+        "audit": [],
+        "outbox": []
+      },
+      "stageLogObserved": true,
+      "committed": false,
+      "classification": "injected bounded stage exception; not Mongo unknown commit",
+      "launch": {
+        "label": "r25-stage-beforeCommit",
+        "mode": "ClaimsEvidence",
+        "pid": 11055,
+        "port": 5066,
+        "fixedIdConfigured": false,
+        "faultStage": "beforeCommit",
+        "binary": "/private/tmp/mvp6-mod0187-r22-r25-evidence-02/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Debug/net8.0/Diten.SupplyChainService.Api.dll",
+        "log": "/private/tmp/mvp6-mod0187-r22-r25-evidence-02/evidence/logs/api-r25-stage-beforeCommit.log",
+        "health": "health=200",
+        "startedAt": "2026-09-21T19:05:33Z",
+        "exitCode": 0,
+        "stoppedAt": "2026-09-21T19:05:37Z"
+      }
+    },
+    "afterCommit": {
+      "status": "PASS",
+      "request": {
+        "shipmentId": "f2e26f0a-c9c5-4dda-ae83-1c40ef102d0d",
+        "reasonCode": "DAMAGED",
+        "claimedAmount": "10.00",
+        "currency": "USD",
+        "evidenceReferenceIds": []
+      },
+      "response": {
+        "status": 201,
+        "correlation": "79079eac-3dc5-4099-af79-92a977f9c1d7",
+        "body": {
+          "claimId": "7645795c-d603-43d0-9c4e-8045e0d8a622",
+          "claimNumber": "CLM-7645795cd60343d09c4e8045e0d8a622",
+          "shipmentId": "f2e26f0a-c9c5-4dda-ae83-1c40ef102d0d",
+          "status": "Open",
+          "approvedAmount": null,
+          "idempotentReplay": true,
+          "contractVersion": "v1"
+        },
+        "requestBodySha256": "a184329236254a92454730298ab664bfbe450d2f08094d465b77cc71dae963ec"
+      },
+      "counts": {
+        "claims": 1,
+        "receipts": 1,
+        "audit": 1,
+        "outbox": 1
+      },
+      "scopedDocuments": {
+        "claims": [
+          {
+            "_id": "7645795c-d603-43d0-9c4e-8045e0d8a622",
+            "TenantId": "1298f43a-6e09-4569-932b-08e360dc5941",
+            "IsDeleted": false,
+            "DeletedAt": null,
+            "CreatedAt": "2026-09-21T19:05:39.663823+00:00",
+            "UpdatedAt": null,
+            "Version": 1,
+            "LegalEntityId": "96716115-423d-4d4a-ae06-ed69d6c2a6d4",
+            "CreatedBy": "9d97abfa-41c0-4b8d-9110-3f794bf0fe9a",
+            "UpdatedBy": null,
+            "ClaimNumber": "CLM-7645795cd60343d09c4e8045e0d8a622",
+            "ShipmentId": "f2e26f0a-c9c5-4dda-ae83-1c40ef102d0d",
+            "CarrierId": null,
+            "ReasonCode": "DAMAGED",
+            "ClaimedAmount": "10.00",
+            "Currency": "USD",
+            "ApprovedAmount": null,
+            "EvidenceReferenceIds": [],
+            "Status": "Open",
+            "CorrelationRoot": "79079eac-3dc5-4099-af79-92a977f9c1d7",
+            "LastEventId": "a46e3938-b00f-427e-a74b-354000c2040a",
+            "ReferenceSnapshot": {
+              "ShipmentId": "f2e26f0a-c9c5-4dda-ae83-1c40ef102d0d",
+              "ShipmentStatus": "Delivered",
+              "ShipmentCarrierId": null,
+              "CarrierStatus": null,
+              "Root": "79079eac-3dc5-4099-af79-92a977f9c1d7",
+              "ObservedAt": "2026-09-21T19:05:39.786325+00:00"
+            }
+          }
+        ],
+        "receipts": [
+          {
+            "_id": "6960ae12-aedf-4540-a3b8-88d4048705d4",
+            "TenantId": "1298f43a-6e09-4569-932b-08e360dc5941",
+            "LegalEntityId": "96716115-423d-4d4a-ae06-ed69d6c2a6d4",
+            "Operation": "createClaim",
+            "TargetId": "create",
+            "IdempotencyKey": "r25-stage-afterCommit",
+            "Fingerprint": "78b75275d1165f987763c19cebd0ef8fd75aa5e25a61d07d2550155f811c1bf9",
+            "CorrelationRoot": "79079eac-3dc5-4099-af79-92a977f9c1d7",
+            "ClaimId": "7645795c-d603-43d0-9c4e-8045e0d8a622",
+            "ClaimNumber": "CLM-7645795cd60343d09c4e8045e0d8a622",
+            "ShipmentId": "f2e26f0a-c9c5-4dda-ae83-1c40ef102d0d",
+            "ResultingStatus": "Open",
+            "ApprovedAmount": null,
+            "ActorId": "9d97abfa-41c0-4b8d-9110-3f794bf0fe9a",
+            "StatusCode": 201
+          }
+        ],
+        "audit": [
+          {
+            "_id": "a5120e59-88e9-4b2c-950c-94f413d834ad",
+            "TenantId": "1298f43a-6e09-4569-932b-08e360dc5941",
+            "LegalEntityId": "96716115-423d-4d4a-ae06-ed69d6c2a6d4",
+            "ClaimId": "7645795c-d603-43d0-9c4e-8045e0d8a622",
+            "ActorId": "9d97abfa-41c0-4b8d-9110-3f794bf0fe9a",
+            "Version": 1,
+            "Before": null,
+            "After": {
+              "_id": "7645795c-d603-43d0-9c4e-8045e0d8a622",
+              "TenantId": "1298f43a-6e09-4569-932b-08e360dc5941",
+              "IsDeleted": false,
+              "DeletedAt": null,
+              "CreatedAt": "2026-09-21T19:05:39.663823+00:00",
+              "UpdatedAt": null,
+              "Version": 1,
+              "LegalEntityId": "96716115-423d-4d4a-ae06-ed69d6c2a6d4",
+              "CreatedBy": "9d97abfa-41c0-4b8d-9110-3f794bf0fe9a",
+              "UpdatedBy": null,
+              "ClaimNumber": "CLM-7645795cd60343d09c4e8045e0d8a622",
+              "ShipmentId": "f2e26f0a-c9c5-4dda-ae83-1c40ef102d0d",
+              "CarrierId": null,
+              "ReasonCode": "DAMAGED",
+              "ClaimedAmount": "10.00",
+              "Currency": "USD",
+              "ApprovedAmount": null,
+              "EvidenceReferenceIds": [],
+              "Status": "Open",
+              "CorrelationRoot": "79079eac-3dc5-4099-af79-92a977f9c1d7",
+              "LastEventId": "a46e3938-b00f-427e-a74b-354000c2040a",
+              "ReferenceSnapshot": {
+                "ShipmentId": "f2e26f0a-c9c5-4dda-ae83-1c40ef102d0d",
+                "ShipmentStatus": "Delivered",
+                "ShipmentCarrierId": null,
+                "CarrierStatus": null,
+                "Root": "79079eac-3dc5-4099-af79-92a977f9c1d7",
+                "ObservedAt": "2026-09-21T19:05:39.786325+00:00"
+              }
+            },
+            "CorrelationRoot": "79079eac-3dc5-4099-af79-92a977f9c1d7",
+            "OccurredAt": "2026-09-21T19:05:39.6638230+00:00",
+            "ReceivedAt": "2026-09-21T19:05:39.6638230+00:00",
+            "CommittedAt": "2026-09-21T19:05:39.8409290+00:00",
+            "ResolutionCode": null,
+            "Note": null
+          }
+        ],
+        "outbox": [
+          {
+            "_id": "e13b363c-1692-4582-85f2-4bb2c9bdd606",
+            "TenantId": "1298f43a-6e09-4569-932b-08e360dc5941",
+            "LegalEntityId": "96716115-423d-4d4a-ae06-ed69d6c2a6d4",
+            "ClaimId": "7645795c-d603-43d0-9c4e-8045e0d8a622",
+            "EventId": "a46e3938-b00f-427e-a74b-354000c2040a",
+            "Status": "Pending",
+            "Envelope": {
+              "eventId": "a46e3938-b00f-427e-a74b-354000c2040a",
+              "eventType": "ClaimOpened",
+              "occurredAt": "2026-09-21T19:05:39.6638230+00:00",
+              "correlationId": "79079eac-3dc5-4099-af79-92a977f9c1d7",
+              "causationId": null,
+              "aggregateType": "Claim",
+              "aggregateId": "7645795c-d603-43d0-9c4e-8045e0d8a622",
+              "payload": {
+                "claimId": "7645795c-d603-43d0-9c4e-8045e0d8a622",
+                "claimNumber": "CLM-7645795cd60343d09c4e8045e0d8a622",
+                "shipmentId": "f2e26f0a-c9c5-4dda-ae83-1c40ef102d0d",
+                "status": "Open",
+                "approvedAmount": null
+              },
+              "contractVersion": "v1"
+            }
+          }
+        ]
+      },
+      "stageLogObserved": true,
+      "committed": true,
+      "classification": "injected bounded stage exception; not Mongo unknown commit",
+      "launch": {
+        "label": "r25-stage-afterCommit",
+        "mode": "ClaimsEvidence",
+        "pid": 11059,
+        "port": 5066,
+        "fixedIdConfigured": false,
+        "faultStage": "afterCommit",
+        "binary": "/private/tmp/mvp6-mod0187-r22-r25-evidence-02/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Debug/net8.0/Diten.SupplyChainService.Api.dll",
+        "log": "/private/tmp/mvp6-mod0187-r22-r25-evidence-02/evidence/logs/api-r25-stage-afterCommit.log",
+        "health": "health=200",
+        "startedAt": "2026-09-21T19:05:38Z",
+        "exitCode": 0,
+        "stoppedAt": "2026-09-21T19:05:42Z"
+      }
+    }
+  },
+  "R25MongoUnknownCommit": {
+    "launch": {
+      "label": "r25-mongo-unknown-commit",
+      "mode": "ClaimsEvidence",
+      "pid": 11063,
+      "port": 5066,
+      "fixedIdConfigured": true,
+      "faultStage": null,
+      "binary": "/private/tmp/mvp6-mod0187-r22-r25-evidence-02/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/bin/Debug/net8.0/Diten.SupplyChainService.Api.dll",
+      "log": "/private/tmp/mvp6-mod0187-r22-r25-evidence-02/evidence/logs/api-r25-mongo-unknown-commit.log",
+      "health": "health=200",
+      "startedAt": "2026-09-21T19:05:43Z",
+      "exitCode": 0,
+      "stoppedAt": "2026-09-21T19:05:57Z"
+    },
+    "fixedId": "25252525-2525-4525-8525-252525252525",
+    "committedUnknownResult": {
+      "status": "FAIL",
+      "failpointEnable": {
+        "count": 0,
+        "ok": 1,
+        "$clusterTime": {
+          "clusterTime": {
+            "$timestamp": "7688066810746241025"
+          },
+          "signature": {
+            "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+            "keyId": {
+              "low": 0,
+              "high": 0,
+              "unsigned": false
+            }
+          }
+        },
+        "operationTime": {
+          "$timestamp": "7688066810746241025"
+        }
+      },
+      "request": {
+        "shipmentId": "d849d11d-113a-4221-9bb0-d12a2882e83e",
+        "reasonCode": "DAMAGED",
+        "claimedAmount": "10.00",
+        "currency": "USD",
+        "evidenceReferenceIds": []
+      },
+      "firstResponse": {
+        "status": 503,
+        "correlation": "cbe2d147-fc52-4799-a074-ed1d8827b36e",
+        "body": {
+          "error": {
+            "code": "CLAIM_STORAGE_UNAVAILABLE",
+            "message": "Claim storage is unavailable.",
+            "correlationId": "cbe2d147-fc52-4799-a074-ed1d8827b36e"
+          },
+          "contractVersion": "v1"
+        },
+        "requestBodySha256": "45d81f79226cc97e519ee82470ab9d6175018438136c3de6a702aafd5b3a3317"
+      },
+      "countsAfterUnknown": {
+        "claims": 1,
+        "receipts": 1,
+        "audit": 1,
+        "outbox": 1
+      },
+      "sameKeyResponse": {
+        "status": 201,
+        "correlation": "cbe2d147-fc52-4799-a074-ed1d8827b36e",
+        "body": {
+          "claimId": "25252525-2525-4525-8525-252525252525",
+          "claimNumber": "CLM-25252525252545258525252525252525",
+          "shipmentId": "d849d11d-113a-4221-9bb0-d12a2882e83e",
+          "status": "Open",
+          "approvedAmount": null,
+          "idempotentReplay": true,
+          "contractVersion": "v1"
+        },
+        "requestBodySha256": "45d81f79226cc97e519ee82470ab9d6175018438136c3de6a702aafd5b3a3317"
+      },
+      "countsAfterSameKey": {
+        "claims": 1,
+        "receipts": 1,
+        "audit": 1,
+        "outbox": 1
+      },
+      "scopedDocuments": {
+        "claims": [
+          {
+            "_id": "25252525-2525-4525-8525-252525252525",
+            "TenantId": "41427ce7-5c21-4689-87f4-ecf6e090c6c5",
+            "IsDeleted": false,
+            "DeletedAt": null,
+            "CreatedAt": "2026-09-21T19:05:45.291591+00:00",
+            "UpdatedAt": null,
+            "Version": 1,
+            "LegalEntityId": "e3185055-963c-4319-ac12-b8520cc6ba90",
+            "CreatedBy": "c72ab952-4dd6-4b72-a4ca-1b1e73a39e44",
+            "UpdatedBy": null,
+            "ClaimNumber": "CLM-25252525252545258525252525252525",
+            "ShipmentId": "d849d11d-113a-4221-9bb0-d12a2882e83e",
+            "CarrierId": null,
+            "ReasonCode": "DAMAGED",
+            "ClaimedAmount": "10.00",
+            "Currency": "USD",
+            "ApprovedAmount": null,
+            "EvidenceReferenceIds": [],
+            "Status": "Open",
+            "CorrelationRoot": "cbe2d147-fc52-4799-a074-ed1d8827b36e",
+            "LastEventId": "59516743-98f8-4c30-97e7-506c38456def",
+            "ReferenceSnapshot": {
+              "ShipmentId": "d849d11d-113a-4221-9bb0-d12a2882e83e",
+              "ShipmentStatus": "Delivered",
+              "ShipmentCarrierId": null,
+              "CarrierStatus": null,
+              "Root": "cbe2d147-fc52-4799-a074-ed1d8827b36e",
+              "ObservedAt": "2026-09-21T19:05:45.418389+00:00"
+            }
+          }
+        ],
+        "receipts": [
+          {
+            "_id": "84b711c4-6111-4ac3-8712-617b7762bf13",
+            "TenantId": "41427ce7-5c21-4689-87f4-ecf6e090c6c5",
+            "LegalEntityId": "e3185055-963c-4319-ac12-b8520cc6ba90",
+            "Operation": "createClaim",
+            "TargetId": "create",
+            "IdempotencyKey": "r25-unknown-committed",
+            "Fingerprint": "e88cd05ffa7f1d8c1f66a7628cb810ea6efd34f028f64c88e5939e5714d8720f",
+            "CorrelationRoot": "cbe2d147-fc52-4799-a074-ed1d8827b36e",
+            "ClaimId": "25252525-2525-4525-8525-252525252525",
+            "ClaimNumber": "CLM-25252525252545258525252525252525",
+            "ShipmentId": "d849d11d-113a-4221-9bb0-d12a2882e83e",
+            "ResultingStatus": "Open",
+            "ApprovedAmount": null,
+            "ActorId": "c72ab952-4dd6-4b72-a4ca-1b1e73a39e44",
+            "StatusCode": 201
+          }
+        ],
+        "audit": [
+          {
+            "_id": "d0b535f8-b76e-48d6-913f-8166ba90e6ad",
+            "TenantId": "41427ce7-5c21-4689-87f4-ecf6e090c6c5",
+            "LegalEntityId": "e3185055-963c-4319-ac12-b8520cc6ba90",
+            "ClaimId": "25252525-2525-4525-8525-252525252525",
+            "ActorId": "c72ab952-4dd6-4b72-a4ca-1b1e73a39e44",
+            "Version": 1,
+            "Before": null,
+            "After": {
+              "_id": "25252525-2525-4525-8525-252525252525",
+              "TenantId": "41427ce7-5c21-4689-87f4-ecf6e090c6c5",
+              "IsDeleted": false,
+              "DeletedAt": null,
+              "CreatedAt": "2026-09-21T19:05:45.291591+00:00",
+              "UpdatedAt": null,
+              "Version": 1,
+              "LegalEntityId": "e3185055-963c-4319-ac12-b8520cc6ba90",
+              "CreatedBy": "c72ab952-4dd6-4b72-a4ca-1b1e73a39e44",
+              "UpdatedBy": null,
+              "ClaimNumber": "CLM-25252525252545258525252525252525",
+              "ShipmentId": "d849d11d-113a-4221-9bb0-d12a2882e83e",
+              "CarrierId": null,
+              "ReasonCode": "DAMAGED",
+              "ClaimedAmount": "10.00",
+              "Currency": "USD",
+              "ApprovedAmount": null,
+              "EvidenceReferenceIds": [],
+              "Status": "Open",
+              "CorrelationRoot": "cbe2d147-fc52-4799-a074-ed1d8827b36e",
+              "LastEventId": "59516743-98f8-4c30-97e7-506c38456def",
+              "ReferenceSnapshot": {
+                "ShipmentId": "d849d11d-113a-4221-9bb0-d12a2882e83e",
+                "ShipmentStatus": "Delivered",
+                "ShipmentCarrierId": null,
+                "CarrierStatus": null,
+                "Root": "cbe2d147-fc52-4799-a074-ed1d8827b36e",
+                "ObservedAt": "2026-09-21T19:05:45.418389+00:00"
+              }
+            },
+            "CorrelationRoot": "cbe2d147-fc52-4799-a074-ed1d8827b36e",
+            "OccurredAt": "2026-09-21T19:05:45.2915910+00:00",
+            "ReceivedAt": "2026-09-21T19:05:45.2915910+00:00",
+            "CommittedAt": "2026-09-21T19:05:45.4825070+00:00",
+            "ResolutionCode": null,
+            "Note": null
+          }
+        ],
+        "outbox": [
+          {
+            "_id": "b61e0dd7-4a6f-48fb-99b3-3c40f10a4a9d",
+            "TenantId": "41427ce7-5c21-4689-87f4-ecf6e090c6c5",
+            "LegalEntityId": "e3185055-963c-4319-ac12-b8520cc6ba90",
+            "ClaimId": "25252525-2525-4525-8525-252525252525",
+            "EventId": "59516743-98f8-4c30-97e7-506c38456def",
+            "Status": "Pending",
+            "Envelope": {
+              "eventId": "59516743-98f8-4c30-97e7-506c38456def",
+              "eventType": "ClaimOpened",
+              "occurredAt": "2026-09-21T19:05:45.2915910+00:00",
+              "correlationId": "cbe2d147-fc52-4799-a074-ed1d8827b36e",
+              "causationId": null,
+              "aggregateType": "Claim",
+              "aggregateId": "25252525-2525-4525-8525-252525252525",
+              "payload": {
+                "claimId": "25252525-2525-4525-8525-252525252525",
+                "claimNumber": "CLM-25252525252545258525252525252525",
+                "shipmentId": "d849d11d-113a-4221-9bb0-d12a2882e83e",
+                "status": "Open",
+                "approvedAmount": null
+              },
+              "contractVersion": "v1"
+            }
+          }
+        ]
+      },
+      "interpretation": "commitTransaction executed; three acknowledgements carried UnknownTransactionCommitResult; repository receipt recovery returned replay"
+    },
+    "notCommittedUnknownResult": {
+      "status": "FAIL",
+      "failpointEnable": {
+        "count": 3,
+        "ok": 1,
+        "$clusterTime": {
+          "clusterTime": {
+            "$timestamp": "7688066840811012097"
+          },
+          "signature": {
+            "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+            "keyId": {
+              "low": 0,
+              "high": 0,
+              "unsigned": false
+            }
+          }
+        },
+        "operationTime": {
+          "$timestamp": "7688066840811012097"
+        }
+      },
+      "request": {
+        "shipmentId": "5d297b72-d285-4707-9c96-4e2c5caa19ff",
+        "reasonCode": "DAMAGED",
+        "claimedAmount": "10.00",
+        "currency": "USD",
+        "evidenceReferenceIds": []
+      },
+      "firstResponse": {
+        "status": 503,
+        "correlation": "5669a79b-360f-42b5-bd24-a6b6864f4290",
+        "body": {
+          "error": {
+            "code": "CLAIM_STORAGE_UNAVAILABLE",
+            "message": "Claim storage is unavailable.",
+            "correlationId": "5669a79b-360f-42b5-bd24-a6b6864f4290"
+          },
+          "contractVersion": "v1"
+        },
+        "requestBodySha256": "a117e972169366a84f2df378363616c4904fdd8f42099dc9eefe06f8cf22ac04"
+      },
+      "countsAfterUnknown": {
+        "claims": 0,
+        "receipts": 0,
+        "audit": 0,
+        "outbox": 0
+      },
+      "sameKeyAfterFailpointOff": {
+        "status": 503,
+        "correlation": "5669a79b-360f-42b5-bd24-a6b6864f4290",
+        "body": {
+          "error": {
+            "code": "CLAIM_STORAGE_UNAVAILABLE",
+            "message": "Claim storage is unavailable.",
+            "correlationId": "5669a79b-360f-42b5-bd24-a6b6864f4290"
+          },
+          "contractVersion": "v1"
+        },
+        "requestBodySha256": "a117e972169366a84f2df378363616c4904fdd8f42099dc9eefe06f8cf22ac04"
+      },
+      "countsAfterRecovery": {
+        "claims": 0,
+        "receipts": 0,
+        "audit": 0,
+        "outbox": 0
+      },
+      "scopedDocuments": {
+        "claims": [],
+        "receipts": [],
+        "audit": [],
+        "outbox": []
+      },
+      "interpretation": "commitTransaction command failed before commit; no receipt existed; same key created once after failpoint removal"
+    },
+    "status": "FAIL"
+  },
+  "tokenRecorded": false,
+  "secretRecorded": false,
+  "status": "FAIL"
+}

@@ -1,0 +1,12 @@
+path	sha256	disposition
+docs/records/audits/2026-09/mvp6-carrier-auth-chain-recovery-01/ACCEPTANCE.tsv	3366f372607f9107b87a98a6a219b86bdff3fcb4761d61d29a6cebb91c18eb3e	added
+docs/records/audits/2026-09/mvp6-carrier-auth-chain-recovery-01/ATTEMPT-DISPOSITION.md	aa9280cb2dd10e4ec89716b88ccad3f25f38abe6acec4fe75ac08b58d5d693a1	added
+docs/records/audits/2026-09/mvp6-carrier-auth-chain-recovery-01/BUILD-SOURCE-MANIFEST.tsv	516ba828bed602e4355a5cc6871501cbb3b3c72d60473fa7ec73d135bbadf911	added
+docs/records/audits/2026-09/mvp6-carrier-auth-chain-recovery-01/CARRIER-REAL-AUTH-E2E-HANDOFF.md	95dafe0fbfdfdf490f9ecdb57f65582d0146da435ad938f1df13c11105586cd2	added
+docs/records/audits/2026-09/mvp6-carrier-auth-chain-recovery-01/EVIDENCE-CONTENTS.txt	008bf658e132370f33e2b4f7287a13180b60561c9430a801aef02caeb30cf9c3	added
+docs/records/audits/2026-09/mvp6-carrier-auth-chain-recovery-01/FINAL-22-SOURCE-MANIFEST.tsv	b9713185aba02bf325a9149b37a8cc6ffe3b1dd0e979febdaa773946ae9b1731	added
+docs/records/audits/2026-09/mvp6-carrier-auth-chain-recovery-01/SOP-22-VER.md	4c78d15daa03892e8c07139e9ba637daa2a6c516a0281715d4f5290cb4fbd917	added
+docs/records/audits/2026-09/mvp6-carrier-auth-chain-recovery-01/SOURCE-BINARY-PROCESS.tsv	e5050218faa1f5ff24074b1551386cbad1bc0397df0951824aa8f07cf2f9c066	added
+docs/records/audits/2026-09/mvp6-carrier-auth-chain-recovery-01/evidence.tar.gz	a9ee32792baea3e70d72eb4ec6cc9d66a1e23f7c7bd34970115086f5fcec134e	added
+docs/records/audits/2026-09/mvp6-carrier-auth-chain-recovery-01/ARTIFACTS.sha256	self-checksum-not-applicable	added
+docs/records/audits/2026-09/mvp6-carrier-auth-chain-recovery-01/CHANGED-FILES.tsv	self-listed	added

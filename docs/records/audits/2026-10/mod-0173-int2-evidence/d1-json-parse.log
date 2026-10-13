@@ -1,0 +1,4 @@
+JSON.parse ok; routes base de976722b=287 working=289
+unrecognized-port routes base={"5063":46,"5064":62,"5065":14,"5066":2}
+unrecognized-port routes working={"5063":46,"5064":62,"5065":14,"5066":4}
+new routes: [{"up":"/api/locations","down":"/api/locations","port":5066,"methods":["GET","POST","PATCH","OPTIONS"],"auth":null},{"up":"/api/locations/{everything}","down":"/api/locations/{everything}","port":5066,"methods":["GET","POST","PATCH","OPTIONS"],"auth":null}]

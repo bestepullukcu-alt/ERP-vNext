@@ -1,0 +1,98 @@
+[
+  {
+    "case": "no-token-create",
+    "method": "POST",
+    "path": "/api/supply-chain/sandop-plans",
+    "requestCorrelation": "c9d066fc-585e-4173-9fd4-93d2f70feac1",
+    "status": 401,
+    "responseHeaders": {},
+    "body": ""
+  },
+  {
+    "case": "missing-grant-create",
+    "method": "POST",
+    "path": "/api/supply-chain/sandop-plans",
+    "requestCorrelation": "54810b85-8442-4e22-9330-4213c7ce7f72",
+    "status": 403,
+    "responseHeaders": {
+      "Content-Type": "application/json; charset=utf-8",
+      "X-Correlation-Id": "54810b85-8442-4e22-9330-4213c7ce7f72"
+    },
+    "body": "{\"error\":{\"code\":\"FORBIDDEN\",\"message\":\"Permission denied\",\"correlationId\":\"54810b85-8442-4e22-9330-4213c7ce7f72\"},\"contractVersion\":\"v1\"}"
+  },
+  {
+    "case": "cross-tenant-create",
+    "method": "POST",
+    "path": "/api/supply-chain/sandop-plans",
+    "requestCorrelation": "cd592c83-05e5-40f1-883d-e000f80a8f0d",
+    "status": 403,
+    "responseHeaders": {
+      "Content-Type": "application/json; charset=utf-8",
+      "X-Correlation-Id": "cd592c83-05e5-40f1-883d-e000f80a8f0d"
+    },
+    "body": "{\"error\":{\"code\":\"FORBIDDEN\",\"message\":\"Permission denied\",\"correlationId\":\"cd592c83-05e5-40f1-883d-e000f80a8f0d\"},\"contractVersion\":\"v1\"}"
+  },
+  {
+    "case": "valid-create",
+    "method": "POST",
+    "path": "/api/supply-chain/sandop-plans",
+    "requestCorrelation": "a56e46cd-0d26-4b27-8b30-fd30570e6992",
+    "status": 500,
+    "responseHeaders": {},
+    "body": ""
+  },
+  {
+    "case": "get-plan",
+    "method": "GET",
+    "path": "/api/supply-chain/sandop-plans/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0190",
+    "requestCorrelation": "0c3f2d42-49e6-4eab-88f7-d3f456f2d610",
+    "status": 404,
+    "responseHeaders": {
+      "Content-Type": "application/json; charset=utf-8",
+      "X-Correlation-Id": "0c3f2d42-49e6-4eab-88f7-d3f456f2d610"
+    },
+    "body": "{\"error\":{\"code\":\"UNKNOWN_SANDOP_PLAN\",\"message\":\"S&OP plan not found\",\"correlationId\":\"0c3f2d42-49e6-4eab-88f7-d3f456f2d610\"},\"contractVersion\":\"v1\"}"
+  },
+  {
+    "case": "list-snapshots",
+    "method": "GET",
+    "path": "/api/supply-chain/sandop-plans/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0190/snapshots",
+    "requestCorrelation": "ba0dbcc6-fa7e-4a21-a0ec-5145c843b52e",
+    "status": 404,
+    "responseHeaders": {
+      "Content-Type": "application/json; charset=utf-8",
+      "X-Correlation-Id": "ba0dbcc6-fa7e-4a21-a0ec-5145c843b52e"
+    },
+    "body": "{\"error\":{\"code\":\"UNKNOWN_SANDOP_PLAN\",\"message\":\"S&OP plan not found\",\"correlationId\":\"ba0dbcc6-fa7e-4a21-a0ec-5145c843b52e\"},\"contractVersion\":\"v1\"}"
+  },
+  {
+    "case": "capture",
+    "method": "POST",
+    "path": "/api/supply-chain/sandop-plans/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0190/snapshots",
+    "requestCorrelation": "56bdaa71-7f8c-4f4a-8fb5-6bd0d9ebcf43",
+    "status": 500,
+    "responseHeaders": {},
+    "body": ""
+  },
+  {
+    "case": "list-signoffs",
+    "method": "GET",
+    "path": "/api/supply-chain/sandop-plans/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0190/sign-offs",
+    "requestCorrelation": "61476358-25bb-4c1a-8799-8d4d4ec121b6",
+    "status": 404,
+    "responseHeaders": {
+      "Content-Type": "application/json; charset=utf-8",
+      "X-Correlation-Id": "61476358-25bb-4c1a-8799-8d4d4ec121b6"
+    },
+    "body": "{\"error\":{\"code\":\"UNKNOWN_SANDOP_PLAN\",\"message\":\"S&OP plan not found\",\"correlationId\":\"61476358-25bb-4c1a-8799-8d4d4ec121b6\"},\"contractVersion\":\"v1\"}"
+  },
+  {
+    "case": "signoff",
+    "method": "POST",
+    "path": "/api/supply-chain/sandop-plans/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0190/sign-offs",
+    "requestCorrelation": "614628ca-9111-44ca-8f99-6a2bfb6314e2",
+    "status": 500,
+    "responseHeaders": {},
+    "body": ""
+  }
+]

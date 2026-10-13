@@ -1,0 +1,13 @@
+F..
+======================================================================
+FAIL: test_bodyless_get_records_zero_bytes (__main__.OutageCaptureTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/carriers/test_outage_capture.py", line 60, in test_bodyless_get_records_zero_bytes
+    self.assertEqual(actual, base64.b64decode(record['sentBodyBase64']))
+AssertionError: b'' != b' '
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.009s
+
+FAILED (failures=1)

@@ -97,7 +97,7 @@ public sealed class HttpWorkItemActionDispatcher : IWorkItemActionDispatcher
          * the same way, for the same two reasons.
          */
         var body = new RemoteWorkItemActionRequest(
-            _row.ProviderCode, request.Payload with { ClosureFieldValues = null, Answer = null });
+            _row.ProviderCode, request.Payload with { ClosureFieldValues = null, Answer = null, SignatureId = null });
 
         // The write path's own budget, from the SAME option the aggregation loop uses for reads. Linked to the
         // caller's token so a reader who navigates away still cancels the call in flight.

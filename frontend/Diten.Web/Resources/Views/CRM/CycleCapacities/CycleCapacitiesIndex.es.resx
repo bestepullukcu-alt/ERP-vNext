@@ -208,4 +208,11 @@
   <data name="Err_cycle_capacity_month_fte_invalid" xml:space="preserve"><value>El FTE de un mes está fuera de rango.</value></data>
   <data name="Err_period_closed" xml:space="preserve"><value>El período está cerrado; su capacidad ya no se puede modificar.</value></data>
   <data name="GoToDetails" xml:space="preserve"><value>Ir al detalle</value></data>
+  <data name="WfDailyFixedMinutesLegacy" xml:space="preserve"><value>Tareas fijas diarias (desplazamiento, informe, cuestionario)</value></data>
+  <data name="UnitMinutesPerDay" xml:space="preserve"><value>min/día</value></data>
+  <data name="SessionStatus_draft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="SessionStatus_generated" xml:space="preserve"><value>Generada</value></data>
+  <data name="SessionStatus_committed" xml:space="preserve"><value>Confirmada</value></data>
+  <data name="SessionStatus_archived" xml:space="preserve"><value>Archivada</value></data>
+  <data name="SessionStatus_unknown" xml:space="preserve"><value>Desconocido</value></data>
 </root>

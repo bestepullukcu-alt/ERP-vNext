@@ -1,0 +1,17 @@
+== guard + provider (outside the module filters), final
+Passed!  - Failed:     0, Passed:    28, Skipped:     0, Total:    28, Duration: 90 ms - Diten.SupplyChainService.Tests.dll (net8.0)
+== SABOTAGE: CHANGE_STATUS removed from RoutingLoadPlanningManifestProvider
+Diten.SupplyChainService.Tests.ModuleRegistration.EnforcedPermissionDeclarationGuardTests.Every_enforced_key_is_declared_by_its_module_provider [FAIL]
+Diten.SupplyChainService.Tests.ModuleRegistration.RoutingLoadPlanningManifestProviderTests.M03_Every_reflected_key_is_declared [FAIL]
+Diten.SupplyChainService.Tests.ModuleRegistration.RoutingLoadPlanningManifestProviderTests.M05_Actions_equal_the_pack_action_table [FAIL]
+supplychain.loads.transition — enforced at LoadsController.Transition, declared by no provider
+Failed!  - Failed:     3, Passed:     9, Skipped:     0, Total:    12, Duration: 47 ms - Diten.SupplyChainService.Tests.dll (net8.0)
+== restored
+Passed!  - Failed:     0, Passed:    28, Skipped:     0, Total:    28, Duration: 69 ms - Diten.SupplyChainService.Tests.dll (net8.0)
+== FINAL frontend
+Passed!  - Failed:     0, Passed:   297, Skipped:     0, Total:   297, Duration: 6 s - Diten.Web.Tests.dll (net8.0)
+== unit SABOTAGE: Loads controller 5xx mapping disabled (if (false)) in a separate scratch copy
+Failed Diten.Web.Tests.Controllers.SupplyChainLoadsControllerTests.UpstreamServerFailureWithoutContractBody_BecomesPersistenceUnavailable(upstream: ServiceUnavailable, body: "") [3 ms]
+Failed Diten.Web.Tests.Controllers.SupplyChainLoadsControllerTests.UpstreamServerFailureWithoutContractBody_BecomesPersistenceUnavailable(upstream: BadGateway, body: "") [< 1 ms]
+Failed Diten.Web.Tests.Controllers.SupplyChainLoadsControllerTests.UpstreamServerFailureWithoutContractBody_BecomesPersistenceUnavailable(upstream: GatewayTimeout, body: "<html>gateway timeout</html>") [< 1 ms]
+Failed!  - Failed:     3, Passed:     5, Skipped:     0, Total:     8, Duration: 24 ms - Diten.Web.Tests.dll (net8.0)

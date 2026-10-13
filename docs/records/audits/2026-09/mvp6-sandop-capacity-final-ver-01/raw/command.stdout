@@ -1,0 +1,12 @@
+{
+  "verdict": "TECHNICAL_PASS",
+  "operations": 12,
+  "metaErrors": 0,
+  "fullErrors": 0,
+  "refs": 204,
+  "uniqueRefs": 52,
+  "exampleChecks": 98,
+  "uniqueExampleValues": 33,
+  "patchA": true,
+  "patchB": true
+}

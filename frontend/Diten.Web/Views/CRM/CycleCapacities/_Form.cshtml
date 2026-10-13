@@ -139,7 +139,8 @@
                             {
                                 <div class="form-text">
                                     @Localizer["PeriodWindow"]:
-                                    <span class="fw-medium">@period.StartDate.UtcDateTime.ToString("d", CultureInfo.CurrentCulture) – @period.EndDate.UtcDateTime.ToString("d", CultureInfo.CurrentCulture)</span>
+                                    @* WP-CYC-UI-FIX-2 — ISO days, formatted by the ONE cycle date formatter (cycle-dates.js). *@
+                                    <span class="fw-medium"><span data-day="@period.StartDate.UtcDateTime.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)">@period.StartDate.UtcDateTime.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)</span> – <span data-day="@period.EndDate.UtcDateTime.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)">@period.EndDate.UtcDateTime.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)</span></span>
                                 </div>
                             }
                         </div>
@@ -365,6 +366,8 @@
                                 <dt class="col-7 fw-normal text-muted">@Localizer["WorkingDays"]</dt><dd class="col-5 text-end mb-1" data-summary="workingDays">—</dd>
                                 <dt class="col-7 fw-normal text-muted">@Localizer["DeductedDays"]</dt><dd class="col-5 text-end mb-1" data-summary="deductedDays">—</dd>
                                 <dt class="col-7 fw-normal text-muted">@Localizer["FieldDays"]</dt><dd class="col-5 text-end mb-1" data-summary="fieldDays">—</dd>
+                                @* WP-CYC-UI-FIX-2 — the label follows the visit model (legacy: travel, report, quiz; typical: travel, quiz). *@
+                                <dt class="col-7 fw-normal text-muted" data-summary="dailyFixedLabel">@Localizer[CycleCapacityWaterfall.DailyFixedLabelKey(Model.VisitModel)]</dt><dd class="col-5 text-end mb-1" data-summary="dailyFixedMinutes">—</dd>
                                 <dt class="col-7 fw-normal text-muted">@Localizer["RemainingMinutes"]</dt><dd class="col-5 text-end mb-1" data-summary="remainingMinutes">—</dd>
                                 <dt class="col-7 fw-normal text-muted">@Localizer["DivideByTypicalVisit"]</dt><dd class="col-5 text-end mb-1" data-summary="typicalVisitMinutes">—</dd>
                                 <dt class="col-7 fw-normal text-muted">@Localizer["TimesAverageFte"]</dt><dd class="col-5 text-end mb-1" data-summary="averageFte">—</dd>

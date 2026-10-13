@@ -1,0 +1,49 @@
+== K01: k01_source.py (HEAD archive + overlays)
+K01 PASS: head=4a8d4d4b339528a88e6220fb8402e5a2c771136c overlays=4 tree_manifest_sha256=a28253c09928d26d12955508796353c4528c087c196d19a4c6f7891c35f9383a
+== K03: k03_ports.py slot 8
+K03 PASS: gateway=5800 web=5801 auth=5856 platform=5857 mdm=5859 supplychain=5861 sink=5899 mongo=38994
+== K02: k02_runtime.sh
+K02 PASS: SDK 8.0.417, runtime 8.0.23, arm64
+== K06: build auth
+K06 build PASS: auth b845a6de16deb979fe5ccf4663b7f71f2d6c7a773e24b731694823d97d524f72
+== K06: build platform
+K06 build PASS: platform 8851e15c31001d248f755ddcbde903b33af910709a814cdd664a30414467cf58
+== K06: build mdm
+K06 build PASS: mdm ad7f7bc213e79bf0e949f25fd0a0753c5a626fceab3baccf77a4165ed04fcf77
+== K06: build supplychain
+K06 build PASS: supplychain b82a254d4f629a7193d1df9fdeb287af8ee733123f3ec580aa09c3cc8ddac396
+== K06: build gateway
+K06 build PASS: gateway 963fa878eb7ef81bd53038fbf09b40ef9cff5a442edea5767993a484cbdb653d
+== K06: build web
+K06 build PASS: web 7ab917b00cfc396e3fe3139c9252025afdab5e6b8e2fb75b9139c8345b541dac
+== K04b: k04b_gateway_routes.py
+K04b PASS: 279 downstream entries; mapped=98 sink=181; runtime ocelot b7aa72f00f30d09a471ecb3783ec784c4638d724a6f87c82bbbd0a02ed5f6edb
+== K04: k04_config.py shared (issuer/audience; no secret)
+K04 shared: issuer/audience pinned to Auth's; rotated secret groups ['auth-platform', 'jwt', 'mfa', 'platform-mdm-active', 'svcid'] are placeholders resolved only inside the lane supervisor
+== K04: k04_config.py render (placeholders only)
+K04 render: 6 env files written (0600; secrets as placeholders only)
+== K04: k04_config.py check (incl. D2 pairing, D4 no literal secret)
+K04 check PASS: 6 services resolved; no 27017; DB-010 suffix SopQ84b01
+== K05: k05_mongo.sh
+K05 PASS: rsSopQ84b01 PRIMARY on 127.0.0.1:38994 (pid 42225)
+== K06: launch auth via supervisor
+K06 launch: {"ok": true, "pid": 42363, "port": 5856, "health": "200", "runtime": "Microsoft.NETCore.App/8.0.23", "listen": ["127.0.0.1:5856"]}
+== K06: launch platform via supervisor
+K06 launch: {"ok": true, "pid": 42476, "port": 5857, "health": "200", "runtime": "Microsoft.NETCore.App/8.0.23", "listen": ["127.0.0.1:5857"]}
+== K06: launch mdm via supervisor
+K06 launch: {"ok": true, "pid": 42720, "port": 5859, "health": "400", "runtime": "Microsoft.NETCore.App/8.0.23", "listen": ["127.0.0.1:5859"]}
+== K06: launch supplychain via supervisor
+K06 launch: {"ok": true, "pid": 42792, "port": 5861, "health": "200", "runtime": "Microsoft.NETCore.App/8.0.23", "listen": ["127.0.0.1:5861"]}
+== K06: launch gateway via supervisor
+K06 launch: {"ok": true, "pid": 42887, "port": 5800, "health": "200", "runtime": "Microsoft.NETCore.App/8.0.23", "listen": ["127.0.0.1:5800"]}
+== K06: launch web via supervisor
+K06 launch: {"ok": true, "pid": 42972, "port": 5801, "health": "200", "runtime": "Microsoft.NETCore.App/8.0.23", "listen": ["127.0.0.1:5801"]}
+== K06: netcheck after start
+K06 netcheck PASS: no kit process connected to 27017 (netcheck-a1.tsv)
+== K07pre: tenant_fixture.py via supervisor harness (lane Platform DB tenant records; no secret)
+{"ok": true, "rc": 0, "log": "run-harness-tenant_fixture-a1.log"}
+== K07: k07_identity.py rotate (supervisor task k07; actor passwords only)
+{"ok": false, "rc": 1, "log": "run-k07-a1.log"}
+EK FAIL: phase failed: K07 (k07_identity.py rotate (supervisor task k07; actor passwords only))
+== UP FAILED (exit 1): abort path (supervisor abort + K11 cleanup)
+K11 skipped by lane rule (no rm); services stopped by supervisor abort

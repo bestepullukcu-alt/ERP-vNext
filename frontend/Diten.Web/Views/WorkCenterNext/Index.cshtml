@@ -74,5 +74,7 @@
     <script src="~/assets/js/shared/diten-dialog.js" asp-append-version="true"></script>
     @* WP-WC-SHARED-UI-01, E3 — app.js's own renderRelated row markup now delegates here. *@
     <script src="~/assets/js/shared/diten-related-records.js" asp-append-version="true"></script>
+    @* MOD-0022 E5W1 — the shared signature dialog: a signatureRequired approve signs before it is dispatched (pack §11.4) *@
+    <partial name="~/Views/Shared/ESignature/_ESignatureDialog.cshtml" />
     <script src="~/assets/js/WorkCenterNext/app.js" asp-append-version="true"></script>
 }

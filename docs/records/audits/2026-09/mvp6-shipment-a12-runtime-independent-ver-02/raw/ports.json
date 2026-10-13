@@ -1,0 +1,13 @@
+{
+  "slot": 4,
+  "ports": {
+    "auth": 5456,
+    "platform": 5457,
+    "mdm": 5459,
+    "supplychain": 5461,
+    "gateway": 5400,
+    "web": 5401,
+    "sink": 5499,
+    "mongo": 34994
+  }
+}

@@ -10,6 +10,20 @@ public sealed record RefreshTokenRequest(string AccessToken, string RefreshToken
 public sealed record ChangePasswordRequest(string CurrentPassword, string NewPassword);
 public sealed record PlatformForcedChangePasswordRequest(string CurrentPassword, string NewPassword, bool RememberMe = false);
 public sealed record TenantForcedChangePasswordRequest(string CurrentPassword, string NewPassword, bool RememberMe = false);
+
+// MOD-0022 E1 — e-signature re-authentication. No user name in the reauth body: the user is the JWT subject.
+// ToString never prints the password or the ticket.
+public sealed record ESignReauthRequest(string Password, string Intent, int? OpenWindowMinutes = null)
+{
+    public override string ToString() => $"ESignReauthRequest {{ Intent = {Intent}, OpenWindowMinutes = {OpenWindowMinutes} }}";
+}
+
+public sealed record ESignWindowTicketRequest(string Intent, string UserName);
+
+public sealed record ConsumeESignTicketRequest(string Ticket, Guid TenantId, Guid UserId, string Intent, string? ConsumedBy = null)
+{
+    public override string ToString() => $"ConsumeESignTicketRequest {{ TenantId = {TenantId}, UserId = {UserId}, Intent = {Intent} }}";
+}
 public sealed record PlatformForgotPasswordRequest(string Email);
 public sealed record PlatformResetPasswordRequest(string Email, string Token, string NewPassword);
 public sealed record PlatformAdminProvisioningRequest(

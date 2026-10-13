@@ -1,0 +1,74 @@
+{
+  "phase": "login",
+  "locale": "en",
+  "startedAt": "2026-09-30T19:48:40.302Z",
+  "web": "http://127.0.0.1:5801",
+  "playwright": "1.59.1",
+  "cases": {
+    "login-full": {
+      "result": "PASS",
+      "landedOn": "/SupplyChain/SandopPlans",
+      "cookies": [
+        {
+          "name": ".AspNetCore.Antiforgery.DQJ6j9JqF7c",
+          "httpOnly": true
+        },
+        {
+          "name": "access_token",
+          "httpOnly": true
+        },
+        {
+          "name": "refresh_token",
+          "httpOnly": true
+        }
+      ],
+      "stateFileWrittenTo": "<stateDir outside the repo, 0600>"
+    },
+    "login-readonly": {
+      "result": "PASS",
+      "landedOn": "/SupplyChain/SandopPlans",
+      "cookies": [
+        {
+          "name": ".AspNetCore.Antiforgery.DQJ6j9JqF7c",
+          "httpOnly": true
+        },
+        {
+          "name": "access_token",
+          "httpOnly": true
+        },
+        {
+          "name": "refresh_token",
+          "httpOnly": true
+        }
+      ],
+      "stateFileWrittenTo": "<stateDir outside the repo, 0600>"
+    },
+    "login-noread": {
+      "result": "PASS",
+      "landedOn": "/SupplyChain/SandopPlans",
+      "cookies": [
+        {
+          "name": ".AspNetCore.Antiforgery.DQJ6j9JqF7c",
+          "httpOnly": true
+        },
+        {
+          "name": "access_token",
+          "httpOnly": true
+        },
+        {
+          "name": "refresh_token",
+          "httpOnly": true
+        }
+      ],
+      "stateFileWrittenTo": "<stateDir outside the repo, 0600>"
+    }
+  },
+  "png": [],
+  "console": [],
+  "toasts": [],
+  "dialogs": [],
+  "foreign": [],
+  "net": [],
+  "shellFonts": 12,
+  "endedAt": "2026-09-30T19:48:51.201Z"
+}

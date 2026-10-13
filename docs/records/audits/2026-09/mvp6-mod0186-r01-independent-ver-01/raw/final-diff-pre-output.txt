@@ -1,0 +1,12 @@
+.antigravity/rules/docs-organization.md
+docs/analysis/contracts/shipment-bundle.openapi.yaml
+execution/domains/supply-chain-execution/module-packs/MOD-0184-carrier-management.md
+execution/domains/supply-chain-execution/module-packs/MOD-0185-routing-load-planning.md
+execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md
+execution/domains/supply-chain-execution/module-packs/MOD-0187-claims-management.md
+services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs
+services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/Handlers/QueryHandlers/GetShipmentByIdHandler.cs
+services/Diten.SupplyChainService/src/Diten.SupplyChainService.Application/Features/Shipments/ShipmentProjection.cs
+services/Diten.SupplyChainService/src/Diten.SupplyChainService.Domain/Features/Shipments/IShipmentRepository.cs
+services/Diten.SupplyChainService/src/Diten.SupplyChainService.Persistence/Features/Shipments/ShipmentRepository.cs
+tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs

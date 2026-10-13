@@ -1,0 +1,163 @@
+{
+  "run": "7e2a5a",
+  "tenants": {
+    "T1": "97c59330-dbc4-4665-b29c-0c26dbb5cc93",
+    "T2": "00000000-0000-0000-0000-000000000001"
+  },
+  "steps": [
+    {
+      "step": "mdm-create-le-A",
+      "status": 201,
+      "ok": true,
+      "id": "67552971-3af3-4caf-acc8-98c630407e2f"
+    },
+    {
+      "step": "mdm-activate-le-A",
+      "status": 204,
+      "ok": true
+    },
+    {
+      "step": "platform-create-ou-A",
+      "status": 201,
+      "ok": true,
+      "id": "acd0e1b6-fc7e-4598-9507-c9d86a481473"
+    },
+    {
+      "step": "platform-create-position-full",
+      "status": 201,
+      "ok": true,
+      "id": "da4436ee-b8e0-4759-accd-bb8d5dd034c9"
+    },
+    {
+      "step": "platform-assign-full-to-LE-A",
+      "status": 201,
+      "ok": true,
+      "id": "fd7476fa-8cbe-47b5-af35-e58da0622785"
+    },
+    {
+      "step": "platform-create-position-fixadmin",
+      "status": 201,
+      "ok": true,
+      "id": "50689869-2607-4133-805b-d607efc63387"
+    },
+    {
+      "step": "platform-assign-fixadmin-to-LE-A",
+      "status": 201,
+      "ok": true,
+      "id": "3d06d133-be18-4046-adc6-35e59ef8526f"
+    }
+  ],
+  "catalogWaitSeconds": 2.2,
+  "catalogMissing": [],
+  "authRoles": {
+    "Q185SopFull@00000000": {
+      "reused": false,
+      "keys": [
+        "supplychain.sandop-plans.read",
+        "supplychain.sandop-plans.create",
+        "supplychain.sandop-plans.snapshot.capture",
+        "supplychain.sandop-plans.sign-off.record"
+      ],
+      "grantsAdded": 4,
+      "members": [
+        "full"
+      ]
+    },
+    "Q185FixtureAdmin@00000000": {
+      "reused": false,
+      "keys": [
+        "mdm.legal-entities.create",
+        "mdm.legal-entities.read",
+        "mdm.legal-entities.update",
+        "platform.organization-units.create",
+        "platform.organization-units.read",
+        "platform.positions.create",
+        "platform.positions.read",
+        "platform.position-assignments.create",
+        "platform.position-assignments.read",
+        "auth.users.lookup-validation"
+      ],
+      "grantsAdded": 10,
+      "members": [
+        "fixadmin"
+      ]
+    },
+    "Q185SopFull@97c59330": {
+      "reused": false,
+      "keys": [
+        "supplychain.sandop-plans.read",
+        "supplychain.sandop-plans.create",
+        "supplychain.sandop-plans.snapshot.capture",
+        "supplychain.sandop-plans.sign-off.record"
+      ],
+      "grantsAdded": 4,
+      "members": [
+        "t1full"
+      ]
+    }
+  },
+  "userIds": {
+    "full": "8878aeea-fa6e-44b2-b168-cefea8531158",
+    "fixadmin": "03de5cb1-c21f-44c8-8792-bd10739bcf7b",
+    "t1full": "88909fcc-19e8-4649-bab6-3dc46f4b26b3"
+  },
+  "adminLoginsBeforeOrg": [
+    {
+      "actor": "fixadmin",
+      "tenantMatches": true,
+      "legalEntityId": null,
+      "sandopPermissions": [],
+      "shipmentsRead": false,
+      "permissionCount": 10
+    }
+  ],
+  "organization": {
+    "legalEntities": {
+      "A": "67552971-3af3-4caf-acc8-98c630407e2f"
+    },
+    "orgUnits": {
+      "A": "acd0e1b6-fc7e-4598-9507-c9d86a481473"
+    },
+    "positions": {
+      "full": "da4436ee-b8e0-4759-accd-bb8d5dd034c9",
+      "fixadmin": "50689869-2607-4133-805b-d607efc63387"
+    }
+  },
+  "actorLogins": {
+    "full": {
+      "actor": "full",
+      "tenantMatches": true,
+      "legalEntityId": "67552971-3af3-4caf-acc8-98c630407e2f",
+      "sandopPermissions": [
+        "supplychain.sandop-plans.create",
+        "supplychain.sandop-plans.read",
+        "supplychain.sandop-plans.sign-off.record",
+        "supplychain.sandop-plans.snapshot.capture"
+      ],
+      "shipmentsRead": false,
+      "permissionCount": 4
+    },
+    "fixadmin": {
+      "actor": "fixadmin",
+      "tenantMatches": true,
+      "legalEntityId": "67552971-3af3-4caf-acc8-98c630407e2f",
+      "sandopPermissions": [],
+      "shipmentsRead": false,
+      "permissionCount": 10
+    },
+    "t1full": {
+      "actor": "t1full",
+      "tenantMatches": true,
+      "legalEntityId": null,
+      "sandopPermissions": [
+        "supplychain.sandop-plans.create",
+        "supplychain.sandop-plans.read",
+        "supplychain.sandop-plans.sign-off.record",
+        "supplychain.sandop-plans.snapshot.capture"
+      ],
+      "shipmentsRead": false,
+      "permissionCount": 4
+    }
+  },
+  "result": "PASS"
+}

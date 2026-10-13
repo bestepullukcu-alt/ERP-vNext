@@ -1,0 +1,24 @@
+# Prospective UI-owned allowlist (21 paths). No path is authorized by this file.
+frontend/Diten.Web/Controllers/SupplyChainCarriersController.cs
+frontend/Diten.Web/Models/SupplyChain/Carriers/CarrierViewModels.cs
+frontend/Diten.Web/Views/SupplyChain/Carriers/CarriersIndex.cs
+frontend/Diten.Web/Views/SupplyChain/Carriers/Index.cshtml
+frontend/Diten.Web/Views/SupplyChain/Carriers/_Filter.cshtml
+frontend/Diten.Web/Views/SupplyChain/Carriers/_DataTable.cshtml
+frontend/Diten.Web/Views/SupplyChain/Carriers/_IndexL10n.cshtml
+frontend/Diten.Web/Views/SupplyChain/Carriers/_CreateEditOffcanvas.cshtml
+frontend/Diten.Web/Views/SupplyChain/Carriers/_ChangeStatusOffcanvas.cshtml
+frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Carriers/index.js
+frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Carriers/index.l10n.js
+frontend/Diten.Web/Resources/Views/SupplyChain/Carriers/CarriersIndex.en.resx
+frontend/Diten.Web/Resources/Views/SupplyChain/Carriers/CarriersIndex.tr.resx
+frontend/Diten.Web/Resources/Views/SupplyChain/Carriers/CarriersIndex.fr.resx
+frontend/Diten.Web/Resources/Views/SupplyChain/Carriers/CarriersIndex.es.resx
+frontend/Diten.Web/Resources/Views/SupplyChain/Carriers/CarriersIndex.zh.resx
+frontend/Diten.Web/Resources/Views/SupplyChain/Carriers/CarriersIndex.ar.resx
+frontend/Diten.Web/Resources/Views/SupplyChain/Carriers/CarriersIndex.ru.resx
+frontend/Diten.Web.Tests/Controllers/SupplyChainCarriersControllerTests.cs
+frontend/Diten.Web.Tests/Forms/CarrierFormContractTests.cs
+frontend/Diten.Web.Tests/JavaScript/CarrierIndexBehaviorTests.cs
+
+# Shared/protected integration surfaces are intentionally excluded; see SHARED-INTEGRATION-HANDOFF.md.

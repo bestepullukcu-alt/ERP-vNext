@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <!-- WP-0173-LOC2: model translation, native-speaker review pending (FU-LOC2-01). -->
+  <data name="LocationTreeTitle" xml:space="preserve"><value>Emplacements</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Liste unique des lieux physiques de la société. Stocks, entrepôt, achats et production s'appuient sur cette liste.</value></data>
+  <data name="TabTree" xml:space="preserve"><value>Hiérarchie</value></data>
+  <data name="TabList" xml:space="preserve"><value>Liste</value></data>
+  <data name="CompanyLabel" xml:space="preserve"><value>Société</value></data>
+  <data name="CompanyPlaceholder" xml:space="preserve"><value>Sélectionnez une société</value></data>
+  <data name="CompanySelectHint" xml:space="preserve"><value>Sélectionnez la société dont vous voulez voir les emplacements. Rien n'est affiché tant qu'aucune société n'est sélectionnée.</value></data>
+  <data name="CompanyUnavailable" xml:space="preserve"><value>La liste des sociétés n'a pas pu être chargée ; aucun emplacement n'est affiché. Demandez à votre administrateur l'accès aux sociétés ou réessayez plus tard.</value></data>
+  <data name="TreeHeading" xml:space="preserve"><value>Hiérarchie des emplacements</value></data>
+  <data name="ShowArchived" xml:space="preserve"><value>Afficher les archivés</value></data>
+  <data name="AddNewSite" xml:space="preserve"><value>Nouvel établissement</value></data>
+  <data name="EmptyTitle" xml:space="preserve"><value>Aucun emplacement pour cette société</value></data>
+  <data name="EmptyBody" xml:space="preserve"><value>Commencez par ajouter le premier établissement. Entrepôts, aires de stockage et casiers s'ajoutent en dessous.</value></data>
+  <data name="AddFirstSite" xml:space="preserve"><value>Ajouter le premier établissement</value></data>
+  <data name="SelectHint" xml:space="preserve"><value>Sélectionnez un emplacement dans l'arbre pour voir le détail.</value></data>
+  <data name="DetailsHeading" xml:space="preserve"><value>Informations</value></data>
+  <data name="StockHeading" xml:space="preserve"><value>Stock présent</value></data>
+  <data name="StockOnLocation" xml:space="preserve"><value>Sur cet emplacement</value></data>
+  <data name="StockBelow" xml:space="preserve"><value>Sous cet emplacement</value></data>
+  <data name="StockUnknown" xml:space="preserve"><value>La présence de stock n'a pas pu être lue pour le moment.</value></data>
+  <data name="StockYes" xml:space="preserve"><value>Stock présent</value></data>
+  <data name="StockNo" xml:space="preserve"><value>Pas de stock</value></data>
+  <data name="ChildrenHeading" xml:space="preserve"><value>Sous-emplacements</value></data>
+  <data name="ChildrenCount" xml:space="preserve"><value>{0} emplacements</value></data>
+  <data name="NoChildrenForBin" xml:space="preserve"><value>Un casier n'a pas de sous-emplacement.</value></data>
+  <data name="ShowInList" xml:space="preserve"><value>Afficher dans la liste</value></data>
+  <data name="TooManyChildren" xml:space="preserve"><value>{0} emplacements sous cet enregistrement — trop pour les afficher ici.</value></data>
+  <data name="OpenInList" xml:space="preserve"><value>Ouvrir dans la liste</value></data>
+  <data name="HistoryHeading" xml:space="preserve"><value>Historique des modifications</value></data>
+  <data name="HistoryDate" xml:space="preserve"><value>Date et heure</value></data>
+  <data name="HistoryUser" xml:space="preserve"><value>Utilisateur</value></data>
+  <data name="HistoryField" xml:space="preserve"><value>Modification</value></data>
+  <data name="HistoryChange" xml:space="preserve"><value>Ancienne valeur → Nouvelle valeur</value></data>
+  <data name="HistoryEmpty" xml:space="preserve"><value>Aucune modification enregistrée.</value></data>
+  <data name="HistoryMore" xml:space="preserve"><value>Afficher les modifications plus anciennes</value></data>
+  <data name="InactiveNote" xml:space="preserve"><value>Cet emplacement ne peut pas être sélectionné dans les formulaires de stock.</value></data>
+  <data name="ArchivedNote" xml:space="preserve"><value>Un enregistrement archivé ne peut être ni réactivé ni modifié. Les emplacements ne sont jamais supprimés : les mouvements passés continuent d'afficher cet emplacement.</value></data>
+  <data name="ExternalNote" xml:space="preserve"><value>Le stock est tenu dans un système externe et suivi ici par intégration.</value></data>
+  <data name="HistAction_Created" xml:space="preserve"><value>Création</value></data>
+  <data name="HistAction_Updated" xml:space="preserve"><value>Mise à jour</value></data>
+  <data name="HistAction_Moved" xml:space="preserve"><value>Déplacement</value></data>
+  <data name="HistAction_StatusChanged" xml:space="preserve"><value>Changement de statut</value></data>
+  <data name="HistAction_BulkCreated" xml:space="preserve"><value>Création en masse</value></data>
+  <data name="HistField_code" xml:space="preserve"><value>Code emplacement</value></data>
+  <data name="HistField_name" xml:space="preserve"><value>Nom</value></data>
+  <data name="HistField_parentId" xml:space="preserve"><value>Emplacement parent</value></data>
+  <data name="HistField_status" xml:space="preserve"><value>Statut</value></data>
+  <data name="HistField_isStockable" xml:space="preserve"><value>Peut contenir du stock</value></data>
+  <data name="HistField_operatingMode" xml:space="preserve"><value>Mode de fonctionnement</value></data>
+  <data name="HistField_orgUnitRef" xml:space="preserve"><value>Unité organisationnelle</value></data>
+  <data name="HistField_costCenterCode" xml:space="preserve"><value>Code centre de coûts</value></data>
+</root>

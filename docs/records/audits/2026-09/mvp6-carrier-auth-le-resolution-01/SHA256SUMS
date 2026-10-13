@@ -1,0 +1,14 @@
+34fbf051e50727a6175813ee8a48685e3df8a6da5a6eef1dd51f4dd640ccc6a1  docs/records/audits/2026-09/mvp6-carrier-auth-le-resolution-01/CHANGED-FILES.tsv
+f17004f444447496d7459469c73e96defc7723ec576b627d2ad72ebb9ccda299  docs/records/audits/2026-09/mvp6-carrier-auth-le-resolution-01/OWNER-DECISION-TEXT.md
+b2ea7a01126ddfc04ce061f514303193a67ce336d172328b5852f6d46a16863b  docs/records/audits/2026-09/mvp6-carrier-auth-le-resolution-01/ROOT-CAUSE.tsv
+3fbbb74f147fccf6140ea453df76164941a2c454285b673fa4aaeb813b371e17  docs/records/audits/2026-09/mvp6-carrier-auth-le-resolution-01/SOP-22.md
+84ce27833951bfed92edf46c02a0ee7c8934d1c6eff006e665d3ddaf09bf8b23  docs/records/audits/2026-09/mvp6-carrier-auth-le-resolution-01/SOURCE-MANIFEST.tsv
+9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa  docs/records/audits/2026-09/mvp6-carrier-auth-le-resolution-01/auth-build.exit
+bac909acb5fa413923f38bb090002b377b85fc3839e9c45652654de732cc8230  docs/records/audits/2026-09/mvp6-carrier-auth-le-resolution-01/auth-build.log
+6559c94835814ab65dc50a05cca32db905e31e637f9a15aeeeb033e9850c83e6  docs/records/audits/2026-09/mvp6-carrier-auth-le-resolution-01/auth-legal-entity-candidate.patch
+07ce7eb5162ed2f0b21b8a33dfa99e304be362ceb2aaa06e506801d555b6d6ee  docs/records/audits/2026-09/mvp6-carrier-auth-le-resolution-01/candidate-validation.log
+9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa  docs/records/audits/2026-09/mvp6-carrier-auth-le-resolution-01/carrier-ver-artifacts-check.exit
+5e453497e42616df30969cd88e49191941aeea072d48658d0922a95b6546e3a5  docs/records/audits/2026-09/mvp6-carrier-auth-le-resolution-01/carrier-ver-artifacts-check.log
+9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa  docs/records/audits/2026-09/mvp6-carrier-auth-le-resolution-01/platform-build.exit
+43401497e9f84245e4e4ec3a1a05b6325cc9ee836c2510ffb48f27f27ea45d08  docs/records/audits/2026-09/mvp6-carrier-auth-le-resolution-01/platform-build.log
+d135de55335b9522f6ee9c57336eee750bf9a3d57590abf940f24ccc175dab93  docs/records/audits/2026-09/mvp6-carrier-auth-le-resolution-01/source-no-change.log

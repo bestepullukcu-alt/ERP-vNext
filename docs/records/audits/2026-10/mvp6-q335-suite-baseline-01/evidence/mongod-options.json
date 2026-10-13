@@ -1,0 +1,28 @@
+{
+  net: {
+    bindIp: '127.0.0.1',
+    port: 57335
+  },
+  processManagement: {
+    fork: true,
+    pidFilePath: '/Users/natig/mvp6-env/q335-20261003-1839/mongod.pid'
+  },
+  replication: {
+    replSet: 'rsq335'
+  },
+  setParameter: {
+    enableTestCommands: '1'
+  },
+  storage: {
+    dbPath: '/Users/natig/mvp6-env/q335-20261003-1839/db',
+    wiredTiger: {
+      engineConfig: {
+        cacheSizeGB: 0.5
+      }
+    }
+  },
+  systemLog: {
+    destination: 'file',
+    path: '/Users/natig/mvp6-env/q335-20261003-1839/log/mongod.log'
+  }
+}

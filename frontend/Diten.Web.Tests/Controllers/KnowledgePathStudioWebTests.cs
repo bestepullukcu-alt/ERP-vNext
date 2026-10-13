@@ -260,6 +260,13 @@ public sealed class KnowledgePathStudioWebTests
         var sequence = model.GetProperty("sequence").EnumerateArray().ToList();
         Assert.Equal("Almiba sunumu", Assert.Single(sequence).GetProperty("title").GetString());
 
+        // WP-E2E-FIX-2 (acceptance 4, E3-B1) — "required" is the chain step's rule (MinSelection > 0), the same for an
+        // empty slot and a filled one; a min-0 step stays optional.
+        var need = branches[1].GetProperty("slots")[0];
+        Assert.Equal((0, 1, true), (need.GetProperty("count").GetInt32(), need.GetProperty("min").GetInt32(), need.GetProperty("required").GetBoolean()));
+        Assert.True(evidence.GetProperty("required").GetBoolean());                       // filled, min 1
+        Assert.All(branches[0].GetProperty("slots").EnumerateArray(), s => Assert.False(s.GetProperty("required").GetBoolean())); // min 0
+
         // No raw code is offered for display: every *Label / *Name field is a label.
         var page = JsonSerializer.Serialize(model);
         Assert.DoesNotContain("\"typeLabel\":\"presentation\"", page);

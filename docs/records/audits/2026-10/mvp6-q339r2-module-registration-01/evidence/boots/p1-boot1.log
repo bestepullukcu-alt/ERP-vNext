@@ -1,0 +1,55 @@
+[19:20:10 INF] User profile is available. Using '/Users/natig/.aspnet/DataProtection-Keys' as key repository; keys will not be encrypted at rest. CorrelationId= TenantId= LegalEntityId=
+[19:20:12 WRN] Shipment outbox transport is not registered. Durable events remain pending; integration is held. CorrelationId= TenantId= LegalEntityId=
+[19:20:12 INF] Start processing HTTP request POST http://localhost:5057/api/internal/module-catalog/register-manifest CorrelationId= TenantId= LegalEntityId=
+[19:20:12 INF] Sending HTTP request POST http://localhost:5057/api/internal/module-catalog/register-manifest CorrelationId= TenantId= LegalEntityId=
+[19:20:12 INF] Now listening on: http://127.0.0.1:58339 CorrelationId= TenantId= LegalEntityId=
+[19:20:12 INF] Application started. Press Ctrl+C to shut down. CorrelationId= TenantId= LegalEntityId=
+[19:20:12 INF] Hosting environment: Development CorrelationId= TenantId= LegalEntityId=
+[19:20:12 INF] Content root path: /Users/natig/mvp6-env/q339r2-20261003-1919/src/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api CorrelationId= TenantId= LegalEntityId=
+[19:20:12 WRN] Module self-registration attempt 1 could not reach Platform; will retry. ModuleCode=shipment-tracking-pod CorrelationId= TenantId= LegalEntityId=
+System.Net.Http.HttpRequestException: Connection refused (localhost:5057)
+ ---> System.Net.Sockets.SocketException (61): Connection refused
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.ThrowException(SocketError error, CancellationToken cancellationToken)
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.System.Threading.Tasks.Sources.IValueTaskSource.GetResult(Int16 token)
+   at System.Net.Sockets.Socket.<ConnectAsync>g__WaitForConnectWithCancellation|285_0(AwaitableSocketAsyncEventArgs saea, ValueTask connectTask, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|5_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|5_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at Diten.SupplyChainService.Api.ModuleRegistration.ModuleRegistrationHostedService.TryRegisterAsync(ModuleManifestDocument manifest, Int32 attemptNumber, CancellationToken ct) in /Users/natig/mvp6-env/q339r2-20261003-1919/src/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/ModuleRegistration/ModuleRegistrationHostedService.cs:line 104
+[19:20:14 INF] Start processing HTTP request POST http://localhost:5057/api/internal/module-catalog/register-manifest CorrelationId= TenantId= LegalEntityId=
+[19:20:14 INF] Sending HTTP request POST http://localhost:5057/api/internal/module-catalog/register-manifest CorrelationId= TenantId= LegalEntityId=
+[19:20:14 WRN] Module self-registration attempt 2 could not reach Platform; will retry. ModuleCode=shipment-tracking-pod CorrelationId= TenantId= LegalEntityId=
+System.Net.Http.HttpRequestException: Connection refused (localhost:5057)
+ ---> System.Net.Sockets.SocketException (61): Connection refused
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.ThrowException(SocketError error, CancellationToken cancellationToken)
+   at System.Net.Sockets.Socket.AwaitableSocketAsyncEventArgs.System.Threading.Tasks.Sources.IValueTaskSource.GetResult(Int16 token)
+   at System.Net.Sockets.Socket.<ConnectAsync>g__WaitForConnectWithCancellation|285_0(AwaitableSocketAsyncEventArgs saea, ValueTask connectTask, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at System.Net.Http.HttpConnectionPool.ConnectToTcpHostAsync(String host, Int32 port, HttpRequestMessage initialRequest, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.ConnectAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.CreateHttp11ConnectionAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.AddHttp11ConnectionAsync(QueueItem queueItem)
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.<SendCoreAsync>g__Core|5_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.<SendCoreAsync>g__Core|5_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+   at Diten.SupplyChainService.Api.ModuleRegistration.ModuleRegistrationHostedService.TryRegisterAsync(ModuleManifestDocument manifest, Int32 attemptNumber, CancellationToken ct) in /Users/natig/mvp6-env/q339r2-20261003-1919/src/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/ModuleRegistration/ModuleRegistrationHostedService.cs:line 104
+[19:20:17 INF] Request starting HTTP/1.1 GET http://127.0.0.1:58339/health - null null CorrelationId= TenantId= LegalEntityId=
+[19:20:17 INF] Executing endpoint 'HTTP: GET /health' CorrelationId= TenantId= LegalEntityId=
+[19:20:17 INF] Setting HTTP status code 200. CorrelationId= TenantId= LegalEntityId=
+[19:20:17 INF] Writing value of type '<>f__AnonymousType2`4' as Json. CorrelationId= TenantId= LegalEntityId=
+[19:20:17 INF] Executed endpoint 'HTTP: GET /health' CorrelationId= TenantId= LegalEntityId=
+[19:20:17 INF] Request finished HTTP/1.1 GET http://127.0.0.1:58339/health - 200 null application/json; charset=utf-8 47.1272ms CorrelationId= TenantId= LegalEntityId=
+[19:20:17 INF] Application is shutting down... CorrelationId= TenantId= LegalEntityId=

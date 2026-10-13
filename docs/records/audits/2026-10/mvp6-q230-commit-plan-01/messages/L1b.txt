@@ -1,0 +1,5 @@
+docs(plans): add MVP6 plans, backlog and guides (part b)
+
+37 folders/items, first 'mvp6-loads-guard-binding-prep-01', last 'scm-planning-analysis-01'.
+Work packages: as named in each folder.
+332 files from pathspec/L1b.txt (Q230 commit plan).

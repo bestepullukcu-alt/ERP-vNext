@@ -1,0 +1,6 @@
+HEAD 4a8d4d4b339528a88e6220fb8402e5a2c771136c branch feature/mvp6-logistics
+index.lock: 1 (1 = absent)
+diff paths: 19
+git diff sha256: 95a5a1e04f7cbf750be2e829692b6e683878fb4c28591a145318195e9f51efa1
+untracked new since start (excl. other writers checked below):
+untracked count: 474

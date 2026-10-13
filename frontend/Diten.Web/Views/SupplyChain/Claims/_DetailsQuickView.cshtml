@@ -1,0 +1,76 @@
+@using Diten.Web.Views.SupplyChain.Claims
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ClaimsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    // Partial view: no Layout. A Layout here renders a second complete tenant shell (Q64b D-02); Index.cshtml states it.
+}
+
+@* QuickView (pack §32.5, CU-31): the clicked row's summary and a copyable claimId only. No by-ID request, no edit
+   control, no details link. Values are written with textContent by index.js. *@
+<div class="offcanvas offcanvas-end backbone-preview-offcanvas" tabindex="-1" id="offcanvasDetailsPreview"
+     aria-labelledby="oc-title">
+    <div class="offcanvas-header p-4">
+        <div class="d-flex align-items-center min-w-0">
+            <div class="backbone-preview-avatar d-flex align-items-center justify-content-center me-3 flex-shrink-0">
+                <i class="bx bx-receipt fs-4" aria-hidden="true"></i>
+            </div>
+            <div class="min-w-0">
+                <h5 id="oc-title" class="offcanvas-title mb-0 text-truncate"><bdi dir="ltr" id="oc-claim-number"></bdi></h5>
+                <small id="oc-subtitle" class="text-muted d-block text-truncate"></small>
+            </div>
+        </div>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Close"]"></button>
+    </div>
+
+    <div class="offcanvas-body flex-grow-1 p-4 border-top">
+        <section class="card backbone-preview-section p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-3 backbone-preview-section-title">@Localizer["ClaimSummary"]</h6>
+            <div class="row g-4">
+                <div class="col-12">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-fingerprint" aria-hidden="true"></i>
+                        <div class="min-w-0 flex-grow-1">
+                            <div class="backbone-preview-label">@Localizer["ClaimId"]</div>
+                            <div class="backbone-preview-value mt-1 d-flex align-items-center gap-2">
+                                <bdi dir="ltr" class="font-monospace text-break" id="oc-claim-id"></bdi>
+                                <button type="button" class="btn btn-sm btn-icon btn-text-secondary js-copy-value" id="oc-claim-id-copy"
+                                        data-copy-source="oc-claim-id" aria-label="@SharedLocalizer["Copy"]"><i class="bx bx-copy" aria-hidden="true"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-package" aria-hidden="true"></i>
+                        <div class="min-w-0 flex-grow-1">
+                            <div class="backbone-preview-label">@Localizer["ShipmentId"]</div>
+                            <div class="backbone-preview-value mt-1"><bdi dir="ltr" class="font-monospace text-break" id="oc-shipment-id"></bdi></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-git-branch" aria-hidden="true"></i>
+                        <div class="min-w-0 flex-grow-1">
+                            <div class="backbone-preview-label">@SharedLocalizer["Status"]</div>
+                            <div class="backbone-preview-value mt-1" id="oc-status"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-money" aria-hidden="true"></i>
+                        <div class="min-w-0 flex-grow-1">
+                            <div class="backbone-preview-label">@Localizer["ClaimedAmount"]</div>
+                            <div class="backbone-preview-value mt-1">
+                                <bdi dir="ltr" id="oc-claimed-amount"></bdi> <bdi dir="ltr" id="oc-currency"></bdi>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <p class="small text-muted mt-3 mb-0">@Localizer["ApprovedAmountNotListed"]</p>
+    </div>
+</div>

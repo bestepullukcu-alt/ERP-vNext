@@ -485,4 +485,6 @@
   <data name="Err_decision_invalid" xml:space="preserve"><value>Choose approve or reject.</value></data>
   <data name="Err_note_text_required" xml:space="preserve"><value>Write the note text.</value></data>
   <data name="Err_note_not_found" xml:space="preserve"><value>The note was not found; reload the page.</value></data>
+  <data name="DecisionApprovedFinal" xml:space="preserve"><value>Approval recorded. The review is complete.</value></data>
+  <data name="Err_withdraw_not_submitter" xml:space="preserve"><value>Only the person who submitted this review can withdraw it.</value></data>
 </root>

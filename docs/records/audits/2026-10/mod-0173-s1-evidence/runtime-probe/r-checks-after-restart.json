@@ -1,0 +1,23 @@
+{
+  "phase": "after-restart",
+  "passed": 4,
+  "failed": 0,
+  "checks": [
+    {
+      "check": "AC2 after restart /balance onHand 100.000",
+      "passed": true
+    },
+    {
+      "check": "AC2 after restart /availability onHand 100.000 / available 100.000",
+      "passed": true
+    },
+    {
+      "check": "AC3 after restart availability 80.000",
+      "passed": true
+    },
+    {
+      "check": "AC3 after restart 2 immutable transactions",
+      "passed": true
+    }
+  ]
+}

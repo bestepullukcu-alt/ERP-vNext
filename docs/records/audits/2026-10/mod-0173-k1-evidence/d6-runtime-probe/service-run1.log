@@ -1,0 +1,636 @@
+info: Diten.InventoryService.Persistence.InventoryIndexInitializerHostedService[0]
+      MOD-0173 Mongo indexes ensured on database diten_inventory_mock.
+info: Diten.InventoryService.Persistence.InventoryIndexInitializerHostedService[0]
+      MOD-0173 SKU positions rebuilt from ledger + reservations: 14.
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5066
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Mock
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: C:\Users\Ali\erp-vnext\services\Diten.InventoryService\src\Diten.InventoryService.Api\bin\Debug\net8.0
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling PostMovementCommand
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+      Start processing HTTP request POST http://127.0.0.1:4010/validate
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+      Sending HTTP request POST http://127.0.0.1:4010/validate
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+      Received HTTP response headers after 74.9782ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+      End processing HTTP request after 84.3355ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4010/products/b1f2c3d4-0000-0000-0000-000000000001
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4010/products/b1f2c3d4-0000-0000-0000-000000000001
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+      Received HTTP response headers after 18.3694ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+      End processing HTTP request after 18.4722ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4010/skus/c3d4e5f6-0000-0000-0000-000000000002?level=Lsku
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4010/skus/c3d4e5f6-0000-0000-0000-000000000002?level=Lsku
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+      Received HTTP response headers after 8.8102ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+      End processing HTTP request after 8.9037ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4010/skus/c3d4e5f6-0000-0000-0000-000000000002/uom
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4010/skus/c3d4e5f6-0000-0000-0000-000000000002/uom
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+      Received HTTP response headers after 7.0011ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+      End processing HTTP request after 7.1185ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[100]
+      Start processing HTTP request POST http://127.0.0.1:4011/validate
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[100]
+      Sending HTTP request POST http://127.0.0.1:4011/validate
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[101]
+      Received HTTP response headers after 24.1125ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[101]
+      End processing HTTP request after 24.2164ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4011/loc-A-12-3
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4011/loc-A-12-3
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[101]
+      Received HTTP response headers after 8.772ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[101]
+      End processing HTTP request after 8.9132ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4011/loc-A-12-3/path
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4011/loc-A-12-3/path
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[101]
+      Received HTTP response headers after 5.8441ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[101]
+      End processing HTTP request after 5.9583ms - 200
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled PostMovementCommand in 425ms
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling GetBalanceQuery
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled GetBalanceQuery in 13ms
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling GetAvailabilityQuery
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled GetAvailabilityQuery in 17ms
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling PostMovementCommand
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+      Start processing HTTP request POST http://127.0.0.1:4010/validate
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+      Sending HTTP request POST http://127.0.0.1:4010/validate
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+      Received HTTP response headers after 6.7673ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+      End processing HTTP request after 6.8571ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4010/products/b1f2c3d4-0000-0000-0000-000000000001
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4010/products/b1f2c3d4-0000-0000-0000-000000000001
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+      Received HTTP response headers after 4.2283ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+      End processing HTTP request after 4.318ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4010/skus/c3d4e5f6-0000-0000-0000-000000000002?level=Lsku
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4010/skus/c3d4e5f6-0000-0000-0000-000000000002?level=Lsku
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+      Received HTTP response headers after 3.5954ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+      End processing HTTP request after 3.6705ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4010/skus/c3d4e5f6-0000-0000-0000-000000000002/uom
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4010/skus/c3d4e5f6-0000-0000-0000-000000000002/uom
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+      Received HTTP response headers after 4.5794ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+      End processing HTTP request after 4.6521ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[100]
+      Start processing HTTP request POST http://127.0.0.1:4011/validate
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[100]
+      Sending HTTP request POST http://127.0.0.1:4011/validate
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[101]
+      Received HTTP response headers after 5.48ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[101]
+      End processing HTTP request after 5.5611ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4011/loc-A-12-3
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4011/loc-A-12-3
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[101]
+      Received HTTP response headers after 4.0128ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[101]
+      End processing HTTP request after 4.0971ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4011/loc-A-12-3/path
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4011/loc-A-12-3/path
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[101]
+      Received HTTP response headers after 3.9245ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[101]
+      End processing HTTP request after 4.0288ms - 200
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled PostMovementCommand in 46ms
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling PostMovementCommand
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+      Start processing HTTP request POST http://127.0.0.1:4010/validate
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+      Sending HTTP request POST http://127.0.0.1:4010/validate
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+      Received HTTP response headers after 5.1702ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+      End processing HTTP request after 5.2674ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4010/products/b1f2c3d4-0000-0000-0000-000000000001
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4010/products/b1f2c3d4-0000-0000-0000-000000000001
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+      Received HTTP response headers after 3.9289ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+      End processing HTTP request after 4.0266ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4010/skus/c3d4e5f6-0000-0000-0000-000000000002?level=Lsku
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4010/skus/c3d4e5f6-0000-0000-0000-000000000002?level=Lsku
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+      Received HTTP response headers after 4.4179ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+      End processing HTTP request after 4.4883ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4010/skus/c3d4e5f6-0000-0000-0000-000000000002/uom
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4010/skus/c3d4e5f6-0000-0000-0000-000000000002/uom
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+      Received HTTP response headers after 3.3171ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+      End processing HTTP request after 3.3783ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[100]
+      Start processing HTTP request POST http://127.0.0.1:4011/validate
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[100]
+      Sending HTTP request POST http://127.0.0.1:4011/validate
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[101]
+      Received HTTP response headers after 4.8244ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[101]
+      End processing HTTP request after 4.8929ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4011/loc-A-12-3
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4011/loc-A-12-3
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[101]
+      Received HTTP response headers after 4.3003ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[101]
+      End processing HTTP request after 4.4064ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4011/loc-A-12-3/path
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4011/loc-A-12-3/path
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[101]
+      Received HTTP response headers after 4.0726ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[101]
+      End processing HTTP request after 4.1429ms - 200
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled PostMovementCommand in 55ms
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling PostMovementCommand
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled PostMovementCommand in 9ms
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling PostMovementCommand
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled PostMovementCommand in 1ms
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling PostMovementCommand
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+      Start processing HTTP request POST http://127.0.0.1:4010/validate
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+      Sending HTTP request POST http://127.0.0.1:4010/validate
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+      Received HTTP response headers after 5.9161ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+      End processing HTTP request after 6.0046ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4010/products/b1f2c3d4-0000-0000-0000-000000000001
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4010/products/b1f2c3d4-0000-0000-0000-000000000001
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+      Received HTTP response headers after 3.8578ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+      End processing HTTP request after 3.9329ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4010/skus/c3d4e5f6-0000-0000-0000-000000000002?level=Lsku
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4010/skus/c3d4e5f6-0000-0000-0000-000000000002?level=Lsku
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+      Received HTTP response headers after 3.5746ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+      End processing HTTP request after 3.6932ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4010/skus/c3d4e5f6-0000-0000-0000-000000000002/uom
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4010/skus/c3d4e5f6-0000-0000-0000-000000000002/uom
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+      Received HTTP response headers after 3.6221ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+      End processing HTTP request after 3.7041ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[100]
+      Start processing HTTP request POST http://127.0.0.1:4011/validate
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[100]
+      Sending HTTP request POST http://127.0.0.1:4011/validate
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[101]
+      Received HTTP response headers after 5.0046ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[101]
+      End processing HTTP request after 5.0898ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4011/loc-A-12-3
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4011/loc-A-12-3
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[101]
+      Received HTTP response headers after 3.3688ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[101]
+      End processing HTTP request after 3.4308ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4011/loc-A-12-3/path
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4011/loc-A-12-3/path
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[101]
+      Received HTTP response headers after 3.5918ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[101]
+      End processing HTTP request after 3.6596ms - 200
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled PostMovementCommand in 37ms
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling PostMovementCommand
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+      Start processing HTTP request POST http://127.0.0.1:4010/validate
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+      Sending HTTP request POST http://127.0.0.1:4010/validate
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+      Received HTTP response headers after 5.3362ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+      End processing HTTP request after 5.4309ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4010/products/b1f2c3d4-0000-0000-0000-000000000001
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4010/products/b1f2c3d4-0000-0000-0000-000000000001
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+      Received HTTP response headers after 3.9595ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+      End processing HTTP request after 4.0426ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4010/skus/c3d4e5f6-0000-0000-0000-000000000002?level=Lsku
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4010/skus/c3d4e5f6-0000-0000-0000-000000000002?level=Lsku
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+      Received HTTP response headers after 3.2703ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+      End processing HTTP request after 3.3389ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4010/skus/c3d4e5f6-0000-0000-0000-000000000002/uom
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4010/skus/c3d4e5f6-0000-0000-0000-000000000002/uom
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+      Received HTTP response headers after 3.6658ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+      End processing HTTP request after 3.751ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[100]
+      Start processing HTTP request POST http://127.0.0.1:4011/validate
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[100]
+      Sending HTTP request POST http://127.0.0.1:4011/validate
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[101]
+      Received HTTP response headers after 4.2243ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[101]
+      End processing HTTP request after 4.3117ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4011/loc-A-12-3
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4011/loc-A-12-3
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[101]
+      Received HTTP response headers after 3.8705ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[101]
+      End processing HTTP request after 3.9716ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4011/loc-A-12-3/path
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4011/loc-A-12-3/path
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[101]
+      Received HTTP response headers after 3.6931ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[101]
+      End processing HTTP request after 3.7702ms - 200
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled PostMovementCommand in 37ms
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling PostMovementCommand
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+      Start processing HTTP request POST http://127.0.0.1:4010/validate
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+      Sending HTTP request POST http://127.0.0.1:4010/validate
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+      Received HTTP response headers after 5.4368ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+      End processing HTTP request after 5.5281ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4010/products/b1f2c3d4-0000-0000-0000-000000000001
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4010/products/b1f2c3d4-0000-0000-0000-000000000001
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+      Received HTTP response headers after 3.3878ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+      End processing HTTP request after 3.4549ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4010/skus/c3d4e5f6-0000-0000-0000-000000000002?level=Lsku
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4010/skus/c3d4e5f6-0000-0000-0000-000000000002?level=Lsku
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+      Received HTTP response headers after 3.72ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+      End processing HTTP request after 3.785ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4010/skus/c3d4e5f6-0000-0000-0000-000000000002/uom
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4010/skus/c3d4e5f6-0000-0000-0000-000000000002/uom
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+      Received HTTP response headers after 3.6377ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+      End processing HTTP request after 3.7336ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[100]
+      Start processing HTTP request POST http://127.0.0.1:4011/validate
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[100]
+      Sending HTTP request POST http://127.0.0.1:4011/validate
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[101]
+      Received HTTP response headers after 4.5109ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[101]
+      End processing HTTP request after 4.596ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4011/loc-A-12-3
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4011/loc-A-12-3
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[101]
+      Received HTTP response headers after 3.5702ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[101]
+      End processing HTTP request after 3.6393ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4011/loc-A-12-3/path
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4011/loc-A-12-3/path
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[101]
+      Received HTTP response headers after 3.9934ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[101]
+      End processing HTTP request after 4.107ms - 200
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled PostMovementCommand in 40ms
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling GetAvailabilityQuery
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled GetAvailabilityQuery in 3ms
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling GetAvailabilityQuery
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+      Start processing HTTP request POST http://127.0.0.1:4010/validate
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+      Sending HTTP request POST http://127.0.0.1:4010/validate
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+      Received HTTP response headers after 5.1421ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+      End processing HTTP request after 5.2457ms - 200
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled GetAvailabilityQuery in 10ms
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling GetBalanceQuery
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled GetBalanceQuery in 3ms
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling GetTransactionsQuery
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled GetTransactionsQuery in 6ms
+warn: Diten.InventoryService.Infrastructure.Middleware.InventoryScopeResolutionMiddleware[0]
+      Inventory scope refused: X-Legal-Entity-Id differs from the token legal entity. Path=/api/inventory/balance
+warn: Diten.InventoryService.Infrastructure.Middleware.InventoryScopeResolutionMiddleware[0]
+      Inventory scope refused: X-Legal-Entity-Id differs from the token legal entity. Path=/api/inventory/movements
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling PostMovementCommand
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+      Start processing HTTP request POST http://127.0.0.1:4010/validate
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+      Sending HTTP request POST http://127.0.0.1:4010/validate
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+      Received HTTP response headers after 5.3912ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+      End processing HTTP request after 5.4855ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4010/products/b1f2c3d4-0000-0000-0000-000000000001
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4010/products/b1f2c3d4-0000-0000-0000-000000000001
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+      Received HTTP response headers after 4.1493ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+      End processing HTTP request after 4.2307ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4010/skus/c3d4e5f6-0000-0000-0000-000000000002?level=Lsku
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4010/skus/c3d4e5f6-0000-0000-0000-000000000002?level=Lsku
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+      Received HTTP response headers after 3.2359ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+      End processing HTTP request after 3.303ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4010/skus/c3d4e5f6-0000-0000-0000-000000000002/uom
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4010/skus/c3d4e5f6-0000-0000-0000-000000000002/uom
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+      Received HTTP response headers after 3.5226ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+      End processing HTTP request after 3.5893ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[100]
+      Start processing HTTP request POST http://127.0.0.1:4011/validate
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[100]
+      Sending HTTP request POST http://127.0.0.1:4011/validate
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[101]
+      Received HTTP response headers after 4.0754ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[101]
+      End processing HTTP request after 4.1399ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4011/loc-A-12-3
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4011/loc-A-12-3
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[101]
+      Received HTTP response headers after 3.827ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[101]
+      End processing HTTP request after 3.8968ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4011/loc-A-12-3/path
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4011/loc-A-12-3/path
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[101]
+      Received HTTP response headers after 3.3045ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[101]
+      End processing HTTP request after 3.3811ms - 200
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled PostMovementCommand in 38ms
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling CreateReservationCommand
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled CreateReservationCommand in 44ms
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling GetAvailabilityQuery
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled GetAvailabilityQuery in 3ms
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling CreateReservationCommand
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled CreateReservationCommand in 6ms
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling PostMovementCommand
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+      Start processing HTTP request POST http://127.0.0.1:4010/validate
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+      Sending HTTP request POST http://127.0.0.1:4010/validate
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+      Received HTTP response headers after 4.7536ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+      End processing HTTP request after 4.853ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4010/products/b1f2c3d4-0000-0000-0000-000000000001
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4010/products/b1f2c3d4-0000-0000-0000-000000000001
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+      Received HTTP response headers after 3.3526ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+      End processing HTTP request after 3.4284ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4010/skus/c3d4e5f6-0000-0000-0000-000000000002?level=Lsku
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4010/skus/c3d4e5f6-0000-0000-0000-000000000002?level=Lsku
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+      Received HTTP response headers after 3.2439ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+      End processing HTTP request after 3.3011ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4010/skus/c3d4e5f6-0000-0000-0000-000000000002/uom
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4010/skus/c3d4e5f6-0000-0000-0000-000000000002/uom
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+      Received HTTP response headers after 3.5176ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+      End processing HTTP request after 3.589ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[100]
+      Start processing HTTP request POST http://127.0.0.1:4011/validate
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[100]
+      Sending HTTP request POST http://127.0.0.1:4011/validate
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[101]
+      Received HTTP response headers after 3.9912ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[101]
+      End processing HTTP request after 4.0549ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4011/loc-A-12-3
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4011/loc-A-12-3
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[101]
+      Received HTTP response headers after 3.601ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[101]
+      End processing HTTP request after 3.6665ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4011/loc-A-12-3/path
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4011/loc-A-12-3/path
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[101]
+      Received HTTP response headers after 3.1845ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[101]
+      End processing HTTP request after 3.2446ms - 200
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled PostMovementCommand in 36ms
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling PostMovementCommand
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+      Start processing HTTP request POST http://127.0.0.1:4010/validate
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+      Sending HTTP request POST http://127.0.0.1:4010/validate
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+      Received HTTP response headers after 18.4555ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+      End processing HTTP request after 18.5701ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4010/products/b1f2c3d4-0000-0000-0000-000000000001
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4010/products/b1f2c3d4-0000-0000-0000-000000000001
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+      Received HTTP response headers after 3.8573ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+      End processing HTTP request after 3.9395ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4010/skus/c3d4e5f6-0000-0000-0000-000000000002?level=Lsku
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4010/skus/c3d4e5f6-0000-0000-0000-000000000002?level=Lsku
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+      Received HTTP response headers after 3.2988ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+      End processing HTTP request after 3.37ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4010/skus/c3d4e5f6-0000-0000-0000-000000000002/uom
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4010/skus/c3d4e5f6-0000-0000-0000-000000000002/uom
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+      Received HTTP response headers after 3.6795ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+      End processing HTTP request after 3.7905ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[100]
+      Start processing HTTP request POST http://127.0.0.1:4011/validate
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[100]
+      Sending HTTP request POST http://127.0.0.1:4011/validate
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[101]
+      Received HTTP response headers after 4.4973ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[101]
+      End processing HTTP request after 4.5725ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4011/loc-A-12-3
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4011/loc-A-12-3
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[101]
+      Received HTTP response headers after 3.1751ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[101]
+      End processing HTTP request after 3.2483ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[100]
+      Start processing HTTP request GET http://127.0.0.1:4011/loc-A-12-3/path
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[100]
+      Sending HTTP request GET http://127.0.0.1:4011/loc-A-12-3/path
+info: System.Net.Http.HttpClient.ILocationMasterClient.ClientHandler[101]
+      Received HTTP response headers after 3.4619ms - 200
+info: System.Net.Http.HttpClient.ILocationMasterClient.LogicalHandler[101]
+      End processing HTTP request after 3.5267ms - 200
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled PostMovementCommand in 61ms
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling ReleaseReservationCommand
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled ReleaseReservationCommand in 11ms
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling ReleaseReservationCommand
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled ReleaseReservationCommand in 9ms
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling CreateReservationCommand
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled CreateReservationCommand in 8ms
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling CreateReservationCommand
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled CreateReservationCommand in 1ms
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling GetAvailabilityQuery
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[100]
+      Start processing HTTP request POST http://127.0.0.1:4010/validate
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[100]
+      Sending HTTP request POST http://127.0.0.1:4010/validate
+info: System.Net.Http.HttpClient.IProductMasterClient.ClientHandler[101]
+      Received HTTP response headers after 5.2028ms - 200
+info: System.Net.Http.HttpClient.IProductMasterClient.LogicalHandler[101]
+      End processing HTTP request after 5.2901ms - 200
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled GetAvailabilityQuery in 19ms

@@ -1,0 +1,45 @@
+[{
+    "EventName" : "InventoryMovementPosted",
+    "AggregateId" : "cef0c829-6c5a-4867-89e0-0bcfb350597c",
+    "CorrelationId" : "3a42a9ca-5276-40de-9b60-ccbe0e010784",
+    "Status" : "Pending",
+    "OccurredAt" : { "$date" : "2026-10-01T10:53:51.158Z" },
+    "Payload" : {
+      "TransactionNumber" : "INV-2026-0000015",
+      "MovementType" : "Reversal",
+      "ReversesTransactionId" : "778ca8c6-92e7-4541-b187-49944ad23337"
+    }
+  }, {
+    "EventName" : "InventoryMovementPosted",
+    "AggregateId" : "ac19c085-e468-430f-8e31-8764e09e0046",
+    "CorrelationId" : "77b9ccd3-874d-4f43-b71c-ca096571d818",
+    "Status" : "Pending",
+    "OccurredAt" : { "$date" : "2026-10-01T10:54:29.451Z" },
+    "Payload" : {
+      "TransactionNumber" : "INV-2026-0000016",
+      "MovementType" : "Reversal",
+      "ReversesTransactionId" : "3201e91a-b56d-4083-ac2d-00e5863c2eb6"
+    }
+  }, {
+    "EventName" : "InventoryMovementPosted",
+    "AggregateId" : "a1993110-fac7-4241-acb8-3c3a0991b57e",
+    "CorrelationId" : "50a833c8-2afe-4db8-b9c0-436b98c11426",
+    "Status" : "Pending",
+    "OccurredAt" : { "$date" : "2026-10-01T10:55:58.624Z" },
+    "Payload" : {
+      "TransactionNumber" : "INV-2026-0000017",
+      "MovementType" : "Reversal",
+      "ReversesTransactionId" : "84d2ac28-93d3-45ff-8464-de145e49e74f"
+    }
+  }, {
+    "EventName" : "InventoryMovementPosted",
+    "AggregateId" : "f4c747c1-db1a-4548-9f1a-1607172c61ab",
+    "CorrelationId" : "67c2c57d-22e3-4956-b42e-9841035abeb8",
+    "Status" : "Pending",
+    "OccurredAt" : { "$date" : "2026-10-01T11:01:48.135Z" },
+    "Payload" : {
+      "TransactionNumber" : "INV-2026-0000018",
+      "MovementType" : "Reversal",
+      "ReversesTransactionId" : "77a1b5ca-7185-42ce-b2b4-3f2a28e5a7ea"
+    }
+  }]

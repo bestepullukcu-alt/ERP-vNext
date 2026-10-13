@@ -20,6 +20,10 @@ namespace Diten.Platform.Application.Tests.Audit;
 public sealed class PpmAuditRetentionPolicySeedMongoTests : IAsyncLifetime
 {
     private const string MongoExecutable = "/opt/homebrew/bin/mongod";
+
+    // DB-010: a seed test that is not tenant-bound gets its own database with a FIXED suffix, not a GUID.
+    // Isolation comes from the test-owned mongod (fresh port and temporary dbpath per class), not from the name.
+    private const string SeedDatabaseName = "diten_platform_audit_seed";
     private static readonly HashSet<int> ProtectedPorts = [27017, 27018, 27019, 27020, 27021];
     private readonly AuditRetentionSeedOptions _options = new()
     {
@@ -76,7 +80,7 @@ public sealed class PpmAuditRetentionPolicySeedMongoTests : IAsyncLifetime
 
         _client = new MongoClient($"mongodb://127.0.0.1:{_port}/?directConnection=true&serverSelectionTimeoutMS=1000");
         await WaitForPingAsync(_client);
-        _database = _client.GetDatabase($"diten_platform_audit_seed_{Guid.NewGuid():N}");
+        _database = _client.GetDatabase(SeedDatabaseName);
 
         var policies = _database.GetCollection<AuditEventRetentionPolicy>("audit_event_retention_policies");
         var baseline = Enum.GetValues<AuditCategory>()

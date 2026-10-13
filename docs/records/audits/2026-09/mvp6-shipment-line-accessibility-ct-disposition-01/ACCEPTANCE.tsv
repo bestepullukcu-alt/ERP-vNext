@@ -1,0 +1,17 @@
+criterion	ct_result	controlling_evidence	boundary
+PRES-183-01 historical RED	PRESERVED	DEV raw/red.trx; original presentation finding	Baseline missing label/accessibility relation remains preserved evidence
+Exact successor identity	PASS	dcc6662696db5e689d2d4f6facbb5106ca53d06a957caf21c5fabc912a0c7c88	354/354 archive reconstruction; isolated successor artifact
+Three-path scope	PASS	4c153b42890f10e289e421c0428ff1c1eff252f39892505ed0556cfa4efe5055; CHANGED-FILES.tsv	No shared layout/DataTable/Auth/Gateway/product backend delta
+Unique dynamic IDs	ACCEPTED	Independent browser 390/768	One/two/three lines; 6/12/18 unique IDs
+Label/control binding and accessible names	ACCEPTED	Independent browser 390/768	Every repeated input has exactly one matching label; 12 accessible-name matches at 768
+Add/remove/reindex	ACCEPTED	Independent browser	Keyboard add and middle removal preserve unique binding and line values
+Keyboard/focus	ACCEPTED	Independent browser	New-line focus, remove recovery, label activation, logical Tab order, validation alert focus
+Model-binding/payload semantics	ACCEPTED	Independent source and browser evidence	data-field order retained; no name attributes introduced
+Focused regression	PASS	Independent focused.trx	1/1
+Bounded Shipment UI/controller regression	PASS	Independent shipment-bounded.trx	17/17; test membership recorded; no arithmetic with overlapping focused test
+Root R2 narrow regression	PASS	Independent root-r2.trx	7/7; no backend acceptance expansion
+Durable PNG	OPEN	Independent VER	No supported durable export; no waiver
+PRES-183-02 shared responsive localization	OPEN	Original presentation finding	Shared-owned; not changed or accepted here
+PRES-183-03 scope-aware DataTable gate	OPEN	Original presentation finding	Shared quality-gate owner; not changed or accepted here
+Other UI183 rows	UNCHANGED	mvp6-shipment-ui-functional-ct-consolidation-01	No full Shipment UI acceptance
+Common checkout/runtime rollout	OPEN	Artifact-only isolated successor	No common-checkout application, rollout, E5/G5 or full-module claim

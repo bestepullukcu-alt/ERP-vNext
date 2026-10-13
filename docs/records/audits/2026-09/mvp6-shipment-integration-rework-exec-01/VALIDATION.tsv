@@ -1,0 +1,16 @@
+check	result	evidence	boundary
+Real owner authority binding	PASS	OWNER-AUTHORITY-BINDING.md	Direct user instruction; no synthetic approval
+Registered worktree	PASS	CHECKOUT.tsv	HEAD 4a8d4d4; writer target only
+Recovered predecessor baseline	PASS	BASELINE-PREFLIGHT.txt; BASELINE-MATERIALIZATION.tsv	Previously approved bytes only; successor scope unchanged
+Absent source transfer	PASS	SUCCESSOR-APPLICATION.txt; SUCCESSOR-DELTA.tsv	258/258, no overwrite
+Identical source preservation	PASS	SUCCESSOR-APPLICATION.txt	161/161 exact
+Shipment successor preservation	PASS	SUCCESSOR-APPLICATION.txt	3/3 exact
+Shipment UI preservation	PASS	SUCCESSOR-APPLICATION.txt	28/28 exact
+Successor patch	PASS	successor-apply.log; SUCCESSOR-DELTA.tsv	Exact b3d0cd5b; two gateway files
+Route ownership	PASS	ROUTE-OWNERSHIP.tsv	35 CRM at 5065; 6 ShipmentBundle at 5061
+SupplyChain Release build	PASS	supplychain-build-final.log; exit 0	0 warnings, 0 errors
+Gateway Release build	PASS	gateway-build.log; exit 0	0 warnings, 0 errors
+CRM Release build	PASS	crm-build.log; exit 0	2 inherited warnings, 0 errors
+Focused route regression	PASS	gateway-route-tests.log; shipment-integration-route-final.trx	24/24
+Runtime/browser acceptance	PENDING	INDEPENDENT-RUNTIME-BROWSER-VER.md	Different verifier required
+Commit/push/stash/rollout	NOT_DONE	SOP-22.md	Out of scope

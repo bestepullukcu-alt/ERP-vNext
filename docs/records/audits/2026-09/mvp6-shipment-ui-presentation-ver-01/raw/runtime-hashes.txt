@@ -1,0 +1,3 @@
+final_manifest	e6551f4552bd05682dcd9f2753044aa0b803dd4df90875952cca89608ab98ab3  docs/records/audits/2026-09/mvp6-shipment-ui-b01-b02-independent-ver-01/FINAL-354-SOURCE-MANIFEST.tsv
+web_dll	b7bf5cf8949e587da087565956dc3071e302c6cbe23513a6b4724dcf561df5ae  /private/tmp/mvp6-shipment-ui-presentation-ver-01/source/frontend/Diten.Web/bin/Release/net8.0/Diten.Web.dll
+fixture_script	7128fc24472084b70e153bfef21da533a7cf1fb4e13e15ea6b3a1e47956ced9a  /private/tmp/mvp6-shipment-ui-presentation-ver-01/runtime/presentation_fixture.py

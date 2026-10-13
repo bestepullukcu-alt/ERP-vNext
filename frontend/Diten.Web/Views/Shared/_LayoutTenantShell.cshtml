@@ -100,7 +100,8 @@
             deven: window.ApiBaseUrl,
             auth: window.ApiBaseUrl,
             platform: window.ApiBaseUrl,
-            procurement: window.ApiBaseUrl
+            procurement: window.ApiBaseUrl,
+            manufacturing: window.ApiBaseUrl
         };
         window.CurrentLanguage = "@currentCulture";
         window.CurrentUser = @Html.Raw(currentUserJson);
@@ -577,6 +578,15 @@
                                                 class="bx bx-user icon-md me-3"></i><span>@SharedLocalizer["MyProfile"]</span>
                                         </a>
                                     </li>
+                                    @* MOD-0022 E5W1 — "İmzam" (mockup user menu: Profilim · İmzam · Çıkış yap), only with its page key *@
+                                    @if (Perms.Has("esign.my-samples.manage"))
+                                    {
+                                        <li>
+                                            <a class="dropdown-item d-flex align-items-center" href="/ESignature/MySignature" id="navbar-my-signature">
+                                                <i class="bx bx-pen icon-md me-3"></i><span>@SharedLocalizer["Nav.Page.ESIGNMYSIGNATURE"]</span>
+                                            </a>
+                                        </li>
+                                    }
                                     <li>
                                         <a class="dropdown-item d-flex align-items-center" href="javascript:void(0);">
                                             <i
@@ -656,10 +666,21 @@
     <partial name="/Views/Shared/_GlobalConfirmation.cshtml" />
     <partial name="/Views/Shared/_GlobalNotification.cshtml" />
 
+    @{
+        // WP-E2E-FIX-3 (E5-B1) — the shell now also shows TempData["WarningMessage"]. A bare resource KEY (an identifier
+        // such as "ArchivedTemplateReadOnly", which some pages store for their own resx and never rendered) is NOT a
+        // message and stays silent exactly as before; only real text is shown.
+        var shellWarning = TempData["WarningMessage"]?.ToString();
+        if (shellWarning is not null && System.Text.RegularExpressions.Regex.IsMatch(shellWarning, "^[A-Za-z][A-Za-z0-9_]*$"))
+        {
+            shellWarning = null;
+        }
+    }
     <script>
         window.BackboneShellTempData = {
             successMessage: @Json.Serialize(TempData["SuccessMessage"]?.ToString()),
-            errorMessage: @Json.Serialize(TempData["ErrorMessage"]?.ToString())
+            errorMessage: @Json.Serialize(TempData["ErrorMessage"]?.ToString()),
+            warningMessage: @Json.Serialize(shellWarning)
         };
     </script>
     <script src="~/assets/js/backbone-shell.js" asp-append-version="true"></script>

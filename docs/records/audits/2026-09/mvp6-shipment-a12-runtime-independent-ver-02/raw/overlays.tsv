@@ -1,0 +1,3 @@
+order	archive	archive_sha256	manifest	manifest_sha256	declared_overlaps
+1	docs/records/audits/2026-09/mvp6-shipment-a12-safe404-rework-01/successor-source.tar.gz	7b6a0d1abea649d920040a039972c5d4928825e9cf2cc185487b1fe5f0f3314d	docs/records/audits/2026-09/mvp6-shipment-a12-safe404-rework-01/SUCCESSOR-360-SOURCE-MANIFEST.tsv	8ffa6c96d29f8004940f310ed704a2c05eaa38ffa501d6114a5f9251e6e00d36	-
+2	docs/records/audits/2026-09/mvp6-carrier-numericdate-exec-01/final-source.tar.gz	f50350b8e541a4c1cbc640926c581cf510b4c2dbb57b31ef4193bf4c25c9e2cd	docs/records/audits/2026-09/mvp6-carrier-numericdate-exec-01/FINAL-22-SOURCE-MANIFEST.tsv	b9713185aba02bf325a9149b37a8cc6ffe3b1dd0e979febdaa773946ae9b1731	-

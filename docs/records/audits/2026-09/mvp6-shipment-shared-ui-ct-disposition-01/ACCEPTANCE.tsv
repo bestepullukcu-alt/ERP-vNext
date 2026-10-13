@@ -1,0 +1,11 @@
+id	scope	result	evidence	disposition
+UI183-A03	Unauthenticated same-origin JSON adapters versus HTML challenge	ACCEPTED_BOUNDED	Independent V07/V08; exact 360-source successor	Five marked adapters return 401 INVALID_REQUEST/v1 with matching correlation and no Location; HTML page retains 302 login redirect; authenticated 403 unchanged
+PRES-183-02	Shared DataTables responsive-modal Details/Close localization	ACCEPTED_BOUNDED	Independent V09-V12 and V14; exact 360-source successor	Seven cultures at 390; six modal cases at 768 while zh legitimately fits columns and keeps localized direct action; Arabic RTL and console clean
+PRES-183-01	Repeatable-line accessibility	PREVIOUSLY_ACCEPTED_PRESERVED	Accessibility CT SOP 7453b4...; independent V04/V13	Separate prior bounded acceptance retained; three exact hashes preserved and final-source regression fresh PASS
+UI183-A13	Presentation aggregate	PARTIAL_THIS_SUCCESSOR	PRES-183-01 and PRES-183-02 accepted; PNG OPEN	Do not convert subfinding closure into complete presentation/UI acceptance
+UI183-A08	Transition race	OPEN_NOT_RUN	Independent VER A08	Read-only fixture lacked concurrency and persistence conditions
+UI183-A09	Stale POD	OPEN_NOT_RUN	Independent VER A09	Read-only fixture lacked stale mutation/persistence conditions
+UI183-A12	Cross-LE	OPEN_NOT_RUN	Independent VER A12	Read-only single-LE fixture insufficient
+UI183-A10	Fault proxy	OPEN_UNAUTHORIZED	Independent VER A10	No proxy prepared or executed
+UI183-A14	Bounded DataTable policy profile	OPEN_POLICY	Remaining-acceptance DN-02 and historical 49/35	No waiver or generic repository PASS
+PNG	Durable PNG evidence	OPEN	Independent VER PNG	No supported export mechanism; no bypass

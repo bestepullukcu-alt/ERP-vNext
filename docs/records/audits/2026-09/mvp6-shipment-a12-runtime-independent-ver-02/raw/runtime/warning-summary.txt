@@ -1,0 +1,6 @@
+26 {State:l}
+20 Audit outbox message {MessageId} moved to DeadLetter. ErrorType={ErrorType}
+9 Long-running request {RequestType} completed in {ElapsedMilliseconds} ms
+3 Module service '{RawService}' did not match any active lookup; preserving as-is.
+1 Tenant login settings read failed. TenantId={TenantId} StatusCode={StatusCode}
+1 Skipping catalog permission sync; key is not canonical module.resource.action. PermissionKey={PermissionKey}

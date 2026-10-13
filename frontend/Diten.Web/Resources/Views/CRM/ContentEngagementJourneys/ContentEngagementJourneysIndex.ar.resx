@@ -79,7 +79,7 @@
   <data name="RecordCreated" xml:space="preserve"><value>تم إنشاء السجل.</value></data>
   <data name="RecordUpdated" xml:space="preserve"><value>تم تحديث السجل.</value></data>
   <data name="Repeatable" xml:space="preserve"><value>قابلة للتكرار</value></data>
-  <data name="Repeated" xml:space="preserve"><value>مكرر</value></data>
+  <data name="Repeated" xml:space="preserve"><value>تكرار المسار</value></data>
   <data name="RequiredStageCount" xml:space="preserve"><value>المراحل الإلزامية</value></data>
   <data name="Reset" xml:space="preserve"><value>إعادة تعيين</value></data>
   <data name="Resolved" xml:space="preserve"><value>محلول</value></data>
@@ -108,4 +108,10 @@
   <data name="UpdatedAt" xml:space="preserve"><value>آخر تحديث</value></data>
   <data name="ViewDetails" xml:space="preserve"><value>عرض التفاصيل</value></data>
   <data name="Yes" xml:space="preserve"><value>نعم</value></data>
+  <data name="RepeatedHint" xml:space="preserve"><value>يُستخدم هذا المسار في مرحلة أخرى أيضًا</value></data>
+  <data name="PathListAllSubjectsNote" xml:space="preserve"><value>لا موضوع لهذه الرحلة، لذلك تُعرض جميع المسارات المنشورة.</value></data>
+  <data name="Err_content_engagement_journey_no_required_stage" xml:space="preserve"><value>لا يمكن نشر الرحلة: يلزم وجود مرحلة إلزامية نشطة واحدة على الأقل. فعّل «إلزامي» لإحدى المراحل.</value></data>
+  <data name="Err_content_engagement_journey_overlapping_published_version" xml:space="preserve"><value>توجد نسخة منشورة أخرى لرمز الرحلة هذا (باللغة نفسها) تغطي هذه التواريخ. غيّر تواريخ السريان أو أرشف النسخة الأخرى.</value></data>
+  <data name="Err_content_engagement_journey_archived_no_mutation" xml:space="preserve"><value>لا يمكن نشر رحلة مؤرشفة.</value></data>
+  <data name="Err_content_engagement_journey_concurrency_conflict" xml:space="preserve"><value>عدّل شخص آخر الرحلة في هذه الأثناء. أعد تحميل الصفحة وحاول مرة أخرى.</value></data>
 </root>

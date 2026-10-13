@@ -1,0 +1,7 @@
+Darwin
+8.0.417
+8.0.417 [/Users/natig/.dotnet/sdk]
+Microsoft.AspNetCore.App 8.0.23 [/Users/natig/.dotnet/shared/Microsoft.AspNetCore.App]
+Microsoft.NETCore.App 8.0.23 [/Users/natig/.dotnet/shared/Microsoft.NETCore.App]
+da5ec0cc0f180d7237bdf599c7d71eb1fb96962ed14496427a1ea789b18c5050  tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs
+/dev/disk3s1       460  406        22    95% 2477559 235368680    1%   /System/Volumes/Data

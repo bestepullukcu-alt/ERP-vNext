@@ -32,6 +32,18 @@ internal static class PlanningSessionMapper
         s.UpdatedAt,
         s.UpdatedBy);
 
+    /// <summary>WP-VP-2 (B-8) — the detail with the selection's read-time names.</summary>
+    public static PlanningSessionDto ToDto(PlanningSession s, Features.PlannedVisit.VisitTargetNames names) => ToDto(s) with
+    {
+        SelectedContacts = s.Selection.SelectedContacts
+            .Select(c => new PlanningSessionContactDto(
+                c.ContactId, c.AccountId, c.AccountContactLinkId, names.Contact(c.ContactId), names.Account(c.AccountId),
+                ProductsOf(c)))
+            .ToList(),
+        SelectedAccounts = s.Selection.SelectedAccountIds.Select(id => new PlanningSessionNamedRefDto(id, names.Account(id))).ToList(),
+        SelectedPharmacies = s.Selection.SelectedPharmacyIds.Select(id => new PlanningSessionNamedRefDto(id, names.Account(id))).ToList()
+    };
+
     public static PlanningSessionListItemDto ToListItem(PlanningSession s) => new(
         s.Id,
         s.CyclePeriodId,
@@ -44,5 +56,106 @@ internal static class PlanningSessionMapper
         s.Version,
         s.CreatedAt,
         s.UpdatedAt,
-        s.TargetWeekStart);
+        s.TargetWeekStart,
+        s.Selection.SelectedPharmacyIds.Count,
+        IsEmpty: !s.HasTargets(),
+        ApprovedWeekCount: s.Weeks.Count(w => w.IsApproved()),
+        DoctorCount: s.Selection.SelectedContacts.Select(c => c.ContactId).Distinct().Count(),
+        PharmacyCount: s.Selection.SelectedPharmacyIds.Distinct().Count());
+
+    /// <summary>WP-VP-4A (E4-3C-B1) — a doctor's stored product pick for the reads (no MDM call: the stored code is the
+    /// display, the name stays null). A pick without a role reads promo (K-7d).</summary>
+    /// <para>WP-VP-4G (F4-4) — <paramref name="productNames"/>: the MDM names read for the whole response in one call
+    /// (absent ⇒ null, the code is shown).</para>
+    public static IReadOnlyList<PlanningSessionProductDto> ProductsOf(
+        PlanningSessionSelectedContact contact, IReadOnlyDictionary<Guid, string>? productNames = null)
+        => contact.Products
+            .Select(p => new PlanningSessionProductDto(
+                p.ProductId, p.ProductCode, productNames?.GetValueOrDefault(p.ProductId),
+                string.Equals(p.Role, StrategyProductLineRoles.NonPromo, StringComparison.OrdinalIgnoreCase)
+                    ? StrategyProductLineRoles.NonPromo
+                    : StrategyProductLineRoles.Promo))
+            .ToList();
+
+    /// <summary>WP-VP-4G (F4-4) — the detail's doctor rows with their picked products named.</summary>
+    public static PlanningSessionDto WithProductNames(
+        PlanningSessionDto dto, PlanningSession s, IReadOnlyDictionary<Guid, string> productNames)
+        => productNames.Count == 0
+            ? dto
+            : dto with
+            {
+                SelectedContacts = dto.SelectedContacts
+                    .Select((c, i) => c with { Products = ProductsOf(s.Selection.SelectedContacts[i], productNames) })
+                    .ToList()
+            };
+
+    /// <summary>WP-VP-4G (F4-10) — the rep's shown name: a person's name (the user directory's full name) wins; an
+    /// e-mail address is the last resort; the stored value is kept when nothing better resolves.</summary>
+    public static string? PreferPersonName(string? resolved, string? stored)
+    {
+        static bool IsEmail(string? v) => !string.IsNullOrWhiteSpace(v) && v.Contains('@');
+        foreach (var candidate in new[] { resolved, stored })
+        {
+            if (!string.IsNullOrWhiteSpace(candidate) && !IsEmail(candidate))
+            {
+                return candidate.Trim();
+            }
+        }
+
+        return string.IsNullOrWhiteSpace(resolved) ? stored : resolved;
+    }
+
+    /// <summary>
+    /// WP-VP-4A (brief §1) — the list's draft weeks WITHOUT generating: the period's weeks that are neither past nor
+    /// approved ("draft" here means "not approved and not over"; the detail's preview knows the exact split). An old
+    /// committed plan and an archived plan have none.
+    /// </summary>
+    public static int DraftWeekCount(PlanningSession s, DateOnly periodStart, DateOnly periodEnd, DateOnly today)
+        => LegacyCommittedPlan.IsLegacy(s) || s.IsArchived()
+            ? 0
+            : PlanningWeekCalendar.PeriodWeeks(periodStart, periodEnd)
+                .Count(w => !PlanningWeekCalendar.IsPast(w, today) && s.WeekOf(w.WeekStart)?.IsApproved() != true);
+
+    /// <summary>WP-VP-4A — today's week when today falls inside the period, else null.</summary>
+    public static string? CurrentWeekStart(DateOnly periodStart, DateOnly periodEnd, DateOnly today)
+        => today < periodStart || today > periodEnd
+            ? null
+            : PlanningWeekCalendar.MondayOf(today).ToString(PlanningWeekCalendar.DateFormat, System.Globalization.CultureInfo.InvariantCulture);
+
+    /// <summary>WP-VP-4A — the "open the next week" target: the first week of the period AFTER today's week (its Monday
+    /// later than today's Monday) that is not approved. Null when none, and always null for an old committed plan (no
+    /// drafts; no week reopen there).</summary>
+    public static string? NextDraftWeekStart(PlanningSession s, DateOnly periodStart, DateOnly periodEnd, DateOnly today)
+        => LegacyCommittedPlan.IsLegacy(s)
+            ? null
+            : PlanningWeekCalendar.PeriodWeeks(periodStart, periodEnd)
+                .FirstOrDefault(w => w.Monday > PlanningWeekCalendar.MondayOf(today) && s.WeekOf(w.WeekStart)?.IsApproved() != true)
+                ?.WeekStart;
+
+    /// <summary>WP-VP-3A — every week of the period for the detail: approved weeks with their visit count; the others
+    /// draft (the plan has targets) or empty (it has none) — the exact split needs a generation (the preview).</summary>
+    /// <para>WP-VP-4A — an old committed plan: a week holding its written visits (<paramref name="legacyFixed"/>) is
+    /// approved with storedStatus legacy; every other week is empty (nothing is generated for it).</para>
+    /// <summary>WP-VP-4E — one week's stored day pins, in day order.</summary>
+    public static IReadOnlyList<PlanningDayPinDto> DayPinsOf(PlanningSession s, string weekStart)
+        => s.DayPins
+            .Where(p => string.Equals(p.WeekStart, weekStart, StringComparison.Ordinal))
+            .OrderBy(p => p.Date, StringComparer.Ordinal)
+            .Select(p => new PlanningDayPinDto(p.TargetType, p.TargetId, p.ContactId, p.Date, p.Scope))
+            .ToList();
+
+    public static IReadOnlyList<PlanningWeekDto> DetailWeeks(
+        PlanningSession s, DateOnly periodStart, DateOnly periodEnd, DateOnly today,
+        IReadOnlyCollection<Domain.Entities.PlannedVisit>? legacyFixed = null)
+        => PlanningWeekCalendar.PeriodWeeks(periodStart, periodEnd)
+            .Select(w =>
+            {
+                var legacy = LegacyCommittedPlan.IsLegacy(s);
+                var stored = LegacyCommittedPlan.WeekOf(s, w, legacyFixed ?? Array.Empty<Domain.Entities.PlannedVisit>());
+                int? count = stored is not null && (stored.IsApproved() || stored.IsLegacy()) ? stored.PlannedVisitIds.Count : null;
+                var status = PlanningWeekCalendar.Derive(w, today, stored, count ?? (s.HasTargets() && !legacy ? 1 : 0));
+                // WP-VP-4E — the rep's day pins of the week (4D / 4F screens).
+                return PlanningWeekCalendar.ToDto(w, status, count, stored) with { DayPins = DayPinsOf(s, w.WeekStart) };
+            })
+            .ToList();
 }

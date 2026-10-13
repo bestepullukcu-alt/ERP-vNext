@@ -1,0 +1,25 @@
+--- a/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs
++++ b/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs
+@@ -1,4 +1,5 @@
+ using Diten.SupplyChainService.Api.Features.Returns;
++using Diten.SupplyChainService.Persistence.Features.SandopPlans;
+ using Diten.SupplyChainService.Application.Features.Returns;
+ using Diten.SupplyChainService.Persistence.Features.Returns;
+ using Diten.SupplyChainService.Infrastructure.Features.Returns;
+@@ -61,6 +62,7 @@
+ builder.Services.AddLoadPersistence();
+ builder.Services.AddClaimPersistence();
+ builder.Services.AddReturnPersistence();
++builder.Services.AddSandopPersistence();
+ builder.Services.AddHttpClient<IReturnReferenceReader, ReturnReferenceReader>(client => client.Timeout = TimeSpan.FromSeconds(5));
+ builder.Services.AddHttpClient<IClaimReferenceReader, ClaimReferenceReader>(client => client.Timeout = TimeSpan.FromSeconds(5));
+ builder.Services.AddHttpClient<ILoadReferenceReader, LoadReferenceReader>(client => client.Timeout = TimeSpan.FromSeconds(5));
+@@ -89,7 +91,7 @@
+ app.UseWhen(ClaimContextMiddleware.IsClaimPath, branch => branch.UseMiddleware<ClaimContextMiddleware>());
+ app.UseWhen(CarrierContextMiddleware.IsCarrierPath, branch => branch.UseMiddleware<CarrierContextMiddleware>());
+ app.UseWhen(LoadContextMiddleware.IsLoadPath, branch => branch.UseMiddleware<LoadContextMiddleware>());
+-app.UseWhen(context => !CarrierContextMiddleware.IsCarrierPath(context) && !LoadContextMiddleware.IsLoadPath(context) && !ClaimContextMiddleware.IsClaimPath(context) && !ReturnContextMiddleware.IsReturnPath(context), branch => branch.UseMiddleware<ShipmentContextMiddleware>());
++app.UseWhen(context => !CarrierContextMiddleware.IsCarrierPath(context) && !LoadContextMiddleware.IsLoadPath(context) && !ClaimContextMiddleware.IsClaimPath(context) && !ReturnContextMiddleware.IsReturnPath(context) && !context.Request.Path.StartsWithSegments("/api/supply-chain/sandop-plans"), branch => branch.UseMiddleware<ShipmentContextMiddleware>());
+ app.UseAuthorization();
+ app.MapGet("/health", () => Results.Ok(new { status = "up", module = "MOD-0183", warehouseIntake = "unimplemented", outboxTransport = "integration-owned" })).AllowAnonymous();
+ app.MapControllers();

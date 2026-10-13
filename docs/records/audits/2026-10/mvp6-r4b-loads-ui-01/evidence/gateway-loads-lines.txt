@@ -1,0 +1,43 @@
+# Gateway lines for /api/shipment-bundle/loads (lane gateway log; 0 in the first 22 lines written before the Loads page was used)
+21:59:08 HTTP "GET" "/api/shipment-bundle/loads" responded 200 in 50.9891 ms
+21:59:23 RequestId: f44306eb-7d57-42f2-baf2-ba4b8d6541db, PreviousRequestId: - | 503 Service Unavailable status code of request URI: http://localhost:5061/api/shipment-bundle/loads
+21:59:23 HTTP "POST" "/api/shipment-bundle/loads" responded 503 in 83.5439 ms
+22:00:12 HTTP "POST" "/api/shipment-bundle/loads" responded 201 in 437.9081 ms
+22:00:12 HTTP "GET" "/api/shipment-bundle/loads" responded 200 in 22.6586 ms
+22:00:28 HTTP "GET" "/api/shipment-bundle/loads" responded 200 in 17.0114 ms
+22:00:46 HTTP "POST" "/api/shipment-bundle/loads" responded 201 in 52.7466 ms
+22:00:46 HTTP "GET" "/api/shipment-bundle/loads" responded 200 in 5.2753 ms
+22:00:59 HTTP "GET" "/api/shipment-bundle/loads" responded 200 in 11.3204 ms
+22:01:01 HTTP "GET" "/api/shipment-bundle/loads" responded 200 in 8.9975 ms
+22:01:03 HTTP "GET" "/api/shipment-bundle/loads" responded 200 in 4.7923 ms
+22:01:43 HTTP "POST" "/api/shipment-bundle/loads" responded 201 in 59.6468 ms
+22:01:46 HTTP "POST" "/api/shipment-bundle/loads" responded 201 in 9.4521 ms
+22:01:46 HTTP "GET" "/api/shipment-bundle/loads" responded 200 in 5.3463 ms
+22:01:50 HTTP "POST" "/api/shipment-bundle/loads" responded 201 in 25.4508 ms
+22:01:53 RequestId: bf1af4c0-a2ca-40ae-897d-072c38d70b54, PreviousRequestId: - | 409 Conflict status code of request URI: http://localhost:5061/api/shipment-bundle/loads
+22:01:53 HTTP "POST" "/api/shipment-bundle/loads" responded 409 in 12.9838 ms
+22:02:21 HTTP "GET" "/api/shipment-bundle/loads" responded 200 in 14.7600 ms
+22:02:47 HTTP "GET" "/api/shipment-bundle/loads" responded 200 in 12.4133 ms
+22:02:49 HTTP "POST" "/api/shipment-bundle/loads" responded 201 in 28.9319 ms
+22:02:52 RequestId: ebb3dabd-ea66-4ab5-a81d-b4305f9c5d63, PreviousRequestId: - | 409 Conflict status code of request URI: http://localhost:5061/api/shipment-bundle/loads
+22:02:52 HTTP "POST" "/api/shipment-bundle/loads" responded 409 in 7.5072 ms
+22:03:14 HTTP "GET" "/api/shipment-bundle/loads" responded 200 in 10.3206 ms
+22:03:16 HTTP "POST" "/api/shipment-bundle/loads" responded 201 in 28.1378 ms
+22:03:19 RequestId: 9aa74fe7-[REDACTED_PHONE]-9a6e-012f3a559d36, PreviousRequestId: - | 409 Conflict status code of request URI: http://localhost:5061/api/shipment-bundle/loads
+22:03:19 HTTP "POST" "/api/shipment-bundle/loads" responded 409 in 14.5175 ms
+22:06:37 TenantResolution dev bypass applied in gateway. Path="/api/shipment-bundle/loads" TenantId=00000000-0000-0000-0000-000000000001
+22:06:37 RequestId: bfa3ff8c4ca34d63baafb741b47bf79c, PreviousRequestId: - | ResponderMiddleware found 1 error -> | ConnectionToDownstreamServiceError: Error connecting to downstream service, exception: System.Net.Http.HttpReques
+22:06:37 HTTP "GET" "/api/shipment-bundle/loads" responded 502 in 27.6012 ms
+22:06:49 RequestId: 172e76ef-1a71-4747-bdcb-7647f59251ee, PreviousRequestId: - | ResponderMiddleware found 1 error -> | ConnectionToDownstreamServiceError: Error connecting to downstream service, exception: System.Net.Http.HttpRe
+22:06:49 HTTP "GET" "/api/shipment-bundle/loads" responded 502 in 3.7992 ms
+22:07:14 HTTP "GET" "/api/shipment-bundle/loads" responded 200 in 750.9956 ms
+22:07:40 RequestId: de89b1dc-1fbc-4362-a053-56071228dfb1, PreviousRequestId: - | ResponderMiddleware found 1 error -> | ConnectionToDownstreamServiceError: Error connecting to downstream service, exception: System.Net.Http.HttpRe
+22:07:40 HTTP "POST" "/api/shipment-bundle/loads" responded 502 in 21.4745 ms
+22:08:13 RequestId: 54d58033-8d8d-49dd-8afb-fc664b0e2e8d, PreviousRequestId: - | ResponderMiddleware found 1 error -> | RequestCanceled: The operation was canceled. | Setting error response for request: GET /api/shipment-bundle/l
+22:08:13 HTTP "GET" "/api/shipment-bundle/loads" responded 499 in 5426.2322 ms
+22:08:28 RequestId: [REDACTED_PHONE]-8fe9-dc9222af32ea, PreviousRequestId: - | ResponderMiddleware found 1 error -> | RequestCanceled: The operation was canceled. | Setting error response for request: GET /api/shipment-bundle/loa
+22:08:28 HTTP "GET" "/api/shipment-bundle/loads" responded 499 in 15005.1972 ms
+22:08:56 RequestId: 6326754f-0d3e-4d21-97cd-1de0fb5b685b, PreviousRequestId: - | ResponderMiddleware found 1 error -> | RequestCanceled: The operation was canceled. | Setting error response for request: GET /api/shipment-bundle/l
+22:08:56 HTTP "GET" "/api/shipment-bundle/loads" responded 499 in 15006.0093 ms
+22:09:15 HTTP "GET" "/api/shipment-bundle/loads" responded 200 in 79.8628 ms
+22:09:18 HTTP "GET" "/api/shipment-bundle/loads" responded 200 in 15.2624 ms

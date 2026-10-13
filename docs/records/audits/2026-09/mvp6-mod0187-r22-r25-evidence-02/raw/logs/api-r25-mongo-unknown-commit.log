@@ -1,0 +1,94 @@
+[22:05:42 INF] User profile is available. Using '/Users/natig/.aspnet/DataProtection-Keys' as key repository; keys will not be encrypted at rest.
+[22:05:42 WRN] Shipment outbox transport is not registered. Durable events remain pending; integration is held.
+[22:05:43 INF] Now listening on: http://127.0.0.1:5066
+[22:05:43 INF] Application started. Press Ctrl+C to shut down.
+[22:05:43 INF] Hosting environment: ClaimsEvidence
+[22:05:43 INF] Content root path: /private/tmp/mvp6-mod0187-r22-r25-evidence-02/source/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api
+[22:05:43 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5066/health - null null
+[22:05:43 INF] Executing endpoint 'HTTP: GET /health'
+[22:05:43 INF] Setting HTTP status code 200.
+[22:05:43 INF] Writing value of type '<>f__AnonymousType2`4' as Json.
+[22:05:43 INF] Executed endpoint 'HTTP: GET /health'
+[22:05:43 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5066/health - 200 null application/json; charset=utf-8 52.3313ms
+[22:05:43 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5066/api/shipment-bundle/claims - null null
+[22:05:43 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Claims.ClaimsController.List (Diten.SupplyChainService.Api)'
+[22:05:43 INF] Route matched with {action = "List", controller = "Claims"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] List(System.String, System.String, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Claims.ClaimsController (Diten.SupplyChainService.Api).
+[22:05:43 INF] Handling GetClaimListQuery
+[22:05:43 INF] Executing ObjectResult, writing value of type 'Diten.SupplyChainService.Application.Features.Claims.ClaimListResponse'.
+[22:05:43 INF] Executed action Diten.SupplyChainService.Api.Features.Claims.ClaimsController.List (Diten.SupplyChainService.Api) in 66.5408ms
+[22:05:43 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Claims.ClaimsController.List (Diten.SupplyChainService.Api)'
+[22:05:43 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5066/api/shipment-bundle/claims - 200 null application/json; charset=utf-8 134.3491ms
+[22:05:45 INF] Request starting HTTP/1.1 POST http://127.0.0.1:5066/api/shipment-bundle/claims - application/json 143
+[22:05:45 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Claims.ClaimsController.Create (Diten.SupplyChainService.Api)'
+[22:05:45 INF] Route matched with {action = "Create", controller = "Claims"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(System.Text.Json.JsonElement, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Claims.ClaimsController (Diten.SupplyChainService.Api).
+[22:05:45 INF] Handling CreateClaimCommand
+[22:05:45 INF] Start processing HTTP request GET http://127.0.0.1:5066/api/shipment-bundle/shipments/d849d11d-113a-4221-9bb0-d12a2882e83e
+[22:05:45 INF] Sending HTTP request GET http://127.0.0.1:5066/api/shipment-bundle/shipments/d849d11d-113a-4221-9bb0-d12a2882e83e
+[22:05:45 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5066/api/shipment-bundle/shipments/d849d11d-113a-4221-9bb0-d12a2882e83e - null null
+[22:05:45 INF] Executing endpoint 'Diten.SupplyChainService.Api.Controllers.ShipmentsController.Detail (Diten.SupplyChainService.Api)'
+[22:05:45 INF] Route matched with {action = "Detail", controller = "Shipments"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Detail(System.Guid, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Controllers.ShipmentsController (Diten.SupplyChainService.Api).
+[22:05:45 INF] Handling GetShipmentByIdQuery
+[22:05:45 INF] Executing ObjectResult, writing value of type 'System.Text.Json.Nodes.JsonObject'.
+[22:05:45 INF] Executed action Diten.SupplyChainService.Api.Controllers.ShipmentsController.Detail (Diten.SupplyChainService.Api) in 34.2343ms
+[22:05:45 INF] Executed endpoint 'Diten.SupplyChainService.Api.Controllers.ShipmentsController.Detail (Diten.SupplyChainService.Api)'
+[22:05:45 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5066/api/shipment-bundle/shipments/d849d11d-113a-4221-9bb0-d12a2882e83e - 200 null application/json; charset=utf-8 39.5264ms
+[22:05:45 INF] Received HTTP response headers after 60.8325ms - 200
+[22:05:45 INF] End processing HTTP request after 64.9023ms - 200
+[22:05:45 INF] Claims evidence probe reached aggregate
+[22:05:45 INF] Claims evidence probe reached receipt
+[22:05:45 INF] Claims evidence probe reached audit
+[22:05:45 INF] Claims evidence probe reached outbox
+[22:05:45 INF] Claims evidence probe reached beforeCommit
+[22:05:45 INF] Executing ObjectResult, writing value of type '<>f__AnonymousType0`2[[<>f__AnonymousType1`3[[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Guid, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Diten.SupplyChainService.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[22:05:45 INF] Executed action Diten.SupplyChainService.Api.Features.Claims.ClaimsController.Create (Diten.SupplyChainService.Api) in 268.432ms
+[22:05:45 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Claims.ClaimsController.Create (Diten.SupplyChainService.Api)'
+[22:05:45 INF] Request finished HTTP/1.1 POST http://127.0.0.1:5066/api/shipment-bundle/claims - 503 null application/json; charset=utf-8 278.8373ms
+[22:05:47 INF] Request starting HTTP/1.1 POST http://127.0.0.1:5066/api/shipment-bundle/claims - application/json 143
+[22:05:47 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Claims.ClaimsController.Create (Diten.SupplyChainService.Api)'
+[22:05:47 INF] Route matched with {action = "Create", controller = "Claims"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(System.Text.Json.JsonElement, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Claims.ClaimsController (Diten.SupplyChainService.Api).
+[22:05:47 INF] Handling CreateClaimCommand
+[22:05:47 INF] Executing ObjectResult, writing value of type 'Diten.SupplyChainService.Application.Features.Claims.ClaimResponse'.
+[22:05:47 INF] Executed action Diten.SupplyChainService.Api.Features.Claims.ClaimsController.Create (Diten.SupplyChainService.Api) in 7.5306ms
+[22:05:47 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Claims.ClaimsController.Create (Diten.SupplyChainService.Api)'
+[22:05:47 INF] Request finished HTTP/1.1 POST http://127.0.0.1:5066/api/shipment-bundle/claims - 201 null application/json; charset=utf-8 9.1956ms
+[22:05:52 INF] Request starting HTTP/1.1 POST http://127.0.0.1:5066/api/shipment-bundle/claims - application/json 143
+[22:05:52 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Claims.ClaimsController.Create (Diten.SupplyChainService.Api)'
+[22:05:52 INF] Route matched with {action = "Create", controller = "Claims"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(System.Text.Json.JsonElement, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Claims.ClaimsController (Diten.SupplyChainService.Api).
+[22:05:52 INF] Handling CreateClaimCommand
+[22:05:52 INF] Start processing HTTP request GET http://127.0.0.1:5066/api/shipment-bundle/shipments/5d297b72-d285-4707-9c96-4e2c5caa19ff
+[22:05:52 INF] Sending HTTP request GET http://127.0.0.1:5066/api/shipment-bundle/shipments/5d297b72-d285-4707-9c96-4e2c5caa19ff
+[22:05:52 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5066/api/shipment-bundle/shipments/5d297b72-d285-4707-9c96-4e2c5caa19ff - null null
+[22:05:52 INF] Executing endpoint 'Diten.SupplyChainService.Api.Controllers.ShipmentsController.Detail (Diten.SupplyChainService.Api)'
+[22:05:52 INF] Route matched with {action = "Detail", controller = "Shipments"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Detail(System.Guid, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Controllers.ShipmentsController (Diten.SupplyChainService.Api).
+[22:05:52 INF] Handling GetShipmentByIdQuery
+[22:05:52 INF] Executing ObjectResult, writing value of type 'System.Text.Json.Nodes.JsonObject'.
+[22:05:52 INF] Executed action Diten.SupplyChainService.Api.Controllers.ShipmentsController.Detail (Diten.SupplyChainService.Api) in 2.9182ms
+[22:05:52 INF] Executed endpoint 'Diten.SupplyChainService.Api.Controllers.ShipmentsController.Detail (Diten.SupplyChainService.Api)'
+[22:05:52 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5066/api/shipment-bundle/shipments/5d297b72-d285-4707-9c96-4e2c5caa19ff - 200 null application/json; charset=utf-8 3.7796ms
+[22:05:52 INF] Received HTTP response headers after 4.8587ms - 200
+[22:05:52 INF] End processing HTTP request after 5.1586ms - 200
+[22:05:52 INF] Executing ObjectResult, writing value of type '<>f__AnonymousType0`2[[<>f__AnonymousType1`3[[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Guid, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Diten.SupplyChainService.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[22:05:52 INF] Executed action Diten.SupplyChainService.Api.Features.Claims.ClaimsController.Create (Diten.SupplyChainService.Api) in 30.6123ms
+[22:05:52 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Claims.ClaimsController.Create (Diten.SupplyChainService.Api)'
+[22:05:52 INF] Request finished HTTP/1.1 POST http://127.0.0.1:5066/api/shipment-bundle/claims - 503 null application/json; charset=utf-8 31.7579ms
+[22:05:54 INF] Request starting HTTP/1.1 POST http://127.0.0.1:5066/api/shipment-bundle/claims - application/json 143
+[22:05:54 INF] Executing endpoint 'Diten.SupplyChainService.Api.Features.Claims.ClaimsController.Create (Diten.SupplyChainService.Api)'
+[22:05:54 INF] Route matched with {action = "Create", controller = "Claims"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(System.Text.Json.JsonElement, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Features.Claims.ClaimsController (Diten.SupplyChainService.Api).
+[22:05:54 INF] Handling CreateClaimCommand
+[22:05:54 INF] Start processing HTTP request GET http://127.0.0.1:5066/api/shipment-bundle/shipments/5d297b72-d285-4707-9c96-4e2c5caa19ff
+[22:05:54 INF] Sending HTTP request GET http://127.0.0.1:5066/api/shipment-bundle/shipments/5d297b72-d285-4707-9c96-4e2c5caa19ff
+[22:05:54 INF] Request starting HTTP/1.1 GET http://127.0.0.1:5066/api/shipment-bundle/shipments/5d297b72-d285-4707-9c96-4e2c5caa19ff - null null
+[22:05:54 INF] Executing endpoint 'Diten.SupplyChainService.Api.Controllers.ShipmentsController.Detail (Diten.SupplyChainService.Api)'
+[22:05:54 INF] Route matched with {action = "Detail", controller = "Shipments"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Detail(System.Guid, System.Threading.CancellationToken) on controller Diten.SupplyChainService.Api.Controllers.ShipmentsController (Diten.SupplyChainService.Api).
+[22:05:54 INF] Handling GetShipmentByIdQuery
+[22:05:54 INF] Executing ObjectResult, writing value of type 'System.Text.Json.Nodes.JsonObject'.
+[22:05:54 INF] Executed action Diten.SupplyChainService.Api.Controllers.ShipmentsController.Detail (Diten.SupplyChainService.Api) in 2.8136ms
+[22:05:54 INF] Executed endpoint 'Diten.SupplyChainService.Api.Controllers.ShipmentsController.Detail (Diten.SupplyChainService.Api)'
+[22:05:54 INF] Request finished HTTP/1.1 GET http://127.0.0.1:5066/api/shipment-bundle/shipments/5d297b72-d285-4707-9c96-4e2c5caa19ff - 200 null application/json; charset=utf-8 3.4377ms
+[22:05:54 INF] Received HTTP response headers after 3.7593ms - 200
+[22:05:54 INF] End processing HTTP request after 3.9806ms - 200
+[22:05:54 INF] Executing ObjectResult, writing value of type '<>f__AnonymousType0`2[[<>f__AnonymousType1`3[[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Guid, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Diten.SupplyChainService.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+[22:05:54 INF] Executed action Diten.SupplyChainService.Api.Features.Claims.ClaimsController.Create (Diten.SupplyChainService.Api) in 15.6388ms
+[22:05:54 INF] Executed endpoint 'Diten.SupplyChainService.Api.Features.Claims.ClaimsController.Create (Diten.SupplyChainService.Api)'
+[22:05:54 INF] Request finished HTTP/1.1 POST http://127.0.0.1:5066/api/shipment-bundle/claims - 503 null application/json; charset=utf-8 16.9496ms
+[22:05:57 INF] Application is shutting down...

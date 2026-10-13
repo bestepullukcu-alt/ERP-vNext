@@ -1,0 +1,30 @@
+{
+ "legalEntityId": "634e06e0-b568-4568-bb1b-2d4a97eb9005",
+ "orgUnitId": "cdb3f99c-c821-4212-b2ef-298df2f3b378",
+ "result": "PASS",
+ "actorLogins": {
+  "admin": {
+   "legal_entity_id": "634e06e0-b568-4568-bb1b-2d4a97eb9005",
+   "pwd_change_required": "false",
+   "shipmentKeys": [
+    "supplychain.shipments.cancel",
+    "supplychain.shipments.create",
+    "supplychain.shipments.dispatch",
+    "supplychain.shipments.pod.capture",
+    "supplychain.shipments.read"
+   ],
+   "permissionCount": 40
+  },
+  "nokey": {
+   "legal_entity_id": "634e06e0-b568-4568-bb1b-2d4a97eb9005",
+   "pwd_change_required": "false",
+   "shipmentKeys": [],
+   "permissionCount": 0
+  }
+ },
+ "userIds": {
+  "admin": "cc813328-4733-44e3-a5a6-5142eba48724",
+  "fix": "41b8ef4e-6c2c-4535-8df7-8036d190cbb2",
+  "nokey": "76c16240-ecde-4378-9c1b-8eeb21c2a044"
+ }
+}

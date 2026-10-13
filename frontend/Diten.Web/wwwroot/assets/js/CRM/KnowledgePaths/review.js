@@ -213,7 +213,10 @@
         try {
             await api.post(`/paths/${pathId}/revisions/${revisionId}/decision`, { decision, comment: comment.trim() || null });
             const done = $('rvDecisionDone');
-            done.textContent = decision === 'approve' ? t('DecisionApproved', model.currentStepName || '') : t('DecisionRejected');
+            // WP-E2E-FIX-2 (E3-B3) — the last step's approval completes the review; no "next step" to point at.
+            done.textContent = decision !== 'approve' ? t('DecisionRejected')
+                : model.isFinalStep ? t('DecisionApprovedFinal')
+                : t('DecisionApproved', model.currentStepName || '');
             done.classList.remove('d-none');
             $('rvDecisionComment').value = '';
             await load();

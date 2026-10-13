@@ -1,0 +1,3 @@
+# verify from: /Users/natig/Projects/ERP-vNext-recovery/docs/records/audits/2026-10/mvp6-q454-no-shell-four-01 — shasum -a 256 -c ARTIFACTS.sha256 (this record's own files only)
+b0d10d03aff469eba33f3bfd603fccbeec59b38012311a7d3716c8b50e08c2f6  REPORT.md
+a3aaf86d1fd8398d9c3faf3fda4d8d8a000968ab410577d185cab67cd6114692  SOURCE-AS-MEASURED.sha256

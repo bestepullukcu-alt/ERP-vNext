@@ -1,0 +1,8 @@
+export DITEN_PLATFORM_TEST_MONGO_URI=mongodb://127.0.0.1:31994/\?replicaSet=rsq205s1\&serverSelectionTimeoutMS=5000
+export MVP6_MOD0192_MONGO_URI=mongodb://127.0.0.1:31994/\?replicaSet=rsq205s1\&serverSelectionTimeoutMS=5000
+export MOD0183_TEST_MONGO=mongodb://127.0.0.1:31994/\?replicaSet=rsq205s1\&serverSelectionTimeoutMS=5000
+export MOD0184_TEST_MONGO=mongodb://127.0.0.1:31994/\?replicaSet=rsq205s1\&serverSelectionTimeoutMS=5000
+export MOD0185_TEST_MONGO=mongodb://127.0.0.1:31994/\?replicaSet=rsq205s1\&serverSelectionTimeoutMS=5000
+export MVP6_MOD0190_MONGO_URI=mongodb://127.0.0.1:31994/\?replicaSet=rsq205s1\&serverSelectionTimeoutMS=5000
+export RETURNS_MONGO_URI=mongodb://127.0.0.1:31994/\?replicaSet=rsq205s1\&serverSelectionTimeoutMS=5000
+export CLAIMS_TEST_MONGO=mongodb://127.0.0.1:31994/\?replicaSet=rsq205s1\&serverSelectionTimeoutMS=5000

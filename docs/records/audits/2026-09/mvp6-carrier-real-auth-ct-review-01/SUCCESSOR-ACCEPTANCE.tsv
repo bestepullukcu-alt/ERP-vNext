@@ -1,0 +1,23 @@
+id	criterion	result	evidence_mode	controlling_evidence	CT disposition
+CAR-01	Bounded backend C01-C12	ACCEPTED	INHERITED / CONTENT-BOUND	mvp6-mod0184-ct-accept-02-2026-09-18/README.md	Prior bounded E4 acceptance retained; not rerun
+CAR-02	Final UI source identity	PASS	FRESH HASH CHECK	FINAL-UI-SOURCE.tsv SHA 3b7086f0cc839c33f0753076e732aa436b9a8e5cd186f1484f2b0225364d033c	Registered isolated UI worktree matches 21/21
+CAR-03	Final Auth/Platform/MDM source identity	PASS	FRESH HASH CHECK	final-source.tar.gz SHA f50350b8e541a4c1cbc640926c581cf510b4c2dbb57b31ef4193bf4c25c9e2cd; FINAL-22 SHA b9713185aba02bf325a9149b37a8cc6ffe3b1dd0e979febdaa773946ae9b1731	Archive matches 22/22
+CAR-04	Source-build-binary-process chain	PASS	FRESH E2E	E2E SOURCE-BINARY-PROCESS.tsv; evidence raw/runtime-binaries.sha256	Six exact binaries bound to lane processes and ports
+CAR-05	Real Auth browser session through Gateway	PASS	FRESH E2E	BROWSER-ACCEPTANCE.tsv; SOP-22.md	Server-managed Auth session; no manually supplied bearer/cookie
+CAR-06	Carrier list	PASS	FRESH E2E	BROWSER-ACCEPTANCE.tsv	Authorized DataTable rendered through Gateway
+CAR-07	Carrier create and reload persistence	PASS	FRESH E2E	BROWSER-ACCEPTANCE.tsv; raw/persistence-after-restart.json	Created row persisted and reloaded
+CAR-08	Replay and changed-payload conflict	PASS	FRESH E2E	raw/replay-create-first.json; raw/replay-create-same.json; raw/replay-create-conflict.json	201 first; 201 same result/replay; 409 IDEMPOTENCY_KEY_REUSED
+CAR-09	Persisted-row status offcanvas	PASS	FRESH E2E	BROWSER-ACCEPTANCE.tsv; raw/persistence-after-restart.json	Row-driven Suspended/E2E-VERIFY persisted
+CAR-10	SupplyChain restart persistence	PASS	FRESH E2E	raw/persistence-after-restart.json	UI and replay rows retained expected states
+CAR-11	RBAC and UAS-001	PASS	FRESH E2E	BROWSER-ACCEPTANCE.tsv; raw/access-isolation-matrix.json	Read-only mutations 403; no-role UI renders denial/remediation only
+CAR-12	Tenant isolation	PASS	FRESH E2E	raw/access-isolation-matrix.json	Tenant-97 sees zero; tenant-1 retains two; contradictory header 400
+CAR-13	Legal-entity isolation	PASS	FRESH E2E	raw/access-isolation-matrix.json	LE1 token requesting LE2 returns 404 CARRIER_NOT_FOUND
+CAR-14	Missing signed legal entity	PASS	FRESH E2E	raw/access-isolation-matrix.json	Carrier fails closed with 403
+CAR-15	Refresh after LE revocation	PASS	FRESH E2E	raw/refresh-revocation.json	Refresh omits legal_entity_id; Carrier returns 403; fixture restored
+CAR-16	F-01/F-02 token validator	CLOSED	INHERITED / NOT RERUN	Auth handoff SHA 95dafe0fbfdfdf490f9ecdb57f65582d0146da435ad938f1df13c11105586cd2; prior independent 49/49	Not counted as a new E2E run
+CAR-17	Seven-language/L10n	PASS	INHERITED / CONTENT-BOUND	mvp6-carrier-ui-quality-close-01; unchanged UI manifest	Prior 70/70 retained; not rerun
+CAR-18	Responsive 768/390	PASS	INHERITED / CONTENT-BOUND	mvp6-carrier-ui-quality-close-01; unchanged UI manifest	Prior exact measurements retained; not rerun
+CAR-19	Durable PNG	OPEN	NOT PRODUCED	BROWSER-ACCEPTANCE.tsv; PNG-DISPOSITION.md	Mandatory controlling evidence row; no approved substitute or waiver
+CAR-20	Platform aggregate health	OBSERVED 503	FRESH E2E	raw/health-platform.body.json	Not a Platform health PASS; required consumer chain still executed successfully
+CAR-21	Secrets and cleanup	PASS	FRESH E2E	SECRET-SCAN.txt; CLEANUP.tsv	No reusable credentials archived; all lane processes stopped
+CAR-22	Overall bounded Carrier UI/backend/E2E	PARTIAL	CT CONSOLIDATION	CAR-01 through CAR-21	Functional isolated slice accepted; complete UI evidence held by CAR-19

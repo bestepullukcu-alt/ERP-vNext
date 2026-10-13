@@ -1,0 +1,26 @@
+[
+  {
+    "old": "# SANDOP-CAPACITY semantics v3.0.0-rc.1 \u2014 UNAPPROVED successor candidate\n\nThis candidate succeeds the published SANDOP-CAPACITY 2.0.0 YAML and annex; it is not published and inherits no final artifact consent. Proposed metadata is `info.version: 3.0.0-rc.1`, `x-status: CANDIDATE`, with unchanged routes and wire `contractVersion: v1`. The conservative proposed major line flags exact-error-code consumer risk; metadata does not negotiate the same-route cutover. Final version, exact artifact consent, canonical publication and duplicate-name production implementation remain separate gates under the actual C decision of 2026-09-22.\n\nThe sole behavioral delta is the `createCapacityScenario` duplicate exact-name 409 described below. All other 2.0.0 operation, lifecycle, fixture, transport, idempotency, executor and event semantics are retained. Earlier 2.0.0 consent/publication applies only to its exact baseline bytes and is not transferred here. This candidate grants no runtime, pack promotion, consumer consent or release authority.\n\nHistorical executor design provenance is unchanged: `DECISION.md` SHA-256 `cfddf953a1a98107869417ef8afbcad5f578fcfde2a8cad8e1d2b6b05197cc5d`; its exact source and retained rules appear in the executor section below. This successor adds no executor authority.\n\n",
+    "new": "# SANDOP-CAPACITY semantics v3.0.0\n\nThis annex specifies SANDOP-CAPACITY 3.0.0, succeeding the 2.0.0 contract. Metadata is `info.version: 3.0.0`, `x-status: FROZEN`, with unchanged routes and wire `contractVersion: v1`. The major line identifies exact-error-code consumer risk; metadata does not negotiate the same-route cutover. Publication, consumer consent and runtime application are recorded separately and are not established by this document's metadata.\n\nThe sole behavioral delta from 2.0.0 is the `createCapacityScenario` duplicate exact-name 409 described below. All other 2.0.0 operation, lifecycle, fixture, transport, idempotency, executor and event semantics are retained. Earlier exact-byte consent is not automatically portable to another artifact. Contract publication itself grants no runtime or pack-promotion authority.\n\nHistorical executor design provenance is unchanged: `DECISION.md` SHA-256 `cfddf953a1a98107869417ef8afbcad5f578fcfde2a8cad8e1d2b6b05197cc5d`; its exact source and retained rules appear in the executor section below. This successor adds no executor authority.\n\n"
+  },
+  {
+    "old": "These are candidate acceptance requirements, not evidence that the production unique-index race implementation is fixed. Source application requires the separately approved published successor and consumer/cutover decision.",
+    "new": "These are contract acceptance requirements, not evidence that the production unique-index race implementation is fixed. Source application requires this contract to be separately approved and published, separate runtime authorization, and the consumer/cutover decision."
+  },
+  {
+    "old": "under the **design-approved, not runtime-authorized** module-owned executor.",
+    "new": "under the **design-approved** module-owned executor, with runtime authorization recorded separately."
+  },
+  {
+    "old": "runtime implementation is still unauthorized.",
+    "new": "this contract does not itself grant runtime implementation authority."
+  },
+  {
+    "old": "Until Phase 1.5 and runtime DEV/VER authorization, terminal E4 acceptance remains HELD.",
+    "new": "Terminal E4 acceptance requires separately recorded Phase 1.5 and runtime DEV/VER authorization and evidence."
+  },
+  {
+    "old": "Static candidate results alone do not prove runtime uptake.",
+    "new": "Static contract results alone do not prove runtime uptake."
+  }
+]

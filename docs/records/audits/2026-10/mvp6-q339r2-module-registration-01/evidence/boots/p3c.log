@@ -1,0 +1,14 @@
+[19:22:23 INF] User profile is available. Using '/Users/natig/.aspnet/DataProtection-Keys' as key repository; keys will not be encrypted at rest. CorrelationId= TenantId= LegalEntityId=
+[19:22:23 WRN] Shipment outbox transport is not registered. Durable events remain pending; integration is held. CorrelationId= TenantId= LegalEntityId=
+[19:22:23 WRN] Module self-registration skipped: PlatformRegistration BaseUrl/InternalApiKey not configured. CorrelationId= TenantId= LegalEntityId=
+[19:22:23 INF] Now listening on: http://127.0.0.1:58339 CorrelationId= TenantId= LegalEntityId=
+[19:22:23 INF] Application started. Press Ctrl+C to shut down. CorrelationId= TenantId= LegalEntityId=
+[19:22:23 INF] Hosting environment: Development CorrelationId= TenantId= LegalEntityId=
+[19:22:23 INF] Content root path: /Users/natig/mvp6-env/q339r2-20261003-1919/src/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api CorrelationId= TenantId= LegalEntityId=
+[19:22:28 INF] Request starting HTTP/1.1 GET http://127.0.0.1:58339/health - null null CorrelationId= TenantId= LegalEntityId=
+[19:22:29 INF] Executing endpoint 'HTTP: GET /health' CorrelationId= TenantId= LegalEntityId=
+[19:22:29 INF] Setting HTTP status code 200. CorrelationId= TenantId= LegalEntityId=
+[19:22:29 INF] Writing value of type '<>f__AnonymousType2`4' as Json. CorrelationId= TenantId= LegalEntityId=
+[19:22:29 INF] Executed endpoint 'HTTP: GET /health' CorrelationId= TenantId= LegalEntityId=
+[19:22:29 INF] Request finished HTTP/1.1 GET http://127.0.0.1:58339/health - 200 null application/json; charset=utf-8 54.2127ms CorrelationId= TenantId= LegalEntityId=
+[19:22:29 INF] Application is shutting down... CorrelationId= TenantId= LegalEntityId=

@@ -1,0 +1,16 @@
+--- a/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/SandopPlans/SandopAtomicityTests.cs
++++ b/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/SandopPlans/SandopAtomicityTests.cs
+@@ -73,9 +73,12 @@
+  var configured=await Configure(db,data);BsonDocument disabled;SandopResult resolved;
+  try{resolved=await SandopTestHost.Mutate(h,s,f,SandopAction.Create,null,key,body,originalCorrelation);}
+  finally{disabled=await Disable(db);}
+- Assert.True(disabled["count"].ToInt32()>configured["count"].ToInt32());Assert.Equal(503,resolved.Status);Assert.Equal("COMMIT_RESULT_UNRESOLVED",resolved.Code);
++ Assert.True(disabled["count"].ToInt32()>configured["count"].ToInt32());
++ Assert.True(resolved.Status is 201 or 503,$"Expected visible receipt replay or unresolved commit, got {resolved.Status} {resolved.Code}");
++ if(resolved.Status==503)Assert.Equal("COMMIT_RESULT_UNRESOLVED",resolved.Code);
+  var recoveredDb=FreshDatabase();
+  var receipt=await recoveredDb.GetCollection<BsonDocument>("sandop_receipts").Find(Scoped(s)).SingleAsync();Assert.Equal(originalCorrelation.ToString(),receipt["OriginalCorrelationId"].AsString);
++ if(resolved.Status==201)Assert.Equal(receipt["Body"].AsString,resolved.Body);
+  var fresh=new Diten.SupplyChainService.Persistence.Features.SandopPlans.SandopRepository(recoveredDb);
+  var replay=await SandopTestHost.Mutate(fresh,s,new Diten.SupplyChainService.Infrastructure.Features.SandopPlans.DemandFixtureReader([]),SandopAction.Create,null,key,body);
+  Assert.Equal(201,replay.Status);Assert.Equal(receipt["Body"].AsString,replay.Body);

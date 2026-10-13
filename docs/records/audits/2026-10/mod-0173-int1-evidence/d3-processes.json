@@ -1,0 +1,11 @@
+﻿{
+    "startedProcesses":  [
+                             "prism-product-master pid=10268",
+                             "prism-location pid=29592",
+                             "service pid=35784",
+                             "gateway pid=3612"
+                         ],
+    "remainingAfterStop":  [
+
+                           ]
+}

@@ -1,0 +1,10 @@
+@model Diten.Web.Views.Traceability.LotTrace.FlowColumn
+@* One level of the İzlenebilirlik flow (back 2 · back 1 · forward 1 · forward 2). index.js fills the cards. *@
+<div class="col-12 col-xl">
+    <div class="card h-100" id="lottrace-@Model.Slot">
+        <div class="card-body p-3">
+            <small class="text-muted d-block mb-2">@Model.Title</small>
+            <div class="d-flex flex-column gap-2" data-nodes></div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,15 @@
+# verify from: cd docs/records/audits/2026-10/mvp6-q448-flaky-p95-01 && shasum -a 256 -c ARTIFACTS.sha256
+0ec71ca6c3a614892154c30bc0753a3bce4335def4c504982516a407996ddf1c  ./REPORT.md
+591612abbc9d8a103a25eaec4bd706d911dbcf3b262e19c1056b44afe5d47afb  ./evidence/delay-probe-output.txt
+648348d03da38a9fe4d959faaa15fe2a1d7167affa61b8dd09c4773bc6942147  ./evidence/delay-probe.cs.txt
+00a4cc7e954c339ac6401ef0aed315ee9dc7eca2bffd7a3a2d7eb19b40d8acb2  ./evidence/module-20x-after.txt
+280e2e6703eb942a7cde127c7b1add5c36fad79f972c379644ac646f78ccf1a1  ./evidence/module-20x-before.txt
+f9a913448b37374c5e70820c7c7fe6b042e5e238afafbda36accf3afbf4d57c2  ./evidence/p95-200x-after-summary.txt
+4abf5c8617c98b44d25ca69ac892e9b115723377517549a9002b4990b1e38921  ./evidence/p95-200x-after.txt
+6d17241eaecac44d23f4c6c612bc92b602ae2fcb525ebebfaaf1d8ebe36e97e9  ./evidence/p95-200x-before-summary.txt
+fe15f0a2b6a8879e20d15f84efdbeac612bc1164f2b8b47bb91ba71643441930  ./evidence/p95-200x-before.txt
+094b1f3566fd6d88e0b7476ced07c15298724aa517c7a3427acad5e438a3ea1c  ./evidence/sabotage-seconds-run-1.txt
+c8e078dcd64e44ebe30d3ab84eab5de4e2606b55e5879cd203e0b9a14bb095d8  ./evidence/sabotage-seconds-run-2.txt
+46da2debebe4536b7acfd18e8a4e4546241160ca67c61c8c3aff172b872d9463  ./evidence/sabotage-seconds-run-3.txt
+60cdb0f80f3cf9da1901d4e76270aceadc5ed3766b4fc1448e88d1ab6aa97eaf  ./evidence/test.diff
+e61d96eb00ac25526806aaf4c6f3a5adbb0aaf30466cb33a1936b76f29182d2f  ../../../../../services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Shipments/ShipmentTelemetryTests.cs

@@ -1,0 +1,5 @@
+tree	suite	filter	exit	summary
+v4/build	web-all	-	0	Passed!  - Failed:     0, Passed:   246, Skipped:     0, Total:   246, Duration: 6 s - Diten.Web.Tests.dll (net8.0)
+v4/build	web-ClaimIndexBehaviorTests	FullyQualifiedName~ClaimIndexBehaviorTests	0	Passed!  - Failed:     0, Passed:    16, Skipped:     0, Total:    16, Duration: 50 ms - Diten.Web.Tests.dll (net8.0)
+v3/sab	web-ClaimIndexBehaviorTests-SABOTAGE	FullyQualifiedName~ClaimIndexBehaviorTests	1	Failed!  - Failed:     1, Passed:    15, Skipped:     0, Total:    16, Duration: 58 ms - Diten.Web.Tests.dll (net8.0)
+v4/build	supplychain-single	-	1	Failed!  - Failed:     1, Passed:   416, Skipped:     0, Total:   417, Duration: 4 m 47 s - Diten.SupplyChainService.Tests.dll (net8.0)

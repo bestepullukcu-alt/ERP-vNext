@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    MOD-0173 pack §10: Domain has no Mongo/framework dependency. Unlike the ProcurementService template (whose
+    Domain references MongoDB.Driver for Bson attributes), the class maps live in Persistence.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+</Project>

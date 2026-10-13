@@ -19,6 +19,11 @@ public interface IContactRepository
         Guid tenantId, string? search, int page, int pageSize, string? sortBy, string? sortDir,
         IReadOnlyCollection<string>? statuses, IReadOnlyCollection<string>? contactTypes, CancellationToken cancellationToken);
 
+    /// <summary>WP-VP-2B (R2) — the ids of the tenant's SOFT-DELETED contacts (a link to one is not an active contact).
+    /// The default answers "none" for alternate implementations; production reads the ids only.</summary>
+    Task<IReadOnlyCollection<Guid>> ListDeletedIdsAsync(Guid tenantId, CancellationToken cancellationToken)
+        => Task.FromResult<IReadOnlyCollection<Guid>>(Array.Empty<Guid>());
+
     /// <summary>All active contacts for the tenant (export). Soft-deleted excluded.</summary>
     Task<IReadOnlyList<Contact>> ListAllAsync(Guid tenantId, CancellationToken cancellationToken);
 

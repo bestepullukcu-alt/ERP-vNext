@@ -1,0 +1,1 @@
+Passed!  - Failed:     0, Passed:     2, Skipped:     0, Total:     2, Duration: 2 ms - Diten.SupplyChainService.Tests.dll (net8.0)

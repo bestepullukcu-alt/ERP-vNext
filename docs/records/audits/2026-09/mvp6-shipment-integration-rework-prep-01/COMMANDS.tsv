@@ -1,0 +1,8 @@
+step	command	exit	evidence
+1	Extract exactly SOURCE-TRANSFER-MANIFEST.tsv paths from accepted BC-SOURCE.tar.gz into disposable target	0	SOURCE-CLOSURE-PLAN.tsv; BC-SOURCE-CLOSURE.tar.gz
+2	/Users/natig/.dotnet/dotnet build services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Diten.SupplyChainService.Api.csproj -c Debug --no-restore -m:1 /nr:false	0	raw/supplychain-build.log
+3	/Users/natig/.dotnet/dotnet build gateway/Diten.ApiGateway/Diten.ApiGateway.csproj -c Debug --no-restore -m:1 /nr:false	0	raw/gateway-build.log
+4	/Users/natig/.dotnet/dotnet build services/Diten.CrmService/src/Diten.CrmService.Api/Diten.CrmService.Api.csproj -c Debug --no-restore -m:1 /nr:false	0	raw/crm-build.log
+5	dotnet test gateway tests filtered to OcelotConfigurationTests (sandbox attempt)	134	raw/gateway-route-tests.log
+6	dotnet test gateway tests filtered to OcelotConfigurationTests (native rerun before full known-port reconciliation)	1	raw/gateway-route-tests-rerun.log; raw/shipment-integration-route-tests-rerun.trx
+7	/Users/natig/.dotnet/dotnet test gateway/Diten.ApiGateway.Tests/Diten.ApiGateway.Tests.csproj -c Debug --no-restore --filter FullyQualifiedName~OcelotConfigurationTests	0	raw/shipment-integration-route-tests-final.trx; 22/22

@@ -55,7 +55,8 @@
     }
     @if (t.Superseded)
     {
-        <div class="alert alert-info" role="alert"><i class="bx bx-git-branch me-1"></i>@Localizer["Superseded"]</div>
+        @* WP-E2E-FIX-3 (E5-B2) — "Yerini v{n} aldı" when the successor's version is known. *@
+        <div class="alert alert-info" role="alert"><i class="bx bx-git-branch me-1"></i>@(t.SupersededByTemplateVersion is { } nextVersion ? Localizer["SupersededByVersion", nextVersion] : Localizer["Superseded"])</div>
     }
 
     @* WP-ST-DETAIL-3 — stat tiles (mockup). Every number is computed from the DetailDto server-side, so it always matches

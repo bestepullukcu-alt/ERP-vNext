@@ -1,0 +1,13 @@
+phase_file	cases	pass	fail	root_leaks	native_dialogs	page_errors	js_console_errors	foreign_hosts	error
+cu05-a1.json	1	1	0	0	0	0	1	fonts.googleapis.com,fonts.gstatic.com	-
+cu11-a1.json	1	1	0	0	0	0	1	fonts.googleapis.com,fonts.gstatic.com	-
+cu25-a1.json	2	2	0	0	0	0	2	fonts.googleapis.com,fonts.gstatic.com	-
+kbd-a1.json	2	2	0	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	-
+login-a1.json	5	5	0	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	-
+regd01-a1.json	1	1	0	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	-
+regression-a1.json	3	3	0	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	-
+saveview-a1.json	6	6	0	0	0	0	0	fonts.googleapis.com,fonts.gstatic.com	-
+spec-a1.json	1	0	1	0	0	0	0	-	-
+spec-a2.json	1	1	0	0	0	0	0	-	-
+ui-flows-a1.json	8	8	0	0	0	0	1	fonts.googleapis.com,fonts.gstatic.com	-
+TOTAL	31	30	1	0	0	0	-	-	-

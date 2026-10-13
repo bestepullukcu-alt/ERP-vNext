@@ -1,0 +1,12 @@
+{
+  "baseline": "a28cb1ab5b7dc235cb68bb0bf7ad72cdc4889a49846ab6fdd4f01601285ab34a",
+  "patch": "70b80f7920f0d216ccd22795328df750a761c949e438a55ede7876c57cbf6444",
+  "target": "a72a05a5e185e04d70ba221f086baacb8c8fca11ea061f289cb4b54fd430254c",
+  "sourceClaimsWorktree": "/Users/natig/.codex/worktrees/claims-dev-start-01/ERP-vNext-recovery",
+  "sourceReturnsWorktree": "/Users/natig/.codex/worktrees/returns-phase15-close-01/ERP-vNext-recovery",
+  "realApplication": false,
+  "disposableApiBinary": "de73636ad0531716b219494c0a199a88dfc5dffa4a9794646fc065b1c62f31c6",
+  "buildExit": 0,
+  "warnings": 0,
+  "errors": 0
+}

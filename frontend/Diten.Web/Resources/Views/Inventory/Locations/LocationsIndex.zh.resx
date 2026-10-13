@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <!-- WP-0173-LOC2: model translation, native-speaker review pending (FU-LOC2-01). -->
+  <data name="LocationsTitle" xml:space="preserve"><value>库位列表</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>公司实体场所的唯一清单。库存、仓库、采购和生产均从此清单读取。</value></data>
+  <data name="TabTree" xml:space="preserve"><value>层级</value></data>
+  <data name="TabList" xml:space="preserve"><value>列表</value></data>
+  <data name="CompanyLabel" xml:space="preserve"><value>公司</value></data>
+  <data name="CompanyPlaceholder" xml:space="preserve"><value>请选择公司</value></data>
+  <data name="CompanySelectHint" xml:space="preserve"><value>请选择要查看库位的公司。选择公司之前不会显示任何数据。</value></data>
+  <data name="CompanyUnavailable" xml:space="preserve"><value>无法加载公司列表，因此不显示任何库位。请向管理员申请查看公司的权限，或稍后重试。</value></data>
+  <data name="AddNewLocation" xml:space="preserve"><value>新建库位</value></data>
+  <data name="ColCode" xml:space="preserve"><value>代码</value></data>
+  <data name="ColName" xml:space="preserve"><value>名称</value></data>
+  <data name="ColType" xml:space="preserve"><value>类型</value></data>
+  <data name="ColParentPath" xml:space="preserve"><value>上级路径</value></data>
+  <data name="ColStatus" xml:space="preserve"><value>状态</value></data>
+  <data name="ColStockable" xml:space="preserve"><value>可存放库存</value></data>
+  <data name="ColOperatingMode" xml:space="preserve"><value>运行模式</value></data>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="FilterType" xml:space="preserve"><value>类型</value></data>
+  <data name="FilterStockable" xml:space="preserve"><value>可存放库存</value></data>
+  <data name="FilterParent" xml:space="preserve"><value>上级</value></data>
+  <data name="StockableYes" xml:space="preserve"><value>可存放库存</value></data>
+  <data name="StockableNo" xml:space="preserve"><value>不可存放库存</value></data>
+  <data name="TypeSite" xml:space="preserve"><value>工厂</value></data>
+  <data name="TypeWarehouse" xml:space="preserve"><value>仓库</value></data>
+  <data name="TypeStorageLocation" xml:space="preserve"><value>存储区</value></data>
+  <data name="TypeZone" xml:space="preserve"><value>区域</value></data>
+  <data name="TypeBin" xml:space="preserve"><value>货位</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>启用</value></data>
+  <data name="StatusInactive" xml:space="preserve"><value>停用</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>已归档</value></data>
+  <data name="ModeInternal" xml:space="preserve"><value>库存在本系统</value></data>
+  <data name="ModeExternal" xml:space="preserve"><value>库存在外部系统，通过集成跟踪</value></data>
+  <data name="ActionEdit" xml:space="preserve"><value>编辑</value></data>
+  <data name="ActionAddChild" xml:space="preserve"><value>添加下级</value></data>
+  <data name="ActionActivate" xml:space="preserve"><value>启用</value></data>
+  <data name="ActionDeactivate" xml:space="preserve"><value>停用</value></data>
+  <data name="ActionArchive" xml:space="preserve"><value>归档</value></data>
+  <data name="ActionHistory" xml:space="preserve"><value>历史</value></data>
+  <data name="ActionViewStock" xml:space="preserve"><value>在库存列表中查看</value></data>
+  <data name="ActionBulkBins" xml:space="preserve"><value>批量生成货位</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>新建库位</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>编辑库位</value></data>
+  <data name="FormTitleChild" xml:space="preserve"><value>在 {0} 下新建库位</value></data>
+  <data name="FieldCode" xml:space="preserve"><value>代码</value></data>
+  <data name="FieldName" xml:space="preserve"><value>名称</value></data>
+  <data name="FieldType" xml:space="preserve"><value>类型</value></data>
+  <data name="FieldParent" xml:space="preserve"><value>上级</value></data>
+  <data name="FieldStockable" xml:space="preserve"><value>可存放库存</value></data>
+  <data name="FieldOperatingMode" xml:space="preserve"><value>运行模式</value></data>
+  <data name="FieldOrgUnit" xml:space="preserve"><value>组织单元</value></data>
+  <data name="FieldCostCenter" xml:space="preserve"><value>成本中心代码</value></data>
+  <data name="Optional" xml:space="preserve"><value>可选</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>例如 WH-01</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>例如 中央仓库</value></data>
+  <data name="ParentPlaceholder" xml:space="preserve"><value>按代码或名称搜索上级</value></data>
+  <data name="OrgUnitPlaceholder" xml:space="preserve"><value>请选择组织单元</value></data>
+  <data name="CostCenterPlaceholder" xml:space="preserve"><value>例如 MM-1100</value></data>
+  <data name="HintCode" xml:space="preserve"><value>在本公司内唯一。之后可以修改：库存仍指向同一库位。</value></data>
+  <data name="HintTypeFixed" xml:space="preserve"><value>类型不可更改。如有错误，请归档该记录并新建。</value></data>
+  <data name="HintParentSite" xml:space="preserve"><value>工厂没有上级。</value></data>
+  <data name="HintZoneOptional" xml:space="preserve"><value>货位也可以不经区域，直接放在存储区下。</value></data>
+  <data name="HintCompany" xml:space="preserve"><value>库位属于所选公司，其下级库位继承该公司。公司不可更改。</value></data>
+  <data name="OrgUnitsUnavailable" xml:space="preserve"><value>无法读取组织单元列表。可以将此字段留空并保存。</value></data>
+  <data name="ValidationRequired" xml:space="preserve"><value>此字段为必填项。</value></data>
+  <data name="ValidationCodeFormat" xml:space="preserve"><value>请使用 1–40 个字符：仅限字母、数字及 . _ / -</value></data>
+  <data name="ValidationNameLength" xml:space="preserve"><value>最多使用 120 个字符。</value></data>
+  <data name="ValidationCostCenterFormat" xml:space="preserve"><value>请使用 1–40 个字符：仅限字母、数字及 . _ -</value></data>
+  <data name="NoChanges" xml:space="preserve"><value>未做任何更改。</value></data>
+  <data name="ReloadLabel" xml:space="preserve"><value>重新加载记录</value></data>
+  <data name="ErrorDetails" xml:space="preserve"><value>详情</value></data>
+  <data name="ReferenceLabel" xml:space="preserve"><value>参考号</value></data>
+  <data name="Searching" xml:space="preserve"><value>正在搜索…</value></data>
+  <data name="NoResults" xml:space="preserve"><value>无匹配结果</value></data>
+  <data name="ConfirmActivateTitle" xml:space="preserve"><value>启用该库位？</value></data>
+  <data name="ConfirmActivateText" xml:space="preserve"><value>{0} 将重新启用，并可在库存单据中选择。</value></data>
+  <data name="ConfirmDeactivateTitle" xml:space="preserve"><value>停用该库位？</value></data>
+  <data name="ConfirmDeactivateText" xml:space="preserve"><value>{0} 将被停用。停用的库位无法在库存单据中选择。</value></data>
+  <data name="ConfirmArchiveTitle" xml:space="preserve"><value>归档该库位？</value></data>
+  <data name="ConfirmArchiveText" xml:space="preserve"><value>{0} 将被归档。此操作不可撤销：已归档的库位无法重新启用或修改。记录不会删除，历史移动中仍可见。</value></data>
+  <data name="BulkTitle" xml:space="preserve"><value>批量生成货位</value></data>
+  <data name="BulkTarget" xml:space="preserve"><value>目标</value></data>
+  <data name="BulkAisleFrom" xml:space="preserve"><value>通道起</value></data>
+  <data name="BulkAisleTo" xml:space="preserve"><value>通道止</value></data>
+  <data name="BulkRackFrom" xml:space="preserve"><value>货架起</value></data>
+  <data name="BulkRackTo" xml:space="preserve"><value>货架止</value></data>
+  <data name="BulkLevelFrom" xml:space="preserve"><value>层起</value></data>
+  <data name="BulkLevelTo" xml:space="preserve"><value>层止</value></data>
+  <data name="BulkPositions" xml:space="preserve"><value>每层货位数</value></data>
+  <data name="BulkCodePattern" xml:space="preserve"><value>代码格式：通道-货架-层-货位，例如 A-01-01-01。</value></data>
+  <data name="BulkCount" xml:space="preserve"><value>{0} 个货位</value></data>
+  <data name="BulkPreview" xml:space="preserve"><value>预览</value></data>
+  <data name="BulkPreviewSummary" xml:space="preserve"><value>将创建 {0} 个货位</value></data>
+  <data name="BulkSkipped" xml:space="preserve"><value>{0} 个代码已存在，将被跳过。</value></data>
+  <data name="BulkCreateButton" xml:space="preserve"><value>创建 {0} 个货位</value></data>
+  <data name="BulkNothingToCreate" xml:space="preserve"><value>没有可创建的货位</value></data>
+  <data name="BulkResult" xml:space="preserve"><value>已创建 {0} 个货位。</value></data>
+  <data name="BulkResultSkipped" xml:space="preserve"><value>已跳过 {0} 个已存在的代码。</value></data>
+  <data name="BulkMore" xml:space="preserve"><value>以及另外 {0} 个</value></data>
+  <data name="LocationCreated" xml:space="preserve"><value>库位已创建。</value></data>
+  <data name="LocationSaved" xml:space="preserve"><value>更改已保存。</value></data>
+  <data name="StatusChanged" xml:space="preserve"><value>状态已更新。</value></data>
+  <data name="BinsCreated" xml:space="preserve"><value>已创建 {0} 个货位。</value></data>
+  <data name="ErrCodeTaken" xml:space="preserve"><value>此代码已在本公司使用。请选择其他代码。</value></data>
+  <data name="ErrLevelInvalid" xml:space="preserve"><value>该类型不能放在所选上级之下（工厂 → 仓库 → 存储区 → 区域 → 货位；货位也可直接放在存储区下）。</value></data>
+  <data name="ErrParentInactive" xml:space="preserve"><value>上级未启用。请先启用上级。</value></data>
+  <data name="ErrMoveIntoSubtree" xml:space="preserve"><value>库位不能移到自身或其下级之下。</value></data>
+  <data name="ErrHasStock" xml:space="preserve"><value>该库位（或其下级）有库存，无法进行此更改。请先转移库存。未做任何更改。</value></data>
+  <data name="ErrHasActiveChildren" xml:space="preserve"><value>该库位下有启用的下级库位。请先停用它们。</value></data>
+  <data name="ErrArchived" xml:space="preserve"><value>该库位已归档，无法修改，也不能在其下添加记录。</value></data>
+  <data name="ErrLocationConflict" xml:space="preserve"><value>您打开后，其他人已保存了此库位。请重新加载后再次修改。</value></data>
+  <data name="ErrBulkLimit" xml:space="preserve"><value>一次最多可创建 1000 个货位。请缩小范围。</value></data>
+  <data name="ErrUnknownLocation" xml:space="preserve"><value>在本公司中未找到该库位。请刷新页面。</value></data>
+  <data name="ErrOrgUnitInvalid" xml:space="preserve"><value>该组织单元不是本公司的启用单元。请选择其他单元或将此字段留空。</value></data>
+  <data name="ErrOrgUnitDirectoryUnavailable" xml:space="preserve"><value>暂时无法核验组织单元，因此未保存任何内容。请重试，或将此字段留空后保存。</value></data>
+  <data name="ErrKeyReused" xml:space="preserve"><value>此操作已使用其他值提交过。请关闭对话框后重新开始。</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>由于某个值无效，请求无法处理。请检查字段后重试。</value></data>
+  <data name="ErrCrossLegalEntity" xml:space="preserve"><value>此记录属于其他公司。请切换到该公司，或向管理员申请访问权限。</value></data>
+  <data name="ErrCompanyCheckUnavailable" xml:space="preserve"><value>暂时无法确认所选公司，因此未做任何更改。请稍后重试。</value></data>
+  <data name="ErrSelectCompany" xml:space="preserve"><value>请先选择公司。未读取或更改任何数据。</value></data>
+  <data name="ErrNoPermission" xml:space="preserve"><value>您无权执行此操作。请向管理员申请所需的库位权限。</value></data>
+  <data name="ErrSessionExpired" xml:space="preserve"><value>您的会话已结束。请重新登录以继续。</value></data>
+  <data name="ErrServiceUnavailable" xml:space="preserve"><value>暂时无法连接库位服务。未做任何更改；请稍后重试。</value></data>
+  <data name="ErrConflict" xml:space="preserve"><value>在您操作期间数据已发生变化。请刷新后重试。</value></data>
+  <data name="ErrGeneric" xml:space="preserve"><value>出现问题，未做任何更改。请重试；如问题持续，请联系支持人员。</value></data>
+</root>

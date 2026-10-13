@@ -1,0 +1,9 @@
+folder	total	passed	failed	q208_total	excluded_from_mediatr_by_this_change	note
+Shipments (root + Shipments/)	74	74	0	74	no	
+Carriers	36	36	0	36	no	
+Loads	33	33	0	33	no	
+Claims	129	128	1	129	yes	known by-design failure: ClaimReplayTests.Receipt_TwoIndependentTestProcesses_DurableRecovery
+Returns	78	78	0	78	yes	
+CapacityPlans	48	48	0	48	yes	
+SandopPlans	19	19	0	19	yes	
+TOTAL	417	416	1	417		scratch copy with the proposed bytes; one run; 4 m 20 s; Q216 band is 415 or 416

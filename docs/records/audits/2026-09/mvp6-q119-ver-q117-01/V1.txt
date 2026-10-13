@@ -1,0 +1,20 @@
+# V1 2026-09-27T12:44:50+0300
+BUILD-SUMMARY.tsv: OK
+FINAL-CHECK.txt: OK
+FIXES.patch: OK
+N1-REPRO-OUTPUT.txt: OK
+OVERLAY-MANIFEST.tsv: OK
+q117-fixes-overlay.tar.gz: OK
+RAW-LOGS.tar.gz: OK
+README.md: OK
+SECRET-SCAN-EXACT-F02.txt: OK
+SECRET-SCAN-PATTERN.txt: OK
+TEST-SUMMARY-before-and-stageA.tsv: OK
+TEST-SUMMARY.tsv: OK
+ok_count=12/      12
+83e6322c1d4dd46c80b0b4de0a2b60493883a7b2d923c7685da689de702f800d  q117-fixes-overlay.tar.gz
+archive files 11 unsafe/AppleDouble/link members []
+manifest rows 11 only_in_archive [] only_in_manifest []
+hash match 11 / 11
+base_sha256 match 11 / 11
+bytes match 11 / 11

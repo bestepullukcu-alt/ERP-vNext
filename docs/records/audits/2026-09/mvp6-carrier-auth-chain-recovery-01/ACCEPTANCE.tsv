@@ -1,0 +1,20 @@
+criterion	result	evidence	disposition
+Final 22-path source set	PASS	evidence.tar.gz::raw/checks/final22-verification.txt	22/22 target hashes match the approved final manifest
+Build source set	PASS	evidence.tar.gz::raw/checks/build-source-verification.txt	3333/3333 immutable inputs match
+Native .NET 8 builds	PASS	evidence.tar.gz::raw/build/*.exit; evidence.tar.gz::raw/build/*-build.log	SDK 8.0.417 and runtime 8.0.23; Auth, Platform and MDM Release builds exited 0 without major roll-forward
+DB-010 isolation	PASS	evidence.tar.gz::raw/config/effective-config-redacted.json; evidence.tar.gz::raw/runtime/rs-status.json	Verifier-owned replica set rsCarrierAuthChainRecovery01 at 127.0.0.1:37994; operational 27017 not used
+Real Auth login	PASS	evidence.tar.gz::raw/runtime/login-refresh-safe.json	HTTP 200; redacted Auth-issued token contains exact authoritative legal_entity_id
+Real Auth refresh	PASS	evidence.tar.gz::raw/runtime/login-refresh-safe.json	HTTP 200; refreshed Auth-issued token contains exact authoritative legal_entity_id
+Refresh-time LE re-resolution	PASS	evidence.tar.gz::raw/runtime/refresh-reresolution-safe.json	Revoking the assignment before refresh removes legal_entity_id; fixture restored afterward
+Zero active scope	PASS	evidence.tar.gz::raw/runtime/zero-scope-safe.json	HTTP 200 token issued without legal_entity_id
+Multiple active scopes	PASS	evidence.tar.gz::raw/runtime/multiple-scope-safe.json	HTTP 200 token issued without legal_entity_id; temporary fixture removed
+Inactive LE	PASS	evidence.tar.gz::raw/runtime/inactive-scope-safe.json	HTTP 200 token issued without legal_entity_id; status restored
+Revoked assignment	PASS	evidence.tar.gz::raw/runtime/revoked-scope-safe.json	HTTP 200 token issued without legal_entity_id; assignment restored
+Platform dependency refusal	PASS	evidence.tar.gz::raw/runtime/dependency-refused-safe.json	Login fails closed with HTTP 401 and no access or refresh token before issuance
+Platform dependency timeout	PASS	evidence.tar.gz::raw/runtime/dependency-timeout-safe.json	Five-second dependency timeout fails closed with HTTP 401 and no access or refresh token
+F-01 exact claim cardinality	CLOSED / INHERITED	numericdate-exec-ver-01/ACCEPTANCE.tsv	49/49 independent result preserved and not rerun
+F-02 NumericDate raw JSON type	CLOSED / INHERITED	numericdate-exec-ver-01/ACCEPTANCE.tsv	49/49 independent result preserved and not rerun
+MFA and forced-password issuance	INHERITED / NOT RERUN	carrier-auth-le-successor-dev-01/RUNTIME-ACCEPTANCE.tsv	Final NumericDate delta affects only the MDM service-token validator; no fresh PASS claimed
+Tenant/actor negative tuples	INHERITED / NOT RERUN	carrier-auth-le-successor-dev-01/RUNTIME-ACCEPTANCE.tsv	Unchanged successor evidence remains content-bound; no fresh PASS claimed
+Platform aggregate health	NON-BLOCKING ENVIRONMENT OBSERVATION	evidence.tar.gz::raw/runtime/platform-attempt3-health.body	HTTP 503 only because business_reference_data_provider is unhealthy; self, MongoDB and Hangfire storage are healthy and the required Auth→Platform→MDM chain passed
+Cleanup	PASS	evidence.tar.gz::raw/checks/cleanup-listeners.txt	Ports 37994, 5556, 5557 and 5559 are free

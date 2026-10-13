@@ -1,0 +1,15 @@
+# InventoryService (5066) — manifest push + scope refusals of the REAL AuthService token (no token content is logged)
+logs/inventory-service.log:      MOD-0173 Mongo indexes ensured on database diten_inventory_fu01_smoke.
+logs/inventory-service.log:      MOD-0173 SKU positions rebuilt from ledger + reservations: 0.
+logs/inventory-service.log:      Start processing HTTP request POST http://localhost:5057/api/internal/module-catalog/register-manifest
+logs/inventory-service.log:      Sending HTTP request POST http://localhost:5057/api/internal/module-catalog/register-manifest
+logs/inventory-service.log:      Now listening on: http://localhost:5066
+logs/inventory-service.log:      Module manifest self-registered with Platform. ModuleCode=INVENTORY-LEDGER Attempt=1
+logs/inventory-service.log:      Inventory scope refused: token lacks a single UUID tenant_id/legal_entity_id/sub. Path=/api/inventory/balance
+logs/inventory-service.log:      Inventory scope refused: token lacks a single UUID tenant_id/legal_entity_id/sub. Path=/api/inventory/balance
+logs-run1/inventory-service.log:      MOD-0173 Mongo indexes ensured on database diten_inventory_fu01_smoke.
+logs-run1/inventory-service.log:      MOD-0173 SKU positions rebuilt from ledger + reservations: 0.
+logs-run1/inventory-service.log:      Start processing HTTP request POST http://localhost:5057/api/internal/module-catalog/register-manifest
+logs-run1/inventory-service.log:      Sending HTTP request POST http://localhost:5057/api/internal/module-catalog/register-manifest
+logs-run1/inventory-service.log:      Now listening on: http://localhost:5066
+logs-run1/inventory-service.log:      Module manifest self-registered with Platform. ModuleCode=INVENTORY-LEDGER Attempt=1

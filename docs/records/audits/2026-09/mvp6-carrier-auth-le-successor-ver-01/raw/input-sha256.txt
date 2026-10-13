@@ -1,0 +1,4 @@
+e6b2a3d335ee8f76270fe6ace09793a08d69e57174874be2b2db99941b01f673  docs/records/audits/2026-09/mvp6-carrier-auth-le-successor-01/successor.patch
+275f204c29113b2bb80b9aa10c87e08b81bd2ab2c71c59a92a98d18130ccb93d  docs/records/audits/2026-09/mvp6-carrier-auth-le-successor-01/SOURCE-MANIFEST.tsv
+1c497022407788a5b38f5c554c867d446cc08541cf00c0d3390704c466301846  docs/records/audits/2026-09/mvp6-carrier-auth-le-successor-01/source-archive.tar.gz
+091f31450bec79797b5faeb5d93ba8ff9bdcbd657c9d3e403339abeb41ddf00a  docs/records/audits/2026-09/mvp6-carrier-auth-le-successor-01/evidence.tar.gz

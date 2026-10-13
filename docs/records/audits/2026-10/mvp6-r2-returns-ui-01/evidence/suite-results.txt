@@ -1,0 +1,25 @@
+== provider tests, fixed
+Passed!  - Failed:     0, Passed:    10, Skipped:     0, Total:    10, Duration: 31 ms - Diten.SupplyChainService.Tests.dll (net8.0)
+== provider tests, SABOTAGE: CHANGE_STATUS action removed
+Failed Diten.SupplyChainService.Tests.ModuleRegistration.ReverseLogisticsManifestProviderTests.M05_Actions_equal_the_pack_action_table [3 ms]
+Failed Diten.SupplyChainService.Tests.ModuleRegistration.ReverseLogisticsManifestProviderTests.M03_Every_reflected_key_is_modeled_or_allow_listed_with_a_reason [1 ms]
+Failed Diten.SupplyChainService.Tests.ModuleRegistration.ReverseLogisticsManifestProviderTests.Every_enforced_key_is_declared_so_the_permission_sync_can_carry_it [2 ms]
+Failed!  - Failed:     3, Passed:     7, Skipped:     0, Total:    10, Duration: 39 ms - Diten.SupplyChainService.Tests.dll (net8.0)
+== provider tests, restored
+Passed!  - Failed:     0, Passed:    10, Skipped:     0, Total:    10, Duration: 31 ms - Diten.SupplyChainService.Tests.dll (net8.0)
+== frontend before R-2 (Q394 baseline): 164/0/164
+== frontend, first build with the draft as placed (before nav keys)
+Failed Diten.Web.Tests.Navigation.NavManifestL10nGuardTests.Every_nav_visible_manifest_page_has_a_Nav_Page_key_in_all_seven_languages [54 ms]
+Failed Diten.Web.Tests.Navigation.NavManifestL10nGuardTests.Every_manifest_module_has_a_Nav_Module_key_in_all_seven_languages [105 ms]
+Failed!  - Failed:     2, Passed:   261, Skipped:     0, Total:   263, Duration: 8 s - Diten.Web.Tests.dll (net8.0)
+== frontend, after recipe fixes, before test realignment
+Failed Diten.Web.Tests.JavaScript.ReturnIndexBehaviorTests.Create_surface_keeps_keyboard_focus_after_a_rejected_submit [< 1 ms]
+Failed Diten.Web.Tests.Forms.ReturnFormContractTests.Mandatory_keys_and_all_twenty_one_error_codes_are_localized [4 ms]
+Failed!  - Failed:     2, Passed:   261, Skipped:     0, Total:   263, Duration: 5 s - Diten.Web.Tests.dll (net8.0)
+== frontend, FINAL
+Passed!  - Failed:     0, Passed:   263, Skipped:     0, Total:   263, Duration: 6 s - Diten.Web.Tests.dll (net8.0)
+== adapter unit SABOTAGE: un-enveloped 5xx mapped to 400 INVALID_REQUEST
+Failed Diten.Web.Tests.Controllers.SupplyChainReturnsControllerTests.List_failure_keeps_the_published_code_and_never_relays_an_unpublished_one [3 ms]
+Failed!  - Failed:     1, Passed:    40, Skipped:     0, Total:    41, Duration: 82 ms - Diten.Web.Tests.dll (net8.0)
+== adapter tests restored
+Passed!  - Failed:     0, Passed:    41, Skipped:     0, Total:    41, Duration: 68 ms - Diten.Web.Tests.dll (net8.0)

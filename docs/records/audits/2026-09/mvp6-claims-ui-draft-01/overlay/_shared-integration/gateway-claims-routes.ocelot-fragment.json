@@ -1,0 +1,24 @@
+{
+  "_comment": "MOD-0187 Claims — PROPOSED gateway routes (pack §32.10 'listed, not edited here'). Integration owner merges these into gateway/Diten.ApiGateway/ocelot.json Routes[] of the integrated target (A12 360 overlay shape). Explicit paths only: no catch-all, so /api/shipment-bundle/claimsXYZ is not matched (CU-27). OPTIONS per NET-001, same as the Carrier routes in the A12 overlay. GET /api/shipment-bundle/shipments/{shipmentId} already exists in the A12 overlay and is only CONFIRMED here (no change).",
+  "Routes": [
+    {
+      "DownstreamPathTemplate": "/api/shipment-bundle/claims",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5061 } ],
+      "UpstreamPathTemplate": "/api/shipment-bundle/claims",
+      "UpstreamHttpMethod": [ "GET", "POST", "OPTIONS" ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/shipment-bundle/claims/{claimId}/transition",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [ { "Host": "localhost", "Port": 5061 } ],
+      "UpstreamPathTemplate": "/api/shipment-bundle/claims/{claimId}/transition",
+      "UpstreamHttpMethod": [ "POST", "OPTIONS" ],
+      "UpstreamScheme": "http"
+    }
+  ],
+  "Confirm": [
+    { "UpstreamPathTemplate": "/api/shipment-bundle/shipments/{shipmentId}", "UpstreamHttpMethod": [ "GET" ], "Source": "A12 360 overlay ocelot.json (existing)" }
+  ]
+}

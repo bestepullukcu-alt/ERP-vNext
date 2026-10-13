@@ -1,0 +1,52 @@
+{
+ "partA": {
+  "orgKeys": 10,
+  "nokeyAdminRolesRemoved": 1,
+  "nokeyRolesLeft": 0
+ },
+ "fixLogin": {
+  "legal_entity_id": null,
+  "pwd_change_required": "false",
+  "shipmentKeys": [
+   "supplychain.shipments.cancel",
+   "supplychain.shipments.create",
+   "supplychain.shipments.dispatch",
+   "supplychain.shipments.pod.capture",
+   "supplychain.shipments.read"
+  ],
+  "permissionCount": 46
+ },
+ "legalEntityId": "a6257fcc-ae1e-4306-a23a-79cddcc301fc",
+ "actorLogins": {
+  "admin": {
+   "legal_entity_id": "a6257fcc-ae1e-4306-a23a-79cddcc301fc",
+   "pwd_change_required": "false",
+   "shipmentKeys": [
+    "supplychain.shipments.cancel",
+    "supplychain.shipments.create",
+    "supplychain.shipments.dispatch",
+    "supplychain.shipments.pod.capture",
+    "supplychain.shipments.read"
+   ],
+   "permissionCount": 40
+  },
+  "nokey": {
+   "legal_entity_id": "a6257fcc-ae1e-4306-a23a-79cddcc301fc",
+   "pwd_change_required": "false",
+   "shipmentKeys": [],
+   "permissionCount": 0
+  }
+ },
+ "result": "PASS",
+ "firstLogin": {
+  "admin": {
+   "requiresPasswordChange": true
+  },
+  "fix": {
+   "requiresPasswordChange": true
+  },
+  "nokey": {
+   "requiresPasswordChange": true
+  }
+ }
+}

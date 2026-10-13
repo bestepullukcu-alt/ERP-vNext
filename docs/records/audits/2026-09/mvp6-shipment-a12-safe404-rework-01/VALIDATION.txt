@@ -1,0 +1,33 @@
+MVP6-SHIPMENT-A12-SAFE404-REWORK-01 validation
+
+Repository baseline
+- Branch: feature/mvp6-logistics
+- HEAD: 4a8d4d4b339528a88e6220fb8402e5a2c771136c
+- Product checkout mutation: none; implementation was applied to the immutable 360-source successor workspace reconstructed from mvp6-shipment-shared-ui-exec-01.
+
+Input source identity
+- Input 360-source archive: docs/records/audits/2026-09/mvp6-shipment-shared-ui-exec-01/combined-source.tar.gz
+- Input archive SHA-256: 490d51be87d249265a2cc9fe6d1f8f3b23bd6976f4e5830d733bff2dfff613a3
+- Input manifest SHA-256: 7d7bec63a1f2e9e906864e5dea6dc96a00e94a280b830dd06f95a8b68246b4fc
+
+RED evidence
+- Command: unpack input 360-source archive to /private/tmp/mvp6-shipment-a12-red-src and assert details.js does not contain renderSafeNotFound, inert safe-state handling, or loadVersion stale-response handling.
+- Result: PASS as RED; original source lacks the A12 safe-not-found presentation guard.
+
+GREEN evidence
+- Command: node --check /private/tmp/mvp6-shipment-a12-rework-src/frontend/Diten.Web/wwwroot/assets/js/SupplyChain/Shipments/details.js
+- Result: PASS.
+- Command: static focused assertions on successor details.js and ShipmentDetailActionTests.cs for renderSafeNotFound, hidden/inert/aria-hidden handling, action replacement, support-reference message, no window.location fallback, and loadVersion stale-response guard.
+- Result: PASS.
+
+Build/test limits
+- Native .NET SDK: /Users/natig/.dotnet/dotnet 8.0.417.
+- Attempted build of the minimal 360-source snapshot is not a valid product result because this archive intentionally omits referenced application/persistence/infrastructure projects. Restore/build produced missing project/type errors from omitted source, not from this two-file presentation change.
+- No runtime/browser acceptance is claimed by this DEV handoff. Independent VER must run against the successor archive with the full accepted runtime environment.
+
+Output source identity
+- Successor source manifest: SUCCESSOR-360-SOURCE-MANIFEST.tsv
+- Successor manifest SHA-256: 8ffa6c96d29f8004940f310ed704a2c05eaa38ffa501d6114a5f9251e6e00d36
+- Successor source archive: successor-source.tar.gz
+- Successor archive SHA-256: 7b6a0d1abea649d920040a039972c5d4928825e9cf2cc185487b1fe5f0f3314d
+- Patch SHA-256: b3c7dcbb68636b123f3ea3ad7c3c902709fef6a9775c66cc3d464073653ecefb

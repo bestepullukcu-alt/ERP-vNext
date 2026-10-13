@@ -1,0 +1,30 @@
+[
+  {
+    "path": "/Users/natig/Projects/ERP-vNext-recovery/docs/analysis/contracts/returns-semantics-v3.0.0.md",
+    "sha256": "00990a289069d25a62f7c883aac718e08b96b0386a572e7d1f93f0e447e98a11"
+  },
+  {
+    "path": "/Users/natig/Projects/ERP-vNext-recovery/docs/analysis/contracts/shipment-bundle.openapi.yaml",
+    "sha256": "5dfe7c1bba32551bd8d4b532243878684e69a6d9560e667a4183bfd516b9d21c"
+  },
+  {
+    "path": "/Users/natig/.codex/worktrees/returns-phase15-close-01/ERP-vNext-recovery/evidence/returns-dev/SOP-22.md",
+    "sha256": "0100fca1603e5443462d9f9703f2a9e8ca0d637267a4e8c0e3ebaeb77a73b3c7"
+  },
+  {
+    "path": "/Users/natig/.codex/worktrees/returns-phase15-close-01/ERP-vNext-recovery/evidence/returns-dev/http-composition-handoff.md",
+    "sha256": "712d8380376dde7897dcfab234cc7e711fed73e90ce447b5a0b8ce112945547c"
+  },
+  {
+    "path": "/Users/natig/.codex/worktrees/returns-phase15-close-01/ERP-vNext-recovery/evidence/returns-dev/source-manifest.tsv",
+    "sha256": "8d84d9eebe6f46a97cf22716960a0c5ec10fd37148951bd4ed523d7bc046a26f"
+  },
+  {
+    "path": "/Users/natig/.codex/worktrees/returns-phase15-close-01/ERP-vNext-recovery/docs/records/audits/2026-09/mvp6-mod0186-phase15-close-01/owned-paths.txt",
+    "sha256": "873a772f52584cf43e455e5e82cf17e902137e07a24db14d47dea60fb24746bb"
+  },
+  {
+    "path": "/Users/natig/.codex/worktrees/claims-dev-start-01/ERP-vNext-recovery/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs",
+    "sha256": "a28cb1ab5b7dc235cb68bb0bf7ad72cdc4889a49846ab6fdd4f01601285ab34a"
+  }
+]

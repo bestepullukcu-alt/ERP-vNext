@@ -1,0 +1,305 @@
+--- a/gateway/Diten.ApiGateway/ocelot.json
++++ b/gateway/Diten.ApiGateway/ocelot.json
+@@ -1,5 +1,66 @@
+ {
+   "Routes": [
++    {
++      "DownstreamPathTemplate": "/api/shipment-bundle/shipments",
++      "DownstreamScheme": "http",
++      "DownstreamHostAndPorts": [
++        {
++          "Host": "localhost",
++          "Port": 5061
++        }
++      ],
++      "UpstreamPathTemplate": "/api/shipment-bundle/shipments",
++      "UpstreamHttpMethod": [
++        "GET",
++        "POST"
++      ],
++      "UpstreamScheme": "http"
++    },
++    {
++      "DownstreamPathTemplate": "/api/shipment-bundle/shipments/{shipmentId}",
++      "DownstreamScheme": "http",
++      "DownstreamHostAndPorts": [
++        {
++          "Host": "localhost",
++          "Port": 5061
++        }
++      ],
++      "UpstreamPathTemplate": "/api/shipment-bundle/shipments/{shipmentId}",
++      "UpstreamHttpMethod": [
++        "GET"
++      ],
++      "UpstreamScheme": "http"
++    },
++    {
++      "DownstreamPathTemplate": "/api/shipment-bundle/shipments/{shipmentId}/transition",
++      "DownstreamScheme": "http",
++      "DownstreamHostAndPorts": [
++        {
++          "Host": "localhost",
++          "Port": 5061
++        }
++      ],
++      "UpstreamPathTemplate": "/api/shipment-bundle/shipments/{shipmentId}/transition",
++      "UpstreamHttpMethod": [
++        "POST"
++      ],
++      "UpstreamScheme": "http"
++    },
++    {
++      "DownstreamPathTemplate": "/api/shipment-bundle/shipments/{shipmentId}/pod",
++      "DownstreamScheme": "http",
++      "DownstreamHostAndPorts": [
++        {
++          "Host": "localhost",
++          "Port": 5061
++        }
++      ],
++      "UpstreamPathTemplate": "/api/shipment-bundle/shipments/{shipmentId}/pod",
++      "UpstreamHttpMethod": [
++        "POST"
++      ],
++      "UpstreamScheme": "http"
++    },
+     {
+       "DownstreamPathTemplate": "/api/shipment-bundle/carriers",
+       "DownstreamScheme": "http",
+--- /dev/null
++++ b/gateway/Diten.ApiGateway.Tests/ShipmentRouteCoverageTests.cs
+@@ -0,0 +1,42 @@
++using Ocelot.Configuration.File;
++using System.Text.Json;
++using Xunit;
++
++namespace Diten.ApiGateway.Tests;
++
++public sealed class ShipmentRouteCoverageTests
++{
++    private static FileConfiguration Load() => JsonSerializer.Deserialize<FileConfiguration>(
++        File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "ocelot.json")),
++        new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
++
++    [Fact]
++    public void Shipment_routes_expose_only_the_five_published_operations()
++    {
++        var routes = Load().Routes
++            .Where(route => route.UpstreamPathTemplate.StartsWith("/api/shipment-bundle/shipments", StringComparison.Ordinal))
++            .ToArray();
++
++        Assert.Equal(4, routes.Length);
++        AssertMethods(routes, "/api/shipment-bundle/shipments", "GET", "POST");
++        AssertMethods(routes, "/api/shipment-bundle/shipments/{shipmentId}", "GET");
++        AssertMethods(routes, "/api/shipment-bundle/shipments/{shipmentId}/transition", "POST");
++        AssertMethods(routes, "/api/shipment-bundle/shipments/{shipmentId}/pod", "POST");
++
++        Assert.All(routes, route =>
++        {
++            var host = Assert.Single(route.DownstreamHostAndPorts);
++            Assert.Equal("localhost", host.Host);
++            Assert.Equal(5061, host.Port);
++            Assert.DoesNotContain("{everything}", route.UpstreamPathTemplate, StringComparison.OrdinalIgnoreCase);
++            Assert.DoesNotContain(route.UpstreamHttpMethod, method => method is "DELETE" or "OPTIONS" or "PATCH" or "PUT");
++        });
++    }
++
++    private static void AssertMethods(IEnumerable<FileRoute> routes, string path, params string[] methods)
++    {
++        var route = Assert.Single(routes, candidate => candidate.UpstreamPathTemplate == path);
++        Assert.Equal(methods.OrderBy(value => value, StringComparer.Ordinal),
++            route.UpstreamHttpMethod.OrderBy(value => value, StringComparer.Ordinal));
++    }
++}
+--- /dev/null
++++ b/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/ModuleRegistration/ShipmentTrackingPodManifestProvider.cs
+@@ -0,0 +1,72 @@
++using Diten.BuildingBlocks.ModuleRegistration.Abstractions;
++
++namespace Diten.SupplyChainService.Api.ModuleRegistration;
++
++public sealed class ShipmentTrackingPodManifestProvider : IModuleManifestProvider
++{
++    private const string Read = "supplychain.shipments.read";
++    private const string Create = "supplychain.shipments.create";
++    private const string Dispatch = "supplychain.shipments.dispatch";
++    private const string Cancel = "supplychain.shipments.cancel";
++    private const string CapturePod = "supplychain.shipments.pod.capture";
++
++    public ModuleManifestDocument GetManifest() =>
++        new(
++            ModuleCode: "shipment-tracking-pod",
++            ModuleName: "ShipmentTrackingPod",
++            DisplayName: "Shipment Tracking & POD",
++            Domain: "SupplyChainExecution",
++            Service: "DitenSupplyChainService",
++            ModuleVersion: "1.0.0",
++            IsTenantAssignable: true,
++            SortOrder: 390,
++            Pages:
++            [
++                new ModuleManifestPage(
++                    PageCode: "SHIPMENTS",
++                    DisplayName: "Shipments",
++                    RoutePath: "/SupplyChain/Shipments",
++                    RequiredPermission: Read,
++                    ParentPageCode: null,
++                    IsNavigationVisible: true,
++                    PageType: "List",
++                    SortOrder: 10,
++                    Actions:
++                    [
++                        new ModuleManifestAction("CREATE", "Create Shipment", Create, "Toolbar", 10, false, true, false),
++                        new ModuleManifestAction("DISPATCH", "Dispatch", Dispatch, "RowAction", 20, false, false, true),
++                        new ModuleManifestAction("CANCEL", "Cancel", Cancel, "RowAction", 30, true, false, true),
++                        new ModuleManifestAction("CAPTURE_POD", "Capture POD", CapturePod, "RowAction", 40, false, false, true)
++                    ]),
++                new ModuleManifestPage(
++                    PageCode: "SHIPMENTS_CREATE",
++                    DisplayName: "Create Shipment",
++                    RoutePath: "/SupplyChain/Shipments/Create",
++                    RequiredPermission: Create,
++                    ParentPageCode: "SHIPMENTS",
++                    IsNavigationVisible: false,
++                    PageType: "Detail",
++                    SortOrder: 11,
++                    Actions:
++                    [
++                        new ModuleManifestAction("SAVE", "Save Shipment", Create, "Toolbar", 10, false, true, false)
++                    ]),
++                new ModuleManifestPage(
++                    PageCode: "SHIPMENTS_DETAILS",
++                    DisplayName: "Shipment Details",
++                    RoutePath: "/SupplyChain/Shipments/Details/{shipmentId}",
++                    RequiredPermission: Read,
++                    ParentPageCode: "SHIPMENTS",
++                    IsNavigationVisible: false,
++                    PageType: "Detail",
++                    SortOrder: 12,
++                    Actions:
++                    [
++                        new ModuleManifestAction("DISPATCH", "Dispatch", Dispatch, "Toolbar", 10, false, true, false),
++                        new ModuleManifestAction("CANCEL", "Cancel", Cancel, "Toolbar", 20, true, true, false),
++                        new ModuleManifestAction("CAPTURE_POD", "Capture POD", CapturePod, "Toolbar", 30, false, true, false)
++                    ])
++            ],
++            Icon: "bx-package",
++            IsBaseline: false);
++}
+--- a/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs
++++ b/services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/Program.cs
+@@ -86,6 +86,7 @@
+ builder.Services.Configure<PlatformRegistrationOptions>(builder.Configuration.GetSection(PlatformRegistrationOptions.SectionName));
+ builder.Services.AddHttpClient();
+ builder.Services.AddSingleton<IModuleManifestProvider, CarrierManagementManifestProvider>();
++builder.Services.AddSingleton<IModuleManifestProvider, ShipmentTrackingPodManifestProvider>();
+ builder.Services.AddHostedService<ModuleRegistrationHostedService>();
+ builder.Services.AddControllers().AddJsonOptions(o =>
+ {
+--- /dev/null
++++ b/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/Shipments/ShipmentTrackingPodManifestProviderTests.cs
+@@ -0,0 +1,46 @@
++using Diten.SupplyChainService.Api.ModuleRegistration;
++using Xunit;
++
++namespace Diten.SupplyChainService.Tests.Shipments;
++
++public sealed class ShipmentTrackingPodManifestProviderTests
++{
++    private static readonly Diten.BuildingBlocks.ModuleRegistration.Abstractions.ModuleManifestDocument Manifest =
++        new ShipmentTrackingPodManifestProvider().GetManifest();
++
++    [Fact]
++    public void Declares_exact_three_page_topology_and_existing_permissions()
++    {
++        Assert.Equal("shipment-tracking-pod", Manifest.ModuleCode);
++        Assert.Equal("SupplyChainExecution", Manifest.Domain);
++        Assert.Equal("DitenSupplyChainService", Manifest.Service);
++        Assert.True(Manifest.IsTenantAssignable);
++        Assert.False(Manifest.IsBaseline);
++
++        Assert.Equal(3, Manifest.Pages.Count);
++        var list = Assert.Single(Manifest.Pages, page => page.PageCode == "SHIPMENTS");
++        Assert.Equal("/SupplyChain/Shipments", list.RoutePath);
++        Assert.Equal("supplychain.shipments.read", list.RequiredPermission);
++        Assert.True(list.IsNavigationVisible);
++
++        var create = Assert.Single(Manifest.Pages, page => page.PageCode == "SHIPMENTS_CREATE");
++        Assert.Equal("/SupplyChain/Shipments/Create", create.RoutePath);
++        Assert.Equal("supplychain.shipments.create", create.RequiredPermission);
++        Assert.False(create.IsNavigationVisible);
++
++        var details = Assert.Single(Manifest.Pages, page => page.PageCode == "SHIPMENTS_DETAILS");
++        Assert.Equal("/SupplyChain/Shipments/Details/{shipmentId}", details.RoutePath);
++        Assert.Equal("supplychain.shipments.read", details.RequiredPermission);
++        Assert.False(details.IsNavigationVisible);
++
++        var keys = Manifest.Pages.SelectMany(page => page.Actions.Select(action => action.PermissionKey))
++            .ToHashSet(StringComparer.Ordinal);
++        Assert.Equal(4, keys.Count);
++        Assert.Contains("supplychain.shipments.create", keys);
++        Assert.Contains("supplychain.shipments.dispatch", keys);
++        Assert.Contains("supplychain.shipments.cancel", keys);
++        Assert.Contains("supplychain.shipments.pod.capture", keys);
++        Assert.DoesNotContain(Manifest.Pages.SelectMany(page => page.Actions),
++            action => action.ActionCode.Contains("RECONCILE", StringComparison.OrdinalIgnoreCase));
++    }
++}
+--- a/frontend/Diten.Web/Resources/SharedResource.en.resx
++++ b/frontend/Diten.Web/Resources/SharedResource.en.resx
+@@ -863,4 +863,6 @@
+   <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>Supply Chain Execution</value></data>
+   <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>Carrier Management</value></data>
+   <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>Carriers</value></data>
++  <data name="Nav.Module.SHIPMENTTRACKINGPOD" xml:space="preserve"><value>Shipment Tracking &amp; POD</value></data>
++  <data name="Nav.Page.SHIPMENTS" xml:space="preserve"><value>Shipments</value></data>
+ </root>--- a/frontend/Diten.Web/Resources/SharedResource.tr.resx
++++ b/frontend/Diten.Web/Resources/SharedResource.tr.resx
+@@ -863,4 +863,6 @@
+   <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>Tedarik Zinciri Yürütme</value></data>
+   <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>Taşıyıcı Yönetimi</value></data>
+   <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>Taşıyıcılar</value></data>
++  <data name="Nav.Module.SHIPMENTTRACKINGPOD" xml:space="preserve"><value>Sevkiyat Takibi ve Teslimat Kanıtı</value></data>
++  <data name="Nav.Page.SHIPMENTS" xml:space="preserve"><value>Sevkiyatlar</value></data>
+ </root>--- a/frontend/Diten.Web/Resources/SharedResource.fr.resx
++++ b/frontend/Diten.Web/Resources/SharedResource.fr.resx
+@@ -803,4 +803,6 @@
+   <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>Exécution de la chaîne d’approvisionnement</value></data>
+   <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>Gestion des transporteurs</value></data>
+   <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>Transporteurs</value></data>
++  <data name="Nav.Module.SHIPMENTTRACKINGPOD" xml:space="preserve"><value>Suivi des expéditions et preuve de livraison</value></data>
++  <data name="Nav.Page.SHIPMENTS" xml:space="preserve"><value>Expéditions</value></data>
+ </root>--- a/frontend/Diten.Web/Resources/SharedResource.es.resx
++++ b/frontend/Diten.Web/Resources/SharedResource.es.resx
+@@ -803,4 +803,6 @@
+   <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>Ejecución de la cadena de suministro</value></data>
+   <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>Gestión de transportistas</value></data>
+   <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>Transportistas</value></data>
++  <data name="Nav.Module.SHIPMENTTRACKINGPOD" xml:space="preserve"><value>Seguimiento de envíos y comprobante de entrega</value></data>
++  <data name="Nav.Page.SHIPMENTS" xml:space="preserve"><value>Envíos</value></data>
+ </root>--- a/frontend/Diten.Web/Resources/SharedResource.zh.resx
++++ b/frontend/Diten.Web/Resources/SharedResource.zh.resx
+@@ -802,4 +802,6 @@
+   <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>供应链执行</value></data>
+   <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>承运商管理</value></data>
+   <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>承运商</value></data>
++  <data name="Nav.Module.SHIPMENTTRACKINGPOD" xml:space="preserve"><value>货运跟踪与交付证明</value></data>
++  <data name="Nav.Page.SHIPMENTS" xml:space="preserve"><value>货运</value></data>
+ </root>--- a/frontend/Diten.Web/Resources/SharedResource.ar.resx
++++ b/frontend/Diten.Web/Resources/SharedResource.ar.resx
+@@ -802,4 +802,6 @@
+   <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>تنفيذ سلسلة الإمداد</value></data>
+   <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>إدارة شركات النقل</value></data>
+   <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>شركات النقل</value></data>
++  <data name="Nav.Module.SHIPMENTTRACKINGPOD" xml:space="preserve"><value>تتبع الشحنات وإثبات التسليم</value></data>
++  <data name="Nav.Page.SHIPMENTS" xml:space="preserve"><value>الشحنات</value></data>
+ </root>--- a/frontend/Diten.Web/Resources/SharedResource.ru.resx
++++ b/frontend/Diten.Web/Resources/SharedResource.ru.resx
+@@ -802,4 +802,6 @@
+   <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>Исполнение цепочки поставок</value></data>
+   <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>Управление перевозчиками</value></data>
+   <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>Перевозчики</value></data>
++  <data name="Nav.Module.SHIPMENTTRACKINGPOD" xml:space="preserve"><value>Отслеживание отгрузок и подтверждение доставки</value></data>
++  <data name="Nav.Page.SHIPMENTS" xml:space="preserve"><value>Отгрузки</value></data>
+ </root>

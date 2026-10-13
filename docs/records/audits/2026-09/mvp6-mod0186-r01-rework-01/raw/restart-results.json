@@ -1,0 +1,64 @@
+[
+  {
+    "name": "restart durable replay",
+    "pass": true,
+    "detail": [
+      201,
+      {
+        "returnId": "b79ff3b2-fbb9-490a-9337-711acae57056",
+        "rmaNumber": "RMA-B79FF3B2FBB9490A9337711ACAE57056",
+        "shipmentId": "f0b456ac-8510-4d83-8e1b-003b9a34a7ad",
+        "status": "Requested",
+        "idempotentReplay": true,
+        "contractVersion": "v1"
+      },
+      {
+        "returnId": "b79ff3b2-fbb9-490a-9337-711acae57056",
+        "status": "Requested"
+      }
+    ]
+  },
+  {
+    "name": "restart persisted list",
+    "pass": true,
+    "detail": [
+      200,
+      {
+        "items": [
+          {
+            "returnId": "b79ff3b2-fbb9-490a-9337-711acae57056",
+            "rmaNumber": "RMA-B79FF3B2FBB9490A9337711ACAE57056",
+            "shipmentId": "f0b456ac-8510-4d83-8e1b-003b9a34a7ad",
+            "status": "Requested"
+          },
+          {
+            "returnId": "907a78fd-b38a-4373-9186-f2f945a76fb9",
+            "rmaNumber": "RMA-907A78FDB38A43739186F2F945A76FB9",
+            "shipmentId": "f0b456ac-8510-4d83-8e1b-003b9a34a7ad",
+            "status": "Requested"
+          }
+        ],
+        "total": 2,
+        "contractVersion": "v1"
+      }
+    ]
+  },
+  {
+    "name": "Pending-only outbox after restart",
+    "pass": true,
+    "detail": {
+      "pending": 19,
+      "nonPending": 0,
+      "inventoryCollections": []
+    }
+  },
+  {
+    "name": "No Inventory/Warehouse/stock collection",
+    "pass": true,
+    "detail": {
+      "pending": 19,
+      "nonPending": 0,
+      "inventoryCollections": []
+    }
+  }
+]

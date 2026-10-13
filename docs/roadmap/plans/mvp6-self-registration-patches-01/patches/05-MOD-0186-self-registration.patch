@@ -1,0 +1,85 @@
+diff --git a/execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md b/execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md
+index 2079277..2dc5077 100644
+--- a/execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md
++++ b/execution/domains/supply-chain-execution/module-packs/MOD-0186-reverse-logistics.md
+@@ -556,3 +556,80 @@ pack promotion and dispatch NOT AUTHORIZED. Manual/opaque proposal approval woul
+ Versioned [DEV](../../../../docs/roadmap/plans/mod-0186-prep-02/dev-prompt-v1.0-HELD.md) and
+ [VER](../../../../docs/roadmap/plans/mod-0186-prep-02/ver-prompt-v1.0-HELD.md) remain **HELD**;
+ CT must issue new released versions after exact missing gates close; do not edit HELD into READY silently.
++
++## 30. Self-registration (PATCH PROPOSAL — NOT APPROVED until owner sign-off)
++
++**Authority:** `docs/records/decisions/2026-09/mvp6-self-registration-design-owner-decision-01.md` (D1–D5 = A; pack preparation only). **Design:** [`mvp6-self-registration-prep-01`](../../../../docs/roadmap/plans/mvp6-self-registration-prep-01/MANIFESTS.md) (MANIFESTS.md, NAV-L10N-KEYS.tsv, TEST-PLAN.md).
++**Foundation:** DCP-009 §21 (interface, hosted service, options, `PlatformRegistration` settings via the existing `X-Internal-Api-Key`, project reference and `Program.cs` lines — single integration owner).
++This section specifies; it authorizes no code, `Program.cs`, `.csproj`, appsettings, `SharedResource`, Platform or gateway change, no new permission key or ID, and no commit, push or stash.
++
++> **Base note.** Written against the current pack text (sha256 `07a8a015…`, last section §29). If the pending Returns sign-off (Q39: alignment-03 → `f4396e8a…` adding §30/§31, then the UI revision → `6c8fbe28…` adding §32) is applied first, this patch must be **rebased** (section number becomes §33) before it is applied.
++
++### Identity (D3 = A)
++
++| Field | Value |
++|---|---|
++| ModuleCode / ModuleName / DisplayName | `reverse-logistics` / `ReverseLogistics` / `Reverse Logistics` |
++| Domain / Service | `SupplyChainExecution` / `DitenSupplyChainService` |
++| ModuleVersion / IsTenantAssignable / IsBaseline | `1.0.0` / true / false |
++| SortOrder / Icon (SOFT, seed-once) | 420 / `bx-undo` |
++| Provider / tests (proposed paths) | `services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api/ModuleRegistration/ReverseLogisticsManifestProvider.cs` / `services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ModuleRegistration/ReverseLogisticsManifestProviderTests.cs` |
++| Scope | every RoutePath starts with `/SupplyChain/`, none with `/Platform/` → Tenant |
++
++### Pages
++
++| PageCode | DisplayName | RoutePath | RequiredPermission | Parent | Nav | PageType | Sort |
++|---|---|---|---|---|---|---|---|
++| `RETURNS` | Returns | `/SupplyChain/Returns` (approved; not a route yet) | `supplychain.returns.read` | — | **true** | List | 10 |
++
++### Actions
++
++| Page | ActionCode | DisplayName | PermissionKey | Placement | Dangerous | Key source |
++|---|---|---|---|---|---|---|
++| `RETURNS` | `CREATE` | Create Return | `supplychain.returns.create` | Toolbar | no | const |
++| `RETURNS` | `AUTHORIZE` | Authorize | `supplychain.returns.authorize` | RowAction | no | `ForTarget` |
++| `RETURNS` | `REJECT` | Reject | `supplychain.returns.authorize` | RowAction | **yes** | `ForTarget` |
++| `RETURNS` | `MARK_IN_TRANSIT` | Mark In Transit | `supplychain.returns.transit` | RowAction | no | `ForTarget` |
++| `RETURNS` | `CANCEL` | Cancel Return | `supplychain.returns.cancel` | RowAction | **yes** | `ForTarget` |
++| `RETURNS` | `RECEIVE` | Receive (manual assertion) | `supplychain.returns.receive` | RowAction | no | `ForTarget` |
++| `RETURNS` | `DISPOSITION` | Disposition | `supplychain.returns.disposition` | RowAction | no | `ForTarget` |
++| `RETURNS` | `CLOSE` | Close | `supplychain.returns.close` | RowAction | no | `ForTarget` |
++
++Existing keys only: `ReturnPermissions` constants `Read`, `Create`, `Transition`, and the values returned by `ReturnPermissions.ForTarget` (Authorized/Rejected → `authorize`, InTransit → `transit`, Cancelled → `cancel`, Received → `receive`, Dispositioned → `disposition`, Closed → `close`). **D5 = A:** the completeness test reflects `ReturnPermissions.ForTarget`; no constant is added and no Returns backend change is made. QuickView is navigation, not an action.
++
++### Navigation keys (NAV-L10N-KEYS.tsv; 0/7 present today)
++
++| Key | Required languages | Ships with |
++|---|---|---|
++| `Nav.Module.REVERSELOGISTICS` | en, tr, fr, es, zh, ar, ru | this provider |
++| `Nav.Page.RETURNS` | en, tr, fr, es, zh, ar, ru | this provider |
++
++Values are added to `frontend/Diten.Web/Resources/SharedResource.{lang}.resx` by the integration owner and reviewed by the l10n agent (no empty value, no English placeholder, no key echoing its own name). This pack does not supply or approve values.
++
++### Tests (TEST-PLAN.md §2; all required before the module counts as closed)
++
++| ID | Pass condition |
++|---|---|
++| M-01 | Identity exactly as above; `IsTenantAssignable` true |
++| M-02 | Every manifest `RequiredPermission` / `PermissionKey` is in the reflected `public const string` fields of `ReturnPermissions` **plus** every non-null value of `ReturnPermissions.ForTarget` over the frozen `ReturnStatus` enum (D5 = A) |
++| M-03 | Every reflected key is in the manifest or on the API-only allow-list with a reason: `supplychain.returns.transition` (conjunction key; enforced by backend and UI, not representable as a single action key) |
++| M-04 | Manifest RoutePaths = the frontend view-route set of the Returns controller (to be built), counts equal (cross-checked by W-01) |
++| M-05 | The action table above equals the manifest actions per page (code, key, placement, dangerous flag) |
++| M-06 | PageCodes, RoutePaths and ActionCodes (per page) unique, case-insensitive |
++| M-07 | Exactly one `IsNavigationVisible` page, with a null parent; every other page has a parent |
++| M-08 | No RoutePath starts with `/Platform/` |
++
++Shared guards W-01…W-04 and reconcile-state R-01…R-04 (DCP-009 §21.3) must also be green for this module.
++
++### Ship rule (D4 = A)
++
++The provider, its `AddSingleton<IModuleManifestProvider, …>` line and its navigation keys ship **together with this module's UI** in the integrated target (Q14/Q15), never ahead of it.
++
++### Open gaps (carried, not solved)
++
++1. `ReturnPermissions.cs` exists only in the accepted isolated source (`returns46.json` entry `9c3f64ed…`), not in the common checkout.
++2. The six target keys are MAP-ONLY (`ForTarget`), handled by D5 = A.
++3. Every row action also needs `supplychain.returns.transition`, and `CREATE` plus every row action need `supplychain.shipments.read` (G-SHIPREAD); the single-key action model cannot express these conjunctions — the declared key is the target key.
++4. The Returns UI is approved but not built; the route and actions are re-checked against the built UI (M-04/M-05, W-01/W-02).
++5. Rebase required if the Q39 Returns sign-off changes this pack's base first (see the base note).
++6. Runtime tests R-02…R-04 need a native executor and the integrated target.

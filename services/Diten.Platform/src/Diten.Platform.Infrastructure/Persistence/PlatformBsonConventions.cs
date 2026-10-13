@@ -47,5 +47,8 @@ public static class PlatformBsonConventions
             IgnoreExtraElementsPackName,
             new ConventionPack { new IgnoreExtraElementsConvention(true) },
             _ => true);
+
+        // WP-MVP1-SYNC1 — the one explicit class map (tolerant StartedByUserId); after the pack, so it binds it.
+        WorkflowInstanceBsonMap.Register();
     }
 }

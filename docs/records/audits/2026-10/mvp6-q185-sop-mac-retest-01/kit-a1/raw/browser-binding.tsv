@@ -1,0 +1,2 @@
+kind	url_or_path	source_path	http	observed	expected	result
+browser-url	http://127.0.0.1:5601/SupplyChain/SandopPlans	-	-	127.0.0.1:5601	127.0.0.1:5601	match

@@ -1,0 +1,8 @@
+surface	browser_or_mvc_route	gateway_downstream	permission	method	owner	contract_operation	boundary
+page	GET /SupplyChain/Carriers	-	supplychain.carriers.read	GET	UI	-	tenant shell; UAS-001 fail-closed
+list adapter	GET /SupplyChain/Carriers/api?status={exact optional token}	GET /api/shipment-bundle/carriers	supplychain.carriers.read	GET	UI + gateway integration	queryCarriers	no paging/search/order query forwarding
+create action	POST /SupplyChain/Carriers/api	POST /api/shipment-bundle/carriers	supplychain.carriers.create	POST	UI + gateway integration	createCarrier	antiforgery; stable per-intent key
+status action	POST /SupplyChain/Carriers/api/{carrierId:guid}/status	POST /api/shipment-bundle/carriers/{carrierId}/status	supplychain.carriers.status.change	POST	UI + gateway integration	changeCarrierStatus	antiforgery; stable per-intent key
+empty state	client only	-	supplychain.carriers.read	-	UI	-	create CTA only with create grant
+filter/search/order/page	client DataTables; status may reload adapter	status query only	supplychain.carriers.read	GET	UI	queryCarriers	all other table operations client-side
+unsupported detail/edit/delete/bulk/import	absent	absent	-	-	protected	-	no route, control, proxy, or request

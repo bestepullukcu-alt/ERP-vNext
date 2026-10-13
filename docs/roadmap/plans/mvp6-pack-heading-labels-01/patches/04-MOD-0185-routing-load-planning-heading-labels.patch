@@ -1,0 +1,14 @@
+diff --git a/execution/domains/supply-chain-execution/module-packs/MOD-0185-routing-load-planning.md b/execution/domains/supply-chain-execution/module-packs/MOD-0185-routing-load-planning.md
+--- a/execution/domains/supply-chain-execution/module-packs/MOD-0185-routing-load-planning.md
++++ b/execution/domains/supply-chain-execution/module-packs/MOD-0185-routing-load-planning.md
+@@ -538,7 +538,9 @@ Versioned VER: docs/roadmap/plans/mod-0185-ver-01-prompt-v1.0.md (HELD until com
+ Protected: frozen contracts/17seals/authority, other modules/source/tests, gateway, UI, shared catalogs,
+ DCP/registry/board and .antigravity. No commit/push/stash. No E5/G5 or integrated consumer acceptance.
+ 
+-## 29. Self-registration — after Loads UI approval (PATCH PROPOSAL — NOT APPROVED until owner sign-off)
++## 29. Self-registration — after Loads UI approval
++
++Approved: `docs/records/decisions/2026-09/mvp6-self-registration-patches-signoff-owner-decision-01.md`
+ 
+ **Authority:** `docs/records/decisions/2026-09/mvp6-self-registration-design-owner-decision-01.md` (D1–D5 = A; pack preparation only). **Design:** [`mvp6-self-registration-prep-01`](../../../../docs/roadmap/plans/mvp6-self-registration-prep-01/MANIFESTS.md) (MANIFESTS.md, NAV-L10N-KEYS.tsv, TEST-PLAN.md).
+ **Foundation:** DCP-009 §21 (interface, hosted service, options, `PlatformRegistration` settings via the existing `X-Internal-Api-Key`, project reference and `Program.cs` lines — single integration owner).
