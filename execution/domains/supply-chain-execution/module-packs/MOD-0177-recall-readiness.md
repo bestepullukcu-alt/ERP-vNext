@@ -1219,6 +1219,28 @@ type, an expired lot too — CT-R10 is real). All exact.
 Order: **R1 → INT → R2 → R3 → R4 → R5 → R6 → R7 → L10n**. R3 starts on the MVP-1 branch that already holds 0176 F2 + FIX1. The SHIPMENT
 requests (§8.11.4) go to the MVP-6 team with the CT's next MVP-6 note (not a blocker).
 
+### 19.8 WP-0177-R1 — agent result, pending CT (2026-10-13)
+
+Work branch `feature/sce/mod-0177-recall-readiness` (fast-forwarded to base `827cac4e9`). Evidence
+`docs/records/audits/2026-10/mod-0177-r1-evidence-2026-10-13.md` (+ scripts). Delivered: company `RecallSettings` (KR-G defaults 4 h / 180 days
+/ 100-95-90 without a row; If-Match `"0"` first save, reason ≥ 10, one history row per field; CT-R16 signature by policy), `RecallCase` state
+machine §8.7 with insert-only events + `inventory_audit` rows, hand-entered scope items (Lot / Stock / Shipment, computed node keys, CT-R6
+subtree exclusion), the scope seal (`rs-scope-v1` SHA-256 at submit, re-sealed at approval → 409 `RECALL_SCOPE_CHANGED`), CT-R1 four-eyes both
+ways (409 `RECALL_SOD_VIOLATION` on prepare / approve / close), the signature port **fail-closed** until R4 (no approval, completion or
+closure passes in production), pending action 15 min, lot blocks of the approved scope (released at closure), `getLotRecallStatus`
+tenant-wide (CT-R7), notification / consumption / segregation records, effectiveness result (pack §8.6, returned = 0 until R3), counters
+`RC-YYYY-NNNN` and `RC-YYYY-DNNN`, manifest `RECALL-READINESS` with the 13 R1 keys as `ApiPermissions` (no page), `recall.openapi.yaml` 1.0.0
+FROZEN (reconciliations R-1…R-12 in its changelog; R-2 new `addScopeItems`, R-12 `item` instead of `product`). Shared files: additions only
+(evidence §8). Inventory 1000 + 1 skipped → **1053 + 1 skipped**; architecture **69/77**, the same 8 reds (the audit list grows 35 → 50
+commands, FU-SYNC1-AUDIT); gateway 134/135 (known port red). Sabotage a–i: each red, restored 85/85, sources SHA-identical. Probe on own port
+5168 + own mongod 27517: `/health` 200, all 22 R1 routes 401 without a token, MOD-0177 index gate at start.
+`git diff --stat 827cac4e9..HEAD`: 39 files, 8223 insertions, 0 deletions — the R1 paths, the eight PARALEL-KURAL files (additions only), `recall.openapi.yaml`, evidence + scripts, this note.
+
+Open for CT (evidence §10): **O-R1-1** audit debt (+15 commands to FU-SYNC1-AUDIT); **O-R1-2** contract reconciliations R-1…R-12; **O-R1-3**
+lot blocks written in R1 (read by the status, enforced from R3); **O-R1-4** the scope-change test writes a stored item under the seal (R2: the
+live trace); **O-R1-5** a Prism start-up timeout flake in one full run (green alone and on re-run); **O-R1-6** `prepareCaseAction` checks the
+decision's key in the controller (R-6).
+
 ## 20. Follow-up Items
 
 | ID | Item | Owner |

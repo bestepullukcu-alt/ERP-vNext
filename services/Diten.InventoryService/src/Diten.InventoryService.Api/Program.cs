@@ -3,6 +3,7 @@ using Diten.BuildingBlocks.Security.Secrets;
 using Diten.InventoryService.Api.Expiry;
 using Diten.InventoryService.Api.ModuleRegistration;
 using Diten.InventoryService.Api.Quarantine;
+using Diten.InventoryService.Api.Recall;
 using Diten.InventoryService.Api.Traceability;
 using Diten.InventoryService.Application;
 using Diten.InventoryService.Application.Common;
@@ -48,6 +49,8 @@ builder.Services.AddSingleton<IModuleManifestProvider, QuarantineBlockedStockMan
 builder.Services.AddQuarantine(builder.Configuration); // MOD-0175 slice Q1
 builder.Services.AddSingleton<IModuleManifestProvider, ExpiryFefoManifestProvider>(); // MOD-0176 (pack §14.4)
 builder.Services.AddExpiry(builder.Configuration); // MOD-0176 slice F1
+builder.Services.AddSingleton<IModuleManifestProvider, RecallReadinessManifestProvider>(); // MOD-0177 (pack §14.4)
+builder.Services.AddRecall(builder.Configuration); // MOD-0177 slice R1
 builder.Services.AddHostedService<ModuleRegistrationHostedService>();
 
 // ── JWT (issuer / audience / keys from configuration; shared clock skew — BL-296) ─────────────────────────
