@@ -146,6 +146,28 @@ public sealed class VisitReportController : CustomBaseController
         return CreateActionResultInstance(await _mediator.Send(new GetCompetitorUsageQuery(ids, months), cancellationToken));
     }
 
+    /// <summary>WP-VW-W4 (W4-WEB-b) — the pharmacy report's shelf photo. multipart/form-data: <c>file</c> (JPEG / PNG ≤ 10 MB).
+    /// Answers <c>{ photoEvidenceId }</c>; the Web keeps it in the draft (<c>pharmacy.shelf.photoEvidenceId</c>).</summary>
+    [HttpPost("api/crm/visit-report/v2/{plannedVisitId:guid}/shelf-photo")]
+    [HasPermission(Perms.Record)]
+    [HasPermission(Perms.PlannedVisitManage)]
+    [RequestSizeLimit(VisitExecutionController.MaxRequestBytes)]
+    [RequestFormLimits(MultipartBodyLengthLimit = VisitExecutionController.MaxRequestBytes)]
+    public async Task<IActionResult> ShelfPhoto(Guid plannedVisitId, IFormFile? file, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new UploadShelfPhotoCommand(plannedVisitId, await VisitExecutionController.ReadAsync(file, cancellationToken)), cancellationToken));
+
+    /// <summary>The shelf photo the visit's report points at (own visit, or read-all).</summary>
+    [HttpGet("api/crm/visit-report/v2/{plannedVisitId:guid}/shelf-photo")]
+    [HasPermission(Perms.Read)]
+    public async Task<IActionResult> ShelfPhotoImage(Guid plannedVisitId, CancellationToken cancellationToken)
+    {
+        var response = await _mediator.Send(new GetShelfPhotoQuery(plannedVisitId), cancellationToken);
+        return !response.IsSuccessful || response.Data is null
+            ? CreateActionResultInstance(response)
+            : File(response.Data.Content, response.Data.MediaType, response.Data.FileName);
+    }
+
     /// <summary><c>If-Match: "3"</c> / <c>W/"3"</c> / <c>3</c> → 3.</summary>
     private int? IfMatch() => DoctorInsightsController.IfMatch(Request.Headers.IfMatch.ToString());
 }

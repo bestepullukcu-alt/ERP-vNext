@@ -20,7 +20,7 @@ namespace Diten.CrmService.Api.Controllers.CRM;
 public sealed class VisitExecutionController : CustomBaseController
 {
     /// <summary>The evidence ceiling (10 MB) plus room for the multipart envelope and the form fields.</summary>
-    private const long MaxRequestBytes = 11L * 1024 * 1024;
+    internal const long MaxRequestBytes = 11L * 1024 * 1024;
 
     private readonly IMediator _mediator;
 
@@ -126,7 +126,7 @@ public sealed class VisitExecutionController : CustomBaseController
             : File(response.Data.Content, response.Data.MediaType, response.Data.FileName);
     }
 
-    private static async Task<VisitEvidenceFile?> ReadAsync(IFormFile? file, CancellationToken cancellationToken)
+    internal static async Task<VisitEvidenceFile?> ReadAsync(IFormFile? file, CancellationToken cancellationToken)
     {
         if (file is null || file.Length == 0)
         {

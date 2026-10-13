@@ -440,6 +440,9 @@ public sealed class VisitWorkspaceW1Tests
         { nameof(VisitReportController.DraftV2), new[] { VisitReportPermissions.Record, VisitReportPermissions.PlannedVisitManage } },
         { nameof(VisitReportController.SubmitV2), new[] { VisitReportPermissions.Record, VisitReportPermissions.PlannedVisitManage } },
         { nameof(VisitReportController.CompetitorUsage), new[] { Diten.CrmService.Application.Features.VisitReport.V2.VisitReportV2Permissions.ReadAggregate } },
+        // WP-VW-W4 (W4-WEB-b) — the pharmacy shelf photo: written like the report, read like the report.
+        { nameof(VisitReportController.ShelfPhoto), new[] { VisitReportPermissions.Record, VisitReportPermissions.PlannedVisitManage } },
+        { nameof(VisitReportController.ShelfPhotoImage), new[] { VisitReportPermissions.Read } },
     };
 
     [Theory]

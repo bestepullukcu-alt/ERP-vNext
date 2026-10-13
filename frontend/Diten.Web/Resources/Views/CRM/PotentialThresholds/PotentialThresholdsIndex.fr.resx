@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>Seuils de potentiel</value></data>
+  <data name="Crumb" xml:space="preserve"><value>Paramètres CRM / Profils médecins</value></data>
+  <data name="Intro" xml:space="preserve"><value>Les patients mensuels d'un médecin dans les indications d'un produit sont classés Faible, Moyen ou Élevé selon ces limites. Une ligne produit l'emporte sur la valeur par défaut du locataire ; sans l'une ni l'autre, les valeurs intégrées s'appliquent.</value></data>
+  <data name="AddProduct" xml:space="preserve"><value>Ajouter un produit</value></data>
+  <data name="ReadOnly" xml:space="preserve"><value>Vous pouvez consulter les seuils ; les modifier nécessite l'autorisation de gestion des seuils.</value></data>
+  <data name="RetryButton" xml:space="preserve"><value>Réessayer</value></data>
+  <data name="ThresholdsTitle" xml:space="preserve"><value>Seuils</value></data>
+  <data name="ThresholdsNote" xml:space="preserve"><value>Faible &lt; X · Moyen · Élevé &gt; Y (patients par mois)</value></data>
+  <data name="ColProduct" xml:space="preserve"><value>Produit</value></data>
+  <data name="ColLow" xml:space="preserve"><value>Faible</value></data>
+  <data name="ColMedium" xml:space="preserve"><value>Moyen</value></data>
+  <data name="ColHigh" xml:space="preserve"><value>Élevé</value></data>
+  <data name="ColSource" xml:space="preserve"><value>Source</value></data>
+  <data name="ColLastChange" xml:space="preserve"><value>Dernière modification</value></data>
+  <data name="RowActions" xml:space="preserve"><value>Opérations</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>Historique des modifications</value></data>
+  <data name="AuditReadOnly" xml:space="preserve"><value>Journal d'audit · lecture seule</value></data>
+  <data name="ColDate" xml:space="preserve"><value>Date</value></data>
+  <data name="ColPerson" xml:space="preserve"><value>Personne</value></data>
+  <data name="ColTarget" xml:space="preserve"><value>Ligne</value></data>
+  <data name="ColField" xml:space="preserve"><value>Champ</value></data>
+  <data name="ColChange" xml:space="preserve"><value>Modification</value></data>
+  <data name="ProductLabel" xml:space="preserve"><value>Produit</value></data>
+  <data name="LowLabel" xml:space="preserve"><value>Faible en dessous de (X)</value></data>
+  <data name="LowHint" xml:space="preserve"><value>Moins de X patients par mois = Faible</value></data>
+  <data name="HighLabel" xml:space="preserve"><value>Élevé au-dessus de (Y)</value></data>
+  <data name="HighHint" xml:space="preserve"><value>Plus de Y patients par mois = Élevé</value></data>
+  <data name="PreviewTitle" xml:space="preserve"><value>Aperçu</value></data>
+  <data name="PreviewPatients" xml:space="preserve"><value>Essayez un nombre de patients par mois :</value></data>
+  <data name="CloseButton" xml:space="preserve"><value>Fermer</value></data>
+  <data name="CancelButton" xml:space="preserve"><value>Annuler</value></data>
+  <data name="SaveButton" xml:space="preserve"><value>Enregistrer</value></data>
+  <data name="SaveTitle" xml:space="preserve"><value>Enregistrer les seuils ?</value></data>
+  <data name="SaveConfirm" xml:space="preserve"><value>Oui, enregistrer</value></data>
+  <data name="TenantDefault" xml:space="preserve"><value>Valeur par défaut du locataire</value></data>
+  <data name="Source_product" xml:space="preserve"><value>Produit</value></data>
+  <data name="Source_default" xml:space="preserve"><value>Défaut du locataire</value></data>
+  <data name="Source_built_in" xml:space="preserve"><value>Intégré</value></data>
+  <data name="BandLow" xml:space="preserve"><value>Faible &lt; {0}</value></data>
+  <data name="BandMedium" xml:space="preserve"><value>Moyen {0}–{1}</value></data>
+  <data name="BandHigh" xml:space="preserve"><value>Élevé &gt; {0}</value></data>
+  <data name="Field_lowBelow" xml:space="preserve"><value>Limite faible</value></data>
+  <data name="Field_highAbove" xml:space="preserve"><value>Limite élevée</value></data>
+  <data name="Field_own" xml:space="preserve"><value>Ligne produit</value></data>
+  <data name="OwnRow" xml:space="preserve"><value>Le produit reçoit sa propre ligne (mêmes valeurs)</value></data>
+  <data name="Never" xml:space="preserve"><value>Pas encore modifié</value></data>
+  <data name="EditButton" xml:space="preserve"><value>Modifier</value></data>
+  <data name="EditTitle" xml:space="preserve"><value>Seuils · {0}</value></data>
+  <data name="NewTitle" xml:space="preserve"><value>Seuils pour un produit</value></data>
+  <data name="ProductPlaceholder" xml:space="preserve"><value>Sélectionnez un produit</value></data>
+  <data name="SaveText" xml:space="preserve"><value>Les nouvelles limites s'appliquent à {0} dès la prochaine classification.</value></data>
+  <data name="SaveTextDefault" xml:space="preserve"><value>Les nouvelles limites s'appliquent à tous les produits sans ligne propre.</value></data>
+  <data name="Saved" xml:space="preserve"><value>Seuils enregistrés.</value></data>
+  <data name="NothingChanged" xml:space="preserve"><value>Aucune modification.</value></data>
+  <data name="NoProducts" xml:space="preserve"><value>Aucun seuil pour l'instant.</value></data>
+  <data name="NoHistory" xml:space="preserve"><value>Aucune modification pour l'instant.</value></data>
+  <data name="HistoryDefault" xml:space="preserve"><value>Défaut du locataire</value></data>
+  <data name="YouLabel" xml:space="preserve"><value>Vous</value></data>
+  <data name="Class_low" xml:space="preserve"><value>Faible</value></data>
+  <data name="Class_medium" xml:space="preserve"><value>Moyen</value></data>
+  <data name="Class_high" xml:space="preserve"><value>Élevé</value></data>
+  <data name="ErrRequired" xml:space="preserve"><value>Saisissez un nombre entier.</value></data>
+  <data name="ErrRange" xml:space="preserve"><value>Un nombre entier de 1 à 100 000.</value></data>
+  <data name="ErrOrder" xml:space="preserve"><value>Élevé (Y) ne peut pas être inférieur à Faible (X).</value></data>
+  <data name="ErrProduct" xml:space="preserve"><value>Sélectionnez un produit.</value></data>
+  <data name="Err_potential_threshold_invalid" xml:space="preserve"><value>Seuils refusés : 0 &lt; Faible ≤ Élevé ≤ 100 000.</value></data>
+  <data name="Err_version_conflict" xml:space="preserve"><value>Quelqu'un d'autre a modifié ces seuils. Rechargez et réessayez.</value></data>
+  <data name="Err_doctor_insights_product_invalid" xml:space="preserve"><value>Ce produit ne figure pas dans le référentiel produits.</value></data>
+  <data name="Err_doctor_insights_invalid" xml:space="preserve"><value>La requête n'est pas valide.</value></data>
+  <data name="Err_reference_data_unavailable" xml:space="preserve"><value>Le référentiel produits est illisible ; rien n'a été enregistré.</value></data>
+  <data name="Err_dependency_unavailable" xml:space="preserve"><value>La liste des produits n'est pas disponible pour le moment.</value></data>
+  <data name="Err_permission_denied" xml:space="preserve"><value>Vous n'avez pas l'autorisation pour cela.</value></data>
+  <data name="Err_unavailable" xml:space="preserve"><value>Le serveur est injoignable ; vos valeurs sont conservées sur cet écran.</value></data>
+  <data name="Err_generic" xml:space="preserve"><value>L'opération n'a pas pu aboutir.</value></data>
+</root>

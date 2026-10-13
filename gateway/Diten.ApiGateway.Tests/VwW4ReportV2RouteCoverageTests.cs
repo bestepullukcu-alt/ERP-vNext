@@ -19,6 +19,9 @@ public sealed class VwW4ReportV2RouteCoverageTests
     [InlineData("/api/crm/visit-report/" + Id + "/amend", "POST")]
     [InlineData("/api/crm/visit-report/" + Id, "GET")]
     [InlineData("/api/crm/visit-report/v2/competitor-usage", "GET")]
+    // WP-VW-W4 (W4-WEB-b) — the pharmacy shelf photo
+    [InlineData("/api/crm/visit-report/v2/" + Id + "/shelf-photo", "POST")]
+    [InlineData("/api/crm/visit-report/v2/" + Id + "/shelf-photo", "GET")]
     public void Every_report_v2_endpoint_has_a_crm_route_for_its_method(string path, string method)
     {
         var routes = Load().Routes.Where(r => Matches(r.UpstreamPathTemplate, path)).ToList();

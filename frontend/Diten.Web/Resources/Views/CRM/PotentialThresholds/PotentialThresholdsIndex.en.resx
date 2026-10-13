@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>Potential thresholds</value></data>
+  <data name="Crumb" xml:space="preserve"><value>CRM Settings / Doctor insights</value></data>
+  <data name="Intro" xml:space="preserve"><value>A doctor's monthly patients in a product's indications are classed Low, Medium or High by these boundaries. A product row wins over the tenant default; without either the built-in values apply.</value></data>
+  <data name="AddProduct" xml:space="preserve"><value>Add product</value></data>
+  <data name="ReadOnly" xml:space="preserve"><value>You can view the thresholds; changing them needs the thresholds management permission.</value></data>
+  <data name="RetryButton" xml:space="preserve"><value>Retry</value></data>
+  <data name="ThresholdsTitle" xml:space="preserve"><value>Thresholds</value></data>
+  <data name="ThresholdsNote" xml:space="preserve"><value>Low &lt; X · Medium · High &gt; Y (monthly patients)</value></data>
+  <data name="ColProduct" xml:space="preserve"><value>Product</value></data>
+  <data name="ColLow" xml:space="preserve"><value>Low</value></data>
+  <data name="ColMedium" xml:space="preserve"><value>Medium</value></data>
+  <data name="ColHigh" xml:space="preserve"><value>High</value></data>
+  <data name="ColSource" xml:space="preserve"><value>Source</value></data>
+  <data name="ColLastChange" xml:space="preserve"><value>Last change</value></data>
+  <data name="RowActions" xml:space="preserve"><value>Row actions</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>Change history</value></data>
+  <data name="AuditReadOnly" xml:space="preserve"><value>Audit record · read-only</value></data>
+  <data name="ColDate" xml:space="preserve"><value>Date</value></data>
+  <data name="ColPerson" xml:space="preserve"><value>Person</value></data>
+  <data name="ColTarget" xml:space="preserve"><value>Row</value></data>
+  <data name="ColField" xml:space="preserve"><value>Field</value></data>
+  <data name="ColChange" xml:space="preserve"><value>Change</value></data>
+  <data name="ProductLabel" xml:space="preserve"><value>Product</value></data>
+  <data name="LowLabel" xml:space="preserve"><value>Low below (X)</value></data>
+  <data name="LowHint" xml:space="preserve"><value>Fewer than X patients a month = Low</value></data>
+  <data name="HighLabel" xml:space="preserve"><value>High above (Y)</value></data>
+  <data name="HighHint" xml:space="preserve"><value>More than Y patients a month = High</value></data>
+  <data name="PreviewTitle" xml:space="preserve"><value>Preview</value></data>
+  <data name="PreviewPatients" xml:space="preserve"><value>Try a monthly patient count:</value></data>
+  <data name="CloseButton" xml:space="preserve"><value>Close</value></data>
+  <data name="CancelButton" xml:space="preserve"><value>Cancel</value></data>
+  <data name="SaveButton" xml:space="preserve"><value>Save</value></data>
+  <data name="SaveTitle" xml:space="preserve"><value>Save the thresholds?</value></data>
+  <data name="SaveConfirm" xml:space="preserve"><value>Yes, save</value></data>
+  <data name="TenantDefault" xml:space="preserve"><value>Tenant default</value></data>
+  <data name="Source_product" xml:space="preserve"><value>Product</value></data>
+  <data name="Source_default" xml:space="preserve"><value>Tenant default</value></data>
+  <data name="Source_built_in" xml:space="preserve"><value>Built-in</value></data>
+  <data name="BandLow" xml:space="preserve"><value>Low &lt; {0}</value></data>
+  <data name="BandMedium" xml:space="preserve"><value>Medium {0}–{1}</value></data>
+  <data name="BandHigh" xml:space="preserve"><value>High &gt; {0}</value></data>
+  <data name="Field_lowBelow" xml:space="preserve"><value>Low boundary</value></data>
+  <data name="Field_highAbove" xml:space="preserve"><value>High boundary</value></data>
+  <data name="Field_own" xml:space="preserve"><value>Product row</value></data>
+  <data name="OwnRow" xml:space="preserve"><value>The product gets its own row (same values)</value></data>
+  <data name="Never" xml:space="preserve"><value>Not changed yet</value></data>
+  <data name="EditButton" xml:space="preserve"><value>Edit</value></data>
+  <data name="EditTitle" xml:space="preserve"><value>Thresholds · {0}</value></data>
+  <data name="NewTitle" xml:space="preserve"><value>Thresholds for a product</value></data>
+  <data name="ProductPlaceholder" xml:space="preserve"><value>Select a product</value></data>
+  <data name="SaveText" xml:space="preserve"><value>The new boundaries apply to {0} from the next classification.</value></data>
+  <data name="SaveTextDefault" xml:space="preserve"><value>The new boundaries apply to every product without its own row.</value></data>
+  <data name="Saved" xml:space="preserve"><value>Thresholds saved.</value></data>
+  <data name="NothingChanged" xml:space="preserve"><value>Nothing changed.</value></data>
+  <data name="NoProducts" xml:space="preserve"><value>No thresholds yet.</value></data>
+  <data name="NoHistory" xml:space="preserve"><value>No change yet.</value></data>
+  <data name="HistoryDefault" xml:space="preserve"><value>Tenant default</value></data>
+  <data name="YouLabel" xml:space="preserve"><value>You</value></data>
+  <data name="Class_low" xml:space="preserve"><value>Low</value></data>
+  <data name="Class_medium" xml:space="preserve"><value>Medium</value></data>
+  <data name="Class_high" xml:space="preserve"><value>High</value></data>
+  <data name="ErrRequired" xml:space="preserve"><value>Enter a whole number.</value></data>
+  <data name="ErrRange" xml:space="preserve"><value>A whole number from 1 to 100,000.</value></data>
+  <data name="ErrOrder" xml:space="preserve"><value>High (Y) cannot be below Low (X).</value></data>
+  <data name="ErrProduct" xml:space="preserve"><value>Select a product.</value></data>
+  <data name="Err_potential_threshold_invalid" xml:space="preserve"><value>The thresholds were refused: 0 &lt; Low ≤ High ≤ 100,000.</value></data>
+  <data name="Err_version_conflict" xml:space="preserve"><value>Someone else changed these thresholds. Reload and try again.</value></data>
+  <data name="Err_doctor_insights_product_invalid" xml:space="preserve"><value>This product is not in the product master.</value></data>
+  <data name="Err_doctor_insights_invalid" xml:space="preserve"><value>The request is not valid.</value></data>
+  <data name="Err_reference_data_unavailable" xml:space="preserve"><value>The product master could not be read; nothing was saved.</value></data>
+  <data name="Err_dependency_unavailable" xml:space="preserve"><value>The product list is not available right now.</value></data>
+  <data name="Err_permission_denied" xml:space="preserve"><value>You do not have permission for this.</value></data>
+  <data name="Err_unavailable" xml:space="preserve"><value>The server could not be reached; your values are kept on this screen.</value></data>
+  <data name="Err_generic" xml:space="preserve"><value>The operation could not be completed.</value></data>
+</root>
