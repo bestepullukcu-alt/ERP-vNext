@@ -1014,6 +1014,20 @@ frozen operations). **O-F3-3** resolvers need `esign.signatures.sign` + `.read` 
 get them in the L10n / roles follow-up; existing tenants by the owner. **O-F3-4** accepted (same as `qd-v1`); a filled `skuCode` needs
 `fx-v2` (FU-0176-FX2). **O-F3-5** accepted. Merged (`--no-ff`) into the MVP-1 branch. Next: F4 (UI) — and MOD-0177 R1 may now start.
 
+### 19.13 WP-0176-F4 — agent result, pending CT (2026-10-13)
+
+Commits on `feature/sce/mod-0176-expiry-fefo` (base `827cac4e9`): `dbefa2a3a` the four reads (`getDashboard`, `listApproaching`,
+`listExpired`, `getFefoOrder` — §8.8 formulas, the F2 `FefoOrderRule` over the shared `FefoCandidateReader`, AVAILABLE / held apart, no money,
+tenant + company scoped, paging ≤ 200, horizon ≤ `ApproachingDays`) + FU-0176-F1-UOM (`openException.baseUomId`, omitted → stock unit,
+unreadable → none) + FEFO-BUNDLE **1.1.0** additive (1.0.2 pinned as a fixture) + manifest 4 pages; `daa191a14` Web (`/Expiry`,
+`/Expiry/Approaching`, `/Expiry/Expired`, `/Expiry/FefoOrder` on `_LayoutTenantShell`, UAS-001, read-only FEFO order, 7 languages + nav keys);
+`4600501c8` three UI fixes found on the screenshots. Evidence `docs/records/audits/2026-10/mod-0176-f4-evidence-2026-10-13.md`. Inventory
+1000+1 → **1007+2 skipped**; Web 1427/1429 → **1440/1440** (both nav reds fixed); architecture 69/77 same 8; gateway 134/135; 0 new warnings.
+Seeded KPIs equal the formulas; FEFO order's first lot = F2's `firstEligibleLotId`. Sabotage a–e 5/5 red → green, `git diff` empty. p95 with
+1 000 lots alone: 135 / 107 / 114 / 316 ms (≤ 500). Probe 5167 + Web 5101: service reads 401, Web pages 302 → login without skeleton, fleet
+PIDs unchanged. PARALEL: only `docs/analysis/contracts/README.md:15` (new line). Screenshots are a static preview (real Razor + real JS +
+seed-equivalent JSON), not a live authorized session. Open points O-F4-1 … O-F4-7 in the evidence §11.
+
 ## 20. Follow-up Items
 
 | ID | Item | Owner |
