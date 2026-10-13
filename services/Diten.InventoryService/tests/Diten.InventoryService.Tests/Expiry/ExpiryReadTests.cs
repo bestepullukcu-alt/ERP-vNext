@@ -1,6 +1,8 @@
 using System.Globalization;
 using System.Text.Json;
 using Diten.InventoryService.Tests.TestInfrastructure;
+using MongoDB.Bson;
+using MongoDB.Driver;
 using Xunit;
 
 namespace Diten.InventoryService.Tests.Expiry;
@@ -245,6 +247,52 @@ public sealed class ExpiryReadTests : IClassFixture<ExpiryApiFactory>
         Assert.Equal(404, (await s.SendAsync(HttpMethod.Get, $"/api/expiry/fefo-order?warehouseId={s.Ledger.Warehouse}&itemId={s.Ledger.Item}&skuId={Guid.NewGuid()}&skuLevel=Lsku", reader)).Status);
         Assert.Equal(400, (await s.SendAsync(HttpMethod.Get, $"/api/expiry/fefo-order?warehouseId={s.Ledger.Warehouse}", reader)).Status);
         Assert.Equal(403, (await s.SendAsync(HttpMethod.Get, query, s.Mint(s.Qa, ["expiry.dashboard.read"]))).Status);
+    }
+
+    /// <summary>
+    /// CT FIX-F4R1 finding 1 — the company filter of <c>FefoCandidateReader</c> (ONE reader for the order read and the posting hook). Company B
+    /// of the same tenant holds an EARLIER-expiring lot under the SAME warehouse id string and the SAME SKU. A warehouse belongs to one company
+    /// (real location tree), so B cannot post there through the API: B's lot and balance row are written straight into the store (a clone of
+    /// A's row with B's company), exactly the shape the reader filters. (a) A's FEFO order lists A's lots only; (b) A's issue from its own
+    /// lot is compliant (201, no reason, no case) — B's lot is never "the first eligible". Sabotage: drop
+    /// <c>b.Eq(x => x.LegalEntityId, _tenant.LegalEntityId)</c> from the reader → (a) and (b) red. The panel / lists read is guarded by
+    /// <see cref="Another_company_and_another_tenant_see_none_of_it"/> (F4 sabotage b).
+    /// </summary>
+    [Fact]
+    public async Task Another_companys_earlier_lot_under_the_same_warehouse_id_is_neither_ordered_nor_first_eligible()
+    {
+        var s = new ExpiryScenario(_factory);
+        var reader = s.Mint(s.Qa, ReaderKeys);
+        var mine = await s.Lots.CreateLotAsync(expiryDate: Day(120), manufacturingDate: "2026-05-01T00:00:00Z");
+        await s.Lots.ReleaseAsync(mine);
+        await s.Lots.PostOkAsync(s.Lots.Receipt("10", mine, postingDate: Posting));
+
+        // company B: a released lot expiring FIRST (+20), its 10 AVAILABLE under A's warehouse id and A's SKU
+        var otherCompany = Guid.NewGuid().ToString();
+        var foreign = await s.Lots.CreateLotAsync(expiryDate: Day(20), manufacturingDate: "2026-01-01T00:00:00Z");
+        await s.Lots.ReleaseAsync(foreign);
+        var lotUpdate = await _factory.Collection("trace_lots").UpdateOneAsync(
+            new BsonDocument("_id", foreign), new BsonDocument("$set", new BsonDocument("LegalEntityId", otherCompany)));
+        Assert.Equal(1, lotUpdate.ModifiedCount);
+        var balances = _factory.Collection("inventory_balances");
+        var template = Assert.Single(await balances.Find(new BsonDocument { { "TenantId", s.Tenant.ToString() }, { "LotId", mine } }).ToListAsync());
+        var clone = template.DeepClone().AsBsonDocument;
+        clone["_id"] = template["_id"].IsString ? Guid.NewGuid().ToString() : (BsonValue)ObjectId.GenerateNewId();
+        clone["LegalEntityId"] = otherCompany;
+        clone["LotId"] = foreign;
+        await balances.InsertOneAsync(clone);
+        Assert.Equal(s.Ledger.Warehouse, clone["WarehouseId"].AsString);
+        Assert.Equal(s.Ledger.Sku.ToString(), clone["SkuId"].AsString);
+
+        // (a) A's order: only A's lot — B's earlier lot is neither eligible nor excluded
+        var query = $"/api/expiry/fefo-order?warehouseId={s.Ledger.Warehouse}&itemId={s.Ledger.Item}&skuId={s.Ledger.Sku}&skuLevel=Lsku&asOf={Posting[..10]}";
+        var order = await GetAsync(s, query, reader);
+        Assert.Equal([mine], order.GetProperty("eligible").EnumerateArray().Select(e => e.GetProperty("lotId").GetString()));
+        Assert.DoesNotContain(foreign, order.GetProperty("excluded").EnumerateArray().Select(e => e.GetProperty("lotId").GetString()));
+
+        // (b) the F2 posting hook over the HTTP posting route: A's issue from its own lot is compliant — 201, no reason, no case
+        await s.Lots.PostAsync(s.Lots.Issue("1", mine, postingDate: Posting), 201);
+        Assert.Empty(s.Persisted("expiry_exceptions"));
     }
 
     [Fact]

@@ -1086,6 +1086,7 @@
   <data name="Nav.Page.ESIGNMEANINGS" xml:space="preserve"><value>Significados de firma</value></data>
   <data name="Nav.Page.ESIGNSAMPLEAPPROVALS" xml:space="preserve"><value>Aprobación de muestras</value></data>
   <data name="Nav.Module.EXPIRYFEFOMANAGEMENT" xml:space="preserve"><value>Caducidad / FEFO</value></data>
+  <data name="Nav.Module.RECALLREADINESS" xml:space="preserve"><value>Preparación para retiradas</value></data>
   <data name="Nav.Page.EXPIRYDASHBOARD" xml:space="preserve"><value>Panel FEFO</value></data>
   <data name="Nav.Page.EXPIRYAPPROACHING" xml:space="preserve"><value>Próximos a caducar</value></data>
   <data name="Nav.Page.EXPIREDSTOCK" xml:space="preserve"><value>Stock caducado</value></data>

@@ -1085,6 +1085,7 @@
   <data name="Nav.Page.ESIGNMEANINGS" xml:space="preserve"><value>Значения подписи</value></data>
   <data name="Nav.Page.ESIGNSAMPLEAPPROVALS" xml:space="preserve"><value>Одобрение образцов</value></data>
   <data name="Nav.Module.EXPIRYFEFOMANAGEMENT" xml:space="preserve"><value>Сроки годности / FEFO</value></data>
+  <data name="Nav.Module.RECALLREADINESS" xml:space="preserve"><value>Готовность к отзыву</value></data>
   <data name="Nav.Page.EXPIRYDASHBOARD" xml:space="preserve"><value>Панель FEFO</value></data>
   <data name="Nav.Page.EXPIRYAPPROACHING" xml:space="preserve"><value>Истекающие сроки</value></data>
   <data name="Nav.Page.EXPIREDSTOCK" xml:space="preserve"><value>Просроченный запас</value></data>
