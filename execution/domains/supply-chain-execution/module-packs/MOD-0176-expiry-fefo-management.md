@@ -265,7 +265,7 @@ Platform e-signature code; `AccountKindAcceptanceHost.Tests` (not run).
 | MOD-0173 ledger | HARD (in-process) | live | posting path, balances by lot (`getBalance` `lotId` `inventory-bundle.openapi.yaml:150`) |
 | MOD-0174 lots | HARD base (report `:122`, `:399`) | live, TRACE 1.3.0 | lot dates, `listLots(expiryBefore, sort=expiryDate)` (`trace.openapi.yaml:64,72`), extension points (MOD-0174 pack `:265-266`, `:1037`) |
 | MOD-0175 quarantine | HARD for KF-C | live (Q1–Q5), QUARANTINE 1.2.0 | intake opens hold on `QUARANTINE` GR (`QuarantineIntake.cs:41-65,109-115`) |
-| MOD-0022 e-signature | HARD for F3 | ready-for-dev / E2 needed | `signSubject`, `verifySignature` (`esign.openapi.yaml:111,176`), registration (`:552-571`), provider contract |
+| MOD-0022 e-signature | HARD for F3 | ready-for-dev / E2 needed | `signSubject`, `getSignature` (`esign.openapi.yaml:111,154`; F3-A: not `verifySignature` `:176`), registration (`:552-571`), provider contract |
 | MOD-0023 Workflow | **not used** | — | §8.7 (report never states Workflow HARD for 0176 — `:121`, `:399`, `:569`) |
 | MOD-0290 product master | HARD data | 1.1.0-draft.11 (not frozen) | `getSku` `shelfLifeDays` / `retestDays` / `minRemainingShelfLifeDays` (`:729-732`) |
 | MOD-0188 Demand | consumer only (report `:123`, `:569` "DEC: base=0174") | not started | — |
@@ -452,11 +452,12 @@ Platform `CatalogHandlers.cs:262-266`; registration hosted service generalised f
 |---|---|---|---|---|---|
 | `expiry.lot-date.override` | Lot tarih sapması | true | `APPROVE` | `savedAccepted` | `expiry.date-override` |
 | `expiry.exception.accept` | İstisnayı gerekçeyle kabul et | true | `APPROVE` | `savedAccepted` | `expiry.exception` |
-| `expiry.exception.fix` | İstisnayı düzeltildi olarak kapat | true | `REVIEW` (mockup "Gözden geçirdim") | `savedAccepted` | `expiry.exception` |
+| `expiry.exception.fix` | İstisnayı düzeltildi olarak kapat | true | `APPROVE` (CT-F8; was `REVIEW`, mockup "Gözden geçirdim") | `savedAccepted` | `expiry.exception` |
 | `expiry.exception.cancel` | İstisnayı iptal et | true | `APPROVE` | `savedAccepted` | `expiry.exception` |
 
-Meanings are tenant-defined (KS-12, MOD-0022 pack `:508-512`); `REVIEW` must exist in the tenant's meaning list or the
-registration falls back to `APPROVE` (CT-F8). Names in 7 languages (SevenNames).
+Meanings are tenant-defined (KS-12, MOD-0022 pack `:508-512`); CT-F8: all four register `APPROVE` (a tenant may map another
+meaning in its policy). Names in 7 languages (SevenNames). F3: `ExpirySignableActions.cs`; one registration call per module
+(`ESignActionRegistrationHostedService`, quarantine call byte-identical to the pre-F3 one).
 
 **Subject provider (CT-D2):** `GET /api/expiry/esign-subjects/{subjectType}/{subjectId}` (provider contract
 `esign.openapi.yaml` `x-subject-provider-contract`; config `ESign:SubjectProviders:expiry:BaseUrl`, operator config,
@@ -472,10 +473,14 @@ never a manifest). Canonical form `{"module","subjectType","subjectId","fields":
   15 min). Same pattern as 0175's decider signature (`QuarantineDeciderSignature.cs:10-105`).
 
 **Direct signature, not E4.** E4 (`ESignatureGate.cs:28-53`, MOD-0022 pack `:533-565`) gates the **approve transition of
-a MOD-0023 workflow task**. 0176 has no workflow task (§8.7), so the deciding user signs directly and 0176 verifies
-(`verifySignature` `esign.openapi.yaml:176`): same tenant, signer = actor, action code = the resolution's, meaning = the
-effective policy's, subject hash = current, not invalidated, signed after `PendingResolution` was set, not used before
-(unique `ResolutionSignatureId`). 0176 stores **only** `signatureId` (KF-E: no own signature record).
+a MOD-0023 workflow task**. 0176 has no workflow task (§8.7), so the deciding user signs directly and 0176 verifies with
+**`getSignature` (`esign.openapi.yaml:654-684`) + a local `fx-v1` / `do-v1` hash comparison** (CT decision F3-A, the MOD-0175
+`QuarantineDeciderSignature` pattern — `verifySignature` returns no signer / action / meaning / `signedAtUtc` and needs
+`esign.signatures.verify`, so it is not called): same tenant, signer = actor, action code = the resolution's, meaning = the
+effective policy's, subject = {expiry, type, id}, subject hash = the CURRENT hash from the provider's own function, not
+invalidated, signed at or after `PendingResolution` was set (an override: its creation), not used before (unique
+`ResolutionSignatureId`; an override is consumed once). MOD-0022 unreadable → refused (fail-closed). 0176 stores **only**
+`signatureId` (KF-E: no own signature record).
 
 Policy: 0176 reads `getEffectivePolicy` (`esign.openapi.yaml:297-311`) per resolution; `required=false` → resolve without a
 signature. KF-D under `ReasonAndSignature` requires the signature **regardless** of the MOD-0022 row (the owner decision
@@ -981,6 +986,20 @@ exemption entry is redundant, not a test gap.) Decisions: **O-F2-1** accepted (s
 the full suite on this machine):** the 50 ms budget stays; the test moves out of the default run behind `INVENTORY_PERF_TESTS=1`
 (explicit skip reason otherwise) and the CT runs it alone at each acceptance — first item of F3. Fast-forwarded into the MVP-1 branch;
 the owner's 5067 now enforces the FEFO issue rule (KF-B default RequireReason); KF-C / KF-D stay inactive until MDM serves the day fields.
+
+### 19.12 WP-0176-F3 — agent result, pending CT (2026-10-13)
+
+**BLOCKED → decision A.** The WP named `verifySignature` (`esign.openapi.yaml:176`); measured, its `VerificationResult` (`:697-707`,
+Platform `ESignatureContracts.cs:140-147`) carries no signer, action code, meaning or `signedAtUtc` and needs `esign.signatures.verify`.
+The agent stopped (error protocol); **CT decision F3-A**: the MOD-0175 pattern — `getSignature` (`:654-684`) with the signer's token +
+the local `fx-v1` / `do-v1` hash from the provider's own function; `verifySignature` is not called, no role gains `esign.signatures.verify`.
+Commits on `feature/sce/mod-0176-expiry-fefo` (base `78da50309`): `66f87dd44` item 0 (p95 test behind `INVENTORY_PERF_TESTS=1`, O-FIX1-2),
+`8233eb714` F3 (registration per module, provider, `ESignExpiryResolutionSignature` / `ESignLotDateOverrideSignature` over
+`GatewayExpiryESignClient`, FEFO-BUNDLE 1.0.2 description only), `9fe2113a4` the one Platform line
+(`ESign:SubjectProviders:expiry:BaseUrl`). Evidence `docs/records/audits/2026-10/mod-0176-f3-evidence-2026-10-13.md`. Quarantine registration
+body byte-identical (golden SHA-256); golden vectors fx-v1 / do-v1; Inventory 978+1 skipped → **1000+1 skipped**; architecture 69/77 same 8
+reds; gateway 134/135; Platform ESign filter 163/163 (Platform source unchanged). Sabotage a–j 10/10 red → green, `git diff` empty. p95 alone
++24.1 / +26.3 / +0.6 ms. Probe on 5167: provider / prepare / resolve / createLot without a token 401, fleet PIDs unchanged.
 
 ## 20. Follow-up Items
 
