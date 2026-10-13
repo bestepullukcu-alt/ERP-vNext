@@ -66,7 +66,8 @@ window.ExpiryUi = (function () {
     const severityBadge = (severity) => severity ? `<span class="badge ${SEVERITY[severity] || 'bg-label-secondary'}">${esc(t('Expiry.Severity.' + severity) || severity)}</span>` : '';
     const REASON = { EXPIRED: 'bg-label-secondary', RETEST_DUE: 'bg-label-danger', BLOCKED: 'bg-label-danger', HELD: 'bg-label-danger', QUARANTINED: 'bg-label-primary', BELOW_MIN_REMAINING: 'bg-label-primary' };
     const reasonBadge = (reason) => `<span class="badge ${REASON[reason] || 'bg-label-secondary'}">${esc(t('Expiry.Reason.' + reason) || reason)}</span>`;
-    const statusCell = (row) => [severityBadge(row.severity)].concat((row.heldReasons || []).map(reasonBadge)).join(' ');
+    // an expired lot is told once: the severity badge already says "Süresi doldu", so its EXPIRED reason is not repeated
+    const statusCell = (row) => [severityBadge(row.severity)].concat((row.heldReasons || []).filter((r) => !(r === 'EXPIRED' && row.severity === 'Expired')).map(reasonBadge)).join(' ');
     const unit = (onHand) => onHand?.baseUomId || t('Expiry.Common.NoUnit');
     const amount = (value, onHand) => `<span dir="ltr">${esc(qty(value))} <small class="text-muted">${esc(unit(onHand))}</small></span>`;
     const productCell = (row) => `<div class="d-flex flex-column"><span class="fw-medium text-heading">${esc(row.itemLabel || row.item?.itemId || '')}</span>`

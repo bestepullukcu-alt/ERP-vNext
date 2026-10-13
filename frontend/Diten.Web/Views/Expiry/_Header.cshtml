@@ -27,7 +27,7 @@
     {
         var on = tab.Code == Model;
         <li class="nav-item">
-            <a class="nav-link d-flex align-items-center gap-2 @(on ? "active" : "bg-white shadow-sm")" href="@tab.Url" @(on ? "aria-current=page" : "")>
+            <a class="nav-link d-flex align-items-center gap-2 @(on ? "active" : "shadow-sm")" style="@(on ? null : "background-color: var(--bs-paper-bg)")" href="@tab.Url" @(on ? "aria-current=page" : "")>
                 <i class="bx @tab.Icon"></i><span>@Localizer[tab.Key]</span>
             </a>
         </li>

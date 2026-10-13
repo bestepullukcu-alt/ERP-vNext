@@ -65,19 +65,19 @@
                 <form class="m-0" id="filterForm" data-no-tracker>
                     <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
                         <div class="filter-chip">
-                            <select id="filterWarehouse" class="form-select form-select-sm" aria-label="@Localizer["Expiry.Common.AllWarehouses"]">
+                            <select id="filterWarehouse" class="form-select form-select-sm" aria-label="@Localizer["Expiry.Common.AllWarehouses"]" data-placeholder="@Localizer["Expiry.Common.AllWarehouses"]">
                                 <option value="">@Localizer["Expiry.Common.AllWarehouses"]</option>
                             </select>
                         </div>
                         <div class="filter-chip">
-                            <select id="filterSeverity" class="form-select form-select-sm" aria-label="@Localizer["Expiry.Approaching.AllStatuses"]">
+                            <select id="filterSeverity" class="form-select form-select-sm" aria-label="@Localizer["Expiry.Approaching.AllStatuses"]" data-placeholder="@Localizer["Expiry.Approaching.AllStatuses"]">
                                 <option value="">@Localizer["Expiry.Approaching.AllStatuses"]</option>
                                 <option value="Critical">@Localizer["Expiry.Severity.Critical"]</option>
                                 <option value="Approaching">@Localizer["Expiry.Severity.Approaching"]</option>
                             </select>
                         </div>
                         <div class="filter-chip">
-                            <select id="filterHorizon" class="form-select form-select-sm" aria-label="@Localizer["Expiry.Approaching.Horizon"]">
+                            <select id="filterHorizon" class="form-select form-select-sm" aria-label="@Localizer["Expiry.Approaching.Horizon"]" data-placeholder="@Localizer["Expiry.Approaching.Horizon"]">
                                 <option value="">@Localizer["Expiry.Approaching.Horizon"]</option>
                                 @foreach (var days in new[] { 30, 60, 90, 180 })
                                 {
@@ -86,7 +86,7 @@
                             </select>
                         </div>
                         <div class="filter-chip">
-                            <select id="filterHeld" class="form-select form-select-sm" aria-label="@Localizer["Expiry.Approaching.HeldAll"]">
+                            <select id="filterHeld" class="form-select form-select-sm" aria-label="@Localizer["Expiry.Approaching.HeldAll"]" data-placeholder="@Localizer["Expiry.Approaching.HeldAll"]">
                                 <option value="">@Localizer["Expiry.Approaching.HeldAll"]</option>
                                 <option value="false">@Localizer["Expiry.Approaching.HeldNone"]</option>
                             </select>
