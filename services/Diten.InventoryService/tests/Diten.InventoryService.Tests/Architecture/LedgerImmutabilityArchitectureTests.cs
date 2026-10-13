@@ -144,6 +144,10 @@ public sealed class LedgerImmutabilityArchitectureTests
 
         Assert.NotEmpty(routes);
         Assert.DoesNotContain(routes, r => r.Verb == "DELETE");
+        // RECALL-BUNDLE 1.0.0 updateSettings (PUT /api/recall/settings — the company's recall settings, master data, WP-0177-R1): exactly
+        // this one recall PUT; it is taken out here so the list below stays as frozen (any other recall PUT still turns it red).
+        Assert.Single(routes, r => r.Verb == "PUT" && r.Route == "RecallController:settings");
+        routes.RemoveAll(r => r.Verb == "PUT" && r.Route == "RecallController:settings");
         Assert.Equal(
             ["ExpiryController:policy", "QuarantineController:block-reasons/{code}", "QuarantineController:settings"],
             routes.Where(r => r.Verb == "PUT").Select(r => r.Route).OrderBy(x => x, StringComparer.Ordinal).ToList());

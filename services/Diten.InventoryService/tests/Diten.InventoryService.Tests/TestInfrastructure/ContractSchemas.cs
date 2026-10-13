@@ -143,6 +143,14 @@ public static class ContractSchemas
     /// <summary>Returns the validation errors of <paramref name="body"/> against the named FEFO-BUNDLE schema (empty = valid).</summary>
     public static IReadOnlyList<string> ValidateFefo(string schemaName, string body) => Fefo.Validate(schemaName, body);
 
+    // RECALL-BUNDLE (MOD-0177, frozen 1.0.0 by WP-0177-R1).
+    private static readonly Contract Recall = new("recall.openapi.yaml", "recall", _ => new Dictionary<string, JsonNode>());
+
+    public static string RecallContractPath => RepoPaths.Contract("recall.openapi.yaml");
+
+    /// <summary>Returns the validation errors of <paramref name="body"/> against the named RECALL-BUNDLE schema (empty = valid).</summary>
+    public static IReadOnlyList<string> ValidateRecall(string schemaName, string body) => Recall.Validate(schemaName, body);
+
     private sealed class Contract
     {
         private readonly string _file;

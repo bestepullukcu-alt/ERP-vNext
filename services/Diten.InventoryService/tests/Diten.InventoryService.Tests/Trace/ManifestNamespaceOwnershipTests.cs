@@ -71,4 +71,24 @@ public sealed class ManifestNamespaceOwnershipTests
         Assert.Equal(Diten.InventoryService.Infrastructure.Authorization.ExpiryPermissions.Implemented.OrderBy(k => k, StringComparer.Ordinal),
             keys.OrderBy(k => k, StringComparer.Ordinal));
     }
+
+    /// <summary>
+    /// WP-0177-R1 (pack §14.1, FU-0174-CAT-01): the MOD-0177 manifest declares ONLY <c>recall.*</c> keys — exactly the thirteen R1 keys, as
+    /// <c>ApiPermissions</c> (no page yet). K3 sabotage (e): a <c>quarantine.*</c> key in it → red.
+    /// </summary>
+    [Fact]
+    public void The_recall_module_declares_only_recall_keys()
+    {
+        var manifest = new Diten.InventoryService.Api.Recall.RecallReadinessManifestProvider().GetManifest();
+        var keys = manifest.Pages.Select(p => p.RequiredPermission)
+            .Concat(manifest.Pages.SelectMany(p => p.Actions).Select(a => a.PermissionKey))
+            .Concat((manifest.ApiPermissions ?? []).Select(a => a.PermissionKey))
+            .ToList();
+
+        Assert.Equal("RECALL-READINESS", manifest.ModuleCode);
+        var foreign = keys.Where(k => !k.StartsWith("recall.", StringComparison.Ordinal)).ToList();
+        Assert.True(foreign.Count == 0, "RECALL-READINESS declares keys outside 'recall.*':\n" + string.Join("\n", foreign));
+        Assert.Equal(Diten.InventoryService.Infrastructure.Authorization.RecallPermissions.R1.OrderBy(k => k, StringComparer.Ordinal),
+            keys.OrderBy(k => k, StringComparer.Ordinal));
+    }
 }
