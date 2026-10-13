@@ -27,10 +27,13 @@ public sealed class OpenExpiryExceptionHandler : IRequestHandler<OpenExpiryExcep
     private readonly ILocationRepository _locations;
     private readonly ExpiryReads _reads;
     private readonly ExpirySupport _support;
+    private readonly Ports.IExpiryReadModel _stock;
 
     public OpenExpiryExceptionHandler(
-        IExpiryRepository repository, ILotRepository lots, ILocationRepository locations, ExpiryReads reads, ExpirySupport support)
+        IExpiryRepository repository, ILotRepository lots, ILocationRepository locations, ExpiryReads reads, ExpirySupport support,
+        Ports.IExpiryReadModel stock)
     {
+        _stock = stock;
         _repository = repository;
         _lots = lots;
         _locations = locations;
@@ -38,10 +41,19 @@ public sealed class OpenExpiryExceptionHandler : IRequestHandler<OpenExpiryExcep
         _support = support;
     }
 
+    /// <summary>FU-0176-F1-UOM: the base unit of the lot's stock (in the warehouse when named); none readable → null ("birim yok").</summary>
+    private async Task<string?> StockUnitAsync(Domain.Traceability.Entities.Lot lot, string? warehouse, CancellationToken ct)
+        => (await _stock.LotStockAsync(warehouse, lot.SkuId, ct)).FirstOrDefault(r => r.Lot.Id == lot.Id)?.BaseUomId is { Length: > 0 } unit ? unit : null;
+
     public async Task<Response<ExpiryExceptionDetailDto>> Handle(OpenExpiryExceptionCommand request, CancellationToken ct)
     {
-        var fingerprint = ExpirySupport.Fingerprint(("type", request.Type.ToString()), ("lotId", request.LotId.ToString("D")),
-            ("warehouseId", request.WarehouseId?.ToString("D")), ("quantity", ExpirySupport.D(request.Quantity)), ("description", request.Description?.Trim()));
+        var fields = new List<(string Name, string? Value)>
+        {
+            ("type", request.Type.ToString()), ("lotId", request.LotId.ToString("D")), ("warehouseId", request.WarehouseId?.ToString("D")),
+            ("quantity", ExpirySupport.D(request.Quantity)), ("description", request.Description?.Trim())
+        };
+        if (request.BaseUomId is not null) fields.Add(("baseUomId", request.BaseUomId.Trim())); // FEFO 1.1.0: joins only when sent (old replays match)
+        var fingerprint = ExpirySupport.Fingerprint([.. fields]);
         if (await _repository.FindCaseByCreateKeyAsync(_support.UserId, request.IdempotencyKey, ct) is { } earlier)
         {
             return earlier.CreateRequestFingerprint == fingerprint
@@ -57,6 +69,11 @@ public sealed class OpenExpiryExceptionHandler : IRequestHandler<OpenExpiryExcep
         if (request.Quantity is <= 0)
         {
             return ExpirySupport.Invalid<ExpiryExceptionDetailDto>("quantity must be greater than zero.");
+        }
+
+        if (request.BaseUomId is { } uom && uom.Trim().Length is < 1 or > 32)
+        {
+            return ExpirySupport.Invalid<ExpiryExceptionDetailDto>("baseUomId must be 1-32 characters.");
         }
 
         var lot = await _lots.FindAsync(request.LotId, ct);
@@ -97,6 +114,7 @@ public sealed class OpenExpiryExceptionHandler : IRequestHandler<OpenExpiryExcep
             RetestDate = lot.RetestDate,
             WarehouseId = warehouse,
             Quantity = request.Quantity,
+            BaseUomId = request.BaseUomId?.Trim() ?? await StockUnitAsync(lot, warehouse, ct),
             Description = request.Description!.Trim(),
             OpenedAtUtc = now,
             OpenedBy = _support.UserId,

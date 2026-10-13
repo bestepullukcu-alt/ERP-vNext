@@ -23,6 +23,7 @@ public static class ExpiryServiceCollectionExtensions
         services.TryAddSingleton(TimeProvider.System);
         services.AddScoped<ExpirySupport>();
         services.AddScoped<ExpiryReads>();
+        services.AddScoped<ExpiryLotView>(); // F4 reads
         services.AddScoped<IExpiryRepository, ExpiryRepository>();
         // F3 — MOD-0022 (CT decision F3-A: getSignature + the local fx-v1 / do-v1 hash); F1 / F2 fail-closed classes stay as fallbacks.
         services.AddScoped<IExpiryResolutionSignature, ESignExpiryResolutionSignature>();
@@ -41,6 +42,8 @@ public static class ExpiryServiceCollectionExtensions
 
         // F2 — the hooks: the ledger's posting policy (CT-F2) and MOD-0174's lot-date gate (KF-D), replaced here; KF-D signature fail-closed until F3.
         services.AddScoped<ExpiryHookWriter>();
+        services.AddScoped<FefoCandidateReader>(); // F4: the one FEFO candidate read (posting hook + FEFO order)
+        services.AddScoped<IExpiryReadModel, ExpiryReadModel>();
         services.RemoveAll<Application.Features.Expiry.Ports.IExpiryPostingPolicy>();
         services.AddScoped<Application.Features.Expiry.Ports.IExpiryPostingPolicy, ExpiryPostingPolicy>();
         services.RemoveAll<Application.Features.Traceability.Ports.ILotDateOverrideGate>();

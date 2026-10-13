@@ -18,7 +18,12 @@ public sealed record OpenExpiryExceptionCommand(
     Guid? WarehouseId,
     decimal? Quantity,
     string? Description,
-    string IdempotencyKey) : IRequest<Response<ExpiryExceptionDetailDto>>;
+    string IdempotencyKey) : IRequest<Response<ExpiryExceptionDetailDto>>
+{
+    /// <summary>FU-0176-F1-UOM (FEFO 1.1.0): the unit of <see cref="Quantity"/>; omitted → read from the lot's stock; unreadable → none.</summary>
+    public string? BaseUomId { get; init; }
+}
+
 
 /// <summary>§4.13 takeException — "İncelemeye al".</summary>
 public sealed record TakeExpiryExceptionCommand(Guid ExceptionId, string IdempotencyKey, int ExpectedVersion)

@@ -129,7 +129,7 @@ public static class ExpiryRequestReader
     };
 
     public static readonly HashSet<string> OpenMembers = new(StringComparer.Ordinal)
-        { "idempotencyKey", "type", "lotId", "warehouseId", "quantity", "description" };
+        { "idempotencyKey", "type", "lotId", "warehouseId", "quantity", "baseUomId", "description" };
 
     public static readonly HashSet<string> KeyMembers = new(StringComparer.Ordinal) { "idempotencyKey" };
 

@@ -1,0 +1,121 @@
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.Expiry.Expiry> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["Expiry.Tabs.Approaching"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    MOD-0176 F4 — Son Kullanma Yaklaşanlar (EXPIRYAPPROACHING, pack §11.1 / §11.3). DataTable v2, SERVER mode: /Expiry/list/approaching →
+    FEFO-BUNDLE listApproaching (severity from the company horizons, KF-A; the horizon never beyond ApproachingDays). Kullanılabilir and
+    Bekleyen are separate columns (D-11). Row actions by action code: İstisna aç, FEFO sırasını gör, Karantinaya al (a link to MOD-0175
+    under that module's key). CSV under the same key, not an evidence export (CT-F14).
+    UAS-001 — nothing below is drawn without expiry.dashboard.read. No redirect.
+*@
+@if (!Perms.Has("expiry.dashboard.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["Expiry.Tabs.Approaching"].Value" />
+    return;
+}
+
+@{
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["Expiry.Common.Company.Label"].Value;
+    company.Placeholder = Localizer["Expiry.Common.Company.Placeholder"].Value;
+    company.SelectHint = Localizer["Expiry.Common.Company.Required"].Value;
+    company.UnavailableText = Localizer["Expiry.Common.Company.Unavailable"].Value;
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-expiry-approaching",
+        DataMode = "server",
+        Slug = "expiry-approaching",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["Expiry.Col.Product"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["Expiry.Col.SkuLevel"].Value, CssClass = "min-tablet-l" },
+            new DataTableColumnViewModel { Header = Localizer["Expiry.Col.LotNo"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["Expiry.Col.Warehouse"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Expiry.Col.Expiry"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Expiry.Col.DaysLeft"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["Expiry.Col.ShelfLife"].Value, CssClass = "min-tablet-l" },
+            new DataTableColumnViewModel { Header = Localizer["Expiry.Col.Available"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Expiry.Col.Held"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Expiry.Col.Status"].Value, CssClass = "all" }
+        ],
+        ActionsHeader = Localizer["Expiry.Col.Actions"].Value
+    };
+}
+
+<partial name="~/Views/Expiry/_Header.cshtml" model="@("EXPIRYAPPROACHING")" />
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready)
+{
+    <p class="text-muted mb-3" id="ex-subtitle">@Localizer["Expiry.Approaching.SubtitlePlain"]</p>
+
+    <div id="inlineFilterHost">
+        <div class="collapse show" id="inlineFilterCollapse">
+            <div class="pt-0 pb-3">
+                <form class="m-0" id="filterForm" data-no-tracker>
+                    <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                        <div class="filter-chip">
+                            <select id="filterWarehouse" class="form-select form-select-sm" aria-label="@Localizer["Expiry.Common.AllWarehouses"]" data-placeholder="@Localizer["Expiry.Common.AllWarehouses"]">
+                                <option value="">@Localizer["Expiry.Common.AllWarehouses"]</option>
+                            </select>
+                        </div>
+                        <div class="filter-chip">
+                            <select id="filterSeverity" class="form-select form-select-sm" aria-label="@Localizer["Expiry.Approaching.AllStatuses"]" data-placeholder="@Localizer["Expiry.Approaching.AllStatuses"]">
+                                <option value="">@Localizer["Expiry.Approaching.AllStatuses"]</option>
+                                <option value="Critical">@Localizer["Expiry.Severity.Critical"]</option>
+                                <option value="Approaching">@Localizer["Expiry.Severity.Approaching"]</option>
+                            </select>
+                        </div>
+                        <div class="filter-chip">
+                            <select id="filterHorizon" class="form-select form-select-sm" aria-label="@Localizer["Expiry.Approaching.Horizon"]" data-placeholder="@Localizer["Expiry.Approaching.Horizon"]">
+                                <option value="">@Localizer["Expiry.Approaching.Horizon"]</option>
+                                @foreach (var days in new[] { 30, 60, 90, 180 })
+                                {
+                                    <option value="@days">@string.Format(Localizer["Expiry.Common.Days"].Value, days)</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="filter-chip">
+                            <select id="filterHeld" class="form-select form-select-sm" aria-label="@Localizer["Expiry.Approaching.HeldAll"]" data-placeholder="@Localizer["Expiry.Approaching.HeldAll"]">
+                                <option value="">@Localizer["Expiry.Approaching.HeldAll"]</option>
+                                <option value="false">@Localizer["Expiry.Approaching.HeldNone"]</option>
+                            </select>
+                        </div>
+                        <div class="ms-auto d-flex gap-3">
+                            <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">@Localizer["Expiry.Common.Apply"]</button>
+                            <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">@Localizer["Expiry.Common.Clear"]</button>
+                            <a class="btn btn-sm btn-label-secondary" id="ex-export" href="/Expiry/export/approaching"><i class="bx bx-download me-1"></i>@Localizer["Expiry.Action.Export"]</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="ex-labels-unavailable" class="alert alert-warning d-none" role="status">@Localizer["Expiry.Common.NamesUnavailable"]</div>
+    <div id="ex-list-error" class="alert alert-danger d-none" role="alert"></div>
+    <partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />
+    <div class="small text-muted mt-3" id="ex-count"></div>
+}
+
+<partial name="~/Views/Expiry/_OpenExceptionModal.cshtml" />
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    <partial name="~/Views/Expiry/_ExpiryActions.cshtml" />
+    <partial name="~/Views/Expiry/_ExpiryL10n.cshtml" />
+    @if (company.Ready)
+    {
+        <script src="~/assets/js/Expiry/approaching.js" asp-append-version="true"></script>
+    }
+}

@@ -1084,4 +1084,9 @@
   <data name="Nav.Page.ESIGNPOLICY" xml:space="preserve"><value>电子签名策略</value></data>
   <data name="Nav.Page.ESIGNMEANINGS" xml:space="preserve"><value>签名含义</value></data>
   <data name="Nav.Page.ESIGNSAMPLEAPPROVALS" xml:space="preserve"><value>签名样本审批</value></data>
+  <data name="Nav.Module.EXPIRYFEFOMANAGEMENT" xml:space="preserve"><value>有效期 / FEFO</value></data>
+  <data name="Nav.Page.EXPIRYDASHBOARD" xml:space="preserve"><value>FEFO 看板</value></data>
+  <data name="Nav.Page.EXPIRYAPPROACHING" xml:space="preserve"><value>即将过期</value></data>
+  <data name="Nav.Page.EXPIREDSTOCK" xml:space="preserve"><value>过期库存</value></data>
+  <data name="Nav.Page.FEFOORDER" xml:space="preserve"><value>FEFO 顺序</value></data>
 </root>

@@ -44,6 +44,19 @@ public static class ExpiryPermissions
         PoliciesRead, PoliciesManage, ExceptionsRead, ExceptionsCreate, ExceptionsComment, ExceptionsReview, ExceptionsResolve, ExceptionsClose
     ];
 
-    /// <summary>WP-0176-F2 — F1 + the API-only key of createDateOverride: the keys the controller enforces and the manifest declares.</summary>
-    public static readonly IReadOnlyList<string> Implemented = [.. F1, DateOverridesCreate];
+    /// <summary>
+    /// The keys the manifest DECLARES, one entry per declaration (WP-0176-F4: a page key repeats per page, a button key per button) — the
+    /// manifest namespace test compares the manifest with this list as a multiset; <c>Implemented.Distinct()</c> = the keys the
+    /// controllers enforce. F1 keys and F2 <c>date-overrides.create</c> (API) + the F4 pages (3 × dashboard.read, fefo-order.read) and
+    /// buttons (3 × exceptions.create "İstisna aç", 2 × fefo-order.read "FEFO sırasını gör", 2 × dashboard.read CSV, fefo-order.read
+    /// "Sırayı hesapla").
+    /// </summary>
+    public static readonly IReadOnlyList<string> Implemented =
+    [
+        DashboardRead, DashboardRead, DashboardRead, FefoOrderRead,                // pages
+        ExceptionsCreate, ExceptionsCreate, ExceptionsCreate,                      // "İstisna aç"
+        FefoOrderRead, FefoOrderRead, DashboardRead, DashboardRead, FefoOrderRead, // view order ×2, CSV ×2, calculate
+        PoliciesRead, PoliciesManage, ExceptionsRead, ExceptionsComment, ExceptionsReview, ExceptionsResolve, ExceptionsClose, // API until F5
+        DateOverridesCreate                                                        // API by design (F2)
+    ];
 }
