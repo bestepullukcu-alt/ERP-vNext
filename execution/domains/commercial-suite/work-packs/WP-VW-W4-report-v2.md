@@ -209,9 +209,10 @@ Her set kodu **üç yerde** tüketilebilir listeye eklenir (drift testleri yeşi
 | `POST v2/submit` | gönderim (eksik → 400 `missing[]`) |
 | `POST {id}/amend` | v2 gövdesi kabul eder; eski / yeni değer |
 | `GET {id}` | v1 / v2 okuma |
+| `GET v2/competitor-usage?competitorIds=&months=3` | rakip başına toplu sayı: doktor, rapor, ürünümüze ve ülkeye göre; **doktor kimliği yok**, hücre < 5 → `"<5"`; birleştirilmiş kayıtlar hayatta kalana sayılır (MDM `mergedIntoId` okunur) — izin `crm.visit-report.read-aggregate` (yeni anahtar) |
 
 - Rakip okuması MDM'den (gateway, çağıranın jetonu). MDM ulaşılamazsa `competitorsUnavailable: true` ve rapor yine gönderilebilir; rakip "kullanmıyor" seçilmeden geçilemez **yalnız liste geldiyse**.
-- **İzinler:** mevcut `crm.visit-report.read` / `.record` / `.amend`. Yeni anahtar yok.
+- **İzinler:** mevcut `crm.visit-report.read` / `.record` / `.amend` + yeni `crm.visit-report.read-aggregate` (rakip kullanım sayıları; mockup fark belgesi G2).
 
 ### 2.6 MDM rakip ürün (BE-b2) ve Workflow (BE-b1)
 **`CompetitorProduct`** (MDM, koleksiyon `mdm_competitor_products`):
@@ -226,7 +227,7 @@ Her set kodu **üç yerde** tüketilebilir listeye eklenir (drift testleri yeşi
 **Öneri kararı** (`CompetitorProposalDecision`, onaylanabilir kayıt `IWorkflowApprovable`):
 - `ProposalId`, `Action` (`complete` | `merge` | `reject`);
 - `Payload` (complete → doldurulan alanlar; merge → `TargetId` + taşınacak ülke satırları; reject → `Reason`);
-- `Status` (`draft` | `in_review` | `applied` | `returned`).
+- `Status` (`draft` | `in_review` | `applied` | `returned`). Öneri kartı durumu: karar yok → "Karar bekliyor"; diğerleri bu alandan (fark belgesi G1).
 - Onaylanınca uygulanır:
   - **complete** → `active`;
   - **merge** → öneri `merged` + `MergedIntoId`; ad hedefin `Aliases`'ına; ülke satırları taşınır;
@@ -242,7 +243,9 @@ Her set kodu **üç yerde** tüketilebilir listeye eklenir (drift testleri yeşi
 | `GET lookup?productId=&indicationNodeId=&market=&q=` (rapor için kısa liste: aktif + çağıranın kendi önerileri; ülke kartı) | read |
 | `POST` / `PUT {id}` / `POST {id}/deactivate` | `mdm.competitor-products.manage` |
 | `POST proposals` (temsilci: ad + firma + productId + reportId?) → `proposed` | `mdm.competitor-products.propose` |
-| `GET proposals` (+ benzer kayıt önerisi, ad benzerliği) | manage |
+| `GET proposals` (+ benzer kayıtlar, **benzerlik 0–100**: küçük harf + Türkçe katlama + noktalama temizliği + trigram, diğer adlar dahil) | manage |
+| `GET merge-candidates?sourceId=&q=` (hedef arama, benzerlik sıralı) | manage |
+| `POST {id}/merge` (**iki aktif kayıt**, doğrudan, onaysız; `targetId`, taşınacak ülke satırları, `confirm=true`) | manage |
 | `POST proposals/{id}/decision` (taslak) · `/submit` · `/withdraw` · `/decision/approve-reject` (Workflow görevinden) | manage |
 | `GET {id}/usage` (CRM'den toplu kullanım sayısı; doktor kimliği yok) | read |
 
@@ -432,8 +435,46 @@ Her set kodu **üç yerde** tüketilebilir listeye eklenir (drift testleri yeşi
 - Eğilim zorunluluğu kalksın → kırmızı.
 - Eşik doğrulaması kalksın → kırmızı.
 
-## W4-WEB-c — MDM rakip ürün yönetimi (mockup gelince yazılır)
-Brif R1–R7 + Workflow ekleri (onaya gönder, onay bekliyor, SoD, onaylayıcı görünümü).
+## W4-WEB-c — MDM rakip ürün yönetimi
+**Mockup:** `mockups/visit-workspace/W4 Rakip Urunler (standalone).html` (çözülmüş `decoded-w4-rakip/Rakip.dc.html`).
+**Fark belgesi:** [DESIGN-GAP-W4-competitor-2026-10-13](mockups/visit-workspace/DESIGN-GAP-W4-competitor-2026-10-13.md) — §1 aynen, §2 G1–G6 uygulanır.
+
+1. **`/MasterDataManagement/CompetitorProducts`** (MDM Ürünler deseni: liste + ayrı yeni / düzenle / ayrıntı sayfaları, bölüm kartları):
+   - **R1:** iki sekme;
+   - **R2:** ülke tablosu + fiyat geçmişi + temsilci kartı önizlemesi;
+   - **R3:** değişiklik geçmişi, raporlarda kullanım (CRM toplu ucu, G2), birleştirme izi, "Pazar verisi · yakında";
+   - **R7:** salt okuma, UAS-001, 409 çakışma "Yenile".
+2. **Öneri kararları Workflow ile (G1):**
+   - **R4 / R5 / R6:** taslak karar → "Onaya gönder";
+   - kart durum çipleri;
+   - "Geri çek";
+   - SoD kutusu;
+   - onaylayıcı görünümü (Görev Merkezi derin bağlantısı): "Onayla" / "Taslağa geri gönder" (not zorunlu).
+   - Desen: W3 itiraz kütüphanesi (`objection-details.js`, `objection-common.js`).
+3. **R3 "Başka kayıtla birleştir"** (iki aktif kayıt): doğrudan, 3 adım, son düğme "Birleştir".
+4. **Endikasyon seçici** CRM'den (G3); **form** MDM sözlüğünden (G4); **benzerlik yüzdesi** sunucudan (G5).
+5. Web vekilleri (MDM + CRM `doctor-insights` / `visit-report` toplu); 7 dil, Arapça RTL, koyu tema, menü.
+
+**Acceptance:**
+- **Saf kurallar Node'da:**
+  - eylem uygunluğu (durum × yetki × SoD);
+  - ülke tekrar engeli;
+  - fiyat dönemi (yeni satır değil);
+  - birleştirme adımı ilerleme koşulları (hedef seçili, onay kutusu);
+  - "<5" gösterimi.
+- **Duman testi:**
+  - liste;
+  - öneri → onayla-tamamla taslak → onaya gönder;
+  - birleştir 3 adım → onaya gönder;
+  - reddet gerekçesiz engel;
+  - doğrudan birleştir;
+  - 409 Yenile;
+  - `createError` null.
+- 7 dil.
+
+**Sabotajlar:**
+- Birleştirmede onay kutusu atlanabilsin → kırmızı.
+- Hazırlayan kendi kararını onaylayabilsin → kırmızı.
 
 ## W4-CFG — Workflow şablonu + yetkiler (canlı yapılandırma, kod YOK)
 **Şablon `MDM-COMP-PROPOSAL`:**
@@ -487,7 +528,7 @@ Repository: C:\tmp\vw-w4-be-a (worktree, test/crm-content-visit-e2e güncel baş
 
 Paket belgesi: execution/domains/commercial-suite/work-packs/WP-VW-W4-report-v2.md — önce oku: §0, §2.1 (rapor setleri), §2.5 tümü, §2.6 (lookup / proposals sözleşmesi), "W4-BE-a". Fark belgesi DESIGN-GAP-W4-report-2026-10-13.md §1–§2 (asıl şartname). BE-c §37 notu (IDoctorInsightsRecorder imzası).
 MEVCUT: Domain/Entities/VisitReport.cs (ContentActuals, Samples, Feedback, Amendments — düzeltme bugün yalnız alan adı yazıyor), Features/VisitReport (SubmitVisitReportHandler 60 dk / 48 sa, AmendVisitReportHandler), VisitReportController (api/crm/visit-report), VisitExecution (Marks, ProductTimings, SlideTimings, Signature, PersonalNotes — kişisel notlar rapora GİTMEZ), VisitExecutionReportBinding, JourneyProgress.Advance (çağıran yok — SB-3c), ContentEngagementJourney.Stages, PlannedVisit.TargetType=pharmacy, MOD-0262 kanıt deseni (W3 fotoğraf).
-NE: §2.5 v2 alanları (VisitReport genişler, yeni toplam değil; v1 okuma bozulmaz); uçlar v2/prefill, v2/draft, v2/submit, {id}/amend (v2), {id}; ContentEngagementJourney aşamasına AdoptionStageCode (isteğe bağlı) + doğrulama; ilerletme kuralı (L'den sonraki ilk eşlenmiş aşama; eşleme yoksa Advance; plan dışı ilerletmez); IMdmCompetitorClient (gateway, çağıranın jetonu; lookup + proposals; MDM yoksa competitorsUnavailable); 10 BRD seti + ConsumableSets 3 yer; AE / endikasyon dışı zorunlu.
+NE: §2.5 v2 alanları (VisitReport genişler, yeni toplam değil; v1 okuma bozulmaz); uçlar v2/prefill, v2/draft, v2/submit, {id}/amend (v2), {id}; ContentEngagementJourney aşamasına AdoptionStageCode (isteğe bağlı) + doğrulama; ilerletme kuralı (L'den sonraki ilk eşlenmiş aşama; eşleme yoksa Advance; plan dışı ilerletmez); IMdmCompetitorClient (gateway, çağıranın jetonu; lookup + proposals; MDM yoksa competitorsUnavailable); 10 BRD seti + ConsumableSets 3 yer; AE / endikasyon dışı zorunlu; v2/competitor-usage toplu ucu (doktor kimliği yok, <5 gizli, merged → hayatta kalan) + yeni izin crm.visit-report.read-aggregate (Auth DataSeeder, açıklama İNGİLİZCE) — mockup fark belgesi DESIGN-GAP-W4-competitor-2026-10-13.md G2.
 KORU/YAPMA: v1 rapor ve W1–W3 akışları (outcome / missed / rescheduled) bozulmaz; Contact'a alan EKLEME; AUD-001 borç satırı EKLEME; Web YOK.
 DOĞRULA: "W4-BE-a" acceptance + 3 sabotaj (.bak + touch); CRM + Platform (BRD drift) + mimari (-o repo içi); denetimsiz sayı önce / sonra.
 Commit: "feat(crm): WP-VW-W4-BE-a — visit report v2 (doctor + pharmacy), prefill from execution, previous values, submit completeness, amend old/new values, journey advance by adoption stage, competitor client + proposals, 10 reference sets" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
@@ -501,7 +542,7 @@ Repository: C:\tmp\vw-w4-be-b2 (worktree, test/crm-content-visit-e2e güncel ba�
 
 Paket belgesi: execution/domains/commercial-suite/work-packs/WP-VW-W4-report-v2.md — önce oku: §0 (K-W6), §2.6 tümü, §2.7, "W4-BE-b2". Brif + kararlar: mockups/visit-workspace/BRIEF-W4-competitor-products.md. b1 §37 notu.
 DESEN: MDM Brand (Domain/Entities/Brand.cs, Features/Brand, BrandRepository, BrandProductClassMaps, BrandsController api/mdm/brands, izinler mdm.brands.*), menü ProductItemSkuMasterManifestProvider, Auth DataSeeder BrandProductPermissionKeys (97c5 grant), ocelot /api/mdm/brands çifti → 5059, BRD market seti (ülke), MDM form sözlüğü (BrandProductVocabulary DosageForm).
-NE: §2.6 toplam + kurallar + uçlar (lookup, proposals, decision / submit / withdraw, usage sayısı için CRM'e soru YOK — usage şimdilik 0 / "yakında" alanı, CRM toplu sayımı W7); CompetitorProposalDecision IWorkflowApprovable + OutcomeApplier (complete / merge / reject); merge: MergedIntoId + alias + ülke taşıma; okumada merged → hayatta kalan; includeProposed=mine; MDM manifest COMPETITOR_PRODUCTS + Nav.Page 7 dil; ocelot /api/mdm/competitor-products (+/{everything}) + rota testi; Auth mdm.competitor-products.read|manage|propose (açıklama İNGİLİZCE); mdm-reimbursement-status BRD seti (global değil, tenant) + ConsumableSets.
+NE: §2.6 toplam + kurallar + uçlar (lookup, proposals, decision / submit / withdraw, usage sayısı için CRM'e soru YOK — usage şimdilik 0 / "yakında" alanı, CRM toplu sayımı W7); CompetitorProposalDecision IWorkflowApprovable + OutcomeApplier (complete / merge / reject); merge: MergedIntoId + alias + ülke taşıma; benzerlik 0–100 (proposals + merge-candidates, Türkçe katlama + trigram, diğer adlar dahil); iki AKTİF kaydın doğrudan birleşmesi POST {id}/merge (onaysız, confirm=true); mockup fark belgesi DESIGN-GAP-W4-competitor-2026-10-13.md G1 / G4 / G5; okumada merged → hayatta kalan; includeProposed=mine; MDM manifest COMPETITOR_PRODUCTS + Nav.Page 7 dil; ocelot /api/mdm/competitor-products (+/{everything}) + rota testi; Auth mdm.competitor-products.read|manage|propose (açıklama İNGİLİZCE); mdm-reimbursement-status BRD seti (global değil, tenant) + ConsumableSets.
 KORU/YAPMA: Brand / Product / GSKU davranışı değişmez; silme YOK (pasif / merged); AUD-001 borç satırı EKLEME; Web sayfası YOK (WEB-c mockup sonrası).
 DOĞRULA: "W4-BE-b2" acceptance + 2 sabotaj (.bak + touch); MDM + Platform (BRD drift) + Gateway + Web (NavL10n) + mimari (-o repo içi).
 Commit: "feat(mdm): WP-VW-W4-BE-b2 — competitor products (aliases, ingredients, country price + reimbursement history), rep proposals, complete/merge/reject via workflow, merged pointer, menu, gateway, permissions" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
@@ -533,4 +574,30 @@ DOĞRULA: "W4-WEB-b" acceptance + 2 sabotaj (.bak + touch); Web tam takım (-o r
 Commit: "feat(web): WP-VW-W4-WEB-b — pharmacy report (stock, shelf photo, sales trend, competitors, recommendation, safety) + potential thresholds settings page" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
 ```
 
-> **W4-WEB-c ve W4-CFG promptları** rakip ürün mockup'ı gelince ve BE-b2 kabul edilince yazılır.
+## §36.1 Agent Prompt — W4-WEB-c (paste-ready · 4. TUR, BE-b2 + BE-a + BE-c test dalında)
+```text
+@[.antigravity/agents/frontend-ui-ux.md]
+WP: WP-VW-W4 · W4-WEB-c — MDM rakip ürün yönetimi (liste + öneriler, yeni / düzenle + ülke fiyat / geri ödeme + geçmiş, ayrıntı, öneri kararları Workflow ile, doğrudan birleştirme, salt okuma / yetkisiz / çakışma, AR)
+Repository: C:\tmp\vw-w4-web-c (worktree, test/crm-content-visit-e2e güncel başı) · Branch: wp/vw-w4-web-c · commit bu dala, push YOK
+
+Paket belgesi: execution/domains/commercial-suite/work-packs/WP-VW-W4-report-v2.md — önce oku: §0 (K-W6), §2.6, §2.7, §2.5 (competitor-usage), "W4-WEB-c"; BE-b2 / BE-a / BE-c §37 notları. Mockup: execution/domains/commercial-suite/work-packs/mockups/visit-workspace/W4 Rakip Urunler (standalone).html (çözülmüş decoded-w4-rakip/Rakip.dc.html; 15 ekran seçicide). Fark belgesi: mockups/visit-workspace/DESIGN-GAP-W4-competitor-2026-10-13.md (§1 aynen, §2 G1–G6).
+DESEN: MDM Ürünler sayfaları (frontend/Diten.Web/Views/MasterData/Products/*, Controllers/MasterData/ProductsController.cs — liste + ayrı sayfalar + bölüm kartları); Workflow karar akışı + SoD + onaylayıcı görünümü = W3 itiraz kütüphanesi (Views/CRM/ObjectionResponses, wwwroot/assets/js/CRM/ObjectionResponses/*); L10n köprüsü parantez koruması (RazorInlineScriptSyntaxTests yeşil kalmalı).
+NE: "W4-WEB-c" 1–5; vekiller MDM api/mdm/competitor-products/* + CRM api/crm/doctor-insights/products/{id}/indication-profiles + api/crm/visit-report/v2/competitor-usage; MDM menü sayfası (BE-b2 manifest) + Nav.Page 7 dil.
+KORU/YAPMA: telefon düzeni gerekmez (masaüstü + tablet); pazar payı / satış yok (W7 yer tutucu); kullanıcının giriş yaptığı sekmeye mock / harness enjekte etme — ayrı sekme.
+DOĞRULA: "W4-WEB-c" acceptance + 2 sabotaj (.bak + touch); Web tam takım (-o repo içi); mockup ile görsel karşılaştırma ayrı sekmede (15 ekran + G1 Workflow durumları), farkları rapora.
+Commit: "feat(web): WP-VW-W4-WEB-c — MDM competitor products (list + proposals, form + country price/reimbursement history, detail, proposal decisions via workflow, direct merge, read-only / unauthorized / conflict, AR)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
+```
+
+## §36.1 Agent Prompt — W4-CFG (paste-ready · 4. TUR, BE-b2 test dalında + fleet yeniden başlatıldıktan SONRA)
+```text
+@[.antigravity/agents/backend-architect.md]
+WP: WP-VW-W4 · W4-CFG — Workflow şablonu MDM-COMP-PROPOSAL (POS-SALES-OPS) canlı oluştur + yayınla; grant betiği (dry-run varsayılan) — tenant 97c5, uygulama KODU YOK
+Repository: C:\tmp\vw-w4-cfg (worktree, test/crm-content-visit-e2e güncel başı) · Branch: wp/vw-w4-cfg · commit (rapor + betik) bu dala, push YOK
+
+Paket belgesi: execution/domains/commercial-suite/work-packs/WP-VW-W4-report-v2.md — "W4-CFG" + §2.6 + §2.7 + BE-b2 §37 notu. DESEN: WP-VW-W3-authoring.md "W3-CFG" + §37 W3-CFG (aynı akış: POST api/v1/workflow/definitions → publish; kök options.rejectCommentRequired; idempotent; parmak izi) + scripts/rbac/grant_w3_authoring_rbac_97c5.py (dry-run, subtype-4 GUID, tarih biçimi yerel belgeden, marker, rol / izin OLUŞTURMAZ). Ön koşul: kullanıcı fleet'i yeniden başlatmış ve yerleşik tarayıcıda giriş yapmış olmalı.
+VERİ YAZMA YETKİSİ (yalnız): (1) MDM-COMP-PROPOSAL şablonunun oluşturulması + yayınlanması; (2) betiğin YAZILMASI (çalıştırmayı kullanıcı yapar).
+NE: şablon tek aşama / tek adım sales_ops "Satış operasyon onayı", aday POS-SALES-OPS (c1acdf12-40d2-4b2c-a2a4-afe1bdd7681d — canlıdan doğrula), SLA 4320 / 2880, rejectCommentRequired: true, requestedObjectType mdm.competitor-proposal; betik scripts/rbac/grant_w4_report_rbac_97c5.py: Admin'e W4 CRM + MDM anahtarları (crm.doctor-insights.*, crm.visit-report.read-aggregate, mdm.competitor-products.read|manage|propose) + MDM'nin Workflow çağrısı için platform.workflow.instances.start / view, tasks.approve / reject / cancel (eksikse); temsilci / pazarlama rolleri varsa "W4-CFG" listesi, yoksa DUR + raporla. Auth kataloğunda anahtarların varlığını önce doğrula.
+KORU/YAPMA: kod değişikliği YOK; diğer şablonlara DOKUNMA (parmak izi önce / sonra aynı); örnek başlatma YOK.
+DOĞRULA: şablon Published + tek adım + doğru aday + options.rejectCommentRequired; diğer şablon parmak izleri aynı; betik dry-run çıktısı rapora.
+Commit: "chore(mdm): WP-VW-W4-CFG — workflow template MDM-COMP-PROPOSAL (live) + RBAC grant script (dry-run default)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22), kullanıcıya --apply + yeniden giriş talimatı. K13.
+```
