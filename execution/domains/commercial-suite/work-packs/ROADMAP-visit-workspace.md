@@ -160,6 +160,7 @@
 | 1 | **W3-WEB-d** ziyaret kanıtı ayarları (kiracı + etkin ayar + geçmiş + süreli istisna) | 1 | ✅ E2 (2d16a835c) |
 | 2 | **W3-CFG** Workflow şablonları (CRM-OBJ-RESP → MED-DIR, CRM-VISIT-EVIDENCE-EXC → POS-SALES-OPS) + yetki betiği | 1 | ✅ E2 (b40a3702f); kullanıcı --apply + yeniden giriş |
 | 3 | W3 yazım canlı E4 + mockup görsel karşılaştırması + olası düzeltme | 0–1 | ✅ 2026-10-13 (2 CT düzeltmesi f8293c2f5, 9f37e0875; notlar 456608389) |
+| 3b | **W3-FIX** canlı E4 küçük düzeltmeleri (F1–F5) | 1 | prompt hazır (WP-VW-W3-authoring); W4'ten önce |
 | 4 | **PLT-ORG-SEAT** Platform "benim pozisyon atamam" ucu (+ bildirim) | 1 | tüzel kişilik katmanı için |
 | 5 | **W3-BE-d** katmanlı ayar (tüzel kişilik × iş birimi), çözümleyici dolar | 1 | PLT-ORG-SEAT sonrası |
 | 5 | **W3-WEB-e** kanıt ayarında tüzel kişilik / iş birimi ağacı + miras | 1 | BE-d ile |
@@ -172,7 +173,7 @@
 | 10 | **W9** eski sayfaların geçişi + temizlik | 1–2 | K-W12 |
 | 11 | **Faz 8** CRM denetimi (AUD-001; denetimsiz sayı şu an **47**) | 2 | en sonda (karar) |
 | 12 | **W10** MDM marka entegrasyonu | 2–3 | MDM push sonrası, en sonda |
-| — | Takipler: FU-W3-OBJ-MLR (itiraz MLR), FU-W3-SLIDE-ASSET (slayt görseli), FU-W3-COVISITOR-LOOKUP (ortak ziyaretçi araması), W2 mobil notu (CT) | 3–4 | zamanı kullanıcı seçer |
+| — | Takipler: FU-W3-OBJ-MLR (itiraz MLR), FU-W3-SLIDE-ASSET (slayt görseli), FU-W3-COVISITOR-LOOKUP (ortak ziyaretçi araması), W2 mobil notu (CT), **FU-KP-NEWVERSION-BUTTON** (KP Studio yayınlanmış yoldan yeni taslak sürüm düğmesi; KP-UI-1 yeniden yazımında düştü — kullanıcı: en sonda) | 3–4 | zamanı kullanıcı seçer |
 
 **Toplam kalan:**
 - W3'ün kalanı: 4–5 prompt.

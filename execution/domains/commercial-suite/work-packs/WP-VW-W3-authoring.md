@@ -543,3 +543,55 @@ Geri alma: `db.rolePermissions.deleteMany({CreatedBy: "manual-grant-w3-authoring
 - istisnalar 13 Ekim (aktif) ve 14 Ekim (planlı), temsilci Admin User.
 
 **Sonuç: W3 yazım ekranları canlıda kabul edildi → W3 tamam (katmanlar PLT-ORG-SEAT sonrası).**
+
+## Canlı E4 ek testleri (CT, 2026-10-13, kullanıcı onayıyla)
+- **C3 değişiklik geçmişi ✅**
+  - Kısa ziyaret eşiği 120 → 150 sn. Kaydet onayında fark satırı ve "1 temsilciye uygulanır" görüldü.
+  - Geçmişte satırlar: ayar oluşturuldu, 120→150, sonra 150→120 (değer geri alındı).
+  - Kişi sütununda "Siz" yazıyor (ad yok; W3-FIX F5).
+- **A3 emekli ✅**
+  - "Emekli · sema pullukcu …", yalnız "Kopyasından yeni taslak" kaldı.
+  - Geçmişte ham **`WORKCENTER_APPROVE`** notu görünüyor (W3-FIX F3).
+- **B1 taslak sunum notları ✅**
+  - KP Studio'da **yeni sürüm düğmesi yok** (KP-UI-1 yeniden yazımında düştü; uç ve TR metinler duruyor). Kullanıcı onayıyla taslak v2 sayfanın kendi `new-version` vekiliyle açıldı (`134fcdf3…`, test verisi).
+  - Alanlar düzenlenebilir; seçici "Bu ürün için onaylı itiraz yanıtı yok" gösterdi (doğru); önizleme canlı güncelleniyor.
+  - Kayıt sonrası PUT 200, sayaç 0/5 → **1/5**. Sunucuda tam `presentation` (`targetSeconds: null`, `objectionResponseIds: []`).
+  - Takip: **FU-KP-NEWVERSION-BUTTON** — kullanıcı kararı "en sonda bakarız".
+
+---
+
+## W3-FIX — canlı E4 küçük düzeltmeleri (CRM + Web, tek prompt)
+Mockup ile görsel farklar ve canlıda görülen kusurlar:
+
+- **F1 · A2 yer tutucuları:** soru ve yanıt kutularına mockup'taki örnek metinler ("ör. Tamsulin ile memnunum, neden değiştireyim?" / "Temsilcinin söyleyeceği yanıt. Yalnız onaylı iddialara dayanın."), 7 dil.
+- **F2 · Yeni kayıtta "Oluşturan":** "—" yerine oturumdaki kullanıcının adı ("Son kayıt: Henüz kaydedilmedi" mockup'taki gibi).
+- **F3 · Ham Workflow kodu not gibi görünüyor:** Platform `WorkflowApprovalWorkItemActionDispatcher` onayda `ActionReasonCode = WORKCENTER_{ACTION}` yazıyor.
+  - CRM onay çekirdeği (`Features/Approvals/WorkflowApprovalCore.cs` + itiraz / istisna geçmiş eşlemesi) bu makine kodlarını **karar notu olarak saklamaz ve göstermez**: `^WORKCENTER_[A-Z_]+$` → not yok. Gerçek kullanıcı yorumu (ret notu) korunur.
+  - Web ayrıntı zaman çizelgeleri (itiraz + istisna) aynı kuralla savunmacı süzer.
+- **F4 · Görev Merkezi bildirim çift kodlaması:** "… — &#39;Onayla&#39; işlemi tamamlandı".
+  - `ToastActionApplied` metnindeki tırnak, `tf()` / `toast` / `showToast` zincirinde iki kez kaçırılıyor.
+  - Kaynağı bul, tek yerde düzelt; diğer `Toast*` anahtarlarını da etkiliyorsa hepsi düzelir.
+  - Platform kodu değil, Web'deki WorkCenterNext; regresyon testi gerekli.
+- **F5 · Kanıt ayarlarında kişi adları:** istisna listesi / ayrıntısı (oluşturan, onaylayan), değişiklik geçmişi (kişi) ve "Son değişiklik" ad yerine "Siz" ya da kısa kimlik gösteriyor.
+  - CRM DTO'larına itirazdaki gibi `displayNames` eklenir (aynı çözümleyici). Web adları gösterir; çözülemeyen kimlikte kısa kimlik kalır.
+- **Kabul edilen sapma (yapılmaz):** A3 onay bekleyen başlıkta yalnız "Onay bekliyor" çipi (mockup'taki ek "Taslak" çipi gereksiz).
+- **Dışarıda (en sonda):** FU-KP-NEWVERSION-BUTTON.
+
+**Acceptance:**
+- F1–F5 her biri için test.
+- **Sabotajlar:** F3 süzgeci kalksın → kırmızı; F4 çift kaçırma geri gelsin → kırmızı.
+- CRM + Web tam takım yeşil; mimari denetimsiz sayısı 47'yi geçmez (yeni komut yok).
+- 7 dil.
+
+## §36.1 Agent Prompt — W3-FIX (paste-ready · W4'ten önce)
+```text
+@[.antigravity/agents/frontend-ui-ux.md]
+WP: WP-VW-W3 · W3-FIX — canlı E4 küçük düzeltmeleri: F1 A2 yer tutucuları, F2 yeni kayıtta "Oluşturan" adı, F3 WORKCENTER_* makine kodu not olarak saklanmaz/gösterilmez (CRM onay çekirdeği + Web zaman çizelgeleri), F4 Görev Merkezi bildirimindeki &#39; çift kodlaması, F5 kanıt ayarlarında kişi adları (CRM displayNames + Web)
+Repository: C:\tmp\vw-w3-fix (worktree, test/crm-content-visit-e2e güncel başı) · Branch: wp/vw-w3-fix · commit bu dala, push YOK
+
+Paket belgesi: execution/domains/commercial-suite/work-packs/WP-VW-W3-authoring.md — önce oku: "W3-FIX" (F1–F5 + kabul edilen sapma + dışarıda kalan), "Canlı E4" ve "Canlı E4 ek testleri" bölümleri, §2.1–2.3 sözleşme. Mockup: execution/domains/commercial-suite/work-packs/mockups/visit-workspace/W3 Yazim Ekranlari (standalone).html (A2, C3, C4 ekranları; yer tutucu metinleri buradan al).
+NE: F1 Views/CRM/ObjectionResponses/Edit.cshtml + ObjectionResponsesIndex.*.resx (7 dil, yankı yok) yer tutucular; F2 objection-edit.js yeni kayıtta oturum kullanıcısının adı (sayfaya Razor'dan verilir, istemci tahmin etmez); F3 CRM Features/Approvals/WorkflowApprovalCore.cs + itiraz/istisna geçmiş eşlemesi: ActionReasonCode ^WORKCENTER_[A-Z_]+$ → karar notu boş (gerçek ret yorumu korunur), Web objection-details.js + visit-evidence-settings.js zaman çizelgesi aynı kuralla süzer; F4 wwwroot/assets/js/WorkCenterNext/app.js (+ ortak toast/showToast): ToastActionApplied'daki tırnak iki kez kaçırılıyor → kaynağı bul, tek yerde düzelt; F5 CRM istisna listesi/ayrıntısı + politika geçmişi + politika DTO'suna displayNames (itiraz DTO'sundaki çözümleyiciyle aynı), Web adları gösterir, çözülemeyen kimlikte kısa kimlik.
+KORU/YAPMA: sözleşme alanlarını yeniden adlandırma; yeni CRM komutu/uç YOK (mimari denetimsiz 47 artmaz); KP Studio "Yeni sürüm" düğmesi (FU-KP-NEWVERSION-BUTTON) bu işte YOK; A3 başlığına "Taslak" çipi EKLEME (kabul edilen sapma); kullanıcının giriş yaptığı sekmeye mock/harness enjekte etme.
+DOĞRULA: F1–F5 için test; sabotaj — F3 süzgeci kaldır → kırmızı, F4 çift kaçırmayı geri getir → kırmızı (.bak + touch ile geri al); CRM + Web tam takım (-o ile repo içi çıktı) yeşil; mimari 47.
+Commit: "fix(crm,web): WP-VW-W3-FIX — objection placeholders + creator name, WORKCENTER_* reason codes not shown as notes, Work Center toast double-encoding, evidence settings display names" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor: F1–F5 ne değişti, test sayıları önce/sonra, sabotaj kanıtı. §22 TÜRKÇE. K13.
+```
