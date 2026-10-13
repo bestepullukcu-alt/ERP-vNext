@@ -57,6 +57,11 @@ describe("the library is loaded from this application, once, by the help partial
     const partial = fs.readFileSync(PARTIAL, "utf8");
     expect(partial).toMatch(/<script src="~\/assets\/vendor\/libs\/driverjs\/driver\.js\.iife\.js"/);
     expect(partial).toMatch(/<link rel="stylesheet" href="~\/assets\/vendor\/libs\/driverjs\/driver\.css"/);
+    // CT acceptance: both tags sit INSIDE the authorized branch — the unauthorized face never receives tour assets (UAS-001).
+    const gate = partial.indexOf("IsAccessDenied(Context))");
+    expect(gate, "the authorized-branch guard is where the tags expect it").toBeGreaterThanOrEqual(0);
+    expect(partial.indexOf("driverjs/driver.js.iife.js")).toBeGreaterThan(gate);
+    expect(partial.indexOf("driverjs/driver.css")).toBeGreaterThan(gate);
   });
 
   test("no view or script loads Driver.js from elsewhere (CDN or a second copy)", () => {
