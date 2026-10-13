@@ -8398,6 +8398,66 @@ Gelecek regresyon riski: 🟡 (gerçek açıksa canlıda çift sayaç).
 
 ---
 
+### BL-630
+
+**Organizasyon birimi: idari (matris) üst birim aynı şirket grubundaki başka bir şirketten seçilebilsin**
+
+DURUM: AÇIK (CT önerisi; sahip kararı bekliyor) · SAHİP: CT (MOD-0288) · BULAN: İK / organizasyon kullanıcısı sorusu (2026-10-13) · KAYIT: 2026-10-13 · 🟢
+
+Ölçüm (hat):
+- Birim oluşturma / güncellemede ana ve idari üst birim aynı tüzel kişilikte olmak zorunda (`Create/UpdateOrganizationUnitCommandHandler`, 409 "Parent Organization Unit must belong to the same Legal Entity").
+- Veri erişim kapsamı yalnız ANA üst birim ağacından türüyor (`OrgDataScopeResolver.BuildChildrenMap`, `ParentOrganizationUnitId`). İdari hat kapsam üretmiyor.
+- Görev atama kapsamı tüzel kişilik / pozisyon zinciri / açık izinle sınırlı (`TaskAssignmentScopeResolver`, "the boundary is legal, not cosmetic").
+- Pozisyon hattı şirketler arası olabiliyor.
+
+Öneri (seçenek a + grup sınırı):
+- ana üst birim aynı şirkette kalır (işveren, maliyet merkezi, veri kapsamı);
+- yalnız idari / matris hat, MDM'de aynı grupta olan (`ParentLegalEntityId` zinciri) başka bir şirketin birimine bağlanabilir; grup dışı yine reddedilir;
+- gerçek raporlama ve onay pozisyon hattıyla gösterilir (zaten destekli).
+
+SAP / Oracle'da da tüzel kişilik ile organizasyon yapısı ayrıdır. Şirketler arası bağlılık yönetici / pozisyon hattı ve matris ("dotted line") ilişkisiyle gösterilir.
+
+Etki:
+- veri kapsamı ve görev atama kapsamı değişmez (ana hattan türüyor);
+- organizasyon şemasında kesikli çizgi;
+- döngü bekçisi şirketler arası idari hattı kapsamalı;
+- seçici şirket grubuna göre gruplanır (7 dil);
+- MDM grup bilgisi okunmalı.
+
+Küçük–orta.
+
+Gelecek regresyon riski: 🟢 ana hat değişmediği sürece kapsam sızıntısı yok; ana hatta gevşetme yapılırsa 🔴 (alt ağaç kapsamı şirket sınırını aşar).
+
+---
+
+### BL-629
+
+**Tüzel kişilikte mali yıl varyantı serbest metin; planlama ve finans bunu anlamlandıramıyor**
+
+DURUM: AÇIK · SAHİP: CT (MOD-0220) · BULAN: MOD-0188 (Talep Planlama) sorusu (2026-10-13) · KAYIT: 2026-10-13 · 🟡
+
+Ölçüm (hat): `LegalEntity.FiscalYearVariant`, 64 karakterlik serbest metin; değer listesi ya da yapı yok (testte örnek "K4", SAP adlandırması). Okuma: MDM `GET api/legal-entities/{id}` (`mdm.legal-entities.read`).
+
+Yapılacak: yapılandırılmış mali yıl tanımı: başlangıç ayı (1–12) + varyant kodu (takvim yılı, Nisan–Mart, 4-4-5 gibi; kapalı liste ya da BRD seti). Okuma sözleşmesine eklenir. SAP'de mali yıl varyantı ayrı bir yapılandırma nesnesidir (dönem sayısı, özel dönemler, başlangıç). Küçük–orta.
+
+Gelecek regresyon riski: 🟡 tüketiciler serbest metni kendi yorumlarsa şirketler arası tutarsız dönem sınırları.
+
+---
+
+### BL-628
+
+**Tüzel kişilikte saat dilimi yok (yalnız kiracı düzeyinde); farklı ülkelerdeki şirketler için hafta ve gün sınırları yanlış**
+
+DURUM: AÇIK · SAHİP: CT (MOD-0220) · BULAN: MOD-0188 (Talep Planlama) sorusu (2026-10-13) · KAYIT: 2026-10-13 · 🟡
+
+Ölçüm (hat): saat dilimi yalnız kiracıda (`Tenant.DefaultTimezone`). `LegalEntity`'de alan yok. Aynı kiracıda Polonya (CET) ve Türkiye (TRT) şirketleri olduğunda haftalık plan sınırı, kesim saatleri ve "bugün" tek saat dilimine göre hesaplanır.
+
+Yapılacak: tüzel kişiliğe isteğe bağlı IANA saat dilimi (`TimeZoneId`; boşsa kiracınınki), tüzel kişilik ekranı (7 dil) ve okuma sözleşmesi. Tüketiciler (planlama, zaman çizelgesi, takvim) şirket saat dilimini okur. SAP'de saat dilimi tesis / adres düzeyinde, Oracle'da konum / tüzel kişilik düzeyinde tutulur. Küçük.
+
+Gelecek regresyon riski: 🟡 çok ülkeli kiracıda hafta sınırları bir şirket için kayık.
+
+---
+
 ### BL-627
 
 **SMTP'de tek bir hatalı alıcı adresi bütün iletiyi reddettiriyor; yeniden deneme hakları biterse Cc / Bcc hiç gitmiyor**
