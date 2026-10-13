@@ -22,8 +22,8 @@ screens:
   - module: RecallSettings
     data_mode: server
 entity_base: EntityBase
-status: draft
-status_note: "draft — WP-0177-P0 (CT-MVP1-0177-P0 v1), 2026-10-13. Owner decisions KR-A…KR-H (2026-10-13) recorded in §19.1 as DECISIONS. Open CT decisions CT-R1…CT-R18 (§19.5). RECALL-BUNDLE v1 proposal: docs/analysis/contracts/drafts/recall-bundle-v1-proposal.md (no RECALL contract exists although the report marks it ✓ — K12). Additive needs on other owners (INVENTORY 1.4.0, QUARANTINE 1.3.0, SHIPMENT-BUNDLE request to MVP-6) are proposals in §8.11, not edits. DCP-002 verifier not run (no Python — waiver W-0177-01, W-0173-01 pattern)."
+status: ready-for-dev
+status_note: "ready-for-dev — WP-0177-P0 CT-ACCEPTED 2026-10-13 (CT-R1…CT-R18 decided, §19.7). Was: draft — WP-0177-P0 (CT-MVP1-0177-P0 v1), 2026-10-13. Owner decisions KR-A…KR-H (2026-10-13) recorded in §19.1 as DECISIONS. Open CT decisions CT-R1…CT-R18 (§19.5). RECALL-BUNDLE v1 proposal: docs/analysis/contracts/drafts/recall-bundle-v1-proposal.md (no RECALL contract exists although the report marks it ✓ — K12). Additive needs on other owners (INVENTORY 1.4.0, QUARANTINE 1.3.0, SHIPMENT-BUNDLE request to MVP-6) are proposals in §8.11, not edits. DCP-002 verifier not run (no Python — waiver W-0177-01, W-0173-01 pattern)."
 owner: supply-chain-execution / mvp-1 control-tower
 branch: feature/sce/mod-0177-recall-readiness
 started: 2026-10-13
@@ -1064,11 +1064,11 @@ calls the e-sign provider through the gateway (`ESign:SubjectProviders:recall:Ba
 |---|---|---|
 | 1 | Owner decisions KR-A…KR-H recorded | ✅ §19.1 |
 | 2 | RECALL-BUNDLE v1 proposal | ✅ draft — CT acceptance pending |
-| 3 | CT-R1 (four-eyes) decided | ⏳ §19.5 |
+| 3 | CT-R1 (four-eyes) decided | ✅ §19.7 |
 | 4 | CT-R2 / CT-R3 (0175 in-process call, origin / `HoldSource.Recall`) decided + 0175 owner agrees | ⏳ |
-| 5 | CT-R4…CT-R18 decided | ⏳ |
+| 5 | CT-R4…CT-R18 decided | ✅ §19.7 |
 | 6 | INVENTORY 1.4.0 / QUARANTINE 1.3.0 additive proposals accepted by owners | ⏳ (R3) |
-| 7 | 0176 F2 (+ FIX1) merged into MVP-1 branch (R3 base) | ⏳ (F2 CT-HOLD) |
+| 7 | 0176 F2 (+ FIX1) merged into MVP-1 branch (R3 base) | ✅ 78da50309 |
 | 8 | MOD-0022 E2 live (signature API + provider registry) | ✅ live on main |
 | 9 | Trace possible with existing reads (`path:line`) | ✅ §8.1, §8.2 |
 | 10 | Exit block in-process inside the posting transaction | ✅ §8.5 |
@@ -1185,6 +1185,39 @@ MOD-0176 pack `§8.3, §8.6, §8.7, §19.7` · MOD-0022 pack `:221-224,401-429,4
 - **ASSUMPTION-0177-09:** drill-candidate set for "Rastgele bitmiş ürün" = finished-good lots with outbound movements in the
   last 365 days in the company.
 - **ASSUMPTION-0177-10:** case class and level are entered at opening and editable only in Draft.
+
+### 19.7 CT acceptance — WP-0177-P0 (2026-10-13)
+
+**CT-ACCEPTED.** Commit `6765606d8` on `feature/sce/mod-0177-recall-readiness` (base `1240a1ce9`), two allowed files only (+1648),
+merged (docs only, `--no-ff`) into the MVP-1 branch after 0176 F2 + FIX1 (`78da50309`). The CT re-read the load-bearing facts:
+`trace.openapi.yaml:115-122` (`getGenealogy` depth 1–2), `GetGenealogyHandler.cs:22-38`, `LotRepository.cs:151-155,283-291` (list-based,
+unbounded link reads → an in-process level walk needs no TRACE change), `StockActionHandlers.cs:125-142` (0175's reservation check refuses
+per SKU → per-bucket calls for partial success), `LotPostingRules.cs:78-112` (`EvaluateClassic`: a Blocked lot refuses every non-CT-D4
+type, an expired lot too — CT-R10 is real). All exact.
+
+| ID | CT decision |
+|---|---|
+| CT-R1 | **Yes, four-eyes both ways:** the scope submitter cannot approve; the effectiveness completer cannot close → 409 `RECALL_SOD_VIOLATION`. No single-approver exception in MVP-1. |
+| CT-R2 | In-process port into 0175 `QuarantineStockHandler`, actor = the approver, retry key `:a{n}`. Accepted **with conditions**: the hold carries origin MOD-0177 + case number and the approver as actor; 0175 runs every stock / lot / reservation / e-sign-policy check unchanged; 0177 never cancels a reservation. |
+| CT-R3 | QUARANTINE 1.3.0: `HoldSource.Recall` + `sourceDocument` (MOD-0177 / RECALL_CASE) — 0175 owner step inside R3, separate commit. |
+| CT-R4 | `WAREHOUSE_TRANSFER` blocked under recall (segregation within a warehouse = `LOCATION_TRANSFER`, allowed). |
+| CT-R5 | Scope revision r+1 after approval, its own signed approval of the delta; the approved scope's blocks stay meanwhile. |
+| CT-R6 | Excluding a derived node excludes its subtree, reason ≥ 10. |
+| CT-R7 | The exit block is by lot id across every company of the tenant. |
+| CT-R8 | Genealogy tenant-wide; stock / movements / shipments company-only; other-company activity shown as a count. |
+| CT-R9 | 0175 shows a warning band (not a block) when releasing recalled stock to AVAILABLE — 0175 owner step, additive, R3 or R7. |
+| CT-R10 | **MOD-0174 lot-rule change accepted, narrowly:** `CUSTOMER_RETURN` of a Blocked / Expired lot is allowed **only into `QUARANTINE` / `QUALITY_INSPECTION` / `BLOCKED`**, never `AVAILABLE`; MOD-0174 owner step inside R3, separate commit, with a sabotage that proves an AVAILABLE return of a held lot stays refused. |
+| CT-R11 | Separate `IRecallPostingGate`, evaluated **before** the 0176 expiry policy; a refused posting opens no FEFO exception. Exemption by movement TYPE only — never `sourceModule` (O-F2-2 lesson; architecture test). |
+| CT-R12 | FEFO 1.1.0 additive exclusion reason `RECALLED` in `getFefoOrder` — 0176 owner step (R3). |
+| CT-R13 | No `getTransactions` filters now. |
+| CT-R14 | **PDF: PDFsharp / MigraDoc (MIT) — not QuestPDF** (its community licence has a company-revenue cap). One shared choice for 0176 F5 and 0177 R7; the CT checks the licence and version when the first slice adds it; the hash is always of the delivered bytes. |
+| CT-R15 | Keep `/LotTrace`; it links to `/Recall/Trace` for users with `recall.trace.run`. |
+| CT-R16 | `recall.settings.update` signable with `defaultRequired=false`; reason mandatory. |
+| CT-R17 | A cancelled drill run is kept (`Cancelled`). |
+| CT-R18 | Serial-level recall out of MVP-1 (FU-0177-SER-01). |
+
+Order: **R1 → INT → R2 → R3 → R4 → R5 → R6 → R7 → L10n**. R3 starts on the MVP-1 branch that already holds 0176 F2 + FIX1. The SHIPMENT
+requests (§8.11.4) go to the MVP-6 team with the CT's next MVP-6 note (not a blocker).
 
 ## 20. Follow-up Items
 
