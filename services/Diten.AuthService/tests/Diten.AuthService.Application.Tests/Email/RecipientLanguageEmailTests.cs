@@ -200,6 +200,9 @@ public sealed class RecipientLanguageEmailTests
         public Task<bool> TryWriteChangesAsync(User u, object capturedState, Guid tenantId, UserWriteCondition condition, CancellationToken ct) => Task.FromResult(false);
         public Task<bool> SetPasswordResetTokenAsync(Guid userId, Guid tenantId, string tokenHash, DateTime expiresAtUtc, CancellationToken ct) => _inner.SetPasswordResetTokenAsync(userId, tenantId, tokenHash, expiresAtUtc, ct);
         public Task<LoginFailureOutcome> RecordLoginFailureAsync(Guid userId, Guid tenantId, int maxFailedAttempts, int lockoutDurationMinutes, CancellationToken ct) => _inner.RecordLoginFailureAsync(userId, tenantId, maxFailedAttempts, lockoutDurationMinutes, ct);
+        // CT lane merge: IUserRepository grew on the lane (BL-521 fix 7) after this double was written on its own branch.
+        public Task<bool> SetPlatformActorTypeAsync(Guid userId, Guid tenantId, string actorType, CancellationToken ct) => _inner.SetPlatformActorTypeAsync(userId, tenantId, actorType, ct);
+        public Task<IReadOnlyCollection<Guid>> VisibleUserIdsAsync(Guid tenantId, IReadOnlyCollection<Guid> userIds, CancellationToken ct) => _inner.VisibleUserIdsAsync(tenantId, userIds, ct);
     }
 
     private sealed class Lines : Microsoft.Extensions.Logging.ILogger<SmtpOtpDeliveryService>
