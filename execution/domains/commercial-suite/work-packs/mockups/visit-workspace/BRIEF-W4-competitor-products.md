@@ -136,6 +136,6 @@ R1 liste · R1 boş · R1 öneriler · R2 yeni · R2 düzenle (ülke tablosu dol
 - **Pazar payı / satış verisi:** W7.
 - **Temsilcinin rapordaki rakip seçimi ve "Listede yok, rakip ekle":** 03-rapor'da çizili.
 
-## Açık sorular (ürün sahibi)
-1. Öneriyi kim onaylar / birleştirir: **yalnız yetkili kullanıcı** (pazarlama / tıbbi, "rakip ürün yönetimi" yetkisi), Workflow onayı olmadan. CT önerisi: evet; ana veri düzeltmesi, MLR içerik onayı değil.
-2. Etken madde ve geri ödeme durumu için **yeni referans veri setleri** açılsın mı (kiracı uyarlar), yoksa etken madde serbest metin + öneri listesi mi? CT önerisi: geri ödeme durumu = referans veri seti; etken madde = serbest etiket (ileride sözlük).
+## Kararlar (ürün sahibi, 2026-10-13)
+1. **Öneriyi onaylayan / birleştiren:** "rakip ürün yönetimi" yetkisi olan kullanıcı (pazarlama / tıbbi). **Workflow onayı yok**; bu bir ana veri düzeltmesidir, MLR içerik onayı değildir.
+2. **Etken madde** serbest etiket (ileride sözlük). **Geri ödeme durumu** yeni referans veri seti (kiracı uyarlar).
