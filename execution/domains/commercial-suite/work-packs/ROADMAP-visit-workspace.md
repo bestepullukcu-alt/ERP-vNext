@@ -160,7 +160,7 @@
 | 1 | **W3-WEB-d** ziyaret kanıtı ayarları (kiracı + etkin ayar + geçmiş + süreli istisna) | 1 | ✅ E2 (2d16a835c) |
 | 2 | **W3-CFG** Workflow şablonları (CRM-OBJ-RESP → MED-DIR, CRM-VISIT-EVIDENCE-EXC → POS-SALES-OPS) + yetki betiği | 1 | ✅ E2 (b40a3702f); kullanıcı --apply + yeniden giriş |
 | 3 | W3 yazım canlı E4 + mockup görsel karşılaştırması + olası düzeltme | 0–1 | ✅ 2026-10-13 (2 CT düzeltmesi f8293c2f5, 9f37e0875; notlar 456608389) |
-| 3b | **W3-FIX** canlı E4 küçük düzeltmeleri (F1–F5) | 1 | prompt hazır (WP-VW-W3-authoring); W4'ten önce |
+| 3b | **W3-FIX** canlı E4 küçük düzeltmeleri (F1–F5) | 1 | ✅ E2 (cbdf745f2 → test) |
 | 4 | **PLT-ORG-SEAT** Platform "benim pozisyon atamam" ucu (+ bildirim) | 1 | tüzel kişilik katmanı için |
 | 5 | **W3-BE-d** katmanlı ayar (tüzel kişilik × iş birimi), çözümleyici dolar | 1 | PLT-ORG-SEAT sonrası |
 | 5 | **W3-WEB-e** kanıt ayarında tüzel kişilik / iş birimi ağacı + miras | 1 | BE-d ile |

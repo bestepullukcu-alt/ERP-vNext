@@ -595,3 +595,28 @@ KORU/YAPMA: sözleşme alanlarını yeniden adlandırma; yeni CRM komutu/uç YOK
 DOĞRULA: F1–F5 için test; sabotaj — F3 süzgeci kaldır → kırmızı, F4 çift kaçırmayı geri getir → kırmızı (.bak + touch ile geri al); CRM + Web tam takım (-o ile repo içi çıktı) yeşil; mimari 47.
 Commit: "fix(crm,web): WP-VW-W3-FIX — objection placeholders + creator name, WORKCENTER_* reason codes not shown as notes, Work Center toast double-encoding, evidence settings display names" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor: F1–F5 ne değişti, test sayıları önce/sonra, sabotaj kanıtı. §22 TÜRKÇE. K13.
 ```
+
+## §37 CT kabul — W3-FIX E2 ACCEPTED (2026-10-13)
+
+**Kaynak:** kullanıcının ajanı, `cbdf745f2` (`wp/vw-w3-fix`) → test dalına alındı.
+
+**CT ölçümü:**
+- CRM **2643/0/5** (2640 + 3).
+- Web **955/0** (950 + 5).
+- Mimari 38/1, denetimsiz **47** (değişmedi).
+
+**CT kod okuması:**
+- **F3:** `WorkflowApprovalNotes.Clean` hem yazarken (uygulayıcı `ReasonCode`) hem okurken (`ApprovalRoundDto` / `ApprovalDecisionDto`) hem de ret yorumu aranırken uygulanıyor. CRM'in kendi gerekçe kodları ve gerçek ret notu korunuyor.
+- **F4 teşhisi doğru.** Görünen bildirim zaten doğruydu; `&#39;` Notyf'in ekran okuyucu alanındaydı (CT, E4'te `.notyf-announcer`'dan okumuştu).
+  - Ortak `_GlobalNotification.cshtml` içinde duyuruya düz metin gidiyor; tüm modüller birlikte düzeldi.
+  - Notyf'in iç `_announce` fonksiyonu sarmalanıyor. **Notyf güncellemesinde kontrol edilmeli.**
+- **F2:** ad sunucuda üretiliyor (`KnowledgePathStudioReview.DisplayNameOf`). Yeri tuhaf ama zararsız.
+- **F5:** `displayNames` istisna listesi / ayrıntısı, politika ve geçmişte. Yeni uç ya da komut yok.
+
+**CT sabotajı:** `evidence-core.js` `personLabel` CRM adını yok saydı → F5 testi kırmızı; `.bak` + touch ile geri alındı, 31/31.
+
+**Kabul edilen sapmalar:**
+- F4 için vitest testi bu makinede çalışmıyor (Node 16); asıl kanıt xUnit + Node testi.
+- Yer tutucudaki "Tamsulin" çevrilmedi.
+
+**Canlı:** fleet yeniden başlatılınca F1 / F2 / F5 gözle bakılır (kısa kontrol, W4 E4'te de görülür).
