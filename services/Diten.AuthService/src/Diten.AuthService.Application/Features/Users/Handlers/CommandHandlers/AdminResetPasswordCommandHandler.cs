@@ -91,7 +91,7 @@ public sealed class AdminResetPasswordCommandHandler : IRequestHandler<AdminRese
             user,
             tenantId,
             AdminResetVia.UsersScreen,
-            _ => AdminPasswordReset.UnusableHash(_passwordHasher, _tokenService),
+            (_, c) => AdminPasswordReset.UnusableHashAsync(_passwordHasher, _tokenService, c),
             u =>
             {
                 u.SetPasswordResetToken(_refreshTokenHasher.Hash(setupToken), DateTime.UtcNow.Add(InvitationTokenLifetime));

@@ -17,8 +17,9 @@ public static class SignInTiming
     // is never handed to BCrypt).
     private static readonly ConcurrentDictionary<Type, string> NoAccountHash = new();
 
-    public static void VerifyAgainstNoAccount(IPasswordHasher hasher, string? password)
-        => _ = hasher.Verify(password ?? string.Empty, HashFor(hasher));
+    // FIX6 S2 — through the hasher's asynchronous door: a queued wait for the CPU slot holds no thread.
+    public static async Task VerifyAgainstNoAccountAsync(IPasswordHasher hasher, string? password, CancellationToken cancellationToken)
+        => _ = await hasher.VerifyAsync(password ?? string.Empty, HashFor(hasher), cancellationToken);
 
     /// <summary>FIX3 item 7 — made at start (<c>SignInTimingWarmup</c>): otherwise the FIRST unknown address after a start
     /// would also pay for making the hash, and be slower than every other answer.</summary>

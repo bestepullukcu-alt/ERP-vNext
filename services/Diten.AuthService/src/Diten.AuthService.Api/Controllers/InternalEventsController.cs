@@ -180,7 +180,7 @@ public sealed class InternalEventsController : ControllerBase
 
         if (existingUser is null)
         {
-            var user = CreateUser(request, AdminPasswordReset.UnusableHash(_passwordHasher, _tokenService));
+            var user = CreateUser(request, await AdminPasswordReset.UnusableHashAsync(_passwordHasher, _tokenService, ct));
             IssueNewAccountInvitation(user, setupTokenHash, setupExpiresAtUtc);
 
             // BL-454 stage D FIX2 (1) — the ACCOUNT is written LAST: its membership and Admin role first, under its id. A
@@ -224,7 +224,7 @@ public sealed class InternalEventsController : ControllerBase
             existingUser,
             request.TenantId,
             AdminResetVia.TenantAdministratorReinvite,
-            _ => AdminPasswordReset.UnusableHash(_passwordHasher, _tokenService),
+            (_, c) => AdminPasswordReset.UnusableHashAsync(_passwordHasher, _tokenService, c),
             u =>
             {
                 u.ActivateByAdministrator(); // the operator's explicit re-invitation is an administrator's activation

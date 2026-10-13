@@ -23,6 +23,19 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
 
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
+        // WP-USERS-ROLES-CLOSE-FIX1 FIX6 N3 — the password-work gate's refusal reached outside MediatR (the platform
+        // controller hashes and verifies itself) is the doors' coded 429 with Retry-After: 1, as the pipeline's is — not 500.
+        if (exception is PasswordWorkCapacityExceededException capacity)
+        {
+            _logger.LogWarning("Password work refused: every slot and the queue are taken. Path={Path} TraceId={TraceId}",
+                httpContext.Request.Path, httpContext.TraceIdentifier);
+            httpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+            httpContext.Response.Headers.RetryAfter = "1";
+            await httpContext.Response.WriteAsJsonAsync(Response<NoContent>.Fail(
+                capacity.Message, [new ResponseError(AuthRefusalCodes.TooManyRequests)], StatusCodes.Status429TooManyRequests), cancellationToken);
+            return true;
+        }
+
         var (statusCode, title) = exception switch
         {
             UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, "Unauthorized"),

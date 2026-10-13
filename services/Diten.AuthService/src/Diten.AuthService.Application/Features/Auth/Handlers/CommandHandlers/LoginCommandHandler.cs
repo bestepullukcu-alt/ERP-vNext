@@ -102,18 +102,18 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Response
         // is not extended (UserRepository.RecordLoginFailureAsync).
         if (user == null)
         {
-            SignInTiming.VerifyAgainstNoAccount(_passwordHasher, request.Password);
+            await SignInTiming.VerifyAgainstNoAccountAsync(_passwordHasher, request.Password, ct);
             return InvalidCredentials();
         }
         if (user.IsPlatformAccount)
         {
             // FIX7 item 5 - one warning (event code, door, tenant id - no e-mail, no user id); the answer is the same 401.
             TenantDoorPlatformAccountRefusal.Log(_logger, TenantDoorPlatformAccountRefusal.SignInDoor, _tenantContext.TenantId);
-            SignInTiming.VerifyAgainstNoAccount(_passwordHasher, request.Password);
+            await SignInTiming.VerifyAgainstNoAccountAsync(_passwordHasher, request.Password, ct);
             return InvalidCredentials();
         }
 
-        var passwordMatches = _passwordHasher.Verify(request.Password, user.PasswordHash);
+        var passwordMatches = await _passwordHasher.VerifyAsync(request.Password, user.PasswordHash, ct);
         if (IsLocked(user))
         {
             // The password was verified (the same time either way) and its result is thrown away: locked is locked. FIX5 —
@@ -140,7 +140,7 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, Response
         // FIX4 item 3 — the right password claims the account against the STORED row (not locked, below the threshold)
         // before a challenge or a token: parallel wrong guesses that reached the threshold meanwhile win, and this one is
         // refused and counted like them.
-        if (!await _userRepository.TryClaimSignInAsync(user.Id, _tenantContext.TenantId, settings.MaxFailedLoginAttempts, ct))
+        if (!await _userRepository.TryClaimSignInAsync(user.Id, _tenantContext.TenantId, ct))
         {
             // FIX5 — the stored row was locked meanwhile (parallel wrong guesses reached the threshold): this attempt is the
             // locked account's — audited, not counted.

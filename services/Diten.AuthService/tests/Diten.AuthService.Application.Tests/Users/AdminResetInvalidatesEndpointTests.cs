@@ -930,14 +930,14 @@ public sealed partial class AdminResetInvalidatesEndpointTests : IClassFixture<A
     // ── Item 8 (H1): the replacement hash is unguessable ────────────────────────────────────────────────────────
 
     [Fact]
-    public void The_unusable_hash_is_random_and_matches_no_known_password()
+    public async Task The_unusable_hash_is_random_and_matches_no_known_password()
     {
         using var scope = _host.Factory.Services.CreateScope();
         var tokens = scope.ServiceProvider.GetRequiredService<ITokenService>();
         var hasher = new PasswordHasher(); // the production BCrypt hasher, not a double that accepts anything
 
-        var first = AdminPasswordReset.UnusableHash(hasher, tokens);
-        var second = AdminPasswordReset.UnusableHash(hasher, tokens);
+        var first = await AdminPasswordReset.UnusableHashAsync(hasher, tokens, CancellationToken.None);
+        var second = await AdminPasswordReset.UnusableHashAsync(hasher, tokens, CancellationToken.None);
 
         Assert.NotEqual(first, second);
         Assert.StartsWith("$2", first, StringComparison.Ordinal); // a real BCrypt hash
@@ -3173,7 +3173,7 @@ public sealed partial class AdminResetInvalidatesEndpointTests : IClassFixture<A
         public Task<bool> SetPlatformActorTypeAsync(Guid userId, Guid tenantId, string actorType, CancellationToken ct) => inner.SetPlatformActorTypeAsync(userId, tenantId, actorType, ct);
         public Task<IReadOnlyCollection<Guid>> VisibleUserIdsAsync(Guid tenantId, IReadOnlyCollection<Guid> userIds, CancellationToken ct) => inner.VisibleUserIdsAsync(tenantId, userIds, ct);
         public Task RecordLoginOutcomeAsync(User user, Guid tenantId, CancellationToken ct) => inner.RecordLoginOutcomeAsync(user, tenantId, ct);
-        public Task<bool> TryClaimSignInAsync(Guid userId, Guid tenantId, int maxFailedAttempts, CancellationToken ct) => inner.TryClaimSignInAsync(userId, tenantId, maxFailedAttempts, ct);
+        public Task<bool> TryClaimSignInAsync(Guid userId, Guid tenantId, CancellationToken ct) => inner.TryClaimSignInAsync(userId, tenantId, ct);
         public object CaptureState(User user) => inner.CaptureState(user);
         public Task<bool> TryWriteChangesAsync(User user, object capturedState, Guid tenantId, UserWriteCondition condition, CancellationToken ct)
         {

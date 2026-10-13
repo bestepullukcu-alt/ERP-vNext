@@ -197,10 +197,10 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
         await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
     }
 
-    public Task<bool> TryClaimSignInAsync(Guid userId, Guid tenantId, int maxFailedAttempts, CancellationToken ct)
-        => TryClaimSignInAsync(userId, tenantId, maxFailedAttempts, excludePlatformAccounts: false, ct);
+    public Task<bool> TryClaimSignInAsync(Guid userId, Guid tenantId, CancellationToken ct)
+        => TryClaimSignInAsync(userId, tenantId, excludePlatformAccounts: false, ct);
 
-    public async Task<bool> TryClaimSignInAsync(Guid userId, Guid tenantId, int maxFailedAttempts, bool excludePlatformAccounts, CancellationToken ct)
+    public async Task<bool> TryClaimSignInAsync(Guid userId, Guid tenantId, bool excludePlatformAccounts, CancellationToken ct)
     {
         // FIX5 — "not locked" is the whole condition. The lock is set by the very write that reaches the threshold (with the
         // count reset), so a flood that reached it has locked the account before this claim can land; a count at or past the
@@ -295,7 +295,11 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
         var lockoutEnd = now.AddMinutes(lockoutDurationMinutes);
         var counting = LiveAccount(userId, tenantId, excludePlatformAccounts) & NotLockedAt(now);
 
-        var next = new BsonDocument("$add", new BsonArray { "$" + nameof(User.FailedLoginAttempts), 1 });
+        // FIX6 S1 — a row WITHOUT the field (written before it existed) counts from 0, as `$inc` did: `$add` on a missing
+        // field is null, so it would never reach the threshold (no lock, ever) and `$set` would write null into an int —
+        // every later read of the account would fail.
+        var stored = new BsonDocument("$ifNull", new BsonArray { "$" + nameof(User.FailedLoginAttempts), 0 });
+        var next = new BsonDocument("$add", new BsonArray { stored, 1 });
         var reaches = new BsonDocument("$gte", new BsonArray { next, maxFailedAttempts });
         var count = PipelineDefinition<User, User>.Create(new[]
         {

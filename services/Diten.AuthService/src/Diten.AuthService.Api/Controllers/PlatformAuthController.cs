@@ -152,7 +152,7 @@ public sealed class PlatformAuthController : CustomBaseController
                 existingUser,
                 PlatformTenantId,
                 AdminResetVia.PlatformAdministratorReinvite,
-                _ => AdminPasswordReset.UnusableHash(_passwordHasher, _tokenService),
+                (_, c) => AdminPasswordReset.UnusableHashAsync(_passwordHasher, _tokenService, c),
                 u =>
                 {
                     u.SetUserName(request.UserName);
@@ -199,7 +199,7 @@ public sealed class PlatformAuthController : CustomBaseController
 
         var user = new User(
             normalizedEmail,
-            _passwordHasher.Hash(_tokenService.GenerateRefreshToken()),
+            await _passwordHasher.HashAsync(_tokenService.GenerateRefreshToken(), ct),
             firstName,
             lastName,
             PlatformTenantId);
@@ -266,7 +266,7 @@ public sealed class PlatformAuthController : CustomBaseController
             target,
             PlatformTenantId,
             AdminResetVia.PlatformAdministratorReset,
-            _ => AdminPasswordReset.UnusableHash(_passwordHasher, _tokenService),
+            (_, c) => AdminPasswordReset.UnusableHashAsync(_passwordHasher, _tokenService, c),
             u => u.SetPasswordResetToken(_refreshTokenHasher.Hash(setupToken), DateTime.UtcNow.AddHours(24)),
             c => _userRepository.GetByEmailAndTenantAsync(normalizedEmail, PlatformTenantId, c),
             async (u, c) =>
@@ -444,7 +444,7 @@ public sealed class PlatformAuthController : CustomBaseController
             return CreateActionResultInstance(Response<AuthResponse>.Fail("Platform administrator account is inactive.", [new ResponseError(AuthRefusalCodes.AccountDeactivated)], 401));
         }
 
-        if (!_passwordHasher.Verify(request.CurrentPassword, user.PasswordHash))
+        if (!await _passwordHasher.VerifyAsync(request.CurrentPassword, user.PasswordHash, ct))
         {
             return CreateActionResultInstance(Response<AuthResponse>.Fail("Current password is incorrect.", [new ResponseError(AuthRefusalCodes.CurrentPasswordIncorrect)], 401));
         }
@@ -468,7 +468,7 @@ public sealed class PlatformAuthController : CustomBaseController
         // change, and only over the password just verified.
         var verifiedHash = user.PasswordHash;
         var state = _userRepository.CaptureState(user);
-        user.UpdatePassword(_passwordHasher.Hash(request.NewPassword));
+        user.UpdatePassword(await _passwordHasher.HashAsync(request.NewPassword, ct));
         user.ClearPasswordChangeRequirement();
         // BL-529 FIX2 — only over the password just verified: never over an administrator's reset that landed meanwhile.
         // Merge WP-CT-LANE-BL521-MERGE-01 FIX1 (small 6) — and only while the account is still ACTIVE: a deactivation that
@@ -590,7 +590,7 @@ public sealed class PlatformAuthController : CustomBaseController
         var redeemedTokenHash = user.PasswordResetTokenHash!;
         var redeemState = _userRepository.CaptureState(user);
         var wasActive = user.IsActive; // FIX9 (M4) — the switch as read: a plain deactivation landing meanwhile is not undone
-        user.UpdatePassword(_passwordHasher.Hash(request.NewPassword));
+        user.UpdatePassword(await _passwordHasher.HashAsync(request.NewPassword, ct));
         user.ClearPasswordChangeRequirement();
         user.Activate();
         user.ConfirmEmail();

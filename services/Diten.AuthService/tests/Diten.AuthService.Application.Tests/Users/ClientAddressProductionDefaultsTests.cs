@@ -175,6 +175,33 @@ public sealed class ClientAddressProductionDefaultsTests : IClassFixture<ClientA
         Assert.Equal(HttpStatusCode.NoContent, (await LinkAsync(email, _host.Links.LastTokenFor(email), "Fresh!Passw0rd-529")).StatusCode); // … the owner is not
     }
 
+    /// <summary>FIX6 N3 — the platform controller hashes outside MediatR: with every password-work slot held, redeeming a VALID
+    /// platform link is the doors' coded 429 with Retry-After: 1 (it was the exception handler's 500), and nothing was written
+    /// — the same link works once the slots are free.</summary>
+    [Fact]
+    public async Task A_platform_link_redeemed_while_every_slot_is_held_is_the_coded_429_and_the_link_still_works()
+    {
+        var email = await ProvisionedAdministratorAsync();
+        var token = _host.Links.LastTokenFor(email);
+        var gate = _host.Factory.Services.GetRequiredService<PasswordWorkGate>();
+
+        var slots = Enumerable.Range(0, gate.Slots).Select(_ => gate.Enter()).ToList();
+        HttpResponseMessage busy;
+        try
+        {
+            busy = await Task.Run(() => LinkAsync(email, token, "Fresh!Passw0rd-529")).WaitAsync(TimeSpan.FromSeconds(20));
+        }
+        finally
+        {
+            foreach (var slot in slots) slot.Dispose();
+        }
+
+        Assert.Equal((HttpStatusCode)429, busy.StatusCode);
+        Assert.Equal("1", Assert.Single(busy.Headers.GetValues("Retry-After")));
+        Assert.Contains(AuthRefusalCodes.TooManyRequests, await busy.Content.ReadAsStringAsync(), StringComparison.Ordinal);
+        Assert.Equal(HttpStatusCode.NoContent, (await LinkAsync(email, token, "Fresh!Passw0rd-529")).StatusCode);
+    }
+
     [Fact]
     public async Task A_wrong_link_never_reaches_platform()
     {

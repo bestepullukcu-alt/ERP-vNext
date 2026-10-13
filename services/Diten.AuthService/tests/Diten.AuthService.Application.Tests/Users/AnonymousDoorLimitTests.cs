@@ -116,7 +116,8 @@ public sealed class AnonymousDoorLimitTests
 
     /// <summary>FIX5 addendum item 1 — the CPU guard is the password hasher's (<see cref="PasswordWorkGate"/>): at most
     /// <c>Slots</c> pieces of work at once, at most <c>QueueLength</c> waiting, each refused once it has waited
-    /// <c>QueueTimeout</c>; past the queue the refusal is immediate; a slot given back lets a waiting one in.</summary>
+    /// <c>QueueTimeout</c>; past the queue the refusal is immediate; a slot given back lets a waiting one in. FIX6 S2 — the
+    /// waiting is <c>EnterAsync</c>'s (the synchronous <c>Enter</c> never waits).</summary>
     [Fact]
     public async Task The_password_work_slots_are_limited_with_a_short_queue_that_times_out()
     {
@@ -125,7 +126,7 @@ public sealed class AnonymousDoorLimitTests
 
         // Waited its turn, then refused — on a task, so a queue without a timeout fails here instead of hanging the run.
         var timer = System.Diagnostics.Stopwatch.StartNew();
-        var waited = Task.Run(() => gate.Enter());
+        var waited = Task.Run(() => gate.EnterAsync());
         try
         {
             await Assert.ThrowsAsync<Diten.AuthService.Application.Common.Exceptions.PasswordWorkCapacityExceededException>(
@@ -140,11 +141,11 @@ public sealed class AnonymousDoorLimitTests
         using var slowGate = new PasswordWorkGate(slots: 1, queueLength: 2, queueTimeout: TimeSpan.FromSeconds(10));
         var slow = slowGate.Enter();
         using var started = new CountdownEvent(2);
-        var queued = Enumerable.Range(0, 2).Select(_ => Task.Run(() => { started.Signal(); return slowGate.Enter(); })).ToList();
+        var queued = Enumerable.Range(0, 2).Select(_ => Task.Run(() => { started.Signal(); return slowGate.EnterAsync(); })).ToList();
         Assert.True(started.Wait(TimeSpan.FromSeconds(5)));
         await Task.Delay(100);
         timer.Restart();
-        Assert.Throws<Diten.AuthService.Application.Common.Exceptions.PasswordWorkCapacityExceededException>(() => slowGate.Enter());
+        await Assert.ThrowsAsync<Diten.AuthService.Application.Common.Exceptions.PasswordWorkCapacityExceededException>(() => slowGate.EnterAsync());
         Assert.True(timer.Elapsed < TimeSpan.FromSeconds(2), "past the queue the refusal does not wait");
 
         slow.Dispose();
@@ -184,6 +185,61 @@ public sealed class AnonymousDoorLimitTests
         });
 
         Assert.True(slotFreeInsideNext);
+    }
+
+    /// <summary>FIX6 N7 — a wrong VERIFICATION CODE uses up the client's guessing count like a wrong password: after the
+    /// allowance, the second-factor door refuses the client before the request goes on.</summary>
+    [Fact]
+    public async Task A_wrong_verification_code_uses_up_the_clients_guessing_count()
+    {
+        using var doors = new PasswordDoorRateLimiter();
+        var wrongCode = Refusal(401, Diten.AuthService.Application.Common.AuthRefusalCodes.InvalidVerificationCode);
+
+        for (var i = 0; i < PasswordDoorRateLimiter.DefaultLoginFailuresPerClientLimit; i++)
+            Assert.True(await ThroughTheDoorAsync(doors, PasswordDoorRateLimiter.LoginDoor.Mfa, wrongCode));
+
+        Assert.False(await ThroughTheDoorAsync(doors, PasswordDoorRateLimiter.LoginDoor.Mfa, wrongCode));
+    }
+
+    /// <summary>FIX6 N7 — the password-work gate's 429 is not a wrong guess: a client refused for capacity more times than its
+    /// wrong-attempt allowance is never refused for guessing.</summary>
+    [Fact]
+    public async Task The_gates_429_does_not_use_up_the_clients_guessing_count()
+    {
+        using var doors = new PasswordDoorRateLimiter();
+        var busy = Refusal(429, Diten.AuthService.Application.Common.AuthRefusalCodes.TooManyRequests);
+
+        for (var i = 0; i <= 2 * PasswordDoorRateLimiter.DefaultLoginFailuresPerClientLimit; i++)
+            Assert.True(await ThroughTheDoorAsync(doors, PasswordDoorRateLimiter.LoginDoor.Tenant, busy));
+    }
+
+    private static Microsoft.AspNetCore.Mvc.ObjectResult Refusal(int status, string code) =>
+        new(Diten.AuthService.Application.Common.Response<Diten.AuthService.Application.Common.NoContent>.Fail(
+            "refused", [new Diten.AuthService.Application.Common.ResponseError(code)], status)) { StatusCode = status };
+
+    /// <summary>One request from one IDENTIFIED client (a listed proxy exists; the peer forwards for nobody) through the door's
+    /// filter, answered with <paramref name="answer"/>. True when the filter let it on.</summary>
+    private static async Task<bool> ThroughTheDoorAsync(PasswordDoorRateLimiter doors, PasswordDoorRateLimiter.LoginDoor door,
+        Microsoft.AspNetCore.Mvc.IActionResult answer)
+    {
+        var services = new ServiceCollection()
+            .AddSingleton(doors).AddSingleton(new ClientAddressResolver([System.Net.IPAddress.Parse("10.9.9.9")]))
+            .BuildServiceProvider();
+        var http = new Microsoft.AspNetCore.Http.DefaultHttpContext { RequestServices = services };
+        http.Connection.RemoteIpAddress = System.Net.IPAddress.Parse("10.0.0.77");
+        var action = new Microsoft.AspNetCore.Mvc.ActionContext(http, new Microsoft.AspNetCore.Routing.RouteData(),
+            new Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor());
+        var filters = new List<Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata>();
+        var executing = new Microsoft.AspNetCore.Mvc.Filters.ResourceExecutingContext(action, filters,
+            new List<Microsoft.AspNetCore.Mvc.ModelBinding.IValueProviderFactory>());
+
+        var reached = false;
+        await new Diten.AuthService.Api.Controllers.Common.AnonymousDoorLimitAttribute(door).OnResourceExecutionAsync(executing, () =>
+        {
+            reached = true;
+            return Task.FromResult(new Microsoft.AspNetCore.Mvc.Filters.ResourceExecutedContext(action, filters) { Result = answer });
+        });
+        return reached;
     }
 
     /// <summary>FIX5 addendum item 1 — the production default waits at most 2 s, and the production hasher goes through it.</summary>

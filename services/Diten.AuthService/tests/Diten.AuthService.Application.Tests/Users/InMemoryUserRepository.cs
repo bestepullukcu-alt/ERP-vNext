@@ -184,7 +184,7 @@ internal sealed class InMemoryUserRepository : IUserRepository
     }
 
     // FIX4 item 3 — as the store: cleared only while not locked and below the threshold.
-    public Task<bool> TryClaimSignInAsync(Guid userId, Guid tenantId, int maxFailedAttempts, CancellationToken ct)
+    public Task<bool> TryClaimSignInAsync(Guid userId, Guid tenantId, CancellationToken ct)
     {
         var user = _users.FirstOrDefault(u => u.Id == userId && u.TenantId == tenantId && !u.IsDeleted);
         if (user is null || user.LockoutEnd > DateTime.UtcNow)
@@ -193,7 +193,7 @@ internal sealed class InMemoryUserRepository : IUserRepository
         return Task.FromResult(true);
     }
 
-    // Mirrors the store's $inc: the stored row counts, whatever copy the caller holds.
+    // Mirrors the store's one write: the stored row counts, whatever copy the caller holds.
     public Task<LoginFailureOutcome> RecordLoginFailureAsync(Guid userId, Guid tenantId, int maxFailedAttempts, int lockoutDurationMinutes, CancellationToken ct)
     {
         var user = _users.FirstOrDefault(u => u.Id == userId && u.TenantId == tenantId && !u.IsDeleted);
@@ -202,11 +202,8 @@ internal sealed class InMemoryUserRepository : IUserRepository
         // threshold sets the lock and starts the count over.
         if (user.LockoutEnd is { } end && end > DateTime.UtcNow)
             return Task.FromResult(new LoginFailureOutcome(0, null));
-        user.RecordLoginFailure(int.MaxValue, 0);
-        if (user.FailedLoginAttempts < maxFailedAttempts)
-            return Task.FromResult(new LoginFailureOutcome(user.FailedLoginAttempts, user.LockoutEnd));
-        user.LockOut(lockoutDurationMinutes);
-        return Task.FromResult(new LoginFailureOutcome(0, user.LockoutEnd, LockoutStarted: true));
+        var started = user.RecordLoginFailure(maxFailedAttempts, lockoutDurationMinutes); // FIX6 N4 — the domain's rule is the store's
+        return Task.FromResult(new LoginFailureOutcome(user.FailedLoginAttempts, user.LockoutEnd, LockoutStarted: started));
     }
 
     public Task<bool> SetPlatformActorTypeAsync(Guid userId, Guid tenantId, string actorType, CancellationToken ct)

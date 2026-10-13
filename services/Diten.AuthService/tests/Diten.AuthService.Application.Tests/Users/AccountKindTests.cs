@@ -509,7 +509,7 @@ public sealed class AccountKindTests
         public Task<User> CreateAsync(User user, CancellationToken ct) => _inner.CreateAsync(user, ct);
         public Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct) => _inner.SoftDeleteAsync(id, tenantId, ct);
         public Task RecordLoginOutcomeAsync(User user, Guid tenantId, CancellationToken ct) => _inner.RecordLoginOutcomeAsync(user, tenantId, ct);
-        public Task<bool> TryClaimSignInAsync(Guid userId, Guid tenantId, int maxFailedAttempts, CancellationToken ct) => _inner.TryClaimSignInAsync(userId, tenantId, maxFailedAttempts, ct);
+        public Task<bool> TryClaimSignInAsync(Guid userId, Guid tenantId, CancellationToken ct) => _inner.TryClaimSignInAsync(userId, tenantId, ct);
         public object CaptureState(User user) => _inner.CaptureState(user);
         // BL-529 FIX3 — the tenant-scoped write is now the targeted one; it is recorded exactly as the replace was.
         public Task<bool> TryWriteChangesAsync(User user, object capturedState, Guid tenantId, UserWriteCondition condition, CancellationToken ct)

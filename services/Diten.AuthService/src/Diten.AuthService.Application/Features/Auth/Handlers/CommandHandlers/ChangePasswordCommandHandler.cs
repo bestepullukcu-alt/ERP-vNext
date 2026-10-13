@@ -42,11 +42,11 @@ public sealed class ChangePasswordCommandHandler : IRequestHandler<ChangePasswor
         var user = await _userRepository.GetByIdAndTenantAsync(userId, _tenantContext.TenantId, ct);
         if (user == null) return Response<NoContent>.Fail("User not found.", 404);
 
-        if (!_passwordHasher.Verify(request.CurrentPassword, user.PasswordHash))
+        if (!await _passwordHasher.VerifyAsync(request.CurrentPassword, user.PasswordHash, ct))
             return Response<NoContent>.Fail("Current password is incorrect.", 401);
 
         await _passwordPolicyService.ValidateTenantPasswordAsync(_tenantContext.TenantId, user.Id, request.NewPassword, "change_password", ct);
-        var newHashedPassword = _passwordHasher.Hash(request.NewPassword);
+        var newHashedPassword = await _passwordHasher.HashAsync(request.NewPassword, ct);
         var verifiedHash = user.PasswordHash;
         var state = _userRepository.CaptureState(user);
         user.UpdatePassword(newHashedPassword);

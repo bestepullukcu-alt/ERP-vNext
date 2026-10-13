@@ -60,7 +60,7 @@ public sealed class SetTenantPasswordCommandHandler : IRequestHandler<SetTenantP
 
         var state = _userRepository.CaptureState(user);
         var wasActive = user.IsActive;
-        user.UpdatePassword(_passwordHasher.Hash(request.NewPassword));
+        user.UpdatePassword(await _passwordHasher.HashAsync(request.NewPassword, ct));
         user.ClearPasswordChangeRequirement(); // also clears the one-time token (single use)
         // BL-529 — a password set through the link starts clean: the lockout the old password's failures (or an attacker
         // guessing at it) built up does not outlive it.

@@ -419,6 +419,51 @@ public sealed partial class AdminResetInvalidatesEndpointTests
         Assert.Equal(lockedUntil, after.LockoutEnd!.Value, TimeSpan.FromMilliseconds(5));
     }
 
+    /// <summary>FIX6 S1 — AN ACCOUNT STORED WITHOUT THE COUNT FIELD (written before it existed). <c>$inc</c> counted a missing
+    /// field from 0; FIX5's <c>$add</c> made it null: the account never reached the threshold (never locked) and the null
+    /// written into an int broke every later read of it. Now: the wrong attempts count from 0, the fifth locks, and the account
+    /// still reads.</summary>
+    [Fact]
+    public async Task An_account_stored_without_the_count_field_counts_from_zero_locks_and_still_reads()
+    {
+        var tenantId = _host.Seeded.TenantId;
+        var (account, _) = await FreshAccountAsync();
+        await _host.Database.GetCollection<User>("users").UpdateOneAsync(u => u.Id == account.Id,
+            Builders<User>.Update.Unset(u => u.FailedLoginAttempts));
+        Assert.DoesNotContain(nameof(User.FailedLoginAttempts), await RawUserAsync(account.Id), StringComparison.Ordinal);
+
+        for (var i = 0; i < 4; i++)
+            Assert.Equal(HttpStatusCode.Unauthorized, (await TenantLoginAsync(tenantId, account.Email, WrongPassword)).StatusCode);
+        Assert.Equal(4, (await ReadUserAsync(account.Id)).FailedLoginAttempts);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, (await TenantLoginAsync(tenantId, account.Email, WrongPassword)).StatusCode);
+        var locked = await ReadUserAsync(account.Id);
+        Assert.True(locked.LockoutEnd > DateTime.UtcNow, "the fifth wrong attempt locks it");
+        Assert.Equal(0, locked.FailedLoginAttempts);
+    }
+
+    /// <summary>FIX6 N7 — THE LOCK IS SET BY EXACTLY ONE WRITE, at the store. From one below the threshold, ten wrong attempts
+    /// reach the failure write at once: exactly one of them starts the lock (one "lockout started" row), the rest find the
+    /// account locked and are not counted; the account ends locked with its count at 0.</summary>
+    [Fact]
+    public async Task Parallel_failures_from_one_below_the_threshold_start_exactly_one_lock()
+    {
+        var tenantId = _host.Seeded.TenantId;
+        var (account, _) = await FreshAccountAsync(failed: 4);
+
+        var outcomes = await Task.WhenAll(Enumerable.Range(0, 10).Select(_ => Task.Run(async () =>
+        {
+            using var scope = _host.Factory.Services.CreateScope();
+            var users = scope.ServiceProvider.GetRequiredService<Diten.AuthService.Persistence.Repositories.UserRepository>();
+            return await users.RecordLoginFailureAsync(account.Id, tenantId, 5, 15, CancellationToken.None);
+        })));
+
+        Assert.Single(outcomes, outcome => outcome.LockoutStarted);
+        var after = await ReadUserAsync(account.Id);
+        Assert.True(after.LockoutEnd > DateTime.UtcNow);
+        Assert.Equal(0, after.FailedLoginAttempts);
+    }
+
     /// <summary>FIX5 addendum item 2 — only a WRONG credential uses up the client's guessing count. A deactivated account's
     /// right password is a 401 too ("Account is disabled."), but it guessed nothing: one client asks more times than its
     /// wrong-attempt allowance and is never refused (FIX4 counted every 401).</summary>

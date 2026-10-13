@@ -94,7 +94,7 @@ public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Re
             return Response<AuthResponse>.Fail("Tenant default roles are not ready.", 422);
         }
 
-        var hashedPassword = _passwordHasher.Hash(request.Password);
+        var hashedPassword = await _passwordHasher.HashAsync(request.Password, ct);
         var user = new User(request.Email, hashedPassword, request.FirstName, request.LastName, _tenantContext.TenantId);
         // WP-INFRA-AUTH-ACCOUNT-KIND-01 — an automatic creation path never classifies: self-registration is Unknown,
         // stated here so the intent is readable (and guarded), not merely inherited from the constructor.

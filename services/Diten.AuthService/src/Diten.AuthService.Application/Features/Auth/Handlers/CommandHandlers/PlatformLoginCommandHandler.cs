@@ -60,10 +60,10 @@ public sealed class PlatformLoginCommandHandler : IRequestHandler<PlatformLoginC
         // does not tell an administrator's address from an unknown one.
         if (user is null)
         {
-            SignInTiming.VerifyAgainstNoAccount(_passwordHasher, request.Password);
+            await SignInTiming.VerifyAgainstNoAccountAsync(_passwordHasher, request.Password, ct);
             return Response<AuthResponse>.Fail("Invalid credentials.", [new ResponseError(AuthRefusalCodes.InvalidCredentials)], 401);
         }
-        if (!_passwordHasher.Verify(request.Password, user.PasswordHash))
+        if (!await _passwordHasher.VerifyAsync(request.Password, user.PasswordHash, ct))
         {
             return Response<AuthResponse>.Fail("Invalid credentials.", [new ResponseError(AuthRefusalCodes.InvalidCredentials)], 401);
         }

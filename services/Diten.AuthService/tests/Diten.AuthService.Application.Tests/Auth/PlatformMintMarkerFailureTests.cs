@@ -235,7 +235,7 @@ public sealed class PlatformMintMarkerFailureTests : IClassFixture<PlatformMintM
         public Task<User> CreateAsync(User user, CancellationToken ct) => inner.CreateAsync(user, ct);
         // Merge WP-CT-LANE-BL521-MERGE-01 — BL-529 FIX4 removed the whole-document UpdateAsync / UpdateForTenantAsync; its targeted writes take their place.
         public Task RecordLoginOutcomeAsync(User user, Guid tenantId, CancellationToken ct) => inner.RecordLoginOutcomeAsync(user, tenantId, ct);
-        public Task<bool> TryClaimSignInAsync(Guid userId, Guid tenantId, int maxFailedAttempts, CancellationToken ct) => inner.TryClaimSignInAsync(userId, tenantId, maxFailedAttempts, ct);
+        public Task<bool> TryClaimSignInAsync(Guid userId, Guid tenantId, CancellationToken ct) => inner.TryClaimSignInAsync(userId, tenantId, ct);
         public object CaptureState(User user) => inner.CaptureState(user);
         public Task<bool> TryWriteChangesAsync(User user, object capturedState, Guid tenantId, UserWriteCondition condition, CancellationToken ct) => inner.TryWriteChangesAsync(user, capturedState, tenantId, condition, ct);
         public Task<bool> SetPasswordResetTokenAsync(Guid userId, Guid tenantId, string tokenHash, DateTime expiresAtUtc, CancellationToken ct) => inner.SetPasswordResetTokenAsync(userId, tenantId, tokenHash, expiresAtUtc, ct);
