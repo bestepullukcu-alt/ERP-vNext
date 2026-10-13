@@ -1,0 +1,114 @@
+{
+  "catalog_version": "2026.10.13-mdm-competitor-reference",
+  "module": "BusinessReferenceData",
+  "note": "WP-VW-W4 (W4-BE-b2): the competitor products sets of MOD-0290. Tenant-scoped (the tenant adapts it); display_name = English, label_* = the other six languages. Labels belong to the data owner and are corrected from the Reference Data screen, never patched by a script.",
+  "sets": [
+    {
+      "set_code": "mdm-reimbursement-status",
+      "set_name": "MDM Reimbursement Status",
+      "scope_type": "tenant",
+      "status": "Active",
+      "description": "A competitor product's reimbursement status in one market (WP-VW-W4, K-W6). Tenant-scoped; consumed by the MDM competitor products (validated on every country price row) and read by the visit report's competitor card.",
+      "attribute_definitions": [
+        {
+          "attribute_code": "label_tr",
+          "display_name": "Label (Turkish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_fr",
+          "display_name": "Label (French)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_es",
+          "display_name": "Label (Spanish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_zh",
+          "display_name": "Label (Chinese)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ar",
+          "display_name": "Label (Arabic)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ru",
+          "display_name": "Label (Russian)",
+          "data_type": "string",
+          "is_required": true
+        }
+      ],
+      "values": [
+        {
+          "value_code": "reimbursed",
+          "display_name": "Reimbursed",
+          "description": "The product is on the payer list.",
+          "is_active": true,
+          "sort_order": 10,
+          "attributes": {
+            "label_tr": "Geri ödemede",
+            "label_fr": "Remboursé",
+            "label_es": "Reembolsado",
+            "label_zh": "可报销",
+            "label_ar": "مشمول بالتعويض",
+            "label_ru": "Возмещается"
+          }
+        },
+        {
+          "value_code": "reimbursed_conditional",
+          "display_name": "Reimbursed · conditional (report required)",
+          "description": "Reimbursed only under a condition (e.g. a specialist report).",
+          "is_active": true,
+          "sort_order": 20,
+          "attributes": {
+            "label_tr": "Geri ödemede · rapor şartlı",
+            "label_fr": "Remboursé · sous condition (rapport requis)",
+            "label_es": "Reembolsado · condicionado (informe requerido)",
+            "label_zh": "可报销 · 有条件（需报告）",
+            "label_ar": "مشمول بالتعويض · بشرط (يتطلب تقريرًا)",
+            "label_ru": "Возмещается · с условием (нужно заключение)"
+          }
+        },
+        {
+          "value_code": "not_reimbursed",
+          "display_name": "Not reimbursed",
+          "description": "The payer does not cover the product.",
+          "is_active": true,
+          "sort_order": 30,
+          "attributes": {
+            "label_tr": "Geri ödeme dışı",
+            "label_fr": "Non remboursé",
+            "label_es": "No reembolsado",
+            "label_zh": "不可报销",
+            "label_ar": "غير مشمول بالتعويض",
+            "label_ru": "Не возмещается"
+          }
+        },
+        {
+          "value_code": "unknown",
+          "display_name": "Unknown",
+          "description": "The reimbursement status is not known.",
+          "is_active": true,
+          "sort_order": 40,
+          "attributes": {
+            "label_tr": "Bilinmiyor",
+            "label_fr": "Inconnu",
+            "label_es": "Desconocido",
+            "label_zh": "未知",
+            "label_ar": "غير معروف",
+            "label_ru": "Неизвестно"
+          }
+        }
+      ]
+    }
+  ]
+}

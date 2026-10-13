@@ -36,8 +36,10 @@ public static class MdmApprovalDefaults
 public sealed record WorkflowApprovalKind(string ObjectType, string ReasonPrefix, Func<Guid, string> Link)
 {
     /// <summary>W4-BE-b2 — the competitor proposal decision (§2.6, <c>requestedObjectType = mdm.competitor-proposal</c>).</summary>
+    /// <para>W4-BE-b2 — the Work Center deep link is the competitor page's proposal view (§2.7; WEB-c uses the same
+    /// path). The id is the PROPOSAL's (the decision is reached from it).</para>
     public static readonly WorkflowApprovalKind CompetitorProposal = new(
-        "mdm.competitor-proposal", "MDM_COMPETITOR_PROPOSAL", id => $"/MDM/CompetitorProducts/Proposals/{id:D}");
+        "mdm.competitor-proposal", "MDM_COMPETITOR_PROPOSAL", id => $"/MasterDataManagement/CompetitorProducts/Proposals/{id:D}");
 
     public string ObjectRef(Guid id) => $"{ObjectType.Replace("mdm.", "mdm/", StringComparison.Ordinal)}/{id:D}";
 
@@ -166,7 +168,8 @@ public abstract class WorkflowApprovalTarget
 public sealed class WorkflowApprovalTarget<T> : WorkflowApprovalTarget where T : EntityBase, IWorkflowApprovable
 {
     public WorkflowApprovalTarget(WorkflowApprovalKind kind, IWorkflowApprovalStore<T> store, string draftStatus, string sodCode,
-        Action<T, string, DateTimeOffset> approve, Func<T, string, CancellationToken, Task<string?>>? extraRefusal = null)
+        Action<T, string, DateTimeOffset> approve, Func<T, string, CancellationToken, Task<string?>>? extraRefusal = null,
+        Func<T, string, DateTimeOffset, CancellationToken, Task<string?>>? applyEffectsAsync = null)
     {
         Kind = kind;
         Store = store;
@@ -174,6 +177,7 @@ public sealed class WorkflowApprovalTarget<T> : WorkflowApprovalTarget where T :
         SodCode = sodCode;
         Approve = approve;
         ExtraRefusal = extraRefusal;
+        ApplyEffectsAsync = applyEffectsAsync;
     }
 
     public override WorkflowApprovalKind Kind { get; }
@@ -182,6 +186,14 @@ public sealed class WorkflowApprovalTarget<T> : WorkflowApprovalTarget where T :
     public string SodCode { get; }
     public Action<T, string, DateTimeOffset> Approve { get; }
     public Func<T, string, CancellationToken, Task<string?>>? ExtraRefusal { get; }
+
+    /// <summary>
+    /// W4-BE-b2 — an approval that changes OTHER records (the competitor decision completes / merges / rejects the proposal):
+    /// run after the SoD and the extra refusal, BEFORE the approvable record itself is replaced. It must be idempotent (the
+    /// applier retries once on a lost CAS race). A non-null result is a refusal code: nothing changes and the record goes
+    /// back to its draft status with that reason on the round. Then <see cref="Approve"/> marks the record itself.
+    /// </summary>
+    public Func<T, string, DateTimeOffset, CancellationToken, Task<string?>>? ApplyEffectsAsync { get; }
 
     /// <summary>The SoD first (author / last editor / submitter), then the kind's own check.</summary>
     public async Task<string?> RefusalAsync(T record, string approver, CancellationToken ct)
@@ -538,7 +550,9 @@ public sealed class WorkflowApprovalOutcomeApplier
             }
 
             record.UpdatedAt = DateTimeOffset.UtcNow;
-            if (outcome == WorkflowApprovalOutcomes.Approved && await target.RefusalAsync(record, completedBy!, ct) is { } refused)
+            if (outcome == WorkflowApprovalOutcomes.Approved
+                && (await target.RefusalAsync(record, completedBy!, ct)
+                    ?? (target.ApplyEffectsAsync is null ? null : await target.ApplyEffectsAsync(record, completedBy!, completedAt, ct))) is { } refused)
             {
                 // The MDM side refuses the approval: back to draft, the reason on the round.
                 round.ReasonCode = refused;

@@ -747,6 +747,9 @@
   <data name="Nav.Page.BRANDS" xml:space="preserve">
     <value>品牌</value>
   </data>
+  <data name="Nav.Page.COMPETITORPRODUCTS" xml:space="preserve">
+    <value>竞品</value>
+  </data>
   <data name="PlannedVisitsMenu" xml:space="preserve"><value>计划访问</value></data>
   <data name="Nav.Page.PLANNEDVISITS" xml:space="preserve"><value>计划访问</value></data>
   <data name="Nav.Domain.PORTFOLIODELIVERY" xml:space="preserve">

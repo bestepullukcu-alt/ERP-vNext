@@ -448,6 +448,13 @@ public static class DataSeeder
             new("mdm", "global-products", "read", "Read Global Product", "Permission to view global product master lists and details", moduleOverride: "product-item-sku-master"),
             new("mdm", "global-products", "create", "Create Global Product", "Permission to create global product master records", moduleOverride: "product-item-sku-master"),
 
+            // WP-VW-W4 (W4-BE-b2) — competitor products (MOD-0290, a separate record from our Global Products; the MDM page
+            // COMPETITOR_PRODUCTS of product-item-sku-master). Scope=Tenant (product-item-sku-master ∉ PlatformAdminModules).
+            // No delete key: a record ends inactive, merged or rejected. Catalog only — the grant is the W4-CFG script.
+            new("mdm", "competitor-products", "read", "Read Competitor Product", "Permission to view competitor products (list, details, the visit report short list)", moduleOverride: "product-item-sku-master"),
+            new("mdm", "competitor-products", "manage", "Manage Competitor Product", "Permission to create and edit competitor products (country prices and reimbursement included), deactivate and merge them, and prepare the decision on a rep's proposal", moduleOverride: "product-item-sku-master"),
+            new("mdm", "competitor-products", "propose", "Propose Competitor Product", "Permission to propose a competitor product that is not in the list from a visit report (usable at once by the proposer; decided by the marketing / medical team)", moduleOverride: "product-item-sku-master"),
+
             // MOD-0149 — Customer 360 / Account Hierarchy (Commercial Suite / CRM core, Diten.CrmService).
             // Tenant-scoped keys (module code "crm-account" is not a PlatformAdmin module → Scope = Tenant).
             // PKS-001 nested keys are canonical; crm.account.360.read is NOT used (crm.account.overview.read instead).

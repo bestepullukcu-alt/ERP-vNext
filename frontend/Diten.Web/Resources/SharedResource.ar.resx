@@ -747,6 +747,9 @@
   <data name="Nav.Page.BRANDS" xml:space="preserve">
     <value>العلامات التجارية</value>
   </data>
+  <data name="Nav.Page.COMPETITORPRODUCTS" xml:space="preserve">
+    <value>منتجات المنافسين</value>
+  </data>
   <data name="PlannedVisitsMenu" xml:space="preserve"><value>الزيارات المخططة</value></data>
   <data name="Nav.Page.PLANNEDVISITS" xml:space="preserve"><value>الزيارات المخططة</value></data>
   <data name="Nav.Domain.PORTFOLIODELIVERY" xml:space="preserve">

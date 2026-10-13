@@ -108,7 +108,10 @@ public sealed class BusinessReferenceDataConsumableSetsOptions
         "crm-pharmacy-stock-level",
         "crm-shelf-position",
         "crm-sales-trend",
-        "crm-recommendation-level"
+        "crm-recommendation-level",
+        // WP-VW-W4 (W4-BE-b2) — the competitor products' reimbursement status (MdmService validates every country price row;
+        // the competitor page and the report card read).
+        "mdm-reimbursement-status"
     ];
 
     /// <summary>The configured list when it names at least one set, otherwise the code default.</summary>

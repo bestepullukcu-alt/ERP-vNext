@@ -43,6 +43,9 @@ public static class DependencyInjection
         services.AddScoped<Application.Features.Approvals.WorkflowApprovalOutcomeApplier>();
         services.AddScoped<Application.Features.Approvals.WorkflowApprovalFlow>();
         services.AddScoped<Application.Features.Approvals.WorkflowApprovalReconciler>();
+        // WP-VW-W4 (W4-BE-b2) — the reimbursement status set read (Gateway, caller's token) and the permission question.
+        services.AddHttpClient<IMdmReferenceValueReader, GatewayReferenceValueReader>(client => client.Timeout = TimeSpan.FromSeconds(15));
+        services.AddScoped<IMdmPermissionContext, MdmPermissionContext>();
         AddWorkflowOutcomeEventing(services, configuration);
 
         return services;

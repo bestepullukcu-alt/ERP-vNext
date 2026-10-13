@@ -748,6 +748,9 @@
   <data name="Nav.Page.BRANDS" xml:space="preserve">
     <value>Marcas</value>
   </data>
+  <data name="Nav.Page.COMPETITORPRODUCTS" xml:space="preserve">
+    <value>Productos competidores</value>
+  </data>
   <data name="PlannedVisitsMenu" xml:space="preserve"><value>Visitas planificadas</value></data>
   <data name="Nav.Page.PLANNEDVISITS" xml:space="preserve"><value>Visitas planificadas</value></data>
   <data name="Nav.Domain.PORTFOLIODELIVERY" xml:space="preserve">
