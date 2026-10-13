@@ -8398,6 +8398,27 @@ Gelecek regresyon riski: 🟡 (gerçek açıksa canlıda çift sayaç).
 
 ---
 
+### BL-627
+
+**SMTP'de tek bir hatalı alıcı adresi bütün iletiyi reddettiriyor; yeniden deneme hakları biterse Cc / Bcc hiç gitmiyor**
+
+DURUM: AÇIK · SAHİP: CT (Bildirimler) + sahip (ürün kararı) · BULAN: WP-EMAIL-LANG-01 FIX3 raporu (E-posta sohbeti, 2026-10-13) · KAYIT: 2026-10-13 · 🟡
+
+Ölçüm (`b11ec563b`):
+- MailKit varsayılanıyla SMTP sunucusu tek bir geçersiz "Kime" adresi yüzünden iletinin tamamını reddediyor; kod bunu ezmiyor.
+- Dil grubu yeniden denemeye düşer ve denemeler tükenirse, o satırla kalan Cc / Bcc alıcılarına ileti hiç gitmez.
+- Operatör notu eklendi (post-deploy-steps §5: "Partial > 0 → elle bak").
+
+Yapılacak, ürün kararı:
+- (a) hatalı alıcıyı ayıklayıp kalanlara gönderme (alıcı başına RCPT sonucu);
+- (b) her alıcıya ayrı ileti;
+- (c) bugünkü gibi + uyarı.
+SAP / Oracle bildirim servisleri genellikle alıcı başına teslim kaydı tutar. Orta iş.
+
+Gelecek regresyon riski: 🟡 yazım hatalı tek bir adres bir grubun bütün bildirimini düşürebilir.
+
+---
+
 ### BL-626
 
 **İstemci ayırt edilemeyen modda (canlıda `TrustedProxies` boşsa) giriş kotaları atlatılabiliyor ya da tek kovaya düşüyor**
