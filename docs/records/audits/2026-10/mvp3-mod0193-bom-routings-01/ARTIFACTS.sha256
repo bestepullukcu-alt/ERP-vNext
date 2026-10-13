@@ -1,6 +1,7 @@
 # verify from: repository root
-e09b0af5c9296e8779001966c0c936e39da3d324d4605c8dd81c587e256ea2ce  docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/REPORT.md
+b29982696deff0bffacdb1a352674ecb994b355086c814cce18a8474e44a4fa9  docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/REPORT.md
 73e8fa4206eb9150b7e0fdfaa57e93df00619063c3676a7011733da9cbf93c38  docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/evidence/architecture-suite.txt
+6808056da0e8a60af3bc218a23bd0a269d01d4f196e25e376d24da54fa8cd096  docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/evidence/bom-version-event.txt
 5f9acc9b1c3e5d735181e9483136e493f7bc8b1096cbe62c0a0ae8b685321fc3  docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/evidence/dcp002.txt
 5b77e87ab4198b0de56712029b365f2079847d7c98147515c48c0f09fa0fbeec  docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/evidence/gateway-e2e.py
 b9fdf500fac16470065314ca03de10971f27de5bcf71243d3012f0374baf0b0e  docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/evidence/gateway-e2e.txt
@@ -18,3 +19,4 @@ e7a651d981dcd7263f0832c74f4e9a4f45dfea9fbf57afe08c05cfebcd917912  docs/records/a
 15b6e08d3511e965e016144a05212645df573b72265ad0d39e074b7b82c15792  docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/evidence/service-suite.txt
 f9a32814c7b7c88befd81803b4c17fd36c6e243ba7dfd64844b9f7c66919040d  docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/evidence/verify-datatable.txt
 1fd07d6885c39d97c3ac09ec3cbd89a477036004915eda8b771825aedf24ce68  docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/evidence/web-suite.txt
+2d17e9759a8910e732570b5df793abbb8b5ef8d76d5cfe68b77fe1b958f11be8  docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/mvp4-handoff-bom-version-event.md

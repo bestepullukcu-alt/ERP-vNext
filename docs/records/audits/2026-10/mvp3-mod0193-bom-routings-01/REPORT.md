@@ -89,3 +89,16 @@ Internal), its initial admin invited (Development returns a temporary password),
 - UAS-001: the shared `_AccessDenied` partial answers HTTP 200 inside the shell (rule table says 403); same on every page
   using it — not an MVP-3 change. Recorded as **BL-510** (CT, open; record only).
 - Company authority is pack follow-up **F-0193-08**.
+
+## Closure (2026-10-13)
+
+- **G2B accepted** by the product owner (Ali) with conditional waiver W-G2B-0290 (MOD-0290 validation + UoM):
+  `docs/records/decisions/2026-10/mvp3-g2b-bom-structure-gate-owner-decision-01.md`. Pack status → **`done`**.
+- **BOM-version event** (in scope by the same decision): contract v1.2.0, outbox in the BOM transaction, shared
+  publisher → MassTransit/RabbitMQ; broker delivery measured — `evidence/bom-version-event.txt`. Branch
+  `feature/mvp3-bom-version-event`, its own PR. MVP-4 handoff: `mvp4-handoff-bom-version-event.md`.
+- **HTTP product client vs PRODUCT-MASTER contract** (measured, no code change): path and shapes compatible; v1.1
+  `maxItems: 200` not honoured (one request), `lifecycleStatus` ignored, 400 reported as 503, no client tests — all
+  conditions of the waiver (decision record).
+- **MOD-0040** registry/Excel meaning difference recorded as F-0193-09.
+
