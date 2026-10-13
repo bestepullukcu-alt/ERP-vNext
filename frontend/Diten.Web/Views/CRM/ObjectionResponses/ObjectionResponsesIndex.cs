@@ -20,7 +20,7 @@ public sealed class ObjectionResponsesIndex
         "EditTitle", "NewTitle", "SelectProduct", "SelectCategory", "ClaimsSelected", "ClaimsMax", "ClaimsNone",
         "ClaimsPickProduct", "ClaimsUnavailable", "ProductsUnavailable", "CategoriesUnavailable", "PreviewEmptyQuestion",
         "PreviewEmptyAnswer", "SaveDraft", "Saved", "Submitted", "SubmitForApproval", "CancelButton", "UnsavedChanges",
-        "CreatedBy", "LastSaved", "ProductRequired",
+        "CreatedBy", "LastSaved", "ProductRequired", "NotSavedYet",
         // record page
         "PendingLine", "ApprovedNote", "RetiredLine", "DraftReturnedLine", "DraftReturnedReason", "SodHint", "WithdrawButton",
         "ApproveButton", "ReturnToDraft", "RetireButton", "Copy", "EditButton", "ReturnTitle", "ReturnNoteLabel", "ReturnNoteRequired",
@@ -43,6 +43,8 @@ public sealed class ObjectionResponsesIndex
     [
         "PageTitle", "PageGroup", "PageDescription", "EmptyTitle", "EmptyText", "SectionContent",
         "FieldProduct", "FieldCategory", "FieldQuestion", "FieldAnswer", "FieldClaims", "ClaimsHint", "PreviewTitle",
-        "PreviewRemote", "PreviewObjections", "MetaNote", "RecordTitle", "UsagesTitle", "CloseButton"
+        "PreviewRemote", "PreviewObjections", "MetaNote", "RecordTitle", "UsagesTitle", "CloseButton",
+        // WP-VW-W3-FIX (F1) — the A2 example placeholders
+        "QuestionPlaceholder", "AnswerPlaceholder"
     ];
 }

@@ -13,7 +13,9 @@ namespace Diten.CrmService.Application.Features.VisitEvidence;
 public sealed record VisitEvidencePolicyChangeDto(
     DateTimeOffset At, string? By, string Scope, string? Field, string? OldValue, string? NewValue, string Kind);
 
-public sealed record VisitEvidencePolicyHistoryDto(IReadOnlyList<VisitEvidencePolicyChangeDto> Items, long Total, int Page, int PageSize);
+public sealed record VisitEvidencePolicyHistoryDto(IReadOnlyList<VisitEvidencePolicyChangeDto> Items, long Total, int Page, int PageSize,
+    // WP-VW-W3-FIX (F5, additive) — user id ("D") → display name for the page's "by" values.
+    IReadOnlyDictionary<string, string>? DisplayNames = null);
 
 public sealed record EffectiveEvidenceFieldDto(string Field, string Value, string Source, Guid? ExceptionId);
 
@@ -78,15 +80,18 @@ public sealed class VisitEvidencePolicyReadHandlers :
     private readonly IVisitEvidencePolicyResolver _resolver;
     private readonly IVisitEvidenceRepRoster _reps;
     private readonly TimeProvider _clock;
+    private readonly IUserDisplayNameResolver? _names;
 
     public VisitEvidencePolicyReadHandlers(ITenantContext tenant, IVisitEvidencePolicyChangeRepository changes,
-        IVisitEvidencePolicyResolver resolver, IVisitEvidenceRepRoster reps, TimeProvider? clock = null)
+        IVisitEvidencePolicyResolver resolver, IVisitEvidenceRepRoster reps, TimeProvider? clock = null,
+        IUserDisplayNameResolver? names = null)
     {
         _tenant = tenant;
         _changes = changes;
         _resolver = resolver;
         _reps = reps;
         _clock = clock ?? TimeProvider.System;
+        _names = names;
     }
 
     public async Task<Response<VisitEvidencePolicyHistoryDto>> Handle(GetVisitEvidencePolicyHistoryQuery request, CancellationToken ct)
@@ -99,9 +104,10 @@ public sealed class VisitEvidencePolicyReadHandlers :
         var page = Math.Max(1, request.Page ?? 1);
         var size = Math.Clamp(request.PageSize ?? 50, 1, 200);
         var (items, total) = await _changes.ListAsync(tenantId, (page - 1) * size, size, ct);
+        var names = await UserDisplayNames.MapAsync(_names, items.Select(c => c.By), ct);
         return Response<VisitEvidencePolicyHistoryDto>.Success(new VisitEvidencePolicyHistoryDto(
             items.Select(c => new VisitEvidencePolicyChangeDto(c.At, c.By, c.Scope, c.Field, c.OldValue, c.NewValue, c.Kind)).ToList(),
-            total, page, size));
+            total, page, size, names));
     }
 
     public async Task<Response<VisitEvidenceEffectiveDto>> Handle(GetVisitEvidenceEffectiveQuery request, CancellationToken ct)

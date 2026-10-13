@@ -100,7 +100,8 @@ public sealed class ObjectionResponsesController : Controller
         CanReadClaims = Has(ClaimRead),
         CanReadProducts = Has(ProductRead),
         Id = id,
-        ProductId = productId
+        ProductId = productId,
+        MeName = KnowledgePathStudioReview.DisplayNameOf(User)
     };
 
     // ---------------- list (server mode) ----------------

@@ -19,6 +19,8 @@
     const canSubmit = root.dataset.canSubmit === 'true';
     const canReadClaims = root.dataset.canReadClaims === 'true';
     const canReadProducts = root.dataset.canReadProducts === 'true';
+    // WP-VW-W3-FIX (F2) — the session user's name from the server (Razor); a record not saved yet was "created" by them.
+    const meName = (root.dataset.meName || '').trim();
     const $ = id => document.getElementById(id);
 
     const state = {
@@ -89,8 +91,9 @@
     const renderMeta = () => {
         const d = state.dto;
         const names = (d && d.displayNames) || {};
-        $('orMetaCreated').textContent = d ? C.personName(d.createdBy, names, L.UnknownUser) || '—' : '—';
-        $('orMetaSaved').textContent = d ? P.dateTime(d.updatedAt || d.createdAt) || '—' : '—';
+        const meta = C.editorMeta(d, names, meName, L);
+        $('orMetaCreated').textContent = meta.by;
+        $('orMetaSaved').textContent = d ? P.dateTime(d.updatedAt || d.createdAt) || '—' : meta.at;
         const badge = $('orStatusBadge');
         badge.textContent = P.statusLabel(d ? d.status : 'draft');
         const product = $('orProduct');

@@ -135,4 +135,7 @@
   <data name="RecordTitle" xml:space="preserve"><value>İtiraz yanıtı</value></data>
   <data name="UsagesTitle" xml:space="preserve"><value>Kullanıldığı yerler</value></data>
   <data name="CloseButton" xml:space="preserve"><value>Kapat</value></data>
+  <data name="QuestionPlaceholder" xml:space="preserve"><value>ör. Tamsulin ile memnunum, neden değiştireyim?</value></data>
+  <data name="AnswerPlaceholder" xml:space="preserve"><value>Temsilcinin söyleyeceği yanıt. Yalnız onaylı iddialara dayanın.</value></data>
+  <data name="NotSavedYet" xml:space="preserve"><value>Henüz kaydedilmedi</value></data>
 </root>

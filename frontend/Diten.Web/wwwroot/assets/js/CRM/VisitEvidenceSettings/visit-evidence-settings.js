@@ -56,26 +56,22 @@
 
     // ── state ────────────────────────────────────────────────────────────────────────────────────────────────
     const state = {
-        policy: null, original: null, draft: null, reps: [], repNames: {}, history: null,
+        policy: null, original: null, draft: null, reps: [], repNames: {}, people: {}, history: null,
         tab: 'settings', pane: 'form', look: '', effective: null,
         list: null, filter: 'all', current: null, close: null, closeTried: false,
         nx: null, nxTried: false, nxFields: null
     };
 
-    const nameOf = id => {
-        if (!id) { return '—'; }
-        if (me && String(id).toLowerCase() === me.toLowerCase()) { return L.YouLabel || ''; }
-        if (state.repNames[id]) { return state.repNames[id]; }
-        if (/^workflow:/.test(id)) { return L.WorkflowActor || ''; }
-        return String(id).length > 12 ? String(id).slice(0, 8) + '…' : String(id);
-    };
+    // WP-VW-W3-FIX (F5) — CRM's displayNames first (every read carries them), a short id when unresolved.
+    const nameOf = id => C.personLabel(id, state.people, state.repNames, me, L);
+    const absorb = dto => { if (dto && dto.displayNames) { C.mergeNames(state.people, dto.displayNames); } return dto; };
 
     const valueText = (field, value) => { const v = C.valueKey(field, value); return T(v.key, ...v.args); };
 
     // ── the policy ───────────────────────────────────────────────────────────────────────────────────────────
     function loadPolicy() {
         return get('/policy').then(r => {
-            const p = data(r);
+            const p = absorb(data(r));
             if (!p) { const n = el('ve-load-error'); n.textContent = errText(r); show('ve-load-error', true); return; }
             show('ve-load-error', false);
             state.policy = p;
@@ -239,7 +235,7 @@
     // ── C3 — the change history ──────────────────────────────────────────────────────────────────────────────
     function loadHistory() {
         get('/policy/history?page=1&pageSize=100').then(r => {
-            const h = data(r);
+            const h = absorb(data(r));
             state.history = h;
             const rows = C.historyRows(h ? h.items : []);
             el('ve-history-rows').innerHTML = rows.length
@@ -270,7 +266,7 @@
     function loadExceptions() {
         if (!perms.read) { return Promise.resolve(); }
         return get('/exceptions').then(r => {
-            const list = data(r);
+            const list = absorb(data(r));
             if (!list) { return; }
             state.list = list;
             (list.items || []).forEach(x => { if (x.resourceId && x.repDisplayName) { state.repNames[x.resourceId] = x.repDisplayName; } });
@@ -302,7 +298,7 @@
     function openException(id) {
         state.close = null; state.closeTried = false;
         get('/exceptions/' + encodeURIComponent(id)).then(r => {
-            const x = data(r);
+            const x = absorb(data(r));
             if (!x) { toast(errText(r), 'error'); return; }
             state.current = x;
             renderDetail();
@@ -348,7 +344,7 @@
         const path = '/exceptions/' + encodeURIComponent(x.id);
         const done = (r, toastKey) => {
             if (!r.ok) { renderDetail(errText(r)); return; }
-            state.current = data(r) || x;
+            state.current = absorb(data(r)) || x;
             state.close = null; state.closeTried = false;
             toast(L[toastKey] || '');
             renderDetail();

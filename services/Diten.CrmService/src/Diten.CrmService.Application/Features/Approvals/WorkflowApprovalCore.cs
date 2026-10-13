@@ -98,15 +98,33 @@ public static class WorkflowApprovalRules
     public static Response<T> Conflict<T>() => Response<T>.Fail("The record was modified by another writer; reload and retry.", 409);
 }
 
+/// <summary>
+/// WP-VW-W3-FIX (F3) — the Work Center records its own action as a machine reason code (<c>WORKCENTER_APPROVE</c>,
+/// <c>WORKCENTER_REJECT</c>, … — Platform <c>WorkflowApprovalWorkItemActionDispatcher</c>). Such a code is not a person's
+/// note: it is neither stored as a round's reason / a decision's comment nor shown. A real comment (a return note) and the
+/// CRM's own refusal codes (<c>…_sod</c>, <c>…_overlap</c>, <c>objection_claim_not_approved</c>) are kept.
+/// </summary>
+public static class WorkflowApprovalNotes
+{
+    private static readonly System.Text.RegularExpressions.Regex MachineCode =
+        new("^WORKCENTER_[A-Z_]+$", System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+
+    public static bool IsMachineCode(string? value) => value is not null && MachineCode.IsMatch(value.Trim());
+
+    /// <summary>The value, or null when it is a Work Center machine code.</summary>
+    public static string? Clean(string? value) => IsMachineCode(value) ? null : value;
+}
+
 /// <summary>A review round / a decision on the wire.</summary>
 public sealed record ApprovalRoundDto(
     int RoundNo, string? SubmittedBy, DateTimeOffset SubmittedAt, string? Outcome, DateTimeOffset? ClosedAt,
     string? CompletedBy, string? ReasonCode, string? TemplateCode)
 {
+    // A machine code stored before W3-FIX is filtered on the read too.
     public static IReadOnlyList<ApprovalRoundDto> From(IWorkflowApprovable record)
         => record.ReviewRounds.OrderBy(r => r.RoundNo)
             .Select(r => new ApprovalRoundDto(r.RoundNo, r.SubmittedBy, r.SubmittedAt, r.Outcome, r.ClosedAt, r.CompletedBy,
-                r.ReasonCode, r.TemplateCode))
+                WorkflowApprovalNotes.Clean(r.ReasonCode), r.TemplateCode))
             .ToList();
 }
 
@@ -114,7 +132,7 @@ public sealed record ApprovalDecisionDto(int RoundNo, string? By, string Outcome
 {
     public static IReadOnlyList<ApprovalDecisionDto> From(IWorkflowApprovable record)
         => record.Decisions.OrderBy(d => d.RoundNo).ThenBy(d => d.At)
-            .Select(d => new ApprovalDecisionDto(d.RoundNo, d.By, d.Outcome, d.Comment, d.At))
+            .Select(d => new ApprovalDecisionDto(d.RoundNo, d.By, d.Outcome, WorkflowApprovalNotes.Clean(d.Comment), d.At))
             .ToList();
 }
 
@@ -370,6 +388,7 @@ public sealed class WorkflowApprovalFlow
             {
                 var history = await _decisions.GetInstanceHistoryAsync(round.WorkflowInstanceId, ct);
                 var entry = history?.LastOrDefault(h => !string.IsNullOrWhiteSpace(h.Comment)
+                                                        && !WorkflowApprovalNotes.IsMachineCode(h.Comment)
                                                         && h.Action.Contains("reject", StringComparison.OrdinalIgnoreCase));
                 if (entry is not null)
                 {
@@ -511,7 +530,7 @@ public sealed class WorkflowApprovalOutcomeApplier
             round.Outcome = outcome;
             round.ClosedAt = completedAt;
             round.CompletedBy = completedBy;
-            round.ReasonCode = reasonCode;
+            round.ReasonCode = WorkflowApprovalNotes.Clean(reasonCode);
             var decision = outcome switch
             {
                 ClaimReviewOutcomes.Approved => WorkflowApprovalDecisions.Approve,

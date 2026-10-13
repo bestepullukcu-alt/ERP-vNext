@@ -135,4 +135,7 @@
   <data name="RecordTitle" xml:space="preserve"><value>الرد على الاعتراض</value></data>
   <data name="UsagesTitle" xml:space="preserve"><value>أماكن الاستخدام</value></data>
   <data name="CloseButton" xml:space="preserve"><value>إغلاق</value></data>
+  <data name="QuestionPlaceholder" xml:space="preserve"><value>مثال: أنا راضٍ عن Tamsulin، فلماذا أغيّره؟</value></data>
+  <data name="AnswerPlaceholder" xml:space="preserve"><value>الرد الذي سيقدمه المندوب. اعتمد على الادعاءات المعتمدة فقط.</value></data>
+  <data name="NotSavedYet" xml:space="preserve"><value>لم يُحفظ بعد</value></data>
 </root>

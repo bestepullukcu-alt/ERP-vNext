@@ -135,4 +135,7 @@
   <data name="RecordTitle" xml:space="preserve"><value>Objection response</value></data>
   <data name="UsagesTitle" xml:space="preserve"><value>Where it is used</value></data>
   <data name="CloseButton" xml:space="preserve"><value>Close</value></data>
+  <data name="QuestionPlaceholder" xml:space="preserve"><value>e.g. I'm happy with Tamsulin, why should I switch?</value></data>
+  <data name="AnswerPlaceholder" xml:space="preserve"><value>The answer the rep will give. Rely on approved claims only.</value></data>
+  <data name="NotSavedYet" xml:space="preserve"><value>Not saved yet</value></data>
 </root>

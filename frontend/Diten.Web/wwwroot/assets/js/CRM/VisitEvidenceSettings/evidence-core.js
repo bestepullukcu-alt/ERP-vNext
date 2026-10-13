@@ -267,13 +267,21 @@
     };
 
     /** The detail's history, oldest first: { key, by, at, note }. */
+    /**
+     * WP-VW-W3-FIX (F3) — a Work Center machine reason code (WORKCENTER_APPROVE, …) is not a note: CRM no longer stores /
+     * returns one; a value an older record still carries is dropped here. A real comment (a return note) stays.
+     */
+    const MACHINE_CODE = /^WORKCENTER_[A-Z_]+$/;
+    const isMachineCode = v => typeof v === 'string' && MACHINE_CODE.test(v.trim());
+    const note = v => (v == null || v === '' || isMachineCode(v) ? null : v);
+
     const timeline = x => {
         if (!x) { return []; }
         const out = [{ key: 'TlCreated', by: x.createdBy, at: x.createdAt, note: null }];
         (x.reviewRounds || []).forEach(r => {
             out.push({ key: 'TlSubmitted', by: r.submittedBy, at: r.submittedAt, note: null });
             const d = (x.decisions || []).find(dd => dd.roundNo === r.roundNo);
-            if (d) { out.push({ key: d.outcome === 'approve' ? 'TlApproved' : 'TlReturned', by: d.by, at: d.at, note: d.comment || null }); }
+            if (d) { out.push({ key: d.outcome === 'approve' ? 'TlApproved' : 'TlReturned', by: d.by, at: d.at, note: note(d.comment) }); }
             else if (r.outcome === 'cancelled') { out.push({ key: 'TlWithdrawn', by: r.completedBy, at: r.closedAt, note: null }); }
             else if (r.outcome === 'timed-out') { out.push({ key: 'TlTimedOut', by: null, at: r.closedAt, note: null }); }
             if (r.reasonCode && /_sod$|_overlap$/.test(r.reasonCode)) { out.push({ key: 'TlRefused_' + r.reasonCode, by: null, at: r.closedAt, note: null }); }
@@ -305,6 +313,29 @@
         return { field: f, value: typed(f, row.value), source: row.source || 'tenant', exceptionId: row.exceptionId || null };
     });
 
+    // ── people (WP-VW-W3-FIX F5) ─────────────────────────────────────────────────────────────────────────────
+    /** Adds a DTO's displayNames (id "D" → name; CRM resolves them) to the page's map; ids compare case-insensitively. */
+    const mergeNames = (target, displayNames) => {
+        const out = target || {};
+        Object.keys(displayNames || {}).forEach(k => { if (displayNames[k]) { out[String(k).toLowerCase()] = displayNames[k]; } });
+        return out;
+    };
+
+    /**
+     * Who a user id is on the screen: the name CRM resolved (also for the session user), then the rep roster's name, then
+     * "Siz" for the session user, the workflow actor label, else a short id (never a guessed name).
+     */
+    const personLabel = (id, people, repNames, me, labels) => {
+        const T = labels || {};
+        if (!id) { return '—'; }
+        const key = String(id).toLowerCase();
+        if (people && people[key]) { return people[key]; }
+        if (repNames && repNames[id]) { return repNames[id]; }
+        if (me && key === String(me).toLowerCase()) { return T.YouLabel || ''; }
+        if (/^workflow:/.test(id)) { return T.WorkflowActor || ''; }
+        return String(id).length > 12 ? String(id).slice(0, 8) + '…' : String(id);
+    };
+
     // ── refusals ───────────────────────────────────────────────────────────────────────────────────────────
     const ERROR_CODES = [
         'visit_evidence_exception_invalid', 'visit_evidence_exception_overlap', 'visit_evidence_exception_rep_unknown',
@@ -329,6 +360,6 @@
         FIELDS, GROUPS, RANGES, OPTIONS, KIND, draftOf, changes, fieldErrors, putBody, valueKey, preview,
         RULES, RULE_FIELD, MAX_DAYS, MAX_REASON, daysInclusive, todayUtc, exceptionErrors, ruleState, chipOf,
         FILTERS, filterExceptions, filterCount, tabBadge, isOwn, actionsOf, timeline, historyRows, typed, effectiveRows,
-        ERROR_CODES, errorKey
+        ERROR_CODES, errorKey, isMachineCode, mergeNames, personLabel
     };
 }));

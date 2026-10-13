@@ -28,7 +28,8 @@
      data-product-id="@(Model.ProductId?.ToString() ?? string.Empty)"
      data-can-submit="@(Model.CanSubmit ? "true" : "false")"
      data-can-read-claims="@(Model.CanReadClaims ? "true" : "false")"
-     data-can-read-products="@(Model.CanReadProducts ? "true" : "false")">
+     data-can-read-products="@(Model.CanReadProducts ? "true" : "false")"
+     data-me-name="@Model.MeName">
 
     <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-3">
         <div>
@@ -67,14 +68,14 @@
                                 <label class="form-label text-uppercase small fw-semibold" for="orQuestion">@Localizer["FieldQuestion"] <span class="text-danger">*</span></label>
                                 <small class="text-muted" id="orQuestionCount"></small>
                             </div>
-                            <textarea id="orQuestion" class="form-control" rows="2" maxlength="500"></textarea>
+                            <textarea id="orQuestion" class="form-control" rows="2" maxlength="500" placeholder="@Localizer["QuestionPlaceholder"]"></textarea>
                         </div>
                         <div class="col-12">
                             <div class="d-flex justify-content-between">
                                 <label class="form-label text-uppercase small fw-semibold" for="orAnswer">@Localizer["FieldAnswer"] <span class="text-danger">*</span></label>
                                 <small class="text-muted" id="orAnswerCount"></small>
                             </div>
-                            <textarea id="orAnswer" class="form-control" rows="5" maxlength="4000"></textarea>
+                            <textarea id="orAnswer" class="form-control" rows="5" maxlength="4000" placeholder="@Localizer["AnswerPlaceholder"]"></textarea>
                         </div>
                         <div class="col-12">
                             <div class="d-flex justify-content-between">

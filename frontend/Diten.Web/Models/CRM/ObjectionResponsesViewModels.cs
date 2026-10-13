@@ -27,4 +27,7 @@ public sealed class ObjectionResponsesPageViewModel
 
     /// <summary>"new": a product pre-selected by the Studio's "create in the library" link.</summary>
     public Guid? ProductId { get; set; }
+
+    /// <summary>WP-VW-W3-FIX (F2) — the session user's display name: the "Oluşturan" of a record not saved yet.</summary>
+    public string MeName { get; set; } = string.Empty;
 }

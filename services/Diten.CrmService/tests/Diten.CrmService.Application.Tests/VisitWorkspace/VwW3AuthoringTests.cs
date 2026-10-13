@@ -463,6 +463,101 @@ public sealed class VwW3AuthoringTests
         Assert.Equal((VisitEvidenceExceptionStatuses.EndedEarly, w.Today, (string?)null), (ended.Status, ended.EndDate, ended.Phase));
     }
 
+    // ═══ 4 · W3-FIX (F3 machine reason codes, F5 display names) ═══════════════════════════════════════════
+
+    [Fact]
+    public async Task F3_a_work_center_machine_code_is_not_stored_as_a_reason_nor_shown_as_a_note_but_a_real_comment_and_a_refusal_stay()
+    {
+        Assert.True(WorkflowApprovalNotes.IsMachineCode("WORKCENTER_APPROVE"));
+        Assert.True(WorkflowApprovalNotes.IsMachineCode(" WORKCENTER_REQUEST_INFO "));
+        Assert.False(WorkflowApprovalNotes.IsMachineCode("workcenter_approve"));
+        Assert.False(WorkflowApprovalNotes.IsMachineCode("WORKCENTER_ approve"));
+        Assert.False(WorkflowApprovalNotes.IsMachineCode(ObjectionResponseErrors.SeparationOfDuties));
+        Assert.False(WorkflowApprovalNotes.IsMachineCode("Kaynak belge eksik."));
+
+        // the outcome applier: an approval by someone else, reason WORKCENTER_APPROVE → nothing stored
+        var w = new World();
+        var id = (await w.CreateException(Rep, w.Today, w.Today.AddDays(2), VisitEvidenceExceptionRules.LocationInfo)).Data!.Id;
+        await w.Exceptions(Submitter).Handle(new SubmitVisitEvidenceExceptionCommand(id), default);
+        var round = w.ExceptionsRepo.Items.Single().ReviewRounds.Single();
+        await w.Applier.ApplyAsync(Tenant, "crm.visit-evidence-exception", id, round.WorkflowInstanceId, ClaimReviewOutcomes.Approved,
+            "sales-ops-1", "WORKCENTER_APPROVE", DateTimeOffset.UtcNow, default);
+        Assert.Equal(VisitEvidenceExceptionStatuses.Approved, w.ExceptionsRepo.Items.Single().Status);
+        Assert.Null(round.ReasonCode);
+
+        // the CRM's own refusal code is still stored (SoD) even when the Work Center sent its machine code
+        var o = new World();
+        var oid = await o.SubmittedAsync();
+        var oround = o.Objections.Items.Single().ReviewRounds.Single();
+        await o.Applier.ApplyAsync(Tenant, "crm.objection-response", oid, oround.WorkflowInstanceId, ClaimReviewOutcomes.Approved,
+            Author, "WORKCENTER_APPROVE", DateTimeOffset.UtcNow, default);
+        Assert.Equal(ObjectionResponseErrors.SeparationOfDuties, oround.ReasonCode);
+
+        // a record written before W3-FIX: the read hides the stored machine code, keeps a real comment
+        var record = o.Objections.Items.Single();
+        oround.ReasonCode = "WORKCENTER_APPROVE";
+        record.Decisions.Clear();
+        record.Decisions.Add(new RegulatoryTextDecision { RoundNo = 1, By = Reviewer, Outcome = WorkflowApprovalDecisions.Approve, Comment = "WORKCENTER_APPROVE", At = DateTimeOffset.UtcNow });
+        record.Decisions.Add(new RegulatoryTextDecision { RoundNo = 2, By = Reviewer, Outcome = WorkflowApprovalDecisions.Return, Comment = "Kaynak belge eksik.", At = DateTimeOffset.UtcNow });
+        var dto = ObjectionResponseDto.From(record);
+        Assert.Null(dto.ReviewRounds!.Single().ReasonCode);
+        Assert.Equal(new[] { (string?)null, "Kaynak belge eksik." }, dto.Decisions!.Select(d => d.Comment));
+    }
+
+    [Fact]
+    public async Task F3_a_work_center_return_takes_the_reviewers_comment_from_the_history_never_the_machine_code()
+    {
+        var w = new World();
+        var id = (await w.CreateException(Rep, w.Today, w.Today.AddDays(2), VisitEvidenceExceptionRules.LocationInfo)).Data!.Id;
+        await w.Exceptions(Submitter).Handle(new SubmitVisitEvidenceExceptionCommand(id), default);
+        var round = w.ExceptionsRepo.Items.Single().ReviewRounds.Single();
+        await w.Applier.ApplyAsync(Tenant, "crm.visit-evidence-exception", id, round.WorkflowInstanceId, ClaimReviewOutcomes.Rejected,
+            "sales-ops-1", "WORKCENTER_REJECT", DateTimeOffset.UtcNow, default);
+        Assert.Null(round.ReasonCode);
+
+        var at = DateTimeOffset.UtcNow;
+        w.Decisions.History.Add(new WorkflowHistoryEntry(1, "task_rejected", "sales-ops-1", null, "sales_ops", null, "Tarih aralığı fazla uzun.", "WORKCENTER_REJECT", at));
+        w.Decisions.History.Add(new WorkflowHistoryEntry(2, "task_rejected", "sales-ops-1", null, "sales_ops", null, "WORKCENTER_REJECT", "WORKCENTER_REJECT", at.AddSeconds(1)));
+        var read = (await w.ExceptionQueries().Handle(new GetVisitEvidenceExceptionQuery(id), default)).Data!;
+        Assert.Equal(VisitEvidenceExceptionStatuses.Draft, read.Status);
+        Assert.Equal("Tarih aralığı fazla uzun.", read.Decisions.Single().Comment);
+        Assert.Null(read.ReviewRounds.Single().ReasonCode);
+    }
+
+    [Fact]
+    public async Task F5_the_exception_list_detail_history_and_policy_carry_display_names_and_an_unknown_id_stays_out()
+    {
+        Guid creator = Guid.NewGuid(), approver = Guid.NewGuid(), stranger = Guid.NewGuid(), admin = Guid.NewGuid();
+        var names = new PeopleNames(new Dictionary<Guid, string> { [creator] = "Ali Yönetici", [approver] = "Sema Onaylayan", [admin] = "Admin User" });
+
+        var w = new World();
+        var e = Exc(Rep, VisitEvidenceExceptionStatuses.Approved, w.Today, w.Today.AddDays(2), VisitEvidenceExceptionRules.LocationInfo);
+        e.CreatedBy = creator.ToString("D");
+        e.ApprovedBy = approver.ToString("D");
+        e.UpdatedBy = stranger.ToString("D");
+        w.ExceptionsRepo.Items.Add(e);
+
+        var list = (await w.ExceptionQueries(names).Handle(new ListVisitEvidenceExceptionsQuery(), default)).Data!;
+        Assert.Equal("Ali Yönetici", list.DisplayNames![creator.ToString("D")]);
+        Assert.Equal("Sema Onaylayan", list.DisplayNames[approver.ToString("D")]);
+        Assert.False(list.DisplayNames.ContainsKey(stranger.ToString("D")));    // unresolved → absent, the screen shows a short id
+        Assert.Single(names.Calls);                                            // ONE bulk call for the page
+
+        var detail = (await w.ExceptionQueries(names).Handle(new GetVisitEvidenceExceptionQuery(e.Id), default)).Data!;
+        Assert.Equal("Sema Onaylayan", detail.DisplayNames![approver.ToString("D")]);
+        Assert.Null((await w.ExceptionQueries().Handle(new GetVisitEvidenceExceptionQuery(e.Id), default)).Data!.DisplayNames); // no resolver → null
+
+        var policies = new FakeVisitEvidencePolicyRepository();
+        var changes = new ChangeRepo();
+        await new UpdateVisitEvidencePolicyHandler(Ctx(), new Actor(admin.ToString("D")), policies, changes)
+            .Handle(new UpdateVisitEvidencePolicyCommand(new VisitEvidencePolicyInput("info", null, null, null, null, null, null, null, null)), default);
+        var history = (await new VisitEvidencePolicyReadHandlers(Ctx(), changes, new VisitEvidencePolicyResolver(policies), new Roster(), names: names)
+            .Handle(new GetVisitEvidencePolicyHistoryQuery(), default)).Data!;
+        Assert.Equal("Admin User", history.DisplayNames![admin.ToString("D")]);
+        var get = (await new GetVisitEvidencePolicyHandler(Ctx(), policies, new Roster(), names).Handle(new GetVisitEvidencePolicyQuery(), default)).Data!;
+        Assert.Equal("Admin User", get.DisplayNames![get.UpdatedBy!]);
+    }
+
     // ═══ helpers ═════════════════════════════════════════════════════════════════════════════════════════
 
     private static TenantContext Ctx()
@@ -565,11 +660,12 @@ public sealed class VwW3AuthoringTests
             return o;
         }
 
-        private VisitEvidenceExceptionService Service(string actor) => new(this, new Actor(actor), ExceptionsRepo, Flow(actor), Reconciler);
+        private VisitEvidenceExceptionService Service(string actor, IUserDisplayNameResolver? names = null)
+            => new(this, new Actor(actor), ExceptionsRepo, Flow(actor), Reconciler, names: names);
 
         public VisitEvidenceExceptionCommandHandlers Exceptions(string actor) => new(Service(actor), new Roster(), Applier);
 
-        public VisitEvidenceExceptionQueryHandlers ExceptionQueries() => new(Service(Reviewer));
+        public VisitEvidenceExceptionQueryHandlers ExceptionQueries(IUserDisplayNameResolver? names = null) => new(Service(Reviewer, names));
 
         public Task<Common.Models.Response<VisitEvidenceExceptionDto>> CreateException(string rep, DateOnly start, DateOnly end, params string[] rules)
             => Exceptions(Author).Handle(new CreateVisitEvidenceExceptionCommand(new VisitEvidenceExceptionInput(rep, rules, start, end, "Konum servisi arızalı")), default);
@@ -597,6 +693,19 @@ public sealed class VwW3AuthoringTests
             => System.Threading.Tasks.Task.FromResult<IReadOnlyList<EvidenceRepDto>>(new[] { new EvidenceRepDto(Rep, "Ayşe Temsilci"), new EvidenceRepDto(OtherRep, "Mehmet Temsilci") });
     }
 
+    /// <summary>Resolves the ids it knows; the others are absent (the production contract — never fabricated).</summary>
+    private sealed class PeopleNames(Dictionary<Guid, string> known) : IUserDisplayNameResolver
+    {
+        public List<IReadOnlyCollection<Guid>> Calls { get; } = new();
+
+        public Task<IReadOnlyDictionary<Guid, string>> ResolveAsync(IReadOnlyCollection<Guid> userIds, CancellationToken cancellationToken = default)
+        {
+            Calls.Add(userIds);
+            return System.Threading.Tasks.Task.FromResult<IReadOnlyDictionary<Guid, string>>(
+                userIds.Where(known.ContainsKey).ToDictionary(id => id, id => known[id]));
+        }
+    }
+
     private sealed class Inbox : ICrmEventInboxRepository
     {
         private readonly HashSet<Guid> _seen = new();
@@ -620,8 +729,10 @@ public sealed class VwW3AuthoringTests
             return System.Threading.Tasks.Task.FromResult(new WorkflowDecisionResult(ClaimWorkflowCallOutcome.Ok, null));
         }
 
+        public List<WorkflowHistoryEntry> History { get; } = new();
+
         public Task<IReadOnlyList<WorkflowHistoryEntry>?> GetInstanceHistoryAsync(Guid workflowInstanceId, CancellationToken ct)
-            => System.Threading.Tasks.Task.FromResult<IReadOnlyList<WorkflowHistoryEntry>?>(Array.Empty<WorkflowHistoryEntry>());
+            => System.Threading.Tasks.Task.FromResult<IReadOnlyList<WorkflowHistoryEntry>?>(History.ToList());
     }
 
     private sealed class ObjectionRepo : IObjectionResponseRepository

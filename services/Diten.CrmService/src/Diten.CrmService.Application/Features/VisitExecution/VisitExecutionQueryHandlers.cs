@@ -243,12 +243,15 @@ public sealed class GetVisitEvidencePolicyHandler : IRequestHandler<GetVisitEvid
     private readonly ITenantContext _tenant;
     private readonly IVisitEvidencePolicyRepository _policies;
     private readonly IVisitEvidenceRepRoster? _reps;
+    private readonly IUserDisplayNameResolver? _names;
 
-    public GetVisitEvidencePolicyHandler(ITenantContext tenant, IVisitEvidencePolicyRepository policies, IVisitEvidenceRepRoster? reps = null)
+    public GetVisitEvidencePolicyHandler(ITenantContext tenant, IVisitEvidencePolicyRepository policies, IVisitEvidenceRepRoster? reps = null,
+        IUserDisplayNameResolver? names = null)
     {
         _tenant = tenant;
         _policies = policies;
         _reps = reps;
+        _names = names;
     }
 
     public async Task<Response<VisitEvidencePolicyDto>> Handle(GetVisitEvidencePolicyQuery request, CancellationToken cancellationToken)
@@ -261,6 +264,7 @@ public sealed class GetVisitEvidencePolicyHandler : IRequestHandler<GetVisitEvid
         var (policy, isDefault) = await VisitExecutionAccess.PolicyAsync(_policies, tenantId, cancellationToken);
         // WP-VW-W3 (W3-BE-c) — how many reps it applies to (active primary territory assignment).
         int? repCount = _reps is null ? null : (await _reps.ListAsync(tenantId, DateTimeOffset.UtcNow, cancellationToken)).Count;
-        return Response<VisitEvidencePolicyDto>.Success(VisitExecutionRules.ToDto(policy, isDefault) with { RepCount = repCount });
+        var names = await UserDisplayNames.MapAsync(_names, new[] { policy.UpdatedBy }, cancellationToken);
+        return Response<VisitEvidencePolicyDto>.Success(VisitExecutionRules.ToDto(policy, isDefault) with { RepCount = repCount, DisplayNames = names });
     }
 }

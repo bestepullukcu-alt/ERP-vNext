@@ -135,4 +135,7 @@
   <data name="RecordTitle" xml:space="preserve"><value>异议回应</value></data>
   <data name="UsagesTitle" xml:space="preserve"><value>使用位置</value></data>
   <data name="CloseButton" xml:space="preserve"><value>关闭</value></data>
+  <data name="QuestionPlaceholder" xml:space="preserve"><value>例如：我用 Tamsulin 很满意，为什么要换？</value></data>
+  <data name="AnswerPlaceholder" xml:space="preserve"><value>代表将给出的回应。仅依据已批准的声明。</value></data>
+  <data name="NotSavedYet" xml:space="preserve"><value>尚未保存</value></data>
 </root>

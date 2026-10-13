@@ -135,4 +135,7 @@
   <data name="RecordTitle" xml:space="preserve"><value>Réponse à une objection</value></data>
   <data name="UsagesTitle" xml:space="preserve"><value>Où elle est utilisée</value></data>
   <data name="CloseButton" xml:space="preserve"><value>Fermer</value></data>
+  <data name="QuestionPlaceholder" xml:space="preserve"><value>p. ex. Je suis satisfait de Tamsulin, pourquoi changer ?</value></data>
+  <data name="AnswerPlaceholder" xml:space="preserve"><value>La réponse que le délégué donnera. Appuyez-vous uniquement sur des allégations approuvées.</value></data>
+  <data name="NotSavedYet" xml:space="preserve"><value>Pas encore enregistré</value></data>
 </root>

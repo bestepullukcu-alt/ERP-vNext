@@ -135,4 +135,7 @@
   <data name="RecordTitle" xml:space="preserve"><value>Ответ на возражение</value></data>
   <data name="UsagesTitle" xml:space="preserve"><value>Где используется</value></data>
   <data name="CloseButton" xml:space="preserve"><value>Закрыть</value></data>
+  <data name="QuestionPlaceholder" xml:space="preserve"><value>напр. Меня устраивает Tamsulin, зачем менять?</value></data>
+  <data name="AnswerPlaceholder" xml:space="preserve"><value>Ответ, который даст представитель. Опирайтесь только на утверждённые утверждения.</value></data>
+  <data name="NotSavedYet" xml:space="preserve"><value>Ещё не сохранено</value></data>
 </root>

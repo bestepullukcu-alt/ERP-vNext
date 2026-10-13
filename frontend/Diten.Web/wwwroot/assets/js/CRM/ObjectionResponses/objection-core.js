@@ -132,6 +132,15 @@
         return { text: `${n} / ${max}`, over: n > max };
     };
 
+    /**
+     * WP-VW-W3-FIX (F3) — a Work Center machine reason code (WORKCENTER_APPROVE, WORKCENTER_REJECT, …) is not a note:
+     * CRM no longer stores / returns one, and the screen drops one an older record still carries. A real comment and
+     * the CRM refusal codes (…_sod, objection_claim_not_approved) stay.
+     */
+    const MACHINE_CODE = /^WORKCENTER_[A-Z_]+$/;
+    const isMachineCode = v => typeof v === 'string' && MACHINE_CODE.test(v.trim());
+    const note = v => (v == null || isMachineCode(v) ? null : v);
+
     const personName = (id, names, unknown) => {
         if (!id) return unknown || '';
         const map = names || {};
@@ -152,17 +161,26 @@
         return { by: personName(by, names, unknown), at: at || null };
     };
 
+    /** WP-VW-W3-FIX (F2) — the editor's "Oluşturan / Son kayıt": a saved record names its creator; a record not saved
+     *  yet is the session user's (the name comes from the server, never guessed here) and "not saved yet". */
+    const editorMeta = (dto, names, meName, L) => {
+        const T = L || {};
+        if (dto) return { by: personName(dto.createdBy, names, T.UnknownUser) || '—', at: null };
+        return { by: (meName && String(meName).trim()) || '—', at: T.NotSavedYet || '—' };
+    };
+
     const returnNote = dto => {
         if (!dto || dto.status !== 'draft') return null;
         const decisions = ((dto && dto.decisions) || []).slice().sort((a, b) => String(b.at).localeCompare(String(a.at)));
         const last = decisions[0];
         const rounds = (dto.reviewRounds || []).slice().sort((a, b) => b.roundNo - a.roundNo);
         const lastRound = rounds[0];
-        if (lastRound && lastRound.reasonCode && (!last || last.roundNo !== lastRound.roundNo)) {
-            return { kind: 'reason', reasonCode: lastRound.reasonCode, at: lastRound.closedAt || null };
+        const lastReason = lastRound ? note(lastRound.reasonCode) : null;
+        if (lastRound && lastReason && (!last || last.roundNo !== lastRound.roundNo)) {
+            return { kind: 'reason', reasonCode: lastReason, at: lastRound.closedAt || null };
         }
         if (last && String(last.outcome).toLowerCase() !== 'approve' && String(last.outcome).toLowerCase() !== 'approved') {
-            return { kind: 'returned', comment: last.comment || null, by: last.by || null, at: last.at || null, reasonCode: lastRound && lastRound.roundNo === last.roundNo ? lastRound.reasonCode || null : null };
+            return { kind: 'returned', comment: note(last.comment) || null, by: last.by || null, at: last.at || null, reasonCode: lastRound && lastRound.roundNo === last.roundNo ? lastReason : null };
         }
         return null;
     };
@@ -185,13 +203,14 @@
             events.push({ kind: 'submitted', at: r.submittedAt, by: name(r.submittedBy), round: r.roundNo });
             const decided = (dto.decisions || []).some(d => d.roundNo === r.roundNo);
             if (r.closedAt && !decided) {
-                const kind = r.reasonCode ? 'returned' : OUTCOME(r.outcome);
-                events.push({ kind, at: r.closedAt, by: name(r.completedBy), round: r.roundNo, reasonCode: r.reasonCode || null });
+                const reason = note(r.reasonCode);
+                const kind = reason ? 'returned' : OUTCOME(r.outcome);
+                events.push({ kind, at: r.closedAt, by: name(r.completedBy), round: r.roundNo, reasonCode: reason || null });
             }
         });
         (dto.decisions || []).forEach(d => {
             const round = (dto.reviewRounds || []).find(r => r.roundNo === d.roundNo);
-            events.push({ kind: OUTCOME(d.outcome), at: d.at, by: name(d.by), round: d.roundNo, comment: d.comment || null, reasonCode: round && round.reasonCode || null });
+            events.push({ kind: OUTCOME(d.outcome), at: d.at, by: name(d.by), round: d.roundNo, comment: note(d.comment) || null, reasonCode: (round && note(round.reasonCode)) || null });
         });
         if (dto.retiredAt) events.push({ kind: 'retired', at: dto.retiredAt, by: name(dto.retiredBy) });
         return events.filter(e => e.at).sort((a, b) => String(b.at).localeCompare(String(a.at)));
@@ -287,7 +306,7 @@
         MAX_CLAIMS, MAX_QUESTION, MAX_ANSWER, MAX_OBJECTIONS, MAX_KEY_MESSAGE, MAX_TALK_TRACK, MAX_TRANSITION,
         MIN_TARGET, MAX_TARGET, STATUSES, ACTIONS,
         actions, decisionBody, categoryTone, claimOptions, toggleClaim, editBody, counter, personName,
-        pendingLine, returnNote, timeline,
+        pendingLine, editorMeta, returnNote, timeline, isMachineCode,
         presentationBody, validatePresentation, notesFilled, completeness, targetHint,
         objectionOptions, splitLinked, toggleObjection,
         errorText, fmt

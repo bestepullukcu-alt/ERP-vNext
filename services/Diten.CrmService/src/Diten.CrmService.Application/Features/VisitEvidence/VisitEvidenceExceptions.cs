@@ -49,7 +49,9 @@ public sealed record VisitEvidenceExceptionDto(
     IReadOnlyList<ApprovalRoundDto> ReviewRounds,
     IReadOnlyList<ApprovalDecisionDto> Decisions,
     VisitEvidenceExceptionAbilities Abilities,
-    int Version)
+    int Version,
+    // WP-VW-W3-FIX (F5, additive) — user id ("D") → display name for the people on the record (detail read only).
+    IReadOnlyDictionary<string, string>? DisplayNames = null)
 {
     public static VisitEvidenceExceptionDto From(VisitEvidenceException e, DateOnly today, VisitEvidenceExceptionAbilities abilities)
     {
@@ -67,7 +69,9 @@ public sealed record VisitEvidenceExceptionDto(
 public sealed record VisitEvidenceExceptionListDto(
     IReadOnlyList<VisitEvidenceExceptionDto> Items,
     IReadOnlyDictionary<string, int> StatusCounts,
-    IReadOnlyDictionary<string, int> PhaseCounts);
+    IReadOnlyDictionary<string, int> PhaseCounts,
+    // WP-VW-W3-FIX (F5, additive) — user id ("D") → display name for the people on the listed rows (one map).
+    IReadOnlyDictionary<string, string>? DisplayNames = null);
 
 public sealed record ListVisitEvidenceExceptionsQuery(string? Status = null, string? Phase = null)
     : IRequest<Response<VisitEvidenceExceptionListDto>>;
@@ -159,9 +163,11 @@ public sealed class VisitEvidenceExceptionService
     private readonly WorkflowApprovalFlow _flow;
     private readonly WorkflowApprovalReconciler? _reconciler;
     private readonly TimeProvider _clock;
+    private readonly IUserDisplayNameResolver? _names;
 
     public VisitEvidenceExceptionService(ITenantContext tenant, IActorContext actor, IVisitEvidenceExceptionRepository exceptions,
-        WorkflowApprovalFlow flow, WorkflowApprovalReconciler? reconciler = null, TimeProvider? clock = null)
+        WorkflowApprovalFlow flow, WorkflowApprovalReconciler? reconciler = null, TimeProvider? clock = null,
+        IUserDisplayNameResolver? names = null)
     {
         _tenant = tenant;
         _actor = actor;
@@ -169,7 +175,15 @@ public sealed class VisitEvidenceExceptionService
         _flow = flow;
         _reconciler = reconciler;
         _clock = clock ?? TimeProvider.System;
+        _names = names;
     }
+
+    /// <summary>WP-VW-W3-FIX (F5) — the names of every person on <paramref name="rows"/> (one resolver call, fail-open).</summary>
+    public Task<IReadOnlyDictionary<string, string>?> NamesAsync(IEnumerable<VisitEvidenceException> rows, CancellationToken ct)
+        => UserDisplayNames.MapAsync(_names, rows.SelectMany(e =>
+            new[] { e.CreatedBy, e.UpdatedBy, e.ApprovedBy, e.CancelledBy }
+                .Concat(e.ReviewRounds.SelectMany(r => new[] { r.SubmittedBy, r.CompletedBy }))
+                .Concat(e.Decisions.Select(d => d.By))), ct);
 
     public Guid? TenantId => _tenant.TenantId;
     public string? Actor => _actor.ActorName;
@@ -233,7 +247,9 @@ public sealed class VisitEvidenceExceptionService
 
         await _flow.FillReturnCommentsAsync(record, ct);
         var abilities = await AbilitiesAsync(new[] { record }, ct);
-        return Response<VisitEvidenceExceptionDto>.Success(VisitEvidenceExceptionDto.From(record, Today, abilities(record)), status);
+        var names = await NamesAsync(new[] { record }, ct);
+        return Response<VisitEvidenceExceptionDto>.Success(
+            VisitEvidenceExceptionDto.From(record, Today, abilities(record)) with { DisplayNames = names }, status);
     }
 }
 
@@ -270,8 +286,9 @@ public sealed class VisitEvidenceExceptionQueryHandlers :
             .Where(r => string.IsNullOrEmpty(phase) || r.PhaseOn(today) == phase)
             .ToList();
         var abilities = await _service.AbilitiesAsync(filtered, ct);
+        var names = await _service.NamesAsync(filtered, ct);
         return Response<VisitEvidenceExceptionListDto>.Success(new VisitEvidenceExceptionListDto(
-            filtered.Select(r => VisitEvidenceExceptionDto.From(r, today, abilities(r))).ToList(), statusCounts, phaseCounts));
+            filtered.Select(r => VisitEvidenceExceptionDto.From(r, today, abilities(r))).ToList(), statusCounts, phaseCounts, names));
     }
 
     public async Task<Response<VisitEvidenceExceptionDto>> Handle(GetVisitEvidenceExceptionQuery request, CancellationToken ct)

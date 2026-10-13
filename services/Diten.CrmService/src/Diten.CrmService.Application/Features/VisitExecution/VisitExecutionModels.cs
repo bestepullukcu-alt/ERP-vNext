@@ -78,7 +78,9 @@ public sealed record VisitEvidencePolicyDto(
     // territory assignment; filled on the settings read only).
     string? UpdatedBy = null,
     DateTimeOffset? UpdatedAt = null,
-    int? RepCount = null);
+    int? RepCount = null,
+    // WP-VW-W3-FIX (F5, additive) — user id ("D") → display name of updatedBy (settings read only).
+    IReadOnlyDictionary<string, string>? DisplayNames = null);
 
 public sealed record VisitExecutionContractDto(
     string ModuleId,

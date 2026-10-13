@@ -135,4 +135,7 @@
   <data name="RecordTitle" xml:space="preserve"><value>Respuesta a objeción</value></data>
   <data name="UsagesTitle" xml:space="preserve"><value>Dónde se usa</value></data>
   <data name="CloseButton" xml:space="preserve"><value>Cerrar</value></data>
+  <data name="QuestionPlaceholder" xml:space="preserve"><value>p. ej. Estoy contento con Tamsulin, ¿por qué cambiar?</value></data>
+  <data name="AnswerPlaceholder" xml:space="preserve"><value>La respuesta que dará el representante. Básese solo en afirmaciones aprobadas.</value></data>
+  <data name="NotSavedYet" xml:space="preserve"><value>Aún no guardado</value></data>
 </root>
