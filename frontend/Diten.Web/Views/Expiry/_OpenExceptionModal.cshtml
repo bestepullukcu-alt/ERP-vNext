@@ -1,0 +1,40 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.Expiry.Expiry> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@*
+    "İstisna aç" (pack §11.3 EXPIRY_EXCEPTION_OPEN, expiry.exceptions.create; mockup §2.9): type + description ≥ 10 for the row's lot and
+    warehouse → FEFO-BUNDLE openException through /Expiry/api/exceptions (antiforgery + Idempotency-Key). Drawn only with the key
+    (D-10: the mockup did not gate it). The unit is not asked: the service reads it from the lot's stock (FU-0176-F1-UOM).
+*@
+@if (Perms.Has("expiry.exceptions.create"))
+{
+    <form id="ex-antiforgery" class="d-none">@Html.AntiForgeryToken()</form>
+    <div class="modal fade" id="ex-open-modal" tabindex="-1" aria-hidden="true" aria-labelledby="ex-open-title">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="ex-open-title">@Localizer["Expiry.Modal.Title"]</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["Expiry.Common.Cancel"]"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="small text-muted mb-3" id="ex-open-subject"></p>
+                    <div id="ex-open-error" class="alert alert-danger d-none" role="alert"></div>
+                    <label class="form-label" for="ex-open-type">@Localizer["Expiry.Modal.Type"] *</label>
+                    <select class="form-select mb-3" id="ex-open-type">
+                        @foreach (var type in new[] { "FEFO_BYPASS", "BELOW_MIN_REMAINING", "EXPIRY_DATE_OVERRIDE", "EXPIRED_ON_HAND" })
+                        {
+                            <option value="@type">@Localizer["Expiry.Modal.Type." + type]</option>
+                        }
+                    </select>
+                    <label class="form-label" for="ex-open-description">@Localizer["Expiry.Modal.Description"] *</label>
+                    <textarea class="form-control" id="ex-open-description" rows="3" maxlength="1000"></textarea>
+                    <div class="form-text text-danger" data-err="description"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@Localizer["Expiry.Common.Cancel"]</button>
+                    <button type="button" class="btn btn-primary" id="ex-open-submit">@Localizer["Expiry.Modal.Title"]</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}

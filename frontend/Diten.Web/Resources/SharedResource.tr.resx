@@ -1141,4 +1141,9 @@
   <data name="Nav.Page.ESIGNPOLICY" xml:space="preserve"><value>e-İmza Politikası</value></data>
   <data name="Nav.Page.ESIGNMEANINGS" xml:space="preserve"><value>İmza Anlamları</value></data>
   <data name="Nav.Page.ESIGNSAMPLEAPPROVALS" xml:space="preserve"><value>İmza Örneği Onayları</value></data>
+  <data name="Nav.Module.EXPIRYFEFOMANAGEMENT" xml:space="preserve"><value>Son Kullanma / FEFO</value></data>
+  <data name="Nav.Page.EXPIRYDASHBOARD" xml:space="preserve"><value>FEFO Paneli</value></data>
+  <data name="Nav.Page.EXPIRYAPPROACHING" xml:space="preserve"><value>Son Kullanma Yaklaşanlar</value></data>
+  <data name="Nav.Page.EXPIREDSTOCK" xml:space="preserve"><value>Süresi Dolmuş Stok</value></data>
+  <data name="Nav.Page.FEFOORDER" xml:space="preserve"><value>FEFO Sırası</value></data>
 </root>

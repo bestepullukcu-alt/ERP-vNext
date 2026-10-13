@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Expiry.Common.Crumb.Root" xml:space="preserve"><value>انتهاء الصلاحية / FEFO</value></data>
+  <data name="Expiry.Common.Company.Label" xml:space="preserve"><value>الشركة</value></data>
+  <data name="Expiry.Common.Company.Placeholder" xml:space="preserve"><value>اختر شركة</value></data>
+  <data name="Expiry.Common.Company.Required" xml:space="preserve"><value>اختر الشركة التي تعمل بها لعرض بيانات انتهاء الصلاحية.</value></data>
+  <data name="Expiry.Common.Company.Unavailable" xml:space="preserve"><value>تعذر تحميل قائمة الشركات. حاول مرة أخرى بعد قليل.</value></data>
+  <data name="Expiry.Common.NamesUnavailable" xml:space="preserve"><value>تعذرت قراءة أسماء المنتجات والمستودعات حاليًا؛ تُعرض المعرفات. الكميات صحيحة.</value></data>
+  <data name="Expiry.Common.Days" xml:space="preserve"><value>{0} يوم</value></data>
+  <data name="Expiry.Common.AllWarehouses" xml:space="preserve"><value>جميع المستودعات</value></data>
+  <data name="Expiry.Common.Apply" xml:space="preserve"><value>تطبيق</value></data>
+  <data name="Expiry.Common.Clear" xml:space="preserve"><value>مسح</value></data>
+  <data name="Expiry.Common.Cancel" xml:space="preserve"><value>إلغاء</value></data>
+  <data name="Expiry.Common.NoUnit" xml:space="preserve"><value>بلا وحدة</value></data>
+  <data name="Expiry.Common.Loading" xml:space="preserve"><value>جارٍ التحميل…</value></data>
+  <data name="Expiry.Tabs.Dashboard" xml:space="preserve"><value>لوحة FEFO</value></data>
+  <data name="Expiry.Tabs.Approaching" xml:space="preserve"><value>قرب انتهاء الصلاحية</value></data>
+  <data name="Expiry.Tabs.Expired" xml:space="preserve"><value>مخزون منتهي الصلاحية</value></data>
+  <data name="Expiry.Tabs.FefoOrder" xml:space="preserve"><value>ترتيب FEFO</value></data>
+  <data name="Expiry.Dashboard.Subtitle" xml:space="preserve"><value>اليوم {0} · «قريب» {1} يومًا · «حرج» {2} يومًا</value></data>
+  <data name="Expiry.Dashboard.SubtitleToday" xml:space="preserve"><value>اليوم {0}</value></data>
+  <data name="Expiry.Dashboard.Period" xml:space="preserve"><value>الفترة</value></data>
+  <data name="Expiry.Kpi.Expired" xml:space="preserve"><value>مخزون منتهي الصلاحية</value></data>
+  <data name="Expiry.Kpi.Critical" xml:space="preserve"><value>ينتهي خلال {0} يومًا</value></data>
+  <data name="Expiry.Kpi.CriticalPlain" xml:space="preserve"><value>حرج</value></data>
+  <data name="Expiry.Kpi.ApproachingPlain" xml:space="preserve"><value>قريب</value></data>
+  <data name="Expiry.Kpi.Lots" xml:space="preserve"><value>{0} تشغيلة</value></data>
+  <data name="Expiry.Kpi.AvailableHeld" xml:space="preserve"><value>متاح {0} · محتجز {1}</value></data>
+  <data name="Expiry.Kpi.Quantity" xml:space="preserve"><value>الكمية {0}</value></data>
+  <data name="Expiry.Kpi.BelowMin" xml:space="preserve"><value>استلامات أقل من الحد الأدنى للعمر المتبقي · آخر 30 يومًا</value></data>
+  <data name="Expiry.Kpi.OpenExceptions" xml:space="preserve"><value>استثناءات FEFO المفتوحة</value></data>
+  <data name="Expiry.Kpi.LateSome" xml:space="preserve"><value>{0} تجاوزت SLA</value></data>
+  <data name="Expiry.Kpi.LateNone" xml:space="preserve"><value>جميعها ضمن SLA</value></data>
+  <data name="Expiry.Kpi.Compliance" xml:space="preserve"><value>الامتثال لـ FEFO · آخر {0} يومًا</value></data>
+  <data name="Expiry.Kpi.ComplianceSub" xml:space="preserve"><value>{0} / {1} صرف من التشغيلة الأقرب انتهاءً</value></data>
+  <data name="Expiry.Kpi.ComplianceNone" xml:space="preserve"><value>لا يوجد صرف في هذه الفترة</value></data>
+  <data name="Expiry.Kpi.AvgResolution" xml:space="preserve"><value>متوسط وقت المعالجة {0} ساعة</value></data>
+  <data name="Expiry.Chart.Title" xml:space="preserve"><value>الأشهر الـ 12 القادمة · الكمية المنتهية شهريًا</value></data>
+  <data name="Expiry.Chart.Subtitle" xml:space="preserve"><value>المخزون المتاح والمحتجز، جميع الوحدات</value></data>
+  <data name="Expiry.Chart.Available" xml:space="preserve"><value>متاح</value></data>
+  <data name="Expiry.Chart.Held" xml:space="preserve"><value>محتجز</value></data>
+  <data name="Expiry.TopRisk.Title" xml:space="preserve"><value>أعلى 10 تشغيلات خطورة</value></data>
+  <data name="Expiry.TopRisk.Subtitle" xml:space="preserve"><value>الأفق {0} يومًا · حسب الأيام المتبقية</value></data>
+  <data name="Expiry.TopRisk.SeeAll" xml:space="preserve"><value>عرض الكل</value></data>
+  <data name="Expiry.TopRisk.Empty" xml:space="preserve"><value>لا توجد تشغيلة تنتهي ضمن هذا الأفق.</value></data>
+  <data name="Expiry.Col.Product" xml:space="preserve"><value>المنتج</value></data>
+  <data name="Expiry.Col.SkuLevel" xml:space="preserve"><value>مستوى SKU</value></data>
+  <data name="Expiry.Col.LotNo" xml:space="preserve"><value>رقم التشغيلة</value></data>
+  <data name="Expiry.Col.Warehouse" xml:space="preserve"><value>المستودع</value></data>
+  <data name="Expiry.Col.Expiry" xml:space="preserve"><value>تاريخ الانتهاء</value></data>
+  <data name="Expiry.Col.DaysLeft" xml:space="preserve"><value>الأيام المتبقية</value></data>
+  <data name="Expiry.Col.ShelfLife" xml:space="preserve"><value>العمر المتبقي</value></data>
+  <data name="Expiry.Col.Available" xml:space="preserve"><value>متاح</value></data>
+  <data name="Expiry.Col.Held" xml:space="preserve"><value>محتجز</value></data>
+  <data name="Expiry.Col.Unit" xml:space="preserve"><value>الوحدة</value></data>
+  <data name="Expiry.Col.Status" xml:space="preserve"><value>الحالة</value></data>
+  <data name="Expiry.Col.Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="Expiry.Col.SinceExpiry" xml:space="preserve"><value>منذ الانتهاء</value></data>
+  <data name="Expiry.Col.Quantity" xml:space="preserve"><value>الكمية</value></data>
+  <data name="Expiry.Col.Exception" xml:space="preserve"><value>الاستثناء</value></data>
+  <data name="Expiry.Col.Rank" xml:space="preserve"><value>الترتيب</value></data>
+  <data name="Expiry.Col.ForQuantity" xml:space="preserve"><value>لهذه الكمية</value></data>
+  <data name="Expiry.Col.Reason" xml:space="preserve"><value>السبب</value></data>
+  <data name="Expiry.Severity.Expired" xml:space="preserve"><value>منتهي الصلاحية</value></data>
+  <data name="Expiry.Severity.Critical" xml:space="preserve"><value>حرج</value></data>
+  <data name="Expiry.Severity.Approaching" xml:space="preserve"><value>قريب</value></data>
+  <data name="Expiry.Severity.Ok" xml:space="preserve"><value>عادي</value></data>
+  <data name="Expiry.Reason.EXPIRED" xml:space="preserve"><value>منتهي الصلاحية</value></data>
+  <data name="Expiry.Reason.RETEST_DUE" xml:space="preserve"><value>تجاوز تاريخ إعادة الاختبار</value></data>
+  <data name="Expiry.Reason.BLOCKED" xml:space="preserve"><value>محظور</value></data>
+  <data name="Expiry.Reason.HELD" xml:space="preserve"><value>معلق (إعادة اختبار)</value></data>
+  <data name="Expiry.Reason.QUARANTINED" xml:space="preserve"><value>في الحجر</value></data>
+  <data name="Expiry.Reason.BELOW_MIN_REMAINING" xml:space="preserve"><value>أقل من الحد الأدنى للعمر المتبقي</value></data>
+  <data name="Expiry.Action.OpenException" xml:space="preserve"><value>فتح استثناء</value></data>
+  <data name="Expiry.Action.Quarantine" xml:space="preserve"><value>وضع في الحجر (MOD-0175)</value></data>
+  <data name="Expiry.Action.ViewOrder" xml:space="preserve"><value>عرض ترتيب FEFO</value></data>
+  <data name="Expiry.Action.Export" xml:space="preserve"><value>تصدير (CSV)</value></data>
+  <data name="Expiry.Action.LotDetail" xml:space="preserve"><value>تفاصيل التشغيلة (MOD-0174)</value></data>
+  <data name="Expiry.Approaching.Subtitle" xml:space="preserve"><value>الترتيب الافتراضي: تاريخ الانتهاء تصاعديًا (ترتيب FEFO). حرج ≤ {0} يومًا، قريب ≤ {1} يومًا.</value></data>
+  <data name="Expiry.Approaching.SubtitlePlain" xml:space="preserve"><value>الترتيب الافتراضي: تاريخ الانتهاء تصاعديًا (ترتيب FEFO).</value></data>
+  <data name="Expiry.Approaching.Count" xml:space="preserve"><value>{0} تشغيلة · خلال {1} يومًا</value></data>
+  <data name="Expiry.Approaching.Empty" xml:space="preserve"><value>لا توجد تشغيلة تطابق عوامل التصفية.</value></data>
+  <data name="Expiry.Approaching.AllStatuses" xml:space="preserve"><value>جميع الحالات</value></data>
+  <data name="Expiry.Approaching.Horizon" xml:space="preserve"><value>الأفق</value></data>
+  <data name="Expiry.Approaching.HeldAll" xml:space="preserve"><value>يشمل المخزون المحتجز</value></data>
+  <data name="Expiry.Approaching.HeldNone" xml:space="preserve"><value>المخزون المتاح فقط</value></data>
+  <data name="Expiry.Expired.Subtitle" xml:space="preserve"><value>تشغيلات منتهية الصلاحية لا يزال لها مخزون</value></data>
+  <data name="Expiry.Expired.Band" xml:space="preserve"><value>تُغلق التشغيلة المنتهية تلقائيًا عن الاستخدام؛ ويُتخذ قرار الإتلاف / الإرجاع في وحدة الحجر.</value></data>
+  <data name="Expiry.Expired.Empty" xml:space="preserve"><value>لا توجد تشغيلة لديها مخزون منتهي الصلاحية.</value></data>
+  <data name="Expiry.Expired.Footer" xml:space="preserve"><value>لا يُتخذ أي قرار في هذه الشاشة؛ يفتح رابط وحدة الحجر.</value></data>
+  <data name="Expiry.Expired.SinceDays" xml:space="preserve"><value>{0} يوم</value></data>
+  <data name="Expiry.Order.Subtitle" xml:space="preserve"><value>أي تشغيلة تُستخدم أولًا · اقتراح للقراءة فقط</value></data>
+  <data name="Expiry.Order.Product" xml:space="preserve"><value>المنتج (SKU)</value></data>
+  <data name="Expiry.Order.Quantity" xml:space="preserve"><value>الكمية المطلوبة (اختياري)</value></data>
+  <data name="Expiry.Order.Calculate" xml:space="preserve"><value>احسب الترتيب</value></data>
+  <data name="Expiry.Order.Eligible" xml:space="preserve"><value>التشغيلات المرتبة · حسب تاريخ الانتهاء</value></data>
+  <data name="Expiry.Order.ForQuantity" xml:space="preserve"><value>التشغيلات المستخدمة لـ {0}:</value></data>
+  <data name="Expiry.Order.Shortfall" xml:space="preserve"><value>إجمالي المتاح {0}؛ لا يمكن تغطية {1}.</value></data>
+  <data name="Expiry.Order.EligibleEmpty" xml:space="preserve"><value>لا توجد تشغيلة لهذا المنتج يمكن ترتيبها في هذا المستودع.</value></data>
+  <data name="Expiry.Order.Excluded" xml:space="preserve"><value>التشغيلات المستبعدة</value></data>
+  <data name="Expiry.Order.ExcludedEmpty" xml:space="preserve"><value>لا توجد تشغيلة مستبعدة في هذا المستودع.</value></data>
+  <data name="Expiry.Order.Band" xml:space="preserve"><value>للقراءة فقط في MVP-1؛ سيستخدم التجميع هذا الترتيب عند وصول وحدة المستودع (MOD-0178).</value></data>
+  <data name="Expiry.Order.Pick" xml:space="preserve"><value>اختر مستودعًا ومنتجًا ثم احسب الترتيب.</value></data>
+  <data name="Expiry.Order.Basis" xml:space="preserve"><value>الرقم لكل تشغيلة هو المخزون المتاح الفعلي؛ الحجوزات غير مرتبطة بالتشغيلة. الكمية الحرة لـ SKU: {0}</value></data>
+  <data name="Expiry.Order.NoProducts" xml:space="preserve"><value>لا يوجد مخزون بتشغيلات في هذا المستودع.</value></data>
+  <data name="Expiry.Order.SeeExpired" xml:space="preserve"><value>عرض في المخزون المنتهي</value></data>
+  <data name="Expiry.Order.SeeQuarantine" xml:space="preserve"><value>عرض في MOD-0175</value></data>
+  <data name="Expiry.Modal.Title" xml:space="preserve"><value>فتح استثناء</value></data>
+  <data name="Expiry.Modal.Type" xml:space="preserve"><value>نوع الاستثناء</value></data>
+  <data name="Expiry.Modal.Description" xml:space="preserve"><value>الوصف</value></data>
+  <data name="Expiry.Modal.DescriptionMin" xml:space="preserve"><value>يجب ألا يقل الوصف عن 10 أحرف.</value></data>
+  <data name="Expiry.Modal.Opened" xml:space="preserve"><value>تم فتح {0}.</value></data>
+  <data name="Expiry.Modal.Type.FEFO_BYPASS" xml:space="preserve"><value>FEFO_BYPASS — لم يتم الصرف من التشغيلة الأقرب انتهاءً</value></data>
+  <data name="Expiry.Modal.Type.BELOW_MIN_REMAINING" xml:space="preserve"><value>BELOW_MIN_REMAINING — العمر المتبقي أقل من الحد الأدنى</value></data>
+  <data name="Expiry.Modal.Type.EXPIRY_DATE_OVERRIDE" xml:space="preserve"><value>EXPIRY_DATE_OVERRIDE — تم تغيير تاريخ الانتهاء / إعادة الاختبار</value></data>
+  <data name="Expiry.Modal.Type.EXPIRED_ON_HAND" xml:space="preserve"><value>EXPIRED_ON_HAND — مخزون منتهي الصلاحية في اليد</value></data>
+  <data name="Expiry.LotStatus.Draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="Expiry.LotStatus.Released" xml:space="preserve"><value>مُفرج عنه</value></data>
+  <data name="Expiry.LotStatus.Blocked" xml:space="preserve"><value>محظور</value></data>
+  <data name="Expiry.LotStatus.Expired" xml:space="preserve"><value>منتهي الصلاحية</value></data>
+  <data name="Expiry.Errors.GENERIC" xml:space="preserve"><value>تعذر إكمال الطلب. حاول مرة أخرى.</value></data>
+  <data name="Expiry.Errors.FORBIDDEN" xml:space="preserve"><value>لا تملك صلاحية القيام بذلك.</value></data>
+  <data name="Expiry.Errors.SERVICE_UNAVAILABLE" xml:space="preserve"><value>تعذر الوصول إلى خدمة المخزون حاليًا. حاول بعد قليل.</value></data>
+  <data name="Expiry.Errors.COMPANY_NOT_SELECTED" xml:space="preserve"><value>اختر شركة أولًا.</value></data>
+  <data name="Expiry.Errors.INVALID_REQUEST" xml:space="preserve"><value>الطلب غير صالح؛ تحقق من عوامل التصفية.</value></data>
+  <data name="Expiry.Errors.UNKNOWN_SKU" xml:space="preserve"><value>هذا المنتج (SKU) غير معروف في البيانات الرئيسية للمنتجات.</value></data>
+  <data name="Expiry.Errors.PRODUCT_MASTER_UNAVAILABLE" xml:space="preserve"><value>تعذر الوصول إلى البيانات الرئيسية للمنتجات؛ لم يُحسب الترتيب.</value></data>
+  <data name="Expiry.Errors.CROSS_LE_FORBIDDEN" xml:space="preserve"><value>لا يمكن الوصول إلى سجل شركة أخرى.</value></data>
+  <data name="Expiry.Errors.UNKNOWN_LOT" xml:space="preserve"><value>التشغيلة غير موجودة.</value></data>
+  <data name="Expiry.Errors.UNKNOWN_LOCATION" xml:space="preserve"><value>المستودع غير موجود.</value></data>
+  <data name="Expiry.Errors.EXPIRY_EXCEPTION_ALREADY_OPEN" xml:space="preserve"><value>يوجد بالفعل استثناء مفتوح من هذا النوع لهذه التشغيلة والمستودع.</value></data>
+  <data name="Expiry.Errors.REASON_REQUIRED" xml:space="preserve"><value>يجب ألا يقل الوصف عن 10 أحرف.</value></data>
+  <data name="Expiry.Errors.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>أُرسل هذا الطلب سابقًا بمحتوى مختلف؛ حدّث الصفحة.</value></data>
+</root>

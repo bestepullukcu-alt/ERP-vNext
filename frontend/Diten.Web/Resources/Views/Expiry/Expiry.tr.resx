@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Expiry.Common.Crumb.Root" xml:space="preserve"><value>Son Kullanma / FEFO</value></data>
+  <data name="Expiry.Common.Company.Label" xml:space="preserve"><value>Şirket</value></data>
+  <data name="Expiry.Common.Company.Placeholder" xml:space="preserve"><value>Şirket seçin</value></data>
+  <data name="Expiry.Common.Company.Required" xml:space="preserve"><value>Son kullanma verilerini görmek için çalıştığınız şirketi seçin.</value></data>
+  <data name="Expiry.Common.Company.Unavailable" xml:space="preserve"><value>Şirket listesi yüklenemedi. Biraz sonra yeniden deneyin.</value></data>
+  <data name="Expiry.Common.NamesUnavailable" xml:space="preserve"><value>Ürün ve depo adları şu an alınamadı; kimlikler gösteriliyor. Miktarlar doğrudur.</value></data>
+  <data name="Expiry.Common.Days" xml:space="preserve"><value>{0} gün</value></data>
+  <data name="Expiry.Common.AllWarehouses" xml:space="preserve"><value>Tüm depolar</value></data>
+  <data name="Expiry.Common.Apply" xml:space="preserve"><value>Uygula</value></data>
+  <data name="Expiry.Common.Clear" xml:space="preserve"><value>Temizle</value></data>
+  <data name="Expiry.Common.Cancel" xml:space="preserve"><value>Vazgeç</value></data>
+  <data name="Expiry.Common.NoUnit" xml:space="preserve"><value>birim yok</value></data>
+  <data name="Expiry.Common.Loading" xml:space="preserve"><value>Yükleniyor…</value></data>
+  <data name="Expiry.Tabs.Dashboard" xml:space="preserve"><value>FEFO Paneli</value></data>
+  <data name="Expiry.Tabs.Approaching" xml:space="preserve"><value>Son Kullanma Yaklaşanlar</value></data>
+  <data name="Expiry.Tabs.Expired" xml:space="preserve"><value>Süresi Dolmuş Stok</value></data>
+  <data name="Expiry.Tabs.FefoOrder" xml:space="preserve"><value>FEFO Sırası</value></data>
+  <data name="Expiry.Dashboard.Subtitle" xml:space="preserve"><value>Bugün {0} · "Yaklaşıyor" {1} gün · "Kritik" {2} gün</value></data>
+  <data name="Expiry.Dashboard.SubtitleToday" xml:space="preserve"><value>Bugün {0}</value></data>
+  <data name="Expiry.Dashboard.Period" xml:space="preserve"><value>Dönem</value></data>
+  <data name="Expiry.Kpi.Expired" xml:space="preserve"><value>Süresi dolmuş stok</value></data>
+  <data name="Expiry.Kpi.Critical" xml:space="preserve"><value>{0} gün içinde dolacak</value></data>
+  <data name="Expiry.Kpi.CriticalPlain" xml:space="preserve"><value>Kritik</value></data>
+  <data name="Expiry.Kpi.ApproachingPlain" xml:space="preserve"><value>Yaklaşıyor</value></data>
+  <data name="Expiry.Kpi.Lots" xml:space="preserve"><value>{0} lot</value></data>
+  <data name="Expiry.Kpi.AvailableHeld" xml:space="preserve"><value>Kullanılabilir {0} · Bekleyen {1}</value></data>
+  <data name="Expiry.Kpi.Quantity" xml:space="preserve"><value>Miktar {0}</value></data>
+  <data name="Expiry.Kpi.BelowMin" xml:space="preserve"><value>Min. kalan raf ömrü altı giriş · son 30 gün</value></data>
+  <data name="Expiry.Kpi.OpenExceptions" xml:space="preserve"><value>Açık FEFO istisnaları</value></data>
+  <data name="Expiry.Kpi.LateSome" xml:space="preserve"><value>{0} tanesi SLA'yı geçti</value></data>
+  <data name="Expiry.Kpi.LateNone" xml:space="preserve"><value>Tümü SLA içinde</value></data>
+  <data name="Expiry.Kpi.Compliance" xml:space="preserve"><value>FEFO uyum oranı · son {0} gün</value></data>
+  <data name="Expiry.Kpi.ComplianceSub" xml:space="preserve"><value>{0} / {1} çıkış en yakın tarihli lottan</value></data>
+  <data name="Expiry.Kpi.ComplianceNone" xml:space="preserve"><value>Bu dönemde çıkış yok</value></data>
+  <data name="Expiry.Kpi.AvgResolution" xml:space="preserve"><value>Ortalama çözüm süresi {0} saat</value></data>
+  <data name="Expiry.Chart.Title" xml:space="preserve"><value>Önümüzdeki 12 ay · ay bazında dolacak miktar</value></data>
+  <data name="Expiry.Chart.Subtitle" xml:space="preserve"><value>Kullanılabilir ve bekleyen stok, tüm birimler</value></data>
+  <data name="Expiry.Chart.Available" xml:space="preserve"><value>Kullanılabilir</value></data>
+  <data name="Expiry.Chart.Held" xml:space="preserve"><value>Bekleyen</value></data>
+  <data name="Expiry.TopRisk.Title" xml:space="preserve"><value>En riskli 10 lot</value></data>
+  <data name="Expiry.TopRisk.Subtitle" xml:space="preserve"><value>Ufuk {0} gün · kalan güne göre</value></data>
+  <data name="Expiry.TopRisk.SeeAll" xml:space="preserve"><value>Tümünü gör</value></data>
+  <data name="Expiry.TopRisk.Empty" xml:space="preserve"><value>Bu ufukta dolacak lot yok.</value></data>
+  <data name="Expiry.Col.Product" xml:space="preserve"><value>Ürün</value></data>
+  <data name="Expiry.Col.SkuLevel" xml:space="preserve"><value>SKU sev.</value></data>
+  <data name="Expiry.Col.LotNo" xml:space="preserve"><value>Lot no</value></data>
+  <data name="Expiry.Col.Warehouse" xml:space="preserve"><value>Depo</value></data>
+  <data name="Expiry.Col.Expiry" xml:space="preserve"><value>SKT</value></data>
+  <data name="Expiry.Col.DaysLeft" xml:space="preserve"><value>Kalan gün</value></data>
+  <data name="Expiry.Col.ShelfLife" xml:space="preserve"><value>Kalan raf ömrü</value></data>
+  <data name="Expiry.Col.Available" xml:space="preserve"><value>Kullanılabilir</value></data>
+  <data name="Expiry.Col.Held" xml:space="preserve"><value>Bekleyen</value></data>
+  <data name="Expiry.Col.Unit" xml:space="preserve"><value>Birim</value></data>
+  <data name="Expiry.Col.Status" xml:space="preserve"><value>Durum</value></data>
+  <data name="Expiry.Col.Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="Expiry.Col.SinceExpiry" xml:space="preserve"><value>Dolduğundan beri</value></data>
+  <data name="Expiry.Col.Quantity" xml:space="preserve"><value>Miktar</value></data>
+  <data name="Expiry.Col.Exception" xml:space="preserve"><value>İstisna</value></data>
+  <data name="Expiry.Col.Rank" xml:space="preserve"><value>Sıra</value></data>
+  <data name="Expiry.Col.ForQuantity" xml:space="preserve"><value>Bu miktar için</value></data>
+  <data name="Expiry.Col.Reason" xml:space="preserve"><value>Neden</value></data>
+  <data name="Expiry.Severity.Expired" xml:space="preserve"><value>Süresi doldu</value></data>
+  <data name="Expiry.Severity.Critical" xml:space="preserve"><value>Kritik</value></data>
+  <data name="Expiry.Severity.Approaching" xml:space="preserve"><value>Yaklaşıyor</value></data>
+  <data name="Expiry.Severity.Ok" xml:space="preserve"><value>Normal</value></data>
+  <data name="Expiry.Reason.EXPIRED" xml:space="preserve"><value>Süresi doldu</value></data>
+  <data name="Expiry.Reason.RETEST_DUE" xml:space="preserve"><value>Retest tarihi geçti</value></data>
+  <data name="Expiry.Reason.BLOCKED" xml:space="preserve"><value>Bloke</value></data>
+  <data name="Expiry.Reason.HELD" xml:space="preserve"><value>Beklemede (retest)</value></data>
+  <data name="Expiry.Reason.QUARANTINED" xml:space="preserve"><value>Karantinada</value></data>
+  <data name="Expiry.Reason.BELOW_MIN_REMAINING" xml:space="preserve"><value>Minimum kalan raf ömrünün altında</value></data>
+  <data name="Expiry.Action.OpenException" xml:space="preserve"><value>İstisna aç</value></data>
+  <data name="Expiry.Action.Quarantine" xml:space="preserve"><value>Karantinaya al (MOD-0175)</value></data>
+  <data name="Expiry.Action.ViewOrder" xml:space="preserve"><value>FEFO sırasını gör</value></data>
+  <data name="Expiry.Action.Export" xml:space="preserve"><value>Dışa aktar (CSV)</value></data>
+  <data name="Expiry.Action.LotDetail" xml:space="preserve"><value>Lot detayı (MOD-0174)</value></data>
+  <data name="Expiry.Approaching.Subtitle" xml:space="preserve"><value>Varsayılan sıralama SKT artan (FEFO sırası). Kritik ≤ {0} gün, Yaklaşıyor ≤ {1} gün.</value></data>
+  <data name="Expiry.Approaching.SubtitlePlain" xml:space="preserve"><value>Varsayılan sıralama SKT artan (FEFO sırası).</value></data>
+  <data name="Expiry.Approaching.Count" xml:space="preserve"><value>{0} lot · {1} gün içinde</value></data>
+  <data name="Expiry.Approaching.Empty" xml:space="preserve"><value>Filtrelere uyan lot yok.</value></data>
+  <data name="Expiry.Approaching.AllStatuses" xml:space="preserve"><value>Tüm durumlar</value></data>
+  <data name="Expiry.Approaching.Horizon" xml:space="preserve"><value>Ufuk</value></data>
+  <data name="Expiry.Approaching.HeldAll" xml:space="preserve"><value>Bekleyen stok dahil</value></data>
+  <data name="Expiry.Approaching.HeldNone" xml:space="preserve"><value>Yalnız kullanılabilir stok</value></data>
+  <data name="Expiry.Expired.Subtitle" xml:space="preserve"><value>Süresi dolmuş ve hâlâ stoğu olan lotlar</value></data>
+  <data name="Expiry.Expired.Band" xml:space="preserve"><value>Süresi dolan lot otomatik olarak kullanıma kapatılır; imha / iade kararı Karantina modülünde verilir.</value></data>
+  <data name="Expiry.Expired.Empty" xml:space="preserve"><value>Süresi dolmuş stoğu olan lot yok.</value></data>
+  <data name="Expiry.Expired.Footer" xml:space="preserve"><value>Bu ekranda karar verilmez; Karantina modülüne bağlantı açılır.</value></data>
+  <data name="Expiry.Expired.SinceDays" xml:space="preserve"><value>{0} gün</value></data>
+  <data name="Expiry.Order.Subtitle" xml:space="preserve"><value>Hangi lot önce kullanılmalı · salt-okunur öneri</value></data>
+  <data name="Expiry.Order.Product" xml:space="preserve"><value>Ürün (SKU)</value></data>
+  <data name="Expiry.Order.Quantity" xml:space="preserve"><value>İstenen miktar (isteğe bağlı)</value></data>
+  <data name="Expiry.Order.Calculate" xml:space="preserve"><value>Sırayı hesapla</value></data>
+  <data name="Expiry.Order.Eligible" xml:space="preserve"><value>Sıraya alınan lotlar · SKT'ye göre</value></data>
+  <data name="Expiry.Order.ForQuantity" xml:space="preserve"><value>{0} için kullanılacak lotlar:</value></data>
+  <data name="Expiry.Order.Shortfall" xml:space="preserve"><value>Kullanılabilir toplam {0}; {1} karşılanamıyor.</value></data>
+  <data name="Expiry.Order.EligibleEmpty" xml:space="preserve"><value>Bu depoda bu ürün için sıraya alınabilir lot yok.</value></data>
+  <data name="Expiry.Order.Excluded" xml:space="preserve"><value>Sıraya alınmayan lotlar</value></data>
+  <data name="Expiry.Order.ExcludedEmpty" xml:space="preserve"><value>Bu depoda dışarıda kalan lot yok.</value></data>
+  <data name="Expiry.Order.Band" xml:space="preserve"><value>MVP-1'de salt-okunur; depo modülü (MOD-0178) geldiğinde toplama bu sırayı kullanır.</value></data>
+  <data name="Expiry.Order.Pick" xml:space="preserve"><value>Depo ve ürün seçip sırayı hesaplayın.</value></data>
+  <data name="Expiry.Order.Basis" xml:space="preserve"><value>Lot başına miktar eldeki kullanılabilir stoktur; rezervasyonlar lota bağlı değildir. SKU serbest miktarı: {0}</value></data>
+  <data name="Expiry.Order.NoProducts" xml:space="preserve"><value>Bu depoda lotlu stok yok.</value></data>
+  <data name="Expiry.Order.SeeExpired" xml:space="preserve"><value>Süresi dolmuş stokta gör</value></data>
+  <data name="Expiry.Order.SeeQuarantine" xml:space="preserve"><value>MOD-0175'te gör</value></data>
+  <data name="Expiry.Modal.Title" xml:space="preserve"><value>İstisna aç</value></data>
+  <data name="Expiry.Modal.Type" xml:space="preserve"><value>İstisna türü</value></data>
+  <data name="Expiry.Modal.Description" xml:space="preserve"><value>Açıklama</value></data>
+  <data name="Expiry.Modal.DescriptionMin" xml:space="preserve"><value>Açıklama en az 10 karakter olmalı.</value></data>
+  <data name="Expiry.Modal.Opened" xml:space="preserve"><value>{0} açıldı.</value></data>
+  <data name="Expiry.Modal.Type.FEFO_BYPASS" xml:space="preserve"><value>FEFO_BYPASS — çıkış en yakın tarihli lottan yapılmadı</value></data>
+  <data name="Expiry.Modal.Type.BELOW_MIN_REMAINING" xml:space="preserve"><value>BELOW_MIN_REMAINING — kalan raf ömrü minimum altı</value></data>
+  <data name="Expiry.Modal.Type.EXPIRY_DATE_OVERRIDE" xml:space="preserve"><value>EXPIRY_DATE_OVERRIDE — SKT / retest değiştirildi</value></data>
+  <data name="Expiry.Modal.Type.EXPIRED_ON_HAND" xml:space="preserve"><value>EXPIRED_ON_HAND — süresi dolmuş stok elde</value></data>
+  <data name="Expiry.LotStatus.Draft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="Expiry.LotStatus.Released" xml:space="preserve"><value>Serbest</value></data>
+  <data name="Expiry.LotStatus.Blocked" xml:space="preserve"><value>Bloke</value></data>
+  <data name="Expiry.LotStatus.Expired" xml:space="preserve"><value>Süresi doldu</value></data>
+  <data name="Expiry.Errors.GENERIC" xml:space="preserve"><value>İşlem tamamlanamadı. Yeniden deneyin.</value></data>
+  <data name="Expiry.Errors.FORBIDDEN" xml:space="preserve"><value>Bu işlem için yetkiniz yok.</value></data>
+  <data name="Expiry.Errors.SERVICE_UNAVAILABLE" xml:space="preserve"><value>Stok servisine şu an ulaşılamıyor. Biraz sonra yeniden deneyin.</value></data>
+  <data name="Expiry.Errors.COMPANY_NOT_SELECTED" xml:space="preserve"><value>Önce şirket seçin.</value></data>
+  <data name="Expiry.Errors.INVALID_REQUEST" xml:space="preserve"><value>İstek geçersiz; filtreleri kontrol edin.</value></data>
+  <data name="Expiry.Errors.UNKNOWN_SKU" xml:space="preserve"><value>Bu ürün (SKU) ürün ana verisinde bulunamadı.</value></data>
+  <data name="Expiry.Errors.PRODUCT_MASTER_UNAVAILABLE" xml:space="preserve"><value>Ürün ana verisine şu an ulaşılamıyor; sıra hesaplanamadı.</value></data>
+  <data name="Expiry.Errors.CROSS_LE_FORBIDDEN" xml:space="preserve"><value>Başka bir şirketin kaydına erişilemez.</value></data>
+  <data name="Expiry.Errors.UNKNOWN_LOT" xml:space="preserve"><value>Lot bulunamadı.</value></data>
+  <data name="Expiry.Errors.UNKNOWN_LOCATION" xml:space="preserve"><value>Depo bulunamadı.</value></data>
+  <data name="Expiry.Errors.EXPIRY_EXCEPTION_ALREADY_OPEN" xml:space="preserve"><value>Bu lot ve depo için bu türde açık bir istisna zaten var.</value></data>
+  <data name="Expiry.Errors.REASON_REQUIRED" xml:space="preserve"><value>Açıklama en az 10 karakter olmalı.</value></data>
+  <data name="Expiry.Errors.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>Bu istek başka bir içerikle zaten gönderildi; sayfayı yenileyin.</value></data>
+</root>

@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Expiry.Common.Crumb.Root" xml:space="preserve"><value>Expiry / FEFO</value></data>
+  <data name="Expiry.Common.Company.Label" xml:space="preserve"><value>Company</value></data>
+  <data name="Expiry.Common.Company.Placeholder" xml:space="preserve"><value>Select a company</value></data>
+  <data name="Expiry.Common.Company.Required" xml:space="preserve"><value>Select the company you work in to see expiry data.</value></data>
+  <data name="Expiry.Common.Company.Unavailable" xml:space="preserve"><value>The company list could not be loaded. Try again shortly.</value></data>
+  <data name="Expiry.Common.NamesUnavailable" xml:space="preserve"><value>Product and warehouse names could not be read right now; ids are shown. The quantities are correct.</value></data>
+  <data name="Expiry.Common.Days" xml:space="preserve"><value>{0} days</value></data>
+  <data name="Expiry.Common.AllWarehouses" xml:space="preserve"><value>All warehouses</value></data>
+  <data name="Expiry.Common.Apply" xml:space="preserve"><value>Apply</value></data>
+  <data name="Expiry.Common.Clear" xml:space="preserve"><value>Clear</value></data>
+  <data name="Expiry.Common.Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Expiry.Common.NoUnit" xml:space="preserve"><value>no unit</value></data>
+  <data name="Expiry.Common.Loading" xml:space="preserve"><value>Loading…</value></data>
+  <data name="Expiry.Tabs.Dashboard" xml:space="preserve"><value>FEFO dashboard</value></data>
+  <data name="Expiry.Tabs.Approaching" xml:space="preserve"><value>Approaching expiry</value></data>
+  <data name="Expiry.Tabs.Expired" xml:space="preserve"><value>Expired stock</value></data>
+  <data name="Expiry.Tabs.FefoOrder" xml:space="preserve"><value>FEFO order</value></data>
+  <data name="Expiry.Dashboard.Subtitle" xml:space="preserve"><value>Today {0} · "Approaching" {1} days · "Critical" {2} days</value></data>
+  <data name="Expiry.Dashboard.SubtitleToday" xml:space="preserve"><value>Today {0}</value></data>
+  <data name="Expiry.Dashboard.Period" xml:space="preserve"><value>Period</value></data>
+  <data name="Expiry.Kpi.Expired" xml:space="preserve"><value>Expired stock</value></data>
+  <data name="Expiry.Kpi.Critical" xml:space="preserve"><value>Expiring within {0} days</value></data>
+  <data name="Expiry.Kpi.CriticalPlain" xml:space="preserve"><value>Critical</value></data>
+  <data name="Expiry.Kpi.ApproachingPlain" xml:space="preserve"><value>Approaching</value></data>
+  <data name="Expiry.Kpi.Lots" xml:space="preserve"><value>{0} lots</value></data>
+  <data name="Expiry.Kpi.AvailableHeld" xml:space="preserve"><value>Available {0} · Held {1}</value></data>
+  <data name="Expiry.Kpi.Quantity" xml:space="preserve"><value>Quantity {0}</value></data>
+  <data name="Expiry.Kpi.BelowMin" xml:space="preserve"><value>Receipts below min. remaining shelf life · last 30 days</value></data>
+  <data name="Expiry.Kpi.OpenExceptions" xml:space="preserve"><value>Open FEFO exceptions</value></data>
+  <data name="Expiry.Kpi.LateSome" xml:space="preserve"><value>{0} past the SLA</value></data>
+  <data name="Expiry.Kpi.LateNone" xml:space="preserve"><value>All within the SLA</value></data>
+  <data name="Expiry.Kpi.Compliance" xml:space="preserve"><value>FEFO compliance · last {0} days</value></data>
+  <data name="Expiry.Kpi.ComplianceSub" xml:space="preserve"><value>{0} / {1} issues from the earliest-expiring lot</value></data>
+  <data name="Expiry.Kpi.ComplianceNone" xml:space="preserve"><value>No issues in this period</value></data>
+  <data name="Expiry.Kpi.AvgResolution" xml:space="preserve"><value>Mean resolution time {0} h</value></data>
+  <data name="Expiry.Chart.Title" xml:space="preserve"><value>Next 12 months · quantity expiring per month</value></data>
+  <data name="Expiry.Chart.Subtitle" xml:space="preserve"><value>Available and held stock, all units</value></data>
+  <data name="Expiry.Chart.Available" xml:space="preserve"><value>Available</value></data>
+  <data name="Expiry.Chart.Held" xml:space="preserve"><value>Held</value></data>
+  <data name="Expiry.TopRisk.Title" xml:space="preserve"><value>Top 10 risk lots</value></data>
+  <data name="Expiry.TopRisk.Subtitle" xml:space="preserve"><value>Horizon {0} days · by days left</value></data>
+  <data name="Expiry.TopRisk.SeeAll" xml:space="preserve"><value>See all</value></data>
+  <data name="Expiry.TopRisk.Empty" xml:space="preserve"><value>No lot expires within this horizon.</value></data>
+  <data name="Expiry.Col.Product" xml:space="preserve"><value>Product</value></data>
+  <data name="Expiry.Col.SkuLevel" xml:space="preserve"><value>SKU level</value></data>
+  <data name="Expiry.Col.LotNo" xml:space="preserve"><value>Lot no.</value></data>
+  <data name="Expiry.Col.Warehouse" xml:space="preserve"><value>Warehouse</value></data>
+  <data name="Expiry.Col.Expiry" xml:space="preserve"><value>Expiry</value></data>
+  <data name="Expiry.Col.DaysLeft" xml:space="preserve"><value>Days left</value></data>
+  <data name="Expiry.Col.ShelfLife" xml:space="preserve"><value>Remaining shelf life</value></data>
+  <data name="Expiry.Col.Available" xml:space="preserve"><value>Available</value></data>
+  <data name="Expiry.Col.Held" xml:space="preserve"><value>Held</value></data>
+  <data name="Expiry.Col.Unit" xml:space="preserve"><value>Unit</value></data>
+  <data name="Expiry.Col.Status" xml:space="preserve"><value>Status</value></data>
+  <data name="Expiry.Col.Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="Expiry.Col.SinceExpiry" xml:space="preserve"><value>Since expiry</value></data>
+  <data name="Expiry.Col.Quantity" xml:space="preserve"><value>Quantity</value></data>
+  <data name="Expiry.Col.Exception" xml:space="preserve"><value>Exception</value></data>
+  <data name="Expiry.Col.Rank" xml:space="preserve"><value>Rank</value></data>
+  <data name="Expiry.Col.ForQuantity" xml:space="preserve"><value>For this quantity</value></data>
+  <data name="Expiry.Col.Reason" xml:space="preserve"><value>Reason</value></data>
+  <data name="Expiry.Severity.Expired" xml:space="preserve"><value>Expired</value></data>
+  <data name="Expiry.Severity.Critical" xml:space="preserve"><value>Critical</value></data>
+  <data name="Expiry.Severity.Approaching" xml:space="preserve"><value>Approaching</value></data>
+  <data name="Expiry.Severity.Ok" xml:space="preserve"><value>Normal</value></data>
+  <data name="Expiry.Reason.EXPIRED" xml:space="preserve"><value>Expired</value></data>
+  <data name="Expiry.Reason.RETEST_DUE" xml:space="preserve"><value>Retest date passed</value></data>
+  <data name="Expiry.Reason.BLOCKED" xml:space="preserve"><value>Blocked</value></data>
+  <data name="Expiry.Reason.HELD" xml:space="preserve"><value>On hold (retest)</value></data>
+  <data name="Expiry.Reason.QUARANTINED" xml:space="preserve"><value>In quarantine</value></data>
+  <data name="Expiry.Reason.BELOW_MIN_REMAINING" xml:space="preserve"><value>Below the minimum remaining shelf life</value></data>
+  <data name="Expiry.Action.OpenException" xml:space="preserve"><value>Open exception</value></data>
+  <data name="Expiry.Action.Quarantine" xml:space="preserve"><value>Quarantine (MOD-0175)</value></data>
+  <data name="Expiry.Action.ViewOrder" xml:space="preserve"><value>View FEFO order</value></data>
+  <data name="Expiry.Action.Export" xml:space="preserve"><value>Export (CSV)</value></data>
+  <data name="Expiry.Action.LotDetail" xml:space="preserve"><value>Lot details (MOD-0174)</value></data>
+  <data name="Expiry.Approaching.Subtitle" xml:space="preserve"><value>Default order: expiry ascending (FEFO order). Critical ≤ {0} days, Approaching ≤ {1} days.</value></data>
+  <data name="Expiry.Approaching.SubtitlePlain" xml:space="preserve"><value>Default order: expiry ascending (FEFO order).</value></data>
+  <data name="Expiry.Approaching.Count" xml:space="preserve"><value>{0} lots · within {1} days</value></data>
+  <data name="Expiry.Approaching.Empty" xml:space="preserve"><value>No lot matches the filters.</value></data>
+  <data name="Expiry.Approaching.AllStatuses" xml:space="preserve"><value>All statuses</value></data>
+  <data name="Expiry.Approaching.Horizon" xml:space="preserve"><value>Horizon</value></data>
+  <data name="Expiry.Approaching.HeldAll" xml:space="preserve"><value>Including held stock</value></data>
+  <data name="Expiry.Approaching.HeldNone" xml:space="preserve"><value>Available stock only</value></data>
+  <data name="Expiry.Expired.Subtitle" xml:space="preserve"><value>Expired lots that still have stock</value></data>
+  <data name="Expiry.Expired.Band" xml:space="preserve"><value>An expired lot is closed for use automatically; the destroy / return decision is taken in the Quarantine module.</value></data>
+  <data name="Expiry.Expired.Empty" xml:space="preserve"><value>No lot has expired stock.</value></data>
+  <data name="Expiry.Expired.Footer" xml:space="preserve"><value>No decision is taken on this screen; a link opens the Quarantine module.</value></data>
+  <data name="Expiry.Expired.SinceDays" xml:space="preserve"><value>{0} days</value></data>
+  <data name="Expiry.Order.Subtitle" xml:space="preserve"><value>Which lot should be used first · read-only suggestion</value></data>
+  <data name="Expiry.Order.Product" xml:space="preserve"><value>Product (SKU)</value></data>
+  <data name="Expiry.Order.Quantity" xml:space="preserve"><value>Requested quantity (optional)</value></data>
+  <data name="Expiry.Order.Calculate" xml:space="preserve"><value>Calculate order</value></data>
+  <data name="Expiry.Order.Eligible" xml:space="preserve"><value>Lots in order · by expiry</value></data>
+  <data name="Expiry.Order.ForQuantity" xml:space="preserve"><value>Lots to use for {0}:</value></data>
+  <data name="Expiry.Order.Shortfall" xml:space="preserve"><value>Available total {0}; {1} cannot be covered.</value></data>
+  <data name="Expiry.Order.EligibleEmpty" xml:space="preserve"><value>No lot of this product can be put in order in this warehouse.</value></data>
+  <data name="Expiry.Order.Excluded" xml:space="preserve"><value>Lots left out</value></data>
+  <data name="Expiry.Order.ExcludedEmpty" xml:space="preserve"><value>No lot is left out in this warehouse.</value></data>
+  <data name="Expiry.Order.Band" xml:space="preserve"><value>Read-only in MVP-1; picking will use this order once the warehouse module (MOD-0178) arrives.</value></data>
+  <data name="Expiry.Order.Pick" xml:space="preserve"><value>Pick a warehouse and a product, then calculate the order.</value></data>
+  <data name="Expiry.Order.Basis" xml:space="preserve"><value>The per-lot figure is available on-hand stock; reservations are not lot-bound. SKU free quantity: {0}</value></data>
+  <data name="Expiry.Order.NoProducts" xml:space="preserve"><value>There is no lot stock in this warehouse.</value></data>
+  <data name="Expiry.Order.SeeExpired" xml:space="preserve"><value>See in expired stock</value></data>
+  <data name="Expiry.Order.SeeQuarantine" xml:space="preserve"><value>See in MOD-0175</value></data>
+  <data name="Expiry.Modal.Title" xml:space="preserve"><value>Open exception</value></data>
+  <data name="Expiry.Modal.Type" xml:space="preserve"><value>Exception type</value></data>
+  <data name="Expiry.Modal.Description" xml:space="preserve"><value>Description</value></data>
+  <data name="Expiry.Modal.DescriptionMin" xml:space="preserve"><value>The description must be at least 10 characters.</value></data>
+  <data name="Expiry.Modal.Opened" xml:space="preserve"><value>{0} opened.</value></data>
+  <data name="Expiry.Modal.Type.FEFO_BYPASS" xml:space="preserve"><value>FEFO_BYPASS — the issue was not from the earliest-expiring lot</value></data>
+  <data name="Expiry.Modal.Type.BELOW_MIN_REMAINING" xml:space="preserve"><value>BELOW_MIN_REMAINING — remaining shelf life below the minimum</value></data>
+  <data name="Expiry.Modal.Type.EXPIRY_DATE_OVERRIDE" xml:space="preserve"><value>EXPIRY_DATE_OVERRIDE — expiry / retest date changed</value></data>
+  <data name="Expiry.Modal.Type.EXPIRED_ON_HAND" xml:space="preserve"><value>EXPIRED_ON_HAND — expired stock on hand</value></data>
+  <data name="Expiry.LotStatus.Draft" xml:space="preserve"><value>Draft</value></data>
+  <data name="Expiry.LotStatus.Released" xml:space="preserve"><value>Released</value></data>
+  <data name="Expiry.LotStatus.Blocked" xml:space="preserve"><value>Blocked</value></data>
+  <data name="Expiry.LotStatus.Expired" xml:space="preserve"><value>Expired</value></data>
+  <data name="Expiry.Errors.GENERIC" xml:space="preserve"><value>The request could not be completed. Try again.</value></data>
+  <data name="Expiry.Errors.FORBIDDEN" xml:space="preserve"><value>You are not allowed to do this.</value></data>
+  <data name="Expiry.Errors.SERVICE_UNAVAILABLE" xml:space="preserve"><value>The inventory service cannot be reached right now. Try again shortly.</value></data>
+  <data name="Expiry.Errors.COMPANY_NOT_SELECTED" xml:space="preserve"><value>Select a company first.</value></data>
+  <data name="Expiry.Errors.INVALID_REQUEST" xml:space="preserve"><value>The request is not valid; check the filters.</value></data>
+  <data name="Expiry.Errors.UNKNOWN_SKU" xml:space="preserve"><value>This product (SKU) is not known to the product master.</value></data>
+  <data name="Expiry.Errors.PRODUCT_MASTER_UNAVAILABLE" xml:space="preserve"><value>The product master cannot be reached right now; the order could not be calculated.</value></data>
+  <data name="Expiry.Errors.CROSS_LE_FORBIDDEN" xml:space="preserve"><value>A record of another company cannot be accessed.</value></data>
+  <data name="Expiry.Errors.UNKNOWN_LOT" xml:space="preserve"><value>Lot not found.</value></data>
+  <data name="Expiry.Errors.UNKNOWN_LOCATION" xml:space="preserve"><value>Warehouse not found.</value></data>
+  <data name="Expiry.Errors.EXPIRY_EXCEPTION_ALREADY_OPEN" xml:space="preserve"><value>An open exception of this type already exists for this lot and warehouse.</value></data>
+  <data name="Expiry.Errors.REASON_REQUIRED" xml:space="preserve"><value>The description must be at least 10 characters.</value></data>
+  <data name="Expiry.Errors.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>This request was already sent with other content; refresh the page.</value></data>
+</root>

@@ -1084,4 +1084,9 @@
   <data name="Nav.Page.ESIGNPOLICY" xml:space="preserve"><value>سياسة التوقيع</value></data>
   <data name="Nav.Page.ESIGNMEANINGS" xml:space="preserve"><value>معاني التوقيع</value></data>
   <data name="Nav.Page.ESIGNSAMPLEAPPROVALS" xml:space="preserve"><value>موافقات نماذج التوقيع</value></data>
+  <data name="Nav.Module.EXPIRYFEFOMANAGEMENT" xml:space="preserve"><value>انتهاء الصلاحية / FEFO</value></data>
+  <data name="Nav.Page.EXPIRYDASHBOARD" xml:space="preserve"><value>لوحة FEFO</value></data>
+  <data name="Nav.Page.EXPIRYAPPROACHING" xml:space="preserve"><value>قرب انتهاء الصلاحية</value></data>
+  <data name="Nav.Page.EXPIREDSTOCK" xml:space="preserve"><value>مخزون منتهي الصلاحية</value></data>
+  <data name="Nav.Page.FEFOORDER" xml:space="preserve"><value>ترتيب FEFO</value></data>
 </root>

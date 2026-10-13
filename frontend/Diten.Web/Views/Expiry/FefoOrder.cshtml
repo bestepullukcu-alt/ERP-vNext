@@ -1,0 +1,104 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.Expiry.Expiry> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["Expiry.Tabs.FefoOrder"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    MOD-0176 F4 — FEFO Sırası (FEFOORDER, pack §11.1, §8.2). READ-ONLY (KF-F): /Expiry/data/fefo-order → getFefoOrder — the posting
+    hook's candidates through the same FefoOrderRule; eligible lots in order (with the allocation of a requested quantity) and the lots
+    left out with their reasons. There is NO "Bu lotu rezerve et" button (D-1, D-14; FU-0176-RES-01).
+    UAS-001 — nothing below is drawn without expiry.fefo-order.read. No redirect.
+*@
+@if (!Perms.Has("expiry.fefo-order.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["Expiry.Tabs.FefoOrder"].Value" />
+    return;
+}
+
+@{
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["Expiry.Common.Company.Label"].Value;
+    company.Placeholder = Localizer["Expiry.Common.Company.Placeholder"].Value;
+    company.SelectHint = Localizer["Expiry.Common.Company.Required"].Value;
+    company.UnavailableText = Localizer["Expiry.Common.Company.Unavailable"].Value;
+}
+
+<partial name="~/Views/Expiry/_Header.cshtml" model="@("FEFOORDER")" />
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready)
+{
+    <p class="text-muted mb-3">@Localizer["Expiry.Order.Subtitle"]</p>
+
+    <form class="card mb-4" id="ex-order-form" data-no-tracker>
+        <div class="card-body row g-3 align-items-end">
+            <div class="col-12 col-md-4">
+                <label class="form-label" for="ex-order-warehouse">@Localizer["Expiry.Col.Warehouse"]</label>
+                <select class="form-select" id="ex-order-warehouse"><option value=""></option></select>
+            </div>
+            <div class="col-12 col-md-4">
+                <label class="form-label" for="ex-order-sku">@Localizer["Expiry.Order.Product"]</label>
+                <select class="form-select" id="ex-order-sku" disabled><option value=""></option></select>
+            </div>
+            <div class="col-12 col-md-2">
+                <label class="form-label" for="ex-order-quantity">@Localizer["Expiry.Order.Quantity"]</label>
+                <input class="form-control" id="ex-order-quantity" inputmode="decimal" autocomplete="off" />
+            </div>
+            <div class="col-12 col-md-2 d-grid">
+                <button type="submit" class="btn btn-primary" id="ex-order-calculate">@Localizer["Expiry.Order.Calculate"]</button>
+            </div>
+        </div>
+    </form>
+
+    <div id="ex-labels-unavailable" class="alert alert-warning d-none" role="status">@Localizer["Expiry.Common.NamesUnavailable"]</div>
+    <div id="ex-error" class="alert alert-danger d-none" role="alert"></div>
+    <div class="alert alert-info" id="ex-order-hint">@Localizer["Expiry.Order.Pick"]</div>
+
+    <div class="card mb-4 d-none" id="ex-order-result">
+        <div class="card-header">
+            <h5 class="card-title mb-1">@Localizer["Expiry.Order.Eligible"]</h5>
+            <div class="d-flex flex-wrap gap-2 align-items-center small" id="ex-order-allocation"></div>
+            <div class="small text-warning" id="ex-order-shortfall"></div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-sm mb-0" id="ex-order-eligible">
+                <thead>
+                    <tr>
+                        <th>@Localizer["Expiry.Col.Rank"]</th>
+                        <th>@Localizer["Expiry.Col.LotNo"]</th>
+                        <th>@Localizer["Expiry.Col.Expiry"]</th>
+                        <th class="text-end">@Localizer["Expiry.Col.DaysLeft"]</th>
+                        <th class="text-end">@Localizer["Expiry.Col.Available"]</th>
+                        <th class="text-end">@Localizer["Expiry.Col.ForQuantity"]</th>
+                        <th>@Localizer["Expiry.Col.Status"]</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div class="card-footer small text-muted" id="ex-order-basis"></div>
+    </div>
+
+    <div class="card mb-4 d-none" id="ex-order-excluded-card">
+        <div class="card-header"><h5 class="card-title mb-0">@Localizer["Expiry.Order.Excluded"]</h5></div>
+        <ul class="list-group list-group-flush" id="ex-order-excluded"></ul>
+    </div>
+
+    <div class="alert alert-secondary d-flex gap-2" role="note"><i class="bx bx-info-circle"></i><span>@Localizer["Expiry.Order.Band"]</span></div>
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    <partial name="~/Views/Expiry/_ExpiryActions.cshtml" />
+    <partial name="~/Views/Expiry/_ExpiryL10n.cshtml" />
+    @if (company.Ready)
+    {
+        <script src="~/assets/js/Expiry/fefo-order.js" asp-append-version="true"></script>
+    }
+}
