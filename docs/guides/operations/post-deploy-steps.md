@@ -185,6 +185,34 @@ verir.
 **Belirti:** (1) kiracı açılışından sonra ilk yöneticinin e-postası gelmez ve Platform günlüğünde `INVITE_LINK_ROOT_…`.
 (2) Başlangıçta `IndexOptionsConflict` ya da kısmi filtre hatası.
 
+### 5 · WP-EMAIL-LANG-01 — okuyanın dilindeki e-posta: kısmi gönderimi elle izleme
+
+| | |
+|---|---|
+| **Modül** | MOD-0027 bildirimler + MOD-0024 görev hatırlatmaları (alıcı dili, teslim 1) |
+| **Ne zaman** | Bu işi taşıyan deploy'dan sonra, sürekli (günlük izleme) |
+| **Yapılmazsa** | Bir e-postanın bazı dil grupları gider, bazıları gitmez. Gitmeyenler **kendiliğinden yeniden denenmez**. |
+| **Kim** | Altyapı / deploy operatörü |
+
+Bir e-posta okuyanların diline göre gruplara bölünür. Bir grup reddedilirse diğerleri yine gönderilir. Çağrı başarılı
+sayılır (`PARTIAL_RECIPIENT_FAILURE`): bu yüzden gönderilmiş okuyanlara aynı posta ikinci kez gitmez.
+
+- **Gönderim satırı olmadan reddedilen grup** kendiliğinden yeniden denenmez. Bu bilinçli bir karardır. Satırsız retler:
+  - `GROUP_DISPATCH_FAILED`;
+  - `MESSAGING_SETTINGS_UNAVAILABLE`;
+  - `TEMPLATE_NOT_FOUND`, `TEMPLATE_RENDER_FAILED`;
+  - `RECIPIENT_INVALID`.
+- **`PROVIDER_REJECTED` alan grup**, gönderim taraması kapalı bir sunucuda (bugün canlı, BL-536) kalıcı başarısızdır.
+  `PROVIDER_REJECTED_RETRY_PENDING` alan grubun satırı yeniden deneme işine kalır.
+
+1. **`task.duesoon.sweep.completed … Partial=N`** Warning satırında N > 0 ise **elle bakın.** Aynı çağrının
+   `notification.dispatch_group_failed` / `notification.dispatch_failed` satırlarından grubun dilini ve nedenini bulun.
+   Nedeni giderin (ayar, şablon, adres). Hatırlatma talebini korur; yani bir sonraki tarama onu **yeniden göndermez**
+   (gönderilmiş okuyanlara ikinci posta gitmesin diye). Gitmeyen okuyana elle haber verin.
+2. Cc / Bcc kopyaları reddedilen gruptan sonraki gruba geçer. Yalnız `PROVIDER_REJECTED_RETRY_PENDING`'de reddedilen
+   satırla kalırlar. ⚠ O satırın bütün denemeleri de tükenirse kopyalar gitmez. Bir SMTP sunucusu tek kötü To adresi
+   yüzünden bütün iletiyi reddeder (MailKit varsayılanı). Kalıcı başarısız satırlarda Cc / Bcc'yi elle kontrol edin.
+
 ---
 
 ## Tamamlananlar

@@ -138,7 +138,8 @@ public sealed class NotificationEventDispatchAdapter : INotificationEventDispatc
          *    c) each group is tried on its own: an exception in one group (other than cancellation) is caught, logged and
          *       counted, and the next group is still tried — when NO group was queued, the first exception is thrown again
          *       as it was (a single dispatch behaves exactly as before);
-         *    d) Cc and Bcc ride with the first group that is QUEUED (a failed group sent nobody, so they move on);
+         *    d) Cc and Bcc ride with the first group that is QUEUED, or refused with its row due for a retry (FIX3: the
+         *       handler's PROVIDER_REJECTED_RETRY_PENDING); any other failed group sent nobody, so they move on;
          *    e) the answer: every group queued → that dispatch; SOME queued → success with PARTIAL_RECIPIENT_FAILURE (the
          *       queued readers have their mail, so a caller that retries on failure would mail them again); none → failure.
          *    A group's To is a subset of the caller's To, so nobody sees an address the single message would not have shown.
@@ -200,9 +201,10 @@ public sealed class NotificationEventDispatchAdapter : INotificationEventDispatc
             }
             else
             {
-                // FIX2 — a provider refusal leaves its dispatch ROW (with these copies) for the retry job: the copies are
-                // on their way with it, so the next group must not carry them a second time.
-                if (string.Equals(response.ReasonCode, Handlers.CommandHandlers.QueueEmailNotificationHandler.ReasonProviderRejected, StringComparison.Ordinal))
+                // FIX3 — only a refusal whose row is DUE for the retry job keeps the copies with it; the handler says so
+                // with its own code. Any other refusal — PROVIDER_REJECTED on a server without the retry job (live today,
+                // BL-536) is final — sent nobody, so the copies move on: a copy twice is lighter than no copy at all.
+                if (string.Equals(response.ReasonCode, Handlers.CommandHandlers.QueueEmailNotificationHandler.ReasonProviderRejectedRetryPending, StringComparison.Ordinal))
                 {
                     copiesPending = false;
                 }

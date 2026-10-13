@@ -35,6 +35,10 @@ public sealed class QueueEmailNotificationHandler
     public const string ReasonTemplateNotFound = "TEMPLATE_NOT_FOUND";
     public const string ReasonRenderFailed = "TEMPLATE_RENDER_FAILED";
     public const string ReasonProviderRejected = "PROVIDER_REJECTED";
+    // WP-EMAIL-LANG-01 FIX3 — the provider refused AND the dispatch row is due for the retry job (NextRetryAt set): the
+    // message, with every address it carried, is still on its way. Said explicitly, so a caller never has to infer it
+    // from PROVIDER_REJECTED — on a server without the retry job (live today, BL-536) that same refusal is final.
+    public const string ReasonProviderRejectedRetryPending = "PROVIDER_REJECTED_RETRY_PENDING";
     // BL-454 — an address that is not ONE plain address (a line break, a second mailbox) never reaches a header.
     // Refused before a dispatch row exists, so nothing schedules a retry of a send that can never succeed.
     public const string ReasonRecipientInvalid = "RECIPIENT_INVALID";
@@ -326,7 +330,8 @@ public sealed class QueueEmailNotificationHandler
             }
         }
         return Response<NotificationDispatchDto>.Fail(
-            "Messaging provider rejected the message.", 400, ReasonProviderRejected);
+            "Messaging provider rejected the message.", 400,
+            _retriesScheduled ? ReasonProviderRejectedRetryPending : ReasonProviderRejected);
     }
 
     /// <summary>

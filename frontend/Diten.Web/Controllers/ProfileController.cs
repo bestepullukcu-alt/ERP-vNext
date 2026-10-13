@@ -102,7 +102,10 @@ public sealed class ProfileController : Controller
     }
 
     /// <summary>The largest body the write accepts — a language code needs a few dozen bytes.</summary>
-    internal const int MaxBodyBytes = 4096;
+    public const int MaxBodyBytes = 4096;
+
+    /// <summary>FIX3 — the write's answer to a body over <see cref="MaxBodyBytes"/> (413).</summary>
+    public const string BodyTooLargeCode = "PROFILE_PREFERENCES_BODY_TOO_LARGE";
 
     [HttpPut("/Profile/api/preferences")]
     [RequestSizeLimit(MaxBodyBytes)]
@@ -115,7 +118,18 @@ public sealed class ProfileController : Controller
             return StatusCode(StatusCodes.Status415UnsupportedMediaType, new { message = "The body must be JSON." });
         }
 
-        if (!TryReadLanguage(await ReadBodyAsync(), out var language))
+        string? json;
+        try
+        {
+            json = await ReadBodyAsync();
+        }
+        catch (BadHttpRequestException ex) when (ex.StatusCode == StatusCodes.Status413PayloadTooLarge)
+        {
+            // FIX3 — over MaxBodyBytes the server stops the read with its own 413; said with a code, not left unhandled.
+            return StatusCode(StatusCodes.Status413PayloadTooLarge, new { code = BodyTooLargeCode, message = "The body is too large." });
+        }
+
+        if (!TryReadLanguage(json, out var language))
         {
             return BadRequest(new { message = "The body must name preferredLanguage: a language, or null to clear it." });
         }

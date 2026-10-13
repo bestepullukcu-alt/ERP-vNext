@@ -100,6 +100,7 @@ public sealed class AuthController : CustomBaseController
     /// </summary>
     [HttpPut("me/preferences")]
     [Authorize]
+    [RequestSizeLimit(PreferencesMaxBodyBytes)]
     public async Task<IActionResult> UpdateMyPreferences(
         [FromServices] Diten.AuthService.Infrastructure.Security.SelfServiceRateLimiter limiter,
         CancellationToken ct)
@@ -126,6 +127,13 @@ public sealed class AuthController : CustomBaseController
                 429));
         }
 
+        // FIX3 — JSON only, as the bound body was before FIX2: anything else is 415 before a byte of it is read.
+        if (!Request.HasJsonContentType())
+        {
+            return CreateActionResultInstance(Response<NoContent>.Fail(
+                "The body must be JSON.", [new ResponseError(PreferencesMediaTypeInvalidCode)], 415));
+        }
+
         // FIX2 — the body is read HERE, not bound: an empty or broken body gets the same coded 400 as a wrong one, instead
         // of the framework's code-less model-binding answer.
         UpdateMyPreferencesRequest? request = null;
@@ -135,9 +143,16 @@ public sealed class AuthController : CustomBaseController
             using var document = await System.Text.Json.JsonDocument.ParseAsync(Request.Body, cancellationToken: ct);
             readable = UpdateMyPreferencesRequest.TryRead(document.RootElement, out request);
         }
-        catch (System.Text.Json.JsonException)
+        // FIX3 — InvalidOperationException: a string that is not text (a lone surrogate, "\ud800", in a value or a name).
+        catch (Exception ex) when (ex is System.Text.Json.JsonException or InvalidOperationException)
         {
             readable = false;
+        }
+        // FIX3 — a body over PreferencesMaxBodyBytes: the server's own 413, with a code, not an unhandled exception.
+        catch (Microsoft.AspNetCore.Http.BadHttpRequestException ex) when (ex.StatusCode == StatusCodes.Status413PayloadTooLarge)
+        {
+            return CreateActionResultInstance(Response<NoContent>.Fail(
+                "The body is too large.", [new ResponseError(PreferencesBodyTooLargeCode)], 413));
         }
 
         if (!readable)
@@ -159,6 +174,15 @@ public sealed class AuthController : CustomBaseController
 
     /// <summary>FIX1 — <c>PUT api/auth/me/preferences</c> with a body that does not name <c>preferredLanguage</c>.</summary>
     public const string PreferencesBodyInvalidCode = "USER_PREFERENCES_BODY_INVALID";
+
+    /// <summary>FIX3 — the same door with a body that is not JSON (415).</summary>
+    public const string PreferencesMediaTypeInvalidCode = "USER_PREFERENCES_MEDIA_TYPE_INVALID";
+
+    /// <summary>FIX3 — the same door with a body over <see cref="PreferencesMaxBodyBytes"/> (413).</summary>
+    public const string PreferencesBodyTooLargeCode = "USER_PREFERENCES_BODY_TOO_LARGE";
+
+    /// <summary>FIX3 — the largest body the door reads; a language code needs a few dozen bytes.</summary>
+    internal const int PreferencesMaxBodyBytes = 4096;
 
     private static string ResolveRequestIp(HttpContext context)
     {

@@ -67,7 +67,7 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
             services.AddScoped<IUserRoleRepository>(sp => new FailingOnceUserRoles(
                 ActivatorUtilities.CreateInstance<Diten.AuthService.Persistence.Repositories.UserRoleRepository>(sp), FailOnce));
             services.AddSingleton<IOtpDeliveryService>(Otp);
-            services.AddSingleton(new Diten.AuthService.Infrastructure.Security.SelfServiceRateLimiter(PreferencesLimit, TimeSpan.FromMinutes(5)));
+            services.AddSingleton(new Diten.AuthService.Infrastructure.Security.SelfServiceRateLimiter(PreferencesLimit, TimeSpan.FromMinutes(5), PreferencesClock));
             services.Configure<Diten.AuthService.Infrastructure.Settings.MfaOptions>(o => o.HashSecret = MfaSecret);
             // FIX3 — the production refresh-token repository with two hold points: before a session is written
             // (create:{user}) and before the reset's sweep (scan:{user}).
@@ -86,6 +86,9 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
 
         /// <summary>WP-EMAIL-LANG-01 FIX1 — the per-user limit of me/preferences, low enough to reach in a test.</summary>
         public const int PreferencesLimit = 3;
+
+        /// <summary>FIX3 — the limiter's clock: it moves only when a test moves it, so the time left in a window is exact.</summary>
+        public ManualClock PreferencesClock { get; } = new(DateTimeOffset.Parse("2026-10-12T09:00:00Z"));
 
         /// <summary>BL-454 stage D FIX3 (3) — "create:{email}" / "assign:{tenantId}": the next such write throws, once.</summary>
         public ConcurrentDictionary<string, bool> FailOnce { get; } = new();
@@ -615,13 +618,94 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
         var refused = await SetMyPreferencesAsync(session.AccessToken, tenantId, new { preferredLanguage = "ru" });
 
         Assert.Equal((HttpStatusCode)429, refused.StatusCode);
-        // FIX2 — Retry-After comes from the lease (the time left in this window), in whole seconds, within the window.
         Assert.True(refused.Headers.RetryAfter?.Delta is { } wait && wait > TimeSpan.Zero && wait <= TimeSpan.FromMinutes(5),
             $"Retry-After: {refused.Headers.RetryAfter}");
         Assert.NotEqual("ru", (await ReadUserAsync(user.Id)).PreferredLanguage);
         // Per USER: another person of the same tenant is not refused.
         var otherSession = await TenantSessionAsync(tenantId, other.Email, OldPassword);
         Assert.Equal(HttpStatusCode.OK, (await SetMyPreferencesAsync(otherSession.AccessToken, tenantId, new { preferredLanguage = "ru" })).StatusCode);
+    }
+
+    [Fact]
+    public async Task Retry_After_is_the_time_left_in_the_window_rounded_up()
+    {
+        // FIX3 (F3) — the window opened at the first write; 1.5 s later the refusal says 300 − 1.5 = 298.5 → 299 s.
+        var tenantId = Guid.NewGuid();
+        var user = await SeedTenantUserAsync(tenantId);
+        var session = await TenantSessionAsync(tenantId, user.Email, OldPassword);
+        for (var i = 0; i < Host.PreferencesLimit; i++)
+        {
+            Assert.Equal(HttpStatusCode.OK, (await SetMyPreferencesAsync(session.AccessToken, tenantId, new { preferredLanguage = "fr" })).StatusCode);
+        }
+
+        _host.PreferencesClock.Advance(TimeSpan.FromMilliseconds(1500));
+        var refused = await SetMyPreferencesAsync(session.AccessToken, tenantId, new { preferredLanguage = "ru" });
+
+        Assert.Equal((HttpStatusCode)429, refused.StatusCode);
+        Assert.Equal(TimeSpan.FromSeconds(299), refused.Headers.RetryAfter?.Delta);
+    }
+
+    [Theory]
+    [InlineData("{\"preferredLanguage\":\"\\ud800\"}")]                 // a value that is not text
+    [InlineData("{\"x\\ud800\":1,\"preferredLanguage\":\"fr\"}")]     // a NAME that is not text
+    public async Task A_lone_surrogate_is_the_coded_400_never_a_500(string body)
+    {
+        // FIX3 — GetString() / property.Name throw InvalidOperationException on "\ud800"; the door refuses it like any wrong body.
+        var tenantId = Guid.NewGuid();
+        var user = await SeedTenantUserAsync(tenantId);
+        var session = await TenantSessionAsync(tenantId, user.Email, OldPassword);
+
+        using var client = _host.Client(session.AccessToken, tenantId);
+        var refused = await client.PutAsync("api/auth/me/preferences", new StringContent(body, System.Text.Encoding.UTF8, "application/json"));
+
+        Assert.Equal(HttpStatusCode.BadRequest, refused.StatusCode);
+        Assert.Contains(Diten.AuthService.Api.Controllers.AuthController.PreferencesBodyInvalidCode, await refused.Content.ReadAsStringAsync());
+        Assert.Null((await ReadUserAsync(user.Id)).PreferredLanguage);
+    }
+
+    [Fact]
+    public async Task A_body_that_is_not_json_is_a_coded_415()
+    {
+        var tenantId = Guid.NewGuid();
+        var user = await SeedTenantUserAsync(tenantId);
+        var session = await TenantSessionAsync(tenantId, user.Email, OldPassword);
+
+        using var client = _host.Client(session.AccessToken, tenantId);
+        var refused = await client.PutAsync("api/auth/me/preferences",
+            new StringContent("preferredLanguage=fr", System.Text.Encoding.UTF8, "application/x-www-form-urlencoded"));
+
+        Assert.Equal(HttpStatusCode.UnsupportedMediaType, refused.StatusCode);
+        Assert.Contains(Diten.AuthService.Api.Controllers.AuthController.PreferencesMediaTypeInvalidCode, await refused.Content.ReadAsStringAsync());
+        Assert.Null((await ReadUserAsync(user.Id)).PreferredLanguage);
+    }
+
+    [Fact]
+    public async Task A_body_over_the_limit_is_a_coded_413()
+    {
+        // FIX3 — past the limit the server stops the read with BadHttpRequestException(413); TestServer does not enforce
+        // the limit, so the test host's filter answers the read exactly so (X-Test-Body-Over-Limit).
+        var tenantId = Guid.NewGuid();
+        var user = await SeedTenantUserAsync(tenantId);
+        var session = await TenantSessionAsync(tenantId, user.Email, OldPassword);
+
+        using var client = _host.Client(session.AccessToken, tenantId);
+        client.DefaultRequestHeaders.Add("X-Test-Body-Over-Limit", "1");
+        var refused = await client.PutAsJsonAsync("api/auth/me/preferences", new { preferredLanguage = "fr" });
+
+        Assert.Equal(HttpStatusCode.RequestEntityTooLarge, refused.StatusCode);
+        Assert.Contains(Diten.AuthService.Api.Controllers.AuthController.PreferencesBodyTooLargeCode, await refused.Content.ReadAsStringAsync());
+        Assert.Null((await ReadUserAsync(user.Id)).PreferredLanguage);
+    }
+
+    [Fact]
+    public void The_door_reads_at_most_four_kilobytes()
+    {
+        var limit = typeof(Diten.AuthService.Api.Controllers.AuthController)
+            .GetMethod(nameof(Diten.AuthService.Api.Controllers.AuthController.UpdateMyPreferences))!
+            .GetCustomAttributes(typeof(Microsoft.AspNetCore.Mvc.RequestSizeLimitAttribute), inherit: false);
+
+        var attribute = Assert.Single(limit);
+        Assert.Equal(4096L, ((Microsoft.AspNetCore.Http.Metadata.IRequestSizeLimitMetadata)attribute).MaxRequestBodySize);
     }
 
     [Theory]
@@ -3157,10 +3241,32 @@ public sealed class AdminResetInvalidatesEndpointTests : IClassFixture<AdminRese
                     context.Connection.RemoteIpAddress = context.Request.Headers.TryGetValue("X-Test-Peer", out var named)
                         ? System.Net.IPAddress.Parse(named.ToString())
                         : new System.Net.IPAddress(Guid.NewGuid().ToByteArray()[..4]);
+                    if (context.Request.Headers.ContainsKey("X-Test-Body-Over-Limit"))
+                    {
+                        context.Request.Body = new OverLimitBody();
+                    }
                     await nextMiddleware();
                 });
                 next(app);
             };
+    }
+
+    /// <summary>WP-EMAIL-LANG-01 FIX3 — a request body read past the server's limit: what Kestrel throws.</summary>
+    private sealed class OverLimitBody : MemoryStream
+    {
+        private static Exception TooLarge() =>
+            new Microsoft.AspNetCore.Http.BadHttpRequestException("Request body too large.", Microsoft.AspNetCore.Http.StatusCodes.Status413PayloadTooLarge);
+        public override int Read(byte[] buffer, int offset, int count) => throw TooLarge();
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) => throw TooLarge();
+        public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default) => throw TooLarge();
+    }
+
+    /// <summary>WP-EMAIL-LANG-01 FIX3 — a clock that moves only when told to.</summary>
+    public sealed class ManualClock(DateTimeOffset start) : TimeProvider
+    {
+        private DateTimeOffset _now = start;
+        public override DateTimeOffset GetUtcNow() => _now;
+        public void Advance(TimeSpan by) => _now += by;
     }
 
     /// <summary>FIX3 — the production refresh-token repository, held before a session is written or before a sweep.</summary>

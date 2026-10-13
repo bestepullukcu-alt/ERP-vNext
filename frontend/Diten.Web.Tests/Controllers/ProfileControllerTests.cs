@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -136,6 +137,45 @@ public sealed class ProfileControllerTests : IClassFixture<WebApplicationFactory
     }
 
     [Fact]
+    public async Task The_field_is_read_in_any_letter_case_as_AuthService_reads_it()
+    {
+        // FIX3 (F5) — the same reading as AuthService: "PreferredLanguage" names the field too.
+        var gateway = new CapturingGateway(HttpStatusCode.OK, Saved("fr"));
+        var (controller, _) = ControllerWith(gateway, "PUT", """{"PreferredLanguage":"fr"}""");
+
+        await controller.SavePreferences();
+
+        Assert.Equal("""{"preferredLanguage":"fr"}""", gateway.LastBody);
+    }
+
+    [Fact]
+    public void The_write_is_limited_to_four_kilobytes()
+    {
+        // FIX3 (F5) — TestServer does not enforce [RequestSizeLimit]; the limit is pinned on the action itself.
+        var limit = typeof(ProfileController).GetMethod(nameof(ProfileController.SavePreferences))!
+            .GetCustomAttributes(typeof(RequestSizeLimitAttribute), inherit: false);
+
+        var attribute = Assert.IsType<RequestSizeLimitAttribute>(Assert.Single(limit));
+        Assert.Equal(ProfileController.MaxBodyBytes, ((Microsoft.AspNetCore.Http.Metadata.IRequestSizeLimitMetadata)attribute).MaxRequestBodySize);
+        Assert.Equal(4096, ProfileController.MaxBodyBytes);
+    }
+
+    [Fact]
+    public async Task A_body_over_the_limit_is_a_coded_413_and_never_sent()
+    {
+        // FIX3 — what Kestrel does past the limit: the read throws BadHttpRequestException(413). The user gets a coded 413.
+        var gateway = new CapturingGateway(HttpStatusCode.OK, "{}");
+        var (controller, context) = ControllerWith(gateway, "PUT", "{}");
+        context.Request.Body = new TooLargeBody();
+
+        var result = Assert.IsType<ObjectResult>(await controller.SavePreferences());
+
+        Assert.Equal(413, result.StatusCode);
+        Assert.Contains(ProfileController.BodyTooLargeCode, System.Text.Json.JsonSerializer.Serialize(result.Value));
+        Assert.Null(gateway.LastUri);
+    }
+
+    [Fact]
     public async Task Without_a_session_token_nothing_is_sent_upstream()
     {
         var gateway = new CapturingGateway(HttpStatusCode.OK, "{}");
@@ -203,11 +243,11 @@ public sealed class ProfileControllerTests : IClassFixture<WebApplicationFactory
     public async Task A_platform_administrators_token_gets_403_and_none_of_the_page(string method, string url)
     {
         // UAS-001, measured end to end: the web tier's own validation of a SIGNED token, then the shell filter.
-        using var client = _factory
-            .WithWebHostBuilder(builder => builder.UseEnvironment("Development"))
-            .CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+        using var development = _factory.WithWebHostBuilder(builder => builder.UseEnvironment("Development"));
+        using var client = development.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
         using var request = new HttpRequestMessage(new HttpMethod(method), url);
-        request.Headers.Add("Cookie", "access_token=" + SignedDevelopmentToken("platform_admin", Guid.Parse("00000000-0000-0000-0000-000000000001")));
+        request.Headers.Add("Cookie", "access_token=" + SignedDevelopmentToken(
+            development.Services.GetRequiredService<IConfiguration>(), "platform_admin", Guid.Parse("00000000-0000-0000-0000-000000000001")));
         if (method == "PUT")
         {
             request.Content = new StringContent("""{"preferredLanguage":"fr"}""", Encoding.UTF8, "application/json");
@@ -221,14 +261,15 @@ public sealed class ProfileControllerTests : IClassFixture<WebApplicationFactory
         Assert.DoesNotContain("profileLanguage", body);
     }
 
-    // Signed with the web tier's own Development settings (appsettings.Development.json, the local development value).
-    private static string SignedDevelopmentToken(string actorType, Guid tenantId)
+    // Signed with the web tier's own Development settings, as the running host composed them.
+    private static string SignedDevelopmentToken(IConfiguration configuration, string actorType, Guid tenantId)
     {
-        using var settings = System.Text.Json.JsonDocument.Parse(File.ReadAllText(WebSourcePath("appsettings.Development.json")));
-        var jwt = settings.RootElement.GetProperty("JwtSettings");
-        var key = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.GetProperty("Secret").GetString()!));
+        // FIX3 — the settings the running web tier actually validates with (an environment variable or a secret store
+        // that overrides the file is followed); the key is never written to the test's output.
+        var jwt = configuration.GetSection("JwtSettings");
+        var key = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt["Secret"]!));
         var token = new JwtSecurityToken(
-            jwt.GetProperty("Issuer").GetString(), jwt.GetProperty("Audience").GetString(),
+            jwt["Issuer"], jwt["Audience"],
             [new Claim("sub", Guid.NewGuid().ToString()), new Claim("actor_type", actorType), new Claim("tenant_id", tenantId.ToString())],
             expires: DateTime.UtcNow.AddMinutes(10),
             signingCredentials: new Microsoft.IdentityModel.Tokens.SigningCredentials(key, Microsoft.IdentityModel.Tokens.SecurityAlgorithms.HmacSha256));
@@ -325,6 +366,16 @@ public sealed class ProfileControllerTests : IClassFixture<WebApplicationFactory
             LastBody = request.Content is null ? null : await request.Content.ReadAsStringAsync(cancellationToken);
             return new HttpResponseMessage(status) { Content = new StringContent(body, Encoding.UTF8, "application/json") };
         }
+    }
+
+    private sealed class TooLargeBody : MemoryStream
+    {
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) =>
+            throw new BadHttpRequestException("Request body too large.", StatusCodes.Status413PayloadTooLarge);
+        public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default) =>
+            throw new BadHttpRequestException("Request body too large.", StatusCodes.Status413PayloadTooLarge);
+        public override int Read(byte[] buffer, int offset, int count) =>
+            throw new BadHttpRequestException("Request body too large.", StatusCodes.Status413PayloadTooLarge);
     }
 
     private sealed class SingleClientFactory(HttpMessageHandler handler) : IHttpClientFactory

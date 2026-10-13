@@ -239,10 +239,46 @@ public sealed class RecipientLanguageFixOneTests
     }
 
     [Fact]
+    public async Task The_callers_own_cancellation_stops_the_loop_and_is_thrown()
+    {
+        // FIX3 (F1) — the caller cancelled: the cancellation is NOT one group's failure; no further group is tried.
+        var (adapter, queue) = Build(throwLocale: "fr", throwForeignCancellation: true);
+        using var cancelled = new CancellationTokenSource();
+        cancelled.Cancel();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => adapter.DispatchByEventCodeAsync(Request(
+            new EmailRecipientDto("fay@acme.test", "Fay", "fr"),
+            new EmailRecipientDto("ruslan@acme.test", "Ruslan", "ru")), cancelled.Token));
+
+        Assert.Equal(["fr"], queue.Sent.Select(c => c.Request.Locale));
+    }
+
+    [Fact]
+    public async Task Cc_and_Bcc_ride_on_past_a_group_that_throws()
+    {
+        // FIX3 (F2) — a group that threw sent nobody: its copies go with the next group that is queued.
+        var (adapter, queue) = Build(throwLocale: "fr");
+        var request = Request(
+            new EmailRecipientDto("fay@acme.test", "Fay", "fr"),
+            new EmailRecipientDto("ruslan@acme.test", "Ruslan", "ru")) with
+        {
+            Cc = [new EmailRecipientDto("cc@acme.test", "Cc")],
+            Bcc = [new EmailRecipientDto("bcc@acme.test", "Bcc")]
+        };
+
+        await adapter.DispatchByEventCodeAsync(request);
+
+        var queued = Assert.Single(queue.Queued);
+        Assert.Equal(["cc@acme.test"], queued.Request.Cc!.Select(r => r.Email));
+        Assert.Equal(["bcc@acme.test"], queued.Request.Bcc!.Select(r => r.Email));
+    }
+
+    [Fact]
     public async Task Copies_on_a_provider_refused_row_are_not_sent_again_with_the_next_group()
     {
-        // PROVIDER_REJECTED leaves its dispatch row — with the copies — for the retry job: the next group must not carry them.
-        var (adapter, queue) = Build(failLocale: "fr", failReason: "PROVIDER_REJECTED");
+        // A refusal whose row is DUE for the retry job (FIX3: the handler says PROVIDER_REJECTED_RETRY_PENDING) keeps the
+        // copies on that row: the next group must not carry them. A final PROVIDER_REJECTED does not — RecipientLanguageFixThreeTests.
+        var (adapter, queue) = Build(failLocale: "fr", failReason: "PROVIDER_REJECTED_RETRY_PENDING");
         var request = Request(
             new EmailRecipientDto("fay@acme.test", "Fay", "fr"),
             new EmailRecipientDto("ruslan@acme.test", "Ruslan", "ru")) with

@@ -20,7 +20,7 @@ and Mailpit announces no AUTH by default — MailKit then throws `NotSupportedEx
 
 ```
 smtp.provider.send.failure    ExceptionType="NotSupportedException"
-notification.dispatch_failed  ReasonCode="PROVIDER_REJECTED" Status=400
+notification.dispatch_failed  ReasonCode="PROVIDER_REJECTED_RETRY_PENDING" Status=400
 ```
 
 That is an environment mismatch, not a product defect. Run Mailpit with:
