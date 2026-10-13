@@ -8398,6 +8398,20 @@ Gelecek regresyon riski: 🟡 (gerçek açıksa canlıda çift sayaç).
 
 ---
 
+### BL-625
+
+**MDM'de iki "en eski açık onay" göstergesi yan yana: LSKU onayı (BL-607) ve kalem etkinleştirme onayı (S2)**
+
+DURUM: AÇIK · SAHİP: CT (MDM) · BULAN: S2 Aşama B raporu §6 ("MDM onay akışı dayanıklılığı" sohbeti, 2026-10-13) · KAYIT: 2026-10-13 · 🟢
+
+S2'nin hatla birleşiminde iki gösterge bilerek ayrı kaldı: BL-607'nin LSKU onayı bekleme göstergesi ve S2'nin kalem etkinleştirme onayı göstergesi. Aynı soruyu ("en eski açık onay ne kadar bekliyor") iki ayrı yerden cevaplıyorlar.
+
+Yapılacak: önce ölç (kim okuyor, uyarı eşikleri aynı mı); sonra tek ortak göstergeye (onay türü boyutuyla) geçiş. Küçük–orta.
+
+Gelecek regresyon riski: 🟢 iki gösterge tutarlı kaldığı sürece yalnız bakım yükü; eşikler ayrışırsa çelişen uyarı.
+
+---
+
 ### BL-624
 
 **Eski parola bağlantısı dizini (`ix_users_password_reset_token_hash`, seyrek) artık oluşturulmuyor ama veritabanlarında duruyor**
