@@ -1276,6 +1276,13 @@ AuthenticationOptions, no header transform, no rate limit), placed right after `
 own gateway copy on 5100 → `GET /api/recall/settings` (random `X-Tenant-Id`, no token) **401 from localhost:5067** (Ocelot log),
 `/api/recallX` 404 (no route).
 
+**INT-RECALL — CT acceptance (2026-10-13).** Commit `aee9d1923` on `feature/int/mod-0177-recall-routes` (base `32267f884`, tree clean,
+4 files +348, no deletions). The ocelot diff is exactly the two `/api/recall` blocks (5067, GET/POST/PUT/OPTIONS — measured against
+`recall.openapi.yaml` 1.0.0: 22 GET, 26 POST, 2 PUT), placed after `/api/expiry/{everything}` (D-INT-1 pattern). The CT re-measured gateway
+**164/165** (the one red = main's known `EveryRoute_DownstreamPortIsInKnownServiceSet`). CT sabotage (own): `GET` removed from
+`/api/recall/{everything}` → **9 of 30** recall route tests red; restored, `git diff` empty. No Web / service file touched. Fast-forwarded
+into the MVP-1 branch; the owner's gateway reloads `ocelot.json` on change (`reloadOnChange: true`).
+
 ## 20. Follow-up Items
 
 | ID | Item | Owner |
