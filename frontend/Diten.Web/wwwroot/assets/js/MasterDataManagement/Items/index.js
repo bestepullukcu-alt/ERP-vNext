@@ -30,11 +30,12 @@ const ItemsPage = (function () {
     const lifecycleRequests = new Set();
     const columnIndexes = [1, 2, 3, 4, 5, 6];
 
-    // MDM's action vocabulary, in MDM's order (ItemActions.For). WITHDRAW_APPROVAL arrives with S2.
-    const actionOrder = ['DETAILS', 'EDIT', 'SUBMIT', 'DEACTIVATE', 'REACTIVATE', 'RETIRE'];
+    // MDM's action vocabulary, in MDM's order (ItemActions.For). S2 lane merge FIX1: + WITHDRAW_APPROVAL (its requester).
+    const actionOrder = ['DETAILS', 'EDIT', 'SUBMIT', 'WITHDRAW_APPROVAL', 'DEACTIVATE', 'REACTIVATE', 'RETIRE'];
     // The lifecycle requests: the proxy path, whether a reason is asked, and the reader's words.
     const lifecycleActions = {
         SUBMIT: { suffix: 'submit', reason: false, label: () => L.Submit, confirm: () => L.SubmitConfirmation, success: () => L.SubmitSuccess },
+        WITHDRAW_APPROVAL: { suffix: 'withdraw', reason: false, label: () => L.WithdrawApproval, confirm: () => L.WithdrawApprovalConfirmation, success: () => L.WithdrawApprovalSuccess },
         DEACTIVATE: { suffix: 'deactivate', reason: true, label: () => L.Deactivate, confirm: () => L.DeactivateConfirmation, success: () => L.DeactivateSuccess },
         REACTIVATE: { suffix: 'reactivation-requests', reason: true, label: () => L.Reactivate, confirm: () => L.ReactivateConfirmation, success: () => L.ReactivateSuccess },
         RETIRE: { suffix: 'retire', reason: true, label: () => L.Retire, confirm: () => L.RetireConfirmation, success: () => L.RetireSuccess }
@@ -168,6 +169,7 @@ const ItemsPage = (function () {
         DETAILS: { key: 'quickView', className: 'js-quick-view', icon: 'bx bx-show', text: () => L.ViewDetails },
         EDIT: { key: 'edit', className: 'js-edit-item', icon: 'bx bx-edit', text: () => L.Edit },
         SUBMIT: { key: 'submit', className: 'js-item-lifecycle', icon: 'bx bx-send', text: () => L.Submit },
+        WITHDRAW_APPROVAL: { key: 'withdrawApproval', className: 'js-item-lifecycle', icon: 'bx bx-undo', text: () => L.WithdrawApproval },
         DEACTIVATE: { key: 'deactivate', className: 'js-item-lifecycle', icon: 'bx bx-block', text: () => L.Deactivate },
         REACTIVATE: { key: 'reactivate', className: 'js-item-lifecycle', icon: 'bx bx-revision', text: () => L.Reactivate },
         RETIRE: { key: 'retire', className: 'js-item-lifecycle text-danger', icon: 'bx bx-archive', text: () => L.Retire }
@@ -184,6 +186,7 @@ const ItemsPage = (function () {
         quickView: ({ id }) => { if (id) window.location.href = `${pagesBase}/Details/${encodeURIComponent(id)}`; },
         edit: ({ id }) => { if (id) window.location.href = `${pagesBase}/Edit/${encodeURIComponent(id)}`; },
         submit: ({ id }) => requestLifecycle(id, 'SUBMIT', reloadList),
+        withdrawApproval: ({ id }) => requestLifecycle(id, 'WITHDRAW_APPROVAL', reloadList),
         deactivate: ({ id }) => requestLifecycle(id, 'DEACTIVATE', reloadList),
         reactivate: ({ id }) => requestLifecycle(id, 'REACTIVATE', reloadList),
         retire: ({ id }) => requestLifecycle(id, 'RETIRE', reloadList)
@@ -455,6 +458,10 @@ const ItemsPage = (function () {
         });
     };
 
+    // S2 (R-04): a lot flag never filled (a legacy draft: null) is drawn indeterminate and sent as null until the reader
+    // sets it — MDM then names it (ITEM_LOT_CONTROLLED_REQUIRED), never a silent "no". A click clears indeterminate.
+    const flagOf = (input) => (input?.indeterminate ? null : input?.checked === true);
+
     // What the form sends: MDM's eleven fields (the proxy forwards exactly these). A fully empty conversion row is no row.
     const readForm = () => ({
         name: String(field('Name')?.value ?? '').trim(),
@@ -462,7 +469,7 @@ const ItemsPage = (function () {
         materialType: String(field('MaterialType')?.value ?? '').trim(),
         baseUomCode: String(field('BaseUomCode')?.value ?? '').trim(),
         storageConditionCodes: selectedCodes(field('StorageConditionCodes')),
-        lotControlled: field('LotControlled')?.checked === true,
+        lotControlled: flagOf(field('LotControlled')),
         stockable: field('Stockable')?.checked === true,
         shelfLifeDays: readDays('ShelfLifeDays'),
         retestDays: readDays('RetestDays'),
@@ -483,7 +490,9 @@ const ItemsPage = (function () {
         fillSelect(field('StorageConditionCodes'), 'storageConditions', (valueOf(item, 'storageConditionCodes') || []).map(String));
         formState.storage = selectedCodes(field('StorageConditionCodes'));
         if (optionState.ready) enforceOneTemperature();
-        field('LotControlled').checked = valueOf(item, 'lotControlled') === true;
+        const lotControlled = valueOf(item, 'lotControlled');
+        field('LotControlled').checked = lotControlled === true;
+        field('LotControlled').indeterminate = lotControlled !== true && lotControlled !== false;
         field('Stockable').checked = valueOf(item, 'stockable') === true;
         ['ShelfLifeDays', 'RetestDays', 'MinRemainingShelfLifeDays'].forEach((name) => {
             const value = valueOf(item, name.charAt(0).toLowerCase() + name.slice(1));

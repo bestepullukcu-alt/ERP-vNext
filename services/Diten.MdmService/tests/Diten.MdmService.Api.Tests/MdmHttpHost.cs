@@ -42,7 +42,7 @@ namespace Diten.MdmService.Api.Tests;
 /// Program.cs registers services, before WebApplicationFactory's configuration hooks apply. They are restored as soon
 /// as the host is built. ⚠ One host per test process: AddPersistence registers a global Guid serializer.</para>
 /// </summary>
-public sealed class MdmHttpHost : IAsyncLifetime
+public class MdmHttpHost : IAsyncLifetime
 {
     public const string DatabaseName = "diten_mdm_itest_http";
     private const string Issuer = "diten-auth-service";
@@ -95,6 +95,9 @@ public sealed class MdmHttpHost : IAsyncLifetime
     public FakeMarkets Markets { get; } = new();
     // MOD-0290-FU04 S1: the three item lists (MOD-0048-FU01 §4) and the tenant-wide stock answer (O-11).
     public FakeItemReferences ItemReferences { get; } = new();
+    public FakeServiceIdentity ServiceIdentity { get; } = new();
+    public FakeItemListPlatform ItemListPlatform => _itemListPlatform ??= new(ItemReferences);
+    private FakeItemListPlatform? _itemListPlatform;
     public FakeStockAvailability Stock { get; } = new();
 
     /// <summary>
@@ -114,6 +117,12 @@ public sealed class MdmHttpHost : IAsyncLifetime
 
     public IMongoDatabase Database =>
         Factory.Services.GetRequiredService<IMongoClient>().GetDatabase(DatabaseName);
+
+    /// <summary>MOD-0290-FU04 S2: settings a derived host adds on top of these (none here).</summary>
+    protected virtual IReadOnlyDictionary<string, string?> AdditionalSettings { get; } = new Dictionary<string, string?>();
+
+    // S2 FIX1: a derived host's own replacements, after the base ones.
+    protected virtual void ConfigureMoreServices(IServiceCollection services) { }
 
     public async Task InitializeAsync()
     {
@@ -144,7 +153,8 @@ public sealed class MdmHttpHost : IAsyncLifetime
                 ["JwtSettings__Audience"] = Audience,
                 ["PlatformRegistration__BaseUrl"] = "",
                 // The real approval-time resolver client, pointed at the in-process Platform answer.
-                ["VerifiedGskuResolver__PlatformBaseAddress"] = "http://platform.test/",
+                // S2 FIX1 item 1: https — the item-list clients refuse plain http outside Development (the GSKU clients take both).
+                ["VerifiedGskuResolver__PlatformBaseAddress"] = "https://platform.test/",
                 ["VerifiedGskuResolver__Timeout"] = "00:00:02",
                 ["VerifiedGskuResolver__CredentialIdentifier"] = "http-host-resolver",
                 ["VerifiedGskuResolver__CredentialSecret"] = Convert.ToHexString(RandomNumberGenerator.GetBytes(16)),
@@ -238,6 +248,8 @@ public sealed class MdmHttpHost : IAsyncLifetime
                 ["LskuRetirementRequestWorkflowWorker__StartSettleSeconds"] = "2",
                 ["LskuRetirementRequestWorkflowWorker__QuarantineAfterFailedAttempts"] = "4"
             };
+            // MOD-0290-FU04 S2: a derived host adds its own settings (ItemActivationHttpHost switches the item approval on).
+            foreach (var (key, value) in AdditionalSettings) overrides[key] = value;
             _overrides = overrides;
             foreach (var (key, value) in overrides)
             {
@@ -264,7 +276,7 @@ public sealed class MdmHttpHost : IAsyncLifetime
                     services.AddSingleton<IVerifiedGskuReferenceResolver>(References);
                     // The approval-time reference check stays the REAL client; only Platform's answer is faked.
                     services.RemoveAll<IWorkflowVerifiedMarketServiceIdentityProvider>();
-                    services.AddSingleton<IWorkflowVerifiedMarketServiceIdentityProvider, FakeServiceIdentity>();
+                    services.AddSingleton<IWorkflowVerifiedMarketServiceIdentityProvider>(ServiceIdentity);
                     services.AddHttpClient(nameof(Diten.MdmService.Infrastructure.ReferenceData.PlatformWorkflowVerifiedGskuResolverClient))
                         .ConfigurePrimaryHttpMessageHandler(() => PlatformReference);
                     services.RemoveAll<IProductIdentityWorkflowTransportReadiness>();
@@ -286,6 +298,11 @@ public sealed class MdmHttpHost : IAsyncLifetime
                     // MOD-0290-FU04 S1: the item lists and the stock answer (production: both fail closed).
                     services.RemoveAll<IItemReferenceResolver>();
                     services.AddSingleton<IItemReferenceResolver>(ItemReferences);
+                    // S2 FIX1 item 1: the approval worker's item lists go through the REAL service-identity client; only
+                    // Platform's endpoint is faked (it answers from ItemReferences and checks the service token).
+                    services.AddHttpClient(nameof(Diten.MdmService.Infrastructure.ReferenceData.PlatformWorkflowItemReferenceResolverClient))
+                        .ConfigurePrimaryHttpMessageHandler(() => ItemListPlatform);
+                    ConfigureMoreServices(services);
                     services.RemoveAll<Diten.MdmService.Application.Contracts.Inventory.IInventoryStockAvailabilityClient>();
                     services.AddSingleton<Diten.MdmService.Application.Contracts.Inventory.IInventoryStockAvailabilityClient>(Stock);
                 });
@@ -335,7 +352,6 @@ public sealed class MdmHttpHost : IAsyncLifetime
         }
     }
 
-    /// <summary>A tenant user's token as AuthService writes it (sub, actor_type, tenant_id, one claim per permission).</summary>
     /// <summary>
     /// WP-MDM-BL598-01 — a second host built like this one (same settings, same fakes, same token key) with some services
     /// replaced (e.g. a Mongo client that cannot reach its server). The caller disposes it.
@@ -362,6 +378,7 @@ public sealed class MdmHttpHost : IAsyncLifetime
         }
     }
 
+    /// <summary>A tenant user's token as AuthService writes it (sub, actor_type, tenant_id, one claim per permission).</summary>
     public string Token(Guid tenantId, Guid userId, params string[] permissions) =>
         TokenOf("tenant_user", tenantId, userId, permissions);
 

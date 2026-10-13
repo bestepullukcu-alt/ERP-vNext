@@ -40,6 +40,10 @@ public sealed class AuditForwardingBehavior<TRequest, TResponse> : IPipelineBeha
             {
                 var metadata = provider.GetAuditMetadata();
                 var succeeded = ReadIsSuccessful(response);
+                // S2 FIX1 item 5: a retried command's repeated refusal is not a new fact.
+                if (!succeeded && request is IAuditFailureRepeatFilter repeats
+                    && !repeats.ShouldAuditFailure(ReadFirstError(response)))
+                    return response;
                 // FIX1 item 2: an opted-in command's own before / after / metadata, plus a refusal's response code.
                 // FIX2 item 1: only an opted-in command carries details, and a refusal enters only in code shape — a
                 // command that has not opted in (BL-574) keeps its old record; a sentence is never forwarded.
@@ -57,7 +61,10 @@ public sealed class AuditForwardingBehavior<TRequest, TResponse> : IPipelineBeha
                     CorrelationId: _correlation?.CorrelationId,
                     BeforeState: details?.BeforeState,
                     AfterState: details?.AfterState,
-                    Metadata: details is { Metadata.Count: > 0 } ? details.Metadata : null);
+                    Metadata: details is { Metadata.Count: > 0 } ? details.Metadata : null,
+                    TenantId: (request as IAuditTenantProvider)?.AuditTenantId is { } tenant && tenant != Guid.Empty
+                        ? tenant : null,
+                    SystemActor: request is IAuditSystemActor);
 
                 await _forwarder.ForwardAsync(forwardRequest, cancellationToken);
             }

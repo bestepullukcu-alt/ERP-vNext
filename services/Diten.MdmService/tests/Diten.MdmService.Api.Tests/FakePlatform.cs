@@ -109,6 +109,7 @@ public sealed class FakeWorkflowEngine : IProductIdentityWorkflowClient
     }
 
     public int StartCalls;
+    public ProductIdentityWorkflowStartRequest? LastStartRequest { get; private set; }
     private long _sequence;
 
     public IReadOnlyList<Instance> Instances(string objectType) =>
@@ -137,6 +138,8 @@ public sealed class FakeWorkflowEngine : IProductIdentityWorkflowClient
         CancellationToken cancellationToken = default)
     {
         Interlocked.Increment(ref StartCalls);
+        // MOD-0290-FU04 S2: what the last start carried (the item approval's position candidate is asserted on it).
+        LastStartRequest = request;
         if (OnNextStart is { } gate)
         {
             OnNextStart = null;
@@ -440,7 +443,13 @@ public sealed class FakePlatformReferenceEndpoint : HttpMessageHandler
 /// <summary>The service token the resolver presents — issued here, in this process, for the test host only.</summary>
 public sealed class FakeServiceIdentity : IWorkflowVerifiedMarketServiceIdentityProvider
 {
+    // S2 FIX2 X2: the tenant each identity was asked for (the token's tenant claim at Auth).
+    public System.Collections.Concurrent.ConcurrentQueue<Guid> Tenants { get; } = new();
+
     public Task<WorkflowVerifiedMarketServiceIdentity> GetAsync(Guid tenantId, bool forceRefresh,
-        CancellationToken cancellationToken = default) =>
-        Task.FromResult(new WorkflowVerifiedMarketServiceIdentity("http-host-service-token", DateTimeOffset.UtcNow.AddMinutes(5)));
+        CancellationToken cancellationToken = default)
+    {
+        Tenants.Enqueue(tenantId);
+        return Task.FromResult(new WorkflowVerifiedMarketServiceIdentity("http-host-service-token", DateTimeOffset.UtcNow.AddMinutes(5)));
+    }
 }

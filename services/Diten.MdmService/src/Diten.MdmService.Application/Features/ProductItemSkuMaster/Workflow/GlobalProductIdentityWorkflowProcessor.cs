@@ -2048,36 +2048,15 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
                    string.Equals(receipt.IdempotencyKey, expectedKey, StringComparison.Ordinal)) == 1;
     }
 
-    private static bool TryMapDecision(string action, out ProductIdentityDecisionKind decision)
-    {
-        if (string.Equals(action, "Approve", StringComparison.Ordinal))
-        {
-            decision = ProductIdentityDecisionKind.Approved;
-            return true;
-        }
-        if (string.Equals(action, "Reject", StringComparison.Ordinal))
-        {
-            decision = ProductIdentityDecisionKind.Rejected;
-            return true;
-        }
-        decision = default;
-        return false;
-    }
+    // FU04 S2: the shared binding part (IdentityApprovalBinding) — the same rules, one place.
+    private static bool TryMapDecision(string action, out ProductIdentityDecisionKind decision) =>
+        IdentityApprovalBinding.TryMapDecision(action, out decision);
 
     private static bool ExactTerminalStatuses(
         ProductIdentityDecisionKind decision,
         string taskStatus,
         string instanceStatus) =>
-        decision switch
-        {
-            ProductIdentityDecisionKind.Approved =>
-                string.Equals(taskStatus, "Approved", StringComparison.Ordinal)
-                && string.Equals(instanceStatus, "Completed", StringComparison.Ordinal),
-            ProductIdentityDecisionKind.Rejected =>
-                string.Equals(taskStatus, "Rejected", StringComparison.Ordinal)
-                && string.Equals(instanceStatus, "Rejected", StringComparison.Ordinal),
-            _ => false
-        };
+        IdentityApprovalBinding.ExactTerminalStatuses(decision, taskStatus, instanceStatus);
 
     private static bool TryRehydrateEvidence(
         GlobalProductIdentityWorkflowOperation operation,
@@ -2233,9 +2212,7 @@ public sealed class GlobalProductIdentityWorkflowProcessor(
         value is null || ExactText(value, maximum);
 
     private static string BoundedCode(string? code, string fallback) =>
-        !string.IsNullOrWhiteSpace(code) && code.Length <= 128 && code.All(character => !char.IsControl(character))
-            ? code
-            : fallback;
+        IdentityApprovalBinding.BoundedCode(code, fallback);
 
     private static GlobalProductIdentityWorkflowProcessingResult Success(
         GlobalProductIdentityWorkflowOperation operation,

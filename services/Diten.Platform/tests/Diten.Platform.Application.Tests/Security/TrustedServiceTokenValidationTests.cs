@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Moq;
 using JsonWebToken = Microsoft.IdentityModel.JsonWebTokens.JsonWebToken;
 using Xunit;
 
@@ -383,6 +384,68 @@ public sealed class TrustedServiceTokenValidationTests : IDisposable
     {
         var principal = new JwtSecurityTokenHandler().ValidateToken(token, Parameters(options), out var validatedToken);
         return (principal, validatedToken);
+    }
+
+    // MOD-0290-FU04 S2 FIX1 item 1 (MDM's approval worker): the item-universal endpoint with Platform's REAL reference-data
+    // validator — MDM's service token for a tenant (actor_type service, Diten.MDM, TRUSTED_REFERENCE_DATA_CONSUMER) resolves
+    // under that tenant; the same call without a token is 401. Only the resolver credential and the human-token path are
+    // stand-ins (neither is under test here).
+    [Theory]
+    [InlineData(true, 200)]
+    [InlineData(false, 401)]
+    public async Task Mdm_service_token_reaches_the_item_lists_under_its_tenant_and_no_token_is_401(bool withToken, int status)
+    {
+        var options = Options();
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                [$"{TrustedServiceTokenValidationOptions.SectionName}:Issuer"] = options.Issuer,
+                [$"{TrustedServiceTokenValidationOptions.SectionName}:CurrentKeyId"] = options.CurrentKeyId,
+                [$"{TrustedServiceTokenValidationOptions.SectionName}:CurrentPublicKeyPem"] = options.CurrentPublicKeyPem
+            })
+            .Build();
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddAuthentication("HumanBearer");
+        services.AddTrustedServiceTokenValidation(configuration, _clock);
+        await using var provider = services.BuildServiceProvider();
+        await using var scope = provider.CreateAsyncScope();
+        var tenant = Guid.NewGuid();
+        var http = new DefaultHttpContext { RequestServices = scope.ServiceProvider };
+        http.Request.Headers[Diten.Platform.API.Controllers.Internal.InternalBusinessReferenceDataController.CredentialIdHeader] = "resolver-id";
+        http.Request.Headers[Diten.Platform.API.Controllers.Internal.InternalBusinessReferenceDataController.CredentialSecretHeader] = "resolver-secret";
+        http.Request.Headers[Diten.Platform.API.Controllers.Internal.InternalBusinessReferenceDataController.AudienceHeader] = "VERIFIED_GSKU_RESOLVE";
+        if (withToken)
+            http.Request.Headers.Authorization = "Bearer " + Token(_current, "current-key", SecurityAlgorithms.RsaSha256,
+                replacedClaimType: "tenant_id", replacedClaimValue: tenant.ToString("D"),
+                audience: TrustedServiceTokenValidationExtensions.ReferenceDataRequiredAudience);
+
+        var tenants = new Diten.Platform.Common.Tenancy.TenantContext();
+        Guid? resolvedUnder = null;
+        var mediator = new Moq.Mock<MediatR.IMediator>(Moq.MockBehavior.Strict);
+        mediator.Setup(x => x.Send(Moq.It.IsAny<Diten.Platform.Application.Features.BusinessReferenceData.Queries.ResolveItemUniversalReferenceDataQuery>(),
+                Moq.It.IsAny<CancellationToken>()))
+            .Callback(() => resolvedUnder = tenants.TenantId)
+            .ReturnsAsync(Diten.Platform.Application.Common.Response<Diten.Platform.Application.Features.BusinessReferenceData.Models.ItemUniversalResolveResult>
+                .Success(new Diten.Platform.Application.Features.BusinessReferenceData.Models.ItemUniversalResolveResult([], [])));
+        var credential = new Moq.Mock<IVerifiedGskuResolverCredentialAuthenticator>(Moq.MockBehavior.Strict);
+        credential.Setup(x => x.Authenticate("resolver-id", "resolver-secret", "VERIFIED_GSKU_RESOLVE"))
+            .Returns(new VerifiedGskuResolverCredentialAuthenticationResult(true, false, "DITENMDMSERVICE", "VERIFIED_GSKU_RESOLVE"));
+        var human = new Moq.Mock<IVerifiedGskuResolverJwtTenantContext>(Moq.MockBehavior.Strict);
+        human.Setup(x => x.ResolveAsync(Moq.It.IsAny<HttpContext>())).ReturnsAsync(VerifiedGskuResolverJwtTenantResult.Unauthenticated);
+        var controller = new Diten.Platform.API.Controllers.Internal.InternalItemUniversalReferenceDataController(
+            mediator.Object, credential.Object, human.Object, tenants, new VerifiedReferenceDataServiceTenantContext())
+        {
+            ControllerContext = new Microsoft.AspNetCore.Mvc.ControllerContext { HttpContext = http }
+        };
+
+        var result = await controller.Resolve(new Diten.Platform.API.Models.BusinessReferenceData.ItemUniversalResolveRequest
+        {
+            Selections = [new() { SetCode = "item-uom", ValueCode = "KGM", ResolutionMode = "LATEST" }]
+        }, CancellationToken.None);
+
+        Assert.Equal(status, result is Microsoft.AspNetCore.Mvc.ObjectResult objectResult ? objectResult.StatusCode ?? 200 : 200);
+        Assert.Equal(withToken ? tenant : null, resolvedUnder);
     }
 
     private static async Task<AuthenticateResult> AuthenticateAsync(

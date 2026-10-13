@@ -117,3 +117,6 @@ public sealed class DeactivateItemValidator() : ItemLifecycleValidator<Deactivat
 public sealed class RequestItemReactivationValidator()
     : ItemLifecycleValidator<RequestItemReactivationCommand>(x => x.ItemId, x => x.Request, true);
 public sealed class RetireItemValidator() : ItemLifecycleValidator<RetireItemCommand>(x => x.ItemId, x => x.Request, true);
+// FU04 S2: the maker's withdrawal — the reason is optional (sent to the engine as the cancel's comment).
+public sealed class WithdrawItemApprovalValidator()
+    : ItemLifecycleValidator<WithdrawItemApprovalCommand>(x => x.ItemId, x => x.Request, false);

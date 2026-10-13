@@ -133,4 +133,7 @@
   <data name="RefusalInternal" xml:space="preserve"><value>El servicio de artículos informó de una incoherencia interna. Informe a su administrador.</value></data>
   <data name="RefusalOptionsUnavailable" xml:space="preserve"><value>Las listas de tipos de material, unidades y condiciones de almacenamiento no se pueden cargar ahora; estos campos no se pueden elegir. Inténtelo de nuevo en un momento.</value></data>
   <data name="RefusalOptionsTimeout" xml:space="preserve"><value>Las listas de tipos de material, unidades y condiciones de almacenamiento no se cargaron a tiempo; estos campos no se pueden elegir. Inténtelo de nuevo en un momento.</value></data>
+  <data name="WithdrawApproval" xml:space="preserve"><value>Retirar solicitud de aprobación</value></data>
+  <data name="WithdrawApprovalConfirmation" xml:space="preserve"><value>¿Retirar la solicitud de aprobación de activación de este artículo?</value></data>
+  <data name="WithdrawApprovalSuccess" xml:space="preserve"><value>La solicitud de aprobación se retiró. El artículo volvió a su estado anterior.</value></data>
 </root>

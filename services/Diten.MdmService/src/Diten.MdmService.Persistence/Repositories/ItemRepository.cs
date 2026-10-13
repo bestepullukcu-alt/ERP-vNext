@@ -177,19 +177,52 @@ public sealed class ItemRepository : IItemRepository
         }
     }
 
-    public async Task<ItemWriteResult> ReplaceAsync(Item item, int expectedVersion, CancellationToken cancellationToken = default)
+    // FU04 S2 (S1 carry-over b, BL-576): the item's own writes are field-level — every field this binary knows is
+    // $set, nothing else is touched, so a field a later binary added survives an edit made by this one. The approval's
+    // fields (binding, fence) are the workflow store's and never written here. The two arrays of classes (conversions,
+    // storage selections) are replaced whole when written: a named risk in the BL-576 guard (MdmDocumentClassMapsTests).
+    public async Task<ItemWriteResult> UpdateFieldsAsync(Item item, int expectedVersion, CancellationToken cancellationToken = default)
     {
         item.TenantId = _tenantId;
-        item.Version = expectedVersion + 1;
-        item.UpdatedAt = DateTimeOffset.UtcNow;
+        var updatedAt = DateTimeOffset.UtcNow;
+        var update = Builders<Item>.Update
+            .Set(x => x.Name, item.Name)
+            .Set(x => x.NameNormalized, item.NameNormalized)
+            .Set(x => x.NameKey, item.NameKey)
+            .Set(x => x.Description, item.Description)
+            .Set(x => x.MaterialType, item.MaterialType)
+            .Set(x => x.MaterialTypeSelection, item.MaterialTypeSelection)
+            .Set(x => x.BaseUomCode, item.BaseUomCode)
+            .Set(x => x.BaseUomSelection, item.BaseUomSelection)
+            .Set(x => x.UomConversions, item.UomConversions)
+            .Set(x => x.StorageConditionCodes, item.StorageConditionCodes)
+            .Set(x => x.StorageConditionSelections, item.StorageConditionSelections)
+            .Set(x => x.StorageConditionKinds, item.StorageConditionKinds)
+            .Set(x => x.LotControlled, item.LotControlled)
+            .Set(x => x.Stockable, item.Stockable)
+            .Set(x => x.ShelfLifeDays, item.ShelfLifeDays)
+            .Set(x => x.RetestDays, item.RetestDays)
+            .Set(x => x.MinRemainingShelfLifeDays, item.MinRemainingShelfLifeDays)
+            .Set(x => x.LifecycleStatus, item.LifecycleStatus)
+            .Set(x => x.UpdatedBy, item.UpdatedBy)
+            .Set(x => x.DeactivationReason, item.DeactivationReason)
+            .Set(x => x.DeactivatedAt, item.DeactivatedAt)
+            .Set(x => x.RetirementReason, item.RetirementReason)
+            .Set(x => x.RetiredAt, item.RetiredAt)
+            .Set(x => x.UpdatedAt, updatedAt)
+            .Inc(x => x.Version, 1);
         try
         {
-            var replaced = await _items.ReplaceOneAsync(
-                Live & Builders<Item>.Filter.Eq(x => x.Id, item.Id) & Builders<Item>.Filter.Eq(x => x.Version, expectedVersion),
-                item, cancellationToken: cancellationToken);
-            return replaced.MatchedCount == 1
-                ? new(true, item)
-                : new(false, null, "ITEM_CONCURRENCY_CONFLICT");
+            var written = await _items.FindOneAndUpdateAsync(
+                Live & Builders<Item>.Filter.Eq(x => x.Id, item.Id) & Builders<Item>.Filter.Eq(x => x.Version, expectedVersion)
+                // §8.4 A: an item whose activation start may be in the engine's hands is not edited under it. Eq(null)
+                // also matches a document written before the field existed.
+                & Builders<Item>.Filter.Eq(x => x.ActivationSubmitOperationId, null),
+                update, new FindOneAndUpdateOptions<Item> { ReturnDocument = ReturnDocument.After }, cancellationToken);
+            return written is null
+                ? new(false, null, await FenceHeldAsync(item.Id, expectedVersion, cancellationToken)
+                    ? ActivationSubmitInFlight : "ITEM_CONCURRENCY_CONFLICT")
+                : new(true, written);
         }
         catch (MongoWriteException exception) when (exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
         {
@@ -202,6 +235,29 @@ public sealed class ItemRepository : IItemRepository
         catch (MongoWriteConcernException) { return AmbiguousWrite(); }
         catch (TimeoutException) { return AmbiguousWrite(); }
     }
+
+    public const string ActivationSubmitInFlight = "ITEM_ACTIVATION_SUBMIT_IN_FLIGHT";
+
+    public async Task<bool> FenceActivationSubmitAsync(Guid itemId, int expectedVersion, ItemLifecycleStatus sourceStatus,
+        Guid operationId, CancellationToken cancellationToken = default)
+    {
+        if (itemId == Guid.Empty || operationId == Guid.Empty || expectedVersion < 0) return false;
+        var fenced = await _items.UpdateOneAsync(
+            Live & Builders<Item>.Filter.Eq(x => x.Id, itemId) & Builders<Item>.Filter.Eq(x => x.Version, expectedVersion)
+            & Builders<Item>.Filter.Eq(x => x.LifecycleStatus, sourceStatus)
+            // Eq(null) also matches a document written before the field existed.
+            & (Builders<Item>.Filter.Eq(x => x.ActivationSubmitOperationId, null)
+               | Builders<Item>.Filter.Eq(x => x.ActivationSubmitOperationId, operationId)),
+            Builders<Item>.Update.Set(x => x.ActivationSubmitOperationId, operationId),
+            cancellationToken: cancellationToken);
+        return fenced.MatchedCount == 1;
+    }
+
+    private Task<bool> FenceHeldAsync(Guid itemId, int expectedVersion, CancellationToken cancellationToken) =>
+        _items.Find(Live & Builders<Item>.Filter.Eq(x => x.Id, itemId)
+                    & Builders<Item>.Filter.Eq(x => x.Version, expectedVersion)
+                    & Builders<Item>.Filter.Ne(x => x.ActivationSubmitOperationId, null))
+            .AnyAsync(cancellationToken);
 
     private static bool IsNameKeyConflict(MongoWriteException exception) =>
         exception.WriteError?.Message?.Contains(NameKeyIndexName, StringComparison.Ordinal) == true;

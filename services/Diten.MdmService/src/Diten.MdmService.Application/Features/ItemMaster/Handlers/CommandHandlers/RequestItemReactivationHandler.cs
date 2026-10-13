@@ -1,18 +1,19 @@
 using Diten.MdmService.Application.Features.ItemMaster.Commands;
-using Diten.MdmService.Domain.Repositories;
+using Diten.MdmService.Domain.Enums;
 using Diten.Shared.Core;
 using MediatR;
 
 namespace Diten.MdmService.Application.Features.ItemMaster.Handlers.CommandHandlers;
 
-// S1 skeleton: see ItemActivationSkeleton.
-public sealed class RequestItemReactivationHandler(IItemRepository items)
+// FU04 S2: Deactivated → PendingActivation through the same approval (ActivationKind = Reactivation).
+public sealed class RequestItemReactivationHandler(ItemActivationRequests requests)
     : IRequestHandler<RequestItemReactivationCommand, Response<ItemModels.ItemDto>>
 {
     public Task<Response<ItemModels.ItemDto>> Handle(RequestItemReactivationCommand command, CancellationToken cancellationToken)
     {
         command.AuditDetails.Set(ItemAudit.ReasonProvided, !string.IsNullOrWhiteSpace(command.Request.Reason));
-        return ItemActivationSkeleton.RefuseAsync(items, command.ItemId, command.Request.ExpectedVersion!.Value,
-            ItemTransition.RequestReactivation, cancellationToken);
+        command.AuditDetails.Set(ItemAudit.ReasonLength, command.Request.Reason?.Trim().Length ?? 0);
+        return requests.StartAsync(command.ItemId, command.Request, ItemActivationKind.Reactivation, command.AuditDetails,
+            cancellationToken);
     }
 }

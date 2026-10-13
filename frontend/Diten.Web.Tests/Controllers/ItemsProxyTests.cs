@@ -311,10 +311,68 @@ public sealed class ItemsProxyTests(WebApplicationFactory<Program> factory) : IC
         Assert.False(sent.RootElement.TryGetProperty("reason", out _));
     }
 
+    // S2 lane merge FIX1 (CT blocker): MDM answers the approval's requests 202 while the approval is still being started
+    // (its normal waiting state) — that is success, passed on with MDM's body; the item is pending, not an error.
+    [Theory]
+    [InlineData("Submit", "mdm.items.submit", "submit")]
+    [InlineData("RequestReactivation", "mdm.items.submit", "reactivation-requests")]
+    [InlineData("WithdrawApproval", "mdm.items.withdraw", "withdraw")]
+    public async Task S2MergeFix1_An_accepted_approval_request_is_a_success_with_mdms_body(string action, string permission,
+        string suffix)
+    {
+        var accepted = AcceptedEnvelope(version: 2, status: 2);
+        var wire = new RecordingHandler(HttpStatusCode.Accepted, accepted);
+        var controller = Controller(wire, [permission], "");
+
+        var result = Assert.IsType<ContentResult>(await InvokeApproval(controller, action, 1));
+
+        Assert.Equal(StatusCodes.Status202Accepted, result.StatusCode);
+        Assert.Equal(accepted, result.Content);
+        Assert.Equal($"{Gateway}/api/mdm/items/{ItemId:D}/{suffix}", Assert.Single(wire.Requests).Url);
+    }
+
+    // ... and never a mix: a 202 whose envelope says 200 (or the reverse), or a 202 on a write that is not an approval
+    // request, is not MDM's own answer.
+    [Fact]
+    public async Task S2MergeFix1_A_202_is_success_only_on_an_approval_request_with_a_matching_envelope()
+    {
+        var mixed = Controller(new RecordingHandler(HttpStatusCode.Accepted, ItemDtoEnvelope(version: 2, status: 2)),
+            ["mdm.items.submit"], "");
+        var reverse = Controller(new RecordingHandler(HttpStatusCode.OK, AcceptedEnvelope(version: 2, status: 2)),
+            ["mdm.items.submit"], "");
+        var deactivate = Controller(new RecordingHandler(HttpStatusCode.Accepted, AcceptedEnvelope(version: 2, status: 4)),
+            ["mdm.items.deactivate"], "");
+
+        Assert.Equal(StatusCodes.Status502BadGateway,
+            Assert.IsType<ObjectResult>(await mixed.Submit(ItemId, 1, CancellationToken.None)).StatusCode);
+        Assert.Equal(StatusCodes.Status502BadGateway,
+            Assert.IsType<ObjectResult>(await reverse.Submit(ItemId, 1, CancellationToken.None)).StatusCode);
+        Assert.Equal(StatusCodes.Status502BadGateway,
+            Assert.IsType<ObjectResult>(await deactivate.Deactivate(ItemId, 1, "r", CancellationToken.None)).StatusCode);
+    }
+
+    // The withdraw's reason is optional; when given it travels trimmed.
+    [Fact]
+    public async Task S2MergeFix1_The_withdraw_posts_the_version_and_an_optional_reason()
+    {
+        var wire = new RecordingHandler(HttpStatusCode.OK, ItemDtoEnvelope(version: 3, status: 1));
+        var controller = Controller(wire, ["mdm.items.withdraw"], "");
+
+        Assert.Equal(StatusCodes.Status200OK,
+            Assert.IsType<ContentResult>(await controller.WithdrawApproval(ItemId, 2, null, CancellationToken.None)).StatusCode);
+        await controller.WithdrawApproval(ItemId, 2, "  wrong lot rule  ", CancellationToken.None);
+
+        using var first = JsonDocument.Parse(wire.Requests[0].Body!);
+        using var second = JsonDocument.Parse(wire.Requests[1].Body!);
+        Assert.Equal(2, first.RootElement.GetProperty("expectedVersion").GetInt32());
+        Assert.False(first.RootElement.TryGetProperty("reason", out _));
+        Assert.Equal("wrong lot rule", second.RootElement.GetProperty("reason").GetString());
+    }
+
     [Fact]
     public void Every_write_endpoint_validates_the_antiforgery_token()
     {
-        foreach (var name in new[] { "CreateItem", "UpdateItem", "Submit", "RequestReactivation", "Deactivate", "Retire" })
+        foreach (var name in new[] { "CreateItem", "UpdateItem", "Submit", "RequestReactivation", "WithdrawApproval", "Deactivate", "Retire" })
         {
             var method = typeof(ItemsController).GetMethod(name)!;
             Assert.True(method.GetCustomAttribute<ValidateAntiForgeryTokenAttribute>() is not null, name);
@@ -378,6 +436,48 @@ public sealed class ItemsProxyTests(WebApplicationFactory<Program> factory) : IC
         Assert.DoesNotContain("unmapped", locked + reference);
     }
 
+    // S2 lane merge: the activation approval's answers are said from ITS resx (the second localizer); the gate's field
+    // names after its code are each said as their label, in MDM's order; an unknown field name is skipped, never shown.
+    [Theory]
+    [InlineData(422, "[\"ITEM_STOCK_FIELDS_REQUIRED_FOR_ACTIVATION\",\"lotControlled\",\"baseUomCode\",\"someNewField\"]",
+        "approval:RefusalStockFieldsRequired|approval:FieldLotControlled|approval:FieldBaseUom")]
+    [InlineData(409, "[\"ITEM_ACTIVATION_WORKFLOW_BUSY\"]", "approval:RefusalApprovalBusy")]
+    [InlineData(403, "[\"ITEM_ACTIVATION_WITHDRAWAL_NOT_REQUESTER\"]", "approval:RefusalApprovalNotRequester")]
+    [InlineData(503, "[\"ITEM_REFERENCE_PROVIDER_CONFIGURATION_ERROR\"]", "approval:RefusalReferenceCheckUnavailable")]
+    [InlineData(409, "[\"ITEM_ACTIVATION_SUBMIT_IN_FLIGHT\"]", "approval:RefusalApprovalSubmitInFlight")]
+    public async Task S2Merge_An_approval_answer_is_its_own_sentence_and_the_gates_fields_are_named(int status, string errors,
+        string expected)
+    {
+        var wire = new RecordingHandler((HttpStatusCode)status, $"{{\"isSuccessful\":false,\"statusCode\":{status},\"errors\":{errors}}}");
+
+        var result = Assert.IsType<ObjectResult>(await Controller(wire, ["mdm.items.submit"], "").Submit(ItemId, 1, CancellationToken.None));
+
+        Assert.Equal(status, result.StatusCode);
+        using var reply = JsonDocument.Parse(JsonSerializer.Serialize(result.Value));
+        Assert.Equal(expected.Split('|'), reply.RootElement.GetProperty("errors").EnumerateArray().Select(item => item.GetString()!));
+        Assert.False(reply.RootElement.TryGetProperty("unmapped", out _));
+    }
+
+    [Fact]
+    public async Task S2Merge_The_gate_refusal_reaches_a_turkish_reader_as_turkish_sentences()
+    {
+        CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("tr");
+        var wire = new RecordingHandler(HttpStatusCode.UnprocessableEntity,
+            "{\"errors\":[\"ITEM_STOCK_FIELDS_REQUIRED_FOR_ACTIVATION\",\"storageConditionCodes\"]}");
+        using var scope = factory.Services.CreateScope();
+        var controller = Controller(wire, ["mdm.items.submit"], "",
+            scope.ServiceProvider.GetRequiredService<IStringLocalizer<ItemsIndex>>(),
+            scope.ServiceProvider.GetRequiredService<IStringLocalizer<ItemRefusals>>());
+
+        var text = JsonSerializer.Serialize(Assert.IsType<ObjectResult>(await controller.Submit(ItemId, 1, CancellationToken.None)).Value,
+            new JsonSerializerOptions { Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
+
+        Assert.Contains("etkinleştirilemez", text);
+        Assert.Contains("Saklama koşulları", text);
+        Assert.DoesNotContain("ITEM_STOCK_FIELDS", text);
+        Assert.DoesNotContain("storageConditionCodes", text);
+    }
+
     [Fact]
     public async Task An_unknown_code_is_the_status_sentence_flagged_unmapped_and_never_shown()
     {
@@ -422,6 +522,10 @@ public sealed class ItemsProxyTests(WebApplicationFactory<Program> factory) : IC
             ("Reactivate", await reader.RequestReactivation(ItemId, 1, "r", CancellationToken.None)),
             ("Deactivate", await reader.Deactivate(ItemId, 1, "r", CancellationToken.None)),
             ("Retire", await reader.Retire(ItemId, 1, "r", CancellationToken.None)),
+            // S2 lane merge FIX1: the withdraw needs its OWN key — the submit key (the request's) is not it.
+            ("Withdraw", await reader.WithdrawApproval(ItemId, 1, null, CancellationToken.None)),
+            ("Withdraw (submit key)", await Controller(wire, ["mdm.items.read", "mdm.items.submit"], "")
+                .WithdrawApproval(ItemId, 1, null, CancellationToken.None)),
             ("Options (read key)", await reader.Options(CancellationToken.None)),
             ("Options (other read key)", await nobody.Options(CancellationToken.None))
         };
@@ -721,6 +825,17 @@ public sealed class ItemsProxyTests(WebApplicationFactory<Program> factory) : IC
         "{\"isSuccessful\":true,\"statusCode\":200,\"data\":{\"id\":\"" + ItemId + "\",\"version\":" + version
         + ",\"lifecycleStatus\":" + status + "}}";
 
+    private static string AcceptedEnvelope(int version, int status) =>
+        "{\"isSuccessful\":true,\"statusCode\":202,\"data\":{\"id\":\"" + ItemId + "\",\"version\":" + version
+        + ",\"lifecycleStatus\":" + status + "}}";
+
+    private static Task<IActionResult> InvokeApproval(ItemsController controller, string action, int version) => action switch
+    {
+        "Submit" => controller.Submit(ItemId, version, CancellationToken.None),
+        "RequestReactivation" => controller.RequestReactivation(ItemId, version, "back in use", CancellationToken.None),
+        _ => controller.WithdrawApproval(ItemId, version, null, CancellationToken.None)
+    };
+
     private static Task<IActionResult> Invoke(ItemsController controller, string action, Guid id, int? version, string? reason) =>
         action switch
         {
@@ -738,7 +853,7 @@ public sealed class ItemsProxyTests(WebApplicationFactory<Program> factory) : IC
     };
 
     private static ItemsController Controller(HttpMessageHandler wire, string[] permissions, string query,
-        IStringLocalizer<ItemsIndex>? localizer = null)
+        IStringLocalizer<ItemsIndex>? localizer = null, IStringLocalizer<ItemRefusals>? approvalLocalizer = null)
     {
         var gateway = new ConfigurationBuilder().AddInMemoryCollection(
             new Dictionary<string, string?> { ["GatewayUrl"] = Gateway }).Build();
@@ -756,7 +871,7 @@ public sealed class ItemsProxyTests(WebApplicationFactory<Program> factory) : IC
         context.Request.Headers.Cookie = "access_token=synthetic-items-proxy";
         context.Request.QueryString = new QueryString(query);
         return new ItemsController(new HttpClient(wire), gateway, new EphemeralDataProtectionProvider(),
-            localizer ?? new EchoLocalizer(), NullLogger<ItemsController>.Instance)
+            localizer ?? new EchoLocalizer(), approvalLocalizer ?? new EchoApprovalLocalizer(), NullLogger<ItemsController>.Instance)
         { ControllerContext = new ControllerContext { HttpContext = context } };
     }
 
@@ -788,6 +903,14 @@ public sealed class ItemsProxyTests(WebApplicationFactory<Program> factory) : IC
     {
         public LocalizedString this[string name] => new(name, name);
         public LocalizedString this[string name, params object[] arguments] => new(name, name);
+        public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) => [];
+    }
+
+    // S2 lane merge: the approval's localizer, told apart from the page's by its prefix.
+    private sealed class EchoApprovalLocalizer : IStringLocalizer<ItemRefusals>
+    {
+        public LocalizedString this[string name] => new(name, "approval:" + name);
+        public LocalizedString this[string name, params object[] arguments] => new(name, "approval:" + name);
         public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) => [];
     }
 }

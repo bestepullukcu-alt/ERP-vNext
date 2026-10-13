@@ -50,6 +50,19 @@ public static class DependencyInjection
                 PlatformItemReferenceResolverClient.CredentialSecretHeader,
                 PlatformItemReferenceResolverClient.AudienceHeader
             ]);
+        // S2 FIX1 item 1: the approval worker reads the same lists with MDM's service identity (no user request there).
+        services.AddHttpClient(nameof(PlatformWorkflowItemReferenceResolverClient), client =>
+            {
+                client.Timeout = Timeout.InfiniteTimeSpan;
+            })
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false })
+            .RedactLoggedHeaders([
+                "Authorization",
+                PlatformItemReferenceResolverClient.CredentialIdHeader,
+                PlatformItemReferenceResolverClient.CredentialSecretHeader,
+                PlatformItemReferenceResolverClient.AudienceHeader
+            ]);
+        services.AddScoped<IWorkflowItemReferenceResolver, PlatformWorkflowItemReferenceResolverClient>();
         services.AddSingleton<Diten.MdmService.Application.Contracts.Inventory.IInventoryStockAvailabilityClient,
             Diten.MdmService.Infrastructure.Inventory.UnavailableInventoryStockAvailabilityClient>();
         services.Configure<VerifiedMarketResolverOptions>(

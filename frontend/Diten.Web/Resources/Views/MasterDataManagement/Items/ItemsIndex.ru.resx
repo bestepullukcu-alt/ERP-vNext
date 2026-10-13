@@ -133,4 +133,7 @@
   <data name="RefusalInternal" xml:space="preserve"><value>Сервис позиций сообщил о внутреннем несоответствии. Сообщите администратору.</value></data>
   <data name="RefusalOptionsUnavailable" xml:space="preserve"><value>Списки типов материалов, единиц измерения и условий хранения сейчас не загружаются, поэтому эти поля нельзя выбрать. Повторите попытку чуть позже.</value></data>
   <data name="RefusalOptionsTimeout" xml:space="preserve"><value>Списки типов материалов, единиц измерения и условий хранения не загрузились вовремя, поэтому эти поля нельзя выбрать. Повторите попытку чуть позже.</value></data>
+  <data name="WithdrawApproval" xml:space="preserve"><value>Отозвать запрос на утверждение</value></data>
+  <data name="WithdrawApprovalConfirmation" xml:space="preserve"><value>Отозвать запрос на утверждение активации этой позиции?</value></data>
+  <data name="WithdrawApprovalSuccess" xml:space="preserve"><value>Запрос на утверждение отозван. Позиция возвращена в предыдущий статус.</value></data>
 </root>

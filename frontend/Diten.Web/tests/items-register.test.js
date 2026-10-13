@@ -59,7 +59,7 @@ describe('Items executed browser contracts', () => {
 
     it('draws a row\'s actions only from its availableActions — an unknown or a duplicate action is never drawn', () => {
         const h = harness();
-        const html = h.api.renderRowActions(item(['DETAILS', 'WITHDRAW_APPROVAL', 'DELETE', 'DEACTIVATE', 'DEACTIVATE']));
+        const html = h.api.renderRowActions(item(['DETAILS', 'APPROVE', 'DELETE', 'DEACTIVATE', 'DEACTIVATE']));
         document.body.insertAdjacentHTML('beforeend', `<div id="row">${html}</div>`);
         const drawn = [...document.querySelectorAll('#row [data-action]')].map((x) => x.dataset.action);
         expect(drawn).toEqual(['DETAILS', 'DEACTIVATE']);
@@ -119,6 +119,47 @@ describe('Items executed browser contracts', () => {
         expect(h.window.showConfirm.mock.calls[0][2].showInput).toBeUndefined();
         expect(h.toast).toHaveBeenCalledWith('Activation approval is not available yet.', 'error');
         expect(h.fetch).toHaveBeenCalledTimes(2);
+    });
+
+    // S2 lane merge FIX1: the requester's WITHDRAW_APPROVAL — drawn after SUBMIT, posts the version to /withdraw without
+    // asking a reason, reads the item back and says its own sentence.
+    it('S2 merge FIX1: WITHDRAW_APPROVAL is drawn in MDM\'s order and posts the version to /withdraw', async () => {
+        const drawn = harness();
+        document.body.insertAdjacentHTML('beforeend',
+            `<div id="row">${drawn.api.renderRowActions(item(['DETAILS', 'WITHDRAW_APPROVAL', 'DEACTIVATE']))}</div>`);
+        expect([...document.querySelectorAll('#row [data-action]')].map((x) => x.dataset.action))
+            .toEqual(['DETAILS', 'WITHDRAW_APPROVAL', 'DEACTIVATE']);
+        expect(document.querySelector('#row [data-action="WITHDRAW_APPROVAL"]').dataset.rowAction).toBe('withdrawApproval');
+
+        const h = harness([
+            response(item(['DETAILS', 'WITHDRAW_APPROVAL'], 2, 2)),
+            response(item(['DETAILS', 'EDIT', 'SUBMIT'], 1, 3)),
+            response(item(['DETAILS', 'EDIT', 'SUBMIT'], 1, 3))
+        ]);
+        h.api.requestLifecycle(id, 'WITHDRAW_APPROVAL', () => h.reload());
+        await h.settle();
+
+        expect(h.fetch.mock.calls[1][0]).toBe(`/MasterDataManagement/Items/api/${id}/withdraw`);
+        expect(h.fetch.mock.calls[1][1].body.get('ExpectedVersion')).toBe('2');
+        expect(h.fetch.mock.calls[1][1].body.has('Reason')).toBe(false);
+        expect(h.window.showConfirm.mock.calls[0][0]).toBe('WithdrawApprovalConfirmation');
+        expect(h.toast).toHaveBeenCalledWith('WithdrawApprovalSuccess', 'success');
+        expect(h.reload).toHaveBeenCalled();
+    });
+
+    // S2 lane merge FIX1 (CT blocker): MDM answers a submit 202 while the approval is still being started — the proxy
+    // passes it on and the screen says the submit's success, never an error.
+    it('S2 merge FIX1: a SUBMIT answered 202 (the approval being started) is a success', async () => {
+        const h = harness([
+            response(item(['DETAILS', 'EDIT', 'SUBMIT'], 1, 1)),
+            response(item(['DETAILS'], 2, 2), 202),
+            response(item(['DETAILS'], 2, 2))
+        ]);
+        h.api.requestLifecycle(id, 'SUBMIT', () => h.reload());
+        await h.settle();
+
+        expect(h.toast).toHaveBeenCalledWith('SubmitSuccess', 'success');
+        expect(h.toast).not.toHaveBeenCalledWith(expect.anything(), 'error');
     });
 
     it('does not post when the server no longer offers the action', async () => {
@@ -374,6 +415,34 @@ describe('Items form option lists (S5b)', () => {
             name: 'New name', materialType: 'EXCIPIENT', baseUomCode: 'KGM', storageConditionCodes: ['COOL_2_8'], expectedVersion: 6,
             uomConversions: [{ fromUom: 'XBX', toUom: 'KGM', numerator: '10', denominator: '1' }]
         });
+    });
+
+    // S2 lane merge (R-04): a legacy draft's lot flag is null — drawn indeterminate and sent as null (MDM names it),
+    // never a silent false; once the reader sets it, the set value is sent.
+    it('S2 merge: a never-filled lot flag is indeterminate and sent as null until the reader sets it', async () => {
+        const item = { id, name: 'Old', materialType: 'EXCIPIENT', baseUomCode: 'KGM', storageConditionCodes: ['COOL_2_8'],
+            uomConversions: [], lotControlled: null, stockable: false, lifecycleStatus: 1, version: 3, availableActions: ['DETAILS', 'EDIT'] };
+        const sent = [];
+        const h = harness('edit', {
+            [`GET ${optionsUrl}`]: ok(options), [`GET /MasterDataManagement/Items/api/${id}`]: ok(item),
+            [`PUT /MasterDataManagement/Items/api/${id}`]: (init) => { sent.push(JSON.parse(init.body)); return ok(item); }
+        });
+        await h.api.initForm();
+
+        expect($('[name="LotControlled"]').indeterminate).toBe(true);
+        expect($('[name="LotControlled"]').checked).toBe(false);
+        await h.api.submitForm(new Event('submit'));
+        expect(sent[0].lotControlled).toBeNull();
+
+        $('[name="LotControlled"]').click();
+        await h.api.submitForm(new Event('submit'));
+        expect(sent[1].lotControlled).toBe(true);
+
+        // FIX1 (CT minor): "no" is a second click from the indeterminate state, and it is sent as false.
+        $('[name="LotControlled"]').click();
+        expect($('[name="LotControlled"]').indeterminate).toBe(false);
+        await h.api.submitForm(new Event('submit'));
+        expect(sent[2].lotControlled).toBe(false);
     });
 
     it('sends the chosen codes: the material type, the base unit, the storage conditions and the conversion units', async () => {

@@ -36,7 +36,7 @@ public sealed class DeactivateItemHandler : IRequestHandler<DeactivateItemComman
         item.DeactivationReason = command.Request.Reason!.Trim();
         item.DeactivatedAt = DateTimeOffset.UtcNow;
         item.UpdatedBy = _actor.ActorId;
-        var written = await _items.ReplaceAsync(item, expectedVersion, cancellationToken);
+        var written = await _items.UpdateFieldsAsync(item, expectedVersion, cancellationToken);
         if (written.Succeeded) ItemAudit.RecordChanges(command.AuditDetails, before, item, draft: true);
         return ItemWrites.Map(written);
     }

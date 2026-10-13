@@ -27,9 +27,13 @@ public sealed class ProductItemSkuMasterManifestProviderTests
         Assert.Equal("/MasterDataManagement/Items", items.RoutePath);
         Assert.Equal("mdm.items.read", items.RequiredPermission);
         Assert.True(items.IsNavigationVisible);
-        Assert.Equal(["ADD_NEW", "VIEW_DETAILS", "EDIT", "SUBMIT", "DEACTIVATE", "REACTIVATE", "RETIRE"],
+        // S2 lane merge FIX1: WITHDRAW_APPROVAL after SUBMIT (the GP / GSKU / LSKU order), with its own key, not dangerous.
+        Assert.Equal(["ADD_NEW", "VIEW_DETAILS", "EDIT", "SUBMIT", "WITHDRAW_APPROVAL", "DEACTIVATE", "REACTIVATE", "RETIRE"],
             items.Actions.Select(action => action.ActionCode));
-        Assert.Equal("1.1.0", Manifest.ModuleVersion);
+        var withdraw = Assert.Single(items.Actions, action => action.ActionCode == "WITHDRAW_APPROVAL");
+        Assert.Equal(("mdm.items.withdraw", "RowAction", false, true),
+            (withdraw.PermissionKey, withdraw.ActionType, withdraw.IsDangerous, withdraw.IsRowAction));
+        Assert.Equal("1.2.0", Manifest.ModuleVersion);
         var globalProducts = Assert.Single(Manifest.Pages, page => page.PageCode == "GLOBAL_PRODUCTS");
         Assert.Equal("/MasterDataManagement/GlobalProducts", globalProducts.RoutePath);
         Assert.Equal("mdm.global-products.read", globalProducts.RequiredPermission);
@@ -104,6 +108,8 @@ public sealed class ProductItemSkuMasterManifestProviderTests
                 "mdm.items.retire",
                 "mdm.items.submit",
                 "mdm.items.update",
+                // S2 lane merge FIX1: the item approval's withdraw (ItemsController.WithdrawApproval).
+                "mdm.items.withdraw",
                 "mdm.lskus.create",
                 "mdm.lskus.read",
                 "mdm.lskus.request-retirement",
@@ -127,7 +133,7 @@ public sealed class ProductItemSkuMasterManifestProviderTests
                 "mdm.product-legal-entity-scopes.replace"
             },
             declared.OrderBy(value => value, StringComparer.Ordinal));
-        Assert.Equal(47, declared.Count);
+        Assert.Equal(48, declared.Count);
         Assert.DoesNotContain(declared, permission => permission.StartsWith("mdm.brands.", StringComparison.Ordinal));
         Assert.All(declared, permission =>
         {

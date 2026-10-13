@@ -133,4 +133,7 @@
   <data name="RefusalInternal" xml:space="preserve"><value>Le service des articles a signalé une incohérence interne. Veuillez prévenir votre administrateur.</value></data>
   <data name="RefusalOptionsUnavailable" xml:space="preserve"><value>Les listes des types de matière, des unités et des conditions de stockage ne peuvent pas être chargées pour le moment ; ces champs ne peuvent pas être choisis. Réessayez dans un instant.</value></data>
   <data name="RefusalOptionsTimeout" xml:space="preserve"><value>Les listes des types de matière, des unités et des conditions de stockage n'ont pas été chargées à temps ; ces champs ne peuvent pas être choisis. Réessayez dans un instant.</value></data>
+  <data name="WithdrawApproval" xml:space="preserve"><value>Retirer la demande d'approbation</value></data>
+  <data name="WithdrawApprovalConfirmation" xml:space="preserve"><value>Retirer la demande d'approbation de l'activation de cet article ?</value></data>
+  <data name="WithdrawApprovalSuccess" xml:space="preserve"><value>La demande d'approbation a été retirée. L'article est revenu à son statut précédent.</value></data>
 </root>

@@ -400,8 +400,8 @@ public sealed class StockBehaviourWebTests(WebApplicationFactory<Program> factor
     // S5b-FIX2 label drift guard: every unit (item-uom) and storage condition (storage-condition) Platform's contract
     // fixture enumerates has its label (Uom_<code> / Storage_<code>) in all seven StockBehaviourText resx files — the
     // ones _ReferenceOptionLabels.cshtml reads. Read from Platform's own fixture (read-only), not a copy of its codes.
-    // INTENTIONALLY RED when ITEM-UNIVERSAL-V2 (IU, CodeStandard, item-uom's new version) merges into that fixture,
-    // until the new codes' labels are added here in seven languages (and to StockBehaviourText.UomCodes).
+    // A code Platform adds to the fixture turns this red until its label is added here in seven languages (and to
+    // StockBehaviourText.UomCodes) — as ITEM-UNIVERSAL-V2's IU was, at the S2 lane merge.
     [Fact]
     public void Every_unit_and_storage_condition_of_platforms_contract_has_its_label_in_all_seven_languages()
     {

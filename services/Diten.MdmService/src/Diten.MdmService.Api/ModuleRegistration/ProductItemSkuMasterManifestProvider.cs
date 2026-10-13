@@ -45,13 +45,14 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
     private const string ProductIdentityLifecycleOperationRecover =
         "mdm.product-identity.lifecycle-operations.recover";
 
-    // MOD-0290-FU04 S5 (§23 #7): the Items page's keys (ItemsController). No withdraw key yet — S2 brings the approval.
+    // MOD-0290-FU04 S5 (§23 #7): the Items page's keys (ItemsController). S2 lane merge FIX1: + the approval's withdraw key.
     private const string ItemsRead = "mdm.items.read";
     private const string ItemsCreate = "mdm.items.create";
     private const string ItemsUpdate = "mdm.items.update";
     private const string ItemsSubmit = "mdm.items.submit";
     private const string ItemsDeactivate = "mdm.items.deactivate";
     private const string ItemsRetire = "mdm.items.retire";
+    private const string ItemsWithdraw = "mdm.items.withdraw";
 
     // S5-FIX1: EDIT_STOCK_BEHAVIOUR is a FORM action (the quick view's "Stock behaviour" section opens its own offcanvas;
     // the row menu only offers it as the STOCK_FLAGS_REQUIRED shortcut), not a row action of its own.
@@ -69,8 +70,8 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
             DisplayName: "Product / Item / SKU Master",
             Domain: "MASTER-DATA-MANAGEMENT",
             Service: "DitenMdmService",
-            // S5: + the ITEMS page and the EDIT_STOCK_BEHAVIOUR actions.
-            ModuleVersion: "1.1.0",
+            // S5: + the ITEMS page and the EDIT_STOCK_BEHAVIOUR actions. S2 lane merge FIX1 (1.2.0): + ITEMS WITHDRAW_APPROVAL.
+            ModuleVersion: "1.2.0",
             IsTenantAssignable: true,
             SortOrder: 340,
             Pages:
@@ -166,7 +167,7 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
                         new ModuleManifestAction("EDIT_STOCK_BEHAVIOUR", "Edit Stock Behaviour", LskusEditStockBehaviour, "FormAction", 50, IsDangerous: false, IsToolbarAction: false, IsRowAction: false)
                     ]),
                 // MOD-0290-FU04 S5 (§23 #1, #7): the Items page under Master Data, for holders of mdm.items.read.
-                // WITHDRAW_APPROVAL is not declared until S2 (CT decision 4).
+                // WITHDRAW_APPROVAL arrives with S2 (CT decision 4), declared at the S2 lane merge FIX1.
                 new ModuleManifestPage(
                     PageCode: "ITEMS",
                     DisplayName: "Items",
@@ -182,6 +183,9 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
                         new ModuleManifestAction("VIEW_DETAILS", "View Details", ItemsRead, "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("EDIT", "Edit", ItemsUpdate, "RowAction", 30, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("SUBMIT", "Submit", ItemsSubmit, "RowAction", 40, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        // S2 lane merge FIX1: the GP / GSKU / LSKU pattern — WITHDRAW_APPROVAL right after SUBMIT, not dangerous
+                        // (it returns the item to Draft / Deactivated; it destroys nothing and may be submitted again).
+                        new ModuleManifestAction("WITHDRAW_APPROVAL", "Withdraw Approval", ItemsWithdraw, "RowAction", 45, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("DEACTIVATE", "Deactivate", ItemsDeactivate, "RowAction", 50, IsDangerous: true, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("REACTIVATE", "Reactivate", ItemsSubmit, "RowAction", 60, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("RETIRE", "Retire", ItemsRetire, "RowAction", 70, IsDangerous: true, IsToolbarAction: false, IsRowAction: true)

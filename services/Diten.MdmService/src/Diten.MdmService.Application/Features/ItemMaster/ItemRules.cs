@@ -176,7 +176,8 @@ public static class ItemRules
     {
         if (current.MaterialType != next.MaterialType) return nameof(Item.MaterialType);
         if (!string.Equals(current.BaseUomCode, next.BaseUomCode, StringComparison.Ordinal)) return nameof(Item.BaseUomCode);
-        if (current.LotControlled != next.LotControlled) return nameof(Item.LotControlled);
+        // FU04 S2: a null lot flag (a legacy document) is empty — its first fill is allowed (O-8), never a change.
+        if (current.LotControlled is not null && current.LotControlled != next.LotControlled) return nameof(Item.LotControlled);
         if (current.Stockable != next.Stockable) return nameof(Item.Stockable);
         if (Filled(current.ShelfLifeDays) && current.ShelfLifeDays != next.ShelfLifeDays) return nameof(Item.ShelfLifeDays);
         if (Filled(current.RetestDays) && current.RetestDays != next.RetestDays) return nameof(Item.RetestDays);
@@ -201,7 +202,10 @@ public static class ItemRules
 
     private static string Key(ItemUomConversion c) => $"{c.FromUom}>{c.ToUom}={c.Numerator}/{c.Denominator}";
 
-    public static ItemModels.ItemDto ToDto(Item item) => new(
+    // detail: the single-item read (the pending reactivation's reason is shown there only).
+    public static ItemModels.ItemDto ToDto(Item item) => ToDto(item, detail: false);
+
+    public static ItemModels.ItemDto ToDto(Item item, bool detail) => new(
         item.Id,
         item.CanonicalCode,
         item.Name,
@@ -220,5 +224,9 @@ public static class ItemRules
         item.LifecycleStatus,
         item.Version,
         item.CreatedAt,
-        item.UpdatedAt);
+        item.UpdatedAt,
+        detail && item.LifecycleStatus == ItemLifecycleStatus.PendingActivation
+               && item.ActivationKind == ItemActivationKind.Reactivation
+            ? item.ActivationRequestReason
+            : null);
 }

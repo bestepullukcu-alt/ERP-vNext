@@ -90,6 +90,12 @@ public sealed class ProductIdentityRecoveryMetrics : IDisposable
     // BL-607 FIX1 item 1: 1 while the last read of a flow's oldest open approval FAILED (its age is dropped, not stale).
     public const string OpenApprovalReadFailedGauge = "mdm.product_identity.open_approval.read_failed";
     private readonly ConcurrentDictionary<string, long> _openApprovalReadFailed = new(StringComparer.Ordinal);
+    // S2 FIX3 item 3: an AGE (seconds), never on the "stuck operations" series — a filterless alert on
+    // manual_reconciliation > 0 must not ring for a waiting approval.
+    // Merge note (S2 lane): the item flow's own age; BL-607's open_approval.* gauges serve LSKU. One gauge for both is
+    // a separate step (it needs an item alert threshold), named in the merge report.
+    public const string OldestOpenApprovalGauge = "mdm.product_identity.recovery.oldest_open_approval_age";
+    private readonly ConcurrentDictionary<string, long> _oldestOpenSeconds = new(StringComparer.Ordinal);
 
     public ProductIdentityRecoveryMetrics()
     {
@@ -117,6 +123,10 @@ public sealed class ProductIdentityRecoveryMetrics : IDisposable
             () => _openApprovalReadFailed.Select(item => new Measurement<long>(item.Value, new KeyValuePair<string, object?>("flow", item.Key))),
             unit: "{flow}",
             description: "1 while the last read of the oldest open approval failed (its age gauge is absent until a read succeeds), per flow.");
+        _meter.CreateObservableGauge(OldestOpenApprovalGauge,
+            () => _oldestOpenSeconds.Select(item => new Measurement<long>(item.Value, new KeyValuePair<string, object?>("flow", item.Key))),
+            unit: "s",
+            description: "Age of the oldest approval still waiting for its decision, per flow (0: none open).");
     }
 
     /// <summary>BL-607: the oldest open approval's age (null: none open — the gauge drops the flow) and the alert threshold.</summary>
@@ -141,6 +151,10 @@ public sealed class ProductIdentityRecoveryMetrics : IDisposable
     public double? OldestOpenApprovalSeconds(string flow) => _oldestOpenApproval.TryGetValue(flow, out var value) ? value : null;
 
     public double? OpenApprovalAlertAfterSeconds(string flow) => _openApprovalAlertAfter.TryGetValue(flow, out var value) ? value : null;
+
+    public void RecordOldestOpenApproval(string flow, long seconds) => _oldestOpenSeconds[flow] = seconds;
+
+    public long? OldestOpenApproval(string flow) => _oldestOpenSeconds.TryGetValue(flow, out var value) ? value : null;
 
     public void RecordCountFailed(string flow, bool failed) => _countFailed[flow] = failed ? 1 : 0;
 

@@ -13,9 +13,10 @@ public sealed class GetItemByIdHandler(IItemRepository items, IProductIdentityLi
 {
     public async Task<Response<ItemModels.ItemDto>> Handle(GetItemByIdQuery query, CancellationToken cancellationToken) =>
         await items.GetByIdAsync(query.Id, cancellationToken) is { } item
-            ? Response<ItemModels.ItemDto>.Success(ItemRules.ToDto(item) with
+            ? Response<ItemModels.ItemDto>.Success(ItemRules.ToDto(item, detail: true) with
             {
-                AvailableActions = actor is null ? null : ItemActions.For(item.LifecycleStatus, actor)
+                AvailableActions = actor is null ? null : ItemActions.For(item.LifecycleStatus, actor,
+                    item.ActivationWorkflowBinding?.SubmitterSubjectId)
             })
             : Response<ItemModels.ItemDto>.Fail(ItemErrors.NotFound, 404);
 }

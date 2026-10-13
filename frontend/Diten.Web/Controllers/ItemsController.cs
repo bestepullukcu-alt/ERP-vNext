@@ -38,6 +38,8 @@ public sealed class ItemsController : Controller
     public const string SubmitPermission = "mdm.items.submit";
     public const string DeactivatePermission = "mdm.items.deactivate";
     public const string RetirePermission = "mdm.items.retire";
+    // S2 lane merge FIX1: the approval's withdraw (MDM's POST api/mdm/items/{id}/withdraw, only its requester).
+    public const string WithdrawPermission = "mdm.items.withdraw";
 
     /// <summary>
     /// S5b: whoever may open a form that offers the item lists — the item form (create / update) and the GSKU / LSKU /
@@ -59,6 +61,8 @@ public sealed class ItemsController : Controller
     private readonly string _gatewayUrl;
     private readonly ITimeLimitedDataProtector _formAttemptProtector;
     private readonly IStringLocalizer<ItemsIndex> _localizer;
+    // S2 lane merge: the activation approval's sentences (ItemRefusals resx, seven languages).
+    private readonly IStringLocalizer<ItemRefusals> _approval;
     private readonly ILogger<ItemsController> _logger;
     private readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web)
     {
@@ -70,6 +74,7 @@ public sealed class ItemsController : Controller
         IConfiguration configuration,
         IDataProtectionProvider dataProtectionProvider,
         IStringLocalizer<ItemsIndex> localizer,
+        IStringLocalizer<ItemRefusals> approvalLocalizer,
         ILogger<ItemsController> logger)
     {
         _httpClient = httpClient;
@@ -79,6 +84,7 @@ public sealed class ItemsController : Controller
             .CreateProtector("Diten.Web", "MOD-0290-FU04", "ItemFormAttempt", "v1")
             .ToTimeLimitedDataProtector();
         _localizer = localizer;
+        _approval = approvalLocalizer;
         _logger = logger;
     }
 
@@ -643,19 +649,31 @@ public sealed class ItemsController : Controller
     private static string? Code(string? value) => value?.Trim().ToUpperInvariant();
 
     // ── Lifecycle ─────────────────────────────────────────────────────────────────────────────────────────────────
-    // Each answers MDM's ItemDto (the item after the change); the screen reads the item back and reloads. Submit and
-    // reactivation are answered 503 ITEM_ACTIVATION_APPROVAL_UNAVAILABLE until the approval (S2) exists — said as such.
+    // Each answers MDM's ItemDto (the item after the change); the screen reads the item back and reloads. S2 lane merge
+    // FIX1: the approval's requests (submit, reactivation, withdraw) answer 200 when MDM finished them and 202 while
+    // the approval is still being started — both are success; 503 ITEM_ACTIVATION_APPROVAL_UNAVAILABLE where it is off.
 
     [HttpPost("api/{id:guid}/submit")]
     [ValidateAntiForgeryToken]
     public Task<IActionResult> Submit(Guid id, [FromForm] int? expectedVersion, CancellationToken cancellationToken) =>
-        LifecycleAsync(id, SubmitPermission, "submit", expectedVersion, reason: null, reasonRequired: false, cancellationToken);
+        LifecycleAsync(id, SubmitPermission, "submit", expectedVersion, reason: null, reasonRequired: false, cancellationToken,
+            mayBeAccepted: true);
 
     [HttpPost("api/{id:guid}/reactivation-requests")]
     [ValidateAntiForgeryToken]
     public Task<IActionResult> RequestReactivation(Guid id, [FromForm] int? expectedVersion, [FromForm] string? reason,
         CancellationToken cancellationToken) =>
-        LifecycleAsync(id, SubmitPermission, "reactivation-requests", expectedVersion, reason, reasonRequired: true, cancellationToken);
+        LifecycleAsync(id, SubmitPermission, "reactivation-requests", expectedVersion, reason, reasonRequired: true, cancellationToken,
+            mayBeAccepted: true);
+
+    // S2 lane merge FIX1: the requester takes the pending approval back (the item returns to Draft / Deactivated). The
+    // reason is optional (MDM passes it to the engine as the cancel's comment, never into the audit).
+    [HttpPost("api/{id:guid}/withdraw")]
+    [ValidateAntiForgeryToken]
+    public Task<IActionResult> WithdrawApproval(Guid id, [FromForm] int? expectedVersion, [FromForm] string? reason,
+        CancellationToken cancellationToken) =>
+        LifecycleAsync(id, WithdrawPermission, "withdraw", expectedVersion, reason, reasonRequired: false, cancellationToken,
+            mayBeAccepted: true);
 
     [HttpPost("api/{id:guid}/deactivate")]
     [ValidateAntiForgeryToken]
@@ -672,7 +690,7 @@ public sealed class ItemsController : Controller
     public const int MaxReasonLength = 500;
 
     private async Task<IActionResult> LifecycleAsync(Guid id, string permission, string suffix, int? expectedVersion,
-        string? reason, bool reasonRequired, CancellationToken cancellationToken)
+        string? reason, bool reasonRequired, CancellationToken cancellationToken, bool mayBeAccepted = false)
     {
         if (!HasPermission(permission))
             return ForbiddenResult();
@@ -691,12 +709,13 @@ public sealed class ItemsController : Controller
         if (!string.IsNullOrEmpty(reason))
             body["reason"] = reason;
         return await ProxyItemWriteAsync(HttpMethod.Post, $"{_gatewayUrl}/api/mdm/items/{id:D}/{suffix}",
-            JsonContent.Create(body, options: _jsonOptions), suffix, cancellationToken);
+            JsonContent.Create(body, options: _jsonOptions), suffix, cancellationToken, mayBeAccepted);
     }
 
-    // A write answered with MDM's ItemDto: passed on only as MDM's own successful envelope with a matching status.
+    // A write answered with MDM's ItemDto: passed on only as MDM's own successful envelope with a matching status — 200,
+    // or 202 for the approval's requests (S2 lane merge FIX1: "accepted, the approval is being started"), never a mix.
     private async Task<IActionResult> ProxyItemWriteAsync(HttpMethod method, string targetUrl, HttpContent payload,
-        string action, CancellationToken cancellationToken)
+        string action, CancellationToken cancellationToken, bool mayBeAccepted = false)
     {
         if (!TryCreateGatewayRequest(method, targetUrl, payload, out var request))
         {
@@ -724,14 +743,15 @@ public sealed class ItemsController : Controller
                     return SafeFailure(HttpStatusCode.BadGateway);
                 }
 
-                if (response.StatusCode != HttpStatusCode.OK
-                    || envelope is not { IsSuccessful: true } || envelope.StatusCode != StatusCodes.Status200OK
+                var status = (int)response.StatusCode;
+                if (!(status == StatusCodes.Status200OK || mayBeAccepted && status == StatusCodes.Status202Accepted)
+                    || envelope is not { IsSuccessful: true } || envelope.StatusCode != status
                     || envelope.Data.ValueKind != JsonValueKind.Object)
                 {
                     return SafeFailure(HttpStatusCode.BadGateway);
                 }
 
-                return new ContentResult { StatusCode = StatusCodes.Status200OK, ContentType = "application/json", Content = body };
+                return new ContentResult { StatusCode = status, ContentType = "application/json", Content = body };
             }
         }
         catch (TaskCanceledException exception) when (!cancellationToken.IsCancellationRequested)
@@ -796,6 +816,7 @@ public sealed class ItemsController : Controller
         var status = NormalizedStatus(response.StatusCode);
         var sentences = new List<string>();
         var unmapped = false;
+        string? lastCode = null;
         for (var index = 0; index < items.Length; index++)
         {
             var code = items[index];
@@ -803,9 +824,19 @@ public sealed class ItemsController : Controller
             // A detail-bearing code owns the ONE item after it, whatever its shape (SAME_UOM, "item-uom:XYZ").
             if (ItemRefusalSentences.DetailBearing.ContainsKey(code) && index + 1 < items.Length)
                 detail = items[++index];
+            // S2: the activation gate's field names follow its code — each known one is said as its label (the sentence
+            // says "the fields listed below"); an unknown name is skipped like any other detail.
+            else if (!IsCode(code) && lastCode == GateCode && ItemRefusalSentences.FieldKeys.TryGetValue(code, out var fieldKey))
+            {
+                var label = _approval[fieldKey].Value;
+                if (!sentences.Contains(label, StringComparer.Ordinal))
+                    sentences.Add(label);
+                continue;
+            }
             // Any other non-code item after a code is that code's detail — never an unmapped code.
             else if (!IsCode(code) && index > 0)
                 continue;
+            lastCode = code;
 
             var sentence = (options ? OptionsSentence(code) : null) ?? Sentence(code, detail);
             if (sentence is null)
@@ -838,8 +869,13 @@ public sealed class ItemsController : Controller
         return null;
     }
 
+    private const string GateCode = "ITEM_STOCK_FIELDS_REQUIRED_FOR_ACTIVATION";
+
     private string? Sentence(string code, string? detail)
     {
+        // S2: the activation approval's answers are said from their own resx (the second localizer).
+        if (ItemRefusalSentences.ApprovalKeys.TryGetValue(code, out var approvalKey))
+            return _approval[approvalKey].Value;
         if (!ItemRefusalSentences.Keys.TryGetValue(code, out var key))
             return null;
         if (detail is null)

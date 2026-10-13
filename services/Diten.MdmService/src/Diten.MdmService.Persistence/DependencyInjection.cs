@@ -68,6 +68,10 @@ public static class DependencyInjection
         services.AddScoped<IFinishedGoodRepository, FinishedGoodRepository>();
         services.AddScoped<IItemRepository, ItemRepository>();
         services.AddScoped<IProductMasterReadStore, ProductMasterReadStore>();
+        // FU04 S2: the item activation approval's store, its tenant-free discovery / gauges, and the orphan IT- census.
+        services.AddScoped<IItemWorkflowOperationRepository, ItemWorkflowOperationRepository>();
+        services.AddScoped<IItemWorkflowTenantPartitionDiscovery, ItemWorkflowTenantPartitionDiscoveryRepository>();
+        services.AddScoped<IItemOrphanCodeCensus, ItemOrphanCodeCensus>();
         services.AddScoped<ILskuRepository, LskuRepository>();
         services.AddScoped<ILskuIdentityWorkflowOperationRepository, LskuIdentityWorkflowOperationRepository>();
         services.AddScoped<ILskuIdentityWorkflowTenantPartitionDiscovery, LskuIdentityWorkflowTenantPartitionDiscoveryRepository>();

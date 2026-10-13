@@ -33,7 +33,8 @@ public sealed class GetItemListHandler(IItemRepository items, IProductIdentityLi
         return Response<ItemModels.ItemListDto>.Success(new ItemModels.ItemListDto(
             result.Items.Select(item => ItemRules.ToDto(item) with
             {
-                AvailableActions = actor is null ? null : ItemActions.For(item.LifecycleStatus, actor)
+                AvailableActions = actor is null ? null : ItemActions.For(item.LifecycleStatus, actor,
+                    item.ActivationWorkflowBinding?.SubmitterSubjectId)
             }).ToList(), result.Total, page, pageSize));
     }
 

@@ -133,4 +133,7 @@
   <data name="RefusalInternal" xml:space="preserve"><value>The item service reported an internal inconsistency. Please inform your administrator.</value></data>
   <data name="RefusalOptionsUnavailable" xml:space="preserve"><value>The lists of material types, units and storage conditions cannot be loaded right now, so these fields cannot be chosen. Try again in a moment.</value></data>
   <data name="RefusalOptionsTimeout" xml:space="preserve"><value>The lists of material types, units and storage conditions did not load in time, so these fields cannot be chosen. Try again in a moment.</value></data>
+  <data name="WithdrawApproval" xml:space="preserve"><value>Withdraw Approval Request</value></data>
+  <data name="WithdrawApprovalConfirmation" xml:space="preserve"><value>Withdraw this item's activation approval request?</value></data>
+  <data name="WithdrawApprovalSuccess" xml:space="preserve"><value>The approval request was withdrawn. The item is back in its previous status.</value></data>
 </root>

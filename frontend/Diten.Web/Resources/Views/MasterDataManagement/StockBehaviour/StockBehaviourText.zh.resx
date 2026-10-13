@@ -59,6 +59,7 @@
   <data name="Uom_MGM" xml:space="preserve"><value>毫克 (mg)</value></data>
   <data name="Uom_GRM" xml:space="preserve"><value>克 (g)</value></data>
   <data name="Uom_KGM" xml:space="preserve"><value>千克 (kg)</value></data>
+  <data name="Uom_IU" xml:space="preserve"><value>国际单位 (IU)</value></data>
   <data name="Uom_MLT" xml:space="preserve"><value>毫升 (mL)</value></data>
   <data name="Uom_LTR" xml:space="preserve"><value>升 (L)</value></data>
   <data name="Uom_MTR" xml:space="preserve"><value>米 (m)</value></data>

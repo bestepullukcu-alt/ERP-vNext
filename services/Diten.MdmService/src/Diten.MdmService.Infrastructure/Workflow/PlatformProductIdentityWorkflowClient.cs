@@ -301,12 +301,19 @@ public sealed class PlatformProductIdentityWorkflowClient : IProductIdentityWork
         && (value.TemplateCode is null || ValidText(value.TemplateCode, 128))
         && ValidObject(value.ObjectType, value.ObjectId) && ValidOptionalText(value.ObjectRef, 256)
         && value.CandidatePrincipalIds.Count is >= 1 and <= 100
-        && value.CandidatePrincipalIds.All(x => Guid.TryParseExact(x, "D", out var id) && id != Guid.Empty)
+        && value.CandidatePrincipalIds.All(x => ValidCandidate(value.ObjectType, x))
         && value.CandidatePrincipalIds.Distinct(StringComparer.Ordinal).Count() == value.CandidatePrincipalIds.Count
         && ValidOptionalText(value.ReasonCode, 128) && ValidUtc(value.DueAt);
+    // A user id (every flow), or — for the item approval only (MOD-0290-FU04 S2, §2.6 / GP-1b) — a position the engine
+    // resolves to its holders: "position:{id}". Every other flow keeps the user-id-only rule.
+    private static bool ValidCandidate(string objectType, string candidate) =>
+        Guid.TryParseExact(candidate, "D", out var id) && id != Guid.Empty
+        || objectType == "Item" && candidate.StartsWith("position:", StringComparison.Ordinal)
+           && Guid.TryParseExact(candidate["position:".Length..], "D", out var position) && position != Guid.Empty;
     private static bool ValidObject(string objectType, string objectId) =>
         objectType is "GlobalProduct" or "GlobalProductCorrection" or "GlobalProductRetirement"
             or "gsku" or "GskuCorrection" or "GskuRetirementRequest" or "lsku" or "LskuRetirementRequest" or "finished-good"
+            or "Item"
         && Guid.TryParseExact(objectId, "D", out var id) && id != Guid.Empty;
     private static bool ValidStartResult(
         ProductIdentityWorkflowStartResult value,
