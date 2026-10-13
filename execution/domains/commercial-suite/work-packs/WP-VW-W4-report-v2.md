@@ -752,3 +752,70 @@ Commit: "chore(mdm): WP-VW-W4-CFG — W4 RBAC grant script (dry-run default); MD
 **Sıradaki:**
 - 4. tur: W4-WEB-c (rakip yönetimi) + W4-CFG (şablon + yetkiler; read-all açık atama, temsilciye gskus.read).
 - Ardından W4 canlı E4.
+
+## §36.2 Uygulama raporu — W4-CFG (2026-10-13, yerel 97c5)
+
+**Kapsam:** yalnız yerel 97c5. Canlıya (be823006) dokunulmadı. Şablon, rol, izin ve kayıt yazılmadı; kod değişikliği yok.
+
+### 1. Şablon `MDM-COMP-PROPOSAL` — salt okuma doğrulandı
+Kaynak: Mongo `diten_personalization_dev.workflow_templates` / `workflow_template_versions`.
+
+| Alan | Değer | Beklenen |
+|---|---|---|
+| Template | `4ca5b242-2cf2-44ca-be80-00e0835315c9`, `Status 2` (Published) | ✅ |
+| Aktif sürüm | `65679ab1-c781-485b-9623-3588f1f4553a`, v1, `Status 1` (Published), `IsImmutable` | ✅ |
+| `requestedObjectType` | `mdm.competitor-proposal` | ✅ |
+| Aşama / adım | tek aşama `sales_ops` "Satış Operasyon" / tek adım `sales_ops` "Satış operasyon onayı" (`approval`) | ✅ |
+| Aday | `position:c1acdf12-40d2-4b2c-a2a4-afe1bdd7681d` = `POS-SALES-OPS` "Satış Operasyon" (aktif); sahibi `d27fa4a6…` (sema, Admin) | ✅ |
+| SLA | `dueInMinutes 4320`, `escalateAfterMinutes 2880` → aynı pozisyon | ✅ |
+| Seçenek | `options.rejectCommentRequired: true` | ✅ |
+
+**Parmak izi** (tüm şablon + sürüm dokümanlarının SHA-256'sı):
+- önce: şablon 26 / `f164e53a4eda13c2`, sürüm 26 / `4fe07db0c5a24163`;
+- sonra: **aynı**.
+
+### 2. Yetki betiği — yazıldı, RBAC'a yazılmadı
+**Auth kataloğu:** 15 anahtarın hepsi mevcut.
+- `crm.doctor-insights.{read,manage,read-all,read-aggregate,thresholds.manage}`
+- `crm.visit-report.read-aggregate`
+- `mdm.competitor-products.{read,manage,propose}`
+- `mdm.gskus.read`
+- `platform.workflow.instances.{start,view}`, `platform.workflow.tasks.{approve,reject,cancel}`
+
+**Betik:** `scripts/rbac/grant_w4_report_rbac_97c5.py` (W3-CFG deseni).
+- dry-run varsayılan; subtype-4 GUID; tarih alanları yerel 97c5 kaydından aynen kopyalanır;
+- idempotent; marker `manual-grant-w4-report-rbac`;
+- rol ve izin oluşturmaz; katalog eksikse durur;
+- `crm.doctor-insights.read-all` (ExplicitGrantOnly) Admin'e **açıkça** verilir;
+- isteğe bağlı rol bayrakları:
+  - `--rep-role`: `mdm.competitor-products.read / propose`, `crm.doctor-insights.read`, `mdm.gskus.read`;
+  - `--marketing-role`: `crm.doctor-insights.read-aggregate / thresholds.manage`, `crm.visit-report.read-aggregate`, `mdm.competitor-products.read / manage`.
+- Komut satırında verilen rol yoksa betik **ABORT** (çıkış 2) ile durur.
+
+**Dry-run (Admin):**
+```
+skip (already granted): Admin <- mdm.gskus.read
+skip (already granted): Admin <- platform.workflow.instances.start
+skip (already granted): Admin <- platform.workflow.instances.view
+skip (already granted): Admin <- platform.workflow.tasks.approve
+skip (already granted): Admin <- platform.workflow.tasks.reject
+skip (already granted): Admin <- platform.workflow.tasks.cancel
+role 'Admin' (6a315467-7d80-4ad8-bd76-78f8f762fe8a): 9 grant(s) to insert: ['crm.doctor-insights.read', 'crm.doctor-insights.manage', 'crm.doctor-insights.read-all', 'crm.doctor-insights.read-aggregate', 'crm.doctor-insights.thresholds.manage', 'crm.visit-report.read-aggregate', 'mdm.competitor-products.read', 'mdm.competitor-products.manage', 'mdm.competitor-products.propose']
+NOTE: no --rep-role / --marketing-role given — only the admin role is planned (local 97c5 has no rep / marketing role; decide them before granting).
+DRY-RUN — nothing written. Re-run with --apply.
+```
+`--rep-role CrmUser` denemesi: `ABORT: role 'CrmUser' not found in tenant 97c5 … Existing: ['Admin', 'DocumentMasterRegisterLinker', 'GQD', 'QADocumentation', 'Viewer']` (çıkış 2). Marker'lı satır sayısı: 0.
+
+### 3. DUR — temsilci / pazarlama rolü yerelde yok
+Yerel 97c5 rolleri: `Admin`, `DocumentMasterRegisterLinker`, `GQD`, `QADocumentation`, `Viewer`.
+- Temsilci rolü yok (canlıda `CrmUser`).
+- Pazarlama rolü yok.
+
+Bu yüzden yalnız Admin planlandı. Temsilci ve pazarlama rolleri için karar ürün sahibinde:
+- rol oluşturma bu paketin yetkisi dışında;
+- roller açıldıktan sonra `--rep-role` / `--marketing-role` ile aynı betik çalıştırılır.
+
+### 4. Kullanıcı adımı
+1. `py -3 scripts/rbac/grant_w4_report_rbac_97c5.py --apply` (Admin'e 9 anahtar).
+2. Admin rolündeki kullanıcılar **yeniden giriş** yapar (izinler JWT'ye basılır).
+3. Geri alma: `db.rolePermissions.deleteMany({CreatedBy: "manual-grant-w4-report-rbac"})`.
