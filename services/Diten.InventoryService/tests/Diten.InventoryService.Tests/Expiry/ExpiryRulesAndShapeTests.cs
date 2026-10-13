@@ -181,7 +181,7 @@ public sealed class ExpiryContractTests
     public void The_contract_is_frozen_1_0_0_owned_by_MOD_0176_with_the_CT_additions()
     {
         var info = Yaml.Value["info"]!;
-        Assert.Equal("1.0.2", info["version"]!.GetValue<string>()); // WP-0176-F2 / F3: description-only steps (x-implemented-by-slice)
+        Assert.Equal("1.1.0", info["version"]!.GetValue<string>()); // F2 / F3 description-only steps; F4 1.1.0 additive (FU-0176-F1-UOM)
         Assert.Equal("FROZEN", info["x-status"]!.GetValue<string>());
         Assert.Equal("MOD-0176", info["x-owner"]!.GetValue<string>());
         Assert.Equal("/api/expiry", Yaml.Value["servers"]![0]!["url"]!.GetValue<string>());
@@ -207,10 +207,11 @@ public sealed class ExpiryContractTests
             .SelectMany(m => m.GetCustomAttributes<HttpMethodAttribute>().SelectMany(a => a.HttpMethods.Select(v =>
                 (Path: "/" + a.Template, Method: v.ToLowerInvariant(), Permission: m.GetCustomAttribute<HasPermissionAttribute>()!.Policy!["Permission:".Length..]))))
             .ToList();
-        Assert.Equal(12, served.Count); // 11 F1 + createDateOverride (F2)
+        Assert.Equal(16, served.Count); // 11 F1 + createDateOverride (F2) + 4 reads (F4)
 
         var byRoute = Operations().ToDictionary(o => (o.Path, o.Method));
-        var f1 = Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["F1"]).Concat(Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["F2"])).ToList();
+        var f1 = Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["F1"]).Concat(Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["F2"]))
+            .Concat(Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["F4"])).ToList();
         foreach (var (path, method, permission) in served)
         {
             Assert.True(byRoute.TryGetValue((path, method), out var op), $"{method} {path} is not in fefo.openapi.yaml");
@@ -269,11 +270,15 @@ public sealed class ExpiryArchitectureTests
         Assert.All(ExpiryPermissions.F1, k => Assert.Contains(k, ExpiryPermissions.All));
 
         // completeness (FU-RSV-01 rule): every key the expiry controller enforces reaches the catalog through ITS manifest, and the
-        // manifest declares nothing the controller does not enforce (F1: API permissions only, no page yet)
+        // manifest declares nothing the controller does not enforce (F4: the four pages + their buttons + the remaining API keys)
         var enforced = actions.Select(a => a.GetCustomAttribute<HasPermissionAttribute>()!.Policy!["Permission:".Length..]).ToHashSet(StringComparer.Ordinal);
         var manifest = new ExpiryFefoManifestProvider().GetManifest();
-        Assert.Empty(manifest.Pages);
-        Assert.Equal(enforced.OrderBy(k => k, StringComparer.Ordinal), (manifest.ApiPermissions ?? []).Select(p => p.PermissionKey).OrderBy(k => k, StringComparer.Ordinal));
+        Assert.Equal(["/Expiry", "/Expiry/Approaching", "/Expiry/Expired", "/Expiry/FefoOrder"], manifest.Pages.Select(p => p.RoutePath));
+        Assert.All(manifest.Pages, p => Assert.False(p.RoutePath.StartsWith("/Platform", StringComparison.OrdinalIgnoreCase)));
+        var declared = manifest.Pages.Select(p => p.RequiredPermission).Concat(manifest.Pages.SelectMany(p => p.Actions).Select(a => a.PermissionKey))
+            .Concat((manifest.ApiPermissions ?? []).Select(p => p.PermissionKey)).Distinct(StringComparer.Ordinal);
+        Assert.Equal(enforced.OrderBy(k => k, StringComparer.Ordinal), declared.OrderBy(k => k, StringComparer.Ordinal));
+        Assert.DoesNotContain(ExpiryPermissions.ExceptionsCreate, (manifest.ApiPermissions ?? []).Select(p => p.PermissionKey)); // now a button
         Assert.All(manifest.ApiPermissions!, p => Assert.Equal("Tenant", p.Scope));
     }
 

@@ -60,6 +60,36 @@ public sealed class ExpiryController : CustomBaseController
         return WithETag(await _mediator.Send(new UpdateExpiryPolicyCommand(body.Policy, body.Reason, key, version), ct), p => p.Version);
     }
 
+    // ── F4 reads (panel, lists, FEFO order — pack §8.2, §8.8) ──────────────────────────────────────────────
+
+    [HttpGet("dashboard")]
+    [HasPermission(ExpiryPermissions.DashboardRead)]
+    public async Task<IActionResult> GetDashboard([FromQuery] string? warehouseId, [FromQuery] string? periodDays, CancellationToken ct)
+        => CreateActionResultInstance(await _mediator.Send(new GetExpiryDashboardQuery(warehouseId, periodDays), ct));
+
+    [HttpGet("lots/approaching")]
+    [HasPermission(ExpiryPermissions.DashboardRead)]
+    public async Task<IActionResult> ListApproaching(
+        [FromQuery] string? warehouseId, [FromQuery] string? skuId, [FromQuery] string? severity, [FromQuery] string? horizonDays,
+        [FromQuery] string? includeHeld, [FromQuery] string? q, [FromQuery] string? sort, [FromQuery] string? page, [FromQuery] string? pageSize,
+        CancellationToken ct)
+        => CreateActionResultInstance(await _mediator.Send(
+            new ListApproachingLotsQuery(warehouseId, skuId, severity, horizonDays, includeHeld, q, sort, page, pageSize), ct));
+
+    [HttpGet("lots/expired")]
+    [HasPermission(ExpiryPermissions.DashboardRead)]
+    public async Task<IActionResult> ListExpired(
+        [FromQuery] string? warehouseId, [FromQuery] string? skuId, [FromQuery] string? minDaysSinceExpiry, [FromQuery] string? page,
+        [FromQuery] string? pageSize, CancellationToken ct)
+        => CreateActionResultInstance(await _mediator.Send(new ListExpiredLotsQuery(warehouseId, skuId, minDaysSinceExpiry, page, pageSize), ct));
+
+    [HttpGet("fefo-order")]
+    [HasPermission(ExpiryPermissions.FefoOrderRead)]
+    public async Task<IActionResult> GetFefoOrder(
+        [FromQuery] string? warehouseId, [FromQuery] string? itemId, [FromQuery] string? skuId, [FromQuery] string? skuLevel,
+        [FromQuery] string? quantity, [FromQuery] string? asOf, CancellationToken ct)
+        => CreateActionResultInstance(await _mediator.Send(new GetFefoOrderQuery(warehouseId, itemId, skuId, skuLevel, quantity, asOf), ct));
+
     // ── exceptions ───────────────────────────────────────────────────────────────────────────────────────
 
     [HttpGet("exceptions")]
@@ -86,13 +116,15 @@ public sealed class ExpiryController : CustomBaseController
             LotId = b.Uuid("lotId"),
             WarehouseId = b.OptionalUuid("warehouseId"),
             Quantity = b.Decimal("quantity"),
+            BaseUomId = b.String("baseUomId"), // FU-0176-F1-UOM (FEFO 1.1.0, optional)
             Description = b.String("description"),
             Key = b.String("idempotencyKey")
         }, ct);
         if (read.Value is not { } body) return Invalid(read.Error);
         if (KeyError(body.Key, out var key) is { } keyError) return Invalid(keyError);
         return WithETag(await _mediator.Send(
-            new OpenExpiryExceptionCommand(body.Type, body.LotId, body.WarehouseId, body.Quantity, body.Description, key), ct), d => d.Version);
+            new OpenExpiryExceptionCommand(body.Type, body.LotId, body.WarehouseId, body.Quantity, body.Description, key) { BaseUomId = body.BaseUomId },
+            ct), d => d.Version);
     }
 
     [HttpPost("exceptions/{exceptionId}/take")]

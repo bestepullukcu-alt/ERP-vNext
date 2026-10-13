@@ -35,17 +35,15 @@ public sealed class ExpiryPostingPolicy : IExpiryPostingPolicy
     private const string Compliant = "Compliant";
     private const string Bypassed = "Bypassed";
 
-    private readonly IMongoCollection<InventoryBalance> _balances;
-    private readonly IMongoCollection<Lot> _lots;
+    private readonly FefoCandidateReader _candidates;
     private readonly ExpiryHookWriter _writer;
     private readonly LedgerTransactionBinding _binding;
     private readonly ITenantContext _tenant;
     private readonly List<(string Action, Lot Lot, Dictionary<string, string?> Detail)> _pendingRefusals = [];
 
-    public ExpiryPostingPolicy(IMongoDatabase database, ExpiryHookWriter writer, LedgerTransactionBinding binding, ITenantContext tenant)
+    public ExpiryPostingPolicy(FefoCandidateReader candidates, ExpiryHookWriter writer, LedgerTransactionBinding binding, ITenantContext tenant)
     {
-        _balances = database.GetCollection<InventoryBalance>(InventoryCollections.Balances);
-        _lots = database.GetCollection<Lot>(TraceCollections.Lots);
+        _candidates = candidates;
         _writer = writer;
         _binding = binding;
         _tenant = tenant;
@@ -226,21 +224,8 @@ public sealed class ExpiryPostingPolicy : IExpiryPostingPolicy
         IClientSessionHandle? session, Lot issued, string warehouseId, Guid itemId, Guid skuId, SkuLevel level, DateTimeOffset asOf, int? minimum,
         CancellationToken ct)
     {
-        var b = Builders<InventoryBalance>.Filter;
-        // Covered by the prefix of the unique balance dimension index (Tenant, LE, Item, Sku, SkuLevel, Warehouse, …) — CT-F13: no new index.
-        var filter = b.Eq(x => x.TenantId, _tenant.TenantId) & b.Eq(x => x.LegalEntityId, _tenant.LegalEntityId) & b.Eq(x => x.IsDeleted, false)
-                     & b.Eq(x => x.ItemId, itemId) & b.Eq(x => x.SkuId, skuId) & b.Eq(x => x.SkuLevel, level) & b.Eq(x => x.WarehouseId, warehouseId)
-                     & b.Ne(x => x.LotId, null) & b.Gt(x => x.OnHand, 0m);
-        var rows = session is null ? await _balances.Find(filter).ToListAsync(ct) : await _balances.Find(session, filter).ToListAsync(ct);
-        var perLot = rows.GroupBy(r => r.LotId!, StringComparer.Ordinal)
-            .Select(g => (LotId: g.Key, Available: g.Where(r => r.StockStatus == StockStatus.Available).Sum(r => r.OnHand),
-                Held: g.Where(r => r.StockStatus != StockStatus.Available).Sum(r => r.OnHand)))
-            .ToList();
-        var ids = perLot.Select(p => Guid.TryParse(p.LotId, out var id) ? id : Guid.Empty).Where(id => id != Guid.Empty).Distinct().ToList();
-        var lotFilter = Builders<Lot>.Filter.Eq(x => x.TenantId, _tenant.TenantId) & Builders<Lot>.Filter.In(x => x.Id, ids);
-        var lots = (session is null ? await _lots.Find(lotFilter).ToListAsync(ct) : await _lots.Find(session, lotFilter).ToListAsync(ct))
-            .ToDictionary(l => l.Id.ToString("D"), StringComparer.Ordinal);
-        var candidates = perLot.Where(p => lots.ContainsKey(p.LotId)).Select(p => new FefoCandidate(lots[p.LotId], p.Available, p.Held)).ToList();
+        // the shared candidate read (FefoCandidateReader) — the FEFO order read of F4 uses the same one (KF-F, one source)
+        var candidates = await _candidates.ReadAsync(session, warehouseId, itemId, skuId, level, ct);
         return FefoIssueRule.Evaluate(issued, FefoOrderRule.Order(candidates, asOf, minimum));
     }
 

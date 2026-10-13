@@ -158,6 +158,8 @@ public sealed class ExpiryESignShapeTests
 
     private static string FixtureV101Path => Path.Combine(RepoPaths.ServiceRoot, "tests", "Diten.InventoryService.Tests", "Contract", "Fixtures", "fefo-v1.0.1.openapi.yaml");
 
+    private static string FixtureV102Path => Path.Combine(RepoPaths.ServiceRoot, "tests", "Diten.InventoryService.Tests", "Contract", "Fixtures", "fefo-v1.0.2.openapi.yaml");
+
     private static JsonObject Load(string path)
     {
         var raw = new DeserializerBuilder().Build().Deserialize<object>(File.ReadAllText(path));
@@ -172,7 +174,7 @@ public sealed class ExpiryESignShapeTests
     public void The_1_0_2_change_is_the_F3_slice_note_and_nothing_else()
     {
         var before = Load(FixtureV101Path);
-        var after = Load(ContractSchemas.FefoContractPath);
+        var after = Load(FixtureV102Path); // F4 moved the yaml on to 1.1.0; the F3 step is measured on the pinned 1.0.2 file
         Assert.Equal("1.0.1", before["info"]!["version"]!.GetValue<string>());
         Assert.Equal("1.0.2", after["info"]!["version"]!.GetValue<string>());
         var slices = after["info"]!["x-implemented-by-slice"]!.AsObject();

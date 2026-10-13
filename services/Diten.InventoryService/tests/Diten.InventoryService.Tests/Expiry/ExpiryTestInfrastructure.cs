@@ -217,6 +217,11 @@ public sealed class ExpiryContractValidatingHandler : DelegatingHandler
         Op("POST", "/api/expiry/exceptions/{id}/close", [200, 400, 401, 403, 404, 409, 503], _ => "ExceptionDetail", etag: true),
         // F2 (KF-D)
         Op("POST", "/api/expiry/date-overrides", [200, 201, 400, 401, 403, 422, 503], _ => "DateOverride"),
+        // F4 (reads)
+        Op("GET", "/api/expiry/dashboard", [200, 400, 401, 403, 503], _ => "DashboardView"),
+        Op("GET", "/api/expiry/lots/approaching", [200, 400, 401, 403, 503], _ => "LotExpiryPage"),
+        Op("GET", "/api/expiry/lots/expired", [200, 400, 401, 403, 503], _ => "LotExpiryPage"),
+        Op("GET", "/api/expiry/fefo-order", [200, 400, 401, 403, 404, 503], _ => "FefoOrder"),
         // F3 (the MOD-0022 subject provider; every refusal is 404)
         Op("GET", "/api/expiry/esign-subjects/{id}/{id}", [200, 401, 404], _ => "SignableSubject")
     ];
