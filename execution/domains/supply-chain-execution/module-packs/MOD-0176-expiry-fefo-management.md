@@ -342,8 +342,10 @@ Common shape:
 - **Synchronous:** all three hooks are synchronous in the request. No queue.
 - **Exempt movement types (CT-D4 + 0175):** `REVERSAL` (never reaches master data — `InternalMovementPostingService.cs:91,210-250`;
   also skipped in the re-check), `SCRAP`, `WRITE_OFF` (`LotPostingRules.cs:42`), `STATUS_TRANSFER`, `LOCATION_TRANSFER`,
-  `COUNT_GAIN`, `COUNT_LOSS`, `SUPPLIER_RETURN`, and every movement with `sourceModule = MOD-0175`
-  (`QuarantineMovementPoster.cs:43,103` posts through the same service).
+  `COUNT_GAIN`, `COUNT_LOSS`, `SUPPLIER_RETURN` (+ `WAREHOUSE_TRANSFER`, CT-F3). MOD-0175's movements are exempt **by TYPE**: it posts
+  only `STATUS_TRANSFER`, `SCRAP`, `SUPPLIER_RETURN`, `LOCATION_TRANSFER` (`QuarantineStockEffects.cs`, through
+  `QuarantineMovementPoster.cs:43,103`). **`sourceModule` is caller data and never exempts** — CT finding O-F2-2, WP-0176-F2-FIX1
+  (guarded by `ExpiryQuarantineTypeExemptionTests`).
 
 #### 8.3.1 Outbound — FEFO check (KF-B)
 
@@ -373,13 +375,13 @@ Common shape:
 | Lot without expiry | rule not applied ("SKT takibi yok"); ASSUMPTION-0176-06 |
 | Class / line | same two points as §8.3.1 (the lot is known after `UNKNOWN_LOT` `:189-196`) |
 | Mode **Uyar** | post as requested; `BELOW_MIN_REMAINING` exception |
-| Mode **Otomatik karantina** (default) | requested `toStockStatus = AVAILABLE` → the ledger books **`QUARANTINE`** (existing status); MOD-0175 intake opens the hold (Source `GoodsReceipt`, `QuarantineIntake.cs:41-65`) — "via the MOD-0175 quarantine path"; `BELOW_MIN_REMAINING` exception with `appliedStockStatus=QUARANTINE`; response `expiryChecks.minRemaining = "Quarantined"`, `appliedToStockStatus`. Requested `QUARANTINE`/`QI` → unchanged + exception. **CT-F1.** |
+| Mode **Otomatik karantina** (default) | **CT-F1 (fallback, decided):** requested `toStockStatus = AVAILABLE` → **422 `LOT_BELOW_MIN_REMAINING_SHELF_LIFE`** with `details.requiredToStockStatus = "QUARANTINE"`, `remainingDays`, `requiredDays`; the server **never turns the requested status** and nothing is posted; the caller (GR UI) resubmits into `QUARANTINE`. Requested `QUARANTINE` / `QUALITY_INSPECTION` → posted as requested, MOD-0175 intake opens the hold (Source `GoodsReceipt`, `QuarantineIntake.cs:41-65`), `BELOW_MIN_REMAINING` exception; response `expiryChecks.minRemaining = "Warned"`. No `appliedToStockStatus`. |
 | Mode **Reddet** | **422 `LOT_BELOW_MIN_REMAINING_SHELF_LIFE`** (details remainingDays, requiredDays); nothing posted |
 | Idempotency | fingerprint unchanged (no new request member); dedup `BELOW_MIN_REMAINING:{transactionId}` |
 | Reservation effect | none (inbound) |
 | REVERSAL | exempt; reversing the GR leaves the exception for QA |
 | Why not post AVAILABLE then `quarantineStock` | two movements, a window where the stock is AVAILABLE and reservable → 0175 would answer 409 `QUARANTINE_STOCK_RESERVED` (`StockActionHandlers.cs:229`); measured path rejected |
-| Fully-additive fallback (if CT rules the re-route non-additive) | server refuses an `AVAILABLE` GR with 422 `LOT_BELOW_MIN_REMAINING_SHELF_LIFE` + `details.requiredToStockStatus = "QUARANTINE"`; the GR UI resubmits with `QUARANTINE` automatically. Same end state, caller-driven. |
+| Fully-additive fallback | **chosen by CT-F1** (see Mode Otomatik karantina): the server-side re-route is not built. |
 
 `HoldSource` has no expiry value (`quarantine.openapi.yaml:397`); 0176 needs none — the hold **is** a goods-receipt
 hold. The exception links the hold (`facts.holdId`) by reading 0175's hold by source transaction. Optional QUARANTINE
@@ -406,7 +408,7 @@ hold. The exception links the hold (`facts.holdId`) by reading 0175's hold by so
 | Hook | Uyar | Gerekçe | Engelle / Reddet | Otomatik karantina | Exception | HTTP |
 |---|---|---|---|---|---|---|
 | Outbound (KF-B) | post + exception | reason ≥ 10 → post + exception; else 422 | 422 `FEFO_ORDER_VIOLATION`, no post | n/a | `FEFO_BYPASS` | 201 / 422 |
-| GR (KF-C) | post + exception | n/a | 422 `LOT_BELOW_MIN_REMAINING_SHELF_LIFE`, no post | post as `QUARANTINE` + 0175 hold + exception | `BELOW_MIN_REMAINING` | 201 / 422 |
+| GR (KF-C) | post + exception | n/a | 422 `LOT_BELOW_MIN_REMAINING_SHELF_LIFE`, no post | into `AVAILABLE`: 422 + `requiredToStockStatus = QUARANTINE`, no post (CT-F1, the server never turns the status); into `QUARANTINE` / `QI`: post + 0175 hold + exception | `BELOW_MIN_REMAINING` | 201 / 422 |
 | Lot creation (KF-D) | n/a | override (reason) → create + exception; else 422 | n/a | n/a | `EXPIRY_DATE_OVERRIDE` | 201 / 422 / 400 / 409 |
 | Lot creation (KF-D) Gerekçe + e-imza | n/a | override + signature → create + exception; signature missing 400, mismatch 409 | n/a | n/a | `EXPIRY_DATE_OVERRIDE` | 201 / 422 / 400 / 409 |
 | Exempt types (§8.3) | — | — | — | — | none | unchanged |
@@ -951,6 +953,19 @@ endpoints (signed KF-D success via a MOD-0022 test double only — production fa
 empty. p95 added +9.4 / +9.7 / −0.5 ms (issue / bypass / receipt, 200 lots). Probe on 5167 + own mongod: `/health` 200, unauthenticated
 posting / date-override / lot routes 401, fleet PIDs unchanged. Open for CT: O-F2-1 (TRACE `Error` has no `details` — suggestion in the
 message), O-F2-2 (MOD-0175 exemption trusts `sourceModule`), O-F2-3, O-F2-4 (§8.3.4 GR text vs CT-F1), O-F2-5 (`GOODS_ISSUE_PROD` in scope).
+
+### 19.11 WP-0176-F2-FIX1 (CT finding O-F2-2) — agent result, pending CT (2026-10-13)
+
+Commits `bc7f520e9` (fix + tests) and `476f4f6e2` (p95 test) on `feature/sce/mod-0176-expiry-fefo` (base `120cf7666`). Evidence
+`docs/records/audits/2026-10/mod-0176-f2-fix1-evidence-2026-10-12.md`. `ExpiryHookScope.For` no longer exempts `sourceModule = MOD-0175`
+(the parameter stays, it does not enter the decision; `QuarantineModule` removed). MOD-0175 is unaffected: measured, it posts only through
+`QuarantineMovementPoster.PostAsync` (`QuarantineApplyEngine.cs:111`, `StockActionHandlers.cs:153`) and only `STATUS_TRANSFER`, `SCRAP`,
+`SUPPLIER_RETURN`, `LOCATION_TRANSFER` — all exempt by TYPE (derived from `QuarantineStockEffects`, call sites pinned; it posts no `REVERSAL`).
+HTTP: an issue / a GR claiming `MOD-0175` → 422 like any other; with a reason → 201 + `FEFO_BYPASS`; a real 0175 block + Destroy of a
+later lot → no FEFO check. §8.3 / §8.3.2 / §8.3.4 aligned (O-F2-2, O-F2-4 closed in text). Inventory 972 → 979; architecture 69/77 same 8
+reds; gateway 134/135. Sabotage s1 → 2 red, s2 → 2 red (3(d) stays green: the status rule is a second barrier — no 0175 movement is
+AVAILABLE → none). **Open: O-FIX1-2** — the F2 p95 test is unstable in the full suite on this machine (3 of 6 red before, 1 of 3 after the
+interleaving fix); the budget is unchanged, CT to decide how p95 is measured.
 
 ## 20. Follow-up Items
 
