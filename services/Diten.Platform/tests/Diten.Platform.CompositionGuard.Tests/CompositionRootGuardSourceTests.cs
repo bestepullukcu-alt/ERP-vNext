@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Diten.Platform.Tests.Shared;
 using Xunit;
 
@@ -58,5 +59,53 @@ public sealed class CompositionRootGuardSourceTests
 
         Assert.Null(address);
         Assert.StartsWith(PlatformTestMongo.Unavailable + ":", Assert.IsType<InvalidOperationException>(failure).Message);
+    }
+
+    // FIX1 (independent review): the tests above prove MongoAddress, not that Host() uses it. Host() cannot be built
+    // here without a mongod (and only once per process), so its source text is pinned instead: the ONE address line is
+    // MongoAddress over the guard's variable with PlatformTestMongo.ConnectionStringAsync, and that address — nothing
+    // else — is the host's MongoDbSettings:ConnectionString. Skipping MongoAddress, another owned source, a second read
+    // of the variable or another connection string is red here.
+    [Fact]
+    public void Host_takes_its_mongo_from_MongoAddress_with_the_owned_platform_source()
+    {
+        // CRLF on a Windows checkout (no eol rule in .gitattributes) must not blind the pin: normalized like CiServiceTestsGuardTests.Text.
+        var host = HostConstructor(File.ReadAllText(GuardSource()).Replace("\r\n", "\n"));
+
+        Assert.Single(Regex.Matches(host,
+            @"(?m)^\s*var mongo = MongoAddress\(Environment\.GetEnvironmentVariable\(MongoVariable\), PlatformTestMongo\.ConnectionStringAsync\);\s*$"));
+        Assert.Single(Regex.Matches(host, @"MongoAddress\("));
+        Assert.Single(Regex.Matches(host, @"ConnectionStringAsync"));
+        Assert.Single(Regex.Matches(host, @"GetEnvironmentVariable\(MongoVariable\)"));
+        Assert.Single(Regex.Matches(host, @"\[""MongoDbSettings:ConnectionString""\] = mongo,"));
+        Assert.Single(Regex.Matches(host, @"MongoDbSettings:ConnectionString"));
+    }
+
+    // The body of `public Host()` — from its signature to the matching closing brace.
+    private static string HostConstructor(string source)
+    {
+        var start = source.IndexOf("public Host()\n", StringComparison.Ordinal);
+        Assert.True(start >= 0, "public Host() not found — the pin is blind");
+        var open = source.IndexOf('{', start);
+        var depth = 0;
+        for (var i = open; i < source.Length; i++)
+        {
+            if (source[i] == '{') depth++;
+            else if (source[i] == '}' && --depth == 0) return source[start..(i + 1)];
+        }
+
+        throw new InvalidOperationException("public Host() has no closing brace.");
+    }
+
+    private static string GuardSource()
+    {
+        for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
+        {
+            if (File.Exists(Path.Combine(directory.FullName, "AGENTS.md")))
+                return Path.Combine(directory.FullName,
+                    "services/Diten.Platform/tests/Diten.Platform.CompositionGuard.Tests/CompositionRootGuardTests.cs");
+        }
+
+        throw new InvalidOperationException("Repo root not found.");
     }
 }

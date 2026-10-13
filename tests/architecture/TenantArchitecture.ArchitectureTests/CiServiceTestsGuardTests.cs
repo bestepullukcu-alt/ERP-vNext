@@ -177,13 +177,14 @@ public class CiServiceTestsGuardTests
     // Main sync FIX1 (CT decision D): no row starts a job-local mongod and no step hands the tests a Mongo address.
     // Every service test owns its mongod (DITEN_TEST_MONGOD): Platform's PlatformTestMongo, MDM's MdmTestMongo (which
     // ignores MDM_TEST_MONGO by design), Auth's owned replica set. A returning address variable would point a test at a
-    // server it did not start — the shape BL-595 removed — so any of them is red here.
+    // server it did not start — the shape BL-595 removed — so any of them is red here. PLATFORM_COMPOSITION_GUARD_MONGO_URI
+    // too (WP-PLATFORM-COMPOSITION-GUARD-OWNED-01 FIX1): the platform-composition-guard row uses its owned mongod.
     [Fact]
     public void No_row_starts_a_job_local_mongod_or_hands_the_tests_a_mongo_address()
     {
         var code = Code(Workflow());
         foreach (var variable in new[] { "MONGO_TEST_URI", "MDM_TEST_MONGO", "Eventing__MongoDb__ConnectionString",
-                     "MongoDbSettings__ConnectionString", "DITEN_PLATFORM_TEST_MONGO_URI" })
+                     "MongoDbSettings__ConnectionString", "DITEN_PLATFORM_TEST_MONGO_URI", "PLATFORM_COMPOSITION_GUARD_MONGO_URI" })
             Assert.True(!Regex.IsMatch(code, $@"(?i)\b{variable}\b"), $"the workflow names {variable}: a test would be pointed at a server it did not start");
         Assert.True(!Regex.IsMatch(code, @"(?i)--replSet|--dbpath|mongo_rs_initiate"), "a job-local mongod is started");
         Assert.True(!Regex.IsMatch(code, @"(?i)\bmongodb://"), "the workflow carries a Mongo address");
