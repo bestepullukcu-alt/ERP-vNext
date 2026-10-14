@@ -35,6 +35,7 @@ public sealed class RecallRepository : IRecallRepository
     private readonly IMongoCollection<RecallTraceSnapshot> _snapshots;
     private readonly IMongoCollection<RecallQuarantineRequest> _requests;
     private readonly IMongoCollection<RecallReturnLink> _returnLinks;
+    private readonly IMongoCollection<RecallSettingsChange> _settingsChanges;
     private readonly TransactionRetryCounter _retries;
     private readonly ILogger<RecallRepository> _logger;
     private readonly Guid _tenantId;
@@ -57,6 +58,7 @@ public sealed class RecallRepository : IRecallRepository
         _snapshots = database.GetCollection<RecallTraceSnapshot>(RecallCollections.TraceSnapshots);
         _requests = database.GetCollection<RecallQuarantineRequest>(RecallCollections.QuarantineRequests);
         _returnLinks = database.GetCollection<RecallReturnLink>(RecallCollections.ReturnLinks);
+        _settingsChanges = database.GetCollection<RecallSettingsChange>(RecallCollections.SettingsChanges);
         _retries = retries;
         _logger = logger;
         _tenantId = tenant.TenantId;
@@ -244,6 +246,23 @@ public sealed class RecallRepository : IRecallRepository
 
     // ── writes ────────────────────────────────────────────────────────────────────────────────────────────
 
+    // ── R4: prepared settings changes, signature reuse ─────────────────────────────────────────────────────
+
+    public async Task<RecallSettingsChange?> FindSettingsChangeAsync(Guid changeId, CancellationToken cancellationToken = default)
+        => await _settingsChanges.Find(Scope<RecallSettingsChange>() & Builders<RecallSettingsChange>.Filter.Eq(x => x.Id, changeId)).FirstOrDefaultAsync(cancellationToken);
+
+    public async Task<RecallSettingsChange?> FindSettingsChangeByKeyAsync(Guid setBy, string idempotencyKey, CancellationToken cancellationToken = default)
+        => await _settingsChanges.Find(Scope<RecallSettingsChange>() & Builders<RecallSettingsChange>.Filter.Eq(x => x.SetBy, setBy)
+            & Builders<RecallSettingsChange>.Filter.Eq(x => x.IdempotencyKey, idempotencyKey)).FirstOrDefaultAsync(cancellationToken);
+
+    public async Task<RecallSettingsChange?> LatestSettingsChangeAsync(Guid setBy, CancellationToken cancellationToken = default)
+        => await _settingsChanges.Find(Scope<RecallSettingsChange>() & Builders<RecallSettingsChange>.Filter.Eq(x => x.SetBy, setBy))
+            .SortByDescending(x => x.SetAtUtc).FirstOrDefaultAsync(cancellationToken);
+
+    public async Task<bool> SignatureUsedAsync(string signatureId, CancellationToken cancellationToken = default)
+        => await _events.Find(Scope<RecallCaseEvent>() & Builders<RecallCaseEvent>.Filter.Eq(x => x.SignatureId, signatureId)).AnyAsync(cancellationToken)
+           || await _history.Find(Scope<RecallSettingsHistoryEntry>() & Builders<RecallSettingsHistoryEntry>.Filter.Eq(x => x.SignatureId, signatureId)).AnyAsync(cancellationToken);
+
     public async Task<T> InTransactionAsync<T>(Func<IRecallWriteSession, CancellationToken, Task<T>> work, CancellationToken cancellationToken = default)
     {
         using var session = await _client.StartSessionAsync(cancellationToken: cancellationToken);
@@ -421,6 +440,12 @@ public sealed class RecallRepository : IRecallRepository
         {
             _owner.Stamp(link);
             return _owner._returnLinks.InsertOneAsync(_session, link, cancellationToken: cancellationToken);
+        }
+
+        public Task InsertSettingsChangeAsync(RecallSettingsChange change, CancellationToken cancellationToken = default)
+        {
+            _owner.Stamp(change);
+            return _owner._settingsChanges.InsertOneAsync(_session, change, cancellationToken: cancellationToken);
         }
     }
 }

@@ -140,14 +140,14 @@ public sealed class ExpiryESignShapeTests
             Assert.Equal(new[] { "ar", "en", "es", "fr", "ru", "tr", "zh" }, a["names"]!.AsObject().Select(n => n.Key).OrderBy(k => k, StringComparer.Ordinal));
             Assert.All(a["names"]!.AsObject(), n => Assert.False(string.IsNullOrWhiteSpace(n.Value!.GetValue<string>())));
         });
-        Assert.Equal(["quarantine", "expiry"], ESignActionRegistrationHostedService.Modules.Select(m => m.Module));
+        Assert.Equal(["quarantine", "expiry", "recall"], ESignActionRegistrationHostedService.Modules.Select(m => m.Module)); // WP-0177-R4 appends recall
     }
 
     [Fact]
     public async Task One_registration_call_per_module()
     {
-        var calls = await ESignActionRegistrationRegressionTests.RunAsync(2);
-        Assert.Equal(2, calls.Count);
+        var calls = await ESignActionRegistrationRegressionTests.RunAsync(3);
+        Assert.Equal(3, calls.Count); // WP-0177-R4: + recall
         Assert.Single(calls, c => c.Body.Contains("\"module\":\"expiry\"", StringComparison.Ordinal) && !c.Body.Contains("quarantine.", StringComparison.Ordinal));
         Assert.Single(calls, c => c.Body.Contains("\"module\":\"quarantine\"", StringComparison.Ordinal) && !c.Body.Contains("expiry.", StringComparison.Ordinal));
     }

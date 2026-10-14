@@ -198,6 +198,10 @@ public static class RecallRequestReader
     public static readonly HashSet<string> SettingsMembers = new(StringComparer.Ordinal)
         { "drillTargetHours", "drillFrequencyWarningDays", "effectivenessTargetPercent", "traceMaxDepth", "traceMaxNodes", "reason", "signatureId", "idempotencyKey" };
 
+    /// <summary>R4 prepareSettingsChange — the settings body without a signature (RECALL 1.3.0).</summary>
+    public static readonly HashSet<string> PrepareSettingsMembers = new(StringComparer.Ordinal)
+        { "drillTargetHours", "drillFrequencyWarningDays", "effectivenessTargetPercent", "traceMaxDepth", "traceMaxNodes", "reason", "idempotencyKey" };
+
     public static readonly HashSet<string> OpenMembers = new(StringComparer.Ordinal)
         { "idempotencyKey", "rootLotId", "direction", "class", "level", "reason", "reasonReference" };
 

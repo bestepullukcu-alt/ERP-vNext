@@ -61,6 +61,24 @@ public sealed class RecallController : CustomBaseController
         return WithETag(await _mediator.Send(new UpdateRecallSettingsCommand(body.Settings, body.Reason, body.SignatureId, key, version), ct), s => s.Version);
     }
 
+    /// <summary>R4 prepareSettingsChange (RECALL 1.3.0, CT-R16) — the proposal to sign; the MOD-0022 subject recall.settings-change.</summary>
+    [HttpPost("settings/pending-change")]
+    [HasPermission(RecallPermissions.SettingsManage)]
+    public async Task<IActionResult> PrepareSettingsChange(CancellationToken ct)
+    {
+        var read = await RecallRequestReader.ReadAsync(Request.Body, RecallRequestReader.PrepareSettingsMembers, b => new
+        {
+            Settings = new RecallSettingsInput(b.Int("drillTargetHours"), b.Int("drillFrequencyWarningDays"), b.Targets("effectivenessTargetPercent"),
+                b.Int("traceMaxDepth"), b.Int("traceMaxNodes")),
+            Reason = b.String("reason"),
+            Key = b.String("idempotencyKey")
+        }, ct);
+        if (read.Value is not { } body) return Invalid(read.Error);
+        if (KeyError(body.Key, out var key) is { } keyError) return Invalid(keyError);
+        if (IfMatch() is not { } version) return Invalid("If-Match is required (\"0\" before the first save).");
+        return CreateActionResultInstance(await _mediator.Send(new PrepareRecallSettingsChangeCommand(body.Settings, body.Reason, key, version), ct));
+    }
+
     // ── cases (reads) ────────────────────────────────────────────────────────────────────────────────────
 
     [HttpGet("cases")]

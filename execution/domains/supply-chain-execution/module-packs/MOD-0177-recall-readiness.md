@@ -1363,6 +1363,25 @@ Dal `fix/mod-0177-r3-tenant` (taban `9362c0402`). Kanıt `docs/records/audits/20
 **FIX-R3T CT-ACCEPTED (2026-10-14).** Read the sweeper change (per-request catch, shutdown cancellation not swallowed, tenant-list overload test-only) — `RecallPostingGate` unchanged. CT trial merge on the MVP-1 tip `1f904aa83`: Inventory **1159 + 4** (the full run had the known 16 Prism start-up timeouts; Prism alone 16/16). **CT sabotage:** only the IN-TRANSACTION re-check of `ByLotAsync` loses its `TenantId` filter (the pre-check keeps it) → `a_ByLotAsync_…_refuses_neither_the_pre_check_nor_the_re_check` red — the re-check stage is measured on its own, as claimed; restored, porcelain clean. The R3 CT finding (untested tenant boundary) is closed. O-R3T-1 → FU-0177-SWEEP-01 (retry limit / Failed + reason), O-R3T-2 → FU-0177-SWEEP-02 (tenant in the dispatcher warning, OBS-001). Merged `--no-ff` into MVP-1; the owner Inventory window needs a restart for the sweeper change (approval).
 
 
+### 19.15 WP-0177-R4 — agent result, pending CT (2026-10-14)
+
+Dal `feature/sce/mod-0177-r4` (taban `9729409e0`). Kanıt `docs/records/audits/2026-10/mod-0177-r4-evidence-2026-10-14.md` (+ betikler). Commit'ler:
+`642489c0f` RECALL **1.3.0** (yalnız ekleme), `9813aebc4` Inventory, `9c0ef2668` Platform yapılandırma satırı + host testi.
+
+- **BLOCKED → CT kararı B:** rs-v1 için `prepareSettingsChange` (yeni yazma komutu) uygulandı; denetim listesi 58 → 59 GEÇİCİ kabul (BL-501 /
+  WP-MVP1-AUDIT1 v2); borç listesine satır eklenmedi. Kanıt §2 "R4 komutları" tablosu (komut, handler, koleksiyonlar).
+- **Teslim:** 5 işlem (`recall.` öneki, 7 dilde ad, settings.update `false`); `rc-v1` (gönderilen + onaylanan iz mührü imzanın içinde) /
+  `dr-v1` / `rs-v1` altın vektörleri; `GET /api/recall/esign-subjects/{type}/{id}` (kiracıya bağlı dizin, her ret 404
+  `RECALL_SUBJECT_NOT_FOUND`, drill-run R5'e kadar 404); `ESignRecallSignature` F3-A (getSignature + yerel hash; imzacı, işlem, anlam, o anki
+  hash, geçersiz değil, hazırlıktan sonra, tek kullanım, başka vaka yok; MOD-0022 okunamazsa ret); kapsam onayı + CT-R5 revizyonu + tamamlama
+  + kapanış + ayar bu kapıdan; CT-R1 dört göz değişmedi; 0177 yalnız `signatureId` saklar.
+- **Pack uzlaştırması:** §8.8'deki `verifySignature` cümlesi F3-A ile geçersiz (0176 F3 CT kararı); WP'nin `SUBJECT_NOT_FOUND`'u →
+  `RECALL_SUBJECT_NOT_FOUND`; BaseUrl Gateway emsaliyle `http://localhost:5000/api/recall`; R4-1 / R4-2 (kanıt §3).
+- **Sabotaj:** a–h 8/8 kırmızı → yeşil, özgün baytlar geri yazıldı, SHA eşit (kanıt §7).
+- **Sayılar:** Inventory 1159 + 4 → **1182 + 4**; mimari **69/77** aynı 8; gateway 164/165; Web 2272/2272; Platform ESign 176 → **177/177**; derleme 0 / 0.
+  Sonda 5168 + mongod 27517: R4 yolları ve imzalı kararlar token'sız 401; filo PID'leri değişmedi.
+- Açık: O-R4-1 (geçici denetim borcu), O-R4-2 (drill-run → R5), O-R4-3 (sahip yeniden başlatması + canlı MOD-0022 kontrolü), O-R4-4, O-R4-5.
+
 ## 20. Follow-up Items
 
 | ID | Item | Owner |
