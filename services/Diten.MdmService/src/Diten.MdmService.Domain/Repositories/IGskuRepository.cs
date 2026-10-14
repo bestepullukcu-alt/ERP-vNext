@@ -74,6 +74,41 @@ public interface IGskuRepository
         CancellationToken cancellationToken = default) => sort == GskuListSort.Default
             ? GetPageAsync(pageNumber, pageSize, canonicalCodeSearch, lifecycleStatus, cancellationToken)
             : throw new NotSupportedException("GSKU_LIST_SORT_NOT_IMPLEMENTED");
+    /// <summary>
+    /// WP-VW-W4 (W4-FIX-d, G-8) — the list search: a GSKU whose code CONTAINS the text (<see cref="MdmSearchText"/>) or whose
+    /// product definition revision is one of <paramref name="productDefinitionRevisionIds"/> (the revisions of the global
+    /// products whose name / code matched). Same tenant, soft-delete and paging rules as <see cref="GetPageAsync"/>.
+    /// </summary>
+    Task<GskuPage> SearchPageAsync(
+        int pageNumber,
+        int pageSize,
+        string search,
+        IReadOnlyCollection<Guid> productDefinitionRevisionIds,
+        CancellationToken cancellationToken = default) =>
+        GetPageAsync(pageNumber, pageSize, search, cancellationToken);
+    // Main sync 2026-10-14 (WP-LANE-MAIN-SYNC-04): main's G-8 search on the lane's two register reads — with the lifecycle
+    // filter and the whitelisted order (preparation mode), and inside the enforced Legal Entity scope. The search predicate is
+    // SearchPageAsync's (code contains, or one of the given product definition revisions); everything else is the lane's.
+    Task<GskuPage> SearchPageAsync(
+        int pageNumber,
+        int pageSize,
+        string search,
+        IReadOnlyCollection<Guid> productDefinitionRevisionIds,
+        ProductIdentityLifecycleStatus? lifecycleStatus,
+        GskuListSort sort,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("GSKU_LIST_SEARCH_SORT_NOT_IMPLEMENTED");
+    Task<GskuPage> SearchEnforcedLegalEntityScopePageAsync(
+        int pageNumber,
+        int pageSize,
+        string search,
+        IReadOnlyCollection<Guid> productDefinitionRevisionIds,
+        ProductIdentityLifecycleStatus? lifecycleStatus,
+        GskuListSort sort,
+        IReadOnlyCollection<Guid> effectiveCandidateLegalEntityIds,
+        DateTimeOffset serverNowUtc,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("GSKU_ENFORCED_LIST_SEARCH_NOT_IMPLEMENTED");
     Task<IReadOnlyList<Guid>> FindIdsByCanonicalCodeAsync(
         string canonicalCodeSearch,
         CancellationToken cancellationToken = default);

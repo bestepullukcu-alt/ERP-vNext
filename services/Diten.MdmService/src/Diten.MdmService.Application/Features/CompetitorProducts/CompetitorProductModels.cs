@@ -133,6 +133,7 @@ public sealed record CompetitorDecisionDto(
     string? Reason,
     string Status,
     string? CreatedBy,
+    DateTimeOffset CreatedAt,           // W4-FIX-d (F-7): when the decision was PREPARED (not applied)
     string? UpdatedBy,
     DateTimeOffset? UpdatedAt,
     string? AppliedBy,

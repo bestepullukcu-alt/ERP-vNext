@@ -102,8 +102,10 @@ public sealed class GskuListComponentProxyTests : IClassFixture<WebApplicationFa
         var wire = new RecordingHandler(HttpStatusCode.OK,
             "{\"isSuccessful\":true,\"statusCode\":200,\"data\":{\"globalProducts\":[],\"uoms\":[],\"hasMore\":true}}");
 
+        // WP-LANE-MAIN-SYNC-04: main's W4-FIX-d binds the three values (bounded) instead of reading Request.Query; the query
+        // string still carries a foreign tenantId that must not reach MDM.
         var result = await Controller(wire, "mdm.gskus.create", "?pageNumber=2&pageSize=20&search=asp%C4%B1rin&tenantId=evil")
-            .CreateOptions(CancellationToken.None);
+            .CreateOptions("aspırin", 2, 20, CancellationToken.None);
 
         Assert.Equal($"{Gateway}/api/gskus/create-options?pageNumber=2&pageSize=20&search=asp%C4%B1rin", Assert.Single(wire.Urls));
         Assert.Contains("\"hasMore\":true", Assert.IsType<ContentResult>(result).Content);

@@ -76,7 +76,7 @@ Her bir feature (Örn: `SampleModule`) altında şu yapı kurulmalıdır:
 Her command, query, handler ve validator ayrı dosyada olmalıdır. Handler sınıfları `Commands/` veya `Queries/` içine konulamaz; sadece `Handlers/CommandHandlers` veya `Handlers/QueryHandlers` altında bulunur.
 
 ### 🔒 Güvenlik ve Tenant
-- **DTO’lar TenantId İçermez:** Kiracı bilgisi her zaman header (`X-Tenant-Id`) üzerinden alınır. DTO içine asla `TenantId` alanı eklenmez.
+- **DTO’lar TenantId İçermez:** Kiracı bilgisi sunucu tarafında `ITenantContext`'ten alınır. Kiracı bağlamında `X-Tenant-Id` başlığı `TenantResolutionMiddleware` tarafından çözülür ve doğrulanır; platform/admin bağlamında bu başlık yoktur. DTO içine asla `TenantId` alanı eklenmez.
 - **Repository:** Veriye erişim sadece `tenant enforced` olan repository metodları üzerinden yapılmalıdır.
 
 ---

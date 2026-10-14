@@ -1,0 +1,25 @@
+@model Diten.Web.Models.MasterData.CompetitorProductsPageViewModel
+@using Diten.Web.Views.MasterData.CompetitorProducts
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CompetitorProductsIndex> Localizer
+
+@* WP-VW-W4 (W4-WEB-c) — the shell every competitor products page shares: the root with the page mode and the keys
+   (each flag = exactly its endpoint's keys), the alert and the body the script draws; the modal sits INSIDE the root so
+   its buttons reach the same delegated handlers. *@
+<div id="cp-root" class="cp-root"
+     data-mode="@Model.Mode"
+     data-id="@(Model.Id?.ToString() ?? string.Empty)"
+     data-proposal-id="@(Model.ProposalId?.ToString() ?? string.Empty)"
+     data-api-base="/MasterDataManagement/CompetitorProducts/api"
+     data-base="/MasterDataManagement/CompetitorProducts"
+     data-actor="@(Model.Actor ?? string.Empty)"
+     data-can-manage="@Model.CanManage.ToString().ToLowerInvariant()"
+     data-can-read-products="@Model.CanReadProducts.ToString().ToLowerInvariant()"
+     data-can-read-forms="@Model.CanReadForms.ToString().ToLowerInvariant()"
+     data-can-read-indications="@Model.CanReadIndications.ToString().ToLowerInvariant()"
+     data-can-read-usage="@Model.CanReadUsage.ToString().ToLowerInvariant()"
+     data-can-read-people="@Model.CanReadPeople.ToString().ToLowerInvariant()">
+    <div class="alert alert-danger d-none" id="cp-alert" role="alert"></div>
+    <div id="cp-body"><div class="text-muted small p-3">@Localizer["Loading"]</div></div>
+    <div class="cp-overlay d-none" id="cp-modal"></div>
+</div>

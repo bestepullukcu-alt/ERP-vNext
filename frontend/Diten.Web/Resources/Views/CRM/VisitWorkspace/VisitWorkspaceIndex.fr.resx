@@ -289,4 +289,13 @@
   <data name="E3StartValue" xml:space="preserve"><value>au démarrage · heure du serveur</value></data>
   <data name="E3Cancel" xml:space="preserve"><value>Annuler</value></data>
   <data name="E3Begin" xml:space="preserve"><value>Démarrer la présentation</value></data>
+  <data name="UnpTargetType" xml:space="preserve"><value>Visite chez</value></data>
+  <data name="UnpTargetDoctor" xml:space="preserve"><value>Médecin</value></data>
+  <data name="UnpTargetPharmacy" xml:space="preserve"><value>Pharmacie</value></data>
+  <data name="UnpDoctorLabel" xml:space="preserve"><value>Médecin</value></data>
+  <data name="UnpDoctorSearch" xml:space="preserve"><value>Rechercher un médecin par nom (au moins 2 lettres)</value></data>
+  <data name="UnpPharmacyLabel" xml:space="preserve"><value>Pharmacie</value></data>
+  <data name="UnpPharmacySearch" xml:space="preserve"><value>Rechercher une pharmacie par nom (au moins 2 lettres)</value></data>
+  <data name="Err_planned_visit_duplicate_same_day_type" xml:space="preserve"><value>Ce lieu a déjà une visite de ce type aujourd'hui.</value></data>
+  <data name="Err_planned_visit_time_window_invalid" xml:space="preserve"><value>L'heure de visite n'est pas valide ; choisissez une autre heure de début.</value></data>
 </root>

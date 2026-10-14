@@ -172,7 +172,7 @@ public sealed class GskuRepository : IGskuRepository
         => GetEnforcedLegalEntityScopePageAsync(pageNumber, pageSize, canonicalCodeSearch, referenceableOnly,
             lifecycleStatus, GskuListSort.Default, effectiveCandidateLegalEntityIds, serverNowUtc, cancellationToken);
 
-    public async Task<GskuPage> GetEnforcedLegalEntityScopePageAsync(
+    public Task<GskuPage> GetEnforcedLegalEntityScopePageAsync(
         int pageNumber,
         int pageSize,
         string? canonicalCodeSearch,
@@ -182,6 +182,36 @@ public sealed class GskuRepository : IGskuRepository
         IReadOnlyCollection<Guid> effectiveCandidateLegalEntityIds,
         DateTimeOffset serverNowUtc,
         CancellationToken cancellationToken = default)
+        => GetEnforcedLegalEntityScopePageCoreAsync(pageNumber, pageSize, canonicalCodeSearch, listSearch: null,
+            referenceableOnly, lifecycleStatus, sort, effectiveCandidateLegalEntityIds, serverNowUtc, cancellationToken);
+
+    // Main sync 2026-10-14 (WP-LANE-MAIN-SYNC-04): main's W4-FIX-d (G-8) list search INSIDE the enforced Legal Entity scope —
+    // the same pipeline (tenant, soft delete, scope lookup, lifecycle filter, order); only the search predicate differs.
+    public Task<GskuPage> SearchEnforcedLegalEntityScopePageAsync(
+        int pageNumber,
+        int pageSize,
+        string search,
+        IReadOnlyCollection<Guid> productDefinitionRevisionIds,
+        ProductIdentityLifecycleStatus? lifecycleStatus,
+        GskuListSort sort,
+        IReadOnlyCollection<Guid> effectiveCandidateLegalEntityIds,
+        DateTimeOffset serverNowUtc,
+        CancellationToken cancellationToken = default)
+        => GetEnforcedLegalEntityScopePageCoreAsync(pageNumber, pageSize, canonicalCodeSearch: null,
+            new GskuListSearch(search, productDefinitionRevisionIds), referenceableOnly: false, lifecycleStatus, sort,
+            effectiveCandidateLegalEntityIds, serverNowUtc, cancellationToken);
+
+    private async Task<GskuPage> GetEnforcedLegalEntityScopePageCoreAsync(
+        int pageNumber,
+        int pageSize,
+        string? canonicalCodeSearch,
+        GskuListSearch? listSearch,
+        bool referenceableOnly,
+        ProductIdentityLifecycleStatus? lifecycleStatus,
+        GskuListSort sort,
+        IReadOnlyCollection<Guid> effectiveCandidateLegalEntityIds,
+        DateTimeOffset serverNowUtc,
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(sort);
         cancellationToken.ThrowIfCancellationRequested();
@@ -206,6 +236,7 @@ public sealed class GskuRepository : IGskuRepository
             match[nameof(Gsku.CanonicalCode)] = new BsonRegularExpression(
                 "^" + System.Text.RegularExpressions.Regex.Escape(canonicalCodeSearch));
         }
+        ApplyListSearch(match, listSearch);
 
         var revisionPredicates = new BsonArray
         {
@@ -321,13 +352,36 @@ public sealed class GskuRepository : IGskuRepository
 
     // FIX3 B17: the register's own read with a whitelisted order. One aggregation for every order, because the pack
     // quantity is stored as a decimal STRING (driver default) and only a converted key sorts it as a number.
-    public async Task<GskuPage> GetPageAsync(
+    public Task<GskuPage> GetPageAsync(
         int pageNumber,
         int pageSize,
         string? canonicalCodeSearch,
         ProductIdentityLifecycleStatus? lifecycleStatus,
         GskuListSort sort,
         CancellationToken cancellationToken = default)
+        => GetSortedPageCoreAsync(pageNumber, pageSize, canonicalCodeSearch, listSearch: null, lifecycleStatus, sort, cancellationToken);
+
+    // Main sync 2026-10-14 (WP-LANE-MAIN-SYNC-04): main's G-8 search on the register's own read (preparation mode), with its
+    // lifecycle filter and whitelisted order.
+    public Task<GskuPage> SearchPageAsync(
+        int pageNumber,
+        int pageSize,
+        string search,
+        IReadOnlyCollection<Guid> productDefinitionRevisionIds,
+        ProductIdentityLifecycleStatus? lifecycleStatus,
+        GskuListSort sort,
+        CancellationToken cancellationToken = default)
+        => GetSortedPageCoreAsync(pageNumber, pageSize, canonicalCodeSearch: null,
+            new GskuListSearch(search, productDefinitionRevisionIds), lifecycleStatus, sort, cancellationToken);
+
+    private async Task<GskuPage> GetSortedPageCoreAsync(
+        int pageNumber,
+        int pageSize,
+        string? canonicalCodeSearch,
+        GskuListSearch? listSearch,
+        ProductIdentityLifecycleStatus? lifecycleStatus,
+        GskuListSort sort,
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(sort);
         var match = new BsonDocument
@@ -344,6 +398,7 @@ public sealed class GskuRepository : IGskuRepository
             match[nameof(Gsku.CanonicalCode)] = new BsonRegularExpression(
                 "^" + System.Text.RegularExpressions.Regex.Escape(canonicalCodeSearch));
         }
+        ApplyListSearch(match, listSearch);
 
         var pipeline = new List<BsonDocument> { new("$match", match) };
         pipeline.AddRange(ListSortStages(sort));
@@ -366,6 +421,33 @@ public sealed class GskuRepository : IGskuRepository
             .ToArray() ?? [];
         var total = result?["summary"].AsBsonArray.FirstOrDefault()?.AsBsonDocument["total"].ToInt64() ?? 0;
         return new(items, total);
+    }
+
+    // Main sync 2026-10-14 (WP-LANE-MAIN-SYNC-04): main's G-8 predicate in the register's own match — the GSKU's code CONTAINS
+    // the text (MdmSearchText: case and Turkish I / İ insensitive) OR its product definition revision is one of the revisions
+    // of the (same-tenant) global products whose name / code matched. Tenant and soft delete stay in the same match.
+    private sealed record GskuListSearch(string Search, IReadOnlyCollection<Guid> ProductDefinitionRevisionIds);
+
+    private static void ApplyListSearch(BsonDocument match, GskuListSearch? listSearch)
+    {
+        if (listSearch is null || MdmSearchText.ContainsPattern(listSearch.Search) is not { } pattern)
+        {
+            return;
+        }
+
+        var byCode = new BsonDocument(nameof(Gsku.CanonicalCode), new BsonRegularExpression(pattern, "i"));
+        if (listSearch.ProductDefinitionRevisionIds.Count == 0)
+        {
+            match.AddRange(byCode);
+            return;
+        }
+
+        var revisionIds = new BsonArray(listSearch.ProductDefinitionRevisionIds.Select(ProductLegalEntityScopeAggregation.GuidBson));
+        match["$or"] = new BsonArray
+        {
+            byCode,
+            new BsonDocument(nameof(Gsku.ProductDefinitionRevisionId), new BsonDocument("$in", revisionIds))
+        };
     }
 
     private const string PackQuantitySortKey = "__GskuPackQuantitySortKey";
@@ -406,6 +488,32 @@ public sealed class GskuRepository : IGskuRepository
             { field, direction },
             { "_id", 1 }
         });
+    }
+
+    public async Task<GskuPage> SearchPageAsync(
+        int pageNumber,
+        int pageSize,
+        string search,
+        IReadOnlyCollection<Guid> productDefinitionRevisionIds,
+        CancellationToken cancellationToken = default)
+    {
+        var filter = ActiveFilter;
+        if (MdmSearchText.ContainsPattern(search) is { } pattern)
+        {
+            var byCode = Builders<Gsku>.Filter.Regex(x => x.CanonicalCode, new BsonRegularExpression(pattern, "i"));
+            filter &= productDefinitionRevisionIds.Count == 0
+                ? byCode
+                : Builders<Gsku>.Filter.Or(byCode, Builders<Gsku>.Filter.In(x => x.ProductDefinitionRevisionId, productDefinitionRevisionIds));
+        }
+
+        var totalCount = await _gskus.CountDocumentsAsync(filter, cancellationToken: cancellationToken);
+        var items = await _gskus.Find(filter)
+            .SortBy(x => x.CanonicalCode)
+            .ThenBy(x => x.Id)
+            .Skip((pageNumber - 1) * pageSize)
+            .Limit(pageSize)
+            .ToListAsync(cancellationToken);
+        return new(items, totalCount);
     }
 
     public async Task<IReadOnlyList<Guid>> FindIdsByCanonicalCodeAsync(

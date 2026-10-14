@@ -420,30 +420,31 @@ public sealed class GskusController : Controller
         return ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/gskus/{id:D}", cancellationToken);
     }
 
+    /// <summary>
+    /// The create form's options: the UOMs + one page of global products. W4-FIX-d (G-1): the product picker pages and
+    /// searches (search ≤ 100, page ≥ 1, pageSize 1–50 — the MDM limits), so every product can be found.
+    /// </summary>
     [HttpGet("api/create-options")]
-    public Task<IActionResult> CreateOptions(CancellationToken cancellationToken)
+    public Task<IActionResult> CreateOptions(
+        [FromQuery] string? search,
+        [FromQuery] int? pageNumber,
+        [FromQuery] int? pageSize,
+        CancellationToken cancellationToken)
     {
         if (!HasPermission(CreatePermission))
             return Task.FromResult<IActionResult>(ForbiddenResult());
 
-        // FIX3 B17: the product picker pages and searches — its pageNumber, pageSize and search reach MDM (they were
-        // dropped, so only MDM's first 20 products could ever be chosen). MDM validates them (pageSize 1–50).
-        return ProxyGatewayAsync(
-            HttpMethod.Get,
-            $"{_gatewayUrl}/api/gskus/create-options{BuildCreateOptionsQuery(Request.Query)}",
-            cancellationToken);
+        // Main sync 2026-10-14 (WP-LANE-MAIN-SYNC-04): main's W4-FIX-d (G-1) bounded query — search ≤ 100, page ≥ 1, size
+        // 1–50 (MDM's limits); the lane's FIX3 B17 forwarded the raw values for MDM to refuse. Same parameters reach MDM.
+        return ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/gskus/create-options{CreateOptionsQuery(search, pageNumber, pageSize)}", cancellationToken);
     }
 
-    internal static string BuildCreateOptionsQuery(IQueryCollection query)
+    public static string CreateOptionsQuery(string? search, int? pageNumber, int? pageSize)
     {
-        var parts = new List<string>();
-        foreach (var key in new[] { "pageNumber", "pageSize", "search" })
-        {
-            var value = query[key].ToString().Trim();
-            if (value.Length > 0)
-                parts.Add($"{key}={Uri.EscapeDataString(value)}");
-        }
-        return parts.Count == 0 ? string.Empty : "?" + string.Join("&", parts);
+        var text = string.IsNullOrWhiteSpace(search) ? null : search.Trim();
+        if (text is { Length: > 100 }) text = text[..100];
+        return $"?pageNumber={Math.Max(1, pageNumber ?? 1)}&pageSize={Math.Clamp(pageSize ?? 50, 1, 50)}"
+               + (text is null ? string.Empty : "&search=" + Uri.EscapeDataString(text));
     }
 
     [HttpGet("api/{id:guid}/edit-options")]

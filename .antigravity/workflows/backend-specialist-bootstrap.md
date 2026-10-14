@@ -12,7 +12,7 @@ Her servis aşağıdaki 5 katmanlı yapıyla kurulur:
 
 - **<Service>.Api:** Host, Middleware (TenantResolution, GlobalException), Controllers.
 - **<Service>.Application:** CQRS (Commands, Queries, Handlers), Validators, DTOs, Mapping.
-- **<Service>.Domain:** Entities (ITenantDocument), IRepositories, Domain Exceptions.
+- **<Service>.Domain:** Entities (servisin `TenantId` taşıyan kiracı taban sınıfı — ad servise göre değişir — ör. Platform.Common: `TenantScopedEntity`; Auth/MDM: `EntityBase`; DevEnablement: `BaseEntity`; bkz. `entity-base-template.md`), IRepositories, Domain Exceptions.
 - **<Service>.Persistence:** MongoDbContext, Repository Impl (Tenant Enforced), Indexing.
 - **<Service>.Infrastructure:** External Services (Mail, Auth Client, etc.).
 
@@ -20,7 +20,7 @@ Her servis aşağıdaki 5 katmanlı yapıyla kurulur:
 
 ## 🛡️ 2. Kesin Gereksinimler (Mühürlü)
 
-1. **Tenant İzolatörü:** `X-Tenant-Id` (GUID) header'ı zorunludur. `TenantResolutionMiddleware` bu header'ı okur ve `Scoped` olan `ITenantContext` nesnesini doldurur.
+1. **Tenant İzolatörü:** Kiracı (tenant) bağlamındaki uç noktalarda `X-Tenant-Id` (GUID) header'ı zorunludur; platform/admin uç noktalarında gönderilmez. `TenantResolutionMiddleware` bu header'ı okur, doğrular ve `Scoped` olan `ITenantContext` nesnesini doldurur.
 2. **Sessiz Tenant Yönetimi:** `TenantId` alanı Request DTO/Body içinde **ASLA** yer almaz. Bu bilgi `Persistence` katmanındaki `RepositoryBase` tarafından yazma anında otomatik set edilir, okuma anında otomatik filtrelenir.
 3. **CQRS & Klasör Yapısı (WORKFLOW-001):** Handler sınıfları `Handlers/CommandHandlers` ve `Handlers/QueryHandlers` klasörlerinde toplanır.
 3.1. **Denetim altyapısı ile doğar (AUD-001):** Yeni servis, ilk yazma komutundan ÖNCE denetim altyapısına sahiptir: ortak iletici + işaret arayüzü `Diten.Building.Blocks`'tan alınır ve servisin pipeline'ına kaydedilir; servis için `tests/architecture/audit-ledger/{Servis}.md` açılır (`## İzler` dolu, `## Bilinen borç` BOŞ). MDM'in `AuditForwardingBehavior`'ını kopyalamak yasaktır (Control Tower kararı K4). Ortak paket henüz yoksa servis yazma komutu olmadan kurulur ve Control Tower'a yazılır. Bkz: `.antigravity/rules/audit-trail-standard.md` §5.

@@ -1,0 +1,32 @@
+@model Diten.Web.Models.MasterData.CompetitorProductsPageViewModel
+@using Diten.Web.Views.MasterData.CompetitorProducts
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CompetitorProductsIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["PageTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    Context.Items["NavActivePath"] = "/MasterDataManagement/CompetitorProducts";
+}
+
+@*
+    WP-VW-W4 (W4-WEB-c) — MDM competitor products · Details (mockup "W4 Rakip Urunler" + DESIGN-GAP-W4-competitor G1–G6). The page
+    is drawn by competitor-pages.js from the shell's data-mode. UAS-001: without mdm.competitor-products.read NOTHING but
+    the access notice — no skeleton, no redirect.
+*@
+@if (!Model.CanRead)
+{
+    <partial name="_AccessDenied" model="@Localizer["PageTitle"].Value" />
+    return;
+}
+
+<partial name="~/Views/MasterData/CompetitorProducts/_Shell.cshtml" model="Model" />
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/js/MasterData/CompetitorProducts/competitor-products.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <partial name="~/Views/MasterData/CompetitorProducts/_L10n.cshtml" />
+    <script src="~/assets/js/MasterData/CompetitorProducts/competitor-core.js" asp-append-version="true"></script>
+    <script src="~/assets/js/MasterData/CompetitorProducts/competitor-pages.js" asp-append-version="true"></script>
+}

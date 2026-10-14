@@ -8,6 +8,16 @@ allowed-tools: Read, Glob, Grep
 
 > "Requirements drive architecture. Trade-offs inform decisions. ADRs capture rationale."
 
+## 🏢 Proje Bağlamı — Diten ERP vNext (önce bunu oku)
+
+Bu skill genel bir mimari karar çerçevesidir. Diten ERP vNext'te aşağıdaki kararlar **verilmiştir ve bu skill ile yeniden tartışılmaz**:
+
+- **Mikroservis** mimarisi (`services/Diten.*Service`, Ocelot Gateway üzerinden erişim) — `AGENTS.md` §2–§3, `erp-architecture.md`
+- **5 katman** (Api / Application / Domain / Persistence / Infrastructure) + **CQRS** (MediatR) — `AGENTS.md` §6
+- **Repository** deseni + MongoDB; kiracı (`TenantId`) filtresi depo katmanında uygulanır — `erp-architecture.md`, `repository-standard.md`, `multi-tenancy.md`
+
+Bu skill'in dosyalarındaki "önce monolit", "tek model", "basit CRUD için repository gereksiz", "ORM'e doğrudan erişim" gibi öneriler bu projede **uygulanmaz**. Skill'i yalnız bu sınırlar içindeki yeni kararlar (ör. bir servis içi desen seçimi, ADR yazımı) için kullan. Sabit bir kararın değişmesi gerektiğini düşünüyorsan uygulamaya geçme; kararı Control Tower / Enterprise Architect'e götür.
+
 ## 🎯 Selective Reading Rule
 
 **Read ONLY files relevant to the request!** Check the content map, find what you need.

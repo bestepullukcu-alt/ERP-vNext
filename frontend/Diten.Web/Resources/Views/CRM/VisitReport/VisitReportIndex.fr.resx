@@ -99,7 +99,7 @@
   <data name="IndicationPatients" xml:space="preserve"><value>Patients dans l'indication (par mois)</value></data>
   <data name="IndicationHint" xml:space="preserve"><value>Liste approuvée indication × profil patient. Cochez seulement les lignes que voit le médecin ; les chiffres sont des estimations.</value></data>
   <data name="ThreeMonthHint" xml:space="preserve"><value>Demandé tous les trois mois ; la dernière valeur est affichée entre-temps.</value></data>
-  <data name="NoIndicationList" xml:space="preserve"><value>Aucune liste d'indications n'est définie pour ce produit ; seul le total du médecin est demandé.</value></data>
+  <data name="NoIndicationList" xml:space="preserve"><value>Aucune liste d'indications n'est définie pour ce produit ; son potentiel n'est pas demandé. Le total du médecin est à l'étape profil.</value></data>
   <data name="PatientsPerMonth" xml:space="preserve"><value>patients / mois</value></data>
   <data name="PreviousValue" xml:space="preserve"><value>Précédent : {0}</value></data>
   <data name="NoPatients" xml:space="preserve"><value>Ne voit pas de patients dans ces indications</value></data>

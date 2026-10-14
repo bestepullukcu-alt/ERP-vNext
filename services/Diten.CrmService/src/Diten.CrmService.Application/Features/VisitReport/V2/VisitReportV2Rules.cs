@@ -24,7 +24,16 @@ public sealed record VisitReportV2CheckContext(
     IReadOnlySet<Guid> DuePotentialProductIds,
     bool TotalDue,
     IReadOnlySet<Guid> CompetitorListedProductIds,
-    bool PharmacyCompetitorsListed);
+    bool PharmacyCompetitorsListed,
+    IReadOnlySet<Guid>? IndicationProductIds = null,
+    Guid? PharmacyProductId = null,
+    bool PharmacyProductsUnavailable = false);
+// WP-VW-W4 (W4-FIX-d, G-9) — PharmacyProductId: the product a pharmacy report's competitor list is probed with and its
+// proposals are filed under (the plan's first product, else the first stock / sales GSKU's global product);
+// PharmacyProductsUnavailable: MDM could not map the GSKUs (the old plan-only rule applied, the submit warns).
+// WP-VW-W4 (W4-FIX-b, F-5) — IndicationProductIds: the products that HAVE approved indication × profile rows (Concept
+// Graph). Only those are asked the indication potential. null = not gathered (callers that do not care: every product
+// counts as having rows — the pre-FIX-b rule); the report handler always gathers it for a doctor report.
 
 public static class VisitReportV2Sections
 {
@@ -107,6 +116,44 @@ public static class VisitReportV2Rules
         return section;
     }
 
+    // ---------------- the indication potential (W4-FIX-b, F-5) ----------------
+
+    public const string PotentialIgnoredWarning = "potential_ignored_no_indications";
+
+    /// <summary>Does the product have approved indication × profile rows? (null set = not gathered ⇒ yes.)</summary>
+    public static bool HasIndicationRows(VisitReportV2CheckContext context, Guid productId)
+        => context.IndicationProductIds is null || context.IndicationProductIds.Contains(productId);
+
+    /// <summary>
+    /// The ONE rule: the indication potential of a product is asked when it is due (90 days) or the rep updated it, AND the
+    /// product has indication rows. Without rows there is nothing to answer — "no patients in these indications" would be a
+    /// false statement, so it is neither required nor recorded.
+    /// </summary>
+    public static bool PotentialAsked(VisitReportV2CheckContext context, VisitReportProductSection section)
+        => HasIndicationRows(context, section.ProductId)
+           && (context.DuePotentialProductIds.Contains(section.ProductId) || section.Potential?.Updated == true);
+
+    /// <summary>
+    /// A potential sent for a product WITHOUT indication rows (rows or "no patients") is dropped from the body before it is
+    /// stored or recorded; each drop is a warning <c>potential_ignored_no_indications:{productId}</c>.
+    /// </summary>
+    public static IReadOnlyList<string> DropPotentialsWithoutIndications(VisitReportV2Body body, VisitReportV2CheckContext context)
+    {
+        var warnings = new List<string>();
+        foreach (var s in body.ProductSections ?? Array.Empty<VisitReportProductSection>())
+        {
+            if (HasIndicationRows(context, s.ProductId) || s.Potential is not { } p) continue;
+            if (p.NoPatientsInIndications == true || p.Rows.Count > 0)
+            {
+                warnings.Add(PotentialIgnoredWarning + ":" + s.ProductId.ToString("D"));
+            }
+
+            s.Potential = null;
+        }
+
+        return warnings;
+    }
+
     /// <summary>The members only the server sets (the steps shown, the plan match, the suggestion) — recomputed on every write.</summary>
     public static void ApplyServerFields(VisitReportProductSection section, Domain.Entities.PlannedVisit plan, Domain.Entities.VisitExecution? execution)
     {
@@ -121,6 +168,7 @@ public static class VisitReportV2Rules
             ? (item is null ? false : null)
             : section.PresentedSteps.All(s => item.Steps.Any(p => p.StepId == s.StepId));
         section.NextMessageSuggestion = Suggestion(section.CommitmentCode, section.AdoptionStageCode);
+        section.PotentialAsked = null; // pre-fill only (W4-FIX-b); never stored
     }
 
     /// <summary>
@@ -212,8 +260,7 @@ public static class VisitReportV2Rules
             Need(!string.IsNullOrWhiteSpace(s.InterestCode), VisitReportV2Sections.Product, id, "interestCode");
             Need(!string.IsNullOrWhiteSpace(s.AdoptionStageCode), VisitReportV2Sections.Product, id, "adoptionStageCode");
             Need(!string.IsNullOrWhiteSpace(s.ShareBucketCode), VisitReportV2Sections.Product, id, "shareBucketCode");
-            var potentialAsked = context.DuePotentialProductIds.Contains(id) || s.Potential?.Updated == true;
-            Need(!potentialAsked || s.Potential?.NoPatientsInIndications == true || (s.Potential?.Rows.Count ?? 0) > 0,
+            Need(!PotentialAsked(context, s) || s.Potential?.NoPatientsInIndications == true || (s.Potential?.Rows.Count ?? 0) > 0,
                 VisitReportV2Sections.Product, id, "potential");
             Need(!context.CompetitorListedProductIds.Contains(id) || s.Competitors.Count > 0 || s.NoCompetitor,
                 VisitReportV2Sections.Product, id, "competitors");

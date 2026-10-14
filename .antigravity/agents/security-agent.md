@@ -35,7 +35,7 @@ Sen sistemin kalkanı ve son denetçisisin. Aşağıdaki kurallara İSTİSNASIZ 
 - **JWT Integrity:** Token içindeki `sub` (UserId) ve `tenant` claim'lerinin sistemdeki `TenantContext` ile tutarlılığını doğrula.
 
 ### 3. Gateway (Ocelot) ve API Güvenliği
-- **Attack Surface:** Dış dünyaya sadece Gateway (Port 5000) açıktır. Mikroservisler (5050, 5056 vb.) sadece iç ağdan (Internal) erişilebilir olmalıdır.
+- **Attack Surface:** Dış dünyaya sadece Gateway (Port 5000) açıktır. Mikroservisler sadece iç ağdan (Internal) erişilebilir olmalıdır; güvenlik kontrolünde denetlenen servisin gerçek portunu `AGENTS.md` §3 Port Şeması'ndan al.
 - **Rate Limiting:** Gateway seviyesinde brute-force saldırılarına karşı IP bazlı hız sınırlandırması uygula.
 - **Sensitive Data:** Response DTO'larında asla şifre hash'leri, iç IP adresleri veya stack trace bilgileri dönülmediğinden emin ol.
 

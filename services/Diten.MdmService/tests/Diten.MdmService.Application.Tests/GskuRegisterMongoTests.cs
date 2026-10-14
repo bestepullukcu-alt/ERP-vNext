@@ -44,6 +44,42 @@ public sealed class GskuRegisterMongoTests
     }
 
     [Fact]
+    public async Task FixD_G8_search_finds_by_product_name_product_code_and_part_of_the_gsku_code_in_the_tenant_only()
+    {
+        // WP-VW-W4 (W4-FIX-d, G-8): "KONSET" (the product name) found nothing — the search read only the GSKU code
+        await using var scope = await MongoScope.CreateAsync();
+        var konset30 = await scope.SeedPairAsync(scope.TenantA, "GS-000000000179", "KONSET", false);
+        var kepleron = await scope.SeedPairAsync(scope.TenantA, "GS-000000000180", "KEPLERON", false);
+        var dotted = await scope.SeedPairAsync(scope.TenantA, "GS-000000000181", "KİNETRA", false);
+        await scope.SeedPairAsync(scope.TenantA, "GS-000000000182", "KONSET SİLİNDİ", true); // soft-deleted
+        await scope.SeedPairAsync(scope.TenantB, "GS-000000000183", "KONSET", false);       // another tenant
+        // Main sync 2026-10-14 (WP-LANE-MAIN-SYNC-04): the lane's handler reads through the Legal Entity scope guard — built
+        // here in preparation mode like the other register tests; main's search assertions below are unchanged.
+        var tenantContext = scope.Context(scope.TenantA);
+        var access = ProductLegalEntityScopeTestFixture.Preparation(tenantContext);
+        var handler = new GetGskusHandler(
+            new GskuRepository(scope.Database, tenantContext),
+            new ProductDefinitionRevisionRepository(scope.Database, tenantContext),
+            new GlobalProductRepository(scope.Database, tenantContext),
+            access.Rollouts,
+            access.Policies,
+            access.Candidates,
+            tenantContext);
+        async Task<Guid[]> Find(string search) =>
+            (await handler.Handle(new GetGskusQuery { PageNumber = 1, PageSize = 20, Search = search }, default)).Data!.Items.Select(x => x.Id).ToArray();
+
+        Assert.Equal([konset30.Gsku.Id], await Find("konset"));                          // the product name, any case
+        Assert.Equal([konset30.Gsku.Id], await Find("ONSE"));                            // part of the name
+        Assert.Equal([kepleron.Gsku.Id], await Find(kepleron.Product.CanonicalCode.ToLowerInvariant())); // the product code
+        Assert.Equal([dotted.Gsku.Id], await Find("kinetra"));                           // Turkish İ ↔ i
+        Assert.Equal([dotted.Gsku.Id], await Find("KINETRA"));
+        Assert.Equal([kepleron.Gsku.Id], await Find("0180"));                            // part of the GSKU code
+        Assert.Equal([konset30.Gsku.Id], await Find("GS-000000000179"));                 // the full code still works
+        Assert.Empty(await Find("NOPE"));
+        Assert.Equal(3, (await handler.Handle(new GetGskusQuery { PageNumber = 1, PageSize = 20 }, default)).Data!.TotalCount); // no search: unchanged
+    }
+
+    [Fact]
     public async Task Detail_returns_the_same_non_disclosing_404_for_cross_tenant_and_soft_deleted_ids()
     {
         await using var scope = await MongoScope.CreateAsync();
@@ -119,6 +155,48 @@ public sealed class GskuRegisterMongoTests
         Assert.Equal(10, response.Data.Items.Count);
         Assert.Equal("GS-0010", response.Data.Items[0].CanonicalCode);
         Assert.Equal("GS-0019", response.Data.Items[^1].CanonicalCode);
+    }
+
+    // Main sync 2026-10-14 (WP-LANE-MAIN-SYNC-04): main's G-8 name search runs INSIDE the enforced Legal Entity scope — a
+    // product whose name matches but whose scope is another company's is not listed; the lifecycle filter still applies.
+    [Fact]
+    public async Task Sync04_enforced_scope_name_search_lists_only_the_callers_companies_gskus()
+    {
+        await using var scope = await MongoScope.CreateAsync();
+        var mine = Guid.NewGuid();
+        var other = Guid.NewGuid();
+        var inMine = await scope.SeedPairAsync(scope.TenantA, "GS-000000000301", "KONSET", false);
+        var inOther = await scope.SeedPairAsync(scope.TenantA, "GS-000000000302", "KONSET FORTE", false);
+        var alsoMine = await scope.SeedPairAsync(scope.TenantA, "GS-000000000303", "KİNSET", false);
+        var notMatching = await scope.SeedPairAsync(scope.TenantA, "GS-000000000304", "KEPLERON", false);
+        var policies = new[] { (inMine, mine), (inOther, other), (alsoMine, mine), (notMatching, mine) }
+            .Select(entry => ProductLegalEntityScopePolicy.Create(scope.TenantA, entry.Item1.Product.Id, Guid.NewGuid(),
+                ProductLegalEntityScopeMode.Scoped, [entry.Item2], Guid.NewGuid(), DateTimeOffset.UtcNow))
+            .ToList();
+        await scope.Database
+            .GetCollection<ProductLegalEntityScopePolicy>("mdm_product_legal_entity_scope_policies")
+            .InsertManyAsync(policies);
+        var tenantContext = scope.Context(scope.TenantA);
+        var access = ProductLegalEntityScopeTestFixture.Enforced(
+            tenantContext, [mine], new ProductLegalEntityScopePolicyRepository(scope.Database, tenantContext));
+        var handler = new GetGskusHandler(
+            new GskuRepository(scope.Database, tenantContext),
+            new ProductDefinitionRevisionRepository(scope.Database, tenantContext),
+            new GlobalProductRepository(scope.Database, tenantContext),
+            access.Rollouts,
+            access.Policies,
+            access.Candidates,
+            tenantContext);
+
+        var found = await handler.Handle(new GetGskusQuery { PageNumber = 1, PageSize = 20, Search = "konset" }, default);
+        var dotted = await handler.Handle(new GetGskusQuery { PageNumber = 1, PageSize = 20, Search = "kinset" }, default);
+        var byCode = await handler.Handle(new GetGskusQuery { PageNumber = 1, PageSize = 20, Search = "0302" }, default);
+
+        Assert.True(found.IsSuccessful);
+        Assert.Equal([inMine.Gsku.Id], found.Data!.Items.Select(item => item.Id));   // "KONSET FORTE" is the other company's
+        Assert.Equal(1, found.Data.TotalCount);
+        Assert.Equal([alsoMine.Gsku.Id], dotted.Data!.Items.Select(item => item.Id)); // Turkish İ, inside the scope
+        Assert.Empty(byCode.Data!.Items);                                              // the other company's GSKU code
     }
 
     [Fact]

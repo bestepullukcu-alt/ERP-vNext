@@ -230,6 +230,10 @@ public static class GskuRefusalSentences
         ["GSKU_LIST_ORDER_DIR_INVALID"] = "RefusalInvalidRequest",
         ["GSKU_LIST_SORT_FIELD_UNKNOWN"] = "RefusalInvalidRequest",
         ["GSKU_LIST_SORT_NOT_IMPLEMENTED"] = "RefusalSetupIncomplete",
+        // WP-LANE-MAIN-SYNC-04: the search variants of the same default-interface guard (main's W4-FIX-d G-8 search on the
+        // lane's register reads) — a store that does not implement them is an incomplete set-up, as for the sort above.
+        ["GSKU_LIST_SEARCH_SORT_NOT_IMPLEMENTED"] = "RefusalSetupIncomplete",
+        ["GSKU_ENFORCED_LIST_SEARCH_NOT_IMPLEMENTED"] = "RefusalSetupIncomplete",
         ["REFERENCE_NOT_SELECTABLE"] = "RefusalPackInvalid",
         ["REFERENCE_PROVIDER_ENUMERATION_NOT_IMPLEMENTED"] = "RefusalSetupIncomplete",
         ["FIRST_GSKU_IDENTITY_REFERENCE_RETIRED_AFTER_APPROVAL"] = "InfoRetiredAfterApproval",

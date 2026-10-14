@@ -31,6 +31,7 @@ public sealed class VisitWorkspaceController : Controller
     public const string VisitPlanApply = "crm.visit-plan.apply";
     public const string PlannedVisitManage = "crm.planned-visit.manage";
     public const string ContactRead = "crm.contact.read";
+    public const string AccountRead = "crm.account.read";
 
     /// <summary>WP-VW-W2 (WEB-b) — Plan mode writes through the Visit Planning session update (its generate key).</summary>
     public const string VisitPlanGenerate = "crm.visit-plan.generate";
@@ -75,6 +76,7 @@ public sealed class VisitWorkspaceController : Controller
             CanRecord = HasAll(RecordKeys),
             CanApplyWeek = HasAll(ApplyKeys),
             CanSearchContacts = HasAll(ContactRead),
+            CanSearchPharmacies = HasAll(AccountRead),
             CanPlan = HasAll(PlanKeys),
             CanExecute = HasAll(ExecutionKeys)
         });
@@ -117,6 +119,12 @@ public sealed class VisitWorkspaceController : Controller
     [HttpGet("api/contacts/search")]
     public Task<IActionResult> SearchContacts(CancellationToken ct)
         => ProxyAsync(HttpMethod.Get, $"/api/crm/contacts/search{Request.QueryString}", null, ct, ContactRead);
+
+    /// <summary>W4-FIX-c (G-3) — the unplanned-visit dialog's PHARMACY search: the existing CRM account list, pharmacies only
+    /// (<c>accountType=pharmacy</c>, the type the CRM requires of a pharmacy target), at most 10.</summary>
+    [HttpGet("api/pharmacies/search")]
+    public Task<IActionResult> SearchPharmacies([FromQuery] string? search, CancellationToken ct)
+        => ProxyAsync(HttpMethod.Get, $"/api/crm/accounts?search={Uri.EscapeDataString((search ?? string.Empty).Trim())}&accountType=pharmacy&page=1&pageSize=10", null, ct, AccountRead);
 
     // ---------------- writes (existing CRM endpoints) ----------------
 

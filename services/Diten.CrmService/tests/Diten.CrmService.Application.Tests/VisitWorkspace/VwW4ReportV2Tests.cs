@@ -196,6 +196,68 @@ public sealed class VwW4ReportV2Tests
         Assert.Equal(503, (await w.Handlers().Handle(new SubmitVisitReportV2Command(plan.Id, body, null), default)).StatusCode);
     }
 
+    [Fact]
+    public async Task F5_a_product_without_indication_rows_is_not_asked_the_potential_and_a_sent_one_is_ignored_with_a_warning()
+    {
+        // WP-VW-W4 (W4-FIX-b, F-5): the potential is due (never given) but ProductA has no approved indication rows
+        var w = new World();
+        w.WithoutIndications(ProductA);
+        var plan = w.DoctorPlan();
+
+        // pre-fill: the flag says "not asked"
+        var prefill = (await w.Queries().Handle(new GetVisitReportV2PrefillQuery(plan.Id), default)).Data!;
+        Assert.False(prefill.Body.ProductSections!.Single(s => s.ProductId == ProductA).PotentialAsked);
+
+        // no potential answer at all ⇒ nothing missing
+        var body = w.Complete(plan);
+        body.ProductSections![0].Potential = null;
+        var ok = await w.Handlers().Handle(new SubmitVisitReportV2Command(plan.Id, body, null), default);
+        Assert.True(ok.IsSuccessful, string.Join(",", ok.Data?.Missing.Select(m => m.Field) ?? Array.Empty<string>()));
+        Assert.DoesNotContain(ok.Data!.Warnings, x => x.StartsWith(VisitReportV2Rules.PotentialIgnoredWarning, StringComparison.Ordinal));
+
+        // a "no patients" (or rows) sent anyway is NOT recorded nor stored, and the submit warns
+        var w2 = new World();
+        w2.WithoutIndications(ProductA);
+        var plan2 = w2.DoctorPlan();
+        var body2 = w2.Complete(plan2);
+        body2.ProductSections![0].Potential = new VisitReportPotential { NoPatientsInIndications = true };
+        var sent = await w2.Handlers().Handle(new SubmitVisitReportV2Command(plan2.Id, body2, null), default);
+        Assert.True(sent.IsSuccessful);
+        Assert.Contains(VisitReportV2Rules.PotentialIgnoredWarning + ":" + ProductA.ToString("D"), sent.Data!.Warnings);
+        var product = w2.Recorder.Records.Single().Products.Single();
+        Assert.Equal((ProductA, (bool?)null, "half"), (product.ProductId, product.NoPatients, product.ShareBucket)); // the share still goes
+        Assert.Null(product.Rows);
+        Assert.Null(w2.Reports.Items.Single().ProductSections!.Single().Potential);
+        Assert.Null(w2.Reports.Items.Single().ProductSections!.Single().PotentialAsked); // pre-fill only, never stored
+    }
+
+    [Fact]
+    public async Task F5_a_product_with_indication_rows_keeps_the_rule_due_or_updated()
+    {
+        var w = new World();                         // ProductA has rows
+        var plan = w.DoctorPlan();
+        var prefill = (await w.Queries().Handle(new GetVisitReportV2PrefillQuery(plan.Id), default)).Data!;
+        Assert.True(prefill.Body.ProductSections!.Single(s => s.ProductId == ProductA).PotentialAsked); // never given ⇒ due
+
+        var body = w.Complete(plan);
+        body.ProductSections![0].Potential = null;
+        var missing = (await w.Handlers().Handle(new SubmitVisitReportV2Command(plan.Id, body, null), default)).Data!.Missing;
+        Assert.Contains(missing, m => m.Field == "potential" && m.ProductId == ProductA);
+
+        body.ProductSections[0].Potential = new VisitReportPotential { NoPatientsInIndications = true };
+        var ok = await w.Handlers().Handle(new SubmitVisitReportV2Command(plan.Id, body, null), default);
+        Assert.True(ok.IsSuccessful);
+        Assert.True(w.Recorder.Records.Single().Products.Single().NoPatients);
+        Assert.DoesNotContain(ok.Data!.Warnings, x => x.StartsWith(VisitReportV2Rules.PotentialIgnoredWarning, StringComparison.Ordinal));
+
+        // not due and not updated ⇒ not asked (pre-fill says so too)
+        var w2 = new World();
+        var plan2 = w2.DoctorPlan();
+        w2.Potentials.Add(plan2.ContactId!.Value, ProductA, asOf: w2.Clock.GetUtcNow().AddDays(-10));
+        Assert.False((await w2.Queries().Handle(new GetVisitReportV2PrefillQuery(plan2.Id), default)).Data!
+            .Body.ProductSections!.Single(s => s.ProductId == ProductA).PotentialAsked);
+    }
+
     // ═══ 3 · submit side effects ════════════════════════════════════════════════════════════════════════
 
     [Fact]
@@ -332,6 +394,82 @@ public sealed class VwW4ReportV2Tests
         Assert.Empty(w2.Mdm.Proposals);                                       // never an empty product to MDM
         Assert.Contains("competitor_proposal_pending:Ürünsüz Rakip", pending.Data!.Warnings);
         Assert.False(w2.Reports.Items.Single().Pharmacy!.Competitors.Single().ProposalForwarded);
+    }
+
+    /// <summary>WP-VW-W4 (W4-FIX-d, G-9): a pharmacy visit without plan products (unplanned) whose stock / sales rows name
+    /// GSKUs takes its competitor list and its proposal product from the first GSKU's global product.</summary>
+    [Fact]
+    public async Task FixD_G9_a_pharmacy_without_plan_products_takes_its_competitor_product_from_the_stock_gskus()
+    {
+        var gsku = Guid.NewGuid();
+        var salesOnly = Guid.NewGuid();
+        VisitReportV2Body Body(bool proposal) => new(
+            new VisitReportGeneral { VisitKindCode = "in_person", MetRoleCode = "pharmacist" }, null, null,
+            new VisitReportPharmacy
+            {
+                Stock = { new VisitReportStockRow { GskuId = gsku, LevelCode = "enough" } },
+                Sales = { new VisitReportSalesRow { GskuId = salesOnly, TrendCode = "up" } },
+                Competitors = proposal ? new List<VisitReportCompetitor> { new() { NameSnapshot = "Stok Rakibi", Company = "Firma", Proposed = true } } : new List<VisitReportCompetitor>()
+            },
+            new VisitReportSafety { AdverseEvent = false }, new VisitReportFollowUp());
+
+        var w = new World();
+        w.Mdm.Available = true;
+        w.Mdm.GskuProducts[gsku] = ProductB;
+        w.Mdm.GskuProducts[salesOnly] = ProductA;
+        var bare = w.PharmacyPlan();
+
+        // the competitor question is now asked (MDM listed competitors for the stock GSKU's product) …
+        var missing = (await w.Handlers().Handle(new SubmitVisitReportV2Command(bare.Id, Body(false), null), default)).Data!.Missing;
+        Assert.Contains(missing, m => m.Field == "competitors");
+        Assert.Equal(ProductB, w.Mdm.Lookups.Last());                          // probed with the FIRST stock GSKU's product
+
+        // … and a proposal goes to MDM under that product (no longer pending)
+        var ok = await w.Handlers().Handle(new SubmitVisitReportV2Command(bare.Id, Body(true), null), default);
+        Assert.True(ok.IsSuccessful, string.Join(",", ok.Data?.Missing.Select(m => m.Field) ?? Array.Empty<string>()));
+        Assert.Equal(("Stok Rakibi", ProductB), (w.Mdm.Proposals.Single().Name, w.Mdm.Proposals.Single().ProductId));
+        Assert.DoesNotContain(ok.Data!.Warnings, x => x.StartsWith("competitor_proposal_pending", StringComparison.Ordinal));
+
+        // the plan's first product still wins when there is one
+        var w2 = new World();
+        w2.Mdm.Available = true;
+        w2.Mdm.GskuProducts[gsku] = ProductB;
+        var planned = w2.PharmacyPlan();
+        planned.ContentItems.Add(new PlannedVisitContentItem { ProductId = ProductA, Order = 1 });
+        Assert.True((await w2.Handlers().Handle(new SubmitVisitReportV2Command(planned.Id, Body(true), null), default)).IsSuccessful);
+        Assert.Equal(ProductA, w2.Mdm.Proposals.Single().ProductId);
+
+        // the pre-fill lists the competitors of the plan's products and of the draft's GSKU products
+        var w3 = new World();
+        w3.Mdm.Available = true;
+        w3.Mdm.GskuProducts[gsku] = ProductB;
+        w3.Mdm.GskuProducts[salesOnly] = ProductA;
+        var draftPlan = w3.PharmacyPlan();
+        Assert.True((await w3.Handlers().Handle(new SaveVisitReportV2DraftCommand(draftPlan.Id, Body(false), null), default)).IsSuccessful);
+        var prefill = (await w3.Queries().Handle(new GetVisitReportV2PrefillQuery(draftPlan.Id), default)).Data!;
+        Assert.Equal(new[] { ProductB, ProductA }, prefill.Competitors.Select(c => c.ProductId).ToArray());
+    }
+
+    [Fact]
+    public async Task FixD_G9_without_the_gsku_mapping_the_old_rule_holds_and_the_submit_warns()
+    {
+        var gsku = Guid.NewGuid();
+        var w = new World();
+        w.Mdm.Available = true;
+        w.Mdm.GskusDown = true;                                                // MDM cannot map the GSKUs
+        var bare = w.PharmacyPlan();
+        var body = new VisitReportV2Body(new VisitReportGeneral { VisitKindCode = "in_person", MetRoleCode = "pharmacist" }, null, null,
+            new VisitReportPharmacy
+            {
+                Stock = { new VisitReportStockRow { GskuId = gsku, LevelCode = "enough" } },
+                Competitors = { new VisitReportCompetitor { NameSnapshot = "Bekleyen", Company = "Firma", Proposed = true } }
+            },
+            new VisitReportSafety { AdverseEvent = false }, new VisitReportFollowUp());
+        var ok = await w.Handlers().Handle(new SubmitVisitReportV2Command(bare.Id, body, null), default);
+        Assert.True(ok.IsSuccessful);                                          // not blocked, the competitor question not asked
+        Assert.Empty(w.Mdm.Proposals);
+        Assert.Contains("competitor_proposal_pending:Bekleyen", ok.Data!.Warnings);
+        Assert.Contains(VisitReportV2Service.PharmacyProductsUnavailableWarning, ok.Data.Warnings);
     }
 
     [Fact]
@@ -499,6 +637,46 @@ public sealed class VwW4ReportV2Tests
         public PotentialStore Potentials { get; } = new();
         public CodeCheck Codes { get; } = new();
         public RecorderSpy Recorder { get; } = new();
+
+        // W4-FIX-b (F-5): a real (in-memory) Concept Graph — by default ProductA and ProductB each have one approved
+        // indication × profile row (the pre-FIX-b behaviour); WithoutIndications(product) removes a product's rows.
+        public NoTypes GraphTypes { get; } = new();
+        public NoNodes GraphNodes { get; } = new();
+        public NoRelationships GraphRelationships { get; } = new();
+        public Guid Indication { get; } = Guid.NewGuid();
+        public Guid ProfileNode { get; } = Guid.NewGuid();
+
+        public World()
+        {
+            Guid indType = Guid.NewGuid(), profType = Guid.NewGuid(), prodType = Guid.NewGuid();
+            ConceptType Type(Guid id, string code) => new() { Id = id, TenantId = Tenant, ConceptTypeCode = code, ConceptTypeName = code, Status = ConceptStatuses.Active };
+            ConceptNode Node(Guid id, Guid type, string name, string? refId = null) => new()
+            {
+                Id = id, TenantId = Tenant, ConceptTypeId = type, ConceptNodeName = name, ConceptNodeCode = name, Status = ConceptStatuses.Active,
+                EffectiveFrom = Clock.GetUtcNow().AddYears(-1), ExternalRefType = refId is null ? null : ConceptExternalRefTypes.GlobalProduct, ExternalRefId = refId
+            };
+            ConceptRelationship Rel(Guid from, Guid to, string type) => new()
+            {
+                TenantId = Tenant, FromConceptNodeId = from, ToConceptNodeId = to, RelationshipType = type, Priority = 1,
+                Status = ConceptStatuses.Active, EffectiveFrom = Clock.GetUtcNow().AddYears(-1)
+            };
+            GraphTypes.Items.AddRange(new[] { Type(indType, "CT-IND"), Type(profType, "CT-PROF"), Type(prodType, "CT-PROD") });
+            GraphNodes.Items.AddRange(new[] { Node(Indication, indType, "Hipertansiyon"), Node(ProfileNode, profType, "Yaşlı hasta") });
+            GraphRelationships.Items.Add(Rel(Indication, ProfileNode, ConceptRelationshipTypes.LeadsTo));
+            foreach (var product in new[] { ProductA, ProductB })
+            {
+                var node = Guid.NewGuid();
+                GraphNodes.Items.Add(Node(node, prodType, "Ürün " + product.ToString("N")[..4], product.ToString("D")));
+                GraphRelationships.Items.Add(Rel(node, Indication, ConceptRelationshipTypes.Addresses));
+            }
+        }
+
+        /// <summary>The product has no approved indication × profile row any more (F-5).</summary>
+        public void WithoutIndications(Guid product)
+        {
+            var node = GraphNodes.Items.Single(n => n.ExternalRefId == product.ToString("D"));
+            GraphRelationships.Items.RemoveAll(r => r.FromConceptNodeId == node.Id);
+        }
         public MdmFake Mdm { get; } = new();
         private Guid _journeyId = Guid.NewGuid();
 
@@ -517,7 +695,7 @@ public sealed class VwW4ReportV2Tests
 
         private VisitReportV2Service Service()
         {
-            var indications = new ProductIndicationProfileReader(new NoTypes(), new NoNodes(), new NoRelationships(), null, Clock);
+            var indications = new ProductIndicationProfileReader(GraphTypes, GraphNodes, GraphRelationships, null, Clock);
             return new VisitReportV2Service(Ctx(), new Actor(Rep), Caller(), Reports, Plans, Executions, Codes,
                 Profiles, Potentials, new NoThresholds(), indications, Recorder, Progress, Journeys, Contacts, Accounts, Mdm.Available ? Mdm : Mdm.Down, null, Clock);
         }
@@ -596,6 +774,7 @@ public sealed class VwW4ReportV2Tests
             ["crm-visit-request-type"] = ["literature", "sample", "patient_material", "training_invite", "msl_meeting", "other"],
             ["crm-pharmacy-met-role"] = ["pharmacist", "technician", "owner", "other"],
             ["crm-sales-trend"] = ["up", "flat", "down"],
+            ["crm-pharmacy-stock-level"] = ["none", "low", "enough", "high"],
             ["crm-kol-level"] = ["none", "local", "regional", "national", "international"],
             ["visit-objection-category"] = ["price", "other"]
         };
@@ -634,7 +813,10 @@ public sealed class VwW4ReportV2Tests
         public IMdmCompetitorClient Down { get; } = new UnavailableMdmCompetitorClient();
 
         public Task<CompetitorLookupResult> LookupAsync(Guid productId, Guid? indicationNodeId, string? market, string? q, CancellationToken ct)
-            => Task.FromResult(new CompetitorLookupResult(true, new[] { new CompetitorOptionDto(Guid.NewGuid(), "Rakip", "Firma", Array.Empty<string>(), null, null, "active", null) }));
+        {
+            Lookups.Add(productId);
+            return Task.FromResult(new CompetitorLookupResult(true, new[] { new CompetitorOptionDto(Guid.NewGuid(), "Rakip", "Firma", Array.Empty<string>(), null, null, "active", null) }));
+        }
 
         public Task<CompetitorProposalResult> ProposeAsync(string name, string company, Guid productId, Guid? reportId, CancellationToken ct)
         {
@@ -644,6 +826,15 @@ public sealed class VwW4ReportV2Tests
 
         public Task<IReadOnlyDictionary<Guid, Guid>?> ResolveSurvivorsAsync(IReadOnlyCollection<Guid> ids, CancellationToken ct)
             => Task.FromResult<IReadOnlyDictionary<Guid, Guid>?>(ids.ToDictionary(id => id, id => MergedInto.TryGetValue(id, out var s) ? s : id));
+
+        // W4-FIX-d (G-9): GSKU → global product; GskusDown = MDM cannot map them
+        public Dictionary<Guid, Guid> GskuProducts { get; } = new();
+        public bool GskusDown { get; set; }
+        public List<Guid> Lookups { get; } = new();
+
+        public Task<IReadOnlyDictionary<Guid, Guid>?> GskuProductsAsync(IReadOnlyCollection<Guid> gskuIds, CancellationToken ct)
+            => Task.FromResult<IReadOnlyDictionary<Guid, Guid>?>(GskusDown ? null
+                : gskuIds.Where(GskuProducts.ContainsKey).ToDictionary(id => id, id => GskuProducts[id]));
     }
 
     private sealed class ProgressStore : IJourneyProgressRepository
@@ -697,8 +888,9 @@ public sealed class VwW4ReportV2Tests
 
     private sealed class NoTypes : IConceptTypeRepository
     {
-        public Task<ConceptType?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken cancellationToken) => Task.FromResult<ConceptType?>(null);
-        public Task<IReadOnlyList<ConceptType>> ListAsync(Guid tenantId, CancellationToken cancellationToken) => Task.FromResult<IReadOnlyList<ConceptType>>(Array.Empty<ConceptType>());
+        public List<ConceptType> Items { get; } = new();
+        public Task<ConceptType?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken cancellationToken) => Task.FromResult(Items.FirstOrDefault(x => x.TenantId == tenantId && x.Id == id));
+        public Task<IReadOnlyList<ConceptType>> ListAsync(Guid tenantId, CancellationToken cancellationToken) => Task.FromResult<IReadOnlyList<ConceptType>>(Items.Where(x => x.TenantId == tenantId).ToList());
         public Task<IReadOnlyList<ConceptType>> ListBySubjectAsync(Guid tenantId, Guid subjectId, CancellationToken cancellationToken) => throw new NotSupportedException();
         public Task<ConceptType?> GetActiveByCodeAsync(Guid tenantId, Guid subjectId, string conceptTypeCode, CancellationToken cancellationToken) => throw new NotSupportedException();
         public Task InsertAsync(ConceptType entity, CancellationToken cancellationToken) => throw new NotSupportedException();
@@ -707,8 +899,9 @@ public sealed class VwW4ReportV2Tests
 
     private sealed class NoNodes : IConceptNodeRepository
     {
-        public Task<ConceptNode?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken cancellationToken) => Task.FromResult<ConceptNode?>(null);
-        public Task<IReadOnlyList<ConceptNode>> ListAsync(Guid tenantId, CancellationToken cancellationToken) => Task.FromResult<IReadOnlyList<ConceptNode>>(Array.Empty<ConceptNode>());
+        public List<ConceptNode> Items { get; } = new();
+        public Task<ConceptNode?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken cancellationToken) => Task.FromResult(Items.FirstOrDefault(x => x.TenantId == tenantId && x.Id == id));
+        public Task<IReadOnlyList<ConceptNode>> ListAsync(Guid tenantId, CancellationToken cancellationToken) => Task.FromResult<IReadOnlyList<ConceptNode>>(Items.Where(x => x.TenantId == tenantId).ToList());
         public Task<IReadOnlyList<ConceptNode>> ListBySubjectAsync(Guid tenantId, Guid subjectId, CancellationToken cancellationToken) => throw new NotSupportedException();
         public Task<ConceptNode?> GetActiveByCodeAsync(Guid tenantId, Guid subjectId, Guid conceptTypeId, string conceptNodeCode, CancellationToken cancellationToken) => throw new NotSupportedException();
         public Task InsertAsync(ConceptNode entity, CancellationToken cancellationToken) => throw new NotSupportedException();
@@ -717,8 +910,9 @@ public sealed class VwW4ReportV2Tests
 
     private sealed class NoRelationships : IConceptRelationshipRepository
     {
-        public Task<ConceptRelationship?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken cancellationToken) => Task.FromResult<ConceptRelationship?>(null);
-        public Task<IReadOnlyList<ConceptRelationship>> ListAsync(Guid tenantId, CancellationToken cancellationToken) => Task.FromResult<IReadOnlyList<ConceptRelationship>>(Array.Empty<ConceptRelationship>());
+        public List<ConceptRelationship> Items { get; } = new();
+        public Task<ConceptRelationship?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken cancellationToken) => Task.FromResult(Items.FirstOrDefault(x => x.TenantId == tenantId && x.Id == id));
+        public Task<IReadOnlyList<ConceptRelationship>> ListAsync(Guid tenantId, CancellationToken cancellationToken) => Task.FromResult<IReadOnlyList<ConceptRelationship>>(Items.Where(x => x.TenantId == tenantId).ToList());
         public Task<IReadOnlyList<ConceptRelationship>> ListBySubjectAsync(Guid tenantId, Guid subjectId, CancellationToken cancellationToken) => throw new NotSupportedException();
         public Task InsertAsync(ConceptRelationship entity, CancellationToken cancellationToken) => throw new NotSupportedException();
         public Task UpdateAsync(ConceptRelationship entity, CancellationToken cancellationToken) => throw new NotSupportedException();
