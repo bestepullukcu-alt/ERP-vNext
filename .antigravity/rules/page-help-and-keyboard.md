@@ -28,14 +28,38 @@ o görünümler borç defterinde ayrı bölümde, "yardım gösterilemez" diye a
 görünür.
 `?` tuşu da aynı paneli açar (`_PageHelpPanel.cshtml`, `assets/js/shared/diten-help.js`).
 
-**Panel dört şey gösterir:**
+**Panelin yapısı** (WP-UX-HELP-PANEL-02, sahip tasarımı 2026-10-13). Başlıkta sayfanın adı (`Nav.Page.{KOD}`), altında
+üç sekme; panel her açılışta **Genel bakış**'la açılır. Nasıl çizildiği bileşenindir (`_PageHelpPanel.cshtml`,
+`diten-help.js`, `backbone-custom.css`); genişlik, ikon, aralık ve tema bu kuralın konusu değildir.
 
-| bölüm | kaynak |
+| sekme | ne gösterir | kaynak |
+|---|---|---|
+| Genel bakış · "Genel bilgi" kartı | bu sayfa ne işe yarar · kim kullanır · hemen geçerli olan işlemler | `Help.{KOD}.Purpose` · `Help.{KOD}.Audience` · `Help.{KOD}.Immediate` |
+| Genel bakış · "İlgili sayfalar" kartı | okuyucunun açabildiği ilgili sayfalar (menünün adresi, menünün izin kuralı) ve her birinin neden ilgili olduğu | `PageHelpCatalog` (`Services/Help/PageHelpCatalog.cs`) · `Help.{KOD}.Related.{İLGİLİ KOD}` |
+| Adım adım | en çok 5 adım kartı; tırnaklı (“…” / «…») düğme ya da alan adı küçük etikete dönüşür | `Help.{KOD}.Step{n}` + `Help.{KOD}.Step{n}Title` · adım ikonu `PageHelpCatalog` |
+| Klavye | her sayfada geçerli tuşlar ve bu sayfanın kayıtlı kısayolları | `Help.Panel.Key*` · `DitenShortcuts.list()` |
+
+Alt barda "Kapat" ve — yalnız sayfanın turu varsa, kütüphane yüklüyse ve ekran ≥ `md` ise — "Turu başlat".
+
+**Hangi metin zorunlu.**
+
+| anahtar | durum |
 |---|---|
-| (a) bu sayfa ne işe yarar — 2 cümle | `Help.{KOD}.Purpose` |
-| (b) nasıl kullanılır — 3–5 adım | `Help.{KOD}.Step1` … `Step5` |
-| (c) bu sayfanın kısayolları | `DitenShortcuts.list()` — kısayol yoksa bölüm çıkmaz |
-| (d) "Turu başlat" | yalnız sayfanın turu varsa, kütüphane yüklüyse ve ekran ≥ `md` ise |
+| `Help.{KOD}.Purpose` | **zorunlu** — metni olan sayfa budur; borç defteri bunu ölçer |
+| `Help.{KOD}.Audience` | **zorunlu** (`Purpose` varsa) |
+| `Help.{KOD}.Step{n}` | **zorunlu**, en az 1 en çok 5, boşluksuz sırayla (`Step1`, `Step2`, …) |
+| `Help.{KOD}.Step{n}Title` | **zorunlu**, yazılan her `Step{n}` için |
+| `Help.{KOD}.Immediate` | **isteğe bağlı** — yalnız sayfada hemen (onaysız) geçerli olan işlem varsa |
+| `Help.{KOD}.Related.{İLGİLİ KOD}` | `PageHelpCatalog`'da bu sayfa için ilgili sayfa yazılmışsa **zorunlu**, yoksa yazılmaz |
+
+Boş alan ve boş kart çizilmez. Başlığı olmayan adım (eski biçim) numaralı düz satır olarak çizilir; yani eski biçimde
+yazılmış bir sayfa bozulmaz, ama yeni sayfa ve yeni metin bu tabloya uyar.
+
+**Dile bağlı olmayan her şey `PageHelpCatalog`'dadır** (tek yer, sayfa koduyla): ilgili sayfa listesi ve adım ikonları.
+İkonu yazılmamış adım varsayılan ikonu alır. İlgili sayfa listesi resx'e, metin `PageHelpCatalog`'a yazılmaz.
+
+**Kodlama.** Metin düz metindir. Etiketleme metni önce kodlar, sonra yalnız etiketi sarar (`PageHelpCatalog.Labelled`);
+resx'ten HTML gelmez.
 
 **Sayfa kodu.** Menünün ve Ctrl+K'nin kullandığı kararlı koddur (`Nav.Page.{KOD}`), `NavNameLocalizer.Normalize`
 biçimindedir: büyük harf, yalnız harf ve rakam.
@@ -50,7 +74,8 @@ biçimindedir: büyük harf, yalnız harf ve rakam.
 - Kiracı sayfası **7 dil** (en, tr, fr, es, zh, ar, ru) taşır; platform yönetici sayfası **2 dil** (en, tr).
 - Metin düz metindir; Razor kodlayarak basar.
 
-**Metni yoksa** panel yalnız kısayolları ve *"Bu sayfa için yardım metni hazırlanıyor"* yazısını gösterir.
+**Metni yoksa** (`Purpose` yok) sekme çizilmez; panel *"Bu sayfa için yardım metni hazırlanıyor"* yazısını
+(`Help.Panel.Preparing`) ve klavye kartlarını gösterir.
 
 **Yetkisiz yüzde** (UAS-001) ne düğme ne panel çizilir. `_AccessDenied.cshtml` isteğe bir işaret koyar
 (`CurrentPage.MarkAccessDenied`); kabuk bu işareti görünce yardımı çizmez.
@@ -110,7 +135,8 @@ Textarea, düğme, bağlantı, IME yazımı ve açık seçici bunun dışındad�
 
 **Kullanıcıya söylenir (FIX2, R3):** `chord` işaretli düğme, paneli her açılışta `aria-keyshortcuts="Control+Enter
 Meta+Enter"` ve (kendi `title`'ı yoksa) kısayolu anlatan yerelleştirilmiş bir `title` alır
-(`Help.Panel.ChordTitle`, 7 dil). Yardım panelindeki `Help.Panel.EnterHint` chord'u anlatır.
+(`Help.Panel.ChordTitle`, 7 dil). Yardım panelinin Klavye sekmesi Enter'ı (`Help.Panel.KeyEnter`) ve chord'u
+(`Help.Panel.KeyChord`) anlatır.
 
 **İstisnalar:**
 
@@ -153,9 +179,10 @@ birincil düğmesi okunamayan panel ya listede gerekçesiyle durur ya da kırmı
 
 **Kütüphane.**
 
-- Driver.js (MIT) kullanılır; **tek sabit sürüm** `wwwroot/assets/vendor/libs/driverjs/` altına, LICENSE dosyası
-  yanında konur ve SHA-256'sı testte kaydedilir — **sahip onayından sonra** (2026-10-10 itibarıyla dosya yok, indirme
-  sahip onayı bekliyor). O güne kadar ara katman her yerde "tur yok" der, hata vermez.
+- Driver.js (MIT) kullanılır; **tek sabit sürüm** `wwwroot/assets/vendor/libs/driverjs/` altında, LICENSE dosyası
+  yanında durur ve SHA-256'sı testte kayıtlıdır (`driverjs-vendor.test.js`). Sürüm 1.8.0, sahip onayıyla 2026-10-13'te
+  eklendi; sürüm değişikliği yeni bir sahip onayı ve yeni SHA-256 ister. Vendor dosyalarına dokunulmaz; görünüm tema
+  sınıflarıyla (`diten-tour.js`, `backbone-custom.css`) verilir.
 - CDN ve ağ yükleme yoktur.
 - Shepherd.js (v14+, ticari) ve Intro.js (AGPL / ticari) **yasaktır**.
 
@@ -190,7 +217,9 @@ birincil düğmesi okunamayan panel ya listede gerekçesiyle durur ya da kırmı
 
 Her modül paketi iki satır taşır (`module-pack-standard.md` §12, §18):
 
-- **Sayfa yardım metni:** sayfa kodu + `Help.{KOD}.Purpose` / `Step1..5` (kiracı 7 dil, platform 2 dil).
+- **Sayfa yardım metni:** sayfa kodu + §2'deki zorunlu anahtarlar — `Help.{KOD}.Purpose`, `Help.{KOD}.Audience`,
+  `Help.{KOD}.Step{n}` ve her biri için `Help.{KOD}.Step{n}Title` (1–5 adım); varsa `Help.{KOD}.Immediate`; ilgili sayfa
+  varsa `PageHelpCatalog` satırı + `Help.{KOD}.Related.{İLGİLİ KOD}` (kiracı 7 dil, platform 2 dil).
 - **Tur gerekiyor mu:** yalnız §5'teki beş akıştan biriyse evet; adımlar ve `data-tour` hedefleri yazılır.
 
 Modül turunun sahip kontrol listesine üç satır eklenir: **Enter** kaydeder, **"?"** metni doğru, **tur** baştan sona

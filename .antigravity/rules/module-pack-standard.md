@@ -408,7 +408,7 @@ Karar: Gateway degisikligi {gerekli | gereksiz}.
 - [ ] Acceptance criteria test edilebilir maddeler
 - [ ] Test expectations build/verifier/RESX/smoke kapsiyor
 - [ ] Audited Events tablosu her yazma komutunu tam bir kez iceriyor: yol (a/b/c) ya da istisna sinifi + gerekce (AUD-001)
-- [ ] Sayfa yardim metni: her sayfanin kodu + `Help.{KOD}.Purpose` / `Step1..5` (kiraci 7 dil, platform 2 dil); metinsiz sayfa yok (UXH-001)
+- [ ] Sayfa yardim metni: her sayfanin kodu + `Help.{KOD}.Purpose`, `Help.{KOD}.Audience`, `Help.{KOD}.Step{n}` + `Help.{KOD}.Step{n}Title` (1-5 adim); varsa `Help.{KOD}.Immediate`; ilgili sayfa varsa `PageHelpCatalog` + `Help.{KOD}.Related.{KOD}` (kiraci 7 dil, platform 2 dil); metinsiz sayfa yok (UXH-001 §2)
 - [ ] Tur gerekiyor mu: yalniz bes akistan biri ise (Gorev Merkezi, Zaman Cizelgesi, Global Urun / kalem onaya gonderme, kullanici + rol kurulumu, Toplanti) adimlar + `data-tour` hedefleri yazili; degilse "tur yok" (UXH-001)
 ```
 
@@ -614,7 +614,7 @@ Slim partial seti:
 - ...
 
 ## Page Help (UXH-001)
-- Sayfa yardim metni: {KOD} → `Help.{KOD}.Purpose` + `Step1..5` (kiraci 7 dil · platform 2 dil)
+- Sayfa yardim metni: {KOD} → `Help.{KOD}.Purpose` + `Help.{KOD}.Audience` + `Help.{KOD}.Step{n}` / `Help.{KOD}.Step{n}Title` (1-5); istege bagli `Help.{KOD}.Immediate`; ilgili sayfalar: `PageHelpCatalog` + `Help.{KOD}.Related.{KOD}` (kiraci 7 dil · platform 2 dil)
 - Tur gerekiyor mu (bes akis listesi): evet → adimlar + `data-tour` hedefleri / hayir → "tur yok"
 
 ## Ready-for-dev Checklist
