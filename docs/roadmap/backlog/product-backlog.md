@@ -10175,6 +10175,26 @@ testin bağlantı dizesi de ulaşılmayan adres olmalı; kabul kanıtı mongod g
 
 ---
 
+### BL-645
+
+**Dev referans kiracısı iki yerde farklı: Pazar (market) operasyonel yüklemesi hattın kilidiyle `0000…0001` istiyor, main'in dev ayarı `0b7d0048-…` diyor — CRM'in yerel Pazar betiği reddediliyor**
+
+DURUM: AÇIK · SAHİP: CT (Platform / referans veri) + CRM (W4-INFRA) — karar sahibin · BULAN: WP-LANE-MAIN-SYNC-04 · KAYIT: 2026-10-14
+
+**Ne:** Hattın kuralı (`6e3013612`, MDM devralma) Pazar kataloğunun tek seferlik yüklemesini yalnız Development'ta ve yalnız işlem ortam
+değişkenleri yapılandırmayla birebir eşleşirse açıyor; referans kiracıyı `VerifiedMarketOperationalProvisioningOptions.LockedReferenceTenantId`
+(`00000000-0000-0000-0000-000000000001`) olarak kilitliyor. Main'in W4-INFRA dev ayarı (`Platform API appsettings.Development.json`,
+`BusinessReferenceData:Provider:ReferenceTenantId`) `0b7d0048-0290-4000-8000-000000000001`; betiği `scripts/dev/run-verified-market-provisioning.ps1`
+ortam değişkeni koymuyor. Sahip kararı A (2026-10-14): hattın kuralı kalır; main'in dev yapılandırma testi `PROCESS_PROVENANCE_REQUIRED` bekliyor.
+**Sonuç:** CRM geliştiricilerinin yerel Pazar kataloğu yüklemesi reddediliyor (yanlış kiracıya yazmıyor; canlı etkisi yok — komut yalnız Development).
+GSKU doğrulanmış yüklemesi etkilenmiyor ama dev'de iki katalog farklı referans kiracı görebilir.
+**Yapılacak:** dev ortamında TEK referans kiracı kararı (sahip + CRM): ya kilit `0b7d…`'ye taşınır ya dev ayarı `0001`'e döner; ardından betik ortam
+değişkenlerini koyar (Enabled=true, CatalogLoad__Enabled=false, ReferenceTenantId ve beş değer yapılandırmayla birebir) ve test yeniden "uygun" bekler.
+SAP'de referans veri tek bir istemcide (client 000 benzeri) tutulur; Oracle'da ortak "Common Set". Tek kiracı doğru yön, hangisi olacağı veri kararı.
+**Gelecek regresyon riski:** 🟡 (yerel CRM geliştirmesi; iki referans kiracıyla dev verisi tutarsızlaşabilir).
+
+---
+
 ### BL-644
 
 **Ctrl+K arama: kural ile kod ayrışmış — platform kaydı yanlış dosyayı gösteriyor, izin süzmesi yalnız Web katmanında, yedek JSON bayat, sabit metinler, yanlış test adı, davranış testi yok**
