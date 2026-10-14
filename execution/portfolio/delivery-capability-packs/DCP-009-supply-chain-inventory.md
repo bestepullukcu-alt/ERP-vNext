@@ -39,7 +39,7 @@ inputs:
 | Status | **approved** (CT 2026-09-11; runtime_code_allowed=false) |
 | Owner domain | supply-chain-execution |
 | Canonical source | Blueprint 8.1 (Supply Chain Execution Suite + Planning + Manufacturing) |
-| Service | `Diten.SupplyChainService` · port **5061** |
+| Service | `Diten.SupplyChainService` · port **5061** (warehouse/planning/mfg/logistics) · `Diten.InventoryService` · port **5067** (MOD-0173…0177, OD-5 2026-09-30; moved 5066 → 5067 by owner decision OD-P1 2026-10-12, WP-MVP1-SYNC1) |
 | runtime_code_allowed | **false** (DCP-level value, unchanged here; seven member packs are ready-for-dev and MVP-6 code exists — see `runtime_code_scope`, measured 2026-10-05, Q450) |
 
 ## 2. Business outcome
@@ -95,11 +95,21 @@ Procurement (0142 GRN → 0173 post) · Commercial ATP (0172 ← 0173 availabili
 ## 18. Open decisions
 **OD-1** Location master owner alt-kırılım (Option A split vs B shared — B seçildi, MOD-# reservation + collision-check pending). **OD-2** BOM (0193) sırası — pharma composition foundation'a yakın (rapor §23.5). **OD-3** MVP-1 module pack bölünmesi (tek pack mi FU'lar mı). **OD-4 RESOLVED (user 2026-09-15):** MVP-6-first. Servis scaffold tetik = onaylı MOD-0183 module pack + `@orchestrator /add-module`; MVP-1 (0173) sonra aynı servise katılır. MVP-6'nın consumed seam'leri (WAREHOUSE-OUTBOUND sahibi MVP-5, SUPPLIER sahibi MVP-2) merkezi CT tarafından öne çekilip frozen edildi (`docs/analysis/contracts/`), böylece MVP-6 mock'a karşı beklemeden geliştirir.
 
+**OD-5 RESOLVED (user 2026-09-30): MVP-1 inventory core gets its own service.** `Diten.InventoryService`, port **5066**, owns MOD-0173…0177. Reason: `Diten.SupplyChainService` exists only on `origin/feature/mvp6-logistics` (not on `main`), which blocked MVP-1. This supersedes OD-4's "MVP-1 (0173) later joins the same service" for 0173–0177 only; everything else in this pack stays in SupplyChainService. Boundaries are unchanged: single stock SoR = MOD-0173; consumers use `INVENTORY-BUNDLE` over HTTP. Scaffold trigger = MOD-0173 pack `ready-for-dev` (commit 946bbab3) + dev WP. The frontmatter `runtime_code_allowed` / `runtime_code_scope` text is stale (CT-0183-05) and is left for the central CT.
+
+**OD-1 RESOLVED (2026-10-01, measured):** Location master owner = **`MOD-0173-FU02 Location / Storage Master`** — Blueprint 8.1 `Blueprint_Data` gives MOD-0173 SoR "inventory balances, movements, valuation, locations (as scoped)" and no other module owns physical locations; the owner workbook (Supply Planning Procure Cap Block) records 0 new canonical IDs. Shared master per DEC-INV-03 Option B, in `Diten.InventoryService`, owner of the LOCATION contract; consumers read only. Pack ready-for-dev 2026-10-01.
+
 ## 19. Future follow-ups
 External-integration adapter (DEC-INV-19) · special-stock/ownership (P2) · material ledger/costing advanced · Transport/TMS (MVP-6) · S&OP (MVP-6).
 
 ## 20. Audit and reconciliation notes
 DCP-002 preflight: MOD-0173/0174/0178 exit 0 (proven). Registry rows added 2026-09-11 (identity-only). Reconciliation `reconciled` statüsünde doldurulacak. Contract'lar `docs/analysis/contracts/` — frozen-ready, owner+consumer review pending.
+
+**MVP-3 · MOD-0193 BOM & Routings (2026-10-06, MVP-3 lane CT).** Pack: [MOD-0193-bom-routings](../../domains/supply-chain-execution/module-packs/MOD-0193-bom-routings.md) `ready-for-dev` (ürün sahibi, 2026-10-06). `runtime_code_allowed` CAP-001 §7 gereği **yalnız MOD-0193 için** açılır; diğer üyeler için frontmatter değeri (false) aynen geçerlidir. DCP-002: `verify_module_id.py --check-id MOD-0193 --name "BOM & Routings"` exit 0.
+- **Servis sapması (ürün sahibi kararı 2026-10-06):** MOD-0193 `Diten.SupplyChainService`'e değil **`Diten.ManufacturingService` (port 5070; ilk atama 5067 — OD-P1 2026-10-12 ile 5067 Inventory'nin oldu)**'e yazılır. Sebep: SupplyChainService yalnız MVP-6'nın birleşmemiş dalında (PR #134) var; oraya yazmak MVP-6'nın paylaşılan dosyalarına dokunmak demekti ve sahip "sadece MVP-3, diğer MVP'lere dokunma" dedi. Manufacturing Execution (0193–0197) ayrı bounded context olarak bu servise toplanır.
+- **OD-2 (BOM sırası) — MVP-3 için kapandı:** BOM contract-first, MVP-1 runtime'ını beklemez (BOM stoğa yazmaz/okumaz; G1 = contract freeze). Pharma composition: kimlik MOD-0290, miktar/formülasyon MOD-0193 (rapor §23.3).
+- **Bağımlılık waiver'ları:** W-0193-01 MOD-0209 Change Control (repo'da yok → `IChangeControlGate` seam), W-0193-02 MOD-0003 Data Contract Registry (planned/missing → contract repo'da pinli). Ayrıntı pack §7.
+- **MOD-0193 built (2026-10-06):** service + screens + gateway, CT-verified (E3 live gateway run 15/15, browser flow M-5; record `docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/`). Pack `review` — owner acceptance pending.
 
 ## 21. Follow-up — Supply Chain module self-registration foundation
 

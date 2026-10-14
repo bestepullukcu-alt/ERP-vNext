@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+    <data name="PageTitle" xml:space="preserve"><value>Presentación de visita</value></data>
+  <data name="BackLabel" xml:space="preserve"><value>Volver al calendario</value></data>
+  <data name="KindLabel" xml:space="preserve"><value>Tipo de visita</value></data>
+  <data name="Loading" xml:space="preserve"><value>Cargando…</value></data>
+  <data name="DoctorScreen" xml:space="preserve"><value>Pantalla del médico</value></data>
+  <data name="RepPanel" xml:space="preserve"><value>Mando del representante</value></data>
+  <data name="ActionFailed" xml:space="preserve"><value>No se pudo completar la acción. Inténtelo de nuevo.</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>No se pudo cargar la visita.</value></data>
+  <data name="NotStartedTitle" xml:space="preserve"><value>La visita no se ha iniciado.</value></data>
+  <data name="NotStartedText" xml:space="preserve"><value>Iníciela desde el espacio de visitas, en la institución.</value></data>
+  <data name="BackToWorkspace" xml:space="preserve"><value>Volver al espacio de visitas</value></data>
+  <data name="NoSlides" xml:space="preserve"><value>Esta visita no tiene contenido aprobado para presentar.</value></data>
+  <data name="StartedLine" xml:space="preserve"><value>{0} · iniciada {1}</value></data>
+  <data name="LiveChip" xml:space="preserve"><value>En curso · {0}</value></data>
+  <data name="Kind_in_person" xml:space="preserve"><value>Presencial</value></data>
+  <data name="Kind_remote" xml:space="preserve"><value>Remota</value></data>
+  <data name="DoctorScreenHint" xml:space="preserve"><value>Pantalla del médico · notas del representante ocultas</value></data>
+  <data name="ExitHold" xml:space="preserve"><value>Salir: mantener pulsado</value></data>
+  <data name="RepTitle" xml:space="preserve"><value>Representante · mando</value></data>
+  <data name="BackToDoctor" xml:space="preserve"><value>Volver al modo médico</value></data>
+  <data name="DoctorMode" xml:space="preserve"><value>Pasar al modo médico</value></data>
+  <data name="TotalLabel" xml:space="preserve"><value>Total {0}</value></data>
+  <data name="DoctorSees" xml:space="preserve"><value>El médico ve · {0}</value></data>
+  <data name="PrevSlide" xml:space="preserve"><value>Atrás</value></data>
+  <data name="NextSlide" xml:space="preserve"><value>Siguiente</value></data>
+  <data name="SkipProduct" xml:space="preserve"><value>Saltar producto</value></data>
+  <data name="LastProduct" xml:space="preserve"><value>Es el último producto.</value></data>
+  <data name="TabNotes" xml:space="preserve"><value>Notas</value></data>
+  <data name="TabMarks" xml:space="preserve"><value>Marcas</value></data>
+  <data name="TabNote" xml:space="preserve"><value>Tomar nota</value></data>
+  <data name="KeyMessage" xml:space="preserve"><value>Mensaje clave</value></data>
+  <data name="ThisSlide" xml:space="preserve"><value>Esta diapositiva {0}</value></data>
+  <data name="TargetLabel" xml:space="preserve"><value>objetivo ≈ {0}</value></data>
+  <data name="TargetSeconds" xml:space="preserve"><value>{0} s</value></data>
+  <data name="TargetMinutes" xml:space="preserve"><value>{0} min</value></data>
+  <data name="TalkTrack" xml:space="preserve"><value>Guion · aprobado</value></data>
+  <data name="ForThisDoctor" xml:space="preserve"><value>Para este médico</value></data>
+  <data name="BriefLastVisit" xml:space="preserve"><value>Última visita: {0}</value></data>
+  <data name="BriefOutcome" xml:space="preserve"><value>Resultado: {0}</value></data>
+  <data name="BriefFollowUp" xml:space="preserve"><value>Seguimiento: {0}</value></data>
+  <data name="BriefSamples" xml:space="preserve"><value>Muestras entregadas: {0}</value></data>
+  <data name="Objections" xml:space="preserve"><value>Objeciones previstas · respuesta aprobada</value></data>
+  <data name="MyNote" xml:space="preserve"><value>Mi nota · {0} · solo usted la ve</value></data>
+  <data name="MyNotePlaceholder" xml:space="preserve"><value>Una nota para usted sobre este producto</value></data>
+  <data name="TransitionHeading" xml:space="preserve"><value>Transición</value></data>
+  <data name="QuickMarks" xml:space="preserve"><value>Marcas rápidas · {0}</value></data>
+  <data name="Interest_interested" xml:space="preserve"><value>Interesado</value></data>
+  <data name="Interest_neutral" xml:space="preserve"><value>Neutral</value></data>
+  <data name="Interest_not_interested" xml:space="preserve"><value>No interesado</value></data>
+  <data name="Flag_question" xml:space="preserve"><value>Hizo una pregunta</value></data>
+  <data name="Flag_objection" xml:space="preserve"><value>Objetó</value></data>
+  <data name="Flag_sample_request" xml:space="preserve"><value>Pidió una muestra</value></data>
+  <data name="Flag_literature_request" xml:space="preserve"><value>Pidió literatura / información</value></data>
+  <data name="Flag_follow_up" xml:space="preserve"><value>Requiere seguimiento</value></data>
+  <data name="ObjectionCategory" xml:space="preserve"><value>Categoría de objeción</value></data>
+  <data name="ObjectionWith" xml:space="preserve"><value>{0}: {1}</value></data>
+  <data name="VisitNote" xml:space="preserve"><value>Nota de la visita</value></data>
+  <data name="VisitNotePlaceholder" xml:space="preserve"><value>Nota libre (el médico no la ve) · pasa al informe</value></data>
+  <data name="VoiceNote" xml:space="preserve"><value>Nota de voz</value></data>
+  <data name="Listening" xml:space="preserve"><value>Escuchando…</value></data>
+  <data name="JointVisit" xml:space="preserve"><value>Con mi responsable (visita conjunta)</value></data>
+  <data name="CoVisitorsPlaceholder" xml:space="preserve"><value>Elija los acompañantes</value></data>
+  <data name="CoVisitorsMax" xml:space="preserve"><value>Como máximo {0} personas.</value></data>
+  <data name="NoPeople" xml:space="preserve"><value>No hay nadie para elegir.</value></data>
+  <data name="DurationConsistency" xml:space="preserve"><value>Coherencia de duración activada: se registran los tiempos de las diapositivas; una visita de menos de {0} se marca.</value></data>
+  <data name="FinishVisit" xml:space="preserve"><value>Finalizar la visita</value></data>
+  <data name="FinishConfirmTitle" xml:space="preserve"><value>¿Finalizar la visita?</value></data>
+  <data name="FinishConfirmText" xml:space="preserve"><value>La hora de fin la fija el servidor; la presentación ya no podrá cambiar.</value></data>
+  <data name="FinishConfirmYes" xml:space="preserve"><value>Sí, finalizar</value></data>
+  <data name="CancelButton" xml:space="preserve"><value>Cancelar</value></data>
+  <data name="PinSetTitle" xml:space="preserve"><value>Defina un PIN de representante de 4 dígitos</value></data>
+  <data name="PinConfirmTitle" xml:space="preserve"><value>Vuelva a introducir el PIN</value></data>
+  <data name="PinUnlockTitle" xml:space="preserve"><value>PIN del representante</value></data>
+  <data name="PinMismatch" xml:space="preserve"><value>Los dos PIN no coinciden. Vuelva a definirlo.</value></data>
+  <data name="PinWrong" xml:space="preserve"><value>PIN incorrecto.</value></data>
+  <data name="SummaryTitle" xml:space="preserve"><value>La visita ha finalizado</value></data>
+  <data name="SummaryLine" xml:space="preserve"><value>{0} · {1} · {2}–{3}</value></data>
+  <data name="DurationHeading" xml:space="preserve"><value>Duración</value></data>
+  <data name="RolePromo" xml:space="preserve"><value>promoción</value></data>
+  <data name="RoleReminder" xml:space="preserve"><value>recordatorio</value></data>
+  <data name="MinutesClock" xml:space="preserve"><value>{0} min</value></data>
+  <data name="ShortVisitWarning" xml:space="preserve"><value>La visita duró menos de {0}; se marca por coherencia de duración.</value></data>
+  <data name="NotesHeading" xml:space="preserve"><value>Notas</value></data>
+  <data name="CoVisitorsLine" xml:space="preserve"><value>Visita conjunta: {0}</value></data>
+  <data name="SignatureTitleApproval" xml:space="preserve"><value>Confirmación del médico</value></data>
+  <data name="SignatureTitleSample" xml:space="preserve"><value>Entrega de muestra · firma del médico</value></data>
+  <data name="SignatureTextApproval" xml:space="preserve"><value>Su empresa solicita la confirmación de la visita por el médico.</value></data>
+  <data name="SignatureTextSample" xml:space="preserve"><value>Se pidió una muestra: el médico firma en la entrega.</value></data>
+  <data name="ClearSignature" xml:space="preserve"><value>Borrar</value></data>
+  <data name="ConfirmVisit" xml:space="preserve"><value>Confirmo la visita (médico)</value></data>
+  <data name="SignatureSave" xml:space="preserve"><value>Guardar la firma</value></data>
+  <data name="SignatureSaved" xml:space="preserve"><value>La firma se ha guardado.</value></data>
+  <data name="Signed" xml:space="preserve"><value>La firma del médico está registrada.</value></data>
+  <data name="EnterReport" xml:space="preserve"><value>Introducir el informe</value></data>
+  <data name="Later" xml:space="preserve"><value>Lo haré más tarde</value></data>
+  <data name="LaterHint" xml:space="preserve"><value>en 48 h · vuelve al calendario</value></data>
+  <data name="CaptureFailed" xml:space="preserve"><value>No se pudo guardar la presentación; se reintentará.</value></data>
+  <data name="ImagePlaceholder" xml:space="preserve"><value>imagen de contenido aprobada</value></data>
+  <data name="Err_visit_execution_finished" xml:space="preserve"><value>La visita ya ha finalizado.</value></data>
+  <data name="Err_visit_execution_not_finished" xml:space="preserve"><value>Finalice primero la visita.</value></data>
+  <data name="Err_visit_signature_exists" xml:space="preserve"><value>La visita ya está firmada.</value></data>
+  <data name="Err_visit_report_deadline_passed" xml:space="preserve"><value>El plazo de 48 horas de la visita ha vencido.</value></data>
+  <data name="Err_visit_capture_invalid" xml:space="preserve"><value>Algunos datos introducidos no son válidos.</value></data>
+  <data name="Err_visit_co_visitor_invalid" xml:space="preserve"><value>No se puede añadir el acompañante (máximo 3 usuarios, no usted).</value></data>
+  <data name="Err_visit_evidence_store_unavailable" xml:space="preserve"><value>El almacén de evidencias no está disponible. Inténtelo de nuevo.</value></data>
+  <data name="Err_visit_already_reported" xml:space="preserve"><value>El informe de la visita ya se envió.</value></data>
+  <data name="Err_visit_execution_not_found" xml:space="preserve"><value>No se encontró la visita.</value></data>
+  <data name="Err_visit_execution_concurrency_conflict" xml:space="preserve"><value>La visita cambió en otra pantalla. Recargue la página.</value></data>
+  <data name="Err_resource_not_caller" xml:space="preserve"><value>Solo el representante de la visita puede registrarla.</value></data>
+</root>

@@ -78,7 +78,9 @@ public sealed record ContentEngagementJourneyStageDto(
     string? CreatedBy,
     DateTimeOffset? UpdatedAt,
     string? UpdatedBy,
-    bool IsArchived);
+    bool IsArchived,
+    // WP-VW-W4 (W4-BE-a, additive) — the doctor adoption stage this stage stands for (crm-adoption-stage).
+    string? AdoptionStageCode = null);
 
 public sealed record ContentEngagementJourneyBranchConditionDto(
     string ConditionCode,

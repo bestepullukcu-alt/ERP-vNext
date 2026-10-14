@@ -100,7 +100,8 @@
             deven: window.ApiBaseUrl,
             auth: window.ApiBaseUrl,
             platform: window.ApiBaseUrl,
-            procurement: window.ApiBaseUrl
+            procurement: window.ApiBaseUrl,
+            manufacturing: window.ApiBaseUrl
         };
         window.CurrentLanguage = "@currentCulture";
         window.CurrentUser = @Html.Raw(currentUserJson);
@@ -577,6 +578,15 @@
                                                 class="bx bx-user icon-md me-3"></i><span>@SharedLocalizer["MyProfile"]</span>
                                         </a>
                                     </li>
+                                    @* MOD-0022 E5W1 — "İmzam" (mockup user menu: Profilim · İmzam · Çıkış yap), only with its page key *@
+                                    @if (Perms.Has("esign.my-samples.manage"))
+                                    {
+                                        <li>
+                                            <a class="dropdown-item d-flex align-items-center" href="/ESignature/MySignature" id="navbar-my-signature">
+                                                <i class="bx bx-pen icon-md me-3"></i><span>@SharedLocalizer["Nav.Page.ESIGNMYSIGNATURE"]</span>
+                                            </a>
+                                        </li>
+                                    }
                                     <li>
                                         <a class="dropdown-item d-flex align-items-center" href="javascript:void(0);">
                                             <i

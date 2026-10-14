@@ -1,0 +1,49 @@
+@using Diten.Web.Views.Inventory.StockMovements
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<StockMovementsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@*
+    UI-2 form l10n bridge: every sentence form.js shows, in the reader's language. form.js reads ONLY these keys —
+    no English fallback in the script (localization-standard; LocationResx-style payload test).
+*@
+<script id="stockmovement-form-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Searching = Localizer["Searching"].Value,
+        NoResults = Localizer["NoResults"].Value,
+        PickerUnavailable = Localizer["PickerUnavailable"].Value,
+        PickerIncomplete = Localizer["PickerIncomplete"].Value,
+        HintSelectProductFirst = Localizer["HintSelectProductFirst"].Value,
+        HintSkuNone = Localizer["HintSkuNone"].Value,
+        HintSourceNone = Localizer["HintSourceNone"].Value,
+        HintSourceSelectSku = Localizer["HintSourceSelectSku"].Value,
+        HintSourceStock = Localizer["HintSourceStock"].Value,
+        HintLocationTransferWarehouse = Localizer["HintLocationTransferWarehouse"].Value,
+        HintTargetLocation = Localizer["HintTargetLocation"].Value,
+        HintTargetLocationNone = Localizer["HintTargetLocationNone"].Value,
+        HintUnitBase = Localizer["HintUnitBase"].Value,
+        HintUnitNoConversion = Localizer["HintUnitNoConversion"].Value,
+        HintSerialCounter = Localizer["HintSerialCounter"].Value,
+        HintSerialCounterUnknown = Localizer["HintSerialCounterUnknown"].Value,
+        ValRequired = Localizer["ValRequired"].Value,
+        ValQuantity = Localizer["ValQuantity"].Value,
+        ValDate = Localizer["ValDate"].Value,
+        ValLotFormat = Localizer["ValLotFormat"].Value,
+        ValSerialDuplicate = Localizer["ValSerialDuplicate"].Value,
+        ValSerialCount = Localizer["ValSerialCount"].Value,
+        ValSameWarehouse = Localizer["ValSameWarehouse"].Value,
+        ValSameLocation = Localizer["ValSameLocation"].Value,
+        ValFixFields = Localizer["ValFixFields"].Value,
+        EffectSource = Localizer["EffectSource"].Value,
+        EffectTarget = Localizer["EffectTarget"].Value,
+        EffectNegative = Localizer["EffectNegative"].Value,
+        EffectUnavailable = Localizer["EffectUnavailable"].Value,
+        PartialText = Localizer["PartialText"].Value,
+        ConfirmCorrectTitle = Localizer["ConfirmCorrectTitle"].Value,
+        ConfirmCorrectText = Localizer["ConfirmCorrectText"].Value,
+        ConfirmCorrectButton = Localizer["ConfirmCorrectButton"].Value,
+        ErrServiceUnavailable = Localizer["ErrServiceUnavailable"].Value,
+        ErrSessionExpired = Localizer["ErrSessionExpired"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value
+    })
+</script>

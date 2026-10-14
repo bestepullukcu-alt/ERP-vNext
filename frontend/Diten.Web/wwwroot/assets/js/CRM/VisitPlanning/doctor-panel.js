@@ -11,6 +11,9 @@
  *     planned products until reports carry what was told, SB-3c) / Planned (approved or this draft week) / Projected
  *     (a later draft week) + the chips.
  *   - "Next content" is NOT shown: content progression waits for SB-3c.
+ *   WP-VP-4J (2) — the product picker (targets.js) opens this same offcanvas and says so ('picker:open'): one doctor →
+ *   the period view draws that doctor (one not in the saved plan yet gets an explanatory empty state, never "—");
+ *   bulk → the period tab is hidden until the panel closes.
  *   The Products tab (and the footer) is a plan writer's only.
  */
 (function (window, document) {
@@ -77,6 +80,14 @@
         const slots = (p.scheduled || []).filter(s => s.contactId === current.contactId)
             .sort((a, b) => String(a.plannedDate).localeCompare(String(b.plannedDate)));
         const doctor = doctors[current.contactId] || null;
+        if (!doctor && !slots.length) {
+            // WP-VP-4J (2) — a doctor ticked on the Targets tab but not saved into the plan yet: nothing to show over the
+            // period, and the panel says why (the title stays the picker's).
+            host.innerHTML = '<div class="border rounded text-center px-3 py-5 d-flex flex-column align-items-center gap-2" style="border-style:dashed !important">' +
+                '<i class="bx bx-calendar-x text-muted" style="font-size:2rem"></i>' +
+                '<div class="small" style="max-width:340px">' + esc(L.PeriodViewNotInPlan || '') + '</div></div>';
+            return;
+        }
         const status = (doctor && doctor.status) || {};
         const name = (doctor && doctor.displayName) || (slots[0] && slots[0].contactDisplayName) || '—';
         const specialty = specLabel((doctor && doctor.specialty) || (slots[0] && slots[0].contactSpecialty) || '');
@@ -86,14 +97,16 @@
         el('vp-dp-sub').textContent = [specialty, accountName].filter(Boolean).join(' · ') || '—';
 
         const hasFrequency = status.requiredVisitCount != null && status.frequencyStatus !== 'unknown';
+        // WP-VP-4L (3) — an unknown frequency is the server's weekly default: "haftada 1 (varsayılan)" (frequencyDefault)
+        const weeklyDefault = status.frequencyDefault === 'weekly' || slots.some(s => s.frequencyDefault === 'weekly');
         const parts = [];
         parts.push('<div class="d-flex flex-wrap gap-1 mb-3">' +
             (status.segmentBadges || []).map(sname => '<span class="badge bg-label-info" title="' + esc(L.SegmentBadgeHint || '') + '">' + bidi(sname) + '</span>').join('') +
-            (hasFrequency ? '' : '<span class="badge bg-label-secondary">' + esc(L.FrequencyNone || '') + '</span>') + '</div>');
+            (hasFrequency ? '' : '<span class="badge bg-label-secondary">' + esc(weeklyDefault ? (L.FrequencyDefaultWeekly || '') : (L.FrequencyNone || '')) + '</span>') + '</div>');
 
-        // three boxes: frequency target ("dönemde 3" / "dönemde 1 (varsayılan)", F4-2) / done / remaining (3D)
+        // three boxes: frequency target ("dönemde 3" / 4L "haftada 1 (varsayılan)") / done / remaining (3D)
         parts.push('<div class="row g-2 text-center mb-4">' + [
-            [L.FrequencyTarget, hasFrequency ? fmt(L.FrequencyPerPeriod || '{0}', status.requiredVisitCount) : (L.FrequencyDefaultOne || '')],
+            [L.FrequencyTarget, hasFrequency ? fmt(L.FrequencyPerPeriod || '{0}', status.requiredVisitCount) : (weeklyDefault ? (L.FrequencyDefaultWeekly || '') : (L.FrequencyNone || ''))],
             [L.DoneLabel, status.done != null ? status.done : '—'],
             [L.RemainingLabel, status.remaining != null ? status.remaining : '—']
         ].map(x => '<div class="col-4"><div class="border rounded p-2 h-100"><div class="small text-muted">' + esc(x[0] || '') + '</div><div class="fw-semibold">' + esc(x[1]) + '</div></div></div>').join('') + '</div>');
@@ -127,7 +140,7 @@
                 const state = historyState(slot, firstDraft);
                 const items = slot ? (slot.contentItems || []).slice().sort((a, b) => (a.order || 0) - (b.order || 0)) : [];
                 return '<li class="border-bottom py-2 vp-dp-week' + (w.status === 'past' ? ' opacity-50' : '') + '" data-ws="' + esc(w.weekStart) + '"><div class="d-flex justify-content-between small gap-2"><span class="fw-medium">' + esc(weekTitle(w) + ' · ' + weekRange(w)) + '</span>' +
-                    (state === 'none' ? '<span class="text-muted">—</span>' : '<span class="badge bg-' + HISTORY_TONE[state] + '">' + esc(L[HISTORY_STATE_LABEL[state]] || state) + '</span>') + '</div>' +
+                    (state === 'none' ? '<span class="text-muted">—</span>' : '<span class="d-flex gap-1">' + (slot.isExtra ? '<span class="badge bg-label-warning vp-extra-badge">' + esc(L.WeekStateExtra || '') + '</span>' : '') + '<span class="badge bg-' + HISTORY_TONE[state] + '">' + esc(L[HISTORY_STATE_LABEL[state]] || state) + '</span></span>') + '</div>' + // 4L: "Extra visit" 
                     (items.length ? '<div class="d-flex flex-wrap gap-1 mt-1 align-items-center"><span class="small text-muted">' + esc((L[HISTORY_LABEL[state]] || '') + ':') + '</span>' + items.map(chip).join(' ') + '</div>' : '') + '</li>';
             }).join('') + '</ul>' : '<div class="small text-muted">' + esc(L.NoVisitsInPeriod || '') + '</div>'));
 
@@ -159,6 +172,21 @@
         });
     });
     page.on('doctor-panel:open', open);
+    // WP-VP-4J (2) — the product picker opened the panel: draw its doctor's period view (single) or hide the tab (bulk).
+    const periodItem = () => el('vp-dp-tab-period-item');
+    page.on('picker:open', e => {
+        if (!e || e.mode !== 'single' || !e.contactId) {
+            current = null;
+            periodItem()?.classList.add('d-none');
+            const host = el('vp-dp-tab-period'); if (host) host.innerHTML = '';
+            return;
+        }
+        periodItem()?.classList.remove('d-none');
+        current = { contactId: e.contactId, accountId: e.accountId || null };
+        render();
+        Promise.all([Object.keys(doctors).length ? null : loadTargets(), Object.keys(specLabels).length ? null : loadLabels()]).then(render);
+    });
+    panel.addEventListener('hidden.bs.offcanvas', () => periodItem()?.classList.remove('d-none'));
     page.on('session', () => { loadTargets().then(render); });
     page.on('preview', () => render());
 })(window, document);

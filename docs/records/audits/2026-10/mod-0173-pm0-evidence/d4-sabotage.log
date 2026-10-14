@@ -1,0 +1,36 @@
+==================================================================
+## (a: bridge ignored outside Development (+ warning)) 2026-10-02T13:56:26+03:00
+file: frontend/Diten.Web/Models/Inventory/ProductMasterBridge.cs
+sha256 before : e5acabce49c2b1e63744626c93bf1f574549105b9abdb7a00bd8f2830b245165
+occurrences of the guarded text: 1
+--- sabotage diff:
+55c55
+<         if (!string.Equals(environmentName, Environments.Development, StringComparison.Ordinal))
+---
+>         if (false)
+--- tests with the guard broken (expected RED):
+Başarısız Diten.Web.Tests.Inventory.ProductMasterBridgeTests.With_the_setting_outside_Development_it_is_ignored_and_a_warning_is_logged(environment: "Staging") [42 ms]
+Başarısız Diten.Web.Tests.Inventory.ProductMasterBridgeTests.With_the_setting_outside_Development_it_is_ignored_and_a_warning_is_logged(environment: "Production") [< 1 ms]
+Başarısız! - Başarısız:     2, Başarılı:     0, Atlanan:     0, Toplam:     2, Süre: 46 ms - Diten.Web.Tests.dll (net8.0)
+sha256 restored: e5acabce49c2b1e63744626c93bf1f574549105b9abdb7a00bd8f2830b245165  identical=yes
+--- tests restored (expected GREEN):
+Başarılı!  - Başarısız:     0, Başarılı:     2, Atlanan:     0, Toplam:     2, Süre: 55 ms - Diten.Web.Tests.dll (net8.0)
+==================================================================
+## (b: reversal dates fixed with the key (re-send replays)) 2026-10-02T13:57:33+03:00
+file: frontend/Diten.Web/Controllers/StockMovementsController.cs
+sha256 before : 23e2541f2deff629a4b0c0e8ec60ffe4e61c1583f1b3912666e7044b3d88de38
+occurrences of the guarded text: 1
+--- sabotage diff:
+316c316
+<         var now = reversalAt;
+---
+>         var now = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", System.Globalization.CultureInfo.InvariantCulture);
+--- tests with the guard broken (expected RED):
+Başarısız Diten.Web.Tests.Inventory.InventoryProxyControllerTests.A_resent_reversal_dialog_carries_the_same_dates_so_the_service_replays_it [1 s]
+Başarısız! - Başarısız:     1, Başarılı:     0, Atlanan:     0, Toplam:     1, Süre: 1 s - Diten.Web.Tests.dll (net8.0)
+sha256 restored: 23e2541f2deff629a4b0c0e8ec60ffe4e61c1583f1b3912666e7044b3d88de38  identical=yes
+--- tests restored (expected GREEN):
+Başarılı!  - Başarısız:     0, Başarılı:     1, Atlanan:     0, Toplam:     1, Süre: 1 s - Diten.Web.Tests.dll (net8.0)
+==================================================================
+## working tree after both (must be empty):
+## git diff HEAD (must be empty):

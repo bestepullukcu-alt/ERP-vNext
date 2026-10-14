@@ -1,0 +1,36 @@
+@using Diten.Web.Views.Inventory.StockLedger
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<StockLedgerIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    // The table card is a component (BL-440): the page describes it, _ListShell renders it. Every header is
+    // localized HERE, the shell produces no text.
+    //
+    // SERVER data through the proxy profile (pack §8): /StockLedger/api translates paging for INVENTORY-BUNDLE.
+    // NO SELECTION COLUMN (pack §11): the balance is a read-only projection, there is nothing to bulk-act on.
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-stockledger",
+        DataMode = "server",
+        Slug = "stockledger",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["ColProductSku"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["ColWarehouseLocation"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColLot"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColStockStatus"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColOnHand"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColReserved"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColAvailable"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColQualityInspection"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColBlocked"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColInTransit"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColUnit"].Value }
+        ],
+        ActionsHeader = Localizer["Actions"].Value
+    };
+}
+
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />

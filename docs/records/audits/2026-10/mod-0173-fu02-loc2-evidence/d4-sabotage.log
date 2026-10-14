@@ -1,0 +1,54 @@
+==================================================================
+## (a: read-only sees no manage controls) 2026-10-02T11:19:47+03:00
+file: frontend/Diten.Web/Views/Inventory/LocationTree/Index.cshtml
+sha256 before : ae041b71ec6f69ba48f1acf60de96cd59d5e81deff544779441372604e0e8066
+occurrences of the guarded text: 1
+--- sabotage diff:
+40c40
+<     var canManage = Perms.Has("inventory.locations.manage");
+---
+>     var canManage = true;
+--- tests with the guard broken (expected RED):
+Başarısız Diten.Web.Tests.Inventory.LocationAccessSurfaceTests.A_read_only_user_gets_no_write_control_at_all(view: "/Views/Inventory/LocationTree/Index.cshtml") [44 ms]
+Başarısız! - Başarısız:     1, Başarılı:     6, Atlanan:     0, Toplam:     7, Süre: 2 s - Diten.Web.Tests.dll (net8.0)
+sha256 restored: ae041b71ec6f69ba48f1acf60de96cd59d5e81deff544779441372604e0e8066  identical=yes
+--- tests restored (expected GREEN):
+Başarılı!  - Başarısız:     0, Başarılı:     7, Atlanan:     0, Toplam:     7, Süre: 2 s - Diten.Web.Tests.dll (net8.0)
+==================================================================
+## (b: UAS-001 gate on /Locations) 2026-10-02T11:21:36+03:00
+file: frontend/Diten.Web/Views/Inventory/Locations/Index.cshtml
+sha256 before : 6ec5037bbe9f5ede3623c0d92cf4e7a4c5521536df75f1842e4b8e62c8032840
+occurrences of the guarded text: 1
+--- sabotage diff:
+22c22
+< @if (!Perms.Has("inventory.locations.read"))
+---
+> @if (false)
+--- tests with the guard broken (expected RED):
+Başarısız Diten.Web.Tests.Inventory.LocationAccessSurfaceTests.Without_read_only_the_access_explanation_is_drawn(view: "/Views/Inventory/Locations/Index.cshtml") [72 ms]
+Başarısız! - Başarısız:     1, Başarılı:     6, Atlanan:     0, Toplam:     7, Süre: 2 s - Diten.Web.Tests.dll (net8.0)
+sha256 restored: 6ec5037bbe9f5ede3623c0d92cf4e7a4c5521536df75f1842e4b8e62c8032840  identical=yes
+--- tests restored (expected GREEN):
+Başarılı!  - Başarısız:     0, Başarılı:     7, Atlanan:     0, Toplam:     7, Süre: 3 s - Diten.Web.Tests.dll (net8.0)
+==================================================================
+## (c: manifest completeness (BULKBINS removed)) 2026-10-02T11:22:40+03:00
+file: services/Diten.InventoryService/src/Diten.InventoryService.Api/ModuleRegistration/InventoryLedgerManifestProvider.cs
+sha256 before : 0c7c01eeefdca9360289e8e1da7100b459dd3c5d21e65eaf6dbf2a13fc206416
+occurrences of the guarded text: 1
+--- sabotage diff:
+83c83
+<                         new ModuleManifestAction("BULKBINS", "Generate bins", InventoryPermissions.LocationsManage, "RowAction", 50, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+---
+> 
+--- tests with the guard broken (expected RED):
+Başarısız Diten.InventoryService.Tests.Api.InventoryLedgerManifestCompletenessTests.Every_rendered_button_is_a_manifest_action_on_its_page_and_nothing_else_is [46 ms]
+Başarısız! - Başarısız:     1, Başarılı:     3, Atlanan:     0, Toplam:     4, Süre: 90 ms - Diten.InventoryService.Tests.dll (net8.0)
+sha256 restored: 0c7c01eeefdca9360289e8e1da7100b459dd3c5d21e65eaf6dbf2a13fc206416  identical=yes
+--- tests restored (expected GREEN):
+Başarılı!  - Başarısız:     0, Başarılı:     4, Atlanan:     0, Toplam:     4, Süre: 38 ms - Diten.InventoryService.Tests.dll (net8.0)
+==================================================================
+## working tree after all three (git status of the touched files must equal the pre-run status):
+ M services/Diten.InventoryService/src/Diten.InventoryService.Api/ModuleRegistration/InventoryLedgerManifestProvider.cs
+?? frontend/Diten.Web/Views/Inventory/LocationTree/Index.cshtml
+?? frontend/Diten.Web/Views/Inventory/Locations/Index.cshtml
+done

@@ -1,0 +1,40 @@
+# D3 what-if — run_all.sh: staged blob, run as a copy with (1) a guard line that aborts unless every external command resolves to an echo-only shim,
+#   (2) the 'trap kill 0' line removed, (3) /usr/bin/osascript -> osascript shim. Shims: lsof killall kill dotnet node env sleep osascript (print 'WHATIF> <cmd> <args>').
+# Nothing is started or killed. 2026-10-02T10:02:00+03:00 · LOCALAPPDATA=C:\Users\Ali\AppData\Local · cwd=/c/Users/Ali/erp-vnext
+
+=========================================
+🚀 Servislerin projeleri derleniyor...
+=========================================
+WHATIF> dotnet build services/Diten.AuthService/src/Diten.AuthService.Api/Diten.AuthService.Api.csproj -v q
+WHATIF> dotnet build services/Diten.DevEnablementService/src/Diten.DevEnablementService.Api/Diten.DevEnablementService.Api.csproj -v q
+WHATIF> dotnet build services/Diten.Platform/src/Diten.Platform.API/Diten.Platform.API.csproj -v q
+WHATIF> dotnet build services/Diten.MdmService/src/Diten.MdmService.Api/Diten.MdmService.Api.csproj -v q
+WHATIF> dotnet build services/Diten.InventoryService/src/Diten.InventoryService.Api/Diten.InventoryService.Api.csproj -v q
+WHATIF> dotnet build services/Diten.HcmService/src/Diten.HcmService.Api/Diten.HcmService.Api.csproj -v q
+WHATIF> dotnet build gateway/Diten.ApiGateway/Diten.ApiGateway.csproj -v q
+WHATIF> dotnet build frontend/Diten.Web/Diten.Web.csproj -v q
+=========================================
+🚀 Başlatılıyor: Auth (AuthService.Api)
+🚀 Başlatılıyor: DevEnablement (DevEnablementService.Api)
+🚀 Başlatılıyor: Platform (Diten.Platform.API)
+🚀 Başlatılıyor: HCM (Diten.HcmService.Api)
+🚀 Başlatılıyor: Prism product-master mock (4010) — FU-PM-01: MDM PRODUCT-MASTER gerçek uç noktası gelene kadar geçici
+🚀 Başlatılıyor: Inventory (Diten.InventoryService.Api)
+🚀 Başlatılıyor: Gateway (ApiGateway)
+🚀 Başlatılıyor: Frontend (Diten.Web)
+=========================================
+
+WHATIF> kill -9 WHATIF> lsof -ti :5000,5001,5056,5057,5058,5059,5060
+WHATIF> kill -9 WHATIF> lsof -ti :4010,5066
+WHATIF> killall -9 dotnet
+WHATIF> sleep 2
+[AUTH    ] WHATIF> dotnet run --no-build --project services/Diten.AuthService/src/Diten.AuthService.Api/Diten.AuthService.Api.csproj --urls http://0.0.0.0:5056
+[DEVEN   ] WHATIF> dotnet run --no-build --project services/Diten.DevEnablementService/src/Diten.DevEnablementService.Api/Diten.DevEnablementService.Api.csproj --urls http://0.0.0.0:5058
+[PLATFORM] WHATIF> dotnet run --no-build --project services/Diten.Platform/src/Diten.Platform.API/Diten.Platform.API.csproj --urls http://0.0.0.0:5057
+[MDM     ] WHATIF> dotnet run --no-build --project services/Diten.MdmService/src/Diten.MdmService.Api/Diten.MdmService.Api.csproj --urls http://0.0.0.0:5059
+[HCM     ] WHATIF> dotnet run --no-build --project services/Diten.HcmService/src/Diten.HcmService.Api/Diten.HcmService.Api.csproj --urls http://0.0.0.0:5060
+[PRISM-PM] WHATIF> node --max-http-header-size=65536 C:/Users/Ali/AppData/Local/npm-cache/_npx/aa6973f8d4bc9dda/node_modules/@stoplight/prism-cli/dist/index.js mock docs/analysis/contracts/product-master-bundle.openapi.yaml --port 4010 --host 127.0.0.1
+[INVENTRY] WHATIF> env Inventory__Upstream__ProductMasterBaseUrl=http://127.0.0.1:4010/ dotnet run --no-build --project services/Diten.InventoryService/src/Diten.InventoryService.Api/Diten.InventoryService.Api.csproj --launch-profile http --urls http://0.0.0.0:5066
+[GATEWAY ] WHATIF> dotnet run --no-build --project gateway/Diten.ApiGateway/Diten.ApiGateway.csproj --urls http://0.0.0.0:5000
+[FRONTEND] WHATIF> dotnet run --no-build --project frontend/Diten.Web/Diten.Web.csproj --urls http://0.0.0.0:5001
+# exit 0

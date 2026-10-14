@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="StockMovementsTitle" xml:space="preserve"><value>Movimientos de existencias</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Todos los movimientos de existencias, del más reciente al más antiguo. Los movimientos no se editan: un error se corrige con una reversión.</value></data>
+  <data name="ColTransactionNo" xml:space="preserve"><value>N.º de transacción</value></data>
+  <data name="ColMovementType" xml:space="preserve"><value>Tipo de movimiento</value></data>
+  <data name="ColReason" xml:space="preserve"><value>Motivo</value></data>
+  <data name="ColQuantity" xml:space="preserve"><value>Cantidad</value></data>
+  <data name="ColBaseQuantity" xml:space="preserve"><value>Cantidad base</value></data>
+  <data name="ColTo" xml:space="preserve"><value>Destino</value></data>
+  <data name="ColStatusChange" xml:space="preserve"><value>Estado</value></data>
+  <data name="ColSource" xml:space="preserve"><value>Origen</value></data>
+  <data name="ColTransactionDate" xml:space="preserve"><value>Fecha de transacción</value></data>
+  <data name="ColPostingDate" xml:space="preserve"><value>Fecha de contabilización</value></data>
+  <data name="Reversal" xml:space="preserve"><value>Revertir</value></data>
+  <data name="ReversalConfirmTitle" xml:space="preserve"><value>¿Revertir este movimiento?</value></data>
+  <data name="ReversalConfirmText" xml:space="preserve"><value>El movimiento {0} permanece en el historial; un nuevo movimiento de reversión anula su efecto en las existencias. No se puede deshacer.</value></data>
+  <data name="ReversalConfirmButton" xml:space="preserve"><value>Revertir movimiento</value></data>
+  <data name="ReversalPosted" xml:space="preserve"><value>Reversión {0} registrada.</value></data>
+  <data name="ReversedBadge" xml:space="preserve"><value>Revertido</value></data>
+  <data name="ReversedInSource" xml:space="preserve"><value>Registrado por otro módulo: se revierte en ese módulo.</value></data>
+  <data name="Automatic" xml:space="preserve"><value>Automático</value></data>
+  <data name="FilterFrom" xml:space="preserve"><value>Fecha desde</value></data>
+  <data name="FilterTo" xml:space="preserve"><value>Fecha hasta</value></data>
+  <data name="MovementOPENING_BALANCE" xml:space="preserve"><value>Saldo inicial</value></data>
+  <data name="MovementGOODS_RECEIPT_PO" xml:space="preserve"><value>Entrada de mercancía (compra)</value></data>
+  <data name="MovementGOODS_RECEIPT_PROD" xml:space="preserve"><value>Entrada de mercancía (producción)</value></data>
+  <data name="MovementGOODS_ISSUE_SALES" xml:space="preserve"><value>Salida de mercancía (venta)</value></data>
+  <data name="MovementGOODS_ISSUE_PROD" xml:space="preserve"><value>Salida de mercancía (producción)</value></data>
+  <data name="MovementWAREHOUSE_TRANSFER" xml:space="preserve"><value>Traspaso entre almacenes</value></data>
+  <data name="MovementLOCATION_TRANSFER" xml:space="preserve"><value>Traspaso de ubicación</value></data>
+  <data name="MovementSTATUS_TRANSFER" xml:space="preserve"><value>Cambio de estado</value></data>
+  <data name="MovementCUSTOMER_RETURN" xml:space="preserve"><value>Devolución de cliente</value></data>
+  <data name="MovementSUPPLIER_RETURN" xml:space="preserve"><value>Devolución a proveedor</value></data>
+  <data name="MovementCOUNT_GAIN" xml:space="preserve"><value>Sobrante de recuento</value></data>
+  <data name="MovementCOUNT_LOSS" xml:space="preserve"><value>Faltante de recuento</value></data>
+  <data name="MovementSCRAP" xml:space="preserve"><value>Desecho</value></data>
+  <data name="MovementWRITE_OFF" xml:space="preserve"><value>Baja</value></data>
+  <data name="MovementREVERSAL" xml:space="preserve"><value>Reversión</value></data>
+  <data name="TabStock" xml:space="preserve"><value>Lista de existencias</value></data>
+  <data name="TabMovements" xml:space="preserve"><value>Historial de movimientos</value></data>
+  <data name="NamesUnavailable" xml:space="preserve"><value>No se han podido cargar ahora los nombres de productos y ubicaciones; se muestran los códigos. Las cifras de existencias son correctas.</value></data>
+  <data name="ColProductSku" xml:space="preserve"><value>Producto / SKU</value></data>
+  <data name="ColLot" xml:space="preserve"><value>Lote</value></data>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="FilterProduct" xml:space="preserve"><value>Producto</value></data>
+  <data name="FilterLot" xml:space="preserve"><value>Número de lote</value></data>
+  <data name="FilterWarehouse" xml:space="preserve"><value>Almacén</value></data>
+  <data name="FilterLocation" xml:space="preserve"><value>Ubicación</value></data>
+  <data name="Searching" xml:space="preserve"><value>Buscando…</value></data>
+  <data name="NoResults" xml:space="preserve"><value>Sin resultados</value></data>
+  <data name="PickerUnavailable" xml:space="preserve"><value>Esta lista no está disponible ahora (no se puede acceder al servicio de datos maestros). Puede filtrar con los demás campos.</value></data>
+  <data name="StatusAVAILABLE" xml:space="preserve"><value>Disponible</value></data>
+  <data name="StatusQUALITY_INSPECTION" xml:space="preserve"><value>Inspección de calidad</value></data>
+  <data name="StatusQUARANTINE" xml:space="preserve"><value>Cuarentena</value></data>
+  <data name="StatusBLOCKED" xml:space="preserve"><value>Bloqueado</value></data>
+  <data name="StatusIN_TRANSIT" xml:space="preserve"><value>En tránsito</value></data>
+  <data name="StatusDAMAGED" xml:space="preserve"><value>Dañado</value></data>
+  <data name="StatusEXPIRED" xml:space="preserve"><value>Caducado</value></data>
+  <data name="SkuLevelGsku" xml:space="preserve"><value>SKU global</value></data>
+  <data name="SkuLevelLsku" xml:space="preserve"><value>SKU local</value></data>
+  <data name="SkuLevelFinishedGood" xml:space="preserve"><value>Producto terminado</value></data>
+  <data name="ErrInsufficientStock" xml:space="preserve"><value>No hay existencias suficientes en el origen para este movimiento. No se ha cambiado nada; compruebe la cantidad disponible e inténtelo de nuevo.</value></data>
+  <data name="ErrAlreadyReversed" xml:space="preserve"><value>Este movimiento ya se ha revertido. No se ha cambiado nada; recargue la lista para ver la reversión.</value></data>
+  <data name="ErrMasterUnavailable" xml:space="preserve"><value>Ahora no se pueden comprobar los datos de producto o ubicación, por lo que no se ha realizado ningún cambio. Inténtelo de nuevo cuando vuelva la conexión.</value></data>
+  <data name="ErrCrossLegalEntity" xml:space="preserve"><value>Este registro pertenece a otra empresa. Cambie a esa empresa o solicite acceso a su administrador.</value></data>
+  <data name="ErrKeyReused" xml:space="preserve"><value>Esta acción ya se envió con otros valores. Cierre el cuadro de diálogo y empiece de nuevo.</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>No se pudo procesar la solicitud porque un valor no es válido. Recargue la página e inténtelo de nuevo.</value></data>
+  <data name="ErrUnknownItem" xml:space="preserve"><value>El maestro de productos no reconoce el producto o el SKU. No se ha cambiado nada; revise el producto.</value></data>
+  <data name="ErrUnknownLocation" xml:space="preserve"><value>No se reconoce el almacén o la ubicación. No se ha cambiado nada; revise la ubicación.</value></data>
+  <data name="ErrUomMissing" xml:space="preserve"><value>Esta unidad no se puede convertir a la unidad base del SKU. No se ha cambiado nada; elija otra unidad.</value></data>
+  <data name="ErrLotRequired" xml:space="preserve"><value>Este producto se controla por lotes: el lote es obligatorio. No se ha cambiado nada; indique el lote e inténtelo de nuevo.</value></data>
+  <data name="ErrSerialMismatch" xml:space="preserve"><value>La cantidad de números de serie no coincide con la cantidad. No se ha cambiado nada; corrija los números de serie.</value></data>
+  <data name="ErrConflict" xml:space="preserve"><value>Los datos cambiaron mientras trabajaba. Recargue la lista e inténtelo de nuevo.</value></data>
+  <data name="ErrNoPermission" xml:space="preserve"><value>No tiene acceso a esta acción. Solicite a su administrador los permisos de existencias que necesita.</value></data>
+  <data name="ErrSessionExpired" xml:space="preserve"><value>Su sesión ha finalizado. Vuelva a iniciar sesión para continuar.</value></data>
+  <data name="ErrServiceUnavailable" xml:space="preserve"><value>Ahora no se puede acceder al servicio de existencias. No se ha realizado ningún cambio; inténtelo de nuevo en un momento.</value></data>
+  <data name="ErrGeneric" xml:space="preserve"><value>Se produjo un problema y no se realizó ningún cambio. Inténtelo de nuevo; si persiste, contacte con soporte.</value></data>
+  <data name="CompanyLabel" xml:space="preserve"><value>Empresa</value></data>
+  <data name="CompanyPlaceholder" xml:space="preserve"><value>Seleccione una empresa</value></data>
+  <data name="CompanySelectHint" xml:space="preserve"><value>Seleccione la empresa cuyas existencias desea ver. No se muestra nada hasta que se seleccione una empresa.</value></data>
+  <data name="CompanyUnavailable" xml:space="preserve"><value>No se pudo cargar la lista de empresas, por lo que no se muestran datos de existencias. Solicite a su administrador permiso para ver las empresas o inténtelo más tarde.</value></data>
+  <data name="ErrSelectCompany" xml:space="preserve"><value>Seleccione primero una empresa. No se ha leído ni cambiado nada.</value></data>
+  <data name="ErrCompanyCheckUnavailable" xml:space="preserve"><value>Ahora no se puede confirmar la empresa seleccionada, por lo que no se ha realizado ningún cambio. Inténtelo de nuevo en un momento.</value></data>
+  <!-- WP-0173-UI2: model translation, native-speaker review pending (FU-UI2-01). -->
+  <data name="NewMovement" xml:space="preserve"><value>Nuevo movimiento</value></data>
+  <data name="Correct" xml:space="preserve"><value>Corregir</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Nuevo movimiento</value></data>
+  <data name="FormTitleEntry" xml:space="preserve"><value>Nueva entrada de stock</value></data>
+  <data name="FormTitleCorrect" xml:space="preserve"><value>Corregir movimiento</value></data>
+  <data name="SubmitCreate" xml:space="preserve"><value>Registrar movimiento</value></data>
+  <data name="SubmitCorrect" xml:space="preserve"><value>Corregir</value></data>
+  <data name="OriginalMissingTitle" xml:space="preserve"><value>Abra la corrección desde el historial de movimientos</value></data>
+  <data name="OriginalMissingText" xml:space="preserve"><value>Esta página corrige un movimiento del historial. Use «Corregir» en un movimiento manual del historial; los movimientos automáticos se corrigen en el módulo que los registró.</value></data>
+  <data name="BackToHistory" xml:space="preserve"><value>Historial de movimientos</value></data>
+  <data name="BackToStock" xml:space="preserve"><value>Lista de stock</value></data>
+  <data name="RetryButton" xml:space="preserve"><value>Reintentar</value></data>
+  <data name="RestartLink" xml:space="preserve"><value>Abrir un formulario nuevo</value></data>
+  <data name="PartialTitle" xml:space="preserve"><value>Corrección incompleta</value></data>
+  <data name="PartialText" xml:space="preserve"><value>La reversión {0} se registró, pero el movimiento corregido no: {1}</value></data>
+  <data name="PartialHint" xml:space="preserve"><value>El movimiento original ya está anulado por la reversión. Corrija el campo de abajo y registre el movimiento corregido; se reutiliza la misma solicitud, nada se registra dos veces.</value></data>
+  <data name="PartialRetry" xml:space="preserve"><value>Registrar el movimiento corregido</value></data>
+  <data name="SectionMovement" xml:space="preserve"><value>Movimiento</value></data>
+  <data name="FieldMovementType" xml:space="preserve"><value>Tipo de movimiento</value></data>
+  <data name="GroupInbound" xml:space="preserve"><value>Entrada</value></data>
+  <data name="GroupOutbound" xml:space="preserve"><value>Salida</value></data>
+  <data name="GroupTransfer" xml:space="preserve"><value>Traslado</value></data>
+  <data name="FieldReasonCode" xml:space="preserve"><value>Código de motivo</value></data>
+  <data name="SectionItem" xml:space="preserve"><value>Artículo</value></data>
+  <data name="FieldProduct" xml:space="preserve"><value>Producto</value></data>
+  <data name="PlaceholderProduct" xml:space="preserve"><value>Buscar producto por código o nombre</value></data>
+  <data name="FieldSku" xml:space="preserve"><value>Referencia (SKU)</value></data>
+  <data name="PlaceholderSku" xml:space="preserve"><value>Elija la referencia del producto</value></data>
+  <data name="HintSelectProductFirst" xml:space="preserve"><value>Elija primero un producto; solo se listan sus referencias.</value></data>
+  <data name="HintSkuNone" xml:space="preserve"><value>Este producto aún no tiene referencias en los datos maestros; no se puede registrar.</value></data>
+  <data name="SectionSourceTarget" xml:space="preserve"><value>Origen y destino</value></data>
+  <data name="FieldSource" xml:space="preserve"><value>Origen (lote / ubicación)</value></data>
+  <data name="PlaceholderSource" xml:space="preserve"><value>Elija la fila de stock de origen</value></data>
+  <data name="HintSourceSelectSku" xml:space="preserve"><value>Elija primero la referencia; aquí se listan sus filas con stock.</value></data>
+  <data name="HintSourceNone" xml:space="preserve"><value>Esta referencia no tiene stock en ninguna ubicación de esta empresa.</value></data>
+  <data name="HintSourceStock" xml:space="preserve"><value>Existencias en este origen: {0} {1}</value></data>
+  <data name="FieldTargetWarehouse" xml:space="preserve"><value>Almacén de destino</value></data>
+  <data name="PlaceholderTargetWarehouse" xml:space="preserve"><value>Elija un almacén activo</value></data>
+  <data name="HintLocationTransferWarehouse" xml:space="preserve"><value>Un traslado de ubicación se queda en el almacén del origen.</value></data>
+  <data name="FieldTargetLocation" xml:space="preserve"><value>Ubicación de destino</value></data>
+  <data name="PlaceholderTargetLocation" xml:space="preserve"><value>Buscar una ubicación del almacén</value></data>
+  <data name="HintTargetLocation" xml:space="preserve"><value>Solo se ofrecen ubicaciones activas que pueden contener stock.</value></data>
+  <data name="HintTargetLocationNone" xml:space="preserve"><value>Este almacén no tiene ubicaciones activas que admitan stock. Añada una en Ubicaciones.</value></data>
+  <data name="FieldTargetStockStatus" xml:space="preserve"><value>Estado de stock de destino</value></data>
+  <data name="FieldLot" xml:space="preserve"><value>Lote</value></data>
+  <data name="PlaceholderLot" xml:space="preserve"><value>Elija un lote conocido o escriba uno nuevo</value></data>
+  <data name="HintLotUnregistered" xml:space="preserve"><value>Lote no registrado (anterior a MOD-0174): primero se listan los lotes de esta referencia ya en stock; un lote escrito se guarda en mayúsculas (A–Z, 0–9, . / -, máx. 40).</value></data>
+  <data name="SectionQuantity" xml:space="preserve"><value>Cantidad</value></data>
+  <data name="FieldQuantity" xml:space="preserve"><value>Cantidad</value></data>
+  <data name="PlaceholderQuantity" xml:space="preserve"><value>p. ej. 12 o 2.5</value></data>
+  <data name="FieldUnit" xml:space="preserve"><value>Unidad</value></data>
+  <data name="HintUnitBase" xml:space="preserve"><value>{0} {1} = {2} {3} (unidad base)</value></data>
+  <data name="HintUnitNoConversion" xml:space="preserve"><value>No hay conversión definida de esta unidad a la unidad base de la referencia; el movimiento será rechazado.</value></data>
+  <data name="FieldSerialNumbers" xml:space="preserve"><value>Números de serie</value></data>
+  <data name="PlaceholderSerials" xml:space="preserve"><value>Un número de serie por línea</value></data>
+  <data name="HintSerialCounter" xml:space="preserve"><value>{0} introducidos / {1} necesarios</value></data>
+  <data name="HintSerialCounterUnknown" xml:space="preserve"><value>{0} introducidos — el número necesario depende de la cantidad y la unidad</value></data>
+  <data name="SectionDocumentDates" xml:space="preserve"><value>Documento y fechas</value></data>
+  <data name="FieldDocumentNo" xml:space="preserve"><value>N.º de documento</value></data>
+  <data name="PlaceholderDocumentNo" xml:space="preserve"><value>p. ej. número de hoja de recuento o informe</value></data>
+  <data name="FieldTransactionDate" xml:space="preserve"><value>Fecha de la operación</value></data>
+  <data name="FieldPostingDate" xml:space="preserve"><value>Fecha de contabilización</value></data>
+  <data name="OriginalTitle" xml:space="preserve"><value>Movimiento que se corrige</value></data>
+  <data name="CorrectExplain" xml:space="preserve"><value>Corregir crea dos registros: (1) la reversión de este movimiento, (2) el movimiento corregido de abajo. El original permanece en el historial.</value></data>
+  <data name="EffectTitle" xml:space="preserve"><value>Efecto en el stock</value></data>
+  <data name="EffectNote" xml:space="preserve"><value>Antes → después, en la unidad base. Informativo: el servicio de stock comprueba la cantidad al registrar.</value></data>
+  <data name="EffectEmpty" xml:space="preserve"><value>Elija el tipo, el producto, la cantidad y las ubicaciones para ver el efecto.</value></data>
+  <data name="EffectSource" xml:space="preserve"><value>Origen</value></data>
+  <data name="EffectTarget" xml:space="preserve"><value>Destino</value></data>
+  <data name="EffectNegative" xml:space="preserve"><value>Más de lo disponible — el servicio de stock lo rechazará salvo que el stock cambie.</value></data>
+  <data name="EffectUnavailable" xml:space="preserve"><value>El efecto no se puede calcular ahora (datos de producto no disponibles).</value></data>
+  <data name="PickerIncomplete" xml:space="preserve"><value>La lista es demasiado larga para mostrarla completa; escriba parte del código o del nombre para acotarla.</value></data>
+  <data name="ProductFactsUnavailable" xml:space="preserve"><value>Los datos del producto (control de lote y serie, unidades) no se pueden leer ahora, por lo que no se puede registrar el movimiento. No se cambió nada; inténtelo más tarde.</value></data>
+  <data name="ValRequired" xml:space="preserve"><value>Este campo es obligatorio.</value></data>
+  <data name="ValMovementType" xml:space="preserve"><value>Elija uno de los tipos de movimiento de esta página.</value></data>
+  <data name="ValQuantity" xml:space="preserve"><value>Introduzca una cantidad mayor que 0 con hasta 6 decimales (punto decimal: 2.5).</value></data>
+  <data name="ValTooLong" xml:space="preserve"><value>Este valor es demasiado largo (máximo 200 caracteres).</value></data>
+  <data name="ValDate" xml:space="preserve"><value>Introduzca una fecha y una hora.</value></data>
+  <data name="ValLotFormat" xml:space="preserve"><value>Un lote puede usar A–Z, 0–9, punto, barra y guion, hasta 40 caracteres.</value></data>
+  <data name="ValSerialDuplicate" xml:space="preserve"><value>Cada número de serie solo puede aparecer una vez.</value></data>
+  <data name="ValSerialCount" xml:space="preserve"><value>{0} números de serie introducidos; la cantidad requiere {1}.</value></data>
+  <data name="ValSameWarehouse" xml:space="preserve"><value>Un traslado entre almacenes necesita un almacén distinto al del origen.</value></data>
+  <data name="ValSameWarehouseRequired" xml:space="preserve"><value>Un traslado de ubicación se queda en el almacén del origen; use un traslado entre almacenes para cambiar de almacén.</value></data>
+  <data name="ValSameLocation" xml:space="preserve"><value>Elija una ubicación distinta a la del origen.</value></data>
+  <data name="ValFixFields" xml:space="preserve"><value>Algunos campos requieren su atención. No se registró nada.</value></data>
+  <data name="ConfirmCorrectTitle" xml:space="preserve"><value>¿Corregir este movimiento?</value></data>
+  <data name="ConfirmCorrectText" xml:space="preserve"><value>El movimiento {0} permanece en el historial. Una reversión anula su efecto en el stock y el movimiento corregido se registra como un registro nuevo. No se puede deshacer.</value></data>
+  <data name="ConfirmCorrectButton" xml:space="preserve"><value>Revertir y registrar</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Comprobante del movimiento</value></data>
+  <data name="ReceiptMissing" xml:space="preserve"><value>No hay ningún comprobante que mostrar. Aparece justo después de registrar un movimiento en esta sesión; los anteriores están en el historial de movimientos.</value></data>
+  <data name="ReceiptPosted" xml:space="preserve"><value>El movimiento {0} se ha registrado.</value></data>
+  <data name="ReplayBanner" xml:space="preserve"><value>Este formulario ya se había enviado, así que no se registró nada nuevo. Este es el comprobante de ese movimiento.</value></data>
+  <data name="CorrectionDone" xml:space="preserve"><value>El movimiento {0} se anuló con la reversión {1}; el movimiento corregido es {2}.</value></data>
+  <data name="DetailPostedAt" xml:space="preserve"><value>Registrado el</value></data>
+  <data name="DetailFrom" xml:space="preserve"><value>Desde</value></data>
+  <data name="DetailTo" xml:space="preserve"><value>Hacia</value></data>
+  <data name="BalanceTitle" xml:space="preserve"><value>Saldo actual</value></data>
+  <data name="BalanceNote" xml:space="preserve"><value>La fila de stock que dejó este movimiento, tal como la devolvió el servicio de stock.</value></data>
+  <data name="BalanceLocation" xml:space="preserve"><value>Almacén / ubicación</value></data>
+  <data name="BalanceOnHand" xml:space="preserve"><value>Existencias</value></data>
+  <data name="BalanceAvailable" xml:space="preserve"><value>Disponible</value></data>
+  <data name="LotUnregisteredBadge" xml:space="preserve"><value>no registrado</value></data>
+  <data name="LotUnregisteredHint" xml:space="preserve"><value>Lote no registrado (anterior a MOD-0174)</value></data>
+  <data name="ErrPeriodClosed" xml:space="preserve"><value>La fecha de contabilización está en un período cerrado. No se cambió nada; elija una fecha de un período abierto.</value></data>
+  <data name="ErrInsufficientStockAmounts" xml:space="preserve"><value>Disponible en el origen: {0}; solicitado: {1} (unidad base).</value></data>
+  <data name="HintChooseTypeFirst" xml:space="preserve"><value>Elija primero el tipo de movimiento: determina qué campos de origen y destino se necesitan.</value></data>
+  <data name="ProductFlagsUnknown" xml:space="preserve"><value>Los datos maestros del producto no indican el control por lote o por número de serie de este SKU, por lo que el movimiento no se puede guardar. Inténtelo de nuevo cuando el registro maestro esté completo.</value></data>
+  <data name="ProductLevelNotStockable" xml:space="preserve"><value>Este producto puede tener control por número de serie: el stock no puede moverse a nivel de SKU global. Elija el nivel de SKU local o de producto terminado.</value></data>
+  <data name="SkuLevelItem" xml:space="preserve"><value>Artículo de material</value></data>
+  <data name="ErrProductDataIncomplete" xml:space="preserve"><value>Los datos maestros del producto no indican el control por lote o por número de serie de este SKU, por lo que el movimiento no se puede guardar. Inténtelo de nuevo cuando el registro maestro esté completo.</value></data>
+  <data name="ErrItemNotActive" xml:space="preserve"><value>El estado del producto no permite este tipo de movimiento (borrador, desactivado o retirado). No se ha modificado nada.</value></data>
+  <data name="ErrSkuLevelNotStockable" xml:space="preserve"><value>Este producto puede tener control por número de serie: el stock no puede moverse a nivel de SKU global. Elija el nivel de SKU local o de producto terminado.</value></data>
+</root>

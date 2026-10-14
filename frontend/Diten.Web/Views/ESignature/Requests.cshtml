@@ -1,0 +1,106 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@using Diten.Web.Models.DataTable
+@inject IHtmlLocalizer<Diten.Web.Views.ESignature.ESignature> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["ESign.Requests.Title"].Value;
+    Layout = "_LayoutTenantShell";
+}
+@*
+    MOD-0022 E5W2 — İmza talepleri (ESIGN_REQUESTS, /ESignature/Requests, esign.requests.read; pack §11.1, §11.3; mockup v2 tab 2).
+    §17.3 (evidence §0): Table-bulk, golden slim SERVER list — emsal Views/Inventory/Locations/Index.cshtml (+ _Filter, _DataTable,
+    index.js). Data: listSignatureRequests (scope mine) through /ESignature/list/requests (page wire only). İmzala = the shared
+    dialog (ESign.open with requestId); Reddet = red reasoned confirm (≥ 10). UAS-001: nothing below without the page key.
+*@
+@if (!Perms.Has("esign.requests.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["ESign.Requests.Title"].Value" />
+    return;
+}
+@{
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-esign-requests",
+        DataMode = "server",
+        Slug = "esign-requests",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["ESign.Common.Module"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ESign.Common.Record"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["ESign.Requests.Col.Meaning"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ESign.Requests.Col.RequestedBy"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ESign.Requests.Col.RequestedAt"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ESign.Requests.Col.Due"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ESign.Common.Status"].Value }
+        ],
+        ActionsHeader = Localizer["ESign.Common.Actions"].Value
+    };
+}
+
+@* Contract marker: <partial name="_Filter" /> *@
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                    <div class="filter-chip">
+                        <select id="filterModule" class="form-select form-select-sm select2" data-placeholder="@Localizer["ESign.Common.Module"]">
+                            <option value="">@Localizer["ESign.Common.AllModules"]</option>
+                            <option value="workflow">@Localizer["ESign.Module.workflow"]</option>
+                            <option value="inventory">@Localizer["ESign.Module.inventory"]</option>
+                            <option value="document-management">@Localizer["ESign.Module.documentmanagement"]</option>
+                        </select>
+                    </div>
+                    <div class="filter-chip">
+                        <select id="filterStatus" class="form-select form-select-sm select2" data-placeholder="@Localizer["ESign.Common.Status"]">
+                            <option value="">@Localizer["ESign.Common.AllStatuses"]</option>
+                            <option value="waiting">@Localizer["ESign.Requests.Status.waiting"]</option>
+                            <option value="signed">@Localizer["ESign.Requests.Status.signed"]</option>
+                            <option value="rejected">@Localizer["ESign.Requests.Status.rejected"]</option>
+                            <option value="expired">@Localizer["ESign.Requests.Status.expired"]</option>
+                            <option value="cancelled">@Localizer["ESign.Requests.Status.cancelled"]</option>
+                        </select>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <label class="small text-muted mb-0" for="filterFrom">@Localizer["ESign.Requests.Col.RequestedAt"]</label>
+                        <input type="date" id="filterFrom" class="form-control form-control-sm" style="width:9.5rem" aria-label="@Localizer["ESign.Common.From"]" />
+                        <span class="text-muted">–</span>
+                        <input type="date" id="filterTo" class="form-control form-control-sm" style="width:9.5rem" aria-label="@Localizer["ESign.Common.To"]" />
+                    </div>
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">@SharedLocalizer["Apply"]</button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">@SharedLocalizer["Reset"]</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+    <div>
+        <h5 class="mb-0">@Localizer["ESign.Requests.Title"]</h5>
+        <p class="mb-0 text-muted">@Localizer["ESign.Requests.Sub"]</p>
+    </div>
+    <span class="text-muted small" id="esignRequestsCount"></span>
+</div>
+
+<div class="alert alert-info d-flex gap-2 align-items-start" role="note">
+    <i class="bx bx-info-circle fs-5"></i><span>@Localizer["ESign.Requests.Info"]</span>
+</div>
+
+@* Contract markers are rendered by _ListShell: <partial name="_TableSkeleton" />, <table id="dt-esign-requests" data-dt-standard="v2"> *@
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/ESignature/_ESignatureListL10n.cshtml" />
+    <script src="~/assets/js/shared/premium-modal.js" asp-append-version="true"></script>
+    @* the shared dialog brings _ESignatureL10n, the zoom, esign-pad.js and esign-dialog.js (rendered once) *@
+    <partial name="~/Views/Shared/ESignature/_ESignatureDialog.cshtml" />
+    <script src="~/assets/js/ESignature/esign-pages.js" asp-append-version="true"></script>
+    <script src="~/assets/js/ESignature/requests.js" asp-append-version="true"></script>
+}

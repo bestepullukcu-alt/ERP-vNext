@@ -6932,7 +6932,9 @@ raporu (`scripts/status_report.py` yanına).
 
 **Ağ geçidi testi ana dalda kırmızı: Tedarik rotaları tanımsız 5065 portunda**
 
-DURUM: AÇIK · SAHİP: Tedarik (Procurement) ekibi; CT bilgi verir · BULAN: CT (takvim motoru kabulü) · KAYIT: 2026-09-29
+DURUM: KISMEN KAPANDI (2026-10-06) — Tedarik payı kapandı; test yine kırmızı, kalan 108 ihlal başka kulvarların (→ BL-509) · önceki: AÇIK · SAHİP: Tedarik (Procurement) ekibi; CT bilgi verir · BULAN: CT (takvim motoru kabulü) · KAYIT: 2026-09-29
+
+**Kısmi kapanış notu (2026-10-06, Procurement CT):** `KnownDownstreamPorts` kümesine `5065` eklendi (yorumda kaynak: DCP-010, OD-5, AGENTS.md §3). Port kaydı zaten doğru: AGENTS.md §3 5065'i ve bandın 5061+ uzatıldığını taşıyor (CLAUDE.md'nin özet satırı AGENTS.md'ye bağlı; çakışmada AGENTS.md kazanır). Ölçüm (E1 statik, testin kuralı `ocelot.json` üzerinde Python ile yeniden koşturuldu — .NET SDK bu ortamda indirilemedi, ağ politikası 403): önce 122 ihlal (14'ü 5065), sonra 108 ihlal, **5065: 0**. Kalan 108 = `5064` (62, TalentEcosystem) + `5063` (46, HumanCapital) — Tedarik sınırı dışında, BL-509. **E2 (2026-10-06, origin/main `b994c813a` üstünde):** `dotnet test gateway/Diten.ApiGateway.Tests` — 86/87; kırmızı tek test yalnız 5063 (46) + 5064 (62) rotalarını sayıyor, **5065: 0**. BL-509 kapanmadan yeşil olmaz.
 
 `OcelotConfigurationTests.EveryRoute_DownstreamPortIsInKnownServiceSet` origin/main'de kırmızı: `/api/suppliers`, `/api/sourcing`,
 `/api/requisitions` (ve `{everything}` eşleri) 5065'e gidiyor; test bilinen port kümesinde 5065'i tanımıyor. Kaynak: `de174eb97` "fix(procurement):
@@ -7544,6 +7546,36 @@ Görevler grubunda `Checklist Templates`, `Templates`; CRM'de `Content Scope`, `
 (2) eksik fiil ve satır adları 7 dilde köprüye; (3) köprünün çevirmediği kodu sayan bir test (küçülen defter), yeni modül kendi adlarını getirsin.
 Karşılaştırma: SAP'de yetki nesnesi alanları ve Oracle'da ayrıcalık adları kullanıcının dilinde listelenir; geniş kapsamlı yetki ayrı işaretlenir.
 Gelecek regresyon riski: 🟢 (yalnız etiket), ama yetki yanlış verilmesine yol açtığı için öncelik orta.
+
+---
+
+### BL-509
+
+**Ağ geçidi port testi 5063 ve 5064 rotalarında da kırmızı: HumanCapital ve TalentEcosystem port kaydında yok**
+
+DURUM: AÇIK · SAHİP: HumanCapital (5063) ve TalentEcosystem (5064) domain sahipleri + EA (port tahsisi); CT bilgi verir · BULAN: Procurement CT (BL-470 kapanışı) · KAYIT: 2026-10-06
+
+`OcelotConfigurationTests.EveryRoute_DownstreamPortIsInKnownServiceSet`, BL-470'in Tedarik payı kapandıktan sonra hâlâ kırmızı: `ocelot.json`'da 108 rota tanımsız porta gidiyor — `5064` (62 rota; ör. `/api/tep-shell-metadata`, `/api/talent-data-foundation`, `/api/hiring-risk-indicators`) ve `5063` (46 rota). AGENTS.md §3 bu servisleri port tablosunda değil, yalnız "Drift (EA reconciliation gerek)" notunda anıyor. İş: EA canonical portu onaylar, sahip §3'e kendi satırını ve testteki kümeye kendi portunu ekler. Tedarik kulvarı bu satırlara dokunmaz (paylaşılan dosyada yalnız kendi satırı). CI'da ağ geçidi testleri koşmadığı için görünmüyor (BL-457). Gelecek regresyon riski: 🟢 (test/kayıt), ama kırmızı test yeni bir port yazım hatasını da gizliyor.
+
+---
+
+### BL-510
+
+**Erişim reddi kartı HTTP 200 ile dönüyor: ortak `_AccessDenied` parçası UAS-001'in istediği 403'ü vermiyor**
+
+DURUM: AÇIK · SAHİP: CT (ortak Web altyapısı) · BULAN: MVP-3 CT, M-4 canlı ölçümü (MOD-0193 BOM & Routings) · KAYIT: 2026-10-12
+
+UAS-001 §3 tablosu "oturum var, izin yok" için **403** ve kabuk içinde açıklama istiyor. Ortak `Views/Shared/_AccessDenied.cshtml`
+parçası açıklamayı doğru yerde (kabuğun içinde, yönlendirmesiz, sayfa iskeleti çizmeden) gösteriyor ama yanıt kodunu değiştirmiyor:
+sayfa **200** döner. Bu parçayı kullanan bütün sayfalarda aynı; MVP-3'e özgü değil. Kullanıcı doğru mesajı görüyor; sorun teknik —
+izleme araçları, erişim günlükleri ve HTTP düzeyindeki testler reddedilen isteği "başarılı" sayıyor.
+**Ölçüldü (2026-10-12, dev, canlı fleet):** BOM modülü yetkisi olmayan kiracı Admin'i ile `GET /Manufacturing/Boms` ve
+`/Manufacturing/Boms/Create` → **HTTP 200**, `Location` yok, kabuk var, `diten-access-denied` kartı var, BOM iskeleti yok; aynı
+kullanıcıyla ağ geçidinden `GET /api/bom/versions` → **403**. Kanıt:
+`docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/evidence/m4-entitlement-uas001.txt`.
+Yapılacak: parça (ya da onu çağıran ortak yol) yanıt kodunu 403 yapsın — kabuk ve metin aynı kalır; parçayı kullanan sayfa sayısı
+ölçülüp bir test 403'ü sabitlesin. Bu kayıt yalnız tespittir; düzeltme ayrı iştir.
+Gelecek regresyon riski: 🟢 (görünen ekran değişmez), ama yanıt kodu değişince 200 bekleyen mevcut testler ölçülmeli.
 
 ---
 

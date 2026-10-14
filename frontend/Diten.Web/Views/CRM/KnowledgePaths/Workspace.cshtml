@@ -129,6 +129,22 @@
                 <i class="bx bx-lock-alt me-1" aria-hidden="true"></i><span id="wsReadOnlyText"></span>
             </div>
 
+            @* WP-VW-W3 (W3-WEB-c) — the path-level presentation-notes completeness (presentation-notes.js; filled = key message
+               + talk track); the missing steps are chips that open their "Sunum notları" tab. *@
+            <div class="border rounded p-3 mb-3 d-none" id="kpNotesBar" role="status">
+                <div class="d-flex flex-wrap align-items-center gap-3">
+                    <i class="bx bx-microphone text-warning fs-5" aria-hidden="true"></i>
+                    <div class="flex-grow-1 kp-notes-bar-main">
+                        <div class="fw-medium text-heading" id="kpNotesBarText"></div>
+                        <div class="progress mt-1 kp-notes-progress" role="progressbar" aria-label="@Localizer["PnButton"]" aria-valuemin="0" aria-valuemax="100">
+                            <div class="progress-bar bg-warning" id="kpNotesBarProgress" aria-valuenow="0"></div>
+                        </div>
+                    </div>
+                    <div class="d-flex flex-wrap align-items-center gap-2" id="kpNotesBarMissing"></div>
+                    <small class="text-muted">@Localizer["PnFilledRule"]</small>
+                </div>
+            </div>
+
             <div class="d-flex flex-wrap align-items-center gap-2 border-top pt-3 mb-3" id="wsSequence" aria-label="@Localizer["FieldOrder"]"></div>
             <p class="small text-muted mb-3" id="wsSkeletonNote"><i class="bx bx-lock-alt me-1" aria-hidden="true"></i>@Localizer["SkeletonNote"]</p>
 
@@ -163,6 +179,7 @@
     </div>
 </div>
 
+<partial name="~/Views/CRM/KnowledgePaths/_PresentationNotes.cshtml" />
 <partial name="~/Views/CRM/KnowledgePaths/_LegacyWizard.cshtml" />
 <partial name="~/Views/CRM/KnowledgePaths/_SubmitModal.cshtml" />
 
@@ -189,6 +206,12 @@
         .kp-studio .kp-quote { border-inline-start: 3px solid var(--bs-primary-border-subtle); padding-inline-start: .6rem; font-style: italic; color: var(--bs-body-color); }
         .kp-studio .kp-preview-frame { inline-size: 100%; block-size: 75vh; border: 1px solid var(--bs-border-color); border-radius: .375rem; background: var(--bs-body-bg); }
         .kp-studio .kp-fingerprint { font-family: var(--bs-font-monospace); word-break: break-all; }
+        .kp-studio .kp-notes-bar-main { min-inline-size: 12rem; }
+        .kp-studio .kp-notes-progress { block-size: .4rem; max-inline-size: 22rem; }
+        #kpNotesPanel { inline-size: min(100%, 64rem); }
+        #kpNotesPanel .pn-doctor { min-block-size: 14rem; background: var(--bs-body-bg); border: 3px solid var(--bs-heading-color); }
+        #kpNotesPanel .pn-remote { background: var(--bs-paper-bg, var(--bs-card-bg)); border: 3px solid var(--bs-heading-color); }
+        #kpNotesPanel .pn-key { background: var(--bs-primary-bg-subtle); color: var(--bs-primary-text-emphasis); }
     </style>
 }
 
@@ -199,4 +222,6 @@
     <script src="~/assets/js/CRM/KnowledgePaths/legacy-wizard.js" asp-append-version="true"></script>
     <script src="~/assets/js/CRM/KnowledgePaths/workspace.js" asp-append-version="true"></script>
     <script src="~/assets/js/CRM/KnowledgePaths/workspace-review.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/ObjectionResponses/objection-core.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/KnowledgePaths/presentation-notes.js" asp-append-version="true"></script>
 }

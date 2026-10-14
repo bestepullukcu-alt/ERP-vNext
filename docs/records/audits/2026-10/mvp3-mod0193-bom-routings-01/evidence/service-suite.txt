@@ -1,0 +1,23 @@
+# service suite — feature/mvp3-bom-routings (local) @ 20028bbd1
+# Earlier runs (rs1 on 27018) are superseded: that port is in the range now excluded (27017-27021).
+
+ManufacturingService suite @ 0413ab5ef (contains 82ebedeb4), 2026-10-12T12:12:02Z
+temporary replica set rstmp on 127.0.0.1:28117 (outside 27017-27021 and >=49152), dbpath scratchpad/tmpmongo
+Total tests: 77
+     Passed: 77
+Skipped lines: 0
+(77 = before 730a7fa1f, incl. the 4 CentralAuditDeclarationTests)
+
+ManufacturingService suite @ 20028bbd1 (contains 730a7fa1f), 2026-10-12T12:14:42Z
+temporary replica set rstmp on 127.0.0.1:28117 (outside 27017-27021 and >=49152), dbpath scratchpad/tmpmongo
+Total tests: 73
+     Passed: 73
+Skipped lines: 0
+databases written: ['diten_manufacturing_tests']
+(73 = after 730a7fa1f removed those 4 tests)
+Both temporary replica sets were shut down and their data directories deleted after the run.
+
+## after main sync 77cd61a44 + port 5070 (@ 872d41105)
+Total tests: 73
+     Passed: 73
+Skipped lines: 0 · temporary replica set rstmp on 127.0.0.1:28117, shut down and deleted after the run.

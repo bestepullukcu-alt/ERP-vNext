@@ -1,0 +1,37 @@
+{
+  "measuredAt": "2026-10-01T10:57:20.111Z",
+  "kpiFromAdapter": {
+    "onHand": "675.000",
+    "available": "670.000",
+    "qualityInspection": "5.000",
+    "quarantineBlocked": "0.000",
+    "baseUomId": "EA"
+  },
+  "availabilityFromGateway": {
+    "onHand": "675.000",
+    "available": "670.000",
+    "reserved": "0.000",
+    "byStatus": {
+      "AVAILABLE": "670.000",
+      "QUALITY_INSPECTION": "5.000",
+      "QUARANTINE": "0.000",
+      "BLOCKED": "0.000",
+      "IN_TRANSIT": "0.000",
+      "DAMAGED": "0.000",
+      "EXPIRED": "0.000"
+    },
+    "baseUomId": "EA"
+  },
+  "checks": {
+    "onHand": true,
+    "available": true,
+    "qualityInspection": true,
+    "quarantineBlockedIsSumOf": [
+      "0.000",
+      "0.000",
+      "0.000",
+      "0.000"
+    ]
+  },
+  "listTotal": 13
+}

@@ -162,6 +162,18 @@
                     </div>
                 </div>
             </div>
+            @* MOD-0022 E5W1 — the E4 step flag: requirements.signatureRequired / signatureMeaning *@
+            <div class="col-12 col-md-6">
+                <div class="form-check form-switch mt-2">
+                    <input class="form-check-input wf-dz-signaturerequired" type="checkbox" role="switch" />
+                    <label class="form-check-label ms-2">@Localizer["Workflow.Designer.SignatureRequired"]</label>
+                </div>
+                <div class="form-text">@Localizer["Workflow.Designer.SignatureHint"]</div>
+            </div>
+            <div class="col-12 col-md-6 wf-dz-signature-meaning-wrap d-none">
+                <label class="form-label fw-medium">@Localizer["Workflow.Designer.SignatureMeaning"] <span class="text-danger">*</span></label>
+                <select class="form-select wf-dz-signaturemeaning"></select>
+            </div>
             <div class="col-12">
                 <label class="form-label fw-medium">@Localizer["CandidatePrincipalIds"] <span class="text-danger">*</span></label>
                 <div class="d-flex gap-2">

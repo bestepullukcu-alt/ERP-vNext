@@ -1,0 +1,20 @@
+{
+  "legalEntity": "099219a0-9780-454a-9580-a216f0fe33d0",
+  "results": [
+    {
+      "status": 201,
+      "transactionNumber": "INV-2026-0000001",
+      "error": null
+    },
+    {
+      "status": 201,
+      "transactionNumber": "INV-2026-0000002",
+      "error": null
+    },
+    {
+      "status": 201,
+      "transactionNumber": "INV-2026-0000003",
+      "error": null
+    }
+  ]
+}

@@ -171,6 +171,11 @@ public sealed class KnowledgePathStep
     /// archive action (§2.1/S4). An archived step is never removed from the array.</summary>
     public string StepStatus { get; set; } = KnowledgePathStepStatuses.Active;
 
+    /// <summary>WP-VW-W3 (W3-BE-b, §2.3) — the rep's speaker notes for this step when it is shown as a slide (key message,
+    /// talk track, target time, transition, the objection answers to keep at hand). Edited with the draft, frozen on
+    /// publish, copied by a new-version clone. Null on an older step (no notes).</summary>
+    public KnowledgePathStepPresentation? Presentation { get; set; }
+
     public DateTimeOffset? ArchivedAt { get; set; }
     public string? ArchivedBy { get; set; }
 
@@ -187,6 +192,47 @@ public sealed class KnowledgePathStep
 /// data; <b>no branch is ever evaluated</b> (<c>supportsBranchEvaluator</c> is absent from the contract). A path must
 /// always be walkable start-to-finish WITHOUT any branch condition (the linear pass is complete — FU01A §8).
 /// </summary>
+/// <summary>WP-VW-W3 (W3-BE-b, §2.3) — the presentation notes of one path step (limits in
+/// <see cref="KnowledgePathPresentationLimits"/>). <see cref="ObjectionResponseIds"/> point at the tenant's objection
+/// library; only the APPROVED ones ever reach a rep.</summary>
+public sealed class KnowledgePathStepPresentation
+{
+    public string? KeyMessage { get; set; }
+    public string? TalkTrack { get; set; }
+    public int? TargetSeconds { get; set; }
+    public string? Transition { get; set; }
+    public List<Guid> ObjectionResponseIds { get; set; } = new();
+
+    /// <summary>A deep copy (a new-version clone must not share the list with its source).</summary>
+    public KnowledgePathStepPresentation Copy() => new()
+    {
+        KeyMessage = KeyMessage,
+        TalkTrack = TalkTrack,
+        TargetSeconds = TargetSeconds,
+        Transition = Transition,
+        ObjectionResponseIds = ObjectionResponseIds.ToList()
+    };
+}
+
+public static class KnowledgePathPresentationLimits
+{
+    public const int MaxKeyMessageLength = 500;
+    public const int MaxTalkTrackLength = 4000;
+    public const int MinTargetSeconds = 10;
+    public const int MaxTargetSeconds = 3600;
+    public const int MaxTransitionLength = 500;
+    public const int MaxObjectionResponses = 10;
+
+    /// <summary>400 — a presentation note is out of its limits.</summary>
+    public const string Invalid = "path_step_presentation_invalid";
+
+    /// <summary>400 — a linked objection answer is not one of this tenant's records.</summary>
+    public const string ObjectionNotFound = "path_step_objection_not_found";
+
+    /// <summary>WP-VW-W3 (W3-BE-c, K-A4) — a linked answer that is not approved or not of the path's product.</summary>
+    public const string ObjectionInvalid = "path_step_objection_invalid";
+}
+
 public sealed class KnowledgePathBranchCondition
 {
     public string ConditionCode { get; set; } = string.Empty;

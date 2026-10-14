@@ -49,13 +49,22 @@ public sealed class LocalFileSystemContentStorageGateway : IContentStorageGatewa
         var safeFileName = SanitizeFileName(request.FileName);
         var extension = Path.GetExtension(safeFileName).ToLowerInvariant();
 
-        if (_options.AllowedExtensions.Count > 0 && !_options.AllowedExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
+        // WP-VW-W3-PLT — a scope with its own rule (today only CrmVisitEvidence) is checked against that rule
+        // INSTEAD of the general one; every other scope keeps the general rule unchanged.
+        var scopeRule = (_options.Scopes ?? new ContentStorageScopeRules()).For(request.Scope);
+        IReadOnlyList<string> allowedExtensions = scopeRule?.AllowedExtensions ?? _options.AllowedExtensions;
+        IReadOnlyList<string> allowedMediaTypes = scopeRule?.AllowedMediaTypes ?? _options.AllowedMediaTypes;
+        var maxFileSizeBytes = scopeRule is null
+            ? _options.MaxFileSizeBytes
+            : scopeRule.MaxFileSizeBytes > 0 ? scopeRule.MaxFileSizeBytes : CrmVisitEvidenceFileRule.DefaultMaxFileSizeBytes;
+
+        if (allowedExtensions.Count > 0 && !allowedExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
         {
             return Response<ContentStoreResult>.Fail($"File type '{extension}' is not allowed.", 400, DocumentRepositoryReasonCodes.ValidationFailed);
         }
 
         var mediaType = string.IsNullOrWhiteSpace(request.DeclaredMediaType) ? "application/octet-stream" : request.DeclaredMediaType.Trim();
-        if (_options.AllowedMediaTypes.Count > 0 && !_options.AllowedMediaTypes.Contains(mediaType, StringComparer.OrdinalIgnoreCase))
+        if (allowedMediaTypes.Count > 0 && !allowedMediaTypes.Contains(mediaType, StringComparer.OrdinalIgnoreCase))
         {
             return Response<ContentStoreResult>.Fail($"Media type '{mediaType}' is not allowed.", 400, DocumentRepositoryReasonCodes.ValidationFailed);
         }
@@ -84,7 +93,7 @@ public sealed class LocalFileSystemContentStorageGateway : IContentStorageGatewa
             var directory = Path.GetDirectoryName(absolutePath)!;
             Directory.CreateDirectory(directory);
 
-            var (size, hash, overflow) = await WriteStreamAsync(request.Content, absolutePath, _options.MaxFileSizeBytes, ct);
+            var (size, hash, overflow) = await WriteStreamAsync(request.Content, absolutePath, maxFileSizeBytes, ct);
 
             if (overflow)
             {
@@ -231,6 +240,10 @@ public sealed class LocalFileSystemContentStorageGateway : IContentStorageGatewa
             // `_ => "documents"` default silently files it under the documents partition with no way to tell them
             // apart on disk. That is the exact MOD-0024 trap called out above; ContentMessagingArtifacts gets its own.
             ContentStorageScope.ContentMessagingArtifacts => "content-messaging-artifacts",
+            // MOD-0022 (CT-D4) — signature images get their own segment for the same reason.
+            ContentStorageScope.ESignatureImages => "esign-images",
+            // WP-VW-W3-PLT — same rule: visit evidence (photo/signature) gets its own partition, never "documents".
+            ContentStorageScope.CrmVisitEvidence => "crm-visit-evidence",
             _ => "documents"
         };
         if (!string.IsNullOrWhiteSpace(request.StoragePartition))

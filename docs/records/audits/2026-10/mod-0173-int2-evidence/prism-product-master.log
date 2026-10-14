@@ -1,0 +1,9 @@
+[09:54:10] � [CLI] ...  awaiting  Starting Prism�
+[09:54:10] � [CLI] i  info      GET        http://127.0.0.1:4012/products/2babb3b3-ec55-1435-bd95-76a20b63228d
+[09:54:10] � [CLI] i  info      GET        http://127.0.0.1:4012/skus/8e3b443c-f3b1-dfdb-2888-9e457af68ad1?level=Gsku
+[09:54:10] � [CLI] i  info      GET        http://127.0.0.1:4012/skus/8dada757-54f5-c779-3211-2ac6fc5eb18b/product?level=Lsku
+[09:54:10] � [CLI] i  info      GET        http://127.0.0.1:4012/skus/682d4c51-d27e-4dcb-d8cf-01972a049ee3/uom
+[09:54:10] � [CLI] i  info      POST       http://127.0.0.1:4012/validate
+[09:54:10] � [CLI] ?  start     Prism is listening on http://127.0.0.1:4012
+[09:54:10] � [HTTP SERVER] get / i  info      Request received
+[09:54:10] � [HTTP SERVER] get / �  error     Request terminated with error: https://stoplight.io/prism/errors#NO_PATH_MATCHED_ERROR: Route not resolved, no path matched

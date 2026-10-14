@@ -703,6 +703,9 @@
   <data name="Nav.Page.LEGALPROFILES" xml:space="preserve">
     <value>法律概况</value>
   </data>
+  <data name="Nav.Page.VISITWORKSPACE" xml:space="preserve">
+    <value>拜访工作台</value>
+  </data>
   <data name="Nav.Page.VISITPLANNING" xml:space="preserve">
     <value>拜访计划</value>
   </data>
@@ -747,6 +750,9 @@
   </data>
   <data name="Nav.Page.BRANDS" xml:space="preserve">
     <value>品牌</value>
+  </data>
+  <data name="Nav.Page.COMPETITORPRODUCTS" xml:space="preserve">
+    <value>竞品</value>
   </data>
   <data name="PlannedVisitsMenu" xml:space="preserve"><value>计划访问</value></data>
   <data name="Nav.Page.PLANNEDVISITS" xml:space="preserve"><value>计划访问</value></data>
@@ -1049,8 +1055,20 @@
   <data name="InviteAcceptAnyway" xml:space="preserve">
     <value>仍然接受</value>
   </data>
+  <data name="Nav.Domain.MANUFACTURING" xml:space="preserve"><value>生产制造</value></data>
+  <data name="Nav.Module.BOMROUTINGS" xml:space="preserve"><value>物料清单与工艺路线</value></data>
+  <data name="Nav.Page.BOMS" xml:space="preserve"><value>物料清单</value></data>
   <data name="Loading" xml:space="preserve">
     <value>加载中...</value>
+  </data>
+  <data name="Nav.Page.OBJECTIONRESPONSES" xml:space="preserve">
+    <value>异议库</value>
+  </data>
+  <data name="Nav.Page.VISITEVIDENCESETTINGS" xml:space="preserve">
+    <value>拜访证据</value>
+  </data>
+  <data name="Nav.Page.CRMDOCTORINSIGHTTHRESHOLDS" xml:space="preserve">
+    <value>潜力阈值</value>
   </data>
   <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>供应链执行</value></data>
   <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>承运商管理</value></data>
@@ -1063,4 +1081,25 @@
   <data name="Nav.Page.LOADS" xml:space="preserve"><value>装载计划</value></data>
   <data name="Nav.Module.CLAIMSMANAGEMENT" xml:space="preserve"><value>索赔管理</value></data>
   <data name="Nav.Page.SHIPMENTCLAIMS" xml:space="preserve"><value>运输索赔</value></data>
+  <data name="Nav.Module.INVENTORYLEDGER" xml:space="preserve"><value>库存管理</value></data>
+  <data name="Nav.Page.STOCKLEDGER" xml:space="preserve"><value>库存台账</value></data>
+  <data name="Nav.Page.LOCATIONTREE" xml:space="preserve"><value>库位</value></data>
+  <data name="Nav.Module.LOTSERIALTRACKING" xml:space="preserve"><value>批次/序列号追踪</value></data>
+  <data name="Nav.Page.LOTS" xml:space="preserve"><value>批次浏览</value></data>
+  <data name="Nav.Page.SERIALS" xml:space="preserve"><value>序列号浏览</value></data>
+  <data name="Nav.Page.LOTTRACE" xml:space="preserve"><value>可追溯性</value></data>
+  <data name="Nav.Page.LOTMIGRATION" xml:space="preserve"><value>手工录入批次迁移</value></data>
+  <data name="Nav.Module.QUARANTINEBLOCKEDSTOCK" xml:space="preserve"><value>质量</value></data>
+  <data name="Nav.Page.QUARANTINEQUEUE" xml:space="preserve"><value>隔离队列</value></data>
+  <data name="Nav.Page.BLOCKEDSTOCK" xml:space="preserve"><value>冻结库存</value></data>
+  <data name="Nav.Page.RETESTQUEUE" xml:space="preserve"><value>复检队列</value></data>
+  <data name="Nav.Page.QUARANTINESETTINGS" xml:space="preserve"><value>隔离设置</value></data>
+  <data name="Nav.Module.ESIGN" xml:space="preserve"><value>电子签名</value></data>
+  <data name="Nav.Page.ESIGNMYSIGNATURE" xml:space="preserve"><value>我的签名</value></data>
+  <data name="Nav.Page.ESIGNREQUESTS" xml:space="preserve"><value>签名请求</value></data>
+  <data name="Nav.Page.ESIGNVERIFICATION" xml:space="preserve"><value>签名验证</value></data>
+  <data name="Nav.Page.ESIGNAUDITEXPORT" xml:space="preserve"><value>审计导出</value></data>
+  <data name="Nav.Page.ESIGNPOLICY" xml:space="preserve"><value>电子签名策略</value></data>
+  <data name="Nav.Page.ESIGNMEANINGS" xml:space="preserve"><value>签名含义</value></data>
+  <data name="Nav.Page.ESIGNSAMPLEAPPROVALS" xml:space="preserve"><value>签名样本审批</value></data>
 </root>

@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>Отчёт о визите в аптеку</value></data>
+  <data name="BackButton" xml:space="preserve"><value>Назад к календарю</value></data>
+  <data name="ReadOnly" xml:space="preserve"><value>Вы можете просматривать отчёт; для записи нужно право записи отчётов о визитах.</value></data>
+  <data name="SentTitle" xml:space="preserve"><value>Отчёт отправлен.</value></data>
+  <data name="Unlock" xml:space="preserve"><value>Изменить</value></data>
+  <data name="FixTitle" xml:space="preserve"><value>Исправление с обоснованием</value></data>
+  <data name="FixText" xml:space="preserve"><value>С момента отправки прошло 60 минут. Обоснование обязательно; изменённые поля видны в истории отчёта.</value></data>
+  <data name="FixPlaceholder" xml:space="preserve"><value>Обоснование (обязательно)</value></data>
+  <data name="StepsLabel" xml:space="preserve"><value>Шаги отчёта</value></data>
+  <data name="PrevButton" xml:space="preserve"><value>Назад</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Сохранить черновик</value></data>
+  <data name="Step_general" xml:space="preserve"><value>Общее</value></data>
+  <data name="Step_stock" xml:space="preserve"><value>Запас и полка</value></data>
+  <data name="Step_order" xml:space="preserve"><value>Заказ и продажи</value></data>
+  <data name="Step_market" xml:space="preserve"><value>Конкурент и рекомендация</value></data>
+  <data name="Step_safety" xml:space="preserve"><value>Безопасность</value></data>
+  <data name="Step_summary" xml:space="preserve"><value>Итог</value></data>
+  <data name="StepMissing" xml:space="preserve"><value>не хватает: {0}</value></data>
+  <data name="StepOk" xml:space="preserve"><value>Готово</value></data>
+  <data name="StepOf" xml:space="preserve"><value>Шаг {0} / {1}</value></data>
+  <data name="NextStep" xml:space="preserve"><value>Далее: {0}</value></data>
+  <data name="MissingCount" xml:space="preserve"><value>Не заполнено полей: {0}</value></data>
+  <data name="ReadyToSend" xml:space="preserve"><value>Готово к отправке</value></data>
+  <data name="SavedAt" xml:space="preserve"><value>Черновик сохранён · {0}</value></data>
+  <data name="Unsaved" xml:space="preserve"><value>Несохранённые изменения</value></data>
+  <data name="DraftStored" xml:space="preserve"><value>Черновик сохранён</value></data>
+  <data name="NotSaved" xml:space="preserve"><value>Ещё не сохранено</value></data>
+  <data name="SentText" xml:space="preserve"><value>Изменить можно в течение 60 минут после отправки; позже нужно исправление с обоснованием.</value></data>
+  <data name="SentAmended" xml:space="preserve"><value>Исправление с обоснованием записано.</value></data>
+  <data name="NotPharmacy" xml:space="preserve"><value>Этот визит не в аптеку; его отчёт заполняется в отчёте врача.</value></data>
+  <data name="Outcome" xml:space="preserve"><value>Результат</value></data>
+  <data name="OutcomeDone" xml:space="preserve"><value>Состоялся</value></data>
+  <data name="OutcomeHint" xml:space="preserve"><value>Не состоялся / перенос вводится из календаря.</value></data>
+  <data name="ActualTimes" xml:space="preserve"><value>Фактическое начало / окончание</value></data>
+  <data name="ServerTime" xml:space="preserve"><value>Время сервера; изменить нельзя.</value></data>
+  <data name="Minutes" xml:space="preserve"><value>{0} мин</value></data>
+  <data name="VisitKind" xml:space="preserve"><value>Тип визита</value></data>
+  <data name="Kind_in_person" xml:space="preserve"><value>Очно</value></data>
+  <data name="Kind_remote" xml:space="preserve"><value>Дистанционно</value></data>
+  <data name="MetRole" xml:space="preserve"><value>С кем встречались</value></data>
+  <data name="GeneralNote" xml:space="preserve"><value>Общая оценка</value></data>
+  <data name="OptionsUnavailable" xml:space="preserve"><value>Не удалось загрузить варианты.</value></data>
+  <data name="StockTitle" xml:space="preserve"><value>Запас по продуктам</value></data>
+  <data name="NearExpiry" xml:space="preserve"><value>Скоро истекает срок</value></data>
+  <data name="ReturnIssue" xml:space="preserve"><value>Проблема с возвратом</value></data>
+  <data name="RemoveRow" xml:space="preserve"><value>Убрать</value></data>
+  <data name="NoSkus" xml:space="preserve"><value>В визите пока нет продуктов; добавьте через поиск.</value></data>
+  <data name="GskuSearch" xml:space="preserve"><value>Найти продукт / упаковку (мин. 2 буквы)</value></data>
+  <data name="GskusNoPermission" xml:space="preserve"><value>С вашими правами упаковки не показываются; запросите право чтения SKU.</value></data>
+  <data name="ShelfTitle" xml:space="preserve"><value>Полка / видимость</value></data>
+  <data name="MaterialStand" xml:space="preserve"><value>Есть материалы / стенд</value></data>
+  <data name="ShelfPhoto" xml:space="preserve"><value>Фото полки</value></data>
+  <data name="PhotoTake" xml:space="preserve"><value>Сделать фото</value></data>
+  <data name="PhotoReplace" xml:space="preserve"><value>Заменить фото</value></data>
+  <data name="PhotoHint" xml:space="preserve"><value>JPEG или PNG, до 10 МБ.</value></data>
+  <data name="PhotoSaved" xml:space="preserve"><value>Фото полки сохранено.</value></data>
+  <data name="OrderTitle" xml:space="preserve"><value>Заказ</value></data>
+  <data name="NoOrder" xml:space="preserve"><value>Предзаказ в этом визите не создавался.</value></data>
+  <data name="CreateOrder" xml:space="preserve"><value>Создать предзаказ</value></data>
+  <data name="Soon" xml:space="preserve"><value>Скоро</value></data>
+  <data name="OrderSoonHint" xml:space="preserve"><value>Предзаказы появятся вместе с модулем заказов.</value></data>
+  <data name="SalesTitle" xml:space="preserve"><value>Продажи</value></data>
+  <data name="SalesHint" xml:space="preserve"><value>Тенденция обязательна для каждого продукта; коробки в месяц — по желанию.</value></data>
+  <data name="BoxesPerMonth" xml:space="preserve"><value>коробок / мес</value></data>
+  <data name="CompetitorTitle" xml:space="preserve"><value>Конкурент</value></data>
+  <data name="CompetitorsUnavailable" xml:space="preserve"><value>Список конкурентов не прочитан; можно записать без него.</value></data>
+  <data name="NoCompetitor" xml:space="preserve"><value>Конкурентов нет</value></data>
+  <data name="ProposedBadge" xml:space="preserve"><value>добавлено представителем · ждёт одобрения в справочник</value></data>
+  <data name="AdvantageHint" xml:space="preserve"><value>Против конкурента: одно касание — наше преимущество (+), два — наш недостаток (−)</value></data>
+  <data name="ProposalOpen" xml:space="preserve"><value>Нет в списке — добавить конкурента</value></data>
+  <data name="ProposalName" xml:space="preserve"><value>Название продукта конкурента</value></data>
+  <data name="ProposalCompany" xml:space="preserve"><value>Компания</value></data>
+  <data name="ProposalAdd" xml:space="preserve"><value>Добавить</value></data>
+  <data name="ProposalHint" xml:space="preserve"><value>При отправке отчёта он предлагается в справочник продуктов.</value></data>
+  <data name="RecommendationTitle" xml:space="preserve"><value>Рекомендации и поток рецептов</value></data>
+  <data name="LinkedDoctors" xml:space="preserve"><value>Врачи, от которых приходят рецепты</value></data>
+  <data name="NoLinked" xml:space="preserve"><value>Врачи не привязаны.</value></data>
+  <data name="DoctorSearch" xml:space="preserve"><value>Найти врача (мин. 2 буквы)</value></data>
+  <data name="TrainingTitle" xml:space="preserve"><value>Обучение / материалы и запросы</value></data>
+  <data name="TrainingGiven" xml:space="preserve"><value>Персонал прошёл обучение по продукту</value></data>
+  <data name="RequestType" xml:space="preserve"><value>Тип запроса</value></data>
+  <data name="RequestDate" xml:space="preserve"><value>Срок</value></data>
+  <data name="RequestAdd" xml:space="preserve"><value>Добавить запрос</value></data>
+  <data name="AeQuestion" xml:space="preserve"><value>Сообщалось ли во время визита о побочном эффекте / нежелательном явлении?</value></data>
+  <data name="AeWarning" xml:space="preserve"><value>Сообщение о фармаконадзоре обязательно в течение 24 часов.</value></data>
+  <data name="AeNote" xml:space="preserve"><value>О чём сообщили</value></data>
+  <data name="AnswerYes" xml:space="preserve"><value>Да</value></data>
+  <data name="AnswerNo" xml:space="preserve"><value>Нет</value></data>
+  <data name="SumStock" xml:space="preserve"><value>Запас: {0} / {1}</value></data>
+  <data name="SumSales" xml:space="preserve"><value>Тенденция продаж: {0} / {1}</value></data>
+  <data name="SumCompetitors" xml:space="preserve"><value>Конкуренты: {0}</value></data>
+  <data name="SumAeYes" xml:space="preserve"><value>Сообщено о нежелательном явлении</value></data>
+  <data name="SumAeNo" xml:space="preserve"><value>Нежелательных явлений нет</value></data>
+  <data name="SumAeOpen" xml:space="preserve"><value>Вопрос о нежелательном явлении без ответа</value></data>
+  <data name="Miss_visitKindCode" xml:space="preserve"><value>Тип визита</value></data>
+  <data name="Miss_adverseEvent" xml:space="preserve"><value>Вопрос о нежелательном явлении</value></data>
+  <data name="Miss_adverseEventNote" xml:space="preserve"><value>О чём сообщили (нежелательное явление)</value></data>
+  <data name="Miss_metRoleCode" xml:space="preserve"><value>С кем встречались</value></data>
+  <data name="Miss_stock_levelCode" xml:space="preserve"><value>{0}: уровень запаса</value></data>
+  <data name="Miss_sales_trendCode" xml:space="preserve"><value>{0}: тенденция продаж</value></data>
+  <data name="Miss_competitors" xml:space="preserve"><value>Конкурент (или «Конкурентов нет»)</value></data>
+  <data name="Miss_generic" xml:space="preserve"><value>Не заполнено: {0}</value></data>
+  <data name="SubmitButton" xml:space="preserve"><value>Отправить отчёт</value></data>
+  <data name="SendFix" xml:space="preserve"><value>Отправить исправление</value></data>
+  <data name="DraftSaved" xml:space="preserve"><value>Черновик сохранён.</value></data>
+  <data name="Submitted" xml:space="preserve"><value>Отчёт отправлен.</value></data>
+  <data name="SubmittedWithWarnings" xml:space="preserve"><value>Отчёт отправлен; некоторые последующие шаги будут повторены.</value></data>
+  <data name="Amended" xml:space="preserve"><value>Исправление записано.</value></data>
+  <data name="WindowClosed" xml:space="preserve"><value>60 минут прошло; укажите обоснование, чтобы отправить исправление.</value></data>
+  <data name="ErrStockLevel" xml:space="preserve"><value>Выберите уровень запаса.</value></data>
+  <data name="ErrTrend" xml:space="preserve"><value>Выберите тенденцию продаж.</value></data>
+  <data name="ErrCompetitors" xml:space="preserve"><value>Выберите конкурента или «Конкурентов нет».</value></data>
+  <data name="ErrAe" xml:space="preserve"><value>Ответьте на вопрос о нежелательном явлении.</value></data>
+  <data name="ErrAeNote" xml:space="preserve"><value>Опишите, о чём сообщили.</value></data>
+  <data name="ErrProposalName" xml:space="preserve"><value>Введите название продукта.</value></data>
+  <data name="ErrProposalCompany" xml:space="preserve"><value>Введите компанию.</value></data>
+  <data name="ErrTooLong" xml:space="preserve"><value>Не более 200 символов.</value></data>
+  <data name="ErrBoxes" xml:space="preserve"><value>Целое число от 0 до 100 000.</value></data>
+  <data name="ErrReason" xml:space="preserve"><value>Обоснование обязательно.</value></data>
+  <data name="ErrReasonLong" xml:space="preserve"><value>Не более 500 символов.</value></data>
+  <data name="Err_report_incomplete" xml:space="preserve"><value>Не хватает ответов; см. итог.</value></data>
+  <data name="Err_report_code_invalid" xml:space="preserve"><value>Один из вариантов больше не действует; выберите снова.</value></data>
+  <data name="Err_report_v2_invalid" xml:space="preserve"><value>Отчёт не прочитан; проверьте значения.</value></data>
+  <data name="Err_reference_data_unavailable" xml:space="preserve"><value>Варианты сейчас не проверить; ответы сохранены.</value></data>
+  <data name="Err_visit_report_edit_window_closed" xml:space="preserve"><value>60 минут прошло; отправьте исправление с обоснованием.</value></data>
+  <data name="Err_visit_report_concurrency_conflict" xml:space="preserve"><value>Отчёт изменён в другом месте. Обновите и повторите.</value></data>
+  <data name="Err_visit_report_amendment_reason_required" xml:space="preserve"><value>Нужно обоснование (до 500 символов).</value></data>
+  <data name="Err_visit_report_not_finalised" xml:space="preserve"><value>Исправить можно только отправленный отчёт.</value></data>
+  <data name="Err_visit_report_plan_cancelled" xml:space="preserve"><value>Этот визит отменён.</value></data>
+  <data name="Err_visit_report_deadline_passed" xml:space="preserve"><value>Срок отчёта истёк.</value></data>
+  <data name="Err_visit_not_yet_due" xml:space="preserve"><value>Время этого визита ещё не наступило.</value></data>
+  <data name="Err_visit_photo_invalid" xml:space="preserve"><value>Фото должно быть JPEG или PNG, не более 10 МБ.</value></data>
+  <data name="Err_shelf_photo_pharmacy_only" xml:space="preserve"><value>Фото полки бывает только у визита в аптеку.</value></data>
+  <data name="Err_shelf_photo_report_submitted" xml:space="preserve"><value>Отчёт отправлен; фото больше не изменить.</value></data>
+  <data name="Err_shelf_photo_not_found" xml:space="preserve"><value>Фото полки пока нет.</value></data>
+  <data name="Err_visit_evidence_store_unavailable" xml:space="preserve"><value>Фото сейчас не сохранить; повторите.</value></data>
+  <data name="Err_dependency_unavailable" xml:space="preserve"><value>Список сейчас недоступен.</value></data>
+  <data name="Err_conflict" xml:space="preserve"><value>Отчёт изменён в другом месте. Обновите и повторите.</value></data>
+  <data name="Err_permission_denied" xml:space="preserve"><value>У вас нет прав на это действие.</value></data>
+  <data name="Err_unavailable" xml:space="preserve"><value>Сервер недоступен; ваши ответы сохранены на этом экране.</value></data>
+  <data name="Err_generic" xml:space="preserve"><value>Не удалось выполнить операцию.</value></data>
+</root>

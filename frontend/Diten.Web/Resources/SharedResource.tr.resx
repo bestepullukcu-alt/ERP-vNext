@@ -764,6 +764,9 @@
   <data name="Nav.Page.LEGALPROFILES" xml:space="preserve">
     <value>Ülke Yasal Profilleri</value>
   </data>
+  <data name="Nav.Page.VISITWORKSPACE" xml:space="preserve">
+    <value>Ziyaret Çalışma Alanı</value>
+  </data>
   <data name="Nav.Page.VISITPLANNING" xml:space="preserve">
     <value>Ziyaret Planlama</value>
   </data>
@@ -808,6 +811,9 @@
   </data>
   <data name="Nav.Page.BRANDS" xml:space="preserve">
     <value>Markalar</value>
+  </data>
+  <data name="Nav.Page.COMPETITORPRODUCTS" xml:space="preserve">
+    <value>Rakip ürünler</value>
   </data>
   <data name="PlannedVisitsMenu" xml:space="preserve"><value>Planlanan Ziyaretler</value></data>
   <data name="Nav.Page.PLANNEDVISITS" xml:space="preserve"><value>Planlanan Ziyaretler</value></data>
@@ -1109,6 +1115,18 @@
   <data name="InviteAcceptAnyway" xml:space="preserve">
     <value>Yine De Kabul Et</value>
   </data>
+  <data name="Nav.Page.OBJECTIONRESPONSES" xml:space="preserve">
+    <value>İtiraz Kütüphanesi</value>
+  </data>
+  <data name="Nav.Page.VISITEVIDENCESETTINGS" xml:space="preserve">
+    <value>Ziyaret Kanıtı</value>
+  </data>
+  <data name="Nav.Page.CRMDOCTORINSIGHTTHRESHOLDS" xml:space="preserve">
+    <value>Potansiyel Eşikleri</value>
+  </data>
+  <data name="Nav.Domain.MANUFACTURING" xml:space="preserve"><value>Üretim</value></data>
+  <data name="Nav.Module.BOMROUTINGS" xml:space="preserve"><value>Reçete ve Rotalar</value></data>
+  <data name="Nav.Page.BOMS" xml:space="preserve"><value>Ürün Reçeteleri</value></data>
   <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>Tedarik Zinciri Yürütme</value></data>
   <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>Taşıyıcı Yönetimi</value></data>
   <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>Taşıyıcılar</value></data>
@@ -1120,4 +1138,25 @@
   <data name="Nav.Page.LOADS" xml:space="preserve"><value>Yükler</value></data>
   <data name="Nav.Module.CLAIMSMANAGEMENT" xml:space="preserve"><value>Hasar Talebi Yönetimi</value></data>
   <data name="Nav.Page.SHIPMENTCLAIMS" xml:space="preserve"><value>Hasar Talepleri</value></data>
+  <data name="Nav.Module.INVENTORYLEDGER" xml:space="preserve"><value>Envanter</value></data>
+  <data name="Nav.Page.STOCKLEDGER" xml:space="preserve"><value>Stok Defteri</value></data>
+  <data name="Nav.Page.LOCATIONTREE" xml:space="preserve"><value>Lokasyonlar</value></data>
+  <data name="Nav.Module.LOTSERIALTRACKING" xml:space="preserve"><value>Lot / Seri Takibi</value></data>
+  <data name="Nav.Page.LOTS" xml:space="preserve"><value>Lot Gezgini</value></data>
+  <data name="Nav.Page.SERIALS" xml:space="preserve"><value>Seri Gezgini</value></data>
+  <data name="Nav.Page.LOTTRACE" xml:space="preserve"><value>İzlenebilirlik</value></data>
+  <data name="Nav.Page.LOTMIGRATION" xml:space="preserve"><value>Elle Girilmiş Lotları Aktarma</value></data>
+  <data name="Nav.Module.QUARANTINEBLOCKEDSTOCK" xml:space="preserve"><value>Kalite</value></data>
+  <data name="Nav.Page.QUARANTINEQUEUE" xml:space="preserve"><value>Karantina Kuyruğu</value></data>
+  <data name="Nav.Page.BLOCKEDSTOCK" xml:space="preserve"><value>Bloke Stok</value></data>
+  <data name="Nav.Page.RETESTQUEUE" xml:space="preserve"><value>Yeniden Test Kuyruğu</value></data>
+  <data name="Nav.Page.QUARANTINESETTINGS" xml:space="preserve"><value>Karantina Ayarları</value></data>
+  <data name="Nav.Module.ESIGN" xml:space="preserve"><value>e-İmza</value></data>
+  <data name="Nav.Page.ESIGNMYSIGNATURE" xml:space="preserve"><value>İmzam</value></data>
+  <data name="Nav.Page.ESIGNREQUESTS" xml:space="preserve"><value>İmza Talepleri</value></data>
+  <data name="Nav.Page.ESIGNVERIFICATION" xml:space="preserve"><value>Doğrulama</value></data>
+  <data name="Nav.Page.ESIGNAUDITEXPORT" xml:space="preserve"><value>Denetim Dışa Aktarımı</value></data>
+  <data name="Nav.Page.ESIGNPOLICY" xml:space="preserve"><value>e-İmza Politikası</value></data>
+  <data name="Nav.Page.ESIGNMEANINGS" xml:space="preserve"><value>İmza Anlamları</value></data>
+  <data name="Nav.Page.ESIGNSAMPLEAPPROVALS" xml:space="preserve"><value>İmza Örneği Onayları</value></data>
 </root>

@@ -1,5 +1,6 @@
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.Common.Services;
+using Diten.AuthService.Domain.Authorization;
 using Diten.AuthService.Domain.Entities;
 
 namespace Diten.AuthService.Application.Tests.Roles;
@@ -32,9 +33,9 @@ public sealed class RoleProvisioningServiceTests
         var catalog = Catalog();
         var roles = new FakeRoleRepository();
         var rolePerms = new FakeRolePermissionRepository(catalog);
-        var service = new RoleProvisioningService(roles, new FakePermissionRepository(catalog), rolePerms);
+        var service = Service(roles, catalog, rolePerms);
 
-        await service.EnsureDefaultRolesAsync(TenantA, CancellationToken.None);
+        await service.EnsureDefaultRolesAsync(TenantA, DefaultRoleProvisioningTriggers.TenantActivated, CancellationToken.None);
 
         var adminId = roles.IdOf(TenantA, "Admin");
         var viewerId = roles.IdOf(TenantA, "Viewer");
@@ -52,9 +53,9 @@ public sealed class RoleProvisioningServiceTests
     {
         var catalog = Catalog();
         var rolePerms = new FakeRolePermissionRepository(catalog);
-        var service = new RoleProvisioningService(new FakeRoleRepository(), new FakePermissionRepository(catalog), rolePerms);
+        var service = Service(new FakeRoleRepository(), catalog, rolePerms);
 
-        await service.EnsureDefaultRolesAsync(TenantA, CancellationToken.None);
+        await service.EnsureDefaultRolesAsync(TenantA, DefaultRoleProvisioningTriggers.TenantActivated, CancellationToken.None);
 
         Assert.NotEmpty(rolePerms.Assigned);
         Assert.All(rolePerms.Assigned, rp => Assert.Equal("system", rp.AssignedBy));
@@ -67,9 +68,9 @@ public sealed class RoleProvisioningServiceTests
         var catalog = Catalog();
         var roles = new FakeRoleRepository();
         var rolePerms = new FakeRolePermissionRepository(catalog);
-        var service = new RoleProvisioningService(roles, new FakePermissionRepository(catalog), rolePerms);
+        var service = Service(roles, catalog, rolePerms);
 
-        await service.EnsureDefaultRolesAsync(TenantA, CancellationToken.None);
+        await service.EnsureDefaultRolesAsync(TenantA, DefaultRoleProvisioningTriggers.TenantActivated, CancellationToken.None);
 
         var allKeys = rolePerms.Assigned.Select(rp => catalog.Single(p => p.Id == rp.PermissionId).Key);
         Assert.DoesNotContain("platform.tenants.read", allKeys);
@@ -81,12 +82,12 @@ public sealed class RoleProvisioningServiceTests
         var catalog = Catalog();
         var roles = new FakeRoleRepository();
         var rolePerms = new FakeRolePermissionRepository(catalog);
-        var service = new RoleProvisioningService(roles, new FakePermissionRepository(catalog), rolePerms);
+        var service = Service(roles, catalog, rolePerms);
 
-        await service.EnsureDefaultRolesAsync(TenantA, CancellationToken.None);
+        await service.EnsureDefaultRolesAsync(TenantA, DefaultRoleProvisioningTriggers.TenantActivated, CancellationToken.None);
         var afterFirst = rolePerms.Assigned.Count;
 
-        await service.EnsureDefaultRolesAsync(TenantA, CancellationToken.None);
+        await service.EnsureDefaultRolesAsync(TenantA, DefaultRoleProvisioningTriggers.TenantActivated, CancellationToken.None);
 
         Assert.Equal(afterFirst, rolePerms.Assigned.Count);
         Assert.Equal(ExpectedAdmin.Length + ExpectedViewer.Length, afterFirst);
@@ -98,10 +99,10 @@ public sealed class RoleProvisioningServiceTests
         var catalog = Catalog();
         var roles = new FakeRoleRepository();
         var rolePerms = new FakeRolePermissionRepository(catalog);
-        var service = new RoleProvisioningService(roles, new FakePermissionRepository(catalog), rolePerms);
+        var service = Service(roles, catalog, rolePerms);
 
-        await service.EnsureDefaultRolesAsync(TenantA, CancellationToken.None);
-        await service.EnsureDefaultRolesAsync(TenantB, CancellationToken.None);
+        await service.EnsureDefaultRolesAsync(TenantA, DefaultRoleProvisioningTriggers.TenantActivated, CancellationToken.None);
+        await service.EnsureDefaultRolesAsync(TenantB, DefaultRoleProvisioningTriggers.TenantActivated, CancellationToken.None);
 
         Assert.All(rolePerms.Assigned.Where(rp => rp.TenantId == TenantA),
             rp => Assert.Equal(TenantA, rp.TenantId));
@@ -125,9 +126,9 @@ public sealed class RoleProvisioningServiceTests
         catalog.Add(new Permission("auth", "users.account-kind", "manage", "Manage Account Kind", null, moduleOverride: "access-governance"));
         var roles = new FakeRoleRepository();
         var rolePerms = new FakeRolePermissionRepository(catalog);
-        var service = new RoleProvisioningService(roles, new FakePermissionRepository(catalog), rolePerms);
+        var service = Service(roles, catalog, rolePerms);
 
-        await service.EnsureDefaultRolesAsync(TenantA, CancellationToken.None);
+        await service.EnsureDefaultRolesAsync(TenantA, DefaultRoleProvisioningTriggers.TenantActivated, CancellationToken.None);
 
         var adminKeys = rolePerms.KeysFor(roles.IdOf(TenantA, "Admin"), TenantA, catalog).ToList();
         var viewerKeys = rolePerms.KeysFor(roles.IdOf(TenantA, "Viewer"), TenantA, catalog).ToList();
@@ -142,16 +143,66 @@ public sealed class RoleProvisioningServiceTests
         var empty = new List<Permission>();
         var roles = new FakeRoleRepository();
         var rolePerms = new FakeRolePermissionRepository(empty);
-        var service = new RoleProvisioningService(roles, new FakePermissionRepository(empty), rolePerms);
+        var service = Service(roles, empty, rolePerms);
 
-        await service.EnsureDefaultRolesAsync(TenantA, CancellationToken.None);
+        await service.EnsureDefaultRolesAsync(TenantA, DefaultRoleProvisioningTriggers.TenantActivated, CancellationToken.None);
 
         Assert.NotEqual(Guid.Empty, roles.IdOf(TenantA, "Admin"));
         Assert.NotEqual(Guid.Empty, roles.IdOf(TenantA, "Viewer"));
         Assert.Empty(rolePerms.Assigned);
     }
 
+    // MOD-0022 E5B CT-Q15 — a tenant provisioned AFTER the esign keys are in the catalog: both default signer roles hold
+    // esign.signatures.read next to sign + my-samples. A tenant provisioned BEFORE (catalog without esign keys) is not
+    // touched by the later provisioning, and the startup reconciler plans no esign grant for its roles (CT-D10 (b)).
+    [Fact]
+    public async Task CT_Q15_new_tenant_signers_can_read_signatures_and_an_existing_tenant_is_unchanged()
+    {
+        var catalog = Catalog();
+        var roles = new FakeRoleRepository();
+        var rolePerms = new FakeRolePermissionRepository(catalog);
+        var service = Service(roles, catalog, rolePerms);
+
+        await service.EnsureDefaultRolesAsync(TenantB, DefaultRoleProvisioningTriggers.TenantActivated, CancellationToken.None); // existing tenant: before the esign keys
+        var tenantBBefore = rolePerms.Assigned.Where(rp => rp.TenantId == TenantB).Select(rp => (rp.RoleId, rp.PermissionId)).ToList();
+
+        catalog.Add(new Permission("esign", "signatures", "sign", "Sign", null, moduleOverride: "esign"));
+        catalog.Add(new Permission("esign", "signatures", "read", "Read signature", null, moduleOverride: "esign"));
+        catalog.Add(new Permission("esign", "my-samples", "manage", "Manage own sample", null, moduleOverride: "esign"));
+        catalog.Add(new Permission("esign", "signatures", "invalidate", "Invalidate", null, moduleOverride: "esign"));
+
+        await service.EnsureDefaultRolesAsync(TenantA, DefaultRoleProvisioningTriggers.TenantActivated, CancellationToken.None); // new tenant
+
+        foreach (var role in new[] { "Admin", "Viewer" })
+        {
+            var keys = rolePerms.KeysFor(roles.IdOf(TenantA, role), TenantA, catalog).ToList();
+            Assert.Contains("esign.signatures.read", keys);
+            Assert.Contains("esign.signatures.sign", keys);
+            Assert.Contains("esign.my-samples.manage", keys);
+        }
+
+        Assert.DoesNotContain("esign.signatures.invalidate",
+            rolePerms.KeysFor(roles.IdOf(TenantA, "Viewer"), TenantA, catalog));
+
+        var tenantBAfter = rolePerms.Assigned.Where(rp => rp.TenantId == TenantB).Select(rp => (rp.RoleId, rp.PermissionId)).ToList();
+        Assert.Equal(tenantBBefore, tenantBAfter);
+
+        var existing = rolePerms.Assigned.Select(rp => (rp.RoleId, rp.PermissionId)).ToHashSet();
+        var planned = TenantAdminSelfServiceReconciler.PlanMissingGrants(
+            new[] { "Admin", "Viewer" }.Select(name => new TenantAdminSelfServiceReconciler.RoleRef(roles.IdOf(TenantB, name), name, TenantB)),
+            catalog, existing);
+        Assert.DoesNotContain(planned, g => catalog.Single(p => p.Id == g.PermissionId).Key.StartsWith("esign.", StringComparison.Ordinal));
+    }
+
     // ── Hand-written fakes ──
+
+    private static RoleProvisioningService Service(FakeRoleRepository roles, List<Permission> catalog, FakeRolePermissionRepository rolePerms)
+        => new(roles, new FakePermissionRepository(catalog), rolePerms, new NoAudit());
+
+    private sealed class NoAudit : IRbacAuditRecorder
+    {
+        public Task RecordAsync(string eventName, Guid tenantId, object metadata, CancellationToken ct = default) => Task.CompletedTask;
+    }
 
     private sealed class FakeRoleRepository : IRoleRepository
     {
@@ -160,14 +211,20 @@ public sealed class RoleProvisioningServiceTests
         public Guid IdOf(Guid tenantId, string name) => _roles[(tenantId, name)].Id;
 
         public Task<Role> UpsertSystemRoleAsync(string name, string displayName, string? description, Guid tenantId, CancellationToken ct)
+            => throw new NotSupportedException();
+
+        // WP-0018-ROLE1: the repository says whether THIS call created the role (the Mongo repository: the upsert's UpsertedId).
+        public Task<SystemRoleProvisioning> CreateSystemRoleIfMissingAsync(string name, string displayName, string? description, Guid tenantId, CancellationToken ct)
         {
-            if (!_roles.TryGetValue((tenantId, name), out var role))
+            if (_roles.TryGetValue((tenantId, name), out var existing))
             {
-                role = new Role(name, displayName, description, tenantId);
-                role.MarkAsSystem();
-                _roles[(tenantId, name)] = role;
+                return Task.FromResult(new SystemRoleProvisioning(existing, false));
             }
-            return Task.FromResult(role);
+
+            var role = new Role(name, displayName, description, tenantId);
+            role.MarkAsSystem();
+            _roles[(tenantId, name)] = role;
+            return Task.FromResult(new SystemRoleProvisioning(role, true));
         }
 
         public Task<Role?> GetByIdAndTenantAsync(Guid id, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();

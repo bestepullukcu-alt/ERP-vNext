@@ -34,4 +34,7 @@ public sealed record WorkingDayCheckResult(
     string Reason,
     // WP-VP-3B (MK-9, additive) — the platform marked the date a HALF day (its holiday's isHalfDay, or the reason code
     // half_day_treated_as_working). Only meaningful on a resolved working day; false otherwise.
-    bool IsHalfDay = false);
+    bool IsHalfDay = false,
+    // W2-BE-c (C3, additive) — the governing holiday's NAME as the platform calendar holds it (WorkingCalendarDay.DayName:
+    // the provider's local name, else its English name). Null on a working day or when the platform sends none.
+    string? HolidayName = null);

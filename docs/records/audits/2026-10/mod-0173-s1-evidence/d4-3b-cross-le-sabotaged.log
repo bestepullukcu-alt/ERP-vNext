@@ -1,0 +1,16 @@
+### D4-3 tenant/LE isolation (repository filter) — RESTORED; D4-3b CROSS_LE_FORBIDDEN middleware check — SABOTAGED
+-        if (!HeaderMatches(context, InventoryContract.LegalEntityOverrideHeader, legalEntity.Value))
++        if (false && !HeaderMatches(context, InventoryContract.LegalEntityOverrideHeader, legalEntity.Value)) // SABOTAGE D4-3b
+  Başarısız Diten.InventoryService.Tests.Api.IsolationTests.Mismatching_X_Legal_Entity_Id_is_403_CROSS_LE_FORBIDDEN_on_reads(endpoint: "/api/inventory/transactions?itemId={item}") [49 ms]
+  Hata İletisi:
+   Assert.Equal() Failure: Values differ
+  Başarısız Diten.InventoryService.Tests.Api.IsolationTests.Mismatching_X_Legal_Entity_Id_is_403_CROSS_LE_FORBIDDEN_on_reads(endpoint: "/api/inventory/balance?itemId={item}") [9 ms]
+  Hata İletisi:
+   Assert.Equal() Failure: Values differ
+  Başarısız Diten.InventoryService.Tests.Api.IsolationTests.Mismatching_X_Legal_Entity_Id_is_403_CROSS_LE_FORBIDDEN_on_reads(endpoint: "/api/inventory/availability?itemId={item}") [16 ms]
+  Hata İletisi:
+   Assert.Equal() Failure: Values differ
+  Başarısız Diten.InventoryService.Tests.Api.IsolationTests.Mismatching_X_Legal_Entity_Id_is_403_CROSS_LE_FORBIDDEN_on_post_and_writes_nothing [16 ms]
+  Hata İletisi:
+   Assert.Equal() Failure: Values differ
+Başarısız! - Başarısız:     4, Başarılı:    12, Atlanan:     0, Toplam:    16, Süre: 1 s - Diten.InventoryService.Tests.dll (net8.0)

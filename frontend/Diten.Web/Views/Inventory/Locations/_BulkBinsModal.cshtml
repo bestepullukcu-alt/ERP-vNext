@@ -1,0 +1,112 @@
+@using Diten.Web.Views.Inventory.Locations
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LocationsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@*
+    L-4 — bulk bin generation (K-12, pack §12), rendered on L-1 for inventory.locations.manage and driven by
+    js/Inventory/Locations/bulk-bins.js. Two steps in one dialog: PREVIEW (dryRun — nothing is written; existing codes
+    are listed as skipped) → CONFIRM (one request, one transaction, the dialog's Idempotency-Key). The fields are the
+    contract's BulkBinsRequest: aisle range (one letter or 1–3 digits), rack and level ranges (1–99), positions per
+    level (1–99); codes {AISLE}-{RACK:00}-{LEVEL:00}-{POS:00}; at most 1000 per run. Only bins are created here.
+*@
+<div class="modal fade" id="modalBulkBins" tabindex="-1" aria-labelledby="modalBulkBinsLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalBulkBinsLabel">@Localizer["BulkTitle"]</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@SharedLocalizer["Cancel"]"></button>
+            </div>
+            <div class="modal-body">
+                <div class="bg-label-secondary rounded p-3 mb-4">
+                    <span class="d-block text-muted small fw-medium mb-1">@Localizer["BulkTarget"]</span>
+                    <span id="bulkTarget" class="fw-medium text-heading">-</span>
+                </div>
+
+                <div id="bulkAlert" class="alert alert-danger d-none" role="alert"></div>
+
+                <form id="formBulkBins" novalidate>
+                    <div class="row g-3">
+                        <div class="col-6 col-md-3">
+                            <label for="bulkAisleFrom" class="form-label fw-medium">@Localizer["BulkAisleFrom"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-street-view diten-field-icon" aria-hidden="true"></i>
+                                <input type="text" id="bulkAisleFrom" class="form-control" maxlength="3" required pattern="([A-Za-z]|[0-9]{1,3})" />
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label for="bulkAisleTo" class="form-label fw-medium">@Localizer["BulkAisleTo"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-street-view diten-field-icon" aria-hidden="true"></i>
+                                <input type="text" id="bulkAisleTo" class="form-control" maxlength="3" required pattern="([A-Za-z]|[0-9]{1,3})" />
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label for="bulkRackFrom" class="form-label fw-medium">@Localizer["BulkRackFrom"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-grid-vertical diten-field-icon" aria-hidden="true"></i>
+                                <input type="number" id="bulkRackFrom" class="form-control" min="1" max="99" required />
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label for="bulkRackTo" class="form-label fw-medium">@Localizer["BulkRackTo"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-grid-vertical diten-field-icon" aria-hidden="true"></i>
+                                <input type="number" id="bulkRackTo" class="form-control" min="1" max="99" required />
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label for="bulkLevelFrom" class="form-label fw-medium">@Localizer["BulkLevelFrom"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-layer diten-field-icon" aria-hidden="true"></i>
+                                <input type="number" id="bulkLevelFrom" class="form-control" min="1" max="99" required />
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label for="bulkLevelTo" class="form-label fw-medium">@Localizer["BulkLevelTo"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-layer diten-field-icon" aria-hidden="true"></i>
+                                <input type="number" id="bulkLevelTo" class="form-control" min="1" max="99" required />
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label for="bulkPositions" class="form-label fw-medium">@Localizer["BulkPositions"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-box diten-field-icon" aria-hidden="true"></i>
+                                <input type="number" id="bulkPositions" class="form-control" min="1" max="99" required />
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3 d-flex align-items-end">
+                            <div class="form-check form-switch mb-2">
+                                <input type="checkbox" id="bulkStockable" class="form-check-input" role="switch" checked />
+                                <label for="bulkStockable" class="form-check-label ms-2">@Localizer["FieldStockable"]</label>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-4">
+                    <small class="text-muted">@Localizer["BulkCodePattern"]</small>
+                    <span id="bulkCount" class="badge bg-label-primary" aria-live="polite"></span>
+                </div>
+
+                @* Preview result (dry run): to create / skipped. Drawn by bulk-bins.js. *@
+                <div id="bulkPreview" class="mt-4 d-none" aria-live="polite">
+                    <div id="bulkPreviewSummary" class="fw-medium text-heading mb-2"></div>
+                    <div id="bulkPreviewCodes" class="d-flex flex-wrap gap-1 mb-3"></div>
+                    <div id="bulkPreviewSkipped" class="d-none">
+                        <div id="bulkPreviewSkippedSummary" class="text-warning fw-medium mb-2"></div>
+                        <div id="bulkPreviewSkippedCodes" class="d-flex flex-wrap gap-1"></div>
+                    </div>
+                </div>
+
+                @* Result after the confirmed run. *@
+                <div id="bulkResult" class="alert alert-success mt-4 d-none" role="status"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal" id="btnBulkClose">@SharedLocalizer["Cancel"]</button>
+                <button type="button" class="btn btn-label-primary" id="btnBulkPreview">@Localizer["BulkPreview"]</button>
+                <button type="button" class="btn btn-primary d-none" id="btnBulkCreate"></button>
+            </div>
+        </div>
+    </div>
+</div>

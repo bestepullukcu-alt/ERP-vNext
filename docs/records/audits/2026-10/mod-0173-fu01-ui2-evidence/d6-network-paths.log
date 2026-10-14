@@ -1,0 +1,53 @@
+﻿# WP-0173-UI2 U2-9 — every request the probe gateway copy received from the Web (:5091) in the last chain run, by path prefix
+# (the browser never calls the gateway: it talks only to same-origin /StockMovements/*, /StockLedger/*, /Locations/*)
+
+   36  /api/platform/navigation
+   28  /api/product-master/products
+   28  /api/product-master/skus
+   20  /api/inventory/balance
+   18  /api/locations/search
+   16  /api/locations/074d9099-4d24-4cfd-8af3-954940fdba2c
+   15  /api/global-products/selector
+   12  /api/locations/62ce6118-[REDACTED_PHONE]-b9ea-2849ebc72e53
+   11  /api/legal-entities/lookup
+   10  /api/locations/84d7cfe3-04c6-4e21-8bbf-34c9bd1ad4ce
+    8  /api/lskus
+    8  /api/gskus
+    7  /api/locations/0fe4da31-9c0c-4c78-b94e-8d3c7abfd6c7
+    7  /api/inventory/movements
+    7  /api/locations/9b108296-e056-436f-a6af-6e9a534acc9c
+    6  /api/legal-entities/099219a0-9780-454a-9580-a216f0fe33d0
+    3  /api/personalization/views
+    3  /api/locations
+    2  /api/inventory/transactions
+    1  /api/locations/6ec2b9ed-7b5b-4aa6-aa7e-8868e35c0931
+
+/api/mdm/products requests: 0
+
+# probe Model A mock (:4012) request log — the only product / SKU selector paths the MVC used (W-UI-01):
+sku mock on 127.0.0.1:4012
+sku mock on ::1:4012
+2026-10-02T09:54:05.479Z GET /api/global-products/selector?pageNumber=1&pageSize=20&search=AKK
+2026-10-02T09:54:05.534Z GET /api/gskus?pageNumber=1&pageSize=100
+2026-10-02T09:54:05.545Z GET /api/lskus?pageNumber=1&pageSize=100
+2026-10-02T09:54:39.589Z GET /api/global-products/selector?pageNumber=1&pageSize=20&search=AKK
+2026-10-02T09:54:39.640Z GET /api/gskus?pageNumber=1&pageSize=100
+2026-10-02T09:54:39.646Z GET /api/lskus?pageNumber=1&pageSize=100
+2026-10-02T09:55:26.045Z GET /api/global-products/selector?pageNumber=1&pageSize=20&search=AKK
+2026-10-02T09:55:26.093Z GET /api/gskus?pageNumber=1&pageSize=100
+2026-10-02T09:55:26.099Z GET /api/lskus?pageNumber=1&pageSize=100
+2026-10-02T09:57:05.930Z GET /api/global-products/selector?pageNumber=1&pageSize=20&search=AKK
+2026-10-02T09:57:05.979Z GET /api/gskus?pageNumber=1&pageSize=100
+2026-10-02T09:57:05.984Z GET /api/lskus?pageNumber=1&pageSize=100
+2026-10-02T09:57:40.717Z GET /api/global-products/selector?pageNumber=1&pageSize=20&search=AKK
+2026-10-02T09:57:40.768Z GET /api/gskus?pageNumber=1&pageSize=100
+2026-10-02T09:57:40.772Z GET /api/lskus?pageNumber=1&pageSize=100
+2026-10-02T09:58:25.869Z GET /api/global-products/selector?pageNumber=1&pageSize=20&search=AKK
+2026-10-02T09:58:25.921Z GET /api/gskus?pageNumber=1&pageSize=100
+2026-10-02T09:58:25.925Z GET /api/lskus?pageNumber=1&pageSize=100
+2026-10-02T09:59:34.947Z GET /api/global-products/selector?pageNumber=1&pageSize=20&search=AKK
+2026-10-02T09:59:35.011Z GET /api/gskus?pageNumber=1&pageSize=100
+2026-10-02T09:59:35.017Z GET /api/lskus?pageNumber=1&pageSize=100
+2026-10-02T10:00:40.197Z GET /api/global-products/selector?pageNumber=1&pageSize=20&search=AKK
+2026-10-02T10:00:40.249Z GET /api/gskus?pageNumber=1&pageSize=100
+2026-10-02T10:00:40.253Z GET /api/lskus?pageNumber=1&pageSize=100

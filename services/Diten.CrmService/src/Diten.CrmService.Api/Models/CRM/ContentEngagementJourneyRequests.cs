@@ -68,7 +68,9 @@ public sealed record AddContentEngagementJourneyStageRequest(
     string? Notes = null,
     IReadOnlyList<ContentEngagementJourneyBranchConditionRequest>? BranchConditions = null,
     int? ExpectedVersion = null,
-    Guid? TenantId = null);
+    Guid? TenantId = null,
+    // WP-VW-W4 (W4-BE-a, K-W4) — the doctor adoption stage this stage stands for (crm-adoption-stage, optional).
+    string? AdoptionStageCode = null);
 
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed record UpdateContentEngagementJourneyStageRequest(
@@ -88,4 +90,6 @@ public sealed record UpdateContentEngagementJourneyStageRequest(
     string? Notes = null,
     IReadOnlyList<ContentEngagementJourneyBranchConditionRequest>? BranchConditions = null,
     int? ExpectedVersion = null,
-    Guid? TenantId = null);
+    Guid? TenantId = null,
+    // WP-VW-W4 (W4-BE-a, K-W4) — the doctor adoption stage this stage stands for (crm-adoption-stage, optional).
+    string? AdoptionStageCode = null);

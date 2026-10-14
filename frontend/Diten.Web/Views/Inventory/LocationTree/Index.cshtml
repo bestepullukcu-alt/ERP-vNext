@@ -1,0 +1,143 @@
+@using Diten.Web.Views.Inventory.LocationTree
+@using Diten.Web.Views.Inventory.Locations
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LocationTreeIndex> Localizer
+@inject IHtmlLocalizer<LocationsIndex> ListLocalizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["LocationTreeTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    MOD-0173-FU02 L-1 Location tree + detail (pack §1/§11) — a custom component, NOT a DataTable: it never pages or
+    filters; it expands one parent at a time (LOC-08) and hands over to the L-2 list above 500 children.
+
+    UAS-001 — nothing below is drawn without inventory.locations.read: no heading, no tabs, no tree, no panel, no
+    button. No redirect: the address stays.
+
+    ⚠ Display only. InventoryService's [HasPermission] remains the authority (UAS-001 §4): a read-only user gets no
+    New / Edit / Add child / status / bulk control — absent, not disabled — and the service refuses them anyway.
+*@
+@if (!Perms.Has("inventory.locations.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["LocationTreeTitle"].Value" />
+    return;
+}
+
+@{
+    // W-0173-02 company selector (FU01 component, reused as is). Without a ready company the data part is not drawn
+    // and no location call is made (AC-14).
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["CompanyLabel"].Value;
+    company.Placeholder = Localizer["CompanyPlaceholder"].Value;
+    company.SelectHint = Localizer["CompanySelectHint"].Value;
+    company.UnavailableText = Localizer["CompanyUnavailable"].Value;
+    var canManage = Perms.Has("inventory.locations.manage");
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["LocationTreeTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+@* Two real routes styled as pills (pack §9) — not client tabs. *@
+<div class="nav-align-top mb-4">
+    <ul class="nav nav-pills d-inline-flex gap-2 flex-wrap">
+        <li class="nav-item">
+            <a class="nav-link active small border shadow-none wc-tab-compact" href="/LocationTree" aria-current="page">
+                <i class="bx bx-sitemap me-1 wc-tab-icon"></i>@Localizer["TabTree"]
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link small border shadow-none wc-tab-compact" href="/Locations">
+                <i class="bx bx-list-ul me-1 wc-tab-icon"></i>@Localizer["TabList"]
+            </a>
+        </li>
+    </ul>
+</div>
+
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready)
+{
+    <div class="row g-4">
+        <div class="col-12 col-lg-5 col-xl-4">
+            <div class="card h-100">
+                <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
+                    <h6 class="mb-0">@Localizer["TreeHeading"]</h6>
+                    <div class="d-flex flex-wrap align-items-center gap-3">
+                        <div class="form-check form-switch mb-0">
+                            <input type="checkbox" id="locationShowArchived" class="form-check-input" role="switch" />
+                            <label for="locationShowArchived" class="form-check-label small">@Localizer["ShowArchived"]</label>
+                        </div>
+                        @if (canManage)
+                        {
+                            <button type="button" class="btn btn-sm btn-primary" data-location-action="newLocation">
+                                <i class="bx bx-plus me-1"></i>@Localizer["AddNewSite"]
+                            </button>
+                        }
+                    </div>
+                </div>
+                <div class="card-body">
+                    @* The tree's own shape while it loads (view-organization §3.1: a placeholder shaped like the content). *@
+                    <div id="locationTreeSkeleton" aria-hidden="true">
+                        <div class="shimmer skeleton-row" style="width: 70%;"></div>
+                        <div class="shimmer skeleton-row ms-4" style="width: 60%;"></div>
+                        <div class="shimmer skeleton-row ms-4" style="width: 55%;"></div>
+                        <div class="shimmer skeleton-row ms-5" style="width: 50%;"></div>
+                        <div class="shimmer skeleton-row" style="width: 65%;"></div>
+                    </div>
+                    <div id="locationTreeError" class="alert alert-danger d-none" role="alert"></div>
+
+                    @* "Loading", "empty" and "refused" are three different pictures (view-organization §3.1). *@
+                    <div id="locationTreeEmpty" class="text-center py-5 d-none">
+                        <div class="avatar avatar-lg mx-auto mb-3"><span class="avatar-initial rounded bg-label-primary"><i class="bx bx-buildings fs-3"></i></span></div>
+                        <h6 class="mb-1">@Localizer["EmptyTitle"]</h6>
+                        <p class="text-muted small mb-3">@Localizer["EmptyBody"]</p>
+                        @if (canManage)
+                        {
+                            <button type="button" class="btn btn-sm btn-primary" data-location-action="newLocation">
+                                <i class="bx bx-plus me-1"></i>@Localizer["AddFirstSite"]
+                            </button>
+                        }
+                    </div>
+
+                    <ul id="locationTree" class="list-unstyled mb-0 d-none" role="tree" aria-label="@Localizer["TreeHeading"]"></ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-lg-7 col-xl-8">
+            <partial name="~/Views/Inventory/LocationTree/_DetailPanel.cshtml" />
+        </div>
+    </div>
+
+    @if (canManage)
+    {
+        @* L-3 (the ONE form, shared with L-2) and L-4 bulk bins — only for a user who may write. *@
+        <partial name="~/Views/Inventory/Locations/_CreateEditOffcanvas.cshtml" />
+        <partial name="~/Views/Inventory/Locations/_BulkBinsModal.cshtml" />
+    }
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    @* The shared location vocabulary (form, dialogs, errors) first, then this page's own words. *@
+    <partial name="~/Views/Inventory/Locations/_IndexL10n.cshtml" />
+    <partial name="~/Views/Inventory/LocationTree/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Inventory/Locations/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Inventory/LocationTree/index.l10n.js" asp-append-version="true"></script>
+    @if (company.Ready)
+    {
+        <script src="~/assets/js/Inventory/Locations/form.js" asp-append-version="true"></script>
+        @if (canManage)
+        {
+            <script src="~/assets/js/Inventory/Locations/bulk-bins.js" asp-append-version="true"></script>
+        }
+        <script src="~/assets/js/Inventory/LocationTree/index.js" asp-append-version="true"></script>
+    }
+}

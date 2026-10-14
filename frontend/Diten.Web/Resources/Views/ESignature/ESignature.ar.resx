@@ -1,0 +1,421 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ESign.Dialog.Title" xml:space="preserve"><value>التوقيع الإلكتروني</value></data>
+  <data name="ESign.Dialog.StandardRef" xml:space="preserve"><value>21 CFR الجزء 11 · ملحق 11 من GMP الأوروبي</value></data>
+  <data name="ESign.Dialog.Close" xml:space="preserve"><value>إغلاق</value></data>
+  <data name="ESign.Dialog.Loading" xml:space="preserve"><value>جارٍ تحميل بيانات التوقيع…</value></data>
+  <data name="ESign.Dialog.WhatYouSign" xml:space="preserve"><value>ما الذي توقّع عليه</value></data>
+  <data name="ESign.Dialog.UserName" xml:space="preserve"><value>اسم المستخدم</value></data>
+  <data name="ESign.Dialog.Password" xml:space="preserve"><value>كلمة المرور</value></data>
+  <data name="ESign.Dialog.RetypeUserName" xml:space="preserve"><value>اكتب اسم المستخدم الخاص بك</value></data>
+  <data name="ESign.Dialog.RetypeHint" xml:space="preserve"><value>ضمن نافذة كلمة المرور تعيد كتابة اسم المستخدم كأحد مكوّنات التوقيع.</value></data>
+  <data name="ESign.Dialog.WindowInfo" xml:space="preserve"><value>تم التحقق من كلمة المرور في {0}. وفق السياسة لن تُطلب مرة أخرى خلال {1} دقيقة (متبقٍّ {2} دقيقة).</value></data>
+  <data name="ESign.Dialog.Meaning" xml:space="preserve"><value>معنى التوقيع</value></data>
+  <data name="ESign.Dialog.MeaningSelect" xml:space="preserve"><value>اختر</value></data>
+  <data name="ESign.Dialog.Appearance" xml:space="preserve"><value>مظهر التوقيع</value></data>
+  <data name="ESign.Dialog.AppearancePolicy" xml:space="preserve"><value>السياسة: {0}</value></data>
+  <data name="ESign.Dialog.App.Saved" xml:space="preserve"><value>استخدام توقيعي المحفوظ</value></data>
+  <data name="ESign.Dialog.App.SavedSub" xml:space="preserve"><value>{0} · يطلب هذا الخيار كلمة المرور دائمًا</value></data>
+  <data name="ESign.Dialog.App.Draw" xml:space="preserve"><value>ارسم الآن</value></data>
+  <data name="ESign.Dialog.App.DrawSub" xml:space="preserve"><value>ارسم في منطقة التوقيع داخل هذه النافذة</value></data>
+  <data name="ESign.Dialog.App.Name" xml:space="preserve"><value>الاسم فقط</value></data>
+  <data name="ESign.Dialog.App.NameSub" xml:space="preserve"><value>يُضاف الاسم والتاريخ والوقت كنص</value></data>
+  <data name="ESign.Dialog.Dis.DrawRequired" xml:space="preserve"><value>تتطلب السياسة رسمًا فوريًا لهذا الإجراء</value></data>
+  <data name="ESign.Dialog.Dis.None" xml:space="preserve"><value>لا يُستخدم توقيع مرئي في هذا الإجراء</value></data>
+  <data name="ESign.Dialog.Dis.Pending" xml:space="preserve"><value>عينة توقيعك بانتظار موافقة المسؤول</value></data>
+  <data name="ESign.Dialog.Dis.NoSample" xml:space="preserve"><value>ليست لديك عينة توقيع محفوظة · أضفها من صفحة توقيعي</value></data>
+  <data name="ESign.Dialog.Dis.VisualRequired" xml:space="preserve"><value>يتطلب هذا الإجراء توقيعًا مرئيًا</value></data>
+  <data name="ESign.Dialog.VisualMode.none" xml:space="preserve"><value>لا يوجد</value></data>
+  <data name="ESign.Dialog.VisualMode.optional" xml:space="preserve"><value>اختياري</value></data>
+  <data name="ESign.Dialog.VisualMode.savedAccepted" xml:space="preserve"><value>يُقبل التوقيع المحفوظ</value></data>
+  <data name="ESign.Dialog.VisualMode.drawRequired" xml:space="preserve"><value>إلزامي: ارسم الآن</value></data>
+  <data name="ESign.Pad.Hint" xml:space="preserve"><value>وقّع بالفأرة أو القلم أو الإصبع</value></data>
+  <data name="ESign.Pad.Undo" xml:space="preserve"><value>تراجع</value></data>
+  <data name="ESign.Pad.Clear" xml:space="preserve"><value>مسح</value></data>
+  <data name="ESign.Pad.Area" xml:space="preserve"><value>منطقة التوقيع</value></data>
+  <data name="ESign.Dialog.Note" xml:space="preserve"><value>ملاحظة التوقيع</value></data>
+  <data name="ESign.Dialog.NotePlaceholder" xml:space="preserve"><value>اختياري</value></data>
+  <data name="ESign.Dialog.Statement1" xml:space="preserve"><value>هذا التوقيع الإلكتروني يعادل توقيعي بخط اليد.</value></data>
+  <data name="ESign.Dialog.Statement2" xml:space="preserve"><value>يُحفظ التوقيع بشكل غير قابل للتغيير مع هويتك والتاريخ والوقت ومعنى التوقيع وملخّص السجل في هذه اللحظة.</value></data>
+  <data name="ESign.Dialog.Cancel" xml:space="preserve"><value>إلغاء</value></data>
+  <data name="ESign.Dialog.Sign" xml:space="preserve"><value>توقيع</value></data>
+  <data name="ESign.Dialog.Signing" xml:space="preserve"><value>جارٍ التوقيع…</value></data>
+  <data name="ESign.Dialog.Err.Meaning" xml:space="preserve"><value>اختر معنى التوقيع.</value></data>
+  <data name="ESign.Dialog.Err.Password" xml:space="preserve"><value>أدخل كلمة المرور.</value></data>
+  <data name="ESign.Dialog.Err.UserName" xml:space="preserve"><value>اكتب اسم المستخدم.</value></data>
+  <data name="ESign.Dialog.Err.Draw" xml:space="preserve"><value>ارسم في منطقة التوقيع.</value></data>
+  <data name="ESign.Dialog.Err.NoSample" xml:space="preserve"><value>ليست لديك عينة توقيع محفوظة صالحة للاستخدام.</value></data>
+  <data name="ESign.Dialog.Err.WrongPassword" xml:space="preserve"><value>كلمة المرور غير صحيحة. المحاولات المتبقية: {0}</value></data>
+  <data name="ESign.Dialog.Err.Generic" xml:space="preserve"><value>تعذّر إكمال التوقيع. حاول مرة أخرى.</value></data>
+  <data name="ESign.Dialog.Err.Forbidden" xml:space="preserve"><value>لا تملك صلاحية هذا التوقيع. اطلب الصلاحية من المسؤول.</value></data>
+  <data name="ESign.Dialog.Err.Title" xml:space="preserve"><value>لم يتم التوقيع</value></data>
+  <data name="ESign.Dialog.Locked.Title" xml:space="preserve"><value>تم قفل حسابك</value></data>
+  <data name="ESign.Dialog.Locked.Text" xml:space="preserve"><value>أُدخلت كلمة مرور خاطئة عدة مرات متتالية. لم يتم التوقيع. قُفل حسابك لمدة {0} دقيقة، وسُجّل الحدث في سجل تدقيق الأمان.</value></data>
+  <data name="ESign.Dialog.Timeout.Title" xml:space="preserve"><value>انتهت مهلة جلستك</value></data>
+  <data name="ESign.Dialog.Timeout.Text" xml:space="preserve"><value>لأسباب أمنية عليك تسجيل الدخول مجددًا للتوقيع. لم يتم التوقيع، ويُحتفظ بالقرار في السجل كمسودة.</value></data>
+  <data name="ESign.Dialog.Timeout.Relogin" xml:space="preserve"><value>سجّل الدخول مجددًا</value></data>
+  <data name="ESign.Dialog.Success.Title" xml:space="preserve"><value>تم حفظ التوقيع</value></data>
+  <data name="ESign.Dialog.Success.SignatureId" xml:space="preserve"><value>معرّف التوقيع</value></data>
+  <data name="ESign.Dialog.Success.Timestamp" xml:space="preserve"><value>الطابع الزمني</value></data>
+  <data name="ESign.Dialog.Success.Signer" xml:space="preserve"><value>الموقِّع</value></data>
+  <data name="ESign.Dialog.Success.Meaning" xml:space="preserve"><value>المعنى</value></data>
+  <data name="ESign.Dialog.Success.Appearance" xml:space="preserve"><value>المظهر</value></data>
+  <data name="ESign.Dialog.Success.Record" xml:space="preserve"><value>السجل</value></data>
+  <data name="ESign.Dialog.Success.RecordDigest" xml:space="preserve"><value>ملخّص السجل</value></data>
+  <data name="ESign.Dialog.Success.ImageDigest" xml:space="preserve"><value>ملخّص الصورة</value></data>
+  <data name="ESign.Dialog.Success.NoVisual" xml:space="preserve"><value>لا يوجد توقيع مرئي · الاسم فقط</value></data>
+  <data name="ESign.Dialog.Success.Ok" xml:space="preserve"><value>موافق</value></data>
+  <data name="ESign.Dialog.AppType.drawn" xml:space="preserve"><value>رسم</value></data>
+  <data name="ESign.Dialog.AppType.sample" xml:space="preserve"><value>توقيع محفوظ</value></data>
+  <data name="ESign.Dialog.AppType.none" xml:space="preserve"><value>الاسم فقط</value></data>
+  <data name="ESign.Module.workflow" xml:space="preserve"><value>سير العمل</value></data>
+  <data name="ESign.Module.quarantine" xml:space="preserve"><value>الجودة / الحجر</value></data>
+  <data name="ESign.Module.documentmanagement" xml:space="preserve"><value>إدارة المستندات</value></data>
+  <data name="ESign.Mine.Title" xml:space="preserve"><value>توقيعي</value></data>
+  <data name="ESign.Mine.Statement" xml:space="preserve"><value>التوقيع المرئي هو مظهر التوقيع فقط. تأتي صلاحيته من التحقق من كلمة المرور ومعنى التوقيع المختار. لا تُضاف صورة التوقيع المحفوظة إلى أي سجل دون التحقق من كلمة المرور.</value></data>
+  <data name="ESign.Mine.MySample" xml:space="preserve"><value>عينة توقيعي</value></data>
+  <data name="ESign.Mine.Active" xml:space="preserve"><value>نشطة</value></data>
+  <data name="ESign.Mine.Id" xml:space="preserve"><value>المعرّف</value></data>
+  <data name="ESign.Mine.AddedAt" xml:space="preserve"><value>تاريخ الإضافة</value></data>
+  <data name="ESign.Mine.Storage" xml:space="preserve"><value>التخزين</value></data>
+  <data name="ESign.Mine.ApprovedBy" xml:space="preserve"><value>وافق عليها</value></data>
+  <data name="ESign.Mine.Usage" xml:space="preserve"><value>الاستخدام</value></data>
+  <data name="ESign.Mine.UsedIn" xml:space="preserve"><value>استُخدمت في {0} توقيعات</value></data>
+  <data name="ESign.Mine.NoApprovalNeeded" xml:space="preserve"><value>لم تكن الموافقة مطلوبة</value></data>
+  <data name="ESign.Mine.Empty.Title" xml:space="preserve"><value>ليست لديك عينة توقيع محفوظة</value></data>
+  <data name="ESign.Mine.Empty.Text" xml:space="preserve"><value>يمكنك متابعة التوقيع في نافذة التوقيع باستخدام «ارسم الآن» أو «الاسم فقط».</value></data>
+  <data name="ESign.Mine.PendingInfo" xml:space="preserve"><value>{0} بانتظار موافقة المسؤول. إلى أن تتم الموافقة، {1}.</value></data>
+  <data name="ESign.Mine.PendingKeep" xml:space="preserve"><value>تُستخدم عينتك الحالية</value></data>
+  <data name="ESign.Mine.PendingNone" xml:space="preserve"><value>يبقى «استخدام توقيعي المحفوظ» غير متاح</value></data>
+  <data name="ESign.Mine.NewSample" xml:space="preserve"><value>عينة توقيع جديدة</value></data>
+  <data name="ESign.Mine.Tab.Draw" xml:space="preserve"><value>رسم</value></data>
+  <data name="ESign.Mine.Tab.Upload" xml:space="preserve"><value>رفع صورة</value></data>
+  <data name="ESign.Mine.Thickness" xml:space="preserve"><value>السُمك</value></data>
+  <data name="ESign.Mine.Thin" xml:space="preserve"><value>رفيع</value></data>
+  <data name="ESign.Mine.Medium" xml:space="preserve"><value>متوسط</value></data>
+  <data name="ESign.Mine.Color" xml:space="preserve"><value>اللون</value></data>
+  <data name="ESign.Mine.Black" xml:space="preserve"><value>أسود</value></data>
+  <data name="ESign.Mine.Navy" xml:space="preserve"><value>كحلي</value></data>
+  <data name="ESign.Mine.FullScreen" xml:space="preserve"><value>ملء الشاشة (أفقي)</value></data>
+  <data name="ESign.Mine.Full.Title" xml:space="preserve"><value>ارسم توقيعك</value></data>
+  <data name="ESign.Mine.Full.Rotate" xml:space="preserve"><value>على الهاتف أو الجهاز اللوحي أدِر جهازك أفقيًا</value></data>
+  <data name="ESign.Mine.Full.Apply" xml:space="preserve"><value>تم</value></data>
+  <data name="ESign.Mine.Upload.Pick" xml:space="preserve"><value>اختر صورة التوقيع</value></data>
+  <data name="ESign.Mine.Upload.Hint" xml:space="preserve"><value>PNG أو JPG · حتى 1 ميغابايت</value></data>
+  <data name="ESign.Mine.Upload.Change" xml:space="preserve"><value>تغيير</value></data>
+  <data name="ESign.Mine.Upload.Remove" xml:space="preserve"><value>إزالة</value></data>
+  <data name="ESign.Mine.Upload.Original" xml:space="preserve"><value>الأصل · منطقة القص</value></data>
+  <data name="ESign.Mine.Upload.Result" xml:space="preserve"><value>معاينة النتيجة</value></data>
+  <data name="ESign.Mine.Crop.Left" xml:space="preserve"><value>قص من اليسار</value></data>
+  <data name="ESign.Mine.Crop.Right" xml:space="preserve"><value>قص من اليمين</value></data>
+  <data name="ESign.Mine.Crop.Top" xml:space="preserve"><value>قص من الأعلى</value></data>
+  <data name="ESign.Mine.Crop.Bottom" xml:space="preserve"><value>قص من الأسفل</value></data>
+  <data name="ESign.Mine.Upload.Bg" xml:space="preserve"><value>إزالة الخلفية</value></data>
+  <data name="ESign.Mine.Upload.Sensitivity" xml:space="preserve"><value>الحساسية</value></data>
+  <data name="ESign.Mine.Upload.ErrType" xml:space="preserve"><value>يمكنك اختيار PNG أو JPG فقط.</value></data>
+  <data name="ESign.Mine.Upload.ErrSize" xml:space="preserve"><value>الملف أكبر من 1 ميغابايت.</value></data>
+  <data name="ESign.Mine.StoreLabel" xml:space="preserve"><value>طريقة التخزين:</value></data>
+  <data name="ESign.Mine.Store.Drawn" xml:space="preserve"><value>صورة PNG + بيانات الخطوط (متجه)</value></data>
+  <data name="ESign.Mine.Store.Uploaded" xml:space="preserve"><value>صورة PNG (الصور المرفوعة لا تحتوي بيانات خطوط)</value></data>
+  <data name="ESign.Mine.ApprovalNote" xml:space="preserve"><value>يمكن استخدام العينة المحفوظة بعد موافقة مسؤول التوقيع الإلكتروني.</value></data>
+  <data name="ESign.Mine.SaveWithPassword" xml:space="preserve"><value>حفظ بكلمة المرور</value></data>
+  <data name="ESign.Mine.Pwd.Title" xml:space="preserve"><value>أكّد كلمة المرور</value></data>
+  <data name="ESign.Mine.Pwd.Sub" xml:space="preserve"><value>لحفظ عينة التوقيع</value></data>
+  <data name="ESign.Mine.Pwd.Save" xml:space="preserve"><value>تحقّق واحفظ</value></data>
+  <data name="ESign.Mine.History.Title" xml:space="preserve"><value>سجل عينات التوقيع</value></data>
+  <data name="ESign.Mine.History.Sub" xml:space="preserve"><value>لا يمكن حذف العينة المستخدمة بل تعطيلها فقط؛ تحتفظ سجلات التوقيع القديمة بصورتها</value></data>
+  <data name="ESign.Mine.Col.Sample" xml:space="preserve"><value>العينة</value></data>
+  <data name="ESign.Mine.Col.Kind" xml:space="preserve"><value>طريقة الإضافة</value></data>
+  <data name="ESign.Mine.Col.Status" xml:space="preserve"><value>الحالة</value></data>
+  <data name="ESign.Mine.Col.Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="ESign.Mine.Kind.drawn" xml:space="preserve"><value>رسم</value></data>
+  <data name="ESign.Mine.Kind.uploaded" xml:space="preserve"><value>رفع</value></data>
+  <data name="ESign.Mine.Format.png" xml:space="preserve"><value>PNG</value></data>
+  <data name="ESign.Mine.Format.pngAndVector" xml:space="preserve"><value>PNG + متجه</value></data>
+  <data name="ESign.Mine.Format.vector" xml:space="preserve"><value>متجه</value></data>
+  <data name="ESign.Mine.Status.active" xml:space="preserve"><value>نشطة</value></data>
+  <data name="ESign.Mine.Status.inactive" xml:space="preserve"><value>غير نشطة</value></data>
+  <data name="ESign.Mine.Status.pending" xml:space="preserve"><value>بانتظار الموافقة</value></data>
+  <data name="ESign.Mine.Status.rejected" xml:space="preserve"><value>مرفوضة</value></data>
+  <data name="ESign.Mine.Status.withdrawn" xml:space="preserve"><value>محذوفة</value></data>
+  <data name="ESign.Mine.Deactivate" xml:space="preserve"><value>تعطيل</value></data>
+  <data name="ESign.Mine.Delete" xml:space="preserve"><value>حذف</value></data>
+  <data name="ESign.Mine.Locked" xml:space="preserve"><value>لا يمكن الحذف</value></data>
+  <data name="ESign.Mine.LockedTitle" xml:space="preserve"><value>لا يمكن حذف عينة توقيع مستخدمة</value></data>
+  <data name="ESign.Mine.HistoryEmpty" xml:space="preserve"><value>لم تُضف أي عينة توقيع بعد.</value></data>
+  <data name="ESign.Mine.UsedCount" xml:space="preserve"><value>{0} توقيعات</value></data>
+  <data name="ESign.Mine.RejectReason" xml:space="preserve"><value>السبب: {0}</value></data>
+  <data name="ESign.Mine.Confirm.Deactivate" xml:space="preserve"><value>هل تريد تعطيل عينة التوقيع؟</value></data>
+  <data name="ESign.Mine.Confirm.DeactivateText" xml:space="preserve"><value>لا تُستخدم العينة غير النشطة في التوقيعات الجديدة؛ وتحتفظ التوقيعات القديمة بصورتها.</value></data>
+  <data name="ESign.Mine.Confirm.Delete" xml:space="preserve"><value>هل تريد حذف عينة التوقيع؟</value></data>
+  <data name="ESign.Mine.Confirm.DeleteText" xml:space="preserve"><value>تُسحب هذه العينة غير المستخدمة وتبقى في القائمة بحالة «محذوفة».</value></data>
+  <data name="ESign.Mine.Toast.Saved" xml:space="preserve"><value>تم حفظ عينة التوقيع.</value></data>
+  <data name="ESign.Mine.Toast.SavedPending" xml:space="preserve"><value>أُرسلت عينة التوقيع إلى المسؤول للموافقة.</value></data>
+  <data name="ESign.Mine.Toast.Deactivated" xml:space="preserve"><value>تم تعطيل عينة التوقيع.</value></data>
+  <data name="ESign.Mine.Toast.Withdrawn" xml:space="preserve"><value>تم حذف عينة التوقيع.</value></data>
+  <data name="ESign.Zoom.Title" xml:space="preserve"><value>صورة التوقيع</value></data>
+  <data name="ESign.Zoom.Enlarge" xml:space="preserve"><value>تكبير</value></data>
+  <data name="ESign.Zoom.Person" xml:space="preserve"><value>الشخص</value></data>
+  <data name="ESign.Zoom.Type" xml:space="preserve"><value>نوع المظهر</value></data>
+  <data name="ESign.Zoom.At" xml:space="preserve"><value>التاريخ والوقت</value></data>
+  <data name="ESign.Zoom.Sample" xml:space="preserve"><value>عينة توقيع · {0}</value></data>
+  <data name="ESign.Errors.ESIGN_ACCOUNT_LOCKED" xml:space="preserve"><value>حسابك مقفل؛ لا يمكنك التوقيع.</value></data>
+  <data name="ESign.Errors.ESIGN_ACTION_PREFIX_MISMATCH" xml:space="preserve"><value>رمز الإجراء لا ينتمي إلى الوحدة.</value></data>
+  <data name="ESign.Errors.ESIGN_ACTOR_NOT_TENANT_USER" xml:space="preserve"><value>يمكن لمستخدمي المستأجر فقط التوقيع.</value></data>
+  <data name="ESign.Errors.ESIGN_ALREADY_INVALIDATED" xml:space="preserve"><value>تم إبطال هذا التوقيع مسبقًا.</value></data>
+  <data name="ESign.Errors.ESIGN_APPEARANCE_NOT_ALLOWED" xml:space="preserve"><value>مظهر التوقيع المختار غير مسموح به في سياسة هذا الإجراء.</value></data>
+  <data name="ESign.Errors.ESIGN_DRAWING_EMPTY" xml:space="preserve"><value>منطقة التوقيع فارغة؛ يُرجى الرسم.</value></data>
+  <data name="ESign.Errors.ESIGN_EXPORT_TOO_LARGE" xml:space="preserve"><value>التصدير كبير جدًا؛ ضيّق عامل التصفية.</value></data>
+  <data name="ESign.Errors.ESIGN_IMAGE_NOT_PNG" xml:space="preserve"><value>يجب أن تكون صورة التوقيع بصيغة PNG.</value></data>
+  <data name="ESign.Errors.ESIGN_IMAGE_TOO_LARGE" xml:space="preserve"><value>تتجاوز صورة التوقيع 1 ميغابايت.</value></data>
+  <data name="ESign.Errors.ESIGN_INTENT_REQUIRES_PASSWORD" xml:space="preserve"><value>يتطلب هذا الإجراء كلمة المرور.</value></data>
+  <data name="ESign.Errors.ESIGN_MEANING_CODE_EXISTS" xml:space="preserve"><value>رمز المعنى هذا موجود بالفعل.</value></data>
+  <data name="ESign.Errors.ESIGN_MEANING_CODE_LOCKED" xml:space="preserve"><value>لا يمكن تغيير رمز معنى مستخدم.</value></data>
+  <data name="ESign.Errors.ESIGN_MEANING_IN_USE" xml:space="preserve"><value>هذا المعنى مستخدم في سطر سياسة.</value></data>
+  <data name="ESign.Errors.ESIGN_MEANING_LANGUAGE_MISSING" xml:space="preserve"><value>الاسم المعروض إلزامي في اللغات السبع كلها.</value></data>
+  <data name="ESign.Errors.ESIGN_MEANING_NOT_ALLOWED" xml:space="preserve"><value>معنى التوقيع المختار غير مسموح به لهذا الإجراء.</value></data>
+  <data name="ESign.Errors.ESIGN_POLICY_VERSION_CONFLICT" xml:space="preserve"><value>تغيّرت السياسة في الأثناء؛ حدّث الصفحة.</value></data>
+  <data name="ESign.Errors.ESIGN_REASON_TOO_SHORT" xml:space="preserve"><value>يجب ألا يقل السبب عن 10 أحرف.</value></data>
+  <data name="ESign.Errors.ESIGN_REAUTH_FAILED" xml:space="preserve"><value>كلمة المرور غير صحيحة.</value></data>
+  <data name="ESign.Errors.ESIGN_REAUTH_REQUIRED" xml:space="preserve"><value>يتطلب هذا التوقيع إدخال كلمة المرور مجددًا.</value></data>
+  <data name="ESign.Errors.ESIGN_REAUTH_UNAVAILABLE" xml:space="preserve"><value>خدمة التحقق من كلمة المرور غير متاحة حاليًا.</value></data>
+  <data name="ESign.Errors.ESIGN_REAUTH_WINDOW_EXPIRED" xml:space="preserve"><value>انتهت نافذة كلمة المرور؛ أدخل كلمة المرور مجددًا.</value></data>
+  <data name="ESign.Errors.ESIGN_REQUEST_NOT_OPEN" xml:space="preserve"><value>لم يعد طلب التوقيع هذا مفتوحًا.</value></data>
+  <data name="ESign.Errors.ESIGN_SAMPLE_IN_USE" xml:space="preserve"><value>لا يمكن حذف عينة توقيع مستخدمة.</value></data>
+  <data name="ESign.Errors.ESIGN_SAMPLE_NOT_ACTIVE" xml:space="preserve"><value>عينة توقيعك غير نشطة.</value></data>
+  <data name="ESign.Errors.ESIGN_SAMPLE_NOT_PENDING" xml:space="preserve"><value>عينة التوقيع هذه ليست بانتظار الموافقة.</value></data>
+  <data name="ESign.Errors.ESIGN_SECOND_FACTOR_NOT_AVAILABLE" xml:space="preserve"><value>العامل الثاني غير متاح بعد.</value></data>
+  <data name="ESign.Errors.ESIGN_SELF_APPROVAL_FORBIDDEN" xml:space="preserve"><value>لا يمكنك الموافقة على عينة توقيعك.</value></data>
+  <data name="ESign.Errors.ESIGN_SIGNATURE_MISMATCH" xml:space="preserve"><value>لا يطابق التوقيع هذه الموافقة؛ وقّع مرة أخرى.</value></data>
+  <data name="ESign.Errors.ESIGN_SIGNATURE_REQUIRED" xml:space="preserve"><value>تتطلب هذه الموافقة توقيعًا إلكترونيًا.</value></data>
+  <data name="ESign.Errors.ESIGN_SIGNER_NOT_FOUND" xml:space="preserve"><value>لم يُعثر على الموقِّع.</value></data>
+  <data name="ESign.Errors.ESIGN_SIGNER_NOT_NOMINATED" xml:space="preserve"><value>لم يتم تعيينك موقِّعًا لهذا الطلب.</value></data>
+  <data name="ESign.Errors.ESIGN_SUBJECT_NOT_FOUND" xml:space="preserve"><value>لم يُعثر على السجل المطلوب توقيعه أو أنه غير ظاهر لك.</value></data>
+  <data name="ESign.Errors.ESIGN_TICKET_INVALID" xml:space="preserve"><value>التحقق من كلمة المرور غير صالح أو منتهٍ؛ حاول مجددًا.</value></data>
+  <data name="ESign.Errors.ESIGN_TICKET_REQUIRED" xml:space="preserve"><value>يلزم التحقق من كلمة المرور للتوقيع.</value></data>
+  <data name="ESign.Common.Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="ESign.Common.AllModules" xml:space="preserve"><value>كل الوحدات</value></data>
+  <data name="ESign.Common.AllStatuses" xml:space="preserve"><value>كل الحالات</value></data>
+  <data name="ESign.Common.Company" xml:space="preserve"><value>الشركة</value></data>
+  <data name="ESign.Common.Continue" xml:space="preserve"><value>متابعة</value></data>
+  <data name="ESign.Common.From" xml:space="preserve"><value>من</value></data>
+  <data name="ESign.Common.To" xml:space="preserve"><value>إلى</value></data>
+  <data name="ESign.Common.Module" xml:space="preserve"><value>الوحدة</value></data>
+  <data name="ESign.Common.Reason" xml:space="preserve"><value>السبب</value></data>
+  <data name="ESign.Common.ReasonMin" xml:space="preserve"><value>يجب ألا يقل السبب عن {0} أحرف.</value></data>
+  <data name="ESign.Common.ReasonPlaceholder" xml:space="preserve"><value>اكتب سبب هذا القرار</value></data>
+  <data name="ESign.Common.ReasonQuoted" xml:space="preserve"><value>السبب: "{0}"</value></data>
+  <data name="ESign.Common.Record" xml:space="preserve"><value>السجل</value></data>
+  <data name="ESign.Common.Save" xml:space="preserve"><value>حفظ</value></data>
+  <data name="ESign.Common.Status" xml:space="preserve"><value>الحالة</value></data>
+  <data name="ESign.Dialog.Err.PasswordRequired" xml:space="preserve"><value>أدخل كلمة المرور.</value></data>
+  <data name="ESign.Module.inventory" xml:space="preserve"><value>المخزون</value></data>
+  <data name="ESign.Requests.Title" xml:space="preserve"><value>طلبات التوقيع</value></data>
+  <data name="ESign.Requests.Sub" xml:space="preserve"><value>أعمال التوقيع المسندة إليك</value></data>
+  <data name="ESign.Requests.Info" xml:space="preserve"><value>تظهر موافقات سير العمل أيضًا في WorkCenter؛ تعرض هذه الشاشة أعمال التوقيع المسندة إليك فقط.</value></data>
+  <data name="ESign.Requests.Count" xml:space="preserve"><value>{0} طلبات · {1} بانتظار</value></data>
+  <data name="ESign.Requests.Col.Meaning" xml:space="preserve"><value>المعنى المطلوب</value></data>
+  <data name="ESign.Requests.Col.RequestedBy" xml:space="preserve"><value>مقدم الطلب</value></data>
+  <data name="ESign.Requests.Col.RequestedAt" xml:space="preserve"><value>تاريخ الطلب</value></data>
+  <data name="ESign.Requests.Col.Due" xml:space="preserve"><value>تاريخ الاستحقاق</value></data>
+  <data name="ESign.Requests.Today" xml:space="preserve"><value>اليوم</value></data>
+  <data name="ESign.Requests.Status.waiting" xml:space="preserve"><value>بانتظار</value></data>
+  <data name="ESign.Requests.Status.signed" xml:space="preserve"><value>موقّع</value></data>
+  <data name="ESign.Requests.Status.rejected" xml:space="preserve"><value>مرفوض</value></data>
+  <data name="ESign.Requests.Status.expired" xml:space="preserve"><value>منتهي الصلاحية</value></data>
+  <data name="ESign.Requests.Status.cancelled" xml:space="preserve"><value>ملغى</value></data>
+  <data name="ESign.Requests.Sign" xml:space="preserve"><value>توقيع</value></data>
+  <data name="ESign.Requests.Reject" xml:space="preserve"><value>رفض</value></data>
+  <data name="ESign.Requests.OpenRecord" xml:space="preserve"><value>توقيعات السجل</value></data>
+  <data name="ESign.Requests.Reject.Title" xml:space="preserve"><value>هل تريد رفض طلب التوقيع؟</value></data>
+  <data name="ESign.Requests.Reject.Sub" xml:space="preserve"><value>{0} · {1} — سيتم إبلاغ مقدم الطلب.</value></data>
+  <data name="ESign.Requests.Rejected" xml:space="preserve"><value>تم رفض {0}.</value></data>
+  <data name="ESign.Requests.RejectReason" xml:space="preserve"><value>سبب الرفض: {0}</value></data>
+  <data name="ESign.Verify.Title" xml:space="preserve"><value>التحقق من التوقيع</value></data>
+  <data name="ESign.Verify.Sub" xml:space="preserve"><value>اعرض توقيعات سجل وصلاحيتها اليوم</value></data>
+  <data name="ESign.Verify.SubjectType" xml:space="preserve"><value>نوع السجل</value></data>
+  <data name="ESign.Verify.SubjectId" xml:space="preserve"><value>معرّف السجل</value></data>
+  <data name="ESign.Verify.Show" xml:space="preserve"><value>عرض</value></data>
+  <data name="ESign.Verify.Recent" xml:space="preserve"><value>السجلات الموقعة مؤخرًا</value></data>
+  <data name="ESign.Verify.RecentPick" xml:space="preserve"><value>اختر سجلًا</value></data>
+  <data name="ESign.Verify.Pick" xml:space="preserve"><value>اختر سجلًا للتحقق منه أو افتح رابط توقيع.</value></data>
+  <data name="ESign.Verify.Reverify" xml:space="preserve"><value>إعادة التحقق</value></data>
+  <data name="ESign.Verify.LastVerified" xml:space="preserve"><value>آخر تحقق: {0}</value></data>
+  <data name="ESign.Verify.NoVerifyPermission" xml:space="preserve"><value>تتطلب حالة التحقق صلاحية التحقق من التوقيع</value></data>
+  <data name="ESign.Verify.CurrentHash" xml:space="preserve"><value>الملخص الحالي للسجل (SHA-256):</value></data>
+  <data name="ESign.Verify.Count.Total" xml:space="preserve"><value>{0} توقيعات</value></data>
+  <data name="ESign.Verify.Count.Valid" xml:space="preserve"><value>{0} صالحة</value></data>
+  <data name="ESign.Verify.Count.Changed" xml:space="preserve"><value>{0} سجل تغيّر</value></data>
+  <data name="ESign.Verify.Count.Invalidated" xml:space="preserve"><value>{0} مُبطلة</value></data>
+  <data name="ESign.Verify.Count.Tampered" xml:space="preserve"><value>{0} تم العبث بها</value></data>
+  <data name="ESign.Verify.Status.valid" xml:space="preserve"><value>صالح</value></data>
+  <data name="ESign.Verify.Status.changed" xml:space="preserve"><value>تغيّر السجل</value></data>
+  <data name="ESign.Verify.Status.invalidated" xml:space="preserve"><value>مُبطل</value></data>
+  <data name="ESign.Verify.Status.tampered" xml:space="preserve"><value>تم العبث به</value></data>
+  <data name="ESign.Verify.Status.subjectUnresolvable" xml:space="preserve"><value>تعذّر قراءة السجل</value></data>
+  <data name="ESign.Verify.ChangedNote" xml:space="preserve"><value>تغيّر السجل بعد التوقيع: الملخص عند التوقيع {0}…، الحالي {1}…</value></data>
+  <data name="ESign.Verify.InvalidatedReason" xml:space="preserve"><value>السبب: "{0}"</value></data>
+  <data name="ESign.Verify.Note" xml:space="preserve"><value>ملاحظة: "{0}"</value></data>
+  <data name="ESign.Verify.AppearanceType" xml:space="preserve"><value>نوع المظهر</value></data>
+  <data name="ESign.Verify.SignatureId" xml:space="preserve"><value>معرّف التوقيع</value></data>
+  <data name="ESign.Verify.HashAtSign" xml:space="preserve"><value>الملخص عند التوقيع</value></data>
+  <data name="ESign.Verify.ImageHash" xml:space="preserve"><value>ملخص الصورة</value></data>
+  <data name="ESign.Verify.DrawnNoImage" xml:space="preserve"><value>رسم · ملخص الصورة محفوظ</value></data>
+  <data name="ESign.Verify.NameOnly" xml:space="preserve"><value>الاسم فقط</value></data>
+  <data name="ESign.Verify.NoSignatures" xml:space="preserve"><value>لا توجد توقيعات على هذا السجل بعد.</value></data>
+  <data name="ESign.Verify.Invalidate" xml:space="preserve"><value>إبطال التوقيع</value></data>
+  <data name="ESign.Verify.InvalidateNoPermission" xml:space="preserve"><value>يتطلب الإبطال صلاحية مسؤول التوقيع الإلكتروني</value></data>
+  <data name="ESign.Verify.Invalidate.Title" xml:space="preserve"><value>هل تريد إبطال التوقيع؟</value></data>
+  <data name="ESign.Verify.Invalidate.Sub" xml:space="preserve"><value>{0} · {1} — لا يتغير سجل التوقيع؛ يُسجَّل الإبطال بشكل منفصل ودائم.</value></data>
+  <data name="ESign.Verify.Invalidate.PwdTitle" xml:space="preserve"><value>أكّد الإبطال بكلمة المرور</value></data>
+  <data name="ESign.Verify.Invalidate.Warn" xml:space="preserve"><value>لا يمكن التراجع عن ذلك. سيظهر التوقيع غير صالح أينما استُخدم.</value></data>
+  <data name="ESign.Verify.Invalidated" xml:space="preserve"><value>تم إبطال {0}.</value></data>
+  <data name="ESign.Export.Title" xml:space="preserve"><value>تصدير التدقيق</value></data>
+  <data name="ESign.Export.Sub" xml:space="preserve"><value>صفِّ سجلات التوقيع ونزّلها بصيغة PDF أو CSV</value></data>
+  <data name="ESign.Export.Preview" xml:space="preserve"><value>معاينة</value></data>
+  <data name="ESign.Export.View.Table" xml:space="preserve"><value>جدول</value></data>
+  <data name="ESign.Export.View.Pdf" xml:space="preserve"><value>معاينة PDF</value></data>
+  <data name="ESign.Export.AsPdf" xml:space="preserve"><value>تصدير بصيغة PDF</value></data>
+  <data name="ESign.Export.AsCsv" xml:space="preserve"><value>تصدير بصيغة CSV</value></data>
+  <data name="ESign.Export.Count" xml:space="preserve"><value>{0} سجلات توقيع</value></data>
+  <data name="ESign.Export.Done" xml:space="preserve"><value>تم تنزيل {0} ({1}).</value></data>
+  <data name="ESign.Export.Empty" xml:space="preserve"><value>لا توجد سجلات توقيع تطابق عامل التصفية.</value></data>
+  <data name="ESign.Export.NoVisual" xml:space="preserve"><value>لا توقيع مرئي · الاسم فقط</value></data>
+  <data name="ESign.Export.AllSigners" xml:space="preserve"><value>كل الموقّعين</value></data>
+  <data name="ESign.Export.AllMeanings" xml:space="preserve"><value>كل المعاني</value></data>
+  <data name="ESign.Export.AllCompanies" xml:space="preserve"><value>كل الشركات</value></data>
+  <data name="ESign.Export.Col.At" xml:space="preserve"><value>التاريخ والوقت</value></data>
+  <data name="ESign.Export.Col.Signer" xml:space="preserve"><value>الموقّع</value></data>
+  <data name="ESign.Export.Col.Meaning" xml:space="preserve"><value>معنى التوقيع</value></data>
+  <data name="ESign.Export.Col.Record" xml:space="preserve"><value>الوحدة · السجل</value></data>
+  <data name="ESign.Export.Col.Verification" xml:space="preserve"><value>التحقق</value></data>
+  <data name="ESign.Export.Report.Title" xml:space="preserve"><value>تقرير تدقيق التوقيعات</value></data>
+  <data name="ESign.Export.Report.Sub" xml:space="preserve"><value>خدمة التوقيع الإلكتروني (MOD-0022)</value></data>
+  <data name="ESign.Export.Report.Foot" xml:space="preserve"><value>تتضمن كل كتلة توقيع الصورة والاسم والمعنى والتاريخ ومعرّف التوقيع. يُنشأ الملف على الخادم.</value></data>
+  <data name="ESign.Export.Log.Title" xml:space="preserve"><value>سجل تدقيق التصدير</value></data>
+  <data name="ESign.Export.Log.Sub" xml:space="preserve"><value>يُسجَّل كل تصدير بشكل غير قابل للتغيير</value></data>
+  <data name="ESign.Export.Log.Number" xml:space="preserve"><value>رقم التصدير</value></data>
+  <data name="ESign.Export.Log.By" xml:space="preserve"><value>بواسطة</value></data>
+  <data name="ESign.Export.Log.Format" xml:space="preserve"><value>الصيغة</value></data>
+  <data name="ESign.Export.Log.Count" xml:space="preserve"><value>عدد السجلات</value></data>
+  <data name="ESign.Export.Log.Records" xml:space="preserve"><value>{0} سجلات</value></data>
+  <data name="ESign.Export.Log.Filter" xml:space="preserve"><value>عامل التصفية</value></data>
+  <data name="ESign.Export.Log.FileHash" xml:space="preserve"><value>ملخص الملف</value></data>
+  <data name="ESign.Export.Log.Empty" xml:space="preserve"><value>لا يوجد تصدير بعد.</value></data>
+  <data name="ESign.Policy.Title" xml:space="preserve"><value>سياسة التوقيع الإلكتروني</value></data>
+  <data name="ESign.Policy.Sub" xml:space="preserve"><value>حدّد الإجراءات التي تتطلب توقيعًا ومعناها وقاعدة التوقيع المرئي</value></data>
+  <data name="ESign.Policy.Scope" xml:space="preserve"><value>النطاق</value></data>
+  <data name="ESign.Policy.Scope.Tenant" xml:space="preserve"><value>الافتراضي للمستأجر</value></data>
+  <data name="ESign.Policy.Scope.Company" xml:space="preserve"><value>حسب الشركة</value></data>
+  <data name="ESign.Policy.ScopeHint.Tenant" xml:space="preserve"><value>تستخدم كل شركة بلا سياسة خاصة هذه السياسة</value></data>
+  <data name="ESign.Policy.ScopeHint.Company" xml:space="preserve"><value>تستخدم سجلات الشركة هذه السياسة</value></data>
+  <data name="ESign.Policy.UsesTenant.Title" xml:space="preserve"><value>{0} تستخدم الإعداد الافتراضي للمستأجر</value></data>
+  <data name="ESign.Policy.UsesTenant.Text" xml:space="preserve"><value>يُطبَّق كل تغيير في سياسة المستأجر على هذه الشركة أيضًا. إن احتاجت قواعد أخرى فانسخ الإعداد الافتراضي وعدّله.</value></data>
+  <data name="ESign.Policy.CopyForCompany" xml:space="preserve"><value>سياسة مختلفة لهذه الشركة</value></data>
+  <data name="ESign.Policy.Override.Text" xml:space="preserve"><value>تُطبَّق سياسة مختلفة على {0}. الصفوف المختلفة عن الإعداد الافتراضي موسومة بـ "مختلف".</value></data>
+  <data name="ESign.Policy.Override.New" xml:space="preserve"><value>نسخة من الإعداد الافتراضي لـ {0}: يؤدي الحفظ إلى إنشاء سياسة الشركة.</value></data>
+  <data name="ESign.Policy.Revert" xml:space="preserve"><value>العودة إلى الإعداد الافتراضي</value></data>
+  <data name="ESign.Policy.Revert.Title" xml:space="preserve"><value>هل تعيد {0} إلى الإعداد الافتراضي؟</value></data>
+  <data name="ESign.Policy.Revert.Sub" xml:space="preserve"><value>تُزال السياسة المختلفة للشركة؛ ويبقى محتواها في سجل التغييرات.</value></data>
+  <data name="ESign.Policy.Reverted" xml:space="preserve"><value>تستخدم {0} الآن الإعداد الافتراضي.</value></data>
+  <data name="ESign.Policy.Rules" xml:space="preserve"><value>قواعد التوقيع حسب الإجراء</value></data>
+  <data name="ESign.Policy.Col.Action" xml:space="preserve"><value>الإجراء</value></data>
+  <data name="ESign.Policy.Col.Meaning" xml:space="preserve"><value>معنى التوقيع</value></data>
+  <data name="ESign.Policy.Col.Visual" xml:space="preserve"><value>التوقيع المرئي</value></data>
+  <data name="ESign.Policy.Col.SecondFactor" xml:space="preserve"><value>العامل الثاني</value></data>
+  <data name="ESign.Policy.Required" xml:space="preserve"><value>إلزامي</value></data>
+  <data name="ESign.Policy.Off" xml:space="preserve"><value>معطّل</value></data>
+  <data name="ESign.Policy.Soon" xml:space="preserve"><value>قريبًا</value></data>
+  <data name="ESign.Policy.Differs" xml:space="preserve"><value>مختلف</value></data>
+  <data name="ESign.Policy.Unsaved" xml:space="preserve"><value>تغيير غير محفوظ</value></data>
+  <data name="ESign.Policy.MeaningSignerChooses" xml:space="preserve"><value>— يختار الموقّع —</value></data>
+  <data name="ESign.Policy.NoActions" xml:space="preserve"><value>لا توجد إجراءات قابلة للتوقيع مسجّلة.</value></data>
+  <data name="ESign.Policy.NoCompanies" xml:space="preserve"><value>تعذّرت قراءة قائمة الشركات.</value></data>
+  <data name="ESign.Policy.General" xml:space="preserve"><value>الإعدادات العامة</value></data>
+  <data name="ESign.Policy.Reauth" xml:space="preserve"><value>كلمة المرور في التوقيعات المتتالية</value></data>
+  <data name="ESign.Policy.Reauth.Every" xml:space="preserve"><value>طلب كلمة المرور عند كل توقيع</value></data>
+  <data name="ESign.Policy.Reauth.EverySub" xml:space="preserve"><value>يعيد المستخدم إدخال كلمة المرور لكل توقيع.</value></data>
+  <data name="ESign.Policy.Reauth.Window" xml:space="preserve"><value>مرة واحدة خلال مدة</value></data>
+  <data name="ESign.Policy.Reauth.WindowSub" xml:space="preserve"><value>خلال مدة صلاحية التحقق لا تُطلب كلمة المرور في التوقيعات اللاحقة.</value></data>
+  <data name="ESign.Policy.Minutes" xml:space="preserve"><value>مدة صلاحية إعادة التحقق من كلمة المرور</value></data>
+  <data name="ESign.Policy.MinutesUnit" xml:space="preserve"><value>دقيقة</value></data>
+  <data name="ESign.Policy.MinutesHint" xml:space="preserve"><value>من 1 إلى 60 دقيقة</value></data>
+  <data name="ESign.Policy.MinutesHintEvery" xml:space="preserve"><value>لا يُستخدم عند اختيار "كل توقيع"</value></data>
+  <data name="ESign.Policy.SampleApproval" xml:space="preserve"><value>اشتراط موافقة المسؤول قبل استخدام نموذج التوقيع</value></data>
+  <data name="ESign.Policy.SampleApproval.Sub" xml:space="preserve"><value>عند التفعيل لا يمكن استخدام نماذج التوقيع الجديدة حتى يوافق عليها المسؤول.</value></data>
+  <data name="ESign.Policy.SampleApproval.TenantOnly" xml:space="preserve"><value>هذا إعداد على مستوى المستأجر؛ تعرضه سياسة الشركة فقط.</value></data>
+  <data name="ESign.Policy.DirtyText" xml:space="preserve"><value>{0} تغييرات غير محفوظة</value></data>
+  <data name="ESign.Policy.SaveWithReason" xml:space="preserve"><value>الحفظ مع ذكر السبب</value></data>
+  <data name="ESign.Policy.Save" xml:space="preserve"><value>حفظ</value></data>
+  <data name="ESign.Policy.Save.Title" xml:space="preserve"><value>هل تريد حفظ تغيير السياسة؟</value></data>
+  <data name="ESign.Policy.Save.Sub" xml:space="preserve"><value>تُسجَّل التغييرات في السجل مع السبب وتُطبَّق على التوقيعات الجديدة.</value></data>
+  <data name="ESign.Policy.Saved" xml:space="preserve"><value>تم حفظ السياسة.</value></data>
+  <data name="ESign.Policy.Change.Required" xml:space="preserve"><value>{0}: الحالة ← {1}</value></data>
+  <data name="ESign.Policy.Change.Meaning" xml:space="preserve"><value>{0}: المعنى ← {1}</value></data>
+  <data name="ESign.Policy.Change.Visual" xml:space="preserve"><value>{0}: التوقيع المرئي ← {1}</value></data>
+  <data name="ESign.Policy.Change.Minutes" xml:space="preserve"><value>مدة الصلاحية ← {0} دقيقة</value></data>
+  <data name="ESign.Policy.History" xml:space="preserve"><value>سجل التغييرات</value></data>
+  <data name="ESign.Policy.HistoryEmpty" xml:space="preserve"><value>لا توجد تغييرات بعد.</value></data>
+  <data name="ESign.Meanings.Title" xml:space="preserve"><value>معاني التوقيع</value></data>
+  <data name="ESign.Meanings.Sub" xml:space="preserve"><value>الاسم الظاهر بسبع لغات؛ تعرض نافذة التوقيع لغة المستخدم</value></data>
+  <data name="ESign.Meanings.Col.Code" xml:space="preserve"><value>الرمز</value></data>
+  <data name="ESign.Meanings.Col.Name" xml:space="preserve"><value>الاسم الظاهر</value></data>
+  <data name="ESign.Meanings.Col.Description" xml:space="preserve"><value>الوصف</value></data>
+  <data name="ESign.Meanings.Col.Usage" xml:space="preserve"><value>الاستخدام</value></data>
+  <data name="ESign.Meanings.Active" xml:space="preserve"><value>نشط</value></data>
+  <data name="ESign.Meanings.Inactive" xml:space="preserve"><value>غير نشط</value></data>
+  <data name="ESign.Meanings.Used" xml:space="preserve"><value>مستخدم</value></data>
+  <data name="ESign.Meanings.Unused" xml:space="preserve"><value>غير مستخدم</value></data>
+  <data name="ESign.Meanings.UsedIn" xml:space="preserve"><value>في {0} توقيعات</value></data>
+  <data name="ESign.Meanings.LangCount" xml:space="preserve"><value>{0}/7 لغات</value></data>
+  <data name="ESign.Meanings.New" xml:space="preserve"><value>معنى جديد</value></data>
+  <data name="ESign.Meanings.Edit" xml:space="preserve"><value>تعديل المعنى · {0}</value></data>
+  <data name="ESign.Meanings.View" xml:space="preserve"><value>المعنى · {0}</value></data>
+  <data name="ESign.Meanings.EditAction" xml:space="preserve"><value>تعديل</value></data>
+  <data name="ESign.Meanings.ViewAction" xml:space="preserve"><value>عرض</value></data>
+  <data name="ESign.Meanings.Modal.Sub" xml:space="preserve"><value>الاسم الظاهر إلزامي بسبع لغات</value></data>
+  <data name="ESign.Meanings.CodeLocked" xml:space="preserve"><value>الرمز مستخدم في توقيعات قائمة ولا يمكن تغييره.</value></data>
+  <data name="ESign.Meanings.CodeFormat" xml:space="preserve"><value>من 2 إلى 32 حرفًا تبدأ بحرف كبير: A–Z و0–9 و_</value></data>
+  <data name="ESign.Meanings.NameRequired" xml:space="preserve"><value>الاسم إلزامي بهذه اللغة.</value></data>
+  <data name="ESign.Meanings.FixFields" xml:space="preserve"><value>صحّح الحقول المحددة.</value></data>
+  <data name="ESign.Meanings.UsageWarn" xml:space="preserve"><value>استُخدم هذا المعنى في {0} توقيعات. يؤثر تغيير الاسم في التوقيعات الجديدة فقط.</value></data>
+  <data name="ESign.Meanings.Created" xml:space="preserve"><value>تم إنشاء {0}.</value></data>
+  <data name="ESign.Meanings.Updated" xml:space="preserve"><value>تم تحديث {0}.</value></data>
+  <data name="ESign.Meanings.Activate" xml:space="preserve"><value>تفعيل</value></data>
+  <data name="ESign.Meanings.Activate.Title" xml:space="preserve"><value>هل تريد تفعيل {0}؟</value></data>
+  <data name="ESign.Meanings.Activate.Sub" xml:space="preserve"><value>يصبح المعنى قابلًا للاختيار في نافذة التوقيع.</value></data>
+  <data name="ESign.Meanings.Deactivate" xml:space="preserve"><value>إلغاء التفعيل</value></data>
+  <data name="ESign.Meanings.Deactivate.Title" xml:space="preserve"><value>هل تريد إلغاء تفعيل {0}؟</value></data>
+  <data name="ESign.Meanings.Deactivate.Sub" xml:space="preserve"><value>لن يُختار في التوقيعات الجديدة؛ يُرفض إن كان صف سياسة يستخدمه.</value></data>
+  <data name="ESign.Meanings.Lang.tr" xml:space="preserve"><value>التركية</value></data>
+  <data name="ESign.Meanings.Lang.en" xml:space="preserve"><value>الإنجليزية</value></data>
+  <data name="ESign.Meanings.Lang.fr" xml:space="preserve"><value>الفرنسية</value></data>
+  <data name="ESign.Meanings.Lang.es" xml:space="preserve"><value>الإسبانية</value></data>
+  <data name="ESign.Meanings.Lang.zh" xml:space="preserve"><value>الصينية</value></data>
+  <data name="ESign.Meanings.Lang.ar" xml:space="preserve"><value>العربية</value></data>
+  <data name="ESign.Meanings.Lang.ru" xml:space="preserve"><value>الروسية</value></data>
+  <data name="ESign.Approvals.Title" xml:space="preserve"><value>موافقات نماذج التوقيع</value></data>
+  <data name="ESign.Approvals.Sub" xml:space="preserve"><value>نماذج التوقيع بانتظار الموافقة</value></data>
+  <data name="ESign.Approvals.Note" xml:space="preserve"><value>لا يمكنك الموافقة على نموذج توقيعك. يُسجَّل كل قرار موافقة أو رفض في سجل التدقيق.</value></data>
+  <data name="ESign.Approvals.Col.User" xml:space="preserve"><value>المستخدم</value></data>
+  <data name="ESign.Approvals.Col.AddedAt" xml:space="preserve"><value>تاريخ الإضافة</value></data>
+  <data name="ESign.Approvals.Col.Image" xml:space="preserve"><value>الصورة</value></data>
+  <data name="ESign.Approvals.Col.How" xml:space="preserve"><value>طريقة الإضافة</value></data>
+  <data name="ESign.Approvals.OtherAdmin" xml:space="preserve"><value>يقرر مسؤول آخر</value></data>
+  <data name="ESign.Approvals.Approve" xml:space="preserve"><value>موافقة</value></data>
+  <data name="ESign.Approvals.Approve.Title" xml:space="preserve"><value>هل توافق على نموذج توقيع {0}؟</value></data>
+  <data name="ESign.Approvals.Approve.Sub" xml:space="preserve"><value>{0} — عند الموافقة يصبح النموذج النشط السابق غير نشط.</value></data>
+  <data name="ESign.Approvals.Approved" xml:space="preserve"><value>تمت الموافقة على {0}.</value></data>
+  <data name="ESign.Approvals.Reject" xml:space="preserve"><value>رفض</value></data>
+  <data name="ESign.Approvals.Reject.Title" xml:space="preserve"><value>هل ترفض نموذج توقيع {0}؟</value></data>
+  <data name="ESign.Approvals.Reject.Sub" xml:space="preserve"><value>{0} — يرى المستخدم السبب في صفحة توقيعي.</value></data>
+  <data name="ESign.Approvals.Rejected" xml:space="preserve"><value>تم رفض {0}.</value></data>
+  <data name="ESign.Approvals.Log" xml:space="preserve"><value>سجل القرارات</value></data>
+  <data name="ESign.Approvals.LogEmpty" xml:space="preserve"><value>لا توجد قرارات بعد.</value></data>
+  <data name="ESign.Approvals.Decision.approved" xml:space="preserve"><value>تمت الموافقة</value></data>
+  <data name="ESign.Approvals.Decision.rejected" xml:space="preserve"><value>مرفوض</value></data>
+</root>

@@ -1,0 +1,52 @@
+# M-5 browser evidence — real login, real fleet (Auth 5056, Platform 5057, MDM 5059, Gateway 5000, Web 5001, Manufacturing 5067)
+# 2026-10-12T08:42:15Z · Chromium (Playwright) 1440x900 · feature/mvp3-bom-routings @ d6af82f2d
+# User: the test tenant's Admin (M-4: entitled to BOM-ROUTINGS). Screenshots + xlsx are kept OUTSIDE the repository; their sha256 below.
+
+## Flow (en)
+login: tenant admin, landed /WorkCenterNext
+create page: /Manufacturing/Boms/Create?legalEntityId=d79b1ac9-ea5b-4441-a08c-8b0c58041470
+v1 created -> /Manufacturing/Boms/Details/ac6b132c-0af0-4110-81ca-0fbefcf19f8f?legalEntityId=d79b1ac9-ea5b-4441-a08c-8b0c58041470
+release CC-2026-310: HTTP 200
+v2 created -> /Manufacturing/Boms/Details/5a8a8a21-1fda-404b-9705-fa1e38e727e0?legalEntityId=d79b1ac9-ea5b-4441-a08c-8b0c58041470
+release CC-2026-311: HTTP 200
+v1 history text: VERSION HISTORY WHEN EVENT BY CHANGED CHANGE CONTROL REFERENCE 10/12/2026, 8:41:06 AM Created BOM Admin - - 10/12/2026, 8:41:10 AM Released BOM Admin Status, Effective from, Change control reference CC-2026-310 10/12/2026, 8:41:18 AM Superseded BOM Admin Status, Effective to CC-2026-310
+explode 100.000: HTTP 200 {"itemId":"686d2fb7-375f-4008-a32a-f70860fe0d49","requestedQuantity":"100.000","requirements":[{"componentItemId":"c96ba825-7f1e-428b-8fa9-887eb72f41f7","requiredQuantity":"250.000","uomId":"KG"},{"componentItemId":"6ad7d76d-b1f3-412f-b8bf-ed5f4d563b3e","requiredQuantity":"50.000","uomId":"L"}],"bom
+list rows: 686d2fb7-375f-4008-a32a-f70860fe0d49 2 Effective Potasyum sitrat şurubu — v2 2 1 10/12/2026, 8:41:18 AM 10/12/2026, 8:41:18 AM  || 686d2fb7-375f-4008-a32a-f70860fe0d49 1 Superseded Potasyum sitrat şurubu — v1 2 1 10/12/2026, 8:41:10 AM 10/12/2026, 8:41:18 AM  || e51233dd-7405-4985-8274-5e04ab016962 2 Effective Potasyum sitrat şurubu — v2 2 1 10/12/2026, 8:33:38 AM 10/12/2026, 8:33:38 AM  || e51233dd-7405-4985-8274-5e04ab016962 1 Superseded Potasyum sitrat şurubu — v1 2 1 10/12/2026, 8:33:30 AM 10/12/2026, 8:33:38 AM 
+export menu: ['Print', 'CSV', 'Excel', 'PDF', 'Copy']
+
+## Export + ar (RTL)
+export request: GET http://localhost:5000/api/bom/versions/export?legalEntityId=d79b1ac9-ea5b-4441-a08c-8b0c58041470&format=xlsx&columns=itemId%2Cversion%2Cstatus%2Cdescription%2CcomponentCount%2CstepCount%2CeffectiveFrom%2CupdatedAt&orderBy=updatedAt&orderDir=desc -> HTTP 200 application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+ar list: html dir=rtl lang=ar title=قوائم المواد - Di10
+ar list headers: ['', 'الصنف', 'الإصدار', 'الحالة', 'الوصف', 'المكونات', 'خطوات المسار', 'ساري من', 'آخر تغيير', 'الإجراءات']
+ar details: html dir=rtl
+downloaded xlsx: sheet A1:H3 = header + v2 Effective + v1 Superseded (read from xl/sharedStrings.xml)
+
+## Defects found in the browser and fixed in this branch
+- history 'by' read 'unknown' for every real user (no 'name' claim in Auth tokens) -> b67b13f7f
+- history 'changed' printed raw field names in all 7 languages -> d6af82f2d
+
+## Console
+BOM pages: no errors of their own. Seen: 2x 403 /Tasks/api/assignable-{positions,people} (Task Center shell, user has no task permissions) and ERR_TUNNEL_CONNECTION_FAILED for external CDN/font hosts (this sandbox's proxy).
+
+## Screenshots (sha256, outside the repository)
+cafb78028b61ca85dc2635548235cbfa3d2df835a658248978d4682da32c27bf  01-login.png
+3e334bdb71cc9bf94eaf2b7a9ec21c033f012c12bdebb270f05987276d11dbd5  02-list-choose-legal-entity.png
+852afa1c8a8261af3cdb342008befd38f33cccc154383cf858ed35847ce7339b  03-list-legal-entity-selected.png
+50cefbf0a7f8023c503a74d088f7fb572e2e02cccb3cea3a836c73583bcfc803  04-create-v1-filled.png
+2ef1b5109ab0e4dea9e70190dd55cae5f5ae133bfb21614a925c161ca5118748  05-details-v1-draft.png
+88c96b684b79a87187a7e80086149c724f53cf3129246d05b29aaab1039dfc09  06-release-v1-confirm.png
+1d1be926ca09096bb946980fe65df13325a9867f65e05daaea1ed880674d0e0f  06-release-v1-offcanvas.png
+f61c14645ea05d7686ee8e7104805497807a3370acbecb80dd4d169f48690028  07-details-v1-effective.png
+3556056fa2b9f4374790a6dab066ea090e3880a9c91deff676b585a047f3fec1  08-create-v2-filled.png
+9bc6e13f1369b3654c3e1a213a8bf7013471f94ccbf0d24610ea2f4b5f0dbe5e  09-release-v2-confirm.png
+acc455f217e4755ebdee69205e5aa107af5ccfa1364a3738e02c689b024e5d53  09-release-v2-offcanvas.png
+7161101b893a98da0845bda5d97c2aea47eec7048268f440b20681275ae8c9e1  10-details-v2-effective.png
+baaecacc7889e4a51db029647ffa50a96e6b4851cbbb9453fa26ec7c33c6118b  11-details-v1-superseded-history.png
+264ba09965608e8f7c384e87e2b89de4a94006b38b8c92e25119c281680ad340  12-explode-v2.png
+da1e5c567944028023ffb7036703ed05b2f874224718da802f9614b054410ae6  13-list-two-versions.png
+0b60b3d293a0954658f1ec7f068ef52f691400970296887e0afdb2d683cfd6df  14-export-menu.png
+073b473e6a08e24a15a5b8af4cfba4443b824b6d754f5a131e1ca1b22b12ab59  15-export-downloaded.png
+e506bc40edc40972d1912e688bed056f3cea16a8347aa5cc1deab80ed51da549  16-ar-list-rtl.png
+907ed86eed7ee86103b549dfdcf99e05d87d5a30f9092f854c7a552a36fb6114  17-ar-details-rtl.png
+907ed86eed7ee86103b549dfdcf99e05d87d5a30f9092f854c7a552a36fb6114  18-ar-details-history-rtl.png
+6433b8400ddf73e3bc02cb2315d0b91cc347e155893b00958b4624e18c8de279  export-bom-versions.xlsx

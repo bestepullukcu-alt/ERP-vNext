@@ -1,0 +1,14 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.Quarantine.Quarantine> Localizer
+@*
+    "Bloke kaldırılsın mı?" (mockup modal, pack §11.3) — the BODY of the confirmation (window.showConfirm, the one dialog
+    implementation; no raw Swal.fire). Reason ≥ 10 is the dialog's input. On confirm the page creates an Unblock DECISION,
+    the MOD-0022 dialog signs it (policy quarantine.blocked.unblock) and the decision goes to approval — the stock moves
+    Bloke → Kullanılabilir only after the approval (§21.3 #3, KQ-F). The mockup's username / meaning fields are MOD-0022's.
+*@
+<template id="qr-unblock-template">
+    <div class="text-start small">
+        <div class="fw-medium mb-1" data-ub-subject></div>
+        <div class="text-muted">@Localizer["Quarantine.Unblock.Text"]</div>
+    </div>
+</template>

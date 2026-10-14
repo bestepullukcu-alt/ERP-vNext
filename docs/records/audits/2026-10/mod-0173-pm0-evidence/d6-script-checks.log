@@ -1,0 +1,64 @@
+# WP-0173-PM0 D6 — script checks 2026-10-02T13:58:42+03:00
+bash -n run_all.sh : OK (exit 0)
+bash -n run-diten.sh : OK (exit 0)
+bash -n run_watch.sh : OK (exit 0)
+
+## numstat 64629d27b..HEAD (deleted column must be 0)
+19	0	run-diten.sh
+4	0	run_all.sh
+4	0	run_watch.sh
+5	0	watch-diten.ps1
+
+## removed lines in scripts (must be none):
+(none)
+
+## watch-diten.ps1 first 3 bytes (base / HEAD):
+ 239 187 191
+ 239 187 191
+
+## added lines:
++++ b/run-diten.sh
+@@ -80,0 +81,19 @@ launch_service "Gateway" "gateway/Diten.ApiGateway" 5000
++# FU-PM-01: MDM PRODUCT-MASTER gelene kadar geçici (docs/roadmap/plans/mod-0290-product-master-bundle-requirements-for-mvp1-2026-10-02.md §6) — WP-0173-PM0
++# Diten.Web'in /api/product-master okumaları Prism mock'a (4010), yalnız Development'ta. Yeni Terminal sekmesi bu kabuğun
++# ortamını almadığı için değişken komutun içinde olmalı: launch_service burada yeniden tanımlanır; son çağrısı Web'dir.
++launch_service() {
++    local NAME=$1
++    local DIR=$2
++    local PORT=$3
++    echo "Starting $NAME on port $PORT (product-master bridge -> 4010)..."
++    /usr/bin/osascript <<EOF
++tell application "Terminal"
++    do script "cd '$PWD/$DIR' && Inventory__ProductMasterBaseUrl=http://127.0.0.1:4010/ dotnet run --no-build --urls http://localhost:$PORT"
++end tell
++EOF
++    if [ $? -ne 0 ]; then
++        echo "Could not open new terminal tab for $NAME, running in background..."
++        cd "$PWD/$DIR" && Inventory__ProductMasterBaseUrl=http://127.0.0.1:4010/ dotnet run --no-build --urls "http://localhost:$PORT" > "/tmp/diten_$NAME.log" 2>&1 &
++        cd - > /dev/null
++    fi
++}
++++ b/run_all.sh
+@@ -66,0 +67,3 @@ prefix_logs "[GATEWAY ]" "dotnet run --no-build --project gateway/Diten.ApiGatew
++# FU-PM-01: MDM PRODUCT-MASTER gelene kadar geçici (docs/roadmap/plans/mod-0290-product-master-bundle-requirements-for-mvp1-2026-10-02.md §6) — WP-0173-PM0
++# Diten.Web'in /api/product-master okumaları Prism mock'a (4010) — yalnız bu Web süreci alır ve yalnız Development'ta geçerlidir.
++export Inventory__ProductMasterBaseUrl=http://127.0.0.1:4010/
+@@ -67,0 +71 @@ prefix_logs "[FRONTEND]" "dotnet run --no-build --project frontend/Diten.Web/Dit
++unset Inventory__ProductMasterBaseUrl # yalnız Diten.Web süreci aldı
++++ b/run_watch.sh
+@@ -49,0 +50,3 @@ prefix_logs "[GATEWAY ]" "dotnet watch run --non-interactive --project gateway/D
++# FU-PM-01: MDM PRODUCT-MASTER gelene kadar geçici (docs/roadmap/plans/mod-0290-product-master-bundle-requirements-for-mvp1-2026-10-02.md §6) — WP-0173-PM0
++# Diten.Web'in /api/product-master okumaları Prism mock'a (4010) — yalnız bu Web süreci alır ve yalnız Development'ta geçerlidir.
++export Inventory__ProductMasterBaseUrl=http://127.0.0.1:4010/
+@@ -50,0 +54 @@ prefix_logs "[FRONTEND]" "dotnet watch run --non-interactive --project frontend/
++unset Inventory__ProductMasterBaseUrl # yalnız Diten.Web süreci aldı
++++ b/watch-diten.ps1
+@@ -61,0 +62,4 @@ Launch-Service -Name "Gateway" -Path "gateway/Diten.ApiGateway" -Port 5000
++# FU-PM-01: MDM PRODUCT-MASTER gelene kadar geçici (docs/roadmap/plans/mod-0290-product-master-bundle-requirements-for-mvp1-2026-10-02.md §6) — WP-0173-PM0
++# Diten.Web'in /api/product-master okumaları Prism mock'a (4010), yalnız Development'ta. Web penceresi bu değişkeni devralır;
++# hemen ardından silinir, sonraki hiçbir pencere almaz.
++$env:Inventory__ProductMasterBaseUrl = 'http://127.0.0.1:4010/'
+@@ -62,0 +67 @@ Launch-Service -Name "Web" -Path "frontend/Diten.Web" -Port 5001
++Remove-Item Env:Inventory__ProductMasterBaseUrl -ErrorAction SilentlyContinue
+PowerShell 5.1.26100.4652 ParseFile watch-diten.ps1 : errors = 0
+ParseFile run-pm0-env.ps1 : errors = 0

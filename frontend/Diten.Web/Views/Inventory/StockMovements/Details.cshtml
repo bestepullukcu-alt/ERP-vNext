@@ -1,0 +1,255 @@
+@model Diten.Web.Models.Inventory.MovementReceiptViewModel
+@using Diten.Web.Views.Inventory.StockMovements
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<StockMovementsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["DetailsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    string Dash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+}
+
+@*
+    MOD-0173-FU01 S-3 result — the receipt of the movement just posted (or idempotently replayed), PRG from the form
+    post (UI-10). Cards mirror the _Form sections (pack §12): ① Movement ② Item ③ Source & target ④ Quantity
+    ⑤ Document & dates, and the balance row the movement left (MovementResponse.balanceSnapshot). BG-06: there is no
+    GET /transactions/{id}, so this page is the receipt of THIS session's post — not a record viewer.
+    UAS-001 on inventory.movements.create (the page exists only behind a post).
+*@
+@if (!Perms.Has("inventory.movements.create"))
+{
+    <partial name="_AccessDenied" model="@Localizer["DetailsTitle"].Value" />
+    return;
+}
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 row-gap-4">
+    <div class="d-flex flex-column justify-content-center">
+        <h5 class="mb-0">@Localizer["DetailsTitle"]</h5>
+        <nav aria-label="breadcrumb" class="text-muted">
+            <ol class="breadcrumb mb-0 py-0">
+                <li class="breadcrumb-item"><a href="/StockMovements">@Localizer["StockMovementsTitle"]</a></li>
+                <li class="breadcrumb-item active text-primary">@Localizer["DetailsTitle"]</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-content-center flex-wrap gap-4">
+        @if (Model.FromEntry)
+        {
+            <a href="/StockLedger" class="btn btn-label-secondary">@Localizer["BackToStock"]</a>
+        }
+        <a href="/StockMovements" class="btn btn-primary">@Localizer["BackToHistory"]</a>
+    </div>
+</div>
+
+@if (Model.IsEmpty)
+{
+    <div class="alert alert-info d-flex align-items-start gap-2" role="status" id="movement-receipt-missing">
+        <i class="bx bx-info-circle mt-1" aria-hidden="true"></i>
+        <div>@Localizer["ReceiptMissing"]</div>
+    </div>
+    return;
+}
+
+<div class="movement-receipt" id="movement-receipt" data-transaction-number="@Model.TransactionNumber">
+    @if (Model.IdempotentReplay)
+    {
+        <div class="alert alert-info d-flex align-items-start gap-2" role="status" id="movement-replay-banner">
+            <i class="bx bx-revision mt-1" aria-hidden="true"></i>
+            <div>@Localizer["ReplayBanner"]</div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-success d-flex align-items-start gap-2" role="status">
+            <i class="bx bx-check-circle mt-1" aria-hidden="true"></i>
+            <div>@string.Format(Localizer["ReceiptPosted"].Value, Model.TransactionNumber)</div>
+        </div>
+    }
+    @if (!string.IsNullOrWhiteSpace(Model.ReversalNumber))
+    {
+        <div class="alert alert-warning d-flex align-items-start gap-2" role="status" id="movement-correction-done">
+            <i class="bx bx-undo mt-1" aria-hidden="true"></i>
+            <div>@string.Format(Localizer["CorrectionDone"].Value, Dash(Model.CorrectedNumber), Model.ReversalNumber, Model.TransactionNumber)</div>
+        </div>
+    }
+
+    <div class="row g-4">
+        <div class="col-12 col-lg-8 d-flex flex-column gap-4">
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionMovement"]</h6>
+                <div class="row g-4">
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field"><i class="bx bx-hash"></i><div>
+                            <div class="backbone-preview-label">@Localizer["ColTransactionNo"]</div>
+                            <div class="backbone-preview-value mt-1 fw-semibold">@Model.TransactionNumber</div>
+                        </div></div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field"><i class="bx bx-shuffle"></i><div>
+                            <div class="backbone-preview-label">@Localizer["FieldMovementType"]</div>
+                            <div class="backbone-preview-value mt-1">@(Model.MovementType is null ? "-" : Localizer["Movement" + Model.MovementType].Value)</div>
+                        </div></div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field"><i class="bx bx-time-five"></i><div>
+                            <div class="backbone-preview-label">@Localizer["DetailPostedAt"]</div>
+                            <div class="backbone-preview-value mt-1"><time data-utc="@Model.PostedAt">@Dash(Model.PostedAt)</time></div>
+                        </div></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionItem"]</h6>
+                <div class="row g-4">
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field"><i class="bx bx-cube"></i><div>
+                            <div class="backbone-preview-label">@Localizer["FieldProduct"]</div>
+                            <div class="backbone-preview-value mt-1 text-break">@Dash(Model.ProductText)</div>
+                        </div></div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field"><i class="bx bx-barcode"></i><div>
+                            <div class="backbone-preview-label">@Localizer["FieldSku"]</div>
+                            <div class="backbone-preview-value mt-1 text-break">@Dash(Model.SkuText)</div>
+                        </div></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionSourceTarget"]</h6>
+                <div class="row g-4">
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field"><i class="bx bx-log-out-circle"></i><div>
+                            <div class="backbone-preview-label">@Localizer["DetailFrom"]</div>
+                            <div class="backbone-preview-value mt-1">@Dash(Model.FromText)</div>
+                        </div></div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field"><i class="bx bx-map-pin"></i><div>
+                            <div class="backbone-preview-label">@Localizer["DetailTo"]</div>
+                            <div class="backbone-preview-value mt-1">@Dash(Model.ToText)</div>
+                        </div></div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field"><i class="bx bx-check-shield"></i><div>
+                            <div class="backbone-preview-label">@Localizer["ColStatusChange"]</div>
+                            <div class="backbone-preview-value mt-1">@(Model.ToStockStatus is null ? "-" : Localizer["Status" + Model.ToStockStatus].Value)</div>
+                        </div></div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="backbone-preview-field"><i class="bx bx-purchase-tag-alt"></i><div>
+                            <div class="backbone-preview-label">@Localizer["FieldLot"]</div>
+                            <div class="backbone-preview-value mt-1">
+                                @Dash(Model.LotId)
+                                @* W-UI-02: a TYPED lot text only (a registered lot id is not "unregistered"), until the P4 migration closes typing. *@
+                                @if (!string.IsNullOrWhiteSpace(Model.LotId) && !Diten.Web.Models.Inventory.MovementRules.IsRegisteredLotId(Model.LotId)
+                                     && !await Diten.Web.Models.Traceability.TraceMigrationStatus.IsClosedAsync(Http, Configuration["GatewayUrl"] ?? string.Empty,
+                                         Context.Request, User, Perms, Context.RequestAborted))
+                                {
+                                    <span class="badge bg-label-secondary ms-1" title="@Localizer["HintLotUnregistered"]">@Localizer["LotUnregisteredBadge"]</span>
+                                }
+                            </div>
+                        </div></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionQuantity"]</h6>
+                <div class="row g-4">
+                    <div class="col-12 col-md-4">
+                        <div class="backbone-preview-field"><i class="bx bx-hash"></i><div>
+                            <div class="backbone-preview-label">@Localizer["FieldQuantity"]</div>
+                            <div class="backbone-preview-value mt-1 font-monospace"><span data-quantity="@Model.Quantity">@Dash(Model.Quantity)</span> @Model.UomId</div>
+                        </div></div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="backbone-preview-field"><i class="bx bx-ruler"></i><div>
+                            <div class="backbone-preview-label">@Localizer["ColBaseQuantity"]</div>
+                            <div class="backbone-preview-value mt-1 font-monospace"><span data-quantity="@Model.BaseQuantity">@Dash(Model.BaseQuantity)</span> @Model.BaseUomId</div>
+                        </div></div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="backbone-preview-field"><i class="bx bx-list-ol"></i><div>
+                            <div class="backbone-preview-label">@Localizer["FieldSerialNumbers"]</div>
+                            <div class="backbone-preview-value mt-1">@(Model.SerialCount == 0 ? "-" : Model.SerialCount.ToString(System.Globalization.CultureInfo.CurrentCulture))</div>
+                        </div></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card backbone-preview-section p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["SectionDocumentDates"]</h6>
+                <div class="row g-4">
+                    <div class="col-12 col-md-4">
+                        <div class="backbone-preview-field"><i class="bx bx-receipt"></i><div>
+                            <div class="backbone-preview-label">@Localizer["FieldDocumentNo"]</div>
+                            <div class="backbone-preview-value mt-1 text-break">@Dash(Model.DocumentNo)</div>
+                        </div></div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="backbone-preview-field"><i class="bx bx-calendar"></i><div>
+                            <div class="backbone-preview-label">@Localizer["FieldTransactionDate"]</div>
+                            <div class="backbone-preview-value mt-1"><time data-utc="@Model.TransactionDate">@Dash(Model.TransactionDate)</time></div>
+                        </div></div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="backbone-preview-field"><i class="bx bx-calendar-check"></i><div>
+                            <div class="backbone-preview-label">@Localizer["FieldPostingDate"]</div>
+                            <div class="backbone-preview-value mt-1"><time data-utc="@Model.PostingDate">@Dash(Model.PostingDate)</time></div>
+                        </div></div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-12 col-lg-4 d-flex flex-column gap-4">
+            @* "Current balance" — the balance row this movement left (MovementResponse.balanceSnapshot, contract). *@
+            <section class="card backbone-preview-section p-4" id="movement-balance">
+                <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["BalanceTitle"]</h6>
+                <p class="text-body-secondary small mb-4">@Localizer["BalanceNote"]</p>
+                <div class="row g-4">
+                    <div class="col-12">
+                        <div class="backbone-preview-field"><i class="bx bx-map-pin"></i><div>
+                            <div class="backbone-preview-label">@Localizer["BalanceLocation"]</div>
+                            <div class="backbone-preview-value mt-1">@Dash(Model.BalanceLocationText)</div>
+                        </div></div>
+                    </div>
+                    <div class="col-6">
+                        <div class="backbone-preview-field"><i class="bx bx-package"></i><div>
+                            <div class="backbone-preview-label">@Localizer["BalanceOnHand"]</div>
+                            <div class="backbone-preview-value mt-1 font-monospace fw-semibold"><span data-quantity="@Model.BalanceOnHand">@Dash(Model.BalanceOnHand)</span> @Model.BaseUomId</div>
+                        </div></div>
+                    </div>
+                    <div class="col-6">
+                        <div class="backbone-preview-field"><i class="bx bx-check-circle"></i><div>
+                            <div class="backbone-preview-label">@Localizer["BalanceAvailable"]</div>
+                            <div class="backbone-preview-value mt-1 font-monospace"><span data-quantity="@Model.BalanceAvailable">@Dash(Model.BalanceAvailable)</span> @Model.BaseUomId</div>
+                        </div></div>
+                    </div>
+                    <div class="col-6">
+                        <div class="backbone-preview-field"><i class="bx bx-check-shield"></i><div>
+                            <div class="backbone-preview-label">@Localizer["ColStatusChange"]</div>
+                            <div class="backbone-preview-value mt-1">@(Model.BalanceStatus is null ? "-" : Localizer["Status" + Model.BalanceStatus].Value)</div>
+                        </div></div>
+                    </div>
+                    <div class="col-6">
+                        <div class="backbone-preview-field"><i class="bx bx-purchase-tag-alt"></i><div>
+                            <div class="backbone-preview-label">@Localizer["FieldLot"]</div>
+                            <div class="backbone-preview-value mt-1">@Dash(Model.BalanceLotId)</div>
+                        </div></div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/assets/js/Inventory/StockMovements/details.js" asp-append-version="true"></script>
+}

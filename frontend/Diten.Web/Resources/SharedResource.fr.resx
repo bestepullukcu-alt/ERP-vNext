@@ -704,6 +704,9 @@
   <data name="Nav.Page.LEGALPROFILES" xml:space="preserve">
     <value>Profils juridiques</value>
   </data>
+  <data name="Nav.Page.VISITWORKSPACE" xml:space="preserve">
+    <value>Espace de visites</value>
+  </data>
   <data name="Nav.Page.VISITPLANNING" xml:space="preserve">
     <value>Planification des visites</value>
   </data>
@@ -748,6 +751,9 @@
   </data>
   <data name="Nav.Page.BRANDS" xml:space="preserve">
     <value>Marques</value>
+  </data>
+  <data name="Nav.Page.COMPETITORPRODUCTS" xml:space="preserve">
+    <value>Produits concurrents</value>
   </data>
   <data name="PlannedVisitsMenu" xml:space="preserve"><value>Visites planifiées</value></data>
   <data name="Nav.Page.PLANNEDVISITS" xml:space="preserve"><value>Visites planifiées</value></data>
@@ -1050,8 +1056,20 @@
   <data name="InviteAcceptAnyway" xml:space="preserve">
     <value>Accepter Quand Même</value>
   </data>
+  <data name="Nav.Domain.MANUFACTURING" xml:space="preserve"><value>Fabrication</value></data>
+  <data name="Nav.Module.BOMROUTINGS" xml:space="preserve"><value>Nomenclatures et gammes</value></data>
+  <data name="Nav.Page.BOMS" xml:space="preserve"><value>Nomenclatures</value></data>
   <data name="Loading" xml:space="preserve">
     <value>Chargement...</value>
+  </data>
+  <data name="Nav.Page.OBJECTIONRESPONSES" xml:space="preserve">
+    <value>Bibliothèque des objections</value>
+  </data>
+  <data name="Nav.Page.VISITEVIDENCESETTINGS" xml:space="preserve">
+    <value>Preuves de visite</value>
+  </data>
+  <data name="Nav.Page.CRMDOCTORINSIGHTTHRESHOLDS" xml:space="preserve">
+    <value>Seuils de potentiel</value>
   </data>
   <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>Exécution de la chaîne d’approvisionnement</value></data>
   <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>Gestion des transporteurs</value></data>
@@ -1064,4 +1082,25 @@
   <data name="Nav.Page.LOADS" xml:space="preserve"><value>Chargements</value></data>
   <data name="Nav.Module.CLAIMSMANAGEMENT" xml:space="preserve"><value>Gestion des réclamations</value></data>
   <data name="Nav.Page.SHIPMENTCLAIMS" xml:space="preserve"><value>Réclamations de transport</value></data>
+  <data name="Nav.Module.INVENTORYLEDGER" xml:space="preserve"><value>Inventaire</value></data>
+  <data name="Nav.Page.STOCKLEDGER" xml:space="preserve"><value>Registre des stocks</value></data>
+  <data name="Nav.Page.LOCATIONTREE" xml:space="preserve"><value>Emplacements</value></data>
+  <data name="Nav.Module.LOTSERIALTRACKING" xml:space="preserve"><value>Suivi des lots / séries</value></data>
+  <data name="Nav.Page.LOTS" xml:space="preserve"><value>Explorateur de lots</value></data>
+  <data name="Nav.Page.SERIALS" xml:space="preserve"><value>Explorateur de numéros de série</value></data>
+  <data name="Nav.Page.LOTTRACE" xml:space="preserve"><value>Traçabilité</value></data>
+  <data name="Nav.Page.LOTMIGRATION" xml:space="preserve"><value>Migration des lots saisis manuellement</value></data>
+  <data name="Nav.Module.QUARANTINEBLOCKEDSTOCK" xml:space="preserve"><value>Qualité</value></data>
+  <data name="Nav.Page.QUARANTINEQUEUE" xml:space="preserve"><value>File de quarantaine</value></data>
+  <data name="Nav.Page.BLOCKEDSTOCK" xml:space="preserve"><value>Stock bloqué</value></data>
+  <data name="Nav.Page.RETESTQUEUE" xml:space="preserve"><value>File de recontrôle</value></data>
+  <data name="Nav.Page.QUARANTINESETTINGS" xml:space="preserve"><value>Paramètres de quarantaine</value></data>
+  <data name="Nav.Module.ESIGN" xml:space="preserve"><value>Signature électronique</value></data>
+  <data name="Nav.Page.ESIGNMYSIGNATURE" xml:space="preserve"><value>Ma signature</value></data>
+  <data name="Nav.Page.ESIGNREQUESTS" xml:space="preserve"><value>Demandes de signature</value></data>
+  <data name="Nav.Page.ESIGNVERIFICATION" xml:space="preserve"><value>Vérification des signatures</value></data>
+  <data name="Nav.Page.ESIGNAUDITEXPORT" xml:space="preserve"><value>Export d'audit</value></data>
+  <data name="Nav.Page.ESIGNPOLICY" xml:space="preserve"><value>Politique de signature</value></data>
+  <data name="Nav.Page.ESIGNMEANINGS" xml:space="preserve"><value>Significations de signature</value></data>
+  <data name="Nav.Page.ESIGNSAMPLEAPPROVALS" xml:space="preserve"><value>Approbation des modèles</value></data>
 </root>

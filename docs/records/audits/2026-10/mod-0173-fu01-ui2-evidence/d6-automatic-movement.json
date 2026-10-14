@@ -1,0 +1,62 @@
+{
+  "step": "UI2 — one automatic movement (GOODS_RECEIPT_PO, MOD-0142) so S-2 shows a row without Correct",
+  "request": {
+    "method": "POST",
+    "url": "http://localhost:5090/api/inventory/movements",
+    "headers": {
+      "Authorization": "Bearer ***(masked, test JWT: inventory.movements.create + inventory.stock.read, legal_entity_id claim = the selected company)",
+      "X-Tenant-Id": "00000000-0000-0000-0000-000000000001",
+      "Idempotency-Key": "ui2-grpo-8c27eab8-98fa-442d-adc3-3367d36fff74"
+    },
+    "body": {
+      "idempotencyKey": "ui2-grpo-8c27eab8-98fa-442d-adc3-3367d36fff74",
+      "movementType": "GOODS_RECEIPT_PO",
+      "itemId": "006bfd79-7146-42eb-beb7-7977f271871a",
+      "skuId": "a0a0a0a0-0000-4000-8000-0000000000a1",
+      "skuLevel": "Gsku",
+      "toWarehouseId": "074d9099-4d24-4cfd-8af3-954940fdba2c",
+      "toLocationId": "84d7cfe3-04c6-4e21-8bbf-34c9bd1ad4ce",
+      "quantity": "10",
+      "uomId": "ADET",
+      "lotId": "LOT-UI2-PO",
+      "toStockStatus": "AVAILABLE",
+      "sourceModule": "MOD-0142",
+      "sourceType": "GOODS_RECEIPT",
+      "sourceDocumentId": "GRN-UI2-1",
+      "sourceLineId": "1",
+      "transactionDate": "2026-10-02T09:50:20.657Z",
+      "postingDate": "2026-10-02T09:50:20.658Z"
+    }
+  },
+  "response": {
+    "status": 201,
+    "xCorrelationId": "bc703dd3c1af4999b3e3610118df250f",
+    "body": {
+      "transactionId": "3898097c-da07-41d7-9b91-5857369ca8b9",
+      "transactionNumber": "INV-2026-0000005",
+      "postedAt": "2026-10-02T09:50:20.752Z",
+      "idempotentReplay": false,
+      "balanceSnapshot": {
+        "itemId": "006bfd79-7146-42eb-beb7-7977f271871a",
+        "skuId": "a0a0a0a0-0000-4000-8000-0000000000a1",
+        "skuLevel": "Gsku",
+        "legalEntityId": "099219a0-9780-454a-9580-a216f0fe33d0",
+        "warehouseId": "074d9099-4d24-4cfd-8af3-954940fdba2c",
+        "locationId": "84d7cfe3-04c6-4e21-8bbf-34c9bd1ad4ce",
+        "lotId": "LOT-UI2-PO",
+        "stockStatus": "AVAILABLE",
+        "onHand": "10.000",
+        "reserved": "0.000",
+        "available": "10.000",
+        "inTransit": "0.000",
+        "blocked": "0.000",
+        "qualityInspection": "0.000",
+        "baseUomId": "ADET",
+        "baseQuantity": "10.000",
+        "lastMovementId": "3898097c-da07-41d7-9b91-5857369ca8b9",
+        "lastPostingDate": "2026-10-02T09:50:20.658Z"
+      },
+      "contractVersion": "v1"
+    }
+  }
+}

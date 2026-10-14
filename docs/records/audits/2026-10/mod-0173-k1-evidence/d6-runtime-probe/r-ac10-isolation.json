@@ -1,0 +1,189 @@
+{
+  "tenantA": {
+    "label": "ac2",
+    "tenantId": "483c1754-6753-4562-ae1a-b87d7e0a5633",
+    "legalEntityId": "1653be45-8e76-49d1-9e4e-779fe9c2b5c5",
+    "userId": "25f29acc-cab7-4db9-8579-6ee2c34765d7"
+  },
+  "tenantB": {
+    "label": "ac10-b",
+    "tenantId": "862597e5-6cee-41d5-acc0-8de3c712720b",
+    "legalEntityId": "a376349f-0bf0-4c31-87b8-d55e2db07783",
+    "userId": "8aa39244-6cd7-4bce-8325-0a16e029d283"
+  },
+  "steps": [
+    {
+      "step": "tenant B GET /availability for tenant A\u0027s item",
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:5066/api/inventory/availability?itemId=b1f2c3d4-0000-0000-0000-000000000001",
+        "headers": {
+          "Authorization": "Bearer ***(masked)"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 200,
+        "X-Correlation-Id": "d4e65ffa-14c8-4604-bce9-4038f1588dcd",
+        "body": {
+          "itemId": "b1f2c3d4-0000-0000-0000-000000000001",
+          "legalEntityId": "a376349f-0bf0-4c31-87b8-d55e2db07783",
+          "scope": {},
+          "onHand": "0.000",
+          "reserved": "0.000",
+          "available": "0.000",
+          "byStatus": {
+            "AVAILABLE": "0.000",
+            "QUALITY_INSPECTION": "0.000",
+            "QUARANTINE": "0.000",
+            "BLOCKED": "0.000",
+            "IN_TRANSIT": "0.000",
+            "DAMAGED": "0.000",
+            "EXPIRED": "0.000"
+          },
+          "asOf": "2026-10-01T09:48:46.644Z",
+          "contractVersion": "v1"
+        }
+      }
+    },
+    {
+      "step": "tenant B GET /balance",
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:5066/api/inventory/balance?itemId=b1f2c3d4-0000-0000-0000-000000000001",
+        "headers": {
+          "Authorization": "Bearer ***(masked)"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 200,
+        "X-Correlation-Id": "2660955b-cfac-483e-b6b8-83f96ca85c4a",
+        "body": {
+          "rows": [],
+          "total": 0,
+          "contractVersion": "v1"
+        }
+      }
+    },
+    {
+      "step": "tenant B GET /transactions",
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:5066/api/inventory/transactions",
+        "headers": {
+          "Authorization": "Bearer ***(masked)"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 200,
+        "X-Correlation-Id": "22765b16-abac-4da1-8985-705a4719062d",
+        "body": {
+          "items": [],
+          "page": 1,
+          "pageSize": 50,
+          "total": 0,
+          "contractVersion": "v1"
+        }
+      }
+    },
+    {
+      "step": "tenant A with a foreign X-Legal-Entity-Id",
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:5066/api/inventory/balance?itemId=b1f2c3d4-0000-0000-0000-000000000001",
+        "headers": {
+          "Authorization": "Bearer ***(masked)",
+          "X-Legal-Entity-Id": "e31705a8-f394-4fc7-9ecb-8e33309b25a9"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 403,
+        "X-Correlation-Id": "90f46268-c4b9-4e77-b3c1-0874be951f92",
+        "body": {
+          "error": {
+            "code": "CROSS_LE_FORBIDDEN",
+            "message": "Access to another legal entity is forbidden.",
+            "correlationId": "90f46268-c4b9-4e77-b3c1-0874be951f92"
+          },
+          "contractVersion": "v1"
+        }
+      }
+    },
+    {
+      "step": "tenant A POST with a foreign X-Legal-Entity-Id",
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:5066/api/inventory/movements",
+        "headers": {
+          "Idempotency-Key": "probe-20261001094845-ac10-post",
+          "Authorization": "Bearer ***(masked)",
+          "X-Legal-Entity-Id": "81cd4e09-ae45-4039-9bae-5ec401b90de2",
+          "Transfer-Encoding": "chunked"
+        },
+        "body": {
+          "idempotencyKey": "probe-20261001094845-ac10-post",
+          "movementType": "OPENING_BALANCE",
+          "itemId": "b1f2c3d4-0000-0000-0000-000000000001",
+          "skuId": "c3d4e5f6-0000-0000-0000-000000000002",
+          "skuLevel": "Lsku",
+          "quantity": "1",
+          "uomId": "EA",
+          "sourceModule": "MOD-PROBE",
+          "sourceType": "RUNTIME_PROBE",
+          "sourceSystem": "WP-0173-S1-PROBE",
+          "transactionDate": "2026-09-30T09:00:00Z",
+          "postingDate": "2026-09-30T10:00:00Z",
+          "lotId": "lot-777",
+          "toWarehouseId": "wh-01",
+          "toLocationId": "loc-A-12-3"
+        }
+      },
+      "response": {
+        "status": 403,
+        "X-Correlation-Id": "2d1c8918-60e8-458c-a7a6-f2712e393a1c",
+        "body": {
+          "error": {
+            "code": "CROSS_LE_FORBIDDEN",
+            "message": "Access to another legal entity is forbidden.",
+            "correlationId": "2d1c8918-60e8-458c-a7a6-f2712e393a1c"
+          },
+          "contractVersion": "v1"
+        }
+      }
+    },
+    {
+      "step": "tenantId in the query",
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:5066/api/inventory/balance?tenantId=862597e5-6cee-41d5-acc0-8de3c712720b",
+        "headers": {
+          "Authorization": "Bearer ***(masked)"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 400,
+        "X-Correlation-Id": "4102e131-b985-45bb-bb04-9b564a1978f8",
+        "body": {
+          "error": {
+            "code": "INVALID_REQUEST",
+            "message": "tenantId/legalEntityId must not be sent: scope is taken from the access token.",
+            "correlationId": "4102e131-b985-45bb-bb04-9b564a1978f8"
+          },
+          "contractVersion": "v1"
+        }
+      }
+    }
+  ],
+  "tenantBPersisted": {
+    "inventory_transactions": [],
+    "inventory_balances": [],
+    "inventory_audit": [],
+    "inventory_outbox": [],
+    "inventory_reservations": [],
+    "inventory_sku_positions": []
+  }
+}

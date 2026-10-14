@@ -1,0 +1,49 @@
+{
+  "tenant": {
+    "label": "fu",
+    "tenantId": "f0474c46-bb3b-4c17-84c3-88d2e2259349",
+    "legalEntityId": "3fdf0276-5e1a-4d5a-bd8b-365f5eae4e1a",
+    "userId": "6ab5e8ff-ecb1-43de-99b4-35178ca11c1d",
+    "warehouseId": "63c59f02-e1b1-4858-b92c-302e29eceb04",
+    "locationId": "7405ba93-8892-40b2-8153-90976599eb08"
+  },
+  "steps": [
+    {
+      "step": "FU-S1-01 known SKU, no stock",
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:5066/api/inventory/availability?itemId=b1f2c3d4-0000-0000-0000-000000000001\u0026skuId=c3d4e5f6-0000-0000-0000-000000000002\u0026skuLevel=Lsku",
+        "headers": {
+          "Authorization": "Bearer ***(masked)"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 200,
+        "X-Correlation-Id": "61d3b15c-1147-4ff0-8c82-cb0af7d4aeee",
+        "ETag": null,
+        "body": {
+          "itemId": "b1f2c3d4-0000-0000-0000-000000000001",
+          "skuId": "c3d4e5f6-0000-0000-0000-000000000002",
+          "skuLevel": "Lsku",
+          "legalEntityId": "3fdf0276-5e1a-4d5a-bd8b-365f5eae4e1a",
+          "scope": {},
+          "onHand": "0.000",
+          "reserved": "0.000",
+          "available": "0.000",
+          "byStatus": {
+            "AVAILABLE": "0.000",
+            "QUALITY_INSPECTION": "0.000",
+            "QUARANTINE": "0.000",
+            "BLOCKED": "0.000",
+            "IN_TRANSIT": "0.000",
+            "DAMAGED": "0.000",
+            "EXPIRED": "0.000"
+          },
+          "asOf": "2026-10-01T14:24:07.890Z",
+          "contractVersion": "v1"
+        }
+      }
+    }
+  ]
+}

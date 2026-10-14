@@ -1,0 +1,66 @@
+# WP-0173-PM0 D7 — git range and allowed-path check 2026-10-02T14:05:06+03:00
+
+## git log 64629d27b..HEAD
+9df9d4f25 bestepullukcu-alt <bestepullukcu@gmail.com> docs(sce): WP-0173-PM0 evidence, audit, FU01 pack §19 PM0 notes (ASSUMPTION-PM0-01..09, removal instruction)
+7491c5efd bestepullukcu-alt <bestepullukcu@gmail.com> feat(sce): WP-0173-PM0 — development-only product-master bridge in Diten.Web, FU-UI2-05 fixed reversal dates
+
+## git diff --stat 64629d27b..HEAD
+ .../2026-10/mod-0173-pm0-audit-2026-10-02.md       |   47 +
+ .../audits/2026-10/mod-0173-pm0-evidence/README.md |   26 +
+ .../2026-10/mod-0173-pm0-evidence/d1-build-web.log |   45 +
+ .../mod-0173-pm0-evidence/d2-diten-web-tests.trx   | 3600 ++++++++++++++++++++
+ .../d3-architecture-tests.trx                      |  136 +
+ .../2026-10/mod-0173-pm0-evidence/d4-sabotage.log  |   36 +
+ .../2026-10/mod-0173-pm0-evidence/d4-sabotage.sh   |   49 +
+ .../mod-0173-pm0-evidence/d5-runtime-smoke.json    |   39 +
+ .../d6-gateway-copy-changes.json                   |   16 +
+ .../d6-gateway-copy-override.json                  |    5 +
+ .../d6-prism-spec-lot.openapi.yaml                 |  222 ++
+ .../mod-0173-pm0-evidence/d6-script-checks.log     |   64 +
+ .../mod-0173-pm0-evidence/d7-fleet-before.json     |   98 +
+ .../mod-0173-pm0-evidence/d7-processes-after.json  |   10 +
+ .../mod-0173-pm0-evidence/persona-helper.js        |   80 +
+ .../2026-10/mod-0173-pm0-evidence/pm0-fixtures.js  |  119 +
+ .../2026-10/mod-0173-pm0-evidence/run-pm0-env.ps1  |  191 ++
+ .../01-s3-product-and-sku-via-bridge.jpg           |  Bin 0 -> 38295 bytes
+ ...02-s3-unit-hint-and-stock-effect-via-bridge.jpg |  Bin 0 -> 29570 bytes
+ .../screenshots/03-s2-reversal-then-replay.jpg     |  Bin 0 -> 15887 bytes
+ .../MOD-0173-FU01-inventory-ledger-ui.md           |   34 +
+ .../Inventory/InventoryProxyControllerTests.cs     |   54 +-
+ .../Inventory/ProductMasterBridgeTests.cs          |  144 +
+ .../Controllers/StockMovementsController.cs        |    7 +-
+ .../Models/Inventory/InventoryGatewayClient.cs     |    9 +-
+ .../Diten.Web/Models/Inventory/InventoryProxy.cs   |    4 +-
+ .../Diten.Web/Models/Inventory/MovementRules.cs    |   23 +
+ .../Models/Inventory/ProductMasterBridge.cs        |   89 +
+ .../Models/Inventory/StockMovementViewModels.cs    |    5 +
+ .../assets/js/Inventory/StockMovements/index.js    |   10 +-
+ run-diten.sh                                       |   19 +
+ run_all.sh                                         |    4 +
+ run_watch.sh                                       |    4 +
+ watch-diten.ps1                                    |    5 +
+ 34 files changed, 5184 insertions(+), 10 deletions(-)
+
+## paths outside the allowed set (must be none):
+(none)
+
+## protected paths touched (must be none):
+(none)
+
+## scripts: deleted lines (must be 0 each)
+19	0	run-diten.sh
+4	0	run_all.sh
+4	0	run_watch.sh
+5	0	watch-diten.ps1
+
+## FU01 pack: deleted lines (must be 0)
+34	0	execution/domains/supply-chain-execution/module-packs/MOD-0173-FU01-inventory-ledger-ui.md
+
+## commit message first bytes (no BOM):
+9df9d4f25    d   o   c
+7491c5efd    f   e   a
+
+## git status
+## feature/sce/mod-0173-inventory-ledger-valuation...origin/feature/sce/mod-0173-inventory-ledger-valuation [ahead 65]
+?? docs/records/audits/2026-10/mod-0173-pm0-evidence/d7-fleet-after.json
+?? docs/records/audits/2026-10/mod-0173-pm0-evidence/d7-git.log
