@@ -1384,6 +1384,26 @@ Dal `feature/sce/mod-0177-r4` (taban `9729409e0`). Kanıt `docs/records/audits/2
 **R4 CT-ACCEPTED (2026-10-14).** Read the binding (`ESignRecallSignature`: getSignature + current local hash, F3-A; no `verifySignature`) and the scope-middleware exemption (GET-only `/api/recall/esign-subjects/…`, same rule as quarantine / expiry). BLOCKED → CT decision B (`prepareSettingsChange` now; audit list 58 → 59 accepted temporarily — AUDIT1 v2 / BL-501 wires every Inventory command). CT trial merge on the MVP-1 tip `a114d6879`: Inventory **1182 + 4** all green, Platform ~ESign **177/177**, architecture 69/77 (same 8). **CT sabotage (not in a–h):** the "signed at or after the preparation" check dropped → `Rule_signed_after_the_preparation` + the stale-subject test red; restored, porcelain clean. Reconciliations accepted (pack `verifySignature` → F3-A; `RECALL_SUBJECT_NOT_FOUND`; provider via the Gateway like quarantine / expiry). O-R4-2 → R5, O-R4-3: owner Inventory + Platform restart needed for live (approval). Merged `--no-ff` into MVP-1.
 
 
+### 19.16 WP-0177-R5 — agent result, pending CT (2026-10-14)
+
+Dal `feature/sce/mod-0177-r5` (taban `394c05550`). Kanıt `docs/records/audits/2026-10/mod-0177-r5-evidence-2026-10-14.md` (+ betikler). Commit'ler:
+`52299453d` RECALL **1.4.0** (yalnız ekleme), `016c44c63` Inventory, (kanıt commit'i) kanıt + bu not + PUT bekçisine `updateDrillPlan` satırı.
+
+- **Teslim (KR-G):** `Features/Recall/Drills/**` — plan CRUD (`DP-NN`, If-Match, şirket kapsamı, `recall.drills.read/manage/run`);
+  `startDrill` (sunucu saati, başlangıçtaki hedef, Auto = enjekte rastgelelikle denetlenen seçim, Manual, şirket başına tek Running — kısmi tekil
+  indeks, `RC-YYYY-DNNN`); adımlar sıkı sırada (İzleme → `Drill` amaçlı iz anlık görüntüsü; Kapsam → kapsam yazılmaz; Müşteri listesi →
+  `EndedAtUtc`, `ceil` dakika, geçti = süre ≤ hedef × 60); sonuç hazırla → imzala (`recall.drill.result`, dr-v1 koşudan; sağlayıcı artık 200;
+  F3-A R4 portuyla; dört göz yok; politika gerekmezse imzasız); iptal saklanır (CT-R17), kapalı koşu değişmez; okumalar + `frequencyWarning`.
+- **Salt-okunur garanti:** ayrı tatbikat deposu; mimari test (IL dahil, gerçek tip adlarıyla uzlaştırılmış yasak liste, §3.2) + kiracının HER
+  koleksiyonunda yazma sayımı testi (istisnalar açıkça listelenir).
+- **AUD-001:** denetim listesi 59 → **66** GEÇİCİ (önceden verilen CT kararı); borç listesine satır yok; kanıt §2 "R5 komutları" tablosu.
+- **Uzlaştırmalar:** R5-1…R5-5 (sözleşme changelog'u, kanıt §3.1); pack §8.10 adları ↔ gerçek tipler (kanıt §3.2).
+- **Sabotaj:** a–h (b iki biçimde) 9/9 kırmızı → yeşil, özgün baytlar geri yazıldı, SHA eşit (kanıt §6). dr-v1 altın vektörü R4 ile aynı.
+- **Sayılar:** Inventory 1182 + 4 → **1199 + 4**; mimari **69/77** aynı 8; gateway 164/165; Web 2280/2280; Platform ESign 177/177; derleme 0 / 0.
+  Sonda 5168 + mongod 27517: tatbikat uçları ve sağlayıcı drill-run token'sız 401; filo PID'leri değişmedi.
+- Açık: O-R5-1 (geçici denetim borcu), O-R5-2 (sağlayıcının `recall.cases.read` anahtarı — CT kararı), O-R5-3 (pano / Tatbikat satırı / ekranlar
+  → R6 / R7), O-R5-4 (sahip yeniden başlatması), O-R5-5 (aday lot türü).
+
 ## 20. Follow-up Items
 
 | ID | Item | Owner |
