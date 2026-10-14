@@ -20,6 +20,9 @@ public sealed class RecallContract120Tests
 
     private static string FixtureV110Path => Path.Combine(RepoPaths.ServiceRoot, "tests", "Diten.InventoryService.Tests", "Contract", "Fixtures", "recall-v1.1.0.openapi.yaml");
 
+    /// <summary>WP-0177-R4: the 1.2.0 file is pinned too (<see cref="RecallContract130Tests"/>); this test now measures 1.1.0 → 1.2.0 between the two fixtures.</summary>
+    internal static string FixtureV120Path => Path.Combine(RepoPaths.ServiceRoot, "tests", "Diten.InventoryService.Tests", "Contract", "Fixtures", "recall-v1.2.0.openapi.yaml");
+
     private static JsonObject Load(string path)
         => (JsonObject)JsonNode.Parse(JsonSerializer.Serialize(new DeserializerBuilder().Build().Deserialize<object>(File.ReadAllText(path))))!;
 
@@ -33,7 +36,7 @@ public sealed class RecallContract120Tests
     public void The_1_2_0_change_is_additive_only()
     {
         var before = Load(FixtureV110Path);
-        var after = Load(ContractSchemas.RecallContractPath);
+        var after = Load(FixtureV120Path);
         Assert.Equal(("1.1.0", "1.2.0"), (before["info"]!["version"]!.GetValue<string>(), after["info"]!["version"]!.GetValue<string>()));
 
         var r3 = new[] { "getCaseStock", "requestQuarantine", "retryQuarantineRequest", "getCaseReturns", "linkReturn", "reviseScope" };

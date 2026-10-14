@@ -556,6 +556,8 @@ public sealed class RecallFailClosedSignatureTests : IClassFixture<ProductionSig
             ["effectivenessTargetPercent"] = new Dictionary<string, decimal> { ["1"] = 100, ["2"] = 95, ["3"] = 90 }, ["traceMaxDepth"] = 20, ["traceMaxNodes"] = 5000,
             ["reason"] = "Tatbikat hedefi 6 saate cikarildi"
         };
-        Assert.Equal(200, (await s.SendAsync(HttpMethod.Put, "/api/recall/settings", s.AdminToken, body, (string)body["idempotencyKey"]!, "W/\"0\"")).Status);
+        // R4: the policy is read from MOD-0022 with the caller's token (unreadable → required, fail-closed), so the admin reaches it
+        var admin = s.Mint(s.Admin, [.. RecallScenario.AdminKeys, "esign.signatures.sign"]);
+        Assert.Equal(200, (await s.SendAsync(HttpMethod.Put, "/api/recall/settings", admin, body, (string)body["idempotencyKey"]!, "W/\"0\"")).Status);
     }
 }

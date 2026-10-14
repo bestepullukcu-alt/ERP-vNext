@@ -3,7 +3,10 @@ namespace Diten.InventoryService.Application.Features.Recall.Ports;
 /// <summary>What the MOD-0022 effective policy says about one signable action for this company.</summary>
 public sealed record RecallSignatureRequirement(bool Required, string MeaningCode, string VisualMode);
 
-/// <summary>One signature to check against the prepared decision (pack §8.8 — signer, action, meaning, subject, after preparation).</summary>
+/// <summary>
+/// One signature to check against the prepared decision (pack §8.8 — signer, action, meaning, subject, after preparation). WP-0177-R4 (CT decision
+/// F3-A): the subject HASH is not passed in — the verifier recomputes it from the stored record with the provider's own function.
+/// </summary>
 public sealed record RecallSignatureVerification(
     string SignatureId,
     string ActionCode,
@@ -11,13 +14,12 @@ public sealed record RecallSignatureVerification(
     Guid SignerUserId,
     string SubjectType,
     Guid SubjectId,
-    string PayloadSha256,
     DateTimeOffset PreparedAtUtc);
 
 /// <summary>
 /// The e-signature gate of the signable recall decisions (pack §8.8: scope approval, effectiveness completion, closure; settings by policy).
-/// R1 ships the port and its FAIL-CLOSED production default (<see cref="FailClosedRecallSignature"/>); R4 replaces it with the MOD-0022
-/// implementation. 0177 never stores a signature — only the id the caller sends.
+/// R1 shipped the port and its FAIL-CLOSED default (<see cref="FailClosedRecallSignature"/>); R4 replaces it in production with the MOD-0022
+/// implementation <c>ESignRecallSignature</c>. 0177 never stores a signature — only the id the caller sends.
 /// </summary>
 public interface IRecallSignature
 {

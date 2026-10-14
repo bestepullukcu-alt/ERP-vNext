@@ -190,10 +190,10 @@ public sealed class RecallContractTests
     private static List<string> Strings(JsonNode? node) => node!.AsArray().Select(v => v!.GetValue<string>()).ToList();
 
     [Fact]
-    public void The_contract_is_frozen_1_2_0_owned_by_MOD_0177_with_the_CT_additions()
+    public void The_contract_is_frozen_1_3_0_owned_by_MOD_0177_with_the_CT_additions()
     {
         var info = Yaml.Value["info"]!;
-        Assert.Equal("1.2.0", info["version"]!.GetValue<string>());
+        Assert.Equal("1.3.0", info["version"]!.GetValue<string>());
         Assert.Equal("FROZEN", info["x-status"]!.GetValue<string>());
         Assert.Equal("MOD-0177", info["x-owner"]!.GetValue<string>());
         Assert.Equal("/api/recall", Yaml.Value["servers"]![0]!["url"]!.GetValue<string>());
@@ -204,6 +204,8 @@ public sealed class RecallContractTests
         Assert.All(new[] { "1.1.0", "rt-v1", "R2-1", "R2-4", "R2-7", "SnapshotRef" }, t => Assert.Contains(t, changelog, StringComparison.Ordinal));
         // R3 (1.2.0): KR-B / KR-C / KR-H / CT-R5 and the reconciliations R3-1…R3-4
         Assert.All(new[] { "1.2.0", "WP-0177-R3", "LOT_UNDER_RECALL", "pendingRevision", "R3-1", "R3-4", "never cancelled" }, t => Assert.Contains(t, changelog, StringComparison.Ordinal));
+        // R4 (1.3.0): the subject provider, prepareSettingsChange, F3-A and the reconciliations R4-1 / R4-2
+        Assert.All(new[] { "1.3.0", "WP-0177-R4", "F3-A", "rc-v1", "rs-v1", "RECALL_SUBJECT_NOT_FOUND", "R4-1", "R4-2" }, t => Assert.Contains(t, changelog, StringComparison.Ordinal));
         Assert.Equal(RecallPermissions.All.OrderBy(k => k), Strings(Yaml.Value["x-permissions"]!["owned"]).OrderBy(k => k));
         Assert.Equal("APPROVE", Yaml.Value["x-signable-actions"]!["defaultMeaningCode"]!.GetValue<string>());
         var settingsAction = Yaml.Value["x-signable-actions"]!["actions"]!.AsArray().Single(a => a!["actionCode"]!.GetValue<string>() == "recall.settings.update");
@@ -222,17 +224,18 @@ public sealed class RecallContractTests
     }
 
     [Fact]
-    public void The_controller_serves_exactly_the_R1_R2_and_R3_operations_with_their_permission()
+    public void The_controller_serves_exactly_the_R1_to_R4_operations_with_their_permission()
     {
         var served = typeof(RecallController).GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
             .SelectMany(m => m.GetCustomAttributes<HttpMethodAttribute>().SelectMany(a => a.HttpMethods.Select(v =>
                 (Path: "/" + a.Template, Method: v.ToLowerInvariant(), Permission: m.GetCustomAttribute<HasPermissionAttribute>()!.Policy!["Permission:".Length..]))))
             .ToList();
-        Assert.Equal(31, served.Count); // R1 22 + R2 runTrace, exportTrace, getCaseScopeDiff + R3 six
+        Assert.Equal(32, served.Count); // R1 22 + R2 runTrace, exportTrace, getCaseScopeDiff + R3 six + R4 prepareSettingsChange
 
         var byRoute = Operations().ToDictionary(o => (o.Path, o.Method));
         var r1 = Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R1"]).Concat(Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R2"]))
-            .Concat(Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R3"])).ToList();
+            .Concat(Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R3"])).Concat(Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R4"])).ToList();
+        Assert.Equal(["prepareSettingsChange", "getSignableSubject"], Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R4"]));
         Assert.Equal(["getCaseStock", "requestQuarantine", "retryQuarantineRequest", "getCaseReturns", "linkReturn", "reviseScope"],
             Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R3"]));
         Assert.Equal(["runTrace", "exportTrace", "getCaseScopeDiff"], Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R2"]));
@@ -243,7 +246,12 @@ public sealed class RecallContractTests
             Assert.Contains(op.Op["operationId"]!.GetValue<string>(), r1);
         }
 
-        Assert.Equal(r1.Count, served.Count);
+        // R4: getSignableSubject is served by the subject-provider controller (the MOD-0175 / MOD-0176 pattern — 404 for every refusal, no [HasPermission])
+        var provider = typeof(Diten.InventoryService.Api.Controllers.Recall.RecallESignSubjectsController);
+        Assert.Equal("api/recall/esign-subjects", provider.GetCustomAttribute<Microsoft.AspNetCore.Mvc.RouteAttribute>()!.Template);
+        Assert.Equal("/esign-subjects/{subjectType}/{subjectId}", "/esign-subjects/" + provider.GetMethod("GetSignableSubject")!.GetCustomAttribute<Microsoft.AspNetCore.Mvc.HttpGetAttribute>()!.Template);
+        Assert.Equal("getSignableSubject", byRoute[("/esign-subjects/{subjectType}/{subjectId}", "get")].Op["operationId"]!.GetValue<string>());
+        Assert.Equal(r1.Count, served.Count + 1);
         var notYet = Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["not-yet-implemented"]);
         Assert.Equal(Operations().Select(o => o.Op["operationId"]!.GetValue<string>()).Except(r1).OrderBy(x => x), notYet.OrderBy(x => x));
         Assert.Equal("api/recall", typeof(RecallController).GetCustomAttribute<Microsoft.AspNetCore.Mvc.RouteAttribute>()!.Template);
@@ -327,11 +335,11 @@ public sealed class RecallArchitectureTests
     {
         var entities = typeof(EntityBase).Assembly.GetTypes()
             .Where(t => typeof(EntityBase).IsAssignableFrom(t) && t.Namespace?.Contains(".Recall", StringComparison.Ordinal) == true).ToList();
-        Assert.Equal(13, entities.Count); // R1: settings, history, case, event, scope item, lot block, notification, consumption, segregation, audit; R2: trace snapshot; R3: quarantine request, return link
+        Assert.Equal(14, entities.Count); // R1: settings, history, case, event, scope item, lot block, notification, consumption, segregation, audit; R2: trace snapshot; R3: quarantine request, return link; R4: prepared settings change
         Assert.DoesNotContain(entities, t => t.Name.Contains("Signature", StringComparison.Ordinal));
         Assert.Contains(typeof(IRecallSignature), typeof(FailClosedRecallSignature).GetInterfaces());
         Assert.False(await new FailClosedRecallSignature().VerifyAsync(new RecallSignatureVerification("s", "recall.scope.approve", "APPROVE", Guid.NewGuid(),
-            "recall.case", Guid.NewGuid(), "x", DateTimeOffset.UtcNow)));
+            "recall.case", Guid.NewGuid(), DateTimeOffset.UtcNow)));
     }
 
     /// <summary>

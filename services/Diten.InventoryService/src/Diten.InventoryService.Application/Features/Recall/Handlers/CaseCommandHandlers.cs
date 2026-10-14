@@ -243,7 +243,10 @@ public abstract class RecallCaseCommandHandler
             ? null
             : RecallSupport.PendingMismatch<T>();
 
-    /// <summary>The MOD-0022 gate of a signable decision (fail-closed until R4): required and missing → 400, sent and not verified → 409.</summary>
+    /// <summary>
+    /// The MOD-0022 gate of a signable decision: required and missing → 400, sent and not verified → 409. WP-0177-R4: the verifier (F3-A)
+    /// recomputes the <c>rc-v1</c> hash of the case as stored — before this command changes it — and compares it with the signed one.
+    /// </summary>
     protected static async Task<Response<T>?> SignatureRefusalAsync<T>(IRecallSignature signature, RecallCase c, RecallPendingActionKind action, string? signatureId,
         Guid signer, CancellationToken ct)
     {
@@ -251,7 +254,7 @@ public abstract class RecallCaseCommandHandler
         var requirement = await signature.RequirementAsync(code, c.Id, ct);
         if (requirement.Required && signatureId is null) return RecallSupport.SignatureRequired<T>();
         if (signatureId is not null && !await signature.VerifyAsync(new RecallSignatureVerification(signatureId, code, requirement.MeaningCode, signer,
-                RecallContract.CaseSubjectType, c.Id, c.PendingAction!.PayloadSha256, c.PendingAction.SetAtUtc), ct))
+                RecallContract.CaseSubjectType, c.Id, c.PendingAction!.SetAtUtc), ct))
         {
             return RecallSupport.SignatureMismatch<T>();
         }
@@ -933,9 +936,15 @@ public sealed class StartRecallEffectivenessHandler : RecallCaseCommandHandler, 
 public sealed class CompleteRecallEffectivenessHandler : RecallCaseCommandHandler, IRequestHandler<CompleteRecallEffectivenessCommand, Response<RecallCaseDetailDto>>
 {
     private readonly IRecallSignature _signature;
+    private readonly RecallSubjectFacts _facts;
 
-    public CompleteRecallEffectivenessHandler(IRecallRepository repository, RecallReads reads, RecallSupport support, IRecallSignature signature)
-        : base(repository, reads, support) => _signature = signature;
+    public CompleteRecallEffectivenessHandler(IRecallRepository repository, RecallReads reads, RecallSupport support, IRecallSignature signature,
+        RecallSubjectFacts facts)
+        : base(repository, reads, support)
+    {
+        _signature = signature;
+        _facts = facts;
+    }
 
     public async Task<Response<RecallCaseDetailDto>> Handle(CompleteRecallEffectivenessCommand request, CancellationToken ct)
     {
@@ -967,11 +976,8 @@ public sealed class CompleteRecallEffectivenessHandler : RecallCaseCommandHandle
 
         if (c.Version != request.ExpectedVersion) return RecallSupport.Conflict<RecallCaseDetailDto>();
 
-        var settings = await Repository.FindSettingsAsync(ct) ?? RecallSettingsRules.Defaults();
-        var items = await Repository.ScopeItemsAsync(c.Id, c.ScopeRevision, ct);
-        var result = RecallEffectivenessRule.Compute(c.Class, RecallSettingsRules.TargetFor(settings, c.Class),
-            RecallReads.EffectivenessInputs(items, RecallReads.Effective(await Repository.ConsumptionsAsync(c.Id, ct)), await Repository.NotificationsAsync(c.Id, ct),
-                await Repository.ReturnLinksAsync(c.Id, ct)), now);
+        // R4: the SAME computation rc-v1 signed for this prepared completion (RecallSubjectFacts) — what the signer saw is what is stored
+        var result = await _facts.LiveEffectivenessAsync(c, null, now, ct);
         c.Effectiveness = result;
         c.EffectivenessCompletedBy = Support.UserId;
         c.EffectivenessCompletedAtUtc = now;

@@ -12,6 +12,10 @@ namespace Diten.InventoryService.Application.Features.Recall.Commands;
 public sealed record UpdateRecallSettingsCommand(RecallSettingsInput Settings, string? Reason, string? SignatureId, string IdempotencyKey, int ExpectedVersion)
     : IRequest<Response<RecallSettingsDto>>;
 
+/// <summary>R4 prepareSettingsChange (RECALL 1.3.0, CT-R16) — the proposal to sign: kept 15 minutes, the MOD-0022 subject <c>recall.settings-change</c>.</summary>
+public sealed record PrepareRecallSettingsChangeCommand(RecallSettingsInput Settings, string? Reason, string IdempotencyKey, int ExpectedVersion)
+    : IRequest<Response<RecallPendingActionResponseDto>>;
+
 /// <summary>§4.30 openCase — R1: by hand from a root lot (opening from a trace is R2).</summary>
 public sealed record OpenRecallCaseCommand(
     Guid RootLotId,
