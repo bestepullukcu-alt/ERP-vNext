@@ -195,6 +195,7 @@ public sealed class LoginOnlyEndpointGuardTests
 
     private static bool IsKeyGated(MethodInfo action)
         => action.IsDefined(typeof(HasPermissionAttribute), true)
+           || action.IsDefined(typeof(HasAnyPermissionAttribute), true) // WP-MVP1-SEC-ESIGN1: any one of the declared keys
            || action.DeclaringType!.IsDefined(typeof(HasPermissionAttribute), true)
            || action.IsDefined(typeof(RequiresExplicitPermissionAttribute), true);
 
