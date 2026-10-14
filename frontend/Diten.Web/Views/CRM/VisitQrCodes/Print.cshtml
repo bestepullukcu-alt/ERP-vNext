@@ -1,0 +1,90 @@
+@model Diten.Web.Models.CRM.VisitQrPrintViewModel
+@using Diten.Web.Views.CRM.VisitQrCodes
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<VisitQrIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["PrintTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    WP-VW-W3E (W3E-WEB-a, Q2) — the QR print page: single (A4 / A5) or the label sheet (4 / 8 on A4, dashed cut lines). The
+    sheet shows a DECOY until "Print": only then the payload is asked (crm.visit-qr.manage), drawn as an SVG by the Web
+    server (no-store), the CRM writes the printed event with the paper and copies, and the browser prints. No personal datum
+    is printed (no rep, no phone). UAS-001: without the manage key nothing but the notice.
+*@
+@if (!Model.CanPrint)
+{
+    <partial name="_AccessDenied" model="@Localizer["PrintTitle"].Value" />
+    return;
+}
+
+<div class="vq-scope vq-page" id="vq-print-root"
+     data-api-base="/CRM/VisitQrCodes/api"
+     data-account-id="@Model.AccountId"
+     data-ids="@string.Join(",", Model.AccountIds)"
+     data-mode="@(Model.Labels ? "labels" : "single")"
+     data-decoy="@Url.Content("~/assets/js/CRM/VisitQrCodes/qr-decoy.svg")">
+    <div>
+        <div class="vq-crumb">@Localizer["PrintCrumb"]</div>
+        <h4 class="vq-title" style="margin-top:4px">@Localizer["PrintTitle"]</h4>
+    </div>
+
+    <div class="vq-print-bar">
+        <div class="vq-seg" role="group" aria-label="@Localizer["PrintTitle"]">
+            <button type="button" id="vq-mode-single" @(Model.AccountId is null && Model.AccountIds.Count != 1 ? "disabled" : "")>@Localizer["ModeSingle"]</button>
+            <button type="button" id="vq-mode-labels">@Localizer["ModeLabels"]</button>
+        </div>
+        <div class="vq-bar-group" id="vq-paper-single">@Localizer["PaperLabel"]
+            <div class="vq-seg" role="group"><button type="button" data-paper="a4">A4</button><button type="button" data-paper="a5">A5</button></div>
+        </div>
+        <div class="vq-bar-group d-none" id="vq-paper-labels">@Localizer["PerA4"]
+            <div class="vq-seg" role="group"><button type="button" data-paper="labels4">@Localizer["Labels4"]</button><button type="button" data-paper="labels8">@Localizer["Labels8"]</button></div>
+        </div>
+        <label class="vq-bar-group">@Localizer["CopiesLabel"] <input type="number" class="vq-input vq-copies" id="vq-copies" min="1" max="50" value="1" /></label>
+        <div class="vq-bar-hint" id="vq-print-hint"></div>
+        <button type="button" class="vq-btn vq-btn-p" id="vq-print-go"><i class="bx bx-printer"></i>@Localizer["PrintButton"]</button>
+    </div>
+    <div class="vq-callout vq-callout-danger d-none" id="vq-print-error" role="alert"><i class="bx bx-error-circle"></i><span class="vq-grow" id="vq-print-error-text"></span></div>
+    <div class="vq-callout vq-callout-info d-none" id="vq-print-skipped"><i class="bx bx-info-circle"></i><span id="vq-print-skipped-text"></span></div>
+
+    <div class="vq-stage">
+        <div id="vq-print-area">
+            @* the single sticker *@
+            <div class="vq-sheet vq-sheet-a4" id="vq-single">
+                <div class="vq-s-parent" id="vq-s-parent">@(Model.ParentName ?? string.Empty)</div>
+                <div class="vq-s-name" id="vq-s-name"><bdi>@(Model.AccountName ?? "—")</bdi></div>
+                <div class="vq-s-addr">@(Model.Address ?? string.Empty)</div>
+                <div class="vq-s-qr" id="vq-s-qr"></div>
+                <div class="vq-s-text">@Localizer["StickerText"]</div>
+                <div class="vq-s-foot">
+                    <div class="vq-s-brand">@await Component.InvokeAsync("TenantBrand", new { preview = true })</div>
+                    <div id="vq-s-foot"></div>
+                </div>
+            </div>
+            @* the label sheet(s) *@
+            <div class="vq-labels-wrap d-none" id="vq-labels">
+                <div class="vq-cut"><i class="bx bx-cut"></i><span id="vq-cut-text"></span></div>
+                <div id="vq-label-pages" class="d-flex flex-column gap-3"></div>
+            </div>
+        </div>
+    </div>
+    <template id="vq-brand-template"><span class="vq-s-brand">@await Component.InvokeAsync("TenantBrand", new { preview = true })</span></template>
+    <div>
+        <a href="/CRM/VisitQrCodes" class="vq-link"><i class="bx bx-chevron-left vq-flip"></i>@Localizer["BackToList"]</a>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/js/CRM/VisitQrCodes/visit-qr.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script>
+        window.VisitQrL10n = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+            VisitQrIndex.ScriptKeys.ToDictionary(k => k, k => Localizer[k].Value)));
+    </script>
+    <script src="~/assets/js/CRM/VisitPlanning/format.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/VisitQrCodes/qr-core.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/VisitQrCodes/qr-print.js" asp-append-version="true"></script>
+}

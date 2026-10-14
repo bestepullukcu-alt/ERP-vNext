@@ -187,6 +187,12 @@ public sealed class AccountDetailViewModel
 public sealed class AccountOverviewViewModel
 {
     public AccountDetailViewModel? Account { get; set; }
+
+    /// <summary>WP-VW-W3E (W3E-WEB-a) — crm.visit-qr.read | .manage: the institution QR card is drawn.</summary>
+    public bool VisitQrRead { get; set; }
+
+    /// <summary>WP-VW-W3E (W3E-WEB-a) — crm.visit-qr.manage: the card's buttons (generate, print, regenerate, revoke).</summary>
+    public bool VisitQrManage { get; set; }
     public Guid? ParentAccountId { get; set; }
     public List<AccountListItemViewModel> Children { get; set; } = [];
     public CoverageSummaryViewModel? Coverage { get; set; }

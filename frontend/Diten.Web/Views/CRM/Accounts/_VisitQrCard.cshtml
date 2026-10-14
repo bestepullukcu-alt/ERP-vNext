@@ -1,0 +1,88 @@
+@model Diten.Web.Models.CRM.AccountOverviewViewModel
+@using Diten.Web.Views.CRM.VisitQrCodes
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<VisitQrIndex> QrLocalizer
+@*
+    WP-VW-W3E (W3E-WEB-a, Q1 / Q3 / Q4) — the institution QR card on the account details: no code (Q1a, + the parent's code
+    line for a sub-unit), active (Q1b: the DECORATIVE blurred preview — no payload is read here, D-8), revoked (Q1c), read
+    only (Q1d: crm.visit-qr.read without .manage → no buttons). History (timeline), regenerate and revoke dialogs. Every
+    call goes through /CRM/VisitQrCodes/api/* (same-origin proxies; the CRM decides). Drawn only with crm.visit-qr.read.
+*@
+@if (Model.VisitQrRead && Model.Account is { } account)
+{
+    <section class="vq-scope vq-card" id="vq-card"
+             data-api-base="/CRM/VisitQrCodes/api"
+             data-print-base="/CRM/VisitQrCodes"
+             data-account-id="@account.Id"
+             data-account-name="@account.AccountName"
+             data-can-manage="@Model.VisitQrManage.ToString().ToLowerInvariant()"
+             data-decoy="@Url.Content("~/assets/js/CRM/VisitQrCodes/qr-decoy.svg")">
+        <div class="vq-card-head">
+            <div class="vq-icon" aria-hidden="true"><i class="bx bx-qr"></i></div>
+            <span class="vq-card-title">@QrLocalizer["CardTitle"]</span>
+            <span class="vq-chip d-none" id="vq-chip"></span>
+            <button type="button" class="vq-link vq-history-link d-none" id="vq-history-link"><i class="bx bx-history"></i>@QrLocalizer["HistoryLink"]</button>
+        </div>
+        <div class="vq-card-body">
+            <div class="vq-callout vq-callout-ok d-none" id="vq-toast" role="status"><i class="bx bx-check-circle"></i><span class="vq-grow" id="vq-toast-text"></span><a href="#" id="vq-toast-print" class="d-none">@QrLocalizer["PrintButton"]</a></div>
+            <div class="vq-callout vq-callout-danger d-none" id="vq-error" role="alert"><i class="bx bx-error-circle"></i><span class="vq-grow" id="vq-error-text"></span><button type="button" class="vq-link d-none" id="vq-retry">@QrLocalizer["Retry"]</button></div>
+            <div id="vq-state"></div>
+        </div>
+    </section>
+
+    @* ── Q3 regenerate ── *@
+    <div class="modal fade vq-scope vq-modal" id="vq-regen" tabindex="-1" aria-labelledby="vq-regen-title" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="vq-dlg-head"><h5 class="vq-dlg-title" id="vq-regen-title">@QrLocalizer["RegenTitle"]</h5><button type="button" class="vq-x" data-bs-dismiss="modal" aria-label="@QrLocalizer["CloseButton"]"><i class="bx bx-x"></i></button></div>
+                <div class="vq-dlg-body">
+                    <div class="vq-callout vq-callout-warn"><i class="bx bx-error"></i><span id="vq-regen-warn"></span></div>
+                    <div id="vq-regen-versions"></div>
+                    <label class="vq-label">
+                        <span class="vq-label-cap">@QrLocalizer["ReasonLabel"] <span>· @QrLocalizer["Optional"]</span></span>
+                        <textarea class="vq-textarea" id="vq-regen-reason" rows="3" maxlength="500" placeholder="@QrLocalizer["ReasonPlaceholderRegen"]"></textarea>
+                    </label>
+                    <div class="vq-err d-none" id="vq-regen-error" role="alert"></div>
+                </div>
+                <div class="vq-dlg-foot">
+                    <button type="button" class="vq-btn vq-btn-s" data-bs-dismiss="modal">@QrLocalizer["CancelButton"]</button>
+                    <button type="button" class="vq-btn vq-btn-p" id="vq-regen-confirm"><i class="bx bx-refresh"></i>@QrLocalizer["RegenerateButton"]</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* ── Q4 revoke ── *@
+    <div class="modal fade vq-scope vq-modal" id="vq-revoke" tabindex="-1" aria-labelledby="vq-revoke-title" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="vq-dlg-head"><h5 class="vq-dlg-title" id="vq-revoke-title">@QrLocalizer["RevokeTitle"]</h5><button type="button" class="vq-x" data-bs-dismiss="modal" aria-label="@QrLocalizer["CloseButton"]"><i class="bx bx-x"></i></button></div>
+                <div class="vq-dlg-body">
+                    <div id="vq-revoke-text"></div>
+                    <div class="vq-callout vq-callout-info"><i class="bx bx-info-circle"></i><span>@QrLocalizer["RevokeInfo"]</span></div>
+                    <label class="vq-label">
+                        <span class="vq-label-cap">@QrLocalizer["ReasonLabel"] <span class="vq-req">*</span></span>
+                        <textarea class="vq-textarea" id="vq-revoke-reason" rows="4" maxlength="500" placeholder="@QrLocalizer["ReasonPlaceholderRevoke"]" aria-required="true"></textarea>
+                    </label>
+                    <div class="vq-count" id="vq-revoke-count"></div>
+                    <div class="vq-err d-none" id="vq-revoke-error" role="alert"></div>
+                </div>
+                <div class="vq-dlg-foot">
+                    <button type="button" class="vq-btn vq-btn-s" data-bs-dismiss="modal">@QrLocalizer["CancelButton"]</button>
+                    <button type="button" class="vq-btn vq-btn-p" id="vq-revoke-confirm" disabled><i class="bx bx-block"></i>@QrLocalizer["RevokeButton"]</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* ── Q1 history ── *@
+    <div class="modal fade vq-scope vq-modal" id="vq-history" tabindex="-1" aria-labelledby="vq-history-title" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="vq-dlg-head" style="padding-bottom:6px"><h5 class="vq-dlg-title" id="vq-history-title">@QrLocalizer["HistoryTitle"]</h5><button type="button" class="vq-x" data-bs-dismiss="modal" aria-label="@QrLocalizer["CloseButton"]"><i class="bx bx-x"></i></button></div>
+                <div class="vq-dlg-sub"><bdi>@account.AccountName</bdi></div>
+                <div class="vq-timeline" id="vq-history-list"></div>
+            </div>
+        </div>
+    </div>
+}

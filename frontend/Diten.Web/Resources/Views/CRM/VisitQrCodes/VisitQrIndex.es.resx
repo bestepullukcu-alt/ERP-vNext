@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="CardTitle" xml:space="preserve"><value>Código QR de la institución</value></data>
+  <data name="Status_active" xml:space="preserve"><value>Activo</value></data>
+  <data name="Status_revoked" xml:space="preserve"><value>Revocado</value></data>
+  <data name="Status_none" xml:space="preserve"><value>Sin código</value></data>
+  <data name="HistoryLink" xml:space="preserve"><value>Historial</value></data>
+  <data name="NoneText" xml:space="preserve"><value>Al inicio de la visita, el representante escanea el código en la recepción de esta institución.</value></data>
+  <data name="InheritedInfo" xml:space="preserve"><value>El código de la institución principal ({0}) también es válido en esta unidad.</value></data>
+  <data name="Generate" xml:space="preserve"><value>Generar código QR</value></data>
+  <data name="PreviewLocked" xml:space="preserve"><value>Código completo al imprimir</value></data>
+  <data name="ActiveLine" xml:space="preserve"><value>Versión {0} · Emitido por {1} · {2}</value></data>
+  <data name="ScanLine" xml:space="preserve"><value>Último escaneo: {0} · {1} escaneos en los últimos 30 días</value></data>
+  <data name="NeverScanned" xml:space="preserve"><value>todavía no</value></data>
+  <data name="ValidNote" xml:space="preserve"><value>Válido hasta que se revoque; no caduca.</value></data>
+  <data name="PrintButton" xml:space="preserve"><value>Imprimir</value></data>
+  <data name="RegenerateButton" xml:space="preserve"><value>Regenerar</value></data>
+  <data name="RevokeButton" xml:space="preserve"><value>Revocar</value></data>
+  <data name="ReadOnly" xml:space="preserve"><value>Solo lectura</value></data>
+  <data name="RevokedLine" xml:space="preserve"><value>Revocado · {0}, {1}</value></data>
+  <data name="ReasonLine" xml:space="preserve"><value>Motivo: {0}</value></data>
+  <data name="RevokedNote" xml:space="preserve"><value>Última versión {0} · la institución no tiene código ahora. Con el QR obligatorio, los representantes empiezan aquí sin código y la visita se marca.</value></data>
+  <data name="NewCode" xml:space="preserve"><value>Generar un código nuevo</value></data>
+  <data name="ToastIssued" xml:space="preserve"><value>Versión {0} generada. Imprima el código y colóquelo en recepción.</value></data>
+  <data name="ToastRegenerated" xml:space="preserve"><value>Versión {0} generada. Los códigos antiguos ya no son válidos; imprima el nuevo y sustituya el anterior.</value></data>
+  <data name="ToastRevoked" xml:space="preserve"><value>El código QR se ha revocado.</value></data>
+  <data name="RegenTitle" xml:space="preserve"><value>Regenerar el código QR</value></data>
+  <data name="RegenWarn" xml:space="preserve"><value>Todos los códigos antiguos colocados o impresos en {0} dejan de ser válidos de inmediato. Debe imprimir el nuevo y sustituir el anterior.</value></data>
+  <data name="VersionArrow" xml:space="preserve"><value>Versión {0} → Versión {1}</value></data>
+  <data name="ReasonLabel" xml:space="preserve"><value>Motivo</value></data>
+  <data name="Optional" xml:space="preserve"><value>opcional</value></data>
+  <data name="ReasonPlaceholderRegen" xml:space="preserve"><value>Ej.: el código impreso está desgastado</value></data>
+  <data name="CancelButton" xml:space="preserve"><value>Cancelar</value></data>
+  <data name="CloseButton" xml:space="preserve"><value>Cerrar</value></data>
+  <data name="RevokeTitle" xml:space="preserve"><value>Revocar el código QR</value></data>
+  <data name="RevokeText" xml:space="preserve"><value>Al revocarlo, {0} se queda sin código; los códigos colocados o impresos dejan de ser válidos.</value></data>
+  <data name="RevokeInfo" xml:space="preserve"><value>Con el QR obligatorio, los representantes empiezan aquí sin código y la visita se marca.</value></data>
+  <data name="ReasonPlaceholderRevoke" xml:space="preserve"><value>¿Por qué se revoca?</value></data>
+  <data name="ReasonCount" xml:space="preserve"><value>{0} / 500</value></data>
+  <data name="ReasonRequired" xml:space="preserve"><value>El motivo es obligatorio.</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>Historial del código QR</value></data>
+  <data name="Ev_issued" xml:space="preserve"><value>Generado · Versión {0}</value></data>
+  <data name="Ev_regenerated" xml:space="preserve"><value>Regenerado · Versión {0}</value></data>
+  <data name="Ev_revoked" xml:space="preserve"><value>Revocado · Versión {0}</value></data>
+  <data name="Ev_printed" xml:space="preserve"><value>Impreso · Versión {0}</value></data>
+  <data name="Ev_bulk_issued" xml:space="preserve"><value>Generado en lote · Versión {0}</value></data>
+  <data name="PrintedDetail" xml:space="preserve"><value>{0}, {1} copias</value></data>
+  <data name="Paper_a4" xml:space="preserve"><value>A4</value></data>
+  <data name="Paper_a5" xml:space="preserve"><value>A5</value></data>
+  <data name="Paper_labels4" xml:space="preserve"><value>Hoja de 4 etiquetas</value></data>
+  <data name="Paper_labels8" xml:space="preserve"><value>Hoja de 8 etiquetas</value></data>
+  <data name="NoHistory" xml:space="preserve"><value>Todavía no hay eventos.</value></data>
+  <data name="Today" xml:space="preserve"><value>hoy {0}</value></data>
+  <data name="Yesterday" xml:space="preserve"><value>ayer {0}</value></data>
+  <data name="Err_visit_execution_concurrency_conflict" xml:space="preserve"><value>Otra persona cambió el código QR. Recargue e inténtelo de nuevo.</value></data>
+  <data name="Err_visit_qr_signing_unavailable" xml:space="preserve"><value>Ahora no se pueden firmar códigos QR. No se generó nada; inténtelo más tarde.</value></data>
+  <data name="Err_visit_qr_not_active" xml:space="preserve"><value>Esta institución no tiene un código QR activo.</value></data>
+  <data name="Err_visit_qr_account_not_found" xml:space="preserve"><value>No se encontró la institución.</value></data>
+  <data name="Err_visit_qr_request_invalid" xml:space="preserve"><value>La solicitud no es válida. Revise los valores e inténtelo de nuevo.</value></data>
+  <data name="Err_permission" xml:space="preserve"><value>No tiene permiso para esta acción.</value></data>
+  <data name="Err_generic" xml:space="preserve"><value>La acción falló. Inténtelo de nuevo.</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>No se pudo cargar el código QR.</value></data>
+  <data name="Retry" xml:space="preserve"><value>Reintentar</value></data>
+  <data name="PageTitle" xml:space="preserve"><value>Códigos QR de instituciones</value></data>
+  <data name="Crumb" xml:space="preserve"><value>CRM / Visita / Códigos QR de instituciones</value></data>
+  <data name="Intro" xml:space="preserve"><value>Códigos colocados en la recepción de las instituciones. Si una unidad no tiene código propio, vale el de la institución principal.</value></data>
+  <data name="FiltersTitle" xml:space="preserve"><value>Filtros</value></data>
+  <data name="AllRegions" xml:space="preserve"><value>Todas las regiones</value></data>
+  <data name="AllTypes" xml:space="preserve"><value>Todos los tipos de institución</value></data>
+  <data name="AllCities" xml:space="preserve"><value>Todas las ciudades</value></data>
+  <data name="AllStatuses" xml:space="preserve"><value>Todos los estados QR</value></data>
+  <data name="StatusOpt_none" xml:space="preserve"><value>Ninguno</value></data>
+  <data name="StatusOpt_active" xml:space="preserve"><value>Activo</value></data>
+  <data name="StatusOpt_revoked" xml:space="preserve"><value>Revocado</value></data>
+  <data name="SearchPlaceholder" xml:space="preserve"><value>Buscar institución</value></data>
+  <data name="CountLabel" xml:space="preserve"><value>{0} instituciones</value></data>
+  <data name="SelectedLabel" xml:space="preserve"><value>{0} seleccionadas</value></data>
+  <data name="BulkGenerate" xml:space="preserve"><value>Generar para las seleccionadas (sin código)</value></data>
+  <data name="BulkPrint" xml:space="preserve"><value>Imprimir las seleccionadas (hoja de etiquetas)</value></data>
+  <data name="BulkLimit" xml:space="preserve"><value>Seleccione como máximo 200 instituciones.</value></data>
+  <data name="ColInstitution" xml:space="preserve"><value>Institución</value></data>
+  <data name="ColType" xml:space="preserve"><value>Tipo</value></data>
+  <data name="ColCity" xml:space="preserve"><value>Ciudad</value></data>
+  <data name="ColStatus" xml:space="preserve"><value>Estado QR</value></data>
+  <data name="ColVersion" xml:space="preserve"><value>Versión</value></data>
+  <data name="ColLastScan" xml:space="preserve"><value>Último escaneo</value></data>
+  <data name="ColRecent" xml:space="preserve"><value>Últimos 30 días</value></data>
+  <data name="ColActions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="Chip_active" xml:space="preserve"><value>Activo</value></data>
+  <data name="Chip_revoked" xml:space="preserve"><value>Revocado</value></data>
+  <data name="Chip_none" xml:space="preserve"><value>Ninguno</value></data>
+  <data name="InheritsParent" xml:space="preserve"><value>vale el código de la principal</value></data>
+  <data name="VersionShort" xml:space="preserve"><value>v{0}</value></data>
+  <data name="BulkResult" xml:space="preserve"><value>{0} códigos generados · {1} instituciones ya tenían un código activo, omitidas</value></data>
+  <data name="PrintLabelsLink" xml:space="preserve"><value>Imprimir la hoja de etiquetas</value></data>
+  <data name="EmptyTitle" xml:space="preserve"><value>Ninguna institución coincide con los filtros</value></data>
+  <data name="ClearFilters" xml:space="preserve"><value>Borrar filtros</value></data>
+  <data name="RowPrint" xml:space="preserve"><value>Imprimir el código</value></data>
+  <data name="RowOpen" xml:space="preserve"><value>Abrir la institución</value></data>
+  <data name="SelectAll" xml:space="preserve"><value>Seleccionar todo en esta página</value></data>
+  <data name="SelectRow" xml:space="preserve"><value>Seleccionar {0}</value></data>
+  <data name="PageInfo" xml:space="preserve"><value>{0}–{1} de {2}</value></data>
+  <data name="PrevPage" xml:space="preserve"><value>Anterior</value></data>
+  <data name="NextPage" xml:space="preserve"><value>Siguiente</value></data>
+  <data name="PrintTitle" xml:space="preserve"><value>Imprimir el código QR</value></data>
+  <data name="PrintCrumb" xml:space="preserve"><value>CRM / Instituciones / Imprimir el código QR</value></data>
+  <data name="ModeSingle" xml:space="preserve"><value>Individual</value></data>
+  <data name="ModeLabels" xml:space="preserve"><value>Hoja de etiquetas</value></data>
+  <data name="PaperLabel" xml:space="preserve"><value>Papel</value></data>
+  <data name="PerA4" xml:space="preserve"><value>En A4</value></data>
+  <data name="Labels4" xml:space="preserve"><value>4 códigos</value></data>
+  <data name="Labels8" xml:space="preserve"><value>8 códigos</value></data>
+  <data name="CopiesLabel" xml:space="preserve"><value>Copias</value></data>
+  <data name="HintSingle" xml:space="preserve"><value>Se imprime el mismo código; las impresiones anteriores siguen siendo válidas.</value></data>
+  <data name="HintLabels" xml:space="preserve"><value>Códigos de las instituciones seleccionadas · corte por las líneas discontinuas.</value></data>
+  <data name="StickerText" xml:space="preserve"><value>Nuestro representante escanea este código al inicio de la visita. Por favor, no lo retire.</value></data>
+  <data name="StickerFooter" xml:space="preserve"><value>Versión {0} · Impreso el {1}</value></data>
+  <data name="LabelFooter" xml:space="preserve"><value>Versión {0} · {1}</value></data>
+  <data name="CutHint" xml:space="preserve"><value>Corte por las líneas discontinuas · A4 · {0} códigos</value></data>
+  <data name="PreviewNote" xml:space="preserve"><value>El código se dibuja al pulsar Imprimir (la impresión queda registrada).</value></data>
+  <data name="NothingToPrint" xml:space="preserve"><value>Ninguna de las instituciones seleccionadas tiene un código activo.</value></data>
+  <data name="NoSelection" xml:space="preserve"><value>No hay instituciones seleccionadas. Elíjalas en la página de códigos QR.</value></data>
+  <data name="SkippedNote" xml:space="preserve"><value>Se omitieron {0} instituciones sin código activo.</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Volver a los códigos QR</value></data>
+</root>

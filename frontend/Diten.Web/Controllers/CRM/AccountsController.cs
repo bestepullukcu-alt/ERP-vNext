@@ -240,6 +240,10 @@ public sealed class AccountsController : Controller
         // — the core Account Details page still renders.
         await PopulateRelatedProjectionsAsync(id, overview);
 
+        // WP-VW-W3E (W3E-WEB-a) — the institution QR card: drawn with crm.visit-qr.read (or .manage), buttons with .manage.
+        overview.VisitQrManage = PermissionClaims.HasPermission(User, VisitQrCodesController.Manage);
+        overview.VisitQrRead = overview.VisitQrManage || PermissionClaims.HasPermission(User, VisitQrCodesController.Read);
+
         return View($"{ViewRoot}/Details.cshtml", overview);
     }
 

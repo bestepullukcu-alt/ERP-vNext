@@ -50,6 +50,13 @@
  *   photoSize(w, h) / PHOTO_*         the JPEG: the longest edge 1600 px, quality 0.85
  *   cameraConstraints(layout) / cameraErrorKey(err)   the phone's back camera; a refused / missing camera
  *   startError(response)              a refused start -> the key in the user's language (+ the distance when far)
+ *
+ * WP-VW-W3E (W3E-WEB-a) — the institution QR at the start (S1–S8); with qrMode off (or no setting) NOTHING changes:
+ *   qrMode(policy, kind)              'off' | 'optional' | 'required' (a remote visit is always 'off')
+ *   qrView(check, mode)               a qr-check answer -> the box state: ok | wrong | invalid | unverifiable | noPrinted | idle
+ *   qrNoCodeState(mode, check)        "I can't find the code" -> nocodeOpt | nocodeReq | noPrinted
+ *   qrSatisfied(mode, qr)             may the required QR let the start go (ok, noPrinted, scanned-unchecked)
+ *   showDeviceLine(policy)            S7: antiFraudMode = flag (a browser is never verified)
  * Reason codes / labels are NOT here: they come from the reference set (GET reasons), never a local list.
  */
 (function (root, factory) {
@@ -599,8 +606,52 @@
         const out = [];
         if (n.photo && !e.photo) { out.push('photo'); }
         if (n.location && !hasFix(e.location)) { out.push('location'); }
+        // WP-VW-W3E (W3E-WEB-a, S8) — a required QR not read yet: "Missing: QR code" and the start stays off
+        if (qrMode(policy, e.kind) === 'required' && !qrSatisfied('required', e.qr)) { out.push('qr'); }
         return out;
     };
+
+    // ── WP-VW-W3E (W3E-WEB-a) — the institution QR at the start ──────────────────────────────────────────────
+    const QR_MODES = ['optional', 'required'];
+
+    /** The effective QR setting of this start: off without a setting, for a remote visit, or when the tenant says off. */
+    const qrMode = (policy, kind) => {
+        const m = policy && policy.qrMode;
+        return kind === 'remote' || QR_MODES.indexOf(m) < 0 ? 'off' : m;
+    };
+
+    /**
+     * A qr-check answer (§2.10) -> the box: ok (+ the scanned institution, via the parent), wrong (+ its name), invalid
+     * (a bad / revoked code), unverifiable (no signing key), noPrinted (required, the chain has no code: start without a
+     * penalty), idle (nothing scanned yet). The server's wouldRefuse stays the final word at the start.
+     */
+    const qrView = (check, mode) => {
+        const c = check || {};
+        switch (c.status) {
+            case 'ok': return { state: 'ok', accountName: c.accountName || null, viaParent: c.matchedVia === 'parent' };
+            case 'wrong_account': return { state: 'wrong', accountName: c.accountName || null };
+            case 'invalid':
+            case 'revoked': return { state: 'invalid' };
+            case 'unverifiable': return { state: 'unverifiable', refused: !!c.wouldRefuse };
+            case 'not_issued': return { state: mode === 'required' ? 'noPrinted' : 'idle' };
+            case 'not_applicable': return { state: 'off' };
+            default: return { state: 'idle' };
+        }
+    };
+
+    /** "I can't find the code": optional -> continue without; required -> no code in the chain: start, else ask for an exception. */
+    const qrNoCodeState = (mode, check) => (mode !== 'required' ? 'nocodeOpt' : check && check.expectedHasActiveCode === false ? 'noPrinted' : 'nocodeReq');
+
+    /** The required QR lets the start go after a verified code, when the institution has none, or a read code that could
+     * not be pre-checked (the start checks it). Optional / off never block. */
+    const qrSatisfied = (mode, qr) => {
+        if (mode !== 'required') { return true; }
+        const st = qr && qr.state;
+        return st === 'ok' || st === 'noPrinted' || st === 'scanned';
+    };
+
+    /** S7 — a browser is never a verified device: with antiFraudMode = flag the rep is told before starting. */
+    const showDeviceLine = policy => !!policy && policy.antiFraudMode === 'flag';
 
     /** "Start the presentation": nothing missing and no start in flight. The distance is the SERVER's to judge. */
     const canBegin = (policy, ev) => !(ev && ev.busy) && startMissing(policy, ev).length === 0;
@@ -646,6 +697,11 @@
             out.push(['photo', e.photo, e.photoName || 'visit-photo.jpg']);
             if (e.photoCapturedAt) { out.push(['photoCapturedAt', e.photoCapturedAt]); }
         }
+        // WP-VW-W3E — the scanned text as read (never parsed here) + the client's scan instant (informative only)
+        if (e.qr && e.qr.payload && e.qr.state !== 'skipped') {
+            out.push(['qrPayload', e.qr.payload]);
+            if (e.qr.scannedAt) { out.push(['qrScannedAt', e.qr.scannedAt]); }
+        }
         return out;
     };
 
@@ -679,6 +735,9 @@
     ];
     const DISTANCE_PREFIX = 'distance_meters=';
 
+    /** WP-VW-W3E — the QR refusals of a start (StartErr_* keys too; START_CODES stays the W3 list). */
+    const QR_START_CODES = ['visit_qr_required', 'visit_qr_invalid', 'visit_qr_wrong_account', 'visit_qr_revoked', 'visit_qr_signing_unavailable'];
+
     /**
      * A refused start -> { key, code, distanceMeters, hintKey }: the code's text (StartErr_*), the distance a too-far
      * refusal carries ("distance_meters=N"), and for too far the setting's hint. Unknown / network -> UploadFailed /
@@ -686,7 +745,7 @@
      */
     const startError = response => {
         const errors = response && response.body && Array.isArray(response.body.errors) ? response.body.errors : [];
-        const code = errors.find(c => START_CODES.indexOf(c) > -1) || null;
+        const code = errors.find(c => START_CODES.indexOf(c) > -1 || QR_START_CODES.indexOf(c) > -1) || null;
         const line = errors.find(c => typeof c === 'string' && c.indexOf(DISTANCE_PREFIX) === 0);
         const distance = line ? Number(line.slice(DISTANCE_PREFIX.length)) : null;
         if (code) {
@@ -709,6 +768,7 @@
         compactCard, tinyCard, cardModel, stepMinutes, estimate, monthCell, DIALOG_TABS, dialogTabs, dayHead, LEGEND, productDistribution, alertFor, isPromo,
         minutesSince, clockOf, canStart, visitActions, presentationUrl, reportUrl, evidenceNeeds, startMissing, canBegin, locationView,
         geoErrorStatus, startFields, PHOTO_MAX_EDGE, PHOTO_QUALITY, PHOTO_TYPE, photoSize, cameraConstraints, cameraErrorKey,
-        START_CODES, startError, distanceParts
+        START_CODES, startError, distanceParts,
+        QR_MODES, qrMode, qrView, qrNoCodeState, qrSatisfied, showDeviceLine, QR_START_CODES
     };
 }));

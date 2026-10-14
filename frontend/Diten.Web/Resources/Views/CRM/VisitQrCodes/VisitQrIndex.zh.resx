@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="CardTitle" xml:space="preserve"><value>机构二维码</value></data>
+  <data name="Status_active" xml:space="preserve"><value>有效</value></data>
+  <data name="Status_revoked" xml:space="preserve"><value>已撤销</value></data>
+  <data name="Status_none" xml:space="preserve"><value>无二维码</value></data>
+  <data name="HistoryLink" xml:space="preserve"><value>历史</value></data>
+  <data name="NoneText" xml:space="preserve"><value>拜访开始时，代表扫描该机构前台的二维码。</value></data>
+  <data name="InheritedInfo" xml:space="preserve"><value>上级机构（{0}）的二维码在本单元同样有效。</value></data>
+  <data name="Generate" xml:space="preserve"><value>生成二维码</value></data>
+  <data name="PreviewLocked" xml:space="preserve"><value>完整二维码在打印时显示</value></data>
+  <data name="ActiveLine" xml:space="preserve"><value>版本 {0} · 生成人 {1} · {2}</value></data>
+  <data name="ScanLine" xml:space="preserve"><value>最近扫描：{0} · 近 30 天扫描 {1} 次</value></data>
+  <data name="NeverScanned" xml:space="preserve"><value>暂无</value></data>
+  <data name="ValidNote" xml:space="preserve"><value>在撤销前一直有效，不会过期。</value></data>
+  <data name="PrintButton" xml:space="preserve"><value>打印</value></data>
+  <data name="RegenerateButton" xml:space="preserve"><value>重新生成</value></data>
+  <data name="RevokeButton" xml:space="preserve"><value>撤销</value></data>
+  <data name="ReadOnly" xml:space="preserve"><value>只读</value></data>
+  <data name="RevokedLine" xml:space="preserve"><value>已撤销 · {0}，{1}</value></data>
+  <data name="ReasonLine" xml:space="preserve"><value>原因：{0}</value></data>
+  <data name="RevokedNote" xml:space="preserve"><value>最新版本 {0} · 该机构当前没有二维码。在“必须扫码”设置下，代表在此无码开始拜访，拜访将被标记。</value></data>
+  <data name="NewCode" xml:space="preserve"><value>生成新二维码</value></data>
+  <data name="ToastIssued" xml:space="preserve"><value>版本 {0} 已生成。请打印并张贴在前台。</value></data>
+  <data name="ToastRegenerated" xml:space="preserve"><value>版本 {0} 已生成。旧二维码已失效，请打印新码替换旧码。</value></data>
+  <data name="ToastRevoked" xml:space="preserve"><value>二维码已撤销。</value></data>
+  <data name="RegenTitle" xml:space="preserve"><value>重新生成二维码</value></data>
+  <data name="RegenWarn" xml:space="preserve"><value>{0} 处张贴或打印的所有旧二维码将立即失效。您需要打印新码并替换旧码。</value></data>
+  <data name="VersionArrow" xml:space="preserve"><value>版本 {0} → 版本 {1}</value></data>
+  <data name="ReasonLabel" xml:space="preserve"><value>原因</value></data>
+  <data name="Optional" xml:space="preserve"><value>可选</value></data>
+  <data name="ReasonPlaceholderRegen" xml:space="preserve"><value>例如：打印的二维码已磨损</value></data>
+  <data name="CancelButton" xml:space="preserve"><value>取消</value></data>
+  <data name="CloseButton" xml:space="preserve"><value>关闭</value></data>
+  <data name="RevokeTitle" xml:space="preserve"><value>撤销二维码</value></data>
+  <data name="RevokeText" xml:space="preserve"><value>撤销后，{0} 将没有二维码；已张贴或打印的二维码失效。</value></data>
+  <data name="RevokeInfo" xml:space="preserve"><value>在“必须扫码”设置下，代表在此无码开始拜访，拜访将被标记。</value></data>
+  <data name="ReasonPlaceholderRevoke" xml:space="preserve"><value>为什么撤销？</value></data>
+  <data name="ReasonCount" xml:space="preserve"><value>{0} / 500</value></data>
+  <data name="ReasonRequired" xml:space="preserve"><value>必须填写原因。</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>二维码历史</value></data>
+  <data name="Ev_issued" xml:space="preserve"><value>已生成 · 版本 {0}</value></data>
+  <data name="Ev_regenerated" xml:space="preserve"><value>已重新生成 · 版本 {0}</value></data>
+  <data name="Ev_revoked" xml:space="preserve"><value>已撤销 · 版本 {0}</value></data>
+  <data name="Ev_printed" xml:space="preserve"><value>已打印 · 版本 {0}</value></data>
+  <data name="Ev_bulk_issued" xml:space="preserve"><value>批量生成 · 版本 {0}</value></data>
+  <data name="PrintedDetail" xml:space="preserve"><value>{0}，{1} 份</value></data>
+  <data name="Paper_a4" xml:space="preserve"><value>A4</value></data>
+  <data name="Paper_a5" xml:space="preserve"><value>A5</value></data>
+  <data name="Paper_labels4" xml:space="preserve"><value>4 联标签</value></data>
+  <data name="Paper_labels8" xml:space="preserve"><value>8 联标签</value></data>
+  <data name="NoHistory" xml:space="preserve"><value>暂无记录。</value></data>
+  <data name="Today" xml:space="preserve"><value>今天 {0}</value></data>
+  <data name="Yesterday" xml:space="preserve"><value>昨天 {0}</value></data>
+  <data name="Err_visit_execution_concurrency_conflict" xml:space="preserve"><value>二维码已被他人更改。请刷新后重试。</value></data>
+  <data name="Err_visit_qr_signing_unavailable" xml:space="preserve"><value>暂时无法签名二维码。未生成任何内容，请稍后重试。</value></data>
+  <data name="Err_visit_qr_not_active" xml:space="preserve"><value>该机构没有有效的二维码。</value></data>
+  <data name="Err_visit_qr_account_not_found" xml:space="preserve"><value>未找到该机构。</value></data>
+  <data name="Err_visit_qr_request_invalid" xml:space="preserve"><value>请求无效。请检查后重试。</value></data>
+  <data name="Err_permission" xml:space="preserve"><value>您无权执行此操作。</value></data>
+  <data name="Err_generic" xml:space="preserve"><value>操作失败，请重试。</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>无法加载二维码。</value></data>
+  <data name="Retry" xml:space="preserve"><value>重试</value></data>
+  <data name="PageTitle" xml:space="preserve"><value>机构二维码</value></data>
+  <data name="Crumb" xml:space="preserve"><value>CRM / 拜访 / 机构二维码</value></data>
+  <data name="Intro" xml:space="preserve"><value>张贴在机构前台的二维码。下属单元没有自己的二维码时，上级机构的二维码有效。</value></data>
+  <data name="FiltersTitle" xml:space="preserve"><value>筛选</value></data>
+  <data name="AllRegions" xml:space="preserve"><value>全部区域</value></data>
+  <data name="AllTypes" xml:space="preserve"><value>全部机构类型</value></data>
+  <data name="AllCities" xml:space="preserve"><value>全部城市</value></data>
+  <data name="AllStatuses" xml:space="preserve"><value>全部二维码状态</value></data>
+  <data name="StatusOpt_none" xml:space="preserve"><value>无</value></data>
+  <data name="StatusOpt_active" xml:space="preserve"><value>有效</value></data>
+  <data name="StatusOpt_revoked" xml:space="preserve"><value>已撤销</value></data>
+  <data name="SearchPlaceholder" xml:space="preserve"><value>搜索机构名称</value></data>
+  <data name="CountLabel" xml:space="preserve"><value>{0} 个机构</value></data>
+  <data name="SelectedLabel" xml:space="preserve"><value>已选 {0} 个</value></data>
+  <data name="BulkGenerate" xml:space="preserve"><value>为所选生成（无二维码的）</value></data>
+  <data name="BulkPrint" xml:space="preserve"><value>打印所选（标签页）</value></data>
+  <data name="BulkLimit" xml:space="preserve"><value>最多选择 200 个机构。</value></data>
+  <data name="ColInstitution" xml:space="preserve"><value>机构</value></data>
+  <data name="ColType" xml:space="preserve"><value>类型</value></data>
+  <data name="ColCity" xml:space="preserve"><value>城市</value></data>
+  <data name="ColStatus" xml:space="preserve"><value>二维码状态</value></data>
+  <data name="ColVersion" xml:space="preserve"><value>版本</value></data>
+  <data name="ColLastScan" xml:space="preserve"><value>最近扫描</value></data>
+  <data name="ColRecent" xml:space="preserve"><value>近 30 天</value></data>
+  <data name="ColActions" xml:space="preserve"><value>操作</value></data>
+  <data name="Chip_active" xml:space="preserve"><value>有效</value></data>
+  <data name="Chip_revoked" xml:space="preserve"><value>已撤销</value></data>
+  <data name="Chip_none" xml:space="preserve"><value>无</value></data>
+  <data name="InheritsParent" xml:space="preserve"><value>上级机构二维码有效</value></data>
+  <data name="VersionShort" xml:space="preserve"><value>v{0}</value></data>
+  <data name="BulkResult" xml:space="preserve"><value>已生成 {0} 个二维码 · {1} 个机构已有有效二维码，已跳过</value></data>
+  <data name="PrintLabelsLink" xml:space="preserve"><value>打印标签页</value></data>
+  <data name="EmptyTitle" xml:space="preserve"><value>没有符合筛选条件的机构</value></data>
+  <data name="ClearFilters" xml:space="preserve"><value>清除筛选</value></data>
+  <data name="RowPrint" xml:space="preserve"><value>打印二维码</value></data>
+  <data name="RowOpen" xml:space="preserve"><value>打开机构</value></data>
+  <data name="SelectAll" xml:space="preserve"><value>选择本页全部</value></data>
+  <data name="SelectRow" xml:space="preserve"><value>选择 {0}</value></data>
+  <data name="PageInfo" xml:space="preserve"><value>第 {0}–{1} 个，共 {2} 个</value></data>
+  <data name="PrevPage" xml:space="preserve"><value>上一页</value></data>
+  <data name="NextPage" xml:space="preserve"><value>下一页</value></data>
+  <data name="PrintTitle" xml:space="preserve"><value>打印二维码</value></data>
+  <data name="PrintCrumb" xml:space="preserve"><value>CRM / 机构 / 打印二维码</value></data>
+  <data name="ModeSingle" xml:space="preserve"><value>单张</value></data>
+  <data name="ModeLabels" xml:space="preserve"><value>标签页</value></data>
+  <data name="PaperLabel" xml:space="preserve"><value>纸张</value></data>
+  <data name="PerA4" xml:space="preserve"><value>A4 上</value></data>
+  <data name="Labels4" xml:space="preserve"><value>4 个</value></data>
+  <data name="Labels8" xml:space="preserve"><value>8 个</value></data>
+  <data name="CopiesLabel" xml:space="preserve"><value>份数</value></data>
+  <data name="HintSingle" xml:space="preserve"><value>重新打印的是同一个二维码，之前的打印件仍然有效。</value></data>
+  <data name="HintLabels" xml:space="preserve"><value>所选机构的二维码 · 沿虚线剪开。</value></data>
+  <data name="StickerText" xml:space="preserve"><value>我们的代表在拜访开始时扫描此二维码。请勿移除。</value></data>
+  <data name="StickerFooter" xml:space="preserve"><value>版本 {0} · 打印于 {1}</value></data>
+  <data name="LabelFooter" xml:space="preserve"><value>版本 {0} · {1}</value></data>
+  <data name="CutHint" xml:space="preserve"><value>沿虚线剪开 · A4 · {0} 个</value></data>
+  <data name="PreviewNote" xml:space="preserve"><value>点击“打印”时生成二维码（打印会被记录）。</value></data>
+  <data name="NothingToPrint" xml:space="preserve"><value>所选机构均没有有效二维码。</value></data>
+  <data name="NoSelection" xml:space="preserve"><value>未选择机构。请在二维码页面中选择。</value></data>
+  <data name="SkippedNote" xml:space="preserve"><value>已排除 {0} 个没有有效二维码的机构。</value></data>
+  <data name="BackToList" xml:space="preserve"><value>返回二维码列表</value></data>
+</root>

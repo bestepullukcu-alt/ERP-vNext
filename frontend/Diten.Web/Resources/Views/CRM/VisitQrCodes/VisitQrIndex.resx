@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="CardTitle" xml:space="preserve"><value>Institution QR code</value></data>
+  <data name="Status_active" xml:space="preserve"><value>Active</value></data>
+  <data name="Status_revoked" xml:space="preserve"><value>Revoked</value></data>
+  <data name="Status_none" xml:space="preserve"><value>No code</value></data>
+  <data name="HistoryLink" xml:space="preserve"><value>History</value></data>
+  <data name="NoneText" xml:space="preserve"><value>At the start of a visit the representative scans the code at this institution’s reception.</value></data>
+  <data name="InheritedInfo" xml:space="preserve"><value>The parent institution’s code ({0}) is also valid in this unit.</value></data>
+  <data name="Generate" xml:space="preserve"><value>Generate QR code</value></data>
+  <data name="PreviewLocked" xml:space="preserve"><value>Full code when printing</value></data>
+  <data name="ActiveLine" xml:space="preserve"><value>Version {0} · Issued by {1} · {2}</value></data>
+  <data name="ScanLine" xml:space="preserve"><value>Last scan: {0} · {1} scans in the last 30 days</value></data>
+  <data name="NeverScanned" xml:space="preserve"><value>not yet</value></data>
+  <data name="ValidNote" xml:space="preserve"><value>Valid until revoked; it does not expire.</value></data>
+  <data name="PrintButton" xml:space="preserve"><value>Print</value></data>
+  <data name="RegenerateButton" xml:space="preserve"><value>Regenerate</value></data>
+  <data name="RevokeButton" xml:space="preserve"><value>Revoke</value></data>
+  <data name="ReadOnly" xml:space="preserve"><value>Read only</value></data>
+  <data name="RevokedLine" xml:space="preserve"><value>Revoked · {0}, {1}</value></data>
+  <data name="ReasonLine" xml:space="preserve"><value>Reason: {0}</value></data>
+  <data name="RevokedNote" xml:space="preserve"><value>Last version {0} · the institution has no code now. With the required QR setting, representatives start here without a code and the visit is flagged.</value></data>
+  <data name="NewCode" xml:space="preserve"><value>Generate a new code</value></data>
+  <data name="ToastIssued" xml:space="preserve"><value>Version {0} generated. Print the code and put it up at reception.</value></data>
+  <data name="ToastRegenerated" xml:space="preserve"><value>Version {0} generated. Old codes are invalid; print the new code and replace the old one.</value></data>
+  <data name="ToastRevoked" xml:space="preserve"><value>The QR code was revoked.</value></data>
+  <data name="RegenTitle" xml:space="preserve"><value>Regenerate the QR code</value></data>
+  <data name="RegenWarn" xml:space="preserve"><value>Every old code put up or printed at {0} becomes invalid at once. You need to print the new code and replace the old one.</value></data>
+  <data name="VersionArrow" xml:space="preserve"><value>Version {0} → Version {1}</value></data>
+  <data name="ReasonLabel" xml:space="preserve"><value>Reason</value></data>
+  <data name="Optional" xml:space="preserve"><value>optional</value></data>
+  <data name="ReasonPlaceholderRegen" xml:space="preserve"><value>E.g. the printed code is worn</value></data>
+  <data name="CancelButton" xml:space="preserve"><value>Cancel</value></data>
+  <data name="CloseButton" xml:space="preserve"><value>Close</value></data>
+  <data name="RevokeTitle" xml:space="preserve"><value>Revoke the QR code</value></data>
+  <data name="RevokeText" xml:space="preserve"><value>Once revoked, {0} has no code; codes put up or printed become invalid.</value></data>
+  <data name="RevokeInfo" xml:space="preserve"><value>With the required QR setting, representatives start here without a code and the visit is flagged.</value></data>
+  <data name="ReasonPlaceholderRevoke" xml:space="preserve"><value>Why is it being revoked?</value></data>
+  <data name="ReasonCount" xml:space="preserve"><value>{0} / 500</value></data>
+  <data name="ReasonRequired" xml:space="preserve"><value>A reason is required.</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>QR code history</value></data>
+  <data name="Ev_issued" xml:space="preserve"><value>Generated · Version {0}</value></data>
+  <data name="Ev_regenerated" xml:space="preserve"><value>Regenerated · Version {0}</value></data>
+  <data name="Ev_revoked" xml:space="preserve"><value>Revoked · Version {0}</value></data>
+  <data name="Ev_printed" xml:space="preserve"><value>Printed · Version {0}</value></data>
+  <data name="Ev_bulk_issued" xml:space="preserve"><value>Generated in bulk · Version {0}</value></data>
+  <data name="PrintedDetail" xml:space="preserve"><value>{0}, {1} copies</value></data>
+  <data name="Paper_a4" xml:space="preserve"><value>A4</value></data>
+  <data name="Paper_a5" xml:space="preserve"><value>A5</value></data>
+  <data name="Paper_labels4" xml:space="preserve"><value>4-label sheet</value></data>
+  <data name="Paper_labels8" xml:space="preserve"><value>8-label sheet</value></data>
+  <data name="NoHistory" xml:space="preserve"><value>No events yet.</value></data>
+  <data name="Today" xml:space="preserve"><value>today {0}</value></data>
+  <data name="Yesterday" xml:space="preserve"><value>yesterday {0}</value></data>
+  <data name="Err_visit_execution_concurrency_conflict" xml:space="preserve"><value>The QR code was changed by someone else. Reload and try again.</value></data>
+  <data name="Err_visit_qr_signing_unavailable" xml:space="preserve"><value>QR codes cannot be signed right now. Nothing was generated; try again later.</value></data>
+  <data name="Err_visit_qr_not_active" xml:space="preserve"><value>This institution has no active QR code.</value></data>
+  <data name="Err_visit_qr_account_not_found" xml:space="preserve"><value>The institution was not found.</value></data>
+  <data name="Err_visit_qr_request_invalid" xml:space="preserve"><value>The request is not valid. Check the values and try again.</value></data>
+  <data name="Err_permission" xml:space="preserve"><value>You do not have permission for this action.</value></data>
+  <data name="Err_generic" xml:space="preserve"><value>The action failed. Try again.</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>The QR code could not be loaded.</value></data>
+  <data name="Retry" xml:space="preserve"><value>Try again</value></data>
+  <data name="PageTitle" xml:space="preserve"><value>Institution QR codes</value></data>
+  <data name="Crumb" xml:space="preserve"><value>CRM / Visit / Institution QR codes</value></data>
+  <data name="Intro" xml:space="preserve"><value>Codes put up at institutions’ reception. If a sub-unit has no code of its own, the parent institution’s code applies.</value></data>
+  <data name="FiltersTitle" xml:space="preserve"><value>Filters</value></data>
+  <data name="AllRegions" xml:space="preserve"><value>All regions</value></data>
+  <data name="AllTypes" xml:space="preserve"><value>All institution types</value></data>
+  <data name="AllCities" xml:space="preserve"><value>All cities</value></data>
+  <data name="AllStatuses" xml:space="preserve"><value>All QR statuses</value></data>
+  <data name="StatusOpt_none" xml:space="preserve"><value>None</value></data>
+  <data name="StatusOpt_active" xml:space="preserve"><value>Active</value></data>
+  <data name="StatusOpt_revoked" xml:space="preserve"><value>Revoked</value></data>
+  <data name="SearchPlaceholder" xml:space="preserve"><value>Search institution name</value></data>
+  <data name="CountLabel" xml:space="preserve"><value>{0} institutions</value></data>
+  <data name="SelectedLabel" xml:space="preserve"><value>{0} selected</value></data>
+  <data name="BulkGenerate" xml:space="preserve"><value>Generate for selected (those without a code)</value></data>
+  <data name="BulkPrint" xml:space="preserve"><value>Print selected (label sheet)</value></data>
+  <data name="BulkLimit" xml:space="preserve"><value>Select at most 200 institutions.</value></data>
+  <data name="ColInstitution" xml:space="preserve"><value>Institution</value></data>
+  <data name="ColType" xml:space="preserve"><value>Type</value></data>
+  <data name="ColCity" xml:space="preserve"><value>City</value></data>
+  <data name="ColStatus" xml:space="preserve"><value>QR status</value></data>
+  <data name="ColVersion" xml:space="preserve"><value>Version</value></data>
+  <data name="ColLastScan" xml:space="preserve"><value>Last scan</value></data>
+  <data name="ColRecent" xml:space="preserve"><value>Last 30 days</value></data>
+  <data name="ColActions" xml:space="preserve"><value>Actions</value></data>
+  <data name="Chip_active" xml:space="preserve"><value>Active</value></data>
+  <data name="Chip_revoked" xml:space="preserve"><value>Revoked</value></data>
+  <data name="Chip_none" xml:space="preserve"><value>None</value></data>
+  <data name="InheritsParent" xml:space="preserve"><value>parent institution’s code applies</value></data>
+  <data name="VersionShort" xml:space="preserve"><value>v{0}</value></data>
+  <data name="BulkResult" xml:space="preserve"><value>{0} codes generated · {1} institutions already had an active code, skipped</value></data>
+  <data name="PrintLabelsLink" xml:space="preserve"><value>Print the label sheet</value></data>
+  <data name="EmptyTitle" xml:space="preserve"><value>No institution matches the filters</value></data>
+  <data name="ClearFilters" xml:space="preserve"><value>Clear filters</value></data>
+  <data name="RowPrint" xml:space="preserve"><value>Print the code</value></data>
+  <data name="RowOpen" xml:space="preserve"><value>Open the institution</value></data>
+  <data name="SelectAll" xml:space="preserve"><value>Select all on this page</value></data>
+  <data name="SelectRow" xml:space="preserve"><value>Select {0}</value></data>
+  <data name="PageInfo" xml:space="preserve"><value>{0}–{1} of {2}</value></data>
+  <data name="PrevPage" xml:space="preserve"><value>Previous</value></data>
+  <data name="NextPage" xml:space="preserve"><value>Next</value></data>
+  <data name="PrintTitle" xml:space="preserve"><value>Print the QR code</value></data>
+  <data name="PrintCrumb" xml:space="preserve"><value>CRM / Institutions / Print the QR code</value></data>
+  <data name="ModeSingle" xml:space="preserve"><value>Single</value></data>
+  <data name="ModeLabels" xml:space="preserve"><value>Label sheet</value></data>
+  <data name="PaperLabel" xml:space="preserve"><value>Paper</value></data>
+  <data name="PerA4" xml:space="preserve"><value>On A4</value></data>
+  <data name="Labels4" xml:space="preserve"><value>4 codes</value></data>
+  <data name="Labels8" xml:space="preserve"><value>8 codes</value></data>
+  <data name="CopiesLabel" xml:space="preserve"><value>Copies</value></data>
+  <data name="HintSingle" xml:space="preserve"><value>The same code is printed again; earlier prints stay valid.</value></data>
+  <data name="HintLabels" xml:space="preserve"><value>Codes of the selected institutions · cut along the dashed lines.</value></data>
+  <data name="StickerText" xml:space="preserve"><value>Our representative scans this code at the start of a visit. Please do not remove it.</value></data>
+  <data name="StickerFooter" xml:space="preserve"><value>Version {0} · Printed {1}</value></data>
+  <data name="LabelFooter" xml:space="preserve"><value>Version {0} · {1}</value></data>
+  <data name="CutHint" xml:space="preserve"><value>Cut along the dashed lines · A4 · {0} codes</value></data>
+  <data name="PreviewNote" xml:space="preserve"><value>The code is drawn when you press Print (the print is recorded).</value></data>
+  <data name="NothingToPrint" xml:space="preserve"><value>None of the selected institutions has an active code.</value></data>
+  <data name="NoSelection" xml:space="preserve"><value>No institution selected. Choose them on the QR codes page.</value></data>
+  <data name="SkippedNote" xml:space="preserve"><value>{0} institutions without an active code were left out.</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Back to QR codes</value></data>
+</root>

@@ -298,4 +298,42 @@
   <data name="UnpPharmacySearch" xml:space="preserve"><value>Buscar farmacia por nombre (al menos 2 letras)</value></data>
   <data name="Err_planned_visit_duplicate_same_day_type" xml:space="preserve"><value>Este destino ya tiene hoy una visita de este tipo.</value></data>
   <data name="Err_planned_visit_time_window_invalid" xml:space="preserve"><value>La hora de la visita no es válida; elija otra hora de inicio.</value></data>
+  <data name="QrCap" xml:space="preserve"><value>Código QR de la institución</value></data>
+  <data name="QrMode_optional" xml:space="preserve"><value>opcional</value></data>
+  <data name="QrMode_required" xml:space="preserve"><value>obligatorio</value></data>
+  <data name="QrIdle" xml:space="preserve"><value>Escanee el código QR de la recepción.</value></data>
+  <data name="QrNoCode" xml:space="preserve"><value>No encuentro el código</value></data>
+  <data name="QrScan" xml:space="preserve"><value>Escanear</value></data>
+  <data name="QrFrame" xml:space="preserve"><value>Coloque el código dentro del marco</value></data>
+  <data name="QrFullTitle" xml:space="preserve"><value>Escanee el código QR de la recepción</value></data>
+  <data name="QrCancel" xml:space="preserve"><value>Cancelar</value></data>
+  <data name="QrOk" xml:space="preserve"><value>{0} · código verificado</value></data>
+  <data name="QrOkParent" xml:space="preserve"><value>Código de la institución principal para {0} · leído a las {1}</value></data>
+  <data name="QrOkSelf" xml:space="preserve"><value>Leído a las {0}</value></data>
+  <data name="QrRescan" xml:space="preserve"><value>Volver a escanear</value></data>
+  <data name="QrWrong" xml:space="preserve"><value>Este código pertenece a otra institución ({0}). Escanee el código de la institución que visita.</value></data>
+  <data name="QrWrongUnknown" xml:space="preserve"><value>Este código pertenece a otra institución. Escanee el código de la institución que visita.</value></data>
+  <data name="QrInvalid" xml:space="preserve"><value>Este código ya no es válido. Puede que la institución tenga un código nuevo; avise a su jefe de zona.</value></data>
+  <data name="QrUnverifiable" xml:space="preserve"><value>El código no se puede verificar ahora. Inténtelo de nuevo en breve.</value></data>
+  <data name="QrScannedUnchecked" xml:space="preserve"><value>Se leyó el código; se verifica al iniciar la visita.</value></data>
+  <data name="QrNoPermTitle" xml:space="preserve"><value>Sin permiso para usar la cámara</value></data>
+  <data name="QrNoPerm1" xml:space="preserve"><value>Toque el icono del candado en la barra de direcciones.</value></data>
+  <data name="QrNoPerm2" xml:space="preserve"><value>Cambie «Cámara» a «Permitir».</value></data>
+  <data name="QrNoPerm3" xml:space="preserve"><value>Vuelva a esta ventana y pulse «Reintentar».</value></data>
+  <data name="QrRetry" xml:space="preserve"><value>Reintentar</value></data>
+  <data name="QrNoCamera" xml:space="preserve"><value>No se puede usar ninguna cámara en este dispositivo.</value></data>
+  <data name="QrNoCodeOpt" xml:space="preserve"><value>Si no hay código en recepción o no se puede leer, puede continuar sin el QR.</value></data>
+  <data name="QrSkip" xml:space="preserve"><value>Continuar sin QR</value></data>
+  <data name="QrBack" xml:space="preserve"><value>Volver a escanear</value></data>
+  <data name="QrNoCodeReq" xml:space="preserve"><value>Para iniciar una visita en esta institución debe escanear su código QR. Si no hay código o no se puede leer, hoy no puede iniciar sin el QR.</value></data>
+  <data name="QrAskException" xml:space="preserve"><value>Pida una excepción a su responsable</value></data>
+  <data name="QrNoPrinted" xml:space="preserve"><value>Todavía no se ha impreso un código QR para esta institución. Puede empezar sin escanear; la visita se marca «La institución no tiene código QR».</value></data>
+  <data name="QrSkipped" xml:space="preserve"><value>Continuando sin QR.</value></data>
+  <data name="DeviceUnverified" xml:space="preserve"><value>Este dispositivo no se puede verificar; su visita se marcará como «dispositivo no verificado». Se recomienda usar la app móvil.</value></data>
+  <data name="E3Missing_qr" xml:space="preserve"><value>código QR</value></data>
+  <data name="StartErr_visit_qr_required" xml:space="preserve"><value>Escanee el código QR de la institución para iniciar la visita.</value></data>
+  <data name="StartErr_visit_qr_invalid" xml:space="preserve"><value>No es un código QR de institución válido.</value></data>
+  <data name="StartErr_visit_qr_wrong_account" xml:space="preserve"><value>Este código QR pertenece a otra institución.</value></data>
+  <data name="StartErr_visit_qr_revoked" xml:space="preserve"><value>Este código QR se ha sustituido o revocado. Escanee el código actual de la institución.</value></data>
+  <data name="StartErr_visit_qr_signing_unavailable" xml:space="preserve"><value>El código QR no se puede verificar ahora. Inténtelo de nuevo en breve.</value></data>
 </root>

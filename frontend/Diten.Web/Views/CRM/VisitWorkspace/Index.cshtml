@@ -201,7 +201,7 @@
    mockup's design-note box (tenant setting buttons) and the QR / anti-fraud cards are NOT drawn. ── *@
 @if (Model.CanExecute)
 {
-<div class="modal fade" id="vw-e3" tabindex="-1" aria-labelledby="vw-e3-title" aria-hidden="true">
+<div class="modal fade" id="vw-e3" tabindex="-1" aria-labelledby="vw-e3-title" aria-hidden="true" data-jsqr="@Url.Content("~/assets/vendor/libs/jsqr/jsQR.js")">
     <div class="modal-dialog modal-lg modal-dialog-scrollable modal-fullscreen-md-down vw-e3-dialog">
         <div class="modal-content">
             <div class="vw-e3-head">
@@ -247,8 +247,28 @@
                     </div>
                     <div class="vw-e3-box vw-e3-row"><span class="vw-e3-h">@Localizer["E3StartLabel"]</span><span>@Localizer["E3StartValue"]</span></div>
                 </section>
+                @* WP-VW-W3E (W3E-WEB-a, S1–S8) — the institution QR: only with contract.policy.qrMode optional | required and an
+                   in-person visit (off / remote: nothing here, the W3 window unchanged). *@
+                <section class="vw-e3-qr d-none" id="vw-e3-qr">
+                    <div class="vw-e3-cap">@Localizer["QrCap"] <span class="vw-e3-need" id="vw-e3-qr-need"></span></div>
+                    <div id="vw-e3-qr-box"></div>
+                    <div class="vw-e3-qr-cam d-none" id="vw-e3-qr-cam">
+                        <video id="vw-e3-qr-video" autoplay playsinline muted></video>
+                        <div class="vw-qr-frame" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+                        <div class="vw-qr-frame-text">@Localizer["QrFrame"]</div>
+                        <button type="button" class="vw-qr-cam-cancel" data-qr="cancel">@Localizer["QrCancel"]</button>
+                    </div>
+                </section>
+                <div class="vw-e3-device d-none" id="vw-e3-device"><i class="bx bx-devices"></i><span>@Localizer["DeviceUnverified"]</span></div>
             </div>
             <div class="vw-e3-alert d-none" id="vw-e3-error" role="alert"></div>
+            @* the phone (list layout): the QR camera full screen (S1 · Telefon) *@
+            <div class="vw-qr-full d-none" id="vw-e3-qr-full" role="dialog" aria-label="@Localizer["QrFullTitle"]">
+                <video id="vw-e3-qr-full-video" autoplay playsinline muted></video>
+                <div class="vw-qr-full-head"><span>@Localizer["QrFullTitle"]</span><button type="button" class="vw-qr-full-x" data-qr="cancel" aria-label="@Localizer["QrCancel"]"><i class="bx bx-x"></i></button></div>
+                <div class="vw-qr-full-mid"><div class="vw-qr-frame vw-qr-frame-lg" aria-hidden="true"><span></span><span></span><span></span><span></span></div><div class="vw-qr-frame-text">@Localizer["QrFrame"]</div></div>
+                <div class="vw-qr-full-foot"><button type="button" class="vw-qr-cam-cancel vw-qr-cam-cancel-lg" data-qr="cancel">@Localizer["QrCancel"]</button></div>
+            </div>
             <div class="vw-e3-foot">
                 <span class="vw-e3-hint" id="vw-e3-hint"></span>
                 <div class="vw-e3-btns">

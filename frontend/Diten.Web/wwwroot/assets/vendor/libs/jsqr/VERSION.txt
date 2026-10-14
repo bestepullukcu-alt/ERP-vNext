@@ -1,0 +1,2 @@
+jsQR 1.4.0 (npm "jsqr", Apache-2.0) — dist/jsQR.js copied unchanged.
+WP-VW-W3E (W3E-WEB-a, D-10): the QR scan fallback when the browser has no BarcodeDetector. No CDN.

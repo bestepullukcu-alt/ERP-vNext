@@ -376,7 +376,9 @@ public sealed partial class VisitWorkspaceStartWebTests
         Assert.Contains("id=\"vw-e3-webcam\"", e3);
         Assert.Contains("id=\"vw-e3-upload\"", e3);
         Assert.Contains("Localizer[\"E3StartValue\"]", e3);
-        foreach (var banned in new[] { "qr", "anti-fraud", "antifraud", "kiracı ayarı", "tenant setting", "photoReq", "locReq" })
+        // WP-VW-W3E (W3E-WEB-a) — the QR section and the web device line belong to the window now (S1–S8); they are
+        // drawn only with contract.policy.qrMode / antiFraudMode (VisitWorkspaceStartW3EQrWebTests). No design note ever.
+        foreach (var banned in new[] { "anti-fraud", "antifraud", "kiracı ayarı", "tenant setting", "photoReq", "locReq" })
         {
             Assert.DoesNotContain(banned, e3, StringComparison.OrdinalIgnoreCase);
         }
@@ -384,7 +386,6 @@ public sealed partial class VisitWorkspaceStartWebTests
         var all = Script("workspace-core.js") + Script("visit-workspace.js");
         Assert.DoesNotContain("strategyTemplate", all, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("campaign", all, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("qr", Script("visit-workspace.js").Replace("querySelector", "", StringComparison.Ordinal), StringComparison.OrdinalIgnoreCase);
         // nothing of the visit is kept in the browser (the photo stays a blob in memory)
         Assert.DoesNotContain("localStorage.setItem", Script("visit-workspace.js"));
     }

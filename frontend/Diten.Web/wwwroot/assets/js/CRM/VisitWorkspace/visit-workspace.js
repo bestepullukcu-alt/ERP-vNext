@@ -664,7 +664,10 @@
     // page opens. Nothing is kept in the browser: the photo is a JPEG blob in memory until the dialog closes.
     const e3 = { visit: null, photo: null, photoUrl: null, photoCapturedAt: null, location: { status: 'pending' }, busy: false, stream: null, open: false };
     const policy = () => (state.execContract && state.execContract.policy) || null;
-    const e3State = () => ({ photo: e3.photo, location: e3.location, busy: e3.busy });
+    // WP-VW-W3E (W3E-WEB-a) — the institution QR of this start: mode (off | optional | required), the box state, the read
+    // text (sent as read — never parsed here), the pre-check answer (qr-check writes nothing), the camera.
+    const qr = { mode: 'off', state: 'idle', payload: null, scannedAt: null, check: null, first: null, stream: null, timer: null, detector: null, seq: 0 };
+    const e3State = () => ({ photo: e3.photo, location: e3.location, busy: e3.busy, kind: 'in_person', qr: { state: qr.state, payload: qr.payload, scannedAt: qr.scannedAt } });
     const show = (id, on) => { const n = el(id); if (n) { n.classList.toggle('d-none', !on); } };
 
     function openStart() {
@@ -680,6 +683,8 @@
         setText('vw-e3-webcam-label', state.layout === 'list' ? L.E3CameraPhone || '' : L.E3Webcam || '');
         showError('vw-e3-photo-error', '');
         showError('vw-e3-error', '');
+        qrOpen(v);
+        show('vw-e3-device', C.showDeviceLine(policy()));
         const panel = el('vw-detail');
         if (panel && window.bootstrap) { window.bootstrap.Offcanvas.getOrCreateInstance(panel).hide(); }
         showModal('vw-e3');
@@ -689,7 +694,7 @@
 
     function closeStart() {
         e3.open = false; e3.visit = null;
-        stopCamera(); clearPhoto();
+        stopCamera(); clearPhoto(); qrStopCamera();
     }
 
     function showError(id, text, hint) {
@@ -782,6 +787,7 @@
 
     // the webcam (getUserMedia): the phone asks for the back camera; a refusal / no camera is said, the upload stays
     function openCamera() {
+        if (qr.stream) { qrStopCamera(); qr.state = 'idle'; qrRender(); } // one camera at a time
         const md = window.navigator && window.navigator.mediaDevices;
         if (!md || !md.getUserMedia) { showError('vw-e3-photo-error', L[C.cameraErrorKey({ name: 'unsupported' })] || ''); return; }
         showError('vw-e3-photo-error', '');
@@ -818,7 +824,7 @@
         if (!v || !C.canBegin(policy(), e3State())) { return; }
         e3.busy = true; syncStart(); showError('vw-e3-error', '');
         const form = new window.FormData();
-        C.startFields(v.plannedVisitId, { location: e3.location, photo: e3.photo, photoName: 'visit-photo.jpg', photoCapturedAt: e3.photoCapturedAt })
+        C.startFields(v.plannedVisitId, { location: e3.location, photo: e3.photo, photoName: 'visit-photo.jpg', photoCapturedAt: e3.photoCapturedAt, qr: e3State().qr })
             .forEach(f => (f.length > 2 ? form.append(f[0], f[1], f[2]) : form.append(f[0], f[1])));
         upload('/execution/start', form).then(r => {
             e3.busy = false;
@@ -829,6 +835,194 @@
             syncStart();
             showStartError(r);
         });
+    }
+
+    // ── WP-VW-W3E (W3E-WEB-a) — the institution QR at the start (S1–S8) ─────────────────────────────────────────
+    // The box follows the tenant setting (contract.policy.qrMode; a remote visit / off: no box) and the server's pre-check
+    // (POST /execution/qr-check, which writes nothing); the start decides again. The camera: BarcodeDetector when the
+    // browser has it, else the local jsQR (no CDN); the phone scans full screen with the back camera.
+    const qrNow = () => new Date().toISOString();
+    const qrClock = iso => { const d = new Date(iso || ''); return isNaN(d) ? '' : String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
+
+    function qrOpen(v) {
+        qrStopCamera();
+        qr.mode = C.qrMode(policy(), 'in_person');
+        qr.state = 'idle'; qr.payload = null; qr.scannedAt = null; qr.check = null; qr.first = null; qr.seq++;
+        show('vw-e3-qr', qr.mode !== 'off');
+        if (qr.mode === 'off') { return; }
+        setText('vw-e3-qr-need', '· ' + (L['QrMode_' + qr.mode] || ''));
+        qrRender();
+        // what the institution has before anything is read: required + no code in the chain → start without a penalty (S6)
+        post('/execution/qr-check', { plannedVisitId: v.plannedVisitId }).then(r => {
+            if (e3.visit !== v || !r.ok || !r.body || !r.body.data) { return; }
+            qr.first = r.body.data;
+            if (qr.state === 'idle' && r.body.data.status === 'not_issued' && qr.mode === 'required') { qr.state = 'noPrinted'; qrRender(); }
+        });
+    }
+
+    function qrBox(cls, inner) { return '<div class="vw-qr-box ' + (cls || '') + '">' + inner + '</div>'; }
+    const qrBtn = (action, text, icon, outline) => '<button type="button" class="vw-qr-btn' + (outline ? ' vw-qr-btn-o' : '') + '" data-qr="' + action + '">' + (icon ? '<i class="bx ' + icon + '"></i>' : '') + esc(text || '') + '</button>';
+    const qrLink = (action, text, small) => '<button type="button" class="vw-qr-link' + (small ? ' vw-qr-link-sm' : '') + '" data-qr="' + action + '">' + esc(text || '') + '</button>';
+
+    function qrRender() {
+        if (qr.mode === 'off') { show('vw-e3-qr', false); syncStart(); return; }
+        const box = el('vw-e3-qr-box');
+        const v = e3.visit || {};
+        const inline = qr.state === 'camera' && state.layout !== 'list';
+        show('vw-e3-qr-cam', inline);
+        show('vw-e3-qr-full', qr.state === 'camera' && state.layout === 'list');
+        let html = '';
+        switch (qr.state) {
+            case 'camera': html = ''; break;
+            case 'checking':
+                html = qrBox('', '<div class="vw-qr-ico"><i class="bx bx-loader-alt bx-spin"></i></div><div class="vw-qr-txt">' + esc(L.QrIdle) + '</div>'); break;
+            case 'ok': {
+                const name = qr.check && qr.check.accountName ? qr.check.accountName : v.accountDisplayName || v.targetDisplayName || '';
+                const sub = qr.check && qr.check.matchedVia === 'parent'
+                    ? fmt(esc(L.QrOkParent), F.bidi(v.accountDisplayName || v.targetDisplayName || ''), esc(qrClock(qr.scannedAt)))
+                    : fmt(esc(L.QrOkSelf), esc(qrClock(qr.scannedAt)));
+                html = qrBox('vw-qr-ok', '<i class="bx bx-check-circle vw-qr-mark-ok"></i><div class="vw-qr-txt"><div class="vw-qr-strong">' + fmt(esc(L.QrOk), F.bidi(name)) + '</div><div class="vw-qr-sub">' + sub + '</div></div>' + qrLink('scan', L.QrRescan));
+                break;
+            }
+            case 'scanned':
+                html = qrBox('vw-qr-info', '<i class="bx bx-info-circle vw-qr-mark-info"></i><div class="vw-qr-txt">' + esc(L.QrScannedUnchecked) + '</div>' + qrLink('scan', L.QrRescan)); break;
+            case 'wrong': {
+                const n = qr.check && qr.check.accountName;
+                html = qrBox('vw-qr-warn', '<i class="bx bx-error-circle vw-qr-mark-warn"></i><div class="vw-qr-txt">' + (n ? fmt(esc(L.QrWrong), F.bidi(n)) : esc(L.QrWrongUnknown)) + '</div>' + qrBtn('scan', L.QrRescan, 'bx-camera'));
+                break;
+            }
+            case 'invalid':
+                html = qrBox('vw-qr-warn', '<i class="bx bx-error-circle vw-qr-mark-warn"></i><div class="vw-qr-txt">' + esc(L.QrInvalid) + '</div>' + qrBtn('scan', L.QrRescan, 'bx-camera')); break;
+            case 'unverifiable':
+                html = qrBox('vw-qr-warn', '<i class="bx bx-error-circle vw-qr-mark-warn"></i><div class="vw-qr-txt">' + esc(L.QrUnverifiable) + '</div>' + qrBtn('scan', L.QrRescan, 'bx-camera')); break;
+            case 'noperm':
+                html = qrBox('vw-qr-box-top', '<div class="vw-qr-ico vw-qr-ico-off"><i class="bx bx-camera-off"></i></div><div class="vw-qr-txt" style="display:flex;flex-direction:column;gap:6px"><div class="vw-qr-strong">' + esc(L.QrNoPermTitle)
+                    + '</div><ol class="vw-qr-steps"><li>' + esc(L.QrNoPerm1) + '</li><li>' + esc(L.QrNoPerm2) + '</li><li>' + esc(L.QrNoPerm3) + '</li></ol><div class="vw-qr-row" style="margin-top:6px">'
+                    + qrBtn('scan', L.QrRetry) + qrLink('nocode', L.QrNoCode) + '</div></div>'); break;
+            case 'nocamera':
+                html = qrBox('', '<div class="vw-qr-ico vw-qr-ico-off"><i class="bx bx-camera-off"></i></div><div class="vw-qr-txt"><div>' + esc(L.QrNoCamera) + '</div>' + qrLink('nocode', L.QrNoCode, true) + '</div>'); break;
+            case 'nocodeOpt':
+                html = qrBox('vw-qr-box-col', '<div>' + esc(L.QrNoCodeOpt) + '</div><div class="vw-qr-row">' + qrBtn('skip', L.QrSkip, null, true) + qrLink('back', L.QrBack) + '</div>'); break;
+            case 'nocodeReq':
+                html = qrBox('vw-qr-box-col', '<div>' + esc(L.QrNoCodeReq) + '</div><div class="vw-qr-row"><span class="vw-qr-ask"><i class="bx bx-support"></i>' + esc(L.QrAskException) + '</span>' + qrLink('back', L.QrBack) + '</div>'); break;
+            case 'noPrinted':
+                html = qrBox('vw-qr-info vw-qr-box-top', '<i class="bx bx-info-circle vw-qr-mark-info"></i><div class="vw-qr-txt">' + esc(L.QrNoPrinted) + '</div>'); break;
+            case 'skipped':
+                html = qrBox('', '<i class="bx bx-minus-circle vw-qr-mark-off"></i><div class="vw-qr-txt">' + esc(L.QrSkipped) + '</div>' + qrLink('scan', L.QrScan)); break;
+            default:
+                html = qrBox('', '<div class="vw-qr-ico"><i class="bx bx-qr-scan"></i></div><div class="vw-qr-txt"><div>' + esc(L.QrIdle) + '</div>' + qrLink('nocode', L.QrNoCode, true) + '</div>'
+                    + qrBtn('scan', L.QrScan, 'bx-camera'));
+        }
+
+        box.innerHTML = html;
+        show('vw-e3-qr-box', qr.state !== 'camera');
+        syncStart();
+    }
+
+    let jsQrLoading = null;
+    function loadJsQr() {
+        if (window.jsQR) { return Promise.resolve(true); }
+        if (jsQrLoading) { return jsQrLoading; }
+        const src = (el('vw-e3') && el('vw-e3').getAttribute('data-jsqr')) || '';
+        jsQrLoading = new Promise(resolve => {
+            const tag = document.createElement('script');
+            tag.src = src; tag.async = true;
+            tag.onload = () => resolve(!!window.jsQR);
+            tag.onerror = () => resolve(false);
+            document.head.appendChild(tag);
+        });
+        return jsQrLoading;
+    }
+
+    /** BarcodeDetector (qr_code) when the browser has it, else the local jsQR. */
+    function qrDecoder() {
+        const BD = window.BarcodeDetector;
+        const viaJsQr = () => loadJsQr().then(ok => (ok ? { jsqr: true } : null));
+        if (!BD || !BD.getSupportedFormats) { return viaJsQr(); }
+        return BD.getSupportedFormats().then(f => (f && f.indexOf('qr_code') > -1 ? { detector: new BD({ formats: ['qr_code'] }) } : viaJsQr()), viaJsQr);
+    }
+
+    function qrScan() {
+        if (!e3.open) { return; }
+        stopCamera(); // the photo camera off: one camera at a time
+        const md = window.navigator && window.navigator.mediaDevices;
+        if (!md || !md.getUserMedia) { qr.state = 'nocamera'; qrRender(); return; }
+        qrStopCamera();
+        const seq = ++qr.seq;
+        md.getUserMedia(C.cameraConstraints('list')).then(stream => { // the BACK camera (a QR on a desk), any device
+            if (seq !== qr.seq || !e3.open) { stream.getTracks().forEach(t => t.stop()); return; }
+            qr.stream = stream; qr.state = 'camera'; qrRender();
+            const video = el(state.layout === 'list' ? 'vw-e3-qr-full-video' : 'vw-e3-qr-video');
+            if (video) { video.srcObject = stream; if (video.play) { Promise.resolve(video.play()).catch(() => {}); } }
+            qrDecoder().then(dec => {
+                if (seq !== qr.seq) { return; }
+                if (!dec) { qrStopCamera(); qr.state = 'nocamera'; qrRender(); return; }
+                qr.detector = dec;
+                qrTick(video, seq);
+            });
+        }, err => {
+            if (seq !== qr.seq) { return; }
+            const name = err && err.name;
+            qr.state = name === 'NotAllowedError' || name === 'SecurityError' ? 'noperm' : 'nocamera';
+            qrRender();
+        });
+    }
+
+    let qrCanvas = null;
+    function qrTick(video, seq) {
+        if (seq !== qr.seq || !qr.stream) { return; }
+        const again = () => { qr.timer = window.setTimeout(() => qrTick(video, seq), 250); };
+        if (!video || video.readyState < 2 || !video.videoWidth) { again(); return; }
+        if (qr.detector && qr.detector.detector) {
+            qr.detector.detector.detect(video).then(codes => {
+                const text = codes && codes.length ? codes[0].rawValue : null;
+                if (text) { qrFound(text, seq); } else { again(); }
+            }, again);
+            return;
+        }
+
+        if (!window.jsQR) { again(); return; }
+        const w = Math.min(640, video.videoWidth), h = Math.round(video.videoHeight * w / video.videoWidth);
+        qrCanvas = qrCanvas || document.createElement('canvas');
+        qrCanvas.width = w; qrCanvas.height = h;
+        const ctx = qrCanvas.getContext('2d', { willReadFrequently: true });
+        ctx.drawImage(video, 0, 0, w, h);
+        const found = window.jsQR(ctx.getImageData(0, 0, w, h).data, w, h, { inversionAttempts: 'attemptBoth' });
+        if (found && found.data) { qrFound(found.data, seq); } else { again(); }
+    }
+
+    /** A code read: the camera off, the text kept as read, the server's pre-check (nothing written) decides the box. */
+    function qrFound(text, seq) {
+        if (seq !== qr.seq) { return; }
+        qrStopCamera();
+        const mine = qr.seq; // a rescan / cancel / close in the meantime makes this answer stale
+        qr.payload = text; qr.scannedAt = qrNow(); qr.state = 'checking'; qrRender();
+        const visit = e3.visit;
+        post('/execution/qr-check', { plannedVisitId: visit.plannedVisitId, qrPayload: text }).then(r => {
+            if (mine !== qr.seq || e3.visit !== visit) { return; }
+            if (!r.ok || !r.body || !r.body.data) { qr.check = null; qr.state = 'scanned'; qrRender(); return; } // the start checks it
+            qr.check = r.body.data;
+            const view = C.qrView(r.body.data, qr.mode);
+            qr.state = view.state === 'idle' ? 'scanned' : view.state;
+            qrRender();
+        });
+    }
+
+    function qrStopCamera() {
+        qr.seq++;
+        if (qr.timer) { window.clearTimeout(qr.timer); qr.timer = null; }
+        if (qr.stream) { qr.stream.getTracks().forEach(t => t.stop()); qr.stream = null; }
+        ['vw-e3-qr-video', 'vw-e3-qr-full-video'].forEach(id => { const v = el(id); if (v) { v.srcObject = null; } });
+        show('vw-e3-qr-full', false);
+        show('vw-e3-qr-cam', false);
+    }
+
+    function qrAction(action) {
+        if (action === 'scan') { qrScan(); return; }
+        if (action === 'cancel') { qrStopCamera(); qr.state = qr.payload ? (qr.check ? C.qrView(qr.check, qr.mode).state : 'scanned') : 'idle'; qrRender(); return; }
+        if (action === 'nocode') { qrStopCamera(); qr.payload = null; qr.check = null; qr.state = C.qrNoCodeState(qr.mode, qr.first); qrRender(); return; }
+        if (action === 'skip') { if (qr.mode === 'optional') { qr.payload = null; qr.state = 'skipped'; qrRender(); } return; }
+        if (action === 'back') { qr.state = 'idle'; qrRender(); }
     }
 
     // ── approve / reopen the week (the existing Visit Planning endpoints) ─────────────────────────────────────
@@ -1295,6 +1489,11 @@
     on('vw-e3-retake', 'click', () => { clearPhoto(); syncStart(); });
     on('vw-e3-loc-retry', 'click', locate);
     on('vw-e3-begin', 'click', beginVisit);
+    // WP-VW-W3E (W3E-WEB-a) — the QR box / camera buttons (delegated: the box is redrawn per state)
+    ['vw-e3-qr', 'vw-e3-qr-full'].forEach(id => on(id, 'click', e => {
+        const b = e.target && e.target.closest ? e.target.closest('[data-qr]') : null;
+        if (b) { e.preventDefault(); qrAction(b.getAttribute('data-qr')); }
+    }));
     on('vw-e3', 'hidden.bs.modal', closeStart);
 
     // WP-VW-W2 (WEB-b) — Plan mode

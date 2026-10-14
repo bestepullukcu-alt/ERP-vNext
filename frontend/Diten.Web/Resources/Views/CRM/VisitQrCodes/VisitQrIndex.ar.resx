@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="CardTitle" xml:space="preserve"><value>رمز QR للمؤسسة</value></data>
+  <data name="Status_active" xml:space="preserve"><value>نشط</value></data>
+  <data name="Status_revoked" xml:space="preserve"><value>ملغى</value></data>
+  <data name="Status_none" xml:space="preserve"><value>لا يوجد رمز</value></data>
+  <data name="HistoryLink" xml:space="preserve"><value>السجل</value></data>
+  <data name="NoneText" xml:space="preserve"><value>في بداية الزيارة يمسح المندوب الرمز الموجود في استقبال هذه المؤسسة.</value></data>
+  <data name="InheritedInfo" xml:space="preserve"><value>رمز المؤسسة الأم ({0}) صالح أيضًا في هذه الوحدة.</value></data>
+  <data name="Generate" xml:space="preserve"><value>إنشاء رمز QR</value></data>
+  <data name="PreviewLocked" xml:space="preserve"><value>الرمز الكامل عند الطباعة</value></data>
+  <data name="ActiveLine" xml:space="preserve"><value>الإصدار {0} · أنشأه {1} · {2}</value></data>
+  <data name="ScanLine" xml:space="preserve"><value>آخر مسح: {0} · {1} عمليات مسح خلال آخر 30 يومًا</value></data>
+  <data name="NeverScanned" xml:space="preserve"><value>لم يتم بعد</value></data>
+  <data name="ValidNote" xml:space="preserve"><value>صالح حتى يُلغى؛ لا تنتهي صلاحيته.</value></data>
+  <data name="PrintButton" xml:space="preserve"><value>طباعة</value></data>
+  <data name="RegenerateButton" xml:space="preserve"><value>إعادة الإنشاء</value></data>
+  <data name="RevokeButton" xml:space="preserve"><value>إلغاء</value></data>
+  <data name="ReadOnly" xml:space="preserve"><value>قراءة فقط</value></data>
+  <data name="RevokedLine" xml:space="preserve"><value>ملغى · {0}، {1}</value></data>
+  <data name="ReasonLine" xml:space="preserve"><value>السبب: {0}</value></data>
+  <data name="RevokedNote" xml:space="preserve"><value>آخر إصدار {0} · المؤسسة بلا رمز الآن. مع إعداد QR الإلزامي يبدأ المندوبون هنا بلا رمز وتُعلَّم الزيارة.</value></data>
+  <data name="NewCode" xml:space="preserve"><value>إنشاء رمز جديد</value></data>
+  <data name="ToastIssued" xml:space="preserve"><value>تم إنشاء الإصدار {0}. اطبع الرمز وعلّقه في الاستقبال.</value></data>
+  <data name="ToastRegenerated" xml:space="preserve"><value>تم إنشاء الإصدار {0}. الرموز القديمة غير صالحة؛ اطبع الرمز الجديد وضعه مكان القديم.</value></data>
+  <data name="ToastRevoked" xml:space="preserve"><value>تم إلغاء رمز QR.</value></data>
+  <data name="RegenTitle" xml:space="preserve"><value>إعادة إنشاء رمز QR</value></data>
+  <data name="RegenWarn" xml:space="preserve"><value>تصبح جميع الرموز القديمة المعلقة أو المطبوعة في {0} غير صالحة فورًا. عليك طباعة الرمز الجديد ووضعه مكان القديم.</value></data>
+  <data name="VersionArrow" xml:space="preserve"><value>الإصدار {0} ← الإصدار {1}</value></data>
+  <data name="ReasonLabel" xml:space="preserve"><value>السبب</value></data>
+  <data name="Optional" xml:space="preserve"><value>اختياري</value></data>
+  <data name="ReasonPlaceholderRegen" xml:space="preserve"><value>مثلًا: الرمز المطبوع تالف</value></data>
+  <data name="CancelButton" xml:space="preserve"><value>إلغاء الأمر</value></data>
+  <data name="CloseButton" xml:space="preserve"><value>إغلاق</value></data>
+  <data name="RevokeTitle" xml:space="preserve"><value>إلغاء رمز QR</value></data>
+  <data name="RevokeText" xml:space="preserve"><value>بعد الإلغاء تبقى {0} بلا رمز؛ وتصبح الرموز المعلقة والمطبوعة غير صالحة.</value></data>
+  <data name="RevokeInfo" xml:space="preserve"><value>مع إعداد QR الإلزامي يبدأ المندوبون هنا بلا رمز وتُعلَّم الزيارة.</value></data>
+  <data name="ReasonPlaceholderRevoke" xml:space="preserve"><value>لماذا يُلغى؟</value></data>
+  <data name="ReasonCount" xml:space="preserve"><value>{0} / 500</value></data>
+  <data name="ReasonRequired" xml:space="preserve"><value>السبب مطلوب.</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>سجل رمز QR</value></data>
+  <data name="Ev_issued" xml:space="preserve"><value>تم الإنشاء · الإصدار {0}</value></data>
+  <data name="Ev_regenerated" xml:space="preserve"><value>أعيد إنشاؤه · الإصدار {0}</value></data>
+  <data name="Ev_revoked" xml:space="preserve"><value>أُلغي · الإصدار {0}</value></data>
+  <data name="Ev_printed" xml:space="preserve"><value>طُبع · الإصدار {0}</value></data>
+  <data name="Ev_bulk_issued" xml:space="preserve"><value>أُنشئ دفعة واحدة · الإصدار {0}</value></data>
+  <data name="PrintedDetail" xml:space="preserve"><value>{0}، {1} نسخ</value></data>
+  <data name="Paper_a4" xml:space="preserve"><value>A4</value></data>
+  <data name="Paper_a5" xml:space="preserve"><value>A5</value></data>
+  <data name="Paper_labels4" xml:space="preserve"><value>ورقة 4 ملصقات</value></data>
+  <data name="Paper_labels8" xml:space="preserve"><value>ورقة 8 ملصقات</value></data>
+  <data name="NoHistory" xml:space="preserve"><value>لا توجد أحداث بعد.</value></data>
+  <data name="Today" xml:space="preserve"><value>اليوم {0}</value></data>
+  <data name="Yesterday" xml:space="preserve"><value>أمس {0}</value></data>
+  <data name="Err_visit_execution_concurrency_conflict" xml:space="preserve"><value>غيّر شخص آخر رمز QR. أعد التحميل وحاول مرة أخرى.</value></data>
+  <data name="Err_visit_qr_signing_unavailable" xml:space="preserve"><value>لا يمكن توقيع رموز QR الآن. لم يُنشأ شيء؛ حاول لاحقًا.</value></data>
+  <data name="Err_visit_qr_not_active" xml:space="preserve"><value>لا يوجد رمز QR نشط لهذه المؤسسة.</value></data>
+  <data name="Err_visit_qr_account_not_found" xml:space="preserve"><value>لم يتم العثور على المؤسسة.</value></data>
+  <data name="Err_visit_qr_request_invalid" xml:space="preserve"><value>الطلب غير صالح. تحقق من القيم وحاول مرة أخرى.</value></data>
+  <data name="Err_permission" xml:space="preserve"><value>ليست لديك صلاحية لهذا الإجراء.</value></data>
+  <data name="Err_generic" xml:space="preserve"><value>فشل الإجراء. حاول مرة أخرى.</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>تعذر تحميل رمز QR.</value></data>
+  <data name="Retry" xml:space="preserve"><value>إعادة المحاولة</value></data>
+  <data name="PageTitle" xml:space="preserve"><value>رموز QR للمؤسسات</value></data>
+  <data name="Crumb" xml:space="preserve"><value>CRM / الزيارة / رموز QR للمؤسسات</value></data>
+  <data name="Intro" xml:space="preserve"><value>رموز معلقة في استقبال المؤسسات. إذا لم يكن للوحدة رمز خاص بها فرمز المؤسسة الأم صالح.</value></data>
+  <data name="FiltersTitle" xml:space="preserve"><value>عوامل التصفية</value></data>
+  <data name="AllRegions" xml:space="preserve"><value>كل المناطق</value></data>
+  <data name="AllTypes" xml:space="preserve"><value>كل أنواع المؤسسات</value></data>
+  <data name="AllCities" xml:space="preserve"><value>كل المدن</value></data>
+  <data name="AllStatuses" xml:space="preserve"><value>كل حالات QR</value></data>
+  <data name="StatusOpt_none" xml:space="preserve"><value>لا يوجد</value></data>
+  <data name="StatusOpt_active" xml:space="preserve"><value>نشط</value></data>
+  <data name="StatusOpt_revoked" xml:space="preserve"><value>ملغى</value></data>
+  <data name="SearchPlaceholder" xml:space="preserve"><value>ابحث باسم المؤسسة</value></data>
+  <data name="CountLabel" xml:space="preserve"><value>{0} مؤسسة</value></data>
+  <data name="SelectedLabel" xml:space="preserve"><value>تم تحديد {0}</value></data>
+  <data name="BulkGenerate" xml:space="preserve"><value>إنشاء للمحدد (التي بلا رمز)</value></data>
+  <data name="BulkPrint" xml:space="preserve"><value>طباعة المحدد (ورقة ملصقات)</value></data>
+  <data name="BulkLimit" xml:space="preserve"><value>حدد 200 مؤسسة على الأكثر.</value></data>
+  <data name="ColInstitution" xml:space="preserve"><value>المؤسسة</value></data>
+  <data name="ColType" xml:space="preserve"><value>النوع</value></data>
+  <data name="ColCity" xml:space="preserve"><value>المدينة</value></data>
+  <data name="ColStatus" xml:space="preserve"><value>حالة QR</value></data>
+  <data name="ColVersion" xml:space="preserve"><value>الإصدار</value></data>
+  <data name="ColLastScan" xml:space="preserve"><value>آخر مسح</value></data>
+  <data name="ColRecent" xml:space="preserve"><value>آخر 30 يومًا</value></data>
+  <data name="ColActions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="Chip_active" xml:space="preserve"><value>نشط</value></data>
+  <data name="Chip_revoked" xml:space="preserve"><value>ملغى</value></data>
+  <data name="Chip_none" xml:space="preserve"><value>لا يوجد</value></data>
+  <data name="InheritsParent" xml:space="preserve"><value>رمز المؤسسة الأم صالح</value></data>
+  <data name="VersionShort" xml:space="preserve"><value>v{0}</value></data>
+  <data name="BulkResult" xml:space="preserve"><value>تم إنشاء {0} رمز · {1} مؤسسة لديها رمز نشط بالفعل، تم تخطيها</value></data>
+  <data name="PrintLabelsLink" xml:space="preserve"><value>طباعة ورقة الملصقات</value></data>
+  <data name="EmptyTitle" xml:space="preserve"><value>لا توجد مؤسسة تطابق عوامل التصفية</value></data>
+  <data name="ClearFilters" xml:space="preserve"><value>مسح عوامل التصفية</value></data>
+  <data name="RowPrint" xml:space="preserve"><value>طباعة الرمز</value></data>
+  <data name="RowOpen" xml:space="preserve"><value>فتح المؤسسة</value></data>
+  <data name="SelectAll" xml:space="preserve"><value>تحديد الكل في هذه الصفحة</value></data>
+  <data name="SelectRow" xml:space="preserve"><value>تحديد {0}</value></data>
+  <data name="PageInfo" xml:space="preserve"><value>{0}–{1} من {2}</value></data>
+  <data name="PrevPage" xml:space="preserve"><value>السابق</value></data>
+  <data name="NextPage" xml:space="preserve"><value>التالي</value></data>
+  <data name="PrintTitle" xml:space="preserve"><value>طباعة رمز QR</value></data>
+  <data name="PrintCrumb" xml:space="preserve"><value>CRM / المؤسسات / طباعة رمز QR</value></data>
+  <data name="ModeSingle" xml:space="preserve"><value>مفرد</value></data>
+  <data name="ModeLabels" xml:space="preserve"><value>ورقة ملصقات</value></data>
+  <data name="PaperLabel" xml:space="preserve"><value>الورق</value></data>
+  <data name="PerA4" xml:space="preserve"><value>على A4</value></data>
+  <data name="Labels4" xml:space="preserve"><value>4 رموز</value></data>
+  <data name="Labels8" xml:space="preserve"><value>8 رموز</value></data>
+  <data name="CopiesLabel" xml:space="preserve"><value>النسخ</value></data>
+  <data name="HintSingle" xml:space="preserve"><value>يُطبع الرمز نفسه؛ وتبقى النسخ السابقة صالحة.</value></data>
+  <data name="HintLabels" xml:space="preserve"><value>رموز المؤسسات المحددة · قصّ على طول الخطوط المتقطعة.</value></data>
+  <data name="StickerText" xml:space="preserve"><value>يمسح مندوبنا هذا الرمز في بداية الزيارة. يرجى عدم إزالته.</value></data>
+  <data name="StickerFooter" xml:space="preserve"><value>الإصدار {0} · طُبع {1}</value></data>
+  <data name="LabelFooter" xml:space="preserve"><value>الإصدار {0} · {1}</value></data>
+  <data name="CutHint" xml:space="preserve"><value>قصّ على طول الخطوط المتقطعة · A4 · {0} رموز</value></data>
+  <data name="PreviewNote" xml:space="preserve"><value>يُرسم الرمز عند الضغط على طباعة (وتُسجَّل الطباعة).</value></data>
+  <data name="NothingToPrint" xml:space="preserve"><value>لا توجد رموز نشطة لأي من المؤسسات المحددة.</value></data>
+  <data name="NoSelection" xml:space="preserve"><value>لم يتم تحديد مؤسسة. اخترها من صفحة رموز QR.</value></data>
+  <data name="SkippedNote" xml:space="preserve"><value>تم استبعاد {0} مؤسسة ليس لديها رمز نشط.</value></data>
+  <data name="BackToList" xml:space="preserve"><value>العودة إلى رموز QR</value></data>
+</root>

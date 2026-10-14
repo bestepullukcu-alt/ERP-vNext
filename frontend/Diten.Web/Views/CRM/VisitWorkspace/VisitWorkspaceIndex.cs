@@ -34,7 +34,9 @@ public sealed class VisitWorkspaceIndex
         // WP-VW-W3 (WEB-a) — start the visit (E3), in_progress, the start refusals
         "Status_in_progress", "AlertTitle_in_progress", "AlertText_in_progress", "AlertText_today_start", "CardLiveMinutes", "Action_start", "Action_presentation", "Action_finish", "E3Required", "E3Optional", "E3Webcam", "E3CameraPhone", "E3Missing", "E3Missing_photo", "E3Missing_location", "E3HintReady", "Loc_pending", "Loc_ok", "Loc_okDetail", "Loc_inaccurate", "Loc_inaccurateDetail", "Loc_denied", "Loc_deniedDetail", "Loc_unavailable", "Loc_unavailableDetail", "Loc_timeout", "Loc_timeoutDetail", "Loc_requiredNote", "Loc_requiredMissing", "Loc_infoNote", "Cam_denied", "Cam_unavailable", "Cam_failed", "Photo_invalid", "Photo_tooLarge", "UploadFailed", "DistanceMeters", "DistanceKm", "StartErr_visit_not_today", "StartErr_visit_not_confirmed", "StartErr_visit_already_started", "StartErr_visit_already_reported", "StartErr_visit_location_required", "StartErr_visit_location_too_far", "StartErr_visit_location_inaccurate", "StartErr_visit_account_location_unknown", "StartErr_visit_photo_required", "StartErr_visit_photo_invalid", "StartErr_visit_capture_invalid", "StartErr_visit_evidence_store_unavailable", "StartErr_visit_execution_not_found", "StartErr_visit_execution_concurrency_conflict",
         // W4-FIX-c (G-3 / G-4) — the unplanned visit: doctor | pharmacy target, the refusals
-        "UnpDoctorLabel", "UnpDoctorSearch", "UnpPharmacyLabel", "UnpPharmacySearch", "Err_planned_visit_duplicate_same_day_type", "Err_planned_visit_time_window_invalid"
+        "UnpDoctorLabel", "UnpDoctorSearch", "UnpPharmacyLabel", "UnpPharmacySearch", "Err_planned_visit_duplicate_same_day_type", "Err_planned_visit_time_window_invalid",
+        // WP-VW-W3E (W3E-WEB-a) — the QR scan at the visit start (S1–S8), the web device line (S7), the QR start refusals
+        "QrMode_optional", "QrMode_required", "QrIdle", "QrNoCode", "QrScan", "QrOk", "QrOkParent", "QrOkSelf", "QrRescan", "QrWrong", "QrWrongUnknown", "QrInvalid", "QrUnverifiable", "QrScannedUnchecked", "QrNoPermTitle", "QrNoPerm1", "QrNoPerm2", "QrNoPerm3", "QrRetry", "QrNoCamera", "QrNoCodeOpt", "QrSkip", "QrBack", "QrNoCodeReq", "QrAskException", "QrNoPrinted", "QrSkipped", "E3Missing_qr", "StartErr_visit_qr_required", "StartErr_visit_qr_invalid", "StartErr_visit_qr_wrong_account", "StartErr_visit_qr_revoked", "StartErr_visit_qr_signing_unavailable"
     ];
 
     /// <summary>The strings the view itself writes (headings, buttons, labels).</summary>
@@ -50,6 +52,8 @@ public sealed class VisitWorkspaceIndex
         // WP-VW-W2 (WEB-c)
         "ViewLabel", "ViewDay", "ViewWeek", "ViewMonth", "TargetsHeading", "MapPlaceholder",
         // WP-VW-W3 (WEB-a) — the E3 dialog
-        "E3Title", "E3Photo", "E3Upload", "E3Webcam", "E3Shutter", "E3PhotoTaken", "E3Retake", "E3Kvkk", "E3LocationTime", "E3Location", "E3Retry", "E3StartLabel", "E3StartValue", "E3Cancel", "E3Begin"
+        "E3Title", "E3Photo", "E3Upload", "E3Webcam", "E3Shutter", "E3PhotoTaken", "E3Retake", "E3Kvkk", "E3LocationTime", "E3Location", "E3Retry", "E3StartLabel", "E3StartValue", "E3Cancel", "E3Begin",
+        // WP-VW-W3E (W3E-WEB-a) — the QR section / camera and the web device line the view writes itself
+        "QrCap", "QrFrame", "QrCancel", "QrFullTitle", "DeviceUnverified"
     ];
 }

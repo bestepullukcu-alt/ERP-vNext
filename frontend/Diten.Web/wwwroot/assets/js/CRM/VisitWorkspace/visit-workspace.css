@@ -297,3 +297,54 @@
     .vw-e3-begin { width: 100%; height: 50px; border-radius: 10px; font-size: 16px; font-weight: 600; }
     .vw-e3-alert { margin: 0 16px 12px; }
 }
+
+/* WP-VW-W3E (W3E-WEB-a, S1–S8) — the institution QR in the start window (the mockup's box states), the web device line,
+   the phone's full-screen camera. Logical properties only (Arabic mirrors). */
+.vw-e3-qr { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.vw-e3-device { grid-column: 1 / -1; display: flex; gap: 10px; align-items: flex-start; padding: 10px 14px; border-radius: 6px; background: var(--vw-inb); color: var(--vw-h); font-size: 14px; }
+.vw-e3-device > .bx { font-size: 19px; color: var(--vw-in); margin-top: 1px; flex: 0 0 auto; }
+.vw-qr-box { border: 1px solid var(--vw-bd); border-radius: 6px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 14.5px; color: var(--vw-h); }
+.vw-qr-box-col { flex-direction: column; align-items: stretch; gap: 10px; padding: 14px; }
+.vw-qr-box-top { align-items: flex-start; }
+.vw-qr-ok { border-color: color-mix(in srgb, var(--vw-ok) 35%, transparent); background: var(--vw-okb); }
+.vw-qr-warn { border-color: color-mix(in srgb, var(--vw-wa) 35%, transparent); background: var(--vw-wab); }
+.vw-qr-info { background: var(--vw-inb); }
+.vw-qr-ico { width: 40px; height: 40px; border-radius: 6px; background: var(--vw-pl); color: var(--vw-pt); display: flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+.vw-qr-ico > .bx { font-size: 22px; }
+.vw-qr-ico-off { background: var(--vw-seb); color: var(--vw-se); }
+.vw-qr-txt { flex: 1; min-width: 180px; }
+.vw-qr-strong { color: var(--vw-h); font-weight: 500; }
+.vw-qr-sub { font-size: 13px; color: var(--vw-tx); }
+.vw-qr-mark-ok { font-size: 26px; color: var(--vw-ok); }
+.vw-qr-mark-warn { font-size: 24px; color: var(--vw-wa); }
+.vw-qr-mark-info { font-size: 20px; color: var(--vw-in); margin-top: 1px; }
+.vw-qr-mark-off { font-size: 22px; color: var(--vw-se); }
+.vw-qr-btn { min-height: 44px; border-radius: 6px; padding: 8px 18px; font-size: 14.5px; font-weight: 500; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; border: 1px solid var(--vw-p); background: var(--vw-p); color: #fff; }
+.vw-qr-btn-o { background: transparent; color: var(--vw-pt); border-color: var(--vw-pt); font-weight: 400; }
+.vw-qr-link { border: 0; background: transparent; padding: 0; color: var(--vw-pt); font-size: 14px; cursor: pointer; }
+.vw-qr-link-sm { font-size: 13.5px; }
+.vw-qr-link:hover { text-decoration: underline; }
+.vw-qr-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+.vw-qr-steps { margin: 0; padding-inline-start: 18px; font-size: 14px; display: flex; flex-direction: column; gap: 2px; }
+.vw-qr-ask { display: inline-flex; align-items: center; gap: 6px; font-weight: 500; color: var(--vw-h); }
+.vw-qr-ask > .bx { color: var(--vw-p); }
+.vw-e3-qr-cam { position: relative; border-radius: 6px; overflow: hidden; background: #15171d; height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; color: #fff; }
+.vw-e3-qr-cam.d-none, .vw-qr-full.d-none { display: none !important; }
+.vw-e3-qr-cam video, .vw-qr-full video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .85; }
+.vw-qr-frame { position: relative; width: 170px; height: 170px; }
+.vw-qr-frame-lg { width: 240px; height: 240px; }
+.vw-qr-frame > span { position: absolute; width: 34px; height: 34px; border: 0 solid #fff; }
+.vw-qr-frame-lg > span { width: 44px; height: 44px; }
+.vw-qr-frame > span:nth-child(1) { top: 0; inset-inline-start: 0; border-top-width: 4px; border-inline-start-width: 4px; border-start-start-radius: 6px; }
+.vw-qr-frame > span:nth-child(2) { top: 0; inset-inline-end: 0; border-top-width: 4px; border-inline-end-width: 4px; border-start-end-radius: 6px; }
+.vw-qr-frame > span:nth-child(3) { bottom: 0; inset-inline-start: 0; border-bottom-width: 4px; border-inline-start-width: 4px; border-end-start-radius: 6px; }
+.vw-qr-frame > span:nth-child(4) { bottom: 0; inset-inline-end: 0; border-bottom-width: 4px; border-inline-end-width: 4px; border-end-end-radius: 6px; }
+.vw-qr-frame-text { position: relative; font-size: 15px; font-weight: 500; text-shadow: 0 1px 3px rgba(0, 0, 0, .6); }
+.vw-qr-cam-cancel { position: relative; background: transparent; color: #fff; border: 1px solid rgba(255, 255, 255, .6); border-radius: 6px; padding: 8px 22px; font-size: 14.5px; cursor: pointer; min-height: 44px; }
+.vw-qr-cam-cancel-lg { width: 100%; border-radius: 8px; padding: 12px; font-size: 16px; min-height: 48px; }
+.vw-qr-full { position: fixed; inset: 0; z-index: 1090; background: #0f1116; color: #fff; display: flex; flex-direction: column; }
+.vw-qr-full-head { position: relative; padding: 22px 18px 12px; display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 500; }
+.vw-qr-full-head > span { flex: 1; }
+.vw-qr-full-x { background: transparent; border: 0; color: #fff; font-size: 26px; cursor: pointer; line-height: 1; }
+.vw-qr-full-mid { position: relative; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; }
+.vw-qr-full-foot { position: relative; padding: 18px 18px 28px; }
