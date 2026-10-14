@@ -1070,6 +1070,9 @@
   <data name="Nav.Page.CRMDOCTORINSIGHTTHRESHOLDS" xml:space="preserve">
     <value>潜力阈值</value>
   </data>
+  <data name="Nav.Page.CRMVISITQRCODES" xml:space="preserve">
+    <value>拜访二维码</value>
+  </data>
   <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>供应链执行</value></data>
   <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>承运商管理</value></data>
   <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>承运商</value></data>

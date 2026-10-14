@@ -49,11 +49,26 @@ public static class VisitExecutionErrorCodes
     /// <summary>The prefix of the extra error line a too-far start carries: <c>distance_meters=1234</c>.</summary>
     public const string DistancePrefix = "distance_meters=";
 
+    // WP-VW-W3E (W3E-BE-a, §2.3 / §2.4) — the institution QR code.
+    public const string QrRequired = "visit_qr_required";                                // 400
+    public const string QrInvalid = "visit_qr_invalid";                                  // 400
+    public const string QrWrongAccount = "visit_qr_wrong_account";                       // 409
+    public const string QrRevoked = "visit_qr_revoked";                                  // 409
+    public const string QrSigningUnavailable = "visit_qr_signing_unavailable";           // 503
+    public const string QrAccountNotFound = "visit_qr_account_not_found";                // 404
+    public const string QrRequestInvalid = "visit_qr_request_invalid";                   // 400
+    public const string QrNotActive = "visit_qr_not_active";                             // 409
+
+    /// <summary>The prefix of the extra error line a wrong-institution QR start carries: <c>scanned_account_id=…</c>
+    /// (same tenant only — a foreign tenant's code is <c>invalid</c>, never named).</summary>
+    public const string ScannedAccountPrefix = "scanned_account_id=";
+
     public static readonly IReadOnlyList<string> All = new[]
     {
         NotFound, NotToday, NotConfirmed, AlreadyStarted, AlreadyReported, LocationRequired, LocationTooFar,
         LocationInaccurate, AccountLocationUnknown, ExecutionFinished, ExecutionNotFinished, SignatureExists,
         ReportDeadlinePassed, ExecutionStarted, ConcurrencyConflict, PhotoRequired, PhotoInvalid, CaptureInvalid,
-        CoVisitorInvalid, PolicyInvalid, EvidenceStoreUnavailable
+        CoVisitorInvalid, PolicyInvalid, EvidenceStoreUnavailable,
+        QrRequired, QrInvalid, QrWrongAccount, QrRevoked, QrSigningUnavailable, QrAccountNotFound, QrRequestInvalid, QrNotActive
     };
 }

@@ -138,6 +138,10 @@ public static class DependencyInjection
         services.AddScoped<Features.DoctorInsights.DoctorInsightsRecorder>();
         services.AddScoped<Features.DoctorInsights.IDoctorInsightsRecorder>(sp => sp.GetRequiredService<Features.DoctorInsights.DoctorInsightsRecorder>());
         services.AddScoped<Features.DoctorInsights.DoctorInsightsReader>();
+        // WP-VW-W3E (W3E-BE-a) — the institution QR codes: the shared handler plumbing and the ONE start-time verifier (the
+        // signing key ring is the host's: Api registers IVisitQrKeyRing on ISecretsProvider).
+        services.AddScoped<Features.VisitQr.VisitQrService>();
+        services.AddScoped<Features.VisitQr.IVisitQrVerifier, Features.VisitQr.VisitQrVerifier>();
         // WP-VW-W4 (W4-BE-a) — the report v2 (pre-fill, draft, submit, amend, competitor usage).
         services.AddScoped<Features.VisitReport.V2.VisitReportV2Service>();
         // W2-BE-c (C1) — the engine preview behind a tenant-keyed, bounded cache (session version + today + the rep's

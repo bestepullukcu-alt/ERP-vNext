@@ -154,6 +154,12 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                     new ModuleManifestAction("INSIGHTS_READ_ALL", "Read All Doctors' Insights", "crm.doctor-insights.read-all", "RowAction", 30, false, false, true),
                     new ModuleManifestAction("INSIGHTS_READ_AGGREGATE", "Read Aggregated Doctor Insights", "crm.doctor-insights.read-aggregate", "RowAction", 40, false, false, true)
                 ]),
+                // WP-VW-W3E (W3E-BE-a, §2.7) — the institution QR codes (bulk page: state, issue, print). Read = the QR state
+                // and history (never a payload); manage = issue / regenerate / revoke / print.
+                new ModuleManifestPage("CRM_VISIT_QR_CODES", "Visit QR Codes", "/CRM/VisitQrCodes", "crm.visit-qr.read", null, true, "List", 69,
+                [
+                    new ModuleManifestAction("QR_MANAGE", "Issue, Revoke and Print Institution QR Codes", "crm.visit-qr.manage", "Toolbar", 10, false, true, false)
+                ]),
                 new ModuleManifestPage("VISIT_PLANNING", "Visit Planning", "/CRM/VisitPlanning", VisitPlanRead, null, true, "List", 64,
                 [
                     new ModuleManifestAction("GENERATE", "Generate Plan", "crm.visit-plan.generate", "Toolbar", 10, false, true, false),

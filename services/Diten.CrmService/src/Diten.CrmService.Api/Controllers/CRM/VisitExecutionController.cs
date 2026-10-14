@@ -43,7 +43,8 @@ public sealed class VisitExecutionController : CustomBaseController
 
     /// <summary>Starts the visit. multipart/form-data: plannedVisitId, kind?, latitude?, longitude?, accuracyMeters?,
     /// locationError? (denied | unavailable | timeout), photo? (file), photoCapturedAt?. Numbers use the invariant
-    /// culture ("41.0123").</summary>
+    /// culture ("41.0123"). WP-VW-W3E (W3E-BE-a): qrPayload? (the scanned institution QR text, ≤ 200, sent as read),
+    /// qrScannedAt? (informative).</summary>
     [HttpPost("api/crm/visit-execution/start")]
     [HasPermission(Perms.Record)]
     [RequestSizeLimit(MaxRequestBytes)]
@@ -57,7 +58,9 @@ public sealed class VisitExecutionController : CustomBaseController
         [FromForm] string? locationError,
         IFormFile? photo,
         [FromForm] string? photoCapturedAt,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        [FromForm] string? qrPayload = null,
+        [FromForm] string? qrScannedAt = null)
     {
         if (!TryNumber(latitude, out var lat) || !TryNumber(longitude, out var lng) || !TryNumber(accuracyMeters, out var accuracy))
         {
@@ -67,7 +70,8 @@ public sealed class VisitExecutionController : CustomBaseController
 
         var file = await ReadAsync(photo, cancellationToken);
         return CreateActionResultInstance(await _mediator.Send(
-            new StartVisitExecutionCommand(plannedVisitId, kind, lat, lng, accuracy, locationError, file, photoCapturedAt),
+            new StartVisitExecutionCommand(plannedVisitId, kind, lat, lng, accuracy, locationError, file, photoCapturedAt,
+                QrPayload: qrPayload, QrScannedAt: qrScannedAt),
             cancellationToken));
     }
 

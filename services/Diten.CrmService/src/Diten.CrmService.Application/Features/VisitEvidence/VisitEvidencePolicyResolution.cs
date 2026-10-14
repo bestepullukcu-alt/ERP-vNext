@@ -107,6 +107,15 @@ public sealed class VisitEvidencePolicyResolver : IVisitEvidencePolicyResolver
                         effective.AccountWithoutLocation = AccountWithoutLocationModes.AllowFlagged;
                         bySource.TryAdd("accountWithoutLocation", exception.Id);
                         break;
+                    // WP-VW-W3E (W3E-BE-a, K-W3E-9) — required → optional (off / optional stay as they are)
+                    case VisitEvidenceExceptionRules.QrOptional:
+                        if (string.Equals(effective.QrMode, VisitQrModes.Required, StringComparison.Ordinal))
+                        {
+                            effective.QrMode = VisitQrModes.Optional;
+                            bySource.TryAdd("qrMode", exception.Id);
+                        }
+
+                        break;
                 }
             }
         }
@@ -131,7 +140,8 @@ public sealed class VisitEvidencePolicyResolver : IVisitEvidencePolicyResolver
         ("doctorConfirmation", p.DoctorConfirmation ? "true" : "false"),
         ("durationConsistency", p.DurationConsistency ? "true" : "false"),
         ("shortVisitSeconds", p.ShortVisitSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture)),
-        ("accountWithoutLocation", p.AccountWithoutLocation)
+        ("accountWithoutLocation", p.AccountWithoutLocation),
+        ("qrMode", p.QrMode) // WP-VW-W3E (W3E-BE-a)
     ];
 
     public static VisitEvidencePolicy Copy(VisitEvidencePolicy p) => new()
@@ -139,7 +149,8 @@ public sealed class VisitEvidencePolicyResolver : IVisitEvidencePolicyResolver
         Id = p.Id, TenantId = p.TenantId, Version = p.Version, CreatedAt = p.CreatedAt, UpdatedAt = p.UpdatedAt, UpdatedBy = p.UpdatedBy,
         LocationMode = p.LocationMode, RadiusMeters = p.RadiusMeters, MaxAccuracyMeters = p.MaxAccuracyMeters, PhotoMode = p.PhotoMode,
         DoctorConfirmation = p.DoctorConfirmation, DurationConsistency = p.DurationConsistency, ShortVisitSeconds = p.ShortVisitSeconds,
-        AccountWithoutLocation = p.AccountWithoutLocation
+        AccountWithoutLocation = p.AccountWithoutLocation,
+        QrMode = p.QrMode // WP-VW-W3E (W3E-BE-a)
     };
 }
 

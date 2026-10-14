@@ -27,6 +27,14 @@ public sealed class AccountRepository : IAccountRepository
         return await _collection.Find(filter).ToListAsync(cancellationToken);
     }
 
+    /// <summary>WP-VW-W3E (W3E-BE-a) — the QR bulk page's city filter: ids only (a projection, never whole accounts).</summary>
+    public async Task<IReadOnlyList<Guid>> ListIdsByCityAsync(Guid tenantId, string cityRef, CancellationToken cancellationToken)
+    {
+        var city = new MongoDB.Bson.BsonRegularExpression("^" + System.Text.RegularExpressions.Regex.Escape(cityRef.Trim()) + "$", "i");
+        var filter = ActiveTenant(tenantId) & Builders<Account>.Filter.Regex(a => a.CityRef, city);
+        return await _collection.Find(filter).Project(a => a.Id).ToListAsync(cancellationToken);
+    }
+
     private static FilterDefinition<Account> ActiveTenant(Guid tenantId)
         => Builders<Account>.Filter.Where(a => a.TenantId == tenantId && !a.IsDeleted);
 

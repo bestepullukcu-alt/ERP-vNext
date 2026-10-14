@@ -585,6 +585,12 @@ public static class DataSeeder
             // hidden). Tenant-scoped ("crm-visit-report" ∉ PlatformAdminModules). Catalog only: granted to no role here.
             new("crm", "visit-report", "read-aggregate", "CRM Visit Report Read Aggregate", "Permission to view aggregated competitor usage counts from visit reports without any doctor's identity (cells under five are hidden)", moduleOverride: "crm-visit-report"),
 
+            // WP-VW-W3E (W3E-BE-a, §2.7) — the institution QR codes. Tenant-scoped ("crm-visit-qr" ∉ PlatformAdminModules).
+            // read = the QR state and history of an institution (never a payload); manage = issue / regenerate / revoke / print
+            // (the payload). Catalog only: granted to no role here.
+            new("crm", "visit-qr", "read", "CRM Visit QR Read", "Permission to view an institution's visit QR code state and history (never the printable payload)", moduleOverride: "crm-visit-qr"),
+            new("crm", "visit-qr", "manage", "CRM Visit QR Manage", "Permission to issue, regenerate, revoke and print institution visit QR codes, one by one or in bulk", moduleOverride: "crm-visit-qr"),
+
             new("mod0251", "employee", "search", "Search Employees", "Permission to search MOD-0251 employee registry records"),
             new("mod0251", "employee", "view", "View Employee", "Permission to view MOD-0251 employee records"),
             new("mod0251", "employee", "view_sensitive", "View Sensitive Employee Fields", "Permission to view sensitive MOD-0251 employee fields when masking policy allows"),

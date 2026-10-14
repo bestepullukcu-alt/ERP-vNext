@@ -1124,6 +1124,9 @@
   <data name="Nav.Page.CRMDOCTORINSIGHTTHRESHOLDS" xml:space="preserve">
     <value>Potential Thresholds</value>
   </data>
+  <data name="Nav.Page.CRMVISITQRCODES" xml:space="preserve">
+    <value>Visit QR Codes</value>
+  </data>
   <data name="Nav.Domain.MANUFACTURING" xml:space="preserve"><value>Manufacturing</value></data>
   <data name="Nav.Module.BOMROUTINGS" xml:space="preserve"><value>BOM &amp; Routings</value></data>
   <data name="Nav.Page.BOMS" xml:space="preserve"><value>Bills of Materials</value></data>

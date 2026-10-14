@@ -5976,6 +5976,39 @@
         "OPTIONS"
       ],
       "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/crm/visit-qr",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5061
+        }
+      ],
+      "UpstreamPathTemplate": "/api/crm/visit-qr",
+      "UpstreamHttpMethod": [
+        "GET",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/crm/visit-qr/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5061
+        }
+      ],
+      "UpstreamPathTemplate": "/api/crm/visit-qr/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
     }
   ],
   "GlobalConfiguration": {

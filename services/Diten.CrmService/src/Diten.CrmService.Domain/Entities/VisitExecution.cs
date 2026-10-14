@@ -56,6 +56,9 @@ public sealed class VisitExecution : EntityBase
     public Guid? ExceptionId { get; set; }
     public List<string> RelaxedRules { get; set; } = new();
 
+    /// <summary>WP-VW-W3E (W3E-BE-a, §2.4) — the institution QR code at the start (null on a start before W3E).</summary>
+    public VisitExecutionQr? Qr { get; set; }
+
     public string? CreatedBy { get; set; }
     public string? UpdatedBy { get; set; }
 
@@ -198,9 +201,17 @@ public static class VisitExecutionFlags
     /// <summary>WP-VW-W3 (W3-BE-c) — the start ran under an approved time-boxed exception (see ExceptionId / RelaxedRules).</summary>
     public const string StartedWithException = "started_with_exception";
 
+    /// <summary>WP-VW-W3E (W3E-BE-a, §2.4) — the QR verdicts that start with a flag (K-W3E-6 / K-W3E-7).</summary>
+    public const string QrNotIssued = "qr_not_issued";
+    public const string QrInvalid = "qr_invalid";
+    public const string QrWrongAccount = "qr_wrong_account";
+    public const string QrRevoked = "qr_revoked";
+    public const string QrUnverifiable = "qr_unverifiable";
+
     public static readonly IReadOnlyList<string> All = new[]
     {
-        LocationFar, LocationMissing, LocationInaccurate, AccountLocationUnknown, ShortVisit, StartedWithException
+        LocationFar, LocationMissing, LocationInaccurate, AccountLocationUnknown, ShortVisit, StartedWithException,
+        QrNotIssued, QrInvalid, QrWrongAccount, QrRevoked, QrUnverifiable
     };
 }
 

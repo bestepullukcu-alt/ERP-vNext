@@ -84,7 +84,10 @@ public static class VisitEvidenceExceptionRules
     /// <summary>accountWithoutLocation → <c>allow_flagged</c>.</summary>
     public const string AccountWithoutLocationAllow = "account_without_location_allow";
 
-    public static readonly IReadOnlyList<string> All = new[] { LocationInfo, PhotoOptional, AccountWithoutLocationAllow };
+    /// <summary>WP-VW-W3E (W3E-BE-a, K-W3E-9) — qrMode <c>required</c> → <c>optional</c>.</summary>
+    public const string QrOptional = "qr_optional";
+
+    public static readonly IReadOnlyList<string> All = new[] { LocationInfo, PhotoOptional, AccountWithoutLocationAllow, QrOptional };
 }
 
 public static class VisitEvidenceExceptionLimits

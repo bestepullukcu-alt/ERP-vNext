@@ -316,3 +316,7 @@ platform.organization-units.custom-fields.manage,0
 platform.organization-units.custom-fields.read,0
 platform.organization-units.custom-fields.write-value,0
 platform.organization-units.reporting-line.update,0
+# WP-VW-W3E (W3E-BE-a) — the 2 institution QR keys, stated Tenant (0): moduleOverride "crm-visit-qr" is not in
+# PlatformAdminModules; a tenant role holds them (read the QR state; issue / revoke / print).
+crm.visit-qr.manage,0
+crm.visit-qr.read,0

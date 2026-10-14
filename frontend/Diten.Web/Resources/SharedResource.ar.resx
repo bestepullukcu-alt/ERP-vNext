@@ -1070,6 +1070,9 @@
   <data name="Nav.Page.CRMDOCTORINSIGHTTHRESHOLDS" xml:space="preserve">
     <value>حدود الإمكانات</value>
   </data>
+  <data name="Nav.Page.CRMVISITQRCODES" xml:space="preserve">
+    <value>رموز QR للزيارات</value>
+  </data>
   <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>تنفيذ سلسلة الإمداد</value></data>
   <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>إدارة شركات النقل</value></data>
   <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>شركات النقل</value></data>

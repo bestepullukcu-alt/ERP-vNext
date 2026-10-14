@@ -1071,6 +1071,9 @@
   <data name="Nav.Page.CRMDOCTORINSIGHTTHRESHOLDS" xml:space="preserve">
     <value>Seuils de potentiel</value>
   </data>
+  <data name="Nav.Page.CRMVISITQRCODES" xml:space="preserve">
+    <value>Codes QR de visite</value>
+  </data>
   <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>Exécution de la chaîne d’approvisionnement</value></data>
   <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>Gestion des transporteurs</value></data>
   <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>Transporteurs</value></data>

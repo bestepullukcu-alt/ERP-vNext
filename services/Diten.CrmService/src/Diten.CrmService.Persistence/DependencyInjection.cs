@@ -285,6 +285,9 @@ public static class DependencyInjection
         services.AddScoped<IDoctorProductPotentialChangeRepository, DoctorProductPotentialChangeRepository>();
         services.AddScoped<IProductPotentialThresholdRepository, ProductPotentialThresholdRepository>();
         services.AddScoped<IProductPotentialThresholdChangeRepository, ProductPotentialThresholdChangeRepository>();
+        // WP-VW-W3E (W3E-BE-a) — the institution QR codes (one active per institution) and their append-only history.
+        services.AddScoped<IInstitutionQrCodeRepository, InstitutionQrCodeRepository>();
+        services.AddScoped<IInstitutionQrEventRepository, InstitutionQrEventRepository>();
 
         TryEnsureIndexes(client.GetDatabase(databaseName));
 
@@ -1373,6 +1376,17 @@ public static class DependencyInjection
         });
         Map<VisitEvidencePolicyChange>(_ => { });
 
+        // WP-VW-W3E (W3E-BE-a) - the institution QR codes, their events and the QR evidence embedded in VisitExecution:
+        // every Guid as a string (the GUID trap: an unmapped Guid is written binary and the by-account / Qr.AccountId
+        // filters come back EMPTY silently).
+        Map<InstitutionQrCode>(map => map.GetMemberMap(c => c.AccountId).SetSerializer(stringGuid));
+        Map<InstitutionQrEvent>(map =>
+        {
+            map.GetMemberMap(e => e.AccountId).SetSerializer(stringGuid);
+            map.GetMemberMap(e => e.QrCodeId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+        });
+        Map<VisitExecutionQr>(map => map.GetMemberMap(q => q.AccountId).SetSerializer(new NullableSerializer<Guid>(stringGuid)));
+
         // WP-VW-W4 (W4-BE-c) - the doctor insights: every Guid FK as a string (the GUID trap: a type missing here stores
         // its Guids binary and the string-Guid queries come back EMPTY silently).
         var nullableStringGuid = new NullableSerializer<Guid>(stringGuid);
@@ -2153,6 +2167,31 @@ public static class DependencyInjection
                     Unique = true,
                     PartialFilterExpression = Builders<VisitEvidencePolicy>.Filter.Eq(p => p.IsDeleted, false)
                 }));
+
+            // WP-VW-W3E (W3E-BE-a) - crm_institution_qr_codes: ONE ACTIVE code per institution, guaranteed by the database
+            // (a concurrent second issue loses). Equality-only partial filter (Status:"active", IsDeleted:false) - $ne in a
+            // partial filter crash-loops startup. Scalar keys only.
+            var qrCodes = database.GetCollection<InstitutionQrCode>(InstitutionQrCodeRepository.CollectionName);
+            qrCodes.Indexes.CreateOne(new CreateIndexModel<InstitutionQrCode>(
+                Builders<InstitutionQrCode>.IndexKeys.Ascending(c => c.TenantId).Ascending(c => c.AccountId),
+                new CreateIndexOptions<InstitutionQrCode>
+                {
+                    Name = "ux_crm_institution_qr_codes_tenant_account_active",
+                    Unique = true,
+                    PartialFilterExpression = Builders<InstitutionQrCode>.Filter.And(
+                        Builders<InstitutionQrCode>.Filter.Eq(c => c.Status, InstitutionQrCodeStatuses.Active),
+                        Builders<InstitutionQrCode>.Filter.Eq(c => c.IsDeleted, false))
+                }));
+            qrCodes.Indexes.CreateOne(new CreateIndexModel<InstitutionQrCode>(
+                Builders<InstitutionQrCode>.IndexKeys.Ascending(c => c.TenantId).Ascending(c => c.Status),
+                new CreateIndexOptions { Name = "ix_crm_institution_qr_codes_tenant_status" }));
+            var qrEvents = database.GetCollection<InstitutionQrEvent>(InstitutionQrEventRepository.CollectionName);
+            qrEvents.Indexes.CreateOne(new CreateIndexModel<InstitutionQrEvent>(
+                Builders<InstitutionQrEvent>.IndexKeys.Ascending(e => e.TenantId).Ascending(e => e.AccountId),
+                new CreateIndexOptions { Name = "ix_crm_institution_qr_events_tenant_account" }));
+            visitExecutions.Indexes.CreateOne(new CreateIndexModel<VisitExecution>(
+                Builders<VisitExecution>.IndexKeys.Ascending(e => e.TenantId).Ascending("Qr.AccountId").Ascending("Qr.Status"),
+                new CreateIndexOptions { Name = "ix_visit_executions_tenant_qr_account_status" }));
         }
         catch (MongoException)
         {

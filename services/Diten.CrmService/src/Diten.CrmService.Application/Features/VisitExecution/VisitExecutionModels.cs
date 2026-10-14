@@ -30,7 +30,13 @@ public sealed record VisitExecutionDto(
     DateTimeOffset ReportDeadline,
     // WP-VW-W3 (W3-BE-c, additive) — the approved time-boxed exception the start ran under (flag started_with_exception).
     Guid? ExceptionId = null,
-    IReadOnlyList<string>? RelaxedRules = null);
+    IReadOnlyList<string>? RelaxedRules = null,
+    // WP-VW-W3E (W3E-BE-a, additive) — the institution QR code at the start (null on a start before W3E).
+    VisitExecutionQrDto? Qr = null);
+
+/// <summary>WP-VW-W3E — the QR verdict of a start: status, the scanned institution + version, the client's scan instant,
+/// how it matched (self | parent). The payload is never echoed.</summary>
+public sealed record VisitExecutionQrDto(string Status, Guid? AccountId, int? Version, DateTimeOffset? ScannedAt, string? MatchedVia);
 
 public sealed record VisitExecutionLocationDto(
     double? Latitude, double? Longitude, double? AccuracyMeters, int? DistanceMeters, int RadiusMeters, string Mode,
@@ -80,7 +86,9 @@ public sealed record VisitEvidencePolicyDto(
     DateTimeOffset? UpdatedAt = null,
     int? RepCount = null,
     // WP-VW-W3-FIX (F5, additive) — user id ("D") → display name of updatedBy (settings read only).
-    IReadOnlyDictionary<string, string>? DisplayNames = null);
+    IReadOnlyDictionary<string, string>? DisplayNames = null,
+    // WP-VW-W3E (W3E-BE-a, additive) — off | optional | required.
+    string? QrMode = null);
 
 public sealed record VisitExecutionContractDto(
     string ModuleId,
@@ -98,7 +106,12 @@ public sealed record VisitExecutionContractDto(
     long MaxEvidenceBytes,
     IReadOnlyList<string> PhotoMediaTypes,
     IReadOnlyList<string> ErrorCodes,
-    IReadOnlyList<string> Permissions);
+    IReadOnlyList<string> Permissions,
+    // WP-VW-W3E (W3E-BE-a, additive) — the QR modes, the verdicts and the payload ceiling.
+    IReadOnlyList<string>? QrModes = null,
+    IReadOnlyList<string>? QrStatuses = null,
+    int? MaxQrPayloadLength = null,
+    IReadOnlyList<string>? QrPermissions = null);
 
 // ── inputs ───────────────────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -132,7 +145,9 @@ public sealed record VisitEvidencePolicyInput(
     bool? DurationConsistency,
     int? ShortVisitSeconds,
     string? AccountWithoutLocation,
-    int? ExpectedVersion);
+    int? ExpectedVersion,
+    // WP-VW-W3E (W3E-BE-a, additive) — off | optional | required.
+    string? QrMode = null);
 
 // ── commands (writes) ────────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -145,7 +160,10 @@ public sealed record StartVisitExecutionCommand(
     double? AccuracyMeters,
     string? LocationError,
     VisitEvidenceFile? Photo,
-    string? PhotoCapturedAt) : IRequest<Response<VisitExecutionDto>>;
+    string? PhotoCapturedAt,
+    // WP-VW-W3E (W3E-BE-a, §2.4) — the scanned institution QR payload (≤ 200, sent as read) + the client's scan instant.
+    string? QrPayload = null,
+    string? QrScannedAt = null) : IRequest<Response<VisitExecutionDto>>;
 
 public sealed record CaptureVisitExecutionCommand(Guid ExecutionId, VisitCaptureInput Capture)
     : IRequest<Response<VisitExecutionDto>>;

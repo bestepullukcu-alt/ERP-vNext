@@ -24,6 +24,10 @@ public sealed class VisitEvidencePolicy : EntityBase
     public string AccountWithoutLocation { get; set; } = VisitEvidencePolicyDefaults.AccountWithoutLocation;
 
     public string? UpdatedBy { get; set; }
+
+    /// <summary>WP-VW-W3E (W3E-BE-a, K-W3E-1) — <see cref="VisitQrModes"/>: the institution QR code at a visit start
+    /// (<c>off</c> | <c>optional</c> | <c>required</c>). An older document without it reads the default (<c>off</c>).</summary>
+    public string QrMode { get; set; } = VisitEvidencePolicyDefaults.QrMode;
 }
 
 public static class VisitLocationModes
@@ -68,4 +72,7 @@ public static class VisitEvidencePolicyDefaults
     public const int MaxAccuracyMetersBound = 1000;
     public const int MinShortVisitSeconds = 30;
     public const int MaxShortVisitSeconds = 1800;
+
+    /// <summary>WP-VW-W3E (W3E-BE-a) — the QR code is off until a tenant turns it on.</summary>
+    public const string QrMode = VisitQrModes.Off;
 }

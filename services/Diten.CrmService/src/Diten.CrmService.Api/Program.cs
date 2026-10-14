@@ -48,6 +48,10 @@ builder.WebHost.UseIISIntegration();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddPersistence(builder.Configuration);
+// WP-VW-W3E (W3E-BE-a) — the visit QR signing keys from the secret store (crm-visit-qr-signing:<keyId>,
+// Crm:VisitQr:ActiveKeyId); Development falls back to a deterministic dev key with a warning, elsewhere no key = 503.
+builder.Services.AddSecretsProvider(builder.Configuration, builder.Environment, options => options.ServiceName = "CrmService");
+builder.Services.AddSingleton<Diten.CrmService.Application.Features.VisitQr.IVisitQrKeyRing, Diten.CrmService.Api.Security.SecretsVisitQrKeyRing>();
 
 var jwtSecret = builder.Configuration["JwtSettings:Secret"];
 var jwtIssuer = builder.Configuration["JwtSettings:Issuer"];

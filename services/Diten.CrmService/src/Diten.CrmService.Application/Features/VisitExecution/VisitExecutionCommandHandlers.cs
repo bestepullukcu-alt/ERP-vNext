@@ -80,14 +80,17 @@ public sealed class StartVisitExecutionHandler : IRequestHandler<StartVisitExecu
     private readonly IVisitEvidenceStore _store;
     private readonly TimeProvider _clock;
     private readonly IVisitEvidencePolicyResolver _resolver;
+    private readonly Features.VisitQr.IVisitQrVerifier? _qr;
 
     public StartVisitExecutionHandler(
         ITenantContext tenant, IActorContext actor, ICallerScope caller,
         IPlannedVisitRepository plans, IVisitReportRepository reports, IVisitExecutionRepository executions,
         IVisitEvidencePolicyRepository policies, IAccountRepository accounts, IVisitEvidenceStore store,
-        TimeProvider? clock = null, IVisitEvidencePolicyResolver? resolver = null)
+        TimeProvider? clock = null, IVisitEvidencePolicyResolver? resolver = null,
+        Features.VisitQr.IVisitQrVerifier? qrVerifier = null)
     {
         _resolver = resolver ?? new VisitEvidencePolicyResolver(policies);
+        _qr = qrVerifier; // WP-VW-W3E (W3E-BE-a) — null (a host without the QR feature) behaves as qrMode off
         _tenant = tenant;
         _actor = actor;
         _caller = caller;
@@ -178,6 +181,16 @@ public sealed class StartVisitExecutionHandler : IRequestHandler<StartVisitExecu
             return VisitExecutionAccess.Fail<VisitExecutionDto>(locationFailure);
         }
 
+        // WP-VW-W3E (W3E-BE-a, §2.4) — the institution QR code: after the location rule, before the photo.
+        var qr = _qr is null
+            ? null
+            : await _qr.EvaluateAsync(tenantId, plan, VisitExecutionRules.Normalize(request.Kind) ?? VisitExecutionKinds.InPerson,
+                policy.QrMode, request.QrPayload, VisitReportValidation.ParseInstant(request.QrScannedAt), cancellationToken);
+        if (qr?.Refusal is { } qrFailure)
+        {
+            return VisitExecutionAccess.Fail<VisitExecutionDto>(qrFailure);
+        }
+
         if (request.Photo is null
             && string.Equals(policy.PhotoMode, VisitPhotoModes.Required, StringComparison.Ordinal))
         {
@@ -204,6 +217,15 @@ public sealed class StartVisitExecutionHandler : IRequestHandler<StartVisitExecu
             CreatedAt = now,
             CreatedBy = _actor.ActorName
         };
+        if (qr is not null)
+        {
+            execution.Qr = qr.Qr;
+            if (qr.Flag is { } qrFlag)
+            {
+                execution.Flags.Add(qrFlag);
+            }
+        }
+
         if (effective.PrimaryException is { } exception)
         {
             execution.ExceptionId = exception.Id;
@@ -251,6 +273,11 @@ public sealed class StartVisitExecutionHandler : IRequestHandler<StartVisitExecu
         {
             await CompensateAsync(execution);
             return VisitExecutionAccess.Fail<VisitExecutionDto>(AlreadyStarted());
+        }
+
+        if (qr is not null && _qr is not null)
+        {
+            await _qr.RecordScanAsync(tenantId, qr, now, CancellationToken.None); // best effort, never blocks the start
         }
 
         return Response<VisitExecutionDto>.Success(
