@@ -819,3 +819,30 @@ Bu yüzden yalnız Admin planlandı. Temsilci ve pazarlama rolleri için karar �
 1. `py -3 scripts/rbac/grant_w4_report_rbac_97c5.py --apply` (Admin'e 9 anahtar).
 2. Admin rolündeki kullanıcılar **yeniden giriş** yapar (izinler JWT'ye basılır).
 3. Geri alma: `db.rolePermissions.deleteMany({CreatedBy: "manual-grant-w4-report-rbac"})`.
+
+---
+
+## §37 CT kabul — W4-WEB-c + W4-CFG E2 ACCEPTED (2026-10-14)
+Test dalına alındı: WEB-c `c22313360` (ajan `be07bddb2`), CFG `50eff4764` (ajan `89973f741`). Cherry-pick çakışmasız.
+
+**WEB-c — CT kontrolü:**
+- Controller: 18 vekil, her biri yalnız kendi ucunun anahtarıyla (A9 teorisi her yolu + anahtarı sabitliyor); gövdede `tenantId` → 400; BRD okuması iki setle sınırlı (`mdm-reimbursement-status`, `market`).
+- UAS-001: 5 sayfanın hepsi okuma anahtarı yoksa yalnız erişim uyarısı çiziyor (iskelet yok, yönlendirme yok).
+- L10n köprüsü `JsonSerializer.Serialize` (HTML kaçışlı); `RazorInlineScriptSyntaxTests` yeşil.
+- SoD: `decisionActions` onay / geri gönder çiftini hazırlayan / son düzenleyen / gönderene hiç çizmiyor (eski bir `canDecide` gelse bile); sunucu zaten zorluyor.
+- Web tam takım (worktree, `-o ./.ct-out/web`): 1658/3. İkisi `ShipmentDetailsDateNodeTests` (tabanda da kırmızı); üçüncüsü `WorkCenterMenuWithoutPermissionsTests` CT'nin `-o` klasöründen kaynaklı göreli yol hatası (`C:\Diten.Web\Views\…` bulunamadı), değişiklikle ilgisiz. Ajanın 1659/2 sonucuyla tutarlı. WEB-c testleri 28/28.
+- **CT sabotajı (ajanın dokunmadığı kural):** `isOwn`'dan "son düzenleyen" (`updatedBy`) çıkarıldı → `A2_actions_sod_…` kırmızı. `.bak` ile geri alındı + touch → 28/28.
+
+**CFG — CT kontrolü:**
+- Betik W3 kalıbıyla aynı (subtype-4, tarih tipleri yerel kayıttan, idempotent, marker `manual-grant-w4-report-rbac`, rol / izin oluşturmaz, `--db diten_auth_v3` W3 ile aynı varsayılan).
+- CT dry-run: Admin'e 9 eklenecek, 6 zaten var — rapor ile birebir. Yazma yok.
+- Şablon `MDM-COMP-PROPOSAL` (CT 2026-10-13 kurdu) ajan tarafından salt okumayla doğrulandı; 26 şablon / 26 sürüm parmak izi önce = sonra.
+
+**Açık / kullanıcıya:**
+- `py -3 scripts/rbac/grant_w4_report_rbac_97c5.py --apply` + Admin yeniden giriş (yerel). Canlı (be823006) zaten yapıldı (scripts/golive).
+- Yerelde temsilci / pazarlama rolü yok → rol kararı ürün sahibinde.
+- Form sözlüğü `mdm.brands.read`, kişi adları `platform.meetings.create` ister; yoksa formda uyarı / kısaltılmış kimlik.
+- Duman testi "Onaya gönder" yerelde koşulmadı (ajan şablonun kurulmasını beklemiş; şablon artık var) → W4 canlı E4'te denenecek.
+- Görsel farklar (kalan): G1 öğeleri mockup'ta yok (karar gereği); birleştirme adayında etken madde / form yok (MDM adayı göndermiyor); avatar tek ton.
+
+**Sıradaki:** W4 canlı E4 (mockup görsel karşılaştırması dahil: rapor sihirbazı, eczane, eşik sayfası, rakip ürünler) → W3E / W5…
