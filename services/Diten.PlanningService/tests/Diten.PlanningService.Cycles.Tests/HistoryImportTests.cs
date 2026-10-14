@@ -40,10 +40,19 @@ public sealed class HistoryImportTests
         $"{key},{Sku:D},Lsku,{warehouse},{date},{quantity},{uom},{kind},{related}";
 
     private static CreateDemandHistoryImportBatchCommand Command(string body,
-        string key = "import-1", Guid? tenant = null, Guid? legalEntityHint = null) => new(
+        string key = "import-1", Guid? tenant = null, Guid? legalEntityHint = null,
+        byte[]? coverage = null) => new(
         tenant ?? Tenant, Actor, legalEntityHint ?? LegalEntity, "controlled-file", "history.csv",
         new DateOnly(2026, 9, 1), new DateOnly(2026, 9, 30),
-        ["wh-01"], Encoding.UTF8.GetBytes(body), key);
+        ["wh-01"], Encoding.UTF8.GetBytes(body), key,
+        coverage ?? Coverage());
+
+    private static byte[] Coverage(string unit = "BOX", string? stockState = null) =>
+        JsonSerializer.SerializeToUtf8Bytes(new[] { new
+        {
+            skuId = Sku, skuLevel = "Lsku", warehouseId = "wh-01", uomId = unit,
+            weekStart = "2026-09-14", stockState
+        } });
 
     private static CreateDemandHistoryImportBatchHandler Handler(MemoryStore store,
         IHistoryImportScopeAuthority? authority = null, FakeReferences? references = null) =>
@@ -75,6 +84,8 @@ public sealed class HistoryImportTests
         Assert.Equal("controlled-file", batch.SourceSystem);
         Assert.Equal("history.csv", batch.SourceFileName);
         Assert.Equal(64, batch.SourceFileSha256.Length);
+        Assert.Equal(64, batch.CoverageFileSha256.Length);
+        Assert.Single(batch.CoverageWeeks);
         Assert.Equal(new DateOnly(2026, 9, 1), batch.ScopeFrom);
         Assert.Equal("wh-01", Assert.Single(batch.WarehouseScope));
         Assert.Equal(9, batch.FieldScope.Count);
@@ -90,6 +101,64 @@ public sealed class HistoryImportTests
             x.Severity == ImportIssueSeverity.Warning);
         Assert.Equal("FileBatchValidated", Assert.Single(batch.AuditTrail).Action);
         Assert.True(batch.IsEligibleForIndependentReview());
+    }
+
+    [Fact]
+    public async Task Create_RequiresCoverageFile()
+    {
+        var store = new MemoryStore();
+        var result = await Handler(store).Handle(Command(Header + "\n" + Row(), coverage: []), default);
+        Assert.Equal(400, result.StatusCode);
+        Assert.Empty(store.Batches);
+    }
+
+    [Fact]
+    public async Task Create_RejectsDuplicateDeclaredWeek()
+    {
+        var store = new MemoryStore();
+        var entry = JsonSerializer.Deserialize<JsonElement>(Coverage())[0];
+        var duplicate = JsonSerializer.SerializeToUtf8Bytes(new[] { entry, entry });
+        var result = await Handler(store).Handle(Command(Header + "\n" + Row(), coverage: duplicate), default);
+        Assert.Equal(400, result.StatusCode);
+        Assert.Empty(store.Batches);
+    }
+
+    [Fact]
+    public async Task Create_QuarantinesRowThatContradictsDeclaredUnit()
+    {
+        var store = new MemoryStore();
+        var result = await Handler(store).Handle(Command(Header + "\n" + Row(),
+            coverage: Coverage(unit: "EA")), default);
+        Assert.Equal(201, result.StatusCode);
+        var batch = Assert.Single(store.Batches);
+        Assert.True(batch.ApprovalBlocked);
+        Assert.Contains(Assert.Single(batch.Rows).Issues, issue => issue.Code == "CoverageRowConflict");
+        Assert.False(batch.IsEligibleForIndependentReview());
+    }
+
+    [Fact]
+    public async Task Create_PreservesUnknownStockStateAndCoverageHash()
+    {
+        var store = new MemoryStore();
+        var result = await Handler(store).Handle(Command(Header + "\n" + Row(),
+            coverage: Coverage(stockState: "Unknown")), default);
+        Assert.Equal(201, result.StatusCode);
+        var batch = Assert.Single(store.Batches);
+        Assert.Equal(ImportWeekStockState.Unknown, Assert.Single(batch.CoverageWeeks).StockState);
+        Assert.Contains(batch.CoverageFileSha256, Assert.Single(batch.AuditTrail).Detail);
+        Assert.Equal(batch.CoverageFileSha256, result.Data!.CoverageFileSha256);
+    }
+
+    [Fact]
+    public async Task Create_SameCsvWithChangedCoverageConflictsOnIdempotencyKey()
+    {
+        var store = new MemoryStore();
+        var csv = Header + "\n" + Row();
+        Assert.Equal(201, (await Handler(store).Handle(Command(csv), default)).StatusCode);
+        var result = await Handler(store).Handle(Command(csv,
+            coverage: Coverage(stockState: "OutOfStock")), default);
+        Assert.Equal(409, result.StatusCode);
+        Assert.Single(store.Batches);
     }
 
     [Fact]
@@ -158,7 +227,8 @@ public sealed class HistoryImportTests
         batch.ReviewedByActorId = OtherActor;
         batch.AuditTrail.Add(new DemandHistoryImportAuditAction
         {
-            Action = "BatchApproved", ActorId = OtherActor, OccurredAt = DateTimeOffset.UtcNow
+            Action = "BatchApproved", ActorId = OtherActor, OccurredAt = DateTimeOffset.UtcNow,
+            Detail = "coverage=" + batch.CoverageFileSha256
         });
         var accepted = new MemoryAcceptedStore();
 
@@ -1001,7 +1071,8 @@ public sealed class HistoryImportTests
                 {
                     Action = decision == ImportBatchReviewState.Approved ? "BatchApproved" : "BatchRejected",
                     ActorId = reviewerId, OccurredAt = decidedAt,
-                    Reason = reason, RequestKey = requestKey
+                    Reason = reason, RequestKey = requestKey,
+                    Detail = "coverage=" + current.CoverageFileSha256
                 });
                 return Task.FromResult<DemandHistoryImportBatch?>(current);
             }

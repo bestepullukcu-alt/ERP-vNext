@@ -1,6 +1,8 @@
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Diten.PlanningService.Domain.Features.DemandPlanning;
 using MediatR;
 
@@ -36,6 +38,10 @@ public sealed class CreateDemandHistoryImportBatchHandler :
             return Response<HistoryImportBatchResult>.Fail("Import file is empty.");
         if (command.FileBytes.Length > 1_048_576)
             return Response<HistoryImportBatchResult>.Fail("Import file exceeds 1 MiB.", 413);
+        if (command.CoverageFileBytes is null || command.CoverageFileBytes.Length == 0)
+            return Response<HistoryImportBatchResult>.Fail("Coverage declaration is required.");
+        if (command.CoverageFileBytes.Length > 262_144)
+            return Response<HistoryImportBatchResult>.Fail("Coverage declaration exceeds 256 KiB.", 413);
 
         Guid? legalEntityId;
         bool? authorized;
@@ -69,11 +75,38 @@ public sealed class CreateDemandHistoryImportBatchHandler :
         }
 
         var fileHash = Convert.ToHexString(SHA256.HashData(command.FileBytes));
+        var coverageHash = Convert.ToHexString(SHA256.HashData(command.CoverageFileBytes));
+        List<ImportWeekCoverage> coverage;
+        try
+        {
+            coverage = JsonSerializer.Deserialize<List<ImportWeekCoverage>>(command.CoverageFileBytes,
+                new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
+                    Converters = { new JsonStringEnumConverter() }
+                }) ?? [];
+        }
+        catch (JsonException)
+        {
+            return Response<HistoryImportBatchResult>.Fail("Coverage declaration is invalid.");
+        }
+        if (coverage.Count is < 1 or > 2_000 || coverage.Any(week =>
+                week.SkuId == Guid.Empty || week.SkuLevel is not ("Gsku" or "Lsku" or "FinishedGood") ||
+                string.IsNullOrWhiteSpace(week.WarehouseId) ||
+                !command.WarehouseScope.Contains(week.WarehouseId, StringComparer.Ordinal) ||
+                string.IsNullOrWhiteSpace(week.UomId) ||
+                week.WeekStart.DayOfWeek != DayOfWeek.Monday ||
+                week.WeekStart < command.ScopeFrom || week.WeekStart.AddDays(6) > command.ScopeThrough ||
+                (week.StockState.HasValue && !Enum.IsDefined(week.StockState.Value))) ||
+            coverage.Select(week => (week.SkuId, week.WarehouseId, week.WeekStart))
+                .Distinct().Count() != coverage.Count)
+            return Response<HistoryImportBatchResult>.Fail("Coverage declaration scope is invalid.");
         var warehouses = command.WarehouseScope.Distinct(StringComparer.Ordinal).OrderBy(x => x, StringComparer.Ordinal).ToList();
         var fingerprintInput = string.Join('|', legalEntityId.Value.ToString("D"),
             command.SourceSystem.Trim(), command.SourceFileName.Trim(),
             command.ScopeFrom.ToString("yyyy-MM-dd"), command.ScopeThrough.ToString("yyyy-MM-dd"),
-            string.Join(',', warehouses), fileHash);
+            string.Join(',', warehouses), fileHash, coverageHash);
         var fingerprint = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(fingerprintInput)));
         var batch = new DemandHistoryImportBatch
         {
@@ -83,6 +116,8 @@ public sealed class CreateDemandHistoryImportBatchHandler :
             SourceSystem = command.SourceSystem.Trim(),
             SourceFileName = command.SourceFileName.Trim(),
             SourceFileSha256 = fileHash,
+            CoverageFileSha256 = coverageHash,
+            CoverageWeeks = coverage,
             ScopeFrom = command.ScopeFrom,
             ScopeThrough = command.ScopeThrough,
             WarehouseScope = warehouses,
@@ -98,6 +133,38 @@ public sealed class CreateDemandHistoryImportBatchHandler :
             var row = await ValidateRowAsync(command, legalEntityId.Value,
                 parsedRow, headerValid, cancellationToken);
             batch.Rows.Add(row);
+        }
+        foreach (var week in coverage)
+        {
+            HistoryReferenceResult reference;
+            try
+            {
+                reference = await _references.CheckAsync(command.TenantId, legalEntityId.Value,
+                    week.SkuId, week.SkuLevel, week.WarehouseId, week.WeekStart,
+                    week.UomId, cancellationToken);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException ||
+                                       !cancellationToken.IsCancellationRequested)
+            {
+                reference = new HistoryReferenceResult(HistoryReferenceState.Unavailable,
+                    null, null, null, null);
+            }
+            if (reference.State != HistoryReferenceState.Verified)
+                batch.FileIssues.Add(new ImportValidationIssue
+                {
+                    Code = "CoverageReferenceUnverified", Severity = ImportIssueSeverity.Blocking,
+                    Message = "Declared SKU, warehouse or unit could not be verified."
+                });
+        }
+        foreach (var row in batch.Rows.Where(row => row.SkuId.HasValue && row.OccurredOn.HasValue))
+        {
+            var weekStart = row.OccurredOn!.Value.AddDays(-((int)row.OccurredOn.Value.DayOfWeek + 6) % 7);
+            var claim = coverage.SingleOrDefault(week => week.SkuId == row.SkuId &&
+                week.WarehouseId == row.WarehouseId && week.WeekStart == weekStart);
+            if (claim is not null &&
+                (claim.SkuLevel != row.SkuLevel || claim.UomId != row.OriginalUomId))
+                AddIssue(row, "CoverageRowConflict", ImportIssueSeverity.Blocking,
+                    "Declared series scope or unit conflicts with its file row.");
         }
         foreach (var duplicateGroup in batch.Rows
             .Where(x => !string.IsNullOrWhiteSpace(x.SourceRecordKey))
@@ -137,7 +204,7 @@ public sealed class CreateDemandHistoryImportBatchHandler :
         {
             Action = "FileBatchValidated", ActorId = command.ActorId,
             OccurredAt = batch.ValidatedAt,
-            Detail = $"rows={batch.Rows.Count};quarantined={batch.QuarantineCases.Count};state={batch.ValidationState}"
+            Detail = $"rows={batch.Rows.Count};quarantined={batch.QuarantineCases.Count};state={batch.ValidationState};coverage={coverageHash}"
         });
 
         HistoryImportInsertResult result;

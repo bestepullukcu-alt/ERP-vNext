@@ -35,9 +35,23 @@ this service-owned setup.
   Mongo tests exist; real-data browser proof remains open.
   MOD-0183 realized shipment rows and file/live deduplication are Phase 2 and
   await the producer contract addendum. Unknown stockout is not zero demand.
+- **Coverage declaration (Phase 1):** each multipart history import requires a
+  `CoverageFile` JSON attachment in addition to `File` CSV. Each entry names one
+  complete ISO Monday week for one `skuId`, `skuLevel`, `warehouseId`, and `uomId`:
+
+  ```json
+  [{"skuId":"00000000-0000-0000-0000-000000000001","skuLevel":"Lsku","warehouseId":"wh-01","uomId":"EA","weekStart":"2026-09-14","stockState":"InStock"}]
+  ```
+
+  `stockState` may be omitted; `OutOfStock` or `Unknown` prevents that week from
+  becoming reliable demand. A week outside the declaration is unknown. An empty
+  declared week is zero only after independent batch review and separate acceptance
+  of every relevant file row. The coverage file hash is included in the batch
+  idempotency fingerprint and review audit; older batches without a declaration
+  cannot be newly approved for accepted history.
 - **Other producer gates:** Platform Working Calendar supplies business days and
-  holidays, while ISO Monday supplies week boundaries. MDM supplies the
-  calendar year plus ISO week is the interim fiscal rule; `FiscalYearVariant`
+  holidays, while ISO Monday supplies week boundaries. Calendar year plus ISO
+  week is the interim fiscal rule; MDM `FiscalYearVariant`
   is not read (BL-629). Tenant `Timezone` is interim (BL-628). Frozen
   PRODUCT-MASTER v1.0 `getSku`/`getSkuUom` can be tested with Prism responses,
   but no live producer route is claimed. V1.0 only permits same-base-unit

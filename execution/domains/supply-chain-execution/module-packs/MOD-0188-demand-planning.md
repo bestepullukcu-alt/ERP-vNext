@@ -24,6 +24,8 @@ target: 2026-11-20
 
 **S1 durumu:** Kod ve testler tamam; gerçek veriyle tarayıcı kanıtı ertelendi (açık madde): satır kabulü, audit izi, birim işareti ve `ar` RTL. S1 tamamlandı sayılmaz; AC-D01–D29 açık kalır.
 
+**Ali'nin haftalık kanıt kararı (Aşama 1):** Yeni dosya batch'i, Tenant × LegalEntity × SKU × Warehouse × ISO hafta için hangi haftaların eksiksiz olduğunu bildiren zorunlu, batch'e bağlı bir kapsam beyanı taşır. Haftalık stok durumu isteğe bağlı `InStock` / `OutOfStock` / `Unknown` değeridir. Yükleyenden bağımsız inceleyici beyanı da onaylar; beyanın kimliği ve özeti onay audit'inde değişmez iz olarak kalır. Beyan edilmiş ve `OutOfStock`/`Unknown` işaretlenmemiş haftada kabul edilmiş satır yoksa gerçek sıfır ancak o haftaya ait bütün batch satırlarının ayrı kabul/karantina kararları tamamlandıktan sonra üretilebilir. Kapsam dışı veya `OutOfStock`/`Unknown` hafta bilinmeyendir, sıfıra çevrilmez. Beyan/satır çelişkisi karantinadır. Tahmin yalnız bu güvenilir haftaları kullanır; 26'dan az güvenilir hafta seri için yetersiz geçmiş sonucudur ve gerekçeli manuel Draft yolu açık kalır. Aşama 2'de InventoryService stok defteri yalnız sistem kullanıma girdikten sonraki haftalar için ikinci kaynaktır; iki kaynak çelişirse hafta karantinaya gider. Bu kaynak ve uzlaştırma henüz kodlanmaz.
+
 ## 1. Module Summary
 
 MOD-0188, Tenant × LegalEntity kapsamında SKU × Warehouse × hafta kırılımında gerçekleşmiş talep geçmişini yönetir, açıklanabilir 52 haftalık brüt tahmin üretir, inceleme ve onayla tek resmî baseline revision'ı yayımlar. Hedef kullanıcılar planlayıcı, inceleyici/yayımlayıcı, planlama veya kalite yöneticisi ve yetkili denetçidir. Birincil ekran özel tenant Demand Planning çalışma alanıdır; klasik CRUD/DataTable değildir.

@@ -82,6 +82,13 @@ public sealed class HistoryImportMongoIntegrationTests
             UploadedByActorId = Uploader, SourceChannel = "File",
             SourceSystem = "fixture", SourceFileName = "fixture.csv",
             SourceFileSha256 = new string('A', 64),
+            CoverageFileSha256 = new string('B', 64),
+            CoverageWeeks = [new ImportWeekCoverage
+            {
+                SkuId = Guid.Parse("66666666-6666-6666-6666-666666666666"),
+                SkuLevel = "Lsku", WarehouseId = "wh-01", UomId = "BOX",
+                WeekStart = new DateOnly(2026, 9, 14)
+            }],
             ScopeFrom = new DateOnly(2026, 9, 1),
             ScopeThrough = new DateOnly(2026, 9, 30),
             WarehouseScope = ["wh-01"], FieldScope = ["sourceRecordKey"],
@@ -116,6 +123,11 @@ public sealed class HistoryImportMongoIntegrationTests
         if (issue == "quarantine")
             batch.QuarantineCases.Add(new DemandHistoryQuarantineCase
             { RowNumber = 2, State = "Open", ReasonCodes = ["Unresolved"] });
+        if (issue == "coverage")
+        {
+            batch.CoverageFileSha256 = string.Empty;
+            batch.CoverageWeeks.Clear();
+        }
         Assert.Equal(HistoryImportInsertOutcome.Created,
             (await store.InsertOrGetAsync(batch, default)).Outcome);
         return new Fixture(context, store, audit, tenantId, legalEntityId, batch.Id);
@@ -151,7 +163,8 @@ public sealed class HistoryImportMongoIntegrationTests
         Assert.Equal("Reviewed evidence", saved.ReviewReason);
         Assert.NotNull(saved.ReviewedAt);
         Assert.Single(saved.AuditTrail, x => x.Action == "BatchApproved" &&
-            x.ActorId == Reviewer && x.RequestKey == "review-1");
+            x.ActorId == Reviewer && x.RequestKey == "review-1" &&
+            x.Detail.Contains("coverage=" + saved.CoverageFileSha256, StringComparison.Ordinal));
         Assert.Single(saved.Rows); // Approval does not create accepted demand history.
     }
 
@@ -174,6 +187,7 @@ public sealed class HistoryImportMongoIntegrationTests
     [InlineData("file")]
     [InlineData("row")]
     [InlineData("quarantine")]
+    [InlineData("coverage")]
     public async Task BlockingEvidence_RejectsApprovalEvenWhenDerivedFlagsAreStale(string issue)
     {
         var fixture = await SeedAsync(issue);

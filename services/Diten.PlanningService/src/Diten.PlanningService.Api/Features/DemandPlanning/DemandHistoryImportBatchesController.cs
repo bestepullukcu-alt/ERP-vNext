@@ -15,7 +15,7 @@ public sealed class DemandHistoryImportBatchesController : CustomBaseController
 
     [HttpPost]
     [Consumes("multipart/form-data")]
-    [RequestSizeLimit(1_200_000)]
+    [RequestSizeLimit(1_600_000)]
     [HasPermission("demand.history-imports.import")]
     public async Task<IActionResult> Create([FromForm] CreateHistoryImportForm form,
         [FromHeader(Name = "X-Legal-Entity-Id")] Guid? selectedLegalEntityHint,
@@ -31,14 +31,20 @@ public sealed class DemandHistoryImportBatchesController : CustomBaseController
         if (form.File is null || form.File.Length == 0 ||
             !string.Equals(Path.GetExtension(form.File.FileName), ".csv", StringComparison.OrdinalIgnoreCase))
             return BadRequest(Response<HistoryImportBatchResult>.Fail("A nonempty CSV file is required."));
-        if (form.File.Length > 1_048_576)
-            return StatusCode(413, Response<HistoryImportBatchResult>.Fail("Import file exceeds 1 MiB.", 413));
+        if (form.CoverageFile is null || form.CoverageFile.Length == 0 ||
+            !string.Equals(Path.GetExtension(form.CoverageFile.FileName), ".json", StringComparison.OrdinalIgnoreCase))
+            return BadRequest(Response<HistoryImportBatchResult>.Fail("A nonempty coverage JSON file is required."));
+        if (form.File.Length > 1_048_576 || form.CoverageFile.Length > 262_144)
+            return StatusCode(413, Response<HistoryImportBatchResult>.Fail("Import or coverage file is too large.", 413));
         await using var stream = new MemoryStream();
         await form.File.CopyToAsync(stream, cancellationToken);
+        await using var coverageStream = new MemoryStream();
+        await form.CoverageFile.CopyToAsync(coverageStream, cancellationToken);
         var command = new CreateDemandHistoryImportBatchCommand(
             tenantId, actorId, selectedLegalEntityHint ?? Guid.Empty, form.SourceSystem,
             Path.GetFileName(form.File.FileName), form.ScopeFrom, form.ScopeThrough,
-            form.WarehouseScope ?? [], stream.ToArray(), idempotencyKey ?? string.Empty);
+            form.WarehouseScope ?? [], stream.ToArray(), idempotencyKey ?? string.Empty,
+            coverageStream.ToArray());
         var response = await _sender.Send(command, cancellationToken);
         if (response.StatusCode == 201 && response.Data is not null)
             return CreatedAtAction(nameof(GetOwn), new { batchId = response.Data.BatchId }, response);
@@ -145,6 +151,7 @@ public sealed class CreateHistoryImportForm
     public DateOnly ScopeThrough { get; set; }
     public List<string> WarehouseScope { get; set; } = [];
     public IFormFile? File { get; set; }
+    public IFormFile? CoverageFile { get; set; }
 }
 
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]

@@ -78,7 +78,9 @@ public sealed record HistoryImportRowResult(
 public sealed record HistoryImportBatchResult(
     Guid BatchId, Guid TenantId, Guid LegalEntityId, Guid UploadedByActorId,
     string SourceChannel, string SourceSystem, string SourceFileName,
-    string SourceFileSha256, DateOnly ScopeFrom, DateOnly ScopeThrough,
+    string SourceFileSha256, string CoverageFileSha256,
+    IReadOnlyList<ImportWeekCoverage> CoverageWeeks,
+    DateOnly ScopeFrom, DateOnly ScopeThrough,
     IReadOnlyList<string> WarehouseScope, IReadOnlyList<string> FieldScope,
     ImportBatchValidationState ValidationState, bool ApprovalBlocked,
     int RowCount, int QuarantineCount,
@@ -96,7 +98,8 @@ public static class HistoryImportResultMapper
     public static HistoryImportBatchResult Map(DemandHistoryImportBatch batch) => new(
         batch.Id, batch.TenantId, batch.LegalEntityId, batch.UploadedByActorId,
         batch.SourceChannel, batch.SourceSystem, batch.SourceFileName,
-        batch.SourceFileSha256, batch.ScopeFrom, batch.ScopeThrough,
+        batch.SourceFileSha256, batch.CoverageFileSha256,
+        batch.CoverageWeeks.AsReadOnly(), batch.ScopeFrom, batch.ScopeThrough,
         batch.WarehouseScope.AsReadOnly(), batch.FieldScope.AsReadOnly(),
         batch.ValidationState, batch.ApprovalBlocked, batch.Rows.Count,
         batch.QuarantineCases.Count, batch.FileIssues.AsReadOnly(),

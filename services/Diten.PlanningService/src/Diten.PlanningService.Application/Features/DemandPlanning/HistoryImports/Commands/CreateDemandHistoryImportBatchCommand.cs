@@ -8,5 +8,5 @@ public sealed record CreateDemandHistoryImportBatchCommand(
     string SourceSystem, string SourceFileName,
     DateOnly ScopeFrom, DateOnly ScopeThrough,
     IReadOnlyList<string> WarehouseScope,
-    byte[] FileBytes, string IdempotencyKey)
+    byte[] FileBytes, string IdempotencyKey, byte[] CoverageFileBytes)
     : IRequest<Response<HistoryImportBatchResult>>;

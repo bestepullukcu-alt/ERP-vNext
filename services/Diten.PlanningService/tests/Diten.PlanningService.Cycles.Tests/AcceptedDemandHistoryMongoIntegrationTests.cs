@@ -56,6 +56,12 @@ public sealed class AcceptedDemandHistoryMongoIntegrationTests
             TenantId = tenantId, LegalEntityId = legalEntityId,
             UploadedByActorId = Guid.NewGuid(), SourceSystem = "fixture",
             SourceFileSha256 = new string('A', 64),
+            CoverageFileSha256 = new string('B', 64),
+            CoverageWeeks = [new ImportWeekCoverage
+            {
+                SkuId = skuId, SkuLevel = "Gsku", WarehouseId = "wh-01", UomId = unit,
+                WeekStart = new DateOnly(2026, 10, 5)
+            }],
             ScopeFrom = new DateOnly(2026, 10, 1),
             ScopeThrough = new DateOnly(2026, 10, 31),
             WarehouseScope = ["wh-01"],
@@ -75,7 +81,8 @@ public sealed class AcceptedDemandHistoryMongoIntegrationTests
             }],
             AuditTrail = [new DemandHistoryImportAuditAction
             {
-                Action = "BatchApproved", ActorId = reviewer, OccurredAt = DateTimeOffset.UtcNow
+                Action = "BatchApproved", ActorId = reviewer, OccurredAt = DateTimeOffset.UtcNow,
+                Detail = "coverage=" + new string('B', 64)
             }]
         };
         await context.HistoryImportBatches.InsertOneAsync(batch);

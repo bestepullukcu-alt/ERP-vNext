@@ -107,7 +107,7 @@ public sealed class DemandHistoryImportMongoStore : IHistoryImportBatchStore
         {
             Action = decision == ImportBatchReviewState.Approved ? "BatchApproved" : "BatchRejected",
             ActorId = reviewerId, OccurredAt = decidedAt,
-            Detail = $"state={decision};version={expected.Version + 1}",
+            Detail = $"state={decision};version={expected.Version + 1};coverage={expected.CoverageFileSha256}",
             RequestKey = requestKey, Reason = reason
         };
         var update = Builders<DemandHistoryImportBatch>.Update
@@ -135,6 +135,8 @@ public sealed class DemandHistoryImportMongoStore : IHistoryImportBatchStore
         var rowWithBlockingIssue = Builders<DemandHistoryImportRow>.Filter.ElemMatch(
             x => x.Issues, blockingIssue);
         return batch.Eq(x => x.ApprovalBlocked, false) &
+               batch.Ne(x => x.CoverageFileSha256, string.Empty) &
+               batch.Not(batch.Size(x => x.CoverageWeeks, 0)) &
                batch.Ne(x => x.ValidationState, ImportBatchValidationState.Blocked) &
                batch.Not(batch.ElemMatch(x => x.FileIssues, blockingIssue)) &
                batch.Not(batch.ElemMatch(x => x.Rows, rowWithBlockingIssue)) &

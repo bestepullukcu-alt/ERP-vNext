@@ -3,6 +3,17 @@ namespace Diten.PlanningService.Domain.Features.DemandPlanning;
 public enum ImportIssueSeverity { Warning, Blocking }
 public enum ImportBatchValidationState { Validated, ValidatedWithWarnings, Blocked }
 public enum ImportBatchReviewState { Pending, Approved, Rejected }
+public enum ImportWeekStockState { InStock, OutOfStock, Unknown }
+
+public sealed class ImportWeekCoverage
+{
+    public Guid SkuId { get; set; }
+    public string SkuLevel { get; set; } = string.Empty;
+    public string WarehouseId { get; set; } = string.Empty;
+    public string UomId { get; set; } = string.Empty;
+    public DateOnly WeekStart { get; set; }
+    public ImportWeekStockState? StockState { get; set; }
+}
 
 public sealed class ImportValidationIssue
 {
@@ -60,6 +71,8 @@ public sealed class DemandHistoryImportBatch : EntityBase
     public string SourceSystem { get; set; } = string.Empty;
     public string SourceFileName { get; set; } = string.Empty;
     public string SourceFileSha256 { get; set; } = string.Empty;
+    public string CoverageFileSha256 { get; set; } = string.Empty;
+    public List<ImportWeekCoverage> CoverageWeeks { get; set; } = [];
     public DateOnly ScopeFrom { get; set; }
     public DateOnly ScopeThrough { get; set; }
     public List<string> WarehouseScope { get; set; } = [];
@@ -83,6 +96,7 @@ public sealed class DemandHistoryImportBatch : EntityBase
     // Review accepts a batch decision only; it does not accept rows as demand history.
     public bool IsEligibleForIndependentReview() =>
         ReviewState == ImportBatchReviewState.Pending && !ApprovalBlocked &&
+        CoverageFileSha256.Length == 64 && CoverageWeeks.Count > 0 &&
         ValidationState != ImportBatchValidationState.Blocked &&
         !FileIssues.Any(x => x.Severity == ImportIssueSeverity.Blocking) &&
         !Rows.Any(x => x.Issues.Any(y => y.Severity == ImportIssueSeverity.Blocking)) &&
@@ -90,9 +104,11 @@ public sealed class DemandHistoryImportBatch : EntityBase
 
     public bool IsEligibleForAcceptedHistory() =>
         ReviewState == ImportBatchReviewState.Approved && !ApprovalBlocked &&
+        CoverageFileSha256.Length == 64 && CoverageWeeks.Count > 0 &&
         ValidationState != ImportBatchValidationState.Blocked &&
         !FileIssues.Any(x => x.Severity == ImportIssueSeverity.Blocking) &&
         !Rows.Any(x => x.Issues.Any(y => y.Severity == ImportIssueSeverity.Blocking)) &&
         !QuarantineCases.Any(x => x.State == "Open") &&
-        AuditTrail.Any(x => x.Action == "BatchApproved" && x.ActorId == ReviewedByActorId);
+        AuditTrail.Any(x => x.Action == "BatchApproved" && x.ActorId == ReviewedByActorId &&
+            x.Detail.Contains($"coverage={CoverageFileSha256}", StringComparison.Ordinal));
 }
