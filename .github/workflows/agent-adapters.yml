@@ -10,6 +10,8 @@ on:
   push:
     branches: ["**"]
     paths:
+      - "AGENTS.md"
+      - "CLAUDE.md"
       - ".antigravity/**"
       - ".claude/agents/**"
       - ".claude/skills/**"
@@ -19,6 +21,8 @@ on:
       - ".github/workflows/agent-adapters.yml"
   pull_request:
     paths:
+      - "AGENTS.md"
+      - "CLAUDE.md"
       - ".antigravity/**"
       - ".claude/agents/**"
       - ".claude/skills/**"
