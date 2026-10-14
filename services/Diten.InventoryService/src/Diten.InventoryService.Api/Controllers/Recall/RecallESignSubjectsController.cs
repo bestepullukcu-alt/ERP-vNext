@@ -16,8 +16,10 @@ namespace Diten.InventoryService.Api.Controllers.Recall;
 /// <c>X-Tenant-Id</c> (config <c>ESign:SubjectProviders:recall:BaseUrl</c>, operator config, never a manifest). The MOD-0176
 /// <c>ExpiryESignSubjectsController</c> pattern, copied; every refusal is one 404 <c>RECALL_SUBJECT_NOT_FOUND</c> (no oracle):
 /// <list type="bullet">
-/// <item>the key <c>recall.cases.read</c> is missing (RECALL <c>x-permission</c> of the operation);</item>
-/// <item>an unknown type or <c>recall.drill-run</c> (R5 binds it), a subject not of the caller's tenant, a company named by the caller that is
+/// <item>the key for the subject type is missing (RECALL 1.4.0 <c>x-permission-by-subject-type</c>, O-R5-2 / CT 2026-10-14):
+/// <c>recall.case</c> and <c>recall.settings-change</c> need <c>recall.cases.read</c>; <c>recall.drill-run</c> needs <c>recall.cases.read</c>
+/// OR <c>recall.drills.read</c>;</item>
+/// <item>an unknown type (R5: <c>recall.drill-run</c> is served), a subject not of the caller's tenant, a company named by the caller that is
 /// not the record's;</item>
 /// <item>a settings change prepared by another user.</item>
 /// </list>
@@ -34,8 +36,8 @@ public sealed class RecallESignSubjectsController : CustomBaseController
     [HttpGet("{subjectType}/{subjectId}")]
     public async Task<IActionResult> GetSignableSubject(string subjectType, string subjectId, CancellationToken ct)
     {
-        if (subjectType is not (RecallSignableActions.CaseSubjectType or RecallSignableActions.SettingsChangeSubjectType)
-            || !User.Claims.Any(c => c.Type == "permission" && c.Value == RecallPermissions.CasesRead)
+        if (subjectType is not (RecallSignableActions.CaseSubjectType or RecallSignableActions.SettingsChangeSubjectType or RecallSignableActions.DrillRunSubjectType)
+            || !User.Claims.Any(c => c.Type == "permission" && KeysFor(subjectType).Contains(c.Value, StringComparer.Ordinal))
             || !Guid.TryParseExact(subjectId, "D", out var id))
         {
             return SubjectNotFound();
@@ -63,6 +65,11 @@ public sealed class RecallESignSubjectsController : CustomBaseController
 
         return CreateActionResultInstance(await _mediator.Send(new GetRecallSignableSubjectQuery(subjectType, id), ct));
     }
+
+    /// <summary>RECALL 1.4.0 <c>x-permission-by-subject-type</c> — any one key suffices.</summary>
+    internal static string[] KeysFor(string subjectType) => subjectType == RecallSignableActions.DrillRunSubjectType
+        ? [RecallPermissions.CasesRead, RecallPermissions.DrillsRead]
+        : [RecallPermissions.CasesRead];
 
     private Guid Claim(params string[] types)
     {

@@ -46,15 +46,17 @@ public sealed class ESignRecallSignature : IRecallSignature
 {
     private readonly IRecallESignClient _esign;
     private readonly IRecallRepository _repository;
+    private readonly IRecallDrillRepository _drills;
     private readonly RecallSubjectFacts _facts;
     private readonly RecallSupport _support;
     private readonly ILogger<ESignRecallSignature> _logger;
 
-    public ESignRecallSignature(IRecallESignClient esign, IRecallRepository repository, RecallSubjectFacts facts, RecallSupport support,
+    public ESignRecallSignature(IRecallESignClient esign, IRecallRepository repository, IRecallDrillRepository drills, RecallSubjectFacts facts, RecallSupport support,
         ILogger<ESignRecallSignature> logger)
     {
         _esign = esign;
         _repository = repository;
+        _drills = drills;
         _facts = facts;
         _support = support;
         _logger = logger;
@@ -122,6 +124,12 @@ public sealed class ESignRecallSignature : IRecallSignature
             return change is null ? null : (change.LegalEntityId, RecallSignableSubjects.SettingsChangeHash(change));
         }
 
-        return null; // recall.drill-run: R5
+        if (subjectType == RecallSignableActions.DrillRunSubjectType)
+        {
+            var run = await _drills.FindRunAsync(subjectId, ct);
+            return run is null ? null : (run.LegalEntityId, RecallSignableSubjects.DrillRunHash(run)); // R5: dr-v1 of the stored run
+        }
+
+        return null;
     }
 }

@@ -148,6 +148,9 @@ public sealed class LedgerImmutabilityArchitectureTests
         // this one recall PUT; it is taken out here so the list below stays as frozen (any other recall PUT still turns it red).
         Assert.Single(routes, r => r.Verb == "PUT" && r.Route == "RecallController:settings");
         routes.RemoveAll(r => r.Verb == "PUT" && r.Route == "RecallController:settings");
+        // RECALL-BUNDLE updateDrillPlan (PUT /api/recall/drill-plans/{planId} — a drill plan, master data, frozen since 1.0.0, served by WP-0177-R5)
+        Assert.Single(routes, r => r.Verb == "PUT" && r.Route == "RecallDrillsController:drill-plans/{planId}");
+        routes.RemoveAll(r => r.Verb == "PUT" && r.Route == "RecallDrillsController:drill-plans/{planId}");
         Assert.Equal(
             ["ExpiryController:policy", "QuarantineController:block-reasons/{code}", "QuarantineController:settings"],
             routes.Where(r => r.Verb == "PUT").Select(r => r.Route).OrderBy(x => x, StringComparer.Ordinal).ToList());

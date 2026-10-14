@@ -172,7 +172,18 @@ public sealed class RecallContractValidatingHandler : DelegatingHandler
         Op("POST", "/api/recall/cases/{id}/quarantine-requests/{id}/retry", [202, 400, 401, 403, 404, 409, 503], "QuarantineRequest"),
         Op("GET", "/api/recall/cases/{id}/returns", [200, 400, 401, 403, 404, 503], "CaseReturns"),
         Op("POST", "/api/recall/cases/{id}/return-links", [200, 201, 400, 401, 403, 404, 409, 422, 503], "ReturnLink"),
-        Op("POST", "/api/recall/cases/{id}/scope/revisions", [200, 201, 400, 401, 403, 404, 409, 503], "CaseDetail", etag: true)
+        Op("POST", "/api/recall/cases/{id}/scope/revisions", [200, 201, 400, 401, 403, 404, 409, 503], "CaseDetail", etag: true),
+        // R5 — the drills (RECALL 1.4.0)
+        Op("GET", "/api/recall/drill-plans", [200, 400, 401, 403, 503], "DrillPlan[]"),
+        Op("POST", "/api/recall/drill-plans", [200, 201, 400, 401, 403, 503], "DrillPlan", etag: true),
+        Op("PUT", "/api/recall/drill-plans/{id}", [200, 400, 401, 403, 404, 409, 503], "DrillPlan", etag: true),
+        Op("GET", "/api/recall/drill-runs", [200, 400, 401, 403, 503], "DrillRunPage"),
+        Op("POST", "/api/recall/drill-runs", [200, 201, 400, 401, 403, 404, 409, 422, 503], "DrillRun", etag: true),
+        Op("GET", "/api/recall/drill-runs/{id}", [200, 400, 401, 403, 404, 503], "DrillRun", etag: true),
+        Op("POST", "/api/recall/drill-runs/{id}/steps/{id}", [200, 400, 401, 403, 404, 409, 503], "DrillRun", etag: true),
+        Op("POST", "/api/recall/drill-runs/{id}/pending-result", [200, 400, 401, 403, 404, 409, 503], "PendingActionResponse", etag: true),
+        Op("POST", "/api/recall/drill-runs/{id}/result", [200, 400, 401, 403, 404, 409, 503], "DrillRun", etag: true),
+        Op("POST", "/api/recall/drill-runs/{id}/cancel", [200, 400, 401, 403, 404, 409, 503], "DrillRun", etag: true)
     ];
 
     /// <summary>exportTrace answers text/csv (UTF-8 BOM, ';') — checked for its media type and BOM, not a JSON schema.</summary>

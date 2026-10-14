@@ -190,10 +190,10 @@ public sealed class RecallContractTests
     private static List<string> Strings(JsonNode? node) => node!.AsArray().Select(v => v!.GetValue<string>()).ToList();
 
     [Fact]
-    public void The_contract_is_frozen_1_3_0_owned_by_MOD_0177_with_the_CT_additions()
+    public void The_contract_is_frozen_1_4_0_owned_by_MOD_0177_with_the_CT_additions()
     {
         var info = Yaml.Value["info"]!;
-        Assert.Equal("1.3.0", info["version"]!.GetValue<string>());
+        Assert.Equal("1.4.0", info["version"]!.GetValue<string>());
         Assert.Equal("FROZEN", info["x-status"]!.GetValue<string>());
         Assert.Equal("MOD-0177", info["x-owner"]!.GetValue<string>());
         Assert.Equal("/api/recall", Yaml.Value["servers"]![0]!["url"]!.GetValue<string>());
@@ -206,6 +206,8 @@ public sealed class RecallContractTests
         Assert.All(new[] { "1.2.0", "WP-0177-R3", "LOT_UNDER_RECALL", "pendingRevision", "R3-1", "R3-4", "never cancelled" }, t => Assert.Contains(t, changelog, StringComparison.Ordinal));
         // R4 (1.3.0): the subject provider, prepareSettingsChange, F3-A and the reconciliations R4-1 / R4-2
         Assert.All(new[] { "1.3.0", "WP-0177-R4", "F3-A", "rc-v1", "rs-v1", "RECALL_SUBJECT_NOT_FOUND", "R4-1", "R4-2" }, t => Assert.Contains(t, changelog, StringComparison.Ordinal));
+        // R5 (1.4.0): the drills (KR-G), dr-v1, CT-R17 and the reconciliations R5-1…R5-5
+        Assert.All(new[] { "1.4.0", "WP-0177-R5", "dr-v1", "RECALL_DRILL_NOT_FOUND", "frequencyWarning", "R5-1", "R5-5" }, t => Assert.Contains(t, changelog, StringComparison.Ordinal));
         Assert.Equal(RecallPermissions.All.OrderBy(k => k), Strings(Yaml.Value["x-permissions"]!["owned"]).OrderBy(k => k));
         Assert.Equal("APPROVE", Yaml.Value["x-signable-actions"]!["defaultMeaningCode"]!.GetValue<string>());
         var settingsAction = Yaml.Value["x-signable-actions"]!["actions"]!.AsArray().Single(a => a!["actionCode"]!.GetValue<string>() == "recall.settings.update");
@@ -224,17 +226,22 @@ public sealed class RecallContractTests
     }
 
     [Fact]
-    public void The_controller_serves_exactly_the_R1_to_R4_operations_with_their_permission()
+    public void The_controller_serves_exactly_the_R1_to_R5_operations_with_their_permission()
     {
         var served = typeof(RecallController).GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+            .Concat(typeof(Diten.InventoryService.Api.Controllers.Recall.RecallDrillsController).GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)) // R5
             .SelectMany(m => m.GetCustomAttributes<HttpMethodAttribute>().SelectMany(a => a.HttpMethods.Select(v =>
                 (Path: "/" + a.Template, Method: v.ToLowerInvariant(), Permission: m.GetCustomAttribute<HasPermissionAttribute>()!.Policy!["Permission:".Length..]))))
             .ToList();
-        Assert.Equal(32, served.Count); // R1 22 + R2 runTrace, exportTrace, getCaseScopeDiff + R3 six + R4 prepareSettingsChange
+        Assert.Equal(42, served.Count); // R1 22 + R2 runTrace, exportTrace, getCaseScopeDiff + R3 six + R4 prepareSettingsChange + R5 ten drill operations
 
         var byRoute = Operations().ToDictionary(o => (o.Path, o.Method));
         var r1 = Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R1"]).Concat(Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R2"]))
-            .Concat(Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R3"])).Concat(Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R4"])).ToList();
+            .Concat(Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R3"])).Concat(Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R4"]))
+            .Concat(Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R5"])).ToList();
+        Assert.Equal(["listDrillPlans", "createDrillPlan", "updateDrillPlan", "listDrillRuns", "startDrill", "getDrillRun", "completeDrillStep", "prepareDrillResult",
+            "signDrillResult", "cancelDrill"], Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R5"]));
+        Assert.Equal("api/recall", typeof(Diten.InventoryService.Api.Controllers.Recall.RecallDrillsController).GetCustomAttribute<Microsoft.AspNetCore.Mvc.RouteAttribute>()!.Template);
         Assert.Equal(["prepareSettingsChange", "getSignableSubject"], Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R4"]));
         Assert.Equal(["getCaseStock", "requestQuarantine", "retryQuarantineRequest", "getCaseReturns", "linkReturn", "reviseScope"],
             Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R3"]));
@@ -292,7 +299,8 @@ public sealed class RecallArchitectureTests
     [Fact]
     public void Every_recall_action_carries_a_permission_in_the_recall_namespace_and_the_manifest_has_no_page()
     {
-        var actions = typeof(RecallController).GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).ToList();
+        var actions = typeof(RecallController).GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+            .Concat(typeof(Diten.InventoryService.Api.Controllers.Recall.RecallDrillsController).GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)).ToList(); // + R5 drills
         Assert.NotEmpty(actions);
         Assert.All(actions, a => Assert.StartsWith("Permission:recall.", a.GetCustomAttribute<HasPermissionAttribute>()?.Policy ?? "", StringComparison.Ordinal));
         Assert.All(RecallPermissions.R1, k => Assert.Contains(k, RecallPermissions.All));
@@ -307,7 +315,8 @@ public sealed class RecallArchitectureTests
         Assert.Empty(manifest.Pages);
         Assert.Equal(enforced.OrderBy(k => k, StringComparer.Ordinal), (manifest.ApiPermissions ?? []).Select(p => p.PermissionKey).OrderBy(k => k, StringComparer.Ordinal));
         Assert.Equal(RecallPermissions.Implemented.OrderBy(k => k, StringComparer.Ordinal), enforced.OrderBy(k => k, StringComparer.Ordinal));
-        Assert.Equal(RecallPermissions.R1Only.Concat([RecallPermissions.TraceRun, RecallPermissions.TraceExport, RecallPermissions.QuarantineRequestsCreate, RecallPermissions.ReturnsLink])
+        Assert.Equal(RecallPermissions.R1Only.Concat([RecallPermissions.TraceRun, RecallPermissions.TraceExport, RecallPermissions.QuarantineRequestsCreate, RecallPermissions.ReturnsLink,
+                RecallPermissions.DrillsRead, RecallPermissions.DrillsManage, RecallPermissions.DrillsRun])
                 .OrderBy(k => k, StringComparer.Ordinal),
             RecallPermissions.Implemented.OrderBy(k => k, StringComparer.Ordinal));
         Assert.Same(RecallPermissions.Implemented, RecallPermissions.R1); // the shared namespace test pins R1 (PARALEL KURAL) — an alias, not a copy
@@ -335,7 +344,7 @@ public sealed class RecallArchitectureTests
     {
         var entities = typeof(EntityBase).Assembly.GetTypes()
             .Where(t => typeof(EntityBase).IsAssignableFrom(t) && t.Namespace?.Contains(".Recall", StringComparison.Ordinal) == true).ToList();
-        Assert.Equal(14, entities.Count); // R1: settings, history, case, event, scope item, lot block, notification, consumption, segregation, audit; R2: trace snapshot; R3: quarantine request, return link; R4: prepared settings change
+        Assert.Equal(17, entities.Count); // R1: settings, history, case, event, scope item, lot block, notification, consumption, segregation, audit; R2: trace snapshot; R3: quarantine request, return link; R4: prepared settings change; R5: drill plan, drill run, drill event
         Assert.DoesNotContain(entities, t => t.Name.Contains("Signature", StringComparison.Ordinal));
         Assert.Contains(typeof(IRecallSignature), typeof(FailClosedRecallSignature).GetInterfaces());
         Assert.False(await new FailClosedRecallSignature().VerifyAsync(new RecallSignatureVerification("s", "recall.scope.approve", "APPROVE", Guid.NewGuid(),

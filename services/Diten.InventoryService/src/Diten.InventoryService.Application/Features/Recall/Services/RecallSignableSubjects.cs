@@ -18,7 +18,7 @@ public sealed record RecallSubjectLineDto(string Label, string Value);
 /// </summary>
 public sealed record RecallCaseSubjectFacts(int ExcludedCount, int IncludedStockCount, int IncludedShipmentCount, RecallEffectivenessResult? Effectiveness);
 
-/// <summary><c>dr-v1</c> input — the drill run of R5 (the entity does not exist yet; the field list and its golden vector do).</summary>
+/// <summary><c>dr-v1</c> input — a drill run (R5: <see cref="DrillRunFacts"/> reads it from the stored run).</summary>
 public sealed record RecallDrillRunSubjectFacts(
     Guid RunId,
     string Number,
@@ -42,7 +42,7 @@ public sealed record RecallDrillRunSubjectFacts(
 /// <list type="bullet">
 /// <item><c>recall.case</c> — <c>rc-v1</c>. <c>submittedSnapshotSha256</c> / <c>approvedSnapshotSha256</c> are the trace seals: signing the scope
 /// signs exactly the frozen trace. <c>pendingAction</c> + <c>pendingActionPayloadSha256</c> are the PREPARED decision.</item>
-/// <item><c>recall.drill-run</c> — <c>dr-v1</c> (R5 binds it).</item>
+/// <item><c>recall.drill-run</c> — <c>dr-v1</c> (R5).</item>
 /// <item><c>recall.settings-change</c> — <c>rs-v1</c>, the prepared change (<see cref="RecallSettingsChange"/>).</item>
 /// </list>
 /// A changed field name or order changes every hash: a new list needs a new version (golden vectors in the tests).
@@ -157,6 +157,13 @@ public static class RecallSignableSubjects
     public static string DrillRunHash(RecallDrillRunSubjectFacts d)
         => Hash(RecallSignableActions.DrillRunSubjectType, d.RunId.ToString("D"), DrillRunFields(d));
 
+    /// <summary>R5: the dr-v1 facts of a stored run — the result note is the PREPARED one while a result is pending (what is signed), else the stored one.</summary>
+    public static RecallDrillRunSubjectFacts DrillRunFacts(RecallDrillRun r) => new(
+        r.Id, r.Number, r.PlanCode, r.LotId, r.LotNumber, r.StartedAtUtc, r.EndedAtUtc, r.DurationMinutes, r.TargetHours, r.Passed, r.GapCount, r.SnapshotSha256,
+        r.PendingResult?.Note ?? r.ResultNote, r.Version);
+
+    public static string DrillRunHash(RecallDrillRun r) => DrillRunHash(DrillRunFacts(r));
+
     public static string SettingsChangeHash(RecallSettingsChange change)
         => Hash(RecallSignableActions.SettingsChangeSubjectType, change.Id.ToString("D"), SettingsChangeFields(change));
 
@@ -188,6 +195,27 @@ public static class RecallSignableSubjects
         summary.Add(new("Gerekçe / Reason", change.Reason));
         return new RecallSignableSubjectDto(Cut($"Geri çağırma ayarları · sürüm {change.SettingsVersion} · {change.Changes.Count} alan", 300), Lines(summary),
             change.LegalEntityId!.Value.ToString("D"), fields);
+    }
+
+    public static RecallSignableSubjectDto DrillRunSubject(RecallDrillRun r)
+    {
+        var fields = DrillRunFields(DrillRunFacts(r));
+        var verdict = r.Passed switch { true => "Geçti / Passed", false => "Kaldı / Failed", null => "—" };
+        var summary = new List<RecallSubjectLineDto>
+        {
+            new("Tatbikat / Drill", r.Number),
+            new("Plan", r.PlanCode),
+            new("Lot", r.LotNumber),
+            new("Başlangıç / Started", fields["startedAtUtc"]!),
+            new("Bitiş / Ended", fields["endedAtUtc"] ?? "—"),
+            new("Süre / Duration (min)", fields["durationMinutes"] ?? "—"),
+            new("Hedef / Target (h)", fields["targetHours"]!),
+            new("Sonuç / Result", verdict),
+            new("Boşluk / Gaps", fields["gapCount"]!),
+            new("İz / Trace", fields["snapshotSha256"] ?? "—"),
+            new("Not / Note", fields["resultNote"] ?? "—")
+        };
+        return new RecallSignableSubjectDto(Cut($"Tatbikat {r.Number} · Lot {r.LotNumber} · {verdict}", 300), Lines(summary), r.LegalEntityId!.Value.ToString("D"), fields);
     }
 
     private static List<RecallSubjectLineDto> Lines(List<RecallSubjectLineDto> summary)

@@ -37,6 +37,16 @@ public static class RecallRequestReader
                 ? i
                 : throw new FormatException($"{name} is required and must be an integer.");
 
+        /// <summary>R5: an optional integer (absent / null → null).</summary>
+        public int? OptionalInt(string name)
+            => !Root.TryGetProperty(name, out var v) || v.ValueKind == JsonValueKind.Null ? null
+                : v.ValueKind == JsonValueKind.Number && v.TryGetInt32(out var i) ? i : throw new FormatException($"{name} must be an integer.");
+
+        /// <summary>R5: an optional boolean (absent / null → null).</summary>
+        public bool? OptionalBool(string name)
+            => !Root.TryGetProperty(name, out var v) || v.ValueKind == JsonValueKind.Null ? null
+                : v.ValueKind is JsonValueKind.True or JsonValueKind.False ? v.GetBoolean() : throw new FormatException($"{name} must be true or false.");
+
         public decimal Decimal(string name) => OptionalDecimal(Root, name) ?? throw new FormatException($"{name} is required and must be a number.");
 
         public Guid Uuid(string name) => Id(Root, name) ?? throw new FormatException($"{name} is required and must be a canonical UUID.");
@@ -235,4 +245,14 @@ public static class RecallRequestReader
     public static readonly HashSet<string> LinkReturnMembers = new(StringComparer.Ordinal) { "idempotencyKey", "transactionId", "customerRef", "returnReference" };
 
     public static readonly HashSet<string> ReviseMembers = new(StringComparer.Ordinal) { "idempotencyKey", "addNodeKeys", "marks", "reason" };
+
+    // R5 drills — no time member anywhere: the server clock stamps start and end (pack §8.10)
+    public static readonly HashSet<string> DrillPlanMembers = new(StringComparer.Ordinal)
+        { "idempotencyKey", "name", "frequency", "customDays", "scopeKind", "nextDueOn", "ownerUserId", "active" };
+
+    public static readonly HashSet<string> StartDrillMembers = new(StringComparer.Ordinal) { "idempotencyKey", "planId", "selectionMode", "lotId" };
+
+    public static readonly HashSet<string> DrillNoteMembers = new(StringComparer.Ordinal) { "idempotencyKey", "resultNote" };
+
+    public static readonly HashSet<string> DrillResultMembers = new(StringComparer.Ordinal) { "idempotencyKey", "resultNote", "signatureId" };
 }

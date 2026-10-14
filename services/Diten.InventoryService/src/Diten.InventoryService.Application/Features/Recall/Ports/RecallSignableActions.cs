@@ -12,7 +12,7 @@ public static class RecallSignableActions
 
     public const string CaseSubjectType = RecallContract.CaseSubjectType;
 
-    /// <summary>R5 brings the drill run; until then the provider answers 404 for this type (the field list + golden vector exist).</summary>
+    /// <summary>The drill run (R5: served by the provider, dr-v1).</summary>
     public const string DrillRunSubjectType = "recall.drill-run";
 
     public const string SettingsChangeSubjectType = RecallContract.SettingsSubjectType;
@@ -107,7 +107,7 @@ public interface IRecallESignClient
 
 /// <summary>
 /// The subject provider's first read (before the company scope exists): the company and, for a prepared settings change, the user who
-/// prepared it — bound to the caller's TENANT (another tenant's subject does not exist: 404). <c>recall.drill-run</c> → null until R5.
+/// prepared it — bound to the caller's TENANT (another tenant's subject does not exist: 404). R5: <c>recall.drill-run</c> (company only).
 /// </summary>
 public interface IRecallSubjectDirectory
 {

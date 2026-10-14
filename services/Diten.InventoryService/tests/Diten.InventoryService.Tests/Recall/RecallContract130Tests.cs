@@ -11,10 +11,13 @@ namespace Diten.InventoryService.Tests.Recall;
 /// <summary>
 /// WP-0177-R4 — RECALL-BUNDLE 1.2.0 → 1.3.0 is ADDITIVE, measured against the pinned 1.2.0 file (the git blob at 9729409e0): the version, one
 /// changelog line, the R4 slice list (prepareSettingsChange, getSignableSubject out of not-yet-implemented), RECALL_SUBJECT_NOT_FOUND appended
-/// to getSignableSubject's x-error-codes and to the registry. Everything else of 1.2.0 is byte-equal as data.
+/// to getSignableSubject's x-error-codes and to the registry. Everything else of 1.2.0 is byte-equal as data. WP-0177-R5: 1.3.0 is pinned as the
+/// fixture <c>recall-v1.3.0.openapi.yaml</c> (the git blob at 394c05550) and this test compares the two fixtures (the R4 pattern).
 /// </summary>
 public sealed class RecallContract130Tests
 {
+    internal static string FixtureV130Path => Path.Combine(RepoPaths.ServiceRoot, "tests", "Diten.InventoryService.Tests", "Contract", "Fixtures", "recall-v1.3.0.openapi.yaml");
+
     private const string FrozenV120Sha256 = "6308c9b965acfcecfef4b6bc44f6c53859d3b5fe5d395da264cc7cd707a15996";
 
     private static JsonObject Load(string path)
@@ -31,7 +34,7 @@ public sealed class RecallContract130Tests
     public void The_1_3_0_change_is_additive_only()
     {
         var before = Load(RecallContract120Tests.FixtureV120Path);
-        var after = Load(ContractSchemas.RecallContractPath);
+        var after = Load(FixtureV130Path);
         Assert.Equal(("1.2.0", "1.3.0"), (before["info"]!["version"]!.GetValue<string>(), after["info"]!["version"]!.GetValue<string>()));
 
         var r4 = new[] { "prepareSettingsChange", "getSignableSubject" };
