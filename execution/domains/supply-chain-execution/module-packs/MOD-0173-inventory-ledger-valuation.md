@@ -616,6 +616,19 @@ CUSTOMER_RETURN …, item-vs-SKU status), restored, porcelain clean. **INVENTORY
     contract changes. The ledger list is a balance projection without a recorder.
   - No ledger / movement Web change.
 
+### BL-501 — central audit (WP-MVP1-AUDIT1 v2, 2026-10-14, agent result, pending CT)
+
+- **Branch:** `feature/platform/bl-501-central-audit` from `9729409e0`, local only, no push. Evidence:
+  `docs/records/audits/2026-10/wp-mvp1-audit1-bl501-evidence-2026-10-14.md`.
+- **Shared forwarder (AUD-001 K4):** `Diten.BuildingBlocks.CentralAudit(.Abstractions)` — marker `ICentralAuditDeclaration`
+  (same shape as MVP-3's 82ebedeb4), MediatR behavior, outbox `central_audit_outbox` in Inventory's own database, dispatcher to
+  Platform `POST /api/internal/audit/append` (per-event idempotency added to Platform: `AuditAppendRequest.EventId`).
+- **Inventory:** all 58 write commands path **b** (`inventory-merkezi-iletim`). The central record is written in the command's own
+  Mongo transaction (9 transaction callbacks enlist it), so it commits with the business data or not at all (K2). The in-product
+  trails (`inventory_audit`, quarantine history, recall timeline, expiry events, lot / location history) are unchanged.
+  `Program.cs`: one `AddCentralAudit` line (`RequireEnlistment`) + `/health/central-audit`.
+- **Numbers:** Inventory 1159+4 → 1174+4 (16 Prism reds both sides, Prism alone 16/16); AuditTrail unaudited-new 123 → 65;
+  architecture 69/77 → 71/79, same 8 reds. Item 6 (Platform / Auth e-sign commands) **BLOCKED** — options in the evidence §5.
 ## 20. Follow-up Items
 
 - **FU-LE1-01 (shared UI owner):** after a failed first list load the DataTables processing indicator stays visible (shared CSS, protected).
