@@ -1360,6 +1360,8 @@ Dal `fix/mod-0177-r3-tenant` (taban `9362c0402`). Kanıt `docs/records/audits/20
   (denetim listesi 58 değişmedi); derleme **0 / 0**.
 - Açık: O-R3T-1 kalıcı bozuk satır her turda yeniden denenir (FU-0177-SWEEP-01 önerisi); O-R3T-2 dispatcher'ın kendi uyarı logunda kiracı yok
   (FU-0177-SWEEP-02 önerisi); O-R3T-3 kiracı listesi aşırı yüklemesini yalnız testler kullanıyor.
+**FIX-R3T CT-ACCEPTED (2026-10-14).** Read the sweeper change (per-request catch, shutdown cancellation not swallowed, tenant-list overload test-only) — `RecallPostingGate` unchanged. CT trial merge on the MVP-1 tip `1f904aa83`: Inventory **1159 + 4** (the full run had the known 16 Prism start-up timeouts; Prism alone 16/16). **CT sabotage:** only the IN-TRANSACTION re-check of `ByLotAsync` loses its `TenantId` filter (the pre-check keeps it) → `a_ByLotAsync_…_refuses_neither_the_pre_check_nor_the_re_check` red — the re-check stage is measured on its own, as claimed; restored, porcelain clean. The R3 CT finding (untested tenant boundary) is closed. O-R3T-1 → FU-0177-SWEEP-01 (retry limit / Failed + reason), O-R3T-2 → FU-0177-SWEEP-02 (tenant in the dispatcher warning, OBS-001). Merged `--no-ff` into MVP-1; the owner Inventory window needs a restart for the sweeper change (approval).
+
 
 ## 20. Follow-up Items
 
