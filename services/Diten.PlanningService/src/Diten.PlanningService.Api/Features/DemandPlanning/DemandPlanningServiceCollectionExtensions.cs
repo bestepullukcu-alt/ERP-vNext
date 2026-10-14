@@ -5,6 +5,7 @@ using Diten.PlanningService.Application.Features.DemandPlanning;
 using Diten.PlanningService.Application.Features.DemandPlanning.Contracts;
 using Diten.PlanningService.Application.Features.DemandPlanning.Cycles;
 using Diten.PlanningService.Application.Features.DemandPlanning.HistoryImports;
+using Diten.PlanningService.Application.Features.DemandPlanning.ForecastRuns;
 using Diten.PlanningService.Application.Features.DemandPlanning.ManualDrafts;
 using Diten.PlanningService.Infrastructure.Features.DemandPlanning;
 using Diten.PlanningService.Persistence.Features.DemandPlanning;
@@ -77,6 +78,8 @@ public static class DemandPlanningServiceCollectionExtensions
         var assembly = typeof(IProductMasterV1Reader).Assembly;
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(assembly));
         services.AddTransient<ManualDraftWorkflow>();
+        services.AddTransient<AcceptedHistoryForecastEvaluation>();
+        services.AddTransient<ForecastWorkflow>();
         services.AddValidatorsFromAssembly(assembly);
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
@@ -86,6 +89,7 @@ public static class DemandPlanningServiceCollectionExtensions
         services.AddSingleton<DemandPlanningMongoContext>();
         services.AddSingleton<ManualDraftMongoStore>();
         services.AddSingleton<IManualDraftStore>(sp => sp.GetRequiredService<ManualDraftMongoStore>());
+        services.AddSingleton<IForecastDraftStore>(sp => sp.GetRequiredService<ManualDraftMongoStore>());
         services.AddSingleton<IInternalPublishAuthority, UnconfiguredPublishAuthority>();
         services.AddSingleton<PublishedRevisionMongoStore>();
         services.AddSingleton<IRollbackDraftStore, RollbackDraftMongoStore>();

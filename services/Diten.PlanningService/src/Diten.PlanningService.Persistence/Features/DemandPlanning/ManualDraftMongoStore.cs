@@ -10,7 +10,7 @@ namespace Diten.PlanningService.Persistence.Features.DemandPlanning;
 
 // Each series is a physical part; the manifest, all parts and mandatory audit commit together.
 // This store is internal only. No route or history-sufficiency decision is exposed here.
-public sealed partial class ManualDraftMongoStore(DemandPlanningMongoContext context) : IManualDraftStore
+public sealed partial class ManualDraftMongoStore(DemandPlanningMongoContext context) : IManualDraftStore, IForecastDraftStore
 {
     private const int SafeDocumentBytes = 15_000_000; // Below MongoDB's 16 MiB BSON ceiling.
     private static readonly JsonSerializerOptions JsonOptions = new();
@@ -68,6 +68,18 @@ public sealed partial class ManualDraftMongoStore(DemandPlanningMongoContext con
                     slots.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId)
                         .Ascending(x => x.PlanningCycleId),
                     new CreateIndexOptions { Unique = true }), cancellationToken: cancellationToken);
+            var runKeys = Builders<ForecastRun>.IndexKeys;
+            await context.ForecastRuns.Indexes.CreateOneAsync(new CreateIndexModel<ForecastRun>(
+                runKeys.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId)
+                    .Ascending(x => x.PlanningCycleId).Ascending(x => x.SelectedBy)
+                    .Ascending(x => x.RequestKey), new CreateIndexOptions { Unique = true }),
+                cancellationToken: cancellationToken);
+            var selectionKeys = Builders<ForecastSelectionAudit>.IndexKeys;
+            await context.ForecastSelectionAudit.Indexes.CreateOneAsync(
+                new CreateIndexModel<ForecastSelectionAudit>(
+                    selectionKeys.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId)
+                        .Ascending(x => x.RevisionId).Ascending(x => x.RequestKey),
+                    new CreateIndexOptions { Unique = true }), cancellationToken: cancellationToken);
             _indexReady = true;
         }
         finally
@@ -76,8 +88,18 @@ public sealed partial class ManualDraftMongoStore(DemandPlanningMongoContext con
         }
     }
 
-    public async Task<ManualDraftStoreResult> CreateAsync(
-        DemandRevisionDraft draft, string requestKey, CancellationToken cancellationToken)
+    public Task<ManualDraftStoreResult> CreateAsync(
+        DemandRevisionDraft draft, string requestKey, CancellationToken cancellationToken) =>
+        CreateCoreAsync(draft, requestKey, null, null, cancellationToken);
+
+    public Task<ManualDraftStoreResult> CreateForecastAsync(DemandRevisionDraft draft,
+        string requestKey, ForecastRun run, ForecastSelectionAudit selection,
+        CancellationToken cancellationToken) =>
+        CreateCoreAsync(draft, requestKey, run, selection, cancellationToken);
+
+    private async Task<ManualDraftStoreResult> CreateCoreAsync(
+        DemandRevisionDraft draft, string requestKey, ForecastRun? run,
+        ForecastSelectionAudit? selection, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(draft);
         if (draft.TenantId == Guid.Empty || draft.LegalEntityId == Guid.Empty ||
@@ -92,6 +114,28 @@ public sealed partial class ManualDraftMongoStore(DemandPlanningMongoContext con
                         !series.Weeks[0].MethodProvenance!.HasSameContent(
                             week.MethodProvenance)))) ||
             string.IsNullOrWhiteSpace(requestKey))
+            return new(ManualDraftStoreOutcome.Invalid);
+
+        if ((run is null) != (selection is null) ||
+            run is not null && (run.TenantId != draft.TenantId ||
+                run.LegalEntityId != draft.LegalEntityId || run.RevisionId != draft.Id ||
+                run.PlanningCycleId != draft.PlanningCycleId ||
+                run.SelectedBy != draft.CreatedBy || run.Id == Guid.Empty ||
+                run.RequestKey != requestKey.Trim() ||
+                draft.Series.Count != 1 || draft.Series[0].SkuId != run.SkuId ||
+                draft.Series[0].WarehouseId != run.WarehouseId ||
+                draft.Series[0].BaseUomId != run.BaseUomId ||
+                draft.Series[0].Weeks.Any(week =>
+                    week.Source != DraftWeekSource.Method ||
+                    week.MethodProvenance?.ForecastRunId != run.Id ||
+                    week.MethodProvenance.Method != run.Method ||
+                    week.MethodProvenance.PolicyVersion != run.PolicyVersion) ||
+                selection!.TenantId != run.TenantId ||
+                selection.LegalEntityId != run.LegalEntityId ||
+                selection.RevisionId != run.RevisionId ||
+                selection.ForecastRunId != run.Id ||
+                selection.RequestFingerprint != run.RequestFingerprint ||
+                selection.RequestKey != run.RequestKey))
             return new(ManualDraftStoreOutcome.Invalid);
 
         await EnsureIndexesAsync(cancellationToken);
@@ -133,6 +177,7 @@ public sealed partial class ManualDraftMongoStore(DemandPlanningMongoContext con
         };
         EnsureDocumentFits(manifest);
         EnsureDocumentFits(audit);
+        if (run is not null) { EnsureDocumentFits(run); EnsureDocumentFits(selection!); }
         foreach (var part in parts) EnsureDocumentFits(part);
 
         using var session = await context.StartSessionAsync(cancellationToken);
@@ -145,12 +190,34 @@ public sealed partial class ManualDraftMongoStore(DemandPlanningMongoContext con
                 cancellationToken: cancellationToken);
             await context.ManualDraftAudit.InsertOneAsync(session, audit,
                 cancellationToken: cancellationToken);
+            if (run is not null)
+            {
+                await context.ForecastRuns.InsertOneAsync(session, run,
+                    cancellationToken: cancellationToken);
+                await context.ForecastSelectionAudit.InsertOneAsync(session, selection!,
+                    cancellationToken: cancellationToken);
+            }
             await session.CommitTransactionAsync(cancellationToken);
             return new(ManualDraftStoreOutcome.Created, draft);
         }
         catch (MongoException error) when (IsWriteConflict(error))
         {
             await AbortIfActiveAsync(session, cancellationToken);
+            if (run is not null)
+            {
+                var durableRun = await context.ForecastRuns.Find(x =>
+                    x.TenantId == run.TenantId && x.LegalEntityId == run.LegalEntityId &&
+                    x.PlanningCycleId == run.PlanningCycleId && x.SelectedBy == run.SelectedBy &&
+                    x.RequestKey == run.RequestKey).FirstOrDefaultAsync(cancellationToken);
+                if (durableRun is null)
+                    throw new InvalidDataException(
+                        "Forecast transaction failed without a durable competing request.", error);
+                if (durableRun.RequestFingerprint != run.RequestFingerprint)
+                    return new(ManualDraftStoreOutcome.Conflict);
+                return new(ManualDraftStoreOutcome.Replayed,
+                    await ReadAsync(run.TenantId, run.LegalEntityId,
+                        durableRun.RevisionId, cancellationToken));
+            }
             var existing = await context.ManualDraftManifests.Find(x =>
                 x.TenantId == draft.TenantId && x.LegalEntityId == draft.LegalEntityId &&
                 x.PlanningCycleId == draft.PlanningCycleId && x.CreateRequestKey == normalizedKey)
@@ -249,6 +316,7 @@ public sealed partial class ManualDraftMongoStore(DemandPlanningMongoContext con
             }
             await context.ManualDraftAudit.InsertOneAsync(session, audit,
                 cancellationToken: cancellationToken);
+
             await session.CommitTransactionAsync(cancellationToken);
             return new(ManualDraftStoreOutcome.Changed, draft);
         }
@@ -415,6 +483,7 @@ public sealed partial class ManualDraftMongoStore(DemandPlanningMongoContext con
                     reopenAudit, cancellationToken: cancellationToken);
             await context.ManualDraftAudit.InsertOneAsync(session, audit,
                 cancellationToken: cancellationToken);
+
             await session.CommitTransactionAsync(cancellationToken);
             return new(ManualDraftStoreOutcome.Changed, draft);
         }

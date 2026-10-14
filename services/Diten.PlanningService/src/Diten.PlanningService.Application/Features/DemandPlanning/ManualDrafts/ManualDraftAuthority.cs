@@ -18,7 +18,7 @@ public interface IManualDraftAuthority : ILegalEntityAssignmentAuthority
 
 public sealed record DraftSeriesKey(Guid SkuId, string WarehouseId);
 public sealed record VerifiedDraftSeriesReference(
-    Guid SkuId, string WarehouseId, string BaseUomId);
+    Guid SkuId, string WarehouseId, string BaseUomId, string? SkuLevel = null);
 
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed record ManualDraftWeekValue(int Number, DraftWeekValueKind ValueKind,

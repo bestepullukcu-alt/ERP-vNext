@@ -67,4 +67,50 @@
   <data name="HistoryPrevious" xml:space="preserve"><value>Previous</value></data>
   <data name="HistoryNext" xml:space="preserve"><value>Next</value></data>
   <data name="HistoryLoading" xml:space="preserve"><value>Loading accepted history...</value></data>
+  <data name="ForecastIntro" xml:space="preserve"><value>Evaluate accepted history for one SKU × Warehouse and explicitly choose a method.</value></data>
+  <data name="ForecastAuthorityPending" xml:space="preserve"><value>Companies are the tenant’s active MDM companies. User company authorization and live series verification are pending; unavailable verification blocks the operation.</value></data>
+  <data name="ForecastLoading" xml:space="preserve"><value>Loading verified data…</value></data>
+  <data name="ForecastCycleVersion" xml:space="preserve"><value>Expected cycle version</value></data>
+  <data name="ForecastScopeHelp" xml:space="preserve"><value>Enter the existing cycle ID, SKU ID and Warehouse ID. These values are revalidated by the server and do not grant access.</value></data>
+  <data name="ForecastEvaluate" xml:space="preserve"><value>Evaluate Methods</value></data>
+  <data name="ForecastCandidates" xml:space="preserve"><value>Method comparison</value></data>
+  <data name="ForecastComparisonHelp" xml:space="preserve"><value>No automatic winner or ranking. WAPE is undefined when its actual-demand denominator is zero; no other metric replaces it. Positive bias means underforecasting. Each origin × test week is a separate sample; overlapping weeks may be counted more than once.</value></data>
+  <data name="ForecastPolicy" xml:space="preserve"><value>Policy version</value></data>
+  <data name="ForecastMethod" xml:space="preserve"><value>Explicit method choice</value></data>
+  <data name="ForecastChooseMethod" xml:space="preserve"><value>Choose an eligible method</value></data>
+  <data name="ForecastCreate" xml:space="preserve"><value>Create Forecast And Draft</value></data>
+  <data name="ForecastOpenDraft" xml:space="preserve"><value>Open Created Draft</value></data>
+  <data name="ForecastCreated" xml:space="preserve"><value>Forecast run and Draft saved with mandatory audit records.</value></data>
+  <data name="ForecastSelectExplicitly" xml:space="preserve"><value>Select one series, evaluate it and choose an eligible method explicitly.</value></data>
+  <data name="ForecastInvalidScope" xml:space="preserve"><value>Enter valid company, cycle, SKU, Warehouse and cycle version values.</value></data>
+  <data name="ForecastUnavailable" xml:space="preserve"><value>Verification is unavailable. No successful operation is confirmed. Try again when the source is available.</value></data>
+  <data name="ForecastSessionExpired" xml:space="preserve"><value>Your session expired. Sign in again and reload this page.</value></data>
+  <data name="ForecastPermissionLost" xml:space="preserve"><value>This action is unavailable to your account. Ask your administrator for access and reload the page.</value></data>
+  <data name="ForecastScopeLost" xml:space="preserve"><value>The selected record or series is unavailable in your scope. Select it again after access is verified.</value></data>
+  <data name="ForecastConflict" xml:space="preserve"><value>The cycle or request changed. Verify the latest version and evaluate again.</value></data>
+  <data name="ForecastSelectionRejected" xml:space="preserve"><value>The selected method or input no longer qualifies. Evaluate again and enter a reason.</value></data>
+  <data name="ForecastUndefined" xml:space="preserve"><value>Undefined</value></data>
+  <data name="ForecastEligible" xml:space="preserve"><value>Eligible</value></data>
+  <data name="ForecastBacktestUnavailable" xml:space="preserve"><value>Eligible; backtest metrics are unavailable.</value></data>
+  <data name="ForecastInsufficientWeeks" xml:space="preserve"><value>Insufficient reliable completed weeks for this method.</value></data>
+  <data name="ForecastInsufficientEvents" xml:space="preserve"><value>Insufficient real demand events or distinct positive weeks for Croston.</value></data>
+  <data name="ForecastMixedUnit" xml:space="preserve"><value>History has mixed or missing units; conversion is not verified.</value></data>
+  <data name="ForecastUntrustedHistory" xml:space="preserve"><value>History reliability or unit consistency could not be verified.</value></data>
+  <data name="ForecastInvalidOutput" xml:space="preserve"><value>The method produced an invalid forecast and cannot be selected.</value></data>
+  <data name="ForecastReliableWeeks" xml:space="preserve"><value>Reliable weeks</value></data>
+  <data name="ForecastRealEvents" xml:space="preserve"><value>Real demand events</value></data>
+  <data name="ForecastWape" xml:space="preserve"><value>WAPE ratio</value></data>
+  <data name="ForecastMae" xml:space="preserve"><value>MAE</value></data>
+  <data name="ForecastBias" xml:space="preserve"><value>Bias (actual − forecast)</value></data>
+  <data name="ForecastMase" xml:space="preserve"><value>MASE</value></data>
+  <data name="ForecastHorizonMetrics" xml:space="preserve"><value>Metrics by forecast distance</value></data>
+  <data name="ForecastWeeksAhead" xml:space="preserve"><value>Weeks ahead</value></data>
+  <data name="ForecastSamples" xml:space="preserve"><value>Samples</value></data>
+  <data name="ForecastMethodNaive" xml:space="preserve"><value>Naive</value></data>
+  <data name="ForecastMethodMovingAverage" xml:space="preserve"><value>Moving Average</value></data>
+  <data name="ForecastMethodSimpleExponentialSmoothing" xml:space="preserve"><value>Simple Exponential Smoothing</value></data>
+  <data name="ForecastMethodHoltTrend" xml:space="preserve"><value>Holt Trend</value></data>
+  <data name="ForecastMethodSeasonalNaive" xml:space="preserve"><value>Seasonal Naive</value></data>
+  <data name="ForecastMethodHoltWinters" xml:space="preserve"><value>Holt-Winters</value></data>
+  <data name="ForecastMethodBiasCorrectedCroston" xml:space="preserve"><value>Bias-corrected Croston</value></data>
 </root>

@@ -70,6 +70,12 @@ public sealed class DemandPlanningMongoContext
     public IMongoCollection<ManualDraftAuditRecord> ManualDraftAudit =>
         _database.GetCollection<ManualDraftAuditRecord>("mod0188_manual_draft_audit");
 
+    public IMongoCollection<ForecastRun> ForecastRuns =>
+        _database.GetCollection<ForecastRun>("mod0188_forecast_runs");
+
+    public IMongoCollection<ForecastSelectionAudit> ForecastSelectionAudit =>
+        _database.GetCollection<ForecastSelectionAudit>("mod0188_forecast_selection_audit");
+
     public IMongoCollection<ManualDraftReviewAuditRecord> ManualDraftReviewAudit =>
         _database.GetCollection<ManualDraftReviewAuditRecord>("mod0188_manual_draft_review_audit");
 

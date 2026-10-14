@@ -34,6 +34,7 @@ public sealed class DemandPlanningManifestProvider : IModuleManifestProvider
             new("demand.history-imports.review", "Review history imports"),
             new("demand.history-imports.accept", "Accept history rows"),
             new("demand.history.read", "Read accepted history"),
+            new("demand.forecast-runs.create", "Evaluate and create forecast runs"),
             new("demand.drafts.create", "Create demand drafts"),
             new("demand.drafts.update", "Update demand drafts"),
             new("demand.plans.review", "Review demand plans"),

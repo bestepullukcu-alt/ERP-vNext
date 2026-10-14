@@ -67,4 +67,50 @@
   <data name="HistoryPrevious" xml:space="preserve"><value>Anterior</value></data>
   <data name="HistoryNext" xml:space="preserve"><value>Siguiente</value></data>
   <data name="HistoryLoading" xml:space="preserve"><value>Cargando historial aceptado...</value></data>
+  <data name="ForecastIntro" xml:space="preserve"><value>Evalúe el historial aceptado de un SKU × almacén y elija explícitamente un método.</value></data>
+  <data name="ForecastAuthorityPending" xml:space="preserve"><value>Se muestran las empresas activas del tenant en MDM. La autorización del usuario por empresa y la verificación real de series están pendientes; sin verificación se bloquea la operación.</value></data>
+  <data name="ForecastLoading" xml:space="preserve"><value>Cargando datos verificados…</value></data>
+  <data name="ForecastCycleVersion" xml:space="preserve"><value>Versión esperada del ciclo</value></data>
+  <data name="ForecastScopeHelp" xml:space="preserve"><value>Introduzca los ID existentes del ciclo, SKU y almacén. El servidor los verifica de nuevo; no conceden acceso.</value></data>
+  <data name="ForecastEvaluate" xml:space="preserve"><value>Evaluar Métodos</value></data>
+  <data name="ForecastCandidates" xml:space="preserve"><value>Comparación de métodos</value></data>
+  <data name="ForecastComparisonHelp" xml:space="preserve"><value>No hay ganador ni clasificación automática. WAPE queda indefinido si la demanda real total es cero; ninguna otra métrica lo sustituye. Un sesgo positivo indica una previsión baja. Cada origen × semana de prueba es una muestra; las semanas solapadas pueden contarse varias veces.</value></data>
+  <data name="ForecastPolicy" xml:space="preserve"><value>Versión de política</value></data>
+  <data name="ForecastMethod" xml:space="preserve"><value>Elección explícita de método</value></data>
+  <data name="ForecastChooseMethod" xml:space="preserve"><value>Elija un método apto</value></data>
+  <data name="ForecastCreate" xml:space="preserve"><value>Crear Previsión Y Borrador</value></data>
+  <data name="ForecastOpenDraft" xml:space="preserve"><value>Abrir Borrador Creado</value></data>
+  <data name="ForecastCreated" xml:space="preserve"><value>Previsión y borrador guardados con los registros obligatorios.</value></data>
+  <data name="ForecastSelectExplicitly" xml:space="preserve"><value>Seleccione una serie, evalúela y elija explícitamente un método apto.</value></data>
+  <data name="ForecastInvalidScope" xml:space="preserve"><value>Introduzca valores válidos de empresa, ciclo, SKU, almacén y versión.</value></data>
+  <data name="ForecastUnavailable" xml:space="preserve"><value>La verificación no está disponible. No se confirma una operación exitosa. Reintente cuando la fuente esté disponible.</value></data>
+  <data name="ForecastSessionExpired" xml:space="preserve"><value>Su sesión caducó. Inicie sesión de nuevo y recargue la página.</value></data>
+  <data name="ForecastPermissionLost" xml:space="preserve"><value>Su cuenta no tiene acceso a esta acción. Solicite permiso al administrador y recargue la página.</value></data>
+  <data name="ForecastScopeLost" xml:space="preserve"><value>El registro o serie no está disponible en su ámbito. Selecciónelo de nuevo tras verificar el acceso.</value></data>
+  <data name="ForecastConflict" xml:space="preserve"><value>El ciclo o la solicitud cambió. Verifique la versión actual y evalúe de nuevo.</value></data>
+  <data name="ForecastSelectionRejected" xml:space="preserve"><value>El método o los datos ya no cumplen los requisitos. Evalúe de nuevo e indique un motivo.</value></data>
+  <data name="ForecastUndefined" xml:space="preserve"><value>Indefinido</value></data>
+  <data name="ForecastEligible" xml:space="preserve"><value>Apto</value></data>
+  <data name="ForecastBacktestUnavailable" xml:space="preserve"><value>Apto; métricas retrospectivas no disponibles.</value></data>
+  <data name="ForecastInsufficientWeeks" xml:space="preserve"><value>Semanas completas fiables insuficientes para este método.</value></data>
+  <data name="ForecastInsufficientEvents" xml:space="preserve"><value>Eventos de demanda real o semanas positivas distintas insuficientes para Croston.</value></data>
+  <data name="ForecastMixedUnit" xml:space="preserve"><value>Unidades mezcladas o ausentes; conversión no verificada.</value></data>
+  <data name="ForecastUntrustedHistory" xml:space="preserve"><value>No se pudo verificar la fiabilidad o coherencia de unidades.</value></data>
+  <data name="ForecastInvalidOutput" xml:space="preserve"><value>El método produjo una previsión inválida y no se puede elegir.</value></data>
+  <data name="ForecastReliableWeeks" xml:space="preserve"><value>Semanas fiables</value></data>
+  <data name="ForecastRealEvents" xml:space="preserve"><value>Eventos de demanda real</value></data>
+  <data name="ForecastWape" xml:space="preserve"><value>Proporción WAPE</value></data>
+  <data name="ForecastMae" xml:space="preserve"><value>MAE</value></data>
+  <data name="ForecastBias" xml:space="preserve"><value>Sesgo (real − previsión)</value></data>
+  <data name="ForecastMase" xml:space="preserve"><value>MASE</value></data>
+  <data name="ForecastHorizonMetrics" xml:space="preserve"><value>Métricas por distancia de previsión</value></data>
+  <data name="ForecastWeeksAhead" xml:space="preserve"><value>Semanas por delante</value></data>
+  <data name="ForecastSamples" xml:space="preserve"><value>Muestras</value></data>
+  <data name="ForecastMethodNaive" xml:space="preserve"><value>Ingenuo</value></data>
+  <data name="ForecastMethodMovingAverage" xml:space="preserve"><value>Media Móvil</value></data>
+  <data name="ForecastMethodSimpleExponentialSmoothing" xml:space="preserve"><value>Suavizado Exponencial Simple</value></data>
+  <data name="ForecastMethodHoltTrend" xml:space="preserve"><value>Tendencia De Holt</value></data>
+  <data name="ForecastMethodSeasonalNaive" xml:space="preserve"><value>Ingenuo Estacional</value></data>
+  <data name="ForecastMethodHoltWinters" xml:space="preserve"><value>Holt-Winters</value></data>
+  <data name="ForecastMethodBiasCorrectedCroston" xml:space="preserve"><value>Croston Corregido Por Sesgo</value></data>
 </root>

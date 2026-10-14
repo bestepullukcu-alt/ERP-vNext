@@ -67,4 +67,50 @@
   <data name="HistoryPrevious" xml:space="preserve"><value>Назад</value></data>
   <data name="HistoryNext" xml:space="preserve"><value>Далее</value></data>
   <data name="HistoryLoading" xml:space="preserve"><value>Загрузка принятой истории...</value></data>
+  <data name="ForecastIntro" xml:space="preserve"><value>Оцените принятые данные одной пары SKU × склад и явно выберите метод.</value></data>
+  <data name="ForecastAuthorityPending" xml:space="preserve"><value>Показаны активные компании арендатора в MDM. Авторизация пользователя по компании и проверка серий в реальном окружении ожидаются; без проверки операция блокируется.</value></data>
+  <data name="ForecastLoading" xml:space="preserve"><value>Загрузка проверенных данных…</value></data>
+  <data name="ForecastCycleVersion" xml:space="preserve"><value>Ожидаемая версия цикла</value></data>
+  <data name="ForecastScopeHelp" xml:space="preserve"><value>Введите существующие идентификаторы цикла, SKU и склада. Сервер проверяет их повторно; сами значения не дают доступа.</value></data>
+  <data name="ForecastEvaluate" xml:space="preserve"><value>Оценить Методы</value></data>
+  <data name="ForecastCandidates" xml:space="preserve"><value>Сравнение методов</value></data>
+  <data name="ForecastComparisonHelp" xml:space="preserve"><value>Автоматического победителя и ранжирования нет. WAPE не определён при нулевом знаменателе фактического спроса; другая метрика его не заменяет. Положительное смещение означает заниженный прогноз. Каждая пара начало × тестовая неделя — отдельная выборка; пересекающиеся недели могут учитываться повторно.</value></data>
+  <data name="ForecastPolicy" xml:space="preserve"><value>Версия политики</value></data>
+  <data name="ForecastMethod" xml:space="preserve"><value>Явный выбор метода</value></data>
+  <data name="ForecastChooseMethod" xml:space="preserve"><value>Выберите допустимый метод</value></data>
+  <data name="ForecastCreate" xml:space="preserve"><value>Создать Прогноз И Черновик</value></data>
+  <data name="ForecastOpenDraft" xml:space="preserve"><value>Открыть Созданный Черновик</value></data>
+  <data name="ForecastCreated" xml:space="preserve"><value>Прогноз и черновик сохранены с обязательными записями аудита.</value></data>
+  <data name="ForecastSelectExplicitly" xml:space="preserve"><value>Выберите одну серию, оцените её и явно укажите допустимый метод.</value></data>
+  <data name="ForecastInvalidScope" xml:space="preserve"><value>Введите корректные значения компании, цикла, SKU, склада и версии цикла.</value></data>
+  <data name="ForecastUnavailable" xml:space="preserve"><value>Проверка недоступна. Успех операции не подтверждён. Повторите попытку после восстановления источника.</value></data>
+  <data name="ForecastSessionExpired" xml:space="preserve"><value>Сеанс истёк. Войдите снова и обновите страницу.</value></data>
+  <data name="ForecastPermissionLost" xml:space="preserve"><value>Это действие недоступно вашей учётной записи. Запросите доступ у администратора и обновите страницу.</value></data>
+  <data name="ForecastScopeLost" xml:space="preserve"><value>Выбранная запись или серия недоступна в вашей области доступа. Выберите её заново после проверки доступа.</value></data>
+  <data name="ForecastConflict" xml:space="preserve"><value>Цикл или запрос изменился. Проверьте текущую версию и повторите оценку.</value></data>
+  <data name="ForecastSelectionRejected" xml:space="preserve"><value>Метод или входные данные больше не соответствуют условиям. Повторите оценку и укажите причину.</value></data>
+  <data name="ForecastUndefined" xml:space="preserve"><value>Не определено</value></data>
+  <data name="ForecastEligible" xml:space="preserve"><value>Допустим</value></data>
+  <data name="ForecastBacktestUnavailable" xml:space="preserve"><value>Допустим; метрики ретроспективной проверки недоступны.</value></data>
+  <data name="ForecastInsufficientWeeks" xml:space="preserve"><value>Недостаточно достоверных завершённых недель для этого метода.</value></data>
+  <data name="ForecastInsufficientEvents" xml:space="preserve"><value>Недостаточно реальных событий спроса или отдельных положительных недель для метода Кростона.</value></data>
+  <data name="ForecastMixedUnit" xml:space="preserve"><value>В истории смешаны или отсутствуют единицы; пересчёт не подтверждён.</value></data>
+  <data name="ForecastUntrustedHistory" xml:space="preserve"><value>Достоверность истории или согласованность единиц не подтверждена.</value></data>
+  <data name="ForecastInvalidOutput" xml:space="preserve"><value>Метод дал недопустимый прогноз и не может быть выбран.</value></data>
+  <data name="ForecastReliableWeeks" xml:space="preserve"><value>Достоверные недели</value></data>
+  <data name="ForecastRealEvents" xml:space="preserve"><value>Реальные события спроса</value></data>
+  <data name="ForecastWape" xml:space="preserve"><value>Отношение WAPE</value></data>
+  <data name="ForecastMae" xml:space="preserve"><value>MAE</value></data>
+  <data name="ForecastBias" xml:space="preserve"><value>Смещение (факт − прогноз)</value></data>
+  <data name="ForecastMase" xml:space="preserve"><value>MASE</value></data>
+  <data name="ForecastHorizonMetrics" xml:space="preserve"><value>Метрики по дальности прогноза</value></data>
+  <data name="ForecastWeeksAhead" xml:space="preserve"><value>Недель вперёд</value></data>
+  <data name="ForecastSamples" xml:space="preserve"><value>Выборки</value></data>
+  <data name="ForecastMethodNaive" xml:space="preserve"><value>Наивный</value></data>
+  <data name="ForecastMethodMovingAverage" xml:space="preserve"><value>Скользящее Среднее</value></data>
+  <data name="ForecastMethodSimpleExponentialSmoothing" xml:space="preserve"><value>Простое Экспоненциальное Сглаживание</value></data>
+  <data name="ForecastMethodHoltTrend" xml:space="preserve"><value>Тренд Холта</value></data>
+  <data name="ForecastMethodSeasonalNaive" xml:space="preserve"><value>Сезонный Наивный</value></data>
+  <data name="ForecastMethodHoltWinters" xml:space="preserve"><value>Холт — Винтерс</value></data>
+  <data name="ForecastMethodBiasCorrectedCroston" xml:space="preserve"><value>Кростон С Коррекцией Смещения</value></data>
 </root>

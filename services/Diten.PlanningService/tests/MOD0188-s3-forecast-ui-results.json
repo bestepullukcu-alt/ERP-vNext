@@ -1,0 +1,164 @@
+{
+  "branch": "feature/sce/mod-0188-demand-planning",
+  "changedFilesThisContinuation": [
+    "frontend/Diten.Web/Controllers/DemandPlanningController.cs",
+    "frontend/Diten.Web/Controllers/DemandPlanningController.Forecast.cs",
+    "frontend/Diten.Web/Views/SupplyChain/DemandPlanning/Index.cshtml",
+    "frontend/Diten.Web/Views/SupplyChain/DemandPlanning/_Forecast.cshtml",
+    "frontend/Diten.Web/Views/SupplyChain/DemandPlanning/_ForecastL10n.cshtml",
+    "frontend/Diten.Web/wwwroot/assets/js/SupplyChain/demand-planning-forecast.js",
+    "frontend/Diten.Web/wwwroot/assets/js/SupplyChain/demand-planning-forecast.l10n.js",
+    "frontend/Diten.Web/tests/demand-planning-workspace.test.js",
+    "frontend/Diten.Web/tests/demand-planning-forecast.test.js",
+    "frontend/Diten.Web.Tests/Controllers/DemandPlanningForecastControllerTests.cs",
+    "services/Diten.PlanningService/tests/Diten.PlanningService.Cycles.Tests/ForecastRunHttpMongoIntegrationTests.cs",
+    "frontend/Diten.Web/Resources/Views/SupplyChain/DemandPlanning/DemandPlanningIndex.en.resx",
+    "frontend/Diten.Web/Resources/Views/SupplyChain/DemandPlanning/DemandPlanningIndex.tr.resx",
+    "frontend/Diten.Web/Resources/Views/SupplyChain/DemandPlanning/DemandPlanningIndex.fr.resx",
+    "frontend/Diten.Web/Resources/Views/SupplyChain/DemandPlanning/DemandPlanningIndex.es.resx",
+    "frontend/Diten.Web/Resources/Views/SupplyChain/DemandPlanning/DemandPlanningIndex.zh.resx",
+    "frontend/Diten.Web/Resources/Views/SupplyChain/DemandPlanning/DemandPlanningIndex.ar.resx",
+    "frontend/Diten.Web/Resources/Views/SupplyChain/DemandPlanning/DemandPlanningIndex.ru.resx",
+    "services/Diten.PlanningService/tests/MOD0188-s3-forecast-ui-results.json",
+    "tests/architecture/TenantArchitecture.ArchitectureTests/AuditTrailStandardTests.cs",
+    "tests/architecture/audit-ledger/Diten.PlanningService.md"
+  ],
+  "checkout": "C:\\Users\\epenc\\Documents\\Codex\\2026-09-29\\https-github-com-bestepullukcu-alt-erp\\work\\ERP-vNext-mod0188-evidence",
+  "tests": {
+    "frontend": {
+      "command": "node node_modules/vitest/vitest.mjs run tests/demand-planning-forecast.test.js tests/demand-planning-workspace.test.js tests/demand-planning-history.test.js",
+      "mockedApi": true,
+      "failed": 0,
+      "skipped": 0,
+      "passed": 23
+    },
+    "gatewayProxy": {
+      "capturedGatewayHttpRequest": true,
+      "liveGatewayAcceptance": false,
+      "failed": 0,
+      "filter": "FullyQualifiedName~DemandPlanningForecastControllerTests",
+      "skipped": 0,
+      "passed": 9
+    },
+    "auditMutation": {
+      "latestTrx": "epenc_GMGRAPHIC_2026-10-14_17_40_25.trx",
+      "productionStoreSha256": "F45DC1D2020EECEFC065D5244573388C9FB761980EB49C61DD3C3E66FDAF45C2",
+      "actualHttpStatus": 201,
+      "subsequentProductionTestsPassed": 8,
+      "failedAsExpected": 1,
+      "method": "Omit selection-audit insertion only in an external source copy compiled into isolated test output; production source untouched",
+      "expectedHttpStatus": 503
+    },
+    "forecastMongoJwt": {
+      "skipped": 0,
+      "failed": 0,
+      "passed": 8,
+      "evaluationTests": 5,
+      "latestTrx": "epenc_GMGRAPHIC_2026-10-14_17_40_54.trx",
+      "filter": "FullyQualifiedName~ForecastHttp_|FullyQualifiedName~AcceptedHistoryForecastEvaluationTests|FullyQualifiedName~ForecastRunMongoIntegrationTests",
+      "storeTests": 1,
+      "httpTests": 2
+    }
+  },
+  "timezone": "Asia/Baku",
+  "date": "2026-10-14",
+  "builds": {
+    "isolatedOutputsRemoved": true,
+    "web": "success; 0 errors; 23 warnings in other existing module files",
+    "planningTests": "success; 0 errors, 0 warnings",
+    "webTests": "success; focused proxy tests passed",
+    "planningApi": "success; 0 errors, 0 warnings",
+    "sdk": "C:/Users/epenc/AppData/Local/DitenSdk/dotnet8/dotnet.exe"
+  },
+  "mongo": {
+    "temporaryDirectory": "C:\\Users\\epenc\\AppData\\Local\\Temp\\mod0188-s3-ui-a9f11473e86743bf8b25eece7e35c973",
+    "replicaSet": "rs-mod0188",
+    "port": 31994,
+    "operationalPortsTouched": false,
+    "address": "127.0.0.1",
+    "portClosed": true,
+    "pidAbsent": true,
+    "pid": 31044,
+    "directoryAbsent": true
+  },
+  "commitPushPr": false,
+  "roleFilesRead": [
+    "orchestrator",
+    "backend-architect",
+    "frontend-ui-ux",
+    "security-agent",
+    "testing-agent",
+    "integration-agent"
+  ],
+  "openGates": [
+    "Both audit screen visibility and live S1/S3 login/browser evidence remain open",
+    "Live series authority adapter and cross-service integration acceptance remain open",
+    "CT independent verification and full WP acceptance pending"
+  ],
+  "workPackage": "WP-MOD0188-S3-FORECAST-COMMAND",
+  "unrelatedBaselineFileTouched": false,
+  "protectedAuditFilesEdited": true,
+  "realSubagentsUsed": false,
+  "scope": {
+    "productionSeriesAuthority": "UnconfiguredManualDraftAuthority stays fail-closed",
+    "unauthorizedSurface": "Razor permission gate; runtime 401/403 removes all action skeleton; live login verification deferred",
+    "languages": [
+      "en",
+      "tr",
+      "fr",
+      "es",
+      "zh",
+      "ar",
+      "ru"
+    ],
+    "livePlatformMdmInventoryAcceptance": "not performed",
+    "bulkSelection": "out of scope",
+    "companyRule": "Tenant active MDM companies; backend revalidation; user-company authorization remains central pending",
+    "draftNavigation": "Read persisted Draft through MVC proxy and Gateway; 13 or all 52 weeks",
+    "normalSurface": "API-backed single SKU x Warehouse; no fixture fallback, auto-winner or ranking",
+    "demandV2": "DRAFT"
+  },
+  "laneStatus": "partial self-verification; CT acceptance pending",
+  "gitVerification": {
+    "diffCheckExitCode": 0,
+    "branch": "feature/sce/mod-0188-demand-planning",
+    "newDebtRows": 0,
+    "centralTestContainsOnlyTwoApprovedEdits": true,
+    "approvedArchitecturePaths": [
+      "tests/architecture/TenantArchitecture.ArchitectureTests/AuditTrailStandardTests.cs",
+      "tests/architecture/audit-ledger/Diten.PlanningService.md"
+    ],
+    "stagedFiles": []
+  },
+  "preApprovalGitVerification": {
+    "stagedFiles": [],
+    "longPathOverride": "per-command core.longpaths=true",
+    "diffCheckExitCode": 0,
+    "protectedAuditDiff": [],
+    "newUntrackedTouchedFilesWhitespace": "clean",
+    "branch": "feature/sce/mod-0188-demand-planning",
+    "transientTrxFilesRemoved": true
+  },
+  "auditFollowup": {
+    "readableAuditStatus": "Both audit traces on the record screen and live browser proof still pending; local c trace is not central audit; BL-501 pending",
+    "filter": "AuditTrailStandard",
+    "snapshot": "6906 scanner input files read from exact Git blobs; no worktree, branch, checkout or .git folder created",
+    "temporaryInputDirectory": "C:\\Users\\epenc\\AppData\\Local\\Temp\\mod0188-audit-9c601970b62d4d11887eb5b2e53ffa5e",
+    "approval": "Ali explicit narrow approval, 2026-10-14",
+    "baselineFailedTests": [
+      "TenantArchitecture.ArchitectureTests.AuditTrailStandardTests.EveryWriteCommand_IsAudited_OrADeclaredException_OrKnownDebt",
+      "TenantArchitecture.ArchitectureTests.AuditTrailStandardTests.EveryServiceWithWriteCommands_HasALedger_AndCommandNamesAreUnambiguous"
+    ],
+    "scope": "PlanningService indirect pin 4 to 5; one c writer tuple and matching ledger declarations; no other central line changed",
+    "currentFailed": 2,
+    "newFailures": 0,
+    "currentPassed": 18,
+    "identicalFailureMessages": true,
+    "mod0188Failures": 0,
+    "mainSha": "92f60aacdd9bb5e8ad0f99504bb516adde8697d7",
+    "temporaryInputsRemoved": true,
+    "mongoRestarted": false,
+    "mainPassed": 18,
+    "mainFailed": 2
+  }
+}

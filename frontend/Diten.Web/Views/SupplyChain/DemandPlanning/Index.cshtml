@@ -25,21 +25,13 @@
     translations["State"] = SharedLocalizer["Status"].Value;
     translations["Unknown"] = SharedLocalizer["Unknown"].Value;
 }
-@if (!canRead)
+@if (!canRead || (!preview && ViewData["CanCreateRun"] as bool? != true))
 {
     <partial name="_AccessDenied" model="pageTitle" />
 }
 else if (!preview)
 {
-    @* The Gateway route and complete Platform company scope do not yet exist.
-       No company name, plan skeleton or service-port request is rendered here. *@
-    <div class="card" role="status">
-        <div class="card-body">
-            <h1 class="h4 mb-2">@Localizer["UnavailableTitle"]</h1>
-            <p class="mb-2">@Localizer["UnavailableBody"]</p>
-            <p class="text-muted mb-0">@Localizer["UnavailableNext"]</p>
-        </div>
-    </div>
+    <partial name="_Forecast" />
 }
 else
 {
@@ -57,6 +49,12 @@ else
     <script id="demandPlanningTranslations" type="application/json">@Html.Raw(JsonSerializer.Serialize(translations))</script>
 }
 @section Scripts {
+    @if (canRead && !preview && ViewData["CanCreateRun"] as bool? == true)
+    {
+        <partial name="_ForecastL10n" />
+        <script src="~/assets/js/SupplyChain/demand-planning-forecast.l10n.js" asp-append-version="true"></script>
+        <script src="~/assets/js/SupplyChain/demand-planning-forecast.js" asp-append-version="true"></script>
+    }
     @if (canRead && preview)
     {
         <script src="~/assets/js/SupplyChain/demand-planning-preview.js" asp-append-version="true"></script>

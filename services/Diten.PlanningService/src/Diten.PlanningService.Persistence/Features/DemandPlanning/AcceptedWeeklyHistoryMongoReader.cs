@@ -17,7 +17,7 @@ public sealed class AcceptedWeeklyHistoryMongoReader : IAcceptedWeeklyHistoryRea
         if (tenantId == Guid.Empty || legalEntityId == Guid.Empty || skuId == Guid.Empty ||
             skuLevel is not ("Gsku" or "Lsku" or "FinishedGood") ||
             string.IsNullOrWhiteSpace(warehouseId) || asOfWeekStart.DayOfWeek != DayOfWeek.Monday ||
-            weekCount is < 1 or > 104)
+            weekCount is < 1 or > 156)
             throw new ArgumentException("Accepted history requires a complete series and ISO week window.");
 
         var from = asOfWeekStart.AddDays(-7 * weekCount);

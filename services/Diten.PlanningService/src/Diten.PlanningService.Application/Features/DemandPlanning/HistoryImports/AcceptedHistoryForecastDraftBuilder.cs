@@ -85,7 +85,7 @@ internal sealed class AcceptedHistoryForecastDraftBuilder(IAcceptedWeeklyHistory
         candidates.Count == 1 ? candidates[0] :
             throw new InvalidDataException("Explicit method selection produced no unique candidate.");
 
-    private static string Fingerprint(AcceptedSeriesHistory history)
+    internal static string Fingerprint(AcceptedSeriesHistory history)
     {
         using var stream = new MemoryStream();
         using var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true);

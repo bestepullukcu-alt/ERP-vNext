@@ -144,7 +144,7 @@ describe('MOD-0188 frontend boundaries', () => {
         expect(controller).toContain('demand.plans.consume');
         expect(view).toContain('Layout = "_LayoutTenantShell"');
         expect(view).toContain('<partial name="_AccessDenied"');
-        expect(view).toContain('UnavailableTitle');
+        expect(view).toContain('<partial name="_Forecast"');
         expect(preview).not.toMatch(/fetch\(|XMLHttpRequest|5068|Authorization/);
         expect(view).not.toContain('5068');
     });

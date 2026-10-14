@@ -9,7 +9,7 @@ namespace Diten.Web.Controllers;
 // PlanningService revalidates the selected company for each read.
 [Authorize]
 [Route("SupplyChain/DemandPlanning")]
-public sealed class DemandPlanningController(
+public sealed partial class DemandPlanningController(
     IWebHostEnvironment environment, HttpClient httpClient, IConfiguration configuration) : Controller
 {
     private readonly string _gatewayUrl = (configuration["GatewayUrl"] ??
@@ -18,6 +18,8 @@ public sealed class DemandPlanningController(
     [HttpGet("")]
     public IActionResult Index([FromQuery] string? preview = null)
     {
+        ViewData["CanCreateRun"] = PermissionClaims.HasPermission(User, "demand.forecast-runs.create");
+        ViewData["CanCreateDraft"] = PermissionClaims.HasPermission(User, "demand.drafts.create");
         ViewData["CanRead"] = PermissionClaims.HasPermission(User, "demand.plans.read");
         ViewData["CanEdit"] = PermissionClaims.HasPermission(User, "demand.drafts.update");
         ViewData["CanReview"] = PermissionClaims.HasPermission(User, "demand.plans.review");

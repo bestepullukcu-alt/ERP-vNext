@@ -73,6 +73,59 @@ x-open-design-decisions:
   - Evidence that an MRP run is already bound to a Superseded revision.
   - Event transport, topic and retry timing; no duration target is fixed here.
 paths:
+  /forecast-runs/evaluation:
+    get:
+      operationId: evaluateDemandForecastCandidates
+      summary: Compare eligible methods for one authorized SKU and Warehouse
+      description: >-
+        The server re-reads accepted history and the locked cycle. Missing,
+        unknown or stockout-uncertain weeks are never converted to zero.
+        A single accepted original unit remains eligible with the visible
+        unitVerificationPending flag until MOD-0290 resolves base-unit conversion;
+        mixed units are rejected without conversion. Metrics may be null when a method is eligible but a 52-week holdout
+        cannot be formed. No method is ranked or selected by this read.
+        The production company/series authority currently fails closed.
+      x-required-permission: demand.forecast-runs.create
+      parameters:
+        - { $ref: '#/components/parameters/SelectedLegalEntityHint' }
+        - { name: planningCycleId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: skuId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: warehouseId, in: query, required: true, schema: { type: string, minLength: 1 } }
+      responses:
+        '200': { description: Side-by-side server-derived candidates, content: { application/json: { schema: { $ref: '#/components/schemas/ForecastEvaluationEnvelope' } } } }
+        '400': { $ref: '#/components/responses/DraftFailure' }
+        '403': { $ref: '#/components/responses/DraftFailure' }
+        '404': { $ref: '#/components/responses/DraftFailure' }
+        '422': { $ref: '#/components/responses/DraftFailure' }
+        '503': { $ref: '#/components/responses/DraftFailure' }
+  /forecast-runs:
+    post:
+      operationId: createDemandForecastRunDraft
+      summary: Explicitly select one eligible method and atomically create a Draft
+      description: >-
+        The server reauthorizes the company and series, re-evaluates accepted
+        history and policy, then writes ForecastRun, selection audit, Draft and
+        mandatory Draft audit in one Mongo transaction. A client-supplied
+        eligibility result, metrics, policy or forecast output is ignored.
+        This narrow operation handles one series; bulk selection is not yet implemented.
+        Live company/series authority remains unconfigured and fails closed.
+      x-required-permission: demand.forecast-runs.create
+      x-additional-required-permission: demand.drafts.create
+      parameters:
+        - { $ref: '#/components/parameters/SelectedLegalEntityHint' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/ForecastRunCreate' } } }
+      responses:
+        '201': { description: Created Run and Draft, content: { application/json: { schema: { $ref: '#/components/schemas/ForecastCreateEnvelope' } } } }
+        '200': { description: Authorized idempotent replay of the same Run and Draft, content: { application/json: { schema: { $ref: '#/components/schemas/ForecastCreateEnvelope' } } } }
+        '400': { $ref: '#/components/responses/DraftFailure' }
+        '403': { $ref: '#/components/responses/DraftFailure' }
+        '404': { $ref: '#/components/responses/DraftFailure' }
+        '409': { $ref: '#/components/responses/DraftFailure' }
+        '422': { $ref: '#/components/responses/DraftFailure' }
+        '503': { $ref: '#/components/responses/DraftFailure' }
   /revisions:
     post:
       operationId: createManualDemandDraft
@@ -95,7 +148,7 @@ paths:
             schema: { $ref: '#/components/schemas/ManualDraftCreate' }
       responses:
         '201': { description: Created Draft envelope, content: { application/json: { schema: { $ref: '#/components/schemas/ManualDraftEnvelope' } } } }
-        '200': { description: Idempotent replay, no second Draft or audit, content: { application/json: { schema: { $ref: '#/components/schemas/ManualDraftEnvelope' } } } }
+        '200': { description: 'Idempotent replay, no second Draft or audit', content: { application/json: { schema: { $ref: '#/components/schemas/ManualDraftEnvelope' } } } }
         '400': { $ref: '#/components/responses/DraftFailure' }
         '403': { $ref: '#/components/responses/DraftFailure' }
         '404': { $ref: '#/components/responses/DraftFailure' }
@@ -294,7 +347,7 @@ paths:
       responses:
         '200': { description: Authoritative state in Response envelope, content: { application/json: { schema: { $ref: '#/components/schemas/RevisionStatusEnvelope' } } } }
         '401': { description: Unauthenticated; JWT middleware may return no body. }
-        '403': { description: Missing consume permission or independent authority denial; policy may return no body, reader returns a failure envelope. }
+        '403': { description: 'Missing consume permission or independent authority denial; policy may return no body, reader returns a failure envelope.' }
         '404': { $ref: '#/components/responses/ReadFailure' }
         '503': { $ref: '#/components/responses/ReadFailure' }
   /revisions/{revisionId}/manifest:
@@ -313,7 +366,7 @@ paths:
       responses:
         '200': { description: Verified whole-revision manifest in Response envelope, content: { application/json: { schema: { $ref: '#/components/schemas/RevisionManifestEnvelope' } } } }
         '401': { description: Unauthenticated; JWT middleware may return no body. }
-        '403': { description: Missing consume permission or independent authority denial; policy may return no body, reader returns a failure envelope. }
+        '403': { description: 'Missing consume permission or independent authority denial; policy may return no body, reader returns a failure envelope.' }
         '404': { $ref: '#/components/responses/ReadFailure' }
         '409': { $ref: '#/components/responses/ReadFailure' }
         '503': { $ref: '#/components/responses/ReadFailure' }
@@ -338,7 +391,7 @@ paths:
       responses:
         '200': { description: Verified page in Response envelope, content: { application/json: { schema: { $ref: '#/components/schemas/RevisionRowPageEnvelope' } } } }
         '401': { description: Unauthenticated; JWT middleware may return no body. }
-        '403': { description: Missing consume permission or independent authority denial; policy may return no body, reader returns a failure envelope. }
+        '403': { description: 'Missing consume permission or independent authority denial; policy may return no body, reader returns a failure envelope.' }
         '404': { $ref: '#/components/responses/ReadFailure' }
         '409': { $ref: '#/components/responses/ReadFailure' }
         '503': { $ref: '#/components/responses/ReadFailure' }
@@ -357,7 +410,7 @@ paths:
       responses:
         '200': { description: Invalidated historical manifest and warning in Response envelope, content: { application/json: { schema: { $ref: '#/components/schemas/AuditSnapshotEnvelope' } } } }
         '401': { description: Unauthenticated; JWT middleware may return no body. }
-        '403': { description: Missing audit permission or independent authority denial; policy may return no body, reader returns a failure envelope. }
+        '403': { description: 'Missing audit permission or independent authority denial; policy may return no body, reader returns a failure envelope.' }
         '404': { $ref: '#/components/responses/ReadFailure' }
         '409': { $ref: '#/components/responses/ReadFailure' }
         '503': { $ref: '#/components/responses/ReadFailure' }
@@ -379,7 +432,7 @@ paths:
       responses:
         '200': { description: Verified historical page and warning in Response envelope, content: { application/json: { schema: { $ref: '#/components/schemas/AuditRowPageEnvelope' } } } }
         '401': { description: Unauthenticated; JWT middleware may return no body. }
-        '403': { description: Missing audit permission or independent authority denial; policy may return no body, reader returns a failure envelope. }
+        '403': { description: 'Missing audit permission or independent authority denial; policy may return no body, reader returns a failure envelope.' }
         '404': { $ref: '#/components/responses/ReadFailure' }
         '409': { $ref: '#/components/responses/ReadFailure' }
         '503': { $ref: '#/components/responses/ReadFailure' }
@@ -406,7 +459,7 @@ paths:
         content: { application/json: { schema: { $ref: '#/components/schemas/RollbackDraftCommand' } } }
       responses:
         '201': { description: New Draft in Response envelope, content: { application/json: { schema: { $ref: '#/components/schemas/ManualDraftEnvelope' } } } }
-        '200': { description: Idempotent replay of the original Draft, without a second effect, content: { application/json: { schema: { $ref: '#/components/schemas/ManualDraftEnvelope' } } } }
+        '200': { description: 'Idempotent replay of the original Draft, without a second effect', content: { application/json: { schema: { $ref: '#/components/schemas/ManualDraftEnvelope' } } } }
         '400': { $ref: '#/components/responses/DraftFailure' }
         '401': { description: Unauthenticated; JWT middleware may return no body. }
         '403': { $ref: '#/components/responses/DraftFailure' }
@@ -439,7 +492,7 @@ paths:
           application/json:
             schema: { $ref: '#/components/schemas/PublishCommand' }
       responses:
-        '200': { description: Publication receipt, not an authoritative current-status read; replay has no second effect., content: { application/json: { schema: { $ref: '#/components/schemas/RevisionCommandEnvelope' } } } }
+        '200': { description: 'Publication receipt, not an authoritative current-status read; replay has no second effect.', content: { application/json: { schema: { $ref: '#/components/schemas/RevisionCommandEnvelope' } } } }
         '400': { $ref: '#/components/responses/RevisionCommandFailure' }
         '401': { $ref: '#/components/responses/Problem' }
         '403': { $ref: '#/components/responses/RevisionCommandFailure' }
@@ -467,7 +520,7 @@ paths:
           application/json:
             schema: { $ref: '#/components/schemas/InvalidateCommand' }
       responses:
-        '200': { description: Invalidation receipt, not an authoritative current-status read; replay has no second effect., content: { application/json: { schema: { $ref: '#/components/schemas/RevisionCommandEnvelope' } } } }
+        '200': { description: 'Invalidation receipt, not an authoritative current-status read; replay has no second effect.', content: { application/json: { schema: { $ref: '#/components/schemas/RevisionCommandEnvelope' } } } }
         '400': { $ref: '#/components/responses/RevisionCommandFailure' }
         '401': { $ref: '#/components/responses/Problem' }
         '403': { $ref: '#/components/responses/RevisionCommandFailure' }
@@ -530,6 +583,80 @@ components:
         application/problem+json:
           schema: { $ref: '#/components/schemas/Problem' }
   schemas:
+    ForecastRunCreate:
+      type: object
+      additionalProperties: false
+      required: [planningCycleId, skuId, warehouseId, method, reason, expectedCycleVersion]
+      properties:
+        planningCycleId: { type: string, format: uuid }
+        skuId: { type: string, format: uuid }
+        warehouseId: { type: string, minLength: 1 }
+        method: { type: string, enum: [Naive, MovingAverage, SimpleExponentialSmoothing, HoltTrend, SeasonalNaive, HoltWinters, BiasCorrectedCroston] }
+        reason: { type: string, minLength: 1, maxLength: 2000 }
+        expectedCycleVersion: { type: integer, minimum: 0 }
+    ForecastEvaluationEnvelope:
+      type: object
+      required: [statusCode, isSuccessful, errors, data]
+      properties:
+        statusCode: { type: integer }
+        isSuccessful: { type: boolean }
+        errors: { type: array, items: { type: string } }
+        data:
+          type: object
+          required: [planningCycleId, skuId, warehouseId, policyVersion, candidates]
+          properties:
+            planningCycleId: { type: string, format: uuid }
+            skuId: { type: string, format: uuid }
+            warehouseId: { type: string }
+            policyVersion: { type: string }
+            candidates:
+              type: array
+              items: { $ref: '#/components/schemas/ForecastCandidate' }
+    ForecastCandidate:
+      type: object
+      required: [method, eligible, reason, policyVersion, reliableWeeks, realDemandEvents, byWeeksAhead, variant, parameters, unitVerificationPending]
+      properties:
+        method: { type: string }
+        eligible: { type: boolean }
+        reason: { type: string }
+        policyVersion: { type: string }
+        variant: { type: string }
+        parameters: { type: object, additionalProperties: { type: string } }
+        forecastUomId: { type: [string, 'null'], description: Accepted single original unit until MOD-0290 verifies conversion; not proof of base-unit conversion. }
+        unitVerificationPending: { type: boolean }
+        reliableWeeks: { type: integer, minimum: 0 }
+        realDemandEvents: { type: integer, minimum: 0 }
+        wapeRatio: { type: [number, 'null'] }
+        mae: { type: [number, 'null'] }
+        bias: { type: [number, 'null'] }
+        mase: { type: [number, 'null'] }
+        byWeeksAhead:
+          type: array
+          items:
+            type: object
+            properties:
+              weeksAhead: { type: integer, minimum: 1, maximum: 52 }
+              count: { type: integer, minimum: 0 }
+              mae: { type: [number, 'null'] }
+              wapeRatio: { type: [number, 'null'] }
+              bias: { type: [number, 'null'] }
+              mase: { type: [number, 'null'] }
+    ForecastCreateEnvelope:
+      type: object
+      required: [statusCode, isSuccessful, errors, data]
+      properties:
+        statusCode: { type: integer }
+        isSuccessful: { type: boolean }
+        errors: { type: array, items: { type: string } }
+        data:
+          type: object
+          required: [forecastRunId, method, policyVersion, draft, replayed]
+          properties:
+            forecastRunId: { type: string, format: uuid }
+            method: { type: string }
+            policyVersion: { type: string }
+            draft: { $ref: '#/components/schemas/ManualDraftView' }
+            replayed: { type: boolean }
     CurrentPublishedEnvelope:
       allOf:
         - { $ref: '#/components/schemas/ReadEnvelope' }

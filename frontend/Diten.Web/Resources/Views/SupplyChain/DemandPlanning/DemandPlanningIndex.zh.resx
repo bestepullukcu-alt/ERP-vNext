@@ -67,4 +67,50 @@
   <data name="HistoryPrevious" xml:space="preserve"><value>上一页</value></data>
   <data name="HistoryNext" xml:space="preserve"><value>下一页</value></data>
   <data name="HistoryLoading" xml:space="preserve"><value>正在加载已接受的历史记录...</value></data>
+  <data name="ForecastIntro" xml:space="preserve"><value>评估单个 SKU × 仓库的已接受历史，并明确选择方法。</value></data>
+  <data name="ForecastAuthorityPending" xml:space="preserve"><value>公司列表来自租户在 MDM 中的有效公司。用户公司授权及实时序列验证尚待完成；无法验证时操作将被阻止。</value></data>
+  <data name="ForecastLoading" xml:space="preserve"><value>正在加载已验证数据…</value></data>
+  <data name="ForecastCycleVersion" xml:space="preserve"><value>预期周期版本</value></data>
+  <data name="ForecastScopeHelp" xml:space="preserve"><value>请输入现有周期、SKU 和仓库的标识。服务器会重新验证这些值；它们不会授予访问权限。</value></data>
+  <data name="ForecastEvaluate" xml:space="preserve"><value>评估方法</value></data>
+  <data name="ForecastCandidates" xml:space="preserve"><value>方法比较</value></data>
+  <data name="ForecastComparisonHelp" xml:space="preserve"><value>不自动排名或选出优胜方法。实际需求分母为零时 WAPE 未定义，不会用其他指标替代。正偏差表示预测偏低。每个起点 × 测试周是独立样本；重叠周可能重复计数。</value></data>
+  <data name="ForecastPolicy" xml:space="preserve"><value>策略版本</value></data>
+  <data name="ForecastMethod" xml:space="preserve"><value>明确选择方法</value></data>
+  <data name="ForecastChooseMethod" xml:space="preserve"><value>请选择符合条件的方法</value></data>
+  <data name="ForecastCreate" xml:space="preserve"><value>创建预测与草稿</value></data>
+  <data name="ForecastOpenDraft" xml:space="preserve"><value>打开已创建草稿</value></data>
+  <data name="ForecastCreated" xml:space="preserve"><value>预测运行和草稿已保存，包含必需的审计记录。</value></data>
+  <data name="ForecastSelectExplicitly" xml:space="preserve"><value>选择单个序列、进行评估并明确选择符合条件的方法。</value></data>
+  <data name="ForecastInvalidScope" xml:space="preserve"><value>请输入有效的公司、周期、SKU、仓库和周期版本。</value></data>
+  <data name="ForecastUnavailable" xml:space="preserve"><value>当前无法验证，尚未确认操作成功。请在来源可用后重试。</value></data>
+  <data name="ForecastSessionExpired" xml:space="preserve"><value>会话已过期，请重新登录并刷新此页面。</value></data>
+  <data name="ForecastPermissionLost" xml:space="preserve"><value>您的账号无权执行此操作。请向管理员申请权限并刷新页面。</value></data>
+  <data name="ForecastScopeLost" xml:space="preserve"><value>所选记录或序列在您的权限范围内不可用。请在访问权限验证后重新选择。</value></data>
+  <data name="ForecastConflict" xml:space="preserve"><value>周期或请求已更改。请确认最新版本并重新评估。</value></data>
+  <data name="ForecastSelectionRejected" xml:space="preserve"><value>所选方法或输入已不符合条件。请重新评估并填写理由。</value></data>
+  <data name="ForecastUndefined" xml:space="preserve"><value>未定义</value></data>
+  <data name="ForecastEligible" xml:space="preserve"><value>符合条件</value></data>
+  <data name="ForecastBacktestUnavailable" xml:space="preserve"><value>符合条件；回测指标不可用。</value></data>
+  <data name="ForecastInsufficientWeeks" xml:space="preserve"><value>此方法所需的可靠完整周数不足。</value></data>
+  <data name="ForecastInsufficientEvents" xml:space="preserve"><value>Croston 所需的实际需求事件或不同正需求周数不足。</value></data>
+  <data name="ForecastMixedUnit" xml:space="preserve"><value>历史单位混合或缺失；换算未经验证。</value></data>
+  <data name="ForecastUntrustedHistory" xml:space="preserve"><value>无法验证历史可靠性或单位一致性。</value></data>
+  <data name="ForecastInvalidOutput" xml:space="preserve"><value>此方法产生了无效预测，无法选择。</value></data>
+  <data name="ForecastReliableWeeks" xml:space="preserve"><value>可靠周数</value></data>
+  <data name="ForecastRealEvents" xml:space="preserve"><value>实际需求事件</value></data>
+  <data name="ForecastWape" xml:space="preserve"><value>WAPE 比率</value></data>
+  <data name="ForecastMae" xml:space="preserve"><value>MAE</value></data>
+  <data name="ForecastBias" xml:space="preserve"><value>偏差（实际 − 预测）</value></data>
+  <data name="ForecastMase" xml:space="preserve"><value>MASE</value></data>
+  <data name="ForecastHorizonMetrics" xml:space="preserve"><value>按预测距离分组的指标</value></data>
+  <data name="ForecastWeeksAhead" xml:space="preserve"><value>提前周数</value></data>
+  <data name="ForecastSamples" xml:space="preserve"><value>样本数</value></data>
+  <data name="ForecastMethodNaive" xml:space="preserve"><value>朴素法</value></data>
+  <data name="ForecastMethodMovingAverage" xml:space="preserve"><value>移动平均法</value></data>
+  <data name="ForecastMethodSimpleExponentialSmoothing" xml:space="preserve"><value>简单指数平滑法</value></data>
+  <data name="ForecastMethodHoltTrend" xml:space="preserve"><value>Holt 趋势法</value></data>
+  <data name="ForecastMethodSeasonalNaive" xml:space="preserve"><value>季节朴素法</value></data>
+  <data name="ForecastMethodHoltWinters" xml:space="preserve"><value>Holt-Winters 法</value></data>
+  <data name="ForecastMethodBiasCorrectedCroston" xml:space="preserve"><value>偏差修正 Croston 法</value></data>
 </root>

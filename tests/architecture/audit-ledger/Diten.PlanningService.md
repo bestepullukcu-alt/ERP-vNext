@@ -9,6 +9,7 @@ Kural: `.antigravity/rules/audit-trail-standard.md` (AUD-001). Ali'nin 2026-10-1
 | batch-inceleme-izi | c | yazıcı | IHistoryImportBatchStore.TryDecideAsync |
 | satir-kabul-izi | c | yazıcı | IAcceptedDemandHistoryStore.AcceptAsync |
 | draft-olusturma-izi | c | yazıcı | IManualDraftStore.CreateAsync |
+| forecast-secim-izi | c | yazıcı | IForecastDraftStore.CreateForecastAsync |
 | draft-duzenleme-izi | c | yazıcı | IManualDraftStore.EditWeekAsync |
 | draft-dislama-izi | c | yazıcı | IManualDraftStore.ExcludeSeriesAsync |
 | draft-inceleme-izi | c | yazıcı | IManualDraftStore.TransitionReviewAsync |
@@ -18,6 +19,7 @@ Kural: `.antigravity/rules/audit-trail-standard.md` (AUD-001). Ali'nin 2026-10-1
 
 > `ReviewHistoryImportBatchCommand`: durum ve karar izi tek Mongo belge güncellemesindedir; `HistoryImportMongoIntegrationTests` karar/audit ve hata yollarını sınar. İz görünürlüğü bekliyor (dilim: S1).
 > `AcceptDemandHistoryRowsCommand`: satır ve kabul izi tek Mongo transaction'ındadır; `AcceptedDemandHistoryMongoIntegrationTests` audit yazma hatasında sıfır kabulü sınar. İz görünürlüğü bekliyor (dilim: S1 tarayıcı kanıtı).
+> `CreateForecastRunCommand`: `CreateForecastRunHandler` → `ForecastWorkflow` → `IForecastDraftStore.CreateForecastAsync`. Ali'nin 2026-10-14 dar onayıyla geçici AUD-001 `c` yolu: ForecastRun, Draft manifesti + seri parçası, Draft oluşturma `ManualDraftAuditRecord` izi ve yöntem seçimi `ForecastSelectionAudit` izi aynı Mongo transaction'ında kalıcılaşır. İki audit'ten herhangi birinin insert hatasında Run, Draft ve yeni audit kayıtları bütünüyle geri alınır; HTTP 503 döner. `PublishedRevisionMongoIntegrationTests.ForecastHttp_EitherMandatoryAuditInsertFailure_RollsBackAllWrites` gerçek loopback Mongo/JWT yolunda her iki hatayı ölçer; `ForecastHttp_ReevaluatesAcceptedHistoryAndWritesRunDraftAndAudits` açık seçim 201, aynı içerik tekrarında 200, farklı içerikte 409 ve kalıcı iki izi ölçer. Bu yerel iz Platform merkezi denetim günlüğü değildir; `BL-501 bekliyor` (merkezî ekip, MVP'ler sonrası). Ekran iz görünürlüğü henüz tamamlanmadı: oluşturulan Draft'ın aktör/zaman/gerekçesi okunabiliyor, fakat iki audit'in kayıt ekranında okunması ve gerçek S1/S3 login/tarayıcı kanıtı açık. Defter/scanner kabulü bu görünürlük veya S3 kabul kapısını kapatmaz.
 > `CreateManualDraftCommand`: `ManualDraftMongoIntegrationTests.MongoAuditInsertFailure_RollsBackManifestAndAllSeriesParts`; iz görünürlüğü bekliyor (dilim: S3).
 > `EditManualDraftWeekCommand`: `ManualDraftMongoIntegrationTests.MongoEditAuditFailure_RollsBackVersionAndWeekChange`; iz görünürlüğü bekliyor (dilim: S3).
 > `ExcludeManualDraftSeriesCommand`: `ManualDraftApiMongoIntegrationTests.ExclusionAuditFailure_RollsBackReopenSlotAndContent`; iz görünürlüğü bekliyor (dilim: S3).
@@ -37,6 +39,7 @@ Kural: `.antigravity/rules/audit-trail-standard.md` (AUD-001). Ali'nin 2026-10-1
 | komut | iz | üzerinden |
 |---|---|---|
 | CreateManualDraftCommand | draft-olusturma-izi | ManualDraftWorkflow |
+| CreateForecastRunCommand | forecast-secim-izi | ForecastWorkflow |
 | EditManualDraftWeekCommand | draft-duzenleme-izi | ManualDraftWorkflow |
 | ExcludeManualDraftSeriesCommand | draft-dislama-izi | ManualDraftWorkflow |
 | TransitionManualDraftCommand | draft-inceleme-izi | ManualDraftWorkflow |

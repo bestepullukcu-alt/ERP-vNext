@@ -122,6 +122,20 @@ Yetkili geliştirme aşamasında `Diten.PlanningService`, MDM/SupplyChain ile ay
 
 Önerilebilir yöntemler: Naive, Moving Average, Simple Exponential Smoothing, Holt trend, Seasonal Naive, Holt-Winters ve Bias-corrected Croston. Genel uygunluk için en az 26 tamamlanmış güvenilir hafta; mevsimsel yöntem için en az 104 hafta; intermittent için en az 26 hafta ve 4 gerçek talep olayı gerekir. Sürümlü pilot politikası bu eşikleri kontrollü ayarlayabilir. Rolling-origin backtest, WAPE birincil karşılaştırma; MAE ve bias zorunlu, MASE uygun olduğunda. MAPE ana ölçü değildir. Yöntem sonuçları aynı run içinde karşılaştırılır, ayrı yayımlanmış senaryo sayılmaz. Tahmin motoru açıklanabilir .NET arabirimi arkasındadır; Python runtime şartı konmaz. Ali'nin 2026-10-06 MVP-4 kararı: uygun adayların WAPE/MAE/bias/uygunsa MASE sonuçları ve tahmin uzaklığı kırılımları yan yana gösterilir; otomatik sıralama veya kazanan yöntem seçimi yapılmaz. WAPE paydası sıfırsa sonuç tanımsız kalır, başka ölçüye sessiz otomatik geçilmez. Planlayıcı yöntemi her SKU × Warehouse serisi için açıkça seçer; seçili birden çok seriye aynı yöntemi gerekçeli toplu işlemle uygulayabilir. Her seçim normal inceleme/onay ve görev ayrılığı akışına tabidir.
 
+Ali'nin 2026-10-14 onayladığı ilk sürümlü yöntem politikası aşağıdadır. Varsayılan, otomatik yöntem seçimi değildir: uygun adayın parametre başlangıcıdır. Her seri için planlayıcının açık ve gerekçeli seçimi gerekir. Güvenilir olmayan hafta hiçbir yöntemde eğitim haftası veya gerçek sıfır değildir.
+
+| Yöntem | Uygunluk | Gerekli geçmiş | Onaylı başlangıç parametresi |
+|---|---|---|---|
+| Naive | Mevsimsellik veya eğilim varsaymayan temel karşılaştırma | 26 güvenilir hafta | Parametre yok |
+| Moving Average | Kısa dönem düzeyini yumuşatma | 26 güvenilir hafta | Son 4 hafta; ileri tahminler yeniden girdiye alınmaz |
+| Simple Exponential Smoothing | Düzey ağırlıklı, belirgin eğilim/mevsimsellik varsaymayan seri | 26 güvenilir hafta | `alpha=0.2`; ilk gözlem düzeyi |
+| Holt trend | Eğilimli, mevsimsellik varsaymayan seri | 26 güvenilir hafta | Toplamsal sönümsüz; `alpha=0.4`, `betaStar=0.3` |
+| Seasonal Naive | Yıllık haftalık mevsimsellik için temel karşılaştırma | 104 güvenilir hafta | Dönem 52 hafta |
+| Holt-Winters | Yıllık haftalık mevsimsellik ve düzey/eğilim | 104 güvenilir hafta | Toplamsal, dönem 52; `alpha=0.5`, `betaStar=0.5`, `gamma=0.2` |
+| Bias-corrected Croston | Aralıklı gerçek talep olayları | 26 güvenilir hafta, en az 4 gerçek olay ve iki ayrı pozitif hafta | SBA; talep `alpha=0.2`, aralık `alpha=0.2` |
+
+Bu başlangıç değerleri sürümle kaydedilir; yetkili politika sahibi eşik veya parametreyi ancak bağımsız inceleme/onay ve audit ile değiştirebilir. Planlayıcı politika parametresini değiştirmez, yalnız seri başına uygun yöntemi seçer. Politika değişimi mevcut inceleme/onayı geçersiz kılar. Ayrı politika değiştirme kullanıcı akışı ve bağımsız onay izni açılmadan bu tablo canlıda düzenlenebilir sayılmaz.
+
 Bias, rolling-origin test tahminlerinin işaretli ortalama hatasıdır: `gerçekleşen − tahmin`. Pozitif bias düşük tahmini, negatif bias yüksek tahmini, sıfır ise bu testlerde net yönlü sapma olmadığını gösterir. Uygulanabilir MASE için mevsimsel olmayan karşılaştırmada gecikme 1; onaylı yıllık haftalık mevsimsel değerlendirmede gecikme 52 ve en az 104 güvenilir eğitim haftası kullanılır. Her origin'in naive/mevsimsel-naive ölçeği yalnız kendi eğitim bölümünden hesaplanır; ölçek sıfır veya yetersizse MASE tanımsızdır, sıfır ya da sonsuz gösterilmez. Mevcut izole değerlendirici her `origin × test haftası` çiftini ayrı ölçüm sayar: aynı takvim haftası örtüşen test pencerelerinde birden fazla sayılabilir. Bu ağırlık kullanıcıya açıklanır; otomatik yöntem sıralaması yapılmaz.
 
 Control Tower'ın 2026-10-06 kararı: Holt-Winters mevsimsel yöntem sınıfındadır ve uygunluk için en az 104 tamamlanmış güvenilir hafta gerektirir. Missing/Unknown veya çözülmemiş stok yokluğu bulunan hafta güvenilir sıfır talep sayılmaz. Bu kuralın izole fixture testi, canlı kabul edilmiş geçmiş kanıtı değildir.
