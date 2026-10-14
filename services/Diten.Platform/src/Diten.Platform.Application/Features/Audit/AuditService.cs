@@ -64,13 +64,16 @@ public sealed class AuditService : IAuditService
             return AuditAppendResult.Rejected("Audit target tenant id cannot be empty.");
         }
 
-        var idempotencyKey = _idempotencyKeyBuilder.Build(
-            request.CorrelationId,
-            request.RequestType,
-            request.EntityType,
-            request.EntityId,
-            request.Operation,
-            request.Sequence);
+        // BL-501: a sender that names its event is deduplicated by that name (AuditAppendRequest.EventId).
+        var idempotencyKey = request.EventId is { } eventId && eventId != Guid.Empty
+            ? AuditIdempotencyKeyBuilder.ForEvent(eventId)
+            : _idempotencyKeyBuilder.Build(
+                request.CorrelationId,
+                request.RequestType,
+                request.EntityType,
+                request.EntityId,
+                request.Operation,
+                request.Sequence);
 
         var writeRequest = new AuditOutboxWriteRequest
         {
