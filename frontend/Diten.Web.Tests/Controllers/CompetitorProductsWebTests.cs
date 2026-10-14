@@ -578,6 +578,35 @@ public sealed class CompetitorProductsWebTests
         Assert.DoesNotContain("Hazırlayan</span><span class=\"cp-v\">Elif Kaya <span class=\"cp-small cp-muted\">" + applied, page);
     }
 
+    [Fact]
+    public void FixC_G11_the_change_history_shows_money_the_reimbursement_label_and_the_date_never_the_raw_row()
+    {
+        var node = RunNode(Core() + """
+            process.stdout.write(JSON.stringify(['186.3 TRY · reimbursed · 2026-07-01', '172.4 TRY', '9 AZN · unknown', 'moved from Koroneks', 'Koronex', null].map(C.priceChange)));
+            """);
+        if (node is not null)
+        {
+            var r = JsonDocument.Parse(node).RootElement.EnumerateArray().ToArray();
+            Assert.Equal(186.3m, r[0].GetProperty("price").GetDecimal());
+            Assert.Equal("TRY", r[0].GetProperty("currency").GetString());
+            Assert.Equal("reimbursed", r[0].GetProperty("reimbursementCode").GetString());
+            Assert.Equal("2026-07-01", r[0].GetProperty("validFrom").GetString());
+            Assert.Equal(JsonValueKind.Null, r[1].GetProperty("reimbursementCode").ValueKind);
+            Assert.Equal("unknown", r[2].GetProperty("reimbursementCode").GetString());
+            Assert.Equal("Koroneks", r[3].GetProperty("movedFrom").GetString());
+            Assert.Equal(JsonValueKind.Null, r[4].ValueKind);
+            Assert.Equal(JsonValueKind.Null, r[5].ValueKind);
+        }
+
+        if (Smoke("details") is not { } d) { return; }
+        var page = d.GetProperty("page").GetString()!;
+        Assert.Contains("172,40 TRY · Geri ödemede · 01.01.2026 → 186,30 TRY · Geri ödemede · 01.07.2026", page);
+        Assert.Contains("Koroneks kaydından taşındı", page);
+        Assert.DoesNotContain("186.3 TRY", page);
+        Assert.DoesNotContain("· reimbursed", page);
+        Assert.DoesNotContain("moved from", page);
+    }
+
     // ═══ 4 · the proxies ═════════════════════════════════════════════════════════════════════════════════════
 
     [Theory]

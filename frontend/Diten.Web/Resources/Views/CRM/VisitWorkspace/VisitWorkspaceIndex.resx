@@ -289,4 +289,13 @@
   <data name="E3StartValue" xml:space="preserve"><value>on start · server time</value></data>
   <data name="E3Cancel" xml:space="preserve"><value>Cancel</value></data>
   <data name="E3Begin" xml:space="preserve"><value>Start presentation</value></data>
+  <data name="UnpTargetType" xml:space="preserve"><value>Visit to</value></data>
+  <data name="UnpTargetDoctor" xml:space="preserve"><value>Doctor</value></data>
+  <data name="UnpTargetPharmacy" xml:space="preserve"><value>Pharmacy</value></data>
+  <data name="UnpDoctorLabel" xml:space="preserve"><value>Doctor</value></data>
+  <data name="UnpDoctorSearch" xml:space="preserve"><value>Search doctors by name (at least 2 letters)</value></data>
+  <data name="UnpPharmacyLabel" xml:space="preserve"><value>Pharmacy</value></data>
+  <data name="UnpPharmacySearch" xml:space="preserve"><value>Search pharmacies by name (at least 2 letters)</value></data>
+  <data name="Err_planned_visit_duplicate_same_day_type" xml:space="preserve"><value>This place already has a visit of this type today.</value></data>
+  <data name="Err_planned_visit_time_window_invalid" xml:space="preserve"><value>The visit time is not valid; choose another start time.</value></data>
 </root>

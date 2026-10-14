@@ -20,6 +20,7 @@
  *   referenceOptions(data, lang)          (W4-FIX-a F-3) a MOD-0048 set as the Web proxy answers it → [{ code, label }]
  *   productMatches(products, q, ids, max) (W4-FIX-a F-2) "our products" picker: every loaded product is findable by name / code
  *   preparedOf(decision) / appliedOf(decision)   (W4-FIX-a F-7) who prepared the decision and when ≠ who applied it and when
+ *   priceChange(value)                    (W4-FIX-c G-11) a change-log country row "186.3 TRY · reimbursed · 2026-07-01" → its parts
  *   errorText(errors, L) · fmt(template, …)
  */
 (function (root, factory) {
@@ -314,6 +315,19 @@
     };
     const appliedOf = d => (d && d.appliedAt ? { by: d.appliedBy || null, at: d.appliedAt } : null);
 
+    /**
+     * W4-FIX-c (G-11) — the MDM writes a country row into the change log as "<invariant price> <currency> · <reimbursement code>
+     * · <yyyy-MM-dd>" (CompetitorProductService.Describe) or "moved from <name>" (a merge). The page shows neither raw: the
+     * parts are formatted (money, the BRD label, the date) — null when the value is not such a row.
+     */
+    const priceChange = value => {
+        const v = String(value == null ? '' : value).trim();
+        const moved = /^moved from (.+)$/.exec(v);
+        if (moved) { return { movedFrom: moved[1] }; }
+        const m = /^(-?\d+(?:\.\d+)?) ([A-Z]{3})(?: · ([^·]+?))?(?: · (\d{4}-\d{2}-\d{2}))?$/.exec(v);
+        return m ? { price: Number(m[1]), currency: m[2], reimbursementCode: m[3] ? m[3].trim() : null, validFrom: m[4] || null } : null;
+    };
+
     // ── words ─────────────────────────────────────────────────────────────────────────────────────────────────
     const errorText = (errors, L) => {
         const l = L || {};
@@ -335,6 +349,6 @@
         recordActions, statusTone, isOwn, decisionState, decisionActions, sodNote, rejectReason, reviewBody,
         canAddMarket, addMarket, pricePeriod, addTag, tags, validate, writeBody, decisionBody,
         mergeCanAdvance, mergeSubmitEnabled, mergeBody, mergeDiffRows, mergeMarketRows,
-        usageOf, countText, similarityTone, errorText, fmt, referenceOptions, productMatches, preparedOf, appliedOf
+        usageOf, countText, similarityTone, errorText, fmt, referenceOptions, productMatches, preparedOf, appliedOf, priceChange
     };
 }));

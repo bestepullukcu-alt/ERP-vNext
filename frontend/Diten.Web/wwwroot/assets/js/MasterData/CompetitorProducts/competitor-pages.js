@@ -585,7 +585,14 @@
     }
 
     /** A status change names the statuses in the page language; any other value is shown as stored. */
-    const changeValue = (c, v) => (c.field === 'status' && v ? statusLabel(v) : v);
+    const changeValue = (c, v) => {
+        if (c.field === 'status' && v) { return statusLabel(v); }
+        // W4-FIX-c (G-11) — a country row: "186,30 TRY · Geri ödemede · 01.07.2026", never "186.3 TRY · reimbursed"
+        const row = String(c.field || '').indexOf('countryPrices.') === 0 ? C.priceChange(v) : null;
+        if (row && row.movedFrom) { return fmt(L.HistMovedFrom || '{0}', row.movedFrom); }
+        if (row) { return [money(row.price, row.currency), row.reimbursementCode ? ((state.reimbursement.find(x => x.code === row.reimbursementCode) || {}).label || '') : '', row.validFrom ? date(row.validFrom) : ''].filter(Boolean).join(' · '); }
+        return v;
+    };
 
     /** The record's indications by name (CRM Concept Graph, G3); without the CRM read only their number. */
     function indicationNames(r) {

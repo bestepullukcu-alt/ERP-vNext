@@ -1,10 +1,11 @@
 /* WP-VW-W4 (W4-WEB-a) - DOM smoke of visit-report.js in Node: a fake document, a stub fetch and controlled timers.
-   Run by VisitReportWebTests with the CRM script folder as argv[2] and the scenario as argv[3]
+   Run by VisitReportWebTests with the CRM script folder as argv[2], the scenario as argv[3] and the page language as argv[4] (tr)
    (doctor | amend | unlock | incomplete | noind); prints one JSON object.
    noind (W4-FIX-b, F-5): the product has NO approved indication rows and the server's pre-fill flag says
    potentialAsked=false — the B card shows the note only (no "no patients" button, no star), the preview is "—". */
 const dir = process.argv[2];
 const scenario = process.argv[3] || 'doctor';
+const pageLang = process.argv[4] || 'tr'; // W4-FIX-c — 'en': the English label of a BRD option is its `label`
 const nodes = {};
 Date.now = () => Date.parse('2026-10-15T12:00:00Z');
 const mk = id => ({
@@ -21,7 +22,7 @@ Object.assign(root.attrs, {
   'data-can-propose-competitors': 'true', 'data-can-read-gskus': 'true', 'data-can-pick-products': 'true'
 });
 root.addEventListener = (ev, fn) => { listeners[ev] = fn; };
-global.document = { documentElement: { lang: 'tr', dir: 'ltr' }, getElementById: el };
+global.document = { documentElement: { lang: pageLang, dir: 'ltr' }, getElementById: el };
 
 const timeouts = [];
 global.setTimeout = (fn, ms) => { timeouts.push({ fn, ms }); return timeouts.length; };
@@ -95,7 +96,9 @@ global.fetch = (url, o) => {
   else if (url === '/api/visits/pv1') data = visit;
   else if (url === '/api/execution/by-plan/pv1') data = { note: 'Sunumdaki not', coVisitors: [{ userId: 'u1', displayName: 'Selin Karaca' }] };
   else if (url.startsWith('/api/presentation/')) data = { slides: [{ productId: A, stepId: 's1', title: 'Gece idrarı mesajı', objections: [{ id: 'or1', categoryCode: 'price', question: 'Pahalı değil mi?' }] }] };
-  else if (url.startsWith('/api/reference-data/')) data = { items: [{ valueCode: 'reimbursed', displayName: 'Reimbursed', attributes: { label_tr: 'Geri ödemede' } }] };
+  // W4-FIX-c — the REAL Web proxy contract (Platform BusinessReferenceDataPublishedValuesModel via CrmReferenceSetReader)
+  else if (url.startsWith('/api/reference-data/')) data = { setCode: 'mdm-reimbursement-status', versionNumber: 1, items: [{ code: 'reimbursed', label: 'Reimbursed', isActive: true, sortOrder: 1, attributes: { label_tr: 'Geri ödemede' } },
+    { code: 'not_reimbursed', label: 'Not reimbursed', isActive: false, sortOrder: 2, attributes: { label_tr: 'Geri ödeme dışı' } }] };
   else if (url === '/api/reports/r1') data = { submittedAt: scenario === 'unlock' ? '2026-10-15T11:50:00Z' : '2026-10-15T09:30:00Z', reportStatus: 'submitted', version: 4,
     amendments: scenario === 'amend' && calls.some(c => c.url.endsWith('/amend')) ? [{ at: '2026-10-15T12:00:00Z', reason: 'Yanlış pay', changes: [{ path: 'productSections[a].shareBucketCode', old: '"none"', new: '"half"' }] }] : [] };
   else if (url.startsWith('/api/doctors/')) data = { profile: prefill.profile, history: [{ at: '2026-09-01T00:00:00Z', field: 'kolLevelCode', oldValue: null, newValue: 'local', source: 'report:r0' }],

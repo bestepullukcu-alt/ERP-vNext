@@ -85,7 +85,10 @@
         if (perms.execution) { jobs.push(api('GET', '/execution/by-plan/' + encodeURIComponent(plannedVisitId)).then(r => { if (r.ok) { state.execution = r.data; } })); }
         jobs.push(api('GET', '/presentation/' + encodeURIComponent(plannedVisitId) + '?lang=' + encodeURIComponent(lang)).then(r => { if (r.ok) { state.presentation = r.data; } }));
         jobs.push(api('GET', '/reference-data/' + S.reimbursement + '/values').then(r => {
-            state.reimbursement = r.ok ? items(r.data).map(v => ({ code: v.valueCode || v.code, label: C.optionLabel({ code: v.valueCode || v.code, label: v.displayName, labels: v.attributes }, lang) })) : [];
+            // W4-FIX-c (FIX-a §37 open item) — the Web proxy answers the MOD-0048 contract { code, label, isActive, attributes:
+            // { label_<lang> } }: the label in the page language, English = label (never displayName / valueCode)
+            state.reimbursement = r.ok ? items(r.data).filter(v => v && v.code && v.isActive !== false)
+                .map(v => ({ code: v.code, label: C.optionLabel({ code: v.code, label: v.label, labels: v.attributes }, lang) })) : [];
         }));
         if (state.reportId) { jobs.push(loadReport()); }
         if (perms.insights && p.contactId) { jobs.push(api('GET', '/doctors/' + encodeURIComponent(p.contactId) + '/profile').then(r => { if (r.ok) { state.insight = r.data; } })); }

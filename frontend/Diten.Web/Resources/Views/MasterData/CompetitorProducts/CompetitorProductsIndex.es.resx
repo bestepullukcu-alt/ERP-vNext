@@ -234,6 +234,7 @@
   <data name="MovedCountries" xml:space="preserve"><value>Países que se mueven</value></data>
   <data name="MergeEffectShort" xml:space="preserve"><value>El nombre propuesto se une a los otros nombres del destino; los informes apuntan a él.</value></data>
   <data name="RejectReason" xml:space="preserve"><value>Motivo</value></data>
+  <data name="HistMovedFrom" xml:space="preserve"><value>trasladada desde {0}</value></data>
   <data name="AppliedRowLabel" xml:space="preserve"><value>Aplicada</value></data>
   <data name="AppliedLine" xml:space="preserve"><value>Aplicada · {0} · aprobada por {1}, {2}</value></data>
   <data name="WithdrawButton" xml:space="preserve"><value>Retirar</value></data>

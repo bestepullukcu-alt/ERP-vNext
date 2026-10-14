@@ -56,7 +56,8 @@ const record = (id, name, extra) => Object.assign({
   competesWithGlobalProductIds: [TUTU], indicationNodeIds: [IND], status: 'active', mergedIntoId: null, survivor: null,
   countryPrices: [{ marketCode: 'TR', boxPrice: 186.3, currencyCode: 'TRY', reimbursementStatusCode: 'reimbursed', validFrom: '2026-07-01T00:00:00Z', source: 'SGK' }],
   countryPriceHistory: [{ marketCode: 'TR', boxPrice: 172.4, currencyCode: 'TRY', reimbursementStatusCode: 'reimbursed', validFrom: '2026-01-01T00:00:00Z', validTo: '2026-07-01T00:00:00Z', reason: 'changed' }],
-  mergedFrom: [], changeLog: [{ at: '2026-10-08T09:00:00Z', by: OTHER, field: 'countryPrices.TR', oldValue: '172.4 TRY', newValue: '186.3 TRY' }],
+  mergedFrom: [], changeLog: [{ at: '2026-10-08T09:00:00Z', by: OTHER, field: 'countryPrices.TR', oldValue: '172.4 TRY · reimbursed · 2026-01-01', newValue: '186.3 TRY · reimbursed · 2026-07-01' },
+    { at: '2026-10-01T09:00:00Z', by: OTHER, field: 'countryPrices.AZ', oldValue: null, newValue: 'moved from Koroneks' }], // W4-FIX-c G-11: MDM Describe() / merge text
   createdBy: ME, createdAt: '2026-09-01T00:00:00Z', updatedBy: OTHER, updatedAt: '2026-10-08T09:00:00Z', version: 3
 }, extra || {});
 const koronex = record(R1, 'Koronex 100', { aliases: ['Koroneks'], mergedFrom: [{ sourceId: 'x', sourceName: 'Koroneks', proposedBy: 'u-rep', mergedAt: '2026-10-01T00:00:00Z' }] });
@@ -136,7 +137,7 @@ global.window.CompetitorL10n = {
   UsagePrivacy: 'Doktor kimliği gösterilmez', Field_countryPrices: 'Ülke fiyatı · {0}', HistoryCount: 'Geçmiş ({0})', DifferentTag: 'farklı', DeactivateButton: 'Pasife al',
   Form_modified_release_tablet: 'değiştirilmiş salımlı tablet', PricedText: '{0}/{1} fiyatlı', ActionFailed: 'İşlem başarısız',
   PreparedBy: 'Hazırlayan', AppliedRowLabel: 'Uygulandı', ProductSearch: 'Ürünlerimizde ad veya koda göre ara', ProductsNoMatch: 'Aramayla eşleşen ürün yok.',
-  ProductsMore: '{0} ürün daha — aramayı daraltın', SectionCountries: 'Ülkeler ve fiyat', ErrNameRequired: 'Ad zorunlu.', ErrCompanyRequired: 'Firma zorunlu.'
+  ProductsMore: '{0} ürün daha — aramayı daraltın', HistMovedFrom: '{0} kaydından taşındı', SectionCountries: 'Ülkeler ve fiyat', ErrNameRequired: 'Ad zorunlu.', ErrCompanyRequired: 'Firma zorunlu.'
 };
 require(dir + '/competitor-pages.js');
 

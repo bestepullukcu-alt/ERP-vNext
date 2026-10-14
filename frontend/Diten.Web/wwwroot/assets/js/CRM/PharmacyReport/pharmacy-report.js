@@ -64,7 +64,7 @@
         prefill: null, body: null, version: 0, reportId: null, status: null, step: 'general', mode: 'draft',
         editing: false, dirty: false, savedAt: null, serverMissing: null, tried: false,
         gskus: [], gskuNames: {}, gskuProducts: {}, gskuError: null, gskuResults: [], contactNames: {}, contactResults: [],
-        proposalOpen: false, proposalErrors: {}, fixReason: '', photoUrl: null, busy: false
+        proposalOpen: false, proposalErrors: {}, fixReason: '', photoUrl: null, busy: false, target: null, reimbursement: []
     };
 
     const options = set => C.optionsOf(state.prefill, set);
@@ -91,7 +91,26 @@
             state.mode = C.modeOf(d) === 'resubmit' ? 'sent' : 'draft';
             if (state.body.pharmacy.shelf.photoEvidenceId) { state.photoUrl = base + '/' + encodeURIComponent(planId) + '/shelf-photo'; }
             render();
-            return loadGskus();
+            return Promise.all([loadGskus(), loadTarget(), loadReimbursement()]);
+        });
+    }
+
+    // W4-FIX-c (G-7) — the pharmacy's name (+ city) for the header (the planned visit's targetDisplayName via the proxy)
+    // W4-FIX-c (G-6) — the competitor card's reimbursement status is an MDM code: its BRD label (not in the pre-fill)
+    function loadReimbursement() {
+        return send('GET', '/reference-data/mdm-reimbursement-status/values').then(r => {
+            const d = data(r);
+            state.reimbursement = d ? C.referenceOptions(d) : [];
+            if (state.reimbursement.length && state.step === 'market') { render(); }
+        });
+    }
+    const reimbLabel = code => { const o = state.reimbursement.find(x => x.code === code); return o ? C.optionLabel(o, lang) : ''; };
+    const price = (v, cur) => { try { return new Intl.NumberFormat(F.dateCulture(), { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(v)) + (cur ? ' ' + cur : ''); } catch (e) { return String(v) + (cur ? ' ' + cur : ''); } };
+
+    function loadTarget() {
+        return send('GET', '/' + encodeURIComponent(planId) + '/target').then(r => {
+            const d = data(r);
+            if (d && (d.name || d.city)) { state.target = { name: d.name || null, city: d.city || null }; renderHead(); }
         });
     }
 
@@ -154,8 +173,12 @@
 
     function renderHead() {
         const p = state.prefill;
-        // the visit day ("13 Eki · Pazartesi"); the account name is not in the pre-fill (see the report's open items)
-        setText('ph-sub', p.startedAt ? F.dayMonth(p.startedAt) + ' · ' + F.weekdayLong(p.startedAt) : '');
+        // mockup E6: "Hayat Eczanesi · <city> · 8 Eki Perşembe" — the pharmacy and its city (W4-FIX-c G-7), then the visit day
+        const sub = el('ph-sub');
+        if (sub) {
+            const day = p.startedAt ? F.dayMonth(p.startedAt) + ' ' + F.weekdayLong(p.startedAt) : '';
+            sub.innerHTML = C.headerParts(state.target, day).map((x, i) => (i === 0 && state.target && x === state.target.name ? F.bidi(x) : esc(x))).join(' · ');
+        }
         const miss = missingNow().length;
         const chip = el('ph-chip-valid');
         chip.className = 'ph-chip ' + (miss ? 'ph-tone-danger' : 'ph-tone-success');
@@ -257,8 +280,9 @@
         const item = C.competitorOptions(state.prefill).find(x => x.id === c.competitorProductId) || null;
         const detail = item ? [
             (item.activeIngredients || []).join(', '), [item.formCode, item.strength].filter(Boolean).join(' '),
-            item.country && item.country.boxPrice != null ? F.number(item.country.boxPrice, 2) + ' ' + (item.country.currencyCode || '') : '',
-            item.country && item.country.reimbursementStatusCode ? item.country.reimbursementStatusCode : ''
+            item.country && item.country.boxPrice != null ? price(item.country.boxPrice, item.country.currencyCode) : '',
+            // W4-FIX-c (G-6) — the reimbursement LABEL (never the code); unknown label → nothing
+            item.country && item.country.reimbursementStatusCode ? reimbLabel(item.country.reimbursementStatusCode) : ''
         ].filter(Boolean).join(' · ') : '';
         const adv = options(C.SETS.advantage).map(o => {
             const plus = c.advantageCodes.indexOf(o.code) > -1;
@@ -301,7 +325,9 @@
                 + (writable() ? ' <button type="button" class="ph-chip-x" data-act="contact-rm" data-id="' + esc(id) + '" aria-label="' + esc(L.RemoveRow) + '"><i class="bx bx-x"></i></button>' : '') + '</span>').join('')
             + (rec.linkedContactIds.length ? '' : '<span class="ph-sub">' + esc(L.NoLinked) + '</span>') + '</div>'
             + (writable() && perms.contacts ? '<div class="ph-picker"><input type="search" class="ph-input" id="ph-contact-q" data-act="contact-q" placeholder="' + esc(L.DoctorSearch) + '" aria-label="' + esc(L.DoctorSearch) + '" autocomplete="off" /><div class="ph-results">'
-                + state.contactResults.map(c => '<button type="button" class="ph-result" data-act="contact-add" data-id="' + esc(c.id) + '" data-name="' + esc(c.name) + '"><i class="bx bx-plus"></i> ' + F.bidi(c.name || short(c.id)) + '</button>').join('') + '</div></div>' : '')
+                // W4-FIX-c (G-10) — a same-named doctor is told apart by the specialty label, the institution and the city
+                + state.contactResults.map(c => { const more = C.contactDetail(c); return '<button type="button" class="ph-result" data-act="contact-add" data-id="' + esc(c.id) + '" data-name="' + esc(c.name) + '"><i class="bx bx-plus"></i> <span class="ph-col"><span>' + F.bidi(c.name || short(c.id)) + '</span>'
+                    + (more ? '<span class="ph-result-sub">' + F.bidi(more) + '</span>' : '') + '</span></button>'; }).join('') + '</div></div>' : '')
             + '<div class="ph-h">' + esc(L.TrainingTitle) + '</div>'
             + '<label class="ph-check"><input type="checkbox" data-act="trained"' + (tr.given ? ' checked' : '') + dis() + '> ' + esc(L.TrainingGiven) + '</label>'
             + tr.requests.map((r, i) => '<div class="ph-line"><select class="ph-input ph-grow" data-act="req-type" data-idx="' + i + '" aria-label="' + esc(L.RequestType) + '"' + dis() + '><option value="">' + esc(L.RequestType) + '</option>'

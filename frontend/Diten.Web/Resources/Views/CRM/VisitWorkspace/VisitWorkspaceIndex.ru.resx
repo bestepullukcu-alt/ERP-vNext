@@ -289,4 +289,13 @@
   <data name="E3StartValue" xml:space="preserve"><value>при запуске · время сервера</value></data>
   <data name="E3Cancel" xml:space="preserve"><value>Отмена</value></data>
   <data name="E3Begin" xml:space="preserve"><value>Начать презентацию</value></data>
+  <data name="UnpTargetType" xml:space="preserve"><value>Визит к</value></data>
+  <data name="UnpTargetDoctor" xml:space="preserve"><value>Врач</value></data>
+  <data name="UnpTargetPharmacy" xml:space="preserve"><value>Аптека</value></data>
+  <data name="UnpDoctorLabel" xml:space="preserve"><value>Врач</value></data>
+  <data name="UnpDoctorSearch" xml:space="preserve"><value>Поиск врача по имени (минимум 2 буквы)</value></data>
+  <data name="UnpPharmacyLabel" xml:space="preserve"><value>Аптека</value></data>
+  <data name="UnpPharmacySearch" xml:space="preserve"><value>Поиск аптеки по названию (минимум 2 буквы)</value></data>
+  <data name="Err_planned_visit_duplicate_same_day_type" xml:space="preserve"><value>У этой цели сегодня уже есть визит такого типа.</value></data>
+  <data name="Err_planned_visit_time_window_invalid" xml:space="preserve"><value>Время визита недопустимо; выберите другое время начала.</value></data>
 </root>

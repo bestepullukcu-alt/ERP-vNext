@@ -234,6 +234,7 @@
   <data name="MovedCountries" xml:space="preserve"><value>迁移的国家</value></data>
   <data name="MergeEffectShort" xml:space="preserve"><value>建议名称加入目标的其他名称；报告关联到目标。</value></data>
   <data name="RejectReason" xml:space="preserve"><value>理由</value></data>
+  <data name="HistMovedFrom" xml:space="preserve"><value>从 {0} 移入</value></data>
   <data name="AppliedRowLabel" xml:space="preserve"><value>已执行</value></data>
   <data name="AppliedLine" xml:space="preserve"><value>已执行 · {0} · 批准人 {1}，{2}</value></data>
   <data name="WithdrawButton" xml:space="preserve"><value>撤回</value></data>

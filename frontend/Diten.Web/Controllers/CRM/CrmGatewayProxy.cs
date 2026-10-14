@@ -170,6 +170,46 @@ public abstract class CrmGatewayProxy : Controller
         }
     }
 
+    /// <summary>W4-FIX-c — a MOD-0048 set's published values through the shared CrmReferenceSetReader (the caller owns the
+    /// answer; null = no tenant / Gateway unreachable).</summary>
+    protected Task<HttpResponseMessage?> ReadReferenceSetAsync(string setCode, CancellationToken ct)
+        => new Diten.Web.Services.CrmReferenceSetReader(_httpClient, _gatewayUrl, _logger)
+            .ReadAsync(setCode, Diten.Web.Services.Auth.AuthTokenCookies.GetAccessToken(Request), TenantId(), ct);
+
+    /// <summary>
+    /// W4-FIX-c — the code → label map of a MOD-0048 set in the UI language (<c>attributes.label_&lt;lang&gt;</c>, else the
+    /// <c>label</c>), read through the shared <see cref="Diten.Web.Services.CrmReferenceSetReader"/> so every tenant role gets
+    /// it. A set that cannot be read is an empty map: the caller then shows no label (never the raw code as if it were one).
+    /// </summary>
+    protected async Task<IReadOnlyDictionary<string, string>> ReadReferenceLabelsAsync(string setCode, CancellationToken ct)
+    {
+        var labels = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        try
+        {
+            using var response = await ReadReferenceSetAsync(setCode, ct);
+            if (response is null || !response.IsSuccessStatusCode) return labels;
+            using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
+            var root = doc.RootElement;
+            var data = root.ValueKind == JsonValueKind.Object && root.TryGetProperty("data", out var d) ? d : root;
+            if (data.ValueKind != JsonValueKind.Object || !data.TryGetProperty("items", out var items) || items.ValueKind != JsonValueKind.Array) return labels;
+            var language = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName.ToLowerInvariant();
+            foreach (var item in items.EnumerateArray())
+            {
+                var code = Str(item, "code");
+                if (string.IsNullOrWhiteSpace(code)) continue;
+                var own = language != "en" && item.TryGetProperty("attributes", out var attributes) ? Str(attributes, "label_" + language) : null;
+                var text = !string.IsNullOrWhiteSpace(own) ? own : Str(item, "label");
+                if (!string.IsNullOrWhiteSpace(text)) labels[code] = text!;
+            }
+        }
+        catch (Exception ex) when (ex is JsonException or HttpRequestException or InvalidOperationException)
+        {
+            _logger.LogWarning(ex, "Reference set '{SetCode}' labels could not be read.", setCode);
+        }
+
+        return labels;
+    }
+
     private string? TenantId() => User.Claims.FirstOrDefault(x =>
         x.Type == "tenantId" || x.Type == "tenant_id" || x.Type.EndsWith("/tenantId", StringComparison.OrdinalIgnoreCase))?.Value;
 
