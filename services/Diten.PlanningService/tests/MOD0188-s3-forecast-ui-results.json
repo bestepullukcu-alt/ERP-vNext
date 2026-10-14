@@ -81,7 +81,11 @@
     "pid": 31044,
     "directoryAbsent": true
   },
-  "commitPushPr": false,
+  "commitPushPr": {
+    "committed": true,
+    "featurePushAuthorizedAfterNoNewRedGate": true,
+    "pullRequestCreated": false
+  },
   "roleFilesRead": [
     "orchestrator",
     "backend-architect",
@@ -93,7 +97,7 @@
   "openGates": [
     "Both audit screen visibility and live S1/S3 login/browser evidence remain open",
     "Live series authority adapter and cross-service integration acceptance remain open",
-    "CT independent verification and full WP acceptance pending"
+    "Full WP acceptance and AC closure remain open; CT state is VERIFIED"
   ],
   "workPackage": "WP-MOD0188-S3-FORECAST-COMMAND",
   "unrelatedBaselineFileTouched": false,
@@ -118,7 +122,7 @@
     "normalSurface": "API-backed single SKU x Warehouse; no fixture fallback, auto-winner or ranking",
     "demandV2": "DRAFT"
   },
-  "laneStatus": "partial self-verification; CT acceptance pending",
+  "laneStatus": "CT VERIFIED; post-merge validation complete; live acceptance pending",
   "gitVerification": {
     "diffCheckExitCode": 0,
     "branch": "feature/sce/mod-0188-demand-planning",
@@ -160,5 +164,145 @@
     "mongoRestarted": false,
     "mainPassed": 18,
     "mainFailed": 2
+  },
+  "shipment": {
+    "authorization": "Direct human approval: stage and commit exactly 48 files excluding evidence-baseline; push only the MOD-0188 branch after main synchronization and no-new-red verification; no PR",
+    "sourceCommit": "95e21fe00e469e67a6376f75e036d825e4ab64df",
+    "mainMergeCommit": "99e66f2098c6fe1edcef8d107004a79ed51e84c1",
+    "mainSha": "92f60aacdd9bb5e8ad0f99504bb516adde8697d7",
+    "mainCommitsMissing": 0,
+    "mergeConflicts": 0,
+    "scopedFileCount": 48,
+    "scopedFiles": [
+      "execution/domains/supply-chain-execution/module-packs/MOD-0188-demand-planning.md",
+      "execution/domains/supply-chain-execution/work-packs/CT-QUEUE.tsv",
+      "frontend/Diten.Web.Tests/Controllers/DemandPlanningForecastControllerTests.cs",
+      "frontend/Diten.Web/Controllers/DemandPlanningController.Forecast.cs",
+      "frontend/Diten.Web/Controllers/DemandPlanningController.cs",
+      "frontend/Diten.Web/Resources/Views/SupplyChain/DemandPlanning/DemandPlanningIndex.ar.resx",
+      "frontend/Diten.Web/Resources/Views/SupplyChain/DemandPlanning/DemandPlanningIndex.en.resx",
+      "frontend/Diten.Web/Resources/Views/SupplyChain/DemandPlanning/DemandPlanningIndex.es.resx",
+      "frontend/Diten.Web/Resources/Views/SupplyChain/DemandPlanning/DemandPlanningIndex.fr.resx",
+      "frontend/Diten.Web/Resources/Views/SupplyChain/DemandPlanning/DemandPlanningIndex.ru.resx",
+      "frontend/Diten.Web/Resources/Views/SupplyChain/DemandPlanning/DemandPlanningIndex.tr.resx",
+      "frontend/Diten.Web/Resources/Views/SupplyChain/DemandPlanning/DemandPlanningIndex.zh.resx",
+      "frontend/Diten.Web/Views/SupplyChain/DemandPlanning/Index.cshtml",
+      "frontend/Diten.Web/Views/SupplyChain/DemandPlanning/_Forecast.cshtml",
+      "frontend/Diten.Web/Views/SupplyChain/DemandPlanning/_ForecastL10n.cshtml",
+      "frontend/Diten.Web/tests/demand-planning-forecast.test.js",
+      "frontend/Diten.Web/tests/demand-planning-workspace.test.js",
+      "frontend/Diten.Web/wwwroot/assets/js/SupplyChain/demand-planning-forecast.js",
+      "frontend/Diten.Web/wwwroot/assets/js/SupplyChain/demand-planning-forecast.l10n.js",
+      "services/Diten.PlanningService/contracts/drafts/demand-v2.openapi.yaml",
+      "services/Diten.PlanningService/src/Diten.PlanningService.Api/Features/DemandPlanning/DemandPlanningServiceCollectionExtensions.cs",
+      "services/Diten.PlanningService/src/Diten.PlanningService.Api/Features/DemandPlanning/ForecastRunsController.cs",
+      "services/Diten.PlanningService/src/Diten.PlanningService.Api/ModuleRegistration/DemandPlanningManifestProvider.cs",
+      "services/Diten.PlanningService/src/Diten.PlanningService.Application/Features/DemandPlanning/ApprovedForecastPolicy.cs",
+      "services/Diten.PlanningService/src/Diten.PlanningService.Application/Features/DemandPlanning/ForecastRunContracts.cs",
+      "services/Diten.PlanningService/src/Diten.PlanningService.Application/Features/DemandPlanning/ForecastRuns/Commands/CreateForecastRunCommand.cs",
+      "services/Diten.PlanningService/src/Diten.PlanningService.Application/Features/DemandPlanning/ForecastRuns/ForecastWorkflow.cs",
+      "services/Diten.PlanningService/src/Diten.PlanningService.Application/Features/DemandPlanning/ForecastRuns/Handlers/CommandHandlers/CreateForecastRunHandler.cs",
+      "services/Diten.PlanningService/src/Diten.PlanningService.Application/Features/DemandPlanning/ForecastRuns/Handlers/QueryHandlers/EvaluateForecastHandler.cs",
+      "services/Diten.PlanningService/src/Diten.PlanningService.Application/Features/DemandPlanning/ForecastRuns/Queries/EvaluateForecastQuery.cs",
+      "services/Diten.PlanningService/src/Diten.PlanningService.Application/Features/DemandPlanning/ForecastRuns/Validators/CreateForecastRunCommandValidator.cs",
+      "services/Diten.PlanningService/src/Diten.PlanningService.Application/Features/DemandPlanning/ForecastRuns/Validators/EvaluateForecastQueryValidator.cs",
+      "services/Diten.PlanningService/src/Diten.PlanningService.Application/Features/DemandPlanning/HistoryImports/AcceptedHistoryForecastDraftBuilder.cs",
+      "services/Diten.PlanningService/src/Diten.PlanningService.Application/Features/DemandPlanning/HistoryImports/AcceptedHistoryForecastEvaluation.cs",
+      "services/Diten.PlanningService/src/Diten.PlanningService.Application/Features/DemandPlanning/ManualDrafts/ManualDraftAuthority.cs",
+      "services/Diten.PlanningService/src/Diten.PlanningService.Domain/Features/DemandPlanning/ForecastRun.cs",
+      "services/Diten.PlanningService/src/Diten.PlanningService.Persistence/Features/DemandPlanning/AcceptedWeeklyHistoryMongoReader.cs",
+      "services/Diten.PlanningService/src/Diten.PlanningService.Persistence/Features/DemandPlanning/DemandPlanningMongoContext.cs",
+      "services/Diten.PlanningService/src/Diten.PlanningService.Persistence/Features/DemandPlanning/ManualDraftMongoStore.Forecast.cs",
+      "services/Diten.PlanningService/src/Diten.PlanningService.Persistence/Features/DemandPlanning/ManualDraftMongoStore.cs",
+      "services/Diten.PlanningService/tests/Diten.PlanningService.Cycles.Tests/AcceptedHistoryForecastEvaluationTests.cs",
+      "services/Diten.PlanningService/tests/Diten.PlanningService.Cycles.Tests/ForecastRunHttpMongoIntegrationTests.cs",
+      "services/Diten.PlanningService/tests/Diten.PlanningService.Cycles.Tests/ForecastRunMongoIntegrationTests.cs",
+      "services/Diten.PlanningService/tests/Diten.PlanningService.Cycles.Tests/IndependentPublishedChecksumMongoTests.cs",
+      "services/Diten.PlanningService/tests/MOD0188-s3-contract-verify-evidence.md",
+      "services/Diten.PlanningService/tests/MOD0188-s3-forecast-ui-results.json",
+      "tests/architecture/TenantArchitecture.ArchitectureTests/AuditTrailStandardTests.cs",
+      "tests/architecture/audit-ledger/Diten.PlanningService.md"
+    ],
+    "excludedBaseline": "docs/records/analysis/mod0188-acceptance/2026-10-13-evidence-baseline.md",
+    "planningRealMongo": {
+      "passed": 349,
+      "failed": 0,
+      "skipped": 0,
+      "total": 349
+    },
+    "frontend": {
+      "passed": 23,
+      "failed": 0,
+      "skipped": 0
+    },
+    "webRelated": {
+      "passed": 16,
+      "failed": 0,
+      "skipped": 0,
+      "total": 16
+    },
+    "audit": {
+      "current": {
+        "passed": 18,
+        "failed": 2,
+        "skipped": 0,
+        "total": 20
+      },
+      "main": {
+        "passed": 18,
+        "failed": 2,
+        "skipped": 0,
+        "total": 20
+      },
+      "identicalFailureMessages": true,
+      "newFailures": 0,
+      "failureMessageSha256": {
+        "TenantArchitecture.ArchitectureTests.AuditTrailStandardTests.EveryWriteCommand_IsAudited_OrADeclaredException_OrKnownDebt": "ec8e59f2bef153fedcfaec2538ba5422af8ef45b99e179635afb1de8fa816a3a",
+        "TenantArchitecture.ArchitectureTests.AuditTrailStandardTests.EveryServiceWithWriteCommands_HasALedger_AndCommandNamesAreUnambiguous": "6c6cc2a62cab8f7dddc2fec0d52db25e4de97b865600828ac839bb517f5c1b30"
+      }
+    },
+    "gateway": {
+      "current": {
+        "passed": 171,
+        "failed": 1,
+        "skipped": 0,
+        "total": 172
+      },
+      "main": {
+        "passed": 171,
+        "failed": 1,
+        "skipped": 0,
+        "total": 172
+      },
+      "identicalFailureMessages": true,
+      "newFailures": 0,
+      "failureMessageSha256": {
+        "Diten.ApiGateway.Tests.OcelotConfigurationTests.EveryRoute_DownstreamPortIsInKnownServiceSet": "6031f8bdc982c4735acbc322c3c6959cdf0385fab8adfe52879147c37d4f3e1a"
+      }
+    },
+    "builds": {
+      "PlanningServiceApi": "passed; 0 warnings; 0 errors",
+      "GatewayApi": "passed as part of Gateway tests",
+      "Web": "passed as part of Web tests"
+    },
+    "mongoCleanup": {
+      "gracefulShutdown": true,
+      "pid": 14040,
+      "pidAbsent": true,
+      "portClosed": true,
+      "verifiedUtc": "2026-10-14T17:00:01.1546451Z",
+      "port": 31994,
+      "directoryAbsent": true
+    },
+    "noNewRedGatePassed": true,
+    "pushTarget": "origin feature/sce/mod-0188-demand-planning",
+    "pullRequestCreated": false,
+    "acClosed": false,
+    "ctState": "VERIFIED",
+    "acceptance": "Live browser/authority/integration acceptance remains open",
+    "excludedBaselineSha256": "ad4d446ffa0371427cd4eab486436a406668b4d831146d18cf74fc4d69eacc6a",
+    "excludedBaselineUnchanged": true,
+    "temporaryValidationInputsRemoved": true,
+    "ownedGatewayBuildOutputRemoved": true
   }
 }
