@@ -921,3 +921,24 @@ KORU/YAPMA: kilitli sabitleri (sürüm, parmak izi) değiştirme; kodda doğrula
 DOĞRULA: CRLF guard sabotajı (.bak + touch: dosyayı CRLF yap → kırmızı); Platform + MDM ilgili test takımları (-o repo içi); yerel ölçüm çıktıları rapora.
 Commit: "chore(platform,mdm): WP-VW-W4-INFRA — locked reference catalogs pinned to LF, dev verified GSKU/market provisioning config, dev credential script, live operator guide" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22): kullanıcıya betik + fleet restart talimatı, canlı için açık kararlar. K13.
 ```
+
+## §37 CT kabul — W4-INFRA E2 ACCEPTED (2026-10-14)
+Test dalına alındı: `fb4042c3b` (ajan `53e51e416`). Cherry-pick çakışmasız.
+
+**CT kontrolü:**
+- **Sapma kabul edildi:** yerel `Provider:ReferenceTenantId` = ayrılmış `0b7d0048-0290-4000-8000-000000000001` (97c5 değil). Kod ve MOD-0048-FU01, referans kiracının tüketici kiracıyla aynı olmasını reddediyor; istemdeki "ikisi de 97c5" geçersizdi. Mevcut BRD okumaları `CatalogLoad:TenantId` (97c5) üzerinden yapıldığı için etkilenmez.
+- `.gitattributes` yalnız iki kilitli kataloğu `text eol=lf` yapıyor; diğer dosyalar etkilenmedi.
+- Depoda gizli değer yok. Betik sırrı üretip iki servisin user-secrets'ına yazıyor; ekrana basmıyor, geri okumuyor. MDM API'ye `UserSecretsId` eklendi.
+- **Testler** (worktree, `-o ./.ct-out/plat`):
+  - yeni `VerifiedReferenceDevProvisioningConfigTests` 4/4;
+  - verified GSKU / market süzgeci 40/4; 4 kırmızı Mongo testi (`DITEN_PLATFORM_TEST_MONGO_URI` tanımlı değil, ortam kaynaklı).
+- **CT sabotajı (ajanın dokunmadığı kural):** `ConsumerTenantId` = referans kiracı yapıldı → `Development_config_makes_gsku_provisioning_enumeration_and_market_eligible` kırmızı. `.bak` ile geri alındı + touch → 4/4.
+
+**Açık / izlenecek:**
+- **Pazar seçici listesi boş kalabilir:** Rakip ürün sayfası pazar listesini Web'de `consumable-sets/market` üzerinden okuyor (önce çağıran kiracı 97c5, yoksa `CatalogLoad:TenantId` 97c5). Pazar kataloğu ayrılmış referans kiracıya yüklendiği için bu liste boş gelebilir; MDM doğrulaması verified resolver üzerinden çalışmaya devam eder. E4'te ölçülecek; gerekirse FIX-a'ya ya da ayrı bir işe girer.
+- **Canlı kararlar (ürün sahibinde):**
+  - K-INFRA-1: üretim yolu yok.
+  - K-INFRA-2: canlı referans kiracı be823006 olamaz; ayrılmış bir GUID gerekir.
+  - K-INFRA-3: canlı kimlik bilgisinin sahibi ve döndürülmesi.
+  - Operatör belgesi: `docs/guides/operations/verified-reference-data-provisioning.md`.
+- **Geliştirme ortamında açılış riski:** GSKU provisioning hata verirse Platform açılmaz (tasarım gereği). Kaçış: Platform user-secrets'ında `BusinessReferenceData:VerifiedGskuOperationalProvisioning:Enabled=false`.
