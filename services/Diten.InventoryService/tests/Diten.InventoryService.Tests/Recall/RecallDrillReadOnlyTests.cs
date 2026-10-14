@@ -181,11 +181,14 @@ public sealed class RecallDrillReadOnlyTests : IClassFixture<RecallDrillApiFacto
         var w = await DrillWorld.CreateAsync(_factory);
         await w.FinishedGoodAsync();
 
-        // explicit exceptions (pack §8.10 + WP-0177-R5 item 7): the drill collections, the Drill snapshot, the counter, the audit rows
+        // explicit exceptions (pack §8.10 + WP-0177-R5 item 7): the drill collections, the Drill snapshot, the counter, the audit rows —
+        // and (CT decision 2026-10-14, BL-501) the shared central-audit outbox: an AUDIT write, one row per drill command, named here
+        // and nothing else added.
         string[] exceptions =
         [
             RecallCollections.DrillPlans, RecallCollections.DrillRuns, RecallCollections.DrillEvents, RecallCollections.TraceSnapshots,
-            RecallCollections.Counters, Diten.InventoryService.Persistence.InventoryCollections.Audit
+            RecallCollections.Counters, Diten.InventoryService.Persistence.InventoryCollections.Audit,
+            Diten.BuildingBlocks.CentralAudit.CentralAuditOutboxRecord.CollectionName
         ];
         var before = await CountsAsync(w);
         var snapshotsBefore = w.Rows(RecallCollections.TraceSnapshots).Count;

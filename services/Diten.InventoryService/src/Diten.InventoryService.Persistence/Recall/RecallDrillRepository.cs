@@ -1,3 +1,4 @@
+using Diten.BuildingBlocks.CentralAudit;
 using System.Globalization;
 using Diten.InventoryService.Application.Common;
 using Diten.InventoryService.Domain.Entities;
@@ -122,7 +123,7 @@ public sealed class RecallDrillRepository : IRecallDrillRepository
         try
         {
             return await session.WithTransactionAsync(
-                (s, ct) =>
+                async (s, ct) =>
                 {
                     if (++attempt > 1)
                     {
@@ -130,7 +131,9 @@ public sealed class RecallDrillRepository : IRecallDrillRepository
                         _logger.LogInformation("Recall drill transaction re-run after a transient conflict (attempt {Attempt}).", attempt);
                     }
 
-                    return work(new WriteSession(this, s), ct);
+                    await CentralAuditTransaction.EnlistAsync(s, ct: ct); // BL-501: the marked command's central-audit event commits with this transaction or not at all.
+
+                    return await work(new WriteSession(this, s), ct);
                 },
                 new TransactionOptions(ReadConcern.Snapshot, writeConcern: WriteConcern.WMajority),
                 cancellationToken);
