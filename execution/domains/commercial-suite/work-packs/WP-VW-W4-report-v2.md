@@ -975,3 +975,31 @@ Test dalına alındı: `b5ecaab09` (ajan `1ff39e2d3`). Cherry-pick çakışması
 - **F-7 sunucu tarafı:** MDM karar DTO'sunda `CreatedAt` yok; istemci ilk gönderim zamanına düşüyor. Kalıcı çözüm DTO'ya `CreatedAt` eklemek (küçük MDM işi).
 - **WEB-a `visit-report.js`:** geri ödeme etiketi hâlâ `displayName` okuyor; İngilizcede etiket yerine kod görünür. F-3'ün eşi, küçük iş.
 - **Pazar listesi:** yerelde `market` consumable seti 404 veriyor. W4-INFRA pazar kataloğunu ayrılmış referans kiracıya yükledi; consumable okuma 97c5 üzerinden yapıldığı için boş kalabilir. INFRA kullanıcı adımlarından sonra E4'te ölçülecek.
+
+## W4 yerel E4 — 2. tur bulguları (CT, 2026-10-14, INFRA + FIX-a + FIX-b sonrası)
+**Doğrulanan:**
+- Platform `/health/ready` Healthy (BL-404 yerelde kapandı).
+- Ayrılmış referans kiracıda `uom` 5, `pack-applicability` 1, `market` 249 yayında.
+- GSKU create-options 200. GSKU oluşturuldu: KONSET `GS-000000000179`, KEPLERON `…180`, KOTVA `…181`.
+- Rakip `E4-TEST Konsetra` TR satırı (186,30 TRY, geri ödemede) kaydedildi; daha önce 503 veriyordu.
+- FIX-a canlıda: Tab sonrası odak korunuyor, geri ödeme kodları dolu, önizleme "186,30 TRY".
+- Eczane ziyareti (plan dışı, `590c97f0`): başlat (istisna ile konum bilgi amaçlı) → bitir → "Rapor gir" eczane sayfasına yönlendirdi (I1) → 3 GSKU stok + satış + tavsiye + eğitim → gönderildi; veri doğru saklandı.
+
+**Yeni bulgular:**
+| # | Bulgu | Yer |
+|---|---|---|
+| G-1 | MDM GSKU oluşturma formunda "Global Ürün" listesi yalnız ilk 20 ürün (create-options varsayılan pageSize 20, arama / sayfalama yok) | Web `MasterDataManagement/Gskus/index.js` + MDM create-options |
+| G-2 | Rakip sayfası pazar listesi 404: Web `consumable-sets/market` çağıran 97c5 → `CatalogLoad:TenantId` (97c5) üzerinden okuyor; doğrulanmış pazar ayrılmış referans kiracıda. Ülke yalnız elle ISO koduyla giriliyor (MDM doğrulaması çalışıyor) | Web `CompetitorProductsController.ReferenceValues` / Platform okuma yolu |
+| G-3 | Çalışma alanı "Plan dışı ziyaret" yalnız doktor hedefi; eczane hedefi yok (sunucu `pharmacy` hedefini destekliyor) | `visit-workspace.js` unplanned |
+| G-4 | Plan dışı ziyarete saat girilirse gövde yalnız `plannedStartTime` gönderir → CRM 400 `planned_visit_time_window_invalid` (başlangıç + bitiş birlikte) | `workspace-core.js unplannedBody` |
+| G-5 (not) | `account` hedefli ziyaret (eczane hesabı olsa da) hekim sihirbazıyla açılır; tür yalnız `TargetType=pharmacy`'den | `VisitReportV2Rules.KindOf` |
+| G-6 | Eczane raporunda TÜM seçenek etiketleri İngilizce: çekirdek `labels[lang]` okuyor, ön doldurma `labels.label_tr` veriyor (F-3 sınıfı) | `report-pharmacy-core.js:289-292` |
+| G-7 | Eczane raporu başlığında eczane adı yok (yalnız tarih) | `pharmacy-report.js` başlık |
+| G-8 | Eczane ürün araması yalnız tam GSKU koduyla çalışıyor; ürün adı ("KONSET") ya da kodun bir kısmı boş döner (MDM `GetGskus` araması yalnız GSKU kodu) | MDM `GetGskusHandler` / Web `lookups/gskus` |
+| G-9 | Eczane rakip listesi planın İLK ÜRÜNÜNE bağlı; ürünsüz (plan dışı) eczane ziyaretinde stok GSKU'ları olsa da rakip listesi oluşmuyor | CRM `VisitReportV2Handlers` pharmacyListed / `PharmacyProposalProduct` |
+| G-10 (not) | Eczane "bağlı hekim" aramasında aynı adlı hekimler ayırt edilemiyor (uzmanlık / kurum yok) | `pharmacy-report.js` contact sonuçları |
+| G-11 (not) | Rakip değişiklik geçmişinde ham kod: "186.3 TRY · reimbursed" | `competitor-pages.js` geçmiş satırı |
+
+Önceki açıklar (FIX-a §37): MDM karar DTO `CreatedAt` yok; `visit-report.js` geri ödeme etiketi `displayName` okuyor.
+
+**Temizlik listesi (yerel test verisi):** `2db09638` (account hedefli, bitmiş, raporsuz eczane ziyareti), `E4-TEST Konsetra` / `Konsepro`, Bülent Yardımcı raporu `d68d299f` + 3 potansiyel (`NoPatientsInIndications=true`), eczane raporu `590c97f0`, KONSET eşik satırı (10/30).
