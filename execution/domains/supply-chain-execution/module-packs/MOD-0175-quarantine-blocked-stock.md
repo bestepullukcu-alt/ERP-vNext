@@ -1597,6 +1597,14 @@ now also counts 33 MVP-1 write commands: Inventory 27, Auth 3, Platform 3), **FU
 - **Probe.** Own Web 5104 (real Kestrel) → gateway copy 5105 → fake downstream 5106, no signed token: BEFORE the `..%5C` request reached
   `/api/locations`; AFTER 400 `backslash` and the downstream saw only the legitimate request.
 
+### FIX-QUI1 — Bloke Stok Web düzeltmeleri (WP-MVP1-FIX-QUI1, 2026-10-14, agent result, pending CT) — dal `fix/mvp1-qui1` (`1f904aa83`), commit'ler `6ff3c638b` (fix) + `4a08ad452` (test), yalnız yerel. Kanıt `docs/records/audits/2026-10/mvp1-fix-qui1-evidence-2026-10-14.md`.
+
+- **(1) Blokeyi kaldır penceresi.** Gövde `subtext` yerine pencerenin işaretleme kapısı `subtextHtml` ile veriliyor (sabit şablon, konu `textContent` ile); ham `<div class=…>` görünmüyor. Aynı ailede 6 çift kaçış (`subtext: esc(…)`: İncelemeyi tamamla, Yeniden uygula, Geri çek, İncelemeye al, Yeniden test, Şablon) düzeltildi. Quarantine dışı aynı hata: `Traceability/Lots/status.js:86` → FU-QUI1-LOTSTATUS.
+- **(2) Stoğu bloke et.** Satır seçimi yazılan miktarı değiştirmiyor (boşsa satır miktarı öneri); "Kullanılabilir: 200 EA" ipucu; satır miktarını aşan miktar alan hatasıyla engelleniyor, istek gitmiyor.
+- **(3) Liste.** `list/blocked` varsayılan `status=Open`; Durum filtresi Açık / Kapandı / Numune saklandı / Tümü; Open dışı kayıtta durum etiketi, işlem yok; sekme rozeti yalnız açık kayıtlar. 6 yeni anahtar 7 dilde.
+- **Sonuç.** Web 2272 → **2280 / 2280**; build 0 hata, 0 yeni uyarı. Sabotaj s1–s4 kırmızı, özgün baytlar geri yazıldı, yeşil. Önizleme kendi portunda (5011 + sahte gateway 5112) HTTP ile doğrulandı; ekran görüntüsü alınamadı (kanıt §7).
+
+
 ## 20. Follow-up Items
 
 - **FU-0175-WF-SOD (MOD-0023):** store `StartedByUserId` and compare user ids in SoD; add an integration test that starts
