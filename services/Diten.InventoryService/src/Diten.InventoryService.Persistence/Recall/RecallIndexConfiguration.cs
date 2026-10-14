@@ -32,10 +32,16 @@ public static class RecallIndexConfiguration
     public const string ConsumptionKeyIndex = "ux_recall_consumption_key";
     public const string SegregationKeyIndex = "ux_recall_segregation_key";
 
+    /// <summary>R3: one request per (case, revision, node key) — the approval transaction cannot write a request twice.</summary>
+    public const string QuarantineRequestNodeIndex = "ux_recall_quarantine_request_node";
+
+    /// <summary>R3 (KR-H): one case per return — a CUSTOMER_RETURN transaction is linked once per company.</summary>
+    public const string ReturnLinkTransactionIndex = "ux_recall_return_link_transaction";
+
     public static readonly IReadOnlyList<string> UniqueIndexes =
     [
         SettingsCompanyIndex, CaseNumberIndex, CaseActiveRootIndex, CaseCreateKeyIndex, EventKeyIndex, ScopeNodeIndex, LotBlockIndex,
-        NotificationKeyIndex, ConsumptionKeyIndex, SegregationKeyIndex
+        NotificationKeyIndex, ConsumptionKeyIndex, SegregationKeyIndex, QuarantineRequestNodeIndex, ReturnLinkTransactionIndex
     ];
 
     private static BsonDocument IsString(string field) => new(field, new BsonDocument("$type", "string"));
@@ -111,6 +117,29 @@ public static class RecallIndexConfiguration
                 Builders<RecallTraceSnapshot>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.CaseId).Ascending(x => x.Purpose),
                 new CreateIndexOptions { Name = "ix_recall_snapshot_case" }),
             cancellationToken: ct);
+
+        // R3 (pack §8.4, §8.5, §8.6): the typed-lot match of the exit block (lot number + SKU of the ACTIVE blocks, tenant-wide), the requests of a case
+        // (+ the sweeper's Pending scan), and the return links (one per transaction)
+        await database.GetCollection<RecallLotBlock>(RecallCollections.LotBlocks).Indexes.CreateOneAsync(
+            new CreateIndexModel<RecallLotBlock>(blocks.Ascending(x => x.TenantId).Ascending(x => x.SkuId).Ascending(x => x.LotNumber),
+                new CreateIndexOptions<RecallLotBlock> { Name = "ix_recall_lot_block_typed", PartialFilterExpression = new BsonDocument(nameof(RecallLotBlock.Active), true) }),
+            cancellationToken: ct);
+
+        var requests = Builders<RecallQuarantineRequest>.IndexKeys;
+        await database.GetCollection<RecallQuarantineRequest>(RecallCollections.QuarantineRequests).Indexes.CreateManyAsync(
+        [
+            new(requests.Ascending(x => x.TenantId).Ascending(x => x.CaseId).Ascending(x => x.Revision).Ascending(x => x.NodeKey),
+                new CreateIndexOptions { Name = QuarantineRequestNodeIndex, Unique = true }),
+            new(requests.Ascending(x => x.Status).Ascending(x => x.LastAttemptAtUtc), new CreateIndexOptions { Name = "ix_recall_quarantine_request_pending" })
+        ], ct);
+
+        var links = Builders<RecallReturnLink>.IndexKeys;
+        await database.GetCollection<RecallReturnLink>(RecallCollections.ReturnLinks).Indexes.CreateManyAsync(
+        [
+            new(links.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.TransactionId),
+                new CreateIndexOptions { Name = ReturnLinkTransactionIndex, Unique = true }),
+            new(links.Ascending(x => x.TenantId).Ascending(x => x.CaseId), new CreateIndexOptions { Name = "ix_recall_return_link_case" })
+        ], ct);
 
         await database.GetCollection<RecallSegregationConfirmation>(RecallCollections.Segregations).Indexes.CreateManyAsync(
         [

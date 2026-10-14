@@ -34,3 +34,11 @@ public sealed record GetRecallCaseTimelineQuery(string CaseId, string? Page, str
 
 /// <summary>§4.13 getLotRecallStatus — tenant-wide (CT-R7).</summary>
 public sealed record GetLotRecallStatusQuery(string LotId) : IRequest<Response<RecallLotStatusDto>>;
+
+// ── R3 ──
+
+/// <summary>§4.38 getCaseStock — live in-scope stock lines with their quarantine requests (KR-B).</summary>
+public sealed record GetRecallCaseStockQuery(string CaseId) : IRequest<Response<IReadOnlyList<RecallStockLineDto>>>;
+
+/// <summary>§4.42a getCaseReturns — linked returns + candidates (KR-H).</summary>
+public sealed record GetRecallCaseReturnsQuery(string CaseId) : IRequest<Response<RecallReturnsDto>>;

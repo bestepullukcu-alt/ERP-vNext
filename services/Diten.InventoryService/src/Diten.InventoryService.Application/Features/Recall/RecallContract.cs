@@ -57,6 +57,25 @@ public static class RecallContract
 
     public const string SubjectTrace = "recall.trace";
 
+    // R3 (pack §8.12)
+    public const string AuditQuarantineRequested = "recall.quarantine.requested";
+    public const string AuditQuarantineFailed = "recall.quarantine.failed";
+    public const string AuditQuarantineRetried = "recall.quarantine.retried";
+    public const string AuditExitRefused = "recall.exit.refused";
+    public const string AuditReturnLinked = "recall.return.linked";
+    public const string AuditScopeRevised = "recall.scope.revised";
+
+    /// <summary>KR-B reason of a 0175 hold: "Geri çağırma RC-… · &lt;case reason&gt;" (0175 caps a reason at 1000).</summary>
+    public static string QuarantineReason(string caseNumber, string caseReason)
+    {
+        var text = $"Geri çağırma {caseNumber} · {caseReason}";
+        return text.Length <= 1000 ? text : text[..1000];
+    }
+
+    /// <summary>CT-R2: the 0175 key of a request — <c>recall:{caseId}:r{revision}:{nodeKey}</c>, "Yeniden dene" n adds <c>:a{n}</c>.</summary>
+    public static string QuarantineKey(Guid caseId, int revision, string nodeKey, int retryNumber)
+        => retryNumber == 0 ? $"recall:{caseId:D}:r{revision}:{nodeKey}" : $"recall:{caseId:D}:r{revision}:{nodeKey}:a{retryNumber}";
+
     public const string SubjectSettings = "recall.settings";
     public const string SubjectCase = "recall.case";
 

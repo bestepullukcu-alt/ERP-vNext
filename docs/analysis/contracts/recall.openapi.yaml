@@ -11,18 +11,20 @@ info:
     company from the W-0173-02 scope (X-Legal-Entity-Id validated against MDM); another company → 403 CROSS_LE_FORBIDDEN, another tenant →
     404 — except getLotRecallStatus, which answers for the lot in every company of the tenant (CT-R7). Success bodies are the schemas below
     (unwrapped); failures are the INVENTORY Error schema.
-  version: 1.1.0
+  version: 1.2.0
   x-status: FROZEN
   x-owner: MOD-0177
   x-owner-service: Diten.InventoryService (MOD-0177, in-process with MOD-0173 / MOD-0174 / MOD-0175 / MOD-0176)
   x-changelog:
+    - "1.2.0 — WP-0177-R3 (additive only; pack §8.3 step 5, §8.4, §8.5, §8.6; CT-R2 / CT-R4 / CT-R5 / CT-R7 / CT-R10 / CT-R11 / CT-R12): getCaseStock, requestQuarantine, retryQuarantineRequest, getCaseReturns, linkReturn and reviseScope are served. KR-B: approveScope writes, in its transaction, the lot blocks (root + included forward lots) and one QuarantineRequest per Stock item of the approved revision (Pending, or NotNeeded with notNeededReason AlreadyQuarantined / AlreadyBlocked / LotBlocked / LotExpired / Excluded); after the commit each Pending request is ONE MOD-0175 quarantineStock call (mode Manual, one bucket, key recall:{caseId}:r{revision}:{nodeKey}, the approver as actor — QUARANTINE 1.3.0 origin MOD-0177 / RECALL_CASE); 409 QUARANTINE_STOCK_RESERVED → BlockedByReservation with the reservation lines (never cancelled), 409 QUARANTINE_NOTHING_AVAILABLE → NothingAvailable, other refusals → Failed; a hosted sweeper retries Pending older than 2 minutes every 60 s; retryQuarantineRequest moves to the key :a{n}. Hold status is read from MOD-0175 at display time. KR-C: the exit block is INVENTORY 1.4.0 LOT_UNDER_RECALL (GOODS_ISSUE_SALES, GOODS_ISSUE_PROD, WAREHOUSE_TRANSFER refused; by movement type only; tenant-wide by lot id; typed lots by number + SKU; checked before the FEFO hook, re-checked in the posting transaction); each refusal is a timeline row ExitRefused. KR-H: returns = CUSTOMER_RETURNs of the lots the case blocks; linkReturn needs a return posted after the approval into a held status (422 RECALL_RETURN_NOT_QUARANTINED otherwise), one case per return (409 RECALL_RETURN_ALREADY_LINKED), a customer of the approved scope; returned joins the effectiveness. CT-R5: reviseScope opens revision r+1 from out-of-scope findings of the live trace (the approved items copied unchanged, only the delta marked), CaseDetail.pendingRevision; the delta is approved by prepareCaseAction(ApproveScope) + approveScope on the Active case (same signature rule, the reviser cannot approve); the approval adds the delta lots' blocks and requests, never removes a block. New optional member CaseDetail.pendingRevision (PendingRevision); CaseEventKind + QuarantineRequested, QuarantineFailed, QuarantineRetried, ExitRefused, ReturnLinked, ScopeRevised; x-error-codes appended on retryQuarantineRequest (RECALL_CONFLICT) and reviseScope (RECALL_SCOPE_ITEM_NOT_MARKABLE, RECALL_SCOPE_EXCLUSION_REASON_REQUIRED, UNKNOWN_LOT). Reconciliations (R3 evidence §2): R3-1 a refusal in another company of the tenant carries recallCaseNumber but no recallCaseId (CT-R7, the getLotRecallStatus rule); R3-2 a request whose stock line names no location is Failed (INVALID_REQUEST) — 0175 needs a bucket; R3-3 the extra members of QuarantineRequest / StockLine / ReturnLink / ReturnCandidate (lot, warehouse, quantities, reservations, live holds) ride additionalProperties: true; R3-4 the segregation 'request held' rule (RECALL_SEGREGATION_NOT_HELD) stays open (R7)."
     - "1.1.0 — WP-0177-R2 (additive only; pack §8.2 / §8.3 / §8.6): runTrace, exportTrace and getCaseScopeDiff are served. The trace seal is canonical form rt-v1 (SHA-256 over the rule-10 ordered nodes and edges; shipment reads, customerRef derived from them and timing are excluded, so an MVP-6 outage never changes a seal). submitScope freezes a trace snapshot (Purpose Submitted, insert-only); prepareCaseAction(ApproveScope) / approveScope re-trace live and answer 409 RECALL_SCOPE_CHANGED with details {submittedSha256, currentSha256, added, removed} (node keys) when the seal differs; approveScope freezes the Approved snapshot and the scope reads show it from then on. New optional members: CaseDetail.submittedSnapshot / approvedSnapshot, ScopeView.snapshot (SnapshotRef), ScopeItem.origin (Manual | Trace) / new; CaseEventKind + TraceRun, OutOfScopeFinding. openCase fills the scope from the trace (root + forward Lot / Stock / Shipment nodes; Manual items are never touched by a re-trace). Reconciliations (R2 evidence §2): R2-1 WAREHOUSE_TRANSFER is internal to the company and is not an outbound node; R2-2 rule-10 orders by warehouse id (not code — no MDM read in the hash path); R2-3 the customer is carried on the Shipment node (customerRef), no separate Customer node is emitted; R2-4 reviseScope (CT-R5) moves to R3 with the lot blocks it changes; R2-5 holdId on Stock nodes joins with the R3 quarantine requests; R2-6 an unknown lot-control flag of a SKU is treated as lot-controlled (UNRESOLVED_TYPED_LOT stays visible); R2-7 OTHER_COMPANY_ACTIVITY carries a count only (CT-R8)."
     - "1.0.0 — frozen by WP-0177-R1 from the accepted proposal (2026-10-13) + pack §19.7: CT-R1 four-eyes both ways adds 409 RECALL_SOD_VIOLATION to prepareCaseAction / approveScope (the scope submitter cannot approve) and to prepareCaseAction / closeCase (the effectiveness completer cannot close); 409 RECALL_SCOPE_CHANGED on prepareCaseAction / approveScope (the scope is re-sealed at approval and compared with the submitted seal); CT-R5 reviseScope is a revision r+1 with its own signed approval of the delta; CT-R6 excluding a derived item excludes its subtree (reason ≥ 10); CT-R7 getLotRecallStatus is tenant-wide; CT-R16 recall.settings.update is signable with defaultRequired=false (reason mandatory); CT-R17 a cancelled drill run is kept (Cancelled); CT-R18 serial-level recall is out of v1 (scope and block are lot-level). Reconciliations of the freeze (R1 evidence §2): R-1 the envelope is the measured INVENTORY / FEFO wire (unwrapped success body, Error on failure); R-2 R1 enters the scope by hand — new operation addScopeItems (POST /cases/{caseId}/scope/items; Lot / Stock / Shipment items, node keys computed by the server) and new code 409 RECALL_SCOPE_ITEM_EXISTS; R2 fills the same items from the trace; R-3 ScopeView is {caseId, revision, editable, excludedCount, sha256, items, version} — the scope seal is the SHA-256 of the canonical scope (form rs-scope-v1); the trace snapshot (TraceResult) joins as an optional member in R2 (additive); R-4 CaseDetail carries submittedScope / approvedScope as ScopeSeal {revision, sha256, canonicalVersion, itemCount, computedAtUtc} instead of SnapshotRef; R-5 a case id that is not found answers 404 RECALL_CASE_NOT_FOUND (owned code, FEFO pattern); R-6 prepareCaseAction answers version (the If-Match of the decision) and is gated per action (approve / complete / close key) inside the handler, the route carries recall.cases.read; R-7 quantities and percents are JSON numbers, effectivenessTargetPercent is {\"1\",\"2\",\"3\"} → number; R-8 CaseRef.openedAtUtc (date-time) replaces openedOn; listCases sort is -openedAtUtc | number and the Drill filter answers an empty page until R5; R-9 confirmSegregation takes nodeKey in R1 (requestId with the R3 quarantine requests; RECALL_SEGREGATION_NOT_HELD from R3); R-10 declareConsumption requires evidence (1–1000); R-11 the audit actions of R1 are pack §8.12 plus recall.scope.items-added and recall.case.action-prepared (they change the scope / the case head). R-12 CaseRef / CaseDetail / ScopeItem carry item {itemId, skuId, skuLevel} (the FEFO R-2 shape) instead of product — the service guard forbids a Model-B Product type."
   x-decisions: [KR-A, KR-B, KR-C, KR-D, KR-E, KR-F, KR-G, KR-H, CT-R1, CT-R5, CT-R6, CT-R7, CT-R16, CT-R17, CT-R18]
   x-implemented-by-slice:
+    R3: [getCaseStock, requestQuarantine, retryQuarantineRequest, getCaseReturns, linkReturn, reviseScope]
     R2: [runTrace, exportTrace, getCaseScopeDiff]
     R1: [getSettings, getSettingsHistory, updateSettings, listCases, getCase, getCaseScope, getCaseTimeline, getLotRecallStatus, openCase, addScopeItems, markScopeItems, submitScope, returnScope, prepareCaseAction, approveScope, cancelCase, confirmSegregation, recordNotification, declareConsumption, startEffectivenessCheck, completeEffectivenessCheck, closeCase]
-    not-yet-implemented: [getDashboard, getCaseStock, getCaseCustomers, getCaseReturns, getCaseEffectiveness, listDrillPlans, listDrillRuns, getDrillRun, previewEvidence, listEvidenceExports, getEvidenceFile, getSignableSubject, reviseScope, requestQuarantine, retryQuarantineRequest, linkReturn, createDrillPlan, updateDrillPlan, startDrill, completeDrillStep, prepareDrillResult, signDrillResult, cancelDrill, createEvidenceExport, prepareSettingsChange]
+    not-yet-implemented: [getDashboard, getCaseCustomers, getCaseEffectiveness, listDrillPlans, listDrillRuns, getDrillRun, previewEvidence, listEvidenceExports, getEvidenceFile, getSignableSubject, createDrillPlan, updateDrillPlan, startDrill, completeDrillStep, prepareDrillResult, signDrillResult, cancelDrill, createEvidenceExport, prepareSettingsChange]
 servers: [{ url: /api/recall }]
 security: [{ bearerAuth: [] }]
 x-rules:
@@ -309,7 +311,7 @@ paths:
       operationId: reviseScope
       summary: "Kapsam revizyonu (R2, CT-R5) — revision r+1 with the out-of-scope findings; its own signed approval of the delta; the approved scope's blocks stay meanwhile."
       x-permission: recall.cases.update
-      x-error-codes: [INVALID_REQUEST, REASON_REQUIRED, IDEMPOTENCY_KEY_REUSED, RECALL_CASE_NOT_FOUND, RECALL_INVALID_TRANSITION, RECALL_CONFLICT, CROSS_LE_FORBIDDEN]
+      x-error-codes: [INVALID_REQUEST, REASON_REQUIRED, IDEMPOTENCY_KEY_REUSED, RECALL_CASE_NOT_FOUND, RECALL_INVALID_TRANSITION, RECALL_CONFLICT, CROSS_LE_FORBIDDEN, RECALL_SCOPE_ITEM_NOT_MARKABLE, RECALL_SCOPE_EXCLUSION_REASON_REQUIRED, UNKNOWN_LOT]
       parameters: [{ $ref: '#/components/parameters/CaseId' }, { $ref: '#/components/parameters/IdempotencyKey' }, { $ref: '#/components/parameters/IfMatch' }]
       requestBody:
         required: true
@@ -384,7 +386,7 @@ paths:
       operationId: retryQuarantineRequest
       summary: "Yeniden dene (R3) — BlockedByReservation / NothingAvailable / Failed; the 0175 key family :a{n} (CT-R2)."
       x-permission: recall.quarantine-requests.create
-      x-error-codes: [IDEMPOTENCY_KEY_REUSED, RECALL_CASE_NOT_FOUND, RECALL_QUARANTINE_REQUEST_NOT_RETRYABLE, CROSS_LE_FORBIDDEN]
+      x-error-codes: [IDEMPOTENCY_KEY_REUSED, RECALL_CASE_NOT_FOUND, RECALL_QUARANTINE_REQUEST_NOT_RETRYABLE, CROSS_LE_FORBIDDEN, RECALL_CONFLICT]
       parameters: [{ $ref: '#/components/parameters/CaseId' }, { name: requestId, in: path, required: true, schema: { type: string, format: uuid } }, { $ref: '#/components/parameters/IdempotencyKey' }]
       requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/KeyBody' } } } }
       responses:
@@ -971,6 +973,7 @@ x-state-machine:
   - "Draft | PendingScopeApproval ──cancelCase──▶ Cancelled"
   - "Active ──reviseScope──▶ revision r+1 pending approval (case stays Active; R3 per 1.1.0 R2-4, CT-R5)"
   - "Four-eyes (CT-R1): approver ≠ scope submitter; closer ≠ effectiveness completer."
+  - "Active + pendingRevision ──approveScope(+sig)──▶ Active (1.2.0: the delta approved; its blocks and quarantine requests added, no block removed)"
 components:
   securitySchemes:
     bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
@@ -992,7 +995,7 @@ components:
     ScopeItemKind: { type: string, enum: [Lot, Stock, Shipment] }
     NotificationChannel: { type: string, enum: [Phone, ExternalEmail, Fax, InPerson, Other] }
     PendingActionKind: { type: string, enum: [ApproveScope, CompleteEffectiveness, Close] }
-    CaseEventKind: { type: string, enum: [Opened, ScopeItemsAdded, ScopeMarked, ScopeSubmitted, ScopeReturned, ScopeApproved, SegregationConfirmed, CustomerNotified, ConsumptionDeclared, EffectivenessStarted, EffectivenessCompleted, Closed, Cancelled, TraceRun, OutOfScopeFinding], description: "R1 kinds + R2 (TraceRun, OutOfScopeFinding); later slices add kinds (additive)." }
+    CaseEventKind: { type: string, enum: [Opened, ScopeItemsAdded, ScopeMarked, ScopeSubmitted, ScopeReturned, ScopeApproved, SegregationConfirmed, CustomerNotified, ConsumptionDeclared, EffectivenessStarted, EffectivenessCompleted, Closed, Cancelled, TraceRun, OutOfScopeFinding, QuarantineRequested, QuarantineFailed, QuarantineRetried, ExitRefused, ReturnLinked, ScopeRevised], description: "R1 kinds + R2 (TraceRun, OutOfScopeFinding) + R3 (QuarantineRequested … ScopeRevised); later slices add kinds (additive)." }
     DrillRunStatus: { type: string, enum: [Running, Completed, Cancelled] }
     DrillStep: { type: string, enum: [Trace, Scope, CustomerList] }
     UserRef:
@@ -1110,6 +1113,15 @@ components:
         page: { type: integer }
         pageSize: { type: integer }
         statusCounts: { type: object, additionalProperties: { type: integer } }
+    PendingRevision:
+      type: object
+      description: "1.2.0 (CT-R5) — a revision r+1 whose delta waits for its signed approval; the case stays Active."
+      required: [revision, reason, addedNodeKeys, revisedBy]
+      properties:
+        revision: { type: integer }
+        reason: { type: string }
+        addedNodeKeys: { type: array, items: { type: string } }
+        revisedBy: { $ref: '#/components/schemas/UserAt' }
     ScopeSeal:
       type: object
       required: [revision, sha256, canonicalVersion, itemCount, computedAtUtc]
@@ -1198,6 +1210,7 @@ components:
         approvedScope: { $ref: '#/components/schemas/ScopeSeal' }
         submittedSnapshot: { $ref: '#/components/schemas/SnapshotRef' }
         approvedSnapshot: { $ref: '#/components/schemas/SnapshotRef' }
+        pendingRevision: { $ref: '#/components/schemas/PendingRevision' }
         scopeSubmittedBy: { $ref: '#/components/schemas/UserAt' }
         scopeApprovedBy: { $ref: '#/components/schemas/UserAt' }
         scopeApprovalSignatureId: { type: string }

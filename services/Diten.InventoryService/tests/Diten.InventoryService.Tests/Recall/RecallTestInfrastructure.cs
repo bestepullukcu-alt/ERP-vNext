@@ -66,6 +66,16 @@ public class RecallApiFactory : TraceApiFactory
 
     protected virtual bool UseTestSignature => true;
 
+    /// <summary>
+    /// WP-0177-R3 race seam: runs after a PASSED recall pre-check of a posting (lot id → hook), i.e. between the pre-check and the posting
+    /// transaction — a test writes a block there to prove the in-transaction re-check is the authoritative decision.
+    /// </summary>
+    public ConcurrentDictionary<string, Func<Task>> AfterPassedPreCheck { get; } = new(StringComparer.Ordinal);
+
+    /// <summary>WP-0177-R3 crash seam of KR-B (per lot id): <c>Before</c> = the 0175 call never happens; <c>After</c> = 0175 committed, the
+    /// answer is lost. Either way the request stays Pending (the sweeper's case). Cleared by the test.</summary>
+    public ConcurrentDictionary<string, string> QuarantineCrash { get; } = new(StringComparer.Ordinal);
+
     public void TrackRecallTenant(Guid tenant) => _recallTenants.Add(tenant);
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -79,6 +89,12 @@ public class RecallApiFactory : TraceApiFactory
                 services.RemoveAll<IRecallSignature>();
                 services.AddSingleton<IRecallSignature>(Signature);
             }
+
+            // the REAL gate / the REAL 0175 requester, wrapped only to open the two seams above (no decision is changed)
+            services.AddScoped<IRecallPostingGate>(sp => new SeamedRecallPostingGate(sp.GetRequiredService<Diten.InventoryService.Persistence.Recall.RecallPostingGate>(), this));
+            services.AddScoped<Diten.InventoryService.Application.Features.Quarantine.Services.QuarantineRecallRequester>();
+            services.AddScoped<IRecallQuarantineRequester>(sp => new SeamedRecallQuarantineRequester(
+                sp.GetRequiredService<Diten.InventoryService.Application.Features.Quarantine.Services.QuarantineRecallRequester>(), this));
         });
     }
 
@@ -143,7 +159,14 @@ public sealed class RecallContractValidatingHandler : DelegatingHandler
         // R2
         Op("GET", "/api/recall/trace", [200, 400, 401, 403, 404, 503], "TraceResult"),
         Op("GET", "/api/recall/trace/export", [200, 400, 401, 403, 404, 503], Csv),
-        Op("GET", "/api/recall/cases/{id}/scope/diff", [200, 400, 401, 403, 404, 409, 503], "ScopeDiff")
+        Op("GET", "/api/recall/cases/{id}/scope/diff", [200, 400, 401, 403, 404, 409, 503], "ScopeDiff"),
+        // R3
+        Op("GET", "/api/recall/cases/{id}/stock", [200, 400, 401, 403, 404, 503], "StockLine[]"),
+        Op("POST", "/api/recall/cases/{id}/quarantine-requests", [202, 400, 401, 403, 404, 409, 503], "QuarantineRequest[]"),
+        Op("POST", "/api/recall/cases/{id}/quarantine-requests/{id}/retry", [202, 400, 401, 403, 404, 409, 503], "QuarantineRequest"),
+        Op("GET", "/api/recall/cases/{id}/returns", [200, 400, 401, 403, 404, 503], "CaseReturns"),
+        Op("POST", "/api/recall/cases/{id}/return-links", [200, 201, 400, 401, 403, 404, 409, 422, 503], "ReturnLink"),
+        Op("POST", "/api/recall/cases/{id}/scope/revisions", [200, 201, 400, 401, 403, 404, 409, 503], "CaseDetail", etag: true)
     ];
 
     /// <summary>exportTrace answers text/csv (UTF-8 BOM, ';') — checked for its media type and BOM, not a JSON schema.</summary>
@@ -152,6 +175,45 @@ public sealed class RecallContractValidatingHandler : DelegatingHandler
     private static readonly Regex WeakETag = new("^W/\"\\d+\"$", RegexOptions.Compiled);
 
     public static readonly ConcurrentDictionary<string, int> Validated = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// R3: <c>X[]</c> = an array whose every element is the component <c>X</c>; <c>CaseReturns</c> = getCaseReturns' inline object
+    /// <c>{links: ReturnLink[], candidates: ReturnCandidate[]}</c> (closed, both required). Anything else is the component itself.
+    /// </summary>
+    private static IReadOnlyList<string> ValidateShape(string schema, string body)
+    {
+        if (schema.EndsWith("[]", StringComparison.Ordinal) || schema == "CaseReturns")
+        {
+            using var doc = JsonDocument.Parse(body);
+            var errors = new List<string>();
+            void Each(JsonElement array, string element, string at)
+            {
+                if (array.ValueKind != JsonValueKind.Array) { errors.Add($"{at}: not an array"); return; }
+                var i = 0;
+                foreach (var e in array.EnumerateArray()) errors.AddRange(ContractSchemas.ValidateRecall(element, e.GetRawText()).Select(x => $"{at}[{i}]{x}"));
+            }
+
+            if (schema == "CaseReturns")
+            {
+                var root = doc.RootElement;
+                var members = root.ValueKind == JsonValueKind.Object ? root.EnumerateObject().Select(p => p.Name).ToList() : [];
+                if (!members.OrderBy(m => m).SequenceEqual(new[] { "candidates", "links" })) errors.Add($"CaseReturns members [{string.Join(",", members)}] are not exactly links, candidates");
+                else
+                {
+                    Each(root.GetProperty("links"), "ReturnLink", "/links");
+                    Each(root.GetProperty("candidates"), "ReturnCandidate", "/candidates");
+                }
+            }
+            else
+            {
+                Each(doc.RootElement, schema[..^2], "");
+            }
+
+            return errors;
+        }
+
+        return ContractSchemas.ValidateRecall(schema, body);
+    }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
@@ -167,7 +229,7 @@ public sealed class RecallContractValidatingHandler : DelegatingHandler
             throw new ContractViolationException($"{request.Method} {path} answered {status}, which the RECALL contract does not allow. Body: {body}");
         }
 
-        var schema = status is 200 or 201 ? operation.Schema : "Error";
+        var schema = status is 200 or 201 or 202 ? operation.Schema : "Error";
         if (schema == Csv)
         {
             var raw = await response.Content.ReadAsByteArrayAsync(cancellationToken);
@@ -183,7 +245,7 @@ public sealed class RecallContractValidatingHandler : DelegatingHandler
             return response;
         }
 
-        var errors = ContractSchemas.ValidateRecall(schema, body);
+        var errors = ValidateShape(schema, body);
         if (errors.Count > 0)
         {
             throw new ContractViolationException($"{request.Method} {path} {status} body does not match recall '{schema}':\n  {string.Join("\n  ", errors)}\nBody: {body}");
@@ -415,4 +477,41 @@ public sealed class RecallScenario
 
     public List<BsonDocument> Audit(string action)
         => Persisted("inventory_audit").Where(d => d.Contains("Action") && d["Action"].AsString == action).ToList();
+}
+
+/// <summary>The real recall gate; after a passed pre-check it runs the factory's hook for the lot (the race seam). Re-check unchanged.</summary>
+public sealed class SeamedRecallPostingGate(IRecallPostingGate inner, RecallApiFactory factory) : IRecallPostingGate
+{
+    public async Task<RecallPostingRefusal?> PreCheckAsync(RecallPostingRequest request, CancellationToken cancellationToken = default)
+    {
+        var refusal = await inner.PreCheckAsync(request, cancellationToken);
+        if (refusal is null && factory.AfterPassedPreCheck.TryRemove(request.LotId, out var hook)) await hook();
+        return refusal;
+    }
+
+    public Task<RecallPostingRefusal?> ReCheckAsync(Diten.InventoryService.Domain.Entities.InventoryTransaction transaction,
+        Diten.InventoryService.Domain.Traceability.Entities.Lot? lot, CancellationToken cancellationToken = default)
+        => inner.ReCheckAsync(transaction, lot, cancellationToken);
+}
+
+/// <summary>The real MOD-0175 requester; the factory's crash seam can lose a call before or after 0175 committed it.</summary>
+public sealed class SeamedRecallQuarantineRequester(IRecallQuarantineRequester inner, RecallApiFactory factory) : IRecallQuarantineRequester
+{
+    public int Calls;
+
+    public async Task<RecallQuarantineAnswer> QuarantineAsync(RecallQuarantineCall call, CancellationToken cancellationToken = default)
+    {
+        Interlocked.Increment(ref Calls);
+        factory.QuarantineCrash.TryGetValue(call.Buckets[0].LotId, out var crash);
+        if (crash == "Before") throw new InvalidOperationException("test crash before the 0175 call");
+        var answer = await inner.QuarantineAsync(call, cancellationToken);
+        if (crash == "After") throw new InvalidOperationException("test crash after 0175 committed");
+        return answer;
+    }
+
+    public Task<IReadOnlyList<RecallHoldView>> HoldsAsync(IReadOnlyCollection<string> holdIds, CancellationToken cancellationToken = default)
+        => inner.HoldsAsync(holdIds, cancellationToken);
+
+    public Task<IReadOnlyList<RecallHoldView>> OpenHoldsOfLotAsync(string lotId, CancellationToken cancellationToken = default)
+        => inner.OpenHoldsOfLotAsync(lotId, cancellationToken);
 }

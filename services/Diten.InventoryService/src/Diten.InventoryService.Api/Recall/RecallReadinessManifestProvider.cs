@@ -46,6 +46,9 @@ public sealed class RecallReadinessManifestProvider : IModuleManifestProvider
                 new ModuleManifestPermission(RecallPermissions.LotsStatusRead, "Read whether a lot is under recall", "Tenant"),
                 // WP-0177-R2: the trace (pack §8.2) — API-only until the R6 "İzleme" page
                 new ModuleManifestPermission(RecallPermissions.TraceRun, "Run a recall trace", "Tenant"),
-                new ModuleManifestPermission(RecallPermissions.TraceExport, "Export a recall trace as CSV", "Tenant")
+                new ModuleManifestPermission(RecallPermissions.TraceExport, "Export a recall trace as CSV", "Tenant"),
+                // WP-0177-R3: KR-B "Karantina isteği gönder / Yeniden dene", KR-H "İadeyi bağla" — API-only until the R7 case detail page
+                new ModuleManifestPermission(RecallPermissions.QuarantineRequestsCreate, "Send / retry a recall quarantine request", "Tenant"),
+                new ModuleManifestPermission(RecallPermissions.ReturnsLink, "Link a customer return to a recall case", "Tenant")
             ]);
 }

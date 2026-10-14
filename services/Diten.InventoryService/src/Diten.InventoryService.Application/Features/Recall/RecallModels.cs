@@ -120,7 +120,8 @@ public sealed record RecallCaseDetailDto(
     RecallPendingActionDto? PendingAction,
     RecallCaseCountsDto Counts,
     RecallSnapshotRefDto? SubmittedSnapshot = null,
-    RecallSnapshotRefDto? ApprovedSnapshot = null);
+    RecallSnapshotRefDto? ApprovedSnapshot = null,
+    RecallPendingRevisionDto? PendingRevision = null);
 
 public sealed record RecallScopeItemDto(
     string NodeKey,
@@ -329,3 +330,80 @@ public sealed record RecallScopeDiffDto(
 
 /// <summary>exportTrace — the CSV text and its file name.</summary>
 public sealed record RecallTraceCsvDto(string FileName, string Content);
+
+
+// ── R3 (RECALL-BUNDLE 1.2.0): quarantine requests, stock, returns, scope revision ───────────────────────────
+
+/// <summary>CT-R5 — the revision waiting for the signed approval of its delta (the case stays Active).</summary>
+public sealed record RecallPendingRevisionDto(int Revision, string Reason, IReadOnlyList<string> AddedNodeKeys, RecallUserAtDto RevisedBy);
+
+/// <summary>A MOD-0175 hold read at display time (never copied).</summary>
+public sealed record RecallHoldDto(string HoldId, string HoldNumber, string Status, string ReviewState, decimal Quantity);
+
+public sealed record RecallReservationLineDto(string ReservationId, string? HolderModule, string? SourceDocumentId, string? RemainingQuantity);
+
+/// <summary>Pack §8.4 KR-B — one request (RECALL-BUNDLE <c>QuarantineRequest</c>; extra members additive).</summary>
+public sealed record RecallQuarantineRequestDto(
+    string RequestId,
+    string Status,
+    string? NotNeededReason,
+    IReadOnlyList<string> HoldIds,
+    int Attempts,
+    string NodeKey,
+    int Revision,
+    RecallLotRefDto Lot,
+    string? WarehouseId,
+    string? LocationId,
+    decimal SnapshotQuantity,
+    decimal? PlannedQuantity,
+    decimal HeldQuantity,
+    string? BaseUomId,
+    int RetryNumber,
+    string? ErrorCode,
+    string? ErrorMessage,
+    IReadOnlyList<RecallReservationLineDto> Reservations,
+    IReadOnlyList<RecallHoldDto> Holds,
+    string RequestedAtUtc,
+    string? LastAttemptAtUtc);
+
+/// <summary>"Eldeki stok" — a live stock line of an in-scope lot in the caller's company (RECALL-BUNDLE <c>StockLine</c>).</summary>
+public sealed record RecallStockLineDto(
+    string NodeKey,
+    RecallLotRefDto Lot,
+    RecallItemRefDto Item,
+    string? WarehouseId,
+    string? LocationId,
+    string? StockStatus,
+    decimal Quantity,
+    string BaseUomId,
+    RecallQuarantineRequestDto? Request,
+    decimal SegregatedQuantity);
+
+public sealed record RecallReturnLinkDto(
+    string LinkId,
+    string Source,
+    string TransactionId,
+    string? TransactionNumber,
+    RecallLotRefDto Lot,
+    string SkuId,
+    decimal Quantity,
+    string BaseUomId,
+    string CustomerRef,
+    string? ReturnReference,
+    string? ToStockStatus,
+    string PostedAtUtc,
+    RecallUserAtDto LinkedBy);
+
+public sealed record RecallReturnCandidateDto(
+    string TransactionId,
+    string? TransactionNumber,
+    RecallLotRefDto Lot,
+    string SkuId,
+    decimal Quantity,
+    string BaseUomId,
+    string? ToStockStatus,
+    string PostedAtUtc,
+    bool Eligible,
+    string? IneligibleReason);
+
+public sealed record RecallReturnsDto(IReadOnlyList<RecallReturnLinkDto> Links, IReadOnlyList<RecallReturnCandidateDto> Candidates);

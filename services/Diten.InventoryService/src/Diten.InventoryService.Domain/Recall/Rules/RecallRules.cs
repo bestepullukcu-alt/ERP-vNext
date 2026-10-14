@@ -167,6 +167,15 @@ public static class RecallCaseRules
 
     public static bool CanApprove(RecallCaseStatus s) => s == RecallCaseStatus.PendingScopeApproval;
 
+    /// <summary>CT-R5 (R3): an Active case with a revision r+1 waiting for the signed approval of its delta.</summary>
+    public static bool IsRevisionPending(RecallCase c) => c.Status == RecallCaseStatus.Active && c.PendingRevision is not null;
+
+    /// <summary>approveScope / prepare(ApproveScope): the first approval, or the approval of a pending revision's delta (CT-R5).</summary>
+    public static bool CanApproveScope(RecallCase c) => CanApprove(c.Status) || IsRevisionPending(c);
+
+    /// <summary>CT-R5: a revision needs an approved scope, an Active case and no revision already waiting.</summary>
+    public static bool CanRevise(RecallCase c) => c.Status == RecallCaseStatus.Active && c.PendingRevision is null && c.ApprovedScope is not null;
+
     public static bool CanCancel(RecallCaseStatus s) => s is RecallCaseStatus.Draft or RecallCaseStatus.PendingScopeApproval;
 
     public static bool CanStartEffectiveness(RecallCaseStatus s) => s == RecallCaseStatus.Active;
@@ -180,7 +189,7 @@ public static class RecallCaseRules
 
     public static bool CanPrepare(RecallCase c, RecallPendingActionKind action) => action switch
     {
-        RecallPendingActionKind.ApproveScope => CanApprove(c.Status),
+        RecallPendingActionKind.ApproveScope => CanApproveScope(c),
         RecallPendingActionKind.CompleteEffectiveness => CanCompleteEffectiveness(c),
         RecallPendingActionKind.Close => CanClose(c),
         _ => false

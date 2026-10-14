@@ -190,10 +190,10 @@ public sealed class RecallContractTests
     private static List<string> Strings(JsonNode? node) => node!.AsArray().Select(v => v!.GetValue<string>()).ToList();
 
     [Fact]
-    public void The_contract_is_frozen_1_1_0_owned_by_MOD_0177_with_the_CT_additions()
+    public void The_contract_is_frozen_1_2_0_owned_by_MOD_0177_with_the_CT_additions()
     {
         var info = Yaml.Value["info"]!;
-        Assert.Equal("1.1.0", info["version"]!.GetValue<string>());
+        Assert.Equal("1.2.0", info["version"]!.GetValue<string>());
         Assert.Equal("FROZEN", info["x-status"]!.GetValue<string>());
         Assert.Equal("MOD-0177", info["x-owner"]!.GetValue<string>());
         Assert.Equal("/api/recall", Yaml.Value["servers"]![0]!["url"]!.GetValue<string>());
@@ -202,6 +202,8 @@ public sealed class RecallContractTests
             t => Assert.Contains(t, changelog, StringComparison.Ordinal));
         // R2 (1.1.0): the trace seal form and the reconciliations R2-1…R2-7
         Assert.All(new[] { "1.1.0", "rt-v1", "R2-1", "R2-4", "R2-7", "SnapshotRef" }, t => Assert.Contains(t, changelog, StringComparison.Ordinal));
+        // R3 (1.2.0): KR-B / KR-C / KR-H / CT-R5 and the reconciliations R3-1…R3-4
+        Assert.All(new[] { "1.2.0", "WP-0177-R3", "LOT_UNDER_RECALL", "pendingRevision", "R3-1", "R3-4", "never cancelled" }, t => Assert.Contains(t, changelog, StringComparison.Ordinal));
         Assert.Equal(RecallPermissions.All.OrderBy(k => k), Strings(Yaml.Value["x-permissions"]!["owned"]).OrderBy(k => k));
         Assert.Equal("APPROVE", Yaml.Value["x-signable-actions"]!["defaultMeaningCode"]!.GetValue<string>());
         var settingsAction = Yaml.Value["x-signable-actions"]!["actions"]!.AsArray().Single(a => a!["actionCode"]!.GetValue<string>() == "recall.settings.update");
@@ -220,16 +222,19 @@ public sealed class RecallContractTests
     }
 
     [Fact]
-    public void The_controller_serves_exactly_the_R1_and_R2_operations_with_their_permission()
+    public void The_controller_serves_exactly_the_R1_R2_and_R3_operations_with_their_permission()
     {
         var served = typeof(RecallController).GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
             .SelectMany(m => m.GetCustomAttributes<HttpMethodAttribute>().SelectMany(a => a.HttpMethods.Select(v =>
                 (Path: "/" + a.Template, Method: v.ToLowerInvariant(), Permission: m.GetCustomAttribute<HasPermissionAttribute>()!.Policy!["Permission:".Length..]))))
             .ToList();
-        Assert.Equal(25, served.Count); // R1 22 + R2 runTrace, exportTrace, getCaseScopeDiff
+        Assert.Equal(31, served.Count); // R1 22 + R2 runTrace, exportTrace, getCaseScopeDiff + R3 six
 
         var byRoute = Operations().ToDictionary(o => (o.Path, o.Method));
-        var r1 = Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R1"]).Concat(Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R2"])).ToList();
+        var r1 = Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R1"]).Concat(Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R2"]))
+            .Concat(Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R3"])).ToList();
+        Assert.Equal(["getCaseStock", "requestQuarantine", "retryQuarantineRequest", "getCaseReturns", "linkReturn", "reviseScope"],
+            Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R3"]));
         Assert.Equal(["runTrace", "exportTrace", "getCaseScopeDiff"], Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["R2"]));
         foreach (var (path, method, permission) in served)
         {
@@ -294,7 +299,8 @@ public sealed class RecallArchitectureTests
         Assert.Empty(manifest.Pages);
         Assert.Equal(enforced.OrderBy(k => k, StringComparer.Ordinal), (manifest.ApiPermissions ?? []).Select(p => p.PermissionKey).OrderBy(k => k, StringComparer.Ordinal));
         Assert.Equal(RecallPermissions.Implemented.OrderBy(k => k, StringComparer.Ordinal), enforced.OrderBy(k => k, StringComparer.Ordinal));
-        Assert.Equal(RecallPermissions.R1Only.Concat([RecallPermissions.TraceRun, RecallPermissions.TraceExport]).OrderBy(k => k, StringComparer.Ordinal),
+        Assert.Equal(RecallPermissions.R1Only.Concat([RecallPermissions.TraceRun, RecallPermissions.TraceExport, RecallPermissions.QuarantineRequestsCreate, RecallPermissions.ReturnsLink])
+                .OrderBy(k => k, StringComparer.Ordinal),
             RecallPermissions.Implemented.OrderBy(k => k, StringComparer.Ordinal));
         Assert.Same(RecallPermissions.Implemented, RecallPermissions.R1); // the shared namespace test pins R1 (PARALEL KURAL) — an alias, not a copy
         Assert.All(manifest.ApiPermissions!, p => Assert.Equal("Tenant", p.Scope));
@@ -306,7 +312,8 @@ public sealed class RecallArchitectureTests
         var mutating = typeof(IRecallWriteSession).GetMethods().Select(m => m.Name)
             .Where(n => Regex.IsMatch(n, "Update|Replace|Delete|Remove|Save|Upsert|Release")).OrderBy(n => n).ToList();
         // the mutable heads: case (version-guarded), settings (version-guarded), a Draft scope mark, the lot-block release at closure
-        Assert.Equal(["ReleaseLotBlocksAsync", "ReplaceCaseAsync", "ReplaceScopeItemAsync", "SaveSettingsAsync"], mutating);
+        // R3: + the quarantine request head (status / attempts / holds, version-guarded); return links stay insert-only
+        Assert.Equal(["ReleaseLotBlocksAsync", "ReplaceCaseAsync", "ReplaceQuarantineRequestAsync", "ReplaceScopeItemAsync", "SaveSettingsAsync"], mutating);
 
         foreach (var file in SourceScan.Production("Diten.InventoryService.Persistence").Where(f => f.RelativePath.Contains("Recall", StringComparison.Ordinal)))
         {
@@ -320,7 +327,7 @@ public sealed class RecallArchitectureTests
     {
         var entities = typeof(EntityBase).Assembly.GetTypes()
             .Where(t => typeof(EntityBase).IsAssignableFrom(t) && t.Namespace?.Contains(".Recall", StringComparison.Ordinal) == true).ToList();
-        Assert.Equal(11, entities.Count); // R1: settings, history, case, event, scope item, lot block, notification, consumption, segregation, audit; R2: trace snapshot
+        Assert.Equal(13, entities.Count); // R1: settings, history, case, event, scope item, lot block, notification, consumption, segregation, audit; R2: trace snapshot; R3: quarantine request, return link
         Assert.DoesNotContain(entities, t => t.Name.Contains("Signature", StringComparison.Ordinal));
         Assert.Contains(typeof(IRecallSignature), typeof(FailClosedRecallSignature).GetInterfaces());
         Assert.False(await new FailClosedRecallSignature().VerifyAsync(new RecallSignatureVerification("s", "recall.scope.approve", "APPROVE", Guid.NewGuid(),

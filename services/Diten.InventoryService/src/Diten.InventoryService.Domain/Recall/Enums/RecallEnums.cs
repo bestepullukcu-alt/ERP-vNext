@@ -77,7 +77,44 @@ public enum RecallCaseEventKind
 
     // R2 (pack §8.3, §8.12)
     TraceRun,
-    OutOfScopeFinding
+    OutOfScopeFinding,
+
+    // R3 (pack §8.4, §8.5, §8.6, §8.12)
+    QuarantineRequested,
+    QuarantineFailed,
+    QuarantineRetried,
+    ExitRefused,
+    ReturnLinked,
+    ScopeRevised
+}
+
+/// <summary>Pack §8.4 KR-B — the state of one quarantine request (one per included Stock node of an approved scope revision).</summary>
+public enum RecallQuarantineRequestStatus
+{
+    Pending,
+    Held,
+    PartiallyHeld,
+    BlockedByReservation,
+    NothingAvailable,
+    Failed,
+    NotNeeded
+}
+
+/// <summary>Why no request goes to MOD-0175 (pack §8.4 "durumu gösterilir").</summary>
+public enum RecallNotNeededReason
+{
+    AlreadyQuarantined,
+    AlreadyBlocked,
+    LotBlocked,
+    LotExpired,
+    Excluded
+}
+
+/// <summary>Where a linked return came from (pack §8.6 KR-H; MOD-0186 when MVP-6 is live).</summary>
+public enum RecallReturnSource
+{
+    Mod0186Return,
+    ManualCustomerReturn
 }
 
 /// <summary>Where a scope item came from: entered by hand (R1, kept at re-trace) or from the trace (R2, reconciled at submit).</summary>

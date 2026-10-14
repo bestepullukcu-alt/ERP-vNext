@@ -167,7 +167,7 @@ public sealed class DeclareRecallConsumptionHandler : IRequestHandler<DeclareRec
 
         var shipped = ofSku.Sum(s => s.Quantity ?? 0m);
         var consumed = RecallReads.Effective(all).Where(d => d.CustomerRef == customer && d.SkuId == request.SkuId && d.Id != request.SupersedesId).Sum(d => d.Quantity);
-        const decimal returned = 0m; // R1: return links are R3
+        var returned = (await _repository.ReturnLinksAsync(c.Id, ct)).Where(r => r.CustomerRef == customer && r.SkuId == request.SkuId).Sum(r => r.Quantity); // R3 KR-H
         if (consumed + returned + request.Quantity > shipped)
         {
             return Response<RecallConsumptionDto>.Fail(RecallErrorCodes.QuantityExceedsShipped,
