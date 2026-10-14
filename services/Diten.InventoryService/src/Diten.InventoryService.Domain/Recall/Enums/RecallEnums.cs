@@ -128,5 +128,8 @@ public enum RecallScopeItemOrigin
 public enum RecallSnapshotPurpose
 {
     Submitted,
-    Approved
+    Approved,
+
+    /// <summary>WP-0177-R5: the trace of a drill run's step 1 (KR-G, pack §8.10) — the one non-drill-collection row a drill writes.</summary>
+    Drill
 }

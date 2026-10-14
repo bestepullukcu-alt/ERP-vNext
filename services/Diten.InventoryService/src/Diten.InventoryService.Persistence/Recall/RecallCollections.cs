@@ -63,5 +63,18 @@ public static class RecallCollections
     /// <summary>The R4 collections (declared beside <see cref="SinceR3"/> by the single-SoR test).</summary>
     public static readonly IReadOnlyList<string> SinceR4 = [SettingsChanges];
 
-    public static IEnumerable<string> Everything => All.Concat(SinceR2).Concat(SinceR3).Concat(SinceR4);
+    /// <summary>R5 (pack §4.11, KR-G) — drill plans of a company (mutable head, Version).</summary>
+    public const string DrillPlans = "recall_drill_plans";
+
+    /// <summary>R5 (pack §4.12, KR-G) — drill runs (Running → Completed | Cancelled; a closed run is kept and never changes, CT-R17).</summary>
+    public const string DrillRuns = "recall_drill_runs";
+
+    /// <summary>R5 — the timeline of drill plans / runs (insert-only, idempotency keys, the result signature id).</summary>
+    public const string DrillEvents = "recall_drill_events";
+
+    /// <summary>The R5 collections (declared beside <see cref="SinceR4"/> by the single-SoR test). A drill writes ONLY these, a Drill snapshot,
+    /// the counter and audit rows (pack §8.10).</summary>
+    public static readonly IReadOnlyList<string> SinceR5 = [DrillPlans, DrillRuns, DrillEvents];
+
+    public static IEnumerable<string> Everything => All.Concat(SinceR2).Concat(SinceR3).Concat(SinceR4).Concat(SinceR5);
 }

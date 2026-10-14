@@ -483,6 +483,9 @@ public sealed class RecallTraceSnapshot : EntityBase
 {
     public Guid CaseId { get; set; }
 
+    /// <summary>WP-0177-R5: the drill run of a <c>Drill</c> snapshot (then <see cref="CaseId"/> is empty).</summary>
+    public Guid? DrillRunId { get; set; }
+
     public int Revision { get; set; }
 
     public RecallSnapshotPurpose Purpose { get; set; }

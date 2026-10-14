@@ -7,17 +7,19 @@ namespace Diten.InventoryService.Persistence.Recall;
 /// <summary>
 /// WP-0177-R4 — <see cref="IRecallSubjectDirectory"/> (the MOD-0176 <c>ExpirySubjectDirectory</c> pattern): TENANT-filtered, company-free reads of a
 /// case / a prepared settings change (company + owner only), so the provider can set the company scope from the record. Another tenant's id
-/// finds nothing (K3 sabotage (g): drop the tenant filter → the provider's cross-tenant test is red). <c>recall.drill-run</c> → null until R5.
+/// finds nothing (K3 sabotage (g): drop the tenant filter → the provider's cross-tenant test is red). R5: <c>recall.drill-run</c> (company only).
 /// </summary>
 public sealed class RecallSubjectDirectory : IRecallSubjectDirectory
 {
     private readonly IMongoCollection<RecallCase> _cases;
     private readonly IMongoCollection<RecallSettingsChange> _changes;
+    private readonly IMongoCollection<RecallDrillRun> _runs;
 
     public RecallSubjectDirectory(IMongoDatabase database)
     {
         _cases = database.GetCollection<RecallCase>(RecallCollections.Cases);
         _changes = database.GetCollection<RecallSettingsChange>(RecallCollections.SettingsChanges);
+        _runs = database.GetCollection<RecallDrillRun>(RecallCollections.DrillRuns);
     }
 
     public async Task<(Guid LegalEntityId, Guid? Owner)?> SubjectAsync(Guid tenantId, string subjectType, Guid subjectId, CancellationToken cancellationToken = default)
@@ -36,6 +38,13 @@ public sealed class RecallSubjectDirectory : IRecallSubjectDirectory
             return change?.LegalEntityId is { } company ? (company, change.SetBy) : null;
         }
 
-        return null; // recall.drill-run: R5 binds it
+        if (subjectType == RecallSignableActions.DrillRunSubjectType)
+        {
+            var run = await _runs.Find(Builders<RecallDrillRun>.Filter.Eq(x => x.TenantId, tenantId) & Builders<RecallDrillRun>.Filter.Eq(x => x.IsDeleted, false)
+                                       & Builders<RecallDrillRun>.Filter.Eq(x => x.Id, subjectId)).FirstOrDefaultAsync(cancellationToken);
+            return run?.LegalEntityId is { } company ? (company, null) : null; // R5: a run of the tenant, its own company
+        }
+
+        return null;
     }
 }

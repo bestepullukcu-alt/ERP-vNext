@@ -49,6 +49,10 @@ public sealed class RecallReadinessManifestProvider : IModuleManifestProvider
                 new ModuleManifestPermission(RecallPermissions.TraceExport, "Export a recall trace as CSV", "Tenant"),
                 // WP-0177-R3: KR-B "Karantina isteği gönder / Yeniden dene", KR-H "İadeyi bağla" — API-only until the R7 case detail page
                 new ModuleManifestPermission(RecallPermissions.QuarantineRequestsCreate, "Send / retry a recall quarantine request", "Tenant"),
-                new ModuleManifestPermission(RecallPermissions.ReturnsLink, "Link a customer return to a recall case", "Tenant")
+                new ModuleManifestPermission(RecallPermissions.ReturnsLink, "Link a customer return to a recall case", "Tenant"),
+                // WP-0177-R5: the drills (pack §8.10, KR-G) — API-only until the R6 "Tatbikat Planlayıcı" page
+                new ModuleManifestPermission(RecallPermissions.DrillsRead, "Read recall drill plans and runs", "Tenant"),
+                new ModuleManifestPermission(RecallPermissions.DrillsManage, "Create and edit recall drill plans", "Tenant"),
+                new ModuleManifestPermission(RecallPermissions.DrillsRun, "Run, sign or cancel a recall drill", "Tenant")
             ]);
 }

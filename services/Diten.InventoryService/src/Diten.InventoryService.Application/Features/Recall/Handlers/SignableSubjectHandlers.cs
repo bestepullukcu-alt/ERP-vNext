@@ -12,18 +12,20 @@ public sealed record GetRecallSignableSubjectQuery(string SubjectType, Guid Subj
 
 /// <summary>
 /// The MOD-0022 subject provider answer (pack §8.8): <c>rc-v1</c> of a case of the caller's company, <c>rs-v1</c> of a settings change the caller
-/// prepared. <c>recall.drill-run</c> (<c>dr-v1</c>) answers 404 until R5 brings the drill run. Every refusal is one 404 (no oracle). The fields
+/// prepared. R5: <c>dr-v1</c> of a drill run of the caller's company. Every refusal is one 404 (no oracle). The fields
 /// are exactly those <see cref="RecallSignableSubjects"/> hashes for the verification (CT decision F3-A).
 /// </summary>
 public sealed class GetRecallSignableSubjectHandler : IRequestHandler<GetRecallSignableSubjectQuery, Response<RecallSignableSubjectDto>>
 {
     private readonly IRecallRepository _repository;
+    private readonly IRecallDrillRepository _drills;
     private readonly RecallSubjectFacts _facts;
     private readonly RecallSupport _support;
 
-    public GetRecallSignableSubjectHandler(IRecallRepository repository, RecallSubjectFacts facts, RecallSupport support)
+    public GetRecallSignableSubjectHandler(IRecallRepository repository, IRecallDrillRepository drills, RecallSubjectFacts facts, RecallSupport support)
     {
         _repository = repository;
+        _drills = drills;
         _facts = facts;
         _support = support;
     }
@@ -39,6 +41,11 @@ public sealed class GetRecallSignableSubjectHandler : IRequestHandler<GetRecallS
             && await _repository.FindSettingsChangeAsync(request.SubjectId, ct) is { } change && change.SetBy == _support.UserId)
         {
             return Response<RecallSignableSubjectDto>.Success(RecallSignableSubjects.SettingsChangeSubject(change));
+        }
+
+        if (request.SubjectType == RecallSignableActions.DrillRunSubjectType && await _drills.FindRunAsync(request.SubjectId, ct) is { } run)
+        {
+            return Response<RecallSignableSubjectDto>.Success(RecallSignableSubjects.DrillRunSubject(run)); // R5: dr-v1 of a run of the caller's company
         }
 
         return Response<RecallSignableSubjectDto>.Fail(RecallErrorCodes.SubjectNotFound, "Signable subject not found.", 404);

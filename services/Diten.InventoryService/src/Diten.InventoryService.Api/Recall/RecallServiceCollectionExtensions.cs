@@ -66,6 +66,12 @@ public static class RecallServiceCollectionExtensions
         services.AddSingleton<RecallQuarantineSweeper>();
         services.AddHostedService<RecallQuarantineSweeperHostedService>();
 
+        // R5 (pack §8.10, KR-G): the drill store (drill records + a Drill snapshot + counter + audit — nothing else), the read-only candidate
+        // reads of the Auto pick and its randomness (Random.Shared; the tests inject a seed)
+        services.AddScoped<IRecallDrillRepository, RecallDrillRepository>();
+        services.AddScoped<Application.Features.Recall.Drills.IRecallDrillCandidates, RecallDrillCandidates>();
+        services.TryAddSingleton<Application.Features.Recall.Drills.IRecallDrillRandom, Application.Features.Recall.Drills.SharedRecallDrillRandom>();
+
         // Index gate (fail-closed): the unique indexes carry idempotency and "one active case per root lot".
         services.AddHostedService<RecallIndexInitializerHostedService>();
         return services;

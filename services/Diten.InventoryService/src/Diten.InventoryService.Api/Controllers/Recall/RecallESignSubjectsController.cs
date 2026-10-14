@@ -17,7 +17,7 @@ namespace Diten.InventoryService.Api.Controllers.Recall;
 /// <c>ExpiryESignSubjectsController</c> pattern, copied; every refusal is one 404 <c>RECALL_SUBJECT_NOT_FOUND</c> (no oracle):
 /// <list type="bullet">
 /// <item>the key <c>recall.cases.read</c> is missing (RECALL <c>x-permission</c> of the operation);</item>
-/// <item>an unknown type or <c>recall.drill-run</c> (R5 binds it), a subject not of the caller's tenant, a company named by the caller that is
+/// <item>an unknown type (R5: <c>recall.drill-run</c> is served), a subject not of the caller's tenant, a company named by the caller that is
 /// not the record's;</item>
 /// <item>a settings change prepared by another user.</item>
 /// </list>
@@ -34,7 +34,7 @@ public sealed class RecallESignSubjectsController : CustomBaseController
     [HttpGet("{subjectType}/{subjectId}")]
     public async Task<IActionResult> GetSignableSubject(string subjectType, string subjectId, CancellationToken ct)
     {
-        if (subjectType is not (RecallSignableActions.CaseSubjectType or RecallSignableActions.SettingsChangeSubjectType)
+        if (subjectType is not (RecallSignableActions.CaseSubjectType or RecallSignableActions.SettingsChangeSubjectType or RecallSignableActions.DrillRunSubjectType)
             || !User.Claims.Any(c => c.Type == "permission" && c.Value == RecallPermissions.CasesRead)
             || !Guid.TryParseExact(subjectId, "D", out var id))
         {

@@ -41,6 +41,9 @@ public static class RecallErrorCodes
     public const string QuantityExceedsShipped = "RECALL_QUANTITY_EXCEEDS_SHIPPED";
     public const string DrillNoCandidate = "RECALL_DRILL_NO_CANDIDATE";
 
+    /// <summary>R5 (RECALL 1.4.0): an unknown drill plan / run of the caller's company (another tenant's id is not found either).</summary>
+    public const string DrillNotFound = "RECALL_DRILL_NOT_FOUND";
+
     // shared (INVENTORY names)
     public const string ReasonRequired = "REASON_REQUIRED";
     public const string UnknownLot = "UNKNOWN_LOT";

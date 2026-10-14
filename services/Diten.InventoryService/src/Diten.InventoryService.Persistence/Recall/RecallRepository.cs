@@ -36,6 +36,7 @@ public sealed class RecallRepository : IRecallRepository
     private readonly IMongoCollection<RecallQuarantineRequest> _requests;
     private readonly IMongoCollection<RecallReturnLink> _returnLinks;
     private readonly IMongoCollection<RecallSettingsChange> _settingsChanges;
+    private readonly IMongoCollection<RecallDrillEvent> _drillEvents;
     private readonly TransactionRetryCounter _retries;
     private readonly ILogger<RecallRepository> _logger;
     private readonly Guid _tenantId;
@@ -59,6 +60,7 @@ public sealed class RecallRepository : IRecallRepository
         _requests = database.GetCollection<RecallQuarantineRequest>(RecallCollections.QuarantineRequests);
         _returnLinks = database.GetCollection<RecallReturnLink>(RecallCollections.ReturnLinks);
         _settingsChanges = database.GetCollection<RecallSettingsChange>(RecallCollections.SettingsChanges);
+        _drillEvents = database.GetCollection<RecallDrillEvent>(RecallCollections.DrillEvents);
         _retries = retries;
         _logger = logger;
         _tenantId = tenant.TenantId;
@@ -261,7 +263,8 @@ public sealed class RecallRepository : IRecallRepository
 
     public async Task<bool> SignatureUsedAsync(string signatureId, CancellationToken cancellationToken = default)
         => await _events.Find(Scope<RecallCaseEvent>() & Builders<RecallCaseEvent>.Filter.Eq(x => x.SignatureId, signatureId)).AnyAsync(cancellationToken)
-           || await _history.Find(Scope<RecallSettingsHistoryEntry>() & Builders<RecallSettingsHistoryEntry>.Filter.Eq(x => x.SignatureId, signatureId)).AnyAsync(cancellationToken);
+           || await _history.Find(Scope<RecallSettingsHistoryEntry>() & Builders<RecallSettingsHistoryEntry>.Filter.Eq(x => x.SignatureId, signatureId)).AnyAsync(cancellationToken)
+           || await _drillEvents.Find(Scope<RecallDrillEvent>() & Builders<RecallDrillEvent>.Filter.Eq(x => x.SignatureId, signatureId)).AnyAsync(cancellationToken); // R5: a drill result
 
     public async Task<T> InTransactionAsync<T>(Func<IRecallWriteSession, CancellationToken, Task<T>> work, CancellationToken cancellationToken = default)
     {

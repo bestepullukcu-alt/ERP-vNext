@@ -1,4 +1,5 @@
 using Diten.InventoryService.Domain.Recall.Entities;
+using Diten.InventoryService.Domain.Recall.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -41,10 +42,19 @@ public static class RecallIndexConfiguration
     /// <summary>R4 (CT-R16): one prepared settings change per (company, user, idempotency key) — the replay of prepareSettingsChange.</summary>
     public const string SettingsChangeKeyIndex = "ux_recall_settings_change_key";
 
+    /// <summary>R5: one drill-run number per tenant; one RUNNING run per company (partial on RunningKey); the start / plan replay keys.</summary>
+    public const string DrillRunNumberIndex = "ux_recall_drill_run_number";
+    public const string DrillRunningIndex = RecallDrillIndexes.Running;
+    public const string DrillRunCreateKeyIndex = "ux_recall_drill_run_create_key";
+    public const string DrillPlanCodeIndex = "ux_recall_drill_plan_code";
+    public const string DrillPlanCreateKeyIndex = "ux_recall_drill_plan_create_key";
+    public const string DrillEventKeyIndex = "ux_recall_drill_event_key";
+
     public static readonly IReadOnlyList<string> UniqueIndexes =
     [
         SettingsCompanyIndex, CaseNumberIndex, CaseActiveRootIndex, CaseCreateKeyIndex, EventKeyIndex, ScopeNodeIndex, LotBlockIndex,
-        NotificationKeyIndex, ConsumptionKeyIndex, SegregationKeyIndex, QuarantineRequestNodeIndex, ReturnLinkTransactionIndex, SettingsChangeKeyIndex
+        NotificationKeyIndex, ConsumptionKeyIndex, SegregationKeyIndex, QuarantineRequestNodeIndex, ReturnLinkTransactionIndex, SettingsChangeKeyIndex,
+        DrillRunNumberIndex, DrillRunningIndex, DrillRunCreateKeyIndex, DrillPlanCodeIndex, DrillPlanCreateKeyIndex, DrillEventKeyIndex
     ];
 
     private static BsonDocument IsString(string field) => new(field, new BsonDocument("$type", "string"));
@@ -157,6 +167,34 @@ public static class RecallIndexConfiguration
             new CreateIndexModel<RecallCaseEvent>(Builders<RecallCaseEvent>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.SignatureId),
                 new CreateIndexOptions<RecallCaseEvent> { Name = "ix_recall_event_signature", PartialFilterExpression = IsString(nameof(RecallCaseEvent.SignatureId)) }),
             cancellationToken: ct);
+
+        // R5: drill plans, runs (one Running per company), events
+        var plans = Builders<RecallDrillPlan>.IndexKeys;
+        await database.GetCollection<RecallDrillPlan>(RecallCollections.DrillPlans).Indexes.CreateManyAsync(
+        [
+            new(plans.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.Code), new CreateIndexOptions { Name = DrillPlanCodeIndex, Unique = true }),
+            new(plans.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.CreatedByUser).Ascending(x => x.CreateIdempotencyKey),
+                new CreateIndexOptions<RecallDrillPlan> { Name = DrillPlanCreateKeyIndex, Unique = true, PartialFilterExpression = IsString(nameof(RecallDrillPlan.CreateIdempotencyKey)) })
+        ], ct);
+        var runs = Builders<RecallDrillRun>.IndexKeys;
+        await database.GetCollection<RecallDrillRun>(RecallCollections.DrillRuns).Indexes.CreateManyAsync(
+        [
+            new(runs.Ascending(x => x.TenantId).Ascending(x => x.Number), new CreateIndexOptions { Name = DrillRunNumberIndex, Unique = true }),
+            new(runs.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.RunningKey),
+                new CreateIndexOptions<RecallDrillRun> { Name = DrillRunningIndex, Unique = true, PartialFilterExpression = IsString(nameof(RecallDrillRun.RunningKey)) }),
+            new(runs.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.StartedBy).Ascending(x => x.CreateIdempotencyKey),
+                new CreateIndexOptions<RecallDrillRun> { Name = DrillRunCreateKeyIndex, Unique = true, PartialFilterExpression = IsString(nameof(RecallDrillRun.CreateIdempotencyKey)) }),
+            new(runs.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.Status).Ascending(x => x.CompletedAtUtc),
+                new CreateIndexOptions { Name = "ix_recall_drill_run_status" })
+        ], ct);
+        var drillEvents = Builders<RecallDrillEvent>.IndexKeys;
+        await database.GetCollection<RecallDrillEvent>(RecallCollections.DrillEvents).Indexes.CreateManyAsync(
+        [
+            new(drillEvents.Ascending(x => x.TenantId).Ascending(x => x.SubjectId).Ascending(x => x.ActorUserId).Ascending(x => x.IdempotencyKey),
+                new CreateIndexOptions<RecallDrillEvent> { Name = DrillEventKeyIndex, Unique = true, PartialFilterExpression = IsString(nameof(RecallDrillEvent.IdempotencyKey)) }),
+            new(drillEvents.Ascending(x => x.TenantId).Ascending(x => x.SignatureId),
+                new CreateIndexOptions<RecallDrillEvent> { Name = "ix_recall_drill_event_signature", PartialFilterExpression = IsString(nameof(RecallDrillEvent.SignatureId)) })
+        ], ct);
 
         await database.GetCollection<RecallSegregationConfirmation>(RecallCollections.Segregations).Indexes.CreateManyAsync(
         [
