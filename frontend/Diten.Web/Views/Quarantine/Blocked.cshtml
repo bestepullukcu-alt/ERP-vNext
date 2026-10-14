@@ -71,6 +71,14 @@
                                 <option value="true">@Localizer["Quarantine.Blocked.Filter.PendingOnly"]</option>
                             </select>
                         </div>
+                        <div class="filter-chip">
+                            <select id="filterStatus" class="form-select form-select-sm" aria-label="@Localizer["Quarantine.Blocked.Filter.Status"]">
+                                <option value="">@Localizer["Quarantine.Blocked.Status.Open"]</option>
+                                <option value="Closed">@Localizer["Quarantine.Blocked.Status.Closed"]</option>
+                                <option value="SampleRetained">@Localizer["Quarantine.Blocked.Status.SampleRetained"]</option>
+                                <option value="All">@Localizer["Quarantine.Blocked.Status.All"]</option>
+                            </select>
+                        </div>
                         <div class="ms-auto d-flex gap-3">
                             <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">@SharedLocalizer["Apply"]</button>
                             <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">@Localizer["Quarantine.Filter.Clear"]</button>

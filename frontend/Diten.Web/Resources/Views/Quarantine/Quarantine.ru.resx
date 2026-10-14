@@ -434,4 +434,10 @@
   <data name="Quarantine.History.NoteUpdated" xml:space="preserve"><value>Примечание к анализу обновлено</value></data>
   <data name="Quarantine.Details.Quality.NoteLocked" xml:space="preserve"><value>Примечание заблокировано, пока решение по этой записи ожидает утверждения или применения.</value></data>
   <data name="Quarantine.Details.History.NoteChange" xml:space="preserve"><value>Примечание: {0} → {1} символов · Вложения: {2} → {3}</value></data>
+  <data name="Quarantine.BlockStock.Available" xml:space="preserve"><value>Доступно: {0} {1}</value></data>
+  <data name="Quarantine.Blocked.Filter.Status" xml:space="preserve"><value>Статус</value></data>
+  <data name="Quarantine.Blocked.Status.Open" xml:space="preserve"><value>Открыт</value></data>
+  <data name="Quarantine.Blocked.Status.Closed" xml:space="preserve"><value>Закрыт</value></data>
+  <data name="Quarantine.Blocked.Status.SampleRetained" xml:space="preserve"><value>Образец сохранён</value></data>
+  <data name="Quarantine.Blocked.Status.All" xml:space="preserve"><value>Все</value></data>
 </root>

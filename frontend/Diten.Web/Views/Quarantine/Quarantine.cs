@@ -309,6 +309,12 @@ public sealed class Quarantine
         "Quarantine.BlockStock.Note",
         "Quarantine.BlockStock.Confirm",
         "Quarantine.BlockStock.Done",
+        "Quarantine.BlockStock.Available", // WP-MVP1-FIX-QUI1
+        "Quarantine.Blocked.Filter.Status", // WP-MVP1-FIX-QUI1
+        "Quarantine.Blocked.Status.Open", // WP-MVP1-FIX-QUI1
+        "Quarantine.Blocked.Status.Closed", // WP-MVP1-FIX-QUI1
+        "Quarantine.Blocked.Status.SampleRetained", // WP-MVP1-FIX-QUI1
+        "Quarantine.Blocked.Status.All", // WP-MVP1-FIX-QUI1
         "Quarantine.Retest.Title",
         "Quarantine.Retest.Info",
         "Quarantine.Retest.Horizon",
