@@ -4,6 +4,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Diten.MdmService.Api</RootNamespace>
+    <!-- WP-VW-W4-INFRA: the dev verified-reference credential secret lives in dotnet user-secrets, never in appsettings -->
+    <UserSecretsId>6a1f0d2e-9c4b-4f7e-8b52-3d0e7a4c1f90</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="MediatR" Version="12.3.0" />

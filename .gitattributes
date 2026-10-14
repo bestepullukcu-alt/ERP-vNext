@@ -1,0 +1,7 @@
+# WP-VW-W4-INFRA — the LOCKED reference catalogs are verified byte-for-byte: Platform hashes the file (SHA-256) and
+# compares it with the fingerprint pinned in code (VerifiedGskuOperationalProvisioningOptions /
+# VerifiedMarketOperationalProvisioningOptions.LockedCatalogFingerprint). A Windows checkout with core.autocrlf=true
+# turned their LF into CRLF and the fingerprint no longer matched, so the verified GSKU / market provisioning refused
+# them. Only these files are pinned; every other file keeps the repository's existing line-ending behaviour.
+services/Diten.Platform/src/Diten.Platform.API/Seed/business-reference-data/mod-0290-gsku-reference.json text eol=lf
+services/Diten.Platform/src/Diten.Platform.API/Seed/business-reference-data/mod-0290-market-reference.json text eol=lf
