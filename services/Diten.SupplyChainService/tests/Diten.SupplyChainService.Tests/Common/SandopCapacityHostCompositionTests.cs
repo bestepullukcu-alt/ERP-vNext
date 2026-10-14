@@ -24,40 +24,51 @@ public sealed class SandopCapacityHostCompositionTests
     }
 
     /// <summary>
-    /// A known, deliberate gap that must STILL be a gap, so the entry cannot outlive its reason
-    /// (the pattern CompositionRootGuardTests.KnownUncomposed uses).
+    /// Q484 (2026-10-12): until the integration owner released it, this test recorded a defect instead of
+    /// asserting the contract — Program.cs wired five context middlewares (Carrier, Load, Return, Claim,
+    /// Shipment) and the whole of src held exactly one reference to CapacityContextMiddleware, its own
+    /// declaration. So a Capacity request was MAPPED but not CONTEXTED: it fell into the Shipment catch-all,
+    /// CapacityRequestContext stayed at its defaults, the handler ran at CorrelationId/TenantId/LegalEntityId
+    /// all-zero and the request answered 500 INTERNAL_ERROR. The guard asserted that 500 so the known gap could
+    /// not outlive its reason, and on 2026-10-12 it fired exactly as designed the moment the branch went in.
     ///
-    /// MOD-0192's CapacityContextMiddleware is never added to the pipeline. Program.cs wires five siblings —
-    /// Carrier (:132), Load (:133), Return (:141), Claim (:142) and Shipment (:145) — and the whole of src
-    /// contains exactly one reference to CapacityContextMiddleware: its own declaration. So CapacityRequestContext
-    /// is never populated and every authenticated Capacity request answers 500, even with the module fully
-    /// composed as it is here. This is NOT the §22 uptake gate (Q292/Q273, the missing demand producer): it would
-    /// still be true the day a real IDemandFixtureReader arrives.
+    /// It now asserts the thing it was standing in for — that the branch is in the pipeline — and it does so
+    /// WITHOUT WRITING, which is forced rather than stylistic. Exactly one capacity plan can exist per scope
+    /// for this fixture: CapacityRepository's duplicate check is (scope, horizon start, horizon end, demand
+    /// plan id, demand plan version) and demand.IsExact pins all four to the fixture's values, so a second
+    /// create answers 409 CAPACITY_PLAN_ALREADY_EXISTS whatever its scenario name. A creating probe here
+    /// would therefore consume the single slot CapacityCorrelationTests needs, and measurement showed exactly
+    /// that: with this test creating a plan, Correlation_survives_request_response_audit_and_event answered
+    /// 409 on a shared host while passing when run alone. That is also why the original guard could assert
+    /// 500 — asserting a refusal costs no slot.
     ///
-    /// Fixing it means editing Program.cs, which the §22 gate reserves, so this test records the defect instead.
-    /// When the middleware is wired, this test fails and must be replaced by the real Capacity HTTP assertions —
-    /// MOD-0192's acceptance :199, :200 and :201 are open for exactly this reason (:202 closed 2026-10-12 by
-    /// SandopCapacitySeparationTests, which needs no HTTP).
-    ///
-    /// 2026-10-12: CT wired the branch, watched this guard fire exactly as designed, measured the result, and
-    /// then reverted it — Program.cs is hash-pinned as Accepted composition in both packs (MOD-0192:273,
-    /// MOD-0190:261) and CT did not have the integration-owner authorization. The measurement survives in
-    /// MOD-0192:199: the correlation chain is green end to end and all five pipeline suites were byte-identical,
-    /// so whoever holds that authorization has the evidence and the two lines ready. CapacityCorrelationTests
-    /// is the test to un-skip on that day.
+    /// An unauthenticated request separates the pipelines without touching the slot, and the discriminator is
+    /// the contract envelope rather than the status. Measured both ways on 2026-10-12: with the branch, the
+    /// request is refused by CapacityContextMiddleware as 401 with the Capacity envelope's UNAUTHENTICATED and
+    /// a Bearer challenge; with both lines of the fix disabled, the same request is refused as a 401 carrying
+    /// NO BODY AND NO CODE at all — the Shipment catch-all returns early on an endpoint that has no Shipment
+    /// permission attribute, and the authentication middleware refuses it bare. So the status matches either
+    /// way and only the code says which middleware handled the path, which is why that is what this asserts.
+    /// Scope population and the four-hop correlation chain belong to CapacityCorrelationTests, un-skipped
+    /// with this branch, which is now the only test that creates; with the branch disabled those two answer
+    /// 500 instead of 201 and 400, the original defect.
     /// </summary>
     [Fact]
-    public async Task Capacity_controller_is_mapped_but_its_context_middleware_is_not_composed()
+    public async Task Capacity_controller_is_mapped_and_its_context_middleware_is_composed()
     {
         var reply = await _host.Send("POST", "/api/supply-chain/capacity-plans",
-            SandopCapacityHttpHost.CapacityPlan(), _host.Token(), "k-" + Guid.NewGuid());
+            SandopCapacityHttpHost.CapacityPlan(), token: null, "k-" + Guid.NewGuid());
 
-        Assert.True(reply.Status == 500,
-            "Capacity answered " + reply.Status + ", not 500. If the Capacity context middleware has been wired "
-            + "into Program.cs, this known-gap guard is stale: delete it and close MOD-0192 :199/:200/:201/:202 "
-            + "with real HTTP assertions. Body: " + reply.Body);
+        Assert.Equal(401, reply.Status);
+        Assert.True(reply.Code == "UNAUTHENTICATED",
+            "Capacity answered code '" + reply.Code + "' with status " + reply.Status + ". UNAUTHENTICATED is "
+            + "CapacityContextMiddleware's refusal, and a bare 401 with no code is what the pipeline answers "
+            + "when the Program.cs capacity branch is gone; measured on 2026-10-12. MOD-0192 :199/:200 rest "
+            + "on this line. Body: '" + reply.Body + "'");
 
-        // 500 alone could be anything; pin it to the contract envelope so an unrelated failure does not pass here.
-        Assert.Equal("INTERNAL_ERROR", reply.Code);
+        // A Capacity refusal is a contract envelope, so the body carries the id the caller can quote back.
+        // The sabotage measurement answered with an empty body, which this also rejects.
+        Assert.False(string.IsNullOrWhiteSpace(reply.Correlation));
+        Assert.Contains("UNAUTHENTICATED", reply.Body);
     }
 }

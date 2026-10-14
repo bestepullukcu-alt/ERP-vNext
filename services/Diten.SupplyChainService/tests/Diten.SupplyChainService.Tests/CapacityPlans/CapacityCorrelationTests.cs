@@ -24,7 +24,7 @@ public sealed class CapacityCorrelationTests
         await _host.Database.GetCollection<BsonDocument>(collection)
             .CountDocumentsAsync(new BsonDocument("CorrelationId", correlation.ToString()));
 
-    [Fact(Skip = "MOD-0192:199/:200 - needs the Program.cs capacity branch, which is hash-pinned as Accepted composition in MOD-0192:273 and MOD-0190:261 and needs integration-owner authorization. Measured green on 2026-10-12 with that branch in place; see MOD-0192:199. Un-skip with the branch, not before.")]
+    [Fact]
     public async Task Correlation_survives_request_response_audit_and_event()
     {
         var correlation = Guid.NewGuid();
@@ -50,7 +50,7 @@ public sealed class CapacityCorrelationTests
         Assert.Equal(1, await Rows("capacity_receipts", correlation));
     }
 
-    [Fact(Skip = "MOD-0192:199/:200 - needs the Program.cs capacity branch, which is hash-pinned as Accepted composition in MOD-0192:273 and MOD-0190:261 and needs integration-owner authorization. Measured green on 2026-10-12 with that branch in place; see MOD-0192:199. Un-skip with the branch, not before.")]
+    [Fact]
     public async Task Malformed_correlation_is_rejected_before_any_write()
     {
         var reply = await _host.Send("POST", Plans, SandopCapacityHttpHost.CapacityPlan(),

@@ -5,6 +5,7 @@ using Diten.SupplyChainService.Infrastructure.Features.Loads;
 using Diten.SupplyChainService.Api.Features.Carriers;
 using Diten.SupplyChainService.Api.Features.Returns;
 using Diten.SupplyChainService.Api.Features.Claims;
+using Diten.SupplyChainService.Api.Features.CapacityPlans;
 using Diten.SupplyChainService.Application.Features.Carriers;
 using Diten.SupplyChainService.Persistence.Features.Carriers;
 // Q271/Q272 (2026-10-03): composing Returns (MOD-0186) and Claims (MOD-0187).
@@ -140,8 +141,18 @@ app.UseWhen(LoadContextMiddleware.IsLoadPath, branch => branch.UseMiddleware<Loa
 // UUIDs." from the Shipment middleware; with this branch wired it returns 200 and the handler runs.
 app.UseWhen(ReturnContextMiddleware.IsReturnPath, branch => branch.UseMiddleware<ReturnContextMiddleware>());
 app.UseWhen(ClaimContextMiddleware.IsClaimPath, branch => branch.UseMiddleware<ClaimContextMiddleware>());
+// Q484 (2026-10-12, integration-owner released): the defect Q271/Q272 found in /returns and /claims was still
+// open for /api/supply-chain/capacity-plans. Composing MOD-0192 made its controller MAPPED but not CONTEXTED:
+// the whole of src held exactly one reference to CapacityContextMiddleware, its own declaration, so Capacity
+// requests fell into the Shipment catch-all below and CapacityRequestContext stayed at its defaults. Measured
+// on the lane before this line: POST /api/supply-chain/capacity-plans with a valid token routed to
+// CapacityPlansController.Create, the handler ran with CorrelationId, TenantId and LegalEntityId all zero, and
+// the request answered 500 INTERNAL_ERROR from an InvalidOperationException, while Sandop answered 201 beside
+// it. SandopCapacityHostCompositionTests recorded that defect on purpose and is replaced by real assertions.
+app.UseWhen(CapacityContextMiddleware.IsCapacityPath, branch => branch.UseMiddleware<CapacityContextMiddleware>());
 app.UseWhen(context => !CarrierContextMiddleware.IsCarrierPath(context) && !LoadContextMiddleware.IsLoadPath(context)
-    && !ReturnContextMiddleware.IsReturnPath(context) && !ClaimContextMiddleware.IsClaimPath(context),
+    && !ReturnContextMiddleware.IsReturnPath(context) && !ClaimContextMiddleware.IsClaimPath(context)
+    && !CapacityContextMiddleware.IsCapacityPath(context),
     branch => branch.UseMiddleware<ShipmentContextMiddleware>());
 app.UseAuthorization();
 app.MapGet("/health", () => Results.Ok(new { status = "up", module = "MOD-0183", warehouseIntake = "unimplemented", outboxTransport = "integration-owned" })).AllowAnonymous();
