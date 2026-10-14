@@ -69,6 +69,24 @@ describe("the shared toast, through the real Notyf", () => {
       .toBe('Onayla uygulandı: A&B "Q3" <taslak> O\'Neil');
   });
 
+  /*
+   * WP-VW-W3-FIX (F4) — Notyf also ANNOUNCES the message to screen readers, with `textContent`. Handed the escaped
+   * text it announced "Başlık — &#39;Onayla&#39; işlemi tamamlandı" (the Work Center's ToastActionApplied, seen in the
+   * accessibility tree at the W3 live E4). The announcement must be the plain sentence, the visible toast too.
+   */
+  it("announces the plain sentence to screen readers — no entities in the live region", async () => {
+    const win = loadShowToast({ Notyf, Notiflix: undefined });
+    const sentence = 'Başlık — \'Onayla\' işlemi tamamlandı · A&B "Q3" <taslak>';
+    win.showToast(sentence, "success");
+    await new Promise((resolve) => setTimeout(resolve, 150)); // Notyf announces after 100 ms
+
+    const announcer = document.querySelector(".notyf-announcer");
+    expect(announcer, "Notyf drew no live region").toBeTruthy();
+    expect(announcer.textContent).toBe(sentence);
+    expect(document.querySelector(".notyf__message").textContent).toBe(sentence);
+    expect(win.DitenToastPlain(win.DitenToastText(sentence))).toBe(sentence);
+  });
+
   it("still resolves its own message keys", () => {
     const win = loadShowToast({ Notyf, Notiflix: undefined });
     win.showToast("RecordSaved", "success");

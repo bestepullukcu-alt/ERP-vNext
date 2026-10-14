@@ -8,7 +8,8 @@ namespace Diten.ManufacturingService.Persistence.Repositories;
 /// AUD-001 yol c — BOM sürümleri ve geçmişleri TEK Mongo işleminde (snapshot / majority) yazılır. Bir yazım başarısız
 /// olursa işlem iptal edilir; ne BOM ne geçmiş kalır (K2 fail-closed). Geçmiş koleksiyonuna yalnız ekleme yapılır.
 /// Eşzamanlılık: güncellenen her sürüm beklenen <c>Version</c> ile filtrelenir; tutmazsa ya da eşsiz index (item başına
-/// tek Effective, revizyon no) ihlal edilirse <see cref="BomCommitResult.Conflict"/>.
+/// tek Effective, revizyon no) ihlal edilirse <see cref="BomCommitResult.Conflict"/>. Contract v1.2.0: değişikliği
+/// duyuran BOM-version olayları outbox koleksiyonuna AYNI işlemde eklenir — değişiklik yazılmazsa olay da yazılmaz.
 /// </summary>
 public sealed class BomHistoryJournal(IMongoDatabase database) : IBomHistoryJournal
 {
@@ -16,6 +17,7 @@ public sealed class BomHistoryJournal(IMongoDatabase database) : IBomHistoryJour
 
     private readonly IMongoCollection<BomVersion> _boms = database.GetCollection<BomVersion>(BomCollections.Boms);
     private readonly IMongoCollection<BomHistoryEntry> _history = database.GetCollection<BomHistoryEntry>(BomCollections.History);
+    private readonly IMongoCollection<BomOutboxEvent> _outbox = database.GetCollection<BomOutboxEvent>(BomCollections.Outbox);
 
     public async Task<BomCommitResult> CommitAsync(BomChangeSet changeSet, CancellationToken ct)
     {
@@ -52,6 +54,11 @@ public sealed class BomHistoryJournal(IMongoDatabase database) : IBomHistoryJour
                     }
 
                     await _history.InsertManyAsync(session, changeSet.History, cancellationToken: ct);
+                    if (changeSet.Events is { Count: > 0 } events)
+                    {
+                        await _outbox.InsertManyAsync(session, events, cancellationToken: ct);
+                    }
+
                     await session.CommitTransactionAsync(ct);
                     return BomCommitResult.Committed;
                 }
@@ -111,7 +118,8 @@ public sealed class BomHistoryJournal(IMongoDatabase database) : IBomHistoryJour
         bool InScope(BomVersion b) => b.TenantId == changeSet.TenantId && b.LegalEntityId == changeSet.LegalEntityId;
         if ((changeSet.Inserted is { } i && !InScope(i))
             || changeSet.Updated.Any(u => !InScope(u.Entity))
-            || changeSet.History.Any(h => h.TenantId != changeSet.TenantId || h.LegalEntityId != changeSet.LegalEntityId))
+            || changeSet.History.Any(h => h.TenantId != changeSet.TenantId || h.LegalEntityId != changeSet.LegalEntityId)
+            || (changeSet.Events ?? []).Any(e => e.TenantId != changeSet.TenantId || e.LegalEntityId != changeSet.LegalEntityId))
         {
             throw new InvalidOperationException("Every document in a BOM change must carry the change's tenant and legal entity.");
         }

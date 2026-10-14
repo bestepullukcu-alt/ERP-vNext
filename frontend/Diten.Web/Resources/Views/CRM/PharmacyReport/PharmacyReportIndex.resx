@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>Pharmacy visit report</value></data>
+  <data name="BackButton" xml:space="preserve"><value>Back to the calendar</value></data>
+  <data name="ReadOnly" xml:space="preserve"><value>You can view this report; recording it needs the visit report record permission.</value></data>
+  <data name="SentTitle" xml:space="preserve"><value>Report sent.</value></data>
+  <data name="Unlock" xml:space="preserve"><value>Change</value></data>
+  <data name="FixTitle" xml:space="preserve"><value>Reasoned correction</value></data>
+  <data name="FixText" xml:space="preserve"><value>60 minutes have passed since sending. A reason is required; the changed fields appear in the report history.</value></data>
+  <data name="FixPlaceholder" xml:space="preserve"><value>Reason (required)</value></data>
+  <data name="StepsLabel" xml:space="preserve"><value>Report steps</value></data>
+  <data name="PrevButton" xml:space="preserve"><value>Back</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Save draft</value></data>
+  <data name="Step_general" xml:space="preserve"><value>General</value></data>
+  <data name="Step_stock" xml:space="preserve"><value>Stock and shelf</value></data>
+  <data name="Step_order" xml:space="preserve"><value>Order and sales</value></data>
+  <data name="Step_market" xml:space="preserve"><value>Competitor and recommendation</value></data>
+  <data name="Step_safety" xml:space="preserve"><value>Safety</value></data>
+  <data name="Step_summary" xml:space="preserve"><value>Summary</value></data>
+  <data name="StepMissing" xml:space="preserve"><value>{0} missing</value></data>
+  <data name="StepOk" xml:space="preserve"><value>Complete</value></data>
+  <data name="StepOf" xml:space="preserve"><value>Step {0} / {1}</value></data>
+  <data name="NextStep" xml:space="preserve"><value>Next: {0}</value></data>
+  <data name="MissingCount" xml:space="preserve"><value>{0} fields missing</value></data>
+  <data name="ReadyToSend" xml:space="preserve"><value>Ready to send</value></data>
+  <data name="SavedAt" xml:space="preserve"><value>Draft saved · {0}</value></data>
+  <data name="Unsaved" xml:space="preserve"><value>Unsaved changes</value></data>
+  <data name="DraftStored" xml:space="preserve"><value>Draft stored</value></data>
+  <data name="NotSaved" xml:space="preserve"><value>Not saved yet</value></data>
+  <data name="SentText" xml:space="preserve"><value>You can change it within 60 minutes of sending; after that a reasoned correction is needed.</value></data>
+  <data name="SentAmended" xml:space="preserve"><value>A reasoned correction was recorded.</value></data>
+  <data name="NotPharmacy" xml:space="preserve"><value>This visit is not a pharmacy visit; its report is filled in on the doctor report.</value></data>
+  <data name="Outcome" xml:space="preserve"><value>Result</value></data>
+  <data name="OutcomeDone" xml:space="preserve"><value>Done</value></data>
+  <data name="OutcomeHint" xml:space="preserve"><value>Not done / postpone is entered from the calendar.</value></data>
+  <data name="ActualTimes" xml:space="preserve"><value>Actual start / end</value></data>
+  <data name="ServerTime" xml:space="preserve"><value>Server time; cannot be changed.</value></data>
+  <data name="Minutes" xml:space="preserve"><value>{0} min</value></data>
+  <data name="VisitKind" xml:space="preserve"><value>Visit type</value></data>
+  <data name="Kind_in_person" xml:space="preserve"><value>In person</value></data>
+  <data name="Kind_remote" xml:space="preserve"><value>Remote</value></data>
+  <data name="MetRole" xml:space="preserve"><value>Person met</value></data>
+  <data name="GeneralNote" xml:space="preserve"><value>General assessment</value></data>
+  <data name="OptionsUnavailable" xml:space="preserve"><value>The options could not be loaded.</value></data>
+  <data name="StockTitle" xml:space="preserve"><value>Stock per product</value></data>
+  <data name="NearExpiry" xml:space="preserve"><value>Near expiry</value></data>
+  <data name="ReturnIssue" xml:space="preserve"><value>Return issue</value></data>
+  <data name="RemoveRow" xml:space="preserve"><value>Remove</value></data>
+  <data name="NoSkus" xml:space="preserve"><value>No product on this visit yet; add one by searching.</value></data>
+  <data name="GskuSearch" xml:space="preserve"><value>Search a product / pack (min. 2 letters)</value></data>
+  <data name="GskusNoPermission" xml:space="preserve"><value>The product packs cannot be listed with your permissions; ask for the SKU read permission.</value></data>
+  <data name="ShelfTitle" xml:space="preserve"><value>Shelf / visibility</value></data>
+  <data name="MaterialStand" xml:space="preserve"><value>Material / stand present</value></data>
+  <data name="ShelfPhoto" xml:space="preserve"><value>Shelf photo</value></data>
+  <data name="PhotoTake" xml:space="preserve"><value>Take a photo</value></data>
+  <data name="PhotoReplace" xml:space="preserve"><value>Replace the photo</value></data>
+  <data name="PhotoHint" xml:space="preserve"><value>JPEG or PNG, up to 10 MB.</value></data>
+  <data name="PhotoSaved" xml:space="preserve"><value>Shelf photo saved.</value></data>
+  <data name="OrderTitle" xml:space="preserve"><value>Order</value></data>
+  <data name="NoOrder" xml:space="preserve"><value>No pre-order was created on this visit.</value></data>
+  <data name="CreateOrder" xml:space="preserve"><value>Create pre-order</value></data>
+  <data name="Soon" xml:space="preserve"><value>Coming soon</value></data>
+  <data name="OrderSoonHint" xml:space="preserve"><value>Pre-orders come with the order module.</value></data>
+  <data name="SalesTitle" xml:space="preserve"><value>Sales</value></data>
+  <data name="SalesHint" xml:space="preserve"><value>The trend is required for each product; boxes per month is optional.</value></data>
+  <data name="BoxesPerMonth" xml:space="preserve"><value>boxes / month</value></data>
+  <data name="CompetitorTitle" xml:space="preserve"><value>Competitor</value></data>
+  <data name="CompetitorsUnavailable" xml:space="preserve"><value>The competitor list could not be read; you can still record without it.</value></data>
+  <data name="NoCompetitor" xml:space="preserve"><value>No competitor</value></data>
+  <data name="ProposedBadge" xml:space="preserve"><value>added by the rep · awaiting approval to the reference list</value></data>
+  <data name="AdvantageHint" xml:space="preserve"><value>Versus the competitor: one tap our advantage (+), two taps our disadvantage (−)</value></data>
+  <data name="ProposalOpen" xml:space="preserve"><value>Not in the list, add a competitor</value></data>
+  <data name="ProposalName" xml:space="preserve"><value>Competitor product name</value></data>
+  <data name="ProposalCompany" xml:space="preserve"><value>Company</value></data>
+  <data name="ProposalAdd" xml:space="preserve"><value>Add</value></data>
+  <data name="ProposalHint" xml:space="preserve"><value>It is proposed to the product master when the report is sent.</value></data>
+  <data name="RecommendationTitle" xml:space="preserve"><value>Recommendation and prescription flow</value></data>
+  <data name="LinkedDoctors" xml:space="preserve"><value>Doctors the prescriptions come from</value></data>
+  <data name="NoLinked" xml:space="preserve"><value>No doctor linked.</value></data>
+  <data name="DoctorSearch" xml:space="preserve"><value>Search a doctor (min. 2 letters)</value></data>
+  <data name="TrainingTitle" xml:space="preserve"><value>Training / material and requests</value></data>
+  <data name="TrainingGiven" xml:space="preserve"><value>Product training was given to the staff</value></data>
+  <data name="RequestType" xml:space="preserve"><value>Request type</value></data>
+  <data name="RequestDate" xml:space="preserve"><value>Due date</value></data>
+  <data name="RequestAdd" xml:space="preserve"><value>Add request</value></data>
+  <data name="AeQuestion" xml:space="preserve"><value>Was a side effect / adverse event reported during the visit?</value></data>
+  <data name="AeWarning" xml:space="preserve"><value>A pharmacovigilance report is required within 24 hours.</value></data>
+  <data name="AeNote" xml:space="preserve"><value>What was reported</value></data>
+  <data name="AnswerYes" xml:space="preserve"><value>Yes</value></data>
+  <data name="AnswerNo" xml:space="preserve"><value>No</value></data>
+  <data name="SumStock" xml:space="preserve"><value>Stock: {0} / {1}</value></data>
+  <data name="SumSales" xml:space="preserve"><value>Sales trend: {0} / {1}</value></data>
+  <data name="SumCompetitors" xml:space="preserve"><value>Competitors: {0}</value></data>
+  <data name="SumAeYes" xml:space="preserve"><value>Adverse event reported</value></data>
+  <data name="SumAeNo" xml:space="preserve"><value>No adverse event</value></data>
+  <data name="SumAeOpen" xml:space="preserve"><value>Adverse event question not answered</value></data>
+  <data name="Miss_visitKindCode" xml:space="preserve"><value>Visit type</value></data>
+  <data name="Miss_adverseEvent" xml:space="preserve"><value>Adverse event question</value></data>
+  <data name="Miss_adverseEventNote" xml:space="preserve"><value>What was reported (adverse event)</value></data>
+  <data name="Miss_metRoleCode" xml:space="preserve"><value>Person met</value></data>
+  <data name="Miss_stock_levelCode" xml:space="preserve"><value>{0}: stock level</value></data>
+  <data name="Miss_sales_trendCode" xml:space="preserve"><value>{0}: sales trend</value></data>
+  <data name="Miss_competitors" xml:space="preserve"><value>Competitor (or "No competitor")</value></data>
+  <data name="Miss_generic" xml:space="preserve"><value>Missing: {0}</value></data>
+  <data name="SubmitButton" xml:space="preserve"><value>Send report</value></data>
+  <data name="SendFix" xml:space="preserve"><value>Send the correction</value></data>
+  <data name="DraftSaved" xml:space="preserve"><value>Draft saved.</value></data>
+  <data name="Submitted" xml:space="preserve"><value>Report sent.</value></data>
+  <data name="SubmittedWithWarnings" xml:space="preserve"><value>Report sent; some follow-up steps will be retried.</value></data>
+  <data name="Amended" xml:space="preserve"><value>Correction recorded.</value></data>
+  <data name="WindowClosed" xml:space="preserve"><value>The 60 minutes have passed; enter a reason to send a correction.</value></data>
+  <data name="ErrStockLevel" xml:space="preserve"><value>Choose the stock level.</value></data>
+  <data name="ErrTrend" xml:space="preserve"><value>Choose the sales trend.</value></data>
+  <data name="ErrCompetitors" xml:space="preserve"><value>Choose a competitor or "No competitor".</value></data>
+  <data name="ErrAe" xml:space="preserve"><value>Answer the adverse event question.</value></data>
+  <data name="ErrAeNote" xml:space="preserve"><value>Describe what was reported.</value></data>
+  <data name="ErrProposalName" xml:space="preserve"><value>Enter the product name.</value></data>
+  <data name="ErrProposalCompany" xml:space="preserve"><value>Enter the company.</value></data>
+  <data name="ErrTooLong" xml:space="preserve"><value>At most 200 characters.</value></data>
+  <data name="ErrBoxes" xml:space="preserve"><value>A whole number from 0 to 100,000.</value></data>
+  <data name="ErrReason" xml:space="preserve"><value>A reason is required.</value></data>
+  <data name="ErrReasonLong" xml:space="preserve"><value>At most 500 characters.</value></data>
+  <data name="Err_report_incomplete" xml:space="preserve"><value>Some answers are missing; see the summary.</value></data>
+  <data name="Err_report_code_invalid" xml:space="preserve"><value>An option is no longer valid; choose again.</value></data>
+  <data name="Err_report_v2_invalid" xml:space="preserve"><value>The report could not be read; check the values.</value></data>
+  <data name="Err_reference_data_unavailable" xml:space="preserve"><value>The options could not be checked right now; your answers are kept.</value></data>
+  <data name="Err_visit_report_edit_window_closed" xml:space="preserve"><value>The 60 minutes have passed; send a reasoned correction.</value></data>
+  <data name="Err_visit_report_concurrency_conflict" xml:space="preserve"><value>The report was changed elsewhere. Reload and try again.</value></data>
+  <data name="Err_visit_report_amendment_reason_required" xml:space="preserve"><value>A reason (up to 500 characters) is required.</value></data>
+  <data name="Err_visit_report_not_finalised" xml:space="preserve"><value>Only a sent report can be corrected.</value></data>
+  <data name="Err_visit_report_plan_cancelled" xml:space="preserve"><value>This visit was cancelled.</value></data>
+  <data name="Err_visit_report_deadline_passed" xml:space="preserve"><value>The report deadline has passed.</value></data>
+  <data name="Err_visit_not_yet_due" xml:space="preserve"><value>This visit is not due yet.</value></data>
+  <data name="Err_visit_photo_invalid" xml:space="preserve"><value>The photo must be JPEG or PNG and at most 10 MB.</value></data>
+  <data name="Err_shelf_photo_pharmacy_only" xml:space="preserve"><value>A shelf photo belongs to a pharmacy visit only.</value></data>
+  <data name="Err_shelf_photo_report_submitted" xml:space="preserve"><value>The report is sent; the photo can no longer change.</value></data>
+  <data name="Err_shelf_photo_not_found" xml:space="preserve"><value>No shelf photo yet.</value></data>
+  <data name="Err_visit_evidence_store_unavailable" xml:space="preserve"><value>The photo could not be stored right now; try again.</value></data>
+  <data name="Err_dependency_unavailable" xml:space="preserve"><value>The list is not available right now.</value></data>
+  <data name="Err_conflict" xml:space="preserve"><value>The report was changed elsewhere. Reload and try again.</value></data>
+  <data name="Err_permission_denied" xml:space="preserve"><value>You do not have permission for this.</value></data>
+  <data name="Err_unavailable" xml:space="preserve"><value>The server could not be reached; your answers are kept on this screen.</value></data>
+  <data name="Err_generic" xml:space="preserve"><value>The operation could not be completed.</value></data>
+</root>

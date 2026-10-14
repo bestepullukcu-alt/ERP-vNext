@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>تقرير زيارة الصيدلية</value></data>
+  <data name="BackButton" xml:space="preserve"><value>العودة إلى التقويم</value></data>
+  <data name="ReadOnly" xml:space="preserve"><value>يمكنك عرض هذا التقرير؛ ويتطلب تسجيله صلاحية تسجيل تقارير الزيارات.</value></data>
+  <data name="SentTitle" xml:space="preserve"><value>تم إرسال التقرير.</value></data>
+  <data name="Unlock" xml:space="preserve"><value>تغيير</value></data>
+  <data name="FixTitle" xml:space="preserve"><value>تصحيح مُعلَّل</value></data>
+  <data name="FixText" xml:space="preserve"><value>مرّت 60 دقيقة على الإرسال. السبب إلزامي؛ وتظهر الحقول المعدَّلة في سجل التقرير.</value></data>
+  <data name="FixPlaceholder" xml:space="preserve"><value>السبب (إلزامي)</value></data>
+  <data name="StepsLabel" xml:space="preserve"><value>خطوات التقرير</value></data>
+  <data name="PrevButton" xml:space="preserve"><value>السابق</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>حفظ المسودة</value></data>
+  <data name="Step_general" xml:space="preserve"><value>عام</value></data>
+  <data name="Step_stock" xml:space="preserve"><value>المخزون والرف</value></data>
+  <data name="Step_order" xml:space="preserve"><value>الطلب والمبيعات</value></data>
+  <data name="Step_market" xml:space="preserve"><value>المنافس والتوصية</value></data>
+  <data name="Step_safety" xml:space="preserve"><value>السلامة</value></data>
+  <data name="Step_summary" xml:space="preserve"><value>الملخص</value></data>
+  <data name="StepMissing" xml:space="preserve"><value>{0} ناقص</value></data>
+  <data name="StepOk" xml:space="preserve"><value>مكتمل</value></data>
+  <data name="StepOf" xml:space="preserve"><value>الخطوة {0} / {1}</value></data>
+  <data name="NextStep" xml:space="preserve"><value>التالي: {0}</value></data>
+  <data name="MissingCount" xml:space="preserve"><value>{0} حقول ناقصة</value></data>
+  <data name="ReadyToSend" xml:space="preserve"><value>جاهز للإرسال</value></data>
+  <data name="SavedAt" xml:space="preserve"><value>حُفظت المسودة · {0}</value></data>
+  <data name="Unsaved" xml:space="preserve"><value>تغييرات غير محفوظة</value></data>
+  <data name="DraftStored" xml:space="preserve"><value>المسودة محفوظة</value></data>
+  <data name="NotSaved" xml:space="preserve"><value>لم يُحفظ بعد</value></data>
+  <data name="SentText" xml:space="preserve"><value>يمكنك تغييره خلال 60 دقيقة من الإرسال؛ وبعدها يلزم تصحيح مُعلَّل.</value></data>
+  <data name="SentAmended" xml:space="preserve"><value>سُجِّل تصحيح مُعلَّل.</value></data>
+  <data name="NotPharmacy" xml:space="preserve"><value>هذه الزيارة ليست زيارة صيدلية؛ يُملأ تقريرها في تقرير الطبيب.</value></data>
+  <data name="Outcome" xml:space="preserve"><value>النتيجة</value></data>
+  <data name="OutcomeDone" xml:space="preserve"><value>تمّت</value></data>
+  <data name="OutcomeHint" xml:space="preserve"><value>لم تتم / التأجيل يُدخل من التقويم.</value></data>
+  <data name="ActualTimes" xml:space="preserve"><value>البداية / النهاية الفعلية</value></data>
+  <data name="ServerTime" xml:space="preserve"><value>وقت الخادم؛ لا يمكن تغييره.</value></data>
+  <data name="Minutes" xml:space="preserve"><value>{0} د</value></data>
+  <data name="VisitKind" xml:space="preserve"><value>نوع الزيارة</value></data>
+  <data name="Kind_in_person" xml:space="preserve"><value>حضوري</value></data>
+  <data name="Kind_remote" xml:space="preserve"><value>عن بُعد</value></data>
+  <data name="MetRole" xml:space="preserve"><value>الشخص الذي تمت مقابلته</value></data>
+  <data name="GeneralNote" xml:space="preserve"><value>التقييم العام</value></data>
+  <data name="OptionsUnavailable" xml:space="preserve"><value>تعذّر تحميل الخيارات.</value></data>
+  <data name="StockTitle" xml:space="preserve"><value>المخزون لكل منتج</value></data>
+  <data name="NearExpiry" xml:space="preserve"><value>قريب الانتهاء</value></data>
+  <data name="ReturnIssue" xml:space="preserve"><value>مشكلة إرجاع</value></data>
+  <data name="RemoveRow" xml:space="preserve"><value>إزالة</value></data>
+  <data name="NoSkus" xml:space="preserve"><value>لا يوجد منتج في هذه الزيارة بعد؛ أضِف منتجًا بالبحث.</value></data>
+  <data name="GskuSearch" xml:space="preserve"><value>ابحث عن منتج / عبوة (حرفان على الأقل)</value></data>
+  <data name="GskusNoPermission" xml:space="preserve"><value>لا يمكن عرض عبوات المنتجات بصلاحياتك؛ اطلب صلاحية قراءة وحدات SKU.</value></data>
+  <data name="ShelfTitle" xml:space="preserve"><value>الرف / الظهور</value></data>
+  <data name="MaterialStand" xml:space="preserve"><value>توجد مواد / حامل عرض</value></data>
+  <data name="ShelfPhoto" xml:space="preserve"><value>صورة الرف</value></data>
+  <data name="PhotoTake" xml:space="preserve"><value>التقاط صورة</value></data>
+  <data name="PhotoReplace" xml:space="preserve"><value>استبدال الصورة</value></data>
+  <data name="PhotoHint" xml:space="preserve"><value>JPEG أو PNG، حتى 10 ميغابايت.</value></data>
+  <data name="PhotoSaved" xml:space="preserve"><value>حُفظت صورة الرف.</value></data>
+  <data name="OrderTitle" xml:space="preserve"><value>الطلب</value></data>
+  <data name="NoOrder" xml:space="preserve"><value>لم يُنشأ طلب مسبق في هذه الزيارة.</value></data>
+  <data name="CreateOrder" xml:space="preserve"><value>إنشاء طلب مسبق</value></data>
+  <data name="Soon" xml:space="preserve"><value>قريبًا</value></data>
+  <data name="OrderSoonHint" xml:space="preserve"><value>ستتوفر الطلبات المسبقة مع وحدة الطلبات.</value></data>
+  <data name="SalesTitle" xml:space="preserve"><value>المبيعات</value></data>
+  <data name="SalesHint" xml:space="preserve"><value>الاتجاه إلزامي لكل منتج؛ وعدد العلب شهريًا اختياري.</value></data>
+  <data name="BoxesPerMonth" xml:space="preserve"><value>علبة / شهر</value></data>
+  <data name="CompetitorTitle" xml:space="preserve"><value>المنافس</value></data>
+  <data name="CompetitorsUnavailable" xml:space="preserve"><value>تعذّرت قراءة قائمة المنافسين؛ يمكنك التسجيل بدونها.</value></data>
+  <data name="NoCompetitor" xml:space="preserve"><value>لا يوجد منافس</value></data>
+  <data name="ProposedBadge" xml:space="preserve"><value>أضافه المندوب · بانتظار الموافقة على قائمة المرجع</value></data>
+  <data name="AdvantageHint" xml:space="preserve"><value>مقارنة بالمنافس: نقرة واحدة ميزة لنا (+)، نقرتان عيب لنا (−)</value></data>
+  <data name="ProposalOpen" xml:space="preserve"><value>غير موجود في القائمة، أضِف منافسًا</value></data>
+  <data name="ProposalName" xml:space="preserve"><value>اسم المنتج المنافس</value></data>
+  <data name="ProposalCompany" xml:space="preserve"><value>الشركة</value></data>
+  <data name="ProposalAdd" xml:space="preserve"><value>إضافة</value></data>
+  <data name="ProposalHint" xml:space="preserve"><value>يُقترح على البيانات الرئيسية للمنتجات عند إرسال التقرير.</value></data>
+  <data name="RecommendationTitle" xml:space="preserve"><value>التوصية وتدفق الوصفات</value></data>
+  <data name="LinkedDoctors" xml:space="preserve"><value>الأطباء الذين تأتي منهم الوصفات</value></data>
+  <data name="NoLinked" xml:space="preserve"><value>لا يوجد طبيب مرتبط.</value></data>
+  <data name="DoctorSearch" xml:space="preserve"><value>ابحث عن طبيب (حرفان على الأقل)</value></data>
+  <data name="TrainingTitle" xml:space="preserve"><value>التدريب / المواد والطلبات</value></data>
+  <data name="TrainingGiven" xml:space="preserve"><value>قُدِّم تدريب على المنتج للموظفين</value></data>
+  <data name="RequestType" xml:space="preserve"><value>نوع الطلب</value></data>
+  <data name="RequestDate" xml:space="preserve"><value>تاريخ الاستحقاق</value></data>
+  <data name="RequestAdd" xml:space="preserve"><value>إضافة طلب</value></data>
+  <data name="AeQuestion" xml:space="preserve"><value>هل أُبلغ عن أثر جانبي / حدث ضار خلال الزيارة؟</value></data>
+  <data name="AeWarning" xml:space="preserve"><value>يلزم تقديم بلاغ يقظة دوائية خلال 24 ساعة.</value></data>
+  <data name="AeNote" xml:space="preserve"><value>ما الذي أُبلغ عنه</value></data>
+  <data name="AnswerYes" xml:space="preserve"><value>نعم</value></data>
+  <data name="AnswerNo" xml:space="preserve"><value>لا</value></data>
+  <data name="SumStock" xml:space="preserve"><value>المخزون: {0} / {1}</value></data>
+  <data name="SumSales" xml:space="preserve"><value>اتجاه المبيعات: {0} / {1}</value></data>
+  <data name="SumCompetitors" xml:space="preserve"><value>المنافسون: {0}</value></data>
+  <data name="SumAeYes" xml:space="preserve"><value>أُبلغ عن حدث ضار</value></data>
+  <data name="SumAeNo" xml:space="preserve"><value>لا يوجد حدث ضار</value></data>
+  <data name="SumAeOpen" xml:space="preserve"><value>لم يُجَب عن سؤال الحدث الضار</value></data>
+  <data name="Miss_visitKindCode" xml:space="preserve"><value>نوع الزيارة</value></data>
+  <data name="Miss_adverseEvent" xml:space="preserve"><value>سؤال الحدث الضار</value></data>
+  <data name="Miss_adverseEventNote" xml:space="preserve"><value>ما الذي أُبلغ عنه (حدث ضار)</value></data>
+  <data name="Miss_metRoleCode" xml:space="preserve"><value>الشخص الذي تمت مقابلته</value></data>
+  <data name="Miss_stock_levelCode" xml:space="preserve"><value>{0}: مستوى المخزون</value></data>
+  <data name="Miss_sales_trendCode" xml:space="preserve"><value>{0}: اتجاه المبيعات</value></data>
+  <data name="Miss_competitors" xml:space="preserve"><value>المنافس (أو «لا يوجد منافس»)</value></data>
+  <data name="Miss_generic" xml:space="preserve"><value>ناقص: {0}</value></data>
+  <data name="SubmitButton" xml:space="preserve"><value>إرسال التقرير</value></data>
+  <data name="SendFix" xml:space="preserve"><value>إرسال التصحيح</value></data>
+  <data name="DraftSaved" xml:space="preserve"><value>حُفظت المسودة.</value></data>
+  <data name="Submitted" xml:space="preserve"><value>تم إرسال التقرير.</value></data>
+  <data name="SubmittedWithWarnings" xml:space="preserve"><value>تم إرسال التقرير؛ ستُعاد محاولة بعض الخطوات اللاحقة.</value></data>
+  <data name="Amended" xml:space="preserve"><value>سُجِّل التصحيح.</value></data>
+  <data name="WindowClosed" xml:space="preserve"><value>انقضت الستون دقيقة؛ أدخل سببًا لإرسال تصحيح.</value></data>
+  <data name="ErrStockLevel" xml:space="preserve"><value>اختر مستوى المخزون.</value></data>
+  <data name="ErrTrend" xml:space="preserve"><value>اختر اتجاه المبيعات.</value></data>
+  <data name="ErrCompetitors" xml:space="preserve"><value>اختر منافسًا أو «لا يوجد منافس».</value></data>
+  <data name="ErrAe" xml:space="preserve"><value>أجب عن سؤال الحدث الضار.</value></data>
+  <data name="ErrAeNote" xml:space="preserve"><value>صِف ما أُبلغ عنه.</value></data>
+  <data name="ErrProposalName" xml:space="preserve"><value>أدخل اسم المنتج.</value></data>
+  <data name="ErrProposalCompany" xml:space="preserve"><value>أدخل الشركة.</value></data>
+  <data name="ErrTooLong" xml:space="preserve"><value>200 حرف كحد أقصى.</value></data>
+  <data name="ErrBoxes" xml:space="preserve"><value>عدد صحيح من 0 إلى 100000.</value></data>
+  <data name="ErrReason" xml:space="preserve"><value>السبب إلزامي.</value></data>
+  <data name="ErrReasonLong" xml:space="preserve"><value>500 حرف كحد أقصى.</value></data>
+  <data name="Err_report_incomplete" xml:space="preserve"><value>بعض الإجابات ناقصة؛ راجع الملخص.</value></data>
+  <data name="Err_report_code_invalid" xml:space="preserve"><value>أحد الخيارات لم يعد صالحًا؛ اختر من جديد.</value></data>
+  <data name="Err_report_v2_invalid" xml:space="preserve"><value>تعذّرت قراءة التقرير؛ تحقّق من القيم.</value></data>
+  <data name="Err_reference_data_unavailable" xml:space="preserve"><value>تعذّر التحقق من الخيارات حاليًا؛ إجاباتك محفوظة.</value></data>
+  <data name="Err_visit_report_edit_window_closed" xml:space="preserve"><value>انقضت الستون دقيقة؛ أرسل تصحيحًا مُعلَّلًا.</value></data>
+  <data name="Err_visit_report_concurrency_conflict" xml:space="preserve"><value>تم تغيير التقرير في مكان آخر. أعد التحميل وحاول مجددًا.</value></data>
+  <data name="Err_visit_report_amendment_reason_required" xml:space="preserve"><value>السبب مطلوب (حتى 500 حرف).</value></data>
+  <data name="Err_visit_report_not_finalised" xml:space="preserve"><value>لا يمكن تصحيح إلا تقرير مُرسَل.</value></data>
+  <data name="Err_visit_report_plan_cancelled" xml:space="preserve"><value>أُلغيت هذه الزيارة.</value></data>
+  <data name="Err_visit_report_deadline_passed" xml:space="preserve"><value>انقضى موعد التقرير.</value></data>
+  <data name="Err_visit_not_yet_due" xml:space="preserve"><value>لم يحِن موعد هذه الزيارة بعد.</value></data>
+  <data name="Err_visit_photo_invalid" xml:space="preserve"><value>يجب أن تكون الصورة JPEG أو PNG وبحد أقصى 10 ميغابايت.</value></data>
+  <data name="Err_shelf_photo_pharmacy_only" xml:space="preserve"><value>صورة الرف خاصة بزيارة الصيدلية فقط.</value></data>
+  <data name="Err_shelf_photo_report_submitted" xml:space="preserve"><value>أُرسل التقرير؛ لم يعد بالإمكان تغيير الصورة.</value></data>
+  <data name="Err_shelf_photo_not_found" xml:space="preserve"><value>لا توجد صورة رف بعد.</value></data>
+  <data name="Err_visit_evidence_store_unavailable" xml:space="preserve"><value>تعذّر حفظ الصورة حاليًا؛ حاول مجددًا.</value></data>
+  <data name="Err_dependency_unavailable" xml:space="preserve"><value>القائمة غير متاحة حاليًا.</value></data>
+  <data name="Err_conflict" xml:space="preserve"><value>تم تغيير التقرير في مكان آخر. أعد التحميل وحاول مجددًا.</value></data>
+  <data name="Err_permission_denied" xml:space="preserve"><value>ليست لديك صلاحية لهذا الإجراء.</value></data>
+  <data name="Err_unavailable" xml:space="preserve"><value>تعذّر الوصول إلى الخادم؛ إجاباتك محفوظة في هذه الشاشة.</value></data>
+  <data name="Err_generic" xml:space="preserve"><value>تعذّر إكمال العملية.</value></data>
+</root>

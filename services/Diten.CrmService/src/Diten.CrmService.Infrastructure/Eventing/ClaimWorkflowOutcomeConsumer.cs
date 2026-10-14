@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Diten.CrmService.Application.Features.Approvals;
 using Diten.CrmService.Application.Features.ContentComposition.Claims;
 using Diten.CrmService.Application.Features.Knowledge.Path.Review;
 using Diten.CrmService.Application.Features.Knowledge.Regulatory;
@@ -23,6 +24,8 @@ namespace Diten.CrmService.Infrastructure.Eventing;
 /// claim applier (unchanged); <c>crm.knowledge-path-revision</c> → the knowledge path revision applier.</para>
 /// <para>WP-KP-5a — <c>crm.safety-text</c> / <c>crm.country-legal-profile</c> → the regulatory text applier (an added
 /// route; the claim and path routes are unchanged).</para>
+/// <para>WP-VW-W3 (W3-BE-c) — <c>crm.objection-response</c> / <c>crm.visit-evidence-exception</c> → the authoring approval
+/// applier (an added route; the others are unchanged).</para>
 /// </summary>
 public sealed class ClaimWorkflowOutcomeConsumer : IConsumer<EventTransportMessage>
 {
@@ -35,16 +38,18 @@ public sealed class ClaimWorkflowOutcomeConsumer : IConsumer<EventTransportMessa
     private readonly ILogger<ClaimWorkflowOutcomeConsumer> _logger;
     private readonly KnowledgePathRevisionOutcomeApplier? _pathApplier;
     private readonly RegulatoryTextOutcomeApplier? _regulatoryApplier;
+    private readonly WorkflowApprovalOutcomeApplier? _authoringApplier;
 
     public ClaimWorkflowOutcomeConsumer(ClaimReviewOutcomeApplier applier, ICrmEventInboxRepository inbox,
         ILogger<ClaimWorkflowOutcomeConsumer> logger, KnowledgePathRevisionOutcomeApplier? pathApplier = null,
-        RegulatoryTextOutcomeApplier? regulatoryApplier = null)
+        RegulatoryTextOutcomeApplier? regulatoryApplier = null, WorkflowApprovalOutcomeApplier? authoringApplier = null)
     {
         _applier = applier;
         _inbox = inbox;
         _logger = logger;
         _pathApplier = pathApplier;
         _regulatoryApplier = regulatoryApplier;
+        _authoringApplier = authoringApplier;
     }
 
     public Task Consume(ConsumeContext<EventTransportMessage> context) => ConsumeAsync(context.Message, context.CancellationToken);
@@ -59,8 +64,9 @@ public sealed class ClaimWorkflowOutcomeConsumer : IConsumer<EventTransportMessa
         var payload = Deserialize(message);
         var isPath = payload?.ObjectType == KnowledgePathReviewRules.ObjectType && _pathApplier is not null;
         var isRegulatory = RegulatoryTextOutcomeApplier.Handles(payload?.ObjectType) && _regulatoryApplier is not null;
+        var isAuthoring = WorkflowApprovalOutcomeApplier.Handles(payload?.ObjectType) && _authoringApplier is not null;
         if (payload is null
-            || (!isPath && !isRegulatory
+            || (!isPath && !isRegulatory && !isAuthoring
                 && payload.ObjectType is not (ClaimReviewRules.ClaimObjectType or ClaimReviewRules.CountryVersionObjectType)))
         {
             return; // another module's workflow
@@ -88,6 +94,9 @@ public sealed class ClaimWorkflowOutcomeConsumer : IConsumer<EventTransportMessa
                 payload.CompletedBy, payload.ReasonCode, completedAt, ct)
             : isRegulatory
                 ? await _regulatoryApplier!.ApplyAsync(tenantId, payload.ObjectType!, objectId, payload.WorkflowInstanceId,
+                    payload.Outcome!, payload.CompletedBy, payload.ReasonCode, completedAt, ct)
+            : isAuthoring
+                ? await _authoringApplier!.ApplyAsync(tenantId, payload.ObjectType!, objectId, payload.WorkflowInstanceId,
                     payload.Outcome!, payload.CompletedBy, payload.ReasonCode, completedAt, ct)
             : await _applier.ApplyAsync(tenantId, payload.ObjectType!, objectId, payload.WorkflowInstanceId,
                 payload.Outcome!, payload.CompletedBy, payload.ReasonCode, completedAt, ct);

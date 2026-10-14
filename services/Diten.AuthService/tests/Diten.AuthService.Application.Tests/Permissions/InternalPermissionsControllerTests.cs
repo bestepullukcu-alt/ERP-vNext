@@ -437,6 +437,57 @@ public sealed class InternalPermissionsControllerTests
         public Task RemoveByIdAsync(Guid id, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
     }
 
+    // ── WP-VW-W3-AUTH — the scopeless A1 sync vs the visit-evidence keys (measured, then pinned) ───────────────
+    // Platform's PlatformPermissionAutoRegistrationWorker syncs every [HasPermission] key with ModuleCode = null and
+    // Scope = null. Measured: on an EXISTING row that leaves Scope (and Module) untouched — it never raises a Tenant row
+    // to PlatformAdmin. On a key Auth has never seen, the Permission ctor stamps the platform.* prefix PlatformAdmin;
+    // the manifest's later Tenant sync cannot lower it (tie-break), which is exactly what the BL-411 correction is for.
+
+    private const string VisitEvidenceWrite = "platform.document-repository.visit-evidence.write";
+
+    [Fact]
+    public async Task Scopeless_auto_registration_sync_never_raises_an_existing_Tenant_visit_evidence_row()
+    {
+        var repo = new FakePermissionRepository();
+        var controller = Build(repo, authorized: true);
+
+        // 1. The CRM manifest reaches Auth first (the self-registration gate's ordering): created Tenant, Module "crm".
+        await controller.Sync(new InternalPermissionsController.SyncPermissionRequest(
+            VisitEvidenceWrite, "Store Own Visit Evidence (Photo, Signature)", null, "CRM", "Tenant"), CancellationToken.None);
+        Assert.Equal(PermissionScope.Tenant, Assert.Single(repo.Items).Scope);
+
+        // 2. A1 auto-registration follows with the exact request shape it sends (ModuleCode/Scope null).
+        var result = await controller.Sync(new InternalPermissionsController.SyncPermissionRequest(
+            VisitEvidenceWrite, "Document Repository Visit Evidence Write", null, null, null), CancellationToken.None);
+
+        Assert.IsType<OkObjectResult>(result);
+        var p = Assert.Single(repo.Items);
+        Assert.Equal(PermissionScope.Tenant, p.Scope); // not raised
+        Assert.Equal("crm", p.Module);                 // not re-attributed either
+    }
+
+    [Fact]
+    public async Task A_key_first_seen_through_scopeless_auto_registration_is_PlatformAdmin_and_the_manifest_sync_cannot_lower_it()
+    {
+        var repo = new FakePermissionRepository();
+        var controller = Build(repo, authorized: true);
+
+        // The order the CT measured in W3-PLT: A1 creates the row before the CRM manifest declares the key.
+        await controller.Sync(new InternalPermissionsController.SyncPermissionRequest(
+            VisitEvidenceWrite, "Document Repository Visit Evidence Write", null, null, null), CancellationToken.None);
+        Assert.Equal(PermissionScope.PlatformAdmin, Assert.Single(repo.Items).Scope);
+
+        await controller.Sync(new InternalPermissionsController.SyncPermissionRequest(
+            VisitEvidenceWrite, "Store Own Visit Evidence (Photo, Signature)", null, "CRM", "Tenant"), CancellationToken.None);
+
+        var stuck = Assert.Single(repo.Items);
+        Assert.Equal(PermissionScope.PlatformAdmin, stuck.Scope); // the tie-break holds; only the correction lowers it
+
+        // The BL-411 correction planner picks exactly this row (its write path is TenantRouteScopeCorrectionMongoTests).
+        var plan = Diten.AuthService.Domain.Authorization.TenantRouteScopeCorrections.Plan(repo.Items);
+        Assert.Equal(stuck.Id, Assert.Single(plan).PermissionId);
+    }
+
     private static InternalPermissionsController Build(
         FakePermissionRepository repo,
         bool authorized,

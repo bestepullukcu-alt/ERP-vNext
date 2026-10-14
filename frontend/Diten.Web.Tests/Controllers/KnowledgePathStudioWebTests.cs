@@ -323,7 +323,9 @@ public sealed class KnowledgePathStudioWebTests
             "POST api/paths/{pathId:guid}/revisions/{revisionId:guid}/release",
             "POST api/paths/{pathId:guid}/revisions/{revisionId:guid}/render",
             "POST api/paths/{pathId:guid}/revisions/{revisionId:guid}/withdraw",
-            "POST api/paths/{pathId:guid}/submit-review", "POST api/paths/{pathId:guid}/withdraw-review"
+            "POST api/paths/{pathId:guid}/submit-review", "POST api/paths/{pathId:guid}/withdraw-review",
+            // WP-VW-W3 (W3-WEB-c) — the "Sunum notları" tab's expected-objection picker (read only).
+            "GET api/lookups/path-objections"
         ];
         Assert.Equal(expected.OrderBy(r => r, StringComparer.Ordinal), routes);
     }

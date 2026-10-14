@@ -7,9 +7,9 @@ shell: tenant
 golden_reference: compact
 data_mode: server
 entity_base: EntityBase
-status: review
+status: done
 owner: supply-chain-execution (MVP-3 lane) / control-tower
-branch: claude/bold-bell-52tgsz
+branch: feature/mvp3-bom-routings
 started: 2026-10-06
 target: 2026-10-20
 form_field_count: 12
@@ -293,6 +293,12 @@ Paylaşılan dosyaya yalnız bu iki rota eklenir (integration-agent rolü bu lan
 - F-0193-07 Gerçek `ProductMaster:Mode=Http` entegrasyonu MOD-0290 `validate` canlı olunca (bugün permissive).
 - F-0193-08 Şirket yetkisi: MDM yalnız tüzel kişinin bu kiracıya ait ve ACTIVE olduğunu kanıtlar; kullanıcının o şirkette
   yetkili olup olmadığı kontrol edilmez. Platform "yetkili şirketlerim" ucu gelince `LegalEntityValidationMiddleware`'e eklenir.
+- F-0193-09 MOD-0040 anlam farkı: registry MOD-0040'ı MOD-0288'in (Tenant Organization) deprecated alias'ı sayıyor; 2026-09-05
+  durum Excel'i MVP-3 destekleyici modülü olarak "Canonical ID & Correlation" anlamıyla listeliyor. MVP-3 pratikte
+  `X-Correlation-Id` taşır (olaylar dahil). Uzlaştırma Control Tower / registry sahibinin kararı; MVP-3'ü engellemez.
+- F-0193-07 / F-0193-03 şartı (G2B waiver W-G2B-0290, 2026-10-13): 0290 `validateRefs` + `getSkuUom` canlı olunca
+  `Mode=Http`, istemci testleri, UoM doğrulaması. Ölçülen uyumsuzluklar: v1.1 `maxItems: 200` (istemci tek istekte
+  gönderiyor), `lifecycleStatus` okunmuyor, 400 → 503. Ayrıntı: `docs/records/decisions/2026-10/mvp3-g2b-bom-structure-gate-owner-decision-01.md`.
 
 ## 21. Audited Events (Denetlenen Olaylar) — AUD-001
 
@@ -351,3 +357,15 @@ written; these rows supersede its numbers.
 | Platform | self-registration; entitlement gives the tenant Admin exactly the 6 `manufacturing.bom.*` (M-4) |
 | AUD-001 | path c unchanged; central-log connection is an open item (BL-501, central team, after the MVPs — §21, `730a7fa1f`); the PR does not wait for it |
 
+## 23. G2B gate and closure (2026-10-13)
+
+G2B — BOM Structure Ready **accepted** (product owner Ali, 2026-10-13) with one conditional waiver, W-G2B-0290
+(MOD-0290 validation; F-0193-07 / F-0193-03). Record: `docs/records/decisions/2026-10/mvp3-g2b-bom-structure-gate-owner-decision-01.md`.
+Status `review` → **`done`**.
+
+BOM-version event (owner decision 2026-10-13, in scope): contract `bom.openapi.yaml` **v1.2.0** —
+`manufacturing.bomversion.effective.v1` / `.superseded.v1`, body `BomVersionEvent` (identity + state, no lines). Outbox
+rows are written by `IBomHistoryJournal.CommitAsync` in the BOM transaction; the shared `EventOutboxPublisherProcessor`
+publishes through MassTransit + RabbitMQ (`EventTransport:Enabled`, off by default → Pending). Broker delivery measured:
+`evidence/bom-version-event.txt`. MVP-4 handoff: `docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/mvp4-handoff-bom-version-event.md`.
+Open items: §20 (F-0193-01…09), BL-501, BL-510, W-0193-01/02.

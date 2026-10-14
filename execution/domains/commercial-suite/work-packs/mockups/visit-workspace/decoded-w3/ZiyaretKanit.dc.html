@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div data-screen-label="C Ziyaret kanıtı ayarları" style="display:flex;flex-direction:column;gap:20px">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap">
+    <div><div style="font-size:13px;color:var(--mu)">{{ L.crumb }}</div><h4 style="margin:2px 0 0;font-size:22px;font-weight:500;color:var(--h)">{{ L.title }}</h4><div style="font-size:14px;margin-top:4px;max-width:760px">{{ L.intro }}</div></div>
+    <sc-if value="{{ showNewExc }}"><button onClick="{{ openNew }}" style="height:38px;background:var(--p);color:#fff;border:0;border-radius:6px;padding:0 18px;font-size:15px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px;box-shadow:0 2px 4px rgba(11,26,140,.35)"><i class="bx bx-plus" style="font-size:18px"></i>Yeni istisna</button></sc-if>
+  </div>
+  <div role="tablist" style="display:flex;gap:8px;flex-wrap:wrap">
+    <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="2"><button role="tab" onClick="{{ t.go }}" style="height:38px;border:0;border-radius:6px;padding:0 16px;font-size:15px;cursor:pointer;display:flex;gap:6px;align-items:center;background:{{ t.bg }};color:{{ t.fg }};box-shadow:{{ t.sh }}"><i class="bx {{ t.ic }}" style="font-size:18px"></i>{{ t.l }}<sc-if value="{{ t.badge }}"><span style="font-size:12px;font-weight:600;padding:0 7px;border-radius:10px;background:{{ t.bbg }};color:{{ t.bfg }}">{{ t.badge }}</span></sc-if></button></sc-for>
+  </div>
+  <sc-if value="{{ saveErr }}"><div role="alert" style="background:var(--dab);color:var(--da);border-radius:6px;padding:12px 16px;display:flex;gap:10px;align-items:center;justify-content:space-between;font-size:14px"><span style="display:flex;gap:8px;align-items:center"><i class="bx bx-error-circle" style="font-size:20px"></i>{{ L.saveErr }}</span><button onClick="{{ askSave }}" style="background:var(--dac);color:#fff;border:0;border-radius:6px;padding:6px 14px;font-weight:500;cursor:pointer;white-space:nowrap">{{ L.retry }}</button></div></sc-if>
+  <sc-if value="{{ ro }}"><div style="background:var(--inb);color:var(--in);border-radius:6px;padding:12px 16px;display:flex;gap:8px;align-items:center;font-size:14px"><i class="bx bx-lock-alt" style="font-size:20px"></i>{{ L.ro }}</div></sc-if>
+
+  <sc-if value="{{ isSet }}" hint-placeholder-val="{{ true }}">
+  <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap">
+    <div style="flex:1 1 280px;max-width:360px;display:flex;flex-direction:column;gap:20px;min-width:0">
+      <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh)">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--bd);display:flex;flex-direction:column;gap:2px"><span style="font-size:16px;font-weight:500;color:var(--h)">{{ L.scopes }}</span><span style="font-size:12px;color:var(--mu)">{{ L.scopesD }}</span></div>
+        <div style="padding:8px;display:flex;flex-direction:column;gap:2px">
+          <sc-for list="{{ tree }}" as="n" hint-placeholder-count="5">
+            <sc-if value="{{ n.isRow }}">
+              <button onClick="{{ n.go }}" style="border:0;background:{{ n.bg }};border-radius:6px;padding:10px 12px;padding-inline-start:{{ n.ind }};display:flex;gap:10px;align-items:flex-start;text-align:start;cursor:pointer;width:100%;position:relative">
+                <span style="width:30px;height:30px;border-radius:6px;background:{{ n.ibg }};color:{{ n.ifg }};display:flex;align-items:center;justify-content:center;flex:0 0 auto"><i class="bx {{ n.ic }}" style="font-size:17px"></i></span>
+                <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+                  <span style="display:flex;gap:6px;align-items:center"><span style="font-size:14px;color:var(--h);font-weight:{{ n.fw }};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ n.l }}</span><sc-if value="{{ n.lock }}"><i class="bx bx-lock-alt" title="{{ L.locked }}" style="font-size:14px;color:var(--mu)"></i></sc-if></span>
+                  <span style="font-size:12px;color:{{ n.dfg }}">{{ n.diff }} · {{ n.reps }}</span>
+                  <span style="font-size:11px;color:var(--mu)">{{ n.last }}</span>
+                </span>
+              </button>
+            </sc-if>
+            <sc-if value="{{ n.isAdd }}"><button onClick="{{ n.go }}" style="border:0;background:transparent;border-radius:6px;padding:6px 12px;padding-inline-start:{{ n.ind }};display:flex;gap:6px;align-items:center;color:var(--pt);font-size:13px;cursor:pointer;width:100%;text-align:start"><i class="bx bx-plus-circle" style="font-size:16px"></i>{{ n.l }}</button></sc-if>
+          </sc-for>
+        </div>
+      </div>
+      <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh);padding:16px 20px;display:flex;flex-direction:column;gap:10px">
+        <span style="font-size:15px;font-weight:500;color:var(--h);display:flex;gap:6px;align-items:center"><i class="bx bx-user-check" style="font-size:19px;color:var(--pt)"></i>{{ L.lookT }}</span>
+        <select ref="{{ lookRef }}" onChange="{{ onLook }}" style="height:38px;border:1px solid var(--bd2);border-radius:6px;padding:0 12px;font-size:14px;color:var(--h);background:var(--card)"><option value="">{{ L.lookPh }}</option><sc-for list="{{ reps }}" as="r"><option value="{{ r.id }}">{{ r.n }} · {{ r.bu }}</option></sc-for></select>
+      </div>
+    </div>
+
+    <div style="flex:999 1 560px;min-width:0;display:flex;flex-direction:column;gap:20px">
+      <sc-if value="{{ isLook }}">
+        <div data-screen-label="C1 Etkin ayar araması" style="background:var(--card);border-radius:8px;box-shadow:var(--sh)">
+          <div style="padding:18px 24px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;gap:12px;align-items:flex-start">
+            <div style="display:flex;gap:12px;align-items:center;min-width:0"><div style="width:42px;height:42px;border-radius:50%;background:var(--pl);color:var(--pt);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;flex:0 0 auto">{{ lk.i }}</div><div style="display:flex;flex-direction:column;gap:2px;min-width:0"><span style="font-size:13px;color:var(--mu)">Etkin ayar</span><span style="font-size:18px;font-weight:500;color:var(--h)">{{ lk.n }}</span><span style="font-size:13px">{{ lk.chain }}</span></div></div>
+            <button onClick="{{ closeLook }}" aria-label="Kapat" style="width:32px;height:32px;border:0;background:var(--soft);color:var(--h);border-radius:6px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex:0 0 auto"><i class="bx bx-x"></i></button>
+          </div>
+          <sc-if value="{{ lk.hasExc }}"><div style="margin:16px 24px 0;background:var(--wab);color:var(--wa);border-radius:6px;padding:10px 14px;font-size:14px;display:flex;gap:8px;align-items:center"><i class="bx bx-time-five" style="font-size:19px"></i>{{ lk.excT }}</div></sc-if>
+          <div style="overflow-x:auto;padding:8px 0 4px">
+            <table style="width:100%;min-width:560px;border-collapse:collapse;font-size:14px">
+              <thead><tr style="border-bottom:1px solid var(--bd)"><th style="text-align:start;padding:12px 24px;font-size:13px;font-weight:500;text-transform:uppercase;color:var(--h)">Alan</th><th style="text-align:start;padding:12px 16px;font-size:13px;font-weight:500;text-transform:uppercase;color:var(--h)">Etkin değer</th><th style="text-align:start;padding:12px 24px;font-size:13px;font-weight:500;text-transform:uppercase;color:var(--h)">Nereden geliyor</th></tr></thead>
+              <tbody><sc-for list="{{ lk.rows }}" as="r" hint-placeholder-count="8"><tr style="border-bottom:1px solid var(--bd)"><td style="padding:12px 24px;color:var(--h)">{{ r.l }}</td><td style="padding:12px 16px;color:var(--h);font-weight:500">{{ r.v }}</td><td style="padding:12px 24px"><span style="padding:2px 10px;border-radius:4px;font-size:13px;font-weight:500;background:{{ r.bg }};color:{{ r.fg }};white-space:nowrap">{{ r.src }}</span></td></tr></sc-for></tbody>
+            </table>
+          </div>
+          <div style="padding:12px 24px 18px;display:flex;gap:8px;flex-wrap:wrap;font-size:12px;align-items:center"><span>Öncelik:</span><span style="padding:1px 8px;border-radius:4px;background:var(--wab);color:var(--wa)">İstisna</span><i class="bx bx-chevron-right"></i><span style="padding:1px 8px;border-radius:4px;background:var(--pl);color:var(--pt)">İş birimi</span><i class="bx bx-chevron-right"></i><span style="padding:1px 8px;border-radius:4px;background:var(--inb);color:var(--in)">Tüzel kişilik</span><i class="bx bx-chevron-right"></i><span style="padding:1px 8px;border-radius:4px;background:var(--seb);color:var(--se)">Kiracı</span></div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isScope }}" hint-placeholder-val="{{ true }}">
+        <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh)">
+          <div style="padding:18px 24px;display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap">
+            <div style="display:flex;gap:12px;align-items:center;min-width:0">
+              <span style="width:42px;height:42px;border-radius:8px;background:{{ sc.ibg }};color:{{ sc.ifg }};display:flex;align-items:center;justify-content:center;flex:0 0 auto"><i class="bx {{ sc.ic }}" style="font-size:22px"></i></span>
+              <div style="display:flex;flex-direction:column;gap:3px;min-width:0"><span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span style="font-size:18px;font-weight:500;color:var(--h)">{{ sc.n }}</span><span style="padding:2px 8px;border-radius:4px;font-size:12px;font-weight:500;background:{{ sc.ibg }};color:{{ sc.ifg }}">{{ sc.typ }}</span></span><span style="font-size:13px">{{ sc.meta }}</span></div>
+            </div>
+            <sc-if value="{{ sc.canRm }}"><button onClick="{{ askRm }}" style="height:34px;background:var(--card);color:var(--da);border:1px solid var(--dac);border-radius:6px;padding:0 14px;font-size:14px;cursor:pointer;display:flex;gap:5px;align-items:center"><i class="bx bx-trash"></i>{{ L.rm }}</button></sc-if>
+          </div>
+          <div role="tablist" style="display:flex;gap:4px;padding:0 24px;border-top:1px solid var(--bd)">
+            <sc-for list="{{ panes }}" as="p" hint-placeholder-count="2"><button role="tab" onClick="{{ p.go }}" style="border:0;background:transparent;height:46px;padding:0 14px;font-size:15px;cursor:pointer;color:{{ p.fg }};border-bottom:2px solid {{ p.bd }};margin-bottom:-1px;font-weight:{{ p.fw }};display:flex;gap:6px;align-items:center"><i class="bx {{ p.ic }}" style="font-size:18px"></i>{{ p.l }}</button></sc-for>
+          </div>
+        </div>
+
+        <sc-if value="{{ isForm }}" hint-placeholder-val="{{ true }}">
+          <sc-if value="{{ sc.inheritNote }}"><div style="background:var(--inb);color:var(--in);border-radius:6px;padding:10px 14px;font-size:14px;display:flex;gap:8px;align-items:center"><i class="bx bx-git-merge" style="font-size:19px"></i>{{ sc.inheritT }}</div></sc-if>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:20px;align-items:start">
+            <div style="display:flex;flex-direction:column;gap:20px;min-width:0">
+              <sc-for list="{{ groups }}" as="g" hint-placeholder-count="3">
+                <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh)">
+                  <div style="padding:16px 24px;border-bottom:1px solid var(--bd);display:flex;gap:10px;align-items:center"><i class="bx {{ g.ic }}" style="font-size:22px;color:var(--pt)"></i><span style="font-size:17px;font-weight:500;color:var(--h)">{{ g.l }}</span></div>
+                  <div style="padding:4px 24px">
+                    <sc-for list="{{ g.fields }}" as="fd">
+                      <div style="padding:16px 0;border-bottom:1px solid var(--bd);display:flex;flex-direction:column;gap:8px">
+                        <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start">
+                          <span style="display:flex;flex-direction:column;gap:3px;min-width:0"><span style="font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.3px;color:var(--h)">{{ fd.l }}</span><sc-if value="{{ fd.hasD }}"><span style="font-size:13px;line-height:1.45">{{ fd.d }}</span></sc-if></span>
+                          <sc-if value="{{ fd.isSw }}"><button role="switch" aria-checked="{{ fd.on }}" onClick="{{ fd.tSw }}" disabled="{{ fd.dis }}" style="flex:0 0 auto;width:44px;height:24px;border-radius:12px;border:0;background:{{ fd.swBg }};position:relative;cursor:{{ fd.cur }};padding:0;opacity:{{ fd.op }}"><span style="position:absolute;top:3px;inset-inline-start:{{ fd.swX }};width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2)"></span></button></sc-if>
+                        </div>
+                        <sc-if value="{{ fd.isSeg }}"><div role="radiogroup" style="display:flex;align-self:flex-start;border:1px solid var(--p);border-radius:6px;overflow:hidden;opacity:{{ fd.op }}"><sc-for list="{{ fd.opts }}" as="o"><button role="radio" onClick="{{ o.go }}" disabled="{{ fd.dis }}" style="border:0;padding:8px 18px;font-size:14px;cursor:{{ fd.cur }};background:{{ o.bg }};color:{{ o.fg }};font-weight:500">{{ o.l }}</button></sc-for></div></sc-if>
+                        <sc-if value="{{ fd.isRadio }}"><div style="display:flex;gap:10px;flex-wrap:wrap;opacity:{{ fd.op }}"><sc-for list="{{ fd.opts }}" as="o"><label style="display:flex;gap:8px;align-items:center;border:1px solid {{ o.bd }};background:{{ o.rbg }};border-radius:6px;padding:9px 14px;cursor:{{ fd.cur }};font-size:14px;color:var(--h)"><input type="radio" name="{{ fd.k }}" checked="{{ o.on }}" onChange="{{ o.go }}" disabled="{{ fd.dis }}" style="accent-color:var(--p);width:16px;height:16px;margin:0">{{ o.l }}</label></sc-for></div></sc-if>
+                        <sc-if value="{{ fd.isNum }}"><div style="display:flex;max-width:260px;opacity:{{ fd.op }}"><input type="number" value="{{ fd.val }}" onChange="{{ fd.onNum }}" disabled="{{ fd.dis }}" style="flex:1;min-width:0;height:38px;border:1px solid {{ fd.err.bd }};border-start-start-radius:6px;border-end-start-radius:6px;padding:0 12px;font-size:15px;color:var(--h);background:{{ fd.inBg }}"><span style="height:38px;border:1px solid var(--bd2);border-inline-start:0;border-start-end-radius:6px;border-end-end-radius:6px;padding:0 12px;display:flex;align-items:center;background:var(--soft2);font-size:14px">{{ fd.unit }}</span></div>
+                          <sc-if value="{{ fd.err.on }}"><span style="font-size:13px;color:var(--da);display:flex;gap:4px;align-items:center"><i class="bx bx-error-circle"></i>{{ fd.err.t }}</span></sc-if>
+                          <sc-if value="{{ fd.hasR }}"><span style="font-size:12px;color:var(--mu)">{{ fd.r }}</span></sc-if></sc-if>
+                        <sc-if value="{{ fd.inh }}"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:13px"><span style="color:var(--mu);display:flex;gap:5px;align-items:center"><i class="bx bx-git-merge" style="font-size:16px"></i>{{ fd.srcL }}</span><sc-if value="{{ fd.canCh }}"><a href="#" onClick="{{ fd.change }}" style="display:flex;gap:3px;align-items:center"><i class="bx bx-edit-alt"></i>{{ L.change }}</a></sc-if></div></sc-if>
+                        <sc-if value="{{ fd.ovr }}"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:13px"><span style="padding:1px 8px;border-radius:4px;font-size:12px;font-weight:500;background:var(--pl);color:var(--pt)">{{ L.here }}</span><span style="color:var(--mu)">{{ fd.upperL }}</span><sc-if value="{{ fd.canCh }}"><a href="#" onClick="{{ fd.revert }}" style="display:flex;gap:3px;align-items:center"><i class="bx bx-undo"></i>{{ L.revert }}</a></sc-if></div></sc-if>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-for>
+              <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh);opacity:.7"><div style="padding:16px 24px;display:flex;gap:10px;align-items:center"><i class="bx bx-qr-scan" style="font-size:22px;color:var(--mu)"></i><span style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-size:16px;font-weight:500;color:var(--h)">{{ L.soon }}</span><span style="font-size:13px">{{ L.soonD }}</span></span><span style="padding:2px 10px;border-radius:4px;font-size:12px;font-weight:500;background:var(--seb);color:var(--se)">{{ L.soonL }}</span><i class="bx bx-chevron-down" style="font-size:22px;color:var(--mu)"></i></div></div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:20px;position:sticky;top:{{ stickyTop }}px;min-width:0">
+              <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh)">
+                <div style="padding:16px 20px;border-bottom:1px solid var(--bd);display:flex;gap:8px;align-items:center"><i class="bx bx-show" style="font-size:20px;color:var(--pt)"></i><span style="font-size:16px;font-weight:500;color:var(--h)">{{ L.preview }}</span></div>
+                <div style="padding:16px 20px;display:flex;flex-direction:column;gap:12px">
+                  <div style="border:1px solid var(--bd);border-radius:8px;overflow:hidden">
+                    <div style="padding:12px 14px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;gap:8px;align-items:center"><div><div style="font-size:15px;font-weight:500;color:var(--h)">{{ L.pvTitle }}</div><div style="font-size:12px">Dr. Kerem Aslan · İstanbul Florence Nightingale · 11:30</div></div><span style="width:26px;height:26px;border-radius:6px;background:var(--soft);color:var(--h);display:flex;align-items:center;justify-content:center"><i class="bx bx-x"></i></span></div>
+                    <div style="padding:12px 14px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px">
+                      <div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;color:var(--h)">{{ L.pvPhoto }} <span style="font-weight:400;text-transform:none;color:var(--mu)">· {{ pv.photoL }}</span></span><div style="height:84px;border-radius:6px;border:1px dashed var(--pbd);background:repeating-linear-gradient(135deg,var(--soft) 0 6px,var(--card) 6px 12px);display:flex;align-items:center;justify-content:center"><i class="bx bx-camera" style="font-size:24px;color:var(--mu)"></i></div></div>
+                      <div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;color:var(--h)">{{ L.pvLoc }}</span><div style="border:1px solid var(--bd);border-radius:6px;padding:8px;display:flex;flex-direction:column;gap:4px"><span style="align-self:flex-start;padding:1px 6px;border-radius:4px;font-size:11px;font-weight:600;background:{{ pv.locBg }};color:{{ pv.locFg }}">{{ pv.locL }}</span><span style="font-size:11px;line-height:1.35">{{ pv.locX }}</span></div></div>
+                    </div>
+                    <sc-if value="{{ pv.sign }}"><div style="margin:0 14px 12px;border-radius:6px;background:var(--soft2);padding:8px 10px;display:flex;gap:6px;align-items:center;font-size:12px;color:var(--h)"><i class="bx bx-pen" style="font-size:16px;color:var(--pt)"></i>{{ L.pvSign }}</div></sc-if>
+                    <div style="padding:10px 14px;border-top:1px solid var(--bd);display:flex;justify-content:flex-end"><span style="height:32px;background:var(--p);color:#fff;border-radius:6px;padding:0 14px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:5px;opacity:{{ pv.btnOp }}"><i class="bx bx-play"></i>{{ L.start }}</span></div>
+                  </div>
+                  <sc-for list="{{ pv.lines }}" as="x"><div style="display:flex;gap:8px;align-items:flex-start;font-size:13px;line-height:1.45;color:var(--h)"><i class="bx {{ x.ic }}" style="font-size:17px;color:{{ x.c }};flex:0 0 auto"></i><span>{{ x.t }}</span></div></sc-for>
+                </div>
+              </div>
+              <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh);padding:16px 20px;display:flex;flex-direction:column;gap:14px">
+                <div style="display:flex;gap:10px;align-items:center"><div style="width:34px;height:34px;border-radius:50%;background:var(--seb);color:var(--se);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600">{{ sc.byI }}</div><div style="display:flex;flex-direction:column;line-height:1.3"><span style="font-size:12px;color:var(--mu)">{{ L.last }}</span><span style="font-size:14px;color:var(--h)">{{ sc.last }}</span></div></div>
+                <sc-if value="{{ dirty }}"><span style="font-size:13px;color:var(--wa);display:flex;gap:5px;align-items:center"><i class="bx bx-edit-alt"></i>{{ L.unsaved }}</span></sc-if>
+                <sc-if value="{{ canEdit }}"><div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap"><button onClick="{{ revertAll }}" disabled="{{ noDirty }}" style="height:38px;background:var(--seb);color:var(--se);border:0;border-radius:6px;padding:0 18px;font-size:15px;cursor:pointer;opacity:{{ btnOp }}">{{ L.cancel }}</button><button onClick="{{ askSave }}" disabled="{{ noDirty }}" style="height:38px;background:var(--p);color:#fff;border:0;border-radius:6px;padding:0 20px;font-size:15px;font-weight:500;cursor:pointer;opacity:{{ btnOp }};box-shadow:0 2px 4px rgba(11,26,140,.35)">{{ L.save }}</button></div></sc-if>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isHist }}">
+          <div data-screen-label="C3 Değişiklik geçmişi" style="background:var(--card);border-radius:8px;box-shadow:var(--sh)">
+            <div style="padding:16px 24px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap"><span style="font-size:17px;font-weight:500;color:var(--h)">Değişiklik geçmişi · {{ sc.n }}</span><span style="font-size:13px;color:var(--mu);display:flex;gap:5px;align-items:center"><i class="bx bx-lock-alt"></i>Denetim kaydı · salt okunur</span></div>
+            <div style="overflow-x:auto"><table style="width:100%;min-width:640px;border-collapse:collapse;font-size:14px">
+              <thead><tr style="border-bottom:1px solid var(--bd)"><th style="text-align:start;padding:12px 24px;font-size:13px;font-weight:500;text-transform:uppercase;color:var(--h)">Tarih</th><th style="text-align:start;padding:12px 16px;font-size:13px;font-weight:500;text-transform:uppercase;color:var(--h)">Kişi</th><th style="text-align:start;padding:12px 16px;font-size:13px;font-weight:500;text-transform:uppercase;color:var(--h)">Alan</th><th style="text-align:start;padding:12px 24px;font-size:13px;font-weight:500;text-transform:uppercase;color:var(--h)">Eski → yeni değer</th></tr></thead>
+              <tbody><sc-for list="{{ hist }}" as="h" hint-placeholder-count="4"><tr style="border-bottom:1px solid var(--bd)"><td style="padding:12px 24px;white-space:nowrap">{{ h.at }}</td><td style="padding:12px 16px;color:var(--h);white-space:nowrap">{{ h.by }}</td><td style="padding:12px 16px;color:var(--h)">{{ h.f }}</td><td style="padding:12px 24px"><span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><span style="color:var(--mu)">{{ h.a }}</span><i class="bx bx-right-arrow-alt"></i><strong style="color:var(--h);font-weight:500">{{ h.b }}</strong></span></td></tr></sc-for></tbody>
+            </table></div>
+            <sc-if value="{{ noHist }}"><div style="padding:24px;text-align:center;font-size:14px;color:var(--mu)">Bu kapsam için kayıtlı değişiklik yok.</div></sc-if>
+          </div>
+        </sc-if>
+      </sc-if>
+    </div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ isExc }}">
+    <div data-screen-label="C4 Süreli istisnalar" style="display:flex;flex-direction:column;gap:20px">
+      <div style="background:var(--inb);color:var(--in);border-radius:6px;padding:12px 16px;font-size:14px;display:flex;gap:8px;align-items:flex-start;line-height:1.5"><i class="bx bx-info-circle" style="font-size:20px"></i><span>İstisna kalıcı ayar değildir: tek bir temsilci için gerekçeli ve en çok 30 günlük gevşetmedir. Yalnız onaylı ve tarih aralığındaki istisna uygulanır. İstisnayla başlatılan ziyaretler yönetici görünümünde "istisna ile başlatıldı" olarak işaretlenir.</span></div>
+      <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh)">
+        <div style="padding:16px 24px;border-bottom:1px solid var(--bd);display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap">
+          <span style="font-size:18px;font-weight:500;color:var(--h)">Süreli istisnalar</span>
+          <div style="display:flex;border:1px solid var(--bd2);border-radius:6px;overflow:hidden;flex-wrap:wrap"><sc-for list="{{ xf }}" as="f" hint-placeholder-count="6"><button onClick="{{ f.go }}" style="border:0;padding:6px 12px;font-size:13px;cursor:pointer;background:{{ f.bg }};color:{{ f.fg }}">{{ f.l }} <span style="opacity:.7">{{ f.n }}</span></button></sc-for></div>
+        </div>
+        <div style="overflow-x:auto"><table style="width:100%;min-width:1060px;border-collapse:collapse;font-size:14px">
+          <thead><tr style="border-bottom:1px solid var(--bd)"><sc-for list="{{ xcols }}" as="c" hint-placeholder-count="7"><th style="text-align:start;padding:14px 16px;font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.3px;color:var(--h);white-space:nowrap">{{ c }}</th></sc-for></tr></thead>
+          <tbody><sc-for list="{{ xrows }}" as="x" hint-placeholder-count="5"><tr onClick="{{ x.open }}" style="border-bottom:1px solid var(--bd);cursor:pointer" style-hover="background:var(--soft2)">
+            <td style="padding:12px 16px;white-space:nowrap"><div style="display:flex;gap:10px;align-items:center"><div style="width:32px;height:32px;border-radius:50%;background:var(--pl);color:var(--pt);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600">{{ x.ri }}</div><div style="display:flex;flex-direction:column;line-height:1.3"><span style="color:var(--h);font-weight:500">{{ x.rn }}</span><span style="font-size:12px;color:var(--mu)">{{ x.rbu }}</span></div></div></td>
+            <td style="padding:12px 16px"><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-start"><sc-for list="{{ x.rules }}" as="r"><span style="padding:1px 8px;border-radius:4px;font-size:12px;font-weight:500;background:var(--wab);color:var(--wa);white-space:nowrap">{{ r }}</span></sc-for></div></td>
+            <td style="padding:12px 16px;white-space:nowrap"><div style="display:flex;flex-direction:column;line-height:1.35"><span style="color:var(--h)">{{ x.range }}</span><span style="font-size:12px;color:var(--mu)">{{ x.days }}</span></div></td>
+            <td style="padding:12px 16px;max-width:280px"><div style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.4">{{ x.why }}</div></td>
+            <td style="padding:12px 16px;white-space:nowrap"><div style="display:flex;flex-direction:column;line-height:1.35;font-size:13px"><span><span style="color:var(--mu)">Oluşturan:</span> <span style="color:var(--h)">{{ x.by }}</span></span><span><span style="color:var(--mu)">Onaylayan:</span> <span style="color:var(--h)">{{ x.ap }}</span></span></div></td>
+            <td style="padding:12px 16px;white-space:nowrap"><div style="display:flex;flex-direction:column;gap:3px;align-items:flex-start"><span style="padding:2px 10px;border-radius:4px;font-size:13px;font-weight:500;background:{{ x.st.bg }};color:{{ x.st.fg }};border:{{ x.st.bd }}">{{ x.st.l }}</span><sc-if value="{{ x.pend }}"><span style="font-size:12px;color:var(--wa);display:flex;gap:3px;align-items:center"><i class="bx bx-time-five"></i>Onay bekliyor</span></sc-if></div></td>
+            <td style="padding:12px 16px;text-align:center"><button onClick="{{ x.open }}" aria-label="Görüntüle" style="width:32px;height:32px;border:0;background:transparent;border-radius:50%;color:var(--h);cursor:pointer;font-size:19px;display:inline-flex;align-items:center;justify-content:center" style-hover="background:var(--seb)"><i class="bx bx-show"></i></button></td>
+          </tr></sc-for></tbody>
+        </table></div>
+        <sc-if value="{{ noX }}"><div style="padding:32px;text-align:center;font-size:14px;color:var(--mu)">Bu durumda istisna yok.</div></sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ drawer }}">
+    <div onClick="{{ closeDrawer }}" style="position:fixed;inset:0;z-index:400;background:var(--ov)"></div>
+    <div role="dialog" aria-label="{{ dw.title }}" style="position:fixed;top:0;bottom:0;inset-inline-end:0;z-index:401;width:min(480px,100%);background:var(--card);box-shadow:var(--sh2);display:flex;flex-direction:column">
+      <div style="padding:18px 24px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;gap:12px"><span style="font-size:18px;font-weight:500;color:var(--h)">{{ dw.title }}</span><button onClick="{{ closeDrawer }}" aria-label="Kapat" style="width:32px;height:32px;border:0;background:var(--soft);color:var(--h);border-radius:6px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center"><i class="bx bx-x"></i></button></div>
+      <div style="flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:18px">
+        <sc-if value="{{ dw.isNew }}">
+          <sc-if value="{{ nx.err }}"><div role="alert" style="background:var(--dab);color:var(--da);border-radius:6px;padding:10px 14px;font-size:14px;display:flex;gap:8px;align-items:center"><i class="bx bx-error-circle" style="font-size:19px"></i>Kaydedilemedi. Sunucuya ulaşılamadı; yeniden deneyin.</div></sc-if>
+          <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.3px;color:var(--h)">Temsilci <span style="color:var(--da)">*</span></span>
+            <select ref="{{ repRef }}" onChange="{{ nx.onRep }}" style="height:38px;border:1px solid {{ nx.e.rep.bd }};border-radius:6px;padding:0 12px;font-size:15px;color:var(--h);background:var(--card)"><option value="">Temsilci seçin</option><sc-for list="{{ reps }}" as="r"><option value="{{ r.id }}">{{ r.n }} · {{ r.reg }}</option></sc-for></select>
+            <sc-if value="{{ nx.hasRep }}"><span style="font-size:12px;color:var(--mu)">{{ nx.chain }}</span></sc-if>
+            <sc-if value="{{ nx.e.rep.on }}"><span style="font-size:13px;color:var(--da);display:flex;gap:4px;align-items:center"><i class="bx bx-error-circle"></i>{{ nx.e.rep.t }}</span></sc-if></label>
+          <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.3px;color:var(--h)">Gevşetilecek kurallar <span style="color:var(--da)">*</span></span>
+            <sc-for list="{{ nx.rules }}" as="r"><label style="display:flex;gap:12px;align-items:flex-start;border:1px solid {{ r.bd }};background:{{ r.bg }};border-radius:8px;padding:10px 14px;cursor:{{ r.cur }};opacity:{{ r.op }}"><input type="checkbox" checked="{{ r.on }}" disabled="{{ r.dis }}" onChange="{{ r.toggle }}" style="accent-color:var(--p);width:17px;height:17px;margin-top:2px;flex:0 0 auto"><span style="display:flex;flex-direction:column;gap:2px"><span style="font-size:14px;font-weight:500;color:var(--h)">{{ r.l }}</span><span style="font-size:12px">{{ r.cur2 }}</span></span></label></sc-for>
+            <sc-if value="{{ nx.e.rules.on }}"><span style="font-size:13px;color:var(--da);display:flex;gap:4px;align-items:center"><i class="bx bx-error-circle"></i>{{ nx.e.rules.t }}</span></sc-if>
+            <span style="font-size:12px;display:flex;gap:6px;align-items:flex-start;color:var(--mu)"><i class="bx bx-info-circle" style="font-size:15px"></i>Eşik değerleri (mesafe, doğruluk, kısa ziyaret) istisnayla değiştirilmez.</span></div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px">
+            <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.3px;color:var(--h)">Başlangıç <span style="color:var(--da)">*</span></span><input type="date" value="{{ nx.from }}" onChange="{{ nx.onFrom }}" style="height:38px;border:1px solid {{ nx.e.from.bd }};border-radius:6px;padding:0 12px;font-size:15px;color:var(--h);background:var(--card)"><sc-if value="{{ nx.e.from.on }}"><span style="font-size:13px;color:var(--da)">{{ nx.e.from.t }}</span></sc-if></label>
+            <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.3px;color:var(--h)">Bitiş <span style="color:var(--da)">*</span></span><input type="date" value="{{ nx.to }}" onChange="{{ nx.onTo }}" style="height:38px;border:1px solid {{ nx.e.to.bd }};border-radius:6px;padding:0 12px;font-size:15px;color:var(--h);background:var(--card)"><sc-if value="{{ nx.e.to.on }}"><span style="font-size:13px;color:var(--da)">{{ nx.e.to.t }}</span></sc-if></label>
+          </div>
+          <span style="font-size:12px;color:{{ nx.dayFg }};margin-top:-8px">{{ nx.dayL }}</span>
+          <label style="display:flex;flex-direction:column;gap:6px"><span style="display:flex;justify-content:space-between"><span style="font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.3px;color:var(--h)">Gerekçe <span style="color:var(--da)">*</span></span><span style="font-size:12px;color:{{ nx.wc.fg }}">{{ nx.wc.l }}</span></span><textarea value="{{ nx.why }}" onChange="{{ nx.onWhy }}" rows="3" placeholder="ör. Tablet GPS modülü arızalı; cihaz değişimi bekleniyor (IT talep no)." style="border:1px solid {{ nx.e.why.bd }};border-radius:6px;padding:9px 12px;font-size:15px;line-height:1.5;color:var(--h);background:var(--card);resize:vertical"></textarea><sc-if value="{{ nx.e.why.on }}"><span style="font-size:13px;color:var(--da);display:flex;gap:4px;align-items:center"><i class="bx bx-error-circle"></i>{{ nx.e.why.t }}</span></sc-if></label>
+          <div style="background:var(--wab);color:var(--wa);border-radius:6px;padding:10px 14px;font-size:13px;display:flex;gap:8px;align-items:flex-start;line-height:1.45"><i class="bx bx-user-x" style="font-size:18px"></i><span>Görev ayrılığı: bu istisnayı siz onaylayamazsınız. Kaydettiğinizde "Taslak · onay bekliyor" olur; başka bir yönetici onaylayınca tarih aralığında uygulanır.</span></div>
+        </sc-if>
+        <sc-if value="{{ dw.isView }}">
+          <div style="display:flex;gap:12px;align-items:center"><div style="width:42px;height:42px;border-radius:50%;background:var(--pl);color:var(--pt);display:flex;align-items:center;justify-content:center;font-weight:600">{{ vx.ri }}</div><div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:16px;font-weight:500;color:var(--h)">{{ vx.rn }}</span><span style="font-size:13px">{{ vx.chain }}</span></div><span style="margin-inline-start:auto;padding:2px 10px;border-radius:4px;font-size:13px;font-weight:500;background:{{ vx.st.bg }};color:{{ vx.st.fg }};border:{{ vx.st.bd }}">{{ vx.st.l }}</span></div>
+          <div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.3px;color:var(--mu)">Gevşetilen kurallar</span><div style="display:flex;gap:6px;flex-wrap:wrap"><sc-for list="{{ vx.rules }}" as="r"><span style="padding:2px 10px;border-radius:4px;font-size:13px;font-weight:500;background:var(--wab);color:var(--wa)">{{ r }}</span></sc-for></div></div>
+          <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.3px;color:var(--mu)">Tarih aralığı</span><span style="color:var(--h)">{{ vx.range }} · {{ vx.days }}</span></div>
+          <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.3px;color:var(--mu)">Gerekçe</span><span style="color:var(--h);line-height:1.5">{{ vx.why }}</span></div>
+          <div style="display:flex;flex-direction:column;border-top:1px solid var(--bd);padding-top:14px"><sc-for list="{{ vx.hist }}" as="h"><div style="display:flex;gap:12px;padding-bottom:14px"><span style="width:10px;height:10px;border-radius:50%;background:{{ h.c }};margin-top:5px;flex:0 0 auto"></span><div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:14px;font-weight:500;color:var(--h)">{{ h.l }}</span><span style="font-size:13px">{{ h.by }} · {{ h.at }}</span><sc-if value="{{ h.why }}"><span style="font-size:13px;color:var(--h)">"{{ h.why }}"</span></sc-if></div></div></sc-for></div>
+          <sc-if value="{{ vx.sod }}"><div style="background:var(--wab);color:var(--wa);border-radius:6px;padding:10px 14px;font-size:14px;display:flex;gap:8px;align-items:center"><i class="bx bx-user-x" style="font-size:19px"></i>Bu istisnayı siz oluşturdunuz; başka bir yönetici onaylamalı.</div></sc-if>
+          <sc-if value="{{ vx.cancelOpen }}"><label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.3px;color:var(--h)">{{ vx.cancelL }} gerekçesi <span style="color:var(--da)">*</span></span><textarea value="{{ vx.cWhy }}" onChange="{{ vx.onCWhy }}" rows="2" style="border:1px solid {{ vx.cErr.bd }};border-radius:6px;padding:9px 12px;font-size:15px;color:var(--h);background:var(--card);resize:vertical"></textarea><sc-if value="{{ vx.cErr.on }}"><span style="font-size:13px;color:var(--da)">Gerekçe yazın.</span></sc-if></label></sc-if>
+        </sc-if>
+      </div>
+      <div style="padding:16px 24px;border-top:1px solid var(--bd);display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap">
+        <button onClick="{{ closeDrawer }}" style="height:38px;background:var(--seb);color:var(--se);border:0;border-radius:6px;padding:0 18px;font-size:15px;cursor:pointer">Kapat</button>
+        <sc-if value="{{ dw.isNew }}"><button onClick="{{ nx.submit }}" style="height:38px;background:var(--p);color:#fff;border:0;border-radius:6px;padding:0 18px;font-size:15px;font-weight:500;cursor:pointer;display:flex;gap:6px;align-items:center"><i class="bx bx-send"></i>Onaya gönder</button></sc-if>
+        <sc-if value="{{ vx.canApprove }}"><button onClick="{{ vx.approve }}" disabled="{{ vx.sod }}" title="{{ vx.sodT }}" style="height:38px;background:var(--okc);color:#fff;border:0;border-radius:6px;padding:0 18px;font-size:15px;font-weight:500;cursor:{{ vx.cur }};opacity:{{ vx.op }};display:flex;gap:6px;align-items:center"><i class="bx bx-check"></i>Onayla</button></sc-if>
+        <sc-if value="{{ vx.canCancel }}"><button onClick="{{ vx.cancel }}" style="height:38px;background:var(--card);color:var(--da);border:1px solid var(--dac);border-radius:6px;padding:0 18px;font-size:15px;cursor:pointer">{{ vx.cancelBtn }}</button></sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ dlgOn }}">
+    <div style="position:fixed;inset:0;z-index:400;background:var(--ov);display:flex;align-items:center;justify-content:center;padding:24px">
+      <div role="dialog" aria-label="{{ dlg.t }}" style="background:var(--card);border-radius:8px;box-shadow:var(--sh2);width:min(520px,100%);display:flex;flex-direction:column">
+        <div style="padding:22px 24px 0;display:flex;gap:14px;align-items:flex-start"><div style="width:42px;height:42px;border-radius:50%;background:{{ dlg.ibg }};color:{{ dlg.ifg }};display:flex;align-items:center;justify-content:center;flex:0 0 auto"><i class="bx {{ dlg.ic }}" style="font-size:22px"></i></div><div style="display:flex;flex-direction:column;gap:6px;min-width:0"><span style="font-size:18px;font-weight:500;color:var(--h)">{{ dlg.t }}</span><span style="font-size:14px;line-height:1.5;color:var(--h)">{{ dlg.d }}</span></div></div>
+        <sc-if value="{{ dlg.hasCh }}"><div style="margin:16px 24px 0;border:1px solid var(--bd);border-radius:8px;display:flex;flex-direction:column"><sc-for list="{{ dlg.ch }}" as="c"><div style="padding:10px 14px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;gap:12px;font-size:14px;flex-wrap:wrap"><span style="color:var(--h)">{{ c.l }}</span><span style="display:flex;gap:6px;align-items:center"><span style="color:var(--mu);text-decoration:line-through">{{ c.a }}</span><i class="bx bx-right-arrow-alt"></i><strong style="color:var(--h);font-weight:500">{{ c.b }}</strong></span></div></sc-for></div></sc-if>
+        <sc-if value="{{ dlg.isAdd }}"><div style="margin:16px 24px 0;display:flex;flex-direction:column;gap:8px"><sc-if value="{{ dlg.noOpt }}"><span style="font-size:14px;color:var(--mu)">{{ L.addNone }}</span></sc-if><sc-for list="{{ dlg.opts }}" as="o"><label style="display:flex;gap:10px;align-items:center;border:1px solid {{ o.bd }};background:{{ o.bg }};border-radius:8px;padding:10px 14px;cursor:pointer;font-size:14px;color:var(--h)"><input type="radio" name="addscope" checked="{{ o.on }}" onChange="{{ o.go }}" style="accent-color:var(--p);margin:0">{{ o.l }}<span style="margin-inline-start:auto;font-size:12px;color:var(--mu)">{{ o.r }}</span></label></sc-for></div></sc-if>
+        <div style="padding:20px 24px;display:flex;justify-content:flex-end;gap:10px"><button onClick="{{ closeDlg }}" style="height:38px;background:var(--seb);color:var(--se);border:0;border-radius:6px;padding:0 18px;font-size:15px;cursor:pointer">{{ L.cancel }}</button><button onClick="{{ dlg.ok }}" disabled="{{ dlg.okDis }}" style="height:38px;background:{{ dlg.okBg }};color:#fff;border:0;border-radius:6px;padding:0 18px;font-size:15px;font-weight:500;cursor:pointer;opacity:{{ dlg.okOp }}">{{ dlg.okL }}</button></div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const NOW='2026-10-12 11:20',TODAY='2026-10-12';
+const KEYS=['loc','dist','acc','noLoc','photo','sign','dur','short'];
+const FT={loc:'seg',dist:'num',acc:'num',noLoc:'radio',photo:'seg',sign:'sw',dur:'sw',short:'num'};
+const RANGE={dist:[50,5000,'m'],acc:[10,1000,'m'],short:[30,1800,'sn']};
+const GROUPS=[['secLoc','bx-map-pin',['loc','dist','acc','noLoc']],['secPhoto','bx-camera',['photo']],['secDoc','bx-check-double',['sign','dur','short']]];
+const RULE={loc:{l:'Konum kontrolü: Bilgi',v:'bilgi'},photo:{l:'Fotoğraf: İsteğe bağlı',v:'istege'},noLoc:{l:'Konumu olmayan kurum: Başlatılsın',v:'isaretle'}};
+const LL={
+ tr:{crumb:'CRM Ayarlar / Ziyaret',title:'Ziyaret kanıtı',intro:'Temsilcinin "Ziyarete başla" kuralları. Katmanlı ayar: en özel olan kazanır. Bir kapsam yalnız değiştirdiği alanları tutar; diğerleri üst kapsamdan gelir.',
+  tabSet:'Kapsamlı ayarlar',tabExc:'Süreli istisnalar',scopes:'Kapsamlar',scopesD:'Öncelik: iş birimi › tüzel kişilik › kiracı',typ:{tenant:'Kiracı',le:'Tüzel kişilik',bu:'İş birimi'},
+  diff:n=>n?n+' alan farklı':'Değişiklik yok',all:'Tüm alanlar dolu',reps:n=>n+' temsilci',locked:'Silinemez',addLe:'Tüzel kişilik ekle',addBu:'İş birimi ekle',
+  lookT:'Bir temsilcinin etkin ayarını gör',lookPh:'Temsilci seçin',paneForm:'Ayar formu',paneHist:'Değişiklik geçmişi',rm:'Kapsamı kaldır',
+  src:{tenant:'Kiracıdan geliyor',le:'Tüzel kişilikten geliyor',bu:'İş biriminden geliyor'},change:'Bu kapsamda değiştir',revert:'Üst ayara dön',here:'Bu kapsamda değiştirildi',upper:'Üst ayar',inh:'Üstten',back:'Üst ayara döner',
+  inheritT:'Soluk alanlar üst kapsamdan geliyor. Değiştirmek istediğiniz alanda "Bu kapsamda değiştir" bağlantısını kullanın.',noneT:'Bu kapsam henüz hiçbir alanı değiştirmiyor; tüm değerler üst kapsamdan geliyor.',
+  f:{loc:'Konum kontrolü',dist:'İzin verilen mesafe',acc:'En düşük konum doğruluğu',noLoc:'Konumu olmayan kurum',photo:'Fotoğraf',sign:'Doktor onayı (imza)',dur:'Süre tutarlılığı',short:'Kısa ziyaret eşiği'},
+  secLoc:'Konum',secPhoto:'Fotoğraf',secDoc:'Onay ve süre',
+  locO:{zorunlu:'Zorunlu',bilgi:'Bilgi'},locD:{zorunlu:'Zorunlu: temsilci kuruma yakın değilse ziyareti başlatamaz.',bilgi:'Bilgi: konum kaydedilir; ziyaret her durumda başlatılabilir.'},
+  noLocO:{isaretle:'Başlatılsın ve işaretlensin',engelle:'Engellensin'},noLocD:'Kurum kaydında koordinat yoksa',photoO:{zorunlu:'Zorunlu',istege:'İsteğe bağlı'},photoD:'Kurum girişi ya da bekleme alanı; yüz çekilmez (KVKK).',
+  signD:'Ziyaret sonunda tablette imza ya da onay dokunuşu. Numune isteğinde her zaman istenir.',durD:'',
+  r:{dist:'50–5000 m · kiracı varsayılanı 300',acc:'10–1000 m · kiracı varsayılanı 150',short:'30–1800 sn · Bu süreden kısa ziyaret işaretlenir.'},m:'m',sn:'sn',on:'Açık',off:'Kapalı',
+  soon:'Ek kanıtlar',soonL:'Yakında',soonD:'Kurum QR kodu ve sahte konum denetimi bu bölüme eklenecek.',
+  preview:'Bu kapsamdaki temsilci şunu görecek',pvTitle:'Ziyarete başla',pvPhoto:'Fotoğraf',pvLoc:'Konum',pvSign:'Doktor onayı · ziyaret sonunda istenir',start:'Sunumu başlat',
+  req:{zorunlu:'zorunlu',istege:'isteğe bağlı',bilgi:'bilgi'},locX:{zorunlu:d=>'Kuruma '+d+' m\'den yakın olmalısınız.',bilgi:()=>'Bilgi olarak kaydedilir.'},
+  open:(ph,lc,d)=>ph&&lc?'"Sunumu başlat", fotoğraf çekildiğinde ve temsilci kuruma '+d+' m\'den yakın olduğunda açılır.':lc?'"Sunumu başlat", temsilci kuruma '+d+' m\'den yakın olduğunda açılır.':ph?'"Sunumu başlat", fotoğraf çekildiğinde açılır.':'"Sunumu başlat" hemen açıktır; konum ve fotoğraf bilgi olarak kaydedilir.',
+  acc2:a=>'Konum doğruluğu '+a+' m\'den kötüyse konum geçersiz sayılır.',nol:{isaretle:'Koordinatı olmayan kurumda ziyaret başlatılır ve işaretlenir.',engelle:'Koordinatı olmayan kurumda ziyaret başlatılamaz.'},sh:s=>s+' sn\'den kısa ziyaretler işaretlenir.',
+  last:'Son değişiklik',unsaved:'Kaydedilmemiş değişiklik var',cancel:'Vazgeç',save:'Kaydet',saveT:'Değişiklikler kaydedilsin mi?',saveD:n=>'Değişiklik hemen bu kapsamdaki '+n+' temsilciye uygulanır.',saveOk:'Kaydet ve uygula',
+  rmT:'Kapsam kaldırılsın mı?',rmD:(n,c)=>'Bu kapsamdaki '+n+' temsilci üst ayara döner.'+(c?' Altındaki '+c+' iş birimi ayarı da kaldırılır.':''),
+  addT:{le:'Tüzel kişilik ayarı ekle',bu:'İş birimi ayarı ekle'},addD:'Yeni kapsam boş başlar; tüm alanlar üst kapsamdan gelir.',addOk:'Ekle',addNone:'Eklenecek kapsam kalmadı.',
+  saved:n=>'Ayarlar kaydedildi; '+n+' temsilciye uygulandı.',removed:'Kapsam kaldırıldı; temsilciler üst ayara döndü.',added:'Kapsam eklendi.',
+  saveErr:'Kaydedilemedi. Sunucuya ulaşılamadı; değişiklikleriniz bu ekranda korunuyor.',retry:'Yeniden dene',ro:'Salt okuma yetkiniz var; ayarlar değiştirilemez.',range:(a,b,u)=>a+'–'+b+' '+u+' arasında olmalı.'},
+ ar:{crumb:'إعدادات CRM / الزيارة',title:'إثبات الزيارة',intro:'قواعد «بدء الزيارة» للمندوب. إعداد متعدد الطبقات: الأكثر تحديدًا هو الذي يُطبَّق. يحتفظ كل نطاق بالحقول التي غيّرها فقط؛ وتُورَث بقية الحقول من النطاق الأعلى.',
+  tabSet:'الإعدادات حسب النطاق',tabExc:'الاستثناءات المؤقتة',scopes:'النطاقات',scopesD:'الأولوية: وحدة العمل › الكيان القانوني › المستأجر',typ:{tenant:'المستأجر',le:'كيان قانوني',bu:'وحدة عمل'},
+  diff:n=>n?n+' حقول مختلفة':'لا تغييرات',all:'كل الحقول معبأة',reps:n=>n+' مندوب',locked:'لا يمكن حذفه',addLe:'إضافة كيان قانوني',addBu:'إضافة وحدة عمل',
+  lookT:'عرض الإعداد الفعلي لمندوب',lookPh:'اختر مندوبًا',paneForm:'نموذج الإعداد',paneHist:'سجل التغييرات',rm:'إزالة النطاق',
+  src:{tenant:'موروث من المستأجر',le:'موروث من الكيان القانوني',bu:'موروث من وحدة العمل'},change:'تغيير في هذا النطاق',revert:'العودة إلى الإعداد الأعلى',here:'مُعدَّل في هذا النطاق',upper:'الإعداد الأعلى',inh:'موروث',back:'يعود إلى الإعداد الأعلى',
+  inheritT:'الحقول الباهتة موروثة من النطاق الأعلى. استخدم «تغيير في هذا النطاق» للحقل الذي تريد تعديله.',noneT:'هذا النطاق لا يغيّر أي حقل بعد؛ كل القيم موروثة من النطاق الأعلى.',
+  f:{loc:'التحقق من الموقع',dist:'المسافة المسموح بها',acc:'أدنى دقة للموقع',noLoc:'مؤسسة بلا موقع',photo:'الصورة',sign:'موافقة الطبيب (التوقيع)',dur:'اتساق المدة',short:'حد الزيارة القصيرة'},
+  secLoc:'الموقع',secPhoto:'الصورة',secDoc:'الموافقة والمدة',
+  locO:{zorunlu:'إلزامي',bilgi:'للعلم'},locD:{zorunlu:'إلزامي: لا يمكن للمندوب بدء الزيارة إذا لم يكن قريبًا من المؤسسة.',bilgi:'للعلم: يُسجَّل الموقع ويمكن بدء الزيارة في كل الأحوال.'},
+  noLocO:{isaretle:'تبدأ الزيارة ويُوضع عليها علامة',engelle:'تُمنع الزيارة'},noLocD:'إذا لم تكن هناك إحداثيات في سجل المؤسسة',photoO:{zorunlu:'إلزامية',istege:'اختيارية'},photoD:'مدخل المؤسسة أو منطقة الانتظار؛ لا تُلتقط الوجوه (حماية البيانات الشخصية).',
+  signD:'توقيع أو لمسة موافقة على الجهاز اللوحي في نهاية الزيارة. مطلوبة دائمًا عند طلب العينات.',durD:'',
+  r:{dist:'50–5000 م · الافتراضي للمستأجر 300',acc:'10–1000 م · الافتراضي للمستأجر 150',short:'30–1800 ث · تُوضع علامة على الزيارة الأقصر من هذه المدة.'},m:'م',sn:'ث',on:'مفعّل',off:'غير مفعّل',
+  soon:'أدلة إضافية',soonL:'قريبًا',soonD:'سيُضاف هنا رمز QR للمؤسسة والتحقق من الموقع المزيف.',
+  preview:'سيرى المندوب في هذا النطاق ما يلي',pvTitle:'بدء الزيارة',pvPhoto:'الصورة',pvLoc:'الموقع',pvSign:'موافقة الطبيب · مطلوبة في نهاية الزيارة',start:'بدء العرض',
+  req:{zorunlu:'إلزامي',istege:'اختياري',bilgi:'للعلم'},locX:{zorunlu:d=>'يجب أن تكون على بُعد أقل من '+d+' م من المؤسسة.',bilgi:()=>'يُسجَّل للعلم.'},
+  open:(ph,lc,d)=>ph&&lc?'يُفعَّل زر «بدء العرض» بعد التقاط الصورة وعندما يكون المندوب على بُعد أقل من '+d+' م من المؤسسة.':lc?'يُفعَّل زر «بدء العرض» عندما يكون المندوب على بُعد أقل من '+d+' م من المؤسسة.':ph?'يُفعَّل زر «بدء العرض» بعد التقاط الصورة.':'زر «بدء العرض» مفعّل فورًا؛ يُسجَّل الموقع والصورة للعلم.',
+  acc2:a=>'إذا كانت دقة الموقع أسوأ من '+a+' م يُعدّ الموقع غير صالح.',nol:{isaretle:'في المؤسسة التي لا تملك إحداثيات تبدأ الزيارة ويُوضع عليها علامة.',engelle:'في المؤسسة التي لا تملك إحداثيات لا يمكن بدء الزيارة.'},sh:s=>'تُوضع علامة على الزيارات الأقصر من '+s+' ث.',
+  last:'آخر تعديل',unsaved:'توجد تغييرات غير محفوظة',cancel:'إلغاء',save:'حفظ',saveT:'هل تريد حفظ التغييرات؟',saveD:n=>'يُطبَّق التغيير فورًا على '+n+' مندوب في هذا النطاق.',saveOk:'حفظ وتطبيق',
+  rmT:'هل تريد إزالة النطاق؟',rmD:(n,c)=>'سيعود '+n+' مندوب في هذا النطاق إلى الإعداد الأعلى.'+(c?' وستُزال أيضًا إعدادات '+c+' وحدات عمل تابعة.':''),
+  addT:{le:'إضافة إعداد كيان قانوني',bu:'إضافة إعداد وحدة عمل'},addD:'يبدأ النطاق الجديد فارغًا؛ كل الحقول موروثة من النطاق الأعلى.',addOk:'إضافة',addNone:'لا توجد نطاقات للإضافة.',
+  saved:n=>'تم حفظ الإعدادات وتطبيقها على '+n+' مندوب.',removed:'أُزيل النطاق؛ عاد المندوبون إلى الإعداد الأعلى.',added:'أُضيف النطاق.',
+  saveErr:'تعذّر الحفظ. لا يمكن الوصول إلى الخادم؛ تغييراتك محفوظة في هذه الشاشة.',retry:'إعادة المحاولة',ro:'لديك صلاحية القراءة فقط؛ لا يمكن تغيير الإعدادات.',range:(a,b,u)=>'يجب أن تكون القيمة بين '+a+' و'+b+' '+u+'.'}
+};
+const TYC={tenant:{ic:'bx-buildings',bg:'var(--seb)',fg:'var(--se)'},le:{ic:'bx-briefcase-alt-2',bg:'var(--inb)',fg:'var(--in)'},bu:{ic:'bx-group',bg:'var(--pl)',fg:'var(--pt)'}};
+const ini=n=>n.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase();
+const dd=(a,b)=>Math.round((new Date(b)-new Date(a))/864e5)+1;
+const MON=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+const fd=d=>{const [y,m,x]=d.split('-').map(Number);return x+' '+MON[m-1]+' '+y};
+class Component extends DCLogic {
+  state={key:null,scopes:[],hist:[],exc:[],sel:'t',pane:'form',look:'',draft:null,dlg:null,addPick:null,saveErr:false,tab:'ayar',xf:'all',drawer:null,nx:null,nxTried:false,nxErr:false,cOpen:false,cWhy:'',cTried:false};
+  lookRef=React.createRef();repRef=React.createRef();
+  get A(){return this.props.app||{nav:{},lang:'tr',perm:'read',me:{n:''},toast(){}}}
+  sync(){const A=this.A,D=window.W3D;if(!D)return;const k=JSON.stringify(A.nav)+A.role;if(this.state.key===k)return;const n=A.nav;
+    const scopes=D.SCOPES.map(s=>({...s,ov:{...s.ov}}));const sel=n.cScope||'t';const sc=scopes.find(s=>s.id===sel);const draft={...sc.ov};if(n.cDirty)draft.acc='200';
+    this.setState({key:k,scopes,hist:D.HIST.map(h=>({...h})),exc:D.EXC.map(x=>({...x})),sel,pane:n.cPane||'form',look:n.cLook||'',draft,dlg:n.cDlg?'save':null,saveErr:false,tab:n.cTab||'ayar',xf:'all',drawer:n.xNew?'new':(n.xOpen||null),nx:n.xNew?{rep:'',rules:[],from:'2026-10-13',to:'',why:''}:null,nxTried:false,nxErr:false,cOpen:false,cWhy:'',cTried:false})}
+  syncSel(){[[this.lookRef,this.state.look],[this.repRef,this.state.nx?this.state.nx.rep:'']].forEach(([r,v])=>{if(r.current&&r.current.value!==v)r.current.value=v})}
+  componentDidMount(){this.sync();this.syncSel()}
+  componentDidUpdate(){this.sync();this.syncSel()}
+  chain(id,scopes){const out=[];let s=scopes.find(x=>x.id===id);while(s){out.push(s);s=scopes.find(x=>x.id===s.parent)}return out}
+  eff(id,scopes,draft){const ch=this.chain(id,scopes);const r={};KEYS.forEach(k=>{for(let i=0;i<ch.length;i++){const ov=i===0&&draft?draft:ch[i].ov;if(k in ov){r[k]={v:ov[k],s:ch[i]};break}}});return r}
+  repScopes(rep,scopes){const le=scopes.find(s=>s.type==='le'&&s.n===rep.le);const bu=le&&scopes.find(s=>s.type==='bu'&&s.parent===le.id&&s.n===rep.bu);return {le,bu,base:(bu||le||scopes[0]).id}}
+  excSt(x){if(x.st==='iptal')return'iptal';if(x.st==='taslak')return'taslak';if(TODAY<x.from)return'planli';if(TODAY>x.to)return'doldu';return'aktif'}
+  disp(k,v,T){if(k==='loc')return T.locO[v];if(k==='photo')return T.photoO[v];if(k==='noLoc')return T.noLocO[v];if(k==='sign'||k==='dur')return v?T.on:T.off;if(k==='short')return v+' '+T.sn;return v+' '+T.m}
+  sname(s,lang){return lang==='ar'&&s.n_ar?s.n_ar:s.n}
+  renderVals(){
+    const A=this.A,S=this.state,D=window.W3D,lang=A.lang,T=LL[lang];
+    if(!D||!S.scopes.length)return{L:T,isSet:true,isScope:true,isForm:true,stickyTop:80,sc:{n:'',typ:'',meta:'',byI:'',last:''},pv:{photoL:'',locL:'',locX:'',lines:[]},tree:[],groups:[],panes:[],tabs:[],reps:[],lk:{rows:[]},dlg:{},dw:{},vx:{},nx:{e:{rep:{},rules:{},from:{},to:{},why:{}},rules:[],wc:{}},hist:[],xrows:[],xf:[],xcols:[]};
+    const canEdit=A.perm==='edit',ro=!canEdit,me=A.me.n;
+    const scopes=S.scopes,sc=scopes.find(s=>s.id===S.sel)||scopes[0],isT=sc.type==='tenant';
+    const draft=S.draft||sc.ov;
+    const E=this.eff(sc.id,scopes,draft);
+    const parentE=sc.parent?this.eff(sc.parent,scopes):null;
+    const setD=p=>this.setState(s=>({draft:{...s.draft,...p}}));
+    const delD=k=>this.setState(s=>{const d={...s.draft};delete d[k];return{draft:d}});
+    const changed=KEYS.filter(k=>JSON.stringify(draft[k])!==JSON.stringify(sc.ov[k]));
+    const dirty=canEdit&&changed.length>0;
+    const errs={};Object.entries(RANGE).forEach(([k,[a,b,u]])=>{if(!(k in draft))return;if(k==='short'&&!E.dur.v)return;const n=Number(draft[k]);if(draft[k]===''||!Number.isFinite(n)||n<a||n>b)errs[k]=T.range(a,b,u==='m'?T.m:T.sn)});
+    const selScope=id=>{const s=scopes.find(x=>x.id===id);this.setState({sel:id,draft:{...s.ov},look:'',pane:'form',saveErr:false})};
+    // tree
+    const tree=[];const row=(s,ind)=>{const on=s.id===sc.id&&!S.look,c=TYC[s.type],n=s.type==='tenant'?0:Object.keys(s.ov).length;
+      tree.push({isRow:true,l:this.sname(s,lang)+(s.sub&&s.type==='le'?' · '+(lang==='ar'&&s.sub_ar?s.sub_ar:s.sub):''),ic:c.ic,ibg:c.bg,ifg:c.fg,bg:on?'var(--pl)':'transparent',fw:on?600:500,ind,lock:s.type==='tenant',
+        diff:s.type==='tenant'?T.all:T.diff(n),dfg:n?'var(--pt)':'var(--mu)',reps:T.reps(s.reps),last:s.by+' · '+D.fmt(s.at,lang),go:()=>selScope(s.id)})};
+    row(scopes[0],'12px');
+    scopes.filter(s=>s.type==='le').forEach(le=>{row(le,'28px');scopes.filter(b=>b.type==='bu'&&b.parent===le.id).forEach(b=>row(b,'46px'));if(canEdit)tree.push({isAdd:true,l:T.addBu,ind:'48px',go:()=>this.setState({dlg:'add',addType:'bu',addParent:le.id,addPick:null})})});
+    if(canEdit)tree.push({isAdd:true,l:T.addLe,ind:'14px',go:()=>this.setState({dlg:'add',addType:'le',addParent:'t',addPick:null})});
+    // fields
+    const groups=GROUPS.map(([gk,ic,keys])=>({l:T[gk],ic,fields:keys.map(k=>{
+      const own=isT||(k in draft),val=E[k].v,inh=!own,durOff=k==='short'&&!E.dur.v;
+      const dis=ro||inh||durOff,t=FT[k];
+      const up=parentE&&parentE[k];
+      const upName=up?this.sname(up.s,lang):'';
+      const srcL=inh?T.src[E[k].s.type]+(E[k].s.type!=='tenant'?' ('+this.sname(E[k].s,lang)+')':'')+': '+this.disp(k,val,T):'';
+      const opts=(t==='seg'||t==='radio')?Object.entries(k==='loc'?T.locO:k==='photo'?T.photoO:T.noLocO).map(([v,l])=>({l,on:val===v,bg:val===v?'var(--p)':'var(--card)',fg:val===v?'#fff':'var(--pt)',bd:val===v?'var(--p)':'var(--bd2)',rbg:val===v?'var(--pl)':'transparent',go:()=>{if(!dis)setD({[k]:v})}})):[];
+      const d=k==='loc'?T.locD[val]:k==='noLoc'?T.noLocD:k==='photo'?T.photoD:k==='sign'?T.signD:'';
+      const er=errs[k];
+      return{k,l:T.f[k],d,hasD:!!d,isSeg:t==='seg',isRadio:t==='radio',isNum:t==='num',isSw:t==='sw',opts,val,unit:k==='short'?T.sn:T.m,
+        onNum:e=>setD({[k]:e.target.value}),on:!!val,swBg:val?'var(--p)':'var(--bd2)',swX:val?'23px':'3px',tSw:()=>{if(!dis)setD({[k]:!val})},
+        dis,op:inh||durOff?.55:1,cur:dis?'default':'pointer',inBg:dis?'var(--soft2)':'var(--card)',
+        err:{on:!!er,t:er||'',bd:er?'var(--dac)':'var(--bd2)'},r:T.r[k]||'',hasR:!er&&!!T.r[k],
+        inh:!isT&&inh,ovr:!isT&&!inh,srcL,upperL:up?T.upper+': '+this.disp(k,up.v,T):'',canCh:canEdit,
+        change:e=>{e.preventDefault();setD({[k]:val})},revert:e=>{e.preventDefault();delD(k)}}})}));
+    const ph=E.photo.v==='zorunlu',lc=E.loc.v==='zorunlu';
+    const lines=[{ic:'bx-play-circle',c:'var(--pt)',t:T.open(ph,lc,E.dist.v)}];
+    if(lc)lines.push({ic:'bx-target-lock',c:'var(--mu)',t:T.acc2(E.acc.v)});
+    lines.push({ic:E.noLoc.v==='engelle'?'bx-block':'bx-flag',c:E.noLoc.v==='engelle'?'var(--da)':'var(--wa)',t:T.nol[E.noLoc.v]});
+    if(E.dur.v)lines.push({ic:'bx-timer',c:'var(--mu)',t:T.sh(E.short.v)});
+    const childN=scopes.filter(s=>s.parent===sc.id).length;
+    const nOv=isT?0:Object.keys(draft).length;
+    const c=TYC[sc.type];
+    // lookup
+    let lk={rows:[]};const rep=D.REPS.find(r=>r.id===S.look);
+    if(rep){const rs=this.repScopes(rep,scopes);const e=this.eff(rs.base,scopes);
+      const ax=S.exc.find(x=>x.rep===rep.id&&this.excSt(x)==='aktif');
+      const SRC={tenant:['Kiracı','var(--seb)','var(--se)'],le:['Tüzel kişilik: ','var(--inb)','var(--in)'],bu:['İş birimi: ','var(--pl)','var(--pt)']};
+      lk={n:rep.n,i:ini(rep.n),chain:rep.le+' › '+rep.bu+' · '+rep.reg+(rs.bu?'':' (iş biriminin kendi ayarı yok)'),hasExc:!!ax,excT:ax?'Aktif istisna: '+ax.rules.map(r=>RULE[r].l).join(', ')+' · '+fd(ax.to)+' tarihine kadar':'',
+        rows:KEYS.map(k=>{if(ax&&ax.rules.includes(k))return{l:LL.tr.f[k],v:this.disp(k,RULE[k].v,LL.tr),src:'İstisna · '+fd(ax.to)+'\'e kadar',bg:'var(--wab)',fg:'var(--wa)'};const x=SRC[e[k].s.type];return{l:LL.tr.f[k],v:this.disp(k,e[k].v,LL.tr),src:x[0]+(e[k].s.type==='tenant'?'':e[k].s.n),bg:x[1],fg:x[2]}})}}
+    // dialogs
+    let dlg={};
+    if(S.dlg==='save')dlg={t:T.saveT,d:T.saveD(sc.reps),ic:'bx-error',ibg:'var(--wab)',ifg:'var(--wa)',hasCh:true,ch:changed.map(k=>({l:T.f[k],a:k in sc.ov?this.disp(k,sc.ov[k],T):T.inh+': '+this.disp(k,(parentE||E)[k].v,T),b:k in draft?this.disp(k,draft[k],T):T.back+' ('+this.disp(k,parentE[k].v,T)+')'})),okL:T.saveOk,okBg:'var(--p)',okOp:1,okDis:false,ok:()=>this.doSave(sc,draft,changed,parentE,T)};
+    if(S.dlg==='rm')dlg={t:T.rmT,d:T.rmD(sc.reps,childN),ic:'bx-trash',ibg:'var(--dab)',ifg:'var(--da)',okL:T.rm,okBg:'var(--dac)',okOp:1,okDis:false,ok:()=>{const ids=[sc.id,...scopes.filter(s=>s.parent===sc.id).map(s=>s.id)];const ns=scopes.filter(s=>!ids.includes(s.id));const p=ns.find(s=>s.id===sc.parent);this.setState({scopes:ns,sel:p.id,draft:{...p.ov},dlg:null});A.toast(T.removed)}};
+    if(S.dlg==='add'){const pool=S.addType==='le'?D.SCOPE_ADD.le:(D.SCOPE_ADD[S.addParent]||[]);const opts=pool.filter(o=>!scopes.some(s=>s.n===o.n&&(S.addType==='le'||s.parent===S.addParent)));
+      dlg={t:T.addT[S.addType],d:T.addD,ic:'bx-plus',ibg:'var(--pl)',ifg:'var(--pt)',isAdd:true,noOpt:!opts.length,opts:opts.map((o,i)=>({l:lang==='ar'?o.n_ar:o.n,r:T.reps(o.reps),on:S.addPick===i,bd:S.addPick===i?'var(--p)':'var(--bd)',bg:S.addPick===i?'var(--pl)':'transparent',go:()=>this.setState({addPick:i})})),
+        okL:T.addOk,okBg:'var(--p)',okDis:S.addPick==null,okOp:S.addPick==null?.5:1,ok:()=>{const o=opts[S.addPick];if(!o)return;const id='s'+Date.now();const ns={id,type:S.addType,n:o.n,n_ar:o.n_ar,sub:o.sub,sub_ar:o.sub_ar,parent:S.addParent,reps:o.reps,ov:{},by:me,at:NOW};this.setState(s=>({scopes:[...s.scopes,ns],hist:[{s:id,at:NOW,by:me,f:'-',a:'—',b:'Kapsam oluşturuldu'},...s.hist],sel:id,draft:{},dlg:null,look:''}));A.toast(T.added)}}}
+    // exceptions
+    const XS={aktif:{l:'Aktif',bg:'var(--okb)',fg:'var(--ok)',bd:'0'},planli:{l:'Planlı',bg:'var(--inb)',fg:'var(--in)',bd:'0'},taslak:{l:'Taslak',bg:'var(--seb)',fg:'var(--se)',bd:'0'},doldu:{l:'Süresi doldu',bg:'transparent',fg:'var(--mu)',bd:'1px solid var(--bd2)'},iptal:{l:'İptal',bg:'var(--dab)',fg:'var(--da)',bd:'0'}};
+    const repOf=id=>D.REPS.find(r=>r.id===id);
+    const xall=S.exc.map(x=>({x,s:this.excSt(x)}));
+    const xrows=xall.filter(o=>S.xf==='all'||o.s===S.xf).map(({x,s})=>{const r=repOf(x.rep);return{ri:ini(r.n),rn:r.n,rbu:r.le+' · '+r.bu,rules:x.rules.map(k=>RULE[k].l),range:fd(x.from)+' – '+fd(x.to),days:dd(x.from,x.to)+' gün',why:x.why,by:x.by,ap:x.apBy||'—',st:XS[s],pend:s==='taslak',open:()=>this.setState({drawer:x.id,cOpen:false,cWhy:'',cTried:false})}});
+    const cnt=k=>xall.filter(o=>k==='all'||o.s===k).length;
+    let vx={rules:[],hist:[],st:{}},dw={};
+    if(S.drawer==='new'){dw={isNew:true,title:'Yeni süreli istisna'}}
+    else if(S.drawer){const x=S.exc.find(e=>e.id===S.drawer);if(x){const s=this.excSt(x),r=repOf(x.rep);const sod=s==='taslak'&&x.by===me;
+      const h=[{l:'Oluşturuldu',by:x.by,at:D.fmt(x.at,'tr',true),c:'var(--pt)'}];if(x.apBy)h.push({l:'Onaylandı',by:x.apBy,at:D.fmt(x.apAt,'tr',true),c:'var(--okc)'});if(x.st==='iptal')h.push({l:'İptal edildi',by:x.cBy,at:D.fmt(x.cAt,'tr',true),c:'var(--dac)',why:x.cWhy});
+      dw={isView:true,title:'İstisna ayrıntısı'};
+      vx={ri:ini(r.n),rn:r.n,chain:r.le+' › '+r.bu,st:XS[s],rules:x.rules.map(k=>RULE[k].l),range:fd(x.from)+' – '+fd(x.to),days:dd(x.from,x.to)+' gün',why:x.why,hist:h,
+        sod,sodT:sod?'Bu istisnayı siz oluşturdunuz; başka bir yönetici onaylamalı.':'',canApprove:canEdit&&s==='taslak',op:sod?.5:1,cur:sod?'not-allowed':'pointer',
+        approve:()=>{if(sod)return;this.setState(st=>({exc:st.exc.map(e=>e.id===x.id?{...e,st:'onayli',apBy:me,apAt:NOW}:e)}));A.toast('İstisna onaylandı.')},
+        canCancel:canEdit&&(s==='aktif'||s==='planli'),cancelBtn:S.cOpen?(s==='aktif'?'Erken bitirmeyi onayla':'İptali onayla'):(s==='aktif'?'Erken bitir':'İptal et'),cancelL:s==='aktif'?'Erken bitirme':'İptal',
+        cancelOpen:S.cOpen,cWhy:S.cWhy,onCWhy:e=>this.setState({cWhy:e.target.value}),cErr:{on:S.cTried&&!S.cWhy.trim(),bd:S.cTried&&!S.cWhy.trim()?'var(--dac)':'var(--bd2)'},
+        cancel:()=>{if(!S.cOpen){this.setState({cOpen:true});return}this.setState({cTried:true});if(!S.cWhy.trim())return;this.setState(st=>({exc:st.exc.map(e=>e.id===x.id?{...e,st:'iptal',cBy:me,cAt:NOW,cWhy:S.cWhy}:e),cOpen:false}));A.toast(s==='aktif'?'İstisna erken bitirildi.':'İstisna iptal edildi.')}}}}
+    let nx={e:{rep:{},rules:{},from:{},to:{},why:{}},rules:[],wc:{}};
+    if(S.nx){const f=S.nx,r=repOf(f.rep);const days=f.from&&f.to?dd(f.from,f.to):0;
+      const er={};if(!f.rep)er.rep='Temsilci seçin.';if(!f.rules.length)er.rules='En az bir kural seçin.';if(!f.from)er.from='Başlangıç tarihi seçin.';if(!f.to)er.to='Bitiş tarihi zorunlu; bitişsiz istisna yok.';else if(f.from&&f.to<f.from)er.to='Bitiş, başlangıçtan önce olamaz.';else if(days>30)er.to='En çok 30 gün; seçilen aralık '+days+' gün.';if(!f.why.trim())er.why='Gerekçe yazın.';else if(f.why.length>500)er.why='En çok 500 karakter.';
+      const show=S.nxTried?er:{};const EE=k=>({on:!!show[k],t:show[k]||'',bd:show[k]?'var(--dac)':'var(--bd2)'});
+      let re=null,rs=null;if(r){rs=this.repScopes(r,scopes);re=this.eff(rs.base,scopes)}
+      const srcN=s=>s.type==='tenant'?'Kiracı':(s.type==='le'?'Tüzel kişilik: ':'İş birimi: ')+s.n;
+      const upd=p=>this.setState(s=>({nx:{...s.nx,...p}}));
+      nx={hasRep:!!r,chain:r?r.le+' › '+r.bu:'',e:{rep:EE('rep'),rules:EE('rules'),from:EE('from'),to:EE('to'),why:EE('why')},
+        onRep:e=>upd({rep:e.target.value,rules:[]}),from:f.from,to:f.to,why:f.why,onFrom:e=>upd({from:e.target.value}),onTo:e=>upd({to:e.target.value}),onWhy:e=>upd({why:e.target.value}),
+        dayL:days?days+' gün · en çok 30 gün':'En çok 30 gün',dayFg:days>30?'var(--da)':'var(--mu)',wc:{l:f.why.length+' / 500',fg:f.why.length>500?'var(--da)':'var(--mu)'},err:S.nxErr,
+        rules:Object.entries(RULE).map(([k,o])=>{const already=re&&re[k].v===o.v;const on=f.rules.includes(k);const dis=!r||already;return{l:o.l,on,dis,op:dis?.55:1,cur:dis?'default':'pointer',bd:on?'var(--p)':'var(--bd)',bg:on?'var(--pl)':'transparent',
+          cur2:!r?'Önce temsilci seçin.':already?'Bu temsilci için zaten '+this.disp(k,o.v,LL.tr)+' ('+srcN(re[k].s)+').':'Şu an: '+this.disp(k,re[k].v,LL.tr)+' · '+srcN(re[k].s),
+          toggle:()=>{if(dis)return;upd({rules:on?f.rules.filter(x=>x!==k):[...f.rules,k]})}}}),
+        submit:()=>{this.setState({nxTried:true});if(Object.keys(er).length)return;if(A.failSave){this.setState({nxErr:true});return}const id='x'+Date.now();this.setState(s=>({exc:[{id,rep:f.rep,rules:f.rules,from:f.from,to:f.to,why:f.why,by:me,at:NOW,st:'taslak'},...s.exc],drawer:id,nx:null,nxTried:false,nxErr:false,xf:'all'}));A.toast('İstisna onaya gönderildi.')}};
+    }
+    return{
+      L:T,stickyTop:A.stickyTop||80,canEdit,ro,lookRef:this.lookRef,repRef:this.repRef,
+      tabs:[['ayar',T.tabSet,'bx-layer',null],['istisna',T.tabExc,'bx-time-five',String(cnt('aktif'))]].map(([k,l,ic,b])=>{const on=S.tab===k;return{l,ic,badge:b,bg:on?'var(--p)':'var(--card)',fg:on?'#fff':'var(--h)',sh:on?'0 2px 4px rgba(11,26,140,.35)':'var(--sh)',bbg:on?'rgba(255,255,255,.25)':'var(--okb)',bfg:on?'#fff':'var(--ok)',go:()=>this.setState({tab:k})}}),
+      isSet:S.tab==='ayar',isExc:S.tab==='istisna',showNewExc:S.tab==='istisna'&&canEdit,
+      openNew:()=>this.setState({drawer:'new',nx:{rep:'',rules:[],from:'2026-10-13',to:'',why:''},nxTried:false,nxErr:false}),
+      tree,reps:D.REPS,onLook:e=>this.setState({look:e.target.value}),closeLook:()=>this.setState({look:''}),isLook:!!rep,isScope:!rep,lk,
+      sc:{n:this.sname(sc,lang),typ:T.typ[sc.type],ic:c.ic,ibg:c.bg,ifg:c.fg,meta:T.reps(sc.reps)+' · '+(isT?T.all:T.diff(Object.keys(sc.ov).length)),canRm:canEdit&&!isT,last:sc.by+' · '+D.fmt(sc.at,lang,true),byI:ini(sc.by),inheritNote:!isT,inheritT:nOv?T.inheritT:T.noneT},
+      panes:[['form',T.paneForm,'bx-slider-alt'],['gecmis',T.paneHist,'bx-history']].map(([k,l,ic])=>({l,ic,fg:S.pane===k?'var(--pt)':'var(--tx)',bd:S.pane===k?'var(--p)':'transparent',fw:S.pane===k?500:400,go:()=>this.setState({pane:k})})),
+      isForm:S.pane==='form',isHist:S.pane==='gecmis',
+      hist:S.hist.filter(h=>h.s===sc.id).map(h=>({at:D.fmt(h.at,'tr',true),by:h.by,f:h.f==='-'?'—':LL.tr.f[h.f],a:h.a,b:h.b})),noHist:!S.hist.some(h=>h.s===sc.id),
+      groups,pv:{photoL:T.req[ph?'zorunlu':'istege'],locL:T.req[lc?'zorunlu':'bilgi'],locBg:lc?'var(--wab)':'var(--inb)',locFg:lc?'var(--wa)':'var(--in)',locX:T.locX[E.loc.v](E.dist.v),btnOp:ph||lc?.5:1,sign:!!E.sign.v,lines},
+      dirty,noDirty:!dirty,btnOp:dirty?1:.5,revertAll:()=>this.setState({draft:{...sc.ov},saveErr:false}),
+      askSave:()=>{if(Object.keys(errs).length||!changed.length)return;this.setState({dlg:'save'})},saveErr:S.saveErr,
+      askRm:()=>this.setState({dlg:'rm'}),dlgOn:!!S.dlg,dlg,closeDlg:()=>this.setState({dlg:null}),
+      xf:[['all','Tümü'],['aktif','Aktif'],['planli','Planlı'],['taslak','Taslak'],['doldu','Süresi doldu'],['iptal','İptal']].map(([k,l])=>({l,n:cnt(k),bg:S.xf===k?'var(--p)':'var(--card)',fg:S.xf===k?'#fff':'var(--h)',go:()=>this.setState({xf:k})})),
+      xcols:['Temsilci','Gevşetilen kurallar','Tarih aralığı','Gerekçe','Oluşturan / onaylayan','Durum',''],xrows,noX:!xrows.length,
+      drawer:!!S.drawer,dw,vx,nx,closeDrawer:()=>this.setState({drawer:null,nx:null})
+    };
+  }
+  doSave(sc,draft,changed,parentE,T){const A=this.A;if(A.failSave){this.setState({dlg:null,saveErr:true});return}
+    const me=A.me.n,tr=LL.tr;const H=changed.map(k=>({s:sc.id,at:NOW,by:me,f:k,a:k in sc.ov?this.disp(k,sc.ov[k],tr):'Üstten: '+this.disp(k,parentE[k].v,tr),b:k in draft?this.disp(k,draft[k],tr):'Üst ayara döndü'}));
+    this.setState(s=>({scopes:s.scopes.map(x=>x.id===sc.id?{...x,ov:{...draft},by:me,at:NOW}:x),hist:[...H,...s.hist],dlg:null,saveErr:false}));A.toast(T.saved(sc.reps))}
+}
+</script>
+</body>
+</html>

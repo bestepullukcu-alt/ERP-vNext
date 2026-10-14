@@ -24,4 +24,7 @@ public sealed record RecordVisitOutcomeCommand(
     string? RescheduleToDate,
     string? RescheduleNotes,
     string? ReportedByResourceId,
-    int? ExpectedVersion) : IRequest<Response<Guid>>;
+    int? ExpectedVersion,
+    /// <summary>WP-VW-W2 — the note of a missed / rescheduled reason (required when the reason's requires_note). For a
+    /// rescheduled outcome RescheduleNotes is accepted as the note when this is empty.</summary>
+    string? ReasonNote = null) : IRequest<Response<Guid>>;

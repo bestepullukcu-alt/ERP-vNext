@@ -20,11 +20,18 @@ public sealed class AddKnowledgePathStepHandler : IRequestHandler<AddKnowledgePa
     private readonly IConceptNodeRepository _nodes;
     private readonly IConceptChainTemplateRepository? _templates;
 
+    private readonly IObjectionResponseRepository? _objections;
+    private readonly IKnowledgePathProductResolver? _pathProducts; // WP-VW-W3 (W3-BE-c, K-A4)
+
     public AddKnowledgePathStepHandler(
         ITenantContext tenant, IActorContext actor, IKnowledgePathRepository paths,
         IKnowledgeContentRepository contents, IConceptNodeRepository nodes,
-        IConceptChainTemplateRepository? templates = null)
+        IConceptChainTemplateRepository? templates = null,
+        // WP-VW-W3 (W3-BE-b) — the presentation notes' objection links are checked against this tenant's library.
+        IObjectionResponseRepository? objections = null, IKnowledgePathProductResolver? pathProducts = null)
     {
+        _objections = objections;
+        _pathProducts = pathProducts;
         _tenant = tenant;
         _actor = actor;
         _paths = paths;
@@ -79,6 +86,12 @@ public sealed class AddKnowledgePathStepHandler : IRequestHandler<AddKnowledgePa
         if (scalarError is not null)
         {
             return Response<Guid>.Fail(scalarError, 400);
+        }
+
+        if (await KnowledgePathPresentation.ValidateAsync(request.Presentation, tenantId, _objections, cancellationToken, path, _pathProducts)
+                is { } presentationError)
+        {
+            return Response<Guid>.Fail(presentationError, 400);
         }
 
         // WP-KP-1 — a chain-bound path: the step sits on a slot of the pinned chain (never outside it, never beyond the
@@ -191,6 +204,7 @@ public sealed class AddKnowledgePathStepHandler : IRequestHandler<AddKnowledgePa
             Notes = KnowledgePathValidation.Trim(request.Notes),
             BranchConditions = KnowledgePathWrite.MapBranchConditions(request.BranchConditions),
             Arrangement = arrangement,
+            Presentation = KnowledgePathPresentation.Map(request.Presentation),
             StepStatus = KnowledgePathStepStatuses.Active,
             CreatedAt = now,
             CreatedBy = _actor.ActorName
@@ -220,11 +234,18 @@ public sealed class UpdateKnowledgePathStepHandler : IRequestHandler<UpdateKnowl
     private readonly IConceptNodeRepository _nodes;
     private readonly IConceptChainTemplateRepository? _templates;
 
+    private readonly IObjectionResponseRepository? _objections;
+    private readonly IKnowledgePathProductResolver? _pathProducts; // WP-VW-W3 (W3-BE-c, K-A4)
+
     public UpdateKnowledgePathStepHandler(
         ITenantContext tenant, IActorContext actor, IKnowledgePathRepository paths,
         IKnowledgeContentRepository contents, IConceptNodeRepository nodes,
-        IConceptChainTemplateRepository? templates = null)
+        IConceptChainTemplateRepository? templates = null,
+        // WP-VW-W3 (W3-BE-b) — the presentation notes' objection links are checked against this tenant's library.
+        IObjectionResponseRepository? objections = null, IKnowledgePathProductResolver? pathProducts = null)
     {
+        _objections = objections;
+        _pathProducts = pathProducts;
         _tenant = tenant;
         _actor = actor;
         _paths = paths;
@@ -284,6 +305,12 @@ public sealed class UpdateKnowledgePathStepHandler : IRequestHandler<UpdateKnowl
         if (scalarError is not null)
         {
             return Response<bool>.Fail(scalarError, 400);
+        }
+
+        if (await KnowledgePathPresentation.ValidateAsync(request.Presentation, tenantId, _objections, cancellationToken, path, _pathProducts)
+                is { } presentationError)
+        {
+            return Response<bool>.Fail(presentationError, 400);
         }
 
         // WP-KP-1 — a chain-bound path: the arrangement is required; a placed step keeps its branch + chain step
@@ -414,6 +441,11 @@ public sealed class UpdateKnowledgePathStepHandler : IRequestHandler<UpdateKnowl
         step.EstimatedDurationMinutes = request.EstimatedDurationMinutes;
         step.Notes = KnowledgePathValidation.Trim(request.Notes);
         step.BranchConditions = KnowledgePathWrite.MapBranchConditions(request.BranchConditions);
+        if (request.Presentation is not null) // WP-VW-W3 (W3-BE-b) — absent = keep the stored notes
+        {
+            step.Presentation = KnowledgePathPresentation.Map(request.Presentation);
+        }
+
         if (arrangement is not null)
         {
             step.Arrangement = arrangement;

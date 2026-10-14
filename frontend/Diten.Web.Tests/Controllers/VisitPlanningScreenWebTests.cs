@@ -40,7 +40,7 @@ public sealed class VisitPlanningScreenWebTests
         Assert.Contains("s.isEmpty === true", Function(js, "isEmptyDraft"));
         Assert.Contains("L.EmptyDraftBadge", Function(js, "statusCell"));
         Assert.Contains("L.LegacyPlanBadge", Function(js, "statusCell"));
-        Assert.Contains("{ targets: 4, visible: viewMode !== 'mine'", js); // the rep column is hidden in "my plans"
+        Assert.Contains("{ targets: 5, visible: viewMode !== 'mine'", js); // the rep column is hidden in "my plans" (4J: + select column)
         Assert.Contains("requestedStatus: 'archived'", js);                 // delete empty drafts = the 3A archive
         Assert.Contains("window.VisitPlanningNewPlan.open()", js);
 
@@ -61,7 +61,7 @@ public sealed class VisitPlanningScreenWebTests
         var drawer = View("_NewPlanDrawer.cshtml");
         Assert.Contains("offcanvas offcanvas-end", drawer);
         Assert.DoesNotMatch("(?i)segment|strateg", drawer);
-        Assert.Contains("id=\"vp-np-rep\" class=\"form-control\" readonly", drawer);
+        Assert.Contains("id=\"vp-np-rep\" class=\"form-control\" disabled aria-readonly=\"true\"", drawer); // 4J: looks read-only too
         Assert.Contains("Localizer[\"GoToPlan\"]", drawer);
 
         var js = Script("new-plan.js");
@@ -192,7 +192,7 @@ public sealed class VisitPlanningScreenWebTests
 
         // The confirm dialogs on this screen carry no generic "are you sure?" sentence.
         Assert.Contains("confirmButtonText: L.ApplyConfirmButton, subtext: ''", Script("details.js"));
-        Assert.Contains("confirmButtonText: L.DeleteEmptyDrafts, subtext: ''", Script("index.js"));
+        Assert.Contains("confirmButtonText: L.ArchiveEmptyDrafts, subtext: ''", Script("index.js")); // 4J: archive, not delete
     }
 
     // ── 7 · the Route code only joined the skeleton ────────────────────────────────────────────────────────────

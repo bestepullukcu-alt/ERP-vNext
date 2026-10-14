@@ -3,7 +3,10 @@ using Diten.ManufacturingService.Application.Interfaces;
 using Diten.ManufacturingService.Infrastructure.Authorization;
 using Diten.ManufacturingService.Infrastructure.LegalEntities;
 using Diten.ManufacturingService.Infrastructure.Middleware;
+using Diten.BuildingBlocks.Eventing;
+using Diten.ManufacturingService.Infrastructure.Eventing;
 using Diten.ManufacturingService.Infrastructure.ProductMaster;
+using MassTransit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -52,7 +55,46 @@ public static class DependencyInjection
         // MOD-0209 Change Control seam — waiver W-0193-01 (format-only until 0209 exists).
         services.AddSingleton<IChangeControlGate, FormatOnlyChangeControlGate>();
 
+        AddBomEventTransport(services, configuration);
         return services;
+    }
+
+    /// <summary>
+    /// BOM-version events (contract v1.2.0): the outbox is always written (journal, same transaction); the broker
+    /// transport is opt-in — <c>EventTransport:Enabled=true</c> with a RabbitMQ host and credentials, using the
+    /// repository's existing MassTransit pattern. Off (default): no transport is registered and the publisher worker
+    /// reports that events stay Pending. Enabled but incomplete: startup fails instead of silently not delivering.
+    /// </summary>
+    private static void AddBomEventTransport(IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddHostedService<BomOutboxPublisherWorker>();
+        var section = configuration.GetSection("EventTransport");
+        if (!section.GetValue("Enabled", false))
+        {
+            return;
+        }
+
+        var host = section["RabbitMqHost"];
+        var user = section["RabbitMqUsername"];
+        var password = section["RabbitMqPassword"];
+        if (string.IsNullOrWhiteSpace(host) || string.IsNullOrWhiteSpace(user) || string.IsNullOrWhiteSpace(password))
+        {
+            throw new InvalidOperationException(
+                "EventTransport:Enabled is true but EventTransport:RabbitMqHost / RabbitMqUsername / RabbitMqPassword are not all set.");
+        }
+
+        var port = (ushort)section.GetValue("RabbitMqPort", 5672);
+        var virtualHost = section["RabbitMqVirtualHost"] ?? "/";
+        services.AddMassTransit(bus => bus.UsingRabbitMq((context, rabbit) =>
+        {
+            rabbit.Host(host, port, virtualHost, h =>
+            {
+                h.Username(user);
+                h.Password(password);
+            });
+            rabbit.ConfigureEndpoints(context);
+        }));
+        services.AddScoped<IEventTransportPublisher, MassTransitBomEventTransportPublisher>();
     }
 
     public static IApplicationBuilder UseCorrelation(this IApplicationBuilder app) => app.UseMiddleware<CorrelationMiddleware>();

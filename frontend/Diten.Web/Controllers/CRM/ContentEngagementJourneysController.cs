@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using Diten.Web.Models.CRM;
 using Diten.Web.Security;
+using Diten.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -235,6 +236,20 @@ public sealed class ContentEngagementJourneysController : Controller
     [HttpGet("api/knowledge-paths")]
     public Task<IActionResult> KnowledgePathList(CancellationToken ct) =>
         ProxyGetAsync($"/api/crm/knowledge/paths{Request.QueryString}", ReadPermission, ct, ReadFallback);
+
+    /// <summary>WP-VW-W4 (W4-WEB-a) — the stage's "adoption stage" picker: the <c>crm-adoption-stage</c> BRD set (the same
+    /// list the visit report asks; the report's answer moves the journey to the first mapped stage after it). Read through
+    /// the shared <see cref="CrmReferenceSetReader"/> (consumable-sets route first); only this one set is readable here.</summary>
+    [HttpGet("api/adoption-stages")]
+    public async Task<IActionResult> AdoptionStages(CancellationToken ct)
+    {
+        if (RequireJson(ReadPermission, ReadFallback) is { } denied) return denied;
+        var response = await new CrmReferenceSetReader(_httpClient, _gatewayUrl, _logger)
+            .ReadAsync(AdoptionStageSet, Diten.Web.Services.Auth.AuthTokenCookies.GetAccessToken(Request), GetTenantId(), ct);
+        return await ToProxyResultAsync(response, ct);
+    }
+
+    public const string AdoptionStageSet = "crm-adoption-stage";
 
     // ---------------- helpers ----------------
 

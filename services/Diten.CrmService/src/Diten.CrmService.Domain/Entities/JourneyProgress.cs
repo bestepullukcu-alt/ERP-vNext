@@ -76,6 +76,26 @@ public sealed class JourneyProgress : EntityBase
     /// <summary>The stage reached from <paramref name="stageIndex"/> after <paramref name="advances"/> more visits on a
     /// journey of <paramref name="stageCount"/> stages — the same wrap-around as <see cref="Advance"/> (used to project
     /// visits that are planned but not yet completed).</summary>
+    /// <summary>
+    /// WP-VW-W4 (W4-BE-a, §2.5) — the doctor's adoption stage moved the journey to <paramref name="targetIndex"/> (the first
+    /// stage mapped AFTER the reported adoption stage). The current stage is recorded as completed, like
+    /// <see cref="Advance"/>; a target behind the current one is allowed (the doctor fell back). No cycle wrap.
+    /// </summary>
+    public void MoveTo(int targetIndex, int stageCount, Guid? visitReportId, DateTimeOffset at)
+    {
+        if (stageCount <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(stageCount), "A journey without active stages cannot move.");
+        }
+
+        LastCompletedStageIndex = EffectiveStageIndex(stageCount);
+        LastCompletedAt = at;
+        LastVisitReportId = visitReportId;
+        CurrentStageIndex = Math.Clamp(targetIndex, 0, stageCount - 1);
+        ExposureCount++;
+        UpdatedAt = at;
+    }
+
     public static int StageAfter(int stageIndex, int advances, int stageCount)
         => stageCount <= 0 ? 0 : (Math.Max(0, stageIndex) + Math.Max(0, advances)) % stageCount;
 }

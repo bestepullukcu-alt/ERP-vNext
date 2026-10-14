@@ -319,22 +319,24 @@ public sealed partial class VisitPlanningTests
     }
 
     [Fact]
-    public async Task An_unknown_cadence_is_one_visit_flagged_unknown_and_a_pharmacy_is_resolved_as_an_account()
+    public async Task An_unknown_cadence_is_one_visit_a_week_flagged_unknown_and_a_pharmacy_is_resolved_as_an_account()
     {
         var frequency = new FakeFrequencyResolver { RequiredVisitCount = null };
+        // 1 Oct – 31 Dec 2026 touches 14 Monday-weeks (28 Sep … 28 Dec), every one with a working day.
         var frame = new PlanningPeriodFrame(new DateOnly(2026, 10, 1), new DateOnly(2026, 12, 31), Array.Empty<DateOnly>());
         var planner = new FrequencyExtendPlanner(frequency);
 
         var doctor = await planner.ResolveRequirementAsync(PlannedVisitTargetType.Contact, Id(1), Now, frame, default);
         var pharmacy = await planner.ResolveRequirementAsync(PlannedVisitTargetType.Pharmacy, Id(70), Now, frame, default);
 
-        Assert.Equal((1, FrequencyStatus.Unknown), (doctor.RequiredInPeriod, doctor.FrequencyStatus));
-        Assert.Equal((1, FrequencyStatus.Unknown), (pharmacy.RequiredInPeriod, pharmacy.FrequencyStatus));
+        // WP-VP-4L (1) — the weekly default: one visit per working week, status stays unknown, frequencyDefault = weekly
+        Assert.Equal((14, FrequencyStatus.Unknown, FrequencyDefaults.Weekly), (doctor.RequiredInPeriod, doctor.FrequencyStatus, doctor.FrequencyDefault));
+        Assert.Equal((14, FrequencyStatus.Unknown), (pharmacy.RequiredInPeriod, pharmacy.FrequencyStatus));
         Assert.Equal(FrequencyTargetType.Account, frequency.Asked.Single(q => q.TargetId == Id(70)).TargetType);
     }
 
     [Fact]
-    public async Task In_the_preview_a_pharmacy_without_a_policy_gets_one_visit_and_doctors_carry_their_cadence()
+    public async Task In_the_preview_a_pharmacy_without_a_policy_gets_the_weekly_default_and_doctors_carry_their_cadence()
     {
         var env = WeeklyEnv();
         env.Session.Selection.SelectedPharmacyIds.Add(env.AccountA);
@@ -342,9 +344,11 @@ public sealed partial class VisitPlanningTests
 
         var preview = (await env.Engine.PreviewAsync(env.Session, env.Options(Wed2Sep), default)).Preview!;
 
-        var pharmacy = Assert.Single(preview.Scheduled, s => s.TargetType == PlannedVisitTargetType.Pharmacy);
-        Assert.Equal(FrequencyStatus.Unknown, pharmacy.FrequencyStatus);
-        Assert.Equal(1, pharmacy.RequiredVisitCount);
+        // WP-VP-4L (1) — no policy = one visit in each of the period's 5 working weeks
+        var pharmacy = preview.Scheduled.Where(s => s.TargetType == PlannedVisitTargetType.Pharmacy).ToList();
+        Assert.Equal(5, pharmacy.Count);
+        Assert.Equal(5, pharmacy.Select(s => s.WeekNumber).Distinct().Count());
+        Assert.All(pharmacy, s => Assert.Equal((FrequencyStatus.Unknown, 5, FrequencyDefaults.Weekly), (s.FrequencyStatus, s.RequiredVisitCount, s.FrequencyDefault)));
         Assert.All(preview.Scheduled.Where(s => s.ContactId == env.DoctorA), s => Assert.Equal(5, s.RequiredVisitCount));
         Assert.Equal(5, preview.Content.Single(c => c.ContactId == env.DoctorA).RequiredVisitCount);
     }

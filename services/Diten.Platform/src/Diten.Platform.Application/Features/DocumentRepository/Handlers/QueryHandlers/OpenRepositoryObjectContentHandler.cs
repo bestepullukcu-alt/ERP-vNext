@@ -13,5 +13,5 @@ public sealed class OpenRepositoryObjectContentHandler
     public OpenRepositoryObjectContentHandler(DocumentRepositoryService service) => _service = service;
 
     public Task<Response<RepositoryObjectContentHandle>> Handle(OpenRepositoryObjectContentQuery request, CancellationToken cancellationToken) =>
-        _service.OpenReadAsync(request.ContentId, request.CorrelationId, cancellationToken);
+        _service.OpenReadForCallerAsync(request.ContentId, request.CorrelationId, cancellationToken);
 }

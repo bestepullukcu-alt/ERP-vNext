@@ -343,6 +343,9 @@ public sealed partial class KnowledgePathsController
                 languageName = LanguageName(language),
                 languageNativeName = language is null ? null : ReferenceValueSet.LanguageOf(language).NativeName,
                 productName = derived is { } d ? Str(d, "productName") ?? Str(d, "productCode") : null,
+                // WP-VW-W3 (W3-WEB-c) — the path's product (the chain derives it; KnowledgePathReviewSubmission's source):
+                // the presentation notes' objection picker offers only this product's approved answers (K-A4).
+                productId = derived is { } dp ? Str(dp, "productId") : null,
                 audiences = derived is { } a && a.TryGetProperty("audiences", out var aud) && aud.ValueKind == JsonValueKind.Array
                     ? aud.EnumerateArray().Select(x => Str(x, "profileName") ?? Str(x, "profileCode")).OfType<string>().ToList()
                     : []
@@ -421,6 +424,10 @@ public sealed partial class KnowledgePathsController
             pathId = Str(p, "pathId"),
             liveVersion,
             canPublish = HasAnyPermission(PublishPermission),
+            // WP-VW-W3 (W3-WEB-c) — the "Sunum notları" tab: the objection picker needs the library's read key, the
+            // "create in the library" link its manage key (the step save itself is the path's manage key, as before).
+            canReadObjections = HasAnyPermission(ObjectionReadPermission),
+            canManageObjections = HasAnyPermission(ObjectionManagePermission),
             compliance = new
             {
                 blockers = compliance.Count(r => r.Severity == KnowledgePathStudioReview.Blocker),
@@ -482,6 +489,9 @@ public sealed partial class KnowledgePathsController
             }).ToList(),
             isRequired = Bool(step, "isRequired"),
             durationMinutes = Int(step, "estimatedDurationMinutes"),
+            // WP-VW-W3 (W3-WEB-c) — the step's presentation notes (W3-BE-b §2.3), read by the "Sunum notları" tab. Carried
+            // whole so a save sends the COMPLETE object back (an object replaces the stored notes).
+            presentation = Presentation(step),
             prerequisiteStepId = prerequisite,
             prerequisiteLabel = prerequisite is null ? null
                 : steps.FirstOrDefault(x => string.Equals(Str(x, "stepId"), prerequisite, StringComparison.OrdinalIgnoreCase)) is { ValueKind: JsonValueKind.Object } pre
@@ -493,6 +503,19 @@ public sealed partial class KnowledgePathsController
             languageName = LanguageName(content is { } cl ? Str(cl, "languageCode") : null),
             statusLabel = StatusLabel(contentStatus),
             published = string.Equals(contentStatus, "published", StringComparison.OrdinalIgnoreCase)
+        };
+    }
+
+    private static object? Presentation(JsonElement step)
+    {
+        if (!step.TryGetProperty("presentation", out var p) || p.ValueKind != JsonValueKind.Object) return null;
+        return new
+        {
+            keyMessage = Str(p, "keyMessage"),
+            talkTrack = Str(p, "talkTrack"),
+            targetSeconds = Int(p, "targetSeconds"),
+            transition = Str(p, "transition"),
+            objectionResponseIds = Guids(p, "objectionResponseIds").ToList()
         };
     }
 

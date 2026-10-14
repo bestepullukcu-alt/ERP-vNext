@@ -13,5 +13,5 @@ public sealed class GetRepositoryObjectByIdHandler
     public GetRepositoryObjectByIdHandler(DocumentRepositoryService service) => _service = service;
 
     public Task<Response<RepositoryObjectModel>> Handle(GetRepositoryObjectByIdQuery request, CancellationToken cancellationToken) =>
-        _service.GetAsync(request.ContentId, request.CorrelationId, cancellationToken);
+        _service.GetForCallerAsync(request.ContentId, request.CorrelationId, cancellationToken);
 }

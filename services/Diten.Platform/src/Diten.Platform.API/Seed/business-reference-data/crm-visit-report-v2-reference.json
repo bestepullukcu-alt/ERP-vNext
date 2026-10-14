@@ -1,0 +1,1747 @@
+{
+  "catalog_version": "2026.10.13-crm-visit-report-v2-reference-2",
+  "module": "BusinessReferenceData",
+  "note": "WP-VW-W4 (visit report v2): the doctor profile / potential sets (W4-BE-c). The ten report sets (W4-BE-a) follow the five profile sets. Tenant-scoped; display_name = English, label_* = the other six languages. Labels belong to the data owner and are corrected from the Reference Data screen, never patched by a script.",
+  "sets": [
+    {
+      "set_code": "crm-adoption-stage",
+      "set_name": "CRM Adoption Stage",
+      "scope_type": "tenant",
+      "status": "Active",
+      "description": "A doctor's adoption stage of one of our products (WP-VW-W4, K-W4). The same list as the content journey stages: the visit report records it per product and the next visit's content follows it. Tenant-scoped.",
+      "attribute_definitions": [
+        {
+          "attribute_code": "label_tr",
+          "display_name": "Label (Turkish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_fr",
+          "display_name": "Label (French)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_es",
+          "display_name": "Label (Spanish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_zh",
+          "display_name": "Label (Chinese)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ar",
+          "display_name": "Label (Arabic)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ru",
+          "display_name": "Label (Russian)",
+          "data_type": "string",
+          "is_required": true
+        }
+      ],
+      "values": [
+        {
+          "value_code": "unaware",
+          "display_name": "Unaware",
+          "description": "Has not heard of the product.",
+          "is_active": true,
+          "sort_order": 10,
+          "attributes": {
+            "label_tr": "Farkında değil",
+            "label_fr": "Pas informé",
+            "label_es": "No informado",
+            "label_zh": "未知晓",
+            "label_ar": "غير مدرك",
+            "label_ru": "Не осведомлён"
+          }
+        },
+        {
+          "value_code": "aware",
+          "display_name": "Aware",
+          "description": "Knows the product.",
+          "is_active": true,
+          "sort_order": 20,
+          "attributes": {
+            "label_tr": "Farkında",
+            "label_fr": "Informé",
+            "label_es": "Informado",
+            "label_zh": "已知晓",
+            "label_ar": "مدرك",
+            "label_ru": "Осведомлён"
+          }
+        },
+        {
+          "value_code": "evaluating",
+          "display_name": "Evaluating",
+          "description": "Weighs the product for their patients.",
+          "is_active": true,
+          "sort_order": 30,
+          "attributes": {
+            "label_tr": "Değerlendiriyor",
+            "label_fr": "En évaluation",
+            "label_es": "Evaluando",
+            "label_zh": "评估中",
+            "label_ar": "يقيّم",
+            "label_ru": "Оценивает"
+          }
+        },
+        {
+          "value_code": "trying",
+          "display_name": "Trying",
+          "description": "Tries the product on some patients.",
+          "is_active": true,
+          "sort_order": 40,
+          "attributes": {
+            "label_tr": "Deniyor",
+            "label_fr": "En essai",
+            "label_es": "Probando",
+            "label_zh": "试用中",
+            "label_ar": "يجرّب",
+            "label_ru": "Пробует"
+          }
+        },
+        {
+          "value_code": "regular",
+          "display_name": "Regular user",
+          "description": "Prescribes the product regularly.",
+          "is_active": true,
+          "sort_order": 50,
+          "attributes": {
+            "label_tr": "Düzenli kullanıyor",
+            "label_fr": "Utilisateur régulier",
+            "label_es": "Usuario habitual",
+            "label_zh": "常规使用",
+            "label_ar": "يستخدم بانتظام",
+            "label_ru": "Использует регулярно"
+          }
+        },
+        {
+          "value_code": "advocate",
+          "display_name": "Advocate",
+          "description": "Recommends the product to peers.",
+          "is_active": true,
+          "sort_order": 60,
+          "attributes": {
+            "label_tr": "Savunucu",
+            "label_fr": "Ambassadeur",
+            "label_es": "Defensor",
+            "label_zh": "倡导者",
+            "label_ar": "مناصر",
+            "label_ru": "Сторонник"
+          }
+        }
+      ]
+    },
+    {
+      "set_code": "crm-share-bucket",
+      "set_name": "CRM Share Bucket",
+      "scope_type": "tenant",
+      "status": "Active",
+      "description": "How much of a doctor's patients in the product's indications get our product (WP-VW-W4, K-W4): a choice, never a percentage. The opportunity matrix reads it with the potential class. Tenant-scoped.",
+      "attribute_definitions": [
+        {
+          "attribute_code": "label_tr",
+          "display_name": "Label (Turkish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_fr",
+          "display_name": "Label (French)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_es",
+          "display_name": "Label (Spanish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_zh",
+          "display_name": "Label (Chinese)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ar",
+          "display_name": "Label (Arabic)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ru",
+          "display_name": "Label (Russian)",
+          "data_type": "string",
+          "is_required": true
+        }
+      ],
+      "values": [
+        {
+          "value_code": "none",
+          "display_name": "None",
+          "description": "None of the patients.",
+          "is_active": true,
+          "sort_order": 10,
+          "attributes": {
+            "label_tr": "Hiç",
+            "label_fr": "Jamais",
+            "label_es": "Nunca",
+            "label_zh": "从不",
+            "label_ar": "أبداً",
+            "label_ru": "Никогда"
+          }
+        },
+        {
+          "value_code": "occasional",
+          "display_name": "Occasionally",
+          "description": "A few of the patients.",
+          "is_active": true,
+          "sort_order": 20,
+          "attributes": {
+            "label_tr": "Ara sıra",
+            "label_fr": "Occasionnellement",
+            "label_es": "Ocasionalmente",
+            "label_zh": "偶尔",
+            "label_ar": "أحياناً",
+            "label_ru": "Иногда"
+          }
+        },
+        {
+          "value_code": "half",
+          "display_name": "About half",
+          "description": "About half of the patients.",
+          "is_active": true,
+          "sort_order": 30,
+          "attributes": {
+            "label_tr": "Yarı yarıya",
+            "label_fr": "À moitié",
+            "label_es": "La mitad",
+            "label_zh": "大约一半",
+            "label_ar": "حوالي النصف",
+            "label_ru": "Примерно половина"
+          }
+        },
+        {
+          "value_code": "mostly",
+          "display_name": "Mostly",
+          "description": "Most of the patients.",
+          "is_active": true,
+          "sort_order": 40,
+          "attributes": {
+            "label_tr": "Çoğunlukla",
+            "label_fr": "La plupart du temps",
+            "label_es": "Mayormente",
+            "label_zh": "大多数",
+            "label_ar": "غالباً",
+            "label_ru": "В основном"
+          }
+        },
+        {
+          "value_code": "always",
+          "display_name": "Always",
+          "description": "All of the patients.",
+          "is_active": true,
+          "sort_order": 50,
+          "attributes": {
+            "label_tr": "Hep",
+            "label_fr": "Toujours",
+            "label_es": "Siempre",
+            "label_zh": "总是",
+            "label_ar": "دائماً",
+            "label_ru": "Всегда"
+          }
+        }
+      ]
+    },
+    {
+      "set_code": "crm-adoption-typology",
+      "set_name": "CRM Adoption Typology",
+      "scope_type": "tenant",
+      "status": "Active",
+      "description": "A doctor's adoption typology (WP-VW-W4, K-W5): kept on the doctor profile, suggested by the rep in the visit report, history kept. Tenant-scoped.",
+      "attribute_definitions": [
+        {
+          "attribute_code": "label_tr",
+          "display_name": "Label (Turkish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_fr",
+          "display_name": "Label (French)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_es",
+          "display_name": "Label (Spanish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_zh",
+          "display_name": "Label (Chinese)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ar",
+          "display_name": "Label (Arabic)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ru",
+          "display_name": "Label (Russian)",
+          "data_type": "string",
+          "is_required": true
+        }
+      ],
+      "values": [
+        {
+          "value_code": "innovator",
+          "display_name": "Innovator",
+          "description": "Adopts new treatments first.",
+          "is_active": true,
+          "sort_order": 10,
+          "attributes": {
+            "label_tr": "Yenilikçi",
+            "label_fr": "Innovateur",
+            "label_es": "Innovador",
+            "label_zh": "创新者",
+            "label_ar": "مبتكر",
+            "label_ru": "Новатор"
+          }
+        },
+        {
+          "value_code": "early_adopter",
+          "display_name": "Early adopter",
+          "description": "Adopts early, after the evidence.",
+          "is_active": true,
+          "sort_order": 20,
+          "attributes": {
+            "label_tr": "Erken benimseyen",
+            "label_fr": "Adopteur précoce",
+            "label_es": "Adoptador temprano",
+            "label_zh": "早期采用者",
+            "label_ar": "متبنٍّ مبكر",
+            "label_ru": "Ранний последователь"
+          }
+        },
+        {
+          "value_code": "early_majority",
+          "display_name": "Early majority",
+          "description": "Adopts once peers do.",
+          "is_active": true,
+          "sort_order": 30,
+          "attributes": {
+            "label_tr": "Erken çoğunluk",
+            "label_fr": "Majorité précoce",
+            "label_es": "Mayoría temprana",
+            "label_zh": "早期大众",
+            "label_ar": "الأغلبية المبكرة",
+            "label_ru": "Раннее большинство"
+          }
+        },
+        {
+          "value_code": "late_majority",
+          "display_name": "Late majority",
+          "description": "Adopts after most peers.",
+          "is_active": true,
+          "sort_order": 40,
+          "attributes": {
+            "label_tr": "Geç çoğunluk",
+            "label_fr": "Majorité tardive",
+            "label_es": "Mayoría tardía",
+            "label_zh": "后期大众",
+            "label_ar": "الأغلبية المتأخرة",
+            "label_ru": "Позднее большинство"
+          }
+        },
+        {
+          "value_code": "laggard",
+          "display_name": "Laggard",
+          "description": "Keeps established treatments.",
+          "is_active": true,
+          "sort_order": 50,
+          "attributes": {
+            "label_tr": "Geride kalan",
+            "label_fr": "Retardataire",
+            "label_es": "Rezagado",
+            "label_zh": "落后者",
+            "label_ar": "متأخر",
+            "label_ru": "Отстающий"
+          }
+        }
+      ]
+    },
+    {
+      "set_code": "crm-communication-style",
+      "set_name": "CRM Communication Style",
+      "scope_type": "tenant",
+      "status": "Active",
+      "description": "A doctor's communication style (WP-VW-W4, K-W5): kept on the doctor profile, suggested by the rep in the visit report, history kept. Tenant-scoped.",
+      "attribute_definitions": [
+        {
+          "attribute_code": "label_tr",
+          "display_name": "Label (Turkish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_fr",
+          "display_name": "Label (French)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_es",
+          "display_name": "Label (Spanish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_zh",
+          "display_name": "Label (Chinese)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ar",
+          "display_name": "Label (Arabic)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ru",
+          "display_name": "Label (Russian)",
+          "data_type": "string",
+          "is_required": true
+        }
+      ],
+      "values": [
+        {
+          "value_code": "analytical",
+          "display_name": "Analytical",
+          "description": "Wants data and evidence.",
+          "is_active": true,
+          "sort_order": 10,
+          "attributes": {
+            "label_tr": "Analitik",
+            "label_fr": "Analytique",
+            "label_es": "Analítico",
+            "label_zh": "分析型",
+            "label_ar": "تحليلي",
+            "label_ru": "Аналитик"
+          }
+        },
+        {
+          "value_code": "driver",
+          "display_name": "Driver",
+          "description": "Wants the result, briefly.",
+          "is_active": true,
+          "sort_order": 20,
+          "attributes": {
+            "label_tr": "Sonuç odaklı",
+            "label_fr": "Directif",
+            "label_es": "Dominante",
+            "label_zh": "驱动型",
+            "label_ar": "حازم",
+            "label_ru": "Лидер"
+          }
+        },
+        {
+          "value_code": "amiable",
+          "display_name": "Amiable",
+          "description": "Values the relationship.",
+          "is_active": true,
+          "sort_order": 30,
+          "attributes": {
+            "label_tr": "Uyumlu",
+            "label_fr": "Aimable",
+            "label_es": "Afable",
+            "label_zh": "亲和型",
+            "label_ar": "ودود",
+            "label_ru": "Дружелюбный"
+          }
+        },
+        {
+          "value_code": "expressive",
+          "display_name": "Expressive",
+          "description": "Values ideas and stories.",
+          "is_active": true,
+          "sort_order": 40,
+          "attributes": {
+            "label_tr": "Dışavurumcu",
+            "label_fr": "Expressif",
+            "label_es": "Expresivo",
+            "label_zh": "表现型",
+            "label_ar": "معبّر",
+            "label_ru": "Экспрессивный"
+          }
+        }
+      ]
+    },
+    {
+      "set_code": "crm-kol-level",
+      "set_name": "CRM KOL Level",
+      "scope_type": "tenant",
+      "status": "Active",
+      "description": "A doctor's key opinion leader level (WP-VW-W4, K-W5): kept on the doctor profile, suggested by the rep in the visit report, history kept. Tenant-scoped.",
+      "attribute_definitions": [
+        {
+          "attribute_code": "label_tr",
+          "display_name": "Label (Turkish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_fr",
+          "display_name": "Label (French)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_es",
+          "display_name": "Label (Spanish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_zh",
+          "display_name": "Label (Chinese)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ar",
+          "display_name": "Label (Arabic)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ru",
+          "display_name": "Label (Russian)",
+          "data_type": "string",
+          "is_required": true
+        }
+      ],
+      "values": [
+        {
+          "value_code": "none",
+          "display_name": "None",
+          "description": "Not an opinion leader.",
+          "is_active": true,
+          "sort_order": 10,
+          "attributes": {
+            "label_tr": "Yok",
+            "label_fr": "Aucun",
+            "label_es": "Ninguno",
+            "label_zh": "无",
+            "label_ar": "لا يوجد",
+            "label_ru": "Нет"
+          }
+        },
+        {
+          "value_code": "local",
+          "display_name": "Local",
+          "description": "An opinion leader in their institution or town.",
+          "is_active": true,
+          "sort_order": 20,
+          "attributes": {
+            "label_tr": "Yerel",
+            "label_fr": "Local",
+            "label_es": "Local",
+            "label_zh": "本地",
+            "label_ar": "محلي",
+            "label_ru": "Местный"
+          }
+        },
+        {
+          "value_code": "regional",
+          "display_name": "Regional",
+          "description": "An opinion leader in the region.",
+          "is_active": true,
+          "sort_order": 30,
+          "attributes": {
+            "label_tr": "Bölgesel",
+            "label_fr": "Régional",
+            "label_es": "Regional",
+            "label_zh": "区域",
+            "label_ar": "إقليمي",
+            "label_ru": "Региональный"
+          }
+        },
+        {
+          "value_code": "national",
+          "display_name": "National",
+          "description": "An opinion leader in the country.",
+          "is_active": true,
+          "sort_order": 40,
+          "attributes": {
+            "label_tr": "Ulusal",
+            "label_fr": "National",
+            "label_es": "Nacional",
+            "label_zh": "全国",
+            "label_ar": "وطني",
+            "label_ru": "Национальный"
+          }
+        },
+        {
+          "value_code": "international",
+          "display_name": "International",
+          "description": "An opinion leader beyond the country.",
+          "is_active": true,
+          "sort_order": 50,
+          "attributes": {
+            "label_tr": "Uluslararası",
+            "label_fr": "International",
+            "label_es": "Internacional",
+            "label_zh": "国际",
+            "label_ar": "دولي",
+            "label_ru": "Международный"
+          }
+        }
+      ]
+    },
+    {
+      "set_code": "crm-visit-success",
+      "set_name": "CRM Visit Success",
+      "scope_type": "tenant",
+      "status": "Active",
+      "description": "Whether the visit's key message landed, per product (WP-VW-W4, K-W4; replaces the mockup's star rating). Tenant-scoped.",
+      "attribute_definitions": [
+        {
+          "attribute_code": "label_tr",
+          "display_name": "Label (Turkish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_fr",
+          "display_name": "Label (French)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_es",
+          "display_name": "Label (Spanish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_zh",
+          "display_name": "Label (Chinese)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ar",
+          "display_name": "Label (Arabic)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ru",
+          "display_name": "Label (Russian)",
+          "data_type": "string",
+          "is_required": true
+        }
+      ],
+      "values": [
+        {
+          "value_code": "reached",
+          "display_name": "Reached",
+          "description": "The key message landed.",
+          "is_active": true,
+          "sort_order": 10,
+          "attributes": {
+            "label_tr": "Ulaşıldı",
+            "label_fr": "Atteint",
+            "label_es": "Logrado",
+            "label_zh": "已达成",
+            "label_ar": "تحقق",
+            "label_ru": "Достигнуто"
+          }
+        },
+        {
+          "value_code": "partial",
+          "display_name": "Partially",
+          "description": "The message landed in part.",
+          "is_active": true,
+          "sort_order": 20,
+          "attributes": {
+            "label_tr": "Kısmen",
+            "label_fr": "Partiellement",
+            "label_es": "Parcialmente",
+            "label_zh": "部分达成",
+            "label_ar": "جزئياً",
+            "label_ru": "Частично"
+          }
+        },
+        {
+          "value_code": "not_reached",
+          "display_name": "Not reached",
+          "description": "The message did not land.",
+          "is_active": true,
+          "sort_order": 30,
+          "attributes": {
+            "label_tr": "Ulaşılamadı",
+            "label_fr": "Non atteint",
+            "label_es": "No logrado",
+            "label_zh": "未达成",
+            "label_ar": "لم يتحقق",
+            "label_ru": "Не достигнуто"
+          }
+        }
+      ]
+    },
+    {
+      "set_code": "crm-doctor-commitment",
+      "set_name": "CRM Doctor Commitment",
+      "scope_type": "tenant",
+      "status": "Active",
+      "description": "What the doctor committed to at the end of the product discussion (WP-VW-W4, K-W4); feeds the next-visit message suggestion. Tenant-scoped.",
+      "attribute_definitions": [
+        {
+          "attribute_code": "label_tr",
+          "display_name": "Label (Turkish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_fr",
+          "display_name": "Label (French)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_es",
+          "display_name": "Label (Spanish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_zh",
+          "display_name": "Label (Chinese)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ar",
+          "display_name": "Label (Arabic)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ru",
+          "display_name": "Label (Russian)",
+          "data_type": "string",
+          "is_required": true
+        }
+      ],
+      "values": [
+        {
+          "value_code": "will_try",
+          "display_name": "Will try",
+          "description": "Will try the product on some patients.",
+          "is_active": true,
+          "sort_order": 10,
+          "attributes": {
+            "label_tr": "Deneyecek",
+            "label_fr": "Va essayer",
+            "label_es": "Lo probará",
+            "label_zh": "将试用",
+            "label_ar": "سيجرّب",
+            "label_ru": "Попробует"
+          }
+        },
+        {
+          "value_code": "will_prescribe",
+          "display_name": "Will prescribe",
+          "description": "Will prescribe to their patients.",
+          "is_active": true,
+          "sort_order": 20,
+          "attributes": {
+            "label_tr": "Hastasına yazacak",
+            "label_fr": "Va prescrire",
+            "label_es": "Lo prescribirá",
+            "label_zh": "将处方",
+            "label_ar": "سيصفه لمرضاه",
+            "label_ru": "Будет назначать"
+          }
+        },
+        {
+          "value_code": "wants_info",
+          "display_name": "Wants more information",
+          "description": "Asked for more information.",
+          "is_active": true,
+          "sort_order": 30,
+          "attributes": {
+            "label_tr": "Daha fazla bilgi istiyor",
+            "label_fr": "Souhaite plus d'informations",
+            "label_es": "Quiere más información",
+            "label_zh": "需要更多信息",
+            "label_ar": "يريد مزيداً من المعلومات",
+            "label_ru": "Хочет больше информации"
+          }
+        },
+        {
+          "value_code": "none",
+          "display_name": "No commitment",
+          "description": "Made no commitment.",
+          "is_active": true,
+          "sort_order": 40,
+          "attributes": {
+            "label_tr": "Taahhüt yok",
+            "label_fr": "Pas d'engagement",
+            "label_es": "Sin compromiso",
+            "label_zh": "无承诺",
+            "label_ar": "لا التزام",
+            "label_ru": "Без обязательств"
+          }
+        }
+      ]
+    },
+    {
+      "set_code": "crm-visit-interest",
+      "set_name": "CRM Visit Interest",
+      "scope_type": "tenant",
+      "status": "Active",
+      "description": "The doctor's interest in a product during the visit (WP-VW-W4); the same codes as the W3 presentation interest mark, so the report pre-fills from it. Tenant-scoped.",
+      "attribute_definitions": [
+        {
+          "attribute_code": "label_tr",
+          "display_name": "Label (Turkish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_fr",
+          "display_name": "Label (French)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_es",
+          "display_name": "Label (Spanish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_zh",
+          "display_name": "Label (Chinese)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ar",
+          "display_name": "Label (Arabic)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ru",
+          "display_name": "Label (Russian)",
+          "data_type": "string",
+          "is_required": true
+        }
+      ],
+      "values": [
+        {
+          "value_code": "interested",
+          "display_name": "Interested",
+          "description": "Showed interest.",
+          "is_active": true,
+          "sort_order": 10,
+          "attributes": {
+            "label_tr": "İlgili",
+            "label_fr": "Intéressé",
+            "label_es": "Interesado",
+            "label_zh": "感兴趣",
+            "label_ar": "مهتم",
+            "label_ru": "Заинтересован"
+          }
+        },
+        {
+          "value_code": "neutral",
+          "display_name": "Neutral",
+          "description": "Neither interested nor uninterested.",
+          "is_active": true,
+          "sort_order": 20,
+          "attributes": {
+            "label_tr": "Nötr",
+            "label_fr": "Neutre",
+            "label_es": "Neutral",
+            "label_zh": "中立",
+            "label_ar": "محايد",
+            "label_ru": "Нейтрально"
+          }
+        },
+        {
+          "value_code": "not_interested",
+          "display_name": "Not interested",
+          "description": "Showed no interest.",
+          "is_active": true,
+          "sort_order": 30,
+          "attributes": {
+            "label_tr": "İlgisiz",
+            "label_fr": "Pas intéressé",
+            "label_es": "No interesado",
+            "label_zh": "不感兴趣",
+            "label_ar": "غير مهتم",
+            "label_ru": "Не заинтересован"
+          }
+        }
+      ]
+    },
+    {
+      "set_code": "crm-visit-request-type",
+      "set_name": "CRM Visit Request Type",
+      "scope_type": "tenant",
+      "status": "Active",
+      "description": "What the doctor / pharmacy asked for during the visit (WP-VW-W4). Tenant-scoped.",
+      "attribute_definitions": [
+        {
+          "attribute_code": "label_tr",
+          "display_name": "Label (Turkish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_fr",
+          "display_name": "Label (French)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_es",
+          "display_name": "Label (Spanish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_zh",
+          "display_name": "Label (Chinese)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ar",
+          "display_name": "Label (Arabic)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ru",
+          "display_name": "Label (Russian)",
+          "data_type": "string",
+          "is_required": true
+        }
+      ],
+      "values": [
+        {
+          "value_code": "literature",
+          "display_name": "Literature / study",
+          "description": "A publication or study.",
+          "is_active": true,
+          "sort_order": 10,
+          "attributes": {
+            "label_tr": "Literatür / çalışma",
+            "label_fr": "Littérature / étude",
+            "label_es": "Literatura / estudio",
+            "label_zh": "文献 / 研究",
+            "label_ar": "أدبيات / دراسة",
+            "label_ru": "Литература / исследование"
+          }
+        },
+        {
+          "value_code": "sample",
+          "display_name": "Sample",
+          "description": "A product sample.",
+          "is_active": true,
+          "sort_order": 20,
+          "attributes": {
+            "label_tr": "Numune",
+            "label_fr": "Échantillon",
+            "label_es": "Muestra",
+            "label_zh": "样品",
+            "label_ar": "عينة",
+            "label_ru": "Образец"
+          }
+        },
+        {
+          "value_code": "patient_material",
+          "display_name": "Patient material",
+          "description": "Material for patients.",
+          "is_active": true,
+          "sort_order": 30,
+          "attributes": {
+            "label_tr": "Hasta materyali",
+            "label_fr": "Documentation patient",
+            "label_es": "Material para pacientes",
+            "label_zh": "患者资料",
+            "label_ar": "مواد للمرضى",
+            "label_ru": "Материалы для пациентов"
+          }
+        },
+        {
+          "value_code": "training_invite",
+          "display_name": "Training / meeting invitation",
+          "description": "An invitation to a training or a meeting.",
+          "is_active": true,
+          "sort_order": 40,
+          "attributes": {
+            "label_tr": "Eğitim / toplantı daveti",
+            "label_fr": "Invitation à une formation / réunion",
+            "label_es": "Invitación a formación / reunión",
+            "label_zh": "培训 / 会议邀请",
+            "label_ar": "دعوة لتدريب / اجتماع",
+            "label_ru": "Приглашение на обучение / встречу"
+          }
+        },
+        {
+          "value_code": "msl_meeting",
+          "display_name": "MSL meeting",
+          "description": "A meeting with a medical science liaison.",
+          "is_active": true,
+          "sort_order": 50,
+          "attributes": {
+            "label_tr": "MSL görüşmesi",
+            "label_fr": "Rencontre avec un MSL",
+            "label_es": "Reunión con MSL",
+            "label_zh": "MSL 会面",
+            "label_ar": "لقاء مع MSL",
+            "label_ru": "Встреча с MSL"
+          }
+        },
+        {
+          "value_code": "other",
+          "display_name": "Other",
+          "description": "Another request.",
+          "is_active": true,
+          "sort_order": 60,
+          "attributes": {
+            "label_tr": "Diğer",
+            "label_fr": "Autre",
+            "label_es": "Otro",
+            "label_zh": "其他",
+            "label_ar": "أخرى",
+            "label_ru": "Другое"
+          }
+        }
+      ]
+    },
+    {
+      "set_code": "crm-competitor-advantage",
+      "set_name": "CRM Competitor Advantage",
+      "scope_type": "tenant",
+      "status": "Active",
+      "description": "An advantage or disadvantage of our product against a competitor, as the doctor sees it (WP-VW-W4, optional). Tenant-scoped.",
+      "attribute_definitions": [
+        {
+          "attribute_code": "label_tr",
+          "display_name": "Label (Turkish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_fr",
+          "display_name": "Label (French)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_es",
+          "display_name": "Label (Spanish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_zh",
+          "display_name": "Label (Chinese)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ar",
+          "display_name": "Label (Arabic)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ru",
+          "display_name": "Label (Russian)",
+          "data_type": "string",
+          "is_required": true
+        }
+      ],
+      "values": [
+        {
+          "value_code": "efficacy",
+          "display_name": "Efficacy",
+          "description": "Efficacy.",
+          "is_active": true,
+          "sort_order": 10,
+          "attributes": {
+            "label_tr": "Etkinlik",
+            "label_fr": "Efficacité",
+            "label_es": "Eficacia",
+            "label_zh": "疗效",
+            "label_ar": "الفعالية",
+            "label_ru": "Эффективность"
+          }
+        },
+        {
+          "value_code": "safety",
+          "display_name": "Safety",
+          "description": "Safety.",
+          "is_active": true,
+          "sort_order": 20,
+          "attributes": {
+            "label_tr": "Güvenlik",
+            "label_fr": "Sécurité",
+            "label_es": "Seguridad",
+            "label_zh": "安全性",
+            "label_ar": "السلامة",
+            "label_ru": "Безопасность"
+          }
+        },
+        {
+          "value_code": "dosing",
+          "display_name": "Ease of dosing",
+          "description": "Ease of dosing.",
+          "is_active": true,
+          "sort_order": 30,
+          "attributes": {
+            "label_tr": "Doz kolaylığı",
+            "label_fr": "Facilité de posologie",
+            "label_es": "Facilidad de dosificación",
+            "label_zh": "给药便利",
+            "label_ar": "سهولة الجرعات",
+            "label_ru": "Удобство дозирования"
+          }
+        },
+        {
+          "value_code": "price",
+          "display_name": "Price",
+          "description": "Price.",
+          "is_active": true,
+          "sort_order": 40,
+          "attributes": {
+            "label_tr": "Fiyat",
+            "label_fr": "Prix",
+            "label_es": "Precio",
+            "label_zh": "价格",
+            "label_ar": "السعر",
+            "label_ru": "Цена"
+          }
+        },
+        {
+          "value_code": "reimbursement",
+          "display_name": "Reimbursement",
+          "description": "Reimbursement.",
+          "is_active": true,
+          "sort_order": 50,
+          "attributes": {
+            "label_tr": "Geri ödeme",
+            "label_fr": "Remboursement",
+            "label_es": "Reembolso",
+            "label_zh": "报销",
+            "label_ar": "التعويض",
+            "label_ru": "Возмещение"
+          }
+        },
+        {
+          "value_code": "access",
+          "display_name": "Access / stock",
+          "description": "Access or stock availability.",
+          "is_active": true,
+          "sort_order": 60,
+          "attributes": {
+            "label_tr": "Erişim / stok",
+            "label_fr": "Accès / stock",
+            "label_es": "Acceso / stock",
+            "label_zh": "可及性 / 库存",
+            "label_ar": "الوصول / المخزون",
+            "label_ru": "Доступность / запасы"
+          }
+        },
+        {
+          "value_code": "evidence",
+          "display_name": "Level of evidence",
+          "description": "The level of evidence.",
+          "is_active": true,
+          "sort_order": 70,
+          "attributes": {
+            "label_tr": "Kanıt düzeyi",
+            "label_fr": "Niveau de preuve",
+            "label_es": "Nivel de evidencia",
+            "label_zh": "证据水平",
+            "label_ar": "مستوى الأدلة",
+            "label_ru": "Уровень доказательности"
+          }
+        },
+        {
+          "value_code": "brand",
+          "display_name": "Brand awareness",
+          "description": "Brand awareness.",
+          "is_active": true,
+          "sort_order": 80,
+          "attributes": {
+            "label_tr": "Marka bilinirliği",
+            "label_fr": "Notoriété de la marque",
+            "label_es": "Reconocimiento de marca",
+            "label_zh": "品牌知名度",
+            "label_ar": "الوعي بالعلامة التجارية",
+            "label_ru": "Узнаваемость бренда"
+          }
+        }
+      ]
+    },
+    {
+      "set_code": "crm-pharmacy-met-role",
+      "set_name": "CRM Pharmacy Met Role",
+      "scope_type": "tenant",
+      "status": "Active",
+      "description": "Who the rep met at a pharmacy visit (WP-VW-W4). Tenant-scoped.",
+      "attribute_definitions": [
+        {
+          "attribute_code": "label_tr",
+          "display_name": "Label (Turkish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_fr",
+          "display_name": "Label (French)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_es",
+          "display_name": "Label (Spanish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_zh",
+          "display_name": "Label (Chinese)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ar",
+          "display_name": "Label (Arabic)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ru",
+          "display_name": "Label (Russian)",
+          "data_type": "string",
+          "is_required": true
+        }
+      ],
+      "values": [
+        {
+          "value_code": "pharmacist",
+          "display_name": "Pharmacist",
+          "description": "The pharmacist.",
+          "is_active": true,
+          "sort_order": 10,
+          "attributes": {
+            "label_tr": "Eczacı",
+            "label_fr": "Pharmacien",
+            "label_es": "Farmacéutico",
+            "label_zh": "药剂师",
+            "label_ar": "صيدلي",
+            "label_ru": "Фармацевт"
+          }
+        },
+        {
+          "value_code": "technician",
+          "display_name": "Pharmacy technician",
+          "description": "A pharmacy technician.",
+          "is_active": true,
+          "sort_order": 20,
+          "attributes": {
+            "label_tr": "Eczane teknisyeni",
+            "label_fr": "Préparateur en pharmacie",
+            "label_es": "Técnico de farmacia",
+            "label_zh": "药房技术员",
+            "label_ar": "فني صيدلة",
+            "label_ru": "Фармтехник"
+          }
+        },
+        {
+          "value_code": "owner",
+          "display_name": "Pharmacy owner",
+          "description": "The owner of the pharmacy.",
+          "is_active": true,
+          "sort_order": 30,
+          "attributes": {
+            "label_tr": "Eczane sahibi",
+            "label_fr": "Titulaire de la pharmacie",
+            "label_es": "Propietario de la farmacia",
+            "label_zh": "药房老板",
+            "label_ar": "مالك الصيدلية",
+            "label_ru": "Владелец аптеки"
+          }
+        },
+        {
+          "value_code": "other",
+          "display_name": "Other",
+          "description": "Someone else.",
+          "is_active": true,
+          "sort_order": 40,
+          "attributes": {
+            "label_tr": "Diğer",
+            "label_fr": "Autre",
+            "label_es": "Otro",
+            "label_zh": "其他",
+            "label_ar": "أخرى",
+            "label_ru": "Другое"
+          }
+        }
+      ]
+    },
+    {
+      "set_code": "crm-pharmacy-stock-level",
+      "set_name": "CRM Pharmacy Stock Level",
+      "scope_type": "tenant",
+      "status": "Active",
+      "description": "A product's stock level at a pharmacy (WP-VW-W4). Tenant-scoped.",
+      "attribute_definitions": [
+        {
+          "attribute_code": "label_tr",
+          "display_name": "Label (Turkish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_fr",
+          "display_name": "Label (French)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_es",
+          "display_name": "Label (Spanish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_zh",
+          "display_name": "Label (Chinese)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ar",
+          "display_name": "Label (Arabic)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ru",
+          "display_name": "Label (Russian)",
+          "data_type": "string",
+          "is_required": true
+        }
+      ],
+      "values": [
+        {
+          "value_code": "none",
+          "display_name": "None",
+          "description": "No stock.",
+          "is_active": true,
+          "sort_order": 10,
+          "attributes": {
+            "label_tr": "Yok",
+            "label_fr": "Aucun",
+            "label_es": "Ninguno",
+            "label_zh": "无",
+            "label_ar": "لا يوجد",
+            "label_ru": "Нет"
+          }
+        },
+        {
+          "value_code": "low",
+          "display_name": "Low",
+          "description": "Little stock.",
+          "is_active": true,
+          "sort_order": 20,
+          "attributes": {
+            "label_tr": "Az",
+            "label_fr": "Faible",
+            "label_es": "Bajo",
+            "label_zh": "少",
+            "label_ar": "منخفض",
+            "label_ru": "Мало"
+          }
+        },
+        {
+          "value_code": "ok",
+          "display_name": "Sufficient",
+          "description": "Enough stock.",
+          "is_active": true,
+          "sort_order": 30,
+          "attributes": {
+            "label_tr": "Yeterli",
+            "label_fr": "Suffisant",
+            "label_es": "Suficiente",
+            "label_zh": "充足",
+            "label_ar": "كافٍ",
+            "label_ru": "Достаточно"
+          }
+        },
+        {
+          "value_code": "high",
+          "display_name": "High",
+          "description": "More stock than needed.",
+          "is_active": true,
+          "sort_order": 40,
+          "attributes": {
+            "label_tr": "Fazla",
+            "label_fr": "Élevé",
+            "label_es": "Alto",
+            "label_zh": "过多",
+            "label_ar": "مرتفع",
+            "label_ru": "Много"
+          }
+        }
+      ]
+    },
+    {
+      "set_code": "crm-shelf-position",
+      "set_name": "CRM Shelf Position",
+      "scope_type": "tenant",
+      "status": "Active",
+      "description": "Where our product stands on the pharmacy shelf (WP-VW-W4). Tenant-scoped.",
+      "attribute_definitions": [
+        {
+          "attribute_code": "label_tr",
+          "display_name": "Label (Turkish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_fr",
+          "display_name": "Label (French)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_es",
+          "display_name": "Label (Spanish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_zh",
+          "display_name": "Label (Chinese)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ar",
+          "display_name": "Label (Arabic)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ru",
+          "display_name": "Label (Russian)",
+          "data_type": "string",
+          "is_required": true
+        }
+      ],
+      "values": [
+        {
+          "value_code": "eye_level",
+          "display_name": "Eye level",
+          "description": "At eye level.",
+          "is_active": true,
+          "sort_order": 10,
+          "attributes": {
+            "label_tr": "Göz hizası",
+            "label_fr": "À hauteur des yeux",
+            "label_es": "A la altura de los ojos",
+            "label_zh": "视线高度",
+            "label_ar": "على مستوى النظر",
+            "label_ru": "На уровне глаз"
+          }
+        },
+        {
+          "value_code": "upper",
+          "display_name": "Upper shelf",
+          "description": "On an upper shelf.",
+          "is_active": true,
+          "sort_order": 20,
+          "attributes": {
+            "label_tr": "Üst raf",
+            "label_fr": "Étagère haute",
+            "label_es": "Estante superior",
+            "label_zh": "上层货架",
+            "label_ar": "الرف العلوي",
+            "label_ru": "Верхняя полка"
+          }
+        },
+        {
+          "value_code": "lower",
+          "display_name": "Lower shelf",
+          "description": "On a lower shelf.",
+          "is_active": true,
+          "sort_order": 30,
+          "attributes": {
+            "label_tr": "Alt raf",
+            "label_fr": "Étagère basse",
+            "label_es": "Estante inferior",
+            "label_zh": "下层货架",
+            "label_ar": "الرف السفلي",
+            "label_ru": "Нижняя полка"
+          }
+        },
+        {
+          "value_code": "behind_counter",
+          "display_name": "Behind the counter",
+          "description": "Behind the counter.",
+          "is_active": true,
+          "sort_order": 40,
+          "attributes": {
+            "label_tr": "Tezgâh arkası",
+            "label_fr": "Derrière le comptoir",
+            "label_es": "Detrás del mostrador",
+            "label_zh": "柜台后",
+            "label_ar": "خلف المنضدة",
+            "label_ru": "За прилавком"
+          }
+        },
+        {
+          "value_code": "not_visible",
+          "display_name": "Not visible",
+          "description": "Not visible to customers.",
+          "is_active": true,
+          "sort_order": 50,
+          "attributes": {
+            "label_tr": "Görünmüyor",
+            "label_fr": "Non visible",
+            "label_es": "No visible",
+            "label_zh": "不可见",
+            "label_ar": "غير مرئي",
+            "label_ru": "Не виден"
+          }
+        }
+      ]
+    },
+    {
+      "set_code": "crm-sales-trend",
+      "set_name": "CRM Sales Trend",
+      "scope_type": "tenant",
+      "status": "Active",
+      "description": "A product's sales trend at a pharmacy, as the pharmacist sees it (WP-VW-W4, S3: required; the boxes per month are optional). Tenant-scoped.",
+      "attribute_definitions": [
+        {
+          "attribute_code": "label_tr",
+          "display_name": "Label (Turkish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_fr",
+          "display_name": "Label (French)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_es",
+          "display_name": "Label (Spanish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_zh",
+          "display_name": "Label (Chinese)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ar",
+          "display_name": "Label (Arabic)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ru",
+          "display_name": "Label (Russian)",
+          "data_type": "string",
+          "is_required": true
+        }
+      ],
+      "values": [
+        {
+          "value_code": "up",
+          "display_name": "Increasing",
+          "description": "Sales are increasing.",
+          "is_active": true,
+          "sort_order": 10,
+          "attributes": {
+            "label_tr": "Artıyor",
+            "label_fr": "En hausse",
+            "label_es": "En aumento",
+            "label_zh": "上升",
+            "label_ar": "في ازدياد",
+            "label_ru": "Растут"
+          }
+        },
+        {
+          "value_code": "flat",
+          "display_name": "Stable",
+          "description": "Sales are stable.",
+          "is_active": true,
+          "sort_order": 20,
+          "attributes": {
+            "label_tr": "Aynı",
+            "label_fr": "Stable",
+            "label_es": "Estable",
+            "label_zh": "持平",
+            "label_ar": "مستقرة",
+            "label_ru": "Без изменений"
+          }
+        },
+        {
+          "value_code": "down",
+          "display_name": "Decreasing",
+          "description": "Sales are decreasing.",
+          "is_active": true,
+          "sort_order": 30,
+          "attributes": {
+            "label_tr": "Azalıyor",
+            "label_fr": "En baisse",
+            "label_es": "En descenso",
+            "label_zh": "下降",
+            "label_ar": "في انخفاض",
+            "label_ru": "Снижаются"
+          }
+        }
+      ]
+    },
+    {
+      "set_code": "crm-recommendation-level",
+      "set_name": "CRM Recommendation Level",
+      "scope_type": "tenant",
+      "status": "Active",
+      "description": "How strongly the pharmacy recommends our product (WP-VW-W4). Tenant-scoped.",
+      "attribute_definitions": [
+        {
+          "attribute_code": "label_tr",
+          "display_name": "Label (Turkish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_fr",
+          "display_name": "Label (French)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_es",
+          "display_name": "Label (Spanish)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_zh",
+          "display_name": "Label (Chinese)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ar",
+          "display_name": "Label (Arabic)",
+          "data_type": "string",
+          "is_required": true
+        },
+        {
+          "attribute_code": "label_ru",
+          "display_name": "Label (Russian)",
+          "data_type": "string",
+          "is_required": true
+        }
+      ],
+      "values": [
+        {
+          "value_code": "high",
+          "display_name": "High",
+          "description": "Recommends strongly.",
+          "is_active": true,
+          "sort_order": 10,
+          "attributes": {
+            "label_tr": "Yüksek",
+            "label_fr": "Élevé",
+            "label_es": "Alto",
+            "label_zh": "高",
+            "label_ar": "مرتفع",
+            "label_ru": "Высокий"
+          }
+        },
+        {
+          "value_code": "medium",
+          "display_name": "Medium",
+          "description": "Recommends sometimes.",
+          "is_active": true,
+          "sort_order": 20,
+          "attributes": {
+            "label_tr": "Orta",
+            "label_fr": "Moyen",
+            "label_es": "Medio",
+            "label_zh": "中",
+            "label_ar": "متوسط",
+            "label_ru": "Средний"
+          }
+        },
+        {
+          "value_code": "low",
+          "display_name": "Low",
+          "description": "Rarely recommends.",
+          "is_active": true,
+          "sort_order": 30,
+          "attributes": {
+            "label_tr": "Düşük",
+            "label_fr": "Faible",
+            "label_es": "Bajo",
+            "label_zh": "低",
+            "label_ar": "منخفض",
+            "label_ru": "Низкий"
+          }
+        },
+        {
+          "value_code": "none",
+          "display_name": "None",
+          "description": "Does not recommend.",
+          "is_active": true,
+          "sort_order": 40,
+          "attributes": {
+            "label_tr": "Yok",
+            "label_fr": "Aucun",
+            "label_es": "Ninguno",
+            "label_zh": "无",
+            "label_ar": "لا يوجد",
+            "label_ru": "Нет"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -8,6 +8,10 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <ItemGroup>
+    <!-- WP-VW-W4 (W4-BE-b1) — the MOD-0023 outcome consumer (the CrmService / AuthService transport and version). -->
+    <PackageReference Include="MassTransit.RabbitMQ" Version="8.3.6" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Diten.MdmService.Application\Diten.MdmService.Application.csproj" />
   </ItemGroup>
 </Project>

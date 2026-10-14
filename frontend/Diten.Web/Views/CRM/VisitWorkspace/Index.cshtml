@@ -1,0 +1,370 @@
+@model Diten.Web.Models.CRM.VisitWorkspaceIndexViewModel
+@using Diten.Web.Views.CRM.VisitWorkspace
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<VisitWorkspaceIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["PageTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    WP-VW-W2 (WEB-a) — the Visit Workspace, Execute mode: the rep's week as ONE calendar (written visits + the draft
+    weeks' preview), the week header, the detail panel and the cancel / not done / reschedule dialogs. Every call is a
+    same-origin proxy under /CRM/VisitWorkspace/api/*. UAS-001: without the read keys NOTHING but the access notice.
+*@
+@if (!Model.CanRead)
+{
+    <partial name="_AccessDenied" model="@Localizer["PageTitle"].Value" />
+    return;
+}
+
+<div id="vw-root"
+     data-api-base="/CRM/VisitWorkspace/api"
+     data-planning-url="/CRM/VisitPlanning"
+     data-execution-url="/CRM/VisitExecution"
+     data-can-manage="@Model.CanManageVisits.ToString().ToLowerInvariant()"
+     data-can-record="@Model.CanRecord.ToString().ToLowerInvariant()"
+     data-can-apply="@Model.CanApplyWeek.ToString().ToLowerInvariant()"
+     data-can-search-contacts="@Model.CanSearchContacts.ToString().ToLowerInvariant()"
+     data-can-plan="@Model.CanPlan.ToString().ToLowerInvariant()"
+     data-can-execute="@Model.CanExecute.ToString().ToLowerInvariant()"
+     data-presentation-url="/CRM/VisitPresentation"
+     data-report-url="/CRM/VisitReport"
+     data-planning-api-base="/CRM/VisitPlanning/api">
+
+    @* ── WP-VW-W2 (WEB-c) — the page head (mockup): the title; the period chip + the subtitle; under it, on the left,
+       Plan / Execute and the unplanned visit (both modes). No week strip. ── *@
+    <div class="vw-page-head">
+        <h4 class="vw-page-title">@Localizer["PageTitle"]</h4>
+        <div class="vw-page-sub"><span class="vw-period d-none" id="vw-period-chip"></span><span>@Localizer["PageSubtitle"]</span></div>
+    </div>
+    <div class="vw-actions-row">
+        @if (Model.CanPlan)
+        {
+            <div class="vw-seg" role="radiogroup" aria-label="@Localizer["ModeLabel"]">
+                <button type="button" class="vw-seg-btn" id="vw-mode-plan" aria-pressed="false"><i class="bx bx-edit"></i> @Localizer["ModePlan"]</button>
+                <button type="button" class="vw-seg-btn active" id="vw-mode-execute" aria-pressed="true"><i class="bx bx-run"></i> @Localizer["ModeExecute"]</button>
+            </div>
+        }
+        <button type="button" class="btn btn-primary vw-unplanned-btn d-none" id="vw-unplanned-open"><i class="bx bx-plus"></i> @Localizer["UnplannedVisit"]</button>
+    </div>
+
+    <div class="alert alert-warning d-none" id="vw-notice" role="alert"></div>
+
+    <div class="vw-layout" id="vw-layout">
+        <div class="vw-main" id="vw-main-col">
+            <div class="card vw-cal-card">
+                @* T3 — ONE calendar card: ‹ › Today + the range; the institution / status (multi) / product filters; Day / Week / Month *@
+                <div class="vw-cal-head">
+                    <div class="d-flex gap-1">
+                        <button type="button" class="vw-icon-btn" id="vw-prev" aria-label="@Localizer["PreviousWeek"]"><i class="bx bx-chevron-left vw-flip"></i></button>
+                        <button type="button" class="vw-icon-btn" id="vw-next" aria-label="@Localizer["NextWeek"]"><i class="bx bx-chevron-right vw-flip"></i></button>
+                        <button type="button" class="vw-text-btn" id="vw-today">@Localizer["TodayButton"]</button>
+                    </div>
+                    <div class="vw-range" id="vw-range-title"></div>
+                    <span class="spinner-border spinner-border-sm text-primary d-none" id="vw-busy" role="status"></span>
+                    <div class="flex-grow-1"></div>
+                    <select class="vw-select" id="vw-filter-account" aria-label="@Localizer["FilterAccount"]"></select>
+                    <div class="dropdown">
+                        <button type="button" class="vw-select vw-select-btn" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-label="@Localizer["FilterStatus"]">
+                            <span id="vw-filter-status-label"></span><i class="bx bx-chevron-down"></i>
+                        </button>
+                        <div class="dropdown-menu p-1" id="vw-filter-status"></div>
+                    </div>
+                    <select class="vw-select" id="vw-filter-product" aria-label="@Localizer["FilterProduct"]"></select>
+                    <div class="vw-seg vw-seg-sm" role="radiogroup" aria-label="@Localizer["ViewLabel"]" id="vw-views">
+                        <button type="button" class="vw-seg-btn" data-view="day">@Localizer["ViewDay"]</button>
+                        <button type="button" class="vw-seg-btn active" data-view="week">@Localizer["ViewWeek"]</button>
+                        <button type="button" class="vw-seg-btn" data-view="month">@Localizer["ViewMonth"]</button>
+                    </div>
+                </div>
+                @* T4 / L3 — the week INSIDE the card: "42. Hafta · 12–16 Eki", the state chip, capacity + bar, did-not-fit, approve / reopen *@
+                <div class="vw-week-head d-none" id="vw-week-head">
+                    <div class="vw-week-title" id="vw-week-title"></div>
+                    <span class="vw-state-chip" id="vw-week-badge"></span>
+                    <div class="vw-capacity">
+                        <div id="vw-capacity-text"></div>
+                        <div class="vw-bar"><div id="vw-capacity-bar" role="progressbar" style="width:0%"></div></div>
+                    </div>
+                    <button type="button" class="vw-slip-chip d-none" id="vw-unplaced"></button>
+                    <div class="flex-grow-1"></div>
+                    <button type="button" class="btn btn-primary vw-head-btn d-none" id="vw-approve"><i class="bx bx-check-double"></i> @Localizer["ApproveWeek"]</button>
+                    <button type="button" class="btn btn-outline-primary vw-head-btn d-none" id="vw-reopen"><i class="bx bx-lock-open-alt"></i> @Localizer["ReopenWeek"]</button>
+                </div>
+                <div class="vw-cal-body">
+                    <div id="vw-calendar"></div>
+                    <div id="vw-day-list" class="d-none"></div>
+                    <div id="vw-empty" class="text-muted small p-3 d-none">@Localizer["NoPlanWeek"]</div>
+                </div>
+                @* T10 / L9 — the legend *@
+                <div class="vw-legend" id="vw-legend"></div>
+            </div>
+        </div>
+        @* ── WP-VW-W2 (WEB-b / WEB-c L5–L8) — Plan mode: the Targets panel (desktop only; the Visit Planning Targets rules) ── *@
+        <aside class="vw-plan-panel d-none" id="vw-plan-panel">
+            <div class="card vw-panel-card">
+                <div class="vw-panel-head">
+                    <div class="vw-panel-icon"><i class="bx bx-target-lock"></i></div>
+                    <div><div class="vw-panel-title">@Localizer["TargetsHeading"]</div><div class="small" id="vw-tg-title"></div></div>
+                </div>
+                <div class="vw-panel-ro d-none" id="vw-tg-locked" role="note"></div>
+                <select class="form-select" id="vw-tg-account" aria-label="@Localizer["AccountLabel"]"></select>
+                <div class="vw-quick" id="vw-tg-quick" role="group" aria-label="@Localizer["QuickFiltersLabel"]"></div>
+                <div class="d-flex gap-2">
+                    <button type="button" class="vw-btn-soft flex-fill" id="vw-tg-select-all" disabled></button>
+                    <button type="button" class="vw-btn-outline flex-fill" id="vw-tg-apply" disabled></button>
+                </div>
+                <div class="vw-tg-list" id="vw-tg-list"></div>
+            </div>
+            <div class="vw-summary">
+                <div class="vw-summary-head" id="vw-tg-summary-head"></div>
+                <div class="vw-summary-grid" id="vw-tg-summary"></div>
+                <div class="vw-summary-dist" id="vw-tg-dist"></div>
+            </div>
+        </aside>
+    </div>
+</div>
+
+@* ── the detail panel (offcanvas; full screen on a phone) — WEB-c D1–D6 ── *@
+<div class="offcanvas offcanvas-end vw-detail" tabindex="-1" id="vw-detail" aria-labelledby="vw-detail-title">
+    <div class="vw-detail-head">
+        <div class="flex-grow-1 d-flex flex-column gap-2" style="min-width:0">
+            <div class="d-flex gap-1 flex-wrap align-items-center" id="vw-detail-chips"></div>
+            <h5 class="vw-detail-name mb-0" id="vw-detail-title"></h5>
+            <div class="d-flex gap-1 flex-wrap d-none" id="vw-detail-tags"></div>
+        </div>
+        <button type="button" class="vw-close" data-bs-dismiss="offcanvas" aria-label="@Localizer["CloseButton"]"><i class="bx bx-x"></i></button>
+    </div>
+    <div class="offcanvas-body vw-detail-body">
+        <div class="vw-account-block">
+            <div class="vw-map" aria-hidden="true">@Localizer["MapPlaceholder"]</div>
+            <div class="d-flex flex-column gap-1" style="min-width:0">
+                <span class="vw-acc-name" id="vw-detail-account"></span>
+                <span class="small d-none" id="vw-detail-address"></span>
+                <span class="small vw-when"><i class="bx bx-time-five"></i> <span id="vw-detail-when"></span></span>
+            </div>
+        </div>
+        <div class="vw-alert" id="vw-detail-band"></div>
+        <section class="d-flex flex-column gap-2">
+            <div class="d-flex justify-content-between align-items-baseline gap-2"><span class="vw-section-title">@Localizer["WhatToPresent"]</span><span class="small text-muted" id="vw-detail-frequency"></span></div>
+            <div class="d-grid gap-2" id="vw-detail-content"></div>
+            <div class="vw-estimate d-none" id="vw-detail-estimate"></div>
+        </section>
+        <section id="vw-detail-previous" class="d-none d-flex flex-column gap-2">
+            <span class="vw-section-title">@Localizer["PreviousVisit"]</span>
+            <div class="vw-prev" id="vw-detail-previous-body"></div>
+        </section>
+    </div>
+    <div class="vw-detail-actions d-none" id="vw-detail-actions"></div>
+</div>
+
+@* ── E2 (WEB-c P1 / P2): ONE dialog, three tabs — cancel · not done · reschedule ── *@
+<div class="modal fade" id="vw-dialog" tabindex="-1" aria-labelledby="vw-dlg-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable vw-dlg">
+        <div class="modal-content">
+            <div class="modal-header align-items-start">
+                <div>
+                    <h5 class="modal-title" id="vw-dlg-title"></h5>
+                    <div class="small" id="vw-dlg-target"></div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["CloseButton"]"></button>
+            </div>
+            <div class="modal-body d-grid gap-3">
+                <div class="vw-tabs" role="tablist" id="vw-dlg-tabs"></div>
+                <div class="small text-muted" id="vw-dlg-mean"></div>
+                <div>
+                    <div class="vw-label">@Localizer["ReasonLabel"] <span class="text-danger">*</span></div>
+                    <div id="vw-dlg-reasons" class="d-grid gap-1"></div>
+                </div>
+                <div>
+                    <label class="vw-label" for="vw-dlg-note">@Localizer["NoteLabel"] <span class="text-danger d-none" id="vw-dlg-note-required">* @Localizer["NoteRequired"]</span></label>
+                    <textarea class="form-control" id="vw-dlg-note" rows="3"></textarea>
+                    <div class="form-text text-end" id="vw-dlg-note-count"></div>
+                </div>
+                <div id="vw-dlg-date-box" class="d-none">
+                    <div class="vw-label">@Localizer["NewDate"] <span class="text-danger">*</span></div>
+                    <div id="vw-dlg-days" class="vw-day-grid"></div>
+                </div>
+                <div class="alert alert-danger d-none mb-0" id="vw-dlg-error" role="alert"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@Localizer["CancelButton"]</button>
+                <button type="button" class="btn btn-primary" id="vw-dlg-save" disabled>@Localizer["SaveButton"]</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ── WP-VW-W3 (WEB-a) — E3: start the visit. A dialog on a desktop / tablet, full screen on a phone. The photo (file
+   or webcam, KVKK), the location (the browser's; the server measures the distance) and the server's start time. The
+   mockup's design-note box (tenant setting buttons) and the QR / anti-fraud cards are NOT drawn. ── *@
+@if (Model.CanExecute)
+{
+<div class="modal fade" id="vw-e3" tabindex="-1" aria-labelledby="vw-e3-title" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable modal-fullscreen-md-down vw-e3-dialog">
+        <div class="modal-content">
+            <div class="vw-e3-head">
+                <div style="min-width:0">
+                    <h5 class="vw-e3-title" id="vw-e3-title">@Localizer["E3Title"]</h5>
+                    <div class="vw-e3-sub" id="vw-e3-target"></div>
+                </div>
+                <button type="button" class="vw-close" data-bs-dismiss="modal" aria-label="@Localizer["CloseButton"]"><i class="bx bx-x"></i></button>
+            </div>
+            <div class="modal-body vw-e3-body">
+                <section class="vw-e3-col">
+                    <div class="vw-e3-cap">@Localizer["E3Photo"] <span class="vw-e3-need" id="vw-e3-photo-need"></span></div>
+                    <div class="vw-e3-shot">
+                        <div class="vw-e3-empty" id="vw-e3-empty">
+                            <i class="bx bx-camera"></i>
+                            <div class="d-flex gap-2 flex-wrap justify-content-center">
+                                <button type="button" class="vw-e3-btn vw-e3-btn-p" id="vw-e3-upload"><i class="bx bx-upload"></i> @Localizer["E3Upload"]</button>
+                                <button type="button" class="vw-e3-btn vw-e3-btn-o" id="vw-e3-webcam"><i class="bx bx-webcam"></i> <span id="vw-e3-webcam-label">@Localizer["E3Webcam"]</span></button>
+                            </div>
+                        </div>
+                        <div class="vw-e3-camera d-none" id="vw-e3-camera">
+                            <video id="vw-e3-video" autoplay playsinline muted></video>
+                            <div class="vw-e3-kvkk-over">@Localizer["E3Kvkk"]</div>
+                        </div>
+                        <div class="vw-e3-taken d-none" id="vw-e3-taken">
+                            <img id="vw-e3-preview" alt="@Localizer["E3PhotoTaken"]" />
+                            <button type="button" class="vw-e3-btn vw-e3-btn-o" id="vw-e3-retake">@Localizer["E3Retake"]</button>
+                        </div>
+                    </div>
+                    <div class="vw-e3-shutter-row d-none" id="vw-e3-shutter-row">
+                        <button type="button" class="vw-e3-shutter" id="vw-e3-shutter" aria-label="@Localizer["E3Shutter"]"><span></span></button>
+                    </div>
+                    <input type="file" id="vw-e3-file" accept="image/jpeg,image/png" class="d-none" aria-hidden="true" tabindex="-1" />
+                    <div class="vw-e3-error d-none" id="vw-e3-photo-error" role="alert"></div>
+                    <div class="vw-e3-kvkk"><i class="bx bx-shield-quarter"></i><span>@Localizer["E3Kvkk"]</span></div>
+                </section>
+                <section class="vw-e3-col">
+                    <div class="vw-e3-cap">@Localizer["E3LocationTime"]</div>
+                    <div class="vw-e3-box">
+                        <div class="d-flex justify-content-between align-items-center gap-2"><span class="vw-e3-h">@Localizer["E3Location"] <span class="vw-e3-need" id="vw-e3-loc-need"></span></span><span class="vw-loc-chip" id="vw-e3-loc-chip"></span></div>
+                        <div class="vw-e3-loc-text" id="vw-e3-loc-text"></div>
+                        <button type="button" class="vw-e3-link d-none" id="vw-e3-loc-retry"><i class="bx bx-refresh"></i> @Localizer["E3Retry"]</button>
+                    </div>
+                    <div class="vw-e3-box vw-e3-row"><span class="vw-e3-h">@Localizer["E3StartLabel"]</span><span>@Localizer["E3StartValue"]</span></div>
+                </section>
+            </div>
+            <div class="vw-e3-alert d-none" id="vw-e3-error" role="alert"></div>
+            <div class="vw-e3-foot">
+                <span class="vw-e3-hint" id="vw-e3-hint"></span>
+                <div class="vw-e3-btns">
+                    <button type="button" class="vw-e3-btn vw-e3-btn-s vw-e3-cancel" data-bs-dismiss="modal">@Localizer["E3Cancel"]</button>
+                    <button type="button" class="vw-e3-btn vw-e3-btn-p vw-e3-begin" id="vw-e3-begin" disabled><i class="bx bx-slideshow"></i> @Localizer["E3Begin"]</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+}
+
+@* ── WP-VW-W2 (WEB-b) — apply products to the institution's plan doctors: the first promo, the others reminders ── *@
+<div class="modal fade" id="vw-products-modal" tabindex="-1" aria-labelledby="vw-products-title" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="vw-products-title">@Localizer["ProductsTitle"]</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["CloseButton"]"></button>
+            </div>
+            <div class="modal-body d-flex flex-column gap-2">
+                <p class="small text-muted mb-0">@Localizer["ProductsHint"]</p>
+                <label class="form-label small mb-0">@Localizer["PickedProducts"]</label>
+                <ul class="list-unstyled mb-0" id="vw-prod-picked"></ul>
+                <input type="search" class="form-control form-control-sm" id="vw-prod-search" placeholder="@Localizer["ProductSearch"]" aria-label="@Localizer["ProductSearch"]">
+                <div class="list-group" id="vw-prod-results"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@Localizer["CancelButton"]</button>
+                <button type="button" class="btn btn-primary" id="vw-prod-apply" disabled>@Localizer["ApplyButton"]</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ── reopen the week (4D: a reason of at least 10 characters) ── *@
+<div class="modal fade" id="vw-reopen-modal" tabindex="-1" aria-labelledby="vw-reopen-title" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="vw-reopen-title"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["CloseButton"]"></button>
+            </div>
+            <div class="modal-body">
+                <label class="form-label" for="vw-reopen-reason">@Localizer["ReopenReason"] <span class="text-danger">*</span></label>
+                <textarea class="form-control" id="vw-reopen-reason" rows="3"></textarea>
+                <div class="form-text d-flex justify-content-between"><span>@Localizer["ReopenHint"]</span><span id="vw-reopen-count"></span></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@Localizer["CancelButton"]</button>
+                <button type="button" class="btn btn-primary" id="vw-reopen-confirm" disabled>@Localizer["ReopenWeek"]</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ── the visits that did not fit the week ── *@
+<div class="modal fade" id="vw-unplaced-modal" tabindex="-1" aria-labelledby="vw-unplaced-title" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="vw-unplaced-title">@Localizer["UnplacedTitle"]</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["CloseButton"]"></button>
+            </div>
+            <div class="modal-body">
+                <p id="vw-unplaced-body" class="mb-2"></p>
+                <ul class="list-group list-group-flush mb-2" id="vw-unplaced-list"></ul>
+                <p class="small text-muted mb-0">@Localizer["UnplacedHint"]</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ── unplanned visit (today only) ── *@
+<div class="modal fade" id="vw-unplanned-modal" tabindex="-1" aria-labelledby="vw-unp-title" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title" id="vw-unp-title">@Localizer["UnplannedTitle"]</h5>
+                    <div class="small text-muted">@Localizer["UnplannedHint"]</div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["CloseButton"]"></button>
+            </div>
+            <div class="modal-body d-grid gap-3">
+                <div>
+                    <label class="form-label" for="vw-unp-search">@Localizer["DoctorLabel"] <span class="text-danger">*</span></label>
+                    <input type="search" class="form-control" id="vw-unp-search" placeholder="@Localizer["DoctorSearch"]" autocomplete="off" />
+                    <div class="list-group mt-1" id="vw-unp-results"></div>
+                </div>
+                <div>
+                    <label class="form-label" for="vw-unp-time">@Localizer["TimeLabel"] (<span id="vw-unp-day"></span>)</label>
+                    <input type="time" class="form-control" id="vw-unp-time" step="900" />
+                </div>
+                <div class="alert alert-danger d-none mb-0" id="vw-unp-error" role="alert"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@Localizer["CancelButton"]</button>
+                <button type="button" class="btn btn-primary" id="vw-unp-save" disabled>@Localizer["AddButton"]</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/js/CRM/VisitWorkspace/visit-workspace.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <partial name="_CalendarAssets" />
+    <script>
+        window.VisitWorkspaceL10n = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+            VisitWorkspaceIndex.ScriptKeys.ToDictionary(k => k, k => Localizer[k].Value)));
+    </script>
+    <script src="~/assets/js/CRM/VisitPlanning/format.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/VisitWorkspace/workspace-core.js" asp-append-version="true"></script>
+    @* WP-VW-W2 (WEB-b) — the Targets rules shared with the Visit Planning page (one module, no copy). *@
+    <script src="~/assets/js/CRM/VisitPlanning/targets-core.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/VisitWorkspace/visit-workspace.js" asp-append-version="true"></script>
+}
