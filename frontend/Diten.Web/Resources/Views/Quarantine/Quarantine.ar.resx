@@ -434,4 +434,10 @@
   <data name="Quarantine.History.NoteUpdated" xml:space="preserve"><value>تم تحديث ملاحظة التحليل</value></data>
   <data name="Quarantine.Details.Quality.NoteLocked" xml:space="preserve"><value>الملاحظة مقفلة ما دام هناك قرار على هذا السجل بانتظار الموافقة أو التطبيق.</value></data>
   <data name="Quarantine.Details.History.NoteChange" xml:space="preserve"><value>الملاحظة: {0} → {1} حرفًا · المرفقات: {2} → {3}</value></data>
+  <data name="Quarantine.BlockStock.Available" xml:space="preserve"><value>المتاح: {0} {1}</value></data>
+  <data name="Quarantine.Blocked.Filter.Status" xml:space="preserve"><value>الحالة</value></data>
+  <data name="Quarantine.Blocked.Status.Open" xml:space="preserve"><value>مفتوح</value></data>
+  <data name="Quarantine.Blocked.Status.Closed" xml:space="preserve"><value>مغلق</value></data>
+  <data name="Quarantine.Blocked.Status.SampleRetained" xml:space="preserve"><value>تم الاحتفاظ بعينة</value></data>
+  <data name="Quarantine.Blocked.Status.All" xml:space="preserve"><value>الكل</value></data>
 </root>

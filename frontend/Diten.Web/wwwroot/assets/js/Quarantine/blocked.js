@@ -7,7 +7,28 @@
  */
 'use strict';
 
+/**
+ * WP-MVP1-FIX-QUI1 — the "Stoğu bloke et" quantity rules (no DOM; the Node test runs the page against THIS file):
+ *   quantityAfterRowChange — choosing a stock row keeps the quantity the user typed; only an EMPTY field takes the row's amount
+ *                            (a suggestion), so a typed 50 never silently becomes the whole lot's 200;
+ *   quantityError          — none, ≤ 0 or above the row's amount is refused before anything is sent.
+ */
+var QuarantineBlockedRules = (function () {
+    const quantityAfterRowChange = (current, row) => {
+        const typed = String(current ?? '').trim();
+        return row && typed === '' ? String(row.onHand ?? '') : typed;
+    };
+    const quantityError = (value, row) => {
+        const quantity = Number(value);
+        return !row || !(quantity > 0) || quantity > Number(row.onHand) ? 'Quarantine.BlockStock.QtyInvalid' : null;
+    };
+    return { quantityAfterRowChange, quantityError };
+})();
+
+if (typeof window !== 'undefined') window.QuarantineBlockedRules = QuarantineBlockedRules;
+
 (function () {
+    if (typeof window === 'undefined' || !window.QuarantineUi) return;
     const ui = window.QuarantineUi;
     const { t, esc, qty, date } = ui;
     const tableEl = document.querySelector('.datatables-quarantine-blocked');
@@ -17,7 +38,9 @@
 
     const filterFields = [
         { id: 'filterReason', key: 'blockReasonCode', kind: 'single' },
-        { id: 'filterPending', key: 'pendingOnly', kind: 'single' }
+        { id: 'filterPending', key: 'pendingOnly', kind: 'single' },
+        // WP-MVP1-FIX-QUI1: empty = Açık (the door's default status=Open), Closed / SampleRetained, All = every record
+        { id: 'filterStatus', key: 'status', kind: 'single' }
     ];
 
     const reasonName = (code) => {
@@ -38,7 +61,13 @@
     const onResponse = (json) => {
         ui.hideError(ui.byId('qr-list-error'));
         ui.byId('qr-labels-unavailable')?.classList.toggle('d-none', json?.labelsAvailable !== false);
-        ui.setCount('BLOCKEDSTOCK', json?.data?.total ?? 0);
+        // WP-MVP1-FIX-QUI1: the tab's badge counts OPEN records only. The door names the status this page shows; another
+        // status's total is not the badge's, so the open count is read on its own (the door's default is Open).
+        if (json?.status === 'Open') {
+            ui.setCount('BLOCKEDSTOCK', json?.data?.total ?? 0);
+        } else {
+            ui.get('/Quarantine/list/blocked?start=0&length=1').then((reply) => { if (reply.ok) ui.setCount('BLOCKEDSTOCK', reply.json?.data?.total ?? ''); });
+        }
     };
     const onListError = (xhr) => {
         let reply = { status: xhr?.status || 0, json: null };
@@ -73,7 +102,9 @@
             reload();
         }, {
             type: 'warning',
-            subtext: body.outerHTML,
+            // WP-MVP1-FIX-QUI1: the body is MARKUP (the view's constant template; the subject went in through textContent, so the
+            // serialized form keeps it escaped) — the dialog's markup door is subtextHtml; `subtext` is text and showed the tags.
+            subtextHtml: body.outerHTML,
             confirmButtonText: t('Quarantine.Unblock.Confirm'),
             cancelButtonText: t('Quarantine.Common.Cancel'),
             showInput: true,
@@ -96,7 +127,7 @@
             reload();
         }, {
             type: 'info',
-            subtext: esc([row.itemLabel, row.lot?.lotNumber, row.blockedNumber].filter(Boolean).join(' · ')),
+            subtext: [row.itemLabel, row.lot?.lotNumber, row.blockedNumber].filter(Boolean).join(' · '), // text: the dialog escapes it (FIX-QUI1)
             confirmButtonText: t('Quarantine.Action.CompleteReview'),
             cancelButtonText: t('Quarantine.Common.Cancel'),
             showInput: true,
@@ -124,6 +155,7 @@
         rowSelect.innerHTML = '<option value=""></option>';
         rowSelect.disabled = true;
         ui.byId('qr-block-uom').textContent = '';
+        ui.byId('qr-block-available').textContent = '';
         if (window.jQuery?.fn?.select2) window.jQuery('#qr-block-lot').val(null).trigger('change');
         window.bootstrap.Modal.getOrCreateInstance(modal).show();
     };
@@ -150,9 +182,14 @@
             lotSelect.addEventListener('change', () => loadStock(lotSelect.value));
         }
         ui.byId('qr-block-row').addEventListener('change', (event) => {
-            const row = stockRows[Number(event.target.value)];
+            const row = event.target.value === '' ? undefined : stockRows[Number(event.target.value)];
             ui.byId('qr-block-uom').textContent = row?.baseUomId || '';
-            if (row) ui.byId('qr-block-qty').value = row.onHand;
+            // WP-MVP1-FIX-QUI1: the typed quantity stays (an empty field takes the row's amount as a suggestion); the row's amount
+            // is shown under the field, and a quantity above it is named at once (the submit refuses it as well).
+            const field = ui.byId('qr-block-qty');
+            field.value = QuarantineBlockedRules.quantityAfterRowChange(field.value, row);
+            ui.byId('qr-block-available').textContent = row ? t('Quarantine.BlockStock.Available', qty(row.onHand), row.baseUomId || '') : '';
+            ui.fieldError(ui.byId('qr-block-form'), 'qty', row && QuarantineBlockedRules.quantityError(field.value, row) ? t('Quarantine.BlockStock.QtyInvalid') : '');
         });
         ui.byId('qr-block-form').addEventListener('submit', submitBlock);
     };
@@ -161,6 +198,7 @@
         rowSelect.innerHTML = '<option value=""></option>';
         rowSelect.disabled = true;
         ui.byId('qr-block-norows').classList.add('d-none');
+        ui.byId('qr-block-available').textContent = '';
         if (!lotId) return;
         const reply = await ui.get(`/Quarantine/lookups/stock?${new URLSearchParams({ lotId })}`);
         stockRows = reply.ok ? (reply.json?.items || []) : [];
@@ -172,12 +210,13 @@
         event.preventDefault();
         const form = ui.byId('qr-block-form');
         ui.clearFieldErrors(form);
-        const row = stockRows[Number(ui.byId('qr-block-row').value)];
+        const rowValue = ui.byId('qr-block-row').value;
+        const row = rowValue === '' ? undefined : stockRows[Number(rowValue)];
         const quantity = Number(ui.byId('qr-block-qty').value);
         const code = ui.byId('qr-block-reason-code').value;
         const reason = ui.byId('qr-block-reason').value.trim();
         let invalid = false;
-        if (!row || !(quantity > 0) || quantity > Number(row.onHand)) { ui.fieldError(form, 'qty', t('Quarantine.BlockStock.QtyInvalid')); invalid = true; }
+        if (QuarantineBlockedRules.quantityError(ui.byId('qr-block-qty').value, row)) { ui.fieldError(form, 'qty', t('Quarantine.BlockStock.QtyInvalid')); invalid = true; }
         if (!code) { ui.fieldError(form, 'blockReason', t('Quarantine.Decide.Err.BlockReason')); invalid = true; }
         if (reason.length < 10) { ui.fieldError(form, 'reason', t('Quarantine.Common.ReasonMin')); invalid = true; }
         if (invalid) return;
@@ -209,6 +248,10 @@
     };
 
     const pendingCell = (row) => {
+        // WP-MVP1-FIX-QUI1: a record that is no longer Open (Closed / SampleRetained) says so — no pending state, no actions
+        if (row.status && row.status !== 'Open') {
+            return `<span class="badge bg-label-secondary" data-qr-blocked-status="${esc(row.status)}">${esc(t('Quarantine.Blocked.Status.' + row.status))}</span>`;
+        }
         if (row.activeDecision) {
             return `<span class="d-flex align-items-center gap-1 text-warning"><i class="bx bx-time-five"></i>${esc(t('Quarantine.Blocked.ActivePending', row.activeDecision.decisionNumber))}</span>`;
         }

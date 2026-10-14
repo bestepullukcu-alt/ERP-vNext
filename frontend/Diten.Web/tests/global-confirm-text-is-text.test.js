@@ -381,6 +381,7 @@ describe("the callers of the shared confirm", () => {
       "wwwroot/assets/js/CRM/Contacts/index.js",
       "wwwroot/assets/js/CRM/TerritoryManagement/resource-assignments.js",
       "wwwroot/assets/js/Platform/AuditLog/index.js",
+      "wwwroot/assets/js/Quarantine/blocked.js", // WP-MVP1-FIX-QUI1: the unblock body (constant template, subject via textContent)
     ]);
   });
 

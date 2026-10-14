@@ -434,4 +434,10 @@
   <data name="Quarantine.History.NoteUpdated" xml:space="preserve"><value>Analysis note updated</value></data>
   <data name="Quarantine.Details.Quality.NoteLocked" xml:space="preserve"><value>The note is locked while a decision on this record is awaiting approval or application.</value></data>
   <data name="Quarantine.Details.History.NoteChange" xml:space="preserve"><value>Note: {0} → {1} characters · Attachments: {2} → {3}</value></data>
+  <data name="Quarantine.BlockStock.Available" xml:space="preserve"><value>Available: {0} {1}</value></data>
+  <data name="Quarantine.Blocked.Filter.Status" xml:space="preserve"><value>Status</value></data>
+  <data name="Quarantine.Blocked.Status.Open" xml:space="preserve"><value>Open</value></data>
+  <data name="Quarantine.Blocked.Status.Closed" xml:space="preserve"><value>Closed</value></data>
+  <data name="Quarantine.Blocked.Status.SampleRetained" xml:space="preserve"><value>Sample retained</value></data>
+  <data name="Quarantine.Blocked.Status.All" xml:space="preserve"><value>All</value></data>
 </root>

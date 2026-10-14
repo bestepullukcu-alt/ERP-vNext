@@ -206,7 +206,7 @@
             if (!reply.ok) return failed(t('Quarantine.Workflow.Reapply'), reply);
             ui.toast(t('Quarantine.Workflow.Reapplied'), 'success');
             await load();
-        }, { type: 'warning', subtext: esc(t('Quarantine.Workflow.ReapplyText')), confirmButtonText: t('Quarantine.Workflow.Reapply'), cancelButtonText: t('Quarantine.Common.Cancel') });
+        }, { type: 'warning', subtext: t('Quarantine.Workflow.ReapplyText'), confirmButtonText: t('Quarantine.Workflow.Reapply'), cancelButtonText: t('Quarantine.Common.Cancel') });
     });
 
     ui.byId('qr-wf-withdraw')?.addEventListener('click', () => {
@@ -217,7 +217,7 @@
             await load();
         }, {
             type: 'warning',
-            subtext: esc(t('Quarantine.Workflow.WithdrawText')),
+            subtext: t('Quarantine.Workflow.WithdrawText'),
             confirmButtonText: t('Quarantine.Workflow.Withdraw'),
             cancelButtonText: t('Quarantine.Common.Cancel'),
             showInput: true,
@@ -236,7 +236,7 @@
             await load();
         }, {
             type: 'info',
-            subtext: esc(t('Quarantine.Details.StartReviewText')),
+            subtext: t('Quarantine.Details.StartReviewText'),
             confirmButtonText: t('Quarantine.Details.StartReview'),
             cancelButtonText: t('Quarantine.Common.Cancel'),
             showInput: true,
