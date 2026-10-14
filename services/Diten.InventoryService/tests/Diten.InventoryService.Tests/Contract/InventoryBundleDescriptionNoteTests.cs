@@ -26,6 +26,9 @@ namespace Diten.InventoryService.Tests.Contract;
 /// <c>description</c> on <c>postMovement</c> and one changelog line — nothing else.</para>
 /// <para>WP-0174-ITEM — 1.2.0 → 1.2.1 is DESCRIPTION ONLY (O-PM1-3): the postMovement description names the stockable: false refusal
 /// and one changelog line is added; measured against the pinned 1.2.0 file (<c>Fixtures/inventory-bundle-v1.2.0.openapi.yaml</c>).</para>
+/// <para>WP-0177-R3 — 1.3.0 → 1.4.0 is ADDITIVE (MOD-0177 KR-C / CT-R10, owner step MOD-0173 + MOD-0174): the 422 example
+/// <c>lotUnderRecall</c>, the recall / CT-R10 words appended to the <c>postMovement</c> description and one changelog line; measured against
+/// the pinned 1.3.0 file (<c>Fixtures/inventory-bundle-v1.3.0.openapi.yaml</c>, the git blob at f6b6ee435).</para>
 /// </summary>
 public sealed class InventoryBundleDescriptionNoteTests
 {
@@ -50,7 +53,9 @@ public sealed class InventoryBundleDescriptionNoteTests
         // 1.2.0 (WP-0173-PM1)
         UnprocessableExamples + "productMasterDataIncomplete.", UnprocessableExamples + "itemNotActive.", UnprocessableExamples + "skuLevelNotStockable.",
         // 1.3.0 (WP-0176-F2)
-        .. V130Additions
+        .. V130Additions,
+        // 1.4.0 (WP-0177-R3)
+        UnprocessableExamples + "lotUnderRecall."
     ];
 
     private const string UnprocessableExamples = "components.responses.UnprocessableMovement.content.application/json.examples.";
@@ -76,7 +81,7 @@ public sealed class InventoryBundleDescriptionNoteTests
         var added = current.Keys.Where(k => !frozen.ContainsKey(k)).ToList();
 
         Assert.Equal(["info.version", SkuLevelDescription], changed);
-        Assert.Equal("1.3.0", current["info.version"]);
+        Assert.Equal("1.4.0", current["info.version"]);
         Assert.All(added, k => Assert.True(k == AvailableDescription || k.StartsWith("info.x-changelog[", StringComparison.Ordinal)
                                            || k.StartsWith(RetestDueExample, StringComparison.Ordinal)
                                            || k == "components.schemas.SkuLevel.enum[3]" || k == PostMovementDescription
@@ -135,7 +140,7 @@ public sealed class InventoryBundleDescriptionNoteTests
     public void The_1_3_0_change_is_additive_fefo_reason_expiry_checks_and_three_422_codes()
     {
         var frozen = Flatten(Load(FixtureV121Path));
-        var current = Flatten(Load(ContractSchemas.ContractPath));
+        var current = Flatten(Load(FixtureV130Path)); // WP-0177-R3: the 1.3.0 file as frozen (the live file is 1.4.0)
         var changed = frozen.Keys.Where(k => !current.TryGetValue(k, out var v) || !string.Equals(v, frozen[k], StringComparison.Ordinal)).ToList();
         var added = current.Keys.Where(k => !frozen.ContainsKey(k)).ToList();
         Assert.Equal(["info.version"], changed);
@@ -151,6 +156,45 @@ public sealed class InventoryBundleDescriptionNoteTests
         Assert.False(current.Keys.Any(k => k.Contains("appliedToStockStatus", StringComparison.Ordinal)), "CT-F1: the ledger never changes the requested status");
         Assert.All(new[] { "FEFO_BYPASS_REASON_REQUIRED", "FEFO_ORDER_VIOLATION", "LOT_BELOW_MIN_REMAINING_SHELF_LIFE" },
             c => Assert.Contains(c, Diten.InventoryService.Application.Common.InventoryErrorCodes.All));
+    }
+
+    /// <summary>WP-0177-R3: the 1.3.0 file as frozen by WP-0176-F2, kept byte for byte (LF-normalised; git blob at f6b6ee435).</summary>
+    private const string FrozenV130Sha256 = "c52168402ef12d81a7f07135d8219c0e0634df467ef1f3ec28a3e6af71e04ead";
+
+    private static string FixtureV130Path => Path.Combine(RepoPaths.ServiceRoot, "tests", "Diten.InventoryService.Tests", "Contract", "Fixtures", "inventory-bundle-v1.3.0.openapi.yaml");
+
+    [Fact]
+    public void The_1_3_0_fixture_is_the_frozen_1_3_0_file_byte_for_byte()
+    {
+        var text = File.ReadAllText(FixtureV130Path).Replace("\r\n", "\n");
+        Assert.Equal(FrozenV130Sha256, Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(text))).ToLowerInvariant());
+    }
+
+    /// <summary>
+    /// WP-0177-R3 — 1.3.0 → 1.4.0 is ADDITIVE (MOD-0177 KR-C / CT-R4 / CT-R7 / CT-R10 / CT-R11): nothing of 1.3.0 changes but the version and the
+    /// postMovement description (the 1.3.0 text kept as its prefix, the recall / CT-R10 note appended); the additions are exactly the example
+    /// <c>lotUnderRecall</c> under the existing <c>UnprocessableMovement</c> response and one changelog line. The code is in the closed set.
+    /// </summary>
+    [Fact]
+    public void The_1_4_0_change_is_additive_lot_under_recall_and_the_CT_R10_note()
+    {
+        var frozen = Flatten(Load(FixtureV130Path));
+        var current = Flatten(Load(ContractSchemas.ContractPath));
+        var changed = frozen.Keys.Where(k => !current.TryGetValue(k, out var v) || !string.Equals(v, frozen[k], StringComparison.Ordinal)).ToList();
+        var added = current.Keys.Where(k => !frozen.ContainsKey(k)).ToList();
+        Assert.Equal(["info.version", PostMovementDescription], changed);
+        Assert.Equal("1.3.0", frozen["info.version"]);
+        Assert.Equal("1.4.0", current["info.version"]);
+        Assert.StartsWith(frozen[PostMovementDescription], current[PostMovementDescription], StringComparison.Ordinal);
+        Assert.All(new[] { "LOT_UNDER_RECALL", "WAREHOUSE_TRANSFER", "never by sourceModule", "CT-R10", "QUARANTINE, QUALITY_INSPECTION or BLOCKED" },
+            t => Assert.Contains(t, current[PostMovementDescription], StringComparison.Ordinal));
+        var lines = added.Where(k => k.StartsWith("info.x-changelog[", StringComparison.Ordinal)).ToList();
+        Assert.StartsWith("1.4.0 — additive (WP-0177-R3", current[Assert.Single(lines)]);
+        Assert.All(added.Except(lines), k => Assert.StartsWith(UnprocessableExamples + "lotUnderRecall.", k, StringComparison.Ordinal));
+        Assert.Equal("LOT_UNDER_RECALL", current[UnprocessableExamples + "lotUnderRecall.value.error.code"]);
+        Assert.All(new[] { "lotId", "lotNumber", "recallCaseId", "recallCaseNumber", "movementType" },
+            d => Assert.True(current.ContainsKey(UnprocessableExamples + "lotUnderRecall.value.error.details." + d), "details." + d));
+        Assert.Contains("LOT_UNDER_RECALL", Diten.InventoryService.Application.Common.InventoryErrorCodes.All);
     }
 
     [Fact]

@@ -35,6 +35,8 @@ public static class DependencyInjection
         services.AddScoped<IInventoryLedgerRepository, InventoryLedgerRepository>();
         // MOD-0176 F2 (CT-F2): the ledger's default expiry hook — no hook; AddExpiry replaces it.
         services.TryAddScoped<Application.Features.Expiry.Ports.IExpiryPostingPolicy, Application.Features.Expiry.Ports.AllowAllExpiryPostingPolicy>();
+        // MOD-0177 R3 (CT-R11): the ledger's default recall exit block — none; AddRecall replaces it.
+        services.TryAddScoped<Application.Features.Recall.Ports.IRecallPostingGate, Application.Features.Recall.Ports.AllowAllRecallPostingGate>();
         services.AddScoped<IInventoryReservationRepository, InventoryReservationRepository>();
         services.AddScoped<IReservationExpirySweeper, ReservationExpirySweeper>();
         services.AddScoped<ISkuPositionRebuilder, SkuPositionRebuilder>();

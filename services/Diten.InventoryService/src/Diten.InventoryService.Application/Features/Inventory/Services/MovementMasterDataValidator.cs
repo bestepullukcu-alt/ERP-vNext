@@ -47,6 +47,7 @@ public sealed class MovementMasterDataValidator
     private readonly LotLedgerOptions _lotPolicy;
     private readonly TypedLotPostingGuard _typedGuard;
     private readonly Expiry.Ports.IExpiryPostingPolicy _expiry;
+    private readonly Recall.Ports.IRecallPostingGate _recall;
 
     public MovementMasterDataValidator(
         IProductMasterClient productMaster,
@@ -56,8 +57,10 @@ public sealed class MovementMasterDataValidator
         IOptions<InventoryPolicyOptions> policy,
         IOptions<LotLedgerOptions> lotPolicy,
         TypedLotPostingGuard typedGuard,
-        Expiry.Ports.IExpiryPostingPolicy expiry)
+        Expiry.Ports.IExpiryPostingPolicy expiry,
+        Recall.Ports.IRecallPostingGate recall)
     {
+        _recall = recall;
         _expiry = expiry;
         _productMaster = productMaster;
         _locationMaster = locationMaster;
@@ -190,6 +193,13 @@ public sealed class MovementMasterDataValidator
                     "lotId is not allowed: the item is not lot-controlled.", new Dictionary<string, object?> { ["lotId"] = lotId });
             }
 
+            // MOD-0177 R3 (pack §8.5, ASSUMPTION-0177-06): a typed lot text that equals a recalled lot's number of the same SKU is refused the same way.
+            if (!registeredForm && await _recall.PreCheckAsync(new Recall.Ports.RecallPostingRequest(movement.MovementType, direction.FromStockStatus,
+                    direction.ToStockStatus, lotId, null, movement.SkuId, movement.SkuLevel, movement.IdempotencyKey), ct) is { } typedRecall)
+            {
+                return MasterDataCheck.Refused(typedRecall.Code, typedRecall.Message, typedRecall.Details);
+            }
+
             if (registeredForm)
             {
                 lot = await _lotMaster.ResolveLotAsync(lotId, ct);
@@ -205,6 +215,14 @@ public sealed class MovementMasterDataValidator
                 {
                     var (code, message, details) = v == LotPostingViolation.RetestDue ? InventoryErrorCodes.RetestDue(lot) : LotPostingErrors.For(v, lot);
                     return MasterDataCheck.Refused(code, message, details);
+                }
+
+                // MOD-0177 R3 (pack §8.5, CT-R11): the recall exit block — after the lot rules, BEFORE the expiry hooks (a refused posting opens no
+                // FEFO exception). Exemption by movement type only; the posting transaction re-checks it on the committed blocks (authoritative).
+                if (await _recall.PreCheckAsync(new Recall.Ports.RecallPostingRequest(movement.MovementType, direction.FromStockStatus, direction.ToStockStatus,
+                        lotId, lot, movement.SkuId, movement.SkuLevel, movement.IdempotencyKey), ct) is { } recallRefusal)
+                {
+                    return MasterDataCheck.Refused(recallRefusal.Code, recallRefusal.Message, recallRefusal.Details);
                 }
 
                 // MOD-0176 F2 (pack §8.3, CT-F2): the expiry hooks' pre-check — FEFO on an issue, minimum remaining shelf life on a goods
