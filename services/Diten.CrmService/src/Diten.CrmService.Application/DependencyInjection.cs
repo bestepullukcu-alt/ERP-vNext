@@ -133,6 +133,7 @@ public static class DependencyInjection
         // read-all, 404 outside), the Concept Graph indication × profile reader, the ONE writer (manual edit + the report's
         // recorder seam for BE-a) and the shared read plumbing.
         services.AddScoped<Features.DoctorInsights.TeamScopeResolver>();
+        services.AddScoped<Features.VisitEvidenceFlags.VisitEvidenceFlagScopeResolver>(); // WP-VW-W3E (BE-b)
         services.AddScoped<Features.DoctorInsights.DoctorInsightsVisibility>();
         services.AddScoped<Features.DoctorInsights.ProductIndicationProfileReader>();
         services.AddScoped<Features.DoctorInsights.DoctorInsightsRecorder>();

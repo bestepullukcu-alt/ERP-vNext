@@ -76,6 +76,17 @@ public sealed class PlannedVisitRepository : IPlannedVisitRepository
         return rows;
     }
 
+    /// <summary>WP-VW-W3E (BE-b, §2.6) — the plan ids of one institution in a day window (PlannedDate is a sortable string).</summary>
+    public async Task<IReadOnlyList<Guid>> ListIdsByAccountAndDateRangeAsync(
+        Guid tenantId, Guid accountId, DateOnly fromDate, DateOnly toDate, CancellationToken cancellationToken)
+        => await _collection
+            .Find(Tenant(tenantId)
+                  & (Builders<PlannedVisit>.Filter.Eq(x => x.AccountId, accountId) | Builders<PlannedVisit>.Filter.Eq(x => x.TargetId, accountId))
+                  & Builders<PlannedVisit>.Filter.Gte(x => x.PlannedDate, fromDate)
+                  & Builders<PlannedVisit>.Filter.Lte(x => x.PlannedDate, toDate))
+            .Project(x => x.Id)
+            .ToListAsync(cancellationToken);
+
     public async Task<IReadOnlyList<PlannedVisit>> ListByTargetAndDateAsync(
         Guid tenantId, Guid targetId, DateOnly plannedDate, CancellationToken cancellationToken)
     {

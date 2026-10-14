@@ -1314,6 +1314,11 @@ public static class DependencyInjection
         {
             BsonClassMap.RegisterClassMap<VisitExecutionLocation>(map => map.AutoMap());
         }
+        // WP-VW-W3E (BE-b) — the device declaration (no Guid members; strict like every CRM map)
+        if (!BsonClassMap.IsClassMapRegistered(typeof(VisitExecutionDevice)))
+        {
+            BsonClassMap.RegisterClassMap<VisitExecutionDevice>(map => map.AutoMap());
+        }
         if (!BsonClassMap.IsClassMapRegistered(typeof(VisitExecutionEvidence)))
         {
             BsonClassMap.RegisterClassMap<VisitExecutionEvidence>(map =>
@@ -2156,6 +2161,15 @@ public static class DependencyInjection
             visitExecutions.Indexes.CreateOne(new CreateIndexModel<VisitExecution>(
                 Builders<VisitExecution>.IndexKeys.Ascending(e => e.TenantId).Ascending(e => e.ResourceId).Ascending(e => e.Status),
                 new CreateIndexOptions { Name = "ix_visit_executions_tenant_resource_status" }));
+            // WP-VW-W3E (BE-b, §2.6) - the manager's evidence flags read: (TenantId, StartedAt) + (TenantId, ResourceId,
+            // StartedAt). StartedAt is a BSON array [ticks, offset]; the key is its SCALAR ticks element "StartedAt.0"
+            // (server UTC clock: offset 0), never the array itself (the parallel-arrays rule above holds).
+            visitExecutions.Indexes.CreateOne(new CreateIndexModel<VisitExecution>(
+                Builders<VisitExecution>.IndexKeys.Ascending(e => e.TenantId).Descending(VisitExecutionRepository.StartedTicksField),
+                new CreateIndexOptions { Name = "ix_visit_executions_tenant_started" }));
+            visitExecutions.Indexes.CreateOne(new CreateIndexModel<VisitExecution>(
+                Builders<VisitExecution>.IndexKeys.Ascending(e => e.TenantId).Ascending(e => e.ResourceId).Descending(VisitExecutionRepository.StartedTicksField),
+                new CreateIndexOptions { Name = "ix_visit_executions_tenant_resource_started" }));
 
             // WP-VW-W3 (BE-a, K-W2) - visit_evidence_policies: one document per tenant.
             var evidencePolicies = database.GetCollection<VisitEvidencePolicy>(VisitEvidencePolicyRepository.CollectionName);

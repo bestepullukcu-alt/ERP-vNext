@@ -590,6 +590,11 @@ public static class DataSeeder
             // (the payload). Catalog only: granted to no role here.
             new("crm", "visit-qr", "read", "CRM Visit QR Read", "Permission to view an institution's visit QR code state and history (never the printable payload)", moduleOverride: "crm-visit-qr"),
             new("crm", "visit-qr", "manage", "CRM Visit QR Manage", "Permission to issue, regenerate, revoke and print institution visit QR codes, one by one or in bulk", moduleOverride: "crm-visit-qr"),
+            // WP-VW-W3E (BE-b, §2.7) — the manager's visit evidence flags (location, device, QR, short visit), read only.
+            // Tenant-scoped ("crm-visit-evidence-flags" ∉ PlatformAdminModules). read = the caller's team + the caller;
+            // read-all = the whole tenant. Catalog only: granted to no role here.
+            new("crm", "visit-evidence-flags", "read", "CRM Visit Evidence Flags Read", "Permission to view the visit start evidence and its flags of the representatives in the caller's team", moduleOverride: "crm-visit-evidence-flags"),
+            new("crm", "visit-evidence-flags", "read-all", "CRM Visit Evidence Flags Read All", "Permission to view the visit start evidence and its flags of every representative in the tenant", moduleOverride: "crm-visit-evidence-flags"),
 
             new("mod0251", "employee", "search", "Search Employees", "Permission to search MOD-0251 employee registry records"),
             new("mod0251", "employee", "view", "View Employee", "Permission to view MOD-0251 employee records"),

@@ -24,7 +24,7 @@ namespace Diten.Web.Tests.Controllers;
 /// presentation page, the in_progress actions, createError null; (3) the proxies: start (multipart streamed) and the
 /// contract only with their keys, nothing else accepted; UAS-001 stays; (4) seven languages, no echo, Arabic RTL.
 /// </summary>
-public sealed class VisitWorkspaceStartWebTests
+public sealed partial class VisitWorkspaceStartWebTests
 {
     private const string GatewayUrl = "http://gateway.test";
     private static readonly Guid TenantId = Guid.Parse("97c59330-dbc4-4665-b29c-0c26dbb5cc93");
@@ -407,8 +407,13 @@ public sealed class VisitWorkspaceStartWebTests
         Assert.Equal("POST", sent.Method);
         Assert.Equal(GatewayUrl + "/api/crm/visit-execution/start", sent.Uri);
         Assert.Equal(TenantId.ToString(), sent.Tenant);
-        Assert.Equal(contentType, sent.ContentType);   // the boundary kept: the CRM parses the same body
-        Assert.Equal(body, sent.Body);                 // streamed through unchanged
+        // W3E-BE-b (K-W3E-10): the body is rebuilt — every field as it came, plus clientPlatform=web (a new boundary)
+        Assert.StartsWith("multipart/form-data", sent.ContentType);
+        var parts = await PartsAsync(sent.ContentType!, sent.Body!);
+        Assert.Equal(new[] { "plannedVisitId", "photo", "clientPlatform" }, parts.Select(x => x.Name).ToArray());
+        Assert.Equal(Id, parts[0].Value);
+        Assert.Equal(("JPEGDATA", "visit-photo.jpg", "image/jpeg"), (parts[1].Value, parts[1].FileName, parts[1].ContentType));
+        Assert.Equal("web", parts[2].Value);
 
         // without the record key: 403, nothing reaches the gateway (the read key is not enough)
         var (noKeyGateway, noKey) = Arrange([ExecRead, ReportRead, PlanRead], body, contentType);

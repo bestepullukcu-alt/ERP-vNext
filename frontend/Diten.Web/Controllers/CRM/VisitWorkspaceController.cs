@@ -204,11 +204,55 @@ public sealed class VisitWorkspaceController : Controller
         // body passed.
         using var buffer = new MemoryStream();
         await Request.Body.CopyToAsync(buffer, ct);
-        var content = new ByteArrayContent(buffer.ToArray());
-        content.Headers.ContentType = mediaType;
+        var boundary = mediaType.Parameters.FirstOrDefault(x =>
+            string.Equals(x.Name, "boundary", StringComparison.OrdinalIgnoreCase))?.Value?.Trim('"');
+        if (string.IsNullOrWhiteSpace(boundary))
+        {
+            return BadRequest(new { errors = new[] { "multipart/form-data needs a boundary.", "visit_capture_invalid" } });
+        }
+
+        // WP-VW-W3E (BE-b, K-W3E-10): a browser cannot vouch for its device — the start goes on as clientPlatform=web
+        // and the device verification fields never leave this proxy (whatever the page sent).
+        var (body, rewrittenType) = await WebStartBodyAsync(buffer.ToArray(), boundary, ct);
+        var content = new ByteArrayContent(body);
+        content.Headers.ContentType = rewrittenType;
 
         var response = await SendGatewayAsync(HttpMethod.Post, "/api/crm/visit-execution/start", content, ct);
         return await ToProxyResultAsync(response, ct);
+    }
+
+    /// <summary>WP-VW-W3E (BE-b) — the fields a browser's start may NOT carry to the CRM: the device verification claims
+    /// (and its own platform, which the proxy writes itself).</summary>
+    public static readonly IReadOnlyList<string> WebStartDroppedFields =
+        ["clientPlatform", "mockLocationDetected", "integrityProvider", "integrityVerdict", "integrityToken"];
+
+    /// <summary>
+    /// WP-VW-W3E (BE-b, K-W3E-10) — Static, so MVC never treats it as an action: the start's multipart body rebuilt with
+    /// every part copied as it came (the photo bytes, its file name and type, the location fields) EXCEPT
+    /// <see cref="WebStartDroppedFields"/>, plus <c>clientPlatform=web</c>. A new boundary; the result is sent as bytes
+    /// (the W3 live-E4 rule: buffered, never a streamed body).
+    /// </summary>
+    public static async Task<(byte[] Body, MediaTypeHeaderValue ContentType)> WebStartBodyAsync(byte[] original, string boundary, CancellationToken ct)
+    {
+        using var rebuilt = new MultipartFormDataContent();
+        var reader = new Microsoft.AspNetCore.WebUtilities.MultipartReader(boundary, new MemoryStream(original));
+        while (await reader.ReadNextSectionAsync(ct) is { } section)
+        {
+            if (!Microsoft.Net.Http.Headers.ContentDispositionHeaderValue.TryParse(section.ContentDisposition, out var disposition)) continue;
+            var name = Microsoft.Net.Http.Headers.HeaderUtilities.RemoveQuotes(disposition.Name).Value ?? string.Empty;
+            if (WebStartDroppedFields.Contains(name, StringComparer.OrdinalIgnoreCase)) continue;
+
+            using var part = new MemoryStream();
+            await section.Body.CopyToAsync(part, ct);
+            var bytes = new ByteArrayContent(part.ToArray());
+            if (!string.IsNullOrWhiteSpace(section.ContentType)) bytes.Headers.ContentType = MediaTypeHeaderValue.Parse(section.ContentType);
+            var fileName = Microsoft.Net.Http.Headers.HeaderUtilities.RemoveQuotes(disposition.FileName).Value;
+            if (string.IsNullOrEmpty(fileName)) rebuilt.Add(bytes, name);
+            else rebuilt.Add(bytes, name, fileName);
+        }
+
+        rebuilt.Add(new StringContent("web"), "clientPlatform");
+        return (await rebuilt.ReadAsByteArrayAsync(ct), rebuilt.Headers.ContentType!);
     }
 
     // ---------------- proxy helpers ----------------

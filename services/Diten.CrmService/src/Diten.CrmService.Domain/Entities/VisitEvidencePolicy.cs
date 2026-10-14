@@ -28,6 +28,10 @@ public sealed class VisitEvidencePolicy : EntityBase
     /// <summary>WP-VW-W3E (W3E-BE-a, K-W3E-1) — <see cref="VisitQrModes"/>: the institution QR code at a visit start
     /// (<c>off</c> | <c>optional</c> | <c>required</c>). An older document without it reads the default (<c>off</c>).</summary>
     public string QrMode { get; set; } = VisitEvidencePolicyDefaults.QrMode;
+
+    /// <summary>WP-VW-W3E (BE-b, §2.1) — <see cref="VisitAntiFraudModes"/>: <c>off</c> (the device declaration is recorded
+    /// only) or <c>flag</c> (recorded + flagged). Never refuses a start (K-W3E-3). An older document reads the default.</summary>
+    public string AntiFraudMode { get; set; } = VisitEvidencePolicyDefaults.AntiFraudMode;
 }
 
 public static class VisitLocationModes
@@ -54,6 +58,16 @@ public static class AccountWithoutLocationModes
     public static readonly IReadOnlyList<string> All = new[] { AllowFlagged, Block };
 }
 
+/// <summary>WP-VW-W3E (BE-b) — the anti-fraud mode. <c>block</c> comes with W3E-ATTEST (server-verified tokens); today it
+/// is an invalid value.</summary>
+public static class VisitAntiFraudModes
+{
+    public const string Off = "off";
+    public const string Flag = "flag";
+
+    public static readonly IReadOnlyList<string> All = new[] { Off, Flag };
+}
+
 /// <summary>K-W2 defaults (location required, photo optional) and the CT defaults / bounds of the package (§2.2).</summary>
 public static class VisitEvidencePolicyDefaults
 {
@@ -75,4 +89,7 @@ public static class VisitEvidencePolicyDefaults
 
     /// <summary>WP-VW-W3E (W3E-BE-a) — the QR code is off until a tenant turns it on.</summary>
     public const string QrMode = VisitQrModes.Off;
+
+    // WP-VW-W3E (BE-b, §2.1)
+    public const string AntiFraudMode = VisitAntiFraudModes.Off;
 }

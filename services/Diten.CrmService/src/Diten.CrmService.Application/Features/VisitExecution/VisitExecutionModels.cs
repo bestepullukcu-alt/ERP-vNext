@@ -32,11 +32,18 @@ public sealed record VisitExecutionDto(
     Guid? ExceptionId = null,
     IReadOnlyList<string>? RelaxedRules = null,
     // WP-VW-W3E (W3E-BE-a, additive) — the institution QR code at the start (null on a start before W3E).
-    VisitExecutionQrDto? Qr = null);
+    VisitExecutionQrDto? Qr = null,
+    // WP-VW-W3E (BE-b, additive) — the device declaration at the start (null on an execution started before W3E).
+    VisitExecutionDeviceDto? Device = null);
 
 /// <summary>WP-VW-W3E — the QR verdict of a start: status, the scanned institution + version, the client's scan instant,
 /// how it matched (self | parent). The payload is never echoed.</summary>
 public sealed record VisitExecutionQrDto(string Status, Guid? AccountId, int? Version, DateTimeOffset? ScannedAt, string? MatchedVia);
+
+/// <summary>WP-VW-W3E (BE-b) — the declared device (never the token; <c>Verified</c> is false until W3E-ATTEST).</summary>
+public sealed record VisitExecutionDeviceDto(
+    string? Platform, string? AppVersion, bool? MockLocation, string? IntegrityProvider, string? IntegrityVerdict,
+    bool TokenProvided, bool Verified);
 
 public sealed record VisitExecutionLocationDto(
     double? Latitude, double? Longitude, double? AccuracyMeters, int? DistanceMeters, int RadiusMeters, string Mode,
@@ -88,7 +95,9 @@ public sealed record VisitEvidencePolicyDto(
     // WP-VW-W3-FIX (F5, additive) — user id ("D") → display name of updatedBy (settings read only).
     IReadOnlyDictionary<string, string>? DisplayNames = null,
     // WP-VW-W3E (W3E-BE-a, additive) — off | optional | required.
-    string? QrMode = null);
+    string? QrMode = null,
+    // WP-VW-W3E (BE-b, §2.1, additive) — off | flag.
+    string? AntiFraudMode = null);
 
 public sealed record VisitExecutionContractDto(
     string ModuleId,
@@ -111,7 +120,13 @@ public sealed record VisitExecutionContractDto(
     IReadOnlyList<string>? QrModes = null,
     IReadOnlyList<string>? QrStatuses = null,
     int? MaxQrPayloadLength = null,
-    IReadOnlyList<string>? QrPermissions = null);
+    IReadOnlyList<string>? QrPermissions = null,
+    // WP-VW-W3E (BE-b, §2.5, additive) — the device declaration vocabularies and the token bound.
+    IReadOnlyList<string>? AntiFraudModes = null,
+    IReadOnlyList<string>? ClientPlatforms = null,
+    IReadOnlyList<string>? IntegrityVerdicts = null,
+    IReadOnlyList<string>? IntegrityProviders = null,
+    int? MaxIntegrityTokenBytes = null);
 
 // ── inputs ───────────────────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -147,7 +162,9 @@ public sealed record VisitEvidencePolicyInput(
     string? AccountWithoutLocation,
     int? ExpectedVersion,
     // WP-VW-W3E (W3E-BE-a, additive) — off | optional | required.
-    string? QrMode = null);
+    string? QrMode = null,
+    // WP-VW-W3E (BE-b, §2.1, additive) — off | flag.
+    string? AntiFraudMode = null);
 
 // ── commands (writes) ────────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -164,6 +181,18 @@ public sealed record StartVisitExecutionCommand(
     // WP-VW-W3E (W3E-BE-a, §2.4) — the scanned institution QR payload (≤ 200, sent as read) + the client's scan instant.
     string? QrPayload = null,
     string? QrScannedAt = null) : IRequest<Response<VisitExecutionDto>>;
+    // WP-VW-W3E (BE-b, §2.5, additive) — the device declaration (the token's SIZE only: the token never enters here).
+    VisitDeviceEvidenceInput? Device = null) : IRequest<Response<VisitExecutionDto>>;
+
+/// <summary>WP-VW-W3E (BE-b, §2.5) — the start's device declaration as the API hands it over. The integrity token is
+/// reduced to its byte count at the edge (bounds check + <c>tokenProvided</c>); its content is never passed on.</summary>
+public sealed record VisitDeviceEvidenceInput(
+    string? ClientPlatform,
+    string? AppVersion,
+    bool? MockLocationDetected,
+    string? IntegrityProvider,
+    string? IntegrityVerdict,
+    int? IntegrityTokenBytes);
 
 public sealed record CaptureVisitExecutionCommand(Guid ExecutionId, VisitCaptureInput Capture)
     : IRequest<Response<VisitExecutionDto>>;

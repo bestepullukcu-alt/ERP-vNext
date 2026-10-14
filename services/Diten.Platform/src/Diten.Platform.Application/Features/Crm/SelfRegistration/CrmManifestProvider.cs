@@ -269,6 +269,12 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                     new ModuleManifestAction("MANAGE", "New Policy", "crm.visit-frequency-policy.manage", "Toolbar", 10, false, true, false),
                     new ModuleManifestAction("RESOLVE", "Resolve", "crm.visit-frequency-policy.resolve", "Toolbar", 20, false, true, false),
                     new ModuleManifestAction("DELETE", "Delete", "crm.visit-frequency-policy.manage", "RowAction", 30, false, false, true)
+                ]),
+                // WP-VW-W3E (BE-b, §2.7, K-W3E-11) — the manager's visit evidence flags (read only): .read = the caller's
+                // team (+ the caller), .read-all = the tenant.
+                new ModuleManifestPage("CRM_VISIT_EVIDENCE_FLAGS", "Visit Evidence Flags", "/CRM/VisitEvidenceFlags", "crm.visit-evidence-flags.read", null, true, "List", 69,
+                [
+                    new ModuleManifestAction("FLAGS_READ_ALL", "Read All Visit Evidence Flags (Tenant-Wide)", "crm.visit-evidence-flags.read-all", "Toolbar", 10, false, true, false)
                 ])
             ]);
 }

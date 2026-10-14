@@ -1072,6 +1072,8 @@
   </data>
   <data name="Nav.Page.CRMVISITQRCODES" xml:space="preserve">
     <value>رموز QR للزيارات</value>
+  <data name="Nav.Page.CRMVISITEVIDENCEFLAGS" xml:space="preserve">
+    <value>مؤشرات أدلة الزيارة</value>
   </data>
   <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>تنفيذ سلسلة الإمداد</value></data>
   <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>إدارة شركات النقل</value></data>

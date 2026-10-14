@@ -1072,6 +1072,8 @@
   </data>
   <data name="Nav.Page.CRMVISITQRCODES" xml:space="preserve">
     <value>QR-коды визитов</value>
+  <data name="Nav.Page.CRMVISITEVIDENCEFLAGS" xml:space="preserve">
+    <value>Отметки доказательств визита</value>
   </data>
   <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>Исполнение цепочки поставок</value></data>
   <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>Управление перевозчиками</value></data>

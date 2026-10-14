@@ -83,6 +83,14 @@ public interface IPlannedVisitRepository
         return (await ListAsync(tenantId, cancellationToken)).Where(p => wanted.Contains(p.Id)).ToList();
     }
 
+    /// <summary>WP-VW-W3E (BE-b, §2.6) — the ids of the plans of one institution (AccountId or TargetId) between two days,
+    /// both included (the evidence flags' institution filter). The default narrows <see cref="ListAsync"/>.</summary>
+    async Task<IReadOnlyList<Guid>> ListIdsByAccountAndDateRangeAsync(
+        Guid tenantId, Guid accountId, DateOnly fromDate, DateOnly toDate, CancellationToken cancellationToken)
+        => (await ListAsync(tenantId, cancellationToken))
+            .Where(p => (p.AccountId == accountId || p.TargetId == accountId) && p.PlannedDate >= fromDate && p.PlannedDate <= toDate)
+            .Select(p => p.Id).ToList();
+
     Task InsertAsync(PlannedVisit entity, CancellationToken cancellationToken);
 
     /// <summary>Optimistic replace: matches on (Id, TenantId, Version == expectedVersion) and bumps the token. Returns

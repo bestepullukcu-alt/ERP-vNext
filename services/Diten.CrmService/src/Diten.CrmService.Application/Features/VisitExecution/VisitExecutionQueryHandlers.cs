@@ -59,7 +59,12 @@ public sealed class GetVisitExecutionContractHandler : IRequestHandler<GetVisitE
             VisitExecutionErrorCodes.All,
             VisitExecutionPermissions.All,
             // WP-VW-W3E (W3E-BE-a) — the QR modes, the verdicts, the payload ceiling, the QR keys (contract.policy.qrMode is the rep's)
-            VisitQrModes.All, VisitQrScanStatuses.All, Features.VisitQr.VisitQrLimits.MaxPayloadLength, Features.VisitQr.VisitQrPermissions.All));
+            VisitQrModes.All, VisitQrScanStatuses.All, Features.VisitQr.VisitQrLimits.MaxPayloadLength, Features.VisitQr.VisitQrPermissions.All,
+            AntiFraudModes: VisitAntiFraudModes.All,
+            ClientPlatforms: VisitClientPlatforms.All,
+            IntegrityVerdicts: VisitIntegrityVerdicts.All,
+            IntegrityProviders: VisitIntegrityProviders.All,
+            MaxIntegrityTokenBytes: VisitExecutionLimits.MaxIntegrityTokenBytes));
     }
 }
 

@@ -342,7 +342,7 @@ public sealed class VwW3AuthoringTests
         Assert.Equal(("info", "exception", active.Id), (location.Value, location.Source, location.ExceptionId!.Value));
         var photo = dto.Fields.Single(f => f.Field == "photoMode");
         Assert.Equal(("optional", "tenant"), (photo.Value, photo.Source)); // the in-review one relaxes nothing
-        Assert.Equal(9, dto.Fields.Count); // WP-VW-W3E (W3E-BE-a, §2.1) — + qrMode (the resolver's Values carry every policy field)
+        Assert.Equal(10, dto.Fields.Count); // WP-VW-W3E — + qrMode (BE-a) + antiFraudMode (BE-b): the resolver's Values carry every policy field
         Assert.Equal(active.Id, dto.ActiveException!.Id);
         Assert.Equal(("active", (Guid?)null, (string?)null, "unresolved"), (dto.ActiveException.Phase, dto.ScopeChain.LegalEntity, dto.ScopeChain.BusinessUnit, dto.ScopeChain.Note));
 

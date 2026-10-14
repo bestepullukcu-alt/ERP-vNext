@@ -23,6 +23,16 @@ public interface IVisitExecutionRepository
 
     /// <summary>Optimistic replace on (Id, TenantId, Version); bumps the token; <c>false</c> on a mismatch.</summary>
     Task<bool> ReplaceAsync(VisitExecution entity, int expectedVersion, CancellationToken cancellationToken);
+
+    /// <summary>WP-VW-W3E (BE-b, §2.6) — one page of the evidence flags read, newest start first, and the total.</summary>
+    Task<(IReadOnlyList<VisitExecution> Items, long Total)> ListForEvidenceFlagsAsync(
+        Guid tenantId, VisitEvidenceFlagFilter filter, int skip, int take, CancellationToken cancellationToken)
+        => throw new NotSupportedException("The evidence flags read needs the Mongo repository.");
+
+    /// <summary>WP-VW-W3E (BE-b, §2.6) — every start of the filter for the summary (only Id, ResourceId and Flags are read).</summary>
+    Task<IReadOnlyList<VisitExecution>> ListForEvidenceSummaryAsync(
+        Guid tenantId, VisitEvidenceFlagFilter filter, CancellationToken cancellationToken)
+        => throw new NotSupportedException("The evidence flags summary needs the Mongo repository.");
 }
 
 /// <summary>WP-VW-W3 (BE-a, K-W2) — the tenant's single evidence policy document.</summary>

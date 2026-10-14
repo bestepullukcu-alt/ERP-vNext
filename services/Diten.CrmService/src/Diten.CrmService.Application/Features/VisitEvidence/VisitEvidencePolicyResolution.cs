@@ -141,7 +141,8 @@ public sealed class VisitEvidencePolicyResolver : IVisitEvidencePolicyResolver
         ("durationConsistency", p.DurationConsistency ? "true" : "false"),
         ("shortVisitSeconds", p.ShortVisitSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture)),
         ("accountWithoutLocation", p.AccountWithoutLocation),
-        ("qrMode", p.QrMode) // WP-VW-W3E (W3E-BE-a)
+        ("qrMode", p.QrMode), // WP-VW-W3E (W3E-BE-a)
+        ("antiFraudMode", p.AntiFraudMode) // WP-VW-W3E (W3E-BE-b)
     ];
 
     public static VisitEvidencePolicy Copy(VisitEvidencePolicy p) => new()
@@ -150,7 +151,8 @@ public sealed class VisitEvidencePolicyResolver : IVisitEvidencePolicyResolver
         LocationMode = p.LocationMode, RadiusMeters = p.RadiusMeters, MaxAccuracyMeters = p.MaxAccuracyMeters, PhotoMode = p.PhotoMode,
         DoctorConfirmation = p.DoctorConfirmation, DurationConsistency = p.DurationConsistency, ShortVisitSeconds = p.ShortVisitSeconds,
         AccountWithoutLocation = p.AccountWithoutLocation,
-        QrMode = p.QrMode // WP-VW-W3E (W3E-BE-a)
+        QrMode = p.QrMode, // WP-VW-W3E (W3E-BE-a)
+        AntiFraudMode = p.AntiFraudMode // WP-VW-W3E (W3E-BE-b)
     };
 }
 

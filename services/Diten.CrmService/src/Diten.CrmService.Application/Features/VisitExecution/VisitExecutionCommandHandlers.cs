@@ -191,6 +191,14 @@ public sealed class StartVisitExecutionHandler : IRequestHandler<StartVisitExecu
             return VisitExecutionAccess.Fail<VisitExecutionDto>(qrFailure);
         }
 
+        // WP-VW-W3E (BE-b, §2.5) — the device declaration: recorded in every mode, flagged in "flag", never a refusal
+        // (only a malformed declaration — an unknown value or an oversized token — is a 400 like any bad capture field).
+        var device = DeviceEvidenceRules.Evaluate(request.Device, policy.AntiFraudMode);
+        if (device.Refusal is { } deviceFailure)
+        {
+            return VisitExecutionAccess.Fail<VisitExecutionDto>(deviceFailure);
+        }
+
         if (request.Photo is null
             && string.Equals(policy.PhotoMode, VisitPhotoModes.Required, StringComparison.Ordinal))
         {
@@ -215,7 +223,8 @@ public sealed class StartVisitExecutionHandler : IRequestHandler<StartVisitExecu
             Location = verdict.Location,
             Flags = verdict.Flags.ToList(),
             CreatedAt = now,
-            CreatedBy = _actor.ActorName
+            CreatedBy = _actor.ActorName,
+            Device = device.Device
         };
         if (qr is not null)
         {
@@ -226,6 +235,7 @@ public sealed class StartVisitExecutionHandler : IRequestHandler<StartVisitExecu
             }
         }
 
+        execution.Flags.AddRange(device.Flags);
         if (effective.PrimaryException is { } exception)
         {
             execution.ExceptionId = exception.Id;

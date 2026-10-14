@@ -71,6 +71,10 @@ crm.doctor-insights.read,0
 crm.doctor-insights.read-aggregate,0
 crm.doctor-insights.read-all,0
 crm.doctor-insights.thresholds.manage,0
+# WP-VW-W3E (BE-b) — 2 visit evidence flags keys, stated Tenant (0): moduleOverride "crm-visit-evidence-flags" is not in
+# PlatformAdminModules.
+crm.visit-evidence-flags.read,0
+crm.visit-evidence-flags.read-all,0
 # WP-VW-W4 (W4-BE-a) — the competitor usage counts key, stated Tenant (0): moduleOverride "crm-visit-report" is not in
 # PlatformAdminModules.
 crm.visit-report.read-aggregate,0

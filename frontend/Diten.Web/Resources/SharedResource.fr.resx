@@ -1073,6 +1073,8 @@
   </data>
   <data name="Nav.Page.CRMVISITQRCODES" xml:space="preserve">
     <value>Codes QR de visite</value>
+  <data name="Nav.Page.CRMVISITEVIDENCEFLAGS" xml:space="preserve">
+    <value>Alertes de preuve de visite</value>
   </data>
   <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>Exécution de la chaîne d’approvisionnement</value></data>
   <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>Gestion des transporteurs</value></data>

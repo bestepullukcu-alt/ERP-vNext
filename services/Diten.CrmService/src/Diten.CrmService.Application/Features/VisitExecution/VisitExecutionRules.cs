@@ -329,8 +329,9 @@ public static class VisitExecutionRules
         target.DurationConsistency = input.DurationConsistency ?? target.DurationConsistency;
         // WP-VW-W3E (W3E-BE-a) — off | optional | required
         target.QrMode = Pick(input.QrMode, VisitQrModes.All, target.QrMode, out var b4)!;
+        target.AntiFraudMode = Pick(input.AntiFraudMode, VisitAntiFraudModes.All, target.AntiFraudMode, out var b5)!; // W3E-BE-b
 
-        if (b1 || b2 || b3 || b4
+        if (b1 || b2 || b3 || b4 || b5
             || target.RadiusMeters is < VisitEvidencePolicyDefaults.MinRadiusMeters or > VisitEvidencePolicyDefaults.MaxRadiusMeters
             || target.MaxAccuracyMeters is < VisitEvidencePolicyDefaults.MinAccuracyMeters or > VisitEvidencePolicyDefaults.MaxAccuracyMetersBound
             || target.ShortVisitSeconds is < VisitEvidencePolicyDefaults.MinShortVisitSeconds or > VisitEvidencePolicyDefaults.MaxShortVisitSeconds)
@@ -338,7 +339,7 @@ public static class VisitExecutionRules
             return new Failure(
                 "Policy out of bounds: locationMode required|info, photoMode required|optional, accountWithoutLocation " +
                 "allow_flagged|block, radiusMeters 50–5000, maxAccuracyMeters 10–1000, shortVisitSeconds 30–1800, " +
-                "qrMode off|optional|required.",
+                "qrMode off|optional|required, antiFraudMode off|flag.",
                 VisitExecutionErrorCodes.PolicyInvalid, 400);
         }
 
@@ -348,7 +349,7 @@ public static class VisitExecutionRules
     public static VisitEvidencePolicyDto ToDto(VisitEvidencePolicy policy, bool isDefault)
         => new(policy.LocationMode, policy.RadiusMeters, policy.MaxAccuracyMeters, policy.PhotoMode,
             policy.DoctorConfirmation, policy.DurationConsistency, policy.ShortVisitSeconds, policy.AccountWithoutLocation,
-            isDefault, policy.Version, policy.UpdatedBy, policy.UpdatedAt, QrMode: policy.QrMode);
+            isDefault, policy.Version, policy.UpdatedBy, policy.UpdatedAt, QrMode: policy.QrMode, AntiFraudMode: policy.AntiFraudMode);
 
     // ── the client view ──────────────────────────────────────────────────────────────────────────────────────────
 
@@ -384,7 +385,8 @@ public static class VisitExecutionRules
             Diten.CrmService.Application.Features.VisitReport.VisitReportDeadline.For(plannedDate),
             e.ExceptionId,
             e.RelaxedRules.ToList(),
-            e.Qr is null ? null : new VisitExecutionQrDto(e.Qr.Status, e.Qr.AccountId, e.Qr.Version, e.Qr.ScannedAt, e.Qr.MatchedVia));
+            e.Qr is null ? null : new VisitExecutionQrDto(e.Qr.Status, e.Qr.AccountId, e.Qr.Version, e.Qr.ScannedAt, e.Qr.MatchedVia),
+            DeviceEvidenceRules.ToDto(e.Device));
     }
 
     // ── helpers ──────────────────────────────────────────────────────────────────────────────────────────────────
