@@ -1342,6 +1342,25 @@ the R2 trace test's finding is now the quarantined stock line.
 
 **CT-ACCEPTED (2026-10-14).** Read the gate / exit rule / seam diffs: decision by movement type only, no `sourceModule`, tenant filter on every block read, case id hidden from another company, refusal recorded outside the posting transaction; CT-R10 narrow. CT trial merge on the MVP-1 tip `713d4ee8a` (FIX-LIVE1 in): Inventory **1153 + 4** all green (no Prism timeout), Web **1468/1468**, gateway 164/165, architecture 69/77 (same 8). **CT sabotage:** `RecallPostingGate.ByLotAsync` without the `TenantId` filter → the FULL Inventory suite stays **1153/1153 green** — the tenant boundary of the exit block is correct but UNTESTED (AGENTS.md: a guard without sabotage proof is not a guard) → **WP-0177-FIX-R3T** (tenant-boundary tests for `ByLotAsync`, `ByTypedLotAsync`, `UnderRecallAsync`, the sweeper scope). CT note: `RecallQuarantineSweeper.SweepAsync` has no per-request catch — one throwing request ends the tick for the rest → in FIX-R3T. O-R3-1…9 accepted as written (O-R3-5 → FU-0175-Q5-03, O-R3-8 → R7). Merged `--no-ff` into MVP-1 (`847d9536b`); owner Inventory window needs a restart (hosted sweeper + DI) — owner approval.
 
+### 19.14 WP-0177-FIX-R3T — ajan sonucu, CT bekliyor (2026-10-14)
+
+Dal `fix/mod-0177-r3-tenant` (taban `9362c0402`). Kanıt `docs/records/audits/2026-10/mod-0177-fix-r3t-evidence-2026-10-14.md`. Commit'ler:
+`98b940b7f` kiracı sınırı testleri, `7c2885d94` süpürücüde istek başına yakalama + testler. `RecallPostingGate.cs` değişmedi.
+
+- **Testler (gerçek gate, gerçek kayıt ucu, kendi Mongo):** T2'de aynı lot id / aynı SKU + lot numarası üzerinde aktif blok →
+  (a) `ByLotAsync` ön kontrol ve (yarış dikişiyle) işlem içi yeniden kontrol T1'i reddetmez (201); (b) `ByTypedLotAsync` aynısı tipli lotla;
+  (c) `UnderRecallAsync` lotu FEFO sırasından `RECALLED` diye çıkarmaz; (d) aynı blok T1'de üçünü de engeller; (e) T1 ve T2'de
+  `ExitRefused` / `recall.exit.refused` satırı oluşmaz. Süpürücü: (f) tek tur iki kiracının isteğini kendi kiracı / şirket kapsamında gönderir
+  (karantina kaydı isteğin `TenantId` / `LegalEntityId`'sinde); (g) 0175 hatasını dispatcher'ın kendi yakalaması Pending tutar; (g2) döngüde
+  hata veren satır (`LegalEntityId` null) Pending kalır, `recall.quarantine.sweep_request_failed` (istek id'si + kiracı) loglanır, diğerleri gönderilir.
+- **BLOCKED → CT kararı A:** dekoratörlü (g) yeni try/catch'i kanıtlayamadı (dispatcher 0175 hatasını zaten yakalıyor; ölçüldü) → (g2) eklendi.
+- **Sabotaj:** s1 `ByLotAsync` filtresiz → (a) kırmızı; s2 `ByTypedLotAsync` → (b); s3 `UnderRecallAsync` → (c); s4 `SetScope` ilk isteğe sabit →
+  (f) (+ g2); s5 try/catch'siz → (g2) kırmızı, (g) beklenen yeşil (kapsam dışı). Her geri almada SHA başlangıçla aynı.
+- **Sayılar:** Inventory 1153 + 4 → **1159 + 4** (tam koşuda 16 Prism başlangıç zaman aşımı; Prism tek başına 16/16); mimari **69/77** aynı 8
+  (denetim listesi 58 değişmedi); derleme **0 / 0**.
+- Açık: O-R3T-1 kalıcı bozuk satır her turda yeniden denenir (FU-0177-SWEEP-01 önerisi); O-R3T-2 dispatcher'ın kendi uyarı logunda kiracı yok
+  (FU-0177-SWEEP-02 önerisi); O-R3T-3 kiracı listesi aşırı yüklemesini yalnız testler kullanıyor.
+
 ## 20. Follow-up Items
 
 | ID | Item | Owner |
