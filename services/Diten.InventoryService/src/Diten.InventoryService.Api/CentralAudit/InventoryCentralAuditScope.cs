@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Diten.BuildingBlocks.CentralAudit;
 using Diten.InventoryService.Application.Common;
 
@@ -26,18 +27,26 @@ public sealed class InventoryCentralAuditScope(
 
     public Guid? ActorId => tenant.UserId;
 
+    /// <summary>
+    /// The name AuthService writes (<c>given_name</c> + <c>family_name</c>, or <c>name</c>). Inventory's JWT bearer maps
+    /// inbound claims (MapInboundClaims default), so the same claims also arrive as <see cref="ClaimTypes.GivenName"/> /
+    /// <see cref="ClaimTypes.Surname"/> / <see cref="ClaimTypes.Name"/> — both spellings are read (measured in the BL-501
+    /// end-to-end probe: reading only the JWT names left the record without a name).
+    /// </summary>
     public string? ActorDisplayName
     {
         get
         {
             var user = http.HttpContext?.User;
-            var name = user?.FindFirst("name")?.Value;
+            string? Claim(params string[] types) => types.Select(t => user?.FindFirst(t)?.Value).FirstOrDefault(v => !string.IsNullOrWhiteSpace(v));
+
+            var name = Claim("name", ClaimTypes.Name);
             if (!string.IsNullOrWhiteSpace(name))
             {
                 return name;
             }
 
-            var full = $"{user?.FindFirst("given_name")?.Value} {user?.FindFirst("family_name")?.Value}".Trim();
+            var full = $"{Claim("given_name", ClaimTypes.GivenName)} {Claim("family_name", ClaimTypes.Surname)}".Trim();
             return full.Length == 0 ? null : full;
         }
     }
