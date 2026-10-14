@@ -398,3 +398,141 @@ Test dalına alındı: `b997aeb77` (ajan `60f2af40d`), çakışmasız.
   - §2.9 ortak dosyalar.
 - **Mimari:** CRM denetimsiz komut 222 → 227 (+5; AUD-001, Faz 8). Borç satırı eklenmedi.
 - **Mobil not:** `mobile/2026-10-14-visit-evidence-w3e/QR.md` → CT mobil sayfasına taşıyacak (BE-b'nin `DEVICE.md`'siyle birlikte).
+
+## §37 CT kabul — W3E-BE-b E2 ACCEPTED (2026-10-14) + BE-a ∥ BE-b birleşimi
+Test dalına alındı:
+- `9294c90e1` (ajan `53ee0c36b`);
+- `302182712` (ajan `da8631629`, menü sırası 71);
+- birleşim düzeltmesi `93700f673`.
+
+**Çakışmalar:** 18 dosya. §2.9 ortak dosyalarında iki blok birlikte alındı.
+- `VwW3AuthoringTests` etkin alan sayısı **10**.
+- `ApplyPolicy` iki ayrı değişken: `b4` = `qrMode`, `b5` = `antiFraudMode`.
+- Ocelot: iki dalın rotaları birlikte (319 rota).
+- **CT'nin birleşim hatası (düzeltildi):**
+  - başlatma komutunun parametre listesi yanlış birleşmişti;
+  - 7 resx dosyasında bir `</data>` düşmüştü.
+  - `9294c90e1` tek başına derlenmez; `93700f673` ile düzelir.
+
+**CT kontrolü:**
+- **Web vekili:** gövde `MultipartReader` ile yeniden kuruluyor. Beş alan düşürülüyor, `clientPlatform=web` sona ekleniyor. Fotoğraf parçası dosya adı ve türüyle aynen geçiyor.
+- **Kapsam:** `.read` = ekip + kendisi, `.read-all` = kiracı. Ayrıntı ucu kapsam dışı yürütmede 404 dönüyor (`Sees`).
+- **Jeton:** denetleyicide bayt sayısına indiriliyor, uygulama katmanına içerik girmiyor.
+- **Birleşik ağaçta testler** (`C:\tmp\vw-w3e-merge`, CT `-o`):
+
+  | takım | sonuç | kırmızılar |
+  |---|---|---|
+  | CRM | 2808/2/5 | `VisitPlanningFix2…shared_pattern` (`-o` artefaktı) + `VwW4DoctorInsights…` (tabanda da var) |
+  | Web (W3E / start / Nav / L10n) | 116/1 | `WorkCenterMenuWithoutPermissions` (`-o` artefaktı) |
+  | Gateway | 185/1 | 5063–5065 bilinen |
+  | Auth | seed süzgeci 320/3 | 3'ü de `-o` artefaktı; `PermissionScopePreservation` + `AccountKindSeed` `-o`'suz **6/6** |
+  | Platform manifest | 167/8 | 8'i Mongo test hattı yok (`DITEN_PLATFORM_TEST_MONGO_URI` / yerel mongod). Ajan hatlı koşuda 175/175. |
+
+- **CT sabotajı (ajanın dokunmadığı kural):** ayrıntı ucunun kapsam denetimi kaldırıldı → `A_manager_sees_the_team_and_self…` **kırmızı**. `.bak` + touch ile geri alındı.
+
+**Açık / izlenecek:**
+- **CT-2 (BE-c):** işaret satırında `Qr` alanı hâlâ `object? = null`; BE-a birleşti ama doldurulmuyor.
+- **CT-1 (BE-c):** fail-open, BE-a §37.
+- **Mimari:** BE-b denetimsiz komut eklemedi (yalnız sorgu).
+- **Mobil not:** `DEVICE.md` + `QR.md` → CT mobil sayfasına taşıyacak.
+- **Kalıntı:** `C:\tmp\vw-w3e-arch-base` boş klasörü yeniden başlatmada silinebilir.
+
+## Mockup geldi (2026-10-14) → fark belgesi
+Mockup: `mockups/visit-workspace/W3E Ek Kanitlar (standalone).html` (30 ekran, brief'in tamamı).
+Fark belgesi: [DESIGN-GAP-W3E-2026-10-14](mockups/visit-workspace/DESIGN-GAP-W3E-2026-10-14.md), D-1 … D-14.
+- Mockup'ın istediği küçük arka uç eklemeleri ve CT-1 / CT-2 → **W3E-BE-c**.
+- Ardından **W3E-WEB-a ∥ W3E-WEB-b**.
+
+### 1b. Tur planı (güncel)
+| tur | prompt | çalışma yeri / dal | bağımlılık |
+|---|---|---|---|
+| 2 | **W3E-BE-c** · CT-1 fail-closed + DI testi; CT-2 işaret satırında QR özeti; `qr-check` ön kontrol ucu; yazdırma `paper` / `copies`; Q5 satır alanları; Web vekili tarayıcı özeti; ayrıntıya slayt / fotoğraf saati | `C:\tmp\vw-w3e-be-c` / `wp/vw-w3e-be-c` | BE-a + BE-b test dalında ✅ |
+| 3 | **W3E-WEB-a** · Q1–Q5 + S1–S8 | `C:\tmp\vw-w3e-web-a` / `wp/vw-w3e-web-a` | BE-c test dalında |
+| 3 | **W3E-WEB-b** · E1–E3 + M1–M6 | `C:\tmp\vw-w3e-web-b` / `wp/vw-w3e-web-b` | BE-c test dalında; WEB-a ile paralel |
+| 4 | **W3E-CFG** (CT) | — | WEB'ler test dalında |
+
+### 2.10 QR ön kontrol ucu (BE-c) — `POST api/crm/visit-execution/qr-check`
+- **İzin:** `crm.visit-execution.record`.
+- **Gövde:** `{ plannedVisitId, qrPayload? }`.
+- **Kurallar:**
+  - Başlatmanın sahiplik ve plan kuralları aynen uygulanır: kendi planı, onaylı, bugün; aksi hâlde başlatmayla aynı hata.
+  - Etkin ayar ve `VisitQrVerifier.EvaluateAsync` başlatmadakiyle aynı.
+  - **Hiçbir şey yazılmaz:** yürütme yok, okutma sayacı yok, olay yok.
+- **Yanıt:**
+  - `qrMode`;
+  - `status` (§2.4 `QrStatuses`);
+  - `wouldRefuse` (bool) + `errorCode`: başlatma bu sonuçla reddedilirdi mi;
+  - `flag`;
+  - `accountId`, `accountName`: okunan kodun kurumu, yalnız aynı kiracı ve imza geçerliyse;
+  - `matchedVia`;
+  - `expectedHasActiveCode` (bool): yük boşken S6 için `not_issued` ↔ `missing` ayrımı.
+- Yük günlüğe yazılmaz.
+- **Web vekili:** `POST /CRM/VisitWorkspace/api/execution/qr-check` (JSON).
+- **Mobil not:** `QR.md`'ye ek bölüm.
+
+## W3E-BE-c — mockup arka uç eklemeleri + CT-1 / CT-2 (CRM + Web vekili)
+1. **CT-1:** işleyicide doğrulayıcı null + `qrMode != off` → 503 `visit_qr_signing_unavailable`. `AddApplication` + sahte depolar / anahtar halkasıyla MediatR'ın çözdüğü başlatma işleyicisinin doğrulayıcıyı aldığını ölçen test (ScaffoldSmoke gibi `localhost:27017`'ye BAĞLANMADAN).
+2. **CT-2:** `VisitEvidenceFlagRowDto.Qr` → `VisitEvidenceQrSummaryDto(Status, AccountId, AccountName, Version, ScannedAt, MatchedVia)`. Kurum adı satır sayfasının toplu kurum okumasına katılır (N+1 YOK). Ayrıntıya `SlideSeconds`, `SlideCount`, `PhotoCapturedAt`.
+3. **§2.10** `qr-check` + Web vekili ucu + testler.
+4. **D-4:** `payload` / `bulk-payload` `paper` + `copies` (doğrulama; olay ayrıntısı; `VisitQrEventDto`'ya `Paper`, `Copies`).
+5. **D-5:** `VisitQrListItemDto` + `ParentAccountId`, `ParentAccountName`, `InheritedFrom` (`VisitQrInheritedDto`), `RecentScanCount`. Toplu okuma, sayfa başına sabit sorgu.
+6. **D-2:** Web vekili kullanıcı ajanından kısa tarayıcı özeti → `appVersion` (≤ 40, deterministik ayrıştırıcı + test; bilinmeyen → "Web").
+
+**Acceptance:**
+- **CT-1:** doğrulayıcısız işleyici + `required` → 503; `off` → 201. DI testi kırmızı / yeşil kanıtı.
+- **CT-2:** satırda QR özeti ve kurum adı; sorgu sayacı sabit.
+- **`qr-check`:**
+  - §2.4 tablosunun her kip / sonuç satırı için `wouldRefuse` / `errorCode` / `flag` başlatmayla **aynı**; ortak tablo testi;
+  - yazma yok (depo sayaçları 0);
+  - başka temsilcinin planı → başlatmayla aynı hata;
+  - `expectedHasActiveCode`.
+- **`paper` / `copies`:** geçersiz → 400; olayda kayıtlı.
+- **Q5 alanları:** üst kurum, devralınan kod, 30 gün sayısı.
+- **Tarayıcı özeti:** 6 kullanıcı ajanı örneği.
+
+**Sabotajlar:**
+- `qr-check` okutma sayacını artırsın → kırmızı.
+- CT-1 kontrolü kalksın → kırmızı.
+- Satır QR özeti başka kiracının kurum adını çözsün → kırmızı.
+
+## §36.1 Agent Prompt — W3E-BE-c (paste-ready · 2. TUR)
+```text
+@[.antigravity/agents/backend-architect.md]
+WP: WP-VW-W3E · W3E-BE-c — mockup arka uç eklemeleri + CT-1 / CT-2: başlatmada doğrulayıcı yokken fail-closed + DI testi; yönetici işaret satırında gerçek QR özeti (kurum adıyla) + ayrıntıya slayt süresi / sayısı + fotoğraf saati; yazmayan QR ön kontrol ucu (qr-check) + Web vekili; yazdırma paper / copies olayda; kurum QR listesinde üst kurum / devralınan kod / 30 gün okutma; Web vekili tarayıcı özeti → appVersion
+Repository: C:\tmp\vw-w3e-be-c (worktree, test/crm-content-visit-e2e güncel başı — BE-a + BE-b + birleşim 93700f673 içerir) · Branch: wp/vw-w3e-be-c · commit bu dala, push YOK
+
+Paket belgesi: execution/domains/commercial-suite/work-packs/WP-VW-W3E-qr-antifraud.md — önce oku: §0, §2.2–§2.6, §2.10, "W3E-BE-c", §37 BE-a (CT-1) ve §37 BE-b (CT-2). Fark belgesi: mockups/visit-workspace/DESIGN-GAP-W3E-2026-10-14.md (D-2, D-3, D-4, D-5, D-6, D-7) — mockup ekranları S2 / S3 / S6, Q1 geçmiş, Q5, M1 / M2 (önizleme: .claude/launch.json "mockups-workspace" 5098, dosya "W3E Ek Kanitlar (standalone).html"; AYRI sekmede aç).
+MEVCUT: Features/VisitQr (VisitQrVerifier.EvaluateAsync + ChainAsync, VisitQrHandlers, VisitQrModels: VisitQrListItemDto, VisitQrInheritedDto, VisitQrEventDto) · StartVisitExecutionHandler (qrVerifier isteğe bağlı parametre — CT-1) · Features/VisitEvidenceFlags (VisitEvidenceFlagRowDto.Qr = object? null — CT-2; toplu ad okuması; Detail) · VisitExecution.Qr / SlideTimings / Photo · Web: Controllers/CRM/VisitWorkspaceController.cs (api/execution/start vekili, WebStartBodyAsync, WebStartDroppedFields).
+NE: (CT-1) işleyicide doğrulayıcı null + etkin qrMode != off → 503 visit_qr_signing_unavailable; AddApplication + sahte depolar / IVisitQrKeyRing ile MediatR'ın çözdüğü başlatma işleyicisinin doğrulayıcıyı aldığını ölçen test (Mongo'ya BAĞLANMA; localhost:27017 YOK) · (CT-2) VisitEvidenceQrSummaryDto(Status, AccountId, AccountName, Version, ScannedAt, MatchedVia) satıra; kurum adı aynı toplu kurum okumasına katılır (N+1 YOK, kiracı sınırlı); ayrıntıya SlideSeconds, SlideCount, PhotoCapturedAt · (§2.10) POST api/crm/visit-execution/qr-check — başlatmanın sahiplik / plan kuralları + aynı etkin ayar + aynı VisitQrEvaluation; yanıt qrMode, status, wouldRefuse, errorCode, flag, accountId, accountName, matchedVia, expectedHasActiveCode; HİÇBİR ŞEY YAZMAZ; Web vekili POST /CRM/VisitWorkspace/api/execution/qr-check (JSON) · (D-4) payload + bulk-payload paper (a4|a5|labels4|labels8) + copies (1–50) → printed olayı; VisitQrEventDto + Paper, Copies · (D-5) VisitQrListItemDto + ParentAccountId, ParentAccountName, InheritedFrom, RecentScanCount (toplu okuma, sayfa başına sabit sorgu) · (D-2) Web vekili User-Agent → kısa tarayıcı özeti ≤40 ("Safari 18 · iPadOS"), appVersion olarak yazılır (istemcinin appVersion'ı web'de yok sayılır); bilinmeyen → "Web" · mobil not mobile/2026-10-14-visit-evidence-w3e/QR.md'ye qr-check bölümü (eski bölümleri değiştirme, ekle).
+KORU/YAPMA: başlatma davranışı qrMode=off / antiFraudMode=off iken DEĞİŞMEZ; qr-check sayaç / olay / yürütme YAZMAZ; yük günlüğe yazılmaz; kiracı izolasyonu (başka kiracının kurum adı asla çözülmez); Web sayfası YOK (WEB-a / WEB-b); AUD-001 borç satırı EKLEME; seed / grant / canlı DB YOK; fleet'i durdurma.
+DOĞRULA: "W3E-BE-c" acceptance + 3 sabotaj (.bak + touch ile geri al, git checkout YOK): (1) qr-check okutma sayacını artırsın → kırmızı; (2) CT-1 kontrolü kalksın → kırmızı; (3) satır QR özeti kiracı süzgeçsiz kurum adı okusun → kırmızı. CRM + Web + mimari (-o ile repo içi çıktı); taban CRM 2808/2 (birleşik), Web birleşik; denetimsiz sayı önce / sonra.
+Commit: "feat(crm,web): WP-VW-W3E-BE-c — fail-closed QR start without a verifier, QR summary on evidence flag rows, qr-check pre-start endpoint, print paper/copies, QR list parent/inherited/recent scans, web browser summary as appVersion" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
+```
+
+## §36.1 Agent Prompt — W3E-WEB-a (paste-ready · 3. TUR, BE-c test dalına alındıktan SONRA)
+```text
+@[.antigravity/agents/frontend-ui-ux.md]
+WP: WP-VW-W3E · W3E-WEB-a — kurum QR kodu ekranları (Q1 kurum ayrıntısında kart + geçmiş, Q2 yazdırma tekli + etiket sayfası, Q3 yeniden üret, Q4 iptal, Q5 toplu QR kodları sayfası) + temsilcinin başlangıç penceresinde QR okutma (S1–S8)
+Repository: C:\tmp\vw-w3e-web-a (worktree, test/crm-content-visit-e2e güncel başı — BE-a/b/c içerir) · Branch: wp/vw-w3e-web-a · commit bu dala, push YOK
+
+ŞARTNAME: mockups/visit-workspace/DESIGN-GAP-W3E-2026-10-14.md (kararlar mockup'ın önüne geçer: D-3, D-8, D-9, D-10, D-12, D-13, D-14 + §4 uç eşlemesi) + mockup "W3E Ek Kanitlar (standalone).html" ekranları Q1a, Q1a (alt birim), Q1b, Q1c, Q1d, Q1 geçmiş, Q2 tekli, Q2 etiket, Q3, Q4, Q5, Q5 sonuç, Q5 boş, S1–S8 (önizleme: .claude/launch.json "mockups-workspace" 5098; çözülmüş: mockups/visit-workspace/decoded-w3e/). Paket: WP-VW-W3E-qr-antifraud.md §0, §2.2–§2.4, §2.10, §37 notları. Görsel dil ve metinler mockup'la BİREBİR; bitince her ekranı mockup'la yan yana karşılaştır (ekran görüntüsü raporda).
+MEVCUT: Controllers/CRM/AccountsController.cs (Details/{id}) + Views/CRM/Accounts/Details.cshtml + _DetailsL10n.cshtml (bölüm kartları) · Controllers/CRM/VisitWorkspaceController.cs (start + qr-check vekilleri, contract) · wwwroot/assets/js/CRM/VisitWorkspace/visit-workspace.js (E3 başlangıç penceresi ~663-826: fotoğraf, konum, "Eksik: …", Sunumu başlat pasif kuralı) · desen: W4 PotentialThresholds sayfası (standart CRM sayfa iskeleti, UAS-001, 7 dil resx + L10n köprüsü — recurring gotcha "L10n bridge").
+NE: (Q1) kurum ayrıntısına "Kurum QR kodu" kartı — durumlar a/b/c/d, alt birimde üst kurum bilgi satırı (inheritedFrom), bulanık SÜS önizleme (yük çekilmez, D-8), Geçmiş bağlantısı → zaman çizelgesi (olaylar + paper/copies + gerekçe); izinler crm.visit-qr.read (kart) / .manage (düğmeler), salt okumada düğmeler gizli · (Q2) yazdırma sayfası tekli (A4/A5) + etiket sayfası (4/8, kesikli çizgi) — QR SVG Web sunucusunda üretilir (D-9: MIT .NET paketi, sürüm sabit, depo bağımlılık kuralı; uç Cache-Control no-store; yük günlüğe yazılmaz; kişisel veri basılmaz) · (Q3 / Q4) pencereler, expectedVersion, 409 sürüm çakışması mesajı, iptalde gerekçe zorunlu ≤500 · (Q5) yeni sayfa /CRM/VisitQrCodes (manifest CRM_VISIT_QR_CODES): süzgeçler bölge / tür / şehir / QR durumu (+ metin arama), sunucu tarafı sayfalama (43K kurum), satırda ↳ üst kurum + "üst kurum kodu geçer", çoklu seçim + "Seçilenlere kod üret" (bulk-issue) + "Seçilenleri yazdır" (etiket), sonuç şeridi, boş durum; UAS-001 · (S1–S8) başlangıç penceresinde QR satırı contract.policy.qrMode'a göre (off: yok; remote: yok), kamera (BarcodeDetector varsa, yoksa wwwroot'a konmuş jsQR — Apache-2.0, sürüm sabit, CDN YOK; telefonda arka kamera), okununca qr-check → S2 (kurum adı + "üst kurumun kodu"), S3, S4, S5 kamera izni, S6 "Kodu bulamıyorum" (isteğe bağlı → "QR olmadan devam et"; zorunlu + expectedHasActiveCode=false → cezasız devam; zorunlu + kod var → istisna yönlendirmesi), S7 (antiFraudMode=flag + web: bilgi satırı, engellemez), S8 "Eksik: QR kodu" + Sunumu başlat pasif; start'a qrPayload + qrScannedAt; başlatma hataları (visit_qr_*) kullanıcı dilinde · 7 DİL (en, tr, fr, es, zh, ar, ru) yankısız, Arapça RTL.
+KORU/YAPMA: qrMode=off iken başlangıç penceresi DEĞİŞMEZ (mevcut W3 Web testleri yeşil); yük yalnız yazdırma ucunda ve manage izniyle; kullanıcının oturum açık sekmesine sahte / harness enjeksiyonu YOK (ayrı sekme); kalıcı veri yazma (seed / grant) YOK; CRM koduna DOKUNMA (sözleşme eksikse DUR ve raporla); WEB-b'nin dosyalarına (VisitEvidenceSettings, VisitEvidenceFlags) DOKUNMA.
+DOĞRULA: Web.Tests (xUnit + RunNode; vitest bu makinede çalışmaz) — kart durumları, izin gizleme, yazdırma ucu no-store + yük günlüksüz, Q5 süzgeç / sayfalama sözleşmesi, S akışı (qr-check sonuçlarına göre durum, Eksik satırı, off'ta değişmezlik), 7 dil anahtar tamlığı + NavL10n; 2 sabotaj (.bak + touch): (1) zorunlu kipte okutmadan Sunumu başlat etkin olsun → kırmızı; (2) salt okuma kullanıcısına Yazdır görünsün → kırmızı. Web tam takım (-o repo içi), taban karşılaştırması. Mockup ↔ ekran karşılaştırma görüntüleri.
+Commit: "feat(web): WP-VW-W3E-WEB-a — institution QR card, history, print (single + label sheet), regenerate / revoke dialogs, bulk QR codes page, QR scan at visit start (camera, qr-check states, missing line)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
+```
+
+## §36.1 Agent Prompt — W3E-WEB-b (paste-ready · 3. TUR, BE-c test dalında; WEB-a ile paralel)
+```text
+@[.antigravity/agents/frontend-ui-ux.md]
+WP: WP-VW-W3E · W3E-WEB-b — kanıt ayarlarında "Ek kanıtlar" bölümü (QR kipi, cihaz doğrulama) + istisnada "QR zorunluluğunu esnet" + etkin ayar / temsilciler / geçmişte iki yeni alan (E1–E3); yönetici "Kanıt işaretleri" sayfası (M1 liste + özet, M2 sağ çekmece, M3 temsilci özeti, M4 boş, M5 yetkisiz, M6 Arapça)
+Repository: C:\tmp\vw-w3e-web-b (worktree, test/crm-content-visit-e2e güncel başı — BE-a/b/c içerir) · Branch: wp/vw-w3e-web-b · commit bu dala, push YOK
+
+ŞARTNAME: mockups/visit-workspace/DESIGN-GAP-W3E-2026-10-14.md (D-1 katmanlı ayar ÇİZİLMEZ — bugünkü kiracı sayfasına eklenir; D-6, D-11, D-14 + §4) + mockup "W3E Ek Kanitlar (standalone).html" ekranları E1, E2, E3, M1–M6 (önizleme: .claude/launch.json "mockups-workspace" 5098; çözülmüş: mockups/visit-workspace/decoded-w3e/). Paket: WP-VW-W3E-qr-antifraud.md §0, §2.1, §2.5, §2.6, §37 notları. Görsel dil ve metinler mockup'la BİREBİR; bitince her ekranı mockup'la yan yana karşılaştır (ekran görüntüsü raporda).
+MEVCUT: Controllers/CRM/VisitEvidenceSettingsController.cs + Views/CRM/VisitEvidenceSettings/Index.cshtml (".ve-soon" Yakında kartı 117-118 — KALDIRILIR, yerine bölüm) + wwwroot/assets/js/CRM/VisitEvidenceSettings/evidence-core.js (alan grupları 33-46) + visit-evidence-settings.js + Resources/Views/CRM/VisitEvidenceSettings/*.resx · istisna penceresi (W3-WEB-d) · desen: W4 PotentialThresholds sayfası (standart CRM sayfa iskeleti, UAS-001, 7 dil resx + L10n köprüsü).
+NE: (E1) "Ek kanıtlar" bölümü: Kurum QR kodu (Kapalı / İsteğe bağlı / Zorunlu + bir cümlelik etki metinleri + "Kurum QR kodlarını yönet →" /CRM/VisitQrCodes, yetki yoksa bağlantı gizli), Cihaz doğrulama (Kapalı / İşaretle / Engelle PASİF "yakında"); PUT'a qrMode + antiFraudMode; (E2) istisna penceresine qr_optional seçeneği ("yeni" rozeti, açıklama); (E3) etkin ayar + Temsilciler sekmesinde iki yeni sütun / satır, istisnadan gelen değer "· istisna", değişiklik geçmişinde alan adları ve değerler kullanıcı dilinde (ham "qrMode" / "antiFraudMode" GÖRÜNMEZ) · (M) yeni sayfa /CRM/VisitEvidenceFlags (manifest CRM_VISIT_EVIDENCE_FLAGS): özet şeridi (başlatılan, işaretli + oran, işaret türüne göre yatay çubuklar, "Diğer (N tür)" gruplama), dönem (Son 7 gün varsayılan / Son 30 gün / bu ay; ≤92 gün), temsilci (ekibim), işaret türü (çoklu), kurum, "Yalnız işaretliler"; Ziyaretler / Temsilci özeti sekmeleri; tablo + sayfalama; işaret çipleri tarafsız dil + değer (Uzak konum · 820 m, Kısa ziyaret · 1 dk 40 sn, Konum hassasiyeti düşük · 240 m); "QR okutulmadı" çipi qr.status=missing iken (işaret DEĞİL, süzgece girmez); M2 çekmece: konum, QR (sonuç, kurum, sürüm, okutma saati), cihaz (platform + appVersion, doğrulama sonucu), süre + slayt, fotoğraf küçük resmi mevcut kanıt okuma yolundan KENDİ izniyle (yoksa "fotoğraf var"), istisna bağlantısı, "Ziyareti aç"; M3 temsilci satırı → liste o temsilciye süzülür; M4 boş; M5 UAS-001 (iskelet çizilmez); .read-all izni varsa temsilci süzgeci tüm kiracı · 7 DİL (en, tr, fr, es, zh, ar, ru) yankısız, Arapça RTL.
+KORU/YAPMA: mevcut kanıt ayarı alanları ve W3-WEB-d testleri bozulmaz; katmanlı ayar (iş birimi / tüzel kişilik) ÇİZİLMEZ (D-1); kullanıcının oturum açık sekmesine sahte / harness enjeksiyonu YOK (ayrı sekme); kalıcı veri yazma YOK; CRM koduna DOKUNMA (sözleşme eksikse DUR ve raporla); WEB-a'nın dosyalarına (Accounts Details, VisitQrCodes, VisitWorkspace) DOKUNMA.
+DOĞRULA: Web.Tests (xUnit + RunNode) — ayar PUT gövdesi iki alanla, Engelle seçilemez, istisna kuralı qr_optional, geçmiş etiketleri (ham anahtar yok), M süzgeç → sorgu parametreleri, 92 gün sınırı ekranda, QR okutulmadı çipi işaret süzgecine girmez, çekmece alanları, UAS-001, 7 dil anahtar tamlığı + NavL10n; 2 sabotaj (.bak + touch): (1) Engelle seçilebilir olsun → kırmızı; (2) geçmişte ham alan adı görünsün → kırmızı. Web tam takım (-o repo içi), taban karşılaştırması. Mockup ↔ ekran karşılaştırma görüntüleri.
+Commit: "feat(web): WP-VW-W3E-WEB-b — additional evidence settings (QR mode, device verification), qr_optional exception, effective/reps/history fields, manager visit evidence flags page (summary, list, drawer, rep summary)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
+```
