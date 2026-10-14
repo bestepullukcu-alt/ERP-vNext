@@ -142,12 +142,32 @@ public static class DataSeeder
     /// </summary>
     public const string MockUsersOptInConfigurationKey = "DevSeeds:MockUsers";
 
+    /// <summary>
+    /// Opt-in switch for the dev tenant administrator (<see cref="DevTenantAdminEmail"/>) — BL-521 follow-up, owner decision
+    /// 2026-10-13. Since BL-521 the seeded admin@diten.com is a platform account and every tenant door refuses it, so a dev
+    /// database had no account that could open Users / Roles. Same gate as the mock users: Development AND this key, read in
+    /// <c>DependencyInjection.AddPersistence</c>; set it only in a local, never-committed appsettings.Development.json.
+    /// </summary>
+    public const string TenantAdminOptInConfigurationKey = "DevSeeds:TenantAdmin";
+
+    /// <summary>The dev tenant administrator: tenant Admin role in the seed tenant, never a platform account.</summary>
+    public const string DevTenantAdminEmail = "kiraci.admin@diten.com";
+
+    private static readonly Guid DevTenantAdminId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+
     public static Task SeedAsync(IMongoDatabase database, bool seedMockUsers = false, ILogger? logger = null)
-        => SeedAsync(database, seedMockUsers, logger, beforeSeedSteps: null);
+        => SeedAsync(database, seedMockUsers, seedTenantAdmin: false, logger);
+
+    public static Task SeedAsync(IMongoDatabase database, bool seedMockUsers, bool seedTenantAdmin, ILogger? logger = null)
+        => SeedCoreAsync(database, seedMockUsers, seedTenantAdmin, logger, beforeSeedSteps: null);
 
     /// <param name="beforeSeedSteps">Test seam: runs where the seed steps begin; a test makes it throw to stand for a
     /// seed step that failed, and measures that the export backfill still runs.</param>
-    public static async Task SeedAsync(IMongoDatabase database, bool seedMockUsers, ILogger? logger, Func<Task>? beforeSeedSteps)
+    public static Task SeedAsync(IMongoDatabase database, bool seedMockUsers, ILogger? logger, Func<Task>? beforeSeedSteps)
+        => SeedCoreAsync(database, seedMockUsers, seedTenantAdmin: false, logger, beforeSeedSteps);
+
+    private static async Task SeedCoreAsync(
+        IMongoDatabase database, bool seedMockUsers, bool seedTenantAdmin, ILogger? logger, Func<Task>? beforeSeedSteps)
     {
         logger ??= SeedConsoleLogger.Instance;
         try 
@@ -162,6 +182,12 @@ public static class DataSeeder
             
             Console.WriteLine("Seeding users...");
             await SeedUsersAsync(database, seedMockUsers, logger);
+
+            if (seedTenantAdmin)
+            {
+                Console.WriteLine("Seeding the dev tenant administrator...");
+                await SeedDevTenantAdminAsync(database, logger);
+            }
 
             Console.WriteLine("Seeding tenant-97c5 BRD consumer grant...");
             await SeedTenant97c5BusinessReferenceDataConsumerGrantAsync(database);
@@ -1213,6 +1239,55 @@ public static class DataSeeder
         {
             await SeedMockUsersForTenantAsync(userCol, DefaultTenantId);
             await SeedMockUsersForTenantAsync(userCol, Tenant97c5Id);
+        }
+    }
+
+    // BL-521 follow-up — the dev tenant administrator. Created once (static id, the dev seed password hash admin@diten.com
+    // has), never marked platform, and given the seed tenant's Admin role (not SuperAdmin). An existing account is never
+    // rewritten: an administrator's deactivation or edits survive a restart; only a missing Admin link is added back.
+    private static async Task SeedDevTenantAdminAsync(IMongoDatabase database, ILogger logger)
+    {
+        var userCol = database.GetCollection<User>("users");
+        var roleCol = database.GetCollection<Role>("roles");
+        var urCol = database.GetCollection<UserRole>("userRoles");
+
+        var user = (await userCol.Find(u => u.Email == DevTenantAdminEmail).ToListAsync())
+            .FirstOrDefault(u => u.TenantId == DefaultTenantId && !u.IsDeleted);
+        if (user == null)
+        {
+            user = new User(DevTenantAdminEmail, "$2a$12$F1MdLL6aHDzrwl/790xPVuiSNW8xJM5/.5E8A/6M3DwAYYenixKwC", "Kiracı", "Admin", DefaultTenantId)
+            {
+                Id = DevTenantAdminId
+            };
+            user.SetUserName("kiraci.admin");
+            user.Activate();
+            user.ConfirmEmail();
+            user.SetAccountKind(AccountKind.Unknown); // WP-INFRA-AUTH-ACCOUNT-KIND-01 — seed never classifies
+            try
+            {
+                await userCol.InsertOneAsync(user);
+                Console.WriteLine("Created the dev tenant administrator.");
+            }
+            catch (MongoWriteException ex) when (ex.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+            {
+                logger.LogWarning("The dev tenant administrator was created by another start-up at the same moment; it was left as it is.");
+                return;
+            }
+        }
+
+        var adminRole = (await roleCol.Find(r => r.Name == "Admin").ToListAsync())
+            .FirstOrDefault(r => r.TenantId == DefaultTenantId && !r.IsDeleted);
+        if (adminRole == null)
+        {
+            logger.LogWarning("The seed tenant has no Admin role; the dev tenant administrator got no role.");
+            return;
+        }
+
+        var linked = await urCol.Find(ur => ur.UserId == user.Id && ur.RoleId == adminRole.Id).AnyAsync();
+        if (!linked)
+        {
+            await urCol.InsertOneAsync(new UserRole(user.Id, adminRole.Id, DefaultTenantId, SystemUser));
+            Console.WriteLine("Assigned the Admin role to the dev tenant administrator.");
         }
     }
 

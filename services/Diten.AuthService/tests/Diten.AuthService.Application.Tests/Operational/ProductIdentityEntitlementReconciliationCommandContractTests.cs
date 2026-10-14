@@ -127,7 +127,7 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
             .SelectMany(path => AuthorityCalls(Path.GetRelativePath(root.FullName, path).Replace('\\', '/'), File.ReadAllText(path)))
             .GroupBy(row => row, StringComparer.Ordinal).Select(group => group.Key + "|" + group.Count())
             .Order(StringComparer.Ordinal).ToArray();
-        var expected = (FrozenWriterCalls + "\n" + OwnerCorrection20261014WriterCalls + "\n" + OwnerCorrection20261014B1WriterCalls + "\n" + ApprovedOperationalWriterCalls + "\n" + ApprovedBookkeepingWriterCalls
+        var expected = (FrozenWriterCalls + "\n" + OwnerCorrection20261014WriterCalls + "\n" + OwnerCorrection20261014B1WriterCalls + "\n" + OwnerCorrection20261014TenantAdminWriterCalls + "\n" + ApprovedOperationalWriterCalls + "\n" + ApprovedBookkeepingWriterCalls
             + "\n" + ApprovedDeclaredServiceClientWriterCalls).Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Order(StringComparer.Ordinal).ToArray();
         var unclassified = actual.Where(row => row.Contains("|UNCLASSIFIED|", StringComparison.Ordinal)).ToArray();
@@ -345,6 +345,14 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
     //     ticket consume, the password window, the bulk revoke; each only NARROWS access.
     //   ESignReauthHandlers _users.RecordLoginFailureAsync / RecordLoginOutcomeAsync / TryClaimSignInAsync — the lane's lockout
     //     model (one atomic failure write, sign-in time only, the conditional claim) on main's re-authentication door.
+    // owner correction 2026-10-14, BL-521 follow-up (owner decision 2026-10-13): the opt-in dev tenant administrator
+    // (DataSeeder.SeedDevTenantAdminAsync, Development + DevSeeds:TenantAdmin only) creates one tenant-side account and links
+    // the seed tenant's Admin role once — userCol.InsertOneAsync 2 → 3, urCol.InsertOneAsync 3 → 4 (moved here from the
+    // frozen list). It never marks a platform account and never rewrites an existing account.
+    private const string OwnerCorrection20261014TenantAdminWriterCalls = """
+    services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs|User|userCol.InsertOneAsync|3
+    services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs|UserRole|urCol.InsertOneAsync|4
+    """;
     private const string OwnerCorrection20261014B1WriterCalls = """
     services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/RoleProvisioningService.cs|IRoleRepository|_roleRepository.CreateSystemRoleIfMissingAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/RoleRepository.cs|Role|Collection.UpdateOneAsync|3
@@ -477,9 +485,7 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs|Role|roleCol.InsertOneAsync|2
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs|UserRepository|userRepository.TryWriteChangesAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs|UserRole|urCol.DeleteManyAsync|1
-    services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs|UserRole|urCol.InsertOneAsync|3
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs|User|userCol.DeleteOneAsync|1
-    services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/DataSeeder.cs|User|userCol.InsertOneAsync|2
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/ExportGrantBackfillRunner.cs|RoleAssignmentVersionRepository|versions.IncrementAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/ExportGrantBackfillRunner.cs|RolePermission|rpCol.UpdateOneAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Seed/ExportGrantBackfillRunner.cs|T|collection.InsertOneAsync|1
@@ -640,9 +646,10 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
         while (!File.Exists(Path.Combine(root.FullName, "AGENTS.md"))) root = root.Parent ?? throw new InvalidOperationException("Checkout required");
         var persistence = File.ReadAllText(Path.Combine(root.FullName, "services/Diten.AuthService/src/Diten.AuthService.Persistence/DependencyInjection.cs"));
         var normal = persistence[persistence.IndexOf("    public static IServiceCollection AddPersistence(", StringComparison.Ordinal)..].Replace("\r", "").Trim();
-        // owner correction 2026-10-14, main-sync: MOD-0022 kayıtları (IESignReauthTicketRepository + IESignReauthWindowRepository, added
-        // to AddPersistence by main). Before: 51D35FF8…D80FC, BL-521 FIX6 14ce67b04 (see the 2026-10-09 BL-521 note above).
-        Assert.Equal("0E54C78818CE17A6AE614EC27739F00F5540E9C26C527A3CBC4801EA9BE0F1AA", EntitlementReconciliationPlan.Hash(normal));
+        // owner correction 2026-10-14, BL-521 follow-up: the opt-in dev tenant administrator (DevSeeds:TenantAdmin, same
+        // Development + key gate as the mock users; owner decision 2026-10-13). Before: 0E54C788…F1AA (main-sync: MOD-0022
+        // kayıtları, IESignReauthTicketRepository + IESignReauthWindowRepository), and before that 51D35FF8…D80FC (BL-521 FIX6).
+        Assert.Equal("F61706DE8AF01299AE22528635D5C47FF804DBB0EC22CA98320D1925AC481326", EntitlementReconciliationPlan.Hash(normal));
         var operational = File.ReadAllText(Path.Combine(root.FullName, "services/Diten.AuthService/src/Diten.AuthService.Api/Operational/EntitlementReconciliationOperationalMode.cs"));
         Assert.Contains("AddEntitlementReconciliationPersistence(configuration)", operational);
         foreach (var forbidden in new[] { "AddPersistence(", "EnsureIndexes", "DataSeeder", "AddHostedService", "AddMassTransit", "GrantModule", "UpsertSystemRole", "WebApplication.CreateBuilder" })
