@@ -23,6 +23,7 @@ public sealed class PharmacyReportController : CrmGatewayProxy
     public const string PlannedVisitManage = "crm.planned-visit.manage";
     public const string GskuRead = "mdm.gskus.read";
     public const string ContactRead = "crm.contact.read";
+    public const string CompetitorRead = "mdm.competitor-products.read";
 
     /// <summary>11 MB: a 10 MB photo + the multipart envelope (the CRM's own ceiling).</summary>
     public const long MaxPhotoRequestBytes = 11L * 1024 * 1024;
@@ -46,6 +47,7 @@ public sealed class PharmacyReportController : CrmGatewayProxy
         CanAmend = HasAny(Amend),
         CanReadGskus = HasAny(GskuRead),
         CanReadContacts = HasAny(ContactRead),
+        CanReadCompetitors = HasAny(CompetitorRead),
         Me = KnowledgePathStudioReview.ActorOf(User)
     });
 
@@ -103,6 +105,15 @@ public sealed class PharmacyReportController : CrmGatewayProxy
             }).ToList()
         });
     }
+
+    /// <summary>
+    /// WP-VW-W4 (W4-FIX-d, G-9) — the MDM competitors of ONE product (a GSKU the rep added whose product the pre-fill did not
+    /// list, e.g. an unplanned pharmacy visit): the same MDM lookup the doctor wizard reads (<c>mdm.competitor-products.read</c>).
+    /// </summary>
+    [HttpGet("api/lookups/competitors")]
+    public Task<IActionResult> Competitors([FromQuery] Guid productId, CancellationToken ct)
+        => ProxyAsync(HttpMethod.Get, $"/api/mdm/competitor-products/lookup?productId={productId:D}", null,
+            productId != Guid.Empty && HasAny(Read) && HasAny(CompetitorRead), ct);
 
     /// <summary>The doctors a pharmacy recommends to (CRM contacts, search ≥ 2 characters): <c>{ id, name }</c>.</summary>
     [HttpGet("api/lookups/contacts")]

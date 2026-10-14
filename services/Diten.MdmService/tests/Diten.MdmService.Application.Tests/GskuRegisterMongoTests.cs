@@ -34,6 +34,34 @@ public sealed class GskuRegisterMongoTests
     }
 
     [Fact]
+    public async Task FixD_G8_search_finds_by_product_name_product_code_and_part_of_the_gsku_code_in_the_tenant_only()
+    {
+        // WP-VW-W4 (W4-FIX-d, G-8): "KONSET" (the product name) found nothing — the search read only the GSKU code
+        await using var scope = await MongoScope.CreateAsync();
+        var konset30 = await scope.SeedPairAsync(scope.TenantA, "GS-000000000179", "KONSET", false);
+        var kepleron = await scope.SeedPairAsync(scope.TenantA, "GS-000000000180", "KEPLERON", false);
+        var dotted = await scope.SeedPairAsync(scope.TenantA, "GS-000000000181", "KİNETRA", false);
+        await scope.SeedPairAsync(scope.TenantA, "GS-000000000182", "KONSET SİLİNDİ", true); // soft-deleted
+        await scope.SeedPairAsync(scope.TenantB, "GS-000000000183", "KONSET", false);       // another tenant
+        var handler = new GetGskusHandler(
+            new GskuRepository(scope.Database, scope.Context(scope.TenantA)),
+            new ProductDefinitionRevisionRepository(scope.Database, scope.Context(scope.TenantA)),
+            new GlobalProductRepository(scope.Database, scope.Context(scope.TenantA)));
+        async Task<Guid[]> Find(string search) =>
+            (await handler.Handle(new GetGskusQuery { PageNumber = 1, PageSize = 20, Search = search }, default)).Data!.Items.Select(x => x.Id).ToArray();
+
+        Assert.Equal([konset30.Gsku.Id], await Find("konset"));                          // the product name, any case
+        Assert.Equal([konset30.Gsku.Id], await Find("ONSE"));                            // part of the name
+        Assert.Equal([kepleron.Gsku.Id], await Find(kepleron.Product.CanonicalCode.ToLowerInvariant())); // the product code
+        Assert.Equal([dotted.Gsku.Id], await Find("kinetra"));                           // Turkish İ ↔ i
+        Assert.Equal([dotted.Gsku.Id], await Find("KINETRA"));
+        Assert.Equal([kepleron.Gsku.Id], await Find("0180"));                            // part of the GSKU code
+        Assert.Equal([konset30.Gsku.Id], await Find("GS-000000000179"));                 // the full code still works
+        Assert.Empty(await Find("NOPE"));
+        Assert.Equal(3, (await handler.Handle(new GetGskusQuery { PageNumber = 1, PageSize = 20 }, default)).Data!.TotalCount); // no search: unchanged
+    }
+
+    [Fact]
     public async Task Detail_returns_the_same_non_disclosing_404_for_cross_tenant_and_soft_deleted_ids()
     {
         await using var scope = await MongoScope.CreateAsync();

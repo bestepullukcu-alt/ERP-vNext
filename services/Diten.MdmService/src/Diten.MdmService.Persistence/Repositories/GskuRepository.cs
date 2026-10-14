@@ -90,6 +90,32 @@ public sealed class GskuRepository : IGskuRepository
         return new(items, totalCount);
     }
 
+    public async Task<GskuPage> SearchPageAsync(
+        int pageNumber,
+        int pageSize,
+        string search,
+        IReadOnlyCollection<Guid> productDefinitionRevisionIds,
+        CancellationToken cancellationToken = default)
+    {
+        var filter = ActiveFilter;
+        if (MdmSearchText.ContainsPattern(search) is { } pattern)
+        {
+            var byCode = Builders<Gsku>.Filter.Regex(x => x.CanonicalCode, new BsonRegularExpression(pattern, "i"));
+            filter &= productDefinitionRevisionIds.Count == 0
+                ? byCode
+                : Builders<Gsku>.Filter.Or(byCode, Builders<Gsku>.Filter.In(x => x.ProductDefinitionRevisionId, productDefinitionRevisionIds));
+        }
+
+        var totalCount = await _gskus.CountDocumentsAsync(filter, cancellationToken: cancellationToken);
+        var items = await _gskus.Find(filter)
+            .SortBy(x => x.CanonicalCode)
+            .ThenBy(x => x.Id)
+            .Skip((pageNumber - 1) * pageSize)
+            .Limit(pageSize)
+            .ToListAsync(cancellationToken);
+        return new(items, totalCount);
+    }
+
     public async Task<IReadOnlyList<Guid>> FindIdsByCanonicalCodeAsync(
         string canonicalCodeSearch,
         CancellationToken cancellationToken = default)

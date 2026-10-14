@@ -176,6 +176,11 @@ public sealed class VisitReportV2Service
 
         var productIds = (body.ProductSections ?? Array.Empty<VisitReportProductSection>()).Select(s => s.ProductId)
             .Concat((plan.ContentItems ?? new List<PlannedVisitContentItem>()).Select(i => i.ProductId)).Distinct().ToList();
+        if (kind == VisitReportKinds.Pharmacy)
+        {
+            // W4-FIX-d (G-9): the plan's products ∪ the global products of the stock / sales GSKUs already on the draft
+            productIds = productIds.Concat((await PharmacyProductsAsync(plan, body, ct)).Products).Distinct().ToList();
+        }
         var market = await MarketAsync(tenantId, plan, ct);
 
         DoctorProfileDto? profile = null;
@@ -297,9 +302,19 @@ public sealed class VisitReportV2Service
             }
         }
 
-        var pharmacyListed = kind == VisitReportKinds.Pharmacy && planned.FirstOrDefault() is { } probe && probe != Guid.Empty
+        // W4-FIX-d (G-9): the pharmacy probe = the plan's first product, else the first stock / sales GSKU's product
+        Guid? pharmacyProduct = null;
+        var pharmacyUnavailable = false;
+        if (kind == VisitReportKinds.Pharmacy)
+        {
+            var (products, unavailable) = await PharmacyProductsAsync(plan, body, ct);
+            pharmacyProduct = products.Count > 0 ? products[0] : null;
+            pharmacyUnavailable = unavailable;
+        }
+
+        var pharmacyListed = pharmacyProduct is { } probe
                              && (await _competitors.LookupAsync(probe, null, market, null, ct)).Available;
-        return new VisitReportV2CheckContext(kind, planned, due, totalDue, listed, pharmacyListed, withIndications);
+        return new VisitReportV2CheckContext(kind, planned, due, totalDue, listed, pharmacyListed, withIndications, pharmacyProduct, pharmacyUnavailable);
     }
 
     /// <summary>Every code of the body is an active value of its BRD set (submit / amend). Null = all valid.</summary>
@@ -344,6 +359,37 @@ public sealed class VisitReportV2Service
     public static Guid? PharmacyProposalProduct(Domain.Entities.PlannedVisit plan)
         => (plan.ContentItems ?? new List<PlannedVisitContentItem>()).Select(i => i.ProductId).FirstOrDefault(id => id != Guid.Empty) is var first
            && first != Guid.Empty ? first : null;
+
+    public const string PharmacyProductsUnavailableWarning = "pharmacy_products_unavailable";
+
+    /// <summary>
+    /// WP-VW-W4 (W4-FIX-d, G-9) — a pharmacy report's products, in order: the plan's products, then the global products of the
+    /// body's stock rows and sales rows (MDM GSKU → product). The FIRST one probes the competitor list and files the
+    /// proposals. MDM unreadable ⇒ the plan's products only (the old rule) and <c>Unavailable</c> (the submit warns).
+    /// </summary>
+    public async Task<(IReadOnlyList<Guid> Products, bool Unavailable)> PharmacyProductsAsync(
+        Domain.Entities.PlannedVisit plan, VisitReportV2Body body, CancellationToken ct)
+    {
+        var products = (plan.ContentItems ?? new List<PlannedVisitContentItem>()).Select(i => i.ProductId).Where(id => id != Guid.Empty).ToList();
+        var pharmacy = body.Pharmacy;
+        var gskus = (pharmacy?.Stock ?? new List<VisitReportStockRow>()).Select(r => r.GskuId)
+            .Concat((pharmacy?.Sales ?? new List<VisitReportSalesRow>()).Select(r => r.GskuId))
+            .Where(id => id != Guid.Empty).Distinct().ToList();
+        if (gskus.Count == 0) return (products.Distinct().ToList(), false);
+
+        var map = await _competitors.GskuProductsAsync(gskus, ct);
+        if (map is null) return (products.Distinct().ToList(), true);
+        foreach (var gsku in gskus)
+        {
+            if (map.TryGetValue(gsku, out var product) && product != Guid.Empty) products.Add(product);
+        }
+
+        return (products.Distinct().ToList(), false);
+    }
+
+    /// <summary>The proposal product of a pharmacy report (G-9): the first of <see cref="PharmacyProductsAsync"/>.</summary>
+    public async Task<Guid?> PharmacyProposalProductAsync(Domain.Entities.PlannedVisit plan, VisitReportV2Body body, CancellationToken ct)
+        => (await PharmacyProductsAsync(plan, body, ct)).Products is { Count: > 0 } products ? products[0] : null;
 
     /// <summary>Forwards the rep's new competitor proposals to MDM (before the save: the ids land in the same write). A
     /// proposal without a product (a pharmacy plan without products) is not sent: it stays on the report, pending.</summary>
@@ -606,7 +652,9 @@ public sealed class VisitReportV2Handlers :
         {
             Id = Guid.NewGuid(), TenantId = tenantId, PlannedVisitId = plan.Id, CreatedAt = now, CreatedBy = _s.Actor
         };
-        var warnings = await _s.ForwardProposalsAsync(body, report.Id, VisitReportV2Service.PharmacyProposalProduct(plan), ct);
+        var warnings = await _s.ForwardProposalsAsync(body, report.Id,
+            context.Kind == VisitReportKinds.Pharmacy ? context.PharmacyProductId : VisitReportV2Service.PharmacyProposalProduct(plan), ct);
+        if (context.PharmacyProductsUnavailable) warnings.Add(VisitReportV2Service.PharmacyProductsUnavailableWarning); // G-9 fallback
         warnings.AddRange(VisitReportV2Rules.DropPotentialsWithoutIndications(body, context)); // F-5: never stored / recorded
         var version = report.Version;
         report.ExecutionOutcome = VisitExecutionOutcome.Completed;
@@ -676,7 +724,8 @@ public sealed class VisitReportV2Handlers :
         var body = await _s.NormalizeAsync(tenantId, plan, request.Body, ct);
         if (await _s.CodesAsync<VisitReportV2SaveResultDto>(body, ct) is { } badCode) return badCode;
 
-        var warnings = await _s.ForwardProposalsAsync(body, report.Id, VisitReportV2Service.PharmacyProposalProduct(plan), ct);
+        var warnings = await _s.ForwardProposalsAsync(body, report.Id,
+            report.ReportKind == VisitReportKinds.Pharmacy ? await _s.PharmacyProposalProductAsync(plan, body, ct) : VisitReportV2Service.PharmacyProposalProduct(plan), ct);
         var before = VisitReportV2Rules.BodyOf(report);
         var changes = VisitReportV2Rules.DiffBodies(before, body);
         var now = _s.Now;

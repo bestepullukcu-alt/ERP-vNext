@@ -396,6 +396,82 @@ public sealed class VwW4ReportV2Tests
         Assert.False(w2.Reports.Items.Single().Pharmacy!.Competitors.Single().ProposalForwarded);
     }
 
+    /// <summary>WP-VW-W4 (W4-FIX-d, G-9): a pharmacy visit without plan products (unplanned) whose stock / sales rows name
+    /// GSKUs takes its competitor list and its proposal product from the first GSKU's global product.</summary>
+    [Fact]
+    public async Task FixD_G9_a_pharmacy_without_plan_products_takes_its_competitor_product_from_the_stock_gskus()
+    {
+        var gsku = Guid.NewGuid();
+        var salesOnly = Guid.NewGuid();
+        VisitReportV2Body Body(bool proposal) => new(
+            new VisitReportGeneral { VisitKindCode = "in_person", MetRoleCode = "pharmacist" }, null, null,
+            new VisitReportPharmacy
+            {
+                Stock = { new VisitReportStockRow { GskuId = gsku, LevelCode = "enough" } },
+                Sales = { new VisitReportSalesRow { GskuId = salesOnly, TrendCode = "up" } },
+                Competitors = proposal ? new List<VisitReportCompetitor> { new() { NameSnapshot = "Stok Rakibi", Company = "Firma", Proposed = true } } : new List<VisitReportCompetitor>()
+            },
+            new VisitReportSafety { AdverseEvent = false }, new VisitReportFollowUp());
+
+        var w = new World();
+        w.Mdm.Available = true;
+        w.Mdm.GskuProducts[gsku] = ProductB;
+        w.Mdm.GskuProducts[salesOnly] = ProductA;
+        var bare = w.PharmacyPlan();
+
+        // the competitor question is now asked (MDM listed competitors for the stock GSKU's product) …
+        var missing = (await w.Handlers().Handle(new SubmitVisitReportV2Command(bare.Id, Body(false), null), default)).Data!.Missing;
+        Assert.Contains(missing, m => m.Field == "competitors");
+        Assert.Equal(ProductB, w.Mdm.Lookups.Last());                          // probed with the FIRST stock GSKU's product
+
+        // … and a proposal goes to MDM under that product (no longer pending)
+        var ok = await w.Handlers().Handle(new SubmitVisitReportV2Command(bare.Id, Body(true), null), default);
+        Assert.True(ok.IsSuccessful, string.Join(",", ok.Data?.Missing.Select(m => m.Field) ?? Array.Empty<string>()));
+        Assert.Equal(("Stok Rakibi", ProductB), (w.Mdm.Proposals.Single().Name, w.Mdm.Proposals.Single().ProductId));
+        Assert.DoesNotContain(ok.Data!.Warnings, x => x.StartsWith("competitor_proposal_pending", StringComparison.Ordinal));
+
+        // the plan's first product still wins when there is one
+        var w2 = new World();
+        w2.Mdm.Available = true;
+        w2.Mdm.GskuProducts[gsku] = ProductB;
+        var planned = w2.PharmacyPlan();
+        planned.ContentItems.Add(new PlannedVisitContentItem { ProductId = ProductA, Order = 1 });
+        Assert.True((await w2.Handlers().Handle(new SubmitVisitReportV2Command(planned.Id, Body(true), null), default)).IsSuccessful);
+        Assert.Equal(ProductA, w2.Mdm.Proposals.Single().ProductId);
+
+        // the pre-fill lists the competitors of the plan's products and of the draft's GSKU products
+        var w3 = new World();
+        w3.Mdm.Available = true;
+        w3.Mdm.GskuProducts[gsku] = ProductB;
+        w3.Mdm.GskuProducts[salesOnly] = ProductA;
+        var draftPlan = w3.PharmacyPlan();
+        Assert.True((await w3.Handlers().Handle(new SaveVisitReportV2DraftCommand(draftPlan.Id, Body(false), null), default)).IsSuccessful);
+        var prefill = (await w3.Queries().Handle(new GetVisitReportV2PrefillQuery(draftPlan.Id), default)).Data!;
+        Assert.Equal(new[] { ProductB, ProductA }, prefill.Competitors.Select(c => c.ProductId).ToArray());
+    }
+
+    [Fact]
+    public async Task FixD_G9_without_the_gsku_mapping_the_old_rule_holds_and_the_submit_warns()
+    {
+        var gsku = Guid.NewGuid();
+        var w = new World();
+        w.Mdm.Available = true;
+        w.Mdm.GskusDown = true;                                                // MDM cannot map the GSKUs
+        var bare = w.PharmacyPlan();
+        var body = new VisitReportV2Body(new VisitReportGeneral { VisitKindCode = "in_person", MetRoleCode = "pharmacist" }, null, null,
+            new VisitReportPharmacy
+            {
+                Stock = { new VisitReportStockRow { GskuId = gsku, LevelCode = "enough" } },
+                Competitors = { new VisitReportCompetitor { NameSnapshot = "Bekleyen", Company = "Firma", Proposed = true } }
+            },
+            new VisitReportSafety { AdverseEvent = false }, new VisitReportFollowUp());
+        var ok = await w.Handlers().Handle(new SubmitVisitReportV2Command(bare.Id, body, null), default);
+        Assert.True(ok.IsSuccessful);                                          // not blocked, the competitor question not asked
+        Assert.Empty(w.Mdm.Proposals);
+        Assert.Contains("competitor_proposal_pending:Bekleyen", ok.Data!.Warnings);
+        Assert.Contains(VisitReportV2Service.PharmacyProductsUnavailableWarning, ok.Data.Warnings);
+    }
+
     [Fact]
     public async Task The_sixty_minute_rule_holds_for_v2_and_a_draft_is_free_then_locked_after_submit()
     {
@@ -698,6 +774,7 @@ public sealed class VwW4ReportV2Tests
             ["crm-visit-request-type"] = ["literature", "sample", "patient_material", "training_invite", "msl_meeting", "other"],
             ["crm-pharmacy-met-role"] = ["pharmacist", "technician", "owner", "other"],
             ["crm-sales-trend"] = ["up", "flat", "down"],
+            ["crm-pharmacy-stock-level"] = ["none", "low", "enough", "high"],
             ["crm-kol-level"] = ["none", "local", "regional", "national", "international"],
             ["visit-objection-category"] = ["price", "other"]
         };
@@ -736,7 +813,10 @@ public sealed class VwW4ReportV2Tests
         public IMdmCompetitorClient Down { get; } = new UnavailableMdmCompetitorClient();
 
         public Task<CompetitorLookupResult> LookupAsync(Guid productId, Guid? indicationNodeId, string? market, string? q, CancellationToken ct)
-            => Task.FromResult(new CompetitorLookupResult(true, new[] { new CompetitorOptionDto(Guid.NewGuid(), "Rakip", "Firma", Array.Empty<string>(), null, null, "active", null) }));
+        {
+            Lookups.Add(productId);
+            return Task.FromResult(new CompetitorLookupResult(true, new[] { new CompetitorOptionDto(Guid.NewGuid(), "Rakip", "Firma", Array.Empty<string>(), null, null, "active", null) }));
+        }
 
         public Task<CompetitorProposalResult> ProposeAsync(string name, string company, Guid productId, Guid? reportId, CancellationToken ct)
         {
@@ -746,6 +826,15 @@ public sealed class VwW4ReportV2Tests
 
         public Task<IReadOnlyDictionary<Guid, Guid>?> ResolveSurvivorsAsync(IReadOnlyCollection<Guid> ids, CancellationToken ct)
             => Task.FromResult<IReadOnlyDictionary<Guid, Guid>?>(ids.ToDictionary(id => id, id => MergedInto.TryGetValue(id, out var s) ? s : id));
+
+        // W4-FIX-d (G-9): GSKU → global product; GskusDown = MDM cannot map them
+        public Dictionary<Guid, Guid> GskuProducts { get; } = new();
+        public bool GskusDown { get; set; }
+        public List<Guid> Lookups { get; } = new();
+
+        public Task<IReadOnlyDictionary<Guid, Guid>?> GskuProductsAsync(IReadOnlyCollection<Guid> gskuIds, CancellationToken ct)
+            => Task.FromResult<IReadOnlyDictionary<Guid, Guid>?>(GskusDown ? null
+                : gskuIds.Where(GskuProducts.ContainsKey).ToDictionary(id => id, id => GskuProducts[id]));
     }
 
     private sealed class ProgressStore : IJourneyProgressRepository

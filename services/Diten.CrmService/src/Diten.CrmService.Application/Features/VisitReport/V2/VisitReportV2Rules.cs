@@ -25,7 +25,12 @@ public sealed record VisitReportV2CheckContext(
     bool TotalDue,
     IReadOnlySet<Guid> CompetitorListedProductIds,
     bool PharmacyCompetitorsListed,
-    IReadOnlySet<Guid>? IndicationProductIds = null);
+    IReadOnlySet<Guid>? IndicationProductIds = null,
+    Guid? PharmacyProductId = null,
+    bool PharmacyProductsUnavailable = false);
+// WP-VW-W4 (W4-FIX-d, G-9) — PharmacyProductId: the product a pharmacy report's competitor list is probed with and its
+// proposals are filed under (the plan's first product, else the first stock / sales GSKU's global product);
+// PharmacyProductsUnavailable: MDM could not map the GSKUs (the old plan-only rule applied, the submit warns).
 // WP-VW-W4 (W4-FIX-b, F-5) — IndicationProductIds: the products that HAVE approved indication × profile rows (Concept
 // Graph). Only those are asked the indication potential. null = not gathered (callers that do not care: every product
 // counts as having rows — the pre-FIX-b rule); the report handler always gathers it for a doctor report.

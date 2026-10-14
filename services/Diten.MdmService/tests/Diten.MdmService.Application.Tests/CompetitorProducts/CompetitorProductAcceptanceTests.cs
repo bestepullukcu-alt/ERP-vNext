@@ -192,6 +192,29 @@ public sealed class CompetitorProductAcceptanceTests
     }
 
     [Fact]
+    public async Task FixD_F7_the_decision_carries_when_and_by_whom_it_was_prepared_not_when_it_was_applied()
+    {
+        // WP-VW-W4 (W4-FIX-d, F-7): "Hazırlayan" showed the APPLY time (11:04) instead of the preparation (10:53)
+        var h = new CompetitorHarness();
+        var (proposal, decision, instance) = await ProposeAndSubmitAsync(h, new CompetitorDecisionRequest("reject", null, null, null, "Kopya"));
+        var prepared = new DateTimeOffset(2026, 10, 14, 7, 53, 0, TimeSpan.Zero);
+        h.Decisions.Backdate(decision, prepared);
+        await h.OutcomeAsync(decision, instance, WorkflowApprovalOutcomes.Approved, Reviewer);
+
+        h.As("u-manager", [.. CompetitorPermissions.All]);
+        var dto = (await h.Service.ProposalAsync(proposal, default)).Data!.Decision!;
+        Assert.Equal(CompetitorDecisionStatuses.Applied, dto.Status);
+        Assert.Equal(prepared, dto.CreatedAt);
+        Assert.Equal("u-manager", dto.CreatedBy);
+        Assert.NotEqual(dto.CreatedAt, dto.AppliedAt);
+
+        // the wire name the Web reads (preparedOf: createdAt first)
+        var json = System.Text.Json.JsonSerializer.Serialize(dto, new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web));
+        Assert.Contains("\"createdAt\":\"2026-10-14T07:53:00+00:00\"", json);
+        Assert.Contains("\"createdBy\":\"u-manager\"", json);
+    }
+
+    [Fact]
     public async Task Merge_points_the_proposal_to_the_target_adds_the_alias_and_moves_the_markets()
     {
         var h = new CompetitorHarness();

@@ -7,6 +7,7 @@
  *   STEPS / stepOf(missing)            the mockup's six pharmacy steps; a missing answer → its step
  *   productIdsOf(prefill)              the plan's products (the pre-fill's competitor probes, in plan order)
  *   competitorsListed(prefill)         MDM answered for the first plan product ⇒ "competitor or none" is asked (server rule)
+ *   gskuProductIds(pharmacy, map)      the global products of the stock then sales GSKUs, once each (W4-FIX-d G-9)
  *   draftOf(prefill)                   the editable body (every list / object present; OffLabelRequest never sent)
  *   seedRows(pharmacy, gskus, ids)     one stock + one sales row per GSKU of a plan product (existing rows kept)
  *   missing(body, ctx)                 the server's pharmacy completeness: AE (+ note), met role, visit kind, every stock
@@ -64,6 +65,18 @@
     const competitorsListed = prefill => {
         const first = arr(prefill && prefill.competitors)[0];
         return !!(first && first.available === true);
+    };
+
+    /** W4-FIX-d (G-9): the products of the stock rows, then the sales rows (GSKU → product map), once each, in that order —
+     * the server probes the competitor list with the plan's first product, else the first of these. */
+    const gskuProductIds = (pharmacy, map) => {
+        const out = [];
+        const m = map || {};
+        arr(pharmacy && pharmacy.stock).concat(arr(pharmacy && pharmacy.sales)).forEach(r => {
+            const id = r && m[r.gskuId];
+            if (id && out.indexOf(id) < 0) { out.push(id); }
+        });
+        return out;
     };
 
     /** The MDM competitor options of every plan product, once each (id → item). */
@@ -296,7 +309,7 @@
 
     return {
         KIND, STEPS, SETS, MAX_NAME, MAX_NOTE, MAX_REASON, MAX_BOXES, MAX_REQUESTS, AMEND_CODE, ERROR_CODES,
-        productIdsOf, competitorsListed, competitorOptions, draftOf, seedRows, addGsku, removeGsku,
+        productIdsOf, gskuProductIds, competitorsListed, competitorOptions, draftOf, seedRows, addGsku, removeGsku,
         missing, stepOf, missingByStep, missingKey, toggleCompetitor, proposalErrors, addProposal, setNoCompetitor,
         cycleAdvantage, boxesOf, requestBody, amendBody, reasonError, modeOf, errorKey, isAmendRefusal, serverMissing,
         optionLabel, optionsOf

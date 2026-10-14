@@ -25,7 +25,8 @@
         record: root.getAttribute('data-can-record') === 'true',
         amend: root.getAttribute('data-can-amend') === 'true',
         gskus: root.getAttribute('data-can-read-gskus') === 'true',
-        contacts: root.getAttribute('data-can-read-contacts') === 'true'
+        contacts: root.getAttribute('data-can-read-contacts') === 'true',
+        competitors: root.getAttribute('data-can-read-competitors') === 'true'
     };
     const lang = (document.documentElement && document.documentElement.lang) || 'tr';
 
@@ -62,7 +63,7 @@
     const state = {
         prefill: null, body: null, version: 0, reportId: null, status: null, step: 'general', mode: 'draft',
         editing: false, dirty: false, savedAt: null, serverMissing: null, tried: false,
-        gskus: [], gskuNames: {}, gskuError: null, gskuResults: [], contactNames: {}, contactResults: [],
+        gskus: [], gskuNames: {}, gskuProducts: {}, gskuError: null, gskuResults: [], contactNames: {}, contactResults: [],
         proposalOpen: false, proposalErrors: {}, fixReason: '', photoUrl: null, busy: false
     };
 
@@ -94,19 +95,40 @@
         });
     }
 
+    /**
+     * WP-VW-W4 (W4-FIX-d, G-9): the competitors of the stock / sales GSKUs' products the pre-fill did not list (an unplanned
+     * pharmacy visit has no plan product) — read once per product and appended, so the list and the "competitor or none"
+     * question follow the same products as the server.
+     */
+    function ensureCompetitors() {
+        if (!perms.competitors || !state.prefill || !state.body) { return Promise.resolve(); }
+        const list = state.prefill.competitors = state.prefill.competitors || [];
+        const known = {};
+        list.forEach(c => { known[c.productId] = true; });
+        const wanted = C.gskuProductIds(state.body.pharmacy, state.gskuProducts).filter(id => !known[id]);
+        if (!wanted.length) { return Promise.resolve(); }
+        wanted.forEach(id => { known[id] = true; list.push({ productId: id, available: false, items: [] }); });
+        return Promise.all(wanted.map(id => send('GET', '/lookups/competitors?productId=' + encodeURIComponent(id)).then(r => {
+            const d = data(r);
+            const entry = list.find(c => c.productId === id);
+            if (entry && Array.isArray(d)) { entry.available = true; entry.items = d; }
+        }))).then(() => render());
+    }
+
     function loadGskus() {
         if (!perms.gskus) { state.gskuError = L.GskusNoPermission || ''; render(); return Promise.resolve(); }
         return send('GET', '/lookups/gskus').then(r => {
             const d = data(r);
             if (!Array.isArray(d)) { state.gskuError = errText(r); render(); return; }
             state.gskus = d;
-            d.forEach(g => { state.gskuNames[g.id] = (g.productName ? g.productName + ' · ' : '') + (g.code || short(g.id)) + (g.pack ? ' (' + g.pack + ')' : ''); });
+            d.forEach(g => { state.gskuNames[g.id] = (g.productName ? g.productName + ' · ' : '') + (g.code || short(g.id)) + (g.pack ? ' (' + g.pack + ')' : ''); if (g.productId) { state.gskuProducts[g.id] = g.productId; } });
             if (writable()) {
                 const before = JSON.stringify(state.body.pharmacy);
                 state.body.pharmacy = C.seedRows(state.body.pharmacy, d, C.productIdsOf(state.prefill));
                 if (JSON.stringify(state.body.pharmacy) !== before) { state.dirty = true; }
             }
             render();
+            return ensureCompetitors();
         });
     }
 
@@ -465,7 +487,7 @@
             const have = {};
             state.body.pharmacy.stock.forEach(x => { have[x.gskuId] = true; });
             state.gskuResults = Array.isArray(d) ? d.filter(g => !have[g.id]).slice(0, 10) : [];
-            (Array.isArray(d) ? d : []).forEach(g => { state.gskuNames[g.id] = (g.productName ? g.productName + ' · ' : '') + (g.code || short(g.id)) + (g.pack ? ' (' + g.pack + ')' : ''); });
+            (Array.isArray(d) ? d : []).forEach(g => { state.gskuNames[g.id] = (g.productName ? g.productName + ' · ' : '') + (g.code || short(g.id)) + (g.pack ? ' (' + g.pack + ')' : ''); if (g.productId) { state.gskuProducts[g.id] = g.productId; } });
             renderStock();
             const input = el('ph-gsku-q'); if (input) { input.value = text; if (input.focus) { input.focus(); } }
         }), 250);
@@ -510,7 +532,7 @@
             case 'trend': { const r = row(p.sales, gsku); if (r) { r.trendCode = r.trendCode === val ? null : val; } break; }
             case 'shelf': p.shelf.positionCode = p.shelf.positionCode === val ? null : val; break;
             case 'photo': { const input = el('ph-photo-input'); if (input && input.click) { input.click(); } return; }
-            case 'gsku-add': b.pharmacy = C.addGsku(p, t.getAttribute('data-id')); state.gskuResults = []; break;
+            case 'gsku-add': b.pharmacy = C.addGsku(p, t.getAttribute('data-id')); state.gskuResults = []; ensureCompetitors(); break;
             case 'gsku-rm': b.pharmacy = C.removeGsku(p, t.getAttribute('data-id')); break;
             case 'comp': { const item = C.competitorOptions(state.prefill).find(x => x.id === t.getAttribute('data-id')); if (item) { b.pharmacy = C.toggleCompetitor(p, item); } break; }
             case 'no-comp': b.pharmacy = C.setNoCompetitor(p, !p.noCompetitor); break;
