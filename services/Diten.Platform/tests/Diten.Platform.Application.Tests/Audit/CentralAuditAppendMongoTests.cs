@@ -193,8 +193,7 @@ public sealed class CentralAuditAppendMongoTests : IAsyncLifetime
         EntityId = entity ?? Guid.NewGuid(),
         RequestType = nameof(Event),
         CorrelationId = correlation,
-        OccurredAtUtc = DateTime.SpecifyKind(DateTime.UtcNow.AddSeconds(-5), DateTimeKind.Utc),
-        Outcome = CentralAuditOutcomes.Succeeded
+        OccurredAtUtc = DateTime.SpecifyKind(DateTime.UtcNow.AddSeconds(-5), DateTimeKind.Utc)
     };
 
     private PlatformCentralAuditClient Client(string key = Key) => new(
