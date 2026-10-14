@@ -7,7 +7,7 @@ namespace Diten.BuildingBlocks.CentralAudit;
 ///
 /// <para>A row is never deleted by this package. Delivered rows stay with <see cref="CentralAuditOutboxStatus.Delivered"/>;
 /// a row Platform refuses stays with <see cref="CentralAuditOutboxStatus.Rejected"/> and is counted by the health check.</para>
-/// <para>Its BSON shape is fixed by <see cref="MongoCentralAuditOutboxStore"/> (Guid = standard UUID, enum = name), not by
+/// <para>Its BSON shape is fixed by <see cref="MongoCentralAuditOutboxStore"/> (Guid = string, enum = name), not by
 /// the host service's global conventions: every service files the same shape.</para>
 /// </summary>
 public sealed class CentralAuditOutboxRecord
@@ -48,11 +48,6 @@ public sealed class CentralAuditOutboxRecord
     /// <summary>True when the row was written inside the command's own Mongo transaction (committed with it or not at all).</summary>
     public bool WrittenInCommandTransaction { get; set; }
 
-    /// <summary>
-    /// <see cref="CentralAuditOutcomes.Succeeded"/>, or <see cref="CentralAuditOutcomes.Failed"/> when the command failed
-    /// AFTER one of its transactions had committed (data partly written — that is itself audit information, AUD-001 §3).
-    /// </summary>
-    public string Outcome { get; set; } = CentralAuditOutcomes.Succeeded;
 
     public CentralAuditOutboxStatus Status { get; set; } = CentralAuditOutboxStatus.Pending;
 
@@ -86,11 +81,12 @@ public enum CentralAuditOutboxStatus
     /// died after the commit) is released by the dispatcher after <c>OrphanAfter</c> as succeeded — its transaction
     /// committed — with a warning; it is never dropped.
     /// </summary>
-    AwaitingCommand = 3
-}
+    AwaitingCommand = 3,
 
-public static class CentralAuditOutcomes
-{
-    public const string Succeeded = "Succeeded";
-    public const string Failed = "Failed";
+    /// <summary>
+    /// Written in a transaction of a command that then FAILED (a transaction can commit without business data — "reservation
+    /// not found" — or before a later step fails). A failed command has no central record, so the row is never delivered;
+    /// it stays as local evidence next to the module's own history.
+    /// </summary>
+    Abandoned = 4
 }

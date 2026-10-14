@@ -40,9 +40,10 @@ public static class CentralAuditTransaction
 /// <list type="bullet">
 /// <item>Enlisted, and the command succeeded → the row committed with the first business transaction as
 /// <see cref="CentralAuditOutboxStatus.AwaitingCommand"/>; it is confirmed deliverable now.</item>
-/// <item>Enlisted, and the command failed → if its transaction aborted the row is gone with it (nothing written, nothing
-/// recorded). If an EARLIER transaction of the command had committed (multi-transaction commands: quarantine stock,
-/// decision apply), data was partly written: the row is delivered with outcome Failed.</item>
+/// <item>Enlisted, and the command failed → if its transaction aborted the row is gone with it. If a transaction of the
+/// command had committed (it can commit without business data — "not found" answered inside it — or before a later step
+/// of a multi-transaction command fails), the row is kept as <see cref="CentralAuditOutboxStatus.Abandoned"/> and never
+/// delivered: a failed command has no central record. Its partial writes stay visible in the module's own history.</item>
 /// <item>Not enlisted (the command owns no transaction) → succeeded: the row is written right after the command
 /// (⚠ the gap: a crash between the command and this write loses the record — logged, counted in the evidence);
 /// failed: nothing.</item>
@@ -58,6 +59,7 @@ public sealed class CentralAuditRecorder : ICentralAuditTransaction
     private readonly ICentralAuditScope _scope;
     private readonly CentralAuditSource _source;
     private readonly TimeProvider _clock;
+    private readonly bool _requireEnlistment;
     private readonly ILogger<CentralAuditRecorder> _logger;
 
     public CentralAuditRecorder(
@@ -65,12 +67,14 @@ public sealed class CentralAuditRecorder : ICentralAuditTransaction
         ICentralAuditScope scope,
         CentralAuditSource source,
         TimeProvider clock,
+        Microsoft.Extensions.Options.IOptions<CentralAuditOptions> options,
         ILogger<CentralAuditRecorder> logger)
     {
         _store = store;
         _scope = scope;
         _source = source;
         _clock = clock;
+        _requireEnlistment = options.Value.RequireEnlistment;
         _logger = logger;
     }
 
@@ -105,13 +109,13 @@ public sealed class CentralAuditRecorder : ICentralAuditTransaction
             RequestType = requestType,
             CorrelationId = _scope.CorrelationId == Guid.Empty ? eventId : _scope.CorrelationId,
             OccurredAtUtc = now,
-            Outcome = CentralAuditOutcomes.Succeeded,
+
             Status = CentralAuditOutboxStatus.Pending,
             NextAttemptAtUtc = now,
             CreatedAtUtc = now
         };
 
-        var pending = new PendingCentralAuditEvent(record);
+        var pending = new PendingCentralAuditEvent(record, declaration is ICentralAuditOutsideTransaction);
         _inFlight.Push(pending);
         return pending;
     }
@@ -149,7 +153,18 @@ public sealed class CentralAuditRecorder : ICentralAuditTransaction
                 await TryAsync(() => _store.SetEntityIdIfMissingAsync(record.Id, late, CancellationToken.None), record, "entity id");
             }
 
-            await TryAsync(() => _store.ConfirmAsync(record.Id, CentralAuditOutcomes.Succeeded, CancellationToken.None), record, "confirmation");
+            await TryAsync(() => _store.ConfirmAsync(record.Id, CancellationToken.None), record, "confirmation");
+            return;
+        }
+
+        if (_requireEnlistment && !pending.OutsideTransaction)
+        {
+            // Every write of this service enlists; a success that enlisted nothing wrote nothing (idempotent replay, no-op).
+            _logger.LogInformation(
+                "Central audit: {RequestType} succeeded without writing (no transaction enlisted the event); no central record. TenantId={TenantId} EventId={EventId}",
+                record.RequestType,
+                record.TenantId,
+                record.Id);
             return;
         }
 
@@ -167,8 +182,8 @@ public sealed class CentralAuditRecorder : ICentralAuditTransaction
         Pop(pending);
         if (pending.Enlisted)
         {
-            // Matches nothing when the enlisting transaction aborted; marks the partly-written command otherwise.
-            await TryAsync(() => _store.ConfirmAsync(pending.Record.Id, CentralAuditOutcomes.Failed, CancellationToken.None), pending.Record, "failure outcome");
+            // Matches nothing when the enlisting transaction aborted; otherwise the committed row is kept, never delivered.
+            await TryAsync(() => _store.AbandonAsync(pending.Record.Id, CancellationToken.None), pending.Record, "abandonment");
         }
     }
 
@@ -200,9 +215,11 @@ public sealed class CentralAuditRecorder : ICentralAuditTransaction
     }
 }
 
-internal sealed class PendingCentralAuditEvent(CentralAuditOutboxRecord record)
+internal sealed class PendingCentralAuditEvent(CentralAuditOutboxRecord record, bool outsideTransaction)
 {
     public CentralAuditOutboxRecord Record { get; } = record;
+
+    public bool OutsideTransaction { get; } = outsideTransaction;
 
     public bool Enlisted { get; set; }
 

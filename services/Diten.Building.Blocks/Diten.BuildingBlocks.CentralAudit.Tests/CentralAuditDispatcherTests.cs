@@ -159,9 +159,7 @@ public sealed class CentralAuditDispatcherTests
         Assert.Equal(Members(source, "AuditCategory"), CentralAuditPlatformValues.Categories.OrderBy(p => p.Key).ToList());
         Assert.Equal(Members(source, "AuditOperation"), CentralAuditPlatformValues.Operations.OrderBy(p => p.Key).ToList());
         Assert.Equal(Members(source, "AuditActorType"), CentralAuditPlatformValues.ActorTypes.OrderBy(p => p.Key).ToList());
-        var outcomes = Members(source, "AuditOutcome").ToDictionary(p => p.Key, p => p.Value);
-        Assert.Equal(CentralAuditPlatformValues.OutcomeSucceeded, outcomes["Succeeded"]);
-        Assert.Equal(CentralAuditPlatformValues.OutcomeFailed, outcomes["Failed"]);
+        Assert.Equal(CentralAuditPlatformValues.OutcomeSucceeded, Members(source, "AuditOutcome").Single(p => p.Key == "Succeeded").Value);
     }
 
     private static List<KeyValuePair<string, int>> Members(string source, string enumName)

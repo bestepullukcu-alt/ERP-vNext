@@ -60,6 +60,20 @@ public sealed record NestedWidgetCommand : IRequest<Result<WidgetView>>, ICentra
     public Guid? CentralAuditEntityId(object? response) => NestedId;
 }
 
+/// <summary>Changes something in another module over HTTP: no transaction of its own (RequireEnlistment services).</summary>
+public sealed record PublishWidgetTemplateCommand : IRequest<Result<WidgetView>>, ICentralAuditOutsideTransaction
+{
+    public CentralAuditMetadata CentralAudit => new("MasterData", "Create", "WidgetTemplate", "widget-catalog");
+
+    public Guid? CentralAuditEntityId(object? response) => (response as Result<WidgetView>)?.Data?.WidgetId;
+}
+
+internal sealed class PublishWidgetTemplateHandler : IRequestHandler<PublishWidgetTemplateCommand, Result<WidgetView>>
+{
+    public Task<Result<WidgetView>> Handle(PublishWidgetTemplateCommand request, CancellationToken ct) =>
+        Task.FromResult(Result<WidgetView>.Ok(new WidgetView(CreateWidgetCommand.CreatedId)));
+}
+
 /// <summary>Not marked: must leave nothing.</summary>
 public sealed record RenameWidgetCommand : IRequest<Result<WidgetView>>;
 

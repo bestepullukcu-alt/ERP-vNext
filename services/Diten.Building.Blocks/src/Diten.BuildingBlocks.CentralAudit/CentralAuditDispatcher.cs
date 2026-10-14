@@ -147,6 +147,12 @@ public sealed class CentralAuditDispatcherHostedService : BackgroundService
             _logger.LogError(ex, "Central audit: outbox indexes could not be created; delivery continues without them.");
         }
 
+        if (!_options.CurrentValue.DispatcherEnabled)
+        {
+            // A test host that drives CentralAuditDispatcher.RunOnceAsync itself.
+            return;
+        }
+
         if (!_options.CurrentValue.IsConfigured)
         {
             _logger.LogWarning(

@@ -15,7 +15,12 @@ public static class CentralAuditServiceCollectionExtensions
     /// scoped <c>IMongoDatabase</c>, the Platform client, the dispatcher and the health check.
     /// </summary>
     /// <typeparam name="TScope">The service's adapter over its own scoped tenant context.</typeparam>
-    public static IServiceCollection AddCentralAudit<TScope>(this IServiceCollection services, IConfiguration configuration, string sourceService)
+    /// <param name="configure">Service-level choices that are code, not configuration (<see cref="CentralAuditOptions.RequireEnlistment"/>).</param>
+    public static IServiceCollection AddCentralAudit<TScope>(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        string sourceService,
+        Action<CentralAuditOptions>? configure = null)
         where TScope : class, ICentralAuditScope
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(sourceService);
@@ -25,6 +30,7 @@ public static class CentralAuditServiceCollectionExtensions
             configuration.GetSection(CentralAuditOptions.TuningSection).Bind(options);
             options.PlatformBaseUrl = configuration[$"{CentralAuditOptions.PlatformSection}:BaseUrl"];
             options.InternalApiKey = configuration[$"{CentralAuditOptions.PlatformSection}:InternalApiKey"];
+            configure?.Invoke(options);
         });
 
         services.TryAddSingleton(TimeProvider.System);

@@ -28,3 +28,13 @@ public interface ICentralAuditDeclaration
 /// declaration names the entity, not its data (AUD-001 §3).
 /// </summary>
 public sealed record CentralAuditMetadata(string Category, string Operation, string EntityType, string SourceModule);
+
+/// <summary>
+/// For a service that registers the forwarder with <c>RequireEnlistment</c> (every write of the service runs in a Mongo
+/// transaction that enlists the event): this command owns NO transaction of its own — it changes something elsewhere
+/// (another module over HTTP) — so its record is written right after it succeeds, like in a service without enlistment.
+/// Without this marker such a command would be taken for a no-op and leave no record.
+/// </summary>
+public interface ICentralAuditOutsideTransaction : ICentralAuditDeclaration
+{
+}

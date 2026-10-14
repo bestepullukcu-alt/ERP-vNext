@@ -58,12 +58,8 @@ public static class CentralAuditPlatformValues
         [CentralAuditActorTypes.Service] = 5
     };
 
-    /// <summary>Platform <c>AuditOutcome.Succeeded</c> / <c>Failed</c> (Failed = the command failed after part of its data committed).</summary>
+    /// <summary>Platform <c>AuditOutcome.Succeeded</c>. Only a succeeded command produces a central record.</summary>
     public const int OutcomeSucceeded = 1;
-
-    public const int OutcomeFailed = 2;
-
-    public static int OutcomeOf(string outcome) => outcome == CentralAuditOutcomes.Failed ? OutcomeFailed : OutcomeSucceeded;
 
     public static bool IsKnown(CentralAuditMetadata metadata) =>
         Categories.ContainsKey(metadata.Category) && Operations.ContainsKey(metadata.Operation);

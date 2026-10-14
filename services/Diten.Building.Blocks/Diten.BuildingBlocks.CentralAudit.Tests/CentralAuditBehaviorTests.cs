@@ -33,7 +33,6 @@ public sealed class CentralAuditBehaviorTests
         Assert.Equal(Harness.Correlation, row.CorrelationId);
         Assert.Equal(harness.Clock.GetUtcNow().UtcDateTime, row.OccurredAtUtc);
         Assert.Equal(DateTimeKind.Utc, row.OccurredAtUtc.Kind);
-        Assert.Equal(CentralAuditOutcomes.Succeeded, row.Outcome);
         Assert.Equal(CentralAuditOutboxStatus.Pending, row.Status);
         Assert.False(row.WrittenInCommandTransaction);
         Assert.NotEqual(Guid.Empty, row.Id);
@@ -132,7 +131,6 @@ public sealed class CentralAuditBehaviorTests
         var row = Assert.Single(harness.Store.Rows);
         Assert.True(row.WrittenInCommandTransaction);
         Assert.Equal(CentralAuditOutboxStatus.Pending, row.Status);
-        Assert.Equal(CentralAuditOutcomes.Succeeded, row.Outcome);
         Assert.Equal(CreateWidgetCommand.CreatedId, row.EntityId);
     }
 
@@ -157,16 +155,22 @@ public sealed class CentralAuditBehaviorTests
         Assert.Single(harness.Store.Rows);
     }
 
+    /// <summary>
+    /// A transaction can commit although the command then fails (it answered "not found" inside the transaction, or a
+    /// later step of a multi-transaction command failed). The row is kept — nothing in the outbox is ever deleted — but a
+    /// failed command has no central record: it is Abandoned and never sent.
+    /// </summary>
     [Fact]
-    public async Task A_command_that_fails_after_one_of_its_transactions_committed_is_delivered_with_outcome_failed()
+    public async Task A_command_that_fails_after_one_of_its_transactions_committed_leaves_an_abandoned_row_that_is_never_sent()
     {
         using var harness = new Harness();
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => harness.SendAsync(new CreateWidgetCommand(Ending.TransactionCommitsThenFails)));
 
-        var row = Assert.Single(harness.Store.Rows);
-        Assert.Equal(CentralAuditOutcomes.Failed, row.Outcome);
-        Assert.Equal(CentralAuditOutboxStatus.Pending, row.Status);
+        Assert.Equal(CentralAuditOutboxStatus.Abandoned, Assert.Single(harness.Store.Rows).Status);
+        harness.Clock.Advance(TimeSpan.FromHours(1));
+        Assert.Equal(0, await harness.DispatchAsync());
+        Assert.Empty(harness.Platform.Calls);
     }
 
     [Fact]
@@ -222,5 +226,45 @@ public sealed class CentralAuditTransactionAmbientTests
         session.Commit();
 
         Assert.Empty(harness.Store.Rows);
+    }
+}
+
+/// <summary>
+/// A service whose every write runs in an enlisting transaction (Inventory): a success that enlisted nothing wrote nothing
+/// — an idempotent replay — and must not file a second record; a command that owns no transaction says so with
+/// ICentralAuditOutsideTransaction and is recorded after it succeeds.
+/// </summary>
+public sealed class RequireEnlistmentTests
+{
+    [Fact]
+    public async Task A_success_that_enlisted_nothing_leaves_no_record()
+    {
+        using var harness = new Harness(requireEnlistment: true);
+
+        await harness.SendAsync(new CreateWidgetCommand(Ending.Succeeds));
+
+        Assert.Empty(harness.Store.Rows);
+    }
+
+    [Fact]
+    public async Task An_enlisted_success_is_recorded_once()
+    {
+        using var harness = new Harness(requireEnlistment: true);
+
+        await harness.SendAsync(new CreateWidgetCommand(Ending.TransactionCommitsThenSucceeds));
+
+        Assert.Equal(CentralAuditOutboxStatus.Pending, Assert.Single(harness.Store.Rows).Status);
+    }
+
+    [Fact]
+    public async Task A_command_declared_outside_a_transaction_is_recorded_after_it_succeeds()
+    {
+        using var harness = new Harness(requireEnlistment: true);
+
+        await harness.SendAsync(new PublishWidgetTemplateCommand());
+
+        var row = Assert.Single(harness.Store.Rows);
+        Assert.False(row.WrittenInCommandTransaction);
+        Assert.Equal("WidgetTemplate", row.EntityType);
     }
 }

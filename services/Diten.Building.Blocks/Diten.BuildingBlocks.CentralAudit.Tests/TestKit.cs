@@ -28,7 +28,7 @@ internal sealed class Harness : IDisposable
 
     private readonly ServiceProvider _provider;
 
-    public Harness(bool configured = true, bool resolvedScope = true, Action<IServiceCollection>? configure = null)
+    public Harness(bool configured = true, bool resolvedScope = true, Action<IServiceCollection>? configure = null, bool requireEnlistment = false)
     {
         var settings = new Dictionary<string, string?>
         {
@@ -48,7 +48,7 @@ internal sealed class Harness : IDisposable
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Harness).Assembly));
         services.AddSingleton(new TestScopeState { IsResolved = resolvedScope });
 
-        services.AddCentralAudit<TestScope>(configuration, "Diten.TestService");
+        services.AddCentralAudit<TestScope>(configuration, "Diten.TestService", options => options.RequireEnlistment = requireEnlistment);
 
         services.AddSingleton(Store);
         services.Replace(ServiceDescriptor.Scoped<ICentralAuditOutboxStore>(sp => sp.GetRequiredService<InMemoryOutboxStore>()));
@@ -152,12 +152,15 @@ internal sealed class InMemoryOutboxStore : ICentralAuditOutboxStore
         return Task.CompletedTask;
     }
 
-    public Task ConfirmAsync(Guid id, string outcome, CancellationToken ct)
+    public Task ConfirmAsync(Guid id, CancellationToken ct) => Move(id, CentralAuditOutboxStatus.Pending);
+
+    public Task AbandonAsync(Guid id, CancellationToken ct) => Move(id, CentralAuditOutboxStatus.Abandoned);
+
+    private Task Move(Guid id, CentralAuditOutboxStatus to)
     {
         if (_rows.TryGetValue(id, out var row) && row.Status == CentralAuditOutboxStatus.AwaitingCommand)
         {
-            row.Status = CentralAuditOutboxStatus.Pending;
-            row.Outcome = outcome;
+            row.Status = to;
         }
 
         return Task.CompletedTask;

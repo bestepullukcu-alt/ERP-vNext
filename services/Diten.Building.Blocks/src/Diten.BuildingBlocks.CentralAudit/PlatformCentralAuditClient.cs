@@ -72,7 +72,7 @@ public sealed class PlatformCentralAuditClient : ICentralAuditPlatformClient
             record.EntityType,
             record.EntityId,
             Operation = operation,
-            Outcome = CentralAuditPlatformValues.OutcomeOf(record.Outcome),
+            Outcome = CentralAuditPlatformValues.OutcomeSucceeded,
             // Identifiers only — never a request body (AUD-001 §3: names, not values).
             Metadata = new Dictionary<string, object?>
             {

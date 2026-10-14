@@ -36,6 +36,15 @@ public sealed class CentralAuditOptions
     /// <summary>A row written in a command's transaction that the command never confirmed is released after this.</summary>
     public TimeSpan OrphanAfter { get; set; } = TimeSpan.FromMinutes(10);
 
+    /// <summary>
+    /// Set by a service whose every write runs in a Mongo transaction that enlists the event (Inventory). Then a marked
+    /// command that SUCCEEDED without enlisting wrote nothing — an idempotent replay, a no-op — and leaves no record
+    /// (otherwise every replay would file a second "Create"). A command that owns no transaction carries
+    /// <see cref="ICentralAuditOutsideTransaction"/> and is recorded right after it succeeds. The service pairs this with a
+    /// guard that every transaction of its persistence enlists (a forgotten one would otherwise drop records silently).
+    /// </summary>
+    public bool RequireEnlistment { get; set; }
+
     /// <summary>The background dispatcher can be switched off (tests that drive <see cref="CentralAuditDispatcher.RunOnceAsync"/> themselves).</summary>
     public bool DispatcherEnabled { get; set; } = true;
 

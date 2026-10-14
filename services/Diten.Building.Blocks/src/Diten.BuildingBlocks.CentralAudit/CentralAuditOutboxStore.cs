@@ -19,8 +19,11 @@ public interface ICentralAuditOutboxStore
 
     Task SetEntityIdIfMissingAsync(Guid id, Guid entityId, CancellationToken ct);
 
-    /// <summary>The command ended: an <see cref="CentralAuditOutboxStatus.AwaitingCommand"/> row becomes deliverable with this outcome.</summary>
-    Task ConfirmAsync(Guid id, string outcome, CancellationToken ct);
+    /// <summary>The command succeeded: its <see cref="CentralAuditOutboxStatus.AwaitingCommand"/> row becomes deliverable.</summary>
+    Task ConfirmAsync(Guid id, CancellationToken ct);
+
+    /// <summary>The command failed: its <see cref="CentralAuditOutboxStatus.AwaitingCommand"/> row (if its transaction committed) is never delivered.</summary>
+    Task AbandonAsync(Guid id, CancellationToken ct);
 
     /// <summary>Rows still awaiting their command after the cut-off become deliverable (their transaction committed). Returns how many.</summary>
     Task<long> ReleaseOrphansAsync(DateTime createdBeforeUtc, CancellationToken ct);
@@ -82,12 +85,14 @@ public sealed class MongoCentralAuditOutboxStore : ICentralAuditOutboxStore
             Builders<CentralAuditOutboxRecord>.Update.Set(x => x.EntityId, entityId),
             cancellationToken: ct);
 
-    public Task ConfirmAsync(Guid id, string outcome, CancellationToken ct) =>
+    public Task ConfirmAsync(Guid id, CancellationToken ct) => MoveAsync(id, CentralAuditOutboxStatus.Pending, ct);
+
+    public Task AbandonAsync(Guid id, CancellationToken ct) => MoveAsync(id, CentralAuditOutboxStatus.Abandoned, ct);
+
+    private Task MoveAsync(Guid id, CentralAuditOutboxStatus to, CancellationToken ct) =>
         _collection.UpdateOneAsync(
             x => x.Id == id && x.Status == CentralAuditOutboxStatus.AwaitingCommand,
-            Builders<CentralAuditOutboxRecord>.Update
-                .Set(x => x.Status, CentralAuditOutboxStatus.Pending)
-                .Set(x => x.Outcome, outcome),
+            Builders<CentralAuditOutboxRecord>.Update.Set(x => x.Status, to),
             cancellationToken: ct);
 
     public async Task<long> ReleaseOrphansAsync(DateTime createdBeforeUtc, CancellationToken ct)
@@ -166,7 +171,7 @@ public sealed class MongoCentralAuditOutboxStore : ICentralAuditOutboxStore
 
     /// <summary>
     /// The row's BSON shape belongs to this package, not to the host service: services register different global Guid
-    /// serializers (Inventory: string), and a row one service writes must read the same everywhere.
+    /// serializers, and a row one service writes must read the same everywhere. Guids are strings, enums their names.
     /// </summary>
     internal static void EnsureClassMap()
     {
@@ -177,7 +182,10 @@ public sealed class MongoCentralAuditOutboxStore : ICentralAuditOutboxStore
                 return;
             }
 
-            var guid = new GuidSerializer(GuidRepresentation.Standard);
+            // Strings, not BSON UUIDs: driver 2.x in its default V2 GUID mode writes a UUID with the writer's legacy
+            // representation (CSUUID) whatever the member serializer says, and filters rendered with the member serializer then
+            // match nothing (measured 2026-10-14 in Inventory: confirmation updates found no row). A string is the same everywhere.
+            var guid = new GuidSerializer(BsonType.String);
             var nullableGuid = new NullableSerializer<Guid>(guid);
             var utc = new DateTimeSerializer(DateTimeKind.Utc);
             BsonClassMap.RegisterClassMap<CentralAuditOutboxRecord>(map =>
