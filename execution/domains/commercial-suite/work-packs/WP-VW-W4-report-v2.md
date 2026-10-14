@@ -942,3 +942,18 @@ Test dalına alındı: `fb4042c3b` (ajan `53e51e416`). Cherry-pick çakışması
   - K-INFRA-3: canlı kimlik bilgisinin sahibi ve döndürülmesi.
   - Operatör belgesi: `docs/guides/operations/verified-reference-data-provisioning.md`.
 - **Geliştirme ortamında açılış riski:** GSKU provisioning hata verirse Platform açılmaz (tasarım gereği). Kaçış: Platform user-secrets'ında `BusinessReferenceData:VerifiedGskuOperationalProvisioning:Enabled=false`.
+
+## §37 CT kabul — W4-FIX-b E2 ACCEPTED (2026-10-14)
+Test dalına alındı: `0ee9231d5` (ajan `4013677e5`). Cherry-pick çakışmasız.
+
+**CT kontrolü:**
+- Tek kural `VisitReportV2Rules.PotentialAsked` (vade ya da güncelleme **ve** onaylı endikasyon satırı). Bu kuralı tamlık kontrolü, kayıt (`InsightsOf`) ve ön doldurma bayrağı birlikte kullanıyor.
+- Gönderimde `DropPotentialsWithoutIndications`, satırsız ürünün potansiyelini gövdeden atıp uyarı ekliyor.
+- Yazıcıda ikinci koruma `WithIndicationsOnlyAsync`; hem Check hem Record yolunda çalışıyor.
+- `PotentialAsked` her yazmada sıfırlanıyor ve saklanmıyor. Web, sunucunun bayrağını kullanıyor; eski sunucuda vade bilgisine düşüyor; bayrağı geri göndermiyor.
+- **Testler** (worktree, `-o` repo içi): CRM VwW4 93/93; Web VwW4 + VisitReport 50/50. Ajanın tam takım sonuçları: CRM 2742/0/5, Web 1662/2; iki Shipment kırmızısı tabanda da var.
+- **CT sabotajı (ajanın dokunmadığı katman, Web):** `hasIndications` her zaman `true` yapıldı → `F5_wizard_shows_the_note_only…` ve `F5_core_without_indication_rows…` kırmızı. `.bak` ile geri alındı + touch → 50/50.
+
+**Açık:**
+- Geçmişe dönük veri temizliği yok: E4 test raporu `d68d299f` (Bülent Yardımcı) 3 potansiyel kaydına `NoPatientsInIndications=true` yazdı. Bu test verisi; temizlik kararı kullanıcıda.
+- Mobil not: `mobile/2026-10-14-visit-report-potential/MOBILE-NOTE-2026-10-14-report-potential-asked.md` → CT mobil yanıt sayfasına taşıyacak.
