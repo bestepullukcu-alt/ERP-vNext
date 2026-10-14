@@ -174,6 +174,7 @@
 | 11 | **Faz 8** CRM denetimi (AUD-001; denetimsiz sayı şu an **47**) | 2 | en sonda (karar) |
 | 12 | **W10** MDM marka entegrasyonu | 2–3 | MDM push sonrası, en sonda |
 | — | Takipler: FU-W3-OBJ-MLR (itiraz MLR), FU-W3-SLIDE-ASSET (slayt görseli), FU-W3-COVISITOR-LOOKUP (ortak ziyaretçi araması), W2 mobil notu (CT), **FU-KP-NEWVERSION-BUTTON** (KP Studio yayınlanmış yoldan yeni taslak sürüm düğmesi; KP-UI-1 yeniden yazımında düştü — kullanıcı: en sonda) | 3–4 | zamanı kullanıcı seçer |
+| 13 | **FIX-CRM-SCAFFOLD-MONGO** (Kapanış CT isteği 2026-10-14, onların istisnası BL-643): `ScaffoldSmokeTests` DI'yi kurarken `localhost:27017` / `DitenERP_Test`'e bağlanıp indeks yazıyor (DB-010 / BL-595 ihlali). Çözüm: `AddPersistence`'a varsayılanı açık `Mongo:EnsureIndexesOnStartup` ayarı; test kapatır (MongoClient tembel → hiç bağlanmaz); üretim davranışı değişmez. Kanıt: CRM test projesinde `localhost:27017` araması 0 + sabotaj (ayar yok sayılırsa bağlantı / indeks çağrısı testte kırmızı). Main'den ayrı dal `fix/crm-scaffold-smoke-no-mongo`; commit kimliği Kapanış CT'ye iletilir | 0–1 (CT küçük iş) | **en sonda** (kullanıcı 2026-10-14) |
 
 **Toplam kalan:**
 - W3'ün kalanı: 4–5 prompt.
