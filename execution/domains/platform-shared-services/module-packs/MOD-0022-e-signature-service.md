@@ -1769,6 +1769,7 @@ measured; `/internal/esign-tickets/consume` and `/api/internal/esign/actions/reg
   - Architecture 69/77 (same 8 pre-existing red); Web 1458/1458.
 - **FU proposal FU-0022-AUD-01.** AuthService `ConsumeESignTicketCommand` / `IssueESignWindowTicketCommand` are red in the
   AUD-001 architecture test.
+- **CT-ACCEPTED (2026-10-14), items 1, 4, 5.** Read `HasAnyPermissionAttribute` (delegates each key to a real `HasPermissionAttribute`, no re-implemented rule; 401 stops early) and the guard edits (strengthened: `ESignatureArchitectureTests` now demands the attribute and that its keys are declared). CT trial merge on the MVP-1 tip: ESign + guard + HasAnyPermission filter **192/192**. **CT sabotage:** `[HasAnyPermission]` removed from `ListMeanings` (the agent sabotaged only `Image`) → 4 red (A1 registration, LoginOnly guard, e-sign architecture, HTTP 403/401); restored, porcelain clean. Merged `46bfe9186` `--no-ff` into MVP-1 — NOT the agent's main-merge `bc258528f` (the main sync stays a separate CT step). **Item 6 → CT decision B** (existing inline `bx-info-circle` note pattern, en + tr, parity test; no new component) → WP-MVP1-ESIGN-HELP; the shared "?" component is FU-WEB-HELP-01 (design-system decision). O-ESIGN1-2 (round-2 allow-list line) forwarded to the closing-line CT; FU-0022-AUD-01 accepted.
 
 ## 20. Follow-up Items
 
