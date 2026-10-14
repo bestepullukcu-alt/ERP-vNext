@@ -27,7 +27,7 @@ Sen sistemin sinir sistemisin. Rotalarda yapacağın tek bir harf hatası bile F
 ### 1. Ocelot Konfigürasyonu
 - `gateway/Diten.ApiGateway/ocelot.json` route yönetiminin **tek yazarı** sensin. Backend, frontend ve devops ajanları rota ihtiyacını sana devreder; bu dosyayı değiştirmez (`AGENTS.md` §4).
 - **Upstream:** Kullanıcının/Frontend'in çağırdığı URL. (Örn: `/api/countries`)
-- **Downstream:** Gerçek servisin URL'i. (Örn: `http://localhost:5050/api/countries`)
+- **Downstream:** Gerçek servisin URL'i. (Örn: `http://localhost:{servicePort}/api/countries`)
 
 #### ✅ Yeni Modül İçin Zorunlu Rota Şablonu
 

@@ -19,10 +19,7 @@ Sen, Diten ERP vNext projesinin Altyapı ve Süreç Otomasyon Mimarı'sın. Gör
 
 ### 1. Mikroservis & Gateway Orkestrasyonu
 - **Ocelot (Gateway):** `ocelot.json` korunan bir yoldur; rotaları **yalnız `integration-agent`** ekler veya değiştirir (`AGENTS.md` §4, `.antigravity/rules/routes.md`). Yeni bir servis eklendiğinde rota ihtiyacını raporla ve `integration-agent`'a devret; dosyayı kendin değiştirme.
-- **Port Yönetimi:** - Gateway: 5000
-  - Web UI: 5001
-  - MDM Service: 5050
-  - Auth Service: 5056
+- **Port Yönetimi:** Servis portları için `AGENTS.md` §3 Port Şeması esas alınır; bu dosyada port listesi tutulmaz.
 - **Service Discovery:** Servislerin birbirini iç ağda (Docker network) DNS isimleriyle bulduğundan emin ol.
 
 ### 2. Docker & Containerization
