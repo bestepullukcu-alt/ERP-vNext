@@ -23,6 +23,11 @@ namespace Diten.Platform.Application.Features.BusinessReferenceData.Handlers.Que
 ///   served from there (the same reference tenant the Legal Entity stopgap reads). A tenant-scoped set of the reference
 ///   tenant — or of any other tenant — is NEVER returned: that is another tenant's data.</item>
 /// </list>
+/// <para><b>Verified catalogs (W4-FIX-d, G-2).</b> When neither the caller nor the catalog reference tenant holds the set and
+/// the set is one of the VERIFIED catalogs (<see cref="VerifiedCatalogSets"/>: <c>market</c>, <c>uom</c>,
+/// <c>pack-applicability</c> — the locked constants), it is read from the verified provider tenant
+/// (<c>BusinessReferenceData:Provider:ReferenceTenantId</c>) — again ONLY when that set is <c>global</c>. A tenant-scoped set
+/// is never read from another tenant; no provider tenant configured ⇒ nothing changes.</para>
 /// <para>Every "nothing to serve" outcome (set missing, retired, no published or no effective version, scope mismatch) is
 /// one answer: 404 <c>reference_set_not_published</c>. Never a 500.</para>
 /// </summary>
@@ -35,6 +40,15 @@ public sealed class GetConsumableBusinessReferenceDataPublishedValuesQueryHandle
     public const string ReferenceTenantMisconfigured = "reference_tenant_misconfigured";
 
     private const string GlobalScope = "global";
+
+    /// <summary>The verified catalogs (the locked constants of the verified market / GSKU provisioning) — the only sets the
+    /// provider-tenant fallback serves.</summary>
+    public static readonly IReadOnlySet<string> VerifiedCatalogSets = new HashSet<string>(StringComparer.Ordinal)
+    {
+        VerifiedMarketCatalogContract.SetCode,
+        VerifiedGskuUniversalCatalog.UomSetCode,
+        VerifiedGskuUniversalCatalog.PackApplicabilitySetCode
+    };
 
     // The consumer service's coded "nothing to serve" outcomes (BusinessReferenceDataConsumerQueryService.ResolveVersionAsync).
     private static readonly HashSet<string> NotPublishedSignals = new(StringComparer.Ordinal)
@@ -93,28 +107,52 @@ public sealed class GetConsumableBusinessReferenceDataPublishedValuesQueryHandle
 
             if (request.ReferenceTenantId is not { } referenceTenantId || referenceTenantId == Guid.Empty)
             {
-                return Fail(ReferenceTenantMisconfigured, 500);
+                return await VerifiedFallbackAsync(request, callerTenantId, setCode, ct) ?? Fail(ReferenceTenantMisconfigured, 500);
             }
 
-            if (referenceTenantId == callerTenantId)
+            if (referenceTenantId != callerTenantId)
             {
-                return Fail(NotPublished, 404);
+                var referenceSet = await ReadSetAsync(referenceTenantId, setCode, ct);
+                if (referenceSet is not null)
+                {
+                    // A reference-tenant set that is not global belongs to the reference tenant alone.
+                    return IsGlobal(referenceSet.ScopeType)
+                        ? Success(await ReadValuesAsync(referenceTenantId, setCode, null, ct))
+                        : Fail(NotPublished, 404);
+                }
             }
 
-            var referenceSet = await ReadSetAsync(referenceTenantId, setCode, ct);
-            if (referenceSet is null || !IsGlobal(referenceSet.ScopeType))
-            {
-                // A reference-tenant set that is not global belongs to the reference tenant alone.
-                return Fail(NotPublished, 404);
-            }
-
-            return Success(await ReadValuesAsync(referenceTenantId, setCode, null, ct));
+            return await VerifiedFallbackAsync(request, callerTenantId, setCode, ct) ?? Fail(NotPublished, 404);
         }
         catch (Exception ex) when (ex is KeyNotFoundException or InvalidOperationException
                                    && NotPublishedSignals.Contains(ex.Message))
         {
             return Fail(NotPublished, 404);
         }
+    }
+
+    /// <summary>
+    /// G-2: a VERIFIED catalog set from the verified provider tenant — only a <c>global</c> set; null when the fallback does
+    /// not apply (not a verified catalog, no provider tenant, the caller's own tenant), so the caller answers as before.
+    /// </summary>
+    private async Task<Response<BusinessReferenceDataPublishedValuesModel>?> VerifiedFallbackAsync(
+        GetConsumableBusinessReferenceDataPublishedValuesQuery request, Guid callerTenantId, string setCode, CancellationToken ct)
+    {
+        if (!VerifiedCatalogSets.Contains(setCode)
+            || request.VerifiedReferenceTenantId is not { } providerTenantId
+            || providerTenantId == Guid.Empty
+            || providerTenantId == callerTenantId)
+        {
+            return null;
+        }
+
+        var providerSet = await ReadSetAsync(providerTenantId, setCode, ct);
+        if (providerSet is null || !IsGlobal(providerSet.ScopeType))
+        {
+            return Fail(NotPublished, 404); // a non-global provider set is the provider tenant's alone
+        }
+
+        return Success(await ReadValuesAsync(providerTenantId, setCode, null, ct));
     }
 
     private async Task<Domain.Entities.BusinessReferenceDataSet?> ReadSetAsync(

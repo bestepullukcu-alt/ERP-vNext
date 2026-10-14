@@ -289,4 +289,13 @@
   <data name="E3StartValue" xml:space="preserve"><value>عند البدء · توقيت الخادم</value></data>
   <data name="E3Cancel" xml:space="preserve"><value>إلغاء</value></data>
   <data name="E3Begin" xml:space="preserve"><value>بدء العرض</value></data>
+  <data name="UnpTargetType" xml:space="preserve"><value>الزيارة إلى</value></data>
+  <data name="UnpTargetDoctor" xml:space="preserve"><value>طبيب</value></data>
+  <data name="UnpTargetPharmacy" xml:space="preserve"><value>صيدلية</value></data>
+  <data name="UnpDoctorLabel" xml:space="preserve"><value>الطبيب</value></data>
+  <data name="UnpDoctorSearch" xml:space="preserve"><value>ابحث عن الطبيب بالاسم (حرفان على الأقل)</value></data>
+  <data name="UnpPharmacyLabel" xml:space="preserve"><value>الصيدلية</value></data>
+  <data name="UnpPharmacySearch" xml:space="preserve"><value>ابحث عن الصيدلية بالاسم (حرفان على الأقل)</value></data>
+  <data name="Err_planned_visit_duplicate_same_day_type" xml:space="preserve"><value>يوجد لهذا الهدف زيارة من النوع نفسه اليوم.</value></data>
+  <data name="Err_planned_visit_time_window_invalid" xml:space="preserve"><value>وقت الزيارة غير صالح؛ اختر وقت بدء آخر.</value></data>
 </root>

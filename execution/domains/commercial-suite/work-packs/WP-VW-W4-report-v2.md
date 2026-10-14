@@ -578,9 +578,10 @@ Commit: "feat(web): WP-VW-W4-WEB-b — pharmacy report (stock, shelf photo, sale
 ```text
 @[.antigravity/agents/frontend-ui-ux.md]
 WP: WP-VW-W4 · W4-WEB-c — MDM rakip ürün yönetimi (liste + öneriler, yeni / düzenle + ülke fiyat / geri ödeme + geçmiş, ayrıntı, öneri kararları Workflow ile, doğrudan birleştirme, salt okuma / yetkisiz / çakışma, AR)
-Repository: C:\tmp\vw-w4-web-c (worktree, test/crm-content-visit-e2e güncel başı) · Branch: wp/vw-w4-web-c · commit bu dala, push YOK
+Repository: C:\tmp\vw-w4-web-c (worktree, test/crm-content-visit-e2e güncel başı = main 19497c934, PR #141 sonrası) · Branch: wp/vw-w4-web-c · commit bu dala, push YOK
 
-Paket belgesi: execution/domains/commercial-suite/work-packs/WP-VW-W4-report-v2.md — önce oku: §0 (K-W6), §2.6, §2.7, §2.5 (competitor-usage), "W4-WEB-c"; BE-b2 / BE-a / BE-c §37 notları. Mockup: execution/domains/commercial-suite/work-packs/mockups/visit-workspace/W4 Rakip Urunler (standalone).html (çözülmüş decoded-w4-rakip/Rakip.dc.html; 15 ekran seçicide). Fark belgesi: mockups/visit-workspace/DESIGN-GAP-W4-competitor-2026-10-13.md (§1 aynen, §2 G1–G6).
+Paket belgesi: execution/domains/commercial-suite/work-packs/WP-VW-W4-report-v2.md — önce oku: §0 (K-W6), §2.6, §2.7, §2.5 (competitor-usage), "W4-WEB-c"; BE-b2 / BE-a / BE-c §37 notları + WEB-a / WEB-b §37 (I2: eczane önerisi planın ilk ürünüyle gelir).
+ÖN KOŞUL (yerel 97c5): Workflow şablonu MDM-COMP-PROPOSAL yerelde CT tarafından KURULDU (4ca5b242, v1 Published, aday POS-SALES-OPS) — "Onaya gönder" duman testinde kullanılabilir; şablona DOKUNMA. Şablonsuz kiracı için MDM 409 workflow_template_missing → arayüz anlaşılır mesaj göstermeli (Node testiyle). Admin'de mdm.competitor-products.* yoksa W4-CFG yetki betiği gerekir (paralel paket) → eksikse dur, raporla. Canlı (be823006) şablon + yetkiler zaten kuruldu — canlıya DOKUNMA. Mockup: execution/domains/commercial-suite/work-packs/mockups/visit-workspace/W4 Rakip Urunler (standalone).html (çözülmüş decoded-w4-rakip/Rakip.dc.html; 15 ekran seçicide). Fark belgesi: mockups/visit-workspace/DESIGN-GAP-W4-competitor-2026-10-13.md (§1 aynen, §2 G1–G6).
 DESEN: MDM Ürünler sayfaları (frontend/Diten.Web/Views/MasterData/Products/*, Controllers/MasterData/ProductsController.cs — liste + ayrı sayfalar + bölüm kartları); Workflow karar akışı + SoD + onaylayıcı görünümü = W3 itiraz kütüphanesi (Views/CRM/ObjectionResponses, wwwroot/assets/js/CRM/ObjectionResponses/*); L10n köprüsü parantez koruması (RazorInlineScriptSyntaxTests yeşil kalmalı).
 NE: "W4-WEB-c" 1–5; vekiller MDM api/mdm/competitor-products/* + CRM api/crm/doctor-insights/products/{id}/indication-profiles + api/crm/visit-report/v2/competitor-usage; MDM menü sayfası (BE-b2 manifest) + Nav.Page 7 dil.
 KORU/YAPMA: telefon düzeni gerekmez (masaüstü + tablet); pazar payı / satış yok (W7 yer tutucu); kullanıcının giriş yaptığı sekmeye mock / harness enjekte etme — ayrı sekme.
@@ -591,15 +592,16 @@ Commit: "feat(web): WP-VW-W4-WEB-c — MDM competitor products (list + proposals
 ## §36.1 Agent Prompt — W4-CFG (paste-ready · 4. TUR, BE-b2 test dalında + fleet yeniden başlatıldıktan SONRA)
 ```text
 @[.antigravity/agents/backend-architect.md]
-WP: WP-VW-W4 · W4-CFG — Workflow şablonu MDM-COMP-PROPOSAL (POS-SALES-OPS) canlı oluştur + yayınla; grant betiği (dry-run varsayılan) — tenant 97c5, uygulama KODU YOK
+WP: WP-VW-W4 · W4-CFG — W4 yetki betiği (dry-run varsayılan) — tenant 97c5, uygulama KODU YOK; Workflow şablonu MDM-COMP-PROPOSAL CT tarafından zaten kuruldu (yalnız doğrula)
 Repository: C:\tmp\vw-w4-cfg (worktree, test/crm-content-visit-e2e güncel başı) · Branch: wp/vw-w4-cfg · commit (rapor + betik) bu dala, push YOK
 
-Paket belgesi: execution/domains/commercial-suite/work-packs/WP-VW-W4-report-v2.md — "W4-CFG" + §2.6 + §2.7 + BE-b2 §37 notu. DESEN: WP-VW-W3-authoring.md "W3-CFG" + §37 W3-CFG (aynı akış: POST api/v1/workflow/definitions → publish; kök options.rejectCommentRequired; idempotent; parmak izi) + scripts/rbac/grant_w3_authoring_rbac_97c5.py (dry-run, subtype-4 GUID, tarih biçimi yerel belgeden, marker, rol / izin OLUŞTURMAZ). Ön koşul: kullanıcı fleet'i yeniden başlatmış ve yerleşik tarayıcıda giriş yapmış olmalı.
-VERİ YAZMA YETKİSİ (yalnız): (1) MDM-COMP-PROPOSAL şablonunun oluşturulması + yayınlanması; (2) betiğin YAZILMASI (çalıştırmayı kullanıcı yapar).
-NE: şablon tek aşama / tek adım sales_ops "Satış operasyon onayı", aday POS-SALES-OPS (c1acdf12-40d2-4b2c-a2a4-afe1bdd7681d — canlıdan doğrula), SLA 4320 / 2880, rejectCommentRequired: true, requestedObjectType mdm.competitor-proposal; betik scripts/rbac/grant_w4_report_rbac_97c5.py: Admin'e W4 CRM + MDM anahtarları (crm.doctor-insights.* — read-all ExplicitGrantOnly olduğu için yalnız bu betikle Admin'e gider, unutma; crm.visit-report.read-aggregate, mdm.competitor-products.read|manage|propose) + MDM'nin Workflow çağrısı için platform.workflow.instances.start / view, tasks.approve / reject / cancel (eksikse); temsilci / pazarlama rolleri varsa "W4-CFG" listesi (temsilciye ayrıca mdm.gskus.read — eczane stok / satış satırları ve numune GSKU listesi için, WEB-b §37), yoksa DUR + raporla. Auth kataloğunda anahtarların varlığını önce doğrula.
-KORU/YAPMA: kod değişikliği YOK; diğer şablonlara DOKUNMA (parmak izi önce / sonra aynı); örnek başlatma YOK.
-DOĞRULA: şablon Published + tek adım + doğru aday + options.rejectCommentRequired; diğer şablon parmak izleri aynı; betik dry-run çıktısı rapora.
-Commit: "chore(mdm): WP-VW-W4-CFG — workflow template MDM-COMP-PROPOSAL (live) + RBAC grant script (dry-run default)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22), kullanıcıya --apply + yeniden giriş talimatı. K13.
+Paket belgesi: execution/domains/commercial-suite/work-packs/WP-VW-W4-report-v2.md — "W4-CFG" + §2.6 + §2.7 + BE-b2 §37 notu. DESEN: scripts/rbac/grant_w3_authoring_rbac_97c5.py (dry-run, subtype-4 GUID, tarih biçimi yerel belgeden, marker, rol / izin OLUŞTURMAZ, idempotent) + WP-VW-W3-authoring.md §37 W3-CFG (rapor biçimi).
+ŞABLON DURUMU (yerel 97c5, 2026-10-13 CT): MDM-COMP-PROPOSAL 4ca5b242-2cf2-44ca-be80-00e0835315c9, v1 65679ab1 Published, tek adım sales_ops, aday position:c1acdf12-40d2-4b2c-a2a4-afe1bdd7681d (POS-SALES-OPS), SLA 4320 / 2880, options.rejectCommentRequired true, requestedObjectType mdm.competitor-proposal. YENİDEN OLUŞTURMA / YAYIMLAMA YOK — yalnız salt okuma doğrula (Mongo workflow_templates / workflow_template_versions).
+VERİ YAZMA YETKİSİ (yalnız): betiğin YAZILMASI (çalıştırmayı kullanıcı yapar). Şablon, rol, izin, kayıt yazımı YOK.
+NE: betik scripts/rbac/grant_w4_report_rbac_97c5.py: Admin'e W4 CRM + MDM anahtarları (crm.doctor-insights.* — read-all ExplicitGrantOnly olduğu için yalnız bu betikle Admin'e gider, unutma; crm.visit-report.read-aggregate, mdm.competitor-products.read|manage|propose) + MDM'nin Workflow çağrısı için platform.workflow.instances.start / view, tasks.approve / reject / cancel (eksikse); temsilci / pazarlama rolleri varsa "W4-CFG" listesi (temsilciye ayrıca mdm.gskus.read — eczane stok / satış satırları ve numune GSKU listesi için, WEB-b §37), yoksa DUR + raporla. Auth kataloğunda anahtarların varlığını önce doğrula.
+KORU/YAPMA: kod değişikliği YOK; diğer şablonlara DOKUNMA (parmak izi önce / sonra aynı); örnek başlatma YOK. YALNIZ yerel 97c5: canlı (be823006, ditenteknoloji.com) 2026-10-13'te CT + kullanıcı tarafından kuruldu (scripts/golive/workflow-templates-live.js, grant-roles-live.js; ülke pozisyonları *RO-SALES-OPS / *RO-MED-DIR) — canlıya DOKUNMA. Temsilci rolü canlıda CrmUser; yerelde temsilci rolü yoksa DUR + raporla.
+DOĞRULA: şablon (salt okuma) Published + tek adım + doğru aday + options.rejectCommentRequired; betik dry-run çıktısı rapora (rol başına eklenecek / zaten var).
+Commit: "chore(mdm): WP-VW-W4-CFG — W4 RBAC grant script (dry-run default); MDM-COMP-PROPOSAL template verified" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22), kullanıcıya --apply + yeniden giriş talimatı. K13.
 ```
 
 ---
@@ -750,3 +752,346 @@ Commit: "chore(mdm): WP-VW-W4-CFG — workflow template MDM-COMP-PROPOSAL (live)
 **Sıradaki:**
 - 4. tur: W4-WEB-c (rakip yönetimi) + W4-CFG (şablon + yetkiler; read-all açık atama, temsilciye gskus.read).
 - Ardından W4 canlı E4.
+
+## §36.2 Uygulama raporu — W4-CFG (2026-10-13, yerel 97c5)
+
+**Kapsam:** yalnız yerel 97c5. Canlıya (be823006) dokunulmadı. Şablon, rol, izin ve kayıt yazılmadı; kod değişikliği yok.
+
+### 1. Şablon `MDM-COMP-PROPOSAL` — salt okuma doğrulandı
+Kaynak: Mongo `diten_personalization_dev.workflow_templates` / `workflow_template_versions`.
+
+| Alan | Değer | Beklenen |
+|---|---|---|
+| Template | `4ca5b242-2cf2-44ca-be80-00e0835315c9`, `Status 2` (Published) | ✅ |
+| Aktif sürüm | `65679ab1-c781-485b-9623-3588f1f4553a`, v1, `Status 1` (Published), `IsImmutable` | ✅ |
+| `requestedObjectType` | `mdm.competitor-proposal` | ✅ |
+| Aşama / adım | tek aşama `sales_ops` "Satış Operasyon" / tek adım `sales_ops` "Satış operasyon onayı" (`approval`) | ✅ |
+| Aday | `position:c1acdf12-40d2-4b2c-a2a4-afe1bdd7681d` = `POS-SALES-OPS` "Satış Operasyon" (aktif); sahibi `d27fa4a6…` (sema, Admin) | ✅ |
+| SLA | `dueInMinutes 4320`, `escalateAfterMinutes 2880` → aynı pozisyon | ✅ |
+| Seçenek | `options.rejectCommentRequired: true` | ✅ |
+
+**Parmak izi** (tüm şablon + sürüm dokümanlarının SHA-256'sı):
+- önce: şablon 26 / `f164e53a4eda13c2`, sürüm 26 / `4fe07db0c5a24163`;
+- sonra: **aynı**.
+
+### 2. Yetki betiği — yazıldı, RBAC'a yazılmadı
+**Auth kataloğu:** 15 anahtarın hepsi mevcut.
+- `crm.doctor-insights.{read,manage,read-all,read-aggregate,thresholds.manage}`
+- `crm.visit-report.read-aggregate`
+- `mdm.competitor-products.{read,manage,propose}`
+- `mdm.gskus.read`
+- `platform.workflow.instances.{start,view}`, `platform.workflow.tasks.{approve,reject,cancel}`
+
+**Betik:** `scripts/rbac/grant_w4_report_rbac_97c5.py` (W3-CFG deseni).
+- dry-run varsayılan; subtype-4 GUID; tarih alanları yerel 97c5 kaydından aynen kopyalanır;
+- idempotent; marker `manual-grant-w4-report-rbac`;
+- rol ve izin oluşturmaz; katalog eksikse durur;
+- `crm.doctor-insights.read-all` (ExplicitGrantOnly) Admin'e **açıkça** verilir;
+- isteğe bağlı rol bayrakları:
+  - `--rep-role`: `mdm.competitor-products.read / propose`, `crm.doctor-insights.read`, `mdm.gskus.read`;
+  - `--marketing-role`: `crm.doctor-insights.read-aggregate / thresholds.manage`, `crm.visit-report.read-aggregate`, `mdm.competitor-products.read / manage`.
+- Komut satırında verilen rol yoksa betik **ABORT** (çıkış 2) ile durur.
+
+**Dry-run (Admin):**
+```
+skip (already granted): Admin <- mdm.gskus.read
+skip (already granted): Admin <- platform.workflow.instances.start
+skip (already granted): Admin <- platform.workflow.instances.view
+skip (already granted): Admin <- platform.workflow.tasks.approve
+skip (already granted): Admin <- platform.workflow.tasks.reject
+skip (already granted): Admin <- platform.workflow.tasks.cancel
+role 'Admin' (6a315467-7d80-4ad8-bd76-78f8f762fe8a): 9 grant(s) to insert: ['crm.doctor-insights.read', 'crm.doctor-insights.manage', 'crm.doctor-insights.read-all', 'crm.doctor-insights.read-aggregate', 'crm.doctor-insights.thresholds.manage', 'crm.visit-report.read-aggregate', 'mdm.competitor-products.read', 'mdm.competitor-products.manage', 'mdm.competitor-products.propose']
+NOTE: no --rep-role / --marketing-role given — only the admin role is planned (local 97c5 has no rep / marketing role; decide them before granting).
+DRY-RUN — nothing written. Re-run with --apply.
+```
+`--rep-role CrmUser` denemesi: `ABORT: role 'CrmUser' not found in tenant 97c5 … Existing: ['Admin', 'DocumentMasterRegisterLinker', 'GQD', 'QADocumentation', 'Viewer']` (çıkış 2). Marker'lı satır sayısı: 0.
+
+### 3. DUR — temsilci / pazarlama rolü yerelde yok
+Yerel 97c5 rolleri: `Admin`, `DocumentMasterRegisterLinker`, `GQD`, `QADocumentation`, `Viewer`.
+- Temsilci rolü yok (canlıda `CrmUser`).
+- Pazarlama rolü yok.
+
+Bu yüzden yalnız Admin planlandı. Temsilci ve pazarlama rolleri için karar ürün sahibinde:
+- rol oluşturma bu paketin yetkisi dışında;
+- roller açıldıktan sonra `--rep-role` / `--marketing-role` ile aynı betik çalıştırılır.
+
+### 4. Kullanıcı adımı
+1. `py -3 scripts/rbac/grant_w4_report_rbac_97c5.py --apply` (Admin'e 9 anahtar).
+2. Admin rolündeki kullanıcılar **yeniden giriş** yapar (izinler JWT'ye basılır).
+3. Geri alma: `db.rolePermissions.deleteMany({CreatedBy: "manual-grant-w4-report-rbac"})`.
+
+---
+
+## §37 CT kabul — W4-WEB-c + W4-CFG E2 ACCEPTED (2026-10-14)
+Test dalına alındı: WEB-c `c22313360` (ajan `be07bddb2`), CFG `50eff4764` (ajan `89973f741`). Cherry-pick çakışmasız.
+
+**WEB-c — CT kontrolü:**
+- Controller: 18 vekil, her biri yalnız kendi ucunun anahtarıyla (A9 teorisi her yolu + anahtarı sabitliyor); gövdede `tenantId` → 400; BRD okuması iki setle sınırlı (`mdm-reimbursement-status`, `market`).
+- UAS-001: 5 sayfanın hepsi okuma anahtarı yoksa yalnız erişim uyarısı çiziyor (iskelet yok, yönlendirme yok).
+- L10n köprüsü `JsonSerializer.Serialize` (HTML kaçışlı); `RazorInlineScriptSyntaxTests` yeşil.
+- SoD: `decisionActions` onay / geri gönder çiftini hazırlayan / son düzenleyen / gönderene hiç çizmiyor (eski bir `canDecide` gelse bile); sunucu zaten zorluyor.
+- Web tam takım (worktree, `-o ./.ct-out/web`): 1658/3. İkisi `ShipmentDetailsDateNodeTests` (tabanda da kırmızı); üçüncüsü `WorkCenterMenuWithoutPermissionsTests` CT'nin `-o` klasöründen kaynaklı göreli yol hatası (`C:\Diten.Web\Views\…` bulunamadı), değişiklikle ilgisiz. Ajanın 1659/2 sonucuyla tutarlı. WEB-c testleri 28/28.
+- **CT sabotajı (ajanın dokunmadığı kural):** `isOwn`'dan "son düzenleyen" (`updatedBy`) çıkarıldı → `A2_actions_sod_…` kırmızı. `.bak` ile geri alındı + touch → 28/28.
+
+**CFG — CT kontrolü:**
+- Betik W3 kalıbıyla aynı (subtype-4, tarih tipleri yerel kayıttan, idempotent, marker `manual-grant-w4-report-rbac`, rol / izin oluşturmaz, `--db diten_auth_v3` W3 ile aynı varsayılan).
+- CT dry-run: Admin'e 9 eklenecek, 6 zaten var — rapor ile birebir. Yazma yok.
+- Şablon `MDM-COMP-PROPOSAL` (CT 2026-10-13 kurdu) ajan tarafından salt okumayla doğrulandı; 26 şablon / 26 sürüm parmak izi önce = sonra.
+
+**Açık / kullanıcıya:**
+- `py -3 scripts/rbac/grant_w4_report_rbac_97c5.py --apply` + Admin yeniden giriş (yerel). Canlı (be823006) zaten yapıldı (scripts/golive).
+- Yerelde temsilci / pazarlama rolü yok → rol kararı ürün sahibinde.
+- Form sözlüğü `mdm.brands.read`, kişi adları `platform.meetings.create` ister; yoksa formda uyarı / kısaltılmış kimlik.
+- Duman testi "Onaya gönder" yerelde koşulmadı (ajan şablonun kurulmasını beklemiş; şablon artık var) → W4 canlı E4'te denenecek.
+- Görsel farklar (kalan): G1 öğeleri mockup'ta yok (karar gereği); birleştirme adayında etken madde / form yok (MDM adayı göndermiyor); avatar tek ton.
+
+**Sıradaki:** W4 canlı E4 (mockup görsel karşılaştırması dahil: rapor sihirbazı, eczane, eşik sayfası, rakip ürünler) → W3E / W5…
+
+---
+
+## W4 yerel E4 bulguları (CT, 2026-10-14)
+Yerel 97c5, kullanıcı onaylı yazmalar. Yapılan:
+- hekim sihirbazı mockup karşılaştırması;
+- eşik ekle (KONSET 15/40 → rapor önizlemesi kullandı) → geri al (10/30);
+- rakip kaydı `E4-TEST Konsetra` (fiyatsız, aşağıdaki ALTYAPI yüzünden);
+- Bülent Yardımcı raporu `d68d299f` gönderildi (profil, potansiyel, geçmiş, MDM önerisi `E4-TEST Konsepro`);
+- öneri → birleştir kararı → onaya gönder → sema onayladı → MDM `merged` + diğer ad. SoD ve "not zorunlu" doğru.
+
+| # | Bulgu | Yer |
+|---|---|---|
+| F-1 | Rakip formunda `change` → tam `render()`; tıklanan / Tab ile geçilen sonraki alan DOM'dan silinir, odak `BODY`'ye düşer, yazılanlar kaybolur | `competitor-pages.js` `change` dinleyicisi (`data-form`, `data-row`) |
+| F-2 | "Rakip olduğu ürünlerimiz" yalnız ilk 100 ürün (`api/products?pageSize=100`); 177'den 77'si seçilemez, arama yok | `competitor-pages.js` ürün yükleme + çip listesi |
+| F-3 | BRD seçenekleri `v.valueCode` / `v.displayName` okuyor; Web vekilinin gerçek yanıtı `code` / `label` → geri ödeme + pazar seçenek değerleri boş, kayıtta boş kod. Duman harness'ı yanlış alanla sahte veri kullandığı için testler yeşildi | `competitor-pages.js:110,117,129` + `competitor-products-smoke.js:70-71` |
+| F-5 | Ürünün onaylı endikasyon × profil satırı YOKKEN potansiyel sorusu yine zorunlu (satır ya da "hasta görmüyor"); temsilci yanlış beyana zorlanır, `NoPatientsInIndications=true` potansiyele işlenir (sınıf / fırsat bozulur) | CRM `VisitReportV2Rules.cs:216` + Web `report-core.js:250` |
+| F-7 | Karar kartında "Hazırlayan" saati hazırlama değil uygulama saati (10:53 yerine 11:04) | `competitor-pages.js` karar kartı |
+| F-4 (not) | Kişi adları `platform.meetings.create` ister; yoksa "kullanıcı c5769c62" | yetki / FU |
+| F-6 (not) | Ürüne özel eşik satırı silinemez (kiracı varsayılanı değişince ürün eski değerde kalır) | FU |
+| ALTYAPI | Doğrulanmış referans (GSKU UOM + pazar) yerelde yok: GSKU create-options 503, ülke fiyatlı rakip kaydı 503 `reference_data_unavailable` | W4-INFRA |
+
+## §36.1 Agent Prompt — W4-FIX-a (paste-ready · rakip ürün sayfası F-1 / F-2 / F-3 / F-7)
+```text
+@[.antigravity/agents/frontend-ui-ux.md]
+WP: WP-VW-W4 · W4-FIX-a — rakip ürün sayfası: alan değişiminde odak kaybı (F-1), ürün seçici 100 sınırı (F-2), BRD seçenek alanları code/label (F-3), "Hazırlayan" saati (F-7)
+Repository: C:\tmp\vw-w4-fix-a (worktree, test/crm-content-visit-e2e güncel başı) · Branch: wp/vw-w4-fix-a · commit bu dala, push YOK
+
+Paket belgesi: execution/domains/commercial-suite/work-packs/WP-VW-W4-report-v2.md — önce oku: "W4 yerel E4 bulguları (CT, 2026-10-14)" tablosu + "W4-WEB-c" + §37 WEB-c. Dosyalar: frontend/Diten.Web/wwwroot/assets/js/MasterData/CompetitorProducts/{competitor-pages.js,competitor-core.js}, frontend/Diten.Web.Tests/Js/competitor-products-smoke.js, frontend/Diten.Web.Tests/Controllers/CompetitorProductsWebTests.cs.
+NE:
+(F-1) Metin / sayı alanlarının `change` olayı tam yeniden çizim YAPMASIN: değer state'e yazılsın, yalnız etkilenen parçalar (önizleme kartı, hata satırı, fiyat dönemi notu) güncellensin; ya da yeniden çizimde odaklanan alan + imleç konumu korunsun. Kabul: ad → firma → güç alanlarına tıkla-yaz ve Tab ile geç → hiçbir değer kaybolmaz, odak gidilen alanda kalır (ülke satırı fiyat / para birimi / tarih alanları dahil). Seçim kutuları (select) çizimi tetikleyebilir ama odağı korur.
+(F-2) "Rakip olduğu ürünlerimiz": 100 ile kesilmesin — arama kutulu seçici (yazdıkça `api/products?q=` ya da tüm sayfalar), seçilenler üstte çip; önerinin tamamlanmasında da aynı seçici. Kabul: 177 ürünün hepsi (ör. TUTUKON) bulunup seçilebilir.
+(F-3) BRD seçeneklerinde gerçek Web yanıt sözleşmesi: `code` + `label` + `attributes.label_<dil>` (bkz. `Controllers/MasterData/CompetitorProductsController.ReferenceValues` → `CrmReferenceSetReader`; aynı biçim `CRM/VisitReport/report-core.js` optionLabel). Hem geri ödeme hem pazar listesi; İngilizce etiket `label`. Duman harness'ı ve C# testleri GERÇEK biçimle (sahte veri `valueCode` / `displayName` OLMASIN) — eski alanla yazılmış harness'ın yanlış yeşil verdiğini sabotajla göster.
+(F-7) Karar kartı "Hazırlayan" = kararın oluşturulma zamanı + oluşturan (createdAt / createdBy); uygulama zamanı ayrı satırda ("Uygulandı · kim, ne zaman").
+KORU/YAPMA: MDM / CRM sunucu koduna dokunma; kullanıcının giriş yaptığı sekmeye mock / harness enjekte etme (ayrı sekme); var olan SoD / birleştirme onay kutusu / 409 Yenile davranışı değişmez (testler yeşil kalmalı).
+DOĞRULA: yeni testler (F-1 odak + değer korunur, F-2 >100 ürün, F-3 gerçek yanıt biçimiyle seçenek değeri dolu, F-7) + 2 sabotaj (.bak + touch): (1) F-3 eşleme yine `valueCode` → kırmızı; (2) F-1 `change` yine tam render + odak koruması kapalı → kırmızı. Web tam takım (-o repo içi), taban kırmızılarını ayrı worktree'de karşılaştır. Yerel tarayıcıda ayrı sekmede elle doğrulama: yeni rakip formu tıkla-yaz-Tab, TUTUKON seçimi, geri ödeme kodu dolu (ülke satırlı kayıt W4-INFRA olmadan 503 verebilir — bu beklenir, raporla).
+Commit: "fix(web): WP-VW-W4-FIX-a — competitor form keeps focus on field change, product picker beyond 100 with search, BRD options read code/label, decision card shows preparer time" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
+```
+
+## §36.1 Agent Prompt — W4-FIX-b (paste-ready · rapor potansiyel kuralı F-5; FIX-a ile paralel)
+```text
+@[.antigravity/agents/backend-architect.md]
+WP: WP-VW-W4 · W4-FIX-b — hekim raporu: ürünün onaylı endikasyon × profil satırı yoksa endikasyon potansiyeli sorulmaz / zorunlu değildir / kaydedilmez (F-5); "hasta görmüyor" yanlış beyanı engellenir
+Repository: C:\tmp\vw-w4-fix-b (worktree, test/crm-content-visit-e2e güncel başı) · Branch: wp/vw-w4-fix-b · commit bu dala, push YOK
+
+Paket belgesi: execution/domains/commercial-suite/work-packs/WP-VW-W4-report-v2.md — önce oku: "W4 yerel E4 bulguları (CT, 2026-10-14)" F-5 + §2.2 + §2.5 + §37 BE-a / BE-c (tamlık testi VwW4ReportV2CompletenessTests). Kod: services/Diten.CrmService/src/Diten.CrmService.Application/Features/VisitReport/V2/{VisitReportV2Rules.cs,VisitReportV2Handlers.cs} (potentialAsked, ProductIndicationProfileReader, DoctorProductInsightInput) + Features/DoctorInsights/DoctorInsightsRecorder.cs + frontend/Diten.Web/wwwroot/assets/js/CRM/VisitReport/{report-core.js,visit-report.js}.
+NE:
+(1) Sunucu: bir ürün bölümü için "potansiyel soruluyor" = (isDue ya da temsilci güncelledi) VE ürünün onaylı endikasyon × profil satırı VAR. Satır yoksa: tamlık kuralı potansiyel istemez (`missing[]`'de `potential` yok); gövdede `noPatientsInIndications=true` ya da satır gelse bile potansiyele YAZILMAZ (yok sayılır + `warnings` içinde `potential_ignored_no_indications:<productId>`); doktorun aylık toplamı (doktor düzeyi) kuralı değişmez; pay kovası (shareBucket) kuralı değişmez. Ön doldurma yanıtında ürün başına `potentialAsked` (bool) açıkça dönsün ki istemciler kendi hesabını yapmasın.
+(2) Web: report-core tamlık kuralı ve sihirbaz aynı bayrağı kullanır; satır yoksa "Bu endikasyonlarda hasta görmüyor" düğmesi ve zorunluluk yıldızı GÖSTERİLMEZ, yalnız bilgi notu ("endikasyon listesi tanımlı değil; doktorun toplamı profil adımında") kalır; potansiyel önizlemesi "—".
+(3) Mobil sözleşme notu: execution/domains/commercial-suite/work-packs/mobile/ altına kısa not (prefill `productSections[].potentialAsked`, yeni uyarı kodu, eski davranışla fark) — CT mobil sayfasına taşıyacak.
+KORU/YAPMA: satırı olan ürünlerde davranış aynen (90 gün kuralı, endikasyon toplamı ≤ doktor toplamı, sınıf / fırsat matrisi); var olan raporların / potansiyel kayıtlarının verisine dokunma (geçmişe dönük düzeltme YOK, yalnız raporla); W4 tamlık testi kapsama denetimi yeşil kalmalı.
+DOĞRULA: CRM testleri (satırsız ürün: missing'de potential yok + noPatients yazılmaz + uyarı; satırlı ürün: eski kural) + Web Node testleri (bayrağa göre çizim + tamlık) + 2 sabotaj (.bak + touch): (1) sunucu kuralında satır şartı kaldırılsın → kırmızı; (2) recorder satırsız üründe noPatients yazsın → kırmızı. CRM + Web tam takım (-o repo içi), taban karşılaştırması.
+Commit: "fix(crm,web): WP-VW-W4-FIX-b — potential is not asked (nor recorded) for a product without approved indication rows; prefill exposes potentialAsked" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22), mobil not yolu rapora. K13.
+```
+
+## §36.1 Agent Prompt — W4-INFRA (paste-ready · doğrulanmış referans verisi: GSKU UOM + pazar; FIX'lerden bağımsız)
+```text
+@[.antigravity/agents/backend-architect.md]
+WP: WP-VW-W4 · W4-INFRA — doğrulanmış referans verisi (verified GSKU UOM + verified market) yerel 97c5'te çalışır hâle gelsin; canlı için operatör adımları belgelensin. GSKU taslağı oluşturma ve ülke fiyatlı rakip kaydı 503 vermesin.
+Repository: C:\tmp\vw-w4-infra (worktree, test/crm-content-visit-e2e güncel başı) · Branch: wp/vw-w4-infra · commit bu dala, push YOK
+
+Paket belgesi: execution/domains/commercial-suite/work-packs/WP-VW-W4-report-v2.md — "W4 yerel E4 bulguları (CT, 2026-10-14)" ALTYAPI satırı. CT ölçümü (2026-10-14):
+- MDM `GET api/gskus/create-options` → 503 "Doğrulanmış referans verileri kullanılamıyor"; MDM `POST api/mdm/competitor-products` ülke satırıyla → 503 `reference_data_unavailable` "The market catalog could not be read".
+- Platform: `BusinessReferenceData:Provider:ReferenceTenantId` hiçbir appsettings'te yok (aynı neden `/health` 503; bkz. docs/guides/operations/go-live-2026-09-meetings-task-engine.md §7/11, backlog BL-404). `BusinessReferenceData:VerifiedGskuOperationalProvisioning` ve `:VerifiedMarketOperationalProvisioning` ayarsız (runner'lar Program.cs'te kayıtlı; uygunluk sınıfları Development…Eligibility).
+- Kilitli kataloglar (`Seed/business-reference-data/mod-0290-gsku-reference.json`, `mod-0290-market-reference.json`) Windows checkout'ta CRLF (core.autocrlf=true, depoda .gitattributes YOK) → SHA-256 kilitli parmak iziyle tutmuyor; LF'ye çevrilince tam tutuyor (gsku e95ef856…, market b94c4528…).
+- MDM `VerifiedGskuResolver` bölümü (PlatformBaseAddress, Timeout, CredentialIdentifier, CredentialSecret — GSKU ve market istemcisi AYNI bölüm) ve Platform `VerifiedGskuResolverCredential:Mdm` (Identifier, ActiveSecret, ConsumerService, AllowedAudience…) ayarsız.
+NE:
+(1) .gitattributes: iki kilitli katalog için `eol=lf` (yalnız bu iki dosya ya da kilitli katalog listesi; diğer seed'leri değiştirme) + renormalize; parmak izini working-tree baytları üzerinden doğrulayan guard testi (dosya CRLF'ye çevrilince kırmızı).
+(2) Development ayarı (appsettings.Development.json, Platform + MDM): Provider:ReferenceTenantId = 97c5; verified GSKU + market provisioning Enabled (EnumerationEnabled dahil), CatalogPath / ExpectedCatalogVersion / ExpectedCatalogFingerprint kilitli sabitlerle aynı, ConsumerTenantId 97c5, ActorId / IdempotencyNamespace; MDM VerifiedGskuResolver PlatformBaseAddress (yerel Platform 5057) + Timeout. Kimlik bilgisi: GİZLİ değer depoya YAZILMAZ — dotnet user-secrets (Platform + MDM UserSecretsId) ile ayarlayan betik `scripts/dev/set-verified-reference-dev-credential.ps1` (rastgele dev sırrı üretir, iki tarafa aynı değeri yazar; kullanıcı çalıştırır). Ayar yazmadan önce mevcut runner / eligibility / authenticator'ın beklediği tam anahtarları koddan doğrula.
+(3) Canlı için operatör belgesi: docs/guides/operations/ altında (yer .antigravity/rules/docs-organization.md'ye göre) — hangi anahtarlar, hangi değerler (canlı referans kiracı = be823006), kimlik bilgisinin nasıl üretilip iki servise verileceği, provisioning'in Production'da çalışıp çalışmadığı (Development…Eligibility Production yolunu engelliyorsa AÇIKÇA yaz ve DUR — üretim yolu tasarımı ayrı karar). Canlıya DOKUNMA.
+(4) Doğrulama: yerelde (kullanıcı betiği çalıştırıp fleet'i yeniden başlattıktan sonra) GSKU create-options 200 + UOM listesi; rakip kaydı ülke satırıyla doğrulama yolu 503 vermez; Platform `/health/ready` durumu. Veri YAZMA: yalnız katalog provisioning'in kendi yazdığı referans satırları; GSKU / rakip kaydı OLUŞTURMA (CT E4'te yapacak).
+KORU/YAPMA: kilitli sabitleri (sürüm, parmak izi) değiştirme; kodda doğrulama gevşetme YOK; gizli değer commit YOK; user-secrets OKUMA YOK (betik yazar, kullanıcı çalıştırır); diğer servislerin ayarlarına dokunma.
+DOĞRULA: CRLF guard sabotajı (.bak + touch: dosyayı CRLF yap → kırmızı); Platform + MDM ilgili test takımları (-o repo içi); yerel ölçüm çıktıları rapora.
+Commit: "chore(platform,mdm): WP-VW-W4-INFRA — locked reference catalogs pinned to LF, dev verified GSKU/market provisioning config, dev credential script, live operator guide" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22): kullanıcıya betik + fleet restart talimatı, canlı için açık kararlar. K13.
+```
+
+## §37 CT kabul — W4-INFRA E2 ACCEPTED (2026-10-14)
+Test dalına alındı: `fb4042c3b` (ajan `53e51e416`). Cherry-pick çakışmasız.
+
+**CT kontrolü:**
+- **Sapma kabul edildi:** yerel `Provider:ReferenceTenantId` = ayrılmış `0b7d0048-0290-4000-8000-000000000001` (97c5 değil). Kod ve MOD-0048-FU01, referans kiracının tüketici kiracıyla aynı olmasını reddediyor; istemdeki "ikisi de 97c5" geçersizdi. Mevcut BRD okumaları `CatalogLoad:TenantId` (97c5) üzerinden yapıldığı için etkilenmez.
+- `.gitattributes` yalnız iki kilitli kataloğu `text eol=lf` yapıyor; diğer dosyalar etkilenmedi.
+- Depoda gizli değer yok. Betik sırrı üretip iki servisin user-secrets'ına yazıyor; ekrana basmıyor, geri okumuyor. MDM API'ye `UserSecretsId` eklendi.
+- **Testler** (worktree, `-o ./.ct-out/plat`):
+  - yeni `VerifiedReferenceDevProvisioningConfigTests` 4/4;
+  - verified GSKU / market süzgeci 40/4; 4 kırmızı Mongo testi (`DITEN_PLATFORM_TEST_MONGO_URI` tanımlı değil, ortam kaynaklı).
+- **CT sabotajı (ajanın dokunmadığı kural):** `ConsumerTenantId` = referans kiracı yapıldı → `Development_config_makes_gsku_provisioning_enumeration_and_market_eligible` kırmızı. `.bak` ile geri alındı + touch → 4/4.
+
+**Açık / izlenecek:**
+- **Pazar seçici listesi boş kalabilir:** Rakip ürün sayfası pazar listesini Web'de `consumable-sets/market` üzerinden okuyor (önce çağıran kiracı 97c5, yoksa `CatalogLoad:TenantId` 97c5). Pazar kataloğu ayrılmış referans kiracıya yüklendiği için bu liste boş gelebilir; MDM doğrulaması verified resolver üzerinden çalışmaya devam eder. E4'te ölçülecek; gerekirse FIX-a'ya ya da ayrı bir işe girer.
+- **Canlı kararlar (ürün sahibinde):**
+  - K-INFRA-1: üretim yolu yok.
+  - K-INFRA-2: canlı referans kiracı be823006 olamaz; ayrılmış bir GUID gerekir.
+  - K-INFRA-3: canlı kimlik bilgisinin sahibi ve döndürülmesi.
+  - Operatör belgesi: `docs/guides/operations/verified-reference-data-provisioning.md`.
+- **Geliştirme ortamında açılış riski:** GSKU provisioning hata verirse Platform açılmaz (tasarım gereği). Kaçış: Platform user-secrets'ında `BusinessReferenceData:VerifiedGskuOperationalProvisioning:Enabled=false`.
+
+## §37 CT kabul — W4-FIX-b E2 ACCEPTED (2026-10-14)
+Test dalına alındı: `0ee9231d5` (ajan `4013677e5`). Cherry-pick çakışmasız.
+
+**CT kontrolü:**
+- Tek kural `VisitReportV2Rules.PotentialAsked` (vade ya da güncelleme **ve** onaylı endikasyon satırı). Bu kuralı tamlık kontrolü, kayıt (`InsightsOf`) ve ön doldurma bayrağı birlikte kullanıyor.
+- Gönderimde `DropPotentialsWithoutIndications`, satırsız ürünün potansiyelini gövdeden atıp uyarı ekliyor.
+- Yazıcıda ikinci koruma `WithIndicationsOnlyAsync`; hem Check hem Record yolunda çalışıyor.
+- `PotentialAsked` her yazmada sıfırlanıyor ve saklanmıyor. Web, sunucunun bayrağını kullanıyor; eski sunucuda vade bilgisine düşüyor; bayrağı geri göndermiyor.
+- **Testler** (worktree, `-o` repo içi): CRM VwW4 93/93; Web VwW4 + VisitReport 50/50. Ajanın tam takım sonuçları: CRM 2742/0/5, Web 1662/2; iki Shipment kırmızısı tabanda da var.
+- **CT sabotajı (ajanın dokunmadığı katman, Web):** `hasIndications` her zaman `true` yapıldı → `F5_wizard_shows_the_note_only…` ve `F5_core_without_indication_rows…` kırmızı. `.bak` ile geri alındı + touch → 50/50.
+
+**Açık:**
+- Geçmişe dönük veri temizliği yok: E4 test raporu `d68d299f` (Bülent Yardımcı) 3 potansiyel kaydına `NoPatientsInIndications=true` yazdı. Bu test verisi; temizlik kararı kullanıcıda.
+- Mobil not: `mobile/2026-10-14-visit-report-potential/MOBILE-NOTE-2026-10-14-report-potential-asked.md` → CT mobil yanıt sayfasına taşıyacak.
+
+## §37 CT kabul — W4-FIX-a E2 ACCEPTED (2026-10-14)
+Test dalına alındı: `b5ecaab09` (ajan `1ff39e2d3`). Cherry-pick çakışmasız.
+
+**CT kontrolü:**
+- Yeni çekirdek işlevleri:
+  - `referenceOptions` (F-3): gerçek `code` / `label` / `attributes.label_<dil>` yanıtı; pasifler dışarıda, `sortOrder` sıralı.
+  - `productMatches` (F-2): Türkçe İ/ı katlamalı ad / kod araması.
+  - `preparedOf` / `appliedOf` (F-7): uygulama anı hiç kullanılmıyor.
+- Ek düzeltme: `money()` virgüllü fiyatı çözüyor; eskiden "NaN" basıyordu.
+- Ana depodaki `.claude/launch.json` temiz; ajan elle kontrol için eklediği girişi geri almış, CT doğruladı.
+- **Testler** (worktree, `-o frontend/Diten.Web.Tests/bin/ct`): `CompetitorProductsWebTests` 32/32. Ajanın tam takım sonucu Web 1663/2; iki `ShipmentDetailsDateNode` kırmızısı tabanda da var.
+- **CT sabotajı (ajanın dokunmadığı kural, F-7):** hazırlama zamanı yine `updatedAt` öncelikli yapıldı → `FixA_F7_prepared_by_is_the_creation_and_applied_is_its_own_line` kırmızı. `.bak` ile geri alındı + touch → 32/32.
+
+**Açık:**
+- **F-7 sunucu tarafı:** MDM karar DTO'sunda `CreatedAt` yok; istemci ilk gönderim zamanına düşüyor. Kalıcı çözüm DTO'ya `CreatedAt` eklemek (küçük MDM işi).
+- **WEB-a `visit-report.js`:** geri ödeme etiketi hâlâ `displayName` okuyor; İngilizcede etiket yerine kod görünür. F-3'ün eşi, küçük iş.
+- **Pazar listesi:** yerelde `market` consumable seti 404 veriyor. W4-INFRA pazar kataloğunu ayrılmış referans kiracıya yükledi; consumable okuma 97c5 üzerinden yapıldığı için boş kalabilir. INFRA kullanıcı adımlarından sonra E4'te ölçülecek.
+
+## W4 yerel E4 — 2. tur bulguları (CT, 2026-10-14, INFRA + FIX-a + FIX-b sonrası)
+**Doğrulanan:**
+- Platform `/health/ready` Healthy (BL-404 yerelde kapandı).
+- Ayrılmış referans kiracıda `uom` 5, `pack-applicability` 1, `market` 249 yayında.
+- GSKU create-options 200. GSKU oluşturuldu: KONSET `GS-000000000179`, KEPLERON `…180`, KOTVA `…181`.
+- Rakip `E4-TEST Konsetra` TR satırı (186,30 TRY, geri ödemede) kaydedildi; daha önce 503 veriyordu.
+- FIX-a canlıda: Tab sonrası odak korunuyor, geri ödeme kodları dolu, önizleme "186,30 TRY".
+- Eczane ziyareti (plan dışı, `590c97f0`): başlat (istisna ile konum bilgi amaçlı) → bitir → "Rapor gir" eczane sayfasına yönlendirdi (I1) → 3 GSKU stok + satış + tavsiye + eğitim → gönderildi; veri doğru saklandı.
+
+**Yeni bulgular:**
+| # | Bulgu | Yer |
+|---|---|---|
+| G-1 | MDM GSKU oluşturma formunda "Global Ürün" listesi yalnız ilk 20 ürün (create-options varsayılan pageSize 20, arama / sayfalama yok) | Web `MasterDataManagement/Gskus/index.js` + MDM create-options |
+| G-2 | Rakip sayfası pazar listesi 404: Web `consumable-sets/market` çağıran 97c5 → `CatalogLoad:TenantId` (97c5) üzerinden okuyor; doğrulanmış pazar ayrılmış referans kiracıda. Ülke yalnız elle ISO koduyla giriliyor (MDM doğrulaması çalışıyor) | Web `CompetitorProductsController.ReferenceValues` / Platform okuma yolu |
+| G-3 | Çalışma alanı "Plan dışı ziyaret" yalnız doktor hedefi; eczane hedefi yok (sunucu `pharmacy` hedefini destekliyor) | `visit-workspace.js` unplanned |
+| G-4 | Plan dışı ziyarete saat girilirse gövde yalnız `plannedStartTime` gönderir → CRM 400 `planned_visit_time_window_invalid` (başlangıç + bitiş birlikte) | `workspace-core.js unplannedBody` |
+| G-5 (not) | `account` hedefli ziyaret (eczane hesabı olsa da) hekim sihirbazıyla açılır; tür yalnız `TargetType=pharmacy`'den | `VisitReportV2Rules.KindOf` |
+| G-6 | Eczane raporunda TÜM seçenek etiketleri İngilizce: çekirdek `labels[lang]` okuyor, ön doldurma `labels.label_tr` veriyor (F-3 sınıfı) | `report-pharmacy-core.js:289-292` |
+| G-7 | Eczane raporu başlığında eczane adı yok (yalnız tarih) | `pharmacy-report.js` başlık |
+| G-8 | Eczane ürün araması yalnız tam GSKU koduyla çalışıyor; ürün adı ("KONSET") ya da kodun bir kısmı boş döner (MDM `GetGskus` araması yalnız GSKU kodu) | MDM `GetGskusHandler` / Web `lookups/gskus` |
+| G-9 | Eczane rakip listesi planın İLK ÜRÜNÜNE bağlı; ürünsüz (plan dışı) eczane ziyaretinde stok GSKU'ları olsa da rakip listesi oluşmuyor | CRM `VisitReportV2Handlers` pharmacyListed / `PharmacyProposalProduct` |
+| G-10 (not) | Eczane "bağlı hekim" aramasında aynı adlı hekimler ayırt edilemiyor (uzmanlık / kurum yok) | `pharmacy-report.js` contact sonuçları |
+| G-11 (not) | Rakip değişiklik geçmişinde ham kod: "186.3 TRY · reimbursed" | `competitor-pages.js` geçmiş satırı |
+
+Önceki açıklar (FIX-a §37): MDM karar DTO `CreatedAt` yok; `visit-report.js` geri ödeme etiketi `displayName` okuyor.
+
+**Temizlik listesi (yerel test verisi):** `2db09638` (account hedefli, bitmiş, raporsuz eczane ziyareti), `E4-TEST Konsetra` / `Konsepro`, Bülent Yardımcı raporu `d68d299f` + 3 potansiyel (`NoPatientsInIndications=true`), eczane raporu `590c97f0`, KONSET eşik satırı (10/30).
+
+## §36.1 Agent Prompt — W4-FIX-c (paste-ready · Web: eczane raporu + plan dışı ziyaret + etiketler; FIX-d ile paralel)
+```text
+@[.antigravity/agents/frontend-ui-ux.md]
+WP: WP-VW-W4 · W4-FIX-c — Web düzeltmeleri: eczane raporu etiketleri (G-6) + başlıkta eczane adı (G-7) + aynı adlı hekimler (G-10); plan dışı ziyaret saati (G-4) + eczane hedefi (G-3); rakip geçmişi etiketleri (G-11); hekim sihirbazı geri ödeme etiketi
+Repository: C:\tmp\vw-w4-fix-c (worktree, test/crm-content-visit-e2e güncel başı) · Branch: wp/vw-w4-fix-c · commit bu dala, push YOK
+
+Paket belgesi: execution/domains/commercial-suite/work-packs/WP-VW-W4-report-v2.md — önce oku: "W4 yerel E4 — 2. tur bulguları" tablosu + §37 FIX-a ("Açık") + §37 WEB-b. Dosyalar: frontend/Diten.Web/wwwroot/assets/js/CRM/PharmacyReport/{report-pharmacy-core.js,pharmacy-report.js}, Controllers/CRM/PharmacyReportController.cs; wwwroot/assets/js/CRM/VisitWorkspace/{workspace-core.js,visit-workspace.js}, Controllers/CRM/VisitWorkspaceController.cs, Views/CRM/VisitWorkspace/*; wwwroot/assets/js/CRM/VisitReport/visit-report.js; wwwroot/assets/js/MasterData/CompetitorProducts/competitor-pages.js.
+NE:
+(G-6) Eczane çekirdeği `optionLabel` GERÇEK ön doldurma sözleşmesini okusun: `optionSets[].{code,label,labels:{label_tr,label_fr,…}}` → dil `en` dışı `labels['label_'+dil]`, yoksa `label`, yoksa kod (hekim report-core optionLabel ile aynı kural). Bütün eczane seçenekleri (görüşülen kişi, stok düzeyi, raf, eğilim, tavsiye, talep, rakip avantaj…) ve özet çipleri Türkçe / 7 dil. Node testleri + duman harness'ı GERÇEK biçimle (sahte `labels:{tr:…}` OLMASIN); eski harness'ın yanlış yeşilini sabotajla göster.
+(G-7) Eczane raporu başlığında eczanenin adı (+ şehir varsa) — mockup E6 gibi; kaynak mevcut uçlardan (planlı ziyaret / takvim `targetDisplayName`), yeni sunucu ucu açma.
+(G-10) Eczane "bağlı hekim" sonuçlarında aynı ada sahip hekimler ayırt edilebilsin: ad + uzmanlık etiketi (BRD etiketi, kod değil) + birincil kurum / şehir — CRM kişi aramasının döndürdüğü alanlarla (Web vekilinde eşle; CRM'e dokunma; alan yoksa yalnız mevcut olanı göster ve raporla).
+(G-4) Plan dışı ziyaret: saat girildiğinde gövde `plannedStartTime` + `plannedEndTime` birlikte gitsin (bitiş = başlangıç + varsayılan ziyaret süresi; kaynak sözleşme / kiracı varsayılanı varsa o, yoksa 20 dk — kararını rapora yaz); saat boşsa ikisi de boş. Kabul: saatli plan dışı ziyaret 201, saatsiz 201.
+(G-3) Plan dışı ziyaret penceresine hedef türü seçimi: Doktor | Eczane. Eczane seçilince eczane araması (CRM hesap araması, yalnız `pharmacy` türü; mevcut CRM ucu + Web vekili, `crm.account.read`), gövde `targetType: "pharmacy"`, `targetId` = hesap. Doktor akışı aynen kalır. Aynı gün aynı hedef 409 `planned_visit_duplicate_same_day_type` anlaşılır mesajla gösterilir.
+(G-11) Rakip ürün değişiklik geçmişi satırlarında ham kod / sayı yok: geri ödeme etiketi (FIX-a referenceOptions), para `money()` biçimi ("186,30 TRY").
+(Ek) Hekim sihirbazı `visit-report.js` geri ödeme / rakip kartı etiketleri `displayName` yerine gerçek `code`/`label`/`attributes.label_<dil>` (FIX-a §37 açığı).
+KORU/YAPMA: sunucu koduna (CRM / MDM / Platform) dokunma — gerekirse DUR + raporla; mevcut sihirbaz / eczane / rakip davranışı ve testleri yeşil kalmalı; kullanıcının giriş yaptığı sekmeye mock / harness enjekte etme (ayrı sekme); yerelde kalıcı kayıt OLUŞTURMA (plan dışı ziyaret yalnız test harness'ında).
+DOĞRULA: her madde için test (Node saf kural + sahte DOM duman) + 2 sabotaj (.bak + touch): (1) eczane optionLabel yine `labels[lang]` → kırmızı; (2) plan dışı gövde yine yalnız başlangıç saati → kırmızı. Web tam takım (-o repo içi, test projesinin altında), taban kırmızılarını ayrı worktree'de karşılaştır. Mockup E6 (Ziyaret Calisma Alani (standalone).html, ekran "E6 · Eczane ziyaret raporu") ile ayrı sekmede görsel karşılaştırma: başlık + seçenek etiketleri.
+Commit: "fix(web): WP-VW-W4-FIX-c — pharmacy report labels in the user's language + pharmacy name + distinguishable doctors; unplanned visit sends start+end and can target a pharmacy; competitor history labels; doctor wizard reimbursement label" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
+```
+
+## §36.1 Agent Prompt — W4-FIX-d (paste-ready · sunucu: GSKU ürün adıyla arama + eczane rakip ürünü + pazar listesi okuma yolu + GSKU formu arama + karar CreatedAt; FIX-c ile paralel)
+```text
+@[.antigravity/agents/backend-architect.md]
+WP: WP-VW-W4 · W4-FIX-d — GSKU araması ürün adını da kapsasın (G-8); eczane rakip listesi / öneri ürünü stok GSKU'larının ürünlerinden de gelsin (G-9); doğrulanmış global setler (market) tüketici okumasında referans sağlayıcı kiracıdan okunsun (G-2); MDM GSKU formu ürün listesi aranabilir olsun (G-1); MDM karar yanıtına CreatedAt / CreatedBy
+Repository: C:\tmp\vw-w4-fix-d (worktree, test/crm-content-visit-e2e güncel başı) · Branch: wp/vw-w4-fix-d · commit bu dala, push YOK
+
+Paket belgesi: execution/domains/commercial-suite/work-packs/WP-VW-W4-report-v2.md — önce oku: "W4 yerel E4 — 2. tur bulguları" + §37 W4-INFRA (ayrılmış referans kiracı `0b7d0048-0290-4000-8000-000000000001`, Provider:ReferenceTenantId) + §37 FIX-a + §37 BE-b2 + §2.6.
+CT ölçümü (2026-10-14, yerel):
+- `GET /CRM/PharmacyReport/api/lookups/gskus?q=KONSET` → boş; `q=GS-000000000179` → 1 satır (MDM `GetGskusHandler` araması yalnız GSKU kodu).
+- `GET /MasterDataManagement/CompetitorProducts/api/reference-data/market/values` → 404 `reference_data_set_not_found`: `GetConsumableBusinessReferenceDataPublishedValuesQueryHandler` çağıran (97c5) → `request.ReferenceTenantId` (= `CatalogLoad:TenantId` 97c5) arıyor; doğrulanmış `market` ayrılmış referans kiracıda.
+- `VisitReportV2Handlers` `pharmacyListed` ve `PharmacyProposalProduct` yalnız planın İLK ürününe bakıyor; plan dışı / ürünsüz eczane ziyaretinde stok GSKU'ları olsa da rakip listesi yok, öneri MDM'ye gitmiyor.
+- MDM GSKU formu `create-options` çağrısı sayfalama / arama göndermiyor → yalnız ilk 20 global ürün.
+NE:
+(G-8) MDM `GET api/gskus?search=`: GSKU kodu + global ürün adı + global ürün kodu (büyük/küçük harf ve Türkçe İ/ı duyarsız, mevcut sayfalama korunur, kiracı sınırı korunur). Eczane vekili (`PharmacyReportController.Gskus`) aynı aramayı kullanır; numune GSKU listesi davranışı değişmez.
+(G-9) CRM eczane raporu: rakip listesi ürünleri = planın ürünleri ∪ gövdedeki stok / satış GSKU'larının global ürünleri (GSKU → globalProductId MDM'den; fail-closed: MDM yoksa eski davranış + uyarı). Ön doldurmada mevcut ürünler; Web'in yeni eklenen GSKU için rakip seçeneği alabilmesi için mevcut CRM ucu (varsa `competitor` lookup vekili) üzerinden ürün başına okuma — yeni uç gerekiyorsa en küçük biçimde ekle ve mobil notuna yaz. Tamlık kuralı (`pharmacyListed`) ve öneri ürünü (`PharmacyProposalProduct`) aynı ürün kümesinden: önce planın ilk ürünü, yoksa ilk stok GSKU'sunun ürünü; hiçbiri yoksa eski davranış (öneri bekler + `competitor_proposal_pending`).
+(G-2) Platform tüketici okuması: çağıran kiracıda yoksa önce mevcut referans (`CatalogLoad:TenantId`), orada da yoksa ve set doğrulanmış katalog setiyse (`market`, `uom`, `pack-applicability` — kilitli sabitlerden) `Provider:ReferenceTenantId`'den; YALNIZ `global` kapsamlı set (kiracı kapsamlı set asla başka kiracıdan okunmaz). `Provider:ReferenceTenantId` yoksa davranış değişmez. Gerekirse `ConsumableSets` listesine `market` eklensin (Web rakip sayfası okuyabilsin) — `TenantReferenceDataController` ile tutarlılığı kontrol et.
+(G-1) MDM GSKU sayfası (Web `MasterDataManagement/Gskus/index.js` + vekil): global ürün listesi aramalı / sayfalı (create-options `Search` + `PageNumber` zaten var); 177 ürünün hepsi (ör. KONSET) bulunup seçilebilir.
+(F-7 kalıcı) MDM rakip öneri karar yanıtına `createdAt` / `createdBy` (karar oluşturulma); Web `preparedOf` zaten önce `createdAt`'ı kullanıyor — Web'e dokunma, yalnız sözleşme + test.
+KORU/YAPMA: kiracı izolasyonu (global olmayan set hiçbir zaman başka kiracıdan okunmaz — testle sabitle); kilitli katalog sabitleri / parmak izleri DEĞİŞMEZ; mevcut hekim raporu davranışı ve W4 tamlık testi yeşil kalmalı; canlıya DOKUNMA; kalıcı veri yazma YOK.
+DOĞRULA: her madde için test (MDM / CRM / Platform / Web ilgili takımlar) + 3 sabotaj (.bak + touch): (1) G-2 fallback kiracı kapsamlı sete de uygulanırsın → kırmızı (izolasyon testi); (2) G-8 arama yine yalnız kod → kırmızı; (3) G-9 ürün kümesi yine yalnız planın ilk ürünü → kırmızı. Tam takımlar (-o repo içi), taban karşılaştırması. Sözleşme değişikliği varsa mobil not: execution/domains/commercial-suite/work-packs/mobile/ altında.
+Commit: "fix(mdm,crm,platform,web): WP-VW-W4-FIX-d — GSKU search by product name, pharmacy competitors from stock GSKUs, verified global sets readable by consumers, searchable GSKU product picker, proposal decision CreatedAt" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
+```
+
+## §37 CT kabul — W4-FIX-d + W4-FIX-c E2 ACCEPTED (2026-10-14)
+Test dalına alındı:
+- FIX-d `2002ca445` (ajan `b74f3cf54`), çakışmasız.
+- FIX-c `fea8857f0` (ajan `b14034186`). İki çakışma, ikisi de birleşimle çözüldü:
+  - `PharmacyReportController.cs` sabitleri: FIX-d `CompetitorRead` + FIX-c `AccountContactRead`, `PlannedVisitRead`, `AccountRead`, `MedicalSpecialtySet`, `CitySet`.
+  - `pharmacy-report.js` state: FIX-d `gskuProducts` + FIX-c `target`, `reimbursement`.
+
+**CT kontrolü:**
+- **G-2 kiracı izolasyonu:** yedek okuma yalnız `VerifiedCatalogSets` (`market`, `uom`, `pack-applicability`, kilitli sabitlerden) **ve** `global` kapsamda devreye giriyor; sağlayıcı kiracı çağıranın kendi kiracısıysa uygulanmıyor. Eski 500 (`ReferenceTenantMisconfigured`) yolu önce doğrulanmış yedek okumaya bakıyor; davranış genişledi, daralmadı.
+- **G-3 eczane araması:** Web vekili `crm.account.read` ile korunuyor, `accountType=pharmacy`. Ekrandaki seçenek `perms.pharmacies` ile gizleniyor.
+- **Birleşik ağaçta testler** (ayrı worktree, `fea8857f0`):
+
+  | Takım | Sonuç | Kırmızılar |
+  |---|---|---|
+  | Web | 1680/3 | 2 Shipment (tabanda da var) + `WorkCenterMenuWithoutPermissions` (CT `-o` yol derinliği artefaktı) |
+  | CRM | 2742/2 | `VwW4DoctorInsights.A_manual_profile_edit…` (tarih bağımlı, tabanda da var) + `VisitPlanningFix2Tests…shared_pattern` (`CrmRoot()` yol artefaktı, CT `-o` derinliği) |
+  | MDM | 506/5 | 5'i de tabanda var (manifest + composition root) |
+  | Platform | 23/23 | Doğrulanmış katalog + ConsumableSets süzgeci |
+
+- **CT sabotajları (ajanların dokunmadığı kurallar):**
+  1. FIX-d G-1 vekil sayfa sınırı 50 → 500: `G1_the_create_options_proxy_forwards_a_bounded…` kırmızı.
+  2. FIX-c G-3 eczane seçeneği yetkisiz kullanıcıya da gösterildi: `FixC_G3_G4_the_dialog_creates…` kırmızı.
+  - İkisi de `.bak` ile geri alındı + touch → 37/37.
+
+**Açık / izlenecek:**
+- **Mobil notu (FIX-d):** `mobile/2026-10-14-visit-report-pharmacy-products/` (eczane rakip ürün kümesi + GSKU araması) → CT mobil sayfasına taşıyacak.
+- **Ölçülmeyen kabul:** plan dışı saatli / saatsiz 201 yalnız harness'ta gösterildi; gerçek CRM'e karşı E4 3. turda ölçülecek.
+- **Veri sahibi maddeleri:**
+  - yerel `medical-specialty` setinde `label_tr` yok (uzmanlık İngilizce);
+  - şehir sözlüğü farkı (`TR-01-ADANA` ↔ `adana`); Web, Ziyaret Planlama kuralını kullanıyor.
+- **Kapsam dışı:**
+  - eczane rakip kartında form kodu ham ("capsule"; form BRD'si yok);
+  - kayıtlı bağlı hekimler kısa kimlikle görünüyor.
+- **Maliyet:** eczane kişi araması her sorguda en çok 10 detay + 10 kurum + 2 BRD okuması.
+
+## W4 yerel E4 — 3. tur (CT, 2026-10-14, FIX-c + FIX-d sonrası) — TEMİZ
+Fleet yeniden başlatıldıktan sonra:
+- G-8 `lookups/gskus?q=konset` → `GS-000000000179 / KONSET`.
+- G-2 rakip sayfası `market` → 249 kayıt (TR = Türkiye).
+- G-1 GSKU formu Select2 araması "tutu" → TUTUKON ve türevleri (ilk 20'nin dışında).
+- G-9 ürünsüz eczane ziyareti `590c97f0` ön doldurma: stok GSKU ürünleri için rakip listesi (KONSET → E4-TEST Konsetra); rakip adımında çip görünüyor.
+- G-6 eczane raporu tüm seçenekler Türkçe (Eczacı, Az/Yeterli/Fazla, Artıyor/Aynı/Azalıyor, Yüksek/Orta/Düşük).
+- G-7 başlık "100.YIL ECZANESİ · Adana · 14 Eki Çarşamba".
+- G-10 aynı adlı hekimler uzmanlık + kurumla ayrışıyor (uzmanlık İngilizce = yerel `medical-specialty` label_tr eksik, veri sahibi).
+- G-11 rakip geçmişi "186,30 TRY · Geri ödemede".
+- G-3 + G-4 arayüzden eczane hedefli + saatli plan dışı ziyaret: aynı gün aynı hedef 409 Türkçe mesaj; Karabük eczanesi 16:00 → 201, kayıt `0e3776f1` TargetType `pharmacy`, 16:00–16:20, Source `unplanned`.
+
+**W4 sonucu:** yerel E4 3 turda tamamlandı; açık hata yok. Kalan veri sahibi / kapsam dışı maddeler §37 FIX-c/d "Açık" listesinde. Temizlik listesine `0e3776f1` eklendi.

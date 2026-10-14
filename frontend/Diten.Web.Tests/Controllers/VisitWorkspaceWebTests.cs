@@ -265,6 +265,7 @@ public sealed class VisitWorkspaceWebTests
         { "Session", "GET", "/api/crm/visit-plan/sessions/" + Id, new[] { PlanRead } },
         { "SessionTargets", "GET", "/api/crm/visit-plan/sessions/" + Id + "/targets?weekStart=2026-10-12", new[] { PlanRead } },
         { "SearchContacts", "GET", "/api/crm/contacts/search?search=ay", new[] { ContactRead } },
+        { "SearchPharmacies", "GET", "/api/crm/accounts?search=hay&accountType=pharmacy&page=1&pageSize=10", new[] { "crm.account.read" } },
         { "Cancel", "POST", "/api/crm/planned-visits/" + Id + "/cancel", new[] { Manage } },
         { "CreateUnplanned", "POST", "/api/crm/planned-visits", new[] { Manage } },
         { "RecordOutcome", "POST", "/api/crm/visit-report/outcome", new[] { ReportRecord, Manage } },
@@ -315,6 +316,79 @@ public sealed class VisitWorkspaceWebTests
         Assert.True(body.GetProperty("unplanned").GetBoolean());
         Assert.Equal("2026-10-15", body.GetProperty("plannedDate").GetString());
         Assert.Matches("^[A-Za-z0-9._-]+$", body.GetProperty("visitCode").GetString()!); // the CRM code pattern
+    }
+
+    // ═══ W4-FIX-c — the unplanned visit: start + end (G-4), a pharmacy target (G-3) ═══════════════════════════
+
+    [Fact]
+    public void FixC_G4_a_timed_unplanned_visit_sends_start_and_end_together_and_an_untimed_one_neither()
+    {
+        var node = RunNode(Core() + """
+            process.stdout.write(JSON.stringify({
+              timed: C.unplannedBody('c1', '2026-10-15', '10:30', 1760522400123),
+              untimed: C.unplannedBody('c1', '2026-10-15', null, 1760522400123),
+              empty: C.unplannedBody('c1', '2026-10-15', '', 1760522400123),
+              bad: C.unplannedBody('c1', '2026-10-15', '25:00', 1760522400123),
+              late: C.unplannedBody('c1', '2026-10-15', '23:50', 1760522400123),
+              pharmacy: C.unplannedBody({ type: 'pharmacy', id: 'a7' }, '2026-10-15', '09:00', 1760522400123),
+              minutes: C.UNPLANNED_MINUTES
+            }));
+            """);
+        if (node is null) { return; }
+        var r = JsonDocument.Parse(node).RootElement;
+        string? T(string k, string f) => r.GetProperty(k).GetProperty(f).ValueKind == JsonValueKind.Null ? null : r.GetProperty(k).GetProperty(f).GetString();
+        Assert.Equal(20, r.GetProperty("minutes").GetInt32());                  // no contract / tenant visit length → 20 min
+        Assert.Equal(("10:30", "10:50"), (T("timed", "plannedStartTime"), T("timed", "plannedEndTime")));
+        Assert.Equal(((string?)null, (string?)null), (T("untimed", "plannedStartTime"), T("untimed", "plannedEndTime")));
+        Assert.Equal(((string?)null, (string?)null), (T("empty", "plannedStartTime"), T("empty", "plannedEndTime")));
+        Assert.Equal(((string?)null, (string?)null), (T("bad", "plannedStartTime"), T("bad", "plannedEndTime")));
+        Assert.Equal(("23:50", "23:59"), (T("late", "plannedStartTime"), T("late", "plannedEndTime")));  // never past midnight
+        Assert.Equal("contact", T("timed", "targetType"));
+        Assert.Equal(("pharmacy", "a7"), (T("pharmacy", "targetType"), T("pharmacy", "targetId")));
+        Assert.Equal(("09:00", "09:20"), (T("pharmacy", "plannedStartTime"), T("pharmacy", "plannedEndTime")));
+        Assert.True(r.GetProperty("pharmacy").GetProperty("unplanned").GetBoolean());
+    }
+
+    [Fact]
+    public void FixC_G3_G4_the_dialog_creates_a_timed_doctor_visit_and_an_untimed_pharmacy_visit_and_names_the_duplicate()
+    {
+        var smoke = Path.Combine(Path.GetDirectoryName(WebRoot())!, "Diten.Web.Tests", "Js", "visit-workspace-unplanned-smoke.js").Replace("\\", "/");
+        var crm = Path.Combine(WebRoot(), "wwwroot", "assets", "js", "CRM").Replace("\\", "/");
+        var node = RunNode("process.argv[2] = '" + crm + "'; process.argv[3] = 'true'; require('" + smoke + "');");
+        if (node is null) { return; }
+        var r = JsonDocument.Parse(node).RootElement;
+        Assert.False(r.GetProperty("typeBoxHidden").GetBoolean());
+        Assert.Equal("Doktor", r.GetProperty("searchLabel").GetString());
+        Assert.True(r.GetProperty("saveDisabledBeforePick").GetBoolean());
+        var doctor = r.GetProperty("doctorBody");
+        Assert.Equal("contact", doctor.GetProperty("targetType").GetString());
+        Assert.Equal("10:30", doctor.GetProperty("plannedStartTime").GetString());
+        Assert.Equal("10:50", doctor.GetProperty("plannedEndTime").GetString());     // G-4: the CRM gets the window → 201
+        Assert.Contains("Kaydedildi.", r.GetProperty("toasts").EnumerateArray().Select(x => x.GetString()));
+        Assert.Equal("Eczane", r.GetProperty("pharmacyLabel").GetString());
+        Assert.Equal("/api/pharmacies/search?search=Hayat", r.GetProperty("pharmacySearchUrl").GetString());
+        Assert.Contains("<bdi>Hayat Eczanesi</bdi>", r.GetProperty("pharmacyResults").GetString());
+        var pharmacy = r.GetProperty("pharmacyBody");
+        Assert.Equal("pharmacy", pharmacy.GetProperty("targetType").GetString());
+        Assert.Equal("A7", pharmacy.GetProperty("targetId").GetString());
+        Assert.Equal(JsonValueKind.Null, pharmacy.GetProperty("plannedStartTime").ValueKind);
+        Assert.Equal(JsonValueKind.Null, pharmacy.GetProperty("plannedEndTime").ValueKind);
+        Assert.True(r.GetProperty("duplicateShown").GetBoolean());
+        Assert.Equal("Bu hedefe bugün aynı türde bir ziyaret zaten var.", r.GetProperty("duplicateError").GetString());
+
+        // without crm.account.read: no type choice, the doctor flow unchanged
+        var node2 = RunNode("process.argv[2] = '" + crm + "'; process.argv[3] = 'false'; require('" + smoke + "');");
+        var r2 = JsonDocument.Parse(node2!).RootElement;
+        Assert.True(r2.GetProperty("typeBoxHidden").GetBoolean());
+        Assert.Equal("10:50", r2.GetProperty("doctorBody").GetProperty("plannedEndTime").GetString());
+        Assert.Equal(1, r2.GetProperty("creates").GetInt32());
+
+        // the page flag and the radio group
+        var view = ViewSource();
+        Assert.Contains("data-can-search-pharmacies=\"@Model.CanSearchPharmacies", view);
+        Assert.Contains("name=\"vw-unp-type\" id=\"vw-unp-type-pharmacy\" value=\"pharmacy\"", view);
+        Assert.True(Model(Arrange(Manage, ContactRead, "crm.account.read").Controller.Index()).CanSearchPharmacies);
+        Assert.False(Model(Arrange(Manage, ContactRead).Controller.Index()).CanSearchPharmacies);
     }
 
     // ═══ 6 · seven languages + the menu key ════════════════════════════════════════════════════════════════
@@ -509,6 +583,7 @@ public sealed class VisitWorkspaceWebTests
         "Session" => c.Session(Guid.Parse(Id), CancellationToken.None),
         "SessionTargets" => c.SessionTargets(Guid.Parse(Id), CancellationToken.None),
         "SearchContacts" => c.SearchContacts(CancellationToken.None),
+        "SearchPharmacies" => c.SearchPharmacies("hay", CancellationToken.None),
         "Cancel" => c.Cancel(Guid.Parse(Id), CancellationToken.None),
         "CreateUnplanned" => c.CreateUnplanned(CancellationToken.None),
         "RecordOutcome" => c.RecordOutcome(CancellationToken.None),

@@ -37,7 +37,6 @@ public sealed class GetGskusHandler
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
-        var search = string.IsNullOrWhiteSpace(request.Search) ? null : request.Search.Trim().ToUpperInvariant();
         var scope = await _scopeGuard.ResolveContextAsync("mdm.gskus.read", cancellationToken);
         if (!scope.IsSuccessful)
         {
@@ -47,19 +46,47 @@ public sealed class GetGskusHandler
 
         // FIX3 B17: the same validated order in both scope modes (the validator already refused an unknown key).
         var sort = request.ResolveSort();
-        var page = scope.Context!.RolloutMode == ProductLegalEntityScopeRolloutMode.Preparation
-            ? await _gskus.GetPageAsync(
-                request.PageNumber, request.PageSize, search, request.LifecycleStatus, sort, cancellationToken)
-            : await _gskus.GetEnforcedLegalEntityScopePageAsync(
-                request.PageNumber,
-                request.PageSize,
-                search,
-                referenceableOnly: false,
-                request.LifecycleStatus,
-                sort,
-                scope.Context.EffectiveCandidateLegalEntityIds,
-                scope.Context.ServerNowUtc,
-                cancellationToken);
+        var enforced = scope.Context!.RolloutMode != ProductLegalEntityScopeRolloutMode.Preparation;
+        // Main sync 2026-10-14 (WP-LANE-MAIN-SYNC-04) — main's W4-FIX-d (G-8): the search finds a GSKU by its code, its global
+        // product's NAME or its global product's CODE (contains; case and Turkish I / İ insensitive) — "KONSET" finds every
+        // KONSET pack. It runs INSIDE the lane's read: the scope guard above, the lifecycle filter, the order and (enforced
+        // mode) the Legal Entity scope pipeline are unchanged; the product / revision lookups are tenant-scoped.
+        var search = string.IsNullOrWhiteSpace(request.Search) ? null : request.Search.Trim();
+        GskuPage page;
+        if (search is null)
+        {
+            page = enforced
+                ? await _gskus.GetEnforcedLegalEntityScopePageAsync(
+                    request.PageNumber,
+                    request.PageSize,
+                    null,
+                    referenceableOnly: false,
+                    request.LifecycleStatus,
+                    sort,
+                    scope.Context.EffectiveCandidateLegalEntityIds,
+                    scope.Context.ServerNowUtc,
+                    cancellationToken)
+                : await _gskus.GetPageAsync(
+                    request.PageNumber, request.PageSize, null, request.LifecycleStatus, sort, cancellationToken);
+        }
+        else
+        {
+            var productIds = await _globalProducts.FindIdsContainingAsync(search, cancellationToken);
+            var revisionIds = await _revisions.FindIdsByGlobalProductIdsAsync(productIds, cancellationToken);
+            page = enforced
+                ? await _gskus.SearchEnforcedLegalEntityScopePageAsync(
+                    request.PageNumber,
+                    request.PageSize,
+                    search,
+                    revisionIds,
+                    request.LifecycleStatus,
+                    sort,
+                    scope.Context.EffectiveCandidateLegalEntityIds,
+                    scope.Context.ServerNowUtc,
+                    cancellationToken)
+                : await _gskus.SearchPageAsync(
+                    request.PageNumber, request.PageSize, search, revisionIds, request.LifecycleStatus, sort, cancellationToken);
+        }
         var revisions = await _revisions.GetByIdsAsync(
             page.Items.Select(x => x.ProductDefinitionRevisionId).Distinct().ToArray(),
             cancellationToken);

@@ -289,4 +289,13 @@
   <data name="E3StartValue" xml:space="preserve"><value>başlatınca · sunucu saati</value></data>
   <data name="E3Cancel" xml:space="preserve"><value>Vazgeç</value></data>
   <data name="E3Begin" xml:space="preserve"><value>Sunumu başlat</value></data>
+  <data name="UnpTargetType" xml:space="preserve"><value>Ziyaret edilen</value></data>
+  <data name="UnpTargetDoctor" xml:space="preserve"><value>Doktor</value></data>
+  <data name="UnpTargetPharmacy" xml:space="preserve"><value>Eczane</value></data>
+  <data name="UnpDoctorLabel" xml:space="preserve"><value>Doktor</value></data>
+  <data name="UnpDoctorSearch" xml:space="preserve"><value>Doktoru ada göre arayın (en az 2 harf)</value></data>
+  <data name="UnpPharmacyLabel" xml:space="preserve"><value>Eczane</value></data>
+  <data name="UnpPharmacySearch" xml:space="preserve"><value>Eczaneyi ada göre arayın (en az 2 harf)</value></data>
+  <data name="Err_planned_visit_duplicate_same_day_type" xml:space="preserve"><value>Bu hedefe bugün aynı türde bir ziyaret zaten var.</value></data>
+  <data name="Err_planned_visit_time_window_invalid" xml:space="preserve"><value>Ziyaret saati geçersiz; başka bir başlangıç saati seçin.</value></data>
 </root>

@@ -711,7 +711,7 @@ public sealed class CompetitorProductService
             CanDecide: CanManage && open is not null && !WorkflowApprovalRules.IsOwn(d, actor));
         return new CompetitorDecisionDto(d.Id, d.ProposalId, d.Action, d.Complete, d.TargetId,
             target is null ? null : new CompetitorSummaryDto(target.Id, target.Name, target.Company, target.Status),
-            d.MoveMarketCodes, d.Reason, d.Status, d.CreatedBy, d.UpdatedBy, d.UpdatedAt, d.AppliedBy, d.AppliedAt,
+            d.MoveMarketCodes, d.Reason, d.Status, d.CreatedBy, d.CreatedAt, d.UpdatedBy, d.UpdatedAt, d.AppliedBy, d.AppliedAt,
             open?.SubmittedBy, open?.SubmittedAt, ApprovalRoundDto.From(d), ApprovalDecisionDto.From(d), d.Version, abilities);
     }
 

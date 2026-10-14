@@ -7,6 +7,7 @@
  *   STEPS / stepOf(missing)            the mockup's six pharmacy steps; a missing answer → its step
  *   productIdsOf(prefill)              the plan's products (the pre-fill's competitor probes, in plan order)
  *   competitorsListed(prefill)         MDM answered for the first plan product ⇒ "competitor or none" is asked (server rule)
+ *   gskuProductIds(pharmacy, map)      the global products of the stock then sales GSKUs, once each (W4-FIX-d G-9)
  *   draftOf(prefill)                   the editable body (every list / object present; OffLabelRequest never sent)
  *   seedRows(pharmacy, gskus, ids)     one stock + one sales row per GSKU of a plan product (existing rows kept)
  *   missing(body, ctx)                 the server's pharmacy completeness: AE (+ note), met role, visit kind, every stock
@@ -64,6 +65,18 @@
     const competitorsListed = prefill => {
         const first = arr(prefill && prefill.competitors)[0];
         return !!(first && first.available === true);
+    };
+
+    /** W4-FIX-d (G-9): the products of the stock rows, then the sales rows (GSKU → product map), once each, in that order —
+     * the server probes the competitor list with the plan's first product, else the first of these. */
+    const gskuProductIds = (pharmacy, map) => {
+        const out = [];
+        const m = map || {};
+        arr(pharmacy && pharmacy.stock).concat(arr(pharmacy && pharmacy.sales)).forEach(r => {
+            const id = r && m[r.gskuId];
+            if (id && out.indexOf(id) < 0) { out.push(id); }
+        });
+        return out;
     };
 
     /** The MDM competitor options of every plan product, once each (id → item). */
@@ -285,20 +298,43 @@
     };
 
     // ── the options ──────────────────────────────────────────────────────────────────────────────────────────
-    /** A BRD option's label in the application language (labels[lang] → label → code). */
+    /**
+     * A BRD option's label in the application language. W4-FIX-c (G-6) — the REAL pre-fill contract is
+     * optionSets[set] = [{ code, label, labels: { label_tr, label_fr, … } }] (CRM VisitReportOptionDto: the BRD value's
+     * attributes): another language reads labels['label_' + lang], English (or a missing translation) the label, then the
+     * code — the same rule as report-core optionLabel.
+     */
     const optionLabel = (option, lang) => {
         if (!option) { return ''; }
-        const labels = option.labels || {};
-        return labels[lang] || labels[String(lang || '').split('-')[0]] || option.label || option.code || '';
+        const labels = option.labels || option.attributes || {};
+        const l = String(lang || '').toLowerCase().split('-')[0];
+        const own = l && l !== 'en' ? (labels['label_' + l] || labels['Label_' + l]) : null;
+        return own || option.label || option.code || '';
     };
 
     const optionsOf = (prefill, set) => arr(prefill && prefill.optionSets && prefill.optionSets[set]);
 
+    // ── W4-FIX-c ─────────────────────────────────────────────────────────────────────────────────────────────
+    /** G-10 — what tells two same-named doctors apart: the specialty LABEL, the primary institution, the city (only what is known). */
+    const contactDetail = c => [c && c.specialty, c && c.institution, c && c.city].filter(x => typeof x === 'string' && x.trim()).join(' · ');
+
+    /**
+     * G-6 — a MOD-0048 set as the Web proxy answers it ({ items: [{ code, label, isActive, sortOrder, attributes }] }) in the
+     * option shape optionLabel reads: [{ code, label, labels }] (inactive values out, sortOrder order).
+     */
+    const referenceOptions = data => arr(data && (Array.isArray(data) ? data : data.items))
+        .filter(v => v && v.code && v.isActive !== false)
+        .map((v, i) => ({ v, i })).sort((a, b) => ((a.v.sortOrder || 0) - (b.v.sortOrder || 0)) || (a.i - b.i))
+        .map(x => ({ code: String(x.v.code), label: x.v.label || null, labels: x.v.attributes || null }));
+
+    /** G-7 — the header line under the title (mockup E6): the pharmacy, its city, the visit day — only what is known. */
+    const headerParts = (target, day) => [target && target.name, target && target.city, day].filter(x => typeof x === 'string' && x.trim());
+
     return {
         KIND, STEPS, SETS, MAX_NAME, MAX_NOTE, MAX_REASON, MAX_BOXES, MAX_REQUESTS, AMEND_CODE, ERROR_CODES,
-        productIdsOf, competitorsListed, competitorOptions, draftOf, seedRows, addGsku, removeGsku,
+        productIdsOf, gskuProductIds, competitorsListed, competitorOptions, draftOf, seedRows, addGsku, removeGsku,
         missing, stepOf, missingByStep, missingKey, toggleCompetitor, proposalErrors, addProposal, setNoCompetitor,
         cycleAdvantage, boxesOf, requestBody, amendBody, reasonError, modeOf, errorKey, isAmendRefusal, serverMissing,
-        optionLabel, optionsOf
+        optionLabel, optionsOf, contactDetail, headerParts, referenceOptions
     };
 }));

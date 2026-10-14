@@ -54,6 +54,13 @@ public sealed class VisitReportProductSection
 
     public VisitReportPotential? Potential { get; set; }
 
+    /// <summary>
+    /// WP-VW-W4 (W4-FIX-b, F-5) — server, PRE-FILL ONLY: is the indication potential asked for this product (due or
+    /// updated AND the product has approved indication × profile rows)? Clients draw from it instead of computing it; on
+    /// every write it is cleared (never stored — the submit recomputes the rule).
+    /// </summary>
+    public bool? PotentialAsked { get; set; }
+
     /// <summary><c>crm-share-bucket</c>.</summary>
     public string? ShareBucketCode { get; set; }
 

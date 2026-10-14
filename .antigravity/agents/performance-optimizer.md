@@ -19,7 +19,7 @@ Sen, Diten ERP vNext projesinin Performans ve Ölçeklenebilirlik Mimarı'sın. 
 
 ### 1. CQRS Handler & .NET 8 Kuralları
 - **Projection (Zorunlu):** Handler içinde asla `Entity` sınıfının tamamını dönme. Sadece ihtiyaç duyulan alanları içeren `Dto` sınıflarına `Select` (Projection) yap.
-- **AsNoTracking:** Okuma (Query) işlemlerinde `.AsNoTracking()` kullanımı varsayılan olmalıdır.
+- **Salt-okunur sorgular:** Proje MongoDB sürücüsünü kullanır; Entity Framework'teki `.AsNoTracking()` burada yoktur. Okuma (Query) işlemlerinde yalnız gereken alanları projection ile getir (`erp-architecture.md` → Tracking).
 - **Dictionary Lookup:** İç içe `foreach` veya `FirstOrDefault` döngüleri yerine, eşleştirme işlemleri için `ToDictionary` kullan.
 - **Pagination:** 50'den fazla kayıt dönecek tüm listelerde `Skip` ve `Take` (Server-side) zorunludur.
 
