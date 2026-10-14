@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Json;
 using Diten.PlanningService.Application.Features.DemandPlanning.HistoryImports;
+using Microsoft.Extensions.Configuration;
 
 namespace Diten.PlanningService.Api.Features.DemandPlanning;
 
@@ -8,11 +9,17 @@ public sealed class LiveHistoryImportReferences : IHistoryImportScopeAuthority, 
 {
     private readonly HttpClient _http;
     private readonly IHttpContextAccessor _context;
+    private readonly string _unitMode;
 
-    public LiveHistoryImportReferences(IHttpClientFactory factory, IHttpContextAccessor context)
+    public LiveHistoryImportReferences(IHttpClientFactory factory, IHttpContextAccessor context,
+        IConfiguration configuration)
     {
         _http = factory.CreateClient("DemandGateway");
         _context = context;
+        _unitMode = configuration["DemandPlanning:HistoryUnitMode"] ??
+            throw new InvalidOperationException("DemandPlanning:HistoryUnitMode is required.");
+        if (_unitMode is not ("SingleUnitInterim" or "ProductMasterV1"))
+            throw new InvalidOperationException("Unsupported DemandPlanning:HistoryUnitMode.");
     }
 
     public async Task<Guid?> ResolveSelectedAsync(Guid tenantId, Guid actorId,
@@ -61,8 +68,23 @@ public sealed class LiveHistoryImportReferences : IHistoryImportScopeAuthority, 
             if (parent is null || RequiredGuid(parent.Value, "id") != parentId ||
                 !IsIdentityApproved(parent.Value)) return invalid;
         }
+        if (_unitMode == "SingleUnitInterim")
+            return new HistoryReferenceResult(HistoryReferenceState.Verified,
+                null, null, null, null, UnitVerificationPending: true);
+
+        var productSku = await ReadAsync(
+            $"api/product-master/skus/{skuId:D}?level={skuLevel}", cancellationToken, wrapped: false);
+        if (productSku is null || RequiredGuid(productSku.Value, "skuId") != skuId ||
+            RequiredString(productSku.Value, "skuLevel") != skuLevel ||
+            RequiredString(productSku.Value, "contractVersion") != "v1") return invalid;
+        var uom = await ReadAsync($"api/product-master/skus/{skuId:D}/uom",
+            cancellationToken, wrapped: false);
+        if (uom is null || RequiredString(uom.Value, "contractVersion") != "v1") return invalid;
+        var baseUomId = RequiredString(uom.Value, "baseUomId");
+        if (string.IsNullOrWhiteSpace(baseUomId) ||
+            !string.Equals(originalUomId, baseUomId, StringComparison.Ordinal)) return invalid;
         return new HistoryReferenceResult(HistoryReferenceState.Verified,
-            null, null, null, null, UnitVerificationPending: true);
+            baseUomId, 1m, "PRODUCT-MASTER-BUNDLE/getSkuUom", "v1");
     }
 
     private async Task<bool> IsActiveWarehouseAsync(Guid legalEntityId, string warehouseId,

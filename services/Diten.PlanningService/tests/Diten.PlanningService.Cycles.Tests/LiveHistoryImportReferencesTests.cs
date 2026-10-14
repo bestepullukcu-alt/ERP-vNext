@@ -4,6 +4,7 @@ using System.Text.Json;
 using Diten.PlanningService.Api.Features.DemandPlanning;
 using Diten.PlanningService.Application.Features.DemandPlanning.HistoryImports;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Xunit;
 
 namespace Diten.PlanningService.Cycles.Tests;
@@ -69,6 +70,51 @@ public sealed class LiveHistoryImportReferencesTests
             Tenant, LegalEntity, Sku, "Gsku", "wh-01", new DateOnly(2026, 1, 1), "EA", default));
     }
 
+    [Fact]
+    public async Task ProductMasterV1_MatchingBaseUnitIsVerified()
+    {
+        var reader = Create(path => path switch
+        {
+            var p when p.Contains("api/locations/") => Warehouse(),
+            var p when p.Contains("api/gskus/") =>
+                Ok(new { data = new { id = Sku, lifecycleStatus = 3 } }),
+            var p when p.Contains("api/product-master/skus/") && p.EndsWith("/uom") =>
+                Ok(new { baseUomId = "EA", conversions = Array.Empty<object>(), contractVersion = "v1" }),
+            var p when p.Contains("api/product-master/skus/") =>
+                Ok(new { skuId = Sku, skuLevel = "Gsku", itemId = Guid.NewGuid(), contractVersion = "v1" }),
+            _ => new HttpResponseMessage(HttpStatusCode.NotFound)
+        }, "ProductMasterV1");
+
+        var result = await reader.CheckAsync(Tenant, LegalEntity, Sku, "Gsku", "wh-01",
+            new DateOnly(2026, 1, 1), "EA", default);
+        Assert.Equal(HistoryReferenceState.Verified, result.State);
+        Assert.False(result.UnitVerificationPending);
+        Assert.Equal("EA", result.BaseUomId);
+        Assert.Equal(1m, result.ConversionFactor);
+    }
+
+    [Fact]
+    public async Task ProductMasterV1_DifferentUnitNeedsDatedConversionAndIsRejected()
+    {
+        var reader = Create(path => path switch
+        {
+            var p when p.Contains("api/locations/") => Warehouse(),
+            var p when p.Contains("api/gskus/") =>
+                Ok(new { data = new { id = Sku, lifecycleStatus = 3 } }),
+            var p when p.Contains("api/product-master/skus/") && p.EndsWith("/uom") =>
+                Ok(new { baseUomId = "EA", conversions = new[] { new {
+                    fromUom = "BOX", toUom = "EA", numerator = "10", denominator = "1" } },
+                    contractVersion = "v1" }),
+            var p when p.Contains("api/product-master/skus/") =>
+                Ok(new { skuId = Sku, skuLevel = "Gsku", itemId = Guid.NewGuid(), contractVersion = "v1" }),
+            _ => new HttpResponseMessage(HttpStatusCode.NotFound)
+        }, "ProductMasterV1");
+
+        var result = await reader.CheckAsync(Tenant, LegalEntity, Sku, "Gsku", "wh-01",
+            new DateOnly(2026, 1, 1), "BOX", default);
+        Assert.Equal(HistoryReferenceState.Invalid, result.State);
+    }
+
     private static HttpResponseMessage Warehouse() => Ok(new {
         locationId = "wh-01", legalEntityId = LegalEntity, type = "Warehouse",
         status = "Active", isStockable = false });
@@ -76,14 +122,17 @@ public sealed class LiveHistoryImportReferencesTests
     private static HttpResponseMessage Ok(object value) => new(HttpStatusCode.OK)
     { Content = new StringContent(JsonSerializer.Serialize(value), Encoding.UTF8, "application/json") };
 
-    private static LiveHistoryImportReferences Create(Func<string, HttpResponseMessage> response)
+    private static LiveHistoryImportReferences Create(Func<string, HttpResponseMessage> response,
+        string mode = "SingleUnitInterim")
     {
         var context = new DefaultHttpContext();
         context.Request.Headers.Authorization = "Bearer test-token";
         var accessor = new HttpContextAccessor { HttpContext = context };
         var client = new HttpClient(new StubHandler(response))
         { BaseAddress = new Uri("http://127.0.0.1:5000/") };
-        return new LiveHistoryImportReferences(new Factory(client), accessor);
+        var configuration = new ConfigurationManager();
+        configuration["DemandPlanning:HistoryUnitMode"] = mode;
+        return new LiveHistoryImportReferences(new Factory(client), accessor, configuration);
     }
 
     private sealed class Factory(HttpClient client) : IHttpClientFactory

@@ -5,6 +5,11 @@ sohbette verdigi kararlar ile MOD-0188 pack'indeki acik AC'leri ayirir. Kod,
 canli entegrasyon, bagimsiz K13 veya AC kabul kaniti degildir. `ready-for-dev`
 korunur; AC-D01-D29 aciktir.
 
+**S1 durumu:** Kod ve testler tamam; gercek veriyle tarayici kaniti ertelendi
+(acik madde): satir kabulu, audit izi, birim isareti ve `ar` RTL. S1 tamamlandi
+sayilmaz; hicbir AC kapanmaz. S3 icin Mongo/fixture kaniti ayri olculecek;
+S1/S3 tarayici kaniti daha sonra birlikte alinacak.
+
 ## Karar listesi
 
 | Konu | Ali karari | Henuz kanitlanmayan / sonraki sahip | Ilgili AC |
@@ -13,8 +18,8 @@ korunur; AC-D01-D29 aciktir.
 | Stockout | Bilinmeyen stok/coverage haftasi sifir talep sayilmaz. | Tarihsel coverage/stockout ureticisi; veri yeterliligi ve uyarinin gercek veriyle sinanmasi. | D08-D09 |
 | Gecici sirket secimi | Tekli secim; tenant'in MDM'deki butun aktif LegalEntity'leri Gateway `GET /api/legal-entities/lookup` ile listelenir. Her istekte MDM `lookup-validation` ayni tenant/aktif kimligi dogrular. Pozisyon bazli kullanici-sirket yetkisi simdilik aranmaz. MDM yoksa 503. | MOD-0188 tek scope reader ve dogrudan API/JWT testleri. Ekran listesi icin `mdm.legal-entities.read` tenant entitlement ile verilir; `DefaultRolePermissionTemplate` genisletilmez. Canli erisim/Gateway kaniti ve kayit/seri veri kapsami aciktir; Demand islem izni ayridir. | D01, D03-D04, D10-D28; D27 kismi |
 | Hedef sirket yetkisi | Merkezi ekip butun MVP'lerden sonra Platform "yetkili sirketlerim" ucunu yapacak. Aktif pozisyon -> Organization Unit -> LegalEntity zinciri okuyucunun uygulamasini degistirecek; ek dislama/alt birim genisletmesi tanimlanmaz. | Platform iptal edilmis atama filtresi, sonuc sozlesmesi ve erisim kaybi testi. Gecici MDM kuralinin bunu karsiladigi iddia edilmez. | D27 |
-| Takvim | ISO Pazartesi, 52 hafta. Is gunu/tatil Platform `working-calendars/resolve` kaynagindan; bulunamazsa is gunu uydurulmaz. Mali yil MDM `FiscalYearVariant`; lookup DTO'sunda yoktur ama `GET /api/legal-entities/{legalEntityId}` detay DTO'su nullable alan olarak tasir ve `mdm.legal-entities.read` ister. Saat dilimi gecici tenant `Timezone`. | Tek okuyucuda dogrulanmis sirketten sonra yetkili detay okumasinin Gateway/tenant entitlement ve dolu veri kaniti; sirkete ozel saat dilimi cevabi ve eski hafta sinirlarini bozmayan gecis. Working Calendar kapsam/surum aciktir. | D01-D02, D15 |
-| SKU/UoM | MDM kimligi mevcut. PRODUCT-MASTER v1.1 DRAFT `getSkuUom` icin Prism taklidiyle izole gelistirme; canli UoM ucu yok. | MDM sahibi cevabi; tarihli donusum v1.2/BL-584. Gecersiz/belirsiz donusum gecmise girmez. | D07, D09 |
+| Takvim | ISO Pazartesi, 52 hafta. Is gunu/tatil Platform `working-calendars/resolve` kaynagindan; bulunamazsa is gunu uydurulmaz. Mali yil takvim yili + ISO haftasidir; MDM `FiscalYearVariant` okunmaz. Saat dilimi gecici tenant `Timezone`. | BL-629 mali yil varyanti ve BL-628 sirket saat dilimi aciktir; eski hafta sinirlari geriye donuk degismez. | D01-D02, D15 |
+| SKU/UoM | Canli MDM GSKU/LSKU kimlik/durum kontrolu ve tek-birim ara duzeni korunur; PRODUCT-MASTER v1.0 `getSku` / `getSkuUom` tuketici dogrulamasi Prism taklidiyle gelistirilir. Tek-birim modu yalniz acik ayarla, canli uclar gelene kadar gecerli; `PackUomCode` temel birim sayilmaz. | MOD-0290 canli uclari; tarihli donusumun `conversionId` ve `asOf` alanlari v1.2'de (takvimi yok). Gecersiz/belirsiz donusum gecmise girmez. | D07, D09 |
 | Demand v2 | Owned OpenAPI/olay semasi DRAFT kalir. Kanonik checksum tanimi alan sirasi ve kodlamayla yazildi; yeni Published eski baseline icin ayri Superseded outbox niyeti gerektirir. MOD-0189 bagli tuketicidir; MOD-0191, S&OP ve Capacity yalniz adaydir. | HTTP satir projection'inda eksik yeniden-hesaplama alanlari, kodda eksik Superseded outbox, bagli MRP okuma, olay teslimi, cursor/freeze ve canli kapsam. | D18, D23-D29 |
 
 ## S1 onerisi - dosyadan kabul edilmis gecmise ince dikey dilim
