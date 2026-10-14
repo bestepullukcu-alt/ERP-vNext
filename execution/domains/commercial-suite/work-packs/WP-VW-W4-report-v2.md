@@ -1081,3 +1081,17 @@ Test dalına alındı:
   - eczane rakip kartında form kodu ham ("capsule"; form BRD'si yok);
   - kayıtlı bağlı hekimler kısa kimlikle görünüyor.
 - **Maliyet:** eczane kişi araması her sorguda en çok 10 detay + 10 kurum + 2 BRD okuması.
+
+## W4 yerel E4 — 3. tur (CT, 2026-10-14, FIX-c + FIX-d sonrası) — TEMİZ
+Fleet yeniden başlatıldıktan sonra:
+- G-8 `lookups/gskus?q=konset` → `GS-000000000179 / KONSET`.
+- G-2 rakip sayfası `market` → 249 kayıt (TR = Türkiye).
+- G-1 GSKU formu Select2 araması "tutu" → TUTUKON ve türevleri (ilk 20'nin dışında).
+- G-9 ürünsüz eczane ziyareti `590c97f0` ön doldurma: stok GSKU ürünleri için rakip listesi (KONSET → E4-TEST Konsetra); rakip adımında çip görünüyor.
+- G-6 eczane raporu tüm seçenekler Türkçe (Eczacı, Az/Yeterli/Fazla, Artıyor/Aynı/Azalıyor, Yüksek/Orta/Düşük).
+- G-7 başlık "100.YIL ECZANESİ · Adana · 14 Eki Çarşamba".
+- G-10 aynı adlı hekimler uzmanlık + kurumla ayrışıyor (uzmanlık İngilizce = yerel `medical-specialty` label_tr eksik, veri sahibi).
+- G-11 rakip geçmişi "186,30 TRY · Geri ödemede".
+- G-3 + G-4 arayüzden eczane hedefli + saatli plan dışı ziyaret: aynı gün aynı hedef 409 Türkçe mesaj; Karabük eczanesi 16:00 → 201, kayıt `0e3776f1` TargetType `pharmacy`, 16:00–16:20, Source `unplanned`.
+
+**W4 sonucu:** yerel E4 3 turda tamamlandı; açık hata yok. Kalan veri sahibi / kapsam dışı maddeler §37 FIX-c/d "Açık" listesinde. Temizlik listesine `0e3776f1` eklendi.
