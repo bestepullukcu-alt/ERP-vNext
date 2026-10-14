@@ -55,7 +55,9 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
     private static readonly Dictionary<string, Pinned> PinnedCounts = new(StringComparer.Ordinal)
     {
         // measured 2026-10-02 — see docs/records/audits/2026-10/
-        ["Diten.AuthService"] = new(Debt: 18, Exceptions: 0, K2Debt: 8),
+        // K2Debt 8 → 11: CT decision 2026-10-14 (WP-MVP1-AUDIT1, CT-DECISIONS.md) — the three MOD-0022 e-sign re-authentication
+        // commands on the existing best-effort recorder until the write-once pattern (FU-0022-AUD-02).
+        ["Diten.AuthService"] = new(Debt: 18, Exceptions: 0, K2Debt: 11),
         ["Diten.CrmService"] = new(Debt: 169, Exceptions: 0),
         ["Diten.DevEnablementService"] = new(Debt: 8, Exceptions: 0),
         ["Diten.EnterpriseStrategyService"] = new(Debt: 36, Exceptions: 0, Indirect: 20),
@@ -63,7 +65,7 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
         ["Diten.HumanCapitalService"] = new(Debt: 70, Exceptions: 0),
         // measured 2026-10-06 — new service (MOD-0193, MVP-3): every command audited through bom-surum-gecmisi, no debt.
         ["Diten.ManufacturingService"] = new(Debt: 0, Exceptions: 0),
-        // measured 2026-10-14 — WP-MVP1-AUDIT1 (BL-501): all 58 write commands audited through inventory-merkezi-iletim
+        // measured 2026-10-14 — WP-MVP1-AUDIT1 (BL-501): all 59 write commands (58 + R4 after the MVP-1 merge) audited through inventory-merkezi-iletim
         // (shared forwarder, written in the command's own transaction), no debt, no exception.
         ["Diten.InventoryService"] = new(Debt: 0, Exceptions: 0),
         ["Diten.ManagementGovernanceService"] = new(Debt: 23, Exceptions: 0),
@@ -90,6 +92,9 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
         // Owner decision 2026-10-14 (A) / CT work package WP-MVP1-AUDIT1: BL-501, the shared forwarder of rule §5 K4
         // (Diten.BuildingBlocks.CentralAudit), path b. Inventory is the first service on it: "komutlar yol b ile denetleniyor".
         ("Diten.InventoryService", "inventory-merkezi-iletim", "b", "ICentralAuditDeclaration"),
+        // CT decision 2026-10-14 (WP-MVP1-AUDIT1, CT-DECISIONS.md): MOD-0022 e-signature commands write their central audit
+        // intent INSIDE the business transaction; accepted as a trail, path a markers are NOT added (double record, §4.4).
+        ("Diten.Platform", "esign-islem-ici-denetim", "a", "ESignatureAuditIntent.EnqueueAsync"),
         ("Diten.Platform", "platform-merkezi", "a",
             "IAuditableCommand+IAuditMetadataProvider+!IAuditExcludedRequest+!ITransactionOwnedAuditCommand"),
         ("Diten.Platform", "platform-meta-denetim", "a", "IAuditMetaAuditWriter.WriteAsync"),

@@ -8,6 +8,7 @@ Aynı değişiklikte `AuditTrailStandardTests.PinnedCounts` içindeki sayı da y
 
 | tarih | servis | eklenen ad | karar / gerekçe | kararı veren |
 |---|---|---|---|---|
+| 2026-10-14 | Diten.Platform · Diten.AuthService | ConsumeESignTicketCommand, IssueESignWindowTicketCommand, ReauthenticateForESignCommand (K2 borcu); Platform izi `esign-islem-ici-denetim` | 2026-10-14 — WP-MVP1-AUDIT1 (BL-501). (1) Diten.Platform: MOD-0022 e-imza komutlarının işlem içinde yazdığı merkezi denetim kaydı iz olarak kabul edildi; yol a eklenmez (çift kayıt, AUD-001 §4.4). (2) Diten.AuthService: ConsumeESignTicketCommand, IssueESignWindowTicketCommand, ReauthenticateForESignCommand K2 borcuna alındı (8 → 11). Gerekçe: mevcut iletici en-iyi-çaba; kimlik / e-imza komutları için önce-yaz kalıbı (WriteOnceAsync) bu dalda yok. Kapanış: FU-0022-AUD-02. Karar: Control Tower. | Control Tower |
 
 Not: defterin ilk kez geldiği değişiklik (taban dalda `tests/architecture/audit-ledger/` yokken) bu denetimden muaftır —
 o değişiklikte her satır tanım gereği yenidir. 2026-10-02'de eklenen `## K2 borcu` (200 satır) ve `## Yazan sorgular` (3 satır)
