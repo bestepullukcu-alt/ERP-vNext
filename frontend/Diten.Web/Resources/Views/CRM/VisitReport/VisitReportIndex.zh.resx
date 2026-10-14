@@ -99,7 +99,7 @@
   <data name="IndicationPatients" xml:space="preserve"><value>适应症患者（每月）</value></data>
   <data name="IndicationHint" xml:space="preserve"><value>已批准的适应症 × 患者画像列表。只勾选医生接诊的行；数字为估计值。</value></data>
   <data name="ThreeMonthHint" xml:space="preserve"><value>每三个月询问一次；期间显示最近一次的值。</value></data>
-  <data name="NoIndicationList" xml:space="preserve"><value>该产品未定义适应症列表；仅询问医生总数。</value></data>
+  <data name="NoIndicationList" xml:space="preserve"><value>该产品未定义适应症列表，因此不询问其潜力；医生总数在档案步骤中。</value></data>
   <data name="PatientsPerMonth" xml:space="preserve"><value>名患者 / 月</value></data>
   <data name="PreviousValue" xml:space="preserve"><value>上次：{0}</value></data>
   <data name="NoPatients" xml:space="preserve"><value>这些适应症中没有患者</value></data>

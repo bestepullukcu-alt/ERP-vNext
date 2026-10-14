@@ -15,7 +15,7 @@ Bu akış, veritabanı seviyesinde izolasyonu ve performansı korumak için izle
 
 ## 🛡️ 2. Uygulama Kuralları (Mühürlü)
 
-1. **İzolasyon Kuralı:** Entity sınıfı mutlaka `ITenantDocument` arayüzünü (veya `BaseTenantDocument` sınıfını) uygulamalıdır. Bu, `TenantId` alanının varlığını garanti eder.
+1. **İzolasyon Kuralı:** Tenant-owned entity sınıfı servisin `TenantId` taşıyan kiracı taban sınıfından (ad servise göre değişir — ör. Platform.Common: `TenantScopedEntity`; Auth/MDM: `EntityBase`; DevEnablement: `BaseEntity`; bkz. `entity-base-template.md`) türemeli ve `Guid TenantId` taşımalıdır. Platform global katalog istisnası (`GlobalEntity`) yalnız module pack'te açıkça yazılırsa geçerlidir (`multi-tenancy.md`).
 2. **Endeksleme (Indexing):** `{ "TenantId": 1, "Sık_Filtre_Alanı": 1 }` şeklinde bir bileşik indeks (Compound Index) oluşturulmadan koleksiyon yayına alınamaz.
 3. **Repository Standartı:** Sorgular her zaman Repository katmanı üzerinden yapılmalı; `TenantId` filtresi veritabanı sürücüsü seviyesinde veya Repository içinde zorlanmalıdır (Tenant Enforced).
 4. **Bson Mapping:** Tarih alanları (`DateTime`) ve benzersiz kimlikler (`Guid`) doğru BSON tipleriyle eşleştirilmelidir.

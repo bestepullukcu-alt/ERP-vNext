@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>منتجات المنافسين</value></data>
+  <data name="Loading" xml:space="preserve"><value>جارٍ التحميل…</value></data>
+  <data name="Crumb" xml:space="preserve"><value>MDM</value></data>
+  <data name="Title" xml:space="preserve"><value>منتجات المنافسين</value></data>
+  <data name="CrumbFull" xml:space="preserve"><value>MDM / منتجات المنافسين</value></data>
+  <data name="CrumbProposals" xml:space="preserve"><value>منتجات المنافسين / اقتراحات المندوبين</value></data>
+  <data name="ReadOnly" xml:space="preserve"><value>قراءة فقط</value></data>
+  <data name="NewButton" xml:space="preserve"><value>منتج منافس جديد</value></data>
+  <data name="TabRecords" xml:space="preserve"><value>منتجات المنافسين</value></data>
+  <data name="TabProposals" xml:space="preserve"><value>اقتراحات المندوبين</value></data>
+  <data name="FiltersTitle" xml:space="preserve"><value>عوامل التصفية</value></data>
+  <data name="AllOption" xml:space="preserve"><value>الكل</value></data>
+  <data name="FilterOurs" xml:space="preserve"><value>منتجنا</value></data>
+  <data name="FilterCompany" xml:space="preserve"><value>الشركة</value></data>
+  <data name="FilterIngredient" xml:space="preserve"><value>المادة الفعالة</value></data>
+  <data name="FilterCountry" xml:space="preserve"><value>الدولة</value></data>
+  <data name="FilterReimbursement" xml:space="preserve"><value>التعويض</value></data>
+  <data name="FilterStatus" xml:space="preserve"><value>الحالة</value></data>
+  <data name="SearchPlaceholder" xml:space="preserve"><value>ابحث في الاسم أو الأسماء الأخرى</value></data>
+  <data name="ExportButton" xml:space="preserve"><value>تصدير</value></data>
+  <data name="ColName" xml:space="preserve"><value>المنتج المنافس</value></data>
+  <data name="ColCompany" xml:space="preserve"><value>الشركة</value></data>
+  <data name="ColIngredient" xml:space="preserve"><value>المادة الفعالة</value></data>
+  <data name="ColForm" xml:space="preserve"><value>الشكل / الجرعة</value></data>
+  <data name="ColOurs" xml:space="preserve"><value>منتجاتنا</value></data>
+  <data name="ColCountries" xml:space="preserve"><value>الدول</value></data>
+  <data name="ColUsage" xml:space="preserve"><value>في التقارير</value></data>
+  <data name="ColStatus" xml:space="preserve"><value>الحالة</value></data>
+  <data name="ColLast" xml:space="preserve"><value>آخر تغيير</value></data>
+  <data name="ColActions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="Aka" xml:space="preserve"><value>أيضًا:</value></data>
+  <data name="PricedText" xml:space="preserve"><value>{0}/{1} مسعّر</value></data>
+  <data name="UsageNoAccess" xml:space="preserve"><value>يتطلب الاستخدام في التقارير صلاحية التقارير المجمعة.</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>التفاصيل</value></data>
+  <data name="EditButton" xml:space="preserve"><value>تعديل</value></data>
+  <data name="EmptyTitle" xml:space="preserve"><value>لا توجد منتجات منافسة بعد</value></data>
+  <data name="EmptyText" xml:space="preserve"><value>تُختار المنتجات المنافسة في قسم "السوق والمنافس" من تقرير المندوب. أضف السجل الأول؛ وتُدرج المنافسات المقترحة في "اقتراحات المندوبين".</value></data>
+  <data name="NoResults" xml:space="preserve"><value>لا يوجد سجل يطابق عوامل التصفية.</value></data>
+  <data name="FooterText" xml:space="preserve"><value>{0}–{1} من {2}</value></data>
+  <data name="PrevPage" xml:space="preserve"><value>الصفحة السابقة</value></data>
+  <data name="NextPage" xml:space="preserve"><value>الصفحة التالية</value></data>
+  <data name="ProposalsTitle" xml:space="preserve"><value>اقتراحات المندوبين المعلقة</value></data>
+  <data name="ProposalsText" xml:space="preserve"><value>يُستخدم الاقتراح فورًا في تقارير مندوبه؛ ولا يُعرض على المندوبين الآخرين حتى يُتخذ القرار.</value></data>
+  <data name="NoProposals" xml:space="preserve"><value>لا توجد اقتراحات معلقة</value></data>
+  <data name="PropName" xml:space="preserve"><value>الاسم المقترح</value></data>
+  <data name="PropCompany" xml:space="preserve"><value>الشركة المكتوبة</value></data>
+  <data name="PropBy" xml:space="preserve"><value>المقترِح</value></data>
+  <data name="PropProduct" xml:space="preserve"><value>في تقرير منتجنا</value></data>
+  <data name="PropUsage" xml:space="preserve"><value>الاستخدام</value></data>
+  <data name="InReports" xml:space="preserve"><value>في {0} تقارير</value></data>
+  <data name="SimilarRecords" xml:space="preserve"><value>سجلات مشابهة:</value></data>
+  <data name="NoSimilar" xml:space="preserve"><value>لا يوجد سجل مشابه · يمكن اعتماده كسجل جديد</value></data>
+  <data name="OpenDecision" xml:space="preserve"><value>القرار</value></data>
+  <data name="ActComplete" xml:space="preserve"><value>اعتماد وإكمال</value></data>
+  <data name="ActMerge" xml:space="preserve"><value>دمج مع سجل موجود</value></data>
+  <data name="ActReject" xml:space="preserve"><value>رفض</value></data>
+  <data name="State_waiting" xml:space="preserve"><value>بانتظار قرار</value></data>
+  <data name="State_draft" xml:space="preserve"><value>قرار مسودة · {0}</value></data>
+  <data name="State_in_review" xml:space="preserve"><value>بانتظار الموافقة · {0}، {1}</value></data>
+  <data name="State_returned" xml:space="preserve"><value>أُعيد إلى المسودة · {0}</value></data>
+  <data name="State_returned_sod" xml:space="preserve"><value>أُعيد: لا يمكن للمُعِد اعتماد قراره</value></data>
+  <data name="State_returned_withdrawn" xml:space="preserve"><value>سُحب · مسودة مجددًا</value></data>
+  <data name="State_applied" xml:space="preserve"><value>طُبّق · {0}، {1}</value></data>
+  <data name="Decision_complete" xml:space="preserve"><value>إكمال</value></data>
+  <data name="Decision_merge" xml:space="preserve"><value>دمج</value></data>
+  <data name="Decision_reject" xml:space="preserve"><value>رفض</value></data>
+  <data name="FormNewTitle" xml:space="preserve"><value>منتج منافس جديد</value></data>
+  <data name="FormEditTitle" xml:space="preserve"><value>تعديل</value></data>
+  <data name="FormCompleteTitle" xml:space="preserve"><value>اعتماد الاقتراح وإكماله</value></data>
+  <data name="FormNewSub" xml:space="preserve"><value>سجل يختاره المندوبون في تقاريرهم</value></data>
+  <data name="FormCompleteSub" xml:space="preserve"><value>يُحفظ القرار كمسودة ويُرسل للموافقة (عمليات المبيعات).</value></data>
+  <data name="CancelButton" xml:space="preserve"><value>إلغاء</value></data>
+  <data name="SaveButton" xml:space="preserve"><value>حفظ</value></data>
+  <data name="SaveDecision" xml:space="preserve"><value>حفظ القرار</value></data>
+  <data name="SendForApproval" xml:space="preserve"><value>إرسال للموافقة</value></data>
+  <data name="ProposalBanner" xml:space="preserve"><value>اقتراح مندوب · {0}، {1} · استُخدم في {2} تقارير</value></data>
+  <data name="ProposalBannerText" xml:space="preserve"><value>عند الاعتماد يصبح الاقتراح نشطًا ويرتبط ما في التقارير بهذا السجل. المكتوب في التقرير: "{0}"، الشركة "{1}".</value></data>
+  <data name="FormErrors" xml:space="preserve"><value>لم يُحفظ. املأ الحقول الإلزامية المحددة.</value></data>
+  <data name="SectionIdentity" xml:space="preserve"><value>الهوية</value></data>
+  <data name="SectionCompetition" xml:space="preserve"><value>المنافسة</value></data>
+  <data name="SectionCountries" xml:space="preserve"><value>السعر والتعويض حسب الدولة</value></data>
+  <data name="FieldName" xml:space="preserve"><value>اسم المنتج المنافس</value></data>
+  <data name="NameHelp" xml:space="preserve"><value>لا يمكن لشركة أن تملك سجلين بالاسم نفسه.</value></data>
+  <data name="FieldCompany" xml:space="preserve"><value>الشركة</value></data>
+  <data name="FieldAliases" xml:space="preserve"><value>أسماء أخرى</value></data>
+  <data name="AliasPlaceholder" xml:space="preserve"><value>اكتب اسمًا واضغط Enter</value></data>
+  <data name="AliasHelp" xml:space="preserve"><value>اختلافات الكتابة والأسماء القديمة؛ يبحث فيها البحث أيضًا. المميزة جاءت من دمج.</value></data>
+  <data name="FromMerge" xml:space="preserve"><value>جاء من دمج</value></data>
+  <data name="FieldIngredients" xml:space="preserve"><value>المادة/المواد الفعالة</value></data>
+  <data name="IngredientPlaceholder" xml:space="preserve"><value>مثل: أملوديبين</value></data>
+  <data name="IngredientHelp" xml:space="preserve"><value>أضف كل مادة في التركيبة على حدة؛ يظهر في التقرير "أملوديبين + فالسارتان".</value></data>
+  <data name="FieldForm" xml:space="preserve"><value>الشكل</value></data>
+  <data name="ChooseOption" xml:space="preserve"><value>اختر</value></data>
+  <data name="FormsUnavailable" xml:space="preserve"><value>تعذرت قراءة قائمة أشكال MDM (تتطلب صلاحية قراءة العلامات).</value></data>
+  <data name="FieldStrength" xml:space="preserve"><value>القوة / الجرعة</value></data>
+  <data name="FieldAtc" xml:space="preserve"><value>رمز ATC</value></data>
+  <data name="FieldOurs" xml:space="preserve"><value>منتجاتنا التي ينافسها</value></data>
+  <data name="OursHelp" xml:space="preserve"><value>من المنتجات العالمية؛ منتج واحد على الأقل. يُدرج المنافس في تقارير هذه المنتجات.</value></data>
+  <data name="ProductsNoAccess" xml:space="preserve"><value>تتطلب منتجاتنا صلاحية قراءة المنتجات العالمية.</value></data>
+  <data name="FieldIndications" xml:space="preserve"><value>الاستطبابات</value></data>
+  <data name="Optional" xml:space="preserve"><value>(اختياري)</value></data>
+  <data name="IndicationHelp" xml:space="preserve"><value>مخطط المفاهيم › استطبابات المنتجات المختارة. يظهر المنافس في التقرير ضمن هذه الاستطبابات.</value></data>
+  <data name="IndicationsNoAccess" xml:space="preserve"><value>تتطلب قائمة الاستطبابات صلاحية رؤى الأطباء (CRM).</value></data>
+  <data name="IndicationsPickProduct" xml:space="preserve"><value>اختر أحد منتجاتنا أولًا.</value></data>
+  <data name="NoIndications" xml:space="preserve"><value>لا توجد استطبابات معرّفة لهذه المنتجات.</value></data>
+  <data name="UnknownIndication" xml:space="preserve"><value>استطباب (لم يعد في القائمة)</value></data>
+  <data name="CountriesHelp" xml:space="preserve"><value>لا يفتح تغيير السعر صفًا جديدًا؛ بل يبدأ فترة جديدة وينتقل السعر السابق إلى السجل.</value></data>
+  <data name="AddCountry" xml:space="preserve"><value>إضافة دولة</value></data>
+  <data name="ProductSearch" xml:space="preserve"><value>ابحث في منتجاتنا بالاسم أو الرمز</value></data>
+  <data name="ProductsNoMatch" xml:space="preserve"><value>لا يوجد منتج يطابق البحث.</value></data>
+  <data name="ProductsMore" xml:space="preserve"><value>{0} أخرى — ضيّق البحث</value></data>
+  <data name="CountrySearch" xml:space="preserve"><value>ابحث عن دولة</value></data>
+  <data name="MarketsUnavailable" xml:space="preserve"><value>تعذرت قراءة قائمة الأسواق؛ اكتب رمز الدولة ISO.</value></data>
+  <data name="AddButton" xml:space="preserve"><value>إضافة</value></data>
+  <data name="HistoryCount" xml:space="preserve"><value>السجل ({0})</value></data>
+  <data name="NoHistory" xml:space="preserve"><value>لا سجل</value></data>
+  <data name="RemoveRow" xml:space="preserve"><value>إزالة الصف</value></data>
+  <data name="RemoveLabel" xml:space="preserve"><value>إزالة</value></data>
+  <data name="BoxPrice" xml:space="preserve"><value>سعر العلبة</value></data>
+  <data name="CurrencyLabel" xml:space="preserve"><value>العملة</value></data>
+  <data name="Reimbursement" xml:space="preserve"><value>حالة التعويض</value></data>
+  <data name="ValidFrom" xml:space="preserve"><value>ساري من</value></data>
+  <data name="Source" xml:space="preserve"><value>المصدر / ملاحظة</value></data>
+  <data name="SourcePlaceholder" xml:space="preserve"><value>مثل: قائمة الأدوية الوطنية</value></data>
+  <data name="NewPeriod" xml:space="preserve"><value>ستُفتح فترة جديدة: {0} ← {1} {2}. ينتقل السعر السابق إلى السجل.</value></data>
+  <data name="NewPeriodDate" xml:space="preserve"><value>حدّث تاريخ البدء.</value></data>
+  <data name="NoCountries" xml:space="preserve"><value>لم تُضف أي دولة بعد</value></data>
+  <data name="NoCountriesText" xml:space="preserve"><value>أدخل سعر العلبة وحالة التعويض لكل دولة. يرى المندوب صف دولته.</value></data>
+  <data name="ErrMarkets_duplicate" xml:space="preserve"><value>لا يمكن إضافة الدولة إلا مرة واحدة.</value></data>
+  <data name="ErrMarkets_price" xml:space="preserve"><value>يجب أن يكون لكل دولة سعر علبة (0 أو أكثر).</value></data>
+  <data name="ErrMarkets_currency" xml:space="preserve"><value>يجب أن يكون لكل دولة رمز عملة من ثلاثة أحرف.</value></data>
+  <data name="PreviousPeriods" xml:space="preserve"><value>الفترات السابقة · قراءة فقط</value></data>
+  <data name="PeriodLabel" xml:space="preserve"><value>الفترة</value></data>
+  <data name="PreviewTitle" xml:space="preserve"><value>عرض المندوب</value></data>
+  <data name="PreviewSub" xml:space="preserve"><value>بطاقة "السوق والمنافس" في التقرير</value></data>
+  <data name="PreviewAs" xml:space="preserve"><value>معاينة كـ {0}</value></data>
+  <data name="CompetitorTag" xml:space="preserve"><value>منافس</value></data>
+  <data name="FormStrength" xml:space="preserve"><value>الشكل / الجرعة</value></data>
+  <data name="OurProduct" xml:space="preserve"><value>منتجنا</value></data>
+  <data name="PriceIn" xml:space="preserve"><value>سعر العلبة · {0}</value></data>
+  <data name="Since" xml:space="preserve"><value>منذ {0}</value></data>
+  <data name="NoPriceFor" xml:space="preserve"><value>لم يُدخل سعر لـ {0}. يرى المندوب البطاقة دون سعر.</value></data>
+  <data name="ShownIndications" xml:space="preserve"><value>يظهر في الاستطبابات:</value></data>
+  <data name="ConflictTitle" xml:space="preserve"><value>عدّل شخص آخر السجل؛ حدّثه.</value></data>
+  <data name="ConflictText" xml:space="preserve"><value>لم تُحفظ تغييراتك؛ أدخلها مجددًا بعد التحديث.</value></data>
+  <data name="RefreshButton" xml:space="preserve"><value>تحديث</value></data>
+  <data name="Saved" xml:space="preserve"><value>تم الحفظ.</value></data>
+  <data name="ErrNameRequired" xml:space="preserve"><value>اسم المنتج المنافس إلزامي (أو لدى الشركة سجل بالاسم نفسه).</value></data>
+  <data name="ErrCompanyRequired" xml:space="preserve"><value>الشركة إلزامية.</value></data>
+  <data name="ErrIngredientsRequired" xml:space="preserve"><value>أدخل مادة فعالة واحدة على الأقل.</value></data>
+  <data name="ErrProductsRequired" xml:space="preserve"><value>اختر منتجًا واحدًا على الأقل من منتجاتنا.</value></data>
+  <data name="LeaveTitle" xml:space="preserve"><value>المغادرة دون حفظ؟</value></data>
+  <data name="LeaveText" xml:space="preserve"><value>ستضيع تغييراتك في هذه الصفحة.</value></data>
+  <data name="StayButton" xml:space="preserve"><value>البقاء</value></data>
+  <data name="LeaveButton" xml:space="preserve"><value>مغادرة</value></data>
+  <data name="DetailSub" xml:space="preserve"><value>{0} · آخر تغيير {1}، {2}</value></data>
+  <data name="MergeOther" xml:space="preserve"><value>دمج مع سجل آخر</value></data>
+  <data name="DeactivateButton" xml:space="preserve"><value>إلغاء التفعيل</value></data>
+  <data name="DeactivateTitle" xml:space="preserve"><value>إلغاء تفعيل {0}؟</value></data>
+  <data name="DeactivateText" xml:space="preserve"><value>لا يمكن اختياره في التقارير الجديدة؛ ولا تتأثر التقارير السابقة.</value></data>
+  <data name="Deactivated" xml:space="preserve"><value>تم إلغاء التفعيل.</value></data>
+  <data name="MergedInto" xml:space="preserve"><value>دُمج هذا السجل في</value></data>
+  <data name="IndicationCount" xml:space="preserve"><value>{0} استطبابات</value></data>
+  <data name="CountryLabel" xml:space="preserve"><value>الدولة</value></data>
+  <data name="SectionHistory" xml:space="preserve"><value>سجل التغييرات</value></data>
+  <data name="SectionUsage" xml:space="preserve"><value>الاستخدام في التقارير</value></data>
+  <data name="LastThreeMonths" xml:space="preserve"><value>آخر 3 أشهر</value></data>
+  <data name="UsageNone" xml:space="preserve"><value>لم يُستخدم في التقارير بعد.</value></data>
+  <data name="UsageUnavailable" xml:space="preserve"><value>تعذرت قراءة أعداد التقارير.</value></data>
+  <data name="DoctorsLabel" xml:space="preserve"><value>أطباء</value></data>
+  <data name="ReportsLabel" xml:space="preserve"><value>تقارير</value></data>
+  <data name="ByProduct" xml:space="preserve"><value>حسب منتجنا</value></data>
+  <data name="ByCountry" xml:space="preserve"><value>حسب الدولة</value></data>
+  <data name="UnknownCountry" xml:space="preserve"><value>غير معروف</value></data>
+  <data name="UsagePrivacy" xml:space="preserve"><value>أعداد مجمعة. لا يُعرض أي طبيب؛ ويظهر العدد الأقل من 5 كـ "&lt;5".</value></data>
+  <data name="SectionMergeTrace" xml:space="preserve"><value>أثر الدمج</value></data>
+  <data name="TraceLine" xml:space="preserve"><value>اقترحه {0} · دُمج {1}</value></data>
+  <data name="NoMergeTrace" xml:space="preserve"><value>لم يُدمج أي سجل في هذا السجل.</value></data>
+  <data name="MarketSoon" xml:space="preserve"><value>بيانات السوق · قريبًا</value></data>
+  <data name="MarketSoonText" xml:space="preserve"><value>حصة السوق وبيانات المبيعات تأتي مع W7.</value></data>
+  <data name="MergeTitle" xml:space="preserve"><value>دمج</value></data>
+  <data name="MergeSource" xml:space="preserve"><value>سيُدمج</value></data>
+  <data name="MergeSourceLine" xml:space="preserve"><value>الشركة "{0}" · اقترحه {1}، {2}</value></data>
+  <data name="StepN" xml:space="preserve"><value>الخطوة {0}/3</value></data>
+  <data name="MergeStepTarget" xml:space="preserve"><value>اختر الهدف</value></data>
+  <data name="MergeStepTargetSub" xml:space="preserve"><value>السجل الباقي</value></data>
+  <data name="MergeStepCompare" xml:space="preserve"><value>قارن</value></data>
+  <data name="MergeStepCompareSub" xml:space="preserve"><value>الحقول والدول</value></data>
+  <data name="MergeStepEffect" xml:space="preserve"><value>الأثر</value></data>
+  <data name="MergeStepEffectSub" xml:space="preserve"><value>تأكيد</value></data>
+  <data name="SearchSurvivor" xml:space="preserve"><value>ابحث عن السجل الباقي</value></data>
+  <data name="SimilarBySimilarity" xml:space="preserve"><value>سجلات مشابهة · حسب تشابه الاسم</value></data>
+  <data name="NoCandidates" xml:space="preserve"><value>لا يوجد سجل نشط مطابق.</value></data>
+  <data name="NextButton" xml:space="preserve"><value>التالي</value></data>
+  <data name="BackButton" xml:space="preserve"><value>السابق</value></data>
+  <data name="CompareHelp" xml:space="preserve"><value>تُعتمد قيم السجل الباقي. الحقول المختلفة مميزة.</value></data>
+  <data name="FieldColumn" xml:space="preserve"><value>الحقل</value></data>
+  <data name="WillMerge" xml:space="preserve"><value>سيُدمج · {0}</value></data>
+  <data name="Survivor" xml:space="preserve"><value>الباقي · {0}</value></data>
+  <data name="WillMergeShort" xml:space="preserve"><value>سيُدمج</value></data>
+  <data name="SurvivorShort" xml:space="preserve"><value>الباقي</value></data>
+  <data name="DifferentTag" xml:space="preserve"><value>مختلف</value></data>
+  <data name="CountryRows" xml:space="preserve"><value>صفوف الدول</value></data>
+  <data name="CountryRowsHelp" xml:space="preserve"><value>يمكن نقل الدولة غير الموجودة في السجل الباقي. وإن وُجدت في الاثنين يبقى صف السجل الباقي.</value></data>
+  <data name="MoveColumn" xml:space="preserve"><value>نقل</value></data>
+  <data name="MoveLabel" xml:space="preserve"><value>نقل</value></data>
+  <data name="KeptLabel" xml:space="preserve"><value>يبقى</value></data>
+  <data name="NoneLabel" xml:space="preserve"><value>لا يوجد</value></data>
+  <data name="EffectTitle" xml:space="preserve"><value>أثر الدمج</value></data>
+  <data name="EffectReports" xml:space="preserve"><value>ستُربط قيمة المنافس في {0} تقارير بـ "{1}".</value></data>
+  <data name="EffectAlias" xml:space="preserve"><value>سيُضاف الاسم "{0}" إلى الأسماء الأخرى.</value></data>
+  <data name="EffectMove" xml:space="preserve"><value>ستُنقل صفوف الدول {0} إلى السجل الباقي.</value></data>
+  <data name="EffectNoMove" xml:space="preserve"><value>لن يُنقل أي صف دولة.</value></data>
+  <data name="EffectStatusProposal" xml:space="preserve"><value>يصبح الاقتراح "مدموجًا" ويبقى أثرًا فقط.</value></data>
+  <data name="EffectStatusRecord" xml:space="preserve"><value>يصبح هذا السجل "مدموجًا" ويبقى أثرًا فقط.</value></data>
+  <data name="EffectApproval" xml:space="preserve"><value>يُطبَّق عندما توافق عمليات المبيعات في مركز المهام.</value></data>
+  <data name="Irreversible" xml:space="preserve"><value>لا يمكن التراجع عن ذلك.</value></data>
+  <data name="AckText" xml:space="preserve"><value>قرأت الأثر وأؤكد الدمج.</value></data>
+  <data name="MergeButton" xml:space="preserve"><value>دمج</value></data>
+  <data name="Merged" xml:space="preserve"><value>تم الدمج.</value></data>
+  <data name="SectionProposal" xml:space="preserve"><value>الاقتراح</value></data>
+  <data name="SectionDecision" xml:space="preserve"><value>القرار</value></data>
+  <data name="SectionDecisionHistory" xml:space="preserve"><value>سجل الموافقات</value></data>
+  <data name="NoDecision" xml:space="preserve"><value>لم يُعدّ أي قرار بعد.</value></data>
+  <data name="DecisionKind" xml:space="preserve"><value>القرار</value></data>
+  <data name="PreparedBy" xml:space="preserve"><value>أعدّه</value></data>
+  <data name="MergeTarget" xml:space="preserve"><value>السجل الهدف</value></data>
+  <data name="MovedCountries" xml:space="preserve"><value>الدول المنقولة</value></data>
+  <data name="MergeEffectShort" xml:space="preserve"><value>ينضم الاسم المقترح إلى أسماء الهدف الأخرى؛ وترتبط التقارير بالهدف.</value></data>
+  <data name="RejectReason" xml:space="preserve"><value>السبب</value></data>
+  <data name="HistMovedFrom" xml:space="preserve"><value>نُقل من {0}</value></data>
+  <data name="AppliedRowLabel" xml:space="preserve"><value>طُبّق</value></data>
+  <data name="AppliedLine" xml:space="preserve"><value>طُبّق · {0} · اعتمده {1}، {2}</value></data>
+  <data name="WithdrawButton" xml:space="preserve"><value>سحب</value></data>
+  <data name="ApproveButton" xml:space="preserve"><value>اعتماد</value></data>
+  <data name="ReturnToDraft" xml:space="preserve"><value>إعادة إلى المسودة</value></data>
+  <data name="SodNote" xml:space="preserve"><value>أنت أعددت هذا القرار؛ يعتمده شخص آخر في مركز المهام.</value></data>
+  <data name="HistSubmitted" xml:space="preserve"><value>أرسل {1} الجولة {0} للموافقة</value></data>
+  <data name="HistRound_approved" xml:space="preserve"><value>اعتُمد · {0}</value></data>
+  <data name="HistRound_rejected" xml:space="preserve"><value>أُعيد · {0}</value></data>
+  <data name="HistRound_cancelled" xml:space="preserve"><value>سُحب · {0}</value></data>
+  <data name="HistRound_timed_out" xml:space="preserve"><value>انتهت المهلة</value></data>
+  <data name="HistRound_closed" xml:space="preserve"><value>أُغلق · {0}</value></data>
+  <data name="HistDecision_approve" xml:space="preserve"><value>القرار: اعتماد · {0}</value></data>
+  <data name="HistDecision_return" xml:space="preserve"><value>القرار: إعادة إلى المسودة · {0}</value></data>
+  <data name="DecisionSaved" xml:space="preserve"><value>حُفظ القرار كمسودة.</value></data>
+  <data name="Sent" xml:space="preserve"><value>أُرسل للموافقة.</value></data>
+  <data name="RejectTitle" xml:space="preserve"><value>رفض الاقتراح: {0}</value></data>
+  <data name="RejectPlaceholder" xml:space="preserve"><value>مثل: غير موجود في هذا السوق؛ وليس خطأ كتابة لمنتج آخر.</value></data>
+  <data name="RejectInfo" xml:space="preserve"><value>يبقى في التقارير كمنافس غير موثق (نص عادي)؛ ولا يُعرض على المندوبين.</value></data>
+  <data name="ErrReasonRequired" xml:space="preserve"><value>السبب إلزامي.</value></data>
+  <data name="ErrTooLong" xml:space="preserve"><value>500 حرف كحد أقصى.</value></data>
+  <data name="ReturnTitle" xml:space="preserve"><value>إعادة القرار إلى المسودة</value></data>
+  <data name="ReturnNote" xml:space="preserve"><value>ملاحظة للمُعِد</value></data>
+  <data name="ErrNoteRequired" xml:space="preserve"><value>الملاحظة إلزامية.</value></data>
+  <data name="UserShort" xml:space="preserve"><value>مستخدم {0}</value></data>
+  <data name="UnknownProduct" xml:space="preserve"><value>منتج بلا اسم</value></data>
+  <data name="ActionFailed" xml:space="preserve"><value>فشل الإجراء. حاول مرة أخرى.</value></data>
+  <data name="Status_proposed" xml:space="preserve"><value>مقترح</value></data>
+  <data name="Status_active" xml:space="preserve"><value>نشط</value></data>
+  <data name="Status_inactive" xml:space="preserve"><value>غير نشط</value></data>
+  <data name="Status_merged" xml:space="preserve"><value>مدموج</value></data>
+  <data name="Status_rejected" xml:space="preserve"><value>مرفوض</value></data>
+  <data name="Field_name" xml:space="preserve"><value>الاسم</value></data>
+  <data name="Field_company" xml:space="preserve"><value>الشركة</value></data>
+  <data name="Field_aliases" xml:space="preserve"><value>أسماء أخرى</value></data>
+  <data name="Field_activeIngredients" xml:space="preserve"><value>المادة الفعالة</value></data>
+  <data name="Field_formCode" xml:space="preserve"><value>الشكل</value></data>
+  <data name="Field_strength" xml:space="preserve"><value>القوة</value></data>
+  <data name="Field_atcCode" xml:space="preserve"><value>رمز ATC</value></data>
+  <data name="Field_competesWith" xml:space="preserve"><value>منتجاتنا</value></data>
+  <data name="Field_indications" xml:space="preserve"><value>الاستطبابات</value></data>
+  <data name="Field_created" xml:space="preserve"><value>أُنشئ</value></data>
+  <data name="Field_proposed" xml:space="preserve"><value>اقترحه مندوب</value></data>
+  <data name="Field_status" xml:space="preserve"><value>الحالة</value></data>
+  <data name="Field_countryPrices" xml:space="preserve"><value>سعر الدولة · {0}</value></data>
+  <data name="Err_concurrency_conflict" xml:space="preserve"><value>عدّل شخص آخر السجل؛ حدّث وحاول مجددًا.</value></data>
+  <data name="Err_forbidden" xml:space="preserve"><value>ليست لديك صلاحية لهذا الإجراء.</value></data>
+  <data name="Err_service_unavailable" xml:space="preserve"><value>تعذر الوصول إلى خدمة. لم يتغير شيء.</value></data>
+  <data name="Err_gateway_unavailable" xml:space="preserve"><value>تعذر الوصول إلى الخادم. حاول مجددًا.</value></data>
+  <data name="Err_workflow_template_missing" xml:space="preserve"><value>لم يُعدّ مسار الموافقة (MDM-COMP-PROPOSAL) بعد. حُفظ القرار كمسودة؛ اطلب من المسؤول نشر القالب.</value></data>
+  <data name="Err_approval_forbidden" xml:space="preserve"><value>لا يُسمح لك ببدء مسار الموافقة.</value></data>
+  <data name="Err_workflow_unavailable" xml:space="preserve"><value>تعذر الوصول إلى خدمة الموافقة. لم يتغير شيء.</value></data>
+  <data name="Err_workflow_request_rejected" xml:space="preserve"><value>رفض مسار الموافقة الطلب.</value></data>
+  <data name="Err_no_open_review" xml:space="preserve"><value>لا توجد موافقة مفتوحة لهذا القرار.</value></data>
+  <data name="Err_withdraw_not_possible" xml:space="preserve"><value>لم يعد بالإمكان سحبه.</value></data>
+  <data name="Err_decision_invalid" xml:space="preserve"><value>القرار اعتماد أو إعادة.</value></data>
+  <data name="Err_rejection_comment_required" xml:space="preserve"><value>تلزم ملاحظة لإعادته.</value></data>
+  <data name="Err_competitor_duplicate" xml:space="preserve"><value>لدى هذه الشركة سجل بهذا الاسم بالفعل.</value></data>
+  <data name="Err_competitor_market_duplicate" xml:space="preserve"><value>لا تظهر الدولة إلا مرة واحدة.</value></data>
+  <data name="Err_competitor_market_invalid" xml:space="preserve"><value>دولة غير موجودة في كتالوج الأسواق الموثقة.</value></data>
+  <data name="Err_competitor_reimbursement_invalid" xml:space="preserve"><value>حالة تعويض غير موجودة في قائمتها.</value></data>
+  <data name="Err_competitor_currency_invalid" xml:space="preserve"><value>عملة ليست رمزًا من ثلاثة أحرف.</value></data>
+  <data name="Err_competitor_form_invalid" xml:space="preserve"><value>الشكل غير موجود في قائمة أشكال MDM.</value></data>
+  <data name="Err_competitor_invalid" xml:space="preserve"><value>بعض القيم ناقصة أو طويلة جدًا.</value></data>
+  <data name="Err_competitor_not_found" xml:space="preserve"><value>لم يُعثر على السجل.</value></data>
+  <data name="Err_competitor_not_editable" xml:space="preserve"><value>لا يمكن تغيير هذا السجل في حالته الحالية.</value></data>
+  <data name="Err_competitor_not_selectable" xml:space="preserve"><value>يجب أن يكون الهدف سجلًا نشطًا.</value></data>
+  <data name="Err_competitor_not_proposal" xml:space="preserve"><value>سبق اتخاذ قرار في الاقتراح.</value></data>
+  <data name="Err_competitor_decision_locked" xml:space="preserve"><value>القرار مقفل أثناء انتظار الموافقة.</value></data>
+  <data name="Err_competitor_decision_missing" xml:space="preserve"><value>أعدّ قرارًا واحفظه أولًا.</value></data>
+  <data name="Err_competitor_proposal_sod" xml:space="preserve"><value>لا يمكن للمُعِد اعتماد قراره.</value></data>
+  <data name="Err_competitor_merge_confirm_required" xml:space="preserve"><value>أكّد أنك قرأت أثر الدمج.</value></data>
+  <data name="Err_competitor_merge_self" xml:space="preserve"><value>لا يمكن دمج السجل في نفسه.</value></data>
+  <data name="Err_reference_data_unavailable" xml:space="preserve"><value>تعذرت قراءة قائمة مرجعية. لم يُحفظ شيء.</value></data>
+  <data name="Err_tenant_supplied" xml:space="preserve"><value>رُفض الطلب.</value></data>
+  <data name="Form_tablet" xml:space="preserve"><value>قرص</value></data>
+  <data name="Form_capsule" xml:space="preserve"><value>كبسولة</value></data>
+  <data name="Form_syrup" xml:space="preserve"><value>شراب</value></data>
+  <data name="Form_injection" xml:space="preserve"><value>حقن</value></data>
+  <data name="Form_ointment" xml:space="preserve"><value>مرهم</value></data>
+  <data name="Form_cream" xml:space="preserve"><value>كريم</value></data>
+  <data name="Form_drops" xml:space="preserve"><value>قطرات</value></data>
+  <data name="Form_inhaler" xml:space="preserve"><value>بخاخ استنشاق</value></data>
+  <data name="Form_patch" xml:space="preserve"><value>لصقة</value></data>
+  <data name="Form_other" xml:space="preserve"><value>شكل آخر</value></data>
+  <data name="Form_film_coated_tablet" xml:space="preserve"><value>قرص مغلف</value></data>
+  <data name="Form_modified_release_tablet" xml:space="preserve"><value>قرص معدل الإطلاق</value></data>
+  <data name="Form_extended_release_tablet" xml:space="preserve"><value>قرص ممتد الإطلاق</value></data>
+  <data name="Form_modified_release_capsule" xml:space="preserve"><value>كبسولة معدلة الإطلاق</value></data>
+  <data name="Form_ampoule" xml:space="preserve"><value>أمبولة</value></data>
+</root>

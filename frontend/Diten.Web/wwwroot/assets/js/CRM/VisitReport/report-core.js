@@ -8,7 +8,9 @@
  *   contextOf(prefill)                    the completeness context (planned products, due potentials / total, listed competitors)
  *   indicationTotal(potential)            the patients of a product's indication rows
  *   doctorTotal(body, prefill)            the doctor's monthly total (this report, else the profile)
- *   potentialAsked(section, ctx)          the numbers are due (three months) or the rep pressed "update"
+ *   hasIndications(ctx, productId)        the product has approved indication × profile rows (W4-FIX-b, F-5)
+ *   potentialAsked(section, ctx)          the product has rows AND the numbers are due (the server's pre-fill flag
+ *                                         productSections[].potentialAsked) or the rep pressed "update"
  *   totalRule(body, prefill, ctx)         the products whose indications exceed the doctor's total (only when both are known)
  *   potentialClass(total, threshold)      low < lowBelow ≤ medium ≤ highAbove < high
  *   opportunity(potentialClass, share)    THE matrix (§2.3) — preview only, the server's value is the record
@@ -103,10 +105,18 @@
         const sections = (p.body && p.body.productSections) || [];
         const potentials = p.potentials || [];
         const profile = p.profile || null;
+        // W4-FIX-b (F-5): the server says per product whether the potential is asked (potentialAsked) — the client does not
+        // recompute it; a server without the flag (older pre-fill) falls back to "due".
+        const flagged = sections.some(s => typeof s.potentialAsked === 'boolean');
         return {
             kind: p.reportKind || 'doctor',
             plannedProductIds: sections.filter(s => !s.unplanned).map(s => s.productId),
-            duePotentialProductIds: potentials.filter(x => x.isDue).map(x => x.productId),
+            duePotentialProductIds: flagged
+                ? sections.filter(s => s.potentialAsked === true).map(s => s.productId)
+                : potentials.filter(x => x.isDue).map(x => x.productId),
+            indicationProductIds: Array.isArray(p.indicationRows)
+                ? p.indicationRows.filter(x => x && (x.items || []).length > 0).map(x => x.productId)
+                : null,
             totalDue: p.reportKind === 'pharmacy' ? false : (profile ? !!profile.totalIsDue : true),
             competitorListedProductIds: (p.competitors || []).filter(c => c.available).map(c => c.productId),
             pharmacyCompetitorsListed: !!(p.competitors || []).length && (p.competitors || []).some(c => c.available)
@@ -126,8 +136,12 @@
         return prefill && prefill.profile ? num(prefill.profile.totalMonthlyPatients) : null;
     };
 
-    const potentialAsked = (section, ctx) => !!section && ((ctx && (ctx.duePotentialProductIds || []).indexOf(section.productId) > -1)
-        || !!(section.potential && section.potential.updated));
+    /** Approved indication × profile rows for the product? (no list in the context = unknown ⇒ yes, the old rule). */
+    const hasIndications = (ctx, productId) => !ctx || !Array.isArray(ctx.indicationProductIds) || ctx.indicationProductIds.indexOf(productId) > -1;
+
+    /** F-5: without indication rows there is nothing to answer — no question, no "no patients", no requirement. */
+    const potentialAsked = (section, ctx) => !!section && hasIndications(ctx, section.productId)
+        && ((ctx && (ctx.duePotentialProductIds || []).indexOf(section.productId) > -1) || !!(section.potential && section.potential.updated));
 
     const storedPotential = (prefill, productId) => ((prefill && prefill.potentials) || []).find(x => x.productId === productId) || null;
 
@@ -177,6 +191,10 @@
         const stored = storedPotential(prefill, section && section.productId);
         const asked = potentialAsked(section, ctx);
         const threshold = stored ? stored.threshold : null;
+        if (section && !hasIndications(ctx, section.productId)) {
+            // no indication list ⇒ no potential: the preview is "—" (the share alone has no class)
+            return { total: null, potentialClass: null, opportunity: null, threshold: threshold, asked: false, server: null };
+        }
         const total = asked ? indicationTotal(section.potential) : (stored ? num(stored.indicationTotal) : null);
         const cls = asked ? potentialClass(total, threshold) : (stored ? stored.potentialClass || null : null);
         const share = section ? section.shareBucketCode : null;
@@ -394,7 +412,7 @@
     // ── the request bodies ────────────────────────────────────────────────────────────────────────────────────
     const cleanSection = s => {
         const x = copy(s);
-        delete x.presentedSteps; delete x.matchedPlan; delete x.nextMessageSuggestion; // server members — recomputed
+        delete x.presentedSteps; delete x.matchedPlan; delete x.nextMessageSuggestion; delete x.potentialAsked; // server members — recomputed
         x.minutes = num(x.minutes);
         if (x.potential) {
             x.potential.rows = (x.potential.rows || []).filter(r => num(r.monthlyPatients) !== null)
@@ -453,7 +471,7 @@
         EDIT_WINDOW_MINUTES, MIN_MINUTES, MAX_MINUTES, MAX_NEXT_MESSAGE, MAX_GENERAL_NOTE, MAX_SAMPLE,
         ADOPTION_STAGES, SHARE_BUCKETS, RESOLUTIONS, KINDS, SETS,
         optionLabel, options, emptySection, bodyOf, contextOf,
-        indicationTotal, doctorTotal, potentialAsked, storedPotential, totalRule, potentialClass, opportunity, preview,
+        indicationTotal, doctorTotal, hasIndications, potentialAsked, storedPotential, totalRule, potentialClass, opportunity, preview,
         suggestionKey, suggestionText,
         missing, missingDoctor, steps, stepOf, missingByStep, groupCounts,
         editWindow, hoursLeft, minutesBetween,

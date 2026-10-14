@@ -105,6 +105,34 @@ public sealed class VwW4DoctorInsightsTests
         Assert.Equal(30, w.Profiles.Items.Single().TotalMonthlyPatients);
     }
 
+    [Fact]
+    public async Task F5_the_recorder_writes_no_indication_numbers_for_a_product_without_indication_rows()
+    {
+        // WP-VW-W4 (W4-FIX-b, F-5): OtherProduct has no indication × profile rows in the Concept Graph, Product has.
+        var w = new World();
+        var doctor = w.Doctor("Dr. Ayşe", w.NodeA);
+        Assert.True((await w.Recorder().RecordFromReportAsync(Tenant, doctor, Guid.NewGuid(), Rep, null, 30, new[]
+        {
+            new DoctorProductInsightInput(OtherProduct, null, true, "half"),
+            new DoctorProductInsightInput(Product, null, true, "half")
+        }, default)).Ok);
+
+        // the row-less product: "no patients" is NOT recorded (no false statement), its three months do not start; the share stays
+        var other = w.Potentials.Items.Single(p => p.GlobalProductId == OtherProduct);
+        Assert.False(other.NoPatientsInIndications);
+        Assert.Null(other.AsOf);
+        Assert.Equal("half", other.ShareBucketCode);
+        Assert.DoesNotContain(w.PotentialHistory.Items, h => h.GlobalProductId == OtherProduct && h.Field == "noPatientsInIndications");
+        // the product with rows keeps the old rule
+        var own = w.Potentials.Items.Single(p => p.GlobalProductId == Product);
+        Assert.True(own.NoPatientsInIndications);
+        Assert.NotNull(own.AsOf);
+
+        // rows sent for a row-less product are dropped, not refused (the check passes, nothing is written for them)
+        Assert.True((await w.Recorder().CheckFromReportAsync(Tenant, doctor, null, 30,
+            new[] { new DoctorProductInsightInput(OtherProduct, new[] { w.Row(w.Ind1, w.Prof1, 5) }, null, null) }, default)).Ok);
+    }
+
     // ═══ 3 · the thresholds ══════════════════════════════════════════════════════════════════════════════
 
     [Fact]

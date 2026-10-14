@@ -168,10 +168,11 @@ public sealed class VwW4PharmacyThresholdsWebTests
         Assert.Contains("\"pack\":\"30 TAB\"", json);
         Assert.Equal(403, Status(await PharmacyArrange([ReportRead], "").Controller.Gskus(null, CancellationToken.None)));
 
-        var (g2, c2) = PharmacyArrange([ReportRead, ContactRead], "", "{\"data\":[{\"id\":\"c1\",\"displayName\":\"Dr. Ayşe Kaya\"}]}");
+        var (g2, c2) = PharmacyArrange([ReportRead, ContactRead], "", "{\"data\":[{\"id\":\"" + Id + "\",\"displayName\":\"Dr. Ayşe Kaya\"}]}");
         Assert.Contains("Dr. Ayşe Kaya", JsonSerializer.Serialize(Assert.IsType<OkObjectResult>(await c2.Contacts("ay", CancellationToken.None)).Value,
             new JsonSerializerOptions { Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
-        Assert.Equal(GatewayUrl + "/api/crm/contacts/search?search=ay&limit=10", Assert.Single(g2.Requests).Uri);
+        // the search first; W4-FIX-c (G-10) then completes each hit from the contact read (+ the BRD labels) — see FixC_G10
+        Assert.Equal(GatewayUrl + "/api/crm/contacts/search?search=ay&limit=10", g2.Requests[0].Uri);
         var (g3, c3) = PharmacyArrange([ReportRead, ContactRead], "");
         await c3.Contacts("a", CancellationToken.None); // < 2 letters: no call
         Assert.Empty(g3.Requests);
@@ -535,6 +536,193 @@ public sealed class VwW4PharmacyThresholdsWebTests
     private static string[] Strings(JsonElement array) => array.EnumerateArray().Select(x => x.GetString()!).ToArray();
 
     private static string Placeholders(string text) => string.Join(",", Regex.Matches(text, "\\{\\d\\}").Select(m => m.Value).OrderBy(x => x));
+
+    // ═══ W4-FIX-c — E4 round 2: G-6 labels, G-7 the pharmacy in the header, G-10 same-named doctors ═════════
+
+    [Fact]
+    public void FixC_G6_option_labels_read_the_real_prefill_contract_label_lang_then_label_then_code()
+    {
+        var node = RunNode(PharmacyCore() + """
+            // the CRM VisitReportOptionDto: the BRD value's English label + its attributes (label_<lang>, and any other attribute)
+            const o = { code: 'in_stock', label: 'In stock', labels: { label_tr: 'Var', label_ar: 'متوفر', note: 'x' } };
+            process.stdout.write(JSON.stringify([
+              C.optionLabel(o, 'tr'), C.optionLabel(o, 'tr-TR'), C.optionLabel(o, 'en'), C.optionLabel(o, 'ar'), C.optionLabel(o, 'fr'),
+              C.optionLabel({ code: 'low', label: null, labels: null }, 'tr'),
+              C.optionLabel({ code: 'low', label: 'Low', labels: { tr: 'Az' } }, 'tr'),   // the OLD fake shape is not the contract
+              C.contactDetail({ specialty: 'Kardiyoloji', institution: 'Şehir Hastanesi', city: 'Ankara' }),
+              C.contactDetail({ specialty: 'Üroloji', institution: null, city: '' }),
+              C.headerParts({ name: 'Hayat Eczanesi', city: null }, '13 Eki Salı').join('|'),
+              C.headerParts(null, '13 Eki Salı').join('|')
+            ]));
+            """);
+        if (node is null) return;
+        var r = Strings(JsonDocument.Parse(node).RootElement);
+        Assert.Equal(["Var", "Var", "In stock", "متوفر", "In stock", "low", "Low",
+            "Kardiyoloji · Şehir Hastanesi · Ankara", "Üroloji", "Hayat Eczanesi|13 Eki Salı", "13 Eki Salı"], r);
+    }
+
+    [Fact]
+    public void FixC_G6_G7_G10_pharmacy_smoke_turkish_options_and_summary_the_pharmacy_in_the_header_distinguishable_doctors()
+    {
+        var r = Smoke("pharmacy-report-smoke.js", PharmacyReportIndex.ScriptKeys, "PharmacyReport", "PharmacyReportIndex", "submit");
+        if (r is null) return;
+        var o = r.Value;
+        // G-6: every option button + the summary in Turkish (the pre-fill sends English labels + labels.label_tr)
+        var general = o.GetProperty("generalHtml0").GetString()!;
+        Assert.Contains("data-val=\"pharmacist\" aria-pressed=\"false\">Eczacı</button>", general);
+        Assert.DoesNotContain(">Pharmacist<", general);
+        var stock = o.GetProperty("stockHtml").GetString()!;
+        Assert.Contains(">Var</button>", stock);
+        Assert.Contains(">Yok</button>", stock);
+        Assert.DoesNotContain("In stock", stock);
+        Assert.Contains("Eczacı", o.GetProperty("summaryHtml").GetString());
+        var market = o.GetProperty("marketHtml").GetString()!;
+        Assert.Contains("data-code=\"price\">+ Fiyat</button>", market);               // the competitor advantage
+        Assert.DoesNotContain("Price</button>", market);
+        Assert.Contains("120,50 TRY · Geri ödemede", market);                            // the card: money + the reimbursement LABEL
+        Assert.DoesNotContain("· reimbursed", market);
+        // G-7: "Hayat Eczanesi · İstanbul · <day>" (mockup E6), the name isolated for RTL
+        Assert.StartsWith("<bdi>Hayat Eczanesi</bdi> · İstanbul · ", o.GetProperty("headerSub").GetString());
+        // G-10: two "Dr. Ali Yılmaz" told apart — specialty label + institution + city, only what is known
+        Assert.Contains("<bdi>Kardiyoloji · Şehir Hastanesi · Ankara</bdi>", market);
+        Assert.Contains("<bdi>Üroloji</bdi>", market);
+        Assert.DoesNotContain("cardiology", market);                                    // never the code
+    }
+
+    [Fact]
+    public async Task FixC_G10_the_contact_search_completes_each_hit_from_existing_reads_with_brd_labels()
+    {
+        const string c1 = "aaaaaaaa-0000-0000-0000-000000000001", c2 = "aaaaaaaa-0000-0000-0000-000000000002";
+        var routes = new Dictionary<string, string>
+        {
+            ["/api/crm/contacts/search"] = "{\"data\":[{\"id\":\"" + c1 + "\",\"displayName\":\"Dr. Ali Yılmaz\"},{\"id\":\"" + c2 + "\",\"displayName\":\"Dr. Ali Yılmaz\"}]}",
+            ["/api/crm/contacts/" + c1 + "/accounts"] = "{\"data\":[{\"accountName\":\"Eski Klinik\",\"isPrimary\":false,\"status\":\"active\"},{\"accountName\":\"Şehir Hastanesi\",\"isPrimary\":true,\"status\":\"active\"}]}",
+            ["/api/crm/contacts/" + c2 + "/accounts"] = "{\"data\":[]}",
+            ["/api/crm/contacts/" + c1] = "{\"data\":{\"id\":\"" + c1 + "\",\"specialty\":\"cardiology\",\"cityRef\":\"tr-06\"}}",
+            ["/api/crm/contacts/" + c2] = "{\"data\":{\"id\":\"" + c2 + "\",\"specialty\":\"urology\",\"cityRef\":null}}",
+            ["/api/lookups/reference-data/consumable-sets/medical-specialty/"] = "{\"data\":{\"items\":[{\"code\":\"cardiology\",\"label\":\"Cardiology\",\"attributes\":{\"label_tr\":\"Kardiyoloji\"}},{\"code\":\"urology\",\"label\":\"Urology\",\"attributes\":{}}]}}",
+            ["/api/lookups/reference-data/consumable-sets/city/"] = "{\"data\":{\"items\":[{\"code\":\"tr-06\",\"label\":\"Ankara\",\"attributes\":{\"label_tr\":\"Ankara\"}}]}}"
+        };
+        var previous = System.Globalization.CultureInfo.CurrentUICulture;
+        System.Globalization.CultureInfo.CurrentUICulture = new System.Globalization.CultureInfo("tr-TR");
+        try
+        {
+            var gateway = new RouteGateway(routes);
+            var controller = new PharmacyReportController(new HttpClient(gateway), Config(), NullLogger<PharmacyReportController>.Instance)
+            {
+                ControllerContext = Context([ReportRead, ContactRead, PharmacyReportController.AccountContactRead], "")
+            };
+            var json = JsonSerializer.Serialize(Assert.IsType<OkObjectResult>(await controller.Contacts("Ali", CancellationToken.None)).Value,
+                new JsonSerializerOptions { Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
+            using var doc = JsonDocument.Parse(json);
+            var rows = doc.RootElement.GetProperty("data").EnumerateArray().ToArray();
+            Assert.Equal("Kardiyoloji", rows[0].GetProperty("specialty").GetString());
+            Assert.Equal("cardiology", rows[0].GetProperty("specialtyCode").GetString());
+            Assert.Equal("Ankara", rows[0].GetProperty("city").GetString());
+            Assert.Equal("Şehir Hastanesi", rows[0].GetProperty("institution").GetString());     // the PRIMARY institution
+            Assert.Equal("Urology", rows[1].GetProperty("specialty").GetString());              // no Turkish label → the label
+            Assert.Equal(JsonValueKind.Null, rows[1].GetProperty("city").ValueKind);
+            Assert.Equal(JsonValueKind.Null, rows[1].GetProperty("institution").ValueKind);
+            Assert.All(gateway.Paths, p => Assert.DoesNotContain("tenantId", p));
+
+            // without crm.account-contact.read: no linked-accounts read, the institution stays empty
+            var g2 = new RouteGateway(routes);
+            var c3 = new PharmacyReportController(new HttpClient(g2), Config(), NullLogger<PharmacyReportController>.Instance) { ControllerContext = Context([ReportRead, ContactRead], "") };
+            var json2 = JsonSerializer.Serialize(Assert.IsType<OkObjectResult>(await c3.Contacts("Ali", CancellationToken.None)).Value);
+            Assert.DoesNotContain(g2.Paths, p => p.EndsWith("/accounts"));
+            Assert.Contains("\"institution\":null", json2);
+        }
+        finally
+        {
+            System.Globalization.CultureInfo.CurrentUICulture = previous;
+        }
+    }
+
+    [Fact]
+    public async Task FixC_G7_the_header_target_reads_the_planned_visit_and_the_account_city_with_their_keys()
+    {
+        const string account = "bbbbbbbb-0000-0000-0000-000000000001";
+        var routes = new Dictionary<string, string>
+        {
+            ["/api/crm/planned-visits/" + Id] = "{\"data\":{\"plannedVisitId\":\"" + Id + "\",\"targetType\":\"pharmacy\",\"targetId\":\"" + account + "\",\"accountId\":null,\"targetDisplayName\":\"Hayat Eczanesi\"}}",
+            ["/api/crm/accounts/" + account] = "{\"data\":{\"id\":\"" + account + "\",\"accountName\":\"Hayat Eczanesi\",\"cityRef\":\"tr-34\"}}",
+            ["/api/lookups/reference-data/consumable-sets/city/"] = "{\"data\":{\"items\":[{\"code\":\"tr-34\",\"label\":\"Istanbul\",\"attributes\":{\"label_tr\":\"İstanbul\"}}]}}"
+        };
+        var previous = System.Globalization.CultureInfo.CurrentUICulture;
+        System.Globalization.CultureInfo.CurrentUICulture = new System.Globalization.CultureInfo("tr-TR");
+        try
+        {
+            var gateway = new RouteGateway(routes);
+            var controller = new PharmacyReportController(new HttpClient(gateway), Config(), NullLogger<PharmacyReportController>.Instance)
+            {
+                ControllerContext = Context([ReportRead, PharmacyReportController.PlannedVisitRead, PharmacyReportController.AccountRead], "")
+            };
+            var json = JsonSerializer.Serialize(Assert.IsType<OkObjectResult>(await controller.Target(Guid.Parse(Id), CancellationToken.None)).Value,
+                new JsonSerializerOptions { Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
+            Assert.Contains("\"name\":\"Hayat Eczanesi\"", json);
+            Assert.Contains("\"city\":\"İstanbul\"", json);
+
+            // no account read: the name only (no account call)
+            var g2 = new RouteGateway(routes);
+            var c2 = new PharmacyReportController(new HttpClient(g2), Config(), NullLogger<PharmacyReportController>.Instance) { ControllerContext = Context([ReportRead, PharmacyReportController.PlannedVisitRead], "") };
+            var json2 = JsonSerializer.Serialize(Assert.IsType<OkObjectResult>(await c2.Target(Guid.Parse(Id), CancellationToken.None)).Value);
+            Assert.Contains("\"city\":null", json2);
+            Assert.DoesNotContain(g2.Paths, p => p.Contains("/api/crm/accounts/"));
+
+            // no plan read: 403, nothing sent
+            var g3 = new RouteGateway(routes);
+            var c3 = new PharmacyReportController(new HttpClient(g3), Config(), NullLogger<PharmacyReportController>.Instance) { ControllerContext = Context([ReportRead], "") };
+            Assert.Equal(403, Status(await c3.Target(Guid.Parse(Id), CancellationToken.None)));
+            Assert.Empty(g3.Paths);
+        }
+        finally
+        {
+            System.Globalization.CultureInfo.CurrentUICulture = previous;
+        }
+    }
+
+    [Fact]
+    public async Task FixC_G6_the_reimbursement_set_is_readable_with_the_page_key_and_no_other_set()
+    {
+        var (gateway, controller) = PharmacyArrange([ReportRead], "");
+        Assert.Equal(200, Status(await controller.ReferenceValues("mdm-reimbursement-status", CancellationToken.None)));
+        Assert.Contains("/consumable-sets/mdm-reimbursement-status/", gateway.Requests[0].Uri);
+        var (g2, c2) = PharmacyArrange([ReportRead], "");
+        Assert.Equal(404, Status(await c2.ReferenceValues("medical-specialty", CancellationToken.None)));
+        Assert.Empty(g2.Requests);
+        var (g3, c3) = PharmacyArrange([ContactRead], "");
+        Assert.Equal(403, Status(await c3.ReferenceValues("mdm-reimbursement-status", CancellationToken.None)));
+        Assert.Empty(g3.Requests);
+    }
+
+    [Fact]
+    public void FixC_the_city_reference_reads_the_city_set_like_visit_planning_and_is_never_shown_raw()
+    {
+        var labels = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["adana"] = "Adana", ["izmir"] = "İzmir", ["tr-34"] = "İstanbul" };
+        Assert.Equal("Adana", PharmacyReportController.CityLabel(labels, "TR-01-ADANA"));   // the master "TR-01-ADANA" ↔ the set "adana"
+        Assert.Equal("İstanbul", PharmacyReportController.CityLabel(labels, "tr-34"));
+        Assert.Equal("Kırşehir", PharmacyReportController.CityLabel(labels, "TR-40-KIRŞEHİR")); // no label: the Turkish way
+        Assert.Equal("Kocaeli", PharmacyReportController.CityLabel(new Dictionary<string, string>(), "TR-41-KOCAELİ"));
+        Assert.Null(PharmacyReportController.CityLabel(labels, "TR-99"));                   // a number alone is not a name
+        Assert.Null(PharmacyReportController.CityLabel(labels, null));
+    }
+
+    /// <summary>A Gateway answering by path (the longest matching prefix); an unknown path is 404.</summary>
+    private sealed class RouteGateway(IReadOnlyDictionary<string, string> routes) : HttpMessageHandler
+    {
+        public List<string> Paths { get; } = [];
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+        {
+            var path = request.RequestUri!.PathAndQuery;
+            lock (Paths) { Paths.Add(path); }
+            var bare = request.RequestUri!.AbsolutePath;
+            var hit = routes.Keys.Where(k => k.EndsWith('/') ? bare.StartsWith(k, StringComparison.Ordinal) : bare == k).OrderByDescending(k => k.Length).FirstOrDefault();
+            return Task.FromResult(hit is null
+                ? new HttpResponseMessage(HttpStatusCode.NotFound) { Content = new StringContent("{}", Encoding.UTF8, "application/json") }
+                : new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(routes[hit], Encoding.UTF8, "application/json") });
+        }
+    }
 
     private JsonElement? Smoke(string smokeFile, string[] keys, string folder, string baseName, string mode)
     {

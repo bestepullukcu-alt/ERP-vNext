@@ -137,3 +137,5 @@
     .ph-line-name { width: 100%; }
     .ph-card { padding: 14px; }
 }
+/* W4-FIX-c (G-10) — the line that tells same-named doctors apart */
+.ph-result-sub { font-size: 12px; color: var(--ph-mu); text-align: start; }

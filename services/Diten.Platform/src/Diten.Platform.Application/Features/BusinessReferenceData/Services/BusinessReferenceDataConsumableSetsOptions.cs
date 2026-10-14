@@ -111,7 +111,10 @@ public sealed class BusinessReferenceDataConsumableSetsOptions
         "crm-recommendation-level",
         // WP-VW-W4 (W4-BE-b2) — the competitor products' reimbursement status (MdmService validates every country price row;
         // the competitor page and the report card read).
-        "mdm-reimbursement-status"
+        "mdm-reimbursement-status",
+        // WP-VW-W4 (W4-FIX-d, G-2) — the competitor page's market picker (a VERIFIED global catalog: read from the verified
+        // provider tenant when no other tenant holds it).
+        "market"
     ];
 
     /// <summary>The configured list when it names at least one set, otherwise the code default.</summary>

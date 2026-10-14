@@ -228,6 +228,17 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
         _globalProducts.Indexes.CreateMany(models);
     }
 
+    public async Task<IReadOnlyList<Guid>> FindIdsContainingAsync(string search, CancellationToken cancellationToken = default)
+    {
+        if (MdmSearchText.ContainsPattern(search) is not { } pattern) return [];
+        var regex = new BsonRegularExpression(pattern, "i");
+        return await _globalProducts.Find(ActiveTenantFilter & Builders<GlobalProduct>.Filter.Or(
+                Builders<GlobalProduct>.Filter.Regex(x => x.GlobalProductNameNormalized, regex),
+                Builders<GlobalProduct>.Filter.Regex(x => x.CanonicalCode, regex)))
+            .Project(x => x.Id)
+            .ToListAsync(cancellationToken);
+    }
+
     private FilterDefinition<GlobalProduct> ActiveTenantFilter =>
         TenantIncludingDeletedFilter
         & Builders<GlobalProduct>.Filter.Eq(x => x.IsDeleted, false);

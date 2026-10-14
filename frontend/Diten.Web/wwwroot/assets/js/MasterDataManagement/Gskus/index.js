@@ -266,11 +266,36 @@ const GskusList = (function () {
         ['#globalProductId', '#packUomCode'].forEach((selector) => {
             const $select = $(selector);
             if ($select.length && !$select.hasClass('select2-hidden-accessible')) {
-                $select.select2({
+                const options = {
                     dropdownParent: $('#offcanvasCreateEdit'),
                     width: '100%',
                     allowClear: true
-                });
+                };
+                // W4-FIX-d (G-1): the global products are searched and paged on the server (not only the first 20)
+                const picker = window.GskuProductPicker;
+                if (selector === '#globalProductId' && picker) {
+                    options.minimumInputLength = 0;
+                    options.ajax = {
+                        delay: 250,
+                        transport: (params, success, failure) => {
+                            const term = params.data?.term || '';
+                            const page = params.data?.page || 1;
+                            fetch(picker.url(endpoint, term, page), { credentials: 'same-origin', headers: getAuthHeaders() })
+                                .then(async (response) => {
+                                    if (response.status === 401) handleUnauthorized();
+                                    if (!response.ok) throw new Error(await getErrorMessage(response));
+                                    return unwrapData(await response.json());
+                                })
+                                .then(success)
+                                .catch((error) => {
+                                    if (!error?.authHandled) window.showToast?.(error.message || L.ErrorGateway, 'error');
+                                    failure(error);
+                                });
+                        },
+                        processResults: (data, params) => picker.results(data, params.page || 1)
+                    };
+                }
+                $select.select2(options);
             }
         });
     };
@@ -297,9 +322,15 @@ const GskusList = (function () {
             const products = data.globalProducts || data.GlobalProducts || [];
             const uoms = data.uoms || data.Uoms || [];
             if (!products.length || !uoms.length) throw new Error(L.OptionsEmpty);
-            replaceOptions(globalProduct, products.map((item) => new Option(
-                `${valueOf(item, 'canonicalCode', 'CanonicalCode')} — ${valueOf(item, 'globalProductName', 'GlobalProductName')}`,
-                valueOf(item, 'id', 'Id'))));
+            // W4-FIX-d (G-1): with the remote picker the product list comes page by page as the user types / scrolls;
+            // without it (picker script missing) the first page stays the fallback
+            if (window.GskuProductPicker) {
+                $(globalProduct).val(null).trigger('change');
+            } else {
+                replaceOptions(globalProduct, products.map((item) => new Option(
+                    `${valueOf(item, 'canonicalCode', 'CanonicalCode')} — ${valueOf(item, 'globalProductName', 'GlobalProductName')}`,
+                    valueOf(item, 'id', 'Id'))));
+            }
             replaceOptions(uom, [...uoms]
                 .sort((left, right) => Number(valueOf(left, 'sortOrder', 'SortOrder')) - Number(valueOf(right, 'sortOrder', 'SortOrder')))
                 .map((item) => {

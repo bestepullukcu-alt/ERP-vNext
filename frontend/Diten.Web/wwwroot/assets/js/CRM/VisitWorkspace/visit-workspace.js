@@ -36,6 +36,7 @@
         record: root.getAttribute('data-can-record') === 'true',
         apply: root.getAttribute('data-can-apply') === 'true',
         contacts: root.getAttribute('data-can-search-contacts') === 'true',
+        pharmacies: root.getAttribute('data-can-search-pharmacies') === 'true', // W4-FIX-c (G-3) — crm.account.read
         plan: root.getAttribute('data-can-plan') === 'true', // the Visit Planning read + generate keys
         execute: root.getAttribute('data-can-execute') === 'true' // WP-VW-W3 — crm.visit-execution.read + record
     };
@@ -898,12 +899,26 @@
     }
 
     // ── unplanned visit (today only) ─────────────────────────────────────────────────────────────────────────
-    const unp = { contactId: null, timer: null };
+    // W4-FIX-c (G-3) — the target is a doctor (contact) or a pharmacy (a pharmacy-type account); (G-4) the body sends the
+    // time window (start + end) or no time at all — see workspace-core unplannedBody.
+    const unp = { type: 'contact', targetId: null, timer: null };
 
-    function openUnplanned() {
-        unp.contactId = null;
+    function setUnplannedType(type) {
+        unp.type = type === 'pharmacy' && perms.pharmacies ? 'pharmacy' : 'contact';
+        unp.targetId = null;
         el('vw-unp-search').value = '';
         el('vw-unp-results').innerHTML = '';
+        el('vw-unp-save').disabled = true;
+        const pharmacy = unp.type === 'pharmacy';
+        el('vw-unp-search-label').textContent = (pharmacy ? L.UnpPharmacyLabel : L.UnpDoctorLabel) || '';
+        el('vw-unp-search').setAttribute('placeholder', (pharmacy ? L.UnpPharmacySearch : L.UnpDoctorSearch) || '');
+        const radio = el(pharmacy ? 'vw-unp-type-pharmacy' : 'vw-unp-type-contact'); if (radio) { radio.checked = true; }
+    }
+
+    function openUnplanned() {
+        // the pharmacy choice appears only with crm.account.read; the doctor flow is the same as before
+        el('vw-unp-type-box').classList.toggle('d-none', !perms.pharmacies);
+        setUnplannedType('contact');
         el('vw-unp-time').value = '';
         el('vw-unp-day').textContent = F.dayLabel(todayYmd());
         el('vw-unp-error').classList.add('d-none');
@@ -913,22 +928,33 @@
 
     function searchContacts() {
         const q = el('vw-unp-search').value.trim();
+        const pharmacy = unp.type === 'pharmacy';
         clearTimeout(unp.timer);
-        if (q.length < 2 || !perms.contacts) { el('vw-unp-results').innerHTML = ''; return; }
+        unp.targetId = null;
+        el('vw-unp-save').disabled = true;
+        if (q.length < 2 || !(pharmacy ? perms.pharmacies : perms.contacts)) { el('vw-unp-results').innerHTML = ''; return; }
         unp.timer = setTimeout(() => {
-            get('/contacts/search?search=' + encodeURIComponent(q) + '&limit=10').then(r => {
-                const items = r.ok && r.body && Array.isArray(r.body.data) ? r.body.data : [];
+            const asked = unp.type;
+            const path = pharmacy ? '/pharmacies/search?search=' + encodeURIComponent(q) : '/contacts/search?search=' + encodeURIComponent(q) + '&limit=10';
+            get(path).then(r => {
+                if (asked !== unp.type) { return; } // the type changed while the search was on its way
+                const d = r.ok && r.body ? r.body.data : null;
+                const items = Array.isArray(d) ? d : (d && Array.isArray(d.items) ? d.items : []);
                 el('vw-unp-results').innerHTML = items.length
-                    ? items.map(c => '<button type="button" class="list-group-item list-group-item-action" data-contact="' + esc(c.id) + '">' + F.bidi(c.displayName) + '</button>').join('')
+                    ? items.map(c => (pharmacy
+                        // a pharmacy: its name + its code / territory, so two branches of one chain are told apart
+                        ? '<button type="button" class="list-group-item list-group-item-action" data-pharmacy="' + esc(c.id) + '">' + F.bidi(c.accountName || c.id)
+                            + ([c.accountCode, c.territoryNodeName].filter(Boolean).length ? ' <span class="small text-muted">' + F.bidi([c.accountCode, c.territoryNodeName].filter(Boolean).join(' · ')) + '</span>' : '') + '</button>'
+                        : '<button type="button" class="list-group-item list-group-item-action" data-contact="' + esc(c.id) + '">' + F.bidi(c.displayName) + '</button>')).join('')
                     : '<div class="text-muted small p-2">' + esc(L.NoMatches || '') + '</div>';
             });
         }, 250);
     }
 
     function saveUnplanned() {
-        if (!unp.contactId) { return; }
+        if (!unp.targetId) { return; }
         el('vw-unp-save').disabled = true;
-        post('/planned-visits/unplanned', C.unplannedBody(unp.contactId, todayYmd(), el('vw-unp-time').value || null, Date.now())).then(r => {
+        post('/planned-visits/unplanned', C.unplannedBody({ type: unp.type, id: unp.targetId }, todayYmd(), el('vw-unp-time').value || null, Date.now())).then(r => {
             el('vw-unp-save').disabled = false;
             if (r.ok) { hideModal('vw-unplanned-modal'); toast(L.Saved || ''); load(true); return; }
             const box = el('vw-unp-error'); box.textContent = C.errorText(r, L); box.classList.remove('d-none');
@@ -1231,14 +1257,15 @@
             document.querySelectorAll('.vw-day-option').forEach(b => b.classList.toggle('active', b === opt));
             syncDialog(); return;
         }
-        const c = e.target.closest('[data-contact]');
+        const c = e.target.closest('[data-contact],[data-pharmacy]');
         if (c) {
-            unp.contactId = c.getAttribute('data-contact');
-            document.querySelectorAll('#vw-unp-results [data-contact]').forEach(b => b.classList.toggle('active', b === c));
+            unp.targetId = c.getAttribute('data-contact') || c.getAttribute('data-pharmacy');
+            document.querySelectorAll('#vw-unp-results [data-contact], #vw-unp-results [data-pharmacy]').forEach(b => b.classList.toggle('active', b === c));
             el('vw-unp-save').disabled = false;
         }
     });
     document.addEventListener('change', e => {
+        if (e.target && e.target.name === 'vw-unp-type') { setUnplannedType(e.target.value); return; } // W4-FIX-c (G-3)
         if (e.target && e.target.name === 'vw-reason') {
             dlg.reason = dlg.reasons.find(x => x.code === e.target.value) || null;
             syncDialog();

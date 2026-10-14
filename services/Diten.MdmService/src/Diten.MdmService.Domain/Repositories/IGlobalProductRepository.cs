@@ -36,6 +36,10 @@ public interface IGlobalProductRepository
         string? normalizedSearch,
         CancellationToken cancellationToken = default) =>
         GetPageAsync(pageNumber, pageSize, normalizedSearch, lifecycleStatus: null, cancellationToken);
+    /// <summary>WP-VW-W4 (W4-FIX-d, G-8) — the ids of the tenant's active global products whose NAME or CODE contains the text
+    /// (<see cref="MdmSearchText"/>: case and Turkish I / İ insensitive).</summary>
+    Task<IReadOnlyList<Guid>> FindIdsContainingAsync(string search, CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyList<Guid>>(Array.Empty<Guid>());
     Task<GlobalProductCreateResult> CreateDraftAsync(GlobalProduct globalProduct, CancellationToken cancellationToken = default);
 }
 

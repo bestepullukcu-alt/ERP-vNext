@@ -123,13 +123,21 @@ zorunda olmaktan çıkarır. Yeni bir yüzey için aynısını yazarken **üç t
 
 ### 2. Yeniden Derleme Protokolü
 .resx değişikliği sonrası şu sırayı izleyin:
-1. Süreçleri durdur: lsof -ti :5000,5001,5050 | xargs kill -9
-   ⚠ **ÖNCE PORTU KİMİN TUTTUĞUNU ÖLÇ.** Bu makinede başka geliştiricilerin worktree'leri var ve
-   servisleri koşuyor olabilir. `lsof -p <PID> -a -d cwd -Fn` hangi dizinden koştuğunu söyler;
-   **başka bir dizinden koşan servisi durdurma** — sahibinin haberi olmaz. Körlemesine
-   `kill -9` bir kez böyle bir servisi düşürdü.
+1. **Yalnız kendi sürecini durdur — önce sahipliği doğrula.** Porta göre toplu sonlandırma
+   (`lsof -ti :<port> | xargs kill -9` gibi), `pkill`, `killall dotnet` ve benzeri geniş kapsamlı komutlar
+   **YASAKTIR**: bu makinede başka geliştiricilerin ve Control Tower'ın worktree'leri ve servisleri
+   koşuyor olabilir. Körlemesine `kill -9` bir kez böyle bir servisi düşürdü.
+   - Portu kimin tuttuğunu ölç: `lsof -nP -iTCP:<port> -sTCP:LISTEN` → PID.
+   - Sürecin hangi dizinden koştuğunu doğrula: `lsof -p <PID> -a -d cwd -Fn`; gerekirse başlangıç
+     zamanını da kaydet: `ps -o lstart= -p <PID>`.
+   - Süreç **senin worktree'nden** koşuyorsa yalnız o PID'yi normal sinyalle durdur: `kill <PID>`.
+     Kapanmazsa `kill -9` **kullanma**; dur ve raporla.
+   - Süreç başka bir dizinden koşuyorsa ya da sahipliği doğrulanamıyorsa **durdurma**: işlemi durdur
+     ve sahibine / Control Tower'a sor.
 2. Cache temizle: rm -rf frontend/Diten.Web/bin frontend/Diten.Web/obj
-3. Rebuild: ./run_all.sh
+3. Rebuild: yalnız kendi worktree'nde `dotnet build frontend/Diten.Web/Diten.Web.csproj` ile derle ve 1. adımda
+   durdurduğun süreci yeniden başlat. `./run_all.sh` bu protokolde **kullanılmaz**: betik porta göre `kill -9`
+   ve `killall -9 dotnet` çalıştırır, yani 1. adımın yasakladığı şeyi yapar.
 4. Tarayıcıda Hard Refresh (Ctrl+F5) yapın.
 
 ---

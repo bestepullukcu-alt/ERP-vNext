@@ -73,14 +73,15 @@ public sealed class DoctorInsightsRecorder : IDoctorInsightsRecorder
         _clock = clock ?? TimeProvider.System;
     }
 
-    public Task<DoctorInsightsResult> CheckFromReportAsync(Guid tenantId, Guid contactId, DoctorProfileSuggestion? profileSuggestion,
+    public async Task<DoctorInsightsResult> CheckFromReportAsync(Guid tenantId, Guid contactId, DoctorProfileSuggestion? profileSuggestion,
         int? totalPatients, IReadOnlyList<DoctorProductInsightInput> perProduct, CancellationToken ct)
-        => CheckAsync(tenantId, contactId, profileSuggestion, totalPatients, perProduct, ct);
+        => await CheckAsync(tenantId, contactId, profileSuggestion, totalPatients, await WithIndicationsOnlyAsync(tenantId, perProduct, ct), ct);
 
     public async Task<DoctorInsightsResult> RecordFromReportAsync(Guid tenantId, Guid contactId, Guid visitReportId, string? actor,
         DoctorProfileSuggestion? profileSuggestion, int? totalPatients, IReadOnlyList<DoctorProductInsightInput> perProduct,
         CancellationToken ct)
     {
+        perProduct = await WithIndicationsOnlyAsync(tenantId, perProduct, ct);
         var check = await CheckAsync(tenantId, contactId, profileSuggestion, totalPatients, perProduct, ct);
         if (!check.Ok) return check;
 
@@ -116,6 +117,26 @@ public sealed class DoctorInsightsRecorder : IDoctorInsightsRecorder
         return await WriteProfileAsync(tenantId, contactId, actor, DoctorInsightsSources.Manual, _clock.GetUtcNow(), expectedVersion,
             p => new ProfileValues(Clean(values.AdoptionTypologyCode), Clean(values.CommunicationStyleCode), Clean(values.KolLevelCode),
                 totalPatients, totalPatients is not null && totalPatients != p.TotalMonthlyPatients), ct);
+    }
+
+    /// <summary>
+    /// WP-VW-W4 (W4-FIX-b, F-5) — the recorder's own guard: a product WITHOUT approved indication × profile rows has no
+    /// indication potential, so its numbers (rows / "no patients") are dropped here whatever the caller sent; the share
+    /// bucket stays. (The report drops them first and warns; this keeps every other caller honest.)
+    /// </summary>
+    private async Task<IReadOnlyList<DoctorProductInsightInput>> WithIndicationsOnlyAsync(Guid tenantId,
+        IReadOnlyList<DoctorProductInsightInput> perProduct, CancellationToken ct)
+    {
+        var result = new List<DoctorProductInsightInput>(perProduct.Count);
+        foreach (var product in perProduct)
+        {
+            var numbers = product.Rows is not null || product.NoPatients is not null;
+            result.Add(numbers && product.ProductId != Guid.Empty && (await _indications.ReadAsync(tenantId, product.ProductId, ct)).Items.Count == 0
+                ? product with { Rows = null, NoPatients = null }
+                : product);
+        }
+
+        return result;
     }
 
     // ---------------- the check ----------------

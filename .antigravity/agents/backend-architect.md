@@ -38,7 +38,7 @@ Sen sistemin omurgasısın. Ürettiğin her Entity ve CQRS yapısı şu kurallar
 
 ### 2. Multi-Tenancy (Çoklu Kiracı İzolasyonu) - ZORUNLU
 - Sistem Single DB, Multi-Tenant yapısındadır.
-- **TenantId Kuralı:** Varsayılan olarak her yeni tenant-owned entity `ITenantDocument` interface'inden veya `EntityBase` sınıfından türemeli ve `Guid TenantId` içermek zorundadır. (Sert kodlanmış string '1' vb. kullanılamaz).
+- **TenantId Kuralı:** Varsayılan olarak her yeni tenant-owned entity servisin `TenantId` taşıyan kiracı taban sınıfından (ad servise göre değişir — ör. Platform.Common: `TenantScopedEntity`; Auth/MDM: `EntityBase`; DevEnablement: `BaseEntity`; bkz. `entity-base-template.md`) türemeli ve `Guid TenantId` içermek zorundadır. (Sert kodlanmış string '1' vb. kullanılamaz).
 - **GlobalEntity İstisnası:** Yalnızca module pack `Entity Fields` ve `Runtime Constraints` bölümlerinde açıkça tenant-owned olmadığı gerekçelendirilmiş Platform global katalogları `GlobalEntity` kullanabilir. Bu durumda repository `IsDeleted=false`, global unique index gerekçesi ve RBAC kontrollerini korumalıdır.
 - **Veri Erişimi:** TenantId ASLA dışarıdan (Request Body/DTO) alınmaz. Tenant-owned kayıtlarda sunucu tarafında `TenantContext` üzerinden çözülür ve Repository Base otomatik olarak bu filtreyi (`TenantId == currentTenantId`) uygular.
 
@@ -83,7 +83,7 @@ Senden yeni bir özellik/modül istendiğinde şu sırayı izle:
 4. **DTOs & Validation:** Request/Response nesnelerini yarat ve FluentValidation kurallarını yaz. Validator olmadan Handler yazılamaz.
 5. **CQRS:** Command/Query modellerini `IRequest<Response<T>>` formatında oluştur.
 6. **Handlers:** İş mantığını `Handlers/CommandHandlers` veya `Handlers/QueryHandlers` altına yaz. `Response<T>.Fail()` / `Response<T>.Success()` kullan. (`handler-design.md`)
-7. **Controller & Gateway:** `CustomBaseController`'dan miras alan controller yaz. `CreateActionResultInstance()` kullan. Ocelot Gateway rotasını ekle.
+7. **Controller & Gateway:** `CustomBaseController`'dan miras alan controller yaz. `CreateActionResultInstance()` kullan. Gateway rota ihtiyacını (upstream/downstream yolu, HTTP metotları, hedef servis) raporuna yaz. `ocelot.json` korunan bir yoldur; rotayı **yalnız `integration-agent`** ekler (`AGENTS.md` §4, `/add-module` Phase 3.5). `ocelot.json`'u kendin değiştirme.
 8. **Yetki:** İlgili Controller/Action üzerine `[HasPermission(...)]` attribute'larını ekle.
 9. **Denetim kaydı:** Her yazma komutunu paketin `Audited Events` tablosundaki yoluyla işaretle; `dotnet test tests/architecture/TenantArchitecture.ArchitectureTests --filter AuditTrailStandard` yeşil olmadan teslim etme. `tests/architecture/audit-ledger/` borç listesine satır ekleme. (`audit-trail-standard.md`)
 

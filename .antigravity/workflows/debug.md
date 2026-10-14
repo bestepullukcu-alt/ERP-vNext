@@ -15,7 +15,7 @@ This command activates DEBUG mode for systematic investigation of issues, errors
 
 ## 🛠️ Diten-Specific Checkpoints
 When debugging in this project, these 5 pillars MUST be checked first:
-1. **Multi-Tenancy:** Is `X-Tenant-Id` GUID present? Is the Repository filtering correctly?
+1. **Multi-Tenancy:** Tenant context: is a valid `X-Tenant-Id` GUID present? Platform/admin context: is it correctly absent? Is the Repository filtering correctly?
 2. **Localization:** Is the `window.L10n` bridge populated? Are keys missing in any of the 8 `.resx` files?
 3. **CQRS Structure:** Is the logic in the correct `Handlers/` subfolder?
 4. **Networking:** Is the route 100% lowercase? Does `Location` header point to Gateway?
@@ -66,7 +66,7 @@ When debugging in this project, these 5 pillars MUST be checked first:
 [What I checked] → [Found X]
 
 ### 5. Root Cause
-🎯 **[Why it happened - e.g., Missing ITenantDocument on Entity]**
+🎯 **[Why it happened - e.g., Entity'de `TenantId` yok ya da sorgu kiracı filtreli depo tabanını atlıyor]**
 
 ### 6. Fix
 [Before/After code blocks]

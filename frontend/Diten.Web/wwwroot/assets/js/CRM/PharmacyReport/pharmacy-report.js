@@ -25,7 +25,8 @@
         record: root.getAttribute('data-can-record') === 'true',
         amend: root.getAttribute('data-can-amend') === 'true',
         gskus: root.getAttribute('data-can-read-gskus') === 'true',
-        contacts: root.getAttribute('data-can-read-contacts') === 'true'
+        contacts: root.getAttribute('data-can-read-contacts') === 'true',
+        competitors: root.getAttribute('data-can-read-competitors') === 'true'
     };
     const lang = (document.documentElement && document.documentElement.lang) || 'tr';
 
@@ -62,8 +63,8 @@
     const state = {
         prefill: null, body: null, version: 0, reportId: null, status: null, step: 'general', mode: 'draft',
         editing: false, dirty: false, savedAt: null, serverMissing: null, tried: false,
-        gskus: [], gskuNames: {}, gskuError: null, gskuResults: [], contactNames: {}, contactResults: [],
-        proposalOpen: false, proposalErrors: {}, fixReason: '', photoUrl: null, busy: false
+        gskus: [], gskuNames: {}, gskuProducts: {}, gskuError: null, gskuResults: [], contactNames: {}, contactResults: [],
+        proposalOpen: false, proposalErrors: {}, fixReason: '', photoUrl: null, busy: false, target: null, reimbursement: []
     };
 
     const options = set => C.optionsOf(state.prefill, set);
@@ -90,8 +91,47 @@
             state.mode = C.modeOf(d) === 'resubmit' ? 'sent' : 'draft';
             if (state.body.pharmacy.shelf.photoEvidenceId) { state.photoUrl = base + '/' + encodeURIComponent(planId) + '/shelf-photo'; }
             render();
-            return loadGskus();
+            return Promise.all([loadGskus(), loadTarget(), loadReimbursement()]);
         });
+    }
+
+    // W4-FIX-c (G-7) — the pharmacy's name (+ city) for the header (the planned visit's targetDisplayName via the proxy)
+    // W4-FIX-c (G-6) — the competitor card's reimbursement status is an MDM code: its BRD label (not in the pre-fill)
+    function loadReimbursement() {
+        return send('GET', '/reference-data/mdm-reimbursement-status/values').then(r => {
+            const d = data(r);
+            state.reimbursement = d ? C.referenceOptions(d) : [];
+            if (state.reimbursement.length && state.step === 'market') { render(); }
+        });
+    }
+    const reimbLabel = code => { const o = state.reimbursement.find(x => x.code === code); return o ? C.optionLabel(o, lang) : ''; };
+    const price = (v, cur) => { try { return new Intl.NumberFormat(F.dateCulture(), { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(v)) + (cur ? ' ' + cur : ''); } catch (e) { return String(v) + (cur ? ' ' + cur : ''); } };
+
+    function loadTarget() {
+        return send('GET', '/' + encodeURIComponent(planId) + '/target').then(r => {
+            const d = data(r);
+            if (d && (d.name || d.city)) { state.target = { name: d.name || null, city: d.city || null }; renderHead(); }
+        });
+    }
+
+    /**
+     * WP-VW-W4 (W4-FIX-d, G-9): the competitors of the stock / sales GSKUs' products the pre-fill did not list (an unplanned
+     * pharmacy visit has no plan product) — read once per product and appended, so the list and the "competitor or none"
+     * question follow the same products as the server.
+     */
+    function ensureCompetitors() {
+        if (!perms.competitors || !state.prefill || !state.body) { return Promise.resolve(); }
+        const list = state.prefill.competitors = state.prefill.competitors || [];
+        const known = {};
+        list.forEach(c => { known[c.productId] = true; });
+        const wanted = C.gskuProductIds(state.body.pharmacy, state.gskuProducts).filter(id => !known[id]);
+        if (!wanted.length) { return Promise.resolve(); }
+        wanted.forEach(id => { known[id] = true; list.push({ productId: id, available: false, items: [] }); });
+        return Promise.all(wanted.map(id => send('GET', '/lookups/competitors?productId=' + encodeURIComponent(id)).then(r => {
+            const d = data(r);
+            const entry = list.find(c => c.productId === id);
+            if (entry && Array.isArray(d)) { entry.available = true; entry.items = d; }
+        }))).then(() => render());
     }
 
     function loadGskus() {
@@ -100,13 +140,14 @@
             const d = data(r);
             if (!Array.isArray(d)) { state.gskuError = errText(r); render(); return; }
             state.gskus = d;
-            d.forEach(g => { state.gskuNames[g.id] = (g.productName ? g.productName + ' · ' : '') + (g.code || short(g.id)) + (g.pack ? ' (' + g.pack + ')' : ''); });
+            d.forEach(g => { state.gskuNames[g.id] = (g.productName ? g.productName + ' · ' : '') + (g.code || short(g.id)) + (g.pack ? ' (' + g.pack + ')' : ''); if (g.productId) { state.gskuProducts[g.id] = g.productId; } });
             if (writable()) {
                 const before = JSON.stringify(state.body.pharmacy);
                 state.body.pharmacy = C.seedRows(state.body.pharmacy, d, C.productIdsOf(state.prefill));
                 if (JSON.stringify(state.body.pharmacy) !== before) { state.dirty = true; }
             }
             render();
+            return ensureCompetitors();
         });
     }
 
@@ -132,8 +173,12 @@
 
     function renderHead() {
         const p = state.prefill;
-        // the visit day ("13 Eki · Pazartesi"); the account name is not in the pre-fill (see the report's open items)
-        setText('ph-sub', p.startedAt ? F.dayMonth(p.startedAt) + ' · ' + F.weekdayLong(p.startedAt) : '');
+        // mockup E6: "Hayat Eczanesi · <city> · 8 Eki Perşembe" — the pharmacy and its city (W4-FIX-c G-7), then the visit day
+        const sub = el('ph-sub');
+        if (sub) {
+            const day = p.startedAt ? F.dayMonth(p.startedAt) + ' ' + F.weekdayLong(p.startedAt) : '';
+            sub.innerHTML = C.headerParts(state.target, day).map((x, i) => (i === 0 && state.target && x === state.target.name ? F.bidi(x) : esc(x))).join(' · ');
+        }
         const miss = missingNow().length;
         const chip = el('ph-chip-valid');
         chip.className = 'ph-chip ' + (miss ? 'ph-tone-danger' : 'ph-tone-success');
@@ -235,8 +280,9 @@
         const item = C.competitorOptions(state.prefill).find(x => x.id === c.competitorProductId) || null;
         const detail = item ? [
             (item.activeIngredients || []).join(', '), [item.formCode, item.strength].filter(Boolean).join(' '),
-            item.country && item.country.boxPrice != null ? F.number(item.country.boxPrice, 2) + ' ' + (item.country.currencyCode || '') : '',
-            item.country && item.country.reimbursementStatusCode ? item.country.reimbursementStatusCode : ''
+            item.country && item.country.boxPrice != null ? price(item.country.boxPrice, item.country.currencyCode) : '',
+            // W4-FIX-c (G-6) — the reimbursement LABEL (never the code); unknown label → nothing
+            item.country && item.country.reimbursementStatusCode ? reimbLabel(item.country.reimbursementStatusCode) : ''
         ].filter(Boolean).join(' · ') : '';
         const adv = options(C.SETS.advantage).map(o => {
             const plus = c.advantageCodes.indexOf(o.code) > -1;
@@ -279,7 +325,9 @@
                 + (writable() ? ' <button type="button" class="ph-chip-x" data-act="contact-rm" data-id="' + esc(id) + '" aria-label="' + esc(L.RemoveRow) + '"><i class="bx bx-x"></i></button>' : '') + '</span>').join('')
             + (rec.linkedContactIds.length ? '' : '<span class="ph-sub">' + esc(L.NoLinked) + '</span>') + '</div>'
             + (writable() && perms.contacts ? '<div class="ph-picker"><input type="search" class="ph-input" id="ph-contact-q" data-act="contact-q" placeholder="' + esc(L.DoctorSearch) + '" aria-label="' + esc(L.DoctorSearch) + '" autocomplete="off" /><div class="ph-results">'
-                + state.contactResults.map(c => '<button type="button" class="ph-result" data-act="contact-add" data-id="' + esc(c.id) + '" data-name="' + esc(c.name) + '"><i class="bx bx-plus"></i> ' + F.bidi(c.name || short(c.id)) + '</button>').join('') + '</div></div>' : '')
+                // W4-FIX-c (G-10) — a same-named doctor is told apart by the specialty label, the institution and the city
+                + state.contactResults.map(c => { const more = C.contactDetail(c); return '<button type="button" class="ph-result" data-act="contact-add" data-id="' + esc(c.id) + '" data-name="' + esc(c.name) + '"><i class="bx bx-plus"></i> <span class="ph-col"><span>' + F.bidi(c.name || short(c.id)) + '</span>'
+                    + (more ? '<span class="ph-result-sub">' + F.bidi(more) + '</span>' : '') + '</span></button>'; }).join('') + '</div></div>' : '')
             + '<div class="ph-h">' + esc(L.TrainingTitle) + '</div>'
             + '<label class="ph-check"><input type="checkbox" data-act="trained"' + (tr.given ? ' checked' : '') + dis() + '> ' + esc(L.TrainingGiven) + '</label>'
             + tr.requests.map((r, i) => '<div class="ph-line"><select class="ph-input ph-grow" data-act="req-type" data-idx="' + i + '" aria-label="' + esc(L.RequestType) + '"' + dis() + '><option value="">' + esc(L.RequestType) + '</option>'
@@ -465,7 +513,7 @@
             const have = {};
             state.body.pharmacy.stock.forEach(x => { have[x.gskuId] = true; });
             state.gskuResults = Array.isArray(d) ? d.filter(g => !have[g.id]).slice(0, 10) : [];
-            (Array.isArray(d) ? d : []).forEach(g => { state.gskuNames[g.id] = (g.productName ? g.productName + ' · ' : '') + (g.code || short(g.id)) + (g.pack ? ' (' + g.pack + ')' : ''); });
+            (Array.isArray(d) ? d : []).forEach(g => { state.gskuNames[g.id] = (g.productName ? g.productName + ' · ' : '') + (g.code || short(g.id)) + (g.pack ? ' (' + g.pack + ')' : ''); if (g.productId) { state.gskuProducts[g.id] = g.productId; } });
             renderStock();
             const input = el('ph-gsku-q'); if (input) { input.value = text; if (input.focus) { input.focus(); } }
         }), 250);
@@ -510,7 +558,7 @@
             case 'trend': { const r = row(p.sales, gsku); if (r) { r.trendCode = r.trendCode === val ? null : val; } break; }
             case 'shelf': p.shelf.positionCode = p.shelf.positionCode === val ? null : val; break;
             case 'photo': { const input = el('ph-photo-input'); if (input && input.click) { input.click(); } return; }
-            case 'gsku-add': b.pharmacy = C.addGsku(p, t.getAttribute('data-id')); state.gskuResults = []; break;
+            case 'gsku-add': b.pharmacy = C.addGsku(p, t.getAttribute('data-id')); state.gskuResults = []; ensureCompetitors(); break;
             case 'gsku-rm': b.pharmacy = C.removeGsku(p, t.getAttribute('data-id')); break;
             case 'comp': { const item = C.competitorOptions(state.prefill).find(x => x.id === t.getAttribute('data-id')); if (item) { b.pharmacy = C.toggleCompetitor(p, item); } break; }
             case 'no-comp': b.pharmacy = C.setNoCompetitor(p, !p.noCompetitor); break;
