@@ -31,11 +31,12 @@ public static class ExpiryIndexConfiguration
     public const string EventOnceIndex = "ux_expiry_event_once";
     public const string SnapshotTransactionIndex = "ux_expiry_snapshot_transaction";
     public const string DateOverrideKeyIndex = "ux_expiry_date_override_key";
+    public const string EvidenceExportKeyIndex = "ux_expiry_evidence_export_key";
 
     public static readonly IReadOnlyList<string> UniqueIndexes =
     [
         PolicyCompanyIndex, ExceptionNumberIndex, ExceptionActiveIndex, ExceptionCreateKeyIndex, ExceptionSignatureIndex, EventKeyIndex, EventOnceIndex,
-        SnapshotTransactionIndex, DateOverrideKeyIndex
+        SnapshotTransactionIndex, DateOverrideKeyIndex, EvidenceExportKeyIndex
     ];
 
     private static BsonDocument IsString(string field) => new(field, new BsonDocument("$type", "string"));
@@ -99,6 +100,16 @@ public static class ExpiryIndexConfiguration
             new(overrides.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.CreatedBy).Ascending(x => x.IdempotencyKey),
                 new CreateIndexOptions { Name = DateOverrideKeyIndex, Unique = true }),
             new(overrides.Ascending(x => x.TenantId).Ascending(x => x.Status).Ascending(x => x.ExpiresAtUtc), new CreateIndexOptions { Name = "ix_expiry_date_override_open" })
+        ], ct);
+
+        // F5: one export per (company, user, key) — a concurrent replay of the key loses on this index and answers the stored export; the log reads
+        // newest first. The file bytes are keyed by the export id (_id).
+        var exports = Builders<ExpiryEvidenceExport>.IndexKeys;
+        await database.GetCollection<ExpiryEvidenceExport>(ExpiryCollections.EvidenceExports).Indexes.CreateManyAsync(
+        [
+            new(exports.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.ExportedBy).Ascending(x => x.IdempotencyKey),
+                new CreateIndexOptions { Name = EvidenceExportKeyIndex, Unique = true }),
+            new(exports.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Descending(x => x.ExportedAtUtc), new CreateIndexOptions { Name = "ix_expiry_evidence_log" })
         ], ct);
     }
 }

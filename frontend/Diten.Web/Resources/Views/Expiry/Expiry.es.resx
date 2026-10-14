@@ -135,4 +135,271 @@
   <data name="Expiry.Errors.EXPIRY_EXCEPTION_ALREADY_OPEN" xml:space="preserve"><value>Ya existe una excepción abierta de este tipo para este lote y almacén.</value></data>
   <data name="Expiry.Errors.REASON_REQUIRED" xml:space="preserve"><value>La descripción debe tener al menos 10 caracteres.</value></data>
   <data name="Expiry.Errors.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>Esta solicitud ya se envió con otro contenido; actualice la página.</value></data>
+  <data name="Expiry.Tabs.Exceptions" xml:space="preserve"><value>Bandeja de excepciones</value></data>
+  <data name="Expiry.Tabs.Policy" xml:space="preserve"><value>Reglas de vida útil y ajustes</value></data>
+  <data name="Expiry.Tabs.Evidence" xml:space="preserve"><value>Paquete de evidencias</value></data>
+  <data name="Expiry.Action.OpenDetail" xml:space="preserve"><value>Abrir la excepción</value></data>
+  <data name="Expiry.Col.Assignee" xml:space="preserve"><value>Asignado a</value></data>
+  <data name="Expiry.Col.ExceptionNo" xml:space="preserve"><value>N.º de excepción</value></data>
+  <data name="Expiry.Col.LotWarehouse" xml:space="preserve"><value>Lote · Almacén</value></data>
+  <data name="Expiry.Col.Opened" xml:space="preserve"><value>Abierta</value></data>
+  <data name="Expiry.Col.Signature" xml:space="preserve"><value>Firma</value></data>
+  <data name="Expiry.Col.Sla" xml:space="preserve"><value>Plazo (SLA)</value></data>
+  <data name="Expiry.Col.Type" xml:space="preserve"><value>Tipo</value></data>
+  <data name="Expiry.Common.Close" xml:space="preserve"><value>Cerrar</value></data>
+  <data name="Expiry.Common.System" xml:space="preserve"><value>Sistema</value></data>
+  <data name="Expiry.Common.UnknownUser" xml:space="preserve"><value>usuario desconocido</value></data>
+  <data name="Expiry.Type.FEFO_BYPASS" xml:space="preserve"><value>Salida fuera de FEFO</value></data>
+  <data name="Expiry.Type.BELOW_MIN_REMAINING" xml:space="preserve"><value>Bajo la vida útil restante mínima</value></data>
+  <data name="Expiry.Type.EXPIRY_DATE_OVERRIDE" xml:space="preserve"><value>Cambio de caducidad / reanálisis</value></data>
+  <data name="Expiry.Type.EXPIRED_ON_HAND" xml:space="preserve"><value>Stock caducado en existencia</value></data>
+  <data name="Expiry.Status.Open" xml:space="preserve"><value>Abierta</value></data>
+  <data name="Expiry.Status.InReview" xml:space="preserve"><value>En revisión</value></data>
+  <data name="Expiry.Status.Accepted" xml:space="preserve"><value>Aceptada</value></data>
+  <data name="Expiry.Status.Fixed" xml:space="preserve"><value>Corregida</value></data>
+  <data name="Expiry.Status.Closed" xml:space="preserve"><value>Cerrada</value></data>
+  <data name="Expiry.Status.Cancelled" xml:space="preserve"><value>Cancelada</value></data>
+  <data name="Expiry.Resolution.AcceptedWithReason" xml:space="preserve"><value>Aceptada con justificación</value></data>
+  <data name="Expiry.Resolution.Fixed" xml:space="preserve"><value>Corregida</value></data>
+  <data name="Expiry.Resolution.Cancelled" xml:space="preserve"><value>Cancelada</value></data>
+  <data name="Expiry.Event.Opened" xml:space="preserve"><value>Excepción abierta</value></data>
+  <data name="Expiry.Event.Taken" xml:space="preserve"><value>Tomada en revisión</value></data>
+  <data name="Expiry.Event.Commented" xml:space="preserve"><value>Comentario</value></data>
+  <data name="Expiry.Event.Resolved" xml:space="preserve"><value>Decidida</value></data>
+  <data name="Expiry.Event.Closed" xml:space="preserve"><value>Cerrada</value></data>
+  <data name="Expiry.Event.Cancelled" xml:space="preserve"><value>Cancelada</value></data>
+  <data name="Expiry.Event.SlaBreached" xml:space="preserve"><value>Plazo superado</value></data>
+  <data name="Expiry.Movement.GOODS_ISSUE_SALES" xml:space="preserve"><value>Salida por venta</value></data>
+  <data name="Expiry.Movement.GOODS_ISSUE_PROD" xml:space="preserve"><value>Salida a producción</value></data>
+  <data name="Expiry.Movement.WAREHOUSE_TRANSFER" xml:space="preserve"><value>Traspaso entre almacenes</value></data>
+  <data name="Expiry.Movement.GOODS_RECEIPT_PO" xml:space="preserve"><value>Recepción de compra</value></data>
+  <data name="Expiry.Movement.GOODS_RECEIPT_PROD" xml:space="preserve"><value>Entrada de producción</value></data>
+  <data name="Expiry.Movement.CUSTOMER_RETURN" xml:space="preserve"><value>Devolución de cliente</value></data>
+  <data name="Expiry.Movement.OTHER" xml:space="preserve"><value>Movimiento</value></data>
+  <data name="Expiry.Sla.Ago" xml:space="preserve"><value>vencido hace {0}</value></data>
+  <data name="Expiry.Sla.Left" xml:space="preserve"><value>quedan {0}</value></data>
+  <data name="Expiry.Sla.Late" xml:space="preserve"><value>Plazo superado</value></data>
+  <data name="Expiry.Sla.DaysHours" xml:space="preserve"><value>{0} d {1} h</value></data>
+  <data name="Expiry.Sla.HoursMinutes" xml:space="preserve"><value>{0} h {1} min</value></data>
+  <data name="Expiry.Inbox.Subtitle" xml:space="preserve"><value>Abierta → En revisión → Aceptada / Corregida → Cerrada</value></data>
+  <data name="Expiry.Inbox.Tab.All" xml:space="preserve"><value>Todas</value></data>
+  <data name="Expiry.Inbox.Tab.Active" xml:space="preserve"><value>Abiertas + En revisión</value></data>
+  <data name="Expiry.Inbox.Tab.Late" xml:space="preserve"><value>Fuera de plazo</value></data>
+  <data name="Expiry.Inbox.Tab.Done" xml:space="preserve"><value>Concluidas</value></data>
+  <data name="Expiry.Inbox.AllTypes" xml:space="preserve"><value>Todos los tipos</value></data>
+  <data name="Expiry.Inbox.AllAssignees" xml:space="preserve"><value>Todos los asignados</value></data>
+  <data name="Expiry.Inbox.AssignedToMe" xml:space="preserve"><value>Asignadas a mí</value></data>
+  <data name="Expiry.Inbox.Empty" xml:space="preserve"><value>Ninguna excepción coincide con los filtros.</value></data>
+  <data name="Expiry.Inbox.Unassigned" xml:space="preserve"><value>Sin asignar</value></data>
+  <data name="Expiry.Modal.PickHint" xml:space="preserve"><value>Elija el lote de la excepción: almacén, producto, lote.</value></data>
+  <data name="Expiry.Modal.LotRequired" xml:space="preserve"><value>Seleccione un lote.</value></data>
+  <data name="Expiry.Order.Sku" xml:space="preserve"><value>Producto (SKU)</value></data>
+  <data name="Expiry.Kpi.ComplianceShort" xml:space="preserve"><value>Cumplimiento FEFO</value></data>
+  <data name="Expiry.Errors.ESIGN_UNAVAILABLE" xml:space="preserve"><value>No se pudo abrir el diálogo de firma electrónica. Recargue la página e inténtelo de nuevo.</value></data>
+  <data name="Expiry.Errors.EXPIRY_EXCEPTION_NOT_FOUND" xml:space="preserve"><value>No se encontró la excepción.</value></data>
+  <data name="Expiry.Errors.EXPIRY_SOD_VIOLATION" xml:space="preserve"><value>Principio de los cuatro ojos: quien originó la excepción no puede decidirla. Debe decidir otro usuario de calidad.</value></data>
+  <data name="Expiry.Errors.EXPIRY_SIGNATURE_REQUIRED" xml:space="preserve"><value>La política de firma electrónica de la empresa exige una firma para esta decisión.</value></data>
+  <data name="Expiry.Errors.EXPIRY_SIGNATURE_MISMATCH" xml:space="preserve"><value>La firma no corresponde a esta decisión (firmante, acción, significado o registro cambiados). Prepare y firme de nuevo.</value></data>
+  <data name="Expiry.Errors.EXPIRY_PENDING_RESOLUTION_MISMATCH" xml:space="preserve"><value>La decisión preparada cambió o caducó. Prepárela de nuevo.</value></data>
+  <data name="Expiry.Errors.EXPIRY_INVALID_TRANSITION" xml:space="preserve"><value>Esta acción no es posible en el estado actual de la excepción.</value></data>
+  <data name="Expiry.Errors.EXPIRY_CONFLICT" xml:space="preserve"><value>El registro cambió después de leerlo. Recargue la página e inténtelo de nuevo.</value></data>
+  <data name="Expiry.Errors.EXPIRY_POLICY_INVALID" xml:space="preserve"><value>Ajustes no válidos: «Crítico» debe ser menor que «Próximo» y cada valor estar en su rango.</value></data>
+  <data name="Expiry.Errors.EXPIRY_NO_CHANGES" xml:space="preserve"><value>No hay cambios que guardar.</value></data>
+  <data name="Expiry.Errors.EXPIRY_EVIDENCE_EXPORT_NOT_FOUND" xml:space="preserve"><value>No se encontró el archivo exportado.</value></data>
+  <data name="Expiry.Errors.EXPIRY_NO_SUGGESTION" xml:space="preserve"><value>Los datos maestros no indican vida útil / reanálisis: no hay fecha sugerida.</value></data>
+  <data name="Expiry.Errors.EXPIRY_DATE_EQUALS_SUGGESTION" xml:space="preserve"><value>La fecha introducida coincide con la sugerida: no hace falta excepción.</value></data>
+  <data name="Expiry.Detail.Title" xml:space="preserve"><value>Detalle de la excepción</value></data>
+  <data name="Expiry.Detail.Heading" xml:space="preserve"><value>Excepción</value></data>
+  <data name="Expiry.Detail.Facts" xml:space="preserve"><value>Hechos</value></data>
+  <data name="Expiry.Detail.WhatHappened" xml:space="preserve"><value>Qué pasó</value></data>
+  <data name="Expiry.Detail.Timeline" xml:space="preserve"><value>Cronología</value></data>
+  <data name="Expiry.Detail.Decision" xml:space="preserve"><value>Decisión</value></data>
+  <data name="Expiry.Detail.ToQuarantine" xml:space="preserve"><value>Poner en cuarentena (MOD-0175)</value></data>
+  <data name="Expiry.Detail.Movement" xml:space="preserve"><value>Movimiento relacionado</value></data>
+  <data name="Expiry.Detail.OpenedManually" xml:space="preserve"><value>Abierta manualmente</value></data>
+  <data name="Expiry.Detail.AutomaticCheck" xml:space="preserve"><value>Control automático</value></data>
+  <data name="Expiry.Detail.Quantity" xml:space="preserve"><value>Cantidad</value></data>
+  <data name="Expiry.Detail.When" xml:space="preserve"><value>Cuándo · quién</value></data>
+  <data name="Expiry.Detail.ExpiryShort" xml:space="preserve"><value>caducidad {0}</value></data>
+  <data name="Expiry.Detail.CommentPlaceholder" xml:space="preserve"><value>Añadir un comentario</value></data>
+  <data name="Expiry.Detail.CommentSend" xml:space="preserve"><value>Enviar</value></data>
+  <data name="Expiry.Detail.Take" xml:space="preserve"><value>Asumir y revisar</value></data>
+  <data name="Expiry.Detail.Decide" xml:space="preserve"><value>Decidir</value></data>
+  <data name="Expiry.Detail.Close" xml:space="preserve"><value>Cerrar la excepción</value></data>
+  <data name="Expiry.Detail.DecisionHelp" xml:space="preserve"><value>Elija la resolución y escriba la justificación (al menos 10 caracteres); si la política de firma lo exige, la decisión se firma en el diálogo MOD-0022.</value></data>
+  <data name="Expiry.Detail.NoDecideKey" xml:space="preserve"><value>La decisión corresponde al rol de calidad (QA).</value></data>
+  <data name="Expiry.Detail.ResolutionLabel" xml:space="preserve"><value>Resolución</value></data>
+  <data name="Expiry.Detail.Signed" xml:space="preserve"><value>Firma electrónica</value></data>
+  <data name="Expiry.Detail.Taken" xml:space="preserve"><value>{0} tomada en revisión.</value></data>
+  <data name="Expiry.Detail.Closed" xml:space="preserve"><value>{0} cerrada.</value></data>
+  <data name="Expiry.Drawer.Title" xml:space="preserve"><value>Decisión de la excepción</value></data>
+  <data name="Expiry.Drawer.Step1" xml:space="preserve"><value>Resolución</value></data>
+  <data name="Expiry.Drawer.Step2" xml:space="preserve"><value>Firma electrónica</value></data>
+  <data name="Expiry.Drawer.Resolution" xml:space="preserve"><value>Resolución</value></data>
+  <data name="Expiry.Drawer.ResolutionHelp.AcceptedWithReason" xml:space="preserve"><value>La desviación se acepta con su justificación; no hace falta corregir.</value></data>
+  <data name="Expiry.Drawer.ResolutionHelp.Fixed" xml:space="preserve"><value>Se eliminó la causa raíz / se corrigió el stock.</value></data>
+  <data name="Expiry.Drawer.ResolutionHelp.Cancelled" xml:space="preserve"><value>La excepción no es válida (p. ej., se revirtió un movimiento erróneo).</value></data>
+  <data name="Expiry.Drawer.Reason" xml:space="preserve"><value>Justificación</value></data>
+  <data name="Expiry.Drawer.ReasonPlaceholder" xml:space="preserve"><value>Escriba la justificación de la decisión</value></data>
+  <data name="Expiry.Drawer.Counter" xml:space="preserve"><value>{0} / mínimo {1}</value></data>
+  <data name="Expiry.Drawer.ResolutionRequired" xml:space="preserve"><value>Seleccione una resolución.</value></data>
+  <data name="Expiry.Drawer.ReasonMin" xml:space="preserve"><value>La justificación debe tener al menos 10 caracteres.</value></data>
+  <data name="Expiry.Drawer.Next" xml:space="preserve"><value>Continuar</value></data>
+  <data name="Expiry.Drawer.Back" xml:space="preserve"><value>Atrás</value></data>
+  <data name="Expiry.Drawer.SignAndSave" xml:space="preserve"><value>Firmar y guardar</value></data>
+  <data name="Expiry.Drawer.ToSign" xml:space="preserve"><value>Decisión a firmar</value></data>
+  <data name="Expiry.Drawer.SummaryReason" xml:space="preserve"><value>Justificación: «{0}»</value></data>
+  <data name="Expiry.Drawer.SignInfo" xml:space="preserve"><value>«Firmar y guardar» abre el diálogo de firma común MOD-0022; la firma se vincula a la decisión con usuario, hora y significado.</value></data>
+  <data name="Expiry.Drawer.SignSkipped" xml:space="preserve"><value>La política de firma de la empresa no exige firma para esta resolución: se omitió el paso de firma.</value></data>
+  <data name="Expiry.Drawer.SignCancelled" xml:space="preserve"><value>Se cerró el diálogo de firma: la decisión no se guardó.</value></data>
+  <data name="Expiry.Drawer.Saved" xml:space="preserve"><value>{0} guardada como {1}.</value></data>
+  <data name="Expiry.Drawer.SavedSigned" xml:space="preserve"><value>{0} guardada como {1} (con firma electrónica).</value></data>
+  <data name="Expiry.What.Fefo" xml:space="preserve"><value>La salida se hizo de un lote que caduca {0} días después que el primer lote del orden FEFO.</value></data>
+  <data name="Expiry.What.BelowMin" xml:space="preserve"><value>El lote se recibió {0} días por debajo de la vida útil restante mínima.</value></data>
+  <data name="Expiry.What.Override" xml:space="preserve"><value>Se introdujo {2} en lugar de la {0} sugerida {1}.</value></data>
+  <data name="Expiry.What.ExpiredOnHand" xml:space="preserve"><value>Hay stock caducado en existencia desde hace {0} días.</value></data>
+  <data name="Expiry.What.Manual" xml:space="preserve"><value>Excepción abierta manualmente.</value></data>
+  <data name="Expiry.What.UsedLot" xml:space="preserve"><value>Lote usado</value></data>
+  <data name="Expiry.What.FirstLot" xml:space="preserve"><value>Primer lote (FEFO)</value></data>
+  <data name="Expiry.What.Gap" xml:space="preserve"><value>Diferencia</value></data>
+  <data name="Expiry.What.BypassReason" xml:space="preserve"><value>Motivo de la salida</value></data>
+  <data name="Expiry.What.Remaining" xml:space="preserve"><value>Vida útil restante en la recepción</value></data>
+  <data name="Expiry.What.Required" xml:space="preserve"><value>Restante mínimo (MDM)</value></data>
+  <data name="Expiry.What.Missing" xml:space="preserve"><value>Faltan</value></data>
+  <data name="Expiry.What.Field" xml:space="preserve"><value>Campo cambiado</value></data>
+  <data name="Expiry.What.FieldExpiry" xml:space="preserve"><value>fecha de caducidad</value></data>
+  <data name="Expiry.What.FieldRetest" xml:space="preserve"><value>fecha de reanálisis</value></data>
+  <data name="Expiry.What.Suggested" xml:space="preserve"><value>Sugerido</value></data>
+  <data name="Expiry.What.SuggestedRule" xml:space="preserve"><value>{0} (fecha de fabricación + vida útil)</value></data>
+  <data name="Expiry.What.Entered" xml:space="preserve"><value>Introducido</value></data>
+  <data name="Expiry.What.UserReason" xml:space="preserve"><value>Justificación del usuario</value></data>
+  <data name="Expiry.What.OpenedBy" xml:space="preserve"><value>Abierta por</value></data>
+  <data name="Expiry.Policy.Tab.Company" xml:space="preserve"><value>Ajustes de la empresa</value></data>
+  <data name="Expiry.Policy.Tab.Products" xml:space="preserve"><value>Vista por producto</value></data>
+  <data name="Expiry.Policy.Tab.History" xml:space="preserve"><value>Historial de cambios</value></data>
+  <data name="Expiry.Policy.ReadOnly" xml:space="preserve"><value>Solo lectura. El administrador del sistema de calidad cambia los ajustes.</value></data>
+  <data name="Expiry.Policy.Approaching" xml:space="preserve"><value>Horizonte «próximo»</value></data>
+  <data name="Expiry.Policy.ApproachingHelp" xml:space="preserve"><value>90 días por defecto · ajuste de la empresa</value></data>
+  <data name="Expiry.Policy.Critical" xml:space="preserve"><value>Umbral «crítico»</value></data>
+  <data name="Expiry.Policy.CriticalHelp" xml:space="preserve"><value>30 días por defecto · menor que el horizonte «próximo»</value></data>
+  <data name="Expiry.Policy.Field.fefoOutboundMode" xml:space="preserve"><value>Regla de salida FEFO</value></data>
+  <data name="Expiry.Policy.Field.belowMinRemainingMode" xml:space="preserve"><value>Recepción bajo la vida útil restante mínima</value></data>
+  <data name="Expiry.Policy.Field.dateOverrideMode" xml:space="preserve"><value>Cambio de caducidad / reanálisis</value></data>
+  <data name="Expiry.Policy.Field.approachingDays" xml:space="preserve"><value>Horizonte «próximo»</value></data>
+  <data name="Expiry.Policy.Field.criticalDays" xml:space="preserve"><value>Umbral «crítico»</value></data>
+  <data name="Expiry.Policy.Field.expiredOnHandThresholdDays" xml:space="preserve"><value>Umbral «stock caducado en existencia»</value></data>
+  <data name="Expiry.Policy.Mode.Warn" xml:space="preserve"><value>Advertir</value></data>
+  <data name="Expiry.Policy.Mode.RequireReason" xml:space="preserve"><value>Exigir justificación</value></data>
+  <data name="Expiry.Policy.Mode.Block" xml:space="preserve"><value>Bloquear</value></data>
+  <data name="Expiry.Policy.Mode.AutoQuarantine" xml:space="preserve"><value>Cuarentena automática</value></data>
+  <data name="Expiry.Policy.Mode.Reject" xml:space="preserve"><value>Rechazar</value></data>
+  <data name="Expiry.Policy.Mode.Reason" xml:space="preserve"><value>Justificación</value></data>
+  <data name="Expiry.Policy.Mode.ReasonAndSignature" xml:space="preserve"><value>Justificación + firma electrónica</value></data>
+  <data name="Expiry.Policy.FefoHelp" xml:space="preserve"><value>Cuando una salida no es del lote de caducidad más próxima</value></data>
+  <data name="Expiry.Policy.BelowMinHelp" xml:space="preserve"><value>El mínimo procede de los datos maestros (MDM)</value></data>
+  <data name="Expiry.Policy.DateOverrideHelp" xml:space="preserve"><value>Cuando se cambia la fecha sugerida al crear un lote</value></data>
+  <data name="Expiry.Policy.Sla" xml:space="preserve"><value>Plazos de las excepciones</value></data>
+  <data name="Expiry.Policy.SlaHelp" xml:space="preserve"><value>Por tipo, en horas</value></data>
+  <data name="Expiry.Policy.Threshold" xml:space="preserve"><value>Umbral «stock caducado en existencia»</value></data>
+  <data name="Expiry.Policy.ThresholdHelp" xml:space="preserve"><value>Al superarse se abre una excepción EXPIRED_ON_HAND</value></data>
+  <data name="Expiry.Policy.UnitDays" xml:space="preserve"><value>días</value></data>
+  <data name="Expiry.Policy.UnitHours" xml:space="preserve"><value>horas</value></data>
+  <data name="Expiry.Policy.Hours" xml:space="preserve"><value>{0} horas</value></data>
+  <data name="Expiry.Policy.SlaOf" xml:space="preserve"><value>Plazo · {0}</value></data>
+  <data name="Expiry.Policy.Dirty" xml:space="preserve"><value>Hay cambios sin guardar</value></data>
+  <data name="Expiry.Policy.Save" xml:space="preserve"><value>Guardar cambios</value></data>
+  <data name="Expiry.Policy.SaveTitle" xml:space="preserve"><value>Guardar los cambios de ajustes</value></data>
+  <data name="Expiry.Policy.ChangeReason" xml:space="preserve"><value>Motivo del cambio</value></data>
+  <data name="Expiry.Policy.Saved" xml:space="preserve"><value>Ajustes guardados y registrados en el historial.</value></data>
+  <data name="Expiry.Policy.FillAll" xml:space="preserve"><value>Rellene todos los campos.</value></data>
+  <data name="Expiry.Policy.Defaults" xml:space="preserve"><value>Se aplican los valores por defecto (aún sin guardar).</value></data>
+  <data name="Expiry.Policy.UpdatedBy" xml:space="preserve"><value>Último cambio {0} · {1}</value></data>
+  <data name="Expiry.Policy.WhenWho" xml:space="preserve"><value>Cuándo · quién</value></data>
+  <data name="Expiry.Policy.Setting" xml:space="preserve"><value>Ajuste</value></data>
+  <data name="Expiry.Policy.OldNew" xml:space="preserve"><value>Anterior → nuevo</value></data>
+  <data name="Expiry.Policy.HistoryEmpty" xml:space="preserve"><value>Aún no hay cambios.</value></data>
+  <data name="Expiry.Policy.ProductsSubtitle" xml:space="preserve"><value>Procede del MDM · solo lectura · se corrige en el MDM</value></data>
+  <data name="Expiry.Policy.ProductsFooter" xml:space="preserve"><value>No se aplica ninguna regla a los valores «Sin definir»; el valor se corrige en la ficha del producto en el MDM.</value></data>
+  <data name="Expiry.Policy.ProductsEmpty" xml:space="preserve"><value>Ningún producto tiene stock por lotes en la empresa.</value></data>
+  <data name="Expiry.Policy.ShelfLife" xml:space="preserve"><value>Vida útil</value></data>
+  <data name="Expiry.Policy.Retest" xml:space="preserve"><value>Reanálisis</value></data>
+  <data name="Expiry.Policy.MinRemaining" xml:space="preserve"><value>Restante mín.</value></data>
+  <data name="Expiry.Policy.Undefined" xml:space="preserve"><value>Sin definir</value></data>
+  <data name="Expiry.Evidence.Subtitle" xml:space="preserve"><value>Excepciones, firmas, cambios de política y resumen de cumplimiento de un periodo, para auditoría</value></data>
+  <data name="Expiry.Evidence.Period" xml:space="preserve"><value>Periodo</value></data>
+  <data name="Expiry.Evidence.Preset.q" xml:space="preserve"><value>Este trimestre</value></data>
+  <data name="Expiry.Evidence.Preset.d30" xml:space="preserve"><value>Últimos 30 días</value></data>
+  <data name="Expiry.Evidence.Preset.ytd" xml:space="preserve"><value>En lo que va de año</value></data>
+  <data name="Expiry.Evidence.Preset.custom" xml:space="preserve"><value>Rango de fechas</value></data>
+  <data name="Expiry.Evidence.From" xml:space="preserve"><value>Desde</value></data>
+  <data name="Expiry.Evidence.To" xml:space="preserve"><value>Hasta</value></data>
+  <data name="Expiry.Evidence.Preview" xml:space="preserve"><value>Vista previa</value></data>
+  <data name="Expiry.Evidence.DownloadPdf" xml:space="preserve"><value>Descargar PDF</value></data>
+  <data name="Expiry.Evidence.DownloadCsv" xml:space="preserve"><value>Descargar CSV</value></data>
+  <data name="Expiry.Evidence.PreviewTitle" xml:space="preserve"><value>Vista previa · paquete de evidencias FEFO / caducidad</value></data>
+  <data name="Expiry.Evidence.PeriodLine" xml:space="preserve"><value>del {0} al {1}</value></data>
+  <data name="Expiry.Evidence.Summary" xml:space="preserve"><value>Indicadores resumidos</value></data>
+  <data name="Expiry.Evidence.Exceptions" xml:space="preserve"><value>Excepciones del periodo y sus resoluciones</value></data>
+  <data name="Expiry.Evidence.PolicyChanges" xml:space="preserve"><value>Cambios de política del periodo</value></data>
+  <data name="Expiry.Evidence.Bypasses" xml:space="preserve"><value>Salidas fuera de FEFO</value></data>
+  <data name="Expiry.Evidence.NoType" xml:space="preserve"><value>N.º · tipo</value></data>
+  <data name="Expiry.Evidence.Awaiting" xml:space="preserve"><value>Pendiente de decisión</value></data>
+  <data name="Expiry.Evidence.NoExceptions" xml:space="preserve"><value>No hay excepciones en el periodo.</value></data>
+  <data name="Expiry.Evidence.NoPolicyChanges" xml:space="preserve"><value>No hay cambios de política en el periodo.</value></data>
+  <data name="Expiry.Evidence.NoBypasses" xml:space="preserve"><value>No hay salidas fuera de FEFO en el periodo.</value></data>
+  <data name="Expiry.Evidence.Issues" xml:space="preserve"><value>Salidas en el ámbito FEFO</value></data>
+  <data name="Expiry.Evidence.IssuesValue" xml:space="preserve"><value>{0} · {1} fuera de FEFO</value></data>
+  <data name="Expiry.Evidence.LotsAvailableHeld" xml:space="preserve"><value>{0} lotes · disponible {1} · retenido {2}</value></data>
+  <data name="Expiry.Evidence.LotsQuantity" xml:space="preserve"><value>{0} lotes · {1}</value></data>
+  <data name="Expiry.Evidence.OpenLate" xml:space="preserve"><value>{0} · {1} fuera de plazo</value></data>
+  <data name="Expiry.Evidence.AvgResolution" xml:space="preserve"><value>Tiempo medio de resolución</value></data>
+  <data name="Expiry.Evidence.Log" xml:space="preserve"><value>Registro de exportaciones</value></data>
+  <data name="Expiry.Evidence.LogEmpty" xml:space="preserve"><value>Aún no hay exportaciones.</value></data>
+  <data name="Expiry.Evidence.Rows" xml:space="preserve"><value>{0} filas</value></data>
+  <data name="Expiry.Evidence.CopyHash" xml:space="preserve"><value>Copiar el valor SHA-256</value></data>
+  <data name="Expiry.Evidence.Copied" xml:space="preserve"><value>SHA-256 copiado.</value></data>
+  <data name="Expiry.Evidence.Exported" xml:space="preserve"><value>{0} creado ({1}) y registrado.</value></data>
+  <data name="Expiry.Band.FefoOkTitle" xml:space="preserve"><value>Orden FEFO respetado</value></data>
+  <data name="Expiry.Band.FefoOkText" xml:space="preserve"><value>El lote elegido es el primero del orden.</value></data>
+  <data name="Expiry.Band.FefoFirst" xml:space="preserve"><value>Hay un lote de caducidad más próxima: {0} (caducidad {1})</value></data>
+  <data name="Expiry.Band.FefoWarnText" xml:space="preserve"><value>La salida es posible; se registra una excepción FEFO_BYPASS.</value></data>
+  <data name="Expiry.Band.FefoReasonText" xml:space="preserve"><value>Indique una justificación para continuar; se abre una excepción FEFO_BYPASS.</value></data>
+  <data name="Expiry.Band.FefoBlockText" xml:space="preserve"><value>La salida de este lote está bloqueada. Debe usarse el primer lote del orden FEFO.</value></data>
+  <data name="Expiry.Band.ReasonLabel" xml:space="preserve"><value>Justificación de la salida fuera de FEFO</value></data>
+  <data name="Expiry.Band.ReasonHelp" xml:space="preserve"><value>Al menos 10 caracteres. Se registra en la excepción FEFO_BYPASS.</value></data>
+  <data name="Expiry.Band.ReasonMin" xml:space="preserve"><value>La justificación debe tener al menos 10 caracteres.</value></data>
+  <data name="Expiry.Band.MinOkTitle" xml:space="preserve"><value>Vida útil restante: {0} días · mínimo {1} días ✓</value></data>
+  <data name="Expiry.Band.MinOkText" xml:space="preserve"><value>El lote puede recibirse.</value></data>
+  <data name="Expiry.Band.MinBelowTitle" xml:space="preserve"><value>Vida útil restante: {0} días · por debajo del mínimo de {1} días</value></data>
+  <data name="Expiry.Band.MinWarnText" xml:space="preserve"><value>Advertencia: puede recibirse; se abre una excepción BELOW_MIN_REMAINING.</value></data>
+  <data name="Expiry.Band.MinQuarText" xml:space="preserve"><value>El lote se recibe en cuarentena (MOD-0175); se abre una excepción BELOW_MIN_REMAINING.</value></data>
+  <data name="Expiry.Band.MinRejectText" xml:space="preserve"><value>La recepción se rechaza; el lote no entra en el stock.</value></data>
+  <data name="Expiry.Band.MinBelowText" xml:space="preserve"><value>Al registrar se aplica la regla de la empresa (advertencia, cuarentena o rechazo).</value></data>
+  <data name="Expiry.Band.MinUndefined" xml:space="preserve"><value>La vida útil restante mínima no está definida en los datos maestros: no se aplica la regla.</value></data>
+  <data name="Expiry.Band.ResubmitTitle" xml:space="preserve"><value>Vida útil restante {0} días · por debajo del mínimo de {1} días</value></data>
+  <data name="Expiry.Band.ResubmitText" xml:space="preserve"><value>Regla de la empresa «cuarentena automática»: el movimiento se reenvía a QUARANTINE.</value></data>
+  <data name="Expiry.Band.ResubmitAlert" xml:space="preserve"><value>El lote está por debajo de la vida útil restante mínima. El movimiento se reenvió a QUARANTINE en lugar de AVAILABLE, con una clave nueva.</value></data>
+  <data name="Expiry.Band.SuggestTitle" xml:space="preserve"><value>Fechas sugeridas</value></data>
+  <data name="Expiry.Band.DiffersTitle" xml:space="preserve"><value>Una fecha difiere de la sugerida</value></data>
+  <data name="Expiry.Band.SuggestExpiry" xml:space="preserve"><value>Caducidad sugerida {0} (fecha de fabricación + vida útil {1} días)</value></data>
+  <data name="Expiry.Band.SuggestRetest" xml:space="preserve"><value>reanálisis {0} (+{1} días)</value></data>
+  <data name="Expiry.Band.NoRetest" xml:space="preserve"><value>no se aplica reanálisis</value></data>
+  <data name="Expiry.Band.UseSuggestion" xml:space="preserve"><value>Usar la fecha sugerida</value></data>
+  <data name="Expiry.Band.DiffersReason" xml:space="preserve"><value>Difiere de la sugerida — justificación</value></data>
+  <data name="Expiry.Band.DiffersPlaceholder" xml:space="preserve"><value>p. ej., se tomó la caducidad del CoA del proveedor</value></data>
+  <data name="Expiry.Band.NoteReason" xml:space="preserve"><value>Al guardar se crea una excepción EXPIRY_DATE_OVERRIDE · regla: justificación</value></data>
+  <data name="Expiry.Band.NoteSign" xml:space="preserve"><value>Al guardar se crea una excepción EXPIRY_DATE_OVERRIDE · regla: justificación + firma (se abre el diálogo MOD-0022)</value></data>
+  <data name="Expiry.Band.NoteServer" xml:space="preserve"><value>Al guardar se crea una excepción EXPIRY_DATE_OVERRIDE; la regla de la empresa pide firma cuando corresponde.</value></data>
+  <data name="Expiry.Band.OverrideFailed" xml:space="preserve"><value>No se pudo preparar el cambio de fecha.</value></data>
+  <data name="Expiry.Band.SignUnavailable" xml:space="preserve"><value>El diálogo de firma no puede abrirse en esta página; el cambio de fecha requiere firma.</value></data>
+  <data name="Expiry.Band.SignCancelled" xml:space="preserve"><value>Se cerró el diálogo de firma: el lote no se guardó.</value></data>
+  <data name="Expiry.Band.Errors.LOT_DATE_OVERRIDE_REQUIRED" xml:space="preserve"><value>La fecha difiere de la sugerida: se requiere un cambio justificado.</value></data>
+  <data name="Expiry.Band.Errors.LOT_DATE_OVERRIDE_SIGNATURE_REQUIRED" xml:space="preserve"><value>El cambio de fecha requiere firma electrónica.</value></data>
+  <data name="Expiry.Band.Errors.LOT_DATE_OVERRIDE_SIGNATURE_MISMATCH" xml:space="preserve"><value>La firma no corresponde a este cambio de fecha. Prepárelo y fírmelo de nuevo.</value></data>
+  <data name="Expiry.Band.Errors.LOT_DATE_OVERRIDE_MISMATCH" xml:space="preserve"><value>El cambio preparado no coincide con las fechas del lote; revíselas y guarde de nuevo.</value></data>
+  <data name="Expiry.Band.Errors.EXPIRY_NO_SUGGESTION" xml:space="preserve"><value>Los datos maestros no indican vida útil: no hace falta cambio.</value></data>
+  <data name="Expiry.Band.Errors.EXPIRY_DATE_EQUALS_SUGGESTION" xml:space="preserve"><value>La fecha introducida coincide con la sugerida: no hace falta cambio.</value></data>
+  <data name="Expiry.Band.Errors.REASON_REQUIRED" xml:space="preserve"><value>La justificación debe tener al menos 10 caracteres.</value></data>
+  <data name="Expiry.Band.Errors.PRODUCT_MASTER_UNAVAILABLE" xml:space="preserve"><value>No se puede acceder a los datos maestros; inténtelo más tarde.</value></data>
+  <data name="Expiry.Band.Errors.FORBIDDEN" xml:space="preserve"><value>No tiene permiso para preparar un cambio de fecha.</value></data>
 </root>

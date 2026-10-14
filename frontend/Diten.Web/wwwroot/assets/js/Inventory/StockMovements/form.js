@@ -322,6 +322,9 @@ const StockMovementForm = (function () {
             const box = byId('lotRetestConfirm');
             if (box && !show) box.checked = false;
         }
+        // WP-0176-F5: the goods-receipt minimum-remaining band (expiry-bands.js; informational, the posting hook decides)
+        window.ExpiryBands?.movement.onLot({ direction: direction(), movementType: el.type.value, itemId: el.item.value, sku: el.sku.value,
+            expiryDate: typedLotOpen() ? null : option?.expiryDate, postingDate: isoOf(el.postingDate) || new Date().toISOString() });
         refreshEffect();
     };
     // A source row of a registered lot is named by its lot NUMBER, not its id (the ledger stores the id, ASSUMPTION-0174-03).
@@ -349,6 +352,8 @@ const StockMovementForm = (function () {
         const row = state.sources.get(el.source.value);
         hint('source', row ? fmt(t('HintSourceStock'), qty(row.onHand), row.baseUomId || '') : form.querySelector('[data-hint-for="source"]')?.textContent);
         syncWarehouseFromSource();
+        // WP-0176-F5: the outbound FEFO band — the source row's lot against the FEFO order of its warehouse (expiry-bands.js)
+        window.ExpiryBands?.movement.onSource({ direction: direction(), itemId: el.item.value, sku: el.sku.value, warehouseId: row?.warehouseId, lotId: row?.lotId });
         refreshEffect();
     };
 
@@ -615,6 +620,7 @@ const StockMovementForm = (function () {
             body.lotId = currentLot();
         }
         if (state.facts?.serialControlled) body.serialNumbers = el.serials.value;
+        window.ExpiryBands?.movement.extend(body); // WP-0176-F5: fefoBypassReason only when the band asked for it and it was written
         return body;
     };
 
@@ -655,6 +661,8 @@ const StockMovementForm = (function () {
                 errors.serialNumbers = fmt(t('ValSerialCount'), lines.length, qty(state.baseQuantity));
             }
         }
+        // WP-0176-F5: the FEFO band asked for a reason (≥ 10) — said before the post (the server repeats it)
+        if (window.ExpiryBands && !window.ExpiryBands.movement.reasonValid()) errors.source = window.ExpiryBands.t('Expiry.Band.ReasonMin');
         return errors;
     };
 
@@ -711,6 +719,17 @@ const StockMovementForm = (function () {
             return;
         }
         setBusy(false);
+        // WP-0176-F5 (CT-F1): a receipt refused because it is below the minimum remaining shelf life, with the server's
+        // details.requiredToStockStatus = QUARANTINE, is sent again into QUARANTINE with a NEW key — said on the page, never silent
+        const band = window.ExpiryBands?.movement.refused(res?.status, json, body);
+        if (band?.resubmit && form.dataset.mode !== 'correct') {
+            const key = window.ExpiryBands.movement.newKey();
+            byId('idempotencyKey').value = key;
+            if (el.toStatus) { el.toStatus.value = band.toStockStatus; if (hasSelect2()) $(el.toStatus).trigger('change.select2'); }
+            showAlert('movement-form-alert', window.ExpiryBands.t('Expiry.Band.ResubmitAlert'));
+            post({ ...body, idempotencyKey: key, toStockStatus: band.toStockStatus });
+            return;
+        }
         handleRefusal(res, json);
     };
 

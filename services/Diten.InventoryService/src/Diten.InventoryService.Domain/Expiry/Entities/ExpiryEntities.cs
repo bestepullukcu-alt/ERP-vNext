@@ -353,3 +353,52 @@ public enum LotDateOverrideStatus
     Consumed,
     Expired
 }
+
+/// <summary>
+/// Pack §4.7 (F5) — one Kanıt Paketi export: the period, the scope, the format and the SHA-256 OF THE PRODUCED FILE BYTES (§21.3 D-8 — never
+/// of the parameters). The bytes themselves are the <see cref="ExpiryEvidenceFile"/> of the same id, written in the same transaction, so a
+/// replay of the idempotency key answers the SAME file and the SAME hash. INSERT ONLY (the export log).
+/// </summary>
+public sealed class ExpiryEvidenceExport : EntityBase
+{
+    /// <summary><c>q</c> | <c>d30</c> | <c>ytd</c> | <c>custom</c>.</summary>
+    public string Preset { get; set; } = "custom";
+
+    /// <summary>First day of the period (UTC midnight).</summary>
+    public DateTimeOffset PeriodFrom { get; set; }
+
+    /// <summary>Last day of the period, inclusive (UTC midnight).</summary>
+    public DateTimeOffset PeriodTo { get; set; }
+
+    public List<string> WarehouseIds { get; set; } = [];
+
+    public List<ExpiryExceptionType> Types { get; set; } = [];
+
+    public ExpiryEvidenceFormat Format { get; set; }
+
+    public string FileName { get; set; } = string.Empty;
+
+    public string ContentType { get; set; } = string.Empty;
+
+    /// <summary>Lower-case hex SHA-256 of <see cref="ExpiryEvidenceFile.Content"/>.</summary>
+    public string Sha256 { get; set; } = string.Empty;
+
+    public long SizeBytes { get; set; }
+
+    /// <summary>Exception rows in the file (the CSV lines without the header; the PDF's exception table).</summary>
+    public int RowCount { get; set; }
+
+    public Guid ExportedBy { get; set; }
+
+    public DateTimeOffset ExportedAtUtc { get; set; }
+
+    public string IdempotencyKey { get; set; } = string.Empty;
+
+    public string RequestFingerprint { get; set; } = string.Empty;
+}
+
+/// <summary>The produced bytes of one <see cref="ExpiryEvidenceExport"/> (same <see cref="EntityBase.Id"/>). INSERT ONLY.</summary>
+public sealed class ExpiryEvidenceFile : EntityBase
+{
+    public byte[] Content { get; set; } = [];
+}

@@ -42,9 +42,9 @@ public sealed class SingleSystemOfRecordArchitectureTests
             Diten.InventoryService.Persistence.Quarantine.QuarantineCollections.All.OrderBy(x => x).ToList());
 
         // MOD-0176 (WP-0176-F1) — expiry policy / exception records in the same database, prefix expiry_ (pack §3). None is stock: an
-        // exception Quantity is the quantity the case is about.
+        // exception Quantity is the quantity the case is about. WP-0176-F5: the evidence export log + the stored file bytes (FEFO-BUNDLE 1.2.0).
         Assert.Equal(
-            ["expiry_counters", "expiry_date_overrides", "expiry_exception_events", "expiry_exceptions", "expiry_fefo_issue_snapshots", "expiry_policies",
+            ["expiry_counters", "expiry_date_overrides", "expiry_evidence_exports", "expiry_evidence_files", "expiry_exception_events", "expiry_exceptions", "expiry_fefo_issue_snapshots", "expiry_policies",
              "expiry_policy_history"],
             Diten.InventoryService.Persistence.Expiry.ExpiryCollections.All.OrderBy(x => x).ToList());
 

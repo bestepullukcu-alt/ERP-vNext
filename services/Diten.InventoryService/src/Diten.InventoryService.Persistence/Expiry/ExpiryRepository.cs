@@ -28,6 +28,8 @@ public sealed class ExpiryRepository : IExpiryRepository
     private readonly IMongoCollection<BsonDocument> _counters;
     private readonly IMongoCollection<ExpiryAuditRecord> _audit;
     private readonly IMongoCollection<LotDateOverride> _overrides;
+    private readonly IMongoCollection<ExpiryEvidenceExport> _exports;
+    private readonly IMongoCollection<ExpiryEvidenceFile> _files;
     private readonly TransactionRetryCounter _retries;
     private readonly ILogger<ExpiryRepository> _logger;
     private readonly Guid _tenantId;
@@ -43,6 +45,8 @@ public sealed class ExpiryRepository : IExpiryRepository
         _counters = database.GetCollection<BsonDocument>(ExpiryCollections.Counters);
         _audit = database.GetCollection<ExpiryAuditRecord>(InventoryCollections.Audit);
         _overrides = database.GetCollection<LotDateOverride>(ExpiryCollections.DateOverrides);
+        _exports = database.GetCollection<ExpiryEvidenceExport>(ExpiryCollections.EvidenceExports);
+        _files = database.GetCollection<ExpiryEvidenceFile>(ExpiryCollections.EvidenceFiles);
         _retries = retries;
         _logger = logger;
         _tenantId = tenant.TenantId;
@@ -132,6 +136,46 @@ public sealed class ExpiryRepository : IExpiryRepository
 
     public async Task<LotDateOverride?> FindDateOverrideAsync(Guid overrideId, CancellationToken cancellationToken = default)
         => await _overrides.Find(Scope<LotDateOverride>() & Builders<LotDateOverride>.Filter.Eq(x => x.Id, overrideId)).FirstOrDefaultAsync(cancellationToken);
+
+    // ── F5 Kanıt Paketi ────────────────────────────────────────────────────────────────────────────────────
+
+    public async Task<IReadOnlyList<FefoExceptionCase>> CasesOpenedBetweenAsync(DateTimeOffset from, DateTimeOffset toExclusive,
+        IReadOnlyCollection<string> warehouseIds, IReadOnlyCollection<ExpiryExceptionType> types, CancellationToken cancellationToken = default)
+    {
+        var f = Builders<FefoExceptionCase>.Filter;
+        var filter = Scope<FefoExceptionCase>() & f.Gte(x => x.OpenedAtUtc, from) & f.Lt(x => x.OpenedAtUtc, toExclusive);
+        if (warehouseIds.Count > 0) filter &= f.In(x => x.WarehouseId, warehouseIds);
+        if (types.Count > 0) filter &= f.In(x => x.Type, types);
+        return await _cases.Find(filter).Sort(Builders<FefoExceptionCase>.Sort.Ascending(x => x.OpenedAtUtc).Ascending(x => x.Number)).ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<ExpiryPolicyHistoryEntry>> PolicyHistoryBetweenAsync(DateTimeOffset from, DateTimeOffset toExclusive, CancellationToken cancellationToken = default)
+        => await _history.Find(Scope<ExpiryPolicyHistoryEntry>() & Builders<ExpiryPolicyHistoryEntry>.Filter.Gte(x => x.ChangedAtUtc, from)
+                               & Builders<ExpiryPolicyHistoryEntry>.Filter.Lt(x => x.ChangedAtUtc, toExclusive))
+            .Sort(Builders<ExpiryPolicyHistoryEntry>.Sort.Ascending(x => x.ChangedAtUtc).Ascending(x => x.Field)).ToListAsync(cancellationToken);
+
+    public async Task<ExpiryEvidenceExport?> FindEvidenceExportByKeyAsync(Guid exportedBy, string idempotencyKey, CancellationToken cancellationToken = default)
+        => await _exports.Find(Scope<ExpiryEvidenceExport>() & Builders<ExpiryEvidenceExport>.Filter.Eq(x => x.ExportedBy, exportedBy)
+                               & Builders<ExpiryEvidenceExport>.Filter.Eq(x => x.IdempotencyKey, idempotencyKey)).FirstOrDefaultAsync(cancellationToken);
+
+    public async Task<ExpiryEvidenceExport?> FindEvidenceExportAsync(Guid exportId, CancellationToken cancellationToken = default)
+        => await _exports.Find(Scope<ExpiryEvidenceExport>() & Builders<ExpiryEvidenceExport>.Filter.Eq(x => x.Id, exportId)).FirstOrDefaultAsync(cancellationToken);
+
+    public async Task<ExpiryEvidenceExportPage> ListEvidenceExportsAsync(int page, int pageSize, CancellationToken cancellationToken = default)
+    {
+        var filter = Scope<ExpiryEvidenceExport>();
+        var total = await _exports.CountDocumentsAsync(filter, cancellationToken: cancellationToken);
+        var items = await _exports.Find(filter).Sort(Builders<ExpiryEvidenceExport>.Sort.Descending(x => x.ExportedAtUtc).Descending(x => x.Id))
+            .Skip((page - 1) * pageSize).Limit(pageSize).ToListAsync(cancellationToken);
+        return new ExpiryEvidenceExportPage(items, total);
+    }
+
+    public async Task<ExpiryEvidenceFile?> FindEvidenceFileAsync(Guid exportId, CancellationToken cancellationToken = default)
+        => await _files.Find(Scope<ExpiryEvidenceFile>() & Builders<ExpiryEvidenceFile>.Filter.Eq(x => x.Id, exportId)).FirstOrDefaultAsync(cancellationToken);
+
+    public async Task<bool> EvidenceExportExistsInAnotherCompanyAsync(Guid exportId, CancellationToken cancellationToken = default)
+        => await _exports.Find(Builders<ExpiryEvidenceExport>.Filter.Eq(x => x.TenantId, _tenantId) & Builders<ExpiryEvidenceExport>.Filter.Ne(x => x.LegalEntityId, _legalEntityId)
+                               & Builders<ExpiryEvidenceExport>.Filter.Eq(x => x.Id, exportId)).AnyAsync(cancellationToken);
 
     public async Task<bool> ExistsInAnotherCompanyAsync(Guid caseId, CancellationToken cancellationToken = default)
         => await _cases.Find(Builders<FefoExceptionCase>.Filter.Eq(x => x.TenantId, _tenantId) & Builders<FefoExceptionCase>.Filter.Ne(x => x.LegalEntityId, _legalEntityId)
@@ -241,6 +285,14 @@ public sealed class ExpiryRepository : IExpiryRepository
         {
             _owner.Stamp(dateOverride);
             return _owner._overrides.InsertOneAsync(_session, dateOverride, cancellationToken: cancellationToken);
+        }
+
+        public async Task InsertEvidenceExportAsync(ExpiryEvidenceExport export, ExpiryEvidenceFile file, CancellationToken cancellationToken = default)
+        {
+            _owner.Stamp(export);
+            _owner.Stamp(file);
+            await _owner._exports.InsertOneAsync(_session, export, cancellationToken: cancellationToken);
+            await _owner._files.InsertOneAsync(_session, file, cancellationToken: cancellationToken);
         }
     }
 }

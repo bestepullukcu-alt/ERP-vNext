@@ -181,7 +181,7 @@ public sealed class ExpiryContractTests
     public void The_contract_is_frozen_1_0_0_owned_by_MOD_0176_with_the_CT_additions()
     {
         var info = Yaml.Value["info"]!;
-        Assert.Equal("1.1.0", info["version"]!.GetValue<string>()); // F2 / F3 description-only steps; F4 1.1.0 additive (FU-0176-F1-UOM)
+        Assert.Equal("1.2.0", info["version"]!.GetValue<string>()); // F2 / F3 description-only steps; F4 1.1.0 + F5 1.2.0 additive
         Assert.Equal("FROZEN", info["x-status"]!.GetValue<string>());
         Assert.Equal("MOD-0176", info["x-owner"]!.GetValue<string>());
         Assert.Equal("/api/expiry", Yaml.Value["servers"]![0]!["url"]!.GetValue<string>());
@@ -207,11 +207,12 @@ public sealed class ExpiryContractTests
             .SelectMany(m => m.GetCustomAttributes<HttpMethodAttribute>().SelectMany(a => a.HttpMethods.Select(v =>
                 (Path: "/" + a.Template, Method: v.ToLowerInvariant(), Permission: m.GetCustomAttribute<HasPermissionAttribute>()!.Policy!["Permission:".Length..]))))
             .ToList();
-        Assert.Equal(16, served.Count); // 11 F1 + createDateOverride (F2) + 4 reads (F4)
+        Assert.Equal(20, served.Count); // 11 F1 + createDateOverride (F2) + 4 reads (F4) + 4 evidence (F5)
 
         var byRoute = Operations().ToDictionary(o => (o.Path, o.Method));
         var f1 = Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["F1"]).Concat(Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["F2"]))
-            .Concat(Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["F4"])).ToList();
+            .Concat(Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["F4"]))
+            .Concat(Strings(Yaml.Value["info"]!["x-implemented-by-slice"]!["F5"])).ToList();
         foreach (var (path, method, permission) in served)
         {
             Assert.True(byRoute.TryGetValue((path, method), out var op), $"{method} {path} is not in fefo.openapi.yaml");
@@ -273,7 +274,9 @@ public sealed class ExpiryArchitectureTests
         // manifest declares nothing the controller does not enforce (F4: the four pages + their buttons + the remaining API keys)
         var enforced = actions.Select(a => a.GetCustomAttribute<HasPermissionAttribute>()!.Policy!["Permission:".Length..]).ToHashSet(StringComparer.Ordinal);
         var manifest = new ExpiryFefoManifestProvider().GetManifest();
-        Assert.Equal(["/Expiry", "/Expiry/Approaching", "/Expiry/Expired", "/Expiry/FefoOrder"], manifest.Pages.Select(p => p.RoutePath));
+        Assert.Equal(["/Expiry", "/Expiry/Approaching", "/Expiry/Expired", "/Expiry/FefoOrder", "/Expiry/Exceptions", "/Expiry/Exceptions/Details/{id}",
+            "/Expiry/Policy", "/Expiry/Evidence"], manifest.Pages.Select(p => p.RoutePath));
+        Assert.Equal([ExpiryPermissions.DateOverridesCreate], (manifest.ApiPermissions ?? []).Select(p => p.PermissionKey)); // F5: the only API key (pack §14.4)
         Assert.All(manifest.Pages, p => Assert.False(p.RoutePath.StartsWith("/Platform", StringComparison.OrdinalIgnoreCase)));
         var declared = manifest.Pages.Select(p => p.RequiredPermission).Concat(manifest.Pages.SelectMany(p => p.Actions).Select(a => a.PermissionKey))
             .Concat((manifest.ApiPermissions ?? []).Select(p => p.PermissionKey)).Distinct(StringComparer.Ordinal);
@@ -301,7 +304,7 @@ public sealed class ExpiryArchitectureTests
     {
         var entities = typeof(EntityBase).Assembly.GetTypes()
             .Where(t => typeof(EntityBase).IsAssignableFrom(t) && t.Namespace?.Contains(".Expiry", StringComparison.Ordinal) == true).ToList();
-        Assert.Equal(7, entities.Count); // F1: 5; F2: + FefoIssueSnapshot, LotDateOverride
+        Assert.Equal(9, entities.Count); // F1: 5; F2: + FefoIssueSnapshot, LotDateOverride; F5: + ExpiryEvidenceExport, ExpiryEvidenceFile (no signature record)
         Assert.DoesNotContain(entities, t => t.Name.Contains("Signature", StringComparison.Ordinal));
         Assert.Contains(typeof(IExpiryResolutionSignature), typeof(FailClosedExpiryResolutionSignature).GetInterfaces());
     }

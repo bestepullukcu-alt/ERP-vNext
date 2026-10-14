@@ -197,6 +197,11 @@ public sealed class MovementSubmitViewModel
     /// <summary>Display only (the Model A picker's labels) — for the receipt; never sent to the service.</summary>
     public string? ItemText { get; set; }
     public string? SkuText { get; set; }
+    /// <summary>
+    /// WP-0176-F5 seam (CT decision A, KF-B): the reason of an issue that is not from the first FEFO lot (INVENTORY 1.3.0, 10–1000 — the
+    /// service decides). Blank = not sent: the payload of a form without it is byte-for-byte the old one.
+    /// </summary>
+    public string? FefoBypassReason { get; set; }
 }
 
 /// <summary>Body of <c>POST /StockMovements/Edit</c> — step (1) reverses the original, step (2) posts the movement.</summary>

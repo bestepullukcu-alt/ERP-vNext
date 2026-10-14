@@ -37,6 +37,7 @@ window.ExpiryUi = (function () {
             headers.RequestVerificationToken = antiforgery();
         }
         if (options?.idempotencyKey) headers['Idempotency-Key'] = options.idempotencyKey;
+        if (options?.ifMatch) headers['If-Match'] = options.ifMatch; // F5: the version of a case / the policy
         try {
             const res = await fetch(url, { method, credentials: 'same-origin', headers, body: body === undefined ? undefined : JSON.stringify(body) });
             const json = await res.json().catch(() => null);
@@ -88,6 +89,45 @@ window.ExpiryUi = (function () {
             + `<small dir="ltr">${esc(qty(pct))}%</small></div>`;
     };
 
+    // ── F5: exception cases (pack §4.3, §8.4; mockup XT / XS / RES) ────────────────────────────────────────────────
+    const TYPE = { FEFO_BYPASS: 'bg-label-primary', BELOW_MIN_REMAINING: 'bg-label-warning', EXPIRY_DATE_OVERRIDE: 'bg-label-info', EXPIRED_ON_HAND: 'bg-label-danger' };
+    const STATUS = { Open: 'bg-label-primary', InReview: 'bg-label-info', Accepted: 'bg-label-success', Fixed: 'bg-label-success', Closed: 'bg-label-secondary', Cancelled: 'bg-label-secondary' };
+    const typeBadge = (type) => `<span class="badge ${TYPE[type] || 'bg-label-secondary'}">${esc(t('Expiry.Type.' + type) || type)}</span>`;
+    const caseStatusBadge = (status) => `<span class="badge ${STATUS[status] || 'bg-label-secondary'}">${esc(t('Expiry.Status.' + status) || status)}</span>`;
+    const resolutionText = (resolution) => (resolution ? t('Expiry.Resolution.' + resolution) || resolution : '');
+    /** A policy history row in the reader's words (the settings history and the evidence pack show it alike): field label, value + unit. */
+    const POLICY_MODES = ['fefoOutboundMode', 'belowMinRemainingMode', 'dateOverrideMode'];
+    const policyField = (field) => (String(field).startsWith('slaHours.') ? t('Expiry.Policy.SlaOf', t('Expiry.Type.' + field.slice(9)))
+        : t('Expiry.Policy.Field.' + field) || field);
+    const policyValue = (field, value) => {
+        if (value === null || value === undefined || value === '') return '—';
+        if (POLICY_MODES.includes(field)) return t('Expiry.Policy.Mode.' + value) || value;
+        return String(field).startsWith('slaHours.') ? t('Expiry.Policy.Hours', value) : t('Expiry.Common.Days', value);
+    };
+    const dateTime = (wire) => {
+        if (!wire) return '';
+        const d = new Date(wire);
+        return Number.isNaN(d.getTime()) ? String(wire)
+            : d.toLocaleString(lang, { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+    };
+    /** "2g 4s" / "3s 20dk" (mockup SLA text). */
+    const duration = (ms) => {
+        const minutes = Math.max(0, Math.round(Math.abs(ms) / 60000));
+        const days = Math.floor(minutes / 1440);
+        const hours = Math.floor((minutes % 1440) / 60);
+        return days > 0 ? t('Expiry.Sla.DaysHours', days, hours) : t('Expiry.Sla.HoursMinutes', hours, minutes % 60);
+    };
+    /** The SLA of an ACTIVE case: late (red, "… önce doldu"), due soon (< 6 h, yellow) — the server's late / dueSoon flags decide the colour. */
+    const slaCell = (row) => {
+        if (!['Open', 'InReview'].includes(row.status)) return '<span class="text-muted">—</span>';
+        const left = new Date(row.dueAtUtc).getTime() - Date.now();
+        if (row.late) return `<span class="badge bg-label-danger me-1">${esc(t('Expiry.Sla.Late'))}</span><small class="text-danger">${esc(t('Expiry.Sla.Ago', duration(left)))}</small>`;
+        return `<small class="${row.dueSoon ? 'text-warning fw-medium' : 'text-muted'}">${esc(t('Expiry.Sla.Left', duration(left)))}</small>`;
+    };
+    /** A person: the name the Web resolved (FU-0175-Q5-02), else the short id + "bilinmeyen kullanıcı" — never a guessed name. */
+    const person = (ref) => (ref?.name ? ref.name : ref?.userId ? `${String(ref.userId).slice(0, 8)} · ${t('Expiry.Common.UnknownUser')}` : '');
+    const write = (method, path, body, options) => call(method, `/Expiry/api/${path}`, body, options);
+
     const loadWarehouses = async (select) => {
         if (!select) return;
         const reply = await get('/Expiry/lookups/warehouses');
@@ -107,25 +147,57 @@ window.ExpiryUi = (function () {
     // ── "İstisna aç" (openException) ─────────────────────────────────────────────────────────────────────────────
     let subject = null;
     const modalEl = () => byId('ex-open-modal');
-    const openModal = (data) => {
+    // F5 pick mode (the inbox has no row): warehouse → the SKUs with lot stock there (/Expiry/lookups/skus) → the SKU's lots (/Lots/form/lots)
+    let pickSkus = [];
+    const resetSelect = (select, disabled) => {
+        if (!select) return;
+        select.innerHTML = '<option value=""></option>';
+        select.disabled = disabled;
+    };
+    const pickWarehouse = async () => {
+        const warehouse = byId('ex-open-warehouse').value;
+        resetSelect(byId('ex-open-sku'), true);
+        resetSelect(byId('ex-open-lot'), true);
+        pickSkus = [];
+        if (!warehouse) return;
+        const reply = await get(`/Expiry/lookups/skus?warehouseId=${encodeURIComponent(warehouse)}`);
+        pickSkus = reply.ok ? reply.json?.items || [] : [];
+        pickSkus.forEach((s, i) => byId('ex-open-sku').add(new Option(s.text || s.skuId, String(i))));
+        byId('ex-open-sku').disabled = pickSkus.length === 0;
+    };
+    const pickSku = async () => {
+        const sku = pickSkus[Number(byId('ex-open-sku').value)];
+        resetSelect(byId('ex-open-lot'), true);
+        if (!sku || byId('ex-open-sku').value === '') return;
+        const reply = await get(`/Lots/form/lots?${new URLSearchParams({ sku: `${sku.skuLevel}:${sku.skuId}` })}`);
+        (reply.ok ? reply.json?.items || [] : []).forEach((o) => byId('ex-open-lot').add(new Option(o.text || o.lotNumber || o.value, o.value)));
+        byId('ex-open-lot').disabled = byId('ex-open-lot').options.length <= 1;
+    };
+    const openModal = async (data) => {
         const el = modalEl();
         if (!el || !window.bootstrap) return;
-        subject = data;
-        byId('ex-open-subject').textContent = [data.lotNumber, data.product, data.warehouse].filter(Boolean).join(' · ');
+        subject = data || {};
+        const pick = !subject.lotId;
+        byId('ex-open-pick')?.classList.toggle('d-none', !pick);
+        byId('ex-open-subject').textContent = pick ? t('Expiry.Modal.PickHint') : [subject.lotNumber, subject.product, subject.warehouse].filter(Boolean).join(' · ');
         byId('ex-open-description').value = '';
-        el.querySelector('[data-err="description"]').textContent = '';
+        el.querySelectorAll('[data-err]').forEach((e) => { e.textContent = ''; });
         hideError(byId('ex-open-error'));
+        if (pick && byId('ex-open-warehouse').options.length <= 1) await loadWarehouses(byId('ex-open-warehouse'));
         window.bootstrap.Modal.getOrCreateInstance(el).show();
     };
     const submitModal = async () => {
         const description = byId('ex-open-description').value.trim();
-        if (description.length < 10) {
-            modalEl().querySelector('[data-err="description"]').textContent = t('Expiry.Modal.DescriptionMin');
-            return;
-        }
+        const pick = !subject.lotId;
+        const lotId = pick ? byId('ex-open-lot')?.value : subject.lotId;
+        const warehouseId = pick ? byId('ex-open-warehouse')?.value : subject.warehouseId;
+        let invalid = false;
+        if (pick && !lotId) { modalEl().querySelector('[data-err="lot"]').textContent = t('Expiry.Modal.LotRequired'); invalid = true; }
+        if (description.length < 10) { modalEl().querySelector('[data-err="description"]').textContent = t('Expiry.Modal.DescriptionMin'); invalid = true; }
+        if (invalid) return;
         const key = newKey();
-        const body = { idempotencyKey: key, type: byId('ex-open-type').value, lotId: subject.lotId, description };
-        if (subject.warehouseId) body.warehouseId = subject.warehouseId;
+        const body = { idempotencyKey: key, type: byId('ex-open-type').value, lotId, description };
+        if (warehouseId) body.warehouseId = warehouseId;
         const reply = await call('POST', '/Expiry/api/exceptions', body, { idempotencyKey: key });
         if (!reply.ok) {
             showError(byId('ex-open-error'), reply);
@@ -133,7 +205,15 @@ window.ExpiryUi = (function () {
         }
         window.bootstrap.Modal.getOrCreateInstance(modalEl()).hide();
         window.showToast?.(t('Expiry.Modal.Opened', reply.json?.number || ''), 'success');
+        // mockup: the new case opens on its detail page (where the reader may read cases)
+        if (reply.json?.exceptionId && can('EXPIRY_EXCEPTIONS_VIEW')) {
+            window.location.href = `/Expiry/Exceptions/Details/${encodeURIComponent(reply.json.exceptionId)}`;
+        }
     };
+    document.addEventListener('change', (event) => {
+        if (event.target?.id === 'ex-open-warehouse') pickWarehouse();
+        if (event.target?.id === 'ex-open-sku') pickSku();
+    });
     document.addEventListener('click', (event) => {
         const trigger = event.target.closest('[data-ex-open]');
         if (trigger) {
@@ -143,5 +223,9 @@ window.ExpiryUi = (function () {
     });
     document.addEventListener('DOMContentLoaded', () => byId('ex-open-submit')?.addEventListener('click', submitModal));
 
-    return { t, has, can, esc, qty, date, byId, get, showError, hideError, severityBadge, reasonBadge, statusCell, amount, unit, productCell, lotLink, orderUrl, shelfBar, loadWarehouses, rowActions };
+    return {
+        t, has, can, esc, qty, date, byId, get, showError, hideError, severityBadge, reasonBadge, statusCell, amount, unit, productCell, lotLink, orderUrl, shelfBar, loadWarehouses, rowActions,
+        // F5
+        call, write, newKey, codeOf, errorText, typeBadge, caseStatusBadge, resolutionText, policyField, policyValue, dateTime, duration, slaCell, person, openModal
+    };
 })();

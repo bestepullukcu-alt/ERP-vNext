@@ -1,0 +1,62 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.Expiry.Expiry> Localizer
+@*
+    MOD-0176 F5 — "İstisna kararı" two-step drawer (pack §8.4, §8.6; mockup "dp"). Step 1 "Çözüm": the resolution (Gerekçeyle kabul ·
+    Düzeltildi · İptal) and the reason (≥ 10) → prepareResolution. Step 2 "Elektronik imza": the prepared decision is signed in the ONE
+    MOD-0022 dialog (_ESignatureDialog, ESign.open — no password field here) and resolved; when the company's e-sign policy asks for no
+    signature the step is skipped and said so. Rendered only for expiry.exceptions.resolve (the page draws it in that guard).
+*@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="ex-drawer" aria-labelledby="ex-drawer-title" data-bs-backdrop="static" style="width:min(520px,100vw)">
+    <div class="offcanvas-header align-items-start border-bottom">
+        <div>
+            <h5 class="offcanvas-title mb-1" id="ex-drawer-title">@Localizer["Expiry.Drawer.Title"] · <span class="font-monospace" id="ex-drawer-number"></span></h5>
+            <small class="text-muted d-block" id="ex-drawer-subject"></small>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="@Localizer["Expiry.Common.Close"]"></button>
+    </div>
+    <div class="offcanvas-body">
+        <ol class="list-unstyled d-flex gap-4 mb-4" id="ex-drawer-steps">
+            <li class="d-flex align-items-center gap-2" data-ex-step="1"><span class="badge rounded-pill bg-primary" data-ex-step-dot>1</span><span class="fw-medium">@Localizer["Expiry.Drawer.Step1"]</span></li>
+            <li class="d-flex align-items-center gap-2 text-muted" data-ex-step="2"><span class="badge rounded-pill bg-label-secondary" data-ex-step-dot>2</span><span class="fw-medium">@Localizer["Expiry.Drawer.Step2"]</span></li>
+        </ol>
+        <div id="ex-drawer-error" class="alert alert-danger d-none" role="alert"></div>
+
+        <section id="ex-drawer-step1">
+            <fieldset class="mb-4">
+                <legend class="form-label">@Localizer["Expiry.Drawer.Resolution"] *</legend>
+                @foreach (var (value, icon, tone) in new[] { ("AcceptedWithReason", "bx-check-circle", "success"), ("Fixed", "bx-wrench", "info"), ("Cancelled", "bx-x-circle", "secondary") })
+                {
+                    <label class="form-check custom-option custom-option-basic d-flex gap-3 p-3 mb-2 border rounded">
+                        <input class="form-check-input mt-1 ms-0 flex-shrink-0" type="radio" name="ex-drawer-resolution" value="@value" />
+                        <span class="d-flex flex-column">
+                            <span class="fw-medium"><i class="bx @icon text-@tone me-1"></i>@Localizer["Expiry.Resolution." + value]</span>
+                            <small class="text-muted">@Localizer["Expiry.Drawer.ResolutionHelp." + value]</small>
+                        </span>
+                    </label>
+                }
+                <div class="form-text text-danger" data-err="resolution"></div>
+            </fieldset>
+            <label class="form-label d-flex justify-content-between" for="ex-drawer-reason">
+                <span>@Localizer["Expiry.Drawer.Reason"] *</span><small class="text-muted" id="ex-drawer-counter" dir="ltr"></small>
+            </label>
+            <textarea class="form-control" id="ex-drawer-reason" rows="3" maxlength="1000" placeholder="@Localizer["Expiry.Drawer.ReasonPlaceholder"]"></textarea>
+            <div class="form-text text-danger" data-err="reason"></div>
+        </section>
+
+        <section id="ex-drawer-step2" class="d-none">
+            <div class="border rounded p-3 mb-3 bg-lighter">
+                <div class="small text-muted mb-1">@Localizer["Expiry.Drawer.ToSign"]</div>
+                <div class="fw-medium" id="ex-drawer-summary"></div>
+                <div class="small mt-1" id="ex-drawer-summary-reason"></div>
+            </div>
+            <div class="alert alert-info small mb-0" role="note"><i class="bx bx-pen me-1"></i>@Localizer["Expiry.Drawer.SignInfo"]</div>
+        </section>
+        <div id="ex-drawer-skipped" class="alert alert-secondary small d-none mt-3" role="note"></div>
+    </div>
+    <div class="border-top p-3 d-flex flex-wrap gap-2 justify-content-end">
+        <button type="button" class="btn btn-label-secondary d-none" id="ex-drawer-back">@Localizer["Expiry.Drawer.Back"]</button>
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@Localizer["Expiry.Common.Cancel"]</button>
+        <button type="button" class="btn btn-primary" id="ex-drawer-next">@Localizer["Expiry.Drawer.Next"]</button>
+        <button type="button" class="btn btn-primary d-none" id="ex-drawer-sign"><i class="bx bx-pen me-1"></i>@Localizer["Expiry.Drawer.SignAndSave"]</button>
+    </div>
+</div>

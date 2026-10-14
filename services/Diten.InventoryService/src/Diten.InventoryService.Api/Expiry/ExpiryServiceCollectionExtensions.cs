@@ -44,6 +44,8 @@ public static class ExpiryServiceCollectionExtensions
         services.AddScoped<ExpiryHookWriter>();
         services.AddScoped<FefoCandidateReader>(); // F4: the one FEFO candidate read (posting hook + FEFO order)
         services.AddScoped<IExpiryReadModel, ExpiryReadModel>();
+        services.AddScoped<ExpiryEvidenceBuilder>(); // F5 Kanıt Paketi (preview + files)
+        services.AddSingleton<Application.Features.Expiry.Ports.IExpiryEvidencePdfRenderer, ExpiryEvidencePdfRenderer>();
         services.RemoveAll<Application.Features.Expiry.Ports.IExpiryPostingPolicy>();
         services.AddScoped<Application.Features.Expiry.Ports.IExpiryPostingPolicy, ExpiryPostingPolicy>();
         services.RemoveAll<Application.Features.Traceability.Ports.ILotDateOverrideGate>();

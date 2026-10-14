@@ -518,6 +518,20 @@ public sealed partial class StockMovementsController : Controller
         }
 
         _logger.LogWarning("Movement refused with {Status} {Code} (correlation {CorrelationId}).", reply.StatusCode, code, reply.Error?.CorrelationId ?? reply.CorrelationId);
+        var expiry = ExpiryRefusalDetails(code, details);
+        if (expiry is not null)
+        {
+            // WP-0176-F5 seam (CT decision A): the FEFO / minimum-shelf-life bands need the server's details (CT-F1: requiredToStockStatus)
+            return new JsonResult(new
+            {
+                partial = reversalNumber is not null,
+                reversalNumber,
+                error = new { code, message, scope, field, correlationId = reply.Error?.CorrelationId ?? reply.CorrelationId, details = expiry },
+                contractVersion = InventoryProxy.ContractVersion
+            })
+            { StatusCode = reply.StatusCode == 0 ? StatusCodes.Status503ServiceUnavailable : reply.StatusCode };
+        }
+
         return new JsonResult(new
         {
             partial = reversalNumber is not null,
@@ -526,6 +540,29 @@ public sealed partial class StockMovementsController : Controller
             contractVersion = InventoryProxy.ContractVersion
         })
         { StatusCode = reply.StatusCode == 0 ? StatusCodes.Status503ServiceUnavailable : reply.StatusCode };
+    }
+
+    /// <summary>WP-0176-F5 seam: the three MOD-0176 hook codes whose details the bands read (no other code carries details).</summary>
+    public static readonly IReadOnlySet<string> ExpiryRefusalCodes = new HashSet<string>(StringComparer.Ordinal)
+    {
+        "FEFO_BYPASS_REASON_REQUIRED", "FEFO_ORDER_VIOLATION", "LOT_BELOW_MIN_REMAINING_SHELF_LIFE"
+    };
+
+    /// <summary>The details keys the bands may see — anything else the service sent is dropped.</summary>
+    public static readonly IReadOnlyList<string> ExpiryDetailKeys =
+        ["firstEligibleLotId", "lotNumber", "expiryDate", "requiredToStockStatus", "remainingDays", "requiredDays"];
+
+    /// <summary>The whitelisted details of an expiry refusal; null for every other code (the pre-F5 answer, unchanged).</summary>
+    public static Dictionary<string, object?>? ExpiryRefusalDetails(string? code, IReadOnlyDictionary<string, object?>? details)
+    {
+        if (code is null || !ExpiryRefusalCodes.Contains(code)) return null;
+        var kept = new Dictionary<string, object?>(StringComparer.Ordinal);
+        foreach (var key in ExpiryDetailKeys)
+        {
+            if (details is not null && details.TryGetValue(key, out var value) && value is not null) kept[key] = value;
+        }
+
+        return kept;
     }
 
     /// <summary>The receipt (UI-10): what was posted, the service's number and the balance row it left (balanceSnapshot).</summary>

@@ -221,6 +221,58 @@ public sealed class ExpiryController : CustomBaseController
             body.ItemId, body.SkuId, body.SkuLevel, body.LotNumber, body.Manufacturing, body.Expiry, body.Retest, body.Reason, key), ct));
     }
 
+    // ── F5 Kanıt Paketi (pack §4.7, §8.10) ───────────────────────────────────────────────────────────────
+
+    [HttpGet("evidence/preview")]
+    [HasPermission(ExpiryPermissions.EvidenceExport)]
+    public async Task<IActionResult> PreviewEvidence(
+        [FromQuery] string? preset, [FromQuery] string? from, [FromQuery] string? to, [FromQuery] string[]? warehouseIds, [FromQuery] string[]? types,
+        CancellationToken ct)
+        => CreateActionResultInstance(await _mediator.Send(new PreviewExpiryEvidenceQuery(preset, from, to, warehouseIds ?? [], types ?? []), ct));
+
+    [HttpGet("evidence/exports")]
+    [HasPermission(ExpiryPermissions.EvidenceExport)]
+    public async Task<IActionResult> ListEvidenceExports([FromQuery] string? page, [FromQuery] string? pageSize, CancellationToken ct)
+        => CreateActionResultInstance(await _mediator.Send(new ListExpiryEvidenceExportsQuery(page, pageSize), ct));
+
+    [HttpPost("evidence/exports")]
+    [HasPermission(ExpiryPermissions.EvidenceExport)]
+    public async Task<IActionResult> CreateEvidenceExport(CancellationToken ct)
+    {
+        var read = await ExpiryRequestReader.ReadAsync(Request.Body, ExpiryRequestReader.EvidenceExportMembers, b => new
+        {
+            Preset = b.String("preset"),
+            From = b.String("from"),
+            To = b.String("to"),
+            WarehouseIds = b.Strings("warehouseIds"),
+            Types = b.Strings("types"),
+            Format = b.String("format"),
+            Key = b.String("idempotencyKey")
+        }, ct);
+        if (read.Value is not { } body) return Invalid(read.Error);
+        if (KeyError(body.Key, out var key) is { } keyError) return Invalid(keyError);
+        // the PDF labels follow the reader's language (tr | en; any other → en) — the Web forwards its UI culture
+        var language = Request.GetTypedHeaders().AcceptLanguage.OrderByDescending(l => l.Quality ?? 1).Select(l => l.Value.Value).FirstOrDefault();
+        return CreateActionResultInstance(await _mediator.Send(new CreateExpiryEvidenceExportCommand(
+            body.Preset, body.From, body.To, body.WarehouseIds, body.Types, body.Format, key,
+            language is not null && language.StartsWith("tr", StringComparison.OrdinalIgnoreCase) ? "tr" : "en"), ct));
+    }
+
+    [HttpGet("evidence/exports/{exportId}/file")]
+    [HasPermission(ExpiryPermissions.EvidenceExport)]
+    public async Task<IActionResult> GetEvidenceExportFile(string exportId, CancellationToken ct)
+    {
+        var result = await _mediator.Send(new GetExpiryEvidenceFileQuery(exportId), ct);
+        if (result.IsSuccessful && result.Data is { } file) return File(file.Content, file.ContentType, file.FileName);
+        if (ExpirySupport.TryParseId(exportId, out var id)
+            && await HttpContext.RequestServices.GetRequiredService<IExpiryRepository>().EvidenceExportExistsInAnotherCompanyAsync(id, ct))
+        {
+            return ContractFailure(StatusCodes.Status403Forbidden, InventoryErrorCodes.CrossLeForbidden, "The record belongs to another company.");
+        }
+
+        return CreateActionResultInstance(result);
+    }
+
     // ── plumbing ──────────────────────────────────────────────────────────────────────────────────────────
 
     /// <summary>

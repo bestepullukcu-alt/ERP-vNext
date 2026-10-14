@@ -276,6 +276,8 @@ public static partial class MovementRules
         if (lot is not null) payload["lotId"] = lot;
         if (serials.Count > 0) payload["serialIds"] = serials;
         if (!string.IsNullOrWhiteSpace(form.DocumentNo)) payload["sourceDocumentId"] = form.DocumentNo.Trim();
+        // WP-0176-F5 seam (CT decision A): the FEFO bypass reason only when sent — absent, the payload is the pre-F5 one
+        if (!string.IsNullOrWhiteSpace(form.FefoBypassReason)) payload["fefoBypassReason"] = form.FefoBypassReason.Trim();
 
         return new Checked(payload, errors, source);
     }

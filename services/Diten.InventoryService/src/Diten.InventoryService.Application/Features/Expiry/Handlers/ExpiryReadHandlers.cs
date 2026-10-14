@@ -145,6 +145,38 @@ public sealed class ExpiryLotView
 }
 
 /// <summary>
+/// The pack §8.8 KPI formulas — ONE place for the panel (F4 getDashboard) and the Kanıt Paketi summary (F5 previewEvidence / the files):
+/// Kritik / Yaklaşıyor = rows with AVAILABLE on-hand &gt; 0 and 0 ≤ days ≤ horizon, AVAILABLE and held apart (Yaklaşıyor includes Kritik);
+/// expired on hand = days &lt; 0, on-hand in any status; compliance = compliant ÷ issues (1 decimal; no issue → null).
+/// </summary>
+public static class ExpiryKpiFormulas
+{
+    public sealed record StockFigures(ExpiryLotCountDto Critical, ExpiryLotCountDto Approaching, ExpiryExpiredCountDto Expired);
+
+    public static StockFigures Stock(IReadOnlyList<(LotStockRow Row, int Days)> dated, ExpiryPolicy policy)
+    {
+        var critical = dated.Where(x => x.Row.Available > 0m && x.Days >= 0 && x.Days <= policy.CriticalDays).ToList();
+        var approaching = dated.Where(x => x.Row.Available > 0m && x.Days >= 0 && x.Days <= policy.ApproachingDays).ToList();
+        var expired = dated.Where(x => x.Days < 0).ToList();
+        return new StockFigures(
+            new ExpiryLotCountDto(critical.Count, critical.Sum(x => x.Row.Available), critical.Sum(x => x.Row.Held)),
+            new ExpiryLotCountDto(approaching.Count, approaching.Sum(x => x.Row.Available), approaching.Sum(x => x.Row.Held)),
+            new ExpiryExpiredCountDto(expired.Count, expired.Sum(x => x.Row.OnHand)));
+    }
+
+    public static ExpiryDashboardKpisDto Kpis(StockFigures stock, int issues, int compliant, int open, int late, double? avgResolutionHours) => new(
+        issues == 0 ? null : Math.Round(compliant * 100m / issues, 1, MidpointRounding.AwayFromZero),
+        issues,
+        issues - compliant,
+        stock.Critical,
+        stock.Approaching,
+        stock.Expired,
+        open,
+        late,
+        avgResolutionHours is { } h ? Math.Round((decimal)h, 1, MidpointRounding.AwayFromZero) : null);
+}
+
+/// <summary>
 /// §4.1 getDashboard (pack §8.8, formulas verbatim): FEFO compliance = compliant ÷ all issue snapshots posted in the period; Kritik /
 /// Yaklaşıyor = rows with AVAILABLE on-hand &gt; 0 and today ≤ expiry ≤ today + horizon (Yaklaşıyor includes Kritik); expired on hand =
 /// expiry &lt; today and on-hand &gt; 0 in any status; open / late cases; mean resolution hours of the period; on-hand by expiry month for 12
@@ -173,9 +205,7 @@ public sealed class GetExpiryDashboardHandler : IRequestHandler<GetExpiryDashboa
         var policy = context.Policy;
         var dated = context.Rows.Select(r => (Row: r, Days: ExpiryLotView.Days(r, context.Today))).ToList();
 
-        var critical = dated.Where(x => x.Row.Available > 0m && x.Days >= 0 && x.Days <= policy.CriticalDays).ToList();
-        var approaching = dated.Where(x => x.Row.Available > 0m && x.Days >= 0 && x.Days <= policy.ApproachingDays).ToList();
-        var expired = dated.Where(x => x.Days < 0).ToList();
+        var stock = ExpiryKpiFormulas.Stock(dated, policy);
         var from = now.AddDays(-period);
         var (issues, compliant) = await _reads.FefoIssuesAsync(from, now, warehouseId, ct);
         var exceptions = await _reads.ExceptionFiguresAsync(now, from, warehouseId, ct);
@@ -191,16 +221,7 @@ public sealed class GetExpiryDashboardHandler : IRequestHandler<GetExpiryDashboa
             .OrderBy(x => x.Days).ThenBy(x => x.Row.Lot.LotNumber, StringComparer.Ordinal).ThenBy(x => x.Row.WarehouseId, StringComparer.Ordinal)
             .Take(10).Select(x => ExpiryLotView.Row(x.Row, context)).ToList();
 
-        var kpis = new ExpiryDashboardKpisDto(
-            issues == 0 ? null : Math.Round(compliant * 100m / issues, 1, MidpointRounding.AwayFromZero),
-            issues,
-            issues - compliant,
-            new ExpiryLotCountDto(critical.Count, critical.Sum(x => x.Row.Available), critical.Sum(x => x.Row.Held)),
-            new ExpiryLotCountDto(approaching.Count, approaching.Sum(x => x.Row.Available), approaching.Sum(x => x.Row.Held)),
-            new ExpiryExpiredCountDto(expired.Count, expired.Sum(x => x.Row.OnHand)),
-            exceptions.Open,
-            exceptions.Late,
-            exceptions.AvgResolutionHours is { } h ? Math.Round((decimal)h, 1, MidpointRounding.AwayFromZero) : null);
+        var kpis = ExpiryKpiFormulas.Kpis(stock, issues, compliant, exceptions.Open, exceptions.Late, exceptions.AvgResolutionHours);
         return Response<ExpiryDashboardDto>.Success(new ExpiryDashboardDto(
             ExpiryLotView.Wire(context.Today),
             new ExpiryPeriodDto(ExpiryLotView.Wire(ExpiryLotView.Day(from)), ExpiryLotView.Wire(context.Today)),

@@ -30,26 +30,38 @@ window.QuickLot = (function () {
         busy = true;
         const button = byId('btnQuickLotSave');
         if (button) button.disabled = true;
+        const lot = {
+            idempotencyKey: value('quickLotKey'),
+            itemId: current.itemId,
+            sku: current.sku,
+            lotNumber: value('quickLotNumber').toUpperCase(),
+            manufacturerLot: value('quickLotManufacturerLot'),
+            supplierLot: value('quickLotSupplierLot'),
+            manufacturingDate: value('quickLotManufacturingDate'),
+            expiryDate: value('quickLotExpiryDate'),
+            retestDate: value('quickLotRetestDate'),
+            countryOfOrigin: value('quickLotCountry'),
+            coaReference: value('quickLotCoa'),
+            origin: 'ledger-shortcut'
+        };
+        // WP-0176-F5 (KF-D): the same date rule as Yeni Lot — the override (+ the MOD-0022 signature when asked) before createLot
+        if (window.ExpiryBands) {
+            const band = await window.ExpiryBands.lot.beforeSave('quick', lot.lotNumber);
+            if (!band.ok) {
+                busy = false;
+                if (button) button.disabled = false;
+                showError(band.message || '');
+                return;
+            }
+            if (band.dateOverride) lot.dateOverride = band.dateOverride;
+        }
         let reply = null;
         try {
             const res = await fetch('/Lots/create', {
                 method: 'POST',
                 credentials: 'same-origin',
                 headers: { 'Content-Type': 'application/json', Accept: 'application/json', RequestVerificationToken: current.token || '' },
-                body: JSON.stringify({
-                    idempotencyKey: value('quickLotKey'),
-                    itemId: current.itemId,
-                    sku: current.sku,
-                    lotNumber: value('quickLotNumber').toUpperCase(),
-                    manufacturerLot: value('quickLotManufacturerLot'),
-                    supplierLot: value('quickLotSupplierLot'),
-                    manufacturingDate: value('quickLotManufacturingDate'),
-                    expiryDate: value('quickLotExpiryDate'),
-                    retestDate: value('quickLotRetestDate'),
-                    countryOfOrigin: value('quickLotCountry'),
-                    coaReference: value('quickLotCoa'),
-                    origin: 'ledger-shortcut'
-                })
+                body: JSON.stringify(lot)
             });
             reply = { ok: res.ok, json: await res.json().catch(() => null) };
         } catch (error) {
@@ -77,18 +89,25 @@ window.QuickLot = (function () {
             const node = document.querySelector(`#modalQuickLot [data-quick-error="${error.field}"]`);
             if (node) node.textContent = error.message || '';
         }
-        showError(error?.message || '');
+        showError(window.ExpiryBands?.lot.refusal(reply.json) || error?.message || '');
     };
 
+    let band = null; // WP-0176-F5: the date band of the quick lot (attached once, reads the SKU of the opened movement)
     const open = (options) => {
         const modal = byId('modalQuickLot');
         if (!modal || !window.bootstrap) return;
         current = options;
         clearErrors();
-        ['quickLotNumber', 'quickLotManufacturerLot', 'quickLotSupplierLot', 'quickLotManufacturingDate', 'quickLotExpiryDate', 'quickLotRetestDate', 'quickLotCountry', 'quickLotCoa']
+        ['quickLotNumber', 'quickLotManufacturerLot', 'quickLotSupplierLot', 'quickLotManufacturingDate', 'quickLotExpiryDate', 'quickLotRetestDate', 'quickLotCountry', 'quickLotCoa',
+            'ex-band-quick-reason']
             .forEach((id) => { const n = byId(id); if (n) n.value = ''; });
         const sku = byId('quickLotSku');
         if (sku) sku.textContent = [options.itemText, options.skuText].filter(Boolean).join(' · ');
+        band = band || window.ExpiryBands?.lot.attach('quick', {
+            manufacturing: 'quickLotManufacturingDate', expiry: 'quickLotExpiryDate', retest: 'quickLotRetestDate', band: 'ex-band-quick', use: 'ex-band-quick-use',
+            reasonGroup: 'ex-band-quick-reason-group', reason: 'ex-band-quick-reason', note: 'ex-band-quick-note'
+        }, () => ({ itemId: current?.itemId, sku: current?.sku }));
+        band?.();
         window.bootstrap.Modal.getOrCreateInstance(modal).show();
     };
 

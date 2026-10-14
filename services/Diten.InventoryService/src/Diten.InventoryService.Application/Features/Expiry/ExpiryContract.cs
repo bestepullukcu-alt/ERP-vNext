@@ -50,6 +50,14 @@ public static class ExpiryContract
     public const string AuditDateOverridePrepared = "expiry.date-override.prepared";
     public const string AuditDateOverrideConsumed = "expiry.date-override.consumed";
 
+    // F5 (pack §8.10)
+    public const string AuditEvidenceExported = "expiry.evidence.exported";
+
+    public const string SubjectEvidenceExport = "expiry.evidence-export";
+
+    /// <summary>F5: an evidence period covers at most 366 days (from and to inclusive).</summary>
+    public const int MaxEvidenceDays = 366;
+
     /// <summary>KF-D: a prepared override is usable for 24 hours.</summary>
     public static readonly TimeSpan DateOverrideLifetime = TimeSpan.FromHours(24);
 

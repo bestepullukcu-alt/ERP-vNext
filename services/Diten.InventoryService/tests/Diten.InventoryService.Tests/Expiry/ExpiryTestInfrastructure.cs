@@ -223,8 +223,15 @@ public sealed class ExpiryContractValidatingHandler : DelegatingHandler
         Op("GET", "/api/expiry/lots/expired", [200, 400, 401, 403, 503], _ => "LotExpiryPage"),
         Op("GET", "/api/expiry/fefo-order", [200, 400, 401, 403, 404, 503], _ => "FefoOrder"),
         // F3 (the MOD-0022 subject provider; every refusal is 404)
-        Op("GET", "/api/expiry/esign-subjects/{id}/{id}", [200, 401, 404], _ => "SignableSubject")
+        Op("GET", "/api/expiry/esign-subjects/{id}/{id}", [200, 401, 404], _ => "SignableSubject"),
+        // F5 (Kanıt Paketi) — the file answer is the stored bytes (text/csv | application/pdf): its body is never read or replaced here
+        Op("GET", "/api/expiry/evidence/preview", [200, 400, 401, 403, 503], _ => "EvidencePreview"),
+        Op("GET", "/api/expiry/evidence/exports", [200, 400, 401, 403, 503], _ => "EvidenceExportPage"),
+        Op("POST", "/api/expiry/evidence/exports", [200, 201, 400, 401, 403, 503], _ => "EvidenceExport"),
+        Op("GET", "/api/expiry/evidence/exports/{id}/file", [200, 401, 403, 404, 503], _ => BinaryFile)
     ];
+
+    private const string BinaryFile = "<file>";
 
     private static readonly Regex WeakETag = new("^W/\"\\d+\"$", RegexOptions.Compiled);
 
@@ -238,6 +245,15 @@ public sealed class ExpiryContractValidatingHandler : DelegatingHandler
         if (operation is null) return response;
 
         var status = (int)response.StatusCode;
+        if (status == 200 && operation.Schema(status) == BinaryFile)
+        {
+            var type = response.Content.Headers.ContentType?.MediaType;
+            if (type is not ("text/csv" or "application/pdf"))
+                throw new ContractViolationException($"{request.Method} {path} 200 answered {type}; the contract allows text/csv or application/pdf.");
+            Validated.AddOrUpdate($"{request.Method} {operation.Path} {status} → fefo:{type}", 1, (_, n) => n + 1);
+            return response;
+        }
+
         var body = await response.Content.ReadAsStringAsync(cancellationToken);
         if (!operation.Allowed.Contains(status))
         {

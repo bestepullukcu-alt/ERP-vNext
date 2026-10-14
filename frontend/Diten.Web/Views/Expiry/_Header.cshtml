@@ -3,7 +3,7 @@
 @inject IHtmlLocalizer<Diten.Web.Views.Expiry.Expiry> Localizer
 @inject Diten.Web.Services.IPermissionSnapshot Perms
 @*
-    Breadcrumb "Son Kullanma / FEFO / {sayfa}" (pack §9) + the F4 pages as links (the mockup's sidebar group; each is its own manifest
+    Breadcrumb "Son Kullanma / FEFO / {sayfa}" (pack §9) + the pages as links (the mockup's sidebar group; each is its own manifest
     page). MODEL: the active page code. A page the user may not open is not offered (UAS-001).
 *@
 @{
@@ -12,7 +12,11 @@
         ("EXPIRYDASHBOARD", "/Expiry", "bx-bar-chart-alt-2", "Expiry.Tabs.Dashboard", "expiry.dashboard.read"),
         ("EXPIRYAPPROACHING", "/Expiry/Approaching", "bx-calendar-exclamation", "Expiry.Tabs.Approaching", "expiry.dashboard.read"),
         ("EXPIREDSTOCK", "/Expiry/Expired", "bx-calendar-x", "Expiry.Tabs.Expired", "expiry.dashboard.read"),
-        ("FEFOORDER", "/Expiry/FefoOrder", "bx-sort-up", "Expiry.Tabs.FefoOrder", "expiry.fefo-order.read")
+        ("FEFOORDER", "/Expiry/FefoOrder", "bx-sort-up", "Expiry.Tabs.FefoOrder", "expiry.fefo-order.read"),
+        // WP-0176-F5 (the detail page is reached from the inbox and is not a tab)
+        ("EXPIRYEXCEPTIONS", "/Expiry/Exceptions", "bx-error-alt", "Expiry.Tabs.Exceptions", "expiry.exceptions.read"),
+        ("EXPIRYPOLICY", "/Expiry/Policy", "bx-cog", "Expiry.Tabs.Policy", "expiry.policies.read"),
+        ("EXPIRYEVIDENCE", "/Expiry/Evidence", "bx-file-find", "Expiry.Tabs.Evidence", "expiry.evidence.export")
     };
     var active = tabs.FirstOrDefault(t => t.Code == Model);
 }

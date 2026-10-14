@@ -71,3 +71,10 @@ public enum ExpiryExceptionEventAction
     Cancelled,
     SlaBreached
 }
+
+/// <summary>Pack §4.7 — the Kanıt Paketi file format.</summary>
+public enum ExpiryEvidenceFormat
+{
+    Csv,
+    Pdf
+}
