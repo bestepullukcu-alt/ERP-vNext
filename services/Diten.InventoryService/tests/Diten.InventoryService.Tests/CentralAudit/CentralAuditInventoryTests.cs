@@ -171,7 +171,77 @@ public sealed class CentralAuditInventoryDeliveryTests : IClassFixture<CentralAu
 
         var delivered = outbox.Find(x => x.Id == waiting.Id).Single();
         Assert.Equal(CentralAuditOutboxStatus.Delivered, delivered.Status);
-        Assert.Contains(_factory.Platform.Bodies, b => b.Contains(waiting.Id.ToString(), StringComparison.Ordinal));
+        // Sent twice (500, then 202); both say Succeeded — the command confirmed this row.
+        var body = _factory.Platform.Bodies.Last(b => b.Contains(waiting.Id.ToString(), StringComparison.Ordinal));
+        Assert.Contains("\"outcome\":1", body, StringComparison.Ordinal);
+        Assert.Contains("\"confirmedByCommand\":true", body, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// CT HOLD item 2 — a transaction that COMMITTED although its command then FAILED: releasing a reservation that does not
+    /// exist opens the release transaction (the event is enlisted in it), answers "not found" inside it and commits; the
+    /// command answers 404. The row is kept as Abandoned and is never among the rows the dispatcher sends
+    /// (<c>RunOnceAsync</c> sends exactly what <c>GetDueAsync</c> returns) — even put first in line.
+    /// </summary>
+    [Fact]
+    public async Task A_failed_command_whose_transaction_committed_leaves_an_abandoned_row_that_is_never_sent()
+    {
+        var s = new InventoryScenario(_factory);
+        using var released = await s.ReleaseAsync(Guid.NewGuid().ToString(), "W/\"1\"");
+        Assert.Equal(HttpStatusCode.NotFound, released.StatusCode);
+
+        var outbox = CentralAuditInventoryTests.Outbox(_factory);
+        var row = outbox.Find(x => x.TenantId == s.Tenant).Single();
+        Assert.Equal("ReleaseReservationCommand", row.RequestType);
+        Assert.True(row.WrittenInCommandTransaction);
+        Assert.Equal(CentralAuditOutboxStatus.Abandoned, row.Status);
+
+        outbox.UpdateOne(x => x.Id == row.Id,
+            Builders<CentralAuditOutboxRecord>.Update.Set(x => x.NextAttemptAtUtc, new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc)));
+        using var scope = _factory.Services.CreateScope();
+        var due = await scope.ServiceProvider.GetRequiredService<ICentralAuditOutboxStore>()
+            .GetDueAsync(DateTime.UtcNow.AddYears(1), int.MaxValue, CancellationToken.None);
+        Assert.DoesNotContain(due, r => r.Id == row.Id);
+        Assert.DoesNotContain(_factory.Platform.Bodies, b => b.Contains(row.Id.ToString(), StringComparison.Ordinal));
+        Assert.Equal(CentralAuditOutboxStatus.Abandoned, outbox.Find(x => x.Id == row.Id).Single().Status);
+    }
+
+    /// <summary>
+    /// CT HOLD item 3 — a row whose command never confirmed it (the process stopped after the commit) is released, not
+    /// lost, and goes to Platform as Unconfirmed (4), never as Succeeded (1).
+    /// </summary>
+    [Fact]
+    public async Task An_orphan_row_is_released_and_delivered_as_unconfirmed_never_as_succeeded()
+    {
+        var s = new InventoryScenario(_factory);
+        await s.PostExpectingAsync(s.Receipt("3"), 201);
+        var outbox = CentralAuditInventoryTests.Outbox(_factory);
+        var id = outbox.Find(x => x.TenantId == s.Tenant).Single().Id;
+
+        // The crash, reproduced on the real row: committed (AwaitingCommand), never confirmed, older than the orphan window.
+        outbox.UpdateOne(x => x.Id == id, Builders<CentralAuditOutboxRecord>.Update
+            .Set(x => x.Status, CentralAuditOutboxStatus.AwaitingCommand)
+            .Set(x => x.CreatedAtUtc, DateTime.UtcNow.AddHours(-1)));
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var store = scope.ServiceProvider.GetRequiredService<ICentralAuditOutboxStore>();
+            Assert.True(await store.ReleaseOrphansAsync(DateTime.UtcNow.AddMinutes(-10), CancellationToken.None) >= 1);
+        }
+
+        var orphan = outbox.Find(x => x.Id == id).Single();
+        Assert.Equal(CentralAuditOutboxStatus.Pending, orphan.Status);
+        Assert.False(orphan.ConfirmedByCommand);
+
+        outbox.UpdateOne(x => x.Id == id,
+            Builders<CentralAuditOutboxRecord>.Update.Set(x => x.NextAttemptAtUtc, new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc)));
+        _factory.Platform.Next = HttpStatusCode.Accepted;
+        await _factory.Services.GetRequiredService<CentralAuditDispatcher>().RunOnceAsync(CancellationToken.None);
+
+        Assert.Equal(CentralAuditOutboxStatus.Delivered, outbox.Find(x => x.Id == id).Single().Status);
+        var body = Assert.Single(_factory.Platform.Bodies, b => b.Contains(id.ToString(), StringComparison.Ordinal));
+        Assert.Contains("\"outcome\":4", body, StringComparison.Ordinal);
+        Assert.DoesNotContain("\"outcome\":1", body, StringComparison.Ordinal);
     }
 
     public sealed class ConfiguredFactory : InventoryApiFactory

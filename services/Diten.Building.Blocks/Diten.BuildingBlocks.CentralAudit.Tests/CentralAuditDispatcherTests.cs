@@ -160,6 +160,7 @@ public sealed class CentralAuditDispatcherTests
         Assert.Equal(Members(source, "AuditOperation"), CentralAuditPlatformValues.Operations.OrderBy(p => p.Key).ToList());
         Assert.Equal(Members(source, "AuditActorType"), CentralAuditPlatformValues.ActorTypes.OrderBy(p => p.Key).ToList());
         Assert.Equal(CentralAuditPlatformValues.OutcomeSucceeded, Members(source, "AuditOutcome").Single(p => p.Key == "Succeeded").Value);
+        Assert.Equal(CentralAuditPlatformValues.OutcomeUnconfirmed, Members(source, "AuditOutcome").Single(p => p.Key == "Unconfirmed").Value);
     }
 
     private static List<KeyValuePair<string, int>> Members(string source, string enumName)

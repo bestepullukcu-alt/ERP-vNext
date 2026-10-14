@@ -210,7 +210,14 @@ public sealed class CentralAuditBehaviorTests
 
         harness.Clock.Advance(TimeSpan.FromMinutes(11));
         Assert.Equal(1, await harness.DispatchAsync());
-        Assert.Equal(CentralAuditOutboxStatus.Delivered, Assert.Single(harness.Store.Rows).Status);
+        var released = Assert.Single(harness.Store.Rows);
+        Assert.Equal(CentralAuditOutboxStatus.Delivered, released.Status);
+        Assert.False(released.ConfirmedByCommand);
+
+        // Kept, but never shown as succeeded: Platform outcome Unconfirmed (4), not Succeeded (1).
+        using var body = System.Text.Json.JsonDocument.Parse(Assert.Single(harness.Platform.Calls).Body);
+        Assert.Equal(CentralAuditPlatformValues.OutcomeUnconfirmed, body.RootElement.GetProperty("outcome").GetInt32());
+        Assert.False(body.RootElement.GetProperty("metadata").GetProperty("confirmedByCommand").GetBoolean());
     }
 }
 

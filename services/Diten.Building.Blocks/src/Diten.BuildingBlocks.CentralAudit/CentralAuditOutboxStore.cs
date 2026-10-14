@@ -101,6 +101,7 @@ public sealed class MongoCentralAuditOutboxStore : ICentralAuditOutboxStore
             x => x.Status == CentralAuditOutboxStatus.AwaitingCommand && x.CreatedAtUtc < createdBeforeUtc,
             Builders<CentralAuditOutboxRecord>.Update
                 .Set(x => x.Status, CentralAuditOutboxStatus.Pending)
+                .Set(x => x.ConfirmedByCommand, false)
                 .Set(x => x.LastError, "Released by the dispatcher: the command never confirmed this row (its transaction committed)."),
             cancellationToken: ct);
         return result.ModifiedCount;

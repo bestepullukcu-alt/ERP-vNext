@@ -169,7 +169,7 @@ internal sealed class InMemoryOutboxStore : ICentralAuditOutboxStore
     public Task<long> ReleaseOrphansAsync(DateTime createdBeforeUtc, CancellationToken ct)
     {
         var orphans = _rows.Values.Where(r => r.Status == CentralAuditOutboxStatus.AwaitingCommand && r.CreatedAtUtc < createdBeforeUtc).ToList();
-        orphans.ForEach(r => r.Status = CentralAuditOutboxStatus.Pending);
+        orphans.ForEach(r => { r.Status = CentralAuditOutboxStatus.Pending; r.ConfirmedByCommand = false; });
         return Task.FromResult((long)orphans.Count);
     }
 

@@ -61,6 +61,11 @@ public static class CentralAuditPlatformValues
     /// <summary>Platform <c>AuditOutcome.Succeeded</c>. Only a succeeded command produces a central record.</summary>
     public const int OutcomeSucceeded = 1;
 
+    /// <summary>Platform <c>AuditOutcome.Unconfirmed</c>: an orphan row — committed, but its command never confirmed the end.</summary>
+    public const int OutcomeUnconfirmed = 4;
+
+    public static int OutcomeOf(CentralAuditOutboxRecord record) => record.ConfirmedByCommand ? OutcomeSucceeded : OutcomeUnconfirmed;
+
     public static bool IsKnown(CentralAuditMetadata metadata) =>
         Categories.ContainsKey(metadata.Category) && Operations.ContainsKey(metadata.Operation);
 }

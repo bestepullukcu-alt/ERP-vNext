@@ -162,6 +162,27 @@ public sealed class CentralAuditAppendMongoTests : IAsyncLifetime
         Assert.Empty(await ReadAsync(TenantB, record.CorrelationId));
     }
 
+    /// <summary>
+    /// CT HOLD item 3 — a row the sender released as an orphan (committed, never confirmed by its command) is filed as
+    /// Unconfirmed; a confirmed row is filed as Succeeded. Additive: AuditOutcome.Unconfirmed = 4.
+    /// </summary>
+    [Fact]
+    public async Task An_unconfirmed_row_is_filed_as_unconfirmed_and_a_confirmed_row_as_succeeded()
+    {
+        var unconfirmed = Event(TenantA, Guid.NewGuid());
+        unconfirmed.ConfirmedByCommand = false;
+        var confirmed = Event(TenantA, Guid.NewGuid());
+
+        Assert.Equal(CentralAuditDeliveryOutcome.Accepted, (await Client().SendAsync(unconfirmed, CancellationToken.None)).Outcome);
+        Assert.Equal(CentralAuditDeliveryOutcome.Accepted, (await Client().SendAsync(confirmed, CancellationToken.None)).Outcome);
+        await ProcessOutboxAsync();
+
+        var filedUnconfirmed = Assert.Single(await ReadAsync(TenantA, unconfirmed.CorrelationId));
+        Assert.Equal(AuditOutcome.Unconfirmed, filedUnconfirmed.Outcome);
+        Assert.Equal("False", filedUnconfirmed.Metadata["confirmedByCommand"]?.ToString());
+        Assert.Equal(AuditOutcome.Succeeded, Assert.Single(await ReadAsync(TenantA, confirmed.CorrelationId)).Outcome);
+    }
+
     [Fact]
     public async Task A_wrong_key_is_refused_and_files_nothing()
     {

@@ -48,6 +48,11 @@ public sealed class CentralAuditOutboxRecord
     /// <summary>True when the row was written inside the command's own Mongo transaction (committed with it or not at all).</summary>
     public bool WrittenInCommandTransaction { get; set; }
 
+    /// <summary>
+    /// False only for a row the dispatcher released as an orphan: its transaction committed but its command never confirmed
+    /// the end. Delivered with Platform outcome <c>Unconfirmed</c>, never <c>Succeeded</c> (CT HOLD 2026-10-14, item 3).
+    /// </summary>
+    public bool ConfirmedByCommand { get; set; } = true;
 
     public CentralAuditOutboxStatus Status { get; set; } = CentralAuditOutboxStatus.Pending;
 
@@ -78,8 +83,9 @@ public enum CentralAuditOutboxStatus
     /// <summary>
     /// Written in the command's transaction; the command has not finished yet. The behavior turns it into
     /// <see cref="Pending"/> when the command ends (succeeded / failed). A row the command never confirmed (the process
-    /// died after the commit) is released by the dispatcher after <c>OrphanAfter</c> as succeeded — its transaction
-    /// committed — with a warning; it is never dropped.
+    /// died after the commit) is released by the dispatcher after <c>OrphanAfter</c> with
+    /// <see cref="CentralAuditOutboxRecord.ConfirmedByCommand"/> = false — delivered as Platform outcome <c>Unconfirmed</c>,
+    /// never as succeeded — with a warning; it is never dropped.
     /// </summary>
     AwaitingCommand = 3,
 

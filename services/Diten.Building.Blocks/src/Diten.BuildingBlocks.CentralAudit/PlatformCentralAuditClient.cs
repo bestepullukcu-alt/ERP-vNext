@@ -72,13 +72,14 @@ public sealed class PlatformCentralAuditClient : ICentralAuditPlatformClient
             record.EntityType,
             record.EntityId,
             Operation = operation,
-            Outcome = CentralAuditPlatformValues.OutcomeSucceeded,
+            Outcome = CentralAuditPlatformValues.OutcomeOf(record),
             // Identifiers only — never a request body (AUD-001 §3: names, not values).
             Metadata = new Dictionary<string, object?>
             {
                 ["eventId"] = record.Id,
                 ["companyId"] = record.CompanyId,
-                ["writtenInCommandTransaction"] = record.WrittenInCommandTransaction
+                ["writtenInCommandTransaction"] = record.WrittenInCommandTransaction,
+                ["confirmedByCommand"] = record.ConfirmedByCommand
             },
             OccurredAtUtc = new DateTimeOffset(DateTime.SpecifyKind(record.OccurredAtUtc, DateTimeKind.Utc)),
             record.SourceService,
