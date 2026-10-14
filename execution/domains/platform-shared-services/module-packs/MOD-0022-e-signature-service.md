@@ -1736,6 +1736,21 @@ measured; `/internal/esign-tickets/consume` and `/api/internal/esign/actions/reg
   keys to existing roles. **O-ROLE1-4:** `how-to-add-a-module.md` step 3 still describes the old behaviour (docs follow-up).
 - **Owner decision 2026-10-12 — O-ROLE1-1 and O-ROLE1-2 stay as they are**, as deliberate exceptions to "the system adds no permission by itself": the Admin reconciler keeps re-adding its four self-service keys to every tenant Admin role at start-up (lock-out protection), and the module-licence sync keeps granting / revoking a licensed module's keys on the Admin and Viewer roles (entitlement-driven). The default-role template itself applies only at role creation (ROLE1).
 
+### SEC-PROXY1 — `/ESignature/api/{**everything}` path boundary (WP-MVP1-SEC-PROXY1, 2026-10-14, agent result, pending CT) — branch `fix/mvp1-sec-proxy1` from `9362c0402`, commits `717092d0b` (fix) + `655103dca` (tests), local only. Evidence `docs/records/audits/2026-10/mvp1-sec-proxy1-evidence-2026-10-14.md`.
+
+- **Finding.** `/ESignature/api/..%5C..%5Clocations` reached `/api/locations` (another service, the caller's session). `ESignatureController.ProxyApi`
+  now builds the path with `ProxyPath.TryBuild("/api/v1/esign", …)`. All `/api/v1/esign/**` contract paths still forwarded.
+  `ESignatureWebTests.Routes_are_tenant_routes_…` lost the `"/api/v1/esign/"` literal from its expected list (moved into the helper) — the one
+  changed line in a shared test file (evidence §7 D-3). The same fix covers the ReferenceData, Workflow and Tenants-lookups proxies (Platform Web).
+- **Helper.** `frontend/Diten.Web/Services/Proxy/ProxyPath.cs` `TryBuild(prefix, everything, out path)`: bounded repeated percent-decode (5),
+  refuses `.`/`..` segments, `\`, `%2F`/`%5C`/`%2E`, control chars, `//`/scheme/`@`, anything outside `A-Z a-z 0-9 - _ ~ . /`, and a final
+  `Uri` prefix check → 400 `INVALID_PROXY_PATH` (`details.reason`), nothing sent to the gateway. Query string forwarded unchanged.
+- **Tests.** `Diten.Web.Tests/Security/**`: 528 attack rows (6 proxies, CT handoff 19 + 29) → 400 and no gateway call; 154 legitimate rows read
+  from the contracts / Platform routes → forwarded under the prefix; helper units; architecture guard over every `{**x}` action. Web 1468 → **2199 / 2199**,
+  architecture 69 / 77 (same 8). Sabotages s1–s4 red, restored green.
+- **Probe.** Own Web 5104 (real Kestrel) → gateway copy 5105 → fake downstream 5106, no signed token: BEFORE the `..%5C` request reached
+  `/api/locations`; AFTER 400 `backslash` and the downstream saw only the legitimate request.
+
 ## 20. Follow-up Items
 
 - MOD-0175 pack: consumes ESIGN-BUNDLE; quarantine signable actions (`inventory.quarantine.release / reject / block /

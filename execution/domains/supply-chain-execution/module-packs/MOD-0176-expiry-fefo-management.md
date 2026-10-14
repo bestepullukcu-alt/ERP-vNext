@@ -1089,6 +1089,19 @@ O-F4-7 stays FU-0175-UI-THEME-01. Fast-forwarded into the MVP-1 branch; the owne
 - **Probe.** Own stack: D01 · İstanbul Merkez Depo → order 1 L-2026-1231, 2 L-2027-0331.
 - **CT-ACCEPTED (2026-10-14).** Read the product diff (Expiry/Quarantine pickers via the one `LocationOptions` reader; Quarantine lot picker `lotId`; Stok Defteri `LotNumberResolver` one listLots per SKU, only with the caller's own `trace.lots.read`). CT re-run in its own worktree: Web **1468/1468** green. CT sabotages: (1) Stok Defteri calls TRACE without the `trace.lots.read` check → `C_without_trace_lots_read…` red; (2) Quarantine lot picker back to `id` → `B_the_quarantine_lot_picker…` red; both reverted, porcelain clean. Scope extension (Quarantine lot picker) accepted. O-LIVE1-1 → FU-WEB-CONTRACT-FAKES (bind the 7 older fake gateways to the contract); O-LIVE1-2 → FU-TRACE-LOTS-BY-IDS (TRACE contract). Merged `--no-ff` into MVP-1; live check of FEFO Sırası with the owner after the Web restart (approval).
 
+### SEC-PROXY1 — `/Expiry/api/{**everything}` path boundary (WP-MVP1-SEC-PROXY1, 2026-10-14, agent result, pending CT) — branch `fix/mvp1-sec-proxy1` from `9362c0402`, commits `717092d0b` (fix) + `655103dca` (tests), local only. Evidence `docs/records/audits/2026-10/mvp1-sec-proxy1-evidence-2026-10-14.md`.
+
+- **Finding.** `/Expiry/api/..%5Clocations?type=Warehouse` answered 200 with InventoryService `/api/locations` (Uri turned `\` into `/` and
+  collapsed `..` after the proxy built `/api/expiry/{everything}`). `ExpiryController.ProxyAsync` now builds the path with `ProxyPath.TryBuild` (1 line).
+- **Helper.** `frontend/Diten.Web/Services/Proxy/ProxyPath.cs` `TryBuild(prefix, everything, out path)`: bounded repeated percent-decode (5),
+  refuses `.`/`..` segments, `\`, `%2F`/`%5C`/`%2E`, control chars, `//`/scheme/`@`, anything outside `A-Z a-z 0-9 - _ ~ . /`, and a final
+  `Uri` prefix check → 400 `INVALID_PROXY_PATH` (`details.reason`), nothing sent to the gateway. Query string forwarded unchanged.
+- **Tests.** `Diten.Web.Tests/Security/**`: 528 attack rows (6 proxies, CT handoff 19 + 29) → 400 and no gateway call; 154 legitimate rows read
+  from the contracts / Platform routes → forwarded under the prefix; helper units; architecture guard over every `{**x}` action. Web 1468 → **2199 / 2199**,
+  architecture 69 / 77 (same 8). Sabotages s1–s4 red, restored green.
+- **Probe.** Own Web 5104 (real Kestrel) → gateway copy 5105 → fake downstream 5106, no signed token: BEFORE the `..%5C` request reached
+  `/api/locations`; AFTER 400 `backslash` and the downstream saw only the legitimate request.
+
 ## 20. Follow-up Items
 
 | ID | Item | Owner |
