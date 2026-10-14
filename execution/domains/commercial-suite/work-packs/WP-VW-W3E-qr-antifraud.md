@@ -590,3 +590,33 @@ Test dalına alındı: `02228ac38` (ajan `f209a8873`), çakışmasız. Yalnız W
 - Özel tarih aralığı eklendi (mockup'ta yok; 92 gün sınırı için).
 - Ayar sayfasının genel düzeni (W3-WEB-d iki sütun) korundu; mockup'taki akordiyon / zaman çizelgesi kapsam dışı.
 - **UXH-001** yardım metni + Enter işareti → SYNC-144 (7b).
+
+## §37 CT kabul — W3E-WEB-a E2 ACCEPTED (2026-10-14)
+Test dalına alındı: `1107ef8bf` (ajan `4a46f96ef`), WEB-b'nin (`02228ac38`) üstüne çakışmasız. Yalnız Web + Web.Tests; CRM / WEB-b dosyalarına dokunulmadı.
+
+**CT kontrolü:**
+- **Q1 kart:** read / manage ayrımı; önizleme süs, yük çekilmez.
+- **Q2 yazdırma:** SVG Web sunucusunda (QRCoder 1.6.0, MIT, csproj'da tek satır); yük yalnız "Yazdır"da, `no-store`, sonra sayfadan silinir.
+- **Q5:** sunucu sayfalama, toplu üret / yazdır.
+- **S1–S8:** `off` / uzaktan ziyarette pencere W3 ile aynı, qr-check çağrısı yok. Kamera `BarcodeDetector` → yerel jsQR 1.4.0 (Apache-2.0, `wwwroot/assets/vendor/libs/jsqr`, LICENSE + VERSION yanında).
+- **Testler** (CT `-o`):
+
+  | ağaç | sonuç | kırmızılar |
+  |---|---|---|
+  | WEB-a worktree | **1720/3** | — |
+  | **WEB-a + WEB-b birleşik** | **1733/3** | `WorkCenterMenuWithoutPermissions` (`-o` artefaktı) + 2 `ShipmentDetailsDateNode` (tabanda da var) |
+
+- **CT sabotajı (ajanın dokunmadığı kural):** S6'da zorunlu kip + kurumda aktif kod **varken** de "kodsuz devam" açıldı → `W3E_Q3…(required)` + `W3E_Q2_the_box_follows…` **kırmızı**. `.bak` + touch ile geri alındı.
+
+**Sapmalar (kabul):**
+- **Ana renk `#0b1a8c`:** W3 / W4 canlı sayfalarıyla tutarlı; mockup Sneat moru `#696cff`. Önceki W3 / W4 kararıyla aynı.
+- **Türkçe ekler:** ad bağımlı ek üretilemediği için "… kurumunda" biçimi.
+- **Mockup'a eklenenler:** yazdırmada "Adet" alanı (D-4); Q5 sayfalama; mockup'ta olmayan iki durum (`unverifiable`, ön kontrol ağ hatası).
+- **W3 testi A7 daraltıldı:** W3E QR'ı bilerek ekliyor; diğer yasaklar duruyor.
+- **Hesap ayrıntısı:** QR kartı ana sütunun en üstünde.
+
+**Açık / izlenecek:**
+- **Görsel karşılaştırma** ajanın düzeneğinde (gerçek view / CSS / JS + sahte veri). Arapça ve telefon görünümü gerçek ortamda açılmadı → **yerel E4'te CT.**
+- **W3E-CFG:** yerel 97c5 yetki betiği (`crm.visit-qr.read|manage`, `crm.visit-evidence-flags.read|read-all`).
+- **UXH-001:** yardım + Enter → SYNC-144 (7b).
+- **Mobil not:** `QR.md` + `DEVICE.md` → CT mobil sayfasına.
