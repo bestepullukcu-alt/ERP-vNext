@@ -41,7 +41,7 @@ Uygulama aşağıdaki dilleri destekler. Modül Platform modülü ise sadece `en
 
 ### 2. .Resx Dosya Stratejisi
 - **SharedResource:** Proje genelinde tekrarlanan "Save", "Cancel", "Success", "Error" gibi genel kelimeler `SharedResource.resx` içinde tutulur.
-- **View-Specific Resource:** Sadece tek bir sayfaya özgü uzun metinler veya tablo başlıkları, o sayfanın View yoluna uygun olarak (örn: `Resources/Views/MDM/SampleModule.tr.resx`) klasörlenir.
+- **View-Specific Resource:** Sadece tek bir sayfaya özgü uzun metinler veya tablo başlıkları, sayfanın marker sınıfının yoluna uygun olarak klasörlenir: `Resources/Views/{AreaName}/{ModuleName}/{MarkerClassName}.{lang}.resx` (örn: `Resources/Views/MDM/SampleModule/SampleModuleIndex.tr.resx`). Ayrıntı ve istisna: `.antigravity/rules/localization-standard.md` §1.
 
 ### 3. Frontend ve JavaScript Köprüsü
 - `.cshtml` dosyalarında `@SharedLocalizer["Key"]` veya `@Localizer["Key"]` kullanılır.
@@ -51,7 +51,7 @@ Uygulama aşağıdaki dilleri destekler. Modül Platform modülü ise sadece `en
 Senden bir modülün çoklu dil desteğini eklemen istendiğinde:
 1. Geliştirilecek modülün ihtiyaç duyduğu tüm anahtarları (Title, Description, Tablo Kolonları vb.) tespit et.
 2. Ortak kelimeleri `SharedResource`'a, özel kelimeleri sayfanın kendi `.resx` dosyalarına (gerekli dil sayısı kadar) yönlendir ve dosyaları fiziksel olarak oluştur.
-3. Çevirileri yaparken İngilizceyi (en) baz alarak diğer 6 dile profesyonel ve kurumsal çeviriler yap.
+3. Çevirileri İngilizceyi (`en`) baz alarak yap: Platform modülünde yalnız `tr`'ye, kiracı modülünde diğer 6 dile (`fr`, `es`, `zh`, `ar`, `ru`, `tr`) profesyonel ve kurumsal çeviri yaz.
 4. Teslim öncesi ZORUNLU kontrol:
    - `SharedResource.en.resx` içindeki yeni key’ler `fr/es/zh/ar/ru/tr` dosyalarında mevcut mu?
    - Non-English dosyalarda value, İngilizce ile aynı mı? (Aynıysa düzeltilmeden teslim edilmez.)

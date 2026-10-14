@@ -1,0 +1,57 @@
+name: agent-adapters
+
+# İ5-A — the tool adapters under .claude/, .codex/ and .agents/ are generated from .antigravity/ by
+# .antigravity/scripts/sync_adapters.py. This job fails when an adapter no longer matches its source, when an
+# adapter was edited by hand, or when an unlisted file sits in a tool discovery folder. It runs on Linux and on
+# Windows (the Windows runner checks out with core.autocrlf=true; no symlinks are used). It reads no secret.
+# Written to the CiServiceTestsGuardTests rules: one read-only token, actions pinned to a commit, no shell override.
+
+on:
+  push:
+    branches: ["**"]
+    paths:
+      - ".antigravity/**"
+      - ".claude/agents/**"
+      - ".claude/skills/**"
+      - ".claude/rules/**"
+      - ".codex/**"
+      - ".agents/**"
+      - ".github/workflows/agent-adapters.yml"
+  pull_request:
+    paths:
+      - ".antigravity/**"
+      - ".claude/agents/**"
+      - ".claude/skills/**"
+      - ".claude/rules/**"
+      - ".codex/**"
+      - ".agents/**"
+      - ".github/workflows/agent-adapters.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  adapters:
+    name: adapters match source (${{ matrix.os }})
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            python: python3
+          - os: windows-latest
+            python: python
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+
+      # Evidence only: on Windows the adapters show as w/crlf, on Linux as w/lf; --check must be green on both.
+      - name: Line endings of the adapters in this checkout
+        run: git ls-files --eol -- .claude/agents .claude/skills .claude/rules .codex .agents
+
+      - name: Adapters match their sources
+        run: ${{ matrix.python }} .antigravity/scripts/sync_adapters.py --check
