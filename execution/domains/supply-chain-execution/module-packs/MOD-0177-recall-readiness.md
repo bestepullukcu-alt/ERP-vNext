@@ -1408,6 +1408,8 @@ Dal `feature/sce/mod-0177-r5` (taban `394c05550`). Kanıt `docs/records/audits/2
   istisnasına yalnız `central_audit_outbox`. Inventory 66 komut, denetimsiz **0**. O-R5-2: drill-run konusu `recall.drills.read` ile de okunur
   (RECALL 1.4.0 içinde yalnız ekleme: `x-permission-by-subject-type`). Inventory **1217 + 4**; mimari 71/79 aynı 8; BB 28/28; Platform ESign 177;
   Web 2280; derleme 0/0. Sabotaj (5) + merkezi denetim + 2 ek: kırmızı → yeşil, SHA eşit. Kanıt §13.
+**R5 CT-ACCEPTED (2026-10-14).** First result sound (1199 + 4; CT sabotage: cancelling a closed run → `A_cancelled_run_is_kept_and_a_closed_run_never_changes` red) but on the BL-501 tip 3 central-audit tests were red → follow-up: MVP-1 tip merged, 7 drill commands marked, drill repository transaction enlisted, write-count test exempts only `central_audit_outbox` by name; O-R5-2 CT decision: drill-run subject readable with `recall.drills.read` (additive `x-permission-by-subject-type`). CT run on the branch tip (contains `a27519491`): Inventory **1217 + 4**, architecture 71/79 same 8, Inventory new-unaudited **0**. **CT sabotage (reverse leak):** `recall.drills.read` accepted for a CASE subject too → `A_signer_with_only_recall_drills_read_reads_a_drill_run_subject_but_not_a_case_subject` red; restored. O-R5-3 (panel, Vakalar "Tatbikat" row, screens) → R6 / R7; O-R5-5 → FU. Merged `--no-ff` into MVP-1; live after the owner Inventory restart (approval).
+
 
 ## 20. Follow-up Items
 
