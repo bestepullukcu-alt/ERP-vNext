@@ -33,6 +33,8 @@ public sealed class RecallRepository : IRecallRepository
     private readonly IMongoCollection<BsonDocument> _counters;
     private readonly IMongoCollection<RecallAuditRecord> _audit;
     private readonly IMongoCollection<RecallTraceSnapshot> _snapshots;
+    private readonly IMongoCollection<RecallQuarantineRequest> _requests;
+    private readonly IMongoCollection<RecallReturnLink> _returnLinks;
     private readonly TransactionRetryCounter _retries;
     private readonly ILogger<RecallRepository> _logger;
     private readonly Guid _tenantId;
@@ -53,6 +55,8 @@ public sealed class RecallRepository : IRecallRepository
         _counters = database.GetCollection<BsonDocument>(RecallCollections.Counters);
         _audit = database.GetCollection<RecallAuditRecord>(InventoryCollections.Audit);
         _snapshots = database.GetCollection<RecallTraceSnapshot>(RecallCollections.TraceSnapshots);
+        _requests = database.GetCollection<RecallQuarantineRequest>(RecallCollections.QuarantineRequests);
+        _returnLinks = database.GetCollection<RecallReturnLink>(RecallCollections.ReturnLinks);
         _retries = retries;
         _logger = logger;
         _tenantId = tenant.TenantId;
@@ -214,6 +218,30 @@ public sealed class RecallRepository : IRecallRepository
             cases.TryGetValue(b.CaseId, out var c) ? c.LegalEntityId : null, cases.TryGetValue(b.CaseId, out var s) ? s.Status : null)).ToList();
     }
 
+    // ── R3 reads ──────────────────────────────────────────────────────────────────────────────────────────
+
+    public async Task<IReadOnlyList<RecallLotBlock>> LotBlocksOfCaseAsync(Guid caseId, CancellationToken cancellationToken = default)
+        => await _blocks.Find(Scope<RecallLotBlock>() & Builders<RecallLotBlock>.Filter.Eq(x => x.CaseId, caseId))
+            .Sort(Builders<RecallLotBlock>.Sort.Ascending(x => x.LotId)).ToListAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<RecallQuarantineRequest>> QuarantineRequestsAsync(Guid caseId, CancellationToken cancellationToken = default)
+        => await _requests.Find(Scope<RecallQuarantineRequest>() & Builders<RecallQuarantineRequest>.Filter.Eq(x => x.CaseId, caseId))
+            .Sort(Builders<RecallQuarantineRequest>.Sort.Ascending(x => x.Revision).Ascending(x => x.NodeKey)).ToListAsync(cancellationToken);
+
+    public async Task<RecallQuarantineRequest?> FindQuarantineRequestAsync(Guid requestId, CancellationToken cancellationToken = default)
+        => await _requests.Find(Scope<RecallQuarantineRequest>() & Builders<RecallQuarantineRequest>.Filter.Eq(x => x.Id, requestId)).FirstOrDefaultAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<RecallReturnLink>> ReturnLinksAsync(Guid caseId, CancellationToken cancellationToken = default)
+        => await _returnLinks.Find(Scope<RecallReturnLink>() & Builders<RecallReturnLink>.Filter.Eq(x => x.CaseId, caseId))
+            .Sort(Builders<RecallReturnLink>.Sort.Ascending(x => x.LinkedAtUtc)).ToListAsync(cancellationToken);
+
+    public async Task<RecallReturnLink?> FindReturnLinkByTransactionAsync(string transactionId, CancellationToken cancellationToken = default)
+        => await _returnLinks.Find(Scope<RecallReturnLink>() & Builders<RecallReturnLink>.Filter.Eq(x => x.TransactionId, transactionId)).FirstOrDefaultAsync(cancellationToken);
+
+    public async Task<RecallReturnLink?> FindReturnLinkByKeyAsync(Guid linkedBy, string idempotencyKey, CancellationToken cancellationToken = default)
+        => await _returnLinks.Find(Scope<RecallReturnLink>() & Builders<RecallReturnLink>.Filter.Eq(x => x.LinkedBy, linkedBy)
+                                   & Builders<RecallReturnLink>.Filter.Eq(x => x.IdempotencyKey, idempotencyKey)).FirstOrDefaultAsync(cancellationToken);
+
     // ── writes ────────────────────────────────────────────────────────────────────────────────────────────
 
     public async Task<T> InTransactionAsync<T>(Func<IRecallWriteSession, CancellationToken, Task<T>> work, CancellationToken cancellationToken = default)
@@ -370,6 +398,29 @@ public sealed class RecallRepository : IRecallRepository
         {
             _owner.Stamp(snapshot);
             return _owner._snapshots.InsertOneAsync(_session, snapshot, cancellationToken: cancellationToken);
+        }
+
+        public Task InsertQuarantineRequestsAsync(IReadOnlyList<RecallQuarantineRequest> requests, CancellationToken cancellationToken = default)
+        {
+            if (requests.Count == 0) return Task.CompletedTask;
+            foreach (var request in requests) _owner.Stamp(request);
+            return _owner._requests.InsertManyAsync(_session, requests, cancellationToken: cancellationToken);
+        }
+
+        public async Task<bool> ReplaceQuarantineRequestAsync(RecallQuarantineRequest request, int expectedVersion, CancellationToken cancellationToken = default)
+        {
+            _owner.Stamp(request);
+            var result = await _owner._requests.ReplaceOneAsync(_session,
+                _owner.Scope<RecallQuarantineRequest>() & Builders<RecallQuarantineRequest>.Filter.Eq(x => x.Id, request.Id)
+                & Builders<RecallQuarantineRequest>.Filter.Eq(x => x.Version, expectedVersion),
+                request, cancellationToken: cancellationToken);
+            return result.MatchedCount == 1;
+        }
+
+        public Task InsertReturnLinkAsync(RecallReturnLink link, CancellationToken cancellationToken = default)
+        {
+            _owner.Stamp(link);
+            return _owner._returnLinks.InsertOneAsync(_session, link, cancellationToken: cancellationToken);
         }
     }
 }

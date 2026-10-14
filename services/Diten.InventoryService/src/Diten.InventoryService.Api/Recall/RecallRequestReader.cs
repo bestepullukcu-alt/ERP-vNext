@@ -93,6 +93,18 @@ public static class RecallRequestReader
         }
 
         /// <summary>markScopeItems — the array of marks.</summary>
+        /// <summary>R3: an array of 1+ non-empty strings (node keys).</summary>
+        public IReadOnlyList<string> Strings(string name)
+        {
+            if (!Root.TryGetProperty(name, out var v) || v.ValueKind != JsonValueKind.Array) throw new FormatException($"{name} is required and must be an array.");
+            return v.EnumerateArray().Select(e => e.ValueKind == JsonValueKind.String && e.GetString() is { Length: > 0 } s
+                ? s
+                : throw new FormatException($"{name}[] entries must be non-empty strings.")).ToList();
+        }
+
+        /// <summary>R3: marks are optional in reviseScope.</summary>
+        public IReadOnlyList<RecallScopeMarkInput> OptionalMarks(string name) => Root.TryGetProperty(name, out var v) && v.ValueKind != JsonValueKind.Null ? Marks(name) : [];
+
         public IReadOnlyList<RecallScopeMarkInput> Marks(string name)
         {
             if (!Root.TryGetProperty(name, out var v) || v.ValueKind != JsonValueKind.Array) throw new FormatException($"{name} is required and must be an array.");
@@ -212,4 +224,11 @@ public static class RecallRequestReader
         { "idempotencyKey", "customerRef", "skuId", "skuLevel", "quantity", "declaredOn", "evidence", "supersedesId" };
 
     public static readonly HashSet<string> SegregationMembers = new(StringComparer.Ordinal) { "idempotencyKey", "nodeKey", "locationId", "quantity", "note" };
+
+    // R3
+    public static readonly HashSet<string> RequestQuarantineMembers = new(StringComparer.Ordinal) { "idempotencyKey", "nodeKeys" };
+
+    public static readonly HashSet<string> LinkReturnMembers = new(StringComparer.Ordinal) { "idempotencyKey", "transactionId", "customerRef", "returnReference" };
+
+    public static readonly HashSet<string> ReviseMembers = new(StringComparer.Ordinal) { "idempotencyKey", "addNodeKeys", "marks", "reason" };
 }

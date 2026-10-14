@@ -1318,6 +1318,28 @@ decision reads it (the R1 guard narrowed accordingly). **O-R2-5** accepted (rows
 customer is carried on the Shipment node (no separate Customer node) — R6 renders the customer row from the shipment node's fields. Fast-forwarded
 into the MVP-1 branch. Live: R2 adds DI / handlers — the owner's Inventory window needs the CT restart (with approval) together with F5.
 
+### 19.13 WP-0177-R3 — agent result, pending CT (2026-10-14)
+
+Start condition measured: MVP-1 tip `acff1f7be` (WP-0176-F5 CT-ACCEPTED); work branch fast-forwarded to it. Evidence
+`docs/records/audits/2026-10/mod-0177-r3-evidence-2026-10-14.md` (+ scripts). Commits — owner steps separate: `5ad58042e` (MOD-0173 / MOD-0174:
+INVENTORY 1.4.0 `LOT_UNDER_RECALL`, `IRecallPostingGate` seam at the validator pre-check and the posting re-check, CT-R10), `47957b106` + `7ef123d2e`
+(MOD-0175: QUARANTINE 1.3.0 `HoldSource.Recall`, in-process origin, `QuarantineRecallRequester`), `9fd9a740c` (MOD-0176: FEFO 1.3.0 `RECALLED`),
+`2befeac9d` (R3 code, RECALL 1.2.0). Delivered: **KR-C** exit block by movement type only (GOODS_ISSUE_SALES incl. MVP-6, GOODS_ISSUE_PROD,
+WAREHOUSE_TRANSFER), tenant-wide by lot id (CT-R7, another company sees the case number, not the id), typed lot by number + SKU, after the lot rules
+and BEFORE the FEFO hook at both seams (CT-R11), re-checked in the posting transaction, `ExitRefused` + `recall.exit.refused`; **KR-B** requests in
+the approval transaction, one 0175 call per bucket after the commit (approver as actor, key `recall:{case}:r{n}:{node}`, `:a{n}` on retry), NotNeeded
+rows, BlockedByReservation with the lines (never cancelled), 60 s sweeper for Pending > 2 min; **CT-R12** recalled lots excluded from the FEFO
+order; **KR-H** return candidates + `linkReturn` (after approval, held status, one case per return; returned in the effectiveness); **CT-R5**
+`reviseScope` r+1 from findings, the delta's own signed approval adds blocks / requests and never removes one; **CT-R10** held-lot returns only into
+QUARANTINE / QI / BLOCKED. Inventory 1115 + 4 → **1153 + 4** (one full run had 16 Prism start-up timeouts; Prism alone 16/16); architecture
+**69/77** same 8 reds (audit list 54 → 58, FU-SYNC1-AUDIT); gateway 164/165; Web 1458/1458; build 0 / 0. Sabotage a1, a2, b–j: each red, restored
+green, sources SHA-identical, `git diff` empty. Probe 5168 + own mongod 27517: `/health` 200, all R1–R3 recall routes 401.
+
+Open for CT (evidence §12): **O-R3-1** audit debt +4; **O-R3-2** reconciliations R3-1…R3-4; **O-R3-3** the bucket quantity is decided once per key
+(replay body), retry re-plans; **O-R3-4** the port takes a bucket list only for sabotage (c); **O-R3-5** `listHoldsBySource` still not served by
+0175; **O-R3-6** records during a pending revision; **O-R3-7** emptied request lines in `getCaseStock`; **O-R3-8** CT-R9 band → R7; **O-R3-9**
+the R2 trace test's finding is now the quarantined stock line.
+
 ## 20. Follow-up Items
 
 | ID | Item | Owner |

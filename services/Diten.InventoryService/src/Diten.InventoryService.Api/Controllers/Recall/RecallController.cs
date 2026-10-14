@@ -112,6 +112,71 @@ public sealed class RecallController : CustomBaseController
     public async Task<IActionResult> GetCaseScopeDiff(string caseId, CancellationToken ct)
         => await CompanyChecked(caseId, CreateActionResultInstance(await _mediator.Send(new DiffRecallScopeCommand(caseId), ct)), ct);
 
+    // ── R3: stock + quarantine requests (KR-B), returns (KR-H), scope revision (CT-R5) ─────────────────────
+
+    [HttpGet("cases/{caseId}/stock")]
+    [HasPermission(RecallPermissions.CasesRead)]
+    public async Task<IActionResult> GetCaseStock(string caseId, CancellationToken ct)
+        => await CompanyChecked(caseId, CreateActionResultInstance(await _mediator.Send(new GetRecallCaseStockQuery(caseId), ct)), ct);
+
+    [HttpPost("cases/{caseId}/quarantine-requests")]
+    [HasPermission(RecallPermissions.QuarantineRequestsCreate)]
+    public async Task<IActionResult> RequestQuarantine(string caseId, CancellationToken ct)
+    {
+        if (!RecallSupport.TryParseId(caseId, out var id)) return NotFound();
+        var read = await RecallRequestReader.ReadAsync(Request.Body, RecallRequestReader.RequestQuarantineMembers,
+            b => new { NodeKeys = b.Strings("nodeKeys"), Key = b.String("idempotencyKey") }, ct);
+        if (read.Value is not { } body) return Invalid(read.Error);
+        if (KeyError(body.Key, out var key) is { } keyError) return Invalid(keyError);
+        return await CompanyChecked(caseId, CreateActionResultInstance(await _mediator.Send(new RequestRecallQuarantineCommand(id, body.NodeKeys, key), ct)), ct);
+    }
+
+    [HttpPost("cases/{caseId}/quarantine-requests/{requestId}/retry")]
+    [HasPermission(RecallPermissions.QuarantineRequestsCreate)]
+    public async Task<IActionResult> RetryQuarantineRequest(string caseId, string requestId, CancellationToken ct)
+    {
+        if (!RecallSupport.TryParseId(caseId, out var id) || !RecallSupport.TryParseId(requestId, out var request)) return NotFound();
+        var read = await RecallRequestReader.ReadAsync(Request.Body, RecallRequestReader.KeyMembers, b => new { Key = b.String("idempotencyKey") }, ct);
+        if (read.Value is not { } body) return Invalid(read.Error);
+        if (KeyError(body.Key, out var key) is { } keyError) return Invalid(keyError);
+        return await CompanyChecked(caseId, CreateActionResultInstance(await _mediator.Send(new RetryRecallQuarantineCommand(id, request, key), ct)), ct);
+    }
+
+    [HttpGet("cases/{caseId}/returns")]
+    [HasPermission(RecallPermissions.CasesRead)]
+    public async Task<IActionResult> GetCaseReturns(string caseId, CancellationToken ct)
+        => await CompanyChecked(caseId, CreateActionResultInstance(await _mediator.Send(new GetRecallCaseReturnsQuery(caseId), ct)), ct);
+
+    [HttpPost("cases/{caseId}/return-links")]
+    [HasPermission(RecallPermissions.ReturnsLink)]
+    public async Task<IActionResult> LinkReturn(string caseId, CancellationToken ct)
+    {
+        if (!RecallSupport.TryParseId(caseId, out var id)) return NotFound();
+        var read = await RecallRequestReader.ReadAsync(Request.Body, RecallRequestReader.LinkReturnMembers, b => new
+        {
+            TransactionId = b.String("transactionId"), CustomerRef = b.String("customerRef"), Reference = b.String("returnReference"), Key = b.String("idempotencyKey")
+        }, ct);
+        if (read.Value is not { } body) return Invalid(read.Error);
+        if (KeyError(body.Key, out var key) is { } keyError) return Invalid(keyError);
+        return await CompanyChecked(caseId, CreateActionResultInstance(await _mediator.Send(
+            new LinkRecallReturnCommand(id, body.TransactionId, body.CustomerRef, body.Reference, key), ct)), ct);
+    }
+
+    [HttpPost("cases/{caseId}/scope/revisions")]
+    [HasPermission(RecallPermissions.CasesUpdate)]
+    public async Task<IActionResult> ReviseScope(string caseId, CancellationToken ct)
+    {
+        if (!RecallSupport.TryParseId(caseId, out var id)) return NotFound();
+        var read = await RecallRequestReader.ReadAsync(Request.Body, RecallRequestReader.ReviseMembers, b => new
+        {
+            Add = b.Strings("addNodeKeys"), Marks = b.OptionalMarks("marks"), Reason = b.String("reason"), Key = b.String("idempotencyKey")
+        }, ct);
+        if (read.Value is not { } body) return Invalid(read.Error);
+        if (KeyError(body.Key, out var key) is { } keyError) return Invalid(keyError);
+        if (IfMatch() is not { } version) return Invalid("If-Match is required.");
+        return await CompanyChecked(caseId, WithETag(await _mediator.Send(new ReviseRecallScopeCommand(id, body.Add, body.Marks, body.Reason, key, version), ct), d => d.Version), ct);
+    }
+
     // ── cases (writes) ───────────────────────────────────────────────────────────────────────────────────
 
     [HttpPost("cases")]

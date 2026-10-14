@@ -100,3 +100,20 @@ public sealed record ExportRecallTraceCommand(string? RootLotId, string? Directi
 
 /// <summary>§4.7 getCaseScopeDiff — the live re-trace against the approved snapshot; new nodes are recorded as OutOfScopeFinding events.</summary>
 public sealed record DiffRecallScopeCommand(string CaseId) : IRequest<Response<RecallScopeDiffDto>>;
+
+
+// ── R3 ──────────────────────────────────────────────────────────────────────────────────────────────────────
+
+/// <summary>§4.39 requestQuarantine — live AVAILABLE stock lines of in-scope lots without a request ("Karantina isteği gönder").</summary>
+public sealed record RequestRecallQuarantineCommand(Guid CaseId, IReadOnlyList<string> NodeKeys, string IdempotencyKey) : IRequest<Response<IReadOnlyList<RecallQuarantineRequestDto>>>;
+
+/// <summary>§4.39a retryQuarantineRequest — "Yeniden dene": BlockedByReservation / NothingAvailable / Failed, key family :a{n} (CT-R2).</summary>
+public sealed record RetryRecallQuarantineCommand(Guid CaseId, Guid RequestId, string IdempotencyKey) : IRequest<Response<RecallQuarantineRequestDto>>;
+
+/// <summary>§4.43 linkReturn — KR-H: a CUSTOMER_RETURN of an in-scope lot after approval, into a held status, to a customer of the case.</summary>
+public sealed record LinkRecallReturnCommand(Guid CaseId, string? TransactionId, string? CustomerRef, string? ReturnReference, string IdempotencyKey)
+    : IRequest<Response<RecallReturnLinkDto>>;
+
+/// <summary>§4.36 reviseScope — CT-R5: revision r+1 with out-of-scope findings; the delta waits for its own signed approval.</summary>
+public sealed record ReviseRecallScopeCommand(Guid CaseId, IReadOnlyList<string> AddNodeKeys, IReadOnlyList<RecallScopeMarkInput> Marks, string? Reason,
+    string IdempotencyKey, int ExpectedVersion) : IRequest<Response<RecallCaseDetailDto>>;

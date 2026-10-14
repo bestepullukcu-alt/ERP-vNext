@@ -49,11 +49,14 @@ public sealed class RecallTraceWorld
         return await Lots.PostOkAsync(body);
     }
 
-    /// <summary>A GOODS_ISSUE_SALES of the lot on a new MVP-6 shipment; returns the shipment id.</summary>
-    public async Task<string> SellAsync(string lotId, string quantity)
+    /// <summary>A GOODS_ISSUE_SALES of the lot on a new MVP-6 shipment; returns the shipment id. R3: <paramref name="expected"/> 422 = refused (exit block).</summary>
+    public async Task<string> SellAsync(string lotId, string quantity, int expected = 201)
     {
         var shipment = Guid.NewGuid().ToString("D");
-        await PostAsync(Lots.Issue(quantity, lotId), "MOD-0183", shipment);
+        var body = Lots.Issue(quantity, lotId);
+        body["sourceModule"] = "MOD-0183";
+        body["sourceDocumentId"] = shipment;
+        await Lots.PostAsync(body, expected);
         return shipment;
     }
 
@@ -370,18 +373,20 @@ public sealed class RecallTraceApiTests : IClassFixture<RecallApiFactory>
         Assert.Equal(new[] { "Approved", "Submitted", "Submitted" }, snapshots.Select(d => d["Purpose"].ToString()!).Order());
         Assert.Equal(3, snapshots.Select(d => d["Sha256"].AsString + d["_id"]).Distinct().Count());
 
-        // 7. "Yeniden izle": a shipment after approval is an out-of-scope finding — recorded once, the scope does not change
-        var after = await w.SellAsync(w.Fg, "1");
+        // 7. "Yeniden izle": a node after approval is an out-of-scope finding — recorded once, the scope does not change. R3: a sale of the recalled
+        // lot is refused now (LOT_UNDER_RECALL), so the finding is the stock line KR-B moved into QUARANTINE (a node the approved snapshot lacks)
+        await w.SellAsync(w.Fg, "1", expected: 422);
+        var quarantined = $"Stock:{w.Fg}:{w.S.Ledger.Warehouse}:{w.S.Ledger.LocationA}:QUARANTINE";
         var diff = await w.S.ExpectAsync(HttpMethod.Get, $"/api/recall/cases/{id}/scope/diff", w.S.Qa1Token, null, 200);
         Assert.Equal(Str(approvedSnapshot, "sha256"), Str(diff, "approvedSha256"));
-        Assert.Contains(diff.GetProperty("added").EnumerateArray(), n => Str(n, "nodeKey") == RecallScenario.ShipmentKey(w.Fg, after));
+        Assert.Contains(diff.GetProperty("added").EnumerateArray(), n => Str(n, "nodeKey") == quarantined);
         await w.S.ExpectAsync(HttpMethod.Get, $"/api/recall/cases/{id}/scope/diff", w.S.Qa1Token, null, 200);
         var timeline = await w.S.ExpectAsync(HttpMethod.Get, $"/api/recall/cases/{id}/timeline?pageSize=200", w.S.Qa1Token, null, 200);
         var findings = timeline.GetProperty("items").EnumerateArray().Where(e => Str(e, "kind") == "OutOfScopeFinding").ToList();
-        Assert.Contains(findings, f => f.GetProperty("refs").GetProperty("nodeKey").GetString() == RecallScenario.ShipmentKey(w.Fg, after));
+        Assert.Contains(findings, f => f.GetProperty("refs").GetProperty("nodeKey").GetString() == quarantined);
         Assert.Equal(findings.Count, findings.Select(f => f.GetProperty("refs").GetProperty("nodeKey").GetString()).Distinct().Count());
         var unchanged = await w.S.ExpectAsync(HttpMethod.Get, $"/api/recall/cases/{id}/scope", w.S.Qa1Token, null, 200);
-        Assert.DoesNotContain(unchanged.GetProperty("items").EnumerateArray(), i => Str(i, "nodeKey") == RecallScenario.ShipmentKey(w.Fg, after));
+        Assert.DoesNotContain(unchanged.GetProperty("items").EnumerateArray(), i => Str(i, "nodeKey") == quarantined);
         Assert.Equal(Str(frozen, "sha256"), Str(unchanged, "sha256"));
 
         // AUD-001: trace runs, submit, the scope diff, the finding

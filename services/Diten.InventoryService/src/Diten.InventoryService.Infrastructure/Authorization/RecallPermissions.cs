@@ -67,8 +67,8 @@ public static class RecallPermissions
         ConsumptionsCreate, SettingsRead, SettingsManage, LotsStatusRead
     ];
 
-    /// <summary>The keys the controller enforces so far (R1 + R2 trace keys) — exactly what the manifest declares as API permissions.</summary>
-    public static readonly IReadOnlyList<string> Implemented = [.. R1Only, TraceRun, TraceExport];
+    /// <summary>The keys the controller enforces so far (R1 + R2 trace keys + R3 quarantine-request / return-link keys) — exactly what the manifest declares as API permissions.</summary>
+    public static readonly IReadOnlyList<string> Implemented = [.. R1Only, TraceRun, TraceExport, QuarantineRequestsCreate, ReturnsLink];
 
     /// <summary>
     /// The shared namespace test (<c>ManifestNamespaceOwnershipTests</c>, WP-0177-R1) pins the manifest against <c>R1</c>; under the R2 PARALEL

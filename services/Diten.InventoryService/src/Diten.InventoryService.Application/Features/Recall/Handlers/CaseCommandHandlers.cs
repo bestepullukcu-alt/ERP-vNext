@@ -745,11 +745,18 @@ public sealed class ApproveRecallScopeHandler : RecallCaseCommandHandler, IReque
 
     private readonly Trace.RecallTraceService _trace;
 
-    public ApproveRecallScopeHandler(IRecallRepository repository, RecallReads reads, RecallSupport support, IRecallSignature signature, Trace.RecallTraceService trace)
+    private readonly ILotRepository _lots;
+
+    private readonly Quarantine.RecallQuarantineDispatcher _dispatcher;
+
+    public ApproveRecallScopeHandler(IRecallRepository repository, RecallReads reads, RecallSupport support, IRecallSignature signature, Trace.RecallTraceService trace,
+        ILotRepository lots, Quarantine.RecallQuarantineDispatcher dispatcher)
         : base(repository, reads, support)
     {
         _signature = signature;
         _trace = trace;
+        _lots = lots;
+        _dispatcher = dispatcher;
     }
 
     public async Task<Response<RecallCaseDetailDto>> Handle(ApproveRecallScopeCommand request, CancellationToken ct)
@@ -762,7 +769,8 @@ public sealed class ApproveRecallScopeHandler : RecallCaseCommandHandler, IReque
 
         var c = await Repository.FindCaseAsync(request.CaseId, ct);
         if (c is null) return RecallSupport.CaseNotFound<RecallCaseDetailDto>();
-        if (!RecallCaseRules.CanApprove(c.Status)) return RecallSupport.InvalidTransition<RecallCaseDetailDto>($"A case in status {c.Status} cannot be approved.");
+        if (!RecallCaseRules.CanApproveScope(c)) return RecallSupport.InvalidTransition<RecallCaseDetailDto>($"A case in status {c.Status} cannot be approved.");
+        var revision = RecallCaseRules.IsRevisionPending(c); // CT-R5: the approval of a revision's delta
         if (RecallCaseRules.SeparationOfDuties(c, RecallPendingActionKind.ApproveScope, Support.UserId) is { } sod) return RecallSupport.Fail<RecallCaseDetailDto>(sod);
 
         var now = Support.Now();
@@ -791,16 +799,32 @@ public sealed class ApproveRecallScopeHandler : RecallCaseCommandHandler, IReque
         if (c.Version != request.ExpectedVersion) return RecallSupport.Conflict<RecallCaseDetailDto>();
 
         var byKey = items.ToDictionary(i => i.NodeKey, StringComparer.Ordinal);
+
+        // pack §8.5: the blocks — the effectively included Lot items (root + forward lots). A revision ADDS the delta's lots and never removes a
+        // block of the approved scope (CT-R5); a lot already blocked by this case is not written twice.
+        var alreadyBlocked = revision ? (await Repository.LotBlocksOfCaseAsync(c.Id, ct)).Select(b => b.LotId).ToHashSet(StringComparer.Ordinal) : [];
         var blocks = items.Where(i => i.Kind == RecallScopeItemKind.Lot && RecallScopeRules.EffectivelyIncluded(i, byKey))
-            .Select(i => i.LotId).Distinct(StringComparer.Ordinal)
-            .Select(lotId => new RecallLotBlock
+            .GroupBy(i => i.LotId, StringComparer.Ordinal).Select(g => g.First())
+            .Where(i => !alreadyBlocked.Contains(i.LotId))
+            .Select(i => new RecallLotBlock
             {
-                Id = Guid.NewGuid(), CreatedAt = now, LotId = lotId, CaseId = c.Id, CaseNumber = c.Number, Active = true, ActivatedAtUtc = now
+                Id = Guid.NewGuid(), CreatedAt = now, LotId = i.LotId, LotNumber = i.LotNumber, SkuId = i.SkuId, SkuLevel = i.SkuLevel, Revision = c.ScopeRevision,
+                CaseId = c.Id, CaseNumber = c.Number, Active = true, ActivatedAtUtc = now
             }).ToList();
 
+        // pack §8.4 KR-B: one request per Stock item of this revision (a revision: only the delta's — the approved ones have theirs), in THIS
+        // transaction as Pending / NotNeeded; the Pending ones are sent after the commit
+        var requested = revision ? (await Repository.QuarantineRequestsAsync(c.Id, ct)).Select(r => r.NodeKey).ToHashSet(StringComparer.Ordinal) : [];
+        var stock = items.Where(i => i.Kind == RecallScopeItemKind.Stock && !requested.Contains(i.NodeKey)).ToList();
+        var lotsById = (await _lots.FindManyAsync(stock.Select(i => Guid.TryParse(i.LotId, out var g) ? g : Guid.Empty).Where(g => g != Guid.Empty).Distinct().ToList(), ct))
+            .ToDictionary(l => l.Id.ToString("D"), StringComparer.Ordinal);
+        var requests = stock.Select(i => Quarantine.RecallQuarantinePlanner.Plan(c, c.ScopeRevision, i, RecallScopeRules.EffectivelyIncluded(i, byKey),
+            lotsById.GetValueOrDefault(i.LotId), Support.UserId, now)).ToList();
+
         var approvedSnapshot = live is null ? null : _trace.Snapshot(live, c, RecallSnapshotPurpose.Approved, now);
-        c.ApprovedSnapshotId = approvedSnapshot?.Id;
+        c.ApprovedSnapshotId = approvedSnapshot?.Id ?? c.ApprovedSnapshotId;
         c.Status = RecallCaseStatus.Active;
+        c.PendingRevision = null;
         c.ApprovedScope = new RecallScopeSeal
         {
             Revision = c.ScopeRevision, Sha256 = sealNow, CanonicalVersion = RecallScopeRules.CanonicalVersion, ItemCount = items.Count, ComputedAtUtc = now
@@ -809,18 +833,30 @@ public sealed class ApproveRecallScopeHandler : RecallCaseCommandHandler, IReque
         c.ScopeApprovedAtUtc = now;
         c.ScopeApprovalSignatureId = signatureId;
         c.PendingAction = null;
-        return await WriteCaseAsync(c, request.ExpectedVersion,
-            Support.Event(c.Id, RecallCaseEventKind.ScopeApproved, now, note,
-                new Dictionary<string, string?> { ["scopeSha256"] = sealNow, ["blockedLots"] = string.Join(",", blocks.Select(b => b.LotId)) },
-                signatureId, request.IdempotencyKey, fingerprint),
+        var counts = new Dictionary<string, string?>
+        {
+            ["scopeSha256"] = sealNow, ["revision"] = c.ScopeRevision.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            ["blockedLots"] = string.Join(",", blocks.Select(b => b.LotId)),
+            ["quarantineRequests"] = requests.Count(r => r.Status == RecallQuarantineRequestStatus.Pending).ToString(System.Globalization.CultureInfo.InvariantCulture),
+            ["notNeeded"] = requests.Count(r => r.Status == RecallQuarantineRequestStatus.NotNeeded).ToString(System.Globalization.CultureInfo.InvariantCulture)
+        };
+        var saved = await SaveAsync(c, request.ExpectedVersion,
+            Support.Event(c.Id, RecallCaseEventKind.ScopeApproved, now, note, counts, signatureId, request.IdempotencyKey, fingerprint),
             Support.Audit(RecallContract.AuditScopeApproved, RecallContract.SubjectCase, c.Id, c.Number, now, request.IdempotencyKey,
-                Detail(c, ("scopeSha256", sealNow), ("signatureId", signatureId), ("blockedLots", string.Join(",", blocks.Select(b => b.LotId))))),
+                Detail(c, ("scopeSha256", sealNow), ("signatureId", signatureId), ("revision", counts["revision"]), ("blockedLots", counts["blockedLots"]),
+                    ("quarantineRequests", counts["quarantineRequests"]))),
             ct, async (session, tx) =>
             {
                 await session.InsertLotBlocksAsync(blocks, tx);
+                await session.InsertQuarantineRequestsAsync(requests, tx);
                 if (approvedSnapshot is not null) await session.InsertSnapshotAsync(approvedSnapshot, tx);
                 if (live is not null) await session.InsertAuditAsync(RecallTraceAudit.Of(Support, live, "approveScope", c.Id, c.Number, now, request.IdempotencyKey), tx);
             });
+        if (!saved) return RecallSupport.Conflict<RecallCaseDetailDto>();
+
+        // pack §8.4 "Execution": after the commit, one 0175 call per Pending request (partial success); a crash here is the sweeper's
+        await _dispatcher.DispatchAsync(requests.Where(r => r.Status == RecallQuarantineRequestStatus.Pending).Select(r => r.Id).ToList(), ct);
+        return await Reads.CurrentAsync(c.Id, ct);
     }
 }
 
@@ -934,7 +970,8 @@ public sealed class CompleteRecallEffectivenessHandler : RecallCaseCommandHandle
         var settings = await Repository.FindSettingsAsync(ct) ?? RecallSettingsRules.Defaults();
         var items = await Repository.ScopeItemsAsync(c.Id, c.ScopeRevision, ct);
         var result = RecallEffectivenessRule.Compute(c.Class, RecallSettingsRules.TargetFor(settings, c.Class),
-            RecallReads.EffectivenessInputs(items, RecallReads.Effective(await Repository.ConsumptionsAsync(c.Id, ct)), await Repository.NotificationsAsync(c.Id, ct)), now);
+            RecallReads.EffectivenessInputs(items, RecallReads.Effective(await Repository.ConsumptionsAsync(c.Id, ct)), await Repository.NotificationsAsync(c.Id, ct),
+                await Repository.ReturnLinksAsync(c.Id, ct)), now);
         c.Effectiveness = result;
         c.EffectivenessCompletedBy = Support.UserId;
         c.EffectivenessCompletedAtUtc = now;

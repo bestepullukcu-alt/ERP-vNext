@@ -16,11 +16,15 @@ public enum FefoExclusionReason
     Blocked,
     Held,
     BelowMinRemaining,
-    Quarantined
+    Quarantined,
+
+    /// <summary>FEFO 1.3.0 (MOD-0177 CT-R12): the lot is under an active recall in the tenant — it cannot leave (KR-C), so it is never first.</summary>
+    Recalled
 }
 
 /// <summary>One lot of the same company + warehouse + SKU with its AVAILABLE on-hand and its other (held) on-hand.</summary>
-public sealed record FefoCandidate(Lot Lot, decimal AvailableOnHand, decimal HeldOnHand);
+/// <summary><paramref name="Recalled"/>: FEFO 1.3.0 (MOD-0177 CT-R12) — the lot is under an active recall (read tenant-wide by the candidate reader).</summary>
+public sealed record FefoCandidate(Lot Lot, decimal AvailableOnHand, decimal HeldOnHand, bool Recalled = false);
 
 public sealed record FefoEligibleLot(int Rank, Lot Lot, decimal Available);
 
@@ -74,6 +78,7 @@ public static class FefoOrderRule
         var lot = c.Lot;
         if (lot.Status == LotStatus.Blocked) return FefoExclusionReason.Blocked;
         if (LotPostingRules.IsExpiredOn(lot, asOf)) return FefoExclusionReason.Expired;
+        if (c.Recalled) return FefoExclusionReason.Recalled; // FEFO 1.3.0, CT-R12
         if (LotPostingRules.IsRetestDueOn(lot, asOf)) return FefoExclusionReason.RetestDue;
         if (LotPostingRules.HoldsStock(lot)) return FefoExclusionReason.Held;
         if (MinRemainingShelfLifeRule.Evaluate(lot.ExpiryDate, minRemaining, asOf).Outcome == MinRemainingOutcome.Below)

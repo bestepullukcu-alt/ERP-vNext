@@ -48,5 +48,14 @@ public static class RecallCollections
     /// </summary>
     public static readonly IReadOnlyList<string> SinceR2 = [TraceSnapshots];
 
-    public static IEnumerable<string> Everything => All.Concat(SinceR2);
+    /// <summary>R3 (pack §8.4 KR-B) — one request to MOD-0175 per included Stock node of an approved revision (mutable head, Version).</summary>
+    public const string QuarantineRequests = "recall_quarantine_requests";
+
+    /// <summary>R3 (pack §8.6 KR-H) — CUSTOMER_RETURNs linked to a case. Insert-only.</summary>
+    public const string ReturnLinks = "recall_return_links";
+
+    /// <summary>The R3 collections (declared beside <see cref="SinceR2"/> by the single-SoR test).</summary>
+    public static readonly IReadOnlyList<string> SinceR3 = [QuarantineRequests, ReturnLinks];
+
+    public static IEnumerable<string> Everything => All.Concat(SinceR2).Concat(SinceR3);
 }

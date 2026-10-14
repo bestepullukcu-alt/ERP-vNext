@@ -60,6 +60,7 @@ public sealed class InventoryLedgerRepository : IInventoryLedgerRepository
     private readonly ILogger<InventoryLedgerRepository> _logger;
     private readonly ReservationPositionOperations _reservations;
     private readonly Application.Features.Expiry.Ports.IExpiryPostingPolicy _expiry;
+    private readonly Application.Features.Recall.Ports.IRecallPostingGate _recall;
     private readonly Guid _tenantId;
     private readonly Guid _legalEntityId;
 
@@ -71,8 +72,10 @@ public sealed class InventoryLedgerRepository : IInventoryLedgerRepository
         ILogger<InventoryLedgerRepository> logger,
         ILotMasterClient lots,
         LedgerTransactionBinding lotBinding,
-        Application.Features.Expiry.Ports.IExpiryPostingPolicy expiry)
+        Application.Features.Expiry.Ports.IExpiryPostingPolicy expiry,
+        Application.Features.Recall.Ports.IRecallPostingGate recall)
     {
+        _recall = recall;
         _expiry = expiry;
         _client = client;
         _transactions = database.GetCollection<InventoryTransaction>(InventoryCollections.Transactions);
@@ -178,6 +181,13 @@ public sealed class InventoryLedgerRepository : IInventoryLedgerRepository
 
                 using var lotSession = _lotBinding.Bind(s);
                 var lot = await ResolvePostingLotAsync(transaction, ct);
+
+                // MOD-0177 R3 (pack §8.5, CT-R11): the recall exit block's AUTHORITATIVE re-check on the committed blocks of THIS transaction —
+                // before the expiry re-check, so a refused posting writes no FEFO snapshot / exception.
+                if (await _recall.ReCheckAsync(transaction, lot, ct) is { } recallRefusal)
+                {
+                    throw new LotPostingRefusedException(recallRefusal.Code, recallRefusal.Message, recallRefusal.Details);
+                }
 
                 // MOD-0176 F2 (CT-F2, pack §8.3): the expiry hooks' AUTHORITATIVE re-check on the committed state of THIS transaction (the binding
                 // lends it the session). It writes the FEFO snapshot and the exception here, so they commit with the movement or not at all;

@@ -36,6 +36,8 @@ public static class QuarantineServiceCollectionExtensions
         services.TryAddSingleton(TimeProvider.System); // the applier's in-flight grace clock (tests pass their own)
         services.AddScoped<QuarantineOutcomeApplier>();
         services.AddScoped<QuarantineStockActions>();
+        // MOD-0177 R3 (CT-R2): the recall's in-process port into quarantineStock (mode Manual, origin MOD-0177 / RECALL_CASE)
+        services.AddScoped<Application.Features.Recall.Ports.IRecallQuarantineRequester, Application.Features.Quarantine.Services.QuarantineRecallRequester>();
         services.AddScoped<QuarantineDecisionChecks>();
         services.AddScoped<QuarantineReads>();
         services.AddScoped<QuarantineWorkflowReconciler>();

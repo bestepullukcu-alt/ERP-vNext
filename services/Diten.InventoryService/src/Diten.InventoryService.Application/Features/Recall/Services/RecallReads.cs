@@ -33,7 +33,10 @@ public sealed class RecallReads
         return RecallMapping.Detail(c, items, notifications, Effective(consumptions), segregations, _support.Now()) with
         {
             SubmittedSnapshot = Trace.RecallTraceService.SnapshotRef(submitted),
-            ApprovedSnapshot = Trace.RecallTraceService.SnapshotRef(approved)
+            ApprovedSnapshot = Trace.RecallTraceService.SnapshotRef(approved),
+            PendingRevision = c.PendingRevision is { } r
+                ? new RecallPendingRevisionDto(r.Revision, r.Reason, r.AddedNodeKeys, new RecallUserAtDto(r.RevisedBy.ToString("D"), RecallSupport.Wire(r.RevisedAtUtc)))
+                : null
         };
     }
 
@@ -71,9 +74,16 @@ public sealed class RecallReads
 
     /// <summary>Pack §8.6 inputs. R1: returned = 0 (return links are R3).</summary>
     public static IEnumerable<RecallEffectivenessRule.Input> EffectivenessInputs(
-        IReadOnlyList<RecallScopeItem> items, IReadOnlyList<RecallConsumptionDeclaration> effectiveConsumptions, IReadOnlyList<RecallCustomerNotification> notifications)
+        IReadOnlyList<RecallScopeItem> items, IReadOnlyList<RecallConsumptionDeclaration> effectiveConsumptions, IReadOnlyList<RecallCustomerNotification> notifications,
+        IReadOnlyList<RecallReturnLink>? returns = null)
     {
         var notified = notifications.Select(n => n.CustomerRef).ToHashSet(StringComparer.Ordinal);
+        // R3 (pack §8.6 KR-H): returned = Σ linked returns per (customer, SKU, base unit)
+        foreach (var r in returns ?? [])
+        {
+            yield return new RecallEffectivenessRule.Input(r.CustomerRef, r.SkuId, r.BaseUomId, 0m, r.Quantity, 0m, notified.Contains(r.CustomerRef));
+        }
+
         foreach (var s in Shipments(items))
         {
             yield return new RecallEffectivenessRule.Input(s.CustomerRef!, s.SkuId, s.BaseUomId!, s.Quantity ?? 0m, 0m, 0m, notified.Contains(s.CustomerRef!));

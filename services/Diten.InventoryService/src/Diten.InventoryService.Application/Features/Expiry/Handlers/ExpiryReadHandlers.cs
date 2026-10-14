@@ -122,6 +122,7 @@ public sealed class ExpiryLotView
         FefoExclusionReason.Held => "HELD",
         FefoExclusionReason.BelowMinRemaining => "BELOW_MIN_REMAINING",
         FefoExclusionReason.Quarantined => "QUARANTINED",
+        FefoExclusionReason.Recalled => "RECALLED", // FEFO 1.3.0 (MOD-0177 CT-R12)
         _ => throw new ArgumentOutOfRangeException(nameof(reason), reason, null)
     };
 

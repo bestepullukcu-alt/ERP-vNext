@@ -42,6 +42,18 @@ public static class RecallServiceCollectionExtensions
             })
             .AddHttpMessageHandler<ForwardCallerHeadersHandler>();
 
+        // R3 (pack §8.4 / §8.5 / §8.6, CT-R11 / CT-R12): the recall exit block and the "under recall?" read replace the ledger's defaults (the 0176
+        // RemoveAll + AddScoped pattern); the KR-B dispatcher + its 60 s sweeper; the in-process ledger reads of the stock / returns tabs
+        services.RemoveAll<IRecallPostingGate>();
+        services.RemoveAll<IRecallLotStatusReader>();
+        services.AddScoped<RecallPostingGate>();
+        services.AddScoped<IRecallPostingGate>(sp => sp.GetRequiredService<RecallPostingGate>());
+        services.AddScoped<IRecallLotStatusReader>(sp => sp.GetRequiredService<RecallPostingGate>());
+        services.AddScoped<IRecallLedgerReader, RecallLedgerReads>();
+        services.AddScoped<Application.Features.Recall.Quarantine.RecallQuarantineDispatcher>();
+        services.AddSingleton<RecallQuarantineSweeper>();
+        services.AddHostedService<RecallQuarantineSweeperHostedService>();
+
         // Index gate (fail-closed): the unique indexes carry idempotency and "one active case per root lot".
         services.AddHostedService<RecallIndexInitializerHostedService>();
         return services;

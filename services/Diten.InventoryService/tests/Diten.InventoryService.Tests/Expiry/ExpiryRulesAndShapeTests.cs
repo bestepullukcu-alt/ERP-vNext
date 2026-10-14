@@ -181,7 +181,7 @@ public sealed class ExpiryContractTests
     public void The_contract_is_frozen_1_0_0_owned_by_MOD_0176_with_the_CT_additions()
     {
         var info = Yaml.Value["info"]!;
-        Assert.Equal("1.2.0", info["version"]!.GetValue<string>()); // F2 / F3 description-only steps; F4 1.1.0 + F5 1.2.0 additive
+        Assert.Equal("1.3.0", info["version"]!.GetValue<string>()); // F2 / F3 description-only steps; F4 1.1.0 + F5 1.2.0 + 0177 R3 1.3.0 additive
         Assert.Equal("FROZEN", info["x-status"]!.GetValue<string>());
         Assert.Equal("MOD-0176", info["x-owner"]!.GetValue<string>());
         Assert.Equal("/api/expiry", Yaml.Value["servers"]![0]!["url"]!.GetValue<string>());

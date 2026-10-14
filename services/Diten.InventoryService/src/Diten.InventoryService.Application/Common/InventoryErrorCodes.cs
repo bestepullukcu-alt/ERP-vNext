@@ -8,7 +8,8 @@ namespace Diten.InventoryService.Application.Common;
 /// serial codes of the MOD-0174 pack §12 "Ledger posting rules" (WP-0174-P2, all 422; INVENTORY-BUNDLE v1 unchanged), plus
 /// <see cref="InventoryUnavailable"/> which INVENTORY-BUNDLE 1.1.0 declares for <c>getStockPresence</c> (503, WP-0173-PM2), plus
 /// the three PRODUCT-MASTER v1.1 refusals INVENTORY-BUNDLE 1.2.0 declares on <c>postMovement</c> (422, WP-0173-PM1, CT-PM1-1). Plus the three
-/// expiry-hook refusals INVENTORY-BUNDLE 1.3.0 declares on <c>postMovement</c> (422, MOD-0176 WP-0176-F2).
+/// expiry-hook refusals INVENTORY-BUNDLE 1.3.0 declares on <c>postMovement</c> (422, MOD-0176 WP-0176-F2). Plus the recall exit block
+/// INVENTORY-BUNDLE 1.4.0 declares on <c>postMovement</c> (422 <see cref="LotUnderRecall"/>, MOD-0177 WP-0177-R3).
 /// No other code may be added without a new pack version.
 /// </summary>
 public static class InventoryErrorCodes
@@ -74,6 +75,9 @@ public static class InventoryErrorCodes
     /// <summary>1.3.0 (MOD-0176 KF-C, CT-F1): a GOODS_RECEIPT_PO below the SKU's minimum remaining shelf life (details.requiredToStockStatus = QUARANTINE in mode "Otomatik karantina").</summary>
     public const string LotBelowMinRemainingShelfLife = "LOT_BELOW_MIN_REMAINING_SHELF_LIFE";
 
+    /// <summary>1.4.0 (MOD-0177 KR-C, CT-R4 / CT-R7 / CT-R11): the lot is under an active recall and the movement type leaves the recall's control.</summary>
+    public const string LotUnderRecall = "LOT_UNDER_RECALL";
+
     public static readonly IReadOnlySet<string> All = new HashSet<string>(StringComparer.Ordinal)
     {
         InvalidMovementType, CrossLeForbidden, InsufficientStock, SerialCountMismatch, UnknownLocation,
@@ -82,7 +86,8 @@ public static class InventoryErrorCodes
         ReservationConflict, LegalEntityMasterUnavailable, LotNotAllowed, UnknownLot, LotSkuMismatch, LotBlocked, LotExpired,
         SerialAlreadyExists, SerialNotAvailable, SerialLotMismatch, LotRetestDue, InventoryUnavailable,
         ProductMasterDataIncomplete, ItemNotActive, SkuLevelNotStockable,
-        FefoBypassReasonRequired, FefoOrderViolation, LotBelowMinRemainingShelfLife
+        FefoBypassReasonRequired, FefoOrderViolation, LotBelowMinRemainingShelfLife,
+        LotUnderRecall
     };
 
     /// <summary>MOD-0175 Q4: the <c>LOT_RETEST_DUE</c> refusal (pre-check and in-transaction re-check give the same answer).</summary>

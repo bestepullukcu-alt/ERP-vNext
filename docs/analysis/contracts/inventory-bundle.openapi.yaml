@@ -6,7 +6,7 @@ info:
     Stok değiştiren tek yol POST /movements (append-only, idempotent).
     Balance = projection (edit yasak). Tenant+LegalEntity scoped (server-resolved).
     Bu spec MOCK kaynağıdır: `prism mock inventory-bundle.openapi.yaml`.
-  version: 1.3.0
+  version: 1.4.0
   x-status: FROZEN
   x-owner: MOD-0173
   x-decisions: [DEC-INV-02, 05, 06, 08, 12, 13, 15, 16, 17, 18]
@@ -18,6 +18,7 @@ info:
     - "1.2.0 — additive (WP-0173-PM1, CT-PM1-1; PRODUCT-MASTER 1.1 consumer, MOD-0290 OD-1/3/4/5/10): three error codes on postMovement, all 422 under the existing UnprocessableMovement response — PRODUCT_MASTER_DATA_INCOMPLETE (a lot / serial flag the SKU level needs is unknown in PRODUCT-MASTER), ITEM_NOT_ACTIVE (the item / SKU lifecycle status does not allow the movement type), SKU_LEVEL_NOT_STOCKABLE (a Gsku movement of a product whose serial flag is not explicitly false) — and the postMovement description of the rules. No path, parameter, schema, property, type, enum, required list or status code changed."
     - "1.2.1 — description only (WP-0174-ITEM, O-PM1-3): SKU_LEVEL_NOT_STOCKABLE also covers a SKU that PRODUCT-MASTER publishes stockable: false (every movement except REVERSAL). Nothing else changed."
     - "1.3.0 — additive (WP-0176-F2, MOD-0176 KF-B / KF-C, CT-F1): postMovement accepts the optional fefoBypassReason (10–1000, the reason of an issue that is not from the first eligible FEFO lot of the same company + warehouse + SKU) and answers the optional expiryChecks (fefo Compliant | Bypassed, minRemaining Ok | NotDefined | Warned | NotApplicable, the ids of the expiry exceptions it opened); three 422 codes under the existing UnprocessableMovement response — FEFO_BYPASS_REASON_REQUIRED, FEFO_ORDER_VIOLATION, LOT_BELOW_MIN_REMAINING_SHELF_LIFE (details.requiredToStockStatus = QUARANTINE when the company quarantines such receipts: the caller resubmits into QUARANTINE; the ledger never changes the requested status — CT-F1); two description-only examples of the existing LOT_EXPIRED and LOT_BLOCKED refusals. A request without fefoBypassReason keeps its idempotency fingerprint. No existing path, parameter, property, type, required list, status code or enum value changed."
+    - "1.4.0 — additive (WP-0177-R3, MOD-0177 KR-C / KR-H, CT-R4 / CT-R7 / CT-R10 / CT-R11; owner step MOD-0173 + MOD-0174): postMovement may answer 422 LOT_UNDER_RECALL (details lotId, lotNumber, recallCaseId, recallCaseNumber, movementType) under the existing UnprocessableMovement response — a lot under an active recall (RECALL-BUNDLE getLotRecallStatus; by lot id in every company of the tenant, CT-R7) refuses GOODS_ISSUE_SALES, GOODS_ISSUE_PROD and WAREHOUSE_TRANSFER (MVP-6 shipment issues included); every other type is exempt; the exemption is decided by movement type only — sourceModule is never read; no reason or signature overrides it. A typed lot text equal to a recalled lot number of the same SKU is refused the same way. Checked after the lot rules and before the expiry hooks (a refused posting writes no FEFO snapshot or exception); re-checked inside the posting transaction. CT-R10 (lot rule, narrow): a CUSTOMER_RETURN of a Blocked / Expired lot is accepted only into QUARANTINE, QUALITY_INSPECTION or BLOCKED (into AVAILABLE it stays 422 LOT_BLOCKED / LOT_EXPIRED). New example lotUnderRecall. No existing path, parameter, property, type, required list, status code or enum value changed."
 servers:
   - url: /api/inventory
 security:
@@ -38,6 +39,11 @@ paths:
         no GOODS_RECEIPT_PO, GOODS_RECEIPT_PROD or OPENING_BALANCE, every other type allowed; Retired (and the v1.0 Archived) —
         only SCRAP and WRITE_OFF; Draft, any other value or no value — nothing; a refusal is 422 ITEM_NOT_ACTIVE. REVERSAL
         copies its original and is accepted in every state. PRODUCT-MASTER unreachable stays 503 PRODUCT_MASTER_UNAVAILABLE.
+        1.4.0 — recall exit block (MOD-0177 KR-C): a lot under an active recall (RECALL-BUNDLE getLotRecallStatus) refuses
+        GOODS_ISSUE_SALES, GOODS_ISSUE_PROD and WAREHOUSE_TRANSFER with 422 LOT_UNDER_RECALL; REVERSAL, SCRAP, WRITE_OFF,
+        STATUS_TRANSFER, LOCATION_TRANSFER, SUPPLIER_RETURN, COUNT_GAIN, COUNT_LOSS, CUSTOMER_RETURN and the receipts are exempt —
+        by movement type only, never by sourceModule. CT-R10 — a CUSTOMER_RETURN of a Blocked / Expired lot is accepted into
+        QUARANTINE, QUALITY_INSPECTION or BLOCKED; into AVAILABLE it stays refused (LOT_BLOCKED / LOT_EXPIRED).
       parameters:
         - $ref: '#/components/parameters/IdempotencyKey'
         - $ref: '#/components/parameters/LegalEntityOverride'
@@ -514,6 +520,7 @@ components:
             lotBelowMinRemainingShelfLife: { value: { error: { code: LOT_BELOW_MIN_REMAINING_SHELF_LIFE, message: "The lot has 40 days of shelf life left, below the minimum of 90: receive it into QUARANTINE", details: { remainingDays: 40, requiredDays: 90, requiredToStockStatus: QUARANTINE }, correlationId: req-14 }, contractVersion: v1 } }
             lotExpired: { value: { error: { code: LOT_EXPIRED, message: "The lot has expired", details: { lotId: 3f2b5a1e-0000-4000-8000-000000000103, lotNumber: L-103 }, correlationId: req-15 }, contractVersion: v1 } }
             lotBlocked: { value: { error: { code: LOT_BLOCKED, message: "The lot is blocked", details: { lotId: 3f2b5a1e-0000-4000-8000-000000000104, lotNumber: L-104 }, correlationId: req-16 }, contractVersion: v1 } }
+            lotUnderRecall: { value: { error: { code: LOT_UNDER_RECALL, message: "The lot is under recall RC-2026-0004: GOODS_ISSUE_SALES is not allowed", details: { lotId: 3f2b5a1e-0000-4000-8000-000000000105, lotNumber: L-105, recallCaseId: 7c1d2e3f-0000-4000-8000-000000000001, recallCaseNumber: RC-2026-0004, movementType: GOODS_ISSUE_SALES }, correlationId: req-17 }, contractVersion: v1 } }
     ProductMasterUnavailable:
       description: itemId/skuId doğrulaması yapılamadı (fail-closed, silent-pass YOK)
       content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: PRODUCT_MASTER_UNAVAILABLE, message: "PRODUCT-MASTER erişilemedi", correlationId: req-7 }, contractVersion: v1 } } }

@@ -154,6 +154,23 @@ public sealed class RecallCase : EntityBase
 
     /// <summary>One ACTIVE (non-terminal) case per company + root lot (unique partial index); cleared at Closed / Cancelled.</summary>
     public string? ActiveRootKey { get; set; }
+
+    /// <summary>R3 (CT-R5): a scope revision r+1 waiting for the signed approval of its delta; the case stays Active, the blocks stay.</summary>
+    public RecallScopeRevision? PendingRevision { get; set; }
+}
+
+/// <summary>CT-R5 — revision r+1 of an approved scope: the out-of-scope findings added (the delta), why, by whom.</summary>
+public sealed class RecallScopeRevision
+{
+    public int Revision { get; set; }
+
+    public string Reason { get; set; } = string.Empty;
+
+    public List<string> AddedNodeKeys { get; set; } = [];
+
+    public Guid RevisedBy { get; set; }
+
+    public DateTimeOffset RevisedAtUtc { get; set; }
 }
 
 /// <summary>The canonical hash of the scope at submit / approval (pack §8.3): what the approver signs is exactly this.</summary>
@@ -299,6 +316,16 @@ public sealed class RecallScopeItem : EntityBase
 public sealed class RecallLotBlock : EntityBase
 {
     public string LotId { get; set; } = string.Empty;
+
+    /// <summary>R3: the lot's number + SKU, so a typed lot text of the same SKU is refused too (ASSUMPTION-0177-06); null on R1 rows.</summary>
+    public string? LotNumber { get; set; }
+
+    public Guid? SkuId { get; set; }
+
+    public SkuLevel? SkuLevel { get; set; }
+
+    /// <summary>R3: the scope revision whose approval wrote the block (CT-R5: a revision adds blocks, never removes one).</summary>
+    public int Revision { get; set; } = 1;
 
     public Guid CaseId { get; set; }
 
@@ -484,4 +511,132 @@ public sealed class RecallTraceSnapshot : EntityBase
     public long DurationMs { get; set; }
 
     public Guid CreatedBy { get; set; }
+}
+
+
+/// <summary>
+/// Pack §8.4 KR-B — one request to MOD-0175 for one included Stock node of an approved scope revision. Created in the approval transaction
+/// (<see cref="Status"/> Pending) and sent after the commit by the dispatcher (the sweeper retries Pending only). The 0175 key is
+/// <c>recall:{caseId}:r{revision}:{nodeKey}</c>, re-used on every attempt (0175 replays); "Yeniden dene" moves to <c>…:a{n}</c> (CT-R2).
+/// The hold status is read from MOD-0175 at display time, never copied. Mutable head (Version) — what happened is the case timeline.
+/// </summary>
+public sealed class RecallQuarantineRequest : EntityBase
+{
+    public Guid CaseId { get; set; }
+
+    public string CaseNumber { get; set; } = string.Empty;
+
+    public int Revision { get; set; }
+
+    public string NodeKey { get; set; } = string.Empty;
+
+    public string LotId { get; set; } = string.Empty;
+
+    public string LotNumber { get; set; } = string.Empty;
+
+    public Guid ItemId { get; set; }
+
+    public Guid SkuId { get; set; }
+
+    public SkuLevel SkuLevel { get; set; }
+
+    public string? WarehouseId { get; set; }
+
+    public string? LocationId { get; set; }
+
+    /// <summary>The quantity of the node in the approved scope (or of the live line for a later request).</summary>
+    public decimal SnapshotQuantity { get; set; }
+
+    public string? BaseUomId { get; set; }
+
+    /// <summary>The bucket quantity of the call (current AVAILABLE, at most the snapshot quantity) — kept per key so a replay sends the same body.</summary>
+    public decimal? PlannedQuantity { get; set; }
+
+    public RecallQuarantineRequestStatus Status { get; set; }
+
+    public RecallNotNeededReason? NotNeededReason { get; set; }
+
+    public List<string> HoldIds { get; set; } = [];
+
+    public decimal HeldQuantity { get; set; }
+
+    public int Attempts { get; set; }
+
+    /// <summary>0 = the base key; n = "Yeniden dene" n (key suffix <c>:a{n}</c>).</summary>
+    public int RetryNumber { get; set; }
+
+    /// <summary>The 0175 idempotency key of the current attempt.</summary>
+    public string QuarantineKey { get; set; } = string.Empty;
+
+    public string? ErrorCode { get; set; }
+
+    public string? ErrorMessage { get; set; }
+
+    public List<RecallReservationLine> Reservations { get; set; } = [];
+
+    /// <summary>The approver / the QA user who asked — the actor of the 0175 call (CT-R2), also for the sweeper.</summary>
+    public Guid RequestedBy { get; set; }
+
+    public DateTimeOffset RequestedAtUtc { get; set; }
+
+    public DateTimeOffset? LastAttemptAtUtc { get; set; }
+
+    /// <summary>The API key that created (requestQuarantine) or last retried the request — the same key replays the answer.</summary>
+    public string? CommandKey { get; set; }
+
+    public string? CommandFingerprint { get; set; }
+}
+
+/// <summary>A reservation that blocked a request (0175 <c>ReservationLine</c>) — shown on "Eldeki stok"; 0177 never cancels it.</summary>
+public sealed class RecallReservationLine
+{
+    public string ReservationId { get; set; } = string.Empty;
+
+    /// <summary>The module that holds the reservation (0175 ReservationLine data, shown — never a decision).</summary>
+    public string? HolderModule { get; set; }
+
+    public string? SourceDocumentId { get; set; }
+
+    public string? RemainingQuantity { get; set; }
+}
+
+/// <summary>
+/// Pack §8.6 KR-H — a CUSTOMER_RETURN of an in-scope lot (posted after the approval, into a held status) linked to the case with a customer of
+/// the case. One case per return (unique transaction id per company). INSERT ONLY. 0177 writes no movement.
+/// </summary>
+public sealed class RecallReturnLink : EntityBase
+{
+    public Guid CaseId { get; set; }
+
+    public RecallReturnSource Source { get; set; }
+
+    public string TransactionId { get; set; } = string.Empty;
+
+    public string? TransactionNumber { get; set; }
+
+    public string LotId { get; set; } = string.Empty;
+
+    public string LotNumber { get; set; } = string.Empty;
+
+    public Guid SkuId { get; set; }
+
+    public decimal Quantity { get; set; }
+
+    public string BaseUomId { get; set; } = string.Empty;
+
+    public StockStatus? ToStockStatus { get; set; }
+
+    public DateTimeOffset PostedAtUtc { get; set; }
+
+    public string CustomerRef { get; set; } = string.Empty;
+
+    public string? ReturnReference { get; set; }
+
+    public Guid LinkedBy { get; set; }
+
+    public DateTimeOffset LinkedAtUtc { get; set; }
+
+    public string IdempotencyKey { get; set; } = string.Empty;
+
+    public string RequestFingerprint { get; set; } = string.Empty;
 }

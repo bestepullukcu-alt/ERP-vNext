@@ -88,6 +88,22 @@ public interface IRecallRepository
     /// <summary>CT-R7 — the ACTIVE blocks of a lot in EVERY company of the caller's tenant (tenant-bound only, by design).</summary>
     Task<IReadOnlyList<RecallLotBlockView>> ActiveLotBlocksAsync(string lotId, CancellationToken cancellationToken = default);
 
+    // ── R3 ──
+
+    /// <summary>The blocks this case wrote (active or released), company-scoped.</summary>
+    Task<IReadOnlyList<RecallLotBlock>> LotBlocksOfCaseAsync(Guid caseId, CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<RecallQuarantineRequest>> QuarantineRequestsAsync(Guid caseId, CancellationToken cancellationToken = default);
+
+    Task<RecallQuarantineRequest?> FindQuarantineRequestAsync(Guid requestId, CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<RecallReturnLink>> ReturnLinksAsync(Guid caseId, CancellationToken cancellationToken = default);
+
+    /// <summary>The link of a transaction in this company, whatever its case (one case per return).</summary>
+    Task<RecallReturnLink?> FindReturnLinkByTransactionAsync(string transactionId, CancellationToken cancellationToken = default);
+
+    Task<RecallReturnLink?> FindReturnLinkByKeyAsync(Guid linkedBy, string idempotencyKey, CancellationToken cancellationToken = default);
+
     Task<T> InTransactionAsync<T>(Func<IRecallWriteSession, CancellationToken, Task<T>> work, CancellationToken cancellationToken = default);
 }
 
@@ -135,4 +151,13 @@ public interface IRecallWriteSession
 
     /// <summary>R2: a trace snapshot (insert-only).</summary>
     Task InsertSnapshotAsync(RecallTraceSnapshot snapshot, CancellationToken cancellationToken = default);
+
+    // ── R3 ──
+
+    Task InsertQuarantineRequestsAsync(IReadOnlyList<RecallQuarantineRequest> requests, CancellationToken cancellationToken = default);
+
+    /// <summary>Version-guarded (the request head is mutable: status, attempts, holds); false = stale.</summary>
+    Task<bool> ReplaceQuarantineRequestAsync(RecallQuarantineRequest request, int expectedVersion, CancellationToken cancellationToken = default);
+
+    Task InsertReturnLinkAsync(RecallReturnLink link, CancellationToken cancellationToken = default);
 }
