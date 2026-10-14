@@ -190,6 +190,15 @@ public sealed class VisitReportV2Service
             potentials.AddRange(productIds.Select(id => DoctorInsightsReader.ToDto(id, stored.FirstOrDefault(p => p.GlobalProductId == id), thresholds, now)));
             foreach (var id in productIds) indications.Add(await _indications.ReadAsync(tenantId, id, ct));
             previous = await PreviousAsync(tenantId, plan, contactId, ct);
+
+            // W4-FIX-b (F-5): the clients draw the potential question from this flag (the same rule as the submit).
+            var context = new VisitReportV2CheckContext(kind, new HashSet<Guid>(),
+                potentials.Where(p => p.IsDue).Select(p => p.ProductId).ToHashSet(), false, new HashSet<Guid>(), false,
+                indications.Where(i => i.Items.Count > 0).Select(i => i.ProductId).ToHashSet());
+            foreach (var section in body.ProductSections ?? Array.Empty<VisitReportProductSection>())
+            {
+                section.PotentialAsked = VisitReportV2Rules.PotentialAsked(context, section);
+            }
         }
 
         var competitorOptions = new List<VisitReportV2CompetitorOptionsDto>();
@@ -278,17 +287,19 @@ public sealed class VisitReportV2Service
         }
 
         var listed = new HashSet<Guid>();
+        var withIndications = new HashSet<Guid>();
         if (kind == VisitReportKinds.Doctor)
         {
             foreach (var id in sectionIds)
             {
                 if ((await _competitors.LookupAsync(id, null, market, null, ct)).Available) listed.Add(id);
+                if ((await _indications.ReadAsync(tenantId, id, ct)).Items.Count > 0) withIndications.Add(id);
             }
         }
 
         var pharmacyListed = kind == VisitReportKinds.Pharmacy && planned.FirstOrDefault() is { } probe && probe != Guid.Empty
                              && (await _competitors.LookupAsync(probe, null, market, null, ct)).Available;
-        return new VisitReportV2CheckContext(kind, planned, due, totalDue, listed, pharmacyListed);
+        return new VisitReportV2CheckContext(kind, planned, due, totalDue, listed, pharmacyListed, withIndications);
     }
 
     /// <summary>Every code of the body is an active value of its BRD set (submit / amend). Null = all valid.</summary>
@@ -370,7 +381,7 @@ public sealed class VisitReportV2Service
         var profile = doctor is null ? null : new DoctorProfileSuggestion(doctor.AdoptionTypologyCode, doctor.CommunicationStyleCode, doctor.KolLevelCode);
         var products = (body.ProductSections ?? Array.Empty<VisitReportProductSection>()).Select(s =>
         {
-            var asked = context.DuePotentialProductIds.Contains(s.ProductId) || s.Potential?.Updated == true;
+            var asked = VisitReportV2Rules.PotentialAsked(context, s);
             var rows = asked && s.Potential?.NoPatientsInIndications != true
                 ? s.Potential?.Rows.Select(r => new DoctorPotentialRowInput(r.IndicationNodeId, r.ProfileNodeId, r.MonthlyPatients)).ToList()
                 : null;
@@ -596,6 +607,7 @@ public sealed class VisitReportV2Handlers :
             Id = Guid.NewGuid(), TenantId = tenantId, PlannedVisitId = plan.Id, CreatedAt = now, CreatedBy = _s.Actor
         };
         var warnings = await _s.ForwardProposalsAsync(body, report.Id, VisitReportV2Service.PharmacyProposalProduct(plan), ct);
+        warnings.AddRange(VisitReportV2Rules.DropPotentialsWithoutIndications(body, context)); // F-5: never stored / recorded
         var version = report.Version;
         report.ExecutionOutcome = VisitExecutionOutcome.Completed;
         report.ReasonCode = null;

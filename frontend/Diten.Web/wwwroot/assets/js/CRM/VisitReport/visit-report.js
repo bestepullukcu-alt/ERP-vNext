@@ -430,8 +430,12 @@
         const rows = indicationRows(s.productId);
         const pot = s.potential || { rows: [] };
         const total = C.doctorTotal(state.body, state.prefill);
+        const indications = C.hasIndications(state.ctx, s.productId);
         let potential = '';
-        if (asked) {
+        if (!indications) {
+            // W4-FIX-b (F-5): no approved indication list ⇒ no question, no "no patients" button, no star — a note only
+            potential = '<div class="vr-small vr-muted" data-f5="no-indications"><i class="bx bx-info-circle"></i> ' + esc(L.NoIndicationList || '') + '</div>';
+        } else if (asked) {
             potential = (rows.items.length ? rows.items.map((r, k) => {
                 const at = (pot.rows || []).findIndex(x => x.indicationNodeId === r.indicationNodeId && (x.profileNodeId || null) === (r.profileNodeId || null));
                 const on = at > -1;
@@ -453,7 +457,7 @@
         const prevShare = stored && stored.shareBucketCode;
         const comp = competitorHtml(s, i);
         return '<div class="vr-card vr-group">' + groupHead('B', L.GroupB || '', chip)
-            + '<div class="vr-field">' + fieldLabel(L.IndicationPatients || '', asked) + '<span class="vr-small vr-muted">' + esc(asked ? (L.IndicationHint || '') : (L.ThreeMonthHint || '')) + '</span>' + potential + '</div>'
+            + '<div class="vr-field">' + fieldLabel(L.IndicationPatients || '', asked) + (indications ? '<span class="vr-small vr-muted">' + esc(asked ? (L.IndicationHint || '') : (L.ThreeMonthHint || '')) + '</span>' : '') + potential + '</div>'
             + '<div class="vr-small vr-muted">' + esc(fmt(L.DoctorTotalLine || '{0}', total == null ? '—' : total)) + '</div>'
             + '<div id="vr-total-warn">' + totalWarning(s.productId) + '</div>'
             + '<div class="vr-field">' + fieldLabel(L.ShareBucket || '', true) + seg('productSections.' + i + '.shareBucketCode', s.shareBucketCode, setChoices(S.shareBucket), 'vr-wrap') + unavailable(S.shareBucket)

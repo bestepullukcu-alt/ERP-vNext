@@ -1,6 +1,8 @@
 /* WP-VW-W4 (W4-WEB-a) - DOM smoke of visit-report.js in Node: a fake document, a stub fetch and controlled timers.
    Run by VisitReportWebTests with the CRM script folder as argv[2] and the scenario as argv[3]
-   (doctor | amend | unlock | incomplete); prints one JSON object. */
+   (doctor | amend | unlock | incomplete | noind); prints one JSON object.
+   noind (W4-FIX-b, F-5): the product has NO approved indication rows and the server's pre-fill flag says
+   potentialAsked=false — the B card shows the note only (no "no patients" button, no star), the preview is "—". */
 const dir = process.argv[2];
 const scenario = process.argv[3] || 'doctor';
 const nodes = {};
@@ -75,6 +77,11 @@ const prefill = {
     'crm-communication-style': [opt('analytical', 'Analitik')], 'crm-kol-level': [opt('local', 'Yerel'), opt('national', 'Ulusal')]
   }
 };
+if (scenario === 'noind') {
+  prefill.indicationRows = [{ productId: A, items: [], reason: 'no_concept_graph' }];
+  prefill.body.productSections[0].potentialAsked = false;
+  prefill.body.productSections[0].potential = null;
+}
 const visit = { targetDisplayName: 'Dr. Ayşe Kaya', contactDisplayName: 'Dr. Ayşe Kaya', accountDisplayName: 'Hacettepe', plannedDate: '2026-10-15', reportDeadline: '2026-10-17T12:00:00Z',
   contentItems: [{ productId: A, productCode: 'UROF', productName: 'Ürofleks', role: 'promo', steps: [{ stepId: 's1', title: 'Gece idrarı mesajı' }] }] };
 const calls = [];
@@ -111,6 +118,7 @@ global.window = { document: global.document, showToast: (m, t) => toasts.push({ 
   location: { replace: u => redirects.push(u) } };
 global.window.VisitReportCore = require(dir + '/VisitReport/report-core.js');
 global.window.VisitReportL10n = {
+  NoIndicationList: 'Endikasyon listesi tanımlı değil', NoPatients: 'Bu endikasyonlarda hasta görmüyor', IndicationPatients: 'Endikasyon başına hasta',
   StepGeneral: 'Genel', StepSafety: 'Takip ve güvenlik', StepDoctor: 'Doktor profili', StepSummary: 'Özet ve gönder', StepMissing: '{0} eksik',
   FromPresentation: 'sunumdan', MatchedPlan: 'plana uydu', MissingChip: '{0} alan eksik', ReadyChip: 'Gönderime hazır', ProposalPending: 'temsilci ekledi · onay bekliyor',
   TotalExceeded: 'Toplam {0} / {1}', SentTitle: 'Rapor gönderildi', SubmittedTitle: 'Rapor gönderildi.', FixButton: 'Düzelt', UnlockButton: 'Değiştir ({0} dk)',
@@ -180,6 +188,11 @@ const missingChip = () => el('vr-chips').innerHTML;
   // ── the product step ──
   step(1);
   out.productA = html();
+  if (scenario === 'noind') {
+    out.missingChip = missingChip();
+    process.stdout.write(JSON.stringify(out));
+    return;
+  }
   set('productSections.0.visitSuccessCode', 'reached');
   set('productSections.0.commitmentCode', 'will_try');
   set('productSections.0.adoptionStageCode', 'evaluating');
