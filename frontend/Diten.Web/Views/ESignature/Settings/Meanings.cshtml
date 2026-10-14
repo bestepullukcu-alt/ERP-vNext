@@ -76,6 +76,10 @@
     <p class="mb-0 text-muted">@Localizer["ESign.Meanings.Sub"]</p>
 </div>
 
+<div class="alert alert-info d-flex gap-2 align-items-start" role="note" id="esignPageHelp">
+    <i class="bx bx-info-circle fs-5"></i><span>@Localizer["ESign.Help.Meanings"]</span>
+</div>
+
 @* Contract markers are rendered by _ListShell: <partial name="_TableSkeleton" />, <table id="dt-esign-meanings" data-dt-standard="v2"> *@
 <partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />
 
