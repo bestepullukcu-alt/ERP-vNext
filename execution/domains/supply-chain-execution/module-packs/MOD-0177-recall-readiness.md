@@ -1381,6 +1381,8 @@ Dal `feature/sce/mod-0177-r4` (taban `9729409e0`). Kanıt `docs/records/audits/2
 - **Sayılar:** Inventory 1159 + 4 → **1182 + 4**; mimari **69/77** aynı 8; gateway 164/165; Web 2272/2272; Platform ESign 176 → **177/177**; derleme 0 / 0.
   Sonda 5168 + mongod 27517: R4 yolları ve imzalı kararlar token'sız 401; filo PID'leri değişmedi.
 - Açık: O-R4-1 (geçici denetim borcu), O-R4-2 (drill-run → R5), O-R4-3 (sahip yeniden başlatması + canlı MOD-0022 kontrolü), O-R4-4, O-R4-5.
+**R4 CT-ACCEPTED (2026-10-14).** Read the binding (`ESignRecallSignature`: getSignature + current local hash, F3-A; no `verifySignature`) and the scope-middleware exemption (GET-only `/api/recall/esign-subjects/…`, same rule as quarantine / expiry). BLOCKED → CT decision B (`prepareSettingsChange` now; audit list 58 → 59 accepted temporarily — AUDIT1 v2 / BL-501 wires every Inventory command). CT trial merge on the MVP-1 tip `a114d6879`: Inventory **1182 + 4** all green, Platform ~ESign **177/177**, architecture 69/77 (same 8). **CT sabotage (not in a–h):** the "signed at or after the preparation" check dropped → `Rule_signed_after_the_preparation` + the stale-subject test red; restored, porcelain clean. Reconciliations accepted (pack `verifySignature` → F3-A; `RECALL_SUBJECT_NOT_FOUND`; provider via the Gateway like quarantine / expiry). O-R4-2 → R5, O-R4-3: owner Inventory + Platform restart needed for live (approval). Merged `--no-ff` into MVP-1.
+
 
 ## 20. Follow-up Items
 
