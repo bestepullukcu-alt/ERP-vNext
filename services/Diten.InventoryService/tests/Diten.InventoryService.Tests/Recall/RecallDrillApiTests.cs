@@ -373,6 +373,28 @@ public sealed class RecallDrillApiTests : IClassFixture<RecallDrillApiFactory>
 
     // ── the subject provider ─────────────────────────────────────────────────────────────────────────────
 
+    /// <summary>
+    /// O-R5-2 — CT decision 2026-10-14 (RECALL 1.4.0 x-permission-by-subject-type): the key depends on the subject type. A signer holding
+    /// ONLY recall.drills.read reads a drill-run subject (200) and still cannot read a recall.case subject of the same tenant and company (404 —
+    /// recall.case stays recall.cases.read only). The case control proves the 404 is the key, not a missing record.
+    /// </summary>
+    [Fact]
+    public async Task A_signer_with_only_recall_drills_read_reads_a_drill_run_subject_but_not_a_case_subject()
+    {
+        var w = await DrillWorld.CreateAsync(_factory);
+        var run = await w.FinishedRunAsync();
+        var id = DrillWorld.RunId(run);
+        await w.PrepareOkAsync(run);
+        var drillsReadOnly = w.S.Mint(w.S.Qa1, ["recall.drills.read"]);
+
+        var subject = await w.SubjectAsync(id, drillsReadOnly, 200);
+        Assert.Equal(run.GetProperty("number").GetString(), subject.GetProperty("fields").GetProperty("number").GetString());
+
+        var opened = await w.S.OpenAsync(run.GetProperty("lot").GetProperty("lotId").GetString()!);
+        var caseId = opened.GetProperty("caseId").GetString()!;
+        await w.S.ExpectAsync(HttpMethod.Get, $"/api/recall/esign-subjects/recall.case/{caseId}", drillsReadOnly, null, 404);
+        await w.S.ExpectAsync(HttpMethod.Get, $"/api/recall/esign-subjects/recall.case/{caseId}", w.S.Qa1Token, null, 200);
+    }
     [Fact]
     public async Task The_provider_answers_dr_v1_of_the_stored_run_and_another_tenant_gets_404()
     {
@@ -399,7 +421,8 @@ public sealed class RecallDrillApiTests : IClassFixture<RecallDrillApiFactory>
         // another tenant → 404; another company of the tenant naming its company → 404; no key → 404 (one answer, no oracle)
         var otherTenant = w.S.Mint(Guid.NewGuid(), DrillWorld.RunnerKeys, Guid.NewGuid(), Guid.NewGuid());
         await w.SubjectAsync(id, otherTenant, 404);
-        await w.SubjectAsync(id, w.S.Mint(w.S.Qa1, ["recall.drills.read"]), 404);
+        // O-R5-2 (CT 2026-10-14): recall.drills.read now reads a drill-run subject (own test below); a token with neither read key → 404.
+        await w.SubjectAsync(id, w.S.Mint(w.S.Qa1, ["recall.drills.manage", "recall.drills.run"]), 404);
         await w.SubjectAsync(Guid.NewGuid().ToString("D"), w.Runner, 404);
 
         // K3 sabotage (g) of R4 for the drill type: the directory is tenant-bound (defense in depth beside the company scope)

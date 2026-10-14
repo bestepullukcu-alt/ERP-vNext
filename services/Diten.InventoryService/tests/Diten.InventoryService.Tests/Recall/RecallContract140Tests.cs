@@ -81,6 +81,16 @@ public sealed class RecallContract140Tests
         Assert.Null(before["components"]!["schemas"]!["DrillRunPage"]!["properties"]!["frequencyWarning"]);
         Assert.DoesNotContain("frequencyWarning", Strings(after["components"]!["schemas"]!["DrillRunPage"]!["required"]));
 
+        // O-R5-2 (CT decision 2026-10-14): getSignableSubject gains a description and x-permission-by-subject-type; x-permission stays.
+        var subjectOp = "/esign-subjects/{subjectType}/{subjectId}";
+        Assert.Null(before["paths"]![subjectOp]!["get"]!["x-permission-by-subject-type"]);
+        Assert.Null(before["paths"]![subjectOp]!["get"]!["description"]);
+        var bySubject = after["paths"]![subjectOp]!["get"]!["x-permission-by-subject-type"]!;
+        Assert.Equal(["recall.cases.read"], Strings(bySubject["recall.case"]));
+        Assert.Equal(["recall.cases.read"], Strings(bySubject["recall.settings-change"]));
+        Assert.Equal(["recall.cases.read", "recall.drills.read"], Strings(bySubject["recall.drill-run"]));
+        Assert.Equal("recall.cases.read", after["paths"]![subjectOp]!["get"]!["x-permission"]!.GetValue<string>());
+
         foreach (var doc in new[] { before, after })
         {
             doc["info"]!.AsObject().Remove("version");
@@ -92,6 +102,8 @@ public sealed class RecallContract140Tests
             doc["x-error-codes"]!.AsObject().Remove("RECALL_DRILL_NOT_FOUND");
             doc["components"]!["schemas"]!.AsObject().Remove("DrillFrequencyWarning");
             doc["components"]!["schemas"]!["DrillRunPage"]!["properties"]!.AsObject().Remove("frequencyWarning");
+            doc["paths"]!["/esign-subjects/{subjectType}/{subjectId}"]!["get"]!.AsObject().Remove("x-permission-by-subject-type");
+            doc["paths"]!["/esign-subjects/{subjectType}/{subjectId}"]!["get"]!.AsObject().Remove("description");
         }
 
         Assert.True(JsonNode.DeepEquals(before, after), "recall.openapi.yaml 1.4.0 changes more than the declared additions.");
