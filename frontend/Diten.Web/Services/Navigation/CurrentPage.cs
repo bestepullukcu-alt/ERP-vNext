@@ -21,6 +21,7 @@ namespace Diten.Web.Services.Navigation;
 public static class CurrentPage
 {
     public const string PageCodeItem = "Diten.PageCode";
+    public const string MenuPagesItem = "Diten.MenuPages";
     public const string AccessDeniedItem = "Diten.AccessDenied";
     public const string PageCodeViewData = "PageCode";
     public const string PlatformPrefix = "PLATFORM";
@@ -100,6 +101,37 @@ public static class CurrentPage
         return context?.Items[PageCodeItem] as string;
     }
 
+    /// <summary>
+    /// WP-UX-HELP-PANEL-02 — the menu's pages (code → address, required permission), recorded by the menu component
+    /// with the page code, so the help panel's "Related pages" links where the menu links and to nothing it does not hold.
+    /// Empty when the menu did not load: the panel then draws no related card.
+    /// </summary>
+    public static IReadOnlyDictionary<string, MenuPage> MenuPages(HttpContext? context) =>
+        context?.Items[MenuPagesItem] as IReadOnlyDictionary<string, MenuPage> ?? EmptyMenu;
+
+    /// <summary>Keeps the first entry per normalized code; an entry without a code or a route is not a page.</summary>
+    public static void RecordMenuPages(HttpContext? context, IEnumerable<MenuPage> pages)
+    {
+        if (context is null)
+        {
+            return;
+        }
+
+        var byCode = new Dictionary<string, MenuPage>(StringComparer.Ordinal);
+        foreach (var page in pages)
+        {
+            var code = NavNameLocalizer.Normalize(page.Code ?? string.Empty);
+            if (code.Length > 0 && !string.IsNullOrWhiteSpace(page.RoutePath) && page.RoutePath.StartsWith('/'))
+            {
+                byCode.TryAdd(code, page with { Code = code });
+            }
+        }
+
+        context.Items[MenuPagesItem] = byCode;
+    }
+
+    private static readonly IReadOnlyDictionary<string, MenuPage> EmptyMenu = new Dictionary<string, MenuPage>();
+
     /// <summary>Set by <c>_AccessDenied.cshtml</c>: the body drew the unauthorized face, so the shell draws no page help.</summary>
     public static bool IsAccessDenied(HttpContext? context) =>
         context?.Items[AccessDeniedItem] is true;
@@ -112,3 +144,6 @@ public static class CurrentPage
         }
     }
 }
+
+/// <summary>One page of the tenant menu: its normalized code, its address and the permission that shows it.</summary>
+public sealed record MenuPage(string Code, string RoutePath, string? RequiredPermission);

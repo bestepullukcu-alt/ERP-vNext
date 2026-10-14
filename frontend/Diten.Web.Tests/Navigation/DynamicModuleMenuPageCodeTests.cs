@@ -40,6 +40,18 @@ public sealed class DynamicModuleMenuPageCodeTests
     }
 
     [Fact]
+    public async Task The_menu_pages_are_recorded_for_the_help_panel_related_links()
+    {
+        // WP-UX-HELP-PANEL-02 — "Related pages" link where the menu links (code → address, permission).
+        var (_, context) = await InvokeAsync("/Users", matcher: null);
+
+        var pages = CurrentPage.MenuPages(context);
+        Assert.Equal("/Users", pages["USERS"].RoutePath);
+        Assert.Equal("/Roles", pages["ROLES"].RoutePath);
+        Assert.Null(pages["ROLES"].RequiredPermission);
+    }
+
+    [Fact]
     public async Task A_failing_page_code_never_takes_the_sidebar_down()
     {
         var (model, context) = await InvokeAsync("/Users", matcher: (_, _) => throw new InvalidOperationException("boom"));

@@ -124,10 +124,22 @@
             doneBtnText: esc(t('Tour.Done')),
             progressText: esc(t('Tour.Progress')),
             popoverClass: rtl ? 'diten-tour-popover diten-tour-rtl' : 'diten-tour-popover',
+            onPopoverRender: dressPopover,
             onDestroyed: () => markCompleted(pageCode, tour.version)
         });
         instance.drive();
         return true;
+    };
+
+    /*
+     * WP-UX-HELP-PANEL-02 — the bubble's buttons are the theme's: Driver.js draws its own (grey, text-shadow); on every
+     * render they get Bootstrap's classes (backbone-custom.css draws them from those classes' own --bs-btn-* values).
+     */
+    const dressPopover = (popover) => {
+        if (!popover) { return; }
+        if (popover.nextButton) { popover.nextButton.classList.add('btn', 'btn-sm', 'btn-primary'); }
+        if (popover.previousButton) { popover.previousButton.classList.add('btn', 'btn-sm', 'btn-label-secondary'); }
+        if (popover.closeButton) { popover.closeButton.classList.add('diten-tour-close'); }
     };
 
     // Test seam only: forget registrations and cached strings.

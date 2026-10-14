@@ -64,19 +64,32 @@ describe("both shells load the keyboard layer and the help panel once", () => {
   });
 });
 
-// The markup _PageHelpPanel.cshtml renders, as the browser receives it.
+// The markup _PageHelpPanel.cshtml renders, as the browser receives it (WP-UX-HELP-PANEL-02: tabs, cards, footer;
+// PageHelpShellTests measures the real render).
 const PANEL = `
   <button type="button" id="diten-help-toggle" data-diten-help-open>?</button>
   <div class="offcanvas offcanvas-end diten-help-panel" id="diten-help-panel" data-page-code="USERS">
     <div class="offcanvas-body">
-      <section data-diten-help-shortcuts hidden><div data-diten-help-shortcut-list></div></section>
-      <p data-diten-help-enter-hint>Enter saves in a side panel</p>
+      <ul class="nav diten-help-tabs" role="tablist" data-diten-help-tabs>
+        <li class="nav-item"><button type="button" class="nav-link active" role="tab" data-diten-help-tab="overview">O</button></li>
+        <li class="nav-item"><button type="button" class="nav-link" role="tab" data-diten-help-tab="steps">S</button></li>
+        <li class="nav-item"><button type="button" class="nav-link" role="tab" data-diten-help-tab="keys">K</button></li>
+      </ul>
+      <div class="tab-content">
+        <div class="tab-pane" id="diten-help-pane-keys" data-diten-help-keys>
+          <section data-diten-help-everywhere></section>
+          <section data-diten-help-shortcuts hidden><div data-diten-help-shortcut-list></div></section>
+        </div>
+      </div>
+    </div>
+    <div class="diten-help-footer">
       <div data-diten-help-tour hidden><button type="button" data-diten-help-start-tour>Start</button></div>
     </div>
   </div>`;
 
 describe("diten-help.js", () => {
   let shown;
+  let tabsShown;
 
   const boot = () => {
     if (window.DitenShortcuts) { window.DitenShortcuts.__uninstall(); }
@@ -85,8 +98,10 @@ describe("diten-help.js", () => {
     delete window.DitenTour;
     document.body.innerHTML = PANEL;
     shown = [];
+    tabsShown = [];
     window.bootstrap = {
-      Offcanvas: { getOrCreateInstance: (el) => ({ show: () => shown.push(el.id), hide: () => {} }) }
+      Offcanvas: { getOrCreateInstance: (el) => ({ show: () => shown.push(el.id), hide: () => {} }) },
+      Tab: { getOrCreateInstance: (el) => ({ show: () => tabsShown.push(el.getAttribute("data-diten-help-tab")) }) }
     };
     loadScript("wwwroot/assets/js/shared/diten-shortcuts.js");
     loadScript("wwwroot/assets/js/shared/diten-tour.js");
@@ -148,17 +163,22 @@ describe("diten-help.js", () => {
     errors.mockRestore();
   });
 
-  it("the side-panel Enter hint shows only where the page has a side panel with fields", () => {
+  // WP-UX-HELP-PANEL-02 — the tab is not remembered: every opening, by button or `?`, starts on "Overview". (The old
+  // grey Enter hint is gone: the Keyboard tab's "On every page" card carries Enter and Ctrl+Enter on every page.)
+  it("every opening starts on the Overview tab", () => {
+    // (opened by open() and by `?`; the button's click listener is document-wide and piles up across boots here)
     boot();
     window.DitenHelp.open();
-    expect(document.querySelector("[data-diten-help-enter-hint]").hidden, "a page with no side panel shows the hint").toBe(true);
-    // UX-COMMON-FIX2 — a read-only quick view (no field) has no Enter to explain.
-    document.body.insertAdjacentHTML("beforeend", '<div class="offcanvas offcanvas-end" id="offcanvasQuickView"><button class="btn btn-primary">Edit</button></div>');
-    window.DitenHelp.open();
-    expect(document.querySelector("[data-diten-help-enter-hint]").hidden, "a quick view counted as an edit panel").toBe(true);
-    document.body.insertAdjacentHTML("beforeend", '<div class="offcanvas offcanvas-end" id="offcanvasCreateEdit"><input type="text"></div>');
-    window.DitenHelp.open();
-    expect(document.querySelector("[data-diten-help-enter-hint]").hidden).toBe(false);
+    document.body.dispatchEvent(new KeyboardEvent("keydown", { key: "?", bubbles: true, cancelable: true }));
+    expect(shown).toEqual(["diten-help-panel", "diten-help-panel"]);
+    expect(tabsShown).toEqual(["overview", "overview"]);
+  });
+
+  it("the 'On this page' card sits in the Keyboard tab beside 'On every page'", () => {
+    boot();
+    const keys = document.querySelector("[data-diten-help-keys]");
+    expect(keys.querySelector("[data-diten-help-everywhere]")).not.toBeNull();
+    expect(keys.querySelector("[data-diten-help-shortcuts]")).not.toBeNull();
   });
 
   it("`?` over an open edit panel does not stack the help panel on it", () => {

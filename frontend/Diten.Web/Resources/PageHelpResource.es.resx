@@ -69,15 +69,6 @@
   <data name="Help.Panel.PurposeHeading" xml:space="preserve">
     <value>Para qué sirve esta página</value>
   </data>
-  <data name="Help.Panel.StepsHeading" xml:space="preserve">
-    <value>Cómo usarla</value>
-  </data>
-  <data name="Help.Panel.ShortcutsHeading" xml:space="preserve">
-    <value>Atajos de teclado de esta página</value>
-  </data>
-  <data name="Help.Panel.EnterHint" xml:space="preserve">
-    <value>En un panel lateral, Intro guarda. Una acción que no se puede deshacer (publicar, aprobar, enviar, eliminar, cancelar…) solo se ejecuta con Ctrl+Intro (⌘+Intro en Mac); un Intro solo no hace nada allí. En un campo de varias líneas, Ctrl+Intro guarda.</value>
-  </data>
   <data name="Help.Panel.ChordTitle" xml:space="preserve">
     <value>Ctrl+Intro (⌘+Intro en Mac). Un Intro solo no ejecuta esta acción.</value>
   </data>
@@ -86,6 +77,60 @@
   </data>
   <data name="Help.Panel.Preparing" xml:space="preserve">
     <value>El texto de ayuda de esta página se está preparando.</value>
+  </data>
+  <data name="Help.Panel.Eyebrow" xml:space="preserve">
+    <value>Ayuda de la página</value>
+  </data>
+  <data name="Help.Panel.Tabs" xml:space="preserve">
+    <value>Secciones de la ayuda</value>
+  </data>
+  <data name="Help.Panel.TabOverview" xml:space="preserve">
+    <value>Resumen</value>
+  </data>
+  <data name="Help.Panel.TabSteps" xml:space="preserve">
+    <value>Paso a paso</value>
+  </data>
+  <data name="Help.Panel.TabKeys" xml:space="preserve">
+    <value>Teclado</value>
+  </data>
+  <data name="Help.Panel.GeneralCard" xml:space="preserve">
+    <value>Información general</value>
+  </data>
+  <data name="Help.Panel.RelatedCard" xml:space="preserve">
+    <value>Páginas relacionadas</value>
+  </data>
+  <data name="Help.Panel.AudienceLabel" xml:space="preserve">
+    <value>Quién la usa</value>
+  </data>
+  <data name="Help.Panel.ImmediateLabel" xml:space="preserve">
+    <value>Acciones con efecto inmediato</value>
+  </data>
+  <data name="Help.Panel.StepNumber" xml:space="preserve">
+    <value>Paso {0}</value>
+  </data>
+  <data name="Help.Panel.KeysEverywhere" xml:space="preserve">
+    <value>En todas las páginas</value>
+  </data>
+  <data name="Help.Panel.KeysThisPage" xml:space="preserve">
+    <value>En esta página</value>
+  </data>
+  <data name="Help.Panel.KeyHelp" xml:space="preserve">
+    <value>Abre este panel</value>
+  </data>
+  <data name="Help.Panel.KeySearch" xml:space="preserve">
+    <value>Buscar páginas, ir al menú</value>
+  </data>
+  <data name="Help.Panel.KeyEnter" xml:space="preserve">
+    <value>Guarda en un panel lateral (acciones que se pueden deshacer)</value>
+  </data>
+  <data name="Help.Panel.KeyChord" xml:space="preserve">
+    <value>Ejecuta una acción que no se puede deshacer (enviar, aprobar, eliminar…); guarda en un campo de varias líneas</value>
+  </data>
+  <data name="Help.Panel.KeyEscape" xml:space="preserve">
+    <value>Cierra el panel abierto</value>
+  </data>
+  <data name="Help.Panel.MacNote" xml:space="preserve">
+    <value>En Mac, use ⌘ en lugar de Ctrl.</value>
   </data>
   <data name="Tour.Next" xml:space="preserve">
     <value>Siguiente</value>
@@ -166,13 +211,13 @@
     <value>Abra una fila para leer la semana y elija Aprobar, o Devolver con un motivo para que se corrija.</value>
   </data>
   <data name="Help.USERS.Purpose" xml:space="preserve">
-    <value>Gestione a quienes pueden iniciar sesión en su inquilino: invítelos, edite sus datos y decida si su cuenta está activa. La usan los administradores; desactivar, eliminar o restablecer surte efecto al instante.</value>
+    <value>Gestione a quienes pueden iniciar sesión en su inquilino: invítelos, edite sus datos y decida si su cuenta está activa.</value>
   </data>
   <data name="Help.USERS.Step1" xml:space="preserve">
     <value>Acote la lista con el cuadro de búsqueda, o haga clic en «Filtrar», elija «Estado», «Roles» o «Tipo de cuenta» y haga clic en «Aplicar».</value>
   </data>
   <data name="Help.USERS.Step2" xml:space="preserve">
-    <value>Haga clic en «Agregar usuario», complete «Correo electrónico», «Nombre» y «Apellido» en el panel lateral y haga clic en «Guardar» o pulse Intro en un campo.</value>
+    <value>Haga clic en «Agregar usuario», complete «Correo electrónico», «Nombre» y «Apellido» en el panel lateral y haga clic en «Guardar» o pulse Ctrl+Intro (⌘+Intro en Mac). Se envía un correo de invitación, por eso un Intro solo no guarda.</value>
   </data>
   <data name="Help.USERS.Step3" xml:space="preserve">
     <value>Pida al nuevo usuario que defina su contraseña con el enlace recibido por correo; hasta entonces el estado es «Invitado» y la fila ofrece «Reenviar invitación».</value>
@@ -183,8 +228,35 @@
   <data name="Help.USERS.Step5" xml:space="preserve">
     <value>Para dar roles a un usuario, abra la página Roles de usuario; la columna «Roles» de aquí solo muestra los ya asignados.</value>
   </data>
+  <data name="Help.USERS.Audience" xml:space="preserve">
+    <value>Administradores</value>
+  </data>
+  <data name="Help.USERS.Immediate" xml:space="preserve">
+    <value>Desactivar, eliminar, restablecer la contraseña</value>
+  </data>
+  <data name="Help.USERS.Step1Title" xml:space="preserve">
+    <value>Acotar la lista</value>
+  </data>
+  <data name="Help.USERS.Step2Title" xml:space="preserve">
+    <value>Invitar a un usuario</value>
+  </data>
+  <data name="Help.USERS.Step3Title" xml:space="preserve">
+    <value>Seguir la invitación</value>
+  </data>
+  <data name="Help.USERS.Step4Title" xml:space="preserve">
+    <value>Gestionar la cuenta</value>
+  </data>
+  <data name="Help.USERS.Step5Title" xml:space="preserve">
+    <value>Asignar roles</value>
+  </data>
+  <data name="Help.USERS.Related.USERROLES" xml:space="preserve">
+    <value>Para asignar roles a un usuario</value>
+  </data>
+  <data name="Help.USERS.Related.ROLES" xml:space="preserve">
+    <value>Para ver qué permite cada rol</value>
+  </data>
   <data name="Help.ROLES.Purpose" xml:space="preserve">
-    <value>Esta página muestra los roles del inquilino: los de Sistema que trae la plataforma y los Personalizados que usted crea. Los administradores gestionan aquí los personalizados; los permisos van en Permisos de rol.</value>
+    <value>Esta página muestra los roles del inquilino: los de Sistema que trae la plataforma y los Personalizados que usted crea.</value>
   </data>
   <data name="Help.ROLES.Step1" xml:space="preserve">
     <value>Busque en la lista, o haga clic en «Filtrar», elija «Sistema (integrado, bloqueado)» o «Personalizado (editable)» en «Tipo» y haga clic en «Aplicar».</value>
@@ -198,8 +270,32 @@
   <data name="Help.ROLES.Step4" xml:space="preserve">
     <value>Use «Ver», «Editar registro» o «Eliminar» en un rol personalizado; un rol del sistema muestra un candado y solo se puede ver.</value>
   </data>
+  <data name="Help.ROLES.Audience" xml:space="preserve">
+    <value>Administradores</value>
+  </data>
+  <data name="Help.ROLES.Immediate" xml:space="preserve">
+    <value>Eliminar un rol personalizado</value>
+  </data>
+  <data name="Help.ROLES.Step1Title" xml:space="preserve">
+    <value>Buscar un rol</value>
+  </data>
+  <data name="Help.ROLES.Step2Title" xml:space="preserve">
+    <value>Agregar un rol</value>
+  </data>
+  <data name="Help.ROLES.Step3Title" xml:space="preserve">
+    <value>Gestionar sus permisos</value>
+  </data>
+  <data name="Help.ROLES.Step4Title" xml:space="preserve">
+    <value>Ver, editar o eliminar</value>
+  </data>
+  <data name="Help.ROLES.Related.ROLEPERMISSIONS" xml:space="preserve">
+    <value>Para definir lo que puede hacer un rol</value>
+  </data>
+  <data name="Help.ROLES.Related.USERROLES" xml:space="preserve">
+    <value>Para asignar roles a los usuarios</value>
+  </data>
   <data name="Help.ROLEPERMISSIONS.Purpose" xml:space="preserve">
-    <value>Esta página define lo que un rol puede hacer: asigne o quite permisos, agrupados por módulo, de un rol a la vez. La usan los administradores, y cada cambio afecta a todos los usuarios con ese rol.</value>
+    <value>Esta página define lo que un rol puede hacer: asigne o quite permisos, agrupados por módulo, de un rol a la vez.</value>
   </data>
   <data name="Help.ROLEPERMISSIONS.Step1" xml:space="preserve">
     <value>Elija un rol en el cuadro «Rol»; si llega desde «Gestionar permisos» en la página Roles, el rol ya aparece seleccionado.</value>
@@ -216,8 +312,35 @@
   <data name="Help.ROLEPERMISSIONS.Step5" xml:space="preserve">
     <value>Revise «Rol seleccionado» a la derecha para ver la «Cobertura de permisos» y los recuentos de permisos asignados, bloqueados y sin asignar.</value>
   </data>
+  <data name="Help.ROLEPERMISSIONS.Audience" xml:space="preserve">
+    <value>Administradores</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Immediate" xml:space="preserve">
+    <value>Asignar y quitar un permiso; afecta a todos los usuarios con ese rol</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step1Title" xml:space="preserve">
+    <value>Elegir un rol</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step2Title" xml:space="preserve">
+    <value>Acotar los permisos</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step3Title" xml:space="preserve">
+    <value>Otorgar un permiso</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step4Title" xml:space="preserve">
+    <value>Quitar un permiso</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step5Title" xml:space="preserve">
+    <value>Revisar la cobertura</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Related.ROLES" xml:space="preserve">
+    <value>Para agregar o editar roles</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Related.USERROLES" xml:space="preserve">
+    <value>Para asignar roles a los usuarios</value>
+  </data>
   <data name="Help.USERROLES.Purpose" xml:space="preserve">
-    <value>Esta página vincula usuarios y roles: elija un usuario y asígnele o quítele roles. Un usuario recibe la unión de los permisos de todos sus roles, así que cada cambio modifica lo que puede hacer.</value>
+    <value>Esta página vincula usuarios y roles: elija un usuario y asígnele o quítele roles.</value>
   </data>
   <data name="Help.USERROLES.Step1" xml:space="preserve">
     <value>Elija una persona en el cuadro «Usuario» para ver los roles que tiene y los que no.</value>
@@ -231,8 +354,32 @@
   <data name="Help.USERROLES.Step4" xml:space="preserve">
     <value>Para quitar un rol, haga clic en «Quitar» en un rol asignado, o en la x junto a él en «Roles activos», y confirme.</value>
   </data>
+  <data name="Help.USERROLES.Audience" xml:space="preserve">
+    <value>Administradores</value>
+  </data>
+  <data name="Help.USERROLES.Immediate" xml:space="preserve">
+    <value>Asignar y quitar un rol; un usuario recibe juntos los permisos de todos sus roles</value>
+  </data>
+  <data name="Help.USERROLES.Step1Title" xml:space="preserve">
+    <value>Elegir un usuario</value>
+  </data>
+  <data name="Help.USERROLES.Step2Title" xml:space="preserve">
+    <value>Acotar los roles</value>
+  </data>
+  <data name="Help.USERROLES.Step3Title" xml:space="preserve">
+    <value>Asignar un rol</value>
+  </data>
+  <data name="Help.USERROLES.Step4Title" xml:space="preserve">
+    <value>Quitar un rol</value>
+  </data>
+  <data name="Help.USERROLES.Related.USERS" xml:space="preserve">
+    <value>Para invitar o gestionar usuarios</value>
+  </data>
+  <data name="Help.USERROLES.Related.ROLES" xml:space="preserve">
+    <value>Para agregar o editar roles</value>
+  </data>
   <data name="Help.ITEMS.Purpose" xml:space="preserve">
-    <value>Esta página lista los artículos (materiales que se mantienen en stock: principios activos, excipientes, envases, intermedios) con su identidad, su tipo de material y su comportamiento de stock. El equipo de datos maestros los crea aquí y lleva cada uno por sus estados: «Borrador», «Pendiente de aprobación», «Activo», «Desactivado», «Retirado».</value>
+    <value>Esta página lista los artículos (materiales que se mantienen en stock: principios activos, excipientes, envases, intermedios) con su identidad, su tipo de material y su comportamiento de stock. Cada artículo se crea aquí y pasa por sus estados: «Borrador», «Pendiente de aprobación», «Activo», «Desactivado», «Retirado».</value>
   </data>
   <data name="Help.ITEMS.Step1" xml:space="preserve">
     <value>Acote la lista con el cuadro de búsqueda, o haga clic en «Filtrar», elija «Estado» o «Tipo de material» y haga clic en «Aplicar».</value>
@@ -248,5 +395,23 @@
   </data>
   <data name="Help.ITEMS.Step5" xml:space="preserve">
     <value>Fuera de un campo de texto, y sin ningún cuadro de diálogo ni panel lateral abierto, la tecla «?» abre esta ayuda con los atajos de la página.</value>
+  </data>
+  <data name="Help.ITEMS.Audience" xml:space="preserve">
+    <value>El equipo de datos maestros</value>
+  </data>
+  <data name="Help.ITEMS.Step1Title" xml:space="preserve">
+    <value>Acotar la lista</value>
+  </data>
+  <data name="Help.ITEMS.Step2Title" xml:space="preserve">
+    <value>Añadir un artículo</value>
+  </data>
+  <data name="Help.ITEMS.Step3Title" xml:space="preserve">
+    <value>Enviar a aprobación</value>
+  </data>
+  <data name="Help.ITEMS.Step4Title" xml:space="preserve">
+    <value>Cambiar su estado</value>
+  </data>
+  <data name="Help.ITEMS.Step5Title" xml:space="preserve">
+    <value>Usar el teclado</value>
   </data>
 </root>

@@ -83,6 +83,25 @@ describe("with the real Driver.js", () => {
     expect(document.querySelector(".driver-popover-next-btn").textContent).toBe("Done");
   });
 
+  // WP-UX-HELP-PANEL-02 — the bubble wears the theme: its buttons get Bootstrap's classes on every render
+  // (onPopoverRender), so backbone-custom.css draws them as the theme's buttons instead of Driver.js's grey ones.
+  test("the bubble's buttons get the theme's classes on every step", () => {
+    page("WORKCENTER");
+    boot();
+    window.DitenTour.start("WORKCENTER");
+
+    const classesOf = (selector) => [...document.querySelector(selector).classList];
+    const dressed = () => {
+      expect(document.querySelector(".driver-popover").classList.contains("diten-tour-popover")).toBe(true);
+      expect(classesOf(".driver-popover-next-btn")).toEqual(expect.arrayContaining(["btn", "btn-sm", "btn-primary"]));
+      expect(classesOf(".driver-popover-prev-btn")).toEqual(expect.arrayContaining(["btn", "btn-sm", "btn-label-secondary"]));
+      expect(classesOf(".driver-popover-close-btn")).toContain("diten-tour-close");
+    };
+    dressed();
+    document.querySelector(".driver-popover-next-btn").click();
+    dressed();
+  });
+
   test.each(["MYTIMESHEET", "TIMEAPPROVALS"])("the %s tour is available on its page and starts", (code) => {
     page(code);
     boot();
