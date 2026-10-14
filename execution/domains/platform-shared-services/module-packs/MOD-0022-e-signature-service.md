@@ -1799,6 +1799,7 @@ measured; `/internal/esign-tickets/consume` and `/api/internal/esign/actions/reg
   - Web 2199 → **2220** (`ESignaturePageHelpWebTests` +21; tabanda 14 kırmızı). Uyarı 24 → 24.
   - Sabotaj: tr anahtarı silindi → 2 kırmızı; özgün baytlar geri yazıldı → yeşil, porcelain temiz.
 - **O-ESIGN1-1 kapandı** (karar B uygulandı).
+- **ESIGN-HELP CT-ACCEPTED (2026-10-14).** Read the seven views (existing `bx-info-circle` note markup, `id=esignPageHelp`, no new component) and the texts (owner-readable, rules checked against code). 7 languages instead of 2 accepted: the existing `ESignatureWebTests` pins all seven `ESignature.*.resx` to one key set. CT run: Web **2220/2220**. **CT sabotage:** the note block removed from `Verification.cshtml` → `The_rendered_page_draws_the_help_note_with_its_text(Verification)` red; restored, porcelain clean. Merged `--no-ff` into MVP-1. SEC-ESIGN1 item 6 closed.
 
 ## 20. Follow-up Items
 
