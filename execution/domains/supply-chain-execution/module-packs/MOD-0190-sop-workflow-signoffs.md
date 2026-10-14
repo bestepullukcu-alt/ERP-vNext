@@ -124,7 +124,7 @@ runtime work. Contract changes require a separate versioned, single-writer speci
 
 ## 8. Runtime Constraints
 
-- Planned service is `Diten.SupplyChainService` on port 5061, using five layers and CQRS/MediatR.
+- Planned service is `Diten.SupplyChainService` on port 5066, using five layers and CQRS/MediatR. (5061 is CRM's route; `gateway/Diten.ApiGateway/ocelot.json` sends SupplyChain to 5066 — corrected 2026-10-11, the pack had carried CRM's port)
 - MongoDB data is tenant/legal-entity scoped; cross-scope access returns 404 without existence leakage.
 - Mutations require a nonempty exact parsed `Idempotency-Key`; all six operations require one valid UUID `X-Correlation-Id`. No trim, case folding, Unicode normalization or added max-200 rule.
 - Snapshots and sign-offs are append-only evidence. Prior decisions are not overwritten.
@@ -186,21 +186,21 @@ but cannot edit the shared permission registry without a separately authorized o
 
 ## 15. Gateway / API Routing Decision
 
-Desired public family is `/api/supply-chain/sandop-plans/**` routed to port 5061. This pack does not authorize an
+Desired public family is `/api/supply-chain/sandop-plans/**` routed to port 5066. This pack does not authorize an
 `ocelot.json` change. An integration-agent WP must add/verify routes and propagation of authorization, tenant,
 legal-entity, correlation and idempotency headers after endpoints exist.
 
 ## 16. Acceptance Criteria
 
-- [ ] Create stores one scoped Draft plan with null currentSnapshotId referencing an exact scoped Published DEMAND ID/version fixture; this does not prove live producer validation.
-- [ ] Draft/InReview capture appends immutable fixture ID/version/checksum/time provenance, updates plan to InReview and preserves older snapshots; no DEMAND series is stored.
-- [ ] InReview sign-off binds to any same-plan immutable snapshot and role; duplicate role cannot overwrite the first and five approvals do not automatically advance plan status.
-- [ ] Three mutations use scoped durable receipt, exact-key/decoded-JSON fingerprint, original-result replay and atomic audit plus at most one Pending event; no publisher or Workflow call.
-- [ ] Current UUID is in response header/error; original UUID remains in audit/event on replay. Missing/malformed/duplicate UUID and application-generated 401 follow published fallback.
-- [ ] Cross-scope access returns 404; missing permission returns 403.
+- [x] Create stores one scoped Draft plan with null currentSnapshotId referencing an exact scoped Published DEMAND ID/version fixture; this does not prove live producer validation. — measured 2026-10-11: `SandopLifecycleTests.Create_capture_signoff_preserves_prior_snapshot_and_draft_to_inreview` asserts `201`, `status=="Draft"` and `currentSnapshotId.ValueKind==JsonValueKind.Null`; `SandopAtomicityTests.Invalid_fixture_creates_nothing_in_five_effect_collections` covers the rejected-fixture side. Bounded slice on the test-only fixture seam — not live producer validation, exactly as the line says.
+- [x] Draft/InReview capture appends immutable fixture ID/version/checksum/time provenance, updates plan to InReview and preserves older snapshots; no DEMAND series is stored. — measured 2026-10-11: the preserve/InReview half was already covered (two captures, `items.Length==2`, `items[0]` equals the first body). The provenance and negative halves were **not asserted anywhere**, so `SandopLifecycleTests.Capture_persists_exact_fixture_provenance_and_stores_no_demand_series` was added: it reads the raw `sandop_snapshots` document and asserts `demandPlanId=="dp-2027"`, `demandPlanVersion=="3"`, `sourceChecksum=="sha256:abc"` and `sourceCapturedAt` present, then scans the whole stored document for `quantity|series|confidence|forecast` (case-insensitive) and requires none — the scan covers the full document, not just field names, because `Provenance` and `SupplyInputRefs` are persisted as JSON strings.
+- [x] InReview sign-off binds to any same-plan immutable snapshot and role; duplicate role cannot overwrite the first and five approvals do not automatically advance plan status. — measured 2026-10-11: a second sign-off for the same role answers `409 SIGN_OFF_ALREADY_RECORDED`; `All_five_role_decisions_leave_plan_in_review_and_outbox_pending` records DemandPlanning/SupplyPlanning/Finance/Operations/Executive and the plan is still `InReview` afterwards; sign-off binds to a snapshot id returned by an earlier capture of the same plan.
+- [x] Three mutations use scoped durable receipt, exact-key/decoded-JSON fingerprint, original-result replay and atomic audit plus at most one Pending event; no publisher or Workflow call. — measured 2026-10-11: 4 `SandopReplayTests` (all three mutations replay with no second effect and no fixture re-read; exact key is not trimmed; a changed payload conflicts; replay survives a new client) and 7 `SandopAtomicityTests` (receipt-insert rollback, unique-index duplicate, unknown-commit recovery, write-concern uncertainty, declared 503). `sandop_outbox` holds 7 records, every one `Status=="Pending"`; no publisher or Workflow client is composed.
+- [x] Current UUID is in response header/error; original UUID remains in audit/event on replay. Missing/malformed/duplicate UUID and application-generated 401 follow published fallback. — measured 2026-10-11: the fallback half is now driven over real HTTP by `SandopHttpContractTests.Correlation_and_authentication_follow_the_published_fallback`: a well-formed `X-Correlation-Id` comes back unchanged in the `X-Correlation-Id` response header **and** in `error.correlationId`; a missing one is minted fresh rather than refused; a malformed one and a duplicated one each answer `400 INVALID_CORRELATION_ID`; and a request with no bearer answers the application's own `401`. The replay half is covered at the module boundary by `SandopReplayTests`, which asserts `audit["CorrelationId"]` still equals the FIRST request's correlation after a replay under the same idempotency key. Both halves re-measured twice in a row, 25/25 each time.
+- [x] Cross-scope access returns 404; missing permission returns 403. — measured 2026-10-11: `SandopIsolationTests.Tenant_and_legal_entity_cross_scope_reads_are_404` asserts `404` for a foreign TenantId and for a foreign LegalEntityId; `Cross_scope_mutation_cannot_disclose_receipt_or_plan` asserts `404 UNKNOWN_SANDOP_PLAN` on the mutation path; `SandopContractTests.Module_request_gate_requires_permission_and_preserves_exact_key_and_correlation` asserts `403` from `SandopContextMiddleware.Resolve` without the permission and `0` with it. Module boundary, not gateway HTTP — the HTTP surface stays behind the §22 uptake gate.
 - [ ] Six operations and three event payloads match published SANDOP-CAPACITY 3.0.0 YAML/annex, wire `contractVersion: v1`, including 400/401/409/422/503 precedence and required/null fields.
-- [ ] MOD-0190 shares no persistence/internal DTOs with MOD-0192 and runs against frozen mocks.
-- [ ] Bounded E4 evidence links decisions to immutable fixture provenance without overriding source SoRs; live producer uptake and E5/G5 are separate gates.
+- [x] MOD-0190 shares no persistence/internal DTOs with MOD-0192 and runs against frozen mocks. — measured 2026-10-11: `SandopCapacitySeparationTests` (3 cases then; **6 as of 2026-10-12**, when the "frozen mocks" clause below stopped being an inspection and became two asserted cases with sabotage proof — see MOD-0192:202). `Neither_module_names_a_type_of_the_other` reflects over the product assemblies and walks bases, interfaces, fields, properties, method signatures and constructor parameters in both directions — 0 offenders. `The_two_modules_persist_into_disjoint_collections` reads the collection-name literals out of each module's own persistence source and asserts the two sets are non-empty and disjoint, and that neither borrows the other's prefix. "No project reference" is deliberately NOT the evidence: the five modules compile into one assembly set and share one `IMongoDatabase`, so that test would be vacuous. Sabotage proof: the same detector fires on the real `Shipments` <-> `SourceIntake` pair, so a green result is a measurement and not an empty scan. "Runs against frozen mocks" holds in both hosts — the repository suites and `SandopCapacityHttpHost` each resolve the test-only `DemandFixtureReader`, and no production implementation exists.
+- [x] Bounded E4 evidence links decisions to immutable fixture provenance without overriding source SoRs; live producer uptake and E5/G5 are separate gates. — measured 2026-10-11: this record: `docs/records/audits/2026-10/mvp6-mod0190-0192-bounded-slice-01/REPORT.md`. It links each bounded decision to immutable fixture provenance (snapshot provenance fields; checksum disagreement refused with no effect; sign-off bound to a snapshot id) and states what it is not — no HTTP surface was exercised (`WebApplicationFactory` and `HttpClient` appear zero times in either suite), the modules stay outside the composed production host, and no gateway route, UI, live DEMAND or Event Bus delivery is claimed. Live producer uptake and E5/G5 remain separate gates.
 
 ## 17. Test Expectations
 
@@ -312,7 +312,7 @@ import/export, DEMAND lookup, Workflow, notification or Capacity call.
 
 ### 23.4 Screens, routes, permissions
 
-Browser → same-origin MVC (`proxy-profile`, NET-001) → Gateway 5000 → SupplyChain 5061. The browser never calls 5000/5061 or holds a bearer token.
+Browser → same-origin MVC (`proxy-profile`, NET-001) → Gateway 5000 → SupplyChain 5066. The browser never calls 5000/5066 or holds a bearer token.
 
 | Surface | MVC route | Gateway downstream | UI display gate | Backend |
 |---|---|---|---|---|
@@ -442,7 +442,7 @@ No row has run. HTTP/browser/DB expectations follow §§13 and 16 and the tables
 | ID | Criterion | Readiness |
 |---|---|---|
 | SU-VS1 | Early vertical slice: real-Auth actor with all four keys creates a plan on the exact DEMAND fixture (201 Draft, no current snapshot), captures a snapshot (201; plan InReview; snapshot listed and marked current), records one Approved sign-off after confirmation (201); reload shows the same rows; plan stays InReview; DB +1 plan, +1 snapshot, +1 sign-off, 3 receipts, 3 audits, 3 Pending events | BLOCKED (target, gateway, permission seed, fixture seed) |
-| SU-01 | Same-origin chain: browser requests only `/SupplyChain/SandopPlans/**`; none to 5000/5061; no bearer token in the browser | BLOCKED (gateway) |
+| SU-01 | Same-origin chain: browser requests only `/SupplyChain/SandopPlans/**`; none to 5000/5066; no bearer token in the browser | BLOCKED (gateway) |
 | SU-02 | Entry page issues no list request; malformed UUID blocked client-side; unknown ID → safe-not-found | READY |
 | SU-03 | Skeleton / empty / error distinct in workspace and both tables | READY |
 | SU-04 | UAS-001 without `.read` | READY |

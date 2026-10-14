@@ -31,12 +31,12 @@ public sealed class SandopAtomicityTests
  {var(h,db,s,f)=await SandopTestHost.Open();var unreachable=new MongoClient("mongodb://127.0.0.1:57191/?serverSelectionTimeoutMS=150");var repo=new Diten.SupplyChainService.Persistence.Features.SandopPlans.SandopRepository(unreachable.GetDatabase("DitenSupplyChain_Mod0190_Test"));var result=await SandopTestHost.Mutate(repo,s,f,SandopAction.Create,null,Guid.NewGuid().ToString(),SandopTestHost.Create());Assert.Equal(503,result.Status);Assert.Equal("DEPENDENCY_UNAVAILABLE",result.Code);}
 
  [Fact]public async Task Receipt_insert_failure_after_plan_write_rolls_back_and_same_key_retries()
- {var(h,db,s,f)=await SandopTestHost.Open();var body=SandopTestHost.Create();var key="postwrite-"+Guid.NewGuid();var before=await Counts(db,s);
- var data=new BsonDocument{{"failCommands",new BsonArray{"insert"}},{"namespace","DitenSupplyChain_Mod0190_Test.sandop_receipts"},{"errorCode",2}};
+ {var app="mod0190-postwrite-"+Guid.NewGuid();var(h,db,s,f)=await SandopTestHost.Open(app);var body=SandopTestHost.Create();var key="postwrite-"+Guid.NewGuid();var before=await Counts(db,s);
+ var data=new BsonDocument{{"failCommands",new BsonArray{"insert"}},{"namespace","DitenSupplyChain_Mod0190_Test.sandop_receipts"},{"appName",app},{"errorCode",2}};
  var configured=await Configure(db,data);BsonDocument disabled;SandopResult failed;
  try{failed=await SandopTestHost.Mutate(h,s,f,SandopAction.Create,null,key,body);}
  finally{disabled=await Disable(db);}
- Assert.True(disabled["count"].ToInt32()>configured["count"].ToInt32());Assert.Equal(503,failed.Status);Assert.Equal("DEPENDENCY_UNAVAILABLE",failed.Code);
+ var hits=disabled["count"].ToInt32()-configured["count"].ToInt32();Console.WriteLine($"Sandop fail point fired {hits} time(s)");Assert.Equal(1,hits);Assert.Equal(503,failed.Status);Assert.Equal("DEPENDENCY_UNAVAILABLE",failed.Code);
  Assert.Equal(before,await Counts(db,s));
  var retried=await SandopTestHost.Mutate(h,s,f,SandopAction.Create,null,key,body);Assert.Equal(201,retried.Status);
  Assert.Equal(new long[]{1,0,1,1,1},await Counts(db,s));
@@ -51,12 +51,12 @@ public sealed class SandopAtomicityTests
  }
 
  [Fact]public async Task Unknown_commit_without_receipt_returns_unresolved_then_exact_key_recovers()
- {var(h,db,s,f)=await SandopTestHost.Open();var body=SandopTestHost.Create();var key="unknown-"+Guid.NewGuid();
- var data=new BsonDocument{{"failCommands",new BsonArray{"commitTransaction"}},{"errorCode",91},{"errorLabels",new BsonArray{"UnknownTransactionCommitResult"}}};
+ {var app="mod0190-unknown-"+Guid.NewGuid();var(h,db,s,f)=await SandopTestHost.Open(app);var body=SandopTestHost.Create();var key="unknown-"+Guid.NewGuid();
+ var data=new BsonDocument{{"failCommands",new BsonArray{"commitTransaction"}},{"appName",app},{"errorCode",8},{"errorLabels",new BsonArray{"UnknownTransactionCommitResult"}}};
  var configured=await Configure(db,data,3);BsonDocument disabled;SandopResult uncertain;
  try{uncertain=await SandopTestHost.Mutate(h,s,f,SandopAction.Create,null,key,body);}
  finally{disabled=await Disable(db);}
- Assert.True(disabled["count"].ToInt32()>configured["count"].ToInt32());Assert.Equal(503,uncertain.Status);Assert.Equal("COMMIT_RESULT_UNRESOLVED",uncertain.Code);
+ var hits=disabled["count"].ToInt32()-configured["count"].ToInt32();Console.WriteLine($"Sandop fail point fired {hits} time(s)");Assert.Equal(1,hits);Assert.Equal(503,uncertain.Status);Assert.Equal("COMMIT_RESULT_UNRESOLVED",uncertain.Code);
  // A failed commit can leave an inactive server transaction. Resolve the isolated test session before retrying.
  await db.Client.GetDatabase("admin").RunCommandAsync<BsonDocument>(new BsonDocument("killAllSessions",new BsonArray()));
  var recoveredDb=FreshDatabase();
@@ -68,12 +68,12 @@ public sealed class SandopAtomicityTests
  }
 
  [Fact]public async Task Committed_write_concern_uncertainty_resolves_original_receipt()
- {var(h,db,s,f)=await SandopTestHost.Open();var body=SandopTestHost.Create();var key="committed-"+Guid.NewGuid();var originalCorrelation=Guid.NewGuid();
- var data=new BsonDocument{{"failCommands",new BsonArray{"commitTransaction"}},{"writeConcernError",new BsonDocument{{"code",91},{"errmsg","injected commit acknowledgement loss"}}},{"errorLabels",new BsonArray{"UnknownTransactionCommitResult"}}};
+ {var app="mod0190-committed-"+Guid.NewGuid();var(h,db,s,f)=await SandopTestHost.Open(app);var body=SandopTestHost.Create();var key="committed-"+Guid.NewGuid();var originalCorrelation=Guid.NewGuid();
+ var data=new BsonDocument{{"failCommands",new BsonArray{"commitTransaction"}},{"appName",app},{"writeConcernError",new BsonDocument{{"code",64},{"errmsg","injected commit acknowledgement loss"}}},{"errorLabels",new BsonArray{"UnknownTransactionCommitResult"}}};
  var configured=await Configure(db,data);BsonDocument disabled;SandopResult resolved;
  try{resolved=await SandopTestHost.Mutate(h,s,f,SandopAction.Create,null,key,body,originalCorrelation);}
  finally{disabled=await Disable(db);}
- Assert.True(disabled["count"].ToInt32()>configured["count"].ToInt32());
+ var hits=disabled["count"].ToInt32()-configured["count"].ToInt32();Console.WriteLine($"Sandop fail point fired {hits} time(s)");Assert.Equal(1,hits);
  Assert.True(resolved.Status is 201 or 503,$"Expected visible receipt replay or unresolved commit, got {resolved.Status} {resolved.Code}");
  if(resolved.Status==503)Assert.Equal("COMMIT_RESULT_UNRESOLVED",resolved.Code);
  var recoveredDb=FreshDatabase();
