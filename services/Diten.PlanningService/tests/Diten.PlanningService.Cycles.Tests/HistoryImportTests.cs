@@ -113,6 +113,16 @@ public sealed class HistoryImportTests
     }
 
     [Fact]
+    public async Task Create_RejectsNullCoverageEntry()
+    {
+        var store = new MemoryStore();
+        var result = await Handler(store).Handle(Command(Header + "\n" + Row(),
+            coverage: "[null]"u8.ToArray()), default);
+        Assert.Equal(400, result.StatusCode);
+        Assert.Empty(store.Batches);
+    }
+
+    [Fact]
     public async Task Create_RejectsDuplicateDeclaredWeek()
     {
         var store = new MemoryStore();
@@ -228,7 +238,8 @@ public sealed class HistoryImportTests
         batch.AuditTrail.Add(new DemandHistoryImportAuditAction
         {
             Action = "BatchApproved", ActorId = OtherActor, OccurredAt = DateTimeOffset.UtcNow,
-            Detail = "coverage=" + batch.CoverageFileSha256
+            Detail = "coverage=" + batch.CoverageFileSha256 +
+                ";content=" + batch.CoverageContentSha256
         });
         var accepted = new MemoryAcceptedStore();
 
@@ -1072,7 +1083,8 @@ public sealed class HistoryImportTests
                     Action = decision == ImportBatchReviewState.Approved ? "BatchApproved" : "BatchRejected",
                     ActorId = reviewerId, OccurredAt = decidedAt,
                     Reason = reason, RequestKey = requestKey,
-                    Detail = "coverage=" + current.CoverageFileSha256
+                    Detail = "coverage=" + current.CoverageFileSha256 +
+                        ";content=" + current.CoverageContentSha256
                 });
                 return Task.FromResult<DemandHistoryImportBatch?>(current);
             }

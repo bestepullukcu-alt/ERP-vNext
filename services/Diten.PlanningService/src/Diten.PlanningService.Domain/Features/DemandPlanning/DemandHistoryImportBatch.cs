@@ -72,6 +72,7 @@ public sealed class DemandHistoryImportBatch : EntityBase
     public string SourceFileName { get; set; } = string.Empty;
     public string SourceFileSha256 { get; set; } = string.Empty;
     public string CoverageFileSha256 { get; set; } = string.Empty;
+    public string CoverageContentSha256 { get; set; } = string.Empty;
     public List<ImportWeekCoverage> CoverageWeeks { get; set; } = [];
     public DateOnly ScopeFrom { get; set; }
     public DateOnly ScopeThrough { get; set; }
@@ -97,6 +98,7 @@ public sealed class DemandHistoryImportBatch : EntityBase
     public bool IsEligibleForIndependentReview() =>
         ReviewState == ImportBatchReviewState.Pending && !ApprovalBlocked &&
         CoverageFileSha256.Length == 64 && CoverageWeeks.Count > 0 &&
+        CoverageContentSha256 == ImportCoverageFingerprint.Compute(CoverageWeeks) &&
         ValidationState != ImportBatchValidationState.Blocked &&
         !FileIssues.Any(x => x.Severity == ImportIssueSeverity.Blocking) &&
         !Rows.Any(x => x.Issues.Any(y => y.Severity == ImportIssueSeverity.Blocking)) &&
@@ -105,10 +107,12 @@ public sealed class DemandHistoryImportBatch : EntityBase
     public bool IsEligibleForAcceptedHistory() =>
         ReviewState == ImportBatchReviewState.Approved && !ApprovalBlocked &&
         CoverageFileSha256.Length == 64 && CoverageWeeks.Count > 0 &&
+        CoverageContentSha256 == ImportCoverageFingerprint.Compute(CoverageWeeks) &&
         ValidationState != ImportBatchValidationState.Blocked &&
         !FileIssues.Any(x => x.Severity == ImportIssueSeverity.Blocking) &&
         !Rows.Any(x => x.Issues.Any(y => y.Severity == ImportIssueSeverity.Blocking)) &&
         !QuarantineCases.Any(x => x.State == "Open") &&
         AuditTrail.Any(x => x.Action == "BatchApproved" && x.ActorId == ReviewedByActorId &&
-            x.Detail.Contains($"coverage={CoverageFileSha256}", StringComparison.Ordinal));
+            x.Detail.Contains($"coverage={CoverageFileSha256};content={CoverageContentSha256}",
+                StringComparison.Ordinal));
 }

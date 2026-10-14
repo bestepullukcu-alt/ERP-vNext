@@ -45,7 +45,7 @@ public sealed class AcceptedDemandHistoryMongoIntegrationTests
     private static async Task<(DemandHistoryImportBatch Batch, AcceptedDemandHistoryRow Row,
         DemandHistoryAcceptanceAudit Audit)> SeedAsync(DemandPlanningMongoContext context,
         Guid? tenant = null, Guid? legalEntity = null, Guid? sku = null,
-        string unit = "CASE", bool pending = false)
+        string unit = "CASE", bool pending = false, bool includeZeroWeek = false)
     {
         var tenantId = tenant ?? Guid.NewGuid();
         var legalEntityId = legalEntity ?? Guid.NewGuid();
@@ -82,9 +82,18 @@ public sealed class AcceptedDemandHistoryMongoIntegrationTests
             AuditTrail = [new DemandHistoryImportAuditAction
             {
                 Action = "BatchApproved", ActorId = reviewer, OccurredAt = DateTimeOffset.UtcNow,
-                Detail = "coverage=" + new string('B', 64)
+                Detail = string.Empty
             }]
         };
+        if (includeZeroWeek)
+            batch.CoverageWeeks.Add(new ImportWeekCoverage
+            {
+                SkuId = skuId, SkuLevel = "Gsku", WarehouseId = "wh-01", UomId = unit,
+                WeekStart = new DateOnly(2026, 10, 12)
+            });
+        batch.CoverageContentSha256 = ImportCoverageFingerprint.Compute(batch.CoverageWeeks);
+        batch.AuditTrail[0].Detail = "coverage=" + batch.CoverageFileSha256 +
+            ";content=" + batch.CoverageContentSha256;
         await context.HistoryImportBatches.InsertOneAsync(batch);
         var source = batch.Rows[0];
         var acceptedAt = DateTimeOffset.UtcNow;
@@ -247,5 +256,69 @@ public sealed class AcceptedDemandHistoryMongoIntegrationTests
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             store.ListAsync(batch.TenantId, batch.LegalEntityId, 0, 50, default));
+    }
+
+    [ManualDraftMongoFact]
+    public async Task WeeklyReader_RequiresSeparateRowAcceptanceBeforeDemandOrZero()
+    {
+        var (context, _) = Open();
+        var (batch, row, audit) = await SeedAsync(context, pending: true, includeZeroWeek: true);
+        var reader = new AcceptedWeeklyHistoryMongoReader(context);
+        var before = await reader.ReadAsync(batch.TenantId, batch.LegalEntityId,
+            row.SkuId, row.SkuLevel, row.WarehouseId, new DateOnly(2026, 10, 19), 2, default);
+        Assert.Equal(AcceptedWeekState.IncompleteAcceptance, before.Weeks[0].State);
+        Assert.Equal(AcceptedWeekState.VerifiedZeroDemand, before.Weeks[1].State);
+
+        var store = new AcceptedDemandHistoryMongoStore(context,
+            new HistoryAcceptanceAuditMongoWriter(context));
+        Assert.Equal(HistoryAcceptanceOutcome.Created,
+            (await store.AcceptAsync(batch, row, audit, default)).Outcome);
+        var after = await reader.ReadAsync(batch.TenantId, batch.LegalEntityId,
+            row.SkuId, row.SkuLevel, row.WarehouseId, new DateOnly(2026, 10, 19), 2, default);
+        Assert.Equal(AcceptedWeekState.VerifiedDemand, after.Weeks[0].State);
+        Assert.Equal(row.Id, Assert.Single(after.Weeks[0].Events).AcceptedRowId);
+        Assert.True(after.Weeks[0].UnitVerificationPending);
+        Assert.Equal(AcceptedWeekState.VerifiedZeroDemand, after.Weeks[1].State);
+        Assert.Empty(after.Weeks[1].Events);
+    }
+
+    [ManualDraftMongoFact]
+    public async Task WeeklyReader_UnknownStockOrTamperedCoverageNeverBecomesZero()
+    {
+        var (context, _) = Open();
+        var (batch, row, _) = await SeedAsync(context, pending: true, includeZeroWeek: true);
+        var reader = new AcceptedWeeklyHistoryMongoReader(context);
+        await context.HistoryImportBatches.UpdateOneAsync(x => x.Id == batch.Id,
+            Builders<DemandHistoryImportBatch>.Update.Set("CoverageWeeks.1.StockState",
+                ImportWeekStockState.Unknown));
+        var tampered = await reader.ReadAsync(batch.TenantId, batch.LegalEntityId,
+            row.SkuId, row.SkuLevel, row.WarehouseId, new DateOnly(2026, 10, 19), 2, default);
+        Assert.Equal(AcceptedWeekState.Quarantined, tampered.Weeks[1].State);
+
+        var saved = await context.HistoryImportBatches.Find(x => x.Id == batch.Id).SingleAsync();
+        saved.CoverageContentSha256 = ImportCoverageFingerprint.Compute(saved.CoverageWeeks);
+        saved.AuditTrail[0].Detail = "coverage=" + saved.CoverageFileSha256 +
+            ";content=" + saved.CoverageContentSha256;
+        await context.HistoryImportBatches.ReplaceOneAsync(x => x.Id == batch.Id, saved);
+        var unknown = await reader.ReadAsync(batch.TenantId, batch.LegalEntityId,
+            row.SkuId, row.SkuLevel, row.WarehouseId, new DateOnly(2026, 10, 19), 2, default);
+        Assert.Equal(AcceptedWeekState.StockoutUnresolved, unknown.Weeks[1].State);
+    }
+
+    [ManualDraftMongoFact]
+    public async Task WeeklyReader_UndeclaredWeeksAndOtherTenantStayUnknown()
+    {
+        var (context, _) = Open();
+        var (batch, row, _) = await SeedAsync(context, pending: true, includeZeroWeek: true);
+        var reader = new AcceptedWeeklyHistoryMongoReader(context);
+        var history = await reader.ReadAsync(batch.TenantId, batch.LegalEntityId,
+            row.SkuId, row.SkuLevel, row.WarehouseId, new DateOnly(2026, 10, 26), 4, default);
+        Assert.Equal(new[] { AcceptedWeekState.Unknown, AcceptedWeekState.IncompleteAcceptance,
+            AcceptedWeekState.VerifiedZeroDemand, AcceptedWeekState.Unknown },
+            history.Weeks.Select(week => week.State));
+
+        var otherTenant = await reader.ReadAsync(Guid.NewGuid(), batch.LegalEntityId,
+            row.SkuId, row.SkuLevel, row.WarehouseId, new DateOnly(2026, 10, 26), 4, default);
+        Assert.All(otherTenant.Weeks, week => Assert.Equal(AcceptedWeekState.Unknown, week.State));
     }
 }

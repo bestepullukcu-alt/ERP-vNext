@@ -92,7 +92,8 @@ public sealed class CreateDemandHistoryImportBatchHandler :
             return Response<HistoryImportBatchResult>.Fail("Coverage declaration is invalid.");
         }
         if (coverage.Count is < 1 or > 2_000 || coverage.Any(week =>
-                week.SkuId == Guid.Empty || week.SkuLevel is not ("Gsku" or "Lsku" or "FinishedGood") ||
+                week is null || week.SkuId == Guid.Empty ||
+                week.SkuLevel is not ("Gsku" or "Lsku" or "FinishedGood") ||
                 string.IsNullOrWhiteSpace(week.WarehouseId) ||
                 !command.WarehouseScope.Contains(week.WarehouseId, StringComparer.Ordinal) ||
                 string.IsNullOrWhiteSpace(week.UomId) ||
@@ -117,6 +118,7 @@ public sealed class CreateDemandHistoryImportBatchHandler :
             SourceFileName = command.SourceFileName.Trim(),
             SourceFileSha256 = fileHash,
             CoverageFileSha256 = coverageHash,
+            CoverageContentSha256 = ImportCoverageFingerprint.Compute(coverage),
             CoverageWeeks = coverage,
             ScopeFrom = command.ScopeFrom,
             ScopeThrough = command.ScopeThrough,
@@ -204,7 +206,7 @@ public sealed class CreateDemandHistoryImportBatchHandler :
         {
             Action = "FileBatchValidated", ActorId = command.ActorId,
             OccurredAt = batch.ValidatedAt,
-            Detail = $"rows={batch.Rows.Count};quarantined={batch.QuarantineCases.Count};state={batch.ValidationState};coverage={coverageHash}"
+            Detail = $"rows={batch.Rows.Count};quarantined={batch.QuarantineCases.Count};state={batch.ValidationState};coverage={coverageHash};content={batch.CoverageContentSha256}"
         });
 
         HistoryImportInsertResult result;

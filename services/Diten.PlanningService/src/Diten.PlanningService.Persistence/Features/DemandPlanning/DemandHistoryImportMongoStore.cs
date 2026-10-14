@@ -107,7 +107,7 @@ public sealed class DemandHistoryImportMongoStore : IHistoryImportBatchStore
         {
             Action = decision == ImportBatchReviewState.Approved ? "BatchApproved" : "BatchRejected",
             ActorId = reviewerId, OccurredAt = decidedAt,
-            Detail = $"state={decision};version={expected.Version + 1};coverage={expected.CoverageFileSha256}",
+            Detail = $"state={decision};version={expected.Version + 1};coverage={expected.CoverageFileSha256};content={expected.CoverageContentSha256}",
             RequestKey = requestKey, Reason = reason
         };
         var update = Builders<DemandHistoryImportBatch>.Update

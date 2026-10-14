@@ -109,6 +109,7 @@ public static class DemandPlanningServiceCollectionExtensions
         services.AddSingleton<IHistoryImportReviewAuditStore, DemandHistoryReviewAuditMongoStore>();
         services.AddSingleton<IHistoryAcceptanceAuditWriter, HistoryAcceptanceAuditMongoWriter>();
         services.AddSingleton<IAcceptedDemandHistoryStore, AcceptedDemandHistoryMongoStore>();
+        services.AddSingleton<IAcceptedWeeklyHistoryReader, AcceptedWeeklyHistoryMongoReader>();
         services.AddSingleton<IAuthorizationMiddlewareResultHandler, DemandReviewAuthorizationResultHandler>();
         services.AddSingleton<IHistoryImportFileParser, CsvHistoryImportFileParser>();
         services.AddHttpContextAccessor();

@@ -128,6 +128,7 @@ public sealed class HistoryImportMongoIntegrationTests
             batch.CoverageFileSha256 = string.Empty;
             batch.CoverageWeeks.Clear();
         }
+        batch.CoverageContentSha256 = ImportCoverageFingerprint.Compute(batch.CoverageWeeks);
         Assert.Equal(HistoryImportInsertOutcome.Created,
             (await store.InsertOrGetAsync(batch, default)).Outcome);
         return new Fixture(context, store, audit, tenantId, legalEntityId, batch.Id);
@@ -164,7 +165,8 @@ public sealed class HistoryImportMongoIntegrationTests
         Assert.NotNull(saved.ReviewedAt);
         Assert.Single(saved.AuditTrail, x => x.Action == "BatchApproved" &&
             x.ActorId == Reviewer && x.RequestKey == "review-1" &&
-            x.Detail.Contains("coverage=" + saved.CoverageFileSha256, StringComparison.Ordinal));
+            x.Detail.Contains("coverage=" + saved.CoverageFileSha256 +
+                ";content=" + saved.CoverageContentSha256, StringComparison.Ordinal));
         Assert.Single(saved.Rows); // Approval does not create accepted demand history.
     }
 
