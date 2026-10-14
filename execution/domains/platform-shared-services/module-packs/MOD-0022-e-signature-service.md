@@ -1736,6 +1736,40 @@ measured; `/internal/esign-tickets/consume` and `/api/internal/esign/actions/reg
   keys to existing roles. **O-ROLE1-4:** `how-to-add-a-module.md` step 3 still describes the old behaviour (docs follow-up).
 - **Owner decision 2026-10-12 — O-ROLE1-1 and O-ROLE1-2 stay as they are**, as deliberate exceptions to "the system adds no permission by itself": the Admin reconciler keeps re-adding its four self-service keys to every tenant Admin role at start-up (lock-out protection), and the module-licence sync keeps granting / revoking a licensed module's keys on the Admin and Viewer roles (entitlement-driven). The default-role template itself applies only at role creation (ROLE1).
 
+### SEC-ESIGN1 — closing-line fixes 1, 4, 5 (WP-MVP1-SEC-ESIGN1, 2026-10-14, pending CT); 6 BLOCKED
+
+- **Branch:** `fix/mvp1-sec-esign1` from `acff1f7be`. Evidence: `docs/records/audits/2026-10/mvp1-sec-esign1-evidence-2026-10-14.md`.
+- **1 — request list order** (`fd88f8832`). `ESignatureRequestListOrderMongoTests` on the real `ESignRequestRepository`
+  and a test-owned replica set:
+  - ListForSignerAsync = exactly b, c2, c1, a (due date ascending, then the newer request first);
+  - ListOverdueAsync = waiting requests past due, ascending;
+  - another tenant's request never appears.
+  - No production change.
+- **4 — `[HasAnyPermission]`** (`8687da0a2`).
+  - Measured: `HasPermission` is AllowMultiple and several of them are AND.
+  - New `HasAnyPermissionAttribute`: any one key is enough. Each key is evaluated by a real `HasPermissionAttribute` (401, the
+    platform actor rule and alias matching are unchanged). A1 registers every key.
+  - `Image` (3 keys) and `ListMeanings` (2 keys) use it; the in-body checks are gone.
+  - The baseline-red `LoginOnlyEndpointGuardTests` "no permission key" guard is green.
+- **5 — internal allow-list** (`a013a621e`).
+  - The guard (`LoginOnlyEndpointGuardTests.AnonymousInternalControllers`) is on this branch AND on origin/main (identical
+    file), and it was red here. `InternalESignActionsController` was added with its reason.
+  - `InternalESignActionsRegisterAuthTests`: no key, a wrong key or a tenant token → 401 and nothing registered.
+  - The round-2 version of the list does not carry the entry (O-ESIGN1-2).
+- **6 — BLOCKED (O-ESIGN1-1).** No existing page-level "?" help component exists to reuse (not here, not on main, not on
+  round-2, not in any branch history). Options: A = CT approves one shared component; B = the existing inline
+  `bx-info-circle` note.
+- **Sabotages.** Each restored by writing the original bytes back; green again; porcelain clean.
+  - Required, all red: 1a ThenBy, 1b SortByDescending, 4a attribute removed, 4b all-of (7 red).
+  - Extra, all red: 1c overdue descending, 5a allow-list line removed, 5b key check off.
+- **Tests.**
+  - Platform `~ESign` 163 → **176**.
+  - Platform Application 6041 → **6064**; red 262 → 260 (no new red; 252 of the rest are the pre-existing
+    `DITEN_PLATFORM_TEST_MONGO_URI is not set` fail-closed tests).
+  - Architecture 69/77 (same 8 pre-existing red); Web 1458/1458.
+- **FU proposal FU-0022-AUD-01.** AuthService `ConsumeESignTicketCommand` / `IssueESignWindowTicketCommand` are red in the
+  AUD-001 architecture test.
+
 ## 20. Follow-up Items
 
 - MOD-0175 pack: consumes ESIGN-BUNDLE; quarantine signable actions (`inventory.quarantine.release / reject / block /
