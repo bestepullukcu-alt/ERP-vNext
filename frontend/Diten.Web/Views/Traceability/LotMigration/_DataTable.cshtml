@@ -1,0 +1,28 @@
+@using Diten.Web.Views.Traceability.LotMigration
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LotMigrationIndex> Localizer
+@{
+    // Aktarma rows (pack §11.5): one per SKU + typed text. CLIENT data: the decisions are page state until the one commit
+    // (ASSUMPTION-0174-11), and "Tüm önerileri uygula" / the confirmation count need every group — the page loads them all
+    // once (/LotMigration/groups). No selection column, no export: a decision is a row action, the commit is the toolbar's.
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-lotmigration",
+        DataMode = "client",
+        Slug = "lotmigration",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["Col.Product"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Col.Typed"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["Col.Moves"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Col.OnHand"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Col.Suggestion"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Col.Decision"].Value, CssClass = "min-tablet-l" }
+        ],
+        ActionsHeader = Localizer["Col.Action"].Value
+    };
+}
+
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />

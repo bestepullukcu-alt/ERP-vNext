@@ -156,7 +156,7 @@ public sealed class RegisterCommandHandlerTests
     // The Viewer role exists, so the ensure-defaults fallback must not run.
     private sealed class UnexpectedRoleProvisioning : IRoleProvisioningService
     {
-        public Task EnsureDefaultRolesAsync(Guid tenantId, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task EnsureDefaultRolesAsync(Guid tenantId, string trigger, CancellationToken ct = default) => throw new NotSupportedException();
     }
 
     private sealed class FakeTokenService : ITokenService

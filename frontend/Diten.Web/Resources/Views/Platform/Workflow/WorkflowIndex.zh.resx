@@ -209,4 +209,10 @@
   <data name="BpmnImportFailed" xml:space="preserve"><value>Could not import the BPMN XML.</value></data>
   <data name="ExclusiveGatewayWarning" xml:space="preserve"><value>Exclusive gateways are accepted in the diagram but not yet mapped to runtime branches.</value></data>
   <data name="BpmnLibraryMissing" xml:space="preserve"><value>The BPMN designer library failed to load.</value></data>
+  <data name="Workflow.Designer.SignatureRequired" xml:space="preserve"><value>需要签名</value></data>
+  <data name="Workflow.Designer.SignatureMeaning" xml:space="preserve"><value>签名含义</value></data>
+  <data name="Workflow.Designer.SignatureMeaningSelect" xml:space="preserve"><value>请选择含义</value></data>
+  <data name="Workflow.Designer.SignatureMeaningRequired" xml:space="preserve"><value>请为每个需要签名的步骤选择一个有效的签名含义。</value></data>
+  <data name="Workflow.Designer.SignatureHint" xml:space="preserve"><value>审批人在 WorkCenter 中审批时进行电子签名（密码 + 含义）。</value></data>
+  <data name="Workflow.Designer.SignatureMeaningsUnavailable" xml:space="preserve"><value>无法加载签名含义。</value></data>
 </root>

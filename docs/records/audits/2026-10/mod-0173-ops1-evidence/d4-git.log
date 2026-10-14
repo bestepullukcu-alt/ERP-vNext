@@ -1,0 +1,31 @@
+# D4 — 2026-10-02T10:03:53+03:00
+## git log --stat 2b13548ed
+2b13548ed bestepullukcu-alt <bestepullukcu@gmail.com>
+feat(ops): OPS1 — run scripts start Prism product-master mock (4010) and InventoryService (5066)
+
+ .../2026-10/mod-0173-ops1-evidence/README.md       |  22 +++
+ .../2026-10/mod-0173-ops1-evidence/d1-diff.log     | 199 +++++++++++++++++++++
+ .../2026-10/mod-0173-ops1-evidence/d2-bash-n.log   |   6 +
+ .../2026-10/mod-0173-ops1-evidence/d2-ps-parse.log |  10 ++
+ .../mod-0173-ops1-evidence/d3-whatif-run-diten.log |  62 +++++++
+ .../mod-0173-ops1-evidence/d3-whatif-run_all.log   |  40 +++++
+ .../mod-0173-ops1-evidence/d3-whatif-run_watch.log |  22 +++
+ .../d3-whatif-watch-diten.log                      |  51 ++++++
+ .../d3b-prism-argform-4099.log                     |  10 ++
+ .../incident-unguarded-whatif.md                   |  26 +++
+ .../mod-0173-ops1-evidence/missing-services.md     |  20 +++
+ run-diten.sh                                       |  33 ++++
+ run_all.sh                                         |  16 ++
+ run_watch.sh                                       |  13 ++
+ watch-diten.ps1                                    |  24 ++-
+ 15 files changed, 553 insertions(+), 1 deletion(-)
+
+## paths outside Allowed (4 scripts + docs/records/audits/2026-10/mod-0173-ops1-evidence):
+(none)
+
+## protected sample: services/** gateway/** frontend/** AGENTS.md .antigravity/** changed in 2b13548ed:
+0
+
+## git status --porcelain (before this file is committed):
+?? docs/records/audits/2026-10/mod-0173-ops1-evidence/d4-git.log
+(empty = clean)

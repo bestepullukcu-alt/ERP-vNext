@@ -145,6 +145,10 @@ builder.Services.AddDitenObservability(
         healthChecks.AddCheck<Diten.Platform.API.Observability.BusinessReferenceDataProviderReadinessHealthCheck>(
             "business_reference_data_provider",
             tags: new[] { "ready" });
+        // MOD-0022 CT-D4 — Degraded (never Unhealthy) when the evidence storage root is unset outside Development.
+        healthChecks.AddCheck<Diten.Platform.API.Observability.ESignatureContentStorageHealthCheck>(
+            "esign_content_storage",
+            tags: new[] { "ready" });
         if (string.Equals(
                 builder.Configuration["Eventing:Transport"],
                 "RabbitMQ",
@@ -219,7 +223,11 @@ builder.Services.AddScoped<Diten.Platform.API.Observability.ICorrelationContext,
 builder.Services.AddScoped<Diten.Platform.API.Authorization.Explain.ISelfAccessExplainService, Diten.Platform.API.Authorization.Explain.SelfAccessExplainService>();
 // The Development API-serving profile omits only startup maintenance/provisioning workers. Request-time
 // authentication, tenant isolation, authorization, BRD readiness, audit/outbox and eventing remain registered.
+// Main sync 2026-10-13: main's MOD-0022 E5W2 signable-action registration worker is a provisioning worker — it joined
+// that list (ApiStartupExecutionMode); its CT-D4 storage warning only logs, so it stays here for every profile.
 apiStartupExecutionMode.AddApiStartupMaintenanceServices(builder.Services);
+// MOD-0022 CT-D4 — one startup warning when the e-signature evidence storage root is unset outside Development.
+builder.Services.AddHostedService<Diten.Platform.API.Observability.ESignatureContentStorageStartupWarning>();
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<Diten.Platform.API.Middleware.GlobalExceptionHandler>();
 

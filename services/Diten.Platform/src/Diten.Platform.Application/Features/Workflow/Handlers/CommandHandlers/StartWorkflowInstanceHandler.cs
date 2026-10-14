@@ -231,6 +231,8 @@ public sealed class StartWorkflowInstanceHandler
             IdempotencyKey = idempotencyKey,
             CommentRequired = firstStep.CommentRequired || request.Request.CommentRequired,
             EvidenceRequired = firstStep.EvidenceRequired || request.Request.EvidenceRequired,
+            SignatureRequired = firstStep.SignatureRequired,
+            SignatureMeaning = firstStep.SignatureMeaning,
             DueAt = dueAt
         };
 

@@ -1,0 +1,75 @@
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.Quarantine.Quarantine> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["Quarantine.Retest.Title"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    MOD-0175 Q5 — Yeniden Test Kuyruğu (RETESTQUEUE, pack §11.3, KQ-H). DataTable v2 SERVER mode → listRetest (the horizon is
+    one answer; /Quarantine/list/retest pages it). Row action "Karantinaya Al" = quarantineStock mode Retest (every AVAILABLE
+    bucket of the lot → QUARANTINE, no workflow — the safety direction); "{KRN} →" opens the hold the lot already has.
+    UAS-001 — nothing without quarantine.holds.read.
+*@
+@if (!Perms.Has("quarantine.holds.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["Quarantine.Retest.Title"].Value" />
+    return;
+}
+
+@{
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["Quarantine.Common.Company.Label"].Value;
+    company.Placeholder = Localizer["Quarantine.Common.Company.Placeholder"].Value;
+    company.SelectHint = Localizer["Quarantine.Common.Company.Required"].Value;
+    company.UnavailableText = Localizer["Quarantine.Common.Company.Unavailable"].Value;
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-quarantine-retest",
+        DataMode = "server",
+        Slug = "quarantine-retest",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["Quarantine.Col.Product"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["Quarantine.Col.Lot"].Value, CssClass = "min-tablet-l" },
+            new DataTableColumnViewModel { Header = Localizer["Quarantine.Col.RetestDate"].Value, CssClass = "min-tablet-l" },
+            new DataTableColumnViewModel { Header = Localizer["Quarantine.Col.OnHand"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Quarantine.Col.Status"].Value, CssClass = "all" }
+        ],
+        ActionsHeader = Localizer["Quarantine.Col.Actions"].Value
+    };
+}
+
+<partial name="~/Views/Quarantine/_Header.cshtml" model="@("RETESTQUEUE")" />
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready)
+{
+    <div class="alert alert-warning d-flex gap-2 py-2" role="note">
+        <i class="bx bx-lock-alt mt-1"></i><span>@Localizer["Quarantine.Retest.Info"]</span>
+    </div>
+    <p class="text-muted small mb-3" id="qr-retest-horizon">@Localizer["Quarantine.Retest.Horizon", 30]</p>
+    <div id="qr-labels-unavailable" class="alert alert-warning d-none" role="status">@Localizer["Quarantine.Common.NamesUnavailable"]</div>
+    <div id="qr-list-error" class="alert alert-danger d-none" role="alert"></div>
+
+    @* Contract markers are rendered by _ListShell: <partial name="_TableSkeleton" /> (id="skeleton-loader"), <table data-dt-standard="v2" data-dt-data-mode="server"> *@
+    <partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />
+    <form id="qr-antiforgery" class="d-none">@Html.AntiForgeryToken()</form>
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    <partial name="~/Views/Quarantine/_QuarantineActions.cshtml" />
+    <partial name="~/Views/Quarantine/_QuarantineL10n.cshtml" />
+    @if (company.Ready)
+    {
+        <script src="~/assets/js/shared/premium-modal.js" asp-append-version="true"></script>
+        <script src="~/assets/js/Quarantine/retest.js" asp-append-version="true"></script>
+    }
+}

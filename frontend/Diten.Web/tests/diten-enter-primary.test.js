@@ -441,11 +441,17 @@ const UNMARKED_PANELS = {
 const SCE = "SCE / MVP-6 (gmg-10)";
 const CRM = "CRM";
 const MAIN_SYNC_WHY = "main-sync (2026-10-12) ile geldi; sahibi başka ekip; işaret sahibin işi";
+// WP-LANE-MAIN-SYNC-02 — the second sync (2026-10-14, origin/main 2af4e55a9): the same rule, its own date.
+const STOCK = "Stok / MVP-1 (MOD-0173…0175)";
+const MANUFACTURING = "Üretim / MVP-3 (MOD-0193)";
+const MAIN_SYNC_2_WHY = "main-sync (2026-10-14) ile geldi; sahibi başka ekip; işaret sahibin işi";
 const MAIN_SYNC_UNMARKED = {
   "CRM/CyclePeriods/_PeriodPanel.cshtml": { owner: CRM, why: MAIN_SYNC_WHY },
   "CRM/KnowledgePaths/Workspace.cshtml": { owner: CRM, why: MAIN_SYNC_WHY },
   "CRM/VisitPlanning/_DoctorPanel.cshtml": { owner: CRM, why: MAIN_SYNC_WHY },
   "CRM/VisitPlanning/_NewPlanDrawer.cshtml": { owner: CRM, why: MAIN_SYNC_WHY },
+  "Inventory/Locations/_CreateEditOffcanvas.cshtml": { owner: STOCK, why: MAIN_SYNC_2_WHY },
+  "Manufacturing/Boms/Details.cshtml": { owner: MANUFACTURING, why: MAIN_SYNC_2_WHY },
   "SupplyChain/Carriers/_ChangeStatusOffcanvas.cshtml": { owner: SCE, why: MAIN_SYNC_WHY },
   "SupplyChain/Carriers/_CreateEditOffcanvas.cshtml": { owner: SCE, why: MAIN_SYNC_WHY },
   "SupplyChain/Claims/Index.cshtml": { owner: SCE, why: MAIN_SYNC_WHY },
@@ -460,6 +466,7 @@ const MAIN_SYNC_UNMARKED = {
 // Keyed by file + label + its ordinal among the same label in that file (FIX1), never the line number: an unrelated
 // edit above the button does not move the key, and two same-labelled buttons in one file are two keys.
 const MAIN_SYNC_CONSEQUENTIAL = {
+  'Manufacturing/Boms/Details.cshtml @Localizer["Action Release"] #1': { owner: MANUFACTURING, why: `${MAIN_SYNC_2_WHY}; chord olmalı, sahibine iletilecek` },
   'SupplyChain/Carriers/_ChangeStatusOffcanvas.cshtml @Localizer["Confirm Status Change"] #1': { owner: SCE, why: `${MAIN_SYNC_WHY}; chord olmalı, sahibine iletilecek` },
   'SupplyChain/Claims/Index.cshtml @Localizer["Submit Transition"] #1': { owner: SCE, why: `${MAIN_SYNC_WHY}; chord olmalı, sahibine iletilecek` },
   'SupplyChain/Returns/Index.cshtml @Localizer["Submit Transition"] #1': { owner: SCE, why: `${MAIN_SYNC_WHY}; chord olmalı, sahibine iletilecek` },
@@ -486,6 +493,8 @@ const LIST_KEYS = {
     "CRM/KnowledgePaths/Workspace.cshtml",
     "CRM/VisitPlanning/_DoctorPanel.cshtml",
     "CRM/VisitPlanning/_NewPlanDrawer.cshtml",
+    "Inventory/Locations/_CreateEditOffcanvas.cshtml",
+    "Manufacturing/Boms/Details.cshtml",
     "SupplyChain/Carriers/_ChangeStatusOffcanvas.cshtml",
     "SupplyChain/Carriers/_CreateEditOffcanvas.cshtml",
     "SupplyChain/Claims/Index.cshtml",
@@ -497,6 +506,7 @@ const LIST_KEYS = {
     "SupplyChain/Shipments/_TransitionOffcanvas.cshtml"
   ],
   MAIN_SYNC_CONSEQUENTIAL: [
+    'Manufacturing/Boms/Details.cshtml @Localizer["Action Release"] #1',
     'SupplyChain/Carriers/_ChangeStatusOffcanvas.cshtml @Localizer["Confirm Status Change"] #1',
     'SupplyChain/Claims/Index.cshtml @Localizer["Submit Transition"] #1',
     'SupplyChain/Returns/Index.cshtml @Localizer["Submit Transition"] #1',
@@ -506,8 +516,12 @@ const LIST_KEYS = {
   ]
 };
 // The owner follows the path, and the reason is the decision's own words — a row cannot borrow another team's owner.
-const OWNER_BY_PATH = [["SupplyChain/", SCE], ["CRM/", CRM]];
-const WHY_BY_LIST = { MAIN_SYNC_UNMARKED: MAIN_SYNC_WHY, MAIN_SYNC_CONSEQUENTIAL: `${MAIN_SYNC_WHY}; chord olmalı, sahibine iletilecek` };
+const OWNER_BY_PATH = [["SupplyChain/", SCE], ["CRM/", CRM], ["Inventory/", STOCK], ["Manufacturing/", MANUFACTURING]];
+// One accepted reason per main-sync (2026-10-12, 2026-10-14); nothing else.
+const WHY_BY_LIST = {
+  MAIN_SYNC_UNMARKED: [MAIN_SYNC_WHY, MAIN_SYNC_2_WHY],
+  MAIN_SYNC_CONSEQUENTIAL: [MAIN_SYNC_WHY, MAIN_SYNC_2_WHY].map((why) => `${why}; chord olmalı, sahibine iletilecek`)
+};
 // "file:line label </button>" → "file label #n", n = its place among the same label in the same file (document order).
 // The rows a list still holds although nothing in the tree produces them any more: the owner fixed it, so the row
 // must leave (the list only shrinks). Used by the real check and by its synthetic test, so the test drives the rule.
@@ -624,7 +638,7 @@ describe("BL-586 / UX-COMMON-FIX2: every side panel with fields marks its primar
     const wrong = ["MAIN_SYNC_UNMARKED", "MAIN_SYNC_CONSEQUENTIAL"].flatMap((name) => Object.entries(lists[name])
       .filter(([key, row]) => {
         const owner = (OWNER_BY_PATH.find(([prefix]) => key.startsWith(prefix)) || [])[1];
-        return !owner || !row || row.owner !== owner || row.why !== WHY_BY_LIST[name];
+        return !owner || !row || row.owner !== owner || !WHY_BY_LIST[name].includes(row.why);
       })
       .map(([key]) => `${name}: ${key}`));
     expect(wrong, "a main-sync row whose owner is not its path's, or whose reason is not the decision's").toEqual([]);

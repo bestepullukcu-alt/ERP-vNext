@@ -1,0 +1,1163 @@
+{
+  "steps": [
+    {
+      "step": "D6.8 after restart GET /api/locations",
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:5066/api/locations",
+        "headers": {
+          "Authorization": "Bearer ***(masked)"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 200,
+        "X-Correlation-Id": "acb22eb3-1fef-4fb4-a161-1be4c96850dc",
+        "ETag": null,
+        "body": {
+          "items": [
+            {
+              "locationId": "a2fff6d4-f416-415d-bca7-5d2851b30819",
+              "code": "A-01-01-01",
+              "name": "A-01-01-01",
+              "type": "Bin",
+              "parentId": "3a32e81a-2a54-4b83-84f8-4025beb2565e",
+              "legalEntityId": "fe99d77a-c50e-474b-9175-1968a3cc52be",
+              "status": "Active",
+              "isStockable": true,
+              "contractVersion": "v1"
+            },
+            {
+              "locationId": "f78bd2dc-d233-4e84-b0a7-500d00c9d92e",
+              "code": "A-01-01-02",
+              "name": "A-01-01-02",
+              "type": "Bin",
+              "parentId": "3a32e81a-2a54-4b83-84f8-4025beb2565e",
+              "legalEntityId": "fe99d77a-c50e-474b-9175-1968a3cc52be",
+              "status": "Active",
+              "isStockable": true,
+              "contractVersion": "v1"
+            },
+            {
+              "locationId": "9218f088-b547-4346-b993-e34a6f379cdf",
+              "code": "A-01-02-01",
+              "name": "A-01-02-01",
+              "type": "Bin",
+              "parentId": "3a32e81a-2a54-4b83-84f8-4025beb2565e",
+              "legalEntityId": "fe99d77a-c50e-474b-9175-1968a3cc52be",
+              "status": "Active",
+              "isStockable": true,
+              "contractVersion": "v1"
+            },
+            {
+              "locationId": "2e518d88-3ddb-4efa-811a-e47c0647caeb",
+              "code": "A-01-02-02",
+              "name": "A-01-02-02",
+              "type": "Bin",
+              "parentId": "3a32e81a-2a54-4b83-84f8-4025beb2565e",
+              "legalEntityId": "fe99d77a-c50e-474b-9175-1968a3cc52be",
+              "status": "Inactive",
+              "isStockable": true,
+              "contractVersion": "v1"
+            },
+            {
+              "locationId": "c12ffc8a-0ed9-4650-b637-0525eb2e6469",
+              "code": "BIN-loc1-RENAMED",
+              "name": "BIN-loc1",
+              "type": "Bin",
+              "parentId": "e891d4d2-ffa1-47f6-bce3-d07c5e7e448b",
+              "legalEntityId": "fe99d77a-c50e-474b-9175-1968a3cc52be",
+              "status": "Active",
+              "isStockable": true,
+              "contractVersion": "v1"
+            },
+            {
+              "locationId": "b7a946e1-95c4-49e4-9e14-f6800dcb298e",
+              "code": "SITE-loc1",
+              "name": "SITE-loc1",
+              "type": "Site",
+              "legalEntityId": "fe99d77a-c50e-474b-9175-1968a3cc52be",
+              "status": "Active",
+              "isStockable": false,
+              "operatingMode": "internal",
+              "contractVersion": "v1"
+            },
+            {
+              "locationId": "e891d4d2-ffa1-47f6-bce3-d07c5e7e448b",
+              "code": "SL-loc1",
+              "name": "SL-loc1",
+              "type": "StorageLocation",
+              "parentId": "61027c98-fca4-4888-8167-a983a64457ce",
+              "legalEntityId": "fe99d77a-c50e-474b-9175-1968a3cc52be",
+              "status": "Active",
+              "isStockable": false,
+              "contractVersion": "v1"
+            },
+            {
+              "locationId": "61027c98-fca4-4888-8167-a983a64457ce",
+              "code": "WH-loc1",
+              "name": "WH-loc1",
+              "type": "Warehouse",
+              "parentId": "b7a946e1-95c4-49e4-9e14-f6800dcb298e",
+              "legalEntityId": "fe99d77a-c50e-474b-9175-1968a3cc52be",
+              "status": "Active",
+              "isStockable": false,
+              "operatingMode": "internal",
+              "contractVersion": "v1"
+            },
+            {
+              "locationId": "3a32e81a-2a54-4b83-84f8-4025beb2565e",
+              "code": "ZONE-loc1",
+              "name": "ZONE-loc1",
+              "type": "Zone",
+              "parentId": "e891d4d2-ffa1-47f6-bce3-d07c5e7e448b",
+              "legalEntityId": "fe99d77a-c50e-474b-9175-1968a3cc52be",
+              "status": "Active",
+              "isStockable": false,
+              "contractVersion": "v1"
+            }
+          ],
+          "total": 9,
+          "contractVersion": "v1"
+        }
+      }
+    },
+    {
+      "step": "D6.8 after restart GET path of bin A",
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:5066/api/locations/c12ffc8a-0ed9-4650-b637-0525eb2e6469/path",
+        "headers": {
+          "Authorization": "Bearer ***(masked)"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 200,
+        "X-Correlation-Id": "8273518d-2ad0-4d25-9a81-6c56641bc148",
+        "ETag": null,
+        "body": {
+          "locationId": "c12ffc8a-0ed9-4650-b637-0525eb2e6469",
+          "path": [
+            {
+              "type": "Site",
+              "id": "b7a946e1-95c4-49e4-9e14-f6800dcb298e",
+              "code": "SITE-loc1"
+            },
+            {
+              "type": "Warehouse",
+              "id": "61027c98-fca4-4888-8167-a983a64457ce",
+              "code": "WH-loc1"
+            },
+            {
+              "type": "StorageLocation",
+              "id": "e891d4d2-ffa1-47f6-bce3-d07c5e7e448b",
+              "code": "SL-loc1"
+            },
+            {
+              "type": "Bin",
+              "id": "c12ffc8a-0ed9-4650-b637-0525eb2e6469",
+              "code": "BIN-loc1-RENAMED"
+            }
+          ],
+          "contractVersion": "v1"
+        }
+      }
+    },
+    {
+      "step": "D6.8 after restart GET bin A",
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:5066/api/locations/c12ffc8a-0ed9-4650-b637-0525eb2e6469",
+        "headers": {
+          "Authorization": "Bearer ***(masked)"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 200,
+        "X-Correlation-Id": "ebdd0cf5-79ad-4569-845d-42ef5e43b296",
+        "ETag": "W/\u00222\u0022",
+        "body": {
+          "locationId": "c12ffc8a-0ed9-4650-b637-0525eb2e6469",
+          "code": "BIN-loc1-RENAMED",
+          "name": "BIN-loc1",
+          "type": "Bin",
+          "parentId": "e891d4d2-ffa1-47f6-bce3-d07c5e7e448b",
+          "legalEntityId": "fe99d77a-c50e-474b-9175-1968a3cc52be",
+          "status": "Active",
+          "isStockable": true,
+          "contractVersion": "v1"
+        }
+      }
+    },
+    {
+      "step": "D6.8 after restart GET bin B",
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:5066/api/locations/2e518d88-3ddb-4efa-811a-e47c0647caeb",
+        "headers": {
+          "Authorization": "Bearer ***(masked)"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 200,
+        "X-Correlation-Id": "60e0e750-3a54-42fe-b1cc-44b52169297e",
+        "ETag": "W/\u00222\u0022",
+        "body": {
+          "locationId": "2e518d88-3ddb-4efa-811a-e47c0647caeb",
+          "code": "A-01-02-02",
+          "name": "A-01-02-02",
+          "type": "Bin",
+          "parentId": "3a32e81a-2a54-4b83-84f8-4025beb2565e",
+          "legalEntityId": "fe99d77a-c50e-474b-9175-1968a3cc52be",
+          "status": "Inactive",
+          "isStockable": true,
+          "contractVersion": "v1"
+        }
+      }
+    },
+    {
+      "step": "D6.8 after restart GET history of bin A",
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:5066/api/locations/c12ffc8a-0ed9-4650-b637-0525eb2e6469/history",
+        "headers": {
+          "Authorization": "Bearer ***(masked)"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 200,
+        "X-Correlation-Id": "418138f5-b488-41d4-99b9-f9e373b58f65",
+        "ETag": null,
+        "body": {
+          "items": [
+            {
+              "changeId": "298e9621-a182-4cb7-af4f-2b10aba411ae",
+              "action": "Updated",
+              "field": "code",
+              "oldValue": "BIN-loc1",
+              "newValue": "BIN-loc1-RENAMED",
+              "actorUserId": "28e117a3-a5db-4207-819d-29ce4c50a51a",
+              "occurredAt": "2026-10-01T14:24:08.5350000Z",
+              "correlationId": "ffe52939-34d2-4a3c-90e6-3b27c1e63c19"
+            },
+            {
+              "changeId": "299b8b0f-88c9-4799-8eba-38e3c6792314",
+              "action": "Created",
+              "newValue": "BIN-loc1",
+              "actorUserId": "28e117a3-a5db-4207-819d-29ce4c50a51a",
+              "occurredAt": "2026-10-01T14:24:07.9290000Z",
+              "correlationId": "5c1c5de0-ef4c-4193-bdb4-44025a60910e"
+            }
+          ],
+          "total": 2,
+          "page": 1,
+          "pageSize": 50,
+          "contractVersion": "v1"
+        }
+      }
+    },
+    {
+      "step": "D6.8 after restart GET history of bin B",
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:5066/api/locations/2e518d88-3ddb-4efa-811a-e47c0647caeb/history",
+        "headers": {
+          "Authorization": "Bearer ***(masked)"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 200,
+        "X-Correlation-Id": "c94fb3a4-5cdb-4f56-a43d-3545f337edec",
+        "ETag": null,
+        "body": {
+          "items": [
+            {
+              "changeId": "155c928e-495e-4a7a-b8e2-31842af1472c",
+              "action": "StatusChanged",
+              "field": "status",
+              "oldValue": "Active",
+              "newValue": "Inactive",
+              "actorUserId": "28e117a3-a5db-4207-819d-29ce4c50a51a",
+              "occurredAt": "2026-10-01T14:24:08.4360000Z",
+              "correlationId": "eaf568f6-cc1d-44ba-8790-981d0e26138f"
+            },
+            {
+              "changeId": "d0c2e82d-fd94-449f-aa4f-587a42479764",
+              "action": "BulkCreated",
+              "newValue": "A-01-02-02",
+              "actorUserId": "28e117a3-a5db-4207-819d-29ce4c50a51a",
+              "occurredAt": "2026-10-01T14:24:08.0990000Z",
+              "correlationId": "99d25e2f-d3b6-43ae-b749-136ee533f6c6"
+            }
+          ],
+          "total": 2,
+          "page": 1,
+          "pageSize": 50,
+          "contractVersion": "v1"
+        }
+      }
+    },
+    {
+      "step": "D6.8 after restart GET balance of bin A",
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:5066/api/inventory/balance?locationId=c12ffc8a-0ed9-4650-b637-0525eb2e6469",
+        "headers": {
+          "Authorization": "Bearer ***(masked)"
+        },
+        "body": null
+      },
+      "response": {
+        "status": 200,
+        "X-Correlation-Id": "3b0974b3-9fee-45ad-a3df-1c2c06b4cd42",
+        "ETag": null,
+        "body": {
+          "rows": [
+            {
+              "itemId": "b1f2c3d4-0000-0000-0000-000000000001",
+              "skuId": "c3d4e5f6-0000-0000-0000-000000000002",
+              "skuLevel": "Lsku",
+              "legalEntityId": "fe99d77a-c50e-474b-9175-1968a3cc52be",
+              "warehouseId": "61027c98-fca4-4888-8167-a983a64457ce",
+              "locationId": "c12ffc8a-0ed9-4650-b637-0525eb2e6469",
+              "lotId": "lot-777",
+              "stockStatus": "AVAILABLE",
+              "onHand": "10.000",
+              "reserved": "0.000",
+              "available": "10.000",
+              "inTransit": "0.000",
+              "blocked": "0.000",
+              "qualityInspection": "0.000",
+              "baseUomId": "EA",
+              "lastMovementId": "a9b7aabf-6683-4d78-a1a0-b086e8b82557",
+              "lastPostingDate": "2026-09-30T10:00:00.000Z"
+            }
+          ],
+          "total": 1,
+          "contractVersion": "v1"
+        }
+      }
+    }
+  ],
+  "persisted": {
+    "inventory_transactions": [
+      {
+        "_id": "a9b7aabf-6683-4d78-a1a0-b086e8b82557",
+        "TenantId": "59aa4159-7adb-439d-beaf-09cb9fb0586b",
+        "LegalEntityId": "fe99d77a-c50e-474b-9175-1968a3cc52be",
+        "CreatedAt": {
+          "$date": "2026-10-01T14:24:08.254Z"
+        },
+        "UpdatedAt": null,
+        "Version": 0,
+        "IsDeleted": false,
+        "DeletedAt": null,
+        "TransactionNumber": "INV-2026-0000001",
+        "DocumentGroupId": null,
+        "MovementType": "OpeningBalance",
+        "MovementReason": null,
+        "ItemId": "b1f2c3d4-0000-0000-0000-000000000001",
+        "SkuId": "c3d4e5f6-0000-0000-0000-000000000002",
+        "SkuLevel": "Lsku",
+        "FromWarehouseId": null,
+        "FromLocationId": null,
+        "ToWarehouseId": "61027c98-fca4-4888-8167-a983a64457ce",
+        "ToLocationId": "c12ffc8a-0ed9-4650-b637-0525eb2e6469",
+        "Quantity": {
+          "$numberDecimal": "10"
+        },
+        "UomId": "EA",
+        "BaseQuantity": {
+          "$numberDecimal": "10"
+        },
+        "BaseUomId": "EA",
+        "LotId": "lot-777",
+        "SerialIds": null,
+        "FromStockStatus": null,
+        "ToStockStatus": "Available",
+        "SourceModule": "MOD-PROBE",
+        "SourceType": "RUNTIME_PROBE",
+        "SourceDocumentId": null,
+        "SourceLineId": null,
+        "SourceSystem": "WP-0173-S1-PROBE",
+        "ExternalRef": null,
+        "ReversesTransactionId": null,
+        "TransactionDate": {
+          "$date": "2026-09-30T09:00:00Z"
+        },
+        "PostingDate": {
+          "$date": "2026-09-30T10:00:00Z"
+        },
+        "IdempotencyKey": "probe-20261001142404-loc1-open",
+        "RequestFingerprint": "80B6040246EC2343CA18F1E7C3D36235084EAC5BB9D138D0AFCA51CA3AC69F00",
+        "CorrelationId": "1cf2be32-243b-4c41-965e-599c4cace3f6",
+        "CreatedBy": "28e117a3-a5db-4207-819d-29ce4c50a51a",
+        "ResultSnapshot": {
+          "ItemId": "b1f2c3d4-0000-0000-0000-000000000001",
+          "SkuId": "c3d4e5f6-0000-0000-0000-000000000002",
+          "SkuLevel": "Lsku",
+          "WarehouseId": "61027c98-fca4-4888-8167-a983a64457ce",
+          "LocationId": "c12ffc8a-0ed9-4650-b637-0525eb2e6469",
+          "LotId": "lot-777",
+          "StockStatus": "Available",
+          "OnHand": {
+            "$numberDecimal": "10"
+          },
+          "Reserved": {
+            "$numberDecimal": "0"
+          },
+          "Available": {
+            "$numberDecimal": "10"
+          },
+          "InTransit": {
+            "$numberDecimal": "0"
+          },
+          "Blocked": {
+            "$numberDecimal": "0"
+          },
+          "QualityInspection": {
+            "$numberDecimal": "0"
+          },
+          "BaseUomId": "EA",
+          "LastMovementId": "a9b7aabf-6683-4d78-a1a0-b086e8b82557",
+          "LastPostingDate": {
+            "$date": "2026-09-30T10:00:00Z"
+          }
+        }
+      }
+    ],
+    "inventory_balances": [
+      {
+        "_id": "22d35292-23a2-4a30-a66c-e172685383a4",
+        "ProjectId": null,
+        "LegalEntityId": "fe99d77a-c50e-474b-9175-1968a3cc52be",
+        "IsDeleted": false,
+        "ItemId": "b1f2c3d4-0000-0000-0000-000000000001",
+        "LotId": "lot-777",
+        "OwnerId": null,
+        "LocationId": "c12ffc8a-0ed9-4650-b637-0525eb2e6469",
+        "WarehouseId": "61027c98-fca4-4888-8167-a983a64457ce",
+        "StockStatus": "Available",
+        "TenantId": "59aa4159-7adb-439d-beaf-09cb9fb0586b",
+        "SkuLevel": "Lsku",
+        "SkuId": "c3d4e5f6-0000-0000-0000-000000000002",
+        "Available": {
+          "$numberDecimal": "10"
+        },
+        "BaseUomId": "EA",
+        "Blocked": {
+          "$numberDecimal": "0"
+        },
+        "CreatedAt": {
+          "$date": "2026-10-01T14:24:08.254Z"
+        },
+        "DeletedAt": null,
+        "InTransit": {
+          "$numberDecimal": "0"
+        },
+        "LastMovementId": "a9b7aabf-6683-4d78-a1a0-b086e8b82557",
+        "LastPostingDate": {
+          "$date": "2026-09-30T10:00:00Z"
+        },
+        "OnHand": {
+          "$numberDecimal": "10"
+        },
+        "QualityInspection": {
+          "$numberDecimal": "0"
+        },
+        "Reserved": {
+          "$numberDecimal": "0"
+        },
+        "UpdatedAt": {
+          "$date": "2026-10-01T14:24:08.254Z"
+        },
+        "Version": 1
+      }
+    ],
+    "inventory_audit": [
+      {
+        "_id": "a754b999-1fe1-43e9-b0ac-38d6d70b099a",
+        "TenantId": "59aa4159-7adb-439d-beaf-09cb9fb0586b",
+        "LegalEntityId": "fe99d77a-c50e-474b-9175-1968a3cc52be",
+        "CreatedAt": {
+          "$date": "2026-10-01T14:24:08.254Z"
+        },
+        "UpdatedAt": null,
+        "Version": 0,
+        "IsDeleted": false,
+        "DeletedAt": null,
+        "Action": "InventoryMovementPosted",
+        "TransactionId": "a9b7aabf-6683-4d78-a1a0-b086e8b82557",
+        "TransactionNumber": "INV-2026-0000001",
+        "MovementType": "OpeningBalance",
+        "ItemId": "b1f2c3d4-0000-0000-0000-000000000001",
+        "SkuId": "c3d4e5f6-0000-0000-0000-000000000002",
+        "BaseQuantity": {
+          "$numberDecimal": "10"
+        },
+        "BaseUomId": "EA",
+        "ActorUserId": "28e117a3-a5db-4207-819d-29ce4c50a51a",
+        "CorrelationId": "1cf2be32-243b-4c41-965e-599c4cace3f6",
+        "IdempotencyKey": "probe-20261001142404-loc1-open",
+        "SourceModule": "MOD-PROBE",
+        "SourceDocumentId": null,
+        "SourceSystem": "WP-0173-S1-PROBE",
+        "LeSource": "token",
+        "OccurredAt": {
+          "$date": "2026-10-01T14:24:08.254Z"
+        }
+      }
+    ],
+    "inventory_outbox": [
+      {
+        "_id": "0024216d-300c-43c9-a524-10fc7cfff097",
+        "TenantId": "59aa4159-7adb-439d-beaf-09cb9fb0586b",
+        "LegalEntityId": "fe99d77a-c50e-474b-9175-1968a3cc52be",
+        "CreatedAt": {
+          "$date": "2026-10-01T14:24:08.254Z"
+        },
+        "UpdatedAt": null,
+        "Version": 0,
+        "IsDeleted": false,
+        "DeletedAt": null,
+        "EventName": "InventoryMovementPosted",
+        "EventVersion": 1,
+        "AggregateId": "a9b7aabf-6683-4d78-a1a0-b086e8b82557",
+        "CorrelationId": "1cf2be32-243b-4c41-965e-599c4cace3f6",
+        "Status": "Pending",
+        "AttemptCount": 0,
+        "OccurredAt": {
+          "$date": "2026-10-01T14:24:08.254Z"
+        },
+        "Payload": {
+          "TransactionId": "a9b7aabf-6683-4d78-a1a0-b086e8b82557",
+          "TransactionNumber": "INV-2026-0000001",
+          "MovementType": "OpeningBalance",
+          "ItemId": "b1f2c3d4-0000-0000-0000-000000000001",
+          "SkuId": "c3d4e5f6-0000-0000-0000-000000000002",
+          "SkuLevel": "Lsku",
+          "FromWarehouseId": null,
+          "FromLocationId": null,
+          "ToWarehouseId": "61027c98-fca4-4888-8167-a983a64457ce",
+          "ToLocationId": "c12ffc8a-0ed9-4650-b637-0525eb2e6469",
+          "LotId": "lot-777",
+          "FromStockStatus": null,
+          "ToStockStatus": "Available",
+          "BaseQuantity": {
+            "$numberDecimal": "10"
+          },
+          "BaseUomId": "EA",
+          "ReversesTransactionId": null,
+          "PostingDate": {
+            "$date": "2026-09-30T10:00:00Z"
+          }
+        }
+      }
+    ],
+    "inventory_reservations": [],
+    "inventory_sku_positions": [
+      {
+        "_id": "6c32938f-ab6d-4423-b8a3-5987316f1e62",
+        "SkuId": "c3d4e5f6-0000-0000-0000-000000000002",
+        "ItemId": "b1f2c3d4-0000-0000-0000-000000000001",
+        "IsDeleted": false,
+        "LegalEntityId": "fe99d77a-c50e-474b-9175-1968a3cc52be",
+        "SkuLevel": "Lsku",
+        "TenantId": "59aa4159-7adb-439d-beaf-09cb9fb0586b",
+        "AvailableOnHand": {
+          "$numberDecimal": "10"
+        },
+        "BaseUomId": "EA",
+        "CreatedAt": {
+          "$date": "2026-10-01T14:24:08.254Z"
+        },
+        "DeletedAt": null,
+        "Reserved": {
+          "$numberDecimal": "0"
+        },
+        "UpdatedAt": {
+          "$date": "2026-10-01T14:24:08.254Z"
+        },
+        "Version": 1
+      }
+    ],
+    "inventory_locations": [
+      {
+        "_id": "a2fff6d4-f416-415d-bca7-5d2851b30819",
+        "TenantId": "59aa4159-7adb-439d-beaf-09cb9fb0586b",
+        "LegalEntityId": "fe99d77a-c50e-474b-9175-1968a3cc52be",
+        "CreatedAt": {
+          "$date": "2026-10-01T14:24:08.099Z"
+        },
+        "UpdatedAt": null,
+        "Version": 1,
+        "IsDeleted": false,
+        "DeletedAt": null,
+        "Code": "A-01-01-01",
+        "CodeNormalized": "A-01-01-01",
+        "Name": "A-01-01-01",
+        "Type": "Bin",
+        "ParentId": "3a32e81a-2a54-4b83-84f8-4025beb2565e",
+        "AncestorIds": [
+          "b7a946e1-95c4-49e4-9e14-f6800dcb298e",
+          "61027c98-fca4-4888-8167-a983a64457ce",
+          "e891d4d2-ffa1-47f6-bce3-d07c5e7e448b",
+          "3a32e81a-2a54-4b83-84f8-4025beb2565e"
+        ],
+        "Status": "Active",
+        "IsStockable": true,
+        "OperatingMode": null,
+        "OrgUnitRef": null,
+        "CostCenterCode": null,
+        "StockTouchSeq": 0,
+        "StructureSeq": 0,
+        "CreatedBy": "28e117a3-a5db-4207-819d-29ce4c50a51a",
+        "UpdatedBy": null,
+        "CreateIdempotencyKey": null,
+        "CreateRequestFingerprint": null,
+        "BulkIdempotencyKey": "bulk-1e0a4bdda9584cea89e94a0c622d3440",
+        "BulkRequestFingerprint": "4E1B9CB8010662B62F0F80270E04D35016CC576C4F82FFB3762D7BE6B220BF2E"
+      },
+      {
+        "_id": "f78bd2dc-d233-4e84-b0a7-500d00c9d92e",
+        "TenantId": "59aa4159-7adb-439d-beaf-09cb9fb0586b",
+        "LegalEntityId": "fe99d77a-c50e-474b-9175-1968a3cc52be",
+        "CreatedAt": {
+          "$date": "2026-10-01T14:24:08.099Z"
+        },
+        "UpdatedAt": null,
+        "Version": 1,
+        "IsDeleted": false,
+        "DeletedAt": null,
+        "Code": "A-01-01-02",
+        "CodeNormalized": "A-01-01-02",
+        "Name": "A-01-01-02",
+        "Type": "Bin",
+        "ParentId": "3a32e81a-2a54-4b83-84f8-4025beb2565e",
+        "AncestorIds": [
+          "b7a946e1-95c4-49e4-9e14-f6800dcb298e",
+          "61027c98-fca4-4888-8167-a983a64457ce",
+          "e891d4d2-ffa1-47f6-bce3-d07c5e7e448b",
+          "3a32e81a-2a54-4b83-84f8-4025beb2565e"
+        ],
+        "Status": "Active",
+        "IsStockable": true,
+        "OperatingMode": null,
+        "OrgUnitRef": null,
+        "CostCenterCode": null,
+        "StockTouchSeq": 0,
+        "StructureSeq": 0,
+        "CreatedBy": "28e117a3-a5db-4207-819d-29ce4c50a51a",
+        "UpdatedBy": null,
+        "CreateIdempotencyKey": null,
+        "CreateRequestFingerprint": null,
+        "BulkIdempotencyKey": "bulk-1e0a4bdda9584cea89e94a0c622d3440",
+        "BulkRequestFingerprint": "4E1B9CB8010662B62F0F80270E04D35016CC576C4F82FFB3762D7BE6B220BF2E"
+      },
+      {
+        "_id": "9218f088-b547-4346-b993-e34a6f379cdf",
+        "TenantId": "59aa4159-7adb-439d-beaf-09cb9fb0586b",
+        "LegalEntityId": "fe99d77a-c50e-474b-9175-1968a3cc52be",
+        "CreatedAt": {
+          "$date": "2026-10-01T14:24:08.099Z"
+        },
+        "UpdatedAt": null,
+        "Version": 1,
+        "IsDeleted": false,
+        "DeletedAt": null,
+        "Code": "A-01-02-01",
+        "CodeNormalized": "A-01-02-01",
+        "Name": "A-01-02-01",
+        "Type": "Bin",
+        "ParentId": "3a32e81a-2a54-4b83-84f8-4025beb2565e",
+        "AncestorIds": [
+          "b7a946e1-95c4-49e4-9e14-f6800dcb298e",
+          "61027c98-fca4-4888-8167-a983a64457ce",
+          "e891d4d2-ffa1-47f6-bce3-d07c5e7e448b",
+          "3a32e81a-2a54-4b83-84f8-4025beb2565e"
+        ],
+        "Status": "Active",
+        "IsStockable": true,
+        "OperatingMode": null,
+        "OrgUnitRef": null,
+        "CostCenterCode": null,
+        "StockTouchSeq": 0,
+        "StructureSeq": 0,
+        "CreatedBy": "28e117a3-a5db-4207-819d-29ce4c50a51a",
+        "UpdatedBy": null,
+        "CreateIdempotencyKey": null,
+        "CreateRequestFingerprint": null,
+        "BulkIdempotencyKey": "bulk-1e0a4bdda9584cea89e94a0c622d3440",
+        "BulkRequestFingerprint": "4E1B9CB8010662B62F0F80270E04D35016CC576C4F82FFB3762D7BE6B220BF2E"
+      },
+      {
+        "_id": "2e518d88-3ddb-4efa-811a-e47c0647caeb",
+        "TenantId": "59aa4159-7adb-439d-beaf-09cb9fb0586b",
+        "LegalEntityId": "fe99d77a-c50e-474b-9175-1968a3cc52be",
+        "CreatedAt": {
+          "$date": "2026-10-01T14:24:08.099Z"
+        },
+        "UpdatedAt": {
+          "$date": "2026-10-01T14:24:08.436Z"
+        },
+        "Version": 2,
+        "IsDeleted": false,
+        "DeletedAt": null,
+        "Code": "A-01-02-02",
+        "CodeNormalized": "A-01-02-02",
+        "Name": "A-01-02-02",
+        "Type": "Bin",
+        "ParentId": "3a32e81a-2a54-4b83-84f8-4025beb2565e",
+        "AncestorIds": [
+          "b7a946e1-95c4-49e4-9e14-f6800dcb298e",
+          "61027c98-fca4-4888-8167-a983a64457ce",
+          "e891d4d2-ffa1-47f6-bce3-d07c5e7e448b",
+          "3a32e81a-2a54-4b83-84f8-4025beb2565e"
+        ],
+        "Status": "Inactive",
+        "IsStockable": true,
+        "OperatingMode": null,
+        "OrgUnitRef": null,
+        "CostCenterCode": null,
+        "StockTouchSeq": 0,
+        "StructureSeq": 0,
+        "CreatedBy": "28e117a3-a5db-4207-819d-29ce4c50a51a",
+        "UpdatedBy": "28e117a3-a5db-4207-819d-29ce4c50a51a",
+        "CreateIdempotencyKey": null,
+        "CreateRequestFingerprint": null,
+        "BulkIdempotencyKey": "bulk-1e0a4bdda9584cea89e94a0c622d3440",
+        "BulkRequestFingerprint": "4E1B9CB8010662B62F0F80270E04D35016CC576C4F82FFB3762D7BE6B220BF2E"
+      },
+      {
+        "_id": "c12ffc8a-0ed9-4650-b637-0525eb2e6469",
+        "TenantId": "59aa4159-7adb-439d-beaf-09cb9fb0586b",
+        "LegalEntityId": "fe99d77a-c50e-474b-9175-1968a3cc52be",
+        "CreatedAt": {
+          "$date": "2026-10-01T14:24:07.929Z"
+        },
+        "UpdatedAt": {
+          "$date": "2026-10-01T14:24:08.535Z"
+        },
+        "Version": 2,
+        "IsDeleted": false,
+        "DeletedAt": null,
+        "Code": "BIN-loc1-RENAMED",
+        "CodeNormalized": "BIN-LOC1-RENAMED",
+        "Name": "BIN-loc1",
+        "Type": "Bin",
+        "ParentId": "e891d4d2-ffa1-47f6-bce3-d07c5e7e448b",
+        "AncestorIds": [
+          "b7a946e1-95c4-49e4-9e14-f6800dcb298e",
+          "61027c98-fca4-4888-8167-a983a64457ce",
+          "e891d4d2-ffa1-47f6-bce3-d07c5e7e448b"
+        ],
+        "Status": "Active",
+        "IsStockable": true,
+        "OperatingMode": null,
+        "OrgUnitRef": null,
+        "CostCenterCode": null,
+        "StockTouchSeq": 1,
+        "StructureSeq": 0,
+        "CreatedBy": "28e117a3-a5db-4207-819d-29ce4c50a51a",
+        "UpdatedBy": "28e117a3-a5db-4207-819d-29ce4c50a51a",
+        "CreateIdempotencyKey": "loc-b6ea0ebee97746e68dd518fb7f4c6b6d",
+        "CreateRequestFingerprint": "D6B786434CE883C4DC556E22434C4013AEA5133994C71734EF710AE1650D6553",
+        "BulkIdempotencyKey": null,
+        "BulkRequestFingerprint": null
+      },
+      {
+        "_id": "b7a946e1-95c4-49e4-9e14-f6800dcb298e",
+        "TenantId": "59aa4159-7adb-439d-beaf-09cb9fb0586b",
+        "LegalEntityId": "fe99d77a-c50e-474b-9175-1968a3cc52be",
+        "CreatedAt": {
+          "$date": "2026-10-01T14:24:07.894Z"
+        },
+        "UpdatedAt": null,
+        "Version": 1,
+        "IsDeleted": false,
+        "DeletedAt": null,
+        "Code": "SITE-loc1",
+        "CodeNormalized": "SITE-LOC1",
+        "Name": "SITE-loc1",
+        "Type": "Site",
+        "ParentId": null,
+        "AncestorIds": [],
+        "Status": "Active",
+        "IsStockable": false,
+        "OperatingMode": "internal",
+        "OrgUnitRef": null,
+        "CostCenterCode": null,
+        "StockTouchSeq": 0,
+        "StructureSeq": 1,
+        "CreatedBy": "28e117a3-a5db-4207-819d-29ce4c50a51a",
+        "UpdatedBy": null,
+        "CreateIdempotencyKey": "loc-85e515654d6943f59271b43794d3a476",
+        "CreateRequestFingerprint": "1E5E1940948D32300ADEB459AF182815C223D7E8E061334DCC3BEAA49EDE3E37",
+        "BulkIdempotencyKey": null,
+        "BulkRequestFingerprint": null
+      },
+      {
+        "_id": "e891d4d2-ffa1-47f6-bce3-d07c5e7e448b",
+        "TenantId": "59aa4159-7adb-439d-beaf-09cb9fb0586b",
+        "LegalEntityId": "fe99d77a-c50e-474b-9175-1968a3cc52be",
+        "CreatedAt": {
+          "$date": "2026-10-01T14:24:07.916Z"
+        },
+        "UpdatedAt": null,
+        "Version": 1,
+        "IsDeleted": false,
+        "DeletedAt": null,
+        "Code": "SL-loc1",
+        "CodeNormalized": "SL-LOC1",
+        "Name": "SL-loc1",
+        "Type": "StorageLocation",
+        "ParentId": "61027c98-fca4-4888-8167-a983a64457ce",
+        "AncestorIds": [
+          "b7a946e1-95c4-49e4-9e14-f6800dcb298e",
+          "61027c98-fca4-4888-8167-a983a64457ce"
+        ],
+        "Status": "Active",
+        "IsStockable": false,
+        "OperatingMode": null,
+        "OrgUnitRef": null,
+        "CostCenterCode": null,
+        "StockTouchSeq": 0,
+        "StructureSeq": 2,
+        "CreatedBy": "28e117a3-a5db-4207-819d-29ce4c50a51a",
+        "UpdatedBy": null,
+        "CreateIdempotencyKey": "loc-32e35c678440417aa73b1d25920b4bd9",
+        "CreateRequestFingerprint": "8EA099671ABA33AE7C473162FCC53B189FE3970A8DC777F42D25573F4993B574",
+        "BulkIdempotencyKey": null,
+        "BulkRequestFingerprint": null
+      },
+      {
+        "_id": "61027c98-fca4-4888-8167-a983a64457ce",
+        "TenantId": "59aa4159-7adb-439d-beaf-09cb9fb0586b",
+        "LegalEntityId": "fe99d77a-c50e-474b-9175-1968a3cc52be",
+        "CreatedAt": {
+          "$date": "2026-10-01T14:24:07.904Z"
+        },
+        "UpdatedAt": null,
+        "Version": 1,
+        "IsDeleted": false,
+        "DeletedAt": null,
+        "Code": "WH-loc1",
+        "CodeNormalized": "WH-LOC1",
+        "Name": "WH-loc1",
+        "Type": "Warehouse",
+        "ParentId": "b7a946e1-95c4-49e4-9e14-f6800dcb298e",
+        "AncestorIds": [
+          "b7a946e1-95c4-49e4-9e14-f6800dcb298e"
+        ],
+        "Status": "Active",
+        "IsStockable": false,
+        "OperatingMode": "internal",
+        "OrgUnitRef": null,
+        "CostCenterCode": null,
+        "StockTouchSeq": 0,
+        "StructureSeq": 1,
+        "CreatedBy": "28e117a3-a5db-4207-819d-29ce4c50a51a",
+        "UpdatedBy": null,
+        "CreateIdempotencyKey": "loc-d15f442c23e341adb73d72ba1c23363d",
+        "CreateRequestFingerprint": "5FDC09762F1FF22463AADE86BAF7C205EFA26BAA526F3507CE98E651E86987E2",
+        "BulkIdempotencyKey": null,
+        "BulkRequestFingerprint": null
+      },
+      {
+        "_id": "3a32e81a-2a54-4b83-84f8-4025beb2565e",
+        "TenantId": "59aa4159-7adb-439d-beaf-09cb9fb0586b",
+        "LegalEntityId": "fe99d77a-c50e-474b-9175-1968a3cc52be",
+        "CreatedAt": {
+          "$date": "2026-10-01T14:24:07.973Z"
+        },
+        "UpdatedAt": null,
+        "Version": 1,
+        "IsDeleted": false,
+        "DeletedAt": null,
+        "Code": "ZONE-loc1",
+        "CodeNormalized": "ZONE-LOC1",
+        "Name": "ZONE-loc1",
+        "Type": "Zone",
+        "ParentId": "e891d4d2-ffa1-47f6-bce3-d07c5e7e448b",
+        "AncestorIds": [
+          "b7a946e1-95c4-49e4-9e14-f6800dcb298e",
+          "61027c98-fca4-4888-8167-a983a64457ce",
+          "e891d4d2-ffa1-47f6-bce3-d07c5e7e448b"
+        ],
+        "Status": "Active",
+        "IsStockable": false,
+        "OperatingMode": null,
+        "OrgUnitRef": null,
+        "CostCenterCode": null,
+        "StockTouchSeq": 0,
+        "StructureSeq": 1,
+        "CreatedBy": "28e117a3-a5db-4207-819d-29ce4c50a51a",
+        "UpdatedBy": null,
+        "CreateIdempotencyKey": "loc-ca1584b91d6a4a339f7426cebb686126",
+        "CreateRequestFingerprint": "C15B0B0117D942FC5B263B047E9FF391A4907EBB7E107AFECF8B1A68E283A8F4",
+        "BulkIdempotencyKey": null,
+        "BulkRequestFingerprint": null
+      }
+    ],
+    "inventory_location_history": [
+      {
+        "_id": "155c928e-495e-4a7a-b8e2-31842af1472c",
+        "TenantId": "59aa4159-7adb-439d-beaf-09cb9fb0586b",
+        "LegalEntityId": "fe99d77a-c50e-474b-9175-1968a3cc52be",
+        "CreatedAt": {
+          "$date": "2026-10-01T14:24:08.436Z"
+        },
+        "UpdatedAt": null,
+        "Version": 0,
+        "IsDeleted": false,
+        "DeletedAt": null,
+        "LocationId": "2e518d88-3ddb-4efa-811a-e47c0647caeb",
+        "Action": "StatusChanged",
+        "Field": "status",
+        "OldValue": "Active",
+        "NewValue": "Inactive",
+        "ActorUserId": "28e117a3-a5db-4207-819d-29ce4c50a51a",
+        "CorrelationId": "eaf568f6-cc1d-44ba-8790-981d0e26138f",
+        "LeSource": "token",
+        "OccurredAt": {
+          "$date": "2026-10-01T14:24:08.436Z"
+        }
+      },
+      {
+        "_id": "d0c2e82d-fd94-449f-aa4f-587a42479764",
+        "TenantId": "59aa4159-7adb-439d-beaf-09cb9fb0586b",
+        "LegalEntityId": "fe99d77a-c50e-474b-9175-1968a3cc52be",
+        "CreatedAt": {
+          "$date": "2026-10-01T14:24:08.099Z"
+        },
+        "UpdatedAt": null,
+        "Version": 0,
+        "IsDeleted": false,
+        "DeletedAt": null,
+        "LocationId": "2e518d88-3ddb-4efa-811a-e47c0647caeb",
+        "Action": "BulkCreated",
+        "Field": null,
+        "OldValue": null,
+        "NewValue": "A-01-02-02",
+        "ActorUserId": "28e117a3-a5db-4207-819d-29ce4c50a51a",
+        "CorrelationId": "99d25e2f-d3b6-43ae-b749-136ee533f6c6",
+        "LeSource": "token",
+        "OccurredAt": {
+          "$date": "2026-10-01T14:24:08.099Z"
+        }
+      },
+      {
+        "_id": "9209958b-0942-4671-a320-f72a2d284788",
+        "TenantId": "59aa4159-7adb-439d-beaf-09cb9fb0586b",
+        "LegalEntityId": "fe99d77a-c50e-474b-9175-1968a3cc52be",
+        "CreatedAt": {
+          "$date": "2026-10-01T14:24:07.973Z"
+        },
+        "UpdatedAt": null,
+        "Version": 0,
+        "IsDeleted": false,
+        "DeletedAt": null,
+        "LocationId": "3a32e81a-2a54-4b83-84f8-4025beb2565e",
+        "Action": "Created",
+        "Field": null,
+        "OldValue": null,
+        "NewValue": "ZONE-loc1",
+        "ActorUserId": "28e117a3-a5db-4207-819d-29ce4c50a51a",
+        "CorrelationId": "d9d2d02d-fd10-4563-bc8e-66cd44ca40eb",
+        "LeSource": "token",
+        "OccurredAt": {
+          "$date": "2026-10-01T14:24:07.973Z"
+        }
+      },
+      {
+        "_id": "cadbda72-fea3-471b-aaca-53e1abc3e312",
+        "TenantId": "59aa4159-7adb-439d-beaf-09cb9fb0586b",
+        "LegalEntityId": "fe99d77a-c50e-474b-9175-1968a3cc52be",
+        "CreatedAt": {
+          "$date": "2026-10-01T14:24:07.904Z"
+        },
+        "UpdatedAt": null,
+        "Version": 0,
+        "IsDeleted": false,
+        "DeletedAt": null,
+        "LocationId": "61027c98-fca4-4888-8167-a983a64457ce",
+        "Action": "Created",
+        "Field": null,
+        "OldValue": null,
+        "NewValue": "WH-loc1",
+        "ActorUserId": "28e117a3-a5db-4207-819d-29ce4c50a51a",
+        "CorrelationId": "f5534506-39c1-45a9-8725-511fcba010de",
+        "LeSource": "token",
+        "OccurredAt": {
+          "$date": "2026-10-01T14:24:07.904Z"
+        }
+      },
+      {
+        "_id": "7d821ac5-e89b-4643-a583-961ea1ec8b1c",
+        "TenantId": "59aa4159-7adb-439d-beaf-09cb9fb0586b",
+        "LegalEntityId": "fe99d77a-c50e-474b-9175-1968a3cc52be",
+        "CreatedAt": {
+          "$date": "2026-10-01T14:24:08.099Z"
+        },
+        "UpdatedAt": null,
+        "Version": 0,
+        "IsDeleted": false,
+        "DeletedAt": null,
+        "LocationId": "9218f088-b547-4346-b993-e34a6f379cdf",
+        "Action": "BulkCreated",
+        "Field": null,
+        "OldValue": null,
+        "NewValue": "A-01-02-01",
+        "ActorUserId": "28e117a3-a5db-4207-819d-29ce4c50a51a",
+        "CorrelationId": "99d25e2f-d3b6-43ae-b749-136ee533f6c6",
+        "LeSource": "token",
+        "OccurredAt": {
+          "$date": "2026-10-01T14:24:08.099Z"
+        }
+      },
+      {
+        "_id": "fca63694-ed23-425b-910f-1198ca939166",
+        "TenantId": "59aa4159-7adb-439d-beaf-09cb9fb0586b",
+        "LegalEntityId": "fe99d77a-c50e-474b-9175-1968a3cc52be",
+        "CreatedAt": {
+          "$date": "2026-10-01T14:24:08.099Z"
+        },
+        "UpdatedAt": null,
+        "Version": 0,
+        "IsDeleted": false,
+        "DeletedAt": null,
+        "LocationId": "a2fff6d4-f416-415d-bca7-5d2851b30819",
+        "Action": "BulkCreated",
+        "Field": null,
+        "OldValue": null,
+        "NewValue": "A-01-01-01",
+        "ActorUserId": "28e117a3-a5db-4207-819d-29ce4c50a51a",
+        "CorrelationId": "99d25e2f-d3b6-43ae-b749-136ee533f6c6",
+        "LeSource": "token",
+        "OccurredAt": {
+          "$date": "2026-10-01T14:24:08.099Z"
+        }
+      },
+      {
+        "_id": "fcadccb7-eda2-4ed3-8867-a0ffe44ff496",
+        "TenantId": "59aa4159-7adb-439d-beaf-09cb9fb0586b",
+        "LegalEntityId": "fe99d77a-c50e-474b-9175-1968a3cc52be",
+        "CreatedAt": {
+          "$date": "2026-10-01T14:24:07.894Z"
+        },
+        "UpdatedAt": null,
+        "Version": 0,
+        "IsDeleted": false,
+        "DeletedAt": null,
+        "LocationId": "b7a946e1-95c4-49e4-9e14-f6800dcb298e",
+        "Action": "Created",
+        "Field": null,
+        "OldValue": null,
+        "NewValue": "SITE-loc1",
+        "ActorUserId": "28e117a3-a5db-4207-819d-29ce4c50a51a",
+        "CorrelationId": "5003dedc-0694-4c97-bdd6-8a42ef936391",
+        "LeSource": "token",
+        "OccurredAt": {
+          "$date": "2026-10-01T14:24:07.894Z"
+        }
+      },
+      {
+        "_id": "298e9621-a182-4cb7-af4f-2b10aba411ae",
+        "TenantId": "59aa4159-7adb-439d-beaf-09cb9fb0586b",
+        "LegalEntityId": "fe99d77a-c50e-474b-9175-1968a3cc52be",
+        "CreatedAt": {
+          "$date": "2026-10-01T14:24:08.535Z"
+        },
+        "UpdatedAt": null,
+        "Version": 0,
+        "IsDeleted": false,
+        "DeletedAt": null,
+        "LocationId": "c12ffc8a-0ed9-4650-b637-0525eb2e6469",
+        "Action": "Updated",
+        "Field": "code",
+        "OldValue": "BIN-loc1",
+        "NewValue": "BIN-loc1-RENAMED",
+        "ActorUserId": "28e117a3-a5db-4207-819d-29ce4c50a51a",
+        "CorrelationId": "ffe52939-34d2-4a3c-90e6-3b27c1e63c19",
+        "LeSource": "token",
+        "OccurredAt": {
+          "$date": "2026-10-01T14:24:08.535Z"
+        }
+      },
+      {
+        "_id": "299b8b0f-88c9-4799-8eba-38e3c6792314",
+        "TenantId": "59aa4159-7adb-439d-beaf-09cb9fb0586b",
+        "LegalEntityId": "fe99d77a-c50e-474b-9175-1968a3cc52be",
+        "CreatedAt": {
+          "$date": "2026-10-01T14:24:07.929Z"
+        },
+        "UpdatedAt": null,
+        "Version": 0,
+        "IsDeleted": false,
+        "DeletedAt": null,
+        "LocationId": "c12ffc8a-0ed9-4650-b637-0525eb2e6469",
+        "Action": "Created",
+        "Field": null,
+        "OldValue": null,
+        "NewValue": "BIN-loc1",
+        "ActorUserId": "28e117a3-a5db-4207-819d-29ce4c50a51a",
+        "CorrelationId": "5c1c5de0-ef4c-4193-bdb4-44025a60910e",
+        "LeSource": "token",
+        "OccurredAt": {
+          "$date": "2026-10-01T14:24:07.929Z"
+        }
+      },
+      {
+        "_id": "9bbea8e6-dfa1-4a8c-8432-c594d281d3ee",
+        "TenantId": "59aa4159-7adb-439d-beaf-09cb9fb0586b",
+        "LegalEntityId": "fe99d77a-c50e-474b-9175-1968a3cc52be",
+        "CreatedAt": {
+          "$date": "2026-10-01T14:24:07.916Z"
+        },
+        "UpdatedAt": null,
+        "Version": 0,
+        "IsDeleted": false,
+        "DeletedAt": null,
+        "LocationId": "e891d4d2-ffa1-47f6-bce3-d07c5e7e448b",
+        "Action": "Created",
+        "Field": null,
+        "OldValue": null,
+        "NewValue": "SL-loc1",
+        "ActorUserId": "28e117a3-a5db-4207-819d-29ce4c50a51a",
+        "CorrelationId": "2ab9b65f-4138-4405-86f6-25bec00ccb19",
+        "LeSource": "token",
+        "OccurredAt": {
+          "$date": "2026-10-01T14:24:07.916Z"
+        }
+      },
+      {
+        "_id": "f2fc856a-d075-4242-a894-907627267ac0",
+        "TenantId": "59aa4159-7adb-439d-beaf-09cb9fb0586b",
+        "LegalEntityId": "fe99d77a-c50e-474b-9175-1968a3cc52be",
+        "CreatedAt": {
+          "$date": "2026-10-01T14:24:08.099Z"
+        },
+        "UpdatedAt": null,
+        "Version": 0,
+        "IsDeleted": false,
+        "DeletedAt": null,
+        "LocationId": "f78bd2dc-d233-4e84-b0a7-500d00c9d92e",
+        "Action": "BulkCreated",
+        "Field": null,
+        "OldValue": null,
+        "NewValue": "A-01-01-02",
+        "ActorUserId": "28e117a3-a5db-4207-819d-29ce4c50a51a",
+        "CorrelationId": "99d25e2f-d3b6-43ae-b749-136ee533f6c6",
+        "LeSource": "token",
+        "OccurredAt": {
+          "$date": "2026-10-01T14:24:08.099Z"
+        }
+      }
+    ]
+  }
+}

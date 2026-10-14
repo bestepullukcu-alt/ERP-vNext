@@ -436,7 +436,10 @@ public sealed record WorkflowTaskDto(
     DateTimeOffset? DueAt,
     DateTimeOffset? CompletedAt,
     string? ActionedBy,
-    string? ActionReasonCode);
+    string? ActionReasonCode,
+    // MOD-0022 E4 — additive, trailing.
+    bool SignatureRequired = false,
+    string? SignatureMeaning = null);
 
 /// <summary>
 /// WP-CL-BE-3a — one row of an instance's transition history (<c>GET instances/{id}/history</c>), in
@@ -457,7 +460,9 @@ public sealed record WorkflowInstanceHistoryEntryDto(
     string? StepName,
     string? Comment,
     string? ReasonCode,
-    DateTimeOffset OccurredAt);
+    DateTimeOffset OccurredAt,
+    // MOD-0022 E4 — the e-signature id the transition carried (ESIGN-BUNDLE x-workflow-addendum), trailing.
+    string? SignatureId = null);
 
 public sealed record ApproveWorkflowTaskRequest(
     string? ActorId,
@@ -465,7 +470,9 @@ public sealed record ApproveWorkflowTaskRequest(
     string IdempotencyKey,
     string? Comment,
     string? EvidenceRef,
-    int? ExpectedVersion = null);
+    int? ExpectedVersion = null,
+    // MOD-0022 E4 (ESIGN-BUNDLE x-workflow-addendum, main) — trailing, optional.
+    string? SignatureId = null);
 
 public sealed record RejectWorkflowTaskRequest(
     string? ActorId,
@@ -651,7 +658,9 @@ public static class WorkflowDefinitionMapper
         task.DueAt,
         task.CompletedAt,
         task.ActionedBy,
-        task.ActionReasonCode);
+        task.ActionReasonCode,
+        task.SignatureRequired,
+        task.SignatureMeaning);
 
     public static SlaEscalationRuleDto ToSlaRule(SlaEscalationRule rule) => new(
         rule.Id,

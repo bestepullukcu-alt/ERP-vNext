@@ -101,6 +101,83 @@ const ceiling = (() => {
   return m ? { tenant: Number(m[1]), platform: Number(m[2]), frozen: Number(m[3]) } : null;
 })();
 
+
+/*
+ * WP-LANE-MAIN-SYNC-02 (owner decision 2026-10-14, BL-638) — the tenant pages that came with main-sync 2026-10-14 and carry
+ * no help text. NOT ledger rows (the ledger's ceiling stays where it was): a named list, owner + reason per page. The
+ * ceiling of this list is the list itself — MAIN_SYNC_2_PAGE_KEYS pins its exact keys, so a 33rd page is red, and a page
+ * whose text is written (or that no longer exists) is red until its row leaves (the list only shrinks).
+ */
+const { STOCK, MANUFACTURING, ESIGN, MAIN_SYNC_2_WHY } = require("./main-sync-owners");
+const MAIN_SYNC_2_PAGES = {
+  BLOCKEDDISPOSITION: { owner: STOCK, why: MAIN_SYNC_2_WHY },
+  BLOCKEDSTOCK: { owner: STOCK, why: MAIN_SYNC_2_WHY },
+  BOMS: { owner: MANUFACTURING, why: MAIN_SYNC_2_WHY },
+  DECISIONSUBMIT: { owner: STOCK, why: MAIN_SYNC_2_WHY },
+  ESIGNAUDITEXPORT: { owner: ESIGN, why: MAIN_SYNC_2_WHY },
+  ESIGNMEANINGS: { owner: ESIGN, why: MAIN_SYNC_2_WHY },
+  ESIGNMYSIGNATURE: { owner: ESIGN, why: MAIN_SYNC_2_WHY },
+  ESIGNPOLICY: { owner: ESIGN, why: MAIN_SYNC_2_WHY },
+  ESIGNREQUESTS: { owner: ESIGN, why: MAIN_SYNC_2_WHY },
+  ESIGNSAMPLEAPPROVALS: { owner: ESIGN, why: MAIN_SYNC_2_WHY },
+  ESIGNVERIFICATION: { owner: ESIGN, why: MAIN_SYNC_2_WHY },
+  LOCATIONS: { owner: STOCK, why: MAIN_SYNC_2_WHY },
+  LOCATIONTREE: { owner: STOCK, why: MAIN_SYNC_2_WHY },
+  LOTCREATE: { owner: STOCK, why: MAIN_SYNC_2_WHY },
+  LOTDETAILS: { owner: STOCK, why: MAIN_SYNC_2_WHY },
+  LOTEDIT: { owner: STOCK, why: MAIN_SYNC_2_WHY },
+  LOTMIGRATION: { owner: STOCK, why: MAIN_SYNC_2_WHY },
+  LOTMOVEMENTS: { owner: STOCK, why: MAIN_SYNC_2_WHY },
+  LOTS: { owner: STOCK, why: MAIN_SYNC_2_WHY },
+  LOTTRACE: { owner: STOCK, why: MAIN_SYNC_2_WHY },
+  QUARANTINEDECIDE: { owner: STOCK, why: MAIN_SYNC_2_WHY },
+  QUARANTINEDETAILS: { owner: STOCK, why: MAIN_SYNC_2_WHY },
+  QUARANTINEQUEUE: { owner: STOCK, why: MAIN_SYNC_2_WHY },
+  QUARANTINESETTINGS: { owner: STOCK, why: MAIN_SYNC_2_WHY },
+  RETESTQUEUE: { owner: STOCK, why: MAIN_SYNC_2_WHY },
+  SERIALS: { owner: STOCK, why: MAIN_SYNC_2_WHY },
+  STOCKLEDGER: { owner: STOCK, why: MAIN_SYNC_2_WHY },
+  STOCKLEDGERCREATE: { owner: STOCK, why: MAIN_SYNC_2_WHY },
+  STOCKMOVEMENTCREATE: { owner: STOCK, why: MAIN_SYNC_2_WHY },
+  STOCKMOVEMENTDETAILS: { owner: STOCK, why: MAIN_SYNC_2_WHY },
+  STOCKMOVEMENTEDIT: { owner: STOCK, why: MAIN_SYNC_2_WHY },
+  STOCKMOVEMENTS: { owner: STOCK, why: MAIN_SYNC_2_WHY }
+};
+const MAIN_SYNC_2_PAGE_KEYS = [
+  "BLOCKEDDISPOSITION",
+  "BLOCKEDSTOCK",
+  "BOMS",
+  "DECISIONSUBMIT",
+  "ESIGNAUDITEXPORT",
+  "ESIGNMEANINGS",
+  "ESIGNMYSIGNATURE",
+  "ESIGNPOLICY",
+  "ESIGNREQUESTS",
+  "ESIGNSAMPLEAPPROVALS",
+  "ESIGNVERIFICATION",
+  "LOCATIONS",
+  "LOCATIONTREE",
+  "LOTCREATE",
+  "LOTDETAILS",
+  "LOTEDIT",
+  "LOTMIGRATION",
+  "LOTMOVEMENTS",
+  "LOTS",
+  "LOTTRACE",
+  "QUARANTINEDECIDE",
+  "QUARANTINEDETAILS",
+  "QUARANTINEQUEUE",
+  "QUARANTINESETTINGS",
+  "RETESTQUEUE",
+  "SERIALS",
+  "STOCKLEDGER",
+  "STOCKLEDGERCREATE",
+  "STOCKMOVEMENTCREATE",
+  "STOCKMOVEMENTDETAILS",
+  "STOCKMOVEMENTEDIT",
+  "STOCKMOVEMENTS"
+];
+
 describe("page help: text or a ledger row, and the ledger only shrinks", () => {
   test("the scan reaches the pages (guards against a vacuous pass)", () => {
     expect(navCodes.length).toBeGreaterThan(150);
@@ -114,8 +191,21 @@ describe("page help: text or a ledger row, and the ledger only shrinks", () => {
   });
 
   test("every tenant page — menu or manifest — has its help text in 7 languages or is named in the ledger", () => {
-    const missing = tenantCodes.filter((code) => !hasText(code, TENANT_LANGS) && !tenantRows.includes(code));
+    const missing = tenantCodes.filter((code) => !hasText(code, TENANT_LANGS) && !tenantRows.includes(code)
+      && !MAIN_SYNC_2_PAGES[code]);
     expect(missing, "pages with no help text and no ledger row").toEqual([]);
+  });
+
+  test("WP-LANE-MAIN-SYNC-02: the main-sync 2026-10-14 page list is exactly its pinned keys, named, and only shrinks", () => {
+    expect(Object.keys(MAIN_SYNC_2_PAGES).sort(), "the list's keys ≠ its pin (adding or removing a row edits the pin too)")
+      .toEqual([...MAIN_SYNC_2_PAGE_KEYS].sort());
+    const owners = { STOCK, MANUFACTURING, ESIGN };
+    const misnamed = Object.entries(MAIN_SYNC_2_PAGES).filter(([, row]) => !row || !Object.values(owners).includes(row.owner)
+      || row.why !== MAIN_SYNC_2_WHY).map(([code]) => code);
+    expect(misnamed, "a row without its owner or the main-sync reason").toEqual([]);
+    const stale = Object.keys(MAIN_SYNC_2_PAGES).filter((code) => !tenantCodes.includes(code) || hasText(code, TENANT_LANGS)
+      || tenantRows.includes(code));
+    expect(stale, "rows whose page has its text now, is in the ledger, or no longer exists — remove them").toEqual([]);
   });
 
   test("every platform admin page has its help text in en + tr or is named in the ledger", () => {

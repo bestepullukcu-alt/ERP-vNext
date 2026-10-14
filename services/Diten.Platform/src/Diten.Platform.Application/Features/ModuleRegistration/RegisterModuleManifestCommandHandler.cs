@@ -25,6 +25,7 @@ namespace Diten.Platform.Application.Features.ModuleRegistration;
 ///     reported), never deleting the holder. Any page/action that still hits a unique-key violation (E11000) is skipped
 ///     too. A partial failure returns 200 + a summary listing the skips — the whole register never 500s.
 ///   • Every reconciled page RequiredPermission + action PermissionKey is best-effort synced to AuthService.
+///   • FU-RSV-01: every manifest ApiPermissions key (no UI) is synced the same way with its declared scope.
 /// </summary>
 public sealed class RegisterModuleManifestCommandHandler
     : IRequestHandler<RegisterModuleManifestCommand, Response<ModuleManifestReconcileResult>>
@@ -224,6 +225,35 @@ public sealed class RegisterModuleManifestCommandHandler
                 {
                     permissionsSynced++;
                 }
+            }
+        }
+
+        // FU-RSV-01 — API-only permissions (a [HasPermission] key with no UI page/button): synced to AuthService with
+        // the DECLARED scope, so a tenant admin can grant them. No catalog page/action is created and nothing is pruned
+        // when one disappears (permissions are additive, see above). AuthService never lowers an existing key's scope,
+        // so an unknown scope is skipped — never assumed PlatformAdmin, never defaulted.
+        foreach (var apiPermission in manifest.ApiPermissions ?? Array.Empty<ModuleManifestPermission>())
+        {
+            var permissionKey = ModulePageDescriptorNormalizer.NormalizePermission(apiPermission.PermissionKey);
+            var scope = apiPermission.Scope; // exact, case-sensitive: "Tenant" | "PlatformAdmin"
+            if (string.IsNullOrWhiteSpace(permissionKey))
+            {
+                continue;
+            }
+
+            if (scope is not ("Tenant" or "PlatformAdmin"))
+            {
+                _logger.LogWarning(
+                    "Skipping manifest API permission (unknown scope). ModuleCode={ModuleCode} PermissionKey={PermissionKey} Scope={Scope}",
+                    moduleCode,
+                    permissionKey,
+                    scope);
+                continue;
+            }
+
+            if (await TrySyncPermissionWithScopeAsync(permissionKey, apiPermission.DisplayName?.Trim() ?? permissionKey, moduleCode, scope, ct))
+            {
+                permissionsSynced++;
             }
         }
 
@@ -712,18 +742,29 @@ public sealed class RegisterModuleManifestCommandHandler
         return existing;
     }
 
-    private async Task<bool> TrySyncPermissionAsync(
+    // Pages / actions: the scope follows the route.
+    private Task<bool> TrySyncPermissionAsync(
         string? permissionKey,
         string displayName,
         string permissionOwnerModuleCode,
         string? routePath,
+        CancellationToken ct) =>
+        TrySyncPermissionWithScopeAsync(
+            permissionKey, displayName, permissionOwnerModuleCode, ModulePageDescriptorNormalizer.ScopeFromRoute(routePath), ct);
+
+    // FU-RSV-01 (main) — API-only permissions carry an explicit, already-validated scope.
+    private async Task<bool> TrySyncPermissionWithScopeAsync(
+        string? permissionKey,
+        string displayName,
+        string permissionOwnerModuleCode,
+        string scope,
         CancellationToken ct)
     {
         var status = await _permissionSyncService.SyncPermissionAsync(
             permissionKey,
             displayName,
             permissionOwnerModuleCode,
-            ModulePageDescriptorNormalizer.ScopeFromRoute(routePath),
+            scope,
             ct);
         return status == CatalogPermissionSyncStatus.Synced;
     }

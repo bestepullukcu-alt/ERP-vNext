@@ -6,17 +6,24 @@
 
 | Contract | Owner | Format | Durum |
 |---|---|---|---|
-| **INVENTORY-BUNDLE** | MOD-0173 | `inventory-bundle.openapi.yaml` (OpenAPI 3.1) | ✅ **v1 · mock DOĞRULANDI (Prism 4.10.5)** |
+| **INVENTORY-BUNDLE** | MOD-0173 | `inventory-bundle.openapi.yaml` (OpenAPI 3.1) | ✅ **v1 · mock DOĞRULANDI (Prism 4.10.5)** · **1.2.0 additive** (WP-0173-PM1, CT-PM1-1): 422 `PRODUCT_MASTER_DATA_INCOMPLETE` / `ITEM_NOT_ACTIVE` / `SKU_LEVEL_NOT_STOCKABLE` on `postMovement` (PRODUCT-MASTER 1.1 consumer rules) · **1.1.0 additive** (WP-0173-PM2, MOD-0290 R-12): `SkuLevel` + `Item`; `getStockPresence` — `GET /api/internal/inventory/stock-presence`, service-to-service (`X-Internal-Api-Key` + `X-Tenant-Id`, no quantities, not on the Gateway) · 1.0.2 description-only (1.0.1 MOD-0174 CT-D1 lot hold; 1.0.2 MOD-0175 CT-Q3: `LOT_RETEST_DUE` + availability "retest-due lots excluded") · **1.2.1** description only (WP-0174-ITEM): `SKU_LEVEL_NOT_STOCKABLE` also for a `stockable: false` SKU |
 | **PRODUCT-MASTER-BUNDLE** v1.0 | MOD-0290 | `product-master-bundle.v1.0.openapi.yaml` (OpenAPI 3.1) — v1.0'ın değişmemiş kopyası; **Prism taklidi bunu kullanır** | ✅ **v1 CT-review PASS · freeze-ready** |
-| **PRODUCT-MASTER-BUNDLE** v1.1 | MOD-0290 | `product-master-bundle.openapi.yaml` (OpenAPI 3.1) — v1.1 `1.1.0-draft.4` (MOD-0290-FU04 kalem kaydı; yalnız ekleme + O-1 davranış daralması) | 🔶 **DRAFT** · CT dondurana kadar değişebilir; stok ekibinin O-1 yazılı onayı bekleniyor |
+| **PRODUCT-MASTER-BUNDLE** v1.1 | MOD-0290 | `product-master-bundle.openapi.yaml` (OpenAPI 3.1) — v1.1 `1.1.0-draft.16` (MOD-0290-FU04 kalem kaydı; yalnız ekleme + O-1 davranış daralması; main'in `1.1.0-draft.11` dosya kopyası — WP-MVP1-FUB2, CT hattının `00a4d4268`'inden — main birleşimi 2026-10-13 ile bu taslağa kavuştu) | 🔶 **DRAFT** · CT dondurana kadar değişebilir; stok ekibinin O-1 yazılı onayı bekleniyor |
 | **LOCATION** | Location Master | `location.openapi.yaml` (OpenAPI 3.1) | ✅ **v1 freeze-ready** |
-| **TRACE-BUNDLE** | MOD-0174 | `trace.openapi.yaml` (OpenAPI 3.1) | ✅ **v1 freeze-ready** |
+| **TRACE-BUNDLE** | MOD-0174 | `trace.openapi.yaml` (OpenAPI 3.1) | ✅ **v1 freeze-ready** · **1.3.0 additive** (WP-0174-ITEM): `SkuLevel` + `Item`; `createLot` 422 `PRODUCT_MASTER_DATA_INCOMPLETE` / `SKU_LEVEL_NOT_STOCKABLE` |
+| **QUARANTINE-BUNDLE** | MOD-0175 | `quarantine.openapi.yaml` (OpenAPI 3.1) | ✅ **1.0.0 FROZEN** (WP-0175-Q1) · **1.1.0 additive** (WP-0174-ITEM): `SkuLevel` + `Item`; nothing else · **1.2.0 additive** (WP-MVP1-FUB2): `HistoryAction` + `NoteUpdated` with the optional `HistoryEntry.noteChange` (`NoteChange`: note length / attachment count before → after) — FU-0175-ITEM-01; `updateHold` lists `QUARANTINE_DECISION_ALREADY_PENDING` (409, the note is locked while a submitted decision is open) — FU-0175-ITEM-03; the replay answers the first result (O-ITEM-4); the 1.1.0 file is the test fixture `quarantine-v1.1.0.openapi.yaml` |
 | **GRN-EVENT** | MOD-0142 | `grn-event.openapi.yaml` (OpenAPI 3.1) | ✅ **v1 freeze-ready** |
-| **BOM** | MOD-0193 | `bom.openapi.yaml` (OpenAPI 3.1) | ✅ **v1 freeze-ready** |
+| **BOM** | MOD-0193 | `bom.openapi.yaml` (OpenAPI 3.1) | ✅ **v1 FROZEN** · v1.1.0 additive (2026-10-06, MVP-3: management surface; v1.0.0 operations unchanged) · **v1.2.0 additive** (2026-10-13): BOM-version lifecycle event `BomVersionEvent` (`manufacturing.bomversion.effective.v1` / `.superseded.v1`, outbox in the BOM transaction; identity + state only, consumer MOD-0189 MRP) |
 | **DEMAND** | MOD-0188 | `demand.openapi.yaml` (OpenAPI 3.1) | ✅ **v1 freeze-ready** |
 | **ATP-BUNDLE** | MOD-0172 | `atp-bundle.openapi.yaml` (OpenAPI 3.1) | ✅ **v1 freeze-ready** |
 
 **→ 8/8 Faz-0 contract OpenAPI TAMAM (hepsi valid, x-status FROZEN).**
+
+### MVP-1 Platform Paylaşılan Hizmetler (2026-10-08)
+
+| Contract | Owner | Format | Durum |
+|---|---|---|---|
+| **ESIGN-BUNDLE** | MOD-0022 (Diten.Platform + Diten.AuthService §4.1–4.3) | `esign.openapi.yaml` (OpenAPI 3.1, v1.0.1) | ✅ **v1 FROZEN** (WP-0022-E2, CT-kabullü öneri `drafts/esign-bundle-v1-proposal.md` ile birebir — diff testi `ESignatureContractTests`). E1 (§4.1–4.3) + E2 (§4.4–4.16, §4.20–4.26) uygulandı; §4.17–4.19 (örnekler) E3, Workflow eki E4. Sonrası yalnız additive (minor). · **1.0.1 yalnız açıklama** (WP-MVP1-FUB2, FU-0022-CT-01): görünürlük notu — şirketsiz (kiracı düzeyi) kayıt `esign.signatures.read` / `esign.signatures.export` sahiplerine görünür, şirket kaydı SEC-002 veri kapsamına göre, imzalayan kendi kaydını görür (VIS1 / FUB1 davranışı). |
 
 ### MVP-6 öne çekilmiş consumed seam'ler (front-loaded 2026-09-15)
 

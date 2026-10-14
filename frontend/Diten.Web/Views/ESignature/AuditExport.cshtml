@@ -1,0 +1,155 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@using Diten.Web.Models.DataTable
+@inject IHtmlLocalizer<Diten.Web.Views.ESignature.ESignature> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["ESign.Export.Title"].Value;
+    Layout = "_LayoutTenantShell";
+}
+@*
+    MOD-0022 E5W2 — Denetim dışa aktarımı (ESIGN_AUDITEXPORT, /ESignature/AuditExport, esign.signatures.export; pack §11.1, §11.3;
+    mockup v2 tab 4). §17.3 (evidence §0): Mixed — the filter + a golden slim SERVER list (emsal Inventory/Locations) + the export
+    log. Data: searchSignatures through /ESignature/list/signatures; PDF / CSV = createExport (server PDF, CT-D11) through the
+    proxy's binary branch, downloaded as a blob (emsal Platform/AuditLog/index.js:571-602); the log = listExports (file hash).
+    UAS-001 below.
+*@
+@if (!Perms.Has("esign.signatures.export"))
+{
+    <partial name="_AccessDenied" model="@Localizer["ESign.Export.Title"].Value" />
+    return;
+}
+@{
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-esign-export",
+        DataMode = "server",
+        Slug = "esign-export",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["ESign.Export.Col.At"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ESign.Verify.SignatureId"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["ESign.Export.Col.Signer"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ESign.Export.Col.Meaning"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ESign.Export.Col.Record"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ESign.Common.Company"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ESign.Export.Col.Verification"].Value }
+        ],
+        ActionsHeader = null
+    };
+}
+
+@* Contract marker: <partial name="_Filter" /> *@
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <label class="small text-muted mb-0" for="filterFrom">@Localizer["ESign.Common.From"]</label>
+                        <input type="date" id="filterFrom" class="form-control form-control-sm" style="width:9.5rem" />
+                        <label class="small text-muted mb-0" for="filterTo">@Localizer["ESign.Common.To"]</label>
+                        <input type="date" id="filterTo" class="form-control form-control-sm" style="width:9.5rem" />
+                    </div>
+                    <div class="filter-chip">
+                        <select id="filterModule" class="form-select form-select-sm select2" data-placeholder="@Localizer["ESign.Common.Module"]">
+                            <option value="">@Localizer["ESign.Common.AllModules"]</option>
+                            <option value="workflow">@Localizer["ESign.Module.workflow"]</option>
+                            <option value="inventory">@Localizer["ESign.Module.inventory"]</option>
+                            <option value="document-management">@Localizer["ESign.Module.documentmanagement"]</option>
+                        </select>
+                    </div>
+                    <div class="filter-chip">
+                        <select id="filterSigner" class="form-select form-select-sm select2" data-placeholder="@Localizer["ESign.Export.Col.Signer"]">
+                            <option value="">@Localizer["ESign.Export.AllSigners"]</option>
+                        </select>
+                    </div>
+                    <div class="filter-chip">
+                        <select id="filterMeaning" class="form-select form-select-sm select2" data-placeholder="@Localizer["ESign.Export.Col.Meaning"]">
+                            <option value="">@Localizer["ESign.Export.AllMeanings"]</option>
+                        </select>
+                    </div>
+                    <div class="filter-chip">
+                        <select id="filterCompany" class="form-select form-select-sm select2" data-placeholder="@Localizer["ESign.Common.Company"]">
+                            <option value="">@Localizer["ESign.Export.AllCompanies"]</option>
+                        </select>
+                    </div>
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">@SharedLocalizer["Apply"]</button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">@SharedLocalizer["Reset"]</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+    <div>
+        <h5 class="mb-0">@Localizer["ESign.Export.Title"]</h5>
+        <p class="mb-0 text-muted">@Localizer["ESign.Export.Sub"]</p>
+    </div>
+    <div class="d-flex flex-wrap align-items-center gap-2">
+        <div class="btn-group btn-group-sm" role="group" aria-label="@Localizer["ESign.Export.Preview"]">
+            <button type="button" class="btn btn-label-secondary active" data-esign-view="table"><i class="bx bx-table me-1"></i>@Localizer["ESign.Export.View.Table"]</button>
+            <button type="button" class="btn btn-label-secondary" data-esign-view="pdf"><i class="bx bxs-file-pdf me-1"></i>@Localizer["ESign.Export.View.Pdf"]</button>
+        </div>
+        <button type="button" class="btn btn-sm btn-label-primary" id="esignExportPdf"><i class="bx bxs-file-pdf me-1"></i>@Localizer["ESign.Export.AsPdf"]</button>
+        <button type="button" class="btn btn-sm btn-primary" id="esignExportCsv"><i class="bx bx-spreadsheet me-1"></i>@Localizer["ESign.Export.AsCsv"]</button>
+    </div>
+</div>
+<p class="small text-muted mb-3" id="esignExportCount"></p>
+
+<div id="esignExportTableView">
+    @* Contract markers are rendered by _ListShell: <partial name="_TableSkeleton" />, <table id="dt-esign-export" data-dt-standard="v2"> *@
+    <partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />
+</div>
+
+@* The PDF preview of the rows on screen (mockup "İmza Denetim Raporu"); the file itself is generated by the server (CT-D11). *@
+<div class="card d-none" id="esignExportPdfView">
+    <div class="card-body bg-lighter">
+        <div class="bg-white border rounded mx-auto p-4" style="max-width:820px">
+            <div class="d-flex flex-wrap justify-content-between gap-2 border-bottom pb-3 mb-3">
+                <div><h6 class="mb-0">@Localizer["ESign.Export.Report.Title"]</h6><small class="text-muted">@Localizer["ESign.Export.Report.Sub"]</small></div>
+                <div class="text-end small"><span class="d-block" id="esignExportPdfFilter"></span><span class="text-muted" id="esignExportPdfCount"></span></div>
+            </div>
+            <div class="row g-3" id="esignExportPdfBlocks"></div>
+            <small class="text-muted d-block mt-3">@Localizer["ESign.Export.Report.Foot"]</small>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header d-flex flex-wrap align-items-center gap-2">
+        <h6 class="mb-0 text-uppercase text-heading fw-semibold"><i class="bx bx-history me-1"></i>@Localizer["ESign.Export.Log.Title"]</h6>
+        <small class="text-muted">@Localizer["ESign.Export.Log.Sub"]</small>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-sm mb-0" id="esignExportLog">
+            <thead>
+                <tr>
+                    <th>@Localizer["ESign.Export.Log.Number"]</th>
+                    <th>@Localizer["ESign.Export.Col.At"]</th>
+                    <th>@Localizer["ESign.Export.Log.By"]</th>
+                    <th>@Localizer["ESign.Export.Log.Format"]</th>
+                    <th>@Localizer["ESign.Export.Log.Count"]</th>
+                    <th>@Localizer["ESign.Export.Log.Filter"]</th>
+                    <th>@Localizer["ESign.Export.Log.FileHash"]</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/ESignature/_ESignatureL10n.cshtml" />
+    <partial name="~/Views/ESignature/_ESignatureListL10n.cshtml" />
+    <script src="~/assets/js/shared/premium-modal.js" asp-append-version="true"></script>
+    <script src="~/assets/js/ESignature/esign-dialog.js" asp-append-version="true"></script>
+    <script src="~/assets/js/ESignature/esign-pages.js" asp-append-version="true"></script>
+    <script src="~/assets/js/ESignature/audit-export.js" asp-append-version="true"></script>
+}

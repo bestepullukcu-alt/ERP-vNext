@@ -104,6 +104,9 @@ public sealed class ApiStartupExecutionMode
         services.AddHostedService<VerifiedGskuOperationalProvisioningRunner>();
         services.AddSingleton<ModuleSelfRegistrationGate>();
         services.AddHostedService<PlatformModuleSelfRegistrationWorker>();
+        // MOD-0022 E5W2 (CT-D19, main) — register MOD-0023's signable action workflow.task.approve in the e-signature
+        // catalog (in-process, idempotent): startup provisioning, so it is omitted with the others.
+        services.AddHostedService<Diten.Platform.API.Services.Workflow.WorkflowSignableActionRegistrationWorker>();
         services.AddHostedService<PlatformPermissionAutoRegistrationWorker>();
     }
 

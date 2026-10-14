@@ -1,0 +1,24 @@
+@using Diten.Web.Views.Traceability.Lots
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LotsIndex> Localizer
+@*
+    Durum Değiştir (pack §11.3, K-E) — the BODY of the confirmation, as a localized template. status.js clones it into
+    window.showConfirm (the one dialog implementation; no raw Swal.fire): current status, the four targets with their
+    allowed / disallowed reason ("Sistem verir; elle seçilemez" for Expired), the Blocked impact line + the required
+    acknowledgement, and the reason (≥ 10 characters) as the dialog's input.
+*@
+<template id="lot-status-template">
+    <div class="text-start small">
+        <div class="mb-2">@Localizer["Status.Dialog.Current"]: <strong data-current></strong></div>
+        <div class="mb-1 fw-medium">@Localizer["Status.Dialog.New"]</div>
+        <div class="d-flex flex-column gap-1 mb-2" data-options></div>
+        <div class="alert alert-danger py-2 px-3 mb-2 d-none" data-danger>
+            <div class="fw-medium">@Localizer["Status.Dialog.Danger"]</div>
+            <div data-impact></div>
+            <div class="form-check mt-2 mb-0">
+                <input class="form-check-input" type="checkbox" id="lotStatusAck" />
+                <label class="form-check-label" for="lotStatusAck">@Localizer["Status.Dialog.Acknowledge"]</label>
+            </div>
+        </div>
+    </div>
+</template>

@@ -113,6 +113,10 @@ public static class PlatformSchemaMigrations
             database.GetCollection<WorkingCalendar>(PlatformCollections.WorkingCalendars).Indexes,
             "ux_working_calendars_scope_country_year_code");
 
+        // MOD-0022 E5B (FU-0022-E4-01) — the per-task UNIQUE e-signature index becomes a lookup index under a new name, so
+        // a task can be re-signed. Dropped only when name AND options are exactly E2's; logged; a no-op once done.
+        await ESignatureSchemaMigrations.RetireWorkflowTaskUniqueIndexAsync(database, cancellationToken: cancellationToken);
+
         // MOD-0280-FU01 T1b v2 F8 — the entries' unique key gained SourceRef (a Meeting row per meeting) under a NEW
         // name; the T1a index it replaces is retired here, before the manifest builds the new one. Without the drop
         // the old, narrower key would keep refusing a second meeting row on the same day.

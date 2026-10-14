@@ -1,0 +1,45 @@
+diff --git a/gateway/Diten.ApiGateway/ocelot.json b/gateway/Diten.ApiGateway/ocelot.json
+index 7489a965..c2b6d7e4 100644
+--- a/gateway/Diten.ApiGateway/ocelot.json
++++ b/gateway/Diten.ApiGateway/ocelot.json
+@@ -803,6 +803,40 @@
+       ],
+       "UpstreamScheme": "http"
+     },
++    {
++      "DownstreamPathTemplate": "/api/inventory",
++      "DownstreamScheme": "http",
++      "DownstreamHostAndPorts": [
++        {
++          "Host": "localhost",
++          "Port": 5066
++        }
++      ],
++      "UpstreamPathTemplate": "/api/inventory",
++      "UpstreamHttpMethod": [
++        "GET",
++        "POST",
++        "OPTIONS"
++      ],
++      "UpstreamScheme": "http"
++    },
++    {
++      "DownstreamPathTemplate": "/api/inventory/{everything}",
++      "DownstreamScheme": "http",
++      "DownstreamHostAndPorts": [
++        {
++          "Host": "localhost",
++          "Port": 5066
++        }
++      ],
++      "UpstreamPathTemplate": "/api/inventory/{everything}",
++      "UpstreamHttpMethod": [
++        "GET",
++        "POST",
++        "OPTIONS"
++      ],
++      "UpstreamScheme": "http"
++    },
+     {
+       "DownstreamPathTemplate": "/api/personalization/views",
+       "DownstreamScheme": "http",

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <!-- WP-0173-LOC2: model translation, native-speaker review pending (FU-LOC2-01). -->
+  <data name="LocationTreeTitle" xml:space="preserve"><value>库位</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>公司实体场所的唯一清单。库存、仓库、采购和生产均从此清单读取。</value></data>
+  <data name="TabTree" xml:space="preserve"><value>层级</value></data>
+  <data name="TabList" xml:space="preserve"><value>列表</value></data>
+  <data name="CompanyLabel" xml:space="preserve"><value>公司</value></data>
+  <data name="CompanyPlaceholder" xml:space="preserve"><value>请选择公司</value></data>
+  <data name="CompanySelectHint" xml:space="preserve"><value>请选择要查看库位的公司。选择公司之前不会显示任何数据。</value></data>
+  <data name="CompanyUnavailable" xml:space="preserve"><value>无法加载公司列表，因此不显示任何库位。请向管理员申请查看公司的权限，或稍后重试。</value></data>
+  <data name="TreeHeading" xml:space="preserve"><value>库位层级</value></data>
+  <data name="ShowArchived" xml:space="preserve"><value>显示已归档</value></data>
+  <data name="AddNewSite" xml:space="preserve"><value>新建工厂</value></data>
+  <data name="EmptyTitle" xml:space="preserve"><value>该公司还没有库位</value></data>
+  <data name="EmptyBody" xml:space="preserve"><value>先添加第一个工厂。仓库、存储区和货位在其下添加。</value></data>
+  <data name="AddFirstSite" xml:space="preserve"><value>添加第一个工厂</value></data>
+  <data name="SelectHint" xml:space="preserve"><value>在树中选择一个库位以查看详情。</value></data>
+  <data name="DetailsHeading" xml:space="preserve"><value>基本信息</value></data>
+  <data name="StockHeading" xml:space="preserve"><value>库存</value></data>
+  <data name="StockOnLocation" xml:space="preserve"><value>本库位</value></data>
+  <data name="StockBelow" xml:space="preserve"><value>下级库位</value></data>
+  <data name="StockUnknown" xml:space="preserve"><value>暂时无法读取库存情况。</value></data>
+  <data name="StockYes" xml:space="preserve"><value>有库存</value></data>
+  <data name="StockNo" xml:space="preserve"><value>无库存</value></data>
+  <data name="ChildrenHeading" xml:space="preserve"><value>下级库位</value></data>
+  <data name="ChildrenCount" xml:space="preserve"><value>{0} 个库位</value></data>
+  <data name="NoChildrenForBin" xml:space="preserve"><value>货位没有下级库位。</value></data>
+  <data name="ShowInList" xml:space="preserve"><value>在列表中显示</value></data>
+  <data name="TooManyChildren" xml:space="preserve"><value>此记录下有 {0} 个库位，数量过多，无法在此显示。</value></data>
+  <data name="OpenInList" xml:space="preserve"><value>在列表中打开</value></data>
+  <data name="HistoryHeading" xml:space="preserve"><value>变更历史</value></data>
+  <data name="HistoryDate" xml:space="preserve"><value>日期时间</value></data>
+  <data name="HistoryUser" xml:space="preserve"><value>用户</value></data>
+  <data name="HistoryField" xml:space="preserve"><value>变更</value></data>
+  <data name="HistoryChange" xml:space="preserve"><value>旧值 → 新值</value></data>
+  <data name="HistoryEmpty" xml:space="preserve"><value>没有记录的变更。</value></data>
+  <data name="HistoryMore" xml:space="preserve"><value>显示更早的变更</value></data>
+  <data name="InactiveNote" xml:space="preserve"><value>此库位无法在库存单据中选择。</value></data>
+  <data name="ArchivedNote" xml:space="preserve"><value>已归档的记录无法重新启用或修改。库位永不删除：历史库存移动仍显示此库位。</value></data>
+  <data name="ExternalNote" xml:space="preserve"><value>库存保存在外部系统中，并通过集成在此跟踪。</value></data>
+  <data name="HistAction_Created" xml:space="preserve"><value>创建</value></data>
+  <data name="HistAction_Updated" xml:space="preserve"><value>更新</value></data>
+  <data name="HistAction_Moved" xml:space="preserve"><value>移动</value></data>
+  <data name="HistAction_StatusChanged" xml:space="preserve"><value>状态变更</value></data>
+  <data name="HistAction_BulkCreated" xml:space="preserve"><value>批量创建</value></data>
+  <data name="HistField_code" xml:space="preserve"><value>代码</value></data>
+  <data name="HistField_name" xml:space="preserve"><value>名称</value></data>
+  <data name="HistField_parentId" xml:space="preserve"><value>上级</value></data>
+  <data name="HistField_status" xml:space="preserve"><value>状态</value></data>
+  <data name="HistField_isStockable" xml:space="preserve"><value>可存放库存</value></data>
+  <data name="HistField_operatingMode" xml:space="preserve"><value>运行模式</value></data>
+  <data name="HistField_orgUnitRef" xml:space="preserve"><value>组织单元</value></data>
+  <data name="HistField_costCenterCode" xml:space="preserve"><value>成本中心代码</value></data>
+</root>

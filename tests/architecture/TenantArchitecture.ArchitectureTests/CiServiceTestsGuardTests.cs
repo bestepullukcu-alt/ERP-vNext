@@ -394,6 +394,8 @@ public class CiServiceTestsGuardTests
             "matrix.suite == 'mdm-app'",
             "matrix.suite == 'platform-bgjobs'",
             "matrix.suite == 'platform-eventing'",
+            // WP-LANE-MAIN-SYNC-02 M1 (owner decision 2026-10-14): Prism for the Inventory row.
+            "matrix.suite == 'inventory-tests'",
             "startsWith(matrix.suite, 'auth-')",
             "always()",
             "always()"
@@ -532,9 +534,35 @@ public class CiServiceTestsGuardTests
             .ToList();
         Assert.True(callers.Count >= 2, $"only {callers.Count} live-broker test files found — the scan is blind");
         foreach (var (path, text) in callers)
+        {
+            var relative = Path.GetRelativePath(root, path).Replace('\\', '/');
+            if (LiveBrokerNamedExceptions.ContainsKey(relative))
+            {
+                continue;
+            }
+
             foreach (var problem in LiveBrokerCallsOutsideTheCollection(text))
-                Assert.Fail($"{Path.GetRelativePath(root, path)}: {problem}");
+                Assert.Fail($"{relative}: {problem}");
+        }
+
+        // The list only shrinks: a named file that is fixed (no problem left) or gone is red until its row leaves.
+        foreach (var named in LiveBrokerNamedExceptions.Keys)
+        {
+            var full = Path.Combine(root, named);
+            Assert.True(File.Exists(full) && LiveBrokerCallsOutsideTheCollection(File.ReadAllText(full)).Count > 0,
+                $"{named} no longer needs its live-broker exception: remove the row.");
+        }
     }
+
+    // WP-LANE-MAIN-SYNC-02 M1 (owner decision 2026-10-14, BL-637) — named, expiring exception: Manufacturing's broker test
+    // came with main-sync 2026-10-14 in its own BomOutboxCollection; joining LiveRabbitMqCollection is its owner's change
+    // (XMC-001). It skips without MANUFACTURING_TEST_RABBITMQ, which no CI row sets.
+    private static readonly IReadOnlyDictionary<string, (string Owner, string Reason, string Backlog)> LiveBrokerNamedExceptions =
+        new Dictionary<string, (string, string, string)>(StringComparer.Ordinal)
+        {
+            ["services/Diten.ManufacturingService/tests/Diten.ManufacturingService.Tests/Api/BomEventBrokerDeliveryTests.cs"] =
+                ("Üretim (MVP-3) geliştiricisi", "main-sync 2026-10-14", "BL-637")
+        };
 
     // The rule on synthetic sources: what FIX1's reader missed is red now.
     [Theory]

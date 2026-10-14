@@ -96,6 +96,7 @@ public sealed class ModuleManifestCarriesNoAddressTests
     /// is not saying "never add a field" — it is saying a human looks at every field added to a client-supplied
     /// contract and confirms it is not an address before the build goes green. That costs one line here. The
     /// alternative costs a token.</para>
+    /// <para>FU-RSV-01 / WP-0173-RSV1: ApiPermissions — CT reviewed 2026-10-02, no address-shaped field.</para>
     /// </summary>
     [Fact]
     public void The_manifest_property_set_is_pinned_so_a_field_the_name_check_would_miss_still_fails()
@@ -120,6 +121,7 @@ public sealed class ModuleManifestCarriesNoAddressTests
             // dials it, so it cannot carry a scheme/host/port. Same field on the page, below.
             "ModuleManifestAction.PermissionOwnerModuleCode",
             "ModuleManifestAction.SortOrder",
+            "ModuleManifestDocument.ApiPermissions",
             "ModuleManifestDocument.DisplayName",
             "ModuleManifestDocument.Domain",
             "ModuleManifestDocument.Icon",
@@ -160,7 +162,10 @@ public sealed class ModuleManifestCarriesNoAddressTests
             "ModuleManifestPage.PermissionOwnerModuleCode",
             "ModuleManifestPage.RequiredPermission",
             "ModuleManifestPage.RoutePath",
-            "ModuleManifestPage.SortOrder"
+            "ModuleManifestPage.SortOrder",
+            "ModuleManifestPermission.DisplayName",
+            "ModuleManifestPermission.PermissionKey",
+            "ModuleManifestPermission.Scope"
         ];
 
         Assert.Equal(expected, actual);

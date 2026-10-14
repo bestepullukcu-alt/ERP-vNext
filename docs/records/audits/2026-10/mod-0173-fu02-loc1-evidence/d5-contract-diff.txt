@@ -1,0 +1,24 @@
+# D5 — git diff 01118cf0e -- docs/analysis/contracts/location.openapi.yaml
+
+ docs/analysis/contracts/location.openapi.yaml | 276 +++++++++++++++++++++++++-
+ 1 file changed, 274 insertions(+), 2 deletions(-)
+
+## Removed lines (all of them):
+-  version: 1.0.0
+-  x-owner: Location Master (MOD-? candidate)
+
+## v1 content check (d5-contract-check.js):
+v1.0.0 lines: 87, v1.1.0 lines: 359; v1 lines not found in order: 2
+    version: 1.0.0
+    x-owner: Location Master (MOD-? candidate)
+
+operation           sha256(v1.0.0)    sha256(v1.1.0)    result
+getLocation         431ded311fce608c  431ded311fce608c  IDENTICAL (11 lines)
+listLocations       c06b08db301c6196  c06b08db301c6196  IDENTICAL (12 lines)
+getLocationPath     f5dbda16384e07e6  f5dbda16384e07e6  IDENTICAL (10 lines)
+validateLocations   f2ff6cb8398fb7ce  f2ff6cb8398fb7ce  IDENTICAL (11 lines)
+LocationType:       bf8dcf30e5df0535  bf8dcf30e5df0535  IDENTICAL
+LocationRef:        c923a9d0438bcff5  c923a9d0438bcff5  IDENTICAL
+Error:              e16481152ab4cd82  e16481152ab4cd82  IDENTICAL
+UnknownLocation:    a19c4500366ff02d  a19c4500366ff02d  IDENTICAL
+securitySchemes:    1808e2e85ed213c1  1808e2e85ed213c1  IDENTICAL

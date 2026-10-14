@@ -1,0 +1,209 @@
+@model Diten.Web.Models.Traceability.LotFormPageViewModel
+@using Diten.Web.Models.Traceability
+@using Diten.Web.Views.Traceability.Lots
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LotsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@*
+    MOD-0174 P3 — Yeni Lot / Düzenle (pack §11.3): Golden Reference COMPACT form (9 fields) + summary card. One partial for
+    both pages. Create: Ürün / SKU and Lot No are entered; Edit: both are READ-ONLY (immutable — LOT_KEY_IMMUTABLE).
+    Editing a non-Draft lot needs a reason ≥ 10 characters (K-C, CT-D8): the fields stay locked until it is long enough,
+    the "changes" panel lists old → new. form.js posts to the same-origin /Lots/create | /Lots/edit/{id}; the service
+    decides (duplicate, dates, reason) and its refusal comes back to its field.
+*@
+@{
+    var title = Model.IsEdit ? Localizer["Form.TitleEdit"].Value : Localizer["Form.TitleNew"].Value;
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["Company.Label"].Value;
+    company.Placeholder = Localizer["Company.Placeholder"].Value;
+    company.SelectHint = Localizer["Company.Required"].Value;
+    company.UnavailableText = Localizer["Company.Unavailable"].Value;
+}
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 row-gap-4">
+    <div>
+        <h5 class="mb-0">@title</h5>
+        <nav aria-label="breadcrumb" class="text-muted">
+            <ol class="breadcrumb mb-0 py-0">
+                <li class="breadcrumb-item"><a href="/Lots">@Localizer["Page.Title"]</a></li>
+                <li class="breadcrumb-item active text-primary">@title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex gap-3">
+        <a href="@(Model.IsEdit && Model.LotId is not null ? "/Lots/Details?lotId=" + Model.LotId : "/Lots")" class="btn btn-label-secondary">@SharedLocalizer["Cancel"]</a>
+        @if (company.Ready && (!Model.IsEdit || Model.LotId is not null))
+        {
+            <button type="submit" form="formLot" id="btnLotSubmit" class="btn btn-primary">@SharedLocalizer["Save"]</button>
+        }
+    </div>
+</div>
+
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (!company.Ready)
+{
+    return;
+}
+
+@if (Model.IsEdit && Model.LotId is null)
+{
+    <div class="alert alert-info" role="status" id="lot-missing">@Localizer["Empty.Lot"]</div>
+    return;
+}
+
+<div id="lot-form-alert" class="alert alert-danger d-none" role="alert">
+    <div data-alert-text></div>
+    <details class="small mt-1 d-none" data-alert-reference><summary>@Localizer["Error.Correlation"]</summary><span data-alert-correlation></span></details>
+</div>
+
+<form id="formLot" novalidate data-mode="@(Model.IsEdit ? "edit" : "create")" data-lot-id="@Model.LotId">
+    @Html.AntiForgeryToken()
+    <input type="hidden" id="lotIdempotencyKey" value="@Model.IdempotencyKey" />
+    <input type="hidden" id="lotIfMatch" value="" />
+    <div class="row g-4">
+        <div class="col-12 col-lg-8">
+            @if (Model.IsEdit)
+            {
+                <div class="alert alert-warning d-none" role="status" id="lot-locked-banner">@Localizer["Form.LockedBanner"]</div>
+            }
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="card-section-title mb-4"><i class="bx bx-purchase-tag-alt"></i>@Localizer["Detail.Info"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label for="lotItemId" class="form-label fw-medium">@Localizer["Form.Product"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-cube diten-field-icon" aria-hidden="true"></i>
+                                <select id="lotItemId" class="form-select" data-placeholder="@Localizer["Form.Product"]" @(Model.IsEdit ? "disabled" : "")><option value=""></option></select>
+                            </div>
+                            <div class="invalid-feedback d-block" data-error-for="itemId"></div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="lotSku" class="form-label fw-medium">@Localizer["Form.Sku"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-barcode diten-field-icon" aria-hidden="true"></i>
+                                <select id="lotSku" class="form-select" disabled data-placeholder="@Localizer["Form.Sku"]"><option value=""></option></select>
+                            </div>
+                            <div class="invalid-feedback d-block" data-error-for="sku"></div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="lotNumber" class="form-label fw-medium">@Localizer["Form.LotNumber"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-hash diten-field-icon" aria-hidden="true"></i>
+                                <input id="lotNumber" type="text" class="form-control" maxlength="@LotFormRules.MaxLotNumberLength" autocomplete="off" @(Model.IsEdit ? "readonly" : "") />
+                            </div>
+                            <div class="form-text">@Localizer["Form.LotNumberHint"]</div>
+                            <div class="invalid-feedback d-block" data-error-for="lotNumber"></div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="lotCountry" class="form-label fw-medium">@Localizer["Form.Country"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-world diten-field-icon" aria-hidden="true"></i>
+                                <select id="lotCountry" class="form-select" data-lockable data-placeholder="@Localizer["Form.Country"]">
+                                    <option value=""></option>
+                                    @foreach (var code in LotFormRules.Countries)
+                                    {
+                                        <option value="@code">@Localizer["Country." + code]</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="invalid-feedback d-block" data-error-for="countryOfOrigin"></div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="lotManufacturerLot" class="form-label fw-medium">@Localizer["Form.ManufacturerLot"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-buildings diten-field-icon" aria-hidden="true"></i>
+                                <input id="lotManufacturerLot" type="text" class="form-control" maxlength="@LotFormRules.MaxAltLotLength" data-lockable autocomplete="off" />
+                            </div>
+                            <div class="invalid-feedback d-block" data-error-for="manufacturerLot"></div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="lotSupplierLot" class="form-label fw-medium">@Localizer["Form.SupplierLot"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-store diten-field-icon" aria-hidden="true"></i>
+                                <input id="lotSupplierLot" type="text" class="form-control" maxlength="@LotFormRules.MaxAltLotLength" data-lockable autocomplete="off" />
+                            </div>
+                            <div class="invalid-feedback d-block" data-error-for="supplierLot"></div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label for="lotManufacturingDate" class="form-label fw-medium">@Localizer["Form.ManufacturingDate"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i>
+                                <input id="lotManufacturingDate" type="date" class="form-control" data-lockable />
+                            </div>
+                            <div class="invalid-feedback d-block" data-error-for="manufacturingDate"></div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label for="lotExpiryDate" class="form-label fw-medium">@Localizer["Form.ExpiryDate"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-calendar-x diten-field-icon" aria-hidden="true"></i>
+                                <input id="lotExpiryDate" type="date" class="form-control" data-lockable />
+                            </div>
+                            <div class="invalid-feedback d-block" data-error-for="expiryDate"></div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label for="lotRetestDate" class="form-label fw-medium">@Localizer["Form.RetestDate"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-test-tube diten-field-icon" aria-hidden="true"></i>
+                                <input id="lotRetestDate" type="date" class="form-control" data-lockable />
+                            </div>
+                            <div class="invalid-feedback d-block" data-error-for="retestDate"></div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="lotCoa" class="form-label fw-medium">@Localizer["Form.Coa"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-file diten-field-icon" aria-hidden="true"></i>
+                                <input id="lotCoa" type="text" class="form-control" maxlength="@LotFormRules.MaxCoaLength" data-lockable autocomplete="off" />
+                            </div>
+                            <div class="invalid-feedback d-block" data-error-for="coaReference"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            @if (Model.IsEdit)
+            {
+                @* K-C: the reason of a non-Draft edit — shown by form.js for a non-Draft lot only. *@
+                <section class="card mb-4 d-none" id="lot-reason-card">
+                    <div class="card-body p-4">
+                        <label for="lotReason" class="form-label fw-medium">@Localizer["Form.Reason"] <span class="text-danger">*</span></label>
+                        <textarea id="lotReason" class="form-control" rows="2" maxlength="500"></textarea>
+                        <div class="d-flex justify-content-between">
+                            <div class="form-text">@Localizer["Form.ReasonHint"]</div>
+                            <small class="text-muted" id="lotReasonCounter" dir="ltr"></small>
+                        </div>
+                        <div class="invalid-feedback d-block" data-error-for="reason"></div>
+                    </div>
+                </section>
+            }
+        </div>
+        <div class="col-12 col-lg-4">
+            <section class="card mb-4" id="lot-summary">
+                <div class="card-body p-4">
+                    <h6 class="card-section-title mb-3"><i class="bx bx-list-check"></i>@Localizer["Form.Summary"]</h6>
+                    <dl class="row small mb-0">
+                        <dt class="col-5">@Localizer["Form.Product"]</dt><dd class="col-7 text-break" data-summary="product">—</dd>
+                        <dt class="col-5">@Localizer["Info.Tracking"]</dt><dd class="col-7" data-summary="tracking">—</dd>
+                        <dt class="col-5">@Localizer["Form.LotNumber"]</dt><dd class="col-7 font-monospace" data-summary="lotNumber">—</dd>
+                        <dt class="col-5">@Localizer["Col.Status"]</dt><dd class="col-7" data-summary="status">@Localizer["Status.Draft"]</dd>
+                    </dl>
+                    @if (!Model.IsEdit)
+                    {
+                        <p class="small text-muted mt-3 mb-0">@Localizer["Form.DraftNote"]</p>
+                    }
+                </div>
+            </section>
+            @if (Model.IsEdit)
+            {
+                <section class="card mb-4" id="lot-changes">
+                    <div class="card-body p-4">
+                        <h6 class="card-section-title mb-3"><i class="bx bx-git-compare"></i>@Localizer["Form.Changes"]</h6>
+                        <ul class="list-unstyled small mb-0" data-changes><li class="text-muted">@Localizer["Form.NoChanges"]</li></ul>
+                    </div>
+                </section>
+            }
+        </div>
+    </div>
+</form>

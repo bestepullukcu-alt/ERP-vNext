@@ -47,6 +47,7 @@ public sealed class BackgroundJobContractsTests
                 "Diten.Platform.MOD-0009.ProvisioningRetryJob",
                 "Diten.Platform.MOD-0018.EntitlementCacheRefreshJob",
                 "Diten.Platform.MOD-0021.AuditLogArchiveJob",
+                "Diten.Platform.MOD-0022.ESignatureRequestExpirySweepJob",
                 "Diten.Platform.MOD-0023.WorkflowEscalationSweepJob",
                 // WP-WF-ENGINE-RECOVERY-01 — the abandoned-start recovery (BL-549/BL-539); off unless EnabledJobs names it.
                 "Diten.Platform.MOD-0023.WorkflowStartRecoverySweepJob",

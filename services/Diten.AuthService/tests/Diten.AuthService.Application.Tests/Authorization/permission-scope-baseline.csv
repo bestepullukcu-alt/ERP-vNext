@@ -8,6 +8,10 @@
 # platform.workflow.instances.start, platform.workflow.tasks.approve, platform.workflow.tasks.reject. They are the
 # SeedOwnedTenantScopeKeys list (Domain/Authorization); no other row changed. Any further 1 -> 0 here is an
 # escalation-boundary decision, not a baseline refresh.
+# MAIN DECISION (WP-0023-FX, main 9648e046d, 2026-10-07; came with main-sync 2026-10-13): four more rows 1 -> 0 —
+# platform.workflow.instances.view, platform.workflow.tasks.cancel / delegate / request-info. Not on
+# SeedOwnedTenantScopeKeys: they move through the allowlisted, audited TenantRouteScopeCorrections (TenantApiPermission).
+# ACCEPTED by the owner 2026-10-14 (WP-LANE-MAIN-SYNC-02 A1): the seven Tenant workflow keys are pinned by name in SeedOwnedTenantScopeKeysTests.
 # key,scope   (0 = Tenant, 1 = PlatformAdmin)
 auth.roles.assign-permission,0
 auth.roles.create,0
@@ -292,12 +296,12 @@ platform.workflow.definitions.view,1
 platform.workflow.escalations.manage,1
 platform.workflow.escalations.run,1
 platform.workflow.instances.start,0
-platform.workflow.instances.view,1
+platform.workflow.instances.view,0
 platform.workflow.tasks.approve,0
-platform.workflow.tasks.cancel,1
-platform.workflow.tasks.delegate,1
+platform.workflow.tasks.cancel,0
+platform.workflow.tasks.delegate,0
 platform.workflow.tasks.reject,0
-platform.workflow.tasks.request-info,1
+platform.workflow.tasks.request-info,0
 platform.workflow.transitions.evaluate,1
 # --- MOD-0288-FU02 (merge d1735755, seed commit 04e212de) — organization unit custom fields + reporting line.
 # Added to the baseline AFTER this guard caught them missing. Scope is STATED, not inferred: all four are tenant

@@ -1,0 +1,27 @@
+@model Diten.Web.Models.Inventory.StockMovementFormViewModel
+@using Diten.Web.Views.Inventory.StockMovements
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<StockMovementsIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["FormTitleCreate"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    MOD-0173-FU01 S-3 New movement (UI-2). UAS-001: without inventory.movements.create only the access explanation is
+    drawn — no heading, no form, no button, no redirect. Display only: MOD-0173's [HasPermission] stays the authority.
+*@
+@if (!Perms.Has("inventory.movements.create"))
+{
+    <partial name="_AccessDenied" model="@Localizer["FormTitleCreate"].Value" />
+    return;
+}
+
+<partial name="~/Views/Inventory/StockMovements/_Form.cshtml" model="Model" />
+
+@section Scripts {
+    <partial name="~/Views/Inventory/StockMovements/_FormL10n.cshtml" />
+    <script src="~/assets/js/shared/diten-datefield.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Inventory/StockMovements/form.js" asp-append-version="true"></script>
+}

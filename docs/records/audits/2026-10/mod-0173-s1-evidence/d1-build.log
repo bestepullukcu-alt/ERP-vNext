@@ -1,0 +1,16 @@
+  Geri yüklenecek projeler belirleniyor...
+  Geri yükleme için tüm projeler güncel.
+  Diten.BuildingBlocks.Security.Secrets -> C:\Users\Ali\erp-vnext\services\Diten.Building.Blocks\Diten.BuildingBlocks.Security.Secrets\bin\Debug\net8.0\Diten.BuildingBlocks.Security.Secrets.dll
+  Diten.InventoryService.Domain -> C:\Users\Ali\erp-vnext\services\Diten.InventoryService\src\Diten.InventoryService.Domain\bin\Debug\net8.0\Diten.InventoryService.Domain.dll
+  Diten.InventoryService.RuntimeProbe -> C:\Users\Ali\erp-vnext\services\Diten.InventoryService\tests\Diten.InventoryService.RuntimeProbe\bin\Debug\net8.0\Diten.InventoryService.RuntimeProbe.dll
+  Diten.InventoryService.Application -> C:\Users\Ali\erp-vnext\services\Diten.InventoryService\src\Diten.InventoryService.Application\bin\Debug\net8.0\Diten.InventoryService.Application.dll
+  Diten.InventoryService.Infrastructure -> C:\Users\Ali\erp-vnext\services\Diten.InventoryService\src\Diten.InventoryService.Infrastructure\bin\Debug\net8.0\Diten.InventoryService.Infrastructure.dll
+  Diten.InventoryService.Persistence -> C:\Users\Ali\erp-vnext\services\Diten.InventoryService\src\Diten.InventoryService.Persistence\bin\Debug\net8.0\Diten.InventoryService.Persistence.dll
+  Diten.InventoryService.Api -> C:\Users\Ali\erp-vnext\services\Diten.InventoryService\src\Diten.InventoryService.Api\bin\Debug\net8.0\Diten.InventoryService.Api.dll
+  Diten.InventoryService.Tests -> C:\Users\Ali\erp-vnext\services\Diten.InventoryService\tests\Diten.InventoryService.Tests\bin\Debug\net8.0\Diten.InventoryService.Tests.dll
+
+Oluşturma başarılı oldu.
+    0 Uyarı
+    0 Hata
+
+Geçen Süre 00:00:05.82

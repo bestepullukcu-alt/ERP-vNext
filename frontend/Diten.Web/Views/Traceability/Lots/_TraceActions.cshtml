@@ -1,0 +1,7 @@
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@*
+    The pack §14 button table for the page's script: action code → may this user see it. The script asks
+    window.TraceActions.can('EDITLOT') — it never names a permission key, so a button cannot drift from its key.
+    Display only: the service's [HasPermission] stays the authority (UAS-001 §4).
+*@
+<script id="trace-actions" type="application/json">@Json.Serialize(Diten.Web.Models.Traceability.TraceActions.AllowedFor(Perms))</script>

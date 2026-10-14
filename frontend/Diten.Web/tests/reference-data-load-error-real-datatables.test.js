@@ -23,7 +23,7 @@ const razor = (rel) => read(...rel.split("/"))
   .replace(/^@(using|inject|model)[^\n]*\n/gm, "")
   .replace(/@(?:Shared)?Localizer\["(\w+)"\]/g, "$1");
 
-const TR = { DtLoadFailed: "Liste yüklenemedi.", DtLoadForbidden: "Bu listeyi görme yetkiniz yok.", DtRetry: "Yeniden Dene" };
+const TR = { DtLoadFailed: "Liste yüklenemedi.", DtLoadNoPermission: "Bu listeyi görme yetkiniz yok.", DtRetry: "Yeniden Dene" };
 
 describe("Reference Data when its list cannot be loaded", () => {
   let ctx;

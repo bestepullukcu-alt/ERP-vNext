@@ -42,5 +42,10 @@ public enum SchemaProfile
 
     /// <summary>MOD-0280-FU01 Time Entry &amp; Weekly Timesheet (ADR-004): weeks, entries, task totals, categories,
     /// settings. T1b adds timer segments and meeting suggestions to this profile.</summary>
-    TimeEntry = 12
+    TimeEntry = 12,
+
+    /// <summary>MOD-0022 e-Signature Service (E2): records, invalidations, requests, policies, policy history, meanings,
+    /// signable actions, exports, number counters. (WP-MVP1-SYNC1: 12 → 13 — main's TimeEntry took 12; the value is a
+    /// code-only selector, never stored.)</summary>
+    ESignature = 13
 }

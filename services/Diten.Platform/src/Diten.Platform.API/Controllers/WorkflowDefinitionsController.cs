@@ -212,7 +212,8 @@ public sealed class WorkflowDefinitionsController : CustomBaseController
                 request.ReasonCode,
                 request.IdempotencyKey,
                 request.Comment,
-                request.EvidenceRef),
+                request.EvidenceRef,
+                SignatureId: request.SignatureId),
             CorrelationId), ct);
         return CreateActionResultInstance(response);
     }
@@ -309,8 +310,13 @@ public sealed class WorkflowDefinitionsController : CustomBaseController
             return false;
         }
 
+        // Main sync 2026-10-13 — main's WP-0023-FX body rule (WorkflowActorBinding), read from the same token: blank = the
+        // caller; the subject in any GUID spelling (WorkflowPrincipal.Same) or the token's own single e-mail = accepted;
+        // anything else 403 WORKFLOW_ACTOR_MISMATCH. The bound actor is always the token's subject (B4 above).
         if (!string.IsNullOrWhiteSpace(claimed)
-            && !(Guid.TryParse(claimed.Trim(), out var named) && named.ToString("D") == actor))
+            && !WorkflowPrincipal.Same(claimed.Trim(), actor)
+            && !(TryResolveAuthenticatedEmail(out var email)
+                 && string.Equals(claimed.Trim(), email, StringComparison.OrdinalIgnoreCase)))
         {
             refusal = CreateActionResultInstance(Response<WorkflowTaskTransitionResponse>.Fail(
                 "A task action is always taken as the signed-in user.",
@@ -327,6 +333,17 @@ public sealed class WorkflowDefinitionsController : CustomBaseController
         string.IsNullOrWhiteSpace(_correlationContext.CorrelationId)
             ? HttpContext.TraceIdentifier
             : _correlationContext.CorrelationId!;
+
+    // The token's one e-mail claim (JWT "email"), for main's "the caller's own e-mail" body rule — none, or more than one, is no e-mail.
+    private bool TryResolveAuthenticatedEmail(out string email)
+    {
+        var emails = User.Claims
+            .Where(claim => string.Equals(claim.Type, JwtRegisteredClaimNames.Email, StringComparison.Ordinal))
+            .Select(claim => claim.Value.Trim())
+            .ToArray();
+        email = emails.Length == 1 && emails[0].Length > 0 ? emails[0] : string.Empty;
+        return email.Length > 0;
+    }
 
     private bool TryResolveAuthenticatedActor(out string actorId)
     {

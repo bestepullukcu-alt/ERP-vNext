@@ -1,0 +1,145 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.ESignature.ESignature> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["ESign.Policy.Title"].Value;
+    Layout = "_LayoutTenantShell";
+    var canManage = Perms.Has("esign.policy.manage");
+}
+@*
+    MOD-0022 E5W2 — e-İmza politikası (ESIGN_POLICY, /ESignature/Settings/Policy, esign.policy.read; pack §11.1, §11.3; mockup v2
+    tab 5). §17.3 (evidence §0): Table-bulk editing — one policy document, rows edited in place, ONE "save with reason" (emsal
+    Traceability/LotMigration/index.js:98-100, 223-283). Data: getPolicy (tenant / override / companies with an override), the
+    signable-action catalog (listSignableActions — a row the stored policy predates shows the catalog default, exactly what the
+    server applies: ESignatureCatalog.GetRowAsync), getPolicyHistory; save = savePolicy / saveLegalEntityPolicy (reason ≥ 10,
+    expectedVersion), revert = revertLegalEntityPolicy (red, reason). Read-only without esign.policy.manage. UAS-001 below.
+*@
+@if (!Perms.Has("esign.policy.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["ESign.Policy.Title"].Value" />
+    return;
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["ESign.Policy.Title"]</h5>
+    <p class="mb-0 text-muted">@Localizer["ESign.Policy.Sub"]</p>
+</div>
+
+<div class="card mb-4" id="esignPolicyRoot" data-can-manage="@(canManage ? "true" : "false")">
+    <div class="card-body d-flex flex-wrap align-items-center gap-3">
+        <div class="btn-group" role="group" aria-label="@Localizer["ESign.Policy.Scope"]">
+            <button type="button" class="btn btn-sm btn-primary" data-esign-scope="tenant">@Localizer["ESign.Policy.Scope.Tenant"]</button>
+            <button type="button" class="btn btn-sm btn-label-secondary" data-esign-scope="company">@Localizer["ESign.Policy.Scope.Company"]</button>
+        </div>
+        <select class="form-select form-select-sm d-none" style="max-width:280px" id="esignPolicyCompany" aria-label="@Localizer["ESign.Common.Company"]"></select>
+        <span class="flex-grow-1"></span>
+        <small class="text-muted" id="esignPolicyScopeHint"></small>
+    </div>
+</div>
+
+<div class="card mb-4 d-none" id="esignPolicyUsesTenant">
+    <div class="card-body d-flex flex-wrap align-items-center gap-3">
+        <span class="badge bg-label-info p-2"><i class="bx bx-git-branch fs-4"></i></span>
+        <div class="flex-grow-1">
+            <span class="fw-medium text-heading d-block" id="esignPolicyUsesTenantTitle"></span>
+            <small class="text-muted">@Localizer["ESign.Policy.UsesTenant.Text"]</small>
+        </div>
+        @if (canManage)
+        {
+            <button type="button" class="btn btn-sm btn-primary" id="esignPolicyCopy"><i class="bx bx-copy me-1"></i>@Localizer["ESign.Policy.CopyForCompany"]</button>
+        }
+    </div>
+</div>
+
+<div class="alert alert-warning d-none d-flex flex-wrap align-items-center gap-2" role="note" id="esignPolicyOverrideBanner">
+    <i class="bx bx-git-branch fs-5"></i><span class="flex-grow-1" id="esignPolicyOverrideText"></span>
+    @if (canManage)
+    {
+        <button type="button" class="btn btn-sm btn-label-danger" id="esignPolicyRevert">@Localizer["ESign.Policy.Revert"]</button>
+    }
+</div>
+
+<div id="esignPolicyEditor" class="d-none">
+    <div class="card mb-4">
+        <div class="card-header d-flex flex-wrap align-items-center gap-2">
+            <h6 class="mb-0 text-heading fw-semibold">@Localizer["ESign.Policy.Rules"]</h6>
+        </div>
+        <div class="table-responsive">
+            <table class="table mb-0" id="esignPolicyRules">
+                <thead>
+                    <tr>
+                        <th>@Localizer["ESign.Policy.Col.Action"]</th>
+                        <th>@Localizer["ESign.Policy.Col.Meaning"]</th>
+                        <th>@Localizer["ESign.Common.Status"]</th>
+                        <th>@Localizer["ESign.Policy.Col.Visual"]</th>
+                        <th>@Localizer["ESign.Policy.Col.SecondFactor"]</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body d-grid gap-3">
+            <h6 class="mb-0 text-heading fw-semibold">@Localizer["ESign.Policy.General"]</h6>
+            <div>
+                <span class="form-label d-block">@Localizer["ESign.Policy.Reauth"]</span>
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <label class="form-check custom-option custom-option-basic h-100 border rounded p-3 mb-0">
+                            <input class="form-check-input" type="radio" name="esignReauth" value="every" id="esignReauthEvery" />
+                            <span class="form-check-label d-grid ms-1"><span class="fw-medium">@Localizer["ESign.Policy.Reauth.Every"]</span><small class="text-muted">@Localizer["ESign.Policy.Reauth.EverySub"]</small></span>
+                        </label>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-check custom-option custom-option-basic h-100 border rounded p-3 mb-0">
+                            <input class="form-check-input" type="radio" name="esignReauth" value="window" id="esignReauthWindow" />
+                            <span class="form-check-label d-grid ms-1"><span class="fw-medium">@Localizer["ESign.Policy.Reauth.Window"]</span><small class="text-muted">@Localizer["ESign.Policy.Reauth.WindowSub"]</small></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div style="max-width:320px">
+                <label class="form-label" for="esignReauthMinutes">@Localizer["ESign.Policy.Minutes"]</label>
+                <div class="input-group input-group-sm">
+                    <input type="number" min="1" max="60" class="form-control" id="esignReauthMinutes" />
+                    <span class="input-group-text">@Localizer["ESign.Policy.MinutesUnit"]</span>
+                </div>
+                <small class="text-muted" id="esignReauthMinutesHint"></small>
+            </div>
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="esignSampleApproval" />
+                <label class="form-check-label" for="esignSampleApproval">
+                    <span class="fw-medium d-block">@Localizer["ESign.Policy.SampleApproval"]</span>
+                    <small class="text-muted" id="esignSampleApprovalHint">@Localizer["ESign.Policy.SampleApproval.Sub"]</small>
+                </label>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (canManage)
+{
+    <div class="alert alert-primary d-none d-flex flex-wrap align-items-center gap-2 position-sticky bottom-0 shadow-sm" style="z-index:5" id="esignPolicyDirty">
+        <i class="bx bx-edit-alt fs-5"></i><span class="flex-grow-1" id="esignPolicyDirtyText"></span>
+        <button type="button" class="btn btn-sm btn-label-secondary" id="esignPolicyDiscard">@Localizer["ESign.Dialog.Cancel"]</button>
+        <button type="button" class="btn btn-sm btn-primary" id="esignPolicySave"><i class="bx bx-save me-1"></i>@Localizer["ESign.Policy.SaveWithReason"]</button>
+    </div>
+}
+
+<div class="card">
+    <div class="card-header"><h6 class="mb-0 text-uppercase text-heading fw-semibold"><i class="bx bx-history me-1"></i>@Localizer["ESign.Policy.History"]</h6></div>
+    <div class="card-body" id="esignPolicyHistory"></div>
+</div>
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/ESignature/_ESignatureL10n.cshtml" />
+    <partial name="~/Views/ESignature/_ESignatureListL10n.cshtml" />
+    <script src="~/assets/js/shared/premium-modal.js" asp-append-version="true"></script>
+    <script src="~/assets/js/ESignature/esign-dialog.js" asp-append-version="true"></script>
+    <script src="~/assets/js/ESignature/esign-pages.js" asp-append-version="true"></script>
+    <script src="~/assets/js/ESignature/policy.js" asp-append-version="true"></script>
+}

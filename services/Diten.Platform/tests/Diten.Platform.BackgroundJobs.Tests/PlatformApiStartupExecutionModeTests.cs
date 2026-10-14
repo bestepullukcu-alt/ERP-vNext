@@ -53,6 +53,7 @@ public sealed class PlatformApiStartupExecutionModeTests
         AssertHostedService<BusinessReferenceDataCatalogLoadWorker>(services);
         AssertHostedService<VerifiedGskuOperationalProvisioningRunner>(services);
         AssertHostedService<PlatformModuleSelfRegistrationWorker>(services);
+        AssertHostedService<Diten.Platform.API.Services.Workflow.WorkflowSignableActionRegistrationWorker>(services);
         AssertHostedService<PlatformPermissionAutoRegistrationWorker>(services);
         Assert.Contains(services, descriptor => descriptor.ServiceType == typeof(ModuleSelfRegistrationGate));
     }

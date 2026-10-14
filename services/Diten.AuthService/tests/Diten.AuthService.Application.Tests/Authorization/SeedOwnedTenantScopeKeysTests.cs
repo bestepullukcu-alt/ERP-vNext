@@ -21,6 +21,20 @@ public sealed class SeedOwnedTenantScopeKeysTests
         "platform.workflow.tasks.reject"
     ];
 
+    // WP-LANE-MAIN-SYNC-02 A1 (owner decision 2026-10-14): main's WP-0023-FX made four more workflow runtime keys Tenant
+    // (TenantRouteScopeCorrections, TenantApiPermission). The Tenant workflow keys are now EXACTLY these seven, by name —
+    // a name list, not a ceiling: an eighth Tenant key, or one of these back to PlatformAdmin, is red.
+    private static readonly string[] TheSevenTenantWorkflowKeys =
+    [
+        "platform.workflow.instances.start",
+        "platform.workflow.instances.view",
+        "platform.workflow.tasks.approve",
+        "platform.workflow.tasks.cancel",
+        "platform.workflow.tasks.delegate",
+        "platform.workflow.tasks.reject",
+        "platform.workflow.tasks.request-info"
+    ];
+
     [Fact]
     public void The_list_is_exactly_the_three_workflow_execution_keys()
     {
@@ -42,20 +56,25 @@ public sealed class SeedOwnedTenantScopeKeysTests
     }
 
     [Fact]
-    public void Of_the_thirteen_seeded_workflow_keys_only_the_listed_three_are_Tenant()
+    public void Of_the_thirteen_seeded_workflow_keys_exactly_the_named_seven_are_Tenant()
     {
         var workflow = DataSeeder.BuildCanonicalPermissions()
             .Where(permission => permission.Key.StartsWith(WorkflowPrefix, StringComparison.Ordinal))
             .ToList();
 
         Assert.Equal(13, workflow.Count);
+        // A1 — the seven by name (was: only the three seed-owned ones).
         Assert.Equal(
-            TheThreeKeys,
+            TheSevenTenantWorkflowKeys,
             workflow.Where(permission => permission.Scope == PermissionScope.Tenant)
                 .Select(permission => permission.Key)
                 .OrderBy(key => key, StringComparer.Ordinal));
+        // The four beyond the seed-owned three are Tenant only through the allowlisted, audited WP-0023-FX correction.
         Assert.All(
-            workflow.Where(permission => !SeedOwnedTenantScopeKeys.Keys.Contains(permission.Key)),
+            TheSevenTenantWorkflowKeys.Except(TheThreeKeys),
+            key => Assert.Contains(TenantRouteScopeCorrections.Allowlist, entry => entry.PermissionKey == key));
+        Assert.All(
+            workflow.Where(permission => !TheSevenTenantWorkflowKeys.Contains(permission.Key)),
             permission =>
             {
                 Assert.Equal(PermissionScope.PlatformAdmin, permission.Scope);
@@ -125,12 +144,17 @@ public sealed class SeedOwnedTenantScopeKeysTests
         Assert.Empty(SeedOwnedTenantScopeKeys.RowsTheExceptionCannotHold([systemApprove]));
     }
 
+    // A1 — WP-0023-FX's allowlist names all seven runtime keys, so it now holds the three seed-owned ones too. The overlap
+    // is EXACTLY those three (by name); any other seed-owned key on the route allowlist is still red.
     [Fact]
-    public void The_seed_sourced_list_and_the_route_sourced_allowlist_do_not_overlap()
+    public void The_seed_sourced_list_and_the_route_sourced_allowlist_overlap_only_in_the_three_named_keys()
     {
-        Assert.DoesNotContain(
-            TenantRouteScopeCorrections.Allowlist,
-            entry => SeedOwnedTenantScopeKeys.Keys.Contains(entry.PermissionKey));
+        Assert.Equal(
+            TheThreeKeys,
+            TenantRouteScopeCorrections.Allowlist
+                .Where(entry => SeedOwnedTenantScopeKeys.Keys.Contains(entry.PermissionKey))
+                .Select(entry => entry.PermissionKey)
+                .OrderBy(key => key, StringComparer.Ordinal));
     }
 
     public static TheoryData<string> ListedKeys()

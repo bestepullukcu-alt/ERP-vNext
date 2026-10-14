@@ -17,7 +17,7 @@ const path = require("path");
  * its source. The Razor expressions (`@Json.Serialize(...)`) are the only thing replaced, with the strings they
  * would render. Everything else is the shipped code.
  */
-const { PROCUREMENT, MAIN_SYNC_WHY, misnamedRows } = require("./main-sync-owners");
+const { PROCUREMENT, STOCK, ESIGN, MAIN_SYNC_WHY, MAIN_SYNC_2_WHY, misnamedRows } = require("./main-sync-owners");
 const repoRoot = path.resolve(__dirname, "..", "..", "..");
 const VIEW = fs.readFileSync(
   path.join(repoRoot, "frontend", "Diten.Web", "Views", "Shared", "_GlobalConfirmation.cshtml"), "utf8");
@@ -62,7 +62,14 @@ const SHOW_INPUT_CALLERS = {
 // …and the callers that came with main (XMC-001: not ours to change; listed so the census stays exact).
 const MAIN_SYNC_SHOW_INPUT = {
   "Procurement/InvoiceMatch/details.js": { inputs: 1, typed: 1, owner: PROCUREMENT, why: MAIN_SYNC_WHY },
-  "Procurement/InvoiceMatch/index.js": { inputs: 1, typed: 1, owner: PROCUREMENT, why: MAIN_SYNC_WHY }
+  "Procurement/InvoiceMatch/index.js": { inputs: 1, typed: 1, owner: PROCUREMENT, why: MAIN_SYNC_WHY },
+  // main-sync 2026-10-14 (WP-LANE-MAIN-SYNC-02): every one of them names its type.
+  "ESignature/esign-pages.js": { inputs: 1, typed: 1, owner: ESIGN, why: MAIN_SYNC_2_WHY },
+  "Quarantine/blocked.js": { inputs: 2, typed: 2, owner: STOCK, why: MAIN_SYNC_2_WHY },
+  "Quarantine/details.js": { inputs: 2, typed: 2, owner: STOCK, why: MAIN_SYNC_2_WHY },
+  "Quarantine/retest.js": { inputs: 1, typed: 1, owner: STOCK, why: MAIN_SYNC_2_WHY },
+  "Traceability/LotMigration/index.js": { inputs: 1, typed: 1, owner: STOCK, why: MAIN_SYNC_2_WHY },
+  "Traceability/Lots/status.js": { inputs: 1, typed: 1, owner: STOCK, why: MAIN_SYNC_2_WHY }
 };
 
 describe("the callers that were already using the input box", () => {

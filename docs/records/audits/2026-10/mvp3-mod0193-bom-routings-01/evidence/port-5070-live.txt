@@ -1,0 +1,10 @@
+# Port change 5067 -> 5070 (OD-P1: 5067 is Inventory's) — live check, 2026-10-12T12:46:28Z, local branch @ 872d41105
+# ManufacturingService started WITHOUT --urls (its own appsettings Kestrel endpoint), Mongo = temporary replica set on 28117; gateway 5000 with the branch's ocelot.json
+service log: Now listening on: http://localhost:5070
+gateway GET /api/bom/versions (no legal entity) -> HTTP 400 {"error":{"code":"LEGAL_ENTITY_REQUIRED","message":"Missing Legal-Entity: 'X-Legal-Entity-Id' header is required (GET may use 'legalEntityId').","correlationId":"6cdd7369-dffe-4117-a8c3-c3c6af7d9515"}
+correlationId sent: 6cdd7369-dffe-4117-a8c3-c3c6af7d9515
+gateway GET /api/bom/versions (no token) -> HTTP 400
+port 5067 listening: False
+port 5070 listening: True
+gateway log, downstream URLs requested for /api/bom: http://localhost:5070/api/bom/versions http://localhost:5070/api/bom/versions?start=0&length=1 
+-> /api/bom reaches Manufacturing on 5070 (the BOM contract error echoes the caller's correlation id); nothing listens on 5067.

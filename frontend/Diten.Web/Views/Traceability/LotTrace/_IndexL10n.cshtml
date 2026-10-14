@@ -1,0 +1,8 @@
+@using Diten.Web.Views.Traceability.LotTrace
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LotTraceIndex> Localizer
+@*
+    The page script's vocabulary (pack §11.6): exactly TraceL10nKeys.LotTrace, key → value in the reader's language. The script
+    reads the same dotted names (window.TraceL10n); a missing one is reported by index.l10n.js, never replaced by hardcoded text.
+*@
+<script id="lottrace-l10n" type="application/json">@Json.Serialize(Diten.Web.Models.Traceability.TraceL10nKeys.LotTrace.Distinct().ToDictionary(k => k, k => Localizer[k].Value))</script>

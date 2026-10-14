@@ -1,0 +1,421 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ESign.Dialog.Title" xml:space="preserve"><value>Signature électronique</value></data>
+  <data name="ESign.Dialog.StandardRef" xml:space="preserve"><value>21 CFR Part 11 · BPF UE Annexe 11</value></data>
+  <data name="ESign.Dialog.Close" xml:space="preserve"><value>Fermer</value></data>
+  <data name="ESign.Dialog.Loading" xml:space="preserve"><value>Chargement des informations de signature…</value></data>
+  <data name="ESign.Dialog.WhatYouSign" xml:space="preserve"><value>Ce que vous signez</value></data>
+  <data name="ESign.Dialog.UserName" xml:space="preserve"><value>Nom d'utilisateur</value></data>
+  <data name="ESign.Dialog.Password" xml:space="preserve"><value>Mot de passe</value></data>
+  <data name="ESign.Dialog.RetypeUserName" xml:space="preserve"><value>Saisissez votre nom d'utilisateur</value></data>
+  <data name="ESign.Dialog.RetypeHint" xml:space="preserve"><value>Dans la fenêtre de mot de passe, vous ressaisissez votre nom d'utilisateur comme composante de la signature.</value></data>
+  <data name="ESign.Dialog.WindowInfo" xml:space="preserve"><value>Votre mot de passe a été vérifié à {0}. Selon la politique, il n'est pas redemandé pendant {1} min ({2} min restantes).</value></data>
+  <data name="ESign.Dialog.Meaning" xml:space="preserve"><value>Signification de la signature</value></data>
+  <data name="ESign.Dialog.MeaningSelect" xml:space="preserve"><value>Sélectionnez</value></data>
+  <data name="ESign.Dialog.Appearance" xml:space="preserve"><value>Apparence de la signature</value></data>
+  <data name="ESign.Dialog.AppearancePolicy" xml:space="preserve"><value>Politique : {0}</value></data>
+  <data name="ESign.Dialog.App.Saved" xml:space="preserve"><value>Utiliser ma signature enregistrée</value></data>
+  <data name="ESign.Dialog.App.SavedSub" xml:space="preserve"><value>{0} · cette option demande toujours le mot de passe</value></data>
+  <data name="ESign.Dialog.App.Draw" xml:space="preserve"><value>Dessiner maintenant</value></data>
+  <data name="ESign.Dialog.App.DrawSub" xml:space="preserve"><value>Dessinez dans la zone de signature de cette fenêtre</value></data>
+  <data name="ESign.Dialog.App.Name" xml:space="preserve"><value>Nom seulement</value></data>
+  <data name="ESign.Dialog.App.NameSub" xml:space="preserve"><value>Votre nom et la date-heure sont ajoutés sous forme de texte</value></data>
+  <data name="ESign.Dialog.Dis.DrawRequired" xml:space="preserve"><value>La politique exige un dessin réalisé maintenant pour cette action</value></data>
+  <data name="ESign.Dialog.Dis.None" xml:space="preserve"><value>Aucune signature visuelle n'est utilisée pour cette action</value></data>
+  <data name="ESign.Dialog.Dis.Pending" xml:space="preserve"><value>Votre spécimen de signature attend l'approbation d'un administrateur</value></data>
+  <data name="ESign.Dialog.Dis.NoSample" xml:space="preserve"><value>Vous n'avez aucun spécimen enregistré · ajoutez-en un sur la page Ma signature</value></data>
+  <data name="ESign.Dialog.Dis.VisualRequired" xml:space="preserve"><value>Cette action exige une signature visuelle</value></data>
+  <data name="ESign.Dialog.VisualMode.none" xml:space="preserve"><value>Aucune</value></data>
+  <data name="ESign.Dialog.VisualMode.optional" xml:space="preserve"><value>Facultative</value></data>
+  <data name="ESign.Dialog.VisualMode.savedAccepted" xml:space="preserve"><value>Signature enregistrée acceptée</value></data>
+  <data name="ESign.Dialog.VisualMode.drawRequired" xml:space="preserve"><value>Obligatoire : dessiner maintenant</value></data>
+  <data name="ESign.Pad.Hint" xml:space="preserve"><value>Signez avec la souris, un stylet ou le doigt</value></data>
+  <data name="ESign.Pad.Undo" xml:space="preserve"><value>Annuler</value></data>
+  <data name="ESign.Pad.Clear" xml:space="preserve"><value>Effacer</value></data>
+  <data name="ESign.Pad.Area" xml:space="preserve"><value>Zone de signature</value></data>
+  <data name="ESign.Dialog.Note" xml:space="preserve"><value>Note de signature</value></data>
+  <data name="ESign.Dialog.NotePlaceholder" xml:space="preserve"><value>Facultatif</value></data>
+  <data name="ESign.Dialog.Statement1" xml:space="preserve"><value>Cette signature électronique équivaut à ma signature manuscrite.</value></data>
+  <data name="ESign.Dialog.Statement2" xml:space="preserve"><value>La signature est conservée de façon inaltérable avec votre identité, la date-heure, la signification et l'empreinte de l'enregistrement à cet instant.</value></data>
+  <data name="ESign.Dialog.Cancel" xml:space="preserve"><value>Annuler</value></data>
+  <data name="ESign.Dialog.Sign" xml:space="preserve"><value>Signer</value></data>
+  <data name="ESign.Dialog.Signing" xml:space="preserve"><value>Signature en cours…</value></data>
+  <data name="ESign.Dialog.Err.Meaning" xml:space="preserve"><value>Sélectionnez une signification.</value></data>
+  <data name="ESign.Dialog.Err.Password" xml:space="preserve"><value>Saisissez votre mot de passe.</value></data>
+  <data name="ESign.Dialog.Err.UserName" xml:space="preserve"><value>Saisissez votre nom d'utilisateur.</value></data>
+  <data name="ESign.Dialog.Err.Draw" xml:space="preserve"><value>Dessinez dans la zone de signature.</value></data>
+  <data name="ESign.Dialog.Err.NoSample" xml:space="preserve"><value>Vous n'avez aucun spécimen enregistré utilisable.</value></data>
+  <data name="ESign.Dialog.Err.WrongPassword" xml:space="preserve"><value>Mot de passe incorrect. Tentatives restantes : {0}</value></data>
+  <data name="ESign.Dialog.Err.Generic" xml:space="preserve"><value>La signature n'a pas pu être finalisée. Veuillez réessayer.</value></data>
+  <data name="ESign.Dialog.Err.Forbidden" xml:space="preserve"><value>Vous n'êtes pas autorisé à apposer cette signature. Demandez l'accès à votre administrateur.</value></data>
+  <data name="ESign.Dialog.Err.Title" xml:space="preserve"><value>La signature n'a pas été apposée</value></data>
+  <data name="ESign.Dialog.Locked.Title" xml:space="preserve"><value>Votre compte est verrouillé</value></data>
+  <data name="ESign.Dialog.Locked.Text" xml:space="preserve"><value>Trop de mots de passe erronés à la suite. Aucune signature n'a été apposée. Votre compte est verrouillé pendant {0} minutes ; l'événement a été consigné dans le journal d'audit de sécurité.</value></data>
+  <data name="ESign.Dialog.Timeout.Title" xml:space="preserve"><value>Votre session a expiré</value></data>
+  <data name="ESign.Dialog.Timeout.Text" xml:space="preserve"><value>Pour des raisons de sécurité, vous devez vous reconnecter pour signer. Aucune signature n'a été apposée ; la décision est conservée comme brouillon.</value></data>
+  <data name="ESign.Dialog.Timeout.Relogin" xml:space="preserve"><value>Se reconnecter</value></data>
+  <data name="ESign.Dialog.Success.Title" xml:space="preserve"><value>Signature enregistrée</value></data>
+  <data name="ESign.Dialog.Success.SignatureId" xml:space="preserve"><value>Identifiant de signature</value></data>
+  <data name="ESign.Dialog.Success.Timestamp" xml:space="preserve"><value>Horodatage</value></data>
+  <data name="ESign.Dialog.Success.Signer" xml:space="preserve"><value>Signataire</value></data>
+  <data name="ESign.Dialog.Success.Meaning" xml:space="preserve"><value>Signification</value></data>
+  <data name="ESign.Dialog.Success.Appearance" xml:space="preserve"><value>Apparence</value></data>
+  <data name="ESign.Dialog.Success.Record" xml:space="preserve"><value>Enregistrement</value></data>
+  <data name="ESign.Dialog.Success.RecordDigest" xml:space="preserve"><value>Empreinte de l'enregistrement</value></data>
+  <data name="ESign.Dialog.Success.ImageDigest" xml:space="preserve"><value>Empreinte de l'image</value></data>
+  <data name="ESign.Dialog.Success.NoVisual" xml:space="preserve"><value>Pas de signature visuelle · nom seulement</value></data>
+  <data name="ESign.Dialog.Success.Ok" xml:space="preserve"><value>OK</value></data>
+  <data name="ESign.Dialog.AppType.drawn" xml:space="preserve"><value>Dessin</value></data>
+  <data name="ESign.Dialog.AppType.sample" xml:space="preserve"><value>Signature enregistrée</value></data>
+  <data name="ESign.Dialog.AppType.none" xml:space="preserve"><value>Nom seulement</value></data>
+  <data name="ESign.Module.workflow" xml:space="preserve"><value>Workflow</value></data>
+  <data name="ESign.Module.quarantine" xml:space="preserve"><value>Qualité / Quarantaine</value></data>
+  <data name="ESign.Module.documentmanagement" xml:space="preserve"><value>Gestion documentaire</value></data>
+  <data name="ESign.Mine.Title" xml:space="preserve"><value>Ma signature</value></data>
+  <data name="ESign.Mine.Statement" xml:space="preserve"><value>La signature visuelle n'est que l'apparence de la signature. Sa validité vient de la vérification du mot de passe et de la signification choisie. Une image enregistrée n'est jamais ajoutée à un enregistrement sans vérification du mot de passe.</value></data>
+  <data name="ESign.Mine.MySample" xml:space="preserve"><value>Mon spécimen de signature</value></data>
+  <data name="ESign.Mine.Active" xml:space="preserve"><value>Actif</value></data>
+  <data name="ESign.Mine.Id" xml:space="preserve"><value>Identifiant</value></data>
+  <data name="ESign.Mine.AddedAt" xml:space="preserve"><value>Ajouté le</value></data>
+  <data name="ESign.Mine.Storage" xml:space="preserve"><value>Stockage</value></data>
+  <data name="ESign.Mine.ApprovedBy" xml:space="preserve"><value>Approuvé par</value></data>
+  <data name="ESign.Mine.Usage" xml:space="preserve"><value>Utilisation</value></data>
+  <data name="ESign.Mine.UsedIn" xml:space="preserve"><value>Utilisé dans {0} signatures</value></data>
+  <data name="ESign.Mine.NoApprovalNeeded" xml:space="preserve"><value>Aucune approbation requise</value></data>
+  <data name="ESign.Mine.Empty.Title" xml:space="preserve"><value>Vous n'avez aucun spécimen enregistré</value></data>
+  <data name="ESign.Mine.Empty.Text" xml:space="preserve"><value>Vous pouvez continuer à signer dans la fenêtre de signature avec « Dessiner maintenant » ou « Nom seulement ».</value></data>
+  <data name="ESign.Mine.PendingInfo" xml:space="preserve"><value>{0} attend l'approbation d'un administrateur. Jusqu'à son approbation, {1}.</value></data>
+  <data name="ESign.Mine.PendingKeep" xml:space="preserve"><value>votre spécimen actuel est utilisé</value></data>
+  <data name="ESign.Mine.PendingNone" xml:space="preserve"><value>« Utiliser ma signature enregistrée » reste indisponible</value></data>
+  <data name="ESign.Mine.NewSample" xml:space="preserve"><value>Nouveau spécimen de signature</value></data>
+  <data name="ESign.Mine.Tab.Draw" xml:space="preserve"><value>Dessiner</value></data>
+  <data name="ESign.Mine.Tab.Upload" xml:space="preserve"><value>Importer une image</value></data>
+  <data name="ESign.Mine.Thickness" xml:space="preserve"><value>Épaisseur</value></data>
+  <data name="ESign.Mine.Thin" xml:space="preserve"><value>Fine</value></data>
+  <data name="ESign.Mine.Medium" xml:space="preserve"><value>Moyenne</value></data>
+  <data name="ESign.Mine.Color" xml:space="preserve"><value>Couleur</value></data>
+  <data name="ESign.Mine.Black" xml:space="preserve"><value>Noir</value></data>
+  <data name="ESign.Mine.Navy" xml:space="preserve"><value>Bleu marine</value></data>
+  <data name="ESign.Mine.FullScreen" xml:space="preserve"><value>Plein écran (paysage)</value></data>
+  <data name="ESign.Mine.Full.Title" xml:space="preserve"><value>Dessinez votre signature</value></data>
+  <data name="ESign.Mine.Full.Rotate" xml:space="preserve"><value>Sur téléphone ou tablette, tournez votre appareil en mode paysage</value></data>
+  <data name="ESign.Mine.Full.Apply" xml:space="preserve"><value>Terminé</value></data>
+  <data name="ESign.Mine.Upload.Pick" xml:space="preserve"><value>Choisissez une image de signature</value></data>
+  <data name="ESign.Mine.Upload.Hint" xml:space="preserve"><value>PNG ou JPG · jusqu'à 1 Mo</value></data>
+  <data name="ESign.Mine.Upload.Change" xml:space="preserve"><value>Modifier</value></data>
+  <data name="ESign.Mine.Upload.Remove" xml:space="preserve"><value>Retirer</value></data>
+  <data name="ESign.Mine.Upload.Original" xml:space="preserve"><value>Original · zone de recadrage</value></data>
+  <data name="ESign.Mine.Upload.Result" xml:space="preserve"><value>Aperçu du résultat</value></data>
+  <data name="ESign.Mine.Crop.Left" xml:space="preserve"><value>Rogner à gauche</value></data>
+  <data name="ESign.Mine.Crop.Right" xml:space="preserve"><value>Rogner à droite</value></data>
+  <data name="ESign.Mine.Crop.Top" xml:space="preserve"><value>Rogner en haut</value></data>
+  <data name="ESign.Mine.Crop.Bottom" xml:space="preserve"><value>Rogner en bas</value></data>
+  <data name="ESign.Mine.Upload.Bg" xml:space="preserve"><value>Nettoyer l'arrière-plan</value></data>
+  <data name="ESign.Mine.Upload.Sensitivity" xml:space="preserve"><value>Sensibilité</value></data>
+  <data name="ESign.Mine.Upload.ErrType" xml:space="preserve"><value>Vous ne pouvez choisir que PNG ou JPG.</value></data>
+  <data name="ESign.Mine.Upload.ErrSize" xml:space="preserve"><value>Le fichier dépasse 1 Mo.</value></data>
+  <data name="ESign.Mine.StoreLabel" xml:space="preserve"><value>Format de stockage :</value></data>
+  <data name="ESign.Mine.Store.Drawn" xml:space="preserve"><value>Image PNG + tracés (vectoriel)</value></data>
+  <data name="ESign.Mine.Store.Uploaded" xml:space="preserve"><value>Image PNG (les images importées ne contiennent pas de tracés)</value></data>
+  <data name="ESign.Mine.ApprovalNote" xml:space="preserve"><value>Un spécimen enregistré est utilisable après l'approbation d'un administrateur de signature électronique.</value></data>
+  <data name="ESign.Mine.SaveWithPassword" xml:space="preserve"><value>Enregistrer avec le mot de passe</value></data>
+  <data name="ESign.Mine.Pwd.Title" xml:space="preserve"><value>Confirmez votre mot de passe</value></data>
+  <data name="ESign.Mine.Pwd.Sub" xml:space="preserve"><value>Pour enregistrer le spécimen de signature</value></data>
+  <data name="ESign.Mine.Pwd.Save" xml:space="preserve"><value>Vérifier et enregistrer</value></data>
+  <data name="ESign.Mine.History.Title" xml:space="preserve"><value>Historique des spécimens</value></data>
+  <data name="ESign.Mine.History.Sub" xml:space="preserve"><value>Un spécimen utilisé ne peut pas être supprimé, seulement désactivé ; les anciennes signatures conservent leur image</value></data>
+  <data name="ESign.Mine.Col.Sample" xml:space="preserve"><value>Spécimen</value></data>
+  <data name="ESign.Mine.Col.Kind" xml:space="preserve"><value>Mode d'ajout</value></data>
+  <data name="ESign.Mine.Col.Status" xml:space="preserve"><value>Statut</value></data>
+  <data name="ESign.Mine.Col.Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="ESign.Mine.Kind.drawn" xml:space="preserve"><value>Dessin</value></data>
+  <data name="ESign.Mine.Kind.uploaded" xml:space="preserve"><value>Importation</value></data>
+  <data name="ESign.Mine.Format.png" xml:space="preserve"><value>PNG</value></data>
+  <data name="ESign.Mine.Format.pngAndVector" xml:space="preserve"><value>PNG + vectoriel</value></data>
+  <data name="ESign.Mine.Format.vector" xml:space="preserve"><value>Vectoriel</value></data>
+  <data name="ESign.Mine.Status.active" xml:space="preserve"><value>Actif</value></data>
+  <data name="ESign.Mine.Status.inactive" xml:space="preserve"><value>Inactif</value></data>
+  <data name="ESign.Mine.Status.pending" xml:space="preserve"><value>En attente d'approbation</value></data>
+  <data name="ESign.Mine.Status.rejected" xml:space="preserve"><value>Refusé</value></data>
+  <data name="ESign.Mine.Status.withdrawn" xml:space="preserve"><value>Supprimé</value></data>
+  <data name="ESign.Mine.Deactivate" xml:space="preserve"><value>Désactiver</value></data>
+  <data name="ESign.Mine.Delete" xml:space="preserve"><value>Supprimer</value></data>
+  <data name="ESign.Mine.Locked" xml:space="preserve"><value>Non supprimable</value></data>
+  <data name="ESign.Mine.LockedTitle" xml:space="preserve"><value>Un spécimen utilisé ne peut pas être supprimé</value></data>
+  <data name="ESign.Mine.HistoryEmpty" xml:space="preserve"><value>Aucun spécimen n'a encore été ajouté.</value></data>
+  <data name="ESign.Mine.UsedCount" xml:space="preserve"><value>{0} signatures</value></data>
+  <data name="ESign.Mine.RejectReason" xml:space="preserve"><value>Motif : {0}</value></data>
+  <data name="ESign.Mine.Confirm.Deactivate" xml:space="preserve"><value>Désactiver le spécimen de signature ?</value></data>
+  <data name="ESign.Mine.Confirm.DeactivateText" xml:space="preserve"><value>Un spécimen inactif ne sert plus aux nouvelles signatures ; les anciennes conservent leur image.</value></data>
+  <data name="ESign.Mine.Confirm.Delete" xml:space="preserve"><value>Supprimer le spécimen de signature ?</value></data>
+  <data name="ESign.Mine.Confirm.DeleteText" xml:space="preserve"><value>Ce spécimen jamais utilisé est retiré et reste dans la liste comme « Supprimé ».</value></data>
+  <data name="ESign.Mine.Toast.Saved" xml:space="preserve"><value>Spécimen de signature enregistré.</value></data>
+  <data name="ESign.Mine.Toast.SavedPending" xml:space="preserve"><value>Spécimen envoyé pour approbation par un administrateur.</value></data>
+  <data name="ESign.Mine.Toast.Deactivated" xml:space="preserve"><value>Spécimen désactivé.</value></data>
+  <data name="ESign.Mine.Toast.Withdrawn" xml:space="preserve"><value>Spécimen supprimé.</value></data>
+  <data name="ESign.Zoom.Title" xml:space="preserve"><value>Image de la signature</value></data>
+  <data name="ESign.Zoom.Enlarge" xml:space="preserve"><value>Agrandir</value></data>
+  <data name="ESign.Zoom.Person" xml:space="preserve"><value>Personne</value></data>
+  <data name="ESign.Zoom.Type" xml:space="preserve"><value>Type d'apparence</value></data>
+  <data name="ESign.Zoom.At" xml:space="preserve"><value>Date-heure</value></data>
+  <data name="ESign.Zoom.Sample" xml:space="preserve"><value>Spécimen de signature · {0}</value></data>
+  <data name="ESign.Errors.ESIGN_ACCOUNT_LOCKED" xml:space="preserve"><value>Votre compte est verrouillé ; vous ne pouvez pas signer.</value></data>
+  <data name="ESign.Errors.ESIGN_ACTION_PREFIX_MISMATCH" xml:space="preserve"><value>Le code d'action n'appartient pas au module.</value></data>
+  <data name="ESign.Errors.ESIGN_ACTOR_NOT_TENANT_USER" xml:space="preserve"><value>Seuls les utilisateurs du locataire peuvent signer.</value></data>
+  <data name="ESign.Errors.ESIGN_ALREADY_INVALIDATED" xml:space="preserve"><value>Cette signature a déjà été invalidée.</value></data>
+  <data name="ESign.Errors.ESIGN_APPEARANCE_NOT_ALLOWED" xml:space="preserve"><value>L'apparence choisie n'est pas autorisée par la politique de cette action.</value></data>
+  <data name="ESign.Errors.ESIGN_DRAWING_EMPTY" xml:space="preserve"><value>La zone de signature est vide ; veuillez dessiner.</value></data>
+  <data name="ESign.Errors.ESIGN_EXPORT_TOO_LARGE" xml:space="preserve"><value>L'export est trop volumineux ; affinez le filtre.</value></data>
+  <data name="ESign.Errors.ESIGN_IMAGE_NOT_PNG" xml:space="preserve"><value>L'image de signature doit être un PNG.</value></data>
+  <data name="ESign.Errors.ESIGN_IMAGE_TOO_LARGE" xml:space="preserve"><value>L'image de signature dépasse 1 Mo.</value></data>
+  <data name="ESign.Errors.ESIGN_INTENT_REQUIRES_PASSWORD" xml:space="preserve"><value>Cette action exige votre mot de passe.</value></data>
+  <data name="ESign.Errors.ESIGN_MEANING_CODE_EXISTS" xml:space="preserve"><value>Ce code de signification existe déjà.</value></data>
+  <data name="ESign.Errors.ESIGN_MEANING_CODE_LOCKED" xml:space="preserve"><value>Le code d'une signification utilisée ne peut pas être modifié.</value></data>
+  <data name="ESign.Errors.ESIGN_MEANING_IN_USE" xml:space="preserve"><value>Cette signification est utilisée par une règle de politique.</value></data>
+  <data name="ESign.Errors.ESIGN_MEANING_LANGUAGE_MISSING" xml:space="preserve"><value>Le nom affiché est obligatoire dans les 7 langues.</value></data>
+  <data name="ESign.Errors.ESIGN_MEANING_NOT_ALLOWED" xml:space="preserve"><value>La signification choisie n'est pas autorisée pour cette action.</value></data>
+  <data name="ESign.Errors.ESIGN_POLICY_VERSION_CONFLICT" xml:space="preserve"><value>La politique a changé entre-temps ; actualisez la page.</value></data>
+  <data name="ESign.Errors.ESIGN_REASON_TOO_SHORT" xml:space="preserve"><value>Le motif doit comporter au moins 10 caractères.</value></data>
+  <data name="ESign.Errors.ESIGN_REAUTH_FAILED" xml:space="preserve"><value>Mot de passe incorrect.</value></data>
+  <data name="ESign.Errors.ESIGN_REAUTH_REQUIRED" xml:space="preserve"><value>Cette signature exige de ressaisir votre mot de passe.</value></data>
+  <data name="ESign.Errors.ESIGN_REAUTH_UNAVAILABLE" xml:space="preserve"><value>Le service de vérification du mot de passe est momentanément indisponible.</value></data>
+  <data name="ESign.Errors.ESIGN_REAUTH_WINDOW_EXPIRED" xml:space="preserve"><value>Votre fenêtre de mot de passe a expiré ; ressaisissez votre mot de passe.</value></data>
+  <data name="ESign.Errors.ESIGN_REQUEST_NOT_OPEN" xml:space="preserve"><value>Cette demande de signature n'est plus ouverte.</value></data>
+  <data name="ESign.Errors.ESIGN_SAMPLE_IN_USE" xml:space="preserve"><value>Un spécimen utilisé ne peut pas être supprimé.</value></data>
+  <data name="ESign.Errors.ESIGN_SAMPLE_NOT_ACTIVE" xml:space="preserve"><value>Votre spécimen de signature n'est pas actif.</value></data>
+  <data name="ESign.Errors.ESIGN_SAMPLE_NOT_PENDING" xml:space="preserve"><value>Ce spécimen n'attend pas d'approbation.</value></data>
+  <data name="ESign.Errors.ESIGN_SECOND_FACTOR_NOT_AVAILABLE" xml:space="preserve"><value>Le second facteur n'est pas encore disponible.</value></data>
+  <data name="ESign.Errors.ESIGN_SELF_APPROVAL_FORBIDDEN" xml:space="preserve"><value>Vous ne pouvez pas approuver votre propre spécimen.</value></data>
+  <data name="ESign.Errors.ESIGN_SIGNATURE_MISMATCH" xml:space="preserve"><value>La signature ne correspond pas à cette approbation ; signez à nouveau.</value></data>
+  <data name="ESign.Errors.ESIGN_SIGNATURE_REQUIRED" xml:space="preserve"><value>Cette approbation exige une signature électronique.</value></data>
+  <data name="ESign.Errors.ESIGN_SIGNER_NOT_FOUND" xml:space="preserve"><value>Le signataire est introuvable.</value></data>
+  <data name="ESign.Errors.ESIGN_SIGNER_NOT_NOMINATED" xml:space="preserve"><value>Vous n'êtes pas désigné comme signataire de cette demande.</value></data>
+  <data name="ESign.Errors.ESIGN_SUBJECT_NOT_FOUND" xml:space="preserve"><value>L'enregistrement à signer est introuvable ou ne vous est pas visible.</value></data>
+  <data name="ESign.Errors.ESIGN_TICKET_INVALID" xml:space="preserve"><value>Votre vérification de mot de passe est invalide ou expirée ; réessayez.</value></data>
+  <data name="ESign.Errors.ESIGN_TICKET_REQUIRED" xml:space="preserve"><value>Une vérification du mot de passe est requise pour signer.</value></data>
+  <data name="ESign.Common.Actions" xml:space="preserve"><value>Actions possibles</value></data>
+  <data name="ESign.Common.AllModules" xml:space="preserve"><value>Tous les modules</value></data>
+  <data name="ESign.Common.AllStatuses" xml:space="preserve"><value>Tous les statuts</value></data>
+  <data name="ESign.Common.Company" xml:space="preserve"><value>Société</value></data>
+  <data name="ESign.Common.Continue" xml:space="preserve"><value>Continuer</value></data>
+  <data name="ESign.Common.From" xml:space="preserve"><value>Du</value></data>
+  <data name="ESign.Common.To" xml:space="preserve"><value>Au</value></data>
+  <data name="ESign.Common.Module" xml:space="preserve"><value>Module métier</value></data>
+  <data name="ESign.Common.Reason" xml:space="preserve"><value>Motif</value></data>
+  <data name="ESign.Common.ReasonMin" xml:space="preserve"><value>Le motif doit comporter au moins {0} caractères.</value></data>
+  <data name="ESign.Common.ReasonPlaceholder" xml:space="preserve"><value>Indiquez le motif de cette décision</value></data>
+  <data name="ESign.Common.ReasonQuoted" xml:space="preserve"><value>Motif : « {0} »</value></data>
+  <data name="ESign.Common.Record" xml:space="preserve"><value>Enregistrement</value></data>
+  <data name="ESign.Common.Save" xml:space="preserve"><value>Enregistrer</value></data>
+  <data name="ESign.Common.Status" xml:space="preserve"><value>Statut</value></data>
+  <data name="ESign.Dialog.Err.PasswordRequired" xml:space="preserve"><value>Saisissez votre mot de passe.</value></data>
+  <data name="ESign.Module.inventory" xml:space="preserve"><value>Stocks</value></data>
+  <data name="ESign.Requests.Title" xml:space="preserve"><value>Demandes de signature</value></data>
+  <data name="ESign.Requests.Sub" xml:space="preserve"><value>Signatures qui vous sont attribuées</value></data>
+  <data name="ESign.Requests.Info" xml:space="preserve"><value>Les approbations de workflow apparaissent aussi dans WorkCenter ; cet écran ne liste que les signatures qui vous sont attribuées.</value></data>
+  <data name="ESign.Requests.Count" xml:space="preserve"><value>{0} demandes · {1} en attente</value></data>
+  <data name="ESign.Requests.Col.Meaning" xml:space="preserve"><value>Signification demandée</value></data>
+  <data name="ESign.Requests.Col.RequestedBy" xml:space="preserve"><value>Demandé par</value></data>
+  <data name="ESign.Requests.Col.RequestedAt" xml:space="preserve"><value>Date de demande</value></data>
+  <data name="ESign.Requests.Col.Due" xml:space="preserve"><value>Échéance</value></data>
+  <data name="ESign.Requests.Today" xml:space="preserve"><value>Aujourd'hui</value></data>
+  <data name="ESign.Requests.Status.waiting" xml:space="preserve"><value>En attente</value></data>
+  <data name="ESign.Requests.Status.signed" xml:space="preserve"><value>Signée</value></data>
+  <data name="ESign.Requests.Status.rejected" xml:space="preserve"><value>Refusée</value></data>
+  <data name="ESign.Requests.Status.expired" xml:space="preserve"><value>Expirée</value></data>
+  <data name="ESign.Requests.Status.cancelled" xml:space="preserve"><value>Annulée</value></data>
+  <data name="ESign.Requests.Sign" xml:space="preserve"><value>Signer</value></data>
+  <data name="ESign.Requests.Reject" xml:space="preserve"><value>Refuser</value></data>
+  <data name="ESign.Requests.OpenRecord" xml:space="preserve"><value>Signatures de l'enregistrement</value></data>
+  <data name="ESign.Requests.Reject.Title" xml:space="preserve"><value>Refuser la demande de signature ?</value></data>
+  <data name="ESign.Requests.Reject.Sub" xml:space="preserve"><value>{0} · {1} — le demandeur est informé.</value></data>
+  <data name="ESign.Requests.Rejected" xml:space="preserve"><value>{0} a été refusée.</value></data>
+  <data name="ESign.Requests.RejectReason" xml:space="preserve"><value>Motif du refus : {0}</value></data>
+  <data name="ESign.Verify.Title" xml:space="preserve"><value>Vérification des signatures</value></data>
+  <data name="ESign.Verify.Sub" xml:space="preserve"><value>Voir les signatures d'un enregistrement et leur validité actuelle</value></data>
+  <data name="ESign.Verify.SubjectType" xml:space="preserve"><value>Type d'enregistrement</value></data>
+  <data name="ESign.Verify.SubjectId" xml:space="preserve"><value>Identifiant de l'enregistrement</value></data>
+  <data name="ESign.Verify.Show" xml:space="preserve"><value>Afficher</value></data>
+  <data name="ESign.Verify.Recent" xml:space="preserve"><value>Enregistrements signés récemment</value></data>
+  <data name="ESign.Verify.RecentPick" xml:space="preserve"><value>Choisissez un enregistrement</value></data>
+  <data name="ESign.Verify.Pick" xml:space="preserve"><value>Choisissez un enregistrement à vérifier ou ouvrez un lien de signature.</value></data>
+  <data name="ESign.Verify.Reverify" xml:space="preserve"><value>Vérifier à nouveau</value></data>
+  <data name="ESign.Verify.LastVerified" xml:space="preserve"><value>Dernière vérification : {0}</value></data>
+  <data name="ESign.Verify.NoVerifyPermission" xml:space="preserve"><value>Le statut de vérification exige le droit de vérification de signature</value></data>
+  <data name="ESign.Verify.CurrentHash" xml:space="preserve"><value>Empreinte actuelle de l'enregistrement (SHA-256) :</value></data>
+  <data name="ESign.Verify.Count.Total" xml:space="preserve"><value>Signatures : {0}</value></data>
+  <data name="ESign.Verify.Count.Valid" xml:space="preserve"><value>{0} valides</value></data>
+  <data name="ESign.Verify.Count.Changed" xml:space="preserve"><value>{0} enregistrement modifié</value></data>
+  <data name="ESign.Verify.Count.Invalidated" xml:space="preserve"><value>{0} invalidées</value></data>
+  <data name="ESign.Verify.Count.Tampered" xml:space="preserve"><value>{0} altérées</value></data>
+  <data name="ESign.Verify.Status.valid" xml:space="preserve"><value>Valide</value></data>
+  <data name="ESign.Verify.Status.changed" xml:space="preserve"><value>Enregistrement modifié</value></data>
+  <data name="ESign.Verify.Status.invalidated" xml:space="preserve"><value>Invalidée</value></data>
+  <data name="ESign.Verify.Status.tampered" xml:space="preserve"><value>Altérée</value></data>
+  <data name="ESign.Verify.Status.subjectUnresolvable" xml:space="preserve"><value>Enregistrement illisible</value></data>
+  <data name="ESign.Verify.ChangedNote" xml:space="preserve"><value>L'enregistrement a changé après la signature : empreinte à la signature {0}…, actuelle {1}…</value></data>
+  <data name="ESign.Verify.InvalidatedReason" xml:space="preserve"><value>Motif : « {0} »</value></data>
+  <data name="ESign.Verify.Note" xml:space="preserve"><value>Remarque : « {0} »</value></data>
+  <data name="ESign.Verify.AppearanceType" xml:space="preserve"><value>Apparence</value></data>
+  <data name="ESign.Verify.SignatureId" xml:space="preserve"><value>Identifiant de signature</value></data>
+  <data name="ESign.Verify.HashAtSign" xml:space="preserve"><value>Empreinte à la signature</value></data>
+  <data name="ESign.Verify.ImageHash" xml:space="preserve"><value>Empreinte de l'image</value></data>
+  <data name="ESign.Verify.DrawnNoImage" xml:space="preserve"><value>dessin · empreinte enregistrée</value></data>
+  <data name="ESign.Verify.NameOnly" xml:space="preserve"><value>nom uniquement</value></data>
+  <data name="ESign.Verify.NoSignatures" xml:space="preserve"><value>Cet enregistrement n'a encore aucune signature.</value></data>
+  <data name="ESign.Verify.Invalidate" xml:space="preserve"><value>Invalider la signature</value></data>
+  <data name="ESign.Verify.InvalidateNoPermission" xml:space="preserve"><value>L'invalidation exige le droit d'administrateur de signature</value></data>
+  <data name="ESign.Verify.Invalidate.Title" xml:space="preserve"><value>Invalider la signature ?</value></data>
+  <data name="ESign.Verify.Invalidate.Sub" xml:space="preserve"><value>{0} · {1} — la signature reste inchangée ; l'invalidation est enregistrée à part, définitivement.</value></data>
+  <data name="ESign.Verify.Invalidate.PwdTitle" xml:space="preserve"><value>Confirmez l'invalidation avec votre mot de passe</value></data>
+  <data name="ESign.Verify.Invalidate.Warn" xml:space="preserve"><value>Action irréversible. La signature apparaîtra invalide partout où elle est utilisée.</value></data>
+  <data name="ESign.Verify.Invalidated" xml:space="preserve"><value>{0} a été invalidée.</value></data>
+  <data name="ESign.Export.Title" xml:space="preserve"><value>Export d'audit</value></data>
+  <data name="ESign.Export.Sub" xml:space="preserve"><value>Filtrez les signatures et téléchargez-les en PDF ou en CSV</value></data>
+  <data name="ESign.Export.Preview" xml:space="preserve"><value>Aperçu</value></data>
+  <data name="ESign.Export.View.Table" xml:space="preserve"><value>Tableau</value></data>
+  <data name="ESign.Export.View.Pdf" xml:space="preserve"><value>Aperçu PDF</value></data>
+  <data name="ESign.Export.AsPdf" xml:space="preserve"><value>Exporter en PDF</value></data>
+  <data name="ESign.Export.AsCsv" xml:space="preserve"><value>Exporter en CSV</value></data>
+  <data name="ESign.Export.Count" xml:space="preserve"><value>{0} signatures enregistrées</value></data>
+  <data name="ESign.Export.Done" xml:space="preserve"><value>{0} téléchargé ({1}).</value></data>
+  <data name="ESign.Export.Empty" xml:space="preserve"><value>Aucune signature ne correspond au filtre.</value></data>
+  <data name="ESign.Export.NoVisual" xml:space="preserve"><value>Pas de signature visuelle · nom seul</value></data>
+  <data name="ESign.Export.AllSigners" xml:space="preserve"><value>Tous les signataires</value></data>
+  <data name="ESign.Export.AllMeanings" xml:space="preserve"><value>Toutes les significations</value></data>
+  <data name="ESign.Export.AllCompanies" xml:space="preserve"><value>Toutes les sociétés</value></data>
+  <data name="ESign.Export.Col.At" xml:space="preserve"><value>Date et heure</value></data>
+  <data name="ESign.Export.Col.Signer" xml:space="preserve"><value>Signataire</value></data>
+  <data name="ESign.Export.Col.Meaning" xml:space="preserve"><value>Signification de la signature</value></data>
+  <data name="ESign.Export.Col.Record" xml:space="preserve"><value>Module · Enregistrement</value></data>
+  <data name="ESign.Export.Col.Verification" xml:space="preserve"><value>Contrôle</value></data>
+  <data name="ESign.Export.Report.Title" xml:space="preserve"><value>Rapport d'audit des signatures</value></data>
+  <data name="ESign.Export.Report.Sub" xml:space="preserve"><value>Service de signature électronique (MOD-0022)</value></data>
+  <data name="ESign.Export.Report.Foot" xml:space="preserve"><value>Chaque bloc contient l'image, le nom, la signification, la date et l'identifiant. Le fichier est produit par le serveur.</value></data>
+  <data name="ESign.Export.Log.Title" xml:space="preserve"><value>Journal des exports</value></data>
+  <data name="ESign.Export.Log.Sub" xml:space="preserve"><value>Chaque export est consigné de façon immuable</value></data>
+  <data name="ESign.Export.Log.Number" xml:space="preserve"><value>N° d'export</value></data>
+  <data name="ESign.Export.Log.By" xml:space="preserve"><value>Par</value></data>
+  <data name="ESign.Export.Log.Format" xml:space="preserve"><value>Type de fichier</value></data>
+  <data name="ESign.Export.Log.Count" xml:space="preserve"><value>Nombre de lignes</value></data>
+  <data name="ESign.Export.Log.Records" xml:space="preserve"><value>{0} lignes</value></data>
+  <data name="ESign.Export.Log.Filter" xml:space="preserve"><value>Filtre appliqué</value></data>
+  <data name="ESign.Export.Log.FileHash" xml:space="preserve"><value>Empreinte du fichier</value></data>
+  <data name="ESign.Export.Log.Empty" xml:space="preserve"><value>Aucun export pour l'instant.</value></data>
+  <data name="ESign.Policy.Title" xml:space="preserve"><value>Politique de signature électronique</value></data>
+  <data name="ESign.Policy.Sub" xml:space="preserve"><value>Définissez quelle action exige une signature, sa signification et la règle visuelle</value></data>
+  <data name="ESign.Policy.Scope" xml:space="preserve"><value>Portée</value></data>
+  <data name="ESign.Policy.Scope.Tenant" xml:space="preserve"><value>Valeur par défaut du locataire</value></data>
+  <data name="ESign.Policy.Scope.Company" xml:space="preserve"><value>Par société</value></data>
+  <data name="ESign.Policy.ScopeHint.Tenant" xml:space="preserve"><value>Toute société sans politique propre utilise celle-ci</value></data>
+  <data name="ESign.Policy.ScopeHint.Company" xml:space="preserve"><value>Les enregistrements de la société utilisent cette politique</value></data>
+  <data name="ESign.Policy.UsesTenant.Title" xml:space="preserve"><value>{0} utilise la valeur par défaut du locataire</value></data>
+  <data name="ESign.Policy.UsesTenant.Text" xml:space="preserve"><value>Toute modification de la politique du locataire s'applique aussi à cette société. Pour d'autres règles, copiez-la puis modifiez-la.</value></data>
+  <data name="ESign.Policy.CopyForCompany" xml:space="preserve"><value>Politique distincte pour cette société</value></data>
+  <data name="ESign.Policy.Override.Text" xml:space="preserve"><value>Une politique distincte s'applique à {0}. Les lignes qui diffèrent sont marquées « Différent ».</value></data>
+  <data name="ESign.Policy.Override.New" xml:space="preserve"><value>Copie de la valeur par défaut pour {0} : l'enregistrement crée la politique de la société.</value></data>
+  <data name="ESign.Policy.Revert" xml:space="preserve"><value>Revenir à la valeur par défaut</value></data>
+  <data name="ESign.Policy.Revert.Title" xml:space="preserve"><value>Ramener {0} à la valeur par défaut ?</value></data>
+  <data name="ESign.Policy.Revert.Sub" xml:space="preserve"><value>La politique distincte est supprimée ; son contenu reste dans l'historique.</value></data>
+  <data name="ESign.Policy.Reverted" xml:space="preserve"><value>{0} utilise désormais la valeur par défaut.</value></data>
+  <data name="ESign.Policy.Rules" xml:space="preserve"><value>Règles de signature par action</value></data>
+  <data name="ESign.Policy.Col.Action" xml:space="preserve"><value>Opération</value></data>
+  <data name="ESign.Policy.Col.Meaning" xml:space="preserve"><value>Signification de la signature</value></data>
+  <data name="ESign.Policy.Col.Visual" xml:space="preserve"><value>Signature visuelle</value></data>
+  <data name="ESign.Policy.Col.SecondFactor" xml:space="preserve"><value>Second facteur</value></data>
+  <data name="ESign.Policy.Required" xml:space="preserve"><value>Obligatoire</value></data>
+  <data name="ESign.Policy.Off" xml:space="preserve"><value>Désactivée</value></data>
+  <data name="ESign.Policy.Soon" xml:space="preserve"><value>Bientôt</value></data>
+  <data name="ESign.Policy.Differs" xml:space="preserve"><value>Différent</value></data>
+  <data name="ESign.Policy.Unsaved" xml:space="preserve"><value>Modification non enregistrée</value></data>
+  <data name="ESign.Policy.MeaningSignerChooses" xml:space="preserve"><value>— Le signataire choisit —</value></data>
+  <data name="ESign.Policy.NoActions" xml:space="preserve"><value>Aucune action signable n'est enregistrée.</value></data>
+  <data name="ESign.Policy.NoCompanies" xml:space="preserve"><value>La liste des sociétés est illisible.</value></data>
+  <data name="ESign.Policy.General" xml:space="preserve"><value>Paramètres généraux</value></data>
+  <data name="ESign.Policy.Reauth" xml:space="preserve"><value>Mot de passe pour les signatures successives</value></data>
+  <data name="ESign.Policy.Reauth.Every" xml:space="preserve"><value>Demander le mot de passe à chaque signature</value></data>
+  <data name="ESign.Policy.Reauth.EverySub" xml:space="preserve"><value>L'utilisateur ressaisit son mot de passe à chaque signature.</value></data>
+  <data name="ESign.Policy.Reauth.Window" xml:space="preserve"><value>Une fois par période</value></data>
+  <data name="ESign.Policy.Reauth.WindowSub" xml:space="preserve"><value>Pendant la période de validité, les signatures suivantes ne demandent pas le mot de passe.</value></data>
+  <data name="ESign.Policy.Minutes" xml:space="preserve"><value>Durée de validité de la revérification</value></data>
+  <data name="ESign.Policy.MinutesUnit" xml:space="preserve"><value>minutes</value></data>
+  <data name="ESign.Policy.MinutesHint" xml:space="preserve"><value>de 1 à 60 minutes</value></data>
+  <data name="ESign.Policy.MinutesHintEvery" xml:space="preserve"><value>Inutilisé quand « chaque signature » est choisi</value></data>
+  <data name="ESign.Policy.SampleApproval" xml:space="preserve"><value>Exiger l'approbation d'un administrateur avant d'utiliser un modèle de signature</value></data>
+  <data name="ESign.Policy.SampleApproval.Sub" xml:space="preserve"><value>Activé, les nouveaux modèles restent inutilisables jusqu'à leur approbation.</value></data>
+  <data name="ESign.Policy.SampleApproval.TenantOnly" xml:space="preserve"><value>Réglage commun au locataire ; la politique de société ne fait que l'afficher.</value></data>
+  <data name="ESign.Policy.DirtyText" xml:space="preserve"><value>{0} modifications non enregistrées</value></data>
+  <data name="ESign.Policy.SaveWithReason" xml:space="preserve"><value>Enregistrer avec un motif</value></data>
+  <data name="ESign.Policy.Save" xml:space="preserve"><value>Enregistrer</value></data>
+  <data name="ESign.Policy.Save.Title" xml:space="preserve"><value>Enregistrer la modification de politique ?</value></data>
+  <data name="ESign.Policy.Save.Sub" xml:space="preserve"><value>Les modifications sont consignées avec le motif et s'appliquent aux nouvelles signatures.</value></data>
+  <data name="ESign.Policy.Saved" xml:space="preserve"><value>La politique a été enregistrée.</value></data>
+  <data name="ESign.Policy.Change.Required" xml:space="preserve"><value>{0} : statut → {1}</value></data>
+  <data name="ESign.Policy.Change.Meaning" xml:space="preserve"><value>{0} : signification → {1}</value></data>
+  <data name="ESign.Policy.Change.Visual" xml:space="preserve"><value>{0} : signature visuelle → {1}</value></data>
+  <data name="ESign.Policy.Change.Minutes" xml:space="preserve"><value>Validité → {0} minutes</value></data>
+  <data name="ESign.Policy.History" xml:space="preserve"><value>Historique des modifications</value></data>
+  <data name="ESign.Policy.HistoryEmpty" xml:space="preserve"><value>Aucune modification pour l'instant.</value></data>
+  <data name="ESign.Meanings.Title" xml:space="preserve"><value>Significations de signature</value></data>
+  <data name="ESign.Meanings.Sub" xml:space="preserve"><value>Nom affiché en 7 langues ; la fenêtre de signature utilise la langue de l'utilisateur</value></data>
+  <data name="ESign.Meanings.Col.Code" xml:space="preserve"><value>Code interne</value></data>
+  <data name="ESign.Meanings.Col.Name" xml:space="preserve"><value>Nom affiché</value></data>
+  <data name="ESign.Meanings.Col.Description" xml:space="preserve"><value>Descriptif</value></data>
+  <data name="ESign.Meanings.Col.Usage" xml:space="preserve"><value>Utilisation</value></data>
+  <data name="ESign.Meanings.Active" xml:space="preserve"><value>Actif</value></data>
+  <data name="ESign.Meanings.Inactive" xml:space="preserve"><value>Inactif</value></data>
+  <data name="ESign.Meanings.Used" xml:space="preserve"><value>Utilisée</value></data>
+  <data name="ESign.Meanings.Unused" xml:space="preserve"><value>Jamais utilisée</value></data>
+  <data name="ESign.Meanings.UsedIn" xml:space="preserve"><value>Dans {0} signatures</value></data>
+  <data name="ESign.Meanings.LangCount" xml:space="preserve"><value>{0}/7 langues</value></data>
+  <data name="ESign.Meanings.New" xml:space="preserve"><value>Nouvelle signification</value></data>
+  <data name="ESign.Meanings.Edit" xml:space="preserve"><value>Modifier la signification · {0}</value></data>
+  <data name="ESign.Meanings.View" xml:space="preserve"><value>Signification · {0}</value></data>
+  <data name="ESign.Meanings.EditAction" xml:space="preserve"><value>Modifier</value></data>
+  <data name="ESign.Meanings.ViewAction" xml:space="preserve"><value>Afficher</value></data>
+  <data name="ESign.Meanings.Modal.Sub" xml:space="preserve"><value>Le nom affiché est obligatoire en 7 langues</value></data>
+  <data name="ESign.Meanings.CodeLocked" xml:space="preserve"><value>Le code est utilisé par des signatures existantes et ne peut changer.</value></data>
+  <data name="ESign.Meanings.CodeFormat" xml:space="preserve"><value>2 à 32 caractères commençant par une majuscule : A–Z, 0–9, _</value></data>
+  <data name="ESign.Meanings.NameRequired" xml:space="preserve"><value>Un nom est obligatoire dans cette langue.</value></data>
+  <data name="ESign.Meanings.FixFields" xml:space="preserve"><value>Corrigez les champs signalés.</value></data>
+  <data name="ESign.Meanings.UsageWarn" xml:space="preserve"><value>Cette signification figure dans {0} signatures. Un changement de nom ne vaut que pour les nouvelles signatures.</value></data>
+  <data name="ESign.Meanings.Created" xml:space="preserve"><value>{0} a été créée.</value></data>
+  <data name="ESign.Meanings.Updated" xml:space="preserve"><value>{0} a été mise à jour.</value></data>
+  <data name="ESign.Meanings.Activate" xml:space="preserve"><value>Activer</value></data>
+  <data name="ESign.Meanings.Activate.Title" xml:space="preserve"><value>Activer {0} ?</value></data>
+  <data name="ESign.Meanings.Activate.Sub" xml:space="preserve"><value>La signification devient sélectionnable dans la fenêtre de signature.</value></data>
+  <data name="ESign.Meanings.Deactivate" xml:space="preserve"><value>Désactiver</value></data>
+  <data name="ESign.Meanings.Deactivate.Title" xml:space="preserve"><value>Désactiver {0} ?</value></data>
+  <data name="ESign.Meanings.Deactivate.Sub" xml:space="preserve"><value>Elle n'est plus proposée pour les nouvelles signatures ; refusé si une règle de politique l'utilise.</value></data>
+  <data name="ESign.Meanings.Lang.tr" xml:space="preserve"><value>Turc</value></data>
+  <data name="ESign.Meanings.Lang.en" xml:space="preserve"><value>Anglais</value></data>
+  <data name="ESign.Meanings.Lang.fr" xml:space="preserve"><value>Français</value></data>
+  <data name="ESign.Meanings.Lang.es" xml:space="preserve"><value>Espagnol</value></data>
+  <data name="ESign.Meanings.Lang.zh" xml:space="preserve"><value>Chinois</value></data>
+  <data name="ESign.Meanings.Lang.ar" xml:space="preserve"><value>Arabe</value></data>
+  <data name="ESign.Meanings.Lang.ru" xml:space="preserve"><value>Russe</value></data>
+  <data name="ESign.Approvals.Title" xml:space="preserve"><value>Approbation des modèles de signature</value></data>
+  <data name="ESign.Approvals.Sub" xml:space="preserve"><value>Modèles de signature en attente d'approbation</value></data>
+  <data name="ESign.Approvals.Note" xml:space="preserve"><value>Vous ne pouvez pas approuver votre propre modèle. Chaque décision est consignée dans l'audit.</value></data>
+  <data name="ESign.Approvals.Col.User" xml:space="preserve"><value>Utilisateur</value></data>
+  <data name="ESign.Approvals.Col.AddedAt" xml:space="preserve"><value>Ajouté le</value></data>
+  <data name="ESign.Approvals.Col.Image" xml:space="preserve"><value>Visuel</value></data>
+  <data name="ESign.Approvals.Col.How" xml:space="preserve"><value>Mode d'ajout</value></data>
+  <data name="ESign.Approvals.OtherAdmin" xml:space="preserve"><value>Un autre administrateur décide</value></data>
+  <data name="ESign.Approvals.Approve" xml:space="preserve"><value>Approuver</value></data>
+  <data name="ESign.Approvals.Approve.Title" xml:space="preserve"><value>Approuver le modèle de signature de {0} ?</value></data>
+  <data name="ESign.Approvals.Approve.Sub" xml:space="preserve"><value>{0} — une fois approuvé, l'ancien modèle actif devient inactif.</value></data>
+  <data name="ESign.Approvals.Approved" xml:space="preserve"><value>{0} a été approuvé.</value></data>
+  <data name="ESign.Approvals.Reject" xml:space="preserve"><value>Refuser</value></data>
+  <data name="ESign.Approvals.Reject.Title" xml:space="preserve"><value>Refuser le modèle de signature de {0} ?</value></data>
+  <data name="ESign.Approvals.Reject.Sub" xml:space="preserve"><value>{0} — l'utilisateur voit le motif sur la page Ma signature.</value></data>
+  <data name="ESign.Approvals.Rejected" xml:space="preserve"><value>{0} a été refusé.</value></data>
+  <data name="ESign.Approvals.Log" xml:space="preserve"><value>Historique des décisions</value></data>
+  <data name="ESign.Approvals.LogEmpty" xml:space="preserve"><value>Aucune décision pour l'instant.</value></data>
+  <data name="ESign.Approvals.Decision.approved" xml:space="preserve"><value>Approuvé</value></data>
+  <data name="ESign.Approvals.Decision.rejected" xml:space="preserve"><value>Refusé</value></data>
+</root>

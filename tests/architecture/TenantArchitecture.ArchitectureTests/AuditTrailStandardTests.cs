@@ -63,6 +63,8 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
         ["Diten.EnterpriseStrategyService"] = new(Debt: 36, Exceptions: 0, Indirect: 20),
         ["Diten.HcmService"] = new(Debt: 8, Exceptions: 0),
         ["Diten.HumanCapitalService"] = new(Debt: 70, Exceptions: 0),
+        // measured 2026-10-06 — new service (MOD-0193, MVP-3): every command audited through bom-surum-gecmisi, no debt.
+        ["Diten.ManufacturingService"] = new(Debt: 0, Exceptions: 0),
         ["Diten.ManagementGovernanceService"] = new(Debt: 23, Exceptions: 0),
         // CT kararı 2026-10-07 (WP-MDM-SETTLE-CAP-01): iz mdm-guvenilir-kaynak-niyeti (b) + 11 dolaylı (akışa özgü işlemci)
         // + 2 İ5 istisna (RetireGskuIdentityPair / RetireLskuIdentity — her zaman 403 DirectRetirementIsSystemOnly).
@@ -108,6 +110,9 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
             + "/IFirstGskuIdentityWorkflowOperationRepository.ApplyWithdrawalAsync"
             + "/ILskuIdentityWorkflowOperationRepository.ApplyWithdrawalAsync"
             + "/IProductAbbreviationRegisterRepository.AppendAuditIntentIfAbsentAsync"),
+        // CT acceptance 2026-10-06 (MVP-3 lane, MOD-0193 pack §21): the BOM version history is written in the SAME Mongo
+        // transaction as the BOM (K2 fail-closed), has no update/delete member, and is read on the BOM's own screen.
+        ("Diten.ManufacturingService", "bom-surum-gecmisi", "c", "IBomHistoryJournal.CommitAsync"),
         ("Diten.Platform", "platform-merkezi", "a",
             "IAuditableCommand+IAuditMetadataProvider+!IAuditExcludedRequest+!ITransactionOwnedAuditCommand"),
         ("Diten.Platform", "platform-meta-denetim", "a", "IAuditMetaAuditWriter.WriteAsync"),

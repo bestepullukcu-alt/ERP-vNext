@@ -824,7 +824,8 @@ public sealed class ExportGrantBackfillScenarioTests : IClassFixture<AccountKind
         {
             scope.ServiceProvider.GetRequiredService<Diten.AuthService.Application.Common.TenantContext>().SetTenant(tenant);
             // The production path a new tenant takes (Admin + Viewer from the template) …
-            await scope.ServiceProvider.GetRequiredService<Diten.AuthService.Application.Common.Interfaces.IRoleProvisioningService>().EnsureDefaultRolesAsync(tenant);
+            await scope.ServiceProvider.GetRequiredService<Diten.AuthService.Application.Common.Interfaces.IRoleProvisioningService>().EnsureDefaultRolesAsync(
+                tenant, Diten.AuthService.Domain.Authorization.DefaultRoleProvisioningTriggers.TenantActivated);
             // … and a reading role its administrator then opens ON PURPOSE without export.
             var role = await scope.ServiceProvider.GetRequiredService<Diten.AuthService.Application.Common.Interfaces.IRoleRepository>()
                 .CreateAsync(new Role("Readers", "Readers", "opened without export", tenant), CancellationToken.None);

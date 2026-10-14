@@ -1,0 +1,91 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@using Diten.Web.Models.DataTable
+@inject IHtmlLocalizer<Diten.Web.Views.ESignature.ESignature> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["ESign.Approvals.Title"].Value;
+    Layout = "_LayoutTenantShell";
+}
+@*
+    MOD-0022 E5W2 — İmza örneği onayları (ESIGN_SAMPLEAPPROVALS, /ESignature/Settings/SampleApprovals, esign.samples.approve; pack
+    §11.1, §11.3, CT-D5; mockup v2 tab 8). §17.3 (evidence §0): Table-bulk golden slim CLIENT list (the pending queue is short;
+    listPendingSamples is unpaged) — emsal Views/DevEnablement/GoldenReferenceSlim; Onayla = confirm; Reddet = red reasoned
+    confirm (≥ 10, emsal Traceability/LotMigration). The owner's OWN sample shows "Başka bir yönetici onaylar" and no decision
+    button — display only: the server refuses a self-decision anyway (403 ESIGN_SELF_APPROVAL_FORBIDDEN, E3). Decision log =
+    listSampleDecisions. UAS-001 below.
+*@
+@if (!Perms.Has("esign.samples.approve"))
+{
+    <partial name="_AccessDenied" model="@Localizer["ESign.Approvals.Title"].Value" />
+    return;
+}
+@{
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-esign-approvals",
+        DataMode = "client",
+        Slug = "esign-approvals",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["ESign.Approvals.Col.User"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["ESign.Approvals.Col.AddedAt"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ESign.Approvals.Col.Image"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ESign.Approvals.Col.How"].Value }
+        ],
+        ActionsHeader = Localizer["ESign.Common.Actions"].Value
+    };
+}
+
+@* Contract marker: <partial name="_Filter" /> *@
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                    <div class="filter-chip">
+                        <select id="filterKind" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["ESign.Approvals.Col.How"]">
+                            <option value="drawn">@Localizer["ESign.Mine.Kind.drawn"]</option>
+                            <option value="uploaded">@Localizer["ESign.Mine.Kind.uploaded"]</option>
+                        </select>
+                    </div>
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">@SharedLocalizer["Apply"]</button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">@SharedLocalizer["Reset"]</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["ESign.Approvals.Title"]</h5>
+    <p class="mb-0 text-muted">@Localizer["ESign.Approvals.Sub"]</p>
+</div>
+
+<div class="alert alert-info d-flex gap-2 align-items-start" role="note">
+    <i class="bx bx-info-circle fs-5"></i><span>@Localizer["ESign.Approvals.Note"]</span>
+</div>
+
+@* Contract markers are rendered by _ListShell: <partial name="_TableSkeleton" />, <table id="dt-esign-approvals" data-dt-standard="v2"> *@
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />
+
+<div class="card mt-4">
+    <div class="card-header"><h6 class="mb-0 text-uppercase text-heading fw-semibold"><i class="bx bx-history me-1"></i>@Localizer["ESign.Approvals.Log"]</h6></div>
+    <div class="card-body" id="esignApprovalsLog"></div>
+</div>
+
+<partial name="~/Views/Shared/ESignature/_SignatureZoom.cshtml" />
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/ESignature/_ESignatureL10n.cshtml" />
+    <partial name="~/Views/ESignature/_ESignatureListL10n.cshtml" />
+    <script src="~/assets/js/shared/premium-modal.js" asp-append-version="true"></script>
+    <script src="~/assets/js/ESignature/esign-dialog.js" asp-append-version="true"></script>
+    <script src="~/assets/js/ESignature/esign-pages.js" asp-append-version="true"></script>
+    <script src="~/assets/js/ESignature/sample-approvals.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <!-- MOD-0193 BL-452: BOM export file headers and status values — the same words the screen shows (Views/Manufacturing/Boms), 7 tenant languages. -->
+  <data name="Title" xml:space="preserve"><value>Listas de materiales</value></data>
+  <data name="ItemId" xml:space="preserve"><value>Artículo</value></data>
+  <data name="Version" xml:space="preserve"><value>Versión</value></data>
+  <data name="Status" xml:space="preserve"><value>Estado</value></data>
+  <data name="Description" xml:space="preserve"><value>Descripción</value></data>
+  <data name="ComponentCount" xml:space="preserve"><value>Componentes</value></data>
+  <data name="StepCount" xml:space="preserve"><value>Pasos de ruta</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Vigente desde</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Vigente hasta</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Último cambio</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="StatusEffective" xml:space="preserve"><value>Vigente</value></data>
+  <data name="StatusSuperseded" xml:space="preserve"><value>Sustituida</value></data>
+</root>

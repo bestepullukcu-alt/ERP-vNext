@@ -108,8 +108,11 @@ class SkipAllowListTests(unittest.TestCase):
             self.assertEqual(1, code, out.getvalue())
             self.assertIn("allow-list line 1", out.getvalue())
 
-    def test_the_repository_allowlist_holds_exactly_the_three_auth_codes_one_test_each(self):
-        self.assertEqual({("auth-app", "MACOS_ONLY"): 1, ("auth-app", "UID_EQUALS_GID"): 1, ("auth-app", "RUNS_AS_ROOT"): 1},
+    # WP-LANE-MAIN-SYNC-02 B3 (owner decision 2026-10-14, BL-637): one Manufacturing line, its own suite only, 35 = the tests
+    # that carry the code (measured). Anything else added is still red here.
+    def test_the_repository_allowlist_holds_exactly_the_three_auth_codes_and_the_manufacturing_mongo_line(self):
+        self.assertEqual({("auth-app", "MACOS_ONLY"): 1, ("auth-app", "UID_EQUALS_GID"): 1, ("auth-app", "RUNS_AS_ROOT"): 1,
+                          ("manufacturing-tests", "MANUFACTURING_TEST_MONGO"): 35},
                          script.load_allowlist(ALLOWLIST))
 
     # FIX2: a code has a maximum — a second test borrowing RUNS_AS_ROOT is red, and named.

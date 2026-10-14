@@ -1,0 +1,421 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ESign.Dialog.Title" xml:space="preserve"><value>Электронная подпись</value></data>
+  <data name="ESign.Dialog.StandardRef" xml:space="preserve"><value>21 CFR Part 11 · GMP ЕС, приложение 11</value></data>
+  <data name="ESign.Dialog.Close" xml:space="preserve"><value>Закрыть</value></data>
+  <data name="ESign.Dialog.Loading" xml:space="preserve"><value>Загрузка данных подписи…</value></data>
+  <data name="ESign.Dialog.WhatYouSign" xml:space="preserve"><value>Что вы подписываете</value></data>
+  <data name="ESign.Dialog.UserName" xml:space="preserve"><value>Имя пользователя</value></data>
+  <data name="ESign.Dialog.Password" xml:space="preserve"><value>Пароль</value></data>
+  <data name="ESign.Dialog.RetypeUserName" xml:space="preserve"><value>Введите имя пользователя</value></data>
+  <data name="ESign.Dialog.RetypeHint" xml:space="preserve"><value>В окне действия пароля вы повторно вводите имя пользователя как один из компонентов подписи.</value></data>
+  <data name="ESign.Dialog.WindowInfo" xml:space="preserve"><value>Пароль подтверждён в {0}. По политике он не запрашивается повторно {1} мин (осталось {2} мин).</value></data>
+  <data name="ESign.Dialog.Meaning" xml:space="preserve"><value>Значение подписи</value></data>
+  <data name="ESign.Dialog.MeaningSelect" xml:space="preserve"><value>Выберите</value></data>
+  <data name="ESign.Dialog.Appearance" xml:space="preserve"><value>Вид подписи</value></data>
+  <data name="ESign.Dialog.AppearancePolicy" xml:space="preserve"><value>Политика: {0}</value></data>
+  <data name="ESign.Dialog.App.Saved" xml:space="preserve"><value>Использовать мою сохранённую подпись</value></data>
+  <data name="ESign.Dialog.App.SavedSub" xml:space="preserve"><value>{0} · этот вариант всегда запрашивает пароль</value></data>
+  <data name="ESign.Dialog.App.Draw" xml:space="preserve"><value>Нарисовать сейчас</value></data>
+  <data name="ESign.Dialog.App.DrawSub" xml:space="preserve"><value>Нарисуйте подпись в поле этого окна</value></data>
+  <data name="ESign.Dialog.App.Name" xml:space="preserve"><value>Только имя</value></data>
+  <data name="ESign.Dialog.App.NameSub" xml:space="preserve"><value>Имя и дата-время добавляются текстом</value></data>
+  <data name="ESign.Dialog.Dis.DrawRequired" xml:space="preserve"><value>Политика требует нарисовать подпись сейчас для этого действия</value></data>
+  <data name="ESign.Dialog.Dis.None" xml:space="preserve"><value>Для этого действия визуальная подпись не используется</value></data>
+  <data name="ESign.Dialog.Dis.Pending" xml:space="preserve"><value>Образец подписи ожидает одобрения администратора</value></data>
+  <data name="ESign.Dialog.Dis.NoSample" xml:space="preserve"><value>Нет сохранённого образца подписи · добавьте его на странице «Моя подпись»</value></data>
+  <data name="ESign.Dialog.Dis.VisualRequired" xml:space="preserve"><value>Для этого действия нужна визуальная подпись</value></data>
+  <data name="ESign.Dialog.VisualMode.none" xml:space="preserve"><value>Нет</value></data>
+  <data name="ESign.Dialog.VisualMode.optional" xml:space="preserve"><value>Необязательно</value></data>
+  <data name="ESign.Dialog.VisualMode.savedAccepted" xml:space="preserve"><value>Сохранённая подпись допускается</value></data>
+  <data name="ESign.Dialog.VisualMode.drawRequired" xml:space="preserve"><value>Обязательно: нарисовать сейчас</value></data>
+  <data name="ESign.Pad.Hint" xml:space="preserve"><value>Подпишите мышью, пером или пальцем</value></data>
+  <data name="ESign.Pad.Undo" xml:space="preserve"><value>Отменить</value></data>
+  <data name="ESign.Pad.Clear" xml:space="preserve"><value>Очистить</value></data>
+  <data name="ESign.Pad.Area" xml:space="preserve"><value>Поле подписи</value></data>
+  <data name="ESign.Dialog.Note" xml:space="preserve"><value>Примечание к подписи</value></data>
+  <data name="ESign.Dialog.NotePlaceholder" xml:space="preserve"><value>Необязательно</value></data>
+  <data name="ESign.Dialog.Statement1" xml:space="preserve"><value>Эта электронная подпись равнозначна моей собственноручной подписи.</value></data>
+  <data name="ESign.Dialog.Statement2" xml:space="preserve"><value>Подпись хранится неизменной вместе с вашей личностью, датой-временем, значением подписи и текущей хеш-суммой записи.</value></data>
+  <data name="ESign.Dialog.Cancel" xml:space="preserve"><value>Отмена</value></data>
+  <data name="ESign.Dialog.Sign" xml:space="preserve"><value>Подписать</value></data>
+  <data name="ESign.Dialog.Signing" xml:space="preserve"><value>Подписание…</value></data>
+  <data name="ESign.Dialog.Err.Meaning" xml:space="preserve"><value>Выберите значение подписи.</value></data>
+  <data name="ESign.Dialog.Err.Password" xml:space="preserve"><value>Введите пароль.</value></data>
+  <data name="ESign.Dialog.Err.UserName" xml:space="preserve"><value>Введите имя пользователя.</value></data>
+  <data name="ESign.Dialog.Err.Draw" xml:space="preserve"><value>Нарисуйте подпись в поле.</value></data>
+  <data name="ESign.Dialog.Err.NoSample" xml:space="preserve"><value>Нет пригодного сохранённого образца подписи.</value></data>
+  <data name="ESign.Dialog.Err.WrongPassword" xml:space="preserve"><value>Неверный пароль. Осталось попыток: {0}</value></data>
+  <data name="ESign.Dialog.Err.Generic" xml:space="preserve"><value>Не удалось завершить подпись. Попробуйте ещё раз.</value></data>
+  <data name="ESign.Dialog.Err.Forbidden" xml:space="preserve"><value>У вас нет прав на эту подпись. Обратитесь к администратору.</value></data>
+  <data name="ESign.Dialog.Err.Title" xml:space="preserve"><value>Подпись не поставлена</value></data>
+  <data name="ESign.Dialog.Locked.Title" xml:space="preserve"><value>Ваша учётная запись заблокирована</value></data>
+  <data name="ESign.Dialog.Locked.Text" xml:space="preserve"><value>Слишком много неверных паролей подряд. Подпись не поставлена. Учётная запись заблокирована на {0} мин; событие записано в журнал аудита безопасности.</value></data>
+  <data name="ESign.Dialog.Timeout.Title" xml:space="preserve"><value>Время сеанса истекло</value></data>
+  <data name="ESign.Dialog.Timeout.Text" xml:space="preserve"><value>В целях безопасности для подписи нужно войти снова. Подпись не поставлена; решение по записи сохранено как черновик.</value></data>
+  <data name="ESign.Dialog.Timeout.Relogin" xml:space="preserve"><value>Войти снова</value></data>
+  <data name="ESign.Dialog.Success.Title" xml:space="preserve"><value>Подпись сохранена</value></data>
+  <data name="ESign.Dialog.Success.SignatureId" xml:space="preserve"><value>Идентификатор подписи</value></data>
+  <data name="ESign.Dialog.Success.Timestamp" xml:space="preserve"><value>Отметка времени</value></data>
+  <data name="ESign.Dialog.Success.Signer" xml:space="preserve"><value>Подписант</value></data>
+  <data name="ESign.Dialog.Success.Meaning" xml:space="preserve"><value>Значение</value></data>
+  <data name="ESign.Dialog.Success.Appearance" xml:space="preserve"><value>Вид</value></data>
+  <data name="ESign.Dialog.Success.Record" xml:space="preserve"><value>Запись</value></data>
+  <data name="ESign.Dialog.Success.RecordDigest" xml:space="preserve"><value>Хеш записи</value></data>
+  <data name="ESign.Dialog.Success.ImageDigest" xml:space="preserve"><value>Хеш изображения</value></data>
+  <data name="ESign.Dialog.Success.NoVisual" xml:space="preserve"><value>Без визуальной подписи · только имя</value></data>
+  <data name="ESign.Dialog.Success.Ok" xml:space="preserve"><value>ОК</value></data>
+  <data name="ESign.Dialog.AppType.drawn" xml:space="preserve"><value>Рисунок</value></data>
+  <data name="ESign.Dialog.AppType.sample" xml:space="preserve"><value>Сохранённая подпись</value></data>
+  <data name="ESign.Dialog.AppType.none" xml:space="preserve"><value>Только имя</value></data>
+  <data name="ESign.Module.workflow" xml:space="preserve"><value>Рабочий процесс</value></data>
+  <data name="ESign.Module.quarantine" xml:space="preserve"><value>Качество / Карантин</value></data>
+  <data name="ESign.Module.documentmanagement" xml:space="preserve"><value>Управление документами</value></data>
+  <data name="ESign.Mine.Title" xml:space="preserve"><value>Моя подпись</value></data>
+  <data name="ESign.Mine.Statement" xml:space="preserve"><value>Визуальная подпись — это только внешний вид подписи. Её действительность обеспечивают проверка пароля и выбранное значение. Сохранённое изображение никогда не добавляется к записи без проверки пароля.</value></data>
+  <data name="ESign.Mine.MySample" xml:space="preserve"><value>Мой образец подписи</value></data>
+  <data name="ESign.Mine.Active" xml:space="preserve"><value>Активен</value></data>
+  <data name="ESign.Mine.Id" xml:space="preserve"><value>Идентификатор</value></data>
+  <data name="ESign.Mine.AddedAt" xml:space="preserve"><value>Добавлен</value></data>
+  <data name="ESign.Mine.Storage" xml:space="preserve"><value>Хранение</value></data>
+  <data name="ESign.Mine.ApprovedBy" xml:space="preserve"><value>Одобрил</value></data>
+  <data name="ESign.Mine.Usage" xml:space="preserve"><value>Использование</value></data>
+  <data name="ESign.Mine.UsedIn" xml:space="preserve"><value>Использован в {0} подписях</value></data>
+  <data name="ESign.Mine.NoApprovalNeeded" xml:space="preserve"><value>Одобрение не требовалось</value></data>
+  <data name="ESign.Mine.Empty.Title" xml:space="preserve"><value>Нет сохранённого образца подписи</value></data>
+  <data name="ESign.Mine.Empty.Text" xml:space="preserve"><value>Вы можете подписывать в окне подписи вариантом «Нарисовать сейчас» или «Только имя».</value></data>
+  <data name="ESign.Mine.PendingInfo" xml:space="preserve"><value>{0} ожидает одобрения администратора. До одобрения {1}.</value></data>
+  <data name="ESign.Mine.PendingKeep" xml:space="preserve"><value>используется текущий образец</value></data>
+  <data name="ESign.Mine.PendingNone" xml:space="preserve"><value>«Использовать мою сохранённую подпись» остаётся недоступным</value></data>
+  <data name="ESign.Mine.NewSample" xml:space="preserve"><value>Новый образец подписи</value></data>
+  <data name="ESign.Mine.Tab.Draw" xml:space="preserve"><value>Нарисовать</value></data>
+  <data name="ESign.Mine.Tab.Upload" xml:space="preserve"><value>Загрузить изображение</value></data>
+  <data name="ESign.Mine.Thickness" xml:space="preserve"><value>Толщина</value></data>
+  <data name="ESign.Mine.Thin" xml:space="preserve"><value>Тонкая</value></data>
+  <data name="ESign.Mine.Medium" xml:space="preserve"><value>Средняя</value></data>
+  <data name="ESign.Mine.Color" xml:space="preserve"><value>Цвет</value></data>
+  <data name="ESign.Mine.Black" xml:space="preserve"><value>Чёрный</value></data>
+  <data name="ESign.Mine.Navy" xml:space="preserve"><value>Тёмно-синий</value></data>
+  <data name="ESign.Mine.FullScreen" xml:space="preserve"><value>Во весь экран (горизонтально)</value></data>
+  <data name="ESign.Mine.Full.Title" xml:space="preserve"><value>Нарисуйте свою подпись</value></data>
+  <data name="ESign.Mine.Full.Rotate" xml:space="preserve"><value>На телефоне или планшете поверните устройство горизонтально</value></data>
+  <data name="ESign.Mine.Full.Apply" xml:space="preserve"><value>Готово</value></data>
+  <data name="ESign.Mine.Upload.Pick" xml:space="preserve"><value>Выберите изображение подписи</value></data>
+  <data name="ESign.Mine.Upload.Hint" xml:space="preserve"><value>PNG или JPG · до 1 МБ</value></data>
+  <data name="ESign.Mine.Upload.Change" xml:space="preserve"><value>Изменить</value></data>
+  <data name="ESign.Mine.Upload.Remove" xml:space="preserve"><value>Убрать</value></data>
+  <data name="ESign.Mine.Upload.Original" xml:space="preserve"><value>Оригинал · область обрезки</value></data>
+  <data name="ESign.Mine.Upload.Result" xml:space="preserve"><value>Предпросмотр результата</value></data>
+  <data name="ESign.Mine.Crop.Left" xml:space="preserve"><value>Обрезать слева</value></data>
+  <data name="ESign.Mine.Crop.Right" xml:space="preserve"><value>Обрезать справа</value></data>
+  <data name="ESign.Mine.Crop.Top" xml:space="preserve"><value>Обрезать сверху</value></data>
+  <data name="ESign.Mine.Crop.Bottom" xml:space="preserve"><value>Обрезать снизу</value></data>
+  <data name="ESign.Mine.Upload.Bg" xml:space="preserve"><value>Очистить фон</value></data>
+  <data name="ESign.Mine.Upload.Sensitivity" xml:space="preserve"><value>Чувствительность</value></data>
+  <data name="ESign.Mine.Upload.ErrType" xml:space="preserve"><value>Можно выбрать только PNG или JPG.</value></data>
+  <data name="ESign.Mine.Upload.ErrSize" xml:space="preserve"><value>Файл больше 1 МБ.</value></data>
+  <data name="ESign.Mine.StoreLabel" xml:space="preserve"><value>Формат хранения:</value></data>
+  <data name="ESign.Mine.Store.Drawn" xml:space="preserve"><value>Изображение PNG + данные штрихов (вектор)</value></data>
+  <data name="ESign.Mine.Store.Uploaded" xml:space="preserve"><value>Изображение PNG (у загруженных изображений нет данных штрихов)</value></data>
+  <data name="ESign.Mine.ApprovalNote" xml:space="preserve"><value>Сохранённый образец можно использовать после одобрения администратором электронной подписи.</value></data>
+  <data name="ESign.Mine.SaveWithPassword" xml:space="preserve"><value>Сохранить с паролем</value></data>
+  <data name="ESign.Mine.Pwd.Title" xml:space="preserve"><value>Подтвердите пароль</value></data>
+  <data name="ESign.Mine.Pwd.Sub" xml:space="preserve"><value>Для сохранения образца подписи</value></data>
+  <data name="ESign.Mine.Pwd.Save" xml:space="preserve"><value>Проверить и сохранить</value></data>
+  <data name="ESign.Mine.History.Title" xml:space="preserve"><value>История образцов подписи</value></data>
+  <data name="ESign.Mine.History.Sub" xml:space="preserve"><value>Использованный образец нельзя удалить, только деактивировать; старые подписи сохраняют своё изображение</value></data>
+  <data name="ESign.Mine.Col.Sample" xml:space="preserve"><value>Образец</value></data>
+  <data name="ESign.Mine.Col.Kind" xml:space="preserve"><value>Способ добавления</value></data>
+  <data name="ESign.Mine.Col.Status" xml:space="preserve"><value>Статус</value></data>
+  <data name="ESign.Mine.Col.Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="ESign.Mine.Kind.drawn" xml:space="preserve"><value>Рисунок</value></data>
+  <data name="ESign.Mine.Kind.uploaded" xml:space="preserve"><value>Загрузка</value></data>
+  <data name="ESign.Mine.Format.png" xml:space="preserve"><value>PNG</value></data>
+  <data name="ESign.Mine.Format.pngAndVector" xml:space="preserve"><value>PNG + вектор</value></data>
+  <data name="ESign.Mine.Format.vector" xml:space="preserve"><value>Вектор</value></data>
+  <data name="ESign.Mine.Status.active" xml:space="preserve"><value>Активен</value></data>
+  <data name="ESign.Mine.Status.inactive" xml:space="preserve"><value>Неактивен</value></data>
+  <data name="ESign.Mine.Status.pending" xml:space="preserve"><value>Ожидает одобрения</value></data>
+  <data name="ESign.Mine.Status.rejected" xml:space="preserve"><value>Отклонён</value></data>
+  <data name="ESign.Mine.Status.withdrawn" xml:space="preserve"><value>Удалён</value></data>
+  <data name="ESign.Mine.Deactivate" xml:space="preserve"><value>Деактивировать</value></data>
+  <data name="ESign.Mine.Delete" xml:space="preserve"><value>Удалить</value></data>
+  <data name="ESign.Mine.Locked" xml:space="preserve"><value>Нельзя удалить</value></data>
+  <data name="ESign.Mine.LockedTitle" xml:space="preserve"><value>Использованный образец подписи удалить нельзя</value></data>
+  <data name="ESign.Mine.HistoryEmpty" xml:space="preserve"><value>Образцы подписи ещё не добавлены.</value></data>
+  <data name="ESign.Mine.UsedCount" xml:space="preserve"><value>{0} подписей</value></data>
+  <data name="ESign.Mine.RejectReason" xml:space="preserve"><value>Причина: {0}</value></data>
+  <data name="ESign.Mine.Confirm.Deactivate" xml:space="preserve"><value>Деактивировать образец подписи?</value></data>
+  <data name="ESign.Mine.Confirm.DeactivateText" xml:space="preserve"><value>Неактивный образец нельзя использовать в новых подписях; старые подписи сохраняют изображение.</value></data>
+  <data name="ESign.Mine.Confirm.Delete" xml:space="preserve"><value>Удалить образец подписи?</value></data>
+  <data name="ESign.Mine.Confirm.DeleteText" xml:space="preserve"><value>Этот неиспользованный образец отзывается и остаётся в списке как «Удалён».</value></data>
+  <data name="ESign.Mine.Toast.Saved" xml:space="preserve"><value>Образец подписи сохранён.</value></data>
+  <data name="ESign.Mine.Toast.SavedPending" xml:space="preserve"><value>Образец подписи отправлен на одобрение администратору.</value></data>
+  <data name="ESign.Mine.Toast.Deactivated" xml:space="preserve"><value>Образец подписи деактивирован.</value></data>
+  <data name="ESign.Mine.Toast.Withdrawn" xml:space="preserve"><value>Образец подписи удалён.</value></data>
+  <data name="ESign.Zoom.Title" xml:space="preserve"><value>Изображение подписи</value></data>
+  <data name="ESign.Zoom.Enlarge" xml:space="preserve"><value>Увеличить</value></data>
+  <data name="ESign.Zoom.Person" xml:space="preserve"><value>Лицо</value></data>
+  <data name="ESign.Zoom.Type" xml:space="preserve"><value>Тип вида</value></data>
+  <data name="ESign.Zoom.At" xml:space="preserve"><value>Дата-время</value></data>
+  <data name="ESign.Zoom.Sample" xml:space="preserve"><value>Образец подписи · {0}</value></data>
+  <data name="ESign.Errors.ESIGN_ACCOUNT_LOCKED" xml:space="preserve"><value>Учётная запись заблокирована; подписывать нельзя.</value></data>
+  <data name="ESign.Errors.ESIGN_ACTION_PREFIX_MISMATCH" xml:space="preserve"><value>Код действия не относится к модулю.</value></data>
+  <data name="ESign.Errors.ESIGN_ACTOR_NOT_TENANT_USER" xml:space="preserve"><value>Подписывать могут только пользователи арендатора.</value></data>
+  <data name="ESign.Errors.ESIGN_ALREADY_INVALIDATED" xml:space="preserve"><value>Эта подпись уже признана недействительной.</value></data>
+  <data name="ESign.Errors.ESIGN_APPEARANCE_NOT_ALLOWED" xml:space="preserve"><value>Выбранный вид подписи не допускается политикой этого действия.</value></data>
+  <data name="ESign.Errors.ESIGN_DRAWING_EMPTY" xml:space="preserve"><value>Поле подписи пустое; нарисуйте подпись.</value></data>
+  <data name="ESign.Errors.ESIGN_EXPORT_TOO_LARGE" xml:space="preserve"><value>Экспорт слишком большой; сузьте фильтр.</value></data>
+  <data name="ESign.Errors.ESIGN_IMAGE_NOT_PNG" xml:space="preserve"><value>Изображение подписи должно быть в формате PNG.</value></data>
+  <data name="ESign.Errors.ESIGN_IMAGE_TOO_LARGE" xml:space="preserve"><value>Изображение подписи превышает 1 МБ.</value></data>
+  <data name="ESign.Errors.ESIGN_INTENT_REQUIRES_PASSWORD" xml:space="preserve"><value>Для этого действия нужен пароль.</value></data>
+  <data name="ESign.Errors.ESIGN_MEANING_CODE_EXISTS" xml:space="preserve"><value>Такой код значения уже существует.</value></data>
+  <data name="ESign.Errors.ESIGN_MEANING_CODE_LOCKED" xml:space="preserve"><value>Код использованного значения изменить нельзя.</value></data>
+  <data name="ESign.Errors.ESIGN_MEANING_IN_USE" xml:space="preserve"><value>Это значение используется в строке политики.</value></data>
+  <data name="ESign.Errors.ESIGN_MEANING_LANGUAGE_MISSING" xml:space="preserve"><value>Отображаемое имя обязательно на всех 7 языках.</value></data>
+  <data name="ESign.Errors.ESIGN_MEANING_NOT_ALLOWED" xml:space="preserve"><value>Выбранное значение подписи не допускается для этого действия.</value></data>
+  <data name="ESign.Errors.ESIGN_POLICY_VERSION_CONFLICT" xml:space="preserve"><value>Политика тем временем изменилась; обновите страницу.</value></data>
+  <data name="ESign.Errors.ESIGN_REASON_TOO_SHORT" xml:space="preserve"><value>Причина должна содержать не менее 10 символов.</value></data>
+  <data name="ESign.Errors.ESIGN_REAUTH_FAILED" xml:space="preserve"><value>Неверный пароль.</value></data>
+  <data name="ESign.Errors.ESIGN_REAUTH_REQUIRED" xml:space="preserve"><value>Для этой подписи нужно снова ввести пароль.</value></data>
+  <data name="ESign.Errors.ESIGN_REAUTH_UNAVAILABLE" xml:space="preserve"><value>Служба проверки пароля сейчас недоступна.</value></data>
+  <data name="ESign.Errors.ESIGN_REAUTH_WINDOW_EXPIRED" xml:space="preserve"><value>Срок действия пароля истёк; введите пароль снова.</value></data>
+  <data name="ESign.Errors.ESIGN_REQUEST_NOT_OPEN" xml:space="preserve"><value>Этот запрос на подпись больше не открыт.</value></data>
+  <data name="ESign.Errors.ESIGN_SAMPLE_IN_USE" xml:space="preserve"><value>Использованный образец подписи удалить нельзя.</value></data>
+  <data name="ESign.Errors.ESIGN_SAMPLE_NOT_ACTIVE" xml:space="preserve"><value>Образец подписи не активен.</value></data>
+  <data name="ESign.Errors.ESIGN_SAMPLE_NOT_PENDING" xml:space="preserve"><value>Этот образец подписи не ожидает одобрения.</value></data>
+  <data name="ESign.Errors.ESIGN_SECOND_FACTOR_NOT_AVAILABLE" xml:space="preserve"><value>Второй фактор пока недоступен.</value></data>
+  <data name="ESign.Errors.ESIGN_SELF_APPROVAL_FORBIDDEN" xml:space="preserve"><value>Нельзя одобрить собственный образец подписи.</value></data>
+  <data name="ESign.Errors.ESIGN_SIGNATURE_MISMATCH" xml:space="preserve"><value>Подпись не соответствует этому утверждению; подпишите снова.</value></data>
+  <data name="ESign.Errors.ESIGN_SIGNATURE_REQUIRED" xml:space="preserve"><value>Для этого утверждения нужна электронная подпись.</value></data>
+  <data name="ESign.Errors.ESIGN_SIGNER_NOT_FOUND" xml:space="preserve"><value>Подписант не найден.</value></data>
+  <data name="ESign.Errors.ESIGN_SIGNER_NOT_NOMINATED" xml:space="preserve"><value>Вы не назначены подписантом этого запроса.</value></data>
+  <data name="ESign.Errors.ESIGN_SUBJECT_NOT_FOUND" xml:space="preserve"><value>Запись для подписи не найдена или вам не видна.</value></data>
+  <data name="ESign.Errors.ESIGN_TICKET_INVALID" xml:space="preserve"><value>Проверка пароля недействительна или истекла; попробуйте снова.</value></data>
+  <data name="ESign.Errors.ESIGN_TICKET_REQUIRED" xml:space="preserve"><value>Для подписи требуется проверка пароля.</value></data>
+  <data name="ESign.Common.Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="ESign.Common.AllModules" xml:space="preserve"><value>Все модули</value></data>
+  <data name="ESign.Common.AllStatuses" xml:space="preserve"><value>Все статусы</value></data>
+  <data name="ESign.Common.Company" xml:space="preserve"><value>Компания</value></data>
+  <data name="ESign.Common.Continue" xml:space="preserve"><value>Продолжить</value></data>
+  <data name="ESign.Common.From" xml:space="preserve"><value>С</value></data>
+  <data name="ESign.Common.To" xml:space="preserve"><value>По</value></data>
+  <data name="ESign.Common.Module" xml:space="preserve"><value>Модуль</value></data>
+  <data name="ESign.Common.Reason" xml:space="preserve"><value>Обоснование</value></data>
+  <data name="ESign.Common.ReasonMin" xml:space="preserve"><value>Обоснование должно содержать не менее {0} символов.</value></data>
+  <data name="ESign.Common.ReasonPlaceholder" xml:space="preserve"><value>Укажите обоснование этого решения</value></data>
+  <data name="ESign.Common.ReasonQuoted" xml:space="preserve"><value>Обоснование: «{0}»</value></data>
+  <data name="ESign.Common.Record" xml:space="preserve"><value>Запись</value></data>
+  <data name="ESign.Common.Save" xml:space="preserve"><value>Сохранить</value></data>
+  <data name="ESign.Common.Status" xml:space="preserve"><value>Статус</value></data>
+  <data name="ESign.Dialog.Err.PasswordRequired" xml:space="preserve"><value>Введите пароль.</value></data>
+  <data name="ESign.Module.inventory" xml:space="preserve"><value>Склад</value></data>
+  <data name="ESign.Requests.Title" xml:space="preserve"><value>Запросы на подпись</value></data>
+  <data name="ESign.Requests.Sub" xml:space="preserve"><value>Назначенные вам подписи</value></data>
+  <data name="ESign.Requests.Info" xml:space="preserve"><value>Согласования рабочих процессов также видны в WorkCenter; здесь показаны только назначенные вам подписи.</value></data>
+  <data name="ESign.Requests.Count" xml:space="preserve"><value>Запросов: {0} · ожидают: {1}</value></data>
+  <data name="ESign.Requests.Col.Meaning" xml:space="preserve"><value>Требуемое значение</value></data>
+  <data name="ESign.Requests.Col.RequestedBy" xml:space="preserve"><value>Инициатор</value></data>
+  <data name="ESign.Requests.Col.RequestedAt" xml:space="preserve"><value>Дата запроса</value></data>
+  <data name="ESign.Requests.Col.Due" xml:space="preserve"><value>Срок</value></data>
+  <data name="ESign.Requests.Today" xml:space="preserve"><value>Сегодня</value></data>
+  <data name="ESign.Requests.Status.waiting" xml:space="preserve"><value>Ожидает</value></data>
+  <data name="ESign.Requests.Status.signed" xml:space="preserve"><value>Подписан</value></data>
+  <data name="ESign.Requests.Status.rejected" xml:space="preserve"><value>Отклонён</value></data>
+  <data name="ESign.Requests.Status.expired" xml:space="preserve"><value>Истёк</value></data>
+  <data name="ESign.Requests.Status.cancelled" xml:space="preserve"><value>Отменён</value></data>
+  <data name="ESign.Requests.Sign" xml:space="preserve"><value>Подписать</value></data>
+  <data name="ESign.Requests.Reject" xml:space="preserve"><value>Отклонить</value></data>
+  <data name="ESign.Requests.OpenRecord" xml:space="preserve"><value>Подписи записи</value></data>
+  <data name="ESign.Requests.Reject.Title" xml:space="preserve"><value>Отклонить запрос на подпись?</value></data>
+  <data name="ESign.Requests.Reject.Sub" xml:space="preserve"><value>{0} · {1} — инициатор будет уведомлён.</value></data>
+  <data name="ESign.Requests.Rejected" xml:space="preserve"><value>{0} отклонён.</value></data>
+  <data name="ESign.Requests.RejectReason" xml:space="preserve"><value>Причина отказа: {0}</value></data>
+  <data name="ESign.Verify.Title" xml:space="preserve"><value>Проверка подписей</value></data>
+  <data name="ESign.Verify.Sub" xml:space="preserve"><value>Подписи записи и их действительность на сегодня</value></data>
+  <data name="ESign.Verify.SubjectType" xml:space="preserve"><value>Тип записи</value></data>
+  <data name="ESign.Verify.SubjectId" xml:space="preserve"><value>Идентификатор записи</value></data>
+  <data name="ESign.Verify.Show" xml:space="preserve"><value>Показать</value></data>
+  <data name="ESign.Verify.Recent" xml:space="preserve"><value>Недавно подписанные записи</value></data>
+  <data name="ESign.Verify.RecentPick" xml:space="preserve"><value>Выберите запись</value></data>
+  <data name="ESign.Verify.Pick" xml:space="preserve"><value>Выберите запись для проверки или перейдите по ссылке на подпись.</value></data>
+  <data name="ESign.Verify.Reverify" xml:space="preserve"><value>Проверить снова</value></data>
+  <data name="ESign.Verify.LastVerified" xml:space="preserve"><value>Последняя проверка: {0}</value></data>
+  <data name="ESign.Verify.NoVerifyPermission" xml:space="preserve"><value>Для статуса проверки нужно право проверки подписи</value></data>
+  <data name="ESign.Verify.CurrentHash" xml:space="preserve"><value>Текущий хеш записи (SHA-256):</value></data>
+  <data name="ESign.Verify.Count.Total" xml:space="preserve"><value>Подписей: {0}</value></data>
+  <data name="ESign.Verify.Count.Valid" xml:space="preserve"><value>Действительных: {0}</value></data>
+  <data name="ESign.Verify.Count.Changed" xml:space="preserve"><value>Запись изменилась: {0}</value></data>
+  <data name="ESign.Verify.Count.Invalidated" xml:space="preserve"><value>Аннулировано: {0}</value></data>
+  <data name="ESign.Verify.Count.Tampered" xml:space="preserve"><value>Искажено: {0}</value></data>
+  <data name="ESign.Verify.Status.valid" xml:space="preserve"><value>Действительна</value></data>
+  <data name="ESign.Verify.Status.changed" xml:space="preserve"><value>Запись изменилась</value></data>
+  <data name="ESign.Verify.Status.invalidated" xml:space="preserve"><value>Аннулирована</value></data>
+  <data name="ESign.Verify.Status.tampered" xml:space="preserve"><value>Искажена</value></data>
+  <data name="ESign.Verify.Status.subjectUnresolvable" xml:space="preserve"><value>Запись недоступна</value></data>
+  <data name="ESign.Verify.ChangedNote" xml:space="preserve"><value>Запись изменилась после подписи: хеш при подписи {0}…, текущий {1}…</value></data>
+  <data name="ESign.Verify.InvalidatedReason" xml:space="preserve"><value>Обоснование: «{0}»</value></data>
+  <data name="ESign.Verify.Note" xml:space="preserve"><value>Примечание: «{0}»</value></data>
+  <data name="ESign.Verify.AppearanceType" xml:space="preserve"><value>Вид подписи</value></data>
+  <data name="ESign.Verify.SignatureId" xml:space="preserve"><value>Идентификатор подписи</value></data>
+  <data name="ESign.Verify.HashAtSign" xml:space="preserve"><value>Хеш на момент подписи</value></data>
+  <data name="ESign.Verify.ImageHash" xml:space="preserve"><value>Хеш изображения</value></data>
+  <data name="ESign.Verify.DrawnNoImage" xml:space="preserve"><value>рисунок · хеш изображения сохранён</value></data>
+  <data name="ESign.Verify.NameOnly" xml:space="preserve"><value>только имя</value></data>
+  <data name="ESign.Verify.NoSignatures" xml:space="preserve"><value>У этой записи пока нет подписей.</value></data>
+  <data name="ESign.Verify.Invalidate" xml:space="preserve"><value>Аннулировать подпись</value></data>
+  <data name="ESign.Verify.InvalidateNoPermission" xml:space="preserve"><value>Для аннулирования нужно право администратора подписей</value></data>
+  <data name="ESign.Verify.Invalidate.Title" xml:space="preserve"><value>Аннулировать подпись?</value></data>
+  <data name="ESign.Verify.Invalidate.Sub" xml:space="preserve"><value>{0} · {1} — запись подписи не меняется; аннулирование фиксируется отдельно и навсегда.</value></data>
+  <data name="ESign.Verify.Invalidate.PwdTitle" xml:space="preserve"><value>Подтвердите аннулирование паролем</value></data>
+  <data name="ESign.Verify.Invalidate.Warn" xml:space="preserve"><value>Действие необратимо. Подпись будет недействительной везде, где используется.</value></data>
+  <data name="ESign.Verify.Invalidated" xml:space="preserve"><value>{0} аннулирована.</value></data>
+  <data name="ESign.Export.Title" xml:space="preserve"><value>Экспорт аудита</value></data>
+  <data name="ESign.Export.Sub" xml:space="preserve"><value>Отфильтруйте подписи и скачайте их в PDF или CSV</value></data>
+  <data name="ESign.Export.Preview" xml:space="preserve"><value>Предпросмотр</value></data>
+  <data name="ESign.Export.View.Table" xml:space="preserve"><value>Таблица</value></data>
+  <data name="ESign.Export.View.Pdf" xml:space="preserve"><value>Просмотр PDF</value></data>
+  <data name="ESign.Export.AsPdf" xml:space="preserve"><value>Экспорт в PDF</value></data>
+  <data name="ESign.Export.AsCsv" xml:space="preserve"><value>Экспорт в CSV</value></data>
+  <data name="ESign.Export.Count" xml:space="preserve"><value>Записей подписей: {0}</value></data>
+  <data name="ESign.Export.Done" xml:space="preserve"><value>{0} скачан ({1}).</value></data>
+  <data name="ESign.Export.Empty" xml:space="preserve"><value>Нет подписей, соответствующих фильтру.</value></data>
+  <data name="ESign.Export.NoVisual" xml:space="preserve"><value>Без изображения · только имя</value></data>
+  <data name="ESign.Export.AllSigners" xml:space="preserve"><value>Все подписанты</value></data>
+  <data name="ESign.Export.AllMeanings" xml:space="preserve"><value>Все значения</value></data>
+  <data name="ESign.Export.AllCompanies" xml:space="preserve"><value>Все компании</value></data>
+  <data name="ESign.Export.Col.At" xml:space="preserve"><value>Дата и время</value></data>
+  <data name="ESign.Export.Col.Signer" xml:space="preserve"><value>Подписант</value></data>
+  <data name="ESign.Export.Col.Meaning" xml:space="preserve"><value>Значение подписи</value></data>
+  <data name="ESign.Export.Col.Record" xml:space="preserve"><value>Модуль · Запись</value></data>
+  <data name="ESign.Export.Col.Verification" xml:space="preserve"><value>Проверка</value></data>
+  <data name="ESign.Export.Report.Title" xml:space="preserve"><value>Отчёт аудита подписей</value></data>
+  <data name="ESign.Export.Report.Sub" xml:space="preserve"><value>Служба электронной подписи (MOD-0022)</value></data>
+  <data name="ESign.Export.Report.Foot" xml:space="preserve"><value>Каждый блок содержит изображение, имя, значение, дату и идентификатор подписи. Файл формирует сервер.</value></data>
+  <data name="ESign.Export.Log.Title" xml:space="preserve"><value>Журнал экспорта</value></data>
+  <data name="ESign.Export.Log.Sub" xml:space="preserve"><value>Каждый экспорт фиксируется без возможности изменения</value></data>
+  <data name="ESign.Export.Log.Number" xml:space="preserve"><value>№ экспорта</value></data>
+  <data name="ESign.Export.Log.By" xml:space="preserve"><value>Кем</value></data>
+  <data name="ESign.Export.Log.Format" xml:space="preserve"><value>Формат</value></data>
+  <data name="ESign.Export.Log.Count" xml:space="preserve"><value>Записей</value></data>
+  <data name="ESign.Export.Log.Records" xml:space="preserve"><value>{0} записей</value></data>
+  <data name="ESign.Export.Log.Filter" xml:space="preserve"><value>Фильтр</value></data>
+  <data name="ESign.Export.Log.FileHash" xml:space="preserve"><value>Хеш файла</value></data>
+  <data name="ESign.Export.Log.Empty" xml:space="preserve"><value>Экспортов пока нет.</value></data>
+  <data name="ESign.Policy.Title" xml:space="preserve"><value>Политика электронной подписи</value></data>
+  <data name="ESign.Policy.Sub" xml:space="preserve"><value>Определите, какие действия требуют подписи, её значение и правило изображения</value></data>
+  <data name="ESign.Policy.Scope" xml:space="preserve"><value>Область</value></data>
+  <data name="ESign.Policy.Scope.Tenant" xml:space="preserve"><value>По умолчанию для арендатора</value></data>
+  <data name="ESign.Policy.Scope.Company" xml:space="preserve"><value>По компании</value></data>
+  <data name="ESign.Policy.ScopeHint.Tenant" xml:space="preserve"><value>Используется всеми компаниями без собственной политики</value></data>
+  <data name="ESign.Policy.ScopeHint.Company" xml:space="preserve"><value>Записи компании используют эту политику</value></data>
+  <data name="ESign.Policy.UsesTenant.Title" xml:space="preserve"><value>{0} использует политику арендатора</value></data>
+  <data name="ESign.Policy.UsesTenant.Text" xml:space="preserve"><value>Все изменения политики арендатора применяются и к этой компании. Для других правил скопируйте политику и измените её.</value></data>
+  <data name="ESign.Policy.CopyForCompany" xml:space="preserve"><value>Отдельная политика для компании</value></data>
+  <data name="ESign.Policy.Override.Text" xml:space="preserve"><value>Для {0} действует отдельная политика. Отличающиеся строки помечены «Отличается».</value></data>
+  <data name="ESign.Policy.Override.New" xml:space="preserve"><value>Копия политики арендатора для {0}: сохранение создаст политику компании.</value></data>
+  <data name="ESign.Policy.Revert" xml:space="preserve"><value>Вернуться к политике арендатора</value></data>
+  <data name="ESign.Policy.Revert.Title" xml:space="preserve"><value>Вернуть {0} к политике арендатора?</value></data>
+  <data name="ESign.Policy.Revert.Sub" xml:space="preserve"><value>Отдельная политика удаляется; её содержимое остаётся в истории.</value></data>
+  <data name="ESign.Policy.Reverted" xml:space="preserve"><value>{0} теперь использует политику арендатора.</value></data>
+  <data name="ESign.Policy.Rules" xml:space="preserve"><value>Правила подписи по действиям</value></data>
+  <data name="ESign.Policy.Col.Action" xml:space="preserve"><value>Действие</value></data>
+  <data name="ESign.Policy.Col.Meaning" xml:space="preserve"><value>Значение подписи</value></data>
+  <data name="ESign.Policy.Col.Visual" xml:space="preserve"><value>Изображение подписи</value></data>
+  <data name="ESign.Policy.Col.SecondFactor" xml:space="preserve"><value>Второй фактор</value></data>
+  <data name="ESign.Policy.Required" xml:space="preserve"><value>Обязательно</value></data>
+  <data name="ESign.Policy.Off" xml:space="preserve"><value>Выключено</value></data>
+  <data name="ESign.Policy.Soon" xml:space="preserve"><value>Скоро</value></data>
+  <data name="ESign.Policy.Differs" xml:space="preserve"><value>Отличается</value></data>
+  <data name="ESign.Policy.Unsaved" xml:space="preserve"><value>Несохранённое изменение</value></data>
+  <data name="ESign.Policy.MeaningSignerChooses" xml:space="preserve"><value>— Выбирает подписант —</value></data>
+  <data name="ESign.Policy.NoActions" xml:space="preserve"><value>Подписываемые действия не зарегистрированы.</value></data>
+  <data name="ESign.Policy.NoCompanies" xml:space="preserve"><value>Не удалось получить список компаний.</value></data>
+  <data name="ESign.Policy.General" xml:space="preserve"><value>Общие настройки</value></data>
+  <data name="ESign.Policy.Reauth" xml:space="preserve"><value>Пароль при последовательных подписях</value></data>
+  <data name="ESign.Policy.Reauth.Every" xml:space="preserve"><value>Запрашивать пароль при каждой подписи</value></data>
+  <data name="ESign.Policy.Reauth.EverySub" xml:space="preserve"><value>Пользователь вводит пароль для каждой подписи.</value></data>
+  <data name="ESign.Policy.Reauth.Window" xml:space="preserve"><value>Один раз в течение периода</value></data>
+  <data name="ESign.Policy.Reauth.WindowSub" xml:space="preserve"><value>В течение периода действия следующие подписи не требуют пароля.</value></data>
+  <data name="ESign.Policy.Minutes" xml:space="preserve"><value>Срок действия повторной проверки пароля</value></data>
+  <data name="ESign.Policy.MinutesUnit" xml:space="preserve"><value>мин</value></data>
+  <data name="ESign.Policy.MinutesHint" xml:space="preserve"><value>от 1 до 60 минут</value></data>
+  <data name="ESign.Policy.MinutesHintEvery" xml:space="preserve"><value>Не используется при выборе «каждая подпись»</value></data>
+  <data name="ESign.Policy.SampleApproval" xml:space="preserve"><value>Требовать одобрения администратора перед использованием образца подписи</value></data>
+  <data name="ESign.Policy.SampleApproval.Sub" xml:space="preserve"><value>Если включено, новые образцы нельзя использовать до одобрения администратором.</value></data>
+  <data name="ESign.Policy.SampleApproval.TenantOnly" xml:space="preserve"><value>Это настройка арендатора; политика компании только показывает её.</value></data>
+  <data name="ESign.Policy.DirtyText" xml:space="preserve"><value>Несохранённых изменений: {0}</value></data>
+  <data name="ESign.Policy.SaveWithReason" xml:space="preserve"><value>Сохранить с обоснованием</value></data>
+  <data name="ESign.Policy.Save" xml:space="preserve"><value>Сохранить</value></data>
+  <data name="ESign.Policy.Save.Title" xml:space="preserve"><value>Сохранить изменение политики?</value></data>
+  <data name="ESign.Policy.Save.Sub" xml:space="preserve"><value>Изменения записываются в историю с обоснованием и применяются к новым подписям.</value></data>
+  <data name="ESign.Policy.Saved" xml:space="preserve"><value>Политика сохранена.</value></data>
+  <data name="ESign.Policy.Change.Required" xml:space="preserve"><value>{0}: статус → {1}</value></data>
+  <data name="ESign.Policy.Change.Meaning" xml:space="preserve"><value>{0}: значение → {1}</value></data>
+  <data name="ESign.Policy.Change.Visual" xml:space="preserve"><value>{0}: изображение подписи → {1}</value></data>
+  <data name="ESign.Policy.Change.Minutes" xml:space="preserve"><value>Срок действия → {0} мин</value></data>
+  <data name="ESign.Policy.History" xml:space="preserve"><value>История изменений</value></data>
+  <data name="ESign.Policy.HistoryEmpty" xml:space="preserve"><value>Изменений пока нет.</value></data>
+  <data name="ESign.Meanings.Title" xml:space="preserve"><value>Значения подписи</value></data>
+  <data name="ESign.Meanings.Sub" xml:space="preserve"><value>Отображаемое имя на 7 языках; окно подписи показывает язык пользователя</value></data>
+  <data name="ESign.Meanings.Col.Code" xml:space="preserve"><value>Код</value></data>
+  <data name="ESign.Meanings.Col.Name" xml:space="preserve"><value>Отображаемое имя</value></data>
+  <data name="ESign.Meanings.Col.Description" xml:space="preserve"><value>Описание</value></data>
+  <data name="ESign.Meanings.Col.Usage" xml:space="preserve"><value>Использование</value></data>
+  <data name="ESign.Meanings.Active" xml:space="preserve"><value>Активно</value></data>
+  <data name="ESign.Meanings.Inactive" xml:space="preserve"><value>Неактивно</value></data>
+  <data name="ESign.Meanings.Used" xml:space="preserve"><value>Использовано</value></data>
+  <data name="ESign.Meanings.Unused" xml:space="preserve"><value>Не использовано</value></data>
+  <data name="ESign.Meanings.UsedIn" xml:space="preserve"><value>В подписях: {0}</value></data>
+  <data name="ESign.Meanings.LangCount" xml:space="preserve"><value>{0}/7 языков</value></data>
+  <data name="ESign.Meanings.New" xml:space="preserve"><value>Новое значение</value></data>
+  <data name="ESign.Meanings.Edit" xml:space="preserve"><value>Изменить значение · {0}</value></data>
+  <data name="ESign.Meanings.View" xml:space="preserve"><value>Значение · {0}</value></data>
+  <data name="ESign.Meanings.EditAction" xml:space="preserve"><value>Изменить</value></data>
+  <data name="ESign.Meanings.ViewAction" xml:space="preserve"><value>Просмотр</value></data>
+  <data name="ESign.Meanings.Modal.Sub" xml:space="preserve"><value>Отображаемое имя обязательно на 7 языках</value></data>
+  <data name="ESign.Meanings.CodeLocked" xml:space="preserve"><value>Код используется в существующих подписях и не может быть изменён.</value></data>
+  <data name="ESign.Meanings.CodeFormat" xml:space="preserve"><value>2–32 символа, начиная с заглавной буквы: A–Z, 0–9, _</value></data>
+  <data name="ESign.Meanings.NameRequired" xml:space="preserve"><value>Имя на этом языке обязательно.</value></data>
+  <data name="ESign.Meanings.FixFields" xml:space="preserve"><value>Исправьте отмеченные поля.</value></data>
+  <data name="ESign.Meanings.UsageWarn" xml:space="preserve"><value>Значение использовано в {0} подписях. Изменение имени касается только новых подписей.</value></data>
+  <data name="ESign.Meanings.Created" xml:space="preserve"><value>{0} создано.</value></data>
+  <data name="ESign.Meanings.Updated" xml:space="preserve"><value>{0} обновлено.</value></data>
+  <data name="ESign.Meanings.Activate" xml:space="preserve"><value>Включить</value></data>
+  <data name="ESign.Meanings.Activate.Title" xml:space="preserve"><value>Включить {0}?</value></data>
+  <data name="ESign.Meanings.Activate.Sub" xml:space="preserve"><value>Значение станет доступным в окне подписи.</value></data>
+  <data name="ESign.Meanings.Deactivate" xml:space="preserve"><value>Отключить</value></data>
+  <data name="ESign.Meanings.Deactivate.Title" xml:space="preserve"><value>Отключить {0}?</value></data>
+  <data name="ESign.Meanings.Deactivate.Sub" xml:space="preserve"><value>Его нельзя будет выбрать для новых подписей; отклоняется, если используется в политике.</value></data>
+  <data name="ESign.Meanings.Lang.tr" xml:space="preserve"><value>Турецкий</value></data>
+  <data name="ESign.Meanings.Lang.en" xml:space="preserve"><value>Английский</value></data>
+  <data name="ESign.Meanings.Lang.fr" xml:space="preserve"><value>Французский</value></data>
+  <data name="ESign.Meanings.Lang.es" xml:space="preserve"><value>Испанский</value></data>
+  <data name="ESign.Meanings.Lang.zh" xml:space="preserve"><value>Китайский</value></data>
+  <data name="ESign.Meanings.Lang.ar" xml:space="preserve"><value>Арабский</value></data>
+  <data name="ESign.Meanings.Lang.ru" xml:space="preserve"><value>Русский</value></data>
+  <data name="ESign.Approvals.Title" xml:space="preserve"><value>Одобрение образцов подписи</value></data>
+  <data name="ESign.Approvals.Sub" xml:space="preserve"><value>Образцы подписи, ожидающие одобрения</value></data>
+  <data name="ESign.Approvals.Note" xml:space="preserve"><value>Нельзя одобрить собственный образец подписи. Каждое решение записывается в журнал аудита.</value></data>
+  <data name="ESign.Approvals.Col.User" xml:space="preserve"><value>Пользователь</value></data>
+  <data name="ESign.Approvals.Col.AddedAt" xml:space="preserve"><value>Добавлен</value></data>
+  <data name="ESign.Approvals.Col.Image" xml:space="preserve"><value>Изображение</value></data>
+  <data name="ESign.Approvals.Col.How" xml:space="preserve"><value>Способ добавления</value></data>
+  <data name="ESign.Approvals.OtherAdmin" xml:space="preserve"><value>Решает другой администратор</value></data>
+  <data name="ESign.Approvals.Approve" xml:space="preserve"><value>Одобрить</value></data>
+  <data name="ESign.Approvals.Approve.Title" xml:space="preserve"><value>Одобрить образец подписи пользователя {0}?</value></data>
+  <data name="ESign.Approvals.Approve.Sub" xml:space="preserve"><value>{0} — после одобрения прежний активный образец станет неактивным.</value></data>
+  <data name="ESign.Approvals.Approved" xml:space="preserve"><value>{0} одобрен.</value></data>
+  <data name="ESign.Approvals.Reject" xml:space="preserve"><value>Отклонить</value></data>
+  <data name="ESign.Approvals.Reject.Title" xml:space="preserve"><value>Отклонить образец подписи пользователя {0}?</value></data>
+  <data name="ESign.Approvals.Reject.Sub" xml:space="preserve"><value>{0} — пользователь увидит причину на странице «Моя подпись».</value></data>
+  <data name="ESign.Approvals.Rejected" xml:space="preserve"><value>{0} отклонён.</value></data>
+  <data name="ESign.Approvals.Log" xml:space="preserve"><value>История решений</value></data>
+  <data name="ESign.Approvals.LogEmpty" xml:space="preserve"><value>Решений пока нет.</value></data>
+  <data name="ESign.Approvals.Decision.approved" xml:space="preserve"><value>Одобрено</value></data>
+  <data name="ESign.Approvals.Decision.rejected" xml:space="preserve"><value>Отклонено</value></data>
+</root>

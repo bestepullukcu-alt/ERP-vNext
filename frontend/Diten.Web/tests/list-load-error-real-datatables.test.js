@@ -25,7 +25,7 @@ const until = async (predicate, ms = 3000) => {
 const settle = (ms = 40) => new Promise((r) => setTimeout(r, ms));
 
 const TR = {
-  DtLoadFailed: "Liste yüklenemedi.", DtLoadForbidden: "Bu listeyi görme yetkiniz yok.", DtRetry: "Yeniden Dene",
+  DtLoadFailed: "Liste yüklenemedi.", DtLoadNoPermission: "Bu listeyi görme yetkiniz yok.", DtRetry: "Yeniden Dene",
   DtEmptyTable: "Kayıt yok.", DtZeroRecords: "Eşleşen kayıt bulunamadı."
 };
 const rows = (n, from = 0) => Array.from({ length: n }, (_, i) => ({ code: `C${from + i + 1}`, name: `Row ${from + i + 1}` }));
@@ -133,7 +133,7 @@ describe("a list whose request fails (vendored DataTables + jQuery, only the net
     await until(() => errorBox());
 
     expect(errorBox().getAttribute("data-dt-load-error")).toBe("forbidden");
-    expect(errorBox().textContent).toContain(TR.DtLoadForbidden);
+    expect(errorBox().textContent).toContain(TR.DtLoadNoPermission);
     expect(errorBox().querySelector("[data-dt-retry]")).toBeNull();
     expect(alerts).toEqual([]);
   });
@@ -225,7 +225,7 @@ describe("a list whose request fails (vendored DataTables + jQuery, only the net
 
   test.each([
     [500, "failed", TR.DtLoadFailed, true],
-    [403, "forbidden", TR.DtLoadForbidden, false]
+    [403, "forbidden", TR.DtLoadNoPermission, false]
   ])("a SERVER-SIDE list whose FIRST request answers %s shows its sentence in the table, and the indicator goes", async (status, kind, sentence, retry) => {
     answer = () => ({ status, body: "{}" });
     buildServer({ url: "/api/bl515-server" });
@@ -399,8 +399,8 @@ describe("the pages that had their own handler now leave the failure to the comp
 
 describe("the list's failure sentences ship in every language", () => {
   const LANGS = ["en", "tr", "fr", "es", "zh", "ar", "ru"];
-  const KEYS = ["DtLoadFailed", "DtLoadForbidden", "DtRetry"];
-  const NEW_KEYS = ["DtLoadFailed", "DtLoadForbidden", "DtRetry", "ShellSearchPlaceholder"];
+  const KEYS = ["DtLoadFailed", "DtLoadNoPermission", "DtRetry"];
+  const NEW_KEYS = ["DtLoadFailed", "DtLoadNoPermission", "DtRetry", "ShellSearchPlaceholder"];
   const value = (lang, key) => {
     const xml = read("Resources", `SharedResource.${lang}.resx`);
     const match = xml.match(new RegExp(`<data name="${key}" xml:space="preserve">\\s*<value>([^<]*)</value>`));

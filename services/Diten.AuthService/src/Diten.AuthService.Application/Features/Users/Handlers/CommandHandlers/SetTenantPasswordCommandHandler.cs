@@ -18,14 +18,19 @@ public sealed class SetTenantPasswordCommandHandler : IRequestHandler<SetTenantP
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly ILogger<SetTenantPasswordCommandHandler> _logger;
 
+    // MOD-0022 E1 — revokes KS-3 e-signature windows; optional so direct constructions stay valid (DI always supplies it).
+    private readonly IESignReauthTicketService? _eSignTickets;
+
     public SetTenantPasswordCommandHandler(
         IUserRepository userRepository,
         IPasswordHasher passwordHasher,
         IPasswordPolicyService passwordPolicyService,
         IRefreshTokenHasher refreshTokenHasher,
         IRefreshTokenRepository refreshTokenRepository,
-        ILogger<SetTenantPasswordCommandHandler> logger)
+        ILogger<SetTenantPasswordCommandHandler> logger,
+        IESignReauthTicketService? eSignTickets = null)
     {
+        _eSignTickets = eSignTickets;
         _userRepository = userRepository;
         _passwordHasher = passwordHasher;
         _passwordPolicyService = passwordPolicyService;
@@ -78,6 +83,7 @@ public sealed class SetTenantPasswordCommandHandler : IRequestHandler<SetTenantP
             return TenantPasswordLink.InvalidAnswer();
         }
         await _refreshTokenRepository.RevokeLiveSessionsAsync(user.Id, user.TenantId, SessionRevocationReasons.PasswordChanged, ct);
+        if (_eSignTickets is not null) await _eSignTickets.RevokeWindowsAsync(user.TenantId, user.Id, "password_set", ct);
 
         _logger.LogInformation("Tenant user set-password redeemed. Id={Id}", user.Id);
         return Response<NoContent>.Success(204);

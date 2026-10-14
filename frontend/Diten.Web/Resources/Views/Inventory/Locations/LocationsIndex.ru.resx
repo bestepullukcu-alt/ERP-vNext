@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <!-- WP-0173-LOC2: model translation, native-speaker review pending (FU-LOC2-01). -->
+  <data name="LocationsTitle" xml:space="preserve"><value>Список местоположений</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Единый список физических мест компании. Запасы, склад, закупки и производство берут данные из этого списка.</value></data>
+  <data name="TabTree" xml:space="preserve"><value>Иерархия</value></data>
+  <data name="TabList" xml:space="preserve"><value>Список</value></data>
+  <data name="CompanyLabel" xml:space="preserve"><value>Компания</value></data>
+  <data name="CompanyPlaceholder" xml:space="preserve"><value>Выберите компанию</value></data>
+  <data name="CompanySelectHint" xml:space="preserve"><value>Выберите компанию, местоположения которой хотите увидеть. Пока компания не выбрана, данные не показываются.</value></data>
+  <data name="CompanyUnavailable" xml:space="preserve"><value>Не удалось загрузить список компаний, поэтому местоположения не показаны. Запросите у администратора право просмотра компаний или повторите попытку позже.</value></data>
+  <data name="AddNewLocation" xml:space="preserve"><value>Новое местоположение</value></data>
+  <data name="ColCode" xml:space="preserve"><value>Код</value></data>
+  <data name="ColName" xml:space="preserve"><value>Название</value></data>
+  <data name="ColType" xml:space="preserve"><value>Тип</value></data>
+  <data name="ColParentPath" xml:space="preserve"><value>Путь родителя</value></data>
+  <data name="ColStatus" xml:space="preserve"><value>Статус</value></data>
+  <data name="ColStockable" xml:space="preserve"><value>Хранение запасов</value></data>
+  <data name="ColOperatingMode" xml:space="preserve"><value>Режим работы</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="FilterType" xml:space="preserve"><value>Тип</value></data>
+  <data name="FilterStockable" xml:space="preserve"><value>Хранение запасов</value></data>
+  <data name="FilterParent" xml:space="preserve"><value>Родитель</value></data>
+  <data name="StockableYes" xml:space="preserve"><value>Можно хранить запасы</value></data>
+  <data name="StockableNo" xml:space="preserve"><value>Нельзя хранить запасы</value></data>
+  <data name="TypeSite" xml:space="preserve"><value>Площадка</value></data>
+  <data name="TypeWarehouse" xml:space="preserve"><value>Склад</value></data>
+  <data name="TypeStorageLocation" xml:space="preserve"><value>Зона хранения</value></data>
+  <data name="TypeZone" xml:space="preserve"><value>Участок</value></data>
+  <data name="TypeBin" xml:space="preserve"><value>Ячейка</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Активно</value></data>
+  <data name="StatusInactive" xml:space="preserve"><value>Неактивно</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="ModeInternal" xml:space="preserve"><value>Запасы в этой системе</value></data>
+  <data name="ModeExternal" xml:space="preserve"><value>Запасы во внешней системе, отслеживаются через интеграцию</value></data>
+  <data name="ActionEdit" xml:space="preserve"><value>Изменить</value></data>
+  <data name="ActionAddChild" xml:space="preserve"><value>Добавить дочернее</value></data>
+  <data name="ActionActivate" xml:space="preserve"><value>Активировать</value></data>
+  <data name="ActionDeactivate" xml:space="preserve"><value>Деактивировать</value></data>
+  <data name="ActionArchive" xml:space="preserve"><value>В архив</value></data>
+  <data name="ActionHistory" xml:space="preserve"><value>История</value></data>
+  <data name="ActionViewStock" xml:space="preserve"><value>Показать в списке запасов</value></data>
+  <data name="ActionBulkBins" xml:space="preserve"><value>Создать ячейки</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Новое местоположение</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Изменить местоположение</value></data>
+  <data name="FormTitleChild" xml:space="preserve"><value>Новое местоположение под {0}</value></data>
+  <data name="FieldCode" xml:space="preserve"><value>Код</value></data>
+  <data name="FieldName" xml:space="preserve"><value>Название</value></data>
+  <data name="FieldType" xml:space="preserve"><value>Тип</value></data>
+  <data name="FieldParent" xml:space="preserve"><value>Родитель</value></data>
+  <data name="FieldStockable" xml:space="preserve"><value>Хранение запасов</value></data>
+  <data name="FieldOperatingMode" xml:space="preserve"><value>Режим работы</value></data>
+  <data name="FieldOrgUnit" xml:space="preserve"><value>Орг. подразделение</value></data>
+  <data name="FieldCostCenter" xml:space="preserve"><value>Код центра затрат</value></data>
+  <data name="Optional" xml:space="preserve"><value>необязательно</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>напр. WH-01</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>напр. Центральный склад</value></data>
+  <data name="ParentPlaceholder" xml:space="preserve"><value>Найдите родителя по коду или названию</value></data>
+  <data name="OrgUnitPlaceholder" xml:space="preserve"><value>Выберите подразделение</value></data>
+  <data name="CostCenterPlaceholder" xml:space="preserve"><value>напр. MM-1100</value></data>
+  <data name="HintCode" xml:space="preserve"><value>Уникален в пределах компании. Его можно изменить позже: запасы продолжают ссылаться на то же местоположение.</value></data>
+  <data name="HintTypeFixed" xml:space="preserve"><value>Тип изменить нельзя. Если он неверен, переместите запись в архив и создайте новую.</value></data>
+  <data name="HintParentSite" xml:space="preserve"><value>У площадки нет родителя.</value></data>
+  <data name="HintZoneOptional" xml:space="preserve"><value>Ячейка может располагаться прямо под зоной хранения, без участка.</value></data>
+  <data name="HintCompany" xml:space="preserve"><value>Местоположение принадлежит выбранной компании; нижестоящие местоположения наследуют её. Компанию изменить нельзя.</value></data>
+  <data name="OrgUnitsUnavailable" xml:space="preserve"><value>Не удалось получить список подразделений. Поле можно оставить пустым и сохранить.</value></data>
+  <data name="ValidationRequired" xml:space="preserve"><value>Обязательное поле.</value></data>
+  <data name="ValidationCodeFormat" xml:space="preserve"><value>Используйте 1–40 символов: только буквы, цифры и . _ / -</value></data>
+  <data name="ValidationNameLength" xml:space="preserve"><value>Не более 120 символов.</value></data>
+  <data name="ValidationCostCenterFormat" xml:space="preserve"><value>Используйте 1–40 символов: только буквы, цифры и . _ -</value></data>
+  <data name="NoChanges" xml:space="preserve"><value>Ничего не изменено.</value></data>
+  <data name="ReloadLabel" xml:space="preserve"><value>Загрузить запись заново</value></data>
+  <data name="ErrorDetails" xml:space="preserve"><value>Подробности</value></data>
+  <data name="ReferenceLabel" xml:space="preserve"><value>Ссылка</value></data>
+  <data name="Searching" xml:space="preserve"><value>Поиск…</value></data>
+  <data name="NoResults" xml:space="preserve"><value>Совпадений нет</value></data>
+  <data name="ConfirmActivateTitle" xml:space="preserve"><value>Активировать местоположение?</value></data>
+  <data name="ConfirmActivateText" xml:space="preserve"><value>{0} снова станет активным и будет доступно для выбора в формах запасов.</value></data>
+  <data name="ConfirmDeactivateTitle" xml:space="preserve"><value>Деактивировать местоположение?</value></data>
+  <data name="ConfirmDeactivateText" xml:space="preserve"><value>{0} будет деактивировано. Неактивные местоположения нельзя выбрать в формах запасов.</value></data>
+  <data name="ConfirmArchiveTitle" xml:space="preserve"><value>Переместить местоположение в архив?</value></data>
+  <data name="ConfirmArchiveText" xml:space="preserve"><value>{0} будет перемещено в архив. Это действие необратимо: архивное местоположение нельзя снова активировать или изменить. Запись не удаляется и остаётся в прошлых движениях.</value></data>
+  <data name="BulkTitle" xml:space="preserve"><value>Массовое создание ячеек</value></data>
+  <data name="BulkTarget" xml:space="preserve"><value>Цель</value></data>
+  <data name="BulkAisleFrom" xml:space="preserve"><value>Проход с</value></data>
+  <data name="BulkAisleTo" xml:space="preserve"><value>Проход по</value></data>
+  <data name="BulkRackFrom" xml:space="preserve"><value>Стеллаж с</value></data>
+  <data name="BulkRackTo" xml:space="preserve"><value>Стеллаж по</value></data>
+  <data name="BulkLevelFrom" xml:space="preserve"><value>Ярус с</value></data>
+  <data name="BulkLevelTo" xml:space="preserve"><value>Ярус по</value></data>
+  <data name="BulkPositions" xml:space="preserve"><value>Ячеек на ярусе</value></data>
+  <data name="BulkCodePattern" xml:space="preserve"><value>Коды: ПРОХОД-СТЕЛЛАЖ-ЯРУС-ЯЧЕЙКА, напр. A-01-01-01.</value></data>
+  <data name="BulkCount" xml:space="preserve"><value>Ячеек: {0}</value></data>
+  <data name="BulkPreview" xml:space="preserve"><value>Предпросмотр</value></data>
+  <data name="BulkPreviewSummary" xml:space="preserve"><value>Будет создано ячеек: {0}</value></data>
+  <data name="BulkSkipped" xml:space="preserve"><value>Кодов уже существует: {0}, они будут пропущены.</value></data>
+  <data name="BulkCreateButton" xml:space="preserve"><value>Создать ячейки: {0}</value></data>
+  <data name="BulkNothingToCreate" xml:space="preserve"><value>Нечего создавать</value></data>
+  <data name="BulkResult" xml:space="preserve"><value>Создано ячеек: {0}.</value></data>
+  <data name="BulkResultSkipped" xml:space="preserve"><value>Пропущено существующих кодов: {0}.</value></data>
+  <data name="BulkMore" xml:space="preserve"><value>и ещё {0}</value></data>
+  <data name="LocationCreated" xml:space="preserve"><value>Местоположение создано.</value></data>
+  <data name="LocationSaved" xml:space="preserve"><value>Изменения сохранены.</value></data>
+  <data name="StatusChanged" xml:space="preserve"><value>Статус обновлён.</value></data>
+  <data name="BinsCreated" xml:space="preserve"><value>Создано ячеек: {0}.</value></data>
+  <data name="ErrCodeTaken" xml:space="preserve"><value>Этот код уже используется в компании. Выберите другой код.</value></data>
+  <data name="ErrLevelInvalid" xml:space="preserve"><value>Этот тип нельзя разместить под выбранным родителем (площадка → склад → зона хранения → участок → ячейка; ячейка может быть и под зоной хранения).</value></data>
+  <data name="ErrParentInactive" xml:space="preserve"><value>Родитель неактивен. Сначала активируйте родителя.</value></data>
+  <data name="ErrMoveIntoSubtree" xml:space="preserve"><value>Местоположение нельзя перенести под само себя или под своё дочернее.</value></data>
+  <data name="ErrHasStock" xml:space="preserve"><value>В этом местоположении (или ниже) есть запасы, поэтому изменение невозможно. Сначала переместите запасы. Ничего не изменено.</value></data>
+  <data name="ErrHasActiveChildren" xml:space="preserve"><value>У этого местоположения есть активные дочерние записи. Сначала деактивируйте их.</value></data>
+  <data name="ErrArchived" xml:space="preserve"><value>Местоположение в архиве: его нельзя изменить и под ним нельзя ничего добавить.</value></data>
+  <data name="ErrLocationConflict" xml:space="preserve"><value>После того как вы открыли местоположение, его сохранил другой пользователь. Загрузите его заново и повторите изменение.</value></data>
+  <data name="ErrBulkLimit" xml:space="preserve"><value>За один раз можно создать не более 1000 ячеек. Сузьте диапазоны.</value></data>
+  <data name="ErrUnknownLocation" xml:space="preserve"><value>Местоположение не найдено в этой компании. Обновите страницу.</value></data>
+  <data name="ErrOrgUnitInvalid" xml:space="preserve"><value>Это подразделение не является активным подразделением компании. Выберите другое или оставьте поле пустым.</value></data>
+  <data name="ErrOrgUnitDirectoryUnavailable" xml:space="preserve"><value>Сейчас не удалось проверить подразделение, поэтому ничего не сохранено. Повторите попытку или оставьте поле пустым и сохраните.</value></data>
+  <data name="ErrKeyReused" xml:space="preserve"><value>Это действие уже было отправлено с другими значениями. Закройте окно и начните заново.</value></data>
+  <data name="ErrInvalidRequest" xml:space="preserve"><value>Запрос не удалось обработать: одно из значений недопустимо. Проверьте поля и повторите попытку.</value></data>
+  <data name="ErrCrossLegalEntity" xml:space="preserve"><value>Эта запись принадлежит другой компании. Переключитесь на неё или запросите доступ у администратора.</value></data>
+  <data name="ErrCompanyCheckUnavailable" xml:space="preserve"><value>Сейчас невозможно подтвердить выбранную компанию, поэтому изменения не внесены. Повторите попытку чуть позже.</value></data>
+  <data name="ErrSelectCompany" xml:space="preserve"><value>Сначала выберите компанию. Ничего не прочитано и не изменено.</value></data>
+  <data name="ErrNoPermission" xml:space="preserve"><value>У вас нет доступа к этому действию. Запросите у администратора нужные права на местоположения.</value></data>
+  <data name="ErrSessionExpired" xml:space="preserve"><value>Сеанс завершён. Войдите снова, чтобы продолжить.</value></data>
+  <data name="ErrServiceUnavailable" xml:space="preserve"><value>Служба местоположений сейчас недоступна. Изменения не внесены; повторите попытку чуть позже.</value></data>
+  <data name="ErrConflict" xml:space="preserve"><value>Пока вы работали, данные изменились. Обновите и повторите попытку.</value></data>
+  <data name="ErrGeneric" xml:space="preserve"><value>Что-то пошло не так, изменения не внесены. Повторите попытку; если ошибка повторяется, обратитесь в поддержку.</value></data>
+</root>

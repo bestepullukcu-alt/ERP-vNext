@@ -7,3 +7,4 @@
 auth-app	MACOS_ONLY	1	macOS decides descriptor anonymity differently; Linux is tested by its own /proc/self/fd test
 auth-app	UID_EQUALS_GID	1	in an image where euid = egid a uid offset moved onto the gid reads the same value
 auth-app	RUNS_AS_ROOT	1	root reads a mode-000 file (CAP_DAC_OVERRIDE), so the refusal is not observable
+manufacturing-tests	MANUFACTURING_TEST_MONGO	35	WP-LANE-MAIN-SYNC-02 B3 (owner decision 2026-10-14): owner Üretim (MVP-3) geliştiricisi; MANUFACTURING_TEST_MONGO yok, BL-637; süre 30 gün (2026-11-13); this project only

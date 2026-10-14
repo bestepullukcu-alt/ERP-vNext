@@ -412,6 +412,44 @@ public sealed class WorkItemActionDispatchTests
         Assert.Empty(mediator.Sent);
     }
 
+    // WP-LANE-MAIN-SYNC-02 P3 (owner decision 2026-10-14) — signatureId is an approve field: carried to MediatR on
+    // approve, refused (400 WORK_ITEM_ACTION_PAYLOAD_INVALID, field SignatureId) on every other workflow action.
+    [Theory]
+    [InlineData("reject")]
+    [InlineData("requestInfo")]
+    [InlineData("delegate")]
+    public async Task Workflow_dispatch_refuses_a_signature_on_any_action_but_approve_before_MediatR(string actionCode)
+    {
+        var mediator = new RecordingMediator();
+        var dispatcher = new WorkflowApprovalWorkItemActionDispatcher(mediator);
+
+        var response = await dispatcher.DispatchAsync(new WorkItemActionDispatchRequest(
+            Guid.NewGuid(), actionCode,
+            new WorkItemActionPayloadDto(ExpectedVersion: 1, IdempotencyKey: "attempt", TargetPrincipalId: "user:" + Guid.NewGuid(),
+                SignatureId: Guid.NewGuid().ToString("D")),
+            PlatformActor(), "corr"));
+
+        Assert.Equal(400, response.StatusCode);
+        Assert.Equal(WorkItemActionReasonCodes.PayloadInvalid, response.ReasonCode);
+        Assert.Empty(mediator.Sent);
+    }
+
+    [Fact]
+    public async Task Workflow_dispatch_carries_the_signature_on_approve()
+    {
+        var mediator = new RecordingMediator();
+        var dispatcher = new WorkflowApprovalWorkItemActionDispatcher(mediator);
+        var signature = Guid.NewGuid().ToString("D");
+
+        await dispatcher.DispatchAsync(new WorkItemActionDispatchRequest(
+            Guid.NewGuid(), "approve",
+            new WorkItemActionPayloadDto(ExpectedVersion: 1, IdempotencyKey: "attempt", SignatureId: signature),
+            PlatformActor(), "corr"));
+
+        var command = Assert.IsType<ApproveWorkflowTaskCommand>(Assert.Single(mediator.Sent));
+        Assert.Equal(signature, command.Request.SignatureId);
+    }
+
     [Fact]
     public async Task Workflow_dispatch_refuses_an_overlong_stable_identity_before_MediatR()
     {

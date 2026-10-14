@@ -1,0 +1,6 @@
+git diff --stat de976722b -- gateway/Diten.ApiGateway/ocelot.json
+ gateway/Diten.ApiGateway/ocelot.json | 36 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 36 insertions(+)
+removed lines: 0
+added lines: 36
+hunks: @@ -837,6 +837,42 @@

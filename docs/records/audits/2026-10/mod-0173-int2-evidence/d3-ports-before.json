@@ -1,0 +1,47 @@
+﻿[
+    {
+        "port":  5000,
+        "listening":  true,
+        "pid":  37956
+    },
+    {
+        "port":  5056,
+        "listening":  true,
+        "pid":  32040
+    },
+    {
+        "port":  5057,
+        "listening":  true,
+        "pid":  24988
+    },
+    {
+        "port":  5059,
+        "listening":  true,
+        "pid":  23664
+    },
+    {
+        "port":  5066,
+        "listening":  true,
+        "pid":  34192
+    },
+    {
+        "port":  5067,
+        "listening":  false,
+        "pid":  null
+    },
+    {
+        "port":  5090,
+        "listening":  false,
+        "pid":  null
+    },
+    {
+        "port":  4010,
+        "listening":  true,
+        "pid":  1392
+    },
+    {
+        "port":  4012,
+        "listening":  false,
+        "pid":  null
+    }
+]

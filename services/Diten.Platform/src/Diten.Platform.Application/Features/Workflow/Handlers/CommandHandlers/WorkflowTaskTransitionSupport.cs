@@ -1,4 +1,6 @@
 using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Features.ESignature;
+using Diten.Platform.Application.Features.ESignature.Services;
 using Diten.Platform.Domain.Entities.Workflow;
 using Diten.Platform.Domain.Enums.Workflow;
 using Diten.Platform.Domain.Repositories;
@@ -15,6 +17,7 @@ internal sealed class WorkflowTaskTransitionSupport
     private readonly IPositionAssignmentRepository? _positionAssignmentRepository;
     private readonly IPositionRepository? _positionRepository;
     private readonly WorkflowTerminalTransitionWriter _terminal;
+    private readonly IESignatureGate? _signatureGate;
 
     public WorkflowTaskTransitionSupport(
         IApprovalTaskRepository taskRepository,
@@ -32,6 +35,7 @@ internal sealed class WorkflowTaskTransitionSupport
         _versionRepository = versionRepository;
         _positionAssignmentRepository = positionAssignmentRepository;
         _positionRepository = seams?.Positions;
+        _signatureGate = seams?.SignatureGate;
         _terminal = new WorkflowTerminalTransitionWriter(
             taskRepository, instanceRepository, logRepository,
             seams?.Transactions, seams?.Events, seams?.Templates, snapshotRepository);
@@ -47,9 +51,11 @@ internal sealed class WorkflowTaskTransitionSupport
         string? comment,
         string? evidenceRef,
         string correlationId,
-        CancellationToken ct)
+        CancellationToken ct,
+        string? signatureId = null)
     {
         actorId = actorId.Trim();
+        signatureId = string.IsNullOrWhiteSpace(signatureId) ? null : signatureId.Trim();
         reasonCode = reasonCode.Trim();
 
         var existingLog = await _logRepository.GetByTaskActionIdempotencyKeyAsync(taskId, action, idempotencyKey, ct);
@@ -134,6 +140,33 @@ internal sealed class WorkflowTaskTransitionSupport
                 correlationId);
         }
 
+        // MOD-0022 E4 — after replay → state → assignment → actor → SoD, before the transition (ESIGN-BUNDLE
+        // x-workflow-addendum). One handler serves the API and the WorkCenter dispatcher, so neither can approve a
+        // signature-required step without a signature that binds this approver, this task and this meaning.
+        if (action == WorkflowTransitionAction.Approve && task.SignatureRequired)
+        {
+            if (signatureId is null)
+            {
+                return Response<WorkflowTaskTransitionResponse>.Fail(
+                    "This approval step requires an electronic signature.",
+                    409,
+                    ESignCodes.SignatureRequired,
+                    correlationId);
+            }
+
+            var binding = _signatureGate is null
+                ? new ESignatureGateResult(ESignatureGateFailure.NotFound) // no gate wired → fail closed
+                : await _signatureGate.ValidateForApprovalAsync(signatureId, task, instance, actorId, ct);
+            if (!binding.Binds)
+            {
+                return Response<WorkflowTaskTransitionResponse>.Fail(
+                    "The electronic signature does not bind this approval.",
+                    409,
+                    ESignCodes.SignatureMismatch,
+                    correlationId);
+            }
+        }
+
         var previousTaskStatus = task.Status;
         var previousInstanceStatus = instance.Status;
         var now = DateTimeOffset.UtcNow;
@@ -207,6 +240,8 @@ internal sealed class WorkflowTaskTransitionSupport
                 IdempotencyKey = idempotencyKey,
                 CommentRequired = nextStep.CommentRequired,
                 EvidenceRequired = nextStep.EvidenceRequired,
+                SignatureRequired = nextStep.SignatureRequired,
+                SignatureMeaning = nextStep.SignatureMeaning,
                 DueAt = instance.DueAt
             };
             nextSnapshot = new RuntimeAssignmentSnapshot
@@ -232,6 +267,7 @@ internal sealed class WorkflowTaskTransitionSupport
             var terminalLog = NewLog(task, instance, action, previousTaskStatus, previousInstanceStatus, actorId,
                 reasonCode, idempotencyKey, comment, evidenceRef, correlationId,
                 await _logRepository.GetLatestSequenceNoAsync(instance.Id, ct) + 1);
+            terminalLog.SignatureId = action == WorkflowTransitionAction.Approve ? signatureId : null;
             var terminal = await _terminal.CommitAsync(task, task.Version, instance, instance.Version, terminalLog,
                 escalationWrite: false, actorId, reasonCode, correlationId, ct);
             return TerminalResponse(terminal, task, instance, previousTaskStatus, previousInstanceStatus, action,
@@ -248,6 +284,8 @@ internal sealed class WorkflowTaskTransitionSupport
         var sequenceNo = await _logRepository.GetLatestSequenceNoAsync(instance.Id, ct) + 1;
         var log = NewLog(task, instance, action, previousTaskStatus, previousInstanceStatus, actorId, reasonCode,
             idempotencyKey, comment, evidenceRef, correlationId, sequenceNo);
+        // MOD-0022 E4 (main) — the decision row of an intermediate approval carries its e-signature, as the terminal one does.
+        log.SignatureId = action == WorkflowTransitionAction.Approve ? signatureId : null;
         var assignLog = new WorkflowTransitionLog
         {
             TenantId = task.TenantId,
@@ -849,8 +887,10 @@ internal sealed class WorkflowTaskTransitionSupport
 
     /// <summary>
     /// D1 — THE ONE COMPARISON OF TWO PRINCIPALS (BL-477). Two user ids are the same person whatever their spelling
-    /// (upper case, braces, no dashes): compared as GUIDs. Anything that is not a GUID is an opaque principal and is
-    /// compared letter for letter. Snapshots written before ids were kept in one spelling match without a migration.
+    /// (upper case, braces, no dashes): compared as GUIDs. Anything that is not a GUID is an opaque principal, compared
+    /// case-insensitively — WP-LANE-MAIN-SYNC-02 P2b (owner decision 2026-10-14): main's WorkflowPrincipal.Same rule
+    /// (WP-0023-FX), so "user:5F00…" and "user:5f00…" are one person. Snapshots written before ids were kept in one
+    /// spelling match without a migration.
     /// </summary>
     internal static bool PrincipalEquals(string? left, string? right)
     {
@@ -871,7 +911,7 @@ internal sealed class WorkflowTaskTransitionSupport
 
         return leftIsId && rightIsId
             ? leftId == rightId
-            : string.Equals(left.Trim(), right.Trim(), StringComparison.Ordinal);
+            : string.Equals(left.Trim(), right.Trim(), StringComparison.OrdinalIgnoreCase);
     }
 
     private const string UserPrefix = "user:";

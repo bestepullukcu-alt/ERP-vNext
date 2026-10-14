@@ -16,11 +16,17 @@ public sealed class WorkflowTaskDecisionPermissionScopeReconciliationTests(Dispo
 {
     private const string DatabaseName = "diten_auth_permission_onboarding_itest";
 
+    // WP-LANE-MAIN-SYNC-02 A1 (owner decision 2026-10-14): the seven Tenant workflow runtime keys by name — the lane's
+    // three plus main's WP-0023-FX four (instances.view, tasks.cancel, tasks.delegate, tasks.request-info).
     private static readonly IReadOnlySet<string> TenantExecutionKeys = new HashSet<string>(StringComparer.Ordinal)
     {
         "platform.workflow.instances.start",
+        "platform.workflow.instances.view",
         "platform.workflow.tasks.approve",
-        "platform.workflow.tasks.reject"
+        "platform.workflow.tasks.cancel",
+        "platform.workflow.tasks.delegate",
+        "platform.workflow.tasks.reject",
+        "platform.workflow.tasks.request-info"
     };
 
     private static readonly IReadOnlySet<string> WorkflowKeys = new HashSet<string>(StringComparer.Ordinal)
@@ -41,7 +47,7 @@ public sealed class WorkflowTaskDecisionPermissionScopeReconciliationTests(Dispo
     };
 
     [OwnedMongoFact]
-    public async Task Real_mongo_seed_reconciles_exact_three_tenant_execution_permissions_and_replay_is_stable()
+    public async Task Real_mongo_seed_reconciles_exact_seven_tenant_execution_permissions_and_replay_is_stable()
     {
         var settings = MongoClientSettings.FromConnectionString(ownedMongo.ConnectionString);
         settings.ServerSelectionTimeout = TimeSpan.FromSeconds(5);
@@ -129,7 +135,7 @@ public sealed class WorkflowTaskDecisionPermissionScopeReconciliationTests(Dispo
         Assert.All(
             permissions.Where(permission => TenantExecutionKeys.Contains(permission.Key)),
             permission => Assert.Equal("workflow", permission.Module));
-        Assert.Equal(3, permissions.Count(permission => permission.Scope == PermissionScope.Tenant));
-        Assert.Equal(10, permissions.Count(permission => permission.Scope == PermissionScope.PlatformAdmin));
+        Assert.Equal(7, permissions.Count(permission => permission.Scope == PermissionScope.Tenant));
+        Assert.Equal(6, permissions.Count(permission => permission.Scope == PermissionScope.PlatformAdmin));
     }
 }

@@ -82,7 +82,9 @@ public sealed class AuditBehavior<TRequest, TResponse> : IPipelineBehavior<TRequ
     }
 
     private static bool IsAuthorizedTransactionOwnedAuditCommand(Type requestType) =>
-        TransactionOwnedAuditCommands.Authorized.Contains(requestType);
+        TransactionOwnedAuditCommands.Authorized.Contains(requestType)
+        // MOD-0022 (main) — e-signature commands write their audit intent inside their own business transaction.
+        || Features.ESignature.ESignatureTransactionAudit.Owns(requestType);
 
     private AuditPlan BuildAuditPlan(TRequest request)
     {

@@ -1,0 +1,76 @@
+@model Diten.Web.Models.Traceability.LotPageViewModel
+@using Diten.Web.Views.Traceability.LotMovements
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LotMovementsIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["Page.Title"].Value;
+    Layout = "_LayoutTenantShell";
+}
+@*
+    MOD-0174 P3 — Lot Hareket Geçmişi (pack §11.1/§11.3): the FU01 history columns for ONE lot (INVENTORY-BUNDLE
+    getTransactions?lotId=). Page key trace.lots.read; the rows are ledger rows, so without inventory.stock.read the page
+    says so instead of drawing an empty table. Row → the receipt modal (Hareket fişi) with "Stok Defteri'nde aç".
+*@
+@if (!Perms.Has("trace.lots.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["Page.Title"].Value" />
+    return;
+}
+@{
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["Company.Label"].Value;
+    company.Placeholder = Localizer["Company.Placeholder"].Value;
+    company.SelectHint = Localizer["Company.Required"].Value;
+    company.UnavailableText = Localizer["Company.Unavailable"].Value;
+}
+
+@* Contract marker: <partial name="_Filter" /> *@
+@if (company.Ready)
+{
+    <partial name="~/Views/Traceability/LotMovements/_Filter.cshtml" model="Model" />
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["Page.Title"]</h5>
+    <p class="mb-0 text-muted">@Localizer["Page.Description"]</p>
+</div>
+
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready)
+{
+    @if (!Perms.Has("inventory.stock.read"))
+    {
+        <div class="alert alert-info" role="status" id="lotmovements-no-ledger">@Localizer["Empty.NoLedger"]</div>
+    }
+    else
+    {
+        <div id="lotmovements-context" class="d-flex flex-wrap align-items-center gap-2 mb-3" data-lot-id="@Model.LotId" data-serial="@Model.Serial">
+            <div style="min-width: 18rem">
+                <select id="lotMovementsLot" class="form-select form-select-sm" data-placeholder="@Localizer["Filter.Lot"]" aria-label="@Localizer["Filter.Lot"]"><option value=""></option></select>
+            </div>
+            <span id="lotmovements-serial-chip" class="badge bg-label-info d-none"></span>
+        </div>
+        <div id="lotmovements-list-error" class="alert alert-danger d-none" role="alert"></div>
+        @* Contract markers are rendered by _DataTable.cshtml: <partial name="_TableSkeleton" /> (id="skeleton-loader"), <table id="dt-lotmovements" data-dt-standard="v2"> *@
+        <partial name="~/Views/Traceability/LotMovements/_DataTable.cshtml" />
+        <partial name="~/Views/Traceability/LotMovements/_ReceiptModal.cshtml" />
+    }
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    <partial name="~/Views/Traceability/Lots/_TraceActions.cshtml" />
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/Traceability/LotMovements/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Traceability/LotMovements/index.l10n.js" asp-append-version="true"></script>
+    @if (company.Ready && Perms.Has("inventory.stock.read"))
+    {
+        <script src="~/assets/js/Traceability/trace-ui.js" asp-append-version="true"></script>
+        <script src="~/assets/js/Traceability/LotMovements/index.js" asp-append-version="true"></script>
+    }
+}

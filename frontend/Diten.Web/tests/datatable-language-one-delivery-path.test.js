@@ -212,7 +212,7 @@ describe("BL-047b: the wiring that carries the payload to the page", () => {
     const read_ = Array.from(new Set(consumer.match(/dtText\('(Dt[A-Za-z]+)'\)/g) || []))
       .map((m) => m.replace(/dtText\('|'\)/g, "")).sort();
 
-    // Six chrome strings + BL-515's three list-failure strings (DtLoadFailed, DtLoadForbidden, DtRetry).
+    // Six chrome strings + BL-515's three list-failure strings (DtLoadFailed, DtLoadNoPermission, DtRetry).
     expect(emitted).toHaveLength(9);
     expect(emitted).toEqual(read_);
   });

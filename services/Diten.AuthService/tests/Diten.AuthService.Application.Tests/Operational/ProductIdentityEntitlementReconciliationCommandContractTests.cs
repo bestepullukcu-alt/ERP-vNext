@@ -127,7 +127,7 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
             .SelectMany(path => AuthorityCalls(Path.GetRelativePath(root.FullName, path).Replace('\\', '/'), File.ReadAllText(path)))
             .GroupBy(row => row, StringComparer.Ordinal).Select(group => group.Key + "|" + group.Count())
             .Order(StringComparer.Ordinal).ToArray();
-        var expected = (FrozenWriterCalls + "\n" + ApprovedOperationalWriterCalls + "\n" + ApprovedBookkeepingWriterCalls
+        var expected = (FrozenWriterCalls + "\n" + OwnerCorrection20261014WriterCalls + "\n" + OwnerCorrection20261014B1WriterCalls + "\n" + ApprovedOperationalWriterCalls + "\n" + ApprovedBookkeepingWriterCalls
             + "\n" + ApprovedDeclaredServiceClientWriterCalls).Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Order(StringComparer.Ordinal).ToArray();
         var unclassified = actual.Where(row => row.Contains("|UNCLASSIFIED|", StringComparison.Ordinal)).ToArray();
@@ -235,7 +235,9 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
         // pattern matched, so its forwarded writes were UNCLASSIFIED. Bound, each one is a counted row like any other writer.
         // FIX1 (small 3): with the Try / Record / Reset verbs, the receivers they reach are bound too — the audit recorders
         // (I…Recorder, non-authority below), the cross-service clients (I…Client) and the account-kind writer.
-        foreach (Match declaration in Regex.Matches(source, @"\b(?<type>I\w+(?:Repository|Service|Writer|Recorder|Client)|UserRepository|AccountKindWriter|IMongoDatabase|TenantSubscriptionTransactionWriter|IMongoCollection\s*<\s*\w+\s*>)\s+(?<name>\w+)"))
+        // Owner correction 2026-10-14 (WP-LANE-MAIN-SYNC-02 A2): a NULLABLE declaration (`IESignReauthTicketService? x`,
+        // `IMongoCollection<T>? x`) binds the same way — before, the `?` left main's new receivers UNCLASSIFIED.
+        foreach (Match declaration in Regex.Matches(source, @"\b(?<type>I\w+(?:Repository|Service|Writer|Recorder|Client)|UserRepository|AccountKindWriter|IMongoDatabase|TenantSubscriptionTransactionWriter|IMongoCollection\s*<\s*\w+\s*>)\??\s+(?<name>\w+)"))
         {
             var type = declaration.Groups["type"].Value;
             if (type.StartsWith("IMongoCollection", StringComparison.Ordinal)) type = Regex.Match(type, @"<\s*(\w+)").Groups[1].Value;
@@ -325,6 +327,34 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
     //   backfill out of DataSeeder into ExportGrantBackfillRunner, whose writes are the ExportGrantBackfillRunner rows below
     //   (the brands key is ExportGrantBackfill.Brands of that one runner; see the header).
     // BRAND-FIX3 M-4 · CT kararı 2026-10-07 · UsersExportGrantBackfill emsali · tek yönlü, kiracı başına bir kez, kalıcı işaretli
+    // Owner correction 2026-10-14 (WP-LANE-MAIN-SYNC-02 A2, main-sync: MOD-0022) — four rows: _eSignTickets.RevokeWindowsAsync
+    // in ChangePassword, ForcedChangeTenantPassword, Logout and SetTenantPassword. Each closes the e-signature password
+    // windows of the user whose password / session just changed: it only ever NARROWS access. (The fifth approved row,
+    // DataSeeder audit.InsertOneAsync, is an AuthAuditLog write — a non-authority binding, so it is not a counted row.)
+    private const string OwnerCorrection20261014WriterCalls = """
+    services/Diten.AuthService/src/Diten.AuthService.Application/Features/Auth/Handlers/CommandHandlers/ChangePasswordCommandHandler.cs|IESignReauthTicketService|_eSignTickets.RevokeWindowsAsync|1
+    services/Diten.AuthService/src/Diten.AuthService.Application/Features/Auth/Handlers/CommandHandlers/ForcedChangeTenantPasswordCommandHandler.cs|IESignReauthTicketService|_eSignTickets.RevokeWindowsAsync|1
+    services/Diten.AuthService/src/Diten.AuthService.Application/Features/Auth/Handlers/CommandHandlers/LogoutCommandHandler.cs|IESignReauthTicketService|_eSignTickets.RevokeWindowsAsync|1
+    services/Diten.AuthService/src/Diten.AuthService.Application/Features/Users/Handlers/CommandHandlers/SetTenantPasswordCommandHandler.cs|IESignReauthTicketService|_eSignTickets.RevokeWindowsAsync|1
+    """;
+    // Owner correction 2026-10-14 (WP-LANE-MAIN-SYNC-02 B1, owner decision) — nine changes, each with its reason:
+    //   RoleProvisioningService _roleRepository.CreateSystemRoleIfMissingAsync|1 — WP-0018-ROLE1 (main): $setOnInsert only, an
+    //     existing role is never overwritten; it REPLACES _roleRepository.UpsertSystemRoleAsync|1 (removed from the frozen list).
+    //   RoleRepository Collection.UpdateOneAsync 2 → 3 — the same work (the insert-only system-role write).
+    //   ESignReauthRepositories FindOneAndUpdateAsync / UpdateManyAsync / UpdateOneAsync — MOD-0022 E1 (main): the single-use
+    //     ticket consume, the password window, the bulk revoke; each only NARROWS access.
+    //   ESignReauthHandlers _users.RecordLoginFailureAsync / RecordLoginOutcomeAsync / TryClaimSignInAsync — the lane's lockout
+    //     model (one atomic failure write, sign-in time only, the conditional claim) on main's re-authentication door.
+    private const string OwnerCorrection20261014B1WriterCalls = """
+    services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/RoleProvisioningService.cs|IRoleRepository|_roleRepository.CreateSystemRoleIfMissingAsync|1
+    services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/RoleRepository.cs|Role|Collection.UpdateOneAsync|3
+    services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/ESignReauthRepositories.cs|ESignReauthTicket|Collection.FindOneAndUpdateAsync|1
+    services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/ESignReauthRepositories.cs|ESignReauthTicket|Collection.UpdateManyAsync|1
+    services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/ESignReauthRepositories.cs|ESignReauthTicket|Collection.UpdateOneAsync|1
+    services/Diten.AuthService/src/Diten.AuthService.Application/Features/ESignReauth/ESignReauthHandlers.cs|IUserRepository|_users.RecordLoginFailureAsync|1
+    services/Diten.AuthService/src/Diten.AuthService.Application/Features/ESignReauth/ESignReauthHandlers.cs|IUserRepository|_users.RecordLoginOutcomeAsync|1
+    services/Diten.AuthService/src/Diten.AuthService.Application/Features/ESignReauth/ESignReauthHandlers.cs|IUserRepository|_users.TryClaimSignInAsync|1
+    """;
     private const string FrozenWriterCalls = """
     services/Diten.AuthService/src/Diten.AuthService.Api/Controllers/InternalEventsController.cs|AdminPasswordReset|AdminPasswordReset.ResetAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Api/Controllers/InternalEventsController.cs|IIntegrationEventInboxRepository|_inboxRepository.TryInsertAsync|1
@@ -353,7 +383,6 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
     services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/PlatformAdministratorRoleConvergence.cs|IUserRoleRepository|userRoles.AssignAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/PlatformAdministratorRoleConvergence.cs|IUserRoleRepository|userRoles.RevokeAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/RoleProvisioningService.cs|IRolePermissionRepository|_rolePermissionRepository.AssignAsync|1
-    services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/RoleProvisioningService.cs|IRoleRepository|_roleRepository.UpsertSystemRoleAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Application/Features/Auth/Handlers/CommandHandlers/ChangePasswordCommandHandler.cs|IRefreshTokenRepository|_refreshTokenRepository.RevokeLiveSessionsAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Application/Features/Auth/Handlers/CommandHandlers/ChangePasswordCommandHandler.cs|IUserRepository|_userRepository.TryWriteChangesAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Application/Features/Auth/Handlers/CommandHandlers/ForcedChangeTenantPasswordCommandHandler.cs|IRefreshTokenRepository|_refreshTokenRepository.CreateAsync|1
@@ -436,7 +465,6 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/RoleAssignmentVersionRepository.cs|RoleAssignmentVersionDocument|_collection.FindOneAndUpdateAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/RolePermissionRepository.cs|RolePermission|Collection.DeleteManyAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/RolePermissionRepository.cs|RolePermission|Collection.DeleteOneAsync|2
-    services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/RoleRepository.cs|Role|Collection.UpdateOneAsync|2
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/UserRepository.cs|User|Collection.FindOneAndUpdateAsync|1
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/UserRepository.cs|User|Collection.UpdateOneAsync|6
     services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/UserRoleRepository.cs|UserRole|Collection.DeleteManyAsync|1
@@ -612,7 +640,9 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
         while (!File.Exists(Path.Combine(root.FullName, "AGENTS.md"))) root = root.Parent ?? throw new InvalidOperationException("Checkout required");
         var persistence = File.ReadAllText(Path.Combine(root.FullName, "services/Diten.AuthService/src/Diten.AuthService.Persistence/DependencyInjection.cs"));
         var normal = persistence[persistence.IndexOf("    public static IServiceCollection AddPersistence(", StringComparison.Ordinal)..].Replace("\r", "").Trim();
-        Assert.Equal("51D35FF8694879A7CE0FCA3E12A32A02D6DEEB49C1A2D3FC0561D6D86D6D80FC", EntitlementReconciliationPlan.Hash(normal)); // BL-521 FIX6 14ce67b04 (see the 2026-10-09 BL-521 note above)
+        // owner correction 2026-10-14, main-sync: MOD-0022 kayıtları (IESignReauthTicketRepository + IESignReauthWindowRepository, added
+        // to AddPersistence by main). Before: 51D35FF8…D80FC, BL-521 FIX6 14ce67b04 (see the 2026-10-09 BL-521 note above).
+        Assert.Equal("0E54C78818CE17A6AE614EC27739F00F5540E9C26C527A3CBC4801EA9BE0F1AA", EntitlementReconciliationPlan.Hash(normal));
         var operational = File.ReadAllText(Path.Combine(root.FullName, "services/Diten.AuthService/src/Diten.AuthService.Api/Operational/EntitlementReconciliationOperationalMode.cs"));
         Assert.Contains("AddEntitlementReconciliationPersistence(configuration)", operational);
         foreach (var forbidden in new[] { "AddPersistence(", "EnsureIndexes", "DataSeeder", "AddHostedService", "AddMassTransit", "GrantModule", "UpsertSystemRole", "WebApplication.CreateBuilder" })

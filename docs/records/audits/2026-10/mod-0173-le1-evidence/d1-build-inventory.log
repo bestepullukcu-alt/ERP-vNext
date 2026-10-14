@@ -1,0 +1,4 @@
+$ dotnet build services/Diten.InventoryService/Diten.InventoryService.sln -c Debug --no-incremental
+    0 Hata
+    0 Uyarı
+Oluşturma başarılı oldu.

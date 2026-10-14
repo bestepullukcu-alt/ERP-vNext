@@ -1,0 +1,437 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Quarantine.Common.Crumb.Root" xml:space="preserve"><value>الجودة</value></data>
+  <data name="Quarantine.Common.Company.Label" xml:space="preserve"><value>الشركة</value></data>
+  <data name="Quarantine.Common.Company.Placeholder" xml:space="preserve"><value>اختر شركة</value></data>
+  <data name="Quarantine.Common.Company.Required" xml:space="preserve"><value>اختر الشركة التي تعمل بها لعرض سجلات الحجر الخاصة بها.</value></data>
+  <data name="Quarantine.Common.Company.Unavailable" xml:space="preserve"><value>تعذّر تحميل قائمة الشركات. حاول مرة أخرى بعد قليل.</value></data>
+  <data name="Quarantine.Common.NamesUnavailable" xml:space="preserve"><value>تعذّرت قراءة أسماء المنتجات والمواقع حاليًا؛ تُعرض المعرّفات. الكميات صحيحة.</value></data>
+  <data name="Quarantine.Common.Back" xml:space="preserve"><value>رجوع</value></data>
+  <data name="Quarantine.Common.Cancel" xml:space="preserve"><value>إلغاء</value></data>
+  <data name="Quarantine.Common.Close" xml:space="preserve"><value>إغلاق</value></data>
+  <data name="Quarantine.Common.Save" xml:space="preserve"><value>حفظ</value></data>
+  <data name="Quarantine.Common.Select" xml:space="preserve"><value>اختر</value></data>
+  <data name="Quarantine.Common.Yes" xml:space="preserve"><value>نعم</value></data>
+  <data name="Quarantine.Common.No" xml:space="preserve"><value>لا</value></data>
+  <data name="Quarantine.Common.Days" xml:space="preserve"><value>{0} يوم</value></data>
+  <data name="Quarantine.Common.DaysLeft" xml:space="preserve"><value>متبقٍ {0} يوم</value></data>
+  <data name="Quarantine.Common.DaysPast" xml:space="preserve"><value>متأخر {0} يوم</value></data>
+  <data name="Quarantine.Common.Target" xml:space="preserve"><value>الهدف {0} يوم · الشركة</value></data>
+  <data name="Quarantine.Common.ReasonCounter" xml:space="preserve"><value>{0} / 10 على الأقل</value></data>
+  <data name="Quarantine.Common.ReasonMin" xml:space="preserve"><value>يجب أن يتكون المبرر من 10 أحرف على الأقل.</value></data>
+  <data name="Quarantine.Tabs.Queue" xml:space="preserve"><value>قائمة انتظار الحجر</value></data>
+  <data name="Quarantine.Tabs.Blocked" xml:space="preserve"><value>المخزون المحظور</value></data>
+  <data name="Quarantine.Tabs.Retest" xml:space="preserve"><value>قائمة إعادة الاختبار</value></data>
+  <data name="Quarantine.Tabs.Settings" xml:space="preserve"><value>إعدادات الحجر</value></data>
+  <data name="Quarantine.Col.Product" xml:space="preserve"><value>المنتج</value></data>
+  <data name="Quarantine.Col.Lot" xml:space="preserve"><value>التشغيلة</value></data>
+  <data name="Quarantine.Col.LotNo" xml:space="preserve"><value>رقم التشغيلة</value></data>
+  <data name="Quarantine.Col.Expiry" xml:space="preserve"><value>تاريخ الانتهاء</value></data>
+  <data name="Quarantine.Col.WarehouseLocation" xml:space="preserve"><value>المستودع / الموقع</value></data>
+  <data name="Quarantine.Col.StockStatus" xml:space="preserve"><value>حالة المخزون</value></data>
+  <data name="Quarantine.Col.Quantity" xml:space="preserve"><value>الكمية</value></data>
+  <data name="Quarantine.Col.EnteredAt" xml:space="preserve"><value>تاريخ الإدخال</value></data>
+  <data name="Quarantine.Col.Wait" xml:space="preserve"><value>الانتظار</value></data>
+  <data name="Quarantine.Col.Source" xml:space="preserve"><value>المصدر / المستند</value></data>
+  <data name="Quarantine.Col.Status" xml:space="preserve"><value>الحالة</value></data>
+  <data name="Quarantine.Col.Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="Quarantine.Col.BlockReason" xml:space="preserve"><value>سبب الحظر</value></data>
+  <data name="Quarantine.Col.BlockedAt" xml:space="preserve"><value>تاريخ الحظر</value></data>
+  <data name="Quarantine.Col.Pending" xml:space="preserve"><value>هل القرار معلق</value></data>
+  <data name="Quarantine.Col.RetestDate" xml:space="preserve"><value>تاريخ إعادة الاختبار</value></data>
+  <data name="Quarantine.Col.OnHand" xml:space="preserve"><value>المخزون المتوفر</value></data>
+  <data name="Quarantine.Col.MoveNo" xml:space="preserve"><value>رقم الحركة</value></data>
+  <data name="Quarantine.Col.Date" xml:space="preserve"><value>التاريخ</value></data>
+  <data name="Quarantine.Col.MoveType" xml:space="preserve"><value>نوع الحركة</value></data>
+  <data name="Quarantine.Col.StatusChange" xml:space="preserve"><value>تغيير الحالة</value></data>
+  <data name="Quarantine.Col.User" xml:space="preserve"><value>المستخدم</value></data>
+  <data name="Quarantine.Field.Reason" xml:space="preserve"><value>المبرر</value></data>
+  <data name="Quarantine.Field.BlockReason" xml:space="preserve"><value>سبب الحظر</value></data>
+  <data name="Quarantine.Filter.AllWarehouses" xml:space="preserve"><value>جميع المستودعات</value></data>
+  <data name="Quarantine.Filter.AllStockStatuses" xml:space="preserve"><value>جميع حالات المخزون</value></data>
+  <data name="Quarantine.Filter.AllSources" xml:space="preserve"><value>جميع المصادر</value></data>
+  <data name="Quarantine.Filter.LateOnly" xml:space="preserve"><value>المتأخرة فقط</value></data>
+  <data name="Quarantine.Filter.Clear" xml:space="preserve"><value>مسح</value></data>
+  <data name="Quarantine.Action.Decide" xml:space="preserve"><value>اتخاذ القرار</value></data>
+  <data name="Quarantine.Action.Detail" xml:space="preserve"><value>التفاصيل</value></data>
+  <data name="Quarantine.Action.Dispose" xml:space="preserve"><value>قرار التصرف</value></data>
+  <data name="Quarantine.Action.Unblock" xml:space="preserve"><value>رفع الحظر</value></data>
+  <data name="Quarantine.Action.CompleteReview" xml:space="preserve"><value>إكمال المراجعة</value></data>
+  <data name="Quarantine.Action.BlockStock" xml:space="preserve"><value>حظر المخزون</value></data>
+  <data name="Quarantine.Action.Quarantine" xml:space="preserve"><value>وضع في الحجر</value></data>
+  <data name="Quarantine.Status.AVAILABLE" xml:space="preserve"><value>متاح</value></data>
+  <data name="Quarantine.Status.QUALITY_INSPECTION" xml:space="preserve"><value>فحص الجودة</value></data>
+  <data name="Quarantine.Status.QUARANTINE" xml:space="preserve"><value>الحجر</value></data>
+  <data name="Quarantine.Status.BLOCKED" xml:space="preserve"><value>محظور</value></data>
+  <data name="Quarantine.Status.IN_TRANSIT" xml:space="preserve"><value>قيد النقل</value></data>
+  <data name="Quarantine.Status.DAMAGED" xml:space="preserve"><value>تالف</value></data>
+  <data name="Quarantine.Status.EXPIRED" xml:space="preserve"><value>منتهي الصلاحية</value></data>
+  <data name="Quarantine.HoldState.Waiting" xml:space="preserve"><value>قيد الانتظار</value></data>
+  <data name="Quarantine.HoldState.InReview" xml:space="preserve"><value>قيد المراجعة</value></data>
+  <data name="Quarantine.HoldState.Pending" xml:space="preserve"><value>بانتظار الموافقة</value></data>
+  <data name="Quarantine.HoldState.Decided" xml:space="preserve"><value>تم القرار</value></data>
+  <data name="Quarantine.Workflow.Draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="Quarantine.Workflow.Submitted" xml:space="preserve"><value>تم الإرسال</value></data>
+  <data name="Quarantine.Workflow.PendingApproval" xml:space="preserve"><value>بانتظار الموافقة</value></data>
+  <data name="Quarantine.Workflow.Approved" xml:space="preserve"><value>تمت الموافقة · بانتظار التطبيق</value></data>
+  <data name="Quarantine.Workflow.Applied" xml:space="preserve"><value>تم التطبيق</value></data>
+  <data name="Quarantine.Workflow.Rejected" xml:space="preserve"><value>مرفوض</value></data>
+  <data name="Quarantine.Workflow.Cancelled" xml:space="preserve"><value>ملغى</value></data>
+  <data name="Quarantine.Workflow.TimedOut" xml:space="preserve"><value>انتهت المهلة</value></data>
+  <data name="Quarantine.Workflow.Withdrawn" xml:space="preserve"><value>تم السحب</value></data>
+  <data name="Quarantine.Workflow.StartFailed" xml:space="preserve"><value>تعذّر الإرسال للموافقة</value></data>
+  <data name="Quarantine.Workflow.ApplyFailed" xml:space="preserve"><value>تعذّر التطبيق</value></data>
+  <data name="Quarantine.Workflow.FourEyesViolation" xml:space="preserve"><value>انتهاك مبدأ الأعين الأربع</value></data>
+  <data name="Quarantine.DecisionKind.HoldDecision" xml:space="preserve"><value>قرار الحجر</value></data>
+  <data name="Quarantine.DecisionKind.Disposition" xml:space="preserve"><value>التصرف</value></data>
+  <data name="Quarantine.DecisionKind.Unblock" xml:space="preserve"><value>رفع الحظر</value></data>
+  <data name="Quarantine.DecisionKind.LotRelease" xml:space="preserve"><value>الإفراج عن التشغيلة</value></data>
+  <data name="Quarantine.LineDecision.Release" xml:space="preserve"><value>إفراج</value></data>
+  <data name="Quarantine.LineDecision.Reject" xml:space="preserve"><value>رفض</value></data>
+  <data name="Quarantine.LineDecision.Block" xml:space="preserve"><value>حظر</value></data>
+  <data name="Quarantine.Source.GoodsReceipt" xml:space="preserve"><value>استلام البضائع</value></data>
+  <data name="Quarantine.Source.Production" xml:space="preserve"><value>الإنتاج</value></data>
+  <data name="Quarantine.Source.CustomerReturn" xml:space="preserve"><value>مرتجع العميل</value></data>
+  <data name="Quarantine.Source.Manual" xml:space="preserve"><value>يدوي</value></data>
+  <data name="Quarantine.Source.Retest" xml:space="preserve"><value>إعادة الاختبار</value></data>
+  <data name="Quarantine.Source.Rework" xml:space="preserve"><value>إعادة المعالجة</value></data>
+  <data name="Quarantine.Source.OtherInbound" xml:space="preserve"><value>إدخال آخر</value></data>
+  <data name="Quarantine.Origin.QuarantineDecision" xml:space="preserve"><value>قرار الحجر</value></data>
+  <data name="Quarantine.Origin.ManualBlock" xml:space="preserve"><value>حظر يدوي</value></data>
+  <data name="Quarantine.Origin.Rework" xml:space="preserve"><value>إعادة المعالجة</value></data>
+  <data name="Quarantine.Origin.OtherInbound" xml:space="preserve"><value>إدخال آخر</value></data>
+  <data name="Quarantine.Origin.LotBlocked" xml:space="preserve"><value>تشغيلة محظورة</value></data>
+  <data name="Quarantine.LotStatus.Draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="Quarantine.LotStatus.Released" xml:space="preserve"><value>مُفرج عنها</value></data>
+  <data name="Quarantine.LotStatus.Blocked" xml:space="preserve"><value>محظورة</value></data>
+  <data name="Quarantine.LotStatus.Expired" xml:space="preserve"><value>منتهية الصلاحية</value></data>
+  <data name="Quarantine.MovementType.OPENING_BALANCE" xml:space="preserve"><value>الرصيد الافتتاحي</value></data>
+  <data name="Quarantine.MovementType.GOODS_RECEIPT_PO" xml:space="preserve"><value>استلام مشتريات</value></data>
+  <data name="Quarantine.MovementType.GOODS_RECEIPT_PROD" xml:space="preserve"><value>استلام من الإنتاج</value></data>
+  <data name="Quarantine.MovementType.GOODS_ISSUE_SALES" xml:space="preserve"><value>صرف مبيعات</value></data>
+  <data name="Quarantine.MovementType.GOODS_ISSUE_PROD" xml:space="preserve"><value>صرف للإنتاج</value></data>
+  <data name="Quarantine.MovementType.WAREHOUSE_TRANSFER" xml:space="preserve"><value>نقل بين المستودعات</value></data>
+  <data name="Quarantine.MovementType.LOCATION_TRANSFER" xml:space="preserve"><value>نقل بين المواقع</value></data>
+  <data name="Quarantine.MovementType.STATUS_TRANSFER" xml:space="preserve"><value>تغيير الحالة</value></data>
+  <data name="Quarantine.MovementType.CUSTOMER_RETURN" xml:space="preserve"><value>مرتجع العميل</value></data>
+  <data name="Quarantine.MovementType.SUPPLIER_RETURN" xml:space="preserve"><value>إرجاع للمورد</value></data>
+  <data name="Quarantine.MovementType.COUNT_GAIN" xml:space="preserve"><value>زيادة جرد</value></data>
+  <data name="Quarantine.MovementType.COUNT_LOSS" xml:space="preserve"><value>عجز جرد</value></data>
+  <data name="Quarantine.MovementType.SCRAP" xml:space="preserve"><value>إتلاف</value></data>
+  <data name="Quarantine.MovementType.WRITE_OFF" xml:space="preserve"><value>شطب</value></data>
+  <data name="Quarantine.MovementType.REVERSAL" xml:space="preserve"><value>عكس القيد</value></data>
+  <data name="Quarantine.History.Quarantined" xml:space="preserve"><value>وُضع في الحجر</value></data>
+  <data name="Quarantine.History.ReviewStarted" xml:space="preserve"><value>بدأت المراجعة</value></data>
+  <data name="Quarantine.History.DecisionSubmitted" xml:space="preserve"><value>أُرسل القرار للموافقة</value></data>
+  <data name="Quarantine.History.Approved" xml:space="preserve"><value>تمت الموافقة</value></data>
+  <data name="Quarantine.History.Rejected" xml:space="preserve"><value>رُفضت الموافقة</value></data>
+  <data name="Quarantine.History.Cancelled" xml:space="preserve"><value>أُلغي</value></data>
+  <data name="Quarantine.History.TimedOut" xml:space="preserve"><value>انتهت المهلة</value></data>
+  <data name="Quarantine.History.Withdrawn" xml:space="preserve"><value>سُحب القرار</value></data>
+  <data name="Quarantine.History.Applied" xml:space="preserve"><value>طُبّقت حركة المخزون</value></data>
+  <data name="Quarantine.History.ApplyFailed" xml:space="preserve"><value>تعذّر التطبيق</value></data>
+  <data name="Quarantine.History.FourEyesViolation" xml:space="preserve"><value>انتهاك مبدأ الأعين الأربع · بلا حركة</value></data>
+  <data name="Quarantine.History.Blocked" xml:space="preserve"><value>تم الحظر</value></data>
+  <data name="Quarantine.History.ReviewCompleted" xml:space="preserve"><value>اكتملت المراجعة</value></data>
+  <data name="Quarantine.History.Disposed" xml:space="preserve"><value>طُبّق التصرف</value></data>
+  <data name="Quarantine.History.Unblocked" xml:space="preserve"><value>رُفع الحظر</value></data>
+  <data name="Quarantine.History.SampleRetained" xml:space="preserve"><value>احتُفظ به كعينة</value></data>
+  <data name="Quarantine.Queue.Title" xml:space="preserve"><value>قائمة انتظار الحجر</value></data>
+  <data name="Quarantine.Queue.Kpi.Pending" xml:space="preserve"><value>سطور بانتظار القرار</value></data>
+  <data name="Quarantine.Queue.Kpi.InReview" xml:space="preserve"><value>{0} سطور قيد المراجعة</value></data>
+  <data name="Quarantine.Queue.Kpi.Quantity" xml:space="preserve"><value>إجمالي الكمية · حسب الوحدة</value></data>
+  <data name="Quarantine.Queue.Kpi.Late" xml:space="preserve"><value>تجاوزت هدف الانتظار</value></data>
+  <data name="Quarantine.Queue.Kpi.ExpirySoon" xml:space="preserve"><value>تنتهي صلاحيتها خلال 90 يومًا: {0}</value></data>
+  <data name="Quarantine.Queue.Empty" xml:space="preserve"><value>لا يوجد سجل حجر مطابق للتصفية.</value></data>
+  <data name="Quarantine.Queue.Footer" xml:space="preserve"><value>{0} سجلات</value></data>
+  <data name="Quarantine.Queue.Legend.Late" xml:space="preserve"><value>تم تجاوز هدف الانتظار</value></data>
+  <data name="Quarantine.Queue.Legend.Expiry" xml:space="preserve"><value>الصلاحية ≤ 90 يومًا</value></data>
+  <data name="Quarantine.Details.Title" xml:space="preserve"><value>سجل الحجر</value></data>
+  <data name="Quarantine.Details.BackToQueue" xml:space="preserve"><value>العودة إلى القائمة</value></data>
+  <data name="Quarantine.Details.GoToLot" xml:space="preserve"><value>الانتقال إلى التشغيلة</value></data>
+  <data name="Quarantine.Details.LateAlert" xml:space="preserve"><value>تجاوز وقت الانتظار الهدف: {0} يوم (الهدف {1} يوم · الشركة).</value></data>
+  <data name="Quarantine.Details.Fact.Lot" xml:space="preserve"><value>رقم التشغيلة</value></data>
+  <data name="Quarantine.Details.Fact.Expiry" xml:space="preserve"><value>تاريخ الانتهاء</value></data>
+  <data name="Quarantine.Details.Fact.Quantity" xml:space="preserve"><value>الكمية</value></data>
+  <data name="Quarantine.Details.Fact.Where" xml:space="preserve"><value>المستودع / الموقع</value></data>
+  <data name="Quarantine.Details.Fact.Wait" xml:space="preserve"><value>مدة الانتظار</value></data>
+  <data name="Quarantine.Details.Fact.Source" xml:space="preserve"><value>المصدر</value></data>
+  <data name="Quarantine.Details.Fact.CreatedBy" xml:space="preserve"><value>أنشأه</value></data>
+  <data name="Quarantine.Details.Quality.Title" xml:space="preserve"><value>معلومات الجودة</value></data>
+  <data name="Quarantine.Details.Quality.Coa" xml:space="preserve"><value>مرجع شهادة التحليل (من التشغيلة)</value></data>
+  <data name="Quarantine.Details.Quality.LotStatus" xml:space="preserve"><value>حالة التشغيلة</value></data>
+  <data name="Quarantine.Details.Quality.Note" xml:space="preserve"><value>ملاحظة نتيجة التحليل</value></data>
+  <data name="Quarantine.Details.Quality.NoNote" xml:space="preserve"><value>لا توجد ملاحظة تحليل.</value></data>
+  <data name="Quarantine.Details.Quality.Attachments" xml:space="preserve"><value>المرفقات · مراجع فقط</value></data>
+  <data name="Quarantine.Details.History.Title" xml:space="preserve"><value>سجل القرارات</value></data>
+  <data name="Quarantine.Details.History.Empty" xml:space="preserve"><value>لا توجد إدخالات بعد.</value></data>
+  <data name="Quarantine.Details.History.Signature" xml:space="preserve"><value>توقيع إلكتروني · {0}</value></data>
+  <data name="Quarantine.Details.History.ApproverSignature" xml:space="preserve"><value>توقيع المعتمِد · {0}</value></data>
+  <data name="Quarantine.Details.Moves.Title" xml:space="preserve"><value>حركات المخزون</value></data>
+  <data name="Quarantine.Details.Moves.Subtitle" xml:space="preserve"><value>تغييرات الحالة التي أحدثها هذا السجل في دفتر المخزون</value></data>
+  <data name="Quarantine.Details.Moves.Empty" xml:space="preserve"><value>لا توجد حركة مخزون لهذا السجل.</value></data>
+  <data name="Quarantine.Details.StartReview" xml:space="preserve"><value>بدء المراجعة</value></data>
+  <data name="Quarantine.Details.StartReviewText" xml:space="preserve"><value>ينتقل السجل إلى «قيد المراجعة»؛ لا يتحرك المخزون.</value></data>
+  <data name="Quarantine.Details.ReviewNote" xml:space="preserve"><value>ملاحظة المراجعة (اختيارية)</value></data>
+  <data name="Quarantine.Details.ReviewStarted" xml:space="preserve"><value>السجل الآن قيد المراجعة.</value></data>
+  <data name="Quarantine.Workflow.Box" xml:space="preserve"><value>سير العمل</value></data>
+  <data name="Quarantine.Workflow.NoDecision" xml:space="preserve"><value>لا يوجد قرار بانتظار الموافقة.</value></data>
+  <data name="Quarantine.Workflow.LastDecision" xml:space="preserve"><value>آخر قرار</value></data>
+  <data name="Quarantine.Workflow.Decision" xml:space="preserve"><value>القرار</value></data>
+  <data name="Quarantine.Workflow.Decider" xml:space="preserve"><value>صاحب القرار</value></data>
+  <data name="Quarantine.Workflow.Approver" xml:space="preserve"><value>المعتمِد</value></data>
+  <data name="Quarantine.Workflow.Instance" xml:space="preserve"><value>المثيل</value></data>
+  <data name="Quarantine.Workflow.DeciderSignature" xml:space="preserve"><value>توقيع صاحب القرار</value></data>
+  <data name="Quarantine.Workflow.ApproverSignature" xml:space="preserve"><value>توقيع المعتمِد</value></data>
+  <data name="Quarantine.Workflow.Refresh" xml:space="preserve"><value>تحديث الحالة</value></data>
+  <data name="Quarantine.Workflow.Refreshed" xml:space="preserve"><value>تم تحديث الحالة: {0}</value></data>
+  <data name="Quarantine.Workflow.Withdraw" xml:space="preserve"><value>سحب القرار</value></data>
+  <data name="Quarantine.Workflow.WithdrawTitle" xml:space="preserve"><value>هل تريد سحب القرار؟</value></data>
+  <data name="Quarantine.Workflow.WithdrawText" xml:space="preserve"><value>تُلغى مهمة الموافقة ويُعاد فتح السجل. لا يتحرك المخزون.</value></data>
+  <data name="Quarantine.Workflow.WithdrawDone" xml:space="preserve"><value>تم سحب القرار.</value></data>
+  <data name="Quarantine.Workflow.Reapply" xml:space="preserve"><value>إعادة التطبيق</value></data>
+  <data name="Quarantine.Workflow.ReapplyText" xml:space="preserve"><value>يُعاد تطبيق القرار المعتمد بالمفاتيح نفسها؛ لا يُرحَّل السطر المرحَّل مرتين.</value></data>
+  <data name="Quarantine.Workflow.Reapplied" xml:space="preserve"><value>أُعيد تطبيق القرار.</value></data>
+  <data name="Quarantine.Workflow.SubmitLink" xml:space="preserve"><value>وقّع وأرسل</value></data>
+  <data name="Quarantine.Decide.PageTitle" xml:space="preserve"><value>اتخاذ القرار</value></data>
+  <data name="Quarantine.Decide.Title" xml:space="preserve"><value>اتخاذ القرار · {0}</value></data>
+  <data name="Quarantine.Decide.Step.Decision" xml:space="preserve"><value>القرار</value></data>
+  <data name="Quarantine.Decide.Step.Sign" xml:space="preserve"><value>التوقيع الإلكتروني</value></data>
+  <data name="Quarantine.Decide.Step.Skipped" xml:space="preserve"><value>السياسة معطلة · يتم تخطي هذه الخطوة</value></data>
+  <data name="Quarantine.Decide.FourEyes.On" xml:space="preserve"><value>قاعدة الأعين الأربع مفعّلة: يوافق مستخدم جودة آخر على هذا القرار؛ لا يمكن لصاحب القرار الموافقة على قراره.</value></data>
+  <data name="Quarantine.Decide.FourEyes.Off" xml:space="preserve"><value>قاعدة الأعين الأربع معطلة في سياسة الشركة؛ ومع ذلك تتم الموافقة من شخص غير صاحب القرار.</value></data>
+  <data name="Quarantine.Decide.Partial.Label" xml:space="preserve"><value>قرار جزئي</value></data>
+  <data name="Quarantine.Decide.Partial.Hint" xml:space="preserve"><value>أفرج عن جزء من الكمية وقرّر بشكل مختلف للباقي</value></data>
+  <data name="Quarantine.Decide.Field.Decision" xml:space="preserve"><value>القرار</value></data>
+  <data name="Quarantine.Decide.Option.Release" xml:space="preserve"><value>يصبح المخزون متاحًا للبيع والحجز.</value></data>
+  <data name="Quarantine.Decide.Option.Reject" xml:space="preserve"><value>ينتقل إلى قائمة المخزون المحظور؛ ثم يلزم قرار تصرف.</value></data>
+  <data name="Quarantine.Decide.Option.Block" xml:space="preserve"><value>يُحظر المخزون؛ وتستمر المراجعة.</value></data>
+  <data name="Quarantine.Decide.Field.Lines" xml:space="preserve"><value>توزيع الكمية</value></data>
+  <data name="Quarantine.Decide.Lines.Pick" xml:space="preserve"><value>اختر قرارًا</value></data>
+  <data name="Quarantine.Decide.Lines.Release" xml:space="preserve"><value>إفراج → متاح</value></data>
+  <data name="Quarantine.Decide.Lines.Reject" xml:space="preserve"><value>رفض → محظور</value></data>
+  <data name="Quarantine.Decide.Lines.Block" xml:space="preserve"><value>حظر → محظور</value></data>
+  <data name="Quarantine.Decide.Lines.Sum" xml:space="preserve"><value>الإجمالي / الكمية المتاحة</value></data>
+  <data name="Quarantine.Decide.Field.Coa" xml:space="preserve"><value>تم التحقق من شهادة التحليل / نتيجة التحليل</value></data>
+  <data name="Quarantine.Decide.Field.NewRetest" xml:space="preserve"><value>تاريخ إعادة الاختبار الجديد</value></data>
+  <data name="Quarantine.Decide.NewRetest.Hint" xml:space="preserve"><value>يتطلب الإفراج عن تشغيلة تجاوزت تاريخ إعادة الاختبار تاريخًا جديدًا (بعد اليوم وقبل الانتهاء).</value></data>
+  <data name="Quarantine.Decide.Err.Decision" xml:space="preserve"><value>اختر قرارًا.</value></data>
+  <data name="Quarantine.Decide.Err.Lines" xml:space="preserve"><value>يجب أن يكون للسطرين قراران مختلفان وكل كمية أكبر من صفر والمجموع مساويًا للكمية المتاحة.</value></data>
+  <data name="Quarantine.Decide.Err.BlockReason" xml:space="preserve"><value>اختر سبب الحظر.</value></data>
+  <data name="Quarantine.Decide.Err.Coa" xml:space="preserve"><value>أكّد التحقق من شهادة التحليل / نتيجة التحليل قبل الإفراج.</value></data>
+  <data name="Quarantine.Decide.Err.Retest" xml:space="preserve"><value>أدخل تاريخ إعادة الاختبار الجديد.</value></data>
+  <data name="Quarantine.Decide.Closed" xml:space="preserve"><value>لا يمكن اتخاذ قرار لهذا السجل الآن ({0}).</value></data>
+  <data name="Quarantine.Decide.Button.Next" xml:space="preserve"><value>التالي: التوقيع الإلكتروني</value></data>
+  <data name="Quarantine.Decide.Button.SignSend" xml:space="preserve"><value>وقّع وأرسل</value></data>
+  <data name="Quarantine.Decide.Button.Send" xml:space="preserve"><value>إرسال للموافقة</value></data>
+  <data name="Quarantine.Sign.Summary" xml:space="preserve"><value>القرار المراد توقيعه</value></data>
+  <data name="Quarantine.Sign.Info" xml:space="preserve"><value>يُضاف التوقيع إلى القرار مع المستخدم والتاريخ والوقت والمعنى. يُرسل القرار للموافقة؛ ولا يتحرك المخزون إلا بعد الموافقة.</value></data>
+  <data name="Quarantine.Sign.NotRequired" xml:space="preserve"><value>لا تتطلب السياسة توقيعًا لهذا القرار؛ يُرسل للموافقة دون توقيع. لا يتحرك المخزون إلا بعد الموافقة.</value></data>
+  <data name="Quarantine.Sign.Movement" xml:space="preserve"><value>حركة المخزون عند الموافقة</value></data>
+  <data name="Quarantine.Sign.ReasonLine" xml:space="preserve"><value>المبرر: «{0}»</value></data>
+  <data name="Quarantine.Sign.Cancelled" xml:space="preserve"><value>أُلغي التوقيع؛ لم يُرسل القرار.</value></data>
+  <data name="Quarantine.Sent.Toast" xml:space="preserve"><value>أُرسل للموافقة</value></data>
+  <data name="Quarantine.Sent.Title" xml:space="preserve"><value>أُرسل للموافقة</value></data>
+  <data name="Quarantine.Sent.Text" xml:space="preserve"><value>{0} بانتظار الموافقة. يتحرك المخزون بعد موافقة المعتمِد.</value></data>
+  <data name="Quarantine.Disposition.PageTitle" xml:space="preserve"><value>قرار التصرف</value></data>
+  <data name="Quarantine.Disposition.Title" xml:space="preserve"><value>قرار التصرف · {0}</value></data>
+  <data name="Quarantine.Disposition.Step" xml:space="preserve"><value>التصرف</value></data>
+  <data name="Quarantine.Disposition.BlockedQty" xml:space="preserve"><value>محظور {0}</value></data>
+  <data name="Quarantine.Disposition.Field.Kind" xml:space="preserve"><value>التصرف</value></data>
+  <data name="Quarantine.Disposition.Destroy" xml:space="preserve"><value>إتلاف</value></data>
+  <data name="Quarantine.Disposition.ReturnToSupplier" xml:space="preserve"><value>إرجاع إلى المورد</value></data>
+  <data name="Quarantine.Disposition.Rework" xml:space="preserve"><value>إعادة المعالجة</value></data>
+  <data name="Quarantine.Disposition.Sample" xml:space="preserve"><value>الاحتفاظ كعينة / مرجع</value></data>
+  <data name="Quarantine.Disposition.Move.Destroy" xml:space="preserve"><value>صرف إتلاف</value></data>
+  <data name="Quarantine.Disposition.Move.ReturnToSupplier" xml:space="preserve"><value>صرف إرجاع</value></data>
+  <data name="Quarantine.Disposition.Move.Rework" xml:space="preserve"><value>نقل لإعادة المعالجة (محظور → حجر)</value></data>
+  <data name="Quarantine.Disposition.Move.Sample" xml:space="preserve"><value>نقل إلى موقع العينات (تبقى الحالة محظورة)</value></data>
+  <data name="Quarantine.Disposition.Move.Title" xml:space="preserve"><value>الحركة التي ستُنشأ في دفتر المخزون عند الموافقة</value></data>
+  <data name="Quarantine.Disposition.Move.Line" xml:space="preserve"><value>{0} · {1} · {2}</value></data>
+  <data name="Quarantine.Disposition.Field.Quantity" xml:space="preserve"><value>الكمية</value></data>
+  <data name="Quarantine.Disposition.Qty.Hint" xml:space="preserve"><value>بحد أقصى {0} · يبقى الباقي محظورًا</value></data>
+  <data name="Quarantine.Disposition.Field.Supplier" xml:space="preserve"><value>المورد</value></data>
+  <data name="Quarantine.Disposition.SuppliersUnavailable" xml:space="preserve"><value>تعذّر تحميل قائمة الموردين.</value></data>
+  <data name="Quarantine.Disposition.Field.ReturnDoc" xml:space="preserve"><value>رقم مستند الإرجاع</value></data>
+  <data name="Quarantine.Disposition.Field.Method" xml:space="preserve"><value>طريقة الإتلاف</value></data>
+  <data name="Quarantine.Disposition.Method.INCINERATION" xml:space="preserve"><value>الحرق · منشأة مرخصة</value></data>
+  <data name="Quarantine.Disposition.Method.CHEMICAL_NEUTRALIZATION" xml:space="preserve"><value>التعادل الكيميائي</value></data>
+  <data name="Quarantine.Disposition.Method.LICENSED_MEDICAL_WASTE" xml:space="preserve"><value>التسليم إلى شركة نفايات طبية مرخصة</value></data>
+  <data name="Quarantine.Disposition.Field.Date" xml:space="preserve"><value>تاريخ الإتلاف</value></data>
+  <data name="Quarantine.Disposition.SampleMissing" xml:space="preserve"><value>لم يُحدَّد موقع عينات لهذا المستودع. اختر موقعًا في إعدادات الحجر.</value></data>
+  <data name="Quarantine.Disposition.Closed" xml:space="preserve"><value>لا يمكن اتخاذ قرار تصرف لهذا السجل الآن.</value></data>
+  <data name="Quarantine.Disposition.Err.Kind" xml:space="preserve"><value>اختر نوع التصرف.</value></data>
+  <data name="Quarantine.Disposition.Err.Qty" xml:space="preserve"><value>أدخل كمية أكبر من صفر وبحد أقصى {0}.</value></data>
+  <data name="Quarantine.Disposition.Err.Supplier" xml:space="preserve"><value>اختر المورد.</value></data>
+  <data name="Quarantine.Disposition.Err.ReturnDoc" xml:space="preserve"><value>أدخل رقم مستند الإرجاع.</value></data>
+  <data name="Quarantine.Disposition.Err.Method" xml:space="preserve"><value>اختر طريقة الإتلاف.</value></data>
+  <data name="Quarantine.Disposition.Err.Date" xml:space="preserve"><value>أدخل تاريخ الإتلاف.</value></data>
+  <data name="Quarantine.Blocked.Title" xml:space="preserve"><value>المخزون المحظور</value></data>
+  <data name="Quarantine.Blocked.Filter.AllReasons" xml:space="preserve"><value>جميع أسباب الحظر</value></data>
+  <data name="Quarantine.Blocked.Filter.PendingOnly" xml:space="preserve"><value>بانتظار التصرف فقط</value></data>
+  <data name="Quarantine.Blocked.Pending.Yes" xml:space="preserve"><value>نعم · بانتظار التصرف</value></data>
+  <data name="Quarantine.Blocked.Pending.NoReviewed" xml:space="preserve"><value>لا · اكتملت المراجعة</value></data>
+  <data name="Quarantine.Blocked.Pending.NoReviewing" xml:space="preserve"><value>لا · المراجعة جارية</value></data>
+  <data name="Quarantine.Blocked.ActivePending" xml:space="preserve"><value>قرار بانتظار الموافقة · {0}</value></data>
+  <data name="Quarantine.Blocked.UnblockDisabled" xml:space="preserve"><value>لا يمكن رفع الحظر قبل اكتمال المراجعة</value></data>
+  <data name="Quarantine.Blocked.Info" xml:space="preserve"><value>لا يُتاح رفع الحظر إلا للسجلات المكتملة المراجعة. رفع الحظر قرار: يُوقَّع ويُرسل للموافقة، ويصبح المخزون متاحًا بعد الموافقة.</value></data>
+  <data name="Quarantine.Blocked.Empty" xml:space="preserve"><value>لا يوجد مخزون محظور مطابق للتصفية.</value></data>
+  <data name="Quarantine.Unblock.Title" xml:space="preserve"><value>هل تريد رفع الحظر عن هذا المخزون؟</value></data>
+  <data name="Quarantine.Unblock.Text" xml:space="preserve"><value>بعد الموافقة ينتقل المخزون من محظور إلى متاح ويُفتح للبيع/الحجز. يُوقَّع القرار ويُرسل للموافقة؛ ويُسجَّل في سجل القرارات.</value></data>
+  <data name="Quarantine.Unblock.Confirm" xml:space="preserve"><value>رفع الحظر</value></data>
+  <data name="Quarantine.CompleteReview.Title" xml:space="preserve"><value>هل تريد إكمال المراجعة؟</value></data>
+  <data name="Quarantine.CompleteReview.Done" xml:space="preserve"><value>اكتملت المراجعة؛ أصبح رفع الحظر متاحًا الآن.</value></data>
+  <data name="Quarantine.BlockStock.Title" xml:space="preserve"><value>حظر المخزون</value></data>
+  <data name="Quarantine.BlockStock.Warn" xml:space="preserve"><value>يصبح المخزون المتاح المختار محظورًا فورًا (الاتجاه الآمن؛ لا يوجد سير موافقة).</value></data>
+  <data name="Quarantine.BlockStock.Lot" xml:space="preserve"><value>التشغيلة</value></data>
+  <data name="Quarantine.BlockStock.LotSearch" xml:space="preserve"><value>ابحث عن رقم تشغيلة</value></data>
+  <data name="Quarantine.BlockStock.Row" xml:space="preserve"><value>سطر المخزون (متاح)</value></data>
+  <data name="Quarantine.BlockStock.NoRows" xml:space="preserve"><value>لا يوجد مخزون متاح لهذه التشغيلة.</value></data>
+  <data name="Quarantine.BlockStock.Quantity" xml:space="preserve"><value>الكمية</value></data>
+  <data name="Quarantine.BlockStock.QtyInvalid" xml:space="preserve"><value>أدخل كمية أكبر من صفر لا تتجاوز السطر المختار.</value></data>
+  <data name="Quarantine.BlockStock.Note" xml:space="preserve"><value>ملاحظة</value></data>
+  <data name="Quarantine.BlockStock.Confirm" xml:space="preserve"><value>حظر</value></data>
+  <data name="Quarantine.BlockStock.Done" xml:space="preserve"><value>تم حظر المخزون · {0}</value></data>
+  <data name="Quarantine.Retest.Title" xml:space="preserve"><value>قائمة إعادة الاختبار</value></data>
+  <data name="Quarantine.Retest.Info" xml:space="preserve"><value>لا يمكن استخدام تشغيلة تجاوزت تاريخ إعادة الاختبار في البيع أو الحجز أو الصرف حتى يُتخذ قرار جودة.</value></data>
+  <data name="Quarantine.Retest.Horizon" xml:space="preserve"><value>تشغيلات تجاوزت التاريخ أو تستحق خلال {0} يومًا</value></data>
+  <data name="Quarantine.Retest.State.Upcoming" xml:space="preserve"><value>قريبًا</value></data>
+  <data name="Quarantine.Retest.State.DueClosed" xml:space="preserve"><value>متأخر · مغلق للاستخدام</value></data>
+  <data name="Quarantine.Retest.State.Quarantined" xml:space="preserve"><value>في الحجر</value></data>
+  <data name="Quarantine.Retest.Open" xml:space="preserve"><value>فتح سجل الحجر</value></data>
+  <data name="Quarantine.Retest.Confirm.Title" xml:space="preserve"><value>هل تريد وضع هذه التشغيلة في الحجر؟</value></data>
+  <data name="Quarantine.Retest.Confirm.Text" xml:space="preserve"><value>ينتقل المخزون المتاح للتشغيلة {0} ({1}) فورًا إلى الحجر ويُضاف إلى قائمة الحجر.</value></data>
+  <data name="Quarantine.Retest.Confirm.DefaultReason" xml:space="preserve"><value>تاريخ إعادة الاختبار {0} · عينة إلى مختبر ضبط الجودة</value></data>
+  <data name="Quarantine.Retest.Done" xml:space="preserve"><value>تم حجر {0} · أُضيف {1} إلى قائمة الحجر.</value></data>
+  <data name="Quarantine.Retest.Empty" xml:space="preserve"><value>لا توجد تشغيلات في قائمة إعادة الاختبار.</value></data>
+  <data name="Quarantine.Submit.PageTitle" xml:space="preserve"><value>إرسال القرار</value></data>
+  <data name="Quarantine.Submit.Title" xml:space="preserve"><value>إرسال القرار · {0}</value></data>
+  <data name="Quarantine.Submit.Step" xml:space="preserve"><value>القرار</value></data>
+  <data name="Quarantine.Submit.Intro" xml:space="preserve"><value>هذا القرار مسودة: وقّعه وأرسله للموافقة. يتحرك المخزون بعد الموافقة.</value></data>
+  <data name="Quarantine.Submit.NotDraft" xml:space="preserve"><value>لم يعد بالإمكان إرسال هذا القرار ({0}).</value></data>
+  <data name="Quarantine.Submit.LotRelease" xml:space="preserve"><value>التشغيلة {0} ← مُفرج عنها</value></data>
+  <data name="Quarantine.Settings.Title" xml:space="preserve"><value>إعدادات الحجر</value></data>
+  <data name="Quarantine.Settings.Description" xml:space="preserve"><value>قواعد الحجر في الشركة والمعتمِدون ومواقع العينات وأسباب الحظر.</value></data>
+  <data name="Quarantine.Settings.Section.General" xml:space="preserve"><value>عام</value></data>
+  <data name="Quarantine.Settings.WaitTarget" xml:space="preserve"><value>هدف الانتظار (أيام)</value></data>
+  <data name="Quarantine.Settings.WaitTarget.Hint" xml:space="preserve"><value>من 1 إلى 60 يومًا؛ تُميَّز السطور التي تتجاوزه.</value></data>
+  <data name="Quarantine.Settings.WaitTarget.Invalid" xml:space="preserve"><value>أدخل عدد أيام بين 1 و60.</value></data>
+  <data name="Quarantine.Settings.Reconcile" xml:space="preserve"><value>فاصل إعادة القراءة (ثوانٍ)</value></data>
+  <data name="Quarantine.Settings.Reconcile.Hint" xml:space="preserve"><value>أقصى تكرار يُسأل به عن حالة موافقة قرار معلق أثناء قراءة الشاشات.</value></data>
+  <data name="Quarantine.Settings.FourEyes" xml:space="preserve"><value>الأعين الأربع</value></data>
+  <data name="Quarantine.Settings.FourEyes.Hint" xml:space="preserve"><value>لا يمكن لصاحب القرار الموافقة على القرار نفسه؛ ويُعاد التحقق عند التطبيق.</value></data>
+  <data name="Quarantine.Settings.LotRelease" xml:space="preserve"><value>الموافقة على الإفراج عن التشغيلة</value></data>
+  <data name="Quarantine.Settings.LotRelease.Hint" xml:space="preserve"><value>تُطلب موافقة الجودة عند الإفراج عن تشغيلة مسودة أو محظورة.</value></data>
+  <data name="Quarantine.Settings.Approvers" xml:space="preserve"><value>المعتمِدون المرشحون</value></data>
+  <data name="Quarantine.Settings.Approvers.Hint" xml:space="preserve"><value>منصب أو مستخدم؛ 10 كحد أقصى. لا يُرسل صاحب القرار كمرشح أبدًا.</value></data>
+  <data name="Quarantine.Settings.Approvers.Kind" xml:space="preserve"><value>النوع</value></data>
+  <data name="Quarantine.Settings.Approvers.Value" xml:space="preserve"><value>المرشح</value></data>
+  <data name="Quarantine.Settings.Approvers.Position" xml:space="preserve"><value>المنصب</value></data>
+  <data name="Quarantine.Settings.Approvers.User" xml:space="preserve"><value>المستخدم</value></data>
+  <data name="Quarantine.Settings.Approvers.Empty" xml:space="preserve"><value>لا يوجد مرشح — لا يمكن إرسال قرار للموافقة.</value></data>
+  <data name="Quarantine.Settings.Approvers.Invalid" xml:space="preserve"><value>اختر منصبًا أو أدخل معرّف مستخدم صالحًا.</value></data>
+  <data name="Quarantine.Settings.Approvers.Max" xml:space="preserve"><value>يمكن تحديد 10 مرشحين كحد أقصى.</value></data>
+  <data name="Quarantine.Settings.SampleLocations" xml:space="preserve"><value>مواقع العينات</value></data>
+  <data name="Quarantine.Settings.SampleLocations.Hint" xml:space="preserve"><value>موقع قابل للتخزين لكل مستودع؛ يبقى المخزون المحتفظ به كعينة محظورًا هنا.</value></data>
+  <data name="Quarantine.Settings.SampleLocations.Empty" xml:space="preserve"><value>لم يُحدَّد موقع عينات.</value></data>
+  <data name="Quarantine.Settings.Sample.Warehouse" xml:space="preserve"><value>المستودع</value></data>
+  <data name="Quarantine.Settings.Sample.Location" xml:space="preserve"><value>موقع العينات</value></data>
+  <data name="Quarantine.Settings.Add" xml:space="preserve"><value>إضافة</value></data>
+  <data name="Quarantine.Settings.Remove" xml:space="preserve"><value>إزالة</value></data>
+  <data name="Quarantine.Settings.Saved" xml:space="preserve"><value>تم حفظ الإعدادات.</value></data>
+  <data name="Quarantine.Settings.Template.Section" xml:space="preserve"><value>قالب الموافقة</value></data>
+  <data name="Quarantine.Settings.Template.Code" xml:space="preserve"><value>رمز القالب</value></data>
+  <data name="Quarantine.Settings.Template.Status" xml:space="preserve"><value>الحالة</value></data>
+  <data name="Quarantine.Settings.Template.Version" xml:space="preserve"><value>الإصدار المنشور</value></data>
+  <data name="Quarantine.Settings.Template.Published" xml:space="preserve"><value>منشور</value></data>
+  <data name="Quarantine.Settings.Template.Missing" xml:space="preserve"><value>غير موجود</value></data>
+  <data name="Quarantine.Settings.Template.Prepare" xml:space="preserve"><value>إعداد قالب الموافقة</value></data>
+  <data name="Quarantine.Settings.Template.Text" xml:space="preserve"><value>يُنشأ قالب INV-QUARANTINE-RELEASE ويُنشر بصلاحياتك؛ وإن كان موجودًا يُذكر إصداره.</value></data>
+  <data name="Quarantine.Settings.Template.Created" xml:space="preserve"><value>نُشر القالب · الإصدار {0}</value></data>
+  <data name="Quarantine.Settings.Template.Existing" xml:space="preserve"><value>القالب منشور بالفعل · الإصدار {0}</value></data>
+  <data name="Quarantine.Settings.Section.BlockReasons" xml:space="preserve"><value>أسباب الحظر</value></data>
+  <data name="Quarantine.Settings.BR.Code" xml:space="preserve"><value>الرمز</value></data>
+  <data name="Quarantine.Settings.BR.CodeHint" xml:space="preserve"><value>أحرف كبيرة وأرقام وشرطة سفلية؛ يبدأ بحرف (مثل QC_REJECT). لا يتغير لاحقًا.</value></data>
+  <data name="Quarantine.Settings.BR.CodeInvalid" xml:space="preserve"><value>تنسيق الرمز غير صالح (مثل QC_REJECT).</value></data>
+  <data name="Quarantine.Settings.BR.Name" xml:space="preserve"><value>الاسم</value></data>
+  <data name="Quarantine.Settings.BR.Active" xml:space="preserve"><value>نشط</value></data>
+  <data name="Quarantine.Settings.BR.Locked" xml:space="preserve"><value>قيد الاستخدام</value></data>
+  <data name="Quarantine.Settings.BR.Add" xml:space="preserve"><value>إضافة سبب حظر</value></data>
+  <data name="Quarantine.Settings.BR.Edit" xml:space="preserve"><value>تعديل سبب الحظر</value></data>
+  <data name="Quarantine.Settings.BR.Saved" xml:space="preserve"><value>تم حفظ سبب الحظر.</value></data>
+  <data name="Quarantine.Settings.Lang.tr" xml:space="preserve"><value>التركية</value></data>
+  <data name="Quarantine.Settings.Lang.en" xml:space="preserve"><value>الإنجليزية</value></data>
+  <data name="Quarantine.Settings.Lang.fr" xml:space="preserve"><value>الفرنسية</value></data>
+  <data name="Quarantine.Settings.Lang.es" xml:space="preserve"><value>الإسبانية</value></data>
+  <data name="Quarantine.Settings.Lang.zh" xml:space="preserve"><value>الصينية</value></data>
+  <data name="Quarantine.Settings.Lang.ar" xml:space="preserve"><value>العربية</value></data>
+  <data name="Quarantine.Settings.Lang.ru" xml:space="preserve"><value>الروسية</value></data>
+  <data name="Quarantine.Errors.GENERIC" xml:space="preserve"><value>تعذّر إكمال الإجراء. حاول مرة أخرى.</value></data>
+  <data name="Quarantine.Errors.FORBIDDEN" xml:space="preserve"><value>ليست لديك صلاحية لهذا الإجراء.</value></data>
+  <data name="Quarantine.Errors.UNAUTHORIZED" xml:space="preserve"><value>انتهت جلستك. سجّل الدخول مجددًا.</value></data>
+  <data name="Quarantine.Errors.SERVICE_UNAVAILABLE" xml:space="preserve"><value>تعذّر الوصول إلى خدمة الحجر الآن. حاول بعد قليل.</value></data>
+  <data name="Quarantine.Errors.ESIGN_UNAVAILABLE" xml:space="preserve"><value>تعذّر تحميل نافذة التوقيع؛ لم يُرسل القرار.</value></data>
+  <data name="Quarantine.Errors.COMPANY_NOT_SELECTED" xml:space="preserve"><value>اختر الشركة التي تعمل بها أولًا.</value></data>
+  <data name="Quarantine.Errors.INVALID_REQUEST" xml:space="preserve"><value>الطلب غير مكتمل أو خاطئ. تحقق من الحقول.</value></data>
+  <data name="Quarantine.Errors.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>تكرر الإجراء نفسه بمحتوى مختلف. أعد تحميل الصفحة وحاول مجددًا.</value></data>
+  <data name="Quarantine.Errors.REASON_REQUIRED" xml:space="preserve"><value>يجب أن يتكون المبرر من 10 إلى 1000 حرف.</value></data>
+  <data name="Quarantine.Errors.CROSS_LE_FORBIDDEN" xml:space="preserve"><value>هذا السجل يخص شركة أخرى.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_HOLD_NOT_FOUND" xml:space="preserve"><value>لم يُعثر على سجل الحجر.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_BLOCKED_NOT_FOUND" xml:space="preserve"><value>لم يُعثر على سجل المخزون المحظور.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_DECISION_NOT_FOUND" xml:space="preserve"><value>لم يُعثر على القرار.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_CONFLICT" xml:space="preserve"><value>تغيّر السجل أثناء عرضك له. أعد التحميل وحاول مجددًا.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_DECISION_INVALID" xml:space="preserve"><value>قرار غير صالح: القرار المفرد يحتوي سطرًا واحدًا بكامل كمية السجل.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_PARTIAL_SUM_MISMATCH" xml:space="preserve"><value>يجب أن يساوي مجموع القرار الجزئي كمية السجل.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_COA_NOT_CONFIRMED" xml:space="preserve"><value>يتطلب الإفراج تأكيد التحقق من شهادة التحليل.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_BLOCK_REASON_REQUIRED" xml:space="preserve"><value>يتطلب الرفض / الحظر سبب حظر نشطًا.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_RETEST_DATE_REQUIRED" xml:space="preserve"><value>يتطلب هذا الإفراج تاريخ إعادة اختبار جديدًا (بعد اليوم وقبل الانتهاء).</value></data>
+  <data name="Quarantine.Errors.LOT_DATES_INVALID" xml:space="preserve"><value>تواريخ التشغيلة غير متسقة (لا يمكن أن يكون تاريخ إعادة الاختبار بعد الانتهاء).</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_QUANTITY_INVALID" xml:space="preserve"><value>يجب أن تكون الكمية أكبر من صفر ولا تتجاوز الكمية المحظورة.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_SUPPLIER_REQUIRED" xml:space="preserve"><value>يتطلب الإرجاع إلى المورد المورد ورقم مستند الإرجاع.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_DESTRUCTION_METHOD_REQUIRED" xml:space="preserve"><value>يتطلب الإتلاف طريقة وتاريخًا لا يتجاوز 30 يومًا مضت.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_SIGNATURE_REQUIRED" xml:space="preserve"><value>تتطلب السياسة توقيعًا إلكترونيًا لهذا القرار.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_SIGNATURE_MISMATCH" xml:space="preserve"><value>التوقيع لا يخص هذا القرار أو أنت أو معنى السياسة. وقّع مجددًا.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_DECISION_ALREADY_PENDING" xml:space="preserve"><value>يوجد قرار آخر لهذا السجل بانتظار الموافقة.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_DECISION_NOT_DRAFT" xml:space="preserve"><value>هذا القرار ليس مسودة؛ لا يمكن إرساله مجددًا.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_DECISION_NOT_PENDING" xml:space="preserve"><value>لم يعد القرار بانتظار الموافقة.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_DECISION_NOT_APPLICABLE" xml:space="preserve"><value>يمكن إعادة تطبيق القرار الذي تعذّر تطبيقه فقط.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_NOT_DECIDER" xml:space="preserve"><value>لا يمكن تنفيذ هذا إلا لصاحب القرار.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_HOLD_CLOSED" xml:space="preserve"><value>سجل الحجر مغلق.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_BLOCKED_CLOSED" xml:space="preserve"><value>سجل المخزون المحظور مغلق.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_LOT_HELD" xml:space="preserve"><value>التشغيلة محظورة أو منتهية الصلاحية؛ الإتلاف هو الخيار الوحيد.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_SAMPLE_LOCATION_NOT_SET" xml:space="preserve"><value>لم يُحدَّد موقع عينات لهذا المستودع (إعدادات الحجر).</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_SAMPLE_LOCATION_INVALID" xml:space="preserve"><value>يجب أن يكون موقع العينات في المستودع نفسه ونشطًا وقابلًا للتخزين.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_REVIEW_NOT_COMPLETED" xml:space="preserve"><value>لا يمكن رفع الحظر قبل اكتمال المراجعة.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_STOCK_CHANGED" xml:space="preserve"><value>تغيّر المخزون أثناء اتخاذ القرار. افتح السجل مجددًا.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_STOCK_RESERVED" xml:space="preserve"><value>جزء من المخزون محجوز؛ ستبقى الحجوزات غير مغطاة، لذا لم يُنفَّذ شيء.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_NOTHING_AVAILABLE" xml:space="preserve"><value>لا يوجد مخزون متاح لهذه التشغيلة.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_APPROVERS_NOT_CONFIGURED" xml:space="preserve"><value>لم يُحدَّد معتمِد مرشح غيرك (إعدادات الحجر). لم يُرسل القرار.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_WORKFLOW_TEMPLATE_MISSING" xml:space="preserve"><value>قالب الموافقة غير منشور. استخدم «إعداد قالب الموافقة» في إعدادات الحجر.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_WORKFLOW_FORBIDDEN" xml:space="preserve"><value>لا يحق لك بدء سير موافقة.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_WORKFLOW_REJECTED" xml:space="preserve"><value>رفضت خدمة سير العمل الطلب.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_WORKFLOW_UNAVAILABLE" xml:space="preserve"><value>خدمة سير العمل غير متاحة؛ لم يُرسل شيء.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_BLOCK_REASON_LANGUAGE_MISSING" xml:space="preserve"><value>يجب أن يكون لسبب الحظر اسم بجميع اللغات السبع.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_BLOCK_REASON_EXISTS" xml:space="preserve"><value>يوجد سبب حظر بهذا الرمز بالفعل.</value></data>
+  <data name="Quarantine.Errors.QUARANTINE_BLOCK_REASON_IN_USE" xml:space="preserve"><value>لا يمكن تعطيل سبب حظر قيد الاستخدام.</value></data>
+  <data name="Quarantine.Errors.UNKNOWN_LOT" xml:space="preserve"><value>لم يُعثر على التشغيلة.</value></data>
+  <data name="Quarantine.Errors.INSUFFICIENT_STOCK" xml:space="preserve"><value>المخزون غير كافٍ.</value></data>
+  <data name="Quarantine.Errors.LOT_BLOCKED" xml:space="preserve"><value>التشغيلة محظورة؛ هذه الحركة غير ممكنة.</value></data>
+  <data name="Quarantine.Errors.LOT_EXPIRED" xml:space="preserve"><value>انتهت صلاحية التشغيلة؛ هذه الحركة غير ممكنة.</value></data>
+  <data name="Quarantine.Errors.LOT_RETEST_DUE" xml:space="preserve"><value>تجاوزت التشغيلة تاريخ إعادة الاختبار؛ لا يمكن استخدامها حتى يُتخذ قرار جودة.</value></data>
+  <data name="Quarantine.Errors.POSTING_PERIOD_CLOSED" xml:space="preserve"><value>فترة الترحيل مغلقة.</value></data>
+  <data name="Quarantine.Errors.UNKNOWN_LOCATION" xml:space="preserve"><value>الموقع غير معروف أو لا يمكن استخدامه.</value></data>
+  <data name="Quarantine.Common.UnknownUser" xml:space="preserve"><value>مستخدم غير معروف</value></data>
+  <data name="Quarantine.Level.Gsku" xml:space="preserve"><value>SKU عالمي</value></data>
+  <data name="Quarantine.Level.Lsku" xml:space="preserve"><value>SKU محلي</value></data>
+  <data name="Quarantine.Level.FinishedGood" xml:space="preserve"><value>منتج نهائي</value></data>
+  <data name="Quarantine.Level.Item" xml:space="preserve"><value>صنف مادة</value></data>
+  <data name="Quarantine.Details.Quality.EditNote" xml:space="preserve"><value>تعديل الملاحظة</value></data>
+  <data name="Quarantine.Details.Quality.NoteSaved" xml:space="preserve"><value>تم حفظ ملاحظة نتيجة التحليل.</value></data>
+  <data name="Quarantine.History.NoteUpdated" xml:space="preserve"><value>تم تحديث ملاحظة التحليل</value></data>
+  <data name="Quarantine.Details.Quality.NoteLocked" xml:space="preserve"><value>الملاحظة مقفلة ما دام هناك قرار على هذا السجل بانتظار الموافقة أو التطبيق.</value></data>
+  <data name="Quarantine.Details.History.NoteChange" xml:space="preserve"><value>الملاحظة: {0} → {1} حرفًا · المرفقات: {2} → {3}</value></data>
+</root>

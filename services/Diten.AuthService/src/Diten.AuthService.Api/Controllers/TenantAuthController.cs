@@ -4,6 +4,7 @@ using Diten.AuthService.Api.Models;
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.DTOs;
 using Diten.AuthService.Application.Features.Auth.Commands;
+using Diten.AuthService.Application.Features.ESignReauth;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -94,6 +95,51 @@ public sealed class TenantAuthController : CustomBaseController
             request.RememberMe);
         var result = await _mediator.Send(command, ct);
         return CreateActionResultInstance(result);
+    }
+
+    /// <summary>
+    /// MOD-0022 E1 — re-enter the password for an e-signature → a short-lived, single-use ticket (ESIGN-BUNDLE §4.1).
+    /// Identity from the validated JWT (sub, tenant_id, actor_type); opens no session and issues no token.
+    /// </summary>
+    [HttpPost("esign/reauth")]
+    [Authorize]
+    public async Task<IActionResult> ESignReauth([FromBody] ESignReauthRequest request, CancellationToken ct)
+    {
+        if (!TryResolveTenantUser(out var userId, out var tenantId, out var actorType))
+        {
+            return CreateActionResultInstance(Response<ESignReauthTicketDto>.Fail("Unauthorized.", 401));
+        }
+
+        var command = new ReauthenticateForESignCommand(userId, tenantId, actorType, request.Password, request.Intent,
+            request.OpenWindowMinutes, ResolveRequestIp(HttpContext), ResolveUserAgent(HttpContext));
+        return CreateActionResultInstance(await _mediator.Send(command, ct));
+    }
+
+    /// <summary>
+    /// MOD-0022 E1 — a ticket from an open KS-3 window, without the password (ESIGN-BUNDLE §4.2). The signer re-types the
+    /// user name (CT-D7).
+    /// </summary>
+    [HttpPost("esign/ticket")]
+    [Authorize]
+    public async Task<IActionResult> ESignWindowTicket([FromBody] ESignWindowTicketRequest request, CancellationToken ct)
+    {
+        if (!TryResolveTenantUser(out var userId, out var tenantId, out var actorType))
+        {
+            return CreateActionResultInstance(Response<ESignReauthTicketDto>.Fail("Unauthorized.", 401));
+        }
+
+        var command = new IssueESignWindowTicketCommand(userId, tenantId, actorType, request.Intent, request.UserName,
+            ResolveRequestIp(HttpContext), ResolveUserAgent(HttpContext));
+        return CreateActionResultInstance(await _mediator.Send(command, ct));
+    }
+
+    private bool TryResolveTenantUser(out Guid userId, out Guid tenantId, out string? actorType)
+    {
+        var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
+        var tenantIdString = User.FindFirst("tenant_id")?.Value;
+        actorType = User.FindFirst("actor_type")?.Value;
+        tenantId = Guid.Empty;
+        return Guid.TryParse(userIdString, out userId) && Guid.TryParse(tenantIdString, out tenantId);
     }
 
     private static string ResolveRequestIp(HttpContext context)

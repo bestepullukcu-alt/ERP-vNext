@@ -1,0 +1,33 @@
+@using Diten.Web.Views.Inventory.Locations
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LocationsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    // The table card is a component (BL-440): the page describes it, _ListShell renders it. Every header is
+    // localized HERE, the shell produces no text.
+    //
+    // SERVER data through the proxy profile (pack §11): /Locations/api translates paging, search, sort and filters
+    // for LOCATION v1.1 searchLocations. NO SELECTION COLUMN: no bulk select, no import, no export (pack §11).
+    // No quantity column — presence only, and only on the detail (K-10).
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-locations",
+        DataMode = "server",
+        Slug = "locations",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["ColCode"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["ColName"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColType"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColParentPath"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColStatus"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColStockable"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColOperatingMode"].Value }
+        ],
+        ActionsHeader = Localizer["Actions"].Value
+    };
+}
+
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />
