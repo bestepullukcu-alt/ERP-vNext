@@ -1584,6 +1584,19 @@ now also counts 33 MVP-1 write commands: Inventory 27, Auth 3, Platform 3), **FU
 - **FU-0175-UI-MANUALHOLD-01 (not done).** There is no UI button that quarantines arbitrary stock; `quarantineStock` exists only in
   the retest queue (Retest.cshtml:14, retest.js:4).
 
+### SEC-PROXY1 — `/Quarantine/api/{**everything}` path boundary (WP-MVP1-SEC-PROXY1, 2026-10-14, agent result, pending CT) — branch `fix/mvp1-sec-proxy1` from `9362c0402`, commits `717092d0b` (fix) + `655103dca` (tests), local only. Evidence `docs/records/audits/2026-10/mvp1-sec-proxy1-evidence-2026-10-14.md`.
+
+- **Finding.** Same pattern as MOD-0176: `/Quarantine/api/..%5Clocations` reached `/api/locations`. `QuarantineController.ProxyAsync` now builds
+  the path with `ProxyPath.TryBuild` (1 line). All 20 contract paths of `quarantine.openapi.yaml` + `lots/{lotId}/quality-status` still forwarded.
+- **Helper.** `frontend/Diten.Web/Services/Proxy/ProxyPath.cs` `TryBuild(prefix, everything, out path)`: bounded repeated percent-decode (5),
+  refuses `.`/`..` segments, `\`, `%2F`/`%5C`/`%2E`, control chars, `//`/scheme/`@`, anything outside `A-Z a-z 0-9 - _ ~ . /`, and a final
+  `Uri` prefix check → 400 `INVALID_PROXY_PATH` (`details.reason`), nothing sent to the gateway. Query string forwarded unchanged.
+- **Tests.** `Diten.Web.Tests/Security/**`: 528 attack rows (6 proxies, CT handoff 19 + 29) → 400 and no gateway call; 154 legitimate rows read
+  from the contracts / Platform routes → forwarded under the prefix; helper units; architecture guard over every `{**x}` action. Web 1468 → **2199 / 2199**,
+  architecture 69 / 77 (same 8). Sabotages s1–s4 red, restored green.
+- **Probe.** Own Web 5104 (real Kestrel) → gateway copy 5105 → fake downstream 5106, no signed token: BEFORE the `..%5C` request reached
+  `/api/locations`; AFTER 400 `backslash` and the downstream saw only the legitimate request.
+
 ## 20. Follow-up Items
 
 - **FU-0175-WF-SOD (MOD-0023):** store `StartedByUserId` and compare user ids in SoD; add an integration test that starts
