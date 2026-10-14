@@ -143,7 +143,8 @@ public static class InventoryListAdapter
         return new Translation("?" + string.Join("&", parts), paging, null, null);
     }
 
-    public static List<StockLedgerRowViewModel> MapBalanceRows(IEnumerable<BalanceViewDto>? rows, MasterLabels labels) =>
+    /// <param name="lotNumbers">FIX-LIVE1: lotId → TRACE lot number for the page (<see cref="Diten.Web.Models.Traceability.LotNumberResolver"/>); none = every registered lot is unresolved.</param>
+    public static List<StockLedgerRowViewModel> MapBalanceRows(IEnumerable<BalanceViewDto>? rows, MasterLabels labels, IReadOnlyDictionary<string, string>? lotNumbers = null) =>
         (rows ?? []).Select(r => new StockLedgerRowViewModel
         {
             Id = string.Join("|", r.ItemId, r.SkuId, r.SkuLevel, r.WarehouseId, r.LocationId, r.LotId, r.StockStatus),
@@ -157,6 +158,8 @@ public static class InventoryListAdapter
             LocationId = r.LocationId,
             LocationLabel = labels.Location(r.LocationId),
             LotId = r.LotId,
+            LotNumber = r.LotId is not null && lotNumbers is not null && lotNumbers.TryGetValue(r.LotId, out var number) ? number : null,
+            LotUnresolved = Diten.Web.Models.Traceability.LotNumberResolver.Unresolved(r.LotId, lotNumbers ?? new Dictionary<string, string>()),
             StockStatus = r.StockStatus,
             OnHand = r.OnHand ?? "0",
             Reserved = r.Reserved ?? "0",

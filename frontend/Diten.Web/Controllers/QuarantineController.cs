@@ -268,14 +268,18 @@ public sealed class QuarantineController : Controller
                     ? "/api/locations?type=Warehouse"
                     : "/api/locations/search?isStockable=true&status=Active&page=1&pageSize=200";
                 var reply = await ledger.GetAsync(path, ct);
-                return reply.IsSuccess ? Json(new { items = Options(reply.Body, "id", "code", "name") }) : Failed("lookups." + kind, reply);
+                // FIX-LIVE1: LOCATION rows are read by LocationRef.locationId (location.openapi.yaml), never by "id".
+                return reply.IsSuccess
+                    ? Json(new { items = (LocationOptions.Parse(reply.Body) ?? []).Select(o => new { value = o.Value, text = o.Text }) })
+                    : Failed("lookups." + kind, reply);
             }
             case "lots":
             {
                 var trace = TraceGatewayClient.For(_httpClient, _gatewayUrl, Request, User);
                 if (trace is null) return Refuse(401, null);
                 var reply = await trace.GetAsync($"/api/trace/lots?q={Uri.EscapeDataString(q ?? string.Empty)}&page=1&pageSize=20", ct);
-                return reply.IsSuccess ? Json(new { items = Options(reply.Body, "id", "lotNumber", null) }) : Failed("lookups.lots", reply);
+                // FIX-LIVE1: TRACE LotRef.lotId (trace.openapi.yaml), never "id".
+                return reply.IsSuccess ? Json(new { items = Options(reply.Body, "lotId", "lotNumber", null) }) : Failed("lookups.lots", reply);
             }
             case "stock":
             {
