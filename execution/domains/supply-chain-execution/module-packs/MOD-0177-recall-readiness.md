@@ -1340,6 +1340,8 @@ Open for CT (evidence §12): **O-R3-1** audit debt +4; **O-R3-2** reconciliation
 0175; **O-R3-6** records during a pending revision; **O-R3-7** emptied request lines in `getCaseStock`; **O-R3-8** CT-R9 band → R7; **O-R3-9**
 the R2 trace test's finding is now the quarantined stock line.
 
+**CT-ACCEPTED (2026-10-14).** Read the gate / exit rule / seam diffs: decision by movement type only, no `sourceModule`, tenant filter on every block read, case id hidden from another company, refusal recorded outside the posting transaction; CT-R10 narrow. CT trial merge on the MVP-1 tip `713d4ee8a` (FIX-LIVE1 in): Inventory **1153 + 4** all green (no Prism timeout), Web **1468/1468**, gateway 164/165, architecture 69/77 (same 8). **CT sabotage:** `RecallPostingGate.ByLotAsync` without the `TenantId` filter → the FULL Inventory suite stays **1153/1153 green** — the tenant boundary of the exit block is correct but UNTESTED (AGENTS.md: a guard without sabotage proof is not a guard) → **WP-0177-FIX-R3T** (tenant-boundary tests for `ByLotAsync`, `ByTypedLotAsync`, `UnderRecallAsync`, the sweeper scope). CT note: `RecallQuarantineSweeper.SweepAsync` has no per-request catch — one throwing request ends the tick for the rest → in FIX-R3T. O-R3-1…9 accepted as written (O-R3-5 → FU-0175-Q5-03, O-R3-8 → R7). Merged `--no-ff` into MVP-1 (`847d9536b`); owner Inventory window needs a restart (hosted sweeper + DI) — owner approval.
+
 ## 20. Follow-up Items
 
 | ID | Item | Owner |
