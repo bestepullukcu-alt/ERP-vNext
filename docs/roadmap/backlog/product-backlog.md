@@ -10175,6 +10175,27 @@ testin bağlantı dizesi de ulaşılmayan adres olmalı; kabul kanıtı mongod g
 
 ---
 
+### BL-646
+
+**service-tests iş akışının ilk tam CI koşusu (PR #144): kırmızıların çoğu CI ortamı — Mongo yolu değişkeni, RabbitMQ, Prism, Linux yolları**
+
+DURUM: AÇIK · SAHİP: CT (CI) · BULAN: PR #144 CI (2026-10-14, b7ba78de7) · KAYIT: 2026-10-14
+
+Ölçüldü (GitHub check-runs + iş günlükleri): 24 işin 16'sı yeşil.
+- platform-app 337 kırmızı: 325'i `AUDIT_OUTBOX_TEMPORAL_TEST_MONGOD_REQUIRED` — CI `DITEN_FU02_MONGOD_PATH` (ya da replika ayarı) vermiyor; 2 `DirectoryNotFound`
+  (Linux büyük/küçük harf ya da yol); `InternalESignActionsController.Register` iç izin listesi (main'in kendi kırmızısı, e-imza sahibine bildirildi);
+  2 `PlatformAdministratorSeedMeasurementTests` NotExecuted ("Skipped = 0" adımı).
+- platform-eventing: RabbitMQ 120 sn'de hazır olmadı (`RABBITMQ_NOT_READY`), test koşmadı.
+- inventory-tests: 16 `PrismConsumedContractSmokeTests` (Prism CI'da çalışmıyor; yerelde de aynı 16).
+- platform-bgjobs 1 (sağlık kontrolü zamanlaması), mdm-api 1 NotExecuted (`ProductMasterContractFixtureTests` SOURCE.txt), auth-acceptance-host 3
+  (`LoginPeerVerificationTests` Linux'ta süreç doğrulama / BrokenPipe).
+- phase1 ×2: main'in bilinen 7 mimari kırmızısı.
+**Yapılacak:** iş akışına doğru mongod değişkenleri; RabbitMQ başlatma bekleme / servis konteyneri; Prism kurulumunun doğrulanması; Linux yol düzeltmeleri;
+NotExecuted testler ya gerçek koşar ya adlı izin listesinde; her adım için CI'da yeşil kanıt.
+**Gelecek regresyon riski:** 🟡 (CI kırmızıyken gerçek gerileme gürültüde kaybolur).
+
+---
+
 ### BL-645
 
 **Dev referans kiracısı iki yerde farklı: Pazar (market) operasyonel yüklemesi hattın kilidiyle `0000…0001` istiyor, main'in dev ayarı `0b7d0048-…` diyor — CRM'in yerel Pazar betiği reddediliyor**
