@@ -29,8 +29,9 @@ public sealed class CentralAuditDeclarationTests
     [Fact]
     public void Every_write_command_declares_its_central_audit_record()
     {
-        // 58 measured 2026-10-14 (AuditTrailStandardTests inventory row). A new command fails here AND in the architecture test.
-        Assert.Equal(58, WriteCommands.Length);
+        // 58 measured 2026-10-14 (AuditTrailStandardTests inventory row); 59 after the MVP-1 merge (R4 PrepareRecallSettingsChangeCommand,
+        // CT HOLD 2026-10-14). A new command fails here AND in the architecture test.
+        Assert.Equal(59, WriteCommands.Length);
         Assert.Empty(WriteCommands.Where(t => !typeof(ICentralAuditDeclaration).IsAssignableFrom(t)).Select(t => t.Name));
     }
 
