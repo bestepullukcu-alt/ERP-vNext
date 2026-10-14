@@ -213,7 +213,8 @@ public sealed class VisitWorkspaceController : Controller
 
         // WP-VW-W3E (BE-b, K-W3E-10): a browser cannot vouch for its device — the start goes on as clientPlatform=web
         // and the device verification fields never leave this proxy (whatever the page sent).
-        var (body, rewrittenType) = await WebStartBodyAsync(buffer.ToArray(), boundary, ct);
+        // WP-VW-W3E (W3E-BE-c, D-2): the browser's own short summary is the start's appVersion (the page's is ignored).
+        var (body, rewrittenType) = await WebStartBodyAsync(buffer.ToArray(), boundary, Request.Headers.UserAgent.ToString(), ct);
         var content = new ByteArrayContent(body);
         content.Headers.ContentType = rewrittenType;
 
@@ -222,9 +223,73 @@ public sealed class VisitWorkspaceController : Controller
     }
 
     /// <summary>WP-VW-W3E (BE-b) — the fields a browser's start may NOT carry to the CRM: the device verification claims
-    /// (and its own platform, which the proxy writes itself).</summary>
+    /// (and its own platform, which the proxy writes itself). W3E-BE-c (D-2): and its appVersion — the proxy writes the
+    /// browser summary instead.</summary>
     public static readonly IReadOnlyList<string> WebStartDroppedFields =
-        ["clientPlatform", "mockLocationDetected", "integrityProvider", "integrityVerdict", "integrityToken"];
+        ["clientPlatform", "mockLocationDetected", "integrityProvider", "integrityVerdict", "integrityToken", "appVersion"];
+
+    /// <summary>WP-VW-W3E (W3E-BE-c, §2.10) — the QR pre-check (JSON <c>{ plannedVisitId, qrPayload }</c>): what the start
+    /// would answer, written nowhere. The start's key; the payload is never logged here (only the method and path are).</summary>
+    [HttpPost("api/execution/qr-check")]
+    public Task<IActionResult> QrCheck(CancellationToken ct)
+        => ProxyBodyAsync(HttpMethod.Post, "/api/crm/visit-execution/qr-check", ct, VisitExecutionRecord);
+
+    /// <summary>WP-VW-W3E (W3E-BE-c, D-2) — Static, so MVC never treats it as an action: a short, deterministic summary of a
+    /// browser's User-Agent for the start's <c>appVersion</c> (≤ 40): "{browser} {major} · {OS}", e.g.
+    /// "Safari 18 · iPadOS"; built only from known names and digits (nothing of the header is copied through); an
+    /// unrecognised browser → "Web".</summary>
+    public static string BrowserSummary(string? userAgent)
+    {
+        const int max = 40;
+        var ua = userAgent ?? string.Empty;
+        bool Has(string token) => ua.Contains(token, StringComparison.Ordinal);
+        var os = Has("iPad") ? "iPadOS"
+            : Has("iPhone") || Has("iPod") ? "iOS"
+            : Has("Android") ? "Android"
+            : Has("CrOS") ? "ChromeOS"
+            : Has("Windows") ? "Windows"
+            : Has("Macintosh") || Has("Mac OS X") ? "macOS"
+            : Has("Linux") ? "Linux"
+            : null;
+
+        string? Major(string token)
+        {
+            var at = ua.IndexOf(token, StringComparison.Ordinal);
+            if (at < 0) return null;
+            var digits = new string(ua.Skip(at + token.Length).TakeWhile(char.IsAsciiDigit).Take(4).ToArray());
+            return digits.Length == 0 ? string.Empty : digits;
+        }
+
+        // the order matters: Edge / Opera / Samsung say "Chrome/" too, every Chromium and iOS browser says "Safari/"
+        (string Name, string Token)[] browsers =
+        [
+            ("Edge", "Edg/"), ("Edge", "EdgA/"), ("Edge", "EdgiOS/"), ("Opera", "OPR/"), ("Samsung Internet", "SamsungBrowser/"),
+            ("Firefox", "FxiOS/"), ("Firefox", "Firefox/"), ("Chrome", "CriOS/"), ("Chrome", "Chrome/")
+        ];
+        string? name = null, major = null;
+        foreach (var (n, token) in browsers)
+        {
+            if (Major(token) is { } m)
+            {
+                (name, major) = (n, m);
+                break;
+            }
+        }
+
+        if (name is null && Has("Safari/"))
+        {
+            (name, major) = ("Safari", Major("Version/"));
+        }
+
+        if (name is null)
+        {
+            return "Web";
+        }
+
+        var text = string.IsNullOrEmpty(major) ? name : name + " " + major;
+        if (os is not null) text += " · " + os;
+        return text.Length <= max ? text : text[..max];
+    }
 
     /// <summary>
     /// WP-VW-W3E (BE-b, K-W3E-10) — Static, so MVC never treats it as an action: the start's multipart body rebuilt with
@@ -232,7 +297,12 @@ public sealed class VisitWorkspaceController : Controller
     /// <see cref="WebStartDroppedFields"/>, plus <c>clientPlatform=web</c>. A new boundary; the result is sent as bytes
     /// (the W3 live-E4 rule: buffered, never a streamed body).
     /// </summary>
-    public static async Task<(byte[] Body, MediaTypeHeaderValue ContentType)> WebStartBodyAsync(byte[] original, string boundary, CancellationToken ct)
+    public static Task<(byte[] Body, MediaTypeHeaderValue ContentType)> WebStartBodyAsync(byte[] original, string boundary, CancellationToken ct)
+        => WebStartBodyAsync(original, boundary, null, ct);
+
+    /// <summary>W3E-BE-c (D-2) — as above, plus <c>appVersion</c> = <see cref="BrowserSummary"/> of <paramref name="userAgent"/>.</summary>
+    public static async Task<(byte[] Body, MediaTypeHeaderValue ContentType)> WebStartBodyAsync(
+        byte[] original, string boundary, string? userAgent, CancellationToken ct)
     {
         using var rebuilt = new MultipartFormDataContent();
         var reader = new Microsoft.AspNetCore.WebUtilities.MultipartReader(boundary, new MemoryStream(original));
@@ -252,6 +322,7 @@ public sealed class VisitWorkspaceController : Controller
         }
 
         rebuilt.Add(new StringContent("web"), "clientPlatform");
+        rebuilt.Add(new StringContent(BrowserSummary(userAgent), Encoding.UTF8), "appVersion");
         return (await rebuilt.ReadAsByteArrayAsync(ct), rebuilt.Headers.ContentType!);
     }
 

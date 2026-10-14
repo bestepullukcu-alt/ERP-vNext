@@ -90,7 +90,7 @@ public sealed class StartVisitExecutionHandler : IRequestHandler<StartVisitExecu
         Features.VisitQr.IVisitQrVerifier? qrVerifier = null)
     {
         _resolver = resolver ?? new VisitEvidencePolicyResolver(policies);
-        _qr = qrVerifier; // WP-VW-W3E (W3E-BE-a) — null (a host without the QR feature) behaves as qrMode off
+        _qr = qrVerifier; // WP-VW-W3E (W3E-BE-c, CT-1) — null: qrMode off starts as before, any other mode is a 503 (fail-closed)
         _tenant = tenant;
         _actor = actor;
         _caller = caller;
@@ -110,23 +110,11 @@ public sealed class StartVisitExecutionHandler : IRequestHandler<StartVisitExecu
             return Response<VisitExecutionDto>.Fail("Tenant context is required.", 400);
         }
 
-        var plan = request.PlannedVisitId == Guid.Empty
-            ? null
-            : await _plans.GetByIdAsync(tenantId, request.PlannedVisitId, cancellationToken);
-        if (plan is null)
+        // WP-VW-W3E (W3E-BE-c, §2.10) — the plan rules live in VisitStartGate so the QR pre-check answers exactly alike.
+        var (found, planFailure) = await VisitStartGate.PlanAsync(tenantId, request.PlannedVisitId, request.Kind, _caller, _plans, cancellationToken);
+        if (planFailure is not null || found is not { } plan)
         {
-            return VisitExecutionAccess.Fail<VisitExecutionDto>(VisitExecutionAccess.PlanNotFound());
-        }
-
-        if (VisitExecutionAccess.WriteRefusal(_caller, plan) is { } ownership)
-        {
-            return VisitExecutionAccess.Fail<VisitExecutionDto>(ownership);
-        }
-
-        if (request.Kind is not null && !VisitExecutionKinds.IsKnown(request.Kind))
-        {
-            return VisitExecutionAccess.Fail<VisitExecutionDto>(
-                VisitExecutionRules.Capture($"kind must be one of: {string.Join(", ", VisitExecutionKinds.All)}."));
+            return VisitExecutionAccess.Fail<VisitExecutionDto>(planFailure ?? VisitExecutionAccess.PlanNotFound());
         }
 
         if (VisitExecutionRules.ValidateCoordinates(request.Latitude, request.Longitude, request.AccuracyMeters, request.LocationError)
@@ -135,38 +123,12 @@ public sealed class StartVisitExecutionHandler : IRequestHandler<StartVisitExecu
             return VisitExecutionAccess.Fail<VisitExecutionDto>(coordinateFailure);
         }
 
-        // An approved week writes its visits as `planned` (the engine, unplanned and reschedule do too); `confirmed` is
-        // the optional manual confirm. A draft or cancelled plan is not startable.
-        if (!plan.IsActivePlan())
+        if (await VisitStartGate.StateAsync(tenantId, plan, _executions, _reports, _clock, cancellationToken) is { } stateFailure)
         {
-            return VisitExecutionAccess.Fail<VisitExecutionDto>(new VisitExecutionRules.Failure(
-                "Only an approved visit can be started.", VisitExecutionErrorCodes.NotConfirmed, 409));
+            return VisitExecutionAccess.Fail<VisitExecutionDto>(stateFailure);
         }
 
         var now = _clock.GetUtcNow();
-        if (plan.PlannedDate != VisitReportValidation.Today(_clock))
-        {
-            return VisitExecutionAccess.Fail<VisitExecutionDto>(new VisitExecutionRules.Failure(
-                "A visit is started on its own day only.", VisitExecutionErrorCodes.NotToday, 409));
-        }
-
-        if (await _executions.GetByPlannedVisitIdAsync(tenantId, plan.Id, cancellationToken) is not null)
-        {
-            return VisitExecutionAccess.Fail<VisitExecutionDto>(AlreadyStarted());
-        }
-
-        var report = await _reports.GetByPlannedVisitIdAsync(tenantId, plan.Id, cancellationToken);
-        if (VisitExecutionAccess.IsReported(report))
-        {
-            return VisitExecutionAccess.Fail<VisitExecutionDto>(new VisitExecutionRules.Failure(
-                "This visit already has its outcome.", VisitExecutionErrorCodes.AlreadyReported, 409));
-        }
-
-        if (VisitReportDeadline.IsPassed(plan.PlannedDate, now))
-        {
-            return VisitExecutionAccess.Fail<VisitExecutionDto>(DeadlinePassed());
-        }
-
         var effective = await _resolver.ResolveAsync(tenantId, plan.Resource.ResourceId, now, cancellationToken);
         var policy = effective.Policy;
 
@@ -179,6 +141,12 @@ public sealed class StartVisitExecutionHandler : IRequestHandler<StartVisitExecu
         if (verdict.Refusal is { } locationFailure)
         {
             return VisitExecutionAccess.Fail<VisitExecutionDto>(locationFailure);
+        }
+
+        // WP-VW-W3E (W3E-BE-c, CT-1) — fail-closed: a host without the verifier never starts silently past a QR rule.
+        if (_qr is null && VisitStartGate.QrVerifierMissing(policy.QrMode) is { } noVerifier)
+        {
+            return VisitExecutionAccess.Fail<VisitExecutionDto>(noVerifier);
         }
 
         // WP-VW-W3E (W3E-BE-a, §2.4) — the institution QR code: after the location rule, before the photo.
@@ -302,7 +270,7 @@ public sealed class StartVisitExecutionHandler : IRequestHandler<StartVisitExecu
         }
     }
 
-    private static VisitExecutionRules.Failure AlreadyStarted()
+    internal static VisitExecutionRules.Failure AlreadyStarted()
         => new("This visit has already been started.", VisitExecutionErrorCodes.AlreadyStarted, 409);
 
     internal static VisitExecutionRules.Failure DeadlinePassed()

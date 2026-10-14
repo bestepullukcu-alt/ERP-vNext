@@ -49,13 +49,15 @@ public sealed class VisitQrController : CustomBaseController
     public async Task<IActionResult> Revoke(Guid accountId, [FromBody] VisitQrRevokeInput? input, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(new RevokeVisitQrCommand(accountId, input ?? new VisitQrRevokeInput(null, null)), cancellationToken));
 
-    /// <summary>The print payload of the active code (a <c>printed</c> event is written).</summary>
+    /// <summary>The print payload of the active code (a <c>printed</c> event is written). W3E-BE-c (D-4): the optional
+    /// <c>paper</c> (a4 | a5 | labels4 | labels8) and <c>copies</c> (1–50) go on that event.</summary>
     [HttpGet("api/crm/visit-qr/accounts/{accountId:guid}/payload")]
     [HasPermission(Perms.Manage)]
-    public async Task<IActionResult> Payload(Guid accountId, CancellationToken cancellationToken)
+    public async Task<IActionResult> Payload(
+        Guid accountId, [FromQuery] string? paper, [FromQuery] int? copies, CancellationToken cancellationToken)
     {
         NoStore();
-        return CreateActionResultInstance(await _mediator.Send(new GetVisitQrPayloadCommand(accountId), cancellationToken));
+        return CreateActionResultInstance(await _mediator.Send(new GetVisitQrPayloadCommand(accountId, paper, copies), cancellationToken));
     }
 
     [HttpPost("api/crm/visit-qr/bulk-issue")]

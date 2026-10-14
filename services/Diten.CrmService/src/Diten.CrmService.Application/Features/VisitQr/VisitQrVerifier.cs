@@ -10,8 +10,12 @@ namespace Diten.CrmService.Application.Features.VisitQr;
 /// <summary>
 /// The QR outcome of a visit start: the verdict to record (<see cref="Qr"/>), a flag to add, or a refusal. <see cref="MatchedCodeId"/>
 /// is the code whose scan counter goes up after the start was written (only on <c>ok</c>).
+/// <para>WP-VW-W3E (W3E-BE-c, §2.10) — <see cref="ExpectedHasActiveCode"/>: the visit's institution chain has an ACTIVE code
+/// (read once the key ring is available; false for off / remote / no key). The pre-check tells <c>not_issued</c> from
+/// <c>missing</c> with it before anything is scanned.</para>
 /// </summary>
-public sealed record VisitQrEvaluation(VisitExecutionQr Qr, string? Flag, VisitExecutionRules.Failure? Refusal, Guid? MatchedCodeId);
+public sealed record VisitQrEvaluation(
+    VisitExecutionQr Qr, string? Flag, VisitExecutionRules.Failure? Refusal, Guid? MatchedCodeId, bool ExpectedHasActiveCode = false);
 
 /// <summary>WP-VW-W3E (W3E-BE-a, §2.4) — the ONE call the start handler makes for the QR code.</summary>
 public interface IVisitQrVerifier
@@ -86,6 +90,14 @@ public sealed class VisitQrVerifier : IVisitQrVerifier
             ? new List<InstitutionQrCode>()
             : (await _codes.ListActiveByAccountsAsync(tenantId, chain, cancellationToken)).Where(c => c.IsActive() && !c.IsDeleted).ToList();
 
+        return Decide(keys, tenantId, chain, active, text, required, scannedAt) with { ExpectedHasActiveCode = active.Count > 0 };
+    }
+
+    /// <summary>The verdict once the chain and its active codes are read (no further read: the pre-check and the start
+    /// share it through <see cref="EvaluateAsync"/>).</summary>
+    private static VisitQrEvaluation Decide(
+        VisitQrKeys keys, Guid tenantId, List<Guid> chain, List<InstitutionQrCode> active, string? text, bool required, DateTimeOffset? scannedAt)
+    {
         if (text is null)
         {
             if (active.Count == 0)

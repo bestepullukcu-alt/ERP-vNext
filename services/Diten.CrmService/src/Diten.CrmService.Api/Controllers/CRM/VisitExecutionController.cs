@@ -109,6 +109,14 @@ public sealed class VisitExecutionController : CustomBaseController
         return false;
     }
 
+    /// <summary>WP-VW-W3E (W3E-BE-c, §2.10) — the QR pre-check: what the start would answer for this QR, written nowhere
+    /// (no execution, no scan counter, no event). The start's plan rules and errors; the payload is never logged.</summary>
+    [HttpPost("api/crm/visit-execution/qr-check")]
+    [HasPermission(Perms.Record)]
+    public async Task<IActionResult> QrCheck([FromBody] VisitQrCheckInput? input, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new CheckVisitQrQuery(input?.PlannedVisitId ?? Guid.Empty, input?.QrPayload, input?.Kind), cancellationToken));
+
     [HttpPut("api/crm/visit-execution/{id:guid}/capture")]
     [HasPermission(Perms.Record)]
     public async Task<IActionResult> Capture(Guid id, [FromBody] VisitCaptureInput capture, CancellationToken cancellationToken)

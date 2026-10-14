@@ -26,7 +26,8 @@ public sealed record VisitQrAccountDto(
 
 public sealed record VisitQrInheritedDto(Guid AccountId, string AccountName, int Version);
 
-public sealed record VisitQrEventDto(Guid Id, string Kind, int Version, DateTimeOffset At, string? By, string? Reason);
+/// <summary>WP-VW-W3E (W3E-BE-c, D-4) — a <c>printed</c> event carries the paper and copies the print said (else null).</summary>
+public sealed record VisitQrEventDto(Guid Id, string Kind, int Version, DateTimeOffset At, string? By, string? Reason, string? Paper = null, int? Copies = null);
 
 /// <summary>The print payload (the ONLY place a payload leaves the server; <c>Cache-Control: no-store</c>).</summary>
 public sealed record VisitQrPayloadDto(Guid AccountId, string AccountName, string? AccountCode, int Version, string Payload, DateTimeOffset IssuedAt);
@@ -35,9 +36,12 @@ public sealed record VisitQrBulkIssueItemDto(Guid AccountId, string Result, int?
 
 public sealed record VisitQrBulkIssueDto(IReadOnlyList<VisitQrBulkIssueItemDto> Items, int Issued, int SkippedActive, int NotFound);
 
+/// <summary>A list row. WP-VW-W3E (W3E-BE-c, D-5): the parent institution (↳), the parent's active code a visit here
+/// also accepts (<see cref="InheritedFrom"/>, K-W3E-5), the successful scans of the last 30 days.</summary>
 public sealed record VisitQrListItemDto(
     Guid AccountId, string AccountName, string? AccountCode, string AccountType, string? CityRef, string Status, int? Version,
-    DateTimeOffset? IssuedAt, DateTimeOffset? LastScannedAt);
+    DateTimeOffset? IssuedAt, DateTimeOffset? LastScannedAt,
+    Guid? ParentAccountId = null, string? ParentAccountName = null, VisitQrInheritedDto? InheritedFrom = null, int RecentScanCount = 0);
 
 public sealed record VisitQrListDto(IReadOnlyList<VisitQrListItemDto> Items, long Total, int Page, int PageSize);
 
@@ -55,7 +59,9 @@ public sealed record VisitQrIssueInput(int? ExpectedVersion, string? Reason);
 
 public sealed record VisitQrRevokeInput(int? ExpectedVersion, string? Reason);
 
-public sealed record VisitQrBulkInput(IReadOnlyList<Guid>? AccountIds);
+/// <summary>The bulk body. WP-VW-W3E (W3E-BE-c, D-4): <paramref name="Paper"/> / <paramref name="Copies"/> are read by
+/// <c>bulk-payload</c> only (the printed events); <c>bulk-issue</c> ignores them.</summary>
+public sealed record VisitQrBulkInput(IReadOnlyList<Guid>? AccountIds, string? Paper = null, int? Copies = null);
 
 // ── commands / queries ───────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -67,8 +73,9 @@ public sealed record IssueVisitQrCommand(Guid AccountId, VisitQrIssueInput Input
 
 public sealed record RevokeVisitQrCommand(Guid AccountId, VisitQrRevokeInput Input) : IRequest<Response<VisitQrAccountDto>>;
 
-/// <summary>A command (it writes the <c>printed</c> event), although it is a GET on the wire.</summary>
-public sealed record GetVisitQrPayloadCommand(Guid AccountId) : IRequest<Response<VisitQrPayloadDto>>;
+/// <summary>A command (it writes the <c>printed</c> event), although it is a GET on the wire. W3E-BE-c (D-4): the paper /
+/// copies the print says (optional; recorded on the event).</summary>
+public sealed record GetVisitQrPayloadCommand(Guid AccountId, string? Paper = null, int? Copies = null) : IRequest<Response<VisitQrPayloadDto>>;
 
 public sealed record BulkIssueVisitQrCommand(VisitQrBulkInput Input) : IRequest<Response<VisitQrBulkIssueDto>>;
 

@@ -31,19 +31,21 @@ public sealed partial class VisitWorkspaceStartWebTests
         var parts = await PartsAsync(type.ToString(), Encoding.Latin1.GetString(body));
         var names = parts.Select(x => x.Name).ToArray();
 
-        Assert.Equal(new[] { "plannedVisitId", "appVersion", "latitude", "longitude", "accuracyMeters", "photo", "photoCapturedAt", "clientPlatform" }, names);
+        // W3E-BE-c (D-2): the page's appVersion is dropped too; the proxy writes the browser summary ("Web" with no User-Agent)
+        Assert.Equal(new[] { "plannedVisitId", "latitude", "longitude", "accuracyMeters", "photo", "photoCapturedAt", "clientPlatform", "appVersion" }, names);
+        Assert.Equal("Web", Assert.Single(parts, x => x.Name == "appVersion").Value);
         Assert.Equal("web", Assert.Single(parts, x => x.Name == "clientPlatform").Value);          // the client's "android" is overwritten
         foreach (var dropped in new[] { "mockLocationDetected", "integrityProvider", "integrityVerdict", "integrityToken" })
             Assert.DoesNotContain(dropped, names);
         Assert.DoesNotContain("SECRET-TOKEN", Encoding.Latin1.GetString(body));
         Assert.DoesNotContain("passed", Encoding.Latin1.GetString(body));
 
-        Assert.Equal(("41.0123", "28.9876", "15"), (parts[2].Value, parts[3].Value, parts[4].Value));
-        var photo = parts[5];
+        Assert.Equal(("41.0123", "28.9876", "15"), (parts[1].Value, parts[2].Value, parts[3].Value));
+        var photo = parts[4];
         Assert.Equal(("visit-photo.jpg", "image/jpeg"), (photo.FileName, photo.ContentType));
         Assert.Equal(jpeg, photo.Bytes);                                                          // binary intact
-        Assert.Equal("2026-10-14T08:31:00.000Z", parts[6].Value);
-        Assert.Equal(new[] { "clientPlatform", "mockLocationDetected", "integrityProvider", "integrityVerdict", "integrityToken" }, VisitWorkspaceController.WebStartDroppedFields);
+        Assert.Equal("2026-10-14T08:31:00.000Z", parts[5].Value);
+        Assert.Equal(new[] { "clientPlatform", "mockLocationDetected", "integrityProvider", "integrityVerdict", "integrityToken", "appVersion" }, VisitWorkspaceController.WebStartDroppedFields);
     }
 
     [Fact]
@@ -57,7 +59,7 @@ public sealed partial class VisitWorkspaceStartWebTests
         Assert.Equal(200, Status(await controller.StartVisit(CancellationToken.None)));
         var sent = Assert.Single(gateway.Requests);
         var parts = await PartsAsync(sent.ContentType!, sent.Body!);
-        Assert.Equal(new[] { "plannedVisitId", "clientPlatform" }, parts.Select(x => x.Name).ToArray());
+        Assert.Equal(new[] { "plannedVisitId", "clientPlatform", "appVersion" }, parts.Select(x => x.Name).ToArray());
 
         var (noBoundaryGateway, noBoundary) = Arrange([ExecRecord], body, "multipart/form-data");
         Assert.Equal(400, Status(await noBoundary.StartVisit(CancellationToken.None)));

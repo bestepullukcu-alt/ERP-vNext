@@ -66,8 +66,14 @@ public sealed record VisitEvidenceFlagRowDto(
     int? DurationSeconds,
     Guid? ExceptionId,
     bool HasPhoto,
-    // W3E-BE-a (parallel) adds the QR summary at the merge; null until then.
-    object? Qr = null);
+    // WP-VW-W3E (W3E-BE-c, CT-2) — the start's QR verdict; null for a start before W3E.
+    VisitEvidenceQrSummaryDto? Qr = null);
+
+/// <summary>WP-VW-W3E (W3E-BE-c, CT-2, D-6) — the QR verdict of a start: the status (<c>missing</c> is not a flag — the
+/// screen draws it, the flag filter never matches it), the SCANNED code's institution (id + name, this tenant only),
+/// its version, the client's scan instant, how it matched (self | parent).</summary>
+public sealed record VisitEvidenceQrSummaryDto(
+    string Status, Guid? AccountId, string? AccountName, int? Version, DateTimeOffset? ScannedAt, string? MatchedVia);
 
 public sealed record VisitEvidenceTargetDto(string Type, Guid TargetId, string? Name, Guid? AccountId, string? AccountName);
 
@@ -87,7 +93,11 @@ public sealed record VisitEvidenceFlagSummaryDto(
 
 public sealed record VisitEvidenceRepSummaryDto(string ResourceId, string RepName, int Started, int Flagged, string? TopFlag);
 
-public sealed record VisitEvidenceFlagDetailDto(VisitEvidenceFlagRowDto Row, VisitEvidenceExceptionSummaryDto? Exception);
+/// <summary>The drawer: the row, the exception, and (W3E-BE-c, D-6) the presentation time (Σ seconds) and the slides shown
+/// (distinct product steps), the photo's capture instant (the device clock, informative only).</summary>
+public sealed record VisitEvidenceFlagDetailDto(
+    VisitEvidenceFlagRowDto Row, VisitEvidenceExceptionSummaryDto? Exception,
+    int SlideSeconds = 0, int SlideCount = 0, DateTimeOffset? PhotoCapturedAt = null);
 
 public sealed record VisitEvidenceExceptionSummaryDto(
     Guid Id, IReadOnlyList<string> Rules, DateOnly StartDate, DateOnly EndDate, string? ApprovedBy, DateTimeOffset? ApprovedAt);

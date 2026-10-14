@@ -192,6 +192,98 @@ public sealed class VwW3EEvidenceFlagsTests
         Assert.DoesNotContain(e.Photo.ContentId.ToString(), System.Text.Json.JsonSerializer.Serialize(detail)); // no content id
     }
 
+    // ═══ W3E-BE-c (CT-2, D-6) — the QR summary on the rows, the drawer's slides and photo time ═══════════════════
+
+    [Fact]
+    public async Task CT2_a_row_carries_the_qr_verdict_with_the_scanned_institutions_name_in_the_same_institution_read()
+    {
+        var w = new World();
+        var ok = w.Start(Rep, 0);
+        var own = w.Plans.Items.Single(p => p.Id == ok.PlannedVisitId).AccountId!.Value;
+        ok.Qr = new VisitExecutionQr { Status = VisitQrScanStatuses.Ok, AccountId = own, Version = 3, ScannedAt = Now.AddMinutes(-1), MatchedVia = VisitQrMatchedVia.Self };
+        var elsewhere = new Account { Id = Guid.NewGuid(), TenantId = Tenant, AccountName = "Ankara Şehir Hastanesi" };
+        w.Accounts.Items.Add(elsewhere);
+        var wrong = w.Start(Rep, -1, VisitExecutionFlags.QrWrongAccount);
+        wrong.Qr = new VisitExecutionQr { Status = VisitQrScanStatuses.WrongAccount, AccountId = elsewhere.Id, Version = 1 };
+        var missing = w.Start(Rep, -2);
+        missing.Qr = new VisitExecutionQr { Status = VisitQrScanStatuses.Missing };
+        var old = w.Start(Rep, -3);                                                   // a start before W3E: no QR at all
+
+        var page = (await w.List(Manager, VisitEvidenceFlagsPermissions.ReadAll)).Data!;
+        Assert.Equal(1, w.Accounts.ListByIdsCalls);                                   // the plans' + the scanned institutions: ONE read
+        var row = page.Items.Single(r => r.ExecutionId == ok.Id).Qr!;
+        Assert.Equal((VisitQrScanStatuses.Ok, own, "Hastane 0", 3, VisitQrMatchedVia.Self), (row.Status, row.AccountId!.Value, row.AccountName, row.Version!.Value, row.MatchedVia));
+        Assert.Equal(Now.AddMinutes(-1), row.ScannedAt);
+        var wrongRow = page.Items.Single(r => r.ExecutionId == wrong.Id).Qr!;
+        Assert.Equal((elsewhere.Id, "Ankara Şehir Hastanesi"), (wrongRow.AccountId!.Value, wrongRow.AccountName));
+        Assert.Equal((VisitQrScanStatuses.Missing, (Guid?)null, (string?)null), (page.Items.Single(r => r.ExecutionId == missing.Id).Qr!.Status,
+            page.Items.Single(r => r.ExecutionId == missing.Id).Qr!.AccountId, page.Items.Single(r => r.ExecutionId == missing.Id).Qr!.AccountName));
+        Assert.Null(page.Items.Single(r => r.ExecutionId == old.Id).Qr);
+
+        // "QR okutulmadı" is not a flag: the flagged filter never matches a plain missing
+        var flagged = (await w.List(Manager, VisitEvidenceFlagsPermissions.ReadAll, onlyFlagged: true)).Data!;
+        Assert.Equal(new[] { wrong.Id }, flagged.Items.Select(r => r.ExecutionId).ToArray());
+    }
+
+    [Fact]
+    public async Task CT2_another_tenants_institution_is_never_named_even_if_the_store_answered_it()
+    {
+        var w = new World();
+        var foreign = new Account { Id = Guid.NewGuid(), TenantId = OtherTenant, AccountName = "Yabancı Kurum" };
+        w.Accounts.Items.Add(foreign);
+        var e = w.Start(Rep, 0, VisitExecutionFlags.QrWrongAccount);
+        e.Qr = new VisitExecutionQr { Status = VisitQrScanStatuses.WrongAccount, AccountId = foreign.Id, Version = 1 };
+        w.AccountReader = new LeakyAccounts(w.Accounts);
+
+        var row = (await w.List(Manager, VisitEvidenceFlagsPermissions.ReadAll)).Data!.Items.Single();
+        Assert.Equal(foreign.Id, row.Qr!.AccountId);
+        Assert.Null(row.Qr.AccountName);
+        var own = w.Accounts.Items.Single(a => a.Id == w.Plans.Items.Single().AccountId);
+        Assert.Equal(own.AccountName, row.Target.AccountName);                        // this tenant's institution still named
+        var detail = (await w.Detail(Manager, e.Id, VisitEvidenceFlagsPermissions.ReadAll)).Data!;
+        Assert.Null(detail.Row.Qr!.AccountName);
+    }
+
+    [Fact]
+    public async Task CT2_the_drawer_has_the_presentation_seconds_the_slides_shown_and_the_photo_time()
+    {
+        var w = new World();
+        var e = w.Start(Rep, 0);
+        Guid productA = Guid.NewGuid(), stepA = Guid.NewGuid(), stepB = Guid.NewGuid();
+        e.SlideTimings = new List<VisitExecutionSlideTiming>
+        {
+            new() { ProductId = productA, StepId = stepA, Seconds = 40 },
+            new() { ProductId = productA, StepId = stepB, Seconds = 25 },
+            new() { ProductId = productA, StepId = stepA, Seconds = 15 }               // the same slide again
+        };
+        e.Photo = new VisitExecutionEvidence { ContentId = Guid.NewGuid(), MediaType = "image/jpeg", ByteSize = 3, CapturedAt = Now.AddMinutes(-2) };
+
+        var detail = (await w.Detail(Manager, e.Id, VisitEvidenceFlagsPermissions.Read)).Data!;
+        Assert.Equal((80, 2, Now.AddMinutes(-2)), (detail.SlideSeconds, detail.SlideCount, detail.PhotoCapturedAt!.Value));
+
+        var bare = w.Start(Rep, -1);
+        var none = (await w.Detail(Manager, bare.Id, VisitEvidenceFlagsPermissions.Read)).Data!;
+        Assert.Equal((0, 0, (DateTimeOffset?)null), (none.SlideSeconds, none.SlideCount, none.PhotoCapturedAt));
+    }
+
+    /// <summary>A store that answers an id read across tenants (what the handler's own tenant guard must survive).</summary>
+    private sealed class LeakyAccounts(FakeAccountRepository inner) : IAccountRepository
+    {
+        public Task<IReadOnlyList<Account>> ListByIdsAsync(Guid tenantId, IReadOnlyCollection<Guid> ids, CancellationToken ct)
+            => Task.FromResult<IReadOnlyList<Account>>(inner.Items.Where(a => ids.Contains(a.Id)).ToList());
+        public Task<Account?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct) => inner.GetByIdAsync(tenantId, id, ct);
+        public Task<Account?> GetByCodeAsync(Guid tenantId, string accountCode, CancellationToken ct) => throw new NotImplementedException();
+        public Task<bool> ExistsByCodeAsync(Guid tenantId, string accountCode, Guid? excludeId, CancellationToken ct) => throw new NotImplementedException();
+        public Task<(IReadOnlyList<Account> Items, long Total, long UnfilteredTotal)> ListAsync(
+            Guid tenantId, string? search, int page, int pageSize, string? sortBy, string? sortDir,
+            IReadOnlyCollection<string>? statuses, IReadOnlyCollection<string>? accountTypes, IReadOnlyCollection<Guid>? accountIdScope, CancellationToken ct)
+            => throw new NotImplementedException();
+        public Task<IReadOnlyList<Account>> GetChildrenAsync(Guid tenantId, Guid parentId, CancellationToken ct) => throw new NotImplementedException();
+        public Task<bool> WouldCreateCycleAsync(Guid tenantId, Guid accountId, Guid candidateParentId, CancellationToken ct) => throw new NotImplementedException();
+        public Task InsertAsync(Account account, CancellationToken ct) => throw new NotImplementedException();
+        public Task UpdateAsync(Account account, CancellationToken ct) => throw new NotImplementedException();
+    }
+
     // ═══ the Mongo filter (a real mongod on the lane's own port; skipped without CRM_TEST_MONGO_URI) ═════════════
 
     [Fact]
@@ -236,6 +328,56 @@ public sealed class VwW3EEvidenceFlagsTests
         }
     }
 
+    /// <summary>W3E-BE-c (D-5) — the QR list's 30-day scan count of a whole page in ONE read, on a real mongod: only "ok"
+    /// starts of this tenant since the instant count; the event's paper / copies round-trip.</summary>
+    [Fact]
+    public async Task The_mongo_scan_count_reads_a_page_of_institutions_at_once()
+    {
+        Diten.CrmService.Persistence.DependencyInjection.EnsureClassMapsForTests();
+        var printed = new InstitutionQrEvent { Id = Guid.NewGuid(), TenantId = Tenant, AccountId = Guid.NewGuid(), Kind = InstitutionQrEventKinds.Printed, Paper = "labels8", Copies = 3 };
+        var back = MongoDB.Bson.Serialization.BsonSerializer.Deserialize<InstitutionQrEvent>(MongoDB.Bson.BsonExtensionMethods.ToBsonDocument(printed));
+        Assert.Equal(("labels8", 3), (back.Paper, back.Copies));
+
+        var uri = Environment.GetEnvironmentVariable("CRM_TEST_MONGO_URI");
+        if (string.IsNullOrWhiteSpace(uri) || uri.Contains(":27017", StringComparison.Ordinal)) return; // never the dev database
+        var client = new MongoClient(uri);
+        var name = "W3EC_SCANS_" + Guid.NewGuid().ToString("N");
+        try
+        {
+            var db = client.GetDatabase(name);
+            var executions = new VisitExecutionRepository(db);
+            var codes = new InstitutionQrCodeRepository(db);
+            Guid a = Guid.NewGuid(), b = Guid.NewGuid(), c = Guid.NewGuid();
+            ExecutionEntity Scan(Guid account, int days, string status = VisitQrScanStatuses.Ok, Guid? tenant = null) => new()
+            {
+                Id = Guid.NewGuid(), TenantId = tenant ?? Tenant, PlannedVisitId = Guid.NewGuid(), ResourceId = Rep, StartedAt = Now.AddDays(days),
+                Qr = new VisitExecutionQr { Status = status, AccountId = account, Version = 1 }
+            };
+            foreach (var e in new[]
+                     {
+                         Scan(a, 0), Scan(a, -10), Scan(a, -40),                       // 2 inside 30 days
+                         Scan(b, -1), Scan(b, -2, VisitQrScanStatuses.WrongAccount),  // only the ok one
+                         Scan(c, 0, tenant: OtherTenant)                              // another tenant's
+                     })
+            {
+                Assert.True(await executions.InsertAsync(e, default));
+            }
+
+            var counts = await codes.CountScansSinceByAccountsAsync(Tenant, new[] { a, b, c }, Now.AddDays(-30), default);
+            Assert.Equal(2, counts[a]);
+            Assert.Equal(1, counts[b]);
+            Assert.False(counts.ContainsKey(c));
+            for (var i = 0; i < counts.Count; i++)
+            {
+                Assert.Equal(await codes.CountScansSinceAsync(Tenant, counts.Keys.ElementAt(i), Now.AddDays(-30), default), counts.Values.ElementAt(i)); // = the per-institution read
+            }
+        }
+        finally
+        {
+            await client.DropDatabaseAsync(name);
+        }
+    }
+
     // ═══ helpers ═════════════════════════════════════════════════════════════════════════════════════════
 
     private sealed class World
@@ -247,6 +389,10 @@ public sealed class VwW3EEvidenceFlagsTests
         public FakeVisitExecutionRepository Executions { get; } = new();
         public FakePlannedVisitRepository Plans { get; } = new();
         public FakeAccountRepository Accounts { get; } = new();
+
+        /// <summary>W3E-BE-c — the institution store the handlers read (default <see cref="Accounts"/>; a leaky one for the
+        /// tenant guard test).</summary>
+        public IAccountRepository? AccountReader { get; set; }
         public FakeContactRepository Contacts { get; } = new();
         public Exceptions Exceptions { get; } = new();
         private sealed class Clock(DateTimeOffset now) : TimeProvider { public override DateTimeOffset GetUtcNow() => now; }
@@ -298,7 +444,7 @@ public sealed class VwW3EEvidenceFlagsTests
             ctx.SetTenant(Tenant);
             var clock = new Clock(Now);
             var scope = new VisitEvidenceFlagScopeResolver(new TestCallerScope(caller, perms), new TeamScopeResolver(Assignments, Models, Nodes), Models, Assignments);
-            return new VisitEvidenceFlagsQueryHandlers(ctx, scope, Executions, Plans, Accounts, Contacts, Exceptions, clock);
+            return new VisitEvidenceFlagsQueryHandlers(ctx, scope, Executions, Plans, AccountReader ?? Accounts, Contacts, Exceptions, clock);
         }
 
         public Task<Diten.CrmService.Application.Common.Models.Response<VisitEvidenceFlagPageDto>> List(string caller, string perm,

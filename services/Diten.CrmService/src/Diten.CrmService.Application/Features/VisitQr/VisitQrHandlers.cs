@@ -103,10 +103,11 @@ public sealed class VisitQrService
         KeyId = keyId, IssuedAt = Now, IssuedBy = Actor, CreatedAt = Now
     };
 
-    public InstitutionQrEvent Event(Guid tenantId, InstitutionQrCode code, string kind, string? reason) => new()
+    public InstitutionQrEvent Event(Guid tenantId, InstitutionQrCode code, string kind, string? reason, string? paper = null, int? copies = null) => new()
     {
         Id = Guid.NewGuid(), TenantId = tenantId, AccountId = code.AccountId, QrCodeId = code.Id, Kind = kind,
-        CodeVersion = code.CodeVersion, At = Now, By = Actor, Reason = string.IsNullOrWhiteSpace(reason) ? null : reason.Trim(), CreatedAt = Now
+        CodeVersion = code.CodeVersion, At = Now, By = Actor, Reason = string.IsNullOrWhiteSpace(reason) ? null : reason.Trim(), CreatedAt = Now,
+        Paper = paper, Copies = copies
     };
 
     public static int NextVersion(IReadOnlyList<InstitutionQrCode> rows) => rows.Count == 0 ? 1 : rows.Max(r => r.CodeVersion) + 1;
@@ -156,7 +157,7 @@ public sealed class GetVisitQrHistoryHandler(VisitQrService qr) : IRequestHandle
         if (await qr.AccountAsync(tenantId, request.AccountId, ct) is null) return VisitQrService.AccountNotFound<IReadOnlyList<VisitQrEventDto>>();
         var events = await qr.Events.ListByAccountAsync(tenantId, request.AccountId, ct);
         return Response<IReadOnlyList<VisitQrEventDto>>.Success(events
-            .Select(e => new VisitQrEventDto(e.Id, e.Kind, e.CodeVersion, e.At, e.By, e.Reason)).ToList());
+            .Select(e => new VisitQrEventDto(e.Id, e.Kind, e.CodeVersion, e.At, e.By, e.Reason, e.Paper, e.Copies)).ToList());
     }
 }
 
@@ -235,6 +236,8 @@ public sealed class GetVisitQrPayloadHandler(VisitQrService qr) : IRequestHandle
     public async Task<Response<VisitQrPayloadDto>> Handle(GetVisitQrPayloadCommand request, CancellationToken ct)
     {
         if (qr.TenantId is not { } tenantId) return VisitQrService.NoTenant<VisitQrPayloadDto>();
+        var (paper, printError) = VisitQrPrint.Check(request.Paper, request.Copies);
+        if (printError is not null) return VisitQrService.Invalid<VisitQrPayloadDto>(printError);
         var account = await qr.AccountAsync(tenantId, request.AccountId, ct);
         if (account is null) return VisitQrService.AccountNotFound<VisitQrPayloadDto>();
         var active = await qr.Codes.GetActiveAsync(tenantId, account.Id, ct);
@@ -246,7 +249,7 @@ public sealed class GetVisitQrPayloadHandler(VisitQrService qr) : IRequestHandle
         }
 
         var payload = VisitQrSigner.Sign(keys, active.KeyId, tenantId, account.Id, active.CodeVersion);
-        await qr.Events.InsertManyAsync(new[] { qr.Event(tenantId, active, InstitutionQrEventKinds.Printed, null) }, ct);
+        await qr.Events.InsertManyAsync(new[] { qr.Event(tenantId, active, InstitutionQrEventKinds.Printed, null, paper, request.Copies) }, ct);
         return Response<VisitQrPayloadDto>.Success(new VisitQrPayloadDto(account.Id, account.AccountName, account.AccountCode, active.CodeVersion, payload, active.IssuedAt));
     }
 }
@@ -308,6 +311,8 @@ public sealed class BulkVisitQrPayloadHandler(VisitQrService qr) : IRequestHandl
         if (qr.TenantId is not { } tenantId) return VisitQrService.NoTenant<IReadOnlyList<VisitQrPayloadDto>>();
         var (ids, error) = VisitQrService.CheckBulk(request.Input);
         if (error is not null) return VisitQrService.Invalid<IReadOnlyList<VisitQrPayloadDto>>(error);
+        var (paper, printError) = VisitQrPrint.Check(request.Input?.Paper, request.Input?.Copies);
+        if (printError is not null) return VisitQrService.Invalid<IReadOnlyList<VisitQrPayloadDto>>(printError);
         var keys = await qr.KeysAsync(ct);
         var accounts = (await qr.Accounts.ListByIdsAsync(tenantId, ids!, ct)).Where(a => a.TenantId == tenantId && !a.IsDeleted).ToDictionary(a => a.Id);
         var active = (await qr.Codes.ListActiveByAccountsAsync(tenantId, accounts.Keys.ToList(), ct)).ToDictionary(c => c.AccountId);
@@ -324,7 +329,7 @@ public sealed class BulkVisitQrPayloadHandler(VisitQrService qr) : IRequestHandl
             var account = accounts[id];
             result.Add(new VisitQrPayloadDto(id, account.AccountName, account.AccountCode, code.CodeVersion,
                 VisitQrSigner.Sign(keys, code.KeyId, tenantId, id, code.CodeVersion), code.IssuedAt));
-            events.Add(qr.Event(tenantId, code, InstitutionQrEventKinds.Printed, null));
+            events.Add(qr.Event(tenantId, code, InstitutionQrEventKinds.Printed, null, paper, request.Input?.Copies));
         }
 
         await qr.Events.InsertManyAsync(events, ct);
@@ -387,12 +392,87 @@ public sealed class ListVisitQrAccountsHandler(
         var types = string.IsNullOrWhiteSpace(request.AccountType) ? null : new[] { request.AccountType.Trim() };
         var (items, total, _) = await qr.Accounts.ListAsync(tenantId, request.Search, page, pageSize, "accountName", "asc",
             null, types, scope, excluded, ct);
-        var latest = (await qr.Codes.ListLatestByAccountsAsync(tenantId, items.Select(a => a.Id).ToList(), ct)).ToDictionary(c => c.AccountId);
+        var pageIds = items.Select(a => a.Id).ToList();
+        var latest = (await qr.Codes.ListLatestByAccountsAsync(tenantId, pageIds, ct)).ToDictionary(c => c.AccountId);
+        var lineage = await VisitQrLineage.ReadAsync(qr, tenantId, items, ct);
+        var recent = await qr.Codes.CountScansSinceByAccountsAsync(tenantId, pageIds, qr.Now.AddDays(-VisitQrLimits.RecentScanDays), ct);
         return Response<VisitQrListDto>.Success(new VisitQrListDto(items.Select(a =>
         {
             latest.TryGetValue(a.Id, out var code);
+            var parentId = a.ParentAccountId is { } p && p != Guid.Empty ? p : (Guid?)null;
             return new VisitQrListItemDto(a.Id, a.AccountName, a.AccountCode, a.AccountType, a.CityRef,
-                code?.Status ?? InstitutionQrCodeStatuses.None, code?.CodeVersion, code?.IssuedAt, code?.LastScannedAt);
+                code?.Status ?? InstitutionQrCodeStatuses.None, code?.CodeVersion, code?.IssuedAt, code?.LastScannedAt,
+                parentId, parentId is { } pid && lineage.Names.TryGetValue(pid, out var pn) ? pn : null,
+                lineage.Inherited.GetValueOrDefault(a.Id), recent.GetValueOrDefault(a.Id));
         }).ToList(), total, page, pageSize));
+    }
+}
+
+/// <summary>
+/// WP-VW-W3E (W3E-BE-c, D-5) — a list page's parents and inherited codes, level by level: each level is ONE institution
+/// read + ONE active-code read for the whole page (≤ <see cref="VisitQrLimits.MaxParentDepth"/> levels), so the query count
+/// does not grow with the page. The walk is the institution read's (<see cref="VisitQrService.StateAsync"/>): the nearest
+/// parent with an ACTIVE code, at most 5 levels up, cycle-guarded; only this tenant's institutions are read and named.
+/// </summary>
+internal static class VisitQrLineage
+{
+    public sealed record Result(IReadOnlyDictionary<Guid, string> Names, IReadOnlyDictionary<Guid, VisitQrInheritedDto> Inherited);
+
+    public static async Task<Result> ReadAsync(VisitQrService qr, Guid tenantId, IReadOnlyList<Domain.Entities.Account> page, CancellationToken ct)
+    {
+        var names = new Dictionary<Guid, string>();
+        var parentOf = new Dictionary<Guid, Guid?>();
+        var inherited = new Dictionary<Guid, VisitQrInheritedDto>();
+
+        // per row: the institution whose parent is checked next, and what the row has walked (cycle guard)
+        var cursor = page.Where(a => a.ParentAccountId is { } p && p != Guid.Empty)
+            .ToDictionary(a => a.Id, a => a.ParentAccountId!.Value);
+        var seen = page.ToDictionary(a => a.Id, a => new HashSet<Guid> { a.Id });
+
+        for (var depth = 0; depth < VisitQrLimits.MaxParentDepth && cursor.Count > 0; depth++)
+        {
+            var level = cursor.Values.Distinct().ToList();
+            var unread = level.Where(id => !parentOf.ContainsKey(id)).ToList();
+            if (unread.Count > 0)
+            {
+                foreach (var a in (await qr.Accounts.ListByIdsAsync(tenantId, unread, ct)).Where(a => a.TenantId == tenantId && !a.IsDeleted))
+                {
+                    names[a.Id] = a.AccountName;
+                    parentOf[a.Id] = a.ParentAccountId is { } p && p != Guid.Empty ? p : null;
+                }
+
+                foreach (var id in unread.Where(id => !parentOf.ContainsKey(id)))
+                {
+                    parentOf[id] = null; // missing / another tenant's: the walk stops there
+                }
+            }
+
+            var active = (await qr.Codes.ListActiveByAccountsAsync(tenantId, level, ct))
+                .Where(c => c.IsActive() && !c.IsDeleted).GroupBy(c => c.AccountId).ToDictionary(g => g.Key, g => g.First());
+
+            var next = new Dictionary<Guid, Guid>();
+            foreach (var (row, at) in cursor)
+            {
+                if (!names.ContainsKey(at) || !seen[row].Add(at))
+                {
+                    continue; // not this tenant's / missing, or a cycle
+                }
+
+                if (active.TryGetValue(at, out var code))
+                {
+                    inherited[row] = new VisitQrInheritedDto(at, names[at], code.CodeVersion);
+                    continue;
+                }
+
+                if (parentOf[at] is { } up)
+                {
+                    next[row] = up;
+                }
+            }
+
+            cursor = next;
+        }
+
+        return new Result(names, inherited);
     }
 }

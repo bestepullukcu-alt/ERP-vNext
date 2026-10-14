@@ -28,6 +28,33 @@ public static class VisitQrLimits
     public const int RecentScanDays = 30;
 }
 
+/// <summary>WP-VW-W3E (W3E-BE-c, D-4) — what a print may say about itself (recorded on the <c>printed</c> event).</summary>
+public static class VisitQrPrint
+{
+    public const string A4 = "a4";
+    public const string A5 = "a5";
+    public const string Labels4 = "labels4";
+    public const string Labels8 = "labels8";
+    public static readonly IReadOnlyList<string> Papers = new[] { A4, A5, Labels4, Labels8 };
+
+    public const int MinCopies = 1;
+    public const int MaxCopies = 50;
+
+    /// <summary>(the paper normalised, null) or (null, the error). Both are optional: nothing said → (null, null).</summary>
+    public static (string? Paper, string? Error) Check(string? paper, int? copies)
+    {
+        var p = string.IsNullOrWhiteSpace(paper) ? null : paper.Trim().ToLowerInvariant();
+        if (p is not null && !Papers.Contains(p))
+        {
+            return (null, $"paper must be one of: {string.Join(", ", Papers)}.");
+        }
+
+        return copies is { } c && (c < MinCopies || c > MaxCopies)
+            ? (null, $"copies must be between {MinCopies} and {MaxCopies}.")
+            : (p, null);
+    }
+}
+
 /// <summary>
 /// The signing keys as the host provides them (secret prefix <c>crm-visit-qr-signing</c>, active key
 /// <c>Crm:VisitQr:ActiveKeyId</c>). <see cref="Available"/> = an active key with its bytes; old key ids stay in

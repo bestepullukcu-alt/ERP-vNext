@@ -31,6 +31,11 @@ public interface IInstitutionQrCodeRepository
 
     /// <summary>The successful scans of an institution's codes since <paramref name="since"/> (the visit starts that matched it).</summary>
     Task<int> CountScansSinceAsync(Guid tenantId, Guid accountId, DateTimeOffset since, CancellationToken cancellationToken);
+
+    /// <summary>WP-VW-W3E (W3E-BE-c, D-5) — the same count for a whole list page in ONE read: institution → successful
+    /// scans since <paramref name="since"/> (an institution without a scan is absent).</summary>
+    Task<IReadOnlyDictionary<Guid, int>> CountScansSinceByAccountsAsync(
+        Guid tenantId, IReadOnlyCollection<Guid> accountIds, DateTimeOffset since, CancellationToken cancellationToken);
 }
 
 /// <summary>WP-VW-W3E (§2.2) — the append-only QR history.</summary>

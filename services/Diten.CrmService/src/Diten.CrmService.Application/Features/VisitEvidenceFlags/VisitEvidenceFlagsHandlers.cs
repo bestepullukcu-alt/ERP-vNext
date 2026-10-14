@@ -173,7 +173,8 @@ public sealed class VisitEvidenceFlagsQueryHandlers :
         return Response<VisitEvidenceFlagPageDto>.Success(new VisitEvidenceFlagPageDto(rows, total, page, size, window.From, window.To));
     }
 
-    /// <summary>The rows of one page: the plans, institutions and doctors in ONE read each (no per-row read).</summary>
+    /// <summary>The rows of one page: the plans, institutions and doctors in ONE read each (no per-row read). The QR's
+    /// scanned institution joins the SAME institution read (W3E-BE-c, CT-2); only this tenant's rows are named.</summary>
     private async Task<IReadOnlyList<VisitEvidenceFlagRowDto>> RowsAsync(
         Guid tenantId, IReadOnlyList<Domain.Entities.VisitExecution> items, VisitEvidenceFlagScope scope, CancellationToken ct)
     {
@@ -181,10 +182,13 @@ public sealed class VisitEvidenceFlagsQueryHandlers :
         var plans = (await _plans.ListByIdsAsync(tenantId, items.Select(e => e.PlannedVisitId).Distinct().ToList(), ct))
             .ToDictionary(p => p.Id);
         var accountIds = plans.Values.Select(p => p.AccountId ?? (IsAccountTarget(p) ? p.TargetId : (Guid?)null))
+            .Concat(items.Select(e => e.Qr?.AccountId))
             .Where(id => id is not null).Select(id => id!.Value).Distinct().ToList();
         var contactIds = plans.Values.Select(p => p.ContactId).Where(id => id is not null).Select(id => id!.Value).Distinct().ToList();
         var accounts = accountIds.Count == 0 ? new Dictionary<Guid, string>()
-            : (await _accounts.ListByIdsAsync(tenantId, accountIds, ct)).ToDictionary(a => a.Id, a => a.AccountName);
+            : (await _accounts.ListByIdsAsync(tenantId, accountIds, ct))
+                .Where(a => a.TenantId == tenantId && !a.IsDeleted) // another tenant's institution is never named
+                .ToDictionary(a => a.Id, a => a.AccountName);
         var contacts = contactIds.Count == 0 ? new Dictionary<Guid, string>()
             : (await _contacts.ListByIdsAsync(tenantId, contactIds, ct)).ToDictionary(c => c.Id, c => c.DisplayName);
 
@@ -206,7 +210,11 @@ public sealed class VisitEvidenceFlagsQueryHandlers :
             new VisitEvidenceTargetDto(plan?.TargetType ?? string.Empty, plan?.TargetId ?? Guid.Empty, targetName, accountId, accountName),
             e.Kind, e.Flags.ToList(),
             new VisitEvidenceLocationSummaryDto(e.Location.DistanceMeters, e.Location.AccuracyMeters, e.Location.RadiusMeters, e.Location.Mode, e.Location.Status),
-            DeviceEvidenceRules.ToDto(e.Device), e.DurationSeconds, e.ExceptionId, e.Photo is not null);
+            DeviceEvidenceRules.ToDto(e.Device), e.DurationSeconds, e.ExceptionId, e.Photo is not null,
+            e.Qr is { } q
+                ? new VisitEvidenceQrSummaryDto(q.Status, q.AccountId,
+                    q.AccountId is { } qa && accounts.TryGetValue(qa, out var qn) ? qn : null, q.Version, q.ScannedAt, q.MatchedVia)
+                : null);
     }
 
     // ── summary ──────────────────────────────────────────────────────────────────────────────────────────────────
@@ -259,6 +267,9 @@ public sealed class VisitEvidenceFlagsQueryHandlers :
             exception = new VisitEvidenceExceptionSummaryDto(x.Id, x.Rules.ToList(), x.StartDate, x.EndDate, x.ApprovedBy, x.ApprovedAt);
         }
 
-        return Response<VisitEvidenceFlagDetailDto>.Success(new VisitEvidenceFlagDetailDto(row, exception));
+        var slides = execution.SlideTimings ?? new List<Domain.Entities.VisitExecutionSlideTiming>();
+        return Response<VisitEvidenceFlagDetailDto>.Success(new VisitEvidenceFlagDetailDto(row, exception,
+            slides.Sum(s => Math.Max(0, s.Seconds)), slides.Select(s => (s.ProductId, s.StepId)).Distinct().Count(),
+            execution.Photo?.CapturedAt));
     }
 }

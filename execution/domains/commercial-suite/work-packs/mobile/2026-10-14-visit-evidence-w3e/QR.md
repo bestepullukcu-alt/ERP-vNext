@@ -77,3 +77,25 @@ Kurum kodu üretme / yeniden üretme / iptal / yazdırma Web işidir (`api/crm/v
 `MOBILE-NOTE-2026-10-12-visit-execution.md` §10 "Henüz yok":
 - "QR / anti-fraud (W3E…)" satırı → "QR: bu not (`2026-10-14-visit-evidence-w3e/QR.md`); cihaz doğrulama: `DEVICE.md`."
 - "Katmanlı kanıt ayarı … + temsilci süreli istisnası (W3-BE-c)" satırından istisna kısmı düşmeli: istisna W3-BE-c ile geldi, yeni kural `qr_optional` dahil.
+
+## 8. Ön kontrol: `POST api/crm/visit-execution/qr-check` (W3E-BE-c, 2026-10-14)
+Okutmadan hemen sonra, **Başlat'a basmadan önce** temsilciye sonucu göstermek için. Kesin karar yine başlatmada sunucudadır; bu uç hiçbir şey yazmaz (yürütme, okutma sayacı, olay yok), aynı kodu istediğiniz kadar sorabilirsiniz.
+
+- **İzin:** `crm.visit-execution.record` (başlatmayla aynı).
+- **Gövde (JSON):** `{ "plannedVisitId": "…", "qrPayload": "DQR1.…" | null, "kind": "in_person" | "remote" }` — `kind` isteğe bağlı (varsayılan `in_person`). Yük, okunduğu gibi gönderilir; istemci ayrıştırmaz.
+- **Plan kuralları başlatmayla aynıdır:** kendi planı değilse 404 (ya da 403 `resource_not_caller`), onaysız / bugün değil / başlamış / raporlanmış / 48 saat dolmuş → başlatmanın aynı hata kodu. Konum kuralı bu uçta **sorulmaz**.
+- **Yanıt (200):**
+
+| alan | anlam |
+|---|---|
+| `qrMode` | etkin ayar (`off` / `optional` / `required`; istisna dahil) |
+| `status` | §3 tablosundaki sonuç (`ok`, `missing`, `not_issued`, `invalid`, `wrong_account`, `revoked`, `unverifiable`, `not_applicable`) |
+| `wouldRefuse` + `errorCode` | başlatma bu kodla **reddedilir mi** ve hangi kodla (§4) |
+| `flag` | başlatma kaydedilirse konacak işaret (ör. `qr_wrong_account`) |
+| `accountId`, `accountName` | **okunan** kodun kurumu — yalnız imza geçerli ve aynı kiracıysa (`ok`, `wrong_account`, `revoked`); "Bu kod Ankara Şehir Hastanesi'ne ait" metni için |
+| `matchedVia` | `self` / `parent` (üst kurum kodu kabul edildi) |
+| `expectedHasActiveCode` | ziyaretin kurumunda (veya üst kurumlarında) aktif kod var mı. Yük boşken: `false` → "kurumda kod yok, cezasız başlayabilirsin" (`not_issued`); `true` → "kodu okut" (`missing`) |
+
+- **Örnek:** `{ "qrMode": "required", "status": "wrong_account", "wouldRefuse": true, "errorCode": "visit_qr_wrong_account", "flag": null, "accountId": "…", "accountName": "Ankara Şehir Hastanesi", "matchedVia": null, "expectedHasActiveCode": true }`
+- Sunucuda doğrulama anahtarı yoksa: zorunlu kipte `wouldRefuse=true` + `visit_qr_signing_unavailable`; sunucu QR doğrulayıcısız kurulmuşsa ve kip `off` değilse 503 (başlatma da 503 verir).
+- Ağ yoksa ön kontrolü atlayın; başlatma yine aynı kararı verir.

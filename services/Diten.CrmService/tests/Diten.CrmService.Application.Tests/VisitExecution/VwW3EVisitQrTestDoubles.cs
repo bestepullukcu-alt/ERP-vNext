@@ -22,8 +22,22 @@ internal sealed class FakeInstitutionQrCodeRepository : IInstitutionQrCodeReposi
         lock (_gate) return Task.FromResult(Items.FirstOrDefault(c => c.TenantId == tenantId && c.AccountId == accountId && c.IsActive()));
     }
 
+    /// <summary>W3E-BE-c — reads counted (a list page reads per level, never per row).</summary>
+    public int ActiveByAccountsCalls { get; private set; }
+    public int ScansByAccountsCalls { get; private set; }
+
+    /// <summary>W3E-BE-c — the last-30-days scans per institution the batch count answers.</summary>
+    public Dictionary<Guid, int> ScansByAccount { get; } = new();
+
+    public Task<IReadOnlyDictionary<Guid, int>> CountScansSinceByAccountsAsync(Guid tenantId, IReadOnlyCollection<Guid> accountIds, DateTimeOffset since, CancellationToken ct)
+    {
+        ScansByAccountsCalls++;
+        return Task.FromResult<IReadOnlyDictionary<Guid, int>>(ScansByAccount.Where(x => accountIds.Contains(x.Key)).ToDictionary(x => x.Key, x => x.Value));
+    }
+
     public Task<IReadOnlyList<InstitutionQrCode>> ListActiveByAccountsAsync(Guid tenantId, IReadOnlyCollection<Guid> accountIds, CancellationToken ct)
     {
+        ActiveByAccountsCalls++;
         lock (_gate) return Task.FromResult<IReadOnlyList<InstitutionQrCode>>(Items.Where(c => c.TenantId == tenantId && accountIds.Contains(c.AccountId) && c.IsActive()).ToList());
     }
 

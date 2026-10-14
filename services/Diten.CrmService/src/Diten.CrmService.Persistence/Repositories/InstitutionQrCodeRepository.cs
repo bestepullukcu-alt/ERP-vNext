@@ -113,6 +113,33 @@ public sealed class InstitutionQrCodeRepository : IInstitutionQrCodeRepository
         var started = await _executions.Find(filter).Project(e => e.StartedAt).ToListAsync(cancellationToken);
         return started.Count(s => s >= since);
     }
+
+    /// <summary>WP-VW-W3E (W3E-BE-c, D-5) — one read for a page: Qr.AccountId $in + "ok" + the SERVER StartedAt by its
+    /// scalar ticks element (<see cref="VisitExecutionRepository.StartedTicksField"/>; UTC, so ticks = UtcTicks); only
+    /// Qr.AccountId comes back, grouped in memory.</summary>
+    public async Task<IReadOnlyDictionary<Guid, int>> CountScansSinceByAccountsAsync(
+        Guid tenantId, IReadOnlyCollection<Guid> accountIds, DateTimeOffset since, CancellationToken cancellationToken)
+    {
+        if (accountIds.Count == 0)
+        {
+            return new Dictionary<Guid, int>();
+        }
+
+        var filter = Builders<VisitExecution>.Filter.Where(e => e.TenantId == tenantId && !e.IsDeleted)
+                     & Builders<VisitExecution>.Filter.In("Qr.AccountId", accountIds.Select(id => id.ToString("D")))
+                     & Builders<VisitExecution>.Filter.Eq("Qr.Status", VisitQrScanStatuses.Ok)
+                     & Builders<VisitExecution>.Filter.Gte(VisitExecutionRepository.StartedTicksField, since.UtcTicks);
+        var rows = await _executions.Find(filter)
+            .Project(Builders<VisitExecution>.Projection.Include("Qr.AccountId").Exclude("_id"))
+            .ToListAsync(cancellationToken);
+        return rows
+            .Select(d => d.TryGetValue("Qr", out var q) && q.IsBsonDocument && q.AsBsonDocument.TryGetValue("AccountId", out var a) && a.IsString
+                ? Guid.TryParse(a.AsString, out var id) ? id : (Guid?)null
+                : null)
+            .Where(id => id is not null)
+            .GroupBy(id => id!.Value)
+            .ToDictionary(g => g.Key, g => g.Count());
+    }
 }
 
 /// <summary>WP-VW-W3E (§2.2) — <c>crm_institution_qr_events</c>: append-only; ordered newest first in memory (At is a

@@ -410,7 +410,7 @@ public sealed partial class VisitWorkspaceStartWebTests
         // W3E-BE-b (K-W3E-10): the body is rebuilt — every field as it came, plus clientPlatform=web (a new boundary)
         Assert.StartsWith("multipart/form-data", sent.ContentType);
         var parts = await PartsAsync(sent.ContentType!, sent.Body!);
-        Assert.Equal(new[] { "plannedVisitId", "photo", "clientPlatform" }, parts.Select(x => x.Name).ToArray());
+        Assert.Equal(new[] { "plannedVisitId", "photo", "clientPlatform", "appVersion" }, parts.Select(x => x.Name).ToArray()); // + W3E-BE-c (D-2)
         Assert.Equal(Id, parts[0].Value);
         Assert.Equal(("JPEGDATA", "visit-photo.jpg", "image/jpeg"), (parts[1].Value, parts[1].FileName, parts[1].ContentType));
         Assert.Equal("web", parts[2].Value);

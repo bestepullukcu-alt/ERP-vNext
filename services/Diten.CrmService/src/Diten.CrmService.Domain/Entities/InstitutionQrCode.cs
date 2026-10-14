@@ -65,6 +65,12 @@ public sealed class InstitutionQrEvent : EntityBase
     public DateTimeOffset At { get; set; }
     public string? By { get; set; }
     public string? Reason { get; set; }
+
+    /// <summary>WP-VW-W3E (W3E-BE-c, D-4) — a <c>printed</c> event's paper (a4 | a5 | labels4 | labels8) and copies (1–50);
+    /// null when the print did not say (an older client, every other kind).</summary>
+    public string? Paper { get; set; }
+
+    public int? Copies { get; set; }
 }
 
 public static class InstitutionQrEventKinds
