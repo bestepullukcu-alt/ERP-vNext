@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    BL-501 — the ONE shared central-audit forwarder (AUD-001 K4). A service references this project, adds
+    `AddCentralAudit<TScope>(configuration, sourceService)` to its Program.cs and marks its write commands with
+    ICentralAuditDeclaration. Copying the forwarder into a service is forbidden (K4); the architecture test refuses it.
+    Versions follow the services that reference it (MediatR 12.3.0, MongoDB.Driver 2.27.0 — measured 2026-10-14 in
+    Inventory, Procurement, SupplyChain, Manufacturing, MDM).
+  -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MediatR" Version="12.3.0" />
+    <PackageReference Include="MongoDB.Driver" Version="2.27.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Diten.BuildingBlocks.CentralAudit.Tests" />
+  </ItemGroup>
+</Project>
