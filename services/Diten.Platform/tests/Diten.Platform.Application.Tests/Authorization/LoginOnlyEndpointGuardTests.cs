@@ -73,6 +73,11 @@ public sealed class LoginOnlyEndpointGuardTests
     {
         "InternalAuditController",
         "InternalBusinessReferenceDataController",
+        // MOD-0022 CT-D12 / WP-MVP1-SEC-ESIGN1 — POST api/internal/esign/actions/register (ESIGN-BUNDLE §4.23). Caller: a consumer
+        // module registering its signable actions at start-up (e.g. InventoryService MOD-0175 quarantine actions), service to service.
+        // Gate: X-Internal-Api-Key compared in fixed time with AuthService:InternalApiKey, fail closed when unset or absent — checked
+        // before the body is read (InternalESignActionsRegisterAuthTests). Not routed by the Gateway: no browser or tenant token reaches it.
+        "InternalESignActionsController",
         "InternalModuleRegistrationController",
         "InternalPlatformAdministratorsController",
         "InternalPpmEntitlementDecisionController",
