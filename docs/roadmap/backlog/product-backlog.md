@@ -8082,6 +8082,26 @@ SuperAdmin doğar. Öneri: tohum yalnız Development'ta; canlı ilk kurulum tek 
 bu kayıtta yasak; tohum açılışı asla çökertmez. Karşılaştırma: SAP ve Oracle'da ilk yönetici kurulum sırasında, rastgele / kurulumcunun verdiği parolayla
 bir kez yaratılır, açılışta yeniden yazılmaz. Gelecek regresyon riski: 🟡 (canlı ilk kurulum yolu).
 
+**2026-10-14 · CT güvenlik değerlendirmesi (salt okuma) + sahip kararı.** BL-556 bu maddeyle birlikte yürür; tek iş paketi
+`WP-AUTH-ADMIN-BOOTSTRAP-01`, kapanış PR'ından sonra. Yeni BL açılmadı.
+- Hatta yeniden doğrulandı: Auth tohumu ortam koşulsuz (`Persistence/DependencyInjection.cs` → `DataSeeder.SeedAsync`); aynı e-postada farklı
+  Id'li kaydı siliyor; Platform `PlatformAdministratorSeed` iki çağrı yerinde (`Infrastructure/DependencyInjection.cs:606, 820`) ortam koşulsuz ve
+  her açılışta Active + SuperAdmin + silinmemiş olarak zorla güncelliyor. Auth'un yeniden etkinleştirmesi hatta yumuşatıldı (BL-529 FIX8:
+  yönetici pasifleştirmesi korunur); main'de koşulsuz.
+- **Depo herkese açık** (GitHub API, anonim ölçüm 2026-10-14). Varsayılan parola iki belgede düz metin: `.antigravity/ARCHITECTURE.md`,
+  `.antigravity/rules/dev-runbook.md`. Git geçmişinde kalıcı; belgeden silmek tek başına yetmez. Depo görünürlüğü kararı depo sahibine iletildi.
+- **Canlı:** sahip 2026-10-14'te canlıda bilinen parolayla platform girişini denedi → reddedildi ("Invalid email or password"); canlı parola
+  daha önce değiştirilmiş (en olası açıklama; hata mesajı kasıtlı olarak genel). Acil durum yok.
+- **Kalan risk 🟡 (bu maddenin kapattığı):** canlıda bu hesap silinir ya da e-postası değiştirilirse sonraki açılışta Auth tohumu hesabı
+  **bilinen parolayla** yeniden yaratır. **Geçici kural (iş paketi gelene kadar): canlıda `admin@diten.com` silinmez, e-postası değiştirilmez.**
+- Çözüm (CT önerisi): hesap tohumu sistem tohumundan (izin / rol / şablon — her ortamda kalır) ayrılır; canlıda otomatik hesap yok, ilk platform
+  yöneticisi tek seferlik komutla ve mevcut **tek kullanımlık şifre belirleme bağlantısıyla** (kiracı yöneticisi davetindeki mekanizma) kurulur,
+  komut Auth + Platform kaydını aynı kimlikle yazar; hiçbir ortamda silme / yeniden yaratma / zorla etkinleştirme yok; dev hesapları (platform
+  yöneticisi, kiracı yöneticisi, sahte kullanıcılar) tek "yalnız dev" sınıfında; platform yöneticisine MFA (sahip kararı); belgelerden parola kalkar.
+- Zorunlu testler: Production boş veritabanı → yönetici yok, izin / rol var · Development → dev hesapları var · farklı Id'li kayıt silinmez ·
+  pasif / askıdaki yönetici açılıştan sonra pasif kalır (Auth + Platform) · ilk yönetici komutu çıktıda / günlükte parola yok, bağlantı tek kullanımlık ·
+  sabit bcrypt özeti yalnız dev sınıfında · belgelerde bilinen parola yok · sabotaj: ortam kapısı kaldırılınca ve silme dalı geri konunca KIRMIZI.
+
 ---
 
 ### BL-579
@@ -10143,6 +10163,40 @@ arka planda 27017'ye izleme bağlantısı açar. CI'da CRM projesi koşmuyor (No
 Mongo'suna dokunabilir. SYNC-03 koşularında bu sınıf filtreyle dışarıda bırakıldı.
 **Yapılacak:** testin kendi mongod'u ya da yalnız DI çözümü için açık bir "bağlanma" yapılandırması; BL-595 desenindeki bekçi CRM'e.
 **Gelecek regresyon riski:** 🟡
+
+**2026-10-14 CT ölçümü:** test yalnız bağlanmıyor, yazıyor da — CRM `AddPersistence` kurulumda `TryEnsureIndexes` çalıştırıyor
+(`Persistence/DependencyInjection.cs:289`), ortak `DitenERP_Test` veritabanında indeks. mongod bağlantı günlüğünde koşu anlarında
+(14:47:46, 15:39:37) bağlantı var. CRM'e bildirildi (sahip iletti).
+
+---
+
+### BL-644
+
+**Ctrl+K arama: kural ile kod ayrışmış — platform kaydı yanlış dosyayı gösteriyor, izin süzmesi yalnız Web katmanında, yedek JSON bayat, sabit metinler, yanlış test adı, davranış testi yok**
+
+DURUM: AÇIK · SAHİP: CT (Platform / UI) — belge düzeltmeleri kural sohbetine (İ1), kapanış PR'ından sonra · BULAN: CT salt okuma denetimi (sahip isteği, 2026-10-14) · KAYIT: 2026-10-14
+
+İlgili ama farklı: BL-455 (Ctrl+K'de komutlar / hızlı eylemler), BL-601 (Ctrl+K'de "Profilim"). Bu madde onları kapsamaz.
+
+1. 🟡 **Platform kaydı yanlış dosyayı gösteriyor.** `.antigravity/rules/platform-global-search-registry.md:28-63` iki statik JSON'u
+   (`platform-search.{en,tr}.json`) düzenlemeyi söylüyor; gerçek kaynak `frontend/Diten.Web/Navigation/PlatformNavigationCatalog.cs`
+   (`PlatformSearchController.cs` onu okuyor; kenar menüsü de). Aynı eski bilgi `module-self-registration-standard.md:149` ve
+   `workflows/add-module.md:113-114, 156`'da. Kurala uyan geliştiricinin eklediği platform sayfası Ctrl+K'de görünmez.
+   Kiracı tarafı otomatik (modül manifesti → `GetTenantNavigationMenuQueryHandler`); geliştirici yalnız manifest + `Nav.Page.{KOD}` (7 dil) yazar.
+2. 🟡 **İzin süzmesi yalnız Web katmanında.** Platform `NavigationController` `[LoginOnly]` ve `RequiredPermission`'ı süzmeden döndürüyor
+   (`GetTenantNavigationMenuQueryHandler.cs:105`); süzme `TenantSearchController.CanAccess`'te ("UX-only"). Platform paletinde kullanıcı başına
+   süzme yok. Sızan: sayfa adı ve adresi (sayfalar ayrıca korumalı). `module-self-registration-standard.md:144` "izinle süzülmüş menü" diyor —
+   sunucuda yarı doğru. SAP Fiori / Oracle'da menü sunucuda rolle süzülür.
+3. 🟢 **Yedek JSON bayat.** Dinamik uç düşerse `main.js:299-303` statik JSON'a düşüyor; içinde kuralın dışladığı `/Platform/Account/*`
+   sayfaları var, ~10 katalog sayfası yok.
+4. 🟢 **Sabit metinler.** "No results found" (`main.js:447`), "Create " öneki (`TenantSearchController.cs:237`), sabit Türkçe anahtar
+   kelimeler ("yeni", "ekle", "tatil": `TenantSearchController.cs:238`, `PlatformNavigationCatalog.cs:49`); kural 7 dil istiyor.
+5. 🟢 **Yanlış test adı.** `add-module.md:112` `NavL10nContractTests` diyor; gerçek bekçi `NavManifestL10nGuardTests`.
+6. 🟢 **Davranış testi yok.** Ctrl / ⌘ + K açılışı (`main.js:571-575`), `PlatformSearchController` ve `PlatformNavigationCatalog` için test yok.
+
+**Yapılacak:** 1, 3, 5 belge / temizlik (kural sohbeti, kapanış PR'ından sonra — `add-module.md` hatta değişiyor). 2 sunucu tarafı süzme
+(Platform, ayrı iş). 4 metinler 7 dilde. 6 bir vitest (gerçek `main.js`, `shell-search-label.test.js` deseni) + `PlatformSearchController` testi.
+**Gelecek regresyon riski:** 🟡 (yeni platform sayfası Ctrl+K'de görünmez; izin süzmesi istemciye bağlı).
 
 ---
 
