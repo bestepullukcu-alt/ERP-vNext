@@ -1103,6 +1103,13 @@ O-F4-7 stays FU-0175-UI-THEME-01. Fast-forwarded into the MVP-1 branch; the owne
   `/api/locations`; AFTER 400 `backslash` and the downstream saw only the legitimate request.
 - **CT-ACCEPTED (2026-10-14).** Read `ProxyPath` (repeated decode, strict ASCII allow-list, final prefix check) and the six one-line hookups. CT trial merge on the MVP-1 tip `48d2a96cb` (SEC-ESIGN1 in; only conflict = the two §19 notes in MOD-0022, both kept): Web **2199/2199**, architecture 69/77 (same 8). **CT sabotage:** Tenants keeps the `TryBuild` call but ignores its result and forwards the raw rest → **49 red** (48 Tenants attack rows + the catch-all guard) — the guard is behavioural, not a source grep; restored, porcelain clean. D-1 (reference-data `:` fixture routes refused via Web) and D-4 (`SetCode` charset) accepted; D-3 one-line edit in `ESignatureWebTests` accepted. **D-2 corrected by CT:** the TimeEntry `{**path}` proxies are NOT the same pattern — `TimeEntryController.UpstreamUrl` (:346) refuses `.`/`..` segments and escapes each segment (`\` stays `%5C`); not measured end-to-end → **WP-MVP1-SEC-PROXY2** measures it and moves the three proxies onto `ProxyPath` (one boundary, guard exception removed). FU-SEC-PROXY1-GATEWAY and notes N-1…N-3 to their owners. Merged `--no-ff` (`26405576d`); owner Web window restart needed for the live fix (approval).
 
+### FIX-WEBGATES v2 — Expiry Web veri kapılarının anahtar kontrolleri testle korunuyor (WP-MVP1-FIX-WEBGATES v2, 2026-10-14, agent result, pending CT) — dal `fix/mvp1-webgates-v2` (`cd3680d7c`'den), commit `cc86d069d`, yalnız yerel. Kanıt `docs/records/audits/2026-10/mvp1-fix-webgates-v2-evidence-2026-10-14.md`.
+
+- **Bulgu (CT, F5 kabulü).** `list/exceptions` (ExceptionsRead), politika okuma (PoliciesRead) ve `data/evidence/preview` (EvidenceExport) kapıları tek tek kaldırıldığında Expiry Web testleri yeşil kalıyordu. Üretim kodu değişmedi.
+- **Test.** `Diten.Web.Tests/Expiry/ExpiryDataGateTests.cs` (52): kapılar `ExpiryController`'dan yansıtmayla keşfedilir (14 veri kapısı, 3 catch-all proxy, 8 sayfa); tek kapı↔anahtar tablosu kaynaktaki her `return Refuse(403…)` ifadesiyle karşılaştırılır; anahtar yokken 403 ve FakeGateway'e istek yok, anahtarlardan biri varken istek gider; `data/dashboard`'ın iki iç kapısı (PoliciesRead, ExceptionsRead) ayrıca; tamlık: yeni kapı tabloya girmezse kırmızı. Proxy sınıfı: token yokken 401 + istek yok (yol sınırı SEC-PROXY1'de).
+- **Sonuç.** Web 2199 → **2251 / 2251**; build 0 hata, 0 yeni uyarı. Sabotajlar s1–s3 (CT'nin üç kapısı), s2b (panel içi politika okuması), s4 (`data/dashboard`), s5 (tabloya eklenmeyen yeni kapı) kırmızı; özgün baytlar geri yazıldı, yeşil, `git diff` boş.
+
+
 ## 20. Follow-up Items
 
 | ID | Item | Owner |
