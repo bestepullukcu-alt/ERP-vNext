@@ -99,7 +99,7 @@
   <data name="IndicationPatients" xml:space="preserve"><value>المرضى في الاستطباب (شهريًا)</value></data>
   <data name="IndicationHint" xml:space="preserve"><value>قائمة معتمدة للاستطباب × ملف المريض. حدد فقط الصفوف التي يراها الطبيب؛ الأرقام تقديرية.</value></data>
   <data name="ThreeMonthHint" xml:space="preserve"><value>يُسأل كل ثلاثة أشهر؛ وتُعرض آخر قيمة في الأثناء.</value></data>
-  <data name="NoIndicationList" xml:space="preserve"><value>لا توجد قائمة استطبابات لهذا المنتج؛ يُسأل عن إجمالي الطبيب فقط.</value></data>
+  <data name="NoIndicationList" xml:space="preserve"><value>لا توجد قائمة استطبابات لهذا المنتج، لذا لا يُسأل عن إمكاناته؛ إجمالي الطبيب في خطوة الملف الشخصي.</value></data>
   <data name="PatientsPerMonth" xml:space="preserve"><value>مريض / شهر</value></data>
   <data name="PreviousValue" xml:space="preserve"><value>السابق: {0}</value></data>
   <data name="NoPatients" xml:space="preserve"><value>لا يرى مرضى في هذه الاستطبابات</value></data>

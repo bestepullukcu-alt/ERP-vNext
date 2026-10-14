@@ -21,6 +21,9 @@ public sealed class PharmacyReportViewModel
     /// <summary>crm.contact.read (the linked doctors).</summary>
     public bool CanReadContacts { get; set; }
 
+    /// <summary>mdm.competitor-products.read (the competitors of an added GSKU's product, W4-FIX-d G-9).</summary>
+    public bool CanReadCompetitors { get; set; }
+
     public string? Me { get; set; }
 }
 

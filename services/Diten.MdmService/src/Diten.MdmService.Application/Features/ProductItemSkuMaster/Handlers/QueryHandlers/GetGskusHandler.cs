@@ -27,8 +27,20 @@ public sealed class GetGskusHandler
         GetGskusQuery request,
         CancellationToken cancellationToken)
     {
-        var search = string.IsNullOrWhiteSpace(request.Search) ? null : request.Search.Trim().ToUpperInvariant();
-        var page = await _gskus.GetPageAsync(request.PageNumber, request.PageSize, search, cancellationToken);
+        // W4-FIX-d (G-8): the search finds a GSKU by its code, its global product's NAME or its global product's CODE
+        // (contains; case and Turkish I / İ insensitive) — "KONSET" finds every KONSET pack.
+        var search = string.IsNullOrWhiteSpace(request.Search) ? null : request.Search.Trim();
+        GskuPage page;
+        if (search is null)
+        {
+            page = await _gskus.GetPageAsync(request.PageNumber, request.PageSize, null, cancellationToken);
+        }
+        else
+        {
+            var productIds = await _globalProducts.FindIdsContainingAsync(search, cancellationToken);
+            var revisionIds = await _revisions.FindIdsByGlobalProductIdsAsync(productIds, cancellationToken);
+            page = await _gskus.SearchPageAsync(request.PageNumber, request.PageSize, search, revisionIds, cancellationToken);
+        }
         var revisions = await _revisions.GetByIdsAsync(
             page.Items.Select(x => x.ProductDefinitionRevisionId).Distinct().ToArray(),
             cancellationToken);

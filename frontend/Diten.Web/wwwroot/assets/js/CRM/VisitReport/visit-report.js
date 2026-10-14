@@ -85,7 +85,10 @@
         if (perms.execution) { jobs.push(api('GET', '/execution/by-plan/' + encodeURIComponent(plannedVisitId)).then(r => { if (r.ok) { state.execution = r.data; } })); }
         jobs.push(api('GET', '/presentation/' + encodeURIComponent(plannedVisitId) + '?lang=' + encodeURIComponent(lang)).then(r => { if (r.ok) { state.presentation = r.data; } }));
         jobs.push(api('GET', '/reference-data/' + S.reimbursement + '/values').then(r => {
-            state.reimbursement = r.ok ? items(r.data).map(v => ({ code: v.valueCode || v.code, label: C.optionLabel({ code: v.valueCode || v.code, label: v.displayName, labels: v.attributes }, lang) })) : [];
+            // W4-FIX-c (FIX-a §37 open item) — the Web proxy answers the MOD-0048 contract { code, label, isActive, attributes:
+            // { label_<lang> } }: the label in the page language, English = label (never displayName / valueCode)
+            state.reimbursement = r.ok ? items(r.data).filter(v => v && v.code && v.isActive !== false)
+                .map(v => ({ code: v.code, label: C.optionLabel({ code: v.code, label: v.label, labels: v.attributes }, lang) })) : [];
         }));
         if (state.reportId) { jobs.push(loadReport()); }
         if (perms.insights && p.contactId) { jobs.push(api('GET', '/doctors/' + encodeURIComponent(p.contactId) + '/profile').then(r => { if (r.ok) { state.insight = r.data; } })); }
@@ -430,8 +433,12 @@
         const rows = indicationRows(s.productId);
         const pot = s.potential || { rows: [] };
         const total = C.doctorTotal(state.body, state.prefill);
+        const indications = C.hasIndications(state.ctx, s.productId);
         let potential = '';
-        if (asked) {
+        if (!indications) {
+            // W4-FIX-b (F-5): no approved indication list ⇒ no question, no "no patients" button, no star — a note only
+            potential = '<div class="vr-small vr-muted" data-f5="no-indications"><i class="bx bx-info-circle"></i> ' + esc(L.NoIndicationList || '') + '</div>';
+        } else if (asked) {
             potential = (rows.items.length ? rows.items.map((r, k) => {
                 const at = (pot.rows || []).findIndex(x => x.indicationNodeId === r.indicationNodeId && (x.profileNodeId || null) === (r.profileNodeId || null));
                 const on = at > -1;
@@ -453,7 +460,7 @@
         const prevShare = stored && stored.shareBucketCode;
         const comp = competitorHtml(s, i);
         return '<div class="vr-card vr-group">' + groupHead('B', L.GroupB || '', chip)
-            + '<div class="vr-field">' + fieldLabel(L.IndicationPatients || '', asked) + '<span class="vr-small vr-muted">' + esc(asked ? (L.IndicationHint || '') : (L.ThreeMonthHint || '')) + '</span>' + potential + '</div>'
+            + '<div class="vr-field">' + fieldLabel(L.IndicationPatients || '', asked) + (indications ? '<span class="vr-small vr-muted">' + esc(asked ? (L.IndicationHint || '') : (L.ThreeMonthHint || '')) + '</span>' : '') + potential + '</div>'
             + '<div class="vr-small vr-muted">' + esc(fmt(L.DoctorTotalLine || '{0}', total == null ? '—' : total)) + '</div>'
             + '<div id="vr-total-warn">' + totalWarning(s.productId) + '</div>'
             + '<div class="vr-field">' + fieldLabel(L.ShareBucket || '', true) + seg('productSections.' + i + '.shareBucketCode', s.shareBucketCode, setChoices(S.shareBucket), 'vr-wrap') + unavailable(S.shareBucket)

@@ -13,4 +13,7 @@ namespace Diten.Platform.Application.Features.BusinessReferenceData.Queries;
 public sealed record GetConsumableBusinessReferenceDataPublishedValuesQuery(
     string SetCode,
     Guid? CallerTenantId,
-    Guid? ReferenceTenantId) : IRequest<Response<BusinessReferenceDataPublishedValuesModel>>, IBusinessReferenceDataRequest;
+    Guid? ReferenceTenantId,
+    Guid? VerifiedReferenceTenantId = null) : IRequest<Response<BusinessReferenceDataPublishedValuesModel>>, IBusinessReferenceDataRequest;
+// WP-VW-W4 (W4-FIX-d, G-2) — VerifiedReferenceTenantId: BusinessReferenceData:Provider:ReferenceTenantId, the reserved tenant
+// the VERIFIED catalogs (market, uom, pack-applicability) are provisioned in. Null = not configured ⇒ the old behaviour.

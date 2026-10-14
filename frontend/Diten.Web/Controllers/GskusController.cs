@@ -88,13 +88,29 @@ public sealed class GskusController : Controller
         return ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/gskus/{id:D}", cancellationToken);
     }
 
+    /// <summary>
+    /// The create form's options: the UOMs + one page of global products. W4-FIX-d (G-1): the product picker pages and
+    /// searches (search ≤ 100, page ≥ 1, pageSize 1–50 — the MDM limits), so every product can be found.
+    /// </summary>
     [HttpGet("api/create-options")]
-    public Task<IActionResult> CreateOptions(CancellationToken cancellationToken)
+    public Task<IActionResult> CreateOptions(
+        [FromQuery] string? search,
+        [FromQuery] int? pageNumber,
+        [FromQuery] int? pageSize,
+        CancellationToken cancellationToken)
     {
         if (!HasPermission(CreatePermission))
             return Task.FromResult<IActionResult>(ForbiddenResult());
 
-        return ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/gskus/create-options", cancellationToken);
+        return ProxyGatewayAsync(HttpMethod.Get, $"{_gatewayUrl}/api/gskus/create-options{CreateOptionsQuery(search, pageNumber, pageSize)}", cancellationToken);
+    }
+
+    public static string CreateOptionsQuery(string? search, int? pageNumber, int? pageSize)
+    {
+        var text = string.IsNullOrWhiteSpace(search) ? null : search.Trim();
+        if (text is { Length: > 100 }) text = text[..100];
+        return $"?pageNumber={Math.Max(1, pageNumber ?? 1)}&pageSize={Math.Clamp(pageSize ?? 50, 1, 50)}"
+               + (text is null ? string.Empty : "&search=" + Uri.EscapeDataString(text));
     }
 
     [HttpPost("api")]

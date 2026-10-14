@@ -21,6 +21,11 @@ public interface IProductDefinitionRevisionRepository
 
         return results;
     }
+    /// <summary>WP-VW-W4 (W4-FIX-d, G-8) — the ids of the tenant's active revisions of these global products.</summary>
+    Task<IReadOnlyList<Guid>> FindIdsByGlobalProductIdsAsync(
+        IReadOnlyCollection<Guid> globalProductIds,
+        CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyList<Guid>>(Array.Empty<Guid>());
     Task<ProductDefinitionRevision?> GetByCreationCommandIdAsync(
         string creationCommandId,
         CancellationToken cancellationToken = default);

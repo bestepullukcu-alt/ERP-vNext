@@ -20,6 +20,18 @@ public interface IGskuRepository
         string? canonicalCodeSearch,
         CancellationToken cancellationToken = default) =>
         GetReferenceablePageAsync(pageNumber, pageSize, canonicalCodeSearch, cancellationToken);
+    /// <summary>
+    /// WP-VW-W4 (W4-FIX-d, G-8) — the list search: a GSKU whose code CONTAINS the text (<see cref="MdmSearchText"/>) or whose
+    /// product definition revision is one of <paramref name="productDefinitionRevisionIds"/> (the revisions of the global
+    /// products whose name / code matched). Same tenant, soft-delete and paging rules as <see cref="GetPageAsync"/>.
+    /// </summary>
+    Task<GskuPage> SearchPageAsync(
+        int pageNumber,
+        int pageSize,
+        string search,
+        IReadOnlyCollection<Guid> productDefinitionRevisionIds,
+        CancellationToken cancellationToken = default) =>
+        GetPageAsync(pageNumber, pageSize, search, cancellationToken);
     Task<IReadOnlyList<Guid>> FindIdsByCanonicalCodeAsync(
         string canonicalCodeSearch,
         CancellationToken cancellationToken = default);

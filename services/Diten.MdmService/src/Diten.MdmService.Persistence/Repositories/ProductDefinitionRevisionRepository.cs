@@ -39,6 +39,16 @@ public sealed class ProductDefinitionRevisionRepository : IProductDefinitionRevi
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<Guid>> FindIdsByGlobalProductIdsAsync(
+        IReadOnlyCollection<Guid> globalProductIds,
+        CancellationToken cancellationToken = default)
+    {
+        if (globalProductIds.Count == 0) return [];
+        return await _revisions.Find(ActiveFilter & Builders<ProductDefinitionRevision>.Filter.In(x => x.GlobalProductId, globalProductIds))
+            .Project(x => x.Id)
+            .ToListAsync(cancellationToken);
+    }
+
     public Task<ProductDefinitionRevision?> GetByCreationCommandIdAsync(
         string creationCommandId,
         CancellationToken cancellationToken = default)
