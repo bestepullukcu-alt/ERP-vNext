@@ -418,4 +418,11 @@
   <data name="ESign.Approvals.LogEmpty" xml:space="preserve"><value>尚无决定。</value></data>
   <data name="ESign.Approvals.Decision.approved" xml:space="preserve"><value>已批准</value></data>
   <data name="ESign.Approvals.Decision.rejected" xml:space="preserve"><value>已拒绝</value></data>
+  <data name="ESign.Help.Mine" xml:space="preserve"><value>“我的签名”用于保存可附加到电子签名上的签名样本，并查看您已做出的签名；需要 esign.my-samples.manage 权限。保存样本时会再次要求输入密码。如果公司策略要求审批，新样本将保持“待审批”，直到另一位拥有 esign.samples.approve 权限的人员批准；您永远不能批准自己的样本（四眼原则）。同一时间只有一个有效样本；已在签名中使用过的样本不能撤回，只能停用。</value></data>
+  <data name="ESign.Help.Requests" xml:space="preserve"><value>“我的签名请求”列出各模块等待您签署的工作；需要 esign.requests.read 权限。列表按截止日期排序，最近的在前；截止日期相同时，较新的请求在前。签署时使用请求中指定的签名含义并要求输入密码；拒绝需要填写至少十个字符的理由，并会通知请求人。</value></data>
+  <data name="ESign.Help.Verify" xml:space="preserve"><value>“签名验证”显示某条记录上的签名及其当前状态：有效、记录已更改、已被篡改或已作废；需要 esign.signatures.read 权限。验证（esign.signatures.verify）会将签署时的内容与记录当前状态进行比较，签名记录本身永不更改。作废签名需要 esign.signatures.invalidate 权限、您的密码以及至少十个字符的理由，并作为单独的条目保存。属于公司的记录仅对您数据范围内的公司显示；您自己的签名始终显示。</value></data>
+  <data name="ESign.Help.Export" xml:space="preserve"><value>“审计导出”可筛选签名记录并以 PDF 或 CSV 格式下载，用于审计和检查；需要 esign.signatures.export 权限。每次导出都会获得一个编号，导出人、所用筛选条件、记录数量以及文件的 SHA-256 摘要都会被记录且不可更改。日期以 UTC 打印，属于公司的记录仅限于您的数据范围。</value></data>
+  <data name="ESign.Help.Policy" xml:space="preserve"><value>“签名策略”决定哪些操作需要电子签名、其默认签名含义以及可视签名规则；查看需要 esign.policy.read 权限，修改需要 esign.policy.manage 权限。这里还设置每次签名都要求输入密码，还是在有效期内只要求一次，以及新的签名样本在使用前是否需要审批。公司可以拥有不同于租户策略的条目并可将其还原；每次更改都需要填写理由，并记录在下方的历史中。</value></data>
+  <data name="ESign.Help.Meanings" xml:space="preserve"><value>“签名含义”定义签名所声明的内容，例如“我批准”或“我已审阅”；签名窗口会从此列表中供选择。查看需要 esign.meanings.read 权限，管理需要 esign.meanings.manage 权限。含义的代码是永久的，永不更改；显示名称按语言分别填写，签署时签名人所用语言的文本会保存在签名记录中。不再使用的含义不会被删除，而是被停用，且不能用于新的签名。</value></data>
+  <data name="ESign.Help.Approvals" xml:space="preserve"><value>“签名样本审批”是在公司策略要求审批时审核新签名样本的页面；批准需要 esign.samples.approve 权限，拒绝需要 esign.samples.reject 权限。根据四眼原则，不会为您自己的样本显示决策按钮。拒绝需要填写理由，每项决定都会写入下方的决策日志且不可更改。已批准的样本将成为其所有者唯一的有效样本。</value></data>
 </root>

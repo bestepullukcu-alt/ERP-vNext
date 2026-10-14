@@ -25,6 +25,10 @@
     <p class="mb-0 text-muted">@Localizer["ESign.Policy.Sub"]</p>
 </div>
 
+<div class="alert alert-info d-flex gap-2 align-items-start" role="note" id="esignPageHelp">
+    <i class="bx bx-info-circle fs-5"></i><span>@Localizer["ESign.Help.Policy"]</span>
+</div>
+
 <div class="card mb-4" id="esignPolicyRoot" data-can-manage="@(canManage ? "true" : "false")">
     <div class="card-body d-flex flex-wrap align-items-center gap-3">
         <div class="btn-group" role="group" aria-label="@Localizer["ESign.Policy.Scope"]">
