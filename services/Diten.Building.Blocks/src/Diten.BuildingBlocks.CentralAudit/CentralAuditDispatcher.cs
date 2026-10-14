@@ -140,7 +140,7 @@ public sealed class CentralAuditDispatcherHostedService : BackgroundService
         try
         {
             using var scope = _scopes.CreateScope();
-            await scope.ServiceProvider.GetRequiredService<ICentralAuditOutboxStore>().EnsureIndexesAsync(stoppingToken);
+            await scope.ServiceProvider.GetRequiredService<ICentralAuditOutboxStore>().CreateIndexesAsync(stoppingToken);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {

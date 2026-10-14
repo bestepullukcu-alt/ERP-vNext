@@ -38,7 +38,7 @@ public interface ICentralAuditOutboxStore
 
     Task<CentralAuditBacklog> GetBacklogAsync(CancellationToken ct);
 
-    Task EnsureIndexesAsync(CancellationToken ct);
+    Task CreateIndexesAsync(CancellationToken ct);
 }
 
 /// <summary>What is still in the outbox: waiting rows, the oldest one's age, and rows Platform refused.</summary>
@@ -154,7 +154,7 @@ public sealed class MongoCentralAuditOutboxStore : ICentralAuditOutboxStore
         return new CentralAuditBacklog(pending, oldest, rejected);
     }
 
-    public Task EnsureIndexesAsync(CancellationToken ct) =>
+    public Task CreateIndexesAsync(CancellationToken ct) =>
         _collection.Indexes.CreateManyAsync(
             [
                 // The dispatcher's queue read — cross-tenant by nature (one queue per service), like Platform's

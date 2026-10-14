@@ -214,7 +214,7 @@ internal sealed class InMemoryOutboxStore : ICentralAuditOutboxStore
             _rows.Values.Count(r => r.Status == CentralAuditOutboxStatus.Rejected)));
     }
 
-    public Task EnsureIndexesAsync(CancellationToken ct) => Task.CompletedTask;
+    public Task CreateIndexesAsync(CancellationToken ct) => Task.CompletedTask;
 }
 
 /// <summary>
