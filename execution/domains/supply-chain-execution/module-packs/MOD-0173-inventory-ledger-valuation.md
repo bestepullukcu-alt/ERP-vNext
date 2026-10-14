@@ -629,6 +629,12 @@ CUSTOMER_RETURN …, item-vs-SKU status), restored, porcelain clean. **INVENTORY
   `Program.cs`: one `AddCentralAudit` line (`RequireEnlistment`) + `/health/central-audit`.
 - **Numbers:** Inventory 1159+4 → 1174+4 (16 Prism reds both sides, Prism alone 16/16); AuditTrail unaudited-new 123 → 65;
   architecture 69/77 → 71/79, same 8 reds. Item 6 (Platform / Auth e-sign commands) **BLOCKED** — options in the evidence §5.
+- **CT HOLD sonrası (2026-10-14, agent result, pending CT):** MVP-1 ucu `394c05550` merge edildi (`b9c113b54`, çakışmasız); R4
+  `PrepareRecallSettingsChangeCommand` işaretlendi (59 komut, hepsi yol b). Başarısız komutun commit olmuş satırı `Abandoned` (gerçek Mongo
+  testi, s8); sahipsiz satır Platform'a `Unconfirmed` gider (eklemeli `AuditOutcome.Unconfirmed = 4`, s9). Madde 6 karar A:
+  Platform e-imza işlem-içi izi (18'in 16'sı; 2 komut işlem dışı yazıyor → CT'ye soru), Auth 3 komut K2 borcu 8 → 11, CT-DECISIONS
+  kaydı. Inventory 1182+4 → 1199+4, Platform 260 kırmızı ad ad aynı, mimari 69/77 → 71/79 aynı 8, AuditTrail denetimsiz-yeni 65 → 46,
+  s1–s9 kırmızı → geri yeşil. Kanıt §11.
 ## 20. Follow-up Items
 
 - **FU-LE1-01 (shared UI owner):** after a failed first list load the DataTables processing indicator stays visible (shared CSS, protected).

@@ -1,6 +1,6 @@
 # WP-MVP1-AUDIT1 (v2) — BL-501 ortak merkezi denetim ileticisi · kanıt
 
-- **Durum:** ajan sonucu, **CT bekliyor**. Madde 1–5 ve 7 teslim; **madde 6 BLOCKED** (aşağıda, seçeneklerle).
+- **Durum:** ajan sonucu, **CT bekliyor**. İlk tur: madde 1–5 ve 7 teslim, madde 6 BLOCKED. **CT HOLD sonrası** (§11): MVP-1 ucu birleştirildi, Abandoned / Unconfirmed testli, madde 6 karar A uygulandı.
 - **Dal:** `feature/platform/bl-501-central-audit`, taban **9729409e0** (doğrulandı), yalıtılmış worktree
   `C:\Users\Ali\erp-vnext-wt-bl501`. Push yok, main'e commit yok; ana checkout'a ve MVP-1 dalına yazılmadı.
 - **Filo:** 5000–5070 / 4010 / 27017'ye dokunulmadı. Sonda kendi portlarında: mongod 27191, Prism 4191, Platform 5191,
@@ -246,3 +246,99 @@ guid missing`) — AUD-001 K1'de kayıtlı bilinen sorun, bu işle ilgisiz.
 5. Platform `AuditCategory`'de envanter / GxP-operasyon değeri yok → Inventory `MasterData`. Ayrı kategori = Platform enum + Web 2 dil
    etiketi + CT kararı.
 6. Okuma tarafı yalnız platform yöneticisi (AUD-001 K6 açık).
+
+## 11. CT HOLD sonrası (2026-10-14) — üç düzeltme + madde 6 kararı A
+
+### 11.1 Commit'ler
+
+| commit | madde |
+|---|---|
+| `b9c113b54` | 1 — MVP-1 ucu `394c05550` merge (`--no-ff`, rebase yok; R4 + FIX-QUI1). Çakışma yok. |
+| `29c7941ab` | 1 — R4 `PrepareRecallSettingsChangeCommand` işaretlendi (`ForRecall("Create", "RecallSettingsChange")`, varlık = yanıttaki değişiklik kimliği). Yazması `RecallRepository.InTransactionAsync` içinde (zaten kaydolan geri çağrı); yeni işlem noktası yok (13 = 9 komut + 4 süpürücü). Envanter 58 → **59**; Inventory defter notu ve `CentralAuditDeclarationTests` sabiti 59. |
+| `6e2e9c127` | 2 + 3 — Abandoned gerçek Mongo testi; sahipsiz satır `Unconfirmed` |
+| `c2f1a487a` | 4 — CT-DECISIONS (metin aynen), Platform izi, Auth K2 borcu 8 → 11, Auth bağlantısı |
+| `28b357fe0` | 4 — Auth olay etiketleri (Web en/tr) + MOD-0022 §20 FU kaydı |
+| (bu commit) | kanıt eki + MOD-0173 §19 satırı |
+
+Diff-stat `394c05550..28b357fe0` (MVP-1 ucuna göre bu dalın katkısı): **76 dosya, +4126 / −87**.
+
+### 11.2 Madde 2 — başarısız komut kuralı artık testli (gerçek Mongo)
+
+`CentralAuditInventoryDeliveryTests.A_failed_command_whose_transaction_committed_leaves_an_abandoned_row_that_is_never_sent`:
+var olmayan bir rezervasyonu (geçerli UUID, `If-Match: W/"1"`) serbest bırakmak `InventoryReservationRepository.ReleaseAsync`
+işlemini açar (olay kaydolur), "bulunamadı"yı işlem içinde döner ve işlem **commit olur**; komut 404. Satır `Abandoned`;
+`NextAttemptAtUtc` en başa çekilse de `GetDueAsync` (dispatcher'ın gönderdiği tek kaynak) onu döndürmez; betikli Platform'a 0 gövde.
+**s8** (`AbandonAsync` → `Pending`) bu testi kırmızı yapar, geri alınca yeşil.
+
+### 11.3 Madde 3 — sahipsiz satır "doğrulanmamış" gider
+
+Ölçüm: `AuditAppendRequest.Outcome` (`AuditOutcome`: Unknown 0, Succeeded 1, Failed 2, Denied 3) var; "doğrulanmamış" karşılığı **yok**.
+Eklemeli: `AuditOutcome.Unconfirmed = 4` (`services/Diten.Platform/src/Diten.Platform.Domain/Enums/AuditEnums.cs`). Eski çağıranlar
+değişmez (varsayılan Succeeded). Platform lookup'ı enum'dan üretildiği için değer listede kendiliğinden çıkar; Web ham adı gösterir.
+Paket: `CentralAuditOutboxRecord.ConfirmedByCommand` (varsayılan true); `ReleaseOrphansAsync` false yapar; istemci `Outcome = 4`
+ve `metadata.confirmedByCommand = false` gönderir. Testler:
+
+- Inventory (gerçek Mongo) `An_orphan_row_is_released_and_delivered_as_unconfirmed_never_as_succeeded` → gövde `"outcome":4`, `1` yok;
+  onaylı satır (teslim testi) `"outcome":1`, `"confirmedByCommand":true`.
+- Platform gerçek host `An_unconfirmed_row_is_filed_as_unconfirmed_and_a_confirmed_row_as_succeeded` → `audit_events.Outcome`
+  `Unconfirmed` / `Succeeded`.
+- **s9** (`ReleaseOrphansAsync`'ten `ConfirmedByCommand=false` kaldırıldı) → Inventory testi kırmızı, geri yeşil.
+
+### 11.4 Madde 4 — CT kararı A
+
+- `tests/architecture/audit-ledger/CT-DECISIONS.md`: CT metni aynen (komut adları yerine konarak), tabloya satır.
+- Platform: `## İzler` → `esign-islem-ici-denetim | a | yazıcı | ESignatureAuditIntent.EnqueueAsync`; `AcceptedTrails` satırı.
+  Yol a işareti eklenmedi. **Ölçüm: 18 komutun 16'sı izden kredi alıyor** (Platform yol a 280 → 296).
+  ⚠ **CT'ye soru:** `RegisterSignableActionsCommand` ve `VerifySignatureCommand` merkezi kaydı işlem **dışında**
+  `IAuditService.AppendAsync` ile yazıyor (`Features/ESignature/Handlers/CatalogHandlers.cs` ~:310, `SignatureHandlers.cs` ~:590).
+  Karar metni "işlem içinde yazdığı" diyor; bu ikisi girmiyor. Defter satırı / iz uydurulmadı, ikisi taban kırmızısında kalıyor.
+  Seçenek A: ikisini `ESignatureAuditIntent.EnqueueAsync` ile işlem içine taşımak (MOD-0022 sahibi). Seçenek B: `IAuditService.AppendAsync`
+  için dar bir yazıcı izi, CT kararıyla (geniş belirteç: her Platform handler'ına kredi verme riski).
+- Auth: 3 komut mevcut `IUserAuditRecorder.RecordAsync` (yol b) ile merkezi günlüğe; ayrı olay adları `user_esign_reauthenticated`,
+  `user_esign_window_ticket_issued`, `user_esign_ticket_consumed` (`UserAuditEvents`, işlem Execute). Mevcut `tenant_esign_*`
+  satırları ve onları sayan testler aynen. Parola / bilet olaya girmez (yalnız intent, kind, consumedBy).
+  Defter `## K2 borcu` + 3 satır, `PinnedCounts.K2Debt` 8 → 11 (aynı commit). Tam suite `UserAuditEventLabelGuardTests`'i kırmızı
+  buldu (ekran etiketi yok) → `_IndexL10n.cshtml` + `AuditLogIndex.en/tr.resx` (Platform ekranı 2 dil) eklendi.
+- MOD-0022 §20: FU-0022-AUD-01 **kapandı**; FU-0022-AUD-02 **açık** (önce-yaz kalıbı).
+- Defter büyümesi: `git diff 394c05550..HEAD -- tests/architecture/audit-ledger/ | grep '^\+- '` → 3 satır
+  (`ConsumeESignTicketCommand`, `IssueESignWindowTicketCommand`, `ReauthenticateForESignCommand`). Üçü de `CT-DECISIONS.md`'de
+  (`grep -wF`, CI kapısının kuralı).
+- AuditTrail denetimsiz-yeni: **65 → 46** (Platform −16, Auth −3). Envanter: Auth `29 | b 11 | borç 18 | K2 11`, Inventory `59 | b 59`,
+  Platform `482 | a 296 | c 15 | istisna 5 | borç 166 | K2 192`.
+
+### 11.5 Sabotaj s1–s9 (birleştirme sonrası; betik: geri yaz → SHA → `touch` → yeşil tekrar)
+
+| # | sabotaj | kırmızı | geri | SHA |
+|---|---|---|---|---|
+| s1 | davranış başarısız komutta da yazar | BB `A_failed_marked_command_leaves_nothing(AnswersFailure)` 13/14 | 14/14 | f8b4f8349f99 = |
+| s2 | işlem içi yazım işlem dışına | Inventory `An_aborted_ledger_transaction_leaves_no_event` 16/17 | 17/17 | 79b9a441b399 = |
+| s3 | başarısızlıkta satır silinir | Inventory `Platform_failing_keeps_the_row…` 16/17 | 17/17 | b55fb08ab605 = |
+| s4a | Platform `EventId` dalı kapalı | Platform `Two_events_that_share…` 4/5 | 5/5 | 6e336c323a09 = |
+| s4b | Platform yinelenme yakalaması kaldırıldı | Platform `The_same_event_id_sent_twice…` 4/5 | 5/5 | 64418cc0495f = |
+| s5 | `StartReviewCommand` işaretsiz | mimari 46 → **47** (`StartReviewCommand — YENİ KOMUT DENETİMSİZ GELDİ`); Inventory bildirim 2/4 | 46 / 4/4 | ba44e9af57a1 = |
+| s6 | Inventory'de iletici kopyası | `CentralAuditForwarder_LivesOnlyInBuildingBlocks…` | yeşil | a598ad63d6aa = |
+| s7 | olayda kiracı başka kimlikten | Inventory 10/17 (7 test) | 17/17 | 79b9a441b399 = |
+| s8 | `AbandonAsync` → `Pending` | Inventory `A_failed_command_whose_transaction_committed…` 16/17 | 17/17 | b55fb08ab605 = |
+| s9 | serbest bırakmada `ConfirmedByCommand=false` yok | Inventory `An_orphan_row_is_released…unconfirmed…` 16/17 | 17/17 | b55fb08ab605 = |
+
+Derleme hatası her sabotajda 0 (kırmızı davranıştan).
+
+### 11.6 Sayılar — taban = MVP-1 ucu `394c05550` (kendi ölçümüm), sonra = HEAD
+
+| suite | taban | sonra | not |
+|---|---|---|---|
+| Inventory | **1182 + 4** | **1199 + 4** | +17 (CentralAudit 17); Prism bu koşuda iki tarafta yeşil |
+| Platform Application | 5805 ✓ / 260 ✗ (6065) | 5810 ✓ / 260 ✗ (6070) | kırmızı küme **ad ad aynı**; +5 (`CentralAuditAppendMongoTests`) |
+| Building.Blocks CentralAudit | — | 28/28 | |
+| Building.Blocks Secrets | 5/5 | 5/5 | |
+| Mimari | 69/77 (8 ✗) | **71/79 (8 ✗)** | kırmızı küme ad ad aynı |
+| Auth Application | 1152/1154 | 1152/1154 | aynı 2 (`CompositionRootGuardTests` ×2, `AUTH_COMPOSITION_GUARD_MONGO_URI` yok). Kendi mongod'umla (27192) **2/2 yeşil**: kurucu DI değişikliği doğrulandı |
+| Gateway | 164/165 | 164/165 | aynı |
+| Web | 2280/2280 | 2280/2280 | |
+| Derleme | Inventory sln 0/0 · Platform API 36/0 · Auth API 1/0 · Web 18/0 | aynı · CentralAudit + testleri 0/0 | yeni uyarı yok |
+
+### 11.7 Açık
+
+1. `RegisterSignableActionsCommand` / `VerifySignatureCommand` (§11.4) — CT kararı.
+2. `AuditOutcome.Unconfirmed` için Web'de ayrı rozet / etiket yok (lookup enum adını verir) — gerekirse FU.
+3. Önceki §10 maddeleri 2–6 aynen (FU-BL501-MIGRATE, FU-BL501-CATEGORY, K6).
