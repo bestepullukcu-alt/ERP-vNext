@@ -109,12 +109,13 @@ internal sealed class CreateWidgetHandler(ICentralAuditTransaction audit, ISende
     }
 }
 
-internal sealed class NestedWidgetHandler(ICentralAuditTransaction audit) : IRequestHandler<NestedWidgetCommand, Result<WidgetView>>
+/// <summary>Enlists through the static, constructor-free form a repository uses (CentralAuditTransaction).</summary>
+internal sealed class NestedWidgetHandler : IRequestHandler<NestedWidgetCommand, Result<WidgetView>>
 {
     public async Task<Result<WidgetView>> Handle(NestedWidgetCommand request, CancellationToken ct)
     {
         var session = FakeSession.Start();
-        await audit.EnlistAsync(session.Handle, NestedWidgetCommand.NestedId, ct);
+        await CentralAuditTransaction.EnlistAsync(session.Handle, NestedWidgetCommand.NestedId, ct);
         session.Commit();
         return Result<WidgetView>.Ok(new WidgetView(NestedWidgetCommand.NestedId));
     }

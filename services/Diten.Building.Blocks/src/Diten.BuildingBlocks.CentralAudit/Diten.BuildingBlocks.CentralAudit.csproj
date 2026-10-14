@@ -25,6 +25,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Diten.BuildingBlocks.CentralAudit.Abstractions\Diten.BuildingBlocks.CentralAudit.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <InternalsVisibleTo Include="Diten.BuildingBlocks.CentralAudit.Tests" />
   </ItemGroup>
 </Project>

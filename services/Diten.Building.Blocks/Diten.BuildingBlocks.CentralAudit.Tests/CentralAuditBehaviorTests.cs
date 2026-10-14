@@ -209,3 +209,18 @@ public sealed class CentralAuditBehaviorTests
         Assert.Equal(CentralAuditOutboxStatus.Delivered, Assert.Single(harness.Store.Rows).Status);
     }
 }
+
+public sealed class CentralAuditTransactionAmbientTests
+{
+    [Fact]
+    public async Task Outside_a_marked_command_the_static_enlistment_writes_nothing()
+    {
+        using var harness = new Harness();
+        var session = FakeSession.Start();
+
+        await CentralAuditTransaction.EnlistAsync(session.Handle);
+        session.Commit();
+
+        Assert.Empty(harness.Store.Rows);
+    }
+}

@@ -40,6 +40,8 @@ public sealed class CentralAuditBehavior<TRequest, TResponse> : IPipelineBehavio
         }
 
         TResponse response;
+        var outer = CentralAuditRecorder.Ambient.Value;
+        CentralAuditRecorder.Ambient.Value = _recorder;
         try
         {
             response = await next();
@@ -48,6 +50,10 @@ public sealed class CentralAuditBehavior<TRequest, TResponse> : IPipelineBehavio
         {
             await _recorder.AbandonAsync(pending);
             throw;
+        }
+        finally
+        {
+            CentralAuditRecorder.Ambient.Value = outer;
         }
 
         if (!Succeeded(response))

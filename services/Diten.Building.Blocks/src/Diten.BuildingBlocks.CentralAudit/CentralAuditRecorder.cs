@@ -17,6 +17,21 @@ public interface ICentralAuditTransaction
 }
 
 /// <summary>
+/// The same enlistment without a constructor dependency — one added line in a repository's transaction callback:
+/// <code>await CentralAuditTransaction.EnlistAsync(s, ct: ct);</code>
+/// It reaches the recorder of the marked command that is running on this async flow (set by
+/// <see cref="CentralAuditBehavior{TRequest,TResponse}"/>); with none — a sweeper, an unmarked command, a host without
+/// <c>AddCentralAudit</c>, a unit test that builds the repository by hand — it does nothing.
+/// </summary>
+public static class CentralAuditTransaction
+{
+    public static Task EnlistAsync(IClientSessionHandle session, Guid? entityId = null, CancellationToken ct = default) =>
+        CentralAuditRecorder.Ambient.Value is { } recorder
+            ? recorder.EnlistAsync(session, entityId, ct)
+            : Task.CompletedTask;
+}
+
+/// <summary>
 /// Request-scoped: the events of the marked commands in flight (a stack — a handler may send another marked command).
 /// <see cref="CentralAuditBehavior{TRequest,TResponse}"/> opens and closes them; a repository enlists the innermost one
 /// in its transaction.
@@ -35,6 +50,9 @@ public interface ICentralAuditTransaction
 /// </summary>
 public sealed class CentralAuditRecorder : ICentralAuditTransaction
 {
+    /// <summary>The recorder of the marked command running on this async flow (see <see cref="CentralAuditTransaction"/>).</summary>
+    internal static readonly AsyncLocal<CentralAuditRecorder?> Ambient = new();
+
     private readonly Stack<PendingCentralAuditEvent> _inFlight = new();
     private readonly ICentralAuditOutboxStore _store;
     private readonly ICentralAuditScope _scope;
@@ -125,12 +143,13 @@ public sealed class CentralAuditRecorder : ICentralAuditTransaction
 
         if (pending.Enlisted)
         {
-            await TryAsync(() => _store.ConfirmAsync(record.Id, CentralAuditOutcomes.Succeeded, CancellationToken.None), record, "confirmation");
+            // Entity id first: the row is not deliverable until it is confirmed, so the dispatcher never sends it without one.
             if (entityId is { } late)
             {
                 await TryAsync(() => _store.SetEntityIdIfMissingAsync(record.Id, late, CancellationToken.None), record, "entity id");
             }
 
+            await TryAsync(() => _store.ConfirmAsync(record.Id, CentralAuditOutcomes.Succeeded, CancellationToken.None), record, "confirmation");
             return;
         }
 
