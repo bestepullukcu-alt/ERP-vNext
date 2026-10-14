@@ -1786,6 +1786,20 @@ measured; `/internal/esign-tickets/consume` and `/api/internal/esign/actions/reg
 - **Probe.** Own Web 5104 (real Kestrel) → gateway copy 5105 → fake downstream 5106, no signed token: BEFORE the `..%5C` request reached
   `/api/locations`; AFTER 400 `backslash` and the downstream saw only the legitimate request.
 
+### ESIGN-HELP — sayfa açıklamaları (WP-MVP1-ESIGN-HELP, 2026-10-14, agent result, pending CT) — SEC-ESIGN1 madde 6, karar B
+
+- **Dal / commit:** dal `fix/mvp1-esign-help`, taban `cd3680d7c`, commit `94782c7cb`. Kanıt: `docs/records/audits/2026-10/mvp1-esign-help-evidence-2026-10-14.md`.
+- **Değişiklik:**
+  - Yedi e-imza sayfasına modülün mevcut satır içi bilgi notu eklendi (`alert alert-info role="note"` + `bx-info-circle`, `MySignature.cshtml:28–30` deseni, `id="esignPageHelp"`). Notlar sayfanın amacını, gereken yetkiyi ve sayfadaki kuralları anlatıyor: imza anlamı, dört göz, şifre, gerekçe, geçmiş.
+  - Yeni bileşen, JS ya da CSS yok.
+- **Anahtarlar:** `ESign.Help.*` ×7, katalog ve resx.
+  - Platform modülü için zorunlu diller en ve tr.
+  - Mevcut 7 dil parite koruması yüzünden fr, es, zh, ar ve ru'ya da gerçek çeviri eklendi.
+- **Testler ve sabotaj:**
+  - Web 2199 → **2220** (`ESignaturePageHelpWebTests` +21; tabanda 14 kırmızı). Uyarı 24 → 24.
+  - Sabotaj: tr anahtarı silindi → 2 kırmızı; özgün baytlar geri yazıldı → yeşil, porcelain temiz.
+- **O-ESIGN1-1 kapandı** (karar B uygulandı).
+
 ## 20. Follow-up Items
 
 - MOD-0175 pack: consumes ESIGN-BUNDLE; quarantine signable actions (`inventory.quarantine.release / reject / block /
