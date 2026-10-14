@@ -886,14 +886,8 @@
   <data name="MeetingLocationPlaceholder" xml:space="preserve">
     <value>Teams / 会议室 2</value>
   </data>
-  <data name="NewPickModuleLabel" xml:space="preserve">
-    <value>哪个模块？</value>
-  </data>
   <data name="MeetingWhenSubtext" xml:space="preserve">
     <value>日历连接尚未建立：此记录仅显示在本页面上，关闭页面后即消失。截止日期不变。</value>
-  </data>
-  <data name="NewInSourceSubtext" xml:space="preserve">
-    <value>记录将在该模块中创建并保留在那里；任务中心不保存副本。</value>
   </data>
   <data name="ConfirmProceedNamed" xml:space="preserve">
     <value>确定，{0}</value>
@@ -1066,23 +1060,11 @@
   <data name="NewSelfTaskDesc" xml:space="preserve">
     <value>个人待办——存于工作中心</value>
   </data>
-  <data name="NewInSource" xml:space="preserve">
-    <value>在源模块中创建</value>
-  </data>
-  <data name="NewInSourceDesc" xml:space="preserve">
-    <value>模块自身的记录——存于该模块</value>
-  </data>
   <data name="NewTaskTitlePlaceholder" xml:space="preserve">
     <value>任务标题…</value>
   </data>
   <data name="NewCreate" xml:space="preserve">
     <value>创建</value>
-  </data>
-  <data name="NewPickModule" xml:space="preserve">
-    <value>选择模块</value>
-  </data>
-  <data name="NewCreateInSource" xml:space="preserve">
-    <value>在来源中创建</value>
   </data>
   <data name="SelfSource" xml:space="preserve">
     <value>个人</value>
@@ -1101,9 +1083,6 @@
   </data>
   <data name="ToastSelfTaskCreatedReal" xml:space="preserve">
     <value>{0} · 已加入我的工作</value>
-  </data>
-  <data name="ToastCreateInSource" xml:space="preserve">
-    <value>将在 {0} 模块中打开创建（模拟）</value>
   </data>
   <data name="ScopeAll" xml:space="preserve">
     <value>全部</value>
@@ -1358,6 +1337,7 @@
   <data name="RelatedTypeChild" xml:space="preserve"><value>子级</value></data>
   <data name="RelatedTypeTransaction" xml:space="preserve"><value>交易</value></data>
   <data name="RelatedTypeDocument" xml:space="preserve"><value>文档</value></data>
+  <data name="RelatedTaskNotAccessible" xml:space="preserve"><value>您无权访问的任务</value></data>
   <data name="ComplianceTitle" xml:space="preserve"><value>合规与控制</value></data>
   <data name="CompliancePolicy" xml:space="preserve"><value>政策</value></data>
   <data name="ComplianceLimit" xml:space="preserve"><value>审批限额</value></data>
@@ -1570,6 +1550,15 @@
   </data>
   <data name="WorkAggregation_Action_Cancel" xml:space="preserve">
     <value>取消任务</value>
+  </data>
+  <data name="WorkAggregation_Action_Decline" xml:space="preserve">
+    <value>拒绝</value>
+  </data>
+  <data name="WorkAggregation_Action_Withdraw" xml:space="preserve">
+    <value>撤回请求</value>
+  </data>
+  <data name="WorkAggregation_Action_Offer" xml:space="preserve">
+    <value>发送请求</value>
   </data>
   <data name="ToastActionApplied" xml:space="preserve">
     <value>{1} — 已完成“{0}”</value>
@@ -2510,8 +2499,5 @@
   </data>
   <data name="DelegateTargetRequired" xml:space="preserve">
     <value>请选择此审批的受托人。</value>
-  </data>
-  <data name="DelegateNoEligiblePeople" xml:space="preserve">
-    <value>没有可以委托此审批的人员。</value>
   </data>
 </root>

@@ -88,6 +88,7 @@
   <data name="NoBrand" xml:space="preserve"><value>无品牌</value></data>
   <data name="NoBrandLinked" xml:space="preserve"><value>此产品未关联品牌。</value></data>
   <data name="BrandIdOptionalHelp" xml:space="preserve"><value>可选。通用产品与非药品可以没有品牌。已归档品牌不会出现在列表中。</value></data>
+  <data name="BrandNotLinkableSuffix" xml:space="preserve"><value>（不可关联）</value></data>
   <data name="BrandNotResolvedHelp" xml:space="preserve"><value>无法读取该品牌，因此仅显示其标识。</value></data>
   <data name="BrandReferenceSection" xml:space="preserve"><value>品牌引用</value></data>
   <data name="PharmaMetadataSection" xml:space="preserve"><value>药品元数据</value></data>
@@ -106,4 +107,39 @@
   <data name="ProductType_service" xml:space="preserve"><value>服务</value></data>
   <data name="ProductType_training-material" xml:space="preserve"><value>培训材料</value></data>
   <data name="ProductType_other" xml:space="preserve"><value>其他</value></data>
+  <data name="BrandArchivedNotice" xml:space="preserve"><value>该品牌已归档。本产品保留该品牌，但无法再关联新产品。</value></data>
+  <!-- P-2026-10-07-BRAND-FIX4 (K3) — every reason code a product write can return, as a sentence; the status sentences the gateway falls back to. -->
+  <data name="Reason_product_not_found" xml:space="preserve"><value>该产品不存在或您无权访问。</value></data>
+  <data name="Reason_product_code_duplicate" xml:space="preserve"><value>已存在使用此代码的产品。即使归档后，代码仍保持保留。</value></data>
+  <data name="Reason_brand_not_found" xml:space="preserve"><value>该品牌不存在或您无权访问。</value></data>
+  <data name="Reason_brand_archived" xml:space="preserve"><value>该品牌已归档；无法再关联新产品。</value></data>
+  <data name="Reason_brand_not_linkable" xml:space="preserve"><value>只有处于启用状态且在有效期内的品牌才能关联新产品。</value></data>
+  <data name="Reason_record_archived" xml:space="preserve"><value>该记录已归档，无法再更改。</value></data>
+  <data name="Reason_code_immutable" xml:space="preserve"><value>记录创建后无法更改代码。</value></data>
+  <data name="Reason_invalid_product_status" xml:space="preserve"><value>请选择有效的产品状态。</value></data>
+  <data name="Reason_invalid_product_type" xml:space="preserve"><value>请选择有效的产品类型。</value></data>
+  <data name="Reason_invalid_dosage_form" xml:space="preserve"><value>请选择有效的剂型。</value></data>
+  <data name="Reason_invalid_unit_of_measure" xml:space="preserve"><value>请选择有效的计量单位。</value></data>
+  <data name="Reason_invalid_atc_code" xml:space="preserve"><value>请输入有效的 ATC 代码。</value></data>
+  <data name="Reason_archived_status_not_assignable" xml:space="preserve"><value>“已归档”状态只能通过归档操作设置。</value></data>
+  <data name="Reason_invalid_effective_window" xml:space="preserve"><value>结束日期不能早于开始日期。</value></data>
+  <data name="Reason_external_reference_primary_conflict" xml:space="preserve"><value>每个来源系统只能有一个主外部引用。</value></data>
+  <data name="Reason_external_reference_duplicate" xml:space="preserve"><value>同一外部引用被输入了两次。</value></data>
+  <data name="Reason_external_reference_in_use" xml:space="preserve"><value>此外部引用已被另一条记录使用。</value></data>
+  <data name="Reason_indication_ref_duplicate" xml:space="preserve"><value>同一适应症被输入了两次。</value></data>
+  <data name="Reason_version_conflict" xml:space="preserve"><value>在您打开后，有人更改了此记录。请重新加载并再次进行更改。</value></data>
+  <data name="Reason_expected_version_required" xml:space="preserve"><value>无法将此编辑与您打开的版本对应。请重新加载页面后重试。</value></data>
+  <data name="Reason_store_unavailable" xml:space="preserve"><value>目前无法安全保存此更改。未保存任何内容，请稍后重试。</value></data>
+  <data name="Reason_write_outcome_unknown" xml:space="preserve"><value>更改已发送，但无法确认结果。请重新加载该产品：如果更改不在其中，请重新操作。</value></data>
+  <data name="Reason_field_invalid" xml:space="preserve"><value>{0}：值缺失、过长或格式不正确。</value></data>
+  <data name="RefusedStatus_400" xml:space="preserve"><value>请求未被接受。请检查输入后重试。</value></data>
+  <data name="RefusedStatus_403" xml:space="preserve"><value>您无权执行此操作。</value></data>
+  <data name="RefusedStatus_404" xml:space="preserve"><value>未找到该记录或您无权访问。</value></data>
+  <data name="RefusedStatus_409" xml:space="preserve"><value>记录已更改或处于不允许此操作的状态。请重新加载后重试。</value></data>
+  <data name="RefusedStatus_502" xml:space="preserve"><value>无法连接到服务。请稍后重试。</value></data>
+  <data name="RefusedStatus_503" xml:space="preserve"><value>服务暂时不可用。请稍后重试。</value></data>
+  <data name="RefusedStatus_504" xml:space="preserve"><value>服务未及时响应。请稍后重试。</value></data>
+  <data name="RefusedStatus_Other" xml:space="preserve"><value>无法完成请求。请稍后重试。</value></data>
+  <!-- FIX4 (F3) — a brand kept on a re-rendered form whose name could not be read: its id plus this mark. -->
+  <data name="BrandNotReadableSuffix" xml:space="preserve"><value>（无法读取）</value></data>
 </root>

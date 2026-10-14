@@ -178,6 +178,9 @@ const bootSurface = ({
     attachmentContentUrl: (taskId, attachmentId) => `/Tasks/api/${taskId}/attachments/${attachmentId}/content`,
     isConcurrencyConflict: () => false,
     isTransitionBlocked: () => false,
+    // WP-WCN-TASK-REQUEST-01 FIX4 (item 7) — the dispatcher asks which sentences an action needs; this double says
+    // "the base map" for every action, as the real client does for every action but the inquire / withdrawing acts.
+    reasonOverridesFor: () => undefined,
     failureMessage: () => "error"
   };
   global.TaskForm = { buildCreatePayload: (draft) => Object.assign({}, draft) };

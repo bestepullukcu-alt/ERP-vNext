@@ -25,3 +25,18 @@ public interface IUserDisplayNameResolver
         IReadOnlyCollection<Guid> userIds,
         CancellationToken ct = default);
 }
+
+/// <summary>
+/// BL-512 (ATT-FIX1 E1) — names WITH a statement of completeness. <paramref name="Complete"/> is true only when every
+/// id asked about was answered by AuthService (or served from its own short cache): an id missing from
+/// <paramref name="Names"/> then really has no name there. False when any part of the question went unanswered
+/// (AuthService down, a 100-id chunk failed, not configured) — a missing name then means "not known right now".
+/// </summary>
+public sealed record DisplayNameResolution(IReadOnlyDictionary<Guid, string> Names, bool Complete);
+
+/// <summary>The resolver's checked form: same names, plus whether the answer was complete (see
+/// <see cref="DisplayNameResolution"/>). A caller that keeps an answer (a cache) needs to know which it holds.</summary>
+public interface IUserDisplayNameChecker
+{
+    Task<DisplayNameResolution> ResolveCheckedAsync(IReadOnlyCollection<Guid> userIds, CancellationToken ct = default);
+}

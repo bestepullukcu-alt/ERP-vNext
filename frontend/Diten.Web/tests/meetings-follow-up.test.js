@@ -187,7 +187,6 @@ describe("MOD-0357 S7: Details page — carried badge, cross-links, always-open 
     global.DitenModal = { success: () => {}, error: () => {} };
     global.jQuery = undefined;
     global.MeetingsApi = {
-      lookupAttendees: async () => ({ ok: true, data: { people: [] } }),
       get: async () => ({ ok: true, data: meeting }),
       linkedTasks: async () => ({ ok: true, data: [] }),
       failureMessage: () => "error"
@@ -202,6 +201,7 @@ describe("MOD-0357 S7: Details page — carried badge, cross-links, always-open 
 
   const load = async () => {
     buildDom();
+    loadScript("wwwroot/assets/js/shared/diten-people-search.js");   // the page loads it before form.js (BL-531)
     loadScript("wwwroot/assets/js/Meetings/form.js");
     document.dispatchEvent(new Event("DOMContentLoaded"));
     await flushMicrotasks();

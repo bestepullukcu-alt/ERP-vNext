@@ -5421,7 +5421,11 @@ form .diten-field:has(.is-invalid) ~ .invalid-tooltip {
    and ties this selector's specificity, so without a more specific focus entry
    here the icon room collapsed the instant the user clicked in — measured as the
    text jumping from 72px to 48px. */
+/* WP-LANE-GUARDS-02 (CT acceptance): a NATIVE <select class="form-select"> inside .diten-field (the stock-behaviour
+   panels, Product Legal Entity Scopes) needs the same room, or the glyph sits on the selected text and takes the
+   clicks on the select's left edge. Only the text side is set; the arrow side stays Bootstrap's. */
 .diten-field .form-control,
+.diten-field .form-select,
 .diten-field tags.diten-tags,
 .diten-field tags.diten-tags:focus-within,
 .diten-field tags.diten-tags.tagify--focus {
@@ -9939,3 +9943,106 @@ body:has(.offcanvas.show) .flatpickr-calendar.open { z-index: 1095; }
 .time-entry-segments { margin-block: 0.25rem 0.75rem; }
 .time-entry-segment { font-variant-numeric: tabular-nums; }
 .time-entry-calendar-unresolved { margin-block-end: 0.5rem; }
+
+/* WP-UX-COMMON-01 (BL-495) — the top bar's "?" help button and panel (_PageHelpButton / _PageHelpPanel,
+   assets/js/shared/diten-help.js), and the step-by-step tour bubble (assets/js/shared/diten-tour.js). Logical
+   properties throughout, so Arabic mirrors without a second rule set.
+   WP-UX-HELP-PANEL-02 — the owner's design (2026-10-13, "alt çizgili sekmeler"): the theme's 400 px panel (full screen
+   below it), a grey body between a paper header and footer, underlined tabs, preview-style cards. */
+.diten-help-toggle { border: 0; background: transparent; }
+/* The "?" sits among the top bar's icons, which do not move: Sneat's `.btn:hover { translateY(-1px) }` stops here. */
+.btn.diten-help-toggle:hover,
+.btn.diten-help-toggle:focus,
+.btn.diten-help-toggle:active { transform: none; }
+.diten-help-panel { background: var(--bs-body-bg); }
+@media (max-width: 399.98px) { .diten-help-panel { --bs-offcanvas-width: 100vw; } }
+.diten-help-header { gap: .875rem; padding: 1.5rem; background: var(--bs-paper-bg); }
+.diten-help-header-text { flex: 1 1 auto; min-inline-size: 0; }
+.diten-help-eyebrow { font-size: .75rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--bs-secondary-color); }
+.diten-help-header .offcanvas-title { font-size: 1.125rem; font-weight: 600; overflow-wrap: anywhere; }
+.diten-help-body { padding: 1.5rem; border-block-start: 1px solid var(--bs-border-color); line-height: 1.375; }
+.diten-help-tabs { flex-wrap: nowrap; margin-block-end: 1.25rem; border-block-end: 1px solid var(--bs-border-color); }
+.diten-help-tabs .nav-item { flex: 1 1 0; min-inline-size: 0; }
+.diten-help-tabs .nav-link {
+    inline-size: 100%; display: inline-flex; align-items: center; justify-content: center; gap: .375rem;
+    padding: .625rem .375rem; margin-block-end: -1px; border: 0; border-block-end: 2px solid transparent; border-radius: 0;
+    background: transparent; color: var(--bs-body-color); font-size: .875rem; font-weight: 500; white-space: nowrap;
+}
+.diten-help-tabs .nav-link.active { color: var(--bs-primary); border-block-end-color: var(--bs-primary); }
+.diten-help-tabs .nav-link:focus-visible,
+.diten-help-step-toggle:focus-visible { outline: 2px solid var(--bs-primary); outline-offset: 2px; }
+.diten-help-body .tab-pane,
+.diten-help-keys-only { display: flex; flex-direction: column; gap: 1rem; }
+.diten-help-body .tab-pane:not(.active) { display: none; }
+.diten-help-preparing { margin-block-end: 1rem; color: var(--bs-secondary-color); font-size: .8125rem; }
+/* The owner's spacing: a card holds 20px, its rows 16px apart, a label 2px over its value. */
+.diten-help-card { padding: 1.25rem; }
+.diten-help-card-title { margin-block-end: .875rem; }
+.diten-help-fields { display: flex; flex-direction: column; gap: 1rem; }
+.diten-help-field-value { margin-block-start: .125rem; }
+.diten-help-field-value--prose { font-weight: 400; color: var(--bs-heading-color); }
+.diten-help-steps { display: flex; flex-direction: column; gap: .75rem; }
+.diten-help-step-toggle {
+    inline-size: 100%; display: flex; align-items: center; gap: .75rem; padding: .875rem 1rem;
+    border: 0; border-radius: var(--bs-card-border-radius); background: transparent; color: inherit; text-align: start;
+}
+.diten-help-step-icon {
+    flex: 0 0 34px; block-size: 34px; display: flex; align-items: center; justify-content: center;
+    border-radius: .5rem; background: var(--bs-primary-bg-subtle); color: var(--bs-primary);
+}
+.diten-help-step-heading { flex: 1 1 auto; min-inline-size: 0; display: flex; flex-direction: column; }
+.diten-help-step-number { font-size: .6875rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--bs-secondary-color); line-height: 1.3; }
+.diten-help-step-title { font-size: .9375rem; font-weight: 500; color: var(--bs-heading-color); line-height: 1.35; }
+.diten-help-step-chevron { flex: 0 0 auto; color: var(--bs-secondary-color); transition: transform .2s ease-in-out; }
+.diten-help-step-toggle:not(.collapsed) .diten-help-step-chevron { transform: rotate(180deg); }
+/* 1.85: the labels sit inside the line without pushing the next one (the owner saw lines collide at the theme's). */
+.diten-help-step-body { padding-block: 0 1rem; padding-inline: 3.875rem 1rem; font-size: .875rem; line-height: 1.85; color: var(--bs-body-color); }
+.diten-help-step-plain .diten-help-step-body { padding: .875rem 1rem; }
+.diten-help-step-plain .diten-help-step-number { margin-inline-end: .375rem; }
+.diten-help-ui {
+    display: inline-block; white-space: nowrap; margin-block: 2px; padding-inline: 6px; vertical-align: baseline;
+    border: 1px solid var(--bs-border-color); border-radius: .25rem; background: var(--bs-body-bg);
+    font-size: .8125rem; font-weight: 500; line-height: 18px; color: var(--bs-heading-color);
+}
+.diten-help-keys { display: grid; grid-template-columns: auto 1fr; column-gap: 1rem; row-gap: .875rem; align-items: center; margin: 0; font-size: .875rem; color: var(--bs-heading-color); }
+.diten-help-keys dt { display: flex; gap: .25rem; margin: 0; font-weight: 400; }
+.diten-help-keys dd { margin: 0; }
+.diten-help-note { margin-block: 1rem 0; color: var(--bs-secondary-color); font-size: .8125rem; }
+.diten-help-footer { display: flex; justify-content: space-between; gap: .5rem; padding: 1.5rem; background: var(--bs-paper-bg); border-block-start: 1px solid var(--bs-border-color); }
+.diten-help-footer [data-diten-help-start-tour] { display: inline-flex; align-items: center; gap: .5rem; }
+/* Arabic: the panel mirrors through logical properties; icons do not (an arrow keeps its meaning). */
+
+/* The tour bubble wears the theme (Driver.js ships its own look; its files are not touched). */
+.driver-popover.diten-tour-popover {
+    max-inline-size: 22rem; padding: 1.25rem; text-align: start;
+    font-family: var(--bs-body-font-family); color: var(--bs-body-color); background-color: var(--bs-paper-bg);
+    border-radius: var(--bs-border-radius-lg); box-shadow: var(--bs-box-shadow-lg);
+}
+.driver-popover.diten-tour-popover .driver-popover-title { font-size: 1rem; font-weight: 600; line-height: 1.4; color: var(--bs-heading-color); }
+.driver-popover.diten-tour-popover .driver-popover-description { font-size: .875rem; line-height: 1.5; color: var(--bs-body-color); }
+.driver-popover.diten-tour-popover .driver-popover-progress-text { font-size: .8125rem; color: var(--bs-secondary-color); }
+.driver-popover.diten-tour-popover .driver-popover-close-btn { color: var(--bs-secondary-color); }
+.driver-popover.diten-tour-popover .driver-popover-close-btn:hover,
+.driver-popover.diten-tour-popover .driver-popover-close-btn:focus-visible { color: var(--bs-heading-color); }
+/* The footer buttons get `btn btn-sm btn-primary` / `btn-label-secondary` from diten-tour.js. Driver.js unsets them
+   (`all: unset`), which keeps custom properties: so the button is drawn from Bootstrap's own --bs-btn-* of its classes. */
+.driver-popover.diten-tour-popover .driver-popover-footer .btn {
+    display: inline-flex; align-items: center; cursor: pointer; text-shadow: none;
+    padding: var(--bs-btn-padding-y) var(--bs-btn-padding-x); font-family: inherit;
+    font-size: var(--bs-btn-font-size); font-weight: var(--bs-btn-font-weight); line-height: var(--bs-btn-line-height);
+    color: var(--bs-btn-color); background-color: var(--bs-btn-bg);
+    border: var(--bs-btn-border-width) solid var(--bs-btn-border-color); border-radius: var(--bs-btn-border-radius);
+    box-shadow: var(--bs-btn-box-shadow);
+}
+.driver-popover.diten-tour-popover .driver-popover-footer .btn:hover {
+    color: var(--bs-btn-hover-color); background-color: var(--bs-btn-hover-bg); border-color: var(--bs-btn-hover-border-color);
+}
+.driver-popover.diten-tour-popover .driver-popover-footer .btn:focus-visible { outline: 0; box-shadow: var(--bs-btn-focus-box-shadow); }
+.driver-popover.diten-tour-popover .driver-popover-navigation-btns { gap: .375rem; }
+.driver-popover.diten-tour-popover .driver-popover-navigation-btns button + button { margin-inline-start: 0; }
+/* The arrow is the bubble's own colour on the side it points from (Driver.js colours it white). */
+.driver-popover.diten-tour-popover .driver-popover-arrow-side-left { border-left-color: var(--bs-paper-bg); }
+.driver-popover.diten-tour-popover .driver-popover-arrow-side-right { border-right-color: var(--bs-paper-bg); }
+.driver-popover.diten-tour-popover .driver-popover-arrow-side-top { border-top-color: var(--bs-paper-bg); }
+.driver-popover.diten-tour-popover .driver-popover-arrow-side-bottom { border-bottom-color: var(--bs-paper-bg); }
+.diten-tour-rtl { direction: rtl; }

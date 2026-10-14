@@ -518,7 +518,7 @@ public sealed class TaskRecurrenceGenerationTests
             new FakeCurrentUserContext(TaskTestData.Me),
             Tenant,
             NullLogger<CreateTaskItemHandler>.Instance,
-                TaskDocumentFreezerDoubles.OverAnEmptyRegister(), TaskAssignmentGuards.NeverAsked());
+                TaskDocumentFreezerDoubles.OverAnEmptyRegister(), TaskAssignmentGuards.NeverAsked(), writeGate: TaskWriteGateDoubles.Open);
     }
 
     /// <summary>

@@ -1,0 +1,42 @@
+@using Diten.Web.Views.MasterData.Brands
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<BrandsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@*
+    WP-MDM-BRAND-ACCEPT-01 FIX1 (item 6) — the register's quick view (Golden list): the row's summary without leaving the
+    list; the full brand page (references, external references, audit, products) is one link away. Read-only — nothing
+    here changes a brand. Filled from the list row by index.js; no reference or person is shown as an id.
+*@
+<div class="offcanvas offcanvas-end backbone-preview-offcanvas" tabindex="-1" id="offcanvasDetailsPreview"
+     aria-labelledby="oc-title">
+    <div class="offcanvas-header p-4">
+        <div class="d-flex align-items-center min-w-0">
+            <div class="backbone-preview-avatar d-flex align-items-center justify-content-center me-3 flex-shrink-0">
+                <i class="bx bx-purchase-tag-alt fs-4"></i>
+            </div>
+            <div class="min-w-0">
+                <h5 id="oc-title" class="offcanvas-title mb-0 text-truncate">-</h5>
+                <small id="oc-subtitle" class="text-muted d-block text-truncate">-</small>
+            </div>
+        </div>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+    <div class="offcanvas-body flex-grow-1 p-4 border-top">
+        <section class="card backbone-preview-section p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-3 backbone-preview-section-title">@Localizer["SummarySection"]</h6>
+            <div class="row g-4">
+                <div class="col-12"><div class="backbone-preview-field"><i class="bx bx-barcode"></i><div class="min-w-0 flex-grow-1"><div class="backbone-preview-label">@Localizer["BrandCode"]</div><div id="oc-code" class="backbone-preview-value mt-1">-</div></div></div></div>
+                <div class="col-12"><div class="backbone-preview-field"><i class="bx bx-purchase-tag"></i><div class="min-w-0 flex-grow-1"><div class="backbone-preview-label">@Localizer["BrandName"]</div><div id="oc-name" class="backbone-preview-value mt-1">-</div></div></div></div>
+                <div class="col-12"><div class="backbone-preview-field"><i class="bx bx-pulse"></i><div class="min-w-0 flex-grow-1"><div class="backbone-preview-label">@Localizer["BrandStatus"]</div><div class="mt-1"><span id="oc-status" class="badge bg-label-secondary">-</span></div></div></div></div>
+                <div class="col-12"><div class="backbone-preview-field"><i class="bx bx-calendar"></i><div class="min-w-0 flex-grow-1"><div class="backbone-preview-label">@Localizer["EffectiveFrom"]</div><div id="oc-effective-from" class="backbone-preview-value mt-1">-</div></div></div></div>
+                <div class="col-12"><div class="backbone-preview-field"><i class="bx bx-calendar-x"></i><div class="min-w-0 flex-grow-1"><div class="backbone-preview-label">@Localizer["EffectiveTo"]</div><div id="oc-effective-to" class="backbone-preview-value mt-1">-</div></div></div></div>
+                <div class="col-12"><div class="backbone-preview-field"><i class="bx bx-archive"></i><div class="min-w-0 flex-grow-1"><div class="backbone-preview-label">@Localizer["Archived"]</div><div id="oc-archived" class="backbone-preview-value mt-1">-</div></div></div></div>
+                <div class="col-12"><div class="backbone-preview-field"><i class="bx bx-calendar-edit"></i><div class="min-w-0 flex-grow-1"><div class="backbone-preview-label">@Localizer["UpdatedAt"]</div><div id="oc-updated-at" class="backbone-preview-value mt-1">-</div></div></div></div>
+            </div>
+        </section>
+    </div>
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-end gap-2 bg-white">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <a id="oc-open-details" class="btn btn-primary" href="/MasterData/Brands">@Localizer["BrandDetail"]</a>
+    </div>
+</div>

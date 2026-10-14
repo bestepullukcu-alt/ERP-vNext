@@ -13,7 +13,7 @@ namespace Diten.Platform.Application.Features.Tasks.Handlers.CommandHandlers;
 /// MOD-0024 — edit a task's descriptive/planning fields. Assignment target, lifecycle and effort actuals are
 /// deliberately NOT editable here: they move through their own commands so each keeps its own guard rails.
 /// </summary>
-public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemCommand, Response<NoContent>>
+public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemCommand, Response<TaskItemEditResultDto>>
 {
     private readonly ITaskItemRepository _tasks;
     private readonly IOrganizationUnitRepository _organizationUnits;
@@ -22,6 +22,7 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
     private readonly ITaskApprovalService _approvals;
     private readonly ITaskReviewService _reviews;
     private readonly TaskDocumentReferenceFreezer _documentFreezer;
+    private readonly ITaskWriteGate _writeGate;
     private readonly ILogger<UpdateTaskItemHandler> _logger;
 
     public UpdateTaskItemHandler(
@@ -39,8 +40,12 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
         // a test that grepped DependencyInjection.cs for a string — a discipline problem patched with a
         // discipline check. Required turns it into an architectural one: forget the registration and the
         // container refuses to build the handler, which ValidateOnBuild surfaces at STARTUP.
-        TaskDocumentReferenceFreezer documentFreezer)
+        TaskDocumentReferenceFreezer documentFreezer,
+        // WP-WCN-TASK-REQUEST-01 FIX2 — required for the reason documentFreezer is: a gate that defaults to "allow"
+        // cannot be caught by review.
+        ITaskWriteGate writeGate)
     {
+        _writeGate = writeGate;
         _tasks = tasks;
         _organizationUnits = organizationUnits;
         _fieldDefinitions = fieldDefinitions;
@@ -51,20 +56,47 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
         _logger = logger;
     }
 
-    public async Task<Response<NoContent>> Handle(UpdateTaskItemCommand command, CancellationToken ct)
+    public async Task<Response<TaskItemEditResultDto>> Handle(UpdateTaskItemCommand command, CancellationToken ct)
     {
         var request = command.Request;
         var task = await _tasks.GetByIdAsync(command.Id, ct);
-        if (task is null)
+
+        // FIX2 — read (404) → person (403: the sender of an ACCEPTED request watches and comments, BL-509 decision 3;
+        // 409: the person a request waits on answers it first) → state → validation. One gate for every write.
+        if (await _writeGate.CheckAsync(task, TaskWriteKind.Change, ct) is { } refused)
         {
-            return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+            return refused.ToResponse<TaskItemEditResultDto>(command.CorrelationId);
         }
 
         // A closed task is read-only — a terminal item exposes no state-changing action.
-        if (task.CompletedAt is not null || task.CancelledAt is not null)
+        if (task!.CompletedAt is not null || task.CancelledAt is not null)
         {
-            return Response<NoContent>.Fail(
+            return Response<TaskItemEditResultDto>.Fail(
                 "A closed task cannot be edited.", 409, TaskReasonCodes.InvalidState, command.CorrelationId);
+        }
+
+        /*
+         * BL-509 — an UNANSWERED request keeps the shape it was sent with. An approval or a review is the sender
+         * naming who decides about work that is not theirs to direct (refused at creation, refused here too), and
+         * the unit is the sender's until somebody accepts: moving it into another company's unit would show the
+         * request to that company's managers before anybody said yes (owner decision 4).
+         */
+        if (TaskRequestPolicy.IsUnanswered(task))
+        {
+            if ((request.ApprovalRequired == true && !task.ApprovalRequired)
+                || (request.ReviewRequired && !task.ReviewRequired))
+            {
+                return Response<TaskItemEditResultDto>.Fail(
+                    "A request cannot carry an approval or a review.",
+                    400, TaskReasonCodes.RequestOptionNotSupported, command.CorrelationId);
+            }
+
+            if (request.OrganizationUnitId is { } movedTo && movedTo != task.OrganizationUnitId)
+            {
+                return Response<TaskItemEditResultDto>.Fail(
+                    "A request stays in the unit it was sent from until it is accepted.",
+                    409, TaskReasonCodes.RequestUnitFixed, command.CorrelationId);
+            }
         }
 
         if (request.OrganizationUnitId is { } unitId && unitId != task.OrganizationUnitId)
@@ -72,7 +104,7 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
             var unit = await _organizationUnits.GetByIdAsync(unitId, ct);
             if (unit is null || unit.IsArchived)
             {
-                return Response<NoContent>.Fail(
+                return Response<TaskItemEditResultDto>.Fail(
                     "The organization unit could not be resolved.",
                     400, TaskReasonCodes.OrganizationUnitUnresolved, command.CorrelationId);
             }
@@ -96,7 +128,7 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
             request.FieldValues, ct, enforceRequired: true, existing: task.FieldValues);
         if (!fields.IsValid)
         {
-            return Response<NoContent>.Fail(
+            return Response<TaskItemEditResultDto>.Fail(
                 fields.Message ?? "Invalid task field value.",
                 400, fields.ReasonCode ?? TaskReasonCodes.FieldValueInvalid, command.CorrelationId);
         }
@@ -122,14 +154,17 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
          */
         if (TaskReviewRules.ReviewerMissing(request.ReviewRequired, request.ReviewerCandidateUserId))
         {
-            return Response<NoContent>.Fail(
+            return Response<TaskItemEditResultDto>.Fail(
                 TaskReviewRules.ReviewerRequiredMessage,
                 400, TaskReasonCodes.ReviewerRequired, command.CorrelationId);
         }
 
-        var cancelReview = task.ReviewRequired
-            && !request.ReviewRequired
-            && task.ReviewWorkflowInstanceId is not null;
+        // D2-FIX1 A1 — a link still held while the requirement is already off is a cancel that failed before: an edit
+        // that keeps the requirement off retries it.
+        // D2-FIX3 item 8 — switching the requirement OFF withdraws even with no link: a submission whose link write lost
+        // its race left a live review the task does not point at (the service finds it by its object reference).
+        var cancelReview = !request.ReviewRequired && (task.ReviewWorkflowInstanceId is not null || task.ReviewRequired);
+        var heldReviewLink = task.ReviewWorkflowInstanceId is not null;
         task.ReviewRequired = request.ReviewRequired;
         task.ReviewerCandidateUserId = request.ReviewerCandidateUserId;
         task.EmailNotificationsEnabled = request.EmailNotificationsEnabled;
@@ -167,7 +202,13 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
         // lost a concurrency race.
         var startApproval = false;
         var cancelApproval = false;
-        if (request.ApprovalRequired is { } wantsApproval && wantsApproval != task.ApprovalRequired)
+        if (request.ApprovalRequired == false && !task.ApprovalRequired && task.WorkflowInstanceId is not null)
+        {
+            // D2-FIX1 A1 — the requirement is already off but the link is still held: a cancel that failed before.
+            // This edit retries it.
+            cancelApproval = true;
+        }
+        else if (request.ApprovalRequired is { } wantsApproval && wantsApproval != task.ApprovalRequired)
         {
             if (wantsApproval)
             {
@@ -175,7 +216,7 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
                 var manager = request.ApprovalManagerUserId ?? task.ApprovalManagerUserId;
                 if (manager is null || manager == Guid.Empty)
                 {
-                    return Response<NoContent>.Fail(
+                    return Response<TaskItemEditResultDto>.Fail(
                         "An approval manager is required when approval is requested.",
                         400, TaskReasonCodes.ValidationFailed, command.CorrelationId);
                 }
@@ -183,7 +224,7 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
                 // B2 follow-up — the editor switching approval on starts it, and a starter cannot decide it.
                 if (manager == _currentUser.UserId)
                 {
-                    return Response<NoContent>.Fail(
+                    return Response<TaskItemEditResultDto>.Fail(
                         "You cannot be the approver of an approval you request.",
                         400, TaskReasonCodes.ApprovalManagerIsSelf, command.CorrelationId);
                 }
@@ -195,8 +236,10 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
             else
             {
                 // ApprovalRequired goes false now; WorkflowInstanceId is kept until the cancel below has used it.
+                // D2-FIX3 item 8 — withdrawn with NO link too: a start whose link write fell over (below) left a live
+                // instance the task does not point at; the service finds it by the task's object reference.
                 task.ApprovalRequired = false;
-                cancelApproval = task.WorkflowInstanceId is not null;
+                cancelApproval = true;
             }
         }
         else if (request.ApprovalManagerUserId is { } reassigned
@@ -207,7 +250,7 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
             // B2 follow-up — the same rule for re-pointing: the editor cannot name themselves as the approver.
             if (reassigned == _currentUser.UserId)
             {
-                return Response<NoContent>.Fail(
+                return Response<TaskItemEditResultDto>.Fail(
                     "You cannot be the approver of an approval you request.",
                     400, TaskReasonCodes.ApprovalManagerIsSelf, command.CorrelationId);
             }
@@ -251,7 +294,7 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
                 task.DocumentReferences, request.DocumentUids, DateTimeOffset.UtcNow, ct);
             if (!frozen.Success)
             {
-                return Response<NoContent>.Fail(
+                return Response<TaskItemEditResultDto>.Fail(
                     $"The document '{frozen.OffendingUid}' cannot be cited.",
                     400, frozen.ReasonCode!, command.CorrelationId);
             }
@@ -259,14 +302,69 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
             task.DocumentReferences = frozen.References;
         }
 
+        /*
+         * D2-FIX4 items 1 and 4 — THE LIVE INSTANCE A WITHDRAW WILL HAVE TO FIND IS ADOPTED BEFORE THIS WRITE, so the link is
+         * STORED BY THE SAME CONDITIONAL WRITE THAT SWITCHES THE REQUIREMENT OFF.
+         *
+         * Before, an approval or review the task did not point at (its link write had fallen over, or the link was stale and
+         * a later round was the live one) was found only AFTER this write, adopted in memory, and stored by a SECOND write
+         * whose result nobody read. The flag was already off by then, so a second write that lost its race left a live
+         * instance with no link and no requirement — nothing would ever look for it again, and the approver kept a decision
+         * nobody reads. Read first (read-only, nothing in MOD-0023 is touched), the link rides in the one write: if that
+         * write loses, the edit is the 409 it always was and MOD-0023 has not been touched; if it lands, a withdraw that
+         * fails after it has a link to follow on the retry.
+         *
+         * An engine that cannot be READ here refuses the edit the same way (409, nothing written): writing the flag off on a
+         * guess is the very loss this guards against.
+         */
+        if (cancelReview || cancelApproval)
+        {
+            try
+            {
+                if (cancelReview && await _reviews.FindUnlinkedOpenInstanceAsync(task, ct) is { } liveReview)
+                {
+                    task.ReviewWorkflowInstanceId = liveReview;
+                }
+
+                if (cancelApproval && await _approvals.FindUnlinkedOpenInstanceAsync(task, ct) is { } liveApproval)
+                {
+                    task.WorkflowInstanceId = liveApproval;
+                }
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                _logger.LogWarning(ex,
+                    "Task {TaskId} was not edited: its running approval or review could not be looked up, and the requirement "
+                    + "is not switched off on a guess.", task.Id);
+                return Response<TaskItemEditResultDto>.Fail(
+                    "The task changed meanwhile; reload and retry.",
+                    409, TaskReasonCodes.ConcurrencyConflict, command.CorrelationId);
+            }
+
+            heldReviewLink = task.ReviewWorkflowInstanceId is not null;
+        }
+
         task.Declare(TaskTransitionKind.Edited, _currentUser.UserId);
 
         if (!await _tasks.UpdateAsync(task, request.ExpectedVersion, ct))
         {
-            return Response<NoContent>.Fail(
+            return Response<TaskItemEditResultDto>.Fail(
                 "The task changed meanwhile; reload and retry.",
                 409, TaskReasonCodes.ConcurrencyConflict, command.CorrelationId);
         }
+
+        /*
+         * D2-FIX2 item 2 — THE VERSION THE STORE HOLDS NOW. The edit has landed (version + 1); a refusal from here on is
+         * about a follow-up, not the edit, so it carries this number and the form's "save again" is a retry instead of
+         * a collision with the very edit it retries. Moved only by a write that LANDED: UpdateAsync stamps the entity
+         * before its conditional write, so task.Version alone would also count a write that lost.
+         *
+         * Why the write is not made to wait for the withdraw (the other way to fix it): the sentence the reader is
+         * shown for these two codes, in seven languages, is "your changes are saved … save again to retry" — true only
+         * if the edit lands first — and acting on MOD-0023 only AFTER the edit is known to have landed is the rule this
+         * handler keeps for every handoff (no workflow touched for an edit that lost its race).
+         */
+        var landedVersion = task.Version;
 
         if (startApproval)
         {
@@ -276,13 +374,29 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
             if (instanceId is not null)
             {
                 task.WorkflowInstanceId = instanceId;
-                if (!await _tasks.UpdateAsync(task, task.Version, ct))
+                if (await _tasks.UpdateAsync(task, task.Version, ct))
+                {
+                    landedVersion = task.Version;
+                }
+                else
                 {
                     // The approval IS running; only its link failed to persist. Never silent: without the id the
                     // projection cannot read the state, and fail-closed then keeps the task blocked.
                     _logger.LogError(
                         "Approval instance {InstanceId} started for task {TaskId} but the link could not be stored; "
                         + "the task stays blocked until it is retried.", instanceId, task.Id);
+
+                    /*
+                     * D2-FIX5 item 1 — IF THE WRITER WHO WON DOES NOT WANT IT, IT IS WITHDRAWN. The link write lost because
+                     * somebody saved the task between the start and here. When that was an edit that switched the approval
+                     * requirement off again (or a cancel, or a delete), its own withdraw ran BEFORE this start and found
+                     * nothing: the approval just started would stay decidable for good, with the requirement off and no
+                     * link for anything to follow. The task is read again — still wanting approval and open, the approval
+                     * stays (the gate reads it by its object reference, and the log above says what is left); otherwise it is
+                     * withdrawn, or, if MOD-0023 refuses, the link is stored for the next edit's retry. Never throws.
+                     */
+                    await TaskWorkflowLinkGate.WithdrawUnwantedStartAsync(
+                        task, review: false, _tasks, _approvals, reviews: null, _logger, ct);
                 }
             }
             else
@@ -294,30 +408,101 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
         }
         if (cancelReview)
         {
-            await _reviews.CancelReviewAsync(task, ct);
+            if (!await _reviews.CancelReviewAsync(task, ct))
+            {
+                // D2-FIX1 A1 — the review is still open: the link stays, or the reviewer could decide a review that
+                // nothing reads any more. The requirement change is saved; the next edit retries the cancel.
+                // D2-FIX2 item 2 — and the refusal says at which version the edit landed (see landedVersion).
+                // D2-FIX3 item 8 — a review the task did not point at (found by its object reference) was adopted as
+                // the link: it is STORED here, or the retry this refusal asks for would have no link to follow.
+                // D2-FIX4 item 4 — normally it was adopted BEFORE the write and rides in it (above); only a review that
+                // started between that read and now is adopted here, and a write that cannot store it is NEVER dropped
+                // silently: the flag is already off, so a link that is not stored is an instance nothing looks for again.
+                if (!heldReviewLink && task.ReviewWorkflowInstanceId is not null)
+                {
+                    if (!await _tasks.UpdateAsync(task, task.Version, ct))
+                    {
+                        _logger.LogError(
+                            "Review {InstanceId} of task {TaskId} could not be withdrawn and its link could not be stored.",
+                            task.ReviewWorkflowInstanceId, task.Id);
+                        return Response<TaskItemEditResultDto>.Fail(
+                            "The task changed meanwhile; reload and retry.",
+                            409, TaskReasonCodes.ConcurrencyConflict, command.CorrelationId);
+                    }
+
+                    landedVersion = task.Version;
+                }
+
+                return Response<TaskItemEditResultDto>.FailWithData(
+                    "The edit is saved, but the running review could not be withdrawn; try again.",
+                    409, TaskReasonCodes.ReviewCancelFailed, new TaskItemEditResultDto(landedVersion),
+                    command.CorrelationId);
+            }
+
             task.ReviewWorkflowInstanceId = null;
             // A task left in PendingReview with no review would be waiting on nobody, with no action to clear it.
+            var rewound = false;
             if (task.Lifecycle == TaskLifecycle.PendingReview)
             {
                 task.Lifecycle = TaskLifecycle.InProgress;
                 // WC-1. Its own kind rather than Resumed: the holder did not pick this back up, the requirement
                 // was withdrawn from under them, and reading "resumed" would name the wrong person's decision.
                 task.Declare(TaskTransitionKind.ReviewCancelled, _currentUser.UserId);
+                rewound = true;
             }
 
-            if (!await _tasks.UpdateAsync(task, task.Version, ct))
+            // Written only when something stored changes: a review found by its object reference and withdrawn was never
+            // the stored link, so clearing it changes nothing on disk.
+            if (heldReviewLink || rewound)
             {
-                _logger.LogWarning(
-                    "Review was switched off for task {TaskId} and cancelled, but clearing the instance link failed.",
-                    task.Id);
+                if (await _tasks.UpdateAsync(task, task.Version, ct))
+                {
+                    landedVersion = task.Version;
+                }
+                else
+                {
+                    _logger.LogWarning(
+                        "Review was switched off for task {TaskId} and cancelled, but clearing the instance link failed.",
+                        task.Id);
+                }
             }
         }
 
         if (cancelApproval)
         {
-            await _approvals.CancelApprovalAsync(task, ct);
+            var heldApprovalLink = task.WorkflowInstanceId is not null;
+            if (!await _approvals.CancelApprovalAsync(task, ct))
+            {
+                // D2-FIX1 A1 — the approval is still open: the link stays (see the review's cancel above).
+                // D2-FIX2 item 2 — the version the edit landed at travels with the refusal.
+                // D2-FIX3 item 8 — an approval found by its object reference was adopted as the link: stored, so the
+                // retry follows it (the requirement is already off, so only a held link makes the next edit retry).
+                // D2-FIX4 item 4 — normally stored by the edit's own write (above); a write that cannot store a late
+                // adoption is refused loudly, never dropped.
+                if (!heldApprovalLink && task.WorkflowInstanceId is not null)
+                {
+                    if (!await _tasks.UpdateAsync(task, task.Version, ct))
+                    {
+                        _logger.LogError(
+                            "Approval {InstanceId} of task {TaskId} could not be withdrawn and its link could not be stored.",
+                            task.WorkflowInstanceId, task.Id);
+                        return Response<TaskItemEditResultDto>.Fail(
+                            "The task changed meanwhile; reload and retry.",
+                            409, TaskReasonCodes.ConcurrencyConflict, command.CorrelationId);
+                    }
+
+                    landedVersion = task.Version;
+                }
+
+                return Response<TaskItemEditResultDto>.FailWithData(
+                    "The edit is saved, but the running approval could not be withdrawn; try again.",
+                    409, TaskReasonCodes.ApprovalCancelFailed, new TaskItemEditResultDto(landedVersion),
+                    command.CorrelationId);
+            }
+
             task.WorkflowInstanceId = null;
-            if (!await _tasks.UpdateAsync(task, task.Version, ct))
+            // A link found by the object reference and withdrawn was never stored: nothing on disk to clear.
+            if (heldApprovalLink && !await _tasks.UpdateAsync(task, task.Version, ct))
             {
                 _logger.LogWarning(
                     "Approval was switched off for task {TaskId} and cancelled, but clearing the instance link failed.",
@@ -325,54 +510,185 @@ public sealed class UpdateTaskItemHandler : IRequestHandler<UpdateTaskItemComman
             }
         }
 
-        return Response<NoContent>.Success(204, command.CorrelationId);
+        return Response<TaskItemEditResultDto>.Success(204, command.CorrelationId);
     }
 }
 
+/// <summary>
+/// Soft-delete one task.
+///
+/// <para><b>D2-FIX3 item 1 — a deleted task takes what it started in MOD-0023 with it.</b> Deleting used to leave the
+/// approval or review running: the approver kept a decision that escalated, timed out and was read by nobody. Now the
+/// delete withdraws them first, exactly as a cancel does (<see cref="TaskWorkflowLinkGate.WithdrawAsync"/>), and a withdraw
+/// that does not happen REFUSES the delete — 409 with the existing withdraw code — so nothing is deleted around a
+/// decision that is still open.</para>
+///
+/// <para>The withdraw services are OPTIONAL for the reason they are on <see cref="TransitionTaskItemHandler"/>: tests that
+/// predate this construct the handler directly; production wires both. Without them a task holding a link is NOT deleted
+/// (fail-closed); a task holding none never asks.</para>
+/// </summary>
 public sealed class DeleteTaskItemHandler : IRequestHandler<DeleteTaskItemCommand, Response<NoContent>>
 {
     private readonly ITaskItemRepository _tasks;
+    private readonly ITaskWriteGate _writeGate;
+    private readonly ITaskApprovalService? _approvals;
+    private readonly ITaskReviewService? _reviews;
 
-    public DeleteTaskItemHandler(ITaskItemRepository tasks)
+    public DeleteTaskItemHandler(
+        ITaskItemRepository tasks,
+        ITaskWriteGate writeGate,
+        ITaskApprovalService? approvals = null,
+        ITaskReviewService? reviews = null)
     {
         _tasks = tasks;
+        _writeGate = writeGate;
+        _approvals = approvals;
+        _reviews = reviews;
     }
 
     public async Task<Response<NoContent>> Handle(DeleteTaskItemCommand command, CancellationToken ct)
     {
+        // FIX2 — the delete key is a manager's; it still reaches only tasks its holder can read. FIX3 (CT decision) —
+        // and never an unanswered request its holder is the person asked (409: they read it to answer it, and a delete
+        // would make it vanish with no decline and no reason), nor a task they read only as a watcher or as the person
+        // a waiting task asks (403).
         var task = await _tasks.GetByIdAsync(command.Id, ct);
-        if (task is null)
+        if (await _writeGate.CheckAsync(task, TaskWriteKind.Administer, ct) is { } refused)
         {
-            return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+            return refused.ToResponse<NoContent>(command.CorrelationId);
         }
 
+        if (await TaskWorkflowLinkGate.WithdrawAsync(task, _approvals, _reviews, ct) is { } refusedCode)
+        {
+            return Response<NoContent>.Fail(
+                refusedCode == TaskReasonCodes.ReviewCancelFailed
+                    ? "The task was not deleted: its running review could not be withdrawn; try again."
+                    : "The task was not deleted: its running approval could not be withdrawn; try again.",
+                409, refusedCode, command.CorrelationId);
+        }
+
+        /*
+         * D2-FIX4 item 7 — THE DELETE IS CONDITIONAL ON THE VERSION READ ABOVE. Between the withdraw and an unconditional
+         * soft delete, a start (an edit switching approval or review on) could land and open a NEW instance: the task was
+         * deleted around a live decision again. Now a task that moved since it was read is not deleted — 409, and the retry
+         * reads it afresh and withdraws what started in between.
+         */
         // Soft delete (repository base sets IsDeleted); no hard delete anywhere.
-        await _tasks.DeleteAsync(command.Id, ct);
+        if (!await _tasks.DeleteAsync(command.Id, task.Version, ct))
+        {
+            return Response<NoContent>.Fail(
+                "The task changed meanwhile; reload and retry.",
+                409, TaskReasonCodes.ConcurrencyConflict, command.CorrelationId);
+        }
+
         return Response<NoContent>.Success(204, command.CorrelationId);
     }
 }
 
-public sealed class BulkDeleteTaskItemHandler : IRequestHandler<BulkDeleteTaskItemCommand, Response<NoContent>>
+/// <summary>
+/// Soft-delete several tasks. D2-FIX3 item 1 — each one withdraws what it started first, like the single delete; a task
+/// whose withdraw does not happen is left as it is.
+///
+/// <para><b>D2-FIX5 item 4 — AND THE ANSWER SAYS WHAT WAS LEFT.</b> A task that moved after it was read (an edit that
+/// started something between the withdraw and the delete) was skipped with a log line and the same 204 as a delete, so a
+/// caller was told "deleted" for a task that was still there. Now, like the subtask cascade, a task whose conditional delete
+/// loses is read again and tried again (at most <see cref="MaxDeleteAttempts"/> times — the withdraw runs each time, so what
+/// started in between is withdrawn too); and whatever is STILL not deleted — a withdraw MOD-0023 refused, or a task that kept
+/// moving — is named: <b>200</b> with <see cref="BulkDeleteTaskItemResultDto.SkippedIds"/> instead of the body-less 204 (which
+/// stays the answer when nothing was left out). Only ids of tasks that exist in THIS tenant are ever named: an id that is
+/// unknown, deleted or another tenant's is answered like a delete, so the answer leaks nothing about which ids exist — the
+/// ids named are ones the caller already holds and can see.</para>
+///
+/// <para>The single delete is stricter by design — it refuses a task that moved (409) and lets the caller re-read it; a bulk
+/// delete has nobody to ask halfway through a list, so it retries on its own, a few times, and reports the rest. Nothing in
+/// the web tier calls this endpoint (no proxy, no script), so the new answer needs no screen text.</para>
+/// </summary>
+public sealed class BulkDeleteTaskItemHandler : IRequestHandler<BulkDeleteTaskItemCommand, Response<BulkDeleteTaskItemResultDto>>
 {
-    private readonly ITaskItemRepository _tasks;
+    /// <summary>D2-FIX5 item 4 — how many times one task's delete is read and tried while its conditional write keeps losing.</summary>
+    internal const int MaxDeleteAttempts = 3;
 
-    public BulkDeleteTaskItemHandler(ITaskItemRepository tasks)
+    private readonly ITaskItemRepository _tasks;
+    private readonly ITaskWriteGate _writeGate;
+    private readonly ITaskApprovalService? _approvals;
+    private readonly ITaskReviewService? _reviews;
+    private readonly ILogger<BulkDeleteTaskItemHandler>? _logger;
+
+    public BulkDeleteTaskItemHandler(
+        ITaskItemRepository tasks,
+        ITaskWriteGate writeGate,
+        ITaskApprovalService? approvals = null,
+        ITaskReviewService? reviews = null,
+        ILogger<BulkDeleteTaskItemHandler>? logger = null)
     {
         _tasks = tasks;
+        _writeGate = writeGate;
+        _approvals = approvals;
+        _reviews = reviews;
+        _logger = logger;
     }
 
-    public async Task<Response<NoContent>> Handle(BulkDeleteTaskItemCommand command, CancellationToken ct)
+    public async Task<Response<BulkDeleteTaskItemResultDto>> Handle(BulkDeleteTaskItemCommand command, CancellationToken ct)
     {
+        var skipped = new List<Guid>();
         foreach (var id in command.Request.Ids.Distinct())
         {
-            // Each delete re-reads through the tenant filter, so an id from another tenant is simply skipped.
-            var task = await _tasks.GetByIdAsync(id, ct);
-            if (task is not null)
+            if (!await DeleteOneAsync(id, ct))
             {
-                await _tasks.DeleteAsync(id, ct);
+                skipped.Add(id);
             }
         }
 
-        return Response<NoContent>.Success(204, command.CorrelationId);
+        return skipped.Count == 0
+            ? Response<BulkDeleteTaskItemResultDto>.Success(204, command.CorrelationId)
+            : Response<BulkDeleteTaskItemResultDto>.Success(new BulkDeleteTaskItemResultDto(skipped), 200, command.CorrelationId);
+    }
+
+    /// <summary>False only for a task of this tenant that is still there and could not be deleted.</summary>
+    private async Task<bool> DeleteOneAsync(Guid id, CancellationToken ct)
+    {
+        for (var attempt = 1; attempt <= MaxDeleteAttempts; attempt++)
+        {
+            // Each delete re-reads through the tenant filter, so an id from another tenant — or one somebody deleted
+            // meanwhile — is simply not there: answered like a delete.
+            var task = await _tasks.GetByIdAsync(id, ct);
+            if (task is null)
+            {
+                return true;
+            }
+
+            // WP-WCN-TASK-REQUEST-01 FIX2 / FIX3 — the same single write gate as the one-task delete, BEFORE anything is
+            // withdrawn: a task the caller cannot read (or reads only as a watcher / as the person a waiting task asks, or
+            // is the person an unanswered request waits on) is skipped and answered like a delete — never named in
+            // SkippedIds, so the answer leaks nothing about it (the rule D2-FIX5 already keeps for unknown ids).
+            if (await _writeGate.CheckAsync(task, TaskWriteKind.Administer, ct) is not null)
+            {
+                return true;
+            }
+
+            if (await TaskWorkflowLinkGate.WithdrawAsync(task, _approvals, _reviews, ct) is { } refusedCode)
+            {
+                _logger?.LogWarning(
+                    "Task {TaskId} was left out of a bulk delete: its running approval or review could not be withdrawn ({ReasonCode}).",
+                    task.Id, refusedCode);
+                return false;
+            }
+
+            // Conditional on the version read above, like the single delete: a task that moved since (a start landed after
+            // its withdraw) is not deleted around the new instance — it is read again, withdrawn again, and tried again.
+            if (await _tasks.DeleteAsync(id, task.Version, ct))
+            {
+                return true;
+            }
+
+            _logger?.LogWarning(
+                "Task {TaskId} changed after it was read for a bulk delete (try {Attempt} of {Attempts}).",
+                task.Id, attempt, MaxDeleteAttempts);
+        }
+
+        _logger?.LogWarning(
+            "Task {TaskId} was left out of a bulk delete: it kept changing after it was read ({Attempts} tries).",
+            id, MaxDeleteAttempts);
+        return false;
     }
 }

@@ -159,7 +159,7 @@ public sealed class PlatformAccountRulesTests
         public Task<bool> ExistsByUserNameAsync(string normalizedUserName, Guid? excludeId = null, CancellationToken ct = default) =>
             Task.FromResult(_items.Any(x => x.NormalizedUserName == normalizedUserName && !x.IsDeleted && (!excludeId.HasValue || x.Id != excludeId.Value)));
 
-        public Task<bool> UpdateAsync(PlatformAdministrator administrator, int expectedVersion, CancellationToken ct = default)
+        public Task<bool> UpdateAsync(PlatformAdministrator administrator, int expectedVersion, CancellationToken ct = default, AuthSyncPendingEffect authSyncPending = AuthSyncPendingEffect.Keep)
         {
             var item = _items.FirstOrDefault(x => x.Id == administrator.Id && !x.IsDeleted && x.Version == expectedVersion);
             if (item is null)
@@ -213,6 +213,29 @@ public sealed class PlatformAccountRulesTests
                 x.Status == AdministratorStatus.Active &&
                 x.Roles.Contains(AdministratorRole.SuperAdmin) &&
                 (!excludeId.HasValue || x.Id != excludeId.Value)));
+
+        // BL-521 FIX3 item 3 — not used by these tests (they edit an account's own profile only).
+        public Task<SuperAdminGuardedWriteResult> UpdateGuardedAsync(PlatformAdministrator administrator, int expectedVersion, CancellationToken ct = default, AuthSyncPendingEffect authSyncPending = AuthSyncPendingEffect.Keep) =>
+            throw new NotSupportedException("The account settings tests never take a super administrator out of the set.");
+
+        public Task<SuperAdminGuardedWriteResult> SoftDeleteGuardedAsync(Guid id, int expectedVersion, string actorName, CancellationToken ct = default) =>
+            throw new NotSupportedException("The account settings tests never take a super administrator out of the set.");
+
+        // BL-521 FIX4 item 2 — only the administrator update writes the convergence mark.
+        public Task<bool> RecordLoginAcceptedAsync(Guid id, DateTimeOffset acceptedAtUtc, CancellationToken ct = default)
+        {
+            var item = _items.FirstOrDefault(x => x.Id == id && !x.IsDeleted && x.Status == AdministratorStatus.Active);
+            if (item is not null)
+            {
+                item.LastLoginAtUtc = acceptedAtUtc;
+                item.InvitationStatus = AdministratorInvitationStatus.Accepted;
+            }
+
+            return Task.FromResult(item is not null);
+        }
+
+        public Task MarkAuthSyncPendingAsync(Guid id, bool pending, CancellationToken ct = default) =>
+            throw new NotSupportedException("The account settings tests never converge Auth.");
 
         private static PlatformAdministrator? CloneOrNull(PlatformAdministrator? administrator) =>
             administrator is null ? null : Clone(administrator);

@@ -56,6 +56,10 @@ public sealed class TaskWorkItemActionDispatcher : IWorkItemActionDispatcher
             // BL-439 — the addressee's answer. READ, the key TasksController's `answer` endpoint carries: the rule
             // that matters is "this task is asking you", which AnswerInquiryHandler enforces, not a key.
             ["answer"] = TaskPermissions.Read,
+            // BL-509 — the request's own acts; each key is the one its TasksController endpoint carries.
+            ["decline"] = TaskPermissions.Update,
+            ["withdraw"] = TaskPermissions.Update,
+            ["offer"] = TaskPermissions.RequestsCreate,
             // MOD-0280-FU01 T2b — the holder's timer; TimeEntryController's timer/start and timer/stop carry this key.
             ["startTimer"] = TimeEntry.TimeEntryPermissions.TimesheetsUpdate,
             ["stopTimer"] = TimeEntry.TimeEntryPermissions.TimesheetsUpdate
@@ -84,6 +88,33 @@ public sealed class TaskWorkItemActionDispatcher : IWorkItemActionDispatcher
             case "accept":
                 return Map(await _mediator.Send(
                     new AcceptTaskItemCommand(request.ItemId, transition, request.CorrelationId), ct), request);
+
+            case "decline":
+                // The handler owns the "a reason is required" rule and its code; an empty one is sent on as-is.
+                return Map(await _mediator.Send(
+                    new DeclineTaskOfferCommand(
+                        request.ItemId,
+                        new DeclineTaskOfferRequest(version, payload.Reason ?? payload.Note ?? string.Empty),
+                        request.CorrelationId), ct), request);
+
+            case "withdraw":
+                return Map(await _mediator.Send(
+                    new WithdrawTaskOfferCommand(
+                        request.ItemId,
+                        new WithdrawTaskOfferRequest(version, payload.Note ?? payload.Reason),
+                        request.CorrelationId), ct), request);
+
+            case "offer":
+                // The one field this act cannot do without: who is being asked.
+                if (payload.AssigneeUserId is not { } offeredTo || offeredTo == Guid.Empty)
+                {
+                    return WorkItemActionDispatchResults.PayloadInvalid(request, nameof(payload.AssigneeUserId));
+                }
+
+                return Map(await _mediator.Send(
+                    new OfferTaskItemCommand(
+                        request.ItemId, new OfferTaskItemRequest(version, offeredTo), request.CorrelationId),
+                    ct), request);
 
             case "claim":
                 return Map(await _mediator.Send(

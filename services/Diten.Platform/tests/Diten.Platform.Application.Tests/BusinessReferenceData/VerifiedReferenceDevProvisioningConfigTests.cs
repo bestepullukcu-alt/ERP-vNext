@@ -41,7 +41,7 @@ public sealed class VerifiedReferenceDevProvisioningConfigTests
     }
 
     [Fact]
-    public async Task Development_config_makes_gsku_provisioning_enumeration_and_market_eligible()
+    public async Task Development_config_makes_gsku_provisioning_enumeration_eligible_and_market_waits_for_process_provenance()
     {
         var configuration = PlatformDevelopmentConfiguration();
         var provider = Bind<BusinessReferenceDataProviderOptions>(configuration, BusinessReferenceDataProviderOptions.SectionName);
@@ -70,15 +70,20 @@ public sealed class VerifiedReferenceDevProvisioningConfigTests
         var enumeration = await gskuEligibility.EvaluateEnumerationAsync();
         Assert.True(enumeration.IsEligible, enumeration.ReasonCode);
 
+        // WP-LANE-MAIN-SYNC-04, owner decision A (2026-10-14): the lane's market rule stays — the one-shot market provisioning
+        // runs only when the process itself names the values (the BusinessReferenceData__VerifiedMarketOperationalProvisioning__*
+        // environment variables equal to the configuration), never on appsettings alone (lane 6e3013612). The Development
+        // configuration is valid; without the process provenance it is refused with that reason, not with "configuration invalid".
         var marketDecision = await new DevelopmentBusinessReferenceDataVerifiedMarketOperationalEligibility(
-            Environment("Development"), Options.Create(market), Options.Create(provider)).EvaluateAsync();
-        Assert.True(marketDecision.IsEligible, marketDecision.ReasonCode);
+            Environment("Development"), configuration, Options.Create(market), Options.Create(provider)).EvaluateAsync();
+        Assert.False(marketDecision.IsEligible);
+        Assert.Equal("VERIFIED_MARKET_OPERATIONAL_PROCESS_PROVENANCE_REQUIRED", marketDecision.ReasonCode);
 
         // the live path: the same configuration is refused outside Development (a separate design decision)
         Assert.False((await new DevelopmentBusinessReferenceDataVerifiedGskuOperationalEligibility(
             Environment("Production"), Options.Create(gsku), Options.Create(provider)).EvaluateAsync()).IsEligible);
         Assert.False((await new DevelopmentBusinessReferenceDataVerifiedMarketOperationalEligibility(
-            Environment("Production"), Options.Create(market), Options.Create(provider)).EvaluateAsync()).IsEligible);
+            Environment("Production"), configuration, Options.Create(market), Options.Create(provider)).EvaluateAsync()).IsEligible);
     }
 
     [Fact]

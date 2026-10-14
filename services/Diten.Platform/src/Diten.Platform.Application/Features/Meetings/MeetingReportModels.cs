@@ -69,7 +69,11 @@ public sealed record MeetingReportMeetingRowDto(
     Guid OrganizerUserId,
     int AttendeeCount,
     int RespondedCount,
-    double? AttendanceRatePercent);
+    double? AttendanceRatePercent,
+    /// <summary>BL-531 — the organizer's name for the screen. Never written when null, so the JSON export (built
+    /// from the same rows without names) stays byte-identical; the CSV export has its own fixed columns.</summary>
+    [property: System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    string? OrganizerDisplayName = null);
 
 /// <summary>One PUBLISHED decision — never a draft's (pack §23.13/3, owner decision 2026-09-15).</summary>
 public sealed record MeetingReportDecisionRowDto(

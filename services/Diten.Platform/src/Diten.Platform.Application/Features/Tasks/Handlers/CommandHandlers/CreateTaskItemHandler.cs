@@ -42,9 +42,13 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
     // BL-023 — is the assignee above me, and if so who carries the request. Neither decides anything.
     private readonly ITaskAssignmentDirection? _direction;
     private readonly ITaskUpwardRequestService? _upwardRequests;
+    // BL-509 — who a request may be sent to. Null only where a test builds this handler without it; an Offered
+    // target is then REFUSED, so an absent service can never let a request through unchecked.
+    private readonly ITaskRequestService? _requests;
     private readonly TaskDocumentReferenceFreezer _documentFreezer;
     // BL-057 at the write — who the work may go to. The same rule the pickers ask.
     private readonly ITaskAssignmentGuard _assignmentGuard;
+    private readonly ITaskWriteGate _writeGate;
     private readonly ITenantContext _tenantContext;
     private readonly ILogger<CreateTaskItemHandler> _logger;
 
@@ -84,6 +88,8 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
          * missing registration fails at STARTUP (ValidateOnBuild) instead of admitting everybody.
          */
         ITaskAssignmentGuard assignmentGuard,
+        // FIX2 — the parent of a subtask is written to (its completion is held by the subtask): the write gate.
+        ITaskWriteGate writeGate,
         /*
          * BL-023 — OPTIONAL on purpose, and NOT the same case. A caller that supplies neither gets exactly
          * the behaviour that shipped before this change (every assignment is a plain order), which is what
@@ -91,8 +97,10 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
          * accident. The freezer was different: absent, it silently discarded data the author had entered.
          */
         ITaskAssignmentDirection? direction = null,
-        ITaskUpwardRequestService? upwardRequests = null)
+        ITaskUpwardRequestService? upwardRequests = null,
+        ITaskRequestService? requests = null)
     {
+        _requests = requests;
         _tasks = tasks;
         _assignments = assignments;
         _watchers = watchers;
@@ -112,6 +120,7 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
         _tenantContext = tenantContext;
         _documentFreezer = documentFreezer;
         _assignmentGuard = assignmentGuard;
+        _writeGate = writeGate;
         _logger = logger;
     }
 
@@ -132,7 +141,10 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
          * caller; the recurring sweep does not, which is the one thing the two callers disagree about.
          */
         if (TaskAssignmentIntentRules.Validate(
-                request.AssignmentTarget, request.AssigneeUserId, request.PoolPositionId, allowSelfAssigned: true)
+                request.AssignmentTarget, request.AssigneeUserId, request.PoolPositionId, allowSelfAssigned: true,
+                request.OfferedToUserId,
+                // BL-509 — a request is a person asking a person: not the sweep, and not a template.
+                allowOffered: !command.IsScheduledGeneration && command.TemplateSnapshotAt is null)
             is { } invalid)
         {
             return Fail(invalid.Message, invalid.ReasonCode, command.CorrelationId);
@@ -152,6 +164,11 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
                 // A pool task has NO holder until someone claims it — that is the point of a pool.
                 assigneeUserId = null;
                 poolPositionId = request.PoolPositionId;
+                break;
+
+            case TaskAssignmentTarget.Offered:
+                // BL-509 — ASKED of somebody, held by nobody until they accept.
+                assigneeUserId = null;
                 break;
 
             default:
@@ -175,6 +192,51 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
         {
             return Response<Guid>.Fail(
                 refused.Message, refused.StatusCode, refused.ReasonCode, command.CorrelationId);
+        }
+
+        /*
+         * ── BL-509 — a REQUEST: may this caller ask THAT person? ─────────────
+         *
+         * Beside the check above, never instead of it: CheckTargetAsync has nothing to say about an Offered target
+         * (nobody is being ASSIGNED work), and BL-057's scope is not asked here at all — a request is how work
+         * reaches somebody the scope withholds. Asked HERE: the sending key and "not yourself" — facts about the
+         * caller. Whether the ADDRESSEE can be reached is asked last, right before the write (see below).
+         */
+        var isRequest = request.AssignmentTarget == TaskAssignmentTarget.Offered;
+        TaskRequestHome? senderHome = null;
+        if (isRequest)
+        {
+            if (_requests is null)
+            {
+                return Fail(TaskAssignmentIntentRules.RequestNotAvailableMessage,
+                    TaskReasonCodes.AssignmentTargetInvalid, command.CorrelationId);
+            }
+
+            if (await _requests.CheckSenderAsync(request.OfferedToUserId!.Value, ct) is { } senderRefused)
+            {
+                return Response<Guid>.Fail(
+                    senderRefused.Message, senderRefused.StatusCode, senderRefused.ReasonCode,
+                    command.CorrelationId);
+            }
+
+            // Approval and review are the sender naming who decides about work that is not theirs to direct.
+            if (request.ApprovalRequired || request.ReviewRequired)
+            {
+                return Fail("A request cannot carry an approval or a review.",
+                    TaskReasonCodes.RequestOptionNotSupported, command.CorrelationId);
+            }
+
+            // FIX2 note — a request is filed under its SENDER's unit (CT decision 4); naming a unit would file it in
+            // another company's before anybody said yes. The same rule the edit enforces (TASK_REQUEST_UNIT_FIXED).
+            if (request.OrganizationUnitId is not null)
+            {
+                return Fail("A request is filed under its sender's unit; it cannot name one.",
+                    TaskReasonCodes.RequestOptionNotSupported, command.CorrelationId);
+            }
+
+            // The sender's home seat — the unit the request is filed under AND the company recorded for them, from
+            // one and the same seat.
+            senderHome = await _requests.HomeOfAsync(actorId, ct);
         }
 
         /*
@@ -221,8 +283,12 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
             //   2. the assignee's active position's unit
             //   3. the tenant's root unit — so a person holding no position can still create work
             //   4. otherwise fail, because inventing a unit would silently misfile the task
+            // BL-509 — a request is filed under its SENDER's unit until somebody accepts it (CT decision 4); the
+            // accept moves it to the recipient's. There is no assignee to read a unit from yet.
             var resolved = request.OrganizationUnitId
-                           ?? await ResolveUnitForUserAsync(assigneeUserId!.Value, ct)
+                           ?? (isRequest
+                               ? senderHome?.OrganizationUnitId
+                               : await ResolveUnitForUserAsync(assigneeUserId!.Value, ct))
                            ?? await ResolveTenantRootUnitAsync(ct);
             if (resolved is null || resolved == Guid.Empty)
             {
@@ -281,8 +347,13 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
         {
             // The tenant-scoped repository makes this a cross-tenant check too: another tenant's parent simply
             // does not resolve.
+            //
+            // FIX2 — a parent the caller cannot READ is the same answer as no parent at all (its existence does not
+            // leak); a readable one goes through its write gate below (sender of an accepted request 403, the
+            // person a request waits on 409).
             var parent = await _tasks.GetByIdAsync(parentId, ct);
-            if (parent is null)
+            var parentGate = await _writeGate.CheckAsync(parent, TaskWriteKind.Change, ct);
+            if (parent is null || parentGate?.StatusCode == 404)
             {
                 return Fail("The parent task could not be found.",
                     TaskReasonCodes.ParentTaskNotFound, command.CorrelationId);
@@ -294,6 +365,14 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
             {
                 return Fail("A subtask cannot itself have subtasks.",
                     TaskReasonCodes.SubtaskDepthExceeded, command.CorrelationId);
+            }
+
+            // BL-509 (decision 3) — an open subtask holds its parent's completion (BL-035), so hanging one under a
+            // request somebody else accepted is directing their work (403); the person a request waits on answers
+            // it first (409).
+            if (parentGate is not null)
+            {
+                return parentGate.ToResponse<Guid>(command.CorrelationId);
             }
         }
 
@@ -318,6 +397,7 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
             AssignmentTarget = request.AssignmentTarget,
             AssigneeUserId = assigneeUserId,
             PoolPositionId = poolPositionId,
+            IsRequest = isRequest,
             CreatedByUserId = actorId,
             OrganizationUnitId = organizationUnitId,
             DueAt = request.DueAt,
@@ -369,6 +449,30 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
             task.DocumentReferences = frozen.References;
         }
 
+        /*
+         * ── BL-509 — the ADDRESSEE, asked LAST ────────────────────────────────
+         *
+         * Every other check on this request has passed by now — fields, options, unit, parent, citations. Asked any
+         * earlier, a request that is wrong in some other way would answer "unavailable" for one person and the
+         * other field's refusal for another, and the difference would tell the caller who can be reached without
+         * leaving a trace. From here the only outcomes are this one answer or the write.
+         */
+        TaskRequestRecipient? requestRecipient = null;
+        if (isRequest)
+        {
+            var (recipientRefused, recipient) = await _requests!.CheckRecipientAsync(request.OfferedToUserId!.Value, ct);
+            if (recipientRefused is not null)
+            {
+                return Response<Guid>.Fail(
+                    recipientRefused.Message, recipientRefused.StatusCode, recipientRefused.ReasonCode,
+                    command.CorrelationId);
+            }
+
+            requestRecipient = recipient!;
+            task.OfferedToUserId = requestRecipient.UserId;
+            task.RequestOriginUnitId = organizationUnitId;
+        }
+
         await _tasks.CreateAsync(task, ct);
 
         /*
@@ -418,10 +522,15 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
         {
             TenantId = _tenantContext.TenantId,
             TaskItemId = task.Id,
-            EventType = TaskAssignmentEventType.Created,
-            UserId = assigneeUserId,
+            EventType = requestRecipient is null
+                ? TaskAssignmentEventType.Created
+                : TaskAssignmentEventType.Offered,
+            UserId = requestRecipient?.UserId ?? assigneeUserId,
             PositionId = poolPositionId,
             ActorUserId = actorId,
+            // BL-509 — both companies, as they stood when the request was sent. Null on every ordinary create.
+            ActorLegalEntityId = senderHome?.LegalEntityId,
+            TargetLegalEntityId = requestRecipient?.LegalEntityId,
             CreatedBy = _currentUser.ActorName
         }, ct);
 

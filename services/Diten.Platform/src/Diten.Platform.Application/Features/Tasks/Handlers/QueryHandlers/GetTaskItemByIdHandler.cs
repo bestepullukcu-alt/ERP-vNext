@@ -77,13 +77,14 @@ public sealed class GetTaskItemByIdHandler : IRequestHandler<GetTaskItemByIdQuer
         // Same shared rule as the list and the projection, for one task.
         // Both decisions in ONE read: GetStatesAsync keys off the instance id and never asks what the instance
         // decides, so approval and review share it (Faz 3b).
+        // D2-FIX3 item 3 — every HELD link, requirement on or off: the gates ask a held link, so the detail reads it too.
         var gatedInstanceIds = new List<Guid>();
-        if (task.ApprovalRequired && task.WorkflowInstanceId is { } instanceId)
+        if (task.WorkflowInstanceId is { } instanceId)
         {
             gatedInstanceIds.Add(instanceId);
         }
 
-        if (task.ReviewRequired && task.ReviewWorkflowInstanceId is { } reviewInstanceId)
+        if (task.ReviewWorkflowInstanceId is { } reviewInstanceId)
         {
             gatedInstanceIds.Add(reviewInstanceId);
         }
@@ -112,7 +113,8 @@ public sealed class GetTaskItemByIdHandler : IRequestHandler<GetTaskItemByIdQuer
         return Response<TaskItemDetailDto>.Success(
             TaskItemMapper.ToDetail(
                 task, _lifecycle, approvalOutstanding, approvalRejected, watchers, dependencies,
-                _actor, definitions, spentHours, reviewOutstanding, reviewRejected),
+                _actor, definitions, spentHours, reviewOutstanding, reviewRejected,
+                viewerUserId: _currentUser.UserId),
             correlationId: request.CorrelationId);
     }
 }

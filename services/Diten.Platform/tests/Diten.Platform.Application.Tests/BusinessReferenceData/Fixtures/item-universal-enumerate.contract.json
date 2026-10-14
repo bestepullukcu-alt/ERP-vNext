@@ -1,0 +1,301 @@
+{
+  "_comment": "MOD-0290-FU04 S5b (BL-600): the item-universal enumeration contract — the request MDM sends and the answer the Platform handler produces (web JSON). Read by Platform (ItemUniversalReferenceDataTests) and MDM (PlatformItemReferenceResolverClientTests). Merging ITEM-UNIVERSAL-V2 (IU, CodeStandard, item-uom's new version) updates this file.",
+  "request": {
+    "set_codes": [
+      "item-uom",
+      "storage-condition",
+      "material-type"
+    ]
+  },
+  "response": {
+    "data": {
+      "sets": [
+        {
+          "set_code": "item-uom",
+          "catalog_version": "ITEM-UNIVERSAL-V2",
+          "catalog_version_id": "c3f1d0a4-6b2e-4f0a-9d71-2e5b7a1c0004",
+          "catalog_version_number": 2,
+          "values": [
+            {
+              "value_code": "C62",
+              "display_name": "One",
+              "sort_order": 10,
+              "attributes": {
+                "DimensionCode": "COUNT",
+                "MaximumDecimalPrecision": "0",
+                "FactorToDimensionBase": "1",
+                "CodeStandard": "UNECE_REC20"
+              }
+            },
+            {
+              "value_code": "MC",
+              "display_name": "Microgram",
+              "sort_order": 15,
+              "attributes": {
+                "DimensionCode": "MASS",
+                "MaximumDecimalPrecision": "3",
+                "FactorToDimensionBase": "0.000000001",
+                "CodeStandard": "UNECE_REC20"
+              }
+            },
+            {
+              "value_code": "MGM",
+              "display_name": "Milligram",
+              "sort_order": 20,
+              "attributes": {
+                "DimensionCode": "MASS",
+                "MaximumDecimalPrecision": "3",
+                "FactorToDimensionBase": "0.000001",
+                "CodeStandard": "UNECE_REC20"
+              }
+            },
+            {
+              "value_code": "GRM",
+              "display_name": "Gram",
+              "sort_order": 30,
+              "attributes": {
+                "DimensionCode": "MASS",
+                "MaximumDecimalPrecision": "3",
+                "FactorToDimensionBase": "0.001",
+                "CodeStandard": "UNECE_REC20"
+              }
+            },
+            {
+              "value_code": "KGM",
+              "display_name": "Kilogram",
+              "sort_order": 40,
+              "attributes": {
+                "DimensionCode": "MASS",
+                "MaximumDecimalPrecision": "3",
+                "FactorToDimensionBase": "1",
+                "CodeStandard": "UNECE_REC20"
+              }
+            },
+            {
+              "value_code": "IU",
+              "display_name": "International unit",
+              "sort_order": 45,
+              "attributes": {
+                "DimensionCode": "BIOLOGICAL_ACTIVITY",
+                "MaximumDecimalPrecision": "0",
+                "FactorToDimensionBase": "1",
+                "CodeStandard": "LOCAL"
+              }
+            },
+            {
+              "value_code": "MLT",
+              "display_name": "Millilitre",
+              "sort_order": 50,
+              "attributes": {
+                "DimensionCode": "VOLUME",
+                "MaximumDecimalPrecision": "3",
+                "FactorToDimensionBase": "0.001",
+                "CodeStandard": "UNECE_REC20"
+              }
+            },
+            {
+              "value_code": "LTR",
+              "display_name": "Litre",
+              "sort_order": 60,
+              "attributes": {
+                "DimensionCode": "VOLUME",
+                "MaximumDecimalPrecision": "3",
+                "FactorToDimensionBase": "1",
+                "CodeStandard": "UNECE_REC20"
+              }
+            },
+            {
+              "value_code": "MTR",
+              "display_name": "Metre",
+              "sort_order": 70,
+              "attributes": {
+                "DimensionCode": "LENGTH",
+                "MaximumDecimalPrecision": "3",
+                "FactorToDimensionBase": "1",
+                "CodeStandard": "UNECE_REC20"
+              }
+            },
+            {
+              "value_code": "MTK",
+              "display_name": "Square metre",
+              "sort_order": 80,
+              "attributes": {
+                "DimensionCode": "AREA",
+                "MaximumDecimalPrecision": "3",
+                "FactorToDimensionBase": "1",
+                "CodeStandard": "UNECE_REC20"
+              }
+            },
+            {
+              "value_code": "XBX",
+              "display_name": "Box",
+              "sort_order": 90,
+              "attributes": {
+                "DimensionCode": "PACKAGE",
+                "MaximumDecimalPrecision": "0",
+                "FactorToDimensionBase": null,
+                "CodeStandard": "UNECE_REC20"
+              }
+            },
+            {
+              "value_code": "XCS",
+              "display_name": "Case",
+              "sort_order": 100,
+              "attributes": {
+                "DimensionCode": "PACKAGE",
+                "MaximumDecimalPrecision": "0",
+                "FactorToDimensionBase": null,
+                "CodeStandard": "UNECE_REC20"
+              }
+            },
+            {
+              "value_code": "XRO",
+              "display_name": "Roll",
+              "sort_order": 110,
+              "attributes": {
+                "DimensionCode": "PACKAGE",
+                "MaximumDecimalPrecision": "0",
+                "FactorToDimensionBase": null,
+                "CodeStandard": "UNECE_REC20"
+              }
+            }
+          ]
+        },
+        {
+          "set_code": "storage-condition",
+          "catalog_version": "ITEM-UNIVERSAL-V2",
+          "catalog_version_id": "c3f1d0a4-6b2e-4f0a-9d71-2e5b7a1c0002",
+          "catalog_version_number": 1,
+          "values": [
+            {
+              "value_code": "AMBIENT_15_25",
+              "display_name": "Store at 15-25 °C",
+              "sort_order": 10,
+              "attributes": {
+                "ConditionKind": "TEMPERATURE",
+                "TemperatureMinC": "15",
+                "TemperatureMaxC": "25",
+                "ProtectFromLight": "false",
+                "ProtectFromMoisture": "false"
+              }
+            },
+            {
+              "value_code": "COOL_2_8",
+              "display_name": "Store at 2-8 °C",
+              "sort_order": 20,
+              "attributes": {
+                "ConditionKind": "TEMPERATURE",
+                "TemperatureMinC": "2",
+                "TemperatureMaxC": "8",
+                "ProtectFromLight": "false",
+                "ProtectFromMoisture": "false"
+              }
+            },
+            {
+              "value_code": "FROZEN_BELOW_MINUS_20",
+              "display_name": "Store at or below -20 °C",
+              "sort_order": 30,
+              "attributes": {
+                "ConditionKind": "TEMPERATURE",
+                "TemperatureMinC": null,
+                "TemperatureMaxC": "-20",
+                "ProtectFromLight": "false",
+                "ProtectFromMoisture": "false"
+              }
+            },
+            {
+              "value_code": "PROTECT_FROM_LIGHT",
+              "display_name": "Protect from light",
+              "sort_order": 40,
+              "attributes": {
+                "ConditionKind": "PROTECTION",
+                "TemperatureMinC": null,
+                "TemperatureMaxC": null,
+                "ProtectFromLight": "true",
+                "ProtectFromMoisture": "false"
+              }
+            },
+            {
+              "value_code": "PROTECT_FROM_MOISTURE",
+              "display_name": "Protect from moisture",
+              "sort_order": 50,
+              "attributes": {
+                "ConditionKind": "PROTECTION",
+                "TemperatureMinC": null,
+                "TemperatureMaxC": null,
+                "ProtectFromLight": "false",
+                "ProtectFromMoisture": "true"
+              }
+            }
+          ]
+        },
+        {
+          "set_code": "material-type",
+          "catalog_version": "ITEM-UNIVERSAL-V2",
+          "catalog_version_id": "c3f1d0a4-6b2e-4f0a-9d71-2e5b7a1c0003",
+          "catalog_version_number": 1,
+          "values": [
+            {
+              "value_code": "ACTIVE_INGREDIENT",
+              "display_name": "Active ingredient",
+              "sort_order": 10,
+              "attributes": {}
+            },
+            {
+              "value_code": "EXCIPIENT",
+              "display_name": "Excipient",
+              "sort_order": 20,
+              "attributes": {}
+            },
+            {
+              "value_code": "RAW_MATERIAL",
+              "display_name": "Other raw material",
+              "sort_order": 30,
+              "attributes": {}
+            },
+            {
+              "value_code": "PACKAGING_PRIMARY",
+              "display_name": "Primary packaging",
+              "sort_order": 40,
+              "attributes": {}
+            },
+            {
+              "value_code": "PACKAGING_SECONDARY",
+              "display_name": "Secondary packaging",
+              "sort_order": 50,
+              "attributes": {}
+            },
+            {
+              "value_code": "INTERMEDIATE",
+              "display_name": "Intermediate",
+              "sort_order": 60,
+              "attributes": {}
+            }
+          ]
+        }
+      ]
+    },
+    "statusCode": 200,
+    "isSuccessful": true,
+    "errors": [],
+    "reason_code": null,
+    "correlation_id": null
+  },
+  "bad_request": {
+    "request": {
+      "set_codes": [
+        "uom"
+      ]
+    },
+    "response": {
+      "data": null,
+      "statusCode": 400,
+      "isSuccessful": false,
+      "errors": [
+        "REFERENCE_SET_NOT_SUPPORTED"
+      ],
+      "reason_code": "REFERENCE_SET_NOT_SUPPORTED",
+      "correlation_id": null
+    }
+  }
+}

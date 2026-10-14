@@ -15,10 +15,22 @@ public sealed class UpdateLegalEntityHandler : IRequestHandler<Commands.UpdateLe
 
     public async Task<Response<NoContent>> Handle(Commands.UpdateLegalEntityCommand request, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(request);
+
+        if (request.Request.ExpectedVersion is not { } expectedVersion || expectedVersion < 0)
+        {
+            return Response<NoContent>.Fail("ExpectedVersion must be a non-negative integer.", 400);
+        }
+
         var entity = await _repository.GetByIdAsync(request.LegalEntityId, cancellationToken);
         if (entity is null)
         {
             return Response<NoContent>.Fail("Legal Entity not found.", 404);
+        }
+
+        if (entity.Version != expectedVersion)
+        {
+            return Response<NoContent>.Fail("The Legal Entity has changed since it was loaded.", 409);
         }
 
         var r = request.Request;
@@ -43,12 +55,24 @@ public sealed class UpdateLegalEntityHandler : IRequestHandler<Commands.UpdateLe
             }
         }
 
-        // OperationalStatus is preserved (lifecycle-owned); Apply maps every editable field + recomputes completeness.
-        LegalEntityMappings.Apply(entity, r);
+        var proposed = new Domain.Entities.LegalEntity
+        {
+            Id = entity.Id,
+            TenantId = entity.TenantId
+        };
+        LegalEntityMappings.ApplyEditableFields(proposed, r);
 
-        var updated = await _repository.UpdateAsync(entity, cancellationToken);
-        return updated
-            ? Response<NoContent>.SuccessWithoutData(204)
-            : Response<NoContent>.Fail("Legal Entity not found.", 404);
+        var updated = await _repository.UpdateEditableFieldsAsync(proposed, expectedVersion, cancellationToken);
+        if (updated)
+        {
+            return Response<NoContent>.SuccessWithoutData(204);
+        }
+
+        // Preserve non-disclosure for targets that vanished (including delete races). A still-visible target proves
+        // the qualified CAS lost to a version change and is therefore a stale edit conflict.
+        var stillVisible = await _repository.GetByIdAsync(request.LegalEntityId, cancellationToken);
+        return stillVisible is null
+            ? Response<NoContent>.Fail("Legal Entity not found.", 404)
+            : Response<NoContent>.Fail("The Legal Entity has changed since it was loaded.", 409);
     }
 }

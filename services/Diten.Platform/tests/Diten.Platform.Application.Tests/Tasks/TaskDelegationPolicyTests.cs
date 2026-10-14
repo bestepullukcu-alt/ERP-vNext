@@ -204,7 +204,7 @@ public sealed class TaskDelegationPolicyTests
                         actingAs ?? TaskTestData.Me,
                         _units[0].Id),
                     new FakeCurrentUserContext(actingAs ?? TaskTestData.Me),
-                    new FakeTenantContext(TaskTestData.Tenant))
+                    new FakeTenantContext(TaskTestData.Tenant), writeGate: TaskWriteGateDoubles.Open)
                 .Handle(
                     new ReassignTaskItemCommand(
                         Task.Id,

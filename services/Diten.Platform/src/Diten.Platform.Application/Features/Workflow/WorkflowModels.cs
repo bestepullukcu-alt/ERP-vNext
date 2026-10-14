@@ -39,6 +39,35 @@ public static class WorkflowReasonCodes
     public const string WorkflowTemplateNotPublished = "WORKFLOW_TEMPLATE_NOT_PUBLISHED";
     public const string WorkflowTemplateNoActiveVersion = "WORKFLOW_TEMPLATE_NO_ACTIVE_VERSION";
     public const string WorkflowInstanceStartConflict = "WORKFLOW_INSTANCE_START_CONFLICT";
+    public const string WorkflowStartIdempotencyConflict = "WORKFLOW_START_IDEMPOTENCY_CONFLICT";
+    public const string WorkflowStartRecoveryConflict = "WORKFLOW_START_RECOVERY_CONFLICT";
+    public const string WorkflowStartNotCompleted = "WORKFLOW_START_NOT_COMPLETED";
+
+    /// <summary>BL-549 — a generic start that never wrote its task, closed by the abandoned-start recovery (the instance's
+    /// <c>StartClosedReasonCode</c> and the closing log's reason).</summary>
+    public const string WorkflowStartAbandoned = "WORKFLOW_START_ABANDONED";
+
+    /// <summary>BL-549 — the recovery refused to close: the instance has a task, is not old enough, is not an open generic
+    /// start. Nothing was written.</summary>
+    public const string WorkflowStartNotAbandoned = "WORKFLOW_START_NOT_ABANDONED";
+
+    /// <summary>FIX2 item 5 — a half start (Active, no task) whose replay was refused because the facts or the person changed,
+    /// closed by the engine's taskless close so the edited request opens a new round under a new key.</summary>
+    public const string WorkflowStartSuperseded = "WORKFLOW_START_SUPERSEDED";
+
+    /// <summary>BL-540 (1) — an approval or review left live by a deleted task or a replaced review round, closed by the
+    /// operator's orphan recovery.</summary>
+    public const string WorkflowOrphanClosed = "WORKFLOW_ORPHAN_CLOSED";
+    public const string WorkflowTerminalEvidenceInconsistent = "WORKFLOW_TERMINAL_EVIDENCE_INCONSISTENT";
+    public const string WorkflowDecisionNotTerminal = "WORKFLOW_DECISION_NOT_TERMINAL";
+
+    /// <summary>BL-547 — the trusted terminal-decision evidence of an approval that was CANCELLED (the trusted consumer's own
+    /// cancel, or the public task cancel) or TIMED OUT (the SLA ran out) and that nobody decided, with every fact of it holding together:
+    /// nothing is left open that could still be decided. 409. Apart from <see cref="WorkflowDecisionNotTerminal"/> (still
+    /// open — an escalated approval included: wait) and from <see cref="WorkflowTerminalEvidenceInconsistent"/> (the
+    /// engine's own facts contradict each other — a person has to look). Which of the two endings it was is in the
+    /// message only: the envelope the consumers read is closed.</summary>
+    public const string WorkflowInstanceClosedWithoutDecision = "WORKFLOW_INSTANCE_CLOSED_WITHOUT_DECISION";
     public const string WorkflowAssignmentCandidatesRequired = "WORKFLOW_ASSIGNMENT_CANDIDATES_REQUIRED";
     public const string WorkflowTaskNotFound = "WORKFLOW_TASK_NOT_FOUND";
     public const string WorkflowInstanceNotFound = "WORKFLOW_INSTANCE_NOT_FOUND";
@@ -50,6 +79,14 @@ public static class WorkflowReasonCodes
     public const string WorkflowTransitionIdempotent = "WORKFLOW_TRANSITION_IDEMPOTENT";
     public const string WorkflowDelegatePrincipalRequired = "WORKFLOW_DELEGATE_PRINCIPAL_REQUIRED";
     public const string WorkflowDelegateSameActorInvalid = "WORKFLOW_DELEGATE_SAME_ACTOR_INVALID";
+    // D1-FIX1 — a delegation names a USER: a user id (optionally "user:"-prefixed). Anything else — free text, a
+    // position, an empty id — would leave the task with a principal no token ever matches.
+    public const string WorkflowDelegateTargetInvalid = "WORKFLOW_DELEGATE_TARGET_INVALID";
+
+    /// <summary>D2 — every candidate the step resolved to is the person who started the workflow: nobody else may
+    /// approve it. A start is refused (400, nothing written); an intermediate approval is refused (409, the step does
+    /// not advance) — never a silent fall back to somebody else.</summary>
+    public const string WorkflowNoEligibleApprover = "WORKFLOW_NO_ELIGIBLE_APPROVER";
     public const string WorkflowNoInstance = "WORKFLOW_NO_INSTANCE";
     public const string WorkflowPendingApproval = "WORKFLOW_PENDING_APPROVAL";
     public const string WorkflowWaitingEvidence = "WORKFLOW_WAITING_EVIDENCE";
@@ -76,7 +113,9 @@ public static class WorkflowReasonCodes
     public const string WorkflowRejectCommentRequired = "WORKFLOW_REJECT_COMMENT_REQUIRED";
 
     /// <summary>WP-CL-BE-3 — the Platform transaction that carries a terminal transition and its completion event
-    /// could not run (e.g. a MongoDB deployment without transactions). Nothing was written.</summary>
+    /// could not run, or its outcome is unknown (e.g. a MongoDB deployment without transactions, or a commit whose
+    /// acknowledgement was lost). D2 — the outcome is NOT known to be "nothing written"; retrying with the same
+    /// idempotency key is safe.</summary>
     public const string WorkflowTransactionUnavailable = "WORKFLOW_TRANSACTION_UNAVAILABLE";
 
     /// <summary>WP-CL-BE-3 — batch status read asked for more object ids than the ceiling.</summary>
@@ -273,6 +312,97 @@ public sealed record StartWorkflowInstanceResponse(
     DateTimeOffset? DueAt,
     string? CorrelationId);
 
+public sealed record TrustedWorkflowStartRequest(
+    Guid? TemplateId,
+    string? TemplateCode,
+    string ObjectType,
+    string ObjectId,
+    string? ObjectRef,
+    IReadOnlyList<string> CandidatePrincipalIds,
+    string? ReasonCode,
+    string IdempotencyKey,
+    bool CommentRequired,
+    bool EvidenceRequired,
+    DateTimeOffset? DueAt);
+
+public sealed record TrustedWorkflowStartResult(
+    Guid WorkflowInstanceId,
+    Guid TemplateId,
+    Guid TemplateVersionId,
+    Guid ApprovalTaskId,
+    Guid AssignmentSnapshotId,
+    Guid StartTransitionLogId,
+    string ObjectRef,
+    string Status,
+    string CurrentStage,
+    string CurrentStep,
+    DateTimeOffset? StartedAt,
+    DateTimeOffset? DueAt,
+    bool IsReplay,
+    string? CorrelationId);
+
+public sealed record TrustedWorkflowTerminalDecisionEvidence(
+    Guid WorkflowInstanceId,
+    Guid ApprovalTaskId,
+    Guid TemplateId,
+    Guid TemplateVersionId,
+    string ObjectType,
+    string ObjectId,
+    string ObjectRef,
+    string TerminalAction,
+    string ActorUserId,
+    string? ReasonCode,
+    DateTimeOffset DecisionAt,
+    long TransitionSequence,
+    string TaskStatus,
+    string InstanceStatus,
+    string? CorrelationId);
+
+public sealed record TrustedWorkflowCancellationPreflight(
+    Guid WorkflowInstanceId,
+    Guid ApprovalTaskId,
+    string ObjectType,
+    string ObjectId,
+    string ObjectRef,
+    int WorkflowInstanceVersion,
+    int ApprovalTaskVersion,
+    string WorkflowInstanceStatus,
+    string ApprovalTaskStatus);
+
+public sealed record TrustedWorkflowCancellationRequest(
+    Guid WorkflowInstanceId,
+    Guid ApprovalTaskId,
+    string ExpectedObjectType,
+    string ExpectedObjectId,
+    Guid ExpectedMakerSubjectId,
+    int ExpectedWorkflowInstanceVersion,
+    int ExpectedApprovalTaskVersion,
+    string ReasonCode,
+    string? Comment,
+    string IdempotencyKey);
+
+public sealed record TrustedWorkflowCancellationEvidence(
+    Guid WorkflowInstanceId,
+    Guid ApprovalTaskId,
+    Guid TemplateId,
+    Guid TemplateVersionId,
+    string ObjectType,
+    string ObjectId,
+    string ObjectRef,
+    string TerminalAction,
+    Guid ActorUserId,
+    string ReasonCode,
+    string? Comment,
+    DateTimeOffset DecisionAt,
+    long TransitionSequence,
+    Guid TransitionLogId,
+    string TaskStatus,
+    string InstanceStatus,
+    int WorkflowInstanceVersion,
+    int ApprovalTaskVersion,
+    bool IsReplay,
+    string? CorrelationId);
+
 public sealed record WorkflowInstanceDto(
     Guid Id,
     Guid TemplateId,
@@ -340,7 +470,8 @@ public sealed record ApproveWorkflowTaskRequest(
     string IdempotencyKey,
     string? Comment,
     string? EvidenceRef,
-    // MOD-0022 E4 (ESIGN-BUNDLE x-workflow-addendum) — trailing, optional.
+    int? ExpectedVersion = null,
+    // MOD-0022 E4 (ESIGN-BUNDLE x-workflow-addendum, main) — trailing, optional.
     string? SignatureId = null);
 
 public sealed record RejectWorkflowTaskRequest(
@@ -348,7 +479,8 @@ public sealed record RejectWorkflowTaskRequest(
     string ReasonCode,
     string IdempotencyKey,
     string? Comment,
-    string? EvidenceRef);
+    string? EvidenceRef,
+    int? ExpectedVersion = null);
 
 public sealed record WorkflowTaskTransitionResponse(
     Guid WorkflowInstanceId,
@@ -367,7 +499,8 @@ public sealed record DelegateWorkflowTaskRequest(
     string DelegatePrincipalId,
     string ReasonCode,
     string IdempotencyKey,
-    string? Comment);
+    string? Comment,
+    int? ExpectedVersion = null);
 
 public sealed record RequestInfoWorkflowTaskRequest(
     string? ActorId,
@@ -375,7 +508,8 @@ public sealed record RequestInfoWorkflowTaskRequest(
     string ReasonCode,
     string IdempotencyKey,
     string? Comment,
-    string? EvidenceRef);
+    string? EvidenceRef,
+    int? ExpectedVersion = null);
 
 public sealed record CancelWorkflowTaskRequest(
     string? ActorId,

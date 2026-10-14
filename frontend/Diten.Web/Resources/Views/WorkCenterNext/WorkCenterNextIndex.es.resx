@@ -886,14 +886,8 @@
   <data name="MeetingLocationPlaceholder" xml:space="preserve">
     <value>Teams / Sala de reuniones 2</value>
   </data>
-  <data name="NewPickModuleLabel" xml:space="preserve">
-    <value>¿Qué módulo?</value>
-  </data>
   <data name="MeetingWhenSubtext" xml:space="preserve">
     <value>La conexión con el calendario aún no existe: este registro solo aparece en esta pantalla y se pierde al cerrar la página. La fecha límite no cambia.</value>
-  </data>
-  <data name="NewInSourceSubtext" xml:space="preserve">
-    <value>El registro se crea en ese módulo y allí permanece; el Centro de tareas no guarda copia.</value>
   </data>
   <data name="ConfirmProceedNamed" xml:space="preserve">
     <value>Sí, {0}</value>
@@ -1066,23 +1060,11 @@
   <data name="NewSelfTaskDesc" xml:space="preserve">
     <value>Un pendiente personal — vive en WorkCenter</value>
   </data>
-  <data name="NewInSource" xml:space="preserve">
-    <value>Crear en el módulo de origen</value>
-  </data>
-  <data name="NewInSourceDesc" xml:space="preserve">
-    <value>Un registro del módulo — vive en ese módulo</value>
-  </data>
   <data name="NewTaskTitlePlaceholder" xml:space="preserve">
     <value>Título de la tarea…</value>
   </data>
   <data name="NewCreate" xml:space="preserve">
     <value>Crear</value>
-  </data>
-  <data name="NewPickModule" xml:space="preserve">
-    <value>Elegir módulo</value>
-  </data>
-  <data name="NewCreateInSource" xml:space="preserve">
-    <value>Crear en el origen</value>
   </data>
   <data name="SelfSource" xml:space="preserve">
     <value>Personal</value>
@@ -1101,9 +1083,6 @@
   </data>
   <data name="ToastSelfTaskCreatedReal" xml:space="preserve">
     <value>{0} · añadido a Mi trabajo</value>
-  </data>
-  <data name="ToastCreateInSource" xml:space="preserve">
-    <value>La creación se abriría en el módulo {0} (mock)</value>
   </data>
   <data name="ScopeAll" xml:space="preserve">
     <value>Todos</value>
@@ -1358,6 +1337,7 @@
   <data name="RelatedTypeChild" xml:space="preserve"><value>Secundario</value></data>
   <data name="RelatedTypeTransaction" xml:space="preserve"><value>Transacción</value></data>
   <data name="RelatedTypeDocument" xml:space="preserve"><value>Documento</value></data>
+  <data name="RelatedTaskNotAccessible" xml:space="preserve"><value>Una tarea a la que no tiene acceso</value></data>
   <data name="ComplianceTitle" xml:space="preserve"><value>Cumplimiento y controles</value></data>
   <data name="CompliancePolicy" xml:space="preserve"><value>Política</value></data>
   <data name="ComplianceLimit" xml:space="preserve"><value>Límite de aprobación</value></data>
@@ -1570,6 +1550,15 @@
   </data>
   <data name="WorkAggregation_Action_Cancel" xml:space="preserve">
     <value>Cancelar tarea</value>
+  </data>
+  <data name="WorkAggregation_Action_Decline" xml:space="preserve">
+    <value>Rechazar</value>
+  </data>
+  <data name="WorkAggregation_Action_Withdraw" xml:space="preserve">
+    <value>Retirar solicitud</value>
+  </data>
+  <data name="WorkAggregation_Action_Offer" xml:space="preserve">
+    <value>Enviar solicitud</value>
   </data>
   <data name="ToastActionApplied" xml:space="preserve">
     <value>{1} — '{0}' completado</value>
@@ -2510,8 +2499,5 @@
   </data>
   <data name="DelegateTargetRequired" xml:space="preserve">
     <value>Elija a quién se delega esta aprobación.</value>
-  </data>
-  <data name="DelegateNoEligiblePeople" xml:space="preserve">
-    <value>No hay nadie en quien se pueda delegar esta aprobación.</value>
   </data>
 </root>

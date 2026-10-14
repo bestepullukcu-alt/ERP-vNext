@@ -16,6 +16,11 @@
     </ItemGroup>
 
     <ItemGroup>
+        <!-- WP-USERS-ROLES-CLOSE-FIX1 item 6: the repositories' race seams (internal) are reached by the tests only. -->
+        <InternalsVisibleTo Include="Diten.AuthService.Application.Tests" />
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\Diten.AuthService.Domain\Diten.AuthService.Domain.csproj" />
         <ProjectReference Include="..\Diten.AuthService.Application\Diten.AuthService.Application.csproj" />
         <ProjectReference Include="..\..\..\Diten.Building.Blocks\Diten.BuildingBlocks.Security.Secrets\Diten.BuildingBlocks.Security.Secrets.csproj" />

@@ -137,6 +137,8 @@ public sealed class PhysicalEntitlementTransactionalArchitectureTests
         {
             [typeof(AddTenantModuleEntitlementCommandHandler)] = 1,
             [typeof(EnableTenantModuleEntitlementCommandHandler)] = 1,
+            // BL-500 FIX2 — three: the stored row named by its id; the plan line through a NEW override row; and the plan
+            // line through the tenant's EXISTING (expired) override row, which the unique index would refuse a second of.
             [typeof(DisableTenantModuleEntitlementCommandHandler)] = 3,
             [typeof(UpdateTenantModuleEntitlementExpiryCommandHandler)] = 1,
             [typeof(RemoveTenantManualModuleOverrideCommandHandler)] = 1
@@ -186,8 +188,49 @@ public sealed class PhysicalEntitlementTransactionalArchitectureTests
         Assert.DoesNotContain("CountEnabledAsync(request.TenantId", quota, StringComparison.Ordinal);
 
         var repository = ReadRepoFile("src", "Diten.Platform.Infrastructure", "Persistence", "Repositories", "TenantModuleEntitlementRepository.cs");
-        Assert.Contains("Eq(x => x.TenantId, TenantContext.TenantId)", repository, StringComparison.Ordinal);
-        Assert.Contains("PlatformMongoTransactionSession.Require(session, _dbContext)", repository, StringComparison.Ordinal);
+        /*
+         * BL-500 — this used to pin `Eq(x => x.TenantId, TenantContext.TenantId)` once, anywhere in the file: the very
+         * filter that matched no row for a platform administrator (TenantContext.TenantId is Guid.Empty in the platform
+         * context) and refused every suspend / enable / expiry change as a concurrency conflict.
+         *
+         * What is pinned now is the rule itself, MEMBER BY MEMBER (a file-wide Contains stayed green when one member lost
+         * its condition as long as another kept the same text): every write member refuses a tenant-scoped caller another
+         * tenant's row with its own exception before writing; the update and delete filters carry the row's tenant, its
+         * id and the version the screen read (the version is required, never optional); and every member reads or writes
+         * inside the caller's transaction. Behaviour is measured in TenantModuleEntitlementTenantGuardMongoTests.
+         */
+        Assert.DoesNotContain("TenantContext.TenantId)", WithoutComments(repository).Replace("!= TenantContext.TenantId)", string.Empty), StringComparison.Ordinal);
+
+        const string refused = "{ throw new TenantModuleEntitlementTenantMismatchException(); }";
+        var update = MemberBody(repository, "public async Task UpdateAsync(IPlatformTransactionSession session");
+        Assert.Contains("if (!TenantContext.IsPlatformContext && entitlement.TenantId != TenantContext.TenantId) " + refused, update, StringComparison.Ordinal);
+        Assert.Contains("RequireRowVersion(expectedRowVersion);", update, StringComparison.Ordinal);
+        Assert.Contains("Eq(x => x.TenantId, entitlement.TenantId)", update, StringComparison.Ordinal);
+        Assert.Contains("Eq(x => x.Id, entitlement.Id)", update, StringComparison.Ordinal);
+        Assert.Contains("Eq(x => x.RowVersion, expectedRowVersion)", update, StringComparison.Ordinal);
+        Assert.Contains("PlatformMongoTransactionSession.Require(session, _dbContext)", update, StringComparison.Ordinal);
+        Assert.Contains("if (result.MatchedCount == 0) { throw new TenantModuleEntitlementConcurrencyException(); }", update, StringComparison.Ordinal);
+
+        var softDelete = MemberBody(repository, "public async Task SoftDeleteAsync(IPlatformTransactionSession session");
+        Assert.Contains("if (!TenantContext.IsPlatformContext && tenantId != TenantContext.TenantId) " + refused, softDelete, StringComparison.Ordinal);
+        Assert.Contains("RequireRowVersion(expectedRowVersion);", softDelete, StringComparison.Ordinal);
+        Assert.Contains("Eq(x => x.TenantId, tenantId)", softDelete, StringComparison.Ordinal);
+        Assert.Contains("Eq(x => x.Id, entitlementId)", softDelete, StringComparison.Ordinal);
+        Assert.Contains("Eq(x => x.RowVersion, expectedRowVersion)", softDelete, StringComparison.Ordinal);
+        Assert.Contains("PlatformMongoTransactionSession.Require(session, _dbContext)", softDelete, StringComparison.Ordinal);
+        Assert.Contains("if (result.MatchedCount == 0) { throw new TenantModuleEntitlementConcurrencyException(); }", softDelete, StringComparison.Ordinal);
+
+        var create = MemberBody(repository, "public async Task<TenantModuleEntitlement> CreateAsync(IPlatformTransactionSession session");
+        Assert.Contains("if (!TenantContext.IsPlatformContext && entity.TenantId != TenantContext.TenantId) " + refused, create, StringComparison.Ordinal);
+        Assert.Contains("PlatformMongoTransactionSession.Require(session, _dbContext)", create, StringComparison.Ordinal);
+
+        var count = MemberBody(repository, "public Task<long> CountEnabledAsync(IPlatformTransactionSession session");
+        Assert.Contains("Eq(x => x.TenantId, tenantId)", count, StringComparison.Ordinal);
+        Assert.Contains("PlatformMongoTransactionSession.Require(session, _dbContext)", count, StringComparison.Ordinal);
+
+        var requireVersion = MemberBody(repository, "private static void RequireRowVersion(byte[]? expectedRowVersion)");
+        Assert.Contains("if (expectedRowVersion is not { Length: > 0 }) { throw new ArgumentException(", requireVersion, StringComparison.Ordinal);
+        Assert.DoesNotContain("expectedRowVersion is { Length: > 0 }", WithoutComments(repository), StringComparison.Ordinal);
 
         var executor = ReadRepoFile("src", "Diten.Platform.Infrastructure", "Persistence", "PlatformTransactionExecutor.cs");
         Assert.Contains("catch (OperationCanceledException)", executor, StringComparison.Ordinal);
@@ -219,6 +262,37 @@ public sealed class PhysicalEntitlementTransactionalArchitectureTests
             Assert.DoesNotContain(calls, method => method.GetCustomAttribute<ObsoleteAttribute>() is not null);
         }
     }
+
+    /// <summary>
+    /// The body of the member whose (whitespace-normalised, comment-free) declaration starts with <paramref name="declaration"/>,
+    /// up to its matching closing brace — whitespace-normalised and without comments, so a pin is about code, never prose.
+    /// Exactly one member may match.
+    /// </summary>
+    private static string MemberBody(string source, string declaration)
+    {
+        var code = Normalised(WithoutComments(source));
+        var start = code.IndexOf(declaration, StringComparison.Ordinal);
+        Assert.True(start >= 0, $"Member not found: {declaration}");
+        Assert.Equal(-1, code.IndexOf(declaration, start + declaration.Length, StringComparison.Ordinal));
+        var open = code.IndexOf('{', start);
+        var depth = 0;
+        for (var i = open; i < code.Length; i++)
+        {
+            if (code[i] == '{') depth++;
+            else if (code[i] == '}' && --depth == 0) return code[open..(i + 1)];
+        }
+
+        throw new InvalidOperationException($"Unbalanced braces after: {declaration}");
+    }
+
+    private static string WithoutComments(string source) =>
+        System.Text.RegularExpressions.Regex.Replace(
+            System.Text.RegularExpressions.Regex.Replace(source, @"/\*.*?\*/", " ", System.Text.RegularExpressions.RegexOptions.Singleline),
+            @"//[^\n]*", " ");
+
+    private static string Normalised(string source) =>
+        System.Text.RegularExpressions.Regex.Replace(source, @"\s+", " ")
+            .Replace("( ", "(").Replace(" )", ")");
 
     private static int Count(string source, string value)
     {

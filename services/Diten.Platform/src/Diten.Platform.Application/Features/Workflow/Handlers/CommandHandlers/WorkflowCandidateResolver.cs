@@ -80,9 +80,11 @@ internal static class WorkflowCandidateResolver
             }
         }
 
+        // D1 (BL-477) — a user id leaves here in ONE spelling ("D"), so the same person named twice in different
+        // spellings is one candidate, and the snapshot never stores a spelling no token will match.
         return resolved
             .Where(x => !string.IsNullOrWhiteSpace(x))
-            .Select(x => x.Trim())
+            .Select(x => WorkflowTaskTransitionSupport.CanonicalPrincipal(x.Trim()))
             .Distinct(StringComparer.Ordinal)
             .OrderBy(x => x, StringComparer.Ordinal)
             .ToList();

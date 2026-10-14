@@ -7,7 +7,9 @@ namespace Diten.Platform.Application.Contracts;
 /// envelope — a notification with a name and no address cannot be sent, and one with an address and no name
 /// can.</para>
 /// </summary>
-public sealed record TaskNotificationRecipient(Guid UserId, string Email, string? DisplayName);
+/// <param name="PreferredLanguage">WP-EMAIL-LANG-01 — the language the person chose for their mail (AuthService
+/// <c>internal/users/contacts</c>); null = none, the tenant's language applies.</param>
+public sealed record TaskNotificationRecipient(Guid UserId, string Email, string? DisplayName, string? PreferredLanguage = null);
 
 /// <summary>
 /// WC-4 — turns user IDs into people a message can reach.

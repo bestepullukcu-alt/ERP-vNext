@@ -63,6 +63,11 @@
                             <dt class="col-sm-5">@Localizer["BrandName"]</dt><dd class="col-sm-7">@brand.BrandName</dd>
                         }
                     </dl>
+                    @* WP-MDM-BRAND-ACCEPT-01 FIX1 (item 3) — the product keeps its brand after the brand is archived; the page says so. *@
+                    @if (Model.Brand is { IsArchived: true })
+                    {
+                        <div class="alert alert-warning mt-2 mb-0" role="note"><i class="bx bx-archive me-1"></i>@Localizer["BrandArchivedNotice"]</div>
+                    }
                     @if (Model.Brand is null)
                     {
                         @* The brand could not be read (no permission or not readable) — the raw id is shown
@@ -136,6 +141,11 @@
         </div></div>
     </div>
 </div>
+
+@* WP-MDM-BRAND-ACCEPT-01 FIX2 (M9) — the archive proxy validates this token; a cross-site POST cannot archive. *@
+<form id="productDetailToken" class="d-none" data-no-tracker>
+    @Html.AntiForgeryToken()
+</form>
 
 @section Scripts {
     <partial name="~/Views/MasterData/Products/_IndexL10n.cshtml" />

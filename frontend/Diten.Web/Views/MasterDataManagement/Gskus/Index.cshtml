@@ -5,6 +5,23 @@
     ViewData["Title"] = Localizer["GskusTitle"].Value;
     Layout = "_LayoutTenantShell";
     var canCreate = ViewData["CanCreateGsku"] as bool? == true;
+    var canUseEditor = ViewData["CanUseGskuEditor"] as bool? == true;
+    // MOD-0290-FU04 S5 (O-12, UAS-001): the stock-behaviour offcanvas and its script exist only with the stock-edit key.
+    var canEditStock = Diten.Web.Security.PermissionClaims.HasPermission(User, Diten.Web.Services.MasterData.StockBehaviourAccess.Gsku);
+}
+
+@*
+    UAS-001 (FIX3 B17) — nothing of the register is drawn without mdm.gskus.read: no filter bar, no heading, no
+    skeleton, no empty table. GskusController.Index answers 403 with this surface instead of redirecting.
+
+    ⚠ Display only. MDM's [HasPermission("mdm.gskus.read")] and the proxy's own check remain the authority.
+*@
+@* EK item 11 (FIX5): the same reader as GskusController.Index (PermissionClaims) — "*", a "permissions" claim and a
+   comma-separated list count the same here as there; the UX snapshot reads only exact "permission" claims. *@
+@if (!Diten.Web.Security.PermissionClaims.HasPermission(User, "mdm.gskus.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["GskusTitle"].Value" />
+    return;
 }
 
 @* Contract marker: <partial name="_Filter" /> *@
@@ -15,18 +32,30 @@
     <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
 </div>
 
+<form id="gskuLifecycleToken" class="d-none" data-no-tracker>
+    @Html.AntiForgeryToken()
+</form>
+
 <partial name="~/Views/MasterDataManagement/Gskus/_DataTable.cshtml" />
 @* Contract marker rendered by the partial: id="offcanvasDetailsPreview" *@
 <partial name="~/Views/MasterDataManagement/Gskus/_DetailsQuickView.cshtml" />
-@if (canCreate)
+@if (canUseEditor)
 {
     <partial name="~/Views/MasterDataManagement/Gskus/_CreateEditOffcanvas.cshtml" />
+}
+@if (canEditStock)
+{
+    <partial name="~/Views/MasterDataManagement/Gskus/_StockBehaviourOffcanvas.cshtml" />
 }
 
 @section Scripts {
     @* Contract marker: <partial name="_IndexL10n" /> *@
     <partial name="~/Views/MasterDataManagement/Gskus/_IndexL10n.cshtml" />
     <script src="~/assets/js/MasterDataManagement/Gskus/index.l10n.js" asp-append-version="true"></script>
+    @if (canEditStock)
+    {
+        <script src="~/assets/js/MasterDataManagement/StockBehaviour/stock-behaviour.js" asp-append-version="true"></script>
+    }
     <script src="~/assets/js/MasterDataManagement/Gskus/gsku-product-picker.js" asp-append-version="true"></script>
     <script src="~/assets/js/MasterDataManagement/Gskus/index.js" asp-append-version="true"></script>
 }

@@ -83,7 +83,7 @@ public sealed class EmailDispatchRetrySweepMongoTests : IAsyncLifetime
         // 1. The first, synchronous send fails.
         var queued = await new QueueEmailNotificationHandler(
                 new FixedSettingsResolver(), templates, new EmailTemplateRenderer(), dispatches,
-                new SingleProviderResolver(provider), bus, NullLogger<QueueEmailNotificationHandler>.Instance)
+                new SingleProviderResolver(provider), bus, NullLogger<QueueEmailNotificationHandler>.Instance, jobOptions: NotificationTestJobs.RetriesOn())
             .Handle(
                 new QueueEmailNotificationCommand(
                     tenantId,
@@ -118,7 +118,7 @@ public sealed class EmailDispatchRetrySweepMongoTests : IAsyncLifetime
                 new MarkNotificationDispatchSentHandler(dispatches, bus),
                 new MarkNotificationDispatchFailedHandler(dispatches, bus),
                 new CancelNotificationDispatchHandler(dispatches, bus)),
-            NullLogger<EmailDispatchJob>.Instance, templates, new EmailTemplateRenderer());
+            NullLogger<EmailDispatchJob>.Instance, NoInvitationLedger.Instance, templates, new EmailTemplateRenderer());
         await job.HandleAsync(enqueued, new BackgroundJobContext(TenantId: tenantId), CancellationToken.None);
 
         // The provider DID accept the retry — whatever the row says next is the platform's own bookkeeping.
@@ -141,7 +141,7 @@ public sealed class EmailDispatchRetrySweepMongoTests : IAsyncLifetime
     private static async Task<IReadOnlyList<EmailDispatchJobArgs>> SweepAsync(NotificationDispatchRepository dispatches)
     {
         var scheduler = new RecordingScheduler();
-        await new EmailDispatchSweepJob(dispatches, scheduler, NullLogger<EmailDispatchSweepJob>.Instance)
+        await TestSweeps.Create(dispatches, scheduler, NullLogger<EmailDispatchSweepJob>.Instance)
             .HandleAsync(new EmailDispatchSweepJobArgs(BatchSize: 500, MaxRetryCount: 5), new BackgroundJobContext(), CancellationToken.None);
         return scheduler.Enqueued;
     }

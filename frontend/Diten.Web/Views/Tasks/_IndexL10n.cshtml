@@ -155,6 +155,20 @@
         ToastClaimed = Localizer["ToastClaimed"].Value,
         ErrorAlreadyClaimed = Localizer["ErrorAlreadyClaimed"].Value,
         ErrorNoAccess = Localizer["ErrorNoAccess"].Value,
+        PeopleSearchHint = Localizer["PeopleSearchHint"].Value,
+        PeopleSearchMinimumLength = Localizer["PeopleSearchMinimumLength"].Value,
+        PeopleSearchNoResults = Localizer["PeopleSearchNoResults"].Value,
+        PeopleSearching = Localizer["PeopleSearching"].Value,
+        DecisionMakerUnavailable = Localizer["DecisionMakerUnavailable"].Value,
+        ErrorPeopleSearchRateLimited = Localizer["ErrorPeopleSearchRateLimited"].Value,
+        // BL-512 FIX1 — a failed search, a stored person whose details could not be loaded, and the lookup's own codes.
+        SearchFailed = Localizer["SearchFailed"].Value,
+        RecordSearchNoResults = Localizer["RecordSearchNoResults"].Value,
+        DecisionMakerLoadFailed = Localizer["DecisionMakerLoadFailed"].Value,
+        ErrorPeopleLookupSearchAndIds = Localizer["ErrorPeopleLookupSearchAndIds"].Value,
+        ErrorPeopleLookupTooManyIds = Localizer["ErrorPeopleLookupTooManyIds"].Value,
+        ErrorPeopleLookupIdsInvalid = Localizer["ErrorPeopleLookupIdsInvalid"].Value,
+        ErrorPeopleDirectoryUnavailable = Localizer["ErrorPeopleDirectoryUnavailable"].Value,
         ErrorUnavailable = Localizer["ErrorUnavailable"].Value,
         EmptyTitle = Localizer["EmptyTitle"].Value,
         EmptyDescription = Localizer["EmptyDescription"].Value,
@@ -242,6 +256,16 @@
         // WP-WORKFLOW-APPROVAL-STATUS-01 (B2) — approval / review routed back to the person starting it.
         ErrorApprovalManagerIsSelf = Localizer["ErrorApprovalManagerIsSelf"].Value,
         ErrorReviewerIsSubmitter = Localizer["ErrorReviewerIsSubmitter"].Value,
+        // WP-WF-ENGINE-CANDIDATES-01 D2-FIX1 + WP-WCN-TASK-REQUEST-01 FIX4 (item 6) — nobody eligible to review
+        // (TASK_REVIEW_NO_ELIGIBLE_REVIEWER, the engine's D2-FIX2 answer on submit); nobody but the caller to decide the
+        // next step of an approval (WORKFLOW_NO_ELIGIBLE_APPROVER).
+        ErrorNoEligibleReviewer = Localizer["ErrorNoEligibleReviewer"].Value,
+        ErrorNoEligibleApprover = Localizer["ErrorNoEligibleApprover"].Value,
+        // FIX4 (item 7) — a linked approval / review that could not be withdrawn: on an edit, and on a cancel.
+        ErrorApprovalCancelFailed = Localizer["ErrorApprovalCancelFailed"].Value,
+        ErrorReviewCancelFailed = Localizer["ErrorReviewCancelFailed"].Value,
+        ErrorWorkflowWithdrawFailedOnAct = Localizer["ErrorWorkflowWithdrawFailedOnAct"].Value,
+        ErrorReviewAlreadyOpen = Localizer["ErrorReviewAlreadyOpen"].Value,
         ErrorWaitingReasonRequired = Localizer["ErrorWaitingReasonRequired"].Value,
         // BL-439 — the answer to a waiting task's question: empty, too long, or no longer the reader's to give.
         ErrorInquiryAnswerRequired = Localizer["ErrorInquiryAnswerRequired"].Value,

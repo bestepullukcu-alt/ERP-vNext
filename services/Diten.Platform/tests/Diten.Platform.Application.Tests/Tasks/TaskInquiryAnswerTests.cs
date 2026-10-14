@@ -338,6 +338,43 @@ public sealed class TaskInquiryAnswerTests
     }
 
     [Fact]
+    public async Task An_answer_into_running_work_whose_withdrawn_approval_is_still_open_lands_in_Open()
+    {
+        // D2-FIX2 item 1 — approval switched OFF while the task waited, but the withdraw failed: the link is held and the
+        // instance is still open. The answer asks the gate the way `resume` does — the link counts, the flag does not.
+        var f = new Fixture(TaskLifecycle.InProgress);
+        await f.InquireAsync(Question, Asked);
+        f.Task.ApprovalRequired = false;
+        f.Task.WorkflowInstanceId = Guid.NewGuid();
+        f.Gate.Blocked = true;
+
+        await f.AnswerAsync(Asked, Answer);
+
+        Assert.Equal(TaskLifecycle.Open, f.Task.Lifecycle);
+        Assert.Contains(f.Gate.Calls, call => call.RequestedTransition == "start");
+    }
+
+    [Theory]
+    [InlineData(false, TaskLifecycle.InProgress)]
+    [InlineData(true, TaskLifecycle.Open)]
+    public async Task An_answer_into_running_work_whose_held_approval_the_engine_refused_follows_the_requirement(
+        bool approvalRequired, TaskLifecycle expected)
+    {
+        // D2-FIX3 item 8 — TransH:1704's Holds(gate, ApprovalRequired) had no test of its own. A held link to an instance
+        // MOD-0023 reports CLOSED holds nothing once the requirement is withdrawn; with it on, the same answer holds.
+        var f = new Fixture(TaskLifecycle.InProgress);
+        await f.InquireAsync(Question, Asked);
+        f.Task.ApprovalRequired = approvalRequired;
+        f.Task.WorkflowInstanceId = Guid.NewGuid();
+        f.Gate.RejectedObjectTypes.Add(TaskApprovalService.ApprovalObjectType);
+
+        await f.AnswerAsync(Asked, Answer);
+
+        Assert.Equal(expected, f.Task.Lifecycle);
+        Assert.Contains(f.Gate.Calls, call => call.RequestedTransition == "start"); // non-vacuity: the gate was asked
+    }
+
+    [Fact]
     public async Task An_answer_into_running_work_with_an_open_predecessor_lands_in_Open()
     {
         var f = new Fixture(TaskLifecycle.InProgress);
@@ -654,7 +691,7 @@ public sealed class TaskInquiryAnswerTests
                     new FakePositionRepository([.. _positions]),
                     new FakeOrganizationUnitRepository([.. _units]),
                     Notifications,
-                    NullLogger<InquireTaskItemHandler>.Instance)
+                    NullLogger<InquireTaskItemHandler>.Instance, writeGate: TaskWriteGateDoubles.Open)
                 .Handle(
                     new InquireTaskItemCommand(Task.Id, new InquireTaskItemRequest(Task.Version, reason, waitingOn), "corr"),
                     CancellationToken.None);
@@ -662,7 +699,7 @@ public sealed class TaskInquiryAnswerTests
         public Task<Response<NoContent>> AnswerAsync(Guid actor, string answer, int? version = null)
             => new AnswerInquiryHandler(
                     Tasks, Tasks.Transitions, new TaskLifecycleService(), new FakeCurrentUserContext(actor),
-                    Gate, Dependencies, Notifications, NullLogger<AnswerInquiryHandler>.Instance)
+                    Gate, Dependencies, Notifications, NullLogger<AnswerInquiryHandler>.Instance, writeGate: TaskWriteGateDoubles.Open)
                 .Handle(
                     new AnswerInquiryCommand(Task.Id, new AnswerInquiryRequest(version ?? Task.Version, answer), "corr"),
                     CancellationToken.None);
@@ -679,7 +716,7 @@ public sealed class TaskInquiryAnswerTests
                     new TaskFieldDefinitionService(
                         new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()),
                     new FakeTaskAttachmentRepository(),
-                    NullLogger<TransitionTaskItemHandler>.Instance)
+                    NullLogger<TransitionTaskItemHandler>.Instance, writeGate: TaskWriteGateDoubles.Open)
                 .Handle(
                     new TransitionTaskItemCommand(
                         Task.Id, target, new TaskTransitionRequest(Task.Version, null, null), "corr",
@@ -689,7 +726,7 @@ public sealed class TaskInquiryAnswerTests
         public Task<Response<NoContent>> ReassignAsAsync(Guid actor, Guid newAssignee)
             => new ReassignTaskItemHandler(
                     Tasks, new FakeTaskAssignmentRepository(), TaskAssignmentGuards.AdmitAll(),
-                    new FakeCurrentUserContext(actor), new FakeTenantContext(TaskTestData.Tenant))
+                    new FakeCurrentUserContext(actor), new FakeTenantContext(TaskTestData.Tenant), writeGate: TaskWriteGateDoubles.Open)
                 .Handle(
                     new ReassignTaskItemCommand(
                         Task.Id, new ReassignTaskItemRequest(Task.Version, newAssignee, "Başkası baksın."), "corr"),
@@ -698,7 +735,7 @@ public sealed class TaskInquiryAnswerTests
         public Task<Response<NoContent>> ReturnAsAsync(Guid actor)
             => new ReturnTaskItemHandler(
                     Tasks, new FakeTaskAssignmentRepository(), new FakeCurrentUserContext(actor),
-                    new FakeTenantContext(TaskTestData.Tenant))
+                    new FakeTenantContext(TaskTestData.Tenant), writeGate: TaskWriteGateDoubles.Open)
                 .Handle(
                     new ReturnTaskItemCommand(Task.Id, new ReturnTaskItemRequest(Task.Version, "Benim işim değil."), "corr"),
                     CancellationToken.None);

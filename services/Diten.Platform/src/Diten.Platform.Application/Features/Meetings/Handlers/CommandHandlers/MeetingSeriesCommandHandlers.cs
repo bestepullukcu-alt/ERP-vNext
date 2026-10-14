@@ -21,6 +21,13 @@ internal static class MeetingSeriesMapping
         series.AttendeeUserIds, series.LeadTimeDays, series.ChainAsFollowUp,
         series.LastGeneratedMeetingId, series.LastGeneratedAt, series.IsActive, series.Version);
 
+    /// <summary>BL-531 — the read side's names (organizer + attendees, in the stored order); null where unresolved.</summary>
+    public static MeetingSeriesDto WithNames(MeetingSeriesDto dto, IReadOnlyDictionary<Guid, string> names) => dto with
+    {
+        OrganizerDisplayName = MeetingPersonNames.NameOf(names, dto.OrganizerUserId),
+        Attendees = dto.AttendeeUserIds.Select(id => new MeetingPersonNameDto(id, MeetingPersonNames.NameOf(names, id))).ToList()
+    };
+
     /// <summary>The field-shape rules pack §12 states for a series, checked identically on create and update.
     /// Returns the first violation's (message, reasonCode), or null when the request is well-formed.</summary>
     public static (string Message, string ReasonCode)? Validate(

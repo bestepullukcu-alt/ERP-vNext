@@ -26,6 +26,7 @@ Senin görevin yeni tasarım "uydurmak" DEĞİLDİR. Senin görevin verilmiş ş
 4. **SharedResource Kuralı:** "Kaydet", "Sil", "İptal", "Emin misiniz?", "Durum", "Filtre", "Sıfırla", "Toplu Sil" gibi genel metinleri View'a özel dil dosyasına (örn: SampleModuleIndex.tr.resx) ASLA ekleme. Bunları daima `@SharedLocalizer["Key"]` üzerinden çağır.
    - **İstisna (Golden DataTable Standardı):** DataTable liste sayfalarında `Actions`, `EditBtn`, `QuickView`, `AddNew{{ModuleName}}` gibi sayfa/modül odaklı UI key'leri modül `.resx`'inde tutulur ve `@Localizer["Key"]` üzerinden okunur. (Altın Referanslar: `GoldenReferenceSlim`, `GoldenReferenceCompact`)
 5. **Personalization Kuralı:** Save View / kullanıcı görünüm tercihleri localStorage’da tutulmaz. Daima gateway üzerinden `/api/personalization/*` çağıran shared `window.personalizationClient` kullanılır. Bu yetenek MDM/Auth içine gömülmez.
+6. **Klavye ve Sayfa Yardımı (UXH-001, 2026-10-12):** Her yeni sayfa ve yan panel `.antigravity/rules/page-help-and-keyboard.md`'ye uyar: "?" yardım panelinde sayfanın metni (ya da borç defterinde adı); alanı olan her yan panelde `enter` / `chord` işareti; geri alınamaz işlem yalnız Ctrl / Cmd + Enter; kısayol ortak katmana (`DitenShortcuts`) kaydedilir, sayfaya özel `keydown` dinleyicisi YASAK. FROZEN `_Layout` kullanan görünümler bu katmanı almaz; yeni sayfa FROZEN `_Layout`'a düşmez.
 
 ## 🏗️ Mimari Disiplin ve Teknoloji Yığını
 - **Ana Yapı:** ASP.NET Core MVC (Razor Views - `.cshtml`).

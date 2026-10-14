@@ -89,6 +89,19 @@
   <data name="ToastClaimed" xml:space="preserve"><value>أصبحت المهمة لك.</value></data>
   <data name="ErrorAlreadyClaimed" xml:space="preserve"><value>تولّى شخص آخر هذه المهمة قبلك.</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>ليس لديك إذن للقيام بذلك.</value></data>
+  <data name="PeopleSearchHint" xml:space="preserve"><value>اكتب اسمًا أو منصبًا…</value></data>
+  <data name="PeopleSearchMinimumLength" xml:space="preserve"><value>اكتب حرفين على الأقل للبحث.</value></data>
+  <data name="PeopleSearchNoResults" xml:space="preserve"><value>لم يتم العثور على أحد لهذا البحث.</value></data>
+  <data name="PeopleSearching" xml:space="preserve"><value>جارٍ البحث…</value></data>
+  <data name="DecisionMakerUnavailable" xml:space="preserve"><value>شخص غير موجود</value></data>
+  <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>عمليات بحث كثيرة في وقت قصير. انتظر قليلًا ثم حاول مرة أخرى.</value></data>
+  <data name="SearchFailed" xml:space="preserve"><value>تعذّر إجراء البحث. يُرجى المحاولة مرة أخرى بعد قليل.</value></data>
+  <data name="RecordSearchNoResults" xml:space="preserve"><value>لم يتم العثور على سجلات.</value></data>
+  <data name="DecisionMakerLoadFailed" xml:space="preserve"><value>تعذّر تحميل بيانات الشخص حاليًا</value></data>
+  <data name="ErrorPeopleLookupSearchAndIds" xml:space="preserve"><value>ابحث بالاسم أو بالأشخاص المحفوظين، وليس بالاثنين معًا.</value></data>
+  <data name="ErrorPeopleLookupTooManyIds" xml:space="preserve"><value>تم طلب عدد كبير جدًا من الأشخاص دفعة واحدة.</value></data>
+  <data name="ErrorPeopleLookupIdsInvalid" xml:space="preserve"><value>أحد مراجع الأشخاص المحفوظة غير صالح.</value></data>
+  <data name="ErrorPeopleDirectoryUnavailable" xml:space="preserve"><value>دليل الأشخاص غير متاح حاليًا. يُرجى المحاولة مرة أخرى بعد قليل.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>تعذّر الوصول إلى خدمة المهام. حاول مرة أخرى.</value></data>
   <data name="EmptyTitle" xml:space="preserve"><value>لا مهام بعد</value></data>
   <data name="EmptyDescription" xml:space="preserve"><value>أنشئ مهمتك الأولى لتظهر هنا وفي مركز المهام.</value></data>
@@ -123,6 +136,12 @@
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>لا يمكن إلغاء هذه المهمة إلا من قِبل الشخص الذي طلبها. إذا كنت لا تريد العمل، فأعده بدلاً من ذلك.</value></data>
   <data name="ErrorApprovalManagerIsSelf" xml:space="preserve"><value>لا يمكنك أن تكون المعتمِد لموافقة تطلبها بنفسك. اختر شخصًا آخر مسؤولًا عن الموافقة.</value></data>
   <data name="ErrorReviewerIsSubmitter" xml:space="preserve"><value>لا يمكنك مراجعة ما قدّمته بنفسك. اطلب من شخص آخر مراجعة هذه المهمة.</value></data>
+  <data name="ErrorNoEligibleReviewer" xml:space="preserve"><value>لا يوجد أحد غيرك يمكنه مراجعة هذه المهمة. اختر مراجعًا آخر.</value></data>
+  <data name="ErrorNoEligibleApprover" xml:space="preserve"><value>لا يوجد أحد غيرك يمكنه اتخاذ قرار في الخطوة التالية من هذه الموافقة. اطلب من المسؤول تعديل معتمدي سير العمل.</value></data>
+  <data name="ErrorApprovalCancelFailed" xml:space="preserve"><value>تم حفظ تغييراتك، لكن تعذّر سحب الموافقة الجارية. احفظ مرة أخرى لإعادة المحاولة.</value></data>
+  <data name="ErrorReviewCancelFailed" xml:space="preserve"><value>تم حفظ تغييراتك، لكن تعذّر سحب المراجعة الجارية. احفظ مرة أخرى لإعادة المحاولة.</value></data>
+  <data name="ErrorWorkflowWithdrawFailedOnAct" xml:space="preserve"><value>تعذّر سحب الموافقة أو المراجعة المرتبطة، لذلك لم يتم تنفيذ أي إجراء. حاول مرة أخرى بعد قليل.</value></data>
+  <data name="ErrorReviewAlreadyOpen" xml:space="preserve"><value>هذه المهمة لديها مراجعة مفتوحة بالفعل.</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>اذكر ما تنتظره المهمة.</value></data>
   <data name="ErrorTitleRequired" xml:space="preserve"><value>العنوان مطلوب.</value></data>
   <data name="ErrorTitleTooLong" xml:space="preserve"><value>لا يمكن أن يتجاوز العنوان 200 حرف.</value></data>

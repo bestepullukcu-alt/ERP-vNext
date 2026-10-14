@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader><resheader name="version"><value>2.0</value></resheader><resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader><resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="RefusalStockFieldsRequired" xml:space="preserve"><value>لا يمكن تفعيل هذا الصنف بعد: املأ حقول المخزون المدرجة أدناه، ثم أرسله مرة أخرى.</value></data>
+  <data name="FieldLotControlled" xml:space="preserve"><value>التتبع بالدفعة</value></data>
+  <data name="FieldBaseUom" xml:space="preserve"><value>الوحدة الأساسية</value></data>
+  <data name="FieldStorageConditions" xml:space="preserve"><value>شروط التخزين (شرط واحد على الأقل)</value></data>
+  <data name="FieldUomConversions" xml:space="preserve"><value>تحويلات الوحدات (كل وحدة على بعد أربع خطوات كحد أقصى من الوحدة الأساسية)</value></data>
+  <data name="RefusalApprovalForbidden" xml:space="preserve"><value>غير مسموح لك بإرسال تفعيل هذا الصنف أو طلبه أو سحبه.</value></data>
+  <data name="RefusalApprovalNotRequester" xml:space="preserve"><value>لا يمكن سحب طلب تفعيل هذا الصنف إلا من قِبل الشخص الذي أرسله.</value></data>
+  <data name="RefusalApprovalChanged" xml:space="preserve"><value>تغيّرت الموافقة على هذا الصنف أثناء عملك. أعد تحميل الصنف وحاول مرة أخرى.</value></data>
+  <data name="RefusalApprovalBusy" xml:space="preserve"><value>تجري معالجة الموافقة على هذا الصنف. حاول مرة أخرى بعد قليل.</value></data>
+  <data name="RefusalApprovalSubmitInFlight" xml:space="preserve"><value>لا تزال معالجة طلب تفعيل هذا الصنف جارية. حاول مرة أخرى بعد قليل.</value></data>
+  <data name="RefusalApprovalRepeatDiffers" xml:space="preserve"><value>سبق إرسال هذا الطلب ببيانات مختلفة. افتح الصنف مرة أخرى وابدأ من جديد.</value></data>
+  <data name="RefusalApprovalWithdrawalInvalid" xml:space="preserve"><value>تعذّرت قراءة طلب السحب. افتح الصنف مرة أخرى وحاول مجددًا.</value></data>
+  <data name="RefusalApprovalWithdrawalRefused" xml:space="preserve"><value>تعذّر سحب الموافقة. ربما صدر قرار بشأنها بالفعل. أعد تحميل الصنف.</value></data>
+  <data name="RefusalApprovalUnavailable" xml:space="preserve"><value>لا يمكن الوصول إلى خدمة الموافقات الآن. حاول مرة أخرى بعد قليل.</value></data>
+  <data name="RefusalApprovalNeedsCheck" xml:space="preserve"><value>يجب أن يتحقق مسؤول من الموافقة على هذا الصنف. لم يُطبَّق طلبك.</value></data>
+  <data name="RefusalApprovalStartRefused" xml:space="preserve"><value>تعذّر بدء الموافقة. اطلب من المسؤول التحقق من إعدادات الموافقات.</value></data>
+  <data name="RefusalApprovalSelf" xml:space="preserve"><value>لا يمكنك الموافقة على طلبك بنفسك. يجب أن يقرر موافِق آخر.</value></data>
+  <data name="RefusalReferenceValueChanged" xml:space="preserve"><value>أُزيلت أو تغيّرت قيمة قائمة يستخدمها هذا الصنف. صحّح الصنف، ثم أرسله مرة أخرى.</value></data>
+  <data name="RefusalReferenceCheckUnavailable" xml:space="preserve"><value>لا يمكن التحقق من قوائم الصنف الآن. حاول مرة أخرى بعد قليل.</value></data>
+  <data name="RefusalOrphanRepairInvalid" xml:space="preserve"><value>طلب إصلاح الرمز غير صالح.</value></data>
+  <data name="RefusalApprovalSessionExpired" xml:space="preserve"><value>لم تقبل خدمة الموافقات جلستك. سجّل الدخول مرة أخرى وكرّر الإجراء.</value></data>
+  <data name="RefusalApprovalSetupIncomplete" xml:space="preserve"><value>إعدادات الموافقة لهذا الإجراء غير مكتملة. يرجى إبلاغ المسؤول.</value></data>
+  <data name="RefusalApprovalResubmit" xml:space="preserve"><value>لم يصل الطلب إلى خدمة الموافقات. أرسل الطلب نفسه مرة أخرى.</value></data>
+</root>

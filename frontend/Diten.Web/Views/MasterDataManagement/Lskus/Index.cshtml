@@ -1,12 +1,44 @@
 @using Diten.Web.Views.MasterDataManagement.Lskus
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<LskusIndex> Localizer
-@{ ViewData["Title"] = Localizer["Title"].Value; Layout = "_LayoutTenantShell"; var canCreate = ViewData["CanCreateLsku"] as bool? == true; }
+@{
+    ViewData["Title"] = Localizer["Title"].Value;
+    Layout = "_LayoutTenantShell";
+    var canCreate = ViewData["CanCreateLsku"] as bool? == true;
+    var canSubmit = ViewData["CanSubmitLsku"] as bool? == true;
+    var canWithdraw = ViewData["CanWithdrawLsku"] as bool? == true;
+    var canRequestRetirement = ViewData["CanRequestRetirementLsku"] as bool? == true;
+    // MOD-0290-FU04 S5 (O-12, UAS-001): the stock-behaviour offcanvas and its script exist only with the stock-edit key.
+    var canEditStock = Diten.Web.Security.PermissionClaims.HasPermission(User, Diten.Web.Services.MasterData.StockBehaviourAccess.Lsku);
+}
+
+@*
+    UAS-001 (WP-MDM-LSKU-ACCEPT-01 B6) — the GSKU register's shape: nothing of the register is drawn without
+    mdm.lskus.read (no filter bar, heading, skeleton or table). LskusController.Index answers 403 with this surface.
+    ⚠ Display only. MDM's [HasPermission("mdm.lskus.read")] and the proxy's own check remain the authority.
+*@
+@if (!Diten.Web.Security.PermissionClaims.HasPermission(User, "mdm.lskus.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["Title"].Value" />
+    return;
+}
+
 @* <partial name="_Filter" /> *@
 <partial name="~/Views/MasterDataManagement/Lskus/_Filter.cshtml" />
-<div class="mb-3" data-can-create="@canCreate.ToString().ToLowerInvariant()"><h5>@Localizer["Title"]</h5><p class="text-muted">@Localizer["PageDescription"]</p></div>
+<div class="mb-3"
+     data-can-create="@canCreate.ToString().ToLowerInvariant()">
+    <h5>@Localizer["Title"]</h5>
+    <p class="text-muted">@Localizer["PageDescription"]</p>
+</div>
+@if (canSubmit || canWithdraw || canRequestRetirement)
+{
+    <form id="lskuLifecycleToken" class="d-none" data-no-tracker>
+        @Html.AntiForgeryToken()
+    </form>
+}
 <partial name="~/Views/MasterDataManagement/Lskus/_DataTable.cshtml" />
 @* id="offcanvasDetailsPreview" is rendered by the real details partial. *@
 <partial name="~/Views/MasterDataManagement/Lskus/_DetailsQuickView.cshtml" />
 @if (canCreate) { <partial name="~/Views/MasterDataManagement/Lskus/_CreateEditOffcanvas.cshtml" /> }
-@section Scripts { @* <partial name="_IndexL10n" /> *@ <partial name="~/Views/MasterDataManagement/Lskus/_IndexL10n.cshtml" /><script src="~/assets/js/MasterDataManagement/Lskus/index.l10n.js" asp-append-version="true"></script><script src="~/assets/js/MasterDataManagement/Lskus/index.js" asp-append-version="true"></script> }
+@if (canEditStock) { <partial name="~/Views/MasterDataManagement/Lskus/_StockBehaviourOffcanvas.cshtml" /> }
+@section Scripts { @* <partial name="_IndexL10n" /> *@ <partial name="~/Views/MasterDataManagement/Lskus/_IndexL10n.cshtml" /><script src="~/assets/js/MasterDataManagement/Lskus/index.l10n.js" asp-append-version="true"></script>@if (canEditStock) { <script src="~/assets/js/MasterDataManagement/StockBehaviour/stock-behaviour.js" asp-append-version="true"></script> }<script src="~/assets/js/MasterDataManagement/Lskus/index.js" asp-append-version="true"></script> }

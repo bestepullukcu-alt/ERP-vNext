@@ -350,6 +350,9 @@ public sealed class TenantRouteScopeCorrectionMongoTests : IClassFixture<Account
     // Ordinary tasks keys, Tenant in the dev catalog (measured: every platform.tasks.* key but the two is Scope 0).
     private const string TasksReadKey = "platform.tasks.read";
     private const string TasksCreateKey = "platform.tasks.create";
+    // A seeded Workflow design key (permission-scope-baseline.csv: 1). Main sync 2026-10-13: main's WP-0023-FX made all seven
+    // workflow runtime keys Tenant (tasks.delegate among them), so the design key main's own test uses stands in here.
+    private const string SeededPlatformAdminKey = "platform.workflow.definitions.publish";
 
     // EntitlementSyncConsumer.Actor — the actor the real consumer passes to the sync.
     private const string EntitlementActor = "entitlement-sync";
@@ -553,7 +556,13 @@ public sealed class TenantRouteScopeCorrectionMongoTests : IClassFixture<Account
         Assert.Equal(PermissionScope.Tenant, (await permissions.Find(p => p.Key == ChecklistTemplatesManage).SingleAsync()).Scope);
         Assert.Equal(PermissionScope.Tenant, (await permissions.Find(p => p.Key == TemplatesManage).SingleAsync()).Scope);
         Assert.Equal(PermissionScope.PlatformAdmin, (await permissions.Find(p => p.Key == UnlistedTenantRouteKey).SingleAsync()).Scope);
-        // WP-0023-FX — the workflow runtime keys are Tenant; every workflow design key (baseline: 1) is still PlatformAdmin.
+        // Owner + CT decision 2026-10-01: the three SeedOwnedTenantScopeKeys are Tenant after the full seed...
+        foreach (var key in SeedOwnedTenantScopeKeys.Keys)
+        {
+            Assert.Equal(PermissionScope.Tenant, (await permissions.Find(p => p.Key == key).SingleAsync()).Scope);
+        }
+        // WP-0023-FX (main) — all seven workflow runtime keys are Tenant (the three above among them); every workflow
+        // design key is still PlatformAdmin.
         foreach (var key in TenantRouteScopeCorrectionTests.WorkflowRuntimeKeys)
         {
             Assert.Equal(PermissionScope.Tenant, (await permissions.Find(p => p.Key == key).SingleAsync()).Scope);
@@ -579,6 +588,17 @@ public sealed class TenantRouteScopeCorrectionMongoTests : IClassFixture<Account
         Assert.Equal(
             before.Select(d => (d["Key"].AsString, d["Scope"].ToString())),
             (await RawExceptKeysAsync(database, [])).Select(d => (d["Key"].AsString, d["Scope"].ToString())));
+
+        // ...and every other seeded platform-admin key (permission-scope-baseline.csv: 1) is still PlatformAdmin —
+        // each row compared with its own production seed literal, so nothing else was lowered by the seed run.
+        var seededPlatformAdmin = DataSeeder.BuildCanonicalPermissions()
+            .Where(p => p.Scope == PermissionScope.PlatformAdmin)
+            .Select(p => p.Key)
+            .ToList();
+        Assert.Contains(SeededPlatformAdminKey, seededPlatformAdmin);
+        var stored = await permissions.Find(Builders<Permission>.Filter.In(p => p.Key, seededPlatformAdmin)).ToListAsync();
+        Assert.Equal(seededPlatformAdmin.Count, stored.Count);
+        Assert.All(stored, p => Assert.Equal(PermissionScope.PlatformAdmin, p.Scope));
     }
 
     // (d) ─────────────────────────────────────────────────────────────────────────────────────────────
@@ -606,13 +626,22 @@ public sealed class TenantRouteScopeCorrectionMongoTests : IClassFixture<Account
 
         // The host's own seeded catalog (the production seeder already ran at host start, correction included): a seeded
         // platform-admin key is PlatformAdmin before and after — neither startup nor this run lowered anything else.
-        const string seededPlatformAdminKey = "platform.workflow.definitions.publish";
-        Assert.Equal(PermissionScope.PlatformAdmin, (await hostPermissions.Find(p => p.Key == seededPlatformAdminKey).SingleAsync()).Scope);
+        // (Owner + CT decision 2026-10-01: the three SeedOwnedTenantScopeKeys are Tenant by the seed, before and after —
+        // the correction run is not what makes them so.)
+        Assert.Equal(PermissionScope.PlatformAdmin, (await hostPermissions.Find(p => p.Key == SeededPlatformAdminKey).SingleAsync()).Scope);
+        foreach (var key in SeedOwnedTenantScopeKeys.Keys)
+        {
+            Assert.Equal(PermissionScope.Tenant, (await hostPermissions.Find(p => p.Key == key).SingleAsync()).Scope);
+        }
 
         var applied = await DataSeeder.ApplyTenantRouteScopeCorrectionsAsync(hostPermissions);
 
         Assert.Equal(new[] { ChecklistTemplatesManage, TemplatesManage }, applied.Select(c => c.PermissionKey).OrderBy(key => key, StringComparer.Ordinal));
-        Assert.Equal(PermissionScope.PlatformAdmin, (await hostPermissions.Find(p => p.Key == seededPlatformAdminKey).SingleAsync()).Scope);
+        Assert.Equal(PermissionScope.PlatformAdmin, (await hostPermissions.Find(p => p.Key == SeededPlatformAdminKey).SingleAsync()).Scope);
+        foreach (var key in SeedOwnedTenantScopeKeys.Keys)
+        {
+            Assert.Equal(PermissionScope.Tenant, (await hostPermissions.Find(p => p.Key == key).SingleAsync()).Scope);
+        }
         Assert.Equal(grantsBefore, await grants.CountDocumentsAsync(Builders<RolePermission>.Filter.In(rp => rp.PermissionId, ids)));
 
         // After: the same request through the same pipeline is accepted and names the granting person.
