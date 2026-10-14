@@ -122,7 +122,10 @@ public static class DependencyInjection
             // Mock users only when BOTH hold: Development AND the opt-in key (see DataSeeder.MockUsersOptInConfigurationKey).
             var seedMockUsers = environment.IsDevelopment()
                 && configuration.GetValue<bool>(DataSeeder.MockUsersOptInConfigurationKey);
-            DataSeeder.SeedAsync(database, seedMockUsers).GetAwaiter().GetResult();
+            // The dev tenant administrator under the same gate (DataSeeder.TenantAdminOptInConfigurationKey, BL-521 follow-up).
+            var seedTenantAdmin = environment.IsDevelopment()
+                && configuration.GetValue<bool>(DataSeeder.TenantAdminOptInConfigurationKey);
+            DataSeeder.SeedAsync(database, seedMockUsers, seedTenantAdmin).GetAwaiter().GetResult();
         }
         catch (Exception ex)
         {
