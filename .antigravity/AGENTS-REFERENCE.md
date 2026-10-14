@@ -2,8 +2,8 @@
 
 Bu belge `AGENTS.md`'nin devamıdır ve **aynı yetki seviyesindedir** (`AGENTS.md` §1, 3. sıra). Bölüm numaraları `AGENTS.md` ile aynıdır.
 Metin `AGENTS.md`'den kelimesi kelimesine taşındı (İ5-B, 2026-10-15). Yalnız şu düzeltmeler yapıldı: §2'ye klasörlerden ölçülen
-güncel servis ve domain listesi eklendi (eski ağaç tarihsel olarak duruyor); §8'deki var olmayan `docs/agent-usage-guide.md`
-bağlantısı gerçek iş akışı tariflerine, §12'deki silinmiş `docs/sop/upstream/` bağlantısı taşındığı `docs/guides/sop-upstream/`'a yönlendirildi.
+güncel servis ve domain listesi eklendi (eski ağaç tarihsel olarak duruyor); §8'deki `docs/agent-usage-guide.md` bağlantısı
+dosyanın taşındığı `docs/guides/operations/agent-usage-guide.md`'ye, §12'deki silinmiş `docs/sop/upstream/` bağlantısı taşındığı `docs/guides/sop-upstream/`'a yönlendirildi.
 
 ---
 
@@ -116,7 +116,7 @@ python3 .antigravity/scripts/verify_datatable_page.py . --area {AreaName} --modu
 
 ## 8. Çalışma Akışı (Domain / Module Oluşturma)
 
-İki ana yol var. Ayrıntılı tarifler: [.antigravity/workflows/prepare-module-pack.md](workflows/prepare-module-pack.md) ve [.antigravity/workflows/add-module.md](workflows/add-module.md).
+İki ana yol var. Detaylı walkthrough: [docs/guides/operations/agent-usage-guide.md](../docs/guides/operations/agent-usage-guide.md).
 
 ### Yol A — Sıfırdan yeni domain (nadir)
 
