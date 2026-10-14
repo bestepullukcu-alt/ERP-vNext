@@ -4,11 +4,12 @@
  * DitenHelp — the top bar's "?" help panel (WP-UX-COMMON-01, BL-495).
  *
  * The panel's text is rendered by the server (_PageHelpPanel.cshtml, resx, encoded). This file only:
- *   · opens it from the top-bar button and from the `?` key (diten-shortcuts.js hands `?` here when it exists);
- *   · fills (c), the page's registered shortcuts, from DitenShortcuts.list() — the global `?` entry is not the
- *     page's, and a page that registers none gets no shortcut section at all;
- *   · shows (d), "Start the tour", only when DitenTour says this page's tour can run (library loaded, a tour
- *     registered, a target on the page, the screen at least `md` wide).
+ *   · opens it from the top-bar button and from the `?` key (diten-shortcuts.js hands `?` here when it exists),
+ *     always on its first tab, "Overview" (WP-UX-HELP-PANEL-02: the tab is not remembered);
+ *   · fills the Keyboard tab's "On this page" card with the page's registered shortcuts, from DitenShortcuts.list() —
+ *     the global `?` entry is not the page's, and a page that registers none gets no card at all;
+ *   · shows "Start the tour" only when DitenTour says this page's tour can run (library loaded, a tour registered,
+ *     a target on the page, the screen at least `md` wide).
  *
  *   DitenHelp.open()      → shows the panel (false when the shell drew none: the unauthorized face)
  *   DitenHelp.pageCode()  → the stable code of the page, or '' when the shell could not tell
@@ -81,17 +82,21 @@
             : null;
     };
 
+    // WP-UX-HELP-PANEL-02 — every opening starts on "Overview": Bootstrap's own tab switch (it moves aria-selected,
+    // tabindex and the active pane); without Bootstrap's Tab the panel opens as it was drawn (Overview active).
+    const showFirstTab = (panel) => {
+        const first = panel.querySelector('[data-diten-help-tab="overview"]');
+        const bs = global.bootstrap;
+        if (first && bs && bs.Tab && typeof bs.Tab.getOrCreateInstance === 'function') {
+            bs.Tab.getOrCreateInstance(first).show();
+        }
+    };
+
     const open = () => {
         const panel = panelEl();
         if (!panel) { return false; }
         fillShortcuts(panel);
-        // UX-COMMON-FIX1 / FIX2 — the side-panel Enter hint only where the page has a side panel WITH fields (an offcanvas
-        // other than this one that a reader types into): a read-only quick view has no Enter to explain.
-        const hint = panel.querySelector('[data-diten-help-enter-hint]');
-        if (hint) {
-            hint.hidden = !Array.from(doc.querySelectorAll(`.offcanvas:not(#${PANEL_ID})`))
-                .some((side) => side.querySelector('input:not([type="hidden"]), textarea, select'));
-        }
+        showFirstTab(panel);
         const tour = panel.querySelector('[data-diten-help-tour]');
         if (tour) { tour.hidden = !tourAvailable(pageCode()); }
         const instance = offcanvasOf(panel);

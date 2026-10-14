@@ -69,15 +69,6 @@
   <data name="Help.Panel.PurposeHeading" xml:space="preserve">
     <value>What this page is for</value>
   </data>
-  <data name="Help.Panel.StepsHeading" xml:space="preserve">
-    <value>How to use it</value>
-  </data>
-  <data name="Help.Panel.ShortcutsHeading" xml:space="preserve">
-    <value>Keyboard shortcuts on this page</value>
-  </data>
-  <data name="Help.Panel.EnterHint" xml:space="preserve">
-    <value>In a side panel, Enter saves. An action that cannot be taken back (publish, approve, send, delete, cancel…) runs only with Ctrl+Enter (⌘+Enter on a Mac); a bare Enter does nothing there. In a multi-line field, Ctrl+Enter saves.</value>
-  </data>
   <data name="Help.Panel.ChordTitle" xml:space="preserve">
     <value>Ctrl+Enter (⌘+Enter on a Mac). A bare Enter does not run this action.</value>
   </data>
@@ -86,6 +77,60 @@
   </data>
   <data name="Help.Panel.Preparing" xml:space="preserve">
     <value>Help text for this page is being prepared.</value>
+  </data>
+  <data name="Help.Panel.Eyebrow" xml:space="preserve">
+    <value>Page help</value>
+  </data>
+  <data name="Help.Panel.Tabs" xml:space="preserve">
+    <value>Help sections</value>
+  </data>
+  <data name="Help.Panel.TabOverview" xml:space="preserve">
+    <value>Overview</value>
+  </data>
+  <data name="Help.Panel.TabSteps" xml:space="preserve">
+    <value>Step by step</value>
+  </data>
+  <data name="Help.Panel.TabKeys" xml:space="preserve">
+    <value>Keyboard</value>
+  </data>
+  <data name="Help.Panel.GeneralCard" xml:space="preserve">
+    <value>General information</value>
+  </data>
+  <data name="Help.Panel.RelatedCard" xml:space="preserve">
+    <value>Related pages</value>
+  </data>
+  <data name="Help.Panel.AudienceLabel" xml:space="preserve">
+    <value>Who uses it</value>
+  </data>
+  <data name="Help.Panel.ImmediateLabel" xml:space="preserve">
+    <value>Actions that take effect at once</value>
+  </data>
+  <data name="Help.Panel.StepNumber" xml:space="preserve">
+    <value>Step {0}</value>
+  </data>
+  <data name="Help.Panel.KeysEverywhere" xml:space="preserve">
+    <value>On every page</value>
+  </data>
+  <data name="Help.Panel.KeysThisPage" xml:space="preserve">
+    <value>On this page</value>
+  </data>
+  <data name="Help.Panel.KeyHelp" xml:space="preserve">
+    <value>Opens this panel</value>
+  </data>
+  <data name="Help.Panel.KeySearch" xml:space="preserve">
+    <value>Search pages, go to the menu</value>
+  </data>
+  <data name="Help.Panel.KeyEnter" xml:space="preserve">
+    <value>Saves in a side panel (actions you can take back)</value>
+  </data>
+  <data name="Help.Panel.KeyChord" xml:space="preserve">
+    <value>Runs an action that cannot be taken back (send, approve, delete…); saves in a multi-line field</value>
+  </data>
+  <data name="Help.Panel.KeyEscape" xml:space="preserve">
+    <value>Closes the open panel</value>
+  </data>
+  <data name="Help.Panel.MacNote" xml:space="preserve">
+    <value>On a Mac, use ⌘ instead of Ctrl.</value>
   </data>
   <data name="Tour.Next" xml:space="preserve">
     <value>Next</value>
@@ -166,13 +211,13 @@
     <value>Open a row to read the week, then choose Approve, or Return with a reason so it can be corrected.</value>
   </data>
   <data name="Help.USERS.Purpose" xml:space="preserve">
-    <value>Manage everyone who can sign in to your tenant: invite users, edit their details and decide whether each account is active. Administrators use it; disabling, deleting or a password reset takes effect at once.</value>
+    <value>Manage everyone who can sign in to your tenant: invite users, edit their details and decide whether each account is active.</value>
   </data>
   <data name="Help.USERS.Step1" xml:space="preserve">
     <value>Narrow the list with the search box, or click “Filter”, choose “Status”, “Roles” or “Account Type” and click “Apply”.</value>
   </data>
   <data name="Help.USERS.Step2" xml:space="preserve">
-    <value>Click “Add User”, fill in “Email”, “First Name” and “Last Name” in the side panel, then click “Save” or press Enter in a field.</value>
+    <value>Click “Add User”, fill in “Email”, “First Name” and “Last Name” in the side panel, then click “Save” or press Ctrl+Enter (⌘+Enter on a Mac). An invitation e-mail is sent, so a bare Enter does not save.</value>
   </data>
   <data name="Help.USERS.Step3" xml:space="preserve">
     <value>Ask the new user to set a password through the e-mailed link; until then the status shows “Invited” and the row offers “Resend Invitation”.</value>
@@ -183,8 +228,35 @@
   <data name="Help.USERS.Step5" xml:space="preserve">
     <value>To give a user roles, open the User Roles page; the “Roles” column here only shows what is already assigned.</value>
   </data>
+  <data name="Help.USERS.Audience" xml:space="preserve">
+    <value>Administrators</value>
+  </data>
+  <data name="Help.USERS.Immediate" xml:space="preserve">
+    <value>Disabling, deleting, password reset</value>
+  </data>
+  <data name="Help.USERS.Step1Title" xml:space="preserve">
+    <value>Narrow the list</value>
+  </data>
+  <data name="Help.USERS.Step2Title" xml:space="preserve">
+    <value>Invite a user</value>
+  </data>
+  <data name="Help.USERS.Step3Title" xml:space="preserve">
+    <value>Follow the invitation</value>
+  </data>
+  <data name="Help.USERS.Step4Title" xml:space="preserve">
+    <value>Manage the account</value>
+  </data>
+  <data name="Help.USERS.Step5Title" xml:space="preserve">
+    <value>Give roles</value>
+  </data>
+  <data name="Help.USERS.Related.USERROLES" xml:space="preserve">
+    <value>To give a user roles</value>
+  </data>
+  <data name="Help.USERS.Related.ROLES" xml:space="preserve">
+    <value>To see what each role allows</value>
+  </data>
   <data name="Help.ROLES.Purpose" xml:space="preserve">
-    <value>This page lists your tenant's roles: System roles that come with the platform and Custom roles you create. Administrators add, edit or delete custom roles here; permissions are set on Role Permissions.</value>
+    <value>This page lists your tenant's roles: System roles that come with the platform and Custom roles you create.</value>
   </data>
   <data name="Help.ROLES.Step1" xml:space="preserve">
     <value>Search the list, or click “Filter”, pick “System (built-in, locked)” or “Custom (editable)” under “Type” and click “Apply”.</value>
@@ -198,8 +270,32 @@
   <data name="Help.ROLES.Step4" xml:space="preserve">
     <value>Use “View”, “Edit” or “Delete” on a custom role; a system role shows a lock icon and can only be viewed.</value>
   </data>
+  <data name="Help.ROLES.Audience" xml:space="preserve">
+    <value>Administrators</value>
+  </data>
+  <data name="Help.ROLES.Immediate" xml:space="preserve">
+    <value>Deleting a custom role</value>
+  </data>
+  <data name="Help.ROLES.Step1Title" xml:space="preserve">
+    <value>Find a role</value>
+  </data>
+  <data name="Help.ROLES.Step2Title" xml:space="preserve">
+    <value>Add a role</value>
+  </data>
+  <data name="Help.ROLES.Step3Title" xml:space="preserve">
+    <value>Manage its permissions</value>
+  </data>
+  <data name="Help.ROLES.Step4Title" xml:space="preserve">
+    <value>View, edit or delete</value>
+  </data>
+  <data name="Help.ROLES.Related.ROLEPERMISSIONS" xml:space="preserve">
+    <value>To set what a role may do</value>
+  </data>
+  <data name="Help.ROLES.Related.USERROLES" xml:space="preserve">
+    <value>To give roles to users</value>
+  </data>
   <data name="Help.ROLEPERMISSIONS.Purpose" xml:space="preserve">
-    <value>This page sets what a role is allowed to do: you grant or remove permissions, grouped by module, for one role at a time. Administrators use it, and each change affects every user who holds the role.</value>
+    <value>This page sets what a role is allowed to do: you grant or remove permissions, grouped by module, for one role at a time.</value>
   </data>
   <data name="Help.ROLEPERMISSIONS.Step1" xml:space="preserve">
     <value>Pick a role in the “Role” box; coming from “Manage Permissions” on the Roles page opens it with the role already selected.</value>
@@ -216,8 +312,35 @@
   <data name="Help.ROLEPERMISSIONS.Step5" xml:space="preserve">
     <value>Check “Selected Role” on the right for “Permission coverage” and the assigned, locked and unassigned counts.</value>
   </data>
+  <data name="Help.ROLEPERMISSIONS.Audience" xml:space="preserve">
+    <value>Administrators</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Immediate" xml:space="preserve">
+    <value>Granting and removing a permission; it affects every user who holds the role</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step1Title" xml:space="preserve">
+    <value>Pick a role</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step2Title" xml:space="preserve">
+    <value>Narrow the permissions</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step3Title" xml:space="preserve">
+    <value>Grant a permission</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step4Title" xml:space="preserve">
+    <value>Remove a permission</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step5Title" xml:space="preserve">
+    <value>Check the coverage</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Related.ROLES" xml:space="preserve">
+    <value>To add or edit roles</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Related.USERROLES" xml:space="preserve">
+    <value>To give roles to users</value>
+  </data>
   <data name="Help.USERROLES.Purpose" xml:space="preserve">
-    <value>This page links users to roles: pick one user, then give them roles or take roles away. A user can hold several roles and gets the union of their permissions, so each change alters what they can do.</value>
+    <value>This page links users to roles: pick one user, then give them roles or take roles away.</value>
   </data>
   <data name="Help.USERROLES.Step1" xml:space="preserve">
     <value>Pick a person in the “User” box to see the roles they hold and the ones they do not.</value>
@@ -231,8 +354,32 @@
   <data name="Help.USERROLES.Step4" xml:space="preserve">
     <value>Click “Remove” on an assigned role, or the x beside it under “Active Roles”, and confirm to take it away.</value>
   </data>
+  <data name="Help.USERROLES.Audience" xml:space="preserve">
+    <value>Administrators</value>
+  </data>
+  <data name="Help.USERROLES.Immediate" xml:space="preserve">
+    <value>Assigning and removing a role; a user gets the permissions of all their roles together</value>
+  </data>
+  <data name="Help.USERROLES.Step1Title" xml:space="preserve">
+    <value>Pick a user</value>
+  </data>
+  <data name="Help.USERROLES.Step2Title" xml:space="preserve">
+    <value>Narrow the roles</value>
+  </data>
+  <data name="Help.USERROLES.Step3Title" xml:space="preserve">
+    <value>Assign a role</value>
+  </data>
+  <data name="Help.USERROLES.Step4Title" xml:space="preserve">
+    <value>Remove a role</value>
+  </data>
+  <data name="Help.USERROLES.Related.USERS" xml:space="preserve">
+    <value>To invite or manage users</value>
+  </data>
+  <data name="Help.USERROLES.Related.ROLES" xml:space="preserve">
+    <value>To add or edit roles</value>
+  </data>
   <data name="Help.ITEMS.Purpose" xml:space="preserve">
-    <value>This page lists the items (materials kept in stock: active ingredients, excipients, packaging, intermediates) with their identity, material type and stock behaviour. The master data team creates them here and takes each one through its statuses: “Draft”, “Awaiting approval”, “Active”, “Deactivated”, “Retired”.</value>
+    <value>This page lists the items (materials kept in stock: active ingredients, excipients, packaging, intermediates) with their identity, material type and stock behaviour. Each item is created here and taken through its statuses: “Draft”, “Awaiting approval”, “Active”, “Deactivated”, “Retired”.</value>
   </data>
   <data name="Help.ITEMS.Step1" xml:space="preserve">
     <value>Narrow the list with the search box, or click “Filter”, choose “Status” or “Material type” and click “Apply”.</value>
@@ -248,5 +395,23 @@
   </data>
   <data name="Help.ITEMS.Step5" xml:space="preserve">
     <value>Outside a text field, with no dialog or side panel open, the “?” key opens this help with the page's shortcuts.</value>
+  </data>
+  <data name="Help.ITEMS.Audience" xml:space="preserve">
+    <value>The master data team</value>
+  </data>
+  <data name="Help.ITEMS.Step1Title" xml:space="preserve">
+    <value>Narrow the list</value>
+  </data>
+  <data name="Help.ITEMS.Step2Title" xml:space="preserve">
+    <value>Add an item</value>
+  </data>
+  <data name="Help.ITEMS.Step3Title" xml:space="preserve">
+    <value>Send for approval</value>
+  </data>
+  <data name="Help.ITEMS.Step4Title" xml:space="preserve">
+    <value>Change its status</value>
+  </data>
+  <data name="Help.ITEMS.Step5Title" xml:space="preserve">
+    <value>Use the keyboard</value>
   </data>
 </root>

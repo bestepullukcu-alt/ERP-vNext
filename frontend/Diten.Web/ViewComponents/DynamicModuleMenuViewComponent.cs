@@ -181,9 +181,13 @@ public sealed class DynamicModuleMenuViewComponent : ViewComponent
     {
         try
         {
+            var items = groups.SelectMany(g => g.Items ?? Array.Empty<NavigationItem>()).ToList();
             HttpContext.Items[CurrentPage.PageCodeItem] = _pageMatcher(
                 HttpContext.Request.Path.Value,
-                groups.SelectMany(g => g.Items ?? Array.Empty<NavigationItem>()).Select(i => ((string?)i.PageCode, i.RoutePath)));
+                items.Select(i => ((string?)i.PageCode, i.RoutePath)));
+            // WP-UX-HELP-PANEL-02 — the same pages, for the help panel's "Related pages" (address + permission).
+            CurrentPage.RecordMenuPages(HttpContext,
+                items.Select(i => new MenuPage(i.PageCode, i.RoutePath ?? string.Empty, i.RequiredPermission)));
         }
         catch (Exception ex)
         {
