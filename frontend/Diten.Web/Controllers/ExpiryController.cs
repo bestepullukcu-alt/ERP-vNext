@@ -236,7 +236,10 @@ public sealed class ExpiryController : Controller
             case "warehouses":
             {
                 var reply = await ledger.GetAsync("/api/locations?type=Warehouse", ct);
-                return reply.IsSuccess ? Json(new { items = Options(reply.Body) }) : Failed("lookups.warehouses", reply);
+                // FIX-LIVE1: LOCATION rows are read by LocationRef.locationId (location.openapi.yaml), never by "id".
+                return reply.IsSuccess
+                    ? Json(new { items = (LocationOptions.Parse(reply.Body) ?? []).Select(o => new { value = o.Value, text = o.Text }) })
+                    : Failed("lookups.warehouses", reply);
             }
             case "skus":
             {
@@ -625,18 +628,6 @@ public sealed class ExpiryController : Controller
             var codeName = string.Join(" · ", new[] { (string?)warehouse?["code"], (string?)warehouse?["name"] }.Where(x => !string.IsNullOrWhiteSpace(x)));
             row["warehouseLabel"] = labels.Location((string?)warehouse?["id"]) ?? (codeName.Length > 0 ? codeName : (string?)warehouse?["id"]);
         }
-    }
-
-    private static IEnumerable<object> Options(string body)
-    {
-        JsonNode? root;
-        try { root = JsonNode.Parse(body); } catch (JsonException) { return []; }
-        var list = root as JsonArray ?? root?["items"] as JsonArray ?? root?["data"] as JsonArray ?? root?["data"]?["items"] as JsonArray ?? new JsonArray();
-        return list.OfType<JsonObject>().Select(o => (object)new
-        {
-            value = o["id"]?.ToString(),
-            text = string.Join(" · ", new[] { o["code"]?.ToString(), o["name"]?.ToString() }.Where(x => !string.IsNullOrWhiteSpace(x)))
-        });
     }
 
     private static string Cell(string? value)

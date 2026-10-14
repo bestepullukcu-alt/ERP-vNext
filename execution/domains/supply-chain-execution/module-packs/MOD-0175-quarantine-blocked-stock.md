@@ -1575,6 +1575,15 @@ actor binding (ours), tolerant `StartedByUserId` map, `SchemaProfile.ESignature 
 now also counts 33 MVP-1 write commands: Inventory 27, Auth 3, Platform 3), **FU-SYNC1-ENV** (main's tests need `DITEN_PLATFORM_TEST_MONGO_URI`,
 `AUTH_COMPOSITION_GUARD_MONGO_URI`, `DevSeeds:MockUsers` for seeded users — every future prompt states them).
 
+### FIX-LIVE1 — Karantina Ayarları sample location / lot picker (WP-MVP1-FIX-LIVE1, 2026-10-14, agent result, pending CT) — branch `fix/mvp1-live1` from `acff1f7be`, commit `6c9ac921b`, local only. Evidence `docs/records/audits/2026-10/mvp1-fix-live1-evidence-2026-10-14.md`.
+
+- **Fix.**
+  - The sample warehouse / location options had value null (they read `id`) and now use `LocationOptions` (`locationId`).
+  - Found while measuring: the lot picker read `id`, but TRACE `LotRef.lotId` (trace.openapi.yaml:291) → fixed to `lotId`.
+- **Tests and sabotage.** (b) ×3; sabotage s2 → red.
+- **FU-0175-UI-MANUALHOLD-01 (not done).** There is no UI button that quarantines arbitrary stock; `quarantineStock` exists only in
+  the retest queue (Retest.cshtml:14, retest.js:4).
+
 ## 20. Follow-up Items
 
 - **FU-0175-WF-SOD (MOD-0023):** store `StartedByUserId` and compare user ids in SoD; add an integration test that starts

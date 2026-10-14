@@ -64,6 +64,12 @@ public sealed class StockLedgerRowViewModel
     public string? LocationId { get; init; }
     public string? LocationLabel { get; init; }
     public string? LotId { get; init; }
+
+    /// <summary>FIX-LIVE1: the TRACE lot number of a registered lot (null when it could not be read, or for a typed lot text).</summary>
+    public string? LotNumber { get; init; }
+
+    /// <summary>FIX-LIVE1: a registered lot id whose number could not be read — the cell shows the id with the "unresolved" hint.</summary>
+    public bool LotUnresolved { get; init; }
     public string? StockStatus { get; init; }
     public string OnHand { get; init; } = "0";
     public string Reserved { get; init; } = "0";
