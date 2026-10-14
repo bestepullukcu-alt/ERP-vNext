@@ -334,7 +334,7 @@ public sealed class QuarantineController : Controller
 
     private async Task<IActionResult> ProxyAsync(string? everything)
     {
-        var path = string.IsNullOrWhiteSpace(everything) ? ApiBase : $"{ApiBase}/{everything.TrimStart('/')}";
+        if (!Diten.Web.Services.Proxy.ProxyPath.TryBuild(ApiBase, everything, out var path, out var refused)) return Diten.Web.Services.Proxy.ProxyPath.Refusal(refused); // WP-MVP1-SEC-PROXY1
         string? body = null;
         if (!HttpMethods.IsGet(Request.Method) && Request.ContentLength is > 0)
         {
