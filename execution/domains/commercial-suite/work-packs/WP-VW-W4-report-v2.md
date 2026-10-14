@@ -957,3 +957,21 @@ Test dalına alındı: `0ee9231d5` (ajan `4013677e5`). Cherry-pick çakışması
 **Açık:**
 - Geçmişe dönük veri temizliği yok: E4 test raporu `d68d299f` (Bülent Yardımcı) 3 potansiyel kaydına `NoPatientsInIndications=true` yazdı. Bu test verisi; temizlik kararı kullanıcıda.
 - Mobil not: `mobile/2026-10-14-visit-report-potential/MOBILE-NOTE-2026-10-14-report-potential-asked.md` → CT mobil yanıt sayfasına taşıyacak.
+
+## §37 CT kabul — W4-FIX-a E2 ACCEPTED (2026-10-14)
+Test dalına alındı: `b5ecaab09` (ajan `1ff39e2d3`). Cherry-pick çakışmasız.
+
+**CT kontrolü:**
+- Yeni çekirdek işlevleri:
+  - `referenceOptions` (F-3): gerçek `code` / `label` / `attributes.label_<dil>` yanıtı; pasifler dışarıda, `sortOrder` sıralı.
+  - `productMatches` (F-2): Türkçe İ/ı katlamalı ad / kod araması.
+  - `preparedOf` / `appliedOf` (F-7): uygulama anı hiç kullanılmıyor.
+- Ek düzeltme: `money()` virgüllü fiyatı çözüyor; eskiden "NaN" basıyordu.
+- Ana depodaki `.claude/launch.json` temiz; ajan elle kontrol için eklediği girişi geri almış, CT doğruladı.
+- **Testler** (worktree, `-o frontend/Diten.Web.Tests/bin/ct`): `CompetitorProductsWebTests` 32/32. Ajanın tam takım sonucu Web 1663/2; iki `ShipmentDetailsDateNode` kırmızısı tabanda da var.
+- **CT sabotajı (ajanın dokunmadığı kural, F-7):** hazırlama zamanı yine `updatedAt` öncelikli yapıldı → `FixA_F7_prepared_by_is_the_creation_and_applied_is_its_own_line` kırmızı. `.bak` ile geri alındı + touch → 32/32.
+
+**Açık:**
+- **F-7 sunucu tarafı:** MDM karar DTO'sunda `CreatedAt` yok; istemci ilk gönderim zamanına düşüyor. Kalıcı çözüm DTO'ya `CreatedAt` eklemek (küçük MDM işi).
+- **WEB-a `visit-report.js`:** geri ödeme etiketi hâlâ `displayName` okuyor; İngilizcede etiket yerine kod görünür. F-3'ün eşi, küçük iş.
+- **Pazar listesi:** yerelde `market` consumable seti 404 veriyor. W4-INFRA pazar kataloğunu ayrılmış referans kiracıya yükledi; consumable okuma 97c5 üzerinden yapıldığı için boş kalabilir. INFRA kullanıcı adımlarından sonra E4'te ölçülecek.
