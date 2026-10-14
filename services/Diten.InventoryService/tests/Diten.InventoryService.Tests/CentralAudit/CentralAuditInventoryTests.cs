@@ -148,16 +148,24 @@ public sealed class CentralAuditInventoryDeliveryTests : IClassFixture<CentralAu
         await s.PostExpectingAsync(s.Receipt("7"), 201);
         var dispatcher = _factory.Services.GetRequiredService<CentralAuditDispatcher>();
         var outbox = CentralAuditInventoryTests.Outbox(_factory);
+        var mine = outbox.Find(x => x.TenantId == s.Tenant).Single().Id;
+
+        // The suite's database is shared (DB-010): other classes' rows wait in the same outbox. The batch is ONE row
+        // (ConfiguredFactory) and this row is put first in the due order, so a cycle touches this row and nobody else's.
+        void FirstInLine() => outbox.UpdateOne(x => x.Id == mine,
+            Builders<CentralAuditOutboxRecord>.Update.Set(x => x.NextAttemptAtUtc, new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc)));
 
         _factory.Platform.Next = HttpStatusCode.InternalServerError;
+        FirstInLine();
         await dispatcher.RunOnceAsync(CancellationToken.None);
-        var waiting = outbox.Find(x => x.TenantId == s.Tenant).Single();
+        var waiting = outbox.Find(x => x.Id == mine).Single();
         Assert.Equal(CentralAuditOutboxStatus.Pending, waiting.Status);
         Assert.Equal(1, waiting.Attempts);
         Assert.Contains("500", waiting.LastError, StringComparison.Ordinal);
+        Assert.True(waiting.NextAttemptAtUtc > DateTime.UtcNow.AddSeconds(-5), "a retry is scheduled after the failure (backoff)");
 
-        // Due again (the scripted backoff is zero), and Platform is back.
-        outbox.UpdateOne(x => x.Id == waiting.Id, Builders<CentralAuditOutboxRecord>.Update.Set(x => x.NextAttemptAtUtc, DateTime.UtcNow.AddSeconds(-1)));
+        // Due again, and Platform is back.
+        FirstInLine();
         _factory.Platform.Next = HttpStatusCode.Accepted;
         await dispatcher.RunOnceAsync(CancellationToken.None);
 
@@ -176,6 +184,7 @@ public sealed class CentralAuditInventoryDeliveryTests : IClassFixture<CentralAu
             builder.UseSetting("PlatformRegistration:BaseUrl", "http://platform.central-audit.test");
             builder.UseSetting("PlatformRegistration:InternalApiKey", "inventory-central-audit-test-key");
             builder.UseSetting("CentralAudit:DispatcherEnabled", "false");
+            builder.UseSetting("CentralAudit:BatchSize", "1");
             builder.ConfigureTestServices(services =>
                 services.AddHttpClient(PlatformCentralAuditClient.HttpClientName).ConfigurePrimaryHttpMessageHandler(() => Platform));
         }
