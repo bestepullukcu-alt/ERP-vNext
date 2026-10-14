@@ -22,7 +22,7 @@ Hata nerede gerçekleşiyor? Bu soruyu şu sırayla cevapla:
 - **Frontend:** Tarayıcı konsolu ve Network (400, 401, 500) hataları.
 - **Gateway (5000):** Ocelot logları. İstek servise ulaştı mı?
 - **Auth (5056):** Token geçerli mi? `X-Tenant-Id` doğru çözüldü mü?
-- **Service (5050/vb):** Business logic veya Veritabanı hatası mı?
+- **Service (portu `AGENTS.md` §3 Port Şeması'ndan bul):** Business logic veya Veritabanı hatası mı?
 
 ### 2. Multi-Tenancy Denetimi (En Sık Hata Kaynağı)
 Hata bir veri sızıntısı veya boş dönen bir liste ise şunları kontrol et:
