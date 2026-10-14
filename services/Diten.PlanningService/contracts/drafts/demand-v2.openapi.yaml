@@ -24,14 +24,17 @@ x-scope-rules:
   - Every API response, cursor and event is bound to resolved Tenant, LegalEntity and data scope.
 x-retention-policy: Published, Superseded and Invalidated revisions are not auto-deleted until enterprise retention policy is set.
 x-checksum-canonicalization: >-
-  MOD0188-CANONICAL-1/SHA-256 hashes a binary stream of ordered string fields.
+  MOD0188-CANONICAL-1/SHA-256 remains byte-for-byte unchanged for all-manual
+  snapshots. A snapshot containing any Method row uses
+  MOD0188-CANONICAL-2/SHA-256. Both hash a binary stream of ordered string fields.
   Each field is its nonnegative UTF-8 byte length as Int32 little-endian,
   followed by those UTF-8 bytes; no separator, BOM, JSON serialization or Unicode
   normalization is added. UUIDs use lowercase D format; dates yyyy-MM-dd;
   timestamps converted to UTC and emitted in round-trip O format with +00:00
   offset; integers invariant decimal without grouping;
   quantities invariant decimal G29; enum values use their case-sensitive names.
-  The ordered manifest fields are literal MOD0188-CANONICAL-1, tenantId,
+  The ordered manifest fields start with literal MOD0188-CANONICAL-1 or
+  MOD0188-CANONICAL-2 (matching definitionId), followed by tenantId,
   legalEntityId, revisionId, planningCycleId, planningPeriodKey, asOfDate,
   calendarId, calendarVersion, timeZoneId, horizonStart, horizonEnd,
   contentVersion, expectedPartCount, expectedRowCount, preparedBy,
@@ -44,7 +47,14 @@ x-checksum-canonicalization: >-
   by the same keys, each as skuId, warehouseId, baseUomId followed by exactly
   52 rows in weekNumber order. Each row is weekNumber, weekStart, weekEnd,
   valueKind, grossQuantityBaseUom, origin, manualReason, manualActorId, manualAt.
-  Current publisher accepts only Known/Manual rows. Physical part IDs, state,
+  In CANONICAL-2 a Method row has empty manualReason, zero UUID manualActorId,
+  and empty manualAt; all Manual rows retain the CANONICAL-1 fields.
+  CANONICAL-2 appends a method-present field to every row (0 or 1). For 1,
+  append forecastRunId, method, variant, policyVersion, historyAsOfWeekStart,
+  historyContentSha256, unitVerificationPending (0 or 1), parameter count,
+  and each parameter key/value in ordinal key order. A Manual row appends only 0.
+  A Method row requires Known quantity and complete provenance; a Manual row
+  must not carry provenance. Physical part IDs, state,
   stateVersion and later invalidation/supersession timestamps are excluded.
   SHA-256 bytes are encoded as uppercase hexadecimal. Missing fields, duplicate
   rows/parts or different ordering fail verification; consumers must receive
@@ -53,7 +63,7 @@ x-implementation-gaps:
   - Current-Published-by-period lookup is implemented only with fixture authority; live Platform/data-scope authority is unconfigured and fails closed.
   - Cycle and history-import HTTP operations are implemented in PlanningService but are not yet modeled in this revision-focused DRAFT contract.
   - Superseded content reading awaits approved evidence of a bound MRP run; status reading alone does not grant content access.
-  - Current HTTP row projection omits manualActorId/manualAt and week boundaries; this DRAFT checksum contract is not yet externally reproducible from its responses.
+  - Full external checksum recomputation from HTTP still needs independent consumer verification against every manifest and row field; this DRAFT is not frozen.
   - Current publish transaction persists a Superseded state/audit but only a Published outbox record; separate Superseded outbox intent remains to be implemented and tested.
 x-open-design-decisions:
   - Stable row ordering definition and opaque cursor encoding and expiry.
@@ -714,17 +724,35 @@ components:
           items: { $ref: '#/components/schemas/ManualDraftWeekView' }
     ManualDraftWeekView:
       type: object
-      required: [number, weekStart, weekEnd, valueKind, source, manualReason, manualActorId, manualAt]
+      required: [number, weekStart, weekEnd, valueKind, source]
       properties:
         number: { type: integer, minimum: 1, maximum: 52 }
         weekStart: { type: string, format: date }
         weekEnd: { type: string, format: date }
         valueKind: { $ref: '#/components/schemas/ManualWeekInput/properties/valueKind' }
         quantity: { type: [number, 'null'] }
-        source: { type: integer, enum: [0, 1], description: '0 Manual, 1 Method; this manual Draft slice produces 0 only.' }
+        source: { type: integer, enum: [0, 1], description: '0 Manual, 1 Method.' }
         manualReason: { type: string }
         manualActorId: { type: string, format: uuid }
         manualAt: { type: string, format: date-time }
+        methodProvenance: { $ref: '#/components/schemas/MethodWeekProvenance' }
+      allOf:
+        - if: { properties: { source: { const: 0 } }, required: [source] }
+          then: { required: [manualReason, manualActorId, manualAt] }
+        - if: { properties: { source: { const: 1 } }, required: [source] }
+          then: { required: [methodProvenance] }
+    MethodWeekProvenance:
+      type: object
+      required: [forecastRunId, method, variant, policyVersion, historyAsOfWeekStart, historyContentSha256, parameters, unitVerificationPending]
+      properties:
+        forecastRunId: { type: string, format: uuid }
+        method: { type: string, minLength: 1 }
+        variant: { type: string, minLength: 1 }
+        policyVersion: { type: string, minLength: 1 }
+        historyAsOfWeekStart: { type: string, format: date }
+        historyContentSha256: { type: string, pattern: '^[0-9A-Fa-f]{64}$' }
+        parameters: { type: object, additionalProperties: { type: string } }
+        unitVerificationPending: { type: boolean }
     ManualDraftChange:
       type: object
       required: [skuId, warehouseId, weekNumber, oldKind, newKind, actorId, occurredAt, reason, requestKey]
@@ -887,10 +915,10 @@ components:
       type: object
       required: [definitionId, digest]
       description: >-
-        MOD0188-CANONICAL-1/SHA-256; use the exact x-checksum-canonicalization
+        MOD0188-CANONICAL-1/SHA-256 or MOD0188-CANONICAL-2/SHA-256; use the exact x-checksum-canonicalization
         definition above and every manifest and row field it names.
       properties:
-        definitionId: { type: string, const: MOD0188-CANONICAL-1/SHA-256 }
+        definitionId: { type: string, enum: [MOD0188-CANONICAL-1/SHA-256, MOD0188-CANONICAL-2/SHA-256] }
         digest: { type: string, pattern: '^[0-9A-F]{64}$' }
     RevisionManifest:
       type: object
@@ -928,11 +956,12 @@ components:
           then: { not: { required: [invalidation] } }
     RevisionRow:
       type: object
-      required: [skuId, warehouseId, weekNumber, weekStart, weekEnd, valueKind, origin]
+      required: [skuId, warehouseId, baseUomId, weekNumber, weekStart, weekEnd, valueKind, origin]
       description: Unique key is revisionId plus skuId plus warehouseId plus weekNumber.
       properties:
         skuId: { type: string, format: uuid }
         warehouseId: { type: string }
+        baseUomId: { type: string }
         weekNumber: { type: integer, minimum: 1, maximum: 52 }
         weekStart: { type: string, format: date }
         weekEnd: { type: string, format: date }
@@ -945,6 +974,7 @@ components:
         manualReason: { type: string, description: Required for manually entered/edited weeks. }
         manualActorId: { type: string, format: uuid, description: Original manual author; required for the current Published checksum. }
         manualAt: { type: string, format: date-time, description: Original manual entry time; required for the current Published checksum. }
+        methodProvenance: { $ref: '#/components/schemas/MethodWeekProvenance' }
       allOf:
         - if: { properties: { valueKind: { const: Known } }, required: [valueKind] }
           then: { required: [grossQuantityBaseUom] }
@@ -952,6 +982,8 @@ components:
           then: { not: { required: [grossQuantityBaseUom] } }
         - if: { properties: { origin: { const: Manual } }, required: [origin] }
           then: { required: [manualReason, manualActorId, manualAt] }
+        - if: { properties: { origin: { const: Method } }, required: [origin] }
+          then: { required: [methodProvenance] }
     RevisionRowPage:
       type: object
       required: [contractVersion, revisionId, planningCycleId, tenantId, legalEntityId, stateVersion, orderingDefinitionId, returnedRowCount, expectedRowCount, integrity, items]

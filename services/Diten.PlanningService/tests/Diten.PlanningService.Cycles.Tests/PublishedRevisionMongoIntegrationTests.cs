@@ -1,4 +1,5 @@
 using Diten.PlanningService.Application.Features.DemandPlanning;
+using Diten.PlanningService.Application.Features.DemandPlanning.HistoryImports;
 using Diten.PlanningService.Domain.Features.DemandPlanning;
 using Diten.PlanningService.Persistence.Features.DemandPlanning;
 using Microsoft.Extensions.Configuration;
@@ -93,6 +94,169 @@ public sealed partial class PublishedRevisionMongoIntegrationTests
         int contentVersion = 0, int stateVersion = 2) =>
         store.PublishAsync(draft.TenantId, draft.LegalEntityId, draft.Id, actor,
             key, contentVersion, stateVersion, Now.AddMinutes(3), default);
+
+    [ManualDraftMongoFact]
+    public async Task AcceptedHistory_ToForecastDraft_IndependentReviewAndPublishedSnapshot()
+    {
+        var (drafts, published, context) = Open();
+        var tenant = Guid.NewGuid(); var legalEntity = Guid.NewGuid();
+        var creator = Guid.NewGuid(); var reviewer = Guid.NewGuid();
+        var sku = Guid.NewGuid();
+        var firstHistoryWeek = FirstWeek.AddDays(-26 * 7);
+        var lastHistoryWeek = FirstWeek.AddDays(-7);
+        var sourceKey = Guid.NewGuid().ToString("N");
+        var batch = new DemandHistoryImportBatch
+        {
+            TenantId = tenant, LegalEntityId = legalEntity,
+            UploadedByActorId = Guid.NewGuid(), SourceSystem = "fixture",
+            SourceFileSha256 = new string('A', 64),
+            CoverageFileSha256 = new string('B', 64),
+            ScopeFrom = firstHistoryWeek, ScopeThrough = lastHistoryWeek.AddDays(6),
+            WarehouseScope = ["WH-1"],
+            ReviewState = ImportBatchReviewState.Approved,
+            ReviewedByActorId = reviewer,
+            CoverageWeeks = Enumerable.Range(0, 26).Select(index =>
+                new ImportWeekCoverage
+                {
+                    SkuId = sku, SkuLevel = "Gsku", WarehouseId = "WH-1",
+                    UomId = "CASE", WeekStart = firstHistoryWeek.AddDays(index * 7),
+                    StockState = ImportWeekStockState.InStock
+                }).ToList(),
+            Rows = [new DemandHistoryImportRow
+            {
+                RowNumber = 1, SourceRecordKey = sourceKey,
+                SkuId = sku, SkuLevel = "Gsku", WarehouseId = "WH-1",
+                OccurredOn = lastHistoryWeek.AddDays(2), OriginalQuantity = 5,
+                OriginalUomId = "CASE", RecordKind = "Shipment",
+                UnitVerificationPending = true
+            }]
+        };
+        batch.CoverageContentSha256 = ImportCoverageFingerprint.Compute(batch.CoverageWeeks);
+        batch.AuditTrail.Add(new DemandHistoryImportAuditAction
+        {
+            Action = "BatchApproved", ActorId = reviewer, OccurredAt = Now,
+            Detail = "coverage=" + batch.CoverageFileSha256 +
+                ";content=" + batch.CoverageContentSha256
+        });
+        await context.HistoryImportBatches.InsertOneAsync(batch);
+        var acceptedAt = Now.AddMinutes(1);
+        var accepted = new AcceptedDemandHistoryRow
+        {
+            TenantId = tenant, LegalEntityId = legalEntity,
+            BatchId = batch.Id, BatchRowNumber = 1,
+            SourceSystem = batch.SourceSystem, SourceRecordKey = sourceKey,
+            SourceFileSha256 = batch.SourceFileSha256, SkuId = sku,
+            SkuLevel = "Gsku", WarehouseId = "WH-1",
+            OccurredOn = lastHistoryWeek.AddDays(2), OriginalQuantity = 5,
+            OriginalUomId = "CASE", AcceptedQuantity = 5,
+            AcceptedUomId = "CASE", UnitVerificationPending = true,
+            AcceptedByActorId = Guid.NewGuid(), AcceptedAt = acceptedAt,
+            AcceptanceReason = "Verified", RequestKey = Guid.NewGuid().ToString("N"),
+            RequestFingerprint = new string('C', 64)
+        };
+        accepted.ContentSha256 = AcceptedHistoryFingerprint.Compute(accepted);
+        await context.AcceptedHistoryRows.InsertOneAsync(accepted);
+        await context.HistoryAcceptanceAudit.InsertOneAsync(new DemandHistoryAcceptanceAudit
+        {
+            TenantId = tenant, LegalEntityId = legalEntity,
+            AcceptedRowId = accepted.Id, BatchId = batch.Id, BatchRowNumber = 1,
+            SourceRecordKey = sourceKey, ActorId = accepted.AcceptedByActorId,
+            OccurredAt = acceptedAt, Reason = accepted.AcceptanceReason,
+            ContentSha256 = accepted.ContentSha256
+        });
+
+        var template = Draft(tenant, legalEntity, creator, FirstWeek);
+        var cycle = new PlanningCycle
+        {
+            Id = template.PlanningCycleId, TenantId = tenant, LegalEntityId = legalEntity,
+            AsOfDate = template.AsOfDate, CalendarId = template.CalendarId,
+            CalendarVersion = template.CalendarVersion, TimeZoneId = template.TimeZoneId,
+            PlanningPeriodKey = template.PlanningPeriodKey,
+            HorizonStart = template.HorizonStart, HorizonEnd = template.HorizonEnd,
+            Weeks = template.Weeks.ToList()
+        };
+        var builder = new AcceptedHistoryForecastDraftBuilder(
+            new AcceptedWeeklyHistoryMongoReader(context));
+        var draft = Assert.IsType<DemandRevisionDraft>(await builder.BuildAsync(cycle,
+            creator, sku, "Gsku", "WH-1", ForecastMethodEligibility.Method.Naive,
+            ForecastMethodEligibility.FixturePolicy.Mvp("pilot-1"),
+            "Explicit Naive selection", Now, default));
+        var moving = Assert.IsType<DemandRevisionDraft>(await builder.BuildAsync(cycle,
+            creator, sku, "Gsku", "WH-1", ForecastMethodEligibility.Method.MovingAverage,
+            ForecastMethodEligibility.FixturePolicy.Mvp("pilot-1"),
+            "Explicit moving average selection", Now, default,
+            new FixtureForecastEngine.MethodSpecification(
+                ForecastMethodEligibility.Method.MovingAverage, "trailing-flat",
+                "method-1", 3, null, null, null)));
+        var movingOrigin = Assert.Single(moving.Series).Weeks[0].MethodProvenance;
+        Assert.Equal("trailing-flat", movingOrigin?.Variant);
+        Assert.Equal("method-1", movingOrigin?.Parameters["methodPolicyVersion"]);
+        Assert.Equal("CASE", Assert.Single(draft.Series).BaseUomId);
+        Assert.All(Assert.Single(draft.Series).Weeks, week => Assert.Equal(5m, week.Quantity));
+        await Approve(drafts, draft, creator, reviewer);
+        Assert.Equal(PublishOutcome.Published,
+            (await Publish(published, draft, reviewer)).Outcome);
+        var snapshot = (await published.ReadSnapshotAsync(tenant, legalEntity,
+            draft.Id, default))!.Value;
+        Assert.Equal("MOD0188-CANONICAL-2/SHA-256", snapshot.Manifest.ChecksumScheme);
+        Assert.All(Assert.Single(snapshot.Parts).Rows, row =>
+        {
+            Assert.Equal(5m, row.Quantity);
+            Assert.Equal("Naive", row.MethodProvenance?.Method);
+            Assert.True(row.MethodProvenance?.UnitVerificationPending);
+        });
+    }
+
+    [ManualDraftMongoFact]
+    public async Task MethodDraft_RoundTripsThroughIndependentReviewAndVerifiedPublication()
+    {
+        var (drafts, published, _) = Open();
+        var tenant = Guid.NewGuid(); var legalEntity = Guid.NewGuid();
+        var creator = Guid.NewGuid(); var reviewer = Guid.NewGuid();
+        var template = Draft(tenant, legalEntity, creator, FirstWeek);
+        var selected = Assert.Single(template.Series);
+        var provenance = new MethodWeekProvenance(Guid.NewGuid(), "Naive", "last-value",
+            "policy-1", FirstWeek.AddDays(-7), new string('A', 64),
+            new Dictionary<string, string> { ["horizon"] = "52" }, true);
+        var cycle = new PlanningCycle
+        {
+            Id = template.PlanningCycleId, TenantId = tenant, LegalEntityId = legalEntity,
+            AsOfDate = template.AsOfDate, CalendarId = template.CalendarId,
+            CalendarVersion = template.CalendarVersion, TimeZoneId = template.TimeZoneId,
+            PlanningPeriodKey = template.PlanningPeriodKey,
+            HorizonStart = template.HorizonStart, HorizonEnd = template.HorizonEnd,
+            Weeks = template.Weeks.ToList()
+        };
+        var draft = Assert.IsType<DemandRevisionDraft>(ManualDraftFactory.Create(cycle,
+            tenant, legalEntity, creator, "Forecast reviewed", Now,
+            [new VerifiedDraftSeries(selected.SkuId, selected.WarehouseId,
+                selected.BaseUomId, selected.Weeks.Select(week =>
+                    new ManualDraftWeekInput(week.Number, week.WeekStart, week.WeekEnd,
+                        week.ValueKind, week.Quantity)).ToArray(), provenance)]).Data);
+        await Approve(drafts, draft, creator, reviewer);
+        var restored = Assert.IsType<DemandRevisionDraft>(await drafts.ReadAsync(
+            tenant, legalEntity, draft.Id, default));
+        Assert.All(Assert.Single(restored.Series).Weeks, week =>
+        {
+            Assert.Equal(DraftWeekSource.Method, week.Source);
+            Assert.True(provenance.HasSameContent(week.MethodProvenance));
+        });
+        Assert.Equal(PublishOutcome.Published,
+            (await Publish(published, draft, reviewer)).Outcome);
+        var snapshot = (await published.ReadSnapshotAsync(tenant, legalEntity,
+            draft.Id, default))!.Value;
+        Assert.Equal("MOD0188-CANONICAL-2/SHA-256", snapshot.Manifest.ChecksumScheme);
+        Assert.Equal(snapshot.Manifest.Checksum,
+            PublishedSnapshotIntegrity.Calculate(snapshot.Manifest, snapshot.Parts));
+        Assert.All(Assert.Single(snapshot.Parts).Rows, row =>
+            Assert.True(provenance.HasSameContent(row.MethodProvenance)));
+        snapshot.Parts[0].Rows[0] = snapshot.Parts[0].Rows[0] with
+        {
+            MethodProvenance = provenance with { PolicyVersion = "tampered" }
+        };
+        Assert.NotEqual(snapshot.Manifest.Checksum,
+            PublishedSnapshotIntegrity.Calculate(snapshot.Manifest, snapshot.Parts));
+    }
 
     [ManualDraftMongoFact]
     public async Task Publish_SamePeriodAcrossCyclesAndCalendars_SupersedesAtomically()

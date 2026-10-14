@@ -49,6 +49,64 @@ public sealed class ManualDraftTests
             Actor, reason, Now, series);
 
     [Fact]
+    public void MethodWeek_PreservesProvenanceOnCopyAndConvertsExplicitEditToManual()
+    {
+        var provenance = new MethodWeekProvenance(Guid.NewGuid(), "Naive", "last-value",
+            "policy-1", FirstMonday.AddDays(-7), new string('A', 64),
+            new Dictionary<string, string> { ["window"] = "26" }, true);
+        var week = DemandDraftWeek.FromMethod(1, FirstMonday, FirstMonday.AddDays(6),
+            5m, provenance);
+        var series = new DemandDraftSeries
+        {
+            SkuId = SkuA, WarehouseId = "WH-1", BaseUomId = "EA", Weeks = [week]
+        };
+        Assert.Equal(DraftWeekSource.Method, Assert.Single(series.Weeks).Source);
+        Assert.Equal(provenance.ForecastRunId,
+            Assert.Single(series.Weeks).MethodProvenance?.ForecastRunId);
+        Assert.Equal("26", Assert.Single(series.Weeks).MethodProvenance?.Parameters["window"]);
+
+        week.ApplyManual(DraftWeekValueKind.Known, 7m, "Planner adjustment", Actor, Now);
+        var copied = Assert.Single(series.Weeks);
+        Assert.Equal(DraftWeekSource.Method, copied.Source);
+        Assert.Equal(5m, copied.Quantity);
+        copied.ApplyManual(DraftWeekValueKind.Known, 7m, "Planner adjustment", Actor, Now);
+        Assert.Equal(DraftWeekSource.Manual, copied.Source);
+        Assert.Null(copied.MethodProvenance);
+        Assert.Equal("Planner adjustment", copied.ManualReason);
+    }
+
+    [Fact]
+    public void MethodSeries_RequiresCompleteKnownWeeksAndPreservesSource()
+    {
+        var provenance = new MethodWeekProvenance(Guid.NewGuid(), "Naive", "last-value",
+            "policy-1", FirstMonday.AddDays(-7), new string('A', 64),
+            new Dictionary<string, string>(), true);
+        var method = Series(SkuA) with { MethodProvenance = provenance };
+        var created = Create(Cycle(), [method]);
+        Assert.True(created.IsSuccessful);
+        Assert.True(created.Data!.HasCompleteKnownQuantities);
+        Assert.False(created.Data.HasCompleteManualQuantities);
+        Assert.All(Assert.Single(created.Data.Series).Weeks,
+            week => Assert.Equal(DraftWeekSource.Method, week.Source));
+
+        var incomplete = method with
+        {
+            Weeks = method.Weeks.Select(week => week.Number == 2
+                ? week with { ValueKind = DraftWeekValueKind.Unknown, Quantity = null }
+                : week).ToArray()
+        };
+        Assert.Equal(422, Create(Cycle(), [incomplete]).StatusCode);
+        Assert.Equal(422, Create(Cycle(),
+            [method with
+            {
+                MethodProvenance = provenance with
+                {
+                    HistoryAsOfWeekStart = FirstMonday
+                }
+            }]).StatusCode);
+    }
+
+    [Fact]
     public void Create_TwoSeries_SharesOneRevisionAndCopiesLocked52Weeks()
     {
         var cycle = Cycle();

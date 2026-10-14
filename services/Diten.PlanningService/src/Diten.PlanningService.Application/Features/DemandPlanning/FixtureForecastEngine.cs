@@ -1,6 +1,6 @@
 namespace Diten.PlanningService.Application.Features.DemandPlanning;
 
-// Isolated synthetic-series boundary. This is not an accepted-history ForecastRun.
+// Pure weekly-series engine. Accepted-history callers must validate scope and evidence first.
 internal static class FixtureForecastEngine
 {
     // The caller must name the mathematical variant and every applicable parameter.

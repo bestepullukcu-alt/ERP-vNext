@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using System.Collections.ObjectModel;
 
 [assembly: InternalsVisibleTo("Diten.PlanningService.Persistence")]
 [assembly: InternalsVisibleTo("Diten.PlanningService.Cycles.Tests")]
@@ -8,6 +9,37 @@ namespace Diten.PlanningService.Domain.Features.DemandPlanning;
 public enum DraftWeekValueKind { Known, Missing, Unknown }
 
 public enum DraftWeekSource { Manual, Method }
+
+public sealed record MethodWeekProvenance(Guid ForecastRunId, string Method,
+    string Variant, string PolicyVersion, DateOnly HistoryAsOfWeekStart,
+    string HistoryContentSha256, IReadOnlyDictionary<string, string> Parameters,
+    bool UnitVerificationPending)
+{
+    public bool IsValid => ForecastRunId != Guid.Empty &&
+        !string.IsNullOrWhiteSpace(Method) && !string.IsNullOrWhiteSpace(Variant) &&
+        !string.IsNullOrWhiteSpace(PolicyVersion) &&
+        HistoryAsOfWeekStart.DayOfWeek == DayOfWeek.Monday &&
+        HistoryContentSha256 is { Length: 64 } &&
+        HistoryContentSha256.All(Uri.IsHexDigit) && Parameters is not null &&
+        Parameters.Keys.All(key => !string.IsNullOrWhiteSpace(key)) &&
+        Parameters.Values.All(value => !string.IsNullOrWhiteSpace(value));
+
+    public MethodWeekProvenance Copy() => this with
+    {
+        Parameters = new ReadOnlyDictionary<string, string>(
+            new Dictionary<string, string>(Parameters, StringComparer.Ordinal))
+    };
+
+    public bool HasSameContent(MethodWeekProvenance? other) => other is not null &&
+        ForecastRunId == other.ForecastRunId && Method == other.Method &&
+        Variant == other.Variant && PolicyVersion == other.PolicyVersion &&
+        HistoryAsOfWeekStart == other.HistoryAsOfWeekStart &&
+        HistoryContentSha256 == other.HistoryContentSha256 &&
+        UnitVerificationPending == other.UnitVerificationPending &&
+        Parameters.Count == other.Parameters.Count &&
+        Parameters.All(item => other.Parameters.TryGetValue(item.Key, out var value) &&
+            value == item.Value);
+}
 
 public enum DemandRevisionState { Draft, InReview, Approved, Published, Superseded, Invalidated }
 
@@ -22,7 +54,8 @@ public sealed record ManualDraftWeekInput(
 // The base unit and series identity must come from a verified reference fixture or contract.
 public sealed record VerifiedDraftSeries(
     Guid SkuId, string WarehouseId, string BaseUomId,
-    IReadOnlyList<ManualDraftWeekInput> Weeks);
+    IReadOnlyList<ManualDraftWeekInput> Weeks,
+    MethodWeekProvenance? MethodProvenance = null);
 
 public sealed record DraftWeekChange(
     Guid SkuId, string WarehouseId, int WeekNumber,
@@ -36,6 +69,26 @@ public sealed record DraftSeriesExclusion(Guid SkuId, string WarehouseId,
 
 public sealed class DemandDraftWeek
 {
+    private DemandDraftWeek(int number, DateOnly weekStart, DateOnly weekEnd,
+        decimal quantity, MethodWeekProvenance provenance)
+    {
+        if (number < 1 || weekEnd != weekStart.AddDays(6) || quantity < 0 ||
+            provenance is null || !provenance.IsValid)
+            throw new ArgumentException("A method week needs a value and complete provenance.");
+        Number = number;
+        WeekStart = weekStart;
+        WeekEnd = weekEnd;
+        ValueKind = DraftWeekValueKind.Known;
+        Quantity = quantity;
+        Source = DraftWeekSource.Method;
+        ManualReason = string.Empty;
+        MethodProvenance = provenance.Copy();
+    }
+
+    public static DemandDraftWeek FromMethod(int number, DateOnly weekStart,
+        DateOnly weekEnd, decimal quantity, MethodWeekProvenance provenance) =>
+        new(number, weekStart, weekEnd, quantity, provenance);
+
     public DemandDraftWeek(int number, DateOnly weekStart, DateOnly weekEnd,
         DraftWeekValueKind valueKind, decimal? quantity, string reason,
         Guid actorId, DateTimeOffset occurredAt)
@@ -58,10 +111,11 @@ public sealed class DemandDraftWeek
     public DateOnly WeekEnd { get; }
     public DraftWeekValueKind ValueKind { get; private set; }
     public decimal? Quantity { get; private set; }
-    public DraftWeekSource Source { get; } = DraftWeekSource.Manual;
+    public DraftWeekSource Source { get; private set; } = DraftWeekSource.Manual;
     public string ManualReason { get; private set; }
     public Guid ManualActorId { get; private set; }
     public DateTimeOffset ManualAt { get; private set; }
+    public MethodWeekProvenance? MethodProvenance { get; private set; }
 
     internal void ApplyManual(DraftWeekValueKind kind, decimal? quantity,
         string reason, Guid actorId, DateTimeOffset occurredAt)
@@ -71,10 +125,15 @@ public sealed class DemandDraftWeek
         ManualReason = reason.Trim();
         ManualActorId = actorId;
         ManualAt = occurredAt;
+        Source = DraftWeekSource.Manual;
+        MethodProvenance = null;
     }
 
-    internal DemandDraftWeek Copy() => new(Number, WeekStart, WeekEnd,
-        ValueKind, Quantity, ManualReason, ManualActorId, ManualAt);
+    internal DemandDraftWeek Copy() => Source == DraftWeekSource.Method
+        ? FromMethod(Number, WeekStart, WeekEnd, Quantity!.Value,
+            MethodProvenance ?? throw new InvalidOperationException("Method provenance is missing."))
+        : new(Number, WeekStart, WeekEnd,
+            ValueKind, Quantity, ManualReason, ManualActorId, ManualAt);
 }
 
 public sealed class DemandDraftSeries
@@ -98,6 +157,14 @@ public sealed class DemandDraftSeries
     internal bool HasCompleteManualQuantities => _weeks.Count == 52 &&
         _weeks.All(week => week.Source == DraftWeekSource.Manual &&
             week.ValueKind == DraftWeekValueKind.Known && week.Quantity.HasValue);
+
+    internal bool HasCompleteKnownQuantities => _weeks.Count == 52 &&
+        _weeks.All(week => week.ValueKind == DraftWeekValueKind.Known &&
+            week.Quantity is >= 0 && (week.Source == DraftWeekSource.Manual &&
+                week.ManualActorId != Guid.Empty && week.ManualAt != default &&
+                !string.IsNullOrWhiteSpace(week.ManualReason) ||
+                week.Source == DraftWeekSource.Method &&
+                week.MethodProvenance is { IsValid: true }));
 
     internal void ApplyExclusion(DraftSeriesExclusion exclusion) => _exclusion = exclusion;
 
@@ -194,6 +261,10 @@ public sealed class DemandRevisionDraft : EntityBase
     public bool HasCompleteManualQuantities => _series.Any(series => series.Exclusion is null) &&
         _series.Where(series => series.Exclusion is null)
             .All(series => series.HasCompleteManualQuantities);
+
+    public bool HasCompleteKnownQuantities => _series.Any(series => series.Exclusion is null) &&
+        _series.Where(series => series.Exclusion is null)
+            .All(series => series.HasCompleteKnownQuantities);
 
     public bool HasSignificantContribution(Guid actorId) => actorId == CreatedBy ||
         _sourceContributorIds.Contains(actorId) ||
@@ -303,7 +374,7 @@ public sealed class DemandRevisionDraft : EntityBase
             if (next is null) return DraftReviewOutcome.Conflict;
             if (enforceManualCompleteness &&
                 action is (DraftReviewAction.Submitted or DraftReviewAction.Approved) &&
-                !HasCompleteManualQuantities)
+                !HasCompleteKnownQuantities)
                 return DraftReviewOutcome.Invalid;
             if (action is (DraftReviewAction.Approved or DraftReviewAction.Rejected) &&
                 HasSignificantContribution(actorId))

@@ -58,11 +58,18 @@ public sealed record RevisionManifestView(string ContractVersion,
     RevisionInvalidationView? Invalidation);
 
 public sealed record RevisionRowView(Guid SkuId, string WarehouseId,
-    int WeekNumber, string ValueKind,
+    string BaseUomId, int WeekNumber, DateOnly WeekStart, DateOnly WeekEnd,
+    string ValueKind,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     string? GrossQuantityBaseUom, string Origin,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    string? ManualReason);
+    string? ManualReason,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    Guid? ManualActorId,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    DateTimeOffset? ManualAt,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    MethodWeekProvenance? MethodProvenance);
 
 public sealed record RevisionRowPageView(string ContractVersion,
     Guid RevisionId, Guid PlanningCycleId, Guid TenantId,
@@ -142,8 +149,12 @@ public static class RevisionReadViewMapper
             OrderingDefinition, rows.Count, status.ExpectedRowCount,
             new RevisionIntegrityView(status.ChecksumScheme, status.Checksum),
             rows.Select(x => new RevisionRowView(x.SkuId, x.WarehouseId,
-                x.WeekNumber, x.ValueKind.ToString(),
+                x.BaseUomId, x.WeekNumber, x.WeekStart, x.WeekEnd,
+                x.ValueKind.ToString(),
                 x.Quantity?.ToString(CultureInfo.InvariantCulture),
                 x.Source.ToString(), x.Source == DraftWeekSource.Manual
-                    ? x.ManualReason : null)).ToArray(), nextCursor);
+                    ? x.ManualReason : null,
+                x.Source == DraftWeekSource.Manual ? x.ManualActorId : null,
+                x.Source == DraftWeekSource.Manual ? x.ManualAt : null,
+                x.MethodProvenance?.Copy())).ToArray(), nextCursor);
 }

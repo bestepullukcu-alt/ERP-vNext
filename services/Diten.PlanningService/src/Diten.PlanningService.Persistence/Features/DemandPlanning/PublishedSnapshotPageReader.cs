@@ -130,7 +130,9 @@ public sealed class PublishedSnapshotPageReader(
             .SelectMany(part => part.Rows.OrderBy(x => x.Number).Select(row =>
                 new InternalSnapshotRow(part.SkuId, part.WarehouseId, part.BaseUomId,
                     row.Number, row.WeekStart, row.WeekEnd, row.ValueKind,
-                    row.Quantity, row.Source, row.ManualReason))).ToArray();
+                    row.Quantity, row.Source, row.ManualReason,
+                    row.ManualActorId, row.ManualAt,
+                    row.MethodProvenance?.Copy()))).ToArray();
         if (rows.Length != manifest.ExpectedRowCount)
             throw new InvalidDataException("Published revision row count is invalid.");
         var position = 0;

@@ -47,7 +47,8 @@ public sealed record InternalSnapshotManifest(InternalSnapshotStatus Status,
 public sealed record InternalSnapshotRow(Guid SkuId, string WarehouseId,
     string BaseUomId, int WeekNumber, DateOnly WeekStart, DateOnly WeekEnd,
     DraftWeekValueKind ValueKind, decimal? Quantity, DraftWeekSource Source,
-    string ManualReason = "");
+    string ManualReason = "", Guid ManualActorId = default,
+    DateTimeOffset ManualAt = default, MethodWeekProvenance? MethodProvenance = null);
 
 public sealed record InternalSnapshotPage(InternalSnapshotStatus Status,
     IReadOnlyList<InternalSnapshotRow> Rows, string? NextCursor);

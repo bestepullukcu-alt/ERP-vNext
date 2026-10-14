@@ -84,6 +84,13 @@ public sealed partial class ManualDraftMongoStore(DemandPlanningMongoContext con
             draft.PlanningCycleId == Guid.Empty || draft.CreatedBy == Guid.Empty ||
             draft.State != DemandRevisionState.Draft || draft.Version != 0 ||
             draft.Changes.Count != 0 || draft.Series.Count == 0 ||
+            draft.Series.Any(series => series.Weeks.Count == 0 ||
+                series.Weeks.Any(week => week.Source != series.Weeks[0].Source) ||
+                series.Weeks[0].Source == DraftWeekSource.Method &&
+                (!series.HasCompleteKnownQuantities ||
+                    series.Weeks.Any(week =>
+                        !series.Weeks[0].MethodProvenance!.HasSameContent(
+                            week.MethodProvenance)))) ||
             string.IsNullOrWhiteSpace(requestKey))
             return new(ManualDraftStoreOutcome.Invalid);
 
@@ -94,7 +101,9 @@ public sealed partial class ManualDraftMongoStore(DemandPlanningMongoContext con
         var seriesJson = draft.Series.Select(series => JsonSerializer.Serialize(
             new VerifiedDraftSeries(series.SkuId, series.WarehouseId, series.BaseUomId,
                 series.Weeks.Select(week => new ManualDraftWeekInput(week.Number,
-                    week.WeekStart, week.WeekEnd, week.ValueKind, week.Quantity)).ToArray()),
+                    week.WeekStart, week.WeekEnd, week.ValueKind, week.Quantity)).ToArray(),
+                series.Weeks[0].Source == DraftWeekSource.Method
+                    ? series.Weeks[0].MethodProvenance : null),
             JsonOptions)).ToArray();
         var normalizedKey = requestKey.Trim();
         var fingerprint = Hash(cycleJson + "\n" + string.Join("\n", seriesJson) + "\n" +

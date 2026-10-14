@@ -4,7 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Diten.PlanningService.Application.Features.DemandPlanning;
 
-// Fixture-only boundary. Accepted history and an authoritative policy source are not wired yet.
+// Pure eligibility rules. The accepted-history adapter supplies verified weeks;
+// a live policy source is still required before exposing a user forecast command.
 internal static class ForecastMethodEligibility
 {
     internal enum Method

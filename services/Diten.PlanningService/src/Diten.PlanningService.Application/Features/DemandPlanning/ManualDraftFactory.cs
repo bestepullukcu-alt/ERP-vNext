@@ -24,7 +24,10 @@ public static class ManualDraftFactory
         if (selectedSeries.Count == 0 || selectedSeries.Any(series =>
                 series.SkuId == Guid.Empty || string.IsNullOrWhiteSpace(series.WarehouseId) ||
                 string.IsNullOrWhiteSpace(series.BaseUomId) || series.Weeks is null ||
-                series.Weeks.Count != 52) ||
+                series.Weeks.Count != 52 ||
+                series.MethodProvenance is not null &&
+                (!series.MethodProvenance.IsValid ||
+                    series.MethodProvenance.HistoryAsOfWeekStart >= cycle.HorizonStart)) ||
             selectedSeries.Select(series => (series.SkuId, series.WarehouseId))
                 .Distinct().Count() != selectedSeries.Count)
             return Response<DemandRevisionDraft>.Fail("Selected SKU and Warehouse series are invalid.", 422);
@@ -40,7 +43,9 @@ public static class ManualDraftFactory
                 if (input.Number != lockedWeek.Number ||
                     input.WeekStart != lockedWeek.WeekStart ||
                     input.WeekEnd != lockedWeek.WeekEnd ||
-                    !DemandRevisionDraft.IsValidValue(input.ValueKind, input.Quantity))
+                    !DemandRevisionDraft.IsValidValue(input.ValueKind, input.Quantity) ||
+                    series.MethodProvenance is not null &&
+                    (input.ValueKind != DraftWeekValueKind.Known || input.Quantity is null))
                     return Response<DemandRevisionDraft>.Fail(
                         "Manual values must match the locked weeks and distinguish known, missing and unknown.", 422);
             }
@@ -50,10 +55,12 @@ public static class ManualDraftFactory
                 SkuId = series.SkuId,
                 WarehouseId = series.WarehouseId,
                 BaseUomId = series.BaseUomId,
-                Weeks = byNumber.Select(week => new DemandDraftWeek(
-                    week.Number, week.WeekStart, week.WeekEnd,
-                    week.ValueKind, week.Quantity, reason,
-                    actorId, occurredAt)).ToList()
+                Weeks = byNumber.Select(week => series.MethodProvenance is null
+                    ? new DemandDraftWeek(week.Number, week.WeekStart, week.WeekEnd,
+                        week.ValueKind, week.Quantity, reason, actorId, occurredAt)
+                    : DemandDraftWeek.FromMethod(week.Number, week.WeekStart,
+                        week.WeekEnd, week.Quantity ?? throw new ArgumentException(
+                            "Method quantity is missing."), series.MethodProvenance)).ToList()
             });
         }
 

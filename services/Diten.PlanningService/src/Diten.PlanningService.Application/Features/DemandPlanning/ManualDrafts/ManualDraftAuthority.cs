@@ -30,7 +30,9 @@ public sealed record ManualDraftSeriesInput(Guid SkuId, string WarehouseId,
 public sealed record ManualDraftWeekView(int Number, DateOnly WeekStart,
     DateOnly WeekEnd, DraftWeekValueKind ValueKind, decimal? Quantity,
     DraftWeekSource Source, string ManualReason, Guid ManualActorId,
-    DateTimeOffset ManualAt);
+    DateTimeOffset ManualAt,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    MethodWeekProvenance? MethodProvenance = null);
 public sealed record ManualDraftSeriesView(Guid SkuId, string WarehouseId,
     string BaseUomId, IReadOnlyList<ManualDraftWeekView> Weeks,
     DraftSeriesExclusion? Exclusion);
@@ -59,7 +61,8 @@ public static class ManualDraftViewMapper
                 series.Weeks.Select(week => new ManualDraftWeekView(
                     week.Number, week.WeekStart, week.WeekEnd, week.ValueKind,
                     week.Quantity, week.Source, week.ManualReason,
-                    week.ManualActorId, week.ManualAt)).ToArray(),
+                    week.ManualActorId, week.ManualAt,
+                    week.MethodProvenance?.Copy())).ToArray(),
                 series.Exclusion)).ToArray(),
             draft.Changes.ToArray(), draft.Exclusions.ToArray(), replayed);
 }

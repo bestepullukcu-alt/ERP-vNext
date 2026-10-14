@@ -15,7 +15,7 @@ public static class PublishedSnapshotIntegrity
         DemandRevisionDraft draft, Guid publisherId, DateTimeOffset publishedAt)
     {
         if (draft.State != DemandRevisionState.Approved ||
-            !draft.HasCompleteManualQuantities || publisherId == Guid.Empty ||
+            !draft.HasCompleteKnownQuantities || publisherId == Guid.Empty ||
             publishedAt == default || draft.HasSignificantContribution(publisherId))
             throw new InvalidDataException("Only a complete independently prepared Approved revision can publish.");
         var selected = draft.Series.Where(x => x.Exclusion is null)
@@ -29,7 +29,8 @@ public static class PublishedSnapshotIntegrity
             Rows = series.Weeks.OrderBy(x => x.Number).Select(week =>
                 new PublishedWeekRow(week.Number, week.WeekStart, week.WeekEnd,
                     week.ValueKind, week.Quantity, week.Source,
-                    week.ManualReason, week.ManualActorId, week.ManualAt)).ToList(),
+                    week.ManualReason, week.ManualActorId, week.ManualAt,
+                    week.MethodProvenance?.Copy())).ToList(),
             CreatedAt = publishedAt
         }).ToArray();
         var manifest = new PublishedRevisionManifest
@@ -55,6 +56,8 @@ public static class PublishedSnapshotIntegrity
             ReviewReason = draft.ReviewReason,
             PublishedBy = publisherId, PublishedAt = publishedAt, CreatedAt = publishedAt
         };
+        if (parts.Any(part => part.Rows.Any(row => row.Source == DraftWeekSource.Method)))
+            manifest.ChecksumScheme = "MOD0188-CANONICAL-2/SHA-256";
         manifest.Checksum = Calculate(manifest, parts);
         return (manifest, parts);
     }
@@ -62,6 +65,9 @@ public static class PublishedSnapshotIntegrity
     public static string Calculate(PublishedRevisionManifest manifest,
         IReadOnlyCollection<PublishedRevisionPart> parts)
     {
+        var methodScheme = manifest.ChecksumScheme == "MOD0188-CANONICAL-2/SHA-256";
+        if (!methodScheme && manifest.ChecksumScheme != "MOD0188-CANONICAL-1/SHA-256")
+            throw new InvalidDataException("Published revision checksum scheme is unsupported.");
         if (manifest.TenantId == Guid.Empty || manifest.LegalEntityId == Guid.Empty ||
             manifest.RevisionId == Guid.Empty || manifest.PlanningCycleId == Guid.Empty ||
             manifest.Weeks.Count != 52 || manifest.ExpectedPartCount < 1 ||
@@ -92,7 +98,7 @@ public static class PublishedSnapshotIntegrity
         }
         void GuidField(Guid value) => Field(value.ToString("D"));
         void DateField(DateOnly value) => Field(value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
-        Field("MOD0188-CANONICAL-1");
+        Field(methodScheme ? "MOD0188-CANONICAL-2" : "MOD0188-CANONICAL-1");
         GuidField(manifest.TenantId); GuidField(manifest.LegalEntityId);
         GuidField(manifest.RevisionId); GuidField(manifest.PlanningCycleId);
         Field(manifest.PlanningPeriodKey); DateField(manifest.AsOfDate);
@@ -146,9 +152,16 @@ public static class PublishedSnapshotIntegrity
                 var week = manifest.Weeks[weekIndex];
                 if (row.Number != weekIndex + 1 || row.WeekStart != week.WeekStart ||
                     row.WeekEnd != week.WeekEnd || row.ValueKind != DraftWeekValueKind.Known ||
-                    row.Quantity is null or < 0 || row.Source != DraftWeekSource.Manual ||
-                    row.ManualActorId == Guid.Empty || row.ManualAt == default ||
-                    string.IsNullOrWhiteSpace(row.ManualReason))
+                    row.Quantity is null or < 0 ||
+                    (row.Source == DraftWeekSource.Manual &&
+                        (row.ManualActorId == Guid.Empty || row.ManualAt == default ||
+                         string.IsNullOrWhiteSpace(row.ManualReason) ||
+                         row.MethodProvenance is not null)) ||
+                    (row.Source is not (DraftWeekSource.Manual or DraftWeekSource.Method)) ||
+                    (row.Source == DraftWeekSource.Method &&
+                        (!methodScheme || row.MethodProvenance is not { IsValid: true } ||
+                         row.ManualActorId != Guid.Empty || row.ManualAt != default ||
+                         !string.IsNullOrEmpty(row.ManualReason))))
                     throw new InvalidDataException("Published revision row is missing or invalid.");
                 Field(row.Number.ToString(CultureInfo.InvariantCulture));
                 DateField(row.WeekStart); DateField(row.WeekEnd);
@@ -156,7 +169,28 @@ public static class PublishedSnapshotIntegrity
                 Field(row.Quantity.Value.ToString("G29", CultureInfo.InvariantCulture));
                 Field(row.Source.ToString());
                 Field(row.ManualReason); GuidField(row.ManualActorId);
-                Field(row.ManualAt.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture));
+                Field(row.Source == DraftWeekSource.Method ? string.Empty :
+                    row.ManualAt.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture));
+                if (methodScheme)
+                {
+                    var provenance = row.MethodProvenance;
+                    Field(provenance is null ? "0" : "1");
+                    if (provenance is not null)
+                    {
+                        GuidField(provenance.ForecastRunId);
+                        Field(provenance.Method); Field(provenance.Variant);
+                        Field(provenance.PolicyVersion);
+                        DateField(provenance.HistoryAsOfWeekStart);
+                        Field(provenance.HistoryContentSha256);
+                        Field(provenance.UnitVerificationPending ? "1" : "0");
+                        Field(provenance.Parameters.Count.ToString(CultureInfo.InvariantCulture));
+                        foreach (var parameter in provenance.Parameters.OrderBy(
+                                     item => item.Key, StringComparer.Ordinal))
+                        {
+                            Field(parameter.Key); Field(parameter.Value);
+                        }
+                    }
+                }
             }
         }
         writer.Flush();

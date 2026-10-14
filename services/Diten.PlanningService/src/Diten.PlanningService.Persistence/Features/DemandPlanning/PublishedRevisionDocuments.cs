@@ -42,7 +42,8 @@ public sealed record PublishedSeriesScope(Guid SkuId, string WarehouseId, string
 
 public sealed record PublishedWeekRow(int Number, DateOnly WeekStart, DateOnly WeekEnd,
     DraftWeekValueKind ValueKind, decimal? Quantity, DraftWeekSource Source,
-    string ManualReason, Guid ManualActorId, DateTimeOffset ManualAt);
+    string ManualReason, Guid ManualActorId, DateTimeOffset ManualAt,
+    MethodWeekProvenance? MethodProvenance = null);
 
 public sealed class PublishedRevisionPart : EntityBase
 {

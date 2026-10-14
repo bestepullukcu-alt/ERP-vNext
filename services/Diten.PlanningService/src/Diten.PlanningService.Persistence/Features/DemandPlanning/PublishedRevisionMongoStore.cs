@@ -136,7 +136,7 @@ public sealed class PublishedRevisionMongoStore(
                 draft.Version != expectedContentVersion ||
                 draft.StateVersion != expectedStateVersion || draft.ReviewedBy is null)
                 return await AbortResult(session, PublishOutcome.Conflict, cancellationToken);
-            if (!draft.HasCompleteManualQuantities)
+            if (!draft.HasCompleteKnownQuantities)
                 return await AbortResult(session, PublishOutcome.Invalid, cancellationToken);
             var (published, parts) = PublishedSnapshotIntegrity.Build(draft, actorId, occurredAt);
             if (!draft.ApplyPublicationTransition(DemandRevisionState.Published,
@@ -349,8 +349,7 @@ public sealed class PublishedRevisionMongoStore(
             x.TenantId == tenantId && x.LegalEntityId == legalEntityId &&
             x.RevisionId == revisionId && !x.IsDeleted)
             .ToListAsync(cancellationToken)).ToArray();
-        if (manifest.ChecksumScheme != "MOD0188-CANONICAL-1/SHA-256" ||
-            manifest.Checksum != PublishedSnapshotIntegrity.Calculate(manifest, parts))
+        if (manifest.Checksum != PublishedSnapshotIntegrity.Calculate(manifest, parts))
             throw new InvalidDataException("Published revision checksum or parts are invalid.");
         var manual = await drafts.LoadAsync(session, tenantId, legalEntityId,
             revisionId, cancellationToken);
