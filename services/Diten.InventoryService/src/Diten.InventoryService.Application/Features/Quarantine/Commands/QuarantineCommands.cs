@@ -12,9 +12,15 @@ namespace Diten.InventoryService.Application.Features.Quarantine.Commands;
 /// <summary>One stock row of a no-workflow action (contract §4.4 / §4.15 bucket; <c>lotId</c> names the lot of the row).</summary>
 public sealed record BucketInput(Guid ItemId, Guid SkuId, SkuLevel SkuLevel, string WarehouseId, string LocationId, decimal Quantity, string? LotId);
 
-/// <summary>§4.4 quarantineStock — "Karantinaya Al" (no workflow, safety direction).</summary>
+/// <summary>
+/// QUARANTINE 1.3.0 (MOD-0177 CT-R3): the module that asked for the hold, in-process only (not a wire member) — the hold gets
+/// <c>Source = Recall</c> and <c>sourceDocument = { module, type, id, number }</c>, so <c>listHoldsBySource</c> answers "which holds did this case cause".
+/// </summary>
+public sealed record HoldOrigin(string Module, string Type, string Id, string Number);
+
+/// <summary>§4.4 quarantineStock — "Karantinaya Al" (no workflow, safety direction). <paramref name="Origin"/>: set only by an in-process caller (CT-R3).</summary>
 public sealed record QuarantineStockCommand(
-    string Mode, string? LotId, IReadOnlyList<BucketInput>? Buckets, string? Reason, string? SignatureId, string IdempotencyKey)
+    string Mode, string? LotId, IReadOnlyList<BucketInput>? Buckets, string? Reason, string? SignatureId, string IdempotencyKey, HoldOrigin? Origin = null)
     : IRequest<Response<IReadOnlyList<HoldRefDto>>>;
 
 /// <summary>§4.15 blockStock — "Stoğu bloke et" (no workflow, safety direction).</summary>
