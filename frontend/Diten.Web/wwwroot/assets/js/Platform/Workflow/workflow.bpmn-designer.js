@@ -10,6 +10,41 @@
     const el = (id) => document.getElementById(id);
     const definitionId = window.WorkflowDefinitionId;
 
+    /*
+     * MOD-0022 E4/E5W1 — "İmza gerekli" + meaning on an approval step (pack §16 E4 designer item). The step carries
+     * requirements.signatureRequired / signatureMeaning in DefinitionJson (WorkflowDefinitionRuntimePlan reads exactly these);
+     * the meanings are the tenant's ACTIVE ones from the server (GET /api/v1/esign/meanings?activeOnly=true through the tenant
+     * e-signature proxy, esign.meanings.read | esign.signatures.sign). Publish refuses a flagged step without an active meaning
+     * (400 ESIGN_MEANING_NOT_ALLOWED) — the designer asks for one first.
+     */
+    let signatureMeanings = null;
+    const signatureLang = ((document.documentElement.getAttribute('lang') || 'tr').slice(0, 2) || 'tr').toLowerCase();
+    const loadSignatureMeanings = async () => {
+        if (signatureMeanings) return signatureMeanings;
+        try {
+            const res = await fetch('/ESignature/api/meanings?activeOnly=true', { credentials: 'same-origin', headers: { Accept: 'application/json' } });
+            const body = res.ok ? await res.json() : null;
+            const list = body && Array.isArray(body.data) ? body.data : (Array.isArray(body) ? body : null);
+            signatureMeanings = (list || []).filter((m) => m && m.isActive !== false);
+            if (!list) console.warn('[Workflow] e-signature meanings unavailable', res.status);
+        } catch (err) {
+            console.warn('[Workflow] e-signature meanings unavailable', err);
+            signatureMeanings = [];
+        }
+        return signatureMeanings;
+    };
+    const fillSignatureMeanings = async (select, selected) => {
+        if (!select) return;
+        const list = await loadSignatureMeanings();
+        const names = (m) => (m.names && (m.names[signatureLang] || m.names.en)) || m.code;
+        const esc = (v) => String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        const options = list.map((m) => `<option value="${esc(m.code)}">${esc(names(m))} (${esc(m.code)})</option>`);
+        if (selected && !list.some((m) => m.code === selected)) options.push(`<option value="${esc(selected)}">${esc(selected)}</option>`);
+        select.innerHTML = `<option value="">${esc(t('Workflow.Designer.SignatureMeaningSelect', 'Select a meaning'))}</option>` + options.join('');
+        select.value = selected || '';
+        if (!list.length) select.setAttribute('title', t('Workflow.Designer.SignatureMeaningsUnavailable', 'The signature meanings could not be loaded.'));
+    };
+
     // ---- helpers ----
     const normalizeCsv = (raw) => {
         const seen = new Set(); const out = [];
@@ -230,6 +265,9 @@
         setSelectValues('wf-vd-candidates', p.candidates || []);
         el('wf-vd-commentrequired').checked = !!p.commentRequired;
         el('wf-vd-evidencerequired').checked = !!p.evidenceRequired;
+        el('wf-vd-signaturerequired').checked = !!p.signatureRequired;
+        el('wf-vd-signaturemeaning-wrap').classList.toggle('d-none', !p.signatureRequired);
+        fillSignatureMeanings(el('wf-vd-signaturemeaning'), p.signatureMeaning || '');
         el('wf-vd-due').value = p.due || '';
         el('wf-vd-escalate').value = p.escalate || '';
         el('wf-vd-timeout').value = p.timeout || '';
@@ -249,6 +287,8 @@
             candidates: readSelectValues('wf-vd-candidates'),
             commentRequired: el('wf-vd-commentrequired').checked,
             evidenceRequired: el('wf-vd-evidencerequired').checked,
+            signatureRequired: el('wf-vd-signaturerequired').checked,
+            signatureMeaning: el('wf-vd-signaturerequired').checked ? (el('wf-vd-signaturemeaning').value || '').trim() : '',
             due: el('wf-vd-due').value.trim(),
             escalate: el('wf-vd-escalate').value.trim(),
             timeout: el('wf-vd-timeout').value.trim(),
@@ -280,6 +320,8 @@
                 candidates: normalizeCsv(source.assignment?.candidatePrincipalIds || []),
                 commentRequired: !!source.requirements?.commentRequired,
                 evidenceRequired: !!source.requirements?.evidenceRequired,
+                signatureRequired: source.requirements?.signatureRequired === true,
+                signatureMeaning: source.requirements?.signatureMeaning || '',
                 due: source.sla?.dueInMinutes != null ? String(source.sla.dueInMinutes) : '',
                 escalate: source.sla?.escalateAfterMinutes != null ? String(source.sla.escalateAfterMinutes) : '',
                 timeout: source.sla?.timeoutAfterMinutes != null ? String(source.sla.timeoutAfterMinutes) : '',
@@ -342,6 +384,7 @@
         for (const task of info.tasks) {
             const p = customProps[task.id] || {};
             if (normalizeCsv(p.candidates).length === 0) return { ok: false, message: t('CandidatePrincipalsRequired', 'Every approval task needs candidate principal ids.') };
+            if (p.signatureRequired && !p.signatureMeaning) return { ok: false, message: t('Workflow.Designer.SignatureMeaningRequired', 'Select an active signature meaning for every step that requires a signature.') };
             const due = p.due, esc = p.escalate, tmo = p.timeout;
             if (due !== '' && due != null && due !== undefined && due !== '') {
                 if (due && !(Number(due) > 0)) return { ok: false, message: t('InvalidSlaMinutes', 'SLA minutes invalid.') };
@@ -378,6 +421,11 @@
                 assignment: { mode: 'candidate_principals', candidatePrincipalIds: normalizeCsv(p.candidates) },
             requirements: { commentRequired: !!p.commentRequired, evidenceRequired: !!p.evidenceRequired }
         };
+        // MOD-0022 E4: written only when on, so an unflagged step's JSON stays byte-identical to before
+        if (p.signatureRequired) {
+            step.requirements.signatureRequired = true;
+            step.requirements.signatureMeaning = p.signatureMeaning || '';
+        }
         if (p.due) {
             const sla = { dueInMinutes: Number(p.due) };
             if (p.escalate) sla.escalateAfterMinutes = Number(p.escalate);
@@ -507,8 +555,15 @@
         }
 
         // Persist property edits on input; reset gates so user must re-validate.
-        ['wf-vd-stepcode', 'wf-vd-stepname', 'wf-vd-steptype', 'wf-vd-candidates', 'wf-vd-commentrequired', 'wf-vd-evidencerequired', 'wf-vd-due', 'wf-vd-escalate', 'wf-vd-timeout', 'wf-vd-escprincipals']
+        ['wf-vd-stepcode', 'wf-vd-stepname', 'wf-vd-steptype', 'wf-vd-candidates', 'wf-vd-commentrequired', 'wf-vd-evidencerequired', 'wf-vd-signaturerequired', 'wf-vd-signaturemeaning', 'wf-vd-due', 'wf-vd-escalate', 'wf-vd-timeout', 'wf-vd-escprincipals']
             .forEach((id) => { const node = el(id); if (node) node.addEventListener('change', () => { captureProps(); resetGates(); }); });
+
+        // MOD-0022 E5W1 — the meaning select appears with the switch and lists the tenant's active meanings
+        el('wf-vd-signaturerequired')?.addEventListener('change', () => {
+            const on = el('wf-vd-signaturerequired').checked;
+            el('wf-vd-signaturemeaning-wrap').classList.toggle('d-none', !on);
+            if (on) fillSignatureMeanings(el('wf-vd-signaturemeaning'), el('wf-vd-signaturemeaning').value);
+        });
 
         // Initial gate state: Generate and UseInPublish start disabled.
         applyGates();

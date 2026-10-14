@@ -1,0 +1,14 @@
+# M-6 SDK 8 build check — global.json {"sdk":{"version":"8.0.131","rollForward":"disable"}} (CI: .github/workflows dotnet-version '8.0.x')
+# worktree of feature/mvp3-bom-routings @ 35221a406, 2026-10-06T11:32:00Z
+Diten.ManufacturingService.sln  exit 0, 0 errors
+Diten.ApiGateway.csproj          exit 0, 0 errors
+Diten.Web.csproj                 exit 1, 8 distinct errors (16 lines) — all CS0121 string.Split overload ambiguity, none in an MVP-3 file:
+  frontend/Diten.Web/Controllers/GrnController.cs(248,14): error CS0121
+  frontend/Diten.Web/Controllers/PharmacovigilanceCaseIntakeTriageController.cs(284,19): error CS0121
+  frontend/Diten.Web/Controllers/Platform/AdministratorsController.cs(557,20): error CS0121
+  frontend/Diten.Web/Controllers/Platform/SubscriptionPlansController.cs(582,14): error CS0121
+  frontend/Diten.Web/Controllers/TaskTypesController.cs(394,16): error CS0121
+  frontend/Diten.Web/Models/MasterData/BrandProductViewModels.cs(206,14): error CS0121
+  frontend/Diten.Web/Models/MasterData/BrandProductViewModels.cs(220,14): error CS0121
+  frontend/Diten.Web/Services/WorkCenter/TaskDetailService.cs(900,32): error CS0121
+git diff origin/main..HEAD on these 7 files: empty (untouched by MVP-3; pre-existing on main). CI does not build Diten.Web.

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <!-- WP-0173-LOC2: model translation, native-speaker review pending (FU-LOC2-01). -->
+  <data name="LocationTreeTitle" xml:space="preserve"><value>Местоположения</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Единый список физических мест компании. Запасы, склад, закупки и производство берут данные из этого списка.</value></data>
+  <data name="TabTree" xml:space="preserve"><value>Иерархия</value></data>
+  <data name="TabList" xml:space="preserve"><value>Список</value></data>
+  <data name="CompanyLabel" xml:space="preserve"><value>Компания</value></data>
+  <data name="CompanyPlaceholder" xml:space="preserve"><value>Выберите компанию</value></data>
+  <data name="CompanySelectHint" xml:space="preserve"><value>Выберите компанию, местоположения которой хотите увидеть. Пока компания не выбрана, данные не показываются.</value></data>
+  <data name="CompanyUnavailable" xml:space="preserve"><value>Не удалось загрузить список компаний, поэтому местоположения не показаны. Запросите у администратора право просмотра компаний или повторите попытку позже.</value></data>
+  <data name="TreeHeading" xml:space="preserve"><value>Иерархия местоположений</value></data>
+  <data name="ShowArchived" xml:space="preserve"><value>Показать архивные</value></data>
+  <data name="AddNewSite" xml:space="preserve"><value>Новая площадка</value></data>
+  <data name="EmptyTitle" xml:space="preserve"><value>У этой компании пока нет местоположений</value></data>
+  <data name="EmptyBody" xml:space="preserve"><value>Начните с первой площадки. Склады, зоны хранения и ячейки добавляются под ней.</value></data>
+  <data name="AddFirstSite" xml:space="preserve"><value>Добавить первую площадку</value></data>
+  <data name="SelectHint" xml:space="preserve"><value>Выберите местоположение в дереве, чтобы увидеть детали.</value></data>
+  <data name="DetailsHeading" xml:space="preserve"><value>Сведения</value></data>
+  <data name="StockHeading" xml:space="preserve"><value>Запасы</value></data>
+  <data name="StockOnLocation" xml:space="preserve"><value>В этом месте</value></data>
+  <data name="StockBelow" xml:space="preserve"><value>Ниже этого места</value></data>
+  <data name="StockUnknown" xml:space="preserve"><value>Сейчас не удалось узнать наличие запасов.</value></data>
+  <data name="StockYes" xml:space="preserve"><value>Есть запасы</value></data>
+  <data name="StockNo" xml:space="preserve"><value>Нет запасов</value></data>
+  <data name="ChildrenHeading" xml:space="preserve"><value>Дочерние местоположения</value></data>
+  <data name="ChildrenCount" xml:space="preserve"><value>Местоположений: {0}</value></data>
+  <data name="NoChildrenForBin" xml:space="preserve"><value>У ячейки нет дочерних местоположений.</value></data>
+  <data name="ShowInList" xml:space="preserve"><value>Показать в списке</value></data>
+  <data name="TooManyChildren" xml:space="preserve"><value>Под этой записью местоположений: {0} — слишком много, чтобы показать здесь.</value></data>
+  <data name="OpenInList" xml:space="preserve"><value>Открыть в списке</value></data>
+  <data name="HistoryHeading" xml:space="preserve"><value>История изменений</value></data>
+  <data name="HistoryDate" xml:space="preserve"><value>Дата и время</value></data>
+  <data name="HistoryUser" xml:space="preserve"><value>Пользователь</value></data>
+  <data name="HistoryField" xml:space="preserve"><value>Изменение</value></data>
+  <data name="HistoryChange" xml:space="preserve"><value>Старое значение → Новое значение</value></data>
+  <data name="HistoryEmpty" xml:space="preserve"><value>Изменений не зарегистрировано.</value></data>
+  <data name="HistoryMore" xml:space="preserve"><value>Показать более ранние изменения</value></data>
+  <data name="InactiveNote" xml:space="preserve"><value>Это местоположение нельзя выбрать в формах запасов.</value></data>
+  <data name="ArchivedNote" xml:space="preserve"><value>Архивную запись нельзя снова активировать или изменить. Местоположения никогда не удаляются: прошлые движения запасов продолжают показывать это место.</value></data>
+  <data name="ExternalNote" xml:space="preserve"><value>Запасы ведутся во внешней системе и отслеживаются здесь через интеграцию.</value></data>
+  <data name="HistAction_Created" xml:space="preserve"><value>Создание</value></data>
+  <data name="HistAction_Updated" xml:space="preserve"><value>Обновление</value></data>
+  <data name="HistAction_Moved" xml:space="preserve"><value>Перенос</value></data>
+  <data name="HistAction_StatusChanged" xml:space="preserve"><value>Смена статуса</value></data>
+  <data name="HistAction_BulkCreated" xml:space="preserve"><value>Массовое создание</value></data>
+  <data name="HistField_code" xml:space="preserve"><value>Код</value></data>
+  <data name="HistField_name" xml:space="preserve"><value>Название</value></data>
+  <data name="HistField_parentId" xml:space="preserve"><value>Родитель</value></data>
+  <data name="HistField_status" xml:space="preserve"><value>Статус</value></data>
+  <data name="HistField_isStockable" xml:space="preserve"><value>Хранение запасов</value></data>
+  <data name="HistField_operatingMode" xml:space="preserve"><value>Режим работы</value></data>
+  <data name="HistField_orgUnitRef" xml:space="preserve"><value>Орг. подразделение</value></data>
+  <data name="HistField_costCenterCode" xml:space="preserve"><value>Код центра затрат</value></data>
+</root>

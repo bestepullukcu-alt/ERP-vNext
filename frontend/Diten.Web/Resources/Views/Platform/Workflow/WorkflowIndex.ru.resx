@@ -209,4 +209,10 @@
   <data name="BpmnImportFailed" xml:space="preserve"><value>Could not import the BPMN XML.</value></data>
   <data name="ExclusiveGatewayWarning" xml:space="preserve"><value>Exclusive gateways are accepted in the diagram but not yet mapped to runtime branches.</value></data>
   <data name="BpmnLibraryMissing" xml:space="preserve"><value>The BPMN designer library failed to load.</value></data>
+  <data name="Workflow.Designer.SignatureRequired" xml:space="preserve"><value>Требуется подпись</value></data>
+  <data name="Workflow.Designer.SignatureMeaning" xml:space="preserve"><value>Значение подписи</value></data>
+  <data name="Workflow.Designer.SignatureMeaningSelect" xml:space="preserve"><value>Выберите значение</value></data>
+  <data name="Workflow.Designer.SignatureMeaningRequired" xml:space="preserve"><value>Выберите активное значение подписи для каждого шага, требующего подписи.</value></data>
+  <data name="Workflow.Designer.SignatureHint" xml:space="preserve"><value>Утверждающий подписывает электронно при утверждении в WorkCenter (пароль + значение).</value></data>
+  <data name="Workflow.Designer.SignatureMeaningsUnavailable" xml:space="preserve"><value>Не удалось загрузить значения подписи.</value></data>
 </root>

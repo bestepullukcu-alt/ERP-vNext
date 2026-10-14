@@ -291,7 +291,18 @@ public sealed record WorkItemActionDto(
     /// Only ever set beside <c>RequiresTargetPerson</c>; omitted when null.
     /// </summary>
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    IReadOnlyList<string>? ExcludedTargetPrincipalIds = null);
+    IReadOnlyList<string>? ExcludedTargetPrincipalIds = null,
+    // MOD-0022 E4 — on the approve action of a signature-required workflow step only; omitted otherwise.
+    [property: System.Text.Json.Serialization.JsonIgnore(
+        Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    bool? SignatureRequired = null,
+    [property: System.Text.Json.Serialization.JsonIgnore(
+        Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    string? SignatureMeaning = null,
+    // MOD-0022 E5W2 (CT-D19) — the signable action the dialog asks the policy for (workflow.task.approve); omitted otherwise.
+    [property: System.Text.Json.Serialization.JsonIgnore(
+        Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    string? SignatureActionCode = null);
 
 /// <summary>
 /// waitingContext { type, waitingOn?, reason?, since?, expectedUntil? } — present iff normalizedStatus == Waiting.

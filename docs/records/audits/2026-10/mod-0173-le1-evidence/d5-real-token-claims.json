@@ -1,0 +1,27 @@
+{
+  "status": 200,
+  "issuer": "diten-auth-service",
+  "claimNames": [
+    "actor_type",
+    "aud",
+    "email",
+    "exp",
+    "family_name",
+    "given_name",
+    "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
+    "iss",
+    "permission",
+    "pwd_change_required",
+    "sub",
+    "tenant_id"
+  ],
+  "hasLegalEntityClaim": false,
+  "actorType": "tenant_user",
+  "tenantIsDefault": true,
+  "relevantPermissions": [
+    "inventory.movements.create",
+    "inventory.stock.read",
+    "mdm.legal-entities.read"
+  ],
+  "permissionCount": 695
+}

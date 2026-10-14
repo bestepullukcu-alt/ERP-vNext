@@ -1,0 +1,110 @@
+﻿{
+    "measuredAt":  "2026-10-02T10:55:22.4616901+03:00",
+    "note":  "Baseline for D7, taken after the fleet settled (10:15 rebuild by another session, CT break-glass bc27dda23 at 10:17).",
+    "listeners":  [
+                      {
+                          "port":  4010,
+                          "pid":  1392,
+                          "name":  "node.exe",
+                          "started":  "2026-10-02T09:50:27.6922310+03:00"
+                      },
+                      {
+                          "port":  5000,
+                          "pid":  28604,
+                          "name":  "Diten.ApiGateway.exe",
+                          "started":  "2026-10-02T10:19:17.2517850+03:00"
+                      },
+                      {
+                          "port":  5001,
+                          "pid":  22772,
+                          "name":  "Diten.Web.exe",
+                          "started":  "2026-10-02T10:19:47.5541620+03:00"
+                      },
+                      {
+                          "port":  5056,
+                          "pid":  41208,
+                          "name":  "Diten.AuthService.Api.exe",
+                          "started":  "2026-10-02T10:19:33.8544710+03:00"
+                      },
+                      {
+                          "port":  5057,
+                          "pid":  8636,
+                          "name":  "dotnet.exe",
+                          "started":  "2026-10-02T10:18:39.1141680+03:00"
+                      },
+                      {
+                          "port":  5058,
+                          "pid":  26120,
+                          "name":  "Diten.DevEnablementService.Api.exe",
+                          "started":  "2026-10-02T10:19:28.5768150+03:00"
+                      },
+                      {
+                          "port":  5059,
+                          "pid":  28356,
+                          "name":  "Diten.MdmService.Api.exe",
+                          "started":  "2026-10-02T10:19:34.8293660+03:00"
+                      },
+                      {
+                          "port":  5060,
+                          "pid":  21548,
+                          "name":  "Diten.HcmService.Api.exe",
+                          "started":  "2026-10-02T10:19:34.2140790+03:00"
+                      },
+                      {
+                          "port":  5061,
+                          "pid":  33776,
+                          "name":  "Diten.CrmService.Api.exe",
+                          "started":  "2026-10-02T10:19:41.2534910+03:00"
+                      },
+                      {
+                          "port":  5066,
+                          "pid":  26152,
+                          "name":  "Diten.InventoryService.Api.exe",
+                          "started":  "2026-10-02T10:19:26.1621230+03:00"
+                      },
+                      {
+                          "port":  27017,
+                          "pid":  5380,
+                          "name":  "mongod.exe",
+                          "started":  "2026-09-30T11:18:43.3230200+03:00"
+                      }
+                  ],
+    "dotnetWatchHosts":  [
+                             {
+                                 "pid":  24556,
+                                 "started":  "2026-10-02T09:41:13.2744890+03:00"
+                             },
+                             {
+                                 "pid":  24024,
+                                 "started":  "2026-10-02T09:41:39.7440150+03:00"
+                             },
+                             {
+                                 "pid":  8264,
+                                 "started":  "2026-10-02T09:41:53.4939870+03:00"
+                             },
+                             {
+                                 "pid":  34252,
+                                 "started":  "2026-10-02T09:42:28.7376380+03:00"
+                             },
+                             {
+                                 "pid":  24704,
+                                 "started":  "2026-10-02T09:42:47.5815730+03:00"
+                             },
+                             {
+                                 "pid":  7824,
+                                 "started":  "2026-10-02T09:43:05.9559730+03:00"
+                             },
+                             {
+                                 "pid":  12148,
+                                 "started":  "2026-10-02T09:43:27.6607860+03:00"
+                             },
+                             {
+                                 "pid":  19772,
+                                 "started":  "2026-10-02T09:43:41.7878790+03:00"
+                             },
+                             {
+                                 "pid":  38932,
+                                 "started":  "2026-10-02T10:15:30.5095090+03:00"
+                             }
+                         ]
+}

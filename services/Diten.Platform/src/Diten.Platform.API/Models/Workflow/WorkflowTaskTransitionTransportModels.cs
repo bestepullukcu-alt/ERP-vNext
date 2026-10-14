@@ -9,7 +9,10 @@ public sealed record ApproveWorkflowTaskTransportRequest(
     string IdempotencyKey,
     string? Comment,
     string? EvidenceRef,
-    string? ActorId = null);
+    string? ActorId = null,
+    // Main sync 2026-10-13 — MOD-0022 E4 (ESIGN-BUNDLE x-workflow-addendum, main): the e-signature of a
+    // signature-required step. Approve only; a reject body naming one is an unsupported field, as before.
+    string? SignatureId = null);
 
 [JsonConverter(typeof(RejectWorkflowTaskTransportRequestJsonConverter))]
 public sealed record RejectWorkflowTaskTransportRequest(
@@ -29,8 +32,9 @@ internal static class WorkflowTaskTransitionTransportJson
         "actorId"
     };
 
-    public static (string ReasonCode, string IdempotencyKey, string? Comment, string? EvidenceRef, string? ActorId) Read(
-        ref Utf8JsonReader reader)
+    public static (string ReasonCode, string IdempotencyKey, string? Comment, string? EvidenceRef, string? ActorId, string? SignatureId) Read(
+        ref Utf8JsonReader reader,
+        bool allowsSignature = false)
     {
         using var document = JsonDocument.ParseValue(ref reader);
         if (document.RootElement.ValueKind != JsonValueKind.Object)
@@ -41,7 +45,7 @@ internal static class WorkflowTaskTransitionTransportJson
         var values = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
         foreach (var property in document.RootElement.EnumerateObject())
         {
-            if (!KnownProperties.Contains(property.Name)
+            if (!(KnownProperties.Contains(property.Name) || (allowsSignature && property.Name == "signatureId"))
                 || !values.TryAdd(property.Name, property.Value.Clone()))
             {
                 throw new JsonException("The workflow task decision contains an unsupported field.");
@@ -52,12 +56,13 @@ internal static class WorkflowTaskTransitionTransportJson
             || !TryRequired(values, "idempotencyKey", 128, out var idempotencyKey)
             || !TryFreeText(values, "comment", 2000, out var comment)
             || !TryOptional(values, "evidenceRef", 512, out var evidenceRef)
-            || !TryOptional(values, "actorId", 64, out var actorId))
+            || !TryOptional(values, "actorId", 64, out var actorId)
+            || !TryOptional(values, "signatureId", 64, out var signatureId))
         {
             throw new JsonException("The workflow task decision is invalid.");
         }
 
-        return (reasonCode!, idempotencyKey!, comment, evidenceRef, actorId);
+        return (reasonCode!, idempotencyKey!, comment, evidenceRef, actorId, signatureId);
     }
 
     public static void Write(
@@ -65,7 +70,8 @@ internal static class WorkflowTaskTransitionTransportJson
         string reasonCode,
         string idempotencyKey,
         string? comment,
-        string? evidenceRef)
+        string? evidenceRef,
+        string? signatureId = null)
     {
         writer.WriteStartObject();
         writer.WriteString("reasonCode", reasonCode);
@@ -86,6 +92,11 @@ internal static class WorkflowTaskTransitionTransportJson
         else
         {
             writer.WriteString("evidenceRef", evidenceRef);
+        }
+
+        if (signatureId is not null)
+        {
+            writer.WriteString("signatureId", signatureId);
         }
 
         writer.WriteEndObject();
@@ -184,8 +195,8 @@ internal sealed class ApproveWorkflowTaskTransportRequestJsonConverter
         Type typeToConvert,
         JsonSerializerOptions options)
     {
-        var value = WorkflowTaskTransitionTransportJson.Read(ref reader);
-        return new(value.ReasonCode, value.IdempotencyKey, value.Comment, value.EvidenceRef, value.ActorId);
+        var value = WorkflowTaskTransitionTransportJson.Read(ref reader, allowsSignature: true);
+        return new(value.ReasonCode, value.IdempotencyKey, value.Comment, value.EvidenceRef, value.ActorId, value.SignatureId);
     }
 
     public override void Write(
@@ -197,7 +208,8 @@ internal sealed class ApproveWorkflowTaskTransportRequestJsonConverter
             value.ReasonCode,
             value.IdempotencyKey,
             value.Comment,
-            value.EvidenceRef);
+            value.EvidenceRef,
+            value.SignatureId);
 }
 
 internal sealed class RejectWorkflowTaskTransportRequestJsonConverter

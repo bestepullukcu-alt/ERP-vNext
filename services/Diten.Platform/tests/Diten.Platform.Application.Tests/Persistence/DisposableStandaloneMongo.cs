@@ -38,8 +38,14 @@ public sealed class DisposableStandaloneMongo : IAsyncDisposable
         var data = Path.Combine(root, "data");
         Directory.CreateDirectory(data);
         var start = new ProcessStartInfo { FileName = binary, UseShellExecute = false, CreateNoWindow = true };
-        foreach (var argument in new[] { "--dbpath", data, "--port", port.ToString(), "--bind_ip", "127.0.0.1", "--nounixsocket" })
+        foreach (var argument in new[] { "--dbpath", data, "--port", port.ToString(), "--bind_ip", "127.0.0.1" })
             start.ArgumentList.Add(argument);
+        // WP-MVP1-SYNC1 — the same guard DisposableMongoReplicaSet has (MOD-0022 E2, measured 2026-10-08): Unix-domain sockets
+        // do not exist in mongod's Windows build, the option is rejected there (exit code 2) and no test of this class starts.
+        if (!OperatingSystem.IsWindows())
+        {
+            start.ArgumentList.Add("--nounixsocket");
+        }
         var process = Process.Start(start) ?? throw new InvalidOperationException("Failed to start standalone mongod.");
         var settings = MongoClientSettings.FromConnectionString($"mongodb://127.0.0.1:{port}/?directConnection=true");
         settings.ServerSelectionTimeout = TimeSpan.FromMilliseconds(500);

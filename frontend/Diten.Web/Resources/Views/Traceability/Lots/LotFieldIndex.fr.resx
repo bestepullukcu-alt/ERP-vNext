@@ -1,0 +1,139 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+    <data name="Lot.BlockedDisabled" xml:space="preserve">
+    <value>Bloqué — ne peut pas recevoir de stock</value>
+  </data>
+  <data name="Lot.Created" xml:space="preserve">
+    <value>Lot {0} créé en brouillon et sélectionné.</value>
+  </data>
+  <data name="Lot.ExpiredDisabled" xml:space="preserve">
+    <value>Périmé — ne peut pas recevoir de stock</value>
+  </data>
+  <data name="Lot.FromSource" xml:space="preserve">
+    <value>Le lot provient de la ligne source.</value>
+  </data>
+  <data name="Lot.NewLot" xml:space="preserve">
+    <value>+ Nouveau lot</value>
+  </data>
+  <data name="Lot.None" xml:space="preserve">
+    <value>Aucun lot enregistré pour cette SKU pour l’instant.</value>
+  </data>
+  <data name="Lot.Picker" xml:space="preserve">
+    <value>Lot</value>
+  </data>
+  <data name="Lot.Placeholder" xml:space="preserve">
+    <value>Choisissez un lot enregistré</value>
+  </data>
+  <data name="Lot.RetestConfirm" xml:space="preserve">
+    <value>Je confirme utiliser ce lot bien que sa date de recontrôle soit dépassée.</value>
+  </data>
+  <data name="Lot.RetestConfirmRequired" xml:space="preserve">
+    <value>Confirmez l’utilisation d’un lot dont la date de recontrôle est dépassée.</value>
+  </data>
+  <data name="Lot.RetestWarn" xml:space="preserve">
+    <value>La date de recontrôle de ce lot ({0}) est dépassée.</value>
+  </data>
+  <data name="Lot.TypedBadge" xml:space="preserve">
+    <value>Lot saisi manuellement</value>
+  </data>
+  <data name="Lot.TypedHint" xml:space="preserve">
+    <value>Pendant la transition, un texte de lot saisi manuellement est encore accepté (W-UI-02) ; préférez un lot enregistré.</value>
+  </data>
+  <data name="Lot.Unavailable" xml:space="preserve">
+    <value>Les lots enregistrés ne peuvent pas être listés pour le moment.</value>
+  </data>
+  <data name="Serial.Add" xml:space="preserve">
+    <value>Ajouter</value>
+  </data>
+  <data name="Serial.Added" xml:space="preserve">
+    <value>{0} numéros de série ajoutés.</value>
+  </data>
+  <data name="Serial.BadFormat" xml:space="preserve">
+    <value>Numéro de série non valide (3 à 24 caractères A–Z, 0–9, -) : {0}</value>
+  </data>
+  <data name="Serial.CheckUnavailable" xml:space="preserve">
+    <value>Le code ne peut pas être vérifié pour le moment.</value>
+  </data>
+  <data name="Serial.Clear" xml:space="preserve">
+    <value>Effacer</value>
+  </data>
+  <data name="Serial.Counter" xml:space="preserve">
+    <value>{0} / {1}</value>
+  </data>
+  <data name="Serial.CounterMore" xml:space="preserve">
+    <value>{0} numéros de série manquants.</value>
+  </data>
+  <data name="Serial.CounterOk" xml:space="preserve">
+    <value>Le nombre de numéros de série est égal à la quantité.</value>
+  </data>
+  <data name="Serial.CounterOver" xml:space="preserve">
+    <value>{0} numéros de série en trop.</value>
+  </data>
+  <data name="Serial.Duplicates" xml:space="preserve">
+    <value>Déjà dans la liste, ignorés : {0}</value>
+  </data>
+  <data name="Serial.Empty" xml:space="preserve">
+    <value>Aucun numéro de série ajouté pour l’instant.</value>
+  </data>
+  <data name="Serial.GtinSkippedWarning" xml:space="preserve">
+    <value>Le produit n’a pas de GTIN dans les données de référence : le GTIN n’a pas été vérifié ; le lot et la date de péremption l’ont été.</value>
+  </data>
+  <data name="Serial.Methods.Range" xml:space="preserve">
+    <value>Plage</value>
+  </data>
+  <data name="Serial.Methods.Scan" xml:space="preserve">
+    <value>Code DataMatrix (GS1)</value>
+  </data>
+  <data name="Serial.Methods.Single" xml:space="preserve">
+    <value>Un par un</value>
+  </data>
+  <data name="Serial.Mismatch.Expiry" xml:space="preserve">
+    <value>Le code porte une autre date de péremption.</value>
+  </data>
+  <data name="Serial.Mismatch.Gtin" xml:space="preserve">
+    <value>Le code appartient à un autre produit (GTIN).</value>
+  </data>
+  <data name="Serial.Mismatch.Lot" xml:space="preserve">
+    <value>Le code porte un autre lot.</value>
+  </data>
+  <data name="Serial.RangeAdd" xml:space="preserve">
+    <value>Ajouter la plage</value>
+  </data>
+  <data name="Serial.RangeEnd" xml:space="preserve">
+    <value>Dernier numéro de série</value>
+  </data>
+  <data name="Serial.RangeHint" xml:space="preserve">
+    <value>Même préfixe et même nombre de chiffres, 5 000 au maximum.</value>
+  </data>
+  <data name="Serial.RangeMax" xml:space="preserve">
+    <value>Une plage peut contenir au maximum 5 000 numéros de série.</value>
+  </data>
+  <data name="Serial.RangeOrder" xml:space="preserve">
+    <value>Le dernier numéro de série ne doit pas être inférieur au premier.</value>
+  </data>
+  <data name="Serial.RangePrefix" xml:space="preserve">
+    <value>Le premier et le dernier numéro de série doivent avoir le même préfixe et le même nombre de chiffres.</value>
+  </data>
+  <data name="Serial.RangePreview" xml:space="preserve">
+    <value>{0} numéros de série : {1} … {2}</value>
+  </data>
+  <data name="Serial.RangeStart" xml:space="preserve">
+    <value>Premier numéro de série</value>
+  </data>
+  <data name="Serial.ScanHint" xml:space="preserve">
+    <value>Scannez ou collez le code DataMatrix GS1 / ITS puis appuyez sur Entrée.</value>
+  </data>
+  <data name="Serial.ScanNeedsLot" xml:space="preserve">
+    <value>Choisissez le lot avant de scanner.</value>
+  </data>
+  <data name="Serial.Unreadable" xml:space="preserve">
+    <value>Le code n’a pas pu être lu.</value>
+  </data>
+  <data name="Lot.RetestRequired" xml:space="preserve">
+    <value>La date de recontrôle de ce lot est dépassée : confirmez l’avertissement du champ lot avant d’enregistrer.</value>
+  </data>
+</root>

@@ -1,0 +1,211 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.Quarantine.Quarantine> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["Quarantine.Settings.Title"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    MOD-0175 Q5 — Karantina Ayarları (QUARANTINESETTINGS, pack §11.3; not in the mockup, §21.3 #10). Mixed pattern (§17.3):
+      (a) the company settings form (TenantSecuritySettings card pattern): Bekleme hedefi (KQ-D, 1–60), Dört göz (KQ-C),
+          Onaylayıcı adaylar (position / user, ≤ 10 — positions from the Workflow lookup), Numune lokasyonları per warehouse
+          (KQ-E), Lot serbest bırakma onayı (KQ-I, CT-Q10), yeniden okuma aralığı — saveSettings with If-Match;
+      (b) Bloke nedenleri (CT-Q8: code + 7 names + active) — DataTable v2 CLIENT mode (a bounded configuration list);
+      (c) "Onay şablonunu hazırla" (INV-QUARANTINE-RELEASE; create + publish with the caller's token, idempotent).
+    UAS-001 — nothing without quarantine.settings.manage.
+*@
+@if (!Perms.Has("quarantine.settings.manage"))
+{
+    <partial name="_AccessDenied" model="@Localizer["Quarantine.Settings.Title"].Value" />
+    return;
+}
+
+@{
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["Quarantine.Common.Company.Label"].Value;
+    company.Placeholder = Localizer["Quarantine.Common.Company.Placeholder"].Value;
+    company.SelectHint = Localizer["Quarantine.Common.Company.Required"].Value;
+    company.UnavailableText = Localizer["Quarantine.Common.Company.Unavailable"].Value;
+    var languages = new[] { "tr", "en", "fr", "es", "zh", "ar", "ru" };
+}
+
+<partial name="~/Views/Quarantine/_Header.cshtml" model="@("QUARANTINESETTINGS")" />
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready)
+{
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 row-gap-3">
+        <div>
+            <h5 class="mb-0">@Localizer["Quarantine.Settings.Title"]</h5>
+            <p class="mb-0 text-muted">@Localizer["Quarantine.Settings.Description"]</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <button type="button" class="btn btn-label-primary" id="qr-template-prepare"><i class="bx bx-git-branch me-1"></i>@Localizer["Quarantine.Settings.Template.Prepare"]</button>
+            <button type="submit" form="qr-settings-form" class="btn btn-primary" id="qr-settings-save">@Localizer["Quarantine.Common.Save"]</button>
+        </div>
+    </div>
+
+    <div class="alert alert-danger d-none" id="qr-page-error" role="alert"></div>
+
+    <div class="row g-4">
+        <div class="col-12 col-xl-8">
+            <form id="qr-settings-form" novalidate>
+                <div class="card mb-4">
+                    <div class="card-header"><h6 class="mb-0"><i class="bx bx-slider-alt me-1"></i>@Localizer["Quarantine.Settings.Section.General"]</h6></div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-12 col-md-6">
+                                <label class="form-label" for="qr-s-wait">@Localizer["Quarantine.Settings.WaitTarget"]</label>
+                                <input type="number" min="1" max="60" step="1" id="qr-s-wait" class="form-control" />
+                                <small class="text-muted">@Localizer["Quarantine.Settings.WaitTarget.Hint"]</small>
+                                <div class="invalid-feedback d-block" data-err="wait"></div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label class="form-label" for="qr-s-reconcile">@Localizer["Quarantine.Settings.Reconcile"]</label>
+                                <input type="number" min="0" step="1" id="qr-s-reconcile" class="form-control" />
+                                <small class="text-muted">@Localizer["Quarantine.Settings.Reconcile.Hint"]</small>
+                            </div>
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between align-items-start gap-3 border rounded p-3">
+                                    <div><div class="fw-medium">@Localizer["Quarantine.Settings.FourEyes"]</div><small class="text-muted">@Localizer["Quarantine.Settings.FourEyes.Hint"]</small></div>
+                                    <div class="form-check form-switch m-0"><input class="form-check-input" type="checkbox" role="switch" id="qr-s-foureyes" aria-label="@Localizer["Quarantine.Settings.FourEyes"]" /></div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between align-items-start gap-3 border rounded p-3">
+                                    <div><div class="fw-medium">@Localizer["Quarantine.Settings.LotRelease"]</div><small class="text-muted">@Localizer["Quarantine.Settings.LotRelease.Hint"]</small></div>
+                                    <div class="form-check form-switch m-0"><input class="form-check-input" type="checkbox" role="switch" id="qr-s-lotrelease" aria-label="@Localizer["Quarantine.Settings.LotRelease"]" /></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header"><h6 class="mb-0"><i class="bx bx-user-check me-1"></i>@Localizer["Quarantine.Settings.Approvers"]</h6><small class="text-muted">@Localizer["Quarantine.Settings.Approvers.Hint"]</small></div>
+                    <div class="card-body">
+                        <div class="row g-2 align-items-end mb-3">
+                            <div class="col-12 col-md-4">
+                                <label class="form-label" for="qr-s-cand-kind">@Localizer["Quarantine.Settings.Approvers.Kind"]</label>
+                                <select id="qr-s-cand-kind" class="form-select">
+                                    <option value="position">@Localizer["Quarantine.Settings.Approvers.Position"]</option>
+                                    <option value="user">@Localizer["Quarantine.Settings.Approvers.User"]</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label class="form-label" for="qr-s-cand-value">@Localizer["Quarantine.Settings.Approvers.Value"]</label>
+                                <select id="qr-s-cand-position" class="form-select"><option value="">@Localizer["Quarantine.Common.Select"]</option></select>
+                                <input type="text" id="qr-s-cand-user" class="form-control d-none" placeholder="00000000-0000-0000-0000-000000000000" />
+                            </div>
+                            <div class="col-12 col-md-2"><button type="button" class="btn btn-label-primary w-100" id="qr-s-cand-add">@Localizer["Quarantine.Settings.Add"]</button></div>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2" id="qr-s-candidates"></div>
+                        <div class="invalid-feedback d-block" data-err="candidates"></div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header"><h6 class="mb-0"><i class="bx bx-archive me-1"></i>@Localizer["Quarantine.Settings.SampleLocations"]</h6><small class="text-muted">@Localizer["Quarantine.Settings.SampleLocations.Hint"]</small></div>
+                    <div class="card-body">
+                        <div class="row g-2 align-items-end mb-3">
+                            <div class="col-12 col-md-5">
+                                <label class="form-label" for="qr-s-sample-wh">@Localizer["Quarantine.Settings.Sample.Warehouse"]</label>
+                                <select id="qr-s-sample-wh" class="form-select"><option value="">@Localizer["Quarantine.Common.Select"]</option></select>
+                            </div>
+                            <div class="col-12 col-md-5">
+                                <label class="form-label" for="qr-s-sample-loc">@Localizer["Quarantine.Settings.Sample.Location"]</label>
+                                <select id="qr-s-sample-loc" class="form-select"><option value="">@Localizer["Quarantine.Common.Select"]</option></select>
+                            </div>
+                            <div class="col-12 col-md-2"><button type="button" class="btn btn-label-primary w-100" id="qr-s-sample-add">@Localizer["Quarantine.Settings.Add"]</button></div>
+                        </div>
+                        <ul class="list-group" id="qr-s-samples"></ul>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="col-12 col-xl-4">
+            <div class="card mb-4">
+                <div class="card-header"><h6 class="mb-0"><i class="bx bx-git-branch me-1"></i>@Localizer["Quarantine.Settings.Template.Section"]</h6></div>
+                <div class="card-body small">
+                    <div class="d-flex justify-content-between mb-1"><span class="text-muted">@Localizer["Quarantine.Settings.Template.Code"]</span><span class="font-monospace">INV-QUARANTINE-RELEASE</span></div>
+                    <div class="d-flex justify-content-between mb-1"><span class="text-muted">@Localizer["Quarantine.Settings.Template.Status"]</span><span id="qr-s-template-status">—</span></div>
+                    <div class="d-flex justify-content-between"><span class="text-muted">@Localizer["Quarantine.Settings.Template.Version"]</span><span id="qr-s-template-version">—</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="mb-0"><i class="bx bx-purchase-tag me-1"></i>@Localizer["Quarantine.Settings.Section.BlockReasons"]</h6>
+        <button type="button" class="btn btn-sm btn-primary" id="qr-br-add"><i class="bx bx-plus me-1"></i>@Localizer["Quarantine.Settings.BR.Add"]</button>
+    </div>
+    var reasons = new Diten.Web.Models.DataTable.DataTableListShellViewModel
+        {
+            TableId = "dt-quarantine-block-reasons",
+            DataMode = "client",
+            Slug = "quarantine-block-reasons",
+            HasSelection = false,
+            Columns =
+            [
+                new Diten.Web.Models.DataTable.DataTableColumnViewModel { Header = Localizer["Quarantine.Settings.BR.Code"].Value, CssClass = "all" },
+                new Diten.Web.Models.DataTable.DataTableColumnViewModel { Header = Localizer["Quarantine.Settings.BR.Name"].Value },
+                new Diten.Web.Models.DataTable.DataTableColumnViewModel { Header = Localizer["Quarantine.Settings.BR.Active"].Value },
+                new Diten.Web.Models.DataTable.DataTableColumnViewModel { Header = Localizer["Quarantine.Settings.BR.Locked"].Value }
+            ],
+            ActionsHeader = Localizer["Quarantine.Col.Actions"].Value
+        };
+    <partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="reasons" />
+
+    <div class="modal fade" id="qr-br-modal" tabindex="-1" aria-labelledby="qr-br-title" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="qr-br-title">@Localizer["Quarantine.Settings.BR.Add"]</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["Quarantine.Common.Close"]"></button>
+                </div>
+                <form id="qr-br-form" novalidate>
+                    <div class="modal-body">
+                        <div class="alert alert-danger d-none" id="qr-br-error" role="alert"></div>
+                        <div class="mb-3">
+                            <label class="form-label" for="qr-br-code">@Localizer["Quarantine.Settings.BR.Code"] <span class="text-danger">*</span></label>
+                            <input type="text" id="qr-br-code" class="form-control font-monospace" maxlength="32" pattern="^[A-Z][A-Z0-9_]{1,31}$" />
+                            <small class="text-muted">@Localizer["Quarantine.Settings.BR.CodeHint"]</small>
+                        </div>
+                        @foreach (var lang in languages)
+                        {
+                            <div class="mb-2">
+                                <label class="form-label" for="qr-br-name-@lang">@Localizer["Quarantine.Settings.BR.Name"] · @Localizer["Quarantine.Settings.Lang." + lang] <span class="text-danger">*</span></label>
+                                <input type="text" id="qr-br-name-@lang" class="form-control" data-lang="@lang" maxlength="100" dir="@(lang == "ar" ? "rtl" : "auto")" />
+                            </div>
+                        }
+                        <div class="form-check form-switch mt-3">
+                            <input class="form-check-input" type="checkbox" role="switch" id="qr-br-active" checked />
+                            <label class="form-check-label" for="qr-br-active">@Localizer["Quarantine.Settings.BR.Active"]</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@Localizer["Quarantine.Common.Cancel"]</button>
+                        <button type="submit" class="btn btn-primary">@Localizer["Quarantine.Common.Save"]</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <form id="qr-antiforgery" class="d-none">@Html.AntiForgeryToken()</form>
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    <partial name="~/Views/Quarantine/_QuarantineActions.cshtml" />
+    <partial name="~/Views/Quarantine/_QuarantineL10n.cshtml" />
+    @if (company.Ready)
+    {
+        <script src="~/assets/js/shared/premium-modal.js" asp-append-version="true"></script>
+        <script src="~/assets/js/Quarantine/settings.js" asp-append-version="true"></script>
+    }
+}

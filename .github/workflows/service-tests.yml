@@ -89,6 +89,14 @@ jobs:
             project: services/Diten.PvgService/tests/Diten.PvgService.RegPvBase.Tests/Diten.PvgService.RegPvBase.Tests.csproj
           - suite: pvg-signal-management
             project: services/Diten.PvgService/tests/Diten.PvgService.SignalManagement.Tests/Diten.PvgService.SignalManagement.Tests.csproj
+          # WP-LANE-MAIN-SYNC-02 M1 (owner decision 2026-10-14): the two services that came with main-sync 2026-10-14.
+          # Inventory (Stok / MVP-1) starts its OWN replica set from DITEN_TEST_MONGOD (TestMongo, refuses 27017); its
+          # contract tests need Prism 4.10.5 in the npx cache (step "Install Prism (Inventory)"). Manufacturing (Üretim /
+          # MVP-3) reads MANUFACTURING_TEST_MONGO for its Mongo tests — no CI row provides one yet (BL-637).
+          - suite: inventory-tests
+            project: services/Diten.InventoryService/tests/Diten.InventoryService.Tests/Diten.InventoryService.Tests.csproj
+          - suite: manufacturing-tests
+            project: services/Diten.ManufacturingService/tests/Diten.ManufacturingService.Tests/Diten.ManufacturingService.Tests.csproj
           # Main sync (CI follow-up 3 review): the gateway's own tests (route table, ports, headers). No Mongo, no broker.
           - suite: gateway
             project: gateway/Diten.ApiGateway.Tests/Diten.ApiGateway.Tests.csproj
@@ -163,6 +171,12 @@ jobs:
           echo "Eventing__RabbitMq__IntegrationTestsEnabled=true" >> "$GITHUB_ENV"
           echo "Eventing__RabbitMq__Host=127.0.0.1" >> "$GITHUB_ENV"
           echo "Eventing__RabbitMq__Port=$RABBITMQ_PORT" >> "$GITHUB_ENV"
+
+      # WP-LANE-MAIN-SYNC-02 M1: Inventory's PrismMockFixture reads @stoplight/prism-cli 4.10.5 from the npx cache; a
+      # one-shot `--version` puts exactly that version there and exits (no server). Pinned version, Inventory row only.
+      - name: Install Prism (Inventory)
+        if: matrix.suite == 'inventory-tests'
+        run: npx --yes @stoplight/prism-cli@4.10.5 --version
 
       # BL-570 FIX3 makes Auth's owned-Mongo tests RED (not skipped) when no owned mongod is found, when this flag is
       # set. Until that code lands the flag has no effect and does no harm — "takes effect with BL-570 FIX3".

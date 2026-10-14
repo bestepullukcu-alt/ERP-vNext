@@ -1,0 +1,3 @@
+### D4-a create guard — RESTORED
+git diff --stat (must be empty):
+Başarılı!  - Başarısız:     0, Başarılı:    44, Atlanan:     0, Toplam:    44, Süre: 18 s - Diten.InventoryService.Tests.dll (net8.0)

@@ -1,0 +1,7 @@
+### D4-c ETag check — RESTORED
+git diff --stat (must be empty):
+Başarılı!  - Başarısız:     0, Başarılı:    44, Atlanan:     0, Toplam:    44, Süre: 17 s - Diten.InventoryService.Tests.dll (net8.0)
+### full suite after all restores
+Başarılı!  - Başarısız:     0, Başarılı:   262, Atlanan:     0, Toplam:   262, Süre: 19 s - Diten.InventoryService.Tests.dll (net8.0)
+### git status --short
+?? docs/records/audits/2026-10/mod-0173-s2-evidence/

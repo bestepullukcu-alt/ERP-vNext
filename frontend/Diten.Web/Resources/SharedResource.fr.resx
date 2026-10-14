@@ -1088,7 +1088,7 @@
   <data name="DtLoadFailed" xml:space="preserve">
     <value>La liste n'a pas pu être chargée.</value>
   </data>
-  <data name="DtLoadForbidden" xml:space="preserve">
+  <data name="DtLoadNoPermission" xml:space="preserve">
     <value>Vous n'avez pas l'autorisation de voir cette liste.</value>
   </data>
   <data name="DtRetry" xml:space="preserve">
@@ -1100,6 +1100,9 @@
   <data name="DateNotRecognized" xml:space="preserve">
     <value>Une date saisie n'a pas pu être lue ; elle n'a donc pas été enregistrée. Saisissez-la de nouveau au format du champ ou choisissez-la dans le calendrier.</value>
   </data>
+  <data name="Nav.Domain.MANUFACTURING" xml:space="preserve"><value>Fabrication</value></data>
+  <data name="Nav.Module.BOMROUTINGS" xml:space="preserve"><value>Nomenclatures et gammes</value></data>
+  <data name="Nav.Page.BOMS" xml:space="preserve"><value>Nomenclatures</value></data>
   <data name="Loading" xml:space="preserve">
     <value>Chargement...</value>
   </data>
@@ -1117,4 +1120,25 @@
   <data name="Activate" xml:space="preserve"><value>Activer</value></data>
   <data name="Deactivate" xml:space="preserve"><value>Désactiver</value></data>
   <data name="Login.EmailOrUsername" xml:space="preserve"><value>E-mail ou nom d'utilisateur</value></data>
+  <data name="Nav.Module.INVENTORYLEDGER" xml:space="preserve"><value>Inventaire</value></data>
+  <data name="Nav.Page.STOCKLEDGER" xml:space="preserve"><value>Registre des stocks</value></data>
+  <data name="Nav.Page.LOCATIONTREE" xml:space="preserve"><value>Emplacements</value></data>
+  <data name="Nav.Module.LOTSERIALTRACKING" xml:space="preserve"><value>Suivi des lots / séries</value></data>
+  <data name="Nav.Page.LOTS" xml:space="preserve"><value>Explorateur de lots</value></data>
+  <data name="Nav.Page.SERIALS" xml:space="preserve"><value>Explorateur de numéros de série</value></data>
+  <data name="Nav.Page.LOTTRACE" xml:space="preserve"><value>Traçabilité</value></data>
+  <data name="Nav.Page.LOTMIGRATION" xml:space="preserve"><value>Migration des lots saisis manuellement</value></data>
+  <data name="Nav.Module.QUARANTINEBLOCKEDSTOCK" xml:space="preserve"><value>Qualité</value></data>
+  <data name="Nav.Page.QUARANTINEQUEUE" xml:space="preserve"><value>File de quarantaine</value></data>
+  <data name="Nav.Page.BLOCKEDSTOCK" xml:space="preserve"><value>Stock bloqué</value></data>
+  <data name="Nav.Page.RETESTQUEUE" xml:space="preserve"><value>File de recontrôle</value></data>
+  <data name="Nav.Page.QUARANTINESETTINGS" xml:space="preserve"><value>Paramètres de quarantaine</value></data>
+  <data name="Nav.Module.ESIGN" xml:space="preserve"><value>Signature électronique</value></data>
+  <data name="Nav.Page.ESIGNMYSIGNATURE" xml:space="preserve"><value>Ma signature</value></data>
+  <data name="Nav.Page.ESIGNREQUESTS" xml:space="preserve"><value>Demandes de signature</value></data>
+  <data name="Nav.Page.ESIGNVERIFICATION" xml:space="preserve"><value>Vérification des signatures</value></data>
+  <data name="Nav.Page.ESIGNAUDITEXPORT" xml:space="preserve"><value>Export d'audit</value></data>
+  <data name="Nav.Page.ESIGNPOLICY" xml:space="preserve"><value>Politique de signature</value></data>
+  <data name="Nav.Page.ESIGNMEANINGS" xml:space="preserve"><value>Significations de signature</value></data>
+  <data name="Nav.Page.ESIGNSAMPLEAPPROVALS" xml:space="preserve"><value>Approbation des modèles</value></data>
 </root>

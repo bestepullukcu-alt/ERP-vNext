@@ -20,7 +20,7 @@ const until = async (predicate, ms = 3000) => {
 };
 const settle = (ms = 40) => new Promise((r) => setTimeout(r, ms));
 
-const TR = { DtLoadFailed: "Liste yüklenemedi.", DtLoadForbidden: "Bu listeyi görme yetkiniz yok.", DtRetry: "Yeniden Dene" };
+const TR = { DtLoadFailed: "Liste yüklenemedi.", DtLoadNoPermission: "Bu listeyi görme yetkiniz yok.", DtRetry: "Yeniden Dene" };
 
 describe("a list that keeps answering 401 after a successful session refresh", () => {
   let ctx;

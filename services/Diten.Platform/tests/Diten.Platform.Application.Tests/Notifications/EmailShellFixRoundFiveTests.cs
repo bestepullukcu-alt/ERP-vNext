@@ -239,6 +239,23 @@ public sealed partial class EmailShellDispatchTests
         var platformSenders = Senders(platform, text => text.Contains("AuthServiceOptions", StringComparison.Ordinal));
         var webSenders = Senders(web, _ => true);
 
+        // WP-LANE-MAIN-SYNC-02 P4 (owner decision 2026-10-14, BL-635) — named, expiring exception. Not e-mail: a
+        // service-to-service internal call — AuthServiceESignTicketConsumer (ESignatureInfrastructure.cs:39-75) posts to
+        // Auth's internal/esign-tickets/consume (the single-use signing ticket). This guard has no category of its own for
+        // such callers (its list IS the internal-key senders, each on the no-redirect client); this one sends the key over
+        // its own typed client with redirects NOT disabled — 🔴, the owner moves it onto the internal no-redirect client.
+        // Out of both checks below; the row leaves when it is fixed or gone (the list only shrinks).
+        var namedExceptions = new Dictionary<string, (string Owner, string Reason, string Backlog)>(StringComparer.Ordinal)
+        {
+            ["ESignatureInfrastructure"] = ("MOD-0022 e-imza geliştiricisi", "servisler arası iç çağrı — e-posta değil (main-sync 2026-10-14)", "BL-635")
+        };
+        foreach (var (name, _) in namedExceptions)
+        {
+            Assert.True(platformSenders.ContainsKey(name), $"{name} no longer sends the internal key: remove its exception row.");
+            Assert.DoesNotContain($", {name}>", platformHelper); // fixed onto the helper → the row must leave
+            platformSenders.Remove(name);
+        }
+
         Assert.Equal(
             new[]
             {

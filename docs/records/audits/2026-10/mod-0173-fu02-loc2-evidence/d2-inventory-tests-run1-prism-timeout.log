@@ -1,0 +1,44 @@
+  Geri yüklenecek projeler belirleniyor...
+  Geri yükleme için tüm projeler güncel.
+  Diten.BuildingBlocks.Security.Secrets -> C:\Users\Ali\erp-vnext-wt-loc2\services\Diten.Building.Blocks\Diten.BuildingBlocks.Security.Secrets\bin\Release\net8.0\Diten.BuildingBlocks.Security.Secrets.dll
+  Diten.InventoryService.Domain -> C:\Users\Ali\erp-vnext-wt-loc2\services\Diten.InventoryService\src\Diten.InventoryService.Domain\bin\Release\net8.0\Diten.InventoryService.Domain.dll
+  Diten.InventoryService.Application -> C:\Users\Ali\erp-vnext-wt-loc2\services\Diten.InventoryService\src\Diten.InventoryService.Application\bin\Release\net8.0\Diten.InventoryService.Application.dll
+  Diten.BuildingBlocks.ModuleRegistration.Abstractions -> C:\Users\Ali\erp-vnext-wt-loc2\services\Diten.Building.Blocks\src\Diten.BuildingBlocks.ModuleRegistration.Abstractions\bin\Release\net8.0\Diten.BuildingBlocks.ModuleRegistration.Abstractions.dll
+  Diten.InventoryService.Infrastructure -> C:\Users\Ali\erp-vnext-wt-loc2\services\Diten.InventoryService\src\Diten.InventoryService.Infrastructure\bin\Release\net8.0\Diten.InventoryService.Infrastructure.dll
+  Diten.InventoryService.Persistence -> C:\Users\Ali\erp-vnext-wt-loc2\services\Diten.InventoryService\src\Diten.InventoryService.Persistence\bin\Release\net8.0\Diten.InventoryService.Persistence.dll
+  Diten.InventoryService.Api -> C:\Users\Ali\erp-vnext-wt-loc2\services\Diten.InventoryService\src\Diten.InventoryService.Api\bin\Release\net8.0\Diten.InventoryService.Api.dll
+  Diten.InventoryService.Tests -> C:\Users\Ali\erp-vnext-wt-loc2\services\Diten.InventoryService\tests\Diten.InventoryService.Tests\bin\Release\net8.0\Diten.InventoryService.Tests.dll
+C:\Users\Ali\erp-vnext-wt-loc2\services\Diten.InventoryService\tests\Diten.InventoryService.Tests\bin\Release\net8.0\Diten.InventoryService.Tests.dll (.NETCoreApp,Version=v8.0) için test çalıştırması
+Toplam 1 test dosyası belirtilen desenle eşleşti.
+[xUnit.net 00:01:42.59]     Diten.InventoryService.Tests.Contract.PrismConsumedContractSmokeTests.Location_client_reads_every_consumed_operation_of_the_frozen_contract [FAIL]
+[xUnit.net 00:01:42.60]     Diten.InventoryService.Tests.Contract.PrismConsumedContractSmokeTests.Unreachable_masters_fail_closed_on_the_real_clients [FAIL]
+[xUnit.net 00:01:42.60]     Diten.InventoryService.Tests.Contract.PrismConsumedContractSmokeTests.Product_master_client_reads_every_consumed_operation_of_the_frozen_contract [FAIL]
+[xUnit.net 00:01:42.60]     Diten.InventoryService.Tests.Contract.PrismConsumedContractSmokeTests.A_master_answering_outside_its_contract_is_treated_as_unavailable [FAIL]
+  Başarısız Diten.InventoryService.Tests.Contract.PrismConsumedContractSmokeTests.Location_client_reads_every_consumed_operation_of_the_frozen_contract [1 ms]
+  Hata İletisi:
+   System.TimeoutException : Prism did not listen on http://127.0.0.1:54103/ within 90 s for C:\Users\Ali\erp-vnext-wt-loc2\docs\analysis\contracts\product-master-bundle.openapi.yaml.
+  Yığın İzleme:
+     at Diten.InventoryService.Tests.Contract.PrismMockFixture.StartAsync(String entryPoint, String spec) in C:\Users\Ali\erp-vnext-wt-loc2\services\Diten.InventoryService\tests\Diten.InventoryService.Tests\Contract\PrismMockFixture.cs:line 157
+   at Diten.InventoryService.Tests.Contract.PrismMockFixture.InitializeAsync() in C:\Users\Ali\erp-vnext-wt-loc2\services\Diten.InventoryService\tests\Diten.InventoryService.Tests\Contract\PrismMockFixture.cs:line 33
+  Başarısız Diten.InventoryService.Tests.Contract.PrismConsumedContractSmokeTests.Unreachable_masters_fail_closed_on_the_real_clients [1 ms]
+  Hata İletisi:
+   System.TimeoutException : Prism did not listen on http://127.0.0.1:54103/ within 90 s for C:\Users\Ali\erp-vnext-wt-loc2\docs\analysis\contracts\product-master-bundle.openapi.yaml.
+  Yığın İzleme:
+     at Diten.InventoryService.Tests.Contract.PrismMockFixture.StartAsync(String entryPoint, String spec) in C:\Users\Ali\erp-vnext-wt-loc2\services\Diten.InventoryService\tests\Diten.InventoryService.Tests\Contract\PrismMockFixture.cs:line 157
+   at Diten.InventoryService.Tests.Contract.PrismMockFixture.InitializeAsync() in C:\Users\Ali\erp-vnext-wt-loc2\services\Diten.InventoryService\tests\Diten.InventoryService.Tests\Contract\PrismMockFixture.cs:line 33
+  Başarısız Diten.InventoryService.Tests.Contract.PrismConsumedContractSmokeTests.Product_master_client_reads_every_consumed_operation_of_the_frozen_contract [1 ms]
+  Hata İletisi:
+   System.TimeoutException : Prism did not listen on http://127.0.0.1:54103/ within 90 s for C:\Users\Ali\erp-vnext-wt-loc2\docs\analysis\contracts\product-master-bundle.openapi.yaml.
+  Yığın İzleme:
+     at Diten.InventoryService.Tests.Contract.PrismMockFixture.StartAsync(String entryPoint, String spec) in C:\Users\Ali\erp-vnext-wt-loc2\services\Diten.InventoryService\tests\Diten.InventoryService.Tests\Contract\PrismMockFixture.cs:line 157
+   at Diten.InventoryService.Tests.Contract.PrismMockFixture.InitializeAsync() in C:\Users\Ali\erp-vnext-wt-loc2\services\Diten.InventoryService\tests\Diten.InventoryService.Tests\Contract\PrismMockFixture.cs:line 33
+  Başarısız Diten.InventoryService.Tests.Contract.PrismConsumedContractSmokeTests.A_master_answering_outside_its_contract_is_treated_as_unavailable [1 ms]
+  Hata İletisi:
+   System.TimeoutException : Prism did not listen on http://127.0.0.1:54103/ within 90 s for C:\Users\Ali\erp-vnext-wt-loc2\docs\analysis\contracts\product-master-bundle.openapi.yaml.
+  Yığın İzleme:
+     at Diten.InventoryService.Tests.Contract.PrismMockFixture.StartAsync(String entryPoint, String spec) in C:\Users\Ali\erp-vnext-wt-loc2\services\Diten.InventoryService\tests\Diten.InventoryService.Tests\Contract\PrismMockFixture.cs:line 157
+   at Diten.InventoryService.Tests.Contract.PrismMockFixture.InitializeAsync() in C:\Users\Ali\erp-vnext-wt-loc2\services\Diten.InventoryService\tests\Diten.InventoryService.Tests\Contract\PrismMockFixture.cs:line 33
+Sonuç Dosyası: C:\Users\Ali\AppData\Local\Temp\claude\C--Users-Ali-erp-vnext\66848348-47fa-4c02-a312-28ee93e9a6b9\scratchpad\loc2\trx\d2-inventory-tests.trx
+
+Başarısız! - Başarısız:     4, Başarılı:   349, Atlanan:     0, Toplam:   353, Süre: 1 m 41 s - Diten.InventoryService.Tests.dll (net8.0)
+inventory exit 1

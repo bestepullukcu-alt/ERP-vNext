@@ -35,6 +35,9 @@ public sealed class ForcedChangeTenantPasswordCommandHandler
     private readonly IAuthAuditService _authAuditService;
     private readonly ILogger<ForcedChangeTenantPasswordCommandHandler> _logger;
 
+    // MOD-0022 E1 — revokes KS-3 e-signature windows; optional so direct constructions stay valid (DI always supplies it).
+    private readonly IESignReauthTicketService? _eSignTickets;
+
     public ForcedChangeTenantPasswordCommandHandler(
         IUserRepository userRepository,
         IUserRoleRepository userRoleRepository,
@@ -49,8 +52,10 @@ public sealed class ForcedChangeTenantPasswordCommandHandler
         ITenantLoginSettingsClient tenantLoginSettingsClient,
         ITenantAdminActivationClient tenantAdminActivationClient,
         IAuthAuditService authAuditService,
-        ILogger<ForcedChangeTenantPasswordCommandHandler> logger)
+        ILogger<ForcedChangeTenantPasswordCommandHandler> logger,
+        IESignReauthTicketService? eSignTickets = null)
     {
+        _eSignTickets = eSignTickets;
         _userRepository = userRepository;
         _userRoleRepository = userRoleRepository;
         _roleRepository = roleRepository;
@@ -102,6 +107,7 @@ public sealed class ForcedChangeTenantPasswordCommandHandler
             return ChangePasswordCommandHandler.PasswordChangedMeanwhile<AuthResponse>();
         }
         await _refreshTokenRepository.RevokeLiveSessionsAsync(user.Id, request.TenantId, SessionRevocationReasons.PasswordChanged, ct);
+        if (_eSignTickets is not null) await _eSignTickets.RevokeWindowsAsync(request.TenantId, user.Id, "forced_password_changed", ct);
         await _authAuditService.WriteAsync("tenant_forced_password_changed", user.Id, request.TenantId, "{}", ct);
 
         // FIX-TENANT-ADMIN-INVITE-ACTIVATION (Part B) — the invited admin has now completed its forced first-login

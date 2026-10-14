@@ -85,7 +85,7 @@ describe("Arabic speaks of permissions with ONE word (أذونات) across the r
   /*
    * FIX2 — the family is Roles, Role Permissions and User Roles: the Roles screen's "إدارة الصلاحيات" button opens
    * Role Permissions, whose heading reads "أذونات الأدوار". The shared SharedResource rows (AccessDeniedMessage,
-   * DtLoadForbidden) are other branches' ground (BL-614) and are not read here.
+   * DtLoadNoPermission) are other branches' ground (BL-614) and are not read here.
    */
   const family = {
     "Roles/RolesIndex": read("Resources/Views/Governance/Roles/RolesIndex.ar.resx"),

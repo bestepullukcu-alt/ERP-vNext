@@ -42,7 +42,10 @@ set**. Tamamı için `AGENTS.md` §6.1 Kural Haritası.
 
 ```
 5000 Gateway · 5001 Web · 5056 Auth · 5057 Platform · 5058 DevEnablement
-5059 MDM · 5060 HCM      ⚠ 5060, mikroservis bandının (5011–5060) son portu
+5059 MDM · 5060 HCM · 5061 CRM · 5062 PPM · 5063 HumanCapital · 5064 TEP · 5065 Procurement
+5066 SupplyChain · 5067 Inventory · 5070 Manufacturing · 5011 PVG · 5004 ESBP/teslim/yükleme
+(bant 5061+ uzatıldı — tam tablo ve notlar AGENTS.md §3 (5062–5064 orada "drift" notunda); sıradaki boş port 5068;
+ağ geçidi testinin bildiği küme: OcelotConfigurationTests.KnownDownstreamPorts)
 ```
 
 ## Neden bu dosya var

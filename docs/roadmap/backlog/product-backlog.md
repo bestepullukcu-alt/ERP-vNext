@@ -6955,7 +6955,9 @@ raporu (`scripts/status_report.py` yanına).
 
 **Ağ geçidi testi ana dalda kırmızı: Tedarik rotaları tanımsız 5065 portunda**
 
-DURUM: AÇIK · SAHİP: Tedarik (Procurement) ekibi; CT bilgi verir · BULAN: CT (takvim motoru kabulü) · KAYIT: 2026-09-29
+DURUM: KISMEN KAPANDI (2026-10-06) — Tedarik payı kapandı; test yine kırmızı, kalan 108 ihlal başka kulvarların (→ BL-509) · önceki: AÇIK · SAHİP: Tedarik (Procurement) ekibi; CT bilgi verir · BULAN: CT (takvim motoru kabulü) · KAYIT: 2026-09-29
+
+**Kısmi kapanış notu (2026-10-06, Procurement CT):** `KnownDownstreamPorts` kümesine `5065` eklendi (yorumda kaynak: DCP-010, OD-5, AGENTS.md §3). Port kaydı zaten doğru: AGENTS.md §3 5065'i ve bandın 5061+ uzatıldığını taşıyor (CLAUDE.md'nin özet satırı AGENTS.md'ye bağlı; çakışmada AGENTS.md kazanır). Ölçüm (E1 statik, testin kuralı `ocelot.json` üzerinde Python ile yeniden koşturuldu — .NET SDK bu ortamda indirilemedi, ağ politikası 403): önce 122 ihlal (14'ü 5065), sonra 108 ihlal, **5065: 0**. Kalan 108 = `5064` (62, TalentEcosystem) + `5063` (46, HumanCapital) — Tedarik sınırı dışında, BL-509. **E2 (2026-10-06, origin/main `b994c813a` üstünde):** `dotnet test gateway/Diten.ApiGateway.Tests` — 86/87; kırmızı tek test yalnız 5063 (46) + 5064 (62) rotalarını sayıyor, **5065: 0**. BL-509 kapanmadan yeşil olmaz.
 
 `OcelotConfigurationTests.EveryRoute_DownstreamPortIsInKnownServiceSet` origin/main'de kırmızı: `/api/suppliers`, `/api/sourcing`,
 `/api/requisitions` (ve `{everything}` eşleri) 5065'e gidiyor; test bilinen port kümesinde 5065'i tanımıyor. Kaynak: `de174eb97` "fix(procurement):
@@ -9988,6 +9990,138 @@ FIX1 + FIX2 işlem içi iki koruma koydu; dizinin "kiracı başına tek canlı a
 
 ---
 
+### BL-632
+
+**Numara:** main'de BL-509 olarak açıldı; hattın BL-509'u başka bir kayıt olduğu için main birleşimi 2026-10-13 (WP-LANE-MAIN-SYNC-02) ile BL-632 oldu. Eski numarayı anan kayıtlar bu maddedir.
+
+**Ağ geçidi port testi 5063 ve 5064 rotalarında da kırmızı: HumanCapital ve TalentEcosystem port kaydında yok**
+
+**Ek 2026-10-13 (main birleşimi):** hattın `OcelotConfigurationTests.KnownDownstreamPorts` kümesi 5063 ve 5064'ü gerekçeleriyle içeriyordu; birleşik küme 5063–5067 ve 5070'i taşır. Kapanış, birleşik ağaçta ağ geçidi koşusunun ölçümüyle (sahibi karar verir).
+
+DURUM: AÇIK · SAHİP: HumanCapital (5063) ve TalentEcosystem (5064) domain sahipleri + EA (port tahsisi); CT bilgi verir · BULAN: Procurement CT (BL-470 kapanışı) · KAYIT: 2026-10-06
+
+`OcelotConfigurationTests.EveryRoute_DownstreamPortIsInKnownServiceSet`, BL-470'in Tedarik payı kapandıktan sonra hâlâ kırmızı: `ocelot.json`'da 108 rota tanımsız porta gidiyor — `5064` (62 rota; ör. `/api/tep-shell-metadata`, `/api/talent-data-foundation`, `/api/hiring-risk-indicators`) ve `5063` (46 rota). AGENTS.md §3 bu servisleri port tablosunda değil, yalnız "Drift (EA reconciliation gerek)" notunda anıyor. İş: EA canonical portu onaylar, sahip §3'e kendi satırını ve testteki kümeye kendi portunu ekler. Tedarik kulvarı bu satırlara dokunmaz (paylaşılan dosyada yalnız kendi satırı). CI'da ağ geçidi testleri koşmadığı için görünmüyor (BL-457). Gelecek regresyon riski: 🟢 (test/kayıt), ama kırmızı test yeni bir port yazım hatasını da gizliyor.
+
+---
+
+### BL-633
+
+**Numara:** main'de BL-510 olarak açıldı; hattın BL-510'u başka bir kayıt olduğu için main birleşimi 2026-10-13 (WP-LANE-MAIN-SYNC-02) ile BL-633 oldu. Eski numarayı anan kayıtlar bu maddedir.
+
+**Erişim reddi kartı HTTP 200 ile dönüyor: ortak `_AccessDenied` parçası UAS-001'in istediği 403'ü vermiyor**
+
+DURUM: AÇIK · SAHİP: CT (ortak Web altyapısı) · BULAN: MVP-3 CT, M-4 canlı ölçümü (MOD-0193 BOM & Routings) · KAYIT: 2026-10-12
+
+UAS-001 §3 tablosu "oturum var, izin yok" için **403** ve kabuk içinde açıklama istiyor. Ortak `Views/Shared/_AccessDenied.cshtml`
+parçası açıklamayı doğru yerde (kabuğun içinde, yönlendirmesiz, sayfa iskeleti çizmeden) gösteriyor ama yanıt kodunu değiştirmiyor:
+sayfa **200** döner. Bu parçayı kullanan bütün sayfalarda aynı; MVP-3'e özgü değil. Kullanıcı doğru mesajı görüyor; sorun teknik —
+izleme araçları, erişim günlükleri ve HTTP düzeyindeki testler reddedilen isteği "başarılı" sayıyor.
+**Ölçüldü (2026-10-12, dev, canlı fleet):** BOM modülü yetkisi olmayan kiracı Admin'i ile `GET /Manufacturing/Boms` ve
+`/Manufacturing/Boms/Create` → **HTTP 200**, `Location` yok, kabuk var, `diten-access-denied` kartı var, BOM iskeleti yok; aynı
+kullanıcıyla ağ geçidinden `GET /api/bom/versions` → **403**. Kanıt:
+`docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/evidence/m4-entitlement-uas001.txt`.
+Yapılacak: parça (ya da onu çağıran ortak yol) yanıt kodunu 403 yapsın — kabuk ve metin aynı kalır; parçayı kullanan sayfa sayısı
+ölçülüp bir test 403'ü sabitlesin. Bu kayıt yalnız tespittir; düzeltme ayrı iştir.
+Gelecek regresyon riski: 🟢 (görünen ekran değişmez), ama yanıt kodu değişince 200 bekleyen mevcut testler ölçülmeli.
+
+---
+
+### BL-634
+
+**E-imza (MOD-0022) denetim kaydı, işlem içi denetim kapısına niyetsiz (elle yazılmış) yükle gidiyor — adlı, süreli muafiyet**
+
+DURUM: AÇIK · SAHİP: MOD-0022 e-imza geliştiricisi · KARAR: sahip, 2026-10-14 (WP-LANE-MAIN-SYNC-02 P1) · KAYIT: 2026-10-14 · SÜRE: 30 gün (2026-11-13)
+
+**Ne:** main-sync 2026-10-14 ile gelen 17 e-imza komutu (ve `RegisterSignableActionsCommand`) denetim kaydını
+`ESignatureAuditIntent.EnqueueAsync` ile kendi yazdığı `audit_events` biçimli yükle, niyet (`TransactionOwnedAuditIntent`)
+taşımadan yazıyor. Hattın işlem içi denetim kapısı (`CanonicalTransactionalAuditOutboxWriter`, WP-PLATFORM-AUDIT-INTX-01)
+niyetsiz yükü reddeder; muafiyet 18 olay adıyla tek tek yazılır (`TransactionOwnedAuditPayloadExemptions`, önek / joker yok),
+bekçi `TransactionOwnedAuditCommandGuardTests` 17 + 1 komutu adlı satırla taşır.
+**Yapılacak:** e-imza işleyicileri niyetle yazsın (aktör kapıda çözülür, yük ortak oluşturucudan); her taşınan olayın satırı
+listeden çıkar. Süre dolunca liste boş olmalı.
+**Gelecek regresyon riski:** 🟡 — muafiyetteki olaylarda aktör kapıda doğrulanmaz (yükü yazan e-imza kodu doğrular); listeye
+olay eklemek yeniden CT kararıdır.
+
+---
+
+### BL-635
+
+**E-imza bilet tüketicisi (servisler arası iç çağrı, e-posta değil) iç anahtarı yönlendirmeye açık istemciyle gönderiyor — `EmailShellDispatchTests` adlı istisnası**
+
+DURUM: AÇIK · SAHİP: MOD-0022 e-imza geliştiricisi · KARAR: sahip, 2026-10-14 (WP-LANE-MAIN-SYNC-02 P4) · KAYIT: 2026-10-14 · SÜRE: 30 gün (2026-11-13)
+
+**Ne:** e-posta değil, servisler arası iç çağrı: `ESignatureInfrastructure.cs:39-75` içindeki `AuthServiceESignTicketConsumer`
+Auth'un `internal/esign-tickets/consume` ucuna tek kullanımlık imza biletini tüketmek için gider ve `X-Internal-Api-Key` başlığını
+`services.AddHttpClient<IESignTicketConsumer, AuthServiceESignTicketConsumer>()` ile kurulan, yönlendirmesi KAPATILMAMIŞ tipli
+istemciyle gönderiyor (ölçüldü 2026-10-14, `Infrastructure/DependencyInjection.cs`). Hattın kuralı: iç anahtar yalnız
+`InternalHttpClients` üzerinden, yönlendirmesiz istemciyle gider. Bekçide adlı istisna, gerekçe: "servisler arası iç çağrı — e-posta değil" (bekçinin bu tür çağrılar için ayrı bir sınıfı yok: listesi zaten iç-anahtar gönderenlerin listesi ve her biri yönlendirmesiz istemcide).
+**Yapılacak:** tüketici iç istemci yardımcısına (`InternalHttpClients`, yönlendirmesiz) taşınır; istisna satırı çıkar.
+**Gelecek regresyon riski:** 🔴 — bir yönlendirme cevabı iç anahtarı başka bir hedefe taşıyabilir.
+
+---
+
+### BL-636
+
+**`DateTimeOffsetSortGuardTests` e-imza deposunu yakalıyor — yanlış pozitif (ad eşleşmesi, tür DateTime)**
+
+DURUM: AÇIK · SAHİP: MOD-0022 e-imza geliştiricisi (satır) · KARAR: sahip, 2026-10-14 (WP-LANE-MAIN-SYNC-02 P4; e-imza sahibi ölçtü, CT doğruladı) · KAYIT: 2026-10-14 · SÜRE: 30 gün (2026-11-13)
+
+**Ne:** `ESignatureRepositories.cs` `SortBy(DueAtUtc).ThenByDescending(RequestedAtUtc)`. "Canlı hata adayı" DEĞİL: `DueAtUtc` /
+`RequestedAtUtc` / `SignedAtUtc` düz `DateTime` (`ESignatureCatalog.cs:124/126`, `ESignatureRecord.cs:37`) — BSON tarih,
+skaler; sunucu sıralamayı reddetmez. Bekçi DateTimeOffset ADLARINI bütün servislerden topluyor; MDM'de aynı adlı DateTimeOffset
+alanlar var. Bekçide adlı istisna, gerekçe: "yanlış pozitif — ad eşleşmesi, tür DateTime; sahip ölçtü 2026-10-14".
+**Yapılacak:** bekçi türü eşleştirdiğinde (BL-639) satır kendiliğinden gereksizleşir ve çıkar.
+**Gelecek regresyon riski:** 🟢 (önceki 🔴 etiketi ölçümle düştü).
+
+---
+
+### BL-639
+
+**DateTimeOffsetSortGuard adı değil türü eşlesin (varlık + alan)**
+
+DURUM: AÇIK · SAHİP: CT · KARAR: CT, 2026-10-14 (WP-LANE-MAIN-SYNC-02 P4 açıklaması) · KAYIT: 2026-10-14
+
+**Ne:** `DateTimeOffsetSortGuardTests` DateTimeOffset özellik ADLARINI bütün servislerden tek kümede topluyor ve sıralama
+zincirindeki alan adını bu kümeyle karşılaştırıyor. Aynı ad başka bir varlıkta DateTimeOffset ise yanlış pozitif (BL-636),
+aynı ad başka bir varlıkta DateTime ise yanlış negatif olabilir. Yapılacak: zincirin hangi varlığın koleksiyonunda koştuğunu
+çözüp (varlık + alan) türü o varlıkta ölçmek; BL-636 satırı bununla çıkar.
+**Gelecek regresyon riski:** 🟡 — bugünkü tarama gerçek bir iki-DateTimeOffset sıralamasını ad çakışmasında da yakalar ama
+türü farklı aynı adla bir sıralamayı kaçırabilir.
+
+---
+
+### BL-637
+
+**Üretim (MVP-3) testleri CI'da: Mongo replika seti ve canlı kuyruk koleksiyonu yok**
+
+DURUM: AÇIK · SAHİP: Üretim (MVP-3) geliştiricisi · KARAR: sahip, 2026-10-14 (WP-LANE-MAIN-SYNC-02 M1) · KAYIT: 2026-10-14 · SÜRE: 30 gün (2026-11-13)
+
+**Ne:** `manufacturing-tests` matris satırı eklendi. 35 test `MANUFACTURING_TEST_MONGO` yokken atlanıyor (ölçüldü, yerel koşu);
+CI'ın "Skipped = 0" adımı bu atlamaları kabul etmez (`scripts/ci-skip-allowlist.tsv` satırı CT kararıdır) — satır, sahip
+kendi replika setini açana ya da CT izin listesine alana kadar CI'da kırmızı kalır. `BomEventBrokerDeliveryTests`
+`LiveRabbitMqCollection` dışında canlı kuyruk açıyor: bekçide adlı istisna.
+**Yapılacak:** testler kendi mongod'unu `DITEN_TEST_MONGOD`'dan açsın (Stok'un `TestMongo` deseni); kuyruk sınıfı
+`LiveRabbitMqCollection`'a girsin; istisna satırı çıkar.
+**Gelecek regresyon riski:** 🟡 — CI'da koşmayan Mongo testleri sessizce bozulabilir.
+
+---
+
+### BL-638
+
+**main-sync 2026-10-14 ile gelen 32 kiracı sayfasının "?" yardım metni yok**
+
+DURUM: AÇIK · SAHİP: Stok / MVP-1 (24 sayfa), E-imza / MOD-0022 (7 sayfa), Üretim / MVP-3 (1 sayfa: BOMS) · KARAR: sahip, 2026-10-14 (WP-LANE-MAIN-SYNC-02, defter) · KAYIT: 2026-10-14 · SÜRE: 30 gün (2026-11-13)
+
+**Ne:** sayfalar yardım defterine satır olarak girmedi (tavan 246'da kaldı); `page-help-ledger.test.js` içinde adlı liste
+(`MAIN_SYNC_2_PAGES`, sahip + gerekçe), anahtarları sabit — yalnız küçülür. Liste: BLOCKEDDISPOSITION, BLOCKEDSTOCK, BOMS,
+DECISIONSUBMIT, ESIGNAUDITEXPORT, ESIGNMEANINGS, ESIGNMYSIGNATURE, ESIGNPOLICY, ESIGNREQUESTS, ESIGNSAMPLEAPPROVALS,
+ESIGNVERIFICATION, LOCATIONS, LOCATIONTREE, LOTCREATE, LOTDETAILS, LOTEDIT, LOTMIGRATION, LOTMOVEMENTS, LOTS, LOTTRACE,
+QUARANTINEDECIDE, QUARANTINEDETAILS, QUARANTINEQUEUE, QUARANTINESETTINGS, RETESTQUEUE, SERIALS, STOCKLEDGER, STOCKLEDGERCREATE,
+STOCKMOVEMENTCREATE, STOCKMOVEMENTDETAILS, STOCKMOVEMENTEDIT, STOCKMOVEMENTS.
+**Yapılacak:** her sahip `PageHelpResource` içinde `Help.{KOD}.Purpose` + adımları 7 dilde yazar; satırı listeden çıkar.
+**Gelecek regresyon riski:** 🟢 — kullanıcı "?" panelinde yalnız kısayolları görür.
+
+---
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**

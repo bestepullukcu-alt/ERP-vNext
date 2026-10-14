@@ -1,0 +1,77 @@
+@using Diten.Web.Models.Traceability
+@using Diten.Web.Views.Traceability.Lots
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<LotsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@*
+    "+ Yeni lot oluştur" (pack §11.4, CT-D5a) — the Stock Ledger lot field's quick lot. The SAME field rules as Yeni Lot
+    (LotFormRules), the SKU fixed to the movement's; the saved lot is DRAFT and comes back SELECTED. Rendered by the Stock
+    Ledger form only for a holder of trace.lots.create (in-form control, NOT a manifest action — CT-D5a); createLot
+    enforces the same key server-side. Plain controls (no .diten-field): the movement form's field set is pinned.
+*@
+<div class="modal fade" id="modalQuickLot" tabindex="-1" aria-labelledby="modalQuickLotTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalQuickLotTitle">@Localizer["Quick.Title"]</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@SharedLocalizer["Close"]"></button>
+            </div>
+            <div class="modal-body">
+                <div id="quick-lot-alert" class="alert alert-danger d-none" role="alert"><div data-alert-text></div></div>
+                <p class="small text-muted" id="quickLotSku"></p>
+                <input type="hidden" id="quickLotKey" value="@Guid.NewGuid().ToString("D")" />
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label for="quickLotNumber" class="form-label fw-medium">@Localizer["Form.LotNumber"] <span class="text-danger">*</span></label>
+                        <input id="quickLotNumber" type="text" class="form-control" maxlength="@LotFormRules.MaxLotNumberLength" autocomplete="off" />
+                        <div class="invalid-feedback d-block" data-quick-error="lotNumber"></div>
+                    </div>
+                    <div class="col-6">
+                        <label for="quickLotManufacturerLot" class="form-label">@Localizer["Form.ManufacturerLot"]</label>
+                        <input id="quickLotManufacturerLot" type="text" class="form-control" maxlength="@LotFormRules.MaxAltLotLength" />
+                    </div>
+                    <div class="col-6">
+                        <label for="quickLotSupplierLot" class="form-label">@Localizer["Form.SupplierLot"]</label>
+                        <input id="quickLotSupplierLot" type="text" class="form-control" maxlength="@LotFormRules.MaxAltLotLength" />
+                    </div>
+                    <div class="col-4">
+                        <label for="quickLotManufacturingDate" class="form-label">@Localizer["Form.ManufacturingDate"]</label>
+                        <input id="quickLotManufacturingDate" type="date" class="form-control" />
+                        <div class="invalid-feedback d-block" data-quick-error="manufacturingDate"></div>
+                    </div>
+                    <div class="col-4">
+                        <label for="quickLotExpiryDate" class="form-label">@Localizer["Form.ExpiryDate"]</label>
+                        <input id="quickLotExpiryDate" type="date" class="form-control" />
+                        <div class="invalid-feedback d-block" data-quick-error="expiryDate"></div>
+                    </div>
+                    <div class="col-4">
+                        <label for="quickLotRetestDate" class="form-label">@Localizer["Form.RetestDate"]</label>
+                        <input id="quickLotRetestDate" type="date" class="form-control" />
+                        <div class="invalid-feedback d-block" data-quick-error="retestDate"></div>
+                    </div>
+                    <div class="col-6">
+                        <label for="quickLotCountry" class="form-label">@Localizer["Form.Country"]</label>
+                        <select id="quickLotCountry" class="form-select">
+                            <option value=""></option>
+                            @foreach (var code in LotFormRules.Countries)
+                            {
+                                <option value="@code">@Localizer["Country." + code]</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-6">
+                        <label for="quickLotCoa" class="form-label">@Localizer["Form.Coa"]</label>
+                        <input id="quickLotCoa" type="text" class="form-control" maxlength="@LotFormRules.MaxCoaLength" />
+                    </div>
+                </div>
+                <p class="small text-muted mt-3 mb-0">@Localizer["Form.DraftNote"]</p>
+            </div>
+            <div class="modal-footer d-flex justify-content-between">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                <button type="button" class="btn btn-primary" id="btnQuickLotSave">@Localizer["Quick.SaveSelect"]</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/assets/js/Traceability/Lots/quick-create.js" asp-append-version="true"></script>

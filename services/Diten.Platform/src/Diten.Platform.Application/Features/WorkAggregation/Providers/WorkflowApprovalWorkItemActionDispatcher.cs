@@ -76,6 +76,13 @@ public sealed class WorkflowApprovalWorkItemActionDispatcher : IWorkItemActionDi
             return WorkItemActionDispatchResults.PayloadInvalid(request, nameof(payload.IdempotencyKey));
         }
 
+        // WP-LANE-MAIN-SYNC-02 P3 (owner decision 2026-10-14) — the e-signature id (MOD-0022 E4) is an APPROVE field only.
+        // Any other action that carries one is refused before MediatR: a signature must never ride along unread.
+        if (payload.SignatureId is not null && request.ActionCode != "approve")
+        {
+            return WorkItemActionDispatchResults.PayloadInvalid(request, nameof(payload.SignatureId));
+        }
+
         /*
          * The transition log wants a reason CODE and MOD-0023 requires one. When the caller has not sent a code,
          * the surface it was pressed on is the honest answer — the log then says a decision came from the Task
@@ -102,7 +109,7 @@ public sealed class WorkflowApprovalWorkItemActionDispatcher : IWorkItemActionDi
                     new ApproveWorkflowTaskCommand(
                         request.ItemId,
                         new ApproveWorkflowTaskRequest(actorId, reasonCode, idempotencyKey, comment, payload.EvidenceRef,
-                            payload.ExpectedVersion),
+                            payload.ExpectedVersion, payload.SignatureId),
                         request.CorrelationId), ct), request);
 
             case "reject":

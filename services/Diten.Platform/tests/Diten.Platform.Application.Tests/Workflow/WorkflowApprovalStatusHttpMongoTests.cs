@@ -232,6 +232,69 @@ public sealed class WorkflowApprovalStatusHttpMongoTests : IClassFixture<Workflo
         Assert.Equal(HttpStatusCode.OK, (await DecideAsync(starter, instance.InstanceId, "approve")).Status);
     }
 
+    // ── WP-MVP1-SYNC1 (CT decision 3): an MVP-1 build wrote StartedByUserId as TEXT ────────────────────────────────
+    // MVP-1 (WP-0023-FX) and main (B2) added the same field, as a string and as a Guid. The merge keeps the Guid and reads
+    // the text form tolerantly (WorkflowInstanceBsonMap); no bulk migration.
+
+    [Fact]
+    public async Task Sync1_an_instance_whose_starter_id_was_written_as_text_is_read_and_its_starter_still_cannot_approve()
+    {
+        var starter = Guid.NewGuid();
+        var definitionId = await PlainDefinitionAsync(starter);
+        // WP-LANE-MAIN-SYNC-02 P2a (owner decision 2026-10-14): the lane's rule stays — a workflow whose every candidate is the
+        // starter is refused AT START (400 WORKFLOW_NO_ELIGIBLE_APPROVER), so no task exists for the starter to approve.
+        // Main expected the start to pass and the approval to be refused (409 WORKFLOW_SOD_VIOLATION).
+        // The text-starter read itself stays measured by the next test (another approver decides a text-starter instance).
+        await AssertStartRefusedAsync(definitionId, starter);
+    }
+
+    [Fact]
+    public async Task Sync1_another_approver_decides_a_text_starter_instance_and_the_save_writes_the_starter_back_as_a_Guid()
+    {
+        var starter = Guid.NewGuid();
+        var definitionId = await PlainDefinitionAsync(starter);
+        var instance = await StartInstanceAsync(definitionId, starter, _manager, "task", Guid.NewGuid());
+        await WriteStarterIdAsTextAsync(instance.InstanceId, starter);
+
+        Assert.Equal(HttpStatusCode.OK, (await DecideAsync(_manager, instance.InstanceId, "approve")).Status);
+
+        var saved = await RawInstanceAsync(instance.InstanceId);
+        Assert.Equal(BsonType.Binary, saved["StartedByUserId"].BsonType);
+        Assert.Equal(starter, saved["StartedByUserId"].AsBsonBinaryData.ToGuid(GuidRepresentation.Standard));
+        Assert.Equal(WorkflowInstanceStatus.Completed, (await InstanceAsync(instance.InstanceId)).Status);
+    }
+
+    /// <summary>
+    /// Measured with the K3 sabotage (e): the driver's own GuidSerializer already reads a VALID Guid text, so the two tests
+    /// above stay green without WorkflowInstanceBsonMap. What the map adds is this case — a text that is not a Guid. The
+    /// default serializer throws FormatException on the whole instance (every task read of it fails); the map reads it as
+    /// "no starter id", which is exactly an instance from before the field: main's old comparison (owner decision B).
+    /// </summary>
+    [Fact]
+    public async Task Sync1_a_starter_id_text_that_is_not_a_guid_reads_as_no_id_and_the_instance_keeps_the_old_comparison()
+    {
+        var starter = Guid.NewGuid();
+        var definitionId = await PlainDefinitionAsync(starter);
+        // WP-LANE-MAIN-SYNC-02 P2a (owner decision 2026-10-14): the lane's rule stays — a workflow whose every candidate is the
+        // starter is refused AT START (400 WORKFLOW_NO_ELIGIBLE_APPROVER), so no task exists for the starter to approve.
+        // Main expected the start to pass and the approval to be refused (409 WORKFLOW_SOD_VIOLATION).
+        // The starter cannot be the only candidate any more, so no such instance is started; the start is refused.
+        await AssertStartRefusedAsync(definitionId, starter);
+    }
+
+    private async Task<BsonDocument> WriteStarterIdAsTextAsync(Guid instanceId, Guid starter)
+    {
+        await _fixture.Database.GetCollection<BsonDocument>(PlatformCollections.WorkflowInstances).UpdateOneAsync(
+            Builders<BsonDocument>.Filter.Eq("_id", new BsonBinaryData(instanceId, GuidRepresentation.Standard)),
+            Builders<BsonDocument>.Update.Set("StartedByUserId", starter.ToString()));
+        return await RawInstanceAsync(instanceId);
+    }
+
+    private Task<BsonDocument> RawInstanceAsync(Guid instanceId)
+        => _fixture.Database.GetCollection<BsonDocument>(PlatformCollections.WorkflowInstances)
+            .Find(Builders<BsonDocument>.Filter.Eq("_id", new BsonBinaryData(instanceId, GuidRepresentation.Standard)))
+            .SingleAsync();
+
     // ── B3 (v2 revert): the PUBLIC cancel never cancels an escalated task ─────────────────────────────────────
 
     [Fact]
@@ -401,6 +464,19 @@ public sealed class WorkflowApprovalStatusHttpMongoTests : IClassFixture<Workflo
             schemaVersion = "1.0", expressionVersion = "1.0", publishReason = "test"
         });
         Assert.True(published.Status == HttpStatusCode.OK, published.ToString());
+    }
+
+    // WP-LANE-MAIN-SYNC-02 P2a — a start whose only candidate is the starter: refused, nothing created.
+    private async Task AssertStartRefusedAsync(Guid definitionId, Guid starter)
+    {
+        var refused = await _host.PostAsync("/api/v1/workflow/instances", Designer(starter), new
+        {
+            templateId = definitionId, objectType = "task", objectId = Guid.NewGuid().ToString(),
+            candidatePrincipalIds = new[] { starter.ToString() }, idempotencyKey = Guid.NewGuid().ToString("N"),
+            commentRequired = false, evidenceRequired = false
+        });
+        Assert.Equal(HttpStatusCode.BadRequest, refused.Status);
+        Assert.Equal(WorkflowReasonCodes.WorkflowNoEligibleApprover, refused.ReasonCode);
     }
 
     private async Task<(Guid InstanceId, Guid ApprovalTaskId)> StartInstanceAsync(

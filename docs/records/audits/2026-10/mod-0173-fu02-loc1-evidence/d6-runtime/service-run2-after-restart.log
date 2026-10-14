@@ -1,0 +1,62 @@
+info: Diten.InventoryService.Persistence.InventoryIndexInitializerHostedService[0]
+      MOD-0173 Mongo indexes ensured on database diten_inventory_mock.
+info: Diten.InventoryService.Persistence.InventoryIndexInitializerHostedService[0]
+      MOD-0173 SKU positions rebuilt from ledger + reservations: 23.
+warn: Diten.InventoryService.Api.ModuleRegistration.ModuleRegistrationHostedService[0]
+      Module self-registration skipped: PlatformRegistration BaseUrl/InternalApiKey not configured.
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5066
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Mock
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: C:\Users\Ali\erp-vnext\services\Diten.InventoryService\src\Diten.InventoryService.Api\bin\Debug\net8.0
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling GetBalanceQuery
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled GetBalanceQuery in 51ms
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling GetAvailabilityQuery
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled GetAvailabilityQuery in 39ms
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling GetAvailabilityQuery
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled GetAvailabilityQuery in 6ms
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling GetTransactionsQuery
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled GetTransactionsQuery in 32ms
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling GetAvailabilityQuery
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled GetAvailabilityQuery in 8ms
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling ListLocationsQuery
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled ListLocationsQuery in 24ms
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling GetLocationPathQuery
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled GetLocationPathQuery in 17ms
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling GetLocationQuery
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled GetLocationQuery in 3ms
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling GetLocationQuery
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled GetLocationQuery in 2ms
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling GetLocationHistoryQuery
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled GetLocationHistoryQuery in 19ms
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling GetLocationHistoryQuery
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled GetLocationHistoryQuery in 6ms
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handling GetBalanceQuery
+info: Diten.InventoryService.Application.Behaviors.LoggingBehavior[0]
+      Handled GetBalanceQuery in 6ms

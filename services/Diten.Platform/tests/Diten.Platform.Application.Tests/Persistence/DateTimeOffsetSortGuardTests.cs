@@ -30,6 +30,18 @@ public sealed class DateTimeOffsetSortGuardTests
         @"\b(?:public|internal|protected)\s+(?:virtual\s+|required\s+|override\s+)*DateTimeOffset\??\s+(?<name>\w+)\s*(?:\{|=>)",
         RegexOptions.Compiled);
 
+    // WP-LANE-MAIN-SYNC-02 P4 (owner decision 2026-10-14, BL-636 🟢) — named, expiring exception, exact finding text.
+    // Reason: yanlış pozitif — ad eşleşmesi, tür DateTime; sahip ölçtü 2026-10-14. DueAtUtc / RequestedAtUtc are plain
+    // DateTime on ESignatureRequest (ESignatureCatalog.cs:124/126; SignedAtUtc likewise, ESignatureRecord.cs:37) — a BSON
+    // date, not a parallel array. This guard harvests DateTimeOffset NAMES from every service and MDM has DateTimeOffset
+    // properties with the same names. The guard matching the TYPE (entity + field) is BL-639 (CT).
+    private static readonly IReadOnlyDictionary<string, (string Owner, string Reason, string Backlog)> NamedExceptions =
+        new Dictionary<string, (string, string, string)>(StringComparer.Ordinal)
+        {
+            ["Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Repositories/ESignatureRepositories.cs: sorts on DueAtUtc + RequestedAtUtc"] =
+                ("MOD-0022 e-imza geliştiricisi", "yanlış pozitif — ad eşleşmesi, tür DateTime; sahip ölçtü 2026-10-14", "BL-636")
+        };
+
     [Fact]
     public void No_repository_sorts_on_two_date_time_offset_keys()
     {
@@ -58,6 +70,7 @@ public sealed class DateTimeOffsetSortGuardTests
         Assert.Contains("StartedAt", dateTimeOffsetProperties);
 
         var violations = new List<string>();
+        var namedHits = new HashSet<string>(StringComparer.Ordinal);
 
         Assert.NotEmpty(productionFiles);
 
@@ -73,10 +86,21 @@ public sealed class DateTimeOffsetSortGuardTests
                 var dateKeys = keys.Where(dateTimeOffsetProperties.Contains).ToList();
                 if (dateKeys.Count >= 2)
                 {
-                    violations.Add($"{Path.GetRelativePath(servicesRoot, path)}: sorts on {string.Join(" + ", dateKeys)}");
+                    var finding = $"{Path.GetRelativePath(servicesRoot, path).Replace('\\', '/')}: sorts on {string.Join(" + ", dateKeys)}";
+                    if (NamedExceptions.ContainsKey(finding))
+                    {
+                        namedHits.Add(finding);
+                        continue;
+                    }
+
+                    violations.Add(finding);
                 }
             }
         }
+
+        // A named row that no longer matches anything leaves the list (the list only shrinks).
+        var stale = NamedExceptions.Keys.Where(key => !namedHits.Contains(key)).ToArray();
+        Assert.True(stale.Length == 0, "Named exceptions that match nothing any more (remove them): " + string.Join(", ", stale));
 
         Assert.True(
             violations.Count == 0,

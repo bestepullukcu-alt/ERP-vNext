@@ -1152,7 +1152,7 @@
   <data name="DtLoadFailed" xml:space="preserve">
     <value>The list could not be loaded.</value>
   </data>
-  <data name="DtLoadForbidden" xml:space="preserve">
+  <data name="DtLoadNoPermission" xml:space="preserve">
     <value>You do not have permission to see this list.</value>
   </data>
   <data name="DtRetry" xml:space="preserve">
@@ -1164,6 +1164,9 @@
   <data name="DateNotRecognized" xml:space="preserve">
     <value>A date you typed could not be read, so it was not saved. Type it again in the field's format or pick it from the calendar.</value>
   </data>
+  <data name="Nav.Domain.MANUFACTURING" xml:space="preserve"><value>Manufacturing</value></data>
+  <data name="Nav.Module.BOMROUTINGS" xml:space="preserve"><value>BOM &amp; Routings</value></data>
+  <data name="Nav.Page.BOMS" xml:space="preserve"><value>Bills of Materials</value></data>
   <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>Supply Chain Execution</value></data>
   <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>Carrier Management</value></data>
   <data name="Nav.Page.CARRIERS" xml:space="preserve"><value>Carriers</value></data>
@@ -1175,4 +1178,25 @@
   <data name="Nav.Page.LOADS" xml:space="preserve"><value>Loads</value></data>
   <data name="Nav.Module.CLAIMSMANAGEMENT" xml:space="preserve"><value>Claims Management</value></data>
   <data name="Nav.Page.SHIPMENTCLAIMS" xml:space="preserve"><value>Shipment Claims</value></data>
+  <data name="Nav.Module.INVENTORYLEDGER" xml:space="preserve"><value>Inventory</value></data>
+  <data name="Nav.Page.STOCKLEDGER" xml:space="preserve"><value>Stock Ledger</value></data>
+  <data name="Nav.Page.LOCATIONTREE" xml:space="preserve"><value>Locations</value></data>
+  <data name="Nav.Module.LOTSERIALTRACKING" xml:space="preserve"><value>Lot / Serial Tracking</value></data>
+  <data name="Nav.Page.LOTS" xml:space="preserve"><value>Lot Explorer</value></data>
+  <data name="Nav.Page.SERIALS" xml:space="preserve"><value>Serial Explorer</value></data>
+  <data name="Nav.Page.LOTTRACE" xml:space="preserve"><value>Traceability</value></data>
+  <data name="Nav.Page.LOTMIGRATION" xml:space="preserve"><value>Typed Lot Migration</value></data>
+  <data name="Nav.Module.QUARANTINEBLOCKEDSTOCK" xml:space="preserve"><value>Quality</value></data>
+  <data name="Nav.Page.QUARANTINEQUEUE" xml:space="preserve"><value>Quarantine queue</value></data>
+  <data name="Nav.Page.BLOCKEDSTOCK" xml:space="preserve"><value>Blocked stock</value></data>
+  <data name="Nav.Page.RETESTQUEUE" xml:space="preserve"><value>Retest queue</value></data>
+  <data name="Nav.Page.QUARANTINESETTINGS" xml:space="preserve"><value>Quarantine settings</value></data>
+  <data name="Nav.Module.ESIGN" xml:space="preserve"><value>e-Signature</value></data>
+  <data name="Nav.Page.ESIGNMYSIGNATURE" xml:space="preserve"><value>My Signature</value></data>
+  <data name="Nav.Page.ESIGNREQUESTS" xml:space="preserve"><value>Signature Requests</value></data>
+  <data name="Nav.Page.ESIGNVERIFICATION" xml:space="preserve"><value>Signature Verification</value></data>
+  <data name="Nav.Page.ESIGNAUDITEXPORT" xml:space="preserve"><value>Audit Export</value></data>
+  <data name="Nav.Page.ESIGNPOLICY" xml:space="preserve"><value>e-Signature Policy</value></data>
+  <data name="Nav.Page.ESIGNMEANINGS" xml:space="preserve"><value>Signature Meanings</value></data>
+  <data name="Nav.Page.ESIGNSAMPLEAPPROVALS" xml:space="preserve"><value>Sample Approvals</value></data>
 </root>

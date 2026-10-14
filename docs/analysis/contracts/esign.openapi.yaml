@@ -1,0 +1,1192 @@
+openapi: 3.1.0
+info:
+  title: ESIGN-BUNDLE
+  description: >
+    MOD-0022 e-Signature Service — the one electronic-signature service of the tenant (Blueprint 8.1 Blueprint_Data row 23,
+    Contract Bundle Dictionary row 87: "signature envelope schema, signer identity binding, audit hooks, evidence link").
+    Frozen from the CT-accepted proposal drafts/esign-bundle-v1-proposal.md (next to this file) in WP-0022-E2, single
+    writer. Every operation and schema of the proposal is here unchanged in meaning; x-implementation-notes record what
+    E1/E2 measured about the shape (envelope field names, the consume answer code on each side).
+    Behaviour authority stays the MOD-0022 module pack §8; this file is the wire shape.
+  version: 1.0.1
+  x-status: FROZEN
+  x-owner: MOD-0022
+  x-owner-service: "Diten.Platform (5057) for /api/v1/esign/** and /api/internal/esign/**; Diten.AuthService (5056) for §4.1–4.3"
+  x-changelog:
+    - "1.0.0 — frozen (WP-0022-E2). §4.1–4.3 implemented by E1 (AuthService), §4.4–4.16 and §4.20–4.26 by E2 (Platform), §4.17–4.19 (samples) are E3 and answer 404 until then; the Workflow addendum (x-workflow-addendum) is E4. After this freeze only additive changes (minor version)."
+    - "1.0.1 — description only (WP-MVP1-FUB2, FU-0022-CT-01; behaviour of WP-0022-VIS1 and WP-MVP1-FUB1, CT-accepted): who sees which signature record — see the x-implementation-notes line 'Visibility'. No path, parameter, schema, status code, error code or permission changed."
+  x-proposal: drafts/esign-bundle-v1-proposal.md
+  x-rules:
+    - "1. Every call is made with the user's own tenant token (actor_type = tenant_user) through the Gateway. No service-key signing. The only S2S calls are §4.3 (Platform → AuthService) and §4.23 (module → Platform); neither carries user authority."
+    - "2. Scope = Tenant for every permission. No path or page is under /Platform."
+    - "3. TenantId always comes from the token, never from a body. Another tenant's id → 404."
+    - "4. Envelope: every JSON response is the service's Response<T> envelope (see x-implementation-notes for the exact field names). Error codes below are the envelope's error code."
+    - "5. Times are UTC ISO-8601 (…Z). Hashes are lowercase hex SHA-256."
+    - "6. Every write takes idempotencyKey (string, 8–100). A replay with the same key returns the first result (200) without side effects."
+    - "7. Every command writes a MOD-0021 audit event (SourceModule MOD-0022). The re-auth endpoints (§4.1–4.3) write AuthService authAuditLogs."
+    - "8. Never in any payload, log or audit: the password; the plain ticket (except the one response that issues it); image bytes in audit metadata."
+    - "9. Additive only towards MOD-0023 (x-workflow-addendum): no existing Workflow field, path or status code changes."
+  x-implementation-notes:
+    - "Platform envelope (measured, Diten.Platform.Application.Common.Response<T>): { data, statusCode, isSuccessful, errors[], reason_code, correlation_id } — the ESIGN_* error code is in reason_code (the proposal called it errorCode)."
+    - "AuthService envelope (measured, E1): { data, statusCode, isSuccessful, errors[], errorCodes: [ { code, params } ] } — the ESIGN_* code is errorCodes[0].code; remainingAttempts / lockoutEndUtc are its params."
+    - "§4.3 is served at /internal/esign-tickets/consume (AuthService's internal pattern; E1, CT 2026-10-08). It answers 409 ESIGN_TICKET_INVALID; Platform turns that into 403 ESIGN_TICKET_INVALID for its own callers."
+    - "§4.23 registers into a GLOBAL catalog (the request carries no tenant; a module's signable actions are the same for every tenant). Policy rows that use them are tenant-scoped."
+    - "§4.4 keeps an image only as content + SHA-256; records carry SHA-256 of the ticket (ticketRef), never the ticket."
+    - "Subject resolution failure of any kind (unknown, other tenant, invisible, owner unreachable) is one answer: 404 ESIGN_SUBJECT_NOT_FOUND (no oracle)."
+    - "Export dates are printed in UTC with the 'UTC' suffix (no tenant time zone is modelled yet)."
+    - "Visibility (1.0.1): a record WITHOUT a company (tenant-level, legalEntityId null — e.g. a workflow-task signature) is visible to every holder of esign.signatures.read (getSignature, listSignaturesBySubject, verifySignature) or esign.signatures.export (searchSignatures, createExport) in the tenant; a company record follows the caller's LegalEntity data scope (SEC-002) and is answered as absent (404 / not listed) outside it; the signer always sees their own records."
+  x-decisions: [KS-0, KS-1, KS-2, KS-3, KS-4, KS-5, KS-6, KS-7, KS-8, KS-9, KS-10, KS-11, KS-12, KS-13, CT-D1, CT-D2, CT-D4, CT-D7, CT-D8, CT-D9, CT-D10, CT-D11, CT-D12, CT-D13, CT-D14, CT-D15]
+servers: [{ url: / }]
+security: [{ bearerAuth: [] }]
+paths:
+  # ── E1 · AuthService ────────────────────────────────────────────────────────────────────────────────────────────────
+  /api/tenant-auth/esign/reauth:
+    post:
+      operationId: esignReauth
+      summary: "§4.1 — re-enter the password → a single-use ticket (CT-D1: 120 s, ESign:TicketLifetimeSeconds 30–300). Opens no session, issues no token."
+      x-slice: E1
+      x-service: Diten.AuthService
+      x-permission: "authenticated tenant_user (no permission key)"
+      x-error-codes: [ESIGN_REAUTH_FAILED, ESIGN_ACCOUNT_LOCKED, ESIGN_ACTOR_NOT_TENANT_USER, ESIGN_REAUTH_UNAVAILABLE]
+      x-idempotency: "none — each call is an authentication attempt"
+      x-audit: [tenant_esign_reauth_succeeded, tenant_esign_reauth_password_failed, tenant_esign_reauth_blocked_by_lockout, tenant_esign_reauth_lockout_started]
+      description: >
+        Lockout uses the tenant login settings MaxFailedLoginAttempts / LockoutDurationMinutes on the SAME user counter as login
+        (KS-13). 401 ESIGN_REAUTH_FAILED carries remainingAttempts (CT-D13); the attempt that STARTS the lockout already answers
+        423 ESIGN_ACCOUNT_LOCKED (remainingAttempts = 0, lockoutEndUtc). Audit metadata {intent, window} only.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReauthRequest' }
+      responses:
+        '200': { description: ReauthTicket (kind password), content: { application/json: { schema: { $ref: '#/components/schemas/ReauthTicket' } } } }
+        '400': { $ref: '#/components/responses/AuthServiceError' }
+        '401': { $ref: '#/components/responses/AuthServiceError' }
+        '403': { $ref: '#/components/responses/AuthServiceError' }
+        '423': { $ref: '#/components/responses/AuthServiceError' }
+        '503': { $ref: '#/components/responses/AuthServiceError' }
+  /api/tenant-auth/esign/ticket:
+    post:
+      operationId: esignWindowTicket
+      summary: "§4.2 — a ticket from an open KS-3 window without the password (only intent sign; the signer re-types the user name, CT-D7)."
+      x-slice: E1
+      x-service: Diten.AuthService
+      x-permission: "authenticated tenant_user (no permission key)"
+      x-error-codes: [ESIGN_REAUTH_WINDOW_EXPIRED, ESIGN_INTENT_REQUIRES_PASSWORD, ESIGN_ACTOR_NOT_TENANT_USER]
+      x-audit: [tenant_esign_window_ticket_issued]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/WindowTicketRequest' }
+      responses:
+        '200': { description: ReauthTicket (kind window, passwordVerifiedAtUtc = window start), content: { application/json: { schema: { $ref: '#/components/schemas/ReauthTicket' } } } }
+        '400': { $ref: '#/components/responses/AuthServiceError' }
+        '403': { $ref: '#/components/responses/AuthServiceError' }
+        '409': { $ref: '#/components/responses/AuthServiceError' }
+  /internal/esign-tickets/consume:
+    post:
+      operationId: esignConsumeTicket
+      summary: "§4.3 — S2S, NOT routed by the gateway. Atomic single use: FindOneAndUpdate with ConsumedAtUtc == null && ExpiresAtUtc > now in the filter."
+      x-slice: E1
+      x-service: Diten.AuthService
+      x-permission: "X-Internal-Api-Key"
+      x-error-codes: [ESIGN_TICKET_INVALID]
+      x-audit: [tenant_esign_ticket_consumed, tenant_esign_ticket_rejected]
+      security: [{ internalApiKey: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ConsumeTicketRequest' }
+      responses:
+        '200': { description: consumed, content: { application/json: { schema: { $ref: '#/components/schemas/ConsumedTicket' } } } }
+        '401': { description: internal key missing or wrong }
+        '409': { description: "ESIGN_TICKET_INVALID — one code for unknown / expired / consumed / user / tenant / intent mismatch", content: { application/json: { schema: { $ref: '#/components/schemas/AuthServiceEnvelope' } } } }
+
+  # ── E2 · Platform: signatures ───────────────────────────────────────────────────────────────────────────────────────
+  /api/v1/esign/signatures:
+    post:
+      operationId: signSubject
+      summary: "§4.4 — sign a subject. Server order: pack §8 E2 steps 1–8; the ticket is consumed only after the subject, policy, appearance and request checks."
+      x-slice: E2
+      x-permission: esign.signatures.sign
+      x-error-codes: [ESIGN_TICKET_REQUIRED, ESIGN_DRAWING_EMPTY, ESIGN_TICKET_INVALID, ESIGN_REAUTH_REQUIRED, ESIGN_SIGNER_NOT_NOMINATED, ESIGN_SUBJECT_NOT_FOUND, ESIGN_MEANING_NOT_ALLOWED, ESIGN_APPEARANCE_NOT_ALLOWED, ESIGN_SAMPLE_NOT_ACTIVE, ESIGN_REQUEST_NOT_OPEN, ESIGN_IMAGE_TOO_LARGE, ESIGN_IMAGE_NOT_PNG, ESIGN_SECOND_FACTOR_NOT_AVAILABLE, ESIGN_REAUTH_UNAVAILABLE]
+      x-audit: [esign.signature.signed]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SignRequest' }
+      responses:
+        '201': { description: SignatureRecord, content: { application/json: { schema: { $ref: '#/components/schemas/SignatureRecord' } } } }
+        '200': { description: SignatureRecord (idempotent replay — no ticket consumed) }
+        '400': { $ref: '#/components/responses/PlatformError' }
+        '403': { $ref: '#/components/responses/PlatformError' }
+        '404': { $ref: '#/components/responses/PlatformError' }
+        '409': { $ref: '#/components/responses/PlatformError' }
+        '413': { $ref: '#/components/responses/PlatformError' }
+        '415': { $ref: '#/components/responses/PlatformError' }
+        '501': { $ref: '#/components/responses/PlatformError' }
+        '503': { $ref: '#/components/responses/PlatformError' }
+    get:
+      operationId: searchSignatures
+      summary: "§4.24 — paged rows for the export screen table: { signature: SignatureRecord, verificationStatus }. Rows outside the caller's LegalEntity data scope are excluded (own signatures always visible)."
+      x-slice: E2
+      x-permission: esign.signatures.export
+      parameters:
+        - { name: fromUtc, in: query, schema: { type: string, format: date-time } }
+        - { name: toUtc, in: query, schema: { type: string, format: date-time } }
+        - { name: module, in: query, schema: { type: string } }
+        - { name: signerUserId, in: query, schema: { type: string } }
+        - { name: meaningCode, in: query, schema: { type: string } }
+        - { name: legalEntityId, in: query, schema: { type: string, format: uuid } }
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/PageSize' }
+      responses:
+        '200': { description: paged rows, content: { application/json: { schema: { $ref: '#/components/schemas/SignatureSearchPage' } } } }
+        '400': { $ref: '#/components/responses/PlatformError' }
+  /api/v1/esign/signatures/{id}:
+    get:
+      operationId: getSignature
+      summary: "§4.5 — 404 when missing, in another tenant, or the subject is not visible to the caller."
+      x-slice: E2
+      x-permission: esign.signatures.read
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { description: SignatureRecord, content: { application/json: { schema: { $ref: '#/components/schemas/SignatureRecord' } } } }
+        '404': { $ref: '#/components/responses/PlatformError' }
+  /api/v1/esign/signatures/by-subject:
+    get:
+      operationId: listSignaturesBySubject
+      summary: "§4.6 — SignatureRecord[] signedAt ascending; 404 ESIGN_SUBJECT_NOT_FOUND if the subject is invisible. During E6 it may include FU23 records with source: fu23 (additive field)."
+      x-slice: E2
+      x-permission: esign.signatures.read
+      x-error-codes: [ESIGN_SUBJECT_NOT_FOUND]
+      parameters:
+        - { name: module, in: query, required: true, schema: { type: string } }
+        - { name: subjectType, in: query, required: true, schema: { type: string } }
+        - { name: subjectId, in: query, required: true, schema: { type: string } }
+      responses:
+        '200': { description: records, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/SignatureRecord' } } } } }
+        '404': { $ref: '#/components/responses/PlatformError' }
+  /api/v1/esign/signatures/{id}/verify:
+    post:
+      operationId: verifySignature
+      summary: "§4.7 — no state change; audit esign.signature.verified (status)."
+      x-slice: E2
+      x-permission: esign.signatures.verify
+      x-audit: [esign.signature.verified]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { description: VerificationResult, content: { application/json: { schema: { $ref: '#/components/schemas/VerificationResult' } } } }
+        '404': { $ref: '#/components/responses/PlatformError' }
+  /api/v1/esign/signatures/{id}/invalidate:
+    post:
+      operationId: invalidateSignature
+      summary: "§4.8 — inserts one invalidation (reason ≥ 10, ticket intent invalidate, kind password); the record never changes."
+      x-slice: E2
+      x-permission: esign.signatures.invalidate
+      x-error-codes: [ESIGN_REASON_TOO_SHORT, ESIGN_TICKET_REQUIRED, ESIGN_TICKET_INVALID, ESIGN_REAUTH_REQUIRED, ESIGN_ALREADY_INVALIDATED, ESIGN_REAUTH_UNAVAILABLE]
+      x-audit: [esign.signature.invalidated]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/InvalidateRequest' }
+      responses:
+        '201': { description: SignatureRecord with invalidation, content: { application/json: { schema: { $ref: '#/components/schemas/SignatureRecord' } } } }
+        '400': { $ref: '#/components/responses/PlatformError' }
+        '403': { $ref: '#/components/responses/PlatformError' }
+        '404': { $ref: '#/components/responses/PlatformError' }
+        '409': { $ref: '#/components/responses/PlatformError' }
+
+  # ── E2 · requests ───────────────────────────────────────────────────────────────────────────────────────────────────
+  /api/v1/esign/requests:
+    post:
+      operationId: createSignatureRequest
+      summary: "§4.9 — API-only key; called by consumers with the user's token."
+      x-slice: E2
+      x-permission: esign.requests.create
+      x-error-codes: [ESIGN_SUBJECT_NOT_FOUND, ESIGN_MEANING_NOT_ALLOWED, ESIGN_SIGNER_NOT_FOUND]
+      x-audit: [esign.request.created]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateSignatureRequestRequest' }
+      responses:
+        '201': { description: SignatureRequest, content: { application/json: { schema: { $ref: '#/components/schemas/SignatureRequest' } } } }
+        '400': { $ref: '#/components/responses/PlatformError' }
+        '404': { $ref: '#/components/responses/PlatformError' }
+        '409': { $ref: '#/components/responses/PlatformError' }
+    get:
+      operationId: listSignatureRequests
+      summary: "§4.10 — scope=mine (default) = signerUserId == me; paged SignatureRequest[] + { waitingCount }."
+      x-slice: E2
+      x-permission: esign.requests.read
+      parameters:
+        - { name: scope, in: query, schema: { type: string, enum: [mine] } }
+        - { name: module, in: query, schema: { type: string } }
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/SignatureRequestStatus' } }
+        - { name: fromUtc, in: query, schema: { type: string, format: date-time } }
+        - { name: toUtc, in: query, schema: { type: string, format: date-time } }
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/PageSize' }
+      responses:
+        '200': { description: page, content: { application/json: { schema: { $ref: '#/components/schemas/SignatureRequestPage' } } } }
+  /api/v1/esign/requests/{id}:
+    get:
+      operationId: getSignatureRequest
+      summary: "§4.11 — only the signer or the requester may read it, else 404."
+      x-slice: E2
+      x-permission: esign.requests.read
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { description: SignatureRequest, content: { application/json: { schema: { $ref: '#/components/schemas/SignatureRequest' } } } }
+        '404': { $ref: '#/components/responses/PlatformError' }
+  /api/v1/esign/requests/{id}/reject:
+    post:
+      operationId: rejectSignatureRequest
+      summary: "§4.12 — the nominated signer rejects with a reason (≥ 10). The requester is notified (MOD-0027 event catalog, follow-up)."
+      x-slice: E2
+      x-permission: esign.requests.reject
+      x-error-codes: [ESIGN_SIGNER_NOT_NOMINATED, ESIGN_REQUEST_NOT_OPEN, ESIGN_REASON_TOO_SHORT]
+      x-audit: [esign.request.rejected]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReasonRequest' }
+      responses:
+        '200': { description: SignatureRequest, content: { application/json: { schema: { $ref: '#/components/schemas/SignatureRequest' } } } }
+        '400': { $ref: '#/components/responses/PlatformError' }
+        '403': { $ref: '#/components/responses/PlatformError' }
+        '409': { $ref: '#/components/responses/PlatformError' }
+  /api/v1/esign/requests/{id}/cancel:
+    post:
+      operationId: cancelSignatureRequest
+      summary: "§4.13 — only the requester. Expiry is system-only (Hangfire sweeper, audit esign.request.expired)."
+      x-slice: E2
+      x-permission: esign.requests.create
+      x-error-codes: [ESIGN_REQUEST_NOT_OPEN, ESIGN_REASON_TOO_SHORT]
+      x-audit: [esign.request.cancelled, esign.request.expired]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReasonRequest' }
+      responses:
+        '200': { description: SignatureRequest, content: { application/json: { schema: { $ref: '#/components/schemas/SignatureRequest' } } } }
+        '409': { $ref: '#/components/responses/PlatformError' }
+
+  # ── E2 · policy ─────────────────────────────────────────────────────────────────────────────────────────────────────
+  /api/v1/esign/policy:
+    get:
+      operationId: getPolicy
+      summary: "§4.14 — { tenant: Policy, override: Policy|null, effective: Policy, legalEntities: [ { id, name, hasOverride } ] }."
+      x-slice: E2
+      x-permission: esign.policy.read
+      parameters: [{ name: legalEntityId, in: query, schema: { type: string, format: uuid } }]
+      responses:
+        '200': { description: policy view, content: { application/json: { schema: { $ref: '#/components/schemas/PolicyView' } } } }
+  /api/v1/esign/policy/effective:
+    get:
+      operationId: getEffectivePolicy
+      summary: "§4.15 — used by the signing dialog."
+      x-slice: E2
+      x-permission: esign.signatures.sign
+      x-error-codes: [ESIGN_SUBJECT_NOT_FOUND]
+      parameters:
+        - { name: actionCode, in: query, schema: { type: string } }
+        - { name: module, in: query, required: true, schema: { type: string } }
+        - { name: subjectType, in: query, required: true, schema: { type: string } }
+        - { name: subjectId, in: query, required: true, schema: { type: string } }
+      responses:
+        '200': { description: effective policy, content: { application/json: { schema: { $ref: '#/components/schemas/EffectivePolicy' } } } }
+        '404': { $ref: '#/components/responses/PlatformError' }
+  /api/v1/esign/policy/tenant:
+    put:
+      operationId: savePolicy
+      summary: "§4.16 — save the tenant default (reason ≥ 10, expectedVersion)."
+      x-slice: E2
+      x-permission: esign.policy.manage
+      x-error-codes: [ESIGN_REASON_TOO_SHORT, ESIGN_SECOND_FACTOR_NOT_AVAILABLE, ESIGN_POLICY_VERSION_CONFLICT]
+      x-audit: [esign.policy.changed]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SavePolicyRequest' }
+      responses:
+        '200': { description: Policy, content: { application/json: { schema: { $ref: '#/components/schemas/Policy' } } } }
+        '400': { $ref: '#/components/responses/PlatformError' }
+        '409': { $ref: '#/components/responses/PlatformError' }
+  /api/v1/esign/policy/legal-entities/{legalEntityId}:
+    put:
+      operationId: saveLegalEntityPolicy
+      summary: "§4.16 — the company override; the first PUT creates it with expectedVersion: null. 404 when the legal entity is not in the tenant (ILegalEntityReferenceValidator)."
+      x-slice: E2
+      x-permission: esign.policy.manage
+      x-error-codes: [ESIGN_REASON_TOO_SHORT, ESIGN_SECOND_FACTOR_NOT_AVAILABLE, ESIGN_POLICY_VERSION_CONFLICT]
+      x-audit: [esign.policy.changed]
+      parameters: [{ $ref: '#/components/parameters/LegalEntityId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SavePolicyRequest' }
+      responses:
+        '200': { description: Policy, content: { application/json: { schema: { $ref: '#/components/schemas/Policy' } } } }
+        '400': { $ref: '#/components/responses/PlatformError' }
+        '404': { $ref: '#/components/responses/PlatformError' }
+        '409': { $ref: '#/components/responses/PlatformError' }
+  /api/v1/esign/policy/legal-entities/{legalEntityId}/revert:
+    post:
+      operationId: revertLegalEntityPolicy
+      summary: "§4.16 — remove the override (reason ≥ 10); its content stays in the history row."
+      x-slice: E2
+      x-permission: esign.policy.manage
+      x-error-codes: [ESIGN_REASON_TOO_SHORT, ESIGN_POLICY_VERSION_CONFLICT]
+      x-audit: [esign.policy.override-reverted]
+      parameters: [{ $ref: '#/components/parameters/LegalEntityId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReasonRequest' }
+      responses:
+        '204': { description: reverted }
+        '400': { $ref: '#/components/responses/PlatformError' }
+        '404': { $ref: '#/components/responses/PlatformError' }
+        '409': { $ref: '#/components/responses/PlatformError' }
+  /api/v1/esign/policy/history:
+    get:
+      operationId: getPolicyHistory
+      summary: "§4.16 history — [ { atUtc, by, scope, legalEntityId, changes[], reason } ]."
+      x-slice: E2
+      x-permission: esign.policy.read
+      parameters: [{ name: legalEntityId, in: query, schema: { type: string, format: uuid } }]
+      responses:
+        '200': { description: history, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/PolicyHistoryEntry' } } } } }
+
+  # ── E3 · samples (contract frozen now; implemented by E3 — until then these paths answer 404) ───────────────────────
+  /api/v1/esign/samples:
+    post:
+      operationId: createSample
+      summary: "§4.17 — ticket intent sample, kind password. pending or active depending on the tenant policy."
+      x-slice: E3
+      x-permission: esign.my-samples.manage
+      x-error-codes: [ESIGN_TICKET_INVALID, ESIGN_REAUTH_REQUIRED, ESIGN_IMAGE_TOO_LARGE, ESIGN_IMAGE_NOT_PNG, ESIGN_DRAWING_EMPTY]
+      x-audit: [esign.sample.submitted]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateSampleRequest' }
+      responses:
+        '201': { description: Sample, content: { application/json: { schema: { $ref: '#/components/schemas/Sample' } } } }
+  /api/v1/esign/samples/mine:
+    get:
+      operationId: listMySamples
+      summary: "§4.17 related — Sample[] history, newest first."
+      x-slice: E3
+      x-permission: esign.my-samples.manage
+      responses:
+        '200': { description: samples, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Sample' } } } } }
+  /api/v1/esign/samples/{id}/image:
+    get:
+      operationId: getSampleImage
+      summary: "§4.17 related — image/png (owner, approvers, or anyone allowed to read a signature that uses it; else 404)."
+      x-slice: E3
+      x-permission: "esign.my-samples.manage | esign.samples.approve | esign.signatures.read"
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { description: PNG, content: { image/png: { schema: { type: string, format: binary } } } }
+        '404': { $ref: '#/components/responses/PlatformError' }
+  /api/v1/esign/samples/{id}/deactivate:
+    post:
+      operationId: deactivateSample
+      summary: "§4.18 — owner only (else 404): Active → Inactive."
+      x-slice: E3
+      x-permission: esign.my-samples.manage
+      x-audit: [esign.sample.deactivated]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { description: Sample, content: { application/json: { schema: { $ref: '#/components/schemas/Sample' } } } }
+  /api/v1/esign/samples/{id}/withdraw:
+    post:
+      operationId: withdrawSample
+      summary: "§4.18 — only if unused and not Active, else 409 ESIGN_SAMPLE_IN_USE; a withdrawn event is appended, nothing is deleted."
+      x-slice: E3
+      x-permission: esign.my-samples.manage
+      x-error-codes: [ESIGN_SAMPLE_IN_USE]
+      x-audit: [esign.sample.withdrawn]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { description: Sample, content: { application/json: { schema: { $ref: '#/components/schemas/Sample' } } } }
+  /api/v1/esign/samples/pending:
+    get:
+      operationId: listPendingSamples
+      summary: "§4.19."
+      x-slice: E3
+      x-permission: esign.samples.approve
+      responses:
+        '200': { description: samples, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Sample' } } } } }
+  /api/v1/esign/samples/{id}/approve:
+    post:
+      operationId: approveSample
+      summary: "§4.19 — active + the owner's previous active sample inactive, one transaction; never by the owner."
+      x-slice: E3
+      x-permission: esign.samples.approve
+      x-error-codes: [ESIGN_SELF_APPROVAL_FORBIDDEN, ESIGN_SAMPLE_NOT_PENDING]
+      x-audit: [esign.sample.approved]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200': { description: Sample, content: { application/json: { schema: { $ref: '#/components/schemas/Sample' } } } }
+  /api/v1/esign/samples/{id}/reject:
+    post:
+      operationId: rejectSample
+      summary: "§4.19 — body { reason ≥ 10 }."
+      x-slice: E3
+      x-permission: esign.samples.reject
+      x-error-codes: [ESIGN_SELF_APPROVAL_FORBIDDEN, ESIGN_SAMPLE_NOT_PENDING, ESIGN_REASON_TOO_SHORT]
+      x-audit: [esign.sample.rejected]
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReasonRequest' }
+      responses:
+        '200': { description: Sample, content: { application/json: { schema: { $ref: '#/components/schemas/Sample' } } } }
+  /api/v1/esign/samples/decisions:
+    get:
+      operationId: listSampleDecisions
+      summary: "§4.19 decision log — [ { atUtc, by, owner, sampleNumber, decision, reason } ]."
+      x-slice: E3
+      x-permission: esign.samples.approve
+      responses:
+        '200': { description: decisions, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/SampleDecision' } } } } }
+
+  # ── E2 · meanings and the signable-action catalog ───────────────────────────────────────────────────────────────────
+  /api/v1/esign/meanings:
+    get:
+      operationId: listMeanings
+      summary: "§4.20."
+      x-slice: E2
+      x-permission: "esign.meanings.read | esign.signatures.sign"
+      parameters: [{ name: activeOnly, in: query, schema: { type: boolean } }]
+      responses:
+        '200': { description: meanings, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Meaning' } } } } }
+    post:
+      operationId: createMeaning
+      summary: "§4.21 — create { code, names{7}, description }."
+      x-slice: E2
+      x-permission: esign.meanings.manage
+      x-error-codes: [ESIGN_MEANING_LANGUAGE_MISSING, ESIGN_MEANING_CODE_EXISTS]
+      x-audit: [esign.meaning.created]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateMeaningRequest' }
+      responses:
+        '201': { description: Meaning, content: { application/json: { schema: { $ref: '#/components/schemas/Meaning' } } } }
+        '400': { $ref: '#/components/responses/PlatformError' }
+        '409': { $ref: '#/components/responses/PlatformError' }
+  /api/v1/esign/meanings/{code}:
+    put:
+      operationId: updateMeaning
+      summary: "§4.21 — update { names{7}, description }; the code is in the path and cannot change."
+      x-slice: E2
+      x-permission: esign.meanings.manage
+      x-error-codes: [ESIGN_MEANING_LANGUAGE_MISSING, ESIGN_MEANING_CODE_LOCKED]
+      x-audit: [esign.meaning.updated]
+      parameters: [{ $ref: '#/components/parameters/Code' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateMeaningRequest' }
+      responses:
+        '200': { description: Meaning, content: { application/json: { schema: { $ref: '#/components/schemas/Meaning' } } } }
+        '400': { $ref: '#/components/responses/PlatformError' }
+        '404': { $ref: '#/components/responses/PlatformError' }
+  /api/v1/esign/meanings/{code}/activate:
+    post:
+      operationId: activateMeaning
+      summary: "§4.21."
+      x-slice: E2
+      x-permission: esign.meanings.manage
+      x-audit: [esign.meaning.activated]
+      parameters: [{ $ref: '#/components/parameters/Code' }]
+      responses:
+        '200': { description: Meaning, content: { application/json: { schema: { $ref: '#/components/schemas/Meaning' } } } }
+        '404': { $ref: '#/components/responses/PlatformError' }
+  /api/v1/esign/meanings/{code}/deactivate:
+    post:
+      operationId: deactivateMeaning
+      summary: "§4.21 — 409 ESIGN_MEANING_IN_USE while a policy row uses it."
+      x-slice: E2
+      x-permission: esign.meanings.manage
+      x-error-codes: [ESIGN_MEANING_IN_USE]
+      x-audit: [esign.meaning.deactivated]
+      parameters: [{ $ref: '#/components/parameters/Code' }]
+      responses:
+        '200': { description: Meaning, content: { application/json: { schema: { $ref: '#/components/schemas/Meaning' } } } }
+        '404': { $ref: '#/components/responses/PlatformError' }
+        '409': { $ref: '#/components/responses/PlatformError' }
+  /api/v1/esign/actions:
+    get:
+      operationId: listSignableActions
+      summary: "§4.22."
+      x-slice: E2
+      x-permission: esign.policy.read
+      responses:
+        '200': { description: actions, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/SignableAction' } } } } }
+  /api/internal/esign/actions/register:
+    post:
+      operationId: registerSignableActions
+      summary: "§4.23 — S2S (CT-D12). Upsert by actionCode; a module may only register its own module. prefix; never deletes; existing policy rows are kept."
+      x-slice: E2
+      x-permission: "X-Internal-Api-Key"
+      x-error-codes: [ESIGN_ACTION_PREFIX_MISMATCH, ESIGN_MEANING_LANGUAGE_MISSING]
+      x-audit: [esign.actions.registered]
+      security: [{ internalApiKey: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterActionsRequest' }
+      responses:
+        '200': { description: "{ registered, unchanged }", content: { application/json: { schema: { $ref: '#/components/schemas/RegisterActionsResult' } } } }
+        '400': { $ref: '#/components/responses/PlatformError' }
+        '401': { $ref: '#/components/responses/PlatformError' }
+        '409': { $ref: '#/components/responses/PlatformError' }
+
+  # ── E2 · export ─────────────────────────────────────────────────────────────────────────────────────────────────────
+  /api/v1/esign/exports:
+    post:
+      operationId: createExport
+      summary: "§4.25 — 200 file stream with header X-Export-Number. Every call writes an ExportLogEntry and audit esign.export.created (KS-6). PDF engine: server-side PDFsharp-MigraDoc 6.1.1 (CT-D11); the log records the SHA-256 of the bytes sent."
+      x-slice: E2
+      x-permission: esign.signatures.export
+      x-error-codes: [ESIGN_EXPORT_TOO_LARGE]
+      x-audit: [esign.export.created]
+      x-csv-columns: ["Tarih-saat", "İmza kimliği", "İmzalayan", "Kullanıcı", "İmza anlamı", "Modül", "Kayıt", "Şirket", "Doğrulama"]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateExportRequest' }
+      responses:
+        '200':
+          description: the export file
+          headers: { X-Export-Number: { schema: { type: string, example: EXP-2026-0032 } } }
+          content:
+            application/pdf: { schema: { type: string, format: binary } }
+            text/csv: { schema: { type: string, description: "UTF-8 with BOM, ';' separator, every cell quoted, formula-leading cells prefixed with an apostrophe" } }
+        '400': { $ref: '#/components/responses/PlatformError' }
+        '413': { $ref: '#/components/responses/PlatformError' }
+    get:
+      operationId: listExports
+      summary: "§4.26."
+      x-slice: E2
+      x-permission: esign.signatures.export
+      parameters: [{ $ref: '#/components/parameters/Page' }, { $ref: '#/components/parameters/PageSize' }]
+      responses:
+        '200': { description: page, content: { application/json: { schema: { $ref: '#/components/schemas/ExportLogPage' } } } }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+    internalApiKey: { type: apiKey, in: header, name: X-Internal-Api-Key }
+  parameters:
+    Id: { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    LegalEntityId: { name: legalEntityId, in: path, required: true, schema: { type: string, format: uuid } }
+    Code: { name: code, in: path, required: true, schema: { type: string, pattern: '^[A-Z][A-Z0-9_]{1,31}$' } }
+    Page: { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+    PageSize: { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 25 } }
+  responses:
+    PlatformError:
+      description: Platform envelope with the ESIGN_* code in reason_code
+      content: { application/json: { schema: { $ref: '#/components/schemas/PlatformEnvelope' } } }
+    AuthServiceError:
+      description: AuthService envelope with the ESIGN_* code in errorCodes[0].code
+      content: { application/json: { schema: { $ref: '#/components/schemas/AuthServiceEnvelope' } } }
+  schemas:
+    # ── §2 (proposal) ────────────────────────────────────────────────────────────────────────────────────────────────
+    SubjectRef:
+      type: object
+      required: [module, subjectType, subjectId]
+      properties:
+        module: { type: string, pattern: '^[a-z][a-z0-9-]{1,40}$', example: inventory }
+        subjectType: { type: string, pattern: '^[a-z][a-z0-9.-]{1,80}$', example: inventory.quarantine-decision }
+        subjectId: { type: string, minLength: 1, maxLength: 100 }
+    SignableSubject:
+      description: "Returned by a subject provider (x-subject-provider-contract). summary ≤ 20 rows (label ≤ 60, value ≤ 300); fields values are strings or null (≤ 100 keys)."
+      type: object
+      required: [display, summary, fields]
+      properties:
+        display: { type: string, maxLength: 300, example: "Karantina kaydı KRN-2026-0412 · Lot PRS-26A014 · 1.200 kutu Serbest Bırak" }
+        summary: { type: array, maxItems: 20, items: { $ref: '#/components/schemas/SummaryLine' } }
+        legalEntityId: { type: [string, 'null'], format: uuid }
+        fields: { type: object, maxProperties: 100, additionalProperties: { type: [string, 'null'] }, example: { decision: release, quantity: "1200", lotCode: PRS-26A014 } }
+    CanonicalSubject:
+      description: "Hash input (x-canonical-form): {\"module\":…,\"subjectType\":…,\"subjectId\":…,\"fields\":{<keys sorted ordinal>}} — a string, never sent on the wire."
+      type: string
+    Appearance:
+      type: object
+      required: [type]
+      properties:
+        type: { type: string, enum: [none, drawn, sample] }
+        sampleId: { type: string, format: uuid, description: "type = sample" }
+        drawing:
+          type: object
+          properties:
+            pngBase64: { type: string, description: "decodes to ≤ 1 048 576 bytes; PNG signature + IHDR ≤ 2000 × 800" }
+            strokes: { type: array, description: "optional, ≤ 256 KB, points normalized 0..1", items: { type: array, items: { type: array, items: { type: number, minimum: 0, maximum: 1 } } } }
+    SignatureRecord:
+      description: "invalidation is null unless invalidated. The record itself never changes."
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        signatureNumber: { type: string, example: ESIG-2026-004813 }
+        subject: { $ref: '#/components/schemas/SubjectRef' }
+        subjectDisplay: { type: string }
+        subjectSummary: { type: array, items: { $ref: '#/components/schemas/SummaryLine' } }
+        legalEntityId: { type: [string, 'null'], format: uuid }
+        actionCode: { type: [string, 'null'], example: inventory.quarantine.release }
+        context: { type: object, additionalProperties: { type: [string, 'null'] }, example: { workflowInstanceId: "…", workflowTaskId: "…", stepCode: "…", decision: approve } }
+        meaningCode: { type: string, example: RELEASE }
+        meaningText: { type: string, example: Serbest bırakma yetkisi }
+        meaningLanguage: { type: string, example: tr }
+        signer: { type: object, properties: { userId: { type: string }, login: { type: string }, name: { type: string } } }
+        signedAtUtc: { type: string, format: date-time }
+        note: { type: [string, 'null'], maxLength: 500 }
+        reauth: { type: object, properties: { kind: { type: string, enum: [password, window] }, passwordVerifiedAtUtc: { type: string, format: date-time } } }
+        secondFactor: { type: string, enum: [none] }
+        appearance:
+          type: object
+          properties:
+            type: { type: string, enum: [none, drawn, sample] }
+            sampleId: { type: [string, 'null'], format: uuid }
+            imageHash: { type: [string, 'null'] }
+            hasVector: { type: boolean }
+        subjectHashAlgorithm: { type: string, enum: [CanonicalJsonSha256] }
+        subjectHash: { type: string }
+        signatureDigest: { type: string }
+        requestId: { type: [string, 'null'], format: uuid }
+        policy:
+          type: object
+          properties:
+            scope: { type: string, enum: [tenant, legalEntity] }
+            legalEntityId: { type: [string, 'null'], format: uuid }
+            version: { type: integer }
+            visualMode: { $ref: '#/components/schemas/VisualMode' }
+            reauthEvery: { type: boolean }
+            reauthWindowMinutes: { type: integer }
+        invalidation:
+          type: [object, 'null']
+          properties: { reason: { type: string }, by: { type: string }, byName: { type: string }, atUtc: { type: string, format: date-time } }
+    VerificationResult:
+      description: "Precedence: invalidated > tampered (image or digest mismatch) > subjectUnresolvable > changed > valid."
+      type: object
+      properties:
+        signatureId: { type: string, format: uuid }
+        status: { type: string, enum: [valid, changed, invalidated, tampered, subjectUnresolvable] }
+        subjectHashAtSign: { type: string }
+        currentSubjectHash: { type: [string, 'null'] }
+        imageIntact: { type: boolean }
+        digestIntact: { type: boolean }
+        verifiedAtUtc: { type: string, format: date-time }
+    SignatureRequest:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        requestNumber: { type: string, example: SR-2026-1190 }
+        subject: { $ref: '#/components/schemas/SubjectRef' }
+        subjectDisplay: { type: string }
+        legalEntityId: { type: [string, 'null'], format: uuid }
+        actionCode: { type: [string, 'null'] }
+        meaningCode: { type: string, example: APPROVE }
+        requestedBy: { type: object, properties: { userId: { type: string }, name: { type: string } } }
+        requestedAtUtc: { type: string, format: date-time }
+        signerUserId: { type: string }
+        dueAtUtc: { type: string, format: date-time }
+        status: { $ref: '#/components/schemas/SignatureRequestStatus' }
+        signatureId: { type: [string, 'null'], format: uuid }
+        rejectReason: { type: [string, 'null'] }
+        decidedAtUtc: { type: [string, 'null'], format: date-time }
+    Policy:
+      description: "sampleApprovalRequired is only meaningful on the tenant scope (pack CT-D15); on legalEntity it is echoed read-only."
+      type: object
+      properties:
+        scope: { type: string, enum: [tenant, legalEntity] }
+        legalEntityId: { type: [string, 'null'], format: uuid }
+        version: { type: integer }
+        rows:
+          type: array
+          items:
+            type: object
+            properties:
+              actionCode: { type: string, example: inventory.quarantine.release }
+              module: { type: string }
+              actionName: { type: string }
+              required: { type: boolean }
+              meaningCode: { type: [string, 'null'] }
+              visualMode: { $ref: '#/components/schemas/VisualMode' }
+              secondFactor: { type: string, enum: [notAvailable] }
+              differsFromTenant: { type: boolean }
+        reauthEvery: { type: boolean, default: true }
+        reauthWindowMinutes: { type: integer, minimum: 1, maximum: 60, default: 15 }
+        sampleApprovalRequired: { type: boolean, default: true }
+    Meaning:
+      description: "All 7 names are required (KS-12). isLocked = used by ≥ 1 signature (code immutable)."
+      type: object
+      properties:
+        code: { type: string, pattern: '^[A-Z][A-Z0-9_]{1,31}$', example: APPROVE }
+        names: { $ref: '#/components/schemas/SevenNames' }
+        description: { type: [string, 'null'] }
+        isActive: { type: boolean }
+        isLocked: { type: boolean }
+        usageCount: { type: integer }
+    Sample:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        sampleNumber: { type: string, example: IMZ-2026-0059 }
+        owner: { type: object, properties: { userId: { type: string }, login: { type: string }, name: { type: string } } }
+        kind: { type: string, enum: [drawn, uploaded] }
+        format: { type: string, enum: [png, pngAndVector, vector] }
+        status: { type: string, enum: [pending, active, inactive, rejected, withdrawn] }
+        imageHash: { type: string }
+        createdAtUtc: { type: string, format: date-time }
+        usedCount: { type: integer }
+        decision: { type: [object, 'null'], properties: { by: { type: string }, byName: { type: string }, atUtc: { type: string, format: date-time }, reason: { type: [string, 'null'] } } }
+    ReauthTicket:
+      type: object
+      properties:
+        ticket: { type: string, description: "base64url (32 random bytes) — the only response that ever carries it" }
+        expiresAtUtc: { type: string, format: date-time }
+        passwordVerifiedAtUtc: { type: string, format: date-time }
+        kind: { type: string, enum: [password, window] }
+        windowExpiresAtUtc: { type: [string, 'null'], format: date-time }
+    ExportLogEntry:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        exportNumber: { type: string, example: EXP-2026-0032 }
+        format: { type: string, enum: [pdf, csv] }
+        recordCount: { type: integer }
+        filter: { $ref: '#/components/schemas/ExportFilter' }
+        filterText: { type: string, example: "2026-09-01–2026-09-30 UTC · all modules · all companies" }
+        by: { type: object, properties: { userId: { type: string }, name: { type: string } } }
+        atUtc: { type: string, format: date-time }
+        fileHash: { type: string }
+
+    # ── request and support shapes (named here; the proposal wrote them inline in §4) ───────────────────────────────
+    SummaryLine:
+      type: object
+      properties: { label: { type: string, maxLength: 60 }, value: { type: string, maxLength: 300 } }
+    SevenNames:
+      type: object
+      required: [en, tr, fr, es, zh, ar, ru]
+      properties: { en: { type: string }, tr: { type: string }, fr: { type: string }, es: { type: string }, zh: { type: string }, ar: { type: string }, ru: { type: string } }
+    VisualMode: { type: string, enum: [none, optional, savedAccepted, drawRequired] }
+    SignatureRequestStatus: { type: string, enum: [waiting, signed, rejected, expired, cancelled] }
+    IdempotencyKey: { type: string, minLength: 8, maxLength: 100 }
+    ReauthRequest:
+      type: object
+      required: [password, intent]
+      properties:
+        password: { type: string, writeOnly: true }
+        intent: { type: string, enum: [sign, sample, invalidate] }
+        openWindowMinutes: { type: [integer, 'null'], minimum: 1, maximum: 60, description: "only with intent sign" }
+    WindowTicketRequest:
+      type: object
+      required: [intent, userName]
+      properties:
+        intent: { type: string, enum: [sign] }
+        userName: { type: string, description: "CT-D7 — the signer re-types the user name (or e-mail) of the session" }
+    ConsumeTicketRequest:
+      type: object
+      required: [ticket, tenantId, userId, intent]
+      properties:
+        ticket: { type: string }
+        tenantId: { type: string, format: uuid }
+        userId: { type: string }
+        intent: { type: string, enum: [sign, sample, invalidate] }
+        consumedBy: { type: string, description: "calling service, default platform" }
+    ConsumedTicket:
+      type: object
+      properties:
+        kind: { type: string, enum: [password, window] }
+        passwordVerifiedAtUtc: { type: string, format: date-time }
+        issuedAtUtc: { type: string, format: date-time }
+    SignRequest:
+      type: object
+      required: [ticket, subject, meaningCode, idempotencyKey]
+      properties:
+        ticket: { type: string }
+        subject: { $ref: '#/components/schemas/SubjectRef' }
+        actionCode: { type: [string, 'null'] }
+        meaningCode: { type: string }
+        note: { type: [string, 'null'], maxLength: 500 }
+        appearance: { $ref: '#/components/schemas/Appearance' }
+        requestId: { type: [string, 'null'], format: uuid }
+        context: { type: object, maxProperties: 20, additionalProperties: { type: [string, 'null'], maxLength: 200 } }
+        idempotencyKey: { $ref: '#/components/schemas/IdempotencyKey' }
+    InvalidateRequest:
+      type: object
+      required: [ticket, reason, idempotencyKey]
+      properties:
+        ticket: { type: string }
+        reason: { type: string, minLength: 10, maxLength: 1000 }
+        idempotencyKey: { $ref: '#/components/schemas/IdempotencyKey' }
+    CreateSignatureRequestRequest:
+      type: object
+      required: [subject, meaningCode, signerUserId, dueAtUtc, idempotencyKey]
+      properties:
+        subject: { $ref: '#/components/schemas/SubjectRef' }
+        actionCode: { type: [string, 'null'] }
+        meaningCode: { type: string }
+        signerUserId: { type: string, format: uuid }
+        dueAtUtc: { type: string, format: date-time, description: "must be in the future" }
+        note: { type: [string, 'null'], maxLength: 500 }
+        idempotencyKey: { $ref: '#/components/schemas/IdempotencyKey' }
+    ReasonRequest:
+      type: object
+      required: [reason]
+      properties:
+        reason: { type: string, minLength: 10, maxLength: 1000 }
+        idempotencyKey: { $ref: '#/components/schemas/IdempotencyKey' }
+    SavePolicyRequest:
+      type: object
+      required: [rows, reauthEvery, reauthWindowMinutes, reason]
+      properties:
+        rows:
+          type: array
+          items:
+            type: object
+            required: [actionCode, required, visualMode]
+            properties:
+              actionCode: { type: string }
+              required: { type: boolean }
+              meaningCode: { type: [string, 'null'] }
+              visualMode: { $ref: '#/components/schemas/VisualMode' }
+              secondFactor: { type: string, enum: [notAvailable], description: "KS-11 — anything else is 400 ESIGN_SECOND_FACTOR_NOT_AVAILABLE" }
+        reauthEvery: { type: boolean }
+        reauthWindowMinutes: { type: integer, minimum: 1, maximum: 60 }
+        sampleApprovalRequired: { type: boolean, description: "tenant only" }
+        reason: { type: string, minLength: 10, maxLength: 1000 }
+        expectedVersion: { type: [integer, 'null'] }
+    PolicyView:
+      type: object
+      properties:
+        tenant: { $ref: '#/components/schemas/Policy' }
+        override: { oneOf: [{ $ref: '#/components/schemas/Policy' }, { type: 'null' }] }
+        effective: { $ref: '#/components/schemas/Policy' }
+        legalEntities: { type: array, items: { type: object, properties: { id: { type: string, format: uuid }, name: { type: string }, hasOverride: { type: boolean } } } }
+    PolicyHistoryEntry:
+      type: object
+      properties:
+        atUtc: { type: string, format: date-time }
+        by: { type: string }
+        scope: { type: string, enum: [tenant, legalEntity] }
+        legalEntityId: { type: [string, 'null'], format: uuid }
+        changes: { type: array, items: { type: string } }
+        reason: { type: string }
+    EffectivePolicy:
+      type: object
+      properties:
+        required: { type: boolean }
+        meaningCode: { type: [string, 'null'] }
+        visualMode: { $ref: '#/components/schemas/VisualMode' }
+        reauthEvery: { type: boolean }
+        reauthWindowMinutes: { type: integer }
+        allowedMeanings: { type: array, items: { $ref: '#/components/schemas/Meaning' } }
+        subject: { $ref: '#/components/schemas/SignableSubject' }
+        mySample: { oneOf: [{ $ref: '#/components/schemas/Sample' }, { type: 'null' }] }
+        myPendingSample: { oneOf: [{ $ref: '#/components/schemas/Sample' }, { type: 'null' }] }
+        signer: { type: object, properties: { login: { type: string }, name: { type: string } } }
+    CreateSampleRequest:
+      type: object
+      required: [ticket, kind, pngBase64, idempotencyKey]
+      properties:
+        ticket: { type: string }
+        kind: { type: string, enum: [drawn, uploaded] }
+        pngBase64: { type: string }
+        strokes: { type: [array, 'null'] }
+        idempotencyKey: { $ref: '#/components/schemas/IdempotencyKey' }
+    SampleDecision:
+      type: object
+      properties:
+        atUtc: { type: string, format: date-time }
+        by: { type: string }
+        owner: { type: string }
+        sampleNumber: { type: string }
+        decision: { type: string, enum: [approved, rejected] }
+        reason: { type: [string, 'null'] }
+    CreateMeaningRequest:
+      type: object
+      required: [code, names]
+      properties:
+        code: { type: string, pattern: '^[A-Z][A-Z0-9_]{1,31}$' }
+        names: { $ref: '#/components/schemas/SevenNames' }
+        description: { type: [string, 'null'] }
+    UpdateMeaningRequest:
+      type: object
+      required: [names]
+      properties:
+        names: { $ref: '#/components/schemas/SevenNames' }
+        description: { type: [string, 'null'] }
+    SignableAction:
+      type: object
+      properties:
+        actionCode: { type: string }
+        module: { type: string }
+        names: { $ref: '#/components/schemas/SevenNames' }
+        defaultRequired: { type: boolean }
+        defaultMeaningCode: { type: [string, 'null'] }
+        defaultVisualMode: { $ref: '#/components/schemas/VisualMode' }
+    RegisterActionsRequest:
+      type: object
+      required: [module, actions]
+      properties:
+        module: { type: string, pattern: '^[a-z][a-z0-9-]{1,40}$', example: inventory }
+        actions:
+          type: array
+          items:
+            type: object
+            required: [actionCode, names]
+            properties:
+              actionCode: { type: string, description: "must start with '{module}.'" }
+              names: { $ref: '#/components/schemas/SevenNames' }
+              defaultRequired: { type: boolean }
+              defaultMeaningCode: { type: [string, 'null'] }
+              defaultVisualMode: { $ref: '#/components/schemas/VisualMode' }
+    RegisterActionsResult:
+      type: object
+      properties: { registered: { type: integer }, unchanged: { type: integer } }
+    ExportFilter:
+      type: object
+      required: [fromUtc, toUtc]
+      properties:
+        fromUtc: { type: string, format: date-time }
+        toUtc: { type: string, format: date-time }
+        module: { type: [string, 'null'] }
+        signerUserId: { type: [string, 'null'] }
+        meaningCode: { type: [string, 'null'] }
+        legalEntityId: { type: [string, 'null'], format: uuid }
+    CreateExportRequest:
+      type: object
+      required: [format, filter, idempotencyKey]
+      properties:
+        format: { type: string, enum: [pdf, csv] }
+        filter: { $ref: '#/components/schemas/ExportFilter' }
+        idempotencyKey: { $ref: '#/components/schemas/IdempotencyKey' }
+    SignatureSearchPage:
+      type: object
+      properties:
+        items: { type: array, items: { type: object, properties: { signature: { $ref: '#/components/schemas/SignatureRecord' }, verificationStatus: { type: string } } } }
+        total: { type: integer }
+        page: { type: integer }
+        pageSize: { type: integer }
+    SignatureRequestPage:
+      type: object
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/SignatureRequest' } }
+        total: { type: integer }
+        page: { type: integer }
+        pageSize: { type: integer }
+        waitingCount: { type: integer }
+    ExportLogPage:
+      type: object
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/ExportLogEntry' } }
+        total: { type: integer }
+        page: { type: integer }
+        pageSize: { type: integer }
+    PlatformEnvelope:
+      type: object
+      properties:
+        data: {}
+        statusCode: { type: integer }
+        isSuccessful: { type: boolean }
+        errors: { type: array, items: { type: string } }
+        reason_code: { $ref: '#/components/schemas/ErrorCode' }
+        correlation_id: { type: [string, 'null'] }
+    AuthServiceEnvelope:
+      type: object
+      properties:
+        data: {}
+        statusCode: { type: integer }
+        isSuccessful: { type: boolean }
+        errors: { type: array, items: { type: string } }
+        errorCodes:
+          type: array
+          items: { type: object, properties: { code: { $ref: '#/components/schemas/ErrorCode' }, params: { type: object, additionalProperties: { type: string } } } }
+    ErrorCode:
+      description: "§4.27 error code table (HTTP status in x-http)."
+      type: string
+      enum:
+        - ESIGN_REAUTH_FAILED
+        - ESIGN_ACCOUNT_LOCKED
+        - ESIGN_ACTOR_NOT_TENANT_USER
+        - ESIGN_REAUTH_WINDOW_EXPIRED
+        - ESIGN_INTENT_REQUIRES_PASSWORD
+        - ESIGN_TICKET_REQUIRED
+        - ESIGN_TICKET_INVALID
+        - ESIGN_REAUTH_REQUIRED
+        - ESIGN_REAUTH_UNAVAILABLE
+        - ESIGN_SUBJECT_NOT_FOUND
+        - ESIGN_MEANING_NOT_ALLOWED
+        - ESIGN_APPEARANCE_NOT_ALLOWED
+        - ESIGN_SAMPLE_NOT_ACTIVE
+        - ESIGN_DRAWING_EMPTY
+        - ESIGN_IMAGE_NOT_PNG
+        - ESIGN_IMAGE_TOO_LARGE
+        - ESIGN_REQUEST_NOT_OPEN
+        - ESIGN_SIGNER_NOT_NOMINATED
+        - ESIGN_SIGNER_NOT_FOUND
+        - ESIGN_REASON_TOO_SHORT
+        - ESIGN_ALREADY_INVALIDATED
+        - ESIGN_POLICY_VERSION_CONFLICT
+        - ESIGN_SECOND_FACTOR_NOT_AVAILABLE
+        - ESIGN_MEANING_LANGUAGE_MISSING
+        - ESIGN_MEANING_CODE_EXISTS
+        - ESIGN_MEANING_CODE_LOCKED
+        - ESIGN_MEANING_IN_USE
+        - ESIGN_SELF_APPROVAL_FORBIDDEN
+        - ESIGN_SAMPLE_NOT_PENDING
+        - ESIGN_SAMPLE_IN_USE
+        - ESIGN_ACTION_PREFIX_MISMATCH
+        - ESIGN_EXPORT_TOO_LARGE
+        - ESIGN_SIGNATURE_REQUIRED
+        - ESIGN_SIGNATURE_MISMATCH
+      x-http:
+        ESIGN_REAUTH_FAILED: 401
+        ESIGN_ACCOUNT_LOCKED: 423
+        ESIGN_ACTOR_NOT_TENANT_USER: 403
+        ESIGN_REAUTH_WINDOW_EXPIRED: 409
+        ESIGN_INTENT_REQUIRES_PASSWORD: 400
+        ESIGN_TICKET_REQUIRED: 400
+        ESIGN_TICKET_INVALID: "403 (409 on §4.3)"
+        ESIGN_REAUTH_REQUIRED: 403
+        ESIGN_REAUTH_UNAVAILABLE: 503
+        ESIGN_SUBJECT_NOT_FOUND: 404
+        ESIGN_MEANING_NOT_ALLOWED: 409
+        ESIGN_APPEARANCE_NOT_ALLOWED: 409
+        ESIGN_SAMPLE_NOT_ACTIVE: 409
+        ESIGN_DRAWING_EMPTY: 400
+        ESIGN_IMAGE_NOT_PNG: 415
+        ESIGN_IMAGE_TOO_LARGE: 413
+        ESIGN_REQUEST_NOT_OPEN: 409
+        ESIGN_SIGNER_NOT_NOMINATED: 403
+        ESIGN_SIGNER_NOT_FOUND: 404
+        ESIGN_REASON_TOO_SHORT: 400
+        ESIGN_ALREADY_INVALIDATED: 409
+        ESIGN_POLICY_VERSION_CONFLICT: 409
+        ESIGN_SECOND_FACTOR_NOT_AVAILABLE: "400 / 501"
+        ESIGN_MEANING_LANGUAGE_MISSING: 400
+        ESIGN_MEANING_CODE_EXISTS: 409
+        ESIGN_MEANING_CODE_LOCKED: 409
+        ESIGN_MEANING_IN_USE: 409
+        ESIGN_SELF_APPROVAL_FORBIDDEN: 403
+        ESIGN_SAMPLE_NOT_PENDING: 409
+        ESIGN_SAMPLE_IN_USE: 409
+        ESIGN_ACTION_PREFIX_MISMATCH: 409
+        ESIGN_EXPORT_TOO_LARGE: 413
+        ESIGN_SIGNATURE_REQUIRED: 409
+        ESIGN_SIGNATURE_MISMATCH: 409
+
+x-permissions:
+  description: "§3 — namespace esign.*, owner MOD-0022 (PKS-001 §4); all Scope = Tenant. The re-auth endpoints need only an authenticated tenant_user."
+  keys: [esign.signatures.read, esign.signatures.sign, esign.signatures.verify, esign.signatures.invalidate, esign.signatures.export, esign.requests.read, esign.requests.create, esign.requests.reject, esign.my-samples.manage, esign.samples.approve, esign.samples.reject, esign.policy.read, esign.policy.manage, esign.meanings.read, esign.meanings.manage]
+  api-only: [esign.signatures.sign, esign.requests.create]
+
+x-canonical-form:
+  description: "§7 (normative). FU23 canonical JSON rules plus module."
+  rules:
+    - "keys of fields sorted by ordinal; the top level of the subject is in the fixed order module, subjectType, subjectId, fields"
+    - "values are JSON strings or null"
+    - "escapes \\\\ \\\" \\n \\r \\t only"
+    - "DateTime as UTC ISO-8601 round-trip \"O\", truncated to milliseconds (the stored precision) before hashing"
+    - "bool true / false (as strings); decimal invariant culture; no whitespace"
+  subjectHash: "hex(SHA-256(UTF-8(canonicalSubject)))"
+  signatureDigest: "hex(SHA-256(UTF-8(canonical({ signatureNumber, tenantId, module, subjectType, subjectId, subjectHash, legalEntityId, actionCode, context, meaningCode, meaningTextAtSign, signerUserId, signerNameAtSign, signedAtUtc, reauthKind, passwordVerifiedAtUtc, appearanceType, appearanceSampleId, appearanceImageHash, requestId })))) — every key sorted by ordinal, nested context keys sorted, Guids \"D\""
+  imageHash: "hex(SHA-256(png bytes))"
+
+x-golden-vectors:
+  description: "Produced in E2 by Diten.Platform ESignatureDigest AND by an independent re-implementation; both agree (ESignatureRulesTests)."
+  subject:
+    module: inventory
+    subjectType: inventory.quarantine-decision
+    subjectId: KRN-2026-0412
+    fields: { quantity: "1200", decision: release, lotCode: PRS-26A014, note: "Line 1\nLine \"2\"\t\\end", expiry: null }
+    canonical: "{\"module\":\"inventory\",\"subjectType\":\"inventory.quarantine-decision\",\"subjectId\":\"KRN-2026-0412\",\"fields\":{\"decision\":\"release\",\"expiry\":null,\"lotCode\":\"PRS-26A014\",\"note\":\"Line 1\\nLine \\\"2\\\"\\t\\\\end\",\"quantity\":\"1200\"}}"
+    subjectHash: 14c30d2865be9998c8504e38fee4ca4a69fcbe8c285f9a3d81a50e27141fd615
+  signature:
+    input:
+      signatureNumber: ESIG-2026-004813
+      tenantId: 11111111-2222-3333-4444-555555555555
+      module: inventory
+      subjectType: inventory.quarantine-decision
+      subjectId: KRN-2026-0412
+      subjectHash: 14c30d2865be9998c8504e38fee4ca4a69fcbe8c285f9a3d81a50e27141fd615
+      legalEntityId: 66666666-7777-8888-9999-000000000000
+      actionCode: inventory.quarantine.release
+      context: { workflowTaskId: t-1, decision: approve }
+      meaningCode: RELEASE
+      meaningTextAtSign: Serbest bırakma yetkisi
+      signerUserId: aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee
+      signerNameAtSign: Ayşe Demir
+      signedAtUtc: "2026-10-07T09:14:22.0000000Z"
+      reauthKind: password
+      passwordVerifiedAtUtc: "2026-10-07T09:13:58.0000000Z"
+      appearanceType: drawn
+      appearanceSampleId: null
+      appearanceImageHash: "0000000000000000000000000000000000000000000000000000000000000000"
+      requestId: null
+    signatureDigest: 6ebcfb6bcaa8fea17e37c004477d228f533b767761d0f08360e0adaa2b23c9f8
+
+x-subject-provider-contract:
+  description: "§6 — consumer side. GET {providerBaseUrl}/esign-subjects/{subjectType}/{subjectId} → 200 SignableSubject · 404 (unknown or not visible to the caller). Called by Platform with the caller's JWT and X-Tenant-Id. providerBaseUrl from Platform operator config ESign:SubjectProviders:{module}:BaseUrl, never from a manifest (WC-D1 Y2); in-process providers for Platform modules use the same shape. The provider owns the field list: a change to it changes the hash of new signatures only, and old signatures verify as changed only if the values changed — keep field names stable and version the list in the provider's own contract."
+  operationId: getSignableSubject
+  response: { $ref: '#/components/schemas/SignableSubject' }
+
+x-workflow-addendum:
+  description: "§5 — MOD-0023, additive only; implemented by E4."
+  definitionJson: "step requirements gain optional signatureRequired (bool, absent = false) and signatureMeaning (meaning code, absent = null). Templates already published are unchanged and immutable. Publish validation (additive): when signatureRequired is true, signatureMeaning must be an active tenant meaning, else 400 ESIGN_MEANING_NOT_ALLOWED on publish."
+  approveRequest: "POST /api/v1/workflow/tasks/{taskId}/approve — ApproveWorkflowTaskRequest gains trailing optional signatureId (default null)."
+  workItemPayload: "POST /api/v1/work-items/{itemId}/actions/approve — WorkItemActionPayloadDto gains trailing signatureId ([JsonIgnore(WhenWritingNull)]); the in-process dispatcher passes it to the same command."
+  behaviour:
+    - "Steps without signatureRequired: identical to today. signatureId, if sent, is stored on the transition log and not validated."
+    - "Steps with signatureRequired: missing → 409 ESIGN_SIGNATURE_REQUIRED; otherwise same tenant, signer.userId == actorId, meaningCode == step.signatureMeaning, context.workflowTaskId == taskId and context.decision == approve, no invalidation, current subject hash == subjectHash, signedAtUtc ≥ task.createdAt, no binding to another task — else 409 ESIGN_SIGNATURE_MISMATCH."
+    - "Check order: idempotent replay → task state → assignment → actor → SoD → signature → transition. Existing codes and statuses unchanged."
+    - "Response unchanged; history gains a trailing signatureId per transition; the workflow approval work item gains signatureRequired / signatureMeaning."
+    - "How a client signs for a task: POST /api/v1/esign/signatures with subject = the instance object (or the workflow-task fallback) and context = { workflowInstanceId, workflowTaskId, stepCode, decision: approve }, then approve with signatureId."
+
+x-non-functional:
+  - "Signing p95 ≤ 800 ms excluding the remote subject provider; the ticket consume is one indexed FindOneAndUpdate."
+  - "Payload limits: request ≤ 1.5 MB (base64 PNG + strokes)."
+  - "Rate limit on esign/reauth: no separate limit; lockout applies (same as login)."
+  - "Retention: records, invalidations, samples, sample events, exports and policy changes are never deleted by the application."
+
+x-check-table:
+  - { surface: "api/tenant-auth/login, mfa/*, change-password/*", change: none }
+  - { surface: "api/platform-auth/*", change: none }
+  - { surface: ApproveWorkflowTaskRequest, change: "+ trailing optional SignatureId" }
+  - { surface: WorkItemActionPayloadDto, change: "+ trailing optional SignatureId (JsonIgnore when null)" }
+  - { surface: "Workflow DefinitionJson", change: "+ optional requirements.signatureRequired, requirements.signatureMeaning" }
+  - { surface: "Workflow transition log / history", change: "+ trailing signatureId" }
+  - { surface: "Workflow error codes / statuses", change: "none changed; two new codes only on flagged steps" }
+  - { surface: "FU23 api/v1/document-management/signature* (16 endpoints)", change: "none (E6 later, additive)" }
+  - { surface: ContentStorageScope, change: "+ ESignatureImages = 4 (enum is additive by design)" }
+  - { surface: Gateway, change: "+ route /api/v1/esign/{everything} only (INT-ESIGN)" }

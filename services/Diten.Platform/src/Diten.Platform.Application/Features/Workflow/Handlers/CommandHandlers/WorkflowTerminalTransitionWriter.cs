@@ -524,4 +524,6 @@ internal sealed record WorkflowTransitionSeams(
     IPositionRepository? Positions,
     IPlatformTransactionExecutor? Transactions,
     ITransactionalIntegrationEventWriter? Events,
-    IWorkflowTemplateRepository? Templates);
+    IWorkflowTemplateRepository? Templates,
+    // MOD-0022 E4 — the e-signature approval gate (null → a signature-required step cannot be approved).
+    Diten.Platform.Application.Features.ESignature.Services.IESignatureGate? SignatureGate = null);

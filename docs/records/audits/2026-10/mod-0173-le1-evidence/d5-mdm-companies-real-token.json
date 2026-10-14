@@ -1,0 +1,35 @@
+{
+  "status": 200,
+  "list": [
+    {
+      "id": "66068d61-f145-4c3b-aa34-dd410c36e368",
+      "code": "LE-DITEN-EU",
+      "lifecycleState": "ACTIVE",
+      "referenceable": true
+    },
+    {
+      "id": "099219a0-9780-454a-9580-a216f0fe33d0",
+      "code": "LE-DITEN-HQ",
+      "lifecycleState": "ACTIVE",
+      "referenceable": true
+    },
+    {
+      "id": "c6cd918b-7729-484c-b7c3-b3c431ce8d78",
+      "code": "LE-DITEN-TECH",
+      "lifecycleState": "ACTIVE",
+      "referenceable": true
+    },
+    {
+      "id": "da87a30c-05f6-41a9-9e80-96695bfa28fc",
+      "code": "LE-DITEN-UK",
+      "lifecycleState": "ACTIVE",
+      "referenceable": true
+    },
+    {
+      "id": "a509f248-73a2-4a9b-815d-d639a878296b",
+      "code": "LE-DITEN-US",
+      "lifecycleState": "ACTIVE",
+      "referenceable": true
+    }
+  ]
+}

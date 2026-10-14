@@ -379,6 +379,12 @@ public interface IWorkflowTransitionLogRepository
         CancellationToken ct = default) =>
         CreateAsync(log, ct);
     Task<WorkflowTransitionLog?> GetByIdAsync(Guid id, CancellationToken ct = default);
+
+    // MOD-0022 E4 — single use of an approval signature: does any transition of this tenant already carry it? Fails closed
+    // in an implementation that does not answer (no silent "false").
+    Task<bool> IsSignatureBoundAsync(string signatureId, CancellationToken ct = default) =>
+        throw new NotSupportedException("This transition log store cannot answer the e-signature single-use check.");
+
     Task<WorkflowTransitionLog?> FindByIdempotencyAsync(
         Guid approvalTaskId,
         Domain.Enums.Workflow.WorkflowTransitionAction action,

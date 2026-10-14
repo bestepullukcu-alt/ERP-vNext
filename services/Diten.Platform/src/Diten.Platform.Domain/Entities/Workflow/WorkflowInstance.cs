@@ -43,6 +43,7 @@ public sealed class WorkflowInstance : TenantScopedEntity
     /// answered as no-eligible, the only reason such a close ever had — no migration.
     /// </summary>
     public string? StartClosedReasonCode { get; set; }
+    /// <summary>Display identity of the starter (e-mail first) — for people, not for comparisons.</summary>
     public string? StartedBy { get; set; }
 
     /// <summary>WP-WORKFLOW-APPROVAL-STATUS-01 (B2) — the starter's USER ID. <see cref="StartedBy"/> holds the actor

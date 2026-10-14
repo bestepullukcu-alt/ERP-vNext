@@ -1,0 +1,10 @@
+{
+  "wp": "WP-0173-PM0",
+  "action": "run-pm0-env.ps1 -Action Stop",
+  "stopped": ["prism-lot 39844", "sku-mock 15908", "inventory-service 372", "gateway 17252", "diten-web 20220", "persona-helper 40892"],
+  "gatewayCopyRemoved": true,
+  "listenersLeftOnOwnPorts": [],
+  "startedPidsStillAlive": [],
+  "userFleetAfterStop": {"4010":1392,"5000":30236,"5001":38232,"5056":41652,"5057":21540,"5058":19064,"5059":33564,"5060":27476,"5061":35008,"5066":35948},
+  "userFleetUnchangedVsBefore": true
+}

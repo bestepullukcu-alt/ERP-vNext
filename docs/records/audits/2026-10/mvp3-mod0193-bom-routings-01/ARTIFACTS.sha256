@@ -1,0 +1,23 @@
+# verify from: repository root
+b29982696deff0bffacdb1a352674ecb994b355086c814cce18a8474e44a4fa9  docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/REPORT.md
+73e8fa4206eb9150b7e0fdfaa57e93df00619063c3676a7011733da9cbf93c38  docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/evidence/architecture-suite.txt
+11e73fc7fed71e4de9b65795711ee485f4d4dd796a99cb7b3b494d3ab8fad0b8  docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/evidence/bom-version-event-suites.txt
+6808056da0e8a60af3bc218a23bd0a269d01d4f196e25e376d24da54fa8cd096  docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/evidence/bom-version-event.txt
+5f9acc9b1c3e5d735181e9483136e493f7bc8b1096cbe62c0a0ae8b685321fc3  docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/evidence/dcp002.txt
+5b77e87ab4198b0de56712029b365f2079847d7c98147515c48c0f09fa0fbeec  docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/evidence/gateway-e2e.py
+b9fdf500fac16470065314ca03de10971f27de5bcf71243d3012f0374baf0b0e  docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/evidence/gateway-e2e.txt
+8e2b6c04aafa67439bf11898f3a351bff99d211ec54673eee4b1af0c4a449f12  docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/evidence/gateway-suite.txt
+11235c74fcaa31bc3129aff7ee7335ae65ee69bd058b3e46bf0c4b43023eb6f3  docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/evidence/guards-sabotage-2026-10-12.txt
+bcc96c69f101c14b13cc1fd3f4f0eb392e12f5c1d79fe86d0d137a6fdbbf226d  docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/evidence/m3-live-mdm.txt
+a492334ea83159920be97e7f0dfe6c8426d25b6665f00e0c0fb62c80506a6f14  docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/evidence/m3-mdm-sabotage.txt
+ffc7b634d61a874d39cd5d4fb58ced9c22e60370edff4dac735d3dfe71fc6081  docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/evidence/m4-entitlement-uas001.txt
+38f40f17bdd9724924c2dbf0025780079e7119fbd63d1024054ea81f284bdc6c  docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/evidence/m4-self-registration.txt
+7b1e8ccbc366e117c817efad678fa86b5140a2ac2f8eb9a173a917fbdc15f200  docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/evidence/m5-browser-flow.txt
+776e13613717fcd40d3c003de4e83d9df746eaae8e94dec71671ef90bd627ed2  docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/evidence/m6-sdk8-build.txt
+60edf6d9cbf8de8114998b39fde56e11b1480a39cf18107695e3310b7eba5639  docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/evidence/m6-suite-comparison.txt
+27d5631a48290d69c580431de354a060817eb569aa4acd295a1a843c5ac75cbb  docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/evidence/port-5070-live.txt
+e7a651d981dcd7263f0832c74f4e9a4f45dfea9fbf57afe08c05cfebcd917912  docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/evidence/service-sabotage.txt
+15b6e08d3511e965e016144a05212645df573b72265ad0d39e074b7b82c15792  docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/evidence/service-suite.txt
+f9a32814c7b7c88befd81803b4c17fd36c6e243ba7dfd64844b9f7c66919040d  docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/evidence/verify-datatable.txt
+1fd07d6885c39d97c3ac09ec3cbd89a477036004915eda8b771825aedf24ce68  docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/evidence/web-suite.txt
+2d17e9759a8910e732570b5df793abbb8b5ef8d76d5cfe68b77fe1b958f11be8  docs/records/audits/2026-10/mvp3-mod0193-bom-routings-01/mvp4-handoff-bom-version-event.md

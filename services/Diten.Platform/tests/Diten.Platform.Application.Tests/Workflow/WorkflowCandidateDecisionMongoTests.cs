@@ -225,7 +225,10 @@ public sealed partial class WorkflowCandidateDecisionMongoTests(AuditOutboxTempo
         Assert.True(WorkflowTaskTransitionSupport.PrincipalEquals(Second.ToString("B").ToUpperInvariant(), D(Second)));
         Assert.False(WorkflowTaskTransitionSupport.PrincipalEquals(D(First), D(Second)));
         Assert.True(WorkflowTaskTransitionSupport.PrincipalEquals("role-queue", " role-queue "));
-        Assert.False(WorkflowTaskTransitionSupport.PrincipalEquals("role-queue", "ROLE-QUEUE")); // opaque: no case folding
+        // WP-LANE-MAIN-SYNC-02 P2b (owner decision 2026-10-14): opaque principals compare case-insensitively (main's
+        // WorkflowPrincipal.Same) — before, "no case folding". Different text is still a different principal.
+        Assert.True(WorkflowTaskTransitionSupport.PrincipalEquals("role-queue", "ROLE-QUEUE"));
+        Assert.False(WorkflowTaskTransitionSupport.PrincipalEquals("role-queue", "role-queue-2"));
         Assert.False(WorkflowTaskTransitionSupport.PrincipalEquals(null, null));
         Assert.False(WorkflowTaskTransitionSupport.PrincipalEquals("", ""));
     }

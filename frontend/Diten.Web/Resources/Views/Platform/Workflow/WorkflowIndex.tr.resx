@@ -209,4 +209,10 @@
   <data name="BpmnImportFailed" xml:space="preserve"><value>BPMN XML içe aktarılamadı.</value></data>
   <data name="ExclusiveGatewayWarning" xml:space="preserve"><value>Dışlayıcı ağ geçitleri diyagramda kabul edilir ancak henüz çalışma zamanı dallarına eşlenmez.</value></data>
   <data name="BpmnLibraryMissing" xml:space="preserve"><value>BPMN tasarımcı kütüphanesi yüklenemedi.</value></data>
+  <data name="Workflow.Designer.SignatureRequired" xml:space="preserve"><value>İmza gerekli</value></data>
+  <data name="Workflow.Designer.SignatureMeaning" xml:space="preserve"><value>İmza anlamı</value></data>
+  <data name="Workflow.Designer.SignatureMeaningSelect" xml:space="preserve"><value>Anlam seçin</value></data>
+  <data name="Workflow.Designer.SignatureMeaningRequired" xml:space="preserve"><value>İmza gerekli adımlar için aktif bir imza anlamı seçin.</value></data>
+  <data name="Workflow.Designer.SignatureHint" xml:space="preserve"><value>Onaylayan, WorkCenter onayında elektronik imza atar (şifre + anlam).</value></data>
+  <data name="Workflow.Designer.SignatureMeaningsUnavailable" xml:space="preserve"><value>İmza anlamları yüklenemedi.</value></data>
 </root>

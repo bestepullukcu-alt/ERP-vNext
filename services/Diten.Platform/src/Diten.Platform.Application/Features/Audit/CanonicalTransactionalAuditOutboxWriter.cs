@@ -67,6 +67,17 @@ public sealed class CanonicalTransactionalAuditOutboxWriter : ITransactionalAudi
         ArgumentNullException.ThrowIfNull(session);
         ArgumentNullException.ThrowIfNull(request);
 
+        // WP-LANE-MAIN-SYNC-02 P1 (owner decision 2026-10-14, BL-634) — the named, expiring exemption: an EXACT event
+        // name on TransactionOwnedAuditPayloadExemptions, no intent, and a payload that names the same event is stored
+        // as written. Everything else without an intent is refused below, as before.
+        if (request.Intent is null
+            && TransactionOwnedAuditPayloadExemptions.Exempts(request.RequestType)
+            && request.Payload.TryGetValue("RequestType", out var named)
+            && string.Equals(named as string, request.RequestType, StringComparison.Ordinal))
+        {
+            return _store.TryInsertAsync(session, request, ct);
+        }
+
         var intent = request.Intent
             ?? throw new TransactionOwnedAuditIntentInvalidException(
                 $"In-transaction audit for {request.RequestType} carries no intent; a hand-written payload is not accepted on this door.");

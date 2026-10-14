@@ -1,0 +1,7 @@
+### D4-3 / D4-3b tenant/LE isolation guards — RESTORED
+git diff --stat (must be empty):
+Başarılı!  - Başarısız:     0, Başarılı:    16, Atlanan:     0, Toplam:    16, Süre: 1 s - Diten.InventoryService.Tests.dll (net8.0)
+### full suite after all restores
+Başarılı!  - Başarısız:     0, Başarılı:   218, Atlanan:     0, Toplam:   218, Süre: 14 s - Diten.InventoryService.Tests.dll (net8.0)
+### git status --short
+?? docs/records/audits/2026-10/

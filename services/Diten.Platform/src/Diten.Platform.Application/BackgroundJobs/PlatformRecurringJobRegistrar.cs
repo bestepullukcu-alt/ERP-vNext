@@ -1,4 +1,5 @@
 using Diten.BuildingBlocks.BackgroundJobs;
+using Diten.Platform.Application.Features.ESignature.BackgroundJobs;
 using Diten.Platform.Application.Features.Meetings.BackgroundJobs;
 using Diten.Platform.Application.Features.Notifications.BackgroundJobs;
 using Diten.Platform.Application.Features.Tasks.BackgroundJobs;
@@ -38,6 +39,7 @@ public sealed class PlatformRecurringJobRegistrar : IRecurringJobRegistrar
             CreateTaskRecurrenceSweepRegistration(),
             CreateTaskDueSoonSweepRegistration(),
             CreateMeetingSeriesSweepRegistration(),
+            CreateESignatureRequestExpirySweepRegistration(),
             CreateTimesheetDecisionSweepRegistration(),
             CreateTimerMidnightCloseRegistration(),
             CreateTimesheetReminderRegistration(),
@@ -107,6 +109,23 @@ public sealed class PlatformRecurringJobRegistrar : IRecurringJobRegistrar
                     ["owner"] = owner,
                     ["execution"] = "sweep"
                 }));
+    }
+
+    private RecurringJobRegistration CreateESignatureRequestExpirySweepRegistration()
+    {
+        const string id = "Diten.Platform.MOD-0022.ESignatureRequestExpirySweepJob";
+        const string owner = "MOD-0022";
+        var enabled = _options.RegisterStandardJobs
+                      && _options.EnabledJobs.TryGetValue(id, out var configuredEnabled)
+                      && configuredEnabled;
+        var descriptor = new BackgroundJobDescriptor(id, ServiceName, nameof(ESignatureRequestExpirySweepJob), owner,
+            "*/15 * * * *", "UTC", enabled, "platform", _options.DefaultRetryAttempts, BackgroundJobTriggerTypes.Recurring);
+        return new RecurringJobRegistration(descriptor, typeof(ESignatureRequestExpirySweepJob), typeof(ESignatureRequestExpirySweepJobArgs),
+            new ESignatureRequestExpirySweepJobArgs(MaxItemsPerTenant: 200),
+            new BackgroundJobContext(
+                TriggerType: BackgroundJobTriggerTypes.Recurring,
+                TriggeredBy: nameof(PlatformRecurringJobRegistrar),
+                Metadata: new Dictionary<string, string> { ["owner"] = owner, ["execution"] = "sweep" }));
     }
 
     private RecurringJobRegistration CreateWorkflowEscalationSweepRegistration()

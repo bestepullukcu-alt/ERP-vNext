@@ -1,0 +1,4 @@
+$ netstat -ano | grep -E ":(5066|4010|4011|5091) .*LISTEN"
+(no listener)
+$ Win32_Process node/dotnet whose command line matches prism-cli|Diten.InventoryService.Api.dll|k1gate
+0

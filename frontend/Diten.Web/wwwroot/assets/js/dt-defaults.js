@@ -233,14 +233,14 @@ window.DtDefaults = (function () {
      */
     var LOAD_ERROR_FALLBACK = {
         DtLoadFailed: 'The list could not be loaded.',
-        DtLoadForbidden: 'You do not have permission to see this list.',
+        DtLoadNoPermission: 'You do not have permission to see this list.',
         DtRetry: 'Retry'
     };
     // Each key read by name, so the payload's key list and what this file reads stay provably equal
     // (tests/datatable-language-one-delivery-path.test.js).
     var loadErrorText = function (key) {
         var own = key === 'DtLoadFailed' ? dtText('DtLoadFailed')
-            : key === 'DtLoadForbidden' ? dtText('DtLoadForbidden')
+            : key === 'DtLoadNoPermission' ? dtText('DtLoadNoPermission')
                 : dtText('DtRetry');
         return own || LOAD_ERROR_FALLBACK[key];
     };
@@ -387,7 +387,7 @@ window.DtDefaults = (function () {
         box.setAttribute('data-dt-load-error', forbidden ? 'forbidden' : 'failed');
         var text = doc.createElement('span');
         text.className = 'text-body-secondary';
-        text.textContent = loadErrorText(forbidden ? 'DtLoadForbidden' : 'DtLoadFailed');
+        text.textContent = loadErrorText(forbidden ? 'DtLoadNoPermission' : 'DtLoadFailed');
         box.appendChild(text);
         if (!forbidden) {
             var retry = doc.createElement('button');

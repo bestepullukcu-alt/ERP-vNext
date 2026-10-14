@@ -1,5 +1,7 @@
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Application.Features.ESignature;
+using Diten.Platform.Application.Features.ESignature.Services;
 using Diten.Platform.Application.Features.Workflow.Commands;
 using Diten.Platform.Application.Features.Workflow.Services;
 using Diten.Platform.Common.Tenancy;
@@ -23,6 +25,8 @@ public sealed class PublishWorkflowDefinitionHandler
     private readonly IWorkflowInstanceRepository? _instances;
     private readonly IApprovalTaskRepository? _approvalTasks;
     private readonly ILogger<PublishWorkflowDefinitionHandler> _logger;
+    private readonly IESignMeaningRepository? _meanings;
+    private readonly IESignatureCatalog? _esignCatalog;
 
     public PublishWorkflowDefinitionHandler(
         IWorkflowTemplateRepository templateRepository,
@@ -33,8 +37,13 @@ public sealed class PublishWorkflowDefinitionHandler
         // D2-FIX4 item 3 — what a republished rule set has to reach (see CreateSlaEscalationRuleHandler).
         IWorkflowInstanceRepository? instances = null,
         IApprovalTaskRepository? approvalTasks = null,
-        ILogger<PublishWorkflowDefinitionHandler>? logger = null)
+        ILogger<PublishWorkflowDefinitionHandler>? logger = null,
+        // MOD-0022 (main) — signature meanings and the e-signature catalog a signature-required step is checked against.
+        IESignMeaningRepository? meanings = null,
+        IESignatureCatalog? esignCatalog = null)
     {
+        _meanings = meanings;
+        _esignCatalog = esignCatalog;
         _templateRepository = templateRepository;
         _versionRepository = versionRepository;
         _tenantContext = tenantContext;
@@ -60,6 +69,35 @@ public sealed class PublishWorkflowDefinitionHandler
                 400,
                 WorkflowReasonCodes.ValidationFailed,
                 request.CorrelationId);
+        }
+
+        // MOD-0022 E4 (ESIGN-BUNDLE x-workflow-addendum) — a step that requires a signature names an ACTIVE meaning of
+        // this tenant, else 400 ESIGN_MEANING_NOT_ALLOWED. Steps without the flag are not looked at (old templates unchanged).
+        var signatureSteps = WorkflowDefinitionRuntimePlan.FromJson(request.Request.DefinitionJson).Where(s => s.SignatureRequired).ToList();
+        if (signatureSteps.Count > 0)
+        {
+            if (_meanings is null)
+            {
+                return Response<PublishWorkflowDefinitionResponse>.Fail(
+                    "Signature meanings cannot be checked; a signature-required step cannot be published.",
+                    400, ESignCodes.MeaningNotAllowed, request.CorrelationId);
+            }
+
+            if (_esignCatalog is not null)
+            {
+                await _esignCatalog.EnsureMeaningsAsync(_tenantContext.TenantId, ct);
+            }
+
+            foreach (var step in signatureSteps)
+            {
+                var meaning = step.SignatureMeaning is null ? null : await _meanings.GetAsync(_tenantContext.TenantId, step.SignatureMeaning, ct);
+                if (meaning is null || !meaning.IsActive)
+                {
+                    return Response<PublishWorkflowDefinitionResponse>.Fail(
+                        $"Step '{step.StageCode}/{step.StepCode}' requires a signature with an active meaning; '{step.SignatureMeaning}' is not one.",
+                        400, ESignCodes.MeaningNotAllowed, request.CorrelationId);
+                }
+            }
         }
 
         var template = await _templateRepository.GetByIdAsync(request.TemplateId, ct);

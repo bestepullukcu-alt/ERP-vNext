@@ -32,6 +32,7 @@ public static class DependencyInjection
         services.Configure<InternalEventAuthSettings>(configuration.GetSection("InternalEventAuth"));
         services.Configure<PlatformServiceOptions>(configuration.GetSection(PlatformServiceOptions.SectionName));
         services.Configure<MfaOptions>(configuration.GetSection(MfaOptions.SectionName));
+        services.Configure<ESignOptions>(configuration.GetSection(ESignOptions.SectionName));
         services.Configure<SmtpOptions>(configuration.GetSection(SmtpOptions.SectionName));
         var jwtSettings = configuration.GetSection("JwtSettings").Get<JwtSettings>()
             ?? new JwtSettings();
@@ -87,6 +88,8 @@ public static class DependencyInjection
         services.AddHostedService<Security.SignInTimingWarmup>();
         services.AddScoped<ITenantUserInvitationEmailService, TenantUserInvitationEmailService>();
         services.AddScoped<IMfaChallengeService, MfaChallengeService>();
+        // MOD-0022 E1 — e-signature re-authentication tickets and KS-3 windows.
+        services.AddScoped<IESignReauthTicketService, ESignReauthTicketService>();
         services.AddScoped<IOtpDeliveryService, SmtpOtpDeliveryService>();
         services.AddHttpClient<ITenantLoginSettingsClient, PlatformTenantLoginSettingsClient>((sp, client) =>
         {
