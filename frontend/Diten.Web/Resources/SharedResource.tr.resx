@@ -1126,6 +1126,7 @@
   </data>
   <data name="Nav.Page.CRMVISITQRCODES" xml:space="preserve">
     <value>Ziyaret QR Kodları</value>
+  </data>
   <data name="Nav.Page.CRMVISITEVIDENCEFLAGS" xml:space="preserve">
     <value>Ziyaret Kanıt İşaretleri</value>
   </data>

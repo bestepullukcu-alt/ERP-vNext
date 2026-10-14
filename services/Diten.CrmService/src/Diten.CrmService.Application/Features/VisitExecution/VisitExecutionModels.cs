@@ -180,7 +180,7 @@ public sealed record StartVisitExecutionCommand(
     string? PhotoCapturedAt,
     // WP-VW-W3E (W3E-BE-a, §2.4) — the scanned institution QR payload (≤ 200, sent as read) + the client's scan instant.
     string? QrPayload = null,
-    string? QrScannedAt = null) : IRequest<Response<VisitExecutionDto>>;
+    string? QrScannedAt = null,
     // WP-VW-W3E (BE-b, §2.5, additive) — the device declaration (the token's SIZE only: the token never enters here).
     VisitDeviceEvidenceInput? Device = null) : IRequest<Response<VisitExecutionDto>>;
 

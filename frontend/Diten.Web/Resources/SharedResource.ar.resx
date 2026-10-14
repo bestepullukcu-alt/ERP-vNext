@@ -1072,6 +1072,7 @@
   </data>
   <data name="Nav.Page.CRMVISITQRCODES" xml:space="preserve">
     <value>رموز QR للزيارات</value>
+  </data>
   <data name="Nav.Page.CRMVISITEVIDENCEFLAGS" xml:space="preserve">
     <value>مؤشرات أدلة الزيارة</value>
   </data>

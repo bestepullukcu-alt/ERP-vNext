@@ -1072,6 +1072,7 @@
   </data>
   <data name="Nav.Page.CRMVISITQRCODES" xml:space="preserve">
     <value>拜访二维码</value>
+  </data>
   <data name="Nav.Page.CRMVISITEVIDENCEFLAGS" xml:space="preserve">
     <value>拜访证据标记</value>
   </data>

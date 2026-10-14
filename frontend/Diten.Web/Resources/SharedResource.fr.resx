@@ -1073,6 +1073,7 @@
   </data>
   <data name="Nav.Page.CRMVISITQRCODES" xml:space="preserve">
     <value>Codes QR de visite</value>
+  </data>
   <data name="Nav.Page.CRMVISITEVIDENCEFLAGS" xml:space="preserve">
     <value>Alertes de preuve de visite</value>
   </data>

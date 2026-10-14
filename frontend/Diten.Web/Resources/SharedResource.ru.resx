@@ -1072,6 +1072,7 @@
   </data>
   <data name="Nav.Page.CRMVISITQRCODES" xml:space="preserve">
     <value>QR-коды визитов</value>
+  </data>
   <data name="Nav.Page.CRMVISITEVIDENCEFLAGS" xml:space="preserve">
     <value>Отметки доказательств визита</value>
   </data>
