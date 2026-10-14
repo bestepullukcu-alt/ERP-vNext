@@ -560,3 +560,11 @@ Test dalına alındı: `c229ec603` (ajan `90a6b07dc`), çakışmasız.
 - **Mobil:** `QR.md` §8 → CT mobil sayfasına taşıyacak (`DEVICE.md` ile birlikte).
 
 **Sıradaki:** W3E-WEB-a ∥ W3E-WEB-b (istemler yukarıda; BE-c artık test dalında).
+
+## Not — PR #144 ve sayfa yardımı (UXH-001), 2026-10-14
+**Kullanıcı kararı:** W3E-WEB-a / WEB-b **şimdi** çalıştırılır (istemler değişmez). PR #144 main'e girip test dalına senkronlanınca CT küçük bir düzeltme yapar:
+- **"?" yardım metinleri:** `Help.CRMVISITQRCODES.*` ve `Help.CRMVISITEVIDENCEFLAGS.*` — Purpose, Audience, Step1..n + Title; 7 dil, `PageHelpResource`. `PageHelpCatalog` girdileri eklenir.
+- **Enter kuralı:** yan pencerelerde birincil işlem Enter'la çalışır; geri alınamaz işlem (iptal, yeniden üret) yalnız Ctrl / Cmd + Enter.
+- **Kısayollar** ortak katmana kaydedilir.
+
+Deneme birleştirmesi (CT): test dalı ↔ PR #144 metin çakışmasız; CRM 2840/2, Web 2531/2 (bilinen).
