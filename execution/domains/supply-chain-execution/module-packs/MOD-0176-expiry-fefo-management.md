@@ -1068,6 +1068,19 @@ gateway 134/135; 0 new warnings. Sabotage a–k **11/11** red → green, `git di
 302 → login without skeleton, `/InventoryGovernance` 404, fleet PIDs unchanged. Screenshots are a static preview (real Razor + real JS
 + fixed JSON). Evidence `docs/records/audits/2026-10/mod-0176-f5-evidence-2026-10-13.md`; open points O-F5-1 … in its §12.
 
+**F5 — CT acceptance (2026-10-14).** Commits `4017893d9`, `c5a6d3062`, `9ddd2c790`, `569c09b3d`, `03d54ccf9`, `f4fbac891` (base `32267f884`; the
+agent stopped BLOCKED on the Web whitelists — CT measured `MovementRules.cs:254-278`, `StockMovementsController.cs:505-528`, `LotsController.cs:177-198`
+and chose **A**: four additive Web seams). The CT merged F5 with the MVP-1 branch (INT-RECALL + R2 had landed meanwhile) in its own worktree — no
+conflict — and measured the merged tree: Inventory **1115 + 4 skipped**, **Web 1458/1458**, architecture 69/77 (same 8), gateway 164/165 (known port
+red). Deletions (2,310 lines) are the InventoryGovernance mock only. The CT viewed the decision drawer and evidence preview screenshots; the
+`EXP-…` number on them is preview fixture data — production numbers are `FX-YYYY-NNNN` (`ExpiryContract.cs:67`). CT sabotages (own): the Web data
+gates of `list/exceptions` (`ExpiryKeys.ExceptionsRead`), the policy read (`PoliciesRead`) and `data/evidence/preview` (`EvidenceExport`) removed one
+at a time → **all 26 Expiry Web tests stayed green** each time. Not an exposure — the Web forwards the caller's token and InventoryService re-checks
+every key on every operation (F1 / F4 / F5 service tests) — but an unproven guard: **WP-MVP1-FIX-WEBGATES** adds a parametric Web test over every
+Expiry data / list / lookup door (403 without its key, no gateway call). Open points accepted as FU: PDF labels tr / en only and raw policy field
+names in the PDF (FU-0176-PDF-L10N); product names absent from CSV / PDF (FU-0176-EV-NAMES); "Risk Management" card opens `/Expiry` (CT-F12, intended);
+O-F4-7 stays FU-0175-UI-THEME-01. Fast-forwarded into the MVP-1 branch; the owner's Inventory + Web need the CT restart (approval).
+
 ## 20. Follow-up Items
 
 | ID | Item | Owner |
