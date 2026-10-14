@@ -32,8 +32,6 @@
   <data name="TypeTenant" xml:space="preserve"><value>Inquilino</value></data>
   <data name="PaneForm" xml:space="preserve"><value>Formulario</value></data>
   <data name="PaneHistory" xml:space="preserve"><value>Historial de cambios</value></data>
-  <data name="SoonTitle" xml:space="preserve"><value>Evidencias adicionales</value></data>
-  <data name="SoonText" xml:space="preserve"><value>Aquí se añadirán el código QR de la institución y el control de ubicación falsa.</value></data>
   <data name="SoonBadge" xml:space="preserve"><value>Próximamente</value></data>
   <data name="PreviewTitle" xml:space="preserve"><value>Un representante de este ámbito verá</value></data>
   <data name="PvStartTitle" xml:space="preserve"><value>Iniciar visita</value></data>
@@ -218,4 +216,35 @@
   <data name="Err_conflict" xml:space="preserve"><value>El registro cambió mientras tanto; recargue e inténtelo de nuevo.</value></data>
   <data name="Err_unavailable" xml:space="preserve"><value>No se pudo guardar. No se puede acceder al servidor; sus cambios se conservan en esta pantalla.</value></data>
   <data name="Err_generic" xml:space="preserve"><value>No se pudo completar la acción.</value></data>
+  <data name="G_extra" xml:space="preserve"><value>Pruebas adicionales</value></data>
+  <data name="QrCaption" xml:space="preserve"><value>CÓDIGO QR DE LA INSTITUCIÓN</value></data>
+  <data name="QrIntro" xml:space="preserve"><value>Código propio de la institución, colocado en recepción. El servidor comprueba que el código pertenece a esta institución y a esta empresa y que no ha sido revocado. Una visita remota no pide el código QR.</value></data>
+  <data name="DeviceCaption" xml:space="preserve"><value>VERIFICACIÓN DEL DISPOSITIVO</value></data>
+  <data name="DeviceIntro" xml:space="preserve"><value>Si la aplicación móvil informa de una ubicación simulada o de un dispositivo modificado, la visita se marca. Las visitas iniciadas desde un navegador web reciben la marca «dispositivo no verificado».</value></data>
+  <data name="ManageQrLink" xml:space="preserve"><value>Gestionar los códigos QR de las instituciones →</value></data>
+  <data name="F_qrMode" xml:space="preserve"><value>Código QR de la institución</value></data>
+  <data name="F_antiFraudMode" xml:space="preserve"><value>Verificación del dispositivo</value></data>
+  <data name="Opt_qrMode_off" xml:space="preserve"><value>Desactivado</value></data>
+  <data name="Opt_qrMode_optional" xml:space="preserve"><value>Opcional</value></data>
+  <data name="Opt_qrMode_required" xml:space="preserve"><value>Obligatorio</value></data>
+  <data name="Opt_antiFraudMode_off" xml:space="preserve"><value>Desactivada</value></data>
+  <data name="Opt_antiFraudMode_flag" xml:space="preserve"><value>Marcar</value></data>
+  <data name="Opt_antiFraudMode_block" xml:space="preserve"><value>Bloquear</value></data>
+  <data name="D_qrMode_off" xml:space="preserve"><value>No se pide código QR.</value></data>
+  <data name="D_qrMode_optional" xml:space="preserve"><value>El representante también puede empezar sin escanear. Si se escanea un código erróneo o revocado, la visita se marca.</value></data>
+  <data name="D_qrMode_required" xml:space="preserve"><value>El representante no puede iniciar la visita sin escanear el código de la institución. Donde no se ha impreso código, la visita empieza y se marca.</value></data>
+  <data name="NewBadge" xml:space="preserve"><value>nuevo</value></data>
+  <data name="XRule_qr_optional" xml:space="preserve"><value>Flexibilizar la obligación del QR</value></data>
+  <data name="XRuleDesc_qr_optional" xml:space="preserve"><value>Código QR de la institución: Obligatorio → Opcional. Empieza sin escanear; la visita se marca «Iniciada con una excepción».</value></data>
+  <data name="XRuleQrNotRequired" xml:space="preserve"><value>El código QR no es obligatorio para este representante; no hay nada que flexibilizar.</value></data>
+  <data name="SourceExceptionShort" xml:space="preserve"><value>excepción</value></data>
+  <data name="RepsEmpty" xml:space="preserve"><value>Ningún representante tiene aún una asignación de territorio activa.</value></data>
+  <data name="PaneReps" xml:space="preserve"><value>Representantes</value></data>
+  <data name="RepsTitle" xml:space="preserve"><value>Representantes · valor predeterminado del inquilino</value></data>
+  <data name="RepsNote" xml:space="preserve"><value>El valor con el que cada representante empieza hoy; «excepción» = una excepción temporal aprobada activa hoy.</value></data>
+  <data name="ColRep" xml:space="preserve"><value>Representante</value></data>
+  <data name="ColLocation" xml:space="preserve"><value>Ubicación</value></data>
+  <data name="ColPhoto" xml:space="preserve"><value>Foto</value></data>
+  <data name="ColQr" xml:space="preserve"><value>Código QR</value></data>
+  <data name="ColDevice" xml:space="preserve"><value>Dispositivo</value></data>
 </root>

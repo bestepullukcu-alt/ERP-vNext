@@ -1,0 +1,118 @@
+@model Diten.Web.Models.CRM.VisitEvidenceFlagsViewModel
+@using Diten.Web.Views.CRM.VisitEvidenceFlags
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<VisitEvidenceFlagsIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["PageTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    Context.Items["NavActivePath"] = "/CRM/VisitEvidenceFlags";
+}
+
+@*
+    WP-VW-W3E (W3E-WEB-b) — the manager's visit evidence flags (mockup "W3E Ek Kanitlar" M1–M6): the summary strip (started,
+    flagged + rate, the flag-type bars with "Other (N types)"), the filters (period ≤ 92 days, rep, flag types, institution,
+    "only flagged"), the visits list + paging, the right drawer (location, QR, device, duration + slides, the photo through
+    the existing evidence path with its own keys, the exception link, "open the visit") and the rep summary (a row filters
+    the list to that rep). Read only (K-W3E-11). Every call is a same-origin proxy under /CRM/VisitEvidenceFlags/api/*.
+    UAS-001: without a flags read key NOTHING but the notice.
+*@
+@if (!Model.CanRead)
+{
+    <partial name="_AccessDenied" model="@Localizer["PageTitle"].Value" />
+    return;
+}
+
+<div id="vf-root" class="vf-page"
+     data-api-base="/CRM/VisitEvidenceFlags/api"
+     data-can-read-all="@Model.CanReadAll.ToString().ToLowerInvariant()"
+     data-can-see-photos="@Model.CanSeePhotos.ToString().ToLowerInvariant()"
+     data-visit-url="/CRM/VisitReport"
+     data-exception-url="/CRM/VisitEvidenceSettings">
+
+    <div class="vf-head">
+        <div class="vf-crumb">@Localizer["Crumb"]</div>
+        <h4 class="vf-title">@Localizer["PageTitle"]</h4>
+        <div class="vf-intro">@Localizer["Intro"]</div>
+    </div>
+
+    <div class="vf-alert vf-alert-danger d-none" id="vf-error" role="alert"></div>
+
+    @* M1 — the summary strip *@
+    <div class="vf-card vf-summary" id="vf-summary">
+        <div class="vf-stat"><span class="vf-stat-label">@Localizer["SumStarted"]</span><span class="vf-stat-value" id="vf-sum-started">—</span><span class="vf-sub" id="vf-sum-range"></span></div>
+        <div class="vf-stat"><span class="vf-stat-label">@Localizer["SumFlagged"]</span><span class="vf-row"><span class="vf-stat-value" id="vf-sum-flagged">—</span><span class="vf-pill vf-tone-warning" id="vf-sum-rate"></span></span><span class="vf-sub">@Localizer["SumReview"]</span></div>
+        <div class="vf-bars-wrap"><div class="vf-sub"><span class="vf-strong-sub">@Localizer["SumByFlag"]</span> · @Localizer["SumByFlagNote"]</div><div class="vf-bars" id="vf-bars"></div></div>
+    </div>
+
+    <div class="vf-card">
+        @* the filters *@
+        <div class="vf-filters">
+            <select class="vf-select" id="vf-period" aria-label="@Localizer["PeriodLabel"]"></select>
+            <span class="vf-custom d-none" id="vf-custom">
+                <input type="date" class="vf-input" id="vf-from" aria-label="@Localizer["CustomFrom"]" />
+                <span class="vf-sub">–</span>
+                <input type="date" class="vf-input" id="vf-to" aria-label="@Localizer["CustomTo"]" />
+            </span>
+            <select class="vf-select" id="vf-rep" aria-label="@Localizer["RepLabel"]"></select>
+            <div class="vf-multi" id="vf-flag-filter">
+                <button type="button" class="vf-select vf-multi-btn" id="vf-flag-btn" aria-haspopup="true" aria-expanded="false"><span id="vf-flag-text"></span><i class="bx bx-chevron-down"></i></button>
+                <div class="vf-multi-menu d-none" id="vf-flag-menu" role="group"></div>
+            </div>
+            <select class="vf-select" id="vf-account" aria-label="@Localizer["AccountLabel"]"></select>
+            <label class="vf-toggle"><input type="checkbox" id="vf-only" checked /> <span class="vf-switch" aria-hidden="true"></span> @Localizer["OnlyFlagged"]</label>
+        </div>
+        <span class="vf-err d-none" id="vf-range-error" role="alert"></span>
+
+        <div class="vf-tabs" role="tablist">
+            <button type="button" role="tab" class="vf-tab active" data-tab="visits" aria-selected="true"><i class="bx bx-list-ul"></i> @Localizer["TabVisits"]</button>
+            <button type="button" role="tab" class="vf-tab" data-tab="reps" aria-selected="false"><i class="bx bx-user-voice"></i> @Localizer["TabReps"]</button>
+        </div>
+
+        @* M1 / M4 — the visits *@
+        <div id="vf-pane-visits">
+            <div class="vf-table-wrap">
+                <table class="vf-table">
+                    <thead><tr><th>@Localizer["ColStart"]</th><th>@Localizer["ColRep"]</th><th>@Localizer["ColTarget"]</th><th>@Localizer["ColKind"]</th><th>@Localizer["ColFlags"]</th><th>@Localizer["ColDuration"]</th><th>@Localizer["ColException"]</th></tr></thead>
+                    <tbody id="vf-rows"></tbody>
+                </table>
+            </div>
+            <div class="vf-empty d-none" id="vf-empty"><i class="bx bx-check-shield"></i><strong id="vf-empty-title"></strong><span class="vf-sub" id="vf-empty-text"></span></div>
+            <div class="vf-pager" id="vf-pager"><span class="vf-sub" id="vf-page-text"></span><div class="vf-pages" id="vf-pages"></div></div>
+        </div>
+
+        @* M3 — the rep summary *@
+        <div class="d-none" id="vf-pane-reps">
+            <div class="vf-table-wrap">
+                <table class="vf-table">
+                    <thead><tr><th>@Localizer["ColRep"]</th><th>@Localizer["ColStarted"]</th><th>@Localizer["ColFlagged"]</th><th>@Localizer["ColRate"]</th><th>@Localizer["ColTopFlag"]</th><th aria-hidden="true"></th></tr></thead>
+                    <tbody id="vf-rep-rows"></tbody>
+                </table>
+            </div>
+            <div class="vf-sub vf-pad">@Localizer["RepsHint"]</div>
+        </div>
+    </div>
+</div>
+
+@* M2 — the right drawer *@
+<div class="offcanvas offcanvas-end vf-drawer" tabindex="-1" id="vf-drawer" aria-labelledby="vf-drawer-title">
+    <div class="vf-drawer-head">
+        <div class="vf-col"><h5 class="vf-drawer-title" id="vf-drawer-title">@Localizer["DrawerTitle"]</h5><span class="vf-sub" id="vf-drawer-sub"></span><span class="vf-sub" id="vf-drawer-target"></span></div>
+        <button type="button" class="vf-x" data-bs-dismiss="offcanvas" aria-label="@Localizer["CloseButton"]"><i class="bx bx-x"></i></button>
+    </div>
+    <div class="offcanvas-body vf-col vf-gap" id="vf-drawer-body"></div>
+    <div class="vf-drawer-foot"><a class="vf-btn vf-btn-o" id="vf-open-visit" href="#">@Localizer["OpenVisit"] <i class="bx bx-right-arrow-alt vf-flip"></i></a></div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/js/CRM/VisitEvidenceFlags/visit-evidence-flags.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script>
+        window.VisitEvidenceFlagsL10n = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+            VisitEvidenceFlagsIndex.ScriptKeys.ToDictionary(k => k, k => Localizer[k].Value)));
+    </script>
+    <script src="~/assets/js/CRM/VisitPlanning/format.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/VisitEvidenceFlags/flags-core.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/VisitEvidenceFlags/visit-evidence-flags.js" asp-append-version="true"></script>
+}

@@ -19,6 +19,9 @@ public sealed class VisitEvidenceSettingsIndexViewModel
     /// <summary>Write / submit / withdraw / cancel / end early an exception: crm.visit-evidence-exception.manage.</summary>
     public bool CanManageExceptions { get; set; }
 
+    /// <summary>WP-VW-W3E (W3E-WEB-b) — crm.visit-qr.read | .manage: the "manage institution QR codes" link.</summary>
+    public bool CanReadQrCodes { get; set; }
+
     /// <summary>The session user as CRM names the actor (sub) — the page marks its own records (SoD hint).</summary>
     public string? Me { get; set; }
 }

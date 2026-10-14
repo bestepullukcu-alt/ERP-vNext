@@ -22,8 +22,10 @@
     const perms = {
         managePolicy: root.getAttribute('data-can-manage-policy') === 'true',
         read: root.getAttribute('data-can-read-exceptions') === 'true',
-        manage: root.getAttribute('data-can-manage-exceptions') === 'true'
+        manage: root.getAttribute('data-can-manage-exceptions') === 'true',
+        qrCodes: root.getAttribute('data-can-read-qr-codes') === 'true' // W3E — the "manage institution QR codes" link
     };
+    const qrCodesUrl = root.getAttribute('data-qr-codes-url') || '/CRM/VisitQrCodes';
     const me = root.getAttribute('data-me') || '';
 
     // ── tiny helpers ─────────────────────────────────────────────────────────────────────────────────────────
@@ -82,6 +84,7 @@
             renderPreview();
             renderDirty();
             if (state.pane === 'history') { loadHistory(); }
+            if (state.pane === 'reps') { renderReps(); }
         });
     }
 
@@ -130,6 +133,40 @@
         if (!state.draft) { return; }
         el('ve-groups').innerHTML = C.GROUPS.map(g => '<div class="ve-card"><div class="ve-card-head ve-start"><span class="ve-card-title ve-row ve-lg"><i class="bx ' + g.icon + ' ve-ic"></i> ' + esc(L['G_' + g.key]) + '</span></div>'
             + '<div class="ve-fields">' + g.fields.map(fieldHtml).join('') + '</div></div>').join('');
+        renderExtra();
+    }
+
+    /**
+     * WP-VW-W3E (W3E-WEB-b, E1) — "Additional evidence" (in place of the former "coming soon" card): the institution QR code
+     * as three choice cards with their effect sentence + the "manage institution QR codes" link (only with a QR key), the
+     * device verification as a segment whose "block" is disabled with "soon" (W3E-ATTEST).
+     */
+    function renderExtra() {
+        const host = el('ve-extra');
+        if (!host || !state.draft) { return; }
+        const d = state.draft;
+        const dis = !perms.managePolicy;
+        const qr = C.EXTRA.qrMode.options.map(v => {
+            const on = d.qrMode === v;
+            return '<button type="button" role="radio" class="ve-choice' + (on ? ' active' : '') + '" aria-checked="' + on + '" data-field="qrMode" data-opt="' + v + '"' + (dis ? ' disabled' : '') + '>'
+                + '<span class="ve-choice-head"><span class="ve-choice-dot" aria-hidden="true"></span><span class="ve-strong">' + esc(L['Opt_qrMode_' + v]) + '</span></span>'
+                + '<span class="ve-sub">' + esc(L['D_qrMode_' + v]) + '</span></button>';
+        }).join('');
+        const device = C.EXTRA.antiFraudMode.options.map(v => {
+            const soon = C.EXTRA.antiFraudMode.soon.indexOf(v) > -1;
+            const on = d.antiFraudMode === v && !soon;
+            return '<button type="button" role="radio" class="ve-seg-btn' + (on ? ' active' : '') + (soon ? ' ve-soon-opt' : '') + '" aria-checked="' + on + '"'
+                + (soon ? ' disabled aria-disabled="true" data-soon="' + v + '"' : ' data-field="antiFraudMode" data-opt="' + v + '"' + (dis ? ' disabled' : ''))
+                + '>' + esc(L['Opt_antiFraudMode_' + v]) + (soon ? ' <span class="ve-pill ve-tone-secondary ve-pill-xs">' + esc(L.SoonBadge) + '</span>' : '') + '</button>';
+        }).join('');
+        host.innerHTML = '<div class="ve-card ve-extra"><div class="ve-card-head ve-start"><span class="ve-card-title ve-row ve-lg"><i class="bx bx-qr-scan ve-ic"></i> ' + esc(L.G_extra) + '</span></div>'
+            + '<div class="ve-fields">'
+            + '<div class="ve-field-row ve-col ve-gap-s"><span class="ve-cap">' + esc(L.QrCaption) + '</span><span class="ve-sub">' + esc(L.QrIntro) + '</span>'
+            + '<div class="ve-choices" role="radiogroup" aria-label="' + esc(L.F_qrMode) + '">' + qr + '</div>'
+            + (perms.qrCodes ? '<a class="ve-link" href="' + esc(qrCodesUrl) + '" id="ve-qr-manage">' + esc(L.ManageQrLink) + '</a>' : '') + '</div>'
+            + '<div class="ve-field-row ve-col ve-gap-s"><span class="ve-cap">' + esc(L.DeviceCaption) + '</span><span class="ve-sub">' + esc(L.DeviceIntro) + '</span>'
+            + '<div class="ve-seg' + (dis ? ' ve-dis' : '') + '" role="radiogroup" aria-label="' + esc(L.F_antiFraudMode) + '">' + device + '</div></div>'
+            + '</div></div>';
     }
 
     function renderPreview() {
@@ -215,7 +252,8 @@
             show('ve-eff-exception', !!x);
             el('ve-eff-rows').innerHTML = C.effectiveRows(dto).map(row => {
                 const fromException = row.source === 'exception';
-                return '<tr><td>' + esc(L['F_' + row.field]) + '</td><td>' + esc(valueText(row.field, row.value)) + '</td><td><span class="ve-pill ' + (fromException ? 've-tone-warning' : 've-tone-secondary') + '">'
+                const isNew = C.NEW_FIELDS.indexOf(row.field) > -1; // W3E — the two new rows carry the mockup's "new" badge
+                return '<tr' + (isNew ? ' class="ve-row-new"' : '') + '><td>' + esc(L['F_' + row.field]) + (isNew ? ' <span class="ve-pill ve-tone-primary ve-pill-xs">' + esc(L.NewBadge) + '</span>' : '') + '</td><td>' + esc(valueText(row.field, row.value)) + '</td><td><span class="ve-pill ' + (fromException ? 've-tone-warning' : 've-tone-secondary') + '">'
                     + esc(fromException ? T('SourceExceptionUntil', x ? day(x.endDate) : '') : L.SourceTenant) + '</span></td></tr>';
             }).join('');
             show('ve-effective', true);
@@ -251,7 +289,24 @@
         document.querySelectorAll('.ve-pane-tab').forEach(b => { const on = b.getAttribute('data-pane') === pane; b.classList.toggle('active', on); b.setAttribute('aria-selected', String(on)); });
         show('ve-pane-form', pane === 'form');
         show('ve-pane-history', pane === 'history');
+        show('ve-pane-reps', pane === 'reps');
         if (pane === 'history' && !state.history) { loadHistory(); }
+        if (pane === 'reps') { renderReps(); }
+    }
+
+    /**
+     * WP-VW-W3E (W3E-WEB-b, E3) — the reps and their effective location / photo / QR / device values: the tenant policy
+     * relaxed by each rep's approved exception active today ("· exception"), from the roster + the exception list the page
+     * already reads (no read per rep).
+     */
+    function renderReps() {
+        const host = el('ve-rep-rows');
+        if (!host || !state.policy) { return; }
+        const rows = C.repRows(state.reps, state.policy, state.list ? state.list.items : []);
+        host.innerHTML = rows.length
+            ? rows.map(r => '<tr><td><div class="ve-row"><span class="ve-avatar ve-avatar-sm">' + esc(initials(r.name)) + '</span><span class="ve-strong">' + F.bidi(r.name) + '</span></div></td>'
+                + C.REP_COLUMNS.map(f => { const c = r.cells[f]; return '<td' + (C.NEW_FIELDS.indexOf(f) > -1 ? ' class="ve-col-new"' : '') + '>' + esc(valueText(f, c.value)) + (c.fromException ? ' <span class="ve-mu">· ' + esc(L.SourceExceptionShort) + '</span>' : '') + '</td>'; }).join('') + '</tr>').join('')
+            : '<tr><td colspan="5" class="ve-empty">' + esc(L.RepsEmpty) + '</td></tr>';
     }
 
     // ── C4 — the exceptions ──────────────────────────────────────────────────────────────────────────────────
@@ -273,7 +328,18 @@
             const badge = el('ve-tab-badge');
             if (badge) { const n = C.tabBadge(list); badge.textContent = F.isolate(n); badge.classList.toggle('d-none', n === 0); }
             renderExceptions();
+            if (state.pane === 'reps') { renderReps(); }
+            openLinkedException();
         });
+    }
+
+    /** WP-VW-W3E (W3E-WEB-b, M2) — "?exception=<id>" (the evidence flags drawer's link) opens that exception once. */
+    let linkedOpened = false;
+    function openLinkedException() {
+        if (linkedOpened) { return; }
+        linkedOpened = true;
+        const id = new URLSearchParams((window.location && window.location.search) || '').get('exception');
+        if (id && /^[0-9a-fA-F-]{36}$/.test(id)) { setTab('exceptions'); openException(id); }
     }
 
     const chipHtml = x => { const c = C.chipOf(x); return '<span class="ve-pill ve-tone-' + c.tone + '">' + esc(L[c.key] || '') + '</span>'; };
@@ -391,10 +457,13 @@
             const st = C.ruleState(rule, f.resourceId ? state.nxFields : null);
             const on = f.rules.indexOf(rule) > -1;
             const note = st.reason === 'XRuleNoRep' ? L.XRuleNoRep
+                : st.reason === 'XRuleQrNotRequired' ? L.XRuleQrNotRequired
                 : st.reason === 'XRuleAlready' ? T('XRuleAlready', valueText(C.RULE_FIELD[rule].field, C.RULE_FIELD[rule].value), L[st.source === 'exception' ? 'SourceException' : 'SourceTenant'])
                     : T('XRuleNow', valueText(st.field, st.value), L[st.source === 'exception' ? 'SourceException' : 'SourceTenant']);
+            const isNew = C.NEW_RULES.indexOf(rule) > -1; // W3E (E2) — "relax the QR requirement", with its "new" badge + description
             return '<label class="ve-check' + (on ? ' active' : '') + (st.enabled ? '' : ' ve-dis') + '"><input type="checkbox" data-rule="' + rule + '"' + (on ? ' checked' : '') + (st.enabled ? '' : ' disabled') + '>'
-                + '<span class="ve-col"><span>' + esc(L['XRule_' + rule]) + '</span><span class="ve-sub">' + esc(note) + '</span></span></label>';
+                + '<span class="ve-col"><span>' + esc(L['XRule_' + rule]) + (isNew ? ' <span class="ve-pill ve-tone-primary ve-pill-xs">' + esc(L.NewBadge) + '</span>' : '') + '</span>'
+                + (isNew ? '<span class="ve-sub">' + esc(L.XRuleDesc_qr_optional) + '</span>' : '') + '<span class="ve-sub">' + esc(note) + '</span></span></label>';
         }).join('');
         const days = C.daysInclusive(f.startDate, f.endDate);
         const counter = el('ve-nx-days');
@@ -462,7 +531,8 @@
         const pane = e.target.closest('[data-pane]');
         if (pane) { setPane(pane.getAttribute('data-pane')); return; }
         const opt = e.target.closest('button[data-opt]');
-        if (opt && !opt.disabled && perms.managePolicy) { state.draft[opt.getAttribute('data-field')] = opt.getAttribute('data-opt'); changed(); return; }
+        // W3E — an "additional evidence" value is taken only when it is one of the field's wire values (never "block")
+        if (opt && !opt.disabled && perms.managePolicy && (C.KIND[opt.getAttribute('data-field')] !== 'extra' || C.canSelect(opt.getAttribute('data-field'), opt.getAttribute('data-opt')))) { state.draft[opt.getAttribute('data-field')] = opt.getAttribute('data-opt'); changed(); return; }
         const sw = e.target.closest('[data-switch]');
         if (sw && !sw.disabled && perms.managePolicy) { const f = sw.getAttribute('data-switch'); state.draft[f] = !state.draft[f]; changed(); return; }
         const xf = e.target.closest('[data-xfilter]');

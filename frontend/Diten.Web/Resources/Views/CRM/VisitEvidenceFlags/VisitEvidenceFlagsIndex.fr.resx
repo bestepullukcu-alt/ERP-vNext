@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>Signalements de preuve</value></data>
+  <data name="Crumb" xml:space="preserve"><value>CRM / Visite / Signalements de preuve</value></data>
+  <data name="Intro" xml:space="preserve"><value>Les signalements sont des indices à examiner ; à eux seuls, ils ne signifient pas qu'une règle a été enfreinte.</value></data>
+  <data name="SumStarted" xml:space="preserve"><value>Visites commencées</value></data>
+  <data name="SumFlagged" xml:space="preserve"><value>Visites signalées</value></data>
+  <data name="SumReview" xml:space="preserve"><value>À examiner</value></data>
+  <data name="SumByFlag" xml:space="preserve"><value>Par type de signalement</value></data>
+  <data name="SumByFlagNote" xml:space="preserve"><value>une visite peut porter plusieurs signalements</value></data>
+  <data name="PeriodLabel" xml:space="preserve"><value>Période</value></data>
+  <data name="CustomFrom" xml:space="preserve"><value>Du</value></data>
+  <data name="CustomTo" xml:space="preserve"><value>Au</value></data>
+  <data name="RepLabel" xml:space="preserve"><value>Délégué</value></data>
+  <data name="AccountLabel" xml:space="preserve"><value>Établissement</value></data>
+  <data name="OnlyFlagged" xml:space="preserve"><value>Signalées uniquement</value></data>
+  <data name="TabVisits" xml:space="preserve"><value>Visites</value></data>
+  <data name="TabReps" xml:space="preserve"><value>Synthèse par délégué</value></data>
+  <data name="ColStart" xml:space="preserve"><value>Début</value></data>
+  <data name="ColRep" xml:space="preserve"><value>Délégué</value></data>
+  <data name="ColTarget" xml:space="preserve"><value>Établissement / médecin</value></data>
+  <data name="ColKind" xml:space="preserve"><value>Type</value></data>
+  <data name="ColFlags" xml:space="preserve"><value>Signalements</value></data>
+  <data name="ColDuration" xml:space="preserve"><value>Durée</value></data>
+  <data name="ColException" xml:space="preserve"><value>Dérogation</value></data>
+  <data name="ColStarted" xml:space="preserve"><value>Commencées</value></data>
+  <data name="ColFlagged" xml:space="preserve"><value>Signalées</value></data>
+  <data name="ColRate" xml:space="preserve"><value>Taux</value></data>
+  <data name="ColTopFlag" xml:space="preserve"><value>Signalement le plus fréquent</value></data>
+  <data name="RepsHint" xml:space="preserve"><value>Cliquez sur une ligne pour filtrer la liste des visites sur ce délégué.</value></data>
+  <data name="DrawerTitle" xml:space="preserve"><value>Preuves de la visite</value></data>
+  <data name="CloseButton" xml:space="preserve"><value>Fermer</value></data>
+  <data name="OpenVisit" xml:space="preserve"><value>Ouvrir la visite</value></data>
+  <data name="PeriodLast7" xml:space="preserve"><value>7 derniers jours · {0}</value></data>
+  <data name="PeriodLast7Short" xml:space="preserve"><value>7 derniers jours</value></data>
+  <data name="PeriodLast30" xml:space="preserve"><value>30 derniers jours</value></data>
+  <data name="PeriodCustom" xml:space="preserve"><value>Période personnalisée…</value></data>
+  <data name="RepAllTeam" xml:space="preserve"><value>Mon équipe ({0} délégués)</value></data>
+  <data name="RepAllTenant" xml:space="preserve"><value>Tous les délégués ({0})</value></data>
+  <data name="FlagAll" xml:space="preserve"><value>Tous les types de signalement</value></data>
+  <data name="FlagSome" xml:space="preserve"><value>{0} types de signalement</value></data>
+  <data name="AccountAll" xml:space="preserve"><value>Tous les établissements</value></data>
+  <data name="SumOther" xml:space="preserve"><value>Autres ({0} types)</value></data>
+  <data name="SumNoFlags" xml:space="preserve"><value>Aucun signalement sur cette période.</value></data>
+  <data name="Percent" xml:space="preserve"><value>{0} %</value></data>
+  <data name="UnitMeters" xml:space="preserve"><value>{0} m</value></data>
+  <data name="Accuracy" xml:space="preserve"><value>±{0} m</value></data>
+  <data name="Minutes" xml:space="preserve"><value>{0} min</value></data>
+  <data name="MinSec" xml:space="preserve"><value>{0} min {1} s</value></data>
+  <data name="Seconds" xml:space="preserve"><value>{0} s</value></data>
+  <data name="ExceptionLink" xml:space="preserve"><value>Dérogation</value></data>
+  <data name="EmptyTitle" xml:space="preserve"><value>Aucune visite signalée sur cette période</value></data>
+  <data name="EmptyAllTitle" xml:space="preserve"><value>Aucune visite commencée sur cette période</value></data>
+  <data name="EmptyText" xml:space="preserve"><value>Modifiez la période ou les filtres pour examiner une autre période.</value></data>
+  <data name="PageFlagged" xml:space="preserve"><value>{1}–{2} sur {0} visites signalées</value></data>
+  <data name="PageAll" xml:space="preserve"><value>{1}–{2} sur {0} visites</value></data>
+  <data name="RepsEmpty" xml:space="preserve"><value>Aucun délégué n'a commencé de visite sur cette période.</value></data>
+  <data name="Kind_in_person" xml:space="preserve"><value>En présentiel</value></data>
+  <data name="Kind_remote" xml:space="preserve"><value>À distance</value></data>
+  <data name="Flag_location_far" xml:space="preserve"><value>Position éloignée</value></data>
+  <data name="Flag_location_missing" xml:space="preserve"><value>Position non obtenue</value></data>
+  <data name="Flag_location_inaccurate" xml:space="preserve"><value>Précision de position faible</value></data>
+  <data name="Flag_account_location_unknown" xml:space="preserve"><value>Aucune position d'établissement</value></data>
+  <data name="Flag_short_visit" xml:space="preserve"><value>Visite courte</value></data>
+  <data name="Flag_started_with_exception" xml:space="preserve"><value>Commencée avec une dérogation</value></data>
+  <data name="Flag_qr_not_issued" xml:space="preserve"><value>L'établissement n'a pas de code QR</value></data>
+  <data name="Flag_qr_invalid" xml:space="preserve"><value>QR non valide</value></data>
+  <data name="Flag_qr_wrong_account" xml:space="preserve"><value>QR d'un autre établissement</value></data>
+  <data name="Flag_qr_revoked" xml:space="preserve"><value>QR révoqué</value></data>
+  <data name="Flag_qr_unverifiable" xml:space="preserve"><value>QR non vérifiable</value></data>
+  <data name="Flag_mock_location" xml:space="preserve"><value>Position simulée signalée</value></data>
+  <data name="Flag_device_integrity_failed" xml:space="preserve"><value>Échec de la vérification de l'appareil</value></data>
+  <data name="Flag_device_unverified" xml:space="preserve"><value>Appareil non vérifié</value></data>
+  <data name="Chip_qr_missing" xml:space="preserve"><value>QR non scanné</value></data>
+  <data name="SecLocation" xml:space="preserve"><value>Position</value></data>
+  <data name="LocDistance" xml:space="preserve"><value>Distance à l'établissement</value></data>
+  <data name="LocAccuracy" xml:space="preserve"><value>Précision de la position</value></data>
+  <data name="LocRadius" xml:space="preserve"><value>Rayon autorisé</value></data>
+  <data name="LocNotMeasured" xml:space="preserve"><value>non mesurée</value></data>
+  <data name="SecQr" xml:space="preserve"><value>Code QR</value></data>
+  <data name="QrResult" xml:space="preserve"><value>Résultat</value></data>
+  <data name="QrInstitution" xml:space="preserve"><value>Établissement du code scanné</value></data>
+  <data name="QrVersion" xml:space="preserve"><value>Version</value></data>
+  <data name="QrVersionValue" xml:space="preserve"><value>Version {0}</value></data>
+  <data name="QrTime" xml:space="preserve"><value>Heure du scan</value></data>
+  <data name="QrParent" xml:space="preserve"><value>code de l'établissement parent</value></data>
+  <data name="QrSt_ok" xml:space="preserve"><value>Vérifié</value></data>
+  <data name="QrSt_missing" xml:space="preserve"><value>Non scanné</value></data>
+  <data name="QrSt_missing_exception" xml:space="preserve"><value>Non scanné · dérogation</value></data>
+  <data name="QrSt_invalid" xml:space="preserve"><value>Code non valide</value></data>
+  <data name="QrSt_wrong_account" xml:space="preserve"><value>Code d'un autre établissement</value></data>
+  <data name="QrSt_revoked" xml:space="preserve"><value>Code révoqué</value></data>
+  <data name="QrSt_not_issued" xml:space="preserve"><value>L'établissement n'a pas de code</value></data>
+  <data name="QrSt_not_applicable" xml:space="preserve"><value>Non demandé</value></data>
+  <data name="QrSt_remote" xml:space="preserve"><value>Non demandé · à distance</value></data>
+  <data name="QrSt_unverifiable" xml:space="preserve"><value>Non vérifiable</value></data>
+  <data name="SecDevice" xml:space="preserve"><value>Appareil</value></data>
+  <data name="DevPlatform" xml:space="preserve"><value>Plateforme</value></data>
+  <data name="DevApp" xml:space="preserve"><value>Version de l'application</value></data>
+  <data name="DevVerdict" xml:space="preserve"><value>Résultat de la vérification</value></data>
+  <data name="Plat_web" xml:space="preserve"><value>Navigateur web</value></data>
+  <data name="Plat_android" xml:space="preserve"><value>Android · application mobile</value></data>
+  <data name="Plat_ios" xml:space="preserve"><value>iOS · application mobile</value></data>
+  <data name="AppWeb" xml:space="preserve"><value>Web</value></data>
+  <data name="Verdict_passed" xml:space="preserve"><value>Vérifié</value></data>
+  <data name="Verdict_failed" xml:space="preserve"><value>Échec · l'intégrité de l'appareil n'a pas pu être vérifiée</value></data>
+  <data name="Verdict_web" xml:space="preserve"><value>Non vérifié · un navigateur web ne peut pas le mesurer</value></data>
+  <data name="Verdict_unavailable" xml:space="preserve"><value>Non vérifiable</value></data>
+  <data name="Verdict_mock" xml:space="preserve"><value>Position simulée signalée</value></data>
+  <data name="Verdict_remote" xml:space="preserve"><value>À distance · non mesuré</value></data>
+  <data name="Verdict_none" xml:space="preserve"><value>Non déclaré</value></data>
+  <data name="SecDuration" xml:space="preserve"><value>Durée</value></data>
+  <data name="DurVisit" xml:space="preserve"><value>Durée de la visite</value></data>
+  <data name="DurSlides" xml:space="preserve"><value>Durée des diapositives</value></data>
+  <data name="SlidesValue" xml:space="preserve"><value>{0} · {1} diapositives</value></data>
+  <data name="SecPhoto" xml:space="preserve"><value>Photo</value></data>
+  <data name="PhotoAlt" xml:space="preserve"><value>Photo de début</value></data>
+  <data name="PhotoCaption" xml:space="preserve"><value>Photo · {0}</value></data>
+  <data name="PhotoNoPermission" xml:space="preserve"><value>Photo présente · vous n'êtes pas autorisé à la voir</value></data>
+  <data name="PhotoNone" xml:space="preserve"><value>Aucune photo prise</value></data>
+  <data name="SecException" xml:space="preserve"><value>Dérogation</value></data>
+  <data name="ExRule" xml:space="preserve"><value>Règle assouplie</value></data>
+  <data name="ExRange" xml:space="preserve"><value>Période</value></data>
+  <data name="ExApproved" xml:space="preserve"><value>Approuvée le</value></data>
+  <data name="ExOpen" xml:space="preserve"><value>Ouvrir la dérogation →</value></data>
+  <data name="XRule_location_info" xml:space="preserve"><value>Contrôle de position : information</value></data>
+  <data name="XRule_photo_optional" xml:space="preserve"><value>Photo : facultative</value></data>
+  <data name="XRule_account_without_location_allow" xml:space="preserve"><value>Établissement sans position : démarrage autorisé</value></data>
+  <data name="XRule_qr_optional" xml:space="preserve"><value>Assouplir l'obligation du QR</value></data>
+  <data name="ErrRangeMissing" xml:space="preserve"><value>Choisissez le jour de début et le jour de fin.</value></data>
+  <data name="ErrRangeOrder" xml:space="preserve"><value>Le jour de fin ne peut pas précéder le jour de début.</value></data>
+  <data name="ErrRangeLong" xml:space="preserve"><value>Choisissez une période de {0} jours au maximum.</value></data>
+  <data name="Err_visit_evidence_flags_range_invalid" xml:space="preserve"><value>Une période de 92 jours au maximum peut être choisie.</value></data>
+  <data name="Err_visit_evidence_flags_filter_invalid" xml:space="preserve"><value>Un filtre n'est pas valide.</value></data>
+  <data name="Err_visit_evidence_flags_not_found" xml:space="preserve"><value>Cette visite est introuvable ou vous n'êtes pas autorisé à la voir.</value></data>
+  <data name="Err_permission_denied" xml:space="preserve"><value>Vous n'êtes pas autorisé à effectuer cette action.</value></data>
+  <data name="Err_unavailable" xml:space="preserve"><value>Les signalements ne peuvent pas être lus pour le moment. Réessayez dans un instant.</value></data>
+  <data name="Err_generic" xml:space="preserve"><value>La demande n'a pas pu aboutir.</value></data>
+</root>

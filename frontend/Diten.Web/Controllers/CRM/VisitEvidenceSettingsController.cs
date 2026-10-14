@@ -55,6 +55,7 @@ public sealed class VisitEvidenceSettingsController : Controller
             CanManagePolicy = HasAny(PolicyManage),
             CanReadExceptions = HasAny(ExceptionRead),
             CanManageExceptions = HasAny(ExceptionManage),
+            CanReadQrCodes = HasAny("crm.visit-qr.read", "crm.visit-qr.manage"), // W3E — the "manage institution QR codes" link
             Me = KnowledgePathStudioReview.ActorOf(User)
         });
 

@@ -32,8 +32,6 @@
   <data name="TypeTenant" xml:space="preserve"><value>租户</value></data>
   <data name="PaneForm" xml:space="preserve"><value>设置表单</value></data>
   <data name="PaneHistory" xml:space="preserve"><value>变更历史</value></data>
-  <data name="SoonTitle" xml:space="preserve"><value>附加证据</value></data>
-  <data name="SoonText" xml:space="preserve"><value>机构二维码和虚假定位检查将添加在此处。</value></data>
   <data name="SoonBadge" xml:space="preserve"><value>即将推出</value></data>
   <data name="PreviewTitle" xml:space="preserve"><value>此范围内的代表将看到</value></data>
   <data name="PvStartTitle" xml:space="preserve"><value>开始拜访</value></data>
@@ -218,4 +216,35 @@
   <data name="Err_conflict" xml:space="preserve"><value>记录已被修改；请刷新后重试。</value></data>
   <data name="Err_unavailable" xml:space="preserve"><value>无法保存。无法连接服务器；您的更改保留在此页面。</value></data>
   <data name="Err_generic" xml:space="preserve"><value>操作未能完成。</value></data>
+  <data name="G_extra" xml:space="preserve"><value>附加凭证</value></data>
+  <data name="QrCaption" xml:space="preserve"><value>机构二维码</value></data>
+  <data name="QrIntro" xml:space="preserve"><value>张贴在接待处的机构专属代码。服务器会验证该代码属于本机构和本公司且未被撤销。远程拜访不要求扫描二维码。</value></data>
+  <data name="DeviceCaption" xml:space="preserve"><value>设备验证</value></data>
+  <data name="DeviceIntro" xml:space="preserve"><value>如果移动应用报告模拟位置或被修改的设备，该拜访将被标记。从网页浏览器开始的拜访会被标记为“无法验证设备”。</value></data>
+  <data name="ManageQrLink" xml:space="preserve"><value>管理机构二维码 →</value></data>
+  <data name="F_qrMode" xml:space="preserve"><value>机构二维码</value></data>
+  <data name="F_antiFraudMode" xml:space="preserve"><value>设备验证</value></data>
+  <data name="Opt_qrMode_off" xml:space="preserve"><value>关闭</value></data>
+  <data name="Opt_qrMode_optional" xml:space="preserve"><value>可选</value></data>
+  <data name="Opt_qrMode_required" xml:space="preserve"><value>必需</value></data>
+  <data name="Opt_antiFraudMode_off" xml:space="preserve"><value>关闭</value></data>
+  <data name="Opt_antiFraudMode_flag" xml:space="preserve"><value>标记</value></data>
+  <data name="Opt_antiFraudMode_block" xml:space="preserve"><value>阻止</value></data>
+  <data name="D_qrMode_off" xml:space="preserve"><value>不要求二维码。</value></data>
+  <data name="D_qrMode_optional" xml:space="preserve"><value>代表也可以不扫码开始。若扫描了错误或已撤销的代码，拜访将被标记。</value></data>
+  <data name="D_qrMode_required" xml:space="preserve"><value>代表必须扫描机构代码才能开始拜访。尚未打印代码的机构可直接开始，但拜访会被标记。</value></data>
+  <data name="NewBadge" xml:space="preserve"><value>新</value></data>
+  <data name="XRule_qr_optional" xml:space="preserve"><value>放宽二维码要求</value></data>
+  <data name="XRuleDesc_qr_optional" xml:space="preserve"><value>机构二维码：必需 → 可选。无需扫码即可开始；拜访会被标记为“以例外开始”。</value></data>
+  <data name="XRuleQrNotRequired" xml:space="preserve"><value>该代表无需二维码，无需放宽。</value></data>
+  <data name="SourceExceptionShort" xml:space="preserve"><value>例外</value></data>
+  <data name="RepsEmpty" xml:space="preserve"><value>尚无代表拥有有效的区域分配。</value></data>
+  <data name="PaneReps" xml:space="preserve"><value>代表</value></data>
+  <data name="RepsTitle" xml:space="preserve"><value>代表 · 租户默认</value></data>
+  <data name="RepsNote" xml:space="preserve"><value>每位代表今天开始拜访时适用的值；“例外”= 今天生效的已批准限时例外。</value></data>
+  <data name="ColRep" xml:space="preserve"><value>代表</value></data>
+  <data name="ColLocation" xml:space="preserve"><value>位置</value></data>
+  <data name="ColPhoto" xml:space="preserve"><value>照片</value></data>
+  <data name="ColQr" xml:space="preserve"><value>二维码</value></data>
+  <data name="ColDevice" xml:space="preserve"><value>设备</value></data>
 </root>

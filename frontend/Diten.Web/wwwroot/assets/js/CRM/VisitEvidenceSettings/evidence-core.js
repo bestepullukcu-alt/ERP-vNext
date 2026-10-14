@@ -18,6 +18,9 @@
  *   actionsOf(exception, perms, me)      the detail drawer's buttons by the CRM abilities (+ the SoD hint for one's own)
  *   timeline(exception)                  the detail's history (created, submitted, decisions, approved, cancelled …)
  *   historyRows(items) / effectiveRows(dto)   the change history and the effective-rules table
+ *   EXTRA / canSelect / repRows / NEW_FIELDS   WP-VW-W3E (W3E-WEB-b) — the "additional evidence" fields (institution QR
+ *                                        code off / optional / required, device verification off / flag; "block" is
+ *                                        shown but NOT selectable until W3E-ATTEST), the reps' effective values
  *   errorKey(response)                   a CRM refusal → the user's text key (never a raw code)
  */
 (function (root, factory) {
@@ -30,7 +33,11 @@
 
     // ── the policy ──────────────────────────────────────────────────────────────────────────────────────────
     const FIELDS = ['locationMode', 'radiusMeters', 'maxAccuracyMeters', 'accountWithoutLocation', 'photoMode',
-        'doctorConfirmation', 'durationConsistency', 'shortVisitSeconds'];
+        'doctorConfirmation', 'durationConsistency', 'shortVisitSeconds',
+        'qrMode', 'antiFraudMode']; // WP-VW-W3E (W3E-WEB-b) — the "additional evidence" section (not a GROUP: its own card)
+
+    /** WP-VW-W3E — the two fields that are new in the effective table / history ("new" badge, the mockup). */
+    const NEW_FIELDS = ['qrMode', 'antiFraudMode'];
 
     /** The mockup's groups: location · photo · approval and duration. */
     const GROUPS = [
@@ -50,13 +57,29 @@
     const OPTIONS = {
         locationMode: ['required', 'info'],
         photoMode: ['required', 'optional'],
-        accountWithoutLocation: ['allow_flagged', 'block']
+        accountWithoutLocation: ['allow_flagged', 'block'],
+        qrMode: ['off', 'optional', 'required'],
+        antiFraudMode: ['off', 'flag']
     };
+
+    /**
+     * WP-VW-W3E (W3E-WEB-b, E1) — the "additional evidence" card: the QR code as three choice cards (each with its effect
+     * sentence), the device verification as a segment whose "block" is drawn disabled with "soon" (W3E-ATTEST): the CRM
+     * refuses it today, so it can never be chosen nor sent.
+     */
+    const EXTRA = {
+        qrMode: { options: ['off', 'optional', 'required'] },
+        antiFraudMode: { options: ['off', 'flag', 'block'], soon: ['block'] }
+    };
+
+    /** A value a user may pick: only the field's wire values (the soon ones are not). */
+    const canSelect = (field, value) => (OPTIONS[field] || []).indexOf(value) > -1;
 
     const KIND = {
         locationMode: 'seg', photoMode: 'seg', accountWithoutLocation: 'radio',
         radiusMeters: 'num', maxAccuracyMeters: 'num', shortVisitSeconds: 'num',
-        doctorConfirmation: 'switch', durationConsistency: 'switch'
+        doctorConfirmation: 'switch', durationConsistency: 'switch',
+        qrMode: 'extra', antiFraudMode: 'extra'
     };
 
     /** The editable copy (numbers as they are typed: strings are allowed while editing). */
@@ -105,6 +128,9 @@
             accountWithoutLocation: d.accountWithoutLocation,
             expectedVersion: typeof version === 'number' && version > 0 ? version : null
         };
+        // WP-VW-W3E — the two new fields, only as one of their wire values ("block" never leaves the page)
+        if (canSelect('qrMode', d.qrMode)) { body.qrMode = d.qrMode; }
+        if (canSelect('antiFraudMode', d.antiFraudMode)) { body.antiFraudMode = d.antiFraudMode; }
         const r = RANGES.shortVisitSeconds;
         const n = Number(d.shortVisitSeconds);
         if (d.durationConsistency || (isInt(d.shortVisitSeconds) && n >= r.min && n <= r.max)) { body.shortVisitSeconds = n; }
@@ -144,7 +170,7 @@
     };
 
     // ── the time-boxed exceptions ───────────────────────────────────────────────────────────────────────────
-    const RULES = ['location_info', 'photo_optional', 'account_without_location_allow'];
+    const RULES = ['location_info', 'photo_optional', 'account_without_location_allow', 'qr_optional']; // + W3E (E2)
     const MAX_DAYS = 30;
     const MAX_REASON = 500;
 
@@ -152,8 +178,13 @@
     const RULE_FIELD = {
         location_info: { field: 'locationMode', value: 'info' },
         photo_optional: { field: 'photoMode', value: 'optional' },
-        account_without_location_allow: { field: 'accountWithoutLocation', value: 'allow_flagged' }
+        account_without_location_allow: { field: 'accountWithoutLocation', value: 'allow_flagged' },
+        // WP-VW-W3E (W3E-WEB-b, E2) — the QR code: required → optional (an off / optional rep has nothing to relax)
+        qr_optional: { field: 'qrMode', value: 'optional', only: 'required' }
     };
+
+    /** The rules that are new this round (the "new" badge of the exception window). */
+    const NEW_RULES = ['qr_optional'];
 
     const dayNo = iso => {
         const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || ''));
@@ -196,6 +227,7 @@
         const map = RULE_FIELD[rule];
         const f = (fields || []).find(x => x.field === map.field);
         if (f && f.value === map.value) { return { enabled: false, reason: 'XRuleAlready', source: f.source }; }
+        if (map.only && (!f || f.value !== map.only)) { return { enabled: false, reason: 'XRuleQrNotRequired', source: f ? f.source : null }; }
         return { enabled: true, reason: 'XRuleNow', source: f ? f.source : null, value: f ? f.value : null, field: map.field };
     };
 
@@ -313,6 +345,27 @@
         return { field: f, value: typed(f, row.value), source: row.source || 'tenant', exceptionId: row.exceptionId || null };
     });
 
+    /**
+     * WP-VW-W3E (W3E-WEB-b, E3) — the reps' effective values of the mockup's columns (location, photo, QR, device): the
+     * tenant policy relaxed by each rep's APPROVED exception ACTIVE today (the list the page already reads), so one read
+     * fills the table — the same rule as the CRM resolver. → [{ resourceId, name, cells: { field: { value, fromException } } }]
+     */
+    const REP_COLUMNS = ['locationMode', 'photoMode', 'qrMode', 'antiFraudMode'];
+    const repRows = (reps, policy, exceptions) => {
+        const p = policy || {};
+        const active = (exceptions || []).filter(x => x && x.status === 'approved' && x.phase === 'active');
+        return (reps || []).map(r => {
+            const cells = {};
+            REP_COLUMNS.forEach(f => { cells[f] = { value: p[f], fromException: false }; });
+            active.filter(x => x.resourceId === r.resourceId).forEach(x => (x.rules || []).forEach(rule => {
+                const map = RULE_FIELD[rule];
+                if (!map || !cells[map.field] || (map.only && cells[map.field].value !== map.only)) { return; }
+                cells[map.field] = { value: map.value, fromException: true };
+            }));
+            return { resourceId: r.resourceId, name: r.displayName || r.resourceId, cells: cells };
+        });
+    };
+
     // ── people (WP-VW-W3-FIX F5) ─────────────────────────────────────────────────────────────────────────────
     /** Adds a DTO's displayNames (id "D" → name; CRM resolves them) to the page's map; ids compare case-insensitively. */
     const mergeNames = (target, displayNames) => {
@@ -360,6 +413,7 @@
         FIELDS, GROUPS, RANGES, OPTIONS, KIND, draftOf, changes, fieldErrors, putBody, valueKey, preview,
         RULES, RULE_FIELD, MAX_DAYS, MAX_REASON, daysInclusive, todayUtc, exceptionErrors, ruleState, chipOf,
         FILTERS, filterExceptions, filterCount, tabBadge, isOwn, actionsOf, timeline, historyRows, typed, effectiveRows,
-        ERROR_CODES, errorKey, isMachineCode, mergeNames, personLabel
+        ERROR_CODES, errorKey, isMachineCode, mergeNames, personLabel,
+        NEW_FIELDS, EXTRA, canSelect, NEW_RULES, REP_COLUMNS, repRows
     };
 }));

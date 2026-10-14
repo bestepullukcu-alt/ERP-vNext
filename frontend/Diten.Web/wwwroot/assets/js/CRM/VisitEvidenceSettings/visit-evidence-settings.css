@@ -208,3 +208,20 @@
     .ve-drawer.offcanvas-end { width: 100% !important; }
     .ve-two { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* ── WP-VW-W3E (W3E-WEB-b) — "additional evidence" (E1), the new badge (E2 / E3), the reps pane (E3) ── */
+.ve-choices { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.ve-choice { display: flex; flex-direction: column; gap: 4px; text-align: start; border: 1px solid var(--ve-bd2); border-radius: 8px; padding: 12px 14px; background: var(--ve-card); color: var(--ve-tx); cursor: pointer; font-size: 13.5px; }
+.ve-choice:disabled { cursor: default; }
+.ve-choice.active { border-color: var(--ve-p); background: var(--ve-pl); box-shadow: 0 0 0 1px var(--ve-p) inset; }
+.ve-choice-head { display: flex; align-items: center; gap: 8px; color: var(--ve-h); }
+.ve-choice-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--ve-p); flex-shrink: 0; position: relative; }
+.ve-choice.active .ve-choice-dot::after { content: ""; position: absolute; inset: 2px; border-radius: 50%; background: var(--ve-p); }
+.ve-seg-btn.ve-soon-opt, .ve-seg-btn:disabled.ve-soon-opt { color: var(--ve-mu); cursor: not-allowed; background: var(--ve-soft2); }
+.ve-pill-xs { padding: 0 6px; font-size: 11px; font-weight: 500; }
+.ve-extra .ve-link { align-self: flex-start; text-decoration: none; color: var(--ve-pt); font-weight: 500; font-size: 14px; }
+.ve-row-new td { background: var(--ve-pl); }
+.ve-table .ve-col-new { background: var(--ve-pl); }
+.ve-table th.ve-col-new { color: var(--ve-pt); }
+@media (max-width: 900px) { .ve-choices { grid-template-columns: 1fr; } }
+.ve-tone-primary { background: var(--ve-pl); color: var(--ve-pt); }

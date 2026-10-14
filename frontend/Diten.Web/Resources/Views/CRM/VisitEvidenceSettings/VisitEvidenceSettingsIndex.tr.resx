@@ -32,8 +32,6 @@
   <data name="TypeTenant" xml:space="preserve"><value>Kiracı</value></data>
   <data name="PaneForm" xml:space="preserve"><value>Ayar formu</value></data>
   <data name="PaneHistory" xml:space="preserve"><value>Değişiklik geçmişi</value></data>
-  <data name="SoonTitle" xml:space="preserve"><value>Ek kanıtlar</value></data>
-  <data name="SoonText" xml:space="preserve"><value>Kurum QR kodu ve sahte konum denetimi bu bölüme eklenecek.</value></data>
   <data name="SoonBadge" xml:space="preserve"><value>Yakında</value></data>
   <data name="PreviewTitle" xml:space="preserve"><value>Bu kapsamdaki temsilci şunu görecek</value></data>
   <data name="PvStartTitle" xml:space="preserve"><value>Ziyarete başla</value></data>
@@ -218,4 +216,35 @@
   <data name="Err_conflict" xml:space="preserve"><value>Kayıt bu arada değişti; yenileyip yeniden deneyin.</value></data>
   <data name="Err_unavailable" xml:space="preserve"><value>Kaydedilemedi. Sunucuya ulaşılamadı; değişiklikleriniz bu ekranda korunuyor.</value></data>
   <data name="Err_generic" xml:space="preserve"><value>İşlem tamamlanamadı.</value></data>
+  <data name="G_extra" xml:space="preserve"><value>Ek kanıtlar</value></data>
+  <data name="QrCaption" xml:space="preserve"><value>KURUM QR KODU</value></data>
+  <data name="QrIntro" xml:space="preserve"><value>Kabule asılan, kuruma özel kod. Sunucu kodun bu kuruma ve bu şirkete ait olduğunu, iptal edilmediğini doğrular. Uzaktan ziyaret QR sormaz.</value></data>
+  <data name="DeviceCaption" xml:space="preserve"><value>CİHAZ DOĞRULAMA</value></data>
+  <data name="DeviceIntro" xml:space="preserve"><value>Mobil uygulama sahte konum ya da değiştirilmiş cihaz bildirirse ziyaret işaretlenir. Web tarayıcısından başlayan ziyaretler 'cihaz doğrulanamadı' işareti alır.</value></data>
+  <data name="ManageQrLink" xml:space="preserve"><value>Kurum QR kodlarını yönet →</value></data>
+  <data name="F_qrMode" xml:space="preserve"><value>Kurum QR kodu</value></data>
+  <data name="F_antiFraudMode" xml:space="preserve"><value>Cihaz doğrulama</value></data>
+  <data name="Opt_qrMode_off" xml:space="preserve"><value>Kapalı</value></data>
+  <data name="Opt_qrMode_optional" xml:space="preserve"><value>İsteğe bağlı</value></data>
+  <data name="Opt_qrMode_required" xml:space="preserve"><value>Zorunlu</value></data>
+  <data name="Opt_antiFraudMode_off" xml:space="preserve"><value>Kapalı</value></data>
+  <data name="Opt_antiFraudMode_flag" xml:space="preserve"><value>İşaretle</value></data>
+  <data name="Opt_antiFraudMode_block" xml:space="preserve"><value>Engelle</value></data>
+  <data name="D_qrMode_off" xml:space="preserve"><value>QR sorulmaz.</value></data>
+  <data name="D_qrMode_optional" xml:space="preserve"><value>Temsilci okutmadan da başlar. Yanlış ya da iptal edilmiş kod okutulursa ziyaret işaretlenir.</value></data>
+  <data name="D_qrMode_required" xml:space="preserve"><value>Temsilci kurumun kodunu okutmadan ziyarete başlayamaz. Kodu basılmamış kurumlarda başlar, ziyaret işaretlenir.</value></data>
+  <data name="NewBadge" xml:space="preserve"><value>yeni</value></data>
+  <data name="XRule_qr_optional" xml:space="preserve"><value>QR zorunluluğunu esnet</value></data>
+  <data name="XRuleDesc_qr_optional" xml:space="preserve"><value>Kurum QR kodu: Zorunlu → İsteğe bağlı. Okutmadan başlar; ziyaret "İstisna ile başladı" işaretlenir.</value></data>
+  <data name="XRuleQrNotRequired" xml:space="preserve"><value>Bu temsilci için QR zorunlu değil; esnetilecek bir şey yok.</value></data>
+  <data name="SourceExceptionShort" xml:space="preserve"><value>istisna</value></data>
+  <data name="RepsEmpty" xml:space="preserve"><value>Henüz aktif bölge ataması olan temsilci yok.</value></data>
+  <data name="PaneReps" xml:space="preserve"><value>Temsilciler</value></data>
+  <data name="RepsTitle" xml:space="preserve"><value>Temsilciler · Kiracı varsayılanı</value></data>
+  <data name="RepsNote" xml:space="preserve"><value>Her temsilcinin bugün başlattığı değer; "istisna" = bugün etkin onaylı süreli istisna.</value></data>
+  <data name="ColRep" xml:space="preserve"><value>Temsilci</value></data>
+  <data name="ColLocation" xml:space="preserve"><value>Konum</value></data>
+  <data name="ColPhoto" xml:space="preserve"><value>Fotoğraf</value></data>
+  <data name="ColQr" xml:space="preserve"><value>QR kodu</value></data>
+  <data name="ColDevice" xml:space="preserve"><value>Cihaz</value></data>
 </root>

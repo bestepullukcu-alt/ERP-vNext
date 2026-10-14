@@ -32,8 +32,6 @@
   <data name="TypeTenant" xml:space="preserve"><value>Locataire</value></data>
   <data name="PaneForm" xml:space="preserve"><value>Formulaire</value></data>
   <data name="PaneHistory" xml:space="preserve"><value>Historique des modifications</value></data>
-  <data name="SoonTitle" xml:space="preserve"><value>Preuves supplémentaires</value></data>
-  <data name="SoonText" xml:space="preserve"><value>Le code QR de l'établissement et le contrôle de fausse position seront ajoutés ici.</value></data>
   <data name="SoonBadge" xml:space="preserve"><value>Bientôt</value></data>
   <data name="PreviewTitle" xml:space="preserve"><value>Un délégué de ce périmètre verra</value></data>
   <data name="PvStartTitle" xml:space="preserve"><value>Démarrer la visite</value></data>
@@ -218,4 +216,35 @@
   <data name="Err_conflict" xml:space="preserve"><value>L'enregistrement a changé entre-temps ; rechargez et réessayez.</value></data>
   <data name="Err_unavailable" xml:space="preserve"><value>Enregistrement impossible. Le serveur est injoignable ; vos modifications restent sur cet écran.</value></data>
   <data name="Err_generic" xml:space="preserve"><value>L'action n'a pas pu être effectuée.</value></data>
+  <data name="G_extra" xml:space="preserve"><value>Preuves supplémentaires</value></data>
+  <data name="QrCaption" xml:space="preserve"><value>CODE QR DE L'ÉTABLISSEMENT</value></data>
+  <data name="QrIntro" xml:space="preserve"><value>Code propre à l'établissement, affiché à l'accueil. Le serveur vérifie que le code appartient à cet établissement et à cette société et qu'il n'a pas été révoqué. Une visite à distance ne demande pas le code QR.</value></data>
+  <data name="DeviceCaption" xml:space="preserve"><value>VÉRIFICATION DE L'APPAREIL</value></data>
+  <data name="DeviceIntro" xml:space="preserve"><value>Si l'application mobile signale une position simulée ou un appareil modifié, la visite est signalée. Les visites lancées depuis un navigateur web reçoivent le signalement « appareil non vérifié ».</value></data>
+  <data name="ManageQrLink" xml:space="preserve"><value>Gérer les codes QR des établissements →</value></data>
+  <data name="F_qrMode" xml:space="preserve"><value>Code QR de l'établissement</value></data>
+  <data name="F_antiFraudMode" xml:space="preserve"><value>Vérification de l'appareil</value></data>
+  <data name="Opt_qrMode_off" xml:space="preserve"><value>Désactivé</value></data>
+  <data name="Opt_qrMode_optional" xml:space="preserve"><value>Facultatif</value></data>
+  <data name="Opt_qrMode_required" xml:space="preserve"><value>Obligatoire</value></data>
+  <data name="Opt_antiFraudMode_off" xml:space="preserve"><value>Désactivée</value></data>
+  <data name="Opt_antiFraudMode_flag" xml:space="preserve"><value>Signaler</value></data>
+  <data name="Opt_antiFraudMode_block" xml:space="preserve"><value>Bloquer</value></data>
+  <data name="D_qrMode_off" xml:space="preserve"><value>Aucun code QR n'est demandé.</value></data>
+  <data name="D_qrMode_optional" xml:space="preserve"><value>Le délégué peut aussi commencer sans scanner. Si un code erroné ou révoqué est scanné, la visite est signalée.</value></data>
+  <data name="D_qrMode_required" xml:space="preserve"><value>Le délégué ne peut pas commencer la visite sans scanner le code de l'établissement. Là où aucun code n'a été imprimé, la visite commence et est signalée.</value></data>
+  <data name="NewBadge" xml:space="preserve"><value>nouveau</value></data>
+  <data name="XRule_qr_optional" xml:space="preserve"><value>Assouplir l'obligation du QR</value></data>
+  <data name="XRuleDesc_qr_optional" xml:space="preserve"><value>Code QR de l'établissement : Obligatoire → Facultatif. Commence sans scanner ; la visite est signalée « Commencée avec une exception ».</value></data>
+  <data name="XRuleQrNotRequired" xml:space="preserve"><value>Le code QR n'est pas obligatoire pour ce délégué ; rien à assouplir.</value></data>
+  <data name="SourceExceptionShort" xml:space="preserve"><value>exception</value></data>
+  <data name="RepsEmpty" xml:space="preserve"><value>Aucun délégué n'a encore d'affectation de secteur active.</value></data>
+  <data name="PaneReps" xml:space="preserve"><value>Délégués</value></data>
+  <data name="RepsTitle" xml:space="preserve"><value>Délégués · valeur par défaut du locataire</value></data>
+  <data name="RepsNote" xml:space="preserve"><value>La valeur avec laquelle chaque délégué commence aujourd'hui ; « exception » = une exception temporaire approuvée active aujourd'hui.</value></data>
+  <data name="ColRep" xml:space="preserve"><value>Délégué</value></data>
+  <data name="ColLocation" xml:space="preserve"><value>Position</value></data>
+  <data name="ColPhoto" xml:space="preserve"><value>Photo</value></data>
+  <data name="ColQr" xml:space="preserve"><value>Code QR</value></data>
+  <data name="ColDevice" xml:space="preserve"><value>Appareil</value></data>
 </root>

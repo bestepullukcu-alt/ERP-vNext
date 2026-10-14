@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>Kanıt işaretleri</value></data>
+  <data name="Crumb" xml:space="preserve"><value>CRM / Ziyaret / Kanıt işaretleri</value></data>
+  <data name="Intro" xml:space="preserve"><value>İşaretler incelenecek ipuçlarıdır; tek başına kural ihlali anlamına gelmez.</value></data>
+  <data name="SumStarted" xml:space="preserve"><value>Başlatılan ziyaret</value></data>
+  <data name="SumFlagged" xml:space="preserve"><value>İşaretli ziyaret</value></data>
+  <data name="SumReview" xml:space="preserve"><value>İncelenmeli</value></data>
+  <data name="SumByFlag" xml:space="preserve"><value>İşaret türüne göre</value></data>
+  <data name="SumByFlagNote" xml:space="preserve"><value>bir ziyarette birden çok işaret olabilir</value></data>
+  <data name="PeriodLabel" xml:space="preserve"><value>Dönem</value></data>
+  <data name="CustomFrom" xml:space="preserve"><value>Başlangıç</value></data>
+  <data name="CustomTo" xml:space="preserve"><value>Bitiş</value></data>
+  <data name="RepLabel" xml:space="preserve"><value>Temsilci</value></data>
+  <data name="AccountLabel" xml:space="preserve"><value>Kurum</value></data>
+  <data name="OnlyFlagged" xml:space="preserve"><value>Yalnız işaretliler</value></data>
+  <data name="TabVisits" xml:space="preserve"><value>Ziyaretler</value></data>
+  <data name="TabReps" xml:space="preserve"><value>Temsilci özeti</value></data>
+  <data name="ColStart" xml:space="preserve"><value>Başlangıç</value></data>
+  <data name="ColRep" xml:space="preserve"><value>Temsilci</value></data>
+  <data name="ColTarget" xml:space="preserve"><value>Kurum / doktor</value></data>
+  <data name="ColKind" xml:space="preserve"><value>Tür</value></data>
+  <data name="ColFlags" xml:space="preserve"><value>İşaretler</value></data>
+  <data name="ColDuration" xml:space="preserve"><value>Süre</value></data>
+  <data name="ColException" xml:space="preserve"><value>İstisna</value></data>
+  <data name="ColStarted" xml:space="preserve"><value>Başlatılan</value></data>
+  <data name="ColFlagged" xml:space="preserve"><value>İşaretli</value></data>
+  <data name="ColRate" xml:space="preserve"><value>Oran</value></data>
+  <data name="ColTopFlag" xml:space="preserve"><value>En sık işaret</value></data>
+  <data name="RepsHint" xml:space="preserve"><value>Satıra tıklayınca ziyaret listesi o temsilciye süzülür.</value></data>
+  <data name="DrawerTitle" xml:space="preserve"><value>Ziyaret kanıtı</value></data>
+  <data name="CloseButton" xml:space="preserve"><value>Kapat</value></data>
+  <data name="OpenVisit" xml:space="preserve"><value>Ziyareti aç</value></data>
+  <data name="PeriodLast7" xml:space="preserve"><value>Son 7 gün · {0}</value></data>
+  <data name="PeriodLast7Short" xml:space="preserve"><value>Son 7 gün</value></data>
+  <data name="PeriodLast30" xml:space="preserve"><value>Son 30 gün</value></data>
+  <data name="PeriodCustom" xml:space="preserve"><value>Özel aralık…</value></data>
+  <data name="RepAllTeam" xml:space="preserve"><value>Ekibim ({0} temsilci)</value></data>
+  <data name="RepAllTenant" xml:space="preserve"><value>Tüm temsilciler ({0})</value></data>
+  <data name="FlagAll" xml:space="preserve"><value>Tüm işaret türleri</value></data>
+  <data name="FlagSome" xml:space="preserve"><value>{0} işaret türü</value></data>
+  <data name="AccountAll" xml:space="preserve"><value>Tüm kurumlar</value></data>
+  <data name="SumOther" xml:space="preserve"><value>Diğer ({0} tür)</value></data>
+  <data name="SumNoFlags" xml:space="preserve"><value>Bu dönemde işaret yok.</value></data>
+  <data name="Percent" xml:space="preserve"><value>%{0}</value></data>
+  <data name="UnitMeters" xml:space="preserve"><value>{0} m</value></data>
+  <data name="Accuracy" xml:space="preserve"><value>±{0} m</value></data>
+  <data name="Minutes" xml:space="preserve"><value>{0} dk</value></data>
+  <data name="MinSec" xml:space="preserve"><value>{0} dk {1} sn</value></data>
+  <data name="Seconds" xml:space="preserve"><value>{0} sn</value></data>
+  <data name="ExceptionLink" xml:space="preserve"><value>İstisna</value></data>
+  <data name="EmptyTitle" xml:space="preserve"><value>Bu dönemde işaretli ziyaret yok</value></data>
+  <data name="EmptyAllTitle" xml:space="preserve"><value>Bu dönemde başlatılan ziyaret yok</value></data>
+  <data name="EmptyText" xml:space="preserve"><value>Tarih aralığını ya da süzgeçleri değiştirerek başka bir dönemi inceleyebilirsiniz.</value></data>
+  <data name="PageFlagged" xml:space="preserve"><value>{0} işaretli ziyaretten {1}–{2}</value></data>
+  <data name="PageAll" xml:space="preserve"><value>{0} ziyaretten {1}–{2}</value></data>
+  <data name="RepsEmpty" xml:space="preserve"><value>Bu dönemde ziyaret başlatan temsilci yok.</value></data>
+  <data name="Kind_in_person" xml:space="preserve"><value>Yüz yüze</value></data>
+  <data name="Kind_remote" xml:space="preserve"><value>Uzaktan</value></data>
+  <data name="Flag_location_far" xml:space="preserve"><value>Uzak konum</value></data>
+  <data name="Flag_location_missing" xml:space="preserve"><value>Konum alınamadı</value></data>
+  <data name="Flag_location_inaccurate" xml:space="preserve"><value>Konum hassasiyeti düşük</value></data>
+  <data name="Flag_account_location_unknown" xml:space="preserve"><value>Kurum konumu yok</value></data>
+  <data name="Flag_short_visit" xml:space="preserve"><value>Kısa ziyaret</value></data>
+  <data name="Flag_started_with_exception" xml:space="preserve"><value>İstisna ile başladı</value></data>
+  <data name="Flag_qr_not_issued" xml:space="preserve"><value>Kurumun QR kodu yok</value></data>
+  <data name="Flag_qr_invalid" xml:space="preserve"><value>Geçersiz QR</value></data>
+  <data name="Flag_qr_wrong_account" xml:space="preserve"><value>Yanlış kurum QR'ı</value></data>
+  <data name="Flag_qr_revoked" xml:space="preserve"><value>İptal edilmiş QR</value></data>
+  <data name="Flag_qr_unverifiable" xml:space="preserve"><value>QR doğrulanamadı</value></data>
+  <data name="Flag_mock_location" xml:space="preserve"><value>Sahte konum bildirildi</value></data>
+  <data name="Flag_device_integrity_failed" xml:space="preserve"><value>Cihaz doğrulaması başarısız</value></data>
+  <data name="Flag_device_unverified" xml:space="preserve"><value>Cihaz doğrulanamadı</value></data>
+  <data name="Chip_qr_missing" xml:space="preserve"><value>QR okutulmadı</value></data>
+  <data name="SecLocation" xml:space="preserve"><value>Konum</value></data>
+  <data name="LocDistance" xml:space="preserve"><value>Kuruma mesafe</value></data>
+  <data name="LocAccuracy" xml:space="preserve"><value>Konum hassasiyeti</value></data>
+  <data name="LocRadius" xml:space="preserve"><value>İzin verilen yarıçap</value></data>
+  <data name="LocNotMeasured" xml:space="preserve"><value>ölçülemedi</value></data>
+  <data name="SecQr" xml:space="preserve"><value>QR kodu</value></data>
+  <data name="QrResult" xml:space="preserve"><value>Sonuç</value></data>
+  <data name="QrInstitution" xml:space="preserve"><value>Okutulan kodun kurumu</value></data>
+  <data name="QrVersion" xml:space="preserve"><value>Sürüm</value></data>
+  <data name="QrVersionValue" xml:space="preserve"><value>Sürüm {0}</value></data>
+  <data name="QrTime" xml:space="preserve"><value>Okutma saati</value></data>
+  <data name="QrParent" xml:space="preserve"><value>üst kurum kodu</value></data>
+  <data name="QrSt_ok" xml:space="preserve"><value>Doğrulandı</value></data>
+  <data name="QrSt_missing" xml:space="preserve"><value>Okutulmadı</value></data>
+  <data name="QrSt_missing_exception" xml:space="preserve"><value>Okutulmadı · istisna</value></data>
+  <data name="QrSt_invalid" xml:space="preserve"><value>Geçersiz kod</value></data>
+  <data name="QrSt_wrong_account" xml:space="preserve"><value>Başka kurumun kodu</value></data>
+  <data name="QrSt_revoked" xml:space="preserve"><value>İptal edilmiş kod</value></data>
+  <data name="QrSt_not_issued" xml:space="preserve"><value>Kurumun kodu yok</value></data>
+  <data name="QrSt_not_applicable" xml:space="preserve"><value>Sorulmaz</value></data>
+  <data name="QrSt_remote" xml:space="preserve"><value>Sorulmaz · uzaktan</value></data>
+  <data name="QrSt_unverifiable" xml:space="preserve"><value>Doğrulanamadı</value></data>
+  <data name="SecDevice" xml:space="preserve"><value>Cihaz</value></data>
+  <data name="DevPlatform" xml:space="preserve"><value>Platform</value></data>
+  <data name="DevApp" xml:space="preserve"><value>Uygulama sürümü</value></data>
+  <data name="DevVerdict" xml:space="preserve"><value>Doğrulama sonucu</value></data>
+  <data name="Plat_web" xml:space="preserve"><value>Web tarayıcı</value></data>
+  <data name="Plat_android" xml:space="preserve"><value>Android · mobil uygulama</value></data>
+  <data name="Plat_ios" xml:space="preserve"><value>iOS · mobil uygulama</value></data>
+  <data name="AppWeb" xml:space="preserve"><value>Web</value></data>
+  <data name="Verdict_passed" xml:space="preserve"><value>Doğrulandı</value></data>
+  <data name="Verdict_failed" xml:space="preserve"><value>Başarısız · cihaz bütünlüğü doğrulanamadı</value></data>
+  <data name="Verdict_web" xml:space="preserve"><value>Doğrulanamadı · web tarayıcı ölçemez</value></data>
+  <data name="Verdict_unavailable" xml:space="preserve"><value>Doğrulanamadı</value></data>
+  <data name="Verdict_mock" xml:space="preserve"><value>Sahte konum bildirildi</value></data>
+  <data name="Verdict_remote" xml:space="preserve"><value>Uzaktan · ölçülmez</value></data>
+  <data name="Verdict_none" xml:space="preserve"><value>Bildirilmedi</value></data>
+  <data name="SecDuration" xml:space="preserve"><value>Süre</value></data>
+  <data name="DurVisit" xml:space="preserve"><value>Ziyaret süresi</value></data>
+  <data name="DurSlides" xml:space="preserve"><value>Slayt süresi</value></data>
+  <data name="SlidesValue" xml:space="preserve"><value>{0} · {1} slayt</value></data>
+  <data name="SecPhoto" xml:space="preserve"><value>Fotoğraf</value></data>
+  <data name="PhotoAlt" xml:space="preserve"><value>Başlangıç fotoğrafı</value></data>
+  <data name="PhotoCaption" xml:space="preserve"><value>Fotoğraf · {0}</value></data>
+  <data name="PhotoNoPermission" xml:space="preserve"><value>Fotoğraf var · görüntüleme yetkiniz yok</value></data>
+  <data name="PhotoNone" xml:space="preserve"><value>Fotoğraf çekilmedi</value></data>
+  <data name="SecException" xml:space="preserve"><value>İstisna</value></data>
+  <data name="ExRule" xml:space="preserve"><value>Esnetilen kural</value></data>
+  <data name="ExRange" xml:space="preserve"><value>Tarih aralığı</value></data>
+  <data name="ExApproved" xml:space="preserve"><value>Onay tarihi</value></data>
+  <data name="ExOpen" xml:space="preserve"><value>İstisnayı aç →</value></data>
+  <data name="XRule_location_info" xml:space="preserve"><value>Konum kontrolü: Bilgi</value></data>
+  <data name="XRule_photo_optional" xml:space="preserve"><value>Fotoğraf: İsteğe bağlı</value></data>
+  <data name="XRule_account_without_location_allow" xml:space="preserve"><value>Konumu olmayan kurum: Başlatılsın</value></data>
+  <data name="XRule_qr_optional" xml:space="preserve"><value>QR zorunluluğunu esnet</value></data>
+  <data name="ErrRangeMissing" xml:space="preserve"><value>Başlangıç ve bitiş gününü seçin.</value></data>
+  <data name="ErrRangeOrder" xml:space="preserve"><value>Bitiş günü başlangıçtan önce olamaz.</value></data>
+  <data name="ErrRangeLong" xml:space="preserve"><value>En çok {0} günlük bir dönem seçin.</value></data>
+  <data name="Err_visit_evidence_flags_range_invalid" xml:space="preserve"><value>En çok 92 günlük dönem seçilebilir.</value></data>
+  <data name="Err_visit_evidence_flags_filter_invalid" xml:space="preserve"><value>Süzgeç geçersiz.</value></data>
+  <data name="Err_visit_evidence_flags_not_found" xml:space="preserve"><value>Bu ziyaret bulunamadı ya da görüntüleme yetkiniz yok.</value></data>
+  <data name="Err_permission_denied" xml:space="preserve"><value>Bu işlem için yetkiniz yok.</value></data>
+  <data name="Err_unavailable" xml:space="preserve"><value>Kanıt işaretleri şu an okunamıyor. Biraz sonra tekrar deneyin.</value></data>
+  <data name="Err_generic" xml:space="preserve"><value>İşlem tamamlanamadı.</value></data>
+</root>

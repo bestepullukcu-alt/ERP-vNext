@@ -32,8 +32,6 @@
   <data name="TypeTenant" xml:space="preserve"><value>المستأجر</value></data>
   <data name="PaneForm" xml:space="preserve"><value>نموذج الإعداد</value></data>
   <data name="PaneHistory" xml:space="preserve"><value>سجل التغييرات</value></data>
-  <data name="SoonTitle" xml:space="preserve"><value>أدلة إضافية</value></data>
-  <data name="SoonText" xml:space="preserve"><value>سيُضاف هنا رمز QR للمؤسسة والتحقق من الموقع المزيف.</value></data>
   <data name="SoonBadge" xml:space="preserve"><value>قريبًا</value></data>
   <data name="PreviewTitle" xml:space="preserve"><value>سيرى المندوب في هذا النطاق ما يلي</value></data>
   <data name="PvStartTitle" xml:space="preserve"><value>بدء الزيارة</value></data>
@@ -218,4 +216,35 @@
   <data name="Err_conflict" xml:space="preserve"><value>تغيّر السجل في هذه الأثناء؛ أعد التحميل وحاول مجددًا.</value></data>
   <data name="Err_unavailable" xml:space="preserve"><value>تعذّر الحفظ. لا يمكن الوصول إلى الخادم؛ تغييراتك محفوظة في هذه الشاشة.</value></data>
   <data name="Err_generic" xml:space="preserve"><value>تعذّر إكمال الإجراء.</value></data>
+  <data name="G_extra" xml:space="preserve"><value>إثباتات إضافية</value></data>
+  <data name="QrCaption" xml:space="preserve"><value>رمز QR للمؤسسة</value></data>
+  <data name="QrIntro" xml:space="preserve"><value>رمز خاص بالمؤسسة يُعلَّق في الاستقبال. يتحقق الخادم من أن الرمز يخص هذه المؤسسة وهذه الشركة وأنه لم يُلغَ. الزيارة عن بُعد لا تطلب رمز QR.</value></data>
+  <data name="DeviceCaption" xml:space="preserve"><value>التحقق من الجهاز</value></data>
+  <data name="DeviceIntro" xml:space="preserve"><value>إذا أبلغ تطبيق الجوال عن موقع وهمي أو جهاز معدَّل، تُعلَّم الزيارة. الزيارات التي تبدأ من متصفح الويب تحصل على علامة «تعذّر التحقق من الجهاز».</value></data>
+  <data name="ManageQrLink" xml:space="preserve"><value>إدارة رموز QR للمؤسسات ←</value></data>
+  <data name="F_qrMode" xml:space="preserve"><value>رمز QR للمؤسسة</value></data>
+  <data name="F_antiFraudMode" xml:space="preserve"><value>التحقق من الجهاز</value></data>
+  <data name="Opt_qrMode_off" xml:space="preserve"><value>متوقف</value></data>
+  <data name="Opt_qrMode_optional" xml:space="preserve"><value>اختياري</value></data>
+  <data name="Opt_qrMode_required" xml:space="preserve"><value>إلزامي</value></data>
+  <data name="Opt_antiFraudMode_off" xml:space="preserve"><value>متوقف</value></data>
+  <data name="Opt_antiFraudMode_flag" xml:space="preserve"><value>تعليم</value></data>
+  <data name="Opt_antiFraudMode_block" xml:space="preserve"><value>حظر</value></data>
+  <data name="D_qrMode_off" xml:space="preserve"><value>لا يُطلب رمز QR.</value></data>
+  <data name="D_qrMode_optional" xml:space="preserve"><value>يمكن للمندوب البدء دون مسح الرمز. إذا مُسح رمز خاطئ أو ملغى، تُعلَّم الزيارة.</value></data>
+  <data name="D_qrMode_required" xml:space="preserve"><value>لا يمكن للمندوب بدء الزيارة دون مسح رمز المؤسسة. في المؤسسات التي لم يُطبع لها رمز تبدأ الزيارة وتُعلَّم.</value></data>
+  <data name="NewBadge" xml:space="preserve"><value>جديد</value></data>
+  <data name="XRule_qr_optional" xml:space="preserve"><value>تخفيف إلزامية رمز QR</value></data>
+  <data name="XRuleDesc_qr_optional" xml:space="preserve"><value>رمز QR للمؤسسة: إلزامي ← اختياري. تبدأ دون مسح؛ وتُعلَّم الزيارة بـ«بدأت باستثناء».</value></data>
+  <data name="XRuleQrNotRequired" xml:space="preserve"><value>رمز QR غير إلزامي لهذا المندوب؛ لا شيء لتخفيفه.</value></data>
+  <data name="SourceExceptionShort" xml:space="preserve"><value>استثناء</value></data>
+  <data name="RepsEmpty" xml:space="preserve"><value>لا يوجد مندوب لديه تعيين منطقة نشط بعد.</value></data>
+  <data name="PaneReps" xml:space="preserve"><value>المندوبون</value></data>
+  <data name="RepsTitle" xml:space="preserve"><value>المندوبون · الإعداد الافتراضي للمستأجر</value></data>
+  <data name="RepsNote" xml:space="preserve"><value>القيمة التي يبدأ بها كل مندوب اليوم؛ «استثناء» = استثناء مؤقت معتمد نافذ اليوم.</value></data>
+  <data name="ColRep" xml:space="preserve"><value>المندوب</value></data>
+  <data name="ColLocation" xml:space="preserve"><value>الموقع</value></data>
+  <data name="ColPhoto" xml:space="preserve"><value>الصورة</value></data>
+  <data name="ColQr" xml:space="preserve"><value>رمز QR</value></data>
+  <data name="ColDevice" xml:space="preserve"><value>الجهاز</value></data>
 </root>

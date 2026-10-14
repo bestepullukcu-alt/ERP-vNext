@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>凭证标记</value></data>
+  <data name="Crumb" xml:space="preserve"><value>CRM / 拜访 / 凭证标记</value></data>
+  <data name="Intro" xml:space="preserve"><value>标记是需要复核的线索，单独并不代表违反规则。</value></data>
+  <data name="SumStarted" xml:space="preserve"><value>已开始的拜访</value></data>
+  <data name="SumFlagged" xml:space="preserve"><value>已标记的拜访</value></data>
+  <data name="SumReview" xml:space="preserve"><value>待复核</value></data>
+  <data name="SumByFlag" xml:space="preserve"><value>按标记类型</value></data>
+  <data name="SumByFlagNote" xml:space="preserve"><value>一次拜访可能有多个标记</value></data>
+  <data name="PeriodLabel" xml:space="preserve"><value>期间</value></data>
+  <data name="CustomFrom" xml:space="preserve"><value>开始</value></data>
+  <data name="CustomTo" xml:space="preserve"><value>结束</value></data>
+  <data name="RepLabel" xml:space="preserve"><value>代表</value></data>
+  <data name="AccountLabel" xml:space="preserve"><value>机构</value></data>
+  <data name="OnlyFlagged" xml:space="preserve"><value>仅已标记</value></data>
+  <data name="TabVisits" xml:space="preserve"><value>拜访</value></data>
+  <data name="TabReps" xml:space="preserve"><value>代表汇总</value></data>
+  <data name="ColStart" xml:space="preserve"><value>开始</value></data>
+  <data name="ColRep" xml:space="preserve"><value>代表</value></data>
+  <data name="ColTarget" xml:space="preserve"><value>机构 / 医生</value></data>
+  <data name="ColKind" xml:space="preserve"><value>类型</value></data>
+  <data name="ColFlags" xml:space="preserve"><value>标记</value></data>
+  <data name="ColDuration" xml:space="preserve"><value>时长</value></data>
+  <data name="ColException" xml:space="preserve"><value>例外</value></data>
+  <data name="ColStarted" xml:space="preserve"><value>已开始</value></data>
+  <data name="ColFlagged" xml:space="preserve"><value>已标记</value></data>
+  <data name="ColRate" xml:space="preserve"><value>比例</value></data>
+  <data name="ColTopFlag" xml:space="preserve"><value>最常见标记</value></data>
+  <data name="RepsHint" xml:space="preserve"><value>点击某行即可将拜访列表筛选到该代表。</value></data>
+  <data name="DrawerTitle" xml:space="preserve"><value>拜访凭证</value></data>
+  <data name="CloseButton" xml:space="preserve"><value>关闭</value></data>
+  <data name="OpenVisit" xml:space="preserve"><value>打开拜访</value></data>
+  <data name="PeriodLast7" xml:space="preserve"><value>最近 7 天 · {0}</value></data>
+  <data name="PeriodLast7Short" xml:space="preserve"><value>最近 7 天</value></data>
+  <data name="PeriodLast30" xml:space="preserve"><value>最近 30 天</value></data>
+  <data name="PeriodCustom" xml:space="preserve"><value>自定义范围…</value></data>
+  <data name="RepAllTeam" xml:space="preserve"><value>我的团队（{0} 名代表）</value></data>
+  <data name="RepAllTenant" xml:space="preserve"><value>全部代表（{0}）</value></data>
+  <data name="FlagAll" xml:space="preserve"><value>所有标记类型</value></data>
+  <data name="FlagSome" xml:space="preserve"><value>{0} 种标记类型</value></data>
+  <data name="AccountAll" xml:space="preserve"><value>所有机构</value></data>
+  <data name="SumOther" xml:space="preserve"><value>其他（{0} 种）</value></data>
+  <data name="SumNoFlags" xml:space="preserve"><value>此期间没有标记。</value></data>
+  <data name="Percent" xml:space="preserve"><value>{0}%</value></data>
+  <data name="UnitMeters" xml:space="preserve"><value>{0} 米</value></data>
+  <data name="Accuracy" xml:space="preserve"><value>±{0} 米</value></data>
+  <data name="Minutes" xml:space="preserve"><value>{0} 分钟</value></data>
+  <data name="MinSec" xml:space="preserve"><value>{0} 分 {1} 秒</value></data>
+  <data name="Seconds" xml:space="preserve"><value>{0} 秒</value></data>
+  <data name="ExceptionLink" xml:space="preserve"><value>例外</value></data>
+  <data name="EmptyTitle" xml:space="preserve"><value>此期间没有已标记的拜访</value></data>
+  <data name="EmptyAllTitle" xml:space="preserve"><value>此期间没有开始的拜访</value></data>
+  <data name="EmptyText" xml:space="preserve"><value>更改日期范围或筛选条件以查看其他期间。</value></data>
+  <data name="PageFlagged" xml:space="preserve"><value>共 {0} 次已标记拜访中的第 {1}–{2} 次</value></data>
+  <data name="PageAll" xml:space="preserve"><value>共 {0} 次拜访中的第 {1}–{2} 次</value></data>
+  <data name="RepsEmpty" xml:space="preserve"><value>此期间没有代表开始拜访。</value></data>
+  <data name="Kind_in_person" xml:space="preserve"><value>面对面</value></data>
+  <data name="Kind_remote" xml:space="preserve"><value>远程</value></data>
+  <data name="Flag_location_far" xml:space="preserve"><value>位置较远</value></data>
+  <data name="Flag_location_missing" xml:space="preserve"><value>未获取位置</value></data>
+  <data name="Flag_location_inaccurate" xml:space="preserve"><value>位置精度低</value></data>
+  <data name="Flag_account_location_unknown" xml:space="preserve"><value>无机构位置</value></data>
+  <data name="Flag_short_visit" xml:space="preserve"><value>拜访过短</value></data>
+  <data name="Flag_started_with_exception" xml:space="preserve"><value>以例外开始</value></data>
+  <data name="Flag_qr_not_issued" xml:space="preserve"><value>机构没有二维码</value></data>
+  <data name="Flag_qr_invalid" xml:space="preserve"><value>二维码无效</value></data>
+  <data name="Flag_qr_wrong_account" xml:space="preserve"><value>其他机构的二维码</value></data>
+  <data name="Flag_qr_revoked" xml:space="preserve"><value>已撤销的二维码</value></data>
+  <data name="Flag_qr_unverifiable" xml:space="preserve"><value>无法验证二维码</value></data>
+  <data name="Flag_mock_location" xml:space="preserve"><value>报告了模拟位置</value></data>
+  <data name="Flag_device_integrity_failed" xml:space="preserve"><value>设备验证失败</value></data>
+  <data name="Flag_device_unverified" xml:space="preserve"><value>无法验证设备</value></data>
+  <data name="Chip_qr_missing" xml:space="preserve"><value>未扫描二维码</value></data>
+  <data name="SecLocation" xml:space="preserve"><value>位置</value></data>
+  <data name="LocDistance" xml:space="preserve"><value>与机构的距离</value></data>
+  <data name="LocAccuracy" xml:space="preserve"><value>位置精度</value></data>
+  <data name="LocRadius" xml:space="preserve"><value>允许半径</value></data>
+  <data name="LocNotMeasured" xml:space="preserve"><value>无法测量</value></data>
+  <data name="SecQr" xml:space="preserve"><value>二维码</value></data>
+  <data name="QrResult" xml:space="preserve"><value>结果</value></data>
+  <data name="QrInstitution" xml:space="preserve"><value>所扫描代码的机构</value></data>
+  <data name="QrVersion" xml:space="preserve"><value>版本</value></data>
+  <data name="QrVersionValue" xml:space="preserve"><value>版本 {0}</value></data>
+  <data name="QrTime" xml:space="preserve"><value>扫描时间</value></data>
+  <data name="QrParent" xml:space="preserve"><value>上级机构代码</value></data>
+  <data name="QrSt_ok" xml:space="preserve"><value>已验证</value></data>
+  <data name="QrSt_missing" xml:space="preserve"><value>未扫描</value></data>
+  <data name="QrSt_missing_exception" xml:space="preserve"><value>未扫描 · 例外</value></data>
+  <data name="QrSt_invalid" xml:space="preserve"><value>代码无效</value></data>
+  <data name="QrSt_wrong_account" xml:space="preserve"><value>其他机构的代码</value></data>
+  <data name="QrSt_revoked" xml:space="preserve"><value>已撤销的代码</value></data>
+  <data name="QrSt_not_issued" xml:space="preserve"><value>机构没有代码</value></data>
+  <data name="QrSt_not_applicable" xml:space="preserve"><value>不要求</value></data>
+  <data name="QrSt_remote" xml:space="preserve"><value>不要求 · 远程</value></data>
+  <data name="QrSt_unverifiable" xml:space="preserve"><value>无法验证</value></data>
+  <data name="SecDevice" xml:space="preserve"><value>设备</value></data>
+  <data name="DevPlatform" xml:space="preserve"><value>平台</value></data>
+  <data name="DevApp" xml:space="preserve"><value>应用版本</value></data>
+  <data name="DevVerdict" xml:space="preserve"><value>验证结果</value></data>
+  <data name="Plat_web" xml:space="preserve"><value>网页浏览器</value></data>
+  <data name="Plat_android" xml:space="preserve"><value>Android · 移动应用</value></data>
+  <data name="Plat_ios" xml:space="preserve"><value>iOS · 移动应用</value></data>
+  <data name="AppWeb" xml:space="preserve"><value>网页</value></data>
+  <data name="Verdict_passed" xml:space="preserve"><value>已验证</value></data>
+  <data name="Verdict_failed" xml:space="preserve"><value>失败 · 无法验证设备完整性</value></data>
+  <data name="Verdict_web" xml:space="preserve"><value>未验证 · 网页浏览器无法检测</value></data>
+  <data name="Verdict_unavailable" xml:space="preserve"><value>无法验证</value></data>
+  <data name="Verdict_mock" xml:space="preserve"><value>报告了模拟位置</value></data>
+  <data name="Verdict_remote" xml:space="preserve"><value>远程 · 不检测</value></data>
+  <data name="Verdict_none" xml:space="preserve"><value>未报告</value></data>
+  <data name="SecDuration" xml:space="preserve"><value>时长</value></data>
+  <data name="DurVisit" xml:space="preserve"><value>拜访时长</value></data>
+  <data name="DurSlides" xml:space="preserve"><value>幻灯片时长</value></data>
+  <data name="SlidesValue" xml:space="preserve"><value>{0} · {1} 张幻灯片</value></data>
+  <data name="SecPhoto" xml:space="preserve"><value>照片</value></data>
+  <data name="PhotoAlt" xml:space="preserve"><value>开始照片</value></data>
+  <data name="PhotoCaption" xml:space="preserve"><value>照片 · {0}</value></data>
+  <data name="PhotoNoPermission" xml:space="preserve"><value>有照片 · 您无权查看</value></data>
+  <data name="PhotoNone" xml:space="preserve"><value>未拍照</value></data>
+  <data name="SecException" xml:space="preserve"><value>例外</value></data>
+  <data name="ExRule" xml:space="preserve"><value>放宽的规则</value></data>
+  <data name="ExRange" xml:space="preserve"><value>日期范围</value></data>
+  <data name="ExApproved" xml:space="preserve"><value>批准日期</value></data>
+  <data name="ExOpen" xml:space="preserve"><value>打开例外 →</value></data>
+  <data name="XRule_location_info" xml:space="preserve"><value>位置检查：仅提示</value></data>
+  <data name="XRule_photo_optional" xml:space="preserve"><value>照片：可选</value></data>
+  <data name="XRule_account_without_location_allow" xml:space="preserve"><value>无位置的机构：允许开始</value></data>
+  <data name="XRule_qr_optional" xml:space="preserve"><value>放宽二维码要求</value></data>
+  <data name="ErrRangeMissing" xml:space="preserve"><value>请选择开始和结束日期。</value></data>
+  <data name="ErrRangeOrder" xml:space="preserve"><value>结束日期不能早于开始日期。</value></data>
+  <data name="ErrRangeLong" xml:space="preserve"><value>请选择不超过 {0} 天的期间。</value></data>
+  <data name="Err_visit_evidence_flags_range_invalid" xml:space="preserve"><value>最多可选择 92 天的期间。</value></data>
+  <data name="Err_visit_evidence_flags_filter_invalid" xml:space="preserve"><value>筛选条件无效。</value></data>
+  <data name="Err_visit_evidence_flags_not_found" xml:space="preserve"><value>未找到该拜访或您无权查看。</value></data>
+  <data name="Err_permission_denied" xml:space="preserve"><value>您无权执行此操作。</value></data>
+  <data name="Err_unavailable" xml:space="preserve"><value>暂时无法读取凭证标记，请稍后重试。</value></data>
+  <data name="Err_generic" xml:space="preserve"><value>无法完成请求。</value></data>
+</root>

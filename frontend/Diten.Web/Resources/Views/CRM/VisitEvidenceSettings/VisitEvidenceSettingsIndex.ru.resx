@@ -32,8 +32,6 @@
   <data name="TypeTenant" xml:space="preserve"><value>Арендатор</value></data>
   <data name="PaneForm" xml:space="preserve"><value>Форма настроек</value></data>
   <data name="PaneHistory" xml:space="preserve"><value>История изменений</value></data>
-  <data name="SoonTitle" xml:space="preserve"><value>Дополнительные подтверждения</value></data>
-  <data name="SoonText" xml:space="preserve"><value>Здесь появятся QR-код учреждения и проверка поддельного местоположения.</value></data>
   <data name="SoonBadge" xml:space="preserve"><value>Скоро</value></data>
   <data name="PreviewTitle" xml:space="preserve"><value>Представитель в этой области увидит</value></data>
   <data name="PvStartTitle" xml:space="preserve"><value>Начать визит</value></data>
@@ -218,4 +216,35 @@
   <data name="Err_conflict" xml:space="preserve"><value>Запись тем временем изменилась; обновите и повторите.</value></data>
   <data name="Err_unavailable" xml:space="preserve"><value>Не удалось сохранить. Сервер недоступен; изменения сохранены на этом экране.</value></data>
   <data name="Err_generic" xml:space="preserve"><value>Не удалось выполнить действие.</value></data>
+  <data name="G_extra" xml:space="preserve"><value>Дополнительные доказательства</value></data>
+  <data name="QrCaption" xml:space="preserve"><value>QR-КОД УЧРЕЖДЕНИЯ</value></data>
+  <data name="QrIntro" xml:space="preserve"><value>Код учреждения, размещённый на ресепшене. Сервер проверяет, что код принадлежит этому учреждению и этой компании и не отозван. Удалённый визит QR-код не запрашивает.</value></data>
+  <data name="DeviceCaption" xml:space="preserve"><value>ПРОВЕРКА УСТРОЙСТВА</value></data>
+  <data name="DeviceIntro" xml:space="preserve"><value>Если мобильное приложение сообщает о фиктивном местоположении или изменённом устройстве, визит помечается. Визиты, начатые из веб-браузера, получают пометку «устройство не проверено».</value></data>
+  <data name="ManageQrLink" xml:space="preserve"><value>Управлять QR-кодами учреждений →</value></data>
+  <data name="F_qrMode" xml:space="preserve"><value>QR-код учреждения</value></data>
+  <data name="F_antiFraudMode" xml:space="preserve"><value>Проверка устройства</value></data>
+  <data name="Opt_qrMode_off" xml:space="preserve"><value>Выключено</value></data>
+  <data name="Opt_qrMode_optional" xml:space="preserve"><value>Необязательно</value></data>
+  <data name="Opt_qrMode_required" xml:space="preserve"><value>Обязательно</value></data>
+  <data name="Opt_antiFraudMode_off" xml:space="preserve"><value>Выключено</value></data>
+  <data name="Opt_antiFraudMode_flag" xml:space="preserve"><value>Помечать</value></data>
+  <data name="Opt_antiFraudMode_block" xml:space="preserve"><value>Блокировать</value></data>
+  <data name="D_qrMode_off" xml:space="preserve"><value>QR-код не запрашивается.</value></data>
+  <data name="D_qrMode_optional" xml:space="preserve"><value>Представитель может начать и без сканирования. Если отсканирован неверный или отозванный код, визит помечается.</value></data>
+  <data name="D_qrMode_required" xml:space="preserve"><value>Представитель не может начать визит, не отсканировав код учреждения. Там, где код не напечатан, визит начинается и помечается.</value></data>
+  <data name="NewBadge" xml:space="preserve"><value>новое</value></data>
+  <data name="XRule_qr_optional" xml:space="preserve"><value>Смягчить обязательность QR</value></data>
+  <data name="XRuleDesc_qr_optional" xml:space="preserve"><value>QR-код учреждения: обязательно → необязательно. Начинается без сканирования; визит помечается «Начат по исключению».</value></data>
+  <data name="XRuleQrNotRequired" xml:space="preserve"><value>Для этого представителя QR-код не обязателен; смягчать нечего.</value></data>
+  <data name="SourceExceptionShort" xml:space="preserve"><value>исключение</value></data>
+  <data name="RepsEmpty" xml:space="preserve"><value>Пока нет представителей с активным назначением территории.</value></data>
+  <data name="PaneReps" xml:space="preserve"><value>Представители</value></data>
+  <data name="RepsTitle" xml:space="preserve"><value>Представители · значение арендатора по умолчанию</value></data>
+  <data name="RepsNote" xml:space="preserve"><value>Значение, с которым каждый представитель начинает сегодня; «исключение» = утверждённое временное исключение, действующее сегодня.</value></data>
+  <data name="ColRep" xml:space="preserve"><value>Представитель</value></data>
+  <data name="ColLocation" xml:space="preserve"><value>Местоположение</value></data>
+  <data name="ColPhoto" xml:space="preserve"><value>Фото</value></data>
+  <data name="ColQr" xml:space="preserve"><value>QR-код</value></data>
+  <data name="ColDevice" xml:space="preserve"><value>Устройство</value></data>
 </root>

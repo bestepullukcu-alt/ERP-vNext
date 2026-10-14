@@ -44,7 +44,9 @@ public sealed class VisitEvidenceSettingsIndex
         "Err_visit_evidence_policy_invalid", "Err_visit_execution_concurrency_conflict", "Err_workflow_template_missing",
         "Err_workflow_unavailable", "Err_approval_forbidden", "Err_no_open_review", "Err_withdraw_not_possible",
         "Err_rejection_comment_required", "Err_workflow_request_rejected", "Err_permission_denied",
-        "Err_conflict", "Err_unavailable", "Err_generic"
+        "Err_conflict", "Err_unavailable", "Err_generic",
+        // WP-VW-W3E (W3E-WEB-b) — additional evidence (E1), qr_optional (E2), the reps pane and the new fields (E3)
+        "G_extra", "QrCaption", "QrIntro", "DeviceCaption", "DeviceIntro", "ManageQrLink", "F_qrMode", "F_antiFraudMode", "Opt_qrMode_off", "Opt_qrMode_optional", "Opt_qrMode_required", "Opt_antiFraudMode_off", "Opt_antiFraudMode_flag", "Opt_antiFraudMode_block", "D_qrMode_off", "D_qrMode_optional", "D_qrMode_required", "NewBadge", "SoonBadge", "XRule_qr_optional", "XRuleDesc_qr_optional", "XRuleQrNotRequired", "SourceExceptionShort", "RepsEmpty"
     ];
 
     /// <summary>The strings the view itself writes (headings, buttons, labels).</summary>
@@ -53,11 +55,12 @@ public sealed class VisitEvidenceSettingsIndex
         "PageTitle", "Crumb", "Intro", "NewException", "TabSettings", "TabExceptions", "Retry", "ReadOnly", "ScopesTitle",
         "ScopesNote", "TenantDefault", "Locked", "AddLegalEntity", "AddLegalEntityHint", "LookTitle", "LookSearch",
         "EffectiveTitle", "CloseButton", "ColField", "ColValue", "ColSource", "Priority", "SourceException", "SourceTenant",
-        "ScopeUnresolved", "TypeTenant", "PaneForm", "PaneHistory", "SoonTitle", "SoonText", "SoonBadge", "PreviewTitle",
+        "ScopeUnresolved", "TypeTenant", "PaneForm", "PaneHistory", "PreviewTitle",
         "PvStartTitle", "PvSample", "PvPhoto", "PvLocation", "PvSign", "PvStart", "LastChange", "Unsaved", "CancelButton", "SaveButton",
         "HistoryTitle", "AuditReadOnly", "ColDate", "ColPerson", "ColChange", "ExceptionsInfo", "ExceptionsTitle",
         "XColRep", "XColRules", "XColRange", "XColReason", "XColPeople", "XColStatus", "OpenRow", "SaveTitle", "SaveConfirm",
         "XNewTitle", "XRep", "XRules", "XRulesHint", "XFrom", "XTo", "XReason", "XReasonPlaceholder", "XSodNew", "XSubmit",
-        "XDetailTitle"
+        "XDetailTitle",
+        "PaneReps", "RepsTitle", "RepsNote", "ColRep", "ColLocation", "ColPhoto", "ColQr", "ColDevice"
     ];
 }

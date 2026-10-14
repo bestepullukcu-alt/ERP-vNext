@@ -57,10 +57,9 @@ public sealed class VisitEvidenceSettingsWebTests
         Assert.Contains("class=\"ve-add\" disabled", view);
         Assert.Contains("Localizer[\"AddLegalEntityHint\"]", view);
         Assert.DoesNotContain("AddBusinessUnit", view);
-        // the "Additional evidence · Coming soon" card has no control
-        var soon = view[view.IndexOf("ve-soon", StringComparison.Ordinal)..view.IndexOf("ve-sticky", StringComparison.Ordinal)];
-        Assert.DoesNotContain("<button", soon);
-        Assert.DoesNotContain("<input", soon);
+        // WP-VW-W3E (W3E-WEB-b, E1) — the former "Additional evidence · Coming soon" card is replaced by the live section
+        Assert.DoesNotContain("ve-soon", view);
+        Assert.Contains("<div id=\"ve-extra\"></div>", view);
     }
 
     // ═══ 2 · the pure rules (Node) ══════════════════════════════════════════════════════════════════════════
