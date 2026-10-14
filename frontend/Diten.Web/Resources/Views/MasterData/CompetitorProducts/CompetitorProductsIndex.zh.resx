@@ -112,6 +112,9 @@
   <data name="UnknownIndication" xml:space="preserve"><value>适应症（已不在列表中）</value></data>
   <data name="CountriesHelp" xml:space="preserve"><value>价格变更不会新增行，而是开启新周期，旧价格移入历史。</value></data>
   <data name="AddCountry" xml:space="preserve"><value>添加国家</value></data>
+  <data name="ProductSearch" xml:space="preserve"><value>按名称或代码搜索我方产品</value></data>
+  <data name="ProductsNoMatch" xml:space="preserve"><value>没有与搜索匹配的产品。</value></data>
+  <data name="ProductsMore" xml:space="preserve"><value>还有 {0} 个 — 请缩小搜索范围</value></data>
   <data name="CountrySearch" xml:space="preserve"><value>搜索国家</value></data>
   <data name="MarketsUnavailable" xml:space="preserve"><value>无法读取市场列表；请输入 ISO 国家代码。</value></data>
   <data name="AddButton" xml:space="preserve"><value>添加</value></data>
@@ -231,6 +234,7 @@
   <data name="MovedCountries" xml:space="preserve"><value>迁移的国家</value></data>
   <data name="MergeEffectShort" xml:space="preserve"><value>建议名称加入目标的其他名称；报告关联到目标。</value></data>
   <data name="RejectReason" xml:space="preserve"><value>理由</value></data>
+  <data name="AppliedRowLabel" xml:space="preserve"><value>已执行</value></data>
   <data name="AppliedLine" xml:space="preserve"><value>已执行 · {0} · 批准人 {1}，{2}</value></data>
   <data name="WithdrawButton" xml:space="preserve"><value>撤回</value></data>
   <data name="ApproveButton" xml:space="preserve"><value>批准</value></data>

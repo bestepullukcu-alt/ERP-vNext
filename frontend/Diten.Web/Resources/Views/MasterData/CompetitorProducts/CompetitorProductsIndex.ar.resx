@@ -112,6 +112,9 @@
   <data name="UnknownIndication" xml:space="preserve"><value>استطباب (لم يعد في القائمة)</value></data>
   <data name="CountriesHelp" xml:space="preserve"><value>لا يفتح تغيير السعر صفًا جديدًا؛ بل يبدأ فترة جديدة وينتقل السعر السابق إلى السجل.</value></data>
   <data name="AddCountry" xml:space="preserve"><value>إضافة دولة</value></data>
+  <data name="ProductSearch" xml:space="preserve"><value>ابحث في منتجاتنا بالاسم أو الرمز</value></data>
+  <data name="ProductsNoMatch" xml:space="preserve"><value>لا يوجد منتج يطابق البحث.</value></data>
+  <data name="ProductsMore" xml:space="preserve"><value>{0} أخرى — ضيّق البحث</value></data>
   <data name="CountrySearch" xml:space="preserve"><value>ابحث عن دولة</value></data>
   <data name="MarketsUnavailable" xml:space="preserve"><value>تعذرت قراءة قائمة الأسواق؛ اكتب رمز الدولة ISO.</value></data>
   <data name="AddButton" xml:space="preserve"><value>إضافة</value></data>
@@ -231,6 +234,7 @@
   <data name="MovedCountries" xml:space="preserve"><value>الدول المنقولة</value></data>
   <data name="MergeEffectShort" xml:space="preserve"><value>ينضم الاسم المقترح إلى أسماء الهدف الأخرى؛ وترتبط التقارير بالهدف.</value></data>
   <data name="RejectReason" xml:space="preserve"><value>السبب</value></data>
+  <data name="AppliedRowLabel" xml:space="preserve"><value>طُبّق</value></data>
   <data name="AppliedLine" xml:space="preserve"><value>طُبّق · {0} · اعتمده {1}، {2}</value></data>
   <data name="WithdrawButton" xml:space="preserve"><value>سحب</value></data>
   <data name="ApproveButton" xml:space="preserve"><value>اعتماد</value></data>

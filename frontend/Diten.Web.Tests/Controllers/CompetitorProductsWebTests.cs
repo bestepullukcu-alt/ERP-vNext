@@ -400,6 +400,184 @@ public sealed class CompetitorProductsWebTests
         }
     }
 
+    // ═══ 3b · W4-FIX-a — the local E4 findings F-1 / F-2 / F-3 / F-7 ═════════════════════════════════════════
+
+    [Fact]
+    public void FixA_F1_a_typed_field_never_redraws_the_form_and_a_redraw_keeps_the_focus()
+    {
+        if (Smoke("focus") is not { } f) { return; }
+        // name → company → strength, each left by click / Tab (its change fires): the form markup is never rewritten
+        Assert.Equal(f.GetProperty("writesStart").GetInt32(), f.GetProperty("writesAfterIdentity").GetInt32());
+        Assert.Equal(0, f.GetProperty("writesAfterRow").GetInt32());                    // price / currency / date / source of a country row
+        // …while the parts that show the values do change in place
+        Assert.Contains("<strong>Valsen Plus</strong>", f.GetProperty("previewSlot").GetString());
+        Assert.Contains("Selen İlaç", f.GetProperty("previewSlot").GetString());
+        Assert.Contains("5/160 mg", f.GetProperty("previewSlot").GetString());
+        Assert.Equal("11/200", f.GetProperty("nameCount").GetString());
+        Assert.Equal("AZN", f.GetProperty("currencyShown").GetString());                 // upper-cased in the field itself
+        Assert.Equal("AZN", f.GetProperty("curSlot").GetString());
+        Assert.Contains("9,80 AZN", f.GetProperty("previewAfterRow").GetString());       // a typed "9,80" previews as a price, not NaN
+        // a select may re-draw, but its own focus comes back; so does a tag input's after Enter
+        Assert.True(f.GetProperty("selectRedrew").GetBoolean());
+        Assert.Equal("[data-form=\"formCode\"]", f.GetProperty("selectFocus")[0].GetString());
+        Assert.Equal("[data-row=\"0\"][data-k=\"reimbursementStatusCode\"]", f.GetProperty("rowSelectFocus")[0].GetString());
+        Assert.Equal("[data-tag=\"activeIngredients\"]", f.GetProperty("tagFocus")[0].GetString());
+        // no value is lost — neither in a later full re-draw nor in what is saved
+        var form = f.GetProperty("formAfterRedraw").GetString()!;
+        foreach (var v in new[] { "value=\"Valsen Plus\"", "value=\"Selen İlaç\"", "value=\"5/160 mg\"", "value=\"9,80\"", "value=\"AZN\"", "value=\"2026-10-01\"", "value=\"SGK\"" })
+        {
+            Assert.Contains(v, form);
+        }
+        var body = f.GetProperty("postBody");
+        Assert.Equal("Valsen Plus", body.GetProperty("name").GetString());
+        Assert.Equal("Selen İlaç", body.GetProperty("company").GetString());
+        Assert.Equal("5/160 mg", body.GetProperty("strength").GetString());
+        Assert.Equal("tablet", body.GetProperty("formCode").GetString());
+        var row = body.GetProperty("countryPrices")[0];
+        Assert.Equal(9.8m, row.GetProperty("boxPrice").GetDecimal());
+        Assert.Equal("AZN", row.GetProperty("currencyCode").GetString());
+        Assert.Equal("2026-10-01", row.GetProperty("validFrom").GetString());
+        Assert.Equal("reimbursed", row.GetProperty("reimbursementStatusCode").GetString());
+
+        // the code: the change listener re-draws only for a select
+        var pages = Script("competitor-pages.js");
+        Assert.Contains("const redraw = t.tagName === 'SELECT';", pages);
+        Assert.Contains("restoreFocus(sel, caret);", pages);
+    }
+
+    [Fact]
+    public void FixA_F2_every_one_of_177_products_is_findable_and_chosen_as_a_chip_also_when_completing()
+    {
+        var node = RunNode(Core() + """
+            const products = [];
+            for (let i = 0; i < 177; i++) products.push({ id: 'p' + i, canonicalCode: 'GP' + i, globalProductName: 'Ürün ' + i });
+            products[150] = { id: 'tutu', canonicalCode: 'TUTU', globalProductName: 'TUTUKON' };
+            const out = {
+              all: C.productMatches(products, '', [], 30),
+              tutu: C.productMatches(products, 'tutu', [], 30).items.map(p => p.id),
+              byCode: C.productMatches(products, 'TUTU', [], 30).items.map(p => p.id),
+              dotted: C.productMatches([{ id: 'x', globalProductName: 'İNDAPAMİD' }], 'indapamid', [], 30).items.length,
+              chosenHidden: C.productMatches(products, 'tutu', ['tutu'], 30).items.length,
+              everyOne: products.every(p => C.productMatches(products, p.globalProductName, [], 30).items.some(x => x.id === p.id))
+            };
+            out.all = { shown: out.all.items.length, more: out.all.more };
+            process.stdout.write(JSON.stringify(out));
+            """);
+        if (node is not null)
+        {
+            var r = JsonDocument.Parse(node).RootElement;
+            Assert.Equal(30, r.GetProperty("all").GetProperty("shown").GetInt32());
+            Assert.Equal(147, r.GetProperty("all").GetProperty("more").GetInt32());
+            Assert.Equal("tutu", Assert.Single(r.GetProperty("tutu").EnumerateArray()).GetString());
+            Assert.Equal("tutu", Assert.Single(r.GetProperty("byCode").EnumerateArray()).GetString());
+            Assert.Equal(1, r.GetProperty("dotted").GetInt32());
+            Assert.Equal(0, r.GetProperty("chosenHidden").GetInt32());
+            Assert.True(r.GetProperty("everyOne").GetBoolean());
+        }
+
+        if (Smoke("picker") is not { } p) { return; }
+        Assert.Equal(new[] { "/api/products?pageSize=100&pageNumber=1", "/api/products?pageSize=100&pageNumber=2" },
+            p.GetProperty("productCalls").EnumerateArray().Select(x => x.GetString()));   // every page, not the first 100
+        Assert.Contains("147 ürün daha — aramayı daraltın", p.GetProperty("firstList").GetString());
+        Assert.Contains("data-local=\"product-q\"", p.GetProperty("firstList").GetString());
+        Assert.Equal(0, p.GetProperty("writesWhileTyping").GetInt32());                  // the search box keeps its focus
+        Assert.Contains("TUTUKON", p.GetProperty("results").GetString());
+        Assert.Contains("Aramayla eşleşen ürün yok.", p.GetProperty("noMatch").GetString());
+        Assert.Contains("cp-chosen\"><span class=\"cp-tag p\">TUTUKON", p.GetProperty("afterPick").GetString());
+        Assert.Equal("[data-local=\"product-q\"]", p.GetProperty("pickFocus")[0].GetString());
+        Assert.Equal("aaaaaaaa-0000-0000-0000-00000000000a", p.GetProperty("postBody").GetProperty("competesWithGlobalProductIds")[0].GetString());
+
+        if (Smoke("complete") is { } c)
+        {
+            Assert.Contains("data-local=\"product-q\"", c.GetProperty("page").GetString());   // the same picker when completing a proposal
+        }
+    }
+
+    [Fact]
+    public void FixA_F3_reference_options_read_the_real_web_contract_code_label_and_attributes()
+    {
+        // the Platform BusinessReferenceDataPublishedValuesModel as CrmReferenceSetReader passes it through (camelCase)
+        const string real = """
+            { "setCode": "mdm-reimbursement-status", "versionNumber": 1, "publishedAt": "2026-10-01T00:00:00Z", "items": [
+              { "code": "unknown", "label": "Unknown", "description": null, "isActive": true, "sortOrder": 9, "attributes": { "label_tr": "Bilinmiyor" } },
+              { "code": "reimbursed", "label": "Reimbursed", "description": null, "isActive": true, "sortOrder": 1, "attributes": { "label_tr": "Geri ödemede", "label_ar": "مُعوَّض" } },
+              { "code": "not_reimbursed", "label": "Not reimbursed", "description": null, "isActive": false, "sortOrder": 2, "attributes": null },
+              { "code": "reimbursed_conditional", "label": "Conditional", "description": null, "isActive": true, "sortOrder": 3, "attributes": null } ] }
+            """;
+        var node = RunNode(Core() + "const real = " + real + ";\n" + """
+            process.stdout.write(JSON.stringify({ tr: C.referenceOptions(real, 'tr'), en: C.referenceOptions(real, 'en'), ar: C.referenceOptions(real, 'ar'),
+              old: C.referenceOptions({ items: [{ valueCode: 'reimbursed', displayName: 'Reimbursed' }] }, 'tr') }));
+            """);
+        if (node is not null)
+        {
+            var r = JsonDocument.Parse(node).RootElement;
+            string Pairs(string lang) => string.Join("|", r.GetProperty(lang).EnumerateArray().Select(o => o.GetProperty("code").GetString() + "=" + o.GetProperty("label").GetString()));
+            Assert.Equal("reimbursed=Geri ödemede|reimbursed_conditional=Conditional|unknown=Bilinmiyor", Pairs("tr")); // sortOrder, inactive out, label fallback
+            Assert.Equal("reimbursed=Reimbursed|reimbursed_conditional=Conditional|unknown=Unknown", Pairs("en"));        // English = label
+            Assert.Equal("reimbursed=مُعوَّض|reimbursed_conditional=Conditional|unknown=Unknown", Pairs("ar"));
+            Assert.Empty(r.GetProperty("old").EnumerateArray());                     // a row without `code` is not an option (no empty code saved)
+        }
+
+        // the page, fed the real format by the smoke fakes: the select's values are the codes, the labels the BRD's
+        if (Smoke("edit") is { } e)
+        {
+            var select = e.GetProperty("reimbursementSelect").GetString()!;
+            Assert.Contains("<option value=\"reimbursed\" selected>Geri ödemede</option>", select);
+            Assert.Contains("<option value=\"unknown\">Bilinmiyor</option>", select);
+            Assert.DoesNotContain("value=\"\"", select);
+            Assert.DoesNotContain("not_reimbursed", select);                         // inactive
+            Assert.Equal("reimbursed", e.GetProperty("putBody").GetProperty("countryPrices")[0].GetProperty("reimbursementStatusCode").GetString());
+        }
+        if (Smoke("focus") is { } f)
+        {
+            var menu = f.GetProperty("addMenu").GetString()!;
+            Assert.Contains("data-act=\"add-country\" data-code=\"AE\"", menu);
+            Assert.Contains("data-act=\"add-country\" data-code=\"TR\"", menu);
+            Assert.DoesNotContain("data-act=\"add-country\" data-code=\"\"", menu);
+        }
+
+        // no fake in the smoke harness speaks the old shape any more
+        var smoke = File.ReadAllText(Path.Combine(Path.GetDirectoryName(WebRoot())!, "Diten.Web.Tests", "Js", "competitor-products-smoke.js"));
+        Assert.DoesNotContain("valueCode", smoke);
+        Assert.DoesNotContain("displayName: 'Reimbursed'", smoke);
+        Assert.DoesNotContain("v.valueCode", Script("competitor-pages.js"));
+    }
+
+    [Fact]
+    public void FixA_F7_prepared_by_is_the_creation_and_applied_is_its_own_line()
+    {
+        var node = RunNode(Core() + """
+            const rounds = [{ submittedAt: '2026-10-14T10:58:00Z' }, { submittedAt: '2026-10-14T10:53:00Z' }];
+            process.stdout.write(JSON.stringify({
+              created: C.preparedOf({ createdBy: 'a', createdAt: '2026-10-14T10:40:00Z', updatedBy: 'b', updatedAt: '2026-10-14T11:04:00Z', status: 'applied', reviewRounds: rounds }),
+              rounds: C.preparedOf({ createdBy: 'a', updatedBy: 'b', updatedAt: '2026-10-14T11:04:00Z', status: 'applied', reviewRounds: rounds }),
+              appliedNoRounds: C.preparedOf({ createdBy: 'a', updatedAt: '2026-10-14T11:04:00Z', status: 'applied', reviewRounds: [] }),
+              draft: C.preparedOf({ createdBy: 'a', updatedAt: '2026-10-14T10:50:00Z', status: 'draft', reviewRounds: [] }),
+              applied: C.appliedOf({ appliedBy: 'b', appliedAt: '2026-10-14T11:04:00Z' }),
+              notApplied: C.appliedOf({ status: 'draft' })
+            }));
+            """);
+        if (node is not null)
+        {
+            var r = JsonDocument.Parse(node).RootElement;
+            Assert.Equal("2026-10-14T10:40:00Z", r.GetProperty("created").GetProperty("at").GetString());     // createdAt when the MDM sends it
+            Assert.Equal("a", r.GetProperty("created").GetProperty("by").GetString());
+            Assert.Equal("2026-10-14T10:53:00Z", r.GetProperty("rounds").GetProperty("at").GetString());      // else the first submission
+            Assert.Equal(JsonValueKind.Null, r.GetProperty("appliedNoRounds").GetProperty("at").ValueKind);   // never the applying moment
+            Assert.Equal("2026-10-14T10:50:00Z", r.GetProperty("draft").GetProperty("at").GetString());
+            Assert.Equal("b", r.GetProperty("applied").GetProperty("by").GetString());
+            Assert.Equal(JsonValueKind.Null, r.GetProperty("notApplied").ValueKind);
+        }
+
+        if (Smoke("applied") is not { } a) { return; }
+        var page = a.GetProperty("page").GetString()!;
+        var prepared = a.GetProperty("expPrepared").GetString()!;
+        var applied = a.GetProperty("expApplied").GetString()!;
+        Assert.Contains("<span class=\"cp-k\">Hazırlayan</span><span class=\"cp-v\">Elif Kaya <span class=\"cp-small cp-muted\">" + prepared + "</span>", page);
+        Assert.Contains("<span class=\"cp-k\">Uygulandı</span><span class=\"cp-v\">Zeynep Koç <span class=\"cp-small cp-muted\">" + applied + "</span>", page);
+        Assert.DoesNotContain("Hazırlayan</span><span class=\"cp-v\">Elif Kaya <span class=\"cp-small cp-muted\">" + applied, page);
+    }
+
     // ═══ 4 · the proxies ═════════════════════════════════════════════════════════════════════════════════════
 
     [Theory]

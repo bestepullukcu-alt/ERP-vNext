@@ -112,6 +112,9 @@
   <data name="UnknownIndication" xml:space="preserve"><value>Indication (plus dans la liste)</value></data>
   <data name="CountriesHelp" xml:space="preserve"><value>Un changement de prix n'ouvre pas de ligne ; il démarre une période et l'ancien prix passe dans l'historique.</value></data>
   <data name="AddCountry" xml:space="preserve"><value>Ajouter un pays</value></data>
+  <data name="ProductSearch" xml:space="preserve"><value>Rechercher nos produits par nom ou code</value></data>
+  <data name="ProductsNoMatch" xml:space="preserve"><value>Aucun produit ne correspond à la recherche.</value></data>
+  <data name="ProductsMore" xml:space="preserve"><value>{0} de plus — affinez la recherche</value></data>
   <data name="CountrySearch" xml:space="preserve"><value>Rechercher un pays</value></data>
   <data name="MarketsUnavailable" xml:space="preserve"><value>La liste des marchés n'a pas pu être lue ; saisissez un code pays ISO.</value></data>
   <data name="AddButton" xml:space="preserve"><value>Ajouter</value></data>
@@ -231,6 +234,7 @@
   <data name="MovedCountries" xml:space="preserve"><value>Pays à déplacer</value></data>
   <data name="MergeEffectShort" xml:space="preserve"><value>Le nom proposé rejoint les autres noms de la cible ; les rapports pointent vers elle.</value></data>
   <data name="RejectReason" xml:space="preserve"><value>Motif</value></data>
+  <data name="AppliedRowLabel" xml:space="preserve"><value>Appliquée</value></data>
   <data name="AppliedLine" xml:space="preserve"><value>Appliquée · {0} · approuvée par {1}, {2}</value></data>
   <data name="WithdrawButton" xml:space="preserve"><value>Retirer</value></data>
   <data name="ApproveButton" xml:space="preserve"><value>Approuver</value></data>

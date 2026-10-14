@@ -89,6 +89,10 @@
 .cp-search i { position: absolute; inset-inline-start: 12px; top: 10px; font-size: 18px; color: var(--cp-muted); }
 .cp-search .form-control { padding-inline-start: 38px; }
 .cp-field .cp-search { flex: none; max-width: 560px; }
+/* W4-FIX-a F-2 — our products picker: chosen chips on top, then the search and its matches */
+.cp-chosen { border-style: dashed; margin-bottom: 8px; }
+.cp-psearch { margin-bottom: 8px; }
+#cp-prod-results { max-height: 220px; overflow-y: auto; }
 .cp-table { margin: 0; font-size: 14px; }
 .cp-table th { font-size: 13px; font-weight: 500; text-transform: uppercase; letter-spacing: .2px; color: var(--cp-head); white-space: nowrap; }
 .cp-table td { vertical-align: middle; }

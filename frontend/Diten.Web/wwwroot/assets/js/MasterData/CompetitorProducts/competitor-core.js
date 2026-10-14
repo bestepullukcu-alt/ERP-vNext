@@ -17,6 +17,9 @@
  *   usageOf(usage, id) / countText(value) the CRM's aggregate counts ("<5" is shown as it comes — no small cell identifies a doctor)
  *   similarityTone(score)                 ≥ 80 "likely the same record"
  *   tags(text) / addTag(list, value)      the alias / ingredient chips (trimmed, case-insensitive once)
+ *   referenceOptions(data, lang)          (W4-FIX-a F-3) a MOD-0048 set as the Web proxy answers it → [{ code, label }]
+ *   productMatches(products, q, ids, max) (W4-FIX-a F-2) "our products" picker: every loaded product is findable by name / code
+ *   preparedOf(decision) / appliedOf(decision)   (W4-FIX-a F-7) who prepared the decision and when ≠ who applied it and when
  *   errorText(errors, L) · fmt(template, …)
  */
 (function (root, factory) {
@@ -266,6 +269,51 @@
 
     const similarityTone = score => (Number(score) >= LIKELY_SAME ? 'likely' : 'other');
 
+    // ── W4-FIX-a ──────────────────────────────────────────────────────────────────────────────────────────────
+    /**
+     * F-3 — a MOD-0048 published set exactly as the Web proxy (CrmReferenceSetReader) answers it:
+     * { items: [{ code, label, isActive, sortOrder, attributes: { label_<lang> } }] }. The English label is `label`; another
+     * language reads `attributes.label_<lang>` and falls back to `label`, then the code (the same rule as report-core optionLabel).
+     */
+    const referenceOptions = (data, lang) => {
+        const list = Array.isArray(data) ? data : (data && Array.isArray(data.items) ? data.items : []);
+        const l = String(lang || '').toLowerCase();
+        return list.filter(v => v && v.code && v.isActive !== false)
+            .map((v, i) => ({ v, i }))
+            .sort((a, b) => ((a.v.sortOrder || 0) - (b.v.sortOrder || 0)) || (a.i - b.i))
+            .map(x => {
+                const at = x.v.attributes || {};
+                const own = l && l !== 'en' ? (at['label_' + l] || at['Label_' + l]) : null;
+                return { code: String(x.v.code), label: String(own || x.v.label || x.v.code) };
+            });
+    };
+
+    /**
+     * F-2 — "our products" picker: the not-yet-chosen products whose name or code contains the search (case- and
+     * Turkish-dotted-I-insensitive), at most `max` of them, plus how many more matched.
+     */
+    const fold = v => String(v || '').replace(/İ/g, 'i').replace(/I/g, 'ı').toLowerCase().replace(/ı/g, 'i');
+    const productMatches = (products, q, ids, max) => {
+        const chosen = ids || [];
+        const needle = fold(String(q || '').trim());
+        const hits = (products || []).filter(p => p && chosen.indexOf(p.id) < 0
+            && (!needle || fold(p.globalProductName).indexOf(needle) > -1 || fold(p.canonicalCode).indexOf(needle) > -1));
+        const limit = max || 30;
+        return { items: hits.slice(0, limit), more: Math.max(0, hits.length - limit) };
+    };
+
+    /**
+     * F-7 — "Prepared by" is the decision's creation (createdBy / createdAt), never the moment it was applied (applying moves
+     * updatedAt). Without createdAt the preparation time is the first submission; a never-submitted draft uses its last save.
+     */
+    const preparedOf = d => {
+        if (!d) { return { by: null, at: null }; }
+        const rounds = (d.reviewRounds || []).map(r => r && r.submittedAt).filter(Boolean).sort();
+        const at = d.createdAt || rounds[0] || d.submittedAt || (d.status === 'applied' ? null : d.updatedAt) || null;
+        return { by: d.createdBy || d.updatedBy || null, at: at };
+    };
+    const appliedOf = d => (d && d.appliedAt ? { by: d.appliedBy || null, at: d.appliedAt } : null);
+
     // ── words ─────────────────────────────────────────────────────────────────────────────────────────────────
     const errorText = (errors, L) => {
         const l = L || {};
@@ -287,6 +335,6 @@
         recordActions, statusTone, isOwn, decisionState, decisionActions, sodNote, rejectReason, reviewBody,
         canAddMarket, addMarket, pricePeriod, addTag, tags, validate, writeBody, decisionBody,
         mergeCanAdvance, mergeSubmitEnabled, mergeBody, mergeDiffRows, mergeMarketRows,
-        usageOf, countText, similarityTone, errorText, fmt
+        usageOf, countText, similarityTone, errorText, fmt, referenceOptions, productMatches, preparedOf, appliedOf
     };
 }));

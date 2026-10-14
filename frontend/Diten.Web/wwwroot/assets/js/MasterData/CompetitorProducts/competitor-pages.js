@@ -83,7 +83,9 @@
     const money = (v, cur) => {
         if (v === null || v === undefined || v === '') { return '—'; }
         const tail = cur ? ' ' + cur : '';
-        try { return new Intl.NumberFormat(lang, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(v)) + tail; } catch (e) { return String(v) + tail; }
+        const n = typeof v === 'number' ? v : Number(String(v).replace(/\s/g, '').replace(',', '.')); // a typed "186,30" (F-1 live preview)
+        if (isNaN(n)) { return String(v) + tail; }
+        try { return new Intl.NumberFormat(lang, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n) + tail; } catch (e) { return String(v) + tail; }
     };
     let regionNames = null;
     try { regionNames = new Intl.DisplayNames([lang], { type: 'region' }); } catch (e) { regionNames = null; }
@@ -107,14 +109,13 @@
         if (k.indexOf('countryPrices.') === 0) { return fmt(L.Field_countryPrices || '{0}', k.slice('countryPrices.'.length)); } // a country row (one per market)
         return L['Field_' + k.replace(/\./g, '_')] || k;
     };
-    const optionLabelOf = v => (lang !== 'en' && v.attributes && v.attributes['label_' + lang]) || v.displayName || v.valueCode;
 
     // ── lookups ──────────────────────────────────────────────────────────────────────────────────────────────
     async function loadLookups() {
         const jobs = [];
-        if (perms.products) { jobs.push(api('GET', '/products?pageSize=100&pageNumber=1').then(r => { state.products = r.ok ? items(r.data) : []; })); }
+        if (perms.products) { jobs.push(loadProducts()); }
         jobs.push(api('GET', '/reference-data/mdm-reimbursement-status/values').then(r => {
-            state.reimbursement = r.ok ? items(r.data).filter(v => v.isActive !== false).map(v => ({ code: v.valueCode, label: optionLabelOf(v) })) : [];
+            state.reimbursement = r.ok ? C.referenceOptions(r.data, lang) : []; // F-3: { code, label, attributes.label_<lang> }
         }));
         if (perms.people) {
             jobs.push(api('GET', '/people').then(r => { ((r.ok && r.data && r.data.people) || []).forEach(p => { state.people[p.userId] = p.displayName || p.userId; }); }));
@@ -122,11 +123,26 @@
         await Promise.all(jobs);
     }
 
+    // F-2 — the selector answers at most 100 a page: read every page (totalCount), so each product is findable and named.
+    const PRODUCT_PAGE = 100;
+    async function loadProducts() {
+        const all = [];
+        for (let page = 1; page <= 50; page++) {
+            const r = await api('GET', '/products?pageSize=' + PRODUCT_PAGE + '&pageNumber=' + page);
+            if (!r.ok) { break; }
+            const got = items(r.data);
+            got.forEach(p => { if (p && !all.some(x => x.id === p.id)) { all.push(p); } });
+            const total = Number(r.data && r.data.totalCount);
+            if (got.length < PRODUCT_PAGE || (total > 0 && all.length >= total)) { break; }
+        }
+        state.products = all;
+    }
+
     async function loadFormLookups() {
         const jobs = [];
         if (perms.forms) { jobs.push(api('GET', '/forms').then(r => { state.forms = r.ok && r.data ? (r.data.dosageForms || (r.data.vocabularies && r.data.vocabularies.dosageForms) || null) : null; })); }
         jobs.push(api('GET', '/reference-data/market/values').then(r => {
-            state.markets = r.ok ? items(r.data).filter(v => v.isActive !== false).map(v => ({ code: v.valueCode, name: v.displayName })) : null;
+            state.markets = r.ok ? C.referenceOptions(r.data, lang).map(o => ({ code: o.code, name: o.label })) : null;
         }));
         await Promise.all(jobs);
     }
@@ -222,7 +238,7 @@
     }
 
     // ── render ───────────────────────────────────────────────────────────────────────────────────────────────
-    function render() {
+    function render(focus) {
         if (state.loading) { return; }
         let html = '';
         if (mode === 'records' || mode === 'proposals') { html = listHtml(); }
@@ -230,8 +246,43 @@
         else if (mode === 'details') { html = detailsHtml(); }
         else if (mode === 'merge' || mode === 'proposal-merge') { html = mergeHtml(); }
         else if (mode === 'proposal') { html = proposalHtml(); }
+        const active = document.activeElement;
+        const sel = focus || focusKeyOf(active);
+        let caret = null;
+        if (sel && !focus) { try { caret = { start: active.selectionStart, end: active.selectionEnd }; } catch (e) { caret = null; } }
         el('cp-body').innerHTML = html;
         renderModal();
+        restoreFocus(sel, caret);
+    }
+
+    // F-1 — a re-draw replaces the DOM; the field that had the focus is found again by its data attributes and refocused.
+    function focusKeyOf(n) {
+        if (!n || !n.getAttribute || (root.contains && !root.contains(n))) { return null; }
+        const names = ['data-form', 'data-local', 'data-filter', 'data-tag'];
+        for (let i = 0; i < names.length; i++) { const v = n.getAttribute(names[i]); if (v) { return '[' + names[i] + '="' + v + '"]'; } }
+        const row = n.getAttribute('data-row');
+        if (row !== null && row !== undefined && row !== '') { return '[data-row="' + row + '"][data-k="' + n.getAttribute('data-k') + '"]'; }
+        return null;
+    }
+    function restoreFocus(sel, caret) {
+        if (!sel || !root.querySelector) { return; }
+        const n = root.querySelector(sel);
+        if (!n || !n.focus) { return; }
+        n.focus();
+        if (caret && caret.start != null && n.setSelectionRange) { try { n.setSelectionRange(caret.start, caret.end); } catch (e) { /* not a text field */ } }
+    }
+
+    // F-1 — a typed value never re-draws the form: only the parts that show it change (preview, counter, cleared errors, period).
+    function refreshParts() {
+        const f = state.form;
+        if (!f) { return; }
+        const set = (id, h) => { const n = el(id); if (n) { n.innerHTML = h; } };
+        set('cp-preview-slot', repCardHtml(f));
+        set('cp-name-count', esc(String(f.name || '').length) + '/200');
+        ['name', 'company'].forEach(k => {
+            if (state.errors[k] && !C.validate(f).errors[k]) { delete state.errors[k]; set('cp-err-' + k, ''); }
+        });
+        f.countryPrices.forEach((r, i) => { set('cp-cur-' + i, esc(r.currencyCode || '—')); set('cp-period-' + i, periodHtml(r)); });
     }
 
     const crumb = parts => '<div class="cp-crumb">' + parts.map((p, i) => (p.href ? '<a href="' + esc(p.href) + '">' + esc(p.text) + '</a>' : '<span>' + esc(p.text) + '</span>') + (i < parts.length - 1 ? ' / ' : '')).join('') + '</div>';
@@ -379,10 +430,10 @@
         const mergedNames = ((state.record && state.record.mergedFrom) || []).map(m => String(m.sourceName || '').toLowerCase());
         const forms = state.forms;
         const identity = '<div class="cp-grid2">'
-            + '<label class="cp-field"><span>' + esc(L.FieldName || '') + ' <i class="cp-req">*</i></span><input class="form-control" data-form="name" maxlength="200" value="' + esc(f.name) + '"><span class="cp-help"><span>' + esc(L.NameHelp || '') + '</span><span>' + esc(f.name.length) + '/200</span></span>'
-            + (e.name ? '<span class="cp-err">' + esc(L.ErrNameRequired || '') + '</span>' : '') + '</label>'
+            + '<label class="cp-field"><span>' + esc(L.FieldName || '') + ' <i class="cp-req">*</i></span><input class="form-control" data-form="name" maxlength="200" value="' + esc(f.name) + '"><span class="cp-help"><span>' + esc(L.NameHelp || '') + '</span><span id="cp-name-count">' + esc(f.name.length) + '/200</span></span>'
+            + '<span id="cp-err-name">' + (e.name ? '<span class="cp-err">' + esc(L.ErrNameRequired || '') + '</span>' : '') + '</span></label>'
             + '<label class="cp-field"><span>' + esc(L.FieldCompany || '') + ' <i class="cp-req">*</i></span><input class="form-control" data-form="company" maxlength="200" list="cp-companies" value="' + esc(f.company) + '">'
-            + '<datalist id="cp-companies">' + companyOptions() + '</datalist>' + (e.company ? '<span class="cp-err">' + esc(L.ErrCompanyRequired || '') + '</span>' : '') + '</label>'
+            + '<datalist id="cp-companies">' + companyOptions() + '</datalist><span id="cp-err-company">' + (e.company ? '<span class="cp-err">' + esc(L.ErrCompanyRequired || '') + '</span>' : '') + '</span></label>'
             + '<div class="cp-field cp-span"><span>' + esc(L.FieldAliases || '') + '</span>' + chips('aliases', f.aliases, mergedNames) + '<span class="cp-help">' + esc(L.AliasHelp || '') + '</span></div>'
             + '<div class="cp-field cp-span"><span>' + esc(L.FieldIngredients || '') + ' <i class="cp-req">*</i></span>' + chips('activeIngredients', f.activeIngredients) + '<span class="cp-help">' + esc(L.IngredientHelp || '') + '</span>'
             + (e.ingredients ? '<span class="cp-err">' + esc(L.ErrIngredientsRequired || '') + '</span>' : '') + '</div>'
@@ -391,13 +442,27 @@
             + (forms ? '' : '<span class="cp-help">' + esc(L.FormsUnavailable || '') + '</span>') + '</label>'
             + '<div class="cp-grid2 cp-tight"><label class="cp-field"><span>' + esc(L.FieldStrength || '') + '</span><input class="form-control" data-form="strength" maxlength="60" value="' + esc(f.strength) + '" placeholder="5/160 mg"></label>'
             + '<label class="cp-field"><span>' + esc(L.FieldAtc || '') + '</span><input class="form-control" data-form="atcCode" maxlength="16" value="' + esc(f.atcCode) + '" placeholder="C01EB15"></label></div></div>';
-        const competition = '<div class="cp-field"><span>' + esc(L.FieldOurs || '') + ' <i class="cp-req">*</i></span><div class="cp-chips">'
-            + (perms.products ? state.products.map(p => { const on = f.competesWithGlobalProductIds.indexOf(p.id) > -1; return '<button type="button" class="cp-toggle' + (on ? ' on' : '') + '" data-act="toggle-product" data-id="' + esc(p.id) + '">' + (on ? '<i class="bx bx-check"></i>' : '') + esc(p.globalProductName || p.canonicalCode) + '</button>'; }).join('')
-                : '<span class="cp-help">' + esc(L.ProductsNoAccess || '') + '</span>') + '</div><span class="cp-help">' + esc(L.OursHelp || '') + '</span>'
+        const competition = '<div class="cp-field"><span>' + esc(L.FieldOurs || '') + ' <i class="cp-req">*</i></span>'
+            + (perms.products ? productPicker(f) : '<div class="cp-chips"><span class="cp-help">' + esc(L.ProductsNoAccess || '') + '</span></div>') + '<span class="cp-help">' + esc(L.OursHelp || '') + '</span>'
             + (e.products ? '<span class="cp-err">' + esc(L.ErrProductsRequired || '') + '</span>' : '') + '</div>'
             + '<div class="cp-field"><span>' + esc(L.FieldIndications || '') + ' <span class="cp-muted">' + esc(L.Optional || '') + '</span></span>' + indicationChips(f) + '<span class="cp-help">' + esc(L.IndicationHelp || '') + '</span></div>';
         return head + banners + '<div class="cp-split"><div class="cp-main">'
             + card(L.SectionIdentity || '', identity) + card(L.SectionCompetition || '', competition) + countryCard(f) + '</div><div class="cp-side">' + previewCard(f) + '</div></div>';
+    }
+
+    function productPicker(f) {
+        const chosen = f.competesWithGlobalProductIds.map(id => '<span class="cp-tag p">' + esc(productName(id))
+            + '<button type="button" data-act="toggle-product" data-id="' + esc(id) + '" aria-label="' + esc(L.RemoveLabel || '') + '"><i class="bx bx-x"></i></button></span>').join('');
+        return (chosen ? '<div class="cp-tags cp-chosen">' + chosen + '</div>' : '')
+            + '<div class="cp-search cp-psearch"><i class="bx bx-search"></i><input class="form-control" data-local="product-q" autocomplete="off" value="' + esc(state.productQ || '') + '" placeholder="' + esc(L.ProductSearch || '') + '" aria-label="' + esc(L.ProductSearch || '') + '"></div>'
+            + '<div class="cp-chips" id="cp-prod-results">' + productResults(f) + '</div>';
+    }
+
+    function productResults(f) {
+        const m = C.productMatches(state.products, state.productQ, f.competesWithGlobalProductIds, 30);
+        if (!m.items.length) { return '<span class="cp-help">' + esc(L.ProductsNoMatch || '') + '</span>'; }
+        return m.items.map(p => '<button type="button" class="cp-toggle" data-act="toggle-product" data-id="' + esc(p.id) + '"><i class="bx bx-plus"></i>' + esc(p.globalProductName || p.canonicalCode) + '</button>').join('')
+            + (m.more ? '<span class="cp-help">' + esc(fmt(L.ProductsMore || '{0}', m.more)) + '</span>' : '');
     }
 
     function companyOptions() {
@@ -419,19 +484,16 @@
     const historyOf = c => (((state.record && state.record.countryPriceHistory) || []).filter(h => h.marketCode === c)).sort((a, b) => String(b.validTo).localeCompare(String(a.validTo)));
 
     function countryCard(f) {
-        const used = f.countryPrices.map(r => r.marketCode);
-        const marketOpts = (state.markets || []).filter(m => used.indexOf(m.code) < 0).map(m => ({ code: m.code, name: countryName(m.code) })).sort((a, b) => a.name.localeCompare(b.name, lang));
+        const marketOpts = marketOptions();
         const add = '<div class="cp-add"><button type="button" class="btn btn-sm btn-label-primary" data-act="add-open"><i class="bx bx-plus"></i>' + esc(L.AddCountry || '') + '<i class="bx bx-chevron-down"></i></button>'
             + (state.addOpen ? '<div class="cp-add-menu">' + (state.markets ? '<input class="form-control form-control-sm" data-local="market-q" placeholder="' + esc(L.CountrySearch || '') + '" value="' + esc(state.marketQ || '') + '">'
-                + '<div class="cp-add-list">' + marketOpts.filter(m => !state.marketQ || (m.name + ' ' + m.code).toLowerCase().indexOf(String(state.marketQ).toLowerCase()) > -1).slice(0, 40)
-                    .map(m => '<button type="button" data-act="add-country" data-code="' + esc(m.code) + '"><span class="cp-cc">' + esc(m.code) + '</span>' + esc(m.name) + '</button>').join('') + '</div>'
+                + '<div class="cp-add-list" id="cp-add-list">' + marketList(marketOpts) + '</div>'
                 : '<div class="cp-small cp-muted">' + esc(L.MarketsUnavailable || '') + '</div><div class="cp-inline"><input class="form-control form-control-sm" maxlength="2" data-local="market-code" placeholder="TR"><button type="button" class="btn btn-sm btn-primary" data-act="add-country-code">' + esc(L.AddButton || '') + '</button></div>')
                 + '</div>' : '') + '</div>';
         const rows = f.countryPrices.length ? f.countryPrices.map((r, i) => {
             const hist = historyOf(r.marketCode);
-            const period = C.pricePeriod(original(r.marketCode), r);
             const open = !!state.histOpen[r.marketCode];
-            return '<div class="cp-crow"><div class="cp-crow-h"><span class="cp-cc">' + esc(r.marketCode) + '</span><strong>' + esc(countryName(r.marketCode)) + '</strong><span class="cp-muted">· ' + esc(r.currencyCode || '—') + '</span><span class="cp-grow"></span>'
+            return '<div class="cp-crow"><div class="cp-crow-h"><span class="cp-cc">' + esc(r.marketCode) + '</span><strong>' + esc(countryName(r.marketCode)) + '</strong><span class="cp-muted">· <span id="cp-cur-' + i + '">' + esc(r.currencyCode || '—') + '</span></span><span class="cp-grow"></span>'
                 + (hist.length ? '<button type="button" class="cp-link" data-act="hist" data-code="' + esc(r.marketCode) + '"><i class="bx bx-history"></i>' + esc(fmt(L.HistoryCount || '{0}', hist.length)) + '<i class="bx ' + (open ? 'bx-chevron-up' : 'bx-chevron-down') + '"></i></button>' : '<span class="cp-small cp-muted">' + esc(L.NoHistory || '') + '</span>')
                 + '<button type="button" class="btn btn-icon btn-sm btn-text-danger" data-act="row-del" data-i="' + i + '" aria-label="' + esc(L.RemoveRow || '') + '"><i class="bx bx-trash"></i></button></div>'
                 + '<div class="cp-crow-b"><label class="cp-field"><span>' + esc(L.BoxPrice || '') + '</span><div class="input-group"><input class="form-control cp-num" inputmode="decimal" data-row="' + i + '" data-k="boxPrice" value="' + esc(r.boxPrice == null ? '' : r.boxPrice) + '" placeholder="0,00">'
@@ -440,11 +502,22 @@
                     .map(x => '<option value="' + esc(x.code) + '"' + (r.reimbursementStatusCode === x.code ? ' selected' : '') + '>' + esc(x.label) + '</option>').join('') + '</select></label>'
                 + '<label class="cp-field"><span>' + esc(L.ValidFrom || '') + '</span><input type="date" class="form-control" data-row="' + i + '" data-k="validFrom" value="' + esc(r.validFrom || '') + '"></label>'
                 + '<label class="cp-field"><span>' + esc(L.Source || '') + '</span><input class="form-control" maxlength="200" data-row="' + i + '" data-k="source" value="' + esc(r.source || '') + '" placeholder="' + esc(L.SourcePlaceholder || '') + '"></label></div>'
-                + (period ? '<div class="cp-period' + (period.dateMustMove ? ' warn' : '') + '"><i class="bx bx-time-five"></i>' + esc(fmt(L.NewPeriod || '{0} {1} {2}', money(period.from, ''), money(period.to, ''), r.currencyCode || '')) + (period.dateMustMove ? ' ' + esc(L.NewPeriodDate || '') : '') + '</div>' : '')
+                + '<div id="cp-period-' + i + '">' + periodHtml(r) + '</div>'
                 + (open ? historyHtml(hist, r.currencyCode) : '') + '</div>';
         }).join('') : '<div class="cp-noctry"><i class="bx bx-world"></i><strong>' + esc(L.NoCountries || '') + '</strong><span>' + esc(L.NoCountriesText || '') + '</span></div>';
         const err = state.errors.markets ? '<span class="cp-err">' + esc(L['ErrMarkets_' + state.errors.markets] || '') + '</span>' : '';
         return card(L.SectionCountries || '', '<p class="cp-muted cp-small">' + esc(L.CountriesHelp || '') + '</p>' + rows + err, 'cp-countries', add);
+    }
+
+    function marketList(opts) {
+        return opts.filter(m => !state.marketQ || (m.name + ' ' + m.code).toLowerCase().indexOf(String(state.marketQ).toLowerCase()) > -1).slice(0, 40)
+            .map(m => '<button type="button" data-act="add-country" data-code="' + esc(m.code) + '"><span class="cp-cc">' + esc(m.code) + '</span>' + esc(m.name) + '</button>').join('');
+    }
+    const marketOptions = () => { const used = state.form.countryPrices.map(r => r.marketCode); return (state.markets || []).filter(m => used.indexOf(m.code) < 0).map(m => ({ code: m.code, name: countryName(m.code) })).sort((a, b) => a.name.localeCompare(b.name, lang)); };
+
+    function periodHtml(r) {
+        const period = C.pricePeriod(original(r.marketCode), r);
+        return period ? '<div class="cp-period' + (period.dateMustMove ? ' warn' : '') + '"><i class="bx bx-time-five"></i>' + esc(fmt(L.NewPeriod || '{0} {1} {2}', money(period.from, ''), money(period.to, ''), r.currencyCode || '')) + (period.dateMustMove ? ' ' + esc(L.NewPeriodDate || '') : '') + '</div>' : '';
     }
 
     function historyHtml(hist, cur) {
@@ -455,18 +528,22 @@
     function previewCard(f) {
         const codes = f.countryPrices.map(r => r.marketCode);
         if (codes.length && codes.indexOf(state.preview) < 0) { state.preview = codes[0]; }
+        return card(L.PreviewTitle || '', '<span class="cp-small cp-muted">' + esc(L.PreviewSub || '') + '</span>'
+            + '<select class="form-select" data-local="preview">' + (codes.length ? codes : ['TR']).map(c => '<option value="' + esc(c) + '"' + (c === state.preview ? ' selected' : '') + '>' + esc(fmt(L.PreviewAs || '{0}', countryName(c))) + '</option>').join('') + '</select>'
+            + '<div id="cp-preview-slot">' + repCardHtml(f) + '</div>', 'cp-preview');
+    }
+
+    function repCardHtml(f) {
         const row = f.countryPrices.find(r => r.marketCode === state.preview);
         const ind = [];
         f.competesWithGlobalProductIds.forEach(id => ((state.indications[id] && state.indications[id].items) || []).forEach(x => { if (f.indicationNodeIds.indexOf(x.id) > -1 && ind.indexOf(x.name) < 0) { ind.push(x.name); } }));
-        return card(L.PreviewTitle || '', '<span class="cp-small cp-muted">' + esc(L.PreviewSub || '') + '</span>'
-            + '<select class="form-select" data-local="preview">' + (codes.length ? codes : ['TR']).map(c => '<option value="' + esc(c) + '"' + (c === state.preview ? ' selected' : '') + '>' + esc(fmt(L.PreviewAs || '{0}', countryName(c))) + '</option>').join('') + '</select>'
-            + '<div class="cp-repcard"><div class="cp-repcard-h"><span class="cp-rep-ic"><i class="bx bx-target-lock"></i></span><div class="cp-grow"><strong>' + esc(f.name || '—') + '</strong><div class="cp-small cp-muted">' + esc(f.company || '—') + '</div></div><span class="badge bg-label-secondary">' + esc(L.CompetitorTag || '') + '</span></div>'
+        return '<div class="cp-repcard"><div class="cp-repcard-h"><span class="cp-rep-ic"><i class="bx bx-target-lock"></i></span><div class="cp-grow"><strong>' + esc(f.name || '—') + '</strong><div class="cp-small cp-muted">' + esc(f.company || '—') + '</div></div><span class="badge bg-label-secondary">' + esc(L.CompetitorTag || '') + '</span></div>'
             + '<dl class="cp-dl"><dt>' + esc(L.FieldIngredients || '') + '</dt><dd>' + esc(f.activeIngredients.join(' + ') || '—') + '</dd><dt>' + esc(L.FormStrength || '') + '</dt><dd>' + esc([formLabel(f.formCode), f.strength].filter(Boolean).join(' · ') || '—') + '</dd>'
             + '<dt>' + esc(L.OurProduct || '') + '</dt><dd>' + esc(f.competesWithGlobalProductIds.map(productName).join(', ') || '—') + '</dd></dl>'
             + (row && row.boxPrice !== null && row.boxPrice !== '' ? '<div class="cp-price"><span class="cp-k">' + esc(fmt(L.PriceIn || '{0}', countryName(row.marketCode))) + '</span><span class="cp-price-v">' + esc(money(row.boxPrice, row.currencyCode)) + '</span>'
                 + '<span class="cp-small cp-muted">' + esc(fmt(L.Since || '{0}', date(row.validFrom))) + '</span>' + reimbChip(row.reimbursementStatusCode) + '</div>'
                 : '<div class="cp-price cp-muted">' + esc(fmt(L.NoPriceFor || '{0}', countryName(state.preview))) + '</div>')
-            + (ind.length ? '<div class="cp-small cp-muted">' + esc(L.ShownIndications || '') + ' <span class="cp-strong">' + esc(ind.join(', ')) + '</span></div>' : '') + '</div>', 'cp-preview');
+            + (ind.length ? '<div class="cp-small cp-muted">' + esc(L.ShownIndications || '') + ' <span class="cp-strong">' + esc(ind.join(', ')) + '</span></div>' : '') + '</div>';
     }
 
     function conflictBanner() {
@@ -658,7 +735,10 @@
 
     function decisionSummary(d) {
         const kv = (k, v) => '<div class="cp-kv"><span class="cp-k">' + esc(k) + '</span><span class="cp-v">' + v + '</span></div>';
-        let inner = kv(L.DecisionKind || '', '<strong>' + esc(decisionLabel(d.action)) + '</strong>') + kv(L.PreparedBy || '', esc(who(d.updatedBy || d.createdBy)) + ' <span class="cp-small cp-muted">' + esc(dateTime(d.updatedAt)) + '</span>');
+        const prep = C.preparedOf(d); // F-7: the decision's creation, not the moment it was applied
+        const app = C.appliedOf(d);
+        let inner = kv(L.DecisionKind || '', '<strong>' + esc(decisionLabel(d.action)) + '</strong>') + kv(L.PreparedBy || '', esc(who(prep.by)) + ' <span class="cp-small cp-muted">' + esc(dateTime(prep.at)) + '</span>')
+            + (app ? kv(L.AppliedRowLabel || '', esc(who(app.by)) + ' <span class="cp-small cp-muted">' + esc(dateTime(app.at)) + '</span>') : '');
         if (d.action === 'complete' && d.complete) {
             const c = d.complete;
             inner += kv(L.FieldName || '', esc(c.name)) + kv(L.FieldCompany || '', esc(c.company)) + kv(L.FieldIngredients || '', esc((c.activeIngredients || []).join(' + ') || '—'))
@@ -854,7 +934,7 @@
                 const id = t.getAttribute('data-id');
                 const at = f.competesWithGlobalProductIds.indexOf(id);
                 if (at > -1) { f.competesWithGlobalProductIds.splice(at, 1); } else { f.competesWithGlobalProductIds.push(id); await loadIndications([id]); }
-                state.dirty = true; render(); break;
+                state.dirty = true; render(state.productQ ? '[data-local="product-q"]' : null); break; // F-2: keep searching
             }
             case 'toggle-indication': { const id = t.getAttribute('data-id'); const at = f.indicationNodeIds.indexOf(id); if (at > -1) { f.indicationNodeIds.splice(at, 1); } else { f.indicationNodeIds.push(id); } state.dirty = true; render(); break; }
             case 'add-open': state.addOpen = !state.addOpen; render(); break;
@@ -910,15 +990,16 @@
         if (!t || !t.getAttribute) { return; }
         const local = t.getAttribute('data-local');
         if (local === 'reason' || local === 'note') { state.modal.text = t.value; return; } // validated on the button (no re-draw while typing)
-        if (local === 'market-q') { state.marketQ = t.value; return; }
+        if (local === 'market-q') { state.marketQ = t.value; const box = el('cp-add-list'); if (box && state.form) { box.innerHTML = marketList(marketOptions()); } return; }
+        if (local === 'product-q') { state.productQ = t.value; const box = el('cp-prod-results'); if (box && state.form) { box.innerHTML = productResults(state.form); } return; }
         if (local === 'market-code') { state.marketCode = t.value; return; }
         if (local === 'merge-q') { state.merge.q = t.value; return; }
         const filter = t.getAttribute('data-filter');
         if (filter && t.tagName !== 'SELECT') { setFilter(filter, t.value, false); return; }
         const k = t.getAttribute('data-form');
-        if (k && state.form) { state.form[k] = t.value; state.dirty = true; return; }
+        if (k && state.form) { state.form[k] = t.value; state.dirty = true; refreshParts(); return; }
         const row = t.getAttribute('data-row');
-        if (row !== null && row !== undefined && state.form) { state.form.countryPrices[parseInt(row, 10)][t.getAttribute('data-k')] = t.value; state.dirty = true; }
+        if (row !== null && row !== undefined && state.form) { state.form.countryPrices[parseInt(row, 10)][t.getAttribute('data-k')] = t.value; state.dirty = true; refreshParts(); }
     });
 
     root.addEventListener('change', async e => {
@@ -928,7 +1009,7 @@
         if (filter) { setFilter(filter, t.value, true); return; }
         const local = t.getAttribute('data-local');
         if (local === 'preview') { state.preview = t.value; render(); return; }
-        if (local === 'market-q') { render(); return; }
+        if (local === 'market-q' || local === 'product-q') { return; } // typed searches update their list on input (F-1)
         if (local === 'merge-q') { await searchCandidates(); render(); return; }
         const act = t.getAttribute('data-act-change');
         if (act === 'ack') { state.merge.ack = !!t.checked; render(); return; }
@@ -940,13 +1021,18 @@
             render(); return;
         }
         const k = t.getAttribute('data-form');
-        if (k && state.form) { state.form[k] = t.value; state.dirty = true; render(); return; }
+        // F-1 — a text / number / date field's change (fired as the focus LEAVES it, by click or Tab) never re-draws the form:
+        // the next field the user went to must stay in the DOM. A select may re-draw; render() keeps its focus.
+        const redraw = t.tagName === 'SELECT';
+        if (k && state.form) { state.form[k] = t.value; state.dirty = true; if (redraw) { render(); } else { refreshParts(); } return; }
         const row = t.getAttribute('data-row');
         if (row !== null && row !== undefined && state.form) {
             const r = state.form.countryPrices[parseInt(row, 10)];
             const key = t.getAttribute('data-k');
             r[key] = key === 'currencyCode' ? String(t.value || '').toUpperCase() : t.value;
-            state.dirty = true; render();
+            if (key === 'currencyCode' && t.value !== r[key]) { t.value = r[key]; }
+            state.dirty = true;
+            if (redraw) { render(); } else { refreshParts(); }
         }
     });
 
