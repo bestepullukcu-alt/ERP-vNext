@@ -1,5 +1,7 @@
+using Diten.BuildingBlocks.CentralAudit;
 using Diten.InventoryService.Application.Common.Models;
 using MediatR;
+using static Diten.InventoryService.Application.Common.InventoryCentralAudit;
 
 namespace Diten.InventoryService.Application.Features.Expiry.Commands;
 
@@ -15,4 +17,8 @@ public sealed record CreateExpiryEvidenceExportCommand(
     IReadOnlyList<string> Types,
     string? Format,
     string IdempotencyKey,
-    string Language) : IRequest<Response<ExpiryEvidenceExportDto>>;
+    string Language) : IRequest<Response<ExpiryEvidenceExportDto>>, ICentralAuditDeclaration
+{
+    public CentralAuditMetadata CentralAudit => ForExpiry("Export", "ExpiryEvidenceExport");
+    public Guid? CentralAuditEntityId(object? response) => Id(Data<ExpiryEvidenceExportDto>(response)?.ExportId);
+}

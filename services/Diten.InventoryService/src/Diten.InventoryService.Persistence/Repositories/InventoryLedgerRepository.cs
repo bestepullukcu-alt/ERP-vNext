@@ -1,3 +1,4 @@
+using Diten.BuildingBlocks.CentralAudit;
 using System.Globalization;
 using Diten.InventoryService.Application.Common;
 using Diten.InventoryService.Application.Features.Traceability.Ports;
@@ -177,6 +178,7 @@ public sealed class InventoryLedgerRepository : IInventoryLedgerRepository
                     _logger.LogInformation("Ledger posting transaction re-run after a transient conflict (attempt {Attempt}).", attempt);
                 }
 
+                await CentralAuditTransaction.EnlistAsync(s, ct: ct); // BL-501: the marked command's central-audit event commits with this transaction or not at all.
                 await TouchLegLocationsAsync(s, posting.Legs, ct);
 
                 using var lotSession = _lotBinding.Bind(s);

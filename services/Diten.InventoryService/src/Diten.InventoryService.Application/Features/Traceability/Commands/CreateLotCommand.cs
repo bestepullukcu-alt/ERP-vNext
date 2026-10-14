@@ -1,11 +1,16 @@
+using Diten.BuildingBlocks.CentralAudit;
 using Diten.InventoryService.Application.Common.Models;
 using MediatR;
+using static Diten.InventoryService.Application.Common.InventoryCentralAudit;
 
 namespace Diten.InventoryService.Application.Features.Traceability.Commands;
 
 /// <summary>POST /api/trace/lots (v1 <c>createLot</c> + v1.1 members). Raw request values; the handler owns parsing.</summary>
-public sealed record CreateLotCommand : IRequest<Response<LotRefDto>>
+public sealed record CreateLotCommand : IRequest<Response<LotRefDto>>, ICentralAuditDeclaration
 {
+    public CentralAuditMetadata CentralAudit => ForLotSerial("Create", "Lot");
+    public Guid? CentralAuditEntityId(object? response) => Id(Data<LotRefDto>(response)?.LotId);
+
     public string? HeaderIdempotencyKey { get; init; }
     public string? IdempotencyKey { get; init; }
     public string? ItemId { get; init; }
