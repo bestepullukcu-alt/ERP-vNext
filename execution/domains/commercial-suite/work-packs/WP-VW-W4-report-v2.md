@@ -1046,3 +1046,38 @@ KORU/YAPMA: kiracı izolasyonu (global olmayan set hiçbir zaman başka kiracıd
 DOĞRULA: her madde için test (MDM / CRM / Platform / Web ilgili takımlar) + 3 sabotaj (.bak + touch): (1) G-2 fallback kiracı kapsamlı sete de uygulanırsın → kırmızı (izolasyon testi); (2) G-8 arama yine yalnız kod → kırmızı; (3) G-9 ürün kümesi yine yalnız planın ilk ürünü → kırmızı. Tam takımlar (-o repo içi), taban karşılaştırması. Sözleşme değişikliği varsa mobil not: execution/domains/commercial-suite/work-packs/mobile/ altında.
 Commit: "fix(mdm,crm,platform,web): WP-VW-W4-FIX-d — GSKU search by product name, pharmacy competitors from stock GSKUs, verified global sets readable by consumers, searchable GSKU product picker, proposal decision CreatedAt" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
 ```
+
+## §37 CT kabul — W4-FIX-d + W4-FIX-c E2 ACCEPTED (2026-10-14)
+Test dalına alındı:
+- FIX-d `2002ca445` (ajan `b74f3cf54`), çakışmasız.
+- FIX-c `fea8857f0` (ajan `b14034186`). İki çakışma, ikisi de birleşimle çözüldü:
+  - `PharmacyReportController.cs` sabitleri: FIX-d `CompetitorRead` + FIX-c `AccountContactRead`, `PlannedVisitRead`, `AccountRead`, `MedicalSpecialtySet`, `CitySet`.
+  - `pharmacy-report.js` state: FIX-d `gskuProducts` + FIX-c `target`, `reimbursement`.
+
+**CT kontrolü:**
+- **G-2 kiracı izolasyonu:** yedek okuma yalnız `VerifiedCatalogSets` (`market`, `uom`, `pack-applicability`, kilitli sabitlerden) **ve** `global` kapsamda devreye giriyor; sağlayıcı kiracı çağıranın kendi kiracısıysa uygulanmıyor. Eski 500 (`ReferenceTenantMisconfigured`) yolu önce doğrulanmış yedek okumaya bakıyor; davranış genişledi, daralmadı.
+- **G-3 eczane araması:** Web vekili `crm.account.read` ile korunuyor, `accountType=pharmacy`. Ekrandaki seçenek `perms.pharmacies` ile gizleniyor.
+- **Birleşik ağaçta testler** (ayrı worktree, `fea8857f0`):
+
+  | Takım | Sonuç | Kırmızılar |
+  |---|---|---|
+  | Web | 1680/3 | 2 Shipment (tabanda da var) + `WorkCenterMenuWithoutPermissions` (CT `-o` yol derinliği artefaktı) |
+  | CRM | 2742/2 | `VwW4DoctorInsights.A_manual_profile_edit…` (tarih bağımlı, tabanda da var) + `VisitPlanningFix2Tests…shared_pattern` (`CrmRoot()` yol artefaktı, CT `-o` derinliği) |
+  | MDM | 506/5 | 5'i de tabanda var (manifest + composition root) |
+  | Platform | 23/23 | Doğrulanmış katalog + ConsumableSets süzgeci |
+
+- **CT sabotajları (ajanların dokunmadığı kurallar):**
+  1. FIX-d G-1 vekil sayfa sınırı 50 → 500: `G1_the_create_options_proxy_forwards_a_bounded…` kırmızı.
+  2. FIX-c G-3 eczane seçeneği yetkisiz kullanıcıya da gösterildi: `FixC_G3_G4_the_dialog_creates…` kırmızı.
+  - İkisi de `.bak` ile geri alındı + touch → 37/37.
+
+**Açık / izlenecek:**
+- **Mobil notu (FIX-d):** `mobile/2026-10-14-visit-report-pharmacy-products/` (eczane rakip ürün kümesi + GSKU araması) → CT mobil sayfasına taşıyacak.
+- **Ölçülmeyen kabul:** plan dışı saatli / saatsiz 201 yalnız harness'ta gösterildi; gerçek CRM'e karşı E4 3. turda ölçülecek.
+- **Veri sahibi maddeleri:**
+  - yerel `medical-specialty` setinde `label_tr` yok (uzmanlık İngilizce);
+  - şehir sözlüğü farkı (`TR-01-ADANA` ↔ `adana`); Web, Ziyaret Planlama kuralını kullanıyor.
+- **Kapsam dışı:**
+  - eczane rakip kartında form kodu ham ("capsule"; form BRD'si yok);
+  - kayıtlı bağlı hekimler kısa kimlikle görünüyor.
+- **Maliyet:** eczane kişi araması her sorguda en çok 10 detay + 10 kurum + 2 BRD okuması.
