@@ -25,12 +25,13 @@ events happened at the lane-placement gate (C9, C10).
 3. **Lane-typed prompt templates (R11):** §36.2 adds four v1 templates: T1 LANE writer, T2 Mac build/test, T3 VER and
    T4 ledger writer. Each starts with NEREDE / NE İLE and the placement gate, and carries pre-filled §17.1, §17.3 and
    §17.4 blocks.
-4. **Dispatch workflow:** `.antigravity/workflows/dispatch-wp.md` selects the template and runs the dispatch gates
-   before CT issues a prompt.
+4. **Dispatch workflow:** CT picks the template from the §36.2 table and runs the dispatch gates in the §20 preflight
+   before it issues a prompt. (The separate dispatch workflow file was withdrawn in `63fa9cd59`: shared workflows are
+   not added without owner approval.)
 
 Revision r2 (WP Q162, findings of the independent VER Q142):
 
-- **F-Q142-1:** the Mac place name in T2 NEREDE, in the runtime branch of T3 NEREDE and in dispatch-wp G2 follows OD-PLACE:
+- **F-Q142-1:** the Mac place name in T2 NEREDE and in the runtime branch of T3 NEREDE follows OD-PLACE:
   "Claude app → </> Code tab → Local → ERP-vNext-recovery (Mac Claude Code)"; Terminal is not required.
 - **F-Q142-2:** no BASE-STACK version is fixed in the SOP. The §17.1 "Current at v2.5" pointer and the fixed layer chain in T2
   are removed. T2 takes the record path, SHA256 and layer chain as written in the cited record. The rule is unchanged: one
@@ -1995,8 +1996,8 @@ Senin PASS'in kapanış değildir (K13).
 
 ## 36.2 Lane-typed prompt templates (v1)
 
-§36.1 is the prompt skeleton. §36.2 adds one ready template per lane type (R11). CT picks the template with
-`.antigravity/workflows/dispatch-wp.md`, fills the `{…}` fields and pastes the block as the prompt. A prompt names its
+§36.1 is the prompt skeleton. §36.2 adds one ready template per lane type (R11). CT picks the template from the
+table below, runs the §20 preflight, fills the `{…}` fields and pastes the block as the prompt. A prompt names its
 template and version (`Template T1 v1`). A template change is a new version, recorded in §0.
 
 | Template | Lane type | Where it runs | Writes |
