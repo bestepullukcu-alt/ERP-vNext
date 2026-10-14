@@ -10168,6 +10168,11 @@ Mongo'suna dokunabilir. SYNC-03 koşularında bu sınıf filtreyle dışarıda b
 (`Persistence/DependencyInjection.cs:289`), ortak `DitenERP_Test` veritabanında indeks. mongod bağlantı günlüğünde koşu anlarında
 (14:47:46, 15:39:37) bağlantı var. CRM'e bildirildi (sahip iletti).
 
+**2026-10-14 CRM cevabı:** doğrulandı; yazılan yalnız `DitenERP_Test`'te boş koleksiyon indeksleri, geliştirici verisi (`DitenERP_Dev`)
+etkilenmedi. Plan `FIX-CRM-SCAFFOLD-MONGO` (dal `fix/crm-scaffold-smoke-no-mongo` → PR → main), ziyaret çalışma alanı paketlerinden sonra:
+`AddPersistence`'a varsayılanı açık `Mongo:EnsureIndexesOnStartup`; test kapatır. CT eki: sürücü istemci oluşunca izleme bağlantısı açar —
+testin bağlantı dizesi de ulaşılmayan adres olmalı; kabul kanıtı mongod günlüğünde 0 bağlantı. İstisna CRM'in PR'ı main'e girene kadar hatta kalır.
+
 ---
 
 ### BL-644
