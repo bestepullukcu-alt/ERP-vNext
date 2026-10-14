@@ -568,3 +568,25 @@ Test dalına alındı: `c229ec603` (ajan `90a6b07dc`), çakışmasız.
 - **Kısayollar** ortak katmana kaydedilir.
 
 Deneme birleştirmesi (CT): test dalı ↔ PR #144 metin çakışmasız; CRM 2840/2, Web 2531/2 (bilinen).
+
+## §37 CT kabul — W3E-WEB-b E2 ACCEPTED (2026-10-14)
+Test dalına alındı: `02228ac38` (ajan `f209a8873`), çakışmasız. Yalnız Web + Web.Tests; CRM / gateway / WEB-a dosyalarına dokunulmadı.
+
+**CT kontrolü:**
+- **E1–E3:** "Ek kanıtlar" kartı + PUT `qrMode` / `antiFraudMode`; "block" hiçbir yoldan gönderilemiyor; `qr_optional` yalnız QR zorunlu temsilcide seçilebiliyor; geçmişte ham alan adı yok.
+- **M sayfası (/CRM/VisitEvidenceFlags):** özet + liste + çekmece + temsilci özeti + boş + UAS-001; "QR okutulmadı" işaret değil, sorguya gitmiyor; fotoğraf mevcut kanıt yolundan, kendi izniyle.
+- **Testler** (worktree, CT `-o`): Web tam **1710/3**. Kırmızılar: `WorkCenterMenuWithoutPermissions` (`-o` artefaktı) + 2 `ShipmentDetailsDateNode` (tabanda da var). Ajan: 1711/2, taban 1698/2 (+13 test).
+- **CT sabotajı (ajanın dokunmadığı kural):** "Kurum QR kodlarını yönet" bağlantısının yetki koşulu kaldırıldı (`CanReadQrCodes = true`) → `B3_without_a_qr_key_the_manage_link_is_not_drawn…` **kırmızı**. `.bak` + touch ile geri alındı.
+
+**Görsel karşılaştırma:**
+- E1–E3 ve M5 canlı sayfada.
+- M1–M4 / M6 ajanın kendi panelinde gerçek görünüm / JS / CSS + sahte veriyle (yetki yazmadan).
+- Bulunan 8 fark düzeltildi; bazı "sonra" görüntüleri yok → **yerel E4'te CT M ekranlarını yeniden karşılaştıracak.**
+
+**Açık / izlenecek:**
+- Yerel Admin'e `crm.visit-evidence-flags.read` → W3E-CFG betiği (CT).
+- Çekmecede onaylayan **adı** yok (CRM yalnız kimlik döndürüyor); yalnız onay tarihi gösteriliyor. → küçük takip (CRM ayrıntıya `approvedByName`).
+- Kurum süzgeci seçenekleri yüklenen satırlardan toplanıyor (ayrı uç yok).
+- Özel tarih aralığı eklendi (mockup'ta yok; 92 gün sınırı için).
+- Ayar sayfasının genel düzeni (W3-WEB-d iki sütun) korundu; mockup'taki akordiyon / zaman çizelgesi kapsam dışı.
+- **UXH-001** yardım metni + Enter işareti → SYNC-144 (7b).
