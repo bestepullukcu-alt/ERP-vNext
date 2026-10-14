@@ -76,6 +76,9 @@ public class RecallApiFactory : TraceApiFactory
     /// answer is lost. Either way the request stays Pending (the sweeper's case). Cleared by the test.</summary>
     public ConcurrentDictionary<string, string> QuarantineCrash { get; } = new(StringComparer.Ordinal);
 
+    /// <summary>WP-0177-FIX-R3T: every log line of the host (the sweeper's per-request failure log is asserted).</summary>
+    public CapturingLoggerProvider Logs { get; } = new();
+
     public void TrackRecallTenant(Guid tenant) => _recallTenants.Add(tenant);
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -84,6 +87,7 @@ public class RecallApiFactory : TraceApiFactory
         builder.ConfigureTestServices(services =>
         {
             services.AddHttpClient(nameof(IShipmentReader)).ConfigurePrimaryHttpMessageHandler(() => Shipments);
+            services.AddSingleton<Microsoft.Extensions.Logging.ILoggerProvider>(Logs);
             if (UseTestSignature)
             {
                 services.RemoveAll<IRecallSignature>();
