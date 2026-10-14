@@ -1087,6 +1087,7 @@ O-F4-7 stays FU-0175-UI-THEME-01. Fast-forwarded into the MVP-1 branch; the owne
   (`locationId`). The FEFO `WarehouseRef.id` reads (fefo.openapi.yaml:536) are correct and unchanged.
 - **Tests and sabotage.** (a) ×2 incl. the FefoOrder body validated against fefo.openapi.yaml. Sabotage s1 (`o["id"]` again) → red.
 - **Probe.** Own stack: D01 · İstanbul Merkez Depo → order 1 L-2026-1231, 2 L-2027-0331.
+- **CT-ACCEPTED (2026-10-14).** Read the product diff (Expiry/Quarantine pickers via the one `LocationOptions` reader; Quarantine lot picker `lotId`; Stok Defteri `LotNumberResolver` one listLots per SKU, only with the caller's own `trace.lots.read`). CT re-run in its own worktree: Web **1468/1468** green. CT sabotages: (1) Stok Defteri calls TRACE without the `trace.lots.read` check → `C_without_trace_lots_read…` red; (2) Quarantine lot picker back to `id` → `B_the_quarantine_lot_picker…` red; both reverted, porcelain clean. Scope extension (Quarantine lot picker) accepted. O-LIVE1-1 → FU-WEB-CONTRACT-FAKES (bind the 7 older fake gateways to the contract); O-LIVE1-2 → FU-TRACE-LOTS-BY-IDS (TRACE contract). Merged `--no-ff` into MVP-1; live check of FEFO Sırası with the owner after the Web restart (approval).
 
 ## 20. Follow-up Items
 
