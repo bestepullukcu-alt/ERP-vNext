@@ -1101,6 +1101,7 @@ O-F4-7 stays FU-0175-UI-THEME-01. Fast-forwarded into the MVP-1 branch; the owne
   architecture 69 / 77 (same 8). Sabotages s1–s4 red, restored green.
 - **Probe.** Own Web 5104 (real Kestrel) → gateway copy 5105 → fake downstream 5106, no signed token: BEFORE the `..%5C` request reached
   `/api/locations`; AFTER 400 `backslash` and the downstream saw only the legitimate request.
+- **CT-ACCEPTED (2026-10-14).** Read `ProxyPath` (repeated decode, strict ASCII allow-list, final prefix check) and the six one-line hookups. CT trial merge on the MVP-1 tip `48d2a96cb` (SEC-ESIGN1 in; only conflict = the two §19 notes in MOD-0022, both kept): Web **2199/2199**, architecture 69/77 (same 8). **CT sabotage:** Tenants keeps the `TryBuild` call but ignores its result and forwards the raw rest → **49 red** (48 Tenants attack rows + the catch-all guard) — the guard is behavioural, not a source grep; restored, porcelain clean. D-1 (reference-data `:` fixture routes refused via Web) and D-4 (`SetCode` charset) accepted; D-3 one-line edit in `ESignatureWebTests` accepted. **D-2: TimeEntry `{**path}` proxies carry the same hole → WP-MVP1-SEC-PROXY2** (security, not FU). FU-SEC-PROXY1-GATEWAY and notes N-1…N-3 to their owners. Merged `--no-ff` (`26405576d`); owner Web window restart needed for the live fix (approval).
 
 ## 20. Follow-up Items
 
