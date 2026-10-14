@@ -21,9 +21,11 @@ public sealed class FefoCandidateReader
     private readonly IMongoCollection<InventoryBalance> _balances;
     private readonly IMongoCollection<Lot> _lots;
     private readonly ITenantContext _tenant;
+    private readonly Application.Features.Recall.Ports.IRecallLotStatusReader _recall;
 
-    public FefoCandidateReader(IMongoDatabase database, ITenantContext tenant)
+    public FefoCandidateReader(IMongoDatabase database, ITenantContext tenant, Application.Features.Recall.Ports.IRecallLotStatusReader recall)
     {
+        _recall = recall;
         _balances = database.GetCollection<InventoryBalance>(InventoryCollections.Balances);
         _lots = database.GetCollection<Lot>(TraceCollections.Lots);
         _tenant = tenant;
@@ -42,7 +44,9 @@ public sealed class FefoCandidateReader
                 Held: g.Where(r => r.StockStatus != StockStatus.Available).Sum(r => r.OnHand)))
             .ToList();
         var lots = await LotsAsync(session, perLot.Select(p => p.LotId), ct);
-        return perLot.Where(p => lots.ContainsKey(p.LotId)).Select(p => new FefoCandidate(lots[p.LotId], p.Available, p.Held)).ToList();
+        // FEFO 1.3.0 (MOD-0177 CT-R12): lots under an active recall, tenant-wide (CT-R7) — excluded with reason RECALLED, posting and read alike
+        var recalled = await _recall.UnderRecallAsync(lots.Keys.ToList(), ct);
+        return perLot.Where(p => lots.ContainsKey(p.LotId)).Select(p => new FefoCandidate(lots[p.LotId], p.Available, p.Held, recalled.Contains(p.LotId))).ToList();
     }
 
     internal async Task<Dictionary<string, Lot>> LotsAsync(IClientSessionHandle? session, IEnumerable<string> lotIds, CancellationToken ct)

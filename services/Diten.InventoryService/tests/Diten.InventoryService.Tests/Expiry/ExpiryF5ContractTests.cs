@@ -37,7 +37,7 @@ public sealed class ExpiryF5ContractTests
     public void The_1_2_0_change_is_additive_and_only_the_evidence_members()
     {
         var before = Load(ExpiryF4ContractTests.FixtureV110Path);
-        var after = Load(ContractSchemas.FefoContractPath);
+        var after = Load(FefoRecalledContractTests.FixtureV120Path); // WP-0177-R3: the 1.2.0 file is now the fixture; 1.3.0 is measured against it
         Assert.Equal("1.1.0", before["info"]!["version"]!.GetValue<string>());
         Assert.Equal("1.2.0", after["info"]!["version"]!.GetValue<string>());
 
