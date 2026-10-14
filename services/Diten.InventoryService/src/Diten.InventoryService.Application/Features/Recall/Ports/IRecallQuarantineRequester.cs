@@ -6,11 +6,11 @@ namespace Diten.InventoryService.Application.Features.Recall.Ports;
 public sealed record RecallQuarantineBucket(Guid ItemId, Guid SkuId, SkuLevel SkuLevel, string WarehouseId, string LocationId, decimal Quantity, string LotId);
 
 /// <summary>
-/// The call (CT-R2): the bucket, the reason <c>"Geri çağırma RC-… · &lt;case reason&gt;"</c>, the idempotency key
+/// The call (CT-R2): the buckets (the recall sends ONE per call — pack §8.4: 0175 checks reservations per SKU for the whole call), the reason <c>"Geri çağırma RC-… · &lt;case reason&gt;"</c>, the idempotency key
 /// <c>recall:{caseId}:r{revision}:{nodeKey}[:a{n}]</c> and the origin (case id + number) the hold records (QUARANTINE 1.3.0).
 /// The actor is the caller's resolved scope user (the approver / the QA user who asked).
 /// </summary>
-public sealed record RecallQuarantineCall(RecallQuarantineBucket Bucket, string Reason, string IdempotencyKey, Guid CaseId, string CaseNumber);
+public sealed record RecallQuarantineCall(IReadOnlyList<RecallQuarantineBucket> Buckets, string Reason, string IdempotencyKey, Guid CaseId, string CaseNumber);
 
 /// <summary>A hold of MOD-0175 as the recall shows it (read at display time, never copied).</summary>
 public sealed record RecallHoldView(string HoldId, string HoldNumber, string Status, string ReviewState, decimal Quantity, string? LotId,

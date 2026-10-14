@@ -29,7 +29,7 @@ public sealed class QuarantineRecallOriginTests : IClassFixture<QuarantineApiFac
     }
 
     private static RecallQuarantineCall Call(QuarantineScenario s, string lot, decimal quantity, Guid caseId, string key)
-        => new(new RecallQuarantineBucket(s.Ledger.Item, s.Ledger.Sku, s.Ledger.Level, s.Ledger.Warehouse, s.Ledger.LocationA, quantity, lot),
+        => new([new RecallQuarantineBucket(s.Ledger.Item, s.Ledger.Sku, s.Ledger.Level, s.Ledger.Warehouse, s.Ledger.LocationA, quantity, lot)],
             "Geri çağırma RC-2026-0001 · Tedarikci sapma bildirimi", key, caseId, "RC-2026-0001");
 
     [Fact]

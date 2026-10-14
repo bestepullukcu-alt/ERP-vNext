@@ -29,9 +29,8 @@ public sealed class QuarantineRecallRequester : IRecallQuarantineRequester
 
     public async Task<RecallQuarantineAnswer> QuarantineAsync(RecallQuarantineCall call, CancellationToken cancellationToken = default)
     {
-        var b = call.Bucket;
-        var response = await _mediator.Send(new QuarantineStockCommand("Manual", b.LotId,
-            [new BucketInput(b.ItemId, b.SkuId, b.SkuLevel, b.WarehouseId, b.LocationId, b.Quantity, b.LotId)], call.Reason, null, call.IdempotencyKey,
+        var response = await _mediator.Send(new QuarantineStockCommand("Manual", call.Buckets.Count == 1 ? call.Buckets[0].LotId : null,
+            call.Buckets.Select(b => new BucketInput(b.ItemId, b.SkuId, b.SkuLevel, b.WarehouseId, b.LocationId, b.Quantity, b.LotId)).ToList(), call.Reason, null, call.IdempotencyKey,
             new HoldOrigin(RecallModule, RecallSourceType, call.CaseId.ToString("D"), call.CaseNumber)), cancellationToken);
         if (!response.IsSuccessful)
         {
