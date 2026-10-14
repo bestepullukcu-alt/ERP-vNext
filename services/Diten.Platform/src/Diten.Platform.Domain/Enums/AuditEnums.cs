@@ -55,7 +55,14 @@ public enum AuditOutcome
     Unknown = 0,
     Succeeded = 1,
     Failed = 2,
-    Denied = 3
+    Denied = 3,
+
+    /// <summary>
+    /// BL-501 (CT HOLD 2026-10-14) — additive. The forwarded command's data committed, but the command never confirmed its
+    /// end (the sender's process stopped between the commit and the confirmation): the record is kept, not shown as
+    /// succeeded. Senders that do not set it are unaffected (default <see cref="Succeeded"/>).
+    /// </summary>
+    Unconfirmed = 4
 }
 
 public enum AuditActorType

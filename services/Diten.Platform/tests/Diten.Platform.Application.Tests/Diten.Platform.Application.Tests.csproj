@@ -33,5 +33,7 @@
     <ProjectReference Include="..\..\src\Diten.Platform.Domain\Diten.Platform.Domain.csproj" />
     <ProjectReference Include="..\..\src\Diten.Platform.Infrastructure\Diten.Platform.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\Diten.Building.Blocks\src\Diten.BuildingBlocks.InterfaceRegistry.Abstractions\Diten.BuildingBlocks.InterfaceRegistry.Abstractions.csproj" />
+    <!-- BL-501: the receiving side is tested with the shared forwarder's own client (Audit/CentralAuditAppendMongoTests). -->
+    <ProjectReference Include="..\..\..\Diten.Building.Blocks\src\Diten.BuildingBlocks.CentralAudit\Diten.BuildingBlocks.CentralAudit.csproj" />
   </ItemGroup>
 </Project>

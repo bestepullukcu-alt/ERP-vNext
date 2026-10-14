@@ -1826,6 +1826,13 @@ measured; `/internal/esign-tickets/consume` and `/api/internal/esign/actions/reg
   show its own group without the shared domain heading "Platform Paylaşılan Hizmetler" (menu infrastructure, platform owner;
   `DynamicModuleMenu/Default.cshtml:56-58`, `GetTenantNavigationMenuQueryHandler.cs:94-141`, Domain seed-once
   `RegisterModuleManifestCommandHandler.cs:18-20`).
+- FU-0022-AUD-01 — **KAPANDI (2026-10-14, CT kararı A, WP-MVP1-AUDIT1 / BL-501).** Platform e-imza komutlarının işlem içi merkezi
+  denetim yazımı (`ESignatureAuditIntent.EnqueueAsync`) iz olarak kabul edildi (`tests/architecture/audit-ledger/Diten.Platform.md`,
+  `esign-islem-ici-denetim`); Auth `ConsumeESignTicketCommand` / `IssueESignWindowTicketCommand` / `ReauthenticateForESignCommand` mevcut
+  `IUserAuditRecorder` ile merkezi günlüğe, K2 borcunda (8 → 11). `RegisterSignableActionsCommand` ve `VerifySignatureCommand` kaydı
+  işlem dışında `IAuditService.AppendAsync` ile yazar — karar metnine girmiyor, CT'ye soru (BL-501 kanıtı §11).
+- FU-0022-AUD-02 — **AÇIK.** Auth e-imza komutları için önce-yaz kalıbı (`IAuthAuditService.WriteOnceAsync`, AUD-001 §4.4): kayıt
+  yazılamazsa komut başarısız olsun; gelince üç komut K2 borcundan çıkar (11 → 8).
 
 ## 21. UI input — approved mockup
 

@@ -1,3 +1,4 @@
+using Diten.BuildingBlocks.CentralAudit;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using Diten.InventoryService.Application.Common;
@@ -273,7 +274,7 @@ public sealed class RecallRepository : IRecallRepository
         try
         {
             return await session.WithTransactionAsync(
-                (s, ct) =>
+                async (s, ct) =>
                 {
                     if (++attempt > 1)
                     {
@@ -281,7 +282,9 @@ public sealed class RecallRepository : IRecallRepository
                         _logger.LogInformation("Recall transaction re-run after a transient conflict (attempt {Attempt}).", attempt);
                     }
 
-                    return work(new WriteSession(this, s), ct);
+                    await CentralAuditTransaction.EnlistAsync(s, ct: ct); // BL-501: the marked command's central-audit event commits with this transaction or not at all.
+
+                    return await work(new WriteSession(this, s), ct);
                 },
                 new TransactionOptions(ReadConcern.Snapshot, writeConcern: WriteConcern.WMajority),
                 cancellationToken);

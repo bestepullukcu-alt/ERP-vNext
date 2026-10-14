@@ -15,6 +15,7 @@ Bu dosyada yalnız **bildirim** durur; bir komutun denetlenip denetlenmediği bu
 | is-akisi-gecis-gunlugu | c | yazıcı | IWorkflowTransitionLogRepository.CreateAsync/IWorkflowTransitionLogRepository.AppendAsync/WorkflowTaskTransitionSupport.TransitionAsync/WorkflowTaskTransitionSupport.DelegateAsync/WorkflowTaskTransitionSupport.RequestInfoAsync/WorkflowTaskTransitionSupport.CancelAsync |
 | platform-islem-ici | aday | işaret | ITransactionOwnedAuditCommand |
 | arayuz-kayit-sink | aday | yazıcı | IInterfaceRegistryAuditSink.EmitAsync |
+| esign-islem-ici-denetim | a | yazıcı | ESignatureAuditIntent.EnqueueAsync |
 
 Ölçüm notları (2026-10-02; `yol = aday` kabul edilmemiş demektir ve o ize giden komut borçta kalır):
 
@@ -24,6 +25,7 @@ Bu dosyada yalnız **bildirim** durur; bir komutun denetlenip denetlenmediği bu
 > **is-akisi-gecis-gunlugu** — Belirteç yazma üyeleridir: günlüğe doğrudan `CreateAsync` / `AppendAsync`, ya da her geçişte günlüğe yazan `WorkflowTaskTransitionSupport` metotları. `workflow_transition_logs`: aktör, eylem, önceki/sonraki durum, korelasyon; arayüzde güncelleme/silme yok; `…/instances/{id}/history` ile okunur. CT onayı: 2026-10-02.
 > **platform-islem-ici** — `AuditBehavior` bu komutları atlar; kayıt handler'ın işlem içinde yazdığı `audit_outbox` satırıdır. Kod okumasıyla: çağıranların yükü eşleyicinin zorunlu alanlarını (TenantId, ActorType, Category, SourceService) taşımıyor → DeadLetter. **Dev veritabanında ölçüldü 2026-10-02 (salt-okunur):** `audit_outbox` 1468 satır = 1461 `Completed` (hepsinin anahtarı `audit:` — `AuditBehavior` yolu) + 7 `DeadLetter` (hepsi `global-applicability:` / `RegisterModuleManifestCommand`). İşlem içi yoldan teslim edilmiş TEK satır yok; `physical-entitlement:` ve `tenant-subscription:` anahtarlı satır hiç yok. `AddTenantModuleEntitlementCommand` (17), `AssignPlanToTenantCommand` (10), `ActivateTenantSubscriptionCommand` (1) teslimleri işaretin eklendiği commit'ten (d3098d729, 2026-08-31) ÖNCE, eski yoldan. Kanıt olmadığı için 25 komutun hepsi borçta (kural §10-K1).
 > **arayuz-kayit-sink** — Kayıtlı uygulama `NullInterfaceRegistryAuditSink` (hiçbir şey yazmaz).
+> **esign-islem-ici-denetim** — MOD-0022 e-imza komutları merkezi denetim niyetini İŞ İŞLEMİNİN İÇİNDE yazar: `ESignatureAuditIntent.EnqueueAsync` → `ITransactionalAuditOutboxWriter` → `audit_outbox` → `audit_events` (yük `AuditService.BuildPayload` anahtarlarını taşır). CT kararı 2026-10-14 (WP-MVP1-AUDIT1, `CT-DECISIONS.md`): iz olarak kabul edildi; yol `a` işareti (`AuditBehavior`) EKLENMEZ — çift kayıt olur ve en iyi çaba yazar (AUD-001 §4.4). Uçtan uca sondada (BL-501) `esign.actions.registered` 3/3 `audit_events`'e düştü.
 
 ## İstisnalar
 

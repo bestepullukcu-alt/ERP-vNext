@@ -616,6 +616,26 @@ CUSTOMER_RETURN …, item-vs-SKU status), restored, porcelain clean. **INVENTORY
     contract changes. The ledger list is a balance projection without a recorder.
   - No ledger / movement Web change.
 
+### BL-501 — central audit (WP-MVP1-AUDIT1 v2, 2026-10-14, agent result, pending CT)
+
+- **Branch:** `feature/platform/bl-501-central-audit` from `9729409e0`, local only, no push. Evidence:
+  `docs/records/audits/2026-10/wp-mvp1-audit1-bl501-evidence-2026-10-14.md`.
+- **Shared forwarder (AUD-001 K4):** `Diten.BuildingBlocks.CentralAudit(.Abstractions)` — marker `ICentralAuditDeclaration`
+  (same shape as MVP-3's 82ebedeb4), MediatR behavior, outbox `central_audit_outbox` in Inventory's own database, dispatcher to
+  Platform `POST /api/internal/audit/append` (per-event idempotency added to Platform: `AuditAppendRequest.EventId`).
+- **Inventory:** all 58 write commands path **b** (`inventory-merkezi-iletim`). The central record is written in the command's own
+  Mongo transaction (9 transaction callbacks enlist it), so it commits with the business data or not at all (K2). The in-product
+  trails (`inventory_audit`, quarantine history, recall timeline, expiry events, lot / location history) are unchanged.
+  `Program.cs`: one `AddCentralAudit` line (`RequireEnlistment`) + `/health/central-audit`.
+- **Numbers:** Inventory 1159+4 → 1174+4 (16 Prism reds both sides, Prism alone 16/16); AuditTrail unaudited-new 123 → 65;
+  architecture 69/77 → 71/79, same 8 reds. Item 6 (Platform / Auth e-sign commands) **BLOCKED** — options in the evidence §5.
+- **CT HOLD sonrası (2026-10-14, agent result, pending CT):** MVP-1 ucu `394c05550` merge edildi (`b9c113b54`, çakışmasız); R4
+  `PrepareRecallSettingsChangeCommand` işaretlendi (59 komut, hepsi yol b). Başarısız komutun commit olmuş satırı `Abandoned` (gerçek Mongo
+  testi, s8); sahipsiz satır Platform'a `Unconfirmed` gider (eklemeli `AuditOutcome.Unconfirmed = 4`, s9). Madde 6 karar A:
+  Platform e-imza işlem-içi izi (18'in 16'sı; 2 komut işlem dışı yazıyor → CT'ye soru), Auth 3 komut K2 borcu 8 → 11, CT-DECISIONS
+  kaydı. Inventory 1182+4 → 1199+4, Platform 260 kırmızı ad ad aynı, mimari 69/77 → 71/79 aynı 8, AuditTrail denetimsiz-yeni 65 → 46,
+  s1–s9 kırmızı → geri yeşil. Kanıt §11.
+- **BL-501 / WP-MVP1-AUDIT1 v2 CT-ACCEPTED (2026-10-14).** Owner decision A (BL-501 now). First result CT HOLD: R4 command unmarked, CT sabotage Abandon → Pending stayed green, orphan rows sent as normal records. After the hold: MVP-1 tip merged, R4 command marked (59, all path b), real-Mongo abandoned-row test, `AuditOutcome.Unconfirmed` (additive) for released orphans, CT decision A written to CT-DECISIONS.md (Platform e-sign in-transaction trace 16/18; Auth 3 → K2 8 → 11). CT trial merge on `394c05550`: Inventory **1199 + 4**, Building.Blocks 28/28, architecture 71/79 same 8, Inventory new-unaudited **0** (all services 46). **CT sabotage repeated:** Abandon → Pending → `A_failed_command_whose_transaction_committed_leaves_an_abandoned_row_that_is_never_sent` red; restored. Open: `RegisterSignableActionsCommand` + `VerifySignatureCommand` write outside the transaction → CT choice A = move into `ESignatureAuditIntent` (FU-0022-AUD-03, MOD-0022 owner); FU-0022-AUD-02 (Auth write-once); FU-BL501-CATEGORY; FU-BL501-MIGRATE (MDM / Auth copies). Merged `--no-ff` into MVP-1. SYNC3 note: PR #144 touches the same ledgers — re-measure on the owner main sync.
 ## 20. Follow-up Items
 
 - **FU-LE1-01 (shared UI owner):** after a failed first list load the DataTables processing indicator stays visible (shared CSS, protected).
