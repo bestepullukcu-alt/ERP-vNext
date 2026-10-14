@@ -536,3 +536,27 @@ KORU/YAPMA: mevcut kanıt ayarı alanları ve W3-WEB-d testleri bozulmaz; katman
 DOĞRULA: Web.Tests (xUnit + RunNode) — ayar PUT gövdesi iki alanla, Engelle seçilemez, istisna kuralı qr_optional, geçmiş etiketleri (ham anahtar yok), M süzgeç → sorgu parametreleri, 92 gün sınırı ekranda, QR okutulmadı çipi işaret süzgecine girmez, çekmece alanları, UAS-001, 7 dil anahtar tamlığı + NavL10n; 2 sabotaj (.bak + touch): (1) Engelle seçilebilir olsun → kırmızı; (2) geçmişte ham alan adı görünsün → kırmızı. Web tam takım (-o repo içi), taban karşılaştırması. Mockup ↔ ekran karşılaştırma görüntüleri.
 Commit: "feat(web): WP-VW-W3E-WEB-b — additional evidence settings (QR mode, device verification), qr_optional exception, effective/reps/history fields, manager visit evidence flags page (summary, list, drawer, rep summary)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
 ```
+
+## §37 CT kabul — W3E-BE-c E2 ACCEPTED (2026-10-14)
+Test dalına alındı: `c229ec603` (ajan `90a6b07dc`), çakışmasız.
+
+**CT kontrolü:**
+- **CT-1:** doğrulayıcı yokken etkin `qrMode != off` ise 503. DI testi MediatR'ın kurduğu işleyiciyi ölçüyor; ajan benim BE-a sabotajımı (DI kaydı silme) tekrar etti → kırmızı. **CT-1 kapandı.**
+- **CT-2:** satırda QR özeti + kurum adı. Okuma sonrası kiracı süzgeci var; depo sızdırsa bile ad gösterilmiyor. **CT-2 kapandı.**
+- **`qr-check` (`CheckVisitQrQuery`):** yazmıyor. Başlatmayla ortak `VisitStartGate` kullanılıyor. Yük `ToString`'de gizli; MediatR yalnız istek adını, Web vekili yalnız yöntem + yolu günlüğe yazıyor. Query adı sayesinde AUD-001 sayısı değişmedi (123 → 123).
+- **Testler** (worktree, CT `-o`):
+
+  | takım | sonuç | kırmızılar |
+  |---|---|---|
+  | CRM | 2840/2/5 | `VisitPlanningFix2…shared_pattern` (`-o` artefaktı) + `VwW4DoctorInsights…` (tabanda da var) |
+  | Web (tam) | 1697/3 | `WorkCenterMenuWithoutPermissions` (`-o` artefaktı) + 2 `ShipmentDetailsDateNode` (tabanda da var) |
+
+- **CT sabotajı (ajanın dokunmadığı kural):** yeni ortak başlatma kapısında "ziyaret zaten raporlanmış" kontrolü devre dışı → `Start_on_a_reported_visit_is_409_already_reported` **kırmızı**. `.bak` + touch ile geri alındı. Başlatma kurallarının taşınması testle korunuyor.
+
+**Not / izlenecek:**
+- **CT-1 uzaktan ziyareti de kapsıyor:** doğrulayıcı yoksa + kip `off` değilse 503. Doğrulayıcı varken uzaktan ziyaret `not_applicable`. Kabul edildi; yalnız yanlış kurulumda devreye girer.
+- **`qr-check`'te konum kuralı sorulmuyor.** Konum hatası yine başlatmada döner (S ekranlarında ayrı satır).
+- **Web vekili `appVersion`'ı da düşürüyor.** Tarayıcı özeti sunucu tarafında üretiliyor.
+- **Mobil:** `QR.md` §8 → CT mobil sayfasına taşıyacak (`DEVICE.md` ile birlikte).
+
+**Sıradaki:** W3E-WEB-a ∥ W3E-WEB-b (istemler yukarıda; BE-c artık test dalında).
