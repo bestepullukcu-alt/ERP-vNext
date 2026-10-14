@@ -1403,6 +1403,11 @@ Dal `feature/sce/mod-0177-r5` (taban `394c05550`). Kanıt `docs/records/audits/2
   Sonda 5168 + mongod 27517: tatbikat uçları ve sağlayıcı drill-run token'sız 401; filo PID'leri değişmedi.
 - Açık: O-R5-1 (geçici denetim borcu), O-R5-2 (sağlayıcının `recall.cases.read` anahtarı — CT kararı), O-R5-3 (pano / Tatbikat satırı / ekranlar
   → R6 / R7), O-R5-4 (sahip yeniden başlatması), O-R5-5 (aday lot türü).
+- **CT kararı sonrası (2026-10-14, agent result, pending CT):** MVP-1 ucu `a27519491` (BL-501) merge edildi (`2d79e2485`, çakışmasız).
+  7 tatbikat komutu `ICentralAuditDeclaration` taşır, `RecallDrillRepository` işlemi merkezi kayda katılır (10 işlem noktası); yazma sayımı
+  istisnasına yalnız `central_audit_outbox`. Inventory 66 komut, denetimsiz **0**. O-R5-2: drill-run konusu `recall.drills.read` ile de okunur
+  (RECALL 1.4.0 içinde yalnız ekleme: `x-permission-by-subject-type`). Inventory **1217 + 4**; mimari 71/79 aynı 8; BB 28/28; Platform ESign 177;
+  Web 2280; derleme 0/0. Sabotaj (5) + merkezi denetim + 2 ek: kırmızı → yeşil, SHA eşit. Kanıt §13.
 
 ## 20. Follow-up Items
 
