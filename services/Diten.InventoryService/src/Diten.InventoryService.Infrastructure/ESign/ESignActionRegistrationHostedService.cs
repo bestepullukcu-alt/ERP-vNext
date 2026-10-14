@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using Diten.InventoryService.Application.Features.Expiry.Ports;
 using Diten.InventoryService.Application.Features.Quarantine.Ports;
+using Diten.InventoryService.Application.Features.Recall.Ports;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -11,7 +12,7 @@ namespace Diten.InventoryService.Infrastructure.ESign;
 /// Registers the signable actions of the InventoryService modules with MOD-0022 at start-up (CT-D12,
 /// <c>POST {Platform}/api/internal/esign/actions/register</c>, <c>X-Internal-Api-Key</c>) — ONE call per module (Platform enforces the
 /// <c>{module}.</c> prefix per call): MOD-0175 <c>quarantine</c> (seven actions, pack §8) and, since WP-0176-F3, MOD-0176 <c>expiry</c>
-/// (four actions, pack §8.6). The <c>ModuleRegistrationHostedService</c> pattern and the same <c>PlatformRegistration</c> settings
+/// (four actions, pack §8.6) and, since WP-0177-R4, MOD-0177 <c>recall</c> (five actions, pack §8.8). The <c>ModuleRegistrationHostedService</c> pattern and the same <c>PlatformRegistration</c> settings
 /// (BaseUrl, InternalApiKey): best effort, 5 attempts per module with 2^n s backoff, never stops the host; not configured → skipped with a
 /// warning. Platform upserts by action code and keeps a tenant's policy rows, so every restart is safe. The quarantine call is
 /// byte-identical to the pre-F3 one (regression test with the golden SHA-256 of its body).
@@ -33,7 +34,10 @@ public sealed class ESignActionRegistrationHostedService : BackgroundService
         new(QuarantineSignableActions.Module,
             QuarantineSignableActions.All.Select(a => new RegisteredAction(a.Code, a.Names, a.DefaultRequired, a.DefaultMeaning, a.DefaultVisualMode)).ToList()),
         new(ExpirySignableActions.Module,
-            ExpirySignableActions.All.Select(a => new RegisteredAction(a.Code, a.Names, a.DefaultRequired, a.DefaultMeaning, a.DefaultVisualMode)).ToList())
+            ExpirySignableActions.All.Select(a => new RegisteredAction(a.Code, a.Names, a.DefaultRequired, a.DefaultMeaning, a.DefaultVisualMode)).ToList()),
+        // WP-0177-R4: MOD-0177 recall (five actions, pack §8.8)
+        new(RecallSignableActions.Module,
+            RecallSignableActions.All.Select(a => new RegisteredAction(a.Code, a.Names, a.DefaultRequired, a.DefaultMeaning, a.DefaultVisualMode)).ToList())
     ];
 
     private readonly IConfiguration _configuration;

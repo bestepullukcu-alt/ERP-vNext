@@ -38,10 +38,13 @@ public static class RecallIndexConfiguration
     /// <summary>R3 (KR-H): one case per return — a CUSTOMER_RETURN transaction is linked once per company.</summary>
     public const string ReturnLinkTransactionIndex = "ux_recall_return_link_transaction";
 
+    /// <summary>R4 (CT-R16): one prepared settings change per (company, user, idempotency key) — the replay of prepareSettingsChange.</summary>
+    public const string SettingsChangeKeyIndex = "ux_recall_settings_change_key";
+
     public static readonly IReadOnlyList<string> UniqueIndexes =
     [
         SettingsCompanyIndex, CaseNumberIndex, CaseActiveRootIndex, CaseCreateKeyIndex, EventKeyIndex, ScopeNodeIndex, LotBlockIndex,
-        NotificationKeyIndex, ConsumptionKeyIndex, SegregationKeyIndex, QuarantineRequestNodeIndex, ReturnLinkTransactionIndex
+        NotificationKeyIndex, ConsumptionKeyIndex, SegregationKeyIndex, QuarantineRequestNodeIndex, ReturnLinkTransactionIndex, SettingsChangeKeyIndex
     ];
 
     private static BsonDocument IsString(string field) => new(field, new BsonDocument("$type", "string"));
@@ -140,6 +143,20 @@ public static class RecallIndexConfiguration
                 new CreateIndexOptions { Name = ReturnLinkTransactionIndex, Unique = true }),
             new(links.Ascending(x => x.TenantId).Ascending(x => x.CaseId), new CreateIndexOptions { Name = "ix_recall_return_link_case" })
         ], ct);
+
+        // R4: the prepared settings changes (replay key, the user's newest) and the "signature never used before" lookups
+        var changes = Builders<RecallSettingsChange>.IndexKeys;
+        await database.GetCollection<RecallSettingsChange>(RecallCollections.SettingsChanges).Indexes.CreateManyAsync(
+        [
+            new(changes.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.SetBy).Ascending(x => x.IdempotencyKey),
+                new CreateIndexOptions { Name = SettingsChangeKeyIndex, Unique = true }),
+            new(changes.Ascending(x => x.TenantId).Ascending(x => x.LegalEntityId).Ascending(x => x.SetBy).Descending(x => x.SetAtUtc),
+                new CreateIndexOptions { Name = "ix_recall_settings_change_latest" })
+        ], ct);
+        await database.GetCollection<RecallCaseEvent>(RecallCollections.CaseEvents).Indexes.CreateOneAsync(
+            new CreateIndexModel<RecallCaseEvent>(Builders<RecallCaseEvent>.IndexKeys.Ascending(x => x.TenantId).Ascending(x => x.SignatureId),
+                new CreateIndexOptions<RecallCaseEvent> { Name = "ix_recall_event_signature", PartialFilterExpression = IsString(nameof(RecallCaseEvent.SignatureId)) }),
+            cancellationToken: ct);
 
         await database.GetCollection<RecallSegregationConfirmation>(RecallCollections.Segregations).Indexes.CreateManyAsync(
         [

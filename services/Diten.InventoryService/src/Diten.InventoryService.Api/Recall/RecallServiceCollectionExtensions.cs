@@ -2,6 +2,7 @@ using Diten.InventoryService.Application.Features.Recall.Ports;
 using Diten.InventoryService.Application.Features.Recall.Services;
 using Diten.InventoryService.Application.Features.Recall.Trace;
 using Diten.InventoryService.Domain.Recall.Repositories;
+using Diten.InventoryService.Infrastructure.ESign;
 using Diten.InventoryService.Infrastructure.Recall;
 using Diten.InventoryService.Infrastructure.Upstream;
 using Diten.InventoryService.Infrastructure.Workflow;
@@ -13,8 +14,8 @@ namespace Diten.InventoryService.Api.Recall;
 /// <summary>
 /// MOD-0177 slice R1 wiring — one call from <c>Program.cs</c> (the <c>AddExpiry</c> pattern), so the shared registrations stay untouched.
 /// MediatR handlers are picked up by the Application assembly scan.
-/// <para><b>Signature gate:</b> <see cref="FailClosedRecallSignature"/> until R4 brings the MOD-0022 implementation — no approval, completion or
-/// closure passes in production without a verified signature (0176 F1 precedent).</para>
+/// <para><b>Signature gate (R4):</b> <see cref="ESignRecallSignature"/> — MOD-0022 over the Gateway with the caller's token (getSignature + the local
+/// subject hash, CT decision F3-A); MOD-0022 unreadable → refused. No approval, completion or closure passes without a verified signature.</para>
 /// </summary>
 public static class RecallServiceCollectionExtensions
 {
@@ -24,7 +25,11 @@ public static class RecallServiceCollectionExtensions
         services.AddScoped<RecallSupport>();
         services.AddScoped<RecallReads>();
         services.AddScoped<IRecallRepository, RecallRepository>();
-        services.AddScoped<IRecallSignature, FailClosedRecallSignature>();
+        // R4 — MOD-0022 (CT decision F3-A: getSignature + the local rc-v1 / rs-v1 hash from the provider's own function); FailClosedRecallSignature
+        // (R1) stays as the fallback type. Registration of the five recall actions rides the shared hosted service (one call per module).
+        services.AddScoped<IRecallSignature, ESignRecallSignature>();
+        services.AddScoped<RecallSubjectFacts>();
+        services.AddScoped<IRecallSubjectDirectory, RecallSubjectDirectory>();
 
         // R2: the trace engine over in-process reads (pack §8.2) and the MVP-6 shipment read through the Gateway with the caller's
         // token + company (pack §8.6 — no cache; the reader bounds each read to 2 s and 8 in flight)
@@ -41,6 +46,13 @@ public static class RecallServiceCollectionExtensions
                 http.Timeout = TimeSpan.FromSeconds(10); // the per-read 2 s bound is the reader's own
             })
             .AddHttpMessageHandler<ForwardCallerHeadersHandler>();
+        services.AddHttpClient<IRecallESignClient, GatewayRecallESignClient>(http =>
+            {
+                http.BaseAddress = gatewayUri;
+                http.Timeout = TimeSpan.FromSeconds(gateway.TimeoutSeconds > 0 ? gateway.TimeoutSeconds : 10);
+            })
+            .AddHttpMessageHandler<ForwardCallerHeadersHandler>();
+        services.AddHostedService<ESignActionRegistrationHostedService>(); // deduplicated with AddQuarantine's / AddExpiry's
 
         // R3 (pack §8.4 / §8.5 / §8.6, CT-R11 / CT-R12): the recall exit block and the "under recall?" read replace the ledger's defaults (the 0176
         // RemoveAll + AddScoped pattern); the KR-B dispatcher + its 60 s sweeper; the in-process ledger reads of the stock / returns tabs

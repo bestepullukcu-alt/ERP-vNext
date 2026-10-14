@@ -58,6 +58,8 @@ public sealed class SingleSystemOfRecordArchitectureTests
         Assert.Equal(["recall_trace_snapshots"], Diten.InventoryService.Persistence.Recall.RecallCollections.SinceR2.OrderBy(x => x).ToList());
         // MOD-0177 (WP-0177-R3) — the quarantine requests (KR-B) and the return links (KR-H, insert-only); neither is stock
         Assert.Equal(["recall_quarantine_requests", "recall_return_links"], Diten.InventoryService.Persistence.Recall.RecallCollections.SinceR3.OrderBy(x => x).ToList());
+        // MOD-0177 (WP-0177-R4) — the prepared settings changes (the MOD-0022 subject recall.settings-change); not stock
+        Assert.Equal(["recall_settings_changes"], Diten.InventoryService.Persistence.Recall.RecallCollections.SinceR4.OrderBy(x => x).ToList());
     }
 
     [Fact]
@@ -69,6 +71,7 @@ public sealed class SingleSystemOfRecordArchitectureTests
             .Concat(Diten.InventoryService.Persistence.Recall.RecallCollections.All) // MOD-0177 (WP-0177-R1)
             .Concat(Diten.InventoryService.Persistence.Recall.RecallCollections.SinceR2) // MOD-0177 (WP-0177-R2)
             .Concat(Diten.InventoryService.Persistence.Recall.RecallCollections.SinceR3) // MOD-0177 (WP-0177-R3)
+            .Concat(Diten.InventoryService.Persistence.Recall.RecallCollections.SinceR4) // MOD-0177 (WP-0177-R4)
             .Concat(Diten.InventoryService.Persistence.Quarantine.QuarantineCollections.All)
             .Concat(Diten.InventoryService.Persistence.Expiry.ExpiryCollections.All).ToList();
         var named = persistence

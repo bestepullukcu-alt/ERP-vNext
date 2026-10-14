@@ -165,7 +165,7 @@
             if (!reply.ok) return window.DitenModal?.error({ title: t('Quarantine.Settings.Template.Prepare'), message: ui.errorText(reply) });
             ui.toast(t(reply.json?.created ? 'Quarantine.Settings.Template.Created' : 'Quarantine.Settings.Template.Existing', reply.json?.publishedVersion ?? ''), 'success');
             await load();
-        }, { type: 'info', subtext: esc(t('Quarantine.Settings.Template.Text')), confirmButtonText: t('Quarantine.Settings.Template.Prepare'), cancelButtonText: t('Quarantine.Common.Cancel') });
+        }, { type: 'info', subtext: t('Quarantine.Settings.Template.Text'), confirmButtonText: t('Quarantine.Settings.Template.Prepare'), cancelButtonText: t('Quarantine.Common.Cancel') });
     });
 
     // ── block reasons (client mode: the whole bounded list in one answer) ───────────────────────────────────────

@@ -57,5 +57,11 @@ public static class RecallCollections
     /// <summary>The R3 collections (declared beside <see cref="SinceR2"/> by the single-SoR test).</summary>
     public static readonly IReadOnlyList<string> SinceR3 = [QuarantineRequests, ReturnLinks];
 
-    public static IEnumerable<string> Everything => All.Concat(SinceR2).Concat(SinceR3);
+    /// <summary>R4 (CT-R16, RECALL 1.3.0 prepareSettingsChange) — prepared settings changes, the MOD-0022 subject recall.settings-change. Insert-only.</summary>
+    public const string SettingsChanges = "recall_settings_changes";
+
+    /// <summary>The R4 collections (declared beside <see cref="SinceR3"/> by the single-SoR test).</summary>
+    public static readonly IReadOnlyList<string> SinceR4 = [SettingsChanges];
+
+    public static IEnumerable<string> Everything => All.Concat(SinceR2).Concat(SinceR3).Concat(SinceR4);
 }

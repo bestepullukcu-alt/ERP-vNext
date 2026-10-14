@@ -127,17 +127,21 @@ public sealed class QuarantineController : Controller
     {
         if (!_permissions.Has(QuarantineKeys.HoldsRead)) return Refuse(403, null);
         var (page, size) = Paging();
+        // WP-MVP1-FIX-QUI1: the list (and the tab's count) shows OPEN records unless the page asks for another BlockedStatus;
+        // "All" is the page's word for no status filter at all. The status shown travels back to the page.
+        var requested = Request.Query["status"].ToString().Trim();
+        var status = requested.Length == 0 ? "Open" : requested == "All" ? null : requested;
         var query = new QueryBuilder()
             .Add("page", page).Add("pageSize", size).Add("q", Search())
             .Add("blockReasonCode", Request.Query["blockReasonCode"]).Add("pendingOnly", Request.Query["pendingOnly"])
-            .Add("warehouseId", Request.Query["warehouseId"]).Add("status", Request.Query["status"]);
+            .Add("warehouseId", Request.Query["warehouseId"]).Add("status", status);
         var reply = await SendAsync(HttpMethod.Get, $"{ApiBase}/blocked{query}", null, null, null, ct);
         if (!reply.IsSuccess) return Failed("listBlocked", reply);
         var root = JsonNode.Parse(reply.Body) as JsonObject ?? new JsonObject();
         var items = root["items"] as JsonArray ?? new JsonArray();
         var labels = await LabelsAsync(items, ct);
         Decorate(items, labels);
-        return ListJson(items, (int?)root["total"] ?? items.Count, labels.Available, null);
+        return ListJson(items, (int?)root["total"] ?? items.Count, labels.Available, new JsonObject { ["status"] = status ?? "All" });
     }
 
     /// <summary>listRetest answers the whole horizon (an array, no paging); the door pages and searches it here.</summary>

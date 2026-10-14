@@ -35,6 +35,8 @@ public static class RecallContract
 
     // AUD-001 (pack §8.12) — the R1 events.
     public const string AuditSettingsUpdated = "recall.settings.updated";
+    /// <summary>R4 (pack §8.12 + CT-R16): a settings change prepared for signing (prepareSettingsChange).</summary>
+    public const string AuditSettingsChangePrepared = "recall.settings.change-prepared";
     public const string AuditCaseOpened = "recall.case.opened";
     public const string AuditCaseCancelled = "recall.case.cancelled";
     public const string AuditScopeItemsAdded = "recall.scope.items-added";

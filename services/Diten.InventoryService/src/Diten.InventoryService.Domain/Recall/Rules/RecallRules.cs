@@ -18,6 +18,9 @@ public static class RecallErrorCodes
     public const string EvidenceRangeInvalid = "RECALL_EVIDENCE_RANGE_INVALID";
     public const string UnknownCustomer = "RECALL_UNKNOWN_CUSTOMER";
     public const string CaseNotFound = "RECALL_CASE_NOT_FOUND";
+
+    /// <summary>R4 (RECALL 1.3.0): the MOD-0022 subject provider's one refusal (unknown, another tenant / company, a change of another user, a drill run before R5).</summary>
+    public const string SubjectNotFound = "RECALL_SUBJECT_NOT_FOUND";
     public const string Conflict = "RECALL_CONFLICT";
     public const string InvalidTransition = "RECALL_INVALID_TRANSITION";
     public const string CaseAlreadyOpen = "RECALL_CASE_ALREADY_OPEN";

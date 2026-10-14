@@ -87,6 +87,8 @@ public class RecallApiFactory : TraceApiFactory
         builder.ConfigureTestServices(services =>
         {
             services.AddHttpClient(nameof(IShipmentReader)).ConfigurePrimaryHttpMessageHandler(() => Shipments);
+            // R4: the recall MOD-0022 client (production GatewayRecallESignClient) runs over the suite's in-memory MOD-0022 (FakeESignGateway)
+            services.AddHttpClient(nameof(Diten.InventoryService.Application.Features.Recall.Ports.IRecallESignClient)).ConfigurePrimaryHttpMessageHandler(() => new FakeESignHandler(ESign));
             services.AddSingleton<Microsoft.Extensions.Logging.ILoggerProvider>(Logs);
             if (UseTestSignature)
             {

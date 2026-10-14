@@ -104,6 +104,18 @@ public interface IRecallRepository
 
     Task<RecallReturnLink?> FindReturnLinkByKeyAsync(Guid linkedBy, string idempotencyKey, CancellationToken cancellationToken = default);
 
+    /// <summary>R4 (CT-R16): one prepared settings change of this company (the MOD-0022 subject <c>recall.settings-change</c>).</summary>
+    Task<RecallSettingsChange?> FindSettingsChangeAsync(Guid changeId, CancellationToken cancellationToken = default);
+
+    /// <summary>R4: the caller's prepared change with this idempotency key, if any (replay).</summary>
+    Task<RecallSettingsChange?> FindSettingsChangeByKeyAsync(Guid setBy, string idempotencyKey, CancellationToken cancellationToken = default);
+
+    /// <summary>R4: the caller's NEWEST prepared settings change in this company, if any.</summary>
+    Task<RecallSettingsChange?> LatestSettingsChangeAsync(Guid setBy, CancellationToken cancellationToken = default);
+
+    /// <summary>R4 (pack §8.8 "never used before"): a case decision (its event) or a settings save (its history) of this company already carries the id.</summary>
+    Task<bool> SignatureUsedAsync(string signatureId, CancellationToken cancellationToken = default);
+
     Task<T> InTransactionAsync<T>(Func<IRecallWriteSession, CancellationToken, Task<T>> work, CancellationToken cancellationToken = default);
 }
 
@@ -160,4 +172,7 @@ public interface IRecallWriteSession
     Task<bool> ReplaceQuarantineRequestAsync(RecallQuarantineRequest request, int expectedVersion, CancellationToken cancellationToken = default);
 
     Task InsertReturnLinkAsync(RecallReturnLink link, CancellationToken cancellationToken = default);
+
+    /// <summary>R4: a prepared settings change (insert-only).</summary>
+    Task InsertSettingsChangeAsync(RecallSettingsChange change, CancellationToken cancellationToken = default);
 }
