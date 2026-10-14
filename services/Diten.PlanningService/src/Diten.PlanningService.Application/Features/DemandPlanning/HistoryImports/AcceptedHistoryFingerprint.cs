@@ -10,6 +10,20 @@ public static class AcceptedHistoryFingerprint
 {
     public static string Compute(AcceptedDemandHistoryRow row)
     {
+        if (row.UnitVerificationPending)
+        {
+            var interimContent = JsonSerializer.Serialize(new
+            {
+                row.TenantId, row.LegalEntityId, row.SourceSystem, row.SourceRecordKey,
+                row.SkuId, row.SkuLevel, row.WarehouseId, row.OccurredOn,
+                OriginalQuantity = row.OriginalQuantity.ToString("G29", CultureInfo.InvariantCulture),
+                row.OriginalUomId,
+                AcceptedQuantity = row.AcceptedQuantity.ToString("G29", CultureInfo.InvariantCulture),
+                row.AcceptedUomId, row.UnitVerificationPending,
+                row.StockoutEvidenceState
+            });
+            return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(interimContent)));
+        }
         var content = JsonSerializer.Serialize(new
         {
             row.TenantId, row.LegalEntityId, row.SourceSystem, row.SourceRecordKey,

@@ -50,4 +50,21 @@
   <data name="NoActionPermission" xml:space="preserve"><value>Acción no disponible con estos permisos.</value></data>
   <data name="NoCompanyData" xml:space="preserve"><value>No hay un ámbito de empresa verificado disponible.</value></data>
   <data name="SupersededReadOnly" xml:space="preserve"><value>Solo se muestra el estado de la versión sustituida. El contenido permanece cerrado sin prueba MRP vinculada aprobada.</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>Historial de demanda aceptada</value></data>
+  <data name="HistorySelectCompany" xml:space="preserve"><value>No hay ninguna empresa activa disponible.</value></data>
+  <data name="HistoryEmpty" xml:space="preserve"><value>No hay líneas aceptadas para esta empresa.</value></data>
+  <data name="HistoryUnavailable" xml:space="preserve"><value>El historial aceptado no está disponible.</value></data>
+  <data name="HistorySku" xml:space="preserve"><value>SKU</value></data>
+  <data name="HistoryWarehouse" xml:space="preserve"><value>Almacén</value></data>
+  <data name="HistoryDate" xml:space="preserve"><value>Fecha de realización</value></data>
+  <data name="HistoryUnit" xml:space="preserve"><value>Unidad aceptada</value></data>
+  <data name="HistoryQuantity" xml:space="preserve"><value>Cantidad aceptada</value></data>
+  <data name="HistoryUnitPending" xml:space="preserve"><value>Unidad no verificada con MOD-0290</value></data>
+  <data name="HistoryBatch" xml:space="preserve"><value>Lote de importación</value></data>
+  <data name="HistoryDecision" xml:space="preserve"><value>Decisión</value></data>
+  <data name="HistoryActor" xml:space="preserve"><value>Decidido por</value></data>
+  <data name="HistoryAt" xml:space="preserve"><value>Fecha de decisión</value></data>
+  <data name="HistoryPrevious" xml:space="preserve"><value>Anterior</value></data>
+  <data name="HistoryNext" xml:space="preserve"><value>Siguiente</value></data>
+  <data name="HistoryLoading" xml:space="preserve"><value>Cargando historial aceptado...</value></data>
 </root>

@@ -8,6 +8,8 @@ Aynı değişiklikte `AuditTrailStandardTests.PinnedCounts` içindeki sayı da y
 
 | tarih | servis | eklenen ad | karar / gerekçe | kararı veren |
 |---|---|---|---|---|
+| 2026-10-14 | Diten.PlanningService | CreatePlanningCycleCommand | İşlem-içi audit yok; BL-501 bekliyor. Ali'nin geçici c-yolu kararı bu komutu kapsamaz. | Ali / Control Tower |
+| 2026-10-14 | Diten.PlanningService | CreateDemandHistoryImportBatchCommand | İşlem-içi audit yok; BL-501 bekliyor. Ali'nin geçici c-yolu kararı bu komutu kapsamaz. | Ali / Control Tower |
 
 Not: defterin ilk kez geldiği değişiklik (taban dalda `tests/architecture/audit-ledger/` yokken) bu denetimden muaftır —
 o değişiklikte her satır tanım gereği yenidir. 2026-10-02'de eklenen `## K2 borcu` (200 satır) ve `## Yazan sorgular` (3 satır)

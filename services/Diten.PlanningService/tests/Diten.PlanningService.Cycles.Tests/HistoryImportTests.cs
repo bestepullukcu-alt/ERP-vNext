@@ -36,8 +36,8 @@ public sealed class HistoryImportTests
 
     private static string Row(string key = "SHIP-1", string warehouse = "wh-01",
         string date = "2026-09-15", string quantity = "2", string kind = "Shipment",
-        string related = "") =>
-        $"{key},{Sku:D},Lsku,{warehouse},{date},{quantity},BOX,{kind},{related}";
+        string related = "", string uom = "BOX") =>
+        $"{key},{Sku:D},Lsku,{warehouse},{date},{quantity},{uom},{kind},{related}";
 
     private static CreateDemandHistoryImportBatchCommand Command(string body,
         string key = "import-1", Guid? tenant = null, Guid? legalEntityHint = null) => new(
@@ -90,6 +90,87 @@ public sealed class HistoryImportTests
             x.Severity == ImportIssueSeverity.Warning);
         Assert.Equal("FileBatchValidated", Assert.Single(batch.AuditTrail).Action);
         Assert.True(batch.IsEligibleForIndependentReview());
+    }
+
+    [Fact]
+    public async Task Create_MixedUnitsForSameSeries_QuarantinesEverySeriesRow()
+    {
+        var store = new MemoryStore();
+        var file = Header + "\n" + Row("SHIP-BOX") + "\n" +
+                   Row("SHIP-EA", uom: "EA");
+
+        var result = await Handler(store).Handle(Command(file), default);
+
+        Assert.Equal(201, result.StatusCode);
+        Assert.Equal(2, result.Data!.QuarantineCount);
+        Assert.True(result.Data.ApprovalBlocked);
+        Assert.All(Assert.Single(store.Batches).Rows, row =>
+            Assert.Contains(row.Issues, issue => issue.Code == "MixedUnitsForSeries" &&
+                issue.Severity == ImportIssueSeverity.Blocking));
+    }
+
+    [Fact]
+    public async Task Create_UnitDifferentFromAcceptedHistory_QuarantinesRow()
+    {
+        var store = new MemoryStore();
+        store.AcceptedUnits.Add("EA");
+
+        var result = await Handler(store).Handle(Command(Header + "\n" + Row()), default);
+
+        Assert.Equal(201, result.StatusCode);
+        Assert.Equal(1, result.Data!.QuarantineCount);
+        Assert.Contains(Assert.Single(Assert.Single(store.Batches).Rows).Issues,
+            issue => issue.Code == "UnitConflictsWithAcceptedHistory" &&
+                issue.Severity == ImportIssueSeverity.Blocking);
+    }
+
+    [Fact]
+    public async Task Create_PendingUnitRetainsOriginalQuantityWithoutClaimingBaseConversion()
+    {
+        var store = new MemoryStore();
+        var pending = new FakeReferences(overrideResult: new HistoryReferenceResult(
+            HistoryReferenceState.Verified, null, null, null, null, UnitVerificationPending: true));
+
+        var result = await Handler(store, references: pending).Handle(
+            Command(Header + "\n" + Row()), default);
+
+        Assert.Equal(201, result.StatusCode);
+        Assert.Equal(0, result.Data!.QuarantineCount);
+        var row = Assert.Single(Assert.Single(store.Batches).Rows);
+        Assert.True(row.UnitVerificationPending);
+        Assert.Equal(2m, row.OriginalQuantity);
+        Assert.Null(row.BaseQuantity);
+        Assert.Null(row.BaseUomId);
+        Assert.Contains(row.Issues, issue => issue.Code == "UnitVerificationPending" &&
+            issue.Severity == ImportIssueSeverity.Warning);
+    }
+
+    [Fact]
+    public async Task Accept_PendingUnit_KeepsOriginalUnitAndVisibleVerificationMarker()
+    {
+        var store = new MemoryStore();
+        var pending = new FakeReferences(overrideResult: new HistoryReferenceResult(
+            HistoryReferenceState.Verified, null, null, null, null, UnitVerificationPending: true));
+        var batchId = (await Handler(store, references: pending).Handle(
+            Command(Header + "\n" + Row()), default)).Data!.BatchId;
+        var batch = Assert.Single(store.Batches);
+        batch.ReviewState = ImportBatchReviewState.Approved;
+        batch.ReviewedByActorId = OtherActor;
+        batch.AuditTrail.Add(new DemandHistoryImportAuditAction
+        {
+            Action = "BatchApproved", ActorId = OtherActor, OccurredAt = DateTimeOffset.UtcNow
+        });
+        var accepted = new MemoryAcceptedStore();
+
+        var result = await new AcceptDemandHistoryRowsHandler(store, new FakeAuthority(true),
+            pending, accepted).Handle(new AcceptDemandHistoryRowsCommand(
+                Tenant, Actor, batchId, 2, LegalEntity, true, "Source checked", "accept-pending"), default);
+
+        Assert.Equal(201, result.StatusCode);
+        Assert.True(result.Data!.UnitVerificationPending);
+        Assert.Equal("BOX", result.Data.AcceptedUomId);
+        Assert.Equal(2m, result.Data.AcceptedQuantity);
+        Assert.Equal(string.Empty, result.Data.BaseUomId);
     }
 
     [Fact]
@@ -867,6 +948,11 @@ public sealed class HistoryImportTests
     {
         private readonly object _gate = new();
         public List<DemandHistoryImportBatch> Batches { get; } = [];
+        public List<string> AcceptedUnits { get; } = [];
+        public Task<IReadOnlyList<string>> GetAcceptedUnitsAsync(Guid tenantId,
+            Guid legalEntityId, Guid skuId, string warehouseId,
+            CancellationToken cancellationToken) =>
+            Task.FromResult<IReadOnlyList<string>>(AcceptedUnits.ToArray());
         public Task<HistoryImportInsertResult> InsertOrGetAsync(DemandHistoryImportBatch batch,
             CancellationToken cancellationToken)
         {
@@ -920,6 +1006,22 @@ public sealed class HistoryImportTests
                 return Task.FromResult<DemandHistoryImportBatch?>(current);
             }
         }
+    }
+
+    private sealed class MemoryAcceptedStore : IAcceptedDemandHistoryStore
+    {
+        public Task<HistoryAcceptanceResult> AcceptAsync(DemandHistoryImportBatch expectedBatch,
+            AcceptedDemandHistoryRow row, DemandHistoryAcceptanceAudit audit,
+            CancellationToken cancellationToken) => Task.FromResult(
+                new HistoryAcceptanceResult(HistoryAcceptanceOutcome.Created, row));
+
+        public Task<AcceptedDemandHistoryView?> GetAsync(Guid tenantId, Guid legalEntityId,
+            Guid acceptedRowId, CancellationToken cancellationToken) =>
+            Task.FromResult<AcceptedDemandHistoryView?>(null);
+
+        public Task<IReadOnlyList<AcceptedDemandHistoryView>> ListAsync(Guid tenantId,
+            Guid legalEntityId, int skip, int take, CancellationToken cancellationToken) =>
+            Task.FromResult<IReadOnlyList<AcceptedDemandHistoryView>>([]);
     }
 }
 

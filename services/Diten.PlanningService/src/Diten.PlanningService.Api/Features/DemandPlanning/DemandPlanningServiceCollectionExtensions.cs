@@ -23,6 +23,7 @@ public static class DemandPlanningServiceCollectionExtensions
     [
         "demand.plans.read", "demand.cycles.create", "demand.history-imports.import",
         "demand.history-integrations.import", "demand.history-imports.review",
+        "demand.history-imports.accept", "demand.history.read",
         "demand.forecast-policies.update", "demand.forecast-runs.create",
         "demand.drafts.create", "demand.drafts.update", "demand.plans.review",
         "demand.plans.publish", "demand.plans.invalidate", "demand.plans.consume",
@@ -110,9 +111,12 @@ public static class DemandPlanningServiceCollectionExtensions
         services.AddSingleton<IAcceptedDemandHistoryStore, AcceptedDemandHistoryMongoStore>();
         services.AddSingleton<IAuthorizationMiddlewareResultHandler, DemandReviewAuthorizationResultHandler>();
         services.AddSingleton<IHistoryImportFileParser, CsvHistoryImportFileParser>();
-        services.AddSingleton<UnconfiguredHistoryImportReferences>();
-        services.AddSingleton<IHistoryImportScopeAuthority>(sp => sp.GetRequiredService<UnconfiguredHistoryImportReferences>());
-        services.AddSingleton<IHistoryRowReferenceChecker>(sp => sp.GetRequiredService<UnconfiguredHistoryImportReferences>());
+        services.AddHttpContextAccessor();
+        services.AddHttpClient("DemandGateway", client => client.BaseAddress = new Uri(
+            configuration["Upstream:GatewayBaseUrl"] ?? "http://127.0.0.1:5000/"));
+        services.AddScoped<LiveHistoryImportReferences>();
+        services.AddScoped<IHistoryImportScopeAuthority>(sp => sp.GetRequiredService<LiveHistoryImportReferences>());
+        services.AddScoped<IHistoryRowReferenceChecker>(sp => sp.GetRequiredService<LiveHistoryImportReferences>());
         services.AddSingleton<UnconfiguredFrozenContractReaders>();
         services.AddSingleton<IProductMasterV1Reader>(sp => sp.GetRequiredService<UnconfiguredFrozenContractReaders>());
         services.AddSingleton<ILocationV1Reader>(sp => sp.GetRequiredService<UnconfiguredFrozenContractReaders>());

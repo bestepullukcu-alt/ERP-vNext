@@ -278,8 +278,9 @@ public sealed partial class PublishedRevisionMongoIntegrationTests
         var gate = new GatedStatusReader(statuses);
         var reader = PeriodReader(published, context, [first, next],
             authority, gate);
-        var inFlight = reader.ReadAsync(first.TenantId, first.LegalEntityId,
-            first.PlanningPeriodKey, actor, default);
+        var inFlight = Enumerable.Range(0, 8).Select(_ => reader.ReadAsync(
+            first.TenantId, first.LegalEntityId,
+            first.PlanningPeriodKey, actor, default)).ToArray();
         await gate.Entered.WaitAsync(TimeSpan.FromSeconds(10));
         try
         {
@@ -290,9 +291,28 @@ public sealed partial class PublishedRevisionMongoIntegrationTests
         {
             gate.Release();
         }
-        var raced = await inFlight;
-        Assert.Equal(CurrentPublishedOutcome.Unverifiable, raced.Outcome);
-        Assert.Null(raced.Revision);
+        var raced = await Task.WhenAll(inFlight);
+        var nextManifest = await context.PublishedRevisionManifests.Find(x =>
+            x.TenantId == next.TenantId && x.LegalEntityId == next.LegalEntityId &&
+            x.RevisionId == next.Id).SingleAsync();
+        Assert.All(raced, result =>
+        {
+            // A slot replacement is an integrity race, not an empty period.
+            Assert.NotEqual(CurrentPublishedOutcome.NotFound, result.Outcome);
+            Assert.True(result.Outcome is CurrentPublishedOutcome.Found or
+                CurrentPublishedOutcome.Unverifiable);
+            if (result.Outcome != CurrentPublishedOutcome.Found)
+            {
+                Assert.Null(result.Revision);
+                return;
+            }
+            var verified = result.Revision!;
+            var matched = verified.RevisionId == first.Id ? firstManifest :
+                verified.RevisionId == next.Id ? nextManifest : null;
+            Assert.NotNull(matched);
+            Assert.Equal(matched.StateVersion, verified.StateVersion);
+            Assert.Equal(matched.Checksum, verified.Checksum);
+        });
 
         reader = PeriodReader(published, context, [first, next], authority);
         var reads = Enumerable.Range(0, 20).Select(_ => reader.ReadAsync(

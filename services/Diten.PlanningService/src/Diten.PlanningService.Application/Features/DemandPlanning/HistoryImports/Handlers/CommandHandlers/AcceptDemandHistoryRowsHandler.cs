@@ -66,13 +66,15 @@ public sealed class AcceptDemandHistoryRowsHandler :
         if (source.RecordKind != "Shipment" || source.IsQuarantined ||
             batch.QuarantineCases.Any(x => x.RowNumber == source.RowNumber && x.State == "Open") ||
             source.SkuId is null || source.OccurredOn is null ||
-            source.OriginalQuantity is not > 0 || source.BaseQuantity is not > 0 ||
-            source.ConversionFactor is not > 0 ||
+            source.OriginalQuantity is not > 0 ||
             string.IsNullOrWhiteSpace(source.SourceRecordKey) ||
             string.IsNullOrWhiteSpace(source.WarehouseId) ||
-            string.IsNullOrWhiteSpace(source.BaseUomId) ||
-            string.IsNullOrWhiteSpace(source.ConversionContractId) ||
-            string.IsNullOrWhiteSpace(source.ConversionContractVersion))
+            string.IsNullOrWhiteSpace(source.OriginalUomId) ||
+            (!source.UnitVerificationPending &&
+             (source.BaseQuantity is not > 0 || source.ConversionFactor is not > 0 ||
+              string.IsNullOrWhiteSpace(source.BaseUomId) ||
+              string.IsNullOrWhiteSpace(source.ConversionContractId) ||
+              string.IsNullOrWhiteSpace(source.ConversionContractVersion))))
             return Response<AcceptedDemandHistoryRow>.Fail("Row is not eligible for history acceptance.", 409);
 
         HistoryReferenceResult reference;
@@ -87,10 +89,12 @@ public sealed class AcceptDemandHistoryRowsHandler :
         if (reference.State == HistoryReferenceState.Unavailable)
             return Response<AcceptedDemandHistoryRow>.Fail("Reference authority is unavailable.", 503);
         if (reference.State != HistoryReferenceState.Verified ||
-            reference.BaseUomId != source.BaseUomId ||
-            reference.ConversionFactor != source.ConversionFactor ||
-            reference.ConversionContractId != source.ConversionContractId ||
-            reference.ConversionContractVersion != source.ConversionContractVersion)
+            reference.UnitVerificationPending != source.UnitVerificationPending ||
+            (!source.UnitVerificationPending &&
+             (reference.BaseUomId != source.BaseUomId ||
+              reference.ConversionFactor != source.ConversionFactor ||
+              reference.ConversionContractId != source.ConversionContractId ||
+              reference.ConversionContractVersion != source.ConversionContractVersion)))
             return Response<AcceptedDemandHistoryRow>.Fail("Row reference or conversion changed.", 409);
 
         var acceptedAt = DateTimeOffset.UtcNow;
@@ -103,10 +107,15 @@ public sealed class AcceptDemandHistoryRowsHandler :
             SkuId = source.SkuId.Value, SkuLevel = source.SkuLevel,
             WarehouseId = source.WarehouseId, OccurredOn = source.OccurredOn.Value,
             OriginalQuantity = source.OriginalQuantity.Value, OriginalUomId = source.OriginalUomId,
-            BaseQuantity = source.BaseQuantity.Value, BaseUomId = source.BaseUomId,
-            ConversionFactor = source.ConversionFactor.Value,
-            ConversionContractId = source.ConversionContractId,
-            ConversionContractVersion = source.ConversionContractVersion,
+            BaseQuantity = source.BaseQuantity ?? 0, BaseUomId = source.BaseUomId ?? string.Empty,
+            ConversionFactor = source.ConversionFactor ?? 0,
+            ConversionContractId = source.ConversionContractId ?? string.Empty,
+            ConversionContractVersion = source.ConversionContractVersion ?? string.Empty,
+            AcceptedQuantity = source.UnitVerificationPending ? source.OriginalQuantity.Value :
+                source.BaseQuantity!.Value,
+            AcceptedUomId = source.UnitVerificationPending ? source.OriginalUomId :
+                source.BaseUomId!,
+            UnitVerificationPending = source.UnitVerificationPending,
             AcceptedByActorId = command.ActorId,
             AcceptedAt = acceptedAt, AcceptanceReason = reason,
             RequestKey = key

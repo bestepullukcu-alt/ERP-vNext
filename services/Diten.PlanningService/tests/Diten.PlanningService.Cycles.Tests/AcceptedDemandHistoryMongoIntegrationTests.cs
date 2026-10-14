@@ -43,10 +43,13 @@ public sealed class AcceptedDemandHistoryMongoIntegrationTests
     }
 
     private static async Task<(DemandHistoryImportBatch Batch, AcceptedDemandHistoryRow Row,
-        DemandHistoryAcceptanceAudit Audit)> SeedAsync(DemandPlanningMongoContext context)
+        DemandHistoryAcceptanceAudit Audit)> SeedAsync(DemandPlanningMongoContext context,
+        Guid? tenant = null, Guid? legalEntity = null, Guid? sku = null,
+        string unit = "CASE", bool pending = false)
     {
-        var tenantId = Guid.NewGuid();
-        var legalEntityId = Guid.NewGuid();
+        var tenantId = tenant ?? Guid.NewGuid();
+        var legalEntityId = legalEntity ?? Guid.NewGuid();
+        var skuId = sku ?? Guid.NewGuid();
         var reviewer = Guid.NewGuid();
         var batch = new DemandHistoryImportBatch
         {
@@ -61,11 +64,14 @@ public sealed class AcceptedDemandHistoryMongoIntegrationTests
             Rows = [new DemandHistoryImportRow
             {
                 RowNumber = 2, SourceRecordKey = Guid.NewGuid().ToString("N"),
-                SkuId = Guid.NewGuid(), SkuLevel = "Gsku", WarehouseId = "wh-01",
+                SkuId = skuId, SkuLevel = "Gsku", WarehouseId = "wh-01",
                 OccurredOn = new DateOnly(2026, 10, 7), OriginalQuantity = 5,
-                OriginalUomId = "CASE", BaseQuantity = 50, BaseUomId = "EA",
-                ConversionFactor = 10, ConversionContractId = "fixture-uom",
-                ConversionContractVersion = "1", RecordKind = "Shipment"
+                OriginalUomId = unit, BaseQuantity = pending ? null : 50,
+                BaseUomId = pending ? null : "EA",
+                ConversionFactor = pending ? null : 10,
+                ConversionContractId = pending ? null : "fixture-uom",
+                ConversionContractVersion = pending ? null : "1", RecordKind = "Shipment",
+                UnitVerificationPending = pending
             }],
             AuditTrail = [new DemandHistoryImportAuditAction
             {
@@ -83,11 +89,15 @@ public sealed class AcceptedDemandHistoryMongoIntegrationTests
             SourceFileSha256 = batch.SourceFileSha256, SkuId = source.SkuId!.Value,
             SkuLevel = source.SkuLevel, WarehouseId = source.WarehouseId,
             OccurredOn = source.OccurredOn!.Value, OriginalQuantity = 5,
-            OriginalUomId = "CASE", BaseQuantity = 50, BaseUomId = "EA",
-            ConversionFactor = 10, ConversionContractId = "fixture-uom",
-            ConversionContractVersion = "1",
+            OriginalUomId = unit, BaseQuantity = pending ? 0 : 50,
+            BaseUomId = pending ? string.Empty : "EA",
+            ConversionFactor = pending ? 0 : 10,
+            ConversionContractId = pending ? string.Empty : "fixture-uom",
+            ConversionContractVersion = pending ? string.Empty : "1",
+            AcceptedQuantity = pending ? 5 : 50,
+            AcceptedUomId = pending ? unit : "EA", UnitVerificationPending = pending,
             AcceptedByActorId = Guid.NewGuid(), AcceptedAt = acceptedAt,
-            AcceptanceReason = "Verified source row", RequestKey = "request-1",
+            AcceptanceReason = "Verified source row", RequestKey = Guid.NewGuid().ToString("N"),
             RequestFingerprint = new string('C', 64)
         };
         row.ContentSha256 = AcceptedHistoryFingerprint.Compute(row);
@@ -156,5 +166,79 @@ public sealed class AcceptedDemandHistoryMongoIntegrationTests
         var unchanged = await context.HistoryImportBatches.Find(x => x.Id == batch.Id &&
             x.TenantId == batch.TenantId).SingleAsync();
         Assert.Equal(batch.Version, unchanged.Version);
+    }
+
+    [ManualDraftMongoFact]
+    public async Task PendingUnitRows_KeepUnitMarker_AndRejectDifferentUnitInLaterBatch()
+    {
+        var (context, _) = Open();
+        var store = new AcceptedDemandHistoryMongoStore(context,
+            new HistoryAcceptanceAuditMongoWriter(context));
+        var first = await SeedAsync(context, pending: true);
+        Assert.Equal(HistoryAcceptanceOutcome.Created,
+            (await store.AcceptAsync(first.Batch, first.Row, first.Audit, default)).Outcome);
+        var view = await store.GetAsync(first.Batch.TenantId, first.Batch.LegalEntityId,
+            first.Row.Id, default);
+        Assert.True(view!.Row.UnitVerificationPending);
+        Assert.Equal("CASE", view.Row.AcceptedUomId);
+        Assert.Equal(5m, view.Row.AcceptedQuantity);
+        Assert.Equal(string.Empty, view.Row.BaseUomId);
+
+        var page = await store.ListAsync(first.Batch.TenantId, first.Batch.LegalEntityId,
+            0, 50, default);
+        Assert.True(Assert.Single(page).Row.UnitVerificationPending);
+        Assert.Equal(first.Row.Id, Assert.Single(page).Audit.AcceptedRowId);
+
+        var same = await SeedAsync(context, first.Batch.TenantId, first.Batch.LegalEntityId,
+            first.Row.SkuId, unit: "CASE", pending: true);
+        Assert.Equal(HistoryAcceptanceOutcome.Created,
+            (await store.AcceptAsync(same.Batch, same.Row, same.Audit, default)).Outcome);
+
+        var different = await SeedAsync(context, first.Batch.TenantId, first.Batch.LegalEntityId,
+            first.Row.SkuId, unit: "EA", pending: true);
+        Assert.Equal(HistoryAcceptanceOutcome.Ineligible,
+            (await store.AcceptAsync(different.Batch, different.Row, different.Audit, default)).Outcome);
+        Assert.Equal(2, await context.AcceptedHistoryRows.CountDocumentsAsync(
+            x => x.TenantId == first.Batch.TenantId));
+        Assert.Equal(2, await context.HistoryAcceptanceAudit.CountDocumentsAsync(
+            x => x.TenantId == first.Batch.TenantId));
+    }
+
+    [ManualDraftMongoFact]
+    public async Task ConcurrentDifferentUnits_NeverBothEnterAcceptedHistory()
+    {
+        var (context, _) = Open();
+        var store = new AcceptedDemandHistoryMongoStore(context,
+            new HistoryAcceptanceAuditMongoWriter(context));
+        var first = await SeedAsync(context, pending: true);
+        var second = await SeedAsync(context, first.Batch.TenantId,
+            first.Batch.LegalEntityId, first.Row.SkuId, unit: "EA", pending: true);
+
+        var results = await Task.WhenAll(
+            store.AcceptAsync(first.Batch, first.Row, first.Audit, default),
+            store.AcceptAsync(second.Batch, second.Row, second.Audit, default));
+
+        Assert.Single(results, x => x.Outcome == HistoryAcceptanceOutcome.Created);
+        Assert.Equal(1, await context.AcceptedHistoryRows.CountDocumentsAsync(
+            x => x.TenantId == first.Batch.TenantId));
+        Assert.Equal(1, await context.HistoryAcceptanceAudit.CountDocumentsAsync(
+            x => x.TenantId == first.Batch.TenantId));
+        Assert.Equal(1, await context.AcceptedHistoryUnitSlots.CountDocumentsAsync(
+            x => x.TenantId == first.Batch.TenantId));
+    }
+
+    [ManualDraftMongoFact]
+    public async Task AcceptedHistoryList_FailsClosedWhenAuditIsMissing()
+    {
+        var (context, _) = Open();
+        var store = new AcceptedDemandHistoryMongoStore(context,
+            new HistoryAcceptanceAuditMongoWriter(context));
+        var (batch, row, audit) = await SeedAsync(context, pending: true);
+        Assert.Equal(HistoryAcceptanceOutcome.Created,
+            (await store.AcceptAsync(batch, row, audit, default)).Outcome);
+        await context.HistoryAcceptanceAudit.DeleteOneAsync(x => x.Id == audit.Id);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            store.ListAsync(batch.TenantId, batch.LegalEntityId, 0, 50, default));
     }
 }

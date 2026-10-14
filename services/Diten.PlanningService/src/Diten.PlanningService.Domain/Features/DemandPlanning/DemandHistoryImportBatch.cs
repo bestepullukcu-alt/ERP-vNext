@@ -29,6 +29,7 @@ public sealed class DemandHistoryImportRow
     public string? ConversionContractId { get; set; }
     public string? ConversionContractVersion { get; set; }
     public decimal? BaseQuantity { get; set; }
+    public bool UnitVerificationPending { get; set; }
     public List<ImportValidationIssue> Issues { get; set; } = [];
     public bool IsQuarantined => Issues.Any(x => x.Severity == ImportIssueSeverity.Blocking);
 }

@@ -50,4 +50,21 @@
   <data name="NoActionPermission" xml:space="preserve"><value>Bu izin kapsamında işlem kullanılamaz.</value></data>
   <data name="NoCompanyData" xml:space="preserve"><value>Doğrulanmış şirket kapsamı yok.</value></data>
   <data name="SupersededReadOnly" xml:space="preserve"><value>Yerine yenisi geçen sürümün yalnız durumu gösterilir. Onaylı bağlı MRP kanıtı olmadan içerik açılmaz.</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>Kabul edilmiş talep geçmişi</value></data>
+  <data name="HistorySelectCompany" xml:space="preserve"><value>Aktif şirket bulunamadı.</value></data>
+  <data name="HistoryEmpty" xml:space="preserve"><value>Bu şirket için kabul edilmiş satır yok.</value></data>
+  <data name="HistoryUnavailable" xml:space="preserve"><value>Kabul geçmişine ulaşılamıyor.</value></data>
+  <data name="HistorySku" xml:space="preserve"><value>SKU</value></data>
+  <data name="HistoryWarehouse" xml:space="preserve"><value>Depo</value></data>
+  <data name="HistoryDate" xml:space="preserve"><value>Gerçekleşme tarihi</value></data>
+  <data name="HistoryUnit" xml:space="preserve"><value>Kabul edilen birim</value></data>
+  <data name="HistoryQuantity" xml:space="preserve"><value>Kabul edilen miktar</value></data>
+  <data name="HistoryUnitPending" xml:space="preserve"><value>Birim MOD-0290 ile doğrulanmadı</value></data>
+  <data name="HistoryBatch" xml:space="preserve"><value>İçe aktarım partisi</value></data>
+  <data name="HistoryDecision" xml:space="preserve"><value>Karar</value></data>
+  <data name="HistoryActor" xml:space="preserve"><value>Kararı veren</value></data>
+  <data name="HistoryAt" xml:space="preserve"><value>Karar zamanı</value></data>
+  <data name="HistoryPrevious" xml:space="preserve"><value>Önceki</value></data>
+  <data name="HistoryNext" xml:space="preserve"><value>Sonraki</value></data>
+  <data name="HistoryLoading" xml:space="preserve"><value>Kabul geçmişi yükleniyor...</value></data>
 </root>

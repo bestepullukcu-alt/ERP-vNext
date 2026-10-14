@@ -16,4 +16,6 @@ public interface IAcceptedDemandHistoryStore
         CancellationToken cancellationToken);
     Task<AcceptedDemandHistoryView?> GetAsync(Guid tenantId, Guid legalEntityId,
         Guid acceptedRowId, CancellationToken cancellationToken);
+    Task<IReadOnlyList<AcceptedDemandHistoryView>> ListAsync(Guid tenantId, Guid legalEntityId,
+        int skip, int take, CancellationToken cancellationToken);
 }

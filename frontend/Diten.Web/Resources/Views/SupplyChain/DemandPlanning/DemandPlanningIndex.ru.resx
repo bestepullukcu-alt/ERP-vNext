@@ -50,4 +50,21 @@
   <data name="NoActionPermission" xml:space="preserve"><value>Действие недоступно с этими правами.</value></data>
   <data name="NoCompanyData" xml:space="preserve"><value>Нет проверенного списка компаний.</value></data>
   <data name="SupersededReadOnly" xml:space="preserve"><value>Для заменённой версии показан только статус. Содержимое закрыто без утверждённого подтверждения связанного MRP.</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>История принятого спроса</value></data>
+  <data name="HistorySelectCompany" xml:space="preserve"><value>Нет доступной активной компании.</value></data>
+  <data name="HistoryEmpty" xml:space="preserve"><value>Для этой компании нет принятых строк.</value></data>
+  <data name="HistoryUnavailable" xml:space="preserve"><value>История принятого спроса недоступна.</value></data>
+  <data name="HistorySku" xml:space="preserve"><value>SKU</value></data>
+  <data name="HistoryWarehouse" xml:space="preserve"><value>Склад</value></data>
+  <data name="HistoryDate" xml:space="preserve"><value>Дата события</value></data>
+  <data name="HistoryUnit" xml:space="preserve"><value>Принятая единица</value></data>
+  <data name="HistoryQuantity" xml:space="preserve"><value>Принятое количество</value></data>
+  <data name="HistoryUnitPending" xml:space="preserve"><value>Единица не проверена через MOD-0290</value></data>
+  <data name="HistoryBatch" xml:space="preserve"><value>Партия импорта</value></data>
+  <data name="HistoryDecision" xml:space="preserve"><value>Решение</value></data>
+  <data name="HistoryActor" xml:space="preserve"><value>Кем принято</value></data>
+  <data name="HistoryAt" xml:space="preserve"><value>Время решения</value></data>
+  <data name="HistoryPrevious" xml:space="preserve"><value>Назад</value></data>
+  <data name="HistoryNext" xml:space="preserve"><value>Далее</value></data>
+  <data name="HistoryLoading" xml:space="preserve"><value>Загрузка принятой истории...</value></data>
 </root>

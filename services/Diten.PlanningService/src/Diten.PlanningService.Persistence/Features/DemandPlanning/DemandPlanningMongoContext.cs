@@ -46,6 +46,9 @@ public sealed class DemandPlanningMongoContext
     public IMongoCollection<AcceptedDemandHistoryRow> AcceptedHistoryRows =>
         _database.GetCollection<AcceptedDemandHistoryRow>("mod0188_accepted_history_rows");
 
+    public IMongoCollection<AcceptedHistoryUnitSlot> AcceptedHistoryUnitSlots =>
+        _database.GetCollection<AcceptedHistoryUnitSlot>("mod0188_accepted_history_unit_slots");
+
     public IMongoCollection<DemandHistoryAcceptanceAudit> HistoryAcceptanceAudit =>
         _database.GetCollection<DemandHistoryAcceptanceAudit>("mod0188_history_acceptance_audit");
 

@@ -115,6 +115,20 @@ public sealed class DemandHistoryImportBatchesController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    [HttpGet("accepted-rows")]
+    [HasPermission("demand.history.read")]
+    public async Task<IActionResult> ListAcceptedRows(
+        [FromHeader(Name = "X-Legal-Entity-Id")] Guid? selectedLegalEntityHint,
+        [FromQuery] int skip = 0, [FromQuery] int take = 50,
+        CancellationToken cancellationToken = default)
+    {
+        if (!TryGetScope(out var tenantId, out var actorId)) return Forbid();
+        var response = await _sender.Send(new ListAcceptedDemandHistoryQuery(
+            tenantId, actorId, selectedLegalEntityHint ?? Guid.Empty,
+            User.HasClaim("permission", "demand.history.read"), skip, take), cancellationToken);
+        return CreateActionResultInstance(response);
+    }
+
     private bool TryGetScope(out Guid tenantId, out Guid actorId)
     {
         tenantId = HttpContext.Items["DemandPlanning.TenantId"] is Guid scope ? scope : Guid.Empty;

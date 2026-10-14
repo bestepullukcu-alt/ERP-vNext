@@ -26,6 +26,7 @@ public sealed class AcceptedDemandHistoryMongoStore : IAcceptedDemandHistoryStor
     private readonly DemandPlanningMongoContext _context;
     private readonly IMongoCollection<DemandHistoryImportBatch> _batches;
     private readonly IMongoCollection<AcceptedDemandHistoryRow> _rows;
+    private readonly IMongoCollection<AcceptedHistoryUnitSlot> _unitSlots;
     private readonly IMongoCollection<DemandHistoryAcceptanceAudit> _audit;
     private readonly IHistoryAcceptanceAuditWriter _auditWriter;
     private readonly SemaphoreSlim _indexGate = new(1, 1);
@@ -37,6 +38,7 @@ public sealed class AcceptedDemandHistoryMongoStore : IAcceptedDemandHistoryStor
         _context = context;
         _batches = context.HistoryImportBatches;
         _rows = context.AcceptedHistoryRows;
+        _unitSlots = context.AcceptedHistoryUnitSlots;
         _audit = context.HistoryAcceptanceAudit;
         _auditWriter = auditWriter;
     }
@@ -46,6 +48,12 @@ public sealed class AcceptedDemandHistoryMongoStore : IAcceptedDemandHistoryStor
         CancellationToken cancellationToken)
     {
         if (row.StockoutEvidenceState != "Unknown" ||
+            (row.UnitVerificationPending &&
+             (row.AcceptedQuantity != row.OriginalQuantity ||
+              row.AcceptedUomId != row.OriginalUomId ||
+              row.BaseQuantity != 0 || row.BaseUomId.Length != 0 ||
+              row.ConversionFactor != 0 || row.ConversionContractId.Length != 0 ||
+              row.ConversionContractVersion.Length != 0)) ||
             row.ContentSha256 != AcceptedHistoryFingerprint.Compute(row) ||
             audit.TenantId != row.TenantId || audit.LegalEntityId != row.LegalEntityId ||
             audit.AcceptedRowId != row.Id || audit.BatchId != row.BatchId ||
@@ -83,6 +91,32 @@ public sealed class AcceptedDemandHistoryMongoStore : IAcceptedDemandHistoryStor
                 return await ResolveExistingAsync(row, HistoryAcceptanceOutcome.Conflict,
                     cancellationToken);
             }
+            var previous = await _rows.Find(session, x => x.TenantId == row.TenantId &&
+                x.LegalEntityId == row.LegalEntityId && x.SkuId == row.SkuId &&
+                x.WarehouseId == row.WarehouseId && !x.IsDeleted)
+                .ToListAsync(cancellationToken);
+            if (previous.Any(x => (x.UnitVerificationPending ? x.AcceptedUomId : x.BaseUomId) !=
+                                  (row.UnitVerificationPending ? row.AcceptedUomId : row.BaseUomId)))
+            {
+                await session.AbortTransactionAsync(cancellationToken);
+                return new HistoryAcceptanceResult(HistoryAcceptanceOutcome.Ineligible, null);
+            }
+            var acceptedUnit = row.UnitVerificationPending ? row.AcceptedUomId : row.BaseUomId;
+            var unitFilter = Builders<AcceptedHistoryUnitSlot>.Filter.Eq(x => x.TenantId, row.TenantId) &
+                Builders<AcceptedHistoryUnitSlot>.Filter.Eq(x => x.LegalEntityId, row.LegalEntityId) &
+                Builders<AcceptedHistoryUnitSlot>.Filter.Eq(x => x.SkuId, row.SkuId) &
+                Builders<AcceptedHistoryUnitSlot>.Filter.Eq(x => x.WarehouseId, row.WarehouseId) &
+                Builders<AcceptedHistoryUnitSlot>.Filter.Eq(x => x.UomId, acceptedUnit);
+            await _unitSlots.UpdateOneAsync(session, unitFilter,
+                Builders<AcceptedHistoryUnitSlot>.Update
+                    .SetOnInsert(x => x.Id, Guid.NewGuid())
+                    .SetOnInsert(x => x.TenantId, row.TenantId)
+                    .SetOnInsert(x => x.LegalEntityId, row.LegalEntityId)
+                    .SetOnInsert(x => x.SkuId, row.SkuId)
+                    .SetOnInsert(x => x.WarehouseId, row.WarehouseId)
+                    .SetOnInsert(x => x.UomId, acceptedUnit)
+                    .Inc(x => x.Version, 1),
+                new UpdateOptions { IsUpsert = true }, cancellationToken);
             var fence = await _batches.UpdateOneAsync(session, batchFilter,
                 Builders<DemandHistoryImportBatch>.Update.Inc(x => x.Version, 1),
                 cancellationToken: cancellationToken);
@@ -109,6 +143,12 @@ public sealed class AcceptedDemandHistoryMongoStore : IAcceptedDemandHistoryStor
         {
             if (session.IsInTransaction)
                 await session.AbortTransactionAsync(CancellationToken.None);
+            var slot = await _unitSlots.Find(x => x.TenantId == row.TenantId &&
+                x.LegalEntityId == row.LegalEntityId && x.SkuId == row.SkuId &&
+                x.WarehouseId == row.WarehouseId).FirstOrDefaultAsync(cancellationToken);
+            if (slot is not null && slot.UomId !=
+                (row.UnitVerificationPending ? row.AcceptedUomId : row.BaseUomId))
+                return new HistoryAcceptanceResult(HistoryAcceptanceOutcome.Ineligible, null);
             return await ResolveExistingAsync(row, HistoryAcceptanceOutcome.Unavailable,
                 cancellationToken);
         }
@@ -166,6 +206,26 @@ public sealed class AcceptedDemandHistoryMongoStore : IAcceptedDemandHistoryStor
         return new AcceptedDemandHistoryView(row, audit[0]);
     }
 
+    public async Task<IReadOnlyList<AcceptedDemandHistoryView>> ListAsync(Guid tenantId,
+        Guid legalEntityId, int skip, int take, CancellationToken cancellationToken)
+    {
+        if (tenantId == Guid.Empty || legalEntityId == Guid.Empty || skip < 0 || take is < 1 or > 100)
+            throw new ArgumentOutOfRangeException(nameof(take));
+        var rows = await _rows.Find(x => x.TenantId == tenantId &&
+            x.LegalEntityId == legalEntityId && !x.IsDeleted)
+            .SortByDescending(x => x.AcceptedAt).ThenByDescending(x => x.Id)
+            .Skip(skip).Limit(take).ToListAsync(cancellationToken);
+        var views = new List<AcceptedDemandHistoryView>(rows.Count);
+        foreach (var row in rows)
+        {
+            var verified = await GetAsync(tenantId, legalEntityId, row.Id, cancellationToken);
+            if (verified is null)
+                throw new InvalidOperationException("Accepted history changed during list read.");
+            views.Add(verified);
+        }
+        return views;
+    }
+
     private static bool Matches(DemandHistoryImportBatch batch, AcceptedDemandHistoryRow row)
     {
         if (batch.SourceChannel != "File" || batch.SourceSystem != row.SourceSystem ||
@@ -178,10 +238,16 @@ public sealed class AcceptedDemandHistoryMongoStore : IAcceptedDemandHistoryStor
                source.SourceRecordKey == row.SourceRecordKey && source.SkuId == row.SkuId &&
                source.SkuLevel == row.SkuLevel && source.WarehouseId == row.WarehouseId &&
                source.OccurredOn == row.OccurredOn && source.OriginalQuantity == row.OriginalQuantity &&
-               source.OriginalUomId == row.OriginalUomId && source.BaseQuantity == row.BaseQuantity &&
-               source.BaseUomId == row.BaseUomId && source.ConversionFactor == row.ConversionFactor &&
-               source.ConversionContractId == row.ConversionContractId &&
-               source.ConversionContractVersion == row.ConversionContractVersion;
+               source.OriginalUomId == row.OriginalUomId &&
+               (row.UnitVerificationPending ||
+                (source.BaseQuantity == row.BaseQuantity && source.BaseUomId == row.BaseUomId &&
+                 source.ConversionFactor == row.ConversionFactor &&
+                 source.ConversionContractId == row.ConversionContractId &&
+                 source.ConversionContractVersion == row.ConversionContractVersion)) &&
+               source.UnitVerificationPending == row.UnitVerificationPending &&
+               (!row.UnitVerificationPending ||
+                (row.AcceptedQuantity == source.OriginalQuantity &&
+                 row.AcceptedUomId == source.OriginalUomId));
     }
 
     private async Task EnsureIndexesAsync(CancellationToken cancellationToken)
@@ -196,6 +262,12 @@ public sealed class AcceptedDemandHistoryMongoStore : IAcceptedDemandHistoryStor
                     .Ascending(x => x.LegalEntityId).Ascending(x => x.SourceSystem)
                     .Ascending(x => x.SourceRecordKey),
                 new CreateIndexOptions { Name = "ux_mod0188_accepted_source", Unique = true }),
+                cancellationToken: cancellationToken);
+            await _unitSlots.Indexes.CreateOneAsync(new CreateIndexModel<AcceptedHistoryUnitSlot>(
+                Builders<AcceptedHistoryUnitSlot>.IndexKeys.Ascending(x => x.TenantId)
+                    .Ascending(x => x.LegalEntityId).Ascending(x => x.SkuId)
+                    .Ascending(x => x.WarehouseId),
+                new CreateIndexOptions { Name = "ux_mod0188_accepted_series_unit", Unique = true }),
                 cancellationToken: cancellationToken);
             await _audit.Indexes.CreateOneAsync(new CreateIndexModel<DemandHistoryAcceptanceAudit>(
                 Builders<DemandHistoryAcceptanceAudit>.IndexKeys.Ascending(x => x.TenantId)

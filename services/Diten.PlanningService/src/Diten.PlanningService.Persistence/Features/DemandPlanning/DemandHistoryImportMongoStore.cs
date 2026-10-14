@@ -7,11 +7,44 @@ namespace Diten.PlanningService.Persistence.Features.DemandPlanning;
 public sealed class DemandHistoryImportMongoStore : IHistoryImportBatchStore
 {
     private readonly IMongoCollection<DemandHistoryImportBatch> _batches;
+    private readonly IMongoCollection<AcceptedDemandHistoryRow> _acceptedRows;
+    private readonly IMongoCollection<DemandHistoryAcceptanceAudit> _acceptanceAudit;
     private readonly SemaphoreSlim _indexGate = new(1, 1);
     private bool _indexReady;
 
-    public DemandHistoryImportMongoStore(DemandPlanningMongoContext context) =>
+    public DemandHistoryImportMongoStore(DemandPlanningMongoContext context)
+    {
         _batches = context.HistoryImportBatches;
+        _acceptedRows = context.AcceptedHistoryRows;
+        _acceptanceAudit = context.HistoryAcceptanceAudit;
+    }
+
+    public async Task<IReadOnlyList<string>> GetAcceptedUnitsAsync(Guid tenantId, Guid legalEntityId,
+        Guid skuId, string warehouseId, CancellationToken cancellationToken)
+    {
+        var rows = await _acceptedRows.Find(x => x.TenantId == tenantId &&
+            x.LegalEntityId == legalEntityId && x.SkuId == skuId &&
+            x.WarehouseId == warehouseId && !x.IsDeleted)
+            .ToListAsync(cancellationToken);
+        foreach (var row in rows)
+        {
+            if (row.ContentSha256 != AcceptedHistoryFingerprint.Compute(row))
+                throw new InvalidOperationException("Accepted history content is inconsistent.");
+            var auditCount = await _acceptanceAudit.CountDocumentsAsync(x =>
+                x.TenantId == tenantId && x.LegalEntityId == legalEntityId &&
+                x.AcceptedRowId == row.Id && x.BatchId == row.BatchId &&
+                x.BatchRowNumber == row.BatchRowNumber &&
+                x.SourceRecordKey == row.SourceRecordKey && x.OccurredAt == row.AcceptedAt &&
+                x.Reason == row.AcceptanceReason &&
+                x.ActorId == row.AcceptedByActorId && x.Action == "RowAccepted" &&
+                x.ContentSha256 == row.ContentSha256,
+                cancellationToken: cancellationToken);
+            if (auditCount != 1)
+                throw new InvalidOperationException("Accepted history audit is inconsistent.");
+        }
+        return rows.Select(x => x.UnitVerificationPending ? x.AcceptedUomId : x.BaseUomId)
+            .Distinct(StringComparer.Ordinal).ToArray();
+    }
 
     public async Task<HistoryImportInsertResult> InsertOrGetAsync(
         DemandHistoryImportBatch batch, CancellationToken cancellationToken)

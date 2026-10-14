@@ -20,6 +20,9 @@ public sealed class AcceptedDemandHistoryRow : EntityBase
     public decimal ConversionFactor { get; set; }
     public string ConversionContractId { get; set; } = string.Empty;
     public string ConversionContractVersion { get; set; } = string.Empty;
+    public decimal AcceptedQuantity { get; set; }
+    public string AcceptedUomId { get; set; } = string.Empty;
+    public bool UnitVerificationPending { get; set; }
     public string StockoutEvidenceState { get; set; } = "Unknown";
     public string ContentSha256 { get; set; } = string.Empty;
     public Guid AcceptedByActorId { get; set; }
@@ -41,4 +44,12 @@ public sealed class DemandHistoryAcceptanceAudit : EntityBase
     public DateTimeOffset OccurredAt { get; set; }
     public string Reason { get; set; } = string.Empty;
     public string ContentSha256 { get; set; } = string.Empty;
+}
+
+public sealed class AcceptedHistoryUnitSlot : EntityBase
+{
+    public Guid LegalEntityId { get; set; }
+    public Guid SkuId { get; set; }
+    public string WarehouseId { get; set; } = string.Empty;
+    public string UomId { get; set; } = string.Empty;
 }

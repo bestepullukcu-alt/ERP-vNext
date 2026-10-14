@@ -50,4 +50,21 @@
   <data name="NoActionPermission" xml:space="preserve"><value>此权限范围内操作不可用。</value></data>
   <data name="NoCompanyData" xml:space="preserve"><value>没有可用的已验证公司范围。</value></data>
   <data name="SupersededReadOnly" xml:space="preserve"><value>已被取代的版本仅显示状态；没有获批的关联 MRP 证明时，内容保持关闭。</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>已接受的需求历史</value></data>
+  <data name="HistorySelectCompany" xml:space="preserve"><value>没有可用的有效公司。</value></data>
+  <data name="HistoryEmpty" xml:space="preserve"><value>该公司没有已接受的记录。</value></data>
+  <data name="HistoryUnavailable" xml:space="preserve"><value>无法获取已接受的历史记录。</value></data>
+  <data name="HistorySku" xml:space="preserve"><value>SKU</value></data>
+  <data name="HistoryWarehouse" xml:space="preserve"><value>仓库</value></data>
+  <data name="HistoryDate" xml:space="preserve"><value>发生日期</value></data>
+  <data name="HistoryUnit" xml:space="preserve"><value>已接受单位</value></data>
+  <data name="HistoryQuantity" xml:space="preserve"><value>已接受数量</value></data>
+  <data name="HistoryUnitPending" xml:space="preserve"><value>单位尚未经 MOD-0290 验证</value></data>
+  <data name="HistoryBatch" xml:space="preserve"><value>导入批次</value></data>
+  <data name="HistoryDecision" xml:space="preserve"><value>决定</value></data>
+  <data name="HistoryActor" xml:space="preserve"><value>决定人</value></data>
+  <data name="HistoryAt" xml:space="preserve"><value>决定时间</value></data>
+  <data name="HistoryPrevious" xml:space="preserve"><value>上一页</value></data>
+  <data name="HistoryNext" xml:space="preserve"><value>下一页</value></data>
+  <data name="HistoryLoading" xml:space="preserve"><value>正在加载已接受的历史记录...</value></data>
 </root>

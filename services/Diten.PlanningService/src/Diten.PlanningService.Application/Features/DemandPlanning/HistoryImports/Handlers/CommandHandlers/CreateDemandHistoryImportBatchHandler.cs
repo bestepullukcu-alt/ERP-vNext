@@ -108,6 +108,17 @@ public sealed class CreateDemandHistoryImportBatchHandler :
                 AddIssue(row, "DuplicateKeyInBatch", ImportIssueSeverity.Blocking,
                     "Source record key appears more than once in this file.");
         }
+        foreach (var series in batch.Rows
+            .Where(x => x.SkuId is not null && !string.IsNullOrWhiteSpace(x.WarehouseId) &&
+                        !string.IsNullOrWhiteSpace(x.OriginalUomId))
+            .GroupBy(x => (x.SkuId, x.WarehouseId))
+            .Where(x => x.Select(row => row.OriginalUomId)
+                .Distinct(StringComparer.Ordinal).Skip(1).Any()))
+        {
+            foreach (var row in series)
+                AddIssue(row, "MixedUnitsForSeries", ImportIssueSeverity.Blocking,
+                    "One SKU and warehouse cannot use multiple units in the same batch.");
+        }
         foreach (var row in batch.Rows.Where(x => x.IsQuarantined))
             batch.QuarantineCases.Add(new DemandHistoryQuarantineCase
             {
@@ -131,7 +142,7 @@ public sealed class CreateDemandHistoryImportBatchHandler :
 
         HistoryImportInsertResult result;
         try { result = await _store.InsertOrGetAsync(batch, cancellationToken); }
-        catch (InvalidOperationException)
+        catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
         {
             return Response<HistoryImportBatchResult>.Fail("Import batch store is unavailable.", 503);
         }
@@ -227,15 +238,43 @@ public sealed class CreateDemandHistoryImportBatchHandler :
                 null, null, null, null);
         }
         if (reference.State != HistoryReferenceState.Verified ||
-            string.IsNullOrWhiteSpace(reference.BaseUomId) ||
-            reference.ConversionFactor is not > 0 ||
-            string.IsNullOrWhiteSpace(reference.ConversionContractId) ||
-            string.IsNullOrWhiteSpace(reference.ConversionContractVersion))
+            (!reference.UnitVerificationPending &&
+             (string.IsNullOrWhiteSpace(reference.BaseUomId) ||
+              reference.ConversionFactor is not > 0 ||
+              string.IsNullOrWhiteSpace(reference.ConversionContractId) ||
+              string.IsNullOrWhiteSpace(reference.ConversionContractVersion))))
         {
             AddIssue(row, reference.State == HistoryReferenceState.Invalid ?
                 "InvalidReference" : "ReferenceOrConversionUnverified",
                 ImportIssueSeverity.Blocking,
                 "SKU, Warehouse or dated unit conversion is not verified.");
+            return row;
+        }
+        IReadOnlyList<string> acceptedUnits;
+        try
+        {
+            acceptedUnits = await _store.GetAcceptedUnitsAsync(command.TenantId, legalEntityId,
+                row.SkuId!.Value, row.WarehouseId, cancellationToken);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
+        {
+            AddIssue(row, "AcceptedHistoryUnavailable", ImportIssueSeverity.Blocking,
+                "Accepted history unit could not be checked.");
+            return row;
+        }
+        if (acceptedUnits.Any(unit => unit != row.OriginalUomId))
+        {
+            AddIssue(row, "UnitConflictsWithAcceptedHistory", ImportIssueSeverity.Blocking,
+                "Unit differs from the already accepted SKU and warehouse history.");
+            return row;
+        }
+        if (reference.UnitVerificationPending)
+        {
+            row.UnitVerificationPending = true;
+            AddIssue(row, "UnitVerificationPending", ImportIssueSeverity.Warning,
+                "Unit is retained without conversion until MOD-0290 verifies it.");
+            AddIssue(row, "StockoutEvidenceUnknown", ImportIssueSeverity.Warning,
+                "Shipment alone cannot prove that demand was fully served.");
             return row;
         }
         try
@@ -244,7 +283,7 @@ public sealed class CreateDemandHistoryImportBatchHandler :
             row.ConversionFactor = reference.ConversionFactor;
             row.ConversionContractId = reference.ConversionContractId;
             row.ConversionContractVersion = reference.ConversionContractVersion;
-            row.BaseQuantity = checked(row.OriginalQuantity!.Value * reference.ConversionFactor.Value);
+            row.BaseQuantity = checked(row.OriginalQuantity!.Value * reference.ConversionFactor!.Value);
         }
         catch (OverflowException)
         {

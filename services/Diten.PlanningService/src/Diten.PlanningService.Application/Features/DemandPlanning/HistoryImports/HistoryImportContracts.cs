@@ -29,7 +29,8 @@ public sealed record HistoryReferenceResult(
     string? BaseUomId,
     decimal? ConversionFactor,
     string? ConversionContractId,
-    string? ConversionContractVersion);
+    string? ConversionContractVersion,
+    bool UnitVerificationPending = false);
 
 // Frozen contract/mock seam for SKU, Warehouse eligibility and dated UoM conversion.
 public interface IHistoryRowReferenceChecker
@@ -45,6 +46,8 @@ public sealed record HistoryImportInsertResult(
 
 public interface IHistoryImportBatchStore
 {
+    Task<IReadOnlyList<string>> GetAcceptedUnitsAsync(Guid tenantId, Guid legalEntityId,
+        Guid skuId, string warehouseId, CancellationToken cancellationToken);
     Task<HistoryImportInsertResult> InsertOrGetAsync(
         DemandHistoryImportBatch batch, CancellationToken cancellationToken);
     Task<DemandHistoryImportBatch?> GetOwnAsync(Guid tenantId, Guid actorId,

@@ -50,4 +50,21 @@
   <data name="NoActionPermission" xml:space="preserve"><value>Action unavailable in this permission scope.</value></data>
   <data name="NoCompanyData" xml:space="preserve"><value>No verified company scope is available.</value></data>
   <data name="SupersededReadOnly" xml:space="preserve"><value>Superseded status only. Content stays closed until an approved bound MRP proof is available.</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>Accepted demand history</value></data>
+  <data name="HistorySelectCompany" xml:space="preserve"><value>No active company is available.</value></data>
+  <data name="HistoryEmpty" xml:space="preserve"><value>No accepted rows for this company.</value></data>
+  <data name="HistoryUnavailable" xml:space="preserve"><value>Accepted history is unavailable.</value></data>
+  <data name="HistorySku" xml:space="preserve"><value>SKU</value></data>
+  <data name="HistoryWarehouse" xml:space="preserve"><value>Warehouse</value></data>
+  <data name="HistoryDate" xml:space="preserve"><value>Occurred on</value></data>
+  <data name="HistoryUnit" xml:space="preserve"><value>Accepted unit</value></data>
+  <data name="HistoryQuantity" xml:space="preserve"><value>Accepted quantity</value></data>
+  <data name="HistoryUnitPending" xml:space="preserve"><value>Unit not verified with MOD-0290</value></data>
+  <data name="HistoryBatch" xml:space="preserve"><value>Import batch</value></data>
+  <data name="HistoryDecision" xml:space="preserve"><value>Decision</value></data>
+  <data name="HistoryActor" xml:space="preserve"><value>Decided by</value></data>
+  <data name="HistoryAt" xml:space="preserve"><value>Decided at</value></data>
+  <data name="HistoryPrevious" xml:space="preserve"><value>Previous</value></data>
+  <data name="HistoryNext" xml:space="preserve"><value>Next</value></data>
+  <data name="HistoryLoading" xml:space="preserve"><value>Loading accepted history...</value></data>
 </root>

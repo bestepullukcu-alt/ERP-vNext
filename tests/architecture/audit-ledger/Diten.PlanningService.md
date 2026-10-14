@@ -1,18 +1,31 @@
 # Denetim defteri — Diten.PlanningService
 
-Kural: `.antigravity/rules/audit-trail-standard.md` (AUD-001). Merkezi iletici BL-501, Ali/Control Tower kararıyla MVP'ler sonrasına bırakılmıştır. Aşağıdaki on yazma komutu için **BL-501 bekliyor**; bu ifade denetlenmiş komut, kabul edilmiş iz, istisna veya mimari test onayı değildir.
-
-BL-501 bekliyor: CreatePlanningCycleCommand, CreateDemandHistoryImportBatchCommand, ReviewHistoryImportBatchCommand, CreateManualDraftCommand, EditManualDraftWeekCommand, ExcludeManualDraftSeriesCommand, TransitionManualDraftCommand, PublishDemandRevisionCommand, InvalidateDemandRevisionCommand, RollbackDemandRevisionCommand.
-
-Bu defter mevcut Mongo işlem-içi iş audit'ini merkezi Platform audit ile eşdeğer ilan etmez. AUD-001 ölçümündeki yeni borç kırmızısı, BL-501 bağlantısı veya ayrı Control Tower kararı gelene kadar açık kalır.
-
-`AcceptDemandHistoryRowsCommand`: c yolu — geçici, CT kabulü (Ali, 2026-10-13); kabul ve değiştirilemez satır izi aynı Mongo işleminde yazılacak, audit hatasında sıfır kabul ve kontrollü hata verilecek. İzinli kiracı kullanıcısının izi kabul edilmiş satırın kendi ekranında okuyabilmesi ve çalışan kod/test kanıtı tamamlanmadan bu karar `## İzler` tablosunda teslim edilmiş iz sayılmaz.
-`AcceptDemandHistoryRowsCommand`: BL-501 bekliyor (merkezi ekip, MVP'ler sonrası); merkezî kayıt daha sonra yerel izin yanına eklenecek, yerel iz kaldırılmayacak.
+Kural: `.antigravity/rules/audit-trail-standard.md` (AUD-001). Ali'nin 2026-10-14 kararı, aynı Mongo atomik yazımında iş durumu ve zorunlu yerel iz üreten komutlara geçici `c` yolu verir. Bu iz Platform merkezi denetim günlüğü değildir; BL-501 bağlanınca yerel iz silinmeden merkezi kayıt yanına eklenir. Mimari tarayıcı bağlantıyı, aşağıdaki Mongo testleri ise yazma hatasında sıfır iş etkisini ölçer.
 
 ## İzler
 
 | iz | yol | tür | belirteç |
 |---|---|---|---|
+| batch-inceleme-izi | c | yazıcı | IHistoryImportBatchStore.TryDecideAsync |
+| satir-kabul-izi | c | yazıcı | IAcceptedDemandHistoryStore.AcceptAsync |
+| draft-olusturma-izi | c | yazıcı | IManualDraftStore.CreateAsync |
+| draft-duzenleme-izi | c | yazıcı | IManualDraftStore.EditWeekAsync |
+| draft-dislama-izi | c | yazıcı | IManualDraftStore.ExcludeSeriesAsync |
+| draft-inceleme-izi | c | yazıcı | IManualDraftStore.TransitionReviewAsync |
+| yayin-izi | c | yazıcı | IInternalPublishedRevisionStore.PublishAsync |
+| gecersiz-kilma-izi | c | yazıcı | IInternalRevisionInvalidator.InvalidateAsync |
+| geri-donus-izi | c | yazıcı | IRollbackDraftStore.CreateAsync |
+
+> `ReviewHistoryImportBatchCommand`: durum ve karar izi tek Mongo belge güncellemesindedir; `HistoryImportMongoIntegrationTests` karar/audit ve hata yollarını sınar. İz görünürlüğü bekliyor (dilim: S1).
+> `AcceptDemandHistoryRowsCommand`: satır ve kabul izi tek Mongo transaction'ındadır; `AcceptedDemandHistoryMongoIntegrationTests` audit yazma hatasında sıfır kabulü sınar. İz görünürlüğü bekliyor (dilim: S1 tarayıcı kanıtı).
+> `CreateManualDraftCommand`: `ManualDraftMongoIntegrationTests.MongoAuditInsertFailure_RollsBackManifestAndAllSeriesParts`; iz görünürlüğü bekliyor (dilim: S3).
+> `EditManualDraftWeekCommand`: `ManualDraftMongoIntegrationTests.MongoEditAuditFailure_RollsBackVersionAndWeekChange`; iz görünürlüğü bekliyor (dilim: S3).
+> `ExcludeManualDraftSeriesCommand`: `ManualDraftApiMongoIntegrationTests.ExclusionAuditFailure_RollsBackReopenSlotAndContent`; iz görünürlüğü bekliyor (dilim: S3).
+> `TransitionManualDraftCommand`: `ManualDraftReviewMongoIntegrationTests.ReviewAuditInsertFailure_RollsBackStateAndCandidateSlot`; iz görünürlüğü bekliyor (dilim: S3).
+> `PublishDemandRevisionCommand`: `PublishedRevisionMongoIntegrationTests.Publish_AuditFailure_RollsBackStateSnapshotSlotAndOutbox`; iz görünürlüğü bekliyor (dilim: S3).
+> `InvalidateDemandRevisionCommand`: `InvalidationMongoIntegrationTests.Invalidate_AuditCollision_RollsBackStateSlotAndOutbox`; iz görünürlüğü bekliyor (dilim: S3).
+> `RollbackDemandRevisionCommand`: `RollbackDraftMongoIntegrationTests.Rollback_AuditWriteFailure_RollsBackAllNewDocuments`; iz görünürlüğü bekliyor (dilim: S3).
+> Her komut için BL-501 bekliyor (merkezi ekip, MVP'ler sonrası). `CreatePlanningCycleCommand` ve `CreateDemandHistoryImportBatchCommand` henüz işlem-içi audit yazmaz; aşağıda bilinen borçtur.
 
 ## İstisnalar
 
@@ -23,10 +36,15 @@ Bu defter mevcut Mongo işlem-içi iş audit'ini merkezi Platform audit ile eşd
 
 | komut | iz | üzerinden |
 |---|---|---|
+| CreateManualDraftCommand | draft-olusturma-izi | ManualDraftWorkflow |
+| EditManualDraftWeekCommand | draft-duzenleme-izi | ManualDraftWorkflow |
+| ExcludeManualDraftSeriesCommand | draft-dislama-izi | ManualDraftWorkflow |
+| TransitionManualDraftCommand | draft-inceleme-izi | ManualDraftWorkflow |
 
 ## Bilinen borç
 
-Yeni komutlar bu bölümde kabul edilmiş borç olarak kaydedilmedi; AUD-001 yalnız önceden sabitlenmiş borcun azalmasına izin verir.
+- CreatePlanningCycleCommand
+- CreateDemandHistoryImportBatchCommand
 
 ## K2 borcu
 

@@ -50,4 +50,21 @@
   <data name="NoActionPermission" xml:space="preserve"><value>Action indisponible avec ces droits.</value></data>
   <data name="NoCompanyData" xml:space="preserve"><value>Aucun périmètre de société vérifié n&apos;est disponible.</value></data>
   <data name="SupersededReadOnly" xml:space="preserve"><value>Seul l'état de la révision remplacée est visible. Le contenu reste fermé sans preuve MRP liée approuvée.</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>Historique de la demande acceptée</value></data>
+  <data name="HistorySelectCompany" xml:space="preserve"><value>Aucune société active disponible.</value></data>
+  <data name="HistoryEmpty" xml:space="preserve"><value>Aucune ligne acceptée pour cette société.</value></data>
+  <data name="HistoryUnavailable" xml:space="preserve"><value>Historique accepté indisponible.</value></data>
+  <data name="HistorySku" xml:space="preserve"><value>SKU</value></data>
+  <data name="HistoryWarehouse" xml:space="preserve"><value>Entrepôt</value></data>
+  <data name="HistoryDate" xml:space="preserve"><value>Date de réalisation</value></data>
+  <data name="HistoryUnit" xml:space="preserve"><value>Unité acceptée</value></data>
+  <data name="HistoryQuantity" xml:space="preserve"><value>Quantité acceptée</value></data>
+  <data name="HistoryUnitPending" xml:space="preserve"><value>Unité non vérifiée par MOD-0290</value></data>
+  <data name="HistoryBatch" xml:space="preserve"><value>Lot d'importation</value></data>
+  <data name="HistoryDecision" xml:space="preserve"><value>Décision</value></data>
+  <data name="HistoryActor" xml:space="preserve"><value>Décidé par</value></data>
+  <data name="HistoryAt" xml:space="preserve"><value>Date de décision</value></data>
+  <data name="HistoryPrevious" xml:space="preserve"><value>Précédent</value></data>
+  <data name="HistoryNext" xml:space="preserve"><value>Suivant</value></data>
+  <data name="HistoryLoading" xml:space="preserve"><value>Chargement de l'historique...</value></data>
 </root>

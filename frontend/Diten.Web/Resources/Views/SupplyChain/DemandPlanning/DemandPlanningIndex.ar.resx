@@ -50,4 +50,21 @@
   <data name="NoActionPermission" xml:space="preserve"><value>الإجراء غير متاح ضمن هذه الصلاحيات.</value></data>
   <data name="NoCompanyData" xml:space="preserve"><value>لا يتوفر نطاق شركة موثق.</value></data>
   <data name="SupersededReadOnly" xml:space="preserve"><value>تُعرض حالة النسخة المستبدلة فقط. يبقى المحتوى مغلقًا دون دليل MRP مرتبط ومعتمد.</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>سجل الطلب المقبول</value></data>
+  <data name="HistorySelectCompany" xml:space="preserve"><value>لا توجد شركة نشطة متاحة.</value></data>
+  <data name="HistoryEmpty" xml:space="preserve"><value>لا توجد سجلات مقبولة لهذه الشركة.</value></data>
+  <data name="HistoryUnavailable" xml:space="preserve"><value>سجل الطلب المقبول غير متاح.</value></data>
+  <data name="HistorySku" xml:space="preserve"><value>رمز المنتج</value></data>
+  <data name="HistoryWarehouse" xml:space="preserve"><value>المستودع</value></data>
+  <data name="HistoryDate" xml:space="preserve"><value>تاريخ الحدوث</value></data>
+  <data name="HistoryUnit" xml:space="preserve"><value>الوحدة المقبولة</value></data>
+  <data name="HistoryQuantity" xml:space="preserve"><value>الكمية المقبولة</value></data>
+  <data name="HistoryUnitPending" xml:space="preserve"><value>لم يتم التحقق من الوحدة عبر MOD-0290</value></data>
+  <data name="HistoryBatch" xml:space="preserve"><value>دفعة الاستيراد</value></data>
+  <data name="HistoryDecision" xml:space="preserve"><value>القرار</value></data>
+  <data name="HistoryActor" xml:space="preserve"><value>صاحب القرار</value></data>
+  <data name="HistoryAt" xml:space="preserve"><value>وقت القرار</value></data>
+  <data name="HistoryPrevious" xml:space="preserve"><value>السابق</value></data>
+  <data name="HistoryNext" xml:space="preserve"><value>التالي</value></data>
+  <data name="HistoryLoading" xml:space="preserve"><value>جار تحميل السجل المقبول...</value></data>
 </root>
