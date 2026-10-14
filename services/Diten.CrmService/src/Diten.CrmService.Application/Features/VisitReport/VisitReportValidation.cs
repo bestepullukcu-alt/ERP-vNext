@@ -104,6 +104,23 @@ public static class VisitReportValidation
                 VisitReportErrorCodes.NotYetDue, 409)
             : null;
 
+    /// <summary>WP-VW-W1 — a cancelled plan takes no outcome and no report (user decision 2026-10-08).</summary>
+    public static Failure? ValidatePlanNotCancelled(Domain.Entities.PlannedVisit plan)
+        => plan.IsCancelled()
+            ? new Failure(
+                "The planned visit is cancelled; no outcome or report can be recorded on it.",
+                VisitReportErrorCodes.PlanCancelled, 409)
+            : null;
+
+    /// <summary>WP-VW-W1 — past the report deadline (<see cref="VisitReportDeadline"/>, the same rule the work status
+    /// reads) an outcome / first submit is refused, unless the caller is the read-all holder (the manager).</summary>
+    public static Failure? ValidateDeadline(DateOnly plannedDate, DateTimeOffset now, bool exempt)
+        => !exempt && VisitReportDeadline.IsPassed(plannedDate, now)
+            ? new Failure(
+                $"The report deadline for this visit passed at {VisitReportDeadline.For(plannedDate):yyyy-MM-dd'T'HH:mm:ss'Z'}.",
+                VisitReportErrorCodes.DeadlinePassed, 409)
+            : null;
+
     /// <summary>The UTC calendar day of the clock (the CRM has no tenant time-zone source).</summary>
     public static DateOnly Today(TimeProvider clock) => DateOnly.FromDateTime(clock.GetUtcNow().UtcDateTime);
 
@@ -132,18 +149,12 @@ public static class VisitReportValidation
             return null; // a completed visit carries no missed/rescheduled reason code
         }
 
-        // missed / rescheduled → a reason code is required and must be in the in-domain set.
-        if (reason is null)
-        {
-            return new Failure(
-                $"A reason code is required for a '{normalized}' outcome.", VisitReportErrorCodes.ReasonCodeRequired);
-        }
-
-        return VisitReportReasonCodes.IsKnown(reason)
-            ? null
-            : new Failure(
-                $"Unsupported reason code '{reason}'. Known values: {string.Join(", ", VisitReportReasonCodes.All)}.",
-                VisitReportErrorCodes.UnsupportedVocabularyValue);
+        // missed / rescheduled → a reason code is required. WHICH codes are valid is reference data (WP-VW-W2: the
+        // visit-outcome-reason set, checked by VisitReasonValidator in the handler) — never the legacy constant list.
+        return reason is null
+            ? new Failure(
+                $"A reason code is required for a '{normalized}' outcome.", VisitReportErrorCodes.ReasonCodeRequired)
+            : null;
     }
 
     /// <summary>The report-content shape for a completed visit: a non-empty outcome code (ref-data, bounded) and

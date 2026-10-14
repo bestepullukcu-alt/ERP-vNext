@@ -108,7 +108,7 @@ const ceiling = (() => {
  * ceiling of this list is the list itself — MAIN_SYNC_2_PAGE_KEYS pins its exact keys, so a 33rd page is red, and a page
  * whose text is written (or that no longer exists) is red until its row leaves (the list only shrinks).
  */
-const { STOCK, MANUFACTURING, ESIGN, MAIN_SYNC_2_WHY } = require("./main-sync-owners");
+const { STOCK, MANUFACTURING, ESIGN, CRM, MAIN_SYNC_2_WHY } = require("./main-sync-owners");
 const MAIN_SYNC_2_PAGES = {
   BLOCKEDDISPOSITION: { owner: STOCK, why: MAIN_SYNC_2_WHY },
   BLOCKEDSTOCK: { owner: STOCK, why: MAIN_SYNC_2_WHY },
@@ -178,6 +178,20 @@ const MAIN_SYNC_2_PAGE_KEYS = [
   "STOCKMOVEMENTS"
 ];
 
+/*
+ * WP-LANE-MAIN-SYNC-03 (main-sync 2026-10-14, origin/main 19497c934, BL-642) — the same rule for the third sync: CRM W4 visit
+ * report v2 pages (COMPETITORPRODUCTS is the W4 competitor list on MDM's menu, same owner). Pinned keys, named, only shrinks.
+ */
+const MAIN_SYNC_3_PAGES = {
+  COMPETITORPRODUCTS: { owner: CRM, why: MAIN_SYNC_2_WHY },
+  CRMDOCTORINSIGHTTHRESHOLDS: { owner: CRM, why: MAIN_SYNC_2_WHY },
+  OBJECTIONRESPONSES: { owner: CRM, why: MAIN_SYNC_2_WHY },
+  VISITEVIDENCESETTINGS: { owner: CRM, why: MAIN_SYNC_2_WHY },
+  VISITWORKSPACE: { owner: CRM, why: MAIN_SYNC_2_WHY }
+};
+const MAIN_SYNC_3_PAGE_KEYS = ["COMPETITORPRODUCTS", "CRMDOCTORINSIGHTTHRESHOLDS", "OBJECTIONRESPONSES", "VISITEVIDENCESETTINGS", "VISITWORKSPACE"];
+
+
 describe("page help: text or a ledger row, and the ledger only shrinks", () => {
   test("the scan reaches the pages (guards against a vacuous pass)", () => {
     expect(navCodes.length).toBeGreaterThan(150);
@@ -192,8 +206,16 @@ describe("page help: text or a ledger row, and the ledger only shrinks", () => {
 
   test("every tenant page — menu or manifest — has its help text in 7 languages or is named in the ledger", () => {
     const missing = tenantCodes.filter((code) => !hasText(code, TENANT_LANGS) && !tenantRows.includes(code)
-      && !MAIN_SYNC_2_PAGES[code]);
+      && !MAIN_SYNC_2_PAGES[code] && !MAIN_SYNC_3_PAGES[code]);
     expect(missing, "pages with no help text and no ledger row").toEqual([]);
+  });
+
+  test("WP-LANE-MAIN-SYNC-03: the third sync's page list is exactly its pinned keys, named, and only shrinks", () => {
+    expect(Object.keys(MAIN_SYNC_3_PAGES).sort()).toEqual([...MAIN_SYNC_3_PAGE_KEYS].sort());
+    expect(Object.entries(MAIN_SYNC_3_PAGES).filter(([, row]) => !row || row.owner !== CRM || row.why !== MAIN_SYNC_2_WHY)
+      .map(([code]) => code)).toEqual([]);
+    expect(Object.keys(MAIN_SYNC_3_PAGES).filter((code) => !tenantCodes.includes(code) || hasText(code, TENANT_LANGS)
+      || tenantRows.includes(code) || MAIN_SYNC_2_PAGES[code])).toEqual([]);
   });
 
   test("WP-LANE-MAIN-SYNC-02: the main-sync 2026-10-14 page list is exactly its pinned keys, named, and only shrinks", () => {

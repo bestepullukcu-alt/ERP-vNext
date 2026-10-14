@@ -4,6 +4,7 @@ using Diten.CrmService.Application.Features.VisitReport.Commands;
 using Diten.CrmService.Application.Features.VisitReport.Contract;
 using Diten.CrmService.Domain.Entities;
 using Diten.CrmService.Domain.Repositories;
+using Diten.CrmService.Application.Features.VisitWorkspace;
 using MediatR;
 
 namespace Diten.CrmService.Application.Features.VisitReport.Handlers.CommandHandlers;
@@ -70,13 +71,49 @@ public sealed class AmendVisitReportHandler : IRequestHandler<AmendVisitReportCo
                 VisitReportErrorCodes.NotFinalised, 409));
         }
 
+        // WP-VW-W2 (K-W1 = A) — once a reschedule created its new visit, its date is frozen: a different date is 409
+        // (the same date is a no-op). A date is set with the outcome, never by an amendment.
+        if (VisitReportValidation.Trim(request.RescheduleToDate) is { } rawDate)
+        {
+            var asked = VisitReportValidation.ParseDate(rawDate);
+            if (asked is null)
+            {
+                return Fail(new VisitReportValidation.Failure(
+                    "RescheduleToDate must be an ISO yyyy-MM-dd date.", VisitReportErrorCodes.RescheduleDateInvalid));
+            }
+
+            if (report.RescheduledToPlannedVisitId is not null && asked != report.RescheduleToDate)
+            {
+                return Fail(new VisitReportValidation.Failure(
+                    "The reschedule already created its new visit; its date can no longer change.",
+                    VisitWorkspaceErrorCodes.RescheduleAlreadyApplied, 409));
+            }
+
+            if (report.RescheduledToPlannedVisitId is null)
+            {
+                return Fail(new VisitReportValidation.Failure(
+                    "A reschedule date is recorded with the rescheduled outcome, not by an amendment.",
+                    VisitWorkspaceErrorCodes.RescheduleDateInvalid));
+            }
+        }
+
         if (VisitReportValidation.ValidateAmendmentContent(request.ContentActuals, request.Samples, request.Feedback)
             is { } contentFailure)
         {
             return Fail(contentFailure);
         }
 
-        var resourceId = VisitReportValidation.Trim(request.ReportedByResourceId) ?? report.ReportedByResourceId;
+        // WP-VW-W1 — the amendment's author is the caller; only the read-all holder amends for someone else. No deadline
+        // and no cancelled-plan lock here: correcting a submitted report stays allowed (audit rule).
+        var (reporterAllowed, reporter) = _caller.ResolveWriteResource(
+            Diten.CrmService.Application.Features.PlannedVisit.PlannedVisitPermissions.ReadAll, request.ReportedByResourceId);
+        if (!reporterAllowed)
+        {
+            return Fail(new VisitReportValidation.Failure(
+                "A visit report can only be amended by the signed-in resource.", VisitOwnership.ResourceNotCaller, 403));
+        }
+
+        var resourceId = reporter ?? report.ReportedByResourceId;
         if (VisitReportValidation.ValidateResourceId(resourceId) is { } resourceFailure)
         {
             return Fail(resourceFailure);
@@ -86,22 +123,30 @@ public sealed class AmendVisitReportHandler : IRequestHandler<AmendVisitReportCo
         var now = DateTimeOffset.UtcNow;
 
         // Apply the optional corrections, tracking which fields the amendment changed (append-only trail).
+        // WP-VW-W4 (W4-BE-a) — and every changed value with its OLD and NEW value (no longer only the field name).
         var changed = new List<string>();
+        var changes = new List<VisitReportAmendmentChange>();
         if (request.ContentActuals is not null)
         {
-            report.ContentActuals = VisitReportMapper.FromInput(request.ContentActuals);
+            var next = VisitReportMapper.FromInput(request.ContentActuals);
+            changes.AddRange(V2.VisitReportV2Rules.Diff(report.ContentActuals, next, "contentActuals"));
+            report.ContentActuals = next;
             changed.Add("ContentActuals");
         }
 
         if (request.Samples is not null)
         {
-            report.Samples = VisitReportMapper.FromInput(request.Samples);
+            var next = VisitReportMapper.FromInput(request.Samples);
+            changes.AddRange(V2.VisitReportV2Rules.Diff(new { items = report.Samples }, new { items = next }, "samples").Select(c => { c.Path = "samples"; return c; }));
+            report.Samples = next;
             changed.Add("Samples");
         }
 
         if (request.Feedback is not null)
         {
-            report.Feedback = VisitReportMapper.FromInput(request.Feedback);
+            var next = VisitReportMapper.FromInput(request.Feedback);
+            changes.AddRange(V2.VisitReportV2Rules.Diff(report.Feedback, next, "feedback"));
+            report.Feedback = next;
             changed.Add("Feedback");
         }
 
@@ -110,7 +155,8 @@ public sealed class AmendVisitReportHandler : IRequestHandler<AmendVisitReportCo
             At = now,
             ByResourceId = resourceId!,
             Reason = reason,
-            ChangedFields = changed
+            ChangedFields = changed,
+            Changes = changes
         });
         report.ReportStatus = VisitReportStatus.Amended;
         report.AmendedAt = now;

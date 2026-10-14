@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>Eczane ziyaret raporu</value></data>
+  <data name="BackButton" xml:space="preserve"><value>Takvime dön</value></data>
+  <data name="ReadOnly" xml:space="preserve"><value>Bu raporu görüntüleyebilirsiniz; kaydetmek için ziyaret raporu kayıt yetkisi gerekir.</value></data>
+  <data name="SentTitle" xml:space="preserve"><value>Rapor gönderildi.</value></data>
+  <data name="Unlock" xml:space="preserve"><value>Değiştir</value></data>
+  <data name="FixTitle" xml:space="preserve"><value>Gerekçeli düzeltme</value></data>
+  <data name="FixText" xml:space="preserve"><value>Gönderimden 60 dakika geçti. Gerekçe zorunlu; değişen alanlar rapor geçmişinde görünür.</value></data>
+  <data name="FixPlaceholder" xml:space="preserve"><value>Gerekçe (zorunlu)</value></data>
+  <data name="StepsLabel" xml:space="preserve"><value>Rapor adımları</value></data>
+  <data name="PrevButton" xml:space="preserve"><value>Geri</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Taslağı kaydet</value></data>
+  <data name="Step_general" xml:space="preserve"><value>Genel</value></data>
+  <data name="Step_stock" xml:space="preserve"><value>Stok ve raf</value></data>
+  <data name="Step_order" xml:space="preserve"><value>Sipariş ve satış</value></data>
+  <data name="Step_market" xml:space="preserve"><value>Rakip ve tavsiye</value></data>
+  <data name="Step_safety" xml:space="preserve"><value>Güvenlik</value></data>
+  <data name="Step_summary" xml:space="preserve"><value>Özet</value></data>
+  <data name="StepMissing" xml:space="preserve"><value>{0} eksik</value></data>
+  <data name="StepOk" xml:space="preserve"><value>Tamam</value></data>
+  <data name="StepOf" xml:space="preserve"><value>Adım {0} / {1}</value></data>
+  <data name="NextStep" xml:space="preserve"><value>İleri: {0}</value></data>
+  <data name="MissingCount" xml:space="preserve"><value>{0} alan eksik</value></data>
+  <data name="ReadyToSend" xml:space="preserve"><value>Gönderime hazır</value></data>
+  <data name="SavedAt" xml:space="preserve"><value>Taslak kaydedildi · {0}</value></data>
+  <data name="Unsaved" xml:space="preserve"><value>Kaydedilmemiş değişiklik</value></data>
+  <data name="DraftStored" xml:space="preserve"><value>Taslak kayıtlı</value></data>
+  <data name="NotSaved" xml:space="preserve"><value>Henüz kaydedilmedi</value></data>
+  <data name="SentText" xml:space="preserve"><value>Gönderimden sonraki 60 dakika içinde değiştirebilirsiniz; sonrasında gerekçeli düzeltme gerekir.</value></data>
+  <data name="SentAmended" xml:space="preserve"><value>Gerekçeli düzeltme kaydedildi.</value></data>
+  <data name="NotPharmacy" xml:space="preserve"><value>Bu ziyaret eczane ziyareti değil; raporu hekim raporunda doldurulur.</value></data>
+  <data name="Outcome" xml:space="preserve"><value>Sonuç</value></data>
+  <data name="OutcomeDone" xml:space="preserve"><value>Yapıldı</value></data>
+  <data name="OutcomeHint" xml:space="preserve"><value>Yapılamadı / Ertele takvimden girilir.</value></data>
+  <data name="ActualTimes" xml:space="preserve"><value>Gerçek başlangıç / bitiş</value></data>
+  <data name="ServerTime" xml:space="preserve"><value>Sunucu saati; değiştirilemez.</value></data>
+  <data name="Minutes" xml:space="preserve"><value>{0} dk</value></data>
+  <data name="VisitKind" xml:space="preserve"><value>Ziyaret türü</value></data>
+  <data name="Kind_in_person" xml:space="preserve"><value>Yüz yüze</value></data>
+  <data name="Kind_remote" xml:space="preserve"><value>Uzaktan</value></data>
+  <data name="MetRole" xml:space="preserve"><value>Görüşülen kişi</value></data>
+  <data name="GeneralNote" xml:space="preserve"><value>Genel değerlendirme</value></data>
+  <data name="OptionsUnavailable" xml:space="preserve"><value>Seçenekler yüklenemedi.</value></data>
+  <data name="StockTitle" xml:space="preserve"><value>Ürün başına stok</value></data>
+  <data name="NearExpiry" xml:space="preserve"><value>Miadı yakın</value></data>
+  <data name="ReturnIssue" xml:space="preserve"><value>İade sorunu</value></data>
+  <data name="RemoveRow" xml:space="preserve"><value>Kaldır</value></data>
+  <data name="NoSkus" xml:space="preserve"><value>Bu ziyarette henüz ürün yok; arayarak ekleyin.</value></data>
+  <data name="GskuSearch" xml:space="preserve"><value>Ürün / ambalaj ara (en az 2 harf)</value></data>
+  <data name="GskusNoPermission" xml:space="preserve"><value>Yetkilerinizle ürün ambalajları listelenemiyor; SKU okuma yetkisi isteyin.</value></data>
+  <data name="ShelfTitle" xml:space="preserve"><value>Raf / görünürlük</value></data>
+  <data name="MaterialStand" xml:space="preserve"><value>Materyal / stand var</value></data>
+  <data name="ShelfPhoto" xml:space="preserve"><value>Raf fotoğrafı</value></data>
+  <data name="PhotoTake" xml:space="preserve"><value>Fotoğraf çek</value></data>
+  <data name="PhotoReplace" xml:space="preserve"><value>Fotoğrafı değiştir</value></data>
+  <data name="PhotoHint" xml:space="preserve"><value>JPEG veya PNG, en çok 10 MB.</value></data>
+  <data name="PhotoSaved" xml:space="preserve"><value>Raf fotoğrafı kaydedildi.</value></data>
+  <data name="OrderTitle" xml:space="preserve"><value>Sipariş</value></data>
+  <data name="NoOrder" xml:space="preserve"><value>Bu ziyarette ön sipariş oluşturulmadı.</value></data>
+  <data name="CreateOrder" xml:space="preserve"><value>Ön sipariş oluştur</value></data>
+  <data name="Soon" xml:space="preserve"><value>Yakında</value></data>
+  <data name="OrderSoonHint" xml:space="preserve"><value>Ön sipariş, sipariş modülüyle gelecek.</value></data>
+  <data name="SalesTitle" xml:space="preserve"><value>Satış</value></data>
+  <data name="SalesHint" xml:space="preserve"><value>Her ürün için eğilim zorunlu; kutu / ay isteğe bağlı.</value></data>
+  <data name="BoxesPerMonth" xml:space="preserve"><value>kutu / ay</value></data>
+  <data name="CompetitorTitle" xml:space="preserve"><value>Rakip</value></data>
+  <data name="CompetitorsUnavailable" xml:space="preserve"><value>Rakip listesi okunamadı; listesiz kaydedebilirsiniz.</value></data>
+  <data name="NoCompetitor" xml:space="preserve"><value>Rakip yok</value></data>
+  <data name="ProposedBadge" xml:space="preserve"><value>temsilci ekledi · referans listesine onay bekliyor</value></data>
+  <data name="AdvantageHint" xml:space="preserve"><value>Rakibe göre: bir dokunuş avantajımız (+), iki dokunuş dezavantajımız (−)</value></data>
+  <data name="ProposalOpen" xml:space="preserve"><value>Listede yok, rakip ekle</value></data>
+  <data name="ProposalName" xml:space="preserve"><value>Rakip ürün adı</value></data>
+  <data name="ProposalCompany" xml:space="preserve"><value>Firma</value></data>
+  <data name="ProposalAdd" xml:space="preserve"><value>Ekle</value></data>
+  <data name="ProposalHint" xml:space="preserve"><value>Rapor gönderildiğinde ürün ana verisine önerilir.</value></data>
+  <data name="RecommendationTitle" xml:space="preserve"><value>Tavsiye ve reçete akışı</value></data>
+  <data name="LinkedDoctors" xml:space="preserve"><value>Reçetelerin geldiği hekimler</value></data>
+  <data name="NoLinked" xml:space="preserve"><value>Bağlı hekim yok.</value></data>
+  <data name="DoctorSearch" xml:space="preserve"><value>Hekim ara (en az 2 harf)</value></data>
+  <data name="TrainingTitle" xml:space="preserve"><value>Eğitim / materyal ve talepler</value></data>
+  <data name="TrainingGiven" xml:space="preserve"><value>Personele ürün eğitimi verildi</value></data>
+  <data name="RequestType" xml:space="preserve"><value>Talep türü</value></data>
+  <data name="RequestDate" xml:space="preserve"><value>Termin</value></data>
+  <data name="RequestAdd" xml:space="preserve"><value>Talep ekle</value></data>
+  <data name="AeQuestion" xml:space="preserve"><value>Ziyarette bir yan etki / advers olay bildirildi mi?</value></data>
+  <data name="AeWarning" xml:space="preserve"><value>24 saat içinde farmakovijilans bildirimi zorunludur.</value></data>
+  <data name="AeNote" xml:space="preserve"><value>Ne bildirildi</value></data>
+  <data name="AnswerYes" xml:space="preserve"><value>Evet</value></data>
+  <data name="AnswerNo" xml:space="preserve"><value>Hayır</value></data>
+  <data name="SumStock" xml:space="preserve"><value>Stok: {0} / {1}</value></data>
+  <data name="SumSales" xml:space="preserve"><value>Satış eğilimi: {0} / {1}</value></data>
+  <data name="SumCompetitors" xml:space="preserve"><value>Rakip: {0}</value></data>
+  <data name="SumAeYes" xml:space="preserve"><value>Advers olay bildirildi</value></data>
+  <data name="SumAeNo" xml:space="preserve"><value>Advers olay yok</value></data>
+  <data name="SumAeOpen" xml:space="preserve"><value>Advers olay sorusu yanıtlanmadı</value></data>
+  <data name="Miss_visitKindCode" xml:space="preserve"><value>Ziyaret türü</value></data>
+  <data name="Miss_adverseEvent" xml:space="preserve"><value>Advers olay sorusu</value></data>
+  <data name="Miss_adverseEventNote" xml:space="preserve"><value>Ne bildirildi (advers olay)</value></data>
+  <data name="Miss_metRoleCode" xml:space="preserve"><value>Görüşülen kişi</value></data>
+  <data name="Miss_stock_levelCode" xml:space="preserve"><value>{0}: stok durumu</value></data>
+  <data name="Miss_sales_trendCode" xml:space="preserve"><value>{0}: satış eğilimi</value></data>
+  <data name="Miss_competitors" xml:space="preserve"><value>Rakip (ya da "Rakip yok")</value></data>
+  <data name="Miss_generic" xml:space="preserve"><value>Eksik: {0}</value></data>
+  <data name="SubmitButton" xml:space="preserve"><value>Raporu gönder</value></data>
+  <data name="SendFix" xml:space="preserve"><value>Düzeltmeyi gönder</value></data>
+  <data name="DraftSaved" xml:space="preserve"><value>Taslak kaydedildi.</value></data>
+  <data name="Submitted" xml:space="preserve"><value>Rapor gönderildi.</value></data>
+  <data name="SubmittedWithWarnings" xml:space="preserve"><value>Rapor gönderildi; bazı sonraki adımlar yeniden denenecek.</value></data>
+  <data name="Amended" xml:space="preserve"><value>Düzeltme kaydedildi.</value></data>
+  <data name="WindowClosed" xml:space="preserve"><value>60 dakika geçti; düzeltme göndermek için gerekçe girin.</value></data>
+  <data name="ErrStockLevel" xml:space="preserve"><value>Stok durumunu seçin.</value></data>
+  <data name="ErrTrend" xml:space="preserve"><value>Satış eğilimini seçin.</value></data>
+  <data name="ErrCompetitors" xml:space="preserve"><value>Bir rakip ya da "Rakip yok" seçin.</value></data>
+  <data name="ErrAe" xml:space="preserve"><value>Advers olay sorusunu yanıtlayın.</value></data>
+  <data name="ErrAeNote" xml:space="preserve"><value>Ne bildirildiğini yazın.</value></data>
+  <data name="ErrProposalName" xml:space="preserve"><value>Ürün adını girin.</value></data>
+  <data name="ErrProposalCompany" xml:space="preserve"><value>Firmayı girin.</value></data>
+  <data name="ErrTooLong" xml:space="preserve"><value>En çok 200 karakter.</value></data>
+  <data name="ErrBoxes" xml:space="preserve"><value>0 ile 100.000 arasında bir tam sayı.</value></data>
+  <data name="ErrReason" xml:space="preserve"><value>Gerekçe zorunlu.</value></data>
+  <data name="ErrReasonLong" xml:space="preserve"><value>En çok 500 karakter.</value></data>
+  <data name="Err_report_incomplete" xml:space="preserve"><value>Bazı yanıtlar eksik; özete bakın.</value></data>
+  <data name="Err_report_code_invalid" xml:space="preserve"><value>Bir seçenek artık geçerli değil; yeniden seçin.</value></data>
+  <data name="Err_report_v2_invalid" xml:space="preserve"><value>Rapor okunamadı; değerleri kontrol edin.</value></data>
+  <data name="Err_reference_data_unavailable" xml:space="preserve"><value>Seçenekler şu anda doğrulanamadı; yanıtlarınız korunuyor.</value></data>
+  <data name="Err_visit_report_edit_window_closed" xml:space="preserve"><value>60 dakika geçti; gerekçeli düzeltme gönderin.</value></data>
+  <data name="Err_visit_report_concurrency_conflict" xml:space="preserve"><value>Rapor başka yerde değiştirildi. Yenileyip tekrar deneyin.</value></data>
+  <data name="Err_visit_report_amendment_reason_required" xml:space="preserve"><value>Gerekçe (en çok 500 karakter) zorunlu.</value></data>
+  <data name="Err_visit_report_not_finalised" xml:space="preserve"><value>Yalnız gönderilmiş rapor düzeltilebilir.</value></data>
+  <data name="Err_visit_report_plan_cancelled" xml:space="preserve"><value>Bu ziyaret iptal edildi.</value></data>
+  <data name="Err_visit_report_deadline_passed" xml:space="preserve"><value>Rapor süresi doldu.</value></data>
+  <data name="Err_visit_not_yet_due" xml:space="preserve"><value>Bu ziyaretin zamanı henüz gelmedi.</value></data>
+  <data name="Err_visit_photo_invalid" xml:space="preserve"><value>Fotoğraf JPEG veya PNG ve en çok 10 MB olmalı.</value></data>
+  <data name="Err_shelf_photo_pharmacy_only" xml:space="preserve"><value>Raf fotoğrafı yalnız eczane ziyaretine eklenir.</value></data>
+  <data name="Err_shelf_photo_report_submitted" xml:space="preserve"><value>Rapor gönderildi; fotoğraf artık değiştirilemez.</value></data>
+  <data name="Err_shelf_photo_not_found" xml:space="preserve"><value>Henüz raf fotoğrafı yok.</value></data>
+  <data name="Err_visit_evidence_store_unavailable" xml:space="preserve"><value>Fotoğraf şu anda saklanamadı; tekrar deneyin.</value></data>
+  <data name="Err_dependency_unavailable" xml:space="preserve"><value>Liste şu anda alınamıyor.</value></data>
+  <data name="Err_conflict" xml:space="preserve"><value>Rapor başka yerde değiştirildi. Yenileyip tekrar deneyin.</value></data>
+  <data name="Err_permission_denied" xml:space="preserve"><value>Bu işlem için yetkiniz yok.</value></data>
+  <data name="Err_unavailable" xml:space="preserve"><value>Sunucuya ulaşılamadı; yanıtlarınız bu ekranda korunuyor.</value></data>
+  <data name="Err_generic" xml:space="preserve"><value>İşlem tamamlanamadı.</value></data>
+</root>

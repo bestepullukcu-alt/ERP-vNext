@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
+<link rel="stylesheet" href="theme.css">
+</helmet>
+<sc-if value="{{ standalone }}"><div style="position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;background:#f5f5f9;font-family:'Public Sans',sans-serif;padding:24px"><div style="background:#fff;border-radius:8px;box-shadow:0 3px 8px rgba(34,48,62,.08);padding:28px 32px;max-width:440px;display:grid;gap:10px;text-align:center"><div style="font-size:17px;font-weight:500;color:#384551">Bu dosya prototipin bir parçası</div><div style="font-size:14px;color:#646e78">Tek başına açıldığında boş görünür. Tüm ekranlar için ana dosyayı açın.</div><a href="Ziyaret Çalışma Alanı.dc.html" style="justify-self:center;margin-top:6px;padding:10px 18px;border-radius:6px;background:#0b1a8c;color:#fff;font-size:14px;font-weight:500;text-decoration:none">Ziyaret Çalışma Alanı'nı aç</a></div></div></sc-if>
+<div data-screen-label="Eczane ön sipariş" style="position:absolute;inset:0;display:flex;flex-direction:column;background:var(--bg);color:var(--tx)">
+  <div style="flex:1;min-height:0;overflow-y:auto">
+    <div style="max-width:1160px;margin:0 auto;padding:{{ pagePad }};display:grid;gap:14px">
+      <div style="display:flex;gap:12px;align-items:center">
+        <button onClick="{{ back }}" aria-label="Geri" style="width:{{ backS }}px;height:{{ backS }}px;flex:0 0 auto;border:1px solid var(--bd2);background:var(--card);color:var(--h);border-radius:8px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center"><i class="bx bx-arrow-back"></i></button>
+        <div style="flex:1;min-width:0"><h4 style="margin:0;font-size:{{ titleS }}px;font-weight:500;color:var(--h)">Ön sipariş</h4><div style="font-size:13px">{{ sub }}</div></div>
+        <sc-if value="{{ hasId }}"><span style="font-size:13px;color:var(--mu);white-space:nowrap">{{ oid }}</span></sc-if>
+      </div>
+
+      <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh);padding:14px 18px;display:flex;gap:6px;align-items:center;overflow-x:auto">
+        <sc-for list="{{ flow }}" as="f" hint-placeholder-count="4">
+          <div style="display:flex;gap:8px;align-items:center;flex:0 0 auto">
+            <span style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;background:{{ f.bg }};color:{{ f.fg }}"><i class="bx {{ f.ic }}"></i></span>
+            <span style="display:flex;flex-direction:column;line-height:1.2"><span style="font-size:13px;font-weight:500;color:{{ f.tc }}">{{ f.l }}</span><span style="font-size:11px;color:var(--mu)">{{ f.s }}</span></span>
+            <sc-if value="{{ f.line }}"><span style="width:36px;height:2px;background:{{ f.lc }};margin:0 6px"></span></sc-if>
+          </div>
+        </sc-for>
+      </div>
+
+      <sc-if value="{{ banner.show }}"><div style="border-radius:8px;padding:12px 16px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;font-size:14px;background:{{ banner.bg }};color:{{ banner.fg }}"><span style="display:flex;gap:8px;align-items:center"><i class="bx {{ banner.ic }}" style="font-size:20px"></i><span><strong>{{ banner.t }}</strong> {{ banner.x }}</span></span><div style="display:flex;gap:6px;flex-wrap:wrap"><sc-for list="{{ banner.acts }}" as="a"><button onClick="{{ a.go }}" style="height:34px;border:0;border-radius:6px;padding:0 12px;font-size:13px;cursor:pointer;background:{{ a.bg }};color:{{ a.fg }}">{{ a.l }}</button></sc-for></div></div></sc-if>
+
+      <div style="display:grid;grid-template-columns:{{ cols }};gap:16px;align-items:start">
+        <div style="display:grid;gap:14px;min-width:0">
+          <sc-if value="{{ indep }}">
+            <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh);padding:16px 18px;display:grid;gap:8px">
+              <span style="font-size:13px;font-weight:500;color:var(--h)">Eczane <span style="color:var(--da)">*</span></span>
+              <div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ phs }}" as="p"><button onClick="{{ p.go }}" disabled="{{ locked }}" style="flex:1 1 220px;text-align:left;border-radius:8px;padding:10px 12px;cursor:pointer;display:flex;flex-direction:column;gap:2px;border:1px solid {{ p.bd }};background:{{ p.bg }}"><span style="font-size:14px;font-weight:600;color:var(--h)">{{ p.n }}</span><span style="font-size:12px">{{ p.ad }}</span></button></sc-for></div>
+              <span style="font-size:12px;color:var(--mu)">Ziyaretten bağımsız sipariş: telefon ya da e-posta ile gelen talepler için.</span>
+            </div>
+          </sc-if>
+          <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh);overflow:hidden">
+            <div style="padding:14px 18px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;gap:8px"><span style="font-size:16px;font-weight:500;color:var(--h)">Ürünler</span><span style="font-size:12px;color:var(--mu)">Liste fiyatı · KDV hariç</span></div>
+            <sc-if value="{{ notPhone }}">
+              <div style="overflow-x:auto">
+                <table style="width:100%;border-collapse:collapse;font-size:14px;min-width:720px">
+                  <thead><tr style="background:var(--soft2)"><sc-for list="{{ heads }}" as="h"><th style="padding:10px 12px;text-align:{{ h.a }};font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.2px;color:var(--h);border-bottom:1px solid var(--bd);white-space:nowrap">{{ h.l }}</th></sc-for><th style="border-bottom:1px solid var(--bd);width:44px"></th></tr></thead>
+                  <tbody>
+                    <sc-for list="{{ lines }}" as="r" hint-placeholder-count="2">
+                      <tr>
+                        <td style="padding:8px 12px;border-bottom:1px solid var(--bd)"><select value="{{ r.sku }}" onChange="{{ r.onSku }}" disabled="{{ locked }}" style="height:40px;width:100%;min-width:220px;border:1px solid var(--bd2);border-radius:6px;padding:0 8px;font-size:14px;color:var(--h);background:var(--card)"><sc-for list="{{ skuOpts }}" as="o"><option>{{ o }}</option></sc-for></select></td>
+                        <td style="padding:8px 12px;border-bottom:1px solid var(--bd)"><input type="number" value="{{ r.q }}" onChange="{{ r.onQ }}" disabled="{{ locked }}" style="width:80px;height:40px;border:1px solid var(--bd2);border-radius:6px;padding:0 10px;font-size:14px;color:var(--h);background:var(--card)"></td>
+                        <td style="padding:8px 12px;border-bottom:1px solid var(--bd)"><input value="{{ r.mf }}" onChange="{{ r.onMf }}" disabled="{{ locked }}" placeholder="10+2" style="width:80px;height:40px;border:1px solid var(--bd2);border-radius:6px;padding:0 10px;font-size:14px;color:var(--h);background:var(--card)"></td>
+                        <td style="padding:8px 12px;border-bottom:1px solid var(--bd)"><div style="display:flex;align-items:center;gap:4px"><input type="number" value="{{ r.isk }}" onChange="{{ r.onIsk }}" disabled="{{ locked }}" style="width:64px;height:40px;border:1px solid var(--bd2);border-radius:6px;padding:0 10px;font-size:14px;color:var(--h);background:var(--card)">%</div></td>
+                        <td style="padding:8px 12px;border-bottom:1px solid var(--bd);text-align:right;white-space:nowrap">{{ r.price }}</td>
+                        <td style="padding:8px 12px;border-bottom:1px solid var(--bd);text-align:right;white-space:nowrap;font-weight:600;color:var(--h)">{{ r.tot }}<div style="font-size:11px;font-weight:400;color:var(--mu)">{{ r.free }}</div></td>
+                        <td style="padding:8px;border-bottom:1px solid var(--bd)"><sc-if value="{{ notLocked }}"><button onClick="{{ r.rm }}" aria-label="Satırı sil" style="width:36px;height:36px;border:0;background:var(--soft);color:var(--mu);border-radius:6px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center"><i class="bx bx-trash"></i></button></sc-if></td>
+                      </tr>
+                    </sc-for>
+                  </tbody>
+                </table>
+              </div>
+            </sc-if>
+            <sc-if value="{{ isPhone }}">
+              <div style="display:grid;gap:10px;padding:12px">
+                <sc-for list="{{ lines }}" as="r">
+                  <div style="border:1px solid var(--bd);border-radius:8px;padding:12px;display:grid;gap:8px">
+                    <select value="{{ r.sku }}" onChange="{{ r.onSku }}" disabled="{{ locked }}" style="height:44px;border:1px solid var(--bd2);border-radius:6px;padding:0 8px;font-size:14px;color:var(--h);background:var(--card)"><sc-for list="{{ skuOpts }}" as="o"><option>{{ o }}</option></sc-for></select>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+                      <label style="display:grid;gap:3px;font-size:11px;color:var(--mu)">Adet<input type="number" value="{{ r.q }}" onChange="{{ r.onQ }}" disabled="{{ locked }}" style="height:44px;border:1px solid var(--bd2);border-radius:6px;padding:0 8px;font-size:14px;color:var(--h);background:var(--card)"></label>
+                      <label style="display:grid;gap:3px;font-size:11px;color:var(--mu)">MF<input value="{{ r.mf }}" onChange="{{ r.onMf }}" disabled="{{ locked }}" placeholder="10+2" style="height:44px;border:1px solid var(--bd2);border-radius:6px;padding:0 8px;font-size:14px;color:var(--h);background:var(--card)"></label>
+                      <label style="display:grid;gap:3px;font-size:11px;color:var(--mu)">İskonto %<input type="number" value="{{ r.isk }}" onChange="{{ r.onIsk }}" disabled="{{ locked }}" style="height:44px;border:1px solid var(--bd2);border-radius:6px;padding:0 8px;font-size:14px;color:var(--h);background:var(--card)"></label>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px"><span>{{ r.price }} / kutu · {{ r.free }}</span><strong style="color:var(--h);font-size:15px">{{ r.tot }}</strong></div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ notLocked }}"><div style="padding:12px 18px"><button onClick="{{ addLine }}" style="min-height:40px;border:1px dashed var(--pt);background:transparent;color:var(--pt);border-radius:6px;padding:0 14px;font-size:14px;cursor:pointer;display:flex;gap:5px;align-items:center"><i class="bx bx-plus"></i>Ürün ekle</button></div></sc-if>
+          </div>
+          <label style="background:var(--card);border-radius:8px;box-shadow:var(--sh);padding:16px 18px;display:grid;gap:6px"><span style="font-size:13px;font-weight:500;color:var(--h)">Sipariş notu</span><textarea value="{{ note }}" onChange="{{ onNote }}" disabled="{{ locked }}" rows="2" placeholder="ör. Kampanya dönemi, raf için stand isteniyor" style="border:1px solid var(--bd2);border-radius:6px;padding:8px 12px;font-size:14px;color:var(--h);background:var(--card)"></textarea></label>
+          <sc-if value="{{ hasHist }}">
+            <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh);overflow:hidden">
+              <div style="padding:14px 18px;border-bottom:1px solid var(--bd);font-size:16px;font-weight:500;color:var(--h)">Bu eczanenin önceki siparişleri</div>
+              <sc-for list="{{ hist }}" as="h"><div style="padding:10px 18px;border-bottom:1px solid var(--bd);display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:13px"><span style="color:var(--h);font-weight:500">{{ h.id }}</span><span>{{ h.date }}</span><span style="flex:1">{{ h.sum }}</span><strong style="color:var(--h)">{{ h.tot }}</strong><span style="padding:2px 8px;border-radius:4px;font-size:12px;background:{{ h.bg }};color:{{ h.fg }}">{{ h.st }}</span></div></sc-for>
+            </div>
+          </sc-if>
+        </div>
+
+        <div style="display:grid;gap:14px;position:{{ asidePos }};top:0">
+          <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh);padding:16px 18px;display:grid;gap:12px">
+            <label style="display:grid;gap:5px"><span style="font-size:13px;font-weight:500;color:var(--h)">Depo / distribütör <span style="color:var(--da)">*</span></span><select value="{{ depo }}" onChange="{{ onDepo }}" disabled="{{ locked }}" style="height:42px;border:1px solid var(--bd2);border-radius:6px;padding:0 8px;font-size:14px;color:var(--h);background:var(--card)"><sc-for list="{{ depos }}" as="o"><option>{{ o }}</option></sc-for></select></label>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <label style="display:grid;gap:5px"><span style="font-size:13px;font-weight:500;color:var(--h)">Teslim tarihi</span><input type="date" value="{{ due }}" onChange="{{ onDue }}" disabled="{{ locked }}" style="height:42px;border:1px solid var(--bd2);border-radius:6px;padding:0 8px;font-size:14px;color:var(--h);background:var(--card)"></label>
+              <label style="display:grid;gap:5px"><span style="font-size:13px;font-weight:500;color:var(--h)">Para birimi</span><select value="{{ cur }}" onChange="{{ onCur }}" disabled="{{ locked }}" style="height:42px;border:1px solid var(--bd2);border-radius:6px;padding:0 8px;font-size:14px;color:var(--h);background:var(--card)"><option value="TRY">TRY · ₺</option><option value="EUR">EUR · €</option><option value="USD">USD · $</option></select></label>
+            </div>
+            <div style="border-top:1px solid var(--bd);padding-top:10px;display:grid;gap:6px;font-size:14px">
+              <sc-for list="{{ sums }}" as="s"><div style="display:flex;justify-content:space-between"><span>{{ s.l }}</span><span style="color:var(--h)">{{ s.v }}</span></div></sc-for>
+              <div style="display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid var(--bd);padding-top:8px"><span style="font-weight:600;color:var(--h)">Toplam</span><span style="font-size:22px;font-weight:600;color:var(--h)">{{ total }}</span></div>
+              <span style="font-size:11px;color:var(--mu)">{{ curNote }}</span>
+            </div>
+          </div>
+          <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh);padding:16px 18px;display:grid;gap:8px">
+            <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;font-weight:500;color:var(--h)">Eczacı onayı <span style="color:var(--da)">*</span></span><sc-if value="{{ notLocked }}"><button onClick="{{ clearSig }}" style="border:0;background:transparent;color:var(--pt);font-size:13px;cursor:pointer">Temizle</button></sc-if></div>
+            <span style="font-size:12px">{{ phWho }} siparişi onaylar.</span>
+            <canvas ref="{{ sigRef }}" width="520" height="130" style="width:100%;height:120px;border:1px dashed var(--pbd);border-radius:8px;background:var(--soft2);touch-action:none;cursor:crosshair"></canvas>
+            <sc-if value="{{ signed }}"><span style="font-size:12px;color:var(--ok);display:flex;gap:5px;align-items:center"><i class="bx bx-check-circle"></i>İmza alındı</span></sc-if>
+          </div>
+          <sc-if value="{{ notLocked }}">
+            <button onClick="{{ submit }}" style="height:48px;border:0;border-radius:8px;background:var(--p);color:#fff;font-size:15px;font-weight:600;cursor:pointer;opacity:{{ subOp }};display:flex;gap:6px;align-items:center;justify-content:center;box-shadow:0 2px 4px rgba(11,26,140,.35)"><i class="bx bx-send"></i>Yönetici onayına gönder</button>
+            <span style="font-size:12px;color:var(--mu);text-align:center">{{ subHint }}</span>
+          </sc-if>
+          <sc-if value="{{ hasMails }}">
+            <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh);padding:16px 18px;display:grid;gap:8px">
+              <span style="font-size:13px;font-weight:600;color:var(--h);text-transform:uppercase;letter-spacing:.3px">E-postalar</span>
+              <sc-for list="{{ mails }}" as="m"><div style="display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--bd)"><i class="bx {{ m.ic }}" style="font-size:20px;color:{{ m.c }}"></i><div style="flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.3"><span style="font-size:13px;color:var(--h);font-weight:500">{{ m.t }}</span><span style="font-size:12px;color:var(--mu)">{{ m.to }} · {{ m.st }}</span></div><button onClick="{{ m.go }}" style="height:32px;border:1px solid var(--bd2);background:var(--card);color:var(--pt);border-radius:6px;padding:0 10px;font-size:12px;cursor:pointer">Önizle</button></div></sc-for>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const parseMf=s=>{const m=String(s||'').match(/(\d+)\s*\+\s*(\d+)/);return m?[+m[1],+m[2]]:null};
+class Component extends DCLogic {
+  sigRef=React.createRef();
+  state={ph:'ph2',lines:null,depo:'Selçuk Ecza Deposu · Şişli',due:'2026-10-12',cur:'TRY',note:'',signed:false,oid:null};
+  get A(){return this.props.app||{nav:{},visits:[],orders:[],set(){},go(){},toast(){},addOrder(){},updOrder(){},device:'desktop'}}
+  componentDidUpdate(pp){const a=pp.app&&pp.app.nav||{},b=this.A.nav||{};if(a.vid!==b.vid){const o=b.vid?[...this.A.orders].reverse().find(x=>x.vid===b.vid):null;this.setState({ph:'ph2',lines:null,note:'',signed:false,oid:o?o.id:null});const c=this.sigRef.current;if(c)c.getContext('2d').clearRect(0,0,c.width,c.height);this._c=null}this.bind()}
+  componentDidMount(){this.bind();const A=this.A;if(A.nav.vid){const o=[...A.orders].reverse().find(x=>x.vid===A.nav.vid);if(o)this.setState({oid:o.id})}}
+  bind(){const c=this.sigRef.current;if(c===this._c)return;this._c=c;if(!c)return;const ctx=c.getContext('2d');let dn=false;const pos=e=>{const r=c.getBoundingClientRect();return[(e.clientX-r.left)*c.width/r.width,(e.clientY-r.top)*c.height/r.height]};
+    c.onpointerdown=e=>{if(this.locked)return;dn=true;c.setPointerCapture(e.pointerId);ctx.strokeStyle=document.body.dataset.theme==='dark'?'#d5d5e2':'#0b1a8c';ctx.lineWidth=2.5;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(...pos(e))};
+    c.onpointermove=e=>{if(!dn)return;ctx.lineTo(...pos(e));ctx.stroke()};c.onpointerup=()=>{dn=false;if(!this.state.signed)this.setState({signed:true})};
+    const o=this.order();if(o&&o.signed){ctx.strokeStyle='#8592a3';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(40,90);ctx.bezierCurveTo(90,20,130,120,180,60);ctx.bezierCurveTo(220,20,250,100,300,70);ctx.stroke()}}
+  visit(){const A=this.A;return A.nav.vid?A.visits.find(v=>v.id===A.nav.vid):null}
+  order(){const A=this.A;const id=this.state.oid;return id?A.orders.find(o=>o.id===id):null}
+  renderVals(){if(!this.props.app)return{standalone:true};
+    const Z=window.ZD,A=this.A,S=this.state,dev=A.device||'desktop',phone=dev==='phone';const v=this.visit();
+    const ph=v?v.doc:S.ph,phd=Z.D[ph],acc=Z.ACC[phd.acc];const o=this.order();const locked=!!o;this.locked=locked;
+    const prodsAll=Object.keys(Z.SKU);const skuOpts=prodsAll.flatMap(p=>Z.SKU[p].map(x=>x[0]));const priceOf=sku=>{for(const p of prodsAll)for(const x of Z.SKU[p])if(x[0]===sku)return[p,x[1]];return['',0]};
+    const defLines=(v?v.prods.map(p=>p.p):phd.prods).slice(0,2).map((p,i)=>({sku:Z.SKU[p][0][0],q:i?10:20,mf:i?'':'20+2',isk:i?0:5}));
+    const L=o?o.lines:(S.lines||defLines);const cur=o?o.cur:S.cur;const C=Z.CUR[cur];
+    const fm=n=>C.s+(n/C.r).toLocaleString('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2});
+    const setL=(i,k,val)=>this.setState({lines:L.map((x,j)=>j===i?{...x,[k]:val}:x)});
+    let gross=0,disc=0;const lines=L.map((x,i)=>{const [,pr]=priceOf(x.sku);const q=Number(x.q||0),isk=Number(x.isk||0);const g=q*pr,dsc=g*isk/100;gross+=g;disc+=dsc;const mf=parseMf(x.mf);const free=mf&&q?Math.floor(q/mf[0])*mf[1]:0;
+      return{sku:x.sku,q:x.q,mf:x.mf,isk:x.isk,price:fm(pr),tot:fm(g-dsc),free:free?'+'+free+' MF · '+(q+free)+' kutu':q+' kutu',onSku:e=>setL(i,'sku',e.target.value),onQ:e=>setL(i,'q',e.target.value),onMf:e=>setL(i,'mf',e.target.value),onIsk:e=>setL(i,'isk',e.target.value),rm:()=>this.setState({lines:L.filter((y,j)=>j!==i)})}});
+    const net=gross-disc,kdv=net*0.10,total=net+kdv;
+    const st=o?o.status:'taslak';const order=['taslak','onay','onaylandi','iletildi'];const si=st==='red'?1:order.indexOf(st);
+    const flow=[['Ön sipariş','temsilci','bx-edit'],['Yönetici onayı',st==='red'?'reddedildi':'Selin Karaca','bx-user-check'],['Onaylandı','','bx-check'],['Depoya iletildi','e-posta','bx-send']].map(([l,s,ic],i)=>{const done=i<si||(i===si&&st==='iletildi'),on=i===si;const red=st==='red'&&i===1;
+      return{l,s,ic:done?'bx-check':red?'bx-x':ic,bg:red?'var(--dab)':done?'var(--okb)':on?'var(--p)':'var(--soft)',fg:red?'var(--da)':done?'var(--ok)':on?'#fff':'var(--mu)',tc:on||done?'var(--h)':'var(--mu)',line:i<3,lc:i<si?'var(--okc)':'var(--bd)'}});
+    const ok=L.length>0&&L.every(x=>Number(x.q)>0)&&S.signed&&!!S.depo;
+    const mails=!o?[]:[{k:'sip_onay',t:'Onay talebi',to:Z.PEOPLE.mgr.n,st:'gönderildi',ic:'bx-envelope',c:'var(--pt)'},...(st==='onaylandi'||st==='iletildi'?[{k:'sip_depo',t:'Sipariş',to:o.depo,st:'gönderildi',ic:'bx-package',c:'var(--ok)'},{k:'sip_eczane',t:'Sipariş onay kopyası',to:phd.n,st:'gönderildi',ic:'bx-store',c:'var(--ok)'},{k:'sip_bilgi',t:'Bilgi: sipariş iletildi',to:Z.PEOPLE.mgr.n,st:'gönderildi',ic:'bx-info-circle',c:'var(--in)'}]:[]),...(st==='red'?[{k:'sip_red',t:'Sipariş reddedildi',to:Z.PEOPLE.rep.n,st:'alındı',ic:'bx-x-circle',c:'var(--da)'}]:[])]
+      .map(m=>({...m,go:()=>A.go('eposta',{mail:m.k==='sip_red'?'sip_onay':m.k,order:o.id,vid:A.nav.vid})}));
+    const banner=st==='onay'?{show:true,bg:'var(--wab)',fg:'var(--wa)',ic:'bx-time-five',t:'Yönetici onayı bekleniyor.',x:'Selin Karaca\'ya onay e-postası gönderildi. Onaydan sonra depoya ve eczaneye iletilir.',acts:[{l:'[demo] Onaylandı',bg:'var(--okc)',fg:'#fff',go:()=>{A.updOrder(o.id,{status:'iletildi'});A.toast('Sipariş onaylandı ve '+o.depo+' deposuna iletildi.')}},{l:'[demo] Reddedildi',bg:'var(--dac)',fg:'#fff',go:()=>{A.updOrder(o.id,{status:'red'});A.toast('Sipariş reddedildi: iskonto limit üstünde.')}}]}
+      :st==='iletildi'?{show:true,bg:'var(--okb)',fg:'var(--ok)',ic:'bx-check-circle',t:'Sipariş depoya iletildi.',x:'Onay: Selin Karaca · 9 Eki 11:12. Eczaneye onay kopyası gönderildi.',acts:[{l:'Yeni ön sipariş',bg:'var(--p)',fg:'#fff',go:()=>this.setState({oid:null,lines:null,signed:false})}]}
+      :st==='red'?{show:true,bg:'var(--dab)',fg:'var(--da)',ic:'bx-x-circle',t:'Sipariş reddedildi.',x:'Gerekçe: TUTUKON iskontosu %5 bölge limitini aşıyor (%3).',acts:[{l:'Düzeltip yeniden gönder',bg:'var(--p)',fg:'#fff',go:()=>this.setState({oid:null,lines:o.lines.map(x=>({...x,isk:Math.min(3,Number(x.isk||0))})),signed:false})}]}:{show:false,acts:[]};
+    const SL={iletildi:['Depoya iletildi','var(--okb)','var(--ok)'],onay:['Onay bekliyor','var(--wab)','var(--wa)'],red:['Reddedildi','var(--dab)','var(--da)'],onaylandi:['Onaylandı','var(--okb)','var(--ok)']};
+    const hist=A.orders.filter(x=>x.ph===ph&&x.id!==S.oid).map(x=>{const t=x.lines.reduce((a,l)=>{const pr=priceOf(l.sku)[1];return a+Number(l.q)*pr*(1-Number(l.isk||0)/100)},0)*1.1;const s=SL[x.status]||SL.onay;return{id:x.id,date:x.date,sum:x.lines.map(l=>l.p?Z.P[l.p].n+' '+l.q:l.sku).join(' · '),tot:'₺'+t.toLocaleString('tr-TR',{maximumFractionDigits:0}),st:s[0],bg:s[1],fg:s[2]}});
+    return{
+      pagePad:phone?'12px 14px 24px':'20px 24px 28px',backS:phone?44:36,titleS:phone?18:22,isPhone:phone,notPhone:!phone,cols:phone?'1fr':'minmax(0,1fr) 340px',asidePos:phone?'static':'sticky',
+      sub:phd.n+' · '+acc.ad+(v?' · '+Z.fmtD(v.date)+' ziyaretinden':' · ziyaretten bağımsız'),hasId:!!o,oid:o?o.id:'',
+      back:()=>A.nav.from==='rapor'?A.go('rapor',{vid:v.id}):A.go(v?'sunum':'takvim',v?{vid:v.id,phase:'ozet'}:{}),
+      flow,banner,indep:!v,phs:['ph1','ph2'].map(k=>({n:Z.D[k].n,ad:Z.ACC[k].ad,bd:ph===k?'var(--p)':'var(--bd)',bg:ph===k?'var(--pl)':'var(--card)',go:()=>this.setState({ph:k,lines:null})})),
+      heads:[['Ürün / ambalaj','left'],['Adet','left'],['MF','left'],['İskonto','left'],['Birim fiyat','right'],['Tutar','right']].map(([l,a])=>({l,a})),
+      lines,skuOpts,locked,notLocked:!locked,addLine:()=>this.setState({lines:[...L,{sku:skuOpts[0],q:10,mf:'',isk:0}]}),
+      note:o?o.note:S.note,onNote:e=>this.setState({note:e.target.value}),
+      depos:Z.DEPO,depo:o?o.depo:S.depo,onDepo:e=>this.setState({depo:e.target.value}),due:o?o.due:S.due,onDue:e=>this.setState({due:e.target.value}),cur,onCur:e=>this.setState({cur:e.target.value}),
+      sums:[{l:'Ara toplam',v:fm(gross)},{l:'İskonto',v:'−'+fm(disc)},{l:'KDV %10',v:fm(kdv)}],total:fm(total),curNote:cur==='TRY'?'Liste fiyatları TRY.':'Kur (demo): 1 '+cur+' = ₺'+C.r.toLocaleString('tr-TR')+' · TRY liste fiyatından çevrildi.',
+      phWho:phd.who||'Eczacı',sigRef:this.sigRef,signed:o?o.signed:S.signed,clearSig:()=>{const c=this.sigRef.current;if(c)c.getContext('2d').clearRect(0,0,c.width,c.height);this.setState({signed:false})},
+      subOp:ok?1:.5,subHint:ok?'Her sipariş yönetici onayından sonra depoya iletilir.':'Eksik: '+[!L.length&&'ürün',L.some(x=>!(Number(x.q)>0))&&'adet',!S.signed&&'eczacı imzası'].filter(Boolean).join(', '),
+      submit:()=>{if(!ok){A.toast('Eksik: eczacı imzası ya da adet.');return}const id=A.addOrder({ph,vid:v?v.id:null,date:'9 Eki 11:05',depo:S.depo,cur:S.cur,due:S.due,note:S.note,lines:L.map(x=>({...x,p:priceOf(x.sku)[0],price:priceOf(x.sku)[1]})),status:'onay',signed:true});this.setState({oid:id});A.toast('Ön sipariş oluşturuldu; Selin Karaca\'ya onay e-postası gönderildi.')},
+      hasMails:mails.length>0,mails,hasHist:hist.length>0,hist
+    };
+  }
+}
+</script>
+</body>
+</html>

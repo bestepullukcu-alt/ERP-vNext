@@ -81,7 +81,14 @@ public enum ContentStorageScope
     /// <summary>MOD-0022 e-Signature Service (E2/E3, CT-D4) — visual signature images (drawn PNGs, later samples). Additive
     /// only, per this enum's own doc comment; projected into the object key by name (its own <c>esign-images</c>
     /// segment), never by ordinal.</summary>
-    ESignatureImages = 4
+    ESignatureImages = 4,
+
+    /// <summary>WP-VW-W3 (W3-PLT, decision K-W3; 5 since the main merge 2026-10-13 — main's MOD-0022 took 4) — CRM visit evidence: the rep's photo and the doctor's signature
+    /// taken during a visit. Own <c>crm-visit-evidence</c> partition; additive only and projected by name, so the
+    /// existing scopes' keys are unchanged. This scope alone has its own file rule (images only, own size
+    /// cap — <see cref="ContentStorageScopeRules"/>) and its own scope-bound keys
+    /// (<c>platform.document-repository.visit-evidence.*</c>), which never open any other scope.</summary>
+    CrmVisitEvidence = 5
 }
 
 /// <summary>

@@ -1,0 +1,25 @@
+@using Diten.Web.Views.CRM.ObjectionResponses
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ObjectionResponsesIndex> Localizer
+
+@* The rep's remote preview: how the answer appears under "Beklenen itirazlar · onaylı yanıt" during a visit. *@
+<section class="card" aria-labelledby="orPreviewTitle">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h6 class="mb-0" id="orPreviewTitle">@Localizer["PreviewTitle"]</h6>
+        <small class="text-muted"><i class="bx bx-mobile me-1" aria-hidden="true"></i>@Localizer["PreviewRemote"]</small>
+    </div>
+    <div class="card-body">
+        <small class="text-uppercase text-muted fw-semibold d-block mb-2">@Localizer["PreviewObjections"]</small>
+        <div class="border rounded or-preview">
+            <div class="d-flex align-items-start gap-2 p-3 border-bottom">
+                <i class="bx bx-message-alt-error text-danger mt-1" aria-hidden="true"></i>
+                <span class="fw-medium text-heading flex-grow-1 text-break" id="orPreviewQuestion"></span>
+                <i class="bx bx-chevron-up text-muted" aria-hidden="true"></i>
+            </div>
+            <div class="p-3">
+                <p class="mb-2 text-break" id="orPreviewAnswer"></p>
+                <ul class="list-unstyled small text-muted mb-0 or-preview-refs" id="orPreviewRefs"></ul>
+            </div>
+        </div>
+    </div>
+</section>

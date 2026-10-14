@@ -145,6 +145,9 @@ public sealed class DependencyInjectionSmokeTests
     {
         var configuration = CreateHostConfiguration();
         var services = new ServiceCollection();
+        // Main sync 2026-10-14 (WP-LANE-MAIN-SYNC-03): the web host registers IConfiguration itself; main's
+        // ConfigurationMdmApprovalSettings (WP-VW-W4) reads it from the container, so the seam check gets it as the host does.
+        services.AddSingleton<IConfiguration>(configuration);
         services.AddLogging();
         services.AddHttpClient();
         services.AddHttpContextAccessor();

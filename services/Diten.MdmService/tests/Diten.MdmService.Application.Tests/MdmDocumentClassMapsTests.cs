@@ -116,10 +116,36 @@ public sealed class MdmDocumentClassMapsTests : IClassFixture<AuditIntentTempora
             .Select(type => type.Name));
 
         Assert.True(used.Count >= 25, $"the scan found only {used.Count} stored types — it is blind");
-        var missing = used.Where(name => !known.Contains(name)).ToArray();
+        var missing = used.Where(name => !known.Contains(name) && !MainSyncUncoveredTypes.ContainsKey(name)).ToArray();
         Assert.True(missing.Length == 0,
             "Stored types neither covered, strict by design nor attributed: " + string.Join(", ", missing));
+        // The list only shrinks: a named type now covered (or no longer stored) is red until its row leaves.
+        var stale = MainSyncUncoveredTypes.Keys.Where(name => known.Contains(name) || !used.Contains(name)).ToArray();
+        Assert.True(stale.Length == 0, "Named main-sync rows that no longer need their exception: " + string.Join(", ", stale));
     }
+
+    // WP-LANE-MAIN-SYNC-03 (main-sync 2026-10-14, BL-640) — named, expiring exceptions: the competitor products and the MOD-0023
+    // outcome inbox came with main (WP-VW-W4, W4-BE-b1 / b2) with their own class maps (CompetitorProductClassMaps), not on this
+    // registry. Bringing them onto MdmDocumentClassMaps is their owner's change (XMC-001). Exact type names; only shrinks.
+    private const string W4Owner = "WP-VW-W4 (rakip ürün / ziyaret raporu) geliştiricisi";
+    private const string MainSyncReason = "main-sync 2026-10-14";
+    internal static readonly IReadOnlyDictionary<string, (string Owner, string Reason, string Backlog)> MainSyncUncoveredTypes =
+        new Dictionary<string, (string, string, string)>(StringComparer.Ordinal)
+        {
+            ["CompetitorProduct"] = (W4Owner, MainSyncReason, "BL-640"),
+            ["CompetitorProposalDecision"] = (W4Owner, MainSyncReason, "BL-640"),
+            ["ProcessedEvent"] = (W4Owner, MainSyncReason, "BL-640")
+        };
+
+    // …and the whole-document writes of the same work: CompetitorProductRepository replaces a CompetitorProduct whole, and
+    // MongoWorkflowApprovalStore<T> replaces its record whole (its type argument reads as "T" to this scan). 🟡: a field a
+    // later binary adds is lost on an older binary's write — the owner makes the maps strict or the writes field-level.
+    internal static readonly IReadOnlyDictionary<string, (string Owner, string Reason, string Backlog)> MainSyncLenientWholeWrites =
+        new Dictionary<string, (string, string, string)>(StringComparer.Ordinal)
+        {
+            ["CompetitorProduct"] = (W4Owner, MainSyncReason, "BL-640"),
+            ["T"] = (W4Owner, MainSyncReason + " (MongoWorkflowApprovalStore<T>)", "BL-640")
+        };
 
     [Fact]
     public void A_type_read_before_its_map_is_registered_stops_the_start_by_name()
@@ -295,10 +321,14 @@ public sealed class MdmDocumentClassMapsTests : IClassFixture<AuditIntentTempora
         var strict = MdmDocumentClassMaps.StrictByDesign.Select(type => type.Name).ToHashSet(StringComparer.Ordinal);
 
         Assert.True(replacedViaBase && replaced.Contains("LegalEntity"), "the scan is blind: LegalEntity's replace not found");
-        var offenders = replaced.Concat(arrayElements)
-            .Where(name => !strict.Contains(name) && !KnownPreExistingLenientWholeWrites.Contains(name))
-            .Distinct().ToArray();
+        var all = replaced.Concat(arrayElements).Distinct().ToArray();
+        var offenders = all
+            .Where(name => !strict.Contains(name) && !KnownPreExistingLenientWholeWrites.Contains(name)
+                           && !MainSyncLenientWholeWrites.ContainsKey(name))
+            .ToArray();
         Assert.True(offenders.Length == 0, "Written whole but read leniently: " + string.Join(", ", offenders));
+        var staleWrites = MainSyncLenientWholeWrites.Keys.Where(name => !all.Contains(name) || strict.Contains(name)).ToArray();
+        Assert.True(staleWrites.Length == 0, "Named main-sync whole-write rows that no longer apply: " + string.Join(", ", staleWrites));
     }
 
     // Brand / Product: their explicit maps ignored extra elements BEFORE this work, and ProductRepository replaces whole —

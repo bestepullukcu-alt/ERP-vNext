@@ -25,6 +25,8 @@ public static class DependencyInjection
         services.AddValidatorsFromAssembly(assembly);
         // WP-MDM-BL598-01: Lazy<T> of any registered service — built on first use, inside the caller's own failure handling.
         services.AddTransient(typeof(Lazy<>), typeof(Common.DeferredService<>));
+        // WP-VW-W4 (W4-BE-b2) — the competitor products service (the handlers are thin calls onto it).
+        services.AddScoped<Features.CompetitorProducts.CompetitorProductService>();
         services.AddScoped<ProductAbbreviationAuthorization>();
         services.AddScoped<ProductAbbreviationWorkflow>();
         services.AddScoped<IProductLegalEntityScopeEvaluator, ProductLegalEntityScopeEvaluator>();

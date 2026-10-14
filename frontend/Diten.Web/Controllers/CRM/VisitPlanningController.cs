@@ -28,6 +28,8 @@ public sealed class VisitPlanningController : Controller
     private const string GeneratePermission = "crm.visit-plan.generate";
     private const string ApplyPermission = "crm.visit-plan.apply";
     private const string PlannedVisitManage = "crm.planned-visit.manage";
+    // WP-VP-4J (4) — reads every rep's plans (CRM VisitPlanningPermissions.ReadAll); the list's "Rep" filter is its only.
+    private const string ReadAllPermission = "crm.visit-plan.read-all";
     private const string ViewRoot = "~/Views/CRM/VisitPlanning";
 
     // WP-VP-FIX-1 (D6) — the MOD-0048 sets whose labels replace raw codes on the Targets + Route tabs.
@@ -64,7 +66,8 @@ public sealed class VisitPlanningController : Controller
         return View($"{ViewRoot}/Index.cshtml", new VisitPlanningIndexViewModel
         {
             CanGenerate = HasAnyPermission(GeneratePermission),
-            CanApply = HasAnyPermission(ApplyPermission) && HasAnyPermission(PlannedVisitManage)
+            CanApply = HasAnyPermission(ApplyPermission) && HasAnyPermission(PlannedVisitManage),
+            CanReadAll = HasAnyPermission(ReadAllPermission)
         });
     }
 
@@ -173,7 +176,7 @@ public sealed class VisitPlanningController : Controller
     [HttpGet("api/sessions/{planningSessionId:guid}/targets")]
     public Task<IActionResult> SessionTargets(Guid planningSessionId, CancellationToken ct)
         => ProxyAsync(
-            HttpMethod.Get, $"/api/crm/visit-plan/sessions/{planningSessionId}/targets", null, ReadPermission, ct);
+            HttpMethod.Get, $"/api/crm/visit-plan/sessions/{planningSessionId}/targets{Request.QueryString}", null, ReadPermission, ct); // WP-VP-4M (5) — ?weekStart
 
     [HttpPost("api/sessions")]
     public async Task<IActionResult> CreateSession(CancellationToken ct)

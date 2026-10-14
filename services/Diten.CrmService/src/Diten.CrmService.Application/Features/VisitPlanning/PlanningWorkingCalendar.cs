@@ -70,6 +70,7 @@ public sealed class PlanningWorkingCalendar
 
         var nonWorking = new List<DateOnly>();
         var kinds = new Dictionary<DateOnly, string>();
+        var holidayNames = new Dictionary<DateOnly, string>();
         for (var day = from; day <= to; day = day.AddDays(1))
         {
             var answer = await AskAsync(countryCode, country.LegalEntityId, day, cancellationToken);
@@ -88,9 +89,13 @@ public sealed class PlanningWorkingCalendar
             }
 
             kinds[day] = KindOf(day, answer);
+            if (!string.IsNullOrWhiteSpace(answer.HolidayName))
+            {
+                holidayNames[day] = answer.HolidayName!;
+            }
         }
 
-        return new PlanningCalendarResult(PlanningCalendarStatuses.Resolved, null, null, nonWorking, kinds);
+        return new PlanningCalendarResult(PlanningCalendarStatuses.Resolved, null, null, nonWorking, kinds, holidayNames);
     }
 
     /// <summary>WP-VP-3B — one day's answer, from the tenant-keyed cache when a resolved answer is still fresh.</summary>
@@ -164,8 +169,13 @@ public sealed record PlanningCalendarResult(
     string? ReasonCode,
     string? Reason,
     IReadOnlyList<DateOnly> NonWorkingDates,
-    IReadOnlyDictionary<DateOnly, string>? DayKinds = null)
+    IReadOnlyDictionary<DateOnly, string>? DayKinds = null,
+    // W2-BE-c (C3, additive) — the platform's holiday name of a day (null when it sent none or the fallback ran).
+    IReadOnlyDictionary<DateOnly, string>? HolidayNames = null)
 {
+    /// <summary>W2-BE-c — the day's holiday name, or null.</summary>
+    public string? HolidayNameOf(DateOnly day) => HolidayNames is not null && HolidayNames.TryGetValue(day, out var n) ? n : null;
+
     /// <summary>A day's kind; a day outside the resolved range is <c>working</c> unless it is listed non-working.</summary>
     public string KindOf(DateOnly day)
         => DayKinds is not null && DayKinds.TryGetValue(day, out var kind)

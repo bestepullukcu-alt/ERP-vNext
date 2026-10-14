@@ -27,6 +27,8 @@ public static class DependencyInjection
         Configurations.GlobalProductLifecycleClassMaps.Register();
         // MOD-0290-FU04 S1 — the item's maps ignore extra elements (a later slice's fields still read).
         Configurations.ItemMasterClassMaps.Register();
+        // WP-VW-W4 (W4-BE-b2) — the competitor aggregates.
+        Configurations.CompetitorProductClassMaps.Register();
 
         var connectionString = configuration["Mongo:ConnectionString"]
             ?? throw new InvalidOperationException("Configuration error: 'Mongo:ConnectionString' is missing.");
@@ -114,6 +116,23 @@ public static class DependencyInjection
 
         // MOD-0290-FU04 S3 — GSKU / LSKU / Finished Good stock-behaviour writes (one conditional write each).
         services.AddScoped<IProductStockBehaviourRepository, ProductStockBehaviourRepository>();
+
+        // WP-VW-W4 (W4-BE-b1) — the MOD-0023 outcome event inbox (one row per EventId). Approvable kinds use
+        // MongoWorkflowApprovalStore<T> (explicit tenant + CAS); W4-BE-b2 registers the competitor proposal's store.
+        services.AddScoped<IMdmEventInboxRepository, MdmEventInboxRepository>();
+
+        // WP-VW-W4 (W4-BE-b2) — competitor products + the proposal decision (explicit tenant + CAS). The decision is an
+        // approvable kind of the b1 core: its WorkflowApprovalTarget makes the outcome applier / event consumer handle
+        // "mdm.competitor-proposal" (complete / merge / reject applied to the proposal).
+        services.AddScoped<ICompetitorProductRepository, CompetitorProductRepository>();
+        services.AddScoped<CompetitorProposalDecisionRepository>();
+        services.AddScoped<ICompetitorProposalDecisionRepository>(sp => sp.GetRequiredService<CompetitorProposalDecisionRepository>());
+        services.AddScoped<Application.Features.Approvals.IWorkflowApprovalStore<Domain.Entities.CompetitorProposalDecision>>(
+            sp => sp.GetRequiredService<CompetitorProposalDecisionRepository>());
+        services.AddScoped<Application.Features.Approvals.WorkflowApprovalTarget>(sp =>
+            Application.Features.CompetitorProducts.CompetitorProposalApproval.Target(
+                sp.GetRequiredService<Application.Features.Approvals.IWorkflowApprovalStore<Domain.Entities.CompetitorProposalDecision>>(),
+                sp.GetRequiredService<ICompetitorProductRepository>()));
 
         return services;
     }

@@ -507,6 +507,13 @@ public static class DataSeeder
             new("mdm", "global-products", "read", "Read Global Product", "Permission to view global product master lists and details", moduleOverride: "product-item-sku-master"),
             new("mdm", "global-products", "create", "Create Global Product", "Permission to create global product master records", moduleOverride: "product-item-sku-master"),
 
+            // WP-VW-W4 (W4-BE-b2) — competitor products (MOD-0290, a separate record from our Global Products; the MDM page
+            // COMPETITOR_PRODUCTS of product-item-sku-master). Scope=Tenant (product-item-sku-master ∉ PlatformAdminModules).
+            // No delete key: a record ends inactive, merged or rejected. Catalog only — the grant is the W4-CFG script.
+            new("mdm", "competitor-products", "read", "Read Competitor Product", "Permission to view competitor products (list, details, the visit report short list)", moduleOverride: "product-item-sku-master"),
+            new("mdm", "competitor-products", "manage", "Manage Competitor Product", "Permission to create and edit competitor products (country prices and reimbursement included), deactivate and merge them, and prepare the decision on a rep's proposal", moduleOverride: "product-item-sku-master"),
+            new("mdm", "competitor-products", "propose", "Propose Competitor Product", "Permission to propose a competitor product that is not in the list from a visit report (usable at once by the proposer; decided by the marketing / medical team)", moduleOverride: "product-item-sku-master"),
+
             // MOD-0149 — Customer 360 / Account Hierarchy (Commercial Suite / CRM core, Diten.CrmService).
             // Tenant-scoped keys (module code "crm-account" is not a PlatformAdmin module → Scope = Tenant).
             // PKS-001 nested keys are canonical; crm.account.360.read is NOT used (crm.account.overview.read instead).
@@ -607,6 +614,20 @@ public static class DataSeeder
             // NO role here or by any automatic path. Without them a rep sees only their own visits, plans and reports.
             new("crm", "planned-visit", "read-all", "CRM Planned Visit Read All", "Permission to read every planned visit and visit report in the tenant and act on them with the existing write permissions (explicit grant only; never granted automatically)", moduleOverride: "crm-planned-visit"),
             new("crm", "visit-plan", "read-all", "CRM Visit Plan Read All", "Permission to read, preview, apply and re-plan every visit planning session in the tenant and plan for another representative (explicit grant only; never granted automatically)", moduleOverride: "crm-visit-plan"),
+
+            // WP-VW-W4 (W4-BE-c, §2.7) — doctor insights (profile, product potential, opportunity, thresholds). Tenant-scoped
+            // ("crm-doctor-insights" ∉ PlatformAdminModules). read = own + team doctors; read-all = the whole tenant
+            // (EXPLICIT-GRANT-ONLY); read-aggregate = counts without a doctor's identity; thresholds.manage = the
+            // per-product Low / Medium / High boundaries. Catalog only: granted to no role here.
+            new("crm", "doctor-insights", "read", "CRM Doctor Insights Read", "Permission to view the profile, product potential and opportunity of the doctors in the caller's own and team territories", moduleOverride: "crm-doctor-insights"),
+            new("crm", "doctor-insights", "manage", "CRM Doctor Insights Manage", "Permission to edit a doctor profile (adoption typology, communication style, KOL level, monthly patients) by hand", moduleOverride: "crm-doctor-insights"),
+            new("crm", "doctor-insights", "read-all", "CRM Doctor Insights Read All", "Permission to view the profile, product potential and opportunity of every doctor in the tenant (explicit grant only; never granted automatically)", moduleOverride: "crm-doctor-insights"),
+            new("crm", "doctor-insights", "read-aggregate", "CRM Doctor Insights Read Aggregate", "Permission to view aggregated potential, share and opportunity counts without any doctor's identity (cells under five doctors are hidden)", moduleOverride: "crm-doctor-insights"),
+            new("crm", "doctor-insights", "thresholds.manage", "CRM Doctor Insights Thresholds Manage", "Permission to set the per-product Low / Medium / High potential thresholds", moduleOverride: "crm-doctor-insights"),
+
+            // WP-VW-W4 (W4-BE-a, G2) — competitor usage counts from the visit reports (no doctor identity; cells under five
+            // hidden). Tenant-scoped ("crm-visit-report" ∉ PlatformAdminModules). Catalog only: granted to no role here.
+            new("crm", "visit-report", "read-aggregate", "CRM Visit Report Read Aggregate", "Permission to view aggregated competitor usage counts from visit reports without any doctor's identity (cells under five are hidden)", moduleOverride: "crm-visit-report"),
 
             new("mod0251", "employee", "search", "Search Employees", "Permission to search MOD-0251 employee registry records"),
             new("mod0251", "employee", "view", "View Employee", "Permission to view MOD-0251 employee records"),

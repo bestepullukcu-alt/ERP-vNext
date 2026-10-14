@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+    <data name="PageTitle" xml:space="preserve"><value>Ziyaret sunumu</value></data>
+  <data name="BackLabel" xml:space="preserve"><value>Takvime dön</value></data>
+  <data name="KindLabel" xml:space="preserve"><value>Ziyaret türü</value></data>
+  <data name="Loading" xml:space="preserve"><value>Yükleniyor…</value></data>
+  <data name="DoctorScreen" xml:space="preserve"><value>Doktor ekranı</value></data>
+  <data name="RepPanel" xml:space="preserve"><value>Temsilci kumandası</value></data>
+  <data name="ActionFailed" xml:space="preserve"><value>İşlem tamamlanamadı. Lütfen tekrar deneyin.</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>Ziyaret yüklenemedi.</value></data>
+  <data name="NotStartedTitle" xml:space="preserve"><value>Ziyaret başlatılmamış.</value></data>
+  <data name="NotStartedText" xml:space="preserve"><value>Kurumdayken ziyaret çalışma alanından başlatın.</value></data>
+  <data name="BackToWorkspace" xml:space="preserve"><value>Ziyaret çalışma alanına dön</value></data>
+  <data name="NoSlides" xml:space="preserve"><value>Bu ziyarette sunulacak onaylı içerik yok.</value></data>
+  <data name="StartedLine" xml:space="preserve"><value>{0} · başladı {1}</value></data>
+  <data name="LiveChip" xml:space="preserve"><value>Devam ediyor · {0}</value></data>
+  <data name="Kind_in_person" xml:space="preserve"><value>Yüz yüze</value></data>
+  <data name="Kind_remote" xml:space="preserve"><value>Uzaktan</value></data>
+  <data name="DoctorScreenHint" xml:space="preserve"><value>Doktor ekranı · temsilci notları görünmez</value></data>
+  <data name="ExitHold" xml:space="preserve"><value>Çıkış: basılı tut</value></data>
+  <data name="RepTitle" xml:space="preserve"><value>Temsilci · kumanda</value></data>
+  <data name="BackToDoctor" xml:space="preserve"><value>Doktor moduna dön</value></data>
+  <data name="DoctorMode" xml:space="preserve"><value>Doktor moduna geç</value></data>
+  <data name="TotalLabel" xml:space="preserve"><value>Toplam {0}</value></data>
+  <data name="DoctorSees" xml:space="preserve"><value>Doktorun gördüğü · {0}</value></data>
+  <data name="PrevSlide" xml:space="preserve"><value>Geri</value></data>
+  <data name="NextSlide" xml:space="preserve"><value>İleri</value></data>
+  <data name="SkipProduct" xml:space="preserve"><value>Ürün atla</value></data>
+  <data name="LastProduct" xml:space="preserve"><value>Bu son ürün.</value></data>
+  <data name="TabNotes" xml:space="preserve"><value>Notlar</value></data>
+  <data name="TabMarks" xml:space="preserve"><value>İşaretler</value></data>
+  <data name="TabNote" xml:space="preserve"><value>Not al</value></data>
+  <data name="KeyMessage" xml:space="preserve"><value>Anahtar mesaj</value></data>
+  <data name="ThisSlide" xml:space="preserve"><value>Bu slayt {0}</value></data>
+  <data name="TargetLabel" xml:space="preserve"><value>hedef ≈ {0}</value></data>
+  <data name="TargetSeconds" xml:space="preserve"><value>{0} sn</value></data>
+  <data name="TargetMinutes" xml:space="preserve"><value>{0} dk</value></data>
+  <data name="TalkTrack" xml:space="preserve"><value>Konuşma metni · onaylı</value></data>
+  <data name="ForThisDoctor" xml:space="preserve"><value>Bu doktor için</value></data>
+  <data name="BriefLastVisit" xml:space="preserve"><value>Son ziyaret: {0}</value></data>
+  <data name="BriefOutcome" xml:space="preserve"><value>Sonuç: {0}</value></data>
+  <data name="BriefFollowUp" xml:space="preserve"><value>Takip: {0}</value></data>
+  <data name="BriefSamples" xml:space="preserve"><value>Verilen numune: {0}</value></data>
+  <data name="Objections" xml:space="preserve"><value>Beklenen itirazlar · onaylı yanıt</value></data>
+  <data name="MyNote" xml:space="preserve"><value>Kendi notum · {0} · yalnız siz görürsünüz</value></data>
+  <data name="MyNotePlaceholder" xml:space="preserve"><value>Bu ürün için kendinize not</value></data>
+  <data name="TransitionHeading" xml:space="preserve"><value>Geçiş</value></data>
+  <data name="QuickMarks" xml:space="preserve"><value>Hızlı işaretler · {0}</value></data>
+  <data name="Interest_interested" xml:space="preserve"><value>İlgili</value></data>
+  <data name="Interest_neutral" xml:space="preserve"><value>Nötr</value></data>
+  <data name="Interest_not_interested" xml:space="preserve"><value>İlgisiz</value></data>
+  <data name="Flag_question" xml:space="preserve"><value>Soru sordu</value></data>
+  <data name="Flag_objection" xml:space="preserve"><value>İtiraz etti</value></data>
+  <data name="Flag_sample_request" xml:space="preserve"><value>Numune istedi</value></data>
+  <data name="Flag_literature_request" xml:space="preserve"><value>Literatür / bilgi istedi</value></data>
+  <data name="Flag_follow_up" xml:space="preserve"><value>Takip gerekli</value></data>
+  <data name="ObjectionCategory" xml:space="preserve"><value>İtiraz kategorisi</value></data>
+  <data name="ObjectionWith" xml:space="preserve"><value>{0}: {1}</value></data>
+  <data name="VisitNote" xml:space="preserve"><value>Ziyaret notu</value></data>
+  <data name="VisitNotePlaceholder" xml:space="preserve"><value>Serbest not (doktor görmez) · rapora aktarılır</value></data>
+  <data name="VoiceNote" xml:space="preserve"><value>Sesle not</value></data>
+  <data name="Listening" xml:space="preserve"><value>Dinleniyor…</value></data>
+  <data name="JointVisit" xml:space="preserve"><value>Yöneticiyle birlikte (ortak ziyaret)</value></data>
+  <data name="CoVisitorsPlaceholder" xml:space="preserve"><value>Ortak ziyaretçileri seçin</value></data>
+  <data name="CoVisitorsMax" xml:space="preserve"><value>En çok {0} kişi.</value></data>
+  <data name="NoPeople" xml:space="preserve"><value>Seçilecek kişi yok.</value></data>
+  <data name="DurationConsistency" xml:space="preserve"><value>Süre tutarlılığı açık: slayt süreleri kaydediliyor; {0} süreden kısa ziyaret işaretlenir.</value></data>
+  <data name="FinishVisit" xml:space="preserve"><value>Ziyareti bitir</value></data>
+  <data name="FinishConfirmTitle" xml:space="preserve"><value>Ziyaret bitirilsin mi?</value></data>
+  <data name="FinishConfirmText" xml:space="preserve"><value>Bitiş saati sunucudan alınır; sunum bundan sonra değişemez.</value></data>
+  <data name="FinishConfirmYes" xml:space="preserve"><value>Evet, bitir</value></data>
+  <data name="CancelButton" xml:space="preserve"><value>Vazgeç</value></data>
+  <data name="PinSetTitle" xml:space="preserve"><value>4 haneli temsilci PIN'i belirleyin</value></data>
+  <data name="PinConfirmTitle" xml:space="preserve"><value>PIN'i tekrar girin</value></data>
+  <data name="PinUnlockTitle" xml:space="preserve"><value>Temsilci PIN</value></data>
+  <data name="PinMismatch" xml:space="preserve"><value>İki PIN eşleşmedi. Yeniden belirleyin.</value></data>
+  <data name="PinWrong" xml:space="preserve"><value>PIN yanlış.</value></data>
+  <data name="SummaryTitle" xml:space="preserve"><value>Ziyaret bitti</value></data>
+  <data name="SummaryLine" xml:space="preserve"><value>{0} · {1} · {2}–{3}</value></data>
+  <data name="DurationHeading" xml:space="preserve"><value>Süre</value></data>
+  <data name="RolePromo" xml:space="preserve"><value>tanıtım</value></data>
+  <data name="RoleReminder" xml:space="preserve"><value>hatırlatma</value></data>
+  <data name="MinutesClock" xml:space="preserve"><value>{0} dk</value></data>
+  <data name="ShortVisitWarning" xml:space="preserve"><value>Ziyaret süresi {0} altında kaldı; süre tutarlılığı için işaretlendi.</value></data>
+  <data name="NotesHeading" xml:space="preserve"><value>Notlar</value></data>
+  <data name="CoVisitorsLine" xml:space="preserve"><value>Ortak ziyaret: {0}</value></data>
+  <data name="SignatureTitleApproval" xml:space="preserve"><value>Doktor onayı</value></data>
+  <data name="SignatureTitleSample" xml:space="preserve"><value>Numune teslimi · doktor imzası</value></data>
+  <data name="SignatureTextApproval" xml:space="preserve"><value>Şirketiniz ziyaret için doktor onayı istiyor.</value></data>
+  <data name="SignatureTextSample" xml:space="preserve"><value>Numune istendi: teslimde doktor imzası gerekir.</value></data>
+  <data name="ClearSignature" xml:space="preserve"><value>Temizle</value></data>
+  <data name="ConfirmVisit" xml:space="preserve"><value>Görüşmeyi onaylıyorum (doktor)</value></data>
+  <data name="SignatureSave" xml:space="preserve"><value>İmzayı kaydet</value></data>
+  <data name="SignatureSaved" xml:space="preserve"><value>İmza kaydedildi.</value></data>
+  <data name="Signed" xml:space="preserve"><value>Doktor imzası alındı.</value></data>
+  <data name="EnterReport" xml:space="preserve"><value>Rapor gir</value></data>
+  <data name="Later" xml:space="preserve"><value>Sonra gireceğim</value></data>
+  <data name="LaterHint" xml:space="preserve"><value>48 sa içinde · takvime döner</value></data>
+  <data name="CaptureFailed" xml:space="preserve"><value>Sunum kaydedilemedi; yeniden denenecek.</value></data>
+  <data name="ImagePlaceholder" xml:space="preserve"><value>onaylı içerik görseli</value></data>
+  <data name="Err_visit_execution_finished" xml:space="preserve"><value>Ziyaret zaten bitti.</value></data>
+  <data name="Err_visit_execution_not_finished" xml:space="preserve"><value>Önce ziyareti bitirin.</value></data>
+  <data name="Err_visit_signature_exists" xml:space="preserve"><value>Ziyaret zaten imzalandı.</value></data>
+  <data name="Err_visit_report_deadline_passed" xml:space="preserve"><value>Ziyaretin 48 saatlik süresi doldu.</value></data>
+  <data name="Err_visit_capture_invalid" xml:space="preserve"><value>Girilen bilgilerin bir kısmı geçersiz.</value></data>
+  <data name="Err_visit_co_visitor_invalid" xml:space="preserve"><value>Ortak ziyaretçi eklenemedi (en çok 3 kişi, şirket kullanıcısı, siz değil).</value></data>
+  <data name="Err_visit_evidence_store_unavailable" xml:space="preserve"><value>Kanıt deposuna ulaşılamıyor. Lütfen tekrar deneyin.</value></data>
+  <data name="Err_visit_already_reported" xml:space="preserve"><value>Ziyaretin raporu zaten gönderildi.</value></data>
+  <data name="Err_visit_execution_not_found" xml:space="preserve"><value>Ziyaret bulunamadı.</value></data>
+  <data name="Err_visit_execution_concurrency_conflict" xml:space="preserve"><value>Ziyaret başka bir ekranda değişti. Sayfayı yenileyin.</value></data>
+  <data name="Err_resource_not_caller" xml:space="preserve"><value>Ziyareti yalnız kendi temsilcisi kaydedebilir.</value></data>
+</root>

@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>Visit evidence</value></data>
+  <data name="Crumb" xml:space="preserve"><value>CRM Settings / Visit</value></data>
+  <data name="Intro" xml:space="preserve"><value>The rules of the rep's "Start the visit". The tenant setting applies to every rep; a time-boxed exception relaxes it for one rep for a while.</value></data>
+  <data name="NewException" xml:space="preserve"><value>New exception</value></data>
+  <data name="TabSettings" xml:space="preserve"><value>Scoped settings</value></data>
+  <data name="TabExceptions" xml:space="preserve"><value>Time-boxed exceptions</value></data>
+  <data name="Retry" xml:space="preserve"><value>Try again</value></data>
+  <data name="ReadOnly" xml:space="preserve"><value>You have read-only access; the settings cannot be changed.</value></data>
+  <data name="ScopesTitle" xml:space="preserve"><value>Scopes</value></data>
+  <data name="ScopesNote" xml:space="preserve"><value>Priority: business unit › legal entity › tenant</value></data>
+  <data name="TenantDefault" xml:space="preserve"><value>Tenant default</value></data>
+  <data name="Locked" xml:space="preserve"><value>Cannot be removed</value></data>
+  <data name="AddLegalEntity" xml:space="preserve"><value>Add legal entity</value></data>
+  <data name="AddLegalEntityHint" xml:space="preserve"><value>The legal entity and business unit layers open when the rep's position and territory assignments are connected.</value></data>
+  <data name="LookTitle" xml:space="preserve"><value>See a rep's effective setting</value></data>
+  <data name="LookSearch" xml:space="preserve"><value>Search a rep</value></data>
+  <data name="EffectiveTitle" xml:space="preserve"><value>Effective setting</value></data>
+  <data name="CloseButton" xml:space="preserve"><value>Close</value></data>
+  <data name="ColField" xml:space="preserve"><value>Field</value></data>
+  <data name="ColValue" xml:space="preserve"><value>Effective value</value></data>
+  <data name="ColSource" xml:space="preserve"><value>Where it comes from</value></data>
+  <data name="Priority" xml:space="preserve"><value>Priority:</value></data>
+  <data name="SourceException" xml:space="preserve"><value>Exception</value></data>
+  <data name="SourceTenant" xml:space="preserve"><value>Tenant</value></data>
+  <data name="ScopeUnresolved" xml:space="preserve"><value>Legal entity and business unit layers are not connected yet.</value></data>
+  <data name="TypeTenant" xml:space="preserve"><value>Tenant</value></data>
+  <data name="PaneForm" xml:space="preserve"><value>Setting form</value></data>
+  <data name="PaneHistory" xml:space="preserve"><value>Change history</value></data>
+  <data name="SoonTitle" xml:space="preserve"><value>Additional evidence</value></data>
+  <data name="SoonText" xml:space="preserve"><value>Institution QR code and fake-location checks will be added here.</value></data>
+  <data name="SoonBadge" xml:space="preserve"><value>Coming soon</value></data>
+  <data name="PreviewTitle" xml:space="preserve"><value>A rep in this scope will see</value></data>
+  <data name="PvStartTitle" xml:space="preserve"><value>Start the visit</value></data>
+  <data name="PvSample" xml:space="preserve"><value>Sample visit · institution · time</value></data>
+  <data name="PvPhoto" xml:space="preserve"><value>Photo</value></data>
+  <data name="PvLocation" xml:space="preserve"><value>Location</value></data>
+  <data name="PvSign" xml:space="preserve"><value>Doctor approval · asked at the end of the visit</value></data>
+  <data name="PvStart" xml:space="preserve"><value>Start presentation</value></data>
+  <data name="LastChange" xml:space="preserve"><value>Last change</value></data>
+  <data name="Unsaved" xml:space="preserve"><value>There are unsaved changes</value></data>
+  <data name="CancelButton" xml:space="preserve"><value>Cancel</value></data>
+  <data name="SaveButton" xml:space="preserve"><value>Save</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>Change history · Tenant default</value></data>
+  <data name="AuditReadOnly" xml:space="preserve"><value>Audit record · read only</value></data>
+  <data name="ColDate" xml:space="preserve"><value>Date</value></data>
+  <data name="ColPerson" xml:space="preserve"><value>Person</value></data>
+  <data name="ColChange" xml:space="preserve"><value>Old → new value</value></data>
+  <data name="ExceptionsInfo" xml:space="preserve"><value>An exception is not a permanent setting: it relaxes the rules for one rep, with a reason, for at most 30 days. Only an approved exception within its dates applies. Visits started with an exception are marked "started with an exception" in the manager view.</value></data>
+  <data name="ExceptionsTitle" xml:space="preserve"><value>Time-boxed exceptions</value></data>
+  <data name="XColRep" xml:space="preserve"><value>Rep</value></data>
+  <data name="XColRules" xml:space="preserve"><value>Relaxed rules</value></data>
+  <data name="XColRange" xml:space="preserve"><value>Date range</value></data>
+  <data name="XColReason" xml:space="preserve"><value>Reason</value></data>
+  <data name="XColPeople" xml:space="preserve"><value>Created / approved by</value></data>
+  <data name="XColStatus" xml:space="preserve"><value>Status</value></data>
+  <data name="OpenRow" xml:space="preserve"><value>Open</value></data>
+  <data name="SaveTitle" xml:space="preserve"><value>Save the changes?</value></data>
+  <data name="SaveConfirm" xml:space="preserve"><value>Save and apply</value></data>
+  <data name="XNewTitle" xml:space="preserve"><value>New time-boxed exception</value></data>
+  <data name="XRep" xml:space="preserve"><value>Rep</value></data>
+  <data name="XRules" xml:space="preserve"><value>Rules to relax</value></data>
+  <data name="XRulesHint" xml:space="preserve"><value>Thresholds (distance, accuracy, short visit) cannot be changed by an exception.</value></data>
+  <data name="XFrom" xml:space="preserve"><value>Start</value></data>
+  <data name="XTo" xml:space="preserve"><value>End</value></data>
+  <data name="XReason" xml:space="preserve"><value>Reason</value></data>
+  <data name="XReasonPlaceholder" xml:space="preserve"><value>e.g. The tablet GPS module is faulty; a device replacement is pending (IT request no).</value></data>
+  <data name="XSodNew" xml:space="preserve"><value>Separation of duties: you cannot approve this exception yourself. Once sent, another person approves it in the Work Center and it applies within its dates.</value></data>
+  <data name="XSubmit" xml:space="preserve"><value>Send for approval</value></data>
+  <data name="XDetailTitle" xml:space="preserve"><value>Exception detail</value></data>
+  <data name="F_locationMode" xml:space="preserve"><value>Location check</value></data>
+  <data name="F_radiusMeters" xml:space="preserve"><value>Allowed distance</value></data>
+  <data name="F_maxAccuracyMeters" xml:space="preserve"><value>Lowest location accuracy</value></data>
+  <data name="F_accountWithoutLocation" xml:space="preserve"><value>Institution without a location</value></data>
+  <data name="F_photoMode" xml:space="preserve"><value>Photo</value></data>
+  <data name="F_doctorConfirmation" xml:space="preserve"><value>Doctor approval (signature)</value></data>
+  <data name="F_durationConsistency" xml:space="preserve"><value>Duration consistency</value></data>
+  <data name="F_shortVisitSeconds" xml:space="preserve"><value>Short visit threshold</value></data>
+  <data name="D_locationMode_required" xml:space="preserve"><value>Required: the rep cannot start the visit unless near the institution.</value></data>
+  <data name="D_locationMode_info" xml:space="preserve"><value>Information: the location is recorded; the visit can always be started.</value></data>
+  <data name="D_accountWithoutLocation" xml:space="preserve"><value>When the institution record has no coordinates</value></data>
+  <data name="D_photoMode" xml:space="preserve"><value>Institution entrance or waiting area; no faces are photographed (data protection).</value></data>
+  <data name="D_doctorConfirmation" xml:space="preserve"><value>A signature or approval tap on the tablet at the end of the visit. Always asked when samples are requested.</value></data>
+  <data name="Opt_locationMode_required" xml:space="preserve"><value>Required</value></data>
+  <data name="Opt_locationMode_info" xml:space="preserve"><value>Information</value></data>
+  <data name="Opt_photoMode_required" xml:space="preserve"><value>Required</value></data>
+  <data name="Opt_photoMode_optional" xml:space="preserve"><value>Optional</value></data>
+  <data name="Opt_accountWithoutLocation_allow_flagged" xml:space="preserve"><value>Start and flag it</value></data>
+  <data name="Opt_accountWithoutLocation_block" xml:space="preserve"><value>Block it</value></data>
+  <data name="R_radiusMeters" xml:space="preserve"><value>50–5000 m · tenant default 300</value></data>
+  <data name="R_maxAccuracyMeters" xml:space="preserve"><value>10–1000 m · tenant default 150</value></data>
+  <data name="R_shortVisitSeconds" xml:space="preserve"><value>30–1800 s · a visit shorter than this is flagged.</value></data>
+  <data name="G_location" xml:space="preserve"><value>Location</value></data>
+  <data name="G_photo" xml:space="preserve"><value>Photo</value></data>
+  <data name="G_approval" xml:space="preserve"><value>Approval and duration</value></data>
+  <data name="ValueOn" xml:space="preserve"><value>On</value></data>
+  <data name="ValueOff" xml:space="preserve"><value>Off</value></data>
+  <data name="UnitMeters" xml:space="preserve"><value>{0} m</value></data>
+  <data name="UnitSeconds" xml:space="preserve"><value>{0} s</value></data>
+  <data name="UnitM" xml:space="preserve"><value>m</value></data>
+  <data name="UnitS" xml:space="preserve"><value>s</value></data>
+  <data name="RangeError" xml:space="preserve"><value>Must be between {0} and {1} {2}.</value></data>
+  <data name="PvRequired" xml:space="preserve"><value>required</value></data>
+  <data name="PvOptional" xml:space="preserve"><value>optional</value></data>
+  <data name="PvInfo" xml:space="preserve"><value>information</value></data>
+  <data name="PvLocationRequired" xml:space="preserve"><value>You must be closer than {0} m to the institution.</value></data>
+  <data name="PvLocationInfo" xml:space="preserve"><value>Recorded for information.</value></data>
+  <data name="PvOpenBoth" xml:space="preserve"><value>"Start presentation" opens once the photo is taken and the rep is closer than {0} m to the institution.</value></data>
+  <data name="PvOpenLocation" xml:space="preserve"><value>"Start presentation" opens once the rep is closer than {0} m to the institution.</value></data>
+  <data name="PvOpenPhoto" xml:space="preserve"><value>"Start presentation" opens once the photo is taken.</value></data>
+  <data name="PvOpenNone" xml:space="preserve"><value>"Start presentation" is open at once; the location and the photo are recorded for information.</value></data>
+  <data name="PvAccuracy" xml:space="preserve"><value>A location less accurate than {0} m counts as invalid.</value></data>
+  <data name="PvNoLocationFlag" xml:space="preserve"><value>At an institution without coordinates the visit starts and is flagged.</value></data>
+  <data name="PvNoLocationBlock" xml:space="preserve"><value>At an institution without coordinates the visit cannot start.</value></data>
+  <data name="PvShort" xml:space="preserve"><value>Visits shorter than {0} s are flagged.</value></data>
+  <data name="Reps" xml:space="preserve"><value>{0} reps</value></data>
+  <data name="AllFields" xml:space="preserve"><value>All fields set</value></data>
+  <data name="DefaultPolicy" xml:space="preserve"><value>Default values · not saved yet</value></data>
+  <data name="YouLabel" xml:space="preserve"><value>You</value></data>
+  <data name="WorkflowActor" xml:space="preserve"><value>Approval workflow</value></data>
+  <data name="SaveText" xml:space="preserve"><value>The change applies at once to the {0} reps in this scope.</value></data>
+  <data name="Saved" xml:space="preserve"><value>Settings saved; applied to {0} reps.</value></data>
+  <data name="LookPlaceholder" xml:space="preserve"><value>Choose a rep</value></data>
+  <data name="ActiveException" xml:space="preserve"><value>Active exception: {0} · until {1}</value></data>
+  <data name="SourceExceptionUntil" xml:space="preserve"><value>Exception · until {0}</value></data>
+  <data name="HistCreated" xml:space="preserve"><value>Setting created</value></data>
+  <data name="NoHistory" xml:space="preserve"><value>No change recorded yet; the defaults apply.</value></data>
+  <data name="XFilter_all" xml:space="preserve"><value>All</value></data>
+  <data name="XFilter_active" xml:space="preserve"><value>Active</value></data>
+  <data name="XFilter_planned" xml:space="preserve"><value>Planned</value></data>
+  <data name="XFilter_in_review" xml:space="preserve"><value>Awaiting approval</value></data>
+  <data name="XFilter_draft" xml:space="preserve"><value>Draft</value></data>
+  <data name="XFilter_expired" xml:space="preserve"><value>Expired</value></data>
+  <data name="XFilter_cancelled" xml:space="preserve"><value>Cancelled</value></data>
+  <data name="XFilter_ended_early" xml:space="preserve"><value>Ended early</value></data>
+  <data name="XRule_location_info" xml:space="preserve"><value>Location check: Information</value></data>
+  <data name="XRule_photo_optional" xml:space="preserve"><value>Photo: Optional</value></data>
+  <data name="XRule_account_without_location_allow" xml:space="preserve"><value>Institution without a location: Start</value></data>
+  <data name="XSt_draft" xml:space="preserve"><value>Draft</value></data>
+  <data name="XSt_in_review" xml:space="preserve"><value>Awaiting approval</value></data>
+  <data name="XSt_active" xml:space="preserve"><value>Active</value></data>
+  <data name="XSt_planned" xml:space="preserve"><value>Planned</value></data>
+  <data name="XSt_expired" xml:space="preserve"><value>Expired</value></data>
+  <data name="XSt_cancelled" xml:space="preserve"><value>Cancelled</value></data>
+  <data name="XSt_ended_early" xml:space="preserve"><value>Ended early</value></data>
+  <data name="XDays" xml:space="preserve"><value>{0} days</value></data>
+  <data name="XCreatedBy" xml:space="preserve"><value>Created by: {0}</value></data>
+  <data name="XApprovedBy" xml:space="preserve"><value>Approved by: {0}</value></data>
+  <data name="XEmpty" xml:space="preserve"><value>No exception in this view.</value></data>
+  <data name="XDetailRules" xml:space="preserve"><value>Relaxed rules</value></data>
+  <data name="XDetailRange" xml:space="preserve"><value>Date range</value></data>
+  <data name="XDetailReason" xml:space="preserve"><value>Reason</value></data>
+  <data name="XInReviewNote" xml:space="preserve"><value>Waiting for approval in the Work Center.</value></data>
+  <data name="XSod" xml:space="preserve"><value>You created, edited or sent this exception; another person must approve it.</value></data>
+  <data name="XReturnComment" xml:space="preserve"><value>Note to the author</value></data>
+  <data name="XCloseReason" xml:space="preserve"><value>Reason</value></data>
+  <data name="TlCreated" xml:space="preserve"><value>Created</value></data>
+  <data name="TlSubmitted" xml:space="preserve"><value>Sent for approval</value></data>
+  <data name="TlApproved" xml:space="preserve"><value>Approved</value></data>
+  <data name="TlReturned" xml:space="preserve"><value>Sent back to draft</value></data>
+  <data name="TlWithdrawn" xml:space="preserve"><value>Withdrawn</value></data>
+  <data name="TlTimedOut" xml:space="preserve"><value>Approval timed out</value></data>
+  <data name="TlCancelled" xml:space="preserve"><value>Cancelled</value></data>
+  <data name="TlEndedEarly" xml:space="preserve"><value>Ended early</value></data>
+  <data name="TlRefused_visit_evidence_exception_sod" xml:space="preserve"><value>Returned: the approver was its creator or submitter</value></data>
+  <data name="TlRefused_visit_evidence_exception_overlap" xml:space="preserve"><value>Returned: it now overlaps another exception</value></data>
+  <data name="XBtnSubmit" xml:space="preserve"><value>Send for approval</value></data>
+  <data name="XBtnWithdraw" xml:space="preserve"><value>Withdraw</value></data>
+  <data name="XBtnApprove" xml:space="preserve"><value>Approve</value></data>
+  <data name="XBtnReturn" xml:space="preserve"><value>Send back to draft</value></data>
+  <data name="XBtnCancel" xml:space="preserve"><value>Cancel exception</value></data>
+  <data name="XBtnEndEarly" xml:space="preserve"><value>End early</value></data>
+  <data name="XBtnConfirmReturn" xml:space="preserve"><value>Confirm sending back</value></data>
+  <data name="XBtnConfirmCancel" xml:space="preserve"><value>Confirm cancellation</value></data>
+  <data name="XBtnConfirmEndEarly" xml:space="preserve"><value>Confirm ending early</value></data>
+  <data name="XSubmitted" xml:space="preserve"><value>Exception sent for approval.</value></data>
+  <data name="XWithdrawn" xml:space="preserve"><value>The approval was withdrawn; the exception is a draft again.</value></data>
+  <data name="XApprovedToast" xml:space="preserve"><value>Decision sent; the exception is approved when the workflow closes.</value></data>
+  <data name="XReturnedToast" xml:space="preserve"><value>Sent back to the author.</value></data>
+  <data name="XCancelledToast" xml:space="preserve"><value>Exception cancelled.</value></data>
+  <data name="XEndedToast" xml:space="preserve"><value>Exception ended early; it ends today.</value></data>
+  <data name="XCreatedNotSent" xml:space="preserve"><value>Saved as a draft but not sent for approval: {0}</value></data>
+  <data name="XRuleNoRep" xml:space="preserve"><value>Choose a rep first.</value></data>
+  <data name="XRuleAlready" xml:space="preserve"><value>This rep already has {0} ({1}).</value></data>
+  <data name="XRuleNow" xml:space="preserve"><value>Now: {0} · {1}</value></data>
+  <data name="XDayCounter" xml:space="preserve"><value>{0} days · at most {1} days</value></data>
+  <data name="XDayCounterEmpty" xml:space="preserve"><value>At most {0} days</value></data>
+  <data name="XErrRep" xml:space="preserve"><value>Choose a rep.</value></data>
+  <data name="XErrRules" xml:space="preserve"><value>Choose at least one rule.</value></data>
+  <data name="XErrFrom" xml:space="preserve"><value>Choose a start date.</value></data>
+  <data name="XErrPast" xml:space="preserve"><value>The start cannot be in the past.</value></data>
+  <data name="XErrToRequired" xml:space="preserve"><value>An end date is required; there is no open-ended exception.</value></data>
+  <data name="XErrToBefore" xml:space="preserve"><value>The end cannot be before the start.</value></data>
+  <data name="XErrTooLong" xml:space="preserve"><value>At most 30 days; the selected range is {0} days.</value></data>
+  <data name="XErrWhy" xml:space="preserve"><value>Write a reason.</value></data>
+  <data name="XErrWhyLong" xml:space="preserve"><value>At most {0} characters.</value></data>
+  <data name="Err_visit_evidence_exception_invalid" xml:space="preserve"><value>The exception is not valid: check the rules, the dates (no past start, at most 30 days) and the reason.</value></data>
+  <data name="Err_visit_evidence_exception_overlap" xml:space="preserve"><value>This rep already has an exception relaxing the same rule on overlapping days.</value></data>
+  <data name="Err_visit_evidence_exception_rep_unknown" xml:space="preserve"><value>The rep has no active primary territory assignment.</value></data>
+  <data name="Err_visit_evidence_exception_not_editable" xml:space="preserve"><value>This exception cannot be changed in its current state.</value></data>
+  <data name="Err_visit_evidence_exception_sod" xml:space="preserve"><value>Separation of duties: its creator or submitter cannot approve it.</value></data>
+  <data name="Err_visit_evidence_exception_not_found" xml:space="preserve"><value>The exception was not found.</value></data>
+  <data name="Err_visit_evidence_policy_invalid" xml:space="preserve"><value>A value is out of its bounds; nothing was saved.</value></data>
+  <data name="Err_visit_execution_concurrency_conflict" xml:space="preserve"><value>Someone changed the settings meanwhile; reload and try again.</value></data>
+  <data name="Err_workflow_template_missing" xml:space="preserve"><value>The approval workflow template is not set up yet. Ask your administrator.</value></data>
+  <data name="Err_workflow_unavailable" xml:space="preserve"><value>The approval workflow cannot be reached; nothing was changed.</value></data>
+  <data name="Err_approval_forbidden" xml:space="preserve"><value>You are not allowed to do this in the approval workflow.</value></data>
+  <data name="Err_no_open_review" xml:space="preserve"><value>There is no approval waiting (it may have just finished).</value></data>
+  <data name="Err_withdraw_not_possible" xml:space="preserve"><value>The approval cannot be withdrawn now.</value></data>
+  <data name="Err_rejection_comment_required" xml:space="preserve"><value>Sending back needs a note to the author.</value></data>
+  <data name="Err_workflow_request_rejected" xml:space="preserve"><value>The approval workflow refused the request.</value></data>
+  <data name="Err_permission_denied" xml:space="preserve"><value>You do not have permission for this action.</value></data>
+  <data name="Err_conflict" xml:space="preserve"><value>The record changed meanwhile; reload and try again.</value></data>
+  <data name="Err_unavailable" xml:space="preserve"><value>Could not save. The server cannot be reached; your changes are kept on this screen.</value></data>
+  <data name="Err_generic" xml:space="preserve"><value>The action could not be completed.</value></data>
+</root>

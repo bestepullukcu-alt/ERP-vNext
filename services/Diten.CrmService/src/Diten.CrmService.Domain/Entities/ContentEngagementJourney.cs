@@ -118,6 +118,11 @@ public sealed class ContentEngagementJourneyStage
     /// <summary>Optional in-domain vocabulary (FU01B §5.2 marks the stage-type set optional).</summary>
     public string? StageType { get; set; }
 
+    /// <summary>WP-VW-W4 (W4-BE-a, K-W4) — the doctor adoption stage this journey stage stands for (<c>crm-adoption-stage</c>,
+    /// optional, at most once per journey). A report's adoption stage moves the doctor's progress to the first stage mapped
+    /// AFTER it.</summary>
+    public string? AdoptionStageCode { get; set; }
+
     /// <summary>REQUIRED: a published + effective FU04 KnowledgePath (else 400). The path's steps are NEVER copied.</summary>
     public Guid RecommendedKnowledgePathId { get; set; }
 

@@ -30,15 +30,23 @@ public sealed class VisitTargetNameReader
             ? new Dictionary<Guid, NamedTarget>()
             : (await _accounts.ListByIdsAsync(tenantId, aIds, cancellationToken))
                 .GroupBy(a => a.Id)
-                .ToDictionary(g => g.Key, g => new NamedTarget(g.First().AccountName, IsInactive(g.First().Status)));
+                .ToDictionary(g => g.Key, g => new NamedTarget(g.First().AccountName, IsInactive(g.First().Status),
+                    AddressLine: g.First().AddressLine, CityRef: g.First().CityRef, DistrictRef: g.First().DistrictRef));
         var contacts = cIds.Count == 0
             ? new Dictionary<Guid, NamedTarget>()
             : (await _contacts.ListByIdsAsync(tenantId, cIds, cancellationToken))
                 .GroupBy(c => c.Id)
-                .ToDictionary(g => g.Key, g => new NamedTarget(g.First().DisplayName, IsInactive(g.First().Status)));
+                .ToDictionary(g => g.Key, g => new NamedTarget(g.First().DisplayName, IsInactive(g.First().Status),
+                    Specialty: g.First().Specialty));
 
         return new VisitTargetNames(accounts, contacts);
     }
+
+    /// <summary>Is the target named by an institution (its TargetId is an account id)? Not for a contact nor for an
+    /// account-contact-link, whose TargetId is the link id (WP-VW-W1 T-1).</summary>
+    public static bool NamedByInstitution(string targetType)
+        => !string.Equals(targetType, PlannedVisitTargetType.Contact, StringComparison.Ordinal)
+           && !string.Equals(targetType, PlannedVisitTargetType.AccountContactLink, StringComparison.Ordinal);
 
     private static bool IsInactive(string? status) => IsInactiveStatus(status);
 
@@ -48,7 +56,10 @@ public sealed class VisitTargetNameReader
         => !string.IsNullOrWhiteSpace(status) && !string.Equals(status.Trim(), "active", StringComparison.OrdinalIgnoreCase);
 }
 
-public sealed record NamedTarget(string? Name, bool Inactive);
+/// <summary>A target's name + passive flag; W2-BE-d — a doctor's specialty code (medical-specialty) and an institution's
+/// address parts (the line + the city / district reference codes), read in the SAME bulk read.</summary>
+public sealed record NamedTarget(
+    string? Name, bool Inactive, string? Specialty = null, string? AddressLine = null, string? CityRef = null, string? DistrictRef = null);
 
 /// <summary>The names of one page of targets. <see cref="For"/> answers a visit's target / account / contact names.</summary>
 public sealed class VisitTargetNames
@@ -68,10 +79,24 @@ public sealed class VisitTargetNames
 
     public string? Contact(Guid? id) => id is { } c && _contacts.TryGetValue(c, out var n) ? Blank(n.Name) : null;
 
-    /// <summary>A contact target is named by the doctor, an account / pharmacy target by the institution.</summary>
+    /// <summary>W2-BE-d — the doctor's specialty CODE (a medical-specialty value), or null.</summary>
+    public string? ContactSpecialty(Guid? id) => id is { } c && _contacts.TryGetValue(c, out var n) ? Blank(n.Specialty) : null;
+
+    /// <summary>W2-BE-d — the institution's address parts (line, city code, district code), or null when unknown.</summary>
+    public NamedTarget? AccountTarget(Guid? id) => id is { } a && _accounts.TryGetValue(a, out var n) ? n : null;
+
+    /// <summary>A contact target — and an <c>account-contact-link</c> ("the doctor at this institution", WP-VW-W1 T-1) —
+    /// is named by the doctor; an account / pharmacy target by the institution.</summary>
     public (string? Target, string? Account, string? Contact, bool TargetInactive) For(
         string targetType, Guid targetId, Guid? accountId, Guid? contactId)
     {
+        if (string.Equals(targetType, PlannedVisitTargetType.AccountContactLink, StringComparison.Ordinal))
+        {
+            // TargetId is the LINK id, which names nothing: the doctor is ContactId, the institution AccountId.
+            var doctor = contactId is { } linkContact && _contacts.TryGetValue(linkContact, out var d) ? d : null;
+            return (Blank(doctor?.Name), Account(accountId), Contact(contactId), doctor?.Inactive ?? false);
+        }
+
         var isContact = string.Equals(targetType, PlannedVisitTargetType.Contact, StringComparison.Ordinal);
         var target = isContact
             ? (_contacts.TryGetValue(contactId ?? targetId, out var c) ? c : null)

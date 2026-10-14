@@ -98,6 +98,11 @@ public sealed class ListClaimsHandler : IRequestHandler<ListClaimsQuery, Respons
             rows = rows.Where(x => !x.IsArchived());
         }
 
+        if (request.ProductId is { } productId)
+        {
+            rows = rows.Where(x => x.ProductId == productId);
+        }
+
         // WP-CL-BE-1 — list-row country summary (one tenant read, grouped in memory).
         var versionsByCode = allVersions
             .GroupBy(v => v.ClaimCode, StringComparer.Ordinal)

@@ -17,4 +17,7 @@ public sealed record AmendVisitReportCommand(
     VisitReportContentActualsInput? ContentActuals,
     IReadOnlyList<VisitReportSampleInput>? Samples,
     VisitReportFeedbackInput? Feedback,
-    int? ExpectedVersion) : IRequest<Response<Guid>>;
+    int? ExpectedVersion,
+    /// <summary>WP-VW-W2 — a reschedule date sent with an amendment. Once the reschedule created its new visit the date
+    /// is frozen: a different date is 409 visit_reschedule_already_applied (the same date is a no-op).</summary>
+    string? RescheduleToDate = null) : IRequest<Response<Guid>>;

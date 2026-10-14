@@ -10,7 +10,10 @@ public sealed record ListClaimsQuery(
     DateTimeOffset? EffectiveAt = null,
     string? Search = null,
     bool IncludeArchived = true,
-    bool IncludeCounts = false) : IRequest<Response<ClaimListDto>>;
+    bool IncludeCounts = false,
+    // WP-VW-W3 (W3-BE-c) — the objection answer's claim picker: one product's claims (with status=approved and
+    // includeArchived=false the picker gets exactly the claims an answer may rest on).
+    Guid? ProductId = null) : IRequest<Response<ClaimListDto>>;
 
 public sealed record GetClaimQuery(Guid ClaimId) : IRequest<Response<ClaimDto>>;
 
