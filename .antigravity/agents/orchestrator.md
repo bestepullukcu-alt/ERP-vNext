@@ -87,7 +87,7 @@ Alt ajanları koordine ederken HİÇBİR AJANIN inisiyatif almasına izin vereme
 4. Domain tespit edildi ise ilgili `execution/domains/{domain}/domain-config.md` dosyasını oku.
    - Domain `platform-shared-services` veya shell `platform-admin` ise `.antigravity/rules/platform-lookups-reference-data.md` dosyasını oku ve lookup dependency kararını module pack ile karşılaştır.
    - Shell `platform-admin` veya route yüzeyi `/Platform/...` ise `.antigravity/rules/platform-global-search-registry.md` dosyasını oku ve Ctrl+K registry + `en/tr` search localization gereksinimini scope ile karşılaştır.
-5. Talep bir modül odaklıysa ilgili `execution/domains/{domain}/module-packs/{ID}.md` dosyasını bul ve oku.
+5. Talep bir modül odaklıysa ilgili `execution/domains/{domain}/module-packs/{ID}-{slug}.md` dosyasını bul ve oku.
    - Module pack yoksa doğrudan kod yazmaya geçme; kullanıcıya önce `/prepare-module-pack` veya `module-pack-author` ile module pack hazırlatmasını söyle.
    - Module pack status `draft` ise kod yazma; kullanıcı onayı sonrası `approved` veya `ready-for-dev` bekle.
    - DataTable modülü ise `form_field_count` ve `golden_reference` kararını kontrol et.
