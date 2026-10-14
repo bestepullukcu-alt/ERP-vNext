@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>إثبات الزيارة</value></data>
+  <data name="Crumb" xml:space="preserve"><value>إعدادات CRM / الزيارة</value></data>
+  <data name="Intro" xml:space="preserve"><value>قواعد «بدء الزيارة» للمندوب. يُطبَّق إعداد المستأجر على جميع المندوبين؛ ويخفّفه الاستثناء المؤقت لمندوب واحد لفترة محددة.</value></data>
+  <data name="NewException" xml:space="preserve"><value>استثناء جديد</value></data>
+  <data name="TabSettings" xml:space="preserve"><value>الإعدادات حسب النطاق</value></data>
+  <data name="TabExceptions" xml:space="preserve"><value>الاستثناءات المؤقتة</value></data>
+  <data name="Retry" xml:space="preserve"><value>إعادة المحاولة</value></data>
+  <data name="ReadOnly" xml:space="preserve"><value>لديك صلاحية القراءة فقط؛ لا يمكن تغيير الإعدادات.</value></data>
+  <data name="ScopesTitle" xml:space="preserve"><value>النطاقات</value></data>
+  <data name="ScopesNote" xml:space="preserve"><value>الأولوية: وحدة العمل › الكيان القانوني › المستأجر</value></data>
+  <data name="TenantDefault" xml:space="preserve"><value>الإعداد الافتراضي للمستأجر</value></data>
+  <data name="Locked" xml:space="preserve"><value>لا يمكن حذفه</value></data>
+  <data name="AddLegalEntity" xml:space="preserve"><value>إضافة كيان قانوني</value></data>
+  <data name="AddLegalEntityHint" xml:space="preserve"><value>تُفتح طبقتا الكيان القانوني ووحدة العمل عند ربط منصب المندوب وتعيين منطقته.</value></data>
+  <data name="LookTitle" xml:space="preserve"><value>عرض الإعداد الفعلي لمندوب</value></data>
+  <data name="LookSearch" xml:space="preserve"><value>ابحث عن مندوب</value></data>
+  <data name="EffectiveTitle" xml:space="preserve"><value>الإعداد الفعلي</value></data>
+  <data name="CloseButton" xml:space="preserve"><value>إغلاق</value></data>
+  <data name="ColField" xml:space="preserve"><value>الحقل</value></data>
+  <data name="ColValue" xml:space="preserve"><value>القيمة الفعلية</value></data>
+  <data name="ColSource" xml:space="preserve"><value>المصدر</value></data>
+  <data name="Priority" xml:space="preserve"><value>الأولوية:</value></data>
+  <data name="SourceException" xml:space="preserve"><value>استثناء</value></data>
+  <data name="SourceTenant" xml:space="preserve"><value>المستأجر</value></data>
+  <data name="ScopeUnresolved" xml:space="preserve"><value>طبقتا الكيان القانوني ووحدة العمل غير مرتبطتين بعد.</value></data>
+  <data name="TypeTenant" xml:space="preserve"><value>المستأجر</value></data>
+  <data name="PaneForm" xml:space="preserve"><value>نموذج الإعداد</value></data>
+  <data name="PaneHistory" xml:space="preserve"><value>سجل التغييرات</value></data>
+  <data name="SoonTitle" xml:space="preserve"><value>أدلة إضافية</value></data>
+  <data name="SoonText" xml:space="preserve"><value>سيُضاف هنا رمز QR للمؤسسة والتحقق من الموقع المزيف.</value></data>
+  <data name="SoonBadge" xml:space="preserve"><value>قريبًا</value></data>
+  <data name="PreviewTitle" xml:space="preserve"><value>سيرى المندوب في هذا النطاق ما يلي</value></data>
+  <data name="PvStartTitle" xml:space="preserve"><value>بدء الزيارة</value></data>
+  <data name="PvSample" xml:space="preserve"><value>زيارة نموذجية · المؤسسة · الوقت</value></data>
+  <data name="PvPhoto" xml:space="preserve"><value>الصورة</value></data>
+  <data name="PvLocation" xml:space="preserve"><value>الموقع</value></data>
+  <data name="PvSign" xml:space="preserve"><value>موافقة الطبيب · مطلوبة في نهاية الزيارة</value></data>
+  <data name="PvStart" xml:space="preserve"><value>بدء العرض</value></data>
+  <data name="LastChange" xml:space="preserve"><value>آخر تعديل</value></data>
+  <data name="Unsaved" xml:space="preserve"><value>توجد تغييرات غير محفوظة</value></data>
+  <data name="CancelButton" xml:space="preserve"><value>إلغاء</value></data>
+  <data name="SaveButton" xml:space="preserve"><value>حفظ</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>سجل التغييرات · الإعداد الافتراضي للمستأجر</value></data>
+  <data name="AuditReadOnly" xml:space="preserve"><value>سجل تدقيق · للقراءة فقط</value></data>
+  <data name="ColDate" xml:space="preserve"><value>التاريخ</value></data>
+  <data name="ColPerson" xml:space="preserve"><value>الشخص</value></data>
+  <data name="ColChange" xml:space="preserve"><value>القيمة القديمة ← الجديدة</value></data>
+  <data name="ExceptionsInfo" xml:space="preserve"><value>الاستثناء ليس إعدادًا دائمًا: فهو يخفّف القواعد لمندوب واحد بمبرّر ولمدة أقصاها 30 يومًا. لا يُطبَّق إلا الاستثناء المعتمد وضمن تواريخه. تُعلَّم الزيارات التي بدأت باستثناء بعبارة «بدأت باستثناء» في عرض المدير.</value></data>
+  <data name="ExceptionsTitle" xml:space="preserve"><value>الاستثناءات المؤقتة</value></data>
+  <data name="XColRep" xml:space="preserve"><value>المندوب</value></data>
+  <data name="XColRules" xml:space="preserve"><value>القواعد المخففة</value></data>
+  <data name="XColRange" xml:space="preserve"><value>نطاق التاريخ</value></data>
+  <data name="XColReason" xml:space="preserve"><value>المبرّر</value></data>
+  <data name="XColPeople" xml:space="preserve"><value>المُنشئ / المعتمِد</value></data>
+  <data name="XColStatus" xml:space="preserve"><value>الحالة</value></data>
+  <data name="OpenRow" xml:space="preserve"><value>فتح</value></data>
+  <data name="SaveTitle" xml:space="preserve"><value>هل تريد حفظ التغييرات؟</value></data>
+  <data name="SaveConfirm" xml:space="preserve"><value>حفظ وتطبيق</value></data>
+  <data name="XNewTitle" xml:space="preserve"><value>استثناء مؤقت جديد</value></data>
+  <data name="XRep" xml:space="preserve"><value>المندوب</value></data>
+  <data name="XRules" xml:space="preserve"><value>القواعد المراد تخفيفها</value></data>
+  <data name="XRulesHint" xml:space="preserve"><value>لا يمكن تغيير الحدود (المسافة، الدقة، الزيارة القصيرة) باستثناء.</value></data>
+  <data name="XFrom" xml:space="preserve"><value>البداية</value></data>
+  <data name="XTo" xml:space="preserve"><value>النهاية</value></data>
+  <data name="XReason" xml:space="preserve"><value>المبرّر</value></data>
+  <data name="XReasonPlaceholder" xml:space="preserve"><value>مثال: وحدة GPS في الجهاز اللوحي معطلة؛ بانتظار استبدال الجهاز (رقم طلب تقنية المعلومات).</value></data>
+  <data name="XSodNew" xml:space="preserve"><value>فصل المهام: لا يمكنك اعتماد هذا الاستثناء بنفسك. بعد إرساله يعتمده شخص آخر في مركز المهام ويُطبَّق ضمن تواريخه.</value></data>
+  <data name="XSubmit" xml:space="preserve"><value>إرسال للاعتماد</value></data>
+  <data name="XDetailTitle" xml:space="preserve"><value>تفاصيل الاستثناء</value></data>
+  <data name="F_locationMode" xml:space="preserve"><value>التحقق من الموقع</value></data>
+  <data name="F_radiusMeters" xml:space="preserve"><value>المسافة المسموح بها</value></data>
+  <data name="F_maxAccuracyMeters" xml:space="preserve"><value>أدنى دقة للموقع</value></data>
+  <data name="F_accountWithoutLocation" xml:space="preserve"><value>مؤسسة بلا موقع</value></data>
+  <data name="F_photoMode" xml:space="preserve"><value>الصورة</value></data>
+  <data name="F_doctorConfirmation" xml:space="preserve"><value>موافقة الطبيب (التوقيع)</value></data>
+  <data name="F_durationConsistency" xml:space="preserve"><value>اتساق المدة</value></data>
+  <data name="F_shortVisitSeconds" xml:space="preserve"><value>حد الزيارة القصيرة</value></data>
+  <data name="D_locationMode_required" xml:space="preserve"><value>إلزامي: لا يمكن للمندوب بدء الزيارة إذا لم يكن قريبًا من المؤسسة.</value></data>
+  <data name="D_locationMode_info" xml:space="preserve"><value>للعلم: يُسجَّل الموقع ويمكن بدء الزيارة في كل الأحوال.</value></data>
+  <data name="D_accountWithoutLocation" xml:space="preserve"><value>إذا لم تكن هناك إحداثيات في سجل المؤسسة</value></data>
+  <data name="D_photoMode" xml:space="preserve"><value>مدخل المؤسسة أو منطقة الانتظار؛ لا تُلتقط الوجوه (حماية البيانات).</value></data>
+  <data name="D_doctorConfirmation" xml:space="preserve"><value>توقيع أو لمسة موافقة على الجهاز اللوحي في نهاية الزيارة. مطلوبة دائمًا عند طلب العينات.</value></data>
+  <data name="Opt_locationMode_required" xml:space="preserve"><value>إلزامي</value></data>
+  <data name="Opt_locationMode_info" xml:space="preserve"><value>للعلم</value></data>
+  <data name="Opt_photoMode_required" xml:space="preserve"><value>إلزامية</value></data>
+  <data name="Opt_photoMode_optional" xml:space="preserve"><value>اختيارية</value></data>
+  <data name="Opt_accountWithoutLocation_allow_flagged" xml:space="preserve"><value>تبدأ الزيارة ويُوضع عليها علامة</value></data>
+  <data name="Opt_accountWithoutLocation_block" xml:space="preserve"><value>تُمنع الزيارة</value></data>
+  <data name="R_radiusMeters" xml:space="preserve"><value>50–5000 م · الافتراضي للمستأجر 300</value></data>
+  <data name="R_maxAccuracyMeters" xml:space="preserve"><value>10–1000 م · الافتراضي للمستأجر 150</value></data>
+  <data name="R_shortVisitSeconds" xml:space="preserve"><value>30–1800 ث · تُوضع علامة على الزيارة الأقصر من هذه المدة.</value></data>
+  <data name="G_location" xml:space="preserve"><value>الموقع</value></data>
+  <data name="G_photo" xml:space="preserve"><value>الصورة</value></data>
+  <data name="G_approval" xml:space="preserve"><value>الموافقة والمدة</value></data>
+  <data name="ValueOn" xml:space="preserve"><value>مفعّل</value></data>
+  <data name="ValueOff" xml:space="preserve"><value>غير مفعّل</value></data>
+  <data name="UnitMeters" xml:space="preserve"><value>{0} م</value></data>
+  <data name="UnitSeconds" xml:space="preserve"><value>{0} ث</value></data>
+  <data name="UnitM" xml:space="preserve"><value>م</value></data>
+  <data name="UnitS" xml:space="preserve"><value>ث</value></data>
+  <data name="RangeError" xml:space="preserve"><value>يجب أن تكون القيمة بين {0} و{1} {2}.</value></data>
+  <data name="PvRequired" xml:space="preserve"><value>إلزامي</value></data>
+  <data name="PvOptional" xml:space="preserve"><value>اختياري</value></data>
+  <data name="PvInfo" xml:space="preserve"><value>للعلم</value></data>
+  <data name="PvLocationRequired" xml:space="preserve"><value>يجب أن تكون على بُعد أقل من {0} م من المؤسسة.</value></data>
+  <data name="PvLocationInfo" xml:space="preserve"><value>يُسجَّل للعلم.</value></data>
+  <data name="PvOpenBoth" xml:space="preserve"><value>يُفعَّل زر «بدء العرض» بعد التقاط الصورة وعندما يكون المندوب على بُعد أقل من {0} م من المؤسسة.</value></data>
+  <data name="PvOpenLocation" xml:space="preserve"><value>يُفعَّل زر «بدء العرض» عندما يكون المندوب على بُعد أقل من {0} م من المؤسسة.</value></data>
+  <data name="PvOpenPhoto" xml:space="preserve"><value>يُفعَّل زر «بدء العرض» بعد التقاط الصورة.</value></data>
+  <data name="PvOpenNone" xml:space="preserve"><value>زر «بدء العرض» مفعّل فورًا؛ يُسجَّل الموقع والصورة للعلم.</value></data>
+  <data name="PvAccuracy" xml:space="preserve"><value>إذا كانت دقة الموقع أسوأ من {0} م يُعدّ الموقع غير صالح.</value></data>
+  <data name="PvNoLocationFlag" xml:space="preserve"><value>في المؤسسة التي لا تملك إحداثيات تبدأ الزيارة ويُوضع عليها علامة.</value></data>
+  <data name="PvNoLocationBlock" xml:space="preserve"><value>في المؤسسة التي لا تملك إحداثيات لا يمكن بدء الزيارة.</value></data>
+  <data name="PvShort" xml:space="preserve"><value>تُوضع علامة على الزيارات الأقصر من {0} ث.</value></data>
+  <data name="Reps" xml:space="preserve"><value>{0} مندوب</value></data>
+  <data name="AllFields" xml:space="preserve"><value>كل الحقول معبأة</value></data>
+  <data name="DefaultPolicy" xml:space="preserve"><value>القيم الافتراضية · لم تُحفظ بعد</value></data>
+  <data name="YouLabel" xml:space="preserve"><value>أنت</value></data>
+  <data name="WorkflowActor" xml:space="preserve"><value>مسار الاعتماد</value></data>
+  <data name="SaveText" xml:space="preserve"><value>يُطبَّق التغيير فورًا على {0} مندوب في هذا النطاق.</value></data>
+  <data name="Saved" xml:space="preserve"><value>تم حفظ الإعدادات وتطبيقها على {0} مندوب.</value></data>
+  <data name="LookPlaceholder" xml:space="preserve"><value>اختر مندوبًا</value></data>
+  <data name="ActiveException" xml:space="preserve"><value>استثناء نشط: {0} · حتى {1}</value></data>
+  <data name="SourceExceptionUntil" xml:space="preserve"><value>استثناء · حتى {0}</value></data>
+  <data name="HistCreated" xml:space="preserve"><value>أُنشئ الإعداد</value></data>
+  <data name="NoHistory" xml:space="preserve"><value>لا توجد تغييرات مسجلة بعد؛ تُطبَّق القيم الافتراضية.</value></data>
+  <data name="XFilter_all" xml:space="preserve"><value>الكل</value></data>
+  <data name="XFilter_active" xml:space="preserve"><value>نشطة</value></data>
+  <data name="XFilter_planned" xml:space="preserve"><value>مخططة</value></data>
+  <data name="XFilter_in_review" xml:space="preserve"><value>بانتظار الاعتماد</value></data>
+  <data name="XFilter_draft" xml:space="preserve"><value>مسودات</value></data>
+  <data name="XFilter_expired" xml:space="preserve"><value>منتهية</value></data>
+  <data name="XFilter_cancelled" xml:space="preserve"><value>ملغاة</value></data>
+  <data name="XFilter_ended_early" xml:space="preserve"><value>منتهية مبكرًا</value></data>
+  <data name="XRule_location_info" xml:space="preserve"><value>التحقق من الموقع: للعلم</value></data>
+  <data name="XRule_photo_optional" xml:space="preserve"><value>الصورة: اختيارية</value></data>
+  <data name="XRule_account_without_location_allow" xml:space="preserve"><value>مؤسسة بلا موقع: تبدأ الزيارة</value></data>
+  <data name="XSt_draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="XSt_in_review" xml:space="preserve"><value>بانتظار الاعتماد</value></data>
+  <data name="XSt_active" xml:space="preserve"><value>نشط</value></data>
+  <data name="XSt_planned" xml:space="preserve"><value>مخطط</value></data>
+  <data name="XSt_expired" xml:space="preserve"><value>منتهي</value></data>
+  <data name="XSt_cancelled" xml:space="preserve"><value>ملغى</value></data>
+  <data name="XSt_ended_early" xml:space="preserve"><value>انتهى مبكرًا</value></data>
+  <data name="XDays" xml:space="preserve"><value>{0} يوم</value></data>
+  <data name="XCreatedBy" xml:space="preserve"><value>المُنشئ: {0}</value></data>
+  <data name="XApprovedBy" xml:space="preserve"><value>المعتمِد: {0}</value></data>
+  <data name="XEmpty" xml:space="preserve"><value>لا توجد استثناءات في هذا العرض.</value></data>
+  <data name="XDetailRules" xml:space="preserve"><value>القواعد المخففة</value></data>
+  <data name="XDetailRange" xml:space="preserve"><value>نطاق التاريخ</value></data>
+  <data name="XDetailReason" xml:space="preserve"><value>المبرّر</value></data>
+  <data name="XInReviewNote" xml:space="preserve"><value>بانتظار الاعتماد في مركز المهام.</value></data>
+  <data name="XSod" xml:space="preserve"><value>أنت من أنشأ هذا الاستثناء أو عدّله أو أرسله؛ يجب أن يعتمده شخص آخر.</value></data>
+  <data name="XReturnComment" xml:space="preserve"><value>ملاحظة للمُنشئ</value></data>
+  <data name="XCloseReason" xml:space="preserve"><value>المبرّر</value></data>
+  <data name="TlCreated" xml:space="preserve"><value>أُنشئ</value></data>
+  <data name="TlSubmitted" xml:space="preserve"><value>أُرسل للاعتماد</value></data>
+  <data name="TlApproved" xml:space="preserve"><value>اعتُمد</value></data>
+  <data name="TlReturned" xml:space="preserve"><value>أُعيد إلى المسودة</value></data>
+  <data name="TlWithdrawn" xml:space="preserve"><value>سُحب</value></data>
+  <data name="TlTimedOut" xml:space="preserve"><value>انتهت مهلة الاعتماد</value></data>
+  <data name="TlCancelled" xml:space="preserve"><value>أُلغي</value></data>
+  <data name="TlEndedEarly" xml:space="preserve"><value>أُنهي مبكرًا</value></data>
+  <data name="TlRefused_visit_evidence_exception_sod" xml:space="preserve"><value>أُعيد: المعتمِد هو المُنشئ أو المُرسِل</value></data>
+  <data name="TlRefused_visit_evidence_exception_overlap" xml:space="preserve"><value>أُعيد: يتداخل الآن مع استثناء آخر</value></data>
+  <data name="XBtnSubmit" xml:space="preserve"><value>إرسال للاعتماد</value></data>
+  <data name="XBtnWithdraw" xml:space="preserve"><value>سحب</value></data>
+  <data name="XBtnApprove" xml:space="preserve"><value>اعتماد</value></data>
+  <data name="XBtnReturn" xml:space="preserve"><value>إعادة إلى المسودة</value></data>
+  <data name="XBtnCancel" xml:space="preserve"><value>إلغاء الاستثناء</value></data>
+  <data name="XBtnEndEarly" xml:space="preserve"><value>إنهاء مبكر</value></data>
+  <data name="XBtnConfirmReturn" xml:space="preserve"><value>تأكيد الإعادة</value></data>
+  <data name="XBtnConfirmCancel" xml:space="preserve"><value>تأكيد الإلغاء</value></data>
+  <data name="XBtnConfirmEndEarly" xml:space="preserve"><value>تأكيد الإنهاء المبكر</value></data>
+  <data name="XSubmitted" xml:space="preserve"><value>أُرسل الاستثناء للاعتماد.</value></data>
+  <data name="XWithdrawn" xml:space="preserve"><value>سُحب طلب الاعتماد؛ عاد الاستثناء مسودة.</value></data>
+  <data name="XApprovedToast" xml:space="preserve"><value>أُرسل القرار؛ يُعتمد الاستثناء عند إغلاق المسار.</value></data>
+  <data name="XReturnedToast" xml:space="preserve"><value>أُعيد إلى المُنشئ.</value></data>
+  <data name="XCancelledToast" xml:space="preserve"><value>أُلغي الاستثناء.</value></data>
+  <data name="XEndedToast" xml:space="preserve"><value>أُنهي الاستثناء مبكرًا؛ ينتهي اليوم.</value></data>
+  <data name="XCreatedNotSent" xml:space="preserve"><value>حُفظ كمسودة لكن تعذّر إرساله للاعتماد: {0}</value></data>
+  <data name="XRuleNoRep" xml:space="preserve"><value>اختر مندوبًا أولًا.</value></data>
+  <data name="XRuleAlready" xml:space="preserve"><value>لدى هذا المندوب بالفعل {0} ({1}).</value></data>
+  <data name="XRuleNow" xml:space="preserve"><value>حاليًا: {0} · {1}</value></data>
+  <data name="XDayCounter" xml:space="preserve"><value>{0} يوم · بحد أقصى {1} يومًا</value></data>
+  <data name="XDayCounterEmpty" xml:space="preserve"><value>بحد أقصى {0} يومًا</value></data>
+  <data name="XErrRep" xml:space="preserve"><value>اختر مندوبًا.</value></data>
+  <data name="XErrRules" xml:space="preserve"><value>اختر قاعدة واحدة على الأقل.</value></data>
+  <data name="XErrFrom" xml:space="preserve"><value>اختر تاريخ البداية.</value></data>
+  <data name="XErrPast" xml:space="preserve"><value>لا يمكن أن تكون البداية في الماضي.</value></data>
+  <data name="XErrToRequired" xml:space="preserve"><value>تاريخ النهاية إلزامي؛ لا يوجد استثناء بلا نهاية.</value></data>
+  <data name="XErrToBefore" xml:space="preserve"><value>لا يمكن أن تسبق النهايةُ البداية.</value></data>
+  <data name="XErrTooLong" xml:space="preserve"><value>بحد أقصى 30 يومًا؛ النطاق المحدد {0} يومًا.</value></data>
+  <data name="XErrWhy" xml:space="preserve"><value>اكتب المبرّر.</value></data>
+  <data name="XErrWhyLong" xml:space="preserve"><value>بحد أقصى {0} حرف.</value></data>
+  <data name="Err_visit_evidence_exception_invalid" xml:space="preserve"><value>الاستثناء غير صالح: تحقّق من القواعد والتواريخ (لا بداية في الماضي، 30 يومًا كحد أقصى) والمبرّر.</value></data>
+  <data name="Err_visit_evidence_exception_overlap" xml:space="preserve"><value>لدى هذا المندوب استثناء يخفّف القاعدة نفسها في أيام متداخلة.</value></data>
+  <data name="Err_visit_evidence_exception_rep_unknown" xml:space="preserve"><value>ليس لدى المندوب تعيين منطقة أساسي نشط.</value></data>
+  <data name="Err_visit_evidence_exception_not_editable" xml:space="preserve"><value>لا يمكن تغيير هذا الاستثناء في حالته الحالية.</value></data>
+  <data name="Err_visit_evidence_exception_sod" xml:space="preserve"><value>فصل المهام: لا يمكن للمُنشئ أو المُرسِل اعتماده.</value></data>
+  <data name="Err_visit_evidence_exception_not_found" xml:space="preserve"><value>لم يتم العثور على الاستثناء.</value></data>
+  <data name="Err_visit_evidence_policy_invalid" xml:space="preserve"><value>قيمة خارج حدودها؛ لم يُحفظ شيء.</value></data>
+  <data name="Err_visit_execution_concurrency_conflict" xml:space="preserve"><value>تغيّرت الإعدادات في هذه الأثناء؛ أعد التحميل وحاول مجددًا.</value></data>
+  <data name="Err_workflow_template_missing" xml:space="preserve"><value>قالب مسار الاعتماد غير مُعدّ بعد. راجع المسؤول.</value></data>
+  <data name="Err_workflow_unavailable" xml:space="preserve"><value>تعذّر الوصول إلى مسار الاعتماد؛ لم يتغيّر شيء.</value></data>
+  <data name="Err_approval_forbidden" xml:space="preserve"><value>غير مسموح لك بذلك في مسار الاعتماد.</value></data>
+  <data name="Err_no_open_review" xml:space="preserve"><value>لا يوجد اعتماد معلّق (ربما انتهى للتو).</value></data>
+  <data name="Err_withdraw_not_possible" xml:space="preserve"><value>لا يمكن سحب الاعتماد الآن.</value></data>
+  <data name="Err_rejection_comment_required" xml:space="preserve"><value>تتطلب الإعادة ملاحظة للمُنشئ.</value></data>
+  <data name="Err_workflow_request_rejected" xml:space="preserve"><value>رفض مسار الاعتماد الطلب.</value></data>
+  <data name="Err_permission_denied" xml:space="preserve"><value>ليست لديك صلاحية لهذا الإجراء.</value></data>
+  <data name="Err_conflict" xml:space="preserve"><value>تغيّر السجل في هذه الأثناء؛ أعد التحميل وحاول مجددًا.</value></data>
+  <data name="Err_unavailable" xml:space="preserve"><value>تعذّر الحفظ. لا يمكن الوصول إلى الخادم؛ تغييراتك محفوظة في هذه الشاشة.</value></data>
+  <data name="Err_generic" xml:space="preserve"><value>تعذّر إكمال الإجراء.</value></data>
+</root>

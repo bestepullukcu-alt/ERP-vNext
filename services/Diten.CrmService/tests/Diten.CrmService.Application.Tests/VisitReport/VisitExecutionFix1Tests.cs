@@ -43,7 +43,8 @@ public sealed class VisitExecutionFix1Tests
     }
 
     private RecordVisitOutcomeHandler Outcome()
-        => new(TenantCtx(), new NullActorContext(), _reports, _plans, TestCallerScope.Unrestricted(), _clock);
+        => new(TenantCtx(), new NullActorContext(), _reports, _plans, TestCallerScope.Unrestricted(), _clock,
+            FakeVisitReasonSet.Permissive().Validator()); // WP-VW-W2 — reasons are reference data
 
     private SubmitVisitReportHandler Submit()
         => new(TenantCtx(), new NullActorContext(), _reports, _plans, TestCallerScope.Unrestricted(), _clock);

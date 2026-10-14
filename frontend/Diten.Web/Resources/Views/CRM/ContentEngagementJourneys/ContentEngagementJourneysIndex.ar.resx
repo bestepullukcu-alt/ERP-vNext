@@ -114,4 +114,16 @@
   <data name="Err_content_engagement_journey_overlapping_published_version" xml:space="preserve"><value>توجد نسخة منشورة أخرى لرمز الرحلة هذا (باللغة نفسها) تغطي هذه التواريخ. غيّر تواريخ السريان أو أرشف النسخة الأخرى.</value></data>
   <data name="Err_content_engagement_journey_archived_no_mutation" xml:space="preserve"><value>لا يمكن نشر رحلة مؤرشفة.</value></data>
   <data name="Err_content_engagement_journey_concurrency_conflict" xml:space="preserve"><value>عدّل شخص آخر الرحلة في هذه الأثناء. أعد تحميل الصفحة وحاول مرة أخرى.</value></data>
+  <data name="AdoptionStage" xml:space="preserve">
+    <value>مرحلة الاستخدام</value>
+  </data>
+  <data name="AdoptionStageHelp" xml:space="preserve">
+    <value>يبلّغ المندوب عن مرحلة استخدام الطبيب؛ وتنتقل الرحلة إلى أول مرحلة مرتبطة بعدها.</value>
+  </data>
+  <data name="AdoptionStageNone" xml:space="preserve">
+    <value>غير مرتبط</value>
+  </data>
+  <data name="AdoptionStageUnavailable" xml:space="preserve">
+    <value>تعذرت قراءة قائمة مراحل الاستخدام.</value>
+  </data>
 </root>

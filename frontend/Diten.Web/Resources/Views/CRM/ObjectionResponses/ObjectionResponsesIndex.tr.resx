@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ColProduct" xml:space="preserve"><value>Ürün</value></data>
+  <data name="ColCategory" xml:space="preserve"><value>Kategori</value></data>
+  <data name="ColQuestion" xml:space="preserve"><value>İtiraz</value></data>
+  <data name="ColClaims" xml:space="preserve"><value>Bağlı iddia</value></data>
+  <data name="ColUsage" xml:space="preserve"><value>Kullanıldığı adım</value></data>
+  <data name="ColStatus" xml:space="preserve"><value>Durum</value></data>
+  <data name="ColUpdated" xml:space="preserve"><value>Son değişiklik</value></data>
+  <data name="ColActions" xml:space="preserve"><value>Eylemler</value></data>
+  <data name="NewResponse" xml:space="preserve"><value>Yeni itiraz yanıtı</value></data>
+  <data name="ViewRecord" xml:space="preserve"><value>Görüntüle</value></data>
+  <data name="EditRecord" xml:space="preserve"><value>Düzenle</value></data>
+  <data name="AllProducts" xml:space="preserve"><value>Tüm ürünler</value></data>
+  <data name="AllCategories" xml:space="preserve"><value>Tüm kategoriler</value></data>
+  <data name="AllStatuses" xml:space="preserve"><value>Tüm durumlar</value></data>
+  <data name="SearchPlaceholder" xml:space="preserve"><value>İtiraz metninde ara</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="Status_in_review" xml:space="preserve"><value>Onay bekliyor</value></data>
+  <data name="Status_approved" xml:space="preserve"><value>Onaylı</value></data>
+  <data name="Status_retired" xml:space="preserve"><value>Emekli</value></data>
+  <data name="EditTitle" xml:space="preserve"><value>İtiraz yanıtını düzenle</value></data>
+  <data name="NewTitle" xml:space="preserve"><value>Yeni itiraz yanıtı</value></data>
+  <data name="SelectProduct" xml:space="preserve"><value>Ürün seçin</value></data>
+  <data name="SelectCategory" xml:space="preserve"><value>Kategori seçin</value></data>
+  <data name="ClaimsSelected" xml:space="preserve"><value>{0} seçili (en çok {1})</value></data>
+  <data name="ClaimsMax" xml:space="preserve"><value>En çok {0} iddia seçilebilir.</value></data>
+  <data name="ClaimsNone" xml:space="preserve"><value>Bu ürünün onaylı iddiası yok.</value></data>
+  <data name="ClaimsPickProduct" xml:space="preserve"><value>Onaylı iddiaları görmek için ürün seçin.</value></data>
+  <data name="ClaimsUnavailable" xml:space="preserve"><value>İddiaları okuma yetkiniz yok.</value></data>
+  <data name="ProductsUnavailable" xml:space="preserve"><value>Ürün listesi okunamadı.</value></data>
+  <data name="CategoriesUnavailable" xml:space="preserve"><value>Kategori listesi okunamadı; tekrar deneyin.</value></data>
+  <data name="PreviewEmptyQuestion" xml:space="preserve"><value>Doktorun sorusu burada görünür.</value></data>
+  <data name="PreviewEmptyAnswer" xml:space="preserve"><value>Onaylı yanıt burada görünür.</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Taslağı kaydet</value></data>
+  <data name="Saved" xml:space="preserve"><value>Taslak kaydedildi.</value></data>
+  <data name="Submitted" xml:space="preserve"><value>Onaya gönderildi.</value></data>
+  <data name="SubmitForApproval" xml:space="preserve"><value>Onaya gönder</value></data>
+  <data name="CancelButton" xml:space="preserve"><value>Vazgeç</value></data>
+  <data name="UnsavedChanges" xml:space="preserve"><value>Kaydedilmemiş değişiklikler var. Yine de çıkılsın mı?</value></data>
+  <data name="CreatedBy" xml:space="preserve"><value>Oluşturan</value></data>
+  <data name="LastSaved" xml:space="preserve"><value>Son kayıt</value></data>
+  <data name="ProductRequired" xml:space="preserve"><value>Ürün seçin.</value></data>
+  <data name="PendingLine" xml:space="preserve"><value>Onay bekliyor · {0}, {1} tarihinde onaya gönderdi.</value></data>
+  <data name="ApprovedNote" xml:space="preserve"><value>Onaylı yanıt değiştirilemez. Değiştirmek için emekliye ayırıp yenisini oluşturun.</value></data>
+  <data name="RetiredLine" xml:space="preserve"><value>Emekli · {0}, {1}. Artık ziyaretlerde gösterilmez.</value></data>
+  <data name="DraftReturnedLine" xml:space="preserve"><value>Taslağa geri gönderildi · {0}, {1}: “{2}”</value></data>
+  <data name="DraftReturnedReason" xml:space="preserve"><value>Taslağa döndü: {0}</value></data>
+  <data name="SodHint" xml:space="preserve"><value>Bu kaydı siz yazdınız veya gönderdiniz; başka bir onaylayıcı onaylamalı.</value></data>
+  <data name="WithdrawButton" xml:space="preserve"><value>Geri çek</value></data>
+  <data name="ApproveButton" xml:space="preserve"><value>Onayla</value></data>
+  <data name="ReturnToDraft" xml:space="preserve"><value>Taslağa geri gönder</value></data>
+  <data name="RetireButton" xml:space="preserve"><value>Emekliye ayır</value></data>
+  <data name="Copy" xml:space="preserve"><value>Kopyasından yeni taslak</value></data>
+  <data name="EditButton" xml:space="preserve"><value>Düzenle</value></data>
+  <data name="ReturnTitle" xml:space="preserve"><value>Taslağa geri gönder</value></data>
+  <data name="ReturnNoteLabel" xml:space="preserve"><value>Yazara not (zorunlu)</value></data>
+  <data name="ReturnNoteRequired" xml:space="preserve"><value>Taslağa geri göndermeden önce not yazın.</value></data>
+  <data name="ReturnConfirm" xml:space="preserve"><value>Geri gönder</value></data>
+  <data name="RetireTitle" xml:space="preserve"><value>Bu yanıt emekliye ayrılsın mı?</value></data>
+  <data name="RetireText" xml:space="preserve"><value>Emekliye ayrılan yanıt yayınlanmış olanlar dahil tüm sunumlardan hemen düşer; geri alınamaz. Değişiklik yeni bir yanıttır.</value></data>
+  <data name="RetireUsed" xml:space="preserve"><value>{0} adımda kullanılıyor.</value></data>
+  <data name="RetireConfirm" xml:space="preserve"><value>Emekliye ayır</value></data>
+  <data name="WithdrawConfirm" xml:space="preserve"><value>Onay isteği geri çekilsin mi? Yanıt taslağa döner.</value></data>
+  <data name="SubmitConfirm" xml:space="preserve"><value>Bu yanıt onaya gönderilsin mi? İnceleme sırasında kilitlenir.</value></data>
+  <data name="ApproveConfirm" xml:space="preserve"><value>Bu yanıt onaylansın mı? Temsilciler ziyaretlerde görecek.</value></data>
+  <data name="Approved" xml:space="preserve"><value>Onaylandı.</value></data>
+  <data name="Returned" xml:space="preserve"><value>Taslağa geri gönderildi.</value></data>
+  <data name="Withdrawn" xml:space="preserve"><value>İstek geri çekildi.</value></data>
+  <data name="Retired" xml:space="preserve"><value>Emekliye ayrıldı.</value></data>
+  <data name="Copied" xml:space="preserve"><value>Kopyasından yeni taslak oluşturuldu.</value></data>
+  <data name="UsagesNone" xml:space="preserve"><value>Bu yanıt henüz hiçbir bilgi yolu adımında beklenen itiraz olarak seçilmedi.</value></data>
+  <data name="UsagePath" xml:space="preserve"><value>Bilgi yolu</value></data>
+  <data name="UsageVersion" xml:space="preserve"><value>Sürüm</value></data>
+  <data name="UsageStep" xml:space="preserve"><value>Adım</value></data>
+  <data name="UsageStepLine" xml:space="preserve"><value>{0} · {1}</value></data>
+  <data name="UsageCount" xml:space="preserve"><value>{0} adım</value></data>
+  <data name="PathStatus_draft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="PathStatus_review" xml:space="preserve"><value>İncelemede</value></data>
+  <data name="PathStatus_approved" xml:space="preserve"><value>Onaylı</value></data>
+  <data name="PathStatus_published" xml:space="preserve"><value>Yayında</value></data>
+  <data name="PathStatus_inactive" xml:space="preserve"><value>Pasif</value></data>
+  <data name="PathStatus_archived" xml:space="preserve"><value>Arşivlendi</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>Geçmiş</value></data>
+  <data name="Event_created" xml:space="preserve"><value>Oluşturuldu</value></data>
+  <data name="Event_submitted" xml:space="preserve"><value>Onaya gönderildi</value></data>
+  <data name="Event_approved" xml:space="preserve"><value>Onaylandı</value></data>
+  <data name="Event_returned" xml:space="preserve"><value>Taslağa geri gönderildi</value></data>
+  <data name="Event_withdrawn" xml:space="preserve"><value>Geri çekildi</value></data>
+  <data name="Event_timeout" xml:space="preserve"><value>Süresi doldu</value></data>
+  <data name="Event_retired" xml:space="preserve"><value>Emekliye ayrıldı</value></data>
+  <data name="EventLine" xml:space="preserve"><value>{0} · {1}</value></data>
+  <data name="UnknownUser" xml:space="preserve"><value>Bilinmeyen kullanıcı</value></data>
+  <data name="ClaimNotApprovedAnymore" xml:space="preserve"><value>Bu iddia artık onaylı değil.</value></data>
+  <data name="NotFound" xml:space="preserve"><value>Yanıt bulunamadı.</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>Yanıt yüklenemedi; tekrar deneyin.</value></data>
+  <data name="ActionFailed" xml:space="preserve"><value>İşlem tamamlanamadı.</value></data>
+  <data name="Err_objection_response_incomplete" xml:space="preserve"><value>Onaya göndermeden önce ürün, kategori, soru ve yanıtı doldurun.</value></data>
+  <data name="Err_objection_claim_not_approved" xml:space="preserve"><value>Seçili bir iddia artık onaylı değil; çıkarıp tekrar deneyin.</value></data>
+  <data name="Err_objection_claim_product_mismatch" xml:space="preserve"><value>Seçili bir iddia başka bir ürüne ait.</value></data>
+  <data name="Err_objection_response_sod" xml:space="preserve"><value>Onaylayan kişi bu yanıtı yazdığı, düzenlediği veya gönderdiği için yanıt taslağa döndü; başka bir onaylayıcı onaylamalı.</value></data>
+  <data name="Err_objection_response_in_review" xml:space="preserve"><value>Yanıt inceleme sırasında kilitli.</value></data>
+  <data name="Err_objection_response_not_editable" xml:space="preserve"><value>Yalnız taslak düzenlenebilir.</value></data>
+  <data name="Err_objection_response_not_draft" xml:space="preserve"><value>Bu işlem yalnız taslakta yapılabilir.</value></data>
+  <data name="Err_approval_via_workflow_only" xml:space="preserve"><value>Onay yalnız onay görevi üzerinden verilir.</value></data>
+  <data name="Err_reference_data_unavailable" xml:space="preserve"><value>Kategori listesi okunamadı; hiçbir şey kaydedilmedi. Tekrar deneyin.</value></data>
+  <data name="Err_objection_category_invalid" xml:space="preserve"><value>Kategori etkin bir değer değil.</value></data>
+  <data name="Err_objection_product_invalid" xml:space="preserve"><value>Ürün, ürün ana verisinde bulunamadı.</value></data>
+  <data name="Err_objection_response_invalid" xml:space="preserve"><value>Alanları kontrol edin: soru ≤ 500, yanıt ≤ 4000 karakter, en çok 10 iddia.</value></data>
+  <data name="Err_objection_response_not_found" xml:space="preserve"><value>Yanıt bulunamadı.</value></data>
+  <data name="Err_decision_comment_required" xml:space="preserve"><value>Taslağa geri göndermek için not gerekir.</value></data>
+  <data name="Err_dependency_unavailable" xml:space="preserve"><value>Bağlı bir servis kullanılamıyor; tekrar deneyin.</value></data>
+  <data name="Err_version_conflict" xml:space="preserve"><value>Bu yanıtı bu arada başka biri kaydetti; sayfayı yenileyip tekrar deneyin.</value></data>
+  <data name="Err_service_unavailable" xml:space="preserve"><value>Servis şu anda kullanılamıyor; tekrar deneyin.</value></data>
+  <data name="PageTitle" xml:space="preserve"><value>İtiraz kütüphanesi</value></data>
+  <data name="PageGroup" xml:space="preserve"><value>Content Studio</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Temsilcilerin ziyaret sırasında gördüğü, doktor itirazlarına onaylı yanıtlar.</value></data>
+  <data name="EmptyTitle" xml:space="preserve"><value>Henüz itiraz yanıtı yok</value></data>
+  <data name="EmptyText" xml:space="preserve"><value>Temsilcinin sunum sırasında göreceği beklenen itirazlar ve onaylı yanıtlar burada toplanır. İlk kaydı oluşturarak başlayın.</value></data>
+  <data name="SectionContent" xml:space="preserve"><value>İtiraz ve onaylı yanıt</value></data>
+  <data name="FieldProduct" xml:space="preserve"><value>Ürün</value></data>
+  <data name="FieldCategory" xml:space="preserve"><value>Kategori</value></data>
+  <data name="FieldQuestion" xml:space="preserve"><value>İtiraz · doktorun sorusu</value></data>
+  <data name="FieldAnswer" xml:space="preserve"><value>Onaylı yanıt</value></data>
+  <data name="FieldClaims" xml:space="preserve"><value>Dayanak iddialar</value></data>
+  <data name="ClaimsHint" xml:space="preserve"><value>Yalnız seçili ürünün onaylı iddiaları listelenir.</value></data>
+  <data name="PreviewTitle" xml:space="preserve"><value>Önizleme</value></data>
+  <data name="PreviewRemote" xml:space="preserve"><value>Temsilci kumandası · Notlar</value></data>
+  <data name="PreviewObjections" xml:space="preserve"><value>Beklenen itirazlar · onaylı yanıt</value></data>
+  <data name="MetaNote" xml:space="preserve"><value>Onaylandıktan sonra kayıt değiştirilemez. Onayı yazar dışında bir onaylayıcı verir.</value></data>
+  <data name="RecordTitle" xml:space="preserve"><value>İtiraz yanıtı</value></data>
+  <data name="UsagesTitle" xml:space="preserve"><value>Kullanıldığı yerler</value></data>
+  <data name="CloseButton" xml:space="preserve"><value>Kapat</value></data>
+  <data name="QuestionPlaceholder" xml:space="preserve"><value>ör. Tamsulin ile memnunum, neden değiştireyim?</value></data>
+  <data name="AnswerPlaceholder" xml:space="preserve"><value>Temsilcinin söyleyeceği yanıt. Yalnız onaylı iddialara dayanın.</value></data>
+  <data name="NotSavedYet" xml:space="preserve"><value>Henüz kaydedilmedi</value></data>
+</root>

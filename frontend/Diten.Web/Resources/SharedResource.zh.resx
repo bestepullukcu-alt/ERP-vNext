@@ -703,6 +703,9 @@
   <data name="Nav.Page.LEGALPROFILES" xml:space="preserve">
     <value>法律概况</value>
   </data>
+  <data name="Nav.Page.VISITWORKSPACE" xml:space="preserve">
+    <value>拜访工作台</value>
+  </data>
   <data name="Nav.Page.VISITPLANNING" xml:space="preserve">
     <value>拜访计划</value>
   </data>
@@ -747,6 +750,9 @@
   </data>
   <data name="Nav.Page.BRANDS" xml:space="preserve">
     <value>品牌</value>
+  </data>
+  <data name="Nav.Page.COMPETITORPRODUCTS" xml:space="preserve">
+    <value>竞品</value>
   </data>
   <data name="PlannedVisitsMenu" xml:space="preserve"><value>计划访问</value></data>
   <data name="Nav.Page.PLANNEDVISITS" xml:space="preserve"><value>计划访问</value></data>
@@ -1054,6 +1060,15 @@
   <data name="Nav.Page.BOMS" xml:space="preserve"><value>物料清单</value></data>
   <data name="Loading" xml:space="preserve">
     <value>加载中...</value>
+  </data>
+  <data name="Nav.Page.OBJECTIONRESPONSES" xml:space="preserve">
+    <value>异议库</value>
+  </data>
+  <data name="Nav.Page.VISITEVIDENCESETTINGS" xml:space="preserve">
+    <value>拜访证据</value>
+  </data>
+  <data name="Nav.Page.CRMDOCTORINSIGHTTHRESHOLDS" xml:space="preserve">
+    <value>潜力阈值</value>
   </data>
   <data name="Nav.Domain.SUPPLYCHAINEXECUTION" xml:space="preserve"><value>供应链执行</value></data>
   <data name="Nav.Module.CARRIERMANAGEMENT" xml:space="preserve"><value>承运商管理</value></data>

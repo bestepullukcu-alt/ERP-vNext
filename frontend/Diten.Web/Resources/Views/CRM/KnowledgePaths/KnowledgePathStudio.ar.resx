@@ -487,4 +487,57 @@
   <data name="Err_note_not_found" xml:space="preserve"><value>لم تُعثر على الملاحظة؛ أعد تحميل الصفحة.</value></data>
   <data name="DecisionApprovedFinal" xml:space="preserve"><value>سُجّلت الموافقة. اكتملت المراجعة.</value></data>
   <data name="Err_withdraw_not_submitter" xml:space="preserve"><value>لا يمكن سحب هذه المراجعة إلا لمن قدّمها.</value></data>
+  <data name="PnButton" xml:space="preserve"><value>ملاحظات العرض</value></data>
+  <data name="PnBar" xml:space="preserve"><value>ملاحظات العرض: {0} / {1} خطوات مكتملة</value></data>
+  <data name="PnMissing" xml:space="preserve"><value>ناقصة:</value></data>
+  <data name="PnFilledRule" xml:space="preserve"><value>مكتملة: الرسالة الرئيسية ونص الحديث مكتوبان.</value></data>
+  <data name="PnFilled" xml:space="preserve"><value>الملاحظات مكتملة</value></data>
+  <data name="PnEmpty" xml:space="preserve"><value>الملاحظات ناقصة</value></data>
+  <data name="PnStepOf" xml:space="preserve"><value>الخطوة {0} / {1}</value></data>
+  <data name="PnTabContent" xml:space="preserve"><value>المحتوى</value></data>
+  <data name="PnTabNotes" xml:space="preserve"><value>ملاحظات العرض</value></data>
+  <data name="PnRequired" xml:space="preserve"><value>الإلزام</value></data>
+  <data name="PnEstimatedDuration" xml:space="preserve"><value>المدة المقدرة</value></data>
+  <data name="PnPrerequisite" xml:space="preserve"><value>المتطلب المسبق</value></data>
+  <data name="PnContentNote" xml:space="preserve"><value>تبقى إعدادات المحتوى (الإلزام والمدة والمتطلب المسبق) على زر الإعدادات في بطاقة الخطوة.</value></data>
+  <data name="PnReadOnly" xml:space="preserve"><value>هذا الإصدار منشور أو ليس مسودة؛ ملاحظات العرض للقراءة فقط.</value></data>
+  <data name="PnKeyMessage" xml:space="preserve"><value>الرسالة الرئيسية</value></data>
+  <data name="PnTalkTrack" xml:space="preserve"><value>نص الحديث</value></data>
+  <data name="PnTarget" xml:space="preserve"><value>المدة المستهدفة</value></data>
+  <data name="PnSeconds" xml:space="preserve"><value>ث</value></data>
+  <data name="PnTargetHint" xml:space="preserve"><value>إذا تُرك فارغًا، تُستخدم المدة المقدرة للخطوة ({0} ث).</value></data>
+  <data name="PnTargetHintNone" xml:space="preserve"><value>إذا تُرك فارغًا، لا تُعرض مدة مستهدفة.</value></data>
+  <data name="PnEstimate" xml:space="preserve"><value>الهدف {0} ث</value></data>
+  <data name="PnTransition" xml:space="preserve"><value>جملة الانتقال</value></data>
+  <data name="PnObjections" xml:space="preserve"><value>الاعتراضات المتوقعة · {0} / {1}</value></data>
+  <data name="PnObjectionsHint" xml:space="preserve"><value>يمكن اختيار ردود الاعتراض المعتمدة لـ {0} فقط.</value></data>
+  <data name="PnReasonObjectionReadMissing" xml:space="preserve"><value>ليس لديك إذن بقراءة مكتبة الاعتراضات.</value></data>
+  <data name="PnReasonObjectionNoProduct" xml:space="preserve"><value>لا يوجد منتج لهذا المسار؛ لا يمكن ربط أي رد اعتراض.</value></data>
+  <data name="PnCreateInLibrary" xml:space="preserve"><value>إنشاء جديد في المكتبة</value></data>
+  <data name="PnCreateUnsaved" xml:space="preserve"><value>في هذه الخطوة تغييرات غير محفوظة. ستُفتح المكتبة في علامة تبويب جديدة؛ احفظ الخطوة عند العودة.</value></data>
+  <data name="PnRefresh" xml:space="preserve"><value>تحديث القائمة</value></data>
+  <data name="PnAddObjection" xml:space="preserve"><value>إضافة اعتراض</value></data>
+  <data name="PnPickerSearch" xml:space="preserve"><value>ابحث في الردود</value></data>
+  <data name="PnPickerEmpty" xml:space="preserve"><value>لا توجد ردود اعتراض معتمدة لهذا المنتج.</value></data>
+  <data name="PnPickerMax" xml:space="preserve"><value>يمكن اختيار {0} اعتراضات كحد أقصى.</value></data>
+  <data name="PnClaimCount" xml:space="preserve"><value>{0} ادعاء داعم</value></data>
+  <data name="PnRemove" xml:space="preserve"><value>إزالة</value></data>
+  <data name="PnUnusable" xml:space="preserve"><value>غير قابل للاستخدام (غير معتمد أو لمنتج آخر)؛ يُزال عند الحفظ.</value></data>
+  <data name="PnPreview" xml:space="preserve"><value>معاينة</value></data>
+  <data name="PnDoctorScreen" xml:space="preserve"><value>شاشة الطبيب</value></data>
+  <data name="PnNotHere" xml:space="preserve"><value>لا تظهر الملاحظات هنا</value></data>
+  <data name="PnRemote" xml:space="preserve"><value>جهاز تحكم المندوب · ملاحظات</value></data>
+  <data name="PnThisSlide" xml:space="preserve"><value>هذه الشريحة</value></data>
+  <data name="PnTargetShort" xml:space="preserve"><value>الهدف ≈ {0}</value></data>
+  <data name="PnApprovedAnswer" xml:space="preserve"><value>الاعتراضات المتوقعة · الرد المعتمد</value></data>
+  <data name="PnSave" xml:space="preserve"><value>حفظ الخطوة</value></data>
+  <data name="PnCancel" xml:space="preserve"><value>إلغاء</value></data>
+  <data name="PnSaved" xml:space="preserve"><value>تم حفظ الخطوة.</value></data>
+  <data name="PnInvalid" xml:space="preserve"><value>تحقق: الرسالة الرئيسية ≤ 500، نص الحديث ≤ 4000، الهدف 10–3600 ث، الانتقال ≤ 500، 10 اعتراضات كحد أقصى.</value></data>
+  <data name="PnUnsavedClose" xml:space="preserve"><value>ستُفقد التغييرات غير المحفوظة. هل تريد الإغلاق؟</value></data>
+  <data name="PnDuration" xml:space="preserve"><value>{0} د {1} ث</value></data>
+  <data name="PnSecondsValue" xml:space="preserve"><value>{0} ث</value></data>
+  <data name="Err_path_step_presentation_invalid" xml:space="preserve"><value>تتجاوز ملاحظات العرض حدًا (الرسالة الرئيسية ≤ 500، نص الحديث ≤ 4000، الهدف 10–3600 ث، الانتقال ≤ 500، ≤ 10 اعتراضات).</value></data>
+  <data name="Err_path_step_objection_invalid" xml:space="preserve"><value>يمكن ربط ردود الاعتراض المعتمدة لمنتج هذا المسار فقط.</value></data>
+  <data name="Err_path_step_objection_not_found" xml:space="preserve"><value>لم يُعثر على رد اعتراض مرتبط؛ حدّث القائمة.</value></data>
 </root>

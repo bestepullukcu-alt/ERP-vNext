@@ -12,7 +12,8 @@ namespace Diten.CrmService.Application.Features.PlannedVisit.Handlers.CommandHan
 
 /// <summary>
 /// Edits a plan. The code and the lifecycle status are NOT inputs (the code is never renamed; the status moves only
-/// through confirm / cancel / archive). An archived plan accepts nothing (409). A past PlannedDate is refused unless the
+/// through confirm / cancel / archive). An archived plan accepts nothing (409), nor does a cancelled one (409
+/// planned_visit_invalid_transition, WP-VW-W1). A past PlannedDate is refused unless the
 /// plan is still <c>draft</c> (V7). Optimistic concurrency is enforced against the expected Version (409 on mismatch).
 /// <para>Every re-derivable provenance block (frequency / consent / availability) is recomputed on the new shape so a
 /// stored snapshot never silently diverges from the plan it describes. The content-position ref is rebuilt from 26/27
@@ -91,6 +92,13 @@ public sealed class UpdatePlannedVisitHandler : IRequestHandler<UpdatePlannedVis
         {
             return Fail(new PlannedVisitValidation.Failure(
                 "An archived plan cannot be modified.", PlannedVisitErrorCodes.Archived, 409));
+        }
+
+        // WP-VW-W1 — a cancelled visit is closed (user decision 2026-10-08): it is not edited back to life.
+        if (plan.IsCancelled())
+        {
+            return Fail(new PlannedVisitValidation.Failure(
+                "Cancelled visit cannot be modified.", PlannedVisitErrorCodes.InvalidTransition, 409));
         }
 
         var shapeFailure = PlannedVisitValidation.ValidateShape(

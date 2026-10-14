@@ -764,6 +764,9 @@
   <data name="Nav.Page.LEGALPROFILES" xml:space="preserve">
     <value>Legal Profiles</value>
   </data>
+  <data name="Nav.Page.VISITWORKSPACE" xml:space="preserve">
+    <value>Visit Workspace</value>
+  </data>
   <data name="Nav.Page.VISITPLANNING" xml:space="preserve">
     <value>Visit Planning</value>
   </data>
@@ -808,6 +811,9 @@
   </data>
   <data name="Nav.Page.BRANDS" xml:space="preserve">
     <value>Brands</value>
+  </data>
+  <data name="Nav.Page.COMPETITORPRODUCTS" xml:space="preserve">
+    <value>Competitor Products</value>
   </data>
   <data name="PlannedVisitsMenu" xml:space="preserve"><value>Planned Visits</value></data>
   <data name="Nav.Page.PLANNEDVISITS" xml:space="preserve"><value>Planned Visits</value></data>
@@ -1108,6 +1114,15 @@
   </data>
   <data name="InviteAcceptAnyway" xml:space="preserve">
     <value>Accept Anyway</value>
+  </data>
+  <data name="Nav.Page.OBJECTIONRESPONSES" xml:space="preserve">
+    <value>Objection Library</value>
+  </data>
+  <data name="Nav.Page.VISITEVIDENCESETTINGS" xml:space="preserve">
+    <value>Visit Evidence</value>
+  </data>
+  <data name="Nav.Page.CRMDOCTORINSIGHTTHRESHOLDS" xml:space="preserve">
+    <value>Potential Thresholds</value>
   </data>
   <data name="Nav.Domain.MANUFACTURING" xml:space="preserve"><value>Manufacturing</value></data>
   <data name="Nav.Module.BOMROUTINGS" xml:space="preserve"><value>BOM &amp; Routings</value></data>

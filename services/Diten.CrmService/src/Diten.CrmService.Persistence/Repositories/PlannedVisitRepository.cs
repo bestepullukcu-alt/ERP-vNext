@@ -87,6 +87,21 @@ public sealed class PlannedVisitRepository : IPlannedVisitRepository
         return Ordered(rows);
     }
 
+    /// <summary>W2-BE-d (6) — one rep's plans (tenant + Resource.ResourceId; the (tenant, resource, date) index prefix).</summary>
+    public async Task<IReadOnlyList<PlannedVisit>> ListByResourceAsync(
+        Guid tenantId, string resourceId, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(resourceId))
+        {
+            return Array.Empty<PlannedVisit>();
+        }
+
+        var rows = await _collection
+            .Find(Tenant(tenantId) & Builders<PlannedVisit>.Filter.Eq(x => x.Resource.ResourceId, resourceId))
+            .ToListAsync(cancellationToken);
+        return Ordered(rows);
+    }
+
     public async Task<IReadOnlyList<PlannedVisit>> ListByResourceAndContactsAsync(
         Guid tenantId, string resourceId, IReadOnlyCollection<Guid> contactIds, CancellationToken cancellationToken)
     {

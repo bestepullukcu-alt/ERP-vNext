@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>Potansiyel eşikleri</value></data>
+  <data name="Crumb" xml:space="preserve"><value>CRM Ayarlar / Doktor içgörüleri</value></data>
+  <data name="Intro" xml:space="preserve"><value>Doktorun bir ürünün endikasyonlarındaki aylık hasta sayısı bu sınırlarla Az, Orta veya Çok olarak sınıflanır. Ürün satırı kiracı varsayılanından önce gelir; ikisi de yoksa yerleşik değerler uygulanır.</value></data>
+  <data name="AddProduct" xml:space="preserve"><value>Ürün ekle</value></data>
+  <data name="ReadOnly" xml:space="preserve"><value>Eşikleri görüntüleyebilirsiniz; değiştirmek için eşik yönetimi yetkisi gerekir.</value></data>
+  <data name="RetryButton" xml:space="preserve"><value>Tekrar dene</value></data>
+  <data name="ThresholdsTitle" xml:space="preserve"><value>Eşikler</value></data>
+  <data name="ThresholdsNote" xml:space="preserve"><value>Az &lt; X · Orta · Çok &gt; Y (aylık hasta)</value></data>
+  <data name="ColProduct" xml:space="preserve"><value>Ürün</value></data>
+  <data name="ColLow" xml:space="preserve"><value>Az</value></data>
+  <data name="ColMedium" xml:space="preserve"><value>Orta</value></data>
+  <data name="ColHigh" xml:space="preserve"><value>Çok</value></data>
+  <data name="ColSource" xml:space="preserve"><value>Kaynak</value></data>
+  <data name="ColLastChange" xml:space="preserve"><value>Son değişiklik</value></data>
+  <data name="RowActions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>Değişiklik geçmişi</value></data>
+  <data name="AuditReadOnly" xml:space="preserve"><value>Denetim kaydı · salt okunur</value></data>
+  <data name="ColDate" xml:space="preserve"><value>Tarih</value></data>
+  <data name="ColPerson" xml:space="preserve"><value>Kişi</value></data>
+  <data name="ColTarget" xml:space="preserve"><value>Satır</value></data>
+  <data name="ColField" xml:space="preserve"><value>Alan</value></data>
+  <data name="ColChange" xml:space="preserve"><value>Değişiklik</value></data>
+  <data name="ProductLabel" xml:space="preserve"><value>Ürün</value></data>
+  <data name="LowLabel" xml:space="preserve"><value>Az sınırı (X)</value></data>
+  <data name="LowHint" xml:space="preserve"><value>Ayda X hastadan az = Az</value></data>
+  <data name="HighLabel" xml:space="preserve"><value>Çok sınırı (Y)</value></data>
+  <data name="HighHint" xml:space="preserve"><value>Ayda Y hastadan fazla = Çok</value></data>
+  <data name="PreviewTitle" xml:space="preserve"><value>Önizleme</value></data>
+  <data name="PreviewPatients" xml:space="preserve"><value>Bir aylık hasta sayısı deneyin:</value></data>
+  <data name="CloseButton" xml:space="preserve"><value>Kapat</value></data>
+  <data name="CancelButton" xml:space="preserve"><value>Vazgeç</value></data>
+  <data name="SaveButton" xml:space="preserve"><value>Kaydet</value></data>
+  <data name="SaveTitle" xml:space="preserve"><value>Eşikler kaydedilsin mi?</value></data>
+  <data name="SaveConfirm" xml:space="preserve"><value>Evet, kaydet</value></data>
+  <data name="TenantDefault" xml:space="preserve"><value>Kiracı varsayılanı</value></data>
+  <data name="Source_product" xml:space="preserve"><value>Ürün</value></data>
+  <data name="Source_default" xml:space="preserve"><value>Kiracı varsayılanı</value></data>
+  <data name="Source_built_in" xml:space="preserve"><value>Yerleşik</value></data>
+  <data name="BandLow" xml:space="preserve"><value>Az &lt; {0}</value></data>
+  <data name="BandMedium" xml:space="preserve"><value>Orta {0}–{1}</value></data>
+  <data name="BandHigh" xml:space="preserve"><value>Çok &gt; {0}</value></data>
+  <data name="Field_lowBelow" xml:space="preserve"><value>Az sınırı</value></data>
+  <data name="Field_highAbove" xml:space="preserve"><value>Çok sınırı</value></data>
+  <data name="Field_own" xml:space="preserve"><value>Ürün satırı</value></data>
+  <data name="OwnRow" xml:space="preserve"><value>Ürün kendi satırını alır (aynı değerler)</value></data>
+  <data name="Never" xml:space="preserve"><value>Henüz değiştirilmedi</value></data>
+  <data name="EditButton" xml:space="preserve"><value>Düzenle</value></data>
+  <data name="EditTitle" xml:space="preserve"><value>Eşikler · {0}</value></data>
+  <data name="NewTitle" xml:space="preserve"><value>Ürüne özel eşik</value></data>
+  <data name="ProductPlaceholder" xml:space="preserve"><value>Ürün seçin</value></data>
+  <data name="SaveText" xml:space="preserve"><value>Yeni sınırlar bir sonraki sınıflamadan itibaren {0} için uygulanır.</value></data>
+  <data name="SaveTextDefault" xml:space="preserve"><value>Yeni sınırlar kendi satırı olmayan tüm ürünlere uygulanır.</value></data>
+  <data name="Saved" xml:space="preserve"><value>Eşikler kaydedildi.</value></data>
+  <data name="NothingChanged" xml:space="preserve"><value>Değişiklik yok.</value></data>
+  <data name="NoProducts" xml:space="preserve"><value>Henüz eşik yok.</value></data>
+  <data name="NoHistory" xml:space="preserve"><value>Henüz değişiklik yok.</value></data>
+  <data name="HistoryDefault" xml:space="preserve"><value>Kiracı varsayılanı</value></data>
+  <data name="YouLabel" xml:space="preserve"><value>Siz</value></data>
+  <data name="Class_low" xml:space="preserve"><value>Az</value></data>
+  <data name="Class_medium" xml:space="preserve"><value>Orta</value></data>
+  <data name="Class_high" xml:space="preserve"><value>Çok</value></data>
+  <data name="ErrRequired" xml:space="preserve"><value>Bir tam sayı girin.</value></data>
+  <data name="ErrRange" xml:space="preserve"><value>1 ile 100.000 arasında bir tam sayı.</value></data>
+  <data name="ErrOrder" xml:space="preserve"><value>Çok sınırı (Y) Az sınırından (X) küçük olamaz.</value></data>
+  <data name="ErrProduct" xml:space="preserve"><value>Bir ürün seçin.</value></data>
+  <data name="Err_potential_threshold_invalid" xml:space="preserve"><value>Eşikler reddedildi: 0 &lt; Az ≤ Çok ≤ 100.000 olmalı.</value></data>
+  <data name="Err_version_conflict" xml:space="preserve"><value>Bu eşikleri başka biri değiştirdi. Yenileyip tekrar deneyin.</value></data>
+  <data name="Err_doctor_insights_product_invalid" xml:space="preserve"><value>Bu ürün ürün ana verisinde yok.</value></data>
+  <data name="Err_doctor_insights_invalid" xml:space="preserve"><value>İstek geçerli değil.</value></data>
+  <data name="Err_reference_data_unavailable" xml:space="preserve"><value>Ürün ana verisi okunamadı; hiçbir şey kaydedilmedi.</value></data>
+  <data name="Err_dependency_unavailable" xml:space="preserve"><value>Ürün listesi şu anda alınamıyor.</value></data>
+  <data name="Err_permission_denied" xml:space="preserve"><value>Bu işlem için yetkiniz yok.</value></data>
+  <data name="Err_unavailable" xml:space="preserve"><value>Sunucuya ulaşılamadı; değerleriniz bu ekranda korunuyor.</value></data>
+  <data name="Err_generic" xml:space="preserve"><value>İşlem tamamlanamadı.</value></data>
+</root>

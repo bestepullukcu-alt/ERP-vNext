@@ -5,6 +5,7 @@ using Diten.CrmService.Application.Features.PlannedVisit.Contract;
 using Diten.CrmService.Application.Features.PlannedVisit.Provenance;
 using Diten.CrmService.Domain.Entities;
 using Diten.CrmService.Domain.Repositories;
+using Diten.CrmService.Application.Features.VisitWorkspace;
 using MediatR;
 using PlannedVisitEntity = Diten.CrmService.Domain.Entities.PlannedVisit;
 
@@ -33,6 +34,8 @@ public sealed class CreatePlannedVisitHandler : IRequestHandler<CreatePlannedVis
     private readonly IUserDisplayNameResolver _userNames;
     private readonly IVisitProvenanceDeriver _deriver;
 
+    private readonly TimeProvider _clock;
+
     public CreatePlannedVisitHandler(
         ITenantContext tenant,
         IActorContext actor,
@@ -44,8 +47,11 @@ public sealed class CreatePlannedVisitHandler : IRequestHandler<CreatePlannedVis
         PlannedVisitAvailabilityProbe availabilityProbe,
         ICallerScope caller,
         IUserDisplayNameResolver userNames,
-        IVisitProvenanceDeriver deriver)
+        IVisitProvenanceDeriver deriver,
+        // WP-VW-W2 — "today" for the unplanned rule and the past-date rule (UTC).
+        TimeProvider? clock = null)
     {
+        _clock = clock ?? TimeProvider.System;
         _caller = caller;
         _userNames = userNames;
         _deriver = deriver;
@@ -98,8 +104,9 @@ public sealed class CreatePlannedVisitHandler : IRequestHandler<CreatePlannedVis
         }
 
         // Birth status: draft (default) or planned. confirmed/cancelled/archived are reached only through transitions.
+        // WP-VW-W2 — an unplanned visit is happening now: born planned unless the caller asked for draft.
         var status = string.IsNullOrWhiteSpace(request.PlanStatus)
-            ? PlannedVisitStatus.Draft
+            ? (request.Unplanned ? PlannedVisitStatus.Planned : PlannedVisitStatus.Draft)
             : PlannedVisitStatus.Normalize(request.PlanStatus);
         if (!string.Equals(status, PlannedVisitStatus.Draft, StringComparison.Ordinal)
             && !string.Equals(status, PlannedVisitStatus.Planned, StringComparison.Ordinal))
@@ -114,8 +121,17 @@ public sealed class CreatePlannedVisitHandler : IRequestHandler<CreatePlannedVis
             return Fail(new PlannedVisitValidation.Failure("PlannedDate is required.", PlannedVisitErrorCodes.DateRequired));
         }
 
+        // WP-VW-W2 (A3) — an unplanned visit is today's (UTC) only.
+        var today = DateOnly.FromDateTime(_clock.GetUtcNow().UtcDateTime);
+        if (request.Unplanned && date != today)
+        {
+            return Fail(new PlannedVisitValidation.Failure(
+                $"An unplanned visit can only be created for today ({today:yyyy-MM-dd}).",
+                VisitWorkspaceErrorCodes.UnplannedTodayOnly));
+        }
+
         // On create the planned date must not be in the past (V7/AC-TIME-3) — a draft exception applies only on update.
-        if (date < DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime))
+        if (date < today)
         {
             return Fail(new PlannedVisitValidation.Failure(
                 "PlannedDate cannot be in the past.", PlannedVisitErrorCodes.DateInPast));
@@ -184,7 +200,7 @@ public sealed class CreatePlannedVisitHandler : IRequestHandler<CreatePlannedVis
             TerritoryModelId = request.TerritoryModelId,
             CampaignId = derived.CampaignId,
             PlanStatus = status,
-            Source = source,
+            Source = request.Unplanned ? PlannedVisitSource.Unplanned : source,
             Content = journeyResult.ContentRef,
             Selection = PlannedVisitProvenance.Selection(derived, actor, now),
             Slot = new PlannedVisitScheduleSlot(), // motor-filled, born empty (D12/V26)

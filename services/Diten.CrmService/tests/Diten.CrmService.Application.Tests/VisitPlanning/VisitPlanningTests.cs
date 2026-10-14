@@ -185,13 +185,19 @@ public sealed partial class VisitPlanningTests
     }
 
     [Fact]
-    public async Task Frequency_unknown_places_only_the_base_week()
+    public async Task Frequency_unknown_is_one_visit_in_every_draft_week()
     {
         var env = Env.WithTwoDoctors();
-        env.Frequency.RequiredVisitCount = null; // no policy → base week only (default never invented)
+        env.Frequency.RequiredVisitCount = null; // no policy → WP-VP-4L: the weekly default (one visit per working week)
 
         var preview = (await env.Engine.PreviewAsync(env.Session, env.Options(), default)).Preview!;
-        Assert.All(preview.Scheduled, s => Assert.Equal(0, s.WeekNumber));
+        foreach (var doctor in new[] { env.DoctorA, env.DoctorB })
+        {
+            var weeks = preview.Scheduled.Where(s => s.ContactId == doctor).Select(s => s.WeekNumber).ToList();
+            Assert.Equal(weeks.Distinct().Count(), weeks.Count); // never two in one week
+            Assert.Equal(preview.Weeks!.Count(w => w.Status != PlanningWeekDisplayStatus.Past), weeks.Count);
+            Assert.All(preview.Scheduled.Where(s => s.ContactId == doctor), s => Assert.Equal(FrequencyDefaults.Weekly, s.FrequencyDefault));
+        }
     }
 
     // ── AC-REPLAN — subset in place ──────────────────────────────────────────────────────────────────────────────
@@ -315,10 +321,12 @@ public sealed partial class VisitPlanningTests
         }, Shape(typeof(Diten.CrmService.Application.Features.PlannedVisit.PlannedVisitContentRefDto)));
 
         var detail = Shape(typeof(Diten.CrmService.Application.Features.PlannedVisit.PlannedVisitDetailDto));
-        // WP-SB-3b added ContentItems; WP-VP-2 (B-8) appended the four read-time name fields after it.
-        Assert.Equal(50, detail.Length);
+        // WP-SB-3b added ContentItems; WP-VP-2 (B-8) appended the four read-time name fields after it; WP-VW-W1 appended
+        // the derived work status, the report deadline and the manager-attention flag.
+        Assert.Equal(53, detail.Length);
         Assert.Equal(new[] { "ContentItems", "TargetDisplayName", "AccountDisplayName", "ContactDisplayName", "TargetInactive" },
-            detail[^5..]);
+            detail[^8..^3]);
+        Assert.Equal(new[] { "WorkStatus", "ReportDeadline", "ManagerAttention" }, detail[^3..]);
         Assert.Equal(new[] { "Content", "Selection", "Availability", "Version", "CreatedAt", "CreatedBy", "UpdatedAt", "UpdatedBy" },
             detail[37..45]);
 
@@ -680,6 +688,10 @@ public sealed partial class VisitPlanningTests
         private readonly Guid _periodId;
         public FakeCyclePeriodReader(Guid periodId) => _periodId = periodId;
 
+        /// <summary>WP-VP-4L — the period's window (default 1–28 Sep 2026, five Monday-weeks).</summary>
+        public DateTimeOffset Start { get; set; } = new(2026, 9, 1, 0, 0, 0, TimeSpan.Zero);
+        public DateTimeOffset End { get; set; } = new(2026, 9, 28, 0, 0, 0, TimeSpan.Zero);
+
         public Task<CyclePeriodResolution> ResolveActiveAsync(
             DateTimeOffset at, string? country, Guid? legalEntityId, string? businessUnitId, CancellationToken ct)
             => Task.FromResult(new CyclePeriodResolution("none", null, Array.Empty<Guid>(), null, null));
@@ -688,8 +700,8 @@ public sealed partial class VisitPlanningTests
             => Task.FromResult<CyclePeriodSnapshot?>(cyclePeriodId == _periodId
                 ? new CyclePeriodSnapshot(
                     _periodId, "C1", "Cycle 1", 2026, 1,
-                    new DateTimeOffset(2026, 9, 1, 0, 0, 0, TimeSpan.Zero),
-                    new DateTimeOffset(2026, 9, 28, 0, 0, 0, TimeSpan.Zero),
+                    Start,
+                    End,
                     "active", "tenant", null, null, null, null)
                 : null);
 
@@ -742,7 +754,10 @@ public sealed partial class VisitPlanningTests
 
     private sealed class FakeFrequencyResolver : IVisitFrequencyPolicyResolver
     {
-        public int? RequiredVisitCount { get; set; }
+        /// <summary>WP-VP-4L — the fixture's targets carry an explicit "once in the period" cadence by default (what an
+        /// unknown cadence meant before 4L), so the day / route / shift tests keep their meaning; null = no policy (the
+        /// weekly default, <see cref="FrequencyDefaults"/>).</summary>
+        public int? RequiredVisitCount { get; set; } = 1;
 
         /// <summary>WP-VP-3A — the policy's PeriodType (default: the cycle, i.e. "per period").</summary>
         public string PeriodType { get; set; } = "cycle";

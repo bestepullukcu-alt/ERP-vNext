@@ -15,7 +15,9 @@
 }
 
 @{
-    var currentPath = Context.Request.Path.Value ?? string.Empty;
+    // WP-VW-W3 (CT, live E4) — a page reached only from another page (no menu entry of its own) may name the menu
+    // route it belongs under via HttpContext.Items["NavActivePath"], so its module group still opens.
+    var currentPath = (Context.Items["NavActivePath"] as string) ?? Context.Request.Path.Value ?? string.Empty;
 
     Func<string, bool> isActive = route =>
         !string.IsNullOrWhiteSpace(route) && route != "#"

@@ -70,7 +70,11 @@
         note_text_required: () => t('Err_note_text_required'),
         note_not_found: () => t('Err_note_not_found'),
         // WP-E2E-FIX-2 (E3-B4) — only the submitter withdraws a review round.
-        withdraw_not_submitter: () => t('Err_withdraw_not_submitter')
+        withdraw_not_submitter: () => t('Err_withdraw_not_submitter'),
+        // WP-VW-W3 (W3-WEB-c) — the step's presentation notes (W3-BE-b / BE-c).
+        path_step_presentation_invalid: () => t('Err_path_step_presentation_invalid'),
+        path_step_objection_invalid: () => t('Err_path_step_objection_invalid'),
+        path_step_objection_not_found: () => t('Err_path_step_objection_not_found')
     };
 
     /** The user text of a failed response body ({ errors: [code, message, …] }). The CRM message is never shown for a

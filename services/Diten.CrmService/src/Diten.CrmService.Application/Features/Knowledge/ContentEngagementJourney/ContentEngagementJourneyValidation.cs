@@ -65,6 +65,25 @@ public static class ContentEngagementJourneyValidation
         => string.IsNullOrWhiteSpace(name) ? "StageName is required."
             : name.Trim().Length > MaxStageName ? $"StageName cannot exceed {MaxStageName} characters." : null;
 
+    /// <summary>WP-VW-W4 (W4-BE-a, K-W4) — an adoption stage code (the crm-adoption-stage codes, in their order) used by
+    /// at most ONE active stage of the journey (the journey move needs one target per adoption stage). Null = valid.</summary>
+    public static string? ValidateAdoptionStage(Domain.Entities.ContentEngagementJourney journey, string? code, Guid? excludeStageId)
+    {
+        if (string.IsNullOrWhiteSpace(code)) return null;
+        var normalized = code.Trim().ToLowerInvariant();
+        if (VisitReport.V2.VisitReportV2Rules.Rank(normalized) < 0)
+        {
+            return $"AdoptionStageCode must be one of: {string.Join(", ", VisitReport.V2.VisitReportV2Rules.AdoptionStageOrder)}.";
+        }
+
+        return journey.ActiveStages().Any(s => s.StageId != excludeStageId
+                                              && string.Equals(s.AdoptionStageCode, normalized, StringComparison.OrdinalIgnoreCase))
+            ? $"Another stage of this journey already stands for the adoption stage '{normalized}'."
+            : null;
+    }
+
+    public static string? NormalizeAdoptionStage(string? code) => string.IsNullOrWhiteSpace(code) ? null : code.Trim().ToLowerInvariant();
+
     public static string? ValidateStageObjective(string? objective)
         => string.IsNullOrWhiteSpace(objective) ? "StageObjective is required."
             : objective.Trim().Length > MaxStageObjective

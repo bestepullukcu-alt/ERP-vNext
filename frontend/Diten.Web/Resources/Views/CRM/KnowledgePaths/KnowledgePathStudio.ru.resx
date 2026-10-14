@@ -487,4 +487,57 @@
   <data name="Err_note_not_found" xml:space="preserve"><value>Заметка не найдена; обновите страницу.</value></data>
   <data name="DecisionApprovedFinal" xml:space="preserve"><value>Согласование записано. Проверка завершена.</value></data>
   <data name="Err_withdraw_not_submitter" xml:space="preserve"><value>Отозвать проверку может только тот, кто её отправил.</value></data>
+  <data name="PnButton" xml:space="preserve"><value>Заметки к презентации</value></data>
+  <data name="PnBar" xml:space="preserve"><value>Заметки к презентации: заполнено {0} / {1} шагов</value></data>
+  <data name="PnMissing" xml:space="preserve"><value>Не заполнены:</value></data>
+  <data name="PnFilledRule" xml:space="preserve"><value>Заполнено: ключевое сообщение и текст беседы написаны.</value></data>
+  <data name="PnFilled" xml:space="preserve"><value>Заметки заполнены</value></data>
+  <data name="PnEmpty" xml:space="preserve"><value>Нет заметок</value></data>
+  <data name="PnStepOf" xml:space="preserve"><value>Шаг {0} / {1}</value></data>
+  <data name="PnTabContent" xml:space="preserve"><value>Содержание</value></data>
+  <data name="PnTabNotes" xml:space="preserve"><value>Заметки к презентации</value></data>
+  <data name="PnRequired" xml:space="preserve"><value>Обязательность</value></data>
+  <data name="PnEstimatedDuration" xml:space="preserve"><value>Оценочная длительность</value></data>
+  <data name="PnPrerequisite" xml:space="preserve"><value>Предварительное условие</value></data>
+  <data name="PnContentNote" xml:space="preserve"><value>Настройки содержания (обязательность, длительность, предварительное условие) остаются на кнопке настроек карточки шага.</value></data>
+  <data name="PnReadOnly" xml:space="preserve"><value>Эта версия опубликована или не является черновиком; заметки только для чтения.</value></data>
+  <data name="PnKeyMessage" xml:space="preserve"><value>Ключевое сообщение</value></data>
+  <data name="PnTalkTrack" xml:space="preserve"><value>Текст беседы</value></data>
+  <data name="PnTarget" xml:space="preserve"><value>Целевая длительность</value></data>
+  <data name="PnSeconds" xml:space="preserve"><value>с</value></data>
+  <data name="PnTargetHint" xml:space="preserve"><value>Если оставить пустым, используется оценочная длительность шага ({0} с).</value></data>
+  <data name="PnTargetHintNone" xml:space="preserve"><value>Если оставить пустым, целевая длительность не показывается.</value></data>
+  <data name="PnEstimate" xml:space="preserve"><value>Цель {0} с</value></data>
+  <data name="PnTransition" xml:space="preserve"><value>Переходная фраза</value></data>
+  <data name="PnObjections" xml:space="preserve"><value>Ожидаемые возражения · {0} / {1}</value></data>
+  <data name="PnObjectionsHint" xml:space="preserve"><value>Можно выбрать только утверждённые ответы для {0}.</value></data>
+  <data name="PnReasonObjectionReadMissing" xml:space="preserve"><value>У вас нет прав на чтение библиотеки возражений.</value></data>
+  <data name="PnReasonObjectionNoProduct" xml:space="preserve"><value>У этого пути нет продукта, поэтому ответ привязать нельзя.</value></data>
+  <data name="PnCreateInLibrary" xml:space="preserve"><value>Создать в библиотеке</value></data>
+  <data name="PnCreateUnsaved" xml:space="preserve"><value>В этом шаге есть несохранённые изменения. Библиотека откроется в новой вкладке; сохраните шаг, когда вернётесь.</value></data>
+  <data name="PnRefresh" xml:space="preserve"><value>Обновить список</value></data>
+  <data name="PnAddObjection" xml:space="preserve"><value>Добавить возражение</value></data>
+  <data name="PnPickerSearch" xml:space="preserve"><value>Поиск по ответам</value></data>
+  <data name="PnPickerEmpty" xml:space="preserve"><value>Для этого продукта нет утверждённых ответов.</value></data>
+  <data name="PnPickerMax" xml:space="preserve"><value>Можно выбрать не более {0} возражений.</value></data>
+  <data name="PnClaimCount" xml:space="preserve"><value>Подтверждающих утверждений: {0}</value></data>
+  <data name="PnRemove" xml:space="preserve"><value>Убрать</value></data>
+  <data name="PnUnusable" xml:space="preserve"><value>Нельзя использовать (не утверждён или другой продукт); будет убран при сохранении.</value></data>
+  <data name="PnPreview" xml:space="preserve"><value>Предпросмотр</value></data>
+  <data name="PnDoctorScreen" xml:space="preserve"><value>Экран врача</value></data>
+  <data name="PnNotHere" xml:space="preserve"><value>Заметки здесь не видны</value></data>
+  <data name="PnRemote" xml:space="preserve"><value>Пульт представителя · Заметки</value></data>
+  <data name="PnThisSlide" xml:space="preserve"><value>Этот слайд</value></data>
+  <data name="PnTargetShort" xml:space="preserve"><value>цель ≈ {0}</value></data>
+  <data name="PnApprovedAnswer" xml:space="preserve"><value>Ожидаемые возражения · утверждённый ответ</value></data>
+  <data name="PnSave" xml:space="preserve"><value>Сохранить шаг</value></data>
+  <data name="PnCancel" xml:space="preserve"><value>Отмена</value></data>
+  <data name="PnSaved" xml:space="preserve"><value>Шаг сохранён.</value></data>
+  <data name="PnInvalid" xml:space="preserve"><value>Проверьте: ключевое сообщение ≤ 500, текст беседы ≤ 4000, цель 10–3600 с, переход ≤ 500, не более 10 возражений.</value></data>
+  <data name="PnUnsavedClose" xml:space="preserve"><value>Несохранённые изменения будут потеряны. Всё равно закрыть?</value></data>
+  <data name="PnDuration" xml:space="preserve"><value>{0} мин {1} с</value></data>
+  <data name="PnSecondsValue" xml:space="preserve"><value>{0} с</value></data>
+  <data name="Err_path_step_presentation_invalid" xml:space="preserve"><value>Заметки превышают лимит (ключевое сообщение ≤ 500, текст беседы ≤ 4000, цель 10–3600 с, переход ≤ 500, ≤ 10 возражений).</value></data>
+  <data name="Err_path_step_objection_invalid" xml:space="preserve"><value>Можно привязать только утверждённые ответы продукта этого пути.</value></data>
+  <data name="Err_path_step_objection_not_found" xml:space="preserve"><value>Привязанный ответ не найден; обновите список.</value></data>
 </root>

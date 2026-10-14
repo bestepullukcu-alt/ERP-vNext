@@ -24,6 +24,7 @@
 
     const L = window.L10n || {};
     const VPF = window.VisitPlanningFormat; // WP-VP-4H — dates / numbers in the application's language
+    const TC = window.VisitPlanningTargetsCore; // WP-VW-W2 (WEB-b) — the Targets rules shared with the Visit Workspace
     const base = '/CRM/VisitPlanning/api';
     const sessionId = root.dataset.sessionId;
     const canGenerate = root.dataset.canGenerate === 'true';
@@ -72,7 +73,8 @@
         no_feasible_availability_window: 'ReasonNoAvailability', duration_exceeds_working_day: 'ReasonTooLong',
         pin_day_full: 'ReasonPinDayFull', pin_outside_availability: 'ReasonPinAvailability',
         max_promo: 'ReasonMaxPromo', max_non_promo: 'ReasonMaxNonPromo',
-        no_near_day: 'ReasonNoNearDay' // 4G — a far group on a light week waits for a near day
+        no_near_day: 'ReasonNoNearDay', // 4G — a far group on a light week waits for a near day
+        extra_no_room: 'ReasonExtraNoRoom', week_full_skipped: 'ReasonWeekFullSkipped' // 4L — an extra / a weekly default visit that did not fit its week
     };
     const reasonText = code => L[REASON_KEYS[code]] || L.ReasonOther || code || '—';
 
@@ -83,7 +85,9 @@
     const weekIndexOf = ws => page.weeks().findIndex(w => w.weekStart === ws);
     let names = { accounts: {}, doctors: {} };
     let me = null;
-    const loadTargets = () => request(base + '/sessions/' + encodeURIComponent(sessionId) + '/targets').then(r => {
+    // WP-VP-4M (5) — the doctors' period status for the SELECTED week (?weekStart, 4M-BE); a week change reloads it.
+    const targetsWeekQuery = () => (/^\d{4}-\d{2}-\d{2}$/.test(page.state.weekStart || '') ? '?weekStart=' + encodeURIComponent(page.state.weekStart) : '');
+    const loadTargets = () => request(base + '/sessions/' + encodeURIComponent(sessionId) + '/targets' + targetsWeekQuery()).then(r => {
         const d = r.ok && r.body && r.body.data;
         if (!d) return;
         const accounts = {}, doctors = {};
@@ -207,6 +211,8 @@
     const openDays = new Set(), fullDays = new Set();
     // A visit: the name over its institution; on the right the product chips (names) and "≈ 22 min" ("no time" without
     // products); the 4D/4E move + pin controls stay.
+    // WP-VP-4L (5) — the rep's per-week extra visit (4L-BE isExtra): a small "extra" badge.
+    const extraMark = s => (s && s.isExtra ? '<span class="badge bg-label-warning vp-extra-badge" title="' + esc(L.WeekStateExtra || '') + '">' + esc(L.ExtraBadgeShort || '') + '</span>' : '');
     const visitLine = (s, movable) => {
         const idx = slotsAll().indexOf(s);
         const name = visitName(s);
@@ -217,7 +223,7 @@
         const hasProducts = (s.contentItems || []).length > 0;
         return '<div class="d-flex align-items-center gap-2 py-2 border-bottom flex-wrap vp-wk-visit"' + (movable ? ' draggable="true" data-drag="visit" data-slot="' + idx + '"' : '') + '>' +
             (movable ? '<i class="bx bx-grid-vertical text-muted" aria-hidden="true"></i>' : '') + pinMark(s) +
-            '<span class="flex-grow-1" style="min-width:0">' + nameHtml + '</span>' +
+            '<span class="flex-grow-1" style="min-width:0">' + nameHtml + '</span>' + extraMark(s) +
             '<span class="d-flex flex-wrap gap-1 align-items-center">' + chipsOf(s) +
             '<span class="small text-muted text-nowrap ms-1">' + esc(hasProducts || !s.contactId ? fmt(L.ApproxMinutes || '{0}', s.durationMinutes || 0) : (L.NoTimeShort || '')) + '</span></span>' +
             (movable ? '<button type="button" class="btn btn-sm btn-text-secondary px-1 js-wk-move" data-slot="' + idx + '" data-scope="visit" title="' + esc(L.MoveToDay || '') + '" aria-label="' + esc(L.MoveToDay || '') + '"><i class="bx bx-calendar-edit"></i></button>' : '') +
@@ -329,11 +335,13 @@
     const firstDraftWeekStart = () => { const w = page.weeks().find(x => x.status === 'draft'); return w ? w.weekStart : null; };
     const DOCTORS_LIMIT = 8;
     let allDoctorsShown = false;
-    // "dönemde 3 · 1 / 2" (frequency · done / remaining); an unknown frequency reads "dönemde 1 (varsayılan)" (F4-2).
+    // "dönemde 3 · 1 / 2" (frequency · done / remaining); WP-VP-4L (3) — an unknown frequency is the server's weekly
+    // default (frequencyDefault "weekly"): "haftada 1 (varsayılan)"; without the field, "no frequency".
     const frequencyLine = (s, status) => {
         const src = status && status.requiredVisitCount != null ? status : s; // the period status (targets read) first
         const known = src.requiredVisitCount != null && src.frequencyStatus !== 'unknown';
-        const freq = known ? fmt(L.FrequencyPerPeriod || '{0}', src.requiredVisitCount) : (L.FrequencyDefaultOne || '');
+        const weeklyDefault = (status && status.frequencyDefault) === 'weekly' || s.frequencyDefault === 'weekly';
+        const freq = known ? fmt(L.FrequencyPerPeriod || '{0}', src.requiredVisitCount) : (weeklyDefault ? (L.FrequencyDefaultWeekly || '') : (L.FrequencyNone || ''));
         const dr = status && status.done != null ? VPF.ratio(status.done, status.remaining != null ? status.remaining : '—') : '';
         return dr ? freq + ' · ' + dr : freq;
     };
@@ -392,13 +400,50 @@
             esc(k ? fmt(L.PinOverflowMessage || '{0} {1}', byTarget[k], dayLabel(k)) : fmt(L.PinOverflowNextWeek || '{0}', byTarget[k]))).join(' · ') + '</div>';
     };
 
+    // WP-VP-4J (3) — "Generate this week" on an empty week: the button shows it is working (spinner, disabled) until the
+    // plan comes back; a week STILL empty then says why (the frequency rule put the period's visits into earlier weeks) in
+    // a toast and in the empty state, with "Edit targets". A preview that never comes back frees the button after a while.
+    const GENERATE_TIMEOUT_MS = 30000;
+    let generating = null;          // the week being built
+    let generateTimer = null;
+    const stillEmpty = new Set();   // weeks a build left empty
+    const startGenerate = ws => {
+        generating = ws;
+        clearTimeout(generateTimer);
+        generateTimer = setTimeout(() => { if (generating === ws) { generating = null; renderDetail(); } }, GENERATE_TIMEOUT_MS);
+        renderDetail();
+        page.request('reload-plan');
+    };
+    const finishGenerate = () => {
+        if (!generating) return;
+        const ws = generating;
+        generating = null;
+        clearTimeout(generateTimer);
+        const w = page.week(ws);
+        if (w && w.status === 'empty') {
+            stillEmpty.add(ws);
+            window.showToast?.(L.GenerateWeekStillEmpty || '', 'info');
+        } else {
+            stillEmpty.delete(ws);
+        }
+    };
+
     // An empty week (WP-VP-4H, 3): ONLY the empty state — no day rows, no product or moved sections.
-    const emptyWeekHtml = () => '<div class="border rounded text-center d-flex flex-column align-items-center gap-2 px-3 py-5" style="border-style:dashed !important">' +
-        '<i class="bx bx-calendar-plus text-muted" style="font-size:2rem"></i>' +
-        '<div class="fw-medium text-heading">' + esc(L.NoVisitThisWeek || '') + '</div>' +
-        '<div class="small" style="max-width:380px">' + esc(L.EmptyWeekHint || '') + '</div>' +
-        (canGenerate && !page.isLegacy() ? '<button type="button" class="btn btn-primary mt-1 js-wk-action" data-action="rebuild">' + esc(L.GenerateWeek || '') + '</button>' : '') +
-        '</div>';
+    const emptyWeekHtml = ws => {
+        const busy = generating === ws;
+        const explained = stillEmpty.has(ws);
+        return '<div class="border rounded text-center d-flex flex-column align-items-center gap-2 px-3 py-5" style="border-style:dashed !important">' +
+            '<i class="bx bx-calendar-plus text-muted" style="font-size:2rem"></i>' +
+            '<div class="fw-medium text-heading">' + esc(L.NoVisitThisWeek || '') + '</div>' +
+            '<div class="small" style="max-width:420px">' + esc(explained ? (L.EmptyWeekNoFrequencyVisits || '') : (L.EmptyWeekHint || '')) + '</div>' +
+            (canGenerate && !page.isLegacy()
+                ? '<button type="button" class="btn btn-primary mt-1 js-wk-action" data-action="generate"' + (busy ? ' disabled aria-busy="true"' : '') + '>' +
+                  (busy ? '<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>' + esc(L.GeneratingWeek || '') : esc(L.GenerateWeek || '')) + '</button>'
+                : '') +
+            (canGenerate && !page.isLegacy() ? '<div class="small text-muted" style="max-width:420px">' + esc(L.EmptyWeekAddFromTargets || '') + '</div>' : '') + // WP-VP-4L (4) — the second way
+            (explained || canGenerate ? '<button type="button" class="btn btn-link btn-sm js-wk-edit-targets"><i class="bx bx-edit-alt me-1"></i>' + esc(L.EditTargetsLink || '') + '</button>' : '') +
+            '</div>';
+    };
 
     const renderDetail = () => {
         const host = el('vp-wk-detail'); if (!host) return;
@@ -425,7 +470,7 @@
             '<div class="d-flex flex-wrap gap-2">' + weekActions(w).map(a => '<button type="button" class="btn btn-sm btn-' + a.tone + ' js-wk-action" data-action="' + a.key + '"><i class="bx ' + a.icon + ' me-1"></i>' + esc(a.label || '') + '</button>').join('') + '</div></div>');
 
         if (w.status === 'empty') { // (3) the empty state only
-            parts.push(emptyWeekHtml());
+            parts.push(emptyWeekHtml(ws));
             host.innerHTML = parts.join('');
             return;
         }
@@ -497,8 +542,9 @@
     const canMove = w => !!w && canGenerate && !readOnly && !page.isLegacy() && MOVABLE_WEEK_STATUSES.indexOf(w.status) > -1;
     const sameTarget = (pin, s) => pin.targetType === s.targetType && String(pin.targetId).toLowerCase() === String(s.targetId).toLowerCase();
     const membersOf = (slot, weekSlots) => weekSlots.filter(s => groupOf(s) === groupOf(slot));
-    const weekPins = ws => (((session().weeks || []).find(w => w.weekStart === ws) || {}).dayPins || [])
-        .map(p => ({ targetType: p.targetType, targetId: p.targetId, contactId: p.contactId || null, date: p.date, scope: p.scope || 'visit' }));
+    // WP-VW-W2 (WEB-b) — the shared mapping keeps a pin's start time: a re-save here never drops a time pin set in the
+    // Visit Workspace.
+    const weekPins = ws => (((session().weeks || []).find(w => w.weekStart === ws) || {}).dayPins || []).map(TC.pinInput);
     // A move REPLACES the pins of what it moves: institution → every member's pin goes, one institution pin comes;
     // visit → that visit's own pin goes, one visit pin comes (it wins over an institution pin of its group).
     const pinsAfterMove = (current, slot, scope, date, members) => {
@@ -595,6 +641,7 @@
         if (act) {
             const k = act.dataset.action;
             if (k === 'approve') { rememberWeeksReturn(); page.request('approve-week'); }
+            else if (k === 'generate') startGenerate(page.state.weekStart); // WP-VP-4J (3) — an empty week, with feedback
             else if (k === 'rebuild') page.request('reload-plan');
             else if (k === 'reopen') { rememberWeeksReturn(); page.request('reopen-week'); }
             else if (k === 'route') {
@@ -677,7 +724,8 @@
     });
 
     page.on('session', () => { render(); loadTargets(); });
-    page.on('preview', () => { render(); returnToWeeks(); });
-    page.on('week-change', () => { openDays.clear(); fullDays.clear(); allDoctorsShown = false; render(); });
+    page.on('preview', () => { finishGenerate(); render(); returnToWeeks(); });
+    page.on('request:generate-week', () => startGenerate(page.state.weekStart)); // the header's "Generate this week" too
+    page.on('week-change', () => { openDays.clear(); fullDays.clear(); allDoctorsShown = false; render(); loadTargets(); });
     loadMe();
 })(window, document);

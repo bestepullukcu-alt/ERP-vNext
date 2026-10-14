@@ -487,4 +487,57 @@
   <data name="Err_note_not_found" xml:space="preserve"><value>No se encontró la nota; recargue la página.</value></data>
   <data name="DecisionApprovedFinal" xml:space="preserve"><value>Aprobación registrada. La revisión ha finalizado.</value></data>
   <data name="Err_withdraw_not_submitter" xml:space="preserve"><value>Solo la persona que envió esta revisión puede retirarla.</value></data>
+  <data name="PnButton" xml:space="preserve"><value>Notas de presentación</value></data>
+  <data name="PnBar" xml:space="preserve"><value>Notas de presentación: {0} / {1} pasos completos</value></data>
+  <data name="PnMissing" xml:space="preserve"><value>Faltan:</value></data>
+  <data name="PnFilledRule" xml:space="preserve"><value>Completo: mensaje clave y guion escritos.</value></data>
+  <data name="PnFilled" xml:space="preserve"><value>Notas completas</value></data>
+  <data name="PnEmpty" xml:space="preserve"><value>Faltan notas</value></data>
+  <data name="PnStepOf" xml:space="preserve"><value>Paso {0} / {1}</value></data>
+  <data name="PnTabContent" xml:space="preserve"><value>Contenido</value></data>
+  <data name="PnTabNotes" xml:space="preserve"><value>Notas de presentación</value></data>
+  <data name="PnRequired" xml:space="preserve"><value>Obligatoriedad</value></data>
+  <data name="PnEstimatedDuration" xml:space="preserve"><value>Duración estimada</value></data>
+  <data name="PnPrerequisite" xml:space="preserve"><value>Requisito previo</value></data>
+  <data name="PnContentNote" xml:space="preserve"><value>Los ajustes del contenido (obligatoriedad, duración, requisito previo) siguen en el botón de ajustes de la tarjeta del paso.</value></data>
+  <data name="PnReadOnly" xml:space="preserve"><value>Esta versión está publicada o no es un borrador; las notas de presentación son de solo lectura.</value></data>
+  <data name="PnKeyMessage" xml:space="preserve"><value>Mensaje clave</value></data>
+  <data name="PnTalkTrack" xml:space="preserve"><value>Guion</value></data>
+  <data name="PnTarget" xml:space="preserve"><value>Duración objetivo</value></data>
+  <data name="PnSeconds" xml:space="preserve"><value>s</value></data>
+  <data name="PnTargetHint" xml:space="preserve"><value>Si se deja vacío, se usa la duración estimada del paso ({0} s).</value></data>
+  <data name="PnTargetHintNone" xml:space="preserve"><value>Si se deja vacío, no se muestra duración objetivo.</value></data>
+  <data name="PnEstimate" xml:space="preserve"><value>Objetivo {0} s</value></data>
+  <data name="PnTransition" xml:space="preserve"><value>Frase de transición</value></data>
+  <data name="PnObjections" xml:space="preserve"><value>Objeciones esperadas · {0} / {1}</value></data>
+  <data name="PnObjectionsHint" xml:space="preserve"><value>Solo se pueden seleccionar respuestas aprobadas de {0}.</value></data>
+  <data name="PnReasonObjectionReadMissing" xml:space="preserve"><value>No tiene permiso para leer la biblioteca de objeciones.</value></data>
+  <data name="PnReasonObjectionNoProduct" xml:space="preserve"><value>Esta ruta no tiene producto; no se puede vincular ninguna respuesta.</value></data>
+  <data name="PnCreateInLibrary" xml:space="preserve"><value>Crear nueva en la biblioteca</value></data>
+  <data name="PnCreateUnsaved" xml:space="preserve"><value>Este paso tiene cambios sin guardar. La biblioteca se abre en una pestaña nueva; guarde el paso al volver.</value></data>
+  <data name="PnRefresh" xml:space="preserve"><value>Actualizar lista</value></data>
+  <data name="PnAddObjection" xml:space="preserve"><value>Añadir objeción</value></data>
+  <data name="PnPickerSearch" xml:space="preserve"><value>Buscar en las respuestas</value></data>
+  <data name="PnPickerEmpty" xml:space="preserve"><value>No hay respuestas aprobadas para este producto.</value></data>
+  <data name="PnPickerMax" xml:space="preserve"><value>Se pueden seleccionar como máximo {0} objeciones.</value></data>
+  <data name="PnClaimCount" xml:space="preserve"><value>{0} afirmación(es) de respaldo</value></data>
+  <data name="PnRemove" xml:space="preserve"><value>Quitar</value></data>
+  <data name="PnUnusable" xml:space="preserve"><value>No utilizable (no aprobada u otro producto); se quita al guardar.</value></data>
+  <data name="PnPreview" xml:space="preserve"><value>Vista previa</value></data>
+  <data name="PnDoctorScreen" xml:space="preserve"><value>Pantalla del médico</value></data>
+  <data name="PnNotHere" xml:space="preserve"><value>Las notas no se muestran aquí</value></data>
+  <data name="PnRemote" xml:space="preserve"><value>Control del representante · Notas</value></data>
+  <data name="PnThisSlide" xml:space="preserve"><value>Esta diapositiva</value></data>
+  <data name="PnTargetShort" xml:space="preserve"><value>objetivo ≈ {0}</value></data>
+  <data name="PnApprovedAnswer" xml:space="preserve"><value>Objeciones esperadas · respuesta aprobada</value></data>
+  <data name="PnSave" xml:space="preserve"><value>Guardar paso</value></data>
+  <data name="PnCancel" xml:space="preserve"><value>Cancelar</value></data>
+  <data name="PnSaved" xml:space="preserve"><value>Paso guardado.</value></data>
+  <data name="PnInvalid" xml:space="preserve"><value>Revise: mensaje clave ≤ 500, guion ≤ 4000, objetivo 10–3600 s, transición ≤ 500, máximo 10 objeciones.</value></data>
+  <data name="PnUnsavedClose" xml:space="preserve"><value>Se perderán los cambios sin guardar. ¿Cerrar de todos modos?</value></data>
+  <data name="PnDuration" xml:space="preserve"><value>{0} min {1} s</value></data>
+  <data name="PnSecondsValue" xml:space="preserve"><value>{0} s</value></data>
+  <data name="Err_path_step_presentation_invalid" xml:space="preserve"><value>Las notas de presentación superan un límite (mensaje clave ≤ 500, guion ≤ 4000, objetivo 10–3600 s, transición ≤ 500, ≤ 10 objeciones).</value></data>
+  <data name="Err_path_step_objection_invalid" xml:space="preserve"><value>Solo se pueden vincular respuestas aprobadas del producto de esta ruta.</value></data>
+  <data name="Err_path_step_objection_not_found" xml:space="preserve"><value>No se encontró una respuesta vinculada; actualice la lista.</value></data>
 </root>
