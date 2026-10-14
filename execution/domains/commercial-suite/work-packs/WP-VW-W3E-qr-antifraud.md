@@ -364,3 +364,37 @@ KORU/YAPMA: antiFraudMode=off iken mevcut başlatma davranışı ve W3 testleri 
 DOĞRULA: "W3E-BE-b" acceptance (işaret kuralları, jeton saklanmıyor, Web vekili, kapsam kendi / ekip / yabancı / read-all, 92 / 93 gün, süzgeçler, sayfalama, N+1 sayaç, özet tutarlılığı, geriye uyum, kiracı izolasyonu) + 3 sabotaj (.bak + touch ile geri al, git checkout YOK); CRM + Web + Gateway + Auth (DataSeeder) + mimari (-o ile repo içi çıktı); taban CRM 2742/2, Web 1681/2; denetimsiz sayı önce / sonra raporda.
 Commit: "feat(crm,web): WP-VW-W3E-BE-b — device evidence at visit start (record + flag: mock location, integrity failed, unverified), antiFraudMode policy, web proxy forces clientPlatform=web, manager visit evidence flags list + summary (team / tenant scope)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor: uçlar, örnek yanıtlar, test sayıları önce / sonra, sabotaj kanıtı, sapmalar. §22 TÜRKÇE. K13.
 ```
+
+## §37 CT kabul — W3E-BE-a E2 ACCEPTED (koşullu, 2026-10-14)
+Test dalına alındı: `b997aeb77` (ajan `60f2af40d`), çakışmasız.
+
+**CT kontrolü:**
+- **İmza:** HKDF(ana[keyId], tenantId) → HMAC-SHA256; `FixedTimeEquals`; yük kiracı taşımıyor. Ajanın bulduğu base64url kanonik kodlama açığı (son karakterin kullanılmayan bitleri) ayrıştırıcıda kapatılmış ve testli.
+- **Anahtar halkası:** `ISecretsProvider` (`crm-visit-qr-signing:<keyId>`, Production'da ortam değişkeni `crm-visit-qr-signing__<keyId>`). Development dışında yedek anahtar yok. `AddSecretsProvider` başlangıçta doğrulama yapmıyor; anahtar yokken CRM yine açılır, yalnız QR uçları 503 döner.
+- **Doğrulayıcı:** §2.4'teki 13 satırın hepsi kodda. Üst kurum zinciri en çok 5 düzey, döngü korumalı. Uzaktan ziyarette QR sorulmuyor (`not_applicable`).
+- **Testler** (worktree, CT `-o`):
+
+  | takım | sonuç | kırmızılar |
+  |---|---|---|
+  | CRM | 2786/2/5 | `VisitPlanningFix2…shared_pattern` (CT `-o` yol artefaktı) + `VwW4DoctorInsights.A_manual_profile_edit…` (tabanda da var) |
+  | Gateway | 181/1 | 5063–5065 bilinen port kırmızısı |
+  | Web (Nav / VwW3E süzgeci) | 62/1 | `WorkCenterMenuWithoutPermissions` (CT `-o` artefaktı) |
+  | Auth (seed / izin süzgeci) | 351/3 | 3'ü de CT `-o` artefaktı: `permission-scope-baseline.csv` / `DataSeeder.cs` bulunamadı. Ajan koşusunda yeşil. |
+
+- **CT sabotajı (ajanın dokunmadığı kural):** `IVisitQrVerifier` DI kaydı silindi → QR / VisitExecution / ScaffoldSmoke süzgecinde **113/113 YEŞİL** kaldı. `.bak` + touch ile geri alındı.
+
+**Açık (CT-1, düzeltilecek) — fail-open:** `StartVisitExecutionHandler`'da doğrulayıcı isteğe bağlı parametre (`qrVerifier = null`); null iken QR "kapalı" sayılıyor. DI kaydı kaybolursa ya da başka bir host işleyiciyi doğrulayıcısız kurarsa, `qrMode=required` canlıda **sessizce uygulanmaz** ve hiçbir test bunu yakalamaz.
+- **Önerilen düzeltme (küçük):**
+  1. İşleyicide `_qr is null` iken etkin `QrMode != off` ise başlatma 503 `visit_qr_signing_unavailable` döner (fail-closed); `off` iken davranış aynı kalır.
+  2. `AddApplication` sonrası `IVisitQrVerifier`'ın kayıtlı olduğunu ve MediatR'ın çözdüğü başlatma işleyicisinin doğrulayıcıyı aldığını ölçen test.
+- Sabotaj tekrarı (kayıt silinir) → kırmızı olmalı.
+
+**Not / izlenecek:**
+- **Anahtar halkası önbelleği:** ilk yükleme sonucunu süreç ömrü boyunca tutuyor; ilk okumada anahtar yoksa bu "yok" sonucu da önbelleğe giriyor. Canlıda anahtar sonradan eklenirse CRM yeniden başlatılmalı. Operatör notu.
+- **İptal edilmiş kod + aktif kod yok:** iptal edilmiş eski bir kod okutulursa zorunlu kipte 409 `visit_qr_revoked` döner. Okutmadan devam edilirse `not_issued` → başlar + işaret. WEB-a'daki S4 metni temsilciyi "Kodu bulamıyorum" yoluna yönlendirmeli.
+- **Yeniden üretme atomik değil** (eski iptal → yeni ekleme). Arada hata olursa kurum kodsuz kalır; çift aktif kod oluşamaz (kısmi tekil dizin).
+- **BE-b birleşiminde beklenen çakışmalar:**
+  - `VwW3AuthoringTests` etkin alan sayısı 9 → 10;
+  - §2.9 ortak dosyalar.
+- **Mimari:** CRM denetimsiz komut 222 → 227 (+5; AUD-001, Faz 8). Borç satırı eklenmedi.
+- **Mobil not:** `mobile/2026-10-14-visit-evidence-w3e/QR.md` → CT mobil sayfasına taşıyacak (BE-b'nin `DEVICE.md`'siyle birlikte).
