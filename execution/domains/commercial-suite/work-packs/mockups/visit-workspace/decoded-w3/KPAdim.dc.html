@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div data-screen-label="B KP Studio adım düzenleyici" style="display:flex;flex-direction:column;gap:20px">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap">
+    <div><div style="font-size:13px;color:var(--mu)">Content Studio / Bilgi Yolları</div><h4 style="margin:2px 0 0;font-size:22px;font-weight:500;color:var(--h);display:flex;align-items:center;gap:10px;flex-wrap:wrap">{{ pathName }}<span style="padding:2px 10px;border-radius:4px;font-size:13px;font-weight:500;background:{{ ver.bg }};color:{{ ver.fg }}">{{ ver.l }}</span></h4></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <sc-if value="{{ canNewVer }}"><button onClick="{{ newVer }}" style="height:38px;background:var(--p);color:#fff;border:0;border-radius:6px;padding:0 18px;font-size:15px;font-weight:500;cursor:pointer;display:flex;gap:6px;align-items:center;box-shadow:0 2px 4px rgba(11,26,140,.35)"><i class="bx bx-git-branch" style="font-size:18px"></i>Yeni sürüm oluştur</button></sc-if>
+      <sc-if value="{{ editable }}" hint-placeholder-val="{{ true }}"><button onClick="{{ save }}" style="height:38px;background:var(--p);color:#fff;border:0;border-radius:6px;padding:0 18px;font-size:15px;font-weight:500;cursor:pointer;display:flex;gap:6px;align-items:center;box-shadow:0 2px 4px rgba(11,26,140,.35)"><i class="bx bx-save" style="font-size:18px"></i>Adımı kaydet</button></sc-if>
+    </div>
+  </div>
+  <sc-if value="{{ saveErr }}"><div role="alert" style="background:var(--dab);color:var(--da);border-radius:6px;padding:12px 16px;display:flex;gap:10px;align-items:center;justify-content:space-between;font-size:14px"><span style="display:flex;gap:8px;align-items:center"><i class="bx bx-error-circle" style="font-size:20px"></i><span><strong>Kaydedilemedi.</strong> Sunucuya ulaşılamadı; değişiklikleriniz bu ekranda korunuyor.</span></span><button onClick="{{ save }}" style="background:var(--dac);color:#fff;border:0;border-radius:6px;padding:6px 14px;font-weight:500;cursor:pointer;white-space:nowrap">Yeniden dene</button></div></sc-if>
+  <sc-if value="{{ pubStrip }}"><div style="background:var(--inb);color:var(--in);border-radius:6px;padding:12px 16px;display:flex;gap:8px;align-items:center;font-size:14px"><i class="bx bx-lock-alt" style="font-size:20px"></i><span>{{ pubT }}</span></div></sc-if>
+
+  <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh);padding:16px 20px;display:flex;gap:16px 28px;align-items:center;flex-wrap:wrap">
+    <div style="display:flex;gap:12px;align-items:center;min-width:240px;flex:1 1 280px">
+      <div style="width:40px;height:40px;border-radius:6px;background:{{ comp.ibg }};color:{{ comp.ifg }};display:flex;align-items:center;justify-content:center;flex:0 0 auto"><i class="bx bx-microphone" style="font-size:22px"></i></div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:6px"><span style="font-size:15px;color:var(--h);font-weight:500">Sunum notları: {{ comp.n }} / {{ comp.t }} adım dolu</span><div style="height:6px;border-radius:3px;background:var(--seb);overflow:hidden"><div style="height:100%;width:{{ comp.pct }};background:{{ comp.bar }}"></div></div></div>
+    </div>
+    <sc-if value="{{ comp.hasMiss }}"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:14px"><span>Eksik:</span><sc-for list="{{ comp.miss }}" as="m"><a href="#" onClick="{{ m.go }}" style="display:flex;gap:4px;align-items:center;padding:3px 10px;border-radius:4px;background:var(--wab);color:var(--wa);text-decoration:none">{{ m.l }}<i class="bx bx-chevron-right"></i></a></sc-for></div></sc-if>
+    <span style="font-size:12px;color:var(--mu)">Dolu: anahtar mesaj ve konuşma metni yazılmış adım.</span>
+  </div>
+
+  <div style="display:grid;grid-template-columns:minmax(200px,250px) minmax(0,1fr);gap:20px;align-items:start">
+    <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh);position:sticky;top:{{ stickyTop }}px">
+      <div style="padding:16px 20px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center"><span style="font-size:16px;font-weight:500;color:var(--h)">Adımlar</span><span style="font-size:13px;color:var(--mu)">{{ comp.t }}</span></div>
+      <div style="padding:8px;display:flex;flex-direction:column;gap:2px">
+        <sc-for list="{{ steps }}" as="s" hint-placeholder-count="6">
+          <button onClick="{{ s.go }}" style="border:0;background:{{ s.bg }};border-radius:6px;padding:10px 12px;display:flex;gap:10px;align-items:center;text-align:start;cursor:pointer;width:100%">
+            <span style="width:28px;height:28px;border-radius:6px;background:{{ s.nbg }};color:{{ s.nfg }};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex:0 0 auto">{{ s.i }}</span>
+            <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span style="font-size:14px;color:var(--h);font-weight:{{ s.fw }};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ s.t }}</span><span style="font-size:12px;color:{{ s.cfg }};display:flex;gap:3px;align-items:center"><i class="bx {{ s.cic }}"></i>{{ s.cl }}</span></span>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh);min-width:0">
+      <div style="padding:20px 24px 0;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+        <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:13px;color:var(--mu)">Adım {{ cur.i }} / {{ comp.t }}</span><span style="font-size:18px;font-weight:500;color:var(--h)">{{ cur.t }}</span></div>
+        <span style="font-size:13px;display:flex;gap:4px;align-items:center"><i class="bx bx-time-five"></i>Tahmini süre {{ cur.est }} sn</span>
+      </div>
+      <sc-if value="{{ isTab }}" hint-placeholder-val="{{ true }}">
+        <div role="tablist" style="display:flex;gap:4px;padding:12px 24px 0;border-bottom:1px solid var(--bd);margin-top:4px">
+          <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="2"><button role="tab" onClick="{{ t.go }}" style="border:0;background:transparent;height:44px;padding:0 14px;font-size:15px;cursor:pointer;color:{{ t.fg }};border-bottom:2px solid {{ t.bd }};margin-bottom:-1px;display:flex;gap:6px;align-items:center;font-weight:{{ t.fw }}"><i class="bx {{ t.ic }}" style="font-size:18px"></i>{{ t.l }}<sc-if value="{{ t.miss }}"><span title="Eksik" style="width:7px;height:7px;border-radius:50%;background:var(--wac)"></span></sc-if></button></sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ showContent }}">
+        <div style="padding:20px 24px;display:flex;flex-direction:column;gap:16px">
+          <sc-if value="{{ isCard }}"><div style="font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;color:var(--h)">İçerik</div></sc-if>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px">
+            <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.3px;color:var(--h)">Başlık</span><input value="{{ cur.t }}" onChange="{{ onT }}" readOnly="{{ ro }}" style="height:38px;border:1px solid var(--bd2);border-radius:6px;padding:0 12px;font-size:15px;color:var(--h);background:{{ inBg }}"></label>
+            <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.3px;color:var(--h)">Alt başlık</span><input value="{{ cur.s }}" onChange="{{ onS }}" readOnly="{{ ro }}" style="height:38px;border:1px solid var(--bd2);border-radius:6px;padding:0 12px;font-size:15px;color:var(--h);background:{{ inBg }}"></label>
+          </div>
+          <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.3px;color:var(--h)">Madde işaretleri <span style="font-weight:400;text-transform:none;color:var(--mu)">· her satır bir madde</span></span><textarea value="{{ cur.bt }}" onChange="{{ onB }}" readOnly="{{ ro }}" rows="3" style="border:1px solid var(--bd2);border-radius:6px;padding:9px 12px;font-size:15px;line-height:1.5;color:var(--h);background:{{ inBg }};resize:vertical"></textarea></label>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px">
+            <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.3px;color:var(--h)">Referans</span><input value="{{ cur.ref }}" onChange="{{ onRef }}" readOnly="{{ ro }}" style="height:38px;border:1px solid var(--bd2);border-radius:6px;padding:0 12px;font-size:15px;color:var(--h);background:{{ inBg }}"></label>
+            <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.3px;color:var(--h)">Tahmini süre</span><div style="display:flex"><input type="number" value="{{ cur.est }}" onChange="{{ onEst }}" readOnly="{{ ro }}" style="flex:1;min-width:0;height:38px;border:1px solid var(--bd2);border-start-start-radius:6px;border-end-start-radius:6px;padding:0 12px;font-size:15px;color:var(--h);background:{{ inBg }}"><span style="height:38px;border:1px solid var(--bd2);border-inline-start:0;border-start-end-radius:6px;border-end-end-radius:6px;padding:0 12px;display:flex;align-items:center;background:var(--soft2);font-size:14px">sn</span></div></label>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isCard }}">
+        <div style="margin:0 24px {{ cardMb }};border:1px solid {{ cardBd }};border-radius:{{ cardRad }}">
+          <button onClick="{{ toggleCard }}" style="width:100%;border:0;background:var(--soft2);border-radius:{{ cardRad }};padding:14px 16px;display:flex;gap:10px;align-items:center;cursor:pointer;text-align:start">
+            <i class="bx bx-microphone" style="font-size:20px;color:var(--pt)"></i><span style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-size:15px;font-weight:500;color:var(--h)">Sunum notları</span><span style="font-size:12px;color:var(--mu)">Yalnız temsilcinin kumandasında görünür</span></span>
+            <span style="padding:2px 8px;border-radius:4px;font-size:12px;font-weight:500;background:{{ cur.cbg }};color:{{ cur.cfg2 }}">{{ cur.cl }}</span><i class="bx {{ cardChev }}" style="font-size:22px;color:var(--mu)"></i>
+          </button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}">
+        <div style="padding:20px 24px;display:flex;flex-direction:column;gap:18px;margin:{{ nw.m }};border:{{ nw.b }};border-top:0;border-radius:{{ nw.r }}">
+          <label style="display:flex;flex-direction:column;gap:6px"><span style="display:flex;justify-content:space-between;gap:8px"><span style="font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.3px;color:var(--h)">Anahtar mesaj</span><span style="font-size:12px;color:{{ c.key.fg }}">{{ c.key.l }}</span></span>
+            <input value="{{ n.key }}" onChange="{{ onKey }}" readOnly="{{ ro }}" placeholder="Doktorun aklında kalması gereken tek cümle" style="height:38px;border:1px solid {{ e.key.bd }};border-radius:6px;padding:0 12px;font-size:15px;color:var(--h);background:{{ inBg }}">
+            <sc-if value="{{ e.key.on }}"><span style="font-size:13px;color:var(--da);display:flex;gap:4px;align-items:center"><i class="bx bx-error-circle"></i>{{ e.key.t }}</span></sc-if></label>
+          <label style="display:flex;flex-direction:column;gap:6px"><span style="display:flex;justify-content:space-between;gap:8px"><span style="font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.3px;color:var(--h)">Konuşma metni <span style="font-weight:400;text-transform:none;color:var(--mu)">· onaylı</span></span><span style="font-size:12px;color:{{ c.script.fg }}">{{ c.script.l }}</span></span>
+            <textarea value="{{ n.script }}" onChange="{{ onScript }}" readOnly="{{ ro }}" rows="5" placeholder="Temsilcinin bu slaytta söyleyeceği onaylı metin" style="border:1px solid {{ e.script.bd }};border-radius:6px;padding:9px 12px;font-size:15px;line-height:1.55;color:var(--h);background:{{ inBg }};resize:vertical"></textarea>
+            <sc-if value="{{ e.script.on }}"><span style="font-size:13px;color:var(--da);display:flex;gap:4px;align-items:center"><i class="bx bx-error-circle"></i>{{ e.script.t }}</span></sc-if></label>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;align-items:start">
+            <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.3px;color:var(--h)">Hedef süre</span>
+              <div style="display:flex"><input type="number" min="10" max="3600" value="{{ n.sure }}" onChange="{{ onSure }}" readOnly="{{ ro }}" placeholder="{{ cur.est }}" style="flex:1;min-width:0;height:38px;border:1px solid {{ e.sure.bd }};border-start-start-radius:6px;border-end-start-radius:6px;padding:0 12px;font-size:15px;color:var(--h);background:{{ inBg }}"><span style="height:38px;border:1px solid var(--bd2);border-inline-start:0;border-start-end-radius:6px;border-end-end-radius:6px;padding:0 12px;display:flex;align-items:center;background:var(--soft2);font-size:14px">sn</span></div>
+              <sc-if value="{{ e.sure.on }}"><span style="font-size:13px;color:var(--da);display:flex;gap:4px;align-items:center"><i class="bx bx-error-circle"></i>{{ e.sure.t }}</span></sc-if>
+              <sc-if value="{{ sureHintOn }}"><span style="font-size:12px;color:var(--mu)">{{ sureHint }}</span></sc-if></label>
+            <label style="display:flex;flex-direction:column;gap:6px"><span style="display:flex;justify-content:space-between;gap:8px"><span style="font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.3px;color:var(--h)">Geçiş cümlesi</span><span style="font-size:12px;color:{{ c.trans.fg }}">{{ c.trans.l }}</span></span>
+              <input value="{{ n.trans }}" onChange="{{ onTrans }}" readOnly="{{ ro }}" placeholder="Sonraki slayta bağlayan cümle" style="height:38px;border:1px solid {{ e.trans.bd }};border-radius:6px;padding:0 12px;font-size:15px;color:var(--h);background:{{ inBg }}">
+              <sc-if value="{{ e.trans.on }}"><span style="font-size:13px;color:var(--da);display:flex;gap:4px;align-items:center"><i class="bx bx-error-circle"></i>{{ e.trans.t }}</span></sc-if></label>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap"><span style="font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.3px;color:var(--h)">Beklenen itirazlar <span style="font-weight:400;text-transform:none;color:var(--mu)">· {{ objCount }} / 10</span></span>
+              <sc-if value="{{ editable }}" hint-placeholder-val="{{ true }}"><a href="#" onClick="{{ toLib }}" style="font-size:13px;display:flex;gap:4px;align-items:center"><i class="bx bx-plus-circle"></i>Kütüphanede yeni oluştur</a></sc-if></div>
+            <span style="font-size:13px;display:flex;gap:6px;align-items:center"><i class="bx bx-info-circle" style="color:var(--in)"></i>Yalnız {{ prodName }} için onaylı itiraz yanıtları seçilebilir.</span>
+            <sc-if value="{{ noObj }}"><div style="border:1px dashed var(--bd2);border-radius:8px;padding:14px;font-size:14px;color:var(--mu);text-align:center">Bu adım için beklenen itiraz seçilmedi.</div></sc-if>
+            <sc-for list="{{ objSel }}" as="o"><div style="border:1px solid var(--bd);border-radius:8px;padding:10px 12px;display:flex;gap:10px;align-items:center">
+              <i class="bx bx-message-error" style="color:var(--da);font-size:18px;flex:0 0 auto"></i>
+              <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px"><span style="font-size:14px;color:var(--h)">"{{ o.q }}"</span><span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span style="padding:1px 8px;border-radius:4px;font-size:12px;font-weight:500;background:{{ o.cat.bg }};color:{{ o.cat.fg }};border:{{ o.cat.bd }}">{{ o.cat.l }}</span><span style="font-size:12px;color:var(--mu)">{{ o.nc }} dayanak iddia</span></span></span>
+              <sc-if value="{{ editable }}"><button onClick="{{ o.remove }}" aria-label="Kaldır" style="width:32px;height:32px;border:0;background:transparent;border-radius:50%;color:var(--mu);cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center" style-hover="background:var(--seb)"><i class="bx bx-x"></i></button></sc-if>
+            </div></sc-for>
+            <sc-if value="{{ canAdd }}">
+              <div style="position:relative;align-self:flex-start">
+                <button onClick="{{ togglePick }}" style="height:36px;background:var(--card);color:var(--pt);border:1px dashed var(--pt);border-radius:6px;padding:0 14px;font-size:14px;cursor:pointer;display:flex;gap:6px;align-items:center"><i class="bx bx-plus"></i>İtiraz ekle</button>
+                <sc-if value="{{ pickOpen }}">
+                  <div style="position:absolute;top:42px;inset-inline-start:0;z-index:20;width:min(460px,80vw);background:var(--card);border-radius:8px;box-shadow:var(--sh2);padding:8px;display:flex;flex-direction:column;gap:2px;max-height:300px;overflow-y:auto">
+                    <sc-if value="{{ noAvail }}"><div style="padding:12px;font-size:14px;color:var(--mu)">Eklenecek onaylı yanıt kalmadı.</div></sc-if>
+                    <sc-for list="{{ objAvail }}" as="o"><button onClick="{{ o.add }}" style="border:0;background:transparent;border-radius:6px;padding:10px 12px;display:flex;flex-direction:column;gap:3px;text-align:start;cursor:pointer" style-hover="background:var(--soft)"><span style="font-size:14px;color:var(--h)">"{{ o.q }}"</span><span style="font-size:12px;color:var(--mu)">{{ o.cat.l }} · {{ o.nc }} dayanak iddia</span></button></sc-for>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-if>
+            <sc-if value="{{ objMax }}"><span style="font-size:13px;color:var(--wa)">En çok 10 itiraz seçilebilir.</span></sc-if>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--bd);padding-top:18px">
+            <span style="font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;color:var(--h)">Önizleme</span>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;align-items:start">
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:14px;font-weight:500;color:var(--h);display:flex;gap:6px;align-items:center"><i class="bx bx-tab"></i>Doktor ekranı</span><span style="padding:2px 8px;border-radius:4px;font-size:12px;font-weight:500;background:var(--wab);color:var(--wa);display:flex;gap:4px;align-items:center"><i class="bx bx-hide"></i>Notlar burada görünmez</span></div>
+                <div style="aspect-ratio:16/10;background:#1d1e26;border-radius:14px;padding:8px">
+                  <div style="height:100%;background:var(--slide);border-radius:8px;padding:18px 20px;display:flex;flex-direction:column;gap:8px;overflow:hidden">
+                    <span style="font-size:11px;font-weight:600;letter-spacing:.4px;color:var(--pt2)">{{ prodName }}</span>
+                    <span style="font-size:20px;font-weight:600;color:var(--h);line-height:1.2">{{ cur.t }}</span>
+                    <span style="font-size:13px;color:var(--tx)">{{ cur.s }}</span>
+                    <div style="display:flex;flex-direction:column;gap:5px;margin-top:4px"><sc-for list="{{ cur.b }}" as="b"><span style="font-size:13px;color:var(--h);display:flex;gap:6px;align-items:flex-start"><span style="width:6px;height:6px;border-radius:50%;background:var(--p);margin-top:6px;flex:0 0 auto"></span>{{ b }}</span></sc-for></div>
+                    <span style="margin-top:auto;font-size:10px;color:var(--mu)">{{ cur.ref }}</span>
+                  </div>
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <span style="font-size:14px;font-weight:500;color:var(--h);display:flex;gap:6px;align-items:center"><i class="bx bx-mobile-alt"></i>Temsilci kumandası · Notlar</span>
+                <div style="background:#1d1e26;border-radius:22px;padding:8px">
+                  <div style="background:var(--card);border-radius:15px;padding:14px;display:grid;gap:12px;max-height:440px;overflow-y:auto">
+                    <div style="background:var(--pl);color:var(--pt);border-radius:8px;padding:10px 12px;display:grid;gap:4px"><span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--pt2)">Anahtar mesaj</span><span style="font-size:14px;font-weight:600;line-height:1.35;opacity:{{ pv.keyOp }}">{{ pv.key }}</span></div>
+                    <div style="display:grid;gap:5px"><div style="display:flex;justify-content:space-between;font-size:12px"><span style="display:flex;gap:4px;align-items:center;color:var(--okc)"><i class="bx bx-timer" style="font-size:15px"></i>Bu slayt 00:00</span><span style="color:var(--mu)">hedef ≈ {{ pv.target }}</span></div><div style="height:4px;border-radius:2px;background:var(--bd)"></div></div>
+                    <div style="display:grid;gap:6px"><span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--mu)">Konuşma metni · onaylı</span><span style="font-size:14px;line-height:1.55;color:var(--h);text-wrap:pretty;opacity:{{ pv.scriptOp }}">{{ pv.script }}</span></div>
+                    <sc-if value="{{ pv.hasObj }}"><div style="display:grid;gap:6px"><span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--mu)">Beklenen itirazlar · onaylı yanıt</span>
+                      <sc-for list="{{ pv.obj }}" as="o"><div style="border:1px solid var(--bd);border-radius:8px;overflow:hidden"><button onClick="{{ o.toggle }}" style="width:100%;min-height:40px;border:0;background:var(--soft2);padding:8px 10px;display:flex;gap:8px;align-items:center;text-align:start;cursor:pointer;color:var(--h);font-size:13px;font-weight:500"><i class="bx bx-message-error" style="color:var(--da);font-size:16px"></i><span style="flex:1">"{{ o.q }}"</span><i class="bx {{ o.chev }}" style="font-size:18px;color:var(--mu)"></i></button>
+                        <sc-if value="{{ o.open }}"><div style="padding:8px 10px;display:grid;gap:8px"><span style="font-size:13px;line-height:1.5;color:var(--h)">{{ o.a }}</span><sc-for list="{{ o.refs }}" as="x"><span style="font-size:11px;color:var(--mu)">{{ x }}</span></sc-for></div></sc-if></div></sc-for></div></sc-if>
+                    <div style="border:1px dashed var(--bd2);border-radius:8px;padding:8px 10px;display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--h)"><i class="bx bx-right-arrow-alt" style="font-size:18px;color:var(--pt)"></i><span style="opacity:{{ pv.transOp }}"><span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--mu);display:block;opacity:1">Geçiş</span>{{ pv.trans }}</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const NOW='2026-10-12 11:20';
+const fmtT=s=>s<60?s+' sn':(s%60===0?(s/60)+' dk':(Math.floor(s/60)+' dk '+(s%60)+' sn'));
+class Component extends DCLogic {
+  state={steps:null,sel:1,tab:'notlar',cardOpen:true,pub:null,pick:false,tried:false,saveErr:false,open:{},key:null};
+  get A(){return this.props.app||{nav:{},obj:[],perm:'read',set(){},go(){},toast(){}}}
+  sync(){const nav=this.A.nav,k=(nav.bPub?'p':'d')+nav.bMode;if(this.state.key!==k||!this.state.steps){const D=window.W3D;if(!D)return;this.setState({key:k,pub:!!nav.bPub,steps:D.STEPS.map(s=>({...s,b:[...s.b],n:{...s.n,obj:[...s.n.obj]}})),sel:1,tab:'notlar',cardOpen:true,tried:false,saveErr:false,pick:false})}}
+  componentDidMount(){this.sync()}
+  componentDidUpdate(){this.sync()}
+  filled(s){return !!(s.n.key.trim()&&s.n.script.trim())}
+  errs(n){const e={};const lim=(k,m)=>{if(n[k].length>m)e[k]='En çok '+m+' karakter. '+(n[k].length-m)+' karakter fazla.'};lim('key',500);lim('script',4000);lim('trans',500);
+    if(n.sure!==''&&n.sure!=null){const v=Number(n.sure);if(!Number.isFinite(v)||v<10||v>3600)e.sure='10 ile 3600 sn arasında olmalı.'}return e}
+  renderVals(){
+    const A=this.A,S=this.state,D=window.W3D;if(!D||!S.steps)return{isTab:true,showNotes:true,editable:true};
+    const nav=A.nav,P=D.PATH,prod=D.P[P.p];
+    const ro=S.pub||A.perm==='read',editable=!ro;
+    const steps=S.steps,cur=steps[S.sel],n=cur.n;
+    const fillN=steps.filter(s=>this.filled(s)).length;
+    const updN=p=>this.setState(s=>({steps:s.steps.map((x,i)=>i===s.sel?{...x,n:{...x.n,...p}}:x)}));
+    const updS=p=>this.setState(s=>({steps:s.steps.map((x,i)=>i===s.sel?{...x,...p}:x)}));
+    const selStep=(i,notes)=>this.setState({sel:i,pick:false,tried:false,...(notes?{tab:'notlar',cardOpen:true}:{})});
+    const err=S.tried?this.errs(n):{};const liveErr=this.errs(n);
+    const E=k=>{const t=err[k]||liveErr[k];return{on:!!t,t:t||'',bd:t?'var(--dac)':'var(--bd2)'}};
+    const ctr=(k,m)=>({l:n[k].length+' / '+m,fg:n[k].length>m?'var(--da)':'var(--mu)'});
+    const approved=A.obj.filter(o=>o.p===P.p&&o.st==='onayli');
+    const catOf=i=>{const c=D.CAT[i];return{l:c.l,bg:c.bg,fg:c.fg,bd:c.bd||'0'}};
+    const objSel=n.obj.map(id=>A.obj.find(o=>o.id===id)).filter(Boolean).map(o=>({q:o.q,a:o.a,cat:catOf(o.cat),nc:o.claims.length,refs:D.CLAIMS.filter(c=>o.claims.includes(c.id)).map(c=>c.ref),id:o.id,remove:()=>updN({obj:n.obj.filter(x=>x!==o.id)})}));
+    const objAvail=approved.filter(o=>!n.obj.includes(o.id)).map(o=>({q:o.q,cat:catOf(o.cat),nc:o.claims.length,add:()=>{updN({obj:[...n.obj,o.id]});this.setState({pick:false})}}));
+    const isTab=nav.bMode!=='card',isCard=!isTab;
+    const target=n.sure!==''&&Number(n.sure)>=10?Number(n.sure):cur.est;
+    const filledCur=this.filled(cur);
+    const miss=steps.map((s,i)=>({s,i})).filter(x=>!this.filled(x.s)).map(x=>({l:(x.i+1)+' · '+x.s.t,go:e=>{e.preventDefault();selStep(x.i,true)}}));
+    return{
+      stickyTop:A.stickyTop||80,pathName:P.n,prodName:prod.n,
+      ver:S.pub?{l:P.pubVer+' · Yayında',bg:'var(--okb)',fg:'var(--ok)'}:{l:P.draftVer+' · Taslak',bg:'var(--seb)',fg:'var(--se)'},
+      canNewVer:S.pub&&A.perm!=='read',editable,ro,inBg:ro?'var(--soft2)':'var(--card)',
+      pubStrip:ro,pubT:S.pub?P.pubVer+' '+D.fmt(P.pubAt,'tr')+' tarihinde yayınlandı; alanlar salt okunur. Değiştirmek için yeni sürüm oluşturun.':'Salt okuma yetkiniz var; alanlar düzenlenemez.',
+      newVer:()=>{this.setState({pub:false});A.toast(P.draftVer+' taslağı '+P.pubVer+' sürümünden oluşturuldu.')},
+      saveErr:S.saveErr,
+      save:()=>{this.setState({tried:true});if(Object.keys(this.errs(n)).length)return;if(A.failSave){this.setState({saveErr:true});return}this.setState({saveErr:false});A.toast('Adım '+(S.sel+1)+' kaydedildi.')},
+      comp:{n:fillN,t:steps.length,pct:Math.round(fillN/steps.length*100)+'%',bar:fillN===steps.length?'var(--okc)':'var(--wac)',ibg:fillN===steps.length?'var(--okb)':'var(--wab)',ifg:fillN===steps.length?'var(--ok)':'var(--wa)',miss,hasMiss:miss.length>0},
+      steps:steps.map((s,i)=>{const on=i===S.sel,f=this.filled(s);return{i:i+1,t:s.t,bg:on?'var(--pl)':'transparent',nbg:on?'var(--p)':'var(--seb)',nfg:on?'#fff':'var(--se)',fw:on?500:400,cl:f?'Notlar dolu':'Notlar eksik',cfg:f?'var(--ok)':'var(--wa)',cic:f?'bx-check-circle':'bx-error-circle',go:()=>selStep(i)}}),
+      cur:{i:S.sel+1,t:cur.t,s:cur.s,b:cur.b,bt:cur.b.join('\n'),ref:cur.ref,est:cur.est,cl:filledCur?'Dolu':'Eksik',cbg:filledCur?'var(--okb)':'var(--wab)',cfg2:filledCur?'var(--ok)':'var(--wa)'},
+      onT:e=>updS({t:e.target.value}),onS:e=>updS({s:e.target.value}),onB:e=>updS({b:e.target.value.split('\n')}),onRef:e=>updS({ref:e.target.value}),onEst:e=>updS({est:Number(e.target.value)||0}),
+      isTab,isCard,
+      tabs:[['icerik','İçerik','bx-detail'],['notlar','Sunum notları','bx-microphone']].map(([k,l,ic])=>({l,ic,fg:S.tab===k?'var(--pt)':'var(--tx)',bd:S.tab===k?'var(--p)':'transparent',fw:S.tab===k?500:400,miss:k==='notlar'&&!filledCur,go:()=>this.setState({tab:k})})),
+      showContent:isCard||S.tab==='icerik',showNotes:isCard?S.cardOpen:S.tab==='notlar',nw:isCard?{m:'0 24px 24px',b:'1px solid var(--pbd)',r:'0 0 8px 8px'}:{m:'0',b:'0',r:'0'},cardMb:isCard&&S.cardOpen?'0':'24px',cardRad:S.cardOpen?'8px 8px 0 0':'8px',
+      toggleCard:()=>this.setState(s=>({cardOpen:!s.cardOpen})),cardChev:S.cardOpen?'bx-chevron-up':'bx-chevron-down',cardBd:S.cardOpen?'var(--pbd)':'var(--bd)',
+      n,c:{key:ctr('key',500),script:ctr('script',4000),trans:ctr('trans',500)},e:{key:E('key'),script:E('script'),trans:E('trans'),sure:E('sure')},
+      onKey:e=>updN({key:e.target.value}),onScript:e=>updN({script:e.target.value}),onSure:e=>updN({sure:e.target.value}),onTrans:e=>updN({trans:e.target.value}),
+      sureHintOn:!liveErr.sure,sureHint:n.sure===''?'Boş bırakıldı: adımın tahmini süresi ('+cur.est+' sn) kullanılır.':'Boş bırakılırsa adımın tahmini süresi ('+cur.est+' sn) kullanılır.',
+      objSel,objCount:n.obj.length,noObj:!n.obj.length,objAvail,noAvail:!objAvail.length,canAdd:editable&&n.obj.length<10,objMax:editable&&n.obj.length>=10,
+      pickOpen:S.pick,togglePick:()=>this.setState(s=>({pick:!s.pick})),
+      toLib:e=>{e.preventDefault();A.go('itiraz',{view:'edit',id:null})},
+      pv:{key:n.key||'Anahtar mesaj yazılmadı',keyOp:n.key?1:.55,script:n.script||'Konuşma metni yazılmadı.',scriptOp:n.script?1:.55,trans:n.trans||'Geçiş cümlesi yazılmadı.',transOp:n.trans?1:.55,target:fmtT(target),
+        hasObj:objSel.length>0,obj:objSel.map(o=>{const op=!!S.open[o.id];return{...o,open:op,chev:op?'bx-chevron-up':'bx-chevron-down',toggle:()=>this.setState(s=>({open:{...s.open,[o.id]:!s.open[o.id]}}))}})}
+    };
+  }
+}
+</script>
+</body>
+</html>

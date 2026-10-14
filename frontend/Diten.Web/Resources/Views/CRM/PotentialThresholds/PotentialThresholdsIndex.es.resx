@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>Umbrales de potencial</value></data>
+  <data name="Crumb" xml:space="preserve"><value>Ajustes CRM / Perfiles de médicos</value></data>
+  <data name="Intro" xml:space="preserve"><value>Los pacientes mensuales de un médico en las indicaciones de un producto se clasifican como Bajo, Medio o Alto según estos límites. Una fila de producto prevalece sobre el valor predeterminado del inquilino; sin ninguno, se aplican los valores integrados.</value></data>
+  <data name="AddProduct" xml:space="preserve"><value>Añadir producto</value></data>
+  <data name="ReadOnly" xml:space="preserve"><value>Puede ver los umbrales; para cambiarlos necesita el permiso de gestión de umbrales.</value></data>
+  <data name="RetryButton" xml:space="preserve"><value>Reintentar</value></data>
+  <data name="ThresholdsTitle" xml:space="preserve"><value>Umbrales</value></data>
+  <data name="ThresholdsNote" xml:space="preserve"><value>Bajo &lt; X · Medio · Alto &gt; Y (pacientes al mes)</value></data>
+  <data name="ColProduct" xml:space="preserve"><value>Producto</value></data>
+  <data name="ColLow" xml:space="preserve"><value>Bajo</value></data>
+  <data name="ColMedium" xml:space="preserve"><value>Medio</value></data>
+  <data name="ColHigh" xml:space="preserve"><value>Alto</value></data>
+  <data name="ColSource" xml:space="preserve"><value>Origen</value></data>
+  <data name="ColLastChange" xml:space="preserve"><value>Último cambio</value></data>
+  <data name="RowActions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>Historial de cambios</value></data>
+  <data name="AuditReadOnly" xml:space="preserve"><value>Registro de auditoría · solo lectura</value></data>
+  <data name="ColDate" xml:space="preserve"><value>Fecha</value></data>
+  <data name="ColPerson" xml:space="preserve"><value>Persona</value></data>
+  <data name="ColTarget" xml:space="preserve"><value>Fila</value></data>
+  <data name="ColField" xml:space="preserve"><value>Campo</value></data>
+  <data name="ColChange" xml:space="preserve"><value>Cambio</value></data>
+  <data name="ProductLabel" xml:space="preserve"><value>Producto</value></data>
+  <data name="LowLabel" xml:space="preserve"><value>Bajo por debajo de (X)</value></data>
+  <data name="LowHint" xml:space="preserve"><value>Menos de X pacientes al mes = Bajo</value></data>
+  <data name="HighLabel" xml:space="preserve"><value>Alto por encima de (Y)</value></data>
+  <data name="HighHint" xml:space="preserve"><value>Más de Y pacientes al mes = Alto</value></data>
+  <data name="PreviewTitle" xml:space="preserve"><value>Vista previa</value></data>
+  <data name="PreviewPatients" xml:space="preserve"><value>Pruebe un número de pacientes al mes:</value></data>
+  <data name="CloseButton" xml:space="preserve"><value>Cerrar</value></data>
+  <data name="CancelButton" xml:space="preserve"><value>Cancelar</value></data>
+  <data name="SaveButton" xml:space="preserve"><value>Guardar</value></data>
+  <data name="SaveTitle" xml:space="preserve"><value>¿Guardar los umbrales?</value></data>
+  <data name="SaveConfirm" xml:space="preserve"><value>Sí, guardar</value></data>
+  <data name="TenantDefault" xml:space="preserve"><value>Valor predeterminado del inquilino</value></data>
+  <data name="Source_product" xml:space="preserve"><value>Producto</value></data>
+  <data name="Source_default" xml:space="preserve"><value>Predeterminado del inquilino</value></data>
+  <data name="Source_built_in" xml:space="preserve"><value>Integrado</value></data>
+  <data name="BandLow" xml:space="preserve"><value>Bajo &lt; {0}</value></data>
+  <data name="BandMedium" xml:space="preserve"><value>Medio {0}–{1}</value></data>
+  <data name="BandHigh" xml:space="preserve"><value>Alto &gt; {0}</value></data>
+  <data name="Field_lowBelow" xml:space="preserve"><value>Límite bajo</value></data>
+  <data name="Field_highAbove" xml:space="preserve"><value>Límite alto</value></data>
+  <data name="Field_own" xml:space="preserve"><value>Fila de producto</value></data>
+  <data name="OwnRow" xml:space="preserve"><value>El producto recibe su propia fila (mismos valores)</value></data>
+  <data name="Never" xml:space="preserve"><value>Aún sin cambios</value></data>
+  <data name="EditButton" xml:space="preserve"><value>Editar</value></data>
+  <data name="EditTitle" xml:space="preserve"><value>Umbrales · {0}</value></data>
+  <data name="NewTitle" xml:space="preserve"><value>Umbrales para un producto</value></data>
+  <data name="ProductPlaceholder" xml:space="preserve"><value>Seleccione un producto</value></data>
+  <data name="SaveText" xml:space="preserve"><value>Los nuevos límites se aplican a {0} desde la próxima clasificación.</value></data>
+  <data name="SaveTextDefault" xml:space="preserve"><value>Los nuevos límites se aplican a todos los productos sin fila propia.</value></data>
+  <data name="Saved" xml:space="preserve"><value>Umbrales guardados.</value></data>
+  <data name="NothingChanged" xml:space="preserve"><value>No hay cambios.</value></data>
+  <data name="NoProducts" xml:space="preserve"><value>Aún no hay umbrales.</value></data>
+  <data name="NoHistory" xml:space="preserve"><value>Aún no hay cambios.</value></data>
+  <data name="HistoryDefault" xml:space="preserve"><value>Predeterminado del inquilino</value></data>
+  <data name="YouLabel" xml:space="preserve"><value>Usted</value></data>
+  <data name="Class_low" xml:space="preserve"><value>Bajo</value></data>
+  <data name="Class_medium" xml:space="preserve"><value>Medio</value></data>
+  <data name="Class_high" xml:space="preserve"><value>Alto</value></data>
+  <data name="ErrRequired" xml:space="preserve"><value>Introduzca un número entero.</value></data>
+  <data name="ErrRange" xml:space="preserve"><value>Un número entero de 1 a 100.000.</value></data>
+  <data name="ErrOrder" xml:space="preserve"><value>Alto (Y) no puede ser menor que Bajo (X).</value></data>
+  <data name="ErrProduct" xml:space="preserve"><value>Seleccione un producto.</value></data>
+  <data name="Err_potential_threshold_invalid" xml:space="preserve"><value>Umbrales rechazados: 0 &lt; Bajo ≤ Alto ≤ 100.000.</value></data>
+  <data name="Err_version_conflict" xml:space="preserve"><value>Otra persona cambió estos umbrales. Recargue e inténtelo de nuevo.</value></data>
+  <data name="Err_doctor_insights_product_invalid" xml:space="preserve"><value>Este producto no está en el maestro de productos.</value></data>
+  <data name="Err_doctor_insights_invalid" xml:space="preserve"><value>La solicitud no es válida.</value></data>
+  <data name="Err_reference_data_unavailable" xml:space="preserve"><value>No se pudo leer el maestro de productos; no se guardó nada.</value></data>
+  <data name="Err_dependency_unavailable" xml:space="preserve"><value>La lista de productos no está disponible ahora.</value></data>
+  <data name="Err_permission_denied" xml:space="preserve"><value>No tiene permiso para esto.</value></data>
+  <data name="Err_unavailable" xml:space="preserve"><value>No se pudo contactar con el servidor; sus valores se conservan en esta pantalla.</value></data>
+  <data name="Err_generic" xml:space="preserve"><value>No se pudo completar la operación.</value></data>
+</root>

@@ -114,4 +114,16 @@
   <data name="Err_content_engagement_journey_overlapping_published_version" xml:space="preserve"><value>Другая опубликованная версия этого кода маршрута (тот же язык) уже покрывает эти даты. Измените даты действия или архивируйте другую версию.</value></data>
   <data name="Err_content_engagement_journey_archived_no_mutation" xml:space="preserve"><value>Архивный маршрут нельзя опубликовать.</value></data>
   <data name="Err_content_engagement_journey_concurrency_conflict" xml:space="preserve"><value>Тем временем маршрут изменил другой пользователь. Перезагрузите страницу и повторите попытку.</value></data>
+  <data name="AdoptionStage" xml:space="preserve">
+    <value>Стадия принятия</value>
+  </data>
+  <data name="AdoptionStageHelp" xml:space="preserve">
+    <value>Представитель сообщает стадию принятия врача; маршрут переходит к первому сопоставленному этапу после неё.</value>
+  </data>
+  <data name="AdoptionStageNone" xml:space="preserve">
+    <value>Не сопоставлено</value>
+  </data>
+  <data name="AdoptionStageUnavailable" xml:space="preserve">
+    <value>Не удалось прочитать список стадий принятия.</value>
+  </data>
 </root>

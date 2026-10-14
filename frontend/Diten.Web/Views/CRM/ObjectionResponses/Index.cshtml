@@ -1,0 +1,109 @@
+@model Diten.Web.Models.CRM.ObjectionResponsesPageViewModel
+@using Diten.Web.Models.DataTable
+@using Diten.Web.Views.CRM.ObjectionResponses
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ObjectionResponsesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["PageTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    WP-VW-W3 (W3-WEB-c) — A1 · the objection library list (Content Studio). SERVER data: the Web proxy turns the list
+    factory's request into CRM's page / pageSize / q and answers { items, total, filteredTotal }. Filters: product (MDM),
+    category (BRD codes, labels from BRD), status (CRM's lifecycle words) + the search box (the question). An empty library
+    draws the empty card (A1 boş); a filter with no hit draws the table's "no result". UAS-001: without
+    crm.objection-response.read NOTHING but the access notice.
+*@
+@if (!Model.CanRead)
+{
+    <partial name="_AccessDenied" model="@Localizer["PageTitle"].Value" />
+    return;
+}
+
+<div id="inlineFilterHost" class="dt-inline-filter-host">
+    <div class="collapse show" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                    <div class="filter-chip filter-product">
+                        <select id="filterProduct" class="form-select form-select-sm select2" aria-label="@Localizer["FieldProduct"]"></select>
+                    </div>
+                    <div class="filter-chip filter-category">
+                        <select id="filterCategory" class="form-select form-select-sm select2" aria-label="@Localizer["FieldCategory"]"></select>
+                    </div>
+                    <div class="filter-chip filter-status">
+                        <select id="filterStatus" class="form-select form-select-sm select2" aria-label="@SharedLocalizer["Status"]"></select>
+                    </div>
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">@SharedLocalizer["Apply"]</button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">@SharedLocalizer["Reset"]</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-3">
+    <div>
+        <small class="text-muted d-block">@Localizer["PageGroup"]</small>
+        <h5 class="mb-0">@Localizer["PageTitle"]</h5>
+        <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+    </div>
+</div>
+
+<div id="orListRoot"
+     data-api-base="/CRM/ObjectionResponses/api"
+     data-can-manage="@(Model.CanManage ? "true" : "false")"
+     data-can-read-products="@(Model.CanReadProducts ? "true" : "false")">
+    <div id="orAlert" class="alert alert-danger d-none" role="alert"></div>
+
+    @* A1 boş — the library has no answer at all (not: a filter found nothing). *@
+    <div class="card d-none" id="orEmpty">
+        <div class="card-body text-center py-5">
+            <span class="avatar avatar-md mb-3"><span class="avatar-initial rounded-circle bg-label-primary"><i class="bx bx-message-square-error" aria-hidden="true"></i></span></span>
+            <h6 class="mb-1">@Localizer["EmptyTitle"]</h6>
+            <p class="text-muted mb-3 mx-auto or-empty-text">@Localizer["EmptyText"]</p>
+            @if (Model.CanManage)
+            {
+                <a class="btn btn-primary" href="/CRM/ObjectionResponses/Create"><i class="bx bx-plus me-1" aria-hidden="true"></i>@Localizer["NewResponse"]</a>
+            }
+        </div>
+    </div>
+
+    <div id="orTable">
+        @{
+            var listShell = new DataTableListShellViewModel
+            {
+                TableId = "dt-objectionresponses",
+                DataMode = "server",
+                Slug = "objectionresponses",
+                HasSelection = false,
+                Columns =
+                [
+                    new DataTableColumnViewModel { Header = Localizer["ColProduct"].Value },
+                    new DataTableColumnViewModel { Header = Localizer["ColCategory"].Value },
+                    new DataTableColumnViewModel { Header = Localizer["ColQuestion"].Value, CssClass = "all" },
+                    new DataTableColumnViewModel { Header = Localizer["ColClaims"].Value },
+                    new DataTableColumnViewModel { Header = Localizer["ColUsage"].Value },
+                    new DataTableColumnViewModel { Header = Localizer["ColStatus"].Value },
+                    new DataTableColumnViewModel { Header = Localizer["ColUpdated"].Value }
+                ],
+                ActionsHeader = Localizer["ColActions"].Value
+            };
+        }
+        <partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/js/CRM/ObjectionResponses/objection-responses.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <partial name="~/Views/CRM/ObjectionResponses/_L10n.cshtml" />
+    <script src="~/assets/js/CRM/ObjectionResponses/objection-core.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/ObjectionResponses/objection-list.js" asp-append-version="true"></script>
+}

@@ -77,7 +77,7 @@ public sealed class VisitPlanningMockupCultureWebTests
         var emptyAt = detail.IndexOf("if (w.status === 'empty') {", StringComparison.Ordinal);
         Assert.True(emptyAt > 0, "the empty branch");
         var branch = Between(detail, "if (w.status === 'empty') {", "}\n");
-        Assert.Contains("parts.push(emptyWeekHtml());", branch);
+        Assert.Contains("parts.push(emptyWeekHtml(ws));", branch);
         Assert.Contains("return;", branch);
         // the day rows, product and moved sections all come AFTER the early return
         foreach (var later in new[] { "dayRow(d, movable)", "L.ProductVisitsTitle", "pinOverflowHtml(p, ws)", "slipRow" })
@@ -85,10 +85,11 @@ public sealed class VisitPlanningMockupCultureWebTests
             var at = detail.IndexOf(later, StringComparison.Ordinal);
             Assert.True(at > emptyAt, later + " must not be drawn for an empty week");
         }
-        var empty = Between(js, "const emptyWeekHtml = () =>", "'</div>';");
+        var empty = Between(js, "const emptyWeekHtml = ws => {", "\n    };");
         Assert.Contains("border-style:dashed !important", empty);
         Assert.Contains("L.EmptyWeekHint", empty);
-        Assert.Contains("js-wk-action\" data-action=\"rebuild\">' + esc(L.GenerateWeek", empty);
+        Assert.Contains("js-wk-action\" data-action=\"generate\"", empty); // WP-VP-4J: the build with feedback
+        Assert.Contains("esc(L.GenerateWeek", empty);
         Assert.Contains("canGenerate && !page.isLegacy()", empty);
         Assert.Equal("Bu haftayı üret", Resx("tr")["GenerateWeek"]);
     }
@@ -118,7 +119,7 @@ public sealed class VisitPlanningMockupCultureWebTests
     {
         var js = Script("weeks.js");
         var freq = Between(js, "const frequencyLine = (s, status) => {", "\n    };");
-        Assert.Contains("(L.FrequencyDefaultOne || '')", freq);
+        Assert.Contains("(weeklyDefault ? (L.FrequencyDefaultWeekly || '') : (L.FrequencyNone || ''))", freq); // 4L: the weekly default
         Assert.Contains("VPF.ratio(status.done, status.remaining != null ? status.remaining : '—')", freq); // CT 4I E4: RTL-safe pair
         Assert.Contains("const stripRects = (cid, firstDraft) => page.weeks().map(pw => {", js);
         Assert.Contains("style=\"width:14px;height:6px\"", js);
@@ -137,7 +138,7 @@ public sealed class VisitPlanningMockupCultureWebTests
         var detail = view.IndexOf("id=\"vp-wk-detail\"", StringComparison.Ordinal);
         var docs = view.IndexOf("id=\"vp-wk-doctors\"", StringComparison.Ordinal);
         Assert.True(detail > 0 && docs > detail);
-        Assert.Equal("dönemde 1 (varsayılan)", Resx("tr")["FrequencyDefaultOne"]);
+        Assert.Equal("haftada 1 (varsayılan)", Resx("tr")["FrequencyDefaultWeekly"]); // 4L: "dönemde 1" is gone
         Assert.Equal("yapıldı", Resx("tr")["StateDone"]);
     }
 
@@ -152,7 +153,7 @@ public sealed class VisitPlanningMockupCultureWebTests
         Assert.Contains("const slot = slots.find(s => (s.weekStart || mondayYmd(s.plannedDate)) === w.weekStart) || null;", js);
         Assert.Contains("(state === 'none' ? '<span class=\"text-muted\">—</span>'", js);
         Assert.Contains("(w.status === 'past' ? ' opacity-50' : '')", js);
-        Assert.Contains("(L.FrequencyDefaultOne || '')", js);
+        Assert.Contains("(weeklyDefault ? (L.FrequencyDefaultWeekly || '') : (L.FrequencyNone || ''))", js);
         Assert.Contains("fmt(L.DurationLine", js);
         Assert.Contains("L.NextContentSoon", js);
         Assert.Equal("Sıradaki içerik: yakında", Resx("tr")["NextContentSoon"]);
@@ -164,13 +165,11 @@ public sealed class VisitPlanningMockupCultureWebTests
     public void The_targets_doctor_table_has_eight_columns_and_no_responsive_collapse()
     {
         var js = Script("details.js");
-        var config = Between(js, "const contactsConfig = list => ({", "\n    });");
-        Assert.Contains("responsive: false, autoWidth: false,", config);
-        Assert.DoesNotMatch(@"responsive:\s*(true|\{)", config);
-        Assert.Contains("columns: [{ data: null }, { data: 'name' }, { data: 'specialty' }, { data: null }, { data: null }, { data: null }, { data: null }, { data: null }]", config);
-        Assert.Contains("targets: 3", config);
-        Assert.Contains("targets: 7", config);
-        Assert.Contains("statusCell(row)", config);
+        // WP-VP-4J — no DataTable at all now (so no responsive collapse): a plain table row of eight cells
+        var row = Between(js, "const doctorRowHtml = row =>", "</tr>';");
+        Assert.Equal(8, Regex.Matches(row, "'<td").Count);
+        Assert.Contains("statusCell(row)", row);
+        Assert.DoesNotContain("contactsDt", js);
         var view = View("Details.cshtml");
         var head = Between(view, "<table id=\"dt-vp-contacts\"", "</thead>");
         Assert.Equal(8, Regex.Matches(head, "<th>").Count);
@@ -242,7 +241,7 @@ public sealed class VisitPlanningMockupCultureWebTests
         var back = Between(js, "const returnToWeeks = () => {", "\n    };");
         Assert.Contains("page.selectWeek(note.week, 'force')", back);
         Assert.Contains("el('vp-tab-weeks-btn')", back);
-        Assert.Contains("page.on('preview', () => { render(); returnToWeeks(); });", js);
+        Assert.Contains("page.on('preview', () => { finishGenerate(); render(); returnToWeeks(); });", js); // 4J: + the empty-week feedback
         Assert.Contains("id=\"vp-tab-weeks-btn\"", View("Details.cshtml"));
     }
 
@@ -265,7 +264,7 @@ public sealed class VisitPlanningMockupCultureWebTests
     {
         var bridged = new[]
         {
-            "NoAccountsFound", "DueThisWeekBadge", "EditWeekTargets", "EmptyWeekHint", "FrequencyDefaultOne", "NextContentSoon",
+            "NoAccountsFound", "DueThisWeekBadge", "EditWeekTargets", "EmptyWeekHint", "FrequencyDefaultWeekly", "NextContentSoon",
             "NoTimeShort", "ShowAllCount", "ShowLess", "WeekDoctorsHeading", "HistoryStateDone", "HistoryStateApproved",
             "HistoryStateDraft", "HistoryStateProjected", "ReasonNoNearDay", "StateDone", "WeekSubApproved", "WeekSubEmpty"
         };

@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
+<link rel="stylesheet" href="theme.css">
+</helmet>
+<sc-if value="{{ standalone }}"><div style="position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;background:#f5f5f9;font-family:'Public Sans',sans-serif;padding:24px"><div style="background:#fff;border-radius:8px;box-shadow:0 3px 8px rgba(34,48,62,.08);padding:28px 32px;max-width:440px;display:grid;gap:10px;text-align:center"><div style="font-size:17px;font-weight:500;color:#384551">Bu dosya prototipin bir parçası</div><div style="font-size:14px;color:#646e78">Tek başına açıldığında boş görünür. Tüm ekranlar için ana dosyayı açın.</div><a href="Ziyaret Çalışma Alanı.dc.html" style="justify-self:center;margin-top:6px;padding:10px 18px;border-radius:6px;background:#0b1a8c;color:#fff;font-size:14px;font-weight:500;text-decoration:none">Ziyaret Çalışma Alanı'nı aç</a></div></div></sc-if>
+<div style="position:relative;height:100%;color:var(--tx)">
+
+<sc-if value="{{ isE3 }}">
+  <div style="position:absolute;inset:0;background:{{ e3Back }};display:flex;align-items:center;justify-content:center;padding:{{ e3Pad }}">
+    <sc-if value="{{ isPhone }}">
+      <div data-screen-label="E3 Telefon kamera + konum" style="position:absolute;inset:0;display:flex;flex-direction:column;background:var(--bg)">
+        <div style="height:52px;display:flex;align-items:center;gap:8px;padding:0 8px;background:var(--card)">
+          <button onClick="{{ cancelE3 }}" aria-label="Geri" style="width:44px;height:44px;border:0;background:transparent;color:var(--h);font-size:26px;display:flex;align-items:center;justify-content:center"><i class="bx bx-chevron-left"></i></button>
+          <div style="flex:1;min-width:0"><div style="font-size:16px;font-weight:600;color:var(--h)">Ziyarete başla</div><div style="font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ v.name }} · {{ v.acc }}</div></div>
+        </div>
+        <div style="flex:1;min-height:0;overflow-y:auto;padding:12px 16px;display:grid;align-content:start;gap:12px">
+          <sc-if value="{{ noPhoto }}">
+            <div style="position:relative;height:360px;border-radius:14px;overflow:hidden;background:repeating-linear-gradient(135deg,#2a2b38 0 10px,#24252f 10px 20px);display:flex;align-items:center;justify-content:center">
+              <div style="position:absolute;inset:28px;border:2px dashed rgba(255,255,255,.45);border-radius:10px"></div>
+              <div style="font:12px/1.4 ui-monospace,monospace;color:rgba(255,255,255,.7);text-align:center">kamera önizlemesi<br>(arka kamera)</div>
+              <div style="position:absolute;left:12px;right:12px;bottom:12px;background:rgba(0,0,0,.6);color:#fff;border-radius:8px;padding:8px 10px;font-size:12px;line-height:1.4">Kurum girişi ya da bekleme alanı. Doktorun ya da hastaların yüzü çekilmez (KVKK).</div>
+            </div>
+            <div style="display:flex;justify-content:center"><button onClick="{{ takePhoto }}" aria-label="Fotoğraf çek" style="width:72px;height:72px;border-radius:50%;border:4px solid var(--p);background:var(--card);display:flex;align-items:center;justify-content:center;cursor:pointer"><span style="width:52px;height:52px;border-radius:50%;background:var(--p)"></span></button></div>
+          </sc-if>
+          <sc-if value="{{ photo }}">
+            <div style="background:var(--card);border-radius:10px;box-shadow:var(--sh);padding:12px;display:flex;gap:12px;align-items:center">
+              <div style="width:84px;height:84px;border-radius:8px;background:repeating-linear-gradient(135deg,var(--soft) 0 6px,var(--card) 6px 12px);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;font:10px ui-monospace,monospace;color:var(--mu);text-align:center">fotoğraf<br>önizleme</div>
+              <div style="flex:1;display:flex;flex-direction:column;gap:4px"><span style="font-size:14px;font-weight:600;color:var(--h)">Fotoğraf alındı</span><span style="font-size:12px">11:31 · kurum girişi</span><sc-if value="{{ offline }}"><span style="align-self:flex-start;padding:1px 7px;border-radius:4px;font-size:11px;font-weight:600;background:var(--wab);color:var(--wa)">Gönderilecek</span></sc-if></div>
+              <button onClick="{{ retake }}" style="height:44px;border:1px solid var(--pt);color:var(--pt);background:transparent;border-radius:8px;padding:0 12px;font-size:14px">Yeniden çek</button>
+            </div>
+          </sc-if>
+          <div style="background:var(--card);border-radius:10px;box-shadow:var(--sh);padding:12px;display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:14px;font-weight:600;color:var(--h);display:flex;gap:6px;align-items:center"><i class="bx bx-current-location" style="font-size:18px"></i>Konum</span><span style="padding:3px 9px;border-radius:4px;font-size:12px;font-weight:600;background:{{ loc.bg }};color:{{ loc.fg }}">{{ loc.l }}</span></div>
+            <div style="font-size:13px">{{ loc.x }}</div>
+            <button onClick="{{ toggleFar }}" style="align-self:flex-start;border:0;background:transparent;color:var(--mu);font:11px ui-monospace,monospace;padding:0;cursor:pointer">[demo] konumu değiştir</button>
+          </div>
+          <div style="background:var(--card);border-radius:10px;box-shadow:var(--sh);padding:12px;display:flex;justify-content:space-between;align-items:center;font-size:14px"><span style="display:flex;gap:6px;align-items:center;color:var(--h);font-weight:600"><i class="bx bx-time-five" style="font-size:18px"></i>Başlangıç</span><span>11:31 · sunucu saati</span></div>
+          <sc-for list="{{ extraOn }}" as="x"><div style="background:var(--card);border-radius:10px;box-shadow:var(--sh);padding:12px;display:flex;gap:10px;align-items:center;font-size:13px"><i class="bx {{ x.ic }}" style="font-size:20px;color:var(--pt)"></i><span style="flex:1"><strong style="color:var(--h)">{{ x.l }}</strong><br>{{ x.s }}</span></div></sc-for>
+          <sc-if value="{{ offline }}"><div style="background:var(--wab);color:var(--wa);border-radius:8px;padding:10px 12px;font-size:13px;display:flex;gap:8px"><i class="bx bx-cloud-upload" style="font-size:18px"></i>Bağlantı yok. Fotoğraf ve konum cihazda bekliyor; bağlantı gelince gönderilecek.</div></sc-if>
+        </div>
+        <div style="padding:12px 16px 20px;background:var(--card);border-top:1px solid var(--bd)"><button onClick="{{ startSunum }}" disabled="{{ startDis }}" style="width:100%;height:50px;border:0;border-radius:10px;background:var(--p);color:#fff;font-size:16px;font-weight:600;opacity:{{ startOp }};display:flex;gap:8px;align-items:center;justify-content:center"><i class="bx bx-slideshow" style="font-size:20px"></i>Sunumu başlat</button></div>
+      </div>
+    </sc-if>
+    <sc-if value="{{ notPhone }}">
+      <div data-screen-label="E3 Ziyarete başla" role="dialog" aria-label="Ziyarete başla" style="background:var(--card);border-radius:8px;width:min(760px,100%);max-height:100%;overflow-y:auto;box-shadow:var(--sh2);display:flex;flex-direction:column">
+        <div style="padding:20px 24px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;gap:12px">
+          <div><div style="font-size:18px;font-weight:500;color:var(--h)">Ziyarete başla</div><div style="font-size:13px;margin-top:2px">{{ v.name }} · {{ v.acc }} · {{ v.time }}</div></div>
+          <button onClick="{{ cancelE3 }}" aria-label="Kapat" style="width:32px;height:32px;border:0;background:var(--soft);color:var(--h);border-radius:6px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center"><i class="bx bx-x"></i></button>
+        </div>
+        <div style="padding:20px 24px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px">
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="font-size:13px;font-weight:600;color:var(--h);text-transform:uppercase;letter-spacing:.3px">Fotoğraf <span style="font-weight:400;text-transform:none;color:var(--mu)">· {{ photoReqL }}</span></div>
+            <div style="height:200px;border-radius:8px;border:1px dashed var(--pbd);background:repeating-linear-gradient(135deg,var(--soft) 0 8px,var(--card) 8px 16px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;position:relative">
+              <sc-if value="{{ noPhoto }}">
+                <i class="bx bx-camera" style="font-size:32px;color:var(--mu)"></i>
+                <div style="display:flex;gap:8px"><button onClick="{{ takePhoto }}" style="height:34px;background:var(--p);color:#fff;border:0;border-radius:6px;padding:0 12px;font-size:13px;cursor:pointer;display:flex;gap:5px;align-items:center"><i class="bx bx-upload"></i>Dosya yükle</button><button onClick="{{ takePhoto }}" style="height:34px;background:var(--card);color:var(--pt);border:1px solid var(--pt);border-radius:6px;padding:0 12px;font-size:13px;cursor:pointer;display:flex;gap:5px;align-items:center"><i class="bx bx-webcam"></i>Web kamerası</button></div>
+              </sc-if>
+              <sc-if value="{{ photo }}">
+                <div style="font:12px ui-monospace,monospace;color:var(--mu)">fotoğraf önizlemesi · kurum girişi</div>
+                <button onClick="{{ retake }}" style="height:32px;background:var(--card);color:var(--pt);border:1px solid var(--pt);border-radius:6px;padding:0 12px;font-size:13px;cursor:pointer">Yeniden çek</button>
+              </sc-if>
+            </div>
+            <div style="font-size:12px;display:flex;gap:6px"><i class="bx bx-shield-quarter" style="font-size:16px;color:var(--wa)"></i>Kurum girişi ya da bekleme alanı. Doktorun ya da hastaların yüzü çekilmez (KVKK).</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="font-size:13px;font-weight:600;color:var(--h);text-transform:uppercase;letter-spacing:.3px">Konum ve saat</div>
+            <div style="border:1px solid var(--bd);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:6px">
+              <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:14px;color:var(--h)">Konum</span><span style="padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;background:{{ loc.bg }};color:{{ loc.fg }}">{{ loc.l }}</span></div>
+              <div style="font-size:12px">{{ loc.x }}</div>
+              <button onClick="{{ toggleFar }}" style="align-self:flex-start;border:0;background:transparent;color:var(--mu);font:11px ui-monospace,monospace;padding:0;cursor:pointer">[demo] konumu değiştir</button>
+            </div>
+            <div style="border:1px solid var(--bd);border-radius:8px;padding:12px;display:flex;justify-content:space-between;font-size:14px"><span style="color:var(--h)">Başlangıç</span><span>11:31 · sunucu saati</span></div>
+            <div style="border:1px dashed var(--wac);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:8px;background:var(--soft2)">
+              <div style="font-size:11px;font-weight:600;color:var(--wa);text-transform:uppercase;letter-spacing:.3px">Ürün sahibi kararı · kiracı ayarı</div>
+              <sc-for list="{{ tenant }}" as="t"><div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--h)">{{ t.l }}<div style="display:flex;border:1px solid var(--bd2);border-radius:4px;overflow:hidden"><sc-for list="{{ t.opts }}" as="o"><button onClick="{{ o.go }}" style="border:0;padding:3px 8px;font-size:12px;cursor:pointer;background:{{ o.bg }};color:{{ o.fg }}">{{ o.l }}</button></sc-for></div></div></sc-for>
+            </div>
+          </div>
+        </div>
+        <div style="padding:0 24px 18px;display:flex;flex-direction:column;gap:10px">
+          <div style="font-size:13px;font-weight:600;color:var(--h);text-transform:uppercase;letter-spacing:.3px">Önerilen ek kanıtlar <span style="font-weight:400;text-transform:none;color:var(--mu)">· ürün sahibi seçecek</span></div>
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
+            <sc-for list="{{ extras }}" as="x"><label style="display:flex;gap:10px;align-items:flex-start;border:1px solid {{ x.bd }};background:{{ x.bg }};border-radius:8px;padding:10px 12px;cursor:pointer"><input type="checkbox" checked="{{ x.on }}" onChange="{{ x.go }}" style="accent-color:var(--p);width:16px;height:16px;margin-top:2px"><span style="display:flex;flex-direction:column;gap:2px"><span style="font-size:14px;color:var(--h);font-weight:500;display:flex;gap:6px;align-items:center"><i class="bx {{ x.ic }}" style="font-size:17px"></i>{{ x.l }}</span><span style="font-size:12px;line-height:1.4">{{ x.d }}</span></span></label></sc-for>
+          </div>
+          <sc-if value="{{ qrOn }}"><div style="display:flex;gap:10px;align-items:center;font-size:13px;background:var(--soft2);border-radius:6px;padding:10px 12px"><i class="bx bx-qr-scan" style="font-size:22px;color:var(--pt)"></i><span style="flex:1">Kabuldeki QR kodunu okutun.</span><button onClick="{{ scanQr }}" style="height:30px;background:{{ qrBtnBg }};color:#fff;border:0;border-radius:6px;padding:0 12px;font-size:13px;cursor:pointer">{{ qrL }}</button></div></sc-if>
+        </div>
+        <div style="padding:14px 24px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;gap:8px">
+          <span style="font-size:12px;color:var(--mu)">{{ startHint }}</span>
+          <div style="display:flex;gap:8px"><button onClick="{{ cancelE3 }}" style="height:38px;background:var(--seb);color:var(--se);border:0;border-radius:6px;padding:0 16px;font-size:14px;cursor:pointer">Vazgeç</button><button onClick="{{ startSunum }}" disabled="{{ startDis }}" style="height:38px;background:var(--p);color:#fff;border:0;border-radius:6px;padding:0 16px;font-size:14px;font-weight:500;cursor:pointer;opacity:{{ startOp }};display:flex;gap:6px;align-items:center"><i class="bx bx-slideshow"></i>Sunumu başlat</button></div>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isSunum }}">
+  <div style="position:absolute;inset:0;display:flex;flex-direction:column;background:var(--bg)">
+    <sc-if value="{{ isDesk }}">
+      <div style="height:56px;flex:0 0 auto;background:var(--card);box-shadow:var(--sh);display:flex;align-items:center;gap:14px;padding:0 20px;z-index:2">
+        <button onClick="{{ back }}" aria-label="Takvime dön" style="width:34px;height:34px;border:1px solid var(--bd2);background:var(--card);color:var(--h);border-radius:6px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center"><i class="bx bx-arrow-back"></i></button>
+        <div style="display:flex;flex-direction:column;line-height:1.3"><span style="font-weight:600;color:var(--h)">{{ v.name }}</span><span style="font-size:12px">{{ v.acc }} · başladı 11:31</span></div>
+        <span style="display:inline-flex;gap:5px;align-items:center;padding:3px 9px;border-radius:4px;font-size:12px;font-weight:500;background:var(--inb);color:var(--in)"><span class="zlive" style="width:7px;height:7px;border-radius:50%;background:var(--inc)"></span>Devam ediyor · {{ totalL }}</span>
+        <div style="flex:1"></div>
+        <div role="radiogroup" aria-label="Ziyaret türü" style="display:flex;border:1px solid var(--bd2);border-radius:6px;overflow:hidden;font-size:13px"><sc-for list="{{ kinds }}" as="k"><button onClick="{{ k.go }}" style="border:0;padding:7px 12px;cursor:pointer;background:{{ k.bg }};color:{{ k.fg }}">{{ k.l }}</button></sc-for></div>
+        <sc-if value="{{ remote }}"><button style="height:34px;background:var(--p);color:#fff;border:0;border-radius:6px;padding:0 12px;font-size:13px;cursor:pointer;display:flex;gap:6px;align-items:center"><i class="bx bx-screenshot"></i>Doktor ekranını paylaş</button></sc-if>
+      </div>
+    </sc-if>
+    <div style="flex:1;min-height:0;display:flex;gap:{{ splitGap }}px;padding:{{ splitPad }}px;position:relative">
+      <sc-if value="{{ showDoc }}">
+        <div data-screen-label="E4a Doktor ekranı" style="flex:1;min-width:0;display:flex;flex-direction:column;background:var(--slide);color:var(--h);border-radius:{{ docRad }}px;overflow:hidden;box-shadow:var(--sh);position:relative">
+          <div style="height:48px;flex:0 0 auto;display:flex;align-items:center;gap:6px;padding:0 20px;border-bottom:1px solid var(--bd)">
+            <sc-for list="{{ ptabs }}" as="t"><button onClick="{{ t.go }}" style="border:0;background:transparent;height:48px;padding:0 12px;font-size:13px;font-weight:600;letter-spacing:.4px;cursor:pointer;color:{{ t.fg }};box-shadow:inset 0 -2px 0 {{ t.bar }}">{{ t.l }}</button></sc-for>
+            <div style="flex:1"></div>
+            <sc-if value="{{ isDesk }}"><span style="font-size:12px;color:var(--mu)">Doktor ekranı · temsilci notları görünmez</span></sc-if>
+            <sc-if value="{{ isTablet }}"><button onPointerDown="{{ lpDown }}" onPointerUp="{{ lpUp }}" onPointerLeave="{{ lpUp }}" title="Çıkmak için basılı tutun" style="height:32px;border:1px solid var(--bd);background:transparent;color:var(--mu);border-radius:16px;padding:0 12px;font-size:12px;display:flex;gap:5px;align-items:center;cursor:pointer;user-select:none"><i class="bx bx-lock-alt"></i>Çıkış: basılı tut</button></sc-if>
+          </div>
+          <div onPointerDown="{{ swDown }}" onPointerUp="{{ swUp }}" style="flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:40px;padding:{{ slidePad }};align-items:center;touch-action:pan-y;user-select:none">
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <div style="font-size:13px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--pt)">{{ slide.kick }}</div>
+              <div style="font-size:{{ titleSize }}px;font-weight:600;line-height:1.1;color:var(--h);text-wrap:balance">{{ slide.t }}</div>
+              <div style="font-size:{{ subSize }}px;color:var(--tx);text-wrap:pretty">{{ slide.s }}</div>
+              <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px">
+                <sc-for list="{{ slide.b }}" as="b"><div style="display:flex;gap:12px;align-items:flex-start;font-size:{{ bulSize }}px;color:var(--h)"><i class="bx bx-check-circle" style="color:var(--okc);font-size:{{ bulSize }}px;margin-top:2px"></i><span>{{ b }}</span></div></sc-for>
+              </div>
+            </div>
+            <div style="height:72%;min-height:160px;border-radius:12px;border:1px solid var(--bd);background:repeating-linear-gradient(135deg,var(--soft) 0 10px,transparent 10px 20px);display:flex;align-items:center;justify-content:center;font:12px/1.4 ui-monospace,monospace;color:var(--mu);text-align:center">onaylı içerik görseli<br>(Content Studio)</div>
+          </div>
+          <div style="height:52px;flex:0 0 auto;display:flex;align-items:center;gap:16px;padding:0 20px;border-top:1px solid var(--bd)">
+            <span style="flex:1;font-size:12px;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ slide.ref }}</span>
+            <div style="display:flex;gap:6px;align-items:center"><sc-for list="{{ dots }}" as="d"><span style="width:{{ d.w }}px;height:8px;border-radius:4px;background:{{ d.c }}"></span></sc-for></div>
+            <span style="flex:1;text-align:right;font-size:12px;color:var(--mu)">{{ slideNo }}</span>
+          </div>
+          <sc-if value="{{ tabHandle }}"><button onPointerDown="{{ lpPanelDown }}" onPointerUp="{{ lpUp }}" onPointerLeave="{{ lpUp }}" title="Temsilci paneli: basılı tutun" style="position:absolute;right:0;top:50%;transform:translateY(-50%);width:28px;height:120px;border:1px solid var(--bd);border-right:0;border-radius:8px 0 0 8px;background:var(--card);color:var(--mu);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;user-select:none"><i class="bx bx-chevron-left"></i><i class="bx bx-lock-alt" style="font-size:13px"></i></button></sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showRep }}">
+        <div data-screen-label="E4b Temsilci ekranı" style="width:{{ repW }};flex:0 0 auto;display:flex;flex-direction:column;background:var(--card);border-radius:{{ repRad }}px;box-shadow:var(--sh2);overflow:hidden;position:{{ repPos }};top:0;right:0;bottom:0;z-index:5">
+          <div style="padding:12px 16px;border-bottom:1px solid var(--bd);display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+              <sc-if value="{{ isPhone }}"><button onClick="{{ back }}" aria-label="Takvime dön" style="width:44px;height:44px;margin-left:-10px;border:0;background:transparent;color:var(--h);font-size:24px;display:flex;align-items:center;justify-content:center"><i class="bx bx-chevron-left"></i></button></sc-if>
+              <div style="flex:1;min-width:0"><div style="font-size:12px;color:var(--mu)">Temsilci · kumanda</div><div style="font-size:14px;font-weight:600;color:var(--h);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ v.name }}</div></div>
+              <sc-if value="{{ repClose }}"><button onClick="{{ closeRep }}" style="height:32px;border:1px solid var(--bd2);background:transparent;color:var(--h);border-radius:6px;padding:0 10px;font-size:12px;cursor:pointer">Doktor moduna dön</button></sc-if>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center;background:var(--inb);color:var(--in);border-radius:8px;padding:8px 12px">
+              <span class="zlive" style="width:8px;height:8px;border-radius:50%;background:var(--inc)"></span>
+              <span style="font-size:15px;font-weight:600">{{ prodTimer }}</span>
+              <span style="flex:1;text-align:right;font-size:12px">Toplam {{ totalL }}</span>
+            </div>
+          </div>
+          <div style="flex:1;min-height:0;display:flex;flex-direction:column">
+            <div style="padding:12px 16px 0;display:grid;gap:10px">
+              <div style="display:flex;gap:10px;align-items:center">
+                <div style="width:128px;aspect-ratio:16/9;flex:0 0 auto;border:1px solid var(--bd);border-radius:6px;background:var(--slide);padding:6px 8px;display:flex;flex-direction:column;justify-content:center;gap:2px;overflow:hidden"><span style="font-size:7px;font-weight:600;letter-spacing:.3px;color:var(--pt)">{{ slide.kick }}</span><span style="font-size:10px;font-weight:600;color:var(--h);line-height:1.15">{{ slide.t }}</span></div>
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span style="font-size:12px;color:var(--mu)">Doktorun gördüğü · {{ slideNo }}</span><span style="font-size:14px;font-weight:600;color:var(--h);line-height:1.25">{{ slide.t }}</span></div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1.2fr;gap:8px">
+                <button onClick="{{ prevSlide }}" style="height:44px;border:1px solid var(--bd2);background:var(--card);color:var(--h);border-radius:8px;font-size:14px;cursor:pointer;display:flex;gap:4px;align-items:center;justify-content:center"><i class="bx bx-chevron-left" style="font-size:22px"></i>Geri</button>
+                <button onClick="{{ nextSlide }}" style="height:44px;border:0;background:var(--p);color:#fff;border-radius:8px;font-size:14px;cursor:pointer;display:flex;gap:4px;align-items:center;justify-content:center">İleri<i class="bx bx-chevron-right" style="font-size:22px"></i></button>
+                <button onClick="{{ skipProd }}" style="height:44px;border:1px solid var(--pt);background:transparent;color:var(--pt);border-radius:8px;font-size:13px;cursor:pointer;display:flex;gap:4px;align-items:center;justify-content:center"><i class="bx bx-skip-next" style="font-size:20px"></i>Ürün atla</button>
+              </div>
+              <div role="tablist" style="display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--bd)">
+                <sc-for list="{{ repTabs }}" as="t" hint-placeholder-count="3"><button role="tab" onClick="{{ t.go }}" style="height:44px;border:0;background:transparent;font-size:14px;font-weight:500;cursor:pointer;display:flex;gap:5px;align-items:center;justify-content:center;color:{{ t.fg }};box-shadow:inset 0 -2px 0 {{ t.bar }}"><i class="bx {{ t.ic }}" style="font-size:17px"></i>{{ t.l }}<sc-if value="{{ t.hasN }}"><span style="padding:0 6px;border-radius:8px;font-size:11px;background:var(--pl);color:var(--pt)">{{ t.n }}</span></sc-if></button></sc-for>
+              </div>
+            </div>
+            <div style="flex:1;min-height:0;overflow-y:auto;padding:14px 16px;display:grid;align-content:start;gap:14px">
+              <sc-if value="{{ tabNotes }}" hint-placeholder-val="{{ true }}">
+                <div style="background:var(--pl);color:var(--pt);border-radius:8px;padding:12px 14px;display:grid;gap:4px"><span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--pt2)">Anahtar mesaj</span><span style="font-size:16px;font-weight:600;line-height:1.35">{{ sn.key }}</span></div>
+                <div style="display:grid;gap:5px"><div style="display:flex;justify-content:space-between;font-size:12px"><span style="display:flex;gap:4px;align-items:center;color:{{ sn.tc }}"><i class="bx bx-timer" style="font-size:15px"></i>Bu slayt {{ sn.el }}</span><span style="color:var(--mu)">hedef ≈ {{ sn.target }}</span></div><div style="height:4px;border-radius:2px;background:var(--bd);overflow:hidden"><div style="height:100%;width:{{ sn.pct }};background:{{ sn.tc }}"></div></div></div>
+                <div style="display:grid;gap:6px"><span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--mu)">Konuşma metni · onaylı</span><span style="font-size:16px;line-height:1.6;color:var(--h);text-wrap:pretty">{{ sn.script }}</span></div>
+                <sc-if value="{{ sn.hasDoc }}"><div style="background:var(--inb);color:var(--in);border-radius:8px;padding:10px 12px;display:grid;gap:6px"><span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px">Bu doktor için</span><sc-for list="{{ sn.doc }}" as="x"><span style="font-size:13px;display:flex;gap:6px;align-items:flex-start"><i class="bx bx-chevron-right" style="font-size:15px;margin-top:1px"></i>{{ x }}</span></sc-for></div></sc-if>
+                <sc-if value="{{ sn.hasObj }}"><div style="display:grid;gap:6px"><span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--mu)">Beklenen itirazlar · onaylı yanıt</span>
+                  <sc-for list="{{ sn.obj }}" as="o"><div style="border:1px solid var(--bd);border-radius:8px;overflow:hidden"><button onClick="{{ o.toggle }}" style="width:100%;min-height:44px;border:0;background:var(--soft2);padding:8px 12px;display:flex;gap:8px;align-items:center;text-align:left;cursor:pointer;color:var(--h);font-size:14px;font-weight:500"><i class="bx bx-message-error" style="color:var(--da);font-size:17px"></i><span style="flex:1">"{{ o.q }}"</span><i class="bx {{ o.chev }}" style="font-size:20px;color:var(--mu)"></i></button>
+                    <sc-if value="{{ o.open }}"><div style="padding:10px 12px;display:grid;gap:10px"><span style="font-size:14px;line-height:1.5;color:var(--h)">{{ o.a }}</span>
+                      <sc-if value="{{ o.hasComp }}"><div style="border:1px solid var(--bd);border-radius:6px;padding:8px 10px;display:grid;gap:4px;font-size:12px"><div style="display:flex;justify-content:space-between;gap:6px"><strong style="color:var(--h);font-size:13px">{{ o.c.n }}</strong><span style="color:var(--mu)">{{ o.c.f }}</span></div><span>{{ o.c.api }} · {{ o.c.form }}</span><div style="display:flex;gap:10px;flex-wrap:wrap;color:var(--mu)"><span>{{ o.c.fiyat }}</span><span>{{ o.c.go }}</span><span>Pazar payı: kurum {{ o.c.pk }} · bölge {{ o.c.pb }}</span></div></div></sc-if>
+                    </div></sc-if></div></sc-for></div></sc-if>
+                <div style="display:grid;gap:6px"><span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--wa);display:flex;gap:5px;align-items:center"><i class="bx bx-lock-alt"></i>Kendi notum · {{ curProdName }} · yalnız siz görürsünüz</span><textarea value="{{ myNote }}" onChange="{{ onMyNote }}" rows="2" placeholder="Bu ürün için kendinize not" style="border:1px solid var(--wac);border-radius:8px;padding:8px 10px;font-size:14px;color:var(--h);background:var(--wab);resize:vertical"></textarea></div>
+                <div style="border:1px dashed var(--bd2);border-radius:8px;padding:10px 12px;display:flex;gap:8px;align-items:flex-start;font-size:14px;color:var(--h)"><i class="bx bx-right-arrow-alt" style="font-size:20px;color:var(--pt)"></i><span><span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--mu);display:block">Geçiş</span>{{ sn.trans }}</span></div>
+              </sc-if>
+              <sc-if value="{{ tabMarks }}">
+                <div style="display:flex;flex-direction:column;gap:8px">
+                  <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;color:var(--h)">Hızlı işaretler · {{ curProdName }}</div>
+                  <div style="display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--bd2);border-radius:8px;overflow:hidden">
+                    <sc-for list="{{ ilgiOpts }}" as="o"><button onClick="{{ o.go }}" style="height:48px;border:0;cursor:pointer;font-size:13px;font-weight:500;display:flex;gap:5px;align-items:center;justify-content:center;background:{{ o.bg }};color:{{ o.fg }}"><i class="bx {{ o.ic }}" style="font-size:18px"></i>{{ o.l }}</button></sc-for>
+                  </div>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap">
+                    <sc-for list="{{ flags }}" as="f"><button onClick="{{ f.go }}" style="min-height:44px;border-radius:22px;padding:0 14px;font-size:13px;cursor:pointer;display:flex;gap:5px;align-items:center;border:1px solid {{ f.bd }};background:{{ f.bg }};color:{{ f.fg }}"><i class="bx {{ f.ic }}" style="font-size:16px"></i>{{ f.l }}</button></sc-for>
+                  </div>
+                  <sc-if value="{{ objOpen }}">
+                    <div style="border:1px solid var(--bd);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:6px;background:var(--soft2)">
+                      <div style="font-size:12px;color:var(--mu)">İtiraz kategorisi</div>
+                      <div style="display:flex;gap:5px;flex-wrap:wrap"><sc-for list="{{ objOpts }}" as="o"><button onClick="{{ o.go }}" style="padding:8px 10px;border-radius:4px;font-size:12px;cursor:pointer;border:1px solid var(--bd2);background:{{ o.bg }};color:{{ o.fg }}">{{ o.l }}</button></sc-for></div>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-if>
+              <sc-if value="{{ tabNote }}">
+                <div style="display:flex;flex-direction:column;gap:6px">
+                  <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;color:var(--h)">Ziyaret notu</span><button onClick="{{ voice }}" style="height:36px;border-radius:18px;padding:0 12px;font-size:12px;cursor:pointer;display:flex;gap:5px;align-items:center;border:1px solid {{ micBd }};background:{{ micBg }};color:{{ micFg }}"><i class="bx bx-microphone" style="font-size:16px"></i>{{ micL }}</button></div>
+                  <textarea value="{{ note }}" onChange="{{ onNote }}" rows="5" placeholder="Serbest not (doktor görmez) · rapora aktarılır" style="border:1px solid var(--bd2);border-radius:8px;padding:8px 10px;font-size:14px;color:var(--h);background:var(--card);resize:vertical"></textarea>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--bd);padding-top:12px">
+                  <label style="display:flex;justify-content:space-between;align-items:center;font-size:14px;color:var(--h);cursor:pointer;min-height:44px">Yöneticiyle birlikte (ortak ziyaret)<input type="checkbox" checked="{{ joint }}" onChange="{{ toggleJoint }}" style="accent-color:var(--p);width:20px;height:20px"></label>
+                  <sc-if value="{{ joint }}"><select style="height:44px;border:1px solid var(--bd2);border-radius:6px;padding:0 10px;font-size:14px;color:var(--h);background:var(--card)"><option>Selin Karaca · Bölge müdürü</option><option>Tolga Uçar · Ürün müdürü (ÜROFLEKS)</option></select></sc-if>
+                </div>
+                <sc-if value="{{ sureOn }}"><div style="font-size:12px;color:var(--mu);display:flex;gap:6px"><i class="bx bx-timer"></i>Süre tutarlılığı açık: slayt süreleri kaydediliyor; 2 dakikadan kısa ziyaret işaretlenir.</div></sc-if>
+              </sc-if>
+            </div>
+          </div>
+          <div style="padding:12px 16px 16px;border-top:1px solid var(--bd)"><button onClick="{{ finish }}" style="width:100%;height:48px;border:0;border-radius:8px;background:var(--dac);color:#fff;font-size:15px;font-weight:600;cursor:pointer;display:flex;gap:6px;align-items:center;justify-content:center"><i class="bx bx-stop-circle" style="font-size:20px"></i>Ziyareti bitir</button></div>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isOzet }}">
+  <div style="position:absolute;inset:0;background:var(--bg);overflow-y:auto;display:flex;justify-content:center;padding:{{ ozPad }}">
+    <div data-screen-label="E4c Bitiş özeti" style="width:min(760px,100%);display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;gap:12px;align-items:center">
+        <div style="width:44px;height:44px;border-radius:8px;background:var(--okb);color:var(--ok);display:flex;align-items:center;justify-content:center;font-size:24px;flex:0 0 auto"><i class="bx bx-check-circle"></i></div>
+        <div style="flex:1;min-width:0"><div style="font-size:20px;font-weight:600;color:var(--h)">Ziyaret bitti</div><div style="font-size:13px">{{ v.name }} · {{ v.acc }} · 11:31–{{ endL }}</div></div>
+      </div>
+      <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh);padding:18px;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;color:var(--h)">Süre</span><span style="font-size:22px;font-weight:600;color:var(--h)">{{ totalL }}</span></div>
+        <sc-for list="{{ oz.rows }}" as="r"><div style="display:flex;flex-direction:column;gap:5px"><div style="display:flex;justify-content:space-between;font-size:14px"><span style="color:var(--h);font-weight:500">{{ r.n }} <span style="font-weight:400;color:var(--mu)">· {{ r.role }}</span></span><span>{{ r.t }}</span></div><div style="height:6px;border-radius:3px;background:var(--bd);overflow:hidden"><div style="height:100%;width:{{ r.pct }};background:var(--p)"></div></div><div style="display:flex;gap:5px;flex-wrap:wrap"><sc-for list="{{ r.tags }}" as="t"><span style="padding:2px 8px;border-radius:4px;font-size:12px;background:{{ t.bg }};color:{{ t.fg }}">{{ t.l }}</span></sc-for></div></div></sc-for>
+        <sc-if value="{{ oz.short }}"><div style="background:var(--wab);color:var(--wa);border-radius:6px;padding:8px 12px;font-size:13px;display:flex;gap:6px"><i class="bx bx-error"></i>Ziyaret 2 dakikadan kısa; süre tutarlılığı için işaretlendi.</div></sc-if>
+      </div>
+      <sc-if value="{{ oz.hasNote }}"><div style="background:var(--card);border-radius:8px;box-shadow:var(--sh);padding:18px;display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;color:var(--h)">Notlar</span><span style="font-size:14px;color:var(--h);white-space:pre-wrap">{{ oz.note }}</span><sc-if value="{{ joint }}"><span style="font-size:13px">Ortak ziyaret: Selin Karaca · Bölge müdürü</span></sc-if></div></sc-if>
+      <sc-if value="{{ oz.sig }}">
+        <div style="background:var(--card);border-radius:8px;box-shadow:var(--sh);padding:18px;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;color:var(--h)">{{ oz.sigT }}</span><button onClick="{{ clearSig }}" style="border:0;background:transparent;color:var(--pt);font-size:13px;cursor:pointer">Temizle</button></div>
+          <div style="font-size:13px">{{ oz.sigX }}</div>
+          <canvas ref="{{ sigRef }}" width="700" height="160" style="width:100%;height:160px;border:1px dashed var(--pbd);border-radius:8px;background:var(--soft2);touch-action:none;cursor:crosshair"></canvas>
+          <label style="display:flex;gap:8px;align-items:center;font-size:14px;color:var(--h)"><input type="checkbox" checked="{{ approved }}" onChange="{{ toggleApproved }}" style="accent-color:var(--p);width:18px;height:18px">Görüşmeyi onaylıyorum (doktor dokunuşu)</label>
+        </div>
+      </sc-if>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;padding-bottom:8px">
+        <button onClick="{{ toReport }}" style="flex:1 1 220px;height:48px;border:0;border-radius:8px;background:var(--p);color:#fff;font-size:15px;font-weight:600;cursor:pointer;display:flex;gap:6px;align-items:center;justify-content:center;box-shadow:0 2px 4px rgba(11,26,140,.35)"><i class="bx bx-edit" style="font-size:19px"></i>Rapor gir</button>
+        <sc-if value="{{ isPhV }}"><button onClick="{{ toOrder }}" style="flex:1 1 220px;height:48px;border:1px solid var(--pt);border-radius:8px;background:transparent;color:var(--pt);font-size:15px;font-weight:600;cursor:pointer;display:flex;gap:6px;align-items:center;justify-content:center"><i class="bx bx-cart-add" style="font-size:19px"></i>Ön sipariş oluştur</button></sc-if>
+        <button onClick="{{ later }}" style="flex:1 1 220px;height:48px;border:1px solid var(--bd2);border-radius:8px;background:var(--card);color:var(--h);font-size:15px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.2">Sonra gireceğim<span style="font-size:11px;color:var(--mu)">48 sa içinde · takvime döner</span></button>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ pinOpen }}">
+  <div style="position:absolute;inset:0;background:var(--ov);z-index:80;display:flex;align-items:center;justify-content:center">
+    <div style="background:var(--card);border-radius:12px;padding:24px;width:300px;display:flex;flex-direction:column;gap:14px;align-items:center;box-shadow:var(--sh2)">
+      <div style="font-size:16px;font-weight:600;color:var(--h)">Temsilci PIN</div>
+      <div style="display:flex;gap:10px"><sc-for list="{{ pinDots }}" as="d"><span style="width:14px;height:14px;border-radius:50%;border:2px solid var(--p);background:{{ d.bg }}"></span></sc-for></div>
+      <div style="display:grid;grid-template-columns:repeat(3,64px);gap:10px"><sc-for list="{{ keys }}" as="k"><button onClick="{{ k.go }}" style="height:52px;border-radius:10px;border:1px solid var(--bd2);background:var(--card);color:var(--h);font-size:20px;cursor:pointer;visibility:{{ k.vis }}">{{ k.l }}</button></sc-for></div>
+      <div style="font:11px ui-monospace,monospace;color:var(--mu)">[demo] herhangi 4 hane</div>
+      <button onClick="{{ closePin }}" style="border:0;background:transparent;color:var(--mu);font-size:13px;cursor:pointer">Vazgeç</button>
+    </div>
+  </div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const fmt=s=>String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+const FL=[['soru','Soru sordu','bx-help-circle'],['itiraz','İtiraz etti','bx-message-error'],['numune','Numune istedi','bx-gift'],['lit','Literatür / bilgi istedi','bx-book-open'],['takip','Takip gerekli','bx-flag']];
+class Component extends DCLogic {
+  state={photo:false,far:false,photoReq:'zorunlu',locReq:'bilgi',ex:{imza:true,qr:false,sure:true,af:false},qrDone:false,cur:0,t:{},marks:{},note:'',listening:false,joint:false,objOpen:false,kind:'yuz',repOpen:false,pinOpen:false,pinFor:null,pin:'',approved:false,signed:false,repTab:'notlar',ss:{},objOpenI:0,my:{UROFLEKS:'Prostatektomi sonrası hasta grubunu sor.'}};
+  sigRef=React.createRef();
+  get A(){return this.props.app||{nav:{},visits:[],set(){},go(){},upd(){},toast(){},device:'desktop'}}
+  componentDidMount(){this._iv=setInterval(()=>{if(this.A.nav.screen!=='sunum'||this.A.nav.phase==='ozet')return;const p=this.slides()[this.state.cur];if(!p)return;this.setState(s=>({t:{...s.t,[p.p]:(s.t[p.p]||0)+1},ss:{...s.ss,[s.cur]:(s.ss[s.cur]||0)+1}}))},1000);this.bindSig()}
+  componentDidUpdate(){this.bindSig()}
+  componentWillUnmount(){clearInterval(this._iv);clearTimeout(this._lp)}
+  bindSig(){const c=this.sigRef.current;if(c===this._c)return;this._c=c;if(!c)return;const ctx=c.getContext('2d');let dn=false;const pos=e=>{const r=c.getBoundingClientRect();return[(e.clientX-r.left)*c.width/r.width,(e.clientY-r.top)*c.height/r.height]};
+    c.onpointerdown=e=>{dn=true;c.setPointerCapture(e.pointerId);ctx.strokeStyle=getComputedStyle(c).color||'#384551';ctx.strokeStyle=document.body.dataset.theme==='dark'?'#d5d5e2':'#0b1a8c';ctx.lineWidth=2.5;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(...pos(e))};
+    c.onpointermove=e=>{if(!dn)return;ctx.lineTo(...pos(e));ctx.stroke()};c.onpointerup=()=>{dn=false;if(!this.state.signed)this.setState({signed:true})}}
+  visit(){const A=this.A;return A.visits.find(v=>v.id===A.nav.vid)||A.visits.find(v=>v.id==='v26')}
+  slides(){const v=this.visit();if(!v)return[];const Z=window.ZD;const L=[...v.prods.filter(p=>p.r==='t'),...v.prods.filter(p=>p.r==='h')];const out=[];L.forEach(p=>{const S=Z.SLIDES[p.p]||[];(p.r==='h'||Z.D[v.doc].ph?S.slice(0,1):S).forEach((s,i)=>out.push({...s,p:p.p,r:p.r,i}))});return out}
+  mk(p){return this.state.marks[p]||{ilgi:'',f:{},obj:''}}
+  setMk(p,fn){this.setState(s=>({marks:{...s.marks,[p]:fn(s.marks[p]||{ilgi:'',f:{},obj:''})}}))}
+  go(n){const L=this.slides().length;this.setState({cur:Math.max(0,Math.min(L-1,n)),objOpenI:0})}
+  lp(fn){clearTimeout(this._lp);this._lp=setTimeout(fn,650)}
+  pinKey(k){if(k==='⌫'){this.setState(s=>({pin:s.pin.slice(0,-1)}));return}const pin=this.state.pin+k;if(pin.length<4){this.setState({pin});return}
+    const f=this.state.pinFor;this.setState({pin:'',pinOpen:false});if(f==='panel')this.setState({repOpen:true});else this.finish()}
+  finish(){const A=this.A,v=this.visit();A.upd(v.id,{status:'raporEksik',doneAt:'2026-10-08T11:52',cap:{t:this.state.t,marks:this.state.marks,note:this.state.note,joint:this.state.joint,kind:this.state.kind}});A.set({phase:'ozet'})}
+  renderVals(){if(!this.props.app)return{standalone:true};
+    const Z=window.ZD,A=this.A,S=this.state,nav=A.nav||{},dev=A.device||'desktop';const v=this.visit();if(!v)return{};
+    const d=Z.D[v.doc],acc=Z.ACC[d.acc];const sl=this.slides();const cs=sl[S.cur]||sl[0]||{b:[]};
+    const isE3=nav.screen==='baslat',isOzet=nav.screen==='sunum'&&nav.phase==='ozet',isSunum=nav.screen==='sunum'&&!isOzet;
+    const phone=dev==='phone',tablet=dev==='tablet',desk=dev==='desktop';
+    const cap=v.cap||{};const T=Object.keys(S.t).length?S.t:(cap.t||(isOzet?{UROFLEKS:492,TUTUKON:236}:{}));const M=Object.keys(S.marks).length?S.marks:(cap.marks||(isOzet?{UROFLEKS:{ilgi:'İlgili',f:{soru:true,numune:true,lit:true},obj:''},TUTUKON:{ilgi:'Nötr',f:{itiraz:true},obj:'Geri ödeme'}}:{}));
+    const note=S.note||(cap.note)||(isOzet?'Gece idrara çıkma şikayeti olan 50+ hastalarda denemeye açık. Literatürü 12 Eki\'ye kadar mail ile ilet.':'');
+    const total=Object.values(T).reduce((a,b)=>a+b,0);
+    const loc=S.far?{l:'Kurumdan 3,4 km uzaktasınız',bg:'var(--dab)',fg:'var(--da)',x:S.locReq==='zorunlu'?'Konum zorunlu: kuruma yaklaşınca başlatabilirsiniz.':'Bilgi olarak kaydedilir; yöneticiniz görür.'}:{l:'Kuruma 120 m — uygun',bg:'var(--okb)',fg:'var(--ok)',x:acc.ad+' · doğruluk ±15 m'};
+    if(desk&&!S.far)loc.x='Masaüstünde konum bilgi amaçlıdır. '+loc.x;
+    const EX=[['imza','Doktor onayı','bx-pen','Ziyaret sonunda tablette doktorun imzası ya da "Görüşmeyi onaylıyorum" dokunuşu. Numune tesliminde zaten gerekir.'],['qr','Kurum QR kodu','bx-qr-scan','Kurumun kabulünde asılı QR kodu temsilci okutur.'],['sure','Süre tutarlılığı','bx-timer','Sunumda geçen süre ve slayt etkileşimi; 2 dakikadan kısa ziyaret işaretlenir.'],['af','Anti-fraud check-in','bx-shield-alt-2','Mobil anti-fraud modülü: cihaz bütünlüğü, sahte konum tespiti.']];
+    const startDis=(S.photoReq==='zorunlu'&&!S.photo)||(S.locReq==='zorunlu'&&S.far)||(S.ex.qr&&!S.qrDone);
+    const prodOrder=[...new Set(sl.map(s=>s.p))];const curP=cs.p;const mk=this.mk(curP);
+    const kick=cs.p?Z.P[cs.p].n+' · '+Z.P[cs.p].f+(cs.r==='h'?' · hatırlatma':''):'';
+    const pinDots=[0,1,2,3].map(i=>({bg:i<S.pin.length?'var(--p)':'transparent'}));
+    return{
+      isE3,isSunum,isOzet,isPhone:phone,notPhone:!phone,isDesk:desk,isTablet:tablet,offline:!A.online,
+      e3Back:phone?'var(--bg)':'var(--ov)',e3Pad:phone?'0':'24px',
+      v:{name:d.n,acc:acc.n,time:Z.fmtD(v.date)+' '+v.start+'–'+v.end},
+      photo:S.photo,noPhoto:!S.photo,takePhoto:()=>this.setState({photo:true}),retake:()=>this.setState({photo:false}),
+      loc,toggleFar:()=>this.setState(s=>({far:!s.far})),photoReqL:S.photoReq==='zorunlu'?'zorunlu':'isteğe bağlı',
+      tenant:[['Fotoğraf','photoReq',['zorunlu','isteğe bağlı']],['Konum kontrolü','locReq',['zorunlu','bilgi']]].map(([l,k,o])=>({l,opts:o.map(x=>({l:x,bg:S[k]===x?'var(--p)':'var(--card)',fg:S[k]===x?'#fff':'var(--h)',go:()=>this.setState({[k]:x})}))})),
+      extras:EX.map(([k,l,ic,dd])=>({l,ic,d:dd,on:!!S.ex[k],bd:S.ex[k]?'var(--p)':'var(--bd)',bg:S.ex[k]?'var(--pl)':'transparent',go:()=>this.setState(s=>({ex:{...s.ex,[k]:!s.ex[k]}}))})),
+      extraOn:[S.ex.af&&{l:'Anti-fraud check-in',ic:'bx-shield-alt-2',s:'Cihaz bütünlüğü ✓ · Sahte konum tespit edilmedi ✓'},S.ex.qr&&{l:'Kurum QR kodu',ic:'bx-qr-scan',s:S.qrDone?'Okundu: '+acc.n:'Kabuldeki QR kodunu okutun.'}].filter(Boolean),
+      qrOn:S.ex.qr,scanQr:()=>this.setState({qrDone:true}),qrL:S.qrDone?'Okundu ✓':'QR okut',qrBtnBg:S.qrDone?'var(--okc)':'var(--p)',
+      startDis,startOp:startDis?.5:1,startHint:startDis?'Eksik: '+[S.photoReq==='zorunlu'&&!S.photo&&'fotoğraf',S.locReq==='zorunlu'&&S.far&&'konum',S.ex.qr&&!S.qrDone&&'QR'].filter(Boolean).join(', '):'Başlangıç saati sunucudan alınır.',
+      cancelE3:()=>A.go('takvim',{drawer:v.id}),
+      startSunum:()=>{if(startDis)return;A.upd(v.id,{status:'devam',startedAt:'2026-10-08T11:31',proof:{photo:S.photo,far:S.far}});this.setState({cur:0,t:{}});A.go('sunum',{vid:v.id})},
+      kinds:[['yuz','Yüz yüze'],['uzak','Uzaktan']].map(([k,l])=>({l,bg:S.kind===k?'var(--p)':'var(--card)',fg:S.kind===k?'#fff':'var(--h)',go:()=>this.setState({kind:k})})),remote:S.kind==='uzak',
+      back:()=>A.go('takvim',{drawer:v.id}),
+      showDoc:!phone,showRep:desk||phone||(tablet&&S.repOpen),tabHandle:tablet&&!S.repOpen,repClose:tablet,closeRep:()=>this.setState({repOpen:false}),
+      splitGap:desk?16:0,splitPad:desk?16:0,docRad:desk?10:0,repW:desk?'380px':phone?'100%':'380px',repRad:desk?10:0,repPos:tablet?'absolute':'relative',
+      slidePad:desk?'28px 40px':'40px 64px',titleSize:desk?36:46,subSize:desk?18:22,bulSize:desk?17:21,
+      ptabs:prodOrder.map(p=>({l:Z.P[p].n,fg:p===curP?'var(--pt)':'var(--mu)',bar:p===curP?'var(--p)':'transparent',go:()=>this.go(sl.findIndex(s=>s.p===p))})),
+      slide:{...cs,kick},dots:sl.map((s,i)=>({w:i===S.cur?22:8,c:i===S.cur?'var(--p)':s.p===curP?'var(--pbd)':'var(--bd)'})),slideNo:(S.cur+1)+' / '+sl.length,
+      swDown:e=>{this._sx=e.clientX},swUp:e=>{const dx=e.clientX-(this._sx||e.clientX);if(dx<-50)this.go(S.cur+1);else if(dx>50)this.go(S.cur-1)},
+      lpDown:()=>this.lp(()=>this.setState({pinOpen:true,pinFor:'exit',pin:''})),lpPanelDown:()=>this.lp(()=>this.setState({pinOpen:true,pinFor:'panel',pin:''})),lpUp:()=>clearTimeout(this._lp),
+      pinOpen:S.pinOpen,pinDots,keys:['1','2','3','4','5','6','7','8','9','','0','⌫'].map(k=>({l:k,vis:k?'visible':'hidden',go:()=>k&&this.pinKey(k)})),closePin:()=>this.setState({pinOpen:false,pin:''}),
+      prodTimer:curP?Z.P[curP].n+' '+fmt(T[curP]||0):'',totalL:fmt(total),curProdName:curP?Z.P[curP].n:'',
+      repTabs:[['notlar','Notlar','bx-notepad'],['isaret','İşaretler','bx-flag'],['not','Not al','bx-edit']].map(([k,l,ic])=>{const on=S.repTab===k;const n=k==='isaret'?Object.values(mk.f||{}).filter(Boolean).length+(mk.ilgi?1:0):k==='not'&&S.note?1:0;return{l,ic,n,hasN:n>0,fg:on?'var(--pt)':'var(--tx)',bar:on?'var(--p)':'transparent',go:()=>this.setState({repTab:k})}}),
+      tabNotes:S.repTab==='notlar',tabMarks:S.repTab==='isaret',tabNote:S.repTab==='not',
+      sn:(()=>{const N=(Z.NOTES[cs.p]||[])[cs.i]||{key:cs.s||'',script:(cs.b||[]).join('. ')+'.',sure:45,trans:'Sonraki slayta geçin.',obj:[]};const el=S.ss[S.cur]||0;const over=el>N.sure;
+        return{key:N.key,script:N.script,trans:N.trans,el:fmt(el),target:N.sure>=60?Math.round(N.sure/60*10)/10+' dk':N.sure+' sn',pct:Math.min(100,Math.round(el/N.sure*100))+'%',tc:over?'var(--wac)':'var(--p)',
+          doc:Z.DOCNOTE[v.doc]||[],hasDoc:!!Z.DOCNOTE[v.doc]&&cs.i===0,hasObj:N.obj.length>0,
+          obj:N.obj.map((o,j)=>{const c=o.comp&&Z.COMPD[o.comp];return{q:o.q,a:o.a,open:S.objOpenI===j,chev:S.objOpenI===j?'bx-chevron-up':'bx-chevron-down',toggle:()=>this.setState(s=>({objOpenI:s.objOpenI===j?-1:j})),hasComp:!!c,c:c?{n:o.comp,...c}:{}}})}})(),
+      myNote:(S.my[curP]||''),onMyNote:e=>{const val=e.target.value;this.setState(s=>({my:{...s.my,[curP]:val}}))},
+      prevSlide:()=>this.go(S.cur-1),nextSlide:()=>this.go(S.cur+1),skipProd:()=>{const j=sl.findIndex((s,i)=>i>S.cur&&s.p!==curP);if(j>=0)this.go(j);else A.toast('Son ürün.')},
+      ilgiOpts:[['İlgili','bx-like'],['Nötr','bx-minus-circle'],['İlgisiz','bx-dislike']].map(([l,ic])=>{const on=mk.ilgi===l;const c=l==='İlgili'?['var(--okb)','var(--ok)']:l==='İlgisiz'?['var(--dab)','var(--da)']:['var(--seb)','var(--h)'];return{l,ic,bg:on?c[0]:'var(--card)',fg:on?c[1]:'var(--tx)',go:()=>this.setMk(curP,m=>({...m,ilgi:on?'':l}))}}),
+      flags:FL.map(([k,l,ic])=>{const on=!!mk.f[k];return{l:k==='itiraz'&&mk.obj?'İtiraz: '+mk.obj:l,ic,bd:on?'var(--p)':'var(--bd2)',bg:on?'var(--pl)':'var(--card)',fg:on?'var(--pt)':'var(--h)',go:()=>{if(k==='itiraz'&&!on){this.setState({objOpen:true});return}this.setMk(curP,m=>({...m,f:{...m.f,[k]:!on},obj:k==='itiraz'?'':m.obj}))}}}),
+      objOpen:S.objOpen,objOpts:Z.OBJ.map(l=>({l,bg:mk.obj===l?'var(--pl)':'var(--card)',fg:mk.obj===l?'var(--pt)':'var(--h)',go:()=>{this.setMk(curP,m=>({...m,obj:l,f:{...m.f,itiraz:true}}));this.setState({objOpen:false})}})),
+      note:S.note,onNote:e=>this.setState({note:e.target.value}),
+      voice:()=>{if(S.listening)return;this.setState({listening:true});setTimeout(()=>this.setState(s=>({listening:false,note:(s.note?s.note+'\n':'')+'Doktor 50 yaş üstü hastalarda gece idrara çıkma şikayetini sık görüyor.'})),1600)},
+      micL:S.listening?'Dinleniyor…':'Sesle not',micBg:S.listening?'var(--dab)':'var(--card)',micFg:S.listening?'var(--da)':'var(--h)',micBd:S.listening?'var(--dac)':'var(--bd2)',
+      joint:S.joint||!!cap.joint,toggleJoint:()=>this.setState(s=>({joint:!s.joint})),sureOn:S.ex.sure,
+      finish:()=>{if(tablet){this.setState({pinOpen:true,pinFor:'exit',pin:''});return}this.finish()},
+      ozPad:phone?'16px':'32px 24px',endL:'11:52',
+      oz:{rows:prodOrder.map(p=>{const m=M[p]||{f:{}};const tags=[];if(m.ilgi)tags.push({l:m.ilgi,bg:m.ilgi==='İlgili'?'var(--okb)':m.ilgi==='İlgisiz'?'var(--dab)':'var(--seb)',fg:m.ilgi==='İlgili'?'var(--ok)':m.ilgi==='İlgisiz'?'var(--da)':'var(--se)'});FL.forEach(([k,l])=>{if(m.f&&m.f[k])tags.push({l:k==='itiraz'&&m.obj?'İtiraz: '+m.obj:l,bg:'var(--pl)',fg:'var(--pt)'})});const r=v.prods.find(x=>x.p===p);return{n:Z.P[p].n,role:Z.ROLE[r.r].l,t:fmt(T[p]||0)+' dk',pct:(total?Math.round((T[p]||0)/total*100):0)+'%',tags}}),
+        short:S.ex.sure&&total>0&&total<120,hasNote:!!note,note,
+        sig:!phone&&(S.ex.imza||Object.values(M).some(m=>m.f&&m.f.numune)),sigT:Object.values(M).some(m=>m.f&&m.f.numune)?'Numune teslimi · doktor imzası':'Doktor onayı',sigX:Object.values(M).some(m=>m.f&&m.f.numune)?'Numune istendi: teslimde doktorun parmakla imzası gerekir.':'Ürün sahibi kararı: her ziyarette doktor onayı alınırsa.'},
+      sigRef:this.sigRef,clearSig:()=>{const c=this.sigRef.current;if(c)c.getContext('2d').clearRect(0,0,c.width,c.height);this.setState({signed:false})},
+      approved:S.approved,toggleApproved:()=>this.setState(s=>({approved:!s.approved})),
+      toReport:()=>A.go('rapor',{vid:v.id}),isPhV:!!d.ph,toOrder:()=>A.go('siparis',{vid:v.id}),
+      later:()=>{A.upd(v.id,{status:'raporEksik',doneAt:'2026-10-08T11:52'});A.go('takvim',{});A.toast('Rapor için 48 sa · son tarih 10 Eki 11:52.')}
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -76,7 +76,9 @@ public sealed record AddContentEngagementJourneyStageCommand(
     Guid? FallbackStageId = null,
     string? Notes = null,
     IReadOnlyList<ContentEngagementJourneyBranchConditionInput>? BranchConditions = null,
-    int? ExpectedVersion = null) : IRequest<Response<Guid>>;
+    int? ExpectedVersion = null,
+    // WP-VW-W4 (W4-BE-a, K-W4) — the doctor adoption stage this stage stands for (crm-adoption-stage, optional).
+    string? AdoptionStageCode = null) : IRequest<Response<Guid>>;
 
 public sealed record UpdateContentEngagementJourneyStageCommand(
     Guid JourneyId,
@@ -96,7 +98,9 @@ public sealed record UpdateContentEngagementJourneyStageCommand(
     Guid? FallbackStageId = null,
     string? Notes = null,
     IReadOnlyList<ContentEngagementJourneyBranchConditionInput>? BranchConditions = null,
-    int? ExpectedVersion = null) : IRequest<Response<bool>>;
+    int? ExpectedVersion = null,
+    // WP-VW-W4 (W4-BE-a, K-W4) — the doctor adoption stage this stage stands for (crm-adoption-stage, optional).
+    string? AdoptionStageCode = null) : IRequest<Response<bool>>;
 
 public sealed record ArchiveContentEngagementJourneyStageCommand(
     Guid JourneyId, Guid StageId, int? ExpectedVersion = null) : IRequest<Response<bool>>;

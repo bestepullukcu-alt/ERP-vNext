@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ColProduct" xml:space="preserve"><value>Product</value></data>
+  <data name="ColCategory" xml:space="preserve"><value>Category</value></data>
+  <data name="ColQuestion" xml:space="preserve"><value>Objection</value></data>
+  <data name="ColClaims" xml:space="preserve"><value>Linked claims</value></data>
+  <data name="ColUsage" xml:space="preserve"><value>Used in steps</value></data>
+  <data name="ColStatus" xml:space="preserve"><value>Status</value></data>
+  <data name="ColUpdated" xml:space="preserve"><value>Last change</value></data>
+  <data name="ColActions" xml:space="preserve"><value>Actions</value></data>
+  <data name="NewResponse" xml:space="preserve"><value>New objection response</value></data>
+  <data name="ViewRecord" xml:space="preserve"><value>View</value></data>
+  <data name="EditRecord" xml:space="preserve"><value>Edit</value></data>
+  <data name="AllProducts" xml:space="preserve"><value>All products</value></data>
+  <data name="AllCategories" xml:space="preserve"><value>All categories</value></data>
+  <data name="AllStatuses" xml:space="preserve"><value>All statuses</value></data>
+  <data name="SearchPlaceholder" xml:space="preserve"><value>Search in the objection text</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>Draft</value></data>
+  <data name="Status_in_review" xml:space="preserve"><value>Awaiting approval</value></data>
+  <data name="Status_approved" xml:space="preserve"><value>Approved</value></data>
+  <data name="Status_retired" xml:space="preserve"><value>Retired</value></data>
+  <data name="EditTitle" xml:space="preserve"><value>Edit objection response</value></data>
+  <data name="NewTitle" xml:space="preserve"><value>New objection response</value></data>
+  <data name="SelectProduct" xml:space="preserve"><value>Select a product</value></data>
+  <data name="SelectCategory" xml:space="preserve"><value>Select a category</value></data>
+  <data name="ClaimsSelected" xml:space="preserve"><value>{0} selected (at most {1})</value></data>
+  <data name="ClaimsMax" xml:space="preserve"><value>At most {0} claims can be selected.</value></data>
+  <data name="ClaimsNone" xml:space="preserve"><value>This product has no approved claim.</value></data>
+  <data name="ClaimsPickProduct" xml:space="preserve"><value>Select a product to see its approved claims.</value></data>
+  <data name="ClaimsUnavailable" xml:space="preserve"><value>You do not have permission to read claims.</value></data>
+  <data name="ProductsUnavailable" xml:space="preserve"><value>The product list could not be read.</value></data>
+  <data name="CategoriesUnavailable" xml:space="preserve"><value>The category list could not be read; try again.</value></data>
+  <data name="PreviewEmptyQuestion" xml:space="preserve"><value>The doctor’s question appears here.</value></data>
+  <data name="PreviewEmptyAnswer" xml:space="preserve"><value>The approved answer appears here.</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Save draft</value></data>
+  <data name="Saved" xml:space="preserve"><value>Draft saved.</value></data>
+  <data name="Submitted" xml:space="preserve"><value>Sent for approval.</value></data>
+  <data name="SubmitForApproval" xml:space="preserve"><value>Send for approval</value></data>
+  <data name="CancelButton" xml:space="preserve"><value>Cancel</value></data>
+  <data name="UnsavedChanges" xml:space="preserve"><value>You have unsaved changes. Leave anyway?</value></data>
+  <data name="CreatedBy" xml:space="preserve"><value>Created by</value></data>
+  <data name="LastSaved" xml:space="preserve"><value>Last saved</value></data>
+  <data name="ProductRequired" xml:space="preserve"><value>Select a product.</value></data>
+  <data name="PendingLine" xml:space="preserve"><value>Awaiting approval · {0} sent it for approval on {1}.</value></data>
+  <data name="ApprovedNote" xml:space="preserve"><value>An approved answer cannot be changed. To change it, retire it and create a new one.</value></data>
+  <data name="RetiredLine" xml:space="preserve"><value>Retired · {0}, {1}. It is no longer shown in visits.</value></data>
+  <data name="DraftReturnedLine" xml:space="preserve"><value>Returned to draft · {0}, {1}: “{2}”</value></data>
+  <data name="DraftReturnedReason" xml:space="preserve"><value>Back to draft: {0}</value></data>
+  <data name="SodHint" xml:space="preserve"><value>You wrote or sent this answer; another approver must approve it.</value></data>
+  <data name="WithdrawButton" xml:space="preserve"><value>Withdraw</value></data>
+  <data name="ApproveButton" xml:space="preserve"><value>Approve</value></data>
+  <data name="ReturnToDraft" xml:space="preserve"><value>Return to draft</value></data>
+  <data name="RetireButton" xml:space="preserve"><value>Retire</value></data>
+  <data name="Copy" xml:space="preserve"><value>New draft from copy</value></data>
+  <data name="EditButton" xml:space="preserve"><value>Edit</value></data>
+  <data name="ReturnTitle" xml:space="preserve"><value>Return to draft</value></data>
+  <data name="ReturnNoteLabel" xml:space="preserve"><value>Note to the author (required)</value></data>
+  <data name="ReturnNoteRequired" xml:space="preserve"><value>Write a note before returning it to draft.</value></data>
+  <data name="ReturnConfirm" xml:space="preserve"><value>Return</value></data>
+  <data name="RetireTitle" xml:space="preserve"><value>Retire this answer?</value></data>
+  <data name="RetireText" xml:space="preserve"><value>A retired answer leaves every presentation at once, published ones included; this cannot be undone. A change is a new answer.</value></data>
+  <data name="RetireUsed" xml:space="preserve"><value>It is used in {0} step(s).</value></data>
+  <data name="RetireConfirm" xml:space="preserve"><value>Retire</value></data>
+  <data name="WithdrawConfirm" xml:space="preserve"><value>Withdraw the approval request? The answer returns to draft.</value></data>
+  <data name="SubmitConfirm" xml:space="preserve"><value>Send this answer for approval? It is locked while it is reviewed.</value></data>
+  <data name="ApproveConfirm" xml:space="preserve"><value>Approve this answer? Reps will see it in visits.</value></data>
+  <data name="Approved" xml:space="preserve"><value>Approved.</value></data>
+  <data name="Returned" xml:space="preserve"><value>Returned to draft.</value></data>
+  <data name="Withdrawn" xml:space="preserve"><value>Request withdrawn.</value></data>
+  <data name="Retired" xml:space="preserve"><value>Retired.</value></data>
+  <data name="Copied" xml:space="preserve"><value>A new draft was created from a copy.</value></data>
+  <data name="UsagesNone" xml:space="preserve"><value>No knowledge path step uses this answer as an expected objection yet.</value></data>
+  <data name="UsagePath" xml:space="preserve"><value>Knowledge path</value></data>
+  <data name="UsageVersion" xml:space="preserve"><value>Version</value></data>
+  <data name="UsageStep" xml:space="preserve"><value>Step</value></data>
+  <data name="UsageStepLine" xml:space="preserve"><value>{0} · {1}</value></data>
+  <data name="UsageCount" xml:space="preserve"><value>{0} step(s)</value></data>
+  <data name="PathStatus_draft" xml:space="preserve"><value>Draft</value></data>
+  <data name="PathStatus_review" xml:space="preserve"><value>In review</value></data>
+  <data name="PathStatus_approved" xml:space="preserve"><value>Approved</value></data>
+  <data name="PathStatus_published" xml:space="preserve"><value>Published</value></data>
+  <data name="PathStatus_inactive" xml:space="preserve"><value>Inactive</value></data>
+  <data name="PathStatus_archived" xml:space="preserve"><value>Archived</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>History</value></data>
+  <data name="Event_created" xml:space="preserve"><value>Created</value></data>
+  <data name="Event_submitted" xml:space="preserve"><value>Sent for approval</value></data>
+  <data name="Event_approved" xml:space="preserve"><value>Approved</value></data>
+  <data name="Event_returned" xml:space="preserve"><value>Returned to draft</value></data>
+  <data name="Event_withdrawn" xml:space="preserve"><value>Withdrawn</value></data>
+  <data name="Event_timeout" xml:space="preserve"><value>Timed out</value></data>
+  <data name="Event_retired" xml:space="preserve"><value>Retired</value></data>
+  <data name="EventLine" xml:space="preserve"><value>{0} · {1}</value></data>
+  <data name="UnknownUser" xml:space="preserve"><value>Unknown user</value></data>
+  <data name="ClaimNotApprovedAnymore" xml:space="preserve"><value>This claim is no longer approved.</value></data>
+  <data name="NotFound" xml:space="preserve"><value>The answer was not found.</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>The answer could not be loaded; try again.</value></data>
+  <data name="ActionFailed" xml:space="preserve"><value>The action could not be completed.</value></data>
+  <data name="Err_objection_response_incomplete" xml:space="preserve"><value>Fill in the product, category, question and answer before sending for approval.</value></data>
+  <data name="Err_objection_claim_not_approved" xml:space="preserve"><value>A selected claim is no longer approved; remove it and try again.</value></data>
+  <data name="Err_objection_claim_product_mismatch" xml:space="preserve"><value>A selected claim belongs to another product.</value></data>
+  <data name="Err_objection_response_sod" xml:space="preserve"><value>The approver wrote, edited or sent this answer, so it returned to draft; another approver must approve it.</value></data>
+  <data name="Err_objection_response_in_review" xml:space="preserve"><value>The answer is locked while it is reviewed.</value></data>
+  <data name="Err_objection_response_not_editable" xml:space="preserve"><value>Only a draft can be edited.</value></data>
+  <data name="Err_objection_response_not_draft" xml:space="preserve"><value>This action is only possible on a draft.</value></data>
+  <data name="Err_approval_via_workflow_only" xml:space="preserve"><value>Approval happens only through the approval task.</value></data>
+  <data name="Err_reference_data_unavailable" xml:space="preserve"><value>The category list could not be read; nothing was saved. Try again.</value></data>
+  <data name="Err_objection_category_invalid" xml:space="preserve"><value>The category is not an active value.</value></data>
+  <data name="Err_objection_product_invalid" xml:space="preserve"><value>The product was not found in the product master.</value></data>
+  <data name="Err_objection_response_invalid" xml:space="preserve"><value>Check the fields: question ≤ 500, answer ≤ 4000 characters, at most 10 claims.</value></data>
+  <data name="Err_objection_response_not_found" xml:space="preserve"><value>The answer was not found.</value></data>
+  <data name="Err_decision_comment_required" xml:space="preserve"><value>Returning to draft needs a note.</value></data>
+  <data name="Err_dependency_unavailable" xml:space="preserve"><value>A dependent service is not available; try again.</value></data>
+  <data name="Err_version_conflict" xml:space="preserve"><value>Someone else saved this answer meanwhile; reload the page and try again.</value></data>
+  <data name="Err_service_unavailable" xml:space="preserve"><value>The service is not available right now; try again.</value></data>
+  <data name="PageTitle" xml:space="preserve"><value>Objection library</value></data>
+  <data name="PageGroup" xml:space="preserve"><value>Content studio</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Approved answers to doctors’ objections that reps see during visits.</value></data>
+  <data name="EmptyTitle" xml:space="preserve"><value>No objection response yet</value></data>
+  <data name="EmptyText" xml:space="preserve"><value>The expected objections and approved answers reps see during the presentation are collected here. Start by creating the first one.</value></data>
+  <data name="SectionContent" xml:space="preserve"><value>Objection and approved answer</value></data>
+  <data name="FieldProduct" xml:space="preserve"><value>Product</value></data>
+  <data name="FieldCategory" xml:space="preserve"><value>Category</value></data>
+  <data name="FieldQuestion" xml:space="preserve"><value>Objection · the doctor’s question</value></data>
+  <data name="FieldAnswer" xml:space="preserve"><value>Approved answer</value></data>
+  <data name="FieldClaims" xml:space="preserve"><value>Supporting claims</value></data>
+  <data name="ClaimsHint" xml:space="preserve"><value>Only the selected product’s approved claims are listed.</value></data>
+  <data name="PreviewTitle" xml:space="preserve"><value>Preview</value></data>
+  <data name="PreviewRemote" xml:space="preserve"><value>Rep remote · Notes</value></data>
+  <data name="PreviewObjections" xml:space="preserve"><value>Expected objections · approved answer</value></data>
+  <data name="MetaNote" xml:space="preserve"><value>An approved record cannot be changed. Approval is given by an approver other than the author.</value></data>
+  <data name="RecordTitle" xml:space="preserve"><value>Objection response</value></data>
+  <data name="UsagesTitle" xml:space="preserve"><value>Where it is used</value></data>
+  <data name="CloseButton" xml:space="preserve"><value>Close</value></data>
+  <data name="QuestionPlaceholder" xml:space="preserve"><value>e.g. I'm happy with Tamsulin, why should I switch?</value></data>
+  <data name="AnswerPlaceholder" xml:space="preserve"><value>The answer the rep will give. Rely on approved claims only.</value></data>
+  <data name="NotSavedYet" xml:space="preserve"><value>Not saved yet</value></data>
+</root>

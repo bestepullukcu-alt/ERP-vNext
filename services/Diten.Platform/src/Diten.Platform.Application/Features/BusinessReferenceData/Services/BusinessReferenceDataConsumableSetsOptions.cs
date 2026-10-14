@@ -86,7 +86,32 @@ public sealed class BusinessReferenceDataConsumableSetsOptions
         // Claims v2 evidence-type lookup, Territory node planning-center type, Chain Template moderator picker.
         "evidence-type",
         "planning-center-type",
-        "content-moderator-role"
+        "content-moderator-role",
+        // WP-VW-W2 — the visit workspace cancel / not-done / reschedule reasons (CrmService validates; Web + mobile read).
+        "visit-outcome-reason",
+        // WP-VW-W3 — the doctor objection categories (CrmService validates the objection library; the presentation reads).
+        "visit-objection-category",
+        // WP-VW-W4 (W4-BE-c) — the doctor profile / potential sets (CrmService validates the profile, the potential and the
+        // report recorder; the report v2 and the thresholds page read).
+        "crm-adoption-stage",
+        "crm-share-bucket",
+        "crm-adoption-typology",
+        "crm-communication-style",
+        "crm-kol-level",
+        // WP-VW-W4 (W4-BE-a) — the report v2 sets (CrmService validates the report on submit / amend; the wizard reads).
+        "crm-visit-success",
+        "crm-doctor-commitment",
+        "crm-visit-interest",
+        "crm-visit-request-type",
+        "crm-competitor-advantage",
+        "crm-pharmacy-met-role",
+        "crm-pharmacy-stock-level",
+        "crm-shelf-position",
+        "crm-sales-trend",
+        "crm-recommendation-level",
+        // WP-VW-W4 (W4-BE-b2) — the competitor products' reimbursement status (MdmService validates every country price row;
+        // the competitor page and the report card read).
+        "mdm-reimbursement-status"
     ];
 
     /// <summary>The configured list when it names at least one set, otherwise the code default.</summary>

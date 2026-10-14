@@ -13,6 +13,8 @@ using Diten.BuildingBlocks.ModuleRegistration.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using PlatformCrm = PlatformProducer::Diten.Platform.Application.Features.Crm.SelfRegistration;
+using PlatformDocumentRepository = PlatformProducer::Diten.Platform.Application.Features.DocumentRepository;
 using PlatformModulePages = PlatformProducer::Diten.Platform.Application.Features.ModulePages;
 using PlatformTasks = PlatformProducer::Diten.Platform.Application.Features.Tasks.SelfRegistration;
 using PlatformWorkflow = PlatformProducer::Diten.Platform.Application.Features.Workflow.SelfRegistration;
@@ -24,25 +26,42 @@ namespace Diten.AuthService.Application.Tests.Authorization;
 /// BL-411 (CT benchmark D3) — the allowlist is measured against PRODUCTION code on both sides of the sync, not against
 /// a copy: the Platform Tasks manifest that registers each key's page route, and Platform's route→scope rule that
 /// authors every route-derived Scope. If an entry's route drifts, or the list grows, this goes red.
+/// WP-VW-W3-AUTH — the CRM manifest joins the Tasks manifest as a source: it registers the three document-repository
+/// visit-evidence keys on /CRM/VisitWorkspace.
 /// </summary>
 public sealed class TenantRouteScopeCorrectionTests
 {
     internal const string ChecklistTemplatesManage = "platform.tasks.checklist-templates.manage";
     internal const string TemplatesManage = "platform.tasks.templates.manage";
 
+    // WP-VW-W3-AUTH — the document repository's scope-bound visit-evidence keys (W3-PLT). Literals on purpose: a test
+    // below proves they are the verbatim Platform constants, so a renamed constant cannot silently pass.
+    internal const string VisitEvidenceWrite = "platform.document-repository.visit-evidence.write";
+    internal const string VisitEvidenceRead = "platform.document-repository.visit-evidence.read";
+    internal const string VisitEvidenceReadAll = "platform.document-repository.visit-evidence.read-all";
+    internal const string VisitWorkspaceRoute = "/CRM/VisitWorkspace";
+
+    // The GENERAL repository keys: real platform-admin authority, never on the list.
+    internal const string RepositoryRead = "platform.document-repository.read";
+    internal const string RepositoryManage = "platform.document-repository.manage";
+
+    internal static readonly string[] VisitEvidenceKeys = [VisitEvidenceWrite, VisitEvidenceRead, VisitEvidenceReadAll];
+
     internal static readonly ModuleManifestDocument TasksManifest = new PlatformTasks.TaskManifestProvider().GetManifest();
 
+    internal static readonly ModuleManifestDocument CrmManifest = new PlatformCrm.CrmManifestProvider().GetManifest();
     internal static readonly ModuleManifestDocument WorkflowManifest = new PlatformWorkflow.WorkflowManifestProvider().GetManifest();
 
+    // Merge of main (WP-0023-FX, seven workflow runtime keys) with the test branch (WP-VW-W3-AUTH, three visit-evidence keys).
     [Fact]
-    public void The_allowlist_is_exactly_the_two_BL411_template_keys_and_the_seven_WP0023FX_workflow_runtime_keys()
+    public void The_allowlist_is_exactly_the_two_BL411_template_keys_the_three_visit_evidence_keys_and_the_seven_WP0023FX_workflow_runtime_keys()
     {
         Assert.Equal(
-            new[] { ChecklistTemplatesManage, TemplatesManage }.Concat(WorkflowRuntimeKeys).OrderBy(key => key, StringComparer.Ordinal),
+            new[] { ChecklistTemplatesManage, TemplatesManage, VisitEvidenceRead, VisitEvidenceReadAll, VisitEvidenceWrite }.Concat(WorkflowRuntimeKeys).OrderBy(key => key, StringComparer.Ordinal),
             TenantRouteScopeCorrections.Allowlist.Select(entry => entry.PermissionKey).OrderBy(key => key, StringComparer.Ordinal));
 
         Assert.All(TenantRouteScopeCorrections.Allowlist.Where(e => e.Kind == TenantRouteScopeCorrections.RegistrationKind.TenantPageRoute),
-            e => Assert.Contains(e.PermissionKey, new[] { ChecklistTemplatesManage, TemplatesManage }));
+            e => Assert.Contains(e.PermissionKey, new[] { ChecklistTemplatesManage, TemplatesManage, VisitEvidenceRead, VisitEvidenceReadAll, VisitEvidenceWrite }));
         Assert.All(TenantRouteScopeCorrections.Allowlist.Where(e => e.Kind == TenantRouteScopeCorrections.RegistrationKind.TenantApiPermission),
             e => Assert.Contains(e.PermissionKey, WorkflowRuntimeKeys));
     }
@@ -96,12 +115,61 @@ public sealed class TenantRouteScopeCorrectionTests
         Assert.All(WorkflowRuntimeKeys, key => Assert.Equal(PermissionScope.Tenant, seeded[key]));
     }
 
-    // Gate 3 (registered route must be a tenant route) is unreachable with today's allowlist — both entries are tenant
-    // routes, which this test proves from the production manifest. It stays as a fail-closed guard for a future entry.
     [Fact]
-    public void Each_allowlisted_key_is_registered_by_the_production_Tasks_manifest_on_its_listed_tenant_route_and_nowhere_on_a_platform_route()
+    public void The_general_repository_read_and_manage_keys_are_not_on_the_list()
+    {
+        var keys = TenantRouteScopeCorrections.Allowlist.Select(entry => entry.PermissionKey).ToList();
+        Assert.DoesNotContain(RepositoryRead, keys);
+        Assert.DoesNotContain(RepositoryManage, keys);
+        Assert.DoesNotContain(keys, key => key.StartsWith("platform.document-repository.", StringComparison.Ordinal)
+                                          && !key.StartsWith("platform.document-repository.visit-evidence.", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void The_visit_evidence_entries_are_the_verbatim_Platform_keys_on_the_visit_workspace_route()
+    {
+        Assert.Equal(PlatformDocumentRepository.DocumentRepositoryPermissions.VisitEvidenceWrite, VisitEvidenceWrite);
+        Assert.Equal(PlatformDocumentRepository.DocumentRepositoryPermissions.VisitEvidenceRead, VisitEvidenceRead);
+        Assert.Equal(PlatformDocumentRepository.DocumentRepositoryPermissions.VisitEvidenceReadAll, VisitEvidenceReadAll);
+        Assert.Equal(PlatformDocumentRepository.DocumentRepositoryPermissions.Read, RepositoryRead);
+        Assert.Equal(PlatformDocumentRepository.DocumentRepositoryPermissions.Manage, RepositoryManage);
+
+        foreach (var key in VisitEvidenceKeys)
+        {
+            var entry = Assert.Single(TenantRouteScopeCorrections.Allowlist, e => e.PermissionKey == key);
+            Assert.Equal(VisitWorkspaceRoute, entry.RegisteredRoutePath);
+        }
+    }
+
+    // Gate 3 (registered route must be a tenant route) is unreachable with today's allowlist — every entry is a tenant
+    // route, which this test proves from the production manifests. It stays as a fail-closed guard for a future entry.
+    [Fact]
+    public void Each_allowlisted_key_is_registered_by_a_production_manifest_on_its_listed_tenant_route_and_nowhere_on_a_platform_route()
     {
         foreach (var entry in TenantRouteScopeCorrections.Allowlist.Where(e => e.Kind == TenantRouteScopeCorrections.RegistrationKind.TenantPageRoute))
+        {
+            // Every declaration of the key, page gate or page action, in every source manifest, with its page's route.
+            var declaredRoutes = new[] { TasksManifest, CrmManifest }
+                .SelectMany(m => m.Pages)
+                .SelectMany(p => p.Actions.Select(a => (Key: a.PermissionKey, p.RoutePath)).Append((Key: p.RequiredPermission, p.RoutePath)))
+                .Where(declared => declared.Key == entry.PermissionKey)
+                .ToList();
+
+            Assert.True(declaredRoutes.Count > 0, $"{entry.PermissionKey} is declared by neither the Tasks nor the CRM manifest.");
+            Assert.Contains(declaredRoutes, declared => declared.RoutePath == entry.RegisteredRoutePath);
+            Assert.True(TenantRouteScopeCorrections.IsTenantRoute(entry.RegisteredRoutePath));
+            // The manifest reconcile syncs every page key AND every action key with its page's route; none may be
+            // platform (Auth's tie-break would keep the key PlatformAdmin, and the correction would fight the sync).
+            Assert.All(declaredRoutes, declared =>
+                Assert.Equal("Tenant", PlatformModulePages.ModulePageDescriptorNormalizer.ScopeFromRoute(declared.RoutePath)));
+        }
+    }
+
+    // The BL-411 template keys keep their original, stronger shape: each is the page gate of exactly one Tasks page.
+    [Fact]
+    public void The_template_keys_are_each_the_gate_of_exactly_one_Tasks_page_on_their_listed_tenant_route()
+    {
+        foreach (var entry in TenantRouteScopeCorrections.Allowlist.Where(e => e.PermissionKey.StartsWith("platform.tasks.", StringComparison.Ordinal)))
         {
             var page = Assert.Single(TasksManifest.Pages, p => p.RequiredPermission == entry.PermissionKey);
             Assert.Equal(entry.RegisteredRoutePath, page.RoutePath);
@@ -120,12 +188,77 @@ public sealed class TenantRouteScopeCorrectionTests
     }
 
     [Fact]
-    public void Neither_template_key_is_in_the_production_seed_catalog()
+    public void No_allowlisted_key_is_in_the_production_seed_catalog()
     {
         // They are synced-only: the seed-list Scope reconcile can never reach them, which is why the correction exists.
         var seeded = DataSeeder.BuildCanonicalPermissions().Select(p => p.Key).ToHashSet(StringComparer.Ordinal);
         Assert.DoesNotContain(ChecklistTemplatesManage, seeded);
         Assert.DoesNotContain(TemplatesManage, seeded);
+        Assert.All(VisitEvidenceKeys, key => Assert.DoesNotContain(key, seeded));
+    }
+
+    // ── WP-VW-W3-AUTH — the planner over a hand-built catalog (pure; the Mongo write path is the class below) ──
+
+    [Fact]
+    public void The_planner_lowers_exactly_the_three_visit_evidence_keys_and_leaves_the_general_repository_keys_PlatformAdmin()
+    {
+        var catalog = new List<Permission>
+        {
+            Row(VisitEvidenceWrite, PermissionScope.PlatformAdmin),
+            Row(VisitEvidenceRead, PermissionScope.PlatformAdmin),
+            Row(VisitEvidenceReadAll, PermissionScope.PlatformAdmin),
+            Row(RepositoryRead, PermissionScope.PlatformAdmin),
+            Row(RepositoryManage, PermissionScope.PlatformAdmin),
+            Row("platform.tenants.quotas.manage", PermissionScope.PlatformAdmin)
+        };
+
+        var plan = TenantRouteScopeCorrections.Plan(catalog);
+
+        Assert.Equal(
+            VisitEvidenceKeys.OrderBy(key => key, StringComparer.Ordinal),
+            plan.Select(c => c.PermissionKey).OrderBy(key => key, StringComparer.Ordinal));
+        Assert.All(plan, c => Assert.Equal(VisitWorkspaceRoute, c.RegisteredRoutePath));
+        Assert.Equal(
+            catalog.Where(p => VisitEvidenceKeys.Contains(p.Key)).Select(p => p.Id).OrderBy(id => id),
+            plan.Select(c => c.PermissionId).OrderBy(id => id));
+    }
+
+    [Fact]
+    public void A_second_plan_after_the_correction_changes_nothing()
+    {
+        var catalog = VisitEvidenceKeys.Select(key => Row(key, PermissionScope.PlatformAdmin)).ToList();
+        var first = TenantRouteScopeCorrections.Plan(catalog);
+        Assert.Equal(3, first.Count);
+
+        // What the write path does: Scope PlatformAdmin → Tenant on exactly the planned rows.
+        foreach (var row in catalog.Where(p => first.Any(c => c.PermissionId == p.Id)))
+        {
+            row.SetScope(PermissionScope.Tenant);
+        }
+
+        Assert.Empty(TenantRouteScopeCorrections.Plan(catalog));
+    }
+
+    [Fact]
+    public void The_planner_never_raises_a_Tenant_row()
+    {
+        var catalog = new List<Permission>
+        {
+            Row(VisitEvidenceWrite, PermissionScope.Tenant),
+            Row(VisitEvidenceReadAll, PermissionScope.Tenant)
+        };
+
+        Assert.Empty(TenantRouteScopeCorrections.Plan(catalog));
+        Assert.All(catalog, p => Assert.Equal(PermissionScope.Tenant, p.Scope));
+    }
+
+    internal static Permission Row(string key, PermissionScope scope)
+    {
+        var segments = key.Split('.');
+        var permission = new Permission(segments[0], string.Join('.', segments[1..^1]), segments[^1], key,
+            description: null, moduleOverride: null, scope: scope);
+        permission.MarkAsUserDefined();
+        return permission;
     }
 
     [Theory]
@@ -137,6 +270,7 @@ public sealed class TenantRouteScopeCorrectionTests
     [InlineData("/Tasks/Templates")]
     [InlineData("/Tasks/ChecklistTemplates")]
     [InlineData("/Organization/Units")]
+    [InlineData("/CRM/VisitWorkspace")]
     public void The_route_rule_agrees_with_Platforms_ScopeFromRoute(string route)
     {
         Assert.Equal(

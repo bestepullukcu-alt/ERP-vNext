@@ -26,6 +26,21 @@ public static class KnowledgePathStudioReview
         return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
     }
 
+    /// <summary>WP-VW-W3-FIX (F2) — the session user's display name as the Auth display-name seam builds it (given name +
+    /// surname), then the <c>name</c> claim, then the e-mail's local part. Empty when nothing is known (the screen keeps
+    /// "—"); the page never guesses a name on the client.</summary>
+    public static string DisplayNameOf(ClaimsPrincipal? user)
+    {
+        if (user?.Identity?.IsAuthenticated != true) return string.Empty;
+        var joined = string.Join(' ', new[] { user.FindFirst(ClaimTypes.GivenName)?.Value, user.FindFirst(ClaimTypes.Surname)?.Value }
+            .Where(v => !string.IsNullOrWhiteSpace(v)).Select(v => v!.Trim()));
+        if (joined.Length > 0) return joined;
+        var name = user.FindFirst("name")?.Value ?? user.FindFirst(ClaimTypes.Name)?.Value;
+        if (!string.IsNullOrWhiteSpace(name)) return name.Trim();
+        var email = user.FindFirst(ClaimTypes.Email)?.Value ?? user.FindFirst("email")?.Value;
+        return string.IsNullOrWhiteSpace(email) ? string.Empty : email.Split('@')[0].Trim();
+    }
+
     /// <summary>Same person = the CRM rule (KnowledgePathReviewRules.SamePerson): trimmed, case-insensitive, never
     /// for an empty side.</summary>
     public static bool SamePerson(string? a, string? b)

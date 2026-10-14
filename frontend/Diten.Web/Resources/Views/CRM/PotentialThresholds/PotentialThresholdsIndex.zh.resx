@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>潜力阈值</value></data>
+  <data name="Crumb" xml:space="preserve"><value>CRM 设置 / 医生洞察</value></data>
+  <data name="Intro" xml:space="preserve"><value>医生在某产品适应症中的月患者数按这些界限分为低、中、高。产品行优先于租户默认值；两者都没有时使用内置值。</value></data>
+  <data name="AddProduct" xml:space="preserve"><value>添加产品</value></data>
+  <data name="ReadOnly" xml:space="preserve"><value>您可以查看阈值；修改需要阈值管理权限。</value></data>
+  <data name="RetryButton" xml:space="preserve"><value>重试</value></data>
+  <data name="ThresholdsTitle" xml:space="preserve"><value>阈值</value></data>
+  <data name="ThresholdsNote" xml:space="preserve"><value>低 &lt; X · 中 · 高 &gt; Y（月患者数）</value></data>
+  <data name="ColProduct" xml:space="preserve"><value>产品</value></data>
+  <data name="ColLow" xml:space="preserve"><value>低</value></data>
+  <data name="ColMedium" xml:space="preserve"><value>中</value></data>
+  <data name="ColHigh" xml:space="preserve"><value>高</value></data>
+  <data name="ColSource" xml:space="preserve"><value>来源</value></data>
+  <data name="ColLastChange" xml:space="preserve"><value>最近更改</value></data>
+  <data name="RowActions" xml:space="preserve"><value>操作</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>变更历史</value></data>
+  <data name="AuditReadOnly" xml:space="preserve"><value>审计记录 · 只读</value></data>
+  <data name="ColDate" xml:space="preserve"><value>日期</value></data>
+  <data name="ColPerson" xml:space="preserve"><value>人员</value></data>
+  <data name="ColTarget" xml:space="preserve"><value>行</value></data>
+  <data name="ColField" xml:space="preserve"><value>字段</value></data>
+  <data name="ColChange" xml:space="preserve"><value>更改</value></data>
+  <data name="ProductLabel" xml:space="preserve"><value>产品</value></data>
+  <data name="LowLabel" xml:space="preserve"><value>低于此值为低（X）</value></data>
+  <data name="LowHint" xml:space="preserve"><value>每月少于 X 名患者 = 低</value></data>
+  <data name="HighLabel" xml:space="preserve"><value>高于此值为高（Y）</value></data>
+  <data name="HighHint" xml:space="preserve"><value>每月多于 Y 名患者 = 高</value></data>
+  <data name="PreviewTitle" xml:space="preserve"><value>预览</value></data>
+  <data name="PreviewPatients" xml:space="preserve"><value>试一个月患者数：</value></data>
+  <data name="CloseButton" xml:space="preserve"><value>关闭</value></data>
+  <data name="CancelButton" xml:space="preserve"><value>取消</value></data>
+  <data name="SaveButton" xml:space="preserve"><value>保存</value></data>
+  <data name="SaveTitle" xml:space="preserve"><value>保存阈值？</value></data>
+  <data name="SaveConfirm" xml:space="preserve"><value>是，保存</value></data>
+  <data name="TenantDefault" xml:space="preserve"><value>租户默认值</value></data>
+  <data name="Source_product" xml:space="preserve"><value>产品</value></data>
+  <data name="Source_default" xml:space="preserve"><value>租户默认值</value></data>
+  <data name="Source_built_in" xml:space="preserve"><value>内置</value></data>
+  <data name="BandLow" xml:space="preserve"><value>低 &lt; {0}</value></data>
+  <data name="BandMedium" xml:space="preserve"><value>中 {0}–{1}</value></data>
+  <data name="BandHigh" xml:space="preserve"><value>高 &gt; {0}</value></data>
+  <data name="Field_lowBelow" xml:space="preserve"><value>低界限</value></data>
+  <data name="Field_highAbove" xml:space="preserve"><value>高界限</value></data>
+  <data name="Field_own" xml:space="preserve"><value>产品行</value></data>
+  <data name="OwnRow" xml:space="preserve"><value>该产品获得自己的行（数值相同）</value></data>
+  <data name="Never" xml:space="preserve"><value>尚未更改</value></data>
+  <data name="EditButton" xml:space="preserve"><value>编辑</value></data>
+  <data name="EditTitle" xml:space="preserve"><value>阈值 · {0}</value></data>
+  <data name="NewTitle" xml:space="preserve"><value>产品专属阈值</value></data>
+  <data name="ProductPlaceholder" xml:space="preserve"><value>选择产品</value></data>
+  <data name="SaveText" xml:space="preserve"><value>新界限将从下一次分类起适用于 {0}。</value></data>
+  <data name="SaveTextDefault" xml:space="preserve"><value>新界限适用于所有没有自己行的产品。</value></data>
+  <data name="Saved" xml:space="preserve"><value>阈值已保存。</value></data>
+  <data name="NothingChanged" xml:space="preserve"><value>没有更改。</value></data>
+  <data name="NoProducts" xml:space="preserve"><value>暂无阈值。</value></data>
+  <data name="NoHistory" xml:space="preserve"><value>暂无更改。</value></data>
+  <data name="HistoryDefault" xml:space="preserve"><value>租户默认值</value></data>
+  <data name="YouLabel" xml:space="preserve"><value>您</value></data>
+  <data name="Class_low" xml:space="preserve"><value>低</value></data>
+  <data name="Class_medium" xml:space="preserve"><value>中</value></data>
+  <data name="Class_high" xml:space="preserve"><value>高</value></data>
+  <data name="ErrRequired" xml:space="preserve"><value>请输入整数。</value></data>
+  <data name="ErrRange" xml:space="preserve"><value>1 到 100,000 之间的整数。</value></data>
+  <data name="ErrOrder" xml:space="preserve"><value>高（Y）不能小于低（X）。</value></data>
+  <data name="ErrProduct" xml:space="preserve"><value>请选择产品。</value></data>
+  <data name="Err_potential_threshold_invalid" xml:space="preserve"><value>阈值被拒绝：须满足 0 &lt; 低 ≤ 高 ≤ 100,000。</value></data>
+  <data name="Err_version_conflict" xml:space="preserve"><value>其他人已更改这些阈值。请刷新后重试。</value></data>
+  <data name="Err_doctor_insights_product_invalid" xml:space="preserve"><value>该产品不在产品主数据中。</value></data>
+  <data name="Err_doctor_insights_invalid" xml:space="preserve"><value>请求无效。</value></data>
+  <data name="Err_reference_data_unavailable" xml:space="preserve"><value>无法读取产品主数据；未保存任何内容。</value></data>
+  <data name="Err_dependency_unavailable" xml:space="preserve"><value>产品列表暂时不可用。</value></data>
+  <data name="Err_permission_denied" xml:space="preserve"><value>您没有此操作的权限。</value></data>
+  <data name="Err_unavailable" xml:space="preserve"><value>无法连接服务器；您的数值保留在此页面。</value></data>
+  <data name="Err_generic" xml:space="preserve"><value>操作未能完成。</value></data>
+</root>

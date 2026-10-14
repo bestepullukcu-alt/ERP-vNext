@@ -6,6 +6,10 @@ public sealed class VisitPlanningIndexViewModel
 {
     public bool CanGenerate { get; set; }
     public bool CanApply { get; set; }
+
+    /// <summary>WP-VP-4J (4) — <c>crm.visit-plan.read-all</c>: the list's "Rep" filter is shown only then (a rep sees
+    /// only their own plans, K-1).</summary>
+    public bool CanReadAll { get; set; }
 }
 
 /// <summary>Shell model for the Golden Compact session pages (Create / Edit / Details). The session itself is loaded

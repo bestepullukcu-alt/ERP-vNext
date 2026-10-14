@@ -21,7 +21,8 @@ public sealed class ProductItemSkuMasterManifestProviderTests
         Assert.True(Manifest.IsTenantAssignable);
         Assert.False(Manifest.IsBaseline);
 
-        Assert.Equal(7, Manifest.Pages.Count);
+        // Main sync 2026-10-14 (WP-LANE-MAIN-SYNC-03): + main's COMPETITOR_PRODUCTS (WP-VW-W4, W4-BE-b2) — 8.
+        Assert.Equal(8, Manifest.Pages.Count);
         // MOD-0290-FU04 S5 (§23 #1, #7): Items under Master Data, visible to holders of mdm.items.read.
         var items = Assert.Single(Manifest.Pages, page => page.PageCode == "ITEMS");
         Assert.Equal("/MasterDataManagement/Items", items.RoutePath);
@@ -58,6 +59,11 @@ public sealed class ProductItemSkuMasterManifestProviderTests
         Assert.Equal("/MasterDataManagement/ProductLegalEntityScopes", productScopes.RoutePath);
         Assert.Equal("mdm.product-legal-entity-scopes.read", productScopes.RequiredPermission);
         Assert.False(productScopes.IsNavigationVisible);
+        // Main sync 2026-10-14: main's competitor products page, the keys CompetitorProductsController enforces.
+        var competitors = Assert.Single(Manifest.Pages, page => page.PageCode == "COMPETITOR_PRODUCTS");
+        Assert.Equal("/MasterDataManagement/CompetitorProducts", competitors.RoutePath);
+        Assert.Equal("mdm.competitor-products.read", competitors.RequiredPermission);
+        Assert.Equal(["ADD_NEW", "VIEW_DETAILS", "PROPOSE"], competitors.Actions.Select(action => action.ActionCode));
     }
 
     [Fact]
@@ -65,7 +71,7 @@ public sealed class ProductItemSkuMasterManifestProviderTests
     {
         const string prefix = "Permission:";
         var policyProperty = typeof(HasPermissionAttribute).GetProperty("Policy");
-        var enforced = new[] { typeof(GlobalProductsController), typeof(FinishedGoodsController), typeof(GskusController), typeof(LskusController), typeof(ProductAbbreviationsController), typeof(ProductLegalEntityScopesController), typeof(ItemsController), typeof(StockBehaviourController) }
+        var enforced = new[] { typeof(GlobalProductsController), typeof(FinishedGoodsController), typeof(GskusController), typeof(LskusController), typeof(ProductAbbreviationsController), typeof(ProductLegalEntityScopesController), typeof(ItemsController), typeof(StockBehaviourController), typeof(CompetitorProductsController) }
             .SelectMany(controller => controller
                 .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
             .SelectMany(method => method.GetCustomAttributes<HasPermissionAttribute>())
@@ -82,6 +88,10 @@ public sealed class ProductItemSkuMasterManifestProviderTests
         Assert.Equal(
             new[]
             {
+                // Main sync 2026-10-14: main's competitor products (CompetitorProductsController).
+                "mdm.competitor-products.manage",
+                "mdm.competitor-products.propose",
+                "mdm.competitor-products.read",
                 "mdm.finished-goods.create",
                 "mdm.finished-goods.read",
                 "mdm.finished-goods.retire",
@@ -133,7 +143,7 @@ public sealed class ProductItemSkuMasterManifestProviderTests
                 "mdm.product-legal-entity-scopes.replace"
             },
             declared.OrderBy(value => value, StringComparer.Ordinal));
-        Assert.Equal(48, declared.Count);
+        Assert.Equal(51, declared.Count);
         Assert.DoesNotContain(declared, permission => permission.StartsWith("mdm.brands.", StringComparison.Ordinal));
         Assert.All(declared, permission =>
         {

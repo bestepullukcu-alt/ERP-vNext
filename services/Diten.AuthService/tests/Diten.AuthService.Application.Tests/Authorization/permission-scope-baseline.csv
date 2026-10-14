@@ -73,6 +73,16 @@ crm.planned-visit.read,0
 # "crm-planned-visit" / "crm-visit-plan" are not platform-admin modules; a tenant role must be able to hold them.
 crm.planned-visit.read-all,0
 crm.visit-plan.read-all,0
+# WP-VW-W4 (W4-BE-c) — 5 doctor insights keys, stated Tenant (0): moduleOverride "crm-doctor-insights" is not in
+# PlatformAdminModules; a tenant role holds them (own / team doctors, the whole tenant, aggregates, thresholds).
+crm.doctor-insights.manage,0
+crm.doctor-insights.read,0
+crm.doctor-insights.read-aggregate,0
+crm.doctor-insights.read-all,0
+crm.doctor-insights.thresholds.manage,0
+# WP-VW-W4 (W4-BE-a) — the competitor usage counts key, stated Tenant (0): moduleOverride "crm-visit-report" is not in
+# PlatformAdminModules.
+crm.visit-report.read-aggregate,0
 # SCMM-12-API / SCMM-14 / SCMM-11-follow-API — 10 content-composition keys, stated Tenant (0): moduleOverride
 # "crm-content-composition" is not in PlatformAdminModules; live diten_auth_v3 Scope=0 (verified 2026-09-25). These
 # were seeded without a baseline row, so Baseline_covers_every_seeded_permission_and_nothing_else was already red.
@@ -106,6 +116,11 @@ mdm.brands.create,0
 mdm.brands.export,0
 mdm.brands.read,0
 mdm.brands.update,0
+# WP-VW-W4 (W4-BE-b2) — 3 competitor product keys, stated Tenant (0): moduleOverride "product-item-sku-master" is not in
+# PlatformAdminModules; a tenant role holds them (read the list, manage records + decide proposals, a rep proposes).
+mdm.competitor-products.manage,0
+mdm.competitor-products.propose,0
+mdm.competitor-products.read,0
 mdm.global-products.create,0
 mdm.global-products.read,0
 mdm.legal-entities.bulk-delete,0

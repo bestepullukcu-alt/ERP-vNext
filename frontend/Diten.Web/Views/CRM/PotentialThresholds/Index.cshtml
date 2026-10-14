@@ -1,0 +1,134 @@
+@model Diten.Web.Models.CRM.PotentialThresholdsViewModel
+@using Diten.Web.Views.CRM.PotentialThresholds
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PotentialThresholdsIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["PageTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    WP-VW-W4 (W4-WEB-b, §2.2) — the potential thresholds (the CRM settings pattern of W3 VisitEvidenceSettings): the tenant
+    default row + one row per Global Product ("Az < X · Orta · Çok > Y"), the edit drawer with the band preview, the save
+    confirm (changed values) and the change history. Every call is a same-origin proxy under /CRM/PotentialThresholds/api/*.
+    UAS-001: without a doctor-insights read key NOTHING but the notice.
+*@
+@if (!Model.CanRead)
+{
+    <partial name="_AccessDenied" model="@Localizer["PageTitle"].Value" />
+    return;
+}
+
+<div id="pt-root" class="pt-page"
+     data-api-base="/CRM/PotentialThresholds/api"
+     data-can-manage="@Model.CanManage.ToString().ToLowerInvariant()"
+     data-can-read-products="@Model.CanReadProducts.ToString().ToLowerInvariant()"
+     data-me="@Model.Me">
+
+    <div class="pt-head">
+        <div>
+            <div class="pt-crumb">@Localizer["Crumb"]</div>
+            <h4 class="pt-title">@Localizer["PageTitle"]</h4>
+            <div class="pt-intro">@Localizer["Intro"]</div>
+        </div>
+        @if (Model.CanManage && Model.CanReadProducts)
+        {
+            <button type="button" class="pt-btn pt-btn-p" id="pt-add"><i class="bx bx-plus"></i> @Localizer["AddProduct"]</button>
+        }
+    </div>
+
+    @if (!Model.CanManage)
+    {
+        <div class="pt-alert pt-alert-info" id="pt-readonly"><i class="bx bx-lock-alt"></i> @Localizer["ReadOnly"]</div>
+    }
+    <div class="pt-alert pt-alert-danger d-none" id="pt-load-error" role="alert">
+        <span id="pt-load-error-text"></span>
+        <button type="button" class="pt-link" id="pt-retry">@Localizer["RetryButton"]</button>
+    </div>
+
+    <div class="pt-card">
+        <div class="pt-card-head"><div class="pt-col"><span class="pt-card-title">@Localizer["ThresholdsTitle"]</span><span class="pt-sub">@Localizer["ThresholdsNote"]</span></div></div>
+        <div class="pt-table-wrap">
+            <table class="pt-table">
+                <thead><tr><th>@Localizer["ColProduct"]</th><th>@Localizer["ColLow"]</th><th>@Localizer["ColMedium"]</th><th>@Localizer["ColHigh"]</th><th>@Localizer["ColSource"]</th><th>@Localizer["ColLastChange"]</th><th><span class="visually-hidden">@Localizer["RowActions"]</span></th></tr></thead>
+                <tbody id="pt-rows"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="pt-card">
+        <div class="pt-card-head"><span class="pt-card-title">@Localizer["HistoryTitle"]</span><span class="pt-sub pt-row"><i class="bx bx-lock-alt"></i> @Localizer["AuditReadOnly"]</span></div>
+        <div class="pt-table-wrap">
+            <table class="pt-table">
+                <thead><tr><th>@Localizer["ColDate"]</th><th>@Localizer["ColPerson"]</th><th>@Localizer["ColTarget"]</th><th>@Localizer["ColField"]</th><th>@Localizer["ColChange"]</th></tr></thead>
+                <tbody id="pt-history-rows"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@* ── the edit drawer (a product row or the tenant default) ── *@
+<div class="offcanvas offcanvas-end pt-drawer" tabindex="-1" id="pt-edit-drawer" aria-labelledby="pt-edit-title">
+    <div class="pt-drawer-head"><h5 class="pt-dlg-title" id="pt-edit-title"></h5><button type="button" class="pt-x" data-bs-dismiss="offcanvas" aria-label="@Localizer["CloseButton"]"><i class="bx bx-x"></i></button></div>
+    <div class="offcanvas-body pt-col pt-gap">
+        <div class="pt-field d-none" id="pt-product-field">
+            <label class="pt-label" for="pt-product">@Localizer["ProductLabel"] <span class="pt-req">*</span></label>
+            <select class="pt-input" id="pt-product"></select>
+            <span class="pt-err d-none" id="pt-err-product"></span>
+        </div>
+        <div class="pt-two">
+            <div class="pt-field">
+                <label class="pt-label" for="pt-low">@Localizer["LowLabel"] <span class="pt-req">*</span></label>
+                <input type="number" class="pt-input" id="pt-low" min="1" max="100000" step="1" inputmode="numeric" />
+                <span class="pt-hint">@Localizer["LowHint"]</span>
+                <span class="pt-err d-none" id="pt-err-low"></span>
+            </div>
+            <div class="pt-field">
+                <label class="pt-label" for="pt-high">@Localizer["HighLabel"] <span class="pt-req">*</span></label>
+                <input type="number" class="pt-input" id="pt-high" min="1" max="100000" step="1" inputmode="numeric" />
+                <span class="pt-hint">@Localizer["HighHint"]</span>
+                <span class="pt-err d-none" id="pt-err-high"></span>
+            </div>
+        </div>
+        <div class="pt-preview">
+            <span class="pt-cap">@Localizer["PreviewTitle"]</span>
+            <div class="pt-bands" id="pt-bands"></div>
+            <label class="pt-row pt-sub" for="pt-try">@Localizer["PreviewPatients"] <input type="number" class="pt-input pt-input-sm" id="pt-try" min="0" step="1" inputmode="numeric" /> <span id="pt-try-class"></span></label>
+        </div>
+        <div class="pt-alert pt-alert-danger d-none" id="pt-edit-error" role="alert"></div>
+    </div>
+    <div class="pt-drawer-foot">
+        <button type="button" class="pt-btn pt-btn-s" data-bs-dismiss="offcanvas">@Localizer["CancelButton"]</button>
+        <button type="button" class="pt-btn pt-btn-p" id="pt-save">@Localizer["SaveButton"]</button>
+    </div>
+</div>
+
+@* ── the save confirm (the changed values) ── *@
+<div class="modal fade pt-modal" id="pt-save-modal" tabindex="-1" aria-labelledby="pt-save-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="pt-dlg">
+                <div class="pt-row pt-top"><span class="pt-dlg-icon"><i class="bx bx-error"></i></span><div class="pt-col"><h5 class="pt-dlg-title" id="pt-save-title">@Localizer["SaveTitle"]</h5><span class="pt-sub" id="pt-save-text"></span></div></div>
+                <div class="pt-diff" id="pt-save-diff"></div>
+                <div class="pt-row pt-end">
+                    <button type="button" class="pt-btn pt-btn-s" data-bs-dismiss="modal">@Localizer["CancelButton"]</button>
+                    <button type="button" class="pt-btn pt-btn-p" id="pt-save-confirm">@Localizer["SaveConfirm"]</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/js/CRM/PotentialThresholds/potential-thresholds.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script>
+        window.PotentialThresholdsL10n = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+            PotentialThresholdsIndex.ScriptKeys.ToDictionary(k => k, k => Localizer[k].Value)));
+    </script>
+    <script src="~/assets/js/CRM/VisitPlanning/format.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/PotentialThresholds/thresholds-core.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/PotentialThresholds/potential-thresholds.js" asp-append-version="true"></script>
+}

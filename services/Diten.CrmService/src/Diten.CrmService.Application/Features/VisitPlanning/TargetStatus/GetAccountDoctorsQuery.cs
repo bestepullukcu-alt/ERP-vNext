@@ -34,7 +34,9 @@ public sealed record GetAccountDoctorsQuery(
     string? Specialty = null,
     int Page = 1,
     int PageSize = 50,
-    string? ResourceId = null) : IRequest<Response<AccountDoctorsDto>>;
+    string? ResourceId = null,
+    // WP-VP-4L (2) — with a plan: the week (Monday yyyy-MM-dd) whose extra visits extraThisWeek reads.
+    string? WeekStart = null) : IRequest<Response<AccountDoctorsDto>>;
 
 public sealed class GetAccountDoctorsQueryHandler : IRequestHandler<GetAccountDoctorsQuery, Response<AccountDoctorsDto>>
 {
@@ -101,6 +103,7 @@ public sealed class GetAccountDoctorsQueryHandler : IRequestHandler<GetAccountDo
         var now = DateTimeOffset.UtcNow;
         string resourceId;
         ContactStatusPeriod? period;
+        PlanningSession? planSession = null;
         if (request.PlanningSessionId is { } sessionId && sessionId != Guid.Empty)
         {
             var session = await _sessions.GetByIdAsync(tenantId, sessionId, cancellationToken);
@@ -111,6 +114,7 @@ public sealed class GetAccountDoctorsQueryHandler : IRequestHandler<GetAccountDo
 
             resourceId = session.ResourceId.Trim();
             period = TargetStatusPeriods.From(await _periods.GetByIdAsync(session.CyclePeriodId, cancellationToken));
+            planSession = session;
         }
         else
         {
@@ -123,6 +127,16 @@ public sealed class GetAccountDoctorsQueryHandler : IRequestHandler<GetAccountDo
 
             resourceId = resolved;
             period = await TargetStatusPeriods.ActiveAsync(_periods, now, cancellationToken);
+        }
+
+        // WP-VP-4M (1) — "this week" is the selected week when one is asked (a Monday of the period).
+        if (!TargetStatusPeriods.TryParseSelectedWeek(request.WeekStart, period, out var selectedWeek))
+        {
+            return Response<AccountDoctorsDto>.Fail(new[]
+            {
+                Handlers.CommandHandlers.PlanningSessionErrorCodes.InvalidWeek,
+                "weekStart must be a Monday (yyyy-MM-dd) of a week of the period."
+            }, 400);
         }
 
         var account = await _accounts.GetByIdAsync(tenantId, request.AccountId, cancellationToken);
@@ -165,11 +179,16 @@ public sealed class GetAccountDoctorsQueryHandler : IRequestHandler<GetAccountDo
         var statuses = await _status.ReadAsync(
             new ContactPeriodStatusRequest(
                 tenantId, resourceId, period, doctors.Select(d => d.Contact.Id).ToList(),
-                DateOnly.FromDateTime(now.UtcDateTime), now, doctors.Select(d => d.Contact).ToList()),
+                DateOnly.FromDateTime(now.UtcDateTime), now, doctors.Select(d => d.Contact).ToList(), selectedWeek),
             cancellationToken);
 
-        var filtered = doctors
-            .Select(d => (d.Link, d.Contact, Status: statuses[d.Contact.Id]))
+        var withStatus = doctors
+            .Select(d => (d.Link, d.Contact, Status: TargetStatusPeriods.WithExtraWeek(statuses[d.Contact.Id], planSession, request.WeekStart)))
+            .ToList();
+        // WP-VP-4M (1) — the quick filters' counts from the SAME statuses the filter below reads.
+        var quickCounts = new TargetQuickCountsDto(
+            withStatus.Count(d => d.Status.DueThisWeek), withStatus.Count(d => d.Status.NeverVisited), withStatus.Count);
+        var filtered = withStatus
             .Where(d => quick switch
             {
                 TargetStatusQuickFilters.Due => d.Status.DueThisWeek,
@@ -190,7 +209,10 @@ public sealed class GetAccountDoctorsQueryHandler : IRequestHandler<GetAccountDo
 
         return Response<AccountDoctorsDto>.Success(new AccountDoctorsDto(
             account.Id, account.AccountName, outOfTerritory, TargetStatusPeriods.ToDto(period),
-            items, filtered.Count, page, pageSize));
+            items, filtered.Count, page, pageSize)
+        {
+            QuickCounts = quickCounts
+        });
     }
 
     /// <summary>K-5 — is the account outside the rep's CURRENT coverage? The "my accounts" rule

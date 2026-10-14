@@ -1,4 +1,4 @@
-namespace Diten.CrmService.Api.Models.CRM;
+﻿namespace Diten.CrmService.Api.Models.CRM;
 
 // MOD-0162 FU04 request models. TenantId is NEVER part of any request body — it is server-resolved from the JWT claim.
 // Route ids (pathId / stepId) come from the path, never the body. Steps are managed only through the step sub-routes;
@@ -101,7 +101,18 @@ public sealed record AddKnowledgePathStepRequest(
     string? Notes = null,
     IReadOnlyList<KnowledgePathBranchConditionRequest>? BranchConditions = null,
     int? ExpectedVersion = null,
-    KnowledgePathArrangementRequest? Arrangement = null);
+    KnowledgePathArrangementRequest? Arrangement = null,
+    // WP-VW-W3 (W3-BE-b) — the step's presentation notes.
+    KnowledgePathStepPresentationRequest? Presentation = null);
+
+/// <summary>WP-VW-W3 (W3-BE-b) — a step's presentation notes (key message ≤ 500, talk track ≤ 4000, target 10–3600 s,
+/// transition ≤ 500, ≤ 10 objection answers). On update an absent object keeps the stored notes.</summary>
+public sealed record KnowledgePathStepPresentationRequest(
+    string? KeyMessage = null,
+    string? TalkTrack = null,
+    int? TargetSeconds = null,
+    string? Transition = null,
+    IReadOnlyList<Guid>? ObjectionResponseIds = null);
 
 public sealed record UpdateKnowledgePathStepRequest(
     int StepOrder,
@@ -118,4 +129,5 @@ public sealed record UpdateKnowledgePathStepRequest(
     string? Notes = null,
     IReadOnlyList<KnowledgePathBranchConditionRequest>? BranchConditions = null,
     int? ExpectedVersion = null,
-    KnowledgePathArrangementRequest? Arrangement = null);
+    KnowledgePathArrangementRequest? Arrangement = null,
+    KnowledgePathStepPresentationRequest? Presentation = null);

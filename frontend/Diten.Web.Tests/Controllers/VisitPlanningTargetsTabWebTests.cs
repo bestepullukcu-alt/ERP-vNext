@@ -34,14 +34,16 @@ public sealed class VisitPlanningTargetsTabWebTests
         var js = Script("details.js");
 
         // the institution's doctors come from the 3D read, with the plan, the quick filter and a page of 200
-        Assert.Contains("api('/my-accounts/' + accountId + '/doctors?planningSessionId=' + encodeURIComponent(sessionId) + '&quick=' + quick + '&pageSize=200')", js);
-        var config = Between(js, "const contactsConfig = list => ({", "\n    });");
-        // WP-VP-4H — eight columns: select · doctor · specialty · products · frequency · done / remaining · last visit · status
-        Assert.Contains("columns: [{ data: null }, { data: 'name' }, { data: 'specialty' }, { data: null }, { data: null }, { data: null }, { data: null }, { data: null }]", config);
+        Assert.Contains("const path = '/my-accounts/' + accountId + '/doctors?planningSessionId=' + encodeURIComponent(sessionId) + '&quick=' + quick + '&pageSize=200';", js);
+        Assert.Contains("return api(path + weekQuery('&'))", js); // 4M (5): the selected week
+        // WP-VP-4J — a PLAIN table row (no DataTable): select · doctor · specialty · products · frequency · done / remaining ·
+        // last visit · status — the 4C / 4H cells
+        var config = Between(js, "const doctorCheck = row =>", "const docMatches");
+        Assert.Contains("'<td class=\"cell-fit\">' + doctorCheck(row) + '</td>'", config);
         Assert.Contains("frequencyCell(row.status)", config);
         Assert.Contains("doneCell(row.status)", config);
         Assert.Contains("lastVisitCell(row.status)", config);
-        Assert.Contains("'<div class=\"vp-doc-picks\" data-cid=\"' + esc(row.contactId)", config);
+        Assert.Contains("<div class=\"vp-doc-picks\" data-cid=\"' + esc(row.contactId)", config);
         Assert.Contains("statusCell(row)", config); // 4H: the badges moved into the Status column
         Assert.Contains("+ doctorBadges(row);", Between(js, "const statusCell = row =>", "\n"));
         Assert.DoesNotContain("linkId' }", config);
@@ -49,18 +51,20 @@ public sealed class VisitPlanningTargetsTabWebTests
         // the cells speak the 3D fields: "N in the period" / no-frequency badge, done / remaining, last visit, badges
         Assert.Contains("st.requiredVisitCount != null && st.frequencyStatus !== 'unknown'", js);
         Assert.Contains("(L.FrequencyPerPeriod || '{0}').replace('{0}', st.requiredVisitCount)", js);
-        Assert.Contains("esc(L.FrequencyNone || '—')", js);
-        Assert.Contains("VPF.ratio(st.done || 0, st.remaining != null ? st.remaining : '—')", js); // CT 4I E4: RTL-safe pair
+        Assert.Contains("(L.FrequencyNone || '—')", js); // 4L: or the weekly default from frequencyDefault
+        Assert.Contains("VPF.ratio(st.done || 0, st.requiredVisitCount)", js); // CT 4I E4: RTL-safe pair (4M: done / required)
         Assert.Contains("st.lastVisitDate ? esc(dayShort(st.lastVisitDate))", js);
         Assert.Contains("(row.status.segmentBadges || []).map(name =>", js);
         Assert.Contains("row.inactive ? ' <span class=\"badge bg-label-secondary\">' + esc(L.BadgeInactive", js);
-        Assert.Contains("String(status.consentStatus || '').toLowerCase() === 'blocked'", js);
+        // WP-VW-W2 (WEB-b) — the row mapping is the shared Targets rule (targets-core.js), also used by the Visit Workspace
+        Assert.Contains("const doctorRow = TC.doctorRow;", js);
+        Assert.Contains("String(status.consentStatus || '').toLowerCase() === 'blocked'", Script("targets-core.js"));
 
         // consent blocked: the box is disabled, a tick is refused, "select all" skips the doctor
         Assert.Contains("(canEditTargets() && !row.blocked ? '' : ' disabled')", config);
         Assert.Contains("if (!canEditTargets() || (c && c.blocked)) { cb.checked = false; return; }", js);
         var selectAll = Between(js, "const selectAllDoctors = () => {", "\n    };");
-        Assert.Contains("contactsDt.rows({ search: 'applied' })", selectAll); // "select all" follows the filters
+        Assert.Contains("visibleDoctors().forEach(row =>", selectAll); // "select all" follows the filters
         Assert.Contains("if (row.blocked) return;", selectAll);
 
         // the view's header has exactly the eight columns (4H: + Status), and no link column
@@ -100,7 +104,7 @@ public sealed class VisitPlanningTargetsTabWebTests
         Assert.Contains("counts[c.specialty] = (counts[c.specialty] || 0) + 1", pills);
         Assert.Contains("esc(specLabel(sp)) + ' (' + counts[sp] + ')", pills);
         Assert.Contains("vp-spec-check", pills);
-        Assert.Contains("'^(' + activeSpecs.map(reEscape).join('|') + ')$'", js);
+        Assert.Contains("(!activeSpecs.length || activeSpecs.indexOf(row.specialty) > -1)", js); // WP-VP-4J: the plain table's filter
         Assert.Contains("querySelectorAll('.vp-spec-check:checked')", js);
         Assert.DoesNotContain("vp-spec-pill", js); // the single-choice pills are gone
     }
@@ -175,12 +179,15 @@ public sealed class VisitPlanningTargetsTabWebTests
         // the field (null = keep), and the account / pharmacy lists are not sent (null = keep)
         var done = Between(js, "const done = () => {", "\n    };");
         Assert.Contains("save(buildUpdate([{ doctor: picker.doctor, products: picker.picks }]), L.ProductsSaved || '');", done);
-        var update = Between(js, "const buildUpdate = changes => {", "\n    };");
-        Assert.Contains("const contacts = savedContacts().map(contactInput);", update);
-        Assert.Contains("entry.products = ch.products.map(pickInput);", update);
+        // WP-VW-W2 (WEB-b) — the update is the shared Targets rule (targets-core.js), used by the Visit Workspace too
+        Assert.Contains("const buildUpdate = changes => TC.selectionUpdate(page.state.session, savedContacts(), changes);", js);
+        var core = Script("targets-core.js");
+        var update = Between(core, "const selectionUpdate = (session, saved, changes) => {", "\n    };");
+        Assert.Contains("let contacts = (saved || []).map(contactInput);", update);
+        Assert.Contains("if (ch.products) { entry.products = ch.products.map(pickInput); }", update);
         Assert.Contains("selectedPharmacyIds: null", update);
-        Assert.Contains("expectedVersion: session.version", update);
-        Assert.DoesNotContain("products", Between(js, "const contactInput = c =>", ";\n"));
+        Assert.Contains("expectedVersion: s.version", update);
+        Assert.DoesNotContain("products", Between(core, "const contactInput = c =>", ";\n"));
         Assert.Contains("base + '/sessions/' + encodeURIComponent(sessionId), { method: 'PUT'", js);
         Assert.Contains("page.request('reload-plan')", js);
         Assert.Contains("page.on('request:reload-plan', () => loadSession().then(preview));", Script("details.js"));
@@ -200,7 +207,8 @@ public sealed class VisitPlanningTargetsTabWebTests
     public void Bulk_apply_adds_to_each_doctors_products_and_counts_the_doctors_over_the_limit()
     {
         var js = Script("targets.js");
-        var union = Between(js, "const unionPicks = (existing, chosen) => {", "\n    };");
+        Assert.Contains("const unionPicks = TC.unionPicks;", js); // WP-VW-W2 (WEB-b) — the shared rule
+        var union = Between(Script("targets-core.js"), "const unionPicks = (existing, chosen) => {", "\n    };");
         // every existing product stays (with its own role) and comes first; a picked one is added only when new
         Assert.StartsWith("const unionPicks = (existing, chosen) => {\n        const merged = (existing || []).map(p =>", union.Replace("\r\n", "\n"));
         Assert.Contains("if (!merged.some(m => m.productId === p.productId)) merged.push(", union);

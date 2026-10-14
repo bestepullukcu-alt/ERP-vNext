@@ -50,6 +50,13 @@ public sealed class VisitReport : EntityBase
 
     public string? RescheduleNotes { get; set; }
 
+    /// <summary>WP-VW-W2 — the note of a missed / rescheduled reason (required when the reason's <c>requires_note</c>).</summary>
+    public string? ReasonNote { get; set; }
+
+    /// <summary>WP-VW-W2 (K-W1 = A) — the new planned visit created when this rescheduled report was submitted. Set once;
+    /// it makes the reschedule idempotent and freezes the reschedule date.</summary>
+    public Guid? RescheduledToPlannedVisitId { get; set; }
+
     /// <summary>The reporting rep (FU01 <see cref="PlannedVisitResourceRef.ResourceId"/> shape — a STRING, no fake FK;
     /// MOD-0288 owns the Person/Position master).</summary>
     public string ReportedByResourceId { get; set; } = string.Empty;
@@ -67,6 +74,31 @@ public sealed class VisitReport : EntityBase
 
     public string? CreatedBy { get; set; }
     public string? UpdatedBy { get; set; }
+
+    // ── WP-VW-W4 (W4-BE-a, §2.5) — report v2 (additive; a v1 report keeps 1 and every section empty) ─────────────────
+
+    /// <summary>1 = the FU02 report (ContentActuals / Samples / Feedback); 2 = the v2 sections below. A document written
+    /// before W4 has no element and reads as 1 (the initializer).</summary>
+    public int SchemaVersion { get; set; } = VisitReportSchemaVersions.V1;
+
+    /// <summary>v2: <see cref="VisitReportKinds"/> — <c>doctor</c> | <c>pharmacy</c> (from the planned visit's target).</summary>
+    public string? ReportKind { get; set; }
+
+    public VisitReportGeneral? General { get; set; }
+
+    /// <summary>v2 doctor report: one section per product.</summary>
+    public List<VisitReportProductSection> ProductSections { get; set; } = new();
+
+    /// <summary>v2 doctor report: the doctor level (to the doctor insights recorder on submit).</summary>
+    public VisitReportDoctorLevel? Doctor { get; set; }
+
+    /// <summary>v2 pharmacy report.</summary>
+    public VisitReportPharmacy? Pharmacy { get; set; }
+
+    public VisitReportSafety? Safety { get; set; }
+    public VisitReportFollowUp? FollowUp { get; set; }
+
+    public bool IsV2() => SchemaVersion >= VisitReportSchemaVersions.V2;
 
     // ── Lifecycle helpers ────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -139,6 +171,9 @@ public sealed class VisitReportAmendment
     public string ByResourceId { get; set; } = string.Empty;
     public string Reason { get; set; } = string.Empty;
     public List<string> ChangedFields { get; set; } = new();
+
+    /// <summary>WP-VW-W4 (W4-BE-a) — every changed value with its OLD and NEW value (JSON), not only the field name.</summary>
+    public List<VisitReportAmendmentChange> Changes { get; set; } = new();
 }
 
 // ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -218,4 +253,9 @@ public static class VisitReportLimits
     /// <summary>The correction window (D-EDIT-WINDOW): a submitted report may be edited in place for this many minutes;
     /// after it, corrections are append-only amendments.</summary>
     public const int EditWindowMinutes = 60;
+
+    /// <summary>WP-VW-W1 — the report deadline: a visit's outcome / report is recorded until the END of its planned day
+    /// (UTC) plus this many hours. After it the visit is locked for the rep (the read-all holder is exempt); an amendment
+    /// of an already-submitted report stays unlimited.</summary>
+    public const int ReportDeadlineHours = 48;
 }

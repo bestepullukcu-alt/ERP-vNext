@@ -54,8 +54,9 @@ public sealed class AccountKindTests
     // MOD-0280-FU01 D11 (T1a CT prerequisite, 79547b4e3, owner's delegation 2026-09-29) added the two time-entry report keys
     // as the fifth and sixth; this test was left at four until the T3 stop report's full Auth run (2026-09-30).
     // WP-VP-2 (B-1, 2026-10-06) added crm.planned-visit.read-all and crm.visit-plan.read-all as the seventh and eighth.
+    // WP-VW-W4 (BE-c, owner decision 2026-10-13) added crm.doctor-insights.read-all — with the lane's task-request key, the tenth.
     [Fact]
-    public void The_explicit_grant_only_set_is_exactly_the_eight_owner_decided_keys()
+    public void The_explicit_grant_only_set_is_exactly_the_ten_owner_decided_keys()
     {
         Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("auth.users.account-kind.manage"));
         Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("AUTH.USERS.ACCOUNT-KIND.MANAGE")); // case-insensitive, like the catalog
@@ -67,8 +68,10 @@ public sealed class AccountKindTests
         Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("platform.tasks.requests.create"));
         Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("crm.planned-visit.read-all"));
         Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("crm.visit-plan.read-all"));
-        // Main sync (2026-10-11): the CT line's task-request key (7th) and main's two CRM read-all keys (VP-2) — 9.
-        Assert.Equal(9, ExplicitGrantOnlyPermissions.Keys.Count);
+        Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("crm.doctor-insights.read-all"));
+        // Main sync (2026-10-11): the CT line's task-request key and main's two CRM read-all keys (VP-2). Main sync
+        // 2026-10-14 (WP-LANE-MAIN-SYNC-03): main's crm.doctor-insights.read-all (cf3eab450) joins them — 10, each by name.
+        Assert.Equal(10, ExplicitGrantOnlyPermissions.Keys.Count);
         Assert.False(ExplicitGrantOnlyPermissions.Keys.Contains("auth.users.lookup")); // lookup is an ORDINARY tenant key
     }
 

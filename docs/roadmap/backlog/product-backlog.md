@@ -10090,6 +10090,62 @@ türü farklı aynı adla bir sıralamayı kaçırabilir.
 
 ---
 
+### BL-640
+
+**Rakip ürünler (WP-VW-W4) MDM belge eşleme kaydında yok; iki belge bütün olarak yazılıyor**
+
+DURUM: AÇIK · SAHİP: WP-VW-W4 (rakip ürün / ziyaret raporu) geliştiricisi · KARAR: CT deseni (SYNC-02), WP-LANE-MAIN-SYNC-03 · KAYIT: 2026-10-14 · SÜRE: 30 gün (2026-11-13)
+
+**Ne:** main-sync 2026-10-14 ile gelen `CompetitorProduct`, `CompetitorProposalDecision` ve MOD-0023 sonuç kutusu `ProcessedEvent`
+kendi `CompetitorProductClassMaps`'iyle geliyor; hattın `MdmDocumentClassMaps` kaydında değiller. `CompetitorProductRepository`
+ve `MongoWorkflowApprovalStore<T>` kaydı bütün olarak değiştiriyor (`ReplaceOneAsync`) ve okuma esnek — sonraki bir sürümün
+eklediği alan eski sürümün yazısında kaybolur. `MdmDocumentClassMapsTests` iki testte adlı, sahipli istisna.
+**Yapılacak:** türler `MdmDocumentClassMaps`'e alınır; bütün yazılar alan düzeyine iner ya da eşleme katı olur; satırlar çıkar.
+**Gelecek regresyon riski:** 🟡
+
+---
+
+### BL-641
+
+**CRM W4 ziyaret raporu v2: üç yan panelin birincil eylemi işaretsiz (Enter / chord)**
+
+DURUM: AÇIK · SAHİP: CRM · KARAR: CT deseni (SYNC-02), WP-LANE-MAIN-SYNC-03 · KAYIT: 2026-10-14 · SÜRE: 30 gün (2026-11-13)
+
+**Ne:** `CRM/KnowledgePaths/_PresentationNotes.cshtml`, `CRM/PotentialThresholds/Index.cshtml`,
+`CRM/VisitEvidenceSettings/Index.cshtml` `data-dt-primary` taşımıyor (UX-COMMON-FIX2 R4). `diten-enter-primary.test.js` içinde adlı satır.
+**Yapılacak:** her panelin birincil düğmesi `enter` ya da `chord` ile işaretlenir; satır çıkar.
+**Gelecek regresyon riski:** 🟢
+
+---
+
+### BL-642
+
+**CRM W4 ile gelen 5 kiracı sayfasının "?" yardım metni yok**
+
+DURUM: AÇIK · SAHİP: CRM (COMPETITORPRODUCTS dahil — W4 rakip ürün listesi) · KARAR: CT deseni (SYNC-02 defter kararı), WP-LANE-MAIN-SYNC-03 · KAYIT: 2026-10-14 · SÜRE: 30 gün (2026-11-13)
+
+**Ne:** COMPETITORPRODUCTS, CRMDOCTORINSIGHTTHRESHOLDS, OBJECTIONRESPONSES, VISITEVIDENCESETTINGS, VISITWORKSPACE. Yardım defterine
+satır girmedi (tavan değişmedi); `page-help-ledger.test.js` içinde `MAIN_SYNC_3_PAGES` adlı listesi, anahtarlar sabit, yalnız küçülür.
+**Yapılacak:** `PageHelpResource` içinde 7 dilde metin; satır çıkar.
+**Gelecek regresyon riski:** 🟢
+
+---
+
+### BL-643
+
+**CRM `ScaffoldSmokeTests` DI'yi paylaşılan `mongodb://localhost:27017` yapılandırmasıyla kuruyor**
+
+DURUM: AÇIK · SAHİP: CRM · KARAR: — (WP-LANE-MAIN-SYNC-03 bulgusu) · KAYIT: 2026-10-14
+
+**Ne:** `services/Diten.CrmService/tests/Diten.CrmService.Application.Tests/ScaffoldSmokeTests.cs:26` bellek içi yapılandırmaya
+`Mongo:ConnectionString = mongodb://localhost:27017` koyup `AddPersistence` ile kabı kuruyor; bir `MongoClient` oluşursa sürücü
+arka planda 27017'ye izleme bağlantısı açar. CI'da CRM projesi koşmuyor (NotInThisJob); yerel koşularda geliştiricinin ortak
+Mongo'suna dokunabilir. SYNC-03 koşularında bu sınıf filtreyle dışarıda bırakıldı.
+**Yapılacak:** testin kendi mongod'u ya da yalnız DI çözümü için açık bir "bağlanma" yapılandırması; BL-595 desenindeki bekçi CRM'e.
+**Gelecek regresyon riski:** 🟡
+
+---
+
 ### BL-637
 
 **Üretim (MVP-3) testleri CI'da: Mongo replika seti ve canlı kuyruk koleksiyonu yok**

@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>Rapport de visite en pharmacie</value></data>
+  <data name="BackButton" xml:space="preserve"><value>Retour au calendrier</value></data>
+  <data name="ReadOnly" xml:space="preserve"><value>Vous pouvez consulter ce rapport ; l'enregistrer nécessite l'autorisation de saisie des rapports de visite.</value></data>
+  <data name="SentTitle" xml:space="preserve"><value>Rapport envoyé.</value></data>
+  <data name="Unlock" xml:space="preserve"><value>Modifier</value></data>
+  <data name="FixTitle" xml:space="preserve"><value>Correction motivée</value></data>
+  <data name="FixText" xml:space="preserve"><value>60 minutes se sont écoulées depuis l'envoi. Un motif est obligatoire ; les champs modifiés apparaissent dans l'historique du rapport.</value></data>
+  <data name="FixPlaceholder" xml:space="preserve"><value>Motif (obligatoire)</value></data>
+  <data name="StepsLabel" xml:space="preserve"><value>Étapes du rapport</value></data>
+  <data name="PrevButton" xml:space="preserve"><value>Retour</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Enregistrer le brouillon</value></data>
+  <data name="Step_general" xml:space="preserve"><value>Général</value></data>
+  <data name="Step_stock" xml:space="preserve"><value>Stock et rayon</value></data>
+  <data name="Step_order" xml:space="preserve"><value>Commande et ventes</value></data>
+  <data name="Step_market" xml:space="preserve"><value>Concurrent et recommandation</value></data>
+  <data name="Step_safety" xml:space="preserve"><value>Sécurité</value></data>
+  <data name="Step_summary" xml:space="preserve"><value>Résumé</value></data>
+  <data name="StepMissing" xml:space="preserve"><value>{0} manquant(s)</value></data>
+  <data name="StepOk" xml:space="preserve"><value>Complet</value></data>
+  <data name="StepOf" xml:space="preserve"><value>Étape {0} / {1}</value></data>
+  <data name="NextStep" xml:space="preserve"><value>Suivant : {0}</value></data>
+  <data name="MissingCount" xml:space="preserve"><value>{0} champs manquants</value></data>
+  <data name="ReadyToSend" xml:space="preserve"><value>Prêt à envoyer</value></data>
+  <data name="SavedAt" xml:space="preserve"><value>Brouillon enregistré · {0}</value></data>
+  <data name="Unsaved" xml:space="preserve"><value>Modifications non enregistrées</value></data>
+  <data name="DraftStored" xml:space="preserve"><value>Brouillon enregistré</value></data>
+  <data name="NotSaved" xml:space="preserve"><value>Pas encore enregistré</value></data>
+  <data name="SentText" xml:space="preserve"><value>Vous pouvez le modifier dans les 60 minutes suivant l'envoi ; ensuite une correction motivée est nécessaire.</value></data>
+  <data name="SentAmended" xml:space="preserve"><value>Une correction motivée a été enregistrée.</value></data>
+  <data name="NotPharmacy" xml:space="preserve"><value>Cette visite n'est pas une visite en pharmacie ; son rapport se remplit dans le rapport médecin.</value></data>
+  <data name="Outcome" xml:space="preserve"><value>Résultat</value></data>
+  <data name="OutcomeDone" xml:space="preserve"><value>Effectuée</value></data>
+  <data name="OutcomeHint" xml:space="preserve"><value>Non effectuée / reporter se saisit depuis le calendrier.</value></data>
+  <data name="ActualTimes" xml:space="preserve"><value>Début / fin réels</value></data>
+  <data name="ServerTime" xml:space="preserve"><value>Heure du serveur ; non modifiable.</value></data>
+  <data name="Minutes" xml:space="preserve"><value>{0} min</value></data>
+  <data name="VisitKind" xml:space="preserve"><value>Type de visite</value></data>
+  <data name="Kind_in_person" xml:space="preserve"><value>En personne</value></data>
+  <data name="Kind_remote" xml:space="preserve"><value>À distance</value></data>
+  <data name="MetRole" xml:space="preserve"><value>Personne rencontrée</value></data>
+  <data name="GeneralNote" xml:space="preserve"><value>Appréciation générale</value></data>
+  <data name="OptionsUnavailable" xml:space="preserve"><value>Les options n'ont pas pu être chargées.</value></data>
+  <data name="StockTitle" xml:space="preserve"><value>Stock par produit</value></data>
+  <data name="NearExpiry" xml:space="preserve"><value>Péremption proche</value></data>
+  <data name="ReturnIssue" xml:space="preserve"><value>Problème de retour</value></data>
+  <data name="RemoveRow" xml:space="preserve"><value>Retirer</value></data>
+  <data name="NoSkus" xml:space="preserve"><value>Aucun produit pour cette visite ; ajoutez-en un par recherche.</value></data>
+  <data name="GskuSearch" xml:space="preserve"><value>Rechercher un produit / conditionnement (2 lettres min.)</value></data>
+  <data name="GskusNoPermission" xml:space="preserve"><value>Vos autorisations ne permettent pas de lister les conditionnements ; demandez l'autorisation de lecture des SKU.</value></data>
+  <data name="ShelfTitle" xml:space="preserve"><value>Rayon / visibilité</value></data>
+  <data name="MaterialStand" xml:space="preserve"><value>Matériel / présentoir présent</value></data>
+  <data name="ShelfPhoto" xml:space="preserve"><value>Photo du rayon</value></data>
+  <data name="PhotoTake" xml:space="preserve"><value>Prendre une photo</value></data>
+  <data name="PhotoReplace" xml:space="preserve"><value>Remplacer la photo</value></data>
+  <data name="PhotoHint" xml:space="preserve"><value>JPEG ou PNG, 10 Mo maximum.</value></data>
+  <data name="PhotoSaved" xml:space="preserve"><value>Photo du rayon enregistrée.</value></data>
+  <data name="OrderTitle" xml:space="preserve"><value>Commande</value></data>
+  <data name="NoOrder" xml:space="preserve"><value>Aucune précommande n'a été créée lors de cette visite.</value></data>
+  <data name="CreateOrder" xml:space="preserve"><value>Créer une précommande</value></data>
+  <data name="Soon" xml:space="preserve"><value>Bientôt</value></data>
+  <data name="OrderSoonHint" xml:space="preserve"><value>Les précommandes arriveront avec le module de commandes.</value></data>
+  <data name="SalesTitle" xml:space="preserve"><value>Ventes</value></data>
+  <data name="SalesHint" xml:space="preserve"><value>La tendance est obligatoire pour chaque produit ; les boîtes par mois sont facultatives.</value></data>
+  <data name="BoxesPerMonth" xml:space="preserve"><value>boîtes / mois</value></data>
+  <data name="CompetitorTitle" xml:space="preserve"><value>Concurrent</value></data>
+  <data name="CompetitorsUnavailable" xml:space="preserve"><value>La liste des concurrents est illisible ; vous pouvez enregistrer sans elle.</value></data>
+  <data name="NoCompetitor" xml:space="preserve"><value>Aucun concurrent</value></data>
+  <data name="ProposedBadge" xml:space="preserve"><value>ajouté par le délégué · en attente d'approbation pour la liste de référence</value></data>
+  <data name="AdvantageHint" xml:space="preserve"><value>Face au concurrent : un appui notre avantage (+), deux appuis notre désavantage (−)</value></data>
+  <data name="ProposalOpen" xml:space="preserve"><value>Absent de la liste, ajouter un concurrent</value></data>
+  <data name="ProposalName" xml:space="preserve"><value>Nom du produit concurrent</value></data>
+  <data name="ProposalCompany" xml:space="preserve"><value>Laboratoire</value></data>
+  <data name="ProposalAdd" xml:space="preserve"><value>Ajouter</value></data>
+  <data name="ProposalHint" xml:space="preserve"><value>Il est proposé au référentiel produits à l'envoi du rapport.</value></data>
+  <data name="RecommendationTitle" xml:space="preserve"><value>Recommandation et flux d'ordonnances</value></data>
+  <data name="LinkedDoctors" xml:space="preserve"><value>Médecins prescripteurs</value></data>
+  <data name="NoLinked" xml:space="preserve"><value>Aucun médecin lié.</value></data>
+  <data name="DoctorSearch" xml:space="preserve"><value>Rechercher un médecin (2 lettres min.)</value></data>
+  <data name="TrainingTitle" xml:space="preserve"><value>Formation / matériel et demandes</value></data>
+  <data name="TrainingGiven" xml:space="preserve"><value>Une formation produit a été donnée au personnel</value></data>
+  <data name="RequestType" xml:space="preserve"><value>Type de demande</value></data>
+  <data name="RequestDate" xml:space="preserve"><value>Échéance</value></data>
+  <data name="RequestAdd" xml:space="preserve"><value>Ajouter une demande</value></data>
+  <data name="AeQuestion" xml:space="preserve"><value>Un effet indésirable / événement indésirable a-t-il été signalé pendant la visite ?</value></data>
+  <data name="AeWarning" xml:space="preserve"><value>Une déclaration de pharmacovigilance est obligatoire sous 24 heures.</value></data>
+  <data name="AeNote" xml:space="preserve"><value>Ce qui a été signalé</value></data>
+  <data name="AnswerYes" xml:space="preserve"><value>Oui</value></data>
+  <data name="AnswerNo" xml:space="preserve"><value>Non</value></data>
+  <data name="SumStock" xml:space="preserve"><value>Stock : {0} / {1}</value></data>
+  <data name="SumSales" xml:space="preserve"><value>Tendance des ventes : {0} / {1}</value></data>
+  <data name="SumCompetitors" xml:space="preserve"><value>Concurrents : {0}</value></data>
+  <data name="SumAeYes" xml:space="preserve"><value>Événement indésirable signalé</value></data>
+  <data name="SumAeNo" xml:space="preserve"><value>Aucun événement indésirable</value></data>
+  <data name="SumAeOpen" xml:space="preserve"><value>Question sur l'événement indésirable sans réponse</value></data>
+  <data name="Miss_visitKindCode" xml:space="preserve"><value>Type de visite</value></data>
+  <data name="Miss_adverseEvent" xml:space="preserve"><value>Question sur l'événement indésirable</value></data>
+  <data name="Miss_adverseEventNote" xml:space="preserve"><value>Ce qui a été signalé (événement indésirable)</value></data>
+  <data name="Miss_metRoleCode" xml:space="preserve"><value>Personne rencontrée</value></data>
+  <data name="Miss_stock_levelCode" xml:space="preserve"><value>{0} : niveau de stock</value></data>
+  <data name="Miss_sales_trendCode" xml:space="preserve"><value>{0} : tendance des ventes</value></data>
+  <data name="Miss_competitors" xml:space="preserve"><value>Concurrent (ou « Aucun concurrent »)</value></data>
+  <data name="Miss_generic" xml:space="preserve"><value>Manquant : {0}</value></data>
+  <data name="SubmitButton" xml:space="preserve"><value>Envoyer le rapport</value></data>
+  <data name="SendFix" xml:space="preserve"><value>Envoyer la correction</value></data>
+  <data name="DraftSaved" xml:space="preserve"><value>Brouillon enregistré.</value></data>
+  <data name="Submitted" xml:space="preserve"><value>Rapport envoyé.</value></data>
+  <data name="SubmittedWithWarnings" xml:space="preserve"><value>Rapport envoyé ; certaines étapes de suivi seront relancées.</value></data>
+  <data name="Amended" xml:space="preserve"><value>Correction enregistrée.</value></data>
+  <data name="WindowClosed" xml:space="preserve"><value>Les 60 minutes sont écoulées ; saisissez un motif pour envoyer une correction.</value></data>
+  <data name="ErrStockLevel" xml:space="preserve"><value>Choisissez le niveau de stock.</value></data>
+  <data name="ErrTrend" xml:space="preserve"><value>Choisissez la tendance des ventes.</value></data>
+  <data name="ErrCompetitors" xml:space="preserve"><value>Choisissez un concurrent ou « Aucun concurrent ».</value></data>
+  <data name="ErrAe" xml:space="preserve"><value>Répondez à la question sur l'événement indésirable.</value></data>
+  <data name="ErrAeNote" xml:space="preserve"><value>Décrivez ce qui a été signalé.</value></data>
+  <data name="ErrProposalName" xml:space="preserve"><value>Saisissez le nom du produit.</value></data>
+  <data name="ErrProposalCompany" xml:space="preserve"><value>Saisissez le laboratoire.</value></data>
+  <data name="ErrTooLong" xml:space="preserve"><value>200 caractères maximum.</value></data>
+  <data name="ErrBoxes" xml:space="preserve"><value>Un nombre entier de 0 à 100 000.</value></data>
+  <data name="ErrReason" xml:space="preserve"><value>Un motif est obligatoire.</value></data>
+  <data name="ErrReasonLong" xml:space="preserve"><value>500 caractères maximum.</value></data>
+  <data name="Err_report_incomplete" xml:space="preserve"><value>Certaines réponses manquent ; voir le résumé.</value></data>
+  <data name="Err_report_code_invalid" xml:space="preserve"><value>Une option n'est plus valide ; choisissez à nouveau.</value></data>
+  <data name="Err_report_v2_invalid" xml:space="preserve"><value>Le rapport est illisible ; vérifiez les valeurs.</value></data>
+  <data name="Err_reference_data_unavailable" xml:space="preserve"><value>Les options ne peuvent pas être vérifiées pour l'instant ; vos réponses sont conservées.</value></data>
+  <data name="Err_visit_report_edit_window_closed" xml:space="preserve"><value>Les 60 minutes sont écoulées ; envoyez une correction motivée.</value></data>
+  <data name="Err_visit_report_concurrency_conflict" xml:space="preserve"><value>Le rapport a été modifié ailleurs. Rechargez et réessayez.</value></data>
+  <data name="Err_visit_report_amendment_reason_required" xml:space="preserve"><value>Un motif (500 caractères max.) est obligatoire.</value></data>
+  <data name="Err_visit_report_not_finalised" xml:space="preserve"><value>Seul un rapport envoyé peut être corrigé.</value></data>
+  <data name="Err_visit_report_plan_cancelled" xml:space="preserve"><value>Cette visite a été annulée.</value></data>
+  <data name="Err_visit_report_deadline_passed" xml:space="preserve"><value>Le délai du rapport est dépassé.</value></data>
+  <data name="Err_visit_not_yet_due" xml:space="preserve"><value>Cette visite n'est pas encore due.</value></data>
+  <data name="Err_visit_photo_invalid" xml:space="preserve"><value>La photo doit être en JPEG ou PNG et 10 Mo maximum.</value></data>
+  <data name="Err_shelf_photo_pharmacy_only" xml:space="preserve"><value>Une photo de rayon ne concerne qu'une visite en pharmacie.</value></data>
+  <data name="Err_shelf_photo_report_submitted" xml:space="preserve"><value>Le rapport est envoyé ; la photo ne peut plus changer.</value></data>
+  <data name="Err_shelf_photo_not_found" xml:space="preserve"><value>Pas encore de photo du rayon.</value></data>
+  <data name="Err_visit_evidence_store_unavailable" xml:space="preserve"><value>La photo n'a pas pu être stockée ; réessayez.</value></data>
+  <data name="Err_dependency_unavailable" xml:space="preserve"><value>La liste n'est pas disponible pour le moment.</value></data>
+  <data name="Err_conflict" xml:space="preserve"><value>Le rapport a été modifié ailleurs. Rechargez et réessayez.</value></data>
+  <data name="Err_permission_denied" xml:space="preserve"><value>Vous n'avez pas l'autorisation pour cela.</value></data>
+  <data name="Err_unavailable" xml:space="preserve"><value>Le serveur est injoignable ; vos réponses sont conservées sur cet écran.</value></data>
+  <data name="Err_generic" xml:space="preserve"><value>L'opération n'a pas pu aboutir.</value></data>
+</root>

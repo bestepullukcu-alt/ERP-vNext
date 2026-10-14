@@ -13,15 +13,34 @@ namespace Diten.Platform.API.Security;
 public sealed class HasPermissionAttribute : Attribute, IAsyncAuthorizationFilter
 {
     private readonly string _permission;
+    private readonly string[] _alternatives;
 
     public HasPermissionAttribute(string permission)
     {
         _permission = permission;
+        _alternatives = [];
+    }
+
+    /// <summary>
+    /// WP-VW-W3-PLT — "<paramref name="permission"/> OR any of <paramref name="alternatives"/>". Used where a
+    /// narrower, scope-bound key may reach the same endpoint as the general key (the document repository's
+    /// <c>visit-evidence.*</c> keys beside <c>read</c>/<c>manage</c>). The attribute only admits the caller; the
+    /// scope and owner decision for the narrower key belongs to the application service behind it (AD-5).
+    /// Several attributes on one action still combine as AND.
+    /// </summary>
+    public HasPermissionAttribute(string permission, params string[] alternatives)
+    {
+        _permission = permission;
+        _alternatives = alternatives ?? [];
     }
 
     /// <summary>The required permission key. Exposed so startup auto-registration (A1) can reflect it without
     /// reaching into the private field.</summary>
     public string Permission => _permission;
+
+    /// <summary>WP-VW-W3-PLT — keys that satisfy this attribute instead of <see cref="Permission"/>. Reflected by A1
+    /// auto-registration too, so an alternative key reaches the permission catalogue like the primary one.</summary>
+    public IReadOnlyList<string> AlternativePermissions => _alternatives;
 
     public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
     {
@@ -90,7 +109,9 @@ public sealed class HasPermissionAttribute : Attribute, IAsyncAuthorizationFilte
         // the side-effect-free PermissionClaimEvaluator so the enforcement filter and the future self-explain observer
         // share one implementation and cannot drift. Behavior is unchanged: a canonical requirement is satisfied by the
         // canonical key OR any mapped legacy alias; a legacy/unknown requirement accepts only itself (fail-closed).
-        if (isPlatformActor || PermissionClaimEvaluator.Evaluate(user.Claims, _permission).IsSatisfied)
+        if (isPlatformActor
+            || PermissionClaimEvaluator.Evaluate(user.Claims, _permission).IsSatisfied
+            || _alternatives.Any(alternative => PermissionClaimEvaluator.Evaluate(user.Claims, alternative).IsSatisfied))
         {
             return;
         }

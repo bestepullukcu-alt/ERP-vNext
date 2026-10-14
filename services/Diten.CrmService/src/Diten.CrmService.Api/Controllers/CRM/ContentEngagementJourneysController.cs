@@ -129,7 +129,8 @@ public sealed class ContentEngagementJourneysController : CustomBaseController
                 journeyId, request.StageOrder, request.StageCode, request.StageName, request.StageObjective,
                 request.RecommendedKnowledgePathId, request.IsRequired, request.Repeatable, request.StageType,
                 request.PathVersionPinPolicy, request.MinVisitNumber, request.MaxVisitNumber, request.AdvancementRule,
-                request.FallbackStageId, request.Notes, MapBranch(request.BranchConditions), request.ExpectedVersion),
+                request.FallbackStageId, request.Notes, MapBranch(request.BranchConditions), request.ExpectedVersion,
+                request.AdoptionStageCode),
             cancellationToken));
 
     [HttpPut("api/crm/knowledge/content-engagement-journeys/{journeyId:guid}/stages/{stageId:guid}")]
@@ -144,7 +145,8 @@ public sealed class ContentEngagementJourneysController : CustomBaseController
                 journeyId, stageId, request.StageOrder, request.StageCode, request.StageName, request.StageObjective,
                 request.RecommendedKnowledgePathId, request.IsRequired, request.Repeatable, request.StageType,
                 request.PathVersionPinPolicy, request.MinVisitNumber, request.MaxVisitNumber, request.AdvancementRule,
-                request.FallbackStageId, request.Notes, MapBranch(request.BranchConditions), request.ExpectedVersion),
+                request.FallbackStageId, request.Notes, MapBranch(request.BranchConditions), request.ExpectedVersion,
+                request.AdoptionStageCode),
             cancellationToken));
 
     [HttpPost("api/crm/knowledge/content-engagement-journeys/{journeyId:guid}/stages/{stageId:guid}/archive")]

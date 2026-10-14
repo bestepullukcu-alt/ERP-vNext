@@ -1,0 +1,144 @@
+@using Diten.Web.Views.CRM.KnowledgePaths
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<KnowledgePathStudio> Localizer
+
+@*
+    WP-VW-W3 (W3-WEB-c) — the step editor's "Sunum notları" tab (K-B1), driven by presentation-notes.js. Two tabs: "İçerik" —
+    the step's content, read-only (its settings stay on the card's own gear, unchanged) — and "Sunum notları". Read-only when
+    the path is not an editable draft (a published version included). The previews: the doctor's screen (the content, never
+    the rep's notes) and the rep's remote (key message, target, talk track, expected objections, transition).
+*@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="kpNotesPanel" aria-labelledby="pnStepTitle">
+    <div class="offcanvas-header border-bottom align-items-start">
+        <div class="flex-grow-1">
+            <small class="text-muted d-block" id="pnStepOf"></small>
+            <h5 class="offcanvas-title mb-0" id="pnStepTitle"></h5>
+        </div>
+        <small class="text-muted text-nowrap me-3 mt-1"><i class="bx bx-time-five me-1" aria-hidden="true"></i><span id="pnEstimate"></span></small>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@Localizer["PnCancel"]"></button>
+    </div>
+    <div class="offcanvas-body">
+        <ul class="nav nav-tabs mb-3" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button type="button" class="nav-link" role="tab" id="pnTab-content" aria-controls="pnPanel-content" aria-selected="false">
+                    <i class="bx bx-file me-1" aria-hidden="true"></i>@Localizer["PnTabContent"]
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button type="button" class="nav-link active" role="tab" id="pnTab-notes" aria-controls="pnPanel-notes" aria-selected="true">
+                    <i class="bx bx-microphone me-1" aria-hidden="true"></i>@Localizer["PnTabNotes"]
+                </button>
+            </li>
+        </ul>
+
+        <div id="pnAlert" class="alert alert-danger d-none" role="alert"></div>
+
+        <div id="pnPanel-content" role="tabpanel" aria-labelledby="pnTab-content" class="d-none">
+            <dl class="row small mb-3">
+                <dt class="col-4 text-muted fw-normal">@Localizer["PnTabContent"]</dt>
+                <dd class="col-8"><span class="fw-medium text-heading" id="pnContentTitle"></span><br /><span class="text-muted" id="pnContentMeta"></span></dd>
+                <dt class="col-4 text-muted fw-normal">@Localizer["PnRequired"]</dt>
+                <dd class="col-8" id="pnContentRequired"></dd>
+                <dt class="col-4 text-muted fw-normal">@Localizer["PnEstimatedDuration"]</dt>
+                <dd class="col-8" id="pnContentDuration"></dd>
+                <dt class="col-4 text-muted fw-normal">@Localizer["PnPrerequisite"]</dt>
+                <dd class="col-8" id="pnContentPrerequisite"></dd>
+            </dl>
+            <p class="small text-muted mb-0"><i class="bx bx-cog me-1" aria-hidden="true"></i>@Localizer["PnContentNote"]</p>
+        </div>
+
+        <div id="pnPanel-notes" role="tabpanel" aria-labelledby="pnTab-notes">
+            <div id="pnReadOnly" class="alert alert-secondary py-2 d-none" role="status"><i class="bx bx-lock-alt me-1" aria-hidden="true"></i>@Localizer["PnReadOnly"]</div>
+
+            <div class="mb-3">
+                <div class="d-flex justify-content-between">
+                    <label class="form-label text-uppercase small fw-semibold" for="pnKeyMessage">@Localizer["PnKeyMessage"]</label>
+                    <small class="text-muted" id="pnKeyMessageCount"></small>
+                </div>
+                <input type="text" class="form-control" id="pnKeyMessage" maxlength="500" />
+            </div>
+            <div class="mb-3">
+                <div class="d-flex justify-content-between">
+                    <label class="form-label text-uppercase small fw-semibold" for="pnTalkTrack">@Localizer["PnTalkTrack"]</label>
+                    <small class="text-muted" id="pnTalkTrackCount"></small>
+                </div>
+                <textarea class="form-control" id="pnTalkTrack" rows="4" maxlength="4000"></textarea>
+            </div>
+            <div class="row g-3 mb-3">
+                <div class="col-12 col-md-5">
+                    <label class="form-label text-uppercase small fw-semibold" for="pnTarget">@Localizer["PnTarget"]</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="pnTarget" min="10" max="3600" step="1" inputmode="numeric" />
+                        <span class="input-group-text">@Localizer["PnSeconds"]</span>
+                    </div>
+                    <small class="text-muted" id="pnTargetHint"></small>
+                </div>
+                <div class="col-12 col-md-7">
+                    <div class="d-flex justify-content-between">
+                        <label class="form-label text-uppercase small fw-semibold" for="pnTransition">@Localizer["PnTransition"]</label>
+                        <small class="text-muted" id="pnTransitionCount"></small>
+                    </div>
+                    <input type="text" class="form-control" id="pnTransition" maxlength="500" />
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <span class="form-label text-uppercase small fw-semibold mb-0" id="pnObjectionsTitle"></span>
+                    <span class="d-flex gap-2">
+                        <button type="button" class="btn btn-sm btn-text-secondary" id="pnRefresh"><i class="bx bx-refresh me-1" aria-hidden="true"></i>@Localizer["PnRefresh"]</button>
+                        <a href="#" class="btn btn-sm btn-text-primary d-none" id="pnCreateInLibrary"><i class="bx bx-plus-circle me-1" aria-hidden="true"></i>@Localizer["PnCreateInLibrary"]</a>
+                    </span>
+                </div>
+                <small class="text-muted d-block mb-2"><i class="bx bx-info-circle me-1" aria-hidden="true"></i><span id="pnObjectionsHint"></span></small>
+                <div class="d-grid gap-2" id="pnObjectionList"></div>
+                <button type="button" class="btn btn-sm btn-outline-primary mt-2 d-none" id="pnAddObjection"><i class="bx bx-plus me-1" aria-hidden="true"></i>@Localizer["PnAddObjection"]</button>
+                <div class="border rounded p-2 mt-2 d-none" id="pnPicker">
+                    <input type="search" class="form-control form-control-sm mb-2" id="pnPickerSearch" placeholder="@Localizer["PnPickerSearch"]" aria-label="@Localizer["PnPickerSearch"]" />
+                    <div id="pnPickerList" class="kp-picker-list"></div>
+                </div>
+            </div>
+
+            <h6 class="text-uppercase small fw-semibold mt-4">@Localizer["PnPreview"]</h6>
+            <div class="row g-3">
+                <div class="col-12 col-lg-6">
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span><i class="bx bx-desktop me-1" aria-hidden="true"></i>@Localizer["PnDoctorScreen"]</span>
+                        <span class="badge bg-label-warning">@Localizer["PnNotHere"]</span>
+                    </div>
+                    <div class="rounded p-3 pn-doctor">
+                        <small class="text-uppercase text-muted d-block" id="pnDoctorProduct"></small>
+                        <div class="fs-5 fw-semibold text-heading" id="pnDoctorTitle"></div>
+                        <small class="text-muted" id="pnDoctorSub"></small>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-6">
+                    <div class="small mb-1"><i class="bx bx-mobile me-1" aria-hidden="true"></i>@Localizer["PnRemote"]</div>
+                    <div class="rounded p-3 pn-remote">
+                        <div class="rounded p-2 mb-2 pn-key">
+                            <small class="text-uppercase d-block">@Localizer["PnKeyMessage"]</small>
+                            <span class="fw-semibold" id="pnRemoteKey"></span>
+                        </div>
+                        <div class="d-flex justify-content-between small text-muted mb-2">
+                            <span>@Localizer["PnThisSlide"]</span><span id="pnRemoteTarget"></span>
+                        </div>
+                        <small class="text-uppercase text-muted d-block">@Localizer["PnTalkTrack"]</small>
+                        <p class="small mb-2 text-break" id="pnRemoteTalk"></p>
+                        <div id="pnRemoteObjectionsBlock" class="d-none">
+                            <small class="text-uppercase text-muted d-block mb-1">@Localizer["PnApprovedAnswer"]</small>
+                            <div id="pnRemoteObjections"></div>
+                        </div>
+                        <div id="pnRemoteTransitionBlock" class="border rounded p-2 mt-2 d-none">
+                            <small class="text-uppercase text-muted d-block">@Localizer["PnTransition"]</small>
+                            <span class="small" id="pnRemoteTransition"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="offcanvas-footer border-top p-3 d-flex justify-content-end gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@Localizer["PnCancel"]</button>
+        <button type="button" class="btn btn-primary" id="pnSave"><i class="bx bx-save me-1" aria-hidden="true"></i>@Localizer["PnSave"]</button>
+    </div>
+</div>
