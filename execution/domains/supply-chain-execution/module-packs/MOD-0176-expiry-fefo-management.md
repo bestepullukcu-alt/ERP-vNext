@@ -1081,6 +1081,13 @@ Expiry data / list / lookup door (403 without its key, no gateway call). Open po
 names in the PDF (FU-0176-PDF-L10N); product names absent from CSV / PDF (FU-0176-EV-NAMES); "Risk Management" card opens `/Expiry` (CT-F12, intended);
 O-F4-7 stays FU-0175-UI-THEME-01. Fast-forwarded into the MVP-1 branch; the owner's Inventory + Web need the CT restart (approval).
 
+### FIX-LIVE1 — FEFO warehouse picker (WP-MVP1-FIX-LIVE1, 2026-10-14, agent result, pending CT) — branch `fix/mvp1-live1` from `acff1f7be`, commit `6c9ac921b`, local only. Evidence `docs/records/audits/2026-10/mvp1-fix-live1-evidence-2026-10-14.md`.
+
+- **Fix.** `/Expiry/lookups/warehouses` gave `value: null` (it read `id`), so FEFO Sırası could not be computed. It now uses `LocationOptions`
+  (`locationId`). The FEFO `WarehouseRef.id` reads (fefo.openapi.yaml:536) are correct and unchanged.
+- **Tests and sabotage.** (a) ×2 incl. the FefoOrder body validated against fefo.openapi.yaml. Sabotage s1 (`o["id"]` again) → red.
+- **Probe.** Own stack: D01 · İstanbul Merkez Depo → order 1 L-2026-1231, 2 L-2027-0331.
+
 ## 20. Follow-up Items
 
 | ID | Item | Owner |

@@ -769,6 +769,16 @@ non-Development) — behaviour is the Gateway at once. Code removal: delete `Pro
   architecture 18/18; no appsettings / ocelot change. Time-boxed: removed when MDM serves PRODUCT-MASTER (FU-PM-01;
   requirements in docs/roadmap/plans/mod-0290-product-master-bundle-requirements-for-mvp1-2026-10-02.md).
 
+### FIX-LIVE1 — Stok Defteri lot number (WP-MVP1-FIX-LIVE1, 2026-10-14, agent result, pending CT) — branch `fix/mvp1-live1` from `acff1f7be`, commit `6c9ac921b`, local only. Evidence `docs/records/audits/2026-10/mvp1-fix-live1-evidence-2026-10-14.md`.
+
+- **Change.**
+  - The LOT column shows the TRACE lot number (`LotNumberResolver`): one `listLots?skuId&skuLevel&pageSize=200` per SKU on the page,
+    not per lot, with the caller's own `trace.lots.read`.
+  - An unreadable registered lot keeps its id with the hint `LotUnresolvedHint` (7 languages; ar / zh follow the lot glossary).
+  - A typed lot text keeps the "kayıtsız" badge.
+- **Tests.** (c) ×3; sabotage s4 → red.
+- **O-LIVE1-2.** More than 200 lots of one SKU → the rest show "unresolved".
+
 ## 20. Follow-up Items
 
 - Request to MOD-0290 owner (MDM): additive product/SKU search in PRODUCT-MASTER-BUNDLE v1.1 — retires W-UI-01.
