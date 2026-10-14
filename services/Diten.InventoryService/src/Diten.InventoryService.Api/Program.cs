@@ -1,5 +1,7 @@
 using System.Text.Json.Serialization;
+using Diten.BuildingBlocks.CentralAudit;
 using Diten.BuildingBlocks.Security.Secrets;
+using Diten.InventoryService.Api.CentralAudit;
 using Diten.InventoryService.Api.Expiry;
 using Diten.InventoryService.Api.ModuleRegistration;
 using Diten.InventoryService.Api.Quarantine;
@@ -52,6 +54,11 @@ builder.Services.AddExpiry(builder.Configuration); // MOD-0176 slice F1
 builder.Services.AddSingleton<IModuleManifestProvider, RecallReadinessManifestProvider>(); // MOD-0177 (pack §14.4)
 builder.Services.AddRecall(builder.Configuration); // MOD-0177 slice R1
 builder.Services.AddHostedService<ModuleRegistrationHostedService>();
+// BL-501 (AUD-001 K4): every marked write command also lands in Platform's central audit log — outbox in this database, written in
+// the command's own transaction (RequireEnlistment: every Inventory write runs in an enlisting transaction, so a success that enlisted
+// nothing — an idempotent replay — files nothing); PlatformRegistration:BaseUrl / InternalApiKey unset → events accumulate, warning +
+// /health/central-audit.
+builder.Services.AddCentralAudit<InventoryCentralAuditScope>(builder.Configuration, "Diten.InventoryService", options => options.RequireEnlistment = true);
 
 // ── JWT (issuer / audience / keys from configuration; shared clock skew — BL-296) ─────────────────────────
 var jwtIssuer = builder.Configuration["JwtSettings:Issuer"];
@@ -148,6 +155,7 @@ app.UseAuthorization();
 
 app.MapGet("/health", () => Results.Ok(new { status = "Healthy", module = InventoryContract.ModuleId }))
     .AllowAnonymous();
+app.MapHealthChecks("/health/central-audit").AllowAnonymous(); // BL-501: Degraded while audit delivery is unconfigured / stuck
 app.MapControllers();
 
 app.Run();

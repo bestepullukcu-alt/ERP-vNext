@@ -28,7 +28,9 @@ public class InventoryApiFactory : WebApplicationFactory<Program>
         // MOD-0175: the post-commit intake observer writes quarantine records for any tenant that posts into QUARANTINE /
         // QUALITY_INSPECTION / BLOCKED — removed with the tenant like the ledger documents (DB-010).
         "quarantine_holds", "quarantine_decisions", "quarantine_decision_events", "quarantine_blocked_stock", "quarantine_history",
-        "quarantine_settings", "quarantine_block_reasons", "quarantine_sequences", "quarantine_event_inbox"
+        "quarantine_settings", "quarantine_block_reasons", "quarantine_sequences", "quarantine_event_inbox",
+        // BL-501: the shared central-audit outbox (TenantId stored as a string, like the ledger's).
+        "central_audit_outbox"
     ];
 
     private readonly ConcurrentBag<Guid> _tenants = [];

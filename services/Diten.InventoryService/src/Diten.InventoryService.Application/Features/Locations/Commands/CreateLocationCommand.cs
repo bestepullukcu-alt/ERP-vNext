@@ -1,5 +1,7 @@
+using Diten.BuildingBlocks.CentralAudit;
 using Diten.InventoryService.Application.Common.Models;
 using MediatR;
+using static Diten.InventoryService.Application.Common.InventoryCentralAudit;
 
 namespace Diten.InventoryService.Application.Features.Locations.Commands;
 
@@ -7,8 +9,11 @@ namespace Diten.InventoryService.Application.Features.Locations.Commands;
 /// POST /api/locations (v1.1 <c>createLocation</c>). Raw request values; the handler owns parsing. There is no
 /// LegalEntityId member: a Site takes the scope company, everything below inherits its parent's (K-03).
 /// </summary>
-public sealed record CreateLocationCommand : IRequest<Response<LocationDetailDto>>
+public sealed record CreateLocationCommand : IRequest<Response<LocationDetailDto>>, ICentralAuditDeclaration
 {
+    public CentralAuditMetadata CentralAudit => ForLedger("Create", "Location");
+    public Guid? CentralAuditEntityId(object? response) => Id(Data<LocationDetailDto>(response)?.LocationId);
+
     public string? HeaderIdempotencyKey { get; init; }
     public string? IdempotencyKey { get; init; }
     public string? Code { get; init; }
