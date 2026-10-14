@@ -620,3 +620,55 @@ Test dalına alındı: `1107ef8bf` (ajan `4a46f96ef`), WEB-b'nin (`02228ac38`) �
 - **W3E-CFG:** yerel 97c5 yetki betiği (`crm.visit-qr.read|manage`, `crm.visit-evidence-flags.read|read-all`).
 - **UXH-001:** yardım + Enter → SYNC-144 (7b).
 - **Mobil not:** `QR.md` + `DEVICE.md` → CT mobil sayfasına.
+
+
+## K-THEME — ana renk sistemin layout renginden gelir (kullanıcı kararı, 2026-10-14)
+- **Karar:** CRM ziyaret sayfalarının ana rengi **sabit yazılmaz**. Layout'taki Template Customizer'da seçilen "Primary Color" neyse o kullanılır: `--bs-primary` / `--bs-primary-rgb`. Varsayılan `#696cff` (`vendor/css/core.css`); mockup'lardaki mor da budur.
+- **Önceki uygulama yanlıştı:** W2–W4 ve W3E-WEB-a lacivert `#0b1a8c`, W3E-WEB-b mor `#696cff` sabit yazmış. Layout'ta renk değişince bu sayfalar değişmiyor.
+- **Kalıcı kural:** bundan sonraki her Web istemi ana rengi ve türevlerini (açık zemin, kenar, metin, çubuk) yalnız `var(--bs-primary)` / `rgba(var(--bs-primary-rgb), α)` ile yazar.
+- **Anlamsal renkler** (başarı / uyarı / tehlike, hastane turkuazı gibi tür renkleri) bu kararın dışındadır.
+
+## W3E-THEME — ziyaret sayfalarında ana rengi layout'a bağlama (Web)
+
+**Kapsam (11 dosya, yalnız CRM ziyaret ailesi):**
+- `wwwroot/assets/css/visit-planning.css`;
+- `js/CRM/VisitPlanning/details.js`;
+- `js/CRM/VisitWorkspace/visit-workspace.css`;
+- `js/CRM/VisitPresentation/visit-presentation.css` + `visit-presentation.js` (canvas);
+- `js/CRM/VisitReport/visit-report.css`;
+- `js/CRM/PharmacyReport/pharmacy-report.css`;
+- `js/CRM/PotentialThresholds/potential-thresholds.css`;
+- `js/CRM/VisitEvidenceSettings/visit-evidence-settings.css`;
+- `js/CRM/VisitQrCodes/visit-qr.css`;
+- `js/CRM/VisitEvidenceFlags/visit-evidence-flags.css`.
+
+**Kapsam dışı (XMC-001, başka modül):** `backbone-custom.css`, `pages/demand-idea-capture.css`. Raporda listelenir, dokunulmaz.
+
+**Yapılacaklar:**
+- Sayfa token'ları (`--vw-p`, `--vp-indigo*`, `--ph-p*`, `--vq-p*`, `--vf-p*` …) `--bs-primary` / `--bs-primary-rgb`'den türetilir. Açık zemin, kenar, ikincil metin ve çubuk tonları `rgba(var(--bs-primary-rgb), α)` olur; açık ve koyu tema için ayrı α değerleri.
+- JS içindeki satır içi renkler (`details.js` `TYPE_TONE` / `ACTIVE_ACCOUNT_STYLE`, sunum canvas `strokeStyle`) çalışma anında `getComputedStyle(document.documentElement).getPropertyValue('--bs-primary')` ile okunur, ya da CSS sınıfına taşınır.
+- QR yazdırma SVG'si siyah kalır (okunabilirlik).
+
+**Acceptance:**
+- **Guard testi:** kapsamdaki 11 dosyada eski ana renk ailesi (`#0b1a8c #e0e2f3 #c5c9e8 #4b55a8 #f3f4fb #4655d6 #2f3163 #4a4f8c #a3aaf5 #696cff #e7e7ff #5f61e6 #a5a6ff #7b7eff #35366a #a3a5ff #6d70e8`) **0**.
+- **Davranış testi** (RunNode / sahte DOM): `:root`'ta `--bs-primary` değiştirilince sayfanın birincil öğesinin hesaplanan rengi değişir.
+- Açık / koyu tema okunabilir. Mevcut W2–W4 / W3E Web testleri yeşil.
+- **Görsel kanıt:** her sayfa ailesinden bir ekran; varsayılan renk + customizer'da başka bir renk (ör. turuncu), açık ve koyu.
+
+**Sabotajlar:**
+- Bir dosyaya `#0b1a8c` geri yazılsın → guard kırmızı.
+- Sunum canvas'ı sabit renge dönsün → davranış testi kırmızı.
+
+## §36.1 Agent Prompt — W3E-THEME (paste-ready · E4'ten önce)
+```text
+@[.antigravity/agents/frontend-ui-ux.md]
+WP: WP-VW-W3E · W3E-THEME — CRM ziyaret sayfalarında ana rengi layout'un Template Customizer rengine bağlamak (--bs-primary / --bs-primary-rgb); sabit lacivert / mor kaldırılır
+Repository: C:\tmp\vw-w3e-theme (worktree, test/crm-content-visit-e2e güncel başı) · Branch: wp/vw-w3e-theme · commit bu dala, push YOK
+
+Paket belgesi: execution/domains/commercial-suite/work-packs/WP-VW-W3E-qr-antifraud.md — önce oku: "K-THEME" ve "W3E-THEME" (kapsam 11 dosya, kapsam dışı 2 dosya, acceptance, sabotajlar).
+MEVCUT: wwwroot/assets/vendor/css/core.css (--bs-primary #696cff, --bs-primary-rgb), vendor/js/template-customizer.js + assets/js/config.js (Primary Color seçimi), Views/Shared/_LayoutTenantShell.cshtml (customizer yüklemesi, tema anahtarı) · sayfa token blokları: visit-planning.css (--vp-indigo*), visit-workspace.css (--vw-p*), pharmacy-report.css (--ph-p*), visit-qr.css (--vq-p*), visit-evidence-flags.css (--vf-p*) ve diğerleri (açık + koyu blokları) · JS: VisitPlanning/details.js 1013-1014, VisitPresentation/visit-presentation.js 490 (canvas).
+NE: sayfa token'larını --bs-primary / rgba(var(--bs-primary-rgb), α)'dan türet (açık + koyu ayrı α); JS satır içi renkleri hesaplanan --bs-primary'ye ya da CSS sınıfına taşı; anlamsal renklere (ok / warn / danger, tür renkleri) DOKUNMA; QR yazdırma SVG'si siyah kalır. Web.Tests: (1) guard — kapsamdaki 11 dosyada eski ana renk ailesi hex'leri 0; (2) davranış — RunNode / sahte DOM'da :root --bs-primary değişince birincil öğenin rengi değişir (en az bir CSS sayfası + sunum canvas). Görsel kanıt: her sayfa ailesinden bir ekran, varsayılan renk + customizer'da başka renk, açık + koyu (AYRI sekme / kendi düzeneğin; kullanıcının oturum açık sekmesine harness enjekte etme).
+KORU/YAPMA: kapsam dışı backbone-custom.css ve pages/demand-idea-capture.css'e DOKUNMA (XMC-001; raporda listele); vendor/core.css ve template-customizer'a DOKUNMA; mevcut W2–W4 / W3E Web testleri yeşil kalır; CRM koduna dokunma; kalıcı veri yazma YOK.
+DOĞRULA: acceptance + 2 sabotaj (.bak + touch ile geri al, git checkout YOK): (1) bir dosyaya #0b1a8c geri yaz → guard kırmızı; (2) sunum canvas'ı sabit renge döndür → davranış testi kırmızı. Web tam takım (-o repo içi), taban karşılaştırması.
+Commit: "fix(web): WP-VW-W3E-THEME — CRM visit pages take the primary colour from the layout (--bs-primary), no hard-coded navy / purple" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
+```
