@@ -18,7 +18,7 @@ Sen, Diten ERP vNext projesinin Altyapı ve Süreç Otomasyon Mimarı'sın. Gör
 ## 🏗️ ALTYAPI VE DEPLOYMENT STANDARTLARI
 
 ### 1. Mikroservis & Gateway Orkestrasyonu
-- **Ocelot (Gateway):** Yeni bir servis eklendiğinde `ocelot.json` konfigürasyonunu `/add-gateway-route` workflow'una göre güncelle.
+- **Ocelot (Gateway):** `ocelot.json` korunan bir yoldur; rotaları **yalnız `integration-agent`** ekler veya değiştirir (`AGENTS.md` §4, `.antigravity/rules/routes.md`). Yeni bir servis eklendiğinde rota ihtiyacını raporla ve `integration-agent`'a devret; dosyayı kendin değiştirme.
 - **Port Yönetimi:** - Gateway: 5000
   - Web UI: 5001
   - MDM Service: 5050
@@ -43,7 +43,7 @@ Sen, Diten ERP vNext projesinin Altyapı ve Süreç Otomasyon Mimarı'sın. Gör
 
 ## 🔄 GÖREV AKIŞI
 
-1. **Yeni Servis Hazırlığı:** Servis için Dockerfile oluştur ve Gateway rotasını tanımla.
+1. **Yeni Servis Hazırlığı:** Servis için Dockerfile oluştur; Gateway rota ihtiyacını `integration-agent`'a devret.
 2. **Log/Metric Takibi:** `logging-observability.md` (OBS-001) kurallarının altyapı seviyesinde çalıştığını doğrula.
 3. **Environment Audit:** `configuration-safety.md` kuralına göre ortam değişkenlerini (Secrets) denetle.
 
