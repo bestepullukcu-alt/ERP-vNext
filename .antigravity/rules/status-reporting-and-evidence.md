@@ -206,6 +206,11 @@ python3 scripts/status_report.py --mode v2 --queue <kuyruk> [--ref <ref>] [--eff
   dosyasının UTF-8 baytlarından `approval_record` künye satırı çıkarılarak hesaplanır. Sayı ya da ağırlık değişirse onay
   geçmez. Onay kaydının seçilen SHA'daki içeriği, tabanın gösterdiği onay commit'indekiyle bayt bayt aynı olmalıdır;
   sonradan değişmiş, geri çekilmiş ya da silinmiş onay yüzdeyi engeller.
+  Özeti hesaplayan komut (dosyayı bayt olarak okur, yalnız LF ve künyede tek `approval_record` ister, dosya yazmaz):
+
+  ```bash
+  python3 -c 'import hashlib,sys; t=open(sys.argv[1],"rb").read().decode("utf-8"); L=t.split("\n"); e=L.index("---",1) if L[0]=="---" and "---" in L[1:] else 0; a=[i for i in range(1,e) if L[i].startswith("approval_record:")]; sys.exit("yalnız LF ve künyede tek approval_record olmalı") if "\r" in t or len(a)!=1 else print(hashlib.sha256("\n".join(L[:a[0]]+L[a[0]+1:]).encode("utf-8")).hexdigest())' <taban yolu>
+  ```
 - **Formül:** her disiplin için `Σ (sayılan işlerin eforu) / Σ (tabandaki bütün işlerin eforu)`; pay ve payda yazılır.
   Bir iş, zincirinin tamamı geçerli ve yürürlükteki revizyonu (en yüksek `-R<n>` ya da işin kendisi) ACCEPTED, kaydı
   ACCEPTED'e izin veriyor, aynı modülde ve `depends_on` kökü gösteriyorsa bir kez sayılır. Koşullu ya da reddedilmiş
