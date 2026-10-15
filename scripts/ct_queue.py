@@ -18,8 +18,9 @@ require   exit 0 only when WP-ID has exactly one row and its state is classed di
           with --new-version, SOP §19.2). Missing row, ambiguous id, undefined or non-dispatchable state -> exit 1.
           A Control Tower without a registered queue has no dispatch path here. It reports two registrations:
           HAZIRLIK (the registry in this working tree) and YÜRÜRLÜK (the registry in the LOCAL ref origin/main, with
-          the measured SHA and the last fetch time — the remote itself is not checked). --in-force refuses when the
-          queue has no row in origin/main's registry.
+          the measured SHA and the last fetch time — the remote itself is not checked). --in-force refuses unless
+          origin/main's registry is well-formed and holds exactly one valid row for the queue that points at the
+          same task source file.
 strict    a queue registered with strict=yes (a new Control Tower's queue) treats an undefined state as an error on
           every row; strict=no (the SCE / MVP6 queue) keeps its tolerance for historical rows.
 guard     without --expect-*: prints the queue's SHA-256 and row count; with both: exit 1 if the file changed since.
@@ -270,14 +271,33 @@ def validate_queue(cur: Table, base: Table, vocab: dict[str, dict], strict: bool
     return result["errors"], result["warnings"]
 
 
-def registered_in(queue_id: str, registry_text: str | None) -> bool | None:
-    """True / False when the registry text has / lacks a row for queue_id; None when there is no registry there."""
+def in_force_status(queue: dict, registry_text: str | None, commit_exists=None, path_at=None) -> tuple[str, str]:
+    """('kayıtlı', '') only for a well-formed registry with exactly one valid row for this queue that points at the same
+    task source; otherwise ('kayıt dosyası yok' | 'kayıt geçersiz' | 'kayıtlı değil' | 'farklı görev kaynağı', reason)."""
     if registry_text is None:
-        return None
+        return "kayıt dosyası yok", ""
     table = Table(registry_text)
-    if table.header[:1] != ["queue_id"]:
-        return False
-    return any(row and row[0] == queue_id for row in table.rows)
+    if table.header != REGISTRY_COLUMNS:
+        return "kayıt geçersiz", "başlık kayıt sözleşmesiyle aynı değil"
+    for i, row in enumerate(table.rows, start=2):
+        if len(row) != len(REGISTRY_COLUMNS):
+            return "kayıt geçersiz", f"satır {i}: {len(row)} sütun, beklenen {len(REGISTRY_COLUMNS)}"
+    rows = [dict(zip(REGISTRY_COLUMNS, row)) for row in table.rows]
+    matches = [r for r in rows if r["queue_id"] == queue["queue_id"]]
+    if not matches:
+        return "kayıtlı değil", ""
+    if len(matches) > 1:
+        return "kayıt geçersiz", f"'{queue['queue_id']}' {len(matches)} kez kayıtlı"
+    row = matches[0]
+    empty = [c for c in REGISTRY_COLUMNS if not row[c].strip()]
+    if empty:
+        return "kayıt geçersiz", f"boş alan: {', '.join(empty)}"
+    problems = check_registry([row], [], commit_exists=commit_exists, path_at=path_at)
+    if problems:
+        return "kayıt geçersiz", problems[0]
+    if row["path"] != queue["path"]:
+        return "farklı görev kaynağı", f"orada '{row['path']}'"
+    return "kayıtlı", ""
 
 
 def main_ref_status() -> tuple[str | None, str]:
@@ -671,10 +691,23 @@ def self_test() -> int:
                   any("katı kuyrukta" in e for e in check_queue(Table(strict_new), b2, vocab, strict=True)["errors"])))
     cases.append(("tolerant queue: the same undefined state is only a warning",
                   not check_queue(Table(strict_new), b2, vocab, strict=False)["errors"]))
-    reg_text = "queue_id\tcontrol_tower\npq\tX\n"
-    cases.append(("in force: registered / not registered / no registry file are told apart",
-                  registered_in("pq", reg_text) is True and registered_in("zz", reg_text) is False
-                  and registered_in("pq", None) is None))
+    head = "\t".join(REGISTRY_COLUMNS)
+    good_row = "pq\tX CT\tq.tsv\tabc\tpending\tX only\tevidence\tno"
+    qd = {"queue_id": "pq", "path": "q.tsv"}
+
+    def status(text):
+        return in_force_status(qd, text, commit_exists=lambda s: True, path_at=lambda s, p: True)[0]
+
+    cases.append(("in force: a valid single row for the same task source -> kayıtlı", status(f"{head}\n{good_row}\n") == "kayıtlı"))
+    cases.append(("sabotage: header and id only -> kayıt geçersiz, not kayıtlı", status("queue_id\npq\n") == "kayıt geçersiz"))
+    cases.append(("sabotage: the queue registered twice -> kayıt geçersiz", status(f"{head}\n{good_row}\n{good_row}\n") == "kayıt geçersiz"))
+    cases.append(("sabotage: a required field empty -> kayıt geçersiz",
+                  status(f"{head}\n{good_row.replace('X only', '')}\n") == "kayıt geçersiz"))
+    cases.append(("sabotage: an invalid strict value -> kayıt geçersiz", status(f"{head}\n{good_row[:-2]}\tmaybe\n") == "kayıt geçersiz"))
+    cases.append(("sabotage: the same id pointing at another task source -> farklı görev kaynağı",
+                  status(f"{head}\n{good_row.replace('q.tsv', 'other.tsv')}\n") == "farklı görev kaynağı"))
+    cases.append(("no registry file / not registered are told apart",
+                  status(None) == "kayıt dosyası yok" and status(f"{head}\n{good_row.replace('pq', 'zz', 1)}\n") == "kayıtlı değil"))
 
     for name, ok in cases:
         print(f"{'PASS' if ok else 'FAIL'} {name}")
@@ -740,11 +773,11 @@ def main() -> int:
         print(line)
         head, fetched = main_ref_status()
         main_data = git_file(head, REGISTRY.relative_to(ROOT).as_posix()) if head else None
-        on_main = registered_in(q["queue_id"], decode(main_data, MAIN_REF) if main_data is not None else None)
+        state, reason = in_force_status(q, decode(main_data, MAIN_REF) if main_data is not None else None)
         print(f"HAZIRLIK: '{q['queue_id']}' bu çalışma ağacının kayıt dosyasında kayıtlı")
-        state = {True: "kayıtlı", False: "kayıtlı değil", None: "kayıt dosyası yok"}[on_main]
-        print(f"YÜRÜRLÜK: yerel {MAIN_REF} referansı {head[:9] if head else 'yok'} (son fetch: {fetched}) — {state}; uzak durum doğrulanmadı")
-        if a.in_force and on_main is not True:
+        print(f"YÜRÜRLÜK: yerel {MAIN_REF} referansı {head if head else 'yok'} (son fetch: {fetched}) — {state}"
+              f"{' (' + reason + ')' if reason else ''}; uzak durum doğrulanmadı")
+        if a.in_force and state != "kayıtlı":
             print(f"DUR: --in-force — '{q['queue_id']}' {MAIN_REF}'de kayıtlı değil; R8 r3'e göre yürürlükte bir kayıtlı kaynak yok")
             code = 1
         if checked["errors"]:

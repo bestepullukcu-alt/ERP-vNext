@@ -197,10 +197,13 @@ def classify(rows: list[dict], run: dict, suite: str | None, items: dict[str, li
         elif row["failure_fingerprint"].startswith("items:") and name in items:
             now, before = set(items_of(message)), set(items[name])
             added, gone = sorted(now - before), sorted(before - now)
-            if added:
+            if not now:
+                # a red list-type test whose message lost its list: a different failure, never "everything fixed"
+                out["YENİ-AYRINTI"].append(f"{name} (liste biçimi kayboldu: mesajda öğe yok — incele)")
+            elif added:
                 shown = "; ".join(a[:90] for a in added[:3]) + (f"; … +{len(added) - 3}" if len(added) > 3 else "")
                 out["YENİ-AYRINTI"].append(f"{name} ({len(added)} yeni öğe: {shown})")
-            elif gone:
+            elif gone and now < before:
                 out["KISMEN-DÜZELDİ"].append(f"{name} ({len(gone)} kayıtlı öğe giderildi, yeni öğe yok)")
             else:
                 out["YENİ-AYRINTI"].append(f"{name} (öğe kümesi aynı, parmak izi farklı — incele)")
@@ -376,6 +379,9 @@ def self_test() -> int:
     cases.append(("sabotage: one item fixed but another added -> YENİ-AYRINTI, exit 1", code == 1 and r["YENİ-AYRINTI"] and not r["KISMEN-DÜZELDİ"]))
     r, code = run(good.replace("Expected: &quot;abc&quot;", "Expected: &quot;abd&quot;"))
     cases.append(("sabotage: a message-type failure changed -> YENİ-AYRINTI, exit 1", code == 1 and r["YENİ-AYRINTI"]))
+    r, code = run(good.replace(known_list, "System.InvalidOperationException: failed before collecting violations"))
+    cases.append(("sabotage: a list-type failure lost its list -> YENİ-AYRINTI, exit 1, never KISMEN-DÜZELDİ",
+                  code == 1 and r["YENİ-AYRINTI"] and not r["KISMEN-DÜZELDİ"]))
     cases.append(("sabotage: no test executed (all NotExecuted) -> exit 2",
                   run(trx([("Ns.X.Other", "NotExecuted", "")]))[1] == 2))
     _, problems = load_items(rows, json.dumps({"tests": {"Ns.A.Known1": items_of(known_list)[:1]}}))
