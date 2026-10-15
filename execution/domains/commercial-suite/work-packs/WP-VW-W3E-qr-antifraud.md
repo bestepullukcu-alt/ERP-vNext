@@ -814,3 +814,40 @@ KORU/YAPMA: K-THEME (ana renk yalnız --bs-primary; tema guard testi yeşil); W3
 DOĞRULA: verify_datatable_page.py (Q5) yeşil; her G / U için test (Web.Tests xUnit + RunNode — vitest bu makinede çalışmaz; ICON_MAP eklemesi için ayrıca xUnit'te "her W3E alanı .diten-field + ikon" denetimi; G-4 için CRM testi: ad çözülür, başka kiracının adı asla) + 4 sabotaj (.bak + touch): (1) .vf-page çakışması geri gelsin → kırmızı; (2) kartta GUID gösterilsin → kırmızı; (3) Q5 tablosundan data-dt-standard="v2" kaldırılsın → kırmızı; (4) smoke harness saati sabitlemesin → C5 kırmızı. CRM + Web tam takım (-o repo içi), taban karşılaştırması. Görsel kanıt: Q5 (standart tablo + süzgeç açık + toplu işlem çubuğu), M (footer altta, standart başlık), QR kartı adla, Q3 / Q4 ikonlu alanlar, ayar önizlemesi QR satırıyla, Arapça QR kartı ad yönü.
 Commit: "fix(web,crm): WP-VW-W3E-FIX — QR codes list on the Golden Compact DataTable standard, standard list headers, field icons, evidence flags layout, type/city labels, issuer names, settings preview QR row, RTL names, same-name institutions, km distances, clock-pinned smoke test" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
 ```
+
+## §37 CT kabul — W3E-DARK E2 ACCEPTED (2026-10-15) — CT-4 kapandı
+Test dalına alındı: `b8e5ccc7d` (ajan `5f59cf635`), çakışmasız. 2 CSS + 1 test dosyası.
+
+**CT kontrolü:**
+- İki dosyada `[data-bs-theme="dark"]` bloğu; açık temada token değerleri aynı.
+- **Testler** (CT `-o`): Web **1747/4**:
+  - `WorkCenterMenu`: `-o` artefaktı;
+  - `C5`: CT-3, tarihe bağlı;
+  - 2 `ShipmentDetailsDateNode`: tabanda da var.
+- **CT sabotajı:** açık tema `--vw-card` `#fff` → `#fafafa` → `D1 (visit-workspace)` **kırmızı**; geri alındı.
+
+**Açık — CT-5 (küçük):** `visit-workspace.css` açık blokta `--vw-today: rgba(224, 226, 243, .45)` eski lacivert ailesinin açık tonu (`#e0e2f3`) rgb biçiminde. K-THEME guard'ı yalnız `11,26,140` / `105,108,255` rgb biçimlerini arıyor, bunu kaçırıyor.
+- `--vw-today` → `rgba(var(--bs-primary-rgb), .06)`.
+- Guard'a eski ailenin tüm hex'lerinin rgb biçimleri eklenmeli.
+- → W3E-FLAGS-STD istemine eklendi.
+
+
+## §36.1 Agent Prompt — W3E-FLAGS-STD (paste-ready · W3E-FIX test dalına alındıktan SONRA — aynı dosyalar)
+```text
+@[.antigravity/agents/frontend-ui-ux.md]
+WP: WP-VW-W3E · W3E-FLAGS-STD — Kanıt işaretleri sayfasının (/CRM/VisitEvidenceFlags) ziyaret listesi ve temsilci özeti Golden Compact DataTable standardına (K-STD); özet şeridi (sayılar + işaret çubukları) üstte kart olarak kalır; çekmece hızlı görünüm olur. Ek: CT-5 (çalışma alanında eski ana renk tonu + tema guard'ının rgb kapsamı)
+Repository: C:\tmp\vw-w3e-flags-std (worktree, test/crm-content-visit-e2e güncel başı — W3E-FIX + W3E-DARK içerir) · Branch: wp/vw-w3e-flags-std · commit bu dala, push YOK
+
+Paket belgesi: execution/domains/commercial-suite/work-packs/WP-VW-W3E-qr-antifraud.md — önce oku: K-STD, K-THEME, "Kullanıcı bulguları (2026-10-15)", §37 W3E-FIX (sayfanın son hali), §37 W3E-DARK (CT-5), DESIGN-GAP-W3E M1–M6 (mockup — yalnız İÇERİK: sütunlar, çip metinleri, durumlar). STANDARTLAR (mockup'ın önüne geçer): .antigravity/rules/frontend-datatable-template.md (server / client modu, _Filter, _BulkActionBar, Save View, quick view), frontend-form-template.md (.diten-field + ikon), frontend-js-standard.md; canlı örnek Views/DevEnablement/GoldenReferenceCompact/* + wwwroot/assets/js/DevEnablement/GoldenReferenceCompact/*; .antigravity/scripts/verify_datatable_page.py.
+MEVCUT: Views/CRM/VisitEvidenceFlags/Index.cshtml + VisitEvidenceFlagsIndex.cs · wwwroot/assets/js/CRM/VisitEvidenceFlags/visit-evidence-flags.js (renderFilters / renderSummary / renderRows / renderReps / renderDrawer) + flags-core.js (saf: dönem, 92 gün, sorgu, çip etiketleri) + visit-evidence-flags.css · Web vekili (CRM/VisitEvidenceFlags api: liste ?from&to&resourceId&flags&accountId&onlyFlagged&page&pageSize≤100, summary, {executionId}) · Web.Tests VisitEvidenceFlagsWebTests + Js/visit-evidence-flags-smoke.js.
+NE:
+(1) Sayfa düzeni: standart başlık (W3E-FIX'te yapıldı, koru) → özet kartı (başlatılan, işaretli + oran, işaret türüne göre çubuklar, "Diğer (N tür)") → standart _Filter partial'ı (inline collapse, select2 çipleri: dönem [son 7 gün / son 30 gün / bu ay / özel aralık — tarih alanları .diten-field + ikon, ikon takvimi açar], temsilci, işaret türü çoklu, kurum [aynı adlıya şehir eki — W3E-FIX G-7'yi koru], "Yalnız işaretliler" anahtarı) → sekmeler "Ziyaretler" / "Temsilci özeti".
+(2) Ziyaretler = Golden Compact DataTable, <table data-dt-standard="v2" data-dt-data-mode="server">, DitenDataTable.createList({ dataMode:'server', … }) (sayfa serverSide / ajax.data / ext.search YAZMAZ); fabrika sorgusunu CRM'in page / pageSize / from / to / resourceId / flags / accountId / onlyFlagged biçimine Web vekilinde çevir (CRM sözleşmesine DOKUNMA); sıralama CRM'de yalnız başlangıç tarihine göre en yeni önce → diğer sütunlarda sıralama kapalı; sütunlar mockup M1'den (başlangıç, temsilci avatar + ad, kurum / doktor, tür, işaret çipleri tarafsız dil + değer, süre, istisna); eylem sütununda "Hızlı görünüm" (mevcut çekmece = standart quick view offcanvas, M2 içeriği aynen) + "Ziyareti aç"; satırda checkbox ve toplu işlem YOK (salt okuma sayfası — standartta bunun nasıl yapıldığını golden'dan izle; gerekmiyorsa kaldırma gerekçesini raporla); Save View CTA; iskelet; 92 gün sınırı aşılırsa sorgu gitmez, standart uyarı.
+(3) Temsilci özeti = ikinci DataTable: summary ucundan gelen temsilci satırları (sınırlı küme → data_mode client, URL'de pageSize YOK); sütunlar M3 (temsilci, başlatılan, işaretli, oran, en sık işaret); satıra tıklayınca Ziyaretler sekmesi o temsilciye süzülür.
+(4) Özet kartı ve DataTable aynı süzgeç durumunu kullanır (tek durum; Save View ikisini birlikte saklar).
+(5) M4 boş, M5 UAS-001, M6 Arapça RTL standart DataTable davranışıyla.
+(6) CT-5: visit-workspace.css açık blok --vw-today: rgba(224, 226, 243, .45) → rgba(var(--bs-primary-rgb), .06) (koyu blok aynı desenle); VisitThemePrimaryWebTests guard'ına eski ana renk ailesindeki 17 hex'in rgb biçimleri de eklensin (kapsamdaki 11 dosyada 0).
+KORU/YAPMA: K-THEME (yalnız --bs-primary; guard yeşil) + K-STD; W3E-FIX'in G-1 / G-6 / G-7 / G-8 / CT-3 düzeltmeleri ve W3E-DARK koyu blokları korunur; CRM koduna DOKUNMA (yalnız Web vekili çevirisi); ortak backbone-custom.css'e modüle özel kural ekleme (XMC-001 — gerekirse DUR ve raporla); kalıcı veri yazma YOK; kullanıcının oturum açık sekmesine harness enjekte etme.
+DOĞRULA: verify_datatable_page.py bu sayfa için yeşil (iki tablo); Web.Tests (xUnit + RunNode; vitest bu makinede çalışmaz): sunucu modu sorgu çevirisi (DataTables start / length → page / pageSize, süzgeçler → sorgu), "QR okutulmadı" çipi süzgece girmez, 92 / 93 gün, hızlı görünüm alanları, temsilci özeti client modu + tıklayınca süzme, Save View iki tabloyu kapsar, UAS-001, 7 dil, tema guard'ı rgb biçimleriyle + 3 sabotaj (.bak + touch): (1) ziyaret tablosundan data-dt-standard="v2" kaldırılsın → kırmızı; (2) vekil page / pageSize çevirisini bozsun → kırmızı; (3) --vw-today eski rgb tonuna dönsün → guard kırmızı. Web tam takım (-o repo içi), taban karşılaştırması. Görsel kanıt (mockup M1–M6 ile yan yana, AYRI sekme / kendi düzeneğin): liste + süzgeç açık, hızlı görünüm, temsilci özeti, boş, Arapça; açık + koyu.
+Commit: "feat(web): WP-VW-W3E-FLAGS-STD — evidence flags list and rep summary on the Golden Compact DataTable standard (server + client mode), standard filter bar, quick view drawer; workspace today tint from the layout primary, theme guard covers rgb forms" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
+```
