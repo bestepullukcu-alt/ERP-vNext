@@ -208,7 +208,10 @@ public sealed class GlobalProductApiMongoTests
         Assert.Equal(cystolerin.Data.GlobalProductId, codeSearch.Data.Items[0].Id);
         Assert.Equal("Cystolerin", detail.Data!.GlobalProductName);
         Assert.Equal(2, selector.Data!.TotalCount);
-        Assert.Equal(3, typeof(ProductItemSkuMasterModels.GlobalProductSelectorDto).GetProperties().Length);
+        // MOD-0290-FU05 (Karar b): the selector's three fields plus the brand's id, code and name — nothing else.
+        Assert.Equal(
+            ["BrandCode", "BrandId", "BrandName", "CanonicalCode", "GlobalProductName", "Id"],
+            typeof(ProductItemSkuMasterModels.GlobalProductSelectorDto).GetProperties().Select(x => x.Name).Order());
         Assert.All(selector.Data.Items, x => Assert.DoesNotContain("Tenant B", x.GlobalProductName));
     }
 

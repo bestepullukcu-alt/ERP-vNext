@@ -15,6 +15,7 @@ public sealed class GetGlobalProductByIdHandler : IRequestHandler<GetGlobalProdu
     private readonly IGlobalProductRepository _repository;
     private readonly ProductLegalEntityScopeConsumerGuard _scopeGuard;
     private readonly IProductIdentityLifecycleActorContext _actorContext;
+    private readonly IBrandRepository? _brands;
 
     public GetGlobalProductByIdHandler(
         IGlobalProductRepository repository,
@@ -22,9 +23,11 @@ public sealed class GetGlobalProductByIdHandler : IRequestHandler<GetGlobalProdu
         IProductLegalEntityScopePolicyRepository policies,
         ProductLegalEntityScopeCandidateFacade candidates,
         ITenantContext tenantContext,
-        IProductIdentityLifecycleActorContext? actorContext = null)
+        IProductIdentityLifecycleActorContext? actorContext = null,
+        IBrandRepository? brands = null)
     {
         _repository = repository;
+        _brands = brands;
         _scopeGuard = new ProductLegalEntityScopeConsumerGuard(
             rolloutStates,
             policies,
@@ -66,6 +69,10 @@ public sealed class GetGlobalProductByIdHandler : IRequestHandler<GetGlobalProdu
         }
 
         var actions = BuildAvailableActions(product, _actorContext);
+        // MOD-0290-FU05 (Karar b): the brand's code and name as the brand says them now (a rename shows at once).
+        var brand = GlobalProductBrands.Describe(
+            product.BrandId,
+            await GlobalProductBrands.ReadAsync(_brands, [product.BrandId], cancellationToken));
 
         return Response<ProductItemSkuMasterModels.GlobalProductDetailDto>.Success(new(
             product.Id,
@@ -75,7 +82,10 @@ public sealed class GetGlobalProductByIdHandler : IRequestHandler<GetGlobalProdu
             product.Version,
             product.CreatedAt,
             product.UpdatedAt,
-            actions));
+            actions,
+            brand.Id,
+            brand.Code,
+            brand.Name));
     }
 
     internal static IReadOnlyList<string> BuildAvailableActions(

@@ -36,6 +36,15 @@ public sealed class GlobalProductsController : CustomBaseController
         CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(query, cancellationToken));
 
+    // MOD-0290-FU05 (T-1): the brands a create / draft edit may link — for whoever may write a Global Product, without
+    // mdm.brands.read. Slice 2 adds mdm.global-products.update-brand to the any-of list.
+    [HttpGet("brand-options")]
+    [HasPermission("mdm.global-products.create", "mdm.global-products.update")]
+    public async Task<IActionResult> GetBrandOptions(
+        [FromQuery] GetGlobalProductBrandOptionsQuery query,
+        CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(query, cancellationToken));
+
     [HttpGet("{id:guid}")]
     [HasPermission("mdm.global-products.read")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
