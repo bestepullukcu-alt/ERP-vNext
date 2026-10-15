@@ -9,13 +9,13 @@ shell: tenant
 golden_reference: slim
 data_mode: server
 entity_base: EntityBase
-status: draft
-runtime_code_allowed: false
-runtime_code_scope: "YOK (taslak). Kod, sahibin §0 kararları ve bu paketin `ready-for-dev` onayından sonra §21'deki dilimlerle, her dilim ayrı CT prompt'uyla açılır."
+status: ready-for-dev
+runtime_code_allowed: true
+runtime_code_scope: "§21'deki dilimler; her dilim ayrı CT prompt'uyla açılır. Sahip §0 kararlarını 2026-10-15'te onayladı."
 owner: module-pack-author
 branch: feature/mdm/mod-0290-fu05-brand-global-product-link
 started: 2026-10-15
-target: Dilim 1 sahibin §0 kararları + CT `ready-for-dev` onayıyla
+target: Dilim 1 → 2 → 3 (CT prompt'larıyla)
 form_field_count: 2
 data_classification: "Kiracı içinde ana veri; kişisel veri yok (yalnız işlemi yapanın kullanıcı kimliği)."
 audit_class: "Ana veri — Global Ürün'ün mevcut güvenilir kaynak niyeti (yol b, `mdm-guvenilir-kaynak-niyeti`); yeni denetimsiz komut yok."
@@ -28,6 +28,8 @@ dependencies:
   - CRM W10 · Marka entegrasyonu (tüketici — "markayı Global Ürün'den türetmek"; `ROADMAP-visit-workspace.md:126-136`)
   - DEV-0000 (Golden Reference Slim — ekran şablonu; Global Ürün ekranı zaten Slim + `_ListShell`)
 ---
+
+> **2026-10-15:** sahip §0.2 (a)(b)(c) ve iki modüller arası satırı (Platform denetim haritası, Auth izin profili; XMC-001) onayladı; durum `ready-for-dev`. Ölçüm: dev veritabanında (`DitenERP_Dev`) `mdm_products` = 0 ve `mdm_brands` = 0, yani eski kayıt yok; canlı durum ölçülmedi (W10 planında CRM ile).
 
 # MOD-0290-FU05 — Brand to Global Product Link (Marka ↔ Global Ürün bağı)
 
@@ -57,13 +59,13 @@ dependencies:
 | CRM [`ROADMAP-visit-workspace.md:126-136`](../../commercial-suite/work-packs/ROADMAP-visit-workspace.md) | W10 ön koşulu: "MDM'nin 'Marka → Global Ürün' birleştirme kararı … markayı Global Ürün'den türetmek için bu bağ gerekir" | Okuma modelleri (liste, detay, seçici) markayı taşır |
 | CRM [`MDM-BRAND-CHANGE-crm-impact-2026-10-09.md:17`](../../commercial-suite/work-packs/MDM-BRAND-CHANGE-crm-impact-2026-10-09.md), `:44`, `:53` | "Ürünler" kaydına bağlı 4 eski CRM yeri var; yeni `api/mdm/products` bağımlılığı eklenmez; geçiş planı MDM ile birlikte yazılır | Eski `Product` / `api/mdm/products` / `brand-products/contract` **değişmez** |
 
-### 0.2 Sahip kararları — ÖNERİLEN — SAHİP ONAYI BEKLİYOR
+### 0.2 Sahip kararları — KARAR (sahip, 2026-10-15: "önerilerine katılıyorum")
 
 Üçü de **karar değildir**; sahip onaylayana kadar §20'deki ilgili kutular boş kalır.
 
 #### Karar (a) — Onaylı Global Ürün'de marka nasıl değişir?
 
-**ÖNERİLEN — SAHİP ONAYI BEKLİYOR.**
+**KARAR — sahip onayı 2026-10-15 (öneri aynen kabul).**
 
 - **Taslak** (`Draft`) Global Ürün: marka normal taslak düzenlemesiyle (`PUT api/global-products/{id}`, `mdm.global-products.update`) değişir.
 - **Onaylı** (`IdentityApproved`) Global Ürün: marka, kendi izniyle (**`mdm.global-products.update-brand`**, §14) **doğrudan, denetimli** bir
@@ -84,7 +86,7 @@ anahtarı bunu sınırlar. Sahip "onaylı ürüne onay şart" derse dilim 2 MOD-
 
 #### Karar (b) — Okuma modeli markayı nasıl taşır?
 
-**ÖNERİLEN — SAHİP ONAYI BEKLİYOR.**
+**KARAR — sahip onayı 2026-10-15 (öneri aynen kabul).**
 
 Liste, detay ve seçici cevapları `brandId` + `brandCode` + `brandName` taşır. Kod ve ad **okuma anında** `mdm_brands`'tan
 çözülür; Global Ürün belgesinde yalnız `BrandId` saklanır (kopya yok). Böylece CRM, Global Ürün'den markayı okumak için
@@ -99,7 +101,7 @@ Regresyon riski: 🟢 — eklemedir; mevcut alanlar aynı ad ve türle kalır.
 
 #### Karar (c) — Mevcut Global Ürünler ve eski "Ürünler" kaydı
 
-**ÖNERİLEN — SAHİP ONAYI BEKLİYOR.**
+**KARAR — sahip onayı 2026-10-15 (öneri aynen kabul).**
 
 Dilim 1'de **geri doldurma (backfill) yok**. Mevcut Global Ürünler markasız başlar. Eski "Ürünler" kaydındaki
 `Product.BrandId`'yi Global Ürünlere eşlemek, CRM'in W10 geçiş planıyla birlikte yazılacak **ayrı bir sonraki dilimdir**
@@ -117,7 +119,7 @@ eder, kırılmaz.
 | # | Konu | Öneri | Regresyon riski |
 |---|---|---|---|
 | T-1 | Marka seçicisinin kaynağı | Global Ürün'ün kendi ucu `GET api/global-products/brand-options` (yalnız bağlanabilir markalar, sayfalı, `search`); izin `mdm.global-products.create` **veya** `.update` **veya** `.update-brand` (`HasPermissionAttribute(string, params string[])` — `HasPermissionAttribute.cs:15`). Gerekçe: `GET api/mdm/brands` `mdm.brands.read` ister (`BrandsController.cs:41-46`) ve bağlanabilirlik süzgeci taşımaz (`IsLinkable` yalnız detayda — `BrandModels.cs:52-54`, `:117`). Emsal: `GET api/gskus/create-options` (`GskusController.cs:38-43`) | 🟢 |
-| T-2 | Onaylı ürün marka komutunun denetim yolu | Mevcut Global Ürün kalıbı: güvenilir kaynak niyeti, yeni `ProductAuditOperation` değeri + Platform işlem haritasına bir satır (`TrustedSourceAuditIntentOperationMap.cs:26` kalıbı). Değer numarası CT'nin: 87–99 Bitmiş Ürün'e, 100–119 Kalem'e ayrılı (`ProductAuditOperation.cs:105-108` yorumu); öneri **120** `GlobalProductBrandChanged`. Platform dosyası başka modüldür → XMC-001: "bunu da düzeltelim mi?" | 🟡 harita satırı gelmezse niyet Platform'da eşlenemez |
+| T-2 | Onaylı ürün marka komutunun denetim yolu | Mevcut Global Ürün kalıbı: güvenilir kaynak niyeti, yeni `ProductAuditOperation` değeri + Platform işlem haritasına bir satır (`TrustedSourceAuditIntentOperationMap.cs:26` kalıbı). Değer numarası CT'nin: 87–99 Bitmiş Ürün'e, 100–119 Kalem'e ayrılı (`ProductAuditOperation.cs:105-108` yorumu); öneri **120** `GlobalProductBrandChanged`. Platform dosyası başka modüldür → XMC-001: "bunu da düzeltelim mi? → EVET (sahip, 2026-10-15)" | 🟡 harita satırı gelmezse niyet Platform'da eşlenemez |
 | T-3 | `CreateGlobalProductDraftCommand` bilinen denetim borcunda (`tests/architecture/audit-ledger/Diten.MdmService.md:62`) | Dilim 1 oluşturmaya marka alanı ekliyor; borç büyümez ama marka oluşturmada denetimsiz kalır. Öneri: dilim 1 bu borcu **öder** (enum'da `GlobalProductDraftCreated = 5` zaten var — `ProductAuditOperation.cs:9`) ve satırı defterden siler (defter yalnız küçülür). Kabul edilmezse borç satırı kalır, gerekçe raporda yazılır | 🟡 (ödenmezse) |
 | T-4 | Taslak düzenlemede `brandId` alanının yokluğu | Alan **yoksa** marka değişmez; `null` markayı kaldırır; değer markayı bağlar. Uygulama: `init` ayarlayıcısı "belirtildi" bayrağı koyar (System.Text.Json ayarlayıcıyı yalnız alan geldiğinde çağırır). Gerekçe: alanı tanımayan bir istemci markayı sessizce silmesin | 🟢 |
 
