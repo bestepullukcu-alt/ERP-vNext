@@ -299,7 +299,7 @@ Satır içi CSS yok (FG-003); gerekirse sınıf `backbone-custom.css`'e.
 |---|---|---|---|---|
 | `BrandId` (oluşturma) | Hayır | GUID; `Guid.Empty` → 400; kiracıda yoksa 404 `brand_not_found`; arşivli 409 `brand_archived`; bağlanamaz 409 `brand_not_linkable` | — | `IBrandRepository.GetByIdAsync` (kiracı süzgeçli — `BrandRepository.cs:28`) + `ProductBrandLink.Refusal` |
 | `BrandId` (taslak düzenleme) | Hayır (T-4: yoksa değişmez) | Aynı; **değişmeyen** değer yeniden doğrulanmaz; `null` bağı kaldırır | — | aynı |
-| `BrandId` (onaylı ürün komutu, Karar a) | İstekte alan zorunlu (`null` = kaldır) | Aynı; aynı değer → 200, yazım yok (sürüm artmaz) — **öneri**, CT onayı | — | aynı + durum `IdentityApproved` ve `ActiveLifecycleOperation == null` |
+| `BrandId` (onaylı ürün komutu, Karar a) | İstekte alan zorunlu (`null` = kaldır) | Aynı; aynı değer → 200, yazım yok (sürüm artmaz) — **CT kararı 2026-10-15** | — | aynı + durum `IdentityApproved` ve `ActiveLifecycleOperation == null` |
 | `ExpectedVersion` | Evet (yazımlarda) | ≥ 0 | CAS | — |
 | `Idempotency-Key` | Evet (düzenleme, marka komutu) | GUID "D", boş değil | tekrar araması (`FindReplayAsync`) | — |
 | `brandId` (liste süzgeci) | Hayır | GUID; bozuk → 400 | `(TenantId, BrandId)` dizini | — |
@@ -344,7 +344,7 @@ Actor type: tenant_user (platform_admin mevcut çalışma zamanı davranışıyl
 | `POST api/global-products/drafts` (+marka) | `mdm.global-products.create` | mevcut |
 | `PUT api/global-products/{id}` (+marka, yalnız Draft) | `mdm.global-products.update` | mevcut |
 | `GET api/global-products/brand-options` | `mdm.global-products.create` · `.update` · `.update-brand` (biri yeter) | yeni (T-1) |
-| `POST api/global-products/{id}/brand` | **`mdm.global-products.update-brand`** | yeni — **Karar (a) bekliyor** |
+| `POST api/global-products/{id}/brand` | **`mdm.global-products.update-brand`** | yeni — **Karar (a) onaylı (sahip, 2026-10-15)** |
 
 **Anahtar adı — ölçüm.** PKS-001 iki biçime de izin verir: `≥ 3` parça (`permission-key-standard.md:30`, `:50`) ve
 Tier-3 modül eylemi (`:127-131`). Platform doğrulayıcısı `≥ 3` parçaya genişletilmiş (`ModulePageDescriptorNormalizer.cs:66-73`).
@@ -441,6 +441,8 @@ ekleme ile girer (T-2).
   `DitenTour` yok (ölçüldü). Bu paket tur eklemez; tur yazıldığında marka adımı opsiyonel bir adım olur → "tur yok (bu pakette)".
 
 ## 20. Ready-for-dev Checklist
+
+> **2026-10-15:** sahip kararlarına bağlı bütün satırlar kapandı (§0.2 a/b/c ve XMC-001 iki satır onaylı). Aşağıdaki işaretsiz kutular dilim kabullerinde CT tarafından işaretlenir; işaretsiz olmaları çelişki DEĞİLDİR. CT kararları: denetim işlemi `GlobalProductBrandChanged = 120`; `mdm.global-products.update-brand` yalnız `ProductDataSteward` rolüne (taslak güncelleme ile aynı rol); aynı değer → 200, yazım yok.
 
 - [x] DCP-002 kimlik kapısı (FU05, tüm dallarda ölçüldü)
 - [x] Golden Reference: mevcut ekran Slim + `_ListShell` (ölçüldü); `form_field_count` 1 → 2
