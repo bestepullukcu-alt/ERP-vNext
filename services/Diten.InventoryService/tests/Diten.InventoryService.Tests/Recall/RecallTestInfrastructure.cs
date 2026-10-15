@@ -531,4 +531,7 @@ public sealed class SeamedRecallQuarantineRequester(IRecallQuarantineRequester i
 
     public Task<IReadOnlyList<RecallHoldView>> OpenHoldsOfLotAsync(string lotId, CancellationToken cancellationToken = default)
         => inner.OpenHoldsOfLotAsync(lotId, cancellationToken);
+
+    public Task<RecallHoldView?> HoldOfMovementAsync(string transactionId, CancellationToken cancellationToken = default)
+        => inner.HoldOfMovementAsync(transactionId, cancellationToken);
 }
