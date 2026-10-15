@@ -894,3 +894,13 @@ KORU/YAPMA: tam CityRef ile süzme bugünkü gibi çalışır; başka kiracını
 DOĞRULA: CRM testleri — eşleştirme tablosu (konya ↔ TR-42-KONYA, istanbul ↔ TR-34-ISTANBUL, adiyaman ↔ TR-02-ADIYAMAN, sanliurfa ↔ TR-63-SANLIURFA, tam ref, büyük harf, Türkçe karakterli girdi "İstanbul", eşleşmeyen girdi, "kon" gibi kısmi girdi EŞLEŞMEZ, regex özel karakterli girdi güvenli), kiracı izolasyonu, liste uç noktasında city=konya → yalnız Konya kurumları; Mongo üzerinde gerçek sorgu testi (geçici test mongod'u; localhost:27017'ye BAĞLANMA) + 2 sabotaj (.bak + touch): (1) önek atlanmasın (yalnız tam eşleşme) → kırmızı; (2) anchored olmasın (kısmi eşleşsin) → kırmızı. CRM + mimari (-o repo içi), taban karşılaştırması.
 Commit: "fix(crm): WP-VW-W3E-CITY — QR list city filter matches the reference-data city code against the TR-NN-NAME account city reference" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
 ```
+
+## §37 CT kabul — W3E-CITY E2 ACCEPTED (2026-10-15) — K-CITY kapandı
+Test dalına alındı: `c0ab04054` (ajan `f0542c1bc`), çakışmasız. Yalnız CRM: Domain'de saf `CityRefMatcher` + depo sorgusu + 40 test.
+
+**CT kontrolü:**
+- **Kalıp:** baştan ve sondan sabitli, her harf kaçışlı ya da Türkçe sınıf; tam referans bugünkü gibi; tek sorgu, kiracı sınırlı. `.*` ya da `|` gibi girdiler sorguyu yönlendiremez.
+- **Testler** (CT `-o`): CRM ilgili 343/1. Tek kırmızı `VisitPlanningFix2…shared_pattern` (`-o` artefaktı). Ajan tam takım 2884/1 (taban ile aynı); `PiiMasking` bilinen kararsız test.
+- **CT sabotajı:** Türkçe "i" sınıfı `[iIıİ]` → `[iI]` → `istanbul ↔ TR-34-İSTANBUL` **kırmızı**; geri alındı.
+
+**Takip (yalnız rapor, karar gerekli) — FU-CITY-TERRITORY:** `TerritoryAssignmentPreviewEngine.cs:107` bölge atama kuralının `CityRefs` değerlerini (`istanbul`) kurum `CityRef`'i (`TR-34-ISTANBUL`) ile doğrudan karşılaştırıyor. Bölge kuralı önizlemesi gerçek veride şehir eşleşmesini kaçırabilir. Aynı `CityRefMatcher` kullanılarak küçük bir CRM düzeltmesi (MOD-0151). Zamanı kullanıcıda.
