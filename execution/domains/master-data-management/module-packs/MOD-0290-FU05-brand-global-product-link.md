@@ -490,6 +490,8 @@ Dikkat notları (ölçülen):
 
 > **Bilinen sınır (Dilim 2 kabulü, 2026-10-15):** oluşturma isteğinin birebir tekrarı, ürün oluşturulduktan SONRA markası `ChangeGlobalProductBrandCommand` ile değiştirilmişse 409 `CODE_RESERVATION_MISMATCH` alır (depo saklı markayla karşılaştırır, `GlobalProductRepository.CreateDraftAsync`). Veri bozulmaz, güvenli taraf; istemci ürünü kimliğiyle okur. İleride gerekirse tekrar karşılaştırması oluşturma anındaki markaya (ilk niyet) yapılır. Ayrıca: "aynı marka → yazım yok" kuralı iki katmanda (işleyici + depo `FromBrandId == ToBrandId`); CT sabotajı ikisi birlikte kaldırılınca `The_same_brand_is_200_and_writes_nothing` KIRMIZI.
 
+> **Dilim 3 kabulü (2026-10-15, 9ec4cf618):** Web ekranı tamam; CT sabotajı 3/3 KIRMIZI. Bilinen sınırlar: (1) özel sütun sırasıyla kaydedilmiş eski görünüm varsayılan sıraya döner (ortak personalization istemcisi; ilk yeniden kayıtta onarılır) 🟡; (2) canlı kontrol (§17 son madde) sahibin modül canlı kontrol oturumuna ertelendi 🟡; (3) verifier'ın 3 FAIL maddesi dilimden önce de vardı (BL-452 sunucu dışa aktarımı, ortak personalization-client, profil sınıflaması) 🟢; (4) marka süzgeci yalnız bağlanabilir markaları listeler, salt okuyucu süzgeci görmez (T-1) 🟢.
+
 | # | Konu | Sahip | Regresyon riski |
 |---|---|---|---|
 | F-1 | Eski "Ürünler" → Global Ürün eşlemesi ve `Product.BrandId` göçü; CRM'in 4 eski yerinin geçişi (Karar c) | MDM + CRM, W10 ile | 🟡 |
