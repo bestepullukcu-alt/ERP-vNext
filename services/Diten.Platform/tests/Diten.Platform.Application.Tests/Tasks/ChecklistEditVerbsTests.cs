@@ -122,7 +122,7 @@ public sealed class ChecklistEditVerbsTests
 
         var result = await new RemoveChecklistItemHandler(
                 new FakeTaskItemRepository(task), runs, new TaskChecklistService(),
-                new FakeCurrentUserContext(TaskTestData.Me))
+                new FakeCurrentUserContext(TaskTestData.Me), writeGate: TaskWriteGateDoubles.Open)
             .Handle(new RemoveChecklistItemCommand(
                 task.Id, "a1", new RemoveChecklistItemRequest(run.Version), "corr"), CancellationToken.None);
 
@@ -221,7 +221,7 @@ public sealed class ChecklistEditVerbsTests
         var edit = await Update(task, runs, "a0",
             new UpdateChecklistItemRequest("changed", ChecklistItemRequirement.Blocking, true, run.Version));
         var remove = await new RemoveChecklistItemHandler(
-                tasks, runs, new TaskChecklistService(), new FakeCurrentUserContext(TaskTestData.Me))
+                tasks, runs, new TaskChecklistService(), new FakeCurrentUserContext(TaskTestData.Me), writeGate: TaskWriteGateDoubles.Open)
             .Handle(new RemoveChecklistItemCommand(
                 task.Id, "a0", new RemoveChecklistItemRequest(run.Version), "corr"), CancellationToken.None);
         var reorder = await Reorder(task, runs, new[] { "a2", "a1", "a0" }, run.Version);
@@ -255,7 +255,7 @@ public sealed class ChecklistEditVerbsTests
             new UpdateChecklistItemRequest("changed", ChecklistItemRequirement.Blocking, true, stale));
         var remove = await new RemoveChecklistItemHandler(
                 new FakeTaskItemRepository(task), runs, new TaskChecklistService(),
-                new FakeCurrentUserContext(TaskTestData.Me))
+                new FakeCurrentUserContext(TaskTestData.Me), writeGate: TaskWriteGateDoubles.Open)
             .Handle(new RemoveChecklistItemCommand(
                 task.Id, "a0", new RemoveChecklistItemRequest(stale), "corr"), CancellationToken.None);
         var reorder = await Reorder(task, runs, new[] { "a2", "a1", "a0" }, stale);
@@ -380,7 +380,7 @@ public sealed class ChecklistEditVerbsTests
 
         var result = await new SetChecklistItemStateHandler(
                 new FakeTaskItemRepository(task), runs, new TaskChecklistService(),
-                new FakeCurrentUserContext(TaskTestData.Me), new FakeTaskAttachmentRepository())
+                new FakeCurrentUserContext(TaskTestData.Me), new FakeTaskAttachmentRepository(), writeGate: TaskWriteGateDoubles.Open)
             .Handle(new SetChecklistItemStateCommand(
                 task.Id, new SetChecklistItemStateRequest("owned", true, run.Version), "corr"),
                 CancellationToken.None);
@@ -459,7 +459,7 @@ public sealed class ChecklistEditVerbsTests
 
         var result = await new AddChecklistItemHandler(
                 new FakeTaskItemRepository(task), runs, new TaskChecklistService(),
-                new FakeCurrentUserContext(TaskTestData.Me), new FakeTenantContext(TaskTestData.Tenant))
+                new FakeCurrentUserContext(TaskTestData.Me), new FakeTenantContext(TaskTestData.Tenant), writeGate: TaskWriteGateDoubles.Open)
             .Handle(new AddChecklistItemCommand(
                 task.Id, new AddChecklistItemRequest("mine", ChecklistItemRequirement.Blocking, 0), "corr"),
                 CancellationToken.None);
@@ -485,7 +485,7 @@ public sealed class ChecklistEditVerbsTests
 
         var result = await new AddChecklistItemHandler(
                 new FakeTaskItemRepository(task), runs, new TaskChecklistService(),
-                new FakeCurrentUserContext(TaskTestData.Me), new FakeTenantContext(TaskTestData.Tenant))
+                new FakeCurrentUserContext(TaskTestData.Me), new FakeTenantContext(TaskTestData.Tenant), writeGate: TaskWriteGateDoubles.Open)
             .Handle(new AddChecklistItemCommand(
                 task.Id, new AddChecklistItemRequest("late", ChecklistItemRequirement.Optional, 0), "corr"),
                 CancellationToken.None);
@@ -530,13 +530,13 @@ public sealed class ChecklistEditVerbsTests
         TaskItem task, FakeChecklistRunRepository runs, string code, UpdateChecklistItemRequest request)
         => new UpdateChecklistItemHandler(
                 new FakeTaskItemRepository(task), runs, new TaskChecklistService(),
-                new FakeCurrentUserContext(TaskTestData.Me))
+                new FakeCurrentUserContext(TaskTestData.Me), writeGate: TaskWriteGateDoubles.Open)
             .Handle(new UpdateChecklistItemCommand(task.Id, code, request, "corr"), CancellationToken.None);
 
     private static Task<Application.Common.Response<Application.Common.NoContent>> Reorder(
         TaskItem task, FakeChecklistRunRepository runs, string[] codes, int expectedVersion)
         => new ReorderChecklistHandler(
-                new FakeTaskItemRepository(task), runs, new FakeCurrentUserContext(TaskTestData.Me))
+                new FakeTaskItemRepository(task), runs, new FakeCurrentUserContext(TaskTestData.Me), writeGate: TaskWriteGateDoubles.Open)
             .Handle(new ReorderChecklistCommand(
                 task.Id, new ReorderChecklistRequest(codes, expectedVersion), "corr"), CancellationToken.None);
 
@@ -544,7 +544,7 @@ public sealed class ChecklistEditVerbsTests
         TaskItem task, FakeChecklistRunRepository runs, string code, int expectedVersion)
         => new RemoveChecklistItemHandler(
                 new FakeTaskItemRepository(task), runs, new TaskChecklistService(),
-                new FakeCurrentUserContext(TaskTestData.Me))
+                new FakeCurrentUserContext(TaskTestData.Me), writeGate: TaskWriteGateDoubles.Open)
             .Handle(new RemoveChecklistItemCommand(
                 task.Id, code, new RemoveChecklistItemRequest(expectedVersion), "corr"), CancellationToken.None);
 

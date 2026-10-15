@@ -57,6 +57,9 @@ public sealed class InMemoryDecisionRepository : ICompetitorProposalDecisionRepo
 {
     private readonly Dictionary<Guid, CompetitorProposalDecision> _rows = new();
 
+    /// <summary>Test-only: the decision was prepared earlier (W4-FIX-d F-7 — the prepared time differs from the applied one).</summary>
+    public void Backdate(Guid id, DateTimeOffset createdAt) => _rows[id].CreatedAt = createdAt;
+
     public Task<CompetitorProposalDecision?> GetAsync(Guid tenantId, Guid id, CancellationToken ct)
         => Task.FromResult(_rows.TryGetValue(id, out var r) && r.TenantId == tenantId ? Copy.Of(r) : null);
 

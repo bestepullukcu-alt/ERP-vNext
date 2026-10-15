@@ -39,6 +39,13 @@ public interface IMdmCompetitorClient
 
     /// <summary>id → the record it counts as (itself, or the survivor when merged); null when MDM cannot be read.</summary>
     Task<IReadOnlyDictionary<Guid, Guid>?> ResolveSurvivorsAsync(IReadOnlyCollection<Guid> ids, CancellationToken ct);
+
+    /// <summary>
+    /// WP-VW-W4 (W4-FIX-d, G-9) — GSKU id → its global product id (MDM <c>api/gskus/{id}</c>, the rep's
+    /// <c>mdm.gskus.read</c>); null when MDM cannot be read or a GSKU cannot be resolved (the report falls back, never blocks).
+    /// </summary>
+    Task<IReadOnlyDictionary<Guid, Guid>?> GskuProductsAsync(IReadOnlyCollection<Guid> gskuIds, CancellationToken ct)
+        => Task.FromResult<IReadOnlyDictionary<Guid, Guid>?>(null);
 }
 
 /// <summary>The default when no gateway client is wired (tests, non-HTTP hosts): MDM is "unavailable".</summary>

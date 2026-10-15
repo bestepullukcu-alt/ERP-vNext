@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ItemsTitle" xml:space="preserve"><value>Items</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Materials kept in stock: identity, material type and stock behaviour.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Add item</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="CanonicalCode" xml:space="preserve"><value>Code</value></data>
+  <data name="Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Description" xml:space="preserve"><value>Description</value></data>
+  <data name="MaterialType" xml:space="preserve"><value>Material type</value></data>
+  <data name="BaseUomCode" xml:space="preserve"><value>Base unit</value></data>
+  <data name="UnitCode" xml:space="preserve"><value>Unit code</value></data>
+  <data name="Stockable" xml:space="preserve"><value>Stockable</value></data>
+  <data name="LotControlled" xml:space="preserve"><value>Lot controlled</value></data>
+  <data name="LifecycleStatus" xml:space="preserve"><value>Status</value></data>
+  <data name="ShelfLifeDays" xml:space="preserve"><value>Shelf life (days)</value></data>
+  <data name="RetestDays" xml:space="preserve"><value>Retest interval (days)</value></data>
+  <data name="MinRemainingShelfLifeDays" xml:space="preserve"><value>Minimum remaining shelf life (days)</value></data>
+  <data name="StorageConditionCodes" xml:space="preserve"><value>Storage conditions</value></data>
+  <data name="UomConversions" xml:space="preserve"><value>Unit conversions</value></data>
+  <data name="Version" xml:space="preserve"><value>Version</value></data>
+  <data name="CreatedAt" xml:space="preserve"><value>Created</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Last changed</value></data>
+  <data name="Yes" xml:space="preserve"><value>Yes</value></data>
+  <data name="No" xml:space="preserve"><value>No</value></data>
+  <data name="MaterialType_ACTIVE_INGREDIENT" xml:space="preserve"><value>Active ingredient</value></data>
+  <data name="MaterialType_EXCIPIENT" xml:space="preserve"><value>Excipient</value></data>
+  <data name="MaterialType_RAW_MATERIAL" xml:space="preserve"><value>Other raw material</value></data>
+  <data name="MaterialType_PACKAGING_PRIMARY" xml:space="preserve"><value>Primary packaging</value></data>
+  <data name="MaterialType_PACKAGING_SECONDARY" xml:space="preserve"><value>Secondary packaging</value></data>
+  <data name="MaterialType_INTERMEDIATE" xml:space="preserve"><value>Intermediate</value></data>
+  <data name="LifecycleDraft" xml:space="preserve"><value>Draft</value></data>
+  <data name="LifecyclePendingActivation" xml:space="preserve"><value>Awaiting approval</value></data>
+  <data name="LifecycleActive" xml:space="preserve"><value>Active</value></data>
+  <data name="LifecycleDeactivated" xml:space="preserve"><value>Deactivated</value></data>
+  <data name="LifecycleRetired" xml:space="preserve"><value>Retired</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>New item</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Edit item</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Item details</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identity</value></data>
+  <data name="StockBehaviourSection" xml:space="preserve"><value>Stock behaviour</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>e.g. Paracetamol</value></data>
+  <data name="DescriptionPlaceholder" xml:space="preserve"><value>What this material is and where it is used</value></data>
+  <data name="MaterialTypePlaceholder" xml:space="preserve"><value>Select a material type</value></data>
+  <data name="BaseUomPlaceholder" xml:space="preserve"><value>Select a unit</value></data>
+  <data name="UnitCodeHint" xml:space="preserve"><value>Choose the unit from the list.</value></data>
+  <data name="StorageConditionPlaceholder" xml:space="preserve"><value>Select storage conditions</value></data>
+  <data name="StorageConditionHint" xml:space="preserve"><value>Choose one or more conditions from the list. At most one temperature condition.</value></data>
+  <data name="DaysPlaceholder" xml:space="preserve"><value>Days</value></data>
+  <data name="ConversionFrom" xml:space="preserve"><value>From unit</value></data>
+  <data name="ConversionTo" xml:space="preserve"><value>To unit</value></data>
+  <data name="ConversionNumerator" xml:space="preserve"><value>Numerator</value></data>
+  <data name="ConversionDenominator" xml:space="preserve"><value>Denominator</value></data>
+  <data name="ConversionHint" xml:space="preserve"><value>1 'from' unit = numerator / denominator 'to' units. Decimal numbers with a point, greater than zero.</value></data>
+  <data name="AddConversion" xml:space="preserve"><value>Add conversion</value></data>
+  <data name="RemoveConversion" xml:space="preserve"><value>Remove</value></data>
+  <data name="NoConversions" xml:space="preserve"><value>No conversions yet.</value></data>
+  <data name="ActiveLockedNote" xml:space="preserve"><value>This item is active: only the name and the description change freely. A filled stock field changes only through an approved correction; an empty one can still be filled once.</value></data>
+  <data name="EditNotAvailable" xml:space="preserve"><value>This item cannot be edited in its current status.</value></data>
+  <data name="CreateSuccess" xml:space="preserve"><value>The item was created as a draft.</value></data>
+  <data name="UpdateSuccess" xml:space="preserve"><value>The item was saved.</value></data>
+  <data name="ErrorInvalidFormAttempt" xml:space="preserve"><value>This form has expired. Reload the page and enter the item again.</value></data>
+  <data name="ErrorValidation" xml:space="preserve"><value>Some values were not accepted. Check the fields and try again.</value></data>
+  <data name="ErrorForbidden" xml:space="preserve"><value>You do not have permission for this action.</value></data>
+  <data name="ErrorUnauthorized" xml:space="preserve"><value>Your session has ended. Sign in again.</value></data>
+  <data name="ErrorNotFound" xml:space="preserve"><value>This item was not found. It may have been removed or you may not have access to it.</value></data>
+  <data name="ErrorConflict" xml:space="preserve"><value>This item was changed meanwhile. Reload it and try again.</value></data>
+  <data name="ErrorProviderUnavailable" xml:space="preserve"><value>The item service is not available right now. Try again in a moment.</value></data>
+  <data name="ErrorProviderTimeout" xml:space="preserve"><value>The item service did not answer in time. Try again in a moment.</value></data>
+  <data name="ErrorGateway" xml:space="preserve"><value>The answer could not be read. Try again in a moment.</value></data>
+  <data name="ErrorExportTooLarge" xml:space="preserve"><value>Too many rows to export at once (more than 50,000). Narrow the list with a filter or a search first.</value></data>
+  <data name="LifecycleStateChanged" xml:space="preserve"><value>The item's status changed meanwhile. The list has been refreshed.</value></data>
+  <data name="Submit" xml:space="preserve"><value>Send for approval</value></data>
+  <data name="Deactivate" xml:space="preserve"><value>Deactivate</value></data>
+  <data name="Reactivate" xml:space="preserve"><value>Request reactivation</value></data>
+  <data name="Retire" xml:space="preserve"><value>Retire</value></data>
+  <data name="SubmitConfirmation" xml:space="preserve"><value>Send this draft for activation approval?</value></data>
+  <data name="DeactivateConfirmation" xml:space="preserve"><value>Deactivate this item? It can no longer be chosen for new stock entries; existing stock can still be issued.</value></data>
+  <data name="ReactivateConfirmation" xml:space="preserve"><value>Request reactivation of this item? Reactivation goes through the same approval as the first activation.</value></data>
+  <data name="RetireConfirmation" xml:space="preserve"><value>Retire this item? This is final: it needs zero stock and the code is never reused.</value></data>
+  <data name="SubmitSuccess" xml:space="preserve"><value>The item was sent for approval.</value></data>
+  <data name="DeactivateSuccess" xml:space="preserve"><value>The item was deactivated.</value></data>
+  <data name="ReactivateSuccess" xml:space="preserve"><value>Reactivation was requested.</value></data>
+  <data name="RetireSuccess" xml:space="preserve"><value>The item was retired.</value></data>
+  <data name="ReasonLabel" xml:space="preserve"><value>Reason</value></data>
+  <data name="ReasonRequired" xml:space="preserve"><value>Enter a reason (up to 500 characters, on one line).</value></data>
+  <data name="ListSeparator" xml:space="preserve"><value>, </value></data>
+  <data name="RefusalNameInvalid" xml:space="preserve"><value>Enter a name of 1–200 characters.</value></data>
+  <data name="RefusalDescriptionInvalid" xml:space="preserve"><value>The description can be at most 2,000 characters.</value></data>
+  <data name="RefusalMaterialTypeRequired" xml:space="preserve"><value>Select a material type.</value></data>
+  <data name="RefusalMaterialTypeInvalid" xml:space="preserve"><value>This material type is not one of the six allowed types.</value></data>
+  <data name="RefusalBaseUomRequired" xml:space="preserve"><value>Enter the base unit code.</value></data>
+  <data name="RefusalBaseUomInvalid" xml:space="preserve"><value>The base unit code is too long; enter a unit code such as KGM.</value></data>
+  <data name="RefusalFlagsRequired" xml:space="preserve"><value>Set both 'Lot controlled' and 'Stockable'.</value></data>
+  <data name="RefusalShelfLifeInvalid" xml:space="preserve"><value>Shelf life must be between 1 and 3650 days.</value></data>
+  <data name="RefusalRetestInvalid" xml:space="preserve"><value>The retest interval must be between 1 and 3650 days.</value></data>
+  <data name="RefusalMinRemainingInvalid" xml:space="preserve"><value>Minimum remaining shelf life must be between 0 and 3650 days and not longer than the shelf life.</value></data>
+  <data name="RefusalStorageInvalid" xml:space="preserve"><value>Storage conditions must be codes (at most 10).</value></data>
+  <data name="RefusalReasonRequired" xml:space="preserve"><value>A reason is required (up to 500 characters, on one line).</value></data>
+  <data name="RefusalInvalidRequest" xml:space="preserve"><value>The request was not in the expected form. Reload the page and try again.</value></data>
+  <data name="RefusalListParameter" xml:space="preserve"><value>The search or filter could not be applied (a search can be at most 200 characters). Change it and try again.</value></data>
+  <data name="RefusalNotFound" xml:space="preserve"><value>This item was not found. It may have been removed or you may not have access to it.</value></data>
+  <data name="RefusalNameConflict" xml:space="preserve"><value>An item with this name and material type already exists.</value></data>
+  <data name="RefusalReferenceValueInvalid" xml:space="preserve"><value>A code entered is not an active value of its list. Check the material type, the unit codes and the storage conditions.</value></data>
+  <data name="RefusalReferenceValueInvalidNamed" xml:space="preserve"><value>These values are not active values of their lists: {0}.</value></data>
+  <data name="RefusalStorageConflict" xml:space="preserve"><value>The storage conditions do not fit together.</value></data>
+  <data name="RefusalStorageTwoTemperatures" xml:space="preserve"><value>Choose at most one temperature condition.</value></data>
+  <data name="RefusalStorageRepeated" xml:space="preserve"><value>A storage condition is entered twice.</value></data>
+  <data name="RefusalUomConversion" xml:space="preserve"><value>A unit conversion is not valid.</value></data>
+  <data name="RefusalUomConversionUnitMissing" xml:space="preserve"><value>Each conversion needs both a 'from' and a 'to' unit.</value></data>
+  <data name="RefusalUomConversionSameUnit" xml:space="preserve"><value>A conversion cannot convert a unit to itself.</value></data>
+  <data name="RefusalUomConversionFactor" xml:space="preserve"><value>Numerator and denominator must be decimal numbers greater than zero, written with a point (e.g. 0.001), without exponent or sign.</value></data>
+  <data name="RefusalUomConversionPairRepeated" xml:space="preserve"><value>A pair of units is entered twice (the reverse direction is derived; enter each pair once).</value></data>
+  <data name="RefusalStockBehaviourIncomplete" xml:space="preserve"><value>A stockable item needs its stock fields: for a non-packaging item at least one storage condition, and a shelf life or a retest interval.</value></data>
+  <data name="RefusalChangedElsewhere" xml:space="preserve"><value>This item was changed by someone else meanwhile. Reload it and try again.</value></data>
+  <data name="RefusalCriticalFieldLocked" xml:space="preserve"><value>On an active item a filled stock field cannot be changed without an approved correction.</value></data>
+  <data name="RefusalCriticalFieldLockedNamed" xml:space="preserve"><value>On an active item, '{0}' cannot be changed without an approved correction.</value></data>
+  <data name="RefusalTransitionInvalid" xml:space="preserve"><value>This action is not possible in the item's current status. Reload the list.</value></data>
+  <data name="RefusalDeactivatedNotEditable" xml:space="preserve"><value>A deactivated item cannot be edited.</value></data>
+  <data name="RefusalRetireRequiresDeactivation" xml:space="preserve"><value>An active item is deactivated first; only a deactivated item can be retired.</value></data>
+  <data name="RefusalRetireStockNotZero" xml:space="preserve"><value>This item still has stock, so it cannot be retired. It stays deactivated.</value></data>
+  <data name="RefusalRepeatDiffers" xml:space="preserve"><value>This form was already sent with different values. Reload the page and enter the item again.</value></data>
+  <data name="RefusalReferenceListUnavailable" xml:space="preserve"><value>The reference lists (units, storage conditions, material types) cannot be checked right now. Try again in a moment.</value></data>
+  <data name="RefusalRetireStockCheckUnavailable" xml:space="preserve"><value>The stock check could not be completed, so the item was not retired. It stays deactivated; try again later.</value></data>
+  <data name="RefusalActivationApprovalUnavailable" xml:space="preserve"><value>Activation approval is not available yet: items cannot be sent for approval or reactivated until the approval flow is switched on. Nothing was changed.</value></data>
+  <data name="RefusalServiceUnavailable" xml:space="preserve"><value>A service this action needs is not available right now. Try again in a moment.</value></data>
+  <data name="RefusalCreatePending" xml:space="preserve"><value>The item is saved but not yet completed. Save the same form again to finish it.</value></data>
+  <data name="RefusalTryAgain" xml:space="preserve"><value>The request could not be completed. Reload the page and try again.</value></data>
+  <data name="RefusalInternal" xml:space="preserve"><value>The item service reported an internal inconsistency. Please inform your administrator.</value></data>
+  <data name="RefusalOptionsUnavailable" xml:space="preserve"><value>The lists of material types, units and storage conditions cannot be loaded right now, so these fields cannot be chosen. Try again in a moment.</value></data>
+  <data name="RefusalOptionsTimeout" xml:space="preserve"><value>The lists of material types, units and storage conditions did not load in time, so these fields cannot be chosen. Try again in a moment.</value></data>
+  <data name="WithdrawApproval" xml:space="preserve"><value>Withdraw Approval Request</value></data>
+  <data name="WithdrawApprovalConfirmation" xml:space="preserve"><value>Withdraw this item's activation approval request?</value></data>
+  <data name="WithdrawApprovalSuccess" xml:space="preserve"><value>The approval request was withdrawn. The item is back in its previous status.</value></data>
+</root>

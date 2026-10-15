@@ -30,3 +30,17 @@ public sealed class TenantModuleEntitlementConcurrencyException : Exception
     {
     }
 }
+
+/// <summary>
+/// BL-500 — a tenant-scoped caller asked to write a row of another tenant. Refused before any write. Its own type so the
+/// refusal is never mistaken for a concurrency conflict (it used to reuse <see cref="TenantModuleEntitlementConcurrencyException"/>
+/// and reached the screen as "somebody else changed this row"); the handlers answer it exactly as "not found", so the
+/// answer leaks nothing about another tenant's rows.
+/// </summary>
+public sealed class TenantModuleEntitlementTenantMismatchException : Exception
+{
+    public TenantModuleEntitlementTenantMismatchException()
+        : base("The tenant module entitlement belongs to another tenant than the caller's.")
+    {
+    }
+}

@@ -1,0 +1,40 @@
+@using Diten.Web.Views.MasterDataManagement.Items
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ItemsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                    @* MDM filters one material type and one status (exact values); both are closed sets. *@
+                    <div class="filter-chip filter-material-type">
+                        <select id="filterMaterialType" class="form-select form-select-sm select2"
+                                data-placeholder="@Localizer["MaterialType"]">
+                            <option value="">@SharedLocalizer["ShowAll"]</option>
+                            @foreach (var code in ItemRefusalSentences.MaterialTypes)
+                            {
+                                <option value="@code">@Localizer[ItemRefusalSentences.MaterialTypeKey(code)]</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="filter-chip filter-lifecycle-status">
+                        <select id="filterStatus" class="form-select form-select-sm select2"
+                                data-placeholder="@Localizer["LifecycleStatus"]">
+                            <option value="">@SharedLocalizer["ShowAll"]</option>
+                            @foreach (var name in ItemRefusalSentences.LifecycleStatuses.Values)
+                            {
+                                <option value="@name">@Localizer[ItemRefusalSentences.LifecycleKey(name)]</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">@SharedLocalizer["Apply"]</button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">@SharedLocalizer["Reset"]</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

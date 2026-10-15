@@ -43,15 +43,11 @@ public sealed class InvitePlatformAdministratorHandler : IRequestHandler<InviteP
         }
 
         var actorType = PlatformAdministratorParsing.ParseActorType(request.Request.ActorType);
-        var provisioning = await _provisioningService.ProvisionAsync(new PlatformAdministratorProvisioningRequest(
-            normalizedEmail,
-            request.Request.UserName.Trim(),
-            request.Request.DisplayName.Trim(),
-            request.Request.ActorType,
-            request.Request.Roles,
-            request.Request.RequirePasswordChange), ct);
-
         var now = DateTimeOffset.UtcNow;
+
+        // BL-521 FIX5 item 6 — the record is BUILT before Auth is provisioned (and written after, as before), so the
+        // call to Auth can name the administrator by its id in the log instead of by its address. Building it first also
+        // refuses an unknown role here, before Auth has been given an account for it.
         var administrator = new PlatformAdministrator
         {
             Email = normalizedEmail,
@@ -74,11 +70,24 @@ public sealed class InvitePlatformAdministratorHandler : IRequestHandler<InviteP
             request.Request.PartnerId,
             request.Request.AllowedTenantIds);
 
+        var provisioning = await _provisioningService.ProvisionAsync(new PlatformAdministratorProvisioningRequest(
+            normalizedEmail,
+            request.Request.UserName.Trim(),
+            request.Request.DisplayName.Trim(),
+            request.Request.ActorType,
+            request.Request.Roles,
+            request.Request.RequirePasswordChange,
+            Status: administrator.Status.ToString())
+        {
+            AdministratorId = administrator.Id
+        }, ct);
+
         await _repository.CreateAsync(administrator, ct);
 
+        // FIX5 item 6 — identity only: the address is personal data and does not belong in the log.
         _logger.LogInformation(
-            "Platform administrator invite queued for {Email} by {Actor}.",
-            administrator.Email,
+            "Platform administrator invite queued for {AdministratorId} by {Actor}.",
+            administrator.Id,
             _currentUser.ActorName);
 
         return Response<PlatformAdministratorInviteResultDto>.Success(

@@ -1,30 +1,32 @@
 @using Diten.Web.Views.Governance.Roles
+@using Diten.Web.Models.DataTable
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<RolesIndex> Localizer
-@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    // The table card is a component (BL-440): the page describes it, _ListShell renders it. The page keeps its
+    // own words — every header is localized HERE, the shell produces no text.
+    //
+    // CLIENT data (WP-ROLES-CLOSE-01): a tenant's roles are a bounded set (pack: data_mode_max_rows 200) and
+    // AuthService returns all of them in one request; the JS declares the same mode.
+    //
+    // NO SELECTION COLUMN, deliberately: AuthService has no bulk endpoint for roles, so a checkbox would select
+    // into nothing — the defect this screen had (bulk JS bound to a column its markup never drew).
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-roles",
+        DataMode = "client",
+        Slug = "roles",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["Name"].Value },
+            new DataTableColumnViewModel { Header = Localizer["DisplayName"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["RoleType"].Value },
+            new DataTableColumnViewModel { Header = Localizer["PermissionCount"].Value },
+            new DataTableColumnViewModel { Header = Localizer["UserCount"].Value }
+        ],
+        ActionsHeader = Localizer["Actions"].Value
+    };
+}
 
-<div class="card">
-    <div id="skeleton-loader" class="backbone-skeleton p-4">
-        <div class="shimmer skeleton-row skeleton-row-lg"></div>
-        <div class="shimmer skeleton-row"></div>
-        <div class="shimmer skeleton-row"></div>
-        <div class="shimmer skeleton-row"></div>
-        <div class="shimmer skeleton-row skeleton-row-last"></div>
-    </div>
-
-    <div class="card-datatable table-responsive">
-        <table id="dt-roles" data-dt-standard="v2" class="datatables-roles table border-top">
-            <thead>
-                <tr>
-                    <th></th>
-                    <th>@Localizer["Name"]</th>
-                    <th class="all">@Localizer["DisplayName"]</th>
-                    <th>@Localizer["RoleType"]</th>
-                    <th>@Localizer["PermissionCount"]</th>
-                    <th>@Localizer["UserCount"]</th>
-                    <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
-                </tr>
-            </thead>
-        </table>
-    </div>
-</div>
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />

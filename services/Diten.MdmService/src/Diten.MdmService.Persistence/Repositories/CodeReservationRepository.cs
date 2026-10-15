@@ -7,6 +7,8 @@ using Diten.MdmService.Domain.Repositories;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Diten.MdmService.Api.Tests")]
+
 namespace Diten.MdmService.Persistence.Repositories;
 
 public sealed class CodeReservationRepository : ICodeReservationRepository
@@ -16,10 +18,12 @@ public sealed class CodeReservationRepository : ICodeReservationRepository
     private const string CounterCollectionName = "mdm_canonical_code_counters";
     private readonly IMongoCollection<CodeReservation> _collection;
     private readonly IMongoCollection<CanonicalCodeCounter> _counters;
+    private readonly IMongoDatabase _database;
     private readonly Guid _tenantId;
 
     public CodeReservationRepository(IMongoDatabase database, ITenantContext tenantContext)
     {
+        _database = database;
         _collection = database.GetCollection<CodeReservation>(CollectionName);
         _counters = database.GetCollection<CanonicalCodeCounter>(CounterCollectionName);
         _tenantId = tenantContext.TenantId;
@@ -277,6 +281,129 @@ public sealed class CodeReservationRepository : ICodeReservationRepository
             null,
             cancellationToken);
 
+    public Task<CodeReservation?> GetByReservationCommandAsync(
+        CodeBearingEntityType entityType, string reservationCommandId, CancellationToken cancellationToken = default) =>
+        _collection.Find(ActiveTenantFilter
+                & Builders<CodeReservation>.Filter.Eq(x => x.EntityType, entityType)
+                & Builders<CodeReservation>.Filter.Eq(x => x.ReservationCommandId, reservationCommandId))
+            .FirstOrDefaultAsync(cancellationToken)!;
+
+    // LSKU FIX1 B1 (b): the binding path already knows Burned; this is its first caller.
+    // LSKU FIX3 5 (c) tests only: a barrier after the burn's "no live row bound" read, inside its transaction.
+    internal Func<Task>? AfterBoundRowCheckForTests { get; set; }
+
+    public const string BoundRowExists = CodeReservationBurnCodes.BoundRowExists;
+    public const string BurnTransactionUnavailable = CodeReservationBurnCodes.TransactionUnavailable;
+    public const string BurnKindNotTransactional = "CODE_RESERVATION_BURN_KIND_NOT_TRANSACTIONAL";
+
+    /*
+     * LSKU FIX3 item 5 (c), CT decision (A): the signature is unchanged, the BEHAVIOUR changed. A code is burned only
+     * when no live (not deleted) identity row is bound to it — read in the SAME Mongo transaction as the burn's write.
+     * That read closes the burn/insert race ONLY because the LSKU insert writes the reservation in its own transaction
+     * (LskuRepository.InsertBoundToLiveCodeAsync): a burn and an insert that overlap fail each other with a write
+     * conflict, so never a live row with a burned code. LSKU FIX4 item 3: an insert that does NOT write the
+     * reservation (a snapshot read does not conflict with a plain insert — write skew) cannot be protected, so a burn of
+     * such a kind is refused outright (BoundRowExistsAsync throws). FG FIX1 part B: the FG insert has the touch
+     * (FinishedGoodRepository.InsertBoundToLiveCodeAsync), so FG codes may be burned; GSKU / GP stay refused. A row that
+     * was cancelled (an LSKU deleted; a Finished Good whose retained cancellation is settled) does not hold its code.
+     * Fail-closed: without transaction support the burn is refused (BurnTransactionUnavailable) — never burned outside one.
+     */
+    public async Task<ReservationOperationResult> BurnIdentityBindingAsync(
+        Guid reservationId,
+        Guid identityId,
+        int expectedVersion,
+        string idempotencyKey,
+        string actorId,
+        string correlationId,
+        string reason,
+        CancellationToken cancellationToken = default)
+    {
+        var current = await GetByIdAsync(reservationId, cancellationToken);
+        if (current is null) return new(false, null, "CODE_RESERVATION_REQUIRED");
+        if (current.BindingState == CodeReservationBindingState.Burned && current.ConsumedEntityId == identityId
+            && string.Equals(current.LastCommandId, idempotencyKey, StringComparison.Ordinal))
+            return new(true, current);
+        IClientSessionHandle session;
+        try
+        {
+            session = await _database.Client.StartSessionAsync(cancellationToken: cancellationToken);
+        }
+        catch (Exception exception) when (exception is NotSupportedException or MongoException)
+        {
+            return new(false, current, BurnTransactionUnavailable);
+        }
+        using (session)
+        {
+            try
+            {
+                session.StartTransaction(new TransactionOptions(ReadConcern.Snapshot, ReadPreference.Primary,
+                    WriteConcern.WMajority));
+                if (await BoundRowExistsAsync(session, current.EntityType, reservationId, identityId, cancellationToken))
+                {
+                    await session.AbortTransactionAsync(cancellationToken);
+                    return new(false, current, BoundRowExists);
+                }
+                if (AfterBoundRowCheckForTests is { } barrier) await barrier();
+                var burned = await ChangeBindingAsync(reservationId, identityId, expectedVersion, idempotencyKey, actorId,
+                    correlationId, CodeReservationBindingState.Burned, ProductAuditOperation.CodeBurned, reason, null,
+                    cancellationToken, session);
+                if (burned.Succeeded) await session.CommitTransactionAsync(cancellationToken);
+                else await session.AbortTransactionAsync(cancellationToken);
+                return burned;
+            }
+            catch (Exception exception) when (exception is NotSupportedException
+                                              || exception is MongoCommandException { Code: 20 })
+            {
+                // Transactions need a replica set (a standalone mongod: the driver refuses, or IllegalOperation) —
+                // refused, nothing written.
+                return new(false, current, BurnTransactionUnavailable);
+            }
+            catch (MongoException exception) when (exception.HasErrorLabel("TransientTransactionError"))
+            {
+                // A write conflict with an overlapping identity insert (or another burn): nothing of ours committed.
+                return new(false, await GetByIdAsync(reservationId, cancellationToken), "CONCURRENCY_CONFLICT");
+            }
+        }
+    }
+
+    private async Task<bool> BoundRowExistsAsync(IClientSessionHandle session, CodeBearingEntityType entityType,
+        Guid reservationId, Guid identityId, CancellationToken cancellationToken)
+    {
+        // LSKU FIX4 item 3: only a kind whose insert writes its reservation inside the insert's transaction may be
+        // burned here. FG FIX1 part B item 2: LSKU and — with FinishedGoodRepository.InsertBoundToLiveCodeAsync — FG.
+        // MOD-0290-FU04 S1: Item (ItemRepository.InsertBoundToLiveCodeAsync). GSKU / GP stay closed until their inserts
+        // gain the same touch.
+        var collection = entityType switch
+        {
+            CodeBearingEntityType.Lsku => "mdm_lskus",
+            CodeBearingEntityType.FinishedGood => "mdm_finished_goods",
+            // MOD-0290-FU04 S1 (CT decision 1): the item insert writes its reservation in its own transaction
+            // (ItemRepository.InsertBoundToLiveCodeAsync). Live = IsDeleted ≠ true; a Retired item keeps its code.
+            CodeBearingEntityType.Item => "mdm_items",
+            CodeBearingEntityType.Gsku or CodeBearingEntityType.GlobalProduct =>
+                throw new InvalidOperationException(
+                    $"{BurnKindNotTransactional}: the {entityType} insert does not yet write its reservation in its own transaction."),
+            _ => throw new InvalidOperationException("CODE_RESERVATION_ENTITY_TYPE_INVALID")
+        };
+        var bound = Builders<BsonDocument>.Filter.Eq("TenantId", new BsonBinaryData(_tenantId, GuidRepresentation.Standard))
+            & Builders<BsonDocument>.Filter.Ne("IsDeleted", true)
+            & (Builders<BsonDocument>.Filter.Eq("_id", new BsonBinaryData(identityId, GuidRepresentation.Standard))
+               | Builders<BsonDocument>.Filter.Eq("CodeReservationId", new BsonBinaryData(reservationId, GuidRepresentation.Standard)));
+        if (entityType != CodeBearingEntityType.FinishedGood)
+            return await _database.GetCollection<BsonDocument>(collection).Find(session, bound).AnyAsync(cancellationToken);
+        // A Finished Good is retained when its Draft is cancelled: once that cancellation is SETTLED (its audit receipt
+        // validated — the same proof as the GSKU blocker) it holds nothing; pending its audit it still holds the code.
+        var rows = await _database.GetCollection<FinishedGood>(collection)
+            .Find(session, Builders<FinishedGood>.Filter.Eq(x => x.TenantId, _tenantId)
+                           & Builders<FinishedGood>.Filter.Ne(x => x.IsDeleted, true)
+                           & (Builders<FinishedGood>.Filter.Eq(x => x.Id, identityId)
+                              | Builders<FinishedGood>.Filter.Eq(x => x.CodeReservationId, reservationId)))
+            .ToListAsync(cancellationToken);
+        return rows.Any(row => Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle
+            .FinishedGoodDraftCancellationProof.Disposition(row)
+            != Diten.MdmService.Domain.ValueObjects.FinishedGoodCancellationDisposition.Cancelled);
+    }
+
     private async Task<ReservationOperationResult> ChangeBindingAsync(
         Guid reservationId,
         Guid identityId,
@@ -288,9 +415,13 @@ public sealed class CodeReservationRepository : ICodeReservationRepository
         ProductAuditOperation operation,
         string? reason,
         string? recoveryDisposition,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        IClientSessionHandle? session = null)
     {
-        var current = await GetByIdAsync(reservationId, cancellationToken);
+        var current = session is null
+            ? await GetByIdAsync(reservationId, cancellationToken)
+            : await _collection.Find(session, ActiveTenantFilter & Builders<CodeReservation>.Filter.Eq(x => x.Id, reservationId))
+                .FirstOrDefaultAsync(cancellationToken);
         if (current is null)
         {
             return new(false, null, "CODE_RESERVATION_REQUIRED");
@@ -341,18 +472,21 @@ public sealed class CodeReservationRepository : ICodeReservationRepository
             .Inc(x => x.Version, 1)
             .Push(x => x.AuditIntents, intent);
 
-        var updated = await _collection.FindOneAndUpdateAsync(
-            filter,
-            update,
-            new FindOneAndUpdateOptions<CodeReservation> { ReturnDocument = ReturnDocument.After },
-            cancellationToken);
+        var updated = session is null
+            ? await _collection.FindOneAndUpdateAsync(filter, update,
+                new FindOneAndUpdateOptions<CodeReservation> { ReturnDocument = ReturnDocument.After }, cancellationToken)
+            : await _collection.FindOneAndUpdateAsync(session, filter, update,
+                new FindOneAndUpdateOptions<CodeReservation> { ReturnDocument = ReturnDocument.After }, cancellationToken);
 
         if (updated is not null)
         {
             return new(true, updated);
         }
 
-        current = await GetByIdAsync(reservationId, cancellationToken);
+        current = session is null
+            ? await GetByIdAsync(reservationId, cancellationToken)
+            : await _collection.Find(session, ActiveTenantFilter & Builders<CodeReservation>.Filter.Eq(x => x.Id, reservationId))
+                .FirstOrDefaultAsync(cancellationToken);
         if (current?.BindingState == targetState
             && current.ConsumedEntityId == identityId
             && string.Equals(current.LastCommandId, idempotencyKey, StringComparison.Ordinal))
@@ -477,6 +611,9 @@ public sealed class CodeReservationRepository : ICodeReservationRepository
             CodeBearingEntityType.Gsku => "GS",
             CodeBearingEntityType.Lsku => "LS",
             CodeBearingEntityType.FinishedGood => "FG",
+            // MOD-0290-FU04 §22 (RCS-001 §4): the item joins the product identity family — same counter, same 15
+            // characters (2 letters + '-' + 12 digits).
+            CodeBearingEntityType.Item => "IT",
             _ => throw new ArgumentOutOfRangeException(nameof(entityType))
         };
 
@@ -494,7 +631,9 @@ public sealed class CodeReservationRepository : ICodeReservationRepository
         string commandId,
         long sequence,
         string evidence)
-        => new()
+    {
+        var timestamp = DateTimeOffset.UtcNow;
+        return new LocalAuditIntent
         {
             IntentId = Guid.NewGuid(),
             TenantId = _tenantId,
@@ -508,12 +647,15 @@ public sealed class CodeReservationRepository : ICodeReservationRepository
             CausationId = commandId,
             CommandId = commandId,
             Sequence = sequence,
-            TimestampUtc = DateTimeOffset.UtcNow,
+            TimestampUtc = timestamp,
+            TimestampUtcTicksV1 = timestamp.UtcTicks,
+            TemporalStorageVersion = AuditIntentTemporalStorage.CurrentVersion,
             EvidenceHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(evidence))),
             SnapshotReference = $"{aggregateType}/{aggregateId:N}/{postVersion}",
             DeliveryState = AuditIntentDeliveryState.Pending,
             IdempotencyKey = $"{_tenantId:N}:{aggregateType}:{aggregateId:N}:{commandId}"
         };
+    }
 
     private void EnsureIndexes()
     {

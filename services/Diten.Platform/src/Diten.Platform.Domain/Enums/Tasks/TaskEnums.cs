@@ -48,7 +48,13 @@ public enum TaskAssignmentTarget
     Person = 1,
 
     /// <summary>Offered to a POSITION's holders: unowned + pendingClaim (pack §12 K4).</summary>
-    PositionPool = 2
+    PositionPool = 2,
+
+    /// <summary>
+    /// BL-509 — ASKED of one named person who is free to take it or decline it: unowned + pendingOffer. Nobody
+    /// holds the task until they accept, at which point it becomes an ordinary <see cref="Person"/> task of theirs.
+    /// </summary>
+    Offered = 3
 }
 
 /// <summary>
@@ -153,7 +159,17 @@ public enum TaskTransitionKind
     /// cleared and the lifecycle went back to before it was planned. Its own kind rather than <see cref="Planned"/>
     /// or <see cref="Edited"/>: "planned for the 5th" and "no longer planned" are opposite sentences.
     /// </summary>
-    Unplanned = 17
+    Unplanned = 17,
+
+    /// <summary>BL-509 — a request was addressed to somebody again, after a decline or a withdrawal. (The FIRST
+    /// offer is the task's own <see cref="Created"/> entry.)</summary>
+    Offered = 18,
+
+    /// <summary>BL-509 — the person a request was addressed to declined it. <c>Reason</c> is theirs.</summary>
+    Declined = 19,
+
+    /// <summary>BL-509 — the sender took a request back before it was answered.</summary>
+    Withdrawn = 20
 }
 
 /// <summary>Assignment/ownership history event kinds (append-only audit of who held the task).</summary>
@@ -165,7 +181,12 @@ public enum TaskAssignmentEventType
     Claimed = 3,
     Released = 4,
     Delegated = 5,
-    Reassigned = 6
+    Reassigned = 6,
+
+    // BL-509 — the request's own ownership story: asked of somebody, declined by them, taken back by the sender.
+    Offered = 7,
+    Declined = 8,
+    Withdrawn = 9
 }
 
 /// <summary>

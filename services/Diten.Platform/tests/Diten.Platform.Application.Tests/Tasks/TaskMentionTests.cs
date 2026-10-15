@@ -480,11 +480,11 @@ public sealed class TaskMentionTests
 
         public AddTaskCommentHandler AddHandler(Guid? caller = null) => new(
             Tasks, Comments, new FakeCurrentUserContext(caller ?? Me), Names, new FakeTenantContext(TaskTestData.Tenant),
-            Watchers, Notifications, ReadAccess(caller ?? Me), NullLogger<AddTaskCommentHandler>.Instance);
+            Watchers, Notifications, ReadAccess(caller ?? Me), NullLogger<AddTaskCommentHandler>.Instance, writeGate: TaskWriteGateDoubles.Open);
 
         public UpdateTaskCommentHandler UpdateHandler(Guid? caller = null) => new(
             Tasks, Comments, new FakeCurrentUserContext(caller ?? Me), ReadAccess(caller ?? Me), Notifications,
-            NullLogger<UpdateTaskCommentHandler>.Instance);
+            NullLogger<UpdateTaskCommentHandler>.Instance, writeGate: TaskWriteGateDoubles.Open);
 
         public GetTaskMentionCandidatesHandler CandidatesHandler(Guid? caller = null) => new(
             Tasks, ReadAccess(caller ?? Me), Names, new FakeCurrentUserContext(caller ?? Me));

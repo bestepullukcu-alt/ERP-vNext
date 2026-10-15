@@ -179,9 +179,11 @@ public sealed class SelfAccessExplainService : ISelfAccessExplainService
             return ("bypass-platform-admin", false, true);
         }
 
+        // BL-521 — a partner administrator is NOT admitted by a permission key: only an endpoint that admits partners
+        // (tenant-scoped families) lets it through, and only for its allowed tenants. A key alone answers "no".
         if (string.Equals(actorType, PartnerAdminActorType, StringComparison.OrdinalIgnoreCase))
         {
-            return ("bypass-partner-admin", false, true);
+            return ("partner-admin-endpoint-scoped", false, false);
         }
 
         var evaluation = PermissionClaimEvaluator.Evaluate(principal.Claims, permissionKey);

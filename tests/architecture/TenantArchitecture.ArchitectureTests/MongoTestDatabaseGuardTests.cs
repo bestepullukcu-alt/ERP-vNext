@@ -74,16 +74,11 @@ public class MongoTestDatabaseGuardTests
      */
     private static readonly string[] KnownPerRunDatabase =
     {
-        "services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/ProductAbbreviationPermissionOnboardingMongoTests.cs",
         "services/Diten.HcmService/tests/Diten.HcmService.Application.Tests/EmployeeDraftSessionRepositoryMongoTests.cs",
-        "services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/AuditIntentDeliveryMongoTests.cs",
-        "services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodDraftFoundationMongoTests.cs",
         "services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GlobalProductApiMongoTests.cs",
         "services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GskuRegisterMongoTests.cs",
-        "services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/LegalEntityMongoRoundTripTests.cs",
         "services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/LskuDraftFoundationMongoTests.cs",
         "services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/LskuRegisterMongoTests.cs",
-        "services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductAbbreviationRegisterMongoTests.cs",
         "services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductItemSkuMasterMongoTests.cs",
 
         // BL-482 (BRD half, 2026-10-01): the BRD harness NO LONGER names a database per run — it opens fixed-name
@@ -94,19 +89,28 @@ public class MongoTestDatabaseGuardTests
         // not the shared one this guard protects. Retiring the pair removes both lines.
         "services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/BusinessReferenceDataMongoResidueSweeper.cs",
         "services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/BusinessReferenceDataMongoResidueSweeperTests.cs",
-        // Neither of these touches the shared mongod this guard protects. Each starts its OWN mongod process on a
-        // free port in a temp directory, names a database inside that private process, and kills the process and
-        // deletes the directory on dispose, so no file-descriptor pressure or leftover database reaches the shared
-        // instance. The standalone one exists to prove transactions fail closed on a NON-replica-set server, which
-        // the shared replica set cannot stand in for. Both entered main on 2026-08-31 and left this guard red in
-        // CI; recorded as BL-393 (CONTROL TOWER, 2026-09-13).
-        "services/Diten.Platform/tests/Diten.Platform.Application.Tests/Audit/PpmAuditRetentionPolicySeedMongoTests.cs",
-        "services/Diten.Platform/tests/Diten.Platform.Application.Tests/Persistence/DisposableStandaloneMongo.cs"
+        // (BL-393's two entries — PpmAuditRetentionPolicySeedMongoTests, DisposableStandaloneMongo — removed at the main
+        // sync, 2026-10-11: main's 571b469ac stopped both naming a database per run, so their licence was stale.)
+        // Same category, product-five takeover (2026-10-01): both name a database per run ONLY inside a mongod the
+        // fixture itself starts on a free loopback port and stops on dispose (AuditIntentTemporalMongoFixture /
+        // AuditOutboxTemporalReplicaSetFixture: OwnedMongoProcess, own --dbpath under the temp directory).
+        // The Platform file needs a private server because its subject is the server's own shape — a standalone
+        // that must refuse transactions, a replica set that must accept them — which the shared instance cannot be
+        // both of. The MDM file's subject is NOT the server (it starts the API host without startup maintenance); it
+        // borrows the same owned standalone, so its per-run names live and die inside that process and never reach
+        // the shared mongod. CONTROL TOWER accepted both entries on those terms (2026-10-01): the rule this list
+        // guards is "no database per run on the SHARED instance", and neither file puts one there.
+        // ⚠ One caveat, recorded rather than hidden: the Platform fixture uses DITEN_FU02_REPLICA_MONGO instead of
+        // its own replica set when that variable is set. Pointing it at the shared mongod would put the per-run
+        // databases there; nothing in this repository sets it.
+        // In the same round three MDM files LEFT this list (fixed names now): AuditIntentDeliveryMongoTests,
+        // LegalEntityMongoRoundTripTests, ProductAbbreviationRegisterMongoTests.
+        "services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ApiStartupExecutionModeTests.cs",
+        "services/Diten.Platform/tests/Diten.Platform.Application.Tests/Audit/AuditOutboxTemporalStorageMigrationMongoTests.cs"
     };
 
     private static readonly string[] KnownTestSideIndexBuild =
     {
-        "services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/ProductAbbreviationPermissionOnboardingMongoTests.cs",
 
         /*
          * ⚠ NOT A DEBT — THIS ONE IS THE TEST OF THE PRODUCTION PATH ITSELF. PlatformSchemaContractMongoTests

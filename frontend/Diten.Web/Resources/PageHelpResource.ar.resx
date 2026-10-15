@@ -1,0 +1,417 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<root xmlns:ns1="urn:schemas-microsoft-com:xml-msdata" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:schema id="root">
+    <xs:element name="root" ns1:IsDataSet="true">
+      <xs:complexType>
+        <xs:choice maxOccurs="unbounded">
+          <xs:element name="metadata">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="value" type="xsd:string" minOccurs="0" />
+              </xs:sequence>
+              <xs:attribute name="name" type="xsd:string" />
+              <xs:attribute name="type" type="xsd:string" />
+              <xs:attribute name="mimetype" type="xsd:string" />
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="assembly">
+            <xs:complexType>
+              <xs:attribute name="alias" type="xsd:string" />
+              <xs:attribute name="name" type="xsd:string" />
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="data">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="value" type="xsd:string" minOccurs="0" ns1:Ordinal="1" />
+                <xs:element name="comment" type="xsd:string" minOccurs="0" ns1:Ordinal="2" />
+              </xs:sequence>
+              <xs:attribute name="name" type="xsd:string" ns1:Ordinal="1" />
+              <xs:attribute name="type" type="xsd:string" ns1:Ordinal="3" />
+              <xs:attribute name="mimetype" type="xsd:string" ns1:Ordinal="4" />
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="resheader">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="value" type="xsd:string" minOccurs="0" ns1:Ordinal="1" />
+              </xs:sequence>
+              <xs:attribute name="name" type="xsd:string" use="required" />
+            </xs:complexType>
+          </xs:element>
+        </xs:choice>
+      </xs:complexType>
+    </xs:element>
+  </xs:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0,
+      Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0,
+      Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Help.Panel.Open" xml:space="preserve">
+    <value>مساعدة لهذه الصفحة</value>
+  </data>
+  <data name="Help.Panel.Title" xml:space="preserve">
+    <value>مساعدة</value>
+  </data>
+  <data name="Help.Panel.Close" xml:space="preserve">
+    <value>إغلاق</value>
+  </data>
+  <data name="Help.Panel.PurposeHeading" xml:space="preserve">
+    <value>الغرض من هذه الصفحة</value>
+  </data>
+  <data name="Help.Panel.ChordTitle" xml:space="preserve">
+    <value>Ctrl+Enter (⌘+Enter على Mac). لا يُنفِّذ Enter وحده هذا الإجراء.</value>
+  </data>
+  <data name="Help.Panel.StartTour" xml:space="preserve">
+    <value>ابدأ الجولة</value>
+  </data>
+  <data name="Help.Panel.Preparing" xml:space="preserve">
+    <value>نص المساعدة لهذه الصفحة قيد الإعداد.</value>
+  </data>
+  <data name="Help.Panel.Eyebrow" xml:space="preserve">
+    <value>مساعدة الصفحة</value>
+  </data>
+  <data name="Help.Panel.Tabs" xml:space="preserve">
+    <value>أقسام المساعدة</value>
+  </data>
+  <data name="Help.Panel.TabOverview" xml:space="preserve">
+    <value>نظرة عامة</value>
+  </data>
+  <data name="Help.Panel.TabSteps" xml:space="preserve">
+    <value>خطوة بخطوة</value>
+  </data>
+  <data name="Help.Panel.TabKeys" xml:space="preserve">
+    <value>لوحة المفاتيح</value>
+  </data>
+  <data name="Help.Panel.GeneralCard" xml:space="preserve">
+    <value>معلومات عامة</value>
+  </data>
+  <data name="Help.Panel.RelatedCard" xml:space="preserve">
+    <value>صفحات ذات صلة</value>
+  </data>
+  <data name="Help.Panel.AudienceLabel" xml:space="preserve">
+    <value>من يستخدمها</value>
+  </data>
+  <data name="Help.Panel.ImmediateLabel" xml:space="preserve">
+    <value>إجراءات تسري فورًا</value>
+  </data>
+  <data name="Help.Panel.StepNumber" xml:space="preserve">
+    <value>الخطوة {0}</value>
+  </data>
+  <data name="Help.Panel.KeysEverywhere" xml:space="preserve">
+    <value>في كل صفحة</value>
+  </data>
+  <data name="Help.Panel.KeysThisPage" xml:space="preserve">
+    <value>في هذه الصفحة</value>
+  </data>
+  <data name="Help.Panel.KeyHelp" xml:space="preserve">
+    <value>يفتح هذه اللوحة</value>
+  </data>
+  <data name="Help.Panel.KeySearch" xml:space="preserve">
+    <value>ابحث عن صفحة، وانتقل إلى القائمة</value>
+  </data>
+  <data name="Help.Panel.KeyEnter" xml:space="preserve">
+    <value>يحفظ في اللوحة الجانبية (إجراءات يمكن التراجع عنها)</value>
+  </data>
+  <data name="Help.Panel.KeyChord" xml:space="preserve">
+    <value>ينفّذ إجراءً لا يمكن التراجع عنه (الإرسال، الاعتماد، الحذف…)؛ ويحفظ في الحقل متعدد الأسطر</value>
+  </data>
+  <data name="Help.Panel.KeyEscape" xml:space="preserve">
+    <value>يغلق اللوحة المفتوحة</value>
+  </data>
+  <data name="Help.Panel.MacNote" xml:space="preserve">
+    <value>على Mac، استخدم ⌘ بدلًا من Ctrl.</value>
+  </data>
+  <data name="Tour.Next" xml:space="preserve">
+    <value>التالي</value>
+  </data>
+  <data name="Tour.Previous" xml:space="preserve">
+    <value>السابق</value>
+  </data>
+  <data name="Tour.Done" xml:space="preserve">
+    <value>تم</value>
+  </data>
+  <data name="Tour.Progress" xml:space="preserve">
+    <value>{{current}} من {{total}}</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step1.Title" xml:space="preserve">
+    <value>علامات التبويب</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step1.Text" xml:space="preserve">
+    <value>يعرض صندوق الوارد الأعمال وطلبات الموافقة المرسلة إليك، ومهامي الأعمال المسندة إليك، وقائمة الانتظار الأعمال التي يمكن لفريقك تولّيها.</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step2.Title" xml:space="preserve">
+    <value>البحث</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step2.Text" xml:space="preserve">
+    <value>اكتب جزءًا من العنوان لتضييق القائمة؛ وتضيّقها رقائق التصفية أكثر حسب النوع والحالة.</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step3.Title" xml:space="preserve">
+    <value>القائمة</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step3.Text" xml:space="preserve">
+    <value>انقر على صف لفتح العمل: تجد هناك تفاصيله وقائمة التحقق والتعليقات والسجل.</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step4.Title" xml:space="preserve">
+    <value>اتخذ إجراءً</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step4.Text" xml:space="preserve">
+    <value>تجد قبول وبدء وإكمال على الصف. افتح طلب الموافقة لتختار موافقة أو رفض؛ ولتسليم العمل لشخص آخر استخدم تفويض داخل العمل المفتوح.</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step5.Title" xml:space="preserve">
+    <value>جديد</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step5.Text" xml:space="preserve">
+    <value>أنشئ من هنا مهمة أو ملاحظة أو اجتماعًا جديدًا.</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step1.Title" xml:space="preserve">
+    <value>الأسبوع</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step1.Text" xml:space="preserve">
+    <value>تنقّل بين الأسابيع بالأسهم؛ ويعيدك اليوم إلى الأسبوع الحالي.</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step2.Title" xml:space="preserve">
+    <value>أضف صفًا</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step2.Text" xml:space="preserve">
+    <value>استخدم + صف مهمة أو + صف فئة لإضافة ما عملت عليه هذا الأسبوع.</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step3.Title" xml:space="preserve">
+    <value>أدخل الوقت</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step3.Text" xml:space="preserve">
+    <value>اكتب الساعات في خانة كل يوم؛ وتتحدّث المجاميع أثناء الكتابة.</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step4.Title" xml:space="preserve">
+    <value>أرسل الأسبوع</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step4.Text" xml:space="preserve">
+    <value>عند اكتمال الأسبوع اختر إرسال للاعتماد؛ وسيراه المعتمِد في اعتماد سجلات الساعات.</value>
+  </data>
+  <data name="Tour.TIMEAPPROVALS.Step1.Title" xml:space="preserve">
+    <value>أسابيع بانتظارك</value>
+  </data>
+  <data name="Tour.TIMEAPPROVALS.Step1.Text" xml:space="preserve">
+    <value>تُعرض هنا الأسابيع التي أرسلها فريقك للاعتماد.</value>
+  </data>
+  <data name="Tour.TIMEAPPROVALS.Step2.Title" xml:space="preserve">
+    <value>افتح أسبوعًا</value>
+  </data>
+  <data name="Tour.TIMEAPPROVALS.Step2.Text" xml:space="preserve">
+    <value>افتح صفًا لقراءة الأسبوع، ثم اختر اعتماد، أو إعادة مع ذكر السبب ليتم تصحيحه.</value>
+  </data>
+  <data name="Help.USERS.Purpose" xml:space="preserve">
+    <value>أدِر كل من يمكنه تسجيل الدخول إلى المستأجر: ادعُ المستخدمين وعدّل بياناتهم وحدّد ما إذا كان كل حساب نشطًا.</value>
+  </data>
+  <data name="Help.USERS.Step1" xml:space="preserve">
+    <value>ضيّق القائمة بمربع البحث، أو انقر «تصفية» واختر «الحالة» أو «الأدوار» أو «نوع الحساب» ثم انقر «تطبيق».</value>
+  </data>
+  <data name="Help.USERS.Step2" xml:space="preserve">
+    <value>انقر «إضافة مستخدم» واملأ «البريد الإلكتروني» و«الاسم الأول» و«اسم العائلة» في اللوحة الجانبية، ثم انقر «حفظ» أو اضغط Ctrl+Enter (⌘+Enter على Mac). تُرسَل رسالة دعوة بالبريد الإلكتروني، لذلك لا يحفظ Enter وحده.</value>
+  </data>
+  <data name="Help.USERS.Step3" xml:space="preserve">
+    <value>اطلب من المستخدم الجديد تعيين كلمة المرور عبر الرابط المرسل بالبريد؛ وحتى ذلك الحين تظهر حالته «مدعو» ويتيح الصف «إعادة إرسال الدعوة».</value>
+  </data>
+  <data name="Help.USERS.Step4" xml:space="preserve">
+    <value>افتح إجراءات الصف لـ«عرض» المستخدم أو «تعديل السجل»، أو «تعطيل» الحساب أو «تفعيل»ه، أو «إعادة تعيين كلمة المرور»، أو «حذف»ه.</value>
+  </data>
+  <data name="Help.USERS.Step5" xml:space="preserve">
+    <value>لإسناد أدوار إلى مستخدم، افتح صفحة أدوار المستخدمين؛ فعمود «الأدوار» هنا يعرض الأدوار المسندة فقط.</value>
+  </data>
+  <data name="Help.USERS.Audience" xml:space="preserve">
+    <value>المسؤولون</value>
+  </data>
+  <data name="Help.USERS.Immediate" xml:space="preserve">
+    <value>التعطيل، الحذف، إعادة تعيين كلمة المرور</value>
+  </data>
+  <data name="Help.USERS.Step1Title" xml:space="preserve">
+    <value>تضييق القائمة</value>
+  </data>
+  <data name="Help.USERS.Step2Title" xml:space="preserve">
+    <value>دعوة مستخدم</value>
+  </data>
+  <data name="Help.USERS.Step3Title" xml:space="preserve">
+    <value>متابعة الدعوة</value>
+  </data>
+  <data name="Help.USERS.Step4Title" xml:space="preserve">
+    <value>إدارة الحساب</value>
+  </data>
+  <data name="Help.USERS.Step5Title" xml:space="preserve">
+    <value>إسناد الأدوار</value>
+  </data>
+  <data name="Help.USERS.Related.USERROLES" xml:space="preserve">
+    <value>لإسناد أدوار إلى مستخدم</value>
+  </data>
+  <data name="Help.USERS.Related.ROLES" xml:space="preserve">
+    <value>لمعرفة ما يسمح به كل دور</value>
+  </data>
+  <data name="Help.ROLES.Purpose" xml:space="preserve">
+    <value>تعرض هذه الصفحة أدوار المستأجر: أدوار النظام المرفقة بالمنصة والأدوار المخصصة التي تنشئها.</value>
+  </data>
+  <data name="Help.ROLES.Step1" xml:space="preserve">
+    <value>ابحث في القائمة، أو انقر «تصفية» واختر «النظام (مدمج، مقفل)» أو «مخصص (قابل للتعديل)» ضمن «النوع» ثم انقر «تطبيق».</value>
+  </data>
+  <data name="Help.ROLES.Step2" xml:space="preserve">
+    <value>انقر «إضافة دور» وأدخل «الاسم» و«الاسم المعروض» (و«الوصف» عند الحاجة)، ثم انقر «حفظ»؛ لا يمكن تغيير الاسم لاحقًا.</value>
+  </data>
+  <data name="Help.ROLES.Step3" xml:space="preserve">
+    <value>انقر أيقونة المفتاح «إدارة الصلاحيات» في أي صف لفتح أذونات الأدوار والدور محدد مسبقًا.</value>
+  </data>
+  <data name="Help.ROLES.Step4" xml:space="preserve">
+    <value>استخدم «عرض» أو «تعديل السجل» أو «حذف» على الدور المخصص؛ أما دور النظام فيظهر بأيقونة قفل ويمكن عرضه فقط.</value>
+  </data>
+  <data name="Help.ROLES.Audience" xml:space="preserve">
+    <value>المسؤولون</value>
+  </data>
+  <data name="Help.ROLES.Immediate" xml:space="preserve">
+    <value>حذف دور مخصص</value>
+  </data>
+  <data name="Help.ROLES.Step1Title" xml:space="preserve">
+    <value>البحث عن دور</value>
+  </data>
+  <data name="Help.ROLES.Step2Title" xml:space="preserve">
+    <value>إضافة دور</value>
+  </data>
+  <data name="Help.ROLES.Step3Title" xml:space="preserve">
+    <value>إدارة صلاحياته</value>
+  </data>
+  <data name="Help.ROLES.Step4Title" xml:space="preserve">
+    <value>العرض أو التعديل أو الحذف</value>
+  </data>
+  <data name="Help.ROLES.Related.ROLEPERMISSIONS" xml:space="preserve">
+    <value>لتحديد ما يمكن للدور فعله</value>
+  </data>
+  <data name="Help.ROLES.Related.USERROLES" xml:space="preserve">
+    <value>لإسناد أدوار إلى المستخدمين</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Purpose" xml:space="preserve">
+    <value>تحدد هذه الصفحة ما يُسمح للدور بفعله: تمنح صلاحيات مجمّعة حسب الوحدة أو تزيلها لدور واحد في كل مرة.</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step1" xml:space="preserve">
+    <value>اختر دورًا من مربع «الدور»؛ وعند الوصول عبر «إدارة الصلاحيات» في صفحة الأدوار يكون الدور محددًا مسبقًا.</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step2" xml:space="preserve">
+    <value>ضيّق الصلاحيات باستخدام «الوحدة» أو مربع «ابحث في الصلاحيات…» أو علامات التبويب «الكل» و«مخصص» و«غير مخصص».</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step3" xml:space="preserve">
+    <value>انقر شارة صلاحية غير مخصصة لمنحها للدور؛ ويُحفظ التغيير فورًا.</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step4" xml:space="preserve">
+    <value>انقر شارة مخصصة وأكّد لإزالتها؛ أما الشارات ذات القفل فمصدرها الأساس أو إحدى الوحدات ولا يمكن تغييرها من هنا.</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step5" xml:space="preserve">
+    <value>راجع «الدور المحدد» على اليمين لمعرفة «تغطية الأذونات» وأعداد الصلاحيات المخصصة والمقفلة وغير المخصصة.</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Audience" xml:space="preserve">
+    <value>المسؤولون</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Immediate" xml:space="preserve">
+    <value>منح الصلاحية وإزالتها؛ ويؤثر ذلك في جميع المستخدمين الذين يحملون الدور</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step1Title" xml:space="preserve">
+    <value>اختيار دور</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step2Title" xml:space="preserve">
+    <value>تضييق الصلاحيات</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step3Title" xml:space="preserve">
+    <value>منح صلاحية</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step4Title" xml:space="preserve">
+    <value>إزالة صلاحية</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step5Title" xml:space="preserve">
+    <value>مراجعة التغطية</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Related.ROLES" xml:space="preserve">
+    <value>لإضافة الأدوار أو تعديلها</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Related.USERROLES" xml:space="preserve">
+    <value>لإسناد أدوار إلى المستخدمين</value>
+  </data>
+  <data name="Help.USERROLES.Purpose" xml:space="preserve">
+    <value>تربط هذه الصفحة المستخدمين بالأدوار: اختر مستخدمًا ثم أسند إليه أدوارًا أو أزلها عنه.</value>
+  </data>
+  <data name="Help.USERROLES.Step1" xml:space="preserve">
+    <value>اختر شخصًا من مربع «المستخدم» لعرض الأدوار المسندة إليه وغير المسندة.</value>
+  </data>
+  <data name="Help.USERROLES.Step2" xml:space="preserve">
+    <value>ضيّق الأدوار باستخدام مربع «البحث في الأدوار» أو علامات التبويب «الكل» و«المسندة» و«غير المسندة».</value>
+  </data>
+  <data name="Help.USERROLES.Step3" xml:space="preserve">
+    <value>انقر «إسناد» على دور ضمن «الأدوار غير المسندة» لمنحه للمستخدم؛ ويُحفظ التغيير فورًا.</value>
+  </data>
+  <data name="Help.USERROLES.Step4" xml:space="preserve">
+    <value>لإزالة دور، انقر «إزالة» على الدور المسند أو علامة x بجانبه ضمن «الأدوار النشطة»، ثم أكّد.</value>
+  </data>
+  <data name="Help.USERROLES.Audience" xml:space="preserve">
+    <value>المسؤولون</value>
+  </data>
+  <data name="Help.USERROLES.Immediate" xml:space="preserve">
+    <value>إسناد الدور وإزالته؛ ويحصل المستخدم على صلاحيات جميع أدواره مجتمعة</value>
+  </data>
+  <data name="Help.USERROLES.Step1Title" xml:space="preserve">
+    <value>اختيار مستخدم</value>
+  </data>
+  <data name="Help.USERROLES.Step2Title" xml:space="preserve">
+    <value>تضييق الأدوار</value>
+  </data>
+  <data name="Help.USERROLES.Step3Title" xml:space="preserve">
+    <value>إسناد دور</value>
+  </data>
+  <data name="Help.USERROLES.Step4Title" xml:space="preserve">
+    <value>إزالة دور</value>
+  </data>
+  <data name="Help.USERROLES.Related.USERS" xml:space="preserve">
+    <value>لدعوة المستخدمين أو إدارتهم</value>
+  </data>
+  <data name="Help.USERROLES.Related.ROLES" xml:space="preserve">
+    <value>لإضافة الأدوار أو تعديلها</value>
+  </data>
+  <data name="Help.ITEMS.Purpose" xml:space="preserve">
+    <value>تعرض هذه الصفحة الأصناف (المواد المحفوظة في المخزون: المواد الفعالة، والسواغات، ومواد التعبئة، والمنتجات الوسيطة) مع هويتها ونوع مادتها وسلوك مخزونها. يُنشأ كل صنف هنا ويمر عبر حالاته: «مسودة»، «بانتظار الموافقة»، «نشط»، «معطّل»، «متقاعد».</value>
+  </data>
+  <data name="Help.ITEMS.Step1" xml:space="preserve">
+    <value>ضيّق القائمة بمربع البحث، أو انقر «تصفية» واختر «الحالة» أو «نوع المادة» ثم انقر «تطبيق».</value>
+  </data>
+  <data name="Help.ITEMS.Step2" xml:space="preserve">
+    <value>انقر «إضافة صنف»، واملأ الهوية وسلوك المخزون في نموذجه ذي الصفحة الكاملة، ثم انقر «حفظ»: يُحفظ الصنف بحالة «مسودة». وأثناء وجودك في حقل من سطر واحد في هذا النموذج يحفظه مفتاح Enter أيضًا (أما في مربع «الوصف» فيبدأ Enter سطرًا جديدًا). وفيما بعد، في الصنف النشط لا يتغير بحرية إلا الاسم والوصف؛ أما حقل المخزون المملوء فيحتاج إلى تصحيح معتمد.</value>
+  </data>
+  <data name="Help.ITEMS.Step3" xml:space="preserve">
+    <value>من «الإجراءات» الخاصة بالمسودة اختر «إرسال للموافقة»: يبقى الصنف «بانتظار الموافقة» حتى تتم الموافقة عليه، وعندها فقط يصبح بحالة «نشط». وأثناء انتظار الموافقة يستطيع الشخص الذي أرسل الطلب أن يختار «سحب طلب الموافقة» من «الإجراءات» الخاصة به: فيعود الصنف إلى حالته السابقة.</value>
+  </data>
+  <data name="Help.ITEMS.Step4" xml:space="preserve">
+    <value>«تعطيل» يُخرج الصنف النشط من إدخالات المخزون الجديدة؛ و«طلب إعادة التفعيل» يمر بالموافقة نفسها مرة أخرى؛ و«إحالة إلى التقاعد» نهائية، ولا يُسمح بها إلا لصنف معطّل مخزونه صفر، ولا يُعاد استخدام الرمز أبدًا. كل إجراء منها يطلب سببًا.</value>
+  </data>
+  <data name="Help.ITEMS.Step5" xml:space="preserve">
+    <value>خارج حقول النص، ومن دون نافذة حوار أو لوحة جانبية مفتوحة، يفتح المفتاح «?» هذه المساعدة مع اختصارات الصفحة.</value>
+  </data>
+  <data name="Help.ITEMS.Audience" xml:space="preserve">
+    <value>فريق البيانات الرئيسية</value>
+  </data>
+  <data name="Help.ITEMS.Step1Title" xml:space="preserve">
+    <value>تضييق القائمة</value>
+  </data>
+  <data name="Help.ITEMS.Step2Title" xml:space="preserve">
+    <value>إضافة صنف</value>
+  </data>
+  <data name="Help.ITEMS.Step3Title" xml:space="preserve">
+    <value>الإرسال للموافقة</value>
+  </data>
+  <data name="Help.ITEMS.Step4Title" xml:space="preserve">
+    <value>تغيير حالته</value>
+  </data>
+  <data name="Help.ITEMS.Step5Title" xml:space="preserve">
+    <value>استخدام لوحة المفاتيح</value>
+  </data>
+</root>

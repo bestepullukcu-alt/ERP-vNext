@@ -130,7 +130,7 @@ public sealed class ClaimTaskItemHandlerTests
         Guid actor)
         => new(tasks, assignments, positionAssignments,
             new FakeCurrentUserContext(actor), new FakeTenantContext(TaskTestData.Tenant),
-            new FakeTaskNotificationService(), NullLogger<ClaimTaskItemHandler>.Instance);
+            new FakeTaskNotificationService(), NullLogger<ClaimTaskItemHandler>.Instance, writeGate: TaskWriteGateDoubles.Open);
 
     private static TaskItem PoolTask() => new()
     {

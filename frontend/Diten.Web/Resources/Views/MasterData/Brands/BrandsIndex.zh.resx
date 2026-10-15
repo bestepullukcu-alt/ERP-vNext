@@ -88,9 +88,53 @@
   <data name="OwnerCompanyId" xml:space="preserve"><value>所属公司</value></data>
   <data name="BusinessUnitId" xml:space="preserve"><value>业务单元</value></data>
   <data name="ReferencesSection" xml:space="preserve"><value>引用</value></data>
-  <data name="ReferenceIdsOnlyHelp" xml:space="preserve"><value>引用标识按原样显示；尚未解析对应主数据记录。</value></data>
+  <data name="ReferenceIdsOnlyHelp" xml:space="preserve"><value>此处没有主记录可解析的引用将按原样保留，并显示为“无法解析”。</value></data>
   <data name="ProductsTab" xml:space="preserve"><value>产品</value></data>
   <data name="ProductsTabUnavailable" xml:space="preserve"><value>没有产品读取权限时无法在此列出产品。</value></data>
   <data name="ArchiveNoCascadeHelp" xml:space="preserve"><value>归档品牌绝不会归档或删除其产品。</value></data>
   <data name="SearchPlaceholder" xml:space="preserve"><value>编码或名称…</value></data>
+  <data name="Reason_brand_not_found" xml:space="preserve"><value>该品牌不存在或您无权访问。</value></data>
+  <data name="Reason_product_not_found" xml:space="preserve"><value>该产品不存在或您无权访问。</value></data>
+  <data name="Reason_brand_code_duplicate" xml:space="preserve"><value>已存在使用此代码的品牌。即使归档后，代码仍保持保留。</value></data>
+  <data name="Reason_product_code_duplicate" xml:space="preserve"><value>已存在使用此代码的产品。即使归档后，代码仍保持保留。</value></data>
+  <data name="Reason_brand_archived" xml:space="preserve"><value>该品牌已归档；无法再关联新产品。</value></data>
+  <data name="Reason_record_archived" xml:space="preserve"><value>该记录已归档，无法再更改。</value></data>
+  <data name="Reason_code_immutable" xml:space="preserve"><value>记录创建后无法更改代码。</value></data>
+  <data name="Reason_invalid_brand_status" xml:space="preserve"><value>请选择有效的品牌状态。</value></data>
+  <data name="Reason_invalid_product_status" xml:space="preserve"><value>请选择有效的产品状态。</value></data>
+  <data name="Reason_invalid_product_type" xml:space="preserve"><value>请选择有效的产品类型。</value></data>
+  <data name="Reason_invalid_dosage_form" xml:space="preserve"><value>请选择有效的剂型。</value></data>
+  <data name="Reason_invalid_unit_of_measure" xml:space="preserve"><value>请选择有效的计量单位。</value></data>
+  <data name="Reason_invalid_atc_code" xml:space="preserve"><value>请输入有效的 ATC 代码。</value></data>
+  <data name="Reason_archived_status_not_assignable" xml:space="preserve"><value>“已归档”状态只能通过归档操作设置。</value></data>
+  <data name="Reason_invalid_effective_window" xml:space="preserve"><value>结束日期不能早于开始日期。</value></data>
+  <data name="Reason_external_reference_primary_conflict" xml:space="preserve"><value>每个来源系统只能有一个主外部引用。</value></data>
+  <data name="Reason_external_reference_duplicate" xml:space="preserve"><value>同一外部引用被输入了两次。</value></data>
+  <data name="Reason_indication_ref_duplicate" xml:space="preserve"><value>同一适应症被输入了两次。</value></data>
+  <data name="Reason_version_conflict" xml:space="preserve"><value>在您打开后，有人更改了此记录。请重新加载并再次进行更改。</value></data>
+  <data name="Reason_expected_version_required" xml:space="preserve"><value>无法将此编辑与您打开的版本对应。请重新加载页面后重试。</value></data>
+  <data name="Reason_external_reference_in_use" xml:space="preserve"><value>此外部引用已被另一条记录使用。</value></data>
+  <data name="Reason_list_query_invalid" xml:space="preserve"><value>列表无法按此方式排序或分页。请重置视图后重试。</value></data>
+  <data name="Reason_brand_not_linkable" xml:space="preserve"><value>只有处于启用状态且在有效期内的品牌才能关联新产品。</value></data>
+  <data name="Reason_store_unavailable" xml:space="preserve"><value>目前无法安全保存此更改。未保存任何内容，请稍后重试。</value></data>
+  <data name="Reason_write_outcome_unknown" xml:space="preserve"><value>更改已发送，但无法确认结果。请重新加载该品牌：如果更改不在其中，请重新操作。</value></data>
+  <data name="Reason_field_invalid" xml:space="preserve"><value>{0}：值缺失、过长或格式不正确。</value></data>
+  <data name="RefusedStatus_400" xml:space="preserve"><value>请求未被接受。请检查输入后重试。</value></data>
+  <data name="RefusedStatus_403" xml:space="preserve"><value>您无权执行此操作。</value></data>
+  <data name="RefusedStatus_404" xml:space="preserve"><value>未找到该记录或您无权访问。</value></data>
+  <data name="RefusedStatus_409" xml:space="preserve"><value>记录已更改或处于不允许此操作的状态。请重新加载后重试。</value></data>
+  <data name="RefusedStatus_502" xml:space="preserve"><value>无法连接到服务。请稍后重试。</value></data>
+  <data name="RefusedStatus_503" xml:space="preserve"><value>服务暂时不可用。请稍后重试。</value></data>
+  <data name="RefusedStatus_504" xml:space="preserve"><value>服务未及时响应。请稍后重试。</value></data>
+  <data name="RefusedStatus_Other" xml:space="preserve"><value>无法完成请求。请稍后重试。</value></data>
+  <data name="ArchiveBrandIrreversible" xml:space="preserve"><value>归档后无法撤销。</value></data>
+  <data name="ArchiveBrandLiveProducts" xml:space="preserve"><value>该品牌有 {0} 个产品正在使用；它们保留该品牌，但无法再关联新产品。</value></data>
+  <data name="ArchiveBrandNoLiveProducts" xml:space="preserve"><value>该品牌没有正在使用的产品。</value></data>
+  <data name="ArchivedWithLiveProducts" xml:space="preserve"><value>有在用产品的已归档品牌</value></data>
+  <data name="ArchivedBrandLiveProducts" xml:space="preserve"><value>该品牌仍有 {0} 个产品在使用。</value></data>
+  <data name="LiveProductCount" xml:space="preserve"><value>在用产品</value></data>
+  <data name="Unresolved" xml:space="preserve"><value>无法解析</value></data>
+  <data name="OwnerCompaniesUnavailable" xml:space="preserve"><value>无法读取公司列表；保留当前所有者。</value></data>
+  <data name="CurrentPageOnly" xml:space="preserve"><value>仅当前页</value></data>
+  <data name="ExcludeArchivedOption" xml:space="preserve"><value>不含已归档</value></data>
 </root>

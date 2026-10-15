@@ -14,7 +14,7 @@ namespace Diten.MdmService.Application.Tests.Approvals;
 
 /// <summary>
 /// WP-VW-W4 (W4-BE-b1) — the infrastructure half: the explicit-tenant CAS store and the inbox against a REAL Mongo (the
-/// other MDM Mongo tests' runner, <c>MDM_TEST_MONGO</c> or localhost:27017, one throw-away database per test), the
+/// other MDM Mongo tests' runner, <c>MdmTestMongo</c> — the run's own replica set, one throw-away database per test), the
 /// configuration, and the start-up with no RabbitMQ (InMemory: no bus at all; RabbitMQ on a closed port: the bus connects in
 /// the background and the host still starts).
 /// </summary>
@@ -199,7 +199,7 @@ public sealed class WorkflowApprovalInfrastructureTests
 
         public static async Task<MongoScope> CreateAsync()
         {
-            var settings = MongoClientSettings.FromConnectionString(Environment.GetEnvironmentVariable("MDM_TEST_MONGO") ?? "mongodb://localhost:27017");
+            var settings = MongoClientSettings.FromConnectionString(MdmTestMongo.ConnectionString); // main-sync 2026-10-14: shared Mongo (MdmTestMongo.SharedPort) default removed (BL-595), owner approved
 #pragma warning disable CS0618
             settings.GuidRepresentation = MongoDB.Bson.GuidRepresentation.Standard;
 #pragma warning restore CS0618

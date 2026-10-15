@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ProfileTitle" xml:space="preserve"><value>Mon profil</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Les informations de votre compte et la langue dans laquelle nous vous écrivons.</value></data>
+  <data name="NameLabel" xml:space="preserve"><value>Nom</value></data>
+  <data name="EmailLabel" xml:space="preserve"><value>Adresse e-mail</value></data>
+  <data name="LanguageTitle" xml:space="preserve"><value>Langue</value></data>
+  <data name="LanguageHelp" xml:space="preserve"><value>Les e-mails qui vous sont adressés sont rédigés dans cette langue, et ce navigateur affiche les écrans dans cette langue. Sans choix, la langue de votre organisation est utilisée.</value></data>
+  <data name="LanguageLabel" xml:space="preserve"><value>Langue préférée</value></data>
+  <data name="LanguageTenantDefault" xml:space="preserve"><value>Langue de l'organisation</value></data>
+  <data name="Save" xml:space="preserve"><value>Enregistrer</value></data>
+  <data name="Loading" xml:space="preserve"><value>Chargement de votre profil…</value></data>
+  <data name="Saved" xml:space="preserve"><value>Votre langue a été enregistrée.</value></data>
+  <data name="Cleared" xml:space="preserve"><value>Votre choix a été supprimé. Les e-mails utilisent désormais la langue de votre organisation.</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>Votre profil n'a pas pu être chargé. Veuillez réessayer plus tard.</value></data>
+  <data name="SaveFailed" xml:space="preserve"><value>Votre langue n'a pas pu être enregistrée. Veuillez réessayer plus tard.</value></data>
+  <data name="ErrorLanguageInvalid" xml:space="preserve"><value>Cette langue n'est pas disponible. Veuillez en choisir une dans la liste.</value></data>
+</root>

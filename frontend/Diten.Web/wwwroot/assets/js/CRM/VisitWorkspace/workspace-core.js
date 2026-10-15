@@ -191,7 +191,8 @@
         'visit_report_reschedule_date_invalid', 'visit_reschedule_already_applied', 'visit_cancel_past_day',
         'unplanned_visit_today_only', 'reference_data_unavailable', 'visit_report_edit_window_closed',
         'visit_report_invalid_transition', 'resource_not_caller', 'visit_reason_applies_to_invalid',
-        'visit_not_yet_due', 'planned_visit_invalid_transition', 'planned_visit_overlap'
+        'visit_not_yet_due', 'planned_visit_invalid_transition', 'planned_visit_overlap',
+        'planned_visit_duplicate_same_day_type', 'planned_visit_time_window_invalid' // W4-FIX-c — the unplanned visit
     ];
 
     /** The first known code in an envelope's errors (the CRM puts the code next to the message). */
@@ -290,18 +291,41 @@
         return Object.assign(base, { allDay: false, startUtc: start, endUtc: end });
     };
 
-    /** The unplanned-visit create body: today, the chosen doctor and time, a generated code, unplanned: true. */
-    const unplannedBody = (contactId, today, time, nowMs) => ({
-        visitCode: 'UNP-' + today.replace(/-/g, '') + '-' + String(nowMs).slice(-6),
-        targetType: 'contact',
-        targetId: contactId,
-        plannedDate: today,
-        plannedStartTime: time || null,
-        visitPurpose: 'medical-visit',
-        visitType: 'field-visit',
-        planStatus: 'planned',
-        unplanned: true
-    });
+    /**
+     * W4-FIX-c (G-4) — an unplanned visit with a time is a WINDOW: the CRM takes plannedStartTime and plannedEndTime together
+     * or neither (planned_visit_time_window_invalid). The end is the start + this default length: the workspace has no
+     * contract / tenant visit length to read (the per-doctor availability length is a separate, per-contact read), so the
+     * unplanned visit uses a fixed 20 minutes. A window never crosses midnight (the CRM compares HH:mm on the same day).
+     */
+    const UNPLANNED_MINUTES = 20;
+    const endTimeOf = (time, minutes) => {
+        const m = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(String(time || ''));
+        if (!m) { return null; }
+        const end = Math.min(23 * 60 + 59, Number(m[1]) * 60 + Number(m[2]) + (minutes == null ? UNPLANNED_MINUTES : minutes));
+        return String(Math.floor(end / 60)).padStart(2, '0') + ':' + String(end % 60).padStart(2, '0');
+    };
+
+    /**
+     * The unplanned-visit create body: today, the chosen target and time, a generated code, unplanned: true.
+     * W4-FIX-c (G-3) — the target is a doctor (a contact id, as before) or { type: 'pharmacy', id: <account id> }.
+     * (G-4) — a time sends start + end together; no time sends neither.
+     */
+    const unplannedBody = (target, today, time, nowMs) => {
+        const t = target && typeof target === 'object' ? target : { type: 'contact', id: target };
+        const start = time && endTimeOf(time) ? time : null;
+        return {
+            visitCode: 'UNP-' + today.replace(/-/g, '') + '-' + String(nowMs).slice(-6),
+            targetType: t.type === 'pharmacy' ? 'pharmacy' : 'contact',
+            targetId: t.id,
+            plannedDate: today,
+            plannedStartTime: start,
+            plannedEndTime: start ? endTimeOf(start) : null,
+            visitPurpose: 'medical-visit',
+            visitType: 'field-visit',
+            planStatus: 'planned',
+            unplanned: true
+        };
+    };
 
     // ── Plan mode (WP-VW-W2 WEB-b) ───────────────────────────────────────────────────────────────────────────
     /** Plan mode edits ONLY a draft week; an approved or past week — or Execute mode — is read-only (no drag, no drop). */
@@ -679,7 +703,7 @@
         STATUSES, statusStyle, countdown, showsCountdown, layoutFor, PHONE_MAX, actionsFor, noteState, canSave,
         saveNotDone, ERROR_CODES, errorKey, errorText, productLabel, contentRoles, filterVisits, loadFilters,
         saveFilters, FILTER_KEY, addDays, mondayOf, weekWindow, capacity, reopenOk, REOPEN_MIN, lastReportOf, visitKey,
-        eventOf, unplannedBody,
+        eventOf, unplannedBody, endTimeOf, UNPLANNED_MINUTES,
         canPlanWeek, PIN_STEP, roundToStep, pinFromDrop, pinsWith, PIN_CODES, pinKey, pinText, pinMoveCode,
         dragItem, parseDragItem, accountOptions, unplacedRows, sessionVersionOf,
         compactCard, tinyCard, cardModel, stepMinutes, estimate, monthCell, DIALOG_TABS, dialogTabs, dayHead, LEGEND, productDistribution, alertFor, isPromo,

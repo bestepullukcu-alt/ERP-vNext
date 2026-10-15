@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text;
@@ -50,6 +51,28 @@ public sealed class AccountKindEndpointTests : IClassFixture<AccountKindAcceptan
         var catalog = _host.Database.GetCollection<Permission>("permissions");
         Assert.NotNull(catalog.Find(p => p.Key == "auth.users.lookup").FirstOrDefault());
         Assert.NotNull(catalog.Find(p => p.Key == "auth.users.account-kind.manage").FirstOrDefault());
+    }
+
+    // Main sync FIX1 (CT decision C): after the host is up, NOTHING in its resolved configuration names the shared Mongo —
+    // every value is walked, not only MongoDbSettings — and every IMongoClient the container hands out talks to the
+    // ephemeral mongod. A second client, a health check or any key a future change adds that still points at
+    // localhost:27017 / 127.0.0.1:27017 (or a portless loopback, the driver's default port) is red here.
+    [Fact]
+    public void The_host_resolved_configuration_and_clients_name_no_shared_mongo()
+    {
+        var configuration = _host.Factory.Services.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>();
+        var shared = new System.Text.RegularExpressions.Regex(
+            @"(?:localhost|127\.0\.0\.1|\[::1\])(?::27017\b|(?![:\d]))", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        var offenders = configuration.AsEnumerable()
+            .Where(pair => pair.Value is { } value && value.Contains("mongodb", StringComparison.OrdinalIgnoreCase) && shared.IsMatch(value))
+            .Select(pair => pair.Key)
+            .ToArray();
+        Assert.True(offenders.Length == 0, "configuration keys that still name the shared Mongo: " + string.Join(", ", offenders));
+
+        var clients = _host.Factory.Services.GetServices<MongoDB.Driver.IMongoClient>().ToArray();
+        Assert.NotEmpty(clients);
+        Assert.All(clients, client => Assert.All(client.Settings.Servers, server =>
+            Assert.False(server.Port is >= 27017 and <= 27021, $"an IMongoClient talks to {server}")));
     }
 
     [Fact]

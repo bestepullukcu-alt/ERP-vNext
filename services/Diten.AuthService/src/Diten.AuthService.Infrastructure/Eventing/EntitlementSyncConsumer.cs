@@ -19,6 +19,7 @@ public sealed class EntitlementSyncConsumer : IConsumer<EventTransportMessage>
 {
     public const string ConsumerName = nameof(EntitlementSyncConsumer);
     private const string Actor = "entitlement-sync";
+    private static readonly TimeSpan InboxLeaseDuration = TimeSpan.FromSeconds(30);
 
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
@@ -69,6 +70,15 @@ public sealed class EntitlementSyncConsumer : IConsumer<EventTransportMessage>
             return; // malformed payload → fail-safe no-op
         }
 
+        if (payload.TenantId != Guid.Empty
+            && message.TenantId.HasValue
+            && message.TenantId.Value != Guid.Empty
+            && payload.TenantId != message.TenantId.Value)
+        {
+            throw new InvalidOperationException(
+                "Entitlement event payload tenant does not match the transport envelope tenant.");
+        }
+
         var tenantId = payload.TenantId != Guid.Empty
             ? payload.TenantId
             : message.TenantId ?? Guid.Empty;
@@ -98,8 +108,25 @@ public sealed class EntitlementSyncConsumer : IConsumer<EventTransportMessage>
             }
         }
 
-        var firstDelivery = await _inbox.TryInsertAsync(message.EventId, message.EventName, tenantId, ct);
-        if (!firstDelivery)
+        var claim = await _inbox.TryClaimAsync(
+            message.EventId,
+            message.EventName,
+            tenantId,
+            InboxLeaseDuration,
+            ct);
+        if (claim.Result == IntegrationEventClaimResult.TenantMismatch)
+        {
+            throw new InvalidOperationException(
+                "Entitlement inbox EventId is already bound to a different tenant.");
+        }
+
+        if (claim.Result == IntegrationEventClaimResult.IdentityMismatch)
+        {
+            throw new InvalidOperationException(
+                "Entitlement inbox EventId is already bound to a different event identity.");
+        }
+
+        if (claim.Result == IntegrationEventClaimResult.Completed)
         {
             _logger.LogInformation(
                 "entitlement.sync.duplicate_ignored EventId={EventId} EventName={EventName} TenantId={TenantId}",
@@ -107,31 +134,70 @@ public sealed class EntitlementSyncConsumer : IConsumer<EventTransportMessage>
             return;
         }
 
-        switch (operation)
+        if (claim.Result == IntegrationEventClaimResult.Busy)
         {
-            case EntitlementOperation.Grant:
-                // Resolve the module's DECLARED catalog permission keys (namespace-agnostic) only from an
-                // authoritative read. A confirmed result that omits the event module revokes that module's sourced
-                // grants; an unavailable read returned before the inbox insert and remains retryable.
-                var grantedModule = entitlementRead!.Modules
-                    .FirstOrDefault(m => string.Equals(m.ModuleCode, payload.ModuleCode, StringComparison.OrdinalIgnoreCase));
-                if (grantedModule is null)
-                {
+            throw new InvalidOperationException("Entitlement inbox EventId is currently being processed.");
+        }
+
+        if (claim.Result != IntegrationEventClaimResult.Claimed || !claim.ClaimId.HasValue)
+        {
+            throw new InvalidOperationException("Entitlement inbox returned an invalid claim result.");
+        }
+
+        var claimId = claim.ClaimId.Value;
+
+        try
+        {
+            switch (operation)
+            {
+                case EntitlementOperation.Grant:
+                    // Resolve the module's DECLARED catalog permission keys (namespace-agnostic) only from an
+                    // authoritative read. A confirmed result that omits the event module revokes that module's sourced
+                    // grants; an unavailable read returned before inbox completion and remains retryable.
+                    var grantedModule = entitlementRead!.Modules
+                        .FirstOrDefault(m => string.Equals(m.ModuleCode, payload.ModuleCode, StringComparison.OrdinalIgnoreCase));
+                    if (grantedModule is null)
+                    {
+                        await _sync.RevokeModuleAsync(tenantId, payload.ModuleCode, Actor, ct);
+                        break;
+                    }
+
+                    await _sync.GrantModuleWithKeysAsync(
+                        tenantId, payload.ModuleCode, grantedModule.PermissionKeys, Actor, ct);
+                    break;
+                case EntitlementOperation.Revoke:
                     await _sync.RevokeModuleAsync(tenantId, payload.ModuleCode, Actor, ct);
                     break;
-                }
+                case EntitlementOperation.Reconcile:
+                    // Catalog-key-driven authoritative reconcile. Confirmed empty removes stale module grants; an
+                    // unavailable read returned before inbox completion and performs no grant or revoke.
+                    await _sync.SyncTenantModulesWithKeysAsync(tenantId, entitlementRead!.Modules, Actor, ct);
+                    break;
+            }
 
-                await _sync.GrantModuleWithKeysAsync(
-                    tenantId, payload.ModuleCode, grantedModule.PermissionKeys, Actor, ct);
-                break;
-            case EntitlementOperation.Revoke:
-                await _sync.RevokeModuleAsync(tenantId, payload.ModuleCode, Actor, ct);
-                break;
-            case EntitlementOperation.Reconcile:
-                // Catalog-key-driven authoritative reconcile. Confirmed empty removes stale module grants; an
-                // unavailable read returned before the inbox insert and performs no grant or revoke.
-                await _sync.SyncTenantModulesWithKeysAsync(tenantId, entitlementRead!.Modules, Actor, ct);
-                break;
+            await _inbox.CompleteClaimAsync(message.EventId, tenantId, claimId, ct);
+        }
+        catch
+        {
+            try
+            {
+                await _inbox.ReleaseClaimAsync(
+                    message.EventId,
+                    tenantId,
+                    claimId,
+                    CancellationToken.None);
+            }
+            catch (Exception releaseException)
+            {
+                // The bounded lease remains the crash/release-failure recovery path.
+                _logger.LogError(
+                    releaseException,
+                    "entitlement.sync.claim_release_failed EventId={EventId} TenantId={TenantId}",
+                    message.EventId,
+                    tenantId);
+            }
+
+            throw;
         }
 
         _logger.LogInformation(

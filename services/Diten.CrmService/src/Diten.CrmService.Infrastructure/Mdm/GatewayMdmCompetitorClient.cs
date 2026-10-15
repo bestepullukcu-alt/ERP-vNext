@@ -76,6 +76,20 @@ public sealed class GatewayMdmCompetitorClient : IMdmCompetitorClient
                 : new CompetitorProposalResult(false, null, "mdm_unavailable");
     }
 
+    /// <summary>W4-FIX-d (G-9): GSKU → global product through MDM <c>api/gskus/{id}</c> (at most 50; any failure ⇒ null).</summary>
+    public async Task<IReadOnlyDictionary<Guid, Guid>?> GskuProductsAsync(IReadOnlyCollection<Guid> gskuIds, CancellationToken ct)
+    {
+        var result = new Dictionary<Guid, Guid>();
+        foreach (var id in gskuIds.Distinct().Take(MaxSurvivorReads))
+        {
+            var data = await SendAsync(HttpMethod.Get, "api/gskus/" + id.ToString("D"), null, ct);
+            if (data is not { ValueKind: JsonValueKind.Object } row) return null;
+            if (Guid(row, "globalProductId") is { } product) result[id] = product;
+        }
+
+        return result;
+    }
+
     public async Task<IReadOnlyDictionary<Guid, Guid>?> ResolveSurvivorsAsync(IReadOnlyCollection<Guid> ids, CancellationToken ct)
     {
         var map = new Dictionary<Guid, Guid>();

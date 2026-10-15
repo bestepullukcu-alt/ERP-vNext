@@ -188,6 +188,20 @@ public sealed class TaskLifecycleService : ITaskLifecycleService
             return false;
         }
 
+        /*
+         * BL-509 — a request nobody has accepted is nobody's work yet: it can be called off and nothing else.
+         * Asked HERE, of the task, rather than left to each handler's "is the caller the holder" test — that test
+         * happens to refuse too (there is no holder), but a rule that holds by coincidence is the acceptance gate
+         * all over again, which lives only in the projection.
+         */
+        if (task.AssignmentTarget == TaskAssignmentTarget.Offered
+            && task.AssigneeUserId is null
+            && target is not TaskLifecycle.Cancelled)
+        {
+            reasonCode = TaskReasonCodes.RequestNotAccepted;
+            return false;
+        }
+
         var allowed = task.Lifecycle switch
         {
             TaskLifecycle.Open => target is TaskLifecycle.Planned or TaskLifecycle.InProgress

@@ -38,7 +38,7 @@ const LoginPage = (function () {
         const rememberMe = document.getElementById('remember-me')?.checked === true;
 
         if (!email || !password) {
-            showError(window.L10n?.LoginErrorRequired || 'Email ve şifre zorunludur.');
+            showError(window.L10n?.LoginErrorRequired || '');
             return;
         }
 
@@ -50,7 +50,7 @@ const LoginPage = (function () {
         try {
             const tenantId = config.authMode === 'platform' ? null : resolveTenantIdForLogin();
             if (config.authMode !== 'platform' && !tenantId) {
-                throw new Error(window.L10n?.TenantLoginMissingTenant || 'Tenant login link is missing tenant information.');
+                throw refusal(window.L10n?.TenantLoginMissingTenant || '');
             }
 
             const loginEndpoint = config.authMode === 'platform'
@@ -73,12 +73,7 @@ const LoginPage = (function () {
             });
 
             if (!response.ok) {
-                const problem = await response.json();
-                let errMsg = problem.detail || problem.title || 'Giriş başarısız. Lütfen bilgilerinizi kontrol edin.';
-                if (errMsg === 'Invalid credentials.') {
-                    errMsg = window.L10n?.LoginError || 'Geçersiz e-posta veya şifre';
-                }
-                throw new Error(errMsg);
+                throw refusal(await refusalSentence(response));
             }
 
             const data = await response.json();
@@ -98,7 +93,7 @@ const LoginPage = (function () {
             window.location.href = data.redirectUrl || window.PostLoginDefault || '/WorkCenterNext';
 
         } catch (error) {
-            showError(error.message);
+            showError(sentenceOf(error));
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalText;
         }
@@ -132,14 +127,13 @@ const LoginPage = (function () {
             });
 
             if (!response.ok) {
-                const problem = await response.json();
-                throw new Error(problem.detail || problem.title || 'Verification failed.');
+                throw refusal(await refusalSentence(response));
             }
 
             const data = await response.json();
             window.location.href = data.redirectUrl || window.PostLoginDefault || '/WorkCenterNext';
         } catch (error) {
-            showError(error.message);
+            showError(sentenceOf(error));
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalText;
         }
@@ -166,8 +160,7 @@ const LoginPage = (function () {
             });
 
             if (!response.ok) {
-                const problem = await response.json();
-                throw new Error(problem.detail || problem.title || 'Verification code could not be resent.');
+                throw refusal(await refusalSentence(response));
             }
 
             const data = await response.json();
@@ -177,11 +170,11 @@ const LoginPage = (function () {
                     icon: 'success',
                     title: window.L10n?.MfaResentTitle || 'Code sent',
                     text: window.L10n?.MfaResentMessage || 'A new verification code has been sent.',
-                    confirmButtonText: 'Tamam'
+                    confirmButtonText: window.L10n?.ConfirmButton || 'OK'
                 });
             }
         } catch (error) {
-            showError(error.message);
+            showError(sentenceOf(error));
         } finally {
             window.setTimeout(() => {
                 resendBtn.disabled = false;
@@ -198,6 +191,28 @@ const LoginPage = (function () {
         document.getElementById('mfaCode')?.focus();
     }
 
+    // WP-USERS-ROLES-CLOSE-FIX1 item 2 (BL-496) — a refusal is said through the shared bridge (diten-refusal.js): the Web
+    // door already answers in the reader's language ({ errors:[sentence], local:true }); anything else (no body, an
+    // unexpected shape) is the general sentence — never the service's English, never a raw code.
+    async function refusalSentence(response) {
+        const problem = await response.json().catch(() => ({}));
+        if (window.DitenRefusal) return window.DitenRefusal.message(problem, {}, window.L10n, 'login');
+        return (problem && problem.local === true && problem.detail) || window.L10n?.ErrorOccurred || '';
+    }
+
+    // FIX2 item 6 — only a refusal this page put together (already the reader's language) is shown as it is; anything else
+    // thrown on the way (a network failure's TypeError, a parse error — English, and not the reader's business) is the
+    // general sentence.
+    function refusal(sentence) {
+        const error = new Error(sentence);
+        error.isRefusal = true;
+        return error;
+    }
+
+    function sentenceOf(error) {
+        return error && error.isRefusal && error.message ? error.message : (window.L10n?.ErrorOccurred || '');
+    }
+
     function resolveTenantIdForLogin() {
         // FIX-LOGIN-TENANT-FALLBACK — prefer ?tenantId= (invite link); otherwise fall back to the Development-only
         // DefaultTenant injected by the server. In Production devDefaultTenantId is null, so the guard below still
@@ -209,16 +224,17 @@ const LoginPage = (function () {
     function showError(message) {
         if (typeof Swal !== 'undefined') {
             Swal.fire({
-                title: window.L10n?.LoginErrorTitle || 'Hata',
-                html: `<div class="mb-1 text-muted">${message}</div>`,
+                title: window.L10n?.LoginErrorTitle || '',
+                // FIX2 item 6 — TEXT, never HTML: whatever the sentence holds is shown, not run.
+                text: message,
                 iconHtml: '<div class="swal-icon-circle bg-label-danger border-danger border-opacity-25" style="display: flex; align-items: center; justify-content: center; width: 80px; height: 80px; border-radius: 50%; background: rgba(255, 76, 81, 0.12); border: 2px solid rgba(255, 76, 81, 0.25); margin: 0 auto !important;"><i class="bx bx-error-circle text-danger" style="font-size: 2.5rem; color: #ff4c51;"></i></div>',
-                confirmButtonText: 'Tamam',
+                confirmButtonText: window.L10n?.ConfirmButton || 'OK',
                 width: '400px',
                 padding: '2.5rem 1.5rem 2rem',
                 customClass: {
                     popup: 'rounded-4 shadow-lg',
                     title: 'fs-4 fw-bold text-heading mt-4 mb-2 d-block w-100 text-center',
-                    htmlContainer: 'mb-1 d-block w-100 text-center',
+                    htmlContainer: 'mb-1 d-block w-100 text-center text-muted',
                     actions: 'd-flex justify-content-center mt-4 w-100',
                     confirmButton: 'btn btn-primary waves-effect waves-light px-5',
                     icon: 'border-0 m-0 p-0 d-flex justify-content-center w-100'

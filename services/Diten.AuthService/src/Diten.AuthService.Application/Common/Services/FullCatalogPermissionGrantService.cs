@@ -30,16 +30,28 @@ public sealed class FullCatalogPermissionGrantService : IFullCatalogPermissionGr
         _logger = logger;
     }
 
-    public async Task GrantToFullCatalogRolesAsync(Guid permissionId, string permissionKey, CancellationToken ct)
+    public async Task GrantToFullCatalogRolesAsync(Permission permission, CancellationToken ct)
     {
+        ArgumentNullException.ThrowIfNull(permission);
+
         // BL-359 — explicit-grant-only permissions (e.g. ppm.portfolios.assign-owner) never reach the
         // full-catalog/SuperAdmin role through this automatic path, on first creation or reactivation.
-        if (ExplicitGrantOnlyPermissions.Keys.Contains(permissionKey))
+        if (ExplicitGrantOnlyPermissions.Keys.Contains(permission.Key))
         {
             _logger.LogInformation(
                 "Skipped full-catalog auto-grant for explicit-grant-only permission {PermissionId} Key={Key}.",
-                permissionId,
-                permissionKey);
+                permission.Id,
+                permission.Key);
+            return;
+        }
+
+        // Product takeover merge (2026-10-01): BOTH guards stay — a non-human execution permission is never auto-granted
+        // to a human role either.
+        if (!DefaultRolePermissionTemplate.CanBeGrantedToHumanRole(permission))
+        {
+            _logger.LogInformation(
+                "Skipped full-catalog human-role auto-grant for non-human permission {PermissionKey}.",
+                permission.Key);
             return;
         }
 
@@ -53,23 +65,23 @@ public sealed class FullCatalogPermissionGrantService : IFullCatalogPermissionGr
                     _logger.LogWarning(
                         "Full-catalog role '{Role}' not found in default tenant; skipping auto-grant for permission {PermissionId}.",
                         roleName,
-                        permissionId);
+                        permission.Id);
                     continue;
                 }
 
                 var existing = await _rolePermissionRepository.GetByRoleAsync(role.Id, DefaultTenantId, ct);
-                if (existing.Any(rp => rp.PermissionId == permissionId && !rp.IsDeleted))
+                if (existing.Any(rp => rp.PermissionId == permission.Id && !rp.IsDeleted))
                 {
                     continue; // idempotent: already granted
                 }
 
                 await _rolePermissionRepository.AssignAsync(
-                    RolePermission.SystemGrant(role.Id, permissionId, DefaultTenantId, GrantActor),
+                    RolePermission.SystemGrant(role.Id, permission.Id, DefaultTenantId, GrantActor),
                     ct);
 
                 _logger.LogInformation(
                     "Auto-granted new permission {PermissionId} to full-catalog role '{Role}'.",
-                    permissionId,
+                    permission.Id,
                     roleName);
             }
             catch (Exception ex)
@@ -78,7 +90,7 @@ public sealed class FullCatalogPermissionGrantService : IFullCatalogPermissionGr
                 _logger.LogWarning(
                     ex,
                     "Failed to auto-grant permission {PermissionId} to full-catalog role '{Role}'.",
-                    permissionId,
+                    permission.Id,
                     roleName);
             }
         }

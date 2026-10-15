@@ -89,6 +89,19 @@
   <data name="ToastClaimed" xml:space="preserve"><value>La tâche vous est attribuée.</value></data>
   <data name="ErrorAlreadyClaimed" xml:space="preserve"><value>Quelqu'un d'autre a pris cette tâche avant vous.</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>Vous n'avez pas l'autorisation d'effectuer cette action.</value></data>
+  <data name="PeopleSearchHint" xml:space="preserve"><value>Saisissez un nom ou un poste…</value></data>
+  <data name="PeopleSearchMinimumLength" xml:space="preserve"><value>Saisissez au moins 2 caractères pour rechercher.</value></data>
+  <data name="PeopleSearchNoResults" xml:space="preserve"><value>Aucune personne trouvée pour cette recherche.</value></data>
+  <data name="PeopleSearching" xml:space="preserve"><value>Recherche…</value></data>
+  <data name="DecisionMakerUnavailable" xml:space="preserve"><value>Personne introuvable</value></data>
+  <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>Trop de recherches en peu de temps. Patientez un instant et réessayez.</value></data>
+  <data name="SearchFailed" xml:space="preserve"><value>La recherche n'a pas pu être effectuée. Réessayez dans un instant.</value></data>
+  <data name="RecordSearchNoResults" xml:space="preserve"><value>Aucun enregistrement trouvé.</value></data>
+  <data name="DecisionMakerLoadFailed" xml:space="preserve"><value>Les informations de la personne n'ont pas pu être chargées pour le moment</value></data>
+  <data name="ErrorPeopleLookupSearchAndIds" xml:space="preserve"><value>Recherchez par nom ou par personnes enregistrées, pas les deux à la fois.</value></data>
+  <data name="ErrorPeopleLookupTooManyIds" xml:space="preserve"><value>Trop de personnes ont été demandées en une seule fois.</value></data>
+  <data name="ErrorPeopleLookupIdsInvalid" xml:space="preserve"><value>Une référence de personne enregistrée n'est pas valide.</value></data>
+  <data name="ErrorPeopleDirectoryUnavailable" xml:space="preserve"><value>L'annuaire des personnes est indisponible pour le moment. Réessayez dans un instant.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>Le service des tâches est injoignable. Réessayez.</value></data>
   <data name="EmptyTitle" xml:space="preserve"><value>Aucune tâche</value></data>
   <data name="EmptyDescription" xml:space="preserve"><value>Créez votre première tâche pour la voir ici et dans le Centre des tâches.</value></data>
@@ -123,6 +136,12 @@
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Seule la personne qui a demandé cette tâche peut l'annuler. Si vous ne voulez pas ce travail, renvoyez-le.</value></data>
   <data name="ErrorApprovalManagerIsSelf" xml:space="preserve"><value>Vous ne pouvez pas être l'approbateur d'une approbation que vous demandez. Choisissez une autre personne comme responsable de l'approbation.</value></data>
   <data name="ErrorReviewerIsSubmitter" xml:space="preserve"><value>Vous ne pouvez pas examiner votre propre soumission. Demandez à une autre personne d'examiner cette tâche.</value></data>
+  <data name="ErrorNoEligibleReviewer" xml:space="preserve"><value>Personne d'autre que vous ne peut examiner cette tâche. Choisissez un autre réviseur.</value></data>
+  <data name="ErrorNoEligibleApprover" xml:space="preserve"><value>Personne d'autre que vous ne peut décider de l'étape suivante de cette approbation. Demandez à votre administrateur d'ajuster les approbateurs du workflow.</value></data>
+  <data name="ErrorApprovalCancelFailed" xml:space="preserve"><value>Vos modifications sont enregistrées, mais l'approbation en cours n'a pas pu être retirée. Enregistrez à nouveau pour réessayer.</value></data>
+  <data name="ErrorReviewCancelFailed" xml:space="preserve"><value>Vos modifications sont enregistrées, mais la révision en cours n'a pas pu être retirée. Enregistrez à nouveau pour réessayer.</value></data>
+  <data name="ErrorWorkflowWithdrawFailedOnAct" xml:space="preserve"><value>L'approbation ou la révision liée n'a pas pu être retirée ; aucune action n'a été effectuée. Réessayez dans un instant.</value></data>
+  <data name="ErrorReviewAlreadyOpen" xml:space="preserve"><value>Cette tâche a déjà une révision en cours.</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>Indiquez ce que la tâche attend.</value></data>
   <data name="ErrorTitleRequired" xml:space="preserve"><value>Un titre est requis.</value></data>
   <data name="ErrorTitleTooLong" xml:space="preserve"><value>Le titre ne peut pas dépasser 200 caractères.</value></data>

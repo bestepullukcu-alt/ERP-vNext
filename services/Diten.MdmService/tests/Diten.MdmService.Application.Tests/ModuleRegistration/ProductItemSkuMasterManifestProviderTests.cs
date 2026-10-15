@@ -16,12 +16,25 @@ public sealed class ProductItemSkuMasterManifestProviderTests
     {
         Assert.Equal("product-item-sku-master", Manifest.ModuleCode);
         Assert.Equal("ProductItemSkuMaster", Manifest.ModuleName);
-        Assert.Equal("MasterDataManagement", Manifest.Domain);
+        Assert.Equal("MASTER-DATA-MANAGEMENT", Manifest.Domain);
         Assert.Equal("DitenMdmService", Manifest.Service);
         Assert.True(Manifest.IsTenantAssignable);
         Assert.False(Manifest.IsBaseline);
 
-        Assert.Equal(5, Manifest.Pages.Count);
+        // Main sync 2026-10-14 (WP-LANE-MAIN-SYNC-03): + main's COMPETITOR_PRODUCTS (WP-VW-W4, W4-BE-b2) — 8.
+        Assert.Equal(8, Manifest.Pages.Count);
+        // MOD-0290-FU04 S5 (§23 #1, #7): Items under Master Data, visible to holders of mdm.items.read.
+        var items = Assert.Single(Manifest.Pages, page => page.PageCode == "ITEMS");
+        Assert.Equal("/MasterDataManagement/Items", items.RoutePath);
+        Assert.Equal("mdm.items.read", items.RequiredPermission);
+        Assert.True(items.IsNavigationVisible);
+        // S2 lane merge FIX1: WITHDRAW_APPROVAL after SUBMIT (the GP / GSKU / LSKU order), with its own key, not dangerous.
+        Assert.Equal(["ADD_NEW", "VIEW_DETAILS", "EDIT", "SUBMIT", "WITHDRAW_APPROVAL", "DEACTIVATE", "REACTIVATE", "RETIRE"],
+            items.Actions.Select(action => action.ActionCode));
+        var withdraw = Assert.Single(items.Actions, action => action.ActionCode == "WITHDRAW_APPROVAL");
+        Assert.Equal(("mdm.items.withdraw", "RowAction", false, true),
+            (withdraw.PermissionKey, withdraw.ActionType, withdraw.IsDangerous, withdraw.IsRowAction));
+        Assert.Equal("1.2.0", Manifest.ModuleVersion);
         var globalProducts = Assert.Single(Manifest.Pages, page => page.PageCode == "GLOBAL_PRODUCTS");
         Assert.Equal("/MasterDataManagement/GlobalProducts", globalProducts.RoutePath);
         Assert.Equal("mdm.global-products.read", globalProducts.RequiredPermission);
@@ -40,20 +53,32 @@ public sealed class ProductItemSkuMasterManifestProviderTests
         Assert.Equal("/MDM/ProductAbbreviationRegister", productAbbreviations.RoutePath);
         Assert.Equal("mdm.product-abbreviations.read", productAbbreviations.RequiredPermission);
         Assert.False(productAbbreviations.IsNavigationVisible);
+        // WP-MDM-BRAND-ACCEPT-01 FIX2 (item 1) — the Brands page belongs to brand-product-master now.
+        Assert.DoesNotContain(Manifest.Pages, page => page.PageCode == "BRANDS");
+        var productScopes = Assert.Single(Manifest.Pages, page => page.PageCode == "PRODUCT_LEGAL_ENTITY_SCOPES");
+        Assert.Equal("/MasterDataManagement/ProductLegalEntityScopes", productScopes.RoutePath);
+        Assert.Equal("mdm.product-legal-entity-scopes.read", productScopes.RequiredPermission);
+        Assert.False(productScopes.IsNavigationVisible);
+        // Main sync 2026-10-14: main's competitor products page, the keys CompetitorProductsController enforces.
+        var competitors = Assert.Single(Manifest.Pages, page => page.PageCode == "COMPETITOR_PRODUCTS");
+        Assert.Equal("/MasterDataManagement/CompetitorProducts", competitors.RoutePath);
+        Assert.Equal("mdm.competitor-products.read", competitors.RequiredPermission);
+        Assert.Equal(["ADD_NEW", "VIEW_DETAILS", "PROPOSE"], competitors.Actions.Select(action => action.ActionCode));
     }
 
     [Fact]
-    public void Declares_only_permissions_enforced_by_both_product_item_sku_master_controllers()
+    public void Declares_exact_unique_canonical_permission_contract_and_matches_runtime_enforcement()
     {
         const string prefix = "Permission:";
         var policyProperty = typeof(HasPermissionAttribute).GetProperty("Policy");
-        var enforced = new[] { typeof(GlobalProductsController), typeof(FinishedGoodsController), typeof(GskusController), typeof(LskusController), typeof(ProductAbbreviationsController) }
+        var enforced = new[] { typeof(GlobalProductsController), typeof(FinishedGoodsController), typeof(GskusController), typeof(LskusController), typeof(ProductAbbreviationsController), typeof(ProductLegalEntityScopesController), typeof(ItemsController), typeof(StockBehaviourController), typeof(CompetitorProductsController) }
             .SelectMany(controller => controller
                 .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
             .SelectMany(method => method.GetCustomAttributes<HasPermissionAttribute>())
             .Select(attribute => policyProperty?.GetValue(attribute) as string ?? string.Empty)
             .Where(policy => policy.StartsWith(prefix, StringComparison.Ordinal))
-            .Select(policy => policy[prefix.Length..])
+            // An any-of door (S5b items/options: "a|b|c") enforces each of its keys.
+            .SelectMany(policy => policy[prefix.Length..].Split('|'))
             .ToHashSet(StringComparer.Ordinal);
 
         var declared = Manifest.Pages
@@ -63,14 +88,44 @@ public sealed class ProductItemSkuMasterManifestProviderTests
         Assert.Equal(
             new[]
             {
+                // Main sync 2026-10-14: main's competitor products (CompetitorProductsController).
+                "mdm.competitor-products.manage",
+                "mdm.competitor-products.propose",
+                "mdm.competitor-products.read",
                 "mdm.finished-goods.create",
                 "mdm.finished-goods.read",
+                "mdm.finished-goods.retire",
+                "mdm.finished-goods.submit",
                 "mdm.global-products.create",
                 "mdm.global-products.read",
+                "mdm.global-products.request-correction",
+                "mdm.global-products.request-retirement",
+                "mdm.global-products.retire",
+                "mdm.global-products.submit",
+                "mdm.global-products.update",
+                "mdm.global-products.withdraw",
                 "mdm.gskus.create",
                 "mdm.gskus.read",
+                "mdm.gskus.request-correction",
+                "mdm.gskus.request-retirement",
+                "mdm.gskus.retire",
+                "mdm.gskus.submit",
+                "mdm.gskus.update",
+                "mdm.gskus.withdraw",
+                "mdm.items.create",
+                "mdm.items.deactivate",
+                "mdm.items.read",
+                "mdm.items.retire",
+                "mdm.items.submit",
+                "mdm.items.update",
+                // S2 lane merge FIX1: the item approval's withdraw (ItemsController.WithdrawApproval).
+                "mdm.items.withdraw",
                 "mdm.lskus.create",
                 "mdm.lskus.read",
+                "mdm.lskus.request-retirement",
+                "mdm.lskus.retire",
+                "mdm.lskus.submit",
+                "mdm.lskus.withdraw",
                 "mdm.product-abbreviations.approve",
                 "mdm.product-abbreviations.audit",
                 "mdm.product-abbreviations.cancel",
@@ -78,43 +133,170 @@ public sealed class ProductItemSkuMasterManifestProviderTests
                 "mdm.product-abbreviations.read",
                 "mdm.product-abbreviations.reject",
                 "mdm.product-abbreviations.request",
-                "mdm.product-abbreviations.retire"
+                "mdm.product-abbreviations.retire",
+                "mdm.product-identity.lifecycle-operations.recover",
+                "mdm.product-legal-entity-scope-rollout.activate",
+                "mdm.product-legal-entity-scope-rollout.rollback",
+                "mdm.product-legal-entity-scopes.configure",
+                "mdm.product-legal-entity-scopes.end",
+                "mdm.product-legal-entity-scopes.read",
+                "mdm.product-legal-entity-scopes.replace"
             },
             declared.OrderBy(value => value, StringComparer.Ordinal));
-        Assert.Equal(16, declared.Count);
-        Assert.True(declared.SetEquals(enforced));
+        Assert.Equal(51, declared.Count);
+        Assert.DoesNotContain(declared, permission => permission.StartsWith("mdm.brands.", StringComparison.Ordinal));
+        Assert.All(declared, permission =>
+        {
+            Assert.Equal(permission.Trim(), permission);
+            Assert.Equal(permission.ToLowerInvariant(), permission);
+            Assert.StartsWith("mdm.", permission, StringComparison.Ordinal);
+            Assert.DoesNotContain("..", permission, StringComparison.Ordinal);
+        });
+        // FG FIX1 item 9 (CT decision B) / part B item 10: exactly ONE key is declared without a door on purpose — the
+        // Finished Good retire, a "System" action whose endpoint comes with the FG lifecycle round. It is named here;
+        // every other declared key (GP / GSKU / LSKU retire and the recover key included) is held to its controller.
+        var systemOnly = new HashSet<string>(StringComparer.Ordinal) { "mdm.finished-goods.retire" };
+        Assert.Equal("System", Assert.Single(Manifest.Pages.SelectMany(page => page.Actions),
+            action => action.PermissionKey == "mdm.finished-goods.retire").ActionType);
+        var nonControllerPermissions = new HashSet<string>(StringComparer.Ordinal)
+        {
+            "mdm.finished-goods.submit",
+            "mdm.product-legal-entity-scope-rollout.activate",
+            "mdm.product-legal-entity-scope-rollout.rollback"
+            // mdm.product-identity.lifecycle-operations.recover is enforced by a controller since LSKU FIX1 B1 (c):
+            // POST api/lskus/operator/child-admission-repairs.
+        };
+        Assert.True(declared.Where(permission => !nonControllerPermissions.Contains(permission) && !systemOnly.Contains(permission))
+            .ToHashSet(StringComparer.Ordinal).SetEquals(enforced.Where(permission => !systemOnly.Contains(permission))));
+    }
+
+    // S5 (O-12, CT decision 5): every stock-bearing level declares EDIT_STOCK_BEHAVIOUR with the key the stock door
+    // enforces today (StockBehaviourPermissions) — never a new mdm.<level>.* key (Auth's exact lifecycle set).
+    [Theory]
+    [InlineData("GSKUS", "mdm.gskus.update")]
+    [InlineData("LSKUS", "mdm.lskus.create")]
+    [InlineData("FINISHED_GOODS", "mdm.finished-goods.create")]
+    public void Stock_levels_declare_the_stock_behaviour_edit_with_todays_key(string pageCode, string key)
+    {
+        var action = Assert.Single(Assert.Single(Manifest.Pages, page => page.PageCode == pageCode).Actions,
+            action => action.ActionCode == "EDIT_STOCK_BEHAVIOUR");
+        Assert.Equal(key, action.PermissionKey);
+        // S5-FIX1: the real surface is the quick view's section and its own form — a form action, not a row action.
+        Assert.Equal("FormAction", action.ActionType);
+        Assert.False(action.IsRowAction);
+        Assert.False(action.IsToolbarAction);
     }
 
     [Fact]
-    public void Existing_product_pages_keep_exact_create_and_quick_view_actions()
+    public void Global_product_declares_exact_lifecycle_actions_without_approval_or_rejection_actions()
     {
-        var productPages = Manifest.Pages.Where(page => page.PageCode != "PRODUCT_ABBREVIATIONS").ToList();
-        Assert.Equal(4, productPages.Count);
+        var page = Assert.Single(Manifest.Pages, item => item.PageCode == "GLOBAL_PRODUCTS");
+        Assert.Equal(
+            ["ADD_NEW", "EDIT", "RECOVER_ORPHANED_LIFECYCLE_OPERATION", "REQUEST_CORRECTION", "REQUEST_RETIREMENT", "RETIRE", "SUBMIT", "VIEW_DETAILS", "WITHDRAW_APPROVAL"],
+            page.Actions.Select(action => action.ActionCode).OrderBy(value => value, StringComparer.Ordinal));
+        Assert.Equal(
+            [
+                "mdm.global-products.create",
+                "mdm.global-products.read",
+                "mdm.global-products.request-correction",
+                "mdm.global-products.request-retirement",
+                "mdm.global-products.retire",
+                "mdm.global-products.submit",
+                "mdm.global-products.update",
+                "mdm.global-products.withdraw",
+                "mdm.product-identity.lifecycle-operations.recover"
+            ],
+            page.Actions.Select(action => action.PermissionKey).OrderBy(value => value, StringComparer.Ordinal));
+        Assert.True(Assert.Single(page.Actions, action => action.ActionCode == "EDIT").IsRowAction);
+        Assert.True(Assert.Single(page.Actions, action => action.ActionCode == "SUBMIT").IsRowAction);
+        Assert.True(Assert.Single(page.Actions, action => action.ActionCode == "WITHDRAW_APPROVAL").IsRowAction);
+        var correction = Assert.Single(page.Actions, action => action.ActionCode == "REQUEST_CORRECTION");
+        Assert.True(correction.IsRowAction);
+        Assert.False(correction.IsDangerous);
+        var requestRetirement = Assert.Single(page.Actions, action => action.ActionCode == "REQUEST_RETIREMENT");
+        Assert.True(requestRetirement.IsRowAction);
+        Assert.True(requestRetirement.IsDangerous);
+        var retire = Assert.Single(page.Actions, action => action.ActionCode == "RETIRE");
+        Assert.Equal("System", retire.ActionType);
+        Assert.True(retire.IsDangerous);
+        Assert.False(retire.IsRowAction);
+        Assert.False(retire.IsToolbarAction);
+        Assert.DoesNotContain(page.Actions, action => action.ActionCode is "APPROVE" or "REJECT");
+    }
+
+    [Fact]
+    public void Recovery_is_an_exact_non_interactive_system_descriptor()
+    {
+        var recovery = Assert.Single(
+            Manifest.Pages.SelectMany(page => page.Actions),
+            action => action.PermissionKey == "mdm.product-identity.lifecycle-operations.recover");
+
+        Assert.Equal("RECOVER_ORPHANED_LIFECYCLE_OPERATION", recovery.ActionCode);
+        Assert.Equal("System", recovery.ActionType);
+        Assert.True(recovery.IsDangerous);
+        Assert.False(recovery.IsToolbarAction);
+        Assert.False(recovery.IsRowAction);
+    }
+
+    [Fact]
+    public void Gsku_has_exact_lifecycle_actions_and_hidden_system_retire()
+    {
+        var page = Assert.Single(Manifest.Pages, p => p.PageCode == "GSKUS");
+        // S5 (O-12): + EDIT_STOCK_BEHAVIOUR (held by mdm.gskus.update today).
+        Assert.Equal(["ADD_NEW", "VIEW_DETAILS", "EDIT", "SUBMIT", "WITHDRAW_APPROVAL",
+            "REQUEST_CORRECTION", "REQUEST_RETIREMENT", "RETIRE", "EDIT_STOCK_BEHAVIOUR"], page.Actions.Select(a => a.ActionCode));
+        var retire = Assert.Single(page.Actions, a => a.ActionCode == "RETIRE");
+        Assert.False(retire.IsRowAction);
+        Assert.False(retire.IsToolbarAction);
+        Assert.Equal("mdm.gskus.retire", retire.PermissionKey);
+    }
+
+    [Fact]
+    public void Finished_good_keeps_the_approved_four_key_contract_without_new_aliases()
+    {
+        // FG FIX1 item 9 (CT decision B): retire is a system action (never a row action a person clicks).
+        var retire = Assert.Single(Manifest.Pages.Single(page => page.PageCode == "FINISHED_GOODS").Actions,
+            action => action.ActionCode == "RETIRE");
+        Assert.Equal("System", retire.ActionType);
+        Assert.False(retire.IsRowAction);
+        var productPages = Manifest.Pages.Where(page => page.PageCode is "FINISHED_GOODS").ToList();
+        Assert.Single(productPages);
         foreach (var page in productPages)
         {
-            Assert.Equal(2, page.Actions.Count);
+            // S5 (O-12): + EDIT_STOCK_BEHAVIOUR on the existing create key — still the same four keys.
+            Assert.Equal(5, page.Actions.Count);
             Assert.Equal(
-                ["ADD_NEW", "VIEW_DETAILS"],
+                ["ADD_NEW", "EDIT_STOCK_BEHAVIOUR", "RETIRE", "SUBMIT", "VIEW_DETAILS"],
                 page.Actions.Select(action => action.ActionCode).OrderBy(value => value, StringComparer.Ordinal));
-            var permissionPrefix = page.PageCode switch
-            {
-                "GLOBAL_PRODUCTS" => "mdm.global-products",
-                "FINISHED_GOODS" => "mdm.finished-goods",
-                "GSKUS" => "mdm.gskus",
-                _ => "mdm.lskus"
-            };
-            var add = Assert.Single(page.Actions, action => action.ActionCode == "ADD_NEW");
-            Assert.Equal(permissionPrefix + ".create", add.PermissionKey);
-            Assert.True(add.IsToolbarAction);
-            Assert.False(add.IsRowAction);
-            Assert.False(add.IsDangerous);
-
-            var details = Assert.Single(page.Actions, action => action.ActionCode == "VIEW_DETAILS");
-            Assert.Equal(permissionPrefix + ".read", details.PermissionKey);
-            Assert.True(details.IsRowAction);
-            Assert.False(details.IsToolbarAction);
-            Assert.False(details.IsDangerous);
+            Assert.Equal(
+                [
+                    "mdm.finished-goods.create",
+                    "mdm.finished-goods.read",
+                    "mdm.finished-goods.retire",
+                    "mdm.finished-goods.submit"
+                ],
+                page.Actions.Select(action => action.PermissionKey).Distinct().OrderBy(value => value, StringComparer.Ordinal));
         }
+    }
+
+    [Fact]
+    public void Product_scope_page_is_navigation_hidden_and_declares_exact_six_permissions()
+    {
+        var page = Assert.Single(Manifest.Pages, item => item.PageCode == "PRODUCT_LEGAL_ENTITY_SCOPES");
+        Assert.False(page.IsNavigationVisible);
+        Assert.Equal(6, page.Actions.Count);
+        Assert.Equal(
+            [
+                "mdm.product-legal-entity-scope-rollout.activate",
+                "mdm.product-legal-entity-scope-rollout.rollback",
+                "mdm.product-legal-entity-scopes.configure",
+                "mdm.product-legal-entity-scopes.end",
+                "mdm.product-legal-entity-scopes.read",
+                "mdm.product-legal-entity-scopes.replace"
+            ],
+            page.Actions.Select(action => action.PermissionKey).OrderBy(value => value, StringComparer.Ordinal));
+        Assert.DoesNotContain(page.Actions, action => action.ActionCode.Contains("DELETE", StringComparison.Ordinal));
+        Assert.DoesNotContain(page.Actions, action => action.ActionCode.Contains("WORKFLOW", StringComparison.Ordinal));
     }
 
     [Fact]

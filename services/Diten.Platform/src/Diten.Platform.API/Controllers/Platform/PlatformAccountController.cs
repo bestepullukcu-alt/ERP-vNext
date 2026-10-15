@@ -1,3 +1,4 @@
+using Diten.Platform.API.Security;
 using Diten.Platform.API.Controllers.Common;
 using Diten.Platform.Application.Features.PlatformAccount;
 using Diten.Platform.Application.Features.PlatformAccount.Commands;
@@ -11,6 +12,8 @@ namespace Diten.Platform.API.Controllers.Platform;
 [ApiController]
 [Route("api/platform/account")]
 [Authorize(Policy = "PlatformActor")]
+// BL-521 — the caller's own account: a partner administrator keeps it.
+[PartnerAdminScope(PartnerAdminScopeAttribute.NoTenant)]
 public sealed class PlatformAccountController : CustomBaseController
 {
     private readonly IMediator _mediator;

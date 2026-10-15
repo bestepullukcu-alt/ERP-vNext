@@ -1,3 +1,4 @@
+using Diten.Platform.API.Security;
 using Diten.Platform.API.Controllers.Common;
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.Tenants;
@@ -13,6 +14,10 @@ namespace Diten.Platform.API.Controllers.Admin;
 [ApiController]
 [Route("api/admin/tenants")]
 [Authorize(Policy = "PlatformActor")]
+// BL-521 — a partner administrator lists only its tenants and reaches a tenant by {id} only when allowed (else 404).
+// Creating and deleting tenants, and reactivating a suspended one (FIX1 F4), stay with platform administrators (403 for
+// a partner). An action added here without an {id} is closed to partners (404) until it declares otherwise (FIX1 F2).
+[PartnerAdminScope("id")]
 public sealed class TenantsController : CustomBaseController
 {
     private readonly IMediator _mediator;
@@ -23,6 +28,7 @@ public sealed class TenantsController : CustomBaseController
     }
 
     [HttpGet]
+    [PartnerAdminScope(PartnerAdminScopeAttribute.FiltersInQuery)] // BL-521 FIX1 F2 — the handler filters by the scope
     public async Task<IActionResult> GetTenants(
         [FromQuery] string? search,
         [FromQuery] string? status,
@@ -37,6 +43,7 @@ public sealed class TenantsController : CustomBaseController
     }
 
     [HttpGet("stats")]
+    [PartnerAdminScope(PartnerAdminScopeAttribute.FiltersInQuery)] // BL-521 FIX1 F2 — the handler counts only the scope
     public async Task<IActionResult> GetStats(CancellationToken ct)
     {
         var result = await _mediator.Send(new GetTenantStatsQuery(), ct);
@@ -56,6 +63,7 @@ public sealed class TenantsController : CustomBaseController
     }
 
     [HttpPost]
+    [Authorize(Policy = "PlatformAdminOnly")]
     public async Task<IActionResult> RegisterTenant([FromBody] RegisterTenantCommand command, CancellationToken ct)
     {
         var result = await _mediator.Send(command, ct);
@@ -89,6 +97,7 @@ public sealed class TenantsController : CustomBaseController
     }
 
     [HttpPost("{id:guid}/reactivate")]
+    [Authorize(Policy = "PlatformAdminOnly")] // BL-521 FIX1 F4 — a partner does not lift a suspension (owner may open it later)
     public async Task<IActionResult> Reactivate(Guid id, [FromBody] TenantLifecycleRequest? body, CancellationToken ct)
     {
         var result = await _mediator.Send(new ReactivateTenantCommand(id, body?.Reason), ct);
@@ -96,6 +105,7 @@ public sealed class TenantsController : CustomBaseController
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Policy = "PlatformAdminOnly")]
     public async Task<IActionResult> DeleteTenant(Guid id, CancellationToken ct)
     {
         var result = await _mediator.Send(new DeleteTenantCommand(id), ct);
@@ -103,6 +113,7 @@ public sealed class TenantsController : CustomBaseController
     }
 
     [HttpDelete("bulk")]
+    [Authorize(Policy = "PlatformAdminOnly")]
     public async Task<IActionResult> BulkDeleteTenants([FromBody] TenantBulkDeleteRequest request, CancellationToken ct)
     {
         var result = await _mediator.Send(new BulkDeleteTenantsCommand(request.Ids), ct);

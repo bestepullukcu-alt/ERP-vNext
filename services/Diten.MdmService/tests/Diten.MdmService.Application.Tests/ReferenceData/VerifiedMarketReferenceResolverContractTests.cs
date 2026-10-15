@@ -61,6 +61,30 @@ public sealed class VerifiedMarketReferenceResolverContractTests
         Assert.Equal("LATEST", result.Selection.ResolutionMode);
     }
 
+    // LSKU FIX4 item 2 (the FIX3 item 6 rule at create time): only Platform's exact "market not offered" is a 404; a
+    // 404 that is not Platform's JSON (an ingress/proxy page) is unavailable, a JSON 404 with any other reason (even a
+    // REFERENCE_ one) or none is a contract error — neither is a definite refusal of the creation.
+    [Theory]
+    [InlineData("text/html", "<html>404 Not Found</html>", 503, "REFERENCE_PROVIDER_UNAVAILABLE")]
+    [InlineData("text/plain", "not found", 503, "REFERENCE_PROVIDER_UNAVAILABLE")]
+    [InlineData("application/json", "{\"isSuccessful\":false,\"reason_code\":\"REFERENCE_SET_NOT_FOUND\"}", 503, "REFERENCE_PROVIDER_CONTRACT_INVALID")]
+    [InlineData("application/json", "{\"isSuccessful\":false}", 503, "REFERENCE_PROVIDER_CONTRACT_INVALID")]
+    // FIX5 K2: the reason is compared exactly — another case or a trailing space is not Platform's reason.
+    [InlineData("application/json", "{\"isSuccessful\":false,\"reason_code\":\"reference_market_not_found\"}", 503, "REFERENCE_PROVIDER_CONTRACT_INVALID")]
+    [InlineData("application/json", "{\"isSuccessful\":false,\"reason_code\":\"REFERENCE_MARKET_NOT_FOUND \"}", 503, "REFERENCE_PROVIDER_CONTRACT_INVALID")]
+    [InlineData("application/json", "{\"isSuccessful\":false,\"reason_code\":\"REFERENCE_MARKET_NOT_FOUND\"}", 404, "REFERENCE_MARKET_NOT_FOUND")]
+    public async Task Only_platforms_own_market_not_found_is_a_404(string mediaType, string body, int expectedStatus, string expectedCode)
+    {
+        var result = await CreateClient(new StubHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound)
+        {
+            Content = new StringContent(body, Encoding.UTF8, mediaType)
+        }))).ResolveLatestAsync("TR");
+
+        Assert.False(result.IsSuccessful);
+        Assert.Equal(expectedStatus, result.StatusCode);
+        Assert.Equal(expectedCode, result.FailureCode);
+    }
+
     [Theory]
     [InlineData(HttpStatusCode.NotFound, "REFERENCE_MARKET_NOT_FOUND", 404)]
     [InlineData(HttpStatusCode.ServiceUnavailable, "REFERENCE_PROVIDER_UNAVAILABLE", 503)]
@@ -80,8 +104,11 @@ public sealed class VerifiedMarketReferenceResolverContractTests
         Assert.Equal(expectedStatus, result.StatusCode);
     }
 
+    // LSKU FIX4 item 2: an empty 404 is NOT Platform's "market not offered" — 503, never a definite refusal that would
+    // burn a creation's code (formerly 404). FIX5 K2 (measured): the body here is JSON ("application/json", empty), so
+    // it is the JSON path — read as no reason → 503 REFERENCE_PROVIDER_CONTRACT_INVALID.
     [Theory]
-    [InlineData(HttpStatusCode.NotFound, 404)]
+    [InlineData(HttpStatusCode.NotFound, 503)]
     [InlineData(HttpStatusCode.ServiceUnavailable, 503)]
     [InlineData(HttpStatusCode.GatewayTimeout, 504)]
     public async Task Empty_failure_body_preserves_exact_transport_class(

@@ -128,7 +128,9 @@ public sealed class ESignatureTestHost : IAsyncLifetime
                 services.AddScoped<IESignSampleOwnerStateRepository, ESignSampleOwnerStateRepository>();
                 services.AddScoped<AuditOutboxRepository>();
                 services.AddScoped<IAuditOutboxWriter>(sp => sp.GetRequiredService<AuditOutboxRepository>());
-                services.AddScoped<ITransactionalAuditOutboxWriter>(sp => sp.GetRequiredService<AuditOutboxRepository>());
+                // Main sync 2026-10-13: the lane's audit door (WP-PLATFORM-AUDIT-INTX-01) — the repository is the STORE; the writer
+                // is AddApplication's CanonicalTransactionalAuditOutboxWriter, exactly as in production.
+                services.AddScoped<ITransactionalAuditOutboxStore>(sp => sp.GetRequiredService<AuditOutboxRepository>());
                 services.Configure<ContentStorageOptions>(o => o.RootPath = StorageRoot);
                 services.AddScoped<IContentStorageGateway, LocalFileSystemContentStorageGateway>();
                 services.AddSingleton<IESignaturePdfRenderer, MigraDocESignaturePdfRenderer>();

@@ -4,10 +4,19 @@
 # tenant/platform-admin escalation boundary: re-attributing a permission to another module must not move a
 # single row across it. PermissionScopePreservationTests compares the seed catalog against this file in both
 # directions, so a shifted Scope AND a stale baseline both fail.
+# DECIDED CHANGE (owner + Control Tower, 2026-10-01; MOD-0018-FU24/FU25): three rows moved 1 -> 0 on purpose —
+# platform.workflow.instances.start, platform.workflow.tasks.approve, platform.workflow.tasks.reject. They are the
+# SeedOwnedTenantScopeKeys list (Domain/Authorization); no other row changed. Any further 1 -> 0 here is an
+# escalation-boundary decision, not a baseline refresh.
+# MAIN DECISION (WP-0023-FX, main 9648e046d, 2026-10-07; came with main-sync 2026-10-13): four more rows 1 -> 0 —
+# platform.workflow.instances.view, platform.workflow.tasks.cancel / delegate / request-info. Not on
+# SeedOwnedTenantScopeKeys: they move through the allowlisted, audited TenantRouteScopeCorrections (TenantApiPermission).
+# ACCEPTED by the owner 2026-10-14 (WP-LANE-MAIN-SYNC-02 A1): the seven Tenant workflow keys are pinned by name in SeedOwnedTenantScopeKeysTests.
 # key,scope   (0 = Tenant, 1 = PlatformAdmin)
 auth.roles.assign-permission,0
 auth.roles.create,0
 auth.roles.delete,0
+auth.roles.export,0
 auth.roles.read,0
 auth.roles.update,0
 auth.users.assign-role,0
@@ -104,6 +113,7 @@ goldenslim.records.read,0
 goldenslim.records.update,0
 mdm.brands.archive,0
 mdm.brands.create,0
+mdm.brands.export,0
 mdm.brands.read,0
 mdm.brands.update,0
 # WP-VW-W4 (W4-BE-b2) — 3 competitor product keys, stated Tenant (0): moduleOverride "product-item-sku-master" is not in

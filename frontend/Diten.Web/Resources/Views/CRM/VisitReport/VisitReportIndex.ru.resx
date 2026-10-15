@@ -99,7 +99,7 @@
   <data name="IndicationPatients" xml:space="preserve"><value>Пациенты по показанию (в месяц)</value></data>
   <data name="IndicationHint" xml:space="preserve"><value>Утверждённый список «показание × профиль пациента». Отмечайте только строки, которые видит врач; числа приблизительные.</value></data>
   <data name="ThreeMonthHint" xml:space="preserve"><value>Спрашивается раз в три месяца; до этого показано последнее значение.</value></data>
-  <data name="NoIndicationList" xml:space="preserve"><value>Для этого продукта список показаний не задан; спрашивается только общее число у врача.</value></data>
+  <data name="NoIndicationList" xml:space="preserve"><value>Для этого продукта список показаний не задан, поэтому его потенциал не спрашивается; общее число у врача — на шаге профиля.</value></data>
   <data name="PatientsPerMonth" xml:space="preserve"><value>пациентов / мес</value></data>
   <data name="PreviousValue" xml:space="preserve"><value>Ранее: {0}</value></data>
   <data name="NoPatients" xml:space="preserve"><value>Не видит пациентов по этим показаниям</value></data>

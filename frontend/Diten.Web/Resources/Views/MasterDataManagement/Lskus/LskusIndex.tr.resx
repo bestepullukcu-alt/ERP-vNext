@@ -35,4 +35,59 @@
   <data name="ErrorProviderTimeout"><value>Referans sağlayıcısı zaman aşımına uğradı.</value></data>
   <data name="ErrorForbidden"><value>Yetkiniz yok.</value></data>
   <data name="ErrorGateway"><value>İstek tamamlanamadı.</value></data>
+  <data name="LifecycleDraft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="LifecycleIdentityApproved" xml:space="preserve"><value>Kimlik Onaylandı</value></data>
+  <data name="LifecyclePendingIdentityApproval" xml:space="preserve"><value>Kimlik Onayı Bekliyor</value></data>
+  <data name="LifecycleRetired" xml:space="preserve"><value>Kullanımdan Kaldırıldı</value></data>
+  <data name="SubmitIdentity" xml:space="preserve"><value>Onaya Gönder</value></data>
+  <data name="SubmitConfirmation" xml:space="preserve"><value>Bu LSKU kimliği onaya gönderilsin mi?</value></data>
+  <data name="RetirementReasonLabel" xml:space="preserve"><value>Kullanımdan kaldırma nedeni</value></data>
+  <data name="RetirementReasonRequired" xml:space="preserve"><value>Kullanımdan kaldırma nedeni zorunludur.</value></data>
+  <data name="RetirementReasonTooLong" xml:space="preserve"><value>Kullanımdan kaldırma nedeni 128 karakteri aşamaz.</value></data>
+  <data name="SubmitPendingSuccess" xml:space="preserve"><value>LSKU kimliği gönderildi ve onay bekliyor.</value></data>
+  <data name="LifecycleStateChanged" xml:space="preserve"><value>Yaşam döngüsü durumu değişti. En güncel kayıt yüklendi.</value></data>
+  <data name="ErrorUnauthorized" xml:space="preserve"><value>Oturumunuzun süresi doldu. Lütfen yeniden giriş yapın.</value></data>
+  <data name="ErrorServiceUnavailable" xml:space="preserve"><value>Yaşam döngüsü hizmeti kullanılamıyor. Daha sonra yeniden deneyin.</value></data>
+  <data name="ErrorTimeout" xml:space="preserve"><value>Yaşam döngüsü isteği zaman aşımına uğradı. Yeniden deneyin.</value></data>
+  <data name="WithdrawApproval" xml:space="preserve"><value>Onayı Geri Çek</value></data>
+  <data name="WithdrawConfirmation" xml:space="preserve"><value>Onay talebi geri çekilsin mi?</value></data>
+  <data name="WithdrawPending" xml:space="preserve"><value>Geri çekme işlemi devam ediyor.</value></data>
+  <data name="WithdrawSuccess" xml:space="preserve"><value>Onay talebi geri çekildi.</value></data>
+  <data name="RequestRetirement" xml:space="preserve"><value>Emeklilik Talep Et</value></data>
+  <data name="RetirementRequestConfirmation" xml:space="preserve"><value>Emeklilik talebi gönderilsin mi?</value></data>
+  <data name="RetirementRequestPending" xml:space="preserve"><value>Emeklilik talebi karar bekliyor.</value></data>
+  <data name="RetirementRequestSuccess" xml:space="preserve"><value>Emeklilik talebi gönderildi.</value></data>
+  <data name="ErrorMarketAlreadyExists" xml:space="preserve">
+    <value>Bu GSKU'nun bu pazar için zaten bir LSKU'su var. Yenisini oluşturmak yerine mevcut LSKU'yu açın.</value>
+  </data>
+  <data name="ErrorSubmitAbandoned" xml:space="preserve">
+    <value>Onay servisi bu gönderimi bir onay başlatmadan reddetti. LSKU hâlâ taslak; yeniden gönderebilirsiniz.</value>
+  </data>
+  <data name="ErrorStockFlagsRequired" xml:space="preserve">
+    <value>Bu LSKU'yu onaya göndermeden önce stok davranışında şunu belirleyin: {0}.</value>
+  </data>
+  <data name="ErrorDecisionNotApplicable" xml:space="preserve">
+    <value>Onay bu LSKU'ya uygulanamadı; örneğin pazarı ya da üst kaydı artık kullanılamıyor. LSKU yeniden taslak oldu; nedeni düzeltip yeniden gönderin.</value>
+  </data>
+  <data name="ErrorSubmitTargetChanged" xml:space="preserve">
+    <value>Bu LSKU gönderim başladıktan sonra değişti ya da iptal edildi; bu yüzden onaya hiçbir şey gönderilmedi. LSKU'yu yeniden açın ve hâlâ gerekiyorsa gönderin.</value>
+  </data>
+  <data name="ErrorSubmitDuringWithdrawal" xml:space="preserve">
+    <value>Bu gönderimin geri çekilmesi sürüyor; yeniden göndermeden önce bitirmek için geri çekmeyi yeniden gönderin.</value>
+  </data>
+  <data name="StockFlagSerialControlled" xml:space="preserve">
+    <value>seri takibi (bu LSKU)</value>
+  </data>
+  <data name="StockFlagGskuLotControlled" xml:space="preserve">
+    <value>GSKU'sunun lot takibi — GSKU'yu düzenleme yetkisi olan kişi girmeli</value>
+  </data>
+  <data name="SubmitNeedsStockFlags" xml:space="preserve">
+    <value>Stok davranışı eksik veya tutarsız olduğu için bu kayıt henüz onaya gönderilemez. Stok davranışında tamamlayın.</value>
+  </data>
+  <data name="ListJoinTwo" xml:space="preserve">
+    <value>{0} ve {1}</value>
+  </data>
+  <data name="ListSeparator" xml:space="preserve">
+    <value>, </value>
+  </data>
 </root>

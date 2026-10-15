@@ -14,9 +14,13 @@ public sealed class RequestInfoWorkflowTaskHandler
         IApprovalTaskRepository taskRepository,
         IWorkflowInstanceRepository instanceRepository,
         IRuntimeAssignmentSnapshotRepository snapshotRepository,
-        IWorkflowTransitionLogRepository logRepository)
+        IWorkflowTransitionLogRepository logRepository,
+        IPlatformTransactionExecutor? transactions = null)
     {
-        _support = new WorkflowTaskTransitionSupport(taskRepository, instanceRepository, snapshotRepository, logRepository);
+        // D1-FIX1 — the transition commits in one Platform transaction (the executor comes from DI; null keeps the
+        // sequential writes for in-memory doubles).
+        _support = new WorkflowTaskTransitionSupport(taskRepository, instanceRepository, snapshotRepository, logRepository,
+            seams: new WorkflowTransitionSeams(null, transactions, null, null));
     }
 
     public Task<Response<WorkflowTaskTransitionResponse>> Handle(RequestInfoWorkflowTaskCommand request, CancellationToken ct) =>
@@ -26,6 +30,7 @@ public sealed class RequestInfoWorkflowTaskHandler
             request.Request.TargetPrincipalId,
             request.Request.ReasonCode,
             request.Request.IdempotencyKey,
+            request.Request.ExpectedVersion,
             request.Request.Comment,
             request.Request.EvidenceRef,
             request.CorrelationId,

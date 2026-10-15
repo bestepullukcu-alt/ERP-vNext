@@ -238,6 +238,7 @@ public sealed class ApprovalStepContextTests
     [Theory]
     [InlineData("runtime_candidates")]
     [InlineData("runtime_next_step_candidates")]
+    [InlineData("trusted_runtime_candidates")]
     public async Task A_task_still_with_its_steps_own_candidates_names_the_positions(string openedBy)
     {
         var finance = Position(Tenant, "Finans Müdürü");
@@ -297,7 +298,7 @@ public sealed class ApprovalStepContextTests
             .OrderBy(x => x, StringComparer.Ordinal)
             .ToList();
 
-        Assert.True(written.Count >= 4, "the scan found fewer resolver sources than MOD-0023 is known to write");
+        Assert.True(written.Count >= 5, "the scan found fewer resolver sources than MOD-0023 is known to write");
         var classified = WorkflowApprovalWorkItemProvider.StepOwnResolverSources
             .Concat(WorkflowApprovalWorkItemProvider.MovedOnResolverSources).ToHashSet();
         Assert.Empty(written.Where(source => !classified.Contains(source)));
@@ -432,17 +433,33 @@ public sealed class ApprovalStepContextTests
             dto.Actions.Single(a => a.Code == "delegate").ExcludedTargetPrincipalIds);
     }
 
-    [Theory]
-    [InlineData(false)] // the instance recorded no starter
-    [InlineData(true)]  // the delegator IS the starter — named once
-    public void Delegate_excludes_only_the_delegator_when_there_is_no_other_starter(bool startedByMe)
+    [Fact] // the instance recorded no starter
+    public void Delegate_excludes_only_the_delegator_when_there_is_no_other_starter()
     {
         var instance = Instance(null);
-        instance.StartedByUserId = startedByMe ? Me : null;
+        instance.StartedByUserId = null;
 
         var dto = _projection.Project(Approval(instance), instance, Actor(), "workflow", "1.0")!;
 
         Assert.Equal([Me.ToString()], dto.Actions.Single(a => a.Code == "delegate").ExcludedTargetPrincipalIds);
+    }
+
+    /// <summary>D2 — the reader STARTED the workflow and still sits in its seat (an instance from before D2 dropped the
+    /// starter from the candidates). The gate refuses their delegation (409 SOD_VIOLATION), so the button is not
+    /// offered; rejecting their own request stays open. (Before D2 the delegate action was offered, excluding only
+    /// the reader — the case this test's former <c>startedByMe: true</c> row pinned.)</summary>
+    [Fact]
+    public void The_starter_sitting_in_the_seat_is_not_offered_delegate_but_may_still_reject()
+    {
+        var instance = Instance(null);
+        instance.StartedByUserId = Me;
+
+        var dto = _projection.Project(Approval(instance), instance, Actor(), "workflow", "1.0")!;
+
+        var delegation = dto.Actions.Single(a => a.Code == "delegate");
+        Assert.False(delegation.Enabled);
+        Assert.Null(delegation.RequiresTargetPerson);
+        Assert.True(dto.Actions.Single(a => a.Code == "reject").Enabled);
     }
 
     [Fact]
@@ -535,9 +552,13 @@ public sealed class ApprovalStepContextTests
         var finance = Position(Tenant, "Finans Müdürü");
         var version = Version(Step("step-1", "Finans Onayı", $"position:{finance.Id}"));
         var instance = Instance(version.Id);
+        // D1-FIX1 — with a readable snapshot: a task whose snapshot cannot be read is listed with its actions closed.
+        var snapshot = Snapshot(instance, "runtime_candidates");
+        var task = Approval(instance);
+        task.AssignmentSnapshotId = snapshot.Id;
 
         var root = Json(Assert.Single(
-            await Provider(version, [finance], Approval(instance)).With(instance).GetWorkItemsAsync(Actor())));
+            await ProviderWith(version, [finance], new SnapshotStore(snapshot), task).GetWorkItemsAsync(Actor())));
 
         var step = root.GetProperty("stepName");
         Assert.Equal("display", step.GetProperty("kind").GetString());

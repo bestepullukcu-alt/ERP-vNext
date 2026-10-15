@@ -4,7 +4,7 @@ using Diten.MdmService.Domain.Repositories;
 
 namespace Diten.MdmService.Application.Tests;
 
-internal sealed class InMemoryLegalEntityRepository : ILegalEntityRepository
+internal class InMemoryLegalEntityRepository : ILegalEntityRepository
 {
     private readonly Guid _tenantId;
     private readonly List<LegalEntity> _entities;
@@ -17,10 +17,14 @@ internal sealed class InMemoryLegalEntityRepository : ILegalEntityRepository
 
     public IReadOnlyList<LegalEntity> Entities => _entities;
 
+    public bool CloneReads { get; init; }
+
+    public Action<LegalEntity>? BeforeNextWrite { get; set; }
+
     public Task<LegalEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var entity = _entities.FirstOrDefault(x => x.Id == id && x.TenantId == _tenantId && !x.IsDeleted);
-        return Task.FromResult(entity);
+        return Task.FromResult(entity is not null && CloneReads ? Clone(entity) : entity);
     }
 
     public Task<LegalEntity> CreateAsync(LegalEntity entity, CancellationToken cancellationToken = default)
@@ -35,6 +39,7 @@ internal sealed class InMemoryLegalEntityRepository : ILegalEntityRepository
 
     public Task<bool> UpdateAsync(LegalEntity entity, CancellationToken cancellationToken = default)
     {
+        InvokeBeforeNextWrite();
         var current = _entities.FirstOrDefault(x => x.Id == entity.Id && x.TenantId == _tenantId && !x.IsDeleted);
         if (current is null)
         {
@@ -74,6 +79,55 @@ internal sealed class InMemoryLegalEntityRepository : ILegalEntityRepository
         return Task.FromResult(true);
     }
 
+    // Compile-compatible test double for the A1a repository contract. It is deliberately available before the
+    // production interface gains the member so RED tests can distinguish the dedicated CAS from generic UpdateAsync.
+    public Task<bool> UpdateEditableFieldsAsync(
+        LegalEntity proposed,
+        int expectedVersion,
+        CancellationToken cancellationToken = default)
+    {
+        InvokeBeforeNextWrite();
+        var current = _entities.FirstOrDefault(x =>
+            x.Id == proposed.Id
+            && x.TenantId == _tenantId
+            && !x.IsDeleted
+            && x.Version == expectedVersion);
+        if (current is null)
+        {
+            return Task.FromResult(false);
+        }
+
+        current.Code = proposed.Code;
+        current.LegalName = proposed.LegalName;
+        current.DisplayName = proposed.DisplayName;
+        current.LegalFormCode = proposed.LegalFormCode;
+        current.OrganizationRoleCode = proposed.OrganizationRoleCode;
+        current.RegistrationNumber = proposed.RegistrationNumber;
+        current.TaxId = proposed.TaxId;
+        current.VatNumber = proposed.VatNumber;
+        current.PlaceOfIncorporation = proposed.PlaceOfIncorporation;
+        current.IncorporationDate = proposed.IncorporationDate;
+        current.DissolutionDate = proposed.DissolutionDate;
+        current.CountryCode = proposed.CountryCode;
+        current.StatutoryStatus = proposed.StatutoryStatus;
+        current.ParentLegalEntityId = proposed.ParentLegalEntityId;
+        current.OwnershipPercent = proposed.OwnershipPercent;
+        current.ControlTypeCode = proposed.ControlTypeCode;
+        current.FiscalYearVariant = proposed.FiscalYearVariant;
+        current.AccountingStandardCode = proposed.AccountingStandardCode;
+        current.TaxRegimeCode = proposed.TaxRegimeCode;
+        current.BaseCurrencyCode = proposed.BaseCurrencyCode;
+        current.RegisteredAddressJson = proposed.RegisteredAddressJson;
+        current.CorrespondenceAddressJson = proposed.CorrespondenceAddressJson;
+        current.OfficialEmail = proposed.OfficialEmail;
+        current.OfficialPhone = proposed.OfficialPhone;
+        current.Website = proposed.Website;
+        current.CompletenessScore = proposed.CompletenessScore;
+        current.UpdatedAt = DateTimeOffset.UtcNow;
+        current.Version++;
+        return Task.FromResult(true);
+    }
+
     public Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var entity = _entities.FirstOrDefault(x => x.Id == id && x.TenantId == _tenantId && !x.IsDeleted);
@@ -105,6 +159,29 @@ internal sealed class InMemoryLegalEntityRepository : ILegalEntityRepository
         return Task.FromResult(items);
     }
 
+    public virtual Task<IReadOnlyList<LegalEntity>> GetReferenceableByIdsAsync(
+        IReadOnlyCollection<Guid> ids,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (ids.Count > ProductLegalEntityScopePolicy.MaximumLegalEntityIdsPerSnapshot
+            || ids.Any(id => id == Guid.Empty)
+            || ids.Distinct().Count() != ids.Count)
+        {
+            throw new ArgumentException("Legal Entity candidate set is not canonical.", nameof(ids));
+        }
+
+        var requested = ids.ToHashSet();
+        IReadOnlyList<LegalEntity> items = _entities
+            .Where(x => requested.Contains(x.Id)
+                && x.TenantId == _tenantId
+                && !x.IsDeleted
+                && x.OperationalStatus == LegalEntityOperationalStatus.Active)
+            .OrderBy(x => x.Id.ToString("D"), StringComparer.Ordinal)
+            .ToList();
+        return Task.FromResult(items);
+    }
+
     public Task<bool> ExistsByCodeAsync(string code, Guid? excludeId = null, CancellationToken cancellationToken = default)
     {
         var exists = _entities.Any(x =>
@@ -114,5 +191,25 @@ internal sealed class InMemoryLegalEntityRepository : ILegalEntityRepository
             && (!excludeId.HasValue || x.Id != excludeId.Value));
 
         return Task.FromResult(exists);
+    }
+
+    private void InvokeBeforeNextWrite()
+    {
+        var callback = BeforeNextWrite;
+        BeforeNextWrite = null;
+        if (callback is not null)
+        {
+            callback(_entities.Single(x => x.TenantId == _tenantId && !x.IsDeleted));
+        }
+    }
+
+    private static LegalEntity Clone(LegalEntity source)
+    {
+        var clone = new LegalEntity();
+        foreach (var property in typeof(LegalEntity).GetProperties().Where(property => property.CanRead && property.CanWrite))
+        {
+            property.SetValue(clone, property.GetValue(source));
+        }
+        return clone;
     }
 }

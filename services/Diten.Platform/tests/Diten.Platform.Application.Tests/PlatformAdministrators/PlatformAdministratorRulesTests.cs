@@ -51,6 +51,27 @@ public sealed class PlatformAdministratorRulesTests
         Assert.Contains(result.Errors, error => error.ErrorMessage.Contains("AllowedTenantIds"));
     }
 
+    /// <summary>BL-521 FIX1 F6 — the platform system tenant cannot be given to a partner administrator, on invite or on
+    /// update; an ordinary tenant still can.</summary>
+    [Fact]
+    public void Invite_and_update_validators_refuse_the_platform_system_tenant_for_a_partner()
+    {
+        var partnerId = Guid.NewGuid();
+        var customer = Guid.NewGuid();
+        IReadOnlyList<Guid> withSystem = [customer, SystemTenantRules.PlatformSystemTenantId];
+
+        var invite = new InvitePlatformAdministratorValidator().Validate(new InvitePlatformAdministratorCommand(new InvitePlatformAdministratorRequest(
+            "partner@diten.com", "partner", "Partner Admin", "PartnerAdmin", partnerId, withSystem, ["SupportAdmin"])));
+        var update = new UpdatePlatformAdministratorValidator().Validate(new UpdatePlatformAdministratorCommand(Guid.NewGuid(), new UpdatePlatformAdministratorRequest(
+            "partner@diten.com", "partner", "Partner Admin", "PartnerAdmin", partnerId, withSystem, "Active", ["SupportAdmin"], 1)));
+        var ordinary = new InvitePlatformAdministratorValidator().Validate(new InvitePlatformAdministratorCommand(new InvitePlatformAdministratorRequest(
+            "partner@diten.com", "partner", "Partner Admin", "PartnerAdmin", partnerId, [customer], ["SupportAdmin"])));
+
+        Assert.Contains(invite.Errors, e => e.ErrorMessage == InvitePlatformAdministratorValidator.SystemTenantNotAllowedMessage);
+        Assert.Contains(update.Errors, e => e.ErrorMessage == UpdatePlatformAdministratorValidator.SystemTenantNotAllowedMessage);
+        Assert.True(ordinary.IsValid, string.Join("; ", ordinary.Errors.Select(e => e.ErrorMessage)));
+    }
+
     [Fact]
     public void Assign_roles_validator_rejects_empty_or_invalid_roles()
     {
@@ -159,6 +180,63 @@ public sealed class PlatformAdministratorRulesTests
         Assert.Single(response.Data!.Items);
     }
 
+    // ── BL-529 FIX2 — "Send setup link" to one's own record is refused before AuthService is called ──────────
+
+    [Fact]
+    public async Task Resend_invite_to_ones_own_record_is_refused_with_a_code_and_never_reaches_auth()
+    {
+        var repository = new InMemoryPlatformAdministratorRepository();
+        var self = await repository.CreateAsync(Administrator("tester@diten.com")); // the TestCurrentUserContext address
+        var provisioning = new TestPlatformAdministratorProvisioningService();
+        var handler = ResendHandler(repository, provisioning);
+
+        var response = await handler.Handle(new ResendPlatformAdministratorInviteCommand(self.Id, new PlatformAdministratorVersionRequest(self.Version)), CancellationToken.None);
+
+        Assert.False(response.IsSuccessful);
+        Assert.Equal(409, response.StatusCode);
+        Assert.Equal(Diten.Platform.Application.Security.ActorSafetyGuard.SelfResendInviteCode, response.ReasonCode);
+        Assert.Equal(0, provisioning.ProvisionCalls);
+    }
+
+    [Fact]
+    public async Task Resend_invite_to_another_administrator_still_provisions()
+    {
+        var repository = new InMemoryPlatformAdministratorRepository();
+        var other = await repository.CreateAsync(Administrator("other@diten.com"));
+        var provisioning = new TestPlatformAdministratorProvisioningService();
+        var handler = ResendHandler(repository, provisioning);
+
+        // Merge WP-CT-LANE-BL521-MERGE-01 — the version the client SAW: BL-521 FIX4 item 3 refuses any other (409) before Auth
+        // is provisioned, so the earlier "bump first, send version - 1" shortcut no longer reaches the provisioning it counts.
+        var response = await handler.Handle(new ResendPlatformAdministratorInviteCommand(other.Id, new PlatformAdministratorVersionRequest(other.Version)), CancellationToken.None);
+
+        Assert.Equal(1, provisioning.ProvisionCalls);
+        Assert.NotEqual(Diten.Platform.Application.Security.ActorSafetyGuard.SelfResendInviteCode, response.ReasonCode);
+    }
+
+    private static ResendPlatformAdministratorInviteHandler ResendHandler(
+        InMemoryPlatformAdministratorRepository repository, TestPlatformAdministratorProvisioningService provisioning)
+    {
+        var currentUser = new TestCurrentUserContext();
+        return new ResendPlatformAdministratorInviteHandler(
+            repository,
+            provisioning,
+            currentUser,
+            new Diten.Platform.Application.Security.ActorSafetyGuard(currentUser, repository),
+            NullLogger<ResendPlatformAdministratorInviteHandler>.Instance);
+    }
+
+    private static PlatformAdministrator Administrator(string email) => new()
+    {
+        Email = email,
+        NormalizedEmail = email,
+        UserName = email.Split('@')[0],
+        NormalizedUserName = email.Split('@')[0],
+        DisplayName = "Admin",
+        Roles = [AdministratorRole.SuperAdmin],
+        CreatedBy = "test"
+    };
+
     private sealed class TestCurrentUserContext : ICurrentUserContext
     {
         public Guid UserId { get; } = Guid.Parse("11111111-1111-1111-1111-111111111111");
@@ -188,7 +266,7 @@ public sealed class PlatformAdministratorRulesTests
         public Task<bool> ExistsByUserNameAsync(string normalizedUserName, Guid? excludeId = null, CancellationToken ct = default) =>
             Task.FromResult(_items.Any(x => x.NormalizedUserName == normalizedUserName && !x.IsDeleted && (!excludeId.HasValue || x.Id != excludeId.Value)));
 
-        public Task<bool> UpdateAsync(PlatformAdministrator administrator, int expectedVersion, CancellationToken ct = default)
+        public Task<bool> UpdateAsync(PlatformAdministrator administrator, int expectedVersion, CancellationToken ct = default, AuthSyncPendingEffect authSyncPending = AuthSyncPendingEffect.Keep)
         {
             if (administrator.Version != expectedVersion + 1)
             {
@@ -241,12 +319,50 @@ public sealed class PlatformAdministratorRulesTests
                 x.Status == AdministratorStatus.Active &&
                 x.Roles.Contains(AdministratorRole.SuperAdmin) &&
                 (!excludeId.HasValue || x.Id != excludeId.Value)));
+
+        // BL-521 FIX3 item 3 — no transaction in memory: count, then write (these tests never run two writes at once).
+        public async Task<SuperAdminGuardedWriteResult> UpdateGuardedAsync(PlatformAdministrator administrator, int expectedVersion, CancellationToken ct = default, AuthSyncPendingEffect authSyncPending = AuthSyncPendingEffect.Keep) =>
+            await CountActiveSuperAdminsAsync(administrator.Id, ct) == 0 ? SuperAdminGuardedWriteResult.LastActiveSuperAdmin
+            : await UpdateAsync(administrator, expectedVersion, ct) ? SuperAdminGuardedWriteResult.Written : SuperAdminGuardedWriteResult.VersionConflict;
+
+        public async Task<SuperAdminGuardedWriteResult> SoftDeleteGuardedAsync(Guid id, int expectedVersion, string actorName, CancellationToken ct = default) =>
+            await CountActiveSuperAdminsAsync(id, ct) == 0 ? SuperAdminGuardedWriteResult.LastActiveSuperAdmin
+            : await SoftDeleteAsync(id, expectedVersion, actorName, ct) ? SuperAdminGuardedWriteResult.Written : SuperAdminGuardedWriteResult.VersionConflict;
+
+        // BL-521 FIX4 item 2 — the convergence mark (no version move).
+        public Task<bool> RecordLoginAcceptedAsync(Guid id, DateTimeOffset acceptedAtUtc, CancellationToken ct = default)
+        {
+            var item = _items.FirstOrDefault(x => x.Id == id && !x.IsDeleted && x.Status == AdministratorStatus.Active);
+            if (item is not null)
+            {
+                item.LastLoginAtUtc = acceptedAtUtc;
+                item.InvitationStatus = AdministratorInvitationStatus.Accepted;
+            }
+
+            return Task.FromResult(item is not null);
+        }
+
+        public Task MarkAuthSyncPendingAsync(Guid id, bool pending, CancellationToken ct = default)
+        {
+            var item = _items.FirstOrDefault(x => x.Id == id);
+            if (item is not null)
+            {
+                item.AuthSyncPendingSinceUtc = pending ? item.AuthSyncPendingSinceUtc ?? DateTimeOffset.UtcNow : null;
+            }
+
+            return Task.CompletedTask;
+        }
     }
 
     private sealed class TestPlatformAdministratorProvisioningService : IPlatformAdministratorProvisioningService
     {
-        public Task<PlatformAdministratorProvisioningResult> ProvisionAsync(PlatformAdministratorProvisioningRequest request, CancellationToken ct) =>
-            Task.FromResult(new PlatformAdministratorProvisioningResult(null, true));
+        public int ProvisionCalls { get; private set; }
+
+        public Task<PlatformAdministratorProvisioningResult> ProvisionAsync(PlatformAdministratorProvisioningRequest request, CancellationToken ct)
+        {
+            ProvisionCalls++;
+            return Task.FromResult(new PlatformAdministratorProvisioningResult(null, true));
+        }
 
         public Task SyncAsync(PlatformAdministratorProvisioningSyncRequest request, CancellationToken ct) => Task.CompletedTask;
     }

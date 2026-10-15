@@ -623,11 +623,29 @@ public sealed class VisitReportWebTests
         return (gateway, controller);
     }
 
-    private static JsonElement? Smoke(string scenario)
+    [Fact]
+    public void FixC_the_wizard_reimbursement_label_reads_the_real_contract_label_in_english_and_label_tr_in_turkish()
+    {
+        // the fake answers the REAL proxy contract ({ code, label, isActive, attributes: { label_tr } }); no displayName
+        var smoke = File.ReadAllText(Path.Combine(Path.GetDirectoryName(WebRoot())!, "Diten.Web.Tests", "Js", "visit-report-smoke.js"));
+        Assert.DoesNotContain("valueCode", smoke);
+        Assert.DoesNotContain("v.displayName", File.ReadAllText(Path.Combine(ScriptDir(), "visit-report.js")));
+
+        if (Smoke("doctor", "en") is not { } en) { return; }
+        var card = en.GetProperty("compCard").GetString()!;
+        Assert.Contains("Reimbursed", card);                                      // English = the BRD label
+        Assert.DoesNotContain("· reimbursed", card);                              // never the code
+        if (Smoke("doctor") is { } tr)
+        {
+            Assert.Contains("Geri ödemede", tr.GetProperty("compCard").GetString());
+        }
+    }
+
+    private static JsonElement? Smoke(string scenario, string lang = "tr")
     {
         var smoke = Path.Combine(Path.GetDirectoryName(WebRoot())!, "Diten.Web.Tests", "Js", "visit-report-smoke.js").Replace("\\", "/");
         var crm = Path.Combine(WebRoot(), "wwwroot", "assets", "js", "CRM").Replace("\\", "/");
-        var node = RunNode("process.argv[2] = '" + crm + "'; process.argv[3] = '" + scenario + "'; require('" + smoke + "');");
+        var node = RunNode("process.argv[2] = '" + crm + "'; process.argv[3] = '" + scenario + "'; process.argv[4] = '" + lang + "'; require('" + smoke + "');");
         return node is null ? null : JsonDocument.Parse(node).RootElement.Clone();
     }
 

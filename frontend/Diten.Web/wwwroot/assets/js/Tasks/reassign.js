@@ -126,7 +126,13 @@
             global.location.reload();
             return;
         }
-        // The server's refusal, verbatim — it knows rules this screen deliberately does not duplicate.
+        // FIX4 (item 7) — a linked workflow that could not be withdrawn is a sentence in the reader's language (nothing
+        // was reassigned). Every other refusal: the server's, verbatim — it knows rules this screen does not duplicate.
+        const overrides = global.TasksApi.reasonOverridesFor?.('reassign');
+        if (overrides && overrides[response.reasonCode]) {
+            global.showToast?.(global.TasksApi.failureMessage(response, overrides), 'error');
+            return;
+        }
         global.showToast?.((response.errors && response.errors[0]) || t('errorOccurred'), 'error');
     };
 

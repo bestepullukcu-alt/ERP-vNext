@@ -120,23 +120,25 @@ describe("the silence rule — no shortcut eats a key meant for something else",
   });
 });
 
-describe("`?` opens the list from anywhere except a form field", () => {
-  it("opens over a modal and with a modifier held, but types into a textarea", () => {
+describe("`?` opens the list from anywhere except a form field or an open overlay", () => {
+  it("opens with a modifier held; not over a modal (UX-COMMON-FIX1); types into a textarea", () => {
     const layer = freshLayer();
     const fired = stubSwal();
     layer.register("test", [{ keys: ["j"], actionKey: "Wcn.Next", handler: () => {} }]);
 
     expect(press("?").defaultPrevented).toBe(true);
     expect(fired.length).toBe(1);
+    press("?", undefined, { ctrlKey: true });
+    expect(fired.length).toBe(2);
 
     document.body.insertAdjacentHTML("beforeend", "<div class=\"modal show\"></div>");
-    press("?");
-    press("?", undefined, { ctrlKey: true });
-    expect(fired.length).toBe(3);
+    expect(press("?").defaultPrevented, "`?` opened behind an open modal").toBe(false);
+    expect(fired.length).toBe(2);
+    document.querySelector(".modal.show").remove();
 
     document.body.insertAdjacentHTML("beforeend", "<textarea id=\"f\"></textarea>");
     expect(press("?", document.getElementById("f")).defaultPrevented).toBe(false);
-    expect(fired.length).toBe(3);
+    expect(fired.length).toBe(2);
   });
 
   it("is reserved — a screen cannot bind `?` to something else", () => {

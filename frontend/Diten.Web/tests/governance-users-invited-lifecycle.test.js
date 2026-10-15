@@ -107,7 +107,7 @@ describe("refusals tagged with a stable code are shown in the reader's language"
     expect(source).toMatch(/USER_INVITATION_PENDING: 'ErrorUserInvitationPending'/);
     // BL-440 package 5: the factory shows `json.errors`; the page's submit hands it the LOCALIZED list.
     expect(source).toMatch(/if \(!json\.success\) return Object\.assign\(\{\}, json, \{ errors: localizedErrors\(json\) \}\);/);
-    expect(source).toMatch(/throw new Error\(localizedErrors\(json\)\[0\] \|\| L\(\)\.ErrorOccurred\)/);
+    expect(source).toMatch(/if \(!res\.ok \|\| json\.success !== true\) throw refusal\(json\);/);
     expect(source, "the form still shows the raw gateway text").not.toMatch(/if \(!json\.success\) return json;/);
   });
 
@@ -115,7 +115,7 @@ describe("refusals tagged with a stable code are shown in the reader's language"
     const controller = read("Controllers", "UsersController.cs");
     expect(controller).not.toMatch(/Json\(new \{ success = false, errors = await ExtractGatewayErrorsAsync\(response\) \}\)/);
     expect((controller.match(/: await GatewayFailureAsync\(response\);/g) || []).length).toBe(3);
-    expect(controller).toMatch(/errorCode = await ExtractGatewayErrorCodeAsync\(response\)/);
+    expect(controller).toMatch(/errorCode = codes\.Count > 0 \? codes\[0\]\.Code : null/);
   });
 });
 

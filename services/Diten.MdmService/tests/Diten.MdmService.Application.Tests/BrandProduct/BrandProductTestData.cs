@@ -16,7 +16,9 @@ internal static class BrandProductTestData
         string status = BrandProductVocabulary.StatusActive,
         DateTimeOffset? effectiveFrom = null,
         DateTimeOffset? effectiveTo = null,
-        IReadOnlyList<BrandProductExternalReferenceDto>? externalReferences = null)
+        IReadOnlyList<BrandProductExternalReferenceDto>? externalReferences = null,
+        // WP-MDM-BRAND-ACCEPT-01 FIX1 (item 2) — an edit says which read it was made on; seeded brands are at version 0.
+        int? expectedVersion = 0)
         => new(
             BrandCode: code,
             BrandName: name,
@@ -27,7 +29,8 @@ internal static class BrandProductTestData
             TherapeuticAreaId: null,
             EffectiveFrom: effectiveFrom ?? From,
             EffectiveTo: effectiveTo,
-            ExternalReferences: externalReferences);
+            ExternalReferences: externalReferences,
+            ExpectedVersion: expectedVersion);
 
     public static ProductWriteRequest ProductRequest(
         string code = "PR-001",
@@ -41,7 +44,9 @@ internal static class BrandProductTestData
         IReadOnlyList<Guid>? indicationRefs = null,
         DateTimeOffset? effectiveFrom = null,
         DateTimeOffset? effectiveTo = null,
-        IReadOnlyList<BrandProductExternalReferenceDto>? externalReferences = null)
+        IReadOnlyList<BrandProductExternalReferenceDto>? externalReferences = null,
+        // FIX3 (R-3) — the version an edit was made on; the doubles' products start at 0.
+        int? expectedVersion = 0)
         => new(
             ProductCode: code,
             ProductName: name,
@@ -58,7 +63,8 @@ internal static class BrandProductTestData
             Description: "Test product",
             EffectiveFrom: effectiveFrom ?? From,
             EffectiveTo: effectiveTo,
-            ExternalReferences: externalReferences);
+            ExternalReferences: externalReferences,
+            ExpectedVersion: expectedVersion);
 
     public static Domain.Entities.Brand Brand(
         Guid tenantId,

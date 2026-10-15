@@ -6,7 +6,10 @@
    (summary, no POST); with every answer the submit posts the pharmacy body.
    readonly: no draft / submit buttons, a click changes nothing, no write call.
    window: a sent report → "Change" → submit answered 409 edit_window_closed → the reasoned correction (no reason = no call;
-   a reason = POST amend). */
+   a reason = POST amend).
+   W4-FIX-c (G-6) — the options come in the REAL pre-fill contract (CRM VisitReportOptionDto: the BRD value's English label
+   + its attributes as labels: { label_tr, label_fr, … }); G-7 the header's pharmacy (the target proxy); G-10 the doctor
+   results with specialty / institution / city. */
 const fs = require('fs');
 const dir = process.argv[2];
 const texts = JSON.parse(fs.readFileSync(process.argv[3], 'utf8'));
@@ -25,7 +28,7 @@ root.addEventListener = (ev, fn) => { listeners[ev] = fn; };
 ['ph-sent', 'ph-fix', 'ph-error', 'ph-draft', 'ph-submit', 'ph-prev'].forEach(id => el(id).classList.add('d-none')); // as the view renders them
 global.document = { documentElement: { lang: 'tr' }, getElementById: el, querySelectorAll: () => [], addEventListener: () => {}, createElement: () => mk('x') };
 
-const opt = (code, label) => ({ code, label, labels: { tr: label } });
+const opt = (code, tr, en) => ({ code, label: en, labels: { label_tr: tr, label_fr: en + ' (fr)', note: 'not a label' } });
 const prefill = {
   plannedVisitId: 'PV1', reportKind: 'pharmacy', contactId: null, accountId: 'A1', visitReportId: mode === 'window' ? 'R1' : null,
   reportStatus: mode === 'window' ? 'submitted' : null, version: mode === 'window' ? 3 : 0, executionStatus: 'finished',
@@ -41,13 +44,13 @@ const prefill = {
     country: { marketCode: 'TR', boxPrice: 120.5, currencyCode: 'TRY', reimbursementStatusCode: 'reimbursed' } }] }],
   competitorsUnavailable: false,
   optionSets: {
-    'crm-pharmacy-met-role': [opt('pharmacist', 'Eczacı'), opt('assistant', 'Kalfa')],
-    'crm-pharmacy-stock-level': [opt('in_stock', 'Var'), opt('low', 'Az'), opt('out', 'Yok')],
-    'crm-shelf-position': [opt('eye_level', 'Göz hizası'), opt('bottom', 'Alt raf')],
-    'crm-sales-trend': [opt('up', 'Artıyor'), opt('flat', 'Sabit'), opt('down', 'Azalıyor')],
-    'crm-recommendation-level': [opt('low', 'Az'), opt('medium', 'Orta'), opt('high', 'Çok')],
-    'crm-visit-request-type': [opt('material', 'Materyal')],
-    'crm-competitor-advantage': [opt('price', 'Fiyat')]
+    'crm-pharmacy-met-role': [opt('pharmacist', 'Eczacı', 'Pharmacist'), opt('assistant', 'Kalfa', 'Assistant')],
+    'crm-pharmacy-stock-level': [opt('in_stock', 'Var', 'In stock'), opt('low', 'Az', 'Low'), opt('out', 'Yok', 'Out of stock')],
+    'crm-shelf-position': [opt('eye_level', 'Göz hizası', 'Eye level'), opt('bottom', 'Alt raf', 'Bottom shelf')],
+    'crm-sales-trend': [opt('up', 'Artıyor', 'Rising'), opt('flat', 'Sabit', 'Flat'), opt('down', 'Azalıyor', 'Falling')],
+    'crm-recommendation-level': [opt('low', 'Az', 'Low'), opt('medium', 'Orta', 'Medium'), opt('high', 'Çok', 'High')],
+    'crm-visit-request-type': [opt('material', 'Materyal', 'Material')],
+    'crm-competitor-advantage': [opt('price', 'Fiyat', 'Price')]
   }
 };
 const gskus = [{ id: 'G1', code: 'URO-30', productId: 'P1', productName: 'Ürofleks', pack: '30 TAB' }, { id: 'G9', code: 'OTHER-1', productId: 'P9', productName: 'Başka', pack: '' }];
@@ -60,6 +63,10 @@ global.fetch = (url, o) => {
   let d = null, status = 200, errors;
   if (url === '/api/PV1/prefill') d = prefill;
   else if (url.indexOf('/api/lookups/gskus') === 0) d = gskus;
+  else if (url === '/api/PV1/target') d = { name: 'Hayat Eczanesi', city: 'İstanbul' };
+  else if (url === '/api/reference-data/mdm-reimbursement-status/values') d = { setCode: 'mdm-reimbursement-status', items: [{ code: 'reimbursed', label: 'Reimbursed', isActive: true, sortOrder: 1, attributes: { label_tr: 'Geri ödemede' } }] };
+  else if (url.indexOf('/api/lookups/contacts') === 0) d = [{ id: 'D1', name: 'Dr. Ali Yılmaz', specialtyCode: 'cardiology', specialty: 'Kardiyoloji', city: 'Ankara', institution: 'Şehir Hastanesi' },
+    { id: 'D2', name: 'Dr. Ali Yılmaz', specialtyCode: 'urology', specialty: 'Üroloji', city: null, institution: null }];
   else if (url === '/api/PV1/shelf-photo' && method === 'POST') { d = { photoEvidenceId: 'E1' }; status = 201; }
   else if (url === '/api/draft') d = { visitReportId: 'R1', version: 1, reportStatus: 'draft', missing: [], warnings: [] };
   else if (url === '/api/submit' && mode === 'window') { status = 409; errors = ['The correction window has closed.', 'visit_report_edit_window_closed']; }
@@ -87,6 +94,8 @@ const writes = () => calls.filter(c => c.method !== 'GET');
   out.stockRows = st.body.pharmacy.stock.map(r => r.gskuId);
   out.salesRows = st.body.pharmacy.sales.map(r => r.gskuId);
   out.validChip = el('ph-chip-valid').innerHTML;
+  out.headerSub = el('ph-sub').innerHTML;
+  out.generalHtml0 = el('ph-general').innerHTML;
 
   if (mode === 'submit') {
     // the photo: a gif is refused before any call; a jpeg is posted multipart, its id kept and the draft saved
@@ -114,6 +123,12 @@ const writes = () => calls.filter(c => c.method !== 'GET');
     out.postsWithoutTrend = writes().slice(b2).filter(c => c.url === '/api/submit').length;
     out.stepAfterTry = st.step;
     out.summaryHtml = el('ph-summary').innerHTML;
+    await page().goStep('stock'); await tick();
+    out.stockHtml = el('ph-stock').innerHTML;
+    await page().goStep('market'); await tick();
+    listeners.input({ target: { closest: q => (q === '[data-act]' ? { getAttribute: () => 'contact-q', value: 'Ali' } : null) } });
+    await new Promise(r => setTimeout(r, 400)); await tick();
+    out.marketHtml = el('ph-market').innerHTML;
     // the trend → the submit goes
     tap({ 'data-act': 'trend', 'data-val': 'up', 'data-gsku': 'G1' });
     out.missingAfterTrend = global.window.ReportPharmacyCore.missing(st.body, { competitorsListed: true });

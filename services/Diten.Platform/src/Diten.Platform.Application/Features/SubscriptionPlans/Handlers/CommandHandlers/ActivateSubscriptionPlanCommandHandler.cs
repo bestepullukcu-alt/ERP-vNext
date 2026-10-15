@@ -33,11 +33,13 @@ public sealed class ActivateSubscriptionPlanCommandHandler : IRequestHandler<Act
                 var plan = await _repository.GetByIdAsync(session, request.Id, transactionCt);
                 if (plan is null) return new(Response<NoContent>.Fail("Subscription plan not found.", 404), false);
                 if (plan.IsActive) return new(Response<NoContent>.Success(204), false);
+                var auditBefore = GlobalApplicabilityAuditChange.StateOf(plan);
                 plan.IsActive = true;
                 await _repository.UpdateAsync(session, plan, transactionCt);
                 _logger.LogInformation("SubscriptionPlan activated PlanId={PlanId} Code={Code}", plan.Id, plan.Code);
                 return new(Response<NoContent>.Success(204), true,
-                    (s, version, token) => _state.UpsertSubscriptionPlanAsync(s, plan, version, token));
+                    (s, version, token) => _state.UpsertSubscriptionPlanAsync(s, plan, version, token),
+                    GlobalApplicabilityAuditChange.Between(auditBefore, GlobalApplicabilityAuditChange.StateOf(plan)));
             }, ct);
     }
 }

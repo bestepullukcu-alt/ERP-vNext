@@ -26,6 +26,7 @@
      data-can-record="@Model.CanRecord.ToString().ToLowerInvariant()"
      data-can-apply="@Model.CanApplyWeek.ToString().ToLowerInvariant()"
      data-can-search-contacts="@Model.CanSearchContacts.ToString().ToLowerInvariant()"
+     data-can-search-pharmacies="@Model.CanSearchPharmacies.ToString().ToLowerInvariant()"
      data-can-plan="@Model.CanPlan.ToString().ToLowerInvariant()"
      data-can-execute="@Model.CanExecute.ToString().ToLowerInvariant()"
      data-presentation-url="/CRM/VisitPresentation"
@@ -333,8 +334,17 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["CloseButton"]"></button>
             </div>
             <div class="modal-body d-grid gap-3">
+                <div class="d-none" id="vw-unp-type-box">
+                    <span class="form-label d-block" id="vw-unp-type-label">@Localizer["UnpTargetType"]</span>
+                    <div class="btn-group" role="radiogroup" aria-labelledby="vw-unp-type-label">
+                        <input type="radio" class="btn-check" name="vw-unp-type" id="vw-unp-type-contact" value="contact" checked />
+                        <label class="btn btn-outline-primary" for="vw-unp-type-contact"><i class="bx bx-user"></i> @Localizer["UnpTargetDoctor"]</label>
+                        <input type="radio" class="btn-check" name="vw-unp-type" id="vw-unp-type-pharmacy" value="pharmacy" />
+                        <label class="btn btn-outline-primary" for="vw-unp-type-pharmacy"><i class="bx bx-plus-medical"></i> @Localizer["UnpTargetPharmacy"]</label>
+                    </div>
+                </div>
                 <div>
-                    <label class="form-label" for="vw-unp-search">@Localizer["DoctorLabel"] <span class="text-danger">*</span></label>
+                    <label class="form-label" for="vw-unp-search"><span id="vw-unp-search-label">@Localizer["DoctorLabel"]</span> <span class="text-danger">*</span></label>
                     <input type="search" class="form-control" id="vw-unp-search" placeholder="@Localizer["DoctorSearch"]" autocomplete="off" />
                     <div class="list-group mt-1" id="vw-unp-results"></div>
                 </div>

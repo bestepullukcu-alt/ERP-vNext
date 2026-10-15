@@ -89,6 +89,19 @@
   <data name="ToastClaimed" xml:space="preserve"><value>Задача закреплена за вами.</value></data>
   <data name="ErrorAlreadyClaimed" xml:space="preserve"><value>Задачу раньше вас взял другой сотрудник.</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>У вас нет прав на это действие.</value></data>
+  <data name="PeopleSearchHint" xml:space="preserve"><value>Введите имя или должность…</value></data>
+  <data name="PeopleSearchMinimumLength" xml:space="preserve"><value>Введите не менее 2 символов для поиска.</value></data>
+  <data name="PeopleSearchNoResults" xml:space="preserve"><value>По этому запросу никого не найдено.</value></data>
+  <data name="PeopleSearching" xml:space="preserve"><value>Поиск…</value></data>
+  <data name="DecisionMakerUnavailable" xml:space="preserve"><value>Человек не найден</value></data>
+  <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>Слишком много поисков за короткое время. Подождите немного и повторите попытку.</value></data>
+  <data name="SearchFailed" xml:space="preserve"><value>Не удалось выполнить поиск. Повторите попытку чуть позже.</value></data>
+  <data name="RecordSearchNoResults" xml:space="preserve"><value>Записи не найдены.</value></data>
+  <data name="DecisionMakerLoadFailed" xml:space="preserve"><value>Сейчас не удалось загрузить данные о сотруднике</value></data>
+  <data name="ErrorPeopleLookupSearchAndIds" xml:space="preserve"><value>Ищите по имени или по сохранённым сотрудникам, но не одновременно.</value></data>
+  <data name="ErrorPeopleLookupTooManyIds" xml:space="preserve"><value>Запрошено слишком много сотрудников за один раз.</value></data>
+  <data name="ErrorPeopleLookupIdsInvalid" xml:space="preserve"><value>Одна из сохранённых ссылок на сотрудника недействительна.</value></data>
+  <data name="ErrorPeopleDirectoryUnavailable" xml:space="preserve"><value>Справочник сотрудников сейчас недоступен. Повторите попытку чуть позже.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>Служба задач недоступна. Повторите попытку.</value></data>
   <data name="EmptyTitle" xml:space="preserve"><value>Задач пока нет</value></data>
   <data name="EmptyDescription" xml:space="preserve"><value>Создайте первую задачу — она появится здесь и в Центре задач.</value></data>
@@ -123,6 +136,12 @@
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Отменить эту задачу может только тот, кто её запросил. Если вы не хотите эту работу, верните её.</value></data>
   <data name="ErrorApprovalManagerIsSelf" xml:space="preserve"><value>Вы не можете утверждать согласование, которое запрашиваете сами. Выберите другого ответственного за согласование.</value></data>
   <data name="ErrorReviewerIsSubmitter" xml:space="preserve"><value>Вы не можете проверять собственную работу. Попросите другого сотрудника проверить эту задачу.</value></data>
+  <data name="ErrorNoEligibleReviewer" xml:space="preserve"><value>Никто, кроме вас, не может проверить эту задачу. Выберите другого проверяющего.</value></data>
+  <data name="ErrorNoEligibleApprover" xml:space="preserve"><value>Никто, кроме вас, не может принять решение на следующем шаге этого согласования. Попросите администратора изменить согласующих в процессе.</value></data>
+  <data name="ErrorApprovalCancelFailed" xml:space="preserve"><value>Изменения сохранены, но текущее согласование не удалось отозвать. Сохраните ещё раз, чтобы повторить попытку.</value></data>
+  <data name="ErrorReviewCancelFailed" xml:space="preserve"><value>Изменения сохранены, но текущую проверку не удалось отозвать. Сохраните ещё раз, чтобы повторить попытку.</value></data>
+  <data name="ErrorWorkflowWithdrawFailedOnAct" xml:space="preserve"><value>Не удалось отозвать связанное согласование или проверку, поэтому действие не выполнено. Повторите попытку чуть позже.</value></data>
+  <data name="ErrorReviewAlreadyOpen" xml:space="preserve"><value>По этой задаче уже открыта проверка.</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>Укажите, чего ожидает задача.</value></data>
   <data name="ErrorTitleRequired" xml:space="preserve"><value>Укажите название.</value></data>
   <data name="ErrorTitleTooLong" xml:space="preserve"><value>Название может содержать не более 200 символов.</value></data>

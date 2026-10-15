@@ -89,6 +89,19 @@
   <data name="ToastClaimed" xml:space="preserve"><value>La tarea es suya.</value></data>
   <data name="ErrorAlreadyClaimed" xml:space="preserve"><value>Otra persona tomó esta tarea antes.</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>No tiene permiso para hacer esto.</value></data>
+  <data name="PeopleSearchHint" xml:space="preserve"><value>Escriba un nombre o un puesto…</value></data>
+  <data name="PeopleSearchMinimumLength" xml:space="preserve"><value>Escriba al menos 2 caracteres para buscar.</value></data>
+  <data name="PeopleSearchNoResults" xml:space="preserve"><value>No se encontró a nadie con esta búsqueda.</value></data>
+  <data name="PeopleSearching" xml:space="preserve"><value>Buscando…</value></data>
+  <data name="DecisionMakerUnavailable" xml:space="preserve"><value>Persona no encontrada</value></data>
+  <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>Demasiadas búsquedas en poco tiempo. Espere un momento e inténtelo de nuevo.</value></data>
+  <data name="SearchFailed" xml:space="preserve"><value>No se pudo realizar la búsqueda. Inténtelo de nuevo en unos instantes.</value></data>
+  <data name="RecordSearchNoResults" xml:space="preserve"><value>No se encontraron registros.</value></data>
+  <data name="DecisionMakerLoadFailed" xml:space="preserve"><value>No se pudieron cargar los datos de la persona en este momento</value></data>
+  <data name="ErrorPeopleLookupSearchAndIds" xml:space="preserve"><value>Busque por nombre o por personas guardadas, no por ambos a la vez.</value></data>
+  <data name="ErrorPeopleLookupTooManyIds" xml:space="preserve"><value>Se solicitaron demasiadas personas a la vez.</value></data>
+  <data name="ErrorPeopleLookupIdsInvalid" xml:space="preserve"><value>Una referencia de persona guardada no es válida.</value></data>
+  <data name="ErrorPeopleDirectoryUnavailable" xml:space="preserve"><value>El directorio de personas no está disponible en este momento. Inténtelo de nuevo en unos instantes.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>No se pudo contactar con el servicio de tareas. Inténtelo de nuevo.</value></data>
   <data name="EmptyTitle" xml:space="preserve"><value>Aún no hay tareas</value></data>
   <data name="EmptyDescription" xml:space="preserve"><value>Cree su primera tarea para verla aquí y en el Centro de tareas.</value></data>
@@ -123,6 +136,12 @@
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Solo quien solicitó esta tarea puede cancelarla. Si no quiere el trabajo, devuélvalo.</value></data>
   <data name="ErrorApprovalManagerIsSelf" xml:space="preserve"><value>No puede ser el aprobador de una aprobación que usted solicita. Elija a otra persona como responsable de la aprobación.</value></data>
   <data name="ErrorReviewerIsSubmitter" xml:space="preserve"><value>No puede revisar su propio envío. Pida a otra persona que revise esta tarea.</value></data>
+  <data name="ErrorNoEligibleReviewer" xml:space="preserve"><value>Nadie más que usted puede revisar esta tarea. Elija otro revisor.</value></data>
+  <data name="ErrorNoEligibleApprover" xml:space="preserve"><value>Nadie más que usted puede decidir el siguiente paso de esta aprobación. Pida a su administrador que ajuste los aprobadores del flujo de trabajo.</value></data>
+  <data name="ErrorApprovalCancelFailed" xml:space="preserve"><value>Sus cambios se han guardado, pero no se pudo retirar la aprobación en curso. Guarde de nuevo para reintentarlo.</value></data>
+  <data name="ErrorReviewCancelFailed" xml:space="preserve"><value>Sus cambios se han guardado, pero no se pudo retirar la revisión en curso. Guarde de nuevo para reintentarlo.</value></data>
+  <data name="ErrorWorkflowWithdrawFailedOnAct" xml:space="preserve"><value>No se pudo retirar la aprobación o revisión vinculada; no se realizó ninguna acción. Inténtelo de nuevo en unos momentos.</value></data>
+  <data name="ErrorReviewAlreadyOpen" xml:space="preserve"><value>Esta tarea ya tiene una revisión abierta.</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>Indique qué está esperando la tarea.</value></data>
   <data name="ErrorTitleRequired" xml:space="preserve"><value>Se requiere un título.</value></data>
   <data name="ErrorTitleTooLong" xml:space="preserve"><value>El título puede tener como máximo 200 caracteres.</value></data>

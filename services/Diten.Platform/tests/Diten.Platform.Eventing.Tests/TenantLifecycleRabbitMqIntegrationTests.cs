@@ -1,3 +1,4 @@
+using Diten.Platform.Tests.Shared;
 using Diten.Platform.Infrastructure.Persistence.Schema;
 using System.Text.Json;
 using Diten.BuildingBlocks.Eventing;
@@ -32,6 +33,7 @@ using Xunit;
 
 namespace Diten.Platform.Eventing.Tests;
 
+[Collection(LiveRabbitMqCollection.Name)]
 public sealed class TenantLifecycleRabbitMqIntegrationTests
 {
     [SkippableFact]
@@ -42,7 +44,7 @@ public sealed class TenantLifecycleRabbitMqIntegrationTests
             "External/local RabbitMQ tenant lifecycle integration test is disabled. Set Eventing__RabbitMq__IntegrationTestsEnabled=true and configure Eventing__RabbitMq__Host/Port/VirtualHost/Username/Password.");
 
         var rabbitMq = RabbitMqTestSettings.FromEnvironment();
-        var mongo = MongoTestSettings.FromEnvironment();
+        var mongo = await MongoTestSettings.FromEnvironmentAsync();
         var mongoClient = new MongoClient(mongo.ConnectionString);
         /*
          * ⚠ A FIXED NAME, AND ONLY THE PROFILES THIS TEST USES. This used to be
@@ -101,7 +103,8 @@ public sealed class TenantLifecycleRabbitMqIntegrationTests
                     new TestHostEnvironment())]),
                 eventBus,
                 NullLogger<QueueEmailNotificationHandler>.Instance);
-            var mediator = new RecordingMediator(queueHandler, targetCount: 3);
+            var mediator = new RecordingMediator(queueHandler, targetCount: 2);
+            var invitations = new RecordingInvitations();
 
             var queueName = "tenant-lifecycle-mod-0009-" + Guid.NewGuid().ToString("N");
             var bus = Bus.Factory.CreateUsingRabbitMq(cfg =>
@@ -127,7 +130,7 @@ public sealed class TenantLifecycleRabbitMqIntegrationTests
                         consumedStore,
                         tenantRepository,
                         mediator,
-                        new TenantCreatedV1NotificationMapper(),
+                        invitations,
                         new TenantSuspendedV1NotificationMapper(),
                         new TenantReactivatedV1NotificationMapper(),
                         NullLogger<TenantLifecycleNotificationConsumer>.Instance));
@@ -190,7 +193,32 @@ public sealed class TenantLifecycleRabbitMqIntegrationTests
                 }
 
                 var published = await processor.PublishPendingAsync();
-                Assert.Equal(envelopes.Count, published);
+                // WP-CI-SERVICE-TESTS-03: the outbox is drained while the consumers already run. A lifecycle mail they
+                // queue (QueueEmailNotificationHandler, e41795d10) adds its own follow-up events to the SAME outbox —
+                // notifications.email.queued.v1 and .dispatch.sent / .failed.v1 — and the loop publishes those too
+                // (measured: 6 + 2 queued + 2 sent, caused by the suspended and reactivated events). How many arrive in
+                // time is a race, so the old "published == 6" was never a contract. What this test owns: each of its own
+                // events is published, and every other published row is a notification caused by one of them.
+                var outbox = await database.GetCollection<OutboxEvent>(PlatformCollections.OutboxEvents)
+                    .Find(FilterDefinition<OutboxEvent>.Empty).ToListAsync();
+                var ownIds = envelopes.Select(envelope => (Guid)envelope.GetType().GetProperty("EventId")!.GetValue(envelope)!)
+                    .ToHashSet();
+                var own = outbox.Where(row => ownIds.Contains(row.EventId)).ToList();
+                Assert.Equal(envelopes.Count, own.Count);
+                Assert.All(own, row => Assert.Equal(OutboxEventStatus.Published, row.Status));
+                var ownCausations = own.Select(row => row.CausationId).ToHashSet();
+                var followUps = outbox.Where(row => !ownIds.Contains(row.EventId)).ToList();
+                Assert.All(followUps, row =>
+                {
+                    Assert.Contains(row.EventName, new[]
+                    {
+                        Diten.Platform.Contracts.Events.Notifications.NotificationEmailQueuedV1.Name,
+                        Diten.Platform.Contracts.Events.Notifications.NotificationDispatchSentV1.Name,
+                        Diten.Platform.Contracts.Events.Notifications.NotificationDispatchFailedV1.Name
+                    });
+                    Assert.Contains(row.CausationId, ownCausations);
+                });
+                Assert.Equal(outbox.Count(row => row.Status == OutboxEventStatus.Published), published);
 
                 await auditService.WaitAsync(TimeSpan.FromSeconds(30));
                 await mediator.WaitAsync(TimeSpan.FromSeconds(30));
@@ -221,8 +249,11 @@ public sealed class TenantLifecycleRabbitMqIntegrationTests
                 Assert.DoesNotContain("Sensitive suspension reason", auditMetadataJson, StringComparison.Ordinal);
                 Assert.Contains("[REDACTED]", auditMetadataJson, StringComparison.Ordinal);
 
-                Assert.Equal(3, mediator.Commands.Count);
-                Assert.Contains(mediator.Commands, command => command.Request.TemplateKey == "tenant.invite.email");
+                // BL-454 slice 2 stage D — the created event invites the initial administrator through the invitation
+                // service (AuthService account + one-time link); suspended and reactivated are mails.
+                var invited = Assert.Single(invitations.Invited);
+                Assert.Equal(initialAdminId, invited.Admin.Id);
+                Assert.Equal(2, mediator.Commands.Count);
                 Assert.Contains(mediator.Commands, command => command.Request.TemplateKey == "tenant.suspended.email");
                 Assert.Contains(mediator.Commands, command => command.Request.TemplateKey == "tenant.reactivated.email");
                 Assert.All(mediator.Commands, command =>
@@ -232,7 +263,7 @@ public sealed class TenantLifecycleRabbitMqIntegrationTests
                 });
 
                 var dispatches = await dispatchRepository.ListByTenantAsync(tenantId, take: 20);
-                Assert.Equal(3, dispatches.Count);
+                Assert.Equal(2, dispatches.Count);
                 Assert.All(dispatches, dispatch =>
                 {
                     Assert.Equal(NotificationDispatchStatus.Sent, dispatch.Status);
@@ -241,6 +272,10 @@ public sealed class TenantLifecycleRabbitMqIntegrationTests
                     Assert.Contains(dispatch.To, recipient => recipient.Email == adminEmail);
                 });
 
+                // WP-CI-SERVICE-TESTS-03: 3176391aa (e-mail slice 2 stage D) took the created mail out — the first admin is
+                // invited instead — and moved the first count 3 → 2, but left this section's "4" (= the old 3 + 1). The
+                // contract: the new suspension sends ONE more mail; the redelivery of the same event sends none.
+                var mailsBeforeDuplicate = mediator.Commands.Count;
                 var duplicateEventId = Guid.NewGuid();
                 var duplicateEvent = new TenantSuspendedV1(tenantId, DateTimeOffset.UtcNow, "Duplicate sensitive reason", actorId);
                 await PublishAsync(eventBus, duplicateEvent, tenantId, correlationId, duplicateEventId);
@@ -254,7 +289,7 @@ public sealed class TenantLifecycleRabbitMqIntegrationTests
                 await Task.Delay(TimeSpan.FromSeconds(2));
 
                 Assert.Equal(auditService.TargetCount + 1, auditService.Requests.Count);
-                Assert.Equal(4, mediator.Commands.Count);
+                Assert.Equal(mailsBeforeDuplicate + 1, mediator.Commands.Count);
                 await WaitForConsumedStatusAsync(consumedRepository, duplicateEventId, TenantLifecycleAuditConsumer.ConsumerName, ConsumedEventStatus.Consumed);
                 await WaitForConsumedStatusAsync(consumedRepository, duplicateEventId, TenantLifecycleNotificationConsumer.ConsumerName, ConsumedEventStatus.Consumed);
             }
@@ -438,50 +473,16 @@ public sealed class TenantLifecycleRabbitMqIntegrationTests
 
     private sealed record MongoTestSettings(string ConnectionString, string DatabaseName)
     {
-        public static MongoTestSettings FromEnvironment()
+        // Main sync (CT decision C): the ONE Platform test Mongo rule (PlatformTestMongo, linked) — a lane URI, else a
+        // mongod this test process starts from DITEN_TEST_MONGOD, else red by name; never 27017.
+        public static async Task<MongoTestSettings> FromEnvironmentAsync()
         {
             return new MongoTestSettings(
-                RequireLaneMongoConnectionString(),
+                await PlatformTestMongo.ConnectionStringAsync(),
                 Get("Eventing__MongoDb__DatabaseName", "eventing_mvp_tests"));
         }
     }
 
-    // Q131a: the lane's MongoDB comes only from DITEN_PLATFORM_TEST_MONGO_URI: no fallback port, no remote host, no
-    // credentials. Same rules as Diten.Platform.Application.Tests.Persistence.PlatformMongoTestConnection; this project
-    // does not reference that test assembly, so the check is repeated here. Messages never repeat the URI.
-    private static string RequireLaneMongoConnectionString()
-    {
-        const string key = "DITEN_PLATFORM_TEST_MONGO_URI";
-        var connectionString = Environment.GetEnvironmentVariable(key);
-        if (string.IsNullOrWhiteSpace(connectionString))
-        {
-            throw new InvalidOperationException(
-                $"{key} is not set. Platform Mongo tests fail closed: point it at a lane-owned loopback MongoDB "
-                + "(scripts/test-env/mvp6-test-mongo-env.sh). There is no fallback port.");
-        }
-
-        var url = new MongoUrl(connectionString);
-        if (url.Username is not null)
-        {
-            throw new InvalidOperationException($"{key} must not carry credentials.");
-        }
-
-        foreach (var server in url.Servers ?? [])
-        {
-            if (server.Host is not ("127.0.0.1" or "localhost" or "::1" or "[::1]"))
-            {
-                throw new InvalidOperationException($"{key} must point at a loopback host.");
-            }
-
-            if (server.Port is >= 27017 and <= 27021)
-            {
-                throw new InvalidOperationException(
-                    $"{key} points at protected MongoDB port {server.Port}. Use the lane's own port.");
-            }
-        }
-
-        return connectionString;
-    }
 
     private sealed class CapturingAuditService : IAuditService
     {
@@ -573,7 +574,11 @@ public sealed class TenantLifecycleRabbitMqIntegrationTests
             var response = await _handler.Handle(command, cancellationToken);
             lock (_gate)
             {
-                if (Commands.Count >= _targetCount)
+                // WP-CI-SERVICE-TESTS-03: "reached" = this many HANDLED (the mail sent and the dispatch updated), not
+                // this many received — a command is recorded before its handler runs, so counting Commands let the
+                // wait return while both sends were still in flight (the dispatches read back Queued).
+                _completed++;
+                if (_completed >= _targetCount)
                 {
                     _targetReached.TrySetResult();
                 }
@@ -582,11 +587,13 @@ public sealed class TenantLifecycleRabbitMqIntegrationTests
             return (TResponse)(object)response;
         }
 
+        private int _completed;
+
         public Task WaitAsync(TimeSpan timeout)
         {
             lock (_gate)
             {
-                if (Commands.Count >= _targetCount)
+                if (_completed >= _targetCount)
                 {
                     return Task.CompletedTask;
                 }
@@ -652,4 +659,25 @@ internal sealed class PassThroughLocaleResolver
 {
     public Task<string> ResolveAsync(Guid tenantId, string? requested, CancellationToken ct = default)
         => Task.FromResult(string.IsNullOrWhiteSpace(requested) ? "en" : requested.Trim().ToLowerInvariant());
+}
+
+/// <summary>
+/// BL-454 slice 2 stage D — the invitation service, recorded (the created event's only effect here). BL-590: at file
+/// level — written inside PassThroughLocaleResolver (e3d3a7331), the test class could not see it and the project did not build.
+/// </summary>
+internal sealed class RecordingInvitations : Diten.Platform.Application.Contracts.IAdminUserInvitationService
+{
+    public List<(Tenant Tenant, TenantAdminUser Admin)> Invited { get; } = [];
+    public string? LinkRootRefusal() => null;
+
+    public Task<Diten.Platform.Application.Contracts.AdminUserInvitationResult> InviteAsync(
+        Tenant tenant, TenantAdminUser adminUser, Diten.Platform.Application.Contracts.AdminInvitationTrigger trigger, CancellationToken cancellationToken)
+    {
+        lock (Invited)
+        {
+            Invited.Add((tenant, adminUser));
+        }
+
+        return Task.FromResult(new Diten.Platform.Application.Contracts.AdminUserInvitationResult("https://login.test", "https://app.test/account/set-password", true, true));
+    }
 }

@@ -118,7 +118,7 @@ Bu module pack'e gore gelistirmeyi baslat.
 
 Zorunlu okuma sirasi:
 1) AGENTS.md
-2) execution/domains/{domain}/module-packs/{ID}.md
+2) execution/domains/{domain}/module-packs/{ID}-{slug}.md
 3) execution/delivery/platform-delivery-board.md
 4) gerekiyorsa execution/portfolio/master-development-plan.md
 5) .antigravity/workflows/add-module.md
@@ -223,7 +223,7 @@ Beklenti:
 ```text
 @[.antigravity/agents/orchestrator.md]
 
-execution/domains/{domain}/module-packs/{ID}.md dosyasindaki approved module pack'e gore gelistirme yap.
+execution/domains/{domain}/module-packs/{ID}-{slug}.md dosyasindaki approved module pack'e gore gelistirme yap.
 
 Zorunlu:
 - Module pack yoksa dur ve kullaniciya once `/prepare-module-pack` kullanmasini soyle.
@@ -365,7 +365,7 @@ Alan sayisini ve GoldenReferenceSlim/GoldenReferenceCompact kararini yaz.
 ### add-module
 
 ```text
-/add-module execution/domains/{domain}/module-packs/{ID}.md
+/add-module execution/domains/{domain}/module-packs/{ID}-{slug}.md
 
 Bu workflow module pack hazirlama workflow'u degildir.
 Sadece approved/ready-for-dev module pack uzerinden gelistirme yap.

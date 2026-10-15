@@ -29,6 +29,11 @@
         <ProjectReference Include="..\..\..\Diten.Building.Blocks\Diten.BuildingBlocks.Security.Secrets\Diten.BuildingBlocks.Security.Secrets.csproj" />
         <!-- Cross-service event contracts (read-only consumption; light: depends only on BuildingBlocks.Eventing). -->
         <ProjectReference Include="..\..\..\Diten.Platform.Contracts\Diten.Platform.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Diten.Building.Blocks\src\Diten.BuildingBlocks.Email\Diten.BuildingBlocks.Email.csproj" />
     </ItemGroup>
 
+  <ItemGroup>
+    <!-- BL-529 FIX7 — ClientAddressResolver's concurrency test seam (AfterRoomFoundUnderLock). -->
+    <InternalsVisibleTo Include="Diten.AuthService.Application.Tests" />
+  </ItemGroup>
 </Project>

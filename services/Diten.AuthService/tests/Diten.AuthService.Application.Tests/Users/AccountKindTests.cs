@@ -54,9 +54,9 @@ public sealed class AccountKindTests
     // MOD-0280-FU01 D11 (T1a CT prerequisite, 79547b4e3, owner's delegation 2026-09-29) added the two time-entry report keys
     // as the fifth and sixth; this test was left at four until the T3 stop report's full Auth run (2026-09-30).
     // WP-VP-2 (B-1, 2026-10-06) added crm.planned-visit.read-all and crm.visit-plan.read-all as the seventh and eighth.
-    // WP-VW-W4 (BE-c, owner decision 2026-10-13) added crm.doctor-insights.read-all as the ninth.
+    // WP-VW-W4 (BE-c, owner decision 2026-10-13) added crm.doctor-insights.read-all — with the lane's task-request key, the tenth.
     [Fact]
-    public void The_explicit_grant_only_set_is_exactly_the_nine_owner_decided_keys()
+    public void The_explicit_grant_only_set_is_exactly_the_ten_owner_decided_keys()
     {
         Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("auth.users.account-kind.manage"));
         Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("AUTH.USERS.ACCOUNT-KIND.MANAGE")); // case-insensitive, like the catalog
@@ -65,10 +65,13 @@ public sealed class AccountKindTests
         Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("platform.tasks.work-report.read-tenant-wide"));
         Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("time-entry.team-totals.read"));
         Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("time-entry.person-reports.read"));
+        Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("platform.tasks.requests.create"));
         Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("crm.planned-visit.read-all"));
         Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("crm.visit-plan.read-all"));
         Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("crm.doctor-insights.read-all"));
-        Assert.Equal(9, ExplicitGrantOnlyPermissions.Keys.Count);
+        // Main sync (2026-10-11): the CT line's task-request key and main's two CRM read-all keys (VP-2). Main sync
+        // 2026-10-14 (WP-LANE-MAIN-SYNC-03): main's crm.doctor-insights.read-all (cf3eab450) joins them — 10, each by name.
+        Assert.Equal(10, ExplicitGrantOnlyPermissions.Keys.Count);
         Assert.False(ExplicitGrantOnlyPermissions.Keys.Contains("auth.users.lookup")); // lookup is an ORDINARY tenant key
     }
 
@@ -455,7 +458,10 @@ public sealed class AccountKindTests
         public Task CreateAsync(RefreshToken refreshToken, CancellationToken ct) => throw new NotSupportedException();
         public Task UpdateAsync(RefreshToken refreshToken, CancellationToken ct) => throw new NotSupportedException();
         public Task RevokeAsync(string token, CancellationToken ct) => throw new NotSupportedException();
-        public Task RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct) => Task.CompletedTask;
+        public Task<long> RevokeLiveSessionsAsync(Guid userId, Guid tenantId, string reason, CancellationToken ct) => RevokeAllByUserAsync(userId, tenantId, ct);
+        public Task<bool> TryRotateAsync(Guid tokenId, string replacedByTokenHash, string? revokedByIp, CancellationToken ct) => Task.FromResult(true);
+        public Task<bool> RevokeIfLiveAsync(string token, string reason, CancellationToken ct) => Task.FromResult(true);
+        public Task<long> RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct) => Task.FromResult(0L);
     }
 
     private static CreateUserCommandHandler CreateHandler(InMemoryUserRepository repo, FakeInvitationEmailService email)
@@ -508,15 +514,22 @@ public sealed class AccountKindTests
         public Task<IReadOnlyList<User>> SearchActiveAsync(Guid tenantId, string? term, int limit, CancellationToken ct) => _inner.SearchActiveAsync(tenantId, term, limit, ct);
         public Task<long> GetCountByTenantAsync(Guid tenantId, CancellationToken ct) => _inner.GetCountByTenantAsync(tenantId, ct);
         public Task<User> CreateAsync(User user, CancellationToken ct) => _inner.CreateAsync(user, ct);
-        public Task<User> UpdateAsync(User user, CancellationToken ct) => throw new InvalidOperationException("The kind change must use the tenant-scoped update.");
-        public Task<User> UpdateForTenantAsync(User user, Guid tenantId, CancellationToken ct)
+        public Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct) => _inner.SoftDeleteAsync(id, tenantId, ct);
+        public Task RecordLoginOutcomeAsync(User user, Guid tenantId, CancellationToken ct) => _inner.RecordLoginOutcomeAsync(user, tenantId, ct);
+        public Task<bool> TryClaimSignInAsync(Guid userId, Guid tenantId, CancellationToken ct) => _inner.TryClaimSignInAsync(userId, tenantId, ct);
+        public object CaptureState(User user) => _inner.CaptureState(user);
+        // BL-529 FIX3 — the tenant-scoped write is now the targeted one; it is recorded exactly as the replace was.
+        public Task<bool> TryWriteChangesAsync(User user, object capturedState, Guid tenantId, UserWriteCondition condition, CancellationToken ct)
         {
             UpdatedForTenant = (user.Id, tenantId);
             UpdatesForTenant++;
             tape?.Add("persist");
-            return Task.FromResult(user);
+            return Task.FromResult(true);
         }
-        public Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct) => _inner.SoftDeleteAsync(id, tenantId, ct);
+        public Task<bool> SetPasswordResetTokenAsync(Guid userId, Guid tenantId, string tokenHash, DateTime expiresAtUtc, CancellationToken ct) => _inner.SetPasswordResetTokenAsync(userId, tenantId, tokenHash, expiresAtUtc, ct);
+        public Task<LoginFailureOutcome> RecordLoginFailureAsync(Guid userId, Guid tenantId, int maxFailedAttempts, int lockoutDurationMinutes, CancellationToken ct) => _inner.RecordLoginFailureAsync(userId, tenantId, maxFailedAttempts, lockoutDurationMinutes, ct);
+        public Task<bool> SetPlatformActorTypeAsync(Guid userId, Guid tenantId, string actorType, CancellationToken ct) => _inner.SetPlatformActorTypeAsync(userId, tenantId, actorType, ct);
+        public Task<IReadOnlyCollection<Guid>> VisibleUserIdsAsync(Guid tenantId, IReadOnlyCollection<Guid> userIds, CancellationToken ct) => _inner.VisibleUserIdsAsync(tenantId, userIds, ct);
     }
 
     private sealed class NoRolesRepository : IUserRoleRepository
@@ -561,6 +574,9 @@ public sealed class AccountKindTests
     {
         public List<(string email, string token)> Sends { get; } = [];
         public string BuildTenantSetPasswordUrl(string email, string setupToken) => $"http://localhost:5001/account/set-password?email={email}&token={setupToken}";
+        // BL-454 — no default on the interface any more: this double records a reset exactly like an invitation.
+        public Task SendTenantUserPasswordResetAsync(string email, string setupToken, CancellationToken ct) =>
+            SendTenantUserInvitationAsync(email, setupToken, ct);
         public Task SendTenantUserInvitationAsync(string email, string setupToken, CancellationToken ct)
         {
             Sends.Add((email, setupToken));

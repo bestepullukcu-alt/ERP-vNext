@@ -9,10 +9,12 @@ public interface IAuthGateway
     Task<AuthBridgeResult> ChangePlatformPasswordAsync(string currentPassword, string newPassword, bool rememberMe = false, CancellationToken ct = default);
     // FIX-TENANT-MUSTCHANGEPW — forced first-login change for tenant_user.
     Task<AuthBridgeResult> ChangeTenantPasswordAsync(string currentPassword, string newPassword, bool rememberMe = false, CancellationToken ct = default);
-    Task<bool> ForgotPlatformPasswordAsync(string email, CancellationToken ct = default);
+    Task<AuthBridgeResult> ForgotPlatformPasswordAsync(string email, CancellationToken ct = default);
     Task<AuthBridgeResult> ResetPlatformPasswordAsync(string email, string token, string newPassword, CancellationToken ct = default);
     // Tenant invitation redemption → anonymous AuthService /api/users/set-password (no tenant header/bearer).
     Task<AuthBridgeResult> ResetTenantPasswordAsync(string email, string token, string newPassword, CancellationToken ct = default);
+    // WP-USERS-ROLES-CLOSE-FIX1 item 3 — the set-password page's read-only pre-check (AuthService /api/users/set-password/check).
+    Task<AuthBridgeResult> CheckTenantPasswordLinkAsync(string email, string token, CancellationToken ct = default);
     Task<AuthBridgeResult> RefreshAsync(string accessToken, string refreshToken, Guid? tenantId, CancellationToken ct = default);
     Task LogoutAsync(string accessToken, string refreshToken, Guid? tenantId, CancellationToken ct = default);
 }

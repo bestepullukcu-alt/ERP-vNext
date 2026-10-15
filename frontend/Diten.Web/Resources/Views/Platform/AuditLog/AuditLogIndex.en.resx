@@ -199,4 +199,9 @@
   <data name="AuditLog.Event.user_role_assigned" xml:space="preserve"><value>Role assigned to user</value></data>
   <data name="AuditLog.Event.user_role_removed" xml:space="preserve"><value>Role removed from user</value></data>
   <data name="AuditLog.Event.user_account_kind_changed" xml:space="preserve"><value>Account kind changed</value></data>
+  <data name="AuditLog.Event.role_created" xml:space="preserve"><value>Role created</value></data>
+  <data name="AuditLog.Event.role_updated" xml:space="preserve"><value>Role updated</value></data>
+  <data name="AuditLog.Event.role_deleted" xml:space="preserve"><value>Role deleted</value></data>
+  <data name="AuditLog.Event.role_permission_granted" xml:space="preserve"><value>Permission granted to role</value></data>
+  <data name="AuditLog.Event.role_permission_revoked" xml:space="preserve"><value>Permission removed from role</value></data>
 </root>

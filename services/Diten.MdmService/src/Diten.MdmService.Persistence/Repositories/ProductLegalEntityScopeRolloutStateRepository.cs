@@ -1,0 +1,1201 @@
+using Diten.MdmService.Application.Common;
+using Diten.MdmService.Domain.Entities;
+using Diten.MdmService.Domain.Enums;
+using Diten.MdmService.Domain.Repositories;
+using MongoDB.Bson;
+using MongoDB.Driver;
+
+namespace Diten.MdmService.Persistence.Repositories;
+
+public sealed class ProductLegalEntityScopeRolloutStateRepository
+    : IProductLegalEntityScopeRolloutStateRepository
+{
+    internal const string CollectionName = "mdm_product_legal_entity_scope_rollout_states";
+    private const int AuditLifecycleHeadroomBytes = 64 * 1024;
+    private const int MaximumPreDeliveryBsonBytes =
+        ProductLegalEntityScopePolicy.MaximumSerializedBsonBytes - AuditLifecycleHeadroomBytes;
+
+    private readonly IMongoCollection<ProductLegalEntityScopeRolloutState> _states;
+    private readonly Guid _tenantId;
+    private readonly Func<Func<Task>, Task> _insertExecutor;
+    private readonly Func<
+        Func<Task<ProductLegalEntityScopeRolloutState?>>,
+        Task<ProductLegalEntityScopeRolloutState?>> _updateExecutor;
+
+    public ProductLegalEntityScopeRolloutStateRepository(IMongoDatabase database, ITenantContext tenantContext)
+        : this(
+            database,
+            tenantContext,
+            static operation => operation(),
+            static operation => operation())
+    {
+    }
+
+    internal ProductLegalEntityScopeRolloutStateRepository(
+        IMongoDatabase database,
+        ITenantContext tenantContext,
+        Func<Func<Task>, Task> insertExecutor,
+        Func<Func<Task<ProductLegalEntityScopeRolloutState?>>, Task<ProductLegalEntityScopeRolloutState?>> updateExecutor)
+    {
+        ArgumentNullException.ThrowIfNull(database);
+        ArgumentNullException.ThrowIfNull(tenantContext);
+        ArgumentNullException.ThrowIfNull(insertExecutor);
+        ArgumentNullException.ThrowIfNull(updateExecutor);
+        if (tenantContext.TenantId == Guid.Empty)
+        {
+            throw new InvalidOperationException("A trusted tenant is required for product scope rollout persistence.");
+        }
+
+        _states = database.GetCollection<ProductLegalEntityScopeRolloutState>(CollectionName);
+        _tenantId = tenantContext.TenantId;
+        _insertExecutor = insertExecutor;
+        _updateExecutor = updateExecutor;
+        EnsureIndexes();
+    }
+
+    public async Task<ProductLegalEntityScopeRolloutState?> GetAsync(
+        CancellationToken cancellationToken = default)
+        => EnsureValidPersistedState(
+            await _states.Find(ActiveTenantFilter).FirstOrDefaultAsync(cancellationToken));
+
+    public async Task<ProductLegalEntityScopeRolloutState?> GetByCreationCommandIdAsync(
+        Guid creationCommandId,
+        CancellationToken cancellationToken = default)
+    {
+        EnsureIdentity(creationCommandId, nameof(creationCommandId));
+        return EnsureValidPersistedState(await _states.Find(
+                ActiveTenantFilter
+                & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(
+                    state => state.CreationCommandId,
+                    creationCommandId))
+            .FirstOrDefaultAsync(cancellationToken));
+    }
+
+    private static ProductLegalEntityScopeRolloutState? EnsureValidPersistedState(
+        ProductLegalEntityScopeRolloutState? state)
+    {
+        state?.EnsureValid();
+        return state;
+    }
+
+    public async Task<ProductLegalEntityScopeRolloutStateWriteResult> CreateAsync(
+        ProductLegalEntityScopeRolloutState state,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(state);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        PrepareCreate(state);
+        EnsureCompleteDocumentWithinBudget(state.ToBsonDocument(), reserveAuditLifecycleHeadroom: true);
+        try
+        {
+            await _insertExecutor(
+                () => _states.InsertOneAsync(state, cancellationToken: cancellationToken));
+            return new(true, state);
+        }
+        catch (MongoWriteException exception) when (
+            exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+        {
+            return await RecoverCreateAsync(state, false, cancellationToken);
+        }
+        catch (MongoConnectionException)
+        {
+            return await RecoverCreateAsync(state, true, cancellationToken);
+        }
+        catch (MongoExecutionTimeoutException)
+        {
+            return await RecoverCreateAsync(state, true, cancellationToken);
+        }
+        catch (MongoWriteConcernException)
+        {
+            return await RecoverCreateAsync(state, true, cancellationToken);
+        }
+    }
+
+    public async Task<ProductLegalEntityScopeRolloutStateWriteResult> UpdateAsync(
+        ProductLegalEntityScopeRolloutState state,
+        int expectedVersion,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(state);
+        cancellationToken.ThrowIfCancellationRequested();
+        ValidateUpdate(state, expectedVersion);
+
+        var persisted = await FindByIdIncludingDeletedAsync(state.Id, cancellationToken);
+        if (persisted is null
+            || persisted.IsDeleted
+            || persisted.CreationCommandId != state.CreationCommandId
+            || persisted.CreatedByActorId != state.CreatedByActorId)
+        {
+            return new(false, null, VersionConflict: true);
+        }
+
+        var newAuditIntents = GetNewAuditIntents(persisted, state);
+        EnsureProjectedDocumentWithinBudget(persisted, state, newAuditIntents);
+
+        var filter = ActiveTenantFilter
+                     & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.Id, state.Id)
+                     & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(
+                         item => item.CreationCommandId,
+                         state.CreationCommandId)
+                     & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(
+                         item => item.CreatedByActorId,
+                         state.CreatedByActorId)
+                     & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.Version, expectedVersion)
+                     & BuildServerSideBudgetFilter(state, newAuditIntents);
+        var update = Builders<ProductLegalEntityScopeRolloutState>.Update
+            .Set(item => item.Mode, state.Mode)
+            .Set(item => item.UpdatedAt, state.UpdatedAt)
+            .Set(item => item.Version, state.Version);
+        if (newAuditIntents.Count > 0)
+        {
+            update = update.PushEach(item => item.AuditIntents, newAuditIntents);
+        }
+
+        try
+        {
+            var updated = await _updateExecutor(
+                () => _states.FindOneAndUpdateAsync(
+                    filter,
+                    update,
+                    new FindOneAndUpdateOptions<ProductLegalEntityScopeRolloutState>
+                    {
+                        ReturnDocument = ReturnDocument.After
+                    },
+                    cancellationToken)!);
+            if (updated is not null)
+            {
+                EnsureCompleteDocumentWithinBudget(updated.ToBsonDocument(), reserveAuditLifecycleHeadroom: true);
+                return ExactBusinessState(updated, state)
+                    ? new(true, updated)
+                    : new(false, updated, VersionConflict: true);
+            }
+
+            return await RecoverUpdateAsync(state, false, cancellationToken);
+        }
+        catch (MongoConnectionException)
+        {
+            return await RecoverUpdateAsync(state, true, cancellationToken);
+        }
+        catch (MongoExecutionTimeoutException)
+        {
+            return await RecoverUpdateAsync(state, true, cancellationToken);
+        }
+        catch (MongoWriteConcernException)
+        {
+            return await RecoverUpdateAsync(state, true, cancellationToken);
+        }
+    }
+
+    /// <summary>
+    /// WP-MDM-SCOPE-ACCEPT-01 FIX2 (7) — how many optimistic rounds one acquisition gets before it gives up. Every lease
+    /// change (another acquisition, a binding, a release) moves the revision and sends the losers round again; one round
+    /// admits at least one writer. FIX3 K3 — STATED PRECISELY: up to this many writers racing at once all get through;
+    /// with MORE than 32 concurrent lease writes in one tenant, the 33rd may give up with CONTENDED (503, counted) —
+    /// a retry then succeeds. Backoff with jitter spreads them out, so this is the bound, not the common case.
+    /// </summary>
+    internal const int MaximumLeaseAttempts = 32;
+
+    /// <summary>FIX3 (10): the rounds this instance gets (tests lower it to force the exhaustion).</summary>
+    internal int LeaseAttempts { get; init; } = MaximumLeaseAttempts;
+
+    /// <summary>
+    /// FIX3 (1, 4) — test seam: runs after a lease acquisition has read and decided, just before it writes ("product" or
+    /// "slot"). A test interleaves another writer exactly there; production leaves it null.
+    /// </summary>
+    internal Func<string, Task>? BeforeLeaseWrite { get; set; }
+
+    private const string LeaseCapacityExceededCode =
+        Application.Features.ProductLegalEntityScopes.ProductLegalEntityScopeWriteFenceCoordinator.LeaseCapacityExceededCode;
+
+    /// <summary>
+    /// FIX3 (10): between two lost rounds a writer waits a little, at random (jitter), longer each round — N writers of
+    /// one tenant then spread out instead of all re-reading at once (O(N²) rounds without it).
+    /// </summary>
+    private static Task BackoffAsync(int attempt, CancellationToken cancellationToken)
+        => attempt == 0
+            ? Task.CompletedTask
+            : Task.Delay(Random.Shared.Next(1, Math.Min(50, 1 << Math.Min(attempt, 6)) + 1), cancellationToken);
+
+
+    private const string LeaseContendedCode =
+        Application.Features.ProductLegalEntityScopes.ProductLegalEntityScopeWriteFenceCoordinator.LeaseContendedCode;
+
+    public async Task<ProductLegalEntityScopeWriterLeaseResult> AcquireWriterLeaseAsync(
+        ProductLegalEntityScopeWriterLease requested,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(requested);
+        requested.EnsureValid();
+        var now = requested.AcquiredAtUtc;
+        for (var attempt = 0; attempt < LeaseAttempts; attempt++)
+        {
+            await BackoffAsync(attempt, cancellationToken);
+            var current = await GetAsync(cancellationToken);
+            if (current is null) return new(false, null, null, LegacyBypass: true);
+            if (current.ActiveFence is not null)
+                return new(false, null, current, FailureCode: "PRODUCT_SCOPE_WRITE_FENCE_ACTIVE");
+            if (current.Mode == ProductLegalEntityScopeRolloutMode.FailClosedSuspended)
+                return new(false, null, current, FailureCode: "PRODUCT_SCOPE_FAIL_CLOSED_SUSPENDED");
+            var held = current.ActiveWriterLease;
+            var renewed = false;
+            if (held is not null)
+            {
+                // FIX2 (2): the same command gets its lease back only while it runs; once it has run out the repeat takes a
+                // fresh one below (new generation, new baseline) — never an expired lease another writer may also take.
+                if (held.SameCommandAs(requested) && !held.IsExpiredAt(now)) return new(true, held, current, Replay: true);
+                renewed = held.SameCommandAs(requested);
+                // WP-MDM-SCOPE-ACCEPT-01 FIX1 B4: an unexpired lease of another command keeps the slot; an expired one is
+                // taken over — matched by its own token and generation, so only the lease that was read is replaced.
+                if (!renewed && !held.IsExpiredForOthersAt(now))
+                    return new(false, null, current, FailureCode: "PRODUCT_SCOPE_WRITER_LEASE_UNAVAILABLE");
+            }
+            if (current.ProductWriterLeases.Any(lease => !lease.IsExpiredForOthersAt(now) && lease.Overlaps(requested)))
+                return new(false, null, current, FailureCode: "PRODUCT_SCOPE_WRITER_LEASE_UNAVAILABLE");
+
+            // The slot numbers its generations with WriterLeaseGeneration, which only the slot moves (FIX2 (1)): the
+            // guarded Replace conditions on it, and a product writer elsewhere in the tenant no longer invalidates it.
+            requested.Generation = checked(current.WriterLeaseGeneration + 1);
+            requested.EnsureValid();
+            var filter = ActiveTenantFilter
+                         & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.Id, current.Id)
+                         & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.Version, current.Version)
+                         & GenerationFilter(current.WriterLeaseGeneration)
+                         & SlotFilter(held)
+                         & RevisionFilter(current.ProductWriterLeaseRevision)
+                         & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.ActiveFence, null);
+            var update = Builders<ProductLegalEntityScopeRolloutState>.Update
+                .Set(item => item.ActiveWriterLease, requested)
+                .Set(item => item.WriterLeaseGeneration, requested.Generation);
+            if (BeforeLeaseWrite is { } slotHook) await slotHook("slot");
+            var updated = await WriteLeaseAsync(filter, update, cancellationToken);
+            if (updated is not null)
+                return new(true, updated.ActiveWriterLease, updated,
+                    TakenOver: held is null || renewed ? 0 : 1, Renewed: renewed);
+        }
+
+        return new(false, null, await GetAsync(cancellationToken), FailureCode: LeaseContendedCode);
+    }
+
+    public async Task<ProductLegalEntityScopeWriterLeaseResult> AcquireProductWriterLeaseAsync(
+        ProductLegalEntityScopeWriterLease requested,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(requested);
+        requested.EnsureValid();
+        var now = requested.AcquiredAtUtc;
+        // Optimistic: read, decide, write only if the list (its revision) and the foreground slot are still the ones read.
+        // A writer that lost the race reads again.
+        for (var attempt = 0; attempt < LeaseAttempts; attempt++)
+        {
+            await BackoffAsync(attempt, cancellationToken);
+            var current = await GetAsync(cancellationToken);
+            if (current is null) return new(false, null, null, LegacyBypass: true);
+            if (current.ActiveFence is not null)
+                return new(false, null, current, FailureCode: "PRODUCT_SCOPE_WRITE_FENCE_ACTIVE");
+            if (current.Mode == ProductLegalEntityScopeRolloutMode.FailClosedSuspended)
+                return new(false, null, current, FailureCode: "PRODUCT_SCOPE_FAIL_CLOSED_SUSPENDED");
+            // FIX2 (2): the command's own lease comes back only while it runs; run out, it is replaced by a fresh one.
+            var own = current.ProductWriterLeases.FirstOrDefault(lease => lease.SameCommandAs(requested));
+            if (own is not null && !own.IsExpiredAt(now)) return new(true, own, current, Replay: true);
+            if (current.ActiveWriterLease is { } slot && !slot.IsExpiredForOthersAt(now) && slot.Overlaps(requested))
+                return new(false, null, current, FailureCode: "PRODUCT_SCOPE_WRITER_LEASE_UNAVAILABLE");
+            var others = current.ProductWriterLeases.Where(lease => !ReferenceEquals(lease, own)).ToList();
+            var meeting = others.Where(lease => lease.Overlaps(requested)).ToList();
+            if (meeting.Any(lease => !lease.IsExpiredForOthersAt(now)))
+                return new(false, null, current, FailureCode: "PRODUCT_SCOPE_WRITER_LEASE_UNAVAILABLE");
+            // FIX2 (5): an expired lease nobody meets (a failed create keyed only by its command) is swept, not kept.
+            var swept = others.Where(lease => !meeting.Contains(lease) && lease.IsExpiredForOthersAt(now)).ToList();
+            var leases = others.Where(lease => !meeting.Contains(lease) && !swept.Contains(lease)).ToList();
+            // FIX3 (3): two buckets — leases that name a product, and leases that name none. Each has its own ceiling; a
+            // full bucket refuses only its own kind, with its own code (counted by the caller), never "this product is busy".
+            var objectless = ProductLegalEntityScopeWriterLease.NamesNoObject(requested);
+            var bucket = leases.Count(lease => ProductLegalEntityScopeWriterLease.NamesNoObject(lease) == objectless);
+            if (bucket >= (objectless
+                    ? ProductLegalEntityScopeRolloutState.MaximumObjectlessWriterLeases
+                    : ProductLegalEntityScopeRolloutState.MaximumProductWriterLeases))
+                return new(false, null, current, FailureCode: LeaseCapacityExceededCode);
+
+            // FIX2 (1): the product lease's generation is the list's own revision. The foreground slot's counter
+            // (WriterLeaseGeneration, which the guarded Replace conditions on) is neither read nor moved here; the slot
+            // itself is matched exactly (SlotFilter), so a Replace taking an overlapping slot meanwhile still sends this
+            // writer round again.
+            var revision = checked(current.ProductWriterLeaseRevision + 1);
+            requested.Generation = revision;
+            requested.EnsureValid();
+            leases.Add(requested);
+            var filter = ActiveTenantFilter
+                         & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.Id, current.Id)
+                         & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.Mode, current.Mode)
+                         & RevisionFilter(current.ProductWriterLeaseRevision)
+                         & SlotFilter(current.ActiveWriterLease)
+                         & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.ActiveFence, null);
+            var update = Builders<ProductLegalEntityScopeRolloutState>.Update
+                .Set(item => item.ProductWriterLeases, leases)
+                .Set(item => item.ProductWriterLeaseRevision, revision);
+            if (BeforeLeaseWrite is { } productHook) await productHook("product");
+            var updated = await WriteLeaseAsync(filter, update, cancellationToken);
+            if (updated is not null)
+                return new(true, requested, updated, TakenOver: meeting.Count, Swept: swept.Count, Renewed: own is not null);
+        }
+
+        return new(false, null, await GetAsync(cancellationToken), FailureCode: LeaseContendedCode);
+    }
+
+    /// <summary>
+    /// FIX4 (2, 6) — the lease write itself. The read before it succeeded; if the store fails once the write was sent
+    /// (connection, write concern, timeout) the lease may be in the list: that is AMBIGUOUS, not a record that cannot be
+    /// read. Cancellation passes through unchanged.
+    /// </summary>
+    private async Task<ProductLegalEntityScopeRolloutState?> WriteLeaseAsync(
+        FilterDefinition<ProductLegalEntityScopeRolloutState> filter,
+        UpdateDefinition<ProductLegalEntityScopeRolloutState> update,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await LeaseWriteExecutor(() => _states.FindOneAndUpdateAsync(
+                filter,
+                update,
+                new FindOneAndUpdateOptions<ProductLegalEntityScopeRolloutState> { ReturnDocument = ReturnDocument.After },
+                cancellationToken));
+        }
+        catch (Exception exception) when (exception is MongoException or TimeoutException)
+        {
+            throw new ProductLegalEntityScopeLeaseWriteAmbiguousException(exception);
+        }
+    }
+
+    /// <summary>FIX4 (2) — test seam around the lease write (a test makes the store fail after the write landed).</summary>
+    internal Func<Func<Task<ProductLegalEntityScopeRolloutState?>>, Task<ProductLegalEntityScopeRolloutState?>> LeaseWriteExecutor { get; set; }
+        = static write => write();
+
+    public async Task<bool> BindProductWriterLeaseBaselineAsync(
+        Guid token,
+        long generation,
+        string preWriteStateHash,
+        CancellationToken cancellationToken = default)
+    {
+        EnsureIdentity(token, nameof(token));
+        if (generation <= 0 || !ExactHash(preWriteStateHash)) return false;
+        var filter = ActiveTenantFilter
+                     & Builders<ProductLegalEntityScopeRolloutState>.Filter.ElemMatch(
+                         item => item.ProductWriterLeases,
+                         new BsonDocument
+                         {
+                             { nameof(ProductLegalEntityScopeWriterLease.Token), new BsonBinaryData(token, GuidRepresentation.Standard) },
+                             { nameof(ProductLegalEntityScopeWriterLease.Generation), generation },
+                             { nameof(ProductLegalEntityScopeWriterLease.PreWriteStateHash), BsonNull.Value }
+                         });
+        // FIX3 (1): the binding moves the list's revision. An acquisition that read the list BEFORE this binding then
+        // fails its revision condition and reads again — it can no longer write back the stale list and erase the bound
+        // baseline (a lost update that let a half-written product pass as clean). Chosen over $push/$pull: the
+        // acquisition must still remove taken-over and swept leases in the same atomic write as it adds its own, which a
+        // single $push/$pull update cannot both do. The binding itself is not conditioned on the revision: it changes one
+        // element matched exactly by token, generation and an unbound baseline — another writer's unrelated acquisition
+        // must not make a binding fail.
+        var result = await _states.UpdateOneAsync(
+            filter,
+            Builders<ProductLegalEntityScopeRolloutState>.Update
+                .Set("ProductWriterLeases.$.PreWriteStateHash", preWriteStateHash)
+                .Inc(item => item.ProductWriterLeaseRevision, 1),
+            cancellationToken: cancellationToken);
+        return result.ModifiedCount == 1;
+    }
+
+    public async Task<bool> ReleaseProductWriterLeaseAsync(
+        Guid token,
+        long generation,
+        CancellationToken cancellationToken = default)
+    {
+        EnsureIdentity(token, nameof(token));
+        if (generation <= 0) return false;
+        var element = new BsonDocument
+        {
+            { nameof(ProductLegalEntityScopeWriterLease.Token), new BsonBinaryData(token, GuidRepresentation.Standard) },
+            { nameof(ProductLegalEntityScopeWriterLease.Generation), generation }
+        };
+        var filter = ActiveTenantFilter
+                     & Builders<ProductLegalEntityScopeRolloutState>.Filter.ElemMatch(item => item.ProductWriterLeases, element);
+        var update = Builders<ProductLegalEntityScopeRolloutState>.Update
+            .PullFilter(item => item.ProductWriterLeases, new BsonDocumentFilterDefinition<ProductLegalEntityScopeWriterLease>(element))
+            .Inc(item => item.ProductWriterLeaseRevision, 1);
+        var result = await _states.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
+        return result.ModifiedCount == 1;
+    }
+
+    public async Task<bool> AbortFenceAsync(
+        ProductLegalEntityScopeFenceAbort abort,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(abort);
+        abort.EnsureValid();
+        var filter = ActiveTenantFilter
+                     & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq("ActiveFence.Token", abort.Token)
+                     & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq("ActiveFence.Action", abort.Action)
+                     & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(
+                         "ActiveFence.CommandId", new BsonBinaryData(abort.CommandId, GuidRepresentation.Standard))
+                     & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(
+                         "ActiveFence.ActorId", new BsonBinaryData(abort.ActorId, GuidRepresentation.Standard));
+        var update = Builders<ProductLegalEntityScopeRolloutState>.Update
+            .Set(item => item.ActiveFence, null)
+            .Set(item => item.LastFenceAbort, abort);
+        var result = await _states.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
+        return result.ModifiedCount == 1;
+    }
+
+    private static FilterDefinition<ProductLegalEntityScopeRolloutState> SlotFilter(ProductLegalEntityScopeWriterLease? held)
+        => held is null
+            ? Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.ActiveWriterLease, null)
+            : Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(
+                  "ActiveWriterLease.Token", new BsonBinaryData(held.Token, GuidRepresentation.Standard))
+              & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq("ActiveWriterLease.Generation", held.Generation);
+
+    private static FilterDefinition<ProductLegalEntityScopeRolloutState> RevisionFilter(long revision)
+        => revision == 0
+            ? Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.ProductWriterLeaseRevision, 0)
+              | Builders<ProductLegalEntityScopeRolloutState>.Filter.Exists(
+                  nameof(ProductLegalEntityScopeRolloutState.ProductWriterLeaseRevision), false)
+            : Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.ProductWriterLeaseRevision, revision);
+
+    private static FilterDefinition<ProductLegalEntityScopeRolloutState> GenerationFilter(long generation)
+        => generation == 0
+            ? Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.WriterLeaseGeneration, 0)
+              | Builders<ProductLegalEntityScopeRolloutState>.Filter.Exists(
+                  nameof(ProductLegalEntityScopeRolloutState.WriterLeaseGeneration), false)
+            : Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.WriterLeaseGeneration, generation);
+
+    /// <summary>No product writer in flight: the list is empty or (a record from before FIX1) absent.</summary>
+    private static FilterDefinition<ProductLegalEntityScopeRolloutState> NoProductWritersFilter
+        => Builders<ProductLegalEntityScopeRolloutState>.Filter.Size(item => item.ProductWriterLeases, 0)
+           | Builders<ProductLegalEntityScopeRolloutState>.Filter.Exists(
+               nameof(ProductLegalEntityScopeRolloutState.ProductWriterLeases), false);
+
+    public async Task<bool> BindWriterLeaseBaselineAsync(
+        Guid token,
+        long generation,
+        string preWriteStateHash,
+        CancellationToken cancellationToken = default)
+    {
+        EnsureIdentity(token, nameof(token));
+        if (generation <= 0 || !ExactHash(preWriteStateHash)) return false;
+        var filter = ActiveTenantFilter
+                     & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq("ActiveWriterLease.Token", token)
+                     & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq("ActiveWriterLease.Generation", generation)
+                     & ActiveWriterLeaseUnexpiredAtServerTimeFilter
+                     & new BsonDocumentFilterDefinition<ProductLegalEntityScopeRolloutState>(
+                         new BsonDocument("ActiveWriterLease.PreWriteStateHash", BsonNull.Value));
+        var result = await _states.UpdateOneAsync(
+            filter,
+            Builders<ProductLegalEntityScopeRolloutState>.Update.Set(
+                "ActiveWriterLease.PreWriteStateHash",
+                preWriteStateHash),
+            cancellationToken: cancellationToken);
+        return result.ModifiedCount == 1;
+    }
+
+    public async Task<bool> ReleaseWriterLeaseAsync(
+        Guid token,
+        long generation,
+        CancellationToken cancellationToken = default)
+    {
+        EnsureIdentity(token, nameof(token));
+        if (generation <= 0) return false;
+        var filter = ActiveTenantFilter
+                     & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq("ActiveWriterLease.Token", token)
+                     & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq("ActiveWriterLease.Generation", generation)
+                     & new BsonDocumentFilterDefinition<ProductLegalEntityScopeRolloutState>(
+                         new BsonDocument("ActiveWriterLease.PreWriteStateHash", new BsonDocument("$ne", BsonNull.Value)));
+        var result = await _states.UpdateOneAsync(
+            filter,
+            Builders<ProductLegalEntityScopeRolloutState>.Update.Set(item => item.ActiveWriterLease, null),
+            cancellationToken: cancellationToken);
+        return result.ModifiedCount == 1;
+    }
+
+    public async Task<ProductLegalEntityScopeFenceResult> AcquireFenceAsync(
+        ProductLegalEntityScopeActivationFence requested,
+        Guid expectedRolloutStateId,
+        int expectedVersion,
+        ProductLegalEntityScopeRolloutMode expectedMode,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(requested);
+        requested.EnsureValid();
+        // FIX3 K3: a binding or a release between this read and the write moves the revision — harmless to a fence that
+        // still finds no running writer. Read again a few times before answering FENCE_CONFLICT.
+        for (var attempt = 0; ; attempt++)
+        {
+            var result = await TryAcquireFenceAsync(requested, expectedRolloutStateId, expectedVersion, expectedMode, cancellationToken);
+            if (result.Acquired || attempt >= FenceAttempts - 1
+                || !string.Equals(result.FailureCode, "PRODUCT_SCOPE_ACTIVATION_FENCE_CONFLICT", StringComparison.Ordinal)
+                || result.Rollout?.ActiveFence is not null)
+                return result;
+            await BackoffAsync(attempt + 1, cancellationToken);
+        }
+    }
+
+    internal const int FenceAttempts = 5;
+
+    private async Task<ProductLegalEntityScopeFenceResult> TryAcquireFenceAsync(
+        ProductLegalEntityScopeActivationFence requested,
+        Guid expectedRolloutStateId,
+        int expectedVersion,
+        ProductLegalEntityScopeRolloutMode expectedMode,
+        CancellationToken cancellationToken)
+    {
+        var current = await GetAsync(cancellationToken);
+        if (current is null || current.Id != expectedRolloutStateId || current.Version != expectedVersion
+            || current.Mode != expectedMode)
+            return new(false, null, current, "PRODUCT_SCOPE_ROLLOUT_VERSION_CONFLICT");
+        if (current.ActiveFence is not null)
+        {
+            // FIX2 (12): a fence token is unique per attempt. The same command finding its own fence (a repeat, or a
+            // concurrent run of the same transition) takes it over under ITS token: the attempt it replaces can neither
+            // bind, commit nor abort it any more — a loser can never abandon the winner's fence.
+            if (!SameCommandFence(current.ActiveFence, requested))
+                return new(false, null, current, "PRODUCT_SCOPE_ACTIVATION_FENCE_CONFLICT");
+            var adopted = await _states.FindOneAndUpdateAsync(
+                ActiveTenantFilter
+                & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.Id, expectedRolloutStateId)
+                & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.Version, expectedVersion)
+                & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq("ActiveFence.Token", current.ActiveFence.Token),
+                Builders<ProductLegalEntityScopeRolloutState>.Update.Set("ActiveFence.Token", requested.Token),
+                new FindOneAndUpdateOptions<ProductLegalEntityScopeRolloutState> { ReturnDocument = ReturnDocument.After },
+                cancellationToken);
+            return adopted?.ActiveFence is null
+                ? new(false, null, await GetAsync(cancellationToken), "PRODUCT_SCOPE_ACTIVATION_FENCE_CONFLICT")
+                : new(true, adopted.ActiveFence, adopted);
+        }
+        // WP-MDM-SCOPE-ACCEPT-01 FIX1 B4: a writer whose lease is still running holds the tenant; an expired lease does
+        // not (its writer's right ended — and the two equal snapshots below catch a writer that still moved anything).
+        var now = requested.AcquiredAtUtc;
+        if (current.ActiveWriterLease is { } slot && !slot.IsExpiredForOthersAt(now)
+            || current.ProductWriterLeases.Any(lease => !lease.IsExpiredForOthersAt(now)))
+            return new(false, null, current, "PRODUCT_SCOPE_WRITER_LEASE_ACTIVE");
+        var cleared = current.ProductWriterLeases.Count + (current.ActiveWriterLease is null ? 0 : 1);
+        var filter = ActiveTenantFilter
+                     & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.Id, expectedRolloutStateId)
+                     & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.Version, expectedVersion)
+                     & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.Mode, expectedMode)
+                     & SlotFilter(current.ActiveWriterLease)
+                     & RevisionFilter(current.ProductWriterLeaseRevision)
+                     & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.ActiveFence, null);
+        if (BeforeLeaseWrite is { } fenceHook) await fenceHook("fence");
+        var updated = await _states.FindOneAndUpdateAsync(
+            filter,
+            Builders<ProductLegalEntityScopeRolloutState>.Update
+                .Set(item => item.ActiveFence, requested)
+                .Set(item => item.ActiveWriterLease, null)
+                .Set(item => item.ProductWriterLeases, new List<ProductLegalEntityScopeWriterLease>())
+                .Set(item => item.ProductWriterLeaseRevision, current.ProductWriterLeaseRevision + 1),
+            new FindOneAndUpdateOptions<ProductLegalEntityScopeRolloutState> { ReturnDocument = ReturnDocument.After },
+            cancellationToken);
+        // FIX2 (3): the expired leases the fence clears are reported (the caller counts them) — never removed silently.
+        return updated is null
+            ? new(false, null, await GetAsync(cancellationToken), "PRODUCT_SCOPE_ACTIVATION_FENCE_CONFLICT")
+            : new(true, updated.ActiveFence, updated, ClearedLeases: cleared);
+    }
+
+    public async Task<bool> BindFenceSnapshotsAsync(
+        string fenceToken,
+        ProductLegalEntityScopeInventorySnapshot first,
+        ProductLegalEntityScopeInventorySnapshot second,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(first);
+        ArgumentNullException.ThrowIfNull(second);
+        first.EnsureValid();
+        second.EnsureValid();
+        if (!ExactHash(fenceToken) || !string.Equals(first.StableFactsHash, second.StableFactsHash, StringComparison.Ordinal))
+            return false;
+        var filter = ActiveTenantFilter
+                     & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq("ActiveFence.Token", fenceToken)
+                     & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq("ActiveFence.State", ProductLegalEntityScopeAdmissionState.Closing)
+                     & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.ActiveWriterLease, null)
+                     & NoProductWritersFilter;
+        // WP-MDM-SCOPE-ACCEPT-01 FIX1 B2: the bound snapshot waits IN THE FENCE. LastInventorySnapshot is the evidence of
+        // the last committed transition (LastTransitionEvidenceHash names it) and is only replaced by the commit.
+        var update = Builders<ProductLegalEntityScopeRolloutState>.Update
+            .Set("ActiveFence.State", ProductLegalEntityScopeAdmissionState.Quiesced)
+            .Set("ActiveFence.FirstStableFactsHash", first.StableFactsHash)
+            .Set("ActiveFence.SecondStableFactsHash", second.StableFactsHash)
+            .Set("ActiveFence.PendingSnapshot", second);
+        var result = await _states.UpdateOneAsync(filter, update, cancellationToken: cancellationToken);
+        return result.ModifiedCount == 1;
+    }
+
+    public async Task<ProductLegalEntityScopeRolloutStateWriteResult> CommitTransitionAsync(
+        string fenceToken,
+        ProductLegalEntityScopeRolloutState requested,
+        int expectedVersion,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(requested);
+        if (!ExactHash(fenceToken)) throw new ArgumentException("Fence token is invalid.", nameof(fenceToken));
+        ValidateUpdate(requested, expectedVersion);
+        var persisted = await GetAsync(cancellationToken);
+        if (persisted is null || persisted.Id != requested.Id || persisted.ActiveFence is null
+            || !string.Equals(persisted.ActiveFence.Token, fenceToken, StringComparison.Ordinal)
+            || persisted.ActiveFence.State != ProductLegalEntityScopeAdmissionState.Quiesced)
+            return new(false, persisted, VersionConflict: true);
+        var newIntents = GetNewAuditIntents(persisted, requested);
+        EnsureProjectedDocumentWithinBudget(persisted, requested, newIntents);
+        var filter = ActiveTenantFilter
+                     & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.Id, requested.Id)
+                     & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.Version, expectedVersion)
+                     & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq("ActiveFence.Token", fenceToken)
+                     & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq("ActiveFence.State", ProductLegalEntityScopeAdmissionState.Quiesced)
+                     & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.ActiveWriterLease, null)
+                     & NoProductWritersFilter
+                     & BuildServerSideBudgetFilter(requested, newIntents);
+        var update = Builders<ProductLegalEntityScopeRolloutState>.Update
+            .Set(item => item.Mode, requested.Mode)
+            .Set(item => item.Version, requested.Version)
+            .Set(item => item.UpdatedAt, requested.UpdatedAt)
+            .Set(item => item.LastInventorySnapshot, requested.LastInventorySnapshot)
+            .Set(item => item.LastTransitionCommandId, requested.LastTransitionCommandId)
+            .Set(item => item.LastTransitionActorId, requested.LastTransitionActorId)
+            .Set(item => item.LastTransitionAction, requested.LastTransitionAction)
+            .Set(item => item.LastTransitionReasonCode, requested.LastTransitionReasonCode)
+            .Set(item => item.LastTransitionEvidenceHash, requested.LastTransitionEvidenceHash)
+            .Set(item => item.LastTransitionIntentId, requested.LastTransitionIntentId)
+            .Set(item => item.ActiveFence, null)
+            .PushEach(item => item.AuditIntents, newIntents);
+        try
+        {
+            var updated = await _updateExecutor(
+                () => _states.FindOneAndUpdateAsync(
+                    filter,
+                    update,
+                    new FindOneAndUpdateOptions<ProductLegalEntityScopeRolloutState>
+                    {
+                        ReturnDocument = ReturnDocument.After
+                    },
+                    cancellationToken)!);
+            return updated is null
+                ? await RecoverUpdateAsync(requested, false, cancellationToken)
+                : new(true, updated);
+        }
+        catch (MongoConnectionException)
+        {
+            return await RecoverUpdateAsync(requested, true, cancellationToken);
+        }
+        catch (MongoExecutionTimeoutException)
+        {
+            return await RecoverUpdateAsync(requested, true, cancellationToken);
+        }
+        catch (MongoWriteConcernException)
+        {
+            return await RecoverUpdateAsync(requested, true, cancellationToken);
+        }
+    }
+
+    /// <summary>The same transition command (action, command, actor, reason) — whatever attempt token it carries.</summary>
+    private static bool SameCommandFence(ProductLegalEntityScopeActivationFence left, ProductLegalEntityScopeActivationFence right)
+        => string.Equals(left.Action, right.Action, StringComparison.Ordinal)
+           && left.CommandId == right.CommandId && left.ActorId == right.ActorId
+           && string.Equals(left.ReasonCode, right.ReasonCode, StringComparison.Ordinal);
+
+    private static bool ExactHash(string value) => value.Length == 64 && value.All(Uri.IsHexDigit)
+        && string.Equals(value, value.ToUpperInvariant(), StringComparison.Ordinal);
+
+    private void PrepareCreate(ProductLegalEntityScopeRolloutState state)
+    {
+        if (state.Id == Guid.Empty || state.CreationCommandId == Guid.Empty)
+        {
+            throw new ArgumentException("Rollout state identities must be non-empty.", nameof(state));
+        }
+
+        state.TenantId = _tenantId;
+        state.IsDeleted = false;
+        state.DeletedAt = null;
+        state.Version = 0;
+        state.EnsureValid();
+        if (state.AuditIntents.Count != 0 || state.AuditIntentReceipts.Count != 0)
+        {
+            throw new ArgumentException(
+                "Preparation creation has no approved audit operation or receipt.",
+                nameof(state));
+        }
+    }
+
+    private void ValidateUpdate(ProductLegalEntityScopeRolloutState state, int expectedVersion)
+    {
+        if (state.Id == Guid.Empty
+            || state.CreationCommandId == Guid.Empty
+            || state.TenantId != _tenantId
+            || state.IsDeleted
+            || expectedVersion < 0
+            || state.Version != expectedVersion + 1)
+        {
+            throw new ArgumentException("Rollout state update contract is invalid.", nameof(state));
+        }
+
+        state.EnsureValid();
+    }
+
+    private async Task<ProductLegalEntityScopeRolloutStateWriteResult> RecoverCreateAsync(
+        ProductLegalEntityScopeRolloutState requested,
+        bool ambiguous,
+        CancellationToken cancellationToken)
+    {
+        var existing = await _states.Find(
+                TenantIncludingDeletedFilter
+                & Builders<ProductLegalEntityScopeRolloutState>.Filter.Or(
+                    Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.Id, requested.Id),
+                    Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(
+                        item => item.CreationCommandId,
+                        requested.CreationCommandId)))
+            .FirstOrDefaultAsync(cancellationToken);
+        if (existing is not null && !existing.IsDeleted && ExactCreatePayload(existing, requested))
+        {
+            EnsureCompleteDocumentWithinBudget(existing.ToBsonDocument(), reserveAuditLifecycleHeadroom: false);
+            return new(true, existing);
+        }
+
+        return new(
+            false,
+            existing,
+            VersionConflict: !ambiguous,
+            WriteOutcomeAmbiguous: ambiguous);
+    }
+
+    private async Task<ProductLegalEntityScopeRolloutStateWriteResult> RecoverUpdateAsync(
+        ProductLegalEntityScopeRolloutState requested,
+        bool ambiguous,
+        CancellationToken cancellationToken)
+    {
+        var existing = await FindByIdIncludingDeletedAsync(requested.Id, cancellationToken);
+        if (existing is not null && !existing.IsDeleted && ExactBusinessState(existing, requested))
+        {
+            EnsureCompleteDocumentWithinBudget(existing.ToBsonDocument(), reserveAuditLifecycleHeadroom: false);
+            return new(true, existing);
+        }
+
+        return new(
+            false,
+            existing,
+            VersionConflict: !ambiguous,
+            WriteOutcomeAmbiguous: ambiguous);
+    }
+
+    private async Task<ProductLegalEntityScopeRolloutState?> FindByIdIncludingDeletedAsync(
+        Guid id,
+        CancellationToken cancellationToken)
+        => await _states.Find(
+                TenantIncludingDeletedFilter
+                & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(item => item.Id, id))
+            .FirstOrDefaultAsync(cancellationToken);
+
+    private IReadOnlyList<LocalAuditIntent> GetNewAuditIntents(
+        ProductLegalEntityScopeRolloutState persisted,
+        ProductLegalEntityScopeRolloutState requested)
+    {
+        if (requested.AuditIntents.Select(intent => intent.IntentId).Distinct().Count()
+            != requested.AuditIntents.Count)
+        {
+            throw new ArgumentException("Audit intent identities must be unique.", nameof(requested));
+        }
+
+        var persistedById = persisted.AuditIntents.ToDictionary(intent => intent.IntentId);
+        foreach (var requestedIntent in requested.AuditIntents)
+        {
+            if (persistedById.TryGetValue(requestedIntent.IntentId, out var persistedIntent)
+                && !ImmutableIntentPayloadEquals(persistedIntent, requestedIntent))
+            {
+                throw new InvalidOperationException("PRODUCT_LEGAL_ENTITY_SCOPE_AUDIT_INTENT_IMMUTABLE_DRIFT");
+            }
+        }
+
+        var newIntents = requested.AuditIntents
+            .Where(intent => !persistedById.ContainsKey(intent.IntentId))
+            .ToArray();
+        if (newIntents.Length != 1)
+        {
+            throw new ArgumentException("Rollout update requires exactly one new audit intent.", nameof(requested));
+        }
+
+        var expectedOperation = requested.Mode switch
+        {
+            ProductLegalEntityScopeRolloutMode.Enforced =>
+                ProductAuditOperation.ProductLegalEntityScopeEnforcementActivated,
+            ProductLegalEntityScopeRolloutMode.FailClosedSuspended =>
+                ProductAuditOperation.ProductLegalEntityScopeEnforcementSuspended,
+            _ => throw new ArgumentException(
+                "Rollout update does not describe one approved transition.",
+                nameof(requested))
+        };
+        ValidateNewAuditIntent(
+            newIntents[0],
+            requested.Id,
+            expectedOperation,
+            requested.Version - 1,
+            requested.Version);
+        return newIntents;
+    }
+
+    private void ValidateNewAuditIntent(
+        LocalAuditIntent intent,
+        Guid aggregateId,
+        ProductAuditOperation operation,
+        int preVersion,
+        int postVersion)
+    {
+        if (intent.IntentId == Guid.Empty
+            || intent.TenantId != _tenantId
+            || intent.AggregateId != aggregateId
+            || intent.AggregateType != AuditAggregateType.ProductLegalEntityScopeRolloutState
+            || !string.Equals(intent.SourceService, AuditIntentContract.SourceService, StringComparison.Ordinal)
+            || intent.SchemaVersion != 1
+            || intent.Operation != operation
+            || intent.PreVersion != preVersion
+            || intent.PostVersion != postVersion
+            || !Guid.TryParse(intent.CommandId, out var parsedCommandId)
+            || parsedCommandId == Guid.Empty
+            || !Guid.TryParse(intent.ActorId, out var parsedActorId)
+            || parsedActorId == Guid.Empty
+            || intent.TimestampUtc.Offset != TimeSpan.Zero
+            || intent.Sequence != postVersion + 1L
+            || string.IsNullOrWhiteSpace(intent.CorrelationId)
+            || string.IsNullOrWhiteSpace(intent.CausationId)
+            || string.IsNullOrWhiteSpace(intent.EvidenceHash)
+            || string.IsNullOrWhiteSpace(intent.SnapshotReference)
+            || string.IsNullOrWhiteSpace(intent.IdempotencyKey)
+            || !IsInitialDeliveryState(intent))
+        {
+            throw new ArgumentException("Audit intent immutable binding is invalid.", nameof(intent));
+        }
+    }
+
+    private static bool ImmutableIntentPayloadEquals(LocalAuditIntent left, LocalAuditIntent right)
+        => string.Equals(left.SourceService, right.SourceService, StringComparison.Ordinal)
+           && left.SchemaVersion == right.SchemaVersion
+           && string.Equals(left.ContractVersion, right.ContractVersion, StringComparison.Ordinal)
+           && left.IntentId == right.IntentId
+           && left.TenantId == right.TenantId
+           && left.AggregateType == right.AggregateType
+           && left.AggregateId == right.AggregateId
+           && left.PreVersion == right.PreVersion
+           && left.PostVersion == right.PostVersion
+           && left.Operation == right.Operation
+           && string.Equals(left.ActorId, right.ActorId, StringComparison.Ordinal)
+           && string.Equals(left.CorrelationId, right.CorrelationId, StringComparison.Ordinal)
+           && string.Equals(left.CausationId, right.CausationId, StringComparison.Ordinal)
+           && string.Equals(left.CommandId, right.CommandId, StringComparison.Ordinal)
+           && left.Sequence == right.Sequence
+           && left.TimestampUtc == right.TimestampUtc
+           && string.Equals(left.EvidenceHash, right.EvidenceHash, StringComparison.Ordinal)
+           && string.Equals(left.SnapshotReference, right.SnapshotReference, StringComparison.Ordinal)
+           && string.Equals(left.IdempotencyKey, right.IdempotencyKey, StringComparison.Ordinal);
+
+    private static bool IsInitialDeliveryState(LocalAuditIntent intent)
+        => intent.DeliveryState == AuditIntentDeliveryState.Pending
+           && intent.AttemptCount == 0
+           && intent.LastAttemptAt is null
+           && intent.NextRetryAt is null
+           && intent.CentralAcknowledgement is null
+           && intent.CentralIdempotencyKey is null
+           && intent.AcknowledgedContractVersion is null
+           && intent.AcknowledgedAt is null
+           && intent.LastError is null
+           && intent.LeaseOwner is null
+           && intent.ClaimToken is null
+           && intent.ClaimGeneration == 0
+           && intent.ClaimedAt is null
+           && intent.LeaseUntil is null
+           && intent.DeliveredAt is null
+           && intent.DeadLetteredAt is null
+           && intent.CompactedAt is null
+           && intent.CompactReceiptReference is null
+           && intent.FailureClass == AuditIntentFailureClass.None
+           && intent.FailureReason is null;
+
+    private static bool ExactCreatePayload(
+        ProductLegalEntityScopeRolloutState persisted,
+        ProductLegalEntityScopeRolloutState requested)
+        => persisted.TenantId == requested.TenantId
+           && persisted.CreationCommandId == requested.CreationCommandId
+           && persisted.CreatedByActorId == requested.CreatedByActorId
+           && persisted.Mode == requested.Mode;
+
+    private static bool ExactBusinessState(
+        ProductLegalEntityScopeRolloutState persisted,
+        ProductLegalEntityScopeRolloutState requested)
+        => persisted.TenantId == requested.TenantId
+           && persisted.Id == requested.Id
+           && persisted.CreationCommandId == requested.CreationCommandId
+           && persisted.CreatedByActorId == requested.CreatedByActorId
+           && persisted.Mode == requested.Mode
+           && persisted.Version == requested.Version
+           && persisted.IsDeleted == requested.IsDeleted
+           && persisted.LastTransitionCommandId == requested.LastTransitionCommandId
+           && persisted.LastTransitionActorId == requested.LastTransitionActorId
+           && string.Equals(persisted.LastTransitionAction, requested.LastTransitionAction, StringComparison.Ordinal)
+           && string.Equals(persisted.LastTransitionReasonCode, requested.LastTransitionReasonCode, StringComparison.Ordinal)
+           && string.Equals(persisted.LastTransitionEvidenceHash, requested.LastTransitionEvidenceHash, StringComparison.Ordinal)
+           && persisted.LastTransitionIntentId == requested.LastTransitionIntentId
+           && ExactSnapshot(persisted.LastInventorySnapshot, requested.LastInventorySnapshot)
+           && ContainsCompleteImmutableAuditProof(persisted.AuditIntents, requested.AuditIntents);
+
+    private static bool ExactSnapshot(
+        ProductLegalEntityScopeInventorySnapshot? left,
+        ProductLegalEntityScopeInventorySnapshot? right) =>
+        left is null && right is null || left is not null && right is not null
+        && left.SchemaVersion == right.SchemaVersion && left.ObservedAtUtc == right.ObservedAtUtc
+        && string.Equals(left.CanonicalPayload, right.CanonicalPayload, StringComparison.Ordinal)
+        && string.Equals(left.StableFactsHash, right.StableFactsHash, StringComparison.Ordinal)
+        && string.Equals(left.SnapshotHash, right.SnapshotHash, StringComparison.Ordinal);
+
+    private static FilterDefinition<ProductLegalEntityScopeRolloutState> BuildServerSideBudgetFilter(
+        ProductLegalEntityScopeRolloutState requested,
+        IReadOnlyCollection<LocalAuditIntent> newAuditIntents)
+    {
+        var requestedDocument = requested.ToBsonDocument();
+        var existingIntents = new BsonDocument(
+            "$ifNull",
+            new BsonArray { "$AuditIntents", new BsonArray() });
+        BsonValue projectedIntents = existingIntents;
+        if (newAuditIntents.Count > 0)
+        {
+            projectedIntents = new BsonDocument(
+                "$concatArrays",
+                new BsonArray
+                {
+                    existingIntents,
+                    new BsonArray(newAuditIntents.Select(intent => intent.ToBsonDocument()))
+                });
+        }
+
+        var projectedFields = new BsonDocument
+        {
+            { nameof(ProductLegalEntityScopeRolloutState.Mode), requestedDocument[nameof(ProductLegalEntityScopeRolloutState.Mode)] },
+            { nameof(ProductLegalEntityScopeRolloutState.UpdatedAt), requestedDocument[nameof(ProductLegalEntityScopeRolloutState.UpdatedAt)] },
+            { nameof(ProductLegalEntityScopeRolloutState.Version), requested.Version },
+            { nameof(ProductLegalEntityScopeRolloutState.LastInventorySnapshot), requestedDocument[nameof(ProductLegalEntityScopeRolloutState.LastInventorySnapshot)] },
+            { nameof(ProductLegalEntityScopeRolloutState.LastTransitionCommandId), requestedDocument[nameof(ProductLegalEntityScopeRolloutState.LastTransitionCommandId)] },
+            { nameof(ProductLegalEntityScopeRolloutState.LastTransitionActorId), requestedDocument[nameof(ProductLegalEntityScopeRolloutState.LastTransitionActorId)] },
+            { nameof(ProductLegalEntityScopeRolloutState.LastTransitionAction), requestedDocument[nameof(ProductLegalEntityScopeRolloutState.LastTransitionAction)] },
+            { nameof(ProductLegalEntityScopeRolloutState.LastTransitionReasonCode), requestedDocument[nameof(ProductLegalEntityScopeRolloutState.LastTransitionReasonCode)] },
+            { nameof(ProductLegalEntityScopeRolloutState.LastTransitionEvidenceHash), requestedDocument[nameof(ProductLegalEntityScopeRolloutState.LastTransitionEvidenceHash)] },
+            { nameof(ProductLegalEntityScopeRolloutState.LastTransitionIntentId), requestedDocument[nameof(ProductLegalEntityScopeRolloutState.LastTransitionIntentId)] },
+            { nameof(ProductLegalEntityScopeRolloutState.ActiveFence), BsonNull.Value },
+            { nameof(ProductLegalEntityScopeRolloutState.AuditIntents), projectedIntents }
+        };
+        var projectedDocument = new BsonDocument(
+            "$mergeObjects",
+            new BsonArray { "$$ROOT", projectedFields });
+        var expression = new BsonDocument(
+            "$expr",
+            new BsonDocument(
+                "$lte",
+                new BsonArray
+                {
+                    new BsonDocument("$bsonSize", projectedDocument),
+                    MaximumPreDeliveryBsonBytes
+                }));
+        return new BsonDocumentFilterDefinition<ProductLegalEntityScopeRolloutState>(expression);
+    }
+
+    private static void EnsureProjectedDocumentWithinBudget(
+        ProductLegalEntityScopeRolloutState persisted,
+        ProductLegalEntityScopeRolloutState requested,
+        IReadOnlyCollection<LocalAuditIntent> newAuditIntents)
+    {
+        var projected = persisted.ToBsonDocument();
+        var requestedDocument = requested.ToBsonDocument();
+        projected[nameof(ProductLegalEntityScopeRolloutState.Mode)] =
+            requestedDocument[nameof(ProductLegalEntityScopeRolloutState.Mode)];
+        projected[nameof(ProductLegalEntityScopeRolloutState.UpdatedAt)] =
+            requestedDocument[nameof(ProductLegalEntityScopeRolloutState.UpdatedAt)];
+        projected[nameof(ProductLegalEntityScopeRolloutState.Version)] = requested.Version;
+        foreach (var field in new[]
+        {
+            nameof(ProductLegalEntityScopeRolloutState.LastInventorySnapshot),
+            nameof(ProductLegalEntityScopeRolloutState.LastTransitionCommandId),
+            nameof(ProductLegalEntityScopeRolloutState.LastTransitionActorId),
+            nameof(ProductLegalEntityScopeRolloutState.LastTransitionAction),
+            nameof(ProductLegalEntityScopeRolloutState.LastTransitionReasonCode),
+            nameof(ProductLegalEntityScopeRolloutState.LastTransitionEvidenceHash)
+            , nameof(ProductLegalEntityScopeRolloutState.LastTransitionIntentId)
+        }) projected[field] = requestedDocument[field];
+        projected[nameof(ProductLegalEntityScopeRolloutState.ActiveFence)] = BsonNull.Value;
+        var intents = projected[nameof(ProductLegalEntityScopeRolloutState.AuditIntents)].AsBsonArray;
+        foreach (var intent in newAuditIntents)
+        {
+            intents.Add(intent.ToBsonDocument());
+        }
+
+        EnsureCompleteDocumentWithinBudget(projected, reserveAuditLifecycleHeadroom: true);
+    }
+
+    private static void EnsureCompleteDocumentWithinBudget(
+        BsonDocument document,
+        bool reserveAuditLifecycleHeadroom)
+    {
+        var size = document.ToBson().Length;
+        ProductLegalEntityScopePolicy.EnsureSerializedBsonSizeWithinLimit(size);
+        if (reserveAuditLifecycleHeadroom && size > MaximumPreDeliveryBsonBytes)
+        {
+            throw new InvalidOperationException("PRODUCT_LEGAL_ENTITY_SCOPE_AUDIT_HEADROOM_EXCEEDED");
+        }
+    }
+
+    private static bool ContainsCompleteImmutableAuditProof(
+        IReadOnlyCollection<LocalAuditIntent> persisted,
+        IReadOnlyCollection<LocalAuditIntent> requested)
+        => requested.All(requestedIntent => persisted.Any(persistedIntent =>
+            persistedIntent.IntentId == requestedIntent.IntentId
+            && ImmutableIntentPayloadEquals(persistedIntent, requestedIntent)));
+
+    private void EnsureIndexes()
+    {
+        _states.Indexes.CreateMany(
+        [
+            new CreateIndexModel<ProductLegalEntityScopeRolloutState>(
+                Builders<ProductLegalEntityScopeRolloutState>.IndexKeys.Ascending(state => state.TenantId),
+                new CreateIndexOptions
+                {
+                    Unique = true,
+                    Name = "ux_mdm_product_legal_entity_scope_rollout_states_tenant"
+                }),
+            new CreateIndexModel<ProductLegalEntityScopeRolloutState>(
+                Builders<ProductLegalEntityScopeRolloutState>.IndexKeys
+                    .Ascending(state => state.TenantId)
+                    .Ascending(state => state.CreationCommandId),
+                new CreateIndexOptions
+                {
+                    Unique = true,
+                    Name = "ux_mdm_product_legal_entity_scope_rollout_states_tenant_command"
+                })
+        ]);
+    }
+
+    private FilterDefinition<ProductLegalEntityScopeRolloutState> TenantIncludingDeletedFilter =>
+        Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(state => state.TenantId, _tenantId);
+
+    private FilterDefinition<ProductLegalEntityScopeRolloutState> ActiveTenantFilter =>
+        TenantIncludingDeletedFilter
+        & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(state => state.IsDeleted, false);
+
+    internal static FilterDefinition<ProductLegalEntityScopeRolloutState>
+        ActiveWriterLeaseUnexpiredAtServerTimeFilter =>
+        new BsonDocumentFilterDefinition<ProductLegalEntityScopeRolloutState>(
+            new BsonDocument(
+                "$expr",
+                new BsonDocument(
+                    "$cond",
+                    new BsonArray
+                    {
+                        new BsonDocument(
+                            "$eq",
+                            new BsonArray
+                            {
+                                new BsonDocument(
+                                    "$type",
+                                    "$ActiveWriterLease.ExpiresAtUtc"),
+                                "array"
+                            }),
+                        new BsonDocument(
+                            "$cond",
+                            new BsonArray
+                            {
+                                new BsonDocument(
+                                    "$eq",
+                                    new BsonArray
+                                    {
+                                        new BsonDocument(
+                                            "$size",
+                                            "$ActiveWriterLease.ExpiresAtUtc"),
+                                        2
+                                    }),
+                                new BsonDocument(
+                                    "$let",
+                                    new BsonDocument
+                                    {
+                                        {
+                                            "vars",
+                                            new BsonDocument
+                                            {
+                                                {
+                                                    "expiryTicks",
+                                                    new BsonDocument(
+                                                        "$arrayElemAt",
+                                                        new BsonArray
+                                                        {
+                                                            "$ActiveWriterLease.ExpiresAtUtc",
+                                                            0
+                                                        })
+                                                },
+                                                {
+                                                    "offsetMinutes",
+                                                    new BsonDocument(
+                                                        "$arrayElemAt",
+                                                        new BsonArray
+                                                        {
+                                                            "$ActiveWriterLease.ExpiresAtUtc",
+                                                            1
+                                                        })
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "in",
+                                            new BsonDocument(
+                                                "$cond",
+                                                new BsonArray
+                                                {
+                                                    new BsonDocument(
+                                                        "$isNumber",
+                                                        "$$expiryTicks"),
+                                                    new BsonDocument(
+                                                        "$cond",
+                                                        new BsonArray
+                                                        {
+                                                            new BsonDocument(
+                                                                "$eq",
+                                                                new BsonArray
+                                                                {
+                                                                    "$$offsetMinutes",
+                                                                    0
+                                                                }),
+                                                            new BsonDocument(
+                                                                "$gt",
+                                                                new BsonArray
+                                                                {
+                                                                    "$$expiryTicks",
+                                                                    new BsonDocument(
+                                                                        "$add",
+                                                                        new BsonArray
+                                                                        {
+                                                                            DateTimeOffset.UnixEpoch.Ticks,
+                                                                            new BsonDocument(
+                                                                                "$multiply",
+                                                                                new BsonArray
+                                                                                {
+                                                                                    new BsonDocument(
+                                                                                        "$toLong",
+                                                                                        "$$NOW"),
+                                                                                    TimeSpan.TicksPerMillisecond
+                                                                                })
+                                                                        })
+                                                                }),
+                                                            false
+                                                        }),
+                                                    false
+                                                })
+                                        }
+                                    }),
+                                false
+                            }),
+                        false
+                    })));
+
+    private static void EnsureIdentity(Guid value, string parameterName)
+    {
+        if (value == Guid.Empty)
+        {
+            throw new ArgumentException("Identity must be non-empty.", parameterName);
+        }
+    }
+}

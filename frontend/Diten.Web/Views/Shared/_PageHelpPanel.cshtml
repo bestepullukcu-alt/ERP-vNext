@@ -1,0 +1,243 @@
+@model Diten.Web.Models.Shared.PageHelpModel
+@using System.Linq
+@using Diten.Web.Services.Help
+@using Diten.Web.Services.Navigation
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<Diten.Web.PageHelpResource> Help
+@inject INavNameLocalizer NavNames
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@*
+    WP-UX-COMMON-01 (BL-495) — the "?" help panel, the tour layer and the side-panel Enter rule, once per shell.
+    WP-UX-HELP-PANEL-02 — the owner's design (2026-10-13, "alt çizgili sekmeler", 400 px): a header with the page's name,
+    three underlined tabs and a footer.
+      · Overview   — "General information" (Help.{CODE}.Purpose / .Audience / .Immediate) and "Related pages"
+                     (PageHelpCatalog: the menu's address, only pages the reader can open). Nothing empty is drawn.
+      · Step by step — one card per step (Help.{CODE}.Step{n} with .Step{n}Title), the first one open; a quoted button
+                     name becomes a small label (PageHelpCatalog.Labelled: the text is encoded, never HTML). A step with
+                     no title (the old format) is a plain numbered row.
+      · Keyboard   — the keys every page has, and the page's own (DitenShortcuts.list(), filled in by diten-help.js;
+                     no card when the page registers none).
+    The tab opened is always Overview (diten-help.js). A page without text keeps its old face: the "being prepared"
+    sentence and the keys (the owner has not decided otherwise). "Start the tour" only when the page's tour can run.
+
+    Text is resx text rendered by Razor (encoded), never HTML. Not drawn on the unauthorized face (UAS-001).
+    Needs: _DitenShortcuts (above it), Bootstrap (offcanvas, tab, collapse).
+*@
+@{
+    var code = Model?.PageCode;
+    string? Text(string key)
+    {
+        var value = Help[key];
+        return value.ResourceNotFound || string.IsNullOrWhiteSpace(value.Value) ? null : value.Value;
+    }
+    var purpose = code is null ? null : Text($"Help.{code}.Purpose");
+    var audience = purpose is null ? null : Text($"Help.{code}.Audience");
+    var immediate = purpose is null ? null : Text($"Help.{code}.Immediate");
+    var steps = code is null || purpose is null
+        ? new List<(int Number, string Text, string? Title)>()
+        : Enumerable.Range(1, 5)
+            .Select(i => (Number: i, Text: Text($"Help.{code}.Step{i}"), Title: Text($"Help.{code}.Step{i}Title")))
+            .Where(s => s.Text is not null)
+            .Select(s => (s.Number, Text: s.Text!, s.Title))
+            .ToList();
+    var related = purpose is null
+        ? new List<RelatedLink>()
+        : PageHelpCatalog.RelatedFor(code, CurrentPage.MenuPages(Context), Perms.Has).ToList();
+    var title = code is null ? Help["Help.Panel.Title"].Value : NavNames.Page(code, Help["Help.Panel.Title"].Value);
+    var tourStrings = Help.GetAllStrings(true)
+        .Where(s => s.Name.StartsWith("Tour.", StringComparison.Ordinal))
+        .GroupBy(s => s.Name)
+        .ToDictionary(g => g.Key, g => g.First().Value);
+}
+<script src="~/assets/js/shared/diten-enter-primary.js" asp-append-version="true"></script>
+@if (!Diten.Web.Services.Navigation.CurrentPage.IsAccessDenied(Context))
+{
+    <div class="offcanvas offcanvas-end diten-help-panel" tabindex="-1" id="diten-help-panel"
+        aria-labelledby="diten-help-title" data-page-code="@code"
+        data-diten-chord-title="@Help["Help.Panel.ChordTitle"]">
+        <div class="offcanvas-header diten-help-header">
+            <div class="backbone-preview-avatar d-flex align-items-center justify-content-center flex-shrink-0">
+                <i class="icon-base bx bx-help-circle icon-md" aria-hidden="true"></i>
+            </div>
+            <div class="diten-help-header-text">
+                <div class="diten-help-eyebrow">@Help["Help.Panel.Eyebrow"]</div>
+                <h5 class="offcanvas-title" id="diten-help-title">@title</h5>
+            </div>
+            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@Help["Help.Panel.Close"]"></button>
+        </div>
+        <div class="offcanvas-body diten-help-body">
+            @if (purpose is not null)
+            {
+                <ul class="nav diten-help-tabs" role="tablist" aria-label="@Help["Help.Panel.Tabs"]" data-diten-help-tabs>
+                    <li class="nav-item" role="presentation">
+                        <button type="button" class="nav-link active" id="diten-help-tab-overview" role="tab" data-bs-toggle="tab"
+                            data-bs-target="#diten-help-pane-overview" aria-controls="diten-help-pane-overview" aria-selected="true"
+                            data-diten-help-tab="overview">
+                            <i class="bx bx-info-circle" aria-hidden="true"></i><span>@Help["Help.Panel.TabOverview"]</span>
+                        </button>
+                    </li>
+                    @if (steps.Count > 0)
+                    {
+                        <li class="nav-item" role="presentation">
+                            <button type="button" class="nav-link" id="diten-help-tab-steps" role="tab" data-bs-toggle="tab"
+                                data-bs-target="#diten-help-pane-steps" aria-controls="diten-help-pane-steps" aria-selected="false"
+                                tabindex="-1" data-diten-help-tab="steps">
+                                <i class="bx bx-list-ol" aria-hidden="true"></i><span>@Help["Help.Panel.TabSteps"]</span>
+                            </button>
+                        </li>
+                    }
+                    <li class="nav-item" role="presentation">
+                        <button type="button" class="nav-link" id="diten-help-tab-keys" role="tab" data-bs-toggle="tab"
+                            data-bs-target="#diten-help-pane-keys" aria-controls="diten-help-pane-keys" aria-selected="false"
+                            tabindex="-1" data-diten-help-tab="keys">
+                            <i class="bx bx-bxs-keyboard" aria-hidden="true"></i><span>@Help["Help.Panel.TabKeys"]</span>
+                        </button>
+                    </li>
+                </ul>
+            }
+            else
+            {
+                <p class="diten-help-preparing" data-diten-help-preparing>@Help["Help.Panel.Preparing"]</p>
+            }
+            <div class="tab-content">
+                @if (purpose is not null)
+                {
+                    <div class="tab-pane fade show active" id="diten-help-pane-overview" role="tabpanel"
+                        aria-labelledby="diten-help-tab-overview" tabindex="0" data-diten-help-purpose>
+                        <section class="card backbone-preview-section diten-help-card" data-diten-help-general>
+                            <h6 class="text-uppercase text-heading fw-semibold backbone-preview-section-title diten-help-card-title">@Help["Help.Panel.GeneralCard"]</h6>
+                            <div class="diten-help-fields">
+                                <div class="backbone-preview-field" data-diten-help-field="purpose">
+                                    <i class="bx bx-info-circle" aria-hidden="true"></i>
+                                    <div>
+                                        <div class="backbone-preview-label">@Help["Help.Panel.PurposeHeading"]</div>
+                                        <div class="backbone-preview-value diten-help-field-value diten-help-field-value--prose">@purpose</div>
+                                    </div>
+                                </div>
+                                @if (audience is not null)
+                                {
+                                    <div class="backbone-preview-field" data-diten-help-field="audience">
+                                        <i class="bx bx-user" aria-hidden="true"></i>
+                                        <div>
+                                            <div class="backbone-preview-label">@Help["Help.Panel.AudienceLabel"]</div>
+                                            <div class="backbone-preview-value diten-help-field-value">@audience</div>
+                                        </div>
+                                    </div>
+                                }
+                                @if (immediate is not null)
+                                {
+                                    <div class="backbone-preview-field" data-diten-help-field="immediate">
+                                        <i class="bx bx-bxs-bolt" aria-hidden="true"></i>
+                                        <div>
+                                            <div class="backbone-preview-label">@Help["Help.Panel.ImmediateLabel"]</div>
+                                            <div class="backbone-preview-value diten-help-field-value">@immediate</div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </section>
+                        @if (related.Count > 0)
+                        {
+                            <section class="card backbone-preview-section diten-help-card" data-diten-help-related>
+                                <h6 class="text-uppercase text-heading fw-semibold backbone-preview-section-title diten-help-card-title">@Help["Help.Panel.RelatedCard"]</h6>
+                                <div class="diten-help-fields">
+                                    @foreach (var link in related)
+                                    {
+                                        var reason = Text($"Help.{code}.Related.{link.Code}");
+                                        <div class="backbone-preview-field" data-diten-help-related-page="@link.Code">
+                                            <i class="bx @link.Icon" aria-hidden="true"></i>
+                                            <div>
+                                                @if (reason is not null)
+                                                {
+                                                    <div class="backbone-preview-label">@reason</div>
+                                                }
+                                                <div class="backbone-preview-value diten-help-field-value"><a href="@link.RoutePath">@NavNames.Page(link.Code, link.Code)</a></div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </section>
+                        }
+                    </div>
+                    @if (steps.Count > 0)
+                    {
+                        <div class="tab-pane fade" id="diten-help-pane-steps" role="tabpanel" aria-labelledby="diten-help-tab-steps"
+                            tabindex="0" data-diten-help-steps>
+                            <div class="diten-help-steps" id="diten-help-steps">
+                                @foreach (var (step, index) in steps.Select((s, i) => (s, i)))
+                                {
+                                    var number = string.Format(System.Globalization.CultureInfo.CurrentCulture, Help["Help.Panel.StepNumber"].Value, step.Number);
+                                    if (step.Title is null)
+                                    {
+                                        <div class="card diten-help-step diten-help-step-plain" data-diten-help-step="@step.Number">
+                                            <div class="diten-help-step-body"><span class="diten-help-step-number">@number</span> @PageHelpCatalog.Labelled(step.Text)</div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="card diten-help-step" data-diten-help-step="@step.Number">
+                                            <button type="button" class="diten-help-step-toggle@(index == 0 ? "" : " collapsed")" data-bs-toggle="collapse"
+                                                data-bs-target="#diten-help-step-@step.Number" aria-controls="diten-help-step-@step.Number"
+                                                aria-expanded="@(index == 0 ? "true" : "false")">
+                                                <span class="diten-help-step-icon"><i class="bx @PageHelpCatalog.StepIcon(code, step.Number)" aria-hidden="true"></i></span>
+                                                <span class="diten-help-step-heading">
+                                                    <span class="diten-help-step-number">@number</span>
+                                                    <span class="diten-help-step-title">@step.Title</span>
+                                                </span>
+                                                <i class="bx bx-chevron-down diten-help-step-chevron" aria-hidden="true"></i>
+                                            </button>
+                                            <div class="collapse@(index == 0 ? " show" : "")" id="diten-help-step-@step.Number" data-bs-parent="#diten-help-steps">
+                                                <div class="diten-help-step-body">@PageHelpCatalog.Labelled(step.Text)</div>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+                @* With text, the keys are the third tab; without it (no tabs) they are simply shown. A null attribute is not written. *@
+                <div class="@(purpose is not null ? "tab-pane fade" : "diten-help-keys-only")" id="diten-help-pane-keys"
+                    role="@(purpose is not null ? "tabpanel" : null)" aria-labelledby="@(purpose is not null ? "diten-help-tab-keys" : null)"
+                    tabindex="@(purpose is not null ? "0" : null)" data-diten-help-keys>
+                    <section class="card backbone-preview-section diten-help-card" data-diten-help-everywhere>
+                        <h6 class="text-uppercase text-heading fw-semibold backbone-preview-section-title diten-help-card-title">@Help["Help.Panel.KeysEverywhere"]</h6>
+                        <dl class="diten-help-keys">
+                            <dt><kbd class="diten-kbd">?</kbd></dt>
+                            <dd>@Help["Help.Panel.KeyHelp"]</dd>
+                            <dt><kbd class="diten-kbd">Ctrl</kbd><kbd class="diten-kbd">K</kbd></dt>
+                            <dd>@Help["Help.Panel.KeySearch"]</dd>
+                            <dt><kbd class="diten-kbd">Enter</kbd></dt>
+                            <dd>@Help["Help.Panel.KeyEnter"]</dd>
+                            <dt><kbd class="diten-kbd">Ctrl</kbd><kbd class="diten-kbd">Enter</kbd></dt>
+                            <dd>@Help["Help.Panel.KeyChord"]</dd>
+                            <dt><kbd class="diten-kbd">Esc</kbd></dt>
+                            <dd>@Help["Help.Panel.KeyEscape"]</dd>
+                        </dl>
+                        <p class="diten-help-note">@Help["Help.Panel.MacNote"]</p>
+                    </section>
+                    <section class="card backbone-preview-section diten-help-card" data-diten-help-shortcuts hidden>
+                        <h6 class="text-uppercase text-heading fw-semibold backbone-preview-section-title diten-help-card-title">@Help["Help.Panel.KeysThisPage"]</h6>
+                        <div data-diten-help-shortcut-list></div>
+                    </section>
+                </div>
+            </div>
+        </div>
+        <div class="diten-help-footer">
+            <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@Help["Help.Panel.Close"]</button>
+            <div data-diten-help-tour hidden>
+                <button type="button" class="btn btn-primary" data-diten-help-start-tour>
+                    <i class="icon-base bx bx-play" aria-hidden="true"></i><span>@Help["Help.Panel.StartTour"]</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    <script id="diten-tour-l10n" type="application/json">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(tourStrings))</script>
+    @* WP-UX-TOUR-DRIVERJS-01 — the tour library, vendored (1.8.0, MIT; assets/vendor/libs/driverjs/README.md), never a
+       CDN. Before the layer that is its only caller; DitenTour looks it up at call time, so the order is for reading. *@
+    <link rel="stylesheet" href="~/assets/vendor/libs/driverjs/driver.css" asp-append-version="true" />
+    <script src="~/assets/vendor/libs/driverjs/driver.js.iife.js" asp-append-version="true"></script>
+    <script src="~/assets/js/shared/diten-tour.js" asp-append-version="true"></script>
+    <script src="~/assets/js/shared/diten-tour-catalog.js" asp-append-version="true"></script>
+    <script src="~/assets/js/shared/diten-help.js" asp-append-version="true"></script>
+}

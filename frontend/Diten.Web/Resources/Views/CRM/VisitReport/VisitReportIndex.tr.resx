@@ -99,7 +99,7 @@
   <data name="IndicationPatients" xml:space="preserve"><value>Endikasyondaki hasta (aylık)</value></data>
   <data name="IndicationHint" xml:space="preserve"><value>Onaylı endikasyon × hasta profili listesi. Yalnız doktorun gördüğü satırları işaretleyin; sayılar tahminidir.</value></data>
   <data name="ThreeMonthHint" xml:space="preserve"><value>3 ayda bir sorulur; arada son değer gösterilir.</value></data>
-  <data name="NoIndicationList" xml:space="preserve"><value>Bu ürün için endikasyon listesi tanımlı değil; yalnız doktorun toplamı sorulur.</value></data>
+  <data name="NoIndicationList" xml:space="preserve"><value>Bu ürün için endikasyon listesi tanımlı değil; ürün potansiyeli sorulmaz. Doktorun toplamı profil adımında.</value></data>
   <data name="PatientsPerMonth" xml:space="preserve"><value>hasta / ay</value></data>
   <data name="PreviousValue" xml:space="preserve"><value>Önceki: {0}</value></data>
   <data name="NoPatients" xml:space="preserve"><value>Bu endikasyonlarda hasta görmüyor</value></data>

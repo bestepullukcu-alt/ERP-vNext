@@ -511,6 +511,11 @@
   <data name="AdminLastSuperAdminDenied" xml:space="preserve"><value>At least one active Super Admin must remain in the system.</value></data>
   <data name="AdminSeedDeleteDenied" xml:space="preserve"><value>The system seed administrator cannot be deleted.</value></data>
   <data name="AdminSeedSuspendDenied" xml:space="preserve"><value>The system seed administrator cannot be suspended.</value></data>
+  <data name="AdminSeedEmailChangeDenied" xml:space="preserve"><value>The system seed administrator's e-mail cannot be changed.</value></data>
+  <data name="AdminChangeUnavailable" xml:space="preserve"><value>The administrator change could not be saved right now. Nothing was written. Please try again.</value></data>
+  <data name="AdminEmailImmutable" xml:space="preserve"><value>An administrator's e-mail cannot be changed. Invite the new address as a new administrator and remove the old one.</value></data>
+  <data name="AdminBulkDuplicateIds" xml:space="preserve"><value>The same administrator is listed more than once. Nothing was deleted.</value></data>
+  <data name="AdminBulkDeletePartial" xml:space="preserve"><value>Some administrators were deleted, but the request stopped at one that could not be deleted. Reload the list to see what remains.</value></data>
   <data name="InvitationEmailSendFailed" xml:space="preserve"><value>Administrator was created, but the invitation email could not be sent. Check SMTP settings and use Resend Invitation.</value></data>
   <data name="AccessGovernance" xml:space="preserve"><value>Access Governance</value></data>
   <data name="UsersMenu" xml:space="preserve"><value>Users</value></data>
@@ -579,6 +584,35 @@
   <data name="Password.Error.NewRequired" xml:space="preserve"><value>New password is required.</value></data>
   <data name="Password.Error.ResetEmailRequired" xml:space="preserve"><value>Email is required.</value></data>
   <data name="Password.Error.ResetTokenRequired" xml:space="preserve"><value>Reset token is required.</value></data>
+  <data name="Auth.Error.TooManyRequests" xml:space="preserve"><value>Too many requests. Please wait a few minutes and try again.</value></data>
+  <data name="Auth.Error.PasswordChangedMeanwhile" xml:space="preserve"><value>Your password was changed meanwhile (for example by an administrator). Please sign in again.</value></data>
+  <data name="Auth.Error.AccountDeactivated" xml:space="preserve"><value>Your account has been deactivated by an administrator. Contact your administrator.</value></data>
+  <data name="Auth.Error.InvalidCredentials" xml:space="preserve"><value>The email or password is incorrect, or the account is temporarily locked. Please try again later.</value></data>
+  <data name="Auth.Error.LoginUnavailable" xml:space="preserve"><value>Sign-in is temporarily unavailable. Please try again in a moment.</value></data>
+  <data name="Auth.Error.EmailLoginDisabled" xml:space="preserve"><value>Sign-in with email is turned off for this organization.</value></data>
+  <data name="Auth.Error.TemporaryPasswordExpired" xml:space="preserve"><value>Your temporary password has expired. Please reset your password.</value></data>
+  <data name="Auth.Error.PlatformPrivilegesRequired" xml:space="preserve"><value>This account has no platform administration role.</value></data>
+  <data name="Auth.Error.InvalidVerificationCode" xml:space="preserve"><value>The verification code is invalid or has expired.</value></data>
+  <data name="Auth.Error.CurrentPasswordIncorrect" xml:space="preserve"><value>Your current password is incorrect.</value></data>
+  <data name="Auth.Error.SessionEnded" xml:space="preserve"><value>Your session has ended. Please sign in again.</value></data>
+  <data name="Auth.Error.LinkInvalid" xml:space="preserve"><value>This link is no longer valid. Ask your administrator for a new link.</value></data>
+  <data name="Auth.Error.LoginFailed" xml:space="preserve"><value>Sign-in failed. Please try again.</value></data>
+  <data name="Auth.Error.VerificationFailed" xml:space="preserve"><value>Verification could not be completed. Please try again.</value></data>
+  <data name="Auth.Error.PasswordChangeFailed" xml:space="preserve"><value>Your password could not be changed. Please try again.</value></data>
+  <data name="Auth.Error.ServiceUnavailable" xml:space="preserve"><value>The sign-in service is temporarily unavailable. Please try again in a moment.</value></data>
+  <data name="Auth.Error.RequestInvalid" xml:space="preserve"><value>The request is incomplete. Please check the fields and try again.</value></data>
+  <data name="Auth.Error.TenantMissing" xml:space="preserve"><value>This sign-in link has no organization information. Please use your invitation link again.</value></data>
+  <data name="Auth.Error.VerificationCodeRequired" xml:space="preserve"><value>Please enter the verification code.</value></data>
+  <data name="Auth.Error.VerificationChallengeRequired" xml:space="preserve"><value>The verification step has expired. Please sign in again.</value></data>
+  <data name="Auth.Dialog.Ok" xml:space="preserve"><value>OK</value></data>
+  <data name="Auth.Mfa.Title" xml:space="preserve"><value>Two-step verification</value></data>
+  <data name="Auth.Mfa.Prompt" xml:space="preserve"><value>Enter the verification code sent to</value></data>
+  <data name="Auth.Mfa.CodeLabel" xml:space="preserve"><value>Verification code</value></data>
+  <data name="Auth.Mfa.Resend" xml:space="preserve"><value>Resend code</value></data>
+  <data name="Auth.Mfa.Verifying" xml:space="preserve"><value>Verifying...</value></data>
+  <data name="Auth.Mfa.Resending" xml:space="preserve"><value>Sending...</value></data>
+  <data name="Auth.Mfa.ResentTitle" xml:space="preserve"><value>Code sent</value></data>
+  <data name="Auth.Mfa.ResentMessage" xml:space="preserve"><value>A new verification code has been sent.</value></data>
   <!-- Tenant navigation names (FEAT-NAV-L10N: generic code→resx localization, keyed by stable nav codes) -->
   <data name="Nav.Domain.ADMINISTRATION" xml:space="preserve"><value>Administration</value></data>
   <data name="Nav.Domain.DEVENABLEMENT" xml:space="preserve"><value>Developer Enablement</value></data>
@@ -686,6 +720,9 @@
   <data name="Nav.Page.TASKEDIT" xml:space="preserve">
     <value>Edit task</value>
   </data>
+  <data name="Nav.Module.BRANDPRODUCTMASTER" xml:space="preserve">
+    <value>Brand &amp; Product Master</value>
+  </data>
   <data name="Nav.Module.PRODUCTITEMSKUMASTER" xml:space="preserve">
     <value>Product / Item / SKU Master</value>
   </data>
@@ -694,6 +731,9 @@
   </data>
   <data name="Nav.Page.GSKUS" xml:space="preserve">
     <value>GSKUs</value>
+  </data>
+  <data name="Nav.Page.ITEMS" xml:space="preserve">
+    <value>Items</value>
   </data>
   <data name="Nav.Page.TASKTYPES" xml:space="preserve">
     <value>Task Types</value>
@@ -1114,6 +1154,21 @@
   </data>
   <data name="InviteAcceptAnyway" xml:space="preserve">
     <value>Accept Anyway</value>
+  </data>
+  <data name="DtLoadFailed" xml:space="preserve">
+    <value>The list could not be loaded.</value>
+  </data>
+  <data name="DtLoadNoPermission" xml:space="preserve">
+    <value>You do not have permission to see this list.</value>
+  </data>
+  <data name="DtRetry" xml:space="preserve">
+    <value>Retry</value>
+  </data>
+  <data name="ShellSearchPlaceholder" xml:space="preserve">
+    <value>Search ({0})</value>
+  </data>
+  <data name="DateNotRecognized" xml:space="preserve">
+    <value>A date you typed could not be read, so it was not saved. Type it again in the field's format or pick it from the calendar.</value>
   </data>
   <data name="Nav.Page.OBJECTIONRESPONSES" xml:space="preserve">
     <value>Objection Library</value>

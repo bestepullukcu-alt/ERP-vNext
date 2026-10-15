@@ -119,6 +119,30 @@ public sealed class TimeSuggestionHttpMongoTests : TimerScenario
         Assert.Equal(TimeEntryReasonCodes.SuggestionAlreadyDecided, twice.ReasonCode);
     }
 
+    /// <summary>WP-WCN-TASK-REQUEST-01 FIX2 — a suggestion booked onto a task is new time on it: the person a request
+    /// waits on answers it first, the same rule as a typed row.</summary>
+    [Fact]
+    public async Task A_suggestion_cannot_be_booked_onto_a_request_still_waiting_for_the_persons_answer()
+    {
+        await SeedMeetingAsync(InvitationResponse.Accepted);
+        var id = Assert.Single(await SuggestionsAsync()).GetProperty("id").GetGuid();
+        var task = Guid.NewGuid();
+        await SeedTaskAsync(Tenant, task, creator: Stranger, lifecycle: Diten.Platform.Domain.Enums.Tasks.TaskLifecycle.Open);
+        await Collection<Diten.Platform.Domain.Entities.Tasks.TaskItem>(PlatformCollections.TaskItems).UpdateOneAsync(t => t.Id == task,
+            Builders<Diten.Platform.Domain.Entities.Tasks.TaskItem>.Update
+                .Set(t => t.AssignmentTarget, Diten.Platform.Domain.Enums.Tasks.TaskAssignmentTarget.Offered)
+                .Set(t => t.AssigneeUserId, null)
+                .Set(t => t.OfferedToUserId, Person)
+                .Set(t => t.IsRequest, true)
+                .Set(t => t.RequestOriginUnitId, Unit));
+
+        var booked = await AcceptAsync(id, new { expectedVersion = await VersionAsync(), taskItemId = task, categoryCode = (string?)null });
+
+        Assert.Equal(HttpStatusCode.BadRequest, booked.Status);
+        Assert.Equal(TimeEntryReasonCodes.TargetInvalid, booked.ReasonCode);
+        Assert.Empty((await GetWeekAsync()).Data.GetProperty("entries").EnumerateArray());
+    }
+
     [Fact]
     public async Task Minutes_saying_absent_withdraw_an_unaccepted_suggestion()
     {

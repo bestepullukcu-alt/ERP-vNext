@@ -65,6 +65,7 @@ public sealed class SendDueSoonRemindersHandler
         var alreadyReminded = 0;
         var notDelivered = 0;
         var failed = 0;
+        var partial = 0;
 
         foreach (var task in candidates)
         {
@@ -133,6 +134,11 @@ public sealed class SendDueSoonRemindersHandler
                     case TaskNotificationOutcome.Dispatched:
                         sent++;
                         break;
+                    case TaskNotificationOutcome.PartiallyDispatched:
+                        // FIX2 — some readers have their reminder: the claim is KEPT (a retry would mail them again), and
+                        // the run says that others did not get theirs.
+                        partial++;
+                        break;
                     case TaskNotificationOutcome.Failed:
                         failed++;
                         await ReleaseClaimAsync(task, outcome.ToString(), ct);
@@ -156,7 +162,7 @@ public sealed class SendDueSoonRemindersHandler
         }
 
         return Response<SendDueSoonRemindersResponse>.Success(
-            new SendDueSoonRemindersResponse(candidates.Count, sent, alreadyReminded, notDelivered, failed),
+            new SendDueSoonRemindersResponse(candidates.Count, sent, alreadyReminded, notDelivered, failed, partial),
             correlationId: command.CorrelationId);
     }
 
@@ -206,6 +212,11 @@ public sealed class SendDueSoonRemindersHandler
         if (task.ReminderLeadDays is not { } leadDays || leadDays < 0) { return false; }
         if (task.CompletedAt is not null || task.CancelledAt is not null) { return false; }
         if (task.Lifecycle is TaskLifecycle.Done or TaskLifecycle.Cancelled) { return false; }
+
+        // BL-509 — a request nobody has accepted is nobody's deadline. Left in, the sweep would claim it and release
+        // it again (two writes, nobody told), so the answer arriving with the version the page was opened on would
+        // read a false 409 — and it would spend this tenant's share of the sweep's cap on work nobody holds.
+        if (TaskRequestPolicy.IsUnanswered(task)) { return false; }
 
         // Inside the window, and not already past the deadline — an overdue task is a different message, and
         // sending "due soon" after the date would be wrong rather than late.

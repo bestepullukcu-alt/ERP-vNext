@@ -88,9 +88,53 @@
   <data name="OwnerCompanyId" xml:space="preserve"><value>Owner Company</value></data>
   <data name="BusinessUnitId" xml:space="preserve"><value>Business Unit</value></data>
   <data name="ReferencesSection" xml:space="preserve"><value>References</value></data>
-  <data name="ReferenceIdsOnlyHelp" xml:space="preserve"><value>Reference identifiers are shown as-is; no master record is resolved for them yet.</value></data>
+  <data name="ReferenceIdsOnlyHelp" xml:space="preserve"><value>References that no master record resolves here are kept as they are and shown as “could not be resolved”.</value></data>
   <data name="ProductsTab" xml:space="preserve"><value>Products</value></data>
   <data name="ProductsTabUnavailable" xml:space="preserve"><value>Products cannot be listed here without product read permission.</value></data>
   <data name="ArchiveNoCascadeHelp" xml:space="preserve"><value>Archiving a brand never archives or deletes its products.</value></data>
   <data name="SearchPlaceholder" xml:space="preserve"><value>Code or name…</value></data>
+  <data name="Reason_brand_not_found" xml:space="preserve"><value>This brand does not exist or is not available to you.</value></data>
+  <data name="Reason_product_not_found" xml:space="preserve"><value>This product does not exist or is not available to you.</value></data>
+  <data name="Reason_brand_code_duplicate" xml:space="preserve"><value>A brand with this code already exists. Codes stay reserved even after archiving.</value></data>
+  <data name="Reason_product_code_duplicate" xml:space="preserve"><value>A product with this code already exists. Codes stay reserved even after archiving.</value></data>
+  <data name="Reason_brand_archived" xml:space="preserve"><value>This brand is archived; no new product can be linked to it.</value></data>
+  <data name="Reason_record_archived" xml:space="preserve"><value>This record is archived and can no longer be changed.</value></data>
+  <data name="Reason_code_immutable" xml:space="preserve"><value>The code cannot be changed after the record is created.</value></data>
+  <data name="Reason_invalid_brand_status" xml:space="preserve"><value>Choose a valid brand status.</value></data>
+  <data name="Reason_invalid_product_status" xml:space="preserve"><value>Choose a valid product status.</value></data>
+  <data name="Reason_invalid_product_type" xml:space="preserve"><value>Choose a valid product type.</value></data>
+  <data name="Reason_invalid_dosage_form" xml:space="preserve"><value>Choose a valid dosage form.</value></data>
+  <data name="Reason_invalid_unit_of_measure" xml:space="preserve"><value>Choose a valid unit of measure.</value></data>
+  <data name="Reason_invalid_atc_code" xml:space="preserve"><value>Enter a valid ATC code.</value></data>
+  <data name="Reason_archived_status_not_assignable" xml:space="preserve"><value>The archived status is set only by archiving.</value></data>
+  <data name="Reason_invalid_effective_window" xml:space="preserve"><value>The end date cannot be earlier than the start date.</value></data>
+  <data name="Reason_external_reference_primary_conflict" xml:space="preserve"><value>Only one external reference per source system can be primary.</value></data>
+  <data name="Reason_external_reference_duplicate" xml:space="preserve"><value>The same external reference is entered twice.</value></data>
+  <data name="Reason_indication_ref_duplicate" xml:space="preserve"><value>The same indication is entered twice.</value></data>
+  <data name="Reason_version_conflict" xml:space="preserve"><value>Someone changed this record after you opened it. Reload it and make your change again.</value></data>
+  <data name="Reason_expected_version_required" xml:space="preserve"><value>The edit could not be matched to the version you opened. Reload the page and try again.</value></data>
+  <data name="Reason_external_reference_in_use" xml:space="preserve"><value>This external reference is already used by another record.</value></data>
+  <data name="Reason_list_query_invalid" xml:space="preserve"><value>The list could not be sorted or paged this way. Reset the view and try again.</value></data>
+  <data name="Reason_brand_not_linkable" xml:space="preserve"><value>Only an active brand inside its validity period can receive new product links.</value></data>
+  <data name="Reason_store_unavailable" xml:space="preserve"><value>The change could not be saved safely right now. Nothing was saved; try again later.</value></data>
+  <data name="Reason_write_outcome_unknown" xml:space="preserve"><value>The change was sent, but its result could not be confirmed. Reload the brand: if the change is not there, make it again.</value></data>
+  <data name="Reason_field_invalid" xml:space="preserve"><value>{0}: the value is missing, too long or in the wrong format.</value></data>
+  <data name="RefusedStatus_400" xml:space="preserve"><value>The request was not accepted. Check the entries and try again.</value></data>
+  <data name="RefusedStatus_403" xml:space="preserve"><value>You do not have permission for this action.</value></data>
+  <data name="RefusedStatus_404" xml:space="preserve"><value>The record was not found or is not available to you.</value></data>
+  <data name="RefusedStatus_409" xml:space="preserve"><value>The record has changed or is in a state that does not allow this. Reload and try again.</value></data>
+  <data name="RefusedStatus_502" xml:space="preserve"><value>The service could not be reached. Try again shortly.</value></data>
+  <data name="RefusedStatus_503" xml:space="preserve"><value>The service is temporarily unavailable. Try again shortly.</value></data>
+  <data name="RefusedStatus_504" xml:space="preserve"><value>The service did not answer in time. Try again shortly.</value></data>
+  <data name="RefusedStatus_Other" xml:space="preserve"><value>The request could not be completed. Try again shortly.</value></data>
+  <data name="ArchiveBrandIrreversible" xml:space="preserve"><value>Archiving cannot be undone.</value></data>
+  <data name="ArchiveBrandLiveProducts" xml:space="preserve"><value>{0} products of this brand are in use; they keep the brand, but no new product can be linked to it.</value></data>
+  <data name="ArchiveBrandNoLiveProducts" xml:space="preserve"><value>No product of this brand is in use.</value></data>
+  <data name="ArchivedWithLiveProducts" xml:space="preserve"><value>Archived brands with products in use</value></data>
+  <data name="ArchivedBrandLiveProducts" xml:space="preserve"><value>{0} products of this brand are still in use.</value></data>
+  <data name="LiveProductCount" xml:space="preserve"><value>Products in use</value></data>
+  <data name="Unresolved" xml:space="preserve"><value>Could not be resolved</value></data>
+  <data name="OwnerCompaniesUnavailable" xml:space="preserve"><value>The company list could not be read; the current owner is kept.</value></data>
+  <data name="CurrentPageOnly" xml:space="preserve"><value>Current page only</value></data>
+  <data name="ExcludeArchivedOption" xml:space="preserve"><value>Without archived</value></data>
 </root>

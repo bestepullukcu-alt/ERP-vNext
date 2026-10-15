@@ -131,9 +131,20 @@ public sealed class RecordLinkRepository : TenantRepository<RecordLink>, IRecord
 /// <c>TaskItemRepository.UpdateAsync</c>'s optimistic-concurrency shape exactly.</summary>
 public sealed class MeetingRepository : TenantRepository<Meeting>, IMeetingRepository
 {
+    private readonly IPlatformDbContext _dbContext;
+
     public MeetingRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
         : base(dbContext.Database, tenantContext, PlatformCollections.MeetingMeetings)
     {
+        _dbContext = dbContext;
+    }
+
+    public async Task<Meeting?> GetByIdAsync(IPlatformTransactionSession session, Guid id, CancellationToken ct = default)
+    {
+        var filter = Builders<Meeting>.Filter.And(
+            ExecutionFilter,
+            Builders<Meeting>.Filter.Eq(x => x.Id, id));
+        return await Collection.Find(PlatformMongoTransactionSession.Require(session, _dbContext), filter).FirstOrDefaultAsync(ct);
     }
 
     public Task<Meeting?> FindByIdempotencyKeyAsync(string idempotencyKey, CancellationToken ct = default)
@@ -166,22 +177,12 @@ public sealed class MeetingRepository : TenantRepository<Meeting>, IMeetingRepos
         }
     }
 
-    public async Task<bool> UpdateAsync(Meeting meeting, int expectedVersion, CancellationToken ct = default)
-    {
-        meeting.Version = expectedVersion + 1;
-        meeting.UpdatedAt = DateTimeOffset.UtcNow;
-        var filter = Builders<Meeting>.Filter.And(
-            ExecutionFilter,
-            Builders<Meeting>.Filter.Eq(x => x.Id, meeting.Id),
-            Builders<Meeting>.Filter.Eq(x => x.Version, expectedVersion));
+    public Task<bool> UpdateAsync(Meeting meeting, int expectedVersion, CancellationToken ct = default)
+        => ReadVersionWrites.ReplaceAsync(Collection, ExecutionFilter, meeting, expectedVersion, ct);
 
-        var previous = await Collection.FindOneAndReplaceAsync(
-            filter,
-            meeting,
-            new FindOneAndReplaceOptions<Meeting> { ReturnDocument = ReturnDocument.Before },
-            ct);
-        return previous is not null;
-    }
+    public Task<bool> UpdateAsync(IPlatformTransactionSession session, Meeting meeting, int expectedVersion, CancellationToken ct = default)
+        => ReadVersionWrites.ReplaceAsync(
+            Collection, PlatformMongoTransactionSession.Require(session, _dbContext), ExecutionFilter, meeting, expectedVersion, ct);
 
     public async Task<IReadOnlyList<Meeting>> ListAsync(CancellationToken ct = default)
         => await Collection.Find(ExecutionFilter).ToListAsync(ct);
@@ -264,9 +265,12 @@ public sealed class MeetingRepository : TenantRepository<Meeting>, IMeetingRepos
 /// <summary>Raw storage for <see cref="MeetingAttendee"/>.</summary>
 public sealed class MeetingAttendeeRepository : TenantRepository<MeetingAttendee>, IMeetingAttendeeRepository
 {
+    private readonly IPlatformDbContext _dbContext;
+
     public MeetingAttendeeRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
         : base(dbContext.Database, tenantContext, PlatformCollections.MeetingAttendees)
     {
+        _dbContext = dbContext;
     }
 
     public async Task<IReadOnlyList<MeetingAttendee>> ListByMeetingIdAsync(Guid meetingId, CancellationToken ct = default)
@@ -329,14 +333,22 @@ public sealed class MeetingAttendeeRepository : TenantRepository<MeetingAttendee
 
     public async Task UpdateAttendanceStatusAsync(
         Guid meetingId, Guid userId, AttendanceStatus status, CancellationToken ct = default)
-    {
-        var filter = Builders<MeetingAttendee>.Filter.And(
+        => await Collection.UpdateOneAsync(AttendeeFilter(meetingId, userId), AttendanceUpdate(status), cancellationToken: ct);
+
+    public async Task UpdateAttendanceStatusAsync(
+        IPlatformTransactionSession session, Guid meetingId, Guid userId, AttendanceStatus status, CancellationToken ct = default)
+        => await Collection.UpdateOneAsync(
+            PlatformMongoTransactionSession.Require(session, _dbContext), AttendeeFilter(meetingId, userId), AttendanceUpdate(status),
+            cancellationToken: ct);
+
+    private FilterDefinition<MeetingAttendee> AttendeeFilter(Guid meetingId, Guid userId)
+        => Builders<MeetingAttendee>.Filter.And(
             ExecutionFilter,
             Builders<MeetingAttendee>.Filter.Eq(x => x.MeetingId, meetingId),
             Builders<MeetingAttendee>.Filter.Eq(x => x.UserId, userId));
-        var update = Builders<MeetingAttendee>.Update.Set(x => x.AttendanceStatus, status);
-        await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
-    }
+
+    private static UpdateDefinition<MeetingAttendee> AttendanceUpdate(AttendanceStatus status)
+        => Builders<MeetingAttendee>.Update.Set(x => x.AttendanceStatus, status);
 
     public async Task<bool> MarkMailUndeliveredAsync(
         Guid meetingId, Guid userId, DateTimeOffset failedAt, CancellationToken ct = default)
@@ -367,22 +379,8 @@ public sealed class AgendaItemRepository : TenantRepository<AgendaItem>, IAgenda
         return await Collection.Find(filter).SortBy(x => x.SortOrder).ToListAsync(ct);
     }
 
-    public async Task<bool> UpdateAsync(AgendaItem item, int expectedVersion, CancellationToken ct = default)
-    {
-        item.Version = expectedVersion + 1;
-        item.UpdatedAt = DateTimeOffset.UtcNow;
-        var filter = Builders<AgendaItem>.Filter.And(
-            ExecutionFilter,
-            Builders<AgendaItem>.Filter.Eq(x => x.Id, item.Id),
-            Builders<AgendaItem>.Filter.Eq(x => x.Version, expectedVersion));
-
-        var previous = await Collection.FindOneAndReplaceAsync(
-            filter,
-            item,
-            new FindOneAndReplaceOptions<AgendaItem> { ReturnDocument = ReturnDocument.Before },
-            ct);
-        return previous is not null;
-    }
+    public Task<bool> UpdateAsync(AgendaItem item, int expectedVersion, CancellationToken ct = default)
+        => ReadVersionWrites.ReplaceAsync(Collection, ExecutionFilter, item, expectedVersion, ct);
 }
 
 /// <summary>Raw storage for <see cref="MeetingType"/>.</summary>
@@ -404,22 +402,8 @@ public sealed class MeetingTypeRepository : TenantRepository<MeetingType>, IMeet
         return Collection.Find(filter).FirstOrDefaultAsync(ct);
     }
 
-    public async Task<bool> UpdateAsync(MeetingType type, int expectedVersion, CancellationToken ct = default)
-    {
-        type.Version = expectedVersion + 1;
-        type.UpdatedAt = DateTimeOffset.UtcNow;
-        var filter = Builders<MeetingType>.Filter.And(
-            ExecutionFilter,
-            Builders<MeetingType>.Filter.Eq(x => x.Id, type.Id),
-            Builders<MeetingType>.Filter.Eq(x => x.Version, expectedVersion));
-
-        var previous = await Collection.FindOneAndReplaceAsync(
-            filter,
-            type,
-            new FindOneAndReplaceOptions<MeetingType> { ReturnDocument = ReturnDocument.Before },
-            ct);
-        return previous is not null;
-    }
+    public Task<bool> UpdateAsync(MeetingType type, int expectedVersion, CancellationToken ct = default)
+        => ReadVersionWrites.ReplaceAsync(Collection, ExecutionFilter, type, expectedVersion, ct);
 }
 
 /// <summary>Raw storage for <see cref="MeetingMinutesVersion"/> — MOD-0357 S6. See the interface's own doc
@@ -427,9 +411,12 @@ public sealed class MeetingTypeRepository : TenantRepository<MeetingType>, IMeet
 public sealed class MeetingMinutesVersionRepository
     : TenantRepository<MeetingMinutesVersion>, IMeetingMinutesVersionRepository
 {
+    private readonly IPlatformDbContext _dbContext;
+
     public MeetingMinutesVersionRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
         : base(dbContext.Database, tenantContext, PlatformCollections.MeetingMinutesVersions)
     {
+        _dbContext = dbContext;
     }
 
     /// <summary>The one place a <c>MongoWriteException</c> from THIS collection is allowed to be caught
@@ -440,6 +427,23 @@ public sealed class MeetingMinutesVersionRepository
         try
         {
             return await CreateAsync(version, ct);
+        }
+        catch (MongoWriteException exception) when (
+            exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>BL-533 — the same insert inside the caller's Platform transaction (a correction). A refusal by the unique
+    /// index aborts the transaction on the server; the caller aborts its side and answers 409.</summary>
+    public async Task<MeetingMinutesVersion?> TryCreateAsync(
+        IPlatformTransactionSession session, MeetingMinutesVersion version, CancellationToken ct = default)
+    {
+        try
+        {
+            return await ReadVersionWrites.InsertAsync(
+                Collection, PlatformMongoTransactionSession.Require(session, _dbContext), version, TenantContext.TenantId, ct);
         }
         catch (MongoWriteException exception) when (
             exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
@@ -482,22 +486,13 @@ public sealed class MeetingMinutesVersionRepository
         return await Collection.Find(filter).ToListAsync(ct);
     }
 
-    public async Task<bool> UpdateAsync(MeetingMinutesVersion version, int expectedVersion, CancellationToken ct = default)
-    {
-        version.Version = expectedVersion + 1;
-        version.UpdatedAt = DateTimeOffset.UtcNow;
-        var filter = Builders<MeetingMinutesVersion>.Filter.And(
-            ExecutionFilter,
-            Builders<MeetingMinutesVersion>.Filter.Eq(x => x.Id, version.Id),
-            Builders<MeetingMinutesVersion>.Filter.Eq(x => x.Version, expectedVersion));
+    public Task<bool> UpdateAsync(MeetingMinutesVersion version, int expectedVersion, CancellationToken ct = default)
+        => ReadVersionWrites.ReplaceAsync(Collection, ExecutionFilter, version, expectedVersion, ct);
 
-        var previous = await Collection.FindOneAndReplaceAsync(
-            filter,
-            version,
-            new FindOneAndReplaceOptions<MeetingMinutesVersion> { ReturnDocument = ReturnDocument.Before },
-            ct);
-        return previous is not null;
-    }
+    public Task<bool> UpdateAsync(
+        IPlatformTransactionSession session, MeetingMinutesVersion version, int expectedVersion, CancellationToken ct = default)
+        => ReadVersionWrites.ReplaceAsync(
+            Collection, PlatformMongoTransactionSession.Require(session, _dbContext), ExecutionFilter, version, expectedVersion, ct);
 }
 
 /// <summary>Raw storage for <see cref="MeetingSeries"/> (MOD-0357 S11).</summary>
@@ -542,15 +537,6 @@ public sealed class MeetingSeriesRepository : TenantRepository<MeetingSeries>, I
         return Collection.Find(filter).FirstOrDefaultAsync(ct);
     }
 
-    public async Task<bool> UpdateAsync(MeetingSeries series, int expectedVersion, CancellationToken ct = default)
-    {
-        series.Version = expectedVersion + 1;
-        series.UpdatedAt = DateTimeOffset.UtcNow;
-        var filter = Builders<MeetingSeries>.Filter.And(
-            ExecutionFilter,
-            Builders<MeetingSeries>.Filter.Eq(x => x.Id, series.Id),
-            Builders<MeetingSeries>.Filter.Eq(x => x.Version, expectedVersion));
-        var result = await Collection.ReplaceOneAsync(filter, series, new ReplaceOptions(), ct);
-        return result.IsAcknowledged && result.ModifiedCount == 1;
-    }
+    public Task<bool> UpdateAsync(MeetingSeries series, int expectedVersion, CancellationToken ct = default)
+        => ReadVersionWrites.ReplaceAsync(Collection, ExecutionFilter, series, expectedVersion, ct);
 }

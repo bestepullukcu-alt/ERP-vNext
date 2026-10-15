@@ -12,6 +12,9 @@ namespace Diten.Platform.API.Controllers.Platform;
 [ApiController]
 [Route("api/platform/tenants/{tenantId:guid}/commercial/subscription")]
 [Authorize(Policy = "PlatformActor")]
+// BL-521 — a partner administrator reaches it only for a tenant it is allowed (else 404); it reads the subscription,
+// every subscription write is platform administrators' (FIX1 F4, closed until the owner opens it).
+[PartnerAdminScope("tenantId")]
 public sealed class TenantCommercialSubscriptionsController : CustomBaseController
 {
     private readonly IMediator _mediator;
@@ -63,6 +66,7 @@ public sealed class TenantCommercialSubscriptionsController : CustomBaseControll
 
     [HttpPost]
     [HasPermission("platform.tenants.commercial.subscription.assign")]
+    [Authorize(Policy = "PlatformAdminOnly")] // BL-521 FIX1 F4
     public async Task<IActionResult> Assign(Guid tenantId, [FromBody] AssignPlanToTenantRequest request, CancellationToken ct)
     {
         var response = await _mediator.Send(new AssignPlanToTenantCommand(tenantId, request), ct);
@@ -71,6 +75,7 @@ public sealed class TenantCommercialSubscriptionsController : CustomBaseControll
 
     [HttpPost("{subscriptionId:guid}/activate")]
     [HasPermission("platform.tenants.commercial.subscription.activate")]
+    [Authorize(Policy = "PlatformAdminOnly")] // BL-521 FIX1 F4
     public async Task<IActionResult> Activate(Guid tenantId, Guid subscriptionId, [FromBody] ActivateTenantSubscriptionRequest request, CancellationToken ct)
     {
         var response = await _mediator.Send(new ActivateTenantSubscriptionCommand(tenantId, subscriptionId, request), ct);
@@ -79,6 +84,7 @@ public sealed class TenantCommercialSubscriptionsController : CustomBaseControll
 
     [HttpPost("{subscriptionId:guid}/cancel")]
     [HasPermission("platform.tenants.commercial.subscription.cancel")]
+    [Authorize(Policy = "PlatformAdminOnly")] // BL-521 FIX1 F4
     public async Task<IActionResult> Cancel(Guid tenantId, Guid subscriptionId, [FromBody] CancelTenantSubscriptionRequest request, CancellationToken ct)
     {
         var response = await _mediator.Send(new CancelTenantSubscriptionCommand(tenantId, subscriptionId, request), ct);
@@ -87,6 +93,7 @@ public sealed class TenantCommercialSubscriptionsController : CustomBaseControll
 
     [HttpPost("{subscriptionId:guid}/renew")]
     [HasPermission("platform.tenants.commercial.subscription.renew")]
+    [Authorize(Policy = "PlatformAdminOnly")] // BL-521 FIX1 F4
     public async Task<IActionResult> Renew(Guid tenantId, Guid subscriptionId, [FromBody] RenewTenantSubscriptionRequest request, CancellationToken ct)
     {
         var response = await _mediator.Send(new RenewTenantSubscriptionCommand(tenantId, subscriptionId, request), ct);
@@ -95,6 +102,7 @@ public sealed class TenantCommercialSubscriptionsController : CustomBaseControll
 
     [HttpPost("{subscriptionId:guid}/expire")]
     [HasPermission("platform.tenants.commercial.subscription.expire")]
+    [Authorize(Policy = "PlatformAdminOnly")] // BL-521 FIX1 F4
     public async Task<IActionResult> Expire(Guid tenantId, Guid subscriptionId, [FromBody] byte[]? rowVersion, CancellationToken ct)
     {
         var response = await _mediator.Send(new ExpireTenantSubscriptionCommand(tenantId, subscriptionId, rowVersion), ct);
@@ -103,6 +111,7 @@ public sealed class TenantCommercialSubscriptionsController : CustomBaseControll
 
     [HttpPost("{subscriptionId:guid}/suspend")]
     [HasPermission("platform.tenants.commercial.subscription.suspend")]
+    [Authorize(Policy = "PlatformAdminOnly")] // BL-521 FIX1 F4
     public async Task<IActionResult> Suspend(Guid tenantId, Guid subscriptionId, [FromBody] SuspendTenantSubscriptionRequest request, CancellationToken ct)
     {
         var response = await _mediator.Send(new SuspendTenantSubscriptionCommand(tenantId, subscriptionId, request), ct);
@@ -111,6 +120,7 @@ public sealed class TenantCommercialSubscriptionsController : CustomBaseControll
 
     [HttpPost("{subscriptionId:guid}/reactivate")]
     [HasPermission("platform.tenants.commercial.subscription.reactivate")]
+    [Authorize(Policy = "PlatformAdminOnly")] // BL-521 FIX1 F4
     public async Task<IActionResult> Reactivate(Guid tenantId, Guid subscriptionId, [FromBody] ReactivateTenantSubscriptionRequest request, CancellationToken ct)
     {
         var response = await _mediator.Send(new ReactivateTenantSubscriptionCommand(tenantId, subscriptionId, request), ct);

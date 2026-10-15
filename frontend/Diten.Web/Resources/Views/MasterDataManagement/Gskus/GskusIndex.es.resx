@@ -8,4 +8,70 @@
   <data name="GeneralInformation" xml:space="preserve"><value>Información general</value></data><data name="Id" xml:space="preserve"><value>Identificador</value></data><data name="Version" xml:space="preserve"><value>Versión</value></data><data name="CreatedAt" xml:space="preserve"><value>Fecha de creación</value></data><data name="UpdatedAt" xml:space="preserve"><value>Fecha de actualización</value></data><data name="GskuSearch" xml:space="preserve"><value>Búsqueda de GSKU</value></data><data name="GskuSearchPlaceholder" xml:space="preserve"><value>GSKU, revisión o producto global</value></data>
   <data name="CreateConfirmation" xml:space="preserve"><value>¿Crear el primer GSKU de este producto global?</value></data><data name="CreateSuccessWithIdentifiers" xml:space="preserve"><value>Se creó el GSKU {0} con la revisión {1}.</value></data><data name="CreateReconciliationPending" xml:space="preserve"><value>La conciliación está pendiente. Este intento sigue abierto y no se ha indicado como correcto.</value></data><data name="OptionsEmpty" xml:space="preserve"><value>No hay productos globales aptos ni unidades verificadas disponibles.</value></data>
   <data name="ErrorUnauthorized" xml:space="preserve"><value>Su sesión ha caducado. Inicie sesión de nuevo.</value></data><data name="ErrorForbidden" xml:space="preserve"><value>No tiene permiso para realizar esta acción de GSKU.</value></data><data name="ErrorNotFound" xml:space="preserve"><value>No se encontró el GSKU o el producto global.</value></data><data name="ErrorConflict" xml:space="preserve"><value>La solicitud entra en conflicto con los datos GSKU existentes.</value></data><data name="ErrorValidation" xml:space="preserve"><value>Revise el producto global, la cantidad y la unidad.</value></data><data name="ErrorGateway" xml:space="preserve"><value>El servicio GSKU no está disponible actualmente.</value></data><data name="ErrorProviderUnavailable" xml:space="preserve"><value>Los datos de referencia verificados no están disponibles. Inténtelo más tarde.</value></data><data name="ErrorProviderTimeout" xml:space="preserve"><value>Los datos de referencia verificados no respondieron a tiempo. Inténtelo de nuevo.</value></data><data name="ErrorInvalidFormAttempt" xml:space="preserve"><value>Este intento de creación falta, ha caducado o no es válido. Actualice la página e inténtelo de nuevo.</value></data>
+  <data name="SubmitIdentity" xml:space="preserve"><value>Enviar para aprobación</value></data><data name="SubmitConfirmation" xml:space="preserve"><value>¿Enviar este par de identidades GSKU para aprobación?</value></data><data name="SubmitPendingSuccess" xml:space="preserve"><value>El par de identidades GSKU se envió y está pendiente de aprobación.</value></data><data name="LifecycleStateChanged" xml:space="preserve"><value>El estado del ciclo de vida cambió. Se cargó el registro más reciente.</value></data><data name="ErrorServiceUnavailable" xml:space="preserve"><value>El servicio de ciclo de vida no está disponible. Inténtelo más tarde.</value></data><data name="ErrorTimeout" xml:space="preserve"><value>La solicitud de ciclo de vida agotó el tiempo de espera. Inténtelo de nuevo.</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Editar borrador GSKU</value></data><data name="EditDraft" xml:space="preserve"><value>Editar borrador</value></data><data name="UpdateDraft" xml:space="preserve"><value>Actualizar borrador</value></data><data name="UpdateConfirmation" xml:space="preserve"><value>¿Actualizar este borrador GSKU?</value></data><data name="UpdateSuccess" xml:space="preserve"><value>El borrador GSKU se actualizó.</value></data><data name="WithdrawApproval" xml:space="preserve"><value>Retirar solicitud de aprobación</value></data><data name="WithdrawConfirmation" xml:space="preserve"><value>¿Retirar esta solicitud de aprobación de identidad GSKU?</value></data><data name="WithdrawSuccess" xml:space="preserve"><value>La solicitud de aprobación se retiró y el GSKU volvió a Borrador.</value></data>
+  <data name="WithdrawPending" xml:space="preserve"><value>El retiro todavía se está procesando. Actualice antes de volver a intentarlo.</value></data>
+  <data name="FormTitleCorrection" xml:space="preserve"><value>Solicitar corrección de GSKU</value></data>
+  <data name="RequestCorrection" xml:space="preserve"><value>Solicitar corrección</value></data>
+  <data name="CorrectionConfirmation" xml:space="preserve"><value>¿Enviar esta corrección de empaque GSKU para aprobación?</value></data>
+  <data name="CorrectionPending" xml:space="preserve"><value>La corrección de GSKU está pendiente de aprobación.</value></data>
+  <data name="CorrectionCompleted" xml:space="preserve"><value>Se aplicó la corrección de GSKU.</value></data>
+  <data name="RequestRetirement" xml:space="preserve"><value>Solicitar retirada</value></data>
+  <data name="RetirementRequestConfirmation" xml:space="preserve"><value>¿Solicitar la retirada de este par de identidades GSKU aprobado?</value></data>
+  <data name="RetirementRequestReasonLabel" xml:space="preserve"><value>Motivo de la solicitud de retirada</value></data>
+  <data name="RetirementRequestReasonRequired" xml:space="preserve"><value>Se requiere un motivo de hasta 128 caracteres.</value></data>
+  <data name="RetirementRequestReasonInvalid" xml:space="preserve"><value>El motivo contiene caracteres de control no admitidos.</value></data>
+  <data name="RetirementRequestedSuccess" xml:space="preserve"><value>La solicitud de retirada se envió para aprobación.</value></data>
+  <data name="ErrorParentNotApproved" xml:space="preserve"><value>El producto global de este GSKU aún no está aprobado. Haga aprobar primero el producto global y luego envíe el GSKU.</value></data>
+  <data name="ErrorApprovalTemplateMissing" xml:space="preserve"><value>La plantilla de aprobación de GSKU aún no está configurada, por lo que no se envió nada. Pida a su administrador que la cree y la publique, y vuelva a enviar.</value></data>
+  <data name="ErrorSubmitInFlight" xml:space="preserve"><value>Este GSKU se está enviando para aprobación. No se puede editar hasta que el envío llegue al motor de aprobación.</value></data>
+  <data name="ErrorDependentIdentitiesExist" xml:space="preserve"><value>Este GSKU todavía tiene SKU locales o productos terminados sin retirar. Retírelos primero.</value></data>
+  <data name="ErrorApprovalChanging" xml:space="preserve"><value>La aprobación está cambiando en este momento. Vuelva a intentarlo en un instante.</value></data>
+  <data name="IdentityNotAppliedParent" xml:space="preserve"><value>La aprobación se concedió pero no se pudo aplicar: el producto global ya no está aprobado. El GSKU vuelve a ser un borrador; corríjalo y envíelo de nuevo.</value></data>
+  <data name="IdentityNotAppliedReference" xml:space="preserve"><value>La aprobación se concedió pero no se pudo aplicar: la unidad de embalaje o su aplicabilidad ya no se puede seleccionar. El GSKU vuelve a ser un borrador; elija un valor válido y envíelo de nuevo.</value></data>
+  <data name="IdentityNotAppliedGeneric" xml:space="preserve"><value>La aprobación se concedió pero no se pudo aplicar. El GSKU vuelve a ser un borrador; revíselo y envíelo de nuevo.</value></data>
+  <data name="ErrorWithdrawalPending" xml:space="preserve"><value>Una retirada anterior de esta aprobación, con un motivo o comentario distinto, todavía se está procesando. Repita la retirada con el mismo motivo y comentario que antes, o espere a que termine.</value></data>
+  <data name="IdentityNotAppliedSelfApproval" xml:space="preserve"><value>La aprobación la decidió la misma persona que la envió, lo cual no se acepta. El GSKU vuelve a ser un borrador: envíelo para que decida otra persona.</value></data>
+  <data name="IdentityStateInFlight" xml:space="preserve"><value>Este GSKU se ha enviado para aprobación y el envío está en camino al motor de aprobación. No se puede editar hasta entonces; no es necesaria ninguna acción.</value></data>
+  <data name="IdentityStateResubmitRequired" xml:space="preserve"><value>El envío no llegó al motor de aprobación. Vuelva a enviarlo o edite primero el borrador.</value></data>
+  <data name="IdentityStateReconciliationRequired" xml:space="preserve"><value>Este envío espera una conciliación. Cuando quien lo envió vuelve a enviarlo, se vuelve a leer el servicio de aprobación y el envío continúa desde donde está; si eso no lo resuelve, debe hacerlo un administrador.</value></data>
+  <data name="IdentityStateSubmissionEnded" xml:space="preserve"><value>El último envío terminó antes de que el motor de aprobación iniciara nada. Edite el borrador y vuelva a enviarlo.</value></data>
+  <data name="ErrorReconciliationRequired" xml:space="preserve"><value>Este envío espera una conciliación. Cuando quien lo envió vuelve a enviarlo, se vuelve a leer el servicio de aprobación y el envío continúa desde donde está; si eso no lo resuelve, debe hacerlo un administrador.</value></data>
+  <data name="ErrorSubmissionEnded" xml:space="preserve"><value>Este envío terminó antes de llegar al motor de aprobación y no se puede repetir tal cual. Edite el borrador y vuelva a enviarlo.</value></data>
+  <data name="ErrorDraftChanged" xml:space="preserve"><value>El borrador cambió mientras se enviaba. Vuelva a abrirlo y envíe la versión actual.</value></data>
+  <data name="ProductPickerLoadFailed" xml:space="preserve"><value>No se pudo cargar la lista de productos globales. Compruebe su conexión e inténtelo de nuevo.</value></data>
+  <data name="ProductPickerNoResults" xml:space="preserve"><value>Ningún producto global referenciable coincide con esta búsqueda.</value></data>
+  <data name="ProductPickerSearching" xml:space="preserve"><value>Buscando productos globales…</value></data>
+  <data name="ProductPickerLoadingMore" xml:space="preserve"><value>Cargando más productos globales…</value></data>
+  <data name="IdentityNotAppliedClosedWithoutDecision" xml:space="preserve"><value>La aprobación se cerró sin una decisión (cancelada o vencida). El borrador puede editarse y enviarse de nuevo.</value></data>
+  <data name="IdentityApprovalNoteRetiredAfterApproval" xml:space="preserve"><value>Una unidad que usa este GSKU se retiró después de la aprobación. La aprobación sigue vigente: se aplicó con los valores validados al enviarla; la unidad retirada no puede elegirse para registros nuevos.</value></data>
+  <data name="RepeatRequest" xml:space="preserve"><value>Volver a enviar la solicitud</value></data>
+  <data name="RepeatRequestConfirmation" xml:space="preserve"><value>¿Volver a enviar la misma solicitud? Se vuelve a leer el servicio de aprobación y la solicitud continúa desde donde está.</value></data>
+  <data name="RepeatRequestWaiting" xml:space="preserve"><value>La aprobación sigue abierta en el Centro de tareas; la solicitud espera su decisión.</value></data>
+  <data name="RepeatRequestSettled" xml:space="preserve"><value>La solicitud se volvió a leer y quedó resuelta.</value></data>
+  <data name="LifecycleRequestStuckRequester" xml:space="preserve"><value>Su solicitud sobre este GSKU espera una conciliación y lo mantiene bloqueado. Vuelva a enviarla: se vuelve a leer el servicio de aprobación; si eso no lo resuelve, contacte con su administrador.</value></data>
+  <data name="LifecycleRequestStuckOther" xml:space="preserve"><value>Una solicitud sobre este GSKU espera una conciliación y lo mantiene bloqueado. Solo quien la hizo puede volver a enviarla; de lo contrario, debe conciliarla un administrador.</value></data>
+  <data name="IdentityStateReconciliationOtherUser" xml:space="preserve"><value>Este envío espera una conciliación. Solo quien lo envió puede volver a enviarlo; de lo contrario, debe conciliarlo un administrador.</value></data>
+  <data name="CurrentPageOnly" xml:space="preserve">
+    <value>Solo la página actual</value>
+  </data>
+  <data name="StockFlagLotControlled" xml:space="preserve">
+    <value>el control por lote</value>
+  </data>
+  <data name="StockDayRetest" xml:space="preserve">
+    <value>el intervalo de reanálisis</value>
+  </data>
+  <data name="StockDayMinRemaining" xml:space="preserve">
+    <value>la vida útil residual mínima</value>
+  </data>
+  <data name="SubmitNeedsStockFlags" xml:space="preserve">
+    <value>El comportamiento de stock está incompleto o es incoherente, por lo que aún no se puede enviar a aprobación. Complételo en Comportamiento de stock.</value>
+  </data>
+  <data name="ListJoinTwo" xml:space="preserve">
+    <value>{0} y {1}</value>
+  </data>
+  <data name="ListSeparator" xml:space="preserve">
+    <value>, </value>
+  </data>
+  <data name="StockDaysExceedShelfLife" xml:space="preserve"><value>La vida útil debe ser de al menos {1} días: {0} no puede superarla.</value></data>
 </root>
