@@ -203,6 +203,15 @@ public class CiServiceTestsGuardTests
         Assert.Contains("RABBITMQ_NOT_READY", step, StringComparison.Ordinal);
         Assert.Contains("Eventing__RabbitMq__IntegrationTestsEnabled=true", step, StringComparison.Ordinal);
         Assert.DoesNotMatch(@"(?i)(Username|Password|RABBITMQ_DEFAULT_)", step);
+        // WP-CI-SERVICE-TESTS-05 (BL-646 item D): a CLI run as root before the server is up creates the Erlang cookie
+        // as root and the broker dies with eacces (PR #144). Every CLI call runs as the cookie's owner, the TCP connect
+        // comes before the first one, and no cookie value is written.
+        var execs = Regex.Matches(step, @"docker exec\b[^\n]*");
+        Assert.NotEmpty(execs);
+        Assert.All(execs, e => Assert.StartsWith("docker exec -u rabbitmq rabbitmq ", e.Value, StringComparison.Ordinal));
+        Assert.True(step.IndexOf("/dev/tcp/", StringComparison.Ordinal) is var tcp && tcp >= 0 && tcp < execs[0].Index,
+            "the TCP connect must short-circuit before the first CLI call");
+        Assert.DoesNotMatch(@"(?i)ERLANG_COOKIE", step);
     }
 
     // BL-590 item 4: Auth rows carry the owned-Mongo flag (BL-570 FIX3 makes it bite; today it is harmless).
@@ -411,7 +420,9 @@ public class CiServiceTestsGuardTests
     {
         ["agent-adapters.yml"] = 0,
         ["phase1-gates.yml"] = 0,
-        ["service-tests.yml"] = 6
+        // WP-CI-SERVICE-TESTS-05: 6 → 7 — the install step's DITEN_FU02_MONGOD_PATH line (BL-646 item 1), pinned below by
+        // The_audit_outbox_mongod_variable_is_set_by_the_install_step_only.
+        ["service-tests.yml"] = 7
     };
 
     [Fact]
@@ -521,6 +532,28 @@ public class CiServiceTestsGuardTests
         Assert.All(assignments, assignment =>
             Assert.True(assignment.Index > installAt && assignment.Index < installAt + Step(code, "Install mongod (pinned version and digest)").Length,
                 "a mongod variable is assigned outside the install step"));
+    }
+
+    // WP-CI-SERVICE-TESTS-05 (BL-646 item 1): Platform's audit-outbox temporal fixture finds its mongod through
+    // DITEN_FU02_MONGOD_PATH. It is set ONCE, by the (unconditional) install step, to the same pinned binary — never by an
+    // env: key and never anywhere else (an empty or other value would turn 325 tests into "mongod required").
+    [Fact]
+    public void The_audit_outbox_mongod_variable_is_set_by_the_install_step_only()
+    {
+        var workflow = WorkflowText("service-tests.yml");
+        var code = Code(workflow);
+        var install = Step(code, "Install mongod (pinned version and digest)");
+        Assert.Contains("echo \"DITEN_FU02_MONGOD_PATH=$bin/mongod\" >> \"$GITHUB_ENV\"", install, StringComparison.Ordinal);
+        Assert.True(KeyCount(code, "DITEN_FU02_MONGOD_PATH") == 0, "an env: key (block or flow, any case) overrides DITEN_FU02_MONGOD_PATH");
+        var assignments = Regex.Matches(code, @"(?i)DITEN_FU02_MONGOD_PATH[ \t]*(?:=|<<)").ToArray();
+        Assert.True(assignments.Length == 1, $"{assignments.Length} assignments of DITEN_FU02_MONGOD_PATH, expected the install step's 1");
+        var installAt = code.IndexOf("- name: Install mongod (pinned version and digest)\n", StringComparison.Ordinal);
+        Assert.True(assignments[0].Index > installAt && assignments[0].Index < installAt + install.Length,
+            "DITEN_FU02_MONGOD_PATH is assigned outside the install step");
+        // The fixture reads exactly this name (non-vacuity: a renamed variable in the test would leave this line dead).
+        var fixture = File.ReadAllText(Path.Combine(RepoRoot(),
+            "services/Diten.Platform/tests/Diten.Platform.Application.Tests/Audit/AuditOutboxTemporalStorageMigrationMongoTests.cs"));
+        Assert.Contains("MongodPathVariable = \"DITEN_FU02_MONGOD_PATH\"", fixture, StringComparison.Ordinal);
     }
 
     // FIX1: every test class that opens a LIVE broker joins LiveRabbitMqCollection (one at a time) — a third one running
@@ -767,6 +800,46 @@ public class CiServiceTestsGuardTests
         Assert.True(code == 1, output);
     }
 
+    // WP-CI-SERVICE-TESTS-05: a backlog item is ONE reason code ("BL-534: …" is BL-534): an allow-list line names exactly that
+    // item. A neighbouring item, a bare "BL" or the same code in another suite is still red.
+    [Theory]
+    [InlineData("BL-534: 2026-10-04 measurement; owner decision pending", "platform-app", 0)]
+    [InlineData("BL-535: another backlog item", "platform-app", 1)]
+    [InlineData("BL: no item number", "platform-app", 1)]
+    [InlineData("BL-534: 2026-10-04 measurement; owner decision pending", "mdm-api", 1)]
+    public void A_backlog_item_code_allows_only_its_own_line(string reason, string suite, int expected)
+    {
+        var allowlist = Path.Combine(Path.GetTempPath(), "bl646-" + Guid.NewGuid().ToString("N") + ".tsv");
+        var trx = Path.Combine(Path.GetTempPath(), "bl646-" + Guid.NewGuid().ToString("N") + ".trx");
+        File.WriteAllText(allowlist, "platform-app\tBL-534\t2\ttest line\n");
+        File.WriteAllText(trx, SkippedTrx(("Diten.A.Passes", null), ("Diten.A.Skipped", reason)));
+        try
+        {
+            var (code, output) = RunScriptOn(trx, suite, allowlist);
+            Assert.True(code == expected, output);
+            if (expected == 0)
+            {
+                Assert.Contains("allowed skips for suite platform-app: 1 (BL-534 x1)", output, StringComparison.Ordinal);
+            }
+        }
+        finally
+        {
+            File.Delete(allowlist);
+            File.Delete(trx);
+        }
+    }
+
+    // A TRX with one result per entry: Passed when the reason is null, otherwise NotExecuted with that skip reason.
+    private static string SkippedTrx(params (string Name, string? SkipReason)[] results) =>
+        "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+        + "<TestRun xmlns=\"http://microsoft.com/schemas/VisualStudio/TeamTest/2010\"><Results>"
+        + string.Concat(results.Select(result => result.SkipReason is null
+            ? $"<UnitTestResult testName=\"{result.Name}\" outcome=\"Passed\" />"
+            : $"<UnitTestResult testName=\"{result.Name}\" outcome=\"NotExecuted\"><Output><ErrorInfo><Message>{result.SkipReason}</Message></ErrorInfo></Output></UnitTestResult>"))
+        + "</Results><ResultSummary outcome=\"Completed\"><Counters "
+        + $"total=\"{results.Length}\" executed=\"{results.Count(r => r.SkipReason is null)}\" "
+        + $"notExecuted=\"{results.Count(r => r.SkipReason is not null)}\" /></ResultSummary></TestRun>";
+
     private static string Trx(params (string Name, string Outcome)[] results) =>
         "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
         + "<TestRun xmlns=\"http://microsoft.com/schemas/VisualStudio/TeamTest/2010\"><Results>"
@@ -789,7 +862,7 @@ public class CiServiceTestsGuardTests
         }
     }
 
-    private static (int Code, string Output) RunScriptOn(string trxPath)
+    private static (int Code, string Output) RunScriptOn(string trxPath, string? suite = null, string? allowlist = null)
     {
         var start = new ProcessStartInfo("python3")
         {
@@ -798,6 +871,18 @@ public class CiServiceTestsGuardTests
             UseShellExecute = false,
         };
         start.ArgumentList.Add(Path.Combine(RepoRoot(), ScriptPath));
+        if (suite is not null)
+        {
+            start.ArgumentList.Add("--suite");
+            start.ArgumentList.Add(suite);
+        }
+
+        if (allowlist is not null)
+        {
+            start.ArgumentList.Add("--allowlist");
+            start.ArgumentList.Add(allowlist);
+        }
+
         start.ArgumentList.Add(trxPath);
         using var process = Process.Start(start)!;
         var output = process.StandardOutput.ReadToEnd() + process.StandardError.ReadToEnd();

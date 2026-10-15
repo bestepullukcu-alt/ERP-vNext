@@ -278,7 +278,7 @@ public sealed class TaskCommentTests
     {
         var controller = File.ReadAllText(Path.Combine(
             RepositoryRoot(),
-            "services/Diten.Platform/src/Diten.Platform.Api/Controllers/TasksController.cs"));
+            "services/Diten.Platform/src/Diten.Platform.API/Controllers/TasksController.cs"));
 
         Assert.Contains("HttpPut(\"{id:guid}/comments/{commentId:guid}", controller, StringComparison.Ordinal);
         Assert.Contains("HttpDelete(\"{id:guid}/comments/{commentId:guid}", controller, StringComparison.Ordinal);

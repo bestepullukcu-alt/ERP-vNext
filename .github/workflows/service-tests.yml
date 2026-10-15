@@ -125,6 +125,11 @@ jobs:
           # Platform's disposable mongod, and Auth's acceptance host (a directory), use this binary.
           echo "DITEN_TEST_MONGOD=$bin/mongod" >> "$GITHUB_ENV"
           echo "DITEN_ITEST_MONGOD_BIN_DIR=$bin" >> "$GITHUB_ENV"
+          # WP-CI-SERVICE-TESTS-05 (BL-646 item 1): Platform's audit-outbox temporal fixture (AuditOutboxTemporalReplicaSetFixture,
+          # 4 classes, 325 tests in PR #144) starts its OWN standalone + replica-set mongod from THIS variable; without it the
+          # fixture searches PATH and fixed install paths, finds nothing on the runner, and every test is red with
+          # AUDIT_OUTBOX_TEMPORAL_TEST_MONGOD_REQUIRED. The same pinned binary; still no job-local mongod.
+          echo "DITEN_FU02_MONGOD_PATH=$bin/mongod" >> "$GITHUB_ENV"
 
       # FIX1 (measured): MDM's cross-service tests load Platform.API's and MDM.Api's RELEASE assemblies from their bin
       # (bin/Release/net8.0 — "run the Platform Release build first"); the job's Debug test build does not produce them,
@@ -151,6 +156,13 @@ jobs:
       # BL-590: Platform.Eventing's integration tests need a real broker. A step, not a `services:` container: a service
       # cannot be started for one matrix row only. --network host: the default guest user may only log in over
       # loopback, so no user or password is written anywhere (guest lives and dies with this job's container).
+      # WP-CI-SERVICE-TESTS-05 (BL-646 item D; PR #144 job 116035243722): the broker did not start slowly, it crashed —
+      # "Error when reading /var/lib/rabbitmq/.erlang.cookie: eacces". The readiness probe was `docker exec` as ROOT
+      # right after `docker run`; when the CLI wins the race it creates the cookie owned by root (mode 400) and the
+      # server, running as the image's rabbitmq user, cannot read it. So: (1) a TCP connect from the runner comes FIRST
+      # and short-circuits the rest — no CLI runs before the server has written its own cookie; (2) every CLI call runs
+      # as `-u rabbitmq`, the cookie's owner; (3) a container that has exited fails at once with its log. No cookie value
+      # is written anywhere (the server generates its own; nothing here is a secret). Budget back to 120 s.
       - name: Start RabbitMQ (Eventing)
         if: matrix.suite == 'platform-eventing'
         env:
@@ -159,13 +171,20 @@ jobs:
           set -euo pipefail
           docker run -d --name rabbitmq --network host "$RABBITMQ_IMAGE"
           for attempt in $(seq 1 60); do
-            if docker exec rabbitmq rabbitmq-diagnostics -q check_port_connectivity >/dev/null 2>&1; then
-              echo "[rabbitmq] ok — accepting connections after $attempt attempt(s)"
+            if [ "$(docker inspect -f '{{.State.Running}}' rabbitmq)" != "true" ]; then
+              docker logs rabbitmq 2>&1 | tail -80
+              echo "[rabbitmq] *** FAILED *** RABBITMQ_NOT_READY — the container exited (attempt $attempt)"
+              exit 1
+            fi
+            if timeout 2 bash -c "exec 3<>/dev/tcp/127.0.0.1/$RABBITMQ_PORT" 2>/dev/null \
+              && docker exec -u rabbitmq rabbitmq rabbitmq-diagnostics -q check_running >/dev/null 2>&1 \
+              && docker exec -u rabbitmq rabbitmq rabbitmq-diagnostics -q check_port_listener "$RABBITMQ_PORT" >/dev/null 2>&1; then
+              echo "[rabbitmq] ok — accepting a TCP connection, running and listening after $attempt attempt(s)"
               break
             fi
             if [ "$attempt" -eq 60 ]; then
-              docker logs rabbitmq | tail -50
-              echo "[rabbitmq] *** FAILED *** RABBITMQ_NOT_READY — not accepting connections within 120 s"
+              docker logs rabbitmq 2>&1 | tail -80
+              echo "[rabbitmq] *** FAILED *** RABBITMQ_NOT_READY — not accepting / running / listening within 120 s"
               exit 1
             fi
             sleep 2

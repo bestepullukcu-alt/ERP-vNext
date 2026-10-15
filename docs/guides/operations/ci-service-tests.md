@@ -215,6 +215,11 @@ uykudan uyanınca zaman aşımı. Main'in Q121b ölçümü: 49 veritabanı.
 - **Ortam değişkenleri:**
   - `DITEN_TEST_MONGOD`: ikilinin tam yolu. Platform'un geçici mongod / replika kümesi bunu kullanır.
   - `DITEN_ITEST_MONGOD_BIN_DIR`: ikilinin dizini. Auth'un kabul sunucusu bunu kullanır.
+  - `DITEN_FU02_MONGOD_PATH` (WP-CI-SERVICE-TESTS-05, BL-646 madde 1): aynı ikilinin tam yolu. Platform'un denetim-outbox
+    zamansal fikstürü (`AuditOutboxTemporalReplicaSetFixture`, 4 sınıf) kendi tekil + replika mongod'unu bundan açar.
+    Değişken yoksa fikstür PATH'e ve sabit kurulum yollarına bakar; koşucuda bulamaz ve PR #144'teki 325 test
+    `AUDIT_OUTBOX_TEMPORAL_TEST_MONGOD_REQUIRED` ile kırmızıdır. Yalnız kurulum adımında yazılır; bekçi:
+    `The_audit_outbox_mongod_variable_is_set_by_the_install_step_only`.
 - **MDM App** (BL-595) kendi mongod'unu açar: tek yardımcı `MdmTestMongo`. İkiliyi `DITEN_TEST_MONGOD`'dan alır (Auth
   kuralı), rastgele port, geçici dizin, tek düğümlü replika kümesi, yalnız `127.0.0.1`. Değişken yoksa adlı kırmızı
   (`OWNED_TEST_MONGO_UNAVAILABLE`); ortak 27017'ye asla düşmez. Bağlantı ortamdan okunmaz (FIX2): `MDM_TEST_MONGO` yok sayılır;
@@ -236,8 +241,15 @@ uykudan uyanınca zaman aşımı. Main'in Q121b ölçümü: 49 veritabanı.
 - **Sürüm sabit, özetle:** `rabbitmq:4.3.2@sha256:345dd3c1…`, dev ile aynı sürüm (Homebrew rabbitmq 4.3.2). Çoklu mimari
   dizin özeti Docker Hub'dan okundu (2026-10-09), iş dosyasına yazılı.
 - **Servis konteyneri değil, adım:** `services:` bir matris satırı için açılamaz. Adım `docker run --network host`.
-- **Hazırlık beklemesi sınırlı:** `rabbitmq-diagnostics check_port_connectivity`, en çok 60 deneme × 2 sn. Aşılırsa
-  `RABBITMQ_NOT_READY` ve konteyner günlüğünün sonu.
+- **Hazırlık beklemesi sınırlı (WP-CI-SERVICE-TESTS-05, BL-646 madde D):** PR #144'te aracı yavaş açılmadı, çöktü:
+  `Error when reading /var/lib/rabbitmq/.erlang.cookie: eacces`. Eski yoklama `docker run`'ın hemen ardından ROOT olarak
+  `docker exec … rabbitmq-diagnostics` çalıştırıyordu; CLI sunucudan önce davranırsa çerezi root sahipli (mod 400) yaratır,
+  imajın `rabbitmq` kullanıcısıyla çalışan sunucu onu okuyamaz. Şimdi: (1) önce koşucudan 127.0.0.1:5672'ye TCP bağlantısı —
+  bağlanmadıkça hiçbir CLI çalışmaz, çerezi sunucu kendisi yazar; (2) her CLI çağrısı `docker exec -u rabbitmq` (çerezin
+  sahibi): `check_running` + `check_port_listener 5672`; (3) konteyner çıktıysa hemen günlüğüyle kırmızı. En çok 60 deneme ×
+  2 sn (120 sn). Aşılırsa `RABBITMQ_NOT_READY` ve konteyner günlüğünün sonu. Çerez değeri hiçbir yere yazılmaz (gizli değer
+  yok). Bekçi: `RabbitMq_is_pinned_and_waited_for_and_writes_no_credential` (her `docker exec` `-u rabbitmq`, TCP önce,
+  `ERLANG_COOKIE` yok). CI'da ölçülecek.
 - **Kullanıcı yazılmaz:** varsayılan `guest` yalnız loopback'ten girer; `--network host` ile bağlantı loopback'tir. Sır
   yok; kullanıcı konteynerle birlikte ölür.
 - Testlerin okuduğu ayarlar: `Eventing__RabbitMq__IntegrationTestsEnabled=true`, `Eventing__RabbitMq__Host=127.0.0.1`,
@@ -288,6 +300,17 @@ Kurallar:
 - Kabul edilen atlamalar koda göre sayılıp iş günlüğüne yazılır
   (`allowed skips for suite auth-app: 3 (MACOS_ONLY x1, …)`).
 - Listeye satır eklemek Control Tower kararıdır.
+- **Backlog kodu tek koddur (WP-CI-SERVICE-TESTS-05):** neden `BL-534: …` ise kod `BL-534`'tür (`-<sayı>` eki koda dahil),
+  `BL` değil. Bir satır yalnız o maddeyi adlandırır; komşu bir madde (`BL-535`) ya da çıplak `BL` kırmızıdır.
+- **WP-CI-SERVICE-TESTS-05 satırları:**
+  - `platform-app · BL-534 · 2`: `PlatformAdministratorSeedMeasurementTests`'in iki ölçüm testi (BL-534 sahip kararını
+    bekliyordu). Karar verildi (WP-AUTH-ADMIN-BOOTSTRAP-01); o dalın birleşimiyle ikisi de koşan kurala döner: satır o
+    birleşimle silinir, en geç 2026-11-14.
+  - `mdm-api · CONTRACT_LINE_ABSENT · 1`: `ProductMasterContractFixtureTests` fikstürü sözleşme hattının dosyasıyla
+    karşılaştırır (SOURCE.txt, yanındaki worktree); koşucuda o hat hiç yoktur. Atlama nedeni bu kodla başlar. Sahip CT,
+    gözden geçirme 2026-12-31 (süresiz satır yok); hat dosyası CI'a gelirse satır silinir.
+- Python testi listeyi BİREBİR sabitler (`test_the_repository_allowlist_holds_exactly_…`): satır eklemek ya da silmek o testi
+  de değiştirmeyi gerektirir. Desenin birim testi: `BL-534: …` → `BL-534`; `BL`, `BL-`, `BL-534x`, `BL-abc`, boş → kabul yok.
 
 Testleri Python'dadır (`scripts/tests/test_check_trx_no_skipped.py`). phase1 her push'ta koşar
 (`run_phase1_gates.sh`: `python3 -m unittest discover -s scripts/tests`). Mimari bekçisi hem bu satırı hem iş akışının
@@ -342,3 +365,23 @@ python3 scripts/check_page_help_ledger_ceiling.py --base origin/main
 4. **Gerçek regresyon:** test adıyla backlog'a, sahibine.
 
 Hiçbir sınıf "atlansın" diye çözülmez: atlanan test de kırmızıdır.
+
+### BL-646 (PR #144, ilk tam koşu) — WP-CI-SERVICE-TESTS-05
+
+| madde | iş | neden | düzeltme | kanıt |
+|---|---|---|---|---|
+| 1 | platform-app (325) | denetim-outbox fikstürü mongod'u `DITEN_FU02_MONGOD_PATH`'ten arar | kurulum adımı değişkeni yazar | yerelde ölçüldü |
+| 2 | platform-app (2) | `TaskMention`/`TaskComment` testleri `Diten.Platform.Api/…` okur; klasör `Diten.Platform.API` (macOS harf duyarsız, Linux değil) | test yolu `API`; tüm yol sabitleri tarandı, başka eşleşme yok | yerelde ölçüldü (yol); Linux harf duyarlılığı CI'da ölçülecek |
+| 3 | platform-app (2) | `BL-534` ölçüm testleri atlanıyor | adlı satır `BL-534` | yerelde ölçüldü (betik) |
+| A | platform-bgjobs (1) | `appsettings.Development.json` doğrulanmış GSKU pilotunu açıyor; alt sürecin boş veritabanında durum yok → `Verified GSKU operational state is incomplete` (yerelde de kırmızıydı) | testin alt süreç ortamı pilot bölümünü boşaltır; sağlık kuralı aynı | yerelde ölçüldü |
+| B | mdm-api (1) | sözleşme hattı karşılaştırması koşucuda atlanır | atlama kodu + adlı satır (2026-12-31) | yerelde ölçüldü (betik) |
+| C | auth-acceptance-host (3) | test desteği macOS `sysctl` çağırıyor (`EntryPointNotFound`) | `ProcessTiming` Linux dalı (`/proc/<pid>/stat` alan 22 + `btime`), harness onu kullanır; ayrıştırıcı birim testi | ayrıştırıcı yerelde ölçüldü; Linux koşusu CI'da ölçülecek |
+| D | platform-eventing | RabbitMQ çerezi `eacces` (root CLI yarışı) | TCP önce, `docker exec -u rabbitmq`, çıkış anında kırmızı, 120 sn | CI'da ölçülecek |
+| E | inventory-tests (16) | Prism fikstürü npx önbelleğini yalnız Windows yolunda arıyordu | npm'in kendi önbellek yolları | yerelde ölçüldü |
+
+**C'nin sınırı:** karşı süreç doğrulaması (`VerifyPeerIsExpectedApiProcess`) yalnız macOS'tadır ve başka işletim
+sisteminde kapalı başarısız olur. Linux'ta üç `LoginPeerVerificationTests` testi bu yüzden geçer: parola gönderilmez, ama
+PID / başlangıç zamanı karşılaştırması ve yönlendirme reddi o OS reddinin arkasında kalır, yalnız macOS'ta ayrı ayrı
+kanıtlanır. Süreç düzeyindeki testler (`SevenStateSupervisor` koleksiyonu: `proc_listpids`, `kinfo_proc` ebeveyn PID'i,
+macOS `posix_spawn` bayrakları) Linux'ta hâlâ kırmızı olabilir; PR #144'teki `DescriptorAndEofTimingTests` iptali buna
+bağlı görünür. Linux karşılığı (`SO_PEERCRED`, `/proc`) ayrı iştir; karar CT'nin.
