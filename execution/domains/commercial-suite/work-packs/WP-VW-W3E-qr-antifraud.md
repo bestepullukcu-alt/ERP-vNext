@@ -1065,3 +1065,38 @@ KORU/YAPMA: düzenleme ve kaydet onayı davranışı, doğrulama kuralları (thr
 DOĞRULA: Web.Tests (xUnit + RunNode): başlık yapısı (pt-crumb yok), sekmeler _TabCard'dan, eşik listesi v2 + client + düzenle açılışı, geçmiş v2 + server + vekil çevirisi (start / length → page / pageSize; pageSize sınırı), dışa aktarma, UAS-001, 7 dil, tema guard; verify_datatable_page.py yeşil (eşik listesi) + 3 sabotaj (.bak + touch): (1) pt-crumb / h4 geri gelsin → kırmızı; (2) vekil page çevirisini bozsun → kırmızı; (3) eşik tablosundan v2 kalksın → kırmızı. Web tam takım (-o), taban karşılaştırması. Görsel kanıt (AYRI sekme): başlık + sekmeler, eşik listesi + düzenle offcanvas açık (kaydetmeden), geçmiş sayfalama, boş durum, Arapça, açık + koyu, telefon.
 Commit: "fix(web): WP-VW-W3E-E4R2-FIX-c — potential thresholds on the Golden Compact header, shared tab card, thresholds and change history on the Golden Compact DataTable" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
 ```
+
+
+## §37 CT kabul — W3E-E4R2-FIX-a E2 ACCEPTED (2026-10-15) — K-TABS ortak sekme kartı kuruldu
+Test dalına alındı: `fdda0d5eb` (ajan `175850dbd`), çakışmasız.
+
+**Ne geldi:**
+- **Ortak sekme kartı (K-TABS):** yeni `Views/Shared/Components/Tabs/_TabCard.cshtml` + `Models/Tabs/TabCardViewModel` + `wwwroot/assets/js/diten-tabs.js`.
+  - İşaretleme WorkCenter'la birebir (`app.js` ~1238–1262); stil ortak `backbone-custom.css`'ten geliyor, yeni kural yok.
+  - Klavye: ← / → (sağdan sola sayfada yer değiştirir), Home / End. Gezinme sırası yalnız etkin sekmede.
+  - Sayfanın dinleyebileceği `diten:tab-change` olayı. WorkCenter'ın kendi çizimine dokunulmadı.
+- **`Infrastructure/DateFieldFormat`:** kültürün kısa tarih kalıbı → flatpickr biçimi. Organizasyon formlarındaki beş yerel kopyanın aynısı, tek yerde ve test edilebilir.
+- **Kanıt işaretleri:**
+  - Sekmeler artık `_TabCard` ile çiziliyor.
+  - Temsilci özeti ikinci `_ListShell` (v2, istemci modu), DtDefaults'un standart araç çubuğuyla, `createCrudTable` üzerinden.
+  - Sütun önceliği: 800 px'de İşaretler görünür; 375 px'de Başlangıç + İşaretler + eylemler sığıyor (telefonda yalnız bu tablonun hücre boşluğu küçültüldü).
+  - Özel aralık standart tarih çiplerinde (`filter-chip filter-from` / `filter-to`, 172 px). Tarih kültürde gösteriliyor (tr 15.09.2026, ar 15/9/2026), gönderilen değer `yyyy-MM-dd`.
+  - Uygulanmış süzgeç canlı `list.appliedFilters`'tan okunuyor; FU-VF-APPLIED-CLEANUP kapandı.
+- **Kurum QR kodları:** QR durumu Tür'den önce. Bu sayfada tarih alanı yok.
+
+**CT kontrolü:**
+- **Diff:** Razor metinleri kodlanıyor; sekme betiği bağımlılıksız. Ortak dosyalara (`backbone-custom.css`, `diten-datatable.js`, layout) dokunulmadı.
+- **Testler** (CT `-o`): Web tam takım 1799/3. Kırmızılar bilinen 2 `ShipmentDetailsDateNode` + `-o` artefaktı `WorkCenterMenuWithoutPermissions`. Ajan 1800/2, taban 1789/2 (+11).
+- **CT sabotajları (ajanın dokunmadığı kurallar):**
+  - (1) `diten-tabs.js`'te sağdan sola ok yer değişimi kaldırıldı → T2 (rtl) **kırmızı**.
+  - (2) `DateFieldFormat`'ta tek haneli gün `j` → `d` yapıldı → T3 **kırmızı**.
+  - İkisi de md5 ile geri alındı.
+
+**FIX-b / FIX-c için notlar (bu kabulden öğrenilenler):**
+- Sekmeler `_TabCard` + `diten-tabs.js` ile. Gizliyken çizilen tablo `diten:tab-change` olayında yeniden ölçülmeli (`columns.adjust` / `responsive.recalc`); emsal Kanıt işaretleri `index.js`.
+- Aynı sayfada iki `_ListShell` olunca `#skeleton-loader` iki kez çiziliyor. Ortak `revealTable` ilk iskeleti kaldırıyor, yani birincil liste ÖNCE kurulmalı. FIX-c'nin değişiklik geçmişi tablosu bu sıraya uymalı.
+- Tarih alanı gerekirse standart çipler (`filter-from` / `filter-to`) + `DateFieldFormat` (L10n `DateFormat`). Ortak `DitenDateField.enhance` `altInput`'lu alanı yanlış biçimle doğruluyor; emsal Kanıt işaretleri `_Filter.cshtml` + `index.js`.
+
+**Yeni ortak takipler** (yol haritası, platform sahibine):
+- **FU-DT-SKELETON-ID:** iki tablolu sayfada iskelet kimliği tekil değil.
+- **FU-DATEFIELD-ALTINPUT:** `DitenDateField.enhance` `altInput` kullanan alanı görünen biçimle değil `Y-m-d` ile doğruluyor; elle girilen geçerli tarihi silebilir.
