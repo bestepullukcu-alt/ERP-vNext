@@ -26,4 +26,9 @@
   <data name="ErrorBrandNotFound" xml:space="preserve"><value>No se encontró la marca seleccionada. Elija otra marca.</value></data>
   <data name="ErrorBrandArchived" xml:space="preserve"><value>La marca seleccionada está archivada y no se puede vincular. Elija otra marca.</value></data>
   <data name="ErrorBrandNotLinkable" xml:space="preserve"><value>La marca seleccionada no está activa o está fuera de su periodo de vigencia. Elija otra marca.</value></data>
+  <!-- WP-MDM-NO-ELIGIBLE-APPROVER-01: the product-identity maker codes said in words. Sentences shared with the GSKU screen (GskuRefusals). -->
+  <data name="ErrorApprovalSetupIncomplete" xml:space="preserve"><value>La configuración de aprobación de esta acción está incompleta. Informe a su administrador.</value></data>
+  <data name="ErrorApprovalResubmit" xml:space="preserve"><value>La solicitud no llegó al servicio de aprobación. Envíe la misma solicitud de nuevo.</value></data>
+  <data name="ErrorApprovalChanging" xml:space="preserve"><value>La aprobación está cambiando en este momento. Vuelva a intentarlo en un instante.</value></data>
+  <data name="ErrorNoEligibleApprover" xml:space="preserve"><value>Nadie más que usted puede aprobar el registro que envió. Pida a su administrador que ajuste los aprobadores; después podrá enviarlo de nuevo.</value></data>
 </root>

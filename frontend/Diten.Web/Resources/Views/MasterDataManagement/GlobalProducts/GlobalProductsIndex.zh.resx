@@ -26,4 +26,9 @@
   <data name="ErrorBrandNotFound" xml:space="preserve"><value>未找到所选品牌。请选择其他品牌。</value></data>
   <data name="ErrorBrandArchived" xml:space="preserve"><value>所选品牌已归档，无法关联。请选择其他品牌。</value></data>
   <data name="ErrorBrandNotLinkable" xml:space="preserve"><value>所选品牌未启用或不在有效期内。请选择其他品牌。</value></data>
+  <!-- WP-MDM-NO-ELIGIBLE-APPROVER-01: the product-identity maker codes said in words. Sentences shared with the GSKU screen (GskuRefusals). -->
+  <data name="ErrorApprovalSetupIncomplete" xml:space="preserve"><value>此操作的审批设置不完整。请通知您的管理员。</value></data>
+  <data name="ErrorApprovalResubmit" xml:space="preserve"><value>请求未到达审批服务。请再次发送相同的请求。</value></data>
+  <data name="ErrorApprovalChanging" xml:space="preserve"><value>审批正在变更中。请稍后重试。</value></data>
+  <data name="ErrorNoEligibleApprover" xml:space="preserve"><value>除您之外没有人可以审批您提交的记录。请联系管理员调整审批人，之后您可以重新提交。</value></data>
 </root>

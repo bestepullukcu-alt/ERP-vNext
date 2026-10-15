@@ -30,6 +30,8 @@ public sealed class ProductIdentityWorkflowFaultPolicyTests
     [InlineData(Call.Start, Outcome.Invalid, "WORKFLOW_ASSIGNMENT_CANDIDATES_REQUIRED", Kind.MakerReplay, Scope.None, true)]
     [InlineData(Call.Start, Outcome.NotFound, "NOT_FOUND_NON_LEAKAGE", Kind.MakerReplay, Scope.None, true)]
     [InlineData(Call.Start, Outcome.Conflict, "WORKFLOW_TEMPLATE_NOT_PUBLISHED", Kind.MakerReplay, Scope.None, true)]
+    // WP-MDM-NO-ELIGIBLE-APPROVER-01: segregation of duties — only a START can meet it
+    [InlineData(Call.Start, Outcome.Invalid, "WORKFLOW_NO_ELIGIBLE_APPROVER", Kind.MakerReplay, Scope.None, true)]
     // the record's
     [InlineData(Call.Start, Outcome.Forbidden, "WORKFLOW_TRUSTED_CONSUMER_TENANT_MISMATCH", Kind.Quarantine, Scope.None, false)]
     [InlineData(Call.Cancel, Outcome.Forbidden, "WORKFLOW_TRUSTED_CANCEL_REQUESTER_FORBIDDEN", Kind.Quarantine, Scope.None, false)]
@@ -38,6 +40,9 @@ public sealed class ProductIdentityWorkflowFaultPolicyTests
     [InlineData(Call.Start, Outcome.Conflict, "WORKFLOW_START_IDEMPOTENCY_CONFLICT", Kind.Quarantine, Scope.None, false)]
     [InlineData(Call.Start, Outcome.Conflict, null, Kind.Quarantine, Scope.None, false)]
     // a definition that is not ready is only ever a START's answer
+    [InlineData(Call.StartResult, Outcome.Invalid, "WORKFLOW_NO_ELIGIBLE_APPROVER", Kind.Quarantine, Scope.None, false)]
+    [InlineData(Call.TerminalEvidence, Outcome.Invalid, "WORKFLOW_NO_ELIGIBLE_APPROVER", Kind.Quarantine, Scope.None, false)]
+    [InlineData(Call.Cancel, Outcome.Invalid, "WORKFLOW_NO_ELIGIBLE_APPROVER", Kind.Quarantine, Scope.None, false)]
     [InlineData(Call.TerminalEvidence, Outcome.Conflict, "WORKFLOW_TEMPLATE_NOT_PUBLISHED", Kind.Quarantine, Scope.None, false)]
     public void Classify_decides_by_outcome_and_code(
         Call call, Outcome outcome, string? code, Kind kind, Scope scope, bool startedNothing)
@@ -85,5 +90,22 @@ public sealed class ProductIdentityWorkflowFaultPolicyTests
         Assert.Equal(409, ProductIdentityWorkflowMakerCodes.StatusFor(ProductIdentityWorkflowMakerCodes.DefinitionNotReady));
         Assert.Equal(503, ProductIdentityWorkflowMakerCodes.StatusFor(ProductIdentityWorkflowMakerCodes.ServiceUnavailableResubmit));
         Assert.Equal(409, ProductIdentityWorkflowMakerCodes.StatusFor(ProductIdentityWorkflowMakerCodes.MakerReplayRequired));
+        // WP-MDM-NO-ELIGIBLE-APPROVER-01
+        Assert.Equal("PRODUCT_IDENTITY_WORKFLOW_NO_ELIGIBLE_APPROVER", ProductIdentityWorkflowMakerCodes.NoEligibleApprover);
+        Assert.Equal(409, ProductIdentityWorkflowMakerCodes.StatusFor(ProductIdentityWorkflowMakerCodes.NoEligibleApprover));
+        Assert.True(ProductIdentityWorkflowMakerCodes.IsMakerCode(ProductIdentityWorkflowMakerCodes.NoEligibleApprover));
+    }
+
+    // WP-MDM-NO-ELIGIBLE-APPROVER-01: the start Platform refuses because the maker would approve their own record
+    // becomes the maker's code — nothing was started, the record is not quarantined.
+    [Fact]
+    public void A_start_refused_for_no_eligible_approver_is_the_makers_with_nothing_started()
+    {
+        var decision = ProductIdentityWorkflowFaultPolicy.Classify(Call.Start, Outcome.Invalid, "WORKFLOW_NO_ELIGIBLE_APPROVER");
+
+        Assert.Equal(Kind.MakerReplay, decision.Kind);
+        Assert.True(decision.StartedNothing);
+        Assert.Equal(ProductIdentityWorkflowMakerCodes.NoEligibleApprover, decision.MakerCode);
+        Assert.Equal(Scope.None, decision.Scope);
     }
 }

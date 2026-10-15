@@ -26,4 +26,9 @@
   <data name="ErrorBrandNotFound" xml:space="preserve"><value>Seçilen marka bulunamadı. Başka bir marka seçin.</value></data>
   <data name="ErrorBrandArchived" xml:space="preserve"><value>Seçilen marka arşivlenmiş; bağlanamaz. Başka bir marka seçin.</value></data>
   <data name="ErrorBrandNotLinkable" xml:space="preserve"><value>Seçilen marka aktif değil ya da geçerlilik süresinin dışında. Başka bir marka seçin.</value></data>
+  <!-- WP-MDM-NO-ELIGIBLE-APPROVER-01: the product-identity maker codes said in words. Sentences shared with the GSKU screen (GskuRefusals). -->
+  <data name="ErrorApprovalSetupIncomplete" xml:space="preserve"><value>Bu işlemin onay ayarları tamamlanmamış. Lütfen yöneticinize bildirin.</value></data>
+  <data name="ErrorApprovalResubmit" xml:space="preserve"><value>İstek onay servisine ulaşmadı. Aynı isteği yeniden gönderin.</value></data>
+  <data name="ErrorApprovalChanging" xml:space="preserve"><value>Onay şu anda değişiyor. Birazdan yeniden deneyin.</value></data>
+  <data name="ErrorNoEligibleApprover" xml:space="preserve"><value>Gönderdiğiniz kaydı sizden başka onaylayabilecek kimse yok. Onaycıları düzenlemesi için yöneticinize başvurun; ardından kaydı yeniden gönderebilirsiniz.</value></data>
 </root>

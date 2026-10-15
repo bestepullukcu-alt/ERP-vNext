@@ -614,7 +614,15 @@ public sealed class GlobalProductsController : Controller
             // its way" — its own sentence names the way out (the same person submits again; else an administrator).
             ["GLOBAL_PRODUCT_IDENTITY_RECONCILIATION_REQUIRED"] = "ErrorSubmitStuck",
             // A submit whose start the engine could not yet confirm IS on its way.
-            ["PRODUCT_IDENTITY_WORKFLOW_START_LOOKUP_REFUSED"] = "ErrorSubmitInFlight"
+            ["PRODUCT_IDENTITY_WORKFLOW_START_LOOKUP_REFUSED"] = "ErrorSubmitInFlight",
+            // WP-MDM-NO-ELIGIBLE-APPROVER-01: the product-identity family's maker codes that reach this screen as a 409
+            // (ProductIdentityWorkflowMakerCodes.StatusFor) — the GSKU screen's sentences, and the new one: nobody but
+            // the maker may approve (segregation of duties) — the administrator adjusts the approvers, then resubmit.
+            ["PRODUCT_IDENTITY_WORKFLOW_APPROVER_NOT_ASSIGNED"] = "ErrorApprovalSetupIncomplete",
+            ["PRODUCT_IDENTITY_WORKFLOW_DEFINITION_NOT_READY"] = "ErrorApprovalSetupIncomplete",
+            ["PRODUCT_IDENTITY_WORKFLOW_MAKER_REPLAY_REQUIRED"] = "ErrorApprovalResubmit",
+            ["PRODUCT_IDENTITY_WORKFLOW_APPROVAL_CHANGING"] = "ErrorApprovalChanging",
+            ["PRODUCT_IDENTITY_WORKFLOW_NO_ELIGIBLE_APPROVER"] = "ErrorNoEligibleApprover"
         };
 
     // MOD-0290-FU05: MDM's brand refusal codes (BrandProductReasonCodes) → this screen's sentences. MDM writes the first
