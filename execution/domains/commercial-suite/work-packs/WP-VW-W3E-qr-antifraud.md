@@ -774,3 +774,43 @@ KORU/YAPMA: K-THEME (ana renk yalnız --bs-primary; guard yeşil); W3E-DARK'ın 
 DOĞRULA: her G için test (Web.Tests xUnit + RunNode; G-4 için CRM testi: ad çözülüyor, başka kiracının adı asla) + 3 sabotaj (.bak + touch): (1) .vf-page çakışması geri gelsin → kırmızı; (2) kartta GUID gösterilsin → kırmızı; (3) smoke harness saati sabitlemesin → C5 kırmızı (testi bugünün tarihine göre çalıştırarak göster). CRM + Web tam takım (-o repo içi), taban karşılaştırması. Görsel kanıt: M sayfası (footer altta), Q5 tür / şehir, QR kartı adla, ayar önizlemesi QR satırıyla, Arapça QR kartı ad yönü.
 Commit: "fix(web,crm): WP-VW-W3E-FIX — evidence flags page layout, QR list type/city labels, issuer names, settings preview QR row, RTL name direction, same-name institutions, km distances, clock-pinned smoke test" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
 ```
+
+
+## Kullanıcı bulguları (2026-10-15) → W3E-FIX kapsamına eklendi
+| # | ekran | bulgu |
+|---|---|---|
+| U-1 | Q5 Kurum QR kodları | Tablo mockup'a uygun ama **bizim DataTable standardımıza değil** → Golden Compact (`data_mode: server`) DataTable standardı. Kural: `.antigravity/rules/frontend-datatable-template.md`, canlı örnek `Views/DevEnablement/GoldenReferenceCompact/*`. |
+| U-2 | W3E formları | **Alanlarda ikon yok** → `frontend-form-template.md`: her alan `.diten-field` ile sarılır, kontrolden önce `bx` ikonu (`aria-hidden`); ikon seçimi `frontend/Diten.Web/tests/diten-field-icons.test.js` `ICON_MAP`'te. |
+| U-3 | Q5 başlık | "CRM / Ziyaret / Kurum QR kodları" kırıntısı + büyük başlık standart değil → liste başlık standardı: `div.mb-3 > h5.mb-0 + p.mb-0.text-muted` (PageDescription). |
+
+**Karar (K-STD):** liste sayfalarında tablo, süzgeç, başlık ve form alanlarında **proje standardı mockup'ın önüne geçer**. Mockup yalnız içerik (sütunlar, metinler, durumlar) için esastır. Kalıcı kural, sonraki tüm Web istemlerine girer.
+
+**İzin (kullanıcı, 2026-10-15):** E4 2. turda CT, S2 / S3 / S4 durumlarını kullanıcının oturum açık sekmesinde okutma simülasyonuyla doğrulayabilir.
+
+**Yerel test verisi:** kalıyor (kullanıcı: silmeye gerek yok).
+
+## §36.1 Agent Prompt — W3E-FIX (paste-ready · v2, önceki W3E-FIX isteminin YERİNE · W3E-DARK ile paralel)
+```text
+@[.antigravity/agents/frontend-ui-ux.md]
+WP: WP-VW-W3E · W3E-FIX — yerel E4 bulguları G-1…G-8 + CT-3 + kullanıcı bulguları U-1 (Kurum QR kodları listesi Golden Compact DataTable standardına), U-2 (W3E form alanlarında .diten-field ikonları), U-3 (liste sayfası başlık standardı)
+Repository: C:\tmp\vw-w3e-fix (worktree, test/crm-content-visit-e2e güncel başı) · Branch: wp/vw-w3e-fix · commit bu dala, push YOK
+
+Paket belgesi: execution/domains/commercial-suite/work-packs/WP-VW-W3E-qr-antifraud.md — önce oku: "W3E yerel E4 (CT, 2026-10-15)" bulgu tablosu, "Kullanıcı bulguları (2026-10-15)" + K-STD, K-THEME, DESIGN-GAP-W3E (mockup metinleri — yalnız İÇERİK için). STANDARTLAR (mockup'ın önüne geçer): .antigravity/rules/frontend-datatable-template.md (Golden Compact, data_mode server, sunucu modu sözleşmesi), .antigravity/rules/frontend-form-template.md (.diten-field + ikon), frontend-js-standard.md; canlı örnek Views/DevEnablement/GoldenReferenceCompact/{Index,_Filter,_DataTable,_IndexL10n}.cshtml + wwwroot/assets/js/DevEnablement/GoldenReferenceCompact/{index.js,index.l10n.js}; doğrulama betiği .antigravity/scripts/verify_datatable_page.py.
+MEVCUT: VisitQrCodes (VisitQrCodesController Index + api/accounts sunucu sayfalama, qr-codes.js özel tablo, qr-card.js, qr-print.js, visit-qr.css) · VisitEvidenceFlags (visit-evidence-flags.css .vf-page iki kez: kök 19 + sayfalama 104; visit-evidence-flags.js; flags-core.js) · VisitEvidenceSettings (visit-evidence-settings.js önizleme kartı) · CRM Features/VisitQr (VisitQrService.Actor = ActorName → kimlik; VisitQrAccountDto.IssuedBy / RevokedBy, VisitQrEventDto.By) · ad deseni VisitEvidencePolicyDto.DisplayNames · BRD account-type etiket okuması (Accounts / PharmacyReport Web) · Web.Tests/Js/visit-evidence-flags-smoke.js (saat sabit değil) · frontend/Diten.Web/tests/diten-field-icons.test.js ICON_MAP.
+NE:
+(U-1) /CRM/VisitQrCodes'u Golden Compact liste standardına çevir: Index + _Filter + _DataTable + _IndexL10n + {Module}Index.cs + index.js + index.l10n.js; <table data-dt-standard="v2" data-dt-data-mode="server">; DitenDataTable.createList({ dataMode:'server', … }) (sayfa serverSide / ajax.data / ext.search YAZMAZ); _Filter inline collapse + select2 çipleri: bölge, kurum türü, şehir, QR durumu + arama; Save View CTA; iskelet; checkbox + eylem sütunu (Yazdır, Kuruma git); ortak _BulkActionBar partial'ı: "Seçilenlere kod üret" (bulk-issue) + "Seçilenleri yazdır" (etiket sayfası) — onay showConfirm standardıyla; toplu üretim sonucu (üretildi / atlandı) standart bildirimle; sütunlar ve metinler mockup Q5'ten (kurum + ↳ üst kurum, tür, şehir, QR durumu çipi, sürüm, son okutma, son 30 gün); seçim en çok 200; CRM api/accounts sözleşmesine dokunmadan sunucu modu fabrikasının sorgu biçimine uyarla (gerekirse Web vekilinde çeviri). verify_datatable_page.py bu sayfa için yeşil.
+(U-3) Q5 ve /CRM/VisitEvidenceFlags başlığı liste başlık standardına: div.mb-3 > h5.mb-0 başlık + p.mb-0.text-muted açıklama; özel kırıntı / büyük başlık kalkar.
+(U-2) W3E'nin tüm form alanları .diten-field + kontrolden önce bx ikon (aria-hidden): Q3 yeniden üret gerekçesi, Q4 iptal gerekçesi (textarea → diten-field-icon--top), Q2 yazdırma "Adet" + kağıt seçimi, M sayfası özel tarih aralığı (tarih ikonu AÇAR — diten-datefield.js), arama kutuları; yeni alan id'leri ICON_MAP'e yazılır.
+(G-1) .vf-page çakışması: sayfalama düğmesi sınıfını ayır, kök içeriği sarar, footer altta.
+(G-2) Q5 "Tür" BRD account-type etiketi kullanıcının dilinde (yoksa kod).
+(G-3) şehir: city BRD etiketi; çözülemezse TR-NN-ADI'dan okunur ad (Türkçe İ/ı doğru) — liste + yazdırma adresi.
+(G-4) CRM: QR hesap okuması + geçmiş ad çözümünü taşır (ayar DTO'sundaki DisplayNames deseni ya da IssuedByName / RevokedByName / olay By adı; kiracı sınırlı); Web kart ve geçmişte adı gösterir, yoksa "—", GUID ASLA.
+(G-5) ayar önizlemesine QR satırı (kipe göre; kapalıyken yok) + kural cümlesi; cihaz doğrulama "İşaretle" iken web bilgi satırı (S7 metni).
+(G-6) kurum / kişi adları <bdi> ya da dir="auto" (QR kartı, Q5, yazdırma, M liste / çekmece / süzgeç).
+(G-7) M kurum süzgecinde aynı adlı seçeneklere şehir (ya da kurum kodu) eki.
+(G-8) mesafe ≥ 1000 m → "198,3 km" (kullanıcının dili, ondalık ayırıcı).
+(CT-3) visit-evidence-flags-smoke.js Date'i 2026-10-14'e sabitler; C5 her gün yeşil.
+KORU/YAPMA: K-THEME (ana renk yalnız --bs-primary; tema guard testi yeşil); W3E-DARK dosyalarına (visit-workspace.css, visit-presentation.css) DOKUNMA; Q1 kart / Q2 yazdırma / S1–S8 davranışı değişmez (yalnız G-4 ad, G-6 bdi, U-2 ikon); QR yükü hiçbir yanıtta / günlükte yok; CRM'de yalnız G-4 (okuma DTO'su + ad çözümü); backbone-custom.css gibi ortak dosyalara modüle özel kural ekleme (XMC-001 — gerekirse DUR ve raporla); kalıcı veri yazma YOK; kullanıcının oturum açık sekmesine harness enjekte etme.
+DOĞRULA: verify_datatable_page.py (Q5) yeşil; her G / U için test (Web.Tests xUnit + RunNode — vitest bu makinede çalışmaz; ICON_MAP eklemesi için ayrıca xUnit'te "her W3E alanı .diten-field + ikon" denetimi; G-4 için CRM testi: ad çözülür, başka kiracının adı asla) + 4 sabotaj (.bak + touch): (1) .vf-page çakışması geri gelsin → kırmızı; (2) kartta GUID gösterilsin → kırmızı; (3) Q5 tablosundan data-dt-standard="v2" kaldırılsın → kırmızı; (4) smoke harness saati sabitlemesin → C5 kırmızı. CRM + Web tam takım (-o repo içi), taban karşılaştırması. Görsel kanıt: Q5 (standart tablo + süzgeç açık + toplu işlem çubuğu), M (footer altta, standart başlık), QR kartı adla, Q3 / Q4 ikonlu alanlar, ayar önizlemesi QR satırıyla, Arapça QR kartı ad yönü.
+Commit: "fix(web,crm): WP-VW-W3E-FIX — QR codes list on the Golden Compact DataTable standard, standard list headers, field icons, evidence flags layout, type/city labels, issuer names, settings preview QR row, RTL names, same-name institutions, km distances, clock-pinned smoke test" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
+```
