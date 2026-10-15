@@ -357,9 +357,6 @@
   <data name="Platform" xml:space="preserve">
     <value>المنصة</value>
   </data>
-  <data name="WorkCenterMenu" xml:space="preserve">
-    <value>مركز العمل</value>
-  </data>
   <data name="ItemMaster" xml:space="preserve">
     <value>سجل العناصر</value>
   </data>

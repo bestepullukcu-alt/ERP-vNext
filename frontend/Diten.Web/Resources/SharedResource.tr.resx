@@ -378,9 +378,6 @@
   <data name="ServiceCodeInUse" xml:space="preserve">
     <value>Servis kodu zaten kullanımda.</value>
   </data>
-  <data name="WorkCenterMenu" xml:space="preserve">
-    <value>Görev Merkezi</value>
-  </data>
   <data name="ItemMaster" xml:space="preserve">
     <value>Kalem Kartı</value>
   </data>
