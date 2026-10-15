@@ -53,15 +53,19 @@ public sealed partial class VisitEvidenceFlagsWebTests
         Assert.DoesNotContain("visit-evidence-flags.js", view);
         Assert.DoesNotContain("window.VisitEvidenceFlagsL10n", view);                                          // the standard L10n bridge only
         Assert.True(view.IndexOf("rep-summary.js", StringComparison.Ordinal) < view.IndexOf("VisitEvidenceFlags/index.js", StringComparison.Ordinal));
-        // the summary card ABOVE the tabs, the tabs above the two panes, the quick view after
-        Assert.True(view.IndexOf("id=\"vf-summary\"", StringComparison.Ordinal) < view.IndexOf("id=\"vf-tab-visits\"", StringComparison.Ordinal));
+        // the summary card ABOVE the tab card (K-TABS), the tab card above the two panes, the quick view after
+        Assert.True(view.IndexOf("id=\"vf-summary\"", StringComparison.Ordinal) < view.IndexOf("<partial name=\"~/Views/Shared/Components/Tabs/_TabCard.cshtml\" model=\"tabCard\" />", StringComparison.Ordinal));
+        Assert.True(view.IndexOf("_TabCard.cshtml", StringComparison.Ordinal) < view.IndexOf("id=\"vf-pane-visits\"", StringComparison.Ordinal));
         Assert.True(view.IndexOf("id=\"vf-pane-visits\"", StringComparison.Ordinal) < view.IndexOf("id=\"vf-pane-reps\"", StringComparison.Ordinal));
 
-        // the rep summary: a v2 table in CLIENT mode (a bounded set)
-        var reps = Regex.Match(view, "<table id=\"dt-vf-reps\"[^>]*>").Value;
-        Assert.Contains("data-dt-standard=\"v2\"", reps);
-        Assert.Contains("data-dt-data-mode=\"client\"", reps);
-        Assert.Contains("class=\"datatables-vf-reps table border-top\"", reps);
+        // the rep summary (W3E-E4R2-FIX-a): the same shared table card, CLIENT mode (a bounded set), read only
+        var reps = FlagsPartial("_RepSummaryTable.cshtml");
+        Assert.Contains("<partial name=\"~/Views/CRM/VisitEvidenceFlags/_RepSummaryTable.cshtml\" />", view);
+        Assert.Contains("<partial name=\"~/Views/Shared/Components/DataTable/_ListShell.cshtml\" model=\"repShell\" />", reps);
+        Assert.Contains("TableId = \"dt-vf-reps\"", reps);
+        Assert.Contains("DataMode = \"client\"", reps);
+        Assert.Contains("Slug = \"vf-reps\"", reps);
+        Assert.Contains("HasSelection = false", reps);
 
         // the filter: the inline collapse, Select2 chips (the flag types MANY), the shared date fields, the scope switch
         var filter = FlagsPartial("_Filter.cshtml");

@@ -219,10 +219,13 @@ const VisitQrCodesList = (function () {
                                 + (m.parent ? '<div class="small text-muted">↳ <bdi>' + esc(m.parent) + '</bdi></div>' : '');
                         }
                     },
-                    { targets: 3, render: (data, type, full) => esc(rowOf(full).typeLabel) },
-                    { targets: 4, render: (data, type, full) => '<bdi>' + esc(rowOf(full).cityLabel) + '</bdi>' },
+                    // W3E-E4R2-FIX-a (E2-1) — what stays on a narrow screen: the institution + the actions always, then the
+                    // QR status (the page's own content) before the type, the city, the version and the scan columns
+                    { targets: 3, responsivePriority: 5, render: (data, type, full) => esc(rowOf(full).typeLabel) },
+                    { targets: 4, responsivePriority: 6, render: (data, type, full) => '<bdi>' + esc(rowOf(full).cityLabel) + '</bdi>' },
                     {
                         targets: 5,
+                        responsivePriority: 4,
                         render: (data, type, full) => {
                             const m = rowOf(full);
                             const chip = CHIP[m.status];
@@ -231,9 +234,9 @@ const VisitQrCodesList = (function () {
                                 + (m.inherits ? '<div class="small text-muted mt-1">' + esc(L().InheritsParent) + '</div>' : '');
                         }
                     },
-                    { targets: 6, render: (data, type, full) => { const m = rowOf(full); return m.version == null ? '—' : esc(fmt(L().VersionShort, m.version)); } },
-                    { targets: 7, render: (data, type, full) => esc(when(rowOf(full).lastScannedAt)) },
-                    { targets: 8, render: (data, type, full) => { const m = rowOf(full); return m.recent == null ? '—' : esc(m.recent); } },
+                    { targets: 6, responsivePriority: 7, render: (data, type, full) => { const m = rowOf(full); return m.version == null ? '—' : esc(fmt(L().VersionShort, m.version)); } },
+                    { targets: 7, responsivePriority: 8, render: (data, type, full) => esc(when(rowOf(full).lastScannedAt)) },
+                    { targets: 8, responsivePriority: 9, render: (data, type, full) => { const m = rowOf(full); return m.recent == null ? '—' : esc(m.recent); } },
                     {
                         targets: -1,
                         title: L().Actions,

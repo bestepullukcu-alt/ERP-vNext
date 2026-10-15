@@ -69,6 +69,19 @@
 .vf-photo { width: 100%; max-height: 220px; object-fit: cover; border-radius: 6px; border: 1px solid var(--vf-bd); }
 .vf-photo-none { display: flex; gap: 8px; align-items: center; padding: 10px 12px; border-radius: 6px; background: var(--vf-soft); font-size: 14px; }
 
+/* ── E2-1 on a phone the chips wrap inside their cell (no horizontal scroll); wider, they stay one line each and the
+   responsive priorities hide the kind / duration / exception first ── */
+@media (max-width: 767.98px) {
+    .datatables-visitevidenceflags .vf-chip, .datatables-vf-reps .vf-chip { white-space: normal; overflow-wrap: anywhere; text-align: start; }
+    .datatables-visitevidenceflags td .vf-chips { min-width: 0; }
+}
+/* on a phone (375 px) the start + the flags + the actions must fit side by side: this table's cells and chips run tighter
+   (measured: control 48 + start 97 + flags 102 + actions 96 of 343 px, no horizontal scroll) */
+@media (max-width: 575.98px) {
+    .datatables-visitevidenceflags > :not(caption) > * > * { padding-inline: .5rem; }
+    .datatables-visitevidenceflags .vf-chip { font-size: 11.5px; padding: 1px 6px; }
+}
+
 @media (max-width: 1100px) {
     .vf-summary { grid-template-columns: 1fr 1fr; }
     .vf-summary > .vf-bars-wrap { grid-column: 1 / -1; border-inline-start: 0; border-top: 1px solid var(--vf-bd); }

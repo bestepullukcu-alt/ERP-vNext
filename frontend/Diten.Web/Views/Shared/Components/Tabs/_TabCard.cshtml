@@ -1,0 +1,39 @@
+@*
+    K-TABS — THE TAB CARD (owner decision, 2026-10-15): the Work Center's tab strip as a used component. The markup is the
+    Work Center's (WorkCenterNext/app.js buildTabs, ~1238–1262) class for class, so the shared backbone-custom.css rules
+    (.wcn-tabcard, .wcn-tabs .nav-link, .wc-tab-compact, .wc-tab-icon, .wcn-tab-count) style it with nothing page-level:
+      div.card.mb-3.wcn-tabcard > div.card-body.p-3.d-flex.align-items-center.gap-3.flex-wrap
+        > ul.nav.nav-pills.gap-2.flex-wrap.mb-0.wcn-tabs[role=tablist]
+          > li.nav-item[role=presentation] > button.nav-link.border.shadow-none.wc-tab-compact.d-inline-flex.align-items-center
+              > i.bx.{icon}.wc-tab-icon.me-md-1 + span.d-none.d-md-inline (the text) [+ span.badge…wcn-tab-count]
+        [> div.d-flex.align-items-center.gap-2.ms-auto (the tools area)]
+    Roving tabindex (the active tab 0, the others -1); below md only the icon shows, so every button carries the label as
+    aria-label + title. Behaviour: assets/js/diten-tabs.js (data-diten-tabs). This file produces NO text of its own.
+*@
+@model Diten.Web.Models.Tabs.TabCardViewModel
+@{
+    var active = Model.ActiveTab;
+}
+<div class="card mb-3 wcn-tabcard">
+    <div class="card-body p-3 d-flex align-items-center gap-3 flex-wrap">
+        <ul class="nav nav-pills gap-2 flex-wrap mb-0 wcn-tabs" role="tablist" data-diten-tabs aria-label="@Model.AriaLabel">
+            @foreach (var tab in Model.Tabs)
+            {
+                var isActive = ReferenceEquals(tab, active);
+                <li class="nav-item" role="presentation">
+                    <button type="button" id="@tab.Id" class="nav-link border shadow-none wc-tab-compact d-inline-flex align-items-center@(isActive ? " active" : "")" data-tab-key="@tab.Key" role="tab" aria-selected="@(isActive ? "true" : "false")" aria-controls="@tab.Controls" tabindex="@(isActive ? "0" : "-1")" aria-label="@tab.Text" title="@tab.Text">
+                        <i class="bx @tab.Icon wc-tab-icon me-md-1" aria-hidden="true"></i><span class="d-none d-md-inline">@tab.Text</span>
+                        @if (tab.Count is > 0)
+                        {
+                            <span class="badge rounded-pill bg-danger wcn-tab-count position-absolute top-0 start-100 translate-middle">@tab.Count</span>
+                        }
+                    </button>
+                </li>
+            }
+        </ul>
+        @if (!string.IsNullOrWhiteSpace(Model.ToolsId))
+        {
+            <div class="d-flex align-items-center gap-2 ms-auto" id="@Model.ToolsId"></div>
+        }
+    </div>
+</div>

@@ -419,6 +419,8 @@ public sealed partial class VisitEvidenceFlagsWebTests
         var words = FlagsResx(mode == "ar" ? "ar" : "tr");
         var texts = VisitEvidenceFlagsIndex.ScriptKeys.ToDictionary(k => k, k => words[k]);
         foreach (var (k, v) in SharedWords) { texts.TryAdd(k, v); }
+        // W3E-E4R2-FIX-a (E2-2) — the payload's DateFormat, from the culture exactly as _IndexL10n.cshtml writes it
+        texts["DateFormat"] = Diten.Web.Infrastructure.DateFieldFormat.Flatpickr(System.Globalization.CultureInfo.GetCultureInfo(mode == "ar" ? "ar" : "tr"));
         return SmokeTexts("visit-evidence-flags-list-smoke.js", texts, mode);
     }
 

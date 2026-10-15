@@ -12,6 +12,11 @@
  * in the URL). It and the summary card are ONE read that follows the list's APPLIED filter state (C.summaryQuery) — one
  * state, so Save View keeps all three. A rep row filters the visits to that rep through the standard Apply.
  *
+ * W3E-E4R2-FIX-a: the two tabs are the shared K-TABS card (diten-tabs.js; a tab change re-measures the table it shows);
+ * the columns carry a responsive priority so the page's own content (the flags) stays on screen on a narrow panel and a
+ * phone; the custom range shows its dates in the reader's culture (altInput, the culture's short date pattern from the
+ * L10n payload) and still sends yyyy-MM-dd.
+ *
  * A custom range over 92 days is never sent: the Apply guard stops it (the standard warning toast) before the factory
  * reads the filter; the proxy refuses it too. Every rule of a row is VisitEvidenceFlagsCore's (flags-core.js, Node-tested);
  * every word comes from window.L10n (7 languages); every data name is isolated (bidi) for RTL. Read only: nothing writes.
@@ -162,7 +167,7 @@ const VisitEvidenceFlagsList = (function () {
     // the custom range is shown only for "custom"; a preset clears it (a stale range never travels with a preset)
     const syncRange = () => {
         const custom = valueOf('filterPeriod') === 'custom';
-        byId('filterRange')?.classList.toggle('d-none', !custom);
+        ['filterRangeFrom', 'filterRangeTo'].forEach((id) => byId(id)?.classList.toggle('d-none', !custom));
         if (!custom) {
             ['vf-from', 'vf-to'].forEach((id) => { const n = byId(id); if (n && n.value) { if (n._flatpickr) { n._flatpickr.clear(); } n.value = ''; } });
         }
@@ -171,7 +176,39 @@ const VisitEvidenceFlagsList = (function () {
     const syncSwitchFromScope = () => { const sw = byId('vf-only'); if (sw) { sw.checked = valueOf('filterScope') !== 'all'; } };
     const syncScopeFromSwitch = () => { const n = byId('filterScope'); const sw = byId('vf-only'); if (n && sw) { n.value = sw.checked ? '' : 'all'; } };
 
-    const markRange = (bad) => ['vf-from', 'vf-to'].forEach((id) => byId(id)?.classList.toggle('is-invalid', !!bad));
+    const markRange = (bad) => ['vf-from', 'vf-to'].forEach((id) => {
+        const n = byId(id);
+        if (!n) { return; }
+        n.classList.toggle('is-invalid', !!bad);
+        n._flatpickr?.altInput?.classList.toggle('is-invalid', !!bad);     // the field the reader sees (E2-2)
+    });
+
+    /**
+     * E2-2 — the custom range in the reader's culture: flatpickr's altInput SHOWS the culture's short date (the L10n
+     * payload's DateFormat, Infrastructure/DateFieldFormat — the conversion the Organization forms use), the input itself
+     * still SENDS yyyy-MM-dd (the proxy contract). Not DitenDateField.enhance: it guards the typed text against dateFormat,
+     * which on an altInput field would clear every valid date — the shared guard is used with 'altFormat' instead (its
+     * documented second shape). The leading calendar icon opens the picker (the .diten-field contract).
+     */
+    const enhanceRange = () => {
+        const altFormat = L().DateFormat || 'Y-m-d';
+        ['vf-from', 'vf-to'].forEach((id) => {
+            const n = byId(id);
+            if (!n || typeof n.flatpickr !== 'function' || n._flatpickr) { return; }
+            n.flatpickr({ monthSelectorType: 'static', dateFormat: 'Y-m-d', altInput: true, altFormat: altFormat, allowInput: true });
+            window.DitenDateField?.guardAgainstSilentMisparse?.(n._flatpickr, 'altFormat');
+            const icon = n.closest ? n.closest('.diten-field')?.querySelector('.diten-field-icon') : null;
+            icon?.addEventListener('click', () => n._flatpickr?.open());
+        });
+    };
+
+    // a value written from outside (Save View, Reset) reaches the visible field: the calendar follows the input
+    const syncRangeField = (event) => {
+        const n = event && event.target;
+        const fp = n && n._flatpickr;
+        if (!fp) { return; }
+        if (n.value) { fp.setDate(n.value, false); } else if (fp.selectedDates && fp.selectedDates.length) { fp.clear(false); }
+    };
 
     /**
      * The 92-day rule on Apply: a custom range that the CRM would refuse is never sent. Registered in the CAPTURE phase on
@@ -191,18 +228,8 @@ const VisitEvidenceFlagsList = (function () {
     };
 
     // ── the summary card + the rep summary (one read of the applied filter state) ──────────────────────────
-    /**
-     * The list's APPLIED filter state, read from the request the list last sent (DataTables' ajax.params(): the factory's
-     * own query — start, length, draw and each applied filter by its key). Not handle.appliedFilters: the factory copies
-     * that getter with Object.assign, so the handle keeps the state of the first moment only (measured live, 2026-10-15).
-     */
-    const appliedFilters = () => {
-        const params = list && list.dt && list.dt.ajax && typeof list.dt.ajax.params === 'function' ? list.dt.ajax.params() : null;
-        if (typeof params !== 'string') { return null; }
-        const q = new URLSearchParams(params);
-        return { period: q.get('period') || '', from: q.get('from') || '', to: q.get('to') || '', resourceId: q.get('resourceId') || '',
-            flags: q.getAll('flags'), accountId: q.get('accountId') || '', scope: q.get('scope') || '' };
-    };
+    /** The list's APPLIED filter state: the factory handle's live accessor (one state for the card and both tables). */
+    const appliedFilters = () => (list && list.appliedFilters) || null;
 
     const renderSummary = (s) => {
         const set = (id, t) => { const n = byId(id); if (n) { n.textContent = t; } };
@@ -246,7 +273,7 @@ const VisitEvidenceFlagsList = (function () {
         setValue('filterRep', resourceId);
         byId('btnFilterApply')?.click();
         const tab = byId('vf-tab-visits');
-        if (tab && window.bootstrap?.Tab) { window.bootstrap.Tab.getOrCreateInstance(tab).show(); }
+        if (tab) { window.DitenTabs?.activate(tab); }
     };
 
     // every list answer: the institutions it names feed the institution filter, then the summary follows the state
@@ -342,7 +369,15 @@ const VisitEvidenceFlagsList = (function () {
         byId('vf-only')?.addEventListener('change', syncScopeFromSwitch);
         byId('btnFilterApply')?.addEventListener('click', guardApply, true);
         // the custom range is the shared date field: flatpickr in the page's language, the calendar icon OPENS it
-        if (window.DitenDateField && byId('filterRange')) { window.DitenDateField.enhance(byId('filterRange')); }
+        enhanceRange();
+        onChange('vf-from', syncRangeField);
+        onChange('vf-to', syncRangeField);
+        // a table laid out while its tab was hidden is re-measured when the tab shows (columns + responsive)
+        document.addEventListener('diten:tab-change', (event) => {
+            const key = event.detail && event.detail.key;
+            const dt = key === 'reps' ? repSummary?.table : key === 'visits' ? list?.dt : null;
+            try { dt?.columns?.adjust?.(); dt?.responsive?.recalc?.(); } catch (e) { /* a table not drawn yet has nothing to measure */ }
+        });
         repSummary = window.VisitEvidenceFlagsRepSummary?.create({
             tableEl: repsTableEl,
             endpoint: endpoint,
@@ -389,20 +424,24 @@ const VisitEvidenceFlagsList = (function () {
                 columnDefs: [
                     // the CRM orders by the start, newest first: no column sorts (the factory then never sends orderBy)
                     { targets: '_all', orderable: false },
-                    { targets: 0, className: 'control', searchable: false, responsivePriority: 2, render: () => '' },
+                    // E2-1 — what stays on a narrow screen: the start + the actions always ('all'), then the flags, the
+                    // institution / doctor, the rep; the kind, the duration and the exception go first
+                    { targets: 0, className: 'control', searchable: false, responsivePriority: 1, render: () => '' },
                     {
                         targets: 1,
+                        className: 'all',
                         render: (d, type, full) => (type === 'display'
                             ? '<div class="d-flex flex-column"><span class="fw-medium text-heading text-nowrap">' + esc(startDay(full.startedAt)) + '</span><small class="text-muted">' + esc(timeText(full.startedAt)) + '</small></div>'
                             : (full.startedAt || ''))
                     },
-                    { targets: 2, render: (d, type, full) => (type === 'display' ? repHtml(full.repName, full.resourceId) : (full.repName || full.resourceId || '')) },
-                    { targets: 3, render: (d, type, full) => (type === 'display' ? targetHtml(full.target) : ((full.target || {}).accountName || (full.target || {}).name || '')) },
-                    { targets: 4, render: (d, type, full) => '<span class="d-inline-flex align-items-center gap-1 text-nowrap"><i class="bx ' + (full.kind === 'remote' ? 'bx-video' : 'bx-user') + ' text-muted"></i>' + esc(L()['Kind_' + full.kind] || full.kind || '') + '</span>' },
-                    { targets: 5, render: (d, type, full) => '<div class="vf-chips">' + C.chipsOf(full).map(chipHtml).join('') + '</div>' },
-                    { targets: 6, className: 'text-nowrap', render: (d, type, full) => esc(durationText(full.durationSeconds)) },
+                    { targets: 2, responsivePriority: 4, render: (d, type, full) => (type === 'display' ? repHtml(full.repName, full.resourceId) : (full.repName || full.resourceId || '')) },
+                    { targets: 3, responsivePriority: 3, render: (d, type, full) => (type === 'display' ? targetHtml(full.target) : ((full.target || {}).accountName || (full.target || {}).name || '')) },
+                    { targets: 4, responsivePriority: 5, render: (d, type, full) => '<span class="d-inline-flex align-items-center gap-1 text-nowrap"><i class="bx ' + (full.kind === 'remote' ? 'bx-video' : 'bx-user') + ' text-muted"></i>' + esc(L()['Kind_' + full.kind] || full.kind || '') + '</span>' },
+                    { targets: 5, responsivePriority: 2, render: (d, type, full) => '<div class="vf-chips">' + C.chipsOf(full).map(chipHtml).join('') + '</div>' },
+                    { targets: 6, className: 'text-nowrap', responsivePriority: 6, render: (d, type, full) => esc(durationText(full.durationSeconds)) },
                     {
                         targets: 7,
+                        responsivePriority: 7,
                         render: (d, type, full) => (full.exceptionId
                             ? '<a class="vf-link" href="' + esc(exceptionUrl + '?exception=' + encodeURIComponent(full.exceptionId)) + '">' + esc(L().ExceptionLink) + '</a>'
                             : '<span class="text-muted">—</span>')

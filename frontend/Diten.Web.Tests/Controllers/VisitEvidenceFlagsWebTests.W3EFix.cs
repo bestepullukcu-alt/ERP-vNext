@@ -68,7 +68,11 @@ public sealed partial class VisitEvidenceFlagsWebTests
         Assert.Contains("~/assets/js/shared/diten-datefield.js", view);
         Assert.True(view.IndexOf("diten-datefield.js", StringComparison.Ordinal) < view.IndexOf("VisitEvidenceFlags/index.js", StringComparison.Ordinal));
         var js = FlagsScript("index.js");
-        Assert.Contains("window.DitenDateField.enhance(byId('filterRange'))", js);
+        // W3E-E4R2-FIX-a (E2-2): the range is flatpickr with altInput in the reader's format; the shared guard in its altFormat
+        // shape; the leading icon still opens the picker
+        Assert.Contains("n.flatpickr({ monthSelectorType: 'static', dateFormat: 'Y-m-d', altInput: true, altFormat: altFormat, allowInput: true });", js);
+        Assert.Contains("window.DitenDateField?.guardAgainstSilentMisparse?.(n._flatpickr, 'altFormat');", js);
+        Assert.Contains("icon?.addEventListener('click', () => n._flatpickr?.open());", js);
         Assert.Contains("if (n._flatpickr) { n._flatpickr.clear(); }", js);                                        // a preset clears the calendar too
     }
 

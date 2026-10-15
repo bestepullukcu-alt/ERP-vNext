@@ -7,6 +7,15 @@
     ViewData["Title"] = Localizer["PageTitle"].Value;
     Layout = "_LayoutTenantShell";
     Context.Items["NavActivePath"] = "/CRM/VisitEvidenceFlags";
+    var tabCard = new Diten.Web.Models.Tabs.TabCardViewModel
+    {
+        AriaLabel = Localizer["PageTitle"].Value,
+        Tabs =
+        [
+            new Diten.Web.Models.Tabs.TabCardItem { Key = "visits", Id = "vf-tab-visits", Icon = "bx-list-ul", Text = Localizer["TabVisits"].Value, Active = true, Controls = "vf-pane-visits" },
+            new Diten.Web.Models.Tabs.TabCardItem { Key = "reps", Id = "vf-tab-reps", Icon = "bx-group", Text = Localizer["TabReps"].Value, Controls = "vf-pane-reps" }
+        ]
+    };
 }
 
 @*
@@ -15,7 +24,8 @@
     (the columns, the chip words and values, the states). Order: the inline filter (period ≤ 92 days · rep · flag types ·
     institution · "only flagged") → the list header → the summary card (started, flagged + rate, the flag-type bars with
     "Other (N types)") → the tabs "Visits" (the server-mode table: the CRM pages the visits, newest start first) / "Rep
-    summary" (the bounded rep set of the summary read, client mode; a row filters the visits to that rep) → the quick view
+    summary" (the bounded rep set of the summary read, client mode; a row filters the visits to that rep) — the tabs on the
+    shared K-TABS card — → the quick view
     (M2). ONE filter state for the card and both tables; Save View keeps it. Read only: no selection, no bulk bar.
     UAS-001: without a flags read key NOTHING but the notice.
 *@
@@ -47,14 +57,9 @@
     <div class="vf-bars-wrap"><div class="vf-sub"><span class="vf-strong-sub">@Localizer["SumByFlag"]</span> · @Localizer["SumByFlagNote"]</div><div class="vf-bars" id="vf-bars"></div></div>
 </div>
 
-<ul class="nav nav-tabs mb-0 vf-tabs" role="tablist">
-    <li class="nav-item" role="presentation">
-        <button type="button" class="nav-link active" id="vf-tab-visits" data-bs-toggle="tab" data-bs-target="#vf-pane-visits" role="tab" aria-controls="vf-pane-visits" aria-selected="true"><i class="bx bx-list-ul me-1"></i>@Localizer["TabVisits"]</button>
-    </li>
-    <li class="nav-item" role="presentation">
-        <button type="button" class="nav-link" id="vf-tab-reps" data-bs-toggle="tab" data-bs-target="#vf-pane-reps" role="tab" aria-controls="vf-pane-reps" aria-selected="false"><i class="bx bx-user-voice me-1"></i>@Localizer["TabReps"]</button>
-    </li>
-</ul>
+@* K-TABS — the shared tab card (the Work Center's tab strip, Views/Shared/Components/Tabs/_TabCard.cshtml); the selected
+   tab is not part of Save View *@
+<partial name="~/Views/Shared/Components/Tabs/_TabCard.cshtml" model="tabCard" />
 
 <div class="tab-content p-0 vf-tab-content">
     @* M1 / M4 — the visits: the server-mode Golden Compact table *@
@@ -63,26 +68,9 @@
         <partial name="~/Views/CRM/VisitEvidenceFlags/_DataTable.cshtml" />
     </div>
 
-    @* M3 — the rep summary: the summary read's rep set (bounded: my team / the tenant's reps), client mode, no page size *@
+    @* M3 — the rep summary: the same shared table card, client mode (a bounded set), no filter / Save View of its own *@
     <div class="tab-pane fade" id="vf-pane-reps" role="tabpanel" aria-labelledby="vf-tab-reps">
-        <div class="card">
-            <div class="card-datatable table-responsive">
-                <table id="dt-vf-reps" data-dt-standard="v2" data-dt-data-mode="client" class="datatables-vf-reps table border-top">
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th class="all">@Localizer["ColRep"]</th>
-                            <th>@Localizer["ColStarted"]</th>
-                            <th>@Localizer["ColFlagged"]</th>
-                            <th>@Localizer["ColRate"]</th>
-                            <th>@Localizer["ColTopFlag"]</th>
-                            <th class="cell-fit text-end pe-3 all">@Localizer["ColActions"]</th>
-                        </tr>
-                    </thead>
-                </table>
-            </div>
-            <div class="card-footer text-muted small py-3">@Localizer["RepsHint"]</div>
-        </div>
+        <partial name="~/Views/CRM/VisitEvidenceFlags/_RepSummaryTable.cshtml" />
     </div>
 </div>
 
@@ -121,6 +109,7 @@
     <script src="~/assets/js/CRM/VisitPlanning/format.js" asp-append-version="true"></script>
     <script src="~/assets/js/shared/diten-datefield.js" asp-append-version="true"></script>
     <script src="~/assets/js/CRM/VisitEvidenceFlags/flags-core.js" asp-append-version="true"></script>
+    <script src="~/assets/js/diten-tabs.js" asp-append-version="true"></script>
     <script src="~/assets/js/CRM/VisitEvidenceFlags/rep-summary.js" asp-append-version="true"></script>
     <script src="~/assets/js/CRM/VisitEvidenceFlags/index.js" asp-append-version="true"></script>
 }

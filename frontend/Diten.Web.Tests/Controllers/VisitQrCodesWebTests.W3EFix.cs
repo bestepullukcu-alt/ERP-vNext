@@ -402,7 +402,8 @@ public sealed partial class VisitQrCodesWebTests
               const out = {
                 options: { dataMode: options.dataMode, ajax: options.ajax.url, export: options.export.url, addNew: options.toolbar.addNewText, bulk: !!options.bulk,
                   checkboxVisible: def(1).visible, filters: options.filters.fields.map(f => f.key).join(','), savedView: options.savedView.moduleKey + '/' + options.savedView.pageKey,
-                  anySortable: defs.some(d => d.orderable === true) || !defs.some(d => d.targets === '_all' && d.orderable === false) },
+                  anySortable: defs.some(d => d.orderable === true) || !defs.some(d => d.targets === '_all' && d.orderable === false),
+                  priorities: Object.fromEntries(defs.filter(d => typeof d.targets === 'number').map(d => [d.targets, (d.className || '').indexOf('all') > -1 ? 'all' : (d.responsivePriority == null ? null : d.responsivePriority)])) },
                 active: shape(rows[0]), none: shape(rows[1])
               };
               options.quickView.populate(rows[0]);

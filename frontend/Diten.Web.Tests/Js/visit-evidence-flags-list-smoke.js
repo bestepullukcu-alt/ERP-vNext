@@ -45,15 +45,16 @@ const repsTable = get('dt-vf-reps');
 const root = get('vf-root');
 Object.assign(root.attrs, { 'data-can-read-all': mode === 'all' ? 'true' : 'false', 'data-can-see-photos': mode === 'all' ? 'true' : 'false',
   'data-visit-url': '/CRM/VisitReport', 'data-exception-url': '/CRM/VisitEvidenceSettings' });
-get('filterRange').classList.add('d-none');
+['filterRangeFrom', 'filterRangeTo'].forEach(id => get(id).classList.add('d-none'));
 get('vf-only').checked = true;
 let ready = null;
+const docListeners = {};
 global.document = {
   documentElement: { lang: mode === 'ar' ? 'ar' : 'tr', dir: mode === 'ar' ? 'rtl' : 'ltr' },
   getElementById: get,
   querySelector: q => (q === '.datatables-visitevidenceflags' ? flagsTable : q === '.datatables-vf-reps' ? repsTable : null),
   createElement: tag => mk(null, tag),
-  addEventListener: (type, fn) => { if (type === 'DOMContentLoaded') { ready = fn; } }
+  addEventListener: (type, fn) => { if (type === 'DOMContentLoaded') { ready = fn; } else { (docListeners[type] = docListeners[type] || []).push(fn); } }
 };
 
 // ── the fake factory + the world ──────────────────────────────────────────────────────────────────────────
@@ -66,10 +67,25 @@ const assigned = [];
 const shownTabs = [];
 let applied = { period: '', from: '', to: '', resourceId: '', flags: [], accountId: '', scope: '' };
 let draw = 0;
+const guards = [];
+// the custom range fields carry a fake flatpickr that records its config and draws an alt input (the field the reader sees)
+['vf-from', 'vf-to'].forEach(id => {
+  const el = get(id);
+  el.flatpickr = function (config) {
+    const alt = mk(id + '-alt');
+    this._flatpickr = { config: config, altInput: alt, selectedDates: [], setDate: (v) => { this._flatpickr.selectedDates = [v]; alt.value = 'alt:' + v; }, clear: () => { this._flatpickr.selectedDates = []; alt.value = ''; }, open: () => {} };
+    return this._flatpickr;
+  };
+  el.closest = q => (q === '.diten-field' ? { querySelector: () => get(id + '-icon') } : null);
+});
 // the factory's toServerQuery: start, length, draw, then each applied filter by its key (a multi one repeated, empty ones left out)
 const paramsOf = a => ['start=0', 'length=10', 'draw=' + (++draw)].concat(Object.keys(a).reduce((out, k) => out.concat(
   (Array.isArray(a[k]) ? a[k] : [a[k]]).filter(v => v !== '' && v != null).map(v => encodeURIComponent(k) + '=' + encodeURIComponent(v))), [])).join('&');
-const repDt = { ajax: { url: u => { loads.push(u); return { load() {} }; } }, row: tr => ({ data: () => (tr && tr._row) || null }) };
+const measured = [];
+const repDt = { ajax: { url: u => { loads.push(u); return { load() {} }; } }, row: tr => ({ data: () => (tr && tr._row) || null }),
+  columns: { adjust: () => measured.push('reps:adjust') }, responsive: { recalc: () => measured.push('reps:recalc') } };
+const firstParams = 'start=0&length=10&draw=1';                       // the list's FIRST request: no filter yet
+const listDt = { ajax: { params: () => firstParams }, columns: { adjust: () => measured.push('visits:adjust') }, responsive: { recalc: () => measured.push('visits:recalc') } };
 const ACC = 'acc-1', EXC = 'exc-1';
 const row = (id, extra) => Object.assign({
   executionId: id, plannedVisitId: 'pv-' + id, startedAt: '2026-10-14T07:42:00Z', resourceId: 'rep-1', repName: 'Sema Kara',
@@ -106,10 +122,17 @@ global.window = {
     renderActions: acts => acts.filter(a => a.visible !== false).map(a => '[' + a.key + ']').join(''),
     // like the real factory: handle.appliedFilters is a SNAPSHOT of the first moment (Object.assign copies the getter's
     // value); the live state is the last request's query (dt.ajax.params(), the factory's own string)
-    createList: async o => { listOptions = o; return { appliedFilters: Object.assign({}, applied), dt: { ajax: { params: () => paramsOf(applied) } } }; },
+    createList: async o => {
+      listOptions = o;
+      const handle = { dt: listDt };
+      Object.defineProperty(handle, 'appliedFilters', { get: () => applied, enumerable: true });   // like the real factory (2de604edc)
+      return handle;
+    },
     createCrudTable: o => { crud.push(o); return repDt; }
   },
-  bootstrap: { Tab: { getOrCreateInstance: el => ({ show() { shownTabs.push(el.id); } }) } },
+  DitenTabs: { activate: el => { shownTabs.push(el.id); return true; } },
+  DtDefaults: { exportButtons: (addNew, attr, extra, opts) => ({ toolbar: 'DtDefaults.exportButtons', addNew: addNew, extra: Object.keys(extra || {}), exportColumns: opts.exportColumns, colvisColumns: opts.colvisColumns }) },
+  DitenDateField: { guardAgainstSilentMisparse: (fp, key) => guards.push(key) },
   showToast: (m, t) => toasts.push([m, t]),
   location: { assign: u => assigned.push(u) }
 };
@@ -145,7 +168,11 @@ const tick = () => new Promise(r => setTimeout(r, 15));
 
   // a list answer → the institutions feed the filter (G-7 read once), the summary follows the APPLIED state
   o.onResponse({ data: { items: rows, total: 412, filteredTotal: 37 } }); await tick(); await tick(); await tick();
+  out.priorities = Object.fromEntries(defs.filter(d => typeof d.targets === 'number').map(d => [d.targets, (d.className || '').indexOf('all') > -1 ? 'all' : (d.responsivePriority == null ? null : d.responsivePriority)]));
+  out.range = { from: get('vf-from')._flatpickr && get('vf-from')._flatpickr.config, to: get('vf-to')._flatpickr && get('vf-to')._flatpickr.config, guards: guards.slice(), iconOpens: get('vf-from-icon').listeners.some(l => l.type === 'click') };
   out.repTable = crud.length ? { count: crud.length, dataMode: crud[0].dataMode, url: crud[0].ajax.url, savedView: 'savedView' in crud[0], filters: 'filters' in crud[0],
+    buttons: crud[0].config.buttons, layout: 'layout' in crud[0].config, info: crud[0].config.info, pagingOff: crud[0].config.paging === false,
+    priorities: Object.fromEntries(crud[0].config.columnDefs.filter(d => typeof d.targets === 'number').map(d => [d.targets, (d.className || '').indexOf('all') > -1 ? 'all' : (d.responsivePriority == null ? null : d.responsivePriority)])),
     paging: crud[0].config.paging, searching: crud[0].config.searching, columns: crud[0].config.columns.map(c => c.data).join(',') } : null;
   out.accountOptions = get('filterAccount').children.map(c => c.value + '=' + c.textContent);
   out.labelCalls = calls.filter(c => c.url.indexOf('/account-labels') > -1).map(c => c.url);
@@ -182,7 +209,7 @@ const tick = () => new Promise(r => setTimeout(r, 15));
   let factoryApplies = 0;
   get('btnFilterApply').addEventListener('click', () => { factoryApplies++; });
   get('filterPeriod').value = 'custom'; dispatch(get('filterPeriod'), 'change');
-  out.rangeShownForCustom = !get('filterRange').classList.contains('d-none');
+  out.rangeShownForCustom = !get('filterRangeFrom').classList.contains('d-none') && !get('filterRangeTo').classList.contains('d-none');
   get('vf-from').value = '2026-06-01'; get('vf-to').value = '2026-09-28';                       // 120 days
   const refused = get('btnFilterApply').click();
   out.guardLong = { applies: factoryApplies, stopped: refused.defaultPrevented, toast: toasts[toasts.length - 1], invalid: get('vf-from').classList.contains('is-invalid') };
@@ -196,7 +223,18 @@ const tick = () => new Promise(r => setTimeout(r, 15));
   get('filterPeriod').value = 'last30'; dispatch(get('filterPeriod'), 'change');               // a preset clears the stale range
   get('vf-from').value = '2026-01-01';
   get('btnFilterApply').click();
-  out.guardPreset = { applies: factoryApplies, from: get('vf-from').value, to: get('vf-to').value, hidden: get('filterRange').classList.contains('d-none') };
+  out.guardPreset = { applies: factoryApplies, from: get('vf-from').value, to: get('vf-to').value, hidden: get('filterRangeFrom').classList.contains('d-none') && get('filterRangeTo').classList.contains('d-none') };
+
+  out.rangeAltInvalid = get('vf-from')._flatpickr.altInput.classList.contains('is-invalid') === false;   // the 92-day pass above cleared it
+  get('vf-from').value = '2026-06-01'; get('vf-to').value = '2026-09-28'; get('filterPeriod').value = 'custom';
+  get('btnFilterApply').click();
+  out.rangeAltInvalidOnLong = get('vf-from')._flatpickr.altInput.classList.contains('is-invalid');
+  get('vf-from').value = '2026-10-01'; dispatch(get('vf-from'), 'change');
+  out.rangeAltSynced = get('vf-from')._flatpickr.altInput.value;
+  get('filterPeriod').value = 'last30'; dispatch(get('filterPeriod'), 'change');
+  (docListeners['diten:tab-change'] || []).forEach(fn => fn({ detail: { key: 'reps' } }));
+  (docListeners['diten:tab-change'] || []).forEach(fn => fn({ detail: { key: 'visits' } }));
+  out.measured = measured.slice();
 
   // "only flagged" — the switch writes the hidden scope; a restored scope moves the switch
   get('vf-only').checked = false; dispatch(get('vf-only'), 'change');

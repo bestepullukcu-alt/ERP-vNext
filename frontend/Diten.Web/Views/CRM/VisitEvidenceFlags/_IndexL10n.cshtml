@@ -1,3 +1,5 @@
+@using System.Globalization
+@using Diten.Web.Infrastructure
 @using Diten.Web.Views.CRM.VisitEvidenceFlags
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<VisitEvidenceFlagsIndex> Localizer
@@ -30,7 +32,9 @@
         ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
         Status = SharedLocalizer["Status"].Value,
         RecordSaved = SharedLocalizer["RecordSaved"].Value,
-        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        // E2-2 — the custom range SHOWS the culture's short date (flatpickr altFormat); it still sends yyyy-MM-dd
+        DateFormat = DateFieldFormat.Flatpickr(CultureInfo.CurrentCulture)
     };
     var payload = new Dictionary<string, string>(StringComparer.Ordinal);
     foreach (var property in shared.GetType().GetProperties())

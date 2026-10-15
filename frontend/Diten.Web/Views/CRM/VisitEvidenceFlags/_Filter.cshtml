@@ -26,10 +26,14 @@
                         </select>
                     </div>
 
-                    @* The custom range (≤ 92 days): two shared date fields *@
-                    <div class="filter-chip filter-range d-none d-flex align-items-center gap-2" id="filterRange">
+                    @* The custom range (≤ 92 days): the standard's date-range chips (.filter-from / .filter-to — their width is the
+                       shared filter bar's, readable, one under the other on a phone), shown only for "custom". Each is the shared
+                       date field (.diten-field + the calendar icon that opens it); it SHOWS the reader's date format (altInput)
+                       and sends yyyy-MM-dd. *@
+                    <div class="filter-chip filter-from d-none" id="filterRangeFrom" data-vf-range>
                         <div class="diten-field"><i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i><input type="text" class="form-control form-control-sm flatpickr-date" id="vf-from" autocomplete="off" aria-label="@Localizer["CustomFrom"]" placeholder="@Localizer["CustomFrom"]" /></div>
-                        <span class="text-muted">–</span>
+                    </div>
+                    <div class="filter-chip filter-to d-none" id="filterRangeTo" data-vf-range>
                         <div class="diten-field"><i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i><input type="text" class="form-control form-control-sm flatpickr-date" id="vf-to" autocomplete="off" aria-label="@Localizer["CustomTo"]" placeholder="@Localizer["CustomTo"]" /></div>
                     </div>
 
