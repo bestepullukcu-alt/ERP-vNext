@@ -240,6 +240,18 @@ public sealed class RecallRepository : IRecallRepository
         => await _returnLinks.Find(Scope<RecallReturnLink>() & Builders<RecallReturnLink>.Filter.Eq(x => x.CaseId, caseId))
             .Sort(Builders<RecallReturnLink>.Sort.Ascending(x => x.LinkedAtUtc)).ToListAsync(cancellationToken);
 
+    // ── R6 (Hazırlık Paneli) ──
+
+    public async Task<IReadOnlyList<RecallCase>> OpenCasesAsync(CancellationToken cancellationToken = default)
+        => await _cases.Find(Scope<RecallCase>() & Builders<RecallCase>.Filter.Nin(x => x.Status, [RecallCaseStatus.Closed, RecallCaseStatus.Cancelled]))
+            .Sort(Builders<RecallCase>.Sort.Descending(x => x.OpenedAtUtc).Descending(x => x.Number)).ToListAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<RecallReturnLink>> ReturnLinksOfCasesAsync(IReadOnlyCollection<Guid> caseIds, CancellationToken cancellationToken = default)
+        => caseIds.Count == 0
+            ? []
+            : await _returnLinks.Find(Scope<RecallReturnLink>() & Builders<RecallReturnLink>.Filter.In(x => x.CaseId, caseIds))
+                .Sort(Builders<RecallReturnLink>.Sort.Ascending(x => x.LinkedAtUtc)).ToListAsync(cancellationToken);
+
     public async Task<RecallReturnLink?> FindReturnLinkByTransactionAsync(string transactionId, CancellationToken cancellationToken = default)
         => await _returnLinks.Find(Scope<RecallReturnLink>() & Builders<RecallReturnLink>.Filter.Eq(x => x.TransactionId, transactionId)).FirstOrDefaultAsync(cancellationToken);
 

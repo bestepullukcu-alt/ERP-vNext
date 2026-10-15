@@ -103,6 +103,27 @@ public sealed class RecallDrillRepository : IRecallDrillRepository
         => await _runs.Find(Scope<RecallDrillRun>() & Builders<RecallDrillRun>.Filter.Eq(x => x.Status, RecallDrillRunStatus.Completed))
             .SortByDescending(x => x.CompletedAtUtc).FirstOrDefaultAsync(cancellationToken);
 
+    // ── R6 (reads only) ──
+
+    public async Task<IReadOnlyList<RecallDrillRun>> LastCompletedRunsAsync(int count, CancellationToken cancellationToken = default)
+        => await _runs.Find(Scope<RecallDrillRun>() & Builders<RecallDrillRun>.Filter.Eq(x => x.Status, RecallDrillRunStatus.Completed))
+            .SortByDescending(x => x.CompletedAtUtc).ThenByDescending(x => x.Number).Limit(count).ToListAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<RecallDrillRun>> CaseListRunsAsync(RecallDrillCaseRowQuery query, CancellationToken cancellationToken = default)
+    {
+        var f = Builders<RecallDrillRun>.Filter;
+        var filter = Scope<RecallDrillRun>();
+        if (query.Statuses is { Count: > 0 } statuses) filter &= f.In(x => x.Status, statuses);
+        if (query.StartedFrom is { } from) filter &= f.Gte(x => x.StartedAtUtc, from);
+        if (query.Search is not null)
+        {
+            var pattern = new BsonRegularExpression(System.Text.RegularExpressions.Regex.Escape(query.Search), "i");
+            filter &= f.Or(f.Regex(x => x.Number, pattern), f.Regex(x => x.LotNumber, pattern));
+        }
+
+        return await _runs.Find(filter).SortByDescending(x => x.StartedAtUtc).ThenByDescending(x => x.Number).ToListAsync(cancellationToken);
+    }
+
     public async Task<RecallDrillEvent?> FindEventByKeyAsync(Guid subjectId, Guid actor, string idempotencyKey, CancellationToken cancellationToken = default)
         => await _events.Find(Scope<RecallDrillEvent>() & Builders<RecallDrillEvent>.Filter.Eq(x => x.SubjectId, subjectId)
                               & Builders<RecallDrillEvent>.Filter.Eq(x => x.ActorUserId, actor)

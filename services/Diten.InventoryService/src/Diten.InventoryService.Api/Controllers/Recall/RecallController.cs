@@ -3,6 +3,7 @@ using Diten.InventoryService.Application.Common;
 using Diten.InventoryService.Application.Common.Models;
 using Diten.InventoryService.Application.Features.Recall;
 using Diten.InventoryService.Application.Features.Recall.Commands;
+using Diten.InventoryService.Application.Features.Recall.Handlers;
 using Diten.InventoryService.Application.Features.Recall.Queries;
 using Diten.InventoryService.Application.Features.Recall.Services;
 using Diten.InventoryService.Domain.Recall.Enums;
@@ -79,15 +80,23 @@ public sealed class RecallController : CustomBaseController
         return CreateActionResultInstance(await _mediator.Send(new PrepareRecallSettingsChangeCommand(body.Settings, body.Reason, key, version), ct));
     }
 
+    // ── R6: Hazırlık Paneli (pack §8.9) ─────────────────────────────────────────────────────────────────────
+
+    [HttpGet("dashboard")]
+    [HasPermission(RecallPermissions.DashboardRead)]
+    public async Task<IActionResult> GetDashboard(CancellationToken ct)
+        => CreateActionResultInstance(await _mediator.Send(new GetRecallDashboardQuery(), ct));
+
     // ── cases (reads) ────────────────────────────────────────────────────────────────────────────────────
 
     [HttpGet("cases")]
     [HasPermission(RecallPermissions.CasesRead)]
     public async Task<IActionResult> ListCases(
         [FromQuery] string? type, [FromQuery] string[]? status, [FromQuery(Name = "class")] string? recallClass, [FromQuery] string? skuId,
-        [FromQuery] string? openedFrom, [FromQuery] string? q, [FromQuery] string? sort, [FromQuery] string? page, [FromQuery] string? pageSize, CancellationToken ct)
+        [FromQuery] string? openedFrom, [FromQuery] string? q, [FromQuery] string? sort, [FromQuery] string? page, [FromQuery] string? pageSize,
+        [FromQuery] string[]? drillStatus, CancellationToken ct)
         => CreateActionResultInstance(await _mediator.Send(
-            new ListRecallCasesQuery(type, status ?? [], recallClass, skuId, openedFrom, q, sort, page, pageSize), ct));
+            new ListRecallCasesQuery(type, status ?? [], recallClass, skuId, openedFrom, q, sort, page, pageSize, drillStatus ?? []), ct));
 
     [HttpGet("cases/{caseId}")]
     [HasPermission(RecallPermissions.CasesRead)]

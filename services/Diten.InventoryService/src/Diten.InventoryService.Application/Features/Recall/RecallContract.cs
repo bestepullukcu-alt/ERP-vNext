@@ -83,4 +83,7 @@ public static class RecallContract
 
     /// <summary>The wire type of a real case row (drill runs join the list in R5 as <c>Drill</c>).</summary>
     public const string CaseTypeReal = "Real";
+
+    /// <summary>R6 (1.5.0): the wire type of a drill row (DrillCaseRow — a drill run is not a case).</summary>
+    public const string CaseTypeDrill = "Drill";
 }

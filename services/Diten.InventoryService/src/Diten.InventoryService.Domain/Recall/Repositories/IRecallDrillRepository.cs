@@ -7,6 +7,9 @@ public sealed record RecallDrillRunQuery(RecallDrillRunStatus? Status, DateOnly?
 
 public sealed record RecallDrillRunPage(IReadOnlyList<RecallDrillRun> Items, long Total);
 
+/// <summary>R6 — the drill rows of the Vakalar union read (pack §8.10): status set, started-at lower bound, number / lot-number search.</summary>
+public sealed record RecallDrillCaseRowQuery(IReadOnlyCollection<RecallDrillRunStatus>? Statuses, DateTimeOffset? StartedFrom, string? Search);
+
 /// <summary>
 /// WP-0177-R5 — the drill records (pack §4.11 / §4.12, §8.10). The READ-ONLY guarantee of KR-G is structural: this is the ONLY store a drill
 /// handler may use, and its write session can write nothing but drill plans, drill runs, drill events, a trace snapshot of purpose
@@ -43,6 +46,17 @@ public interface IRecallDrillRepository
     Task<bool> ExistsInAnotherCompanyAsync(Guid id, CancellationToken cancellationToken = default);
 
     Task<T> InTransactionAsync<T>(Func<IRecallDrillWriteSession, CancellationToken, Task<T>> work, CancellationToken cancellationToken = default);
+
+    // ── R6 (reads only) ──
+
+    /// <summary>The company's last <paramref name="count"/> COMPLETED runs, newest completed first (the panel's drill chart).</summary>
+    Task<IReadOnlyList<RecallDrillRun>> LastCompletedRunsAsync(int count, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// The runs matching the Vakalar filters, newest started first (then number descending). Drill runs of a company are few (a plan runs a
+    /// few times a year), so the union read takes them whole and cuts ONE page together with the cases.
+    /// </summary>
+    Task<IReadOnlyList<RecallDrillRun>> CaseListRunsAsync(RecallDrillCaseRowQuery query, CancellationToken cancellationToken = default);
 }
 
 /// <summary>The writes of one drill transaction — drill records, a <c>Drill</c> snapshot, the counter, audit rows. Nothing else exists here.</summary>

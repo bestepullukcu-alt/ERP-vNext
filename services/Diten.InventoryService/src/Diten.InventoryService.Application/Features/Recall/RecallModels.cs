@@ -55,9 +55,40 @@ public sealed record RecallCaseRefDto(
     RecallUserRefDto Owner,
     IReadOnlyList<RecallQuantityDto> AffectedQuantity,
     IReadOnlyList<RecallProgressDto> Progress,
-    int Version);
+    int Version,
+    string? SortAt = null,
+    int? Position = null);
 
-public sealed record RecallCasePageDto(IReadOnlyList<RecallCaseRefDto> Items, long Total, int Page, int PageSize, IReadOnlyDictionary<string, long> StatusCounts);
+/// <summary>
+/// 1.5.0 (WP-0177-R6, CT decision A) — <see cref="Items"/> carries ONLY real cases; the drill runs of the same page travel in
+/// <see cref="DrillRows"/> (a drill run is not a case). Every row carries <c>sortAt</c> + <c>position</c> in the merged page.
+/// </summary>
+public sealed record RecallCasePageDto(
+    IReadOnlyList<RecallCaseRefDto> Items,
+    long Total,
+    int Page,
+    int PageSize,
+    IReadOnlyDictionary<string, long> StatusCounts,
+    IReadOnlyList<RecallDrillCaseRowDto>? DrillRows = null,
+    IReadOnlyDictionary<string, long>? DrillStatusCounts = null);
+
+/// <summary>1.5.0 — a drill run as a Vakalar row (pack §8.10): no class, no level (mockup difference D-25).</summary>
+public sealed record RecallDrillCaseRowDto(
+    string RunId,
+    string Number,
+    string Type,
+    string Status,
+    RecallLotRefDto Lot,
+    RecallItemRefDto? Item,
+    string StartedAtUtc,
+    string? EndedAtUtc,
+    RecallUserRefDto Owner,
+    int? DurationMinutes,
+    int TargetHours,
+    bool? Passed,
+    string SortAt,
+    int Position,
+    int Version);
 
 public sealed record RecallScopeSealDto(int Revision, string Sha256, string CanonicalVersion, int ItemCount, string ComputedAtUtc);
 

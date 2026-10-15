@@ -34,6 +34,7 @@ public static class RecallServiceCollectionExtensions
         // R2: the trace engine over in-process reads (pack §8.2) and the MVP-6 shipment read through the Gateway with the caller's
         // token + company (pack §8.6 — no cache; the reader bounds each read to 2 s and 8 in flight)
         services.AddScoped<IRecallTraceSource, RecallTraceSource>();
+        services.AddScoped<IRecallDashboardSource, RecallDashboardSource>(); // R6: the panel's company-bound ledger read (pack §8.9)
         services.AddScoped<RecallTraceEngine>();
         services.AddScoped<RecallTraceService>();
         var gateway = configuration.GetSection(GatewayOptions.SectionName).Get<GatewayOptions>() ?? new GatewayOptions();
