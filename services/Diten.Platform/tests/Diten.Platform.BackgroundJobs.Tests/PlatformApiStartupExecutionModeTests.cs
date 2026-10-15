@@ -251,8 +251,10 @@ public sealed class PlatformApiStartupExecutionModeTests
         }
         start.Environment["BackgroundJobs__Enabled"] = "false";
         start.Environment["BackgroundJobs__DashboardEnabled"] = "false";
+        // WP-PLT-MARKET-REFTENANT-01 — a reference tenant that is NOT the platform system tenant (MOD-0048-FU01 2026-10-15):
+        // the Development reference tenant.
         start.Environment["BusinessReferenceData__Provider__ReferenceTenantId"] =
-            "00000000-0000-0000-0000-000000000001";
+            "0b7d0048-0290-4000-8000-000000000001";
         using var process = new Process { StartInfo = start };
         Assert.True(process.Start());
         var stdout = process.StandardOutput.ReadToEndAsync();

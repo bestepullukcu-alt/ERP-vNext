@@ -279,14 +279,14 @@ public sealed class BusinessReferenceDataVerifiedMarketOperationalAuditMongoTest
     {
         var audit = new Mock<IAuditService>(MockBehavior.Strict);
         var preflight = new Mock<IVerifiedMarketOperationalPreflight>(MockBehavior.Strict);
-        return (new VerifiedMarketOperationalGovernanceAuditAdapter(audit.Object, preflight.Object), audit, preflight);
+        return (new VerifiedMarketOperationalGovernanceAuditAdapter(audit.Object, preflight.Object, new VerifiedMarketOperationalReferenceTenant(Guid.Parse(VerifiedMarketOperationalEligibilityTests.DevReferenceTenantId))), audit, preflight);
     }
 
     private static VerifiedMarketOperationalFacts Facts() => new(
         BusinessReferenceDataTestHarness.GetSeedPath(VerifiedMarketOperationalProvisioningOptions.LockedCatalogFileName),
         VerifiedMarketOperationalProvisioningOptions.LockedCatalogVersion,
         VerifiedMarketOperationalProvisioningOptions.LockedCatalogFingerprint,
-        Guid.Parse(VerifiedMarketOperationalProvisioningOptions.LockedReferenceTenantId),
+        Guid.Parse(VerifiedMarketOperationalEligibilityTests.DevReferenceTenantId),
         VerifiedMarketOperationalProvisioningOptions.LockedActorId,
         "market-operational-test");
 
