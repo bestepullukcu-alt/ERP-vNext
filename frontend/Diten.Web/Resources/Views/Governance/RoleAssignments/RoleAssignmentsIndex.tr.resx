@@ -162,6 +162,18 @@
   <data name="ActionVerb_WriteValue" xml:space="preserve"><value>Değer Gir</value></data>
   <data name="KeyHint_CrmVisitPlanReadAll" xml:space="preserve"><value>Tüm kiracı: bu role diğer temsilciler adına ziyaret planlama, planı uygulama ve yeniden planlama yetkisi de verir.</value></data>
   <data name="KeyHint_CrmPlannedVisitReadAll" xml:space="preserve"><value>Tüm kiracı: bu rolün planlanan ziyaretler ve ziyaret raporları üzerindeki mevcut yazma izinlerini tüm kiracıya genişletir.</value></data>
+  <data name="KeyHint_PlatformTasksUpdate" xml:space="preserve"><value>Bu izin şunları da verir:
+• görevin alanlarını düzenleme
+• isteği kabul etme ya da gerekçeyle reddetme
+• yanıtlanmamış isteği geri çekme
+• görevi takvime planlama ya da plandan çıkarma
+• görevi başlatma
+• incelemeye gönderme
+• görevin birini beklediğini bildirme
+• işi isteyene iade etme
+• kontrol listesi maddelerini işaretleme, ekleme, düzenleme, silme ve sıralama
+• ek ekleme ve kaldırma
+• bağımlılık ekleme ve kaldırma</value></data>
   <data name="ErrorRoleActorRequired" xml:space="preserve">
     <value>Oturumunuz doğrulanamadı. Yeniden giriş yapıp tekrar deneyin.</value>
   </data>

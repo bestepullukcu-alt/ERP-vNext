@@ -162,6 +162,18 @@
   <data name="ActionVerb_WriteValue" xml:space="preserve"><value>写入值</value></data>
   <data name="KeyHint_CrmVisitPlanReadAll" xml:space="preserve"><value>整个租户：还允许此角色为其他代表计划、应用和重新计划拜访。</value></data>
   <data name="KeyHint_CrmPlannedVisitReadAll" xml:space="preserve"><value>整个租户：将此角色对计划拜访和拜访报告的现有写入权限扩展到整个租户。</value></data>
+  <data name="KeyHint_PlatformTasksUpdate" xml:space="preserve"><value>此权限还允许：
+• 编辑任务字段
+• 接受请求，或说明理由后拒绝
+• 撤回无人答复的请求
+• 将任务排入日历或移出日历
+• 开始任务
+• 提交审阅
+• 说明任务正在等待他人
+• 将工作退回给请求人
+• 勾选、添加、编辑、删除和排序检查清单项
+• 添加和删除附件
+• 添加和删除依赖关系</value></data>
   <data name="ErrorRoleActorRequired" xml:space="preserve">
     <value>无法验证您的会话。请重新登录后再试。</value>
   </data>

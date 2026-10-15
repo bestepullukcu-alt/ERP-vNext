@@ -162,6 +162,18 @@
   <data name="ActionVerb_WriteValue" xml:space="preserve"><value>Escribir valor</value></data>
   <data name="KeyHint_CrmVisitPlanReadAll" xml:space="preserve"><value>Todo el inquilino: también permite a este rol planificar, aplicar y replanificar visitas para otros representantes.</value></data>
   <data name="KeyHint_CrmPlannedVisitReadAll" xml:space="preserve"><value>Todo el inquilino: extiende a todo el inquilino los permisos de escritura existentes de este rol sobre visitas planificadas e informes de visita.</value></data>
+  <data name="KeyHint_PlatformTasksUpdate" xml:space="preserve"><value>Este permiso también permite:
+• editar los campos de la tarea
+• aceptar una solicitud o rechazarla indicando el motivo
+• retirar una solicitud que nadie ha respondido
+• planificar la tarea en el calendario o quitarla
+• iniciar la tarea
+• enviarla a revisión
+• indicar que la tarea está a la espera de alguien
+• devolver el trabajo a quien lo solicitó
+• marcar, añadir, editar, eliminar y reordenar elementos de la lista de verificación
+• añadir y quitar adjuntos
+• añadir y quitar dependencias</value></data>
   <data name="ErrorRoleActorRequired" xml:space="preserve">
     <value>No se pudo verificar su sesión. Inicie sesión de nuevo y vuelva a intentarlo.</value>
   </data>

@@ -162,6 +162,18 @@
   <data name="ActionVerb_WriteValue" xml:space="preserve"><value>Saisir la valeur</value></data>
   <data name="KeyHint_CrmVisitPlanReadAll" xml:space="preserve"><value>Tout le locataire : permet aussi à ce rôle de planifier, d'appliquer et de replanifier des visites pour d'autres représentants.</value></data>
   <data name="KeyHint_CrmPlannedVisitReadAll" xml:space="preserve"><value>Tout le locataire : étend à tout le locataire les autorisations d'écriture existantes de ce rôle sur les visites planifiées et les rapports de visite.</value></data>
+  <data name="KeyHint_PlatformTasksUpdate" xml:space="preserve"><value>Cette autorisation permet aussi de :
+• modifier les champs de la tâche
+• accepter une demande ou la refuser en indiquant un motif
+• retirer une demande restée sans réponse
+• planifier la tâche dans le calendrier ou l'en retirer
+• démarrer la tâche
+• l'envoyer en revue
+• signaler que la tâche attend quelqu'un
+• rendre le travail à son demandeur
+• cocher, ajouter, modifier, supprimer et réordonner les éléments de la liste de contrôle
+• ajouter et supprimer des pièces jointes
+• ajouter et supprimer des dépendances</value></data>
   <data name="ErrorRoleActorRequired" xml:space="preserve">
     <value>Votre session n'a pas pu être vérifiée. Reconnectez-vous puis réessayez.</value>
   </data>

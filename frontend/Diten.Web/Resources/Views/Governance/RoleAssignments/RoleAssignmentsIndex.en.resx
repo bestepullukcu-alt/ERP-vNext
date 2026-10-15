@@ -162,6 +162,18 @@
   <data name="ActionVerb_WriteValue" xml:space="preserve"><value>Write Value</value></data>
   <data name="KeyHint_CrmVisitPlanReadAll" xml:space="preserve"><value>Tenant-wide: also lets this role plan, apply and re-plan visits for other representatives.</value></data>
   <data name="KeyHint_CrmPlannedVisitReadAll" xml:space="preserve"><value>Tenant-wide: extends this role's existing write permissions on planned visits and visit reports to the whole tenant.</value></data>
+  <data name="KeyHint_PlatformTasksUpdate" xml:space="preserve"><value>This permission also grants:
+• edit the task's fields
+• accept a request, or decline it with a reason
+• take back a request nobody has answered
+• plan the task on the calendar, or take it off
+• start the task
+• send it for review
+• say the task is waiting on someone
+• give the work back to whoever asked for it
+• tick, add, edit, delete and reorder checklist items
+• add and remove attachments
+• add and remove dependencies</value></data>
   <data name="ErrorRoleActorRequired" xml:space="preserve">
     <value>Your session could not be verified. Sign in again and retry.</value>
   </data>

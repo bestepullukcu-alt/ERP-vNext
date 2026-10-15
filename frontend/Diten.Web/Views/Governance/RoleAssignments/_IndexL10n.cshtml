@@ -110,7 +110,9 @@
         KeyHints = new Dictionary<string, string>
         {
             ["crm.visit-plan.read-all"] = Localizer["KeyHint_CrmVisitPlanReadAll"].Value,
-            ["crm.planned-visit.read-all"] = Localizer["KeyHint_CrmPlannedVisitReadAll"].Value
+            ["crm.planned-visit.read-all"] = Localizer["KeyHint_CrmPlannedVisitReadAll"].Value,
+            // WP-WEB-TASK-UPDATE-HINT-01 (BL-341 step 1) — everything "Update Task" grants (TasksController).
+            ["platform.tasks.update"] = Localizer["KeyHint_PlatformTasksUpdate"].Value
         },
         PermissionSummary = Localizer["PermissionSummary"].Value,
         SelectedRoleTitle = Localizer["SelectedRoleTitle"].Value,

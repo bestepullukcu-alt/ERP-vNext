@@ -162,6 +162,18 @@
   <data name="ActionVerb_WriteValue" xml:space="preserve"><value>كتابة القيمة</value></data>
   <data name="KeyHint_CrmVisitPlanReadAll" xml:space="preserve"><value>على مستوى المستأجر: يتيح لهذا الدور أيضًا تخطيط الزيارات وتطبيقها وإعادة تخطيطها نيابةً عن ممثلين آخرين.</value></data>
   <data name="KeyHint_CrmPlannedVisitReadAll" xml:space="preserve"><value>على مستوى المستأجر: يوسّع أذونات الكتابة الحالية لهذا الدور على الزيارات المخططة وتقارير الزيارات لتشمل المستأجر بأكمله.</value></data>
+  <data name="KeyHint_PlatformTasksUpdate" xml:space="preserve"><value>يمنح هذا الإذن أيضًا:
+• تعديل حقول المهمة
+• قبول طلب أو رفضه مع ذكر السبب
+• سحب طلب لم يردّ عليه أحد
+• جدولة المهمة في التقويم أو إزالتها منه
+• بدء المهمة
+• إرسالها للمراجعة
+• الإشارة إلى أن المهمة بانتظار شخص آخر
+• إعادة العمل إلى من طلبه
+• تحديد بنود قائمة التحقق وإضافتها وتعديلها وحذفها وترتيبها
+• إضافة المرفقات وإزالتها
+• إضافة التبعيات وإزالتها</value></data>
   <data name="ErrorRoleActorRequired" xml:space="preserve">
     <value>تعذّر التحقق من جلستك. سجّل الدخول من جديد ثم أعد المحاولة.</value>
   </data>

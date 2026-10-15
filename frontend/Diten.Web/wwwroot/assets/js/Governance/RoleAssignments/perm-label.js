@@ -141,7 +141,11 @@
      */
     const KEY_VERBS = {
         'crm.visit-plan.read-all': 'manage',
-        'crm.planned-visit.read-all': 'manage'
+        'crm.planned-visit.read-all': 'manage',
+        // WP-WEB-TASK-UPDATE-HINT-01 (BL-341 step 1) — the verb stays "update"; the key is here for its HINT: 19 Platform
+        // TasksController endpoints (accept, plan, start, submit for review, return, checklist, attachments,
+        // dependencies …) all ride on this one chip. role-assignments-task-update-hint.test.js pins the count.
+        'platform.tasks.update': 'update'
     };
 
     const humanize = (value) => String(value ?? '')
