@@ -170,8 +170,9 @@ public sealed class GskuKnownFailureSentenceTests
             new PrefixLocalizer<Diten.Web.SharedResource>(), new PrefixLocalizer<Diten.Web.Views.MasterDataManagement.GlobalProducts.GlobalProductsIndex>(),
             NullLogger<GlobalProductsController>.Instance)
         {
+            // MOD-0290-FU05 (T-4, CT decision): the draft-edit form always carries BrandId ("" = no brand).
             ControllerContext = new ControllerContext { HttpContext = Context("mdm.global-products.update",
-                new() { ["ExpectedVersion"] = "3", ["GlobalProductName"] = "Renamed", ["__RequestVerificationToken"] = "synthetic-csrf" }) }
+                new() { ["ExpectedVersion"] = "3", ["GlobalProductName"] = "Renamed", ["BrandId"] = "", ["__RequestVerificationToken"] = "synthetic-csrf" }) }
         };
 
         var result = await controller.UpdateDraft(Guid.NewGuid(), 3, "Renamed", CancellationToken.None);

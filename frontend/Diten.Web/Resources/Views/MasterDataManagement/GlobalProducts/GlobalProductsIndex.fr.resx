@@ -15,4 +15,15 @@
   <data name="ErrorSubmitInFlight" xml:space="preserve"><value>Ce produit est en cours de soumission pour approbation. Il ne peut pas être modifié tant que la soumission n'a pas atteint le moteur d'approbation.</value></data>
   <data name="ErrorDraftChanged" xml:space="preserve"><value>Le brouillon a changé pendant sa soumission. Rouvrez-le et soumettez la version actuelle.</value></data>
   <data name="ErrorSubmitStuck" xml:space="preserve"><value>Une soumission de ce produit est bloquée. La personne qui l'a soumise la débloque en cliquant de nouveau sur Soumettre ; si cela ne suffit pas, un administrateur doit intervenir.</value></data>
+  <!-- MOD-0290-FU05: the Global Product brand (slice 3). -->
+  <data name="Brand" xml:space="preserve"><value>Marque</value></data>
+  <data name="BrandNone" xml:space="preserve"><value>Aucune marque</value></data>
+  <data name="BrandHelp" xml:space="preserve"><value>Facultatif. Seules les marques actives et dans leur période de validité sont proposées.</value></data>
+  <data name="ChangeBrand" xml:space="preserve"><value>Changer la marque</value></data>
+  <data name="ChangeBrandConfirmation" xml:space="preserve"><value>La marque de ce produit global approuvé va changer. Le changement est enregistré dans la piste d'audit.</value></data>
+  <data name="ChangeBrandSuccess" xml:space="preserve"><value>Marque modifiée.</value></data>
+  <data name="BrandUnchanged" xml:space="preserve"><value>La marque sélectionnée est déjà liée ; rien n'a été modifié.</value></data>
+  <data name="ErrorBrandNotFound" xml:space="preserve"><value>La marque sélectionnée est introuvable. Choisissez une autre marque.</value></data>
+  <data name="ErrorBrandArchived" xml:space="preserve"><value>La marque sélectionnée est archivée et ne peut pas être associée. Choisissez une autre marque.</value></data>
+  <data name="ErrorBrandNotLinkable" xml:space="preserve"><value>La marque sélectionnée n'est pas active ou est hors de sa période de validité. Choisissez une autre marque.</value></data>
 </root>

@@ -29,11 +29,17 @@ public sealed class GlobalProductsIndexL10nTests
     [Fact]
     public void Every_mapped_refusal_has_a_sentence_in_all_seven_languages()
     {
-        var mapped = (IReadOnlyDictionary<string, string>)typeof(GlobalProductsController)
-            .GetField("InFlightRefusalKeys", BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(null)!;
-        Assert.Contains("ErrorSubmitStuck", mapped.Values);
+        // MOD-0290-FU05: + MDM's brand refusals (brand_not_found / brand_archived / brand_not_linkable).
+        var mapped = new[] { "InFlightRefusalKeys", "BrandRefusalKeys" }
+            .SelectMany(field => ((IReadOnlyDictionary<string, string>)typeof(GlobalProductsController)
+                .GetField(field, BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(null)!).Values)
+            .Distinct()
+            .ToArray();
+        Assert.Contains("ErrorSubmitStuck", mapped);
+        Assert.Contains("ErrorBrandNotFound", mapped);
+        Assert.Contains("ErrorBrandArchived", mapped);
         foreach (var language in Languages)
-        foreach (var key in mapped.Values.Distinct())
+        foreach (var key in mapped)
             Assert.True(Keys(language).Contains(key), $"GlobalProductsIndex.{language}.resx misses {key}");
     }
 

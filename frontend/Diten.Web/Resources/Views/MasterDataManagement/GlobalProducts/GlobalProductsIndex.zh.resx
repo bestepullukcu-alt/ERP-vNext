@@ -15,4 +15,15 @@
   <data name="ErrorSubmitInFlight" xml:space="preserve"><value>此产品正在提交审批。在提交到达审批引擎之前无法编辑。</value></data>
   <data name="ErrorDraftChanged" xml:space="preserve"><value>草稿在提交过程中发生了变化。请重新打开并提交当前版本。</value></data>
   <data name="ErrorSubmitStuck" xml:space="preserve"><value>该产品的一次提交被卡住了。提交人再次点击“提交”即可解决；如果仍未解决，则需由管理员处理。</value></data>
+  <!-- MOD-0290-FU05: the Global Product brand (slice 3). -->
+  <data name="Brand" xml:space="preserve"><value>品牌</value></data>
+  <data name="BrandNone" xml:space="preserve"><value>无品牌</value></data>
+  <data name="BrandHelp" xml:space="preserve"><value>可选。仅列出处于有效期内的启用品牌。</value></data>
+  <data name="ChangeBrand" xml:space="preserve"><value>更改品牌</value></data>
+  <data name="ChangeBrandConfirmation" xml:space="preserve"><value>此已批准全球产品的品牌将被更改。该更改会记录在审计跟踪中。</value></data>
+  <data name="ChangeBrandSuccess" xml:space="preserve"><value>品牌已更改。</value></data>
+  <data name="BrandUnchanged" xml:space="preserve"><value>所选品牌已关联，未做任何更改。</value></data>
+  <data name="ErrorBrandNotFound" xml:space="preserve"><value>未找到所选品牌。请选择其他品牌。</value></data>
+  <data name="ErrorBrandArchived" xml:space="preserve"><value>所选品牌已归档，无法关联。请选择其他品牌。</value></data>
+  <data name="ErrorBrandNotLinkable" xml:space="preserve"><value>所选品牌未启用或不在有效期内。请选择其他品牌。</value></data>
 </root>
