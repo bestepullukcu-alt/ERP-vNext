@@ -1,4 +1,4 @@
-# CONTROL TOWER — Daily Operating Card v1.6
+# CONTROL TOWER — Daily Operating Card v1.7
 
 > **Purpose:** günlük Control Tower turu için hızlı gate. Yeni authority yaratmaz. Ayrıntı için [CONTROL TOWER SOP](./control-tower-sop.md) (v2.5 r3).
 
@@ -18,8 +18,10 @@
   CANCELLED. Dağıtılabilir durum: yalnız READY.
 - [ ] **`module` sütunu:** `MOD-nnnn`, `MOD-nnnn-FUn` ya da `ortak:<MOD listesi | kapsam yolu>`. Kayıt dosyasında
   olmayan kimlik ve kullanımdan kalkmış takma ad reddedilir.
-- [ ] **Kalite kapısı:** Elle keşif denetimi yalnız hazırlık içindir. CT-PQG-01 hazır olmadan yeni bir Control Tower ilk
-  geliştirme işini dağıtamaz.
+- [ ] **Kalite kapısı (CT-PQG-01, SOP §20.2):** her uygulama promptu dağıtımdan önce
+  `python3 scripts/prompt_gate.py check <prompt> --queue <kuyruk>` ile çıkış 0 alır; HIGH için `--review <kayıt>@<commit>`.
+  Kapı ve kuyruk kaydı `main`'de değilken yalnız `--prepare` çalışır ve "DAĞITIM İZNİ DEĞİL" der. Elle denetim
+  kapının yerine geçmez.
 
 ### 0.1 Keşif — her yeni iş için (DISCOVERED → INSPECTION_REQUIRED)
 
@@ -97,6 +99,7 @@ python3 .antigravity/scripts/verify_module_id.py --check-report <kanıt yolu>
 
 ```text
 WP / Prompt ID + version
+PQG: python3 scripts/prompt_gate.py check <prompt> --queue <kuyruk> → çıkış 0 (HIGH: --review; SOP §20.2)
 Agent Lane ID / Type
 Target agent / entry point
 Repository / Branch / HEAD / Worktree

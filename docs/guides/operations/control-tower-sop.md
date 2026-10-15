@@ -1214,6 +1214,75 @@ Git operasyonları repo `GIT-002` kurallarına tabidir.
 
 **Commit ≠ acceptance.**
 
+## 20.2 Prompt kalite kapısı (CT-PQG-01)
+
+> Kararlar: `ct-operating-model-owner-decisions-01.md` §3 (10 madde) ve `ct-completion-delegation-owner-decision-01.md`.
+> **Zorunlu:** yeni Control Tower'ların (kayıtta `strict=yes`) her uygulama promptu. Eski Control Tower'lar aracı isteğe
+> bağlı kullanır; onaylı işleri geriye dönük durdurulmaz. §36.2 T1–T4 değişmez.
+
+```text
+python3 scripts/prompt_gate.py check <prompt dosyası> --queue <kuyruk> [--review <kayıt yolu>@<commit>] [--prepare]
+python3 scripts/prompt_gate.py pack <prompt dosyası>
+```
+
+- **Prompt dosyası** ajana yapıştırılacak §36.1 bloğudur, bayt bayt.
+- **Çıkış:** 0 geçti · 1 engel · 2 tamamlanamadı. 2 hiçbir zaman geçiş sayılmaz.
+- **Kip:** Varsayılan kip dağıtım denetimidir. Kuyruk, yerel `origin/main`'deki kayıt dosyasında kayıtlı olmalıdır;
+  ölçülen SHA rapora yazılır, fetch yapılmaz. `--prepare` yalnız hazırlığı denetler ve "DAĞITIM İZNİ DEĞİL" der.
+- **Rapor:** Kapının raporu keşif raporunun özet kuralını taşır (`rapor-sha256`); `verify_module_id.py --check-report`
+  onu da doğrular. İş paketi kaydına `PQG: <sonuç> · rapor <yol>@<commit> · sha256 <…>` satırı yazılır. Bu satır
+  promptun içine yazılmaz.
+
+**Mekanik denetimler** (her biri tutmazsa ENGEL):
+
+| Denetim | Kural |
+|---|---|
+| Biçim | §36.1 alanları ve yeni alanlar var; `NE:`, `NEDEN:`, `NASIL:`, `YAPMA:`, `DOĞRULA:`, `Durma koşulları:`, `Rapor formatı:` birer kez ve altında içerikle |
+| Git | `Repository` ve `Worktree` bu makinede ölçülmüş yollar ve kapının çalıştığı depoyla aynı depo; `Worktree` HEAD'i = `Expected HEAD`; dal; izinli yollara, korunan yollara, kaynak dosyalara ya da "Önce oku" desenlerine dokunan kirli dosya (diğer kirli dosyalar yalnız envanter) |
+| Kaynak | Her "Önce oku" yolu `Expected HEAD`'de var; kısaltılmış (`...`) yol yok; desen en az bir dosyayla eşleşir |
+| Sözleşme | `API`, `İzin`, `Test`, `Sabotaj` yüzeylerinin her biri ya `«birebir metin» (yol:satır)` alıntısı — metin o satırda `Expected HEAD`'de aynen var — ya da `N/A — <gerekçe>`. Alıntısız ifade yorumdur ve reddedilir. HIGH promptta en az bir alıntı gerekir; bütün yüzeyler N/A ise rapor "doğrulanan sözleşme yok" der |
+| Görev sınıfı | `ürün`: adı geçen Module Pack `ready-for-dev` ya da `approved` ve dosya adındaki MOD kimliği kuyruk satırının modülü. `yönetişim`: `docs/records/decisions/` altında `status: approved` (ya da `decided`) kapsam kaydı; kayıt WP kimliğini anar ya da kuyruk satırının `record` sütunu onu gösterir |
+| Risk | §9.1 sinyalleri aşağıdaki sabit listeden; herhangi bir sinyal varsa `Risk: HIGH`. İzinli yollar migrasyon, gateway ya da yetki dosyalarına dokunuyorsa ilgili sinyal beyan edilmiş olmalı |
+| Kuyruk | WP satırı var ve `ct_queue.py`'nin kendi `require` kararı dağıtılabilir diyor |
+| Keşif | Katı kuyrukta `Keşif:` satırı zorunlu. Rapor v2, commit'lenmiş, özeti geçerli; üreticinin biçiminde (sonuç sözlüğü ve çıkış kodu, tekil satırlar, EKSİK satırları, ref sayısı = ref satırları, "eşleşme yok" ⇒ BULGU yok); `araç:` satırındaki sha256, raporun ilan ettiği commit'teki `verify_module_id.py`'nin sha256'sı (commit okunamazsa tamamlanamadı); sorgu bu işin adı ya da modülünün kayıtlı adı; "tamamlanamadı" engeldir; "inceleme gerekli" ise her BULGU için `Keşif kararı <n>: <parent\|FU\|child\|yeni> — <gerekçe>` |
+| İnceleme | HIGH promptta aşağıdaki kayıt |
+
+**§9.1 sinyal adları:** `sözleşme` (paylaşılan sözleşme / olay şeması), `migrasyon`, `yetki` (yetkilendirme /
+kimlik doğrulama), `kiracı`, `denetim` (denetim / kanıt temeli), `finansal`, `uyum`, `gateway`,
+`modüller-arası-yazma`, `silme` (silme / saklama), `kaldırma` (kullanımdan kaldırma).
+
+**HIGH — bağımsız inceleme kaydı.** Ayrı bir dosyadır, commit'lenir ve `--review <yol>@<commit>` ile verilir. Promptun
+içine yazılmaz; böylece ajana giden metin incelenen metinle bayt bayt aynı kalır.
+
+```text
+PROMPT İNCELEME KAYDI v1
+wp: <WP ID>
+prompt: <Prompt ID> v<sürüm>
+prompt-sha256: <prompt dosyasının sha256'sı>
+kaynak-paketi-sha256: <pack komutunun verdiği özet>
+yazar: <kimlik>
+inceleyen: <kimlik — yazardan farklı>
+kontrol sözleşme: tamam — <kaynak paketindeki en az bir yolu gösteren kanıt>
+kontrol dosyalar: tamam — <…>
+kontrol ct-onayı: tamam — <…>
+kontrol kabul: tamam — <…>
+kontrol durma: tamam — <…>
+kontrol risk: tamam — <…>
+bulgu: <kritik|engelleyici|diğer> · <açık|kapandı> · <açıklama>        (sıfır ya da daha çok satır)
+kritik-açık: <sayı>
+engelleyici-açık: <sayı>
+```
+
+- İnceleyen yalnız `pack` çıktısındaki sınırlı kaynak paketini alır (madde 7).
+- **Bayatlık:** Prompt, komutu, kapsamı ya da kaynaklarından biri değişirse kayıt bayatlar. Kayıt
+  `prompt-sha256` ve `kaynak-paketi-sha256` ile promptun kendisine ve `Expected HEAD`'deki kaynak blob'larına bağlıdır.
+  Kritik bir düzeltmeden sonra yeniden inceleme bütün sözleşme yüzeyini kapsar, yalnız farkı değil (madde 6).
+- **Karar ölçütü:** Puan değil, açık kritik ve engelleyici bulgu sayısıdır (madde 5). Kapı, beyan edilen sayıyı bulgu
+  satırlarından yeniden sayar.
+- **Sınır:** Kapının kayıt denetimi mekaniktir; incelemenin kendisinin yerine geçmez (madde 8).
+- **Prompt kaynaklı yeniden iş (madde 9):** `-R<n>` satırının iş metni `neden: prompt|kod|ortam|kapsam` ile başlar.
+  Sayımı CT-OPS-04 yapar.
+
 ---
 
 # 21. Adım 8 — AGENT LANE DEVELOPMENT EXECUTION
@@ -2008,9 +2077,22 @@ dispatch edilemez.
 WP: {WP ID} · Prompt {Prompt ID} v{version}
 
 Repository: {path} · Branch: {branch} · Expected HEAD: {sha} · Worktree: {path}
+Risk: {LOW|MEDIUM|HIGH} · §9.1 sinyalleri: {§20.2 listesinden, virgülle | yok}      # §20.2
+Görev sınıfı: {ürün · Paket: <pack yolu> | yönetişim · Kapsam kaydı: <docs/records/decisions/… yolu>}
+İzinli yollar: {virgülle ayrılmış yollar / desenler}
+Korunan yollar: {virgülle ayrılmış yollar / desenler | yok}
 
 Önce oku (sırayla):
 {authority paths — module pack, domain-config, AGENTS.md, ilgili .antigravity/rules/**}
+
+Sözleşme yüzeyleri:                                                                   # §20.2 — alıntı ya da gerekçeli N/A
+- API: «birebir metin» (yol:satır) | N/A — {gerekçe}
+- İzin: «…» (yol:satır) | N/A — {gerekçe}
+- Test: «…» (yol:satır) | N/A — {gerekçe}
+- Sabotaj: «…» (yol:satır) | N/A — {gerekçe}
+
+Keşif: {sonuç} · rapor {yol}@{commit} · sha256 {rapor-sha256}                         # katı kuyrukta zorunlu (kart §0.1)
+Keşif kararı {n}: {parent|FU|child|yeni} — {gerekçe}                                    # "inceleme gerekli" ise her BULGU için
 
 {§17.4 tablosundan hedef ajanın zorunlu giriş alanları — doldurulmuş halde}
 
@@ -2028,6 +2110,7 @@ Senin PASS'in kapanış değildir (K13).
 ```
 
 `Repository:` alanı **ölçülmüş** değerdir; başka makineden kalan mutlak yol kopyalanmaz (§20 preflight).
+Yeni alanlar ve kapı: §20.2. `PQG:` sonucu ve HIGH inceleme kaydı promptun içine değil, iş paketi kaydına yazılır.
 
 ## 36.2 Lane-typed prompt templates (v1)
 
