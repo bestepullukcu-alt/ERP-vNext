@@ -112,4 +112,5 @@
   <data name="ErrorRolePermissionAlreadyGranted" xml:space="preserve">
     <value>Le rôle dispose déjà de cette autorisation. Actualisez la page.</value>
   </data>
+  <data name="ErrorRolePermissionRevokeLastSteward" xml:space="preserve"><value>Retirer cette autorisation ne laisserait aucun autre compte actif pouvant ajouter des utilisateurs. Accordez d'abord ce droit à un autre utilisateur.</value></data>
 </root>

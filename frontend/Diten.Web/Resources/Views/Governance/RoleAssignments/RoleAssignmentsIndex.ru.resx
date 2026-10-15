@@ -112,4 +112,5 @@
   <data name="ErrorRolePermissionAlreadyGranted" xml:space="preserve">
     <value>У роли уже есть это разрешение. Обновите страницу.</value>
   </data>
+  <data name="ErrorRolePermissionRevokeLastSteward" xml:space="preserve"><value>После отзыва этого разрешения не останется другой активной учётной записи, которая может добавлять пользователей. Сначала предоставьте это право другому пользователю.</value></data>
 </root>

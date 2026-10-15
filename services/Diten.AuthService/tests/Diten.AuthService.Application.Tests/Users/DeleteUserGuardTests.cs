@@ -2,6 +2,7 @@ using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.Features.Users.Commands;
 using Diten.AuthService.Application.Features.Users.Handlers.CommandHandlers;
+using Diten.AuthService.Application.Features.Users.Services;
 using Diten.AuthService.Domain.Entities;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
@@ -234,11 +235,14 @@ public sealed class DeleteUserGuardTests
         var admin = new Role("Yöneticiler", "Yöneticiler", null, TenantA) { IsDeleted = adminRoleDeleted };
         var plain = new Role("Okuyucular", "Okuyucular", null, TenantA);
 
+        // WP-USERS-ROLES-SMALL-02 — the REAL shared rule over these fakes: the handler no longer counts on its own.
         return new DeleteUserCommandHandler(
             users,
-            new FakeUserRoles(admin.Id, holders, plain.Id, plainRoleHolders ?? []),
-            new FakeRoles(admin, plain),
-            new FakeRolePermissions(admin.Id),
+            new RecoveryCapabilityGuard(
+                users,
+                new FakeUserRoles(admin.Id, holders, plain.Id, plainRoleHolders ?? []),
+                new FakeRoles(admin, plain),
+                new FakeRolePermissions(admin.Id)),
             TenantContext(),
             new FakeCurrentUser(actor),
             UserAuditForTests.None(),

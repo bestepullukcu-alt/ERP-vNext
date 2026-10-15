@@ -38,4 +38,5 @@
   <data name="ErrorUserRoleUserNotFound" xml:space="preserve">
     <value>Этот пользователь больше не существует. Обновите страницу.</value>
   </data>
+  <data name="ErrorUserRoleRevokeLastSteward" xml:space="preserve"><value>После снятия этой роли не останется другой активной учётной записи, которая может добавлять пользователей. Сначала предоставьте это право другому пользователю.</value></data>
 </root>

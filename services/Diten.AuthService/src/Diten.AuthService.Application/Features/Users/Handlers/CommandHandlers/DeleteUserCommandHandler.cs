@@ -34,15 +34,13 @@ namespace Diten.AuthService.Application.Features.Users.Handlers.CommandHandlers;
 public sealed class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, Response<NoContent>>
 {
     /// <summary>The capability that makes recovery possible: whoever holds it can put an account back.</summary>
-    public const string RecoveryPermission = "auth.users.create";
+    public const string RecoveryPermission = RecoveryCapabilityGuard.RecoveryPermission;
 
     public const string SelfDeleteCode = UserErrorCodes.DeleteSelf;
     public const string LastStewardCode = UserErrorCodes.DeleteLastSteward;
 
     private readonly IUserRepository _userRepository;
-    private readonly IUserRoleRepository _userRoleRepository;
-    private readonly IRoleRepository _roleRepository;
-    private readonly IRolePermissionRepository _rolePermissionRepository;
+    private readonly IRecoveryCapabilityGuard _recoveryGuard;
     private readonly ITenantContext _tenantContext;
     private readonly ICurrentUserAccessor _currentUser;
     private readonly IUserAuditRecorder _audit;
@@ -50,18 +48,14 @@ public sealed class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand
 
     public DeleteUserCommandHandler(
         IUserRepository userRepository,
-        IUserRoleRepository userRoleRepository,
-        IRoleRepository roleRepository,
-        IRolePermissionRepository rolePermissionRepository,
+        IRecoveryCapabilityGuard recoveryGuard,
         ITenantContext tenantContext,
         ICurrentUserAccessor currentUser,
         IUserAuditRecorder audit,
         ILogger<DeleteUserCommandHandler> logger)
     {
         _userRepository = userRepository;
-        _userRoleRepository = userRoleRepository;
-        _roleRepository = roleRepository;
-        _rolePermissionRepository = rolePermissionRepository;
+        _recoveryGuard = recoveryGuard;
         _tenantContext = tenantContext;
         _currentUser = currentUser;
         _audit = audit;
@@ -87,7 +81,9 @@ public sealed class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand
                 409);
         }
 
-        if (await IsLastRecoveryHolderAsync(request.Id, tenantId, ct))
+        // WP-USERS-ROLES-SMALL-02 — the shared last-steward rule; since this round only ACTIVE other holders keep the
+        // tenant alive (an inactive one cannot put an account back), a deliberate tightening of the BL-558 guard.
+        if (await _recoveryGuard.WouldLeaveNoActiveHolderAsync(tenantId, new RecoveryCapabilityChange.RemoveUser(request.Id), ct))
         {
             return Response<NoContent>.Fail(
                 "This is the last account that can create users; deleting it would leave the tenant with no way back in.",
@@ -104,46 +100,5 @@ public sealed class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand
         await _audit.RecordAsync(UserAuditEvents.Deleted, tenantId, request.Id,
             new Dictionary<string, object?> { ["previousStatus"] = UserLifecycle.StatusOf(target) }, ct);
         return Response<NoContent>.Success(204);
-    }
-
-    /// <summary>
-    /// True when <paramref name="candidateId"/> holds <see cref="RecoveryPermission"/> (through a live role) and
-    /// removing them would leave nobody else holding it. Reads roles → permissions → holders, and keeps only holders
-    /// who are still real users.
-    ///
-    /// <para>⚠ BL-558 (WP-USERS-ROLES-SMALL-01): the guard used to ask only "would anyone be left?" — so in a tenant
-    /// that had ALREADY lost its last holder, no account could be deleted at all and the refusal blamed whoever was
-    /// being deleted. A candidate who does not hold the capability cannot take it away; the guard does not apply.</para>
-    /// </summary>
-    private async Task<bool> IsLastRecoveryHolderAsync(Guid candidateId, Guid tenantId, CancellationToken ct)
-    {
-        var roles = await _roleRepository.GetAllByTenantAsync(tenantId, ct);
-        var candidateHolds = false;
-
-        foreach (var role in roles)
-        {
-            var permissions = await _rolePermissionRepository.GetPermissionsByRoleAsync(role.Id, tenantId, ct);
-            if (!permissions.Any(p => string.Equals(p, RecoveryPermission, StringComparison.OrdinalIgnoreCase)))
-            {
-                continue;
-            }
-
-            foreach (var holderId in await _userRoleRepository.GetUserIdsByRoleAsync(role.Id, tenantId, ct))
-            {
-                if (holderId == candidateId)
-                {
-                    candidateHolds = true;
-                    continue;
-                }
-
-                // A live user, not merely an assignment row: the repository hides soft-deleted accounts.
-                if (await _userRepository.GetByIdAndTenantAsync(holderId, tenantId, ct) is not null)
-                {
-                    return false;
-                }
-            }
-        }
-
-        return candidateHolds;
     }
 }
