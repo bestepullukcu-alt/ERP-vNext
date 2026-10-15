@@ -52,7 +52,7 @@ STATE_COLUMNS = ["queue_id", "state", "class", "dispatch", "source", "confirmati
 DISPATCH_VALUES = ("yes", "new-version", "no")
 CONFIRMATION_VALUES = ("pending", "confirmed")
 UNVERIFIED = "unverified"
-READ_ONLY_GIT = {"cat-file", "for-each-ref", "log", "merge-base", "rev-parse", "show"}
+READ_ONLY_GIT = {"cat-file", "for-each-ref", "log", "merge-base", "rev-parse"}
 WRITE_ATTRS = {"write", "write_text", "write_bytes", "unlink", "rename", "mkdir", "rmdir", "touch", "truncate",
                "symlink_to", "chmod", "rmtree"}
 MOD_ID = re.compile(r"\bMOD-\d{4}\b")
@@ -92,9 +92,32 @@ def git_text(*args: str) -> str:
     return git(*args).stdout.decode("utf-8", errors="replace").strip()
 
 
+def fail(message: str, code: int = 2):
+    print(message)
+    raise SystemExit(code)
+
+
+def safe_ref(ref: str) -> str:
+    """A ref given on the command line is never passed to git as an option (e.g. `--output=…`)."""
+    if not ref or ref.startswith("-") or any(c in ref for c in "\0\n\r"):
+        fail(f"DUR: geçersiz ref '{ref}'")
+    return ref
+
+
 def git_file(ref: str, path: str) -> bytes | None:
-    result = git("show", f"{ref}:{path}")
+    safe_ref(ref)
+    blob = git("rev-parse", "--verify", "--quiet", "--end-of-options", f"{ref}:{path}")
+    if blob.returncode != 0:
+        return None
+    result = git("cat-file", "blob", blob.stdout.decode().strip())
     return result.stdout if result.returncode == 0 else None
+
+
+def decode(data: bytes, what: str) -> str:
+    try:
+        return data.decode("utf-8")
+    except UnicodeDecodeError as e:
+        fail(f"DUR: {what} UTF-8 değil ({e}); kuyruk okunamadı")
 
 
 def read_table(path: Path, columns: list[str]) -> list[dict]:
@@ -154,53 +177,110 @@ def structure_errors(cur: Table, base: Table) -> list[str]:
         return ["kuyrukta 'id' ve 'state' sütunları yok"]
     errors = []
     for i, row in enumerate(cur.rows, start=2):
-        if len(row) != len(base.header):
+        if row == [""]:
+            errors.append(f"satır {i}: boş satır (editör artığı olabilir)")
+        elif len(row) != len(base.header):
             errors.append(f"satır {i}: {len(row)} sütun, beklenen {len(base.header)}")
         elif not row[id_i].strip():
             errors.append(f"satır {i}: id boş")
     return errors
 
 
-def validate_queue(cur: Table, base: Table, vocab: dict[str, dict]) -> tuple[list[str], list[str]]:
-    errors, warnings = structure_errors(cur, base), []
-    if errors:
-        return errors, warnings
-    id_i, state_i, since_i = base.index("id"), base.index("state"), base.index("since")
-    base_count = Counter(r[id_i] for r in base.rows)
-    cur_count = Counter(r[id_i] for r in cur.rows)
+def check_queue(cur: Table, base: Table, vocab: dict[str, dict]) -> dict:
+    """errors and warnings as text, plus the ids an error is about (require refuses those ids)."""
+    out = {"errors": [], "warnings": [], "bad": defaultdict(list)}
+
+    def error(qid: str | None, text: str):
+        out["errors"].append(text)
+        if qid is not None:
+            out["bad"][qid].append(text)
+
+    for text in structure_errors(cur, base):
+        error(None, text)
+    if out["errors"]:
+        return out
+    id_i, state_i, since_i, trig_i = base.index("id"), base.index("state"), base.index("since"), base.index("redispatch_trigger")
+    for i, row in enumerate(cur.rows, start=2):
+        if row[id_i] != row[id_i].strip() or re.search(r"\s", row[id_i]):
+            error(row[id_i], f"satır {i}: kimlik '{row[id_i]}' boşluk içeriyor — kimlikler birebir karşılaştırılır")
+    base_lines, cur_lines = defaultdict(Counter), defaultdict(Counter)
+    for line, row in zip(base.lines, base.rows):
+        base_lines[row[id_i]][line] += 1
+    for line, row in zip(cur.lines, cur.rows):
+        cur_lines[row[id_i]][line] += 1
+    base_count = {qid: sum(c.values()) for qid, c in base_lines.items()}
+    cur_count = {qid: sum(c.values()) for qid, c in cur_lines.items()}
     for qid, k in sorted(base_count.items()):
-        if cur_count[qid] < k:
-            errors.append(f"veri kaybı: {qid} tabanda {k} satır, şimdi {cur_count[qid]}")
+        if cur_count.get(qid, 0) < k:
+            error(qid, f"veri kaybı: {qid} tabanda {k} satır, şimdi {cur_count.get(qid, 0)}")
     legacy = []
     for qid, k in sorted(cur_count.items()):
-        if k > 1 and k > base_count[qid]:
-            errors.append(f"yeni kimlik tekrarı: {qid} {k} satır (tabanda {base_count[qid]})")
+        if k > 1 and k > base_count.get(qid, 0):
+            error(qid, f"yeni kimlik tekrarı: {qid} {k} satır (tabanda {base_count.get(qid, 0)})")
         elif k > 1:
             legacy.append(f"{qid}×{k}")
     if legacy:
-        warnings.append(f"eski kimlik tekrarı (tabanda vardı, korunur): {len(legacy)} kimlik — {', '.join(legacy)}")
+        out["warnings"].append(f"eski kimlik tekrarı (tabanda vardı, korunur): {len(legacy)} kimlik — {', '.join(legacy)}")
+    for qid in sorted(set(base_lines) & set(cur_lines)):
+        removed = base_lines[qid] - cur_lines[qid]
+        added = cur_lines[qid] - base_lines[qid]
+        if not removed:
+            continue
+        old_rows = [line.split("\t") for line in removed]
+        new_rows = [line.split("\t") for line in added]
+        old_states = [r[state_i] for r in old_rows]
+        if any(vocab.get(s, {}).get("class") == "closed" for s in old_states):
+            error(qid, f"{qid}: DONE satırı yerinde değiştirildi — kapalı iş yeniden açılamaz; yeni sürüm (-R<n>) satırı ekleyin")
+        elif any(vocab.get(r[state_i], {}).get("dispatch") == "yes" for r in new_rows):
+            unverified = [s for s in old_states if s not in vocab]
+            if unverified:
+                error(qid, f"{qid}: doğrulanmamış durum '{unverified[0][:40]}' yerinde READY yapıldı — geçiş doğrulanamaz")
+            elif trig_i is not None:
+                for old in old_rows:
+                    if vocab.get(old[state_i], {}).get("class") in ("held", "waiting-decision") and \
+                            any(new[trig_i] == old[trig_i] for new in new_rows):
+                        out["warnings"].append(f"{qid}: {old[state_i]} → READY ama redispatch_trigger değişmedi "
+                                               "(süreç belgesi §2: tetikleyici değişmeden yeniden dağıtılmaz)")
     unchanged = Counter(base.lines)
     for i, (line, row) in enumerate(zip(cur.lines, cur.rows), start=2):
         if unchanged[line] > 0:
             unchanged[line] -= 1
             continue
-        state = row[state_i].strip()
-        if state not in vocab:
-            warnings.append(f"satır {i} {row[id_i]}: tanımsız durum '{state}' — dağıtılabilir ya da kapalı sayılmaz")
+        if row[state_i] not in vocab:
+            out["warnings"].append(f"satır {i} {row[id_i]}: tanımsız durum '{row[state_i]}' — dağıtılabilir ya da kapalı sayılmaz")
         if since_i is not None and not DATE.match(row[since_i].strip()):
-            warnings.append(f"satır {i} {row[id_i]}: since '{row[since_i]}' YYYY-MM-DD değil")
-    return errors, warnings
+            out["warnings"].append(f"satır {i} {row[id_i]}: since '{row[since_i]}' YYYY-MM-DD değil")
+    return out
 
 
-def require(cur: Table, vocab: dict[str, dict], wp_id: str, new_version: bool) -> tuple[int, str]:
+def validate_queue(cur: Table, base: Table, vocab: dict[str, dict]) -> tuple[list[str], list[str]]:
+    result = check_queue(cur, base, vocab)
+    return result["errors"], result["warnings"]
+
+
+def loss_against(cur: Table, other: Table) -> list[str]:
+    """Rows of another version of the queue (e.g. a branch about to be merged) that this version lost."""
+    id_i = other.index("id")
+    if id_i is None or cur.index("id") is None:
+        return ["karşılaştırılan sürümde 'id' sütunu yok"]
+    mine = Counter(r[cur.index("id")] for r in cur.rows if len(r) > id_i)
+    theirs = Counter(r[id_i] for r in other.rows if len(r) > id_i)
+    return [f"veri kaybı: {qid} karşılaştırılan sürümde {k} satır, burada {mine[qid]}"
+            for qid, k in sorted(theirs.items()) if mine[qid] < k]
+
+
+def require(cur: Table, vocab: dict[str, dict], wp_id: str, new_version: bool, bad: dict | None = None) -> tuple[int, str]:
+    """bad: {id: [error text]} from check_queue — an id with an error is never dispatchable."""
     id_i, state_i = cur.index("id"), cur.index("state")
-    rows = [r for r in cur.rows if len(r) == len(cur.header) and r[id_i].strip() == wp_id]
+    if bad and wp_id in bad:
+        return 1, f"DUR {wp_id}: bu kimlikte doğrulama hatası var — {bad[wp_id][0]}"
+    rows = [r for r in cur.rows if len(r) == len(cur.header) and r[id_i] == wp_id]
     if not rows:
         return 1, f"DUR {wp_id}: kuyrukta satır yok — kayıt yoksa dağıtım yok (SOP §20.1, R8)"
     if len(rows) > 1:
         return 1, (f"DUR {wp_id}: aynı kimlikle {len(rows)} satır (durum geçmişi olabilir); hangisinin güncel olduğu "
                    "kuyruk sahibince doğrulanmadı — dağıtım yok")
-    state = rows[0][state_i].strip()
+    state = rows[0][state_i]
     entry = vocab.get(state)
     if entry is None:
         return 1, f"DUR {wp_id}: durum '{state}' doğrulanmadı — dağıtılabilir sayılmaz"
@@ -268,7 +348,7 @@ def summarize(cur: Table, vocab: dict[str, dict], queue: dict) -> dict:
     for row in cur.rows:
         if len(row) != len(cur.header):
             continue
-        state = row[state_i].strip()
+        state = row[state_i]
         cls = vocab[state]["class"] if state in vocab else UNVERIFIED
         by_class[cls] += 1
         if state not in vocab:
@@ -279,7 +359,7 @@ def summarize(cur: Table, vocab: dict[str, dict], queue: dict) -> dict:
     pending = queue["owner_confirmation"] != "confirmed" or any(v["confirmation"] != "confirmed" for v in vocab.values())
     id_count = Counter(r[id_i] for r in cur.rows if len(r) == len(cur.header))
     dispatchable_ids = sum(1 for r in cur.rows if len(r) == len(cur.header) and id_count[r[id_i]] == 1
-                           and vocab.get(r[state_i].strip(), {}).get("dispatch") == "yes")
+                           and vocab.get(r[state_i], {}).get("dispatch") == "yes")
     return {
         "queue_id": queue["queue_id"],
         "control_tower": queue["control_tower"],
@@ -356,7 +436,7 @@ def baseline(queue: dict) -> Table:
     data = git_file(queue["baseline_commit"], queue["path"])
     if data is None:
         raise SystemExit(f"{queue['queue_id']}: taban {queue['baseline_commit']} okunamadı")
-    return Table(data.decode("utf-8"))
+    return Table(decode(data, f"{queue['queue_id']} tabanı"))
 
 
 def list_refs() -> list[tuple[str, str]]:
@@ -375,6 +455,7 @@ def blob_ids(specs: list[str]) -> list[str | None]:
 
 def writers(queue: dict, base_ref: str) -> tuple[int, list[str]]:
     path = queue["path"]
+    safe_ref(base_ref)
     base_blob = blob_ids([f"{base_ref}:{path}"])[0]
     if base_blob is None:
         return 2, [f"{base_ref}: '{path}' yok — --base ile başka bir referans verin"]
@@ -513,6 +594,47 @@ def self_test() -> int:
                   any("owner_confirmation" in p for p in problems) and any("dispatch" in p for p in problems)
                   and any("source" in p for p in problems)))
 
+    # fail-closed cases from the 2026-10-15 audit
+    hb = header + "\n" + "\n".join([
+        "Q20\tready one\tREADY\tCT\t-\t-\t2026-10-01\t-",
+        "Q20\tsuperseded\tSUPERSEDED (by Q21)\tCT\t-\t-\t2026-10-02\t-",
+        "Q21\tclosed\tDONE\tCT\t-\t-\t2026-10-01\tdocs/records/x.md",
+        "Q22\tunverified\tDONE (CT ACCEPTED)\tCT\t-\t-\t2026-10-01\t-",
+        "Q23\twaiting\tHELD\tCT\tQ20\tQ20 reports\t2026-10-01\t-",
+    ]) + "\n"
+    b2 = Table(hb)
+
+    def checked(text: str) -> dict:
+        return check_queue(Table(text), b2, vocab)
+
+    lost = hb.replace("Q20\tsuperseded\tSUPERSEDED (by Q21)\tCT\t-\t-\t2026-10-02\t-\n", "")
+    c = checked(lost)
+    cases.append(("sabotage: the other row of a repeated id deleted -> require DUR for that id",
+                  "Q20" in c["bad"] and require(Table(lost), vocab, "Q20", False, c["bad"])[0] == 1))
+    reopened = hb.replace("Q21\tclosed\tDONE\t", "Q21\tclosed\tREADY\t")
+    c = checked(reopened)
+    cases.append(("sabotage: DONE reopened in place as READY -> HATA and require DUR",
+                  "Q21" in c["bad"] and require(Table(reopened), vocab, "Q21", False, c["bad"])[0] == 1))
+    unverified = hb.replace("Q22\tunverified\tDONE (CT ACCEPTED)\t", "Q22\tunverified\tREADY\t")
+    cases.append(("sabotage: an unverified state turned READY in place -> HATA", "Q22" in checked(unverified)["bad"]))
+    c = checked(hb.replace("Q23\twaiting\tHELD\t", "Q23\twaiting\tREADY\t"))
+    cases.append(("HELD -> READY with the same trigger -> UYARI, not HATA",
+                  not c["errors"] and any("redispatch_trigger" in w for w in c["warnings"])))
+    cases.append(("sabotage: id with a trailing space -> HATA",
+                  any("boşluk" in e for e in checked(hb + "Q24 \tnew\tREADY\tCT\t-\t-\t2026-10-15\t-\n")["errors"])))
+    padded = hb + "Q25\tnew\tREADY \tCT\t-\t-\t2026-10-15\t-\n"
+    cases.append(("sabotage: state 'READY ' with a trailing space -> not dispatchable",
+                  require(Table(padded), vocab, "Q25", False)[0] == 1))
+    cases.append(("sabotage: a blank line -> structural error",
+                  any("boş satır" in e for e in structure_errors(Table(hb + "\nQ26\tx\tREADY\tCT\t-\t-\t2026-10-15\t-\n"), b2))))
+    try:
+        git_file("--output=/dev/null", "x")
+        refused = False
+    except SystemExit:
+        refused = True
+    cases.append(("sabotage: a ref starting with '-' is refused before git runs", refused))
+    cases.append(("merge check: rows lost against another version are reported", loss_against(Table(lost), b2) != []))
+
     for name, ok in cases:
         print(f"{'PASS' if ok else 'FAIL'} {name}")
     failed = [n for n, ok in cases if not ok]
@@ -530,6 +652,7 @@ def main() -> int:
     p = argparse.ArgumentParser(description="Control Tower task queues: validate, require, guard, writers, summary (read-only).")
     sub = p.add_subparsers(dest="cmd", required=True)
     pv = sub.add_parser("validate"); pv.add_argument("--queue"); pv.add_argument("--ref")
+    pv.add_argument("--against", action="append", default=[], help="also report rows this version lost against REF")
     pr = sub.add_parser("require"); pr.add_argument("wp_id"); pr.add_argument("--queue", required=True)
     pr.add_argument("--new-version", action="store_true")
     pg = sub.add_parser("guard"); pg.add_argument("--queue", required=True)
@@ -545,7 +668,13 @@ def main() -> int:
             print(f"HATA {line}")
         failed = bool(problems)
         for q in queues:
-            errors, warnings = validate_queue(Table(current_bytes(q, a.ref).decode("utf-8")), baseline(q), vocabulary(states, q["queue_id"]))
+            cur = Table(decode(current_bytes(q, a.ref), q["path"]))
+            errors, warnings = validate_queue(cur, baseline(q), vocabulary(states, q["queue_id"]))
+            for other in a.against:
+                data = git_file(other, q["path"])
+                if data is None:
+                    fail(f"DUR: {other}: '{q['path']}' okunamadı")
+                errors += [f"{line} ({other}'e göre)" for line in loss_against(cur, Table(decode(data, other)))]
             for line in errors:
                 print(f"HATA {q['queue_id']} {line}")
             for line in warnings:
@@ -559,16 +688,16 @@ def main() -> int:
     q = queues[0] if a.cmd in ("require", "guard") else None
     if a.cmd == "require":
         vocab = vocabulary(states, q["queue_id"])
-        cur = Table(current_bytes(q, None).decode("utf-8"))
+        cur = Table(decode(current_bytes(q, None), q["path"]))
         base = baseline(q)
         if structure_errors(cur, base):
-            print(f"DUR: kuyruk okunamıyor (başlık ya da sütun hatası) — python3 scripts/ct_queue.py validate --queue {q['queue_id']}")
+            print(f"DUR: kuyruk okunamıyor (başlık, sütun ya da boş satır) — python3 scripts/ct_queue.py validate --queue {q['queue_id']}")
             return 1
-        code, line = require(cur, vocab, a.wp_id.strip(), a.new_version)
+        checked = check_queue(cur, base, vocab)
+        code, line = require(cur, vocab, a.wp_id.strip(), a.new_version, checked["bad"])
         print(line)
-        errors, _ = validate_queue(cur, base, vocab)
-        if errors:
-            print(f"NOT: kuyrukta {len(errors)} doğrulama hatası var (validate); bu kimliğin kararını değiştirmez.")
+        if checked["errors"]:
+            print(f"NOT: kuyrukta {len(checked['errors'])} doğrulama hatası var (validate).")
         if q["owner_confirmation"] != "confirmed" or any(v["confirmation"] != "confirmed" for v in vocab.values()):
             print(PROVISIONAL)
         return code
@@ -578,7 +707,7 @@ def main() -> int:
             print("--expect-sha256 ve --expect-rows birlikte verilir")
             return 2
         data = current_bytes(q, None)
-        rows = len(Table(data.decode("utf-8")).rows)
+        rows = len(Table(decode(data, q["path"])).rows)
         code, out = guard(data, rows, a.expect_sha256, a.expect_rows)
         print("\n".join(out))
         if a.expect_sha256 is None:
@@ -596,7 +725,13 @@ def main() -> int:
         return worst
 
     if a.cmd == "summary":
-        result = [summarize(Table(current_bytes(q, a.ref).decode("utf-8")), vocabulary(states, q["queue_id"]), q) for q in queues]
+        result = []
+        for q in queues:
+            cur = Table(decode(current_bytes(q, a.ref), q["path"]))
+            broken = structure_errors(cur, baseline(q))
+            if broken:
+                fail(f"DUR: {q['queue_id']} kuyruğu okunamıyor — {broken[0]}")
+            result.append(summarize(cur, vocabulary(states, q["queue_id"]), q))
         if a.json:
             print(json.dumps(result, ensure_ascii=False, indent=2))
         else:

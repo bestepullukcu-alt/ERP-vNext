@@ -19,7 +19,7 @@ build recipes instead of one declared stack; 7 WPs needed a re-issued prompt, an
 events happened at the lane-placement gate (C9, C10).
 
 1. **Ledger-row gate (R8; changed in r3 below):** §17.1 and the §36 record carry the WP's row from the dispatching
-   Control Tower's registered task source (`CT-QUEUE.tsv` for SCE / MVP6). The §20 preflight checks that the row exists;
+   Control Tower's registered task source (`docs/roadmap/plans/mvp6-process-pilot-01/CT-QUEUE.tsv` for SCE / MVP6). The §20 preflight checks that the row exists;
    if it does not, the WP stops (§20.1).
 2. **Base-stack field (R9):** §17.1 and the §36 record carry `Base Stack` (BASE-STACK record path + SHA256). It is
    required for every Mac build/test/runtime WP.
@@ -28,7 +28,8 @@ events happened at the lane-placement gate (C9, C10).
    §17.4 blocks.
 4. **Dispatch workflow:** CT picks the template from the §36.2 table and runs the dispatch gates in the §20 preflight
    before it issues a prompt. (The separate dispatch workflow file was withdrawn in `63fa9cd59`: shared workflows are
-   not added without owner approval.)
+   not added without owner approval.) Since r3: the §36.2 templates T1–T4 belong to the SCE / MVP6 Control Tower; every
+   other Control Tower uses the §36.1 skeleton and names it in the prompt.
 
 Revision r2 (WP Q162, findings of the independent VER Q142):
 
@@ -38,19 +39,31 @@ Revision r2 (WP Q162, findings of the independent VER Q142):
   are removed. T2 takes the record path, SHA256 and layer chain as written in the cited record. The rule is unchanged: one
   versioned BASE-STACK record + SHA256 (K4).
 
-Revision r3 (owner decision `CT-R8-REGISTERED-TASK-SOURCE-OWNER-DECISION-01`, 2026-10-15; record in `docs/records/decisions/2026-10/`):
+Revision r3 (owner decisions `CT-R8-REGISTERED-TASK-SOURCE-OWNER-DECISION-01` and `CT-R8-TRANSITION-PERIOD-OWNER-DECISION-01`, 2026-10-15;
+records in `docs/records/decisions/2026-10/`):
 
-- **R8 — registered task source.** Every Control Tower uses the verified work row in its own registered and authorised
-  task source, listed in `execution/delivery/ct-queue-registry.tsv`. `CT-QUEUE.tsv` is the SCE / MVP6 Control Tower's
-  source; no other Control Tower writes it.
+- **R8 — registered task source.** Every Control Tower uses the verified work row in its own registered task source.
+  Registered means a valid, verifiable row for that Control Tower in `execution/delivery/ct-queue-registry.tsv` on
+  `main`. A similar file name, or another file named `CT-QUEUE.tsv`, is not a registration. The SCE / MVP6 Control
+  Tower's source is `docs/roadmap/plans/mvp6-process-pilot-01/CT-QUEUE.tsv` (row `sce-mvp6`); no other Control Tower writes it.
 - **Field names.** §17.1 and §36: `CT-QUEUE Row (exact text)` becomes `Task Source Row (exact text)`. §20:
   `CT-QUEUE row present` becomes `Task source row present`. The §36.2 templates T1–T4 belong to SCE / MVP6 and are not
   changed; there the old names keep meaning the SCE / MVP6 source.
-- **No registered task source.** The Control Tower dispatches only under `CT-R8-TRANSITIONAL-DEVIATION-OWNER-DECISION-01`, on that record's terms: while it
-  is in force, after confirming receipt, inside an approved work package or Module Pack, with its separate transition
-  reference and report line. Otherwise STOP (§20.1). No new scope is released by this revision.
+- **Templates.** T1–T4 in §36.2 belong to SCE / MVP6. Every other Control Tower uses the §36.1 skeleton.
+- **No registered task source.**
+  - During the transition period the Control Tower dispatches only under `CT-R8-TRANSITIONAL-DEVIATION-OWNER-DECISION-01`, on that record's terms: confirmed
+    receipt, an approved work package or Module Pack, the separate transition reference and the report line.
+  - After the period, work packages explicitly approved before its end continue and may be dispatched within their
+    approved scope. A new work package under an existing capability is not approved in advance by that capability.
+  - A work package approved after the end needs a registered task source or a time-limited exception the owner
+    approved explicitly, naming the Control Tower, the reason, the scope, and a start and end date.
+  - Otherwise no new dispatch (§20.1). Running work is never stopped by this rule, and no capability gets a time limit.
+    No new scope is released by this revision.
+- **Transition period.** 30 calendar days from the day r3 is merged to `main` (`CT-R8-TRANSITION-PERIOD-OWNER-DECISION-01`). After it, every REP-001 report
+  of a Control Tower without a registered task source carries the line
+  `Kayıtlı görev kaynağı yok (R8 geçiş süresi <bitiş tarihi> bitti)`.
 - **In force.** r3 is in force when it is on `main`; until then v2.5 r2 applies, with the transition decision for the
-  Control Towers that confirmed it. When the transition decision ends is set by that decision and its owner, not here.
+  Control Towers that confirmed it.
 
 ### 0.2 v2.4'te eklenen dispatch-adresleme kontrolleri
 
@@ -852,7 +865,7 @@ Paralellik varsa en az iki executable prompt üretmek hedeflenir; güvenli deği
 Work Package ID:
 Prompt ID:
 Prompt Version:
-Task Source Row (exact text): # R8 (r3) — row as in the CT's registered task source; SCE / MVP6: CT-QUEUE.tsv; no row → no dispatch (§20.1)
+Task Source Row (exact text): # R8 (r3) — row as in the CT's registered task source; SCE / MVP6: docs/roadmap/plans/mvp6-process-pilot-01/CT-QUEUE.tsv; no row → §0.1 r3 rules, else no dispatch (§20.1)
 
 Capability Block:
 Module:
@@ -891,10 +904,12 @@ A | B | C
 
 - `Task Source Row (exact text)` (until r3: `CT-QUEUE Row (exact text)`) is copied at dispatch from the dispatching
   Control Tower's registered task source (`execution/delivery/ct-queue-registry.tsv`). That source's single writer adds
-  the row before the WP starts; for SCE / MVP6 the source is `CT-QUEUE.tsv` and the writer is T4 (§36.2), unchanged.
+  the row before the WP starts; for SCE / MVP6 the source is `docs/roadmap/plans/mvp6-process-pilot-01/CT-QUEUE.tsv` and the writer is T4 (§36.2),
+  unchanged.
   CT does not dispatch a WP whose row does not exist (R8; §20.1).
-- A Control Tower with no registered task source dispatches only under `CT-R8-TRANSITIONAL-DEVIATION-OWNER-DECISION-01` (see §0.1 r3). It leaves the
-  field empty and adds the separate line `R8 geçiş referansı (CT-QUEUE satırı değildir): …` that the record prescribes.
+- A Control Tower with no registered task source follows the §0.1 r3 rules. Under `CT-R8-TRANSITIONAL-DEVIATION-OWNER-DECISION-01` it leaves the field empty and
+  adds the separate line `R8 geçiş referansı (CT-QUEUE satırı değildir): …` that the record prescribes; under an
+  owner-approved exception the separate line names the exception instead.
 - `Base Stack` names one versioned BASE-STACK record and its SHA256 (K4: a changed stack is a new file, never an edit).
   It is required for Mac build/test/runtime WPs; other WPs write `n/a`. The Mac lane checks the record folder's
   `SHA256SUMS` and the quoted hash before composing, and writes any deviation in its report (R9).
@@ -1174,7 +1189,7 @@ Staged files:
 Unstaged relevant files:
 Untracked relevant files:
 Unrelated dirty inventory:
-Task source row present:     # R8 (r3) — yes / no (the WP ID in the CT's registered task source; SCE / MVP6: CT-QUEUE.tsv). "no" stops, unless the R8 transition decision applies (§0.1 r3)
+Task source row present:     # R8 (r3) — yes / no (the WP ID in the CT's registered task source; SCE / MVP6: docs/roadmap/plans/mvp6-process-pilot-01/CT-QUEUE.tsv). "no" stops, unless a §0.1 r3 rule applies
 ```
 
 ## 20.1 Stop conditions
@@ -1187,8 +1202,8 @@ Aşağıdakilerde fail-closed:
 - overlapping dirty files,
 - protected path değişikliği gerekiyor ama approval yok,
 - dependency unsatisfied,
-- WP row missing in the dispatching Control Tower's registered task source, and the R8 transition decision does not
-  apply to it (R8, §0.1 r3),
+- WP row missing in the dispatching Control Tower's registered task source, and no §0.1 r3 rule applies (transition
+  decision within the period, work package approved before the period ended, owner-approved exception) (R8),
 - pack draft,
 - missing/ambiguous contract,
 - ownership conflict,

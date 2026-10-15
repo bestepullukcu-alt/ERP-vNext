@@ -1,4 +1,4 @@
-# CONTROL TOWER — Daily Operating Card v1.3
+# CONTROL TOWER — Daily Operating Card v1.4
 
 > **Purpose:** günlük Control Tower turu için hızlı gate. Yeni authority yaratmaz. Ayrıntı için [CONTROL TOWER SOP](./control-tower-sop.md) (v2.5 r3).
 
@@ -13,14 +13,15 @@
 - [ ] **Execution:** Profile A/B/C + Agent Lane ID/Type + risk class açık.
 - [ ] **Target agent:** entry point §6'dan seçildi; o ajanın §17.4 zorunlu giriş alanları dolu; paste-ready prompt (§36.1) hazır.
 - [ ] **Acceptance:** golden/contract/inspection flow + measurable AC + required evidence level açık.
-- [ ] **Görev kaynağı satırı (R8, r3):** WP'nin satırı, dağıtan Control Tower'ın kayıtlı görev kaynağında dağıtımdan önce var (SCE / MVP6: CT-QUEUE). Kayıtlı kaynak yoksa yalnız `CT-R8-TRANSITIONAL-DEVIATION-OWNER-DECISION-01` kapsamında: kararı aldığını doğrulamış, onaylı WP / Module Pack, ayrı geçiş referansı. Değilse STOP (SOP §0.1 r3, §17.1, §20.1).
+- [ ] **Görev kaynağı satırı (R8, r3):** WP'nin satırı, dağıtan Control Tower'ın kayıtlı görev kaynağında dağıtımdan önce var (kayıtlı = `execution/delivery/ct-queue-registry.tsv`'de `main`'de geçerli bir satır; SCE / MVP6: `docs/roadmap/plans/mvp6-process-pilot-01/CT-QUEUE.tsv`). Kayıtlı kaynak yoksa: 30 günlük geçiş süresinde yalnız `CT-R8-TRANSITIONAL-DEVIATION-OWNER-DECISION-01` kapsamında (kararı aldığını doğrulamış, onaylı WP / Module Pack, ayrı geçiş referansı); süre bitince yalnız bitişten önce onaylanmış WP'ler, sonra onaylananlar için kayıtlı kaynak ya da sahibin süreli istisnası. Değilse yeni dağıtım yok; çalışan iş durdurulmaz (SOP §0.1 r3, §17.1, §20.1).
 - [ ] **Kuyruk kontrolü (yardımcı; zorunlu kapı değil):** `python3 scripts/ct_queue.py require <WP-ID> --queue <kuyruk>` — çıkış 1 = satır yok, aynı kimlikle birden çok satır ya da durum dağıtılabilir değil. Kuyruklar [`ct-queue-registry.tsv`](../../../execution/delivery/ct-queue-registry.tsv)'de; kayıtlı kuyruğu olmayan Control Tower için dağıtım kendiliğinden serbest değildir. Kuyruğa yazmadan önce `guard` (kilit değildir); dallar arası kimlik çakışması için `writers`.
 
 **Bir kritik madde FAIL → implementation dispatch yok.**
 
-> **R8 (SOP r3, karar `CT-R8-REGISTERED-TASK-SOURCE-OWNER-DECISION-01`):** her Control Tower kendi kayıtlı görev kaynağını kullanır; SCE / MVP6 kuyruğuna
-> başkası yazmaz; §36.2 T1–T4 SCE / MVP6'nındır ve değişmedi. Yürürlük: r3 `main`'e girdiğinde; o zamana kadar v2.5 r2
-> ve geçiş kararı (yalnız onu aldığını doğrulayan Control Tower'lar için).
+> **R8 (SOP r3; kararlar `CT-R8-REGISTERED-TASK-SOURCE-OWNER-DECISION-01`, `CT-R8-TRANSITION-PERIOD-OWNER-DECISION-01`):** her Control Tower kendi kayıtlı
+> görev kaynağını kullanır; SCE / MVP6 kuyruğuna başkası yazmaz; §36.2 T1–T4 SCE / MVP6'nındır, diğerleri §36.1'i
+> kullanır. Yürürlük: r3 `main`'e girdiğinde; 30 günlük geçiş süresi o gün başlar. O zamana kadar v2.5 r2 ve geçiş
+> kararı (yalnız onu aldığını doğrulayan Control Tower'lar için).
 
 ## 2. PARALLEL / Agent Lane gate
 
@@ -64,7 +65,7 @@ Aşağıdakilerde STOP: wrong branch/HEAD, overlapping dirty files, draft pack, 
 - [ ] State-changing ise UI/API + persisted state + audit/observability.
 - [ ] RBAC + tenant + concurrency + idempotency applicable kontrolleri.
 - [ ] Cross-module ise Integration Gate.
-- [ ] Bilinen kırmızılar: sonuç `python3 scripts/known_failures.py check <log|trx>` ile `tests/known-failures.tsv`'ye karşı okunur; **YENİ = regresyon, STOP**. Yerel tekrar tanıdan önce `should-rerun --suite <ad>`; ATLA yalnız yerel tekrar tanı içindir — CI, zorunlu kabul, güvenlik testleri ve sahibin açıkça istediği testler atlanmaz.
+- [ ] Bilinen kırmızılar: koşu TRX ile alınır (`dotnet test … --logger "trx;LogFileName=<dosya>"`) ve `python3 scripts/known_failures.py check <trx> --suite <ad>` ile `tests/known-failures.tsv`'ye karşı okunur. Çıkış 0 = yalnız kayıtlı kırmızılar, ayrıntıları (parmak izi) aynı; 1 = YENİ ya da YENİ-AYRINTI → regresyon, STOP; 2 = koşu güvenilir değil (boş, bozuk, eksik, iptal) → STOP; 3 = konsol çıktısı, ayrıntı doğrulanmadı → kabul için yetmez. Yerel tekrar tanıdan önce `should-rerun --suite <ad>`: ATLA yalnız adı verilen kayıtlı testler içindir — süitin geri kalanı, CI, zorunlu kabul, güvenlik testleri ve sahibin açıkça istediği testler atlanmaz.
 
 ## 6. CLOSE / REPLAN
 
@@ -110,10 +111,10 @@ Replanning = Closure
 
 | Domain | Control Tower | Kanıt |
 |---|---|---|
-| supply-chain-execution | MVP6 Control Tower (CT-QUEUE) | `docs/roadmap/plans/mvp6-process-pilot-01/CT-QUEUE.tsv@6b8a62d5a` (MOD-0147, 0148, 0183–0192) · `docs/guides/operations/mvp6-development-process-v1.0.md@6b8a62d5a` |
+| supply-chain-execution | MVP6 Control Tower (CT-QUEUE) — **kısmi**: MOD-0147, 0148, 0183–0187, 0190, 0192; domainin diğer modülleri Belirsiz | `docs/roadmap/plans/mvp6-process-pilot-01/CT-QUEUE.tsv@6b8a62d5a` (bu modüllerin satırları; MOD-0188 yalnız başka bir sahibe atıf olarak geçer, 0189 ve 0191 hiç geçmez) · `docs/guides/operations/mvp6-development-process-v1.0.md@6b8a62d5a` |
 | pharmacovigilance | PVG Control Tower — planda; güncelliği doğrulanmadı | `docs/roadmap/plans/pvg-control-tower-development-plan-2026-08-13.md@6b8a62d5a` |
-| platform-shared-services | Kapanış Control Tower'ı — **kısmi**: Auth, Platform, MOD-0023 onay motoru, MOD-0024 Görev Merkezi, MOD-0027 bildirimler; kapanış sonrası "modül başına CT" planı nedeniyle güncelliği doğrulanmalı | `docs/roadmap/backlog/product-backlog.md@6b8a62d5a` "SAHİP: CT (…)" etiketleri (Auth 13, MOD-0024/Görev Merkezi/WorkCenter 12, MOD-0023 ve onay motoru 10, Platform ve bildirimler 6); paketler `execution/domains/platform-shared-services/module-packs/@6b8a62d5a` |
-| master-data-management | Kapanış Control Tower'ı — **kısmi**: MDM devralma, MOD-0220; güncelliği doğrulanmalı | `docs/roadmap/backlog/product-backlog.md@6b8a62d5a` "SAHİP: CT (…)" etiketleri (MDM devralma 10, MDM 4, MOD-0220 2) |
+| platform-shared-services | Backlog'daki "CT" — **kısmi**: Auth, Platform, MOD-0023 onay motoru, MOD-0024 Görev Merkezi, MOD-0027 bildirimler. Etiket yalnız "CT" der, hangi Control Tower olduğunu söylemez; bugünkü sahip, sahip kararı bekliyor | `docs/roadmap/backlog/product-backlog.md@6b8a62d5a` "SAHİP: CT (…)" etiketleri (Auth 13, MOD-0024/Görev Merkezi/WorkCenter 12, MOD-0023 ve onay motoru 10, Platform ve bildirimler 6); paketler `execution/domains/platform-shared-services/module-packs/@6b8a62d5a` |
+| master-data-management | Backlog'daki "CT" — **kısmi**: MDM devralma, MOD-0220. Bugünkü sahip, sahip kararı bekliyor | `docs/roadmap/backlog/product-backlog.md@6b8a62d5a` "SAHİP: CT (…)" etiketleri (MDM devralma 10, MDM 4, MOD-0220 2) |
 | procurement | Belirsiz — sahip ataması bekliyor | CT-QUEUE'da yalnız MOD-0140 satırı var; domain sahipliği sayılmadı |
 | commercial-suite | Belirsiz — sahip ataması bekliyor | — |
 | developer-enablement | Belirsiz — sahip ataması bekliyor | — |
@@ -121,4 +122,4 @@ Replanning = Closure
 | human-capital-management | Belirsiz — sahip ataması bekliyor | — |
 | management-governance | Belirsiz — sahip ataması bekliyor | `domain-config.md`'deki "Control Tower Gate 2" bir kapıdır, sahiplik değildir |
 | portfolio-delivery | Belirsiz — sahip ataması bekliyor | — |
-| *(domain dışı)* altyapı, CI, test altyapısı, ortak ön yüz | Kapanış Control Tower'ı; güncelliği doğrulanmalı | `docs/roadmap/backlog/product-backlog.md@6b8a62d5a` "SAHİP: CT (…)" etiketleri (altyapı 12, ortak ön yüz 5, test altyapısı 2) |
+| *(domain dışı)* altyapı, CI, test altyapısı, ortak ön yüz | Backlog'daki "CT"; bugünkü sahip, sahip kararı bekliyor | `docs/roadmap/backlog/product-backlog.md@6b8a62d5a` "SAHİP: CT (…)" etiketleri (altyapı 12, ortak ön yüz 5, test altyapısı 2) |
