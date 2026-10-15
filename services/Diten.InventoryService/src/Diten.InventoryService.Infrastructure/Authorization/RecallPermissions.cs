@@ -68,7 +68,7 @@ public static class RecallPermissions
     ];
 
     /// <summary>The keys the controller enforces so far (R1 + R2 trace keys + R3 quarantine-request / return-link keys + R5 drill keys + R6 panel key) — exactly what the manifest declares as API permissions.</summary>
-    public static readonly IReadOnlyList<string> Implemented = [.. R1Only, TraceRun, TraceExport, QuarantineRequestsCreate, ReturnsLink, DrillsRead, DrillsManage, DrillsRun, DashboardRead];
+    public static readonly IReadOnlyList<string> Implemented = [.. R1Only, TraceRun, TraceExport, QuarantineRequestsCreate, ReturnsLink, DrillsRead, DrillsManage, DrillsRun, DashboardRead, EvidenceExport];
 
     /// <summary>
     /// The shared namespace test (<c>ManifestNamespaceOwnershipTests</c>, WP-0177-R1) pins the manifest against <c>R1</c>; under the R2 PARALEL

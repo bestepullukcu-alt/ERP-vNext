@@ -104,6 +104,20 @@ public interface IRecallRepository
 
     Task<RecallReturnLink?> FindReturnLinkByKeyAsync(Guid linkedBy, string idempotencyKey, CancellationToken cancellationToken = default);
 
+    // ── R7b: the evidence pack (pack §4.13) — the company's export log and the stored bytes ──
+
+    Task<RecallEvidenceExport?> FindEvidenceExportByKeyAsync(Guid exportedBy, string idempotencyKey, CancellationToken cancellationToken = default);
+
+    Task<RecallEvidenceExport?> FindEvidenceExportAsync(Guid exportId, CancellationToken cancellationToken = default);
+
+    Task<RecallEvidenceFile?> FindEvidenceFileAsync(Guid exportId, CancellationToken cancellationToken = default);
+
+    /// <summary>The export log of the company, newest first.</summary>
+    Task<(IReadOnlyList<RecallEvidenceExport> Items, long Total)> ListEvidenceExportsAsync(int page, int pageSize, CancellationToken cancellationToken = default);
+
+    /// <summary>The export exists in another company of the tenant (the controller answers 403 instead of 404).</summary>
+    Task<bool> EvidenceExportExistsInAnotherCompanyAsync(Guid exportId, CancellationToken cancellationToken = default);
+
     /// <summary>R4 (CT-R16): one prepared settings change of this company (the MOD-0022 subject <c>recall.settings-change</c>).</summary>
     Task<RecallSettingsChange?> FindSettingsChangeAsync(Guid changeId, CancellationToken cancellationToken = default);
 
@@ -180,6 +194,9 @@ public interface IRecallWriteSession
     Task<bool> ReplaceQuarantineRequestAsync(RecallQuarantineRequest request, int expectedVersion, CancellationToken cancellationToken = default);
 
     Task InsertReturnLinkAsync(RecallReturnLink link, CancellationToken cancellationToken = default);
+
+    /// <summary>R7b — the export log row and its file bytes (insert-only, one transaction with the audit row).</summary>
+    Task InsertEvidenceExportAsync(RecallEvidenceExport export, RecallEvidenceFile file, CancellationToken cancellationToken = default);
 
     /// <summary>R4: a prepared settings change (insert-only).</summary>
     Task InsertSettingsChangeAsync(RecallSettingsChange change, CancellationToken cancellationToken = default);

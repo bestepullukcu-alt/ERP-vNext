@@ -76,5 +76,13 @@ public static class RecallCollections
     /// the counter and audit rows (pack §8.10).</summary>
     public static readonly IReadOnlyList<string> SinceR5 = [DrillPlans, DrillRuns, DrillEvents];
 
-    public static IEnumerable<string> Everything => All.Concat(SinceR2).Concat(SinceR3).Concat(SinceR4).Concat(SinceR5);
+    /// <summary>R7b (pack §4.13) — the evidence export log (insert-only) and the stored file bytes of each export (insert-only).</summary>
+    public const string EvidenceExports = "recall_evidence_exports";
+
+    public const string EvidenceFiles = "recall_evidence_files";
+
+    /// <summary>The R7b collections (declared beside <see cref="SinceR5"/> by the single-SoR test).</summary>
+    public static readonly IReadOnlyList<string> SinceR7b = [EvidenceExports, EvidenceFiles];
+
+    public static IEnumerable<string> Everything => All.Concat(SinceR2).Concat(SinceR3).Concat(SinceR4).Concat(SinceR5).Concat(SinceR7b);
 }

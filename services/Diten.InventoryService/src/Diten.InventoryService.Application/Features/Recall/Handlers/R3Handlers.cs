@@ -288,11 +288,13 @@ public sealed class GetRecallCaseReturnsHandler : IRequestHandler<GetRecallCaseR
 {
     private readonly IRecallRepository _repository;
     private readonly IRecallLedgerReader _ledger;
+    private readonly IRecallQuarantineRequester _quarantine;
 
-    public GetRecallCaseReturnsHandler(IRecallRepository repository, IRecallLedgerReader ledger)
+    public GetRecallCaseReturnsHandler(IRecallRepository repository, IRecallLedgerReader ledger, IRecallQuarantineRequester quarantine)
     {
         _repository = repository;
         _ledger = ledger;
+        _quarantine = quarantine;
     }
 
     public async Task<Response<RecallReturnsDto>> Handle(GetRecallCaseReturnsQuery request, CancellationToken ct)
@@ -316,7 +318,9 @@ public sealed class GetRecallCaseReturnsHandler : IRequestHandler<GetRecallCaseR
                 reason is null, reason));
         }
 
-        return Response<RecallReturnsDto>.Success(new RecallReturnsDto(links.Select(RecallReturnRules.Dto).ToList(), candidates));
+        var linked = new List<RecallReturnLinkDto>();
+        foreach (var link in links) linked.Add(await RecallReturnRules.WithHoldAsync(_quarantine, link, ct));
+        return Response<RecallReturnsDto>.Success(new RecallReturnsDto(linked, candidates));
     }
 }
 
@@ -336,6 +340,13 @@ public static class RecallReturnRules
         return null;
     }
 
+    /// <summary>
+    /// D-28 (RECALL 1.7.0) — the link with the MOD-0175 hold whose intake movement IS the linked return (the port's read-only
+    /// <c>HoldOfMovementAsync</c>); no hold → no hold fields (never a guess from the lot).
+    /// </summary>
+    public static async Task<RecallReturnLinkDto> WithHoldAsync(IRecallQuarantineRequester quarantine, RecallReturnLink l, CancellationToken ct)
+        => await quarantine.HoldOfMovementAsync(l.TransactionId, ct) is { } hold ? Dto(l) with { HoldId = hold.HoldId, HoldNumber = hold.HoldNumber } : Dto(l);
+
     public static RecallReturnLinkDto Dto(RecallReturnLink l)
         => new(l.Id.ToString("D"), l.Source.ToString(), l.TransactionId, l.TransactionNumber, new RecallLotRefDto(l.LotId, l.LotNumber), l.SkuId.ToString("D"), l.Quantity,
             l.BaseUomId, l.CustomerRef, l.ReturnReference, l.ToStockStatus is { } s ? WireNames.ToWire(s) : null, RecallSupport.Wire(l.PostedAtUtc),
@@ -353,9 +364,11 @@ public sealed class LinkRecallReturnHandler : IRequestHandler<LinkRecallReturnCo
     private readonly IRecallRepository _repository;
     private readonly IRecallLedgerReader _ledger;
     private readonly RecallSupport _support;
+    private readonly IRecallQuarantineRequester _quarantine;
 
-    public LinkRecallReturnHandler(IRecallRepository repository, IRecallLedgerReader ledger, RecallSupport support)
+    public LinkRecallReturnHandler(IRecallRepository repository, IRecallLedgerReader ledger, RecallSupport support, IRecallQuarantineRequester quarantine)
     {
+        _quarantine = quarantine;
         _repository = repository;
         _ledger = ledger;
         _support = support;
@@ -432,7 +445,7 @@ public sealed class LinkRecallReturnHandler : IRequestHandler<LinkRecallReturnCo
             return Response<RecallReturnLinkDto>.Fail(RecallErrorCodes.ReturnAlreadyLinked, "This return is already linked to a recall case.", 409);
         }
 
-        return Response<RecallReturnLinkDto>.Success(RecallReturnRules.Dto(link), 201);
+        return Response<RecallReturnLinkDto>.Success(await RecallReturnRules.WithHoldAsync(_quarantine, link, ct), 201);
     }
 
     private static Response<RecallReturnLinkDto> NotEligible(string message, string reason)

@@ -29,6 +29,8 @@ public static class RecallServiceCollectionExtensions
         // (R1) stays as the fallback type. Registration of the five recall actions rides the shared hosted service (one call per module).
         services.AddScoped<IRecallSignature, ESignRecallSignature>();
         services.AddScoped<RecallSubjectFacts>();
+        services.AddScoped<Application.Features.Recall.Evidence.RecallEvidenceBuilder>(); // R7b Kanıt Paketi (preview + files)
+        services.AddSingleton<Application.Features.Recall.Ports.IRecallEvidencePdfRenderer, RecallEvidencePdfRenderer>();
         services.AddScoped<IRecallSubjectDirectory, RecallSubjectDirectory>();
 
         // R2: the trace engine over in-process reads (pack §8.2) and the MVP-6 shipment read through the Gateway with the caller's

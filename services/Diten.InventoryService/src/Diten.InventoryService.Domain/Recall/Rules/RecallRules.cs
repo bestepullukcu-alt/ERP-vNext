@@ -44,6 +44,9 @@ public static class RecallErrorCodes
     /// <summary>R5 (RECALL 1.4.0): an unknown drill plan / run of the caller's company (another tenant's id is not found either).</summary>
     public const string DrillNotFound = "RECALL_DRILL_NOT_FOUND";
 
+    /// <summary>WP-0177-R7b (RECALL 1.7.0) — getEvidenceFile of an unknown export.</summary>
+    public const string EvidenceExportNotFound = "RECALL_EVIDENCE_EXPORT_NOT_FOUND";
+
     // shared (INVENTORY names)
     public const string ReasonRequired = "REASON_REQUIRED";
     public const string UnknownLot = "UNKNOWN_LOT";

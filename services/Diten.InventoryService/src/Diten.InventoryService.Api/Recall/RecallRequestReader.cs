@@ -225,6 +225,9 @@ public static class RecallRequestReader
 
     public static readonly HashSet<string> KeyMembers = new(StringComparer.Ordinal) { "idempotencyKey" };
 
+    /// <summary>WP-0177-R7b createEvidenceExport (RECALL 1.7.0).</summary>
+    public static readonly HashSet<string> EvidenceExportMembers = new(StringComparer.Ordinal) { "idempotencyKey", "caseId", "runId", "from", "to", "format" };
+
     public static readonly HashSet<string> PrepareMembers = new(StringComparer.Ordinal) { "idempotencyKey", "action", "note", "summary", "openQuantityAcceptance" };
 
     public static readonly HashSet<string> SignedNoteMembers = new(StringComparer.Ordinal) { "idempotencyKey", "note", "signatureId" };

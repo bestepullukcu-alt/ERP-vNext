@@ -34,7 +34,7 @@ public sealed class RecallContract160Tests
     public void The_1_6_0_change_is_additive_only()
     {
         var before = Load(FixtureV150Path);
-        var after = Load(ContractSchemas.RecallContractPath);
+        var after = Load(RecallContract170Tests.FixtureV160Path); // WP-0177-R7b: 1.6.0 is pinned; 1.6.0 → 1.7.0 is RecallContract170Tests
         Assert.Equal(("1.5.0", "1.6.0"), (before["info"]!["version"]!.GetValue<string>(), after["info"]!["version"]!.GetValue<string>()));
 
         Assert.Equal(["getCaseCustomers", "getCaseEffectiveness"], Strings(after["info"]!["x-implemented-by-slice"]!["R7a"]));

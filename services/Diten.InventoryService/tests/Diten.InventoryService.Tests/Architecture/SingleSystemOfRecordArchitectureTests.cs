@@ -62,6 +62,8 @@ public sealed class SingleSystemOfRecordArchitectureTests
         Assert.Equal(["recall_settings_changes"], Diten.InventoryService.Persistence.Recall.RecallCollections.SinceR4.OrderBy(x => x).ToList());
         // MOD-0177 (WP-0177-R5) — the drill plans, runs and their events (KR-G, read-only rehearsal); not stock
         Assert.Equal(["recall_drill_events", "recall_drill_plans", "recall_drill_runs"], Diten.InventoryService.Persistence.Recall.RecallCollections.SinceR5.OrderBy(x => x).ToList());
+        // MOD-0177 (WP-0177-R7b) — the evidence export log and the stored file bytes (pack §4.13, insert-only); not stock
+        Assert.Equal(["recall_evidence_exports", "recall_evidence_files"], Diten.InventoryService.Persistence.Recall.RecallCollections.SinceR7b.OrderBy(x => x).ToList());
     }
 
     [Fact]
@@ -75,6 +77,7 @@ public sealed class SingleSystemOfRecordArchitectureTests
             .Concat(Diten.InventoryService.Persistence.Recall.RecallCollections.SinceR3) // MOD-0177 (WP-0177-R3)
             .Concat(Diten.InventoryService.Persistence.Recall.RecallCollections.SinceR4) // MOD-0177 (WP-0177-R4)
             .Concat(Diten.InventoryService.Persistence.Recall.RecallCollections.SinceR5) // MOD-0177 (WP-0177-R5)
+            .Concat(Diten.InventoryService.Persistence.Recall.RecallCollections.SinceR7b) // MOD-0177 (WP-0177-R7b)
             .Concat(Diten.InventoryService.Persistence.Quarantine.QuarantineCollections.All)
             .Concat(Diten.InventoryService.Persistence.Expiry.ExpiryCollections.All).ToList();
         var named = persistence

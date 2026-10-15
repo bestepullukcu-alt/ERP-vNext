@@ -15,6 +15,8 @@ namespace Diten.InventoryService.Api.Recall;
 /// their keys leave <c>ApiPermissions</c> (the page / action declares them). The other keys stay API-only until their R7 pages.</para>
 /// <para><b>WP-0177-R7a:</b> the case detail page RECALLCASEDETAILS (not in the menu, parent RECALLCASES) with one action per §11.3 button; the case
 /// keys leave <c>ApiPermissions</c>. Settings and drill keys stay API-only until their R7b pages.</para>
+/// <para><b>WP-0177-R7b:</b> Tatbikat Planlayıcı, Kanıt Paketi and Ayarlar (pack §11.1) with their §11.3 buttons; only <c>recall.lots.status.read</c>
+/// stays an API permission (by design, pack §14.2).</para>
 /// </summary>
 public sealed class RecallReadinessManifestProvider : IModuleManifestProvider
 {
@@ -91,6 +93,47 @@ public sealed class RecallReadinessManifestProvider : IModuleManifestProvider
                         new ModuleManifestAction("RECALL_EFFECTIVENESS_COMPLETE", "Complete the effectiveness check", RecallPermissions.EffectivenessComplete, "Toolbar", 120, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
                         new ModuleManifestAction("RECALL_CASE_CLOSE", "Close the recall case", RecallPermissions.CasesClose, "Toolbar", 130, IsDangerous: true, IsToolbarAction: true, IsRowAction: false),
                         new ModuleManifestAction("RECALL_CASE_CANCEL", "Cancel the recall case", RecallPermissions.CasesCancel, "Toolbar", 140, IsDangerous: true, IsToolbarAction: true, IsRowAction: false)
+                    ]),
+                new ModuleManifestPage(
+                    PageCode: "RECALLDRILLS",
+                    DisplayName: "Recall drills",
+                    RoutePath: "/Recall/Drills",
+                    RequiredPermission: RecallPermissions.DrillsRead,
+                    ParentPageCode: null,
+                    IsNavigationVisible: true,
+                    PageType: "List",
+                    SortOrder: 40,
+                    Actions:
+                    [
+                        new ModuleManifestAction("RECALL_DRILL_PLAN_SAVE", "Add / edit a drill plan", RecallPermissions.DrillsManage, "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
+                        new ModuleManifestAction("RECALL_DRILL_RUN", "Start / step / cancel a drill", RecallPermissions.DrillsRun, "Toolbar", 20, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
+                        new ModuleManifestAction("RECALL_DRILL_SIGN", "Sign the drill result", RecallPermissions.DrillsRun, "Toolbar", 30, IsDangerous: false, IsToolbarAction: true, IsRowAction: false)
+                    ]),
+                new ModuleManifestPage(
+                    PageCode: "RECALLEVIDENCE",
+                    DisplayName: "Recall evidence pack",
+                    RoutePath: "/Recall/Evidence",
+                    RequiredPermission: RecallPermissions.EvidenceExport,
+                    ParentPageCode: null,
+                    IsNavigationVisible: true,
+                    PageType: "Detail",
+                    SortOrder: 50,
+                    Actions:
+                    [
+                        new ModuleManifestAction("RECALL_EVIDENCE_EXPORT", "Download the evidence pack (PDF / CSV)", RecallPermissions.EvidenceExport, "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false)
+                    ]),
+                new ModuleManifestPage(
+                    PageCode: "RECALLSETTINGS",
+                    DisplayName: "Recall settings",
+                    RoutePath: "/Recall/Settings",
+                    RequiredPermission: RecallPermissions.SettingsRead,
+                    ParentPageCode: null,
+                    IsNavigationVisible: true,
+                    PageType: "Form",
+                    SortOrder: 60,
+                    Actions:
+                    [
+                        new ModuleManifestAction("RECALL_SETTINGS_SAVE", "Save the recall settings", RecallPermissions.SettingsManage, "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false)
                     ])
             ],
             Icon: "bx-revision",
@@ -98,13 +141,8 @@ public sealed class RecallReadinessManifestProvider : IModuleManifestProvider
             [
                 // WP-0177-R7a: the case keys (update / approve / cancel / close / effectiveness / segregation / notification / consumption /
                 // quarantine request / return link) moved to the RECALLCASEDETAILS buttons (pack §11.3)
-                new ModuleManifestPermission(RecallPermissions.SettingsRead, "Read the recall settings", "Tenant"),
-                new ModuleManifestPermission(RecallPermissions.SettingsManage, "Change the recall settings", "Tenant"),
+                // WP-0177-R7b: the drill, evidence and settings keys moved to the RECALLDRILLS / RECALLEVIDENCE / RECALLSETTINGS pages and buttons
                 // API-only by design (pack §14.2): the lot / movement screens of 0174 / 0173 read it; it has no page of its own
-                new ModuleManifestPermission(RecallPermissions.LotsStatusRead, "Read whether a lot is under recall", "Tenant"),
-                // WP-0177-R5: the drills (pack §8.10, KR-G) — API-only until the R6 "Tatbikat Planlayıcı" page
-                new ModuleManifestPermission(RecallPermissions.DrillsRead, "Read recall drill plans and runs", "Tenant"),
-                new ModuleManifestPermission(RecallPermissions.DrillsManage, "Create and edit recall drill plans", "Tenant"),
-                new ModuleManifestPermission(RecallPermissions.DrillsRun, "Run, sign or cancel a recall drill", "Tenant")
+                new ModuleManifestPermission(RecallPermissions.LotsStatusRead, "Read whether a lot is under recall", "Tenant")
             ]);
 }

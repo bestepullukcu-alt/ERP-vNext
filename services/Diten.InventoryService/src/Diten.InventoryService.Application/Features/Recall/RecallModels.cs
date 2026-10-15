@@ -437,6 +437,26 @@ public sealed record RecallStockLineDto(
     RecallQuarantineRequestDto? Request,
     decimal SegregatedQuantity);
 
+/// <summary>WP-0177-R7b (RECALL 1.7.0) — the subject of an evidence pack.</summary>
+public sealed record RecallEvidenceSubjectDto(string Kind, string? CaseId, string? RunId, string? From, string? To, string Label);
+
+public sealed record RecallEvidenceTableDto(string Key, IReadOnlyList<string> Columns, IReadOnlyList<IReadOnlyList<string>> Rows);
+
+public sealed record RecallEvidenceSectionDto(bool Applicable, string? Note, IReadOnlyList<RecallEvidenceTableDto> Tables);
+
+/// <summary><c>EvidencePreview</c> — the seven sections by their contract keys (1_summary … 7_signatures).</summary>
+public sealed record RecallEvidencePreviewDto(
+    RecallEvidenceSubjectDto Subject, string LegalEntityId, string GeneratedAtUtc, string Language, IReadOnlyDictionary<string, RecallEvidenceSectionDto> Sections);
+
+/// <summary><c>EvidenceExport</c> — sha256 is of the produced (= stored) bytes.</summary>
+public sealed record RecallEvidenceExportDto(
+    string ExportId, RecallEvidenceSubjectDto Subject, string Format, string FileName, string Sha256, long SizeBytes, RecallUserAtDto ExportedBy,
+    IReadOnlyList<string> Sections, string? DmsRef = null);
+
+public sealed record RecallEvidenceExportPageDto(IReadOnlyList<RecallEvidenceExportDto> Items, long Total, int Page, int PageSize);
+
+public sealed record RecallEvidenceFileDto(byte[] Content, string ContentType, string FileName, string Sha256);
+
 public sealed record RecallReturnLinkDto(
     string LinkId,
     string Source,
@@ -450,7 +470,9 @@ public sealed record RecallReturnLinkDto(
     string? ReturnReference,
     string? ToStockStatus,
     string PostedAtUtc,
-    RecallUserAtDto LinkedBy);
+    RecallUserAtDto LinkedBy,
+    string? HoldId = null,
+    string? HoldNumber = null);
 
 public sealed record RecallReturnCandidateDto(
     string TransactionId,
