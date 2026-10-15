@@ -398,6 +398,8 @@ public sealed class Recall
         "Help.RECALLCASEDETAILS.Step3",
         "Help.RECALLCASEDETAILS.Step4Title",
         "Help.RECALLCASEDETAILS.Step4",
-        "Recall.Scope.PendingHint"
+        "Recall.Scope.PendingHint",
+        "Recall.Sign.LineQuarantine",
+        "Recall.Sign.LineNotified"
     ];
 }

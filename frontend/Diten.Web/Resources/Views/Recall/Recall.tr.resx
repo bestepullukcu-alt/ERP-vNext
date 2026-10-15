@@ -396,4 +396,6 @@
   <data name="Help.RECALLCASEDETAILS.Step4Title" xml:space="preserve"><value>Etkinliği kontrol edip kapatın</value></data>
   <data name="Help.RECALLCASEDETAILS.Step4" xml:space="preserve"><value>Etkinlik kontrolünü e-imzayla tamamlayın; vakayı başka bir kullanıcı kapatır.</value></data>
   <data name="Recall.Scope.PendingHint" xml:space="preserve"><value>Kapsam onay bekliyor; değiştirmek için taslağa geri gönderilmelidir.</value></data>
+  <data name="Recall.Sign.LineQuarantine" xml:space="preserve"><value>Karantina istekleri: {0}</value></data>
+  <data name="Recall.Sign.LineNotified" xml:space="preserve"><value>Müşteri bilgilendirme: {0} / {1}</value></data>
 </root>

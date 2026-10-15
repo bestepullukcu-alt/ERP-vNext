@@ -59,12 +59,34 @@ var RecallCaseView = (function () {
     /** The effectiveness rows of one customer (per SKU + unit — never added across units, D-20). */
     const customerRows = (effectiveness, customerRef) => (effectiveness?.rows || []).filter((r) => r.customerRef === customerRef);
 
+    /**
+     * The scope as the mockup's tree (L:258): every item under its parent (parentKey), depth-first from the root, siblings in the server's
+     * order; an item whose parent is not in the list starts its own branch. Each item exactly once (a cycle cannot repeat a row).
+     */
+    const treeOrder = (items) => {
+        const list = items || [];
+        const keys = new Set(list.map((i) => i.nodeKey));
+        const children = new Map();
+        list.forEach((i) => { const p = i.parentKey && keys.has(i.parentKey) ? i.parentKey : ''; if (!children.has(p)) children.set(p, []); children.get(p).push(i); });
+        const out = [];
+        const seen = new Set();
+        const visit = (item, depth) => {
+            if (seen.has(item.nodeKey)) return;
+            seen.add(item.nodeKey);
+            out.push({ item, depth });
+            (children.get(item.nodeKey) || []).forEach((c) => visit(c, depth + 1));
+        };
+        (children.get('') || []).forEach((r) => visit(r, 0));
+        list.filter((i) => !seen.has(i.nodeKey)).forEach((i) => visit(i, 0));
+        return out;
+    };
+
     /** The vocabulary key of a refusal; the same SoD code is worded for the decision it refused. */
     const errorKey = (code, decision) => (code === 'RECALL_SOD_VIOLATION' && decision === 'close'
         ? 'Recall.Errors.RECALL_SOD_VIOLATION_CLOSE'
         : `Recall.Errors.${code}`);
 
-    return { STEPS, step, offers, retryable, segregatable, requestable, hasOpen, customerRows, errorKey };
+    return { STEPS, step, offers, retryable, segregatable, requestable, hasOpen, customerRows, treeOrder, errorKey };
 })();
 
 if (typeof window !== 'undefined') window.RecallCaseView = RecallCaseView;

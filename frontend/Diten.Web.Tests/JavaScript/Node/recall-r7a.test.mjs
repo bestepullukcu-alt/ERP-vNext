@@ -90,6 +90,17 @@ test('four-eyes on the screen (CT-R1): the scope submitter is never offered "Kap
     }
 });
 
+test('the scope is drawn as the mockup\'s tree: every item under its parent, depth-first, each once', () => {
+    const items = [
+        { nodeKey: 'Shipment:fg:S1', parentKey: 'Lot:fg' }, { nodeKey: 'Lot:rm', isRoot: true }, { nodeKey: 'Lot:fg', parentKey: 'Lot:rm' },
+        { nodeKey: 'Stock:fg:W1', parentKey: 'Lot:fg' }, { nodeKey: 'Stock:rm:W1', parentKey: 'Lot:rm' }, { nodeKey: 'Manual:x', parentKey: 'Lot:gone' }
+    ];
+    const order = plain(view.treeOrder(items)).map((r) => `${r.depth}:${r.item.nodeKey}`);
+    assert.deepEqual(order, ['0:Lot:rm', '1:Lot:fg', '2:Shipment:fg:S1', '2:Stock:fg:W1', '1:Stock:rm:W1', '0:Manual:x']);
+    const cyclic = plain(view.treeOrder([{ nodeKey: 'A', parentKey: 'B' }, { nodeKey: 'B', parentKey: 'A' }]));
+    assert.equal(cyclic.length, 2);
+});
+
 // a fake server: records every call; prepare answers the prepared decision at version 8
 const fakeDeps = (policy = { signatureRequired: true }, signer = async () => ({ signatureId: 'SIG-77' })) => {
     const calls = [];

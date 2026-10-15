@@ -120,7 +120,7 @@
         byId('rc-scope-hint').textContent = scope.editable ? t('Recall.Scope.EditHint')
             : state.detail?.approvedScope ? t('Recall.Scope.LockedHint') : t('Recall.Scope.PendingHint');
         const editable = scope.editable && state.offers.mark;
-        const rows = items.map((i) => {
+        const rows = view.treeOrder(items).map(({ item: i, depth }) => {
             const place = i.kind === 'Shipment' ? esc(i.customerRef || '') : esc([i.warehouseLabel, i.locationLabel].filter(Boolean).join(' · '));
             const quantity = i.quantity == null ? '' : qty(i.quantity, i.baseUomId);
             const markable = editable && !i.isRoot; // the root stays; excluding an item excludes its subtree (CT-R6, the server's rule)
@@ -132,7 +132,7 @@
                       + `<input type="text" class="form-control form-control-sm ${i.included ? 'd-none' : ''}" data-reason="${esc(i.nodeKey)}" maxlength="1000" placeholder="${esc(t('Recall.Scope.ExclusionReason'))}" value="${esc(i.exclusionReason || '')}"></div>`
                     : `<span class="badge ${i.effectivelyIncluded ? 'bg-label-success' : 'bg-label-secondary'}">${esc(t(i.included ? (i.effectivelyIncluded ? 'Recall.Scope.Included' : 'Recall.Scope.ExcludedByParent') : 'Recall.Scope.Excluded'))}</span>`
                       + (i.exclusionReason ? `<div class="small text-muted">${esc(i.exclusionReason)}</div>` : '');
-            return `<tr class="${i.effectivelyIncluded ? '' : 'opacity-75'}"><td>${esc(t('Recall.Kind.' + i.kind) || i.kind)}${i.new ? ` <span class="badge bg-label-warning">${esc(t('Recall.Scope.New'))}</span>` : ''}</td>`
+            return `<tr class="${i.effectivelyIncluded ? '' : 'opacity-75'}"><td style="padding-inline-start:${0.75 + depth * 1.25}rem">${depth > 0 ? '<i class="bx bx-subdirectory-right text-muted me-1"></i>' : ''}${esc(t('Recall.Kind.' + i.kind) || i.kind)}${i.new ? ` <span class="badge bg-label-warning">${esc(t('Recall.Scope.New'))}</span>` : ''}</td>`
                 + `<td>${ui.productCell(i, i.lot?.lotNumber)}</td><td class="small">${place}</td><td class="text-end">${quantity}</td><td>${markCell}</td></tr>`;
         });
         byId('rc-scope-table').querySelector('tbody').innerHTML = rows.join('') || `<tr><td colspan="5" class="text-muted">${esc(t('Recall.Common.None'))}</td></tr>`;
@@ -185,9 +185,19 @@
                 + `<td>${requestCell(l)}</td><td>${holds}</td><td>${segregated || '—'}${segButton}</td></tr>`;
         });
         byId('rc-stock-table').querySelector('tbody').innerHTML = body.join('') || `<tr><td colspan="7" class="text-muted">${esc(t('Recall.Stock.Empty'))}</td></tr>`;
+        // the mockup's "Toplam 950 adet · D01 650 · D02 300": per SKU + unit (never across units), then per warehouse of the same unit
         const totals = {};
-        lines.forEach((l) => { const k = `${l.item?.skuId}|${l.baseUomId}`; totals[k] = { q: (totals[k]?.q || 0) + Number(l.quantity || 0), u: l.baseUomId }; });
-        byId('rc-stock-totals').textContent = Object.values(totals).length ? t('Recall.Stock.Totals', Object.values(totals).map((x) => `${ui.qty(x.q)} ${x.u}`).join(' · ')) : '';
+        lines.forEach((l) => {
+            const k = `${l.item?.skuId}|${l.baseUomId}`;
+            const sum = totals[k] || (totals[k] = { q: 0, u: l.baseUomId, wh: {} });
+            sum.q += Number(l.quantity || 0);
+            const w = l.warehouseLabel || l.warehouseId || '—';
+            sum.wh[w] = (sum.wh[w] || 0) + Number(l.quantity || 0);
+        });
+        byId('rc-stock-totals').textContent = Object.values(totals).length
+            ? t('Recall.Stock.Totals', Object.values(totals).map((x) => `${ui.qty(x.q)} ${x.u}`
+                + (Object.keys(x.wh).length > 1 ? ' (' + Object.entries(x.wh).map(([w, q]) => `${w} ${ui.qty(q)}`).join(' · ') + ')' : '')).join(' · '))
+            : '';
         const send = action('quarantine-send');
         const sync = () => { if (send) { send.textContent = t('Recall.Stock.SendSelected', state.selected.size); send.disabled = state.selected.size === 0; } };
         show(send, state.offers.quarantine && lines.some(view.requestable));
@@ -236,8 +246,9 @@
     const drawReturns = (returns) => {
         const links = returns.links || [];
         byId('rc-ret-links').querySelector('tbody').innerHTML = links.map((l) => `<tr><td class="font-monospace small">${esc(l.transactionNumber || l.transactionId)}</td><td class="small">${esc(l.customerRef)}</td>`
-            + `<td class="text-end">${qty(l.quantity, l.baseUomId)}</td><td><span class="badge bg-label-info">${esc(t('Recall.Ret.Source.' + l.source))}</span></td></tr>`).join('')
-            || `<tr><td colspan="4" class="text-muted">${esc(t('Recall.Ret.Empty'))}</td></tr>`;
+            + `<td class="font-monospace small">${esc(l.lot?.lotNumber || '')}</td><td class="text-end">${qty(l.quantity, l.baseUomId)}</td><td class="small">${esc(ui.date(l.postedAtUtc))}</td>`
+            + `<td><span class="badge bg-label-info">${esc(t('Recall.Ret.Source.' + l.source))}</span></td></tr>`).join('')
+            || `<tr><td colspan="6" class="text-muted">${esc(t('Recall.Ret.Empty'))}</td></tr>`;
         const candidates = returns.candidates || [];
         byId('rc-ret-candidates').querySelector('tbody').innerHTML = candidates.map((c) => {
             const button = c.eligible && state.offers.link && byId('rc-link-modal')
@@ -420,6 +431,14 @@
         const lines = kind === 'approve'
             ? [t('Recall.Scope.Summary', c.counts?.scopeItems ?? '', c.counts?.excludedItems ?? '', c.scopeRevision)]
             : (effectiveness?.totals || []).map((x) => `${t('Recall.Eff.Shipped')} ${ui.qty(x.shipped)} − ${t('Recall.Eff.Returned')} ${ui.qty(x.returned)} − ${t('Recall.Eff.Consumed')} ${ui.qty(x.consumed)} = ${t('Recall.Eff.Open')} ${ui.qty(x.open)} ${x.baseUomId} · ${percent(x.percent)}`);
+        if (kind !== 'approve' && effectiveness) lines.push(t('Recall.Eff.Target', effectiveness.targetPercent, effectiveness.class));
+        if (kind === 'close') {
+            // the mockup's closure summary (L:301): the quarantine requests with their status and the notified customers
+            const stock = (await read('stock')).json?.data || [];
+            const requests = stock.filter((l) => l.request).map((l) => `${(l.request.holds || []).map((h) => h.holdNumber).join(', ') || l.lot?.lotNumber} (${t('Recall.ReqStatus.' + l.request.status)})`);
+            lines.push(t('Recall.Sign.LineQuarantine', requests.join(', ') || t('Recall.Common.None')));
+            lines.push(t('Recall.Sign.LineNotified', c.counts?.notified ?? 0, c.counts?.customers ?? 0));
+        }
         byId('rc-sign-lines').innerHTML = lines.map((l) => `<li>${esc(l)}</li>`).join('');
         document.querySelectorAll('[data-sign-field]').forEach((f) => show(f, false));
         show(document.querySelector('[data-sign-field="note"]'), kind !== 'close');

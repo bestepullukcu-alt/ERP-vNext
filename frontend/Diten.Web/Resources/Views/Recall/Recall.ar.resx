@@ -396,4 +396,6 @@
   <data name="Help.RECALLCASEDETAILS.Step4Title" xml:space="preserve"><value>افحص الفعالية وأغلق</value></data>
   <data name="Help.RECALLCASEDETAILS.Step4" xml:space="preserve"><value>أكمل فحص الفعالية بالتوقيع الإلكتروني؛ يغلق الحالة مستخدم آخر.</value></data>
   <data name="Recall.Scope.PendingHint" xml:space="preserve"><value>النطاق بانتظار الموافقة؛ لتغييره أعده إلى المسودة.</value></data>
+  <data name="Recall.Sign.LineQuarantine" xml:space="preserve"><value>طلبات الحجر: {0}</value></data>
+  <data name="Recall.Sign.LineNotified" xml:space="preserve"><value>العملاء المُبلَّغون: {0} / {1}</value></data>
 </root>

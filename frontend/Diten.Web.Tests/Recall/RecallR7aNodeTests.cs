@@ -24,7 +24,7 @@ public sealed class RecallR7aNodeTests
         var output = await node.StandardOutput.ReadToEndAsync();
         await node.WaitForExitAsync();
         Assert.True(node.ExitCode == 0, $"{output}\n{await error}");
-        Assert.Matches(new Regex(@"^# pass 5$", RegexOptions.Multiline), output);
+        Assert.Matches(new Regex(@"^# pass 6$", RegexOptions.Multiline), output);
         Assert.Matches(new Regex(@"^# fail 0$", RegexOptions.Multiline), output);
     }
 }
