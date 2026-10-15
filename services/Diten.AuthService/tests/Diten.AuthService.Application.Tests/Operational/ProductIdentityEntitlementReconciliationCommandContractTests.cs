@@ -657,12 +657,15 @@ public sealed class ProductIdentityEntitlementReconciliationCommandContractTests
         while (!File.Exists(Path.Combine(root.FullName, "AGENTS.md"))) root = root.Parent ?? throw new InvalidOperationException("Checkout required");
         var persistence = File.ReadAllText(Path.Combine(root.FullName, "services/Diten.AuthService/src/Diten.AuthService.Persistence/DependencyInjection.cs"));
         var normal = persistence[persistence.IndexOf("    public static IServiceCollection AddPersistence(", StringComparison.Ordinal)..].Replace("\r", "").Trim();
+        // owner correction 2026-10-15 (v1.1), WP-AUTH-ADMIN-BOOTSTRAP-01 (owner decision 2026-10-15 "ok"): one more argument to
+        // the account step — PlatformAdmin, read from DevSeeds:PlatformAdmin (the dev platform administrator became opt-in, like
+        // the mock users and the dev tenant administrator). Before: 580DF944…AACDC (v1.0, below).
         // owner correction 2026-10-15, WP-AUTH-ADMIN-BOOTSTRAP-01 (BL-534 + BL-556, owner decision 2026-10-15): the start-up
         // seed is two steps — DataSeeder.SeedAsync (system seed, every environment) then AdminAccountSeed.RunAsync (accounts,
         // Development only; the DevSeeds switches passed through, the environment gate inside the step). Nothing else in
         // AddPersistence changed. Before: F61706DE…1326 (owner correction 2026-10-14, BL-521 follow-up: the opt-in dev tenant
         // administrator), 0E54C788…F1AA (main-sync: MOD-0022), and before that 51D35FF8…D80FC (BL-521 FIX6).
-        Assert.Equal("580DF944B50B0C67EFB16450D112C284E0559685CE04D9159DAA623D55DAACDC", EntitlementReconciliationPlan.Hash(normal));
+        Assert.Equal("C0687A382B8D839BA0ED031F13BFB84896FED386C90C7EE0E28FCAD432F09C03", EntitlementReconciliationPlan.Hash(normal));
         var operational = File.ReadAllText(Path.Combine(root.FullName, "services/Diten.AuthService/src/Diten.AuthService.Api/Operational/EntitlementReconciliationOperationalMode.cs"));
         Assert.Contains("AddEntitlementReconciliationPersistence(configuration)", operational);
         foreach (var forbidden in new[] { "AddPersistence(", "EnsureIndexes", "DataSeeder", "AddHostedService", "AddMassTransit", "GrantModule", "UpsertSystemRole", "WebApplication.CreateBuilder" })

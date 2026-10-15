@@ -120,11 +120,13 @@ public static class DependencyInjection
         {
             MongoDbIndexConfigurations.EnsureIndexesAsync(database).GetAwaiter().GetResult();
             // WP-AUTH-ADMIN-BOOTSTRAP-01 — the system seed (permissions, roles, templates) in every environment, then the account
-            // step: dev accounts in Development only (mock users / dev tenant administrator also need their opt-in key);
+            // step: dev accounts in Development only, each also under its opt-in key (platform administrator, mock users, dev
+            // tenant administrator);
             // anywhere else no account is created, deleted or switched on (AdminAccountSeed).
             DataSeeder.SeedAsync(database).GetAwaiter().GetResult();
             AdminAccountSeed.RunAsync(database, new AdminAccountSeed.Settings(
                     Development: environment.IsDevelopment(),
+                    PlatformAdmin: configuration.GetValue<bool>(DevAccountSeed.PlatformAdminOptInConfigurationKey),
                     MockUsers: configuration.GetValue<bool>(DevAccountSeed.MockUsersOptInConfigurationKey),
                     TenantAdmin: configuration.GetValue<bool>(DevAccountSeed.TenantAdminOptInConfigurationKey)))
                 .GetAwaiter().GetResult();

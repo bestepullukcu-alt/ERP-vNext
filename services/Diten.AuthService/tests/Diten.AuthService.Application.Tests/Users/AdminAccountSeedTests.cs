@@ -48,6 +48,17 @@ public static class AdminAccountSeedStartUp
 
         public Snapshot? AtStart { get; private set; }
     }
+
+    /// <summary>v1.1 — Development with the dev platform administrator's opt-in key (DevSeeds:PlatformAdmin = true).</summary>
+    public sealed class DevelopmentOptInHost : AccountKindAcceptance.AuthTestHost
+    {
+        public DevelopmentOptInHost() => BeforeSeedHookForTesting = async host => AtStart = await ReadAsync(host.Database);
+
+        protected override IReadOnlyDictionary<string, string?> AdditionalEnvironment { get; } =
+            new Dictionary<string, string?> { ["DevSeeds__PlatformAdmin"] = "true" };
+
+        public Snapshot? AtStart { get; private set; }
+    }
 }
 
 public sealed class AdminAccountSeedProductionStartTests : IClassFixture<AdminAccountSeedStartUp.ProductionHost>
@@ -73,10 +84,28 @@ public sealed class AdminAccountSeedDevelopmentStartTests : IClassFixture<AdminA
 
     public AdminAccountSeedDevelopmentStartTests(AdminAccountSeedStartUp.DevelopmentHost host) => _host = host;
 
-    // Today's development behaviour: the platform administrator, active, platform account, SuperAdmin; the opt-in accounts
-    // stay off without their switches.
+    // (a) v1.1 — without DevSeeds:PlatformAdmin even a development start creates no account: the system seed only.
     [Fact]
-    public void A_development_start_on_an_empty_database_seeds_the_dev_platform_administrator()
+    public void A_development_start_without_the_opt_in_key_seeds_no_account()
+    {
+        var atStart = Assert.IsType<AdminAccountSeedStartUp.Snapshot>(_host.AtStart);
+
+        Assert.Empty(atStart.Users);
+        Assert.True(atStart.Permissions > 0, "the permission catalog was not seeded");
+        Assert.Equal(["Admin", "SuperAdmin", "Viewer"], atStart.PlatformTenantRoles);
+    }
+}
+
+public sealed class AdminAccountSeedDevelopmentOptInStartTests : IClassFixture<AdminAccountSeedStartUp.DevelopmentOptInHost>
+{
+    private readonly AdminAccountSeedStartUp.DevelopmentOptInHost _host;
+
+    public AdminAccountSeedDevelopmentOptInStartTests(AdminAccountSeedStartUp.DevelopmentOptInHost host) => _host = host;
+
+    // (b) With the key: the platform administrator, active, platform account, SuperAdmin; the other opt-in accounts stay off
+    // without their own switches.
+    [Fact]
+    public void A_development_start_with_the_opt_in_key_seeds_the_dev_platform_administrator()
     {
         var atStart = Assert.IsType<AdminAccountSeedStartUp.Snapshot>(_host.AtStart);
 
@@ -128,7 +157,7 @@ public sealed class AdminAccountSeedRuleTests : IClassFixture<AccountKindAccepta
         var before = await users.Find(FilterDefinition<BsonDocument>.Empty).ToListAsync();
         var logger = new WarningCapture();
 
-        await AdminAccountSeed.RunAsync(database, new AdminAccountSeed.Settings(development), logger);
+        await AdminAccountSeed.RunAsync(database, new AdminAccountSeed.Settings(development, PlatformAdmin: true), logger);
 
         Assert.Equal(before, await users.Find(FilterDefinition<BsonDocument>.Empty).ToListAsync()); // kept, nothing added
         Assert.Single(await userRoles.Find(ur => ur.UserId == other.Id).ToListAsync());
@@ -143,7 +172,7 @@ public sealed class AdminAccountSeedRuleTests : IClassFixture<AccountKindAccepta
     public async Task Outside_development_a_passive_seeded_administrator_stays_passive(bool markedByAdministrator, string databaseName)
     {
         var database = await EmptySeededDatabaseAsync(databaseName);
-        await AdminAccountSeed.RunAsync(database, new AdminAccountSeed.Settings(Development: true)); // the account as dev made it
+        await AdminAccountSeed.RunAsync(database, new AdminAccountSeed.Settings(Development: true, PlatformAdmin: true)); // as dev made it
         var users = database.GetCollection<BsonDocument>("users");
         var byId = Builders<BsonDocument>.Filter.Eq("_id", new BsonBinaryData(AdminAccountSeed.PlatformAdministratorId, GuidRepresentation.Standard));
         await users.UpdateOneAsync(byId, Builders<BsonDocument>.Update
@@ -164,14 +193,55 @@ public sealed class AdminAccountSeedRuleTests : IClassFixture<AccountKindAccepta
     {
         var database = await EmptySeededDatabaseAsync("admin_bootstrap_switches_prod");
 
-        await AdminAccountSeed.RunAsync(database, new AdminAccountSeed.Settings(Development: false, MockUsers: true, TenantAdmin: true));
+        await AdminAccountSeed.RunAsync(database, new AdminAccountSeed.Settings(Development: false, MockUsers: true, TenantAdmin: true, PlatformAdmin: true));
 
         Assert.Equal(0, await database.GetCollection<User>("users").CountDocumentsAsync(FilterDefinition<User>.Empty));
+    }
+
+    // (c) / (d) v1.1 — outside Development the seeded administrator still holding the repository's dev password hash is said
+    // ONCE at Critical, by code and id only; a changed password says nothing. Read only: the database is byte-identical after.
+    // The account is made by the dev seed itself (this test does not carry the hash).
+    [Theory]
+    [InlineData(true, "admin_bootstrap_default_password")]
+    [InlineData(false, "admin_bootstrap_changed_password")]
+    public async Task Outside_development_the_seeded_admin_with_the_dev_password_is_reported_once_at_critical(bool devPassword, string databaseName)
+    {
+        var database = await EmptySeededDatabaseAsync(databaseName);
+        await AdminAccountSeed.RunAsync(database, new AdminAccountSeed.Settings(Development: true, PlatformAdmin: true));
+        var users = database.GetCollection<BsonDocument>("users");
+        var byId = Builders<BsonDocument>.Filter.Eq("_id", new BsonBinaryData(AdminAccountSeed.PlatformAdministratorId, GuidRepresentation.Standard));
+        if (!devPassword)
+        {
+            await users.UpdateOneAsync(byId, Builders<BsonDocument>.Update.Set(nameof(User.PasswordHash), "a-changed-password-hash"));
+        }
+
+        var before = await users.Find(FilterDefinition<BsonDocument>.Empty).ToListAsync();
+        var storedHash = (await users.Find(byId).SingleAsync())[nameof(User.PasswordHash)].AsString;
+        var logger = new WarningCapture();
+
+        await AdminAccountSeed.RunAsync(database, new AdminAccountSeed.Settings(Development: false), logger);
+
+        Assert.Equal(before, await users.Find(FilterDefinition<BsonDocument>.Empty).ToListAsync());
+        var critical = logger.Criticals.ToList();
+        if (devPassword)
+        {
+            var line = Assert.Single(critical);
+            Assert.Contains(AdminAccountSeed.DefaultPasswordActiveCode, line);
+            Assert.Contains(AdminAccountSeed.PlatformAdministratorId.ToString(), line);
+            Assert.DoesNotContain(AdminAccountSeed.PlatformAdministratorEmail, line);
+            Assert.DoesNotContain(storedHash, line);
+            Assert.DoesNotContain("$2", line);
+        }
+        else
+        {
+            Assert.Empty(critical);
+        }
     }
 
     private sealed class WarningCapture : Microsoft.Extensions.Logging.ILogger
     {
         public System.Collections.Concurrent.ConcurrentQueue<string> Warnings { get; } = new();
+        public System.Collections.Concurrent.ConcurrentQueue<string> Criticals { get; } = new();
         public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
         public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel) => true;
         public void Log<TState>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId,
@@ -180,6 +250,11 @@ public sealed class AdminAccountSeedRuleTests : IClassFixture<AccountKindAccepta
             if (logLevel == Microsoft.Extensions.Logging.LogLevel.Warning)
             {
                 Warnings.Enqueue(formatter(state, exception));
+            }
+
+            if (logLevel == Microsoft.Extensions.Logging.LogLevel.Critical)
+            {
+                Criticals.Enqueue(formatter(state, exception));
             }
         }
     }

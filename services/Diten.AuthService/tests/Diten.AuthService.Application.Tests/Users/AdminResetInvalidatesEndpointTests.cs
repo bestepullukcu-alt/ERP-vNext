@@ -2363,7 +2363,7 @@ public sealed partial class AdminResetInvalidatesEndpointTests : IClassFixture<A
     {
         await Diten.AuthService.Persistence.Seed.DataSeeder.SeedAsync(database, logger);
         await Diten.AuthService.Persistence.Seed.AdminAccountSeed.RunAsync(
-            database, new Diten.AuthService.Persistence.Seed.AdminAccountSeed.Settings(Development: true), logger);
+            database, new Diten.AuthService.Persistence.Seed.AdminAccountSeed.Settings(Development: true, PlatformAdmin: true), logger);
     }
 
     // ── FIX8 item 2: the seeder does not switch a marked admin back on ──────────────────────────────────────────────

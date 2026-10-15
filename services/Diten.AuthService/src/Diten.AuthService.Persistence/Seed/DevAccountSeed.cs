@@ -35,6 +35,14 @@ public static class DevAccountSeed
     /// </summary>
     public const string TenantAdminOptInConfigurationKey = "DevSeeds:TenantAdmin";
 
+    /// <summary>
+    /// Opt-in switch for the dev platform administrator (<see cref="AdminAccountSeed.PlatformAdministratorEmail"/>) —
+    /// WP-AUTH-ADMIN-BOOTSTRAP-01 v1.1, owner decision 2026-10-15. Absent means false: even in Development no administrator
+    /// is created. Same gate as the mock users; Platform's <c>PlatformAdministratorSeed</c> reads the same key. Set it only in
+    /// a local, never-committed appsettings.Development.json.
+    /// </summary>
+    public const string PlatformAdminOptInConfigurationKey = "DevSeeds:PlatformAdmin";
+
     /// <summary>The dev tenant administrator: tenant Admin role in the seed tenant, never a platform account.</summary>
     public const string DevTenantAdminEmail = "kiraci.admin@diten.com";
 
@@ -43,13 +51,19 @@ public static class DevAccountSeed
     private static readonly Guid Tenant97c5Id = Guid.Parse("97c59330-dbc4-4665-b29c-0c26dbb5cc93");
     private const string SystemUser = "system";
 
-    // The dev password's hash — the ONE copy in the service (guarded: BcryptHashLiteralGuardTests).
-    private const string DevPasswordHash = "$2a$12$F1MdLL6aHDzrwl/790xPVuiSNW8xJM5/.5E8A/6M3DwAYYenixKwC";
+    // The dev password's hash — the ONE copy in the service (guarded: AdminBootstrapGuardTests). Internal: AdminAccountSeed
+    // compares stored hashes with it outside Development (read only, AUTH_SEED_ADMIN_DEFAULT_PASSWORD_ACTIVE).
+    internal const string DevPasswordHash = "$2a$12$F1MdLL6aHDzrwl/790xPVuiSNW8xJM5/.5E8A/6M3DwAYYenixKwC";
 
-    internal static async Task SeedAsync(IMongoDatabase database, bool seedMockUsers, bool seedTenantAdmin, ILogger logger)
+    internal static async Task SeedAsync(
+        IMongoDatabase database, bool seedPlatformAdmin, bool seedMockUsers, bool seedTenantAdmin, ILogger logger)
     {
         Console.WriteLine("Seeding the development accounts...");
-        await SeedPlatformAdministratorAsync(database, logger);
+        // The dev platform administrator — OPT-IN only (PlatformAdminOptInConfigurationKey, v1.1). Default: none, even here.
+        if (seedPlatformAdmin)
+        {
+            await SeedPlatformAdministratorAsync(database, logger);
+        }
 
         // Five mock users per dev tenant — OPT-IN only (MockUsersOptInConfigurationKey). Default: nothing is seeded,
         // so a tenant that was emptied on purpose stays empty across restarts.
