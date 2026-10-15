@@ -479,6 +479,8 @@
         const canvas = el('vp-sig');
         if (!canvas || typeof canvas.getContext !== 'function') { return; }
         const ctx = canvas.getContext('2d');
+        // W3E-THEME (K-THEME) — the ink is the layout's primary colour (Template Customizer → :root --bs-primary)
+        const primaryInk = () => (window.getComputedStyle ? window.getComputedStyle(document.documentElement).getPropertyValue('--bs-primary') : '').trim() || '#1d2129';
         let down = false;
         const pos = e => {
             const r = canvas.getBoundingClientRect();
@@ -487,7 +489,7 @@
         canvas.addEventListener('pointerdown', e => {
             down = true;
             if (canvas.setPointerCapture) { canvas.setPointerCapture(e.pointerId); }
-            ctx.strokeStyle = '#0b1a8c';
+            ctx.strokeStyle = primaryInk(); // W3E-THEME — the layout's primary colour, read when the stroke starts
             ctx.lineWidth = 2.5;
             ctx.lineCap = 'round';
             ctx.beginPath();

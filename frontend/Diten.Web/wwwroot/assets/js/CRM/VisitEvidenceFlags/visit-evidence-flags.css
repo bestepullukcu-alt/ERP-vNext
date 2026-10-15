@@ -3,14 +3,14 @@
    the filters, the table, the bars and the drawer. Neutral language and tones: no red alarm (the mockup). */
 #vf-root, .vf-drawer {
     --vf-bg: #f5f5f9; --vf-card: #fff; --vf-h: #384551; --vf-tx: #646e78; --vf-mu: #8592a3; --vf-bd: #e4e6e8; --vf-bd2: #d9dee3;
-    --vf-soft: #f5f5f9; --vf-pl: #e7e7ff; --vf-p: #696cff; --vf-pt: #5f61e6; --vf-bar: #a5a6ff;
+    --vf-soft: #f5f5f9; --vf-pl: rgba(var(--bs-primary-rgb), .12); --vf-p: var(--bs-primary); --vf-pt: var(--bs-primary); --vf-bar: rgba(var(--bs-primary-rgb), .55);
     --vf-wab: #fff2d6; --vf-wa: #b27800; --vf-inb: #d7f5fc; --vf-in: #028aa6; --vf-seb: #ebeef0; --vf-se: #6d7887; --vf-sub: #e8fadf; --vf-su: #56ca00;
     --vf-sh: 0 3px 8px rgba(34, 48, 62, .08);
     color: var(--vf-tx);
 }
 [data-bs-theme="dark"] #vf-root, [data-bs-theme="dark"] .vf-drawer {
     --vf-bg: #232333; --vf-card: #2b2c40; --vf-h: #d5d5e2; --vf-tx: #b2b2c4; --vf-mu: #8a8ba5; --vf-bd: #3d3e58; --vf-bd2: #4e4f6c;
-    --vf-soft: #34354e; --vf-pl: #35366a; --vf-p: #7b7eff; --vf-pt: #a3a5ff; --vf-bar: #6d70e8;
+    --vf-soft: #34354e; --vf-pl: rgba(var(--bs-primary-rgb), .22); --vf-p: var(--bs-primary); --vf-pt: color-mix(in srgb, var(--bs-primary) 60%, #fff); --vf-bar: rgba(var(--bs-primary-rgb), .6);
     --vf-wab: #4d4130; --vf-wa: #ffbf3d; --vf-inb: #23435a; --vf-in: #4fd6f2; --vf-seb: #3a3b55; --vf-se: #a1a2b8; --vf-sub: #36483f; --vf-su: #8be85a;
     --vf-sh: 0 3px 8px rgba(0, 0, 0, .25);
 }

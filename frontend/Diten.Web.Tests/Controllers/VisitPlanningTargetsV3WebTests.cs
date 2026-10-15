@@ -67,7 +67,7 @@ public sealed class VisitPlanningTargetsV3WebTests
         Assert.Contains("id=\"vp-selection-chips\"", pane);
         var css = File.ReadAllText(Path.Combine(WebRoot(), "wwwroot", "assets", "css", "visit-planning.css"));
         Assert.Contains("scrollbar-width: thin;", css);
-        Assert.Contains("--vp-indigo-line: #c5c9e8;", css);
+        Assert.Contains("--vp-indigo-line: rgba(var(--bs-primary-rgb), .28);", css); // W3E-THEME: the layout's primary, line tone
         foreach (var page in new[] { "Details.cshtml", "Index.cshtml", "Create.cshtml", "Edit.cshtml" })
         {
             Assert.Contains("~/assets/css/visit-planning.css", Between(View(page), "@section Styles {", "}"));

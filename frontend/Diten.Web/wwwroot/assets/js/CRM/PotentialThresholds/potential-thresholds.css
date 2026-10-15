@@ -3,7 +3,7 @@
    table, the drawer and the arrows. */
 #pt-root, .pt-modal, .pt-drawer {
     --pt-bg: #f5f5f9; --pt-card: #fff; --pt-h: #384551; --pt-tx: #646e78; --pt-mu: #8592a3; --pt-bd: #e4e6e8; --pt-bd2: #d9dee3;
-    --pt-soft: #f5f5f9; --pt-pl: #e0e2f3; --pt-p: #0b1a8c; --pt-pt: #0b1a8c;
+    --pt-soft: #f5f5f9; --pt-pl: rgba(var(--bs-primary-rgb), .12); --pt-p: var(--bs-primary); --pt-pt: var(--bs-primary);
     --pt-okb: #e8fadf; --pt-ok: #4a9a22; --pt-wab: #fff2d6; --pt-wa: #b27800; --pt-dab: #ffe0db; --pt-da: #d1301a;
     --pt-inb: #d7f5fc; --pt-in: #028aa6; --pt-seb: #ebeef0; --pt-se: #6d7887;
     --pt-sh: 0 3px 8px rgba(34, 48, 62, .08);
@@ -11,7 +11,7 @@
 }
 [data-bs-theme="dark"] #pt-root, [data-bs-theme="dark"] .pt-modal, [data-bs-theme="dark"] .pt-drawer {
     --pt-bg: #232333; --pt-card: #2b2c40; --pt-h: #d5d5e2; --pt-tx: #b2b2c4; --pt-mu: #8a8ba5; --pt-bd: #3d3e58; --pt-bd2: #4e4f6c;
-    --pt-soft: #34354e; --pt-pl: #2f3163; --pt-p: #4655d6; --pt-pt: #a3aaf5;
+    --pt-soft: #34354e; --pt-pl: rgba(var(--bs-primary-rgb), .22); --pt-p: var(--bs-primary); --pt-pt: color-mix(in srgb, var(--bs-primary) 60%, #fff);
     --pt-okb: #344a35; --pt-ok: #86e05a; --pt-wab: #4d4130; --pt-wa: #ffbf3d; --pt-dab: #4f2e36; --pt-da: #ff7a66;
     --pt-inb: #23435a; --pt-in: #4fd6f2; --pt-seb: #3a3b55; --pt-se: #a1a2b8; --pt-sh: 0 3px 8px rgba(0, 0, 0, .25);
 }

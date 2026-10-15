@@ -3,7 +3,7 @@
    rows, the bottom bar and the arrows. Touch targets ≥ 40px (the mockup's tablet / phone use). */
 #ph-root {
     --ph-bg: #f5f5f9; --ph-card: #fff; --ph-h: #384551; --ph-tx: #646e78; --ph-mu: #8592a3; --ph-bd: #e4e6e8; --ph-bd2: #d9dee3;
-    --ph-soft: #f5f5f9; --ph-soft2: #fafafb; --ph-pl: #e0e2f3; --ph-pbd: #c5c9e8; --ph-p: #0b1a8c; --ph-pt: #0b1a8c;
+    --ph-soft: #f5f5f9; --ph-soft2: #fafafb; --ph-pl: rgba(var(--bs-primary-rgb), .12); --ph-pbd: rgba(var(--bs-primary-rgb), .28); --ph-p: var(--bs-primary); --ph-pt: var(--bs-primary);
     --ph-okb: #e8fadf; --ph-ok: #4a9a22; --ph-wab: #fff2d6; --ph-wa: #b27800; --ph-wac: #ffab00;
     --ph-dab: #ffe0db; --ph-da: #d1301a; --ph-dac: #ff3e1d; --ph-inb: #d7f5fc; --ph-in: #028aa6; --ph-seb: #ebeef0; --ph-se: #6d7887;
     --ph-sh: 0 3px 8px rgba(34, 48, 62, .08);
@@ -11,7 +11,7 @@
 }
 [data-bs-theme="dark"] #ph-root {
     --ph-bg: #232333; --ph-card: #2b2c40; --ph-h: #d5d5e2; --ph-tx: #b2b2c4; --ph-mu: #8a8ba5; --ph-bd: #3d3e58; --ph-bd2: #4e4f6c;
-    --ph-soft: #34354e; --ph-soft2: #303148; --ph-pl: #2f3163; --ph-pbd: #4a4f8c; --ph-p: #4655d6; --ph-pt: #a3aaf5;
+    --ph-soft: #34354e; --ph-soft2: #303148; --ph-pl: rgba(var(--bs-primary-rgb), .22); --ph-pbd: rgba(var(--bs-primary-rgb), .45); --ph-p: var(--bs-primary); --ph-pt: color-mix(in srgb, var(--bs-primary) 60%, #fff);
     --ph-okb: #344a35; --ph-ok: #86e05a; --ph-wab: #4d4130; --ph-wa: #ffbf3d; --ph-wac: #ffbf3d; --ph-dab: #4f2e36; --ph-da: #ff7a66;
     --ph-dac: #ff7a66; --ph-inb: #23435a; --ph-in: #4fd6f2; --ph-seb: #3a3b55; --ph-se: #a1a2b8; --ph-sh: 0 3px 8px rgba(0, 0, 0, .25);
 }
@@ -129,7 +129,7 @@
 .ph-btn-w { background: var(--ph-card); color: var(--ph-h); border-color: var(--ph-bd2); }
 .ph-btn-o { background: transparent; color: var(--ph-pt); border-color: var(--ph-pt); }
 .ph-btn-dash { background: transparent; color: var(--ph-h); border: 1px dashed var(--ph-bd2); align-self: flex-start; }
-.ph-btn-send { box-shadow: 0 2px 4px rgba(11, 26, 140, .35); }
+.ph-btn-send { box-shadow: 0 2px 4px rgba(var(--bs-primary-rgb), .35); }
 .ph-btn:disabled { opacity: .5; cursor: not-allowed; }
 .ph-faded { opacity: .6; }
 .ph-bar { position: sticky; inset-block-end: 0; background: var(--ph-card); border-block-start: 1px solid var(--ph-bd); padding: 10px 16px; display: flex; gap: 8px; align-items: center; z-index: 5; border-radius: 8px 8px 0 0; }
