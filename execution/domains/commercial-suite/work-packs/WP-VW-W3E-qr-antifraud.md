@@ -672,3 +672,18 @@ KORU/YAPMA: kapsam dışı backbone-custom.css ve pages/demand-idea-capture.css'
 DOĞRULA: acceptance + 2 sabotaj (.bak + touch ile geri al, git checkout YOK): (1) bir dosyaya #0b1a8c geri yaz → guard kırmızı; (2) sunum canvas'ı sabit renge döndür → davranış testi kırmızı. Web tam takım (-o repo içi), taban karşılaştırması.
 Commit: "fix(web): WP-VW-W3E-THEME — CRM visit pages take the primary colour from the layout (--bs-primary), no hard-coded navy / purple" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
 ```
+
+## §37 CT kabul — W3E-THEME E2 ACCEPTED (2026-10-15)
+Test dalına alındı: `67366dbec` (ajan `fe4f5d107`), çakışmasız. 11 dosya + 3 test dosyası; kapsam dışı iki dosyaya ve vendor'a dokunulmadı.
+
+**CT kontrolü:**
+- Token blokları `var(--bs-primary)` / `rgba(var(--bs-primary-rgb), α)`; koyu temada metin tonu `color-mix(…, #fff)`. Anlamsal renkler ve QR baskısı değişmedi.
+- **Testler** (worktree, CT `-o`): Web **1744/4**.
+  - `WorkCenterMenuWithoutPermissions`: `-o` artefaktı.
+  - 2 `ShipmentDetailsDateNode`: tabanda da var.
+  - **`VisitEvidenceFlagsWebTests.C5`:** WEB-b'nin testi, **tarihe bağlı** (8–14 Ekim sabit, sayfa gerçek saati okuyor). 15 Ekim'de kırmızıya döndü; THEME ile ilgisiz → **CT-3**.
+- **CT sabotajı (ajanın dokunmadığı yol):** `visit-qr.css` açık zemin tonu listede OLMAYAN sabit renge (`#e6e7ff`) çevrildi. Koruma testi listesi bunu görmez, ama davranış testi `T2…(visit-qr.css)` **kırmızı**. `.bak` + touch ile geri alındı.
+
+**Açık:**
+- **CT-3:** `visit-evidence-flags-smoke.js` saati sabitlemiyor → C5 her gün kayar. Düzeltme: harness `Date`'i 2026-10-14'e sabitler (yalnız test).
+- **CT-4:** `visit-workspace.css` ve `visit-presentation.css`'te koyu tema bloğu yok (THEME öncesinden). Koyu temada başlangıç penceresi başlıkları soluk, fotoğraf alanı beyaz → E4 öncesi küçük Web işi.
