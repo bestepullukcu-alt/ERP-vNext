@@ -851,3 +851,28 @@ KORU/YAPMA: K-THEME (yalnız --bs-primary; guard yeşil) + K-STD; W3E-FIX'in G-1
 DOĞRULA: verify_datatable_page.py bu sayfa için yeşil (iki tablo); Web.Tests (xUnit + RunNode; vitest bu makinede çalışmaz): sunucu modu sorgu çevirisi (DataTables start / length → page / pageSize, süzgeçler → sorgu), "QR okutulmadı" çipi süzgece girmez, 92 / 93 gün, hızlı görünüm alanları, temsilci özeti client modu + tıklayınca süzme, Save View iki tabloyu kapsar, UAS-001, 7 dil, tema guard'ı rgb biçimleriyle + 3 sabotaj (.bak + touch): (1) ziyaret tablosundan data-dt-standard="v2" kaldırılsın → kırmızı; (2) vekil page / pageSize çevirisini bozsun → kırmızı; (3) --vw-today eski rgb tonuna dönsün → guard kırmızı. Web tam takım (-o repo içi), taban karşılaştırması. Görsel kanıt (mockup M1–M6 ile yan yana, AYRI sekme / kendi düzeneğin): liste + süzgeç açık, hızlı görünüm, temsilci özeti, boş, Arapça; açık + koyu.
 Commit: "feat(web): WP-VW-W3E-FLAGS-STD — evidence flags list and rep summary on the Golden Compact DataTable standard (server + client mode), standard filter bar, quick view drawer; workspace today tint from the layout primary, theme guard covers rgb forms" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
 ```
+
+## §37 CT kabul — W3E-FIX E2 ACCEPTED (2026-10-15) — G-1…G-8, CT-3, U-1…U-3
+Test dalına alındı: `ed32ef511` (ajan `4fbee3daf`), çakışmasız.
+
+**CT kontrolü:**
+- **Q5:** Golden Compact (sunucu modu). Web vekili `start/length` → CRM `page/pageSize` çevirisi yapıyor; CRM sözleşmesi değişmedi. Dışa aktarma Web'de, ortak `ListExport` building block'u ile (csproj'a tek ProjectReference; mimari takım aynı 9 kırmızı → kural çiğnenmedi).
+- **G-4:** CRM yalnız okuma DTO'sunda ad (kiracı sınırlı, tek çağrı).
+- **Testler** (CT `-o`):
+
+  | takım | sonuç | kırmızılar |
+  |---|---|---|
+  | Web tam | **1766/3** | `WorkCenterMenu` (`-o`) + 2 `ShipmentDetailsDateNode` (taban). **C5 yeşil (CT-3 kapandı).** |
+  | CRM W3E / VisitExecution | 167/0 | — |
+  | Mimari | 68/9 | taban ile aynı 9 |
+
+- **CT sabotajı (ajanın dokunmadığı kural):** Web vekili toplu işlem sınırı 200 → 2000 → `A7…` + `A9…` **kırmızı**; geri alındı.
+
+**Açık / karar:**
+- **K-CITY (karar gerekli):** şehir süzgeci BRD kodu (`konya`) gönderiyor, CRM `TR-42-KONYA` arıyor → süzgeç gerçek veride sonuç vermiyor. Bu paketten önce de böyleydi. Seçenek: (a) CRM'de eşleştirme; (b) sözlük birleştirme (veri sahibi).
+- **Veri sahibi:** BRD `account-type` 9 değerde `label_tr` yok → "Clinic" İngilizce görünüyor (kod doğru).
+- **Q5 kısıtları (kabul):** sıralama yalnız CRM'in varsayılanı (kurum adı), sütun sıralaması kapalı. Seçim sayfa bazında (fabrika standardı).
+- **Dışa aktarma:** 43K kurum ≈ 435 CRM çağrısı → ileride CRM'e kendi dışa aktarma ucu.
+- **Ortak doğrulayıcı kırmızısı** (`personalization-client.js`, Golden'da da var): ajan ayrı görev kartı açtı (sidebar "Fix shared personalizationClient verifier red"). Ortak dosya, Kapanış / platform sahibinin işi (XMC-001).
+
+**Sıradaki:** W3E-FLAGS-STD (istem yukarıda; artık çalıştırılabilir).
