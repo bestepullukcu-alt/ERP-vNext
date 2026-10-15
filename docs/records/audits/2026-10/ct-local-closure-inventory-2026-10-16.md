@@ -1,7 +1,8 @@
 # Control Tower işleri — yerel kapanış envanteri (2026-10-16)
 
-Dal `chore/ct/pqg-01`, yalnız yerelde. Yerel `origin/main` `3912d568b`'ye göre 18 commit önde, 29 commit geride (birleşme
-tabanı `6b8a62d5a`); 86 dosya. Uzak depo okunmadı (fetch yapılmadı), push / PR / merge yapılmadı.
+Dal `chore/ct/pqg-01`, yalnız yerelde. Ölçüm: `afb5beeca` @ yerel `origin/main` `3912d568b` — 18 commit önde, 29 commit
+geride (birleşme tabanı `6b8a62d5a`); 86 dosya. Bu envanterin kendi commit'leri sayıya girmez. Uzak depo okunmadı (fetch
+yapılmadı), push / PR / merge yapılmadı.
 
 Yetki: sahibin Codex aracılığıyla verdiği ortak yerel karar yetkisi (`CT-COMPLETION-DELEGATION-OWNER-DECISION-01`).
 Aşağıdaki "Codex yerel teknik kabulü" sahip kabulü değildir.
