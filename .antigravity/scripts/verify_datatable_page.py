@@ -1087,13 +1087,27 @@ def main() -> int:
                 "Expected saveDefaultView payload viewName to fall back to 'Default' when no saved/localized name is available",
             )
         )
+        # Tenant scope of Save View: since 8e497c6f5 (2026-08-24) the browser calls the same-origin MVC proxy
+        # (PersonalizationProxyController) and never sends X-Tenant-Id itself — a header built from window.CurrentUser
+        # is client-controlled. The proxy adds it from the authenticated tenant_id claim, only for tenant_user actors.
+        personalization_proxy = root / "frontend" / "Diten.Web" / "Controllers" / "PersonalizationProxyController.cs"
+        personalization_proxy_text = read_text(personalization_proxy)
         checks.append(
-            check_contains(
+            check_not_contains(
                 personalization_client,
                 personalization_text,
-                re.compile(r"actorType[\s\S]*tenant_user[\s\S]*X-Tenant-Id", re.IGNORECASE),
-                "personalizationClient sends tenant header only for tenant users",
-                "Expected shared personalizationClient to send X-Tenant-Id for tenant_user Save View requests while omitting it for platform actors",
+                re.compile(r"X-Tenant-Id", re.IGNORECASE),
+                "personalizationClient sends no browser tenant header",
+                "personalizationClient must not set X-Tenant-Id; the MVC proxy derives it from the authenticated claim",
+            )
+        )
+        checks.append(
+            check_contains(
+                personalization_proxy,
+                personalization_proxy_text,
+                re.compile(r"actor_type[\s\S]*tenant_user[\s\S]*tenant_id[\s\S]*Headers\.Add\(\s*\"X-Tenant-Id\"", re.IGNORECASE),
+                "Personalization proxy sends tenant header only for tenant users",
+                "Expected PersonalizationProxyController to add X-Tenant-Id from the tenant_id claim for tenant_user actors and omit it for platform actors",
             )
         )
         checks.append(
