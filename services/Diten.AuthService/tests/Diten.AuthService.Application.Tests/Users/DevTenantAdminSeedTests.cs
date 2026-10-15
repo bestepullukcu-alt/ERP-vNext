@@ -7,7 +7,8 @@ namespace Diten.AuthService.Application.Tests.Users;
 
 /// <summary>
 /// BL-521 follow-up (owner decision 2026-10-13) — the opt-in dev tenant administrator, measured on the production
-/// <see cref="DataSeeder"/> against the test-owned mongod. Since BL-521 admin@diten.com is a platform account that every
+/// start-up seed steps (<see cref="DataSeeder"/>, then <see cref="AdminAccountSeed"/>; since WP-AUTH-ADMIN-BOOTSTRAP-01 the
+/// account lives in <see cref="DevAccountSeed"/>) against the test-owned mongod. Since BL-521 admin@diten.com is a platform account that every
 /// tenant door refuses; this account is the dev database's tenant-side administrator: tenant Admin role, never platform.
 /// </summary>
 [Collection("AccountKindAcceptance")]
@@ -24,16 +25,23 @@ public sealed class DevTenantAdminSeedTests : IClassFixture<AccountKindAcceptanc
     private IMongoCollection<UserRole> UserRoles => _host.Database.GetCollection<UserRole>("userRoles");
 
     private async Task<List<User>> TenantAdminsAsync()
-        => (await Users.Find(u => u.Email == DataSeeder.DevTenantAdminEmail).ToListAsync())
+        => (await Users.Find(u => u.Email == DevAccountSeed.DevTenantAdminEmail).ToListAsync())
             .Where(u => u.TenantId == DefaultTenantId && !u.IsDeleted).ToList();
 
     private async Task RemoveTenantAdminAsync()
     {
-        foreach (var user in await Users.Find(u => u.Email == DataSeeder.DevTenantAdminEmail).ToListAsync())
+        foreach (var user in await Users.Find(u => u.Email == DevAccountSeed.DevTenantAdminEmail).ToListAsync())
         {
             await UserRoles.DeleteManyAsync(ur => ur.UserId == user.Id);
             await Users.DeleteOneAsync(u => u.Id == user.Id);
         }
+    }
+
+    // The two start-up seed steps as AddPersistence runs them (system seed, then the account step).
+    private async Task StartUpSeedAsync(bool development, bool tenantAdmin)
+    {
+        await DataSeeder.SeedAsync(_host.Database);
+        await AdminAccountSeed.RunAsync(_host.Database, new AdminAccountSeed.Settings(development, TenantAdmin: tenantAdmin));
     }
 
     private async Task<List<string>> RoleNamesAsync(Guid userId)
@@ -47,8 +55,19 @@ public sealed class DevTenantAdminSeedTests : IClassFixture<AccountKindAcceptanc
     {
         await RemoveTenantAdminAsync();
 
-        await DataSeeder.SeedAsync(_host.Database);
-        await DataSeeder.SeedAsync(_host.Database, seedMockUsers: false, seedTenantAdmin: false);
+        await StartUpSeedAsync(development: true, tenantAdmin: false);
+        await StartUpSeedAsync(development: true, tenantAdmin: false);
+
+        Assert.Empty(await TenantAdminsAsync());
+    }
+
+    // WP-AUTH-ADMIN-BOOTSTRAP-01 — the switch alone is not enough: outside Development no account step writes anything.
+    [Fact]
+    public async Task Outside_development_the_switch_seeds_no_tenant_administrator()
+    {
+        await RemoveTenantAdminAsync();
+
+        await StartUpSeedAsync(development: false, tenantAdmin: true);
 
         Assert.Empty(await TenantAdminsAsync());
     }
@@ -58,7 +77,7 @@ public sealed class DevTenantAdminSeedTests : IClassFixture<AccountKindAcceptanc
     {
         await RemoveTenantAdminAsync();
 
-        await DataSeeder.SeedAsync(_host.Database, seedMockUsers: false, seedTenantAdmin: true);
+        await StartUpSeedAsync(development: true, tenantAdmin: true);
 
         var admin = Assert.Single(await TenantAdminsAsync());
         Assert.True(admin.IsActive);
@@ -70,12 +89,12 @@ public sealed class DevTenantAdminSeedTests : IClassFixture<AccountKindAcceptanc
     public async Task A_second_start_adds_nothing_and_keeps_an_administrators_deactivation()
     {
         await RemoveTenantAdminAsync();
-        await DataSeeder.SeedAsync(_host.Database, seedMockUsers: false, seedTenantAdmin: true);
+        await StartUpSeedAsync(development: true, tenantAdmin: true);
         var admin = Assert.Single(await TenantAdminsAsync());
         await Users.UpdateOneAsync(u => u.Id == admin.Id,
             Builders<User>.Update.Set(u => u.IsActive, false).Set(u => u.DeactivatedByAdministrator, true));
 
-        await DataSeeder.SeedAsync(_host.Database, seedMockUsers: false, seedTenantAdmin: true);
+        await StartUpSeedAsync(development: true, tenantAdmin: true);
 
         var after = Assert.Single(await TenantAdminsAsync());
         Assert.False(after.IsActive);

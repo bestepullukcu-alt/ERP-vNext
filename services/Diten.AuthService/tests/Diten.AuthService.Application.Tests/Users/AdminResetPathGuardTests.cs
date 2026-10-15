@@ -51,7 +51,10 @@ public sealed class AdminResetPathGuardTests
         (PlatformAuth, "ProvisionPlatformAdmin"),
         (PlatformAuth, "ForgotPassword"),
         // BL-454 slice 2 stage D — a NEW tenant administrator's invitation (an existing account goes through the reset).
-        (InternalEvents, "IssueNewAccountInvitation")
+        (InternalEvents, "IssueNewAccountInvitation"),
+        // WP-AUTH-ADMIN-BOOTSTRAP-01 — a new environment's FIRST platform administrator: a NEW account's invitation (the tenant
+        // administrator's, field for field); it refuses when any platform account exists, so it never resets one.
+        ("Diten.AuthService.Persistence/Operations/FirstPlatformAdministratorAccount.cs", "TryCreateAsync")
     ];
 
     private static readonly Regex UpdatePasswordCall = new(@"\.UpdatePassword\s*\(", RegexOptions.Compiled);

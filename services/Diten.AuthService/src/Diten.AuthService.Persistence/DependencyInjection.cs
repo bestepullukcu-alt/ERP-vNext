@@ -119,13 +119,15 @@ public static class DependencyInjection
         try
         {
             MongoDbIndexConfigurations.EnsureIndexesAsync(database).GetAwaiter().GetResult();
-            // Mock users only when BOTH hold: Development AND the opt-in key (see DataSeeder.MockUsersOptInConfigurationKey).
-            var seedMockUsers = environment.IsDevelopment()
-                && configuration.GetValue<bool>(DataSeeder.MockUsersOptInConfigurationKey);
-            // The dev tenant administrator under the same gate (DataSeeder.TenantAdminOptInConfigurationKey, BL-521 follow-up).
-            var seedTenantAdmin = environment.IsDevelopment()
-                && configuration.GetValue<bool>(DataSeeder.TenantAdminOptInConfigurationKey);
-            DataSeeder.SeedAsync(database, seedMockUsers, seedTenantAdmin).GetAwaiter().GetResult();
+            // WP-AUTH-ADMIN-BOOTSTRAP-01 — the system seed (permissions, roles, templates) in every environment, then the account
+            // step: dev accounts in Development only (mock users / dev tenant administrator also need their opt-in key);
+            // anywhere else no account is created, deleted or switched on (AdminAccountSeed).
+            DataSeeder.SeedAsync(database).GetAwaiter().GetResult();
+            AdminAccountSeed.RunAsync(database, new AdminAccountSeed.Settings(
+                    Development: environment.IsDevelopment(),
+                    MockUsers: configuration.GetValue<bool>(DevAccountSeed.MockUsersOptInConfigurationKey),
+                    TenantAdmin: configuration.GetValue<bool>(DevAccountSeed.TenantAdminOptInConfigurationKey)))
+                .GetAwaiter().GetResult();
         }
         catch (Exception ex)
         {

@@ -40,6 +40,9 @@
     <ProjectReference Include="..\..\src\Diten.AuthService.Persistence\Diten.AuthService.Persistence.csproj" />
     <!-- BL-529 FIX9 — the legacy deactivation marker tool: its command is tested in-process and as a process. -->
     <ProjectReference Include="..\..\tools\Diten.AuthService.LegacyDeactivationMarker\Diten.AuthService.LegacyDeactivationMarker.csproj" />
+    <!-- WP-AUTH-ADMIN-BOOTSTRAP-01 — the first platform administrator command: tested in-process (aliased: it brings Platform's
+         Infrastructure with it) and as a process. -->
+    <ProjectReference Include="..\..\tools\Diten.AuthService.FirstPlatformAdministrator\Diten.AuthService.FirstPlatformAdministrator.csproj" Aliases="FirstAdminTool" />
     <ProjectReference Include="..\..\src\Diten.AuthService.Infrastructure\Diten.AuthService.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\Diten.Platform\src\Diten.Platform.Application\Diten.Platform.Application.csproj" Aliases="PlatformProducer" />
   </ItemGroup>
