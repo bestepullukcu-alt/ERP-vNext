@@ -1098,4 +1098,7 @@
   <data name="Nav.Page.EXPIRYEXCEPTIONDETAILS" xml:space="preserve"><value>Detalle de la excepción</value></data>
   <data name="Nav.Page.EXPIRYPOLICY" xml:space="preserve"><value>Reglas de vida útil y ajustes</value></data>
   <data name="Nav.Page.EXPIRYEVIDENCE" xml:space="preserve"><value>Paquete de evidencias</value></data>
+  <data name="Nav.Page.RECALLDASHBOARD" xml:space="preserve"><value>Preparación ante retiradas</value></data>
+  <data name="Nav.Page.RECALLTRACE" xml:space="preserve"><value>Trazabilidad de retirada</value></data>
+  <data name="Nav.Page.RECALLCASES" xml:space="preserve"><value>Casos de retirada</value></data>
 </root>

@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Recall.Common.Crumb.Root" xml:space="preserve"><value>Geri Çağırma</value></data>
+  <data name="Recall.Common.Company.Label" xml:space="preserve"><value>Şirket</value></data>
+  <data name="Recall.Common.Company.Placeholder" xml:space="preserve"><value>Şirket seçin</value></data>
+  <data name="Recall.Common.Company.Required" xml:space="preserve"><value>Geri çağırma hazırlığını görmek için şirketi seçin.</value></data>
+  <data name="Recall.Common.Company.Unavailable" xml:space="preserve"><value>Şirket listesi yüklenemedi. Biraz sonra yeniden deneyin.</value></data>
+  <data name="Recall.Common.NamesUnavailable" xml:space="preserve"><value>Ürün ve depo adları okunamadı; kodlar gösteriliyor.</value></data>
+  <data name="Recall.Common.Loading" xml:space="preserve"><value>Yükleniyor…</value></data>
+  <data name="Recall.Common.Cancel" xml:space="preserve"><value>Vazgeç</value></data>
+  <data name="Recall.Common.Apply" xml:space="preserve"><value>Uygula</value></data>
+  <data name="Recall.Common.Clear" xml:space="preserve"><value>Temizle</value></data>
+  <data name="Recall.Common.ReasonMin" xml:space="preserve"><value>En az 10 karakter yazın.</value></data>
+  <data name="Recall.Common.Required" xml:space="preserve"><value>Zorunlu.</value></data>
+  <data name="Recall.Common.None" xml:space="preserve"><value>Yok</value></data>
+  <data name="Recall.Tabs.Dashboard" xml:space="preserve"><value>Hazırlık Paneli</value></data>
+  <data name="Recall.Tabs.Trace" xml:space="preserve"><value>İzleme</value></data>
+  <data name="Recall.Tabs.Cases" xml:space="preserve"><value>Vakalar</value></data>
+  <data name="Recall.Dashboard.Subtitle" xml:space="preserve"><value>Bugün {0} · tatbikat hedefi {1} saat</value></data>
+  <data name="Recall.Freq.Band" xml:space="preserve"><value>Son tatbikat {0} günden eski.</value></data>
+  <data name="Recall.Freq.Detail" xml:space="preserve"><value>Son tatbikat {0} ({1} gün önce). Eşik Ayarlar'dan gelir.</value></data>
+  <data name="Recall.Freq.None" xml:space="preserve"><value>Henüz tamamlanmış tatbikat yok. Eşik Ayarlar'dan gelir.</value></data>
+  <data name="Recall.Kpi.Open" xml:space="preserve"><value>Açık geri çağırma vakası</value></data>
+  <data name="Recall.Kpi.OpenSub" xml:space="preserve"><value>1. sınıf {0} · 2. sınıf {1} · 3. sınıf {2}</value></data>
+  <data name="Recall.Kpi.LastDrill" xml:space="preserve"><value>Son tatbikat süresi</value></data>
+  <data name="Recall.Kpi.LastDrillSub" xml:space="preserve"><value>{0} · hedef {1} saat</value></data>
+  <data name="Recall.Kpi.NoDrill" xml:space="preserve"><value>Tamamlanmış tatbikat yok</value></data>
+  <data name="Recall.Kpi.Coverage" xml:space="preserve"><value>İzlenebilirlik kapsama oranı</value></data>
+  <data name="Recall.Kpi.CoverageSub" xml:space="preserve"><value>Son {0} gün · {2} çıkıştan {1} tanesi lot / serili</value></data>
+  <data name="Recall.Kpi.CoverageNone" xml:space="preserve"><value>Son {0} günde çıkış hareketi yok</value></data>
+  <data name="Recall.Kpi.Gaps" xml:space="preserve"><value>Lotsuz çıkış (izlenemeyen)</value></data>
+  <data name="Recall.Kpi.GapsSub" xml:space="preserve"><value>Son {0} gün</value></data>
+  <data name="Recall.Kpi.Returned" xml:space="preserve"><value>Geri dönen (açık vakalar)</value></data>
+  <data name="Recall.Kpi.ReturnedNone" xml:space="preserve"><value>Bağlı iade yok</value></data>
+  <data name="Recall.Badge.OnTarget" xml:space="preserve"><value>Hedefte</value></data>
+  <data name="Recall.Badge.OverTarget" xml:space="preserve"><value>Hedef aşıldı</value></data>
+  <data name="Recall.Chart.Title" xml:space="preserve"><value>Tatbikat geçmişi · son 12</value></data>
+  <data name="Recall.Chart.Target" xml:space="preserve"><value>Hedef {0} sa</value></data>
+  <data name="Recall.Chart.Hours" xml:space="preserve"><value>Saat</value></data>
+  <data name="Recall.Chart.Empty" xml:space="preserve"><value>Henüz tamamlanmış tatbikat yok.</value></data>
+  <data name="Recall.OpenCases.Title" xml:space="preserve"><value>Açık vakalar</value></data>
+  <data name="Recall.OpenCases.All" xml:space="preserve"><value>Tüm vakalar →</value></data>
+  <data name="Recall.OpenCases.Empty" xml:space="preserve"><value>Açık geri çağırma vakası yok.</value></data>
+  <data name="Recall.Duration.HoursMinutes" xml:space="preserve"><value>{0} sa {1} dk</value></data>
+  <data name="Recall.Duration.Minutes" xml:space="preserve"><value>{0} dk</value></data>
+  <data name="Recall.Col.Number" xml:space="preserve"><value>Vaka no</value></data>
+  <data name="Recall.Col.ProductLot" xml:space="preserve"><value>Ürün / lot</value></data>
+  <data name="Recall.Col.ProductRootLot" xml:space="preserve"><value>Ürün / kök lot</value></data>
+  <data name="Recall.Col.Class" xml:space="preserve"><value>Sınıf</value></data>
+  <data name="Recall.Col.Level" xml:space="preserve"><value>Düzey</value></data>
+  <data name="Recall.Col.Opened" xml:space="preserve"><value>Açılış</value></data>
+  <data name="Recall.Col.Affected" xml:space="preserve"><value>Etkilenen</value></data>
+  <data name="Recall.Col.ReturnedPct" xml:space="preserve"><value>Geri dönen %</value></data>
+  <data name="Recall.Col.Status" xml:space="preserve"><value>Durum</value></data>
+  <data name="Recall.Col.Type" xml:space="preserve"><value>Tür</value></data>
+  <data name="Recall.Col.Owner" xml:space="preserve"><value>Sorumlu</value></data>
+  <data name="Recall.Col.Progress" xml:space="preserve"><value>İlerleme (dönen / sevk)</value></data>
+  <data name="Recall.Class.N" xml:space="preserve"><value>{0}. sınıf</value></data>
+  <data name="Recall.Status.Draft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="Recall.Status.PendingScopeApproval" xml:space="preserve"><value>Kapsam onayı bekliyor</value></data>
+  <data name="Recall.Status.Active" xml:space="preserve"><value>Aktif</value></data>
+  <data name="Recall.Status.EffectivenessCheck" xml:space="preserve"><value>Etkinlik kontrolü</value></data>
+  <data name="Recall.Status.Closed" xml:space="preserve"><value>Kapandı</value></data>
+  <data name="Recall.Status.Cancelled" xml:space="preserve"><value>İptal</value></data>
+  <data name="Recall.DrillStatus.Running" xml:space="preserve"><value>Tatbikat sürüyor</value></data>
+  <data name="Recall.DrillStatus.Completed" xml:space="preserve"><value>Tatbikat tamamlandı</value></data>
+  <data name="Recall.DrillStatus.Cancelled" xml:space="preserve"><value>Tatbikat iptal edildi</value></data>
+  <data name="Recall.Level.Wholesale" xml:space="preserve"><value>Toptan</value></data>
+  <data name="Recall.Level.Pharmacy" xml:space="preserve"><value>Eczane</value></data>
+  <data name="Recall.Level.Patient" xml:space="preserve"><value>Hasta</value></data>
+  <data name="Recall.Type.Real" xml:space="preserve"><value>Gerçek</value></data>
+  <data name="Recall.Type.Drill" xml:space="preserve"><value>Tatbikat</value></data>
+  <data name="Recall.Drill.Passed" xml:space="preserve"><value>Geçti</value></data>
+  <data name="Recall.Drill.Failed" xml:space="preserve"><value>Kaldı</value></data>
+  <data name="Recall.Drill.NoClass" xml:space="preserve"><value>Tatbikatın sınıfı ve düzeyi yoktur</value></data>
+  <data name="Recall.Trace.Subtitle" xml:space="preserve"><value>Soy ağacı MOD-0174 · stok defteri MOD-0173 · sevkiyat MOD-0183</value></data>
+  <data name="Recall.Trace.Lot" xml:space="preserve"><value>Lot no</value></data>
+  <data name="Recall.Trace.LotPlaceholder" xml:space="preserve"><value>Lot numarası arayın</value></data>
+  <data name="Recall.Trace.Product" xml:space="preserve"><value>Ürün</value></data>
+  <data name="Recall.Trace.Direction" xml:space="preserve"><value>Yön</value></data>
+  <data name="Recall.Direction.Backward" xml:space="preserve"><value>Geriye</value></data>
+  <data name="Recall.Direction.Forward" xml:space="preserve"><value>İleriye</value></data>
+  <data name="Recall.Direction.Both" xml:space="preserve"><value>İkisi</value></data>
+  <data name="Recall.Trace.Run" xml:space="preserve"><value>İzle</value></data>
+  <data name="Recall.Trace.Recent" xml:space="preserve"><value>Son lotlar:</value></data>
+  <data name="Recall.Trace.Busy" xml:space="preserve"><value>Soy ağacı ve stok defteri taranıyor…</value></data>
+  <data name="Recall.Trace.Empty" xml:space="preserve"><value>Bir lot seçin ve izleyin.</value></data>
+  <data name="Recall.Trace.Summary" xml:space="preserve"><value>{0} bitmiş ürün lotu · {1} stok satırı · {2} sevkiyat · {3} boşluk</value></data>
+  <data name="Recall.Trace.Duration" xml:space="preserve"><value>Sorgu {0} sn'de tamamlandı · tatbikat ölçümünün kaynağı</value></data>
+  <data name="Recall.Trace.OpenCase" xml:space="preserve"><value>Bu kapsamla geri çağırma vakası aç</value></data>
+  <data name="Recall.Trace.Csv" xml:space="preserve"><value>CSV indir</value></data>
+  <data name="Recall.Trace.GapBand" xml:space="preserve"><value>{0} izleme boşluğu: bu miktarların nereye gittiği lot üzerinden kanıtlanamaz.</value></data>
+  <data name="Recall.Trace.Truncated" xml:space="preserve"><value>İzleme sınırına ulaşıldı — sonuç eksik.</value></data>
+  <data name="Recall.Trace.OtherCompany" xml:space="preserve"><value>Bu lotların kuruluşunuzun başka şirketlerinde {0} hareketi var — izlemeyi orada da çalıştırın.</value></data>
+  <data name="Recall.Trace.Tree" xml:space="preserve"><value>Ağaç</value></data>
+  <data name="Recall.Trace.Table" xml:space="preserve"><value>Tablo</value></data>
+  <data name="Recall.Trace.ExpandAll" xml:space="preserve"><value>Tümünü aç</value></data>
+  <data name="Recall.TCol.Kind" xml:space="preserve"><value>Düğüm türü</value></data>
+  <data name="Recall.TCol.Place" xml:space="preserve"><value>Depo / Müşteri</value></data>
+  <data name="Recall.TCol.Quantity" xml:space="preserve"><value>Miktar</value></data>
+  <data name="Recall.TCol.Ref" xml:space="preserve"><value>Hareket / Sevkiyat no</value></data>
+  <data name="Recall.TCol.Date" xml:space="preserve"><value>Tarih</value></data>
+  <data name="Recall.Kind.RawMaterialLot" xml:space="preserve"><value>Hammadde lotu</value></data>
+  <data name="Recall.Kind.FinishedGoodLot" xml:space="preserve"><value>Bitmiş ürün lotu</value></data>
+  <data name="Recall.Kind.Lot" xml:space="preserve"><value>Lot</value></data>
+  <data name="Recall.Kind.Input" xml:space="preserve"><value>Girdi</value></data>
+  <data name="Recall.Kind.Stock" xml:space="preserve"><value>Depo stoğu</value></data>
+  <data name="Recall.Kind.Shipment" xml:space="preserve"><value>Sevkiyat</value></data>
+  <data name="Recall.Kind.Customer" xml:space="preserve"><value>Müşteri</value></data>
+  <data name="Recall.Kind.Gap" xml:space="preserve"><value>İzleme boşluğu</value></data>
+  <data name="Recall.Kind.Disposal" xml:space="preserve"><value>İmha / tedarikçiye iade</value></data>
+  <data name="Recall.Badge.Untracked" xml:space="preserve"><value>Takip dışı</value></data>
+  <data name="Recall.StockStatus.AVAILABLE" xml:space="preserve"><value>Eldeki stok</value></data>
+  <data name="Recall.StockStatus.QUARANTINE" xml:space="preserve"><value>Karantinada</value></data>
+  <data name="Recall.StockStatus.QUALITY_INSPECTION" xml:space="preserve"><value>Kalite kontrolde</value></data>
+  <data name="Recall.StockStatus.BLOCKED" xml:space="preserve"><value>Bloke</value></data>
+  <data name="Recall.Gap.LOTLESS_OUTBOUND" xml:space="preserve"><value>Çıkış hareketinde lot alanı boş</value></data>
+  <data name="Recall.Gap.UNRESOLVED_TYPED_LOT" xml:space="preserve"><value>Yazılı lot metni bir lota bağlanmadı</value></data>
+  <data name="Recall.Gap.MISSING_GENEALOGY_LINK" xml:space="preserve"><value>Soy ağacı bağı eksik</value></data>
+  <data name="Recall.Gap.CONSUMED_WITHOUT_OUTPUT_LINK" xml:space="preserve"><value>Üretimde çıktı bağı olmadan tüketildi</value></data>
+  <data name="Recall.Gap.NO_CUSTOMER_REFERENCE" xml:space="preserve"><value>Müşteri referansı olmayan sevkiyat</value></data>
+  <data name="Recall.Gap.LIMIT_REACHED" xml:space="preserve"><value>İzleme sınırına ulaşıldı</value></data>
+  <data name="Recall.Gap.OTHER_COMPANY_ACTIVITY" xml:space="preserve"><value>Başka şirkette hareket (yalnız sayı)</value></data>
+  <data name="Recall.Shipment.Unreadable" xml:space="preserve"><value>Sevkiyat ayrıntıları okunamadı (eksik alan)</value></data>
+  <data name="Recall.Shipment.Customer" xml:space="preserve"><value>Müşteri {0}</value></data>
+  <data name="Recall.Shipment.UnknownCustomer" xml:space="preserve"><value>Bilinmiyor (belge dışı)</value></data>
+  <data name="Recall.OpenCase.Title" xml:space="preserve"><value>Geri çağırma vakası aç</value></data>
+  <data name="Recall.OpenCase.Intro" xml:space="preserve"><value>Vaka taslak olarak açılır; kapsamı {0} izlemesinden alınır.</value></data>
+  <data name="Recall.OpenCase.Reason" xml:space="preserve"><value>Neden</value></data>
+  <data name="Recall.OpenCase.Reference" xml:space="preserve"><value>Sapma / şikâyet no</value></data>
+  <data name="Recall.OpenCase.Submit" xml:space="preserve"><value>Taslak vaka aç</value></data>
+  <data name="Recall.OpenCase.Done" xml:space="preserve"><value>Taslak vaka {0} açıldı.</value></data>
+  <data name="Recall.Cases.Subtitle" xml:space="preserve"><value>Gerçek vakalar ve tatbikatlar · durum: Taslak → Kapsam onayı bekliyor → Aktif → Etkinlik kontrolü → Kapandı</value></data>
+  <data name="Recall.Filter.AllTypes" xml:space="preserve"><value>Tüm türler</value></data>
+  <data name="Recall.Filter.AllStatuses" xml:space="preserve"><value>Tüm durumlar</value></data>
+  <data name="Recall.Filter.AllClasses" xml:space="preserve"><value>Tüm sınıflar</value></data>
+  <data name="Recall.Filter.AllProducts" xml:space="preserve"><value>Tüm ürünler</value></data>
+  <data name="Recall.Filter.OpenedFrom" xml:space="preserve"><value>Açılış ≥</value></data>
+  <data name="Recall.Filter.CaseStatuses" xml:space="preserve"><value>Vaka durumları</value></data>
+  <data name="Recall.Filter.DrillStatuses" xml:space="preserve"><value>Tatbikat durumları</value></data>
+  <data name="Recall.Cases.Empty" xml:space="preserve"><value>Filtreye uyan vaka yok.</value></data>
+  <data name="Recall.Cases.Count" xml:space="preserve"><value>{0} kayıt</value></data>
+  <data name="Recall.Errors.GENERIC" xml:space="preserve"><value>İstek tamamlanamadı.</value></data>
+  <data name="Recall.Errors.FORBIDDEN" xml:space="preserve"><value>Bu işlem için yetkiniz yok.</value></data>
+  <data name="Recall.Errors.UNAUTHORIZED" xml:space="preserve"><value>Oturumunuz sona erdi. Yeniden giriş yapın.</value></data>
+  <data name="Recall.Errors.SERVICE_UNAVAILABLE" xml:space="preserve"><value>Geri çağırma servisine ulaşılamıyor. Biraz sonra yeniden deneyin.</value></data>
+  <data name="Recall.Errors.INVALID_REQUEST" xml:space="preserve"><value>Bazı alanlar eksik ya da geçersiz.</value></data>
+  <data name="Recall.Errors.REASON_REQUIRED" xml:space="preserve"><value>En az 10 karakterlik bir neden yazın.</value></data>
+  <data name="Recall.Errors.UNKNOWN_LOT" xml:space="preserve"><value>Lot bulunamadı.</value></data>
+  <data name="Recall.Errors.CROSS_LE_FORBIDDEN" xml:space="preserve"><value>Bu kayıt başka bir şirkete ait.</value></data>
+  <data name="Recall.Errors.RECALL_CASE_ALREADY_OPEN" xml:space="preserve"><value>Bu lot için zaten açık bir geri çağırma vakası var.</value></data>
+  <data name="Recall.Errors.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>Bu istek farklı içerikle zaten gönderildi. Sayfayı yenileyin.</value></data>
+  <data name="Recall.Errors.COMPANY_NOT_SELECTED" xml:space="preserve"><value>Önce bir şirket seçin.</value></data>
+  <data name="Help.RECALLDASHBOARD.Purpose" xml:space="preserve"><value>Şirketin bir geri çağırmaya ne kadar hazır olduğunu gösterir: açık vakalar, hedefine göre son tatbikat, çıkışların lot kapsamı, izlenemeyen çıkışlar ve açık vakaların iadeleri.</value></data>
+  <data name="Help.RECALLDASHBOARD.Audience" xml:space="preserve"><value>Kalite (geri çağırma sorumlusu), kalite sistem yöneticisi ve yönetim (salt okunur).</value></data>
+  <data name="Help.RECALLDASHBOARD.Step1Title" xml:space="preserve"><value>Şirketi seçin</value></data>
+  <data name="Help.RECALLDASHBOARD.Step1" xml:space="preserve"><value>Bu sayfadaki her rakam yalnız seçili şirkete aittir.</value></data>
+  <data name="Help.RECALLDASHBOARD.Step2Title" xml:space="preserve"><value>Kartları okuyun</value></data>
+  <data name="Help.RECALLDASHBOARD.Step2" xml:space="preserve"><value>Son tatbikatta kırmızı “Hedef aşıldı” ya da sıfırdan büyük izlenemeyen çıkış sayısı ilgi ister.</value></data>
+  <data name="Help.RECALLDASHBOARD.Step3Title" xml:space="preserve"><value>Tatbikat geçmişine bakın</value></data>
+  <data name="Help.RECALLDASHBOARD.Step3" xml:space="preserve"><value>Grafik son 12 tamamlanmış tatbikatı hedef çizgisine göre gösterir; üstteki bant son tatbikat çok eskiyse uyarır.</value></data>
+  <data name="Help.RECALLTRACE.Purpose" xml:space="preserve"><value>Bir lotu tüm soy ağacı boyunca izler: geriye girdilerine, ileriye stoğa, sevkiyatlara ve müşterilere; malın nereye gittiğinin lotla kanıtlanamadığı boşlukları gösterir.</value></data>
+  <data name="Help.RECALLTRACE.Audience" xml:space="preserve"><value>Kalite (geri çağırma sorumlusu) ve kalite sistem yöneticisi.</value></data>
+  <data name="Help.RECALLTRACE.Step1Title" xml:space="preserve"><value>Lotu seçin</value></data>
+  <data name="Help.RECALLTRACE.Step1" xml:space="preserve"><value>Lot numarasını arayın ve yönü seçin: geriye, ileriye ya da ikisi.</value></data>
+  <data name="Help.RECALLTRACE.Step2Title" xml:space="preserve"><value>Ağacı ya da tabloyu okuyun</value></data>
+  <data name="Help.RECALLTRACE.Step2" xml:space="preserve"><value>İki görünüm aynı düğümleri gösterir. Kırmızı satırlar izleme boşluğudur; başka şirketin hareketi yalnız sayı olarak görünür.</value></data>
+  <data name="Help.RECALLTRACE.Step3Title" xml:space="preserve"><value>Dışa aktarın ya da vaka açın</value></data>
+  <data name="Help.RECALLTRACE.Step3" xml:space="preserve"><value>“CSV indir” aynı satırları verir; “Bu kapsamla geri çağırma vakası aç” bu izlemeden taslak bir vaka açar.</value></data>
+  <data name="Help.RECALLTRACE.Immediate" xml:space="preserve"><value>Vaka açmak hemen bir taslak oluşturur; kapsam onaylanana kadar hiçbir şey engellenmez.</value></data>
+  <data name="Help.RECALLCASES.Purpose" xml:space="preserve"><value>Şirketin gerçek geri çağırma vakalarını ve tatbikatlarını birlikte, en yeniden eskiye, durum ve ilerlemeleriyle listeler.</value></data>
+  <data name="Help.RECALLCASES.Audience" xml:space="preserve"><value>Geri çağırmaları izleyen herkes: kalite, depo, ticari ve yönetim.</value></data>
+  <data name="Help.RECALLCASES.Step1Title" xml:space="preserve"><value>Listeyi süzün</value></data>
+  <data name="Help.RECALLCASES.Step1" xml:space="preserve"><value>Tür, durum, sınıf, ürün ve açılış tarihini kullanın. Sınıf süzgeci yalnız gerçek vakaları gösterir.</value></data>
+  <data name="Help.RECALLCASES.Step2Title" xml:space="preserve"><value>Tatbikatları ayırt edin</value></data>
+  <data name="Help.RECALLCASES.Step2" xml:space="preserve"><value>Tatbikat satırı “Tatbikat” der, sonucunu ve süresini gösterir; sınıfı ve düzeyi yoktur.</value></data>
+</root>

@@ -1,0 +1,183 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.Recall.Recall> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["Recall.Tabs.Trace"].Value;
+    ViewData["PageCode"] = "RECALLTRACE";
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    MOD-0177 R6 — İzleme (RECALLTRACE, pack §11.1, §8.2, mockup "isTrace"). Lot (TRACE lot search) + direction → /Recall/data/trace (runTrace).
+    Tree and table show the SAME nodes (one list, two drawings); "Tümünü aç" opens every branch; "CSV indir" (RECALL_TRACE_EXPORT) is the
+    service's file; "Vaka aç" (RECALL_CASE_OPEN) opens a real Draft case (D-22). Recent lots are this browser's (D-23 — no fixed list).
+    CT-R8: another company's activity is ONE count band, never its rows (the service sends no such row). The mockup's "Tatbikat olarak
+    kaydet" is not built (D-15).
+    UAS-001 — nothing below is drawn without recall.trace.run. No redirect.
+*@
+@if (!Perms.Has(Diten.Web.Controllers.RecallKeys.TraceRun))
+{
+    <partial name="_AccessDenied" model="@Localizer["Recall.Tabs.Trace"].Value" />
+    return;
+}
+
+@{
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["Recall.Common.Company.Label"].Value;
+    company.Placeholder = Localizer["Recall.Common.Company.Placeholder"].Value;
+    company.SelectHint = Localizer["Recall.Common.Company.Required"].Value;
+    company.UnavailableText = Localizer["Recall.Common.Company.Unavailable"].Value;
+}
+
+<partial name="~/Views/Recall/_Header.cshtml" model="@("RECALLTRACE")" />
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready)
+{
+    <p class="text-muted mb-3">@Localizer["Recall.Trace.Subtitle"]</p>
+    <div class="card mb-4">
+        <div class="card-body">
+            <form class="row g-3 align-items-end" id="rc-trace-form" novalidate>
+                <div class="col-12 col-md-4">
+                    <label class="form-label" for="rc-trace-lot">@Localizer["Recall.Trace.Lot"]</label>
+                    <select id="rc-trace-lot" class="form-select" data-placeholder="@Localizer["Recall.Trace.LotPlaceholder"]"><option value=""></option></select>
+                </div>
+                <div class="col-12 col-md-3">
+                    <label class="form-label" for="rc-trace-product">@Localizer["Recall.Trace.Product"]</label>
+                    <input id="rc-trace-product" class="form-control" readonly value="—" />
+                </div>
+                <div class="col-12 col-md-3">
+                    <span class="form-label d-block">@Localizer["Recall.Trace.Direction"]</span>
+                    <div class="btn-group w-100" role="group" aria-label="@Localizer["Recall.Trace.Direction"]">
+                        @foreach (var (value, icon) in new[] { ("Backward", "bx-left-arrow-alt"), ("Forward", "bx-right-arrow-alt"), ("Both", "bx-transfer-alt") })
+                        {
+                            <input type="radio" class="btn-check" name="rc-direction" id="rc-direction-@value" value="@value" @(value == "Both" ? "checked" : "") />
+                            <label class="btn btn-outline-primary" for="rc-direction-@value"><i class="bx @icon"></i> @Localizer["Recall.Direction." + value]</label>
+                        }
+                    </div>
+                </div>
+                <div class="col-12 col-md-2 d-grid">
+                    <button type="submit" class="btn btn-primary" id="rc-trace-run"><i class="bx bx-search-alt me-1"></i>@Localizer["Recall.Trace.Run"]</button>
+                </div>
+            </form>
+            <div class="d-flex flex-wrap align-items-center gap-2 mt-3 d-none" id="rc-recent">
+                <small class="text-muted">@Localizer["Recall.Trace.Recent"]</small>
+                <span class="d-flex flex-wrap gap-2" id="rc-recent-list"></span>
+            </div>
+        </div>
+    </div>
+
+    <div id="rc-labels-unavailable" class="alert alert-warning d-none" role="status">@Localizer["Recall.Common.NamesUnavailable"]</div>
+    <div id="rc-error" class="alert alert-danger d-none" role="alert"></div>
+    <div class="text-muted mb-3 d-none" id="rc-trace-busy"><span class="spinner-border spinner-border-sm me-2"></span>@Localizer["Recall.Trace.Busy"]</div>
+    <p class="text-muted" id="rc-trace-empty">@Localizer["Recall.Trace.Empty"]</p>
+
+    <div class="d-none" id="rc-trace-result">
+        <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-3">
+            <div>
+                <div class="fw-medium" id="rc-trace-summary"></div>
+                <small class="text-muted" id="rc-trace-duration"></small>
+            </div>
+            <div class="d-flex flex-wrap gap-2" id="rc-trace-actions"></div>
+        </div>
+        <div class="alert alert-danger d-none" role="status" id="rc-trace-gapband"></div>
+        <div class="alert alert-warning d-none" role="status" id="rc-trace-truncated">@Localizer["Recall.Trace.Truncated"]</div>
+        <div class="alert alert-info d-none" role="status" id="rc-trace-othercompany"></div>
+
+        <div class="card">
+            <div class="card-header d-flex flex-wrap align-items-center gap-2">
+                <div class="btn-group" role="group">
+                    <input type="radio" class="btn-check" name="rc-view" id="rc-view-tree" value="tree" checked />
+                    <label class="btn btn-sm btn-outline-primary" for="rc-view-tree"><i class="bx bx-sitemap me-1"></i>@Localizer["Recall.Trace.Tree"]</label>
+                    <input type="radio" class="btn-check" name="rc-view" id="rc-view-table" value="table" />
+                    <label class="btn btn-sm btn-outline-primary" for="rc-view-table"><i class="bx bx-table me-1"></i>@Localizer["Recall.Trace.Table"]</label>
+                </div>
+                <button type="button" class="btn btn-sm btn-label-secondary ms-auto" id="rc-expand-all">@Localizer["Recall.Trace.ExpandAll"]</button>
+            </div>
+            <div class="card-body p-0">
+                <div id="rc-trace-tree" class="list-group list-group-flush"></div>
+                <div class="table-responsive d-none" id="rc-trace-table-wrap">
+                    <table class="table table-sm mb-0" id="rc-trace-table">
+                        <thead>
+                            <tr>
+                                <th>@Localizer["Recall.TCol.Kind"]</th>
+                                <th>@Localizer["Recall.Trace.Product"]</th>
+                                <th>@Localizer["Recall.Trace.Lot"]</th>
+                                <th>@Localizer["Recall.TCol.Place"]</th>
+                                <th class="text-end">@Localizer["Recall.TCol.Quantity"]</th>
+                                <th>@Localizer["Recall.TCol.Ref"]</th>
+                                <th>@Localizer["Recall.TCol.Date"]</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (Perms.Has(Diten.Web.Controllers.RecallKeys.CasesCreate))
+    {
+        <div class="modal fade" id="rc-open-case-modal" tabindex="-1" aria-labelledby="rc-open-case-title" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <form class="modal-content" id="rc-open-case-form" novalidate>
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="rc-open-case-title">@Localizer["Recall.OpenCase.Title"]</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["Recall.Common.Cancel"]"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="text-muted small" id="rc-open-case-intro"></p>
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <label class="form-label" for="rc-open-case-class">@Localizer["Recall.Col.Class"]</label>
+                                <select id="rc-open-case-class" class="form-select">
+                                    @foreach (var c in new[] { 1, 2, 3 })
+                                    {
+                                        <option value="@c">@string.Format(Localizer["Recall.Class.N"].Value, c)</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label" for="rc-open-case-level">@Localizer["Recall.Col.Level"]</label>
+                                <select id="rc-open-case-level" class="form-select">
+                                    @foreach (var level in new[] { "Wholesale", "Pharmacy", "Patient" })
+                                    {
+                                        <option value="@level">@Localizer["Recall.Level." + level]</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label" for="rc-open-case-reason">@Localizer["Recall.OpenCase.Reason"] <span class="text-danger">*</span></label>
+                                <textarea id="rc-open-case-reason" class="form-control" rows="3" maxlength="1000"></textarea>
+                                <div class="invalid-feedback d-block" data-err="reason"></div>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label" for="rc-open-case-reference">@Localizer["Recall.OpenCase.Reference"]</label>
+                                <input id="rc-open-case-reference" class="form-control" maxlength="100" />
+                            </div>
+                        </div>
+                        <div class="alert alert-danger d-none mt-3" role="alert" id="rc-open-case-error"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@Localizer["Recall.Common.Cancel"]</button>
+                        <button type="submit" class="btn btn-primary" id="rc-open-case-submit" data-dt-primary="chord">@Localizer["Recall.OpenCase.Submit"]</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    }
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    <partial name="~/Views/Recall/_RecallActions.cshtml" />
+    <partial name="~/Views/Recall/_RecallL10n.cshtml" />
+    @if (company.Ready)
+    {
+        <script src="~/assets/js/Recall/trace-view.js" asp-append-version="true"></script>
+        <script src="~/assets/js/Recall/trace.js" asp-append-version="true"></script>
+    }
+}

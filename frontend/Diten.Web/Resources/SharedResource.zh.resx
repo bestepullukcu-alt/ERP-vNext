@@ -1097,4 +1097,7 @@
   <data name="Nav.Page.EXPIRYEXCEPTIONDETAILS" xml:space="preserve"><value>异常详情</value></data>
   <data name="Nav.Page.EXPIRYPOLICY" xml:space="preserve"><value>保质期规则与设置</value></data>
   <data name="Nav.Page.EXPIRYEVIDENCE" xml:space="preserve"><value>证据包</value></data>
+  <data name="Nav.Page.RECALLDASHBOARD" xml:space="preserve"><value>召回准备情况</value></data>
+  <data name="Nav.Page.RECALLTRACE" xml:space="preserve"><value>召回追溯</value></data>
+  <data name="Nav.Page.RECALLCASES" xml:space="preserve"><value>召回案例</value></data>
 </root>

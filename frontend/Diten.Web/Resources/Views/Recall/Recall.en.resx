@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Recall.Common.Crumb.Root" xml:space="preserve"><value>Recall</value></data>
+  <data name="Recall.Common.Company.Label" xml:space="preserve"><value>Company</value></data>
+  <data name="Recall.Common.Company.Placeholder" xml:space="preserve"><value>Select a company</value></data>
+  <data name="Recall.Common.Company.Required" xml:space="preserve"><value>Select the company to see its recall readiness.</value></data>
+  <data name="Recall.Common.Company.Unavailable" xml:space="preserve"><value>The company list could not be loaded. Try again shortly.</value></data>
+  <data name="Recall.Common.NamesUnavailable" xml:space="preserve"><value>Product and warehouse names could not be read; codes are shown.</value></data>
+  <data name="Recall.Common.Loading" xml:space="preserve"><value>Loading…</value></data>
+  <data name="Recall.Common.Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Recall.Common.Apply" xml:space="preserve"><value>Apply</value></data>
+  <data name="Recall.Common.Clear" xml:space="preserve"><value>Clear</value></data>
+  <data name="Recall.Common.ReasonMin" xml:space="preserve"><value>Write at least 10 characters.</value></data>
+  <data name="Recall.Common.Required" xml:space="preserve"><value>Required.</value></data>
+  <data name="Recall.Common.None" xml:space="preserve"><value>None</value></data>
+  <data name="Recall.Tabs.Dashboard" xml:space="preserve"><value>Readiness dashboard</value></data>
+  <data name="Recall.Tabs.Trace" xml:space="preserve"><value>Trace</value></data>
+  <data name="Recall.Tabs.Cases" xml:space="preserve"><value>Cases</value></data>
+  <data name="Recall.Dashboard.Subtitle" xml:space="preserve"><value>Today {0} · drill target {1} h</value></data>
+  <data name="Recall.Freq.Band" xml:space="preserve"><value>The last drill is older than {0} days.</value></data>
+  <data name="Recall.Freq.Detail" xml:space="preserve"><value>Last drill {0} ({1} days ago). The threshold comes from Settings.</value></data>
+  <data name="Recall.Freq.None" xml:space="preserve"><value>No drill has been completed yet. The threshold comes from Settings.</value></data>
+  <data name="Recall.Kpi.Open" xml:space="preserve"><value>Open recall cases</value></data>
+  <data name="Recall.Kpi.OpenSub" xml:space="preserve"><value>Class 1: {0} · Class 2: {1} · Class 3: {2}</value></data>
+  <data name="Recall.Kpi.LastDrill" xml:space="preserve"><value>Last drill duration</value></data>
+  <data name="Recall.Kpi.LastDrillSub" xml:space="preserve"><value>{0} · target {1} h</value></data>
+  <data name="Recall.Kpi.NoDrill" xml:space="preserve"><value>No completed drill</value></data>
+  <data name="Recall.Kpi.Coverage" xml:space="preserve"><value>Traceability coverage</value></data>
+  <data name="Recall.Kpi.CoverageSub" xml:space="preserve"><value>Last {0} days · {1} of {2} outbound movements with lot / serial</value></data>
+  <data name="Recall.Kpi.CoverageNone" xml:space="preserve"><value>No outbound movement in the last {0} days</value></data>
+  <data name="Recall.Kpi.Gaps" xml:space="preserve"><value>Outbound without lot (untraceable)</value></data>
+  <data name="Recall.Kpi.GapsSub" xml:space="preserve"><value>Last {0} days</value></data>
+  <data name="Recall.Kpi.Returned" xml:space="preserve"><value>Returned (open cases)</value></data>
+  <data name="Recall.Kpi.ReturnedNone" xml:space="preserve"><value>No linked return</value></data>
+  <data name="Recall.Badge.OnTarget" xml:space="preserve"><value>On target</value></data>
+  <data name="Recall.Badge.OverTarget" xml:space="preserve"><value>Target exceeded</value></data>
+  <data name="Recall.Chart.Title" xml:space="preserve"><value>Drill history · last 12</value></data>
+  <data name="Recall.Chart.Target" xml:space="preserve"><value>Target {0} h</value></data>
+  <data name="Recall.Chart.Hours" xml:space="preserve"><value>Hours</value></data>
+  <data name="Recall.Chart.Empty" xml:space="preserve"><value>No drill has been completed yet.</value></data>
+  <data name="Recall.OpenCases.Title" xml:space="preserve"><value>Open cases</value></data>
+  <data name="Recall.OpenCases.All" xml:space="preserve"><value>All cases →</value></data>
+  <data name="Recall.OpenCases.Empty" xml:space="preserve"><value>There is no open recall case.</value></data>
+  <data name="Recall.Duration.HoursMinutes" xml:space="preserve"><value>{0} h {1} min</value></data>
+  <data name="Recall.Duration.Minutes" xml:space="preserve"><value>{0} min</value></data>
+  <data name="Recall.Col.Number" xml:space="preserve"><value>Case no</value></data>
+  <data name="Recall.Col.ProductLot" xml:space="preserve"><value>Product / lot</value></data>
+  <data name="Recall.Col.ProductRootLot" xml:space="preserve"><value>Product / root lot</value></data>
+  <data name="Recall.Col.Class" xml:space="preserve"><value>Class</value></data>
+  <data name="Recall.Col.Level" xml:space="preserve"><value>Level</value></data>
+  <data name="Recall.Col.Opened" xml:space="preserve"><value>Opened</value></data>
+  <data name="Recall.Col.Affected" xml:space="preserve"><value>Affected</value></data>
+  <data name="Recall.Col.ReturnedPct" xml:space="preserve"><value>Returned %</value></data>
+  <data name="Recall.Col.Status" xml:space="preserve"><value>Status</value></data>
+  <data name="Recall.Col.Type" xml:space="preserve"><value>Type</value></data>
+  <data name="Recall.Col.Owner" xml:space="preserve"><value>Owner</value></data>
+  <data name="Recall.Col.Progress" xml:space="preserve"><value>Progress (returned / shipped)</value></data>
+  <data name="Recall.Class.N" xml:space="preserve"><value>Class {0}</value></data>
+  <data name="Recall.Status.Draft" xml:space="preserve"><value>Draft</value></data>
+  <data name="Recall.Status.PendingScopeApproval" xml:space="preserve"><value>Pending scope approval</value></data>
+  <data name="Recall.Status.Active" xml:space="preserve"><value>Active</value></data>
+  <data name="Recall.Status.EffectivenessCheck" xml:space="preserve"><value>Effectiveness check</value></data>
+  <data name="Recall.Status.Closed" xml:space="preserve"><value>Closed</value></data>
+  <data name="Recall.Status.Cancelled" xml:space="preserve"><value>Cancelled</value></data>
+  <data name="Recall.DrillStatus.Running" xml:space="preserve"><value>Drill running</value></data>
+  <data name="Recall.DrillStatus.Completed" xml:space="preserve"><value>Drill completed</value></data>
+  <data name="Recall.DrillStatus.Cancelled" xml:space="preserve"><value>Drill cancelled</value></data>
+  <data name="Recall.Level.Wholesale" xml:space="preserve"><value>Wholesale</value></data>
+  <data name="Recall.Level.Pharmacy" xml:space="preserve"><value>Pharmacy</value></data>
+  <data name="Recall.Level.Patient" xml:space="preserve"><value>Patient</value></data>
+  <data name="Recall.Type.Real" xml:space="preserve"><value>Real</value></data>
+  <data name="Recall.Type.Drill" xml:space="preserve"><value>Drill</value></data>
+  <data name="Recall.Drill.Passed" xml:space="preserve"><value>Passed</value></data>
+  <data name="Recall.Drill.Failed" xml:space="preserve"><value>Failed</value></data>
+  <data name="Recall.Drill.NoClass" xml:space="preserve"><value>A drill has no class or level</value></data>
+  <data name="Recall.Trace.Subtitle" xml:space="preserve"><value>Genealogy MOD-0174 · stock ledger MOD-0173 · shipments MOD-0183</value></data>
+  <data name="Recall.Trace.Lot" xml:space="preserve"><value>Lot number</value></data>
+  <data name="Recall.Trace.LotPlaceholder" xml:space="preserve"><value>Search a lot number</value></data>
+  <data name="Recall.Trace.Product" xml:space="preserve"><value>Product</value></data>
+  <data name="Recall.Trace.Direction" xml:space="preserve"><value>Direction</value></data>
+  <data name="Recall.Direction.Backward" xml:space="preserve"><value>Backward</value></data>
+  <data name="Recall.Direction.Forward" xml:space="preserve"><value>Forward</value></data>
+  <data name="Recall.Direction.Both" xml:space="preserve"><value>Both</value></data>
+  <data name="Recall.Trace.Run" xml:space="preserve"><value>Trace</value></data>
+  <data name="Recall.Trace.Recent" xml:space="preserve"><value>Recent lots:</value></data>
+  <data name="Recall.Trace.Busy" xml:space="preserve"><value>Scanning genealogy and the stock ledger…</value></data>
+  <data name="Recall.Trace.Empty" xml:space="preserve"><value>Choose a lot and run the trace.</value></data>
+  <data name="Recall.Trace.Summary" xml:space="preserve"><value>{0} finished-good lots · {1} stock lines · {2} shipments · {3} gaps</value></data>
+  <data name="Recall.Trace.Duration" xml:space="preserve"><value>Query completed in {0} s · the measure of a drill</value></data>
+  <data name="Recall.Trace.OpenCase" xml:space="preserve"><value>Open a recall case with this scope</value></data>
+  <data name="Recall.Trace.Csv" xml:space="preserve"><value>Download CSV</value></data>
+  <data name="Recall.Trace.GapBand" xml:space="preserve"><value>{0} trace gap(s): where these quantities went cannot be proven by lot.</value></data>
+  <data name="Recall.Trace.Truncated" xml:space="preserve"><value>The trace reached its limit — the result is incomplete.</value></data>
+  <data name="Recall.Trace.OtherCompany" xml:space="preserve"><value>{0} movement(s) of these lots exist in other companies of your organisation — run the trace there too.</value></data>
+  <data name="Recall.Trace.Tree" xml:space="preserve"><value>Tree</value></data>
+  <data name="Recall.Trace.Table" xml:space="preserve"><value>Table</value></data>
+  <data name="Recall.Trace.ExpandAll" xml:space="preserve"><value>Expand all</value></data>
+  <data name="Recall.TCol.Kind" xml:space="preserve"><value>Node type</value></data>
+  <data name="Recall.TCol.Place" xml:space="preserve"><value>Warehouse / customer</value></data>
+  <data name="Recall.TCol.Quantity" xml:space="preserve"><value>Quantity</value></data>
+  <data name="Recall.TCol.Ref" xml:space="preserve"><value>Movement / shipment no</value></data>
+  <data name="Recall.TCol.Date" xml:space="preserve"><value>Date</value></data>
+  <data name="Recall.Kind.RawMaterialLot" xml:space="preserve"><value>Raw-material lot</value></data>
+  <data name="Recall.Kind.FinishedGoodLot" xml:space="preserve"><value>Finished-good lot</value></data>
+  <data name="Recall.Kind.Lot" xml:space="preserve"><value>Lot</value></data>
+  <data name="Recall.Kind.Input" xml:space="preserve"><value>Input</value></data>
+  <data name="Recall.Kind.Stock" xml:space="preserve"><value>Warehouse stock</value></data>
+  <data name="Recall.Kind.Shipment" xml:space="preserve"><value>Shipment</value></data>
+  <data name="Recall.Kind.Customer" xml:space="preserve"><value>Customer</value></data>
+  <data name="Recall.Kind.Gap" xml:space="preserve"><value>Trace gap</value></data>
+  <data name="Recall.Kind.Disposal" xml:space="preserve"><value>Disposal / return to supplier</value></data>
+  <data name="Recall.Badge.Untracked" xml:space="preserve"><value>Not tracked</value></data>
+  <data name="Recall.StockStatus.AVAILABLE" xml:space="preserve"><value>On hand</value></data>
+  <data name="Recall.StockStatus.QUARANTINE" xml:space="preserve"><value>In quarantine</value></data>
+  <data name="Recall.StockStatus.QUALITY_INSPECTION" xml:space="preserve"><value>In quality inspection</value></data>
+  <data name="Recall.StockStatus.BLOCKED" xml:space="preserve"><value>Blocked</value></data>
+  <data name="Recall.Gap.LOTLESS_OUTBOUND" xml:space="preserve"><value>Outbound movement without a lot</value></data>
+  <data name="Recall.Gap.UNRESOLVED_TYPED_LOT" xml:space="preserve"><value>Typed lot text not linked to a lot</value></data>
+  <data name="Recall.Gap.MISSING_GENEALOGY_LINK" xml:space="preserve"><value>Missing genealogy link</value></data>
+  <data name="Recall.Gap.CONSUMED_WITHOUT_OUTPUT_LINK" xml:space="preserve"><value>Consumed in production without an output link</value></data>
+  <data name="Recall.Gap.NO_CUSTOMER_REFERENCE" xml:space="preserve"><value>Shipment without a customer reference</value></data>
+  <data name="Recall.Gap.LIMIT_REACHED" xml:space="preserve"><value>Trace limit reached</value></data>
+  <data name="Recall.Gap.OTHER_COMPANY_ACTIVITY" xml:space="preserve"><value>Movements in another company (count only)</value></data>
+  <data name="Recall.Shipment.Unreadable" xml:space="preserve"><value>Shipment details could not be read (missing fields)</value></data>
+  <data name="Recall.Shipment.Customer" xml:space="preserve"><value>Customer {0}</value></data>
+  <data name="Recall.Shipment.UnknownCustomer" xml:space="preserve"><value>Unknown (no document)</value></data>
+  <data name="Recall.OpenCase.Title" xml:space="preserve"><value>Open a recall case</value></data>
+  <data name="Recall.OpenCase.Intro" xml:space="preserve"><value>The case opens as a draft; its scope is taken from the trace of {0}.</value></data>
+  <data name="Recall.OpenCase.Reason" xml:space="preserve"><value>Reason</value></data>
+  <data name="Recall.OpenCase.Reference" xml:space="preserve"><value>Deviation / complaint no</value></data>
+  <data name="Recall.OpenCase.Submit" xml:space="preserve"><value>Open draft case</value></data>
+  <data name="Recall.OpenCase.Done" xml:space="preserve"><value>Draft case {0} opened.</value></data>
+  <data name="Recall.Cases.Subtitle" xml:space="preserve"><value>Real cases and drills · status: Draft → Pending scope approval → Active → Effectiveness check → Closed</value></data>
+  <data name="Recall.Filter.AllTypes" xml:space="preserve"><value>All types</value></data>
+  <data name="Recall.Filter.AllStatuses" xml:space="preserve"><value>All statuses</value></data>
+  <data name="Recall.Filter.AllClasses" xml:space="preserve"><value>All classes</value></data>
+  <data name="Recall.Filter.AllProducts" xml:space="preserve"><value>All products</value></data>
+  <data name="Recall.Filter.OpenedFrom" xml:space="preserve"><value>Opened on or after</value></data>
+  <data name="Recall.Filter.CaseStatuses" xml:space="preserve"><value>Case statuses</value></data>
+  <data name="Recall.Filter.DrillStatuses" xml:space="preserve"><value>Drill statuses</value></data>
+  <data name="Recall.Cases.Empty" xml:space="preserve"><value>No case matches the filter.</value></data>
+  <data name="Recall.Cases.Count" xml:space="preserve"><value>{0} records</value></data>
+  <data name="Recall.Errors.GENERIC" xml:space="preserve"><value>The request could not be completed.</value></data>
+  <data name="Recall.Errors.FORBIDDEN" xml:space="preserve"><value>You do not have permission for this.</value></data>
+  <data name="Recall.Errors.UNAUTHORIZED" xml:space="preserve"><value>Your session has ended. Sign in again.</value></data>
+  <data name="Recall.Errors.SERVICE_UNAVAILABLE" xml:space="preserve"><value>The recall service cannot be reached. Try again shortly.</value></data>
+  <data name="Recall.Errors.INVALID_REQUEST" xml:space="preserve"><value>Some fields are missing or invalid.</value></data>
+  <data name="Recall.Errors.REASON_REQUIRED" xml:space="preserve"><value>Write a reason of at least 10 characters.</value></data>
+  <data name="Recall.Errors.UNKNOWN_LOT" xml:space="preserve"><value>The lot was not found.</value></data>
+  <data name="Recall.Errors.CROSS_LE_FORBIDDEN" xml:space="preserve"><value>This record belongs to another company.</value></data>
+  <data name="Recall.Errors.RECALL_CASE_ALREADY_OPEN" xml:space="preserve"><value>This lot already has an open recall case.</value></data>
+  <data name="Recall.Errors.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>This request was already sent with different content. Refresh the page.</value></data>
+  <data name="Recall.Errors.COMPANY_NOT_SELECTED" xml:space="preserve"><value>Select a company first.</value></data>
+  <data name="Help.RECALLDASHBOARD.Purpose" xml:space="preserve"><value>Shows how ready the company is for a recall: open cases, the last drill against its target, lot coverage of outbound movements, untraceable outbound movements and returns of open cases.</value></data>
+  <data name="Help.RECALLDASHBOARD.Audience" xml:space="preserve"><value>Quality (recall owner), quality system administrator and management (read-only).</value></data>
+  <data name="Help.RECALLDASHBOARD.Step1Title" xml:space="preserve"><value>Choose the company</value></data>
+  <data name="Help.RECALLDASHBOARD.Step1" xml:space="preserve"><value>Every figure on this page belongs to the selected company only.</value></data>
+  <data name="Help.RECALLDASHBOARD.Step2Title" xml:space="preserve"><value>Read the cards</value></data>
+  <data name="Help.RECALLDASHBOARD.Step2" xml:space="preserve"><value>A red “Target exceeded” on the last drill or a non-zero untraceable count needs attention.</value></data>
+  <data name="Help.RECALLDASHBOARD.Step3Title" xml:space="preserve"><value>Watch the drill history</value></data>
+  <data name="Help.RECALLDASHBOARD.Step3" xml:space="preserve"><value>The chart shows the last 12 completed drills against the target line; the band above warns when the last drill is too old.</value></data>
+  <data name="Help.RECALLTRACE.Purpose" xml:space="preserve"><value>Traces a lot through the whole genealogy, backward to its inputs and forward to stock, shipments and customers, and shows the gaps where a lot cannot prove where goods went.</value></data>
+  <data name="Help.RECALLTRACE.Audience" xml:space="preserve"><value>Quality (recall owner) and the quality system administrator.</value></data>
+  <data name="Help.RECALLTRACE.Step1Title" xml:space="preserve"><value>Pick the lot</value></data>
+  <data name="Help.RECALLTRACE.Step1" xml:space="preserve"><value>Search the lot number and choose the direction: backward, forward or both.</value></data>
+  <data name="Help.RECALLTRACE.Step2Title" xml:space="preserve"><value>Read the tree or the table</value></data>
+  <data name="Help.RECALLTRACE.Step2" xml:space="preserve"><value>Both views show the same nodes. Red rows are trace gaps; another company’s activity appears only as a count.</value></data>
+  <data name="Help.RECALLTRACE.Step3Title" xml:space="preserve"><value>Export or open a case</value></data>
+  <data name="Help.RECALLTRACE.Step3" xml:space="preserve"><value>“Download CSV” gives the same rows; “Open a recall case with this scope” opens a draft case from this trace.</value></data>
+  <data name="Help.RECALLTRACE.Immediate" xml:space="preserve"><value>Opening a case creates a draft immediately; nothing is blocked until its scope is approved.</value></data>
+  <data name="Help.RECALLCASES.Purpose" xml:space="preserve"><value>Lists the company’s real recall cases and drills together, newest first, with their status and progress.</value></data>
+  <data name="Help.RECALLCASES.Audience" xml:space="preserve"><value>Everyone who follows recalls: quality, warehouse, commercial and management.</value></data>
+  <data name="Help.RECALLCASES.Step1Title" xml:space="preserve"><value>Filter the list</value></data>
+  <data name="Help.RECALLCASES.Step1" xml:space="preserve"><value>Use type, status, class, product and the opening date. A class filter shows real cases only.</value></data>
+  <data name="Help.RECALLCASES.Step2Title" xml:space="preserve"><value>Tell drills apart</value></data>
+  <data name="Help.RECALLCASES.Step2" xml:space="preserve"><value>A drill row says “Drill”, shows its result and duration, and has no class or level.</value></data>
+</root>
