@@ -5,37 +5,49 @@ using System.Threading;
 using System.Threading.Tasks;
 using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Enums;
-using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace Diten.Platform.Infrastructure.Persistence.Configurations;
 
+/// <summary>
+/// The development platform administrator record (admin@diten.com, the same fixed id as Auth's development account).
+/// <para>WP-AUTH-ADMIN-BOOTSTRAP-01 (BL-534, owner decision 2026-10-15): <b>Development only, and only "create when
+/// missing".</b> Outside Development nothing is written. A record that exists — found by its fixed id OR by its address —
+/// is never touched: a start-up no longer forces it back to PlatformAdmin + Active + [SuperAdmin] + not deleted, so an
+/// administrator's suspension, demotion or deletion lasts. A record whose address was changed no longer makes the next
+/// start fail on the fixed id. A new environment's first platform administrator is created by the
+/// <c>Diten.AuthService.FirstPlatformAdministrator</c> command (<see cref="FirstPlatformAdministratorRecord"/>).</para>
+/// </summary>
 public static class PlatformAdministratorSeed
 {
-    public static async Task EnsureSeededAsync(IMongoDatabase database, CancellationToken ct = default)
-    {
-        var collection = database.GetCollection<PlatformAdministrator>(PlatformCollections.PlatformAdministrators);
-        var rawCollection = database.GetCollection<BsonDocument>(PlatformCollections.PlatformAdministrators);
+    public static readonly Guid DevelopmentAdministratorId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+    public const string DevelopmentAdministratorEmail = "admin@diten.com";
 
-        var staticAdminId = Guid.Parse("11111111-1111-1111-1111-111111111111");
-        var email = "admin@diten.com";
-        var normalizedEmail = "admin@diten.com";
+    /// <param name="isDevelopment">The host runs in the Development environment — THE GATE: false writes nothing.</param>
+    public static async Task EnsureSeededAsync(IMongoDatabase database, bool isDevelopment, CancellationToken ct = default)
+    {
+        if (!isDevelopment)
+        {
+            return;
+        }
+
+        var collection = database.GetCollection<PlatformAdministrator>(PlatformCollections.PlatformAdministrators);
+        var email = DevelopmentAdministratorEmail;
+        var normalizedEmail = DevelopmentAdministratorEmail;
         var userName = "admin";
 
-        var existingAdministrators = await collection
-            .Find(x => x.Email == email || x.NormalizedEmail == normalizedEmail || x.NormalizedEmail == "ADMIN@DITEN.COM")
-            .ToListAsync(ct);
-
-        var exists = existingAdministrators.FirstOrDefault(x => x.Id == staticAdminId) ?? existingAdministrators.FirstOrDefault();
-        if (exists != null)
+        var exists = await collection
+            .Find(x => x.Id == DevelopmentAdministratorId
+                       || x.Email == email || x.NormalizedEmail == normalizedEmail || x.NormalizedEmail == "ADMIN@DITEN.COM")
+            .AnyAsync(ct);
+        if (exists)
         {
-            await NormalizeEnumStorageAsync(rawCollection, exists.Id, ct);
             return;
         }
 
         var seed = new PlatformAdministrator
         {
-            Id = staticAdminId,
+            Id = DevelopmentAdministratorId,
             Email = email,
             NormalizedEmail = normalizedEmail,
             UserName = userName,
@@ -51,64 +63,15 @@ public static class PlatformAdministratorSeed
             IsDeleted = false
         };
 
-        await collection.InsertOneAsync(seed, cancellationToken: ct);
-        await NormalizeEnumStorageAsync(rawCollection, staticAdminId, ct);
-        Console.WriteLine("Created platform administrator seed user.");
-    }
-
-    private static async Task NormalizeEnumStorageAsync(IMongoCollection<BsonDocument> collection, Guid id, CancellationToken ct)
-    {
-        var filter = Builders<BsonDocument>.Filter.Eq("_id", new BsonBinaryData(id, GuidRepresentation.Standard));
-        var document = await collection.Find(filter).FirstOrDefaultAsync(ct);
-        if (document is null)
+        try
         {
-            return;
+            await collection.InsertOneAsync(seed, cancellationToken: ct);
+            Console.WriteLine("Created platform administrator seed user.");
         }
-
-        var update = Builders<BsonDocument>.Update
-            .Set("ActorType", (int)ActorType.PlatformAdmin)
-            .Set("Status", (int)AdministratorStatus.Active)
-            .Set("Roles", new BsonArray { (int)AdministratorRole.SuperAdmin })
-            .Set("InvitationStatus", (int)AdministratorInvitationStatus.Accepted)
-            .Set("IsDeleted", false);
-
-        if (HasNumericValue(document, "ActorType", (int)ActorType.PlatformAdmin) &&
-            HasNumericValue(document, "Status", (int)AdministratorStatus.Active) &&
-            HasNumericArray(document, "Roles", (int)AdministratorRole.SuperAdmin) &&
-            HasNumericValue(document, "InvitationStatus", (int)AdministratorInvitationStatus.Accepted) &&
-            document.TryGetValue("IsDeleted", out var isDeleted) &&
-            isDeleted.IsBoolean &&
-            !isDeleted.AsBoolean)
+        catch (MongoWriteException ex) when (ex.WriteError?.Category == ServerErrorCategory.DuplicateKey)
         {
-            return;
+            // Another start-up created it (or its address / user name is held) between the read and the write: left as it is.
+            Console.WriteLine("Platform administrator seed skipped: the record exists.");
         }
-
-        await collection.UpdateOneAsync(filter, update, cancellationToken: ct);
-    }
-
-    private static bool HasNumericValue(BsonDocument document, string fieldName, int expectedValue)
-    {
-        if (!document.TryGetValue(fieldName, out var value))
-        {
-            return false;
-        }
-
-        return value.IsInt32
-            ? value.AsInt32 == expectedValue
-            : value.IsInt64 && value.AsInt64 == expectedValue;
-    }
-
-    private static bool HasNumericArray(BsonDocument document, string fieldName, int expectedValue)
-    {
-        if (!document.TryGetValue(fieldName, out var value) || !value.IsBsonArray)
-        {
-            return false;
-        }
-
-        var array = value.AsBsonArray;
-        return array.Count == 1 &&
-               (array[0].IsInt32
-                   ? array[0].AsInt32 == expectedValue
-                   : array[0].IsInt64 && array[0].AsInt64 == expectedValue);
     }
 }
