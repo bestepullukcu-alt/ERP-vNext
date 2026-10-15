@@ -876,3 +876,21 @@ Test dalına alındı: `ed32ef511` (ajan `4fbee3daf`), çakışmasız.
 - **Ortak doğrulayıcı kırmızısı** (`personalization-client.js`, Golden'da da var): ajan ayrı görev kartı açtı (sidebar "Fix shared personalizationClient verifier red"). Ortak dosya, Kapanış / platform sahibinin işi (XMC-001).
 
 **Sıradaki:** W3E-FLAGS-STD (istem yukarıda; artık çalıştırılabilir).
+
+
+## K-CITY — karar (kullanıcı, 2026-10-15): (a) CRM'de eşleştirme
+Kurum QR kodları süzgeci BRD şehir kodunu (`konya`, `istanbul`, `adiyaman`) gönderiyor; kurum kaydı `CityRef` ise `TR-42-KONYA` biçiminde. CRM, iki biçimi de kabul eder. Sözlük birleştirmesi (veri sahibi) ileride yapılırsa bu eşleştirme bozulmadan çalışmaya devam eder.
+
+## §36.1 Agent Prompt — W3E-CITY (paste-ready · W3E-FLAGS-STD ile paralel; yalnız CRM)
+```text
+@[.antigravity/agents/backend-architect.md]
+WP: WP-VW-W3E · W3E-CITY — K-CITY (a): Kurum QR kodları listesinin şehir süzgeci BRD şehir kodunu (konya) da kabul etsin; kurum CityRef'i TR-NN-ADI (TR-42-KONYA) biçiminde
+Repository: C:\tmp\vw-w3e-city (worktree, test/crm-content-visit-e2e güncel başı) · Branch: wp/vw-w3e-city · commit bu dala, push YOK
+
+Paket belgesi: execution/domains/commercial-suite/work-packs/WP-VW-W3E-qr-antifraud.md — önce oku: "K-CITY", §37 W3E-FIX (K-CITY maddesi, G-3). Hafıza notu: country / city sözlük farkı (COUNTRY_CODES ↔ `country`, `TR-01-ADANA` ↔ `adana`) bilinen veri sahibi maddesi.
+MEVCUT: services/Diten.CrmService/src/Diten.CrmService.Persistence/Repositories/AccountRepository.cs ListIdsByCityAsync 31-36 (yalnız tam eşleşme: ^<girdi>$, büyük/küçük harf duyarsız) · Features/VisitQr/VisitQrHandlers.cs 386-388 (liste süzgeci) · Web VisitQrCodesController liste vekili city parametresini olduğu gibi iletiyor (Web'e dokunma) · Web G-3 şehir etiketi çözümü (TR-NN-ADI → BRD etiketi) — aynı eşleştirme kuralının JS ikizi var, tutarlı olsun.
+NE: CRM'de tek, saf bir şehir eşleştirme kuralı (ör. CityRefMatcher): girdi tam CityRef ise (TR-42-KONYA) bugünkü gibi tam eşleşme; girdi BRD kodu ise (konya, istanbul, adiyaman, sanliurfa, izmir) CityRef'in "<ÜLKE>-<NN>-" önekinden sonraki kısmıyla eşleşir — Türkçe harfler ASCII'ye katlanarak (İ/ı/ş/ğ/ü/ö/ç) ve büyük/küçük harf duyarsız; Mongo sorgusu anchored + Regex.Escape'li (enjeksiyon yok), kiracı sınırı korunur; ListIdsByCityAsync bu kuralı kullanır. Erişimde ek okuma yok (tek sorgu).
+KORU/YAPMA: tam CityRef ile süzme bugünkü gibi çalışır; başka kiracının kurumu asla dönmez; Account toplamına alan EKLEME; veri göçü / BRD değişikliği YOK; Web'e DOKUNMA; AUD-001 borç satırı EKLEME; kalıcı veri yazma YOK. Aynı sözlük farkı CRM'in başka süzgeçlerinde de varsa (ör. Accounts listesi şehir süzgeci) DÜZELTME — yalnız raporla (ayrı karar).
+DOĞRULA: CRM testleri — eşleştirme tablosu (konya ↔ TR-42-KONYA, istanbul ↔ TR-34-ISTANBUL, adiyaman ↔ TR-02-ADIYAMAN, sanliurfa ↔ TR-63-SANLIURFA, tam ref, büyük harf, Türkçe karakterli girdi "İstanbul", eşleşmeyen girdi, "kon" gibi kısmi girdi EŞLEŞMEZ, regex özel karakterli girdi güvenli), kiracı izolasyonu, liste uç noktasında city=konya → yalnız Konya kurumları; Mongo üzerinde gerçek sorgu testi (geçici test mongod'u; localhost:27017'ye BAĞLANMA) + 2 sabotaj (.bak + touch): (1) önek atlanmasın (yalnız tam eşleşme) → kırmızı; (2) anchored olmasın (kısmi eşleşsin) → kırmızı. CRM + mimari (-o repo içi), taban karşılaştırması.
+Commit: "fix(crm): WP-VW-W3E-CITY — QR list city filter matches the reference-data city code against the TR-NN-NAME account city reference" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
+```
