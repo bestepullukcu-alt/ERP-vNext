@@ -1457,6 +1457,8 @@ Dal `feature/sce/mod-0177-r7a` (taban `3842938ad`). Kanıt `docs/records/audits/
   önizlemede test imzasıyla ikame edildi (Platform yok).
 - **CT kararı bekleyen:** Geri dönüşler satırında karantina kaydı (KRN →) bağlantısı — `ReturnLink` taşımıyor (kanıt §11, öneri A: D-28 + R7b
   RECALL 1.7.0). Pack'e D-28 eklenmedi.
+**R7a CT-ACCEPTED (2026-10-15).** BLOCKED → CT decisions A / A (D-26 no target date → FU-0177-TARGET-DATE; D-27 no "Müşteri iadesi gir" until R7b extends the 0173 form, KR-H). CT run on the branch tip (contains `3842938ad`): Web **2411/2411**, Inventory **1244 + 4** all green. **CT sabotage (not in a–g):** the shared case-command helper lets a page-sent `action` win over the door's own (`body["action"]` kept when present) → `A_prepare_door_prepares_only_its_own_decision_whatever_the_body_says` red ×2; restored, porcelain clean. Last open fact (agent asked): the mockup's Geri dönüşler links each return to its quarantine record (KRN →) but `ReturnLink` carries no hold → **CT decision A: D-28** + RECALL 1.7.0 additive `ReturnLink.holdId / holdNumber` in R7b. Merged `--no-ff` into MVP-1.
+
 
 ## 20. Follow-up Items
 
@@ -1529,3 +1531,4 @@ instruction. Seed data (`USERS` `L:9-15`, `RM` `L:16`, `FG` `L:17-31`, `CONSUMED
 | D-25 | Vakalar'daki tatbikat satırı sınıf / seviye taşır (mockup `cls:1`, `lvl`) | tatbikat satırı (`DrillCaseRow`, RECALL 1.5.0) sınıf / seviye taşımaz — ekranda "—"; sınıf süzgeci tatbikatları dışarıda bırakır | tatbikat koşusunun sınıfı / seviyesi yok (CT kararı A, WP-0177-R6) |
 | D-26 | Vaka başlığında hedef tarih / kalan gün (mockup `template.html:392`) | pack'te ve `CaseDetail`'de vaka hedef tarihi yok; kuralı tanımsız (kim belirler / nasıl hesaplanır) → çizilmez | FU-0177-TARGET-DATE (ürün kararı; CT kararı A, WP-0177-R7a) |
 | D-27 | "Müşteri iadesi gir" bağlantısı (mockup `L:296` + §11.3) | R7a'da yok — 0173 formu `CUSTOMER_RETURN` sunmuyor (`MovementRules.ManualTypes`) ve `lotId` / `toStatus` okumuyor; KR-H (sahip: elle müşteri iadesi de bağlanabilir) için form genişletmesi + bağlantı WP-0177-R7b'de, 0173 sahip adımı olarak. Geri dönüşler'de bilgi notu: "Müşteri iadesi stok hareketi olarak kaydedilir; kaydedildiğinde burada aday olarak görünür." | CT kararı A, WP-0177-R7a |
+| D-28 | Geri dönüşler: each return links to its quarantine record (KRN →) (`app.js:275`) | `ReturnLink` carries no hold in RECALL 1.6.0 → added in R7b (RECALL 1.7.0 additive `holdId` / `holdNumber`) | CT decision A (R7a) |
