@@ -94,6 +94,74 @@
   <data name="ActionVerb_Move" xml:space="preserve"><value>نقل</value></data>
   <data name="ActionVerb_Start" xml:space="preserve"><value>بدء</value></data>
   <data name="ActionVerb_ReadManagerChain" xml:space="preserve"><value>عرض سلسلة الإدارة</value></data>
+  <data name="ActionVerb_Allocate" xml:space="preserve"><value>تخصيص</value></data>
+  <data name="ActionVerb_Amend" xml:space="preserve"><value>تنقيح</value></data>
+  <data name="ActionVerb_Append" xml:space="preserve"><value>إلحاق</value></data>
+  <data name="ActionVerb_Apply" xml:space="preserve"><value>تطبيق</value></data>
+  <data name="ActionVerb_ApproveExtension" xml:space="preserve"><value>اعتماد التمديد</value></data>
+  <data name="ActionVerb_AttachEvidence" xml:space="preserve"><value>إرفاق دليل</value></data>
+  <data name="ActionVerb_Audit" xml:space="preserve"><value>تدقيق</value></data>
+  <data name="ActionVerb_AuditView" xml:space="preserve"><value>عرض سجل التدقيق</value></data>
+  <data name="ActionVerb_Block" xml:space="preserve"><value>حظر</value></data>
+  <data name="ActionVerb_Capture" xml:space="preserve"><value>إدخال</value></data>
+  <data name="ActionVerb_Change" xml:space="preserve"><value>تغيير</value></data>
+  <data name="ActionVerb_ChangeStatus" xml:space="preserve"><value>تغيير الحالة</value></data>
+  <data name="ActionVerb_Commit" xml:space="preserve"><value>تثبيت</value></data>
+  <data name="ActionVerb_Configure" xml:space="preserve"><value>ضبط</value></data>
+  <data name="ActionVerb_Confirm" xml:space="preserve"><value>تأكيد</value></data>
+  <data name="ActionVerb_Correct" xml:space="preserve"><value>تصحيح</value></data>
+  <data name="ActionVerb_CreateDraft" xml:space="preserve"><value>إنشاء مسودة</value></data>
+  <data name="ActionVerb_Deactivate" xml:space="preserve"><value>تعطيل</value></data>
+  <data name="ActionVerb_Decide" xml:space="preserve"><value>بتّ</value></data>
+  <data name="ActionVerb_Dispatch" xml:space="preserve"><value>إرسال الشحنة</value></data>
+  <data name="ActionVerb_Dispose" xml:space="preserve"><value>تخلّص</value></data>
+  <data name="ActionVerb_DryRun" xml:space="preserve"><value>تشغيل تجريبي</value></data>
+  <data name="ActionVerb_EditEmployment" xml:space="preserve"><value>تعديل بيانات التوظيف</value></data>
+  <data name="ActionVerb_EditLegal" xml:space="preserve"><value>تعديل الملف القانوني</value></data>
+  <data name="ActionVerb_End" xml:space="preserve"><value>إنهاء</value></data>
+  <data name="ActionVerb_Generate" xml:space="preserve"><value>توليد</value></data>
+  <data name="ActionVerb_ImpactView" xml:space="preserve"><value>عرض الأثر</value></data>
+  <data name="ActionVerb_Instantiate" xml:space="preserve"><value>إنشاء نسخة</value></data>
+  <data name="ActionVerb_Invalidate" xml:space="preserve"><value>إلغاء السريان</value></data>
+  <data name="ActionVerb_Investigate" xml:space="preserve"><value>تحقيق</value></data>
+  <data name="ActionVerb_Link" xml:space="preserve"><value>ربط</value></data>
+  <data name="ActionVerb_Lookup" xml:space="preserve"><value>استعلام</value></data>
+  <data name="ActionVerb_LookupValidation" xml:space="preserve"><value>التحقق من المرجع</value></data>
+  <data name="ActionVerb_Migrate" xml:space="preserve"><value>ترحيل</value></data>
+  <data name="ActionVerb_MinutesPublish" xml:space="preserve"><value>نشر المحضر</value></data>
+  <data name="ActionVerb_MinutesWrite" xml:space="preserve"><value>كتابة المحضر</value></data>
+  <data name="ActionVerb_Propose" xml:space="preserve"><value>اقتراح</value></data>
+  <data name="ActionVerb_PublishOverride" xml:space="preserve"><value>نشر استثنائي</value></data>
+  <data name="ActionVerb_ReadAggregate" xml:space="preserve"><value>عرض الملخص</value></data>
+  <data name="ActionVerb_Rebase" xml:space="preserve"><value>مواءمة مع الإصدار الجديد</value></data>
+  <data name="ActionVerb_Recover" xml:space="preserve"><value>استرداد</value></data>
+  <data name="ActionVerb_Release" xml:space="preserve"><value>إفراج</value></data>
+  <data name="ActionVerb_Reopen" xml:space="preserve"><value>إعادة فتح</value></data>
+  <data name="ActionVerb_Replace" xml:space="preserve"><value>استبدال</value></data>
+  <data name="ActionVerb_RequestCorrection" xml:space="preserve"><value>طلب تصحيح</value></data>
+  <data name="ActionVerb_RequestInfo" xml:space="preserve"><value>طلب معلومات</value></data>
+  <data name="ActionVerb_RequestRetirement" xml:space="preserve"><value>طلب السحب من الاستخدام</value></data>
+  <data name="ActionVerb_Reserve" xml:space="preserve"><value>حجز</value></data>
+  <data name="ActionVerb_Resolve" xml:space="preserve"><value>معالجة</value></data>
+  <data name="ActionVerb_Retire" xml:space="preserve"><value>سحب من الاستخدام</value></data>
+  <data name="ActionVerb_Rollback" xml:space="preserve"><value>تراجع</value></data>
+  <data name="ActionVerb_SeriesManage" xml:space="preserve"><value>إدارة السلسلة</value></data>
+  <data name="ActionVerb_Settle" xml:space="preserve"><value>إغلاق المطالبة</value></data>
+  <data name="ActionVerb_Sign" xml:space="preserve"><value>توقيع</value></data>
+  <data name="ActionVerb_TemporaryIssue" xml:space="preserve"><value>إصدار مؤقت</value></data>
+  <data name="ActionVerb_ThresholdsManage" xml:space="preserve"><value>إدارة الحدود</value></data>
+  <data name="ActionVerb_Transition" xml:space="preserve"><value>نقل الحالة</value></data>
+  <data name="ActionVerb_TypesManage" xml:space="preserve"><value>إدارة الأنواع</value></data>
+  <data name="ActionVerb_Unblock" xml:space="preserve"><value>رفع الحظر</value></data>
+  <data name="ActionVerb_UpdateReleased" xml:space="preserve"><value>تحديث المُفرج عنه</value></data>
+  <data name="ActionVerb_VersionPublish" xml:space="preserve"><value>نشر الإصدار</value></data>
+  <data name="ActionVerb_ViewSensitive" xml:space="preserve"><value>عرض البيانات الحساسة</value></data>
+  <data name="ActionVerb_ViewStatusHistory" xml:space="preserve"><value>عرض سجل الحالات</value></data>
+  <data name="ActionVerb_Withdraw" xml:space="preserve"><value>سحب الطلب</value></data>
+  <data name="ActionVerb_Write" xml:space="preserve"><value>كتابة</value></data>
+  <data name="ActionVerb_WriteValue" xml:space="preserve"><value>كتابة القيمة</value></data>
+  <data name="KeyHint_CrmVisitPlanReadAll" xml:space="preserve"><value>على مستوى المستأجر: يتيح لهذا الدور أيضًا تخطيط الزيارات وتطبيقها وإعادة تخطيطها نيابةً عن ممثلين آخرين.</value></data>
+  <data name="KeyHint_CrmPlannedVisitReadAll" xml:space="preserve"><value>على مستوى المستأجر: يوسّع أذونات الكتابة الحالية لهذا الدور على الزيارات المخططة وتقارير الزيارات لتشمل المستأجر بأكمله.</value></data>
   <data name="ErrorRoleActorRequired" xml:space="preserve">
     <value>تعذّر التحقق من جلستك. سجّل الدخول من جديد ثم أعد المحاولة.</value>
   </data>

@@ -828,6 +828,27 @@
   <data name="Nav.Module.PERSON" xml:space="preserve"><value>Справочник персон</value></data>
   <data name="Nav.Module.LOOKUPS" xml:space="preserve"><value>Справочники</value></data>
   <data name="Perm.Module.TASKS" xml:space="preserve"><value>Задачи</value></data>
+  <data name="Perm.Module.MOD0251" xml:space="preserve"><value>Реестр сотрудников (базовый HR)</value></data>
+  <data name="Perm.Module.CRMACCOUNT" xml:space="preserve"><value>Клиенты CRM</value></data>
+  <data name="Perm.Module.CRMCONTACT" xml:space="preserve"><value>Контакты CRM</value></data>
+  <data name="Perm.Module.CRMCONTENTCOMPOSITION" xml:space="preserve"><value>Компоновка контента CRM</value></data>
+  <data name="Perm.Module.CRMDOCTORINSIGHTS" xml:space="preserve"><value>Аналитика по врачам CRM</value></data>
+  <data name="Perm.Module.CRMKNOWLEDGE" xml:space="preserve"><value>Знания CRM</value></data>
+  <data name="Perm.Module.CRMPLANNEDVISIT" xml:space="preserve"><value>Запланированные визиты CRM</value></data>
+  <data name="Perm.Module.CRMTERRITORY" xml:space="preserve"><value>Территории CRM</value></data>
+  <data name="Perm.Module.CRMVISITPLAN" xml:space="preserve"><value>Планирование визитов CRM</value></data>
+  <data name="Perm.Module.CRMVISITREPORT" xml:space="preserve"><value>Отчёты о визитах CRM</value></data>
+  <data name="Perm.Entity.APPROVALS" xml:space="preserve"><value>Согласования</value></data>
+  <data name="Perm.Entity.CATEGORIES" xml:space="preserve"><value>Категории</value></data>
+  <data name="Perm.Entity.SETTINGS" xml:space="preserve"><value>Настройки</value></data>
+  <data name="Perm.Entity.TIMESHEETS" xml:space="preserve"><value>Табели учёта времени</value></data>
+  <data name="Perm.Entity.WEEKS" xml:space="preserve"><value>Недели</value></data>
+  <data name="Perm.Entity.CHECKLISTTEMPLATES" xml:space="preserve"><value>Шаблоны чек-листов</value></data>
+  <data name="Perm.Entity.TEMPLATES" xml:space="preserve"><value>Шаблоны</value></data>
+  <data name="Perm.Entity.CONTENTSCOPE" xml:space="preserve"><value>Область контента</value></data>
+  <data name="Perm.Entity.CONTENTSET" xml:space="preserve"><value>Набор контента</value></data>
+  <data name="Perm.Entity.ELIGIBILITY" xml:space="preserve"><value>Критерии допуска</value></data>
+  <data name="Perm.Entity.VISITFREQUENCYPOLICY" xml:space="preserve"><value>Политика частоты визитов</value></data>
   <data name="Nav.Page.PRODUCTS" xml:space="preserve"><value>Продукты</value></data>
   <data name="Nav.Page.ACCOUNT" xml:space="preserve"><value>Клиент</value></data>
   <data name="Nav.Page.CAMPAIGN" xml:space="preserve"><value>Кампания</value></data>
