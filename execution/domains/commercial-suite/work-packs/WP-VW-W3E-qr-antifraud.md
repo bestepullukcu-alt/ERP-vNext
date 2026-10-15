@@ -687,3 +687,17 @@ Test dalına alındı: `67366dbec` (ajan `fe4f5d107`), çakışmasız. 11 dosya 
 **Açık:**
 - **CT-3:** `visit-evidence-flags-smoke.js` saati sabitlemiyor → C5 her gün kayar. Düzeltme: harness `Date`'i 2026-10-14'e sabitler (yalnız test).
 - **CT-4:** `visit-workspace.css` ve `visit-presentation.css`'te koyu tema bloğu yok (THEME öncesinden). Koyu temada başlangıç penceresi başlıkları soluk, fotoğraf alanı beyaz → E4 öncesi küçük Web işi.
+
+## §36.1 Agent Prompt — W3E-DARK (paste-ready · CT-4, E4'ten önce)
+```text
+@[.antigravity/agents/frontend-ui-ux.md]
+WP: WP-VW-W3E · W3E-DARK — ziyaret çalışma alanı ve sunum sayfalarına koyu tema renk bloğu (CT-4): koyu temada başlangıç penceresi başlıkları soluk, fotoğraf alanı beyaz
+Repository: C:\tmp\vw-w3e-dark (worktree, test/crm-content-visit-e2e güncel başı — THEME 67366dbec içerir) · Branch: wp/vw-w3e-dark · commit bu dala, push YOK
+
+Paket belgesi: execution/domains/commercial-suite/work-packs/WP-VW-W3E-qr-antifraud.md — önce oku: "K-THEME", §37 W3E-THEME (CT-4).
+MEVCUT: wwwroot/assets/js/CRM/VisitWorkspace/visit-workspace.css (#vw-root token bloğu, yalnız açık) · wwwroot/assets/js/CRM/VisitPresentation/visit-presentation.css (yalnız açık) · DESEN: pharmacy-report.css / visit-qr.css / visit-evidence-flags.css'teki `[data-bs-theme="dark"] <kök>` bloğu (zemin, kart, başlık, metin, soluk metin, kenar, yumuşak zemin, anlamsal renklerin koyu karşılıkları; ana renk K-THEME'e göre --bs-primary'den, metin tonu color-mix). Mockup: mockups/visit-workspace/decoded/00-tema.css (koyu değişkenler varsa) + "Ziyaret Calisma Alani (standalone).html" koyu tema düğmesi.
+NE: iki dosyaya aynı desende `[data-bs-theme="dark"]` token bloğu; sabit açık renkler (beyaz kart, açık gri zemin, koyu başlık metni) token'a bağlanır; başlangıç penceresi (E3 + W3E QR bölümü), takvim, ayrıntı paneli, sunum ekranı ve imza alanı koyu temada okunur; ana renk yine --bs-primary (K-THEME). Web.Tests: her iki dosyada koyu blok var + başlık / zemin / kart token'ları tanımlı (dosya düzeyi) + VisitThemePrimary testleri yeşil. Görsel kanıt: çalışma alanı (takvim + başlangıç penceresi QR bölümüyle) ve sunum, açık + koyu, varsayılan renk + bir başka customizer rengi (AYRI sekme / kendi düzeneğin; kullanıcının oturum açık sekmesine harness enjekte etme).
+KORU/YAPMA: açık tema görünümü DEĞİŞMEZ (mevcut Web testleri yeşil); K-THEME guard'ı (eski ana renk hex'leri 0) bozulmaz; başka sayfaların CSS'ine dokunma; CRM koduna dokunma; kalıcı veri yazma YOK.
+DOĞRULA: 1 sabotaj (.bak + touch): visit-workspace.css koyu bloğu silinsin → yeni test kırmızı. Web tam takım (-o repo içi), taban karşılaştırması (C5 tarih kırmızısı tabanda da var olabilir — CT-3, ayrı).
+Commit: "fix(web): WP-VW-W3E-DARK — dark theme token blocks for the visit workspace and presentation pages" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
+```
