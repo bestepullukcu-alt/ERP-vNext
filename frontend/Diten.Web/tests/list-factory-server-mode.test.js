@@ -224,6 +224,33 @@ describe("the list factory in server mode (BL-440 package 3)", () => {
     expect(parseQuery(built.captured.ajax.data(dtRequest({ search: { value: "" } }))).filter(([k]) => k === "status")).toEqual([]);
   });
 
+  test("4c. handle.appliedFilters is LIVE — it follows Apply and Reset (a copied getter froze it at the empty state)", async () => {
+    for (const mode of ["server", "client"]) {
+      const built = await build(mode);
+      await init(built);
+      expect(Object.getOwnPropertyDescriptor(built.list, "appliedFilters").get, `${mode}: an accessor, not a copied value`).toBeTypeOf("function");
+      expect(built.list.appliedFilters.status, `${mode}: nothing applied yet`).toEqual([]);
+
+      window.jQuery("#filterStatus").val(["Passive"]);
+      window.jQuery("#filterPriority").val("70");
+      document.getElementById("btnFilterApply").click();
+      expect(built.list.appliedFilters, `${mode}: after Apply`).toEqual({ status: ["Passive"], priority: "70", owner: [] });
+
+      document.getElementById("btnFilterReset").click();
+      expect(built.list.appliedFilters.status, `${mode}: after Reset`).toEqual([]);
+      expect(built.list.appliedFilters.priority, `${mode}: after Reset`).toBeFalsy();
+    }
+  });
+
+  test("4d. handle.lastResponse is the LAST envelope, not the first", async () => {
+    const built = await build("server");
+    const second = { isSuccessful: true, statusCode: 200, data: { items: [], total: 5, filteredTotal: 0 } };
+    const req = { url: "/api/golden-reference-compact?draw=1" };
+    built.captured.ajax.dataFilter.call(req, JSON.stringify({ isSuccessful: true, statusCode: 200, data: { items: [{ id: 1 }], total: 5, filteredTotal: 1 } }));
+    built.captured.ajax.dataFilter.call(req, JSON.stringify(second));
+    expect(built.list.lastResponse).toEqual(second);
+  });
+
   // ── 5. Save View ───────────────────────────────────────────────────────────────────────────────────
 
   test("5. Save View writes the same view definition in server mode as in client mode", async () => {
@@ -258,5 +285,6 @@ describe("the list factory in server mode (BL-440 package 3)", () => {
     expect(parseQuery(built.captured.ajax.data(dtRequest({ search: { value: "" } }))).filter(([k]) => k === "status")).toEqual([["status", "Passive"]]);
     expect(built.captured.search).toEqual({ search: "grc" });
     expect(built.captured.order).toEqual([[3, "desc"]]);
+    expect(built.list.appliedFilters.status, "the handle shows the saved view's filters").toEqual(["Passive"]);
   });
 });
