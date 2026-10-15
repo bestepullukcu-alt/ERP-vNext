@@ -111,7 +111,8 @@ public sealed record RecallEffectivenessDto(
     decimal TargetPercent,
     IReadOnlyList<RecallEffectivenessRowDto> Rows,
     IReadOnlyList<RecallEffectivenessRowDto> Totals,
-    string ComputedAtUtc);
+    string ComputedAtUtc,
+    string? Source = null);
 
 public sealed record RecallClosureDto(string Summary, string? OpenQuantityAcceptance, RecallUserAtDto ClosedBy, string? SignatureId);
 
@@ -208,6 +209,32 @@ public sealed record RecallPendingActionResponseDto(
     RecallSubjectRefDto Subject,
     string ExpiresAtUtc,
     int Version);
+
+/// <summary>WP-0177-R7a (RECALL 1.6.0) — one ledger movement of a customer shipment (the caller's company only).</summary>
+public sealed record RecallCustomerMovementDto(string TransactionId, string? Number, decimal Quantity, string PostingDate);
+
+/// <summary>WP-0177-R7a — <c>CaseCustomerShipment</c>: one Shipment item of the scope with its ledger movements and the live MVP-6 read.</summary>
+public sealed record RecallCaseCustomerShipmentDto(
+    string NodeKey,
+    RecallLotRefDto Lot,
+    RecallItemRefDto Item,
+    string? SourceDocumentId,
+    decimal Quantity,
+    string BaseUomId,
+    IReadOnlyList<RecallCustomerMovementDto> Movements,
+    string Read,
+    string? Status,
+    string? ActualDeliverAt,
+    string? ShipToReference);
+
+/// <summary>WP-0177-R7a — <c>CustomerRow</c>: a customer of the case with its shipments, notification (current + history) and consumptions.</summary>
+public sealed record RecallCustomerRowDto(
+    string CustomerRef,
+    string? Label,
+    IReadOnlyList<RecallCaseCustomerShipmentDto> Shipments,
+    RecallNotificationDto? Notification,
+    IReadOnlyList<RecallNotificationDto> Notifications,
+    IReadOnlyList<RecallConsumptionDto> Consumptions);
 
 public sealed record RecallNotificationDto(
     string NotificationId,

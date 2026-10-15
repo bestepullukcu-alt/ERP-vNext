@@ -23,6 +23,14 @@ public sealed record TraceTransaction(
     string? ReversesTransactionId,
     IReadOnlyList<string> SerialIds);
 
+/// <summary>
+/// WP-0177-R7a — one GOODS_ISSUE_SALES movement that stands (not reversed) behind a scope Shipment item, as the case's customer rows show it.
+/// <see cref="IsShipmentDocument"/>: its document is an MVP-6 shipment — the trace's own node identification (<see cref="TraceRules.ShipmentModule"/>),
+/// made here so no other recall type reads the source module (R2 rule); only those documents are re-read from MVP-6.
+/// </summary>
+public sealed record TraceSalesIssue(string TransactionId, string? Number, string LotId, decimal BaseQuantity, string BaseUomId, DateTimeOffset PostingDate,
+    string? DocumentId, bool IsShipmentDocument);
+
 public sealed record TraceBalance(string LotId, Guid ItemId, Guid SkuId, string? WarehouseId, string? LocationId, StockStatus Status, decimal OnHand, string BaseUomId);
 
 public sealed record TraceSerial(Guid LotId, string Number, string? WarehouseId, string? LocationId, bool Active);
@@ -46,6 +54,9 @@ public interface IRecallTraceSource
 
     /// <summary>Every movement of these lots in the caller's company (index <c>ix_tenant_le_lot</c>).</summary>
     Task<IReadOnlyList<TraceTransaction>> TransactionsOfLotsAsync(IReadOnlyCollection<Guid> lotIds, CancellationToken cancellationToken = default);
+
+    /// <summary>WP-0177-R7a — the sales issues of the lots that stand (net of reversals), the caller's company ONLY (getCaseCustomers).</summary>
+    Task<IReadOnlyList<TraceSalesIssue>> SalesIssuesOfLotsAsync(IReadOnlyCollection<string> lotIds, CancellationToken cancellationToken = default);
 
     /// <summary>The balance rows (on-hand &gt; 0) of these lots in the caller's company.</summary>
     Task<IReadOnlyList<TraceBalance>> BalancesAsync(IReadOnlyCollection<Guid> itemIds, IReadOnlyCollection<Guid> lotIds, CancellationToken cancellationToken = default);

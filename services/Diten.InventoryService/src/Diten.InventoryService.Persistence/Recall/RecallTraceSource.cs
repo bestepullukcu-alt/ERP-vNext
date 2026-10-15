@@ -78,6 +78,23 @@ public sealed class RecallTraceSource : IRecallTraceSource
             : (await _transactions.Find(Company & Builders<InventoryTransaction>.Filter.In(x => x.LotId, lotIds.Select(Id))).ToListAsync(cancellationToken))
                 .Select(Map).ToList();
 
+    public async Task<IReadOnlyList<TraceSalesIssue>> SalesIssuesOfLotsAsync(IReadOnlyCollection<string> lotIds, CancellationToken cancellationToken = default)
+    {
+        if (lotIds.Count == 0) return [];
+        var f = Builders<InventoryTransaction>.Filter;
+        var issues = await _transactions.Find(Company & f.In(x => x.LotId, lotIds) & f.Eq(x => x.MovementType, MovementType.GoodsIssueSales))
+            .Sort(Builders<InventoryTransaction>.Sort.Ascending(x => x.PostingDate)).ToListAsync(cancellationToken);
+        if (issues.Count == 0) return [];
+        var ids = issues.Select(t => (Guid?)t.Id).ToList();
+        var reversed = (await _transactions.Find(Company & f.Eq(x => x.MovementType, MovementType.Reversal) & f.In(x => x.ReversesTransactionId, ids))
+                .Project(x => x.ReversesTransactionId).ToListAsync(cancellationToken))
+            .Where(id => id is not null).Select(id => id!.Value).ToHashSet();
+        return issues.Where(t => !reversed.Contains(t.Id))
+            .Select(t => new TraceSalesIssue(t.Id.ToString("D"), t.TransactionNumber, t.LotId!, t.BaseQuantity, t.BaseUomId, t.PostingDate, t.SourceDocumentId,
+                string.Equals(t.SourceModule, TraceRules.ShipmentModule, StringComparison.Ordinal)))
+            .ToList();
+    }
+
     public async Task<IReadOnlyList<TraceBalance>> BalancesAsync(IReadOnlyCollection<Guid> itemIds, IReadOnlyCollection<Guid> lotIds, CancellationToken cancellationToken = default)
     {
         if (lotIds.Count == 0) return [];

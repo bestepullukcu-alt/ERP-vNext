@@ -169,6 +169,18 @@ public sealed class RecallController : CustomBaseController
         return await CompanyChecked(caseId, CreateActionResultInstance(await _mediator.Send(new RetryRecallQuarantineCommand(id, request, key), ct)), ct);
     }
 
+    // ── R7a: the case detail reads (RECALL 1.6.0) ─────────────────────────────────────────────────────────
+
+    [HttpGet("cases/{caseId}/customers")]
+    [HasPermission(RecallPermissions.CasesRead)]
+    public async Task<IActionResult> GetCaseCustomers(string caseId, CancellationToken ct)
+        => await CompanyChecked(caseId, CreateActionResultInstance(await _mediator.Send(new GetRecallCaseCustomersQuery(caseId), ct)), ct);
+
+    [HttpGet("cases/{caseId}/effectiveness")]
+    [HasPermission(RecallPermissions.CasesRead)]
+    public async Task<IActionResult> GetCaseEffectiveness(string caseId, CancellationToken ct)
+        => await CompanyChecked(caseId, CreateActionResultInstance(await _mediator.Send(new GetRecallCaseEffectivenessQuery(caseId), ct)), ct);
+
     [HttpGet("cases/{caseId}/returns")]
     [HasPermission(RecallPermissions.CasesRead)]
     public async Task<IActionResult> GetCaseReturns(string caseId, CancellationToken ct)
