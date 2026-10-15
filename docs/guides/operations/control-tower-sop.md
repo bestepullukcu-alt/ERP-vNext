@@ -18,8 +18,9 @@ Measurement (Q139 `METRICS.tsv`): 12 CT-QUEUE rows were missing at dispatch or a
 build recipes instead of one declared stack; 7 WPs needed a re-issued prompt, and 6 of the 11 recorded STOP/BLOCKED
 events happened at the lane-placement gate (C9, C10).
 
-1. **Ledger-row gate (R8):** §17.1 and the §36 record carry `CT-QUEUE Row (exact text)`. The §20 preflight checks that
-   the WP row exists in CT-QUEUE; if it does not, the WP stops (§20.1).
+1. **Ledger-row gate (R8; changed in r3 below):** §17.1 and the §36 record carry the WP's row from the dispatching
+   Control Tower's registered task source (`CT-QUEUE.tsv` for SCE / MVP6). The §20 preflight checks that the row exists;
+   if it does not, the WP stops (§20.1).
 2. **Base-stack field (R9):** §17.1 and the §36 record carry `Base Stack` (BASE-STACK record path + SHA256). It is
    required for every Mac build/test/runtime WP.
 3. **Lane-typed prompt templates (R11):** §36.2 adds four v1 templates: T1 LANE writer, T2 Mac build/test, T3 VER and
@@ -36,6 +37,20 @@ Revision r2 (WP Q162, findings of the independent VER Q142):
 - **F-Q142-2:** no BASE-STACK version is fixed in the SOP. The §17.1 "Current at v2.5" pointer and the fixed layer chain in T2
   are removed. T2 takes the record path, SHA256 and layer chain as written in the cited record. The rule is unchanged: one
   versioned BASE-STACK record + SHA256 (K4).
+
+Revision r3 (owner decision `CT-R8-REGISTERED-TASK-SOURCE-OWNER-DECISION-01`, 2026-10-15; record in `docs/records/decisions/2026-10/`):
+
+- **R8 — registered task source.** Every Control Tower uses the verified work row in its own registered and authorised
+  task source, listed in `execution/delivery/ct-queue-registry.tsv`. `CT-QUEUE.tsv` is the SCE / MVP6 Control Tower's
+  source; no other Control Tower writes it.
+- **Field names.** §17.1 and §36: `CT-QUEUE Row (exact text)` becomes `Task Source Row (exact text)`. §20:
+  `CT-QUEUE row present` becomes `Task source row present`. The §36.2 templates T1–T4 belong to SCE / MVP6 and are not
+  changed; there the old names keep meaning the SCE / MVP6 source.
+- **No registered task source.** The Control Tower dispatches only under `CT-R8-TRANSITIONAL-DEVIATION-OWNER-DECISION-01`, on that record's terms: while it
+  is in force, after confirming receipt, inside an approved work package or Module Pack, with its separate transition
+  reference and report line. Otherwise STOP (§20.1). No new scope is released by this revision.
+- **In force.** r3 is in force when it is on `main`; until then v2.5 r2 applies, with the transition decision for the
+  Control Towers that confirmed it. When the transition decision ends is set by that decision and its owner, not here.
 
 ### 0.2 v2.4'te eklenen dispatch-adresleme kontrolleri
 
@@ -837,7 +852,7 @@ Paralellik varsa en az iki executable prompt üretmek hedeflenir; güvenli deği
 Work Package ID:
 Prompt ID:
 Prompt Version:
-CT-QUEUE Row (exact text):   # v2.5 R8 — row as in CT-QUEUE.tsv; no row → no dispatch (§20.1)
+Task Source Row (exact text): # R8 (r3) — row as in the CT's registered task source; SCE / MVP6: CT-QUEUE.tsv; no row → no dispatch (§20.1)
 
 Capability Block:
 Module:
@@ -874,8 +889,12 @@ A | B | C
 
 **v2.5 rules for the two new fields**
 
-- `CT-QUEUE Row (exact text)` is copied from `CT-QUEUE.tsv` at dispatch. The single ledger writer appends the row
-  before the WP starts. CT does not dispatch a WP whose row does not exist (R8; §20.1).
+- `Task Source Row (exact text)` (until r3: `CT-QUEUE Row (exact text)`) is copied at dispatch from the dispatching
+  Control Tower's registered task source (`execution/delivery/ct-queue-registry.tsv`). That source's single writer adds
+  the row before the WP starts; for SCE / MVP6 the source is `CT-QUEUE.tsv` and the writer is T4 (§36.2), unchanged.
+  CT does not dispatch a WP whose row does not exist (R8; §20.1).
+- A Control Tower with no registered task source dispatches only under `CT-R8-TRANSITIONAL-DEVIATION-OWNER-DECISION-01` (see §0.1 r3). It leaves the
+  field empty and adds the separate line `R8 geçiş referansı (CT-QUEUE satırı değildir): …` that the record prescribes.
 - `Base Stack` names one versioned BASE-STACK record and its SHA256 (K4: a changed stack is a new file, never an edit).
   It is required for Mac build/test/runtime WPs; other WPs write `n/a`. The Mac lane checks the record folder's
   `SHA256SUMS` and the quoted hash before composing, and writes any deviation in its report (R9).
@@ -1155,7 +1174,7 @@ Staged files:
 Unstaged relevant files:
 Untracked relevant files:
 Unrelated dirty inventory:
-CT-QUEUE row present:        # v2.5 R8 — yes / no (the WP ID at line start in CT-QUEUE.tsv)
+Task source row present:     # R8 (r3) — yes / no (the WP ID in the CT's registered task source; SCE / MVP6: CT-QUEUE.tsv). "no" stops, unless the R8 transition decision applies (§0.1 r3)
 ```
 
 ## 20.1 Stop conditions
@@ -1168,7 +1187,8 @@ Aşağıdakilerde fail-closed:
 - overlapping dirty files,
 - protected path değişikliği gerekiyor ama approval yok,
 - dependency unsatisfied,
-- WP row missing in CT-QUEUE (v2.5 R8),
+- WP row missing in the dispatching Control Tower's registered task source, and the R8 transition decision does not
+  apply to it (R8, §0.1 r3),
 - pack draft,
 - missing/ambiguous contract,
 - ownership conflict,
@@ -1859,7 +1879,7 @@ WORK PACKAGE
 WP ID:
 Prompt ID:
 Prompt Version:
-CT-QUEUE Row (exact text):
+Task Source Row (exact text):     # R8 (r3); under the R8 transition decision: empty + the separate transition reference
 Task Class:
 Golden-Flow Profile:
 Risk Class:

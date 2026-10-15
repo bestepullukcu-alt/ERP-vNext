@@ -1,6 +1,6 @@
-# CONTROL TOWER — Daily Operating Card v1.2
+# CONTROL TOWER — Daily Operating Card v1.3
 
-> **Purpose:** günlük Control Tower turu için hızlı gate. Yeni authority yaratmaz. Ayrıntı için [CONTROL TOWER SOP](./control-tower-sop.md) (v2.5).
+> **Purpose:** günlük Control Tower turu için hızlı gate. Yeni authority yaratmaz. Ayrıntı için [CONTROL TOWER SOP](./control-tower-sop.md) (v2.5 r3).
 
 ## 1. START / DoR — dispatch etmeden önce
 
@@ -13,15 +13,14 @@
 - [ ] **Execution:** Profile A/B/C + Agent Lane ID/Type + risk class açık.
 - [ ] **Target agent:** entry point §6'dan seçildi; o ajanın §17.4 zorunlu giriş alanları dolu; paste-ready prompt (§36.1) hazır.
 - [ ] **Acceptance:** golden/contract/inspection flow + measurable AC + required evidence level açık.
-- [ ] **Ledger row (v2.5 R8):** WP'nin CT-QUEUE satırı dağıtımdan önce var; yoksa STOP (SOP §0.1 madde 1, §20.1).
+- [ ] **Görev kaynağı satırı (R8, r3):** WP'nin satırı, dağıtan Control Tower'ın kayıtlı görev kaynağında dağıtımdan önce var (SCE / MVP6: CT-QUEUE). Kayıtlı kaynak yoksa yalnız `CT-R8-TRANSITIONAL-DEVIATION-OWNER-DECISION-01` kapsamında: kararı aldığını doğrulamış, onaylı WP / Module Pack, ayrı geçiş referansı. Değilse STOP (SOP §0.1 r3, §17.1, §20.1).
 - [ ] **Kuyruk kontrolü (yardımcı; zorunlu kapı değil):** `python3 scripts/ct_queue.py require <WP-ID> --queue <kuyruk>` — çıkış 1 = satır yok, aynı kimlikle birden çok satır ya da durum dağıtılabilir değil. Kuyruklar [`ct-queue-registry.tsv`](../../../execution/delivery/ct-queue-registry.tsv)'de; kayıtlı kuyruğu olmayan Control Tower için dağıtım kendiliğinden serbest değildir. Kuyruğa yazmadan önce `guard` (kilit değildir); dallar arası kimlik çakışması için `writers`.
 
 **Bir kritik madde FAIL → implementation dispatch yok.**
 
-> **Açık mimari karar — R8 (2026-10-15):** SOP v2.5 R8 ve T4 şablonu tek bir kuyruğu, SCE / MVP6 `CT-QUEUE.tsv`'yi gösterir;
-> diğer Control Tower'ların işleri o kuyruğa yazılmaz. Önerilen ilke: "Her Control Tower, kendisine ait kayıtlı ve
-> yetkilendirilmiş görev kaynağından sorumludur. Kaynak veya doğrulanmış görev kaydı yoksa dağıtım yapılamaz." SOP
-> güncellenene kadar R8 ve T4 metni olduğu gibi geçerlidir.
+> **R8 (SOP r3, karar `CT-R8-REGISTERED-TASK-SOURCE-OWNER-DECISION-01`):** her Control Tower kendi kayıtlı görev kaynağını kullanır; SCE / MVP6 kuyruğuna
+> başkası yazmaz; §36.2 T1–T4 SCE / MVP6'nındır ve değişmedi. Yürürlük: r3 `main`'e girdiğinde; o zamana kadar v2.5 r2
+> ve geçiş kararı (yalnız onu aldığını doğrulayan Control Tower'lar için).
 
 ## 2. PARALLEL / Agent Lane gate
 
