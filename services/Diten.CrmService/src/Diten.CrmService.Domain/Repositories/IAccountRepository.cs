@@ -71,12 +71,13 @@ public interface IAccountRepository
 
     Task UpdateAsync(Account account, CancellationToken cancellationToken);
 
-    /// <summary>WP-VW-W3E (W3E-BE-a) — the ids of the tenant's non-deleted accounts in <paramref name="cityRef"/> (exact,
-    /// case-insensitive): the QR bulk page's city filter, used as an account-id scope of <see cref="ListAsync"/>. The
-    /// default goes through the id-free list; the Mongo repository answers with one projection.</summary>
+    /// <summary>WP-VW-W3E (W3E-BE-a) — the ids of the tenant's non-deleted accounts in <paramref name="cityRef"/>: the QR
+    /// bulk page's city filter, used as an account-id scope of <see cref="ListAsync"/>. W3E-CITY — matched by
+    /// <see cref="CityRefMatcher"/> (a full TR-42-KONYA reference exactly, a reference-data code "konya" against the
+    /// NAME). The default goes through the id-free list; the Mongo repository answers with one projection.</summary>
     async Task<IReadOnlyList<Guid>> ListIdsByCityAsync(Guid tenantId, string cityRef, CancellationToken cancellationToken)
     {
         var page = await ListAsync(tenantId, null, 1, int.MaxValue, null, null, null, null, null, cancellationToken);
-        return page.Items.Where(a => string.Equals(a.CityRef?.Trim(), cityRef.Trim(), StringComparison.OrdinalIgnoreCase)).Select(a => a.Id).ToList();
+        return page.Items.Where(a => CityRefMatcher.Matches(cityRef, a.CityRef)).Select(a => a.Id).ToList();
     }
 }
