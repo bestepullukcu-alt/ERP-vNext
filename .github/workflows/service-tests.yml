@@ -97,6 +97,8 @@ jobs:
             project: services/Diten.InventoryService/tests/Diten.InventoryService.Tests/Diten.InventoryService.Tests.csproj
           - suite: manufacturing-tests
             project: services/Diten.ManufacturingService/tests/Diten.ManufacturingService.Tests/Diten.ManufacturingService.Tests.csproj
+          - suite: planning-tests
+            project: services/Diten.PlanningService/tests/Diten.PlanningService.Cycles.Tests/Diten.PlanningService.Cycles.Tests.csproj
           # Main sync (CI follow-up 3 review): the gateway's own tests (route table, ports, headers). No Mongo, no broker.
           - suite: gateway
             project: gateway/Diten.ApiGateway.Tests/Diten.ApiGateway.Tests.csproj
@@ -184,6 +186,10 @@ jobs:
         if: startsWith(matrix.suite, 'auth-')
         run: echo "DITEN_REQUIRE_OWNED_MONGO=1" >> "$GITHUB_ENV"
 
+      - name: Start owned Mongo (Planning)
+        if: matrix.suite == 'planning-tests'
+        run: bash scripts/test-env/mod0188-ci-mongo.sh start
+
       # A hung test must not hold the job until its timeout: --blame-hang-timeout aborts and names it (lesson 8).
       - name: Test
         run: |
@@ -195,6 +201,10 @@ jobs:
       - name: Skipped = 0
         if: always()
         run: python3 scripts/check_trx_no_skipped.py --suite "$SUITE" "$RUNNER_TEMP/test-results/$SUITE.trx"
+
+      - name: Stop owned Mongo (Planning)
+        if: always() && matrix.suite == 'planning-tests'
+        run: bash scripts/test-env/mod0188-ci-mongo.sh stop
 
       - name: Upload test results
         if: always()

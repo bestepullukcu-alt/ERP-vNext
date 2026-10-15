@@ -399,7 +399,9 @@ public class CiServiceTestsGuardTests
             // WP-LANE-MAIN-SYNC-02 M1 (owner decision 2026-10-14): Prism for the Inventory row.
             "matrix.suite == 'inventory-tests'",
             "startsWith(matrix.suite, 'auth-')",
+            "matrix.suite == 'planning-tests'",
             "always()",
+            "always() && matrix.suite == 'planning-tests'",
             "always()"
         ]
     };

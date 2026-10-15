@@ -1155,4 +1155,6 @@
   <data name="Nav.Page.ESIGNPOLICY" xml:space="preserve"><value>سياسة التوقيع</value></data>
   <data name="Nav.Page.ESIGNMEANINGS" xml:space="preserve"><value>معاني التوقيع</value></data>
   <data name="Nav.Page.ESIGNSAMPLEAPPROVALS" xml:space="preserve"><value>موافقات نماذج التوقيع</value></data>
+  <data name="Nav.Module.DEMANDPLANNING" xml:space="preserve"><value>تخطيط الطلب</value></data>
+  <data name="Nav.Page.DEMANDPLANNING" xml:space="preserve"><value>تخطيط الطلب</value></data>
 </root>

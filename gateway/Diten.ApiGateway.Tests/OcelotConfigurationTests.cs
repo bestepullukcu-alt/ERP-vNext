@@ -37,8 +37,9 @@ public sealed class OcelotConfigurationTests
     // 5065: Procurement (Satın Alma) — DCP-010, moved from 5062 by OD-5 on 2026-09-17 (AGENTS.md §3, BL-470).
     // 5066: Supply Chain Execution (main, PR #134 MVP-6).
     // 5067: Inventory (Stok) — OD-P1 2026-10-12, WP-MVP1-SYNC1 (main, main sync 2026-10-13).
+    // planning(5068 — MOD-0188)
     // 5070: Manufacturing — MOD-0193 BOM & Routings, MVP-3; moved from 5067 by OD-P1 2026-10-12 (main, main sync 2026-10-13).
-    private static readonly HashSet<int> KnownDownstreamPorts = new() { 5004, 5011, 5056, 5057, 5058, 5059, 5060, 5061, 5062, 5063, 5064, 5065, 5066, 5067, 5070 };
+    private static readonly HashSet<int> KnownDownstreamPorts = new() { 5004, 5011, 5056, 5057, 5058, 5059, 5060, 5061, 5062, 5063, 5064, 5065, 5066, 5067, 5068, 5070 };
 
     private static readonly HashSet<string> PpmMethods = new(StringComparer.Ordinal)
     {

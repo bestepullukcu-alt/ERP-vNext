@@ -1,0 +1,49 @@
+@using System.Text.Json
+@using Diten.Web.Views.SupplyChain.DemandPlanning
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<DemandPlanningIndex> Localizer
+@{
+    Layout = "_LayoutTenantShell";
+    var title = Localizer["HistoryTitle"].Value;
+    ViewData["Title"] = title;
+    var canRead = ViewData["CanReadHistory"] as bool? == true;
+    var keys = new[] { "HistorySelectCompany", "HistoryEmpty", "HistoryUnavailable",
+        "HistorySku", "HistoryWarehouse", "HistoryDate", "HistoryUnit", "HistoryQuantity",
+        "HistoryUnitPending", "HistoryBatch", "HistoryDecision", "HistoryActor",
+        "HistoryAt", "HistoryPrevious", "HistoryNext", "HistoryLoading" };
+    var labels = keys.ToDictionary(key => key, key => Localizer[key].Value);
+}
+@if (!canRead)
+{
+    <partial name="_AccessDenied" model="title" />
+}
+else
+{
+    <link rel="stylesheet" href="~/assets/css/SupplyChain/demand-planning-history.css" asp-append-version="true" />
+    <main class="dp-history" id="demandHistory" aria-labelledby="demandHistoryTitle">
+        <header class="dp-history-header">
+            <h1 id="demandHistoryTitle" class="h4">@title</h1>
+            <div class="dp-history-selector">
+                <label for="demandHistoryCompany">@Localizer["Company"]</label>
+                <select id="demandHistoryCompany" class="form-select" aria-label="@Localizer["Company"]" disabled></select>
+            </div>
+        </header>
+        <p id="demandHistoryState" role="status">@Localizer["HistoryLoading"]</p>
+        <div id="demandHistoryRows" class="dp-history-rows" aria-live="polite"></div>
+        <nav class="dp-history-pages" aria-label="@title">
+            <button type="button" id="demandHistoryPrevious" class="btn btn-outline-secondary" disabled>
+                <i class="bx bx-chevron-left" aria-hidden="true"></i> @Localizer["HistoryPrevious"]
+            </button>
+            <button type="button" id="demandHistoryNext" class="btn btn-outline-secondary" disabled>
+                @Localizer["HistoryNext"] <i class="bx bx-chevron-right" aria-hidden="true"></i>
+            </button>
+        </nav>
+    </main>
+    <script id="demandHistoryLabels" type="application/json">@Html.Raw(JsonSerializer.Serialize(labels))</script>
+}
+@section Scripts {
+    @if (canRead)
+    {
+        <script src="~/assets/js/SupplyChain/demand-planning-history.js" asp-append-version="true"></script>
+    }
+}
