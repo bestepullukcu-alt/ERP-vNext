@@ -6,6 +6,24 @@
     Layout = "_LayoutTenantShell";
 }
 
+@*
+    UAS-001 (WP-USERS-ROLES-SMALL-01, BL-617) — nothing below this block is drawn for a user who may not read the
+    permission catalog: not the heading, not the filter, not the table that would otherwise load, take a 403 from the
+    gateway and leave an empty "0 records" grid behind (UAS-001 §6: an empty list is not "no access").
+
+    Returning here also stops @@section Scripts from registering — index.js is the caller. The layout renders the
+    section with required:false, so its absence is a no-op.
+
+    The SAME reader as the controller (PermissionClaims), never the Perms snapshot: "*", a "permissions" claim and a
+    comma-separated list count the same here as there, so the status code and the face can never disagree (URA FIX1).
+    ⚠ Display only. AuthService's [HasPermission("auth.roles.read")] remains the authority (UAS-001 §4).
+*@
+@if (!Diten.Web.Security.PermissionClaims.HasPermission(User, "auth.roles.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["PermissionsTitle"].Value" />
+    return;
+}
+
 <div class="mb-3">
     <h5 class="mb-0">@Localizer["PermissionsTitle"]</h5>
     <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>

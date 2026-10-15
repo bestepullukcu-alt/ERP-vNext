@@ -22,6 +22,7 @@ namespace Diten.AuthService.Application.Tests.Users;
 public sealed class DeleteUserGuardTests
 {
     private static readonly Guid TenantA = Guid.Parse("11111111-1111-1111-1111-111111111111");
+    private static readonly Guid TenantB = Guid.Parse("22222222-2222-2222-2222-222222222222");
 
     [Fact]
     public async Task You_cannot_delete_the_account_you_are_signed_in_with()
@@ -106,6 +107,107 @@ public sealed class DeleteUserGuardTests
         Assert.Contains(result.ErrorCodes, e => e.Code == DeleteUserCommandHandler.LastStewardCode);
     }
 
+    // ── BL-558 (WP-USERS-ROLES-SMALL-01): the guard protects the last HOLDER; it never blocks someone who holds nothing ──
+
+    [Fact]
+    public async Task BL558_a_user_without_the_capability_is_deleted_in_a_tenant_that_has_no_holder_left()
+    {
+        // The live case (2026-10-05): the tenant's administrator was already gone; deleting a role-less "deneme" user was
+        // refused with "this is the last account that can create users" — blaming someone who could create nobody.
+        var trial = User("deneme@acme.test");
+        var actor = User("actor@acme.test");
+        var repo = new InMemoryUserRepository([trial, actor]);
+
+        var result = await Handler(repo, actor: actor.Id, holders: []).Handle(
+            new DeleteUserCommand(trial.Id), CancellationToken.None);
+
+        Assert.True(result.IsSuccessful, string.Join(",", result.ErrorCodes.Select(e => e.Code)));
+        Assert.Equal(204, result.StatusCode);
+        Assert.True(trial.IsDeleted);
+    }
+
+    [Fact]
+    public async Task BL558_the_only_holder_cannot_delete_themself_the_self_rule_answers_first()
+    {
+        var onlyAdmin = User("admin@acme.test");
+        var repo = new InMemoryUserRepository([onlyAdmin]);
+
+        var result = await Handler(repo, actor: onlyAdmin.Id, holders: [onlyAdmin.Id]).Handle(
+            new DeleteUserCommand(onlyAdmin.Id), CancellationToken.None);
+
+        Assert.False(result.IsSuccessful);
+        Assert.Equal(409, result.StatusCode);
+        Assert.Contains(result.ErrorCodes, e => e.Code == DeleteUserCommandHandler.SelfDeleteCode);
+        Assert.False(onlyAdmin.IsDeleted);
+    }
+
+    [Fact]
+    public async Task BL558_the_only_holder_cannot_be_deleted_by_someone_else()
+    {
+        // The candidate is excluded from "someone else holds it" — counting them would let them keep themselves alive.
+        var onlyAdmin = User("admin@acme.test");
+        var plain = User("plain@acme.test");
+        var repo = new InMemoryUserRepository([onlyAdmin, plain]);
+
+        var result = await Handler(repo, actor: plain.Id, holders: [onlyAdmin.Id]).Handle(
+            new DeleteUserCommand(onlyAdmin.Id), CancellationToken.None);
+
+        Assert.False(result.IsSuccessful);
+        Assert.Equal(409, result.StatusCode);
+        Assert.Contains(result.ErrorCodes, e => e.Code == DeleteUserCommandHandler.LastStewardCode);
+        Assert.False(onlyAdmin.IsDeleted);
+    }
+
+    [Fact]
+    public async Task BL558_one_of_two_holders_is_deleted()
+    {
+        var first = User("a@acme.test");
+        var second = User("b@acme.test");
+        var actor = User("c@acme.test");
+        var repo = new InMemoryUserRepository([first, second, actor]);
+
+        var result = await Handler(repo, actor: actor.Id, holders: [first.Id, second.Id]).Handle(
+            new DeleteUserCommand(second.Id), CancellationToken.None);
+
+        Assert.True(result.IsSuccessful);
+        Assert.True(second.IsDeleted);
+        Assert.False(first.IsDeleted);
+    }
+
+    [Fact]
+    public async Task BL558_a_capability_held_only_through_a_deleted_role_does_not_make_the_candidate_a_holder()
+    {
+        // RoleRepository.GetAllByTenantAsync returns live roles only (IsDeleted == false); the fake filters the same way.
+        // The role is PRESENT and soft-deleted — leaving it out would make this test say nothing.
+        var candidate = User("former-admin@acme.test");
+        var actor = User("actor@acme.test");
+        var repo = new InMemoryUserRepository([candidate, actor]);
+
+        var result = await Handler(repo, actor: actor.Id, holders: [candidate.Id], adminRoleDeleted: true).Handle(
+            new DeleteUserCommand(candidate.Id), CancellationToken.None);
+
+        Assert.True(result.IsSuccessful, string.Join(",", result.ErrorCodes.Select(e => e.Code)));
+        Assert.True(candidate.IsDeleted);
+    }
+
+    [Fact]
+    public async Task BL558_a_holder_in_another_tenant_does_not_keep_this_tenant_alive()
+    {
+        // Tenant isolation: the role row names a user of tenant B; the user read is scoped to tenant A and finds nobody.
+        var onlyAdmin = User("admin@acme.test");
+        var actor = User("actor@acme.test");
+        var otherTenantAdmin = new User("admin@other.test", "hash:x", "Ad", "Soyad", TenantB);
+        var repo = new InMemoryUserRepository([onlyAdmin, actor, otherTenantAdmin]);
+
+        var result = await Handler(repo, actor: actor.Id, holders: [onlyAdmin.Id, otherTenantAdmin.Id]).Handle(
+            new DeleteUserCommand(onlyAdmin.Id), CancellationToken.None);
+
+        Assert.False(result.IsSuccessful);
+        Assert.Contains(result.ErrorCodes, e => e.Code == DeleteUserCommandHandler.LastStewardCode);
+        Assert.False(onlyAdmin.IsDeleted);
+        Assert.False(otherTenantAdmin.IsDeleted);
+    }
+
     [Fact]
     public async Task Deleting_someone_who_is_not_there_is_not_a_success()
     {
@@ -127,9 +229,9 @@ public sealed class DeleteUserGuardTests
     /// The guard must find the capability through the role, never through a name.
     /// </summary>
     private static DeleteUserCommandHandler Handler(
-        IUserRepository users, Guid actor, Guid[] holders, Guid[]? plainRoleHolders = null)
+        IUserRepository users, Guid actor, Guid[] holders, Guid[]? plainRoleHolders = null, bool adminRoleDeleted = false)
     {
-        var admin = new Role("Yöneticiler", "Yöneticiler", null, TenantA);
+        var admin = new Role("Yöneticiler", "Yöneticiler", null, TenantA) { IsDeleted = adminRoleDeleted };
         var plain = new Role("Okuyucular", "Okuyucular", null, TenantA);
 
         return new DeleteUserCommandHandler(
@@ -168,8 +270,9 @@ public sealed class DeleteUserGuardTests
 
     private sealed class FakeRoles(Role admin, Role plain) : IRoleRepository
     {
+        // As RoleRepository.GetAllByTenantAsync: this tenant's live roles only (TenantId == tenantId, IsDeleted == false).
         public Task<IEnumerable<Role>> GetAllByTenantAsync(Guid tenantId, CancellationToken ct) =>
-            Task.FromResult<IEnumerable<Role>>([admin, plain]);
+            Task.FromResult<IEnumerable<Role>>(new[] { admin, plain }.Where(r => r.TenantId == tenantId && !r.IsDeleted).ToList());
 
         public Task<Role?> GetByIdAndTenantAsync(Guid id, Guid tenantId, CancellationToken ct) => Task.FromResult<Role?>(null);
         public Task<Role?> GetByNameAndTenantAsync(string name, Guid tenantId, CancellationToken ct) => Task.FromResult<Role?>(null);

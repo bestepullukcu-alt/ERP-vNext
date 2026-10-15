@@ -107,12 +107,18 @@ public sealed class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand
     }
 
     /// <summary>
-    /// True when removing <paramref name="candidateId"/> would leave nobody holding <see cref="RecoveryPermission"/>.
-    /// Reads roles → permissions → holders, and keeps only holders who are still real users.
+    /// True when <paramref name="candidateId"/> holds <see cref="RecoveryPermission"/> (through a live role) and
+    /// removing them would leave nobody else holding it. Reads roles → permissions → holders, and keeps only holders
+    /// who are still real users.
+    ///
+    /// <para>⚠ BL-558 (WP-USERS-ROLES-SMALL-01): the guard used to ask only "would anyone be left?" — so in a tenant
+    /// that had ALREADY lost its last holder, no account could be deleted at all and the refusal blamed whoever was
+    /// being deleted. A candidate who does not hold the capability cannot take it away; the guard does not apply.</para>
     /// </summary>
     private async Task<bool> IsLastRecoveryHolderAsync(Guid candidateId, Guid tenantId, CancellationToken ct)
     {
         var roles = await _roleRepository.GetAllByTenantAsync(tenantId, ct);
+        var candidateHolds = false;
 
         foreach (var role in roles)
         {
@@ -126,6 +132,7 @@ public sealed class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand
             {
                 if (holderId == candidateId)
                 {
+                    candidateHolds = true;
                     continue;
                 }
 
@@ -137,6 +144,6 @@ public sealed class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand
             }
         }
 
-        return true;
+        return candidateHolds;
     }
 }
