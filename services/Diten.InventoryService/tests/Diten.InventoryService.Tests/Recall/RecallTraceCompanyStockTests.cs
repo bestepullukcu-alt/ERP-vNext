@@ -8,7 +8,7 @@ namespace Diten.InventoryService.Tests.Recall;
 /// <summary>
 /// WP-0177-R6 — what the İzleme screen draws for a lot with on-hand stock in TWO companies of the tenant (CT-R8): the caller's company shows
 /// its own Stock line; the other company's balance is never a node (no warehouse, no quantity), only the one OTHER_COMPANY_ACTIVITY count.
-/// R6 sabotage (d) — the balance read without its company filter — turns this red. (R2's CT-R8 test covers movements; this one the stock.)
+/// R6 sabotage (d) — the balance read without its company filter — turns this red (the quantity assertion: the engine sums a lot's balances per place). (R2's CT-R8 test covers movements; this one the stock.)
 /// </summary>
 public sealed class RecallTraceCompanyStockTests : IClassFixture<RecallApiFactory>
 {
@@ -42,8 +42,15 @@ public sealed class RecallTraceCompanyStockTests : IClassFixture<RecallApiFactor
         var trace = JsonDocument.Parse(text).RootElement;
         var stock = RecallTraceWorld.Nodes(trace).Where(n => n.GetProperty("kind").GetString() == "Stock").ToList();
         Assert.Equal(own.Count, stock.Count);                                  // only this company's lines
+        // The engine groups balances by (lot, warehouse, location, status) and SUMS them: a leaked foreign balance would not be an extra node,
+        // it would hide inside this company's node as a bigger quantity — so the drawn quantity must be exactly this company's on-hand.
+        var ownOnHand = own.Sum(b => b["OnHand"].ToDecimal());
+        Assert.Equal(ownOnHand, stock.Sum(n => Quantity(n.GetProperty("quantity"))));
         Assert.DoesNotContain("4242.5", text, StringComparison.Ordinal);       // the other company's quantity never travels
         Assert.DoesNotContain(otherCompany.ToString("D"), text, StringComparison.OrdinalIgnoreCase);
         Assert.True(Assert.Single(RecallTraceWorld.Gaps(trace, "OTHER_COMPANY_ACTIVITY")).GetProperty("count").GetInt64() >= 1);
     }
+
+    private static decimal Quantity(JsonElement value)
+        => value.ValueKind == JsonValueKind.String ? decimal.Parse(value.GetString()!, System.Globalization.CultureInfo.InvariantCulture) : value.GetDecimal();
 }
