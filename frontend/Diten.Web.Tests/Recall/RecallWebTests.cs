@@ -24,7 +24,9 @@ public sealed class RecallWebTests : IClassFixture<WebApplicationFactory<Program
     private static readonly HashSet<string> SameAsEnglishAllowed = new(StringComparer.Ordinal)
     {
         "Recall.Kind.Lot", "Recall.Duration.HoursMinutes", "Recall.Duration.Minutes", "Recall.Col.Type", "Recall.Level.Patient", "Recall.Type.Real",
-        "Recall.TCol.Date"
+        "Recall.TCol.Date",
+        // R7a — the same word in the language: es / fr "Total {0}", "Fax"; fr "Lot", "Source"
+        "Recall.Stock.Totals", "Recall.Channel.Fax", "Recall.StCol.Lot", "Recall.RCol.Source"
     };
 
     public static readonly TheoryData<string, string, string> Pages = new()
@@ -106,6 +108,7 @@ public sealed class RecallWebTests : IClassFixture<WebApplicationFactory<Program
     [InlineData("RECALLDASHBOARD")]
     [InlineData("RECALLTRACE")]
     [InlineData("RECALLCASES")]
+    [InlineData("RECALLCASEDETAILS")]
     public void The_page_help_texts_follow_the_UXH_001_key_structure(string code)
     {
         var keys = Diten.Web.Views.Recall.Recall.Keys.Where(k => k.StartsWith($"Help.{code}.", StringComparison.Ordinal)).ToHashSet(StringComparer.Ordinal);
@@ -155,13 +158,13 @@ public sealed class RecallWebTests : IClassFixture<WebApplicationFactory<Program
     public async Task The_panel_draws_no_dead_link_to_R7_pages()
     {
         var html = await TraceViewRenderer.RenderAsync(_factory, "/Views/Recall/Index.cshtml", null, RecallKeys.DashboardRead, RecallKeys.CasesRead);
-        foreach (var r7 in new[] { "/Recall/Drills", "/Recall/Evidence", "/Recall/Settings", "/Recall/Cases/Details" })
+        foreach (var r7 in new[] { "/Recall/Drills", "/Recall/Evidence", "/Recall/Settings" }) // R7b pages; the case detail exists since R7a
             Assert.DoesNotContain(r7, html, StringComparison.Ordinal);
         Assert.Contains("href=\"/Recall/Cases\"", html, StringComparison.Ordinal);
         foreach (var file in Directory.EnumerateFiles(Js, "*.js"))
         {
             var code = Code(File.ReadAllText(file));
-            foreach (var r7 in new[] { "/Recall/Drills", "/Recall/Evidence", "/Recall/Settings", "/Recall/Cases/Details" })
+            foreach (var r7 in new[] { "/Recall/Drills", "/Recall/Evidence", "/Recall/Settings" })
                 Assert.DoesNotContain(r7, code, StringComparison.Ordinal);
         }
     }
@@ -176,7 +179,7 @@ public sealed class RecallWebTests : IClassFixture<WebApplicationFactory<Program
             .Where(m => m.ReturnType == typeof(IActionResult))
             .Select(m => "/Recall" + (m.GetCustomAttribute<HttpGetAttribute>()!.Template is { Length: > 0 } t ? "/" + t : string.Empty))
             .OrderBy(x => x, StringComparer.Ordinal).ToList();
-        Assert.Equal(["/Recall", "/Recall/Cases", "/Recall/Trace"], pages);
+        Assert.Equal(["/Recall", "/Recall/Cases", "/Recall/Cases/Details/{id}", "/Recall/Trace"], pages); // + R7a Vaka Detayı
 
         var manifest = File.ReadAllText(Path.Combine(TraceViewRenderer.RepoRoot(), "services", "Diten.InventoryService", "src", "Diten.InventoryService.Api", "Recall",
             "RecallReadinessManifestProvider.cs"));

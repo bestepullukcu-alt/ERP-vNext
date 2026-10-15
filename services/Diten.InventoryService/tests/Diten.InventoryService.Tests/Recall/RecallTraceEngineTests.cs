@@ -109,6 +109,9 @@ public sealed class FakeTraceSource : IRecallTraceSource
 
     public Task<bool?> LotControlledAsync(Guid skuId, SkuLevel level, CancellationToken cancellationToken = default)
         => Task.FromResult(LotControlled.TryGetValue(skuId, out var c) ? c : true);
+
+    public Task<IReadOnlyList<TraceSalesIssue>> SalesIssuesOfLotsAsync(IReadOnlyCollection<string> lotIds, CancellationToken cancellationToken = default)
+        => Task.FromResult<IReadOnlyList<TraceSalesIssue>>([]); // the engine never asks (R7a: getCaseCustomers only)
 }
 
 /// <summary>The MVP-6 shipment read double of the engine tests: one fixed outcome for every shipment, and the ids it was asked.</summary>

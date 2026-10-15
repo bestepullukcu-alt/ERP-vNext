@@ -2,7 +2,7 @@
  * MOD-0177 R6 — Vakalar (pack §8.10, §11.1, mockup "isCases"). DitenDataTable.createList, SERVER mode, door /Recall/list/cases — the RECALL
  * 1.5.0 union read: real cases and drill runs in ONE list in the server's order. Filters: type, case status, drill status, class, product,
  * opened from (forwarded as they are; the server applies them — a class filter leaves the drill rows out). Status chips = the server's case
- * counts. Rows link nowhere in R6 (R7 — no dead link).
+ * counts. R7a: the number of a real case links to its Vaka Detayı; drill rows link nowhere until R7b (no dead link).
  */
 'use strict';
 
@@ -93,7 +93,9 @@
                 ],
                 columnDefs: [
                     { targets: 0, className: 'control', searchable: false, orderable: false, responsivePriority: 2, render: () => '' },
-                    { targets: 1, render: (data, type, full) => `<span class="font-monospace">${esc(cell(full).number)}</span>` },
+                    { targets: 1, render: (data, type, full) => (cell(full).clickable
+                        ? `<a class="font-monospace fw-medium" href="${esc(cell(full).href)}">${esc(cell(full).number)}</a>`
+                        : `<span class="font-monospace">${esc(cell(full).number)}</span>`) },
                     { targets: 2, render: (data, type, full) => ui.typeBadge(full.rowKind) },
                     { targets: 3, render: (data, type, full) => productCell(cell(full)) },
                     { targets: 4, render: (data, type, full) => (full.rowKind === 'Drill'

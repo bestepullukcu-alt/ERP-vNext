@@ -43,3 +43,11 @@ public sealed record GetRecallCaseStockQuery(string CaseId) : IRequest<Response<
 
 /// <summary>§4.42a getCaseReturns — linked returns + candidates (KR-H).</summary>
 public sealed record GetRecallCaseReturnsQuery(string CaseId) : IRequest<Response<RecallReturnsDto>>;
+
+// ── R7a ──
+
+/// <summary>getCaseCustomers — the customers of the case's scope with shipments (ledger + live MVP-6 read), notifications and consumptions.</summary>
+public sealed record GetRecallCaseCustomersQuery(string CaseId) : IRequest<Response<IReadOnlyList<RecallCustomerRowDto>>>;
+
+/// <summary>getCaseEffectiveness — live until completed, then the stored result (pack §8.6).</summary>
+public sealed record GetRecallCaseEffectivenessQuery(string CaseId) : IRequest<Response<RecallEffectivenessDto>>;

@@ -89,6 +89,6 @@ public sealed class ManifestNamespaceOwnershipTests
         var foreign = keys.Where(k => !k.StartsWith("recall.", StringComparison.Ordinal)).ToList();
         Assert.True(foreign.Count == 0, "RECALL-READINESS declares keys outside 'recall.*':\n" + string.Join("\n", foreign));
         Assert.Equal(Diten.InventoryService.Infrastructure.Authorization.RecallPermissions.R1.OrderBy(k => k, StringComparer.Ordinal),
-            keys.OrderBy(k => k, StringComparer.Ordinal));
+            keys.Distinct(StringComparer.Ordinal).OrderBy(k => k, StringComparer.Ordinal)); // WP-0177-R7a: several case buttons share one key
     }
 }

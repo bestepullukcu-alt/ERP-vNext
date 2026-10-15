@@ -1435,6 +1435,29 @@ Dal `feature/sce/mod-0177-r6` (taban `9c41cc92c`). Kanıt `docs/records/audits/2
 **R6 CT-ACCEPTED (2026-10-15).** BLOCKED → CT decision A (drill rows are not case rows: `DrillCaseRow` + `drillRows`, class / level "—", D-25). CT run on the branch tip (contains `9c41cc92c`): Web **2320/2320**, Inventory **1238 + 4** all green; agent: architecture same 8, central-audit list unchanged (no new write command). **CT sabotage (not in a–g):** the CSV export door checks `recall.trace.run` instead of `recall.trace.export` → 3 door tests red (`…(door: "ExportTrace")`); restored, porcelain clean. Accepted: sabotage d fixed by tightening the test (stock total = own on-hand), the 800 px trace-form fix. Open: FU-0177-HELP-PANEL (wire at SYNC3), O-R6-2 → R7. Merged `--no-ff` into MVP-1; live with the next owner restart (approval).
 
 
+### 19.18 WP-0177-R7a — agent result, pending CT (2026-10-15)
+
+Dal `feature/sce/mod-0177-r7a` (taban `3842938ad`). Kanıt `docs/records/audits/2026-10/mod-0177-r7a-evidence-2026-10-15.md`. Commit'ler:
+`6dc580f5a` RECALL **1.6.0** (yalnız ekleme), `ed859075d` Inventory, `06be26adb` + `4c21db3c1` Web, (kanıt commit'i) kanıt + bu not + §20 + §21.3.
+
+- **İlk okuma → BLOCKED** (hedef tarih; 0173 formu `CUSTOMER_RETURN` sunmuyor) → **CT kararı A / A**: D-26 + FU-0177-TARGET-DATE; D-27, "Müşteri
+  iadesi gir" çizilmez, Geri dönüşler'de bilgi notu; 0173'e dokunulmadı.
+- **İki okuma:** `getCaseCustomers` (kapsamın etkin sevkiyat kalemleri; arkalarındaki satış çıkışları şirket kapsamlı, ters kayıt netlenir; MVP-6
+  belgesi tanıma yalnız iz tarafında — R2 bekçisi; MOD-0183 belgeleri canlı okunur) ve `getCaseEffectiveness` (tamamlanana kadar R3 / R4'ün
+  `LiveEffectivenessAsync`'i, sonra saklı sonuç; birimler arası toplam yok — D-20).
+- **Vaka Detayı** `/Recall/Cases/Details/{id}` (RECALLCASEDETAILS, menüde yok, üst RECALLCASES, 14 eylem): adım çubuğu, 6 sekme, iki adımlı imza
+  (hazırla → MOD-0022 → komut, `signatureId`); düğme yalnız anahtar sahibine çizilir; dört göz ekranda (gönderene onay, tamamlayana kapat
+  çizilmez — sayfadan kaldırılır); 1 okuma + 18 komut kapısı, her biri kendi anahtarı, hazırlama kapıları kendi kararını koyar; antiforgery +
+  `Idempotency-Key` + `If-Match`; 7 dil; yardım metinleri UXH-001 yapısında (FU-0177-HELP-PANEL). Vakalar'da gerçek vaka detaya gider.
+- **Sabotaj:** a–g 7/7 kırmızı → yeşil (iyileştirmelerden sonra web a, b, c, d, f yeniden), özgün baytlar, SHA eşit.
+- **Sayılar:** Inventory 1238 + 4 → **1244 + 4**; Web 2320 → **2411**; mimari 71/79 aynı 8 (iletiler birebir); gateway 164/165; derleme aynı;
+  denetimsiz komut 0.
+- **Önizleme:** 5168 / 5105 / 5104 (QA1) / 5106 (QA2) / 5107 (anahtarsız): vaka Taslak → gönder (QA1) → onay + imza (QA2) → Aktif → bildirim,
+  tüketim, iade bağlama → etkinlik başlat + tamamla + imza (QA1) → kapat + kabul gerekçesi + imza (QA2) → Kapandı. MOD-0022 penceresi yalnız
+  önizlemede test imzasıyla ikame edildi (Platform yok).
+- **CT kararı bekleyen:** Geri dönüşler satırında karantina kaydı (KRN →) bağlantısı — `ReturnLink` taşımıyor (kanıt §11, öneri A: D-28 + R7b
+  RECALL 1.7.0). Pack'e D-28 eklenmedi.
+
 ## 20. Follow-up Items
 
 | ID | Item | Owner |
@@ -1450,6 +1473,7 @@ Dal `feature/sce/mod-0177-r6` (taban `9c41cc92c`). Kanıt `docs/records/audits/2
 | FU-0177-REG-01 | Registry row `MOD-0177` → `in-progress` when R1 starts (proposal; not changed here) | CT |
 | FU-0177-RPT-01 | Report `:232` "RECALL-BUNDLE ✓" corrected to "proposal (drafts)" until R1 freezes | CT / docs |
 | FU-SYNC1-AUDIT | 0177 write commands join the Inventory audit-ledger debt (0176 O-F1-1) | CT |
+| FU-0177-TARGET-DATE | Recall case target date / days left (mockup `template.html:392` "Hedef tarih · N gün kaldı") — the rule is undefined (who sets it, how it is computed); product decision, then an additive RECALL change (D-26) | Product / CT |
 | FU-0177-HELP-PANEL | Bind the Recall pages' UXH-001 help texts (`Help.RECALL*`, delivered in 7 languages by R6) to the page help panel once the rule / component is on the base branch | MOD-0177 / UI |
 
 ## 21. UI input — approved mockup ("Geri Çağırma Recall (offline).html", 2026-10-12)
@@ -1503,3 +1527,5 @@ instruction. Seed data (`USERS` `L:9-15`, `RM` `L:16`, `FG` `L:17-31`, `CONSUMED
 | D-23 | Ad-hoc trace quick lots (`L:226`) | recent lots of the user (no fixed list) | seed |
 | D-24 | Scope tab traces forward only (`L:258`) | case direction parameter (default Both for scope: backward shows inputs, forward drives blocks / requests) | KR-D |
 | D-25 | Vakalar'daki tatbikat satırı sınıf / seviye taşır (mockup `cls:1`, `lvl`) | tatbikat satırı (`DrillCaseRow`, RECALL 1.5.0) sınıf / seviye taşımaz — ekranda "—"; sınıf süzgeci tatbikatları dışarıda bırakır | tatbikat koşusunun sınıfı / seviyesi yok (CT kararı A, WP-0177-R6) |
+| D-26 | Vaka başlığında hedef tarih / kalan gün (mockup `template.html:392`) | pack'te ve `CaseDetail`'de vaka hedef tarihi yok; kuralı tanımsız (kim belirler / nasıl hesaplanır) → çizilmez | FU-0177-TARGET-DATE (ürün kararı; CT kararı A, WP-0177-R7a) |
+| D-27 | "Müşteri iadesi gir" bağlantısı (mockup `L:296` + §11.3) | R7a'da yok — 0173 formu `CUSTOMER_RETURN` sunmuyor (`MovementRules.ManualTypes`) ve `lotId` / `toStatus` okumuyor; KR-H (sahip: elle müşteri iadesi de bağlanabilir) için form genişletmesi + bağlantı WP-0177-R7b'de, 0173 sahip adımı olarak. Geri dönüşler'de bilgi notu: "Müşteri iadesi stok hareketi olarak kaydedilir; kaydedildiğinde burada aday olarak görünür." | CT kararı A, WP-0177-R7a |

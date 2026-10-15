@@ -1,0 +1,254 @@
+@model string
+@using Microsoft.AspNetCore.Mvc.Localization
+@using Diten.Web.Controllers
+@inject IHtmlLocalizer<Diten.Web.Views.Recall.Recall> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["Recall.Tabs.Cases"].Value;
+    ViewData["PageCode"] = "RECALLCASEDETAILS";
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    MOD-0177 R7a — Vaka Detayı (RECALLCASEDETAILS, pack §11.1, §11.3, §8.3–§8.8, mockup "isCase"). Header + steps bar (Taslak → Kapsam onayı
+    bekliyor → Aktif → Etkinlik kontrolü → Kapandı) + six tabs, every read through ONE door /Recall/data/cases/{id}?part=…, every command through
+    its own door (its own key). A button is DRAWN here only when the user holds its key (UAS-001: absent, not disabled); the script then shows
+    it only in the statuses the server allows and never to the user four-eyes excludes (CT-R1: the scope submitter gets no "Kapsamı onayla",
+    the effectiveness completer no "Vakayı kapat"). Scope approval, effectiveness completion and closure are TWO steps (pack §8.8): the decision
+    dialog prepares (PendingAction), the ONE MOD-0022 dialog (ESign.open) signs, the command carries the signatureId.
+    Not built: the "Hedef tarih · N gün kaldı" header line (D-26 — no target date in the pack), the "Müşteri iadesi gir" button (D-27 — the
+    return is recorded as a stock movement elsewhere and appears here as a candidate), the demo status selector / role switcher (D-14).
+    UAS-001 — nothing below is drawn without recall.cases.read. No redirect.
+*@
+@if (!Perms.Has(RecallKeys.CasesRead))
+{
+    <partial name="_AccessDenied" model="@Localizer["Recall.Tabs.Cases"].Value" />
+    return;
+}
+
+@{
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["Recall.Common.Company.Label"].Value;
+    company.Placeholder = Localizer["Recall.Common.Company.Placeholder"].Value;
+    company.SelectHint = Localizer["Recall.Common.Company.Required"].Value;
+    company.UnavailableText = Localizer["Recall.Common.Company.Unavailable"].Value;
+    var caseId = Guid.TryParse(Model, out var parsed) ? parsed.ToString("D") : null;
+    var me = User.FindFirst("sub")?.Value ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+    var signs = Perms.Has(RecallKeys.CasesApprove) || Perms.Has(RecallKeys.EffectivenessComplete) || Perms.Has(RecallKeys.CasesClose);
+}
+
+<partial name="~/Views/Recall/_Header.cshtml" model="@("RECALLCASES")" />
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready && caseId is null)
+{
+    <div class="alert alert-warning" role="alert" id="rc-case-invalid">@Localizer["Recall.Case.NotFound"]</div>
+}
+else if (company.Ready)
+{
+    <div id="rc-case" data-case-id="@caseId" data-user-id="@me">
+        <div id="rc-error" class="alert alert-danger d-none" role="alert"></div>
+        <div id="rc-labels-unavailable" class="alert alert-warning d-none" role="status">@Localizer["Recall.Common.NamesUnavailable"]</div>
+
+        <div class="card mb-4" id="rc-case-head">
+            <div class="card-body">
+                <div class="d-flex flex-wrap align-items-start gap-3 mb-3">
+                    <div class="me-auto">
+                        <h4 class="mb-1 font-monospace" id="rc-h-number">…</h4>
+                        <div class="d-flex flex-wrap gap-2" id="rc-h-badges"></div>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2" id="rc-head-actions">
+                        @if (Perms.Has(RecallKeys.CasesCancel))
+                        {
+                            <button type="button" class="btn btn-label-secondary d-none" data-rc-action="cancel"><i class="bx bx-x-circle me-1"></i>@Localizer["Recall.Case.Cancel"]</button>
+                        }
+                        @if (Perms.Has(RecallKeys.CasesClose))
+                        {
+                            <button type="button" class="btn btn-danger d-none" data-rc-action="close"><i class="bx bx-lock-alt me-1"></i>@Localizer["Recall.Case.Close"]</button>
+                        }
+                    </div>
+                </div>
+                <div class="row g-3 small">
+                    <div class="col-12 col-md-6 col-xl-3"><span class="text-muted d-block">@Localizer["Recall.Case.Product"]</span><span class="fw-medium text-heading" id="rc-h-product"></span></div>
+                    <div class="col-12 col-md-6 col-xl-3"><span class="text-muted d-block">@Localizer["Recall.Case.RootLot"]</span><span class="font-monospace" id="rc-h-lot"></span></div>
+                    <div class="col-12 col-md-6 col-xl-3"><span class="text-muted d-block">@Localizer["Recall.Case.Reason"]</span><span id="rc-h-reason"></span></div>
+                    <div class="col-12 col-md-6 col-xl-3"><span class="text-muted d-block">@Localizer["Recall.Case.OpenedBy"]</span><span id="rc-h-opened"></span></div>
+                </div>
+                <p class="small text-muted mb-0 mt-2 d-none" id="rc-h-final"></p>
+            </div>
+            <div class="card-footer border-top">
+                <ol class="list-unstyled d-flex flex-wrap gap-3 mb-0" id="rc-steps" aria-label="@Localizer["Recall.Col.Status"]">
+                    @foreach (var (status, n) in new[] { ("Draft", 1), ("PendingScopeApproval", 2), ("Active", 3), ("EffectivenessCheck", 4), ("Closed", 5) })
+                    {
+                        <li class="d-flex align-items-center gap-2" data-step="@status">
+                            <span class="badge rounded-pill bg-label-secondary" data-step-mark>@n</span>
+                            <span class="small">@Localizer["Recall.Status." + status]</span>
+                        </li>
+                    }
+                </ol>
+            </div>
+        </div>
+
+        <div class="alert alert-info d-none" role="status" id="rc-sod-note"></div>
+        <div class="alert alert-warning d-none" role="status" id="rc-revision-note"></div>
+
+        <ul class="nav nav-tabs flex-wrap" role="tablist" id="rc-case-tabs">
+            @foreach (var (tab, icon, key) in new[]
+            {
+                ("scope", "bx-sitemap", "Recall.CaseTab.Scope"), ("stock", "bx-buildings", "Recall.CaseTab.Stock"), ("customers", "bx-store", "Recall.CaseTab.Customers"),
+                ("returns", "bx-undo", "Recall.CaseTab.Returns"), ("effectiveness", "bx-check-shield", "Recall.CaseTab.Effectiveness"), ("timeline", "bx-history", "Recall.CaseTab.Timeline")
+            })
+            {
+                <li class="nav-item" role="presentation">
+                    <button type="button" class="nav-link d-flex align-items-center gap-1 @(tab == "scope" ? "active" : "")" data-bs-toggle="tab" data-bs-target="#rc-tab-@tab" data-rc-tab="@tab" role="tab">
+                        <i class="bx @icon"></i><span>@Localizer[key]</span>
+                    </button>
+                </li>
+            }
+        </ul>
+        <div class="tab-content border border-top-0 rounded-bottom p-3 mb-4">
+            <div class="tab-pane fade show active" id="rc-tab-scope" role="tabpanel">
+                <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                    <span class="me-auto small text-muted" id="rc-scope-summary"></span>
+                    <button type="button" class="btn btn-sm btn-label-secondary d-none" data-rc-action="rescan"><i class="bx bx-refresh me-1"></i>@Localizer["Recall.Scope.Rescan"]</button>
+                    @if (Perms.Has(RecallKeys.CasesUpdate))
+                    {
+                        <button type="button" class="btn btn-sm btn-label-primary d-none" data-rc-action="save-marks"><i class="bx bx-save me-1"></i>@Localizer["Recall.Scope.SaveMarks"]</button>
+                        <button type="button" class="btn btn-sm btn-primary d-none" data-rc-action="submit"><i class="bx bx-send me-1"></i>@Localizer["Recall.Scope.Submit"]</button>
+                    }
+                    @if (Perms.Has(RecallKeys.CasesApprove))
+                    {
+                        <button type="button" class="btn btn-sm btn-label-warning d-none" data-rc-action="return"><i class="bx bx-undo me-1"></i>@Localizer["Recall.Scope.Return"]</button>
+                        <button type="button" class="btn btn-sm btn-success d-none" data-rc-action="approve"><i class="bx bx-check-double me-1"></i>@Localizer["Recall.Scope.Approve"]</button>
+                    }
+                </div>
+                <p class="small text-muted" id="rc-scope-hint"></p>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0" id="rc-scope-table">
+                        <thead><tr><th>@Localizer["Recall.SCol.Node"]</th><th>@Localizer["Recall.Col.ProductLot"]</th><th>@Localizer["Recall.SCol.Place"]</th><th class="text-end">@Localizer["Recall.SCol.Quantity"]</th><th>@Localizer["Recall.SCol.Mark"]</th></tr></thead>
+                        <tbody><tr><td colspan="5" class="text-muted">@Localizer["Recall.Common.Loading"]</td></tr></tbody>
+                    </table>
+                </div>
+                <div class="mt-4 d-none" id="rc-diff">
+                    <h6 class="mb-2">@Localizer["Recall.Scope.DiffTitle"]</h6>
+                    <div id="rc-diff-body"></div>
+                    @if (Perms.Has(RecallKeys.CasesUpdate))
+                    {
+                        <div class="mt-2 d-none" id="rc-revise-box">
+                            <label class="form-label small" for="rc-revise-reason">@Localizer["Recall.Scope.ReviseReason"]</label>
+                            <textarea class="form-control form-control-sm mb-2" id="rc-revise-reason" rows="2" maxlength="1000"></textarea>
+                            <button type="button" class="btn btn-sm btn-warning" data-rc-action="revise"><i class="bx bx-git-pull-request me-1"></i>@Localizer["Recall.Scope.Revise"]</button>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="rc-tab-stock" role="tabpanel">
+                <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                    <span class="me-auto small text-muted">@Localizer["Recall.Stock.Info"]</span>
+                    @if (Perms.Has(RecallKeys.QuarantineRequestsCreate))
+                    {
+                        <button type="button" class="btn btn-sm btn-warning d-none" data-rc-action="quarantine-send" disabled></button>
+                    }
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0" id="rc-stock-table">
+                        <thead><tr><th></th><th>@Localizer["Recall.StCol.Place"]</th><th>@Localizer["Recall.StCol.Lot"]</th><th class="text-end">@Localizer["Recall.SCol.Quantity"]</th><th>@Localizer["Recall.StCol.Request"]</th><th>@Localizer["Recall.StCol.Hold"]</th><th>@Localizer["Recall.StCol.Segregation"]</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <p class="small text-muted mt-2 mb-0" id="rc-stock-totals"></p>
+            </div>
+
+            <div class="tab-pane fade" id="rc-tab-customers" role="tabpanel">
+                <p class="small text-muted" id="rc-cust-summary"></p>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0" id="rc-cust-table">
+                        <thead><tr><th>@Localizer["Recall.CCol.Customer"]</th><th>@Localizer["Recall.CCol.Shipment"]</th><th>@Localizer["Recall.CCol.Delivery"]</th><th class="text-end">@Localizer["Recall.CCol.Shipped"]</th><th class="text-end">@Localizer["Recall.CCol.Returned"]</th><th class="text-end">@Localizer["Recall.CCol.Open"]</th><th>@Localizer["Recall.CCol.Notification"]</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="rc-tab-returns" role="tabpanel">
+                <div class="alert alert-info small" role="note" id="rc-ret-info">@Localizer["Recall.Ret.Info"]</div>
+                <h6>@Localizer["Recall.Ret.Linked"]</h6>
+                <div class="table-responsive mb-4">
+                    <table class="table table-sm align-middle mb-0" id="rc-ret-links">
+                        <thead><tr><th>@Localizer["Recall.RCol.Movement"]</th><th>@Localizer["Recall.CCol.Customer"]</th><th>@Localizer["Recall.StCol.Lot"]</th><th class="text-end">@Localizer["Recall.SCol.Quantity"]</th><th>@Localizer["Recall.RCol.Date"]</th><th>@Localizer["Recall.RCol.Source"]</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <h6>@Localizer["Recall.Ret.Candidates"]</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0" id="rc-ret-candidates">
+                        <thead><tr><th>@Localizer["Recall.RCol.Movement"]</th><th>@Localizer["Recall.StCol.Lot"]</th><th class="text-end">@Localizer["Recall.SCol.Quantity"]</th><th>@Localizer["Recall.RCol.Status"]</th><th>@Localizer["Recall.RCol.Date"]</th><th></th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="rc-tab-effectiveness" role="tabpanel">
+                <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                    <span class="me-auto small text-muted" id="rc-eff-source"></span>
+                    @if (Perms.Has(RecallKeys.EffectivenessComplete))
+                    {
+                        <button type="button" class="btn btn-sm btn-label-primary d-none" data-rc-action="eff-start"><i class="bx bx-play me-1"></i>@Localizer["Recall.Eff.Start"]</button>
+                        <button type="button" class="btn btn-sm btn-primary d-none" data-rc-action="eff-complete"><i class="bx bx-check-shield me-1"></i>@Localizer["Recall.Eff.Complete"]</button>
+                    }
+                </div>
+                <p class="small text-muted">@Localizer["Recall.Eff.PerUnit"]</p>
+                <div class="row g-3 mb-4" id="rc-eff-totals"></div>
+                <h6>@Localizer["Recall.Eff.PerCustomer"]</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0" id="rc-eff-table">
+                        <thead><tr><th>@Localizer["Recall.CCol.Customer"]</th><th class="text-end">@Localizer["Recall.Eff.Shipped"]</th><th class="text-end">@Localizer["Recall.Eff.Returned"]</th><th class="text-end">@Localizer["Recall.Eff.Consumed"]</th><th class="text-end">@Localizer["Recall.Eff.Open"]</th><th>@Localizer["Recall.Eff.Percent"]</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="rc-tab-timeline" role="tabpanel">
+                <ul class="timeline mb-0" id="rc-timeline"></ul>
+            </div>
+        </div>
+    </div>
+
+    <partial name="~/Views/Recall/_SignDialog.cshtml" />
+    <partial name="~/Views/Recall/_ReasonModal.cshtml" />
+    @if (Perms.Has(RecallKeys.NotificationsCreate))
+    {
+        <partial name="~/Views/Recall/_NotificationModal.cshtml" />
+    }
+    @if (Perms.Has(RecallKeys.ConsumptionsCreate))
+    {
+        <partial name="~/Views/Recall/_ConsumptionModal.cshtml" />
+    }
+    @if (Perms.Has(RecallKeys.ReturnsLink))
+    {
+        <partial name="~/Views/Recall/_LinkReturnModal.cshtml" />
+    }
+    @if (Perms.Has(RecallKeys.SegregationsConfirm))
+    {
+        <partial name="~/Views/Recall/_SegregationModal.cshtml" />
+    }
+    @if (signs)
+    {
+        <partial name="~/Views/Shared/ESignature/_ESignatureDialog.cshtml" />
+    }
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    <partial name="~/Views/Recall/_RecallActions.cshtml" />
+    <partial name="~/Views/Recall/_RecallL10n.cshtml" />
+    @if (company.Ready && caseId is not null)
+    {
+        <script src="~/assets/js/Recall/case-view.js" asp-append-version="true"></script>
+        <script src="~/assets/js/Recall/case-decision.js" asp-append-version="true"></script>
+        <script src="~/assets/js/Recall/case-detail.js" asp-append-version="true"></script>
+    }
+}
