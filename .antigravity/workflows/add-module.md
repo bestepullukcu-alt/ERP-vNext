@@ -11,7 +11,7 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
 0. **Phase 0: Onaylı Module Pack Kapısı (ORKESTRATOR)**
    - `AGENTS.md` dosyasını oku ve repo-level guardrail'leri uygula.
    - İlgili domain'i tespit et ve `execution/domains/{domain}/domain-config.md` dosyasını oku.
-   - Hedef modül için module pack var mı kontrol et: `execution/domains/{domain}/module-packs/{ID}.md`
+   - Hedef modül için module pack var mı kontrol et: `execution/domains/{domain}/module-packs/{ID}-{slug}.md`
    - Module pack yoksa kod yazma; kullanıcıya önce `/prepare-module-pack` veya `module-pack-author` ile module pack hazırlatmasını söyle.
    - Module pack status `draft` ise kod yazma; kullanıcı incelemesi ve `approved` veya `ready-for-dev` status beklenir.
    - DataTable modülü ise module pack içinde `form_field_count` ve `golden_reference: slim|compact` kararını kontrol et.
@@ -49,12 +49,12 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
    - **Sapma Halinde:** Tek bir madde "Hayır" ise Phase 1'e dön, module pack ya da plan üzerinde düzelt; tabloyu yeniden doldur.
 
 2. **Phase 2: Veri Mimarisi (data-agent & backend-architect)**
-   - MongoDB koleksiyonunu tasarla. Varsayılan model tenant-owned `ITenantDocument`/`BaseEntity` tabanıdır.
+   - MongoDB koleksiyonunu tasarla. Varsayılan model, servisin `TenantId` taşıyan kiracı taban sınıfıdır (ad servise göre değişir — ör. Platform.Common: `TenantScopedEntity`; Auth/MDM: `EntityBase`; DevEnablement: `BaseEntity`; bkz. `/add-mongo-collection`).
    - Domain Entity ve Repository katmanını oluştur. Tenant-owned veride Soft Delete ve TenantId ZORUNLUDUR. Yalnızca module pack'te açıkça gerekçelendirilmiş Platform global kataloglarında `GlobalEntity` kullanılabilir; bu durumda repository `IsDeleted=false`, global unique index ve RBAC kontrollerini belgelemek zorundadır.
 
 3. **Phase 3: İş Mantığı & Yerelleştirme (backend-architect & l10n-agent)**
    - `/add-endpoint-cqrs` akışını başlat (Request, Command, Handler, Validator).
-   - API Controller'ı oluştur ve Ocelot Gateway rotasını ekle.
+   - API Controller'ı oluştur. Gateway rotasını kendin ekleme; rota ihtiyacını Phase 3.5'te `integration-agent`'a devret (`ocelot.json`'un tek yazarı).
    - **ÖNCE `l10n-agent`:** `.antigravity/rules/localization-standard.md` kuralına göre modül tipine uygun (Platform: 2 dil, Tenant: 7 dil) `.resx` senkronizasyonunu tamamla.
    - Sadece projede desteklenen dillerde `.resx` dosyalarını oluştur.
    - **⚠️ RESX DOSYA ADI KURALI (KRİTİK):** `.resx` dosya adı, Razor view'da kullanılan localization marker class adıyla **birebir eşleşmelidir**. Eğer marker class `GoldenReferenceSlimIndex` ise dosya adı `GoldenReferenceSlimIndex.{lang}.resx` olmalıdır. `Index.{lang}.resx` KULLANILMAZ. Yol: `Resources/Views/{AreaName}/{ModuleName}/{MarkerClassName}.{lang}.resx`
@@ -104,7 +104,7 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
    - **Frontend Proxy Contract (ZORUNLU):**
      - Platform/admin MVC modüllerinde API profili `proxy-profile`dır. JS endpoint'i `/{AreaName}/{ModuleName}/api` olur; browser JS `window.API.platform`, `window.ApiBaseUrl`, `document.cookie`, `access_token` veya `Authorization: Bearer` kullanmaz.
      - Frontend controller route'u ve JS endpoint'i birlikte tasarlanır. Controller en az `GET api`, `DELETE api/{id}`, `DELETE api/bulk` proxy action'larını içerir; module pack'te varsa `activate/deactivate` gibi action'lar da eklenir.
-     - Proxy action'ları `Request.Cookies["access_token"]` değerini server-side okuyup Gateway çağrısına `Authorization: Bearer` olarak ekler ve `X-Tenant-Id` header'ını Platform/admin context'te göndermez.
+     - Proxy action'ları HttpOnly token'ı server-side `AuthTokenCookies.GetAccessToken(Request)` ile okuyup Gateway çağrısına `Authorization: Bearer` olarak ekler (doğrudan `Request.Cookies["access_token"]` okunmaz: parçalı token bozulur; bkz. `.antigravity/rules/routes.md`) ve `X-Tenant-Id` header'ını Platform/admin context'te göndermez.
      - Tenant/public shell modüllerinde `direct-gateway-profile` kullanılacaksa bu karar module pack veya orchestration report'ta açık yazılır ve `window.API.{service}` kullanılır.
    - **[ZORUNLU]** `colReorder: { columns: ':gt(1):not(:last-child)' }` DataTable config'e eklenmelidir (standart kolon yapısı için varsayılan; bkz. `frontend-js-standard.md §11`). `column-reorder.dt`/`columns-reordered.dt` event'leri dirty-state hesabına bağlanmalıdır.
    - Shell tipine göre `_LayoutPlatformAdmin` veya `_LayoutTenantShell` içine menü linkini ekle ve aktif state için `ViewContext.RouteData` dinamik kontrolü yap.

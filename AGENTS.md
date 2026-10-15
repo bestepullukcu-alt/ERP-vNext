@@ -21,7 +21,7 @@ sessizce işlevsiz kalıyor — dosya var görünür, içerik yoktur.
 
 Bir talep birden fazla kaynakta yer alıyorsa, en spesifik katman kazanır:
 
-1. **Module Pack** — `execution/domains/{domain}/module-packs/{ID}.md`
+1. **Module Pack** — `execution/domains/{domain}/module-packs/{ID}-{slug}.md`
 2. **Domain Config** — `execution/domains/{domain}/domain-config.md`
 3. **AGENTS.md** — bu dosya (repo root)
 4. **Global Engineering System** — `.antigravity/` (ajanlar, kurallar, workflow'lar, skill'ler)
@@ -274,7 +274,7 @@ Tüm git operasyonları (branch, staging, commit, push) [GIT-002 git-safety.md](
 Orchestrator çağrıldığında Aşama 0'da şu dosyaları okur:
 1. `AGENTS.md` (bu dosya)
 2. İlgili `execution/domains/{domain}/domain-config.md`
-3. Varsa `execution/domains/{domain}/module-packs/{ID}.md`
+3. Varsa `execution/domains/{domain}/module-packs/{ID}-{slug}.md`
 4. Görev tipine uygun `.antigravity/workflows/*.md`
 
 **Kural:** `@orchestrator` module pack oluşturmaz. Yeni modül geliştirmesi yalnızca mevcut ve kullanıcı tarafından onaylanmış (`approved` veya `ready-for-dev`) module pack üzerinden başlar. Module pack yoksa veya `draft` durumundaysa kod yazılmaz; kullanıcı önce `/prepare-module-pack` veya `module-pack-author` ile module pack hazırlamaya yönlendirilir.
@@ -368,7 +368,7 @@ Module pack minimum içermeli:
 |-------|-------|
 | **Global Engineering System** | `.antigravity/` — tüm projeler arası yeniden kullanılabilir katman |
 | **Domain** | `execution/domains/{name}/` — bir iş alanı (DEVEN, PSS; MDM/ESBP planlı) |
-| **Module Pack** | `execution/domains/{d}/module-packs/{ID}.md` — tek bir modülün kimlik + AC dosyası |
+| **Module Pack** | `execution/domains/{d}/module-packs/{ID}-{slug}.md` — tek bir modülün kimlik + AC dosyası |
 | **Domain Config** | `execution/domains/{d}/domain-config.md` — domain sınırları ve kararlar |
 | **Master Development Plan** | `execution/portfolio/master-development-plan.md` — High-level wave planı ve modül envanteri (eski monolith `docs/platform/master-plan.md` yerine) |
 | **Platform Delivery Board** | `execution/delivery/platform-delivery-board.md` — Aktif iş/hardening takibi ve status panosu |

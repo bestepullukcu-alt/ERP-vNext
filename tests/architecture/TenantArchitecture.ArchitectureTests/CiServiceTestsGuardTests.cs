@@ -326,7 +326,8 @@ public class CiServiceTestsGuardTests
     };
 
     /// <summary>The workflow files the repository is allowed to hold — a new one is added here on purpose, with review.</summary>
-    private static readonly string[] NamedWorkflows = ["phase1-gates.yml", "service-tests.yml"];
+    // İ5-A (owner-approved 2026-10-14): agent-adapters.yml checks the generated tool adapters against .antigravity/.
+    private static readonly string[] NamedWorkflows = ["agent-adapters.yml", "phase1-gates.yml", "service-tests.yml"];
 
     [Fact]
     public void Only_the_named_workflow_files_exist()
@@ -388,6 +389,7 @@ public class CiServiceTestsGuardTests
     // --filter (a row or a test cannot be dropped quietly).
     private static readonly Dictionary<string, string[]> ExpectedIfs = new(StringComparer.Ordinal)
     {
+        ["agent-adapters.yml"] = [],
         ["phase1-gates.yml"] = [],
         ["service-tests.yml"] =
         [
@@ -405,6 +407,7 @@ public class CiServiceTestsGuardTests
     /// <summary>Hardening: the $GITHUB_ENV writes each file makes (measured; a new one is a deliberate edit here).</summary>
     private static readonly Dictionary<string, int> ExpectedGithubEnvWrites = new(StringComparer.Ordinal)
     {
+        ["agent-adapters.yml"] = 0,
         ["phase1-gates.yml"] = 0,
         ["service-tests.yml"] = 6
     };

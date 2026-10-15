@@ -23,6 +23,8 @@ Sadece Türkçe (`tr`) oluşturup bırakmak kural ihlalidir.
 **Dosya Yolu Standardı:** `Resources/Views/{AreaName}/{ModuleName}/{MarkerClassName}.{lang}.resx`
 *(Örn: `Resources/Views/MDM/SampleModule/SampleModuleIndex.en.resx`, `Resources/Views/MDM/SampleModule/SampleModuleIndex.tr.resx` vb.)*
 **Kritik Kural:** Kaynak dosyası, Razor view'daki `IHtmlLocalizer<T>` sınıf adıyla birebir eşleşmelidir. Marker class convention: `{ModuleName}Index` (bkz: `frontend-datatable-template.md`). `Index.{lang}.resx` adı KULLANILMAZ.
+**Yol, marker sınıfının yerini izler:** `Views/.../{MarkerClassName}.cs` → `Resources/Views/.../{MarkerClassName}.{lang}.resx`. Görünümleri doğrudan `Views/{ModuleName}/` altında duran modüllerde (Tasks, Meetings, WorkCenter, TimeEntry, PPM gibi) yol bir seviye kısadır: `Resources/Views/{ModuleName}/{MarkerClassName}.{lang}.resx` (örn: `Resources/Views/Tasks/TasksIndex.tr.resx`). Bu biçim de geçerlidir.
+**Geriye dönük uyumluluk:** Eski yazımdaki `Resources/Views/{AreaName}/{ModuleName}.{lang}.resx` ayrı bir biçim değildir; yalnız dosya adı marker sınıfının adıyla aynıysa çalışır (örn: `ESignature`, `Quarantine`). Bu dosyalar taşınmaz. `IHtmlLocalizer<T>` ile eşleşen bir marker sınıfı olmayan `.resx` ekranda okunmaz. Ölçüm (2026-10-14): 141 kaynak grubunun 140'ı bu kurala uyuyor.
 
 ## 2. Zorunlu Anahtarlar (Keys)
 Her modülün dil dosyasında ŞART olan standart anahtarlar:
@@ -39,7 +41,7 @@ Birden fazla sayfada kullanılan genel ifadeler ASLA View (sayfa) dil dosyaları
 *Örnekler:* "Save" (Kaydet), "Delete" (Sil), "Cancel" (İptal), "Yes/No", "Active/Passive", "Are you sure?", "Actions", DataTable standart metinleri ("No records found" vb.).
 
 **B. View-Specific Resource (Sayfaya Özel Metinler):**
-SADECE o sayfaya ve modüle ait olan, başka sayfalarda kullanılmayacak metinler `Resources/Views/{AreaName}/{ModuleName}.{lang}.resx` dosyalarına eklenmelidir.
+SADECE o sayfaya ve modüle ait olan, başka sayfalarda kullanılmayacak metinler, §1'deki marker yoluna (`Resources/Views/{AreaName}/{ModuleName}/{MarkerClassName}.{lang}.resx`) eklenmelidir.
 *Örnekler:* Sayfa başlığı (`SampleModuleTitle`), Sayfa açıklaması (`SampleModuleDescription`), Modüle özel tablo sütun isimleri (`IsoCode`, `TaxNumber`), Modüle özel mesajlar (`CountryAddedSuccessfully`).
 
 ---
