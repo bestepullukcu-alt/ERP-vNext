@@ -17,15 +17,17 @@ namespace Diten.Platform.BackgroundJobs.Tests;
 /// WP-AUTH-ADMIN-BOOTSTRAP-01 (BL-534) — the platform administrator seed through Platform's REAL start-up composition
 /// (<c>AddInfrastructure</c> with its start-up maintenance: migrations, schema, every seed) on a test-owned mongod whose
 /// database starts empty. Outside Development the start-up writes its system data and NO administrator; in Development it
-/// still writes the development administrator.
+/// writes the development administrator only with DevSeeds:PlatformAdmin (v1.1).
 /// </summary>
 public sealed class PlatformAdministratorSeedCompositionTests
 {
+    // v1.1 — Development AND DevSeeds:PlatformAdmin (the key alone outside Development does nothing).
     [Theory]
-    [InlineData("Staging", "diten_platform_itest_admin_seed_staging", false)]
-    [InlineData("Development", "diten_platform_itest_admin_seed_development", true)]
-    public async Task The_start_up_writes_the_development_administrator_only_in_development(
-        string environmentName, string databaseName, bool administratorExpected)
+    [InlineData("Staging", "diten_platform_itest_admin_seed_staging", true, false)]
+    [InlineData("Development", "diten_platform_itest_admin_seed_development_no_key", false, false)]
+    [InlineData("Development", "diten_platform_itest_admin_seed_development", true, true)]
+    public async Task The_start_up_writes_the_development_administrator_only_in_development_with_the_opt_in_key(
+        string environmentName, string databaseName, bool optedIn, bool administratorExpected)
     {
         // The test process's own mongod (PlatformTestMongo: DITEN_TEST_MONGOD), never the shared 27017; a fixed name, emptied.
         var connectionString = await PlatformTestMongo.ConnectionStringAsync();
@@ -33,7 +35,7 @@ public sealed class PlatformAdministratorSeedCompositionTests
         await client.DropDatabaseAsync(databaseName);
         var database = client.GetDatabase(databaseName);
 
-        var configuration = Configuration(connectionString, databaseName);
+        var configuration = Configuration(connectionString, databaseName, optedIn);
         var services = new ServiceCollection();
         services.AddLogging();
         services.AddSingleton<IConfiguration>(configuration);
@@ -56,7 +58,7 @@ public sealed class PlatformAdministratorSeedCompositionTests
         }
     }
 
-    private static IConfiguration Configuration(string mongoConnectionString, string databaseName) =>
+    private static IConfiguration Configuration(string mongoConnectionString, string databaseName, bool optedIn) =>
         new ConfigurationBuilder()
             .AddJsonFile(RepoFile("services", "Diten.Platform", "src", "Diten.Platform.API", "appsettings.json"), optional: false)
             .AddInMemoryCollection(new Dictionary<string, string?>
@@ -74,7 +76,8 @@ public sealed class PlatformAdministratorSeedCompositionTests
                 ["BackgroundJobs:DashboardEnabled"] = "false",
                 ["Eventing:Transport"] = "InMemory",
                 ["Eventing:WorkerEnabled"] = "false",
-                ["Smtp:Enabled"] = "false"
+                ["Smtp:Enabled"] = "false",
+                [PlatformAdministratorSeed.OptInConfigurationKey] = optedIn ? "true" : "false"
             })
             .Build();
 

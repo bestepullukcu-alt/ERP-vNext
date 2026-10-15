@@ -31,7 +31,19 @@ public sealed class PlatformAdministratorSeedMeasurementTests
         await using var mongo = await DisposableMongoReplicaSet.StartAsync();
         var database = await DatabaseAsync(mongo);
 
-        await PlatformAdministratorSeed.EnsureSeededAsync(database, isDevelopment: false);
+        await PlatformAdministratorSeed.EnsureSeededAsync(database, isDevelopment: false, optedIn: true);
+
+        Assert.Equal(0, await Collection(database).CountDocumentsAsync(FilterDefinition<PlatformAdministrator>.Empty));
+    }
+
+    // v1.1 (owner decision 2026-10-15) — DevSeeds:PlatformAdmin is required too: without it Development creates nothing.
+    [Fact]
+    public async Task In_development_without_the_opt_in_key_an_empty_database_gets_no_administrator()
+    {
+        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var database = await DatabaseAsync(mongo);
+
+        await PlatformAdministratorSeed.EnsureSeededAsync(database, isDevelopment: true, optedIn: false);
 
         Assert.Equal(0, await Collection(database).CountDocumentsAsync(FilterDefinition<PlatformAdministrator>.Empty));
     }
@@ -42,7 +54,7 @@ public sealed class PlatformAdministratorSeedMeasurementTests
         await using var mongo = await DisposableMongoReplicaSet.StartAsync();
         var database = await DatabaseAsync(mongo);
 
-        await PlatformAdministratorSeed.EnsureSeededAsync(database, isDevelopment: true);
+        await PlatformAdministratorSeed.EnsureSeededAsync(database, isDevelopment: true, optedIn: true);
 
         var record = await Collection(database).Find(x => x.Id == SeedId).SingleAsync();
         Assert.Equal(PlatformAdministratorSeed.DevelopmentAdministratorEmail, record.NormalizedEmail);
@@ -59,7 +71,7 @@ public sealed class PlatformAdministratorSeedMeasurementTests
     {
         await using var mongo = await DisposableMongoReplicaSet.StartAsync();
         var database = await DatabaseAsync(mongo);
-        await PlatformAdministratorSeed.EnsureSeededAsync(database, isDevelopment: true);
+        await PlatformAdministratorSeed.EnsureSeededAsync(database, isDevelopment: true, optedIn: true);
         var collection = Collection(database);
         await collection.UpdateOneAsync(x => x.Id == SeedId, Builders<PlatformAdministrator>.Update
             .Set(x => x.ActorType, ActorType.PartnerAdmin)
@@ -68,7 +80,7 @@ public sealed class PlatformAdministratorSeedMeasurementTests
             .Set(x => x.IsDeleted, true));
         var before = await Raw(database).Find(ById(SeedId)).SingleAsync();
 
-        await PlatformAdministratorSeed.EnsureSeededAsync(database, isDevelopment: true); // the next start
+        await PlatformAdministratorSeed.EnsureSeededAsync(database, isDevelopment: true, optedIn: true); // the next start
 
         Assert.Equal(before, await Raw(database).Find(ById(SeedId)).SingleAsync());
         Assert.Equal(1, await collection.CountDocumentsAsync(FilterDefinition<PlatformAdministrator>.Empty));
@@ -83,13 +95,13 @@ public sealed class PlatformAdministratorSeedMeasurementTests
     {
         await using var mongo = await DisposableMongoReplicaSet.StartAsync();
         var database = await DatabaseAsync(mongo);
-        await PlatformAdministratorSeed.EnsureSeededAsync(database, isDevelopment: true);
+        await PlatformAdministratorSeed.EnsureSeededAsync(database, isDevelopment: true, optedIn: true);
         var collection = Collection(database);
         await collection.UpdateOneAsync(x => x.Id == SeedId, Builders<PlatformAdministrator>.Update
             .Set(x => x.Email, "renamed.seed@bl521.test")
             .Set(x => x.NormalizedEmail, "renamed.seed@bl521.test"));
 
-        await PlatformAdministratorSeed.EnsureSeededAsync(database, isDevelopment: true);
+        await PlatformAdministratorSeed.EnsureSeededAsync(database, isDevelopment: true, optedIn: true);
 
         var only = await collection.Find(FilterDefinition<PlatformAdministrator>.Empty).SingleAsync();
         Assert.Equal("renamed.seed@bl521.test", only.NormalizedEmail);
@@ -114,7 +126,7 @@ public sealed class PlatformAdministratorSeedMeasurementTests
         });
         var before = await Raw(database).Find(FilterDefinition<BsonDocument>.Empty).ToListAsync();
 
-        await PlatformAdministratorSeed.EnsureSeededAsync(database, isDevelopment: true);
+        await PlatformAdministratorSeed.EnsureSeededAsync(database, isDevelopment: true, optedIn: true);
 
         Assert.Equal(before, await Raw(database).Find(FilterDefinition<BsonDocument>.Empty).ToListAsync());
     }

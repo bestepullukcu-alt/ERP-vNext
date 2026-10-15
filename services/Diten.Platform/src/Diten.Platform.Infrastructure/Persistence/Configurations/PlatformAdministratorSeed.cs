@@ -23,10 +23,18 @@ public static class PlatformAdministratorSeed
     public static readonly Guid DevelopmentAdministratorId = Guid.Parse("11111111-1111-1111-1111-111111111111");
     public const string DevelopmentAdministratorEmail = "admin@diten.com";
 
-    /// <param name="isDevelopment">The host runs in the Development environment — THE GATE: false writes nothing.</param>
-    public static async Task EnsureSeededAsync(IMongoDatabase database, bool isDevelopment, CancellationToken ct = default)
+    /// <summary>
+    /// WP-AUTH-ADMIN-BOOTSTRAP-01 v1.1 (owner decision 2026-10-15) — the opt-in switch, the SAME key Auth's dev account seed
+    /// reads: without it no administrator record is created, even in Development. Set it only in a local, never-committed
+    /// appsettings.Development.json.
+    /// </summary>
+    public const string OptInConfigurationKey = "DevSeeds:PlatformAdmin";
+
+    /// <param name="isDevelopment">The host runs in the Development environment.</param>
+    /// <param name="optedIn">The <see cref="OptInConfigurationKey"/> switch. THE GATE is both: either false writes nothing.</param>
+    public static async Task EnsureSeededAsync(IMongoDatabase database, bool isDevelopment, bool optedIn, CancellationToken ct = default)
     {
-        if (!isDevelopment)
+        if (!isDevelopment || !optedIn)
         {
             return;
         }

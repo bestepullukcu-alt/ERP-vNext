@@ -604,7 +604,8 @@ public static class DependencyInjection
                 ?? throw new InvalidOperationException($"Configuration error: '{AuditRetentionSeedOptions.SectionName}' is missing in appsettings.json.");
             AuditRetentionPolicySeed.EnsureSeededAsync(database, auditRetentionSeedOptions).GetAwaiter().GetResult();
             // WP-AUTH-ADMIN-BOOTSTRAP-01 — Development only, create when missing; an existing record is never changed.
-            PlatformAdministratorSeed.EnsureSeededAsync(database, environment.IsDevelopment()).GetAwaiter().GetResult();
+            PlatformAdministratorSeed.EnsureSeededAsync(database, environment.IsDevelopment(),
+                configuration.GetValue<bool>(PlatformAdministratorSeed.OptInConfigurationKey)).GetAwaiter().GetResult();
             TenantSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
             NotificationTemplateSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
             // WC-4 — the platform-default messaging settings row. Without it QueueEmailNotificationHandler refuses at its
@@ -697,7 +698,8 @@ public static class DependencyInjection
                 mongoSettings,
                 configuration.GetSection(SmtpOptions.SectionName).Get<SmtpOptions>() ?? new SmtpOptions(),
                 environment.IsDevelopment(),
-                seedDevOrganizationPositions);
+                seedDevOrganizationPositions,
+                configuration.GetValue<bool>(PlatformAdministratorSeed.OptInConfigurationKey));
         }
 
         return services;
@@ -807,7 +809,8 @@ public static class DependencyInjection
         MongoDbSettings mongoSettings,
         SmtpOptions smtpOptions,
         bool isDevelopment,
-        bool seedDevOrganizationPositions)
+        bool seedDevOrganizationPositions,
+        bool seedDevPlatformAdministrator)
     {
         try
         {
@@ -819,7 +822,7 @@ public static class DependencyInjection
             ModuleDomainDeduplicationMigration.MigrateAsync(database).GetAwaiter().GetResult();
             MongoDbIndexConfigurations.EnsureIndexesAsync(database).GetAwaiter().GetResult();
             // WP-AUTH-ADMIN-BOOTSTRAP-01 — Development only, create when missing; an existing record is never changed.
-            PlatformAdministratorSeed.EnsureSeededAsync(database, isDevelopment).GetAwaiter().GetResult();
+            PlatformAdministratorSeed.EnsureSeededAsync(database, isDevelopment, seedDevPlatformAdministrator).GetAwaiter().GetResult();
             TenantSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
             NotificationTemplateSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
             // WC-4 — the platform-default messaging settings row. Without it QueueEmailNotificationHandler refuses at its
