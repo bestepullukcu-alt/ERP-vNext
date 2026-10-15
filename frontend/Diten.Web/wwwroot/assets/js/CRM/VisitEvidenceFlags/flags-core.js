@@ -7,16 +7,18 @@
  *                                device · duration · exception: the chip's tone + icon) and the value a chip carries
  *   chipsOf(row)                 a row's chips in a stable order + "QR not scanned" when qr.status = missing — that one is
  *                                NOT a flag: it is never offered by the flag filter and never sent as one (D-6)
- *   PERIODS / rangeOf(key, today, custom)   last 7 days (default) · last 30 days · this month · a custom range (≤ 92 days)
- *   rangeError(from, to)         a custom range: from ≤ to, both present, at most 92 days (both ends included)
- *   listQuery(filters, page) / summaryQuery(filters)   the CRM query strings (from, to, resourceId, flags, accountId,
- *                                onlyFlagged, page, pageSize)
+ *   PERIODS / rangeOf(key, today, custom)   last 7 days (the baseline "") · last 30 days · this month · a custom range
+ *                                (≤ 92 days) — the twin of the Web proxy's ResolveRange (the proxy computes the CRM window)
+ *   rangeError(from, to) / customRangeError(period, from, to)   a custom range: from ≤ to, both present, at most 92 days
+ *                                (both ends included); a preset never has an error — a bad range is never sent (W3E-FLAGS-STD)
+ *   summaryQuery(applied)        the summary read of the list's APPLIED filters (period, custom from / to, rep) — the card
+ *                                and the rep summary follow the one filter state of the list
  *   summaryBars(byFlag, max)     the flag-type bars: the top `max`, the rest summed as "Other (N types)" (D-11)
  *   duration(seconds)            "18 dk" / "1 dk 40 sn" / "40 sn" as { key, args }
  *   distance(meters)             "820 m" / "198,3 km" (≥ 1000 m, one decimal) as { key, args, digits } (W3E-FIX G-8)
  *   accountOptions(entries) / sameNameIds(entries)   the institution filter: same names told apart by city / code (G-7)
  *   qrResult(qr, kind, exception)   the drawer's QR result key; device(row)  the platform / app / verdict keys
- *   pageRange(total, page, size) "1–10 of 37"; repRate(started, flagged) the rate in tenths
+ *   repRate(started, flagged)    the rate in tenths
  *   errorKey(response)           a CRM refusal → the user's text key (never a raw code)
  */
 (function (root, factory) {
@@ -112,8 +114,8 @@
 
     // ── the period ───────────────────────────────────────────────────────────────────────────────────────────
     const MAX_RANGE_DAYS = 92;
-    const PERIODS = ['last7', 'last30', 'month', 'custom'];
-    const PAGE_SIZE = 10;
+    /** The period filter's values: "" (the baseline) is the last 7 days. */
+    const PERIODS = ['', 'last30', 'month', 'custom'];
 
     const dayNo = iso => {
         const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || ''));
@@ -127,7 +129,7 @@
         if (key === 'last30') { return { from: isoOf(t - 29), to: today }; }
         if (key === 'month') { return { from: String(today).slice(0, 8) + '01', to: today }; }
         if (key === 'custom') { return { from: (custom && custom.from) || '', to: (custom && custom.to) || '' }; }
-        return { from: isoOf(t - 6), to: today };
+        return { from: isoOf(t - 6), to: today };   // "" / last7
     };
 
     /** A custom range's error key, or null (the CRM refuses > 92 days with visit_evidence_flags_range_invalid). */
@@ -138,17 +140,21 @@
         return b - a + 1 > MAX_RANGE_DAYS ? 'ErrRangeLong' : null;
     };
 
+    /** The staged / applied period's error key, or null: only a custom range can be wrong (W3E-FLAGS-STD — never sent). */
+    const customRangeError = (period, from, to) => (period === 'custom' ? rangeError(from, to) : null);
+
     const qs = pairs => pairs.filter(p => p[1] !== null && p[1] !== undefined && p[1] !== '')
         .map(p => encodeURIComponent(p[0]) + '=' + encodeURIComponent(p[1])).join('&');
 
-    /** The list query. Only REAL flag codes go in `flags` ("QR not scanned" is never one). */
-    const listQuery = (f, page) => {
-        const flags = (f.flags || []).filter(c => FLAG_CODES.indexOf(c) > -1);
-        return '?' + qs([['from', f.from], ['to', f.to], ['resourceId', f.resourceId], ['flags', flags.join(',')],
-            ['accountId', f.accountId], ['onlyFlagged', f.onlyFlagged ? 'true' : 'false'], ['page', page || 1], ['pageSize', PAGE_SIZE]]);
+    /**
+     * The summary read of the list's APPLIED filters (the factory's filter keys): the period, the custom from / to (only
+     * for "custom"), the rep. Never a page size (the rep summary is a bounded set, client mode) and never a flag.
+     */
+    const summaryQuery = applied => {
+        const a = applied || {};
+        const custom = a.period === 'custom';
+        return '?' + qs([['period', a.period], ['from', custom ? a.from : ''], ['to', custom ? a.to : ''], ['resourceId', a.resourceId]]);
     };
-
-    const summaryQuery = f => '?' + qs([['from', f.from], ['to', f.to], ['resourceId', f.resourceId]]);
 
     /** The flag-type bars: [{ code, key, count, pct }] of the top `max` + { count, types } of the rest ("Other"). */
     const summaryBars = (byFlag, max) => {
@@ -168,15 +174,6 @@
 
     /** The rate in percent with one decimal (9.0), 0 without starts. */
     const repRate = (started, flagged) => (started > 0 ? Math.round(flagged * 1000 / started) / 10 : 0);
-
-    /** "1–10 of 37": { from, to, total }. */
-    const pageRange = (total, page, size) => {
-        const t = Math.max(0, Number(total) || 0);
-        const s = size || PAGE_SIZE;
-        const p = Math.max(1, Number(page) || 1);
-        return t === 0 ? { from: 0, to: 0, total: 0 } : { from: (p - 1) * s + 1, to: Math.min(t, p * s), total: t };
-    };
-    const pageCount = (total, size) => Math.max(1, Math.ceil((Number(total) || 0) / (size || PAGE_SIZE)));
 
     // ── the drawer ───────────────────────────────────────────────────────────────────────────────────────────
     /** The QR result's label key: not asked (off / remote), each verdict, "not scanned · exception". */
@@ -248,7 +245,7 @@
     };
 
     return {
-        CATS, FLAGS, FLAG_CODES, NOT_SCANNED, MAX_RANGE_DAYS, PERIODS, PAGE_SIZE, flagOf, chipsOf, duration, durationExact, distance, accountOptions, sameNameIds, rangeOf, rangeError,
-        listQuery, summaryQuery, summaryBars, repRate, pageRange, pageCount, qrResult, device, initials, ERROR_CODES, errorKey
+        CATS, FLAGS, FLAG_CODES, NOT_SCANNED, MAX_RANGE_DAYS, PERIODS, flagOf, chipsOf, duration, durationExact, distance, accountOptions, sameNameIds, rangeOf, rangeError,
+        customRangeError, summaryQuery, summaryBars, repRate, qrResult, device, initials, ERROR_CODES, errorKey
     };
 }));

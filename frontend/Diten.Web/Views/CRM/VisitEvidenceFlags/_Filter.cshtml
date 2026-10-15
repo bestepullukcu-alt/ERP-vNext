@@ -1,0 +1,75 @@
+@model Diten.Web.Models.CRM.VisitEvidenceFlagsViewModel
+@using Diten.Web.Views.CRM.VisitEvidenceFlags
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<VisitEvidenceFlagsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* W3E-FLAGS-STD (K-STD) — the inline collapse filter of the standard. ONE filter state for the visits list, the summary card
+   and the rep summary (Save View keeps it). The option texts that depend on today (the period labels) or on the data (the
+   reps, the institutions) are written by index.js through loadOptions; the baseline value "" of each select is the default:
+   the last 7 days, every rep of my scope, every institution. The custom range is the shared date field (.diten-field + the
+   calendar icon that OPENS it, diten-datefield.js) and is shown only for "custom". "Only flagged" is a switch over the
+   hidden "scope" value ("" = only flagged, the baseline; "all" = every visit) — the factory reads values, not checkboxes. *@
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+
+                    @* Filter Chip: Period (the baseline "" = the last 7 days) *@
+                    <div class="filter-chip filter-period">
+                        <select id="filterPeriod" class="form-select form-select-sm select2" data-placeholder="@Localizer["PeriodLabel"]">
+                            <option value=""></option>
+                            <option value="last30"></option>
+                            <option value="month"></option>
+                            <option value="custom"></option>
+                        </select>
+                    </div>
+
+                    @* The custom range (≤ 92 days): two shared date fields *@
+                    <div class="filter-chip filter-range d-none d-flex align-items-center gap-2" id="filterRange">
+                        <div class="diten-field"><i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i><input type="text" class="form-control form-control-sm flatpickr-date" id="vf-from" autocomplete="off" aria-label="@Localizer["CustomFrom"]" placeholder="@Localizer["CustomFrom"]" /></div>
+                        <span class="text-muted">–</span>
+                        <div class="diten-field"><i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i><input type="text" class="form-control form-control-sm flatpickr-date" id="vf-to" autocomplete="off" aria-label="@Localizer["CustomTo"]" placeholder="@Localizer["CustomTo"]" /></div>
+                    </div>
+
+                    @* Filter Chip: Rep (my team; the tenant with read-all) *@
+                    <div class="filter-chip filter-rep">
+                        <select id="filterRep" class="form-select form-select-sm select2" data-placeholder="@Localizer["RepLabel"]">
+                            <option value=""></option>
+                        </select>
+                    </div>
+
+                    @* Filter Chip: Flag types (many). Only the REAL flags — "QR not scanned" is not a flag (D-6). *@
+                    <div class="filter-chip filter-flags">
+                        <select id="filterFlags" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["FlagTypeLabel"]">
+                        </select>
+                    </div>
+
+                    @* Filter Chip: Institution (same names told apart by city / code — W3E-FIX G-7) *@
+                    <div class="filter-chip filter-account">
+                        <select id="filterAccount" class="form-select form-select-sm select2" data-placeholder="@Localizer["AccountLabel"]">
+                            <option value=""></option>
+                        </select>
+                    </div>
+
+                    @* "Only flagged" — the switch writes the hidden scope value *@
+                    <div class="filter-chip filter-scope form-check form-switch m-0">
+                        <input type="hidden" id="filterScope" value="" />
+                        <input class="form-check-input" type="checkbox" role="switch" id="vf-only" checked />
+                        <label class="form-check-label" for="vf-only">@Localizer["OnlyFlagged"]</label>
+                    </div>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">
+                            @SharedLocalizer["Apply"]
+                        </button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">
+                            @SharedLocalizer["Reset"]
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

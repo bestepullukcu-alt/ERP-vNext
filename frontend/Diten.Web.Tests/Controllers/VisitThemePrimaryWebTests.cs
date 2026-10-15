@@ -30,6 +30,14 @@ public sealed class VisitThemePrimaryWebTests
         "#5f61e6", "#a5a6ff", "#7b7eff", "#35366a", "#a3a5ff", "#6d70e8"
     ];
 
+    /// <summary>The family as rgb patterns: "#e0e2f3" → <c>\b224\s*[,\s]\s*226\s*[,\s]\s*243\b</c> (rgb() / rgba(), comma or space).</summary>
+    public static IEnumerable<(string Hex, string Pattern)> OldPrimaryFamilyRgb()
+        => OldPrimaryFamily.Select(hex =>
+        {
+            var n = Convert.ToInt32(hex[1..], 16);
+            return (hex, $@"\b{(n >> 16) & 255}\s*[,\s]\s*{(n >> 8) & 255}\s*[,\s]\s*{n & 255}\b");
+        });
+
     [Fact]
     public void T1_no_visit_file_hard_codes_the_old_navy_or_purple_family()
     {
@@ -41,7 +49,12 @@ public sealed class VisitThemePrimaryWebTests
                 Assert.False(text.Contains(hex, StringComparison.OrdinalIgnoreCase), $"{file}: {hex}");
             }
 
-            Assert.False(Regex.IsMatch(text, @"\b11,\s*26,\s*140\b|\b105,\s*108,\s*255\b"), $"{file}: an rgb of the old primary");
+            // W3E-FLAGS-STD (CT-5) — every hex of the family in its rgb form too (rgba(224, 226, 243, .45) is #e0e2f3), comma or
+            // space separated: a tone written as rgb() must not slip past the hex list
+            foreach (var (hex, rgb) in OldPrimaryFamilyRgb())
+            {
+                Assert.False(Regex.IsMatch(text, rgb), $"{file}: the rgb form of {hex}");
+            }
             Assert.Contains("--bs-primary", text);                                                   // it takes the layout's colour
         }
     }

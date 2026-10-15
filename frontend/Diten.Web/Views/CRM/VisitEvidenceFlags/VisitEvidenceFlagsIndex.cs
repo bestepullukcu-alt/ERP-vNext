@@ -2,6 +2,7 @@ namespace Diten.Web.Views.CRM.VisitEvidenceFlags;
 
 /// <summary>
 /// Localization marker for the WP-VW-W3E (W3E-WEB-b) visit evidence flags page (tenant module: 7 languages).
+/// W3E-FLAGS-STD — the script keys travel in the standard L10n payload (_IndexL10n.cshtml → index.l10n.js → window.L10n).
 /// <see cref="ScriptKeys"/> are the strings the page script reads (window.VisitEvidenceFlagsL10n) — ONE list, so the view
 /// serializes exactly these and the tests check exactly these in every language; <see cref="ViewKeys"/> the strings the
 /// view writes itself.
@@ -26,15 +27,15 @@ public sealed class VisitEvidenceFlagsIndex
         "XRule_location_info", "XRule_photo_optional", "XRule_account_without_location_allow", "XRule_qr_optional",
         "ErrRangeMissing", "ErrRangeOrder", "ErrRangeLong", "Err_visit_evidence_flags_range_invalid",
         "Err_visit_evidence_flags_filter_invalid", "Err_visit_evidence_flags_not_found", "Err_permission_denied",
-        "Err_unavailable", "Err_generic"
+        "Err_unavailable", "Err_generic", "QuickView", "OpenVisit", "TabVisits"
     ];
 
     /// <summary>The strings the view itself writes (headings, buttons, labels).</summary>
     public static readonly string[] ViewKeys =
     [
-        "PageTitle", "Intro", "SumStarted", "SumFlagged", "SumReview", "SumByFlag", "SumByFlagNote", "PeriodLabel",
+        "PageTitle", "PageDescription", "SumStarted", "SumFlagged", "SumReview", "SumByFlag", "SumByFlagNote", "PeriodLabel",
         "CustomFrom", "CustomTo", "RepLabel", "AccountLabel", "OnlyFlagged", "TabVisits", "TabReps", "ColStart", "ColRep",
         "ColTarget", "ColKind", "ColFlags", "ColDuration", "ColException", "ColStarted", "ColFlagged", "ColRate", "ColTopFlag",
-        "RepsHint", "DrawerTitle", "CloseButton", "OpenVisit"
+        "RepsHint", "DrawerTitle", "CloseButton", "OpenVisit", "FlagTypeLabel", "ColActions"
     ];
 }

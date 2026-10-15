@@ -2,6 +2,7 @@
 @using Diten.Web.Views.CRM.VisitEvidenceFlags
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<VisitEvidenceFlagsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 @{
     ViewData["Title"] = Localizer["PageTitle"].Value;
     Layout = "_LayoutTenantShell";
@@ -9,11 +10,13 @@
 }
 
 @*
-    WP-VW-W3E (W3E-WEB-b) — the manager's visit evidence flags (mockup "W3E Ek Kanitlar" M1–M6): the summary strip (started,
-    flagged + rate, the flag-type bars with "Other (N types)"), the filters (period ≤ 92 days, rep, flag types, institution,
-    "only flagged"), the visits list + paging, the right drawer (location, QR, device, duration + slides, the photo through
-    the existing evidence path with its own keys, the exception link, "open the visit") and the rep summary (a row filters
-    the list to that rep). Read only (K-W3E-11). Every call is a same-origin proxy under /CRM/VisitEvidenceFlags/api/*.
+    WP-VW-W3E · the manager's visit evidence flags (mockup "W3E Ek Kanitlar" M1–M6) — W3E-FLAGS-STD (K-STD): the Golden
+    Compact LIST STANDARD (frontend-datatable-template.md). The standard wins over the mockup; the mockup gives the content
+    (the columns, the chip words and values, the states). Order: the inline filter (period ≤ 92 days · rep · flag types ·
+    institution · "only flagged") → the list header → the summary card (started, flagged + rate, the flag-type bars with
+    "Other (N types)") → the tabs "Visits" (the server-mode table: the CRM pages the visits, newest start first) / "Rep
+    summary" (the bounded rep set of the summary read, client mode; a row filters the visits to that rep) → the quick view
+    (M2). ONE filter state for the card and both tables; Save View keeps it. Read only: no selection, no bulk bar.
     UAS-001: without a flags read key NOTHING but the notice.
 *@
 @if (!Model.CanRead)
@@ -22,86 +25,89 @@
     return;
 }
 
-@* U-3 — the list page header standard (frontend-datatable-template.md): div.mb-3 > h5.mb-0 + p.mb-0.text-muted *@
+@* ① Inline Filter partial *@
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/CRM/VisitEvidenceFlags/_Filter.cshtml" model="Model" />
+
 <div class="mb-3">
     <h5 class="mb-0">@Localizer["PageTitle"]</h5>
-    <p class="mb-0 text-muted">@Localizer["Intro"]</p>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
 </div>
 
-<div id="vf-root" class="vf-page"
-     data-api-base="/CRM/VisitEvidenceFlags/api"
+<div id="vf-root" class="d-none"
      data-can-read-all="@Model.CanReadAll.ToString().ToLowerInvariant()"
      data-can-see-photos="@Model.CanSeePhotos.ToString().ToLowerInvariant()"
      data-visit-url="/CRM/VisitReport"
-     data-exception-url="/CRM/VisitEvidenceSettings">
+     data-exception-url="/CRM/VisitEvidenceSettings"></div>
 
-    <div class="vf-alert vf-alert-danger d-none" id="vf-error" role="alert"></div>
+@* M1 — the summary card (the summary read; the same filter state as the tables) *@
+<div class="card mb-4 vf-summary" id="vf-summary">
+    <div class="vf-stat"><span class="vf-stat-label">@Localizer["SumStarted"]</span><span class="vf-stat-value" id="vf-sum-started">—</span><span class="vf-sub" id="vf-sum-range"></span></div>
+    <div class="vf-stat"><span class="vf-stat-label">@Localizer["SumFlagged"]</span><span class="vf-row"><span class="vf-stat-value" id="vf-sum-flagged">—</span><span class="vf-pill vf-tone-warning" id="vf-sum-rate"></span></span><span class="vf-sub">@Localizer["SumReview"]</span></div>
+    <div class="vf-bars-wrap"><div class="vf-sub"><span class="vf-strong-sub">@Localizer["SumByFlag"]</span> · @Localizer["SumByFlagNote"]</div><div class="vf-bars" id="vf-bars"></div></div>
+</div>
 
-    @* M1 — the summary strip *@
-    <div class="vf-card vf-summary" id="vf-summary">
-        <div class="vf-stat"><span class="vf-stat-label">@Localizer["SumStarted"]</span><span class="vf-stat-value" id="vf-sum-started">—</span><span class="vf-sub" id="vf-sum-range"></span></div>
-        <div class="vf-stat"><span class="vf-stat-label">@Localizer["SumFlagged"]</span><span class="vf-row"><span class="vf-stat-value" id="vf-sum-flagged">—</span><span class="vf-pill vf-tone-warning" id="vf-sum-rate"></span></span><span class="vf-sub">@Localizer["SumReview"]</span></div>
-        <div class="vf-bars-wrap"><div class="vf-sub"><span class="vf-strong-sub">@Localizer["SumByFlag"]</span> · @Localizer["SumByFlagNote"]</div><div class="vf-bars" id="vf-bars"></div></div>
+<ul class="nav nav-tabs mb-0 vf-tabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button type="button" class="nav-link active" id="vf-tab-visits" data-bs-toggle="tab" data-bs-target="#vf-pane-visits" role="tab" aria-controls="vf-pane-visits" aria-selected="true"><i class="bx bx-list-ul me-1"></i>@Localizer["TabVisits"]</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button type="button" class="nav-link" id="vf-tab-reps" data-bs-toggle="tab" data-bs-target="#vf-pane-reps" role="tab" aria-controls="vf-pane-reps" aria-selected="false"><i class="bx bx-user-voice me-1"></i>@Localizer["TabReps"]</button>
+    </li>
+</ul>
+
+<div class="tab-content p-0 vf-tab-content">
+    @* M1 / M4 — the visits: the server-mode Golden Compact table *@
+    <div class="tab-pane fade show active" id="vf-pane-visits" role="tabpanel" aria-labelledby="vf-tab-visits">
+        @* Contract markers are rendered by _DataTable.cshtml: the shared <partial name="_TableSkeleton" /> (which carries id="skeleton-loader"), <table id="dt-visitevidenceflags" data-dt-standard="v2"> *@
+        <partial name="~/Views/CRM/VisitEvidenceFlags/_DataTable.cshtml" />
     </div>
 
-    <div class="vf-card">
-        @* the filters *@
-        <div class="vf-filters">
-            <select class="vf-select" id="vf-period" aria-label="@Localizer["PeriodLabel"]"></select>
-            @* U-2 — the shared date field: .diten-field + the calendar icon that OPENS it (diten-datefield.js) *@
-            <span class="vf-custom d-none" id="vf-custom">
-                <span class="diten-field vf-date"><i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i><input type="text" class="form-control flatpickr-date" id="vf-from" autocomplete="off" aria-label="@Localizer["CustomFrom"]" /></span>
-                <span class="vf-sub">–</span>
-                <span class="diten-field vf-date"><i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i><input type="text" class="form-control flatpickr-date" id="vf-to" autocomplete="off" aria-label="@Localizer["CustomTo"]" /></span>
-            </span>
-            <select class="vf-select" id="vf-rep" aria-label="@Localizer["RepLabel"]"></select>
-            <div class="vf-multi" id="vf-flag-filter">
-                <button type="button" class="vf-select vf-multi-btn" id="vf-flag-btn" aria-haspopup="true" aria-expanded="false"><span id="vf-flag-text"></span><i class="bx bx-chevron-down"></i></button>
-                <div class="vf-multi-menu d-none" id="vf-flag-menu" role="group"></div>
-            </div>
-            <select class="vf-select" id="vf-account" aria-label="@Localizer["AccountLabel"]"></select>
-            <label class="vf-toggle"><input type="checkbox" id="vf-only" checked /> <span class="vf-switch" aria-hidden="true"></span> @Localizer["OnlyFlagged"]</label>
-        </div>
-        <span class="vf-err d-none" id="vf-range-error" role="alert"></span>
-
-        <div class="vf-tabs" role="tablist">
-            <button type="button" role="tab" class="vf-tab active" data-tab="visits" aria-selected="true"><i class="bx bx-list-ul"></i> @Localizer["TabVisits"]</button>
-            <button type="button" role="tab" class="vf-tab" data-tab="reps" aria-selected="false"><i class="bx bx-user-voice"></i> @Localizer["TabReps"]</button>
-        </div>
-
-        @* M1 / M4 — the visits *@
-        <div id="vf-pane-visits">
-            <div class="vf-table-wrap">
-                <table class="vf-table">
-                    <thead><tr><th>@Localizer["ColStart"]</th><th>@Localizer["ColRep"]</th><th>@Localizer["ColTarget"]</th><th>@Localizer["ColKind"]</th><th>@Localizer["ColFlags"]</th><th>@Localizer["ColDuration"]</th><th>@Localizer["ColException"]</th></tr></thead>
-                    <tbody id="vf-rows"></tbody>
+    @* M3 — the rep summary: the summary read's rep set (bounded: my team / the tenant's reps), client mode, no page size *@
+    <div class="tab-pane fade" id="vf-pane-reps" role="tabpanel" aria-labelledby="vf-tab-reps">
+        <div class="card">
+            <div class="card-datatable table-responsive">
+                <table id="dt-vf-reps" data-dt-standard="v2" data-dt-data-mode="client" class="datatables-vf-reps table border-top">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th class="all">@Localizer["ColRep"]</th>
+                            <th>@Localizer["ColStarted"]</th>
+                            <th>@Localizer["ColFlagged"]</th>
+                            <th>@Localizer["ColRate"]</th>
+                            <th>@Localizer["ColTopFlag"]</th>
+                            <th class="cell-fit text-end pe-3 all">@Localizer["ColActions"]</th>
+                        </tr>
+                    </thead>
                 </table>
             </div>
-            <div class="vf-empty d-none" id="vf-empty"><i class="bx bx-check-shield"></i><strong id="vf-empty-title"></strong><span class="vf-sub" id="vf-empty-text"></span></div>
-            <div class="vf-pager" id="vf-pager"><span class="vf-sub" id="vf-page-text"></span><div class="vf-pages" id="vf-pages"></div></div>
-        </div>
-
-        @* M3 — the rep summary *@
-        <div class="d-none" id="vf-pane-reps">
-            <div class="vf-table-wrap">
-                <table class="vf-table">
-                    <thead><tr><th>@Localizer["ColRep"]</th><th>@Localizer["ColStarted"]</th><th>@Localizer["ColFlagged"]</th><th>@Localizer["ColRate"]</th><th>@Localizer["ColTopFlag"]</th><th aria-hidden="true"></th></tr></thead>
-                    <tbody id="vf-rep-rows"></tbody>
-                </table>
-            </div>
-            <div class="vf-sub vf-pad">@Localizer["RepsHint"]</div>
+            <div class="card-footer text-muted small py-3">@Localizer["RepsHint"]</div>
         </div>
     </div>
 </div>
 
-@* M2 — the right drawer *@
-<div class="offcanvas offcanvas-end vf-drawer" tabindex="-1" id="vf-drawer" aria-labelledby="vf-drawer-title">
-    <div class="vf-drawer-head">
-        <div class="vf-col"><h5 class="vf-drawer-title" id="vf-drawer-title">@Localizer["DrawerTitle"]</h5><span class="vf-sub" id="vf-drawer-sub"></span><span class="vf-sub" id="vf-drawer-target"></span></div>
-        <button type="button" class="vf-x" data-bs-dismiss="offcanvas" aria-label="@Localizer["CloseButton"]"><i class="bx bx-x"></i></button>
+@* ④ Quick view (M2) — the standard offcanvas; the visit's evidence, read once per open *@
+<div class="offcanvas offcanvas-end vf-drawer" tabindex="-1" id="offcanvasDetailsPreview" aria-labelledby="oc-title" style="width: 480px;">
+    <div class="offcanvas-header border-bottom">
+        <div class="d-flex align-items-center">
+            <div class="avatar avatar-md bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center me-3">
+                <i class="bx bx-shield-quarter fs-4"></i>
+            </div>
+            <div>
+                <h5 id="oc-title" class="offcanvas-title mb-0">@Localizer["DrawerTitle"]</h5>
+                <small id="oc-subtitle" class="text-muted d-block">-</small>
+                <small id="oc-target" class="text-muted d-block"></small>
+            </div>
+        </div>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@Localizer["CloseButton"]"></button>
     </div>
-    <div class="offcanvas-body vf-col vf-gap" id="vf-drawer-body"></div>
-    <div class="vf-drawer-foot"><a class="vf-btn vf-btn-o" id="vf-open-visit" href="#">@Localizer["OpenVisit"] <i class="bx bx-right-arrow-alt vf-flip"></i></a></div>
+    <div class="offcanvas-body flex-grow-1 p-0">
+        <div class="p-4 d-flex flex-column gap-3" id="oc-details-list"></div>
+    </div>
+    <div class="offcanvas-footer border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary flex-grow-1" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <a id="oc-btn-edit" href="#" class="btn btn-primary flex-grow-1">@Localizer["OpenVisit"] <i class="bx bx-right-arrow-alt vf-flip ms-1"></i></a>
+    </div>
 </div>
 
 @section Styles {
@@ -109,12 +115,12 @@
 }
 
 @section Scripts {
-    <script>
-        window.VisitEvidenceFlagsL10n = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
-            VisitEvidenceFlagsIndex.ScriptKeys.ToDictionary(k => k, k => Localizer[k].Value)));
-    </script>
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/CRM/VisitEvidenceFlags/_IndexL10n.cshtml" />
+    <script src="~/assets/js/CRM/VisitEvidenceFlags/index.l10n.js" asp-append-version="true"></script>
     <script src="~/assets/js/CRM/VisitPlanning/format.js" asp-append-version="true"></script>
     <script src="~/assets/js/shared/diten-datefield.js" asp-append-version="true"></script>
     <script src="~/assets/js/CRM/VisitEvidenceFlags/flags-core.js" asp-append-version="true"></script>
-    <script src="~/assets/js/CRM/VisitEvidenceFlags/visit-evidence-flags.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/VisitEvidenceFlags/rep-summary.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/VisitEvidenceFlags/index.js" asp-append-version="true"></script>
 }

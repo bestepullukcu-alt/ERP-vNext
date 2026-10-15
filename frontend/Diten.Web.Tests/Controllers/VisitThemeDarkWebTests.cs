@@ -47,7 +47,8 @@ public sealed class VisitThemeDarkWebTests
         Assert.Contains(".vw-e3-box { background: var(--vw-card);", css);
         Assert.Contains("var(--vw-soft) 0 8px, var(--vw-card) 8px 16px)", css);                         // the photo area
         Assert.Contains("--fc-today-bg-color: var(--vw-today);", css);                                   // the calendar's today
-        Assert.Contains("--vw-today: rgba(224, 226, 243, .45);", css);                                   // light: as before
+        Assert.Contains("--vw-today: rgba(var(--bs-primary-rgb), .06);", css);                           // light: W3E-FLAGS-STD (CT-5) — the layout primary, not the old #e0e2f3 tone
+        Assert.Contains("--vw-today: rgba(var(--bs-primary-rgb), .14);", css);                           // dark: unchanged (W3E-DARK)
         Assert.DoesNotContain("rgba(34, 48, 62, .08)", css[css.IndexOf("[dir=\"rtl\"] .vw-flip", StringComparison.Ordinal)..]); // shadows are tokens
     }
 

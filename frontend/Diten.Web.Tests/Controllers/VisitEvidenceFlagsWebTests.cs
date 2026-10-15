@@ -212,27 +212,6 @@ public sealed partial class VisitEvidenceFlagsWebTests
         Assert.Contains("data-visit-url=\"/CRM/VisitReport\"", view);
     }
 
-    [Theory]
-    [InlineData("List", "/api/crm/visit-evidence-flags?from=2026-10-08&to=2026-10-14&onlyFlagged=true")]
-    [InlineData("Summary", "/api/crm/visit-evidence-flags/summary?from=2026-10-08&to=2026-10-14&onlyFlagged=true")]
-    [InlineData("Detail", "/api/crm/visit-evidence-flags/" + Id)]
-    public async Task C2_every_read_proxy_goes_to_its_crm_path_with_a_flags_key_and_is_refused_without_one(string action, string path)
-    {
-        var denied = Arrange(PhotoKeys);
-        Assert.Equal(403, Status(await Invoke(denied.Controller, action)));
-        Assert.Empty(denied.Gateway.Requests);
-
-        foreach (var key in new[] { Read, ReadAll })
-        {
-            var (gateway, controller) = Arrange(key);
-            Assert.Equal(200, Status(await Invoke(controller, action)));
-            var request = Assert.Single(gateway.Requests);
-            Assert.Equal("GET", request.Method);
-            Assert.Equal(GatewayUrl + path, request.Uri);
-            Assert.Equal(TenantId.ToString(), request.Tenant);
-        }
-    }
-
     [Fact]
     public async Task C3_the_photo_goes_through_the_existing_evidence_path_and_needs_the_flags_key_and_all_three_photo_keys()
     {
@@ -258,16 +237,17 @@ public sealed partial class VisitEvidenceFlagsWebTests
               max: C.MAX_RANGE_DAYS,
               ok92: C.rangeError('2026-07-15', '2026-10-14'), long93: C.rangeError('2026-07-14', '2026-10-14'), order: C.rangeError('2026-10-14', '2026-10-01'), missing: C.rangeError('', '2026-10-01'),
               last7: C.rangeOf('last7', '2026-10-14'), last30: C.rangeOf('last30', '2026-10-14'), month: C.rangeOf('month', '2026-10-14'), periods: C.PERIODS,
-              list: C.listQuery({ from: '2026-10-08', to: '2026-10-14', resourceId: 'rep-2', flags: ['location_far', 'qr_missing', 'short_visit'], accountId: 'acc-1', onlyFlagged: false }, 3),
-              listDefault: C.listQuery({ from: '2026-10-08', to: '2026-10-14', flags: [], onlyFlagged: true }),
-              summary: C.summaryQuery({ from: '2026-10-08', to: '2026-10-14', resourceId: 'rep-2', flags: ['x'] }),
+              summary: C.summaryQuery({ period: 'last30', from: '2026-01-01', to: '2026-01-31', resourceId: 'rep-2', flags: ['location_far'], accountId: 'a', scope: 'all' }),
+              summaryCustom: C.summaryQuery({ period: 'custom', from: '2026-09-01', to: '2026-09-30', resourceId: '' }),
+              summaryBaseline: C.summaryQuery({ period: '', from: '', to: '', resourceId: '', flags: [], accountId: '', scope: '' }),
+              custom: [C.customRangeError('custom', '2026-07-15', '2026-10-14'), C.customRangeError('custom', '2026-07-14', '2026-10-14'), C.customRangeError('last30', '2026-01-01', '2026-12-31'), C.customRangeError('', '', '')],
               codes: C.FLAG_CODES, chips: C.chipsOf(row), noQrChip: C.chipsOf({ flags: [], qr: { status: 'ok' } }), bars,
               d1: C.duration(100), d2: C.duration(1080), d3: C.duration(40), dx: C.durationExact(710),
               qr: [C.qrResult({ status: 'missing' }, 'in_person', { id: 'x' }), C.qrResult({ status: 'missing' }, 'in_person', null), C.qrResult({ status: 'ok' }, 'remote', null), C.qrResult(null, 'in_person', null), C.qrResult({ status: 'wrong_account' }, 'in_person', null)],
               web: C.device({ kind: 'in_person', device: { platform: 'web', appVersion: 'Safari 18 · iPadOS' } }),
               android: C.device({ kind: 'in_person', device: { platform: 'android', appVersion: '2.4.1', integrityVerdict: 'passed' } }),
               mock: C.device({ kind: 'in_person', device: { platform: 'android', appVersion: '2.4.1', mockLocation: true, integrityVerdict: 'passed' } }),
-              rate: C.repRate(412, 37), page: C.pageRange(37, 4, 10), pages: C.pageCount(37, 10),
+              rate: C.repRate(412, 37),
               err: [C.errorKey({ status: 400, body: { errors: ['visit_evidence_flags_range_invalid'] } }), C.errorKey({ status: 403, body: {} }), C.errorKey({ status: 500, body: {} })]
             }));
             """);
@@ -281,12 +261,14 @@ public sealed partial class VisitEvidenceFlagsWebTests
         Assert.Equal("2026-10-08", r.GetProperty("last7").GetProperty("from").GetString());
         Assert.Equal("2026-09-15", r.GetProperty("last30").GetProperty("from").GetString());
         Assert.Equal("2026-10-01", r.GetProperty("month").GetProperty("from").GetString());
-        Assert.Equal("last7", r.GetProperty("periods")[0].GetString());
+        Assert.Equal(["", "last30", "month", "custom"], r.GetProperty("periods").EnumerateArray().Select(x => x.GetString()));   // "" (the baseline) = the last 7 days
 
-        // the filters → the CRM query: "QR not scanned" never goes in flags
-        Assert.Equal("?from=2026-10-08&to=2026-10-14&resourceId=rep-2&flags=location_far%2Cshort_visit&accountId=acc-1&onlyFlagged=false&page=3&pageSize=10", r.GetProperty("list").GetString());
-        Assert.Equal("?from=2026-10-08&to=2026-10-14&onlyFlagged=true&page=1&pageSize=10", r.GetProperty("listDefault").GetString());
-        Assert.Equal("?from=2026-10-08&to=2026-10-14&resourceId=rep-2", r.GetProperty("summary").GetString());
+        // W3E-FLAGS-STD — the summary read of the APPLIED filters: the period, the custom range only for "custom", the rep —
+        // never a page size (the rep summary is client mode), never a flag / institution / scope
+        Assert.Equal("?period=last30&resourceId=rep-2", r.GetProperty("summary").GetString());
+        Assert.Equal("?period=custom&from=2026-09-01&to=2026-09-30", r.GetProperty("summaryCustom").GetString());
+        Assert.Equal("?", r.GetProperty("summaryBaseline").GetString());
+        Assert.Equal("[null,\"ErrRangeLong\",null,null]", r.GetProperty("custom").GetRawText());                                   // 92 ok · 93 refused · a preset never
         var codes = r.GetProperty("codes").EnumerateArray().Select(x => x.GetString()).ToArray();
         Assert.Equal(14, codes.Length);
         Assert.DoesNotContain("qr_missing", codes);
@@ -321,104 +303,7 @@ public sealed partial class VisitEvidenceFlagsWebTests
         Assert.Equal("Verdict_passed", r.GetProperty("android").GetProperty("verdictKey").GetString());
         Assert.Equal("Verdict_mock", r.GetProperty("mock").GetProperty("verdictKey").GetString());
         Assert.Equal(9.0, r.GetProperty("rate").GetDouble());
-        Assert.Equal(31, r.GetProperty("page").GetProperty("from").GetInt32());
-        Assert.Equal(37, r.GetProperty("page").GetProperty("to").GetInt32());
-        Assert.Equal(4, r.GetProperty("pages").GetInt32());
         Assert.Equal(["Err_visit_evidence_flags_range_invalid", "Err_permission_denied", "Err_unavailable"], r.GetProperty("err").EnumerateArray().Select(x => x.GetString()));
-    }
-
-    [Fact]
-    public void C5_the_team_page_summary_filters_list_rep_filter_paging_and_the_drawer()
-    {
-        var r = FlagsSmoke("team");
-        if (r is null) { return; }
-        var s = r.Value;
-        var tr = FlagsResx("tr");
-        Assert.Equal(JsonValueKind.Null, s.GetProperty("createError").ValueKind);
-
-        // the first load: the last 7 days, only flagged, page 1 + the summary of the same period
-        var first = s.GetProperty("firstCalls").EnumerateArray().Select(x => x.GetString()!).ToArray();
-        Assert.Contains("/api/flags?from=2026-10-08&to=2026-10-14&onlyFlagged=true&page=1&pageSize=10", first);
-        Assert.Contains(first, u => u.StartsWith("/api/summary?from=2026-10-08&to=2026-10-14", StringComparison.Ordinal));
-
-        // M1 — the summary strip
-        Assert.Equal("412", s.GetProperty("started").GetString());
-        Assert.Equal("37", s.GetProperty("flagged").GetString());
-        Assert.Contains("9,0", s.GetProperty("rate").GetString());
-        var bars = s.GetProperty("bars").GetString()!;
-        Assert.Contains(Encode(tr["Flag_device_unverified"]), bars);
-        Assert.Contains(Encode(Fmt(tr["SumOther"], 4)), bars);
-        Assert.DoesNotContain(Encode(tr["Flag_qr_wrong_account"]), bars); // folded into "Other"
-
-        // the filters: the periods, "my team", the flag menu WITHOUT "QR not scanned"
-        var period = s.GetProperty("period").GetString()!;
-        Assert.Contains("value=\"last7\" selected", period);
-        Assert.Contains("value=\"custom\"", period);
-        Assert.Contains(Encode(Fmt(tr["RepAllTeam"], 2)), s.GetProperty("rep").GetString()!);
-        Assert.Equal(tr["FlagAll"], s.GetProperty("flagText").GetString());
-        var menu = s.GetProperty("flagMenu").GetString()!;
-        Assert.Equal(14, Regex.Matches(menu, "data-flagtype=").Count);
-        Assert.DoesNotContain("qr_missing", menu);
-        Assert.DoesNotContain(Encode(tr["Chip_qr_missing"]), menu);
-        Assert.Contains("Kardiyoloji Polikliniği", s.GetProperty("account").GetString()!);
-
-        // the list: neutral chips with their values, "QR not scanned", the exception link, the paging
-        var rows = s.GetProperty("rows").GetString()!;
-        Assert.Contains(Encode(tr["Flag_location_far"]) + " · 820 m", rows);
-        Assert.Contains(Encode(tr["Flag_short_visit"]) + " · " + Encode(Fmt(tr["MinSec"], 1, 40)), rows);
-        Assert.Contains(Encode(tr["Chip_qr_missing"]), rows);
-        Assert.Contains("/CRM/VisitEvidenceSettings?exception=exc-0000-0000-0000-000000000001", rows);
-        Assert.Contains("data-open=\"e1\"", rows);
-        Assert.False(s.GetProperty("emptyShown").GetBoolean());
-        Assert.Contains("data-page=\"4\"", s.GetProperty("pages").GetString()!);
-        Assert.Contains("37", s.GetProperty("pageText").GetString()!);
-
-        // M3 — the rep summary + a rep row filters the list
-        var reps = s.GetProperty("reps").GetString()!;
-        Assert.Contains("data-rep=\"rep-2\"", reps);
-        Assert.Contains("Murat Demir", reps);
-        Assert.Contains("resourceId=rep-2", s.GetProperty("repCall").GetString()!);
-
-        // a flag type → flags=; a custom range > 92 days → the error on screen and NO call; paging → page=2
-        Assert.Contains("flags=location_far", s.GetProperty("flagCall").GetString()!);
-        Assert.Equal(Fmt(tr["FlagSome"], 1), s.GetProperty("flagTextAfter").GetString());
-        Assert.True(s.GetProperty("rangeErrorShown").GetBoolean());
-        Assert.Equal(Fmt(tr["ErrRangeLong"], 92), s.GetProperty("rangeError").GetString());
-        Assert.Equal(0, s.GetProperty("callsAfterLongRange").GetInt32());
-        Assert.Contains("page=2", s.GetProperty("pageCall").GetString()!);
-
-        // M2 — the drawer: location, QR, device, duration + slides, photo present but not allowed, the exception, the visit
-        Assert.True(s.GetProperty("drawerShown").GetBoolean());
-        Assert.Contains("Sema Kara", s.GetProperty("drawerSub").GetString()!);
-        var drawer = s.GetProperty("drawer").GetString()!;
-        foreach (var key in new[] { "SecLocation", "LocDistance", "LocAccuracy", "LocRadius", "SecQr", "QrResult", "QrSt_missing_exception", "SecDevice", "DevPlatform", "Plat_web",
-                     "DevVerdict", "Verdict_web", "SecDuration", "DurVisit", "DurSlides", "SecPhoto", "PhotoNoPermission", "SecException", "XRule_qr_optional" })
-        {
-            Assert.Contains(Encode(tr[key]), drawer);
-        }
-        Assert.Contains("Safari 18 · iPadOS", drawer);
-        Assert.Contains(Encode(Fmt(tr["SlidesValue"], Fmt(tr["MinSec"], 11, 50), 8)), drawer); // the exact slide time, never rounded
-        Assert.DoesNotContain("<img", drawer);
-        Assert.Equal("/CRM/VisitReport?plannedVisitId=pv-e7", s.GetProperty("openVisit").GetString());
-        Assert.All(s.GetProperty("allCalls").EnumerateArray(), u => Assert.DoesNotContain("photo", u.GetString()!));
-    }
-
-    [Fact]
-    public void C6_tenant_wide_with_the_photo_keys_shows_all_reps_and_the_thumbnail_and_an_empty_period_shows_m4()
-    {
-        var all = FlagsSmoke("all");
-        if (all is null) { return; }
-        var tr = FlagsResx("tr");
-        Assert.Contains(Encode(Fmt(tr["RepAllTenant"], 2)), all.Value.GetProperty("rep").GetString()!);
-        var drawer = all.Value.GetProperty("drawer").GetString()!;
-        Assert.Contains("<img", drawer);
-        Assert.Contains("src=\"/api/flags/e7/photo\"", drawer);
-        Assert.DoesNotContain(Encode(tr["PhotoNoPermission"]), drawer);
-
-        var empty = FlagsSmoke("empty")!.Value;
-        Assert.True(empty.GetProperty("emptyShown").GetBoolean());
-        Assert.Equal(tr["EmptyTitle"], empty.GetProperty("emptyTitle").GetString());
-        Assert.Equal("0", empty.GetProperty("flagged").GetString());
     }
 
     [Fact]
@@ -446,11 +331,25 @@ public sealed partial class VisitEvidenceFlagsWebTests
         Assert.Equal("Uzak konum", FlagsResx("tr")["Flag_location_far"]);
         Assert.Equal("QR okutulmadı", FlagsResx("tr")["Chip_qr_missing"]);
 
-        // the view writes only declared view keys; the script reads only declared script keys
-        var view = FlagsView();
-        Assert.Contains("VisitEvidenceFlagsIndex.ScriptKeys.ToDictionary(k => k, k => Localizer[k].Value)", view);
-        foreach (Match m in Regex.Matches(view, "Localizer\\[\"([A-Za-z0-9_]+)\"\\]")) { Assert.Contains(m.Groups[1].Value, VisitEvidenceFlagsIndex.ViewKeys); }
-        foreach (Match m in Regex.Matches(FlagsScript("visit-evidence-flags.js"), "\\bL\\.([A-Za-z0-9_]+)")) { Assert.Contains(m.Groups[1].Value, VisitEvidenceFlagsIndex.ScriptKeys); }
+        // the views write only declared view keys (the page's own Localizer; the shared words are SharedLocalizer's); the
+        // L10n payload carries EVERY script key; the scripts read only the page's script keys or a shared payload word
+        var l10n = FlagsPartial("_IndexL10n.cshtml");
+        Assert.Contains("foreach (var key in VisitEvidenceFlagsIndex.ScriptKeys)", l10n);
+        Assert.Contains("payload[key] = Localizer[key].Value;", l10n);
+        foreach (var file in new[] { "Index.cshtml", "_Filter.cshtml", "_DataTable.cshtml" })
+        {
+            foreach (Match m in Regex.Matches(FlagsPartial(file), "(?<!Shared)Localizer\\[\"([A-Za-z0-9_]+)\"\\]")) { Assert.Contains(m.Groups[1].Value, VisitEvidenceFlagsIndex.ViewKeys); }
+        }
+
+        var sharedWords = Regex.Matches(l10n, "^\\s+([A-Za-z]+) = ", RegexOptions.Multiline).Select(m => m.Groups[1].Value).ToHashSet();
+        foreach (var script in new[] { "index.js", "rep-summary.js" })
+        {
+            var js = FlagsScript(script);
+            foreach (Match m in Regex.Matches(js, "\\b(?:L\\(\\)|l)\\.([A-Z][A-Za-z0-9_]+)"))
+            {
+                Assert.True(VisitEvidenceFlagsIndex.ScriptKeys.Contains(m.Groups[1].Value) || sharedWords.Contains(m.Groups[1].Value), script + ": " + m.Groups[1].Value);
+            }
+        }
 
         var node = RunNode(FlagsCore() + """
             const keys = [];
@@ -478,14 +377,15 @@ public sealed partial class VisitEvidenceFlagsWebTests
     {
         var css = File.ReadAllText(Path.Combine(FlagsScriptDir(), "visit-evidence-flags.css"));
         Assert.Contains("[dir=\"rtl\"] .vf-flip", css);
-        Assert.Contains("[data-bs-theme=\"dark\"] #vf-root", css);
+        Assert.Contains("[data-bs-theme=\"dark\"] .vf-summary, [data-bs-theme=\"dark\"] .datatables-visitevidenceflags, [data-bs-theme=\"dark\"] .datatables-vf-reps, [data-bs-theme=\"dark\"] .vf-drawer", css);
         foreach (var physical in new[] { "margin-left", "margin-right", "padding-left", "padding-right", " left:", " right:", "text-align: left", "text-align: right" })
         {
             Assert.DoesNotContain(physical, css);
         }
 
-        var js = FlagsScript("visit-evidence-flags.js");
+        var js = FlagsScript("index.js") + FlagsScript("rep-summary.js");
         Assert.Contains("F.bidi(row.repName || row.resourceId)", js);
+        Assert.Contains("F.bidi(name || id)", js);
         Assert.DoesNotContain("localStorage", js);
         Assert.DoesNotContain("toLocaleDateString", js);
         Assert.DoesNotContain("campaign", js, StringComparison.OrdinalIgnoreCase);
@@ -511,18 +411,29 @@ public sealed partial class VisitEvidenceFlagsWebTests
         return s;
     }
 
+    /// <summary>The shared words the page reads from the L10n payload (SharedResource in the real page); fixed here.</summary>
+    private static readonly Dictionary<string, string> SharedWords = new() { ["ShowAll"] = "Tümü", ["Apply"] = "Uygula", ["Reset"] = "Sıfırla", ["SaveView"] = "Görünümü kaydet" };
+
     private static JsonElement? FlagsSmoke(string mode)
-        => Smoke("visit-evidence-flags-smoke.js", VisitEvidenceFlagsIndex.ScriptKeys, FlagsResx("tr"), mode);
+    {
+        var words = FlagsResx(mode == "ar" ? "ar" : "tr");
+        var texts = VisitEvidenceFlagsIndex.ScriptKeys.ToDictionary(k => k, k => words[k]);
+        foreach (var (k, v) in SharedWords) { texts.TryAdd(k, v); }
+        return SmokeTexts("visit-evidence-flags-list-smoke.js", texts, mode);
+    }
 
     private static JsonElement? SettingsSmoke(string mode)
         => Smoke("visit-evidence-settings-w3e-smoke.js", VisitEvidenceSettingsIndex.ScriptKeys, SettingsResx("tr"), mode);
 
     private static JsonElement? Smoke(string file, string[] keys, Dictionary<string, string> tr, string mode)
+        => SmokeTexts(file, keys.ToDictionary(k => k, k => tr[k]), mode);
+
+    private static JsonElement? SmokeTexts(string file, Dictionary<string, string> words, string mode)
     {
         var smoke = Path.Combine(Path.GetDirectoryName(WebRoot())!, "Diten.Web.Tests", "Js", file).Replace("\\", "/");
         var crm = Path.Combine(WebRoot(), "wwwroot", "assets", "js", "CRM").Replace("\\", "/");
         var texts = Path.Combine(Path.GetTempPath(), "vf-tr-" + Guid.NewGuid().ToString("N") + ".json");
-        File.WriteAllText(texts, JsonSerializer.Serialize(keys.ToDictionary(k => k, k => tr[k])), new UTF8Encoding(false));
+        File.WriteAllText(texts, JsonSerializer.Serialize(words), new UTF8Encoding(false));
         try
         {
             var node = RunNode("process.argv[2] = '" + crm + "'; process.argv[3] = '" + texts.Replace("\\", "/") + "'; process.argv[4] = '" + mode + "'; require('" + smoke + "');");
@@ -548,8 +459,8 @@ public sealed partial class VisitEvidenceFlagsWebTests
 
     private static Task<IActionResult> Invoke(VisitEvidenceFlagsController c, string action) => action switch
     {
-        "List" => c.List(CancellationToken.None),
-        "Summary" => c.Summary(CancellationToken.None),
+        "List" => c.List(0, 10, null, null, null, null, null, null, null, null, null, null, CancellationToken.None),
+        "Summary" => c.Summary(null, null, null, null, CancellationToken.None),
         "Detail" => c.Detail(Guid.Parse(Id), CancellationToken.None),
         "Photo" => c.Photo(Guid.Parse(Id), CancellationToken.None),
         _ => throw new ArgumentOutOfRangeException(nameof(action))
@@ -604,7 +515,9 @@ public sealed partial class VisitEvidenceFlagsWebTests
 
     private static string FlagsScript(string file) => File.ReadAllText(Path.Combine(FlagsScriptDir(), file)).Replace("\r\n", "\n");
 
-    private static string FlagsView() => File.ReadAllText(Path.Combine(WebRoot(), "Views", "CRM", "VisitEvidenceFlags", "Index.cshtml")).Replace("\r\n", "\n");
+    private static string FlagsView() => FlagsPartial("Index.cshtml");
+
+    private static string FlagsPartial(string file) => File.ReadAllText(Path.Combine(WebRoot(), "Views", "CRM", "VisitEvidenceFlags", file)).Replace("\r\n", "\n");
 
     private static Dictionary<string, string> FlagsResx(string culture) => Resx("VisitEvidenceFlags", "VisitEvidenceFlagsIndex", culture);
 

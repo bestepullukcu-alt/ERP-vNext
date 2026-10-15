@@ -15,64 +15,61 @@ using Xunit;
 namespace Diten.Web.Tests.Controllers;
 
 /// <summary>
-/// WP-VW-W3E · W3E-FIX on the evidence flags page (M) and the settings preview (E): G-1 the root and the paging buttons
-/// no longer share a class (the footer stays below), U-3 the list header standard, U-2 the custom range is the shared date
+/// WP-VW-W3E · W3E-FIX on the evidence flags page (M) and the settings preview (E): G-1 the page draws no own root box
+/// or paging buttons any more (W3E-FLAGS-STD: the standard table owns them), U-3 the list header standard, U-2 the custom range is the shared date
 /// field, G-7 same-name institutions told apart (city / code, read once through the page's proxy), G-8 far distances in km
 /// in the reader's language, CT-3 the smoke's clock pinned, G-5 the settings preview shows the QR row, its rule sentence
 /// and the web device line.
 /// </summary>
 public sealed partial class VisitEvidenceFlagsWebTests
 {
+    /// <summary>G-1 (kept under W3E-FLAGS-STD): the footer rode over the table because the page's own root and its own paging
+    /// buttons shared a class. The page no longer draws either — the table, its paging and the empty row are the standard's
+    /// (_ListShell + the list factory) — so neither class may come back.</summary>
     [Fact]
-    public void G1_the_root_and_the_paging_buttons_never_share_a_class_so_the_root_wraps_its_content()
+    public void G1_the_page_draws_no_own_root_box_or_paging_buttons_the_standard_table_owns_them()
     {
         var css = FlagsScript("visit-evidence-flags.css");
-        var root = Regex.Matches(css, @"^\.vf-page\b[^{]*\{([^}]*)\}", RegexOptions.Multiline);
-        Assert.Single(root);                                                                                   // ONE rule: the root's
-        Assert.Matches(@"display:\s*flex;\s*flex-direction:\s*column", root[0].Groups[1].Value);
-        Assert.DoesNotMatch(@"(^|[;\s])(height|min-width)\s*:", root[0].Groups[1].Value);                    // a button's box never reaches the root
-        Assert.Matches(@"^\.vf-pg \{[^}]*min-width: 32px; height: 32px;", css.Split('\n').First(l => l.StartsWith(".vf-pg {", StringComparison.Ordinal)));
-        Assert.Contains(".vf-pg.active {", css);
-        Assert.DoesNotMatch(@"\.vf-page\.active|\.vf-page\s*\{[^}]*height", css);
-
-        var js = FlagsScript("visit-evidence-flags.js");
-        Assert.Contains("'<button type=\"button\" class=\"vf-pg'", js);
-        Assert.DoesNotContain("class=\"vf-page", js);
-        Assert.Contains("<div id=\"vf-root\" class=\"vf-page\"", FlagsView());
-
-        var smoke = FlagsSmoke("team");
-        if (smoke is null) { return; }
-        var pages = smoke.Value.GetProperty("pages").GetString()!;
-        Assert.Contains("class=\"vf-pg active\"", pages);
-        Assert.DoesNotContain("vf-page", pages);
+        Assert.DoesNotMatch(@"\.vf-page\b|\.vf-pg\b|\.vf-pager\b|\.vf-table\b", css);
+        var js = FlagsScript("index.js");
+        Assert.DoesNotContain("vf-pg", js);
+        Assert.DoesNotContain("vf-page", js);
+        Assert.DoesNotContain("data-page=", js);
+        Assert.DoesNotContain("class=\"vf-page", FlagsView());
+        Assert.False(File.Exists(Path.Combine(FlagsScriptDir(), "visit-evidence-flags.js")));                    // the custom table is gone
+        Assert.Contains("<partial name=\"~/Views/CRM/VisitEvidenceFlags/_DataTable.cshtml\" />", FlagsView());
     }
 
     [Fact]
     public void U3_the_flags_header_is_the_list_header_standard_and_the_crumb_is_gone()
     {
         var view = FlagsView();
-        Assert.Matches(@"<div class=""mb-3"">\s*<h5 class=""mb-0"">@Localizer\[""PageTitle""\]</h5>\s*<p class=""mb-0 text-muted"">@Localizer\[""Intro""\]</p>\s*</div>\s*<div id=""vf-root""", view);
+        Assert.Matches(@"<div class=""mb-3"">\s*<h5 class=""mb-0"">@Localizer\[""PageTitle""\]</h5>\s*<p class=""mb-0 text-muted"">@Localizer\[""PageDescription""\]</p>\s*</div>", view);
         Assert.DoesNotContain("vf-crumb", view);
         Assert.DoesNotContain("vf-title", view);
         Assert.DoesNotContain("Crumb", VisitEvidenceFlagsIndex.ViewKeys);
-        Assert.DoesNotContain("name=\"Crumb\"", File.ReadAllText(Path.Combine(WebRoot(), "Resources", "Views", "CRM", "VisitEvidenceFlags", "VisitEvidenceFlagsIndex.tr.resx")));
+        Assert.DoesNotContain("Intro", VisitEvidenceFlagsIndex.ViewKeys);
+        var trResx = File.ReadAllText(Path.Combine(WebRoot(), "Resources", "Views", "CRM", "VisitEvidenceFlags", "VisitEvidenceFlagsIndex.tr.resx"));
+        Assert.DoesNotContain("name=\"Crumb\"", trResx);
+        Assert.DoesNotContain("name=\"Intro\"", trResx);
     }
 
     [Fact]
     public void U2_the_custom_range_is_the_shared_date_field_whose_icon_opens_the_calendar()
     {
-        var view = FlagsView();
+        var filter = FlagsPartial("_Filter.cshtml");
         foreach (var id in new[] { "vf-from", "vf-to" })
         {
-            Assert.Matches("<span class=\"diten-field vf-date\"><i class=\"bx bx-calendar diten-field-icon\" aria-hidden=\"true\"></i><input type=\"text\" class=\"form-control flatpickr-date\" id=\"" + id + "\"", view);
+            Assert.Matches("<div class=\"diten-field\"><i class=\"bx bx-calendar diten-field-icon\" aria-hidden=\"true\"></i><input type=\"text\" class=\"form-control form-control-sm flatpickr-date\" id=\"" + id + "\"", filter);
         }
 
-        Assert.DoesNotContain("type=\"date\"", view);
+        Assert.DoesNotContain("type=\"date\"", filter);
+        var view = FlagsView();
         Assert.Contains("~/assets/js/shared/diten-datefield.js", view);
-        Assert.True(view.IndexOf("diten-datefield.js", StringComparison.Ordinal) < view.IndexOf("visit-evidence-flags.js", StringComparison.Ordinal));
-        var js = FlagsScript("visit-evidence-flags.js");
-        Assert.Contains("window.DitenDateField.enhance(root)", js);
-        Assert.Contains("n._flatpickr.setDate(iso, false)", js);                                              // the preset → custom switch keeps the calendar in step
+        Assert.True(view.IndexOf("diten-datefield.js", StringComparison.Ordinal) < view.IndexOf("VisitEvidenceFlags/index.js", StringComparison.Ordinal));
+        var js = FlagsScript("index.js");
+        Assert.Contains("window.DitenDateField.enhance(byId('filterRange'))", js);
+        Assert.Contains("if (n._flatpickr) { n._flatpickr.clear(); }", js);                                        // a preset clears the calendar too
     }
 
     [Fact]
@@ -83,24 +80,25 @@ public sealed partial class VisitEvidenceFlagsWebTests
         var s = r.Value;
         var tr = FlagsResx("tr");
 
-        // CT-3 — the harness's today is 2026-10-14 whatever day the suite runs (the first call's period is 08–14 Oct)
-        Assert.Equal("2026-10-14", s.GetProperty("today").GetString());
-        Assert.Contains("/api/flags?from=2026-10-08&to=2026-10-14&onlyFlagged=true&page=1&pageSize=10", s.GetProperty("firstCalls").EnumerateArray().Select(x => x.GetString()));
+        // CT-3 — the harness's today is 2026-10-14 whatever day the suite runs: the baseline period label is 8–14 Oct
+        Assert.Contains("8", s.GetProperty("lookups").GetProperty("filterPeriod").GetProperty("showAll").GetString()!);
+        Assert.Contains("14 Eki", s.GetProperty("lookups").GetProperty("filterPeriod").GetProperty("showAll").GetString()!);
+        Assert.Contains("month=Ekim 2026", s.GetProperty("lookups").GetProperty("filterPeriod").GetProperty("items").EnumerateArray().Select(x => x.GetString()));
 
         // G-8 — 198 290 m → "198,3 km" (Turkish decimal comma); under 1000 m stays metres
-        var rows = s.GetProperty("rows").GetString()!;
-        Assert.Contains(Encode(tr["Flag_location_far"]) + " · " + Encode(Fmt(tr["UnitKm"], "198,3")), rows);
-        Assert.Contains(Encode(tr["Flag_location_far"]) + " · 820 m", rows);
-        Assert.DoesNotContain("198.290", rows);
+        var flags = string.Join("\n", s.GetProperty("cells").EnumerateArray().Select(c => c.GetProperty("flags").GetString()));
+        Assert.Contains(Encode(tr["Flag_location_far"]) + " · " + Encode(Fmt(tr["UnitKm"], "198,3")), flags);
+        Assert.Contains(Encode(tr["Flag_location_far"]) + " · 820 m", flags);
+        Assert.DoesNotContain("198.290", flags);
 
         // G-7 — the two "100.YIL ECZANESİ" options carry their city; a unique name stays plain; ONE label read, the same-name ids only
-        var account = s.GetProperty("account").GetString()!;
+        var account = s.GetProperty("accountOptions").EnumerateArray().Select(x => x.GetString()!).ToList();
         const string Fsi = "⁨", Pdi = "⁩";
-        Assert.Contains(">" + Fsi + "100.YIL ECZANESİ" + Pdi + " · " + Fsi + "Konya" + Pdi + "</option>", account);
-        Assert.Contains(">" + Fsi + "100.YIL ECZANESİ" + Pdi + " · " + Fsi + "İstanbul" + Pdi + "</option>", account);
-        Assert.Contains(">" + Fsi + "Kardiyoloji Polikliniği" + Pdi + "</option>", account);
-        var labelCalls = s.GetProperty("allCalls").EnumerateArray().Select(x => x.GetString()!).Where(u => u.StartsWith("/api/account-labels", StringComparison.Ordinal)).ToList();
-        Assert.Equal(new[] { "/api/account-labels?ids=acc-3%2Cacc-4" }, labelCalls);
+        Assert.Contains("acc-3=" + Fsi + "100.YIL ECZANESİ" + Pdi + " · " + Fsi + "Konya" + Pdi, account);
+        Assert.Contains("acc-4=" + Fsi + "100.YIL ECZANESİ" + Pdi + " · " + Fsi + "İstanbul" + Pdi, account);
+        Assert.Contains("acc-1=" + Fsi + "Kardiyoloji Polikliniği" + Pdi, account);
+        Assert.Equal("=" + tr["AccountAll"], account[0]);
+        Assert.Equal(new[] { "/CRM/VisitEvidenceFlags/api/account-labels?ids=acc-3%2Cacc-4" }, s.GetProperty("labelCalls").EnumerateArray().Select(x => x.GetString()));
 
         var node = RunNode(FlagsCore() + """
             const cmp = (a, b) => a.localeCompare(b, 'tr');

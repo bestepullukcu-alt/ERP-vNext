@@ -230,8 +230,8 @@ public sealed partial class VisitQrCodesWebTests
             ["vq-regen-reason"] = View("Accounts", "_VisitQrCard.cshtml"), ["vq-revoke-reason"] = View("Accounts", "_VisitQrCard.cshtml"),
             ["vq-paper-single-select"] = View("VisitQrCodes", "Print.cshtml"), ["vq-paper-labels-select"] = View("VisitQrCodes", "Print.cshtml"),
             ["vq-copies"] = View("VisitQrCodes", "Print.cshtml"),
-            ["vf-from"] = File.ReadAllText(Path.Combine(WebRoot(), "Views", "CRM", "VisitEvidenceFlags", "Index.cshtml")),
-            ["vf-to"] = File.ReadAllText(Path.Combine(WebRoot(), "Views", "CRM", "VisitEvidenceFlags", "Index.cshtml"))
+            ["vf-from"] = File.ReadAllText(Path.Combine(WebRoot(), "Views", "CRM", "VisitEvidenceFlags", "_Filter.cshtml")),
+            ["vf-to"] = File.ReadAllText(Path.Combine(WebRoot(), "Views", "CRM", "VisitEvidenceFlags", "_Filter.cshtml"))
         };
         foreach (var (id, glyph) in map)
         {
