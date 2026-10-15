@@ -195,6 +195,8 @@ def module_problem(value: str, known: dict) -> str | None:
         return f"geçersiz modül değeri '{value[:30]}' (MOD-nnnn, MOD-nnnn-FUn ya da ortak:…)"
     if not known["blueprint"]:
         return "Blueprint okunamadı — modül varlığı doğrulanamadı (tamamlanamadı)"
+    if not known.get("registry", False):
+        return "modül kayıt dosyası okunamadı — modül varlığı doğrulanamadı (tamamlanamadı)"
     if value in known["active"]:
         return None
     if value in known["deprecated"]:
@@ -213,7 +215,7 @@ def known_modules() -> dict:
     packs = {fid for fid in vmi.load_packs(str(ROOT)).values() if fid}
     active = {r["id"] for r in reg if not vmi.is_deprecated(r)} | set(bp or {}) | packs
     return {"active": active, "deprecated": {r["id"] for r in reg if vmi.is_deprecated(r)} - active,
-            "blueprint": bp is not None, "path_exists": lambda rel: (ROOT / rel).resolve().is_relative_to(ROOT) and (ROOT / rel).exists()}
+            "blueprint": bp is not None, "registry": bool(reg), "path_exists": lambda rel: (ROOT / rel).resolve().is_relative_to(ROOT) and (ROOT / rel).exists()}
 
 
 def terminal_exits(snapshots: list[Table], terminal: set[str]) -> list[tuple[str | None, str]]:
@@ -312,6 +314,8 @@ def check_queue(cur: Table, base: Table, vocab: dict[str, dict], strict: bool = 
         for i, row in enumerate(cur.rows, start=2):
             if row[state_i] not in vocab:
                 error(row[id_i], f"satır {i} {row[id_i]}: katı kuyrukta tanımsız durum '{row[state_i][:40]}'")
+    if strict and profile is None:
+        error(None, "katı kuyruk: geçiş profili yok — module, -R ve geçmiş denetimleri yapılamadı")
     if strict and profile is not None:
         mod_i, dep_i, rec_i = base.index("module"), base.index("depends_on"), base.index("record")
         if mod_i is None:
@@ -620,10 +624,33 @@ def queue_snapshots(queue: dict, ref: str | None) -> list[Table]:
     return tables
 
 
-def build_profile(queue: dict, vocab: dict[str, dict]) -> dict | None:
-    edges = load_transitions(queue["vocabulary"])
-    if queue.get("strict") != "yes" or not edges:
+class ProfileError(Exception):
+    """A strict queue's transition profile cannot be built: its checks would silently switch off, so the tool stops."""
+
+
+def build_profile(queue: dict, vocab: dict[str, dict], states: list[dict]) -> dict | None:
+    """None for a tolerant queue. For a strict queue the profile is mandatory: a missing or broken transition table, or
+    one without rows for the queue's vocabulary, raises ProfileError instead of turning the strict checks off."""
+    if queue.get("strict") != "yes":
         return None
+    name = TRANSITIONS.relative_to(ROOT).as_posix() if TRANSITIONS.is_relative_to(ROOT) else str(TRANSITIONS)
+    if not TRANSITIONS.is_file():
+        raise ProfileError(f"geçiş tablosu yok ({name})")
+    try:
+        rows = read_table(TRANSITIONS, TRANSITION_COLUMNS)
+    except SystemExit as e:
+        raise ProfileError(f"geçiş tablosu okunamadı: {e}")
+    return profile_from_rows(queue, vocab, states, rows)
+
+
+def profile_from_rows(queue: dict, vocab: dict[str, dict], states: list[dict], rows: list[dict]) -> dict:
+    mine = [r for r in rows if r["vocabulary"] == queue["vocabulary"]]
+    if not mine:
+        raise ProfileError(f"geçiş tablosunda '{queue['vocabulary']}' sözlüğünün satırı yok")
+    problems = check_transitions(mine, states)
+    if problems:
+        raise ProfileError(f"geçiş tablosu geçersiz: {problems[0]}" + (f" (+{len(problems) - 1})" if len(problems) > 1 else ""))
+    edges = {(r["from_state"], r["to_state"]) for r in mine}
     return {"edges": edges, "terminal": terminal_states(vocab, edges), "known": known_modules()}
 
 
@@ -862,7 +889,7 @@ def self_test() -> int:
     edges = {("READY", "IN_PROGRESS"), ("IN_PROGRESS", "VERIFIED"), ("VERIFIED", "ACCEPTED"), ("VERIFIED", "REWORK")}
     term = terminal_states(v7, edges)
     cases.append(("sop7: terminal states are the states without an outgoing transition", term == {"ACCEPTED", "REWORK"}))
-    known = {"active": {"MOD-0288", "MOD-0288-FU01", "MOD-0024"}, "deprecated": {"MOD-0999"}, "blueprint": True,
+    known = {"active": {"MOD-0288", "MOD-0288-FU01", "MOD-0024"}, "deprecated": {"MOD-0999"}, "blueprint": True, "registry": True,
              "path_exists": lambda rel: rel == "docs/reference/scope/x.md"}
     cases.append(("module: MOD-0288-FU01 and ortak: with a MOD list or a scope record are accepted",
                   module_problem("MOD-0288-FU01", known) is None and module_problem("ortak:MOD-0288, MOD-0024", known) is None
@@ -871,9 +898,14 @@ def self_test() -> int:
                   all(module_problem(v, known) for v in ("ortak", "ortak:", "MOD-0288-FU09", "MOD-0999", "Organization"))))
     cases.append(("sabotage: Blueprint unreadable -> module existence not proved (fail-closed)",
                   module_problem("MOD-0288", dict(known, blueprint=False)) is not None))
+    cases.append(("sabotage: module registry unreadable -> module existence not proved (fail-closed)",
+                  module_problem("MOD-0288", dict(known, registry=False)) is not None))
     h = "id\titem\tmodule\tstate\towner\tdepends_on\tredispatch_trigger\tsince\trecord\n"
     snap = lambda st: Table(h + f"W1\tx\tMOD-0288\t{st}\tCT\t-\t-\t2026-10-15\t-\n")
     cases.append(("sabotage: ACCEPTED in one version, READY in the next -> terminal exit", len(terminal_exits([snap("ACCEPTED"), snap("READY")], term)) == 1))
+    short = Table(h + "W1\tx\tMOD-0288\n")
+    cases.append(("a version whose row lost its state column is bridged: ACCEPTED, short row, READY -> terminal exit",
+                  len(terminal_exits([snap("ACCEPTED"), short, snap("READY")], term)) == 1))
     cases.append(("READY then VERIFIED then ACCEPTED -> no error (skipped steps are not inferred)",
                   not terminal_exits([snap("READY"), snap("VERIFIED"), snap("ACCEPTED")], term)))
     cases.append(("sabotage: a version without a state column -> history not checkable, reported",
@@ -898,6 +930,31 @@ def self_test() -> int:
                   and any("§28.2" in e for e in r3("docs/records/decisions/2026-10"))))
     cases.append(("sabotage: a strict queue without a module column -> refused",
                   any("module" in e for e in check_queue(Table("id\tstate\nW1\tREADY\n"), Table("id\tstate\n"), v7, True, prof)["errors"])))
+    sq = {"queue_id": "nq", "vocabulary": "sop7", "strict": "yes"}
+    st7 = [{"queue_id": "sop7", "state": s, "class": "x", "dispatch": "no", "source": "s", "confirmation": "confirmed"} for s in v7]
+    row7 = lambda a, b: {"vocabulary": "sop7", "from_state": a, "to_state": b, "evidence": "e", "source": "s", "kind": "sop"}
+
+    def profile_refused(fn) -> bool:
+        try:
+            fn()
+            return False
+        except ProfileError:
+            return True
+
+    saved = TRANSITIONS
+    globals()["TRANSITIONS"] = ROOT / "execution" / "delivery" / "no-such-transitions.tsv"
+    try:
+        missing = profile_refused(lambda: build_profile(sq, v7, st7))
+    finally:
+        globals()["TRANSITIONS"] = saved
+    cases.append(("sabotage: strict queue, transition table missing -> ProfileError, not a silent skip", missing))
+    cases.append(("sabotage: strict queue, no transition rows for its vocabulary -> ProfileError",
+                  profile_refused(lambda: profile_from_rows(dict(sq, vocabulary="other"), v7, st7, [row7("READY", "IN_PROGRESS")]))))
+    cases.append(("sabotage: strict queue, a transition to a state outside the vocabulary -> ProfileError",
+                  profile_refused(lambda: profile_from_rows(sq, v7, st7, [row7("READY", "IN_PROGRES")]))))
+    cases.append(("a tolerant queue needs no profile; a strict one checked without a profile -> error, not silence",
+                  build_profile(dict(sq, strict="no"), v7, st7) is None
+                  and any("geçiş profili yok" in e for e in check_queue(Table(h + "W9\tx\tMOD-9999\tREADY\tCT\t-\t-\t2026-10-15\t-\n"), b7, v7, True, None)["errors"])))
     cases.append(("registry: a vocabulary without rows in the states file -> problem",
                   any("vocabulary 'nope'" in pr for pr in check_registry(
                       [{"queue_id": "t", "path": "q.tsv", "baseline_commit": "abc", "owner_confirmation": "pending", "strict": "yes", "vocabulary": "nope"}],
@@ -942,8 +999,13 @@ def main() -> int:
         for q in queues:
             cur = Table(decode(current_bytes(q, a.ref), q["path"]))
             vocab = vocabulary(states, q["vocabulary"])
-            profile = build_profile(q, vocab)
+            try:
+                profile, profile_error = build_profile(q, vocab, states), None
+            except ProfileError as e:
+                profile, profile_error = None, str(e)
             errors, warnings = validate_queue(cur, baseline(q), vocab, q["strict"] == "yes", profile)
+            if profile_error:
+                errors.insert(0, f"katı kuyruk profili kurulamadı — {profile_error}")
             errors += [text for _, text in history_errors(q, profile, a.ref)]
             for other in a.against:
                 data = git_file(other, q["path"])
@@ -968,7 +1030,11 @@ def main() -> int:
         if structure_errors(cur, base):
             print(f"DUR: kuyruk okunamıyor (başlık, sütun ya da boş satır) — python3 scripts/ct_queue.py validate --queue {q['queue_id']}")
             return 1
-        profile = build_profile(q, vocab)
+        try:
+            profile = build_profile(q, vocab, states)
+        except ProfileError as e:
+            print(f"DUR: katı kuyruk profili kurulamadı — {e}; module, -R ve geçmiş denetimleri yapılamaz, dağıtım yok")
+            return 1
         checked = check_queue(cur, base, vocab, q["strict"] == "yes", profile)
         for qid, text in history_errors(q, profile, None):
             checked["errors"].append(text)
