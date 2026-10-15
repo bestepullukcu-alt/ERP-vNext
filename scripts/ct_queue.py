@@ -297,13 +297,16 @@ def structure_errors(cur: Table, base: Table) -> list[str]:
 
 
 def check_queue(cur: Table, base: Table, vocab: dict[str, dict], strict: bool = False, profile: dict | None = None) -> dict:
-    """errors and warnings as text, plus the ids an error is about (require refuses those ids)."""
-    out = {"errors": [], "warnings": [], "bad": defaultdict(list)}
+    """errors and warnings as text, the ids an error is about (require refuses those ids), and the errors that belong
+    to no single id ("global": in a strict queue require refuses every id while one is open)."""
+    out = {"errors": [], "warnings": [], "bad": defaultdict(list), "global": []}
 
     def error(qid: str | None, text: str):
         out["errors"].append(text)
         if qid is not None:
             out["bad"][qid].append(text)
+        else:
+            out["global"].append(text)
 
     for text in structure_errors(cur, base):
         error(None, text)
@@ -470,6 +473,32 @@ def require(cur: Table, vocab: dict[str, dict], wp_id: str, new_version: bool, b
             return 0, f"DAĞITILABİLİR {wp_id}: {state} — yalnız yeni sürüm olarak (ayrı yürütme, örn. -R1; SOP §19.2)"
         return 1, f"DUR {wp_id}: {state} yalnız yeni sürüm olarak dağıtılır (SOP §19.2); yeni sürümse --new-version ekleyin"
     return 1, f"DUR {wp_id}: {state} ({entry['class']}) dağıtılamaz"
+
+
+def require_decision(queue: dict, vocab: dict[str, dict], cur: Table, base: Table, wp_id: str, new_version: bool,
+                     profile: dict | None = None, profile_error: str | None = None, history=lambda: []) -> tuple[int, str, dict | None]:
+    """The whole dispatch decision of `require`, used by the command line and by the self-test alike.
+    history: a callable returning [(id or None, text)] from the queue's git history (called only when reached).
+    Returns (exit code, decision line, check result or None when the queue could not be checked)."""
+    queue_id = queue.get("queue_id", "?")
+    if structure_errors(cur, base):
+        return 1, f"DUR: kuyruk okunamıyor (başlık, sütun ya da boş satır) — python3 scripts/ct_queue.py validate --queue {queue_id}", None
+    if profile_error:
+        return 1, f"DUR: katı kuyruk profili kurulamadı — {profile_error}; module, -R ve geçmiş denetimleri yapılamaz, dağıtım yok", None
+    strict = queue.get("strict") == "yes"
+    checked = check_queue(cur, base, vocab, strict, profile)
+    for qid, text in history():
+        checked["errors"].append(text)
+        if qid is None:
+            checked["global"].append(text)
+        else:
+            checked["bad"][qid].append(text)
+    code, line = require(cur, vocab, wp_id, new_version, checked["bad"])
+    if strict and checked["global"]:
+        more = f" (+{len(checked['global']) - 1})" if len(checked["global"]) > 1 else ""
+        code, line = 1, (f"DUR {wp_id}: katı kuyrukta bir işe bağlanmayan doğrulama hatası var — {checked['global'][0]}{more}; "
+                         "giderilmeden hiçbir iş dağıtılmaz")
+    return code, line, checked
 
 
 def guard(data: bytes, rows: int, expect_sha: str | None, expect_rows: int | None) -> tuple[int, list[str]]:
@@ -955,6 +984,28 @@ def self_test() -> int:
     cases.append(("a tolerant queue needs no profile; a strict one checked without a profile -> error, not silence",
                   build_profile(dict(sq, strict="no"), v7, st7) is None
                   and any("geçiş profili yok" in e for e in check_queue(Table(h + "W9\tx\tMOD-9999\tREADY\tCT\t-\t-\t2026-10-15\t-\n"), b7, v7, True, None)["errors"])))
+    # follow-up 02: the decision require prints, through the same function the command line calls
+    qs, qt = {"queue_id": "nq", "strict": "yes"}, {"queue_id": "tq", "strict": "no"}
+    cur_ok = Table(h + "W1\tx\tMOD-0288\tREADY\tCT\t-\t-\t2026-10-15\t-\n")
+    hist_bad = lambda: terminal_exits([Table("id\titem\nW1\tx\n"), cur_ok], term)
+
+    def decide(q, cur, base, **kw):
+        return require_decision(q, v7, cur, base, "W1", False, **kw)
+
+    cases.append(("decision: strict queue, clean rows and history -> DAĞITILABİLİR, exit 0",
+                  decide(qs, cur_ok, b7, profile=prof, history=lambda: terminal_exits([cur_ok], term))[0] == 0))
+    r_hist = decide(qs, cur_ok, b7, profile=prof, history=hist_bad)
+    cases.append(("sabotage (decision): strict queue, a history version without a state column -> require DUR, exit 1",
+                  r_hist[0] == 1 and r_hist[1].startswith("DUR W1") and "bir işe bağlanmayan" in r_hist[1]))
+    hm = "id\titem\tstate\towner\tdepends_on\tredispatch_trigger\tsince\trecord\n"
+    r_mod = decide(qs, Table(hm + "W1\tx\tREADY\tCT\t-\t-\t2026-10-15\t-\n"), Table(hm), profile=prof)
+    cases.append(("sabotage (decision): strict queue without a module column -> require DUR, exit 1",
+                  r_mod[0] == 1 and r_mod[1].startswith("DUR W1") and "module" in r_mod[1]))
+    cases.append(("decision: tolerant queue, the same id-less history error -> unchanged, DAĞITILABİLİR (SCE behaviour)",
+                  decide(qt, cur_ok, b7, history=hist_bad)[0] == 0))
+    r_prof, r_struct = decide(qs, cur_ok, b7, profile_error="geçiş tablosu yok"), decide(qs, Table(h + "\n"), b7, profile=prof)
+    cases.append(("decision: a profile error or a structural error -> DUR, exit 1, nothing else checked",
+                  r_prof[0] == 1 and r_prof[2] is None and r_struct[0] == 1 and r_struct[2] is None))
     cases.append(("registry: a vocabulary without rows in the states file -> problem",
                   any("vocabulary 'nope'" in pr for pr in check_registry(
                       [{"queue_id": "t", "path": "q.tsv", "baseline_commit": "abc", "owner_confirmation": "pending", "strict": "yes", "vocabulary": "nope"}],
@@ -1027,21 +1078,15 @@ def main() -> int:
         vocab = vocabulary(states, q["vocabulary"])
         cur = Table(decode(current_bytes(q, None), q["path"]))
         base = baseline(q)
-        if structure_errors(cur, base):
-            print(f"DUR: kuyruk okunamıyor (başlık, sütun ya da boş satır) — python3 scripts/ct_queue.py validate --queue {q['queue_id']}")
-            return 1
         try:
-            profile = build_profile(q, vocab, states)
+            profile, profile_error = build_profile(q, vocab, states), None
         except ProfileError as e:
-            print(f"DUR: katı kuyruk profili kurulamadı — {e}; module, -R ve geçmiş denetimleri yapılamaz, dağıtım yok")
-            return 1
-        checked = check_queue(cur, base, vocab, q["strict"] == "yes", profile)
-        for qid, text in history_errors(q, profile, None):
-            checked["errors"].append(text)
-            if qid is not None:
-                checked["bad"][qid].append(text)
-        code, line = require(cur, vocab, a.wp_id.strip(), a.new_version, checked["bad"])
+            profile, profile_error = None, str(e)
+        code, line, checked = require_decision(q, vocab, cur, base, a.wp_id.strip(), a.new_version, profile, profile_error,
+                                               history=lambda: history_errors(q, profile, None))
         print(line)
+        if checked is None:
+            return code
         head, fetched = main_ref_status()
         main_data = git_file(head, REGISTRY.relative_to(ROOT).as_posix()) if head else None
         state, reason = in_force_status(q, decode(main_data, MAIN_REF) if main_data is not None else None)
