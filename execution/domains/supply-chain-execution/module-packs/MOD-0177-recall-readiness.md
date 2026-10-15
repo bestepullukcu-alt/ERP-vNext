@@ -1432,6 +1432,8 @@ Dal `feature/sce/mod-0177-r6` (taban `9c41cc92c`). Kanıt `docs/records/audits/2
 - **Önizleme:** kendi portlar 5168 / 5105 / 5104 (+ anahtarsız 5106); gerçek API'ye karşı üç sayfa, anahtarsız kullanıcı iskelet görmez
   ve gateway'e istek gitmez; ekran görüntüleri alındı; dar ekranda İzleme formu taşması bulundu ve düzeltildi.
 - Açık: O-R6-1 (yardım paneli bağlama), O-R6-2 (R7 ekranları, Panel "Tatbikat planla", satır tıklama, 375 px), O-R6-3 (önizleme ortamı notu).
+**R6 CT-ACCEPTED (2026-10-15).** BLOCKED → CT decision A (drill rows are not case rows: `DrillCaseRow` + `drillRows`, class / level "—", D-25). CT run on the branch tip (contains `9c41cc92c`): Web **2320/2320**, Inventory **1238 + 4** all green; agent: architecture same 8, central-audit list unchanged (no new write command). **CT sabotage (not in a–g):** the CSV export door checks `recall.trace.run` instead of `recall.trace.export` → 3 door tests red (`…(door: "ExportTrace")`); restored, porcelain clean. Accepted: sabotage d fixed by tightening the test (stock total = own on-hand), the 800 px trace-form fix. Open: FU-0177-HELP-PANEL (wire at SYNC3), O-R6-2 → R7. Merged `--no-ff` into MVP-1; live with the next owner restart (approval).
+
 
 ## 20. Follow-up Items
 
