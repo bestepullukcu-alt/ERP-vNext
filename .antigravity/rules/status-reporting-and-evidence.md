@@ -44,8 +44,8 @@ Kurallar:
 - **Tamamlanma** yalnız SOP §29'daki seviyelerden biridir: WP Done · Module Done · Capability Done · Release Done —
   ya da `yok`. Karardan türetilmez (SOP §29.5).
 - **Geçiş notu (CT-OPS-03 → CT-OPS-04):** `scripts/status_report.py` bugün eski biçimi üretir: tek "CT kararı"
-  sütunu, içinde `decision` değeri. İki sütunlu çıktı CT-OPS-04'ün yeni kipiyle gelir; o zamana kadar betiğin çıktısı
-  eski uyumluluk çıktısıdır. Yalnız yerelde duran bir pilotun çıktısı yayımlanmış kanıt değildir (§3).
+  sütunu, içinde `decision` değeri. İki sütunlu çıktıyı yeni kip üretir (`--mode v2`, §7.1); varsayılan kip eski
+  uyumluluk çıktısıdır ve değişmez. Yalnız yerelde duran bir pilotun çıktısı yayımlanmış kanıt değildir (§3).
 - **Sıradaki tek eksik** bir cümledir. "Modülün bitmesi için yalnız bu kaldı" demek değildir; sıradaki adımdır.
 - **Yüzde yazmak serbesttir, ama tek başına yasaktır.** Bir yüzde ancak altındaki satır listesiyle birlikte yazılır;
   liste yoksa yüzde silinir.
@@ -174,6 +174,51 @@ python3 scripts/status_report.py --ref origin/feature/mvp6-logistics --packs "ex
 
 Geliştirici tablo yazmaz, betiği çalıştırır ve çıktısını rapora yapıştırır. Betiğin bulamadığı şeyi **uydurmaz**:
 kanıt kaydı yoksa hücre `kayıt yok` yazar. `kayıt yok` gören CT, sayıyı değil eksiği konuşur.
+
+### 7.1 Yeni kip — yeni Control Tower'lar (CT-OPS-04)
+
+```bash
+python3 scripts/status_report.py --mode v2 --queue <kuyruk> [--ref <ref>] [--effort <taban yolu>] [--previous <rapor>@<commit>]
+```
+
+- **Tek kaynak:** `--ref` (varsayılan HEAD) bir kez tam SHA'ya çözülür. Kayıt dosyası, durum sözlüğü, geçiş tablosu,
+  kuyruk ve geçmişi, modül kimlik kaynakları, yeniden değerlendirme kararları, v2 kabul kayıtları, efor tabanı ve onayı
+  yalnız bu SHA'dan okunur; çalışma ağacı okunmaz (kirliyse rapor yalnız not düşer). Seçilen commit'ten kod
+  çalıştırılmaz: araç bugünkü haliyle çalışır, veri o SHA'dandır.
+- **Kapsam:** Yalnız kayıtlı ve `strict=yes` kuyruk; değilse çıkış 2. SCE / MVP6 ve eski Control Tower'lar varsayılan
+  kipi kullanır; o kip değişmez.
+- **Rapor alanları:** kaynak (SHA, yerel `origin/main`, YÜRÜRLÜK; uzak durum doğrulanmadı), tamlık, TABAN KAPSAMI
+  ilerlemesi (Backend · Frontend · Test · Genel), kanıt seviyesi dağılımı, tamamlanan işler, açık işler, engeller, açık
+  koşullar, bağlı karar kayıtları, karar bekleyenler (yalnız mekanik olarak bilinenler), yeniden işleme nedenleri
+  (`neden:` öneki; yoksa bilinmiyor), REP-001 §2 tablosu (modül tam kimlikle, FU korunur), önceki rapordan farklar.
+- **Makine bloğu:** Raporun sonunda kapalı şemalı bir JSON bloğu ve `rapor-sha256` vardır; görünen rapor bu bloktan
+  üretilir. `complete` ve `percentages_valid` alanları tamlığı ve yüzdelerin geçerliliğini söyler; çıkış 0 yalnız
+  raporun üretildiğini söyler.
+
+**Efor tabanı (isteğe bağlı).** Yoksa her yüzde alanı tam olarak "Taban yok — hesaplanamadı" yazar. Varsa
+`execution/delivery/effort/<kuyruk>.md` (ya da `--effort`), şablon `execution/delivery/effort-ledger-template.md`:
+
+- UTF-8, yalnız LF, tek satır sonuyla biter; künye katı okunur (`format: effort-ledger-v1`, `queue`,
+  `baseline_version`, `unit`, `approval_record`, isteğe bağlı `weights`); tek tablo `| ID | Backend | Frontend | Test |`;
+  sayılar 0–999999.99, işaretsiz, üssüz; kimlikler tekil, kuyrukta var, `-R` satırı değil.
+- **Onay:** `approval_record` `docs/records/decisions/` altında, künyesinde tek `status: approved|decided` olan ve
+  `ledger: <bu yol>`, `baseline_version`, `ledger_content_sha256` satırlarını birer kez taşıyan kayıttır. Özet, taban
+  dosyasının UTF-8 baytlarından `approval_record` künye satırı çıkarılarak hesaplanır. Sayı ya da ağırlık değişirse onay
+  geçmez. Onay kaydının seçilen SHA'daki içeriği, tabanın gösterdiği onay commit'indekiyle bayt bayt aynı olmalıdır;
+  sonradan değişmiş, geri çekilmiş ya da silinmiş onay yüzdeyi engeller.
+- **Formül:** her disiplin için `Σ (sayılan işlerin eforu) / Σ (tabandaki bütün işlerin eforu)`; pay ve payda yazılır.
+  Bir iş, zincirinin tamamı geçerli ve yürürlükteki revizyonu (en yüksek `-R<n>` ya da işin kendisi) ACCEPTED, kaydı
+  ACCEPTED'e izin veriyor, aynı modülde ve `depends_on` kökü gösteriyorsa bir kez sayılır. Koşullu ya da reddedilmiş
+  kayıt, açık ya da başarısız yeni revizyon sayılmaz; geçersiz bir üst revizyon eski kabulü geri getirmez. Genel yüzde
+  yalnız onaylı ağırlıklarla. Payda 0 ise o alan "Taban yok — hesaplanamadı".
+- Tabanda olmayan kuyruk işleri ayrı listelenir, yüzdeye girmez. Kuyruk ya da kabul kaynağı geçersizse, taban
+  geçersizse yüzde basılmaz, gerekçesi yazılır. Görev adedinden yüzde üretilmez.
+- **Önceki rapor:** özeti, kapalı şeması, aynı kuyruk, kaynak SHA'sının ve efor tabanı kimliğinin gerçek commit'lerle
+  eşleşmesi doğrulanır. İş verisi ve hesapları da önceki raporun kendi kaynak SHA'sından yeniden üretilip karşılaştırılır
+  (önceki raporun kendi önceki bağlantısı açılmaz; kaynak etiketi, yerel `origin/main`, YÜRÜRLÜK, ata ilişkisi, uzak durum
+  ve kirli not gözlem alanıdır, karşılaştırılmaz); tutmazsa fark bölümü "hesaplanamadı" yazar. Taban değiştiyse yüzde farkı karşılaştırılabilir ilerleme olarak sunulmaz.
+- **Sınır:** Yüzde, onaylı tabandaki kabul edilmiş eforu ölçer; işin kalitesini ölçmez. Yalnız yerelde duran rapor
+  yayımlanmış kanıt değildir (§3).
 
 ---
 

@@ -40,12 +40,17 @@ def load_blueprint(root):
     path = os.path.join(root, BLUEPRINT)
     if not os.path.exists(path):
         return None
+    return blueprint_from_workbook(path)
+
+
+def blueprint_from_workbook(source):
+    """load_blueprint's parser: source is a path or a binary file object (e.g. a commit's blob). Same result rules."""
     try:
         import openpyxl
     except ImportError:
         return None
     try:
-        wb = openpyxl.load_workbook(path, read_only=True, data_only=True)
+        wb = openpyxl.load_workbook(source, read_only=True, data_only=True)
     except Exception:
         return None
     if "Blueprint_Data" not in wb.sheetnames:
@@ -68,10 +73,16 @@ def load_blueprint(root):
 
 def load_registry(root):
     path = os.path.join(root, REGISTRY)
-    rows = []
     if not os.path.exists(path):
-        return rows
-    for line in open(path, encoding="utf-8"):
+        return []
+    with open(path, encoding="utf-8") as f:
+        return registry_from_lines(f)
+
+
+def registry_from_lines(lines):
+    """load_registry's parser: any iterable of the registry's lines (a file, or a commit's blob split into lines)."""
+    rows = []
+    for line in lines:
         s = line.strip()
         if not s.startswith("|"):
             continue
@@ -99,21 +110,28 @@ def load_packs(root):
         fid = None
         try:
             with open(p, encoding="utf-8") as f:
-                in_fm = False
-                for ln in f:
-                    if ln.strip() == "---":
-                        if in_fm:
-                            break
-                        in_fm = True
-                        continue
-                    if in_fm:
-                        m = re.match(r"\s*id:\s*(\S+)", ln)
-                        if m:
-                            fid = m.group(1).strip()
+                fid = pack_id_from_lines(f)
         except OSError:
             pass
         out[p] = fid
     return out
+
+
+def pack_id_from_lines(lines):
+    """load_packs' parser for one pack: the front matter's last `id:` value, or None."""
+    fid = None
+    in_fm = False
+    for ln in lines:
+        if ln.strip() == "---":
+            if in_fm:
+                break
+            in_fm = True
+            continue
+        if in_fm:
+            m = re.match(r"\s*id:\s*(\S+)", ln)
+            if m:
+                fid = m.group(1).strip()
+    return fid
 
 
 def split_id(mid):

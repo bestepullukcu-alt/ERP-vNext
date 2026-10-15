@@ -206,6 +206,14 @@ def module_problem(value: str, known: dict) -> str | None:
     return f"{value} kayıt dosyasında, Blueprint'te ya da paketlerde yok"
 
 
+def known_modules_from(reg: list[dict], bp: dict | None, packs: set, path_exists, is_deprecated) -> dict:
+    """The module id rules of known_modules() on given data: registry rows, Blueprint {id: name} (None = unreadable),
+    pack ids, a path check for ortak: scope records. Used with working-tree data or with a fixed commit's blobs."""
+    active = {r["id"] for r in reg if not is_deprecated(r)} | set(bp or {}) | set(packs)
+    return {"active": active, "deprecated": {r["id"] for r in reg if is_deprecated(r)} - active,
+            "blueprint": bp is not None, "registry": bool(reg), "path_exists": path_exists}
+
+
 def known_modules() -> dict:
     """Module ids from the same sources and rules as .antigravity/scripts/verify_module_id.py (imported, not copied)."""
     import importlib.util
@@ -215,9 +223,8 @@ def known_modules() -> dict:
     reg = vmi.load_registry(str(ROOT))
     bp = vmi.load_blueprint(str(ROOT))
     packs = {fid for fid in vmi.load_packs(str(ROOT)).values() if fid}
-    active = {r["id"] for r in reg if not vmi.is_deprecated(r)} | set(bp or {}) | packs
-    return {"active": active, "deprecated": {r["id"] for r in reg if vmi.is_deprecated(r)} - active,
-            "blueprint": bp is not None, "registry": bool(reg), "path_exists": lambda rel: (ROOT / rel).resolve().is_relative_to(ROOT) and (ROOT / rel).exists()}
+    return known_modules_from(reg, bp, packs,
+                              lambda rel: (ROOT / rel).resolve().is_relative_to(ROOT) and (ROOT / rel).exists(), vmi.is_deprecated)
 
 
 def terminal_exits(snapshots: list[Table], terminal: set[str]) -> list[tuple[str | None, str]]:
@@ -349,10 +356,12 @@ def check_queue(cur: Table, base: Table, vocab: dict[str, dict], strict: bool = 
                     rr_i = base.index("reassessment_record")  # its own column; old strict data without it: record
                     src_i = rr_i if rr_i is not None else rec_i
                     rec = (row[src_i] if src_i is not None else "").split("@")[0].strip()
-                    if not (rec.startswith("docs/records/decisions/") and ".." not in Path(rec).parts
-                            and (ROOT / rec).is_file()):
+                    reader = profile.get("read_file")  # CT-OPS-04: a fixed commit's blobs instead of the working tree
+                    inside = rec.startswith("docs/records/decisions/") and ".." not in Path(rec).parts
+                    text = (reader(rec) if inside else None) if reader else None
+                    if not (inside and (text is not None if reader else (ROOT / rec).is_file())):
                         error(row[id_i], f"satır {i} {row[id_i]}: -R{n} için yeniden değerlendirme kaydı gerekli (SOP §28.2)")
-                    elif not decision_resolved(ROOT / rec):
+                    elif not (decision_resolved_text(text) if reader else decision_resolved(ROOT / rec)):
                         error(row[id_i], f"satır {i} {row[id_i]}: -R{n} yeniden değerlendirme kaydı onaylı ya da karara "
                                          f"bağlanmış değil (künyede tek 'status: approved|decided' yok) — SOP §28.2")
     for i, row in enumerate(cur.rows, start=2):
@@ -700,7 +709,11 @@ def profile_from_rows(queue: dict, vocab: dict[str, dict], states: list[dict], r
 def decision_resolved(path: Path) -> bool:
     """A reassessment record counts as resolved only when its künye holds exactly one status that is approved or
     decided. The file's existence alone proves nothing; whether the decision really resolves the cause is the CT's."""
-    lines = path.read_text(encoding="utf-8", errors="replace").replace("\r\n", "\n").split("\n")
+    return decision_resolved_text(path.read_text(encoding="utf-8", errors="replace"))
+
+
+def decision_resolved_text(text: str) -> bool:
+    lines = text.replace("\r\n", "\n").split("\n")
     if not lines or lines[0].strip() != "---":
         return False
     statuses = []
@@ -1028,6 +1041,27 @@ def self_test() -> int:
     draft_dec = "docs/records/decisions/2026-10/ct-audit-corrections-2026-10-15-01.md"
     cases.append(("sabotage (Y3): a reassessment record that is not an approved / decided decision -> refused (SOP §28.2)",
                   any("§28.2" in e for e in cq(r3_ready.replace(dec, draft_dec)))))
+    # CT-OPS-04: the module and decision data can come from a fixed commit instead of the working tree
+    only_sha = "docs/records/decisions/2026-10/only-in-the-fixed-commit.md"
+    texts = {only_sha: "---\nstatus: approved\n---\n"}
+    prof_sha = dict(prof, read_file=lambda rel: texts.get(rel))
+    cq_sha = lambda rows, pr=prof_sha: check_queue(Table(h2 + rows), b2r, v7, True, pr)["errors"]
+    r3_sha = base_rows + f"W1-R3\tfix\tMOD-0288\tREADY\tCT\tW1\t-\t2026-10-15\t-\t{only_sha}\n"
+    cases.append(("fixed source: a -R3 decision that exists only in the fixed commit, approved -> no error", not cq_sha(r3_sha)))
+    cases.append(("sabotage (fixed source): approved in the working tree but a draft in the fixed commit -> refused (SOP §28.2)",
+                  any("§28.2" in e for e in cq_sha(r3_ready, dict(prof_sha, read_file=lambda rel: "---\nstatus: draft\n---\n")))))
+    cases.append(("sabotage (fixed source): the decision missing in the fixed commit (present in the working tree) -> refused",
+                  any("§28.2" in e for e in cq_sha(r3_ready, dict(prof_sha, read_file=lambda rel: None)))))
+    km = known_modules_from([{"id": "MOD-0001", "name": "a", "type": "Module", "status": "active", "alias": "", "replacement": "", "notes": ""},
+                             {"id": "MOD-0009", "name": "b", "type": "Alias", "status": "deprecated", "alias": "", "replacement": "", "notes": ""}],
+                            {"MOD-0002": "x"}, {"MOD-0003"}, lambda rel: rel == "docs/x.md",
+                            lambda r: "deprecated" in r["status"])
+    cases.append(("known_modules_from: active from registry, Blueprint and packs; deprecated apart; path check passed in",
+                  km["active"] == {"MOD-0001", "MOD-0002", "MOD-0003"} and km["deprecated"] == {"MOD-0009"}
+                  and km["blueprint"] and km["registry"] and km["path_exists"]("docs/x.md")))
+    km_none = known_modules_from([], None, set(), lambda rel: False, lambda r: False)
+    cases.append(("sabotage: known_modules_from without a readable Blueprint or registry -> fail-closed flags",
+                  not km_none["blueprint"] and not km_none["registry"]))
     no_check = {k: v for k, v in prof.items() if k != "acceptance"}
     cases.append(("CT-OPS-03: a strict profile without the acceptance check -> ACCEPTED not silently accepted",
                   any("kabul denetimi yok" in e for e in check_queue(Table(h + ok_rows), b7, v7, True, no_check)["errors"])))

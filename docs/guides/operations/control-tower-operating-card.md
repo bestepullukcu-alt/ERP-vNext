@@ -142,6 +142,8 @@ Aşağıdakilerde STOP: wrong branch/HEAD, overlapping dirty files, draft pack, 
 - [ ] **Kabul kaydı (yeni Control Tower, CT-OPS-03):** ACCEPTED'ten önce
   `python3 scripts/acceptance_record.py check <kayıt>@<commit> --queue <kuyruk> --wp <WP> --module <modül>` çıkış 0;
   satırın `record` sütunu bu kaydı gösterir (REP-001 §6.1–6.2, SOP §29.5).
+- [ ] **Rapor (yeni Control Tower, CT-OPS-04):** `python3 scripts/status_report.py --mode v2 --queue <kuyruk>`; yüzde
+  yalnız onaylı efor tabanından, yoksa "Taban yok — hesaplanamadı" (REP-001 §7.1).
 - [ ] Dependency gates yeniden hesaplandı.
 - [ ] Newly-unblocked work belirlendi.
 - [ ] Güvenli paralellik varsa sonraki **2+ WP** üretildi; yoksa neden yazıldı.
