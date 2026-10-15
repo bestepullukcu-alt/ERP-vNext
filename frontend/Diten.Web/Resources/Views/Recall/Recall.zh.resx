@@ -178,4 +178,222 @@
   <data name="Help.RECALLCASES.Step1" xml:space="preserve"><value>使用类型、状态、级别、产品和开启日期。级别筛选仅显示真实案例。</value></data>
   <data name="Help.RECALLCASES.Step2Title" xml:space="preserve"><value>区分演练</value></data>
   <data name="Help.RECALLCASES.Step2" xml:space="preserve"><value>演练行标注“演练”，显示结果和时长，没有级别或层级。</value></data>
+  <data name="Recall.Case.Crumb" xml:space="preserve"><value>案例 {0}</value></data>
+  <data name="Recall.Case.NotFound" xml:space="preserve"><value>未找到召回案例。</value></data>
+  <data name="Recall.Case.Product" xml:space="preserve"><value>产品</value></data>
+  <data name="Recall.Case.RootLot" xml:space="preserve"><value>根批次</value></data>
+  <data name="Recall.Case.Reason" xml:space="preserve"><value>原因</value></data>
+  <data name="Recall.Case.OpenedBy" xml:space="preserve"><value>开立人 · 时间</value></data>
+  <data name="Recall.Case.Direction" xml:space="preserve"><value>追溯方向</value></data>
+  <data name="Recall.Case.Close" xml:space="preserve"><value>关闭案例</value></data>
+  <data name="Recall.Case.Cancel" xml:space="preserve"><value>取消案例</value></data>
+  <data name="Recall.Case.ClosedInfo" xml:space="preserve"><value>{0} 于 {1} 关闭</value></data>
+  <data name="Recall.Case.CancelledInfo" xml:space="preserve"><value>{0} 已取消：{1}</value></data>
+  <data name="Recall.Case.Signature" xml:space="preserve"><value>电子签名 {0}</value></data>
+  <data name="Recall.Case.YouSubmitted" xml:space="preserve"><value>此范围由您提交，需由另一位有审批权限的用户批准（四眼原则）。</value></data>
+  <data name="Recall.Case.YouCompleted" xml:space="preserve"><value>有效性检查由您完成，需由另一位用户关闭案例（四眼原则）。</value></data>
+  <data name="Recall.Case.PendingRevision" xml:space="preserve"><value>范围修订 {0} 待批准（新增 {1} 项）。在此期间已批准的范围及其锁定保持不变。</value></data>
+  <data name="Recall.Case.Saved" xml:space="preserve"><value>已保存。</value></data>
+  <data name="Recall.CaseTab.Scope" xml:space="preserve"><value>范围</value></data>
+  <data name="Recall.CaseTab.Stock" xml:space="preserve"><value>现有库存</value></data>
+  <data name="Recall.CaseTab.Customers" xml:space="preserve"><value>客户与发货</value></data>
+  <data name="Recall.CaseTab.Returns" xml:space="preserve"><value>退回</value></data>
+  <data name="Recall.CaseTab.Effectiveness" xml:space="preserve"><value>有效性检查</value></data>
+  <data name="Recall.CaseTab.Timeline" xml:space="preserve"><value>时间线</value></data>
+  <data name="Recall.Scope.Summary" xml:space="preserve"><value>{0} 项 · 排除 {1} 项 · 修订 {2}</value></data>
+  <data name="Recall.Scope.Submit" xml:space="preserve"><value>提交范围审批</value></data>
+  <data name="Recall.Scope.Return" xml:space="preserve"><value>退回草稿</value></data>
+  <data name="Recall.Scope.Approve" xml:space="preserve"><value>批准范围</value></data>
+  <data name="Recall.Scope.Rescan" xml:space="preserve"><value>重新追溯</value></data>
+  <data name="Recall.Scope.Revise" xml:space="preserve"><value>范围修订</value></data>
+  <data name="Recall.Scope.Included" xml:space="preserve"><value>包含</value></data>
+  <data name="Recall.Scope.Excluded" xml:space="preserve"><value>排除</value></data>
+  <data name="Recall.Scope.ExcludedByParent" xml:space="preserve"><value>随上级一起排除</value></data>
+  <data name="Recall.Scope.ExclusionReason" xml:space="preserve"><value>排除理由</value></data>
+  <data name="Recall.Scope.SaveMarks" xml:space="preserve"><value>保存包含 / 排除</value></data>
+  <data name="Recall.Scope.Root" xml:space="preserve"><value>根</value></data>
+  <data name="Recall.Scope.New" xml:space="preserve"><value>新</value></data>
+  <data name="Recall.Scope.EditHint" xml:space="preserve"><value>包含 / 排除只能在范围批准前更改；排除某项会同时排除其下所有内容。</value></data>
+  <data name="Recall.Scope.LockedHint" xml:space="preserve"><value>范围已批准；如需更改须进行范围修订。</value></data>
+  <data name="Recall.Scope.Seal" xml:space="preserve"><value>封印 (SHA-256) {0}</value></data>
+  <data name="Recall.Scope.DiffTitle" xml:space="preserve"><value>实时重新追溯与已批准范围对比</value></data>
+  <data name="Recall.Scope.DiffNone" xml:space="preserve"><value>无差异：实时追溯与已批准范围一致。</value></data>
+  <data name="Recall.Scope.DiffFound" xml:space="preserve"><value>{0} 项范围外发现：现在发现，不在已批准范围内。它们本身不会改变任何内容。</value></data>
+  <data name="Recall.Scope.DiffRemoved" xml:space="preserve"><value>已批准范围中有 {0} 项不再出现在实时追溯中。</value></data>
+  <data name="Recall.Scope.ReviseReason" xml:space="preserve"><value>为何添加这些项目？（至少 10 个字符）</value></data>
+  <data name="Recall.SCol.Node" xml:space="preserve"><value>节点</value></data>
+  <data name="Recall.SCol.Place" xml:space="preserve"><value>仓库 / 客户</value></data>
+  <data name="Recall.SCol.Quantity" xml:space="preserve"><value>数量</value></data>
+  <data name="Recall.SCol.Mark" xml:space="preserve"><value>包含 / 排除</value></data>
+  <data name="Recall.Stock.Info" xml:space="preserve"><value>隔离决定在隔离模块中作出；此处仅显示请求及其状态。</value></data>
+  <data name="Recall.Stock.SendSelected" xml:space="preserve"><value>隔离所选项（{0}）</value></data>
+  <data name="Recall.Stock.Retry" xml:space="preserve"><value>重试</value></data>
+  <data name="Recall.Stock.Segregate" xml:space="preserve"><value>确认物理隔离</value></data>
+  <data name="Recall.Stock.Segregated" xml:space="preserve"><value>已确认 {0}</value></data>
+  <data name="Recall.Stock.NoRequest" xml:space="preserve"><value>无请求</value></data>
+  <data name="Recall.Stock.Empty" xml:space="preserve"><value>本公司没有该案例批次的库存。</value></data>
+  <data name="Recall.Stock.Reserved" xml:space="preserve"><value>已预留：{0}</value></data>
+  <data name="Recall.Stock.Totals" xml:space="preserve"><value>合计 {0}</value></data>
+  <data name="Recall.StCol.Place" xml:space="preserve"><value>仓库 / 库位</value></data>
+  <data name="Recall.StCol.Lot" xml:space="preserve"><value>批次</value></data>
+  <data name="Recall.StCol.Request" xml:space="preserve"><value>隔离状态</value></data>
+  <data name="Recall.StCol.Hold" xml:space="preserve"><value>隔离记录</value></data>
+  <data name="Recall.StCol.Segregation" xml:space="preserve"><value>物理隔离</value></data>
+  <data name="Recall.ReqStatus.Pending" xml:space="preserve"><value>待发送</value></data>
+  <data name="Recall.ReqStatus.Held" xml:space="preserve"><value>已隔离</value></data>
+  <data name="Recall.ReqStatus.PartiallyHeld" xml:space="preserve"><value>部分隔离</value></data>
+  <data name="Recall.ReqStatus.BlockedByReservation" xml:space="preserve"><value>因预留受阻</value></data>
+  <data name="Recall.ReqStatus.NothingAvailable" xml:space="preserve"><value>无可用库存</value></data>
+  <data name="Recall.ReqStatus.Failed" xml:space="preserve"><value>失败</value></data>
+  <data name="Recall.ReqStatus.NotNeeded" xml:space="preserve"><value>无需请求</value></data>
+  <data name="Recall.NotNeeded.AlreadyQuarantined" xml:space="preserve"><value>已在隔离中</value></data>
+  <data name="Recall.NotNeeded.AlreadyBlocked" xml:space="preserve"><value>已锁定</value></data>
+  <data name="Recall.NotNeeded.LotBlocked" xml:space="preserve"><value>批次已锁定</value></data>
+  <data name="Recall.NotNeeded.LotExpired" xml:space="preserve"><value>批次已过期</value></data>
+  <data name="Recall.NotNeeded.Excluded" xml:space="preserve"><value>已排除出范围</value></data>
+  <data name="Recall.Seg.Title" xml:space="preserve"><value>确认物理隔离</value></data>
+  <data name="Recall.Seg.Quantity" xml:space="preserve"><value>隔离数量</value></data>
+  <data name="Recall.Seg.Note" xml:space="preserve"><value>备注</value></data>
+  <data name="Recall.Seg.Hint" xml:space="preserve"><value>仅记录——不产生库存移动。移动库存需由您自行进行库位转移。</value></data>
+  <data name="Recall.Cust.Summary" xml:space="preserve"><value>已通知 {0} / {1} 位客户 · 通知仅为记录，不发送电子邮件</value></data>
+  <data name="Recall.Cust.Empty" xml:space="preserve"><value>范围内没有发货。</value></data>
+  <data name="Recall.CCol.Customer" xml:space="preserve"><value>客户</value></data>
+  <data name="Recall.CCol.Shipment" xml:space="preserve"><value>发货</value></data>
+  <data name="Recall.CCol.Delivery" xml:space="preserve"><value>交付</value></data>
+  <data name="Recall.CCol.Shipped" xml:space="preserve"><value>已发</value></data>
+  <data name="Recall.CCol.Returned" xml:space="preserve"><value>已退回</value></data>
+  <data name="Recall.CCol.Open" xml:space="preserve"><value>未结</value></data>
+  <data name="Recall.CCol.Notification" xml:space="preserve"><value>通知</value></data>
+  <data name="Recall.Cust.Notified" xml:space="preserve"><value>已通知</value></data>
+  <data name="Recall.Cust.NotNotified" xml:space="preserve"><value>未通知</value></data>
+  <data name="Recall.Cust.Mark" xml:space="preserve"><value>标记为已通知</value></data>
+  <data name="Recall.Cust.Consumption" xml:space="preserve"><value>添加消耗声明</value></data>
+  <data name="Recall.Cust.Consumed" xml:space="preserve"><value>已声明消耗 {0}</value></data>
+  <data name="Recall.Cust.Delivered" xml:space="preserve"><value>已于 {0} 交付</value></data>
+  <data name="Recall.Cust.NotDelivered" xml:space="preserve"><value>尚未交付（{0}）</value></data>
+  <data name="Recall.Read.NotApplicable" xml:space="preserve"><value>无发货记录——库存账数据</value></data>
+  <data name="Recall.Read.Forbidden" xml:space="preserve"><value>无法读取发货——权限不足</value></data>
+  <data name="Recall.Read.NotFound" xml:space="preserve"><value>未找到发货</value></data>
+  <data name="Recall.Read.Unavailable" xml:space="preserve"><value>发货服务不可用</value></data>
+  <data name="Recall.Notif.Title" xml:space="preserve"><value>记录客户通知</value></data>
+  <data name="Recall.Notif.Date" xml:space="preserve"><value>通知日期</value></data>
+  <data name="Recall.Notif.Channel" xml:space="preserve"><value>渠道</value></data>
+  <data name="Recall.Channel.Phone" xml:space="preserve"><value>电话</value></data>
+  <data name="Recall.Channel.ExternalEmail" xml:space="preserve"><value>电子邮件（系统外）</value></data>
+  <data name="Recall.Channel.Fax" xml:space="preserve"><value>传真</value></data>
+  <data name="Recall.Channel.InPerson" xml:space="preserve"><value>当面</value></data>
+  <data name="Recall.Channel.Other" xml:space="preserve"><value>其他</value></data>
+  <data name="Recall.Cons.Title" xml:space="preserve"><value>消耗声明</value></data>
+  <data name="Recall.Cons.Product" xml:space="preserve"><value>产品</value></data>
+  <data name="Recall.Cons.Quantity" xml:space="preserve"><value>数量</value></data>
+  <data name="Recall.Cons.Date" xml:space="preserve"><value>声明日期</value></data>
+  <data name="Recall.Cons.Evidence" xml:space="preserve"><value>证明（文件、函件）</value></data>
+  <data name="Recall.Ret.Info" xml:space="preserve"><value>客户退货以库存移动记录；记录后会在此显示为候选项。</value></data>
+  <data name="Recall.Ret.Linked" xml:space="preserve"><value>已关联的退货</value></data>
+  <data name="Recall.Ret.Candidates" xml:space="preserve"><value>候选项</value></data>
+  <data name="Recall.Ret.Empty" xml:space="preserve"><value>没有已关联的退货。</value></data>
+  <data name="Recall.Ret.NoCandidates" xml:space="preserve"><value>没有候选项。</value></data>
+  <data name="Recall.Ret.Link" xml:space="preserve"><value>关联退货</value></data>
+  <data name="Recall.RCol.Movement" xml:space="preserve"><value>移动</value></data>
+  <data name="Recall.RCol.Status" xml:space="preserve"><value>库存状态</value></data>
+  <data name="Recall.RCol.Date" xml:space="preserve"><value>过账</value></data>
+  <data name="Recall.RCol.Source" xml:space="preserve"><value>来源</value></data>
+  <data name="Recall.Ret.Ineligible.NotQuarantined" xml:space="preserve"><value>未扣留——退回到可用库存</value></data>
+  <data name="Recall.Ret.Ineligible.NotInScope" xml:space="preserve"><value>批次不在范围内</value></data>
+  <data name="Recall.Ret.Ineligible.BeforeApproval" xml:space="preserve"><value>在范围批准前过账</value></data>
+  <data name="Recall.Ret.Ineligible.AlreadyLinked" xml:space="preserve"><value>已关联到其他案例</value></data>
+  <data name="Recall.Ret.Source.Mod0186Return" xml:space="preserve"><value>退货物流</value></data>
+  <data name="Recall.Ret.Source.ManualCustomerReturn" xml:space="preserve"><value>客户退货（手工）</value></data>
+  <data name="Recall.Link.Reference" xml:space="preserve"><value>退货参考号</value></data>
+  <data name="Recall.Eff.Shipped" xml:space="preserve"><value>已发</value></data>
+  <data name="Recall.Eff.Returned" xml:space="preserve"><value>已退回</value></data>
+  <data name="Recall.Eff.Consumed" xml:space="preserve"><value>声明已消耗</value></data>
+  <data name="Recall.Eff.Open" xml:space="preserve"><value>未结数量</value></data>
+  <data name="Recall.Eff.Percent" xml:space="preserve"><value>有效性</value></data>
+  <data name="Recall.Eff.Target" xml:space="preserve"><value>目标 {0}%（{1} 级）</value></data>
+  <data name="Recall.Eff.Met" xml:space="preserve"><value>达标</value></data>
+  <data name="Recall.Eff.NotMet" xml:space="preserve"><value>未达标</value></data>
+  <data name="Recall.Eff.Live" xml:space="preserve"><value>实时——在检查完成前会变化。</value></data>
+  <data name="Recall.Eff.Stored" xml:space="preserve"><value>{0} 的已存结果</value></data>
+  <data name="Recall.Eff.Start" xml:space="preserve"><value>开始有效性检查</value></data>
+  <data name="Recall.Eff.Complete" xml:space="preserve"><value>完成有效性检查</value></data>
+  <data name="Recall.Eff.PerCustomer" xml:space="preserve"><value>按客户的有效性</value></data>
+  <data name="Recall.Eff.Empty" xml:space="preserve"><value>没有发货——无可衡量内容。</value></data>
+  <data name="Recall.Eff.PerUnit" xml:space="preserve"><value>按产品和单位——不同单位绝不相加。</value></data>
+  <data name="Recall.Tl.Empty" xml:space="preserve"><value>尚无事件。</value></data>
+  <data name="Recall.Event.Opened" xml:space="preserve"><value>案例已开立</value></data>
+  <data name="Recall.Event.ScopeItemsAdded" xml:space="preserve"><value>已添加范围项目</value></data>
+  <data name="Recall.Event.ScopeMarked" xml:space="preserve"><value>包含 / 排除已更改</value></data>
+  <data name="Recall.Event.ScopeSubmitted" xml:space="preserve"><value>已提交范围审批</value></data>
+  <data name="Recall.Event.ScopeReturned" xml:space="preserve"><value>范围已退回草稿</value></data>
+  <data name="Recall.Event.ScopeApproved" xml:space="preserve"><value>范围已批准</value></data>
+  <data name="Recall.Event.SegregationConfirmed" xml:space="preserve"><value>已确认物理隔离</value></data>
+  <data name="Recall.Event.CustomerNotified" xml:space="preserve"><value>已通知客户</value></data>
+  <data name="Recall.Event.ConsumptionDeclared" xml:space="preserve"><value>已声明消耗</value></data>
+  <data name="Recall.Event.EffectivenessStarted" xml:space="preserve"><value>有效性检查已开始</value></data>
+  <data name="Recall.Event.EffectivenessCompleted" xml:space="preserve"><value>有效性检查已完成</value></data>
+  <data name="Recall.Event.Closed" xml:space="preserve"><value>案例已关闭</value></data>
+  <data name="Recall.Event.Cancelled" xml:space="preserve"><value>案例已取消</value></data>
+  <data name="Recall.Event.TraceRun" xml:space="preserve"><value>已执行追溯</value></data>
+  <data name="Recall.Event.OutOfScopeFinding" xml:space="preserve"><value>范围外发现</value></data>
+  <data name="Recall.Event.QuarantineRequested" xml:space="preserve"><value>已请求隔离</value></data>
+  <data name="Recall.Event.QuarantineFailed" xml:space="preserve"><value>隔离请求失败</value></data>
+  <data name="Recall.Event.QuarantineRetried" xml:space="preserve"><value>已重试隔离请求</value></data>
+  <data name="Recall.Event.ExitRefused" xml:space="preserve"><value>出库被拒绝（批次在召回中）</value></data>
+  <data name="Recall.Event.ReturnLinked" xml:space="preserve"><value>已关联退货</value></data>
+  <data name="Recall.Event.ScopeRevised" xml:space="preserve"><value>已提交范围修订</value></data>
+  <data name="Recall.Sign.ApproveTitle" xml:space="preserve"><value>批准范围</value></data>
+  <data name="Recall.Sign.CompleteTitle" xml:space="preserve"><value>完成有效性检查</value></data>
+  <data name="Recall.Sign.CloseTitle" xml:space="preserve"><value>关闭案例</value></data>
+  <data name="Recall.Sign.Step1" xml:space="preserve"><value>1 · 决定</value></data>
+  <data name="Recall.Sign.Step2" xml:space="preserve"><value>2 · 电子签名</value></data>
+  <data name="Recall.Sign.ApproveNote" xml:space="preserve"><value>批准备注（可选）</value></data>
+  <data name="Recall.Sign.CompleteNote" xml:space="preserve"><value>备注（至少 10 个字符）</value></data>
+  <data name="Recall.Sign.Summary" xml:space="preserve"><value>关闭摘要（至少 10 个字符）</value></data>
+  <data name="Recall.Sign.Acceptance" xml:space="preserve"><value>未结数量的接受理由</value></data>
+  <data name="Recall.Sign.AcceptWarn" xml:space="preserve"><value>仍有未结数量。关闭需要接受理由。</value></data>
+  <data name="Recall.Sign.Next" xml:space="preserve"><value>继续</value></data>
+  <data name="Recall.Sign.SignSave" xml:space="preserve"><value>签名并保存</value></data>
+  <data name="Recall.Sign.Save" xml:space="preserve"><value>保存</value></data>
+  <data name="Recall.Sign.ToSign" xml:space="preserve"><value>决定已准备（15 分钟内有效）。接下来将打开电子签名窗口；取消窗口则不会保存任何内容。</value></data>
+  <data name="Recall.Sign.NoSignature" xml:space="preserve"><value>公司的电子签名策略对此决定不要求签名；将不签名保存。</value></data>
+  <data name="Recall.Sign.Cancelled" xml:space="preserve"><value>签名窗口已关闭；未保存任何内容。</value></data>
+  <data name="Recall.Sign.DoneSigned" xml:space="preserve"><value>已使用电子签名 {0} 保存。</value></data>
+  <data name="Recall.Reason.ReturnTitle" xml:space="preserve"><value>将范围退回草稿</value></data>
+  <data name="Recall.Reason.CancelTitle" xml:space="preserve"><value>取消案例</value></data>
+  <data name="Recall.Reason.Label" xml:space="preserve"><value>理由（至少 10 个字符）</value></data>
+  <data name="Recall.Reason.Save" xml:space="preserve"><value>保存</value></data>
+  <data name="Recall.Errors.RECALL_SOD_VIOLATION" xml:space="preserve"><value>提交范围的人不能批准该范围。</value></data>
+  <data name="Recall.Errors.RECALL_SOD_VIOLATION_CLOSE" xml:space="preserve"><value>完成有效性检查的人不能关闭案例。</value></data>
+  <data name="Recall.Errors.RECALL_SIGNATURE_REQUIRED" xml:space="preserve"><value>此决定需要电子签名。</value></data>
+  <data name="Recall.Errors.RECALL_SIGNATURE_MISMATCH" xml:space="preserve"><value>签名与此决定不符（签名人、操作或内容已更改）。请重新准备决定。</value></data>
+  <data name="Recall.Errors.RECALL_PENDING_ACTION_MISMATCH" xml:space="preserve"><value>已准备的决定已过期或不一致。请重新准备。</value></data>
+  <data name="Recall.Errors.RECALL_SCOPE_CHANGED" xml:space="preserve"><value>范围自提交后已更改。请退回或重新提交。</value></data>
+  <data name="Recall.Errors.RECALL_INVALID_TRANSITION" xml:space="preserve"><value>在案例当前状态下无法执行此步骤。</value></data>
+  <data name="Recall.Errors.RECALL_CONFLICT" xml:space="preserve"><value>案例在此期间已被他人更改。页面已刷新，请重试。</value></data>
+  <data name="Recall.Errors.RECALL_OPEN_QUANTITY_ACCEPTANCE_REQUIRED" xml:space="preserve"><value>仍有未结数量：请填写接受理由。</value></data>
+  <data name="Recall.Errors.RECALL_SCOPE_EXCLUSION_REASON_REQUIRED" xml:space="preserve"><value>每个排除项都需填写至少 10 个字符的理由。</value></data>
+  <data name="Recall.Errors.RECALL_SCOPE_ITEM_NOT_MARKABLE" xml:space="preserve"><value>此项无法标记（根批次始终在范围内）。</value></data>
+  <data name="Recall.Errors.RECALL_QUARANTINE_REQUEST_NOT_RETRYABLE" xml:space="preserve"><value>此隔离请求无法重试。</value></data>
+  <data name="Recall.Errors.RECALL_QUARANTINE_REQUEST_EXISTS" xml:space="preserve"><value>该行已存在隔离请求。</value></data>
+  <data name="Recall.Errors.RECALL_SEGREGATION_NOT_HELD" xml:space="preserve"><value>只能为隔离中的库存确认物理隔离。</value></data>
+  <data name="Recall.Errors.RECALL_UNKNOWN_CUSTOMER" xml:space="preserve"><value>该客户不是此案例的客户。</value></data>
+  <data name="Recall.Errors.RECALL_QUANTITY_EXCEEDS_SHIPPED" xml:space="preserve"><value>退回与消耗之和不能超过发给该客户的数量。</value></data>
+  <data name="Recall.Errors.RECALL_RETURN_NOT_ELIGIBLE" xml:space="preserve"><value>此移动无法关联（不是批准后范围内批次的客户退货）。</value></data>
+  <data name="Recall.Errors.RECALL_RETURN_NOT_QUARANTINED" xml:space="preserve"><value>退回到可用库存的退货无法关联；召回货物必须被扣留。</value></data>
+  <data name="Recall.Errors.RECALL_RETURN_ALREADY_LINKED" xml:space="preserve"><value>此退货已关联。</value></data>
+  <data name="Recall.Errors.RECALL_CASE_NOT_FOUND" xml:space="preserve"><value>未找到召回案例。</value></data>
+  <data name="Recall.Errors.LOT_UNDER_RECALL" xml:space="preserve"><value>该批次正在召回——出库已被阻止。</value></data>
+  <data name="Recall.Errors.ESIGN_UNAVAILABLE" xml:space="preserve"><value>无法打开电子签名窗口，请稍后重试。</value></data>
+  <data name="Help.RECALLCASEDETAILS.Purpose" xml:space="preserve"><value>从草稿到关闭处理一个召回案例：范围、库存、客户、退货、有效性和历史。</value></data>
+  <data name="Help.RECALLCASEDETAILS.Audience" xml:space="preserve"><value>公司的质量（QA）、仓库和客户服务用户。</value></data>
+  <data name="Help.RECALLCASEDETAILS.Step1Title" xml:space="preserve"><value>标记并提交范围</value></data>
+  <data name="Help.RECALLCASEDETAILS.Step1" xml:space="preserve"><value>用理由排除不受影响的项目，然后提交范围审批。</value></data>
+  <data name="Help.RECALLCASEDETAILS.Step2Title" xml:space="preserve"><value>以电子签名批准</value></data>
+  <data name="Help.RECALLCASEDETAILS.Step2" xml:space="preserve"><value>由另一位用户批准范围；批次被锁定并发送隔离请求。</value></data>
+  <data name="Help.RECALLCASEDETAILS.Step3Title" xml:space="preserve"><value>跟进客户和退货</value></data>
+  <data name="Help.RECALLCASEDETAILS.Step3" xml:space="preserve"><value>记录每次通知和消耗，并关联每笔客户退货。</value></data>
+  <data name="Help.RECALLCASEDETAILS.Step4Title" xml:space="preserve"><value>检查有效性并关闭</value></data>
+  <data name="Help.RECALLCASEDETAILS.Step4" xml:space="preserve"><value>以电子签名完成有效性检查；由另一位用户关闭案例。</value></data>
+  <data name="Recall.Scope.PendingHint" xml:space="preserve"><value>范围正在等待批准；如需更改，请退回草稿。</value></data>
 </root>

@@ -178,4 +178,222 @@
   <data name="Help.RECALLCASES.Step1" xml:space="preserve"><value>Tür, durum, sınıf, ürün ve açılış tarihini kullanın. Sınıf süzgeci yalnız gerçek vakaları gösterir.</value></data>
   <data name="Help.RECALLCASES.Step2Title" xml:space="preserve"><value>Tatbikatları ayırt edin</value></data>
   <data name="Help.RECALLCASES.Step2" xml:space="preserve"><value>Tatbikat satırı “Tatbikat” der, sonucunu ve süresini gösterir; sınıfı ve düzeyi yoktur.</value></data>
+  <data name="Recall.Case.Crumb" xml:space="preserve"><value>Vaka {0}</value></data>
+  <data name="Recall.Case.NotFound" xml:space="preserve"><value>Geri çağırma vakası bulunamadı.</value></data>
+  <data name="Recall.Case.Product" xml:space="preserve"><value>Ürün</value></data>
+  <data name="Recall.Case.RootLot" xml:space="preserve"><value>Kök lot</value></data>
+  <data name="Recall.Case.Reason" xml:space="preserve"><value>Neden</value></data>
+  <data name="Recall.Case.OpenedBy" xml:space="preserve"><value>Açan · açılış</value></data>
+  <data name="Recall.Case.Direction" xml:space="preserve"><value>İzleme yönü</value></data>
+  <data name="Recall.Case.Close" xml:space="preserve"><value>Vakayı kapat</value></data>
+  <data name="Recall.Case.Cancel" xml:space="preserve"><value>Vakayı iptal et</value></data>
+  <data name="Recall.Case.ClosedInfo" xml:space="preserve"><value>{1} tarihinde {0} kapattı</value></data>
+  <data name="Recall.Case.CancelledInfo" xml:space="preserve"><value>{0} iptal etti: {1}</value></data>
+  <data name="Recall.Case.Signature" xml:space="preserve"><value>E-imza {0}</value></data>
+  <data name="Recall.Case.YouSubmitted" xml:space="preserve"><value>Bu kapsamı siz gönderdiniz. Onayı, onay yetkisi olan başka bir kullanıcı verir (dört göz).</value></data>
+  <data name="Recall.Case.YouCompleted" xml:space="preserve"><value>Etkinlik kontrolünü siz tamamladınız. Vakayı başka bir kullanıcı kapatır (dört göz).</value></data>
+  <data name="Recall.Case.PendingRevision" xml:space="preserve"><value>Kapsam revizyonu {0} onay bekliyor ({1} yeni kalem). Bu sırada onaylı kapsam ve engelleri yerinde kalır.</value></data>
+  <data name="Recall.Case.Saved" xml:space="preserve"><value>Kaydedildi.</value></data>
+  <data name="Recall.CaseTab.Scope" xml:space="preserve"><value>Kapsam</value></data>
+  <data name="Recall.CaseTab.Stock" xml:space="preserve"><value>Eldeki stok</value></data>
+  <data name="Recall.CaseTab.Customers" xml:space="preserve"><value>Müşteriler ve sevkiyatlar</value></data>
+  <data name="Recall.CaseTab.Returns" xml:space="preserve"><value>Geri dönüşler</value></data>
+  <data name="Recall.CaseTab.Effectiveness" xml:space="preserve"><value>Etkinlik kontrolü</value></data>
+  <data name="Recall.CaseTab.Timeline" xml:space="preserve"><value>Zaman çizelgesi</value></data>
+  <data name="Recall.Scope.Summary" xml:space="preserve"><value>{0} kalem · {1} hariç · revizyon {2}</value></data>
+  <data name="Recall.Scope.Submit" xml:space="preserve"><value>Kapsam onayına gönder</value></data>
+  <data name="Recall.Scope.Return" xml:space="preserve"><value>Geri gönder</value></data>
+  <data name="Recall.Scope.Approve" xml:space="preserve"><value>Kapsamı onayla</value></data>
+  <data name="Recall.Scope.Rescan" xml:space="preserve"><value>Yeniden izle</value></data>
+  <data name="Recall.Scope.Revise" xml:space="preserve"><value>Kapsam revizyonu</value></data>
+  <data name="Recall.Scope.Included" xml:space="preserve"><value>Dahil</value></data>
+  <data name="Recall.Scope.Excluded" xml:space="preserve"><value>Hariç</value></data>
+  <data name="Recall.Scope.ExcludedByParent" xml:space="preserve"><value>Üst kalemle birlikte hariç</value></data>
+  <data name="Recall.Scope.ExclusionReason" xml:space="preserve"><value>Hariç tutma gerekçesi</value></data>
+  <data name="Recall.Scope.SaveMarks" xml:space="preserve"><value>Dahil / hariç kaydet</value></data>
+  <data name="Recall.Scope.Root" xml:space="preserve"><value>Kök</value></data>
+  <data name="Recall.Scope.New" xml:space="preserve"><value>yeni</value></data>
+  <data name="Recall.Scope.EditHint" xml:space="preserve"><value>Dahil / hariç işareti yalnız kapsam onayından önce değiştirilebilir; bir kalemi hariç tutmak altındaki her şeyi hariç tutar.</value></data>
+  <data name="Recall.Scope.LockedHint" xml:space="preserve"><value>Kapsam onaylandı; değişiklik için kapsam revizyonu gerekir.</value></data>
+  <data name="Recall.Scope.Seal" xml:space="preserve"><value>Mühür (SHA-256) {0}</value></data>
+  <data name="Recall.Scope.DiffTitle" xml:space="preserve"><value>Canlı yeniden izleme ve onaylı kapsam</value></data>
+  <data name="Recall.Scope.DiffNone" xml:space="preserve"><value>Fark yok: canlı izleme onaylı kapsamla aynı.</value></data>
+  <data name="Recall.Scope.DiffFound" xml:space="preserve"><value>{0} kapsam dışı bulgu: şimdi bulundu, onaylı kapsamda yok. Kendiliğinden hiçbir şeyi değiştirmez.</value></data>
+  <data name="Recall.Scope.DiffRemoved" xml:space="preserve"><value>Onaylı kapsamın {0} kalemi artık canlı izlemede yok.</value></data>
+  <data name="Recall.Scope.ReviseReason" xml:space="preserve"><value>Bu kalemler neden ekleniyor? (en az 10 karakter)</value></data>
+  <data name="Recall.SCol.Node" xml:space="preserve"><value>Düğüm</value></data>
+  <data name="Recall.SCol.Place" xml:space="preserve"><value>Depo / müşteri</value></data>
+  <data name="Recall.SCol.Quantity" xml:space="preserve"><value>Miktar</value></data>
+  <data name="Recall.SCol.Mark" xml:space="preserve"><value>Dahil / hariç</value></data>
+  <data name="Recall.Stock.Info" xml:space="preserve"><value>Karantina kararı Karantina modülünde verilir; burada yalnız istek ve durumu görünür.</value></data>
+  <data name="Recall.Stock.SendSelected" xml:space="preserve"><value>Seçilenleri karantinaya al ({0})</value></data>
+  <data name="Recall.Stock.Retry" xml:space="preserve"><value>Yeniden dene</value></data>
+  <data name="Recall.Stock.Segregate" xml:space="preserve"><value>Ayırmayı teyit et</value></data>
+  <data name="Recall.Stock.Segregated" xml:space="preserve"><value>Teyit edildi {0}</value></data>
+  <data name="Recall.Stock.NoRequest" xml:space="preserve"><value>İstek yok</value></data>
+  <data name="Recall.Stock.Empty" xml:space="preserve"><value>Bu şirkette vakanın lotlarına ait stok yok.</value></data>
+  <data name="Recall.Stock.Reserved" xml:space="preserve"><value>Rezerve: {0}</value></data>
+  <data name="Recall.Stock.Totals" xml:space="preserve"><value>Toplam {0}</value></data>
+  <data name="Recall.StCol.Place" xml:space="preserve"><value>Depo / lokasyon</value></data>
+  <data name="Recall.StCol.Lot" xml:space="preserve"><value>Lot</value></data>
+  <data name="Recall.StCol.Request" xml:space="preserve"><value>Karantina durumu</value></data>
+  <data name="Recall.StCol.Hold" xml:space="preserve"><value>Karantina kaydı</value></data>
+  <data name="Recall.StCol.Segregation" xml:space="preserve"><value>Fiziksel ayırma</value></data>
+  <data name="Recall.ReqStatus.Pending" xml:space="preserve"><value>Gönderilmeyi bekliyor</value></data>
+  <data name="Recall.ReqStatus.Held" xml:space="preserve"><value>Karantinada</value></data>
+  <data name="Recall.ReqStatus.PartiallyHeld" xml:space="preserve"><value>Kısmen karantinada</value></data>
+  <data name="Recall.ReqStatus.BlockedByReservation" xml:space="preserve"><value>Rezervasyon nedeniyle bekliyor</value></data>
+  <data name="Recall.ReqStatus.NothingAvailable" xml:space="preserve"><value>Kullanılabilir stok yok</value></data>
+  <data name="Recall.ReqStatus.Failed" xml:space="preserve"><value>Başarısız</value></data>
+  <data name="Recall.ReqStatus.NotNeeded" xml:space="preserve"><value>Gerekmiyor</value></data>
+  <data name="Recall.NotNeeded.AlreadyQuarantined" xml:space="preserve"><value>zaten karantinada</value></data>
+  <data name="Recall.NotNeeded.AlreadyBlocked" xml:space="preserve"><value>zaten bloke</value></data>
+  <data name="Recall.NotNeeded.LotBlocked" xml:space="preserve"><value>lot bloke</value></data>
+  <data name="Recall.NotNeeded.LotExpired" xml:space="preserve"><value>lotun süresi dolmuş</value></data>
+  <data name="Recall.NotNeeded.Excluded" xml:space="preserve"><value>kapsamdan hariç</value></data>
+  <data name="Recall.Seg.Title" xml:space="preserve"><value>Fiziksel ayırmayı teyit et</value></data>
+  <data name="Recall.Seg.Quantity" xml:space="preserve"><value>Ayrılan miktar</value></data>
+  <data name="Recall.Seg.Note" xml:space="preserve"><value>Not</value></data>
+  <data name="Recall.Seg.Hint" xml:space="preserve"><value>Yalnız kayıttır — stok hareketi yapılmaz. Stoğu taşımak kendi lokasyon transferinizdir.</value></data>
+  <data name="Recall.Cust.Summary" xml:space="preserve"><value>{0} / {1} müşteri bilgilendirildi · bilgilendirme yalnız kayıttır, e-posta gönderilmez</value></data>
+  <data name="Recall.Cust.Empty" xml:space="preserve"><value>Kapsamda sevkiyat yok.</value></data>
+  <data name="Recall.CCol.Customer" xml:space="preserve"><value>Müşteri</value></data>
+  <data name="Recall.CCol.Shipment" xml:space="preserve"><value>Sevkiyat</value></data>
+  <data name="Recall.CCol.Delivery" xml:space="preserve"><value>Teslim</value></data>
+  <data name="Recall.CCol.Shipped" xml:space="preserve"><value>Sevk</value></data>
+  <data name="Recall.CCol.Returned" xml:space="preserve"><value>Geri dönen</value></data>
+  <data name="Recall.CCol.Open" xml:space="preserve"><value>Kalan</value></data>
+  <data name="Recall.CCol.Notification" xml:space="preserve"><value>Bilgilendirme</value></data>
+  <data name="Recall.Cust.Notified" xml:space="preserve"><value>Bilgilendirildi</value></data>
+  <data name="Recall.Cust.NotNotified" xml:space="preserve"><value>Bilgilendirilmedi</value></data>
+  <data name="Recall.Cust.Mark" xml:space="preserve"><value>Bilgilendirildi olarak kaydet</value></data>
+  <data name="Recall.Cust.Consumption" xml:space="preserve"><value>Tüketim beyanı ekle</value></data>
+  <data name="Recall.Cust.Consumed" xml:space="preserve"><value>{0} tüketildi beyanı</value></data>
+  <data name="Recall.Cust.Delivered" xml:space="preserve"><value>Teslim edildi {0}</value></data>
+  <data name="Recall.Cust.NotDelivered" xml:space="preserve"><value>Henüz teslim edilmedi ({0})</value></data>
+  <data name="Recall.Read.NotApplicable" xml:space="preserve"><value>Sevkiyat kaydı yok — stok defteri verisi</value></data>
+  <data name="Recall.Read.Forbidden" xml:space="preserve"><value>Sevkiyat okunamadı — yetki</value></data>
+  <data name="Recall.Read.NotFound" xml:space="preserve"><value>Sevkiyat bulunamadı</value></data>
+  <data name="Recall.Read.Unavailable" xml:space="preserve"><value>Sevkiyat servisi erişilemiyor</value></data>
+  <data name="Recall.Notif.Title" xml:space="preserve"><value>Müşteri bilgilendirmesini kaydet</value></data>
+  <data name="Recall.Notif.Date" xml:space="preserve"><value>Bilgilendirme tarihi</value></data>
+  <data name="Recall.Notif.Channel" xml:space="preserve"><value>Kanal</value></data>
+  <data name="Recall.Channel.Phone" xml:space="preserve"><value>Telefon</value></data>
+  <data name="Recall.Channel.ExternalEmail" xml:space="preserve"><value>E-posta (sistem dışı)</value></data>
+  <data name="Recall.Channel.Fax" xml:space="preserve"><value>Faks</value></data>
+  <data name="Recall.Channel.InPerson" xml:space="preserve"><value>Yüz yüze</value></data>
+  <data name="Recall.Channel.Other" xml:space="preserve"><value>Diğer</value></data>
+  <data name="Recall.Cons.Title" xml:space="preserve"><value>Tüketim beyanı</value></data>
+  <data name="Recall.Cons.Product" xml:space="preserve"><value>Ürün</value></data>
+  <data name="Recall.Cons.Quantity" xml:space="preserve"><value>Miktar</value></data>
+  <data name="Recall.Cons.Date" xml:space="preserve"><value>Beyan tarihi</value></data>
+  <data name="Recall.Cons.Evidence" xml:space="preserve"><value>Kanıt (belge, yazı)</value></data>
+  <data name="Recall.Ret.Info" xml:space="preserve"><value>Müşteri iadesi stok hareketi olarak kaydedilir; kaydedildiğinde burada aday olarak görünür.</value></data>
+  <data name="Recall.Ret.Linked" xml:space="preserve"><value>Bağlı iadeler</value></data>
+  <data name="Recall.Ret.Candidates" xml:space="preserve"><value>Adaylar</value></data>
+  <data name="Recall.Ret.Empty" xml:space="preserve"><value>Bağlı iade yok.</value></data>
+  <data name="Recall.Ret.NoCandidates" xml:space="preserve"><value>Aday yok.</value></data>
+  <data name="Recall.Ret.Link" xml:space="preserve"><value>İadeyi bağla</value></data>
+  <data name="Recall.RCol.Movement" xml:space="preserve"><value>Hareket</value></data>
+  <data name="Recall.RCol.Status" xml:space="preserve"><value>Stok durumu</value></data>
+  <data name="Recall.RCol.Date" xml:space="preserve"><value>Kayıt</value></data>
+  <data name="Recall.RCol.Source" xml:space="preserve"><value>Kaynak</value></data>
+  <data name="Recall.Ret.Ineligible.NotQuarantined" xml:space="preserve"><value>Tutulmuyor — kullanılabilir stoğa dönmüş</value></data>
+  <data name="Recall.Ret.Ineligible.NotInScope" xml:space="preserve"><value>Lot kapsamda değil</value></data>
+  <data name="Recall.Ret.Ineligible.BeforeApproval" xml:space="preserve"><value>Kapsam onayından önce kaydedilmiş</value></data>
+  <data name="Recall.Ret.Ineligible.AlreadyLinked" xml:space="preserve"><value>Başka bir vakaya bağlı</value></data>
+  <data name="Recall.Ret.Source.Mod0186Return" xml:space="preserve"><value>İade lojistiği</value></data>
+  <data name="Recall.Ret.Source.ManualCustomerReturn" xml:space="preserve"><value>Müşteri iadesi (elle)</value></data>
+  <data name="Recall.Link.Reference" xml:space="preserve"><value>İade referansı</value></data>
+  <data name="Recall.Eff.Shipped" xml:space="preserve"><value>Sevk edilen</value></data>
+  <data name="Recall.Eff.Returned" xml:space="preserve"><value>Geri dönen</value></data>
+  <data name="Recall.Eff.Consumed" xml:space="preserve"><value>Tüketildiği beyan edilen</value></data>
+  <data name="Recall.Eff.Open" xml:space="preserve"><value>Açık miktar</value></data>
+  <data name="Recall.Eff.Percent" xml:space="preserve"><value>Etkinlik</value></data>
+  <data name="Recall.Eff.Target" xml:space="preserve"><value>Hedef %{0} ({1}. sınıf)</value></data>
+  <data name="Recall.Eff.Met" xml:space="preserve"><value>Hedefte</value></data>
+  <data name="Recall.Eff.NotMet" xml:space="preserve"><value>Hedefin altında</value></data>
+  <data name="Recall.Eff.Live" xml:space="preserve"><value>Canlı — kontrol tamamlanana kadar değişir.</value></data>
+  <data name="Recall.Eff.Stored" xml:space="preserve"><value>{0} tarihli saklı sonuç</value></data>
+  <data name="Recall.Eff.Start" xml:space="preserve"><value>Etkinlik kontrolüne geç</value></data>
+  <data name="Recall.Eff.Complete" xml:space="preserve"><value>Etkinlik kontrolünü tamamla</value></data>
+  <data name="Recall.Eff.PerCustomer" xml:space="preserve"><value>Müşteri bazında etkinlik</value></data>
+  <data name="Recall.Eff.Empty" xml:space="preserve"><value>Sevkiyat yok — ölçülecek bir şey yok.</value></data>
+  <data name="Recall.Eff.PerUnit" xml:space="preserve"><value>Ürün ve birim bazında — farklı birimler toplanmaz.</value></data>
+  <data name="Recall.Tl.Empty" xml:space="preserve"><value>Henüz olay yok.</value></data>
+  <data name="Recall.Event.Opened" xml:space="preserve"><value>Vaka açıldı</value></data>
+  <data name="Recall.Event.ScopeItemsAdded" xml:space="preserve"><value>Kapsama kalem eklendi</value></data>
+  <data name="Recall.Event.ScopeMarked" xml:space="preserve"><value>Dahil / hariç değiştirildi</value></data>
+  <data name="Recall.Event.ScopeSubmitted" xml:space="preserve"><value>Kapsam onayına gönderildi</value></data>
+  <data name="Recall.Event.ScopeReturned" xml:space="preserve"><value>Kapsam geri gönderildi</value></data>
+  <data name="Recall.Event.ScopeApproved" xml:space="preserve"><value>Kapsam onaylandı</value></data>
+  <data name="Recall.Event.SegregationConfirmed" xml:space="preserve"><value>Fiziksel ayırma teyit edildi</value></data>
+  <data name="Recall.Event.CustomerNotified" xml:space="preserve"><value>Müşteri bilgilendirildi</value></data>
+  <data name="Recall.Event.ConsumptionDeclared" xml:space="preserve"><value>Tüketim beyan edildi</value></data>
+  <data name="Recall.Event.EffectivenessStarted" xml:space="preserve"><value>Etkinlik kontrolüne geçildi</value></data>
+  <data name="Recall.Event.EffectivenessCompleted" xml:space="preserve"><value>Etkinlik kontrolü tamamlandı</value></data>
+  <data name="Recall.Event.Closed" xml:space="preserve"><value>Vaka kapandı</value></data>
+  <data name="Recall.Event.Cancelled" xml:space="preserve"><value>Vaka iptal edildi</value></data>
+  <data name="Recall.Event.TraceRun" xml:space="preserve"><value>İzleme çalıştırıldı</value></data>
+  <data name="Recall.Event.OutOfScopeFinding" xml:space="preserve"><value>Kapsam dışı bulgu</value></data>
+  <data name="Recall.Event.QuarantineRequested" xml:space="preserve"><value>Karantina isteği gönderildi</value></data>
+  <data name="Recall.Event.QuarantineFailed" xml:space="preserve"><value>Karantina isteği başarısız</value></data>
+  <data name="Recall.Event.QuarantineRetried" xml:space="preserve"><value>Karantina isteği yeniden denendi</value></data>
+  <data name="Recall.Event.ExitRefused" xml:space="preserve"><value>Çıkış hareketi reddedildi (lot geri çağırmada)</value></data>
+  <data name="Recall.Event.ReturnLinked" xml:space="preserve"><value>İade bağlandı</value></data>
+  <data name="Recall.Event.ScopeRevised" xml:space="preserve"><value>Kapsam revizyonu gönderildi</value></data>
+  <data name="Recall.Sign.ApproveTitle" xml:space="preserve"><value>Kapsamı onayla</value></data>
+  <data name="Recall.Sign.CompleteTitle" xml:space="preserve"><value>Etkinlik kontrolünü tamamla</value></data>
+  <data name="Recall.Sign.CloseTitle" xml:space="preserve"><value>Vakayı kapat</value></data>
+  <data name="Recall.Sign.Step1" xml:space="preserve"><value>1 · Karar</value></data>
+  <data name="Recall.Sign.Step2" xml:space="preserve"><value>2 · E-imza</value></data>
+  <data name="Recall.Sign.ApproveNote" xml:space="preserve"><value>Onay notu (isteğe bağlı)</value></data>
+  <data name="Recall.Sign.CompleteNote" xml:space="preserve"><value>Not (en az 10 karakter)</value></data>
+  <data name="Recall.Sign.Summary" xml:space="preserve"><value>Kapanış özeti (en az 10 karakter)</value></data>
+  <data name="Recall.Sign.Acceptance" xml:space="preserve"><value>Açık miktar için kabul gerekçesi</value></data>
+  <data name="Recall.Sign.AcceptWarn" xml:space="preserve"><value>Açık miktar var. Kapatmak için kabul gerekçesi zorunlu.</value></data>
+  <data name="Recall.Sign.Next" xml:space="preserve"><value>Devam</value></data>
+  <data name="Recall.Sign.SignSave" xml:space="preserve"><value>İmzala ve kaydet</value></data>
+  <data name="Recall.Sign.Save" xml:space="preserve"><value>Kaydet</value></data>
+  <data name="Recall.Sign.ToSign" xml:space="preserve"><value>Karar hazırlandı (15 dakika geçerli). Sırada e-imza penceresi açılır; pencereyi kapatırsanız hiçbir şey kaydedilmez.</value></data>
+  <data name="Recall.Sign.NoSignature" xml:space="preserve"><value>Şirketin e-imza politikası bu karar için imza istemiyor; imzasız kaydedilir.</value></data>
+  <data name="Recall.Sign.Cancelled" xml:space="preserve"><value>İmza penceresi kapatıldı; hiçbir şey kaydedilmedi.</value></data>
+  <data name="Recall.Sign.DoneSigned" xml:space="preserve"><value>E-imza {0} ile kaydedildi.</value></data>
+  <data name="Recall.Reason.ReturnTitle" xml:space="preserve"><value>Kapsamı geri gönder</value></data>
+  <data name="Recall.Reason.CancelTitle" xml:space="preserve"><value>Vakayı iptal et</value></data>
+  <data name="Recall.Reason.Label" xml:space="preserve"><value>Gerekçe (en az 10 karakter)</value></data>
+  <data name="Recall.Reason.Save" xml:space="preserve"><value>Kaydet</value></data>
+  <data name="Recall.Errors.RECALL_SOD_VIOLATION" xml:space="preserve"><value>Kapsamı gönderen kişi onaylayamaz.</value></data>
+  <data name="Recall.Errors.RECALL_SOD_VIOLATION_CLOSE" xml:space="preserve"><value>Etkinlik kontrolünü tamamlayan kişi vakayı kapatamaz.</value></data>
+  <data name="Recall.Errors.RECALL_SIGNATURE_REQUIRED" xml:space="preserve"><value>Bu karar e-imza gerektirir.</value></data>
+  <data name="Recall.Errors.RECALL_SIGNATURE_MISMATCH" xml:space="preserve"><value>İmza bu kararla uyuşmuyor (imzalayan, işlem ya da içerik değişti). Kararı yeniden hazırlayın.</value></data>
+  <data name="Recall.Errors.RECALL_PENDING_ACTION_MISMATCH" xml:space="preserve"><value>Hazırlanan kararın süresi doldu ya da farklı. Yeniden hazırlayın.</value></data>
+  <data name="Recall.Errors.RECALL_SCOPE_CHANGED" xml:space="preserve"><value>Kapsam gönderildikten sonra değişti. Geri gönderin ya da yeniden gönderin.</value></data>
+  <data name="Recall.Errors.RECALL_INVALID_TRANSITION" xml:space="preserve"><value>Bu adım vakanın şu anki durumunda yapılamaz.</value></data>
+  <data name="Recall.Errors.RECALL_CONFLICT" xml:space="preserve"><value>Bu sırada vaka başkası tarafından değiştirildi. Sayfa yenilendi; yeniden deneyin.</value></data>
+  <data name="Recall.Errors.RECALL_OPEN_QUANTITY_ACCEPTANCE_REQUIRED" xml:space="preserve"><value>Açık miktar var: kabul gerekçesi yazın.</value></data>
+  <data name="Recall.Errors.RECALL_SCOPE_EXCLUSION_REASON_REQUIRED" xml:space="preserve"><value>Hariç tutulan her kalem için en az 10 karakter gerekçe yazın.</value></data>
+  <data name="Recall.Errors.RECALL_SCOPE_ITEM_NOT_MARKABLE" xml:space="preserve"><value>Bu kalem işaretlenemez (kök lot kapsamda kalır).</value></data>
+  <data name="Recall.Errors.RECALL_QUARANTINE_REQUEST_NOT_RETRYABLE" xml:space="preserve"><value>Bu karantina isteği yeniden denenemez.</value></data>
+  <data name="Recall.Errors.RECALL_QUARANTINE_REQUEST_EXISTS" xml:space="preserve"><value>Bu satır için zaten karantina isteği var.</value></data>
+  <data name="Recall.Errors.RECALL_SEGREGATION_NOT_HELD" xml:space="preserve"><value>Ayırma yalnız karantinada tutulan stok için teyit edilebilir.</value></data>
+  <data name="Recall.Errors.RECALL_UNKNOWN_CUSTOMER" xml:space="preserve"><value>Bu müşteri vakanın müşterisi değil.</value></data>
+  <data name="Recall.Errors.RECALL_QUANTITY_EXCEEDS_SHIPPED" xml:space="preserve"><value>Geri dönen ve tüketilen birlikte bu müşteriye sevk edileni aşamaz.</value></data>
+  <data name="Recall.Errors.RECALL_RETURN_NOT_ELIGIBLE" xml:space="preserve"><value>Bu hareket bağlanamaz (onaydan sonra kapsamdaki bir lotun müşteri iadesi değil).</value></data>
+  <data name="Recall.Errors.RECALL_RETURN_NOT_QUARANTINED" xml:space="preserve"><value>Kullanılabilir stoğa giren iade bağlanamaz; geri çağrılan ürün tutulmalıdır.</value></data>
+  <data name="Recall.Errors.RECALL_RETURN_ALREADY_LINKED" xml:space="preserve"><value>Bu iade zaten bağlı.</value></data>
+  <data name="Recall.Errors.RECALL_CASE_NOT_FOUND" xml:space="preserve"><value>Geri çağırma vakası bulunamadı.</value></data>
+  <data name="Recall.Errors.LOT_UNDER_RECALL" xml:space="preserve"><value>Bu lot geri çağırmada — çıkış hareketleri engelli.</value></data>
+  <data name="Recall.Errors.ESIGN_UNAVAILABLE" xml:space="preserve"><value>E-imza penceresi açılamadı. Biraz sonra yeniden deneyin.</value></data>
+  <data name="Help.RECALLCASEDETAILS.Purpose" xml:space="preserve"><value>Bir geri çağırma vakasını taslaktan kapanışa yürütür: kapsamı, stoğu, müşterileri, iadeleri, etkinliği ve geçmişi.</value></data>
+  <data name="Help.RECALLCASEDETAILS.Audience" xml:space="preserve"><value>Şirketin kalite (QA), depo ve müşteri hizmetleri kullanıcıları.</value></data>
+  <data name="Help.RECALLCASEDETAILS.Step1Title" xml:space="preserve"><value>Kapsamı işaretleyip gönderin</value></data>
+  <data name="Help.RECALLCASEDETAILS.Step1" xml:space="preserve"><value>Etkilenmeyeni gerekçesiyle hariç tutun, sonra kapsamı onaya gönderin.</value></data>
+  <data name="Help.RECALLCASEDETAILS.Step2Title" xml:space="preserve"><value>E-imzayla onaylayın</value></data>
+  <data name="Help.RECALLCASEDETAILS.Step2" xml:space="preserve"><value>Kapsamı başka bir kullanıcı onaylar; lotlar engellenir ve karantina istekleri gönderilir.</value></data>
+  <data name="Help.RECALLCASEDETAILS.Step3Title" xml:space="preserve"><value>Müşterileri ve iadeleri izleyin</value></data>
+  <data name="Help.RECALLCASEDETAILS.Step3" xml:space="preserve"><value>Her bilgilendirmeyi ve tüketimi kaydedin, her müşteri iadesini bağlayın.</value></data>
+  <data name="Help.RECALLCASEDETAILS.Step4Title" xml:space="preserve"><value>Etkinliği kontrol edip kapatın</value></data>
+  <data name="Help.RECALLCASEDETAILS.Step4" xml:space="preserve"><value>Etkinlik kontrolünü e-imzayla tamamlayın; vakayı başka bir kullanıcı kapatır.</value></data>
+  <data name="Recall.Scope.PendingHint" xml:space="preserve"><value>Kapsam onay bekliyor; değiştirmek için taslağa geri gönderilmelidir.</value></data>
 </root>

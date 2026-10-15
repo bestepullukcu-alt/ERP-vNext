@@ -1157,4 +1157,5 @@
   <data name="Nav.Page.RECALLDASHBOARD" xml:space="preserve"><value>Recall readiness</value></data>
   <data name="Nav.Page.RECALLTRACE" xml:space="preserve"><value>Recall trace</value></data>
   <data name="Nav.Page.RECALLCASES" xml:space="preserve"><value>Recall cases</value></data>
+  <data name="Nav.Page.RECALLCASEDETAILS" xml:space="preserve"><value>Recall case</value></data>
 </root>

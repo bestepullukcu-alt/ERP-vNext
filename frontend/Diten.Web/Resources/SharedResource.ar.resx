@@ -1100,4 +1100,5 @@
   <data name="Nav.Page.RECALLDASHBOARD" xml:space="preserve"><value>جاهزية الاستدعاء</value></data>
   <data name="Nav.Page.RECALLTRACE" xml:space="preserve"><value>تتبّع الاستدعاء</value></data>
   <data name="Nav.Page.RECALLCASES" xml:space="preserve"><value>حالات الاستدعاء</value></data>
+  <data name="Nav.Page.RECALLCASEDETAILS" xml:space="preserve"><value>حالة الاستدعاء</value></data>
 </root>

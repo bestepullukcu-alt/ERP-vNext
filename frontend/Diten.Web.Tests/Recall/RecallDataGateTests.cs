@@ -37,9 +37,29 @@ public sealed class RecallDataGateTests
         ["LotLookup"] = [RecallKeys.TraceRun],
         ["ListCases"] = [RecallKeys.CasesRead],
         ["ProductLookup"] = [RecallKeys.CasesRead],
+        // WP-0177-R7a — Vaka Detayı: one read door, one door per command (pack §11.3); each prepare door prepares ONLY its own decision
+        ["CaseData"] = [RecallKeys.CasesRead],
+        ["MarkScope"] = [RecallKeys.CasesUpdate],
+        ["SubmitScope"] = [RecallKeys.CasesUpdate],
+        ["ReturnScope"] = [RecallKeys.CasesApprove],
+        ["PrepareApproval"] = [RecallKeys.CasesApprove],
+        ["ApproveScope"] = [RecallKeys.CasesApprove],
+        ["ReviseScope"] = [RecallKeys.CasesUpdate],
+        ["RequestQuarantine"] = [RecallKeys.QuarantineRequestsCreate],
+        ["RetryQuarantine"] = [RecallKeys.QuarantineRequestsCreate],
+        ["ConfirmSegregation"] = [RecallKeys.SegregationsConfirm],
+        ["RecordNotification"] = [RecallKeys.NotificationsCreate],
+        ["DeclareConsumption"] = [RecallKeys.ConsumptionsCreate],
+        ["LinkReturn"] = [RecallKeys.ReturnsLink],
+        ["StartEffectiveness"] = [RecallKeys.EffectivenessComplete],
+        ["PrepareCompletion"] = [RecallKeys.EffectivenessComplete],
+        ["CompleteEffectiveness"] = [RecallKeys.EffectivenessComplete],
+        ["PrepareClosure"] = [RecallKeys.CasesClose],
+        ["CloseCase"] = [RecallKeys.CasesClose],
+        ["CancelCase"] = [RecallKeys.CasesCancel],
     };
 
-    public static readonly string[] Pages = ["Cases", "Index", "Trace"];
+    public static readonly string[] Pages = ["CaseDetails", "Cases", "Index", "Trace"];
 
     [Fact]
     public void Every_routed_action_is_a_page_or_a_door_of_the_gate_table_and_there_is_no_catch_all_proxy()
@@ -117,7 +137,8 @@ public sealed class RecallDataGateTests
         return next.Success ? rest[..(next.Index + 1)] : rest;
     }
 
-    internal static async Task<IActionResult> Invoke(string action, HttpMessageHandler gateway, string[] keys, string query = "", string? body = null)
+    /// <summary>The production controller over a fake gateway, a signed-in tenant user with <paramref name="keys"/> (R7a: shared with RecallCaseDetailWebTests).</summary>
+    internal static RecallController Build(HttpMessageHandler gateway, string[] keys)
     {
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?> { ["GatewayUrl"] = Gateway }).Build();
         var claims = new List<Claim>
@@ -126,10 +147,21 @@ public sealed class RecallDataGateTests
             new("legal_entity_id", "1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d")
         };
         var http = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity(claims, "test")) };
+        http.Request.Headers.Cookie = "access_token=caller-token";
+        return new RecallController(new Factory(gateway), new HttpClient(gateway), configuration, new KeySet(keys),
+            new KeyLocalizer<Diten.Web.Views.Recall.Recall>(), NullLogger<RecallController>.Instance)
+        {
+            ControllerContext = new ControllerContext { HttpContext = http }
+        };
+    }
+
+    internal static async Task<IActionResult> Invoke(string action, HttpMessageHandler gateway, string[] keys, string query = "", string? body = null)
+    {
+        var controller = Build(gateway, keys);
+        var http = controller.ControllerContext.HttpContext;
         var method = typeof(RecallController).GetMethod(action, BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly)!;
         var post = method.GetCustomAttribute<HttpPostAttribute>() is not null;
         http.Request.Method = post ? "POST" : "GET";
-        http.Request.Headers.Cookie = "access_token=caller-token";
         if (query.Length > 0) http.Request.QueryString = new QueryString(query);
         if (post)
         {
@@ -139,11 +171,6 @@ public sealed class RecallDataGateTests
             http.Request.ContentType = "application/json";
         }
 
-        var controller = new RecallController(new Factory(gateway), new HttpClient(gateway), configuration, new KeySet(keys),
-            new KeyLocalizer<Diten.Web.Views.Recall.Recall>(), NullLogger<RecallController>.Instance)
-        {
-            ControllerContext = new ControllerContext { HttpContext = http }
-        };
         var arguments = method.GetParameters().Select(p => Sample(action, p)).ToArray();
         return await (Task<IActionResult>)method.Invoke(controller, arguments)!;
     }
@@ -155,6 +182,8 @@ public sealed class RecallDataGateTests
             "rootLotId" => SampleId,
             "direction" => "Both",
             "q" => "L-2026",
+            "id" or "requestId" => SampleId,
+            "part" => null,
             _ => throw new InvalidOperationException($"{action}: no sample for parameter '{parameter.Name}' — add one here.")
         };
 

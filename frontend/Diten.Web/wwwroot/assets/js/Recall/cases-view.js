@@ -2,7 +2,7 @@
  * MOD-0177 R6 — Vakalar, the PURE part (no DOM; the Node test runs it against THIS file). One merged row (RecallController list door:
  * rowKind Case | Drill, already in the server's order) → the texts of the nine columns. A DRILL row is not a case (RECALL 1.5.0, CT
  * decision A): its class and level are "—" (mockup difference D-25), its type says "Tatbikat", its progress cell is the drill result.
- * No row links anywhere in R6 (the case detail and the drill planner are R7 — no dead link).
+ * R7a: a REAL case row opens its Vaka Detayı (/Recall/Cases/Details/{caseId}); a drill row still opens nothing (the drill planner is R7b).
  */
 'use strict';
 
@@ -30,7 +30,7 @@ var RecallCasesView = (function () {
         return {
             number: row.number, kind: 'Case', type: t('Recall.Type.Real'), product: row.itemLabel || row.item?.itemId || '', lot: lot || '',
             class: t('Recall.Class.N', row.class), level: t('Recall.Level.' + row.level) || row.level, opened: fmt.date(row.openedAtUtc), owner, progress,
-            status: t('Recall.Status.' + row.status), statusCode: row.status, clickable: false
+            status: t('Recall.Status.' + row.status), statusCode: row.status, clickable: true, href: `/Recall/Cases/Details/${encodeURIComponent(row.caseId)}`
         };
     };
 

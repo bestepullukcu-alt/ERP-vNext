@@ -178,4 +178,222 @@
   <data name="Help.RECALLCASES.Step1" xml:space="preserve"><value>Используйте тип, статус, класс, товар и дату открытия. Фильтр по классу показывает только реальные случаи.</value></data>
   <data name="Help.RECALLCASES.Step2Title" xml:space="preserve"><value>Отличайте учения</value></data>
   <data name="Help.RECALLCASES.Step2" xml:space="preserve"><value>Строка учения помечена «Учение», показывает результат и длительность и не имеет класса и уровня.</value></data>
+  <data name="Recall.Case.Crumb" xml:space="preserve"><value>Случай {0}</value></data>
+  <data name="Recall.Case.NotFound" xml:space="preserve"><value>Случай отзыва не найден.</value></data>
+  <data name="Recall.Case.Product" xml:space="preserve"><value>Товар</value></data>
+  <data name="Recall.Case.RootLot" xml:space="preserve"><value>Исходная партия</value></data>
+  <data name="Recall.Case.Reason" xml:space="preserve"><value>Причина</value></data>
+  <data name="Recall.Case.OpenedBy" xml:space="preserve"><value>Открыл · когда</value></data>
+  <data name="Recall.Case.Direction" xml:space="preserve"><value>Направление прослеживания</value></data>
+  <data name="Recall.Case.Close" xml:space="preserve"><value>Закрыть случай</value></data>
+  <data name="Recall.Case.Cancel" xml:space="preserve"><value>Отменить случай</value></data>
+  <data name="Recall.Case.ClosedInfo" xml:space="preserve"><value>Закрыт: {0}, {1}</value></data>
+  <data name="Recall.Case.CancelledInfo" xml:space="preserve"><value>Отменён: {0}. {1}</value></data>
+  <data name="Recall.Case.Signature" xml:space="preserve"><value>Электронная подпись {0}</value></data>
+  <data name="Recall.Case.YouSubmitted" xml:space="preserve"><value>Вы отправили этот объём. Утверждает другой пользователь с правом утверждения (принцип четырёх глаз).</value></data>
+  <data name="Recall.Case.YouCompleted" xml:space="preserve"><value>Вы завершили проверку эффективности. Случай закрывает другой пользователь (принцип четырёх глаз).</value></data>
+  <data name="Recall.Case.PendingRevision" xml:space="preserve"><value>Ревизия объёма {0} ожидает утверждения (новых позиций: {1}). Утверждённый объём и его блокировки сохраняются.</value></data>
+  <data name="Recall.Case.Saved" xml:space="preserve"><value>Сохранено.</value></data>
+  <data name="Recall.CaseTab.Scope" xml:space="preserve"><value>Объём</value></data>
+  <data name="Recall.CaseTab.Stock" xml:space="preserve"><value>Запасы в наличии</value></data>
+  <data name="Recall.CaseTab.Customers" xml:space="preserve"><value>Клиенты и отгрузки</value></data>
+  <data name="Recall.CaseTab.Returns" xml:space="preserve"><value>Возвраты</value></data>
+  <data name="Recall.CaseTab.Effectiveness" xml:space="preserve"><value>Проверка эффективности</value></data>
+  <data name="Recall.CaseTab.Timeline" xml:space="preserve"><value>Хронология</value></data>
+  <data name="Recall.Scope.Summary" xml:space="preserve"><value>Позиций: {0} · исключено: {1} · ревизия {2}</value></data>
+  <data name="Recall.Scope.Submit" xml:space="preserve"><value>Отправить объём на утверждение</value></data>
+  <data name="Recall.Scope.Return" xml:space="preserve"><value>Вернуть в черновик</value></data>
+  <data name="Recall.Scope.Approve" xml:space="preserve"><value>Утвердить объём</value></data>
+  <data name="Recall.Scope.Rescan" xml:space="preserve"><value>Проследить заново</value></data>
+  <data name="Recall.Scope.Revise" xml:space="preserve"><value>Ревизия объёма</value></data>
+  <data name="Recall.Scope.Included" xml:space="preserve"><value>Включено</value></data>
+  <data name="Recall.Scope.Excluded" xml:space="preserve"><value>Исключено</value></data>
+  <data name="Recall.Scope.ExcludedByParent" xml:space="preserve"><value>Исключено вместе с родителем</value></data>
+  <data name="Recall.Scope.ExclusionReason" xml:space="preserve"><value>Причина исключения</value></data>
+  <data name="Recall.Scope.SaveMarks" xml:space="preserve"><value>Сохранить включение / исключение</value></data>
+  <data name="Recall.Scope.Root" xml:space="preserve"><value>Исходная</value></data>
+  <data name="Recall.Scope.New" xml:space="preserve"><value>новое</value></data>
+  <data name="Recall.Scope.EditHint" xml:space="preserve"><value>Включение / исключение меняется только до утверждения объёма; исключение позиции исключает всё, что под ней.</value></data>
+  <data name="Recall.Scope.LockedHint" xml:space="preserve"><value>Объём утверждён; для изменения нужна ревизия объёма.</value></data>
+  <data name="Recall.Scope.Seal" xml:space="preserve"><value>Печать (SHA-256) {0}</value></data>
+  <data name="Recall.Scope.DiffTitle" xml:space="preserve"><value>Повторное прослеживание и утверждённый объём</value></data>
+  <data name="Recall.Scope.DiffNone" xml:space="preserve"><value>Различий нет: текущее прослеживание совпадает с утверждённым объёмом.</value></data>
+  <data name="Recall.Scope.DiffFound" xml:space="preserve"><value>Находок вне объёма: {0} — найдены сейчас, их нет в утверждённом объёме. Сами по себе ничего не меняют.</value></data>
+  <data name="Recall.Scope.DiffRemoved" xml:space="preserve"><value>Позиций утверждённого объёма, которых больше нет в прослеживании: {0}.</value></data>
+  <data name="Recall.Scope.ReviseReason" xml:space="preserve"><value>Почему добавляются эти позиции? (не менее 10 символов)</value></data>
+  <data name="Recall.SCol.Node" xml:space="preserve"><value>Узел</value></data>
+  <data name="Recall.SCol.Place" xml:space="preserve"><value>Склад / клиент</value></data>
+  <data name="Recall.SCol.Quantity" xml:space="preserve"><value>Количество</value></data>
+  <data name="Recall.SCol.Mark" xml:space="preserve"><value>Включить / исключить</value></data>
+  <data name="Recall.Stock.Info" xml:space="preserve"><value>Решение о карантине принимается в модуле «Карантин»; здесь видны только запрос и его статус.</value></data>
+  <data name="Recall.Stock.SendSelected" xml:space="preserve"><value>Поместить выбранное в карантин ({0})</value></data>
+  <data name="Recall.Stock.Retry" xml:space="preserve"><value>Повторить</value></data>
+  <data name="Recall.Stock.Segregate" xml:space="preserve"><value>Подтвердить отделение</value></data>
+  <data name="Recall.Stock.Segregated" xml:space="preserve"><value>Подтверждено {0}</value></data>
+  <data name="Recall.Stock.NoRequest" xml:space="preserve"><value>Запроса нет</value></data>
+  <data name="Recall.Stock.Empty" xml:space="preserve"><value>В этой компании нет запасов партий случая.</value></data>
+  <data name="Recall.Stock.Reserved" xml:space="preserve"><value>Зарезервировано: {0}</value></data>
+  <data name="Recall.Stock.Totals" xml:space="preserve"><value>Итого {0}</value></data>
+  <data name="Recall.StCol.Place" xml:space="preserve"><value>Склад / ячейка</value></data>
+  <data name="Recall.StCol.Lot" xml:space="preserve"><value>Партия</value></data>
+  <data name="Recall.StCol.Request" xml:space="preserve"><value>Статус карантина</value></data>
+  <data name="Recall.StCol.Hold" xml:space="preserve"><value>Запись карантина</value></data>
+  <data name="Recall.StCol.Segregation" xml:space="preserve"><value>Физическое отделение</value></data>
+  <data name="Recall.ReqStatus.Pending" xml:space="preserve"><value>Ожидает отправки</value></data>
+  <data name="Recall.ReqStatus.Held" xml:space="preserve"><value>В карантине</value></data>
+  <data name="Recall.ReqStatus.PartiallyHeld" xml:space="preserve"><value>Частично в карантине</value></data>
+  <data name="Recall.ReqStatus.BlockedByReservation" xml:space="preserve"><value>Заблокировано резервом</value></data>
+  <data name="Recall.ReqStatus.NothingAvailable" xml:space="preserve"><value>Нет доступного</value></data>
+  <data name="Recall.ReqStatus.Failed" xml:space="preserve"><value>Ошибка</value></data>
+  <data name="Recall.ReqStatus.NotNeeded" xml:space="preserve"><value>Не требуется</value></data>
+  <data name="Recall.NotNeeded.AlreadyQuarantined" xml:space="preserve"><value>уже в карантине</value></data>
+  <data name="Recall.NotNeeded.AlreadyBlocked" xml:space="preserve"><value>уже заблокировано</value></data>
+  <data name="Recall.NotNeeded.LotBlocked" xml:space="preserve"><value>партия заблокирована</value></data>
+  <data name="Recall.NotNeeded.LotExpired" xml:space="preserve"><value>срок годности партии истёк</value></data>
+  <data name="Recall.NotNeeded.Excluded" xml:space="preserve"><value>исключено из объёма</value></data>
+  <data name="Recall.Seg.Title" xml:space="preserve"><value>Подтвердить физическое отделение</value></data>
+  <data name="Recall.Seg.Quantity" xml:space="preserve"><value>Отделённое количество</value></data>
+  <data name="Recall.Seg.Note" xml:space="preserve"><value>Примечание</value></data>
+  <data name="Recall.Seg.Hint" xml:space="preserve"><value>Только запись — движения запасов нет. Перемещение запасов — ваш собственный перенос между ячейками.</value></data>
+  <data name="Recall.Cust.Summary" xml:space="preserve"><value>Уведомлено клиентов: {0} / {1} · уведомление — только запись, письмо не отправляется</value></data>
+  <data name="Recall.Cust.Empty" xml:space="preserve"><value>В объёме нет отгрузок.</value></data>
+  <data name="Recall.CCol.Customer" xml:space="preserve"><value>Клиент</value></data>
+  <data name="Recall.CCol.Shipment" xml:space="preserve"><value>Отгрузка</value></data>
+  <data name="Recall.CCol.Delivery" xml:space="preserve"><value>Доставка</value></data>
+  <data name="Recall.CCol.Shipped" xml:space="preserve"><value>Отгружено</value></data>
+  <data name="Recall.CCol.Returned" xml:space="preserve"><value>Возвращено</value></data>
+  <data name="Recall.CCol.Open" xml:space="preserve"><value>Остаток</value></data>
+  <data name="Recall.CCol.Notification" xml:space="preserve"><value>Уведомление</value></data>
+  <data name="Recall.Cust.Notified" xml:space="preserve"><value>Уведомлён</value></data>
+  <data name="Recall.Cust.NotNotified" xml:space="preserve"><value>Не уведомлён</value></data>
+  <data name="Recall.Cust.Mark" xml:space="preserve"><value>Отметить как уведомлённого</value></data>
+  <data name="Recall.Cust.Consumption" xml:space="preserve"><value>Добавить декларацию потребления</value></data>
+  <data name="Recall.Cust.Consumed" xml:space="preserve"><value>Заявлено потреблённым: {0}</value></data>
+  <data name="Recall.Cust.Delivered" xml:space="preserve"><value>Доставлено {0}</value></data>
+  <data name="Recall.Cust.NotDelivered" xml:space="preserve"><value>Ещё не доставлено ({0})</value></data>
+  <data name="Recall.Read.NotApplicable" xml:space="preserve"><value>Нет записи об отгрузке — данные книги учёта</value></data>
+  <data name="Recall.Read.Forbidden" xml:space="preserve"><value>Не удалось прочитать отгрузку — нет прав</value></data>
+  <data name="Recall.Read.NotFound" xml:space="preserve"><value>Отгрузка не найдена</value></data>
+  <data name="Recall.Read.Unavailable" xml:space="preserve"><value>Сервис отгрузок недоступен</value></data>
+  <data name="Recall.Notif.Title" xml:space="preserve"><value>Записать уведомление клиента</value></data>
+  <data name="Recall.Notif.Date" xml:space="preserve"><value>Дата уведомления</value></data>
+  <data name="Recall.Notif.Channel" xml:space="preserve"><value>Канал</value></data>
+  <data name="Recall.Channel.Phone" xml:space="preserve"><value>Телефон</value></data>
+  <data name="Recall.Channel.ExternalEmail" xml:space="preserve"><value>Эл. почта (вне системы)</value></data>
+  <data name="Recall.Channel.Fax" xml:space="preserve"><value>Факс</value></data>
+  <data name="Recall.Channel.InPerson" xml:space="preserve"><value>Лично</value></data>
+  <data name="Recall.Channel.Other" xml:space="preserve"><value>Другое</value></data>
+  <data name="Recall.Cons.Title" xml:space="preserve"><value>Декларация потребления</value></data>
+  <data name="Recall.Cons.Product" xml:space="preserve"><value>Товар</value></data>
+  <data name="Recall.Cons.Quantity" xml:space="preserve"><value>Количество</value></data>
+  <data name="Recall.Cons.Date" xml:space="preserve"><value>Дата декларации</value></data>
+  <data name="Recall.Cons.Evidence" xml:space="preserve"><value>Подтверждение (документ, письмо)</value></data>
+  <data name="Recall.Ret.Info" xml:space="preserve"><value>Возврат клиента записывается как движение запасов; после записи он появляется здесь как кандидат.</value></data>
+  <data name="Recall.Ret.Linked" xml:space="preserve"><value>Привязанные возвраты</value></data>
+  <data name="Recall.Ret.Candidates" xml:space="preserve"><value>Кандидаты</value></data>
+  <data name="Recall.Ret.Empty" xml:space="preserve"><value>Привязанных возвратов нет.</value></data>
+  <data name="Recall.Ret.NoCandidates" xml:space="preserve"><value>Кандидатов нет.</value></data>
+  <data name="Recall.Ret.Link" xml:space="preserve"><value>Привязать возврат</value></data>
+  <data name="Recall.RCol.Movement" xml:space="preserve"><value>Движение</value></data>
+  <data name="Recall.RCol.Status" xml:space="preserve"><value>Статус запаса</value></data>
+  <data name="Recall.RCol.Date" xml:space="preserve"><value>Проведено</value></data>
+  <data name="Recall.RCol.Source" xml:space="preserve"><value>Источник</value></data>
+  <data name="Recall.Ret.Ineligible.NotQuarantined" xml:space="preserve"><value>Не удерживается — возвращено в доступный запас</value></data>
+  <data name="Recall.Ret.Ineligible.NotInScope" xml:space="preserve"><value>Партия вне объёма</value></data>
+  <data name="Recall.Ret.Ineligible.BeforeApproval" xml:space="preserve"><value>Проведено до утверждения объёма</value></data>
+  <data name="Recall.Ret.Ineligible.AlreadyLinked" xml:space="preserve"><value>Уже привязан к другому случаю</value></data>
+  <data name="Recall.Ret.Source.Mod0186Return" xml:space="preserve"><value>Логистика возвратов</value></data>
+  <data name="Recall.Ret.Source.ManualCustomerReturn" xml:space="preserve"><value>Возврат клиента (вручную)</value></data>
+  <data name="Recall.Link.Reference" xml:space="preserve"><value>Номер возврата</value></data>
+  <data name="Recall.Eff.Shipped" xml:space="preserve"><value>Отгружено</value></data>
+  <data name="Recall.Eff.Returned" xml:space="preserve"><value>Возвращено</value></data>
+  <data name="Recall.Eff.Consumed" xml:space="preserve"><value>Заявлено потреблённым</value></data>
+  <data name="Recall.Eff.Open" xml:space="preserve"><value>Остаток</value></data>
+  <data name="Recall.Eff.Percent" xml:space="preserve"><value>Эффективность</value></data>
+  <data name="Recall.Eff.Target" xml:space="preserve"><value>Цель {0}% (класс {1})</value></data>
+  <data name="Recall.Eff.Met" xml:space="preserve"><value>Цель достигнута</value></data>
+  <data name="Recall.Eff.NotMet" xml:space="preserve"><value>Ниже цели</value></data>
+  <data name="Recall.Eff.Live" xml:space="preserve"><value>Текущее — меняется до завершения проверки.</value></data>
+  <data name="Recall.Eff.Stored" xml:space="preserve"><value>Сохранённый результат от {0}</value></data>
+  <data name="Recall.Eff.Start" xml:space="preserve"><value>Начать проверку эффективности</value></data>
+  <data name="Recall.Eff.Complete" xml:space="preserve"><value>Завершить проверку эффективности</value></data>
+  <data name="Recall.Eff.PerCustomer" xml:space="preserve"><value>Эффективность по клиентам</value></data>
+  <data name="Recall.Eff.Empty" xml:space="preserve"><value>Отгрузок нет — измерять нечего.</value></data>
+  <data name="Recall.Eff.PerUnit" xml:space="preserve"><value>По товару и единице — разные единицы не суммируются.</value></data>
+  <data name="Recall.Tl.Empty" xml:space="preserve"><value>Событий пока нет.</value></data>
+  <data name="Recall.Event.Opened" xml:space="preserve"><value>Случай открыт</value></data>
+  <data name="Recall.Event.ScopeItemsAdded" xml:space="preserve"><value>Добавлены позиции объёма</value></data>
+  <data name="Recall.Event.ScopeMarked" xml:space="preserve"><value>Изменено включение / исключение</value></data>
+  <data name="Recall.Event.ScopeSubmitted" xml:space="preserve"><value>Отправлено на утверждение объёма</value></data>
+  <data name="Recall.Event.ScopeReturned" xml:space="preserve"><value>Объём возвращён в черновик</value></data>
+  <data name="Recall.Event.ScopeApproved" xml:space="preserve"><value>Объём утверждён</value></data>
+  <data name="Recall.Event.SegregationConfirmed" xml:space="preserve"><value>Физическое отделение подтверждено</value></data>
+  <data name="Recall.Event.CustomerNotified" xml:space="preserve"><value>Клиент уведомлён</value></data>
+  <data name="Recall.Event.ConsumptionDeclared" xml:space="preserve"><value>Заявлено потребление</value></data>
+  <data name="Recall.Event.EffectivenessStarted" xml:space="preserve"><value>Начата проверка эффективности</value></data>
+  <data name="Recall.Event.EffectivenessCompleted" xml:space="preserve"><value>Проверка эффективности завершена</value></data>
+  <data name="Recall.Event.Closed" xml:space="preserve"><value>Случай закрыт</value></data>
+  <data name="Recall.Event.Cancelled" xml:space="preserve"><value>Случай отменён</value></data>
+  <data name="Recall.Event.TraceRun" xml:space="preserve"><value>Выполнено прослеживание</value></data>
+  <data name="Recall.Event.OutOfScopeFinding" xml:space="preserve"><value>Находка вне объёма</value></data>
+  <data name="Recall.Event.QuarantineRequested" xml:space="preserve"><value>Запрошен карантин</value></data>
+  <data name="Recall.Event.QuarantineFailed" xml:space="preserve"><value>Запрос карантина не выполнен</value></data>
+  <data name="Recall.Event.QuarantineRetried" xml:space="preserve"><value>Запрос карантина повторён</value></data>
+  <data name="Recall.Event.ExitRefused" xml:space="preserve"><value>Отпуск отклонён (партия на отзыве)</value></data>
+  <data name="Recall.Event.ReturnLinked" xml:space="preserve"><value>Возврат привязан</value></data>
+  <data name="Recall.Event.ScopeRevised" xml:space="preserve"><value>Отправлена ревизия объёма</value></data>
+  <data name="Recall.Sign.ApproveTitle" xml:space="preserve"><value>Утвердить объём</value></data>
+  <data name="Recall.Sign.CompleteTitle" xml:space="preserve"><value>Завершить проверку эффективности</value></data>
+  <data name="Recall.Sign.CloseTitle" xml:space="preserve"><value>Закрыть случай</value></data>
+  <data name="Recall.Sign.Step1" xml:space="preserve"><value>1 · Решение</value></data>
+  <data name="Recall.Sign.Step2" xml:space="preserve"><value>2 · Электронная подпись</value></data>
+  <data name="Recall.Sign.ApproveNote" xml:space="preserve"><value>Комментарий к утверждению (необязательно)</value></data>
+  <data name="Recall.Sign.CompleteNote" xml:space="preserve"><value>Примечание (не менее 10 символов)</value></data>
+  <data name="Recall.Sign.Summary" xml:space="preserve"><value>Итог закрытия (не менее 10 символов)</value></data>
+  <data name="Recall.Sign.Acceptance" xml:space="preserve"><value>Обоснование принятия остатка</value></data>
+  <data name="Recall.Sign.AcceptWarn" xml:space="preserve"><value>Остался открытый остаток. Для закрытия нужно обоснование принятия.</value></data>
+  <data name="Recall.Sign.Next" xml:space="preserve"><value>Далее</value></data>
+  <data name="Recall.Sign.SignSave" xml:space="preserve"><value>Подписать и сохранить</value></data>
+  <data name="Recall.Sign.Save" xml:space="preserve"><value>Сохранить</value></data>
+  <data name="Recall.Sign.ToSign" xml:space="preserve"><value>Решение подготовлено (действует 15 минут). Далее откроется окно электронной подписи; при отмене ничего не сохранится.</value></data>
+  <data name="Recall.Sign.NoSignature" xml:space="preserve"><value>Политика электронной подписи компании не требует подписи для этого решения; оно сохраняется без неё.</value></data>
+  <data name="Recall.Sign.Cancelled" xml:space="preserve"><value>Окно подписи закрыто; ничего не сохранено.</value></data>
+  <data name="Recall.Sign.DoneSigned" xml:space="preserve"><value>Сохранено с электронной подписью {0}.</value></data>
+  <data name="Recall.Reason.ReturnTitle" xml:space="preserve"><value>Вернуть объём в черновик</value></data>
+  <data name="Recall.Reason.CancelTitle" xml:space="preserve"><value>Отменить случай</value></data>
+  <data name="Recall.Reason.Label" xml:space="preserve"><value>Причина (не менее 10 символов)</value></data>
+  <data name="Recall.Reason.Save" xml:space="preserve"><value>Сохранить</value></data>
+  <data name="Recall.Errors.RECALL_SOD_VIOLATION" xml:space="preserve"><value>Тот, кто отправил объём, не может его утвердить.</value></data>
+  <data name="Recall.Errors.RECALL_SOD_VIOLATION_CLOSE" xml:space="preserve"><value>Тот, кто завершил проверку эффективности, не может закрыть случай.</value></data>
+  <data name="Recall.Errors.RECALL_SIGNATURE_REQUIRED" xml:space="preserve"><value>Для этого решения нужна электронная подпись.</value></data>
+  <data name="Recall.Errors.RECALL_SIGNATURE_MISMATCH" xml:space="preserve"><value>Подпись не соответствует решению (изменились подписант, действие или содержание). Подготовьте решение заново.</value></data>
+  <data name="Recall.Errors.RECALL_PENDING_ACTION_MISMATCH" xml:space="preserve"><value>Подготовленное решение истекло или отличается. Подготовьте его заново.</value></data>
+  <data name="Recall.Errors.RECALL_SCOPE_CHANGED" xml:space="preserve"><value>Объём изменился после отправки. Верните его или отправьте снова.</value></data>
+  <data name="Recall.Errors.RECALL_INVALID_TRANSITION" xml:space="preserve"><value>Этот шаг невозможен в текущем статусе случая.</value></data>
+  <data name="Recall.Errors.RECALL_CONFLICT" xml:space="preserve"><value>Случай тем временем изменён. Страница обновлена; повторите попытку.</value></data>
+  <data name="Recall.Errors.RECALL_OPEN_QUANTITY_ACCEPTANCE_REQUIRED" xml:space="preserve"><value>Остался открытый остаток: укажите обоснование принятия.</value></data>
+  <data name="Recall.Errors.RECALL_SCOPE_EXCLUSION_REASON_REQUIRED" xml:space="preserve"><value>Укажите причину не короче 10 символов для каждой исключённой позиции.</value></data>
+  <data name="Recall.Errors.RECALL_SCOPE_ITEM_NOT_MARKABLE" xml:space="preserve"><value>Эту позицию нельзя отметить (исходная партия остаётся в объёме).</value></data>
+  <data name="Recall.Errors.RECALL_QUARANTINE_REQUEST_NOT_RETRYABLE" xml:space="preserve"><value>Этот запрос карантина нельзя повторить.</value></data>
+  <data name="Recall.Errors.RECALL_QUARANTINE_REQUEST_EXISTS" xml:space="preserve"><value>Для этой строки уже есть запрос карантина.</value></data>
+  <data name="Recall.Errors.RECALL_SEGREGATION_NOT_HELD" xml:space="preserve"><value>Отделение подтверждается только для запаса в карантине.</value></data>
+  <data name="Recall.Errors.RECALL_UNKNOWN_CUSTOMER" xml:space="preserve"><value>Этот клиент не относится к случаю.</value></data>
+  <data name="Recall.Errors.RECALL_QUANTITY_EXCEEDS_SHIPPED" xml:space="preserve"><value>Возвращённое и потреблённое вместе не может превышать отгруженное этому клиенту.</value></data>
+  <data name="Recall.Errors.RECALL_RETURN_NOT_ELIGIBLE" xml:space="preserve"><value>Это движение нельзя привязать (это не возврат клиента по партии из объёма после утверждения).</value></data>
+  <data name="Recall.Errors.RECALL_RETURN_NOT_QUARANTINED" xml:space="preserve"><value>Возврат в доступный запас нельзя привязать; отзываемый товар должен удерживаться.</value></data>
+  <data name="Recall.Errors.RECALL_RETURN_ALREADY_LINKED" xml:space="preserve"><value>Этот возврат уже привязан.</value></data>
+  <data name="Recall.Errors.RECALL_CASE_NOT_FOUND" xml:space="preserve"><value>Случай отзыва не найден.</value></data>
+  <data name="Recall.Errors.LOT_UNDER_RECALL" xml:space="preserve"><value>Партия на отзыве — отпуск заблокирован.</value></data>
+  <data name="Recall.Errors.ESIGN_UNAVAILABLE" xml:space="preserve"><value>Не удалось открыть окно электронной подписи. Повторите позже.</value></data>
+  <data name="Help.RECALLCASEDETAILS.Purpose" xml:space="preserve"><value>Один случай отзыва от черновика до закрытия: объём, запасы, клиенты, возвраты, эффективность и история.</value></data>
+  <data name="Help.RECALLCASEDETAILS.Audience" xml:space="preserve"><value>Сотрудники качества (QA), склада и клиентской службы компании.</value></data>
+  <data name="Help.RECALLCASEDETAILS.Step1Title" xml:space="preserve"><value>Отметьте и отправьте объём</value></data>
+  <data name="Help.RECALLCASEDETAILS.Step1" xml:space="preserve"><value>Исключите незатронутое с причиной и отправьте объём на утверждение.</value></data>
+  <data name="Help.RECALLCASEDETAILS.Step2Title" xml:space="preserve"><value>Утвердите с электронной подписью</value></data>
+  <data name="Help.RECALLCASEDETAILS.Step2" xml:space="preserve"><value>Объём утверждает другой пользователь; партии блокируются, отправляются запросы карантина.</value></data>
+  <data name="Help.RECALLCASEDETAILS.Step3Title" xml:space="preserve"><value>Отслеживайте клиентов и возвраты</value></data>
+  <data name="Help.RECALLCASEDETAILS.Step3" xml:space="preserve"><value>Записывайте каждое уведомление и потребление и привязывайте каждый возврат.</value></data>
+  <data name="Help.RECALLCASEDETAILS.Step4Title" xml:space="preserve"><value>Проверьте эффективность и закройте</value></data>
+  <data name="Help.RECALLCASEDETAILS.Step4" xml:space="preserve"><value>Завершите проверку эффективности с подписью; случай закрывает другой пользователь.</value></data>
+  <data name="Recall.Scope.PendingHint" xml:space="preserve"><value>Объём ожидает утверждения; чтобы изменить его, верните в черновик.</value></data>
 </root>

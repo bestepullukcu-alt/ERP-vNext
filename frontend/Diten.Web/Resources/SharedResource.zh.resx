@@ -1100,4 +1100,5 @@
   <data name="Nav.Page.RECALLDASHBOARD" xml:space="preserve"><value>召回准备情况</value></data>
   <data name="Nav.Page.RECALLTRACE" xml:space="preserve"><value>召回追溯</value></data>
   <data name="Nav.Page.RECALLCASES" xml:space="preserve"><value>召回案例</value></data>
+  <data name="Nav.Page.RECALLCASEDETAILS" xml:space="preserve"><value>召回案例</value></data>
 </root>

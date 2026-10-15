@@ -1101,4 +1101,5 @@
   <data name="Nav.Page.RECALLDASHBOARD" xml:space="preserve"><value>Preparación ante retiradas</value></data>
   <data name="Nav.Page.RECALLTRACE" xml:space="preserve"><value>Trazabilidad de retirada</value></data>
   <data name="Nav.Page.RECALLCASES" xml:space="preserve"><value>Casos de retirada</value></data>
+  <data name="Nav.Page.RECALLCASEDETAILS" xml:space="preserve"><value>Caso de retirada</value></data>
 </root>

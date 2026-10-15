@@ -1100,4 +1100,5 @@
   <data name="Nav.Page.RECALLDASHBOARD" xml:space="preserve"><value>Готовность к отзыву</value></data>
   <data name="Nav.Page.RECALLTRACE" xml:space="preserve"><value>Прослеживание для отзыва</value></data>
   <data name="Nav.Page.RECALLCASES" xml:space="preserve"><value>Случаи отзыва</value></data>
+  <data name="Nav.Page.RECALLCASEDETAILS" xml:space="preserve"><value>Случай отзыва</value></data>
 </root>

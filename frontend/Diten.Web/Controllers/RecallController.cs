@@ -72,6 +72,10 @@ public sealed class RecallController : Controller
     [HttpGet("Cases")]
     public IActionResult Cases() => View($"{ViewRoot}/Cases.cshtml");
 
+    // WP-0177-R7a — Vaka Detayı (RECALLCASEDETAILS, not in the menu; parent Vakalar). The id is the page's model; the view validates it.
+    [HttpGet("Cases/Details/{id}")]
+    public IActionResult CaseDetails(string id) => View($"{ViewRoot}/CaseDetails.cshtml", id);
+
     // ── Hazırlık Paneli ───────────────────────────────────────────────────────────────────────────────────────
 
     /// <summary>getDashboard (pack §8.9) — the KPIs as the service computed them + the product names of the open-case table.</summary>
@@ -226,6 +230,256 @@ public sealed class RecallController : Controller
     }
 
     /// <summary>items (cases) + drillRows (drill runs) → one array in <c>position</c> order, each row tagged with its kind.</summary>
+    // ── Vaka Detayı (WP-0177-R7a, pack §11.1 RECALLCASEDETAILS, §11.3) ─────────────────────────────────────────────
+
+    /// <summary>
+    /// The reads of the case detail page — ONE door, a closed list of parts (no free path): the case, its scope, the live diff, the stock,
+    /// the customers, the returns, the effectiveness, the timeline. Product / warehouse / location names and people are added; nothing else.
+    /// </summary>
+    [HttpGet("data/cases/{id}")]
+    public async Task<IActionResult> CaseData(string id, [FromQuery] string? part, CancellationToken ct)
+    {
+        if (!_permissions.Has(RecallKeys.CasesRead)) return Refuse(403, null);
+        if (!Guid.TryParse(id, out var caseId)) return Refuse(400, "INVALID_REQUEST");
+        if (!CaseParts.TryGetValue(part ?? string.Empty, out var suffix)) return Refuse(400, "INVALID_REQUEST");
+        var query = part == "timeline" ? new QueryBuilder().Add("page", Request.Query["page"]).Add("pageSize", Request.Query["pageSize"]).ToString() : string.Empty;
+        var reply = await SendAsync(HttpMethod.Get, $"{ApiBase}/cases/{caseId:D}{suffix}{query}", null, null, ct);
+        if (!reply.IsSuccess) return Failed("case " + (part ?? "detail"), reply);
+        var data = JsonNode.Parse(reply.Body) ?? new JsonObject();
+        var labels = await CaseLabelsAsync(data, ct);
+        await PeopleAsync(ct, data);
+        return Json(new JsonObject { ["data"] = data.DeepClone(), ["labelsAvailable"] = labels });
+    }
+
+    /// <summary>part → the service path after /cases/{id} (getCase, getCaseScope, getCaseScopeDiff, getCaseStock, getCaseCustomers, getCaseReturns, getCaseEffectiveness, getCaseTimeline).</summary>
+    public static readonly IReadOnlyDictionary<string, string> CaseParts = new Dictionary<string, string>(StringComparer.Ordinal)
+    {
+        [""] = "", ["scope"] = "/scope", ["diff"] = "/scope/diff", ["stock"] = "/stock", ["customers"] = "/customers", ["returns"] = "/returns",
+        ["effectiveness"] = "/effectiveness", ["timeline"] = "/timeline"
+    };
+
+    /// <summary>markScopeItems — Dahil / Hariç (+ gerekçe ≥ 10), Draft.</summary>
+    [HttpPost("cmd/cases/{id}/marks")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> MarkScope(string id, CancellationToken ct)
+    {
+        if (!_permissions.Has(RecallKeys.CasesUpdate)) return Refuse(403, null);
+        return await CaseCommandAsync(id, "/scope/marks", "markScopeItems", null, ct);
+    }
+
+    /// <summary>submitScope — "Kapsam onayına gönder".</summary>
+    [HttpPost("cmd/cases/{id}/submit")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SubmitScope(string id, CancellationToken ct)
+    {
+        if (!_permissions.Has(RecallKeys.CasesUpdate)) return Refuse(403, null);
+        return await CaseCommandAsync(id, "/scope/submit", "submitScope", null, ct);
+    }
+
+    /// <summary>returnScope — "Geri gönder" (gerekçe ≥ 10).</summary>
+    [HttpPost("cmd/cases/{id}/return")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ReturnScope(string id, CancellationToken ct)
+    {
+        if (!_permissions.Has(RecallKeys.CasesApprove)) return Refuse(403, null);
+        return await CaseCommandAsync(id, "/scope/return", "returnScope", null, ct);
+    }
+
+    /// <summary>prepareCaseAction ApproveScope — step 1 of "Kapsamı onayla" (the door sets the action: this key prepares nothing else).</summary>
+    [HttpPost("cmd/cases/{id}/prepare-approval")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> PrepareApproval(string id, CancellationToken ct)
+    {
+        if (!_permissions.Has(RecallKeys.CasesApprove)) return Refuse(403, null);
+        return await CaseCommandAsync(id, "/pending-action", "prepareCaseAction", "ApproveScope", ct);
+    }
+
+    /// <summary>approveScope — step 2 of "Kapsamı onayla" (signatureId from the MOD-0022 dialog when the policy asks for one).</summary>
+    [HttpPost("cmd/cases/{id}/approve")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ApproveScope(string id, CancellationToken ct)
+    {
+        if (!_permissions.Has(RecallKeys.CasesApprove)) return Refuse(403, null);
+        return await CaseCommandAsync(id, "/scope/approve", "approveScope", null, ct);
+    }
+
+    /// <summary>reviseScope — "Kapsam revizyonu" (CT-R5: the out-of-scope findings + gerekçe).</summary>
+    [HttpPost("cmd/cases/{id}/revise")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ReviseScope(string id, CancellationToken ct)
+    {
+        if (!_permissions.Has(RecallKeys.CasesUpdate)) return Refuse(403, null);
+        return await CaseCommandAsync(id, "/scope/revisions", "reviseScope", null, ct);
+    }
+
+    /// <summary>requestQuarantine — "Karantina isteği gönder" for lines without a request (KR-B).</summary>
+    [HttpPost("cmd/cases/{id}/quarantine")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RequestQuarantine(string id, CancellationToken ct)
+    {
+        if (!_permissions.Has(RecallKeys.QuarantineRequestsCreate)) return Refuse(403, null);
+        return await CaseCommandAsync(id, "/quarantine-requests", "requestQuarantine", null, ct);
+    }
+
+    /// <summary>retryQuarantineRequest — "Yeniden dene".</summary>
+    [HttpPost("cmd/cases/{id}/quarantine/{requestId}/retry")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RetryQuarantine(string id, string requestId, CancellationToken ct)
+    {
+        if (!_permissions.Has(RecallKeys.QuarantineRequestsCreate)) return Refuse(403, null);
+        if (!Guid.TryParse(requestId, out var request)) return Refuse(400, "INVALID_REQUEST");
+        return await CaseCommandAsync(id, $"/quarantine-requests/{request:D}/retry", "retryQuarantineRequest", null, ct);
+    }
+
+    /// <summary>confirmSegregation — "Fiziksel ayırmayı teyit et" (record only, no movement).</summary>
+    [HttpPost("cmd/cases/{id}/segregations")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ConfirmSegregation(string id, CancellationToken ct)
+    {
+        if (!_permissions.Has(RecallKeys.SegregationsConfirm)) return Refuse(403, null);
+        return await CaseCommandAsync(id, "/segregations", "confirmSegregation", null, ct);
+    }
+
+    /// <summary>recordNotification — "Bilgilendirildi olarak kaydet" (KR-F, record only — no e-mail).</summary>
+    [HttpPost("cmd/cases/{id}/notifications")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RecordNotification(string id, CancellationToken ct)
+    {
+        if (!_permissions.Has(RecallKeys.NotificationsCreate)) return Refuse(403, null);
+        return await CaseCommandAsync(id, "/notifications", "recordNotification", null, ct);
+    }
+
+    /// <summary>declareConsumption — "Tüketim beyanı ekle".</summary>
+    [HttpPost("cmd/cases/{id}/consumptions")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeclareConsumption(string id, CancellationToken ct)
+    {
+        if (!_permissions.Has(RecallKeys.ConsumptionsCreate)) return Refuse(403, null);
+        return await CaseCommandAsync(id, "/consumption-declarations", "declareConsumption", null, ct);
+    }
+
+    /// <summary>linkReturn — "İadeyi bağla" (KR-H). 0177 links a CUSTOMER_RETURN posted elsewhere; it never posts a movement (D-3, D-27).</summary>
+    [HttpPost("cmd/cases/{id}/return-links")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> LinkReturn(string id, CancellationToken ct)
+    {
+        if (!_permissions.Has(RecallKeys.ReturnsLink)) return Refuse(403, null);
+        return await CaseCommandAsync(id, "/return-links", "linkReturn", null, ct);
+    }
+
+    /// <summary>startEffectivenessCheck — "Etkinlik kontrolüne geç".</summary>
+    [HttpPost("cmd/cases/{id}/effectiveness/start")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> StartEffectiveness(string id, CancellationToken ct)
+    {
+        if (!_permissions.Has(RecallKeys.EffectivenessComplete)) return Refuse(403, null);
+        return await CaseCommandAsync(id, "/effectiveness/start", "startEffectivenessCheck", null, ct);
+    }
+
+    /// <summary>prepareCaseAction CompleteEffectiveness — step 1 of "Etkinlik kontrolünü tamamla".</summary>
+    [HttpPost("cmd/cases/{id}/prepare-completion")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> PrepareCompletion(string id, CancellationToken ct)
+    {
+        if (!_permissions.Has(RecallKeys.EffectivenessComplete)) return Refuse(403, null);
+        return await CaseCommandAsync(id, "/pending-action", "prepareCaseAction", "CompleteEffectiveness", ct);
+    }
+
+    /// <summary>completeEffectivenessCheck — step 2 of "Etkinlik kontrolünü tamamla".</summary>
+    [HttpPost("cmd/cases/{id}/effectiveness/complete")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CompleteEffectiveness(string id, CancellationToken ct)
+    {
+        if (!_permissions.Has(RecallKeys.EffectivenessComplete)) return Refuse(403, null);
+        return await CaseCommandAsync(id, "/effectiveness/complete", "completeEffectivenessCheck", null, ct);
+    }
+
+    /// <summary>prepareCaseAction Close — step 1 of "Vakayı kapat".</summary>
+    [HttpPost("cmd/cases/{id}/prepare-closure")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> PrepareClosure(string id, CancellationToken ct)
+    {
+        if (!_permissions.Has(RecallKeys.CasesClose)) return Refuse(403, null);
+        return await CaseCommandAsync(id, "/pending-action", "prepareCaseAction", "Close", ct);
+    }
+
+    /// <summary>closeCase — step 2 of "Vakayı kapat".</summary>
+    [HttpPost("cmd/cases/{id}/close")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CloseCase(string id, CancellationToken ct)
+    {
+        if (!_permissions.Has(RecallKeys.CasesClose)) return Refuse(403, null);
+        return await CaseCommandAsync(id, "/close", "closeCase", null, ct);
+    }
+
+    /// <summary>cancelCase — "Vakayı iptal et" (Draft / Kapsam onayı bekliyor; gerekçe ≥ 10).</summary>
+    [HttpPost("cmd/cases/{id}/cancel")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CancelCase(string id, CancellationToken ct)
+    {
+        if (!_permissions.Has(RecallKeys.CasesCancel)) return Refuse(403, null);
+        return await CaseCommandAsync(id, "/cancel", "cancelCase", null, ct);
+    }
+
+    /// <summary>
+    /// One case command after its door's key check: the body as the page sent it (a prepare door puts ITS action in), the body's idempotency key
+    /// as the Idempotency-Key header, the page's If-Match passed through. The service's answer (status + body) comes back unchanged.
+    /// </summary>
+    private async Task<IActionResult> CaseCommandAsync(string id, string suffix, string operation, string? action, CancellationToken ct)
+    {
+        if (!Guid.TryParse(id, out var caseId)) return Refuse(400, "INVALID_REQUEST");
+        using var reader = new StreamReader(Request.Body, Encoding.UTF8, leaveOpen: true);
+        var text = await reader.ReadToEndAsync(ct);
+        JsonObject body;
+        try { body = JsonNode.Parse(text) as JsonObject ?? throw new JsonException(); }
+        catch (JsonException) { return Refuse(400, "INVALID_REQUEST"); }
+        if (body["idempotencyKey"] is not JsonValue keyValue || !keyValue.TryGetValue<string>(out var key) || string.IsNullOrWhiteSpace(key)) return Refuse(400, "INVALID_REQUEST");
+        if (action is not null) body["action"] = action;
+        var reply = await SendAsync(HttpMethod.Post, $"{ApiBase}/cases/{caseId:D}{suffix}", body.ToJsonString(), key, ct, Header("If-Match"));
+        if (!reply.IsSuccess) return Failed(operation, reply);
+        return new ContentResult { StatusCode = reply.StatusCode, Content = reply.Body, ContentType = "application/json" };
+    }
+
+    /// <summary>Product / SKU / warehouse / location names for every object of a case answer that carries them (MasterLabelResolver).</summary>
+    private async Task<bool> CaseLabelsAsync(JsonNode root, CancellationToken ct)
+    {
+        var objects = new List<JsonObject>();
+        void Walk(JsonNode? node)
+        {
+            switch (node)
+            {
+                case JsonObject o:
+                    if (o["item"] is JsonObject || o["warehouseId"] is not null || o["locationId"] is not null) objects.Add(o);
+                    foreach (var child in o.Select(p => p.Value).ToList()) Walk(child);
+                    break;
+                case JsonArray a:
+                    foreach (var child in a.ToList()) Walk(child);
+                    break;
+            }
+        }
+
+        Walk(root);
+        if (objects.Count == 0) return true;
+        var ledger = InventoryProxy.Gateway(_httpClient, _gatewayUrl, Request, User);
+        if (ledger is null) return false;
+        var labels = await MasterLabelResolver.ResolveAsync(ledger, objects.Select(o => (string?)o["item"]?["itemId"]),
+            objects.Select(o => ((string?)o["item"]?["skuId"], (string?)o["item"]?["skuLevel"])),
+            objects.SelectMany(o => new[] { (string?)o["warehouseId"], (string?)o["locationId"] }), ct);
+        foreach (var o in objects)
+        {
+            if (o["item"] is JsonObject item)
+            {
+                o["itemLabel"] = labels.Product((string?)item["itemId"]) ?? (string?)item["itemId"];
+                o["skuLabel"] = labels.Sku((string?)item["skuId"]);
+            }
+
+            if (o["warehouseId"] is not null) o["warehouseLabel"] = labels.Location((string?)o["warehouseId"]) ?? (string?)o["warehouseId"];
+            if (o["locationId"] is not null) o["locationLabel"] = labels.Location((string?)o["locationId"]) ?? (string?)o["locationId"];
+        }
+
+        return labels.Available;
+    }
+
     private static JsonArray Merge(JsonObject page)
     {
         var rows = new List<(int Position, JsonObject Row)>();
@@ -253,7 +507,7 @@ public sealed class RecallController : Controller
         return new QueryBuilder().Add("rootLotId", lot.ToString("D")).Add("direction", dir).ToString();
     }
 
-    private async Task<Reply> SendAsync(HttpMethod method, string pathAndQuery, string? body, string? idempotencyKey, CancellationToken ct)
+    private async Task<Reply> SendAsync(HttpMethod method, string pathAndQuery, string? body, string? idempotencyKey, CancellationToken ct, string? ifMatch = null)
     {
         var token = Diten.Web.Services.Auth.AuthTokenCookies.GetAccessToken(Request);
         if (string.IsNullOrWhiteSpace(token)) return Reply.Error(401, "UNAUTHORIZED");
@@ -278,6 +532,7 @@ public sealed class RecallController : Controller
             if (selected is not null) request.Headers.TryAddWithoutValidation(CompanySelection.LegalEntityHeader, selected.Value.ToString("D"));
             if (Header("Accept-Language") is { } language) request.Headers.TryAddWithoutValidation("Accept-Language", language);
             if (idempotencyKey is not null) request.Headers.TryAddWithoutValidation("Idempotency-Key", idempotencyKey);
+            if (ifMatch is not null) request.Headers.TryAddWithoutValidation("If-Match", ifMatch);
             if (body is not null) request.Content = new StringContent(body, Encoding.UTF8, "application/json");
 
             using var response = await _httpClientFactory.CreateClient().SendAsync(request, ct);
@@ -478,13 +733,40 @@ public static class RecallKeys
     public const string CasesRead = "recall.cases.read";
     public const string CasesCreate = "recall.cases.create";
 
+    // WP-0177-R7a — the case detail buttons (pack §11.3, §14.2)
+    public const string CasesUpdate = "recall.cases.update";
+    public const string CasesApprove = "recall.cases.approve";
+    public const string CasesCancel = "recall.cases.cancel";
+    public const string CasesClose = "recall.cases.close";
+    public const string EffectivenessComplete = "recall.effectiveness.complete";
+    public const string QuarantineRequestsCreate = "recall.quarantine-requests.create";
+    public const string SegregationsConfirm = "recall.segregations.confirm";
+    public const string NotificationsCreate = "recall.notifications.create";
+    public const string ConsumptionsCreate = "recall.consumptions.create";
+    public const string ReturnsLink = "recall.returns.link";
+
     public static readonly IReadOnlyDictionary<string, string> Actions = new Dictionary<string, string>(StringComparer.Ordinal)
     {
         ["RECALL_TRACE_EXPORT"] = TraceExport,
         ["RECALL_CASE_OPEN"] = CasesCreate,
         ["RECALL_DASHBOARD_VIEW"] = DashboardRead, // the panel's links between the three pages
         ["RECALL_TRACE_VIEW"] = TraceRun,
-        ["RECALL_CASES_VIEW"] = CasesRead
+        ["RECALL_CASES_VIEW"] = CasesRead,
+        // R7a — Vaka Detayı, verbatim pack §11.3
+        ["RECALL_SCOPE_MARK"] = CasesUpdate,
+        ["RECALL_SCOPE_SUBMIT"] = CasesUpdate,
+        ["RECALL_SCOPE_RETURN"] = CasesApprove,
+        ["RECALL_SCOPE_APPROVE"] = CasesApprove,
+        ["RECALL_SCOPE_REVISE"] = CasesUpdate,
+        ["RECALL_QUARANTINE_REQUEST"] = QuarantineRequestsCreate,
+        ["RECALL_SEGREGATION_CONFIRM"] = SegregationsConfirm,
+        ["RECALL_CUSTOMER_NOTIFY"] = NotificationsCreate,
+        ["RECALL_CONSUMPTION_DECLARE"] = ConsumptionsCreate,
+        ["RECALL_RETURN_LINK"] = ReturnsLink,
+        ["RECALL_EFFECTIVENESS_START"] = EffectivenessComplete,
+        ["RECALL_EFFECTIVENESS_COMPLETE"] = EffectivenessComplete,
+        ["RECALL_CASE_CLOSE"] = CasesClose,
+        ["RECALL_CASE_CANCEL"] = CasesCancel
     };
 
     public static IReadOnlyDictionary<string, bool> For(IPermissionSnapshot permissions)

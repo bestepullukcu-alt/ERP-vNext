@@ -1157,4 +1157,5 @@
   <data name="Nav.Page.RECALLDASHBOARD" xml:space="preserve"><value>Geri Çağırma Hazırlığı</value></data>
   <data name="Nav.Page.RECALLTRACE" xml:space="preserve"><value>Geri Çağırma İzleme</value></data>
   <data name="Nav.Page.RECALLCASES" xml:space="preserve"><value>Geri Çağırma Vakaları</value></data>
+  <data name="Nav.Page.RECALLCASEDETAILS" xml:space="preserve"><value>Geri Çağırma Vakası</value></data>
 </root>
