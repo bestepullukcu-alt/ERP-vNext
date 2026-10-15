@@ -701,3 +701,76 @@ KORU/YAPMA: açık tema görünümü DEĞİŞMEZ (mevcut Web testleri yeşil); K
 DOĞRULA: 1 sabotaj (.bak + touch): visit-workspace.css koyu bloğu silinsin → yeni test kırmızı. Web tam takım (-o repo içi), taban karşılaştırması (C5 tarih kırmızısı tabanda da var olabilir — CT-3, ayrı).
 Commit: "fix(web): WP-VW-W3E-DARK — dark theme token blocks for the visit workspace and presentation pages" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
 ```
+
+
+## W3E yerel E4 (CT, 2026-10-15) — yetki betiği uygulandı, fleet yeniden başlatıldı, Admin ile giriş
+
+### Doğrulananlar (gerçek veriyle)
+- **M sayfası:** 6 ziyaret, özet, işaret çubukları, süzgeçler, liste; sistem rengi (mor) doğru.
+- **Q1 kart:**
+  - durum a ("Kod yok") → "QR kodu üret" → durum b (Aktif · Sürüm 1);
+  - geçmiş zaman çizelgesi.
+- **Q2 yazdırma:**
+  - önizleme mockup'la uyumlu;
+  - `GET …/print?paper=a4&copies=1` → 200, `no-store`, SVG var, yanıtta `DQR1` metni YOK.
+- **E1–E3:**
+  - "Ek kanıtlar" bölümü;
+  - onay penceresi "Kurum QR kodu: Kapalı → Zorunlu";
+  - geçmişte alan / değer kullanıcının dilinde, kişi adıyla.
+- **S ekranları** (zorunlu kip, bugünkü ziyaret "SEZEN GENÇ · 75.YIL MECİDİYEKÖY ASM"):
+  - kurumda kod yokken cezasız başlama bilgisi (S6, QR "Eksik" sayılmıyor);
+  - kod varken S8 ("Kabuldeki QR kodunu okutun", "Eksik: konum, QR kodu", Sunumu başlat kapalı);
+  - S5 kamera izni yok (panel kamerayı engelliyor);
+  - zorunluda "Kodu bulamıyorum" → istisna yönlendirmesi.
+- **Ön kontrol (qr-check) gerçek veriyle**, geliştirme anahtarıyla üretilen yüklerle:
+
+  | yük | sonuç |
+  |---|---|
+  | doğru kurum | `ok` / `self` / kurum adı |
+  | başka kurum | `wrong_account`, "100.YIL ECZANESİ" adıyla |
+  | bozuk | `invalid` |
+  | yük yok | `missing` → `visit_qr_required` |
+
+  CT'nin hesapladığı vektör BE-a raporundaki örnekle birebir.
+- **Telefon (375 px) + Arapça:** M sayfası ve QR kartı sağdan sola, okunur.
+
+### Doğrulanamayanlar
+- **S2 / S3 / S4'ün ekrandaki çizimi gerçek okutmayla:** tarayıcı paneli kamerayı engelliyor. Sunucu tarafı yukarıda doğrulandı; ekran çizimi ajan testlerinde.
+- Q3 / Q4 (yeniden üret / iptal) gerçek veride denenmedi.
+- Q5 toplu üretim; M2 çekmece gerçek satırda.
+- **Koyu tema:** W3E-DARK bekliyor.
+
+### Bulgular
+| # | ekran | bulgu | sahip |
+|---|---|---|---|
+| G-1 | M (Kanıt işaretleri) | Kök kutu ve sayfalama düğmeleri aynı `.vf-page` sınıfını kullanıyor → kök 32 px'e sıkışıyor, alt bilgi (footer) tablonun üstüne biniyor (masaüstü + telefon). | Web |
+| G-2 | Q5 liste | "Tür" sütunu ham kod (`Clinic`, `Pharmacy`) → BRD `account-type` etiketi kullanıcının dilinde. | Web |
+| G-3 | Q5 liste, Q2 adres | Şehir ham kod (`TR-42-KONYA`). Bilinen şehir sözlüğü farkı (veri sahibi maddesi); Web'de etiket çözülemezse koddan okunur ad ("Konya") gösterilir. | Web (+ veri) |
+| G-4 | Q1 kart + geçmiş | "Üreten" / olay kişisi kullanıcı kimliği (GUID) gösteriyor. Ayar geçmişi aynı kişiyi "Admin User" diye gösteriyor. → QR okuma ve geçmiş yanıtı ad çözümünü taşısın (ayar DTO'sundaki `DisplayNames` deseni). | CRM + Web |
+| G-5 | E (ayar önizlemesi) | "Bu kapsamdaki temsilci şunu görecek" QR kipini yansıtmıyor; QR satırı ve kural cümlesi yok. | Web |
+| G-6 | Q1 kart, Arapça | Rakamla başlayan Latin adlar sağdan sola düzende ters dönüyor ("75.YIL" → "YIL.75"). Adlar `<bdi>` / `dir="auto"` ile sarılmalı (QR kartı, liste, M sayfası). | Web |
+| G-7 | M süzgeç | Kurum seçeneklerinde aynı adlı kurumlar ayırt edilemiyor (3 × "100.YIL ECZANESİ") → şehir / kod eklenmeli. | Web |
+| G-8 | M çip | "Uzak konum · 198.290 m" → 1000 m üstü km ("198,3 km"). | Web |
+| CT-3 | Web.Tests | `VisitEvidenceFlagsWebTests.C5` tarihe bağlı (her gün kırmızı) → smoke harness saati sabitler. | Web.Tests |
+
+**Not:** Çalışma alanı takvimi ilk açılışta ~15 sn yüklendi (5 haftalık aralık; W2'den beri). İzlenecek.
+
+### Yerel test verisi (temizlik kararı kullanıcıda)
+- **QR kodları:**
+  - `daafb809…` 100.YIL ECZANESİ v1 (+ "Yazdırıldı · A4, 1 adet" olayı);
+  - `dbcc1d79…` 75.YIL MECİDİYEKÖY ASM v1.
+- **Kanıt ayarı:** `qrMode` Kapalı → Zorunlu → Kapalı (v3; ayar eski haline döndü, geçmişte iki satır).
+
+## §36.1 Agent Prompt — W3E-FIX (paste-ready · E4 bulguları G-1…G-8 + CT-3; W3E-DARK ile paralel)
+```text
+@[.antigravity/agents/frontend-ui-ux.md]
+WP: WP-VW-W3E · W3E-FIX — yerel E4 bulguları: G-1 kanıt işaretleri sayfasında sınıf çakışması (footer tablonun üstünde), G-2 QR listesinde tür etiketi, G-3 şehir adı, G-4 QR kartı / geçmişinde kişi adı (GUID değil), G-5 ayar önizlemesinde QR satırı, G-6 RTL'de ad yönü, G-7 aynı adlı kurumları ayırt etme, G-8 uzak mesafe km biçimi, CT-3 C5 testinin saati
+Repository: C:\tmp\vw-w3e-fix (worktree, test/crm-content-visit-e2e güncel başı) · Branch: wp/vw-w3e-fix · commit bu dala, push YOK
+
+Paket belgesi: execution/domains/commercial-suite/work-packs/WP-VW-W3E-qr-antifraud.md — önce oku: "W3E yerel E4 (CT, 2026-10-15)" bulgu tablosu + K-THEME + DESIGN-GAP-W3E (mockup metinleri).
+MEVCUT: wwwroot/assets/js/CRM/VisitEvidenceFlags/visit-evidence-flags.css (.vf-page iki kez: kök 19 + sayfalama düğmesi 104) + visit-evidence-flags.js + flags-core.js · VisitQrCodes (qr-card.js, qr-codes.js, qr-print.js, VisitQrCodesController) · VisitEvidenceSettings (visit-evidence-settings.js önizleme kartı) · CRM Features/VisitQr (VisitQrService.Actor = ActorName — kimlik dönüyor; VisitQrAccountDto.IssuedBy / RevokedBy, VisitQrEventDto.By) · ad çözümü deseni: VisitEvidencePolicyDto.DisplayNames (ayar geçmişi "Admin User" gösteriyor) · BRD account-type etiketi deseni: mevcut Accounts / PharmacyReport Web okuması · Web.Tests/Js/visit-evidence-flags-smoke.js (saat sabit değil).
+NE: (G-1) sayfalama düğmesi sınıfını ayır (ör. .vf-pg), kök yüksekliği içeriği sarar, footer altta · (G-2) Q5 "Tür" BRD account-type etiketi kullanıcının dilinde (yoksa kod) · (G-3) şehir: city BRD etiketi; çözülemezse `TR-NN-ADI` biçiminden okunur ad (ilk harf büyük, Türkçe İ/ı doğru) — liste + yazdırma adresi · (G-4) CRM: QR hesap okuması ve geçmiş yanıtı ad çözümünü taşır (DisplayNames ya da IssuedByName / RevokedByName / By adı, ayar deseniyle; kiracı sınırlı); Web kartta ve geçmişte adı gösterir, ad yoksa "—" (GUID asla) · (G-5) ayar önizlemesine QR satırı (kipe göre "zorunlu / isteğe bağlı", kapalıyken yok) + kural cümlesi; cihaz doğrulama "İşaretle" iken web bilgi satırı (S7 metni) · (G-6) kurum / kişi adları <bdi> ya da dir="auto" (QR kartı, Q5 liste, yazdırma, M liste + çekmece + süzgeç) · (G-7) M kurum süzgecinde aynı adlı seçeneklere şehir (ya da kurum kodu) eki · (G-8) mesafe ≥ 1000 m → "198,3 km" (kullanıcının dili ve ondalık ayırıcısı) · (CT-3) visit-evidence-flags-smoke.js Date'i 2026-10-14'e sabitler; C5 her gün yeşil.
+KORU/YAPMA: K-THEME (ana renk yalnız --bs-primary; guard yeşil); W3E-DARK'ın dosyalarına (visit-workspace.css, visit-presentation.css) DOKUNMA; mevcut W3E / W4 Web testleri yeşil; QR yükü hiçbir yanıtta / günlükte yok; CRM'de yalnız G-4 (okuma DTO'su + ad çözümü), başka davranış değişmez; kalıcı veri yazma YOK; kullanıcının oturum açık sekmesine harness enjekte etme.
+DOĞRULA: her G için test (Web.Tests xUnit + RunNode; G-4 için CRM testi: ad çözülüyor, başka kiracının adı asla) + 3 sabotaj (.bak + touch): (1) .vf-page çakışması geri gelsin → kırmızı; (2) kartta GUID gösterilsin → kırmızı; (3) smoke harness saati sabitlemesin → C5 kırmızı (testi bugünün tarihine göre çalıştırarak göster). CRM + Web tam takım (-o repo içi), taban karşılaştırması. Görsel kanıt: M sayfası (footer altta), Q5 tür / şehir, QR kartı adla, ayar önizlemesi QR satırıyla, Arapça QR kartı ad yönü.
+Commit: "fix(web,crm): WP-VW-W3E-FIX — evidence flags page layout, QR list type/city labels, issuer names, settings preview QR row, RTL name direction, same-name institutions, km distances, clock-pinned smoke test" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
+```
