@@ -32,7 +32,8 @@ public sealed class RecallDashboardSource : IRecallDashboardSource
                                             & f.Gte(x => x.PostingDate, from) & f.Lte(x => x.PostingDate, to) & f.In(x => x.MovementType, types))
             .ToListAsync(cancellationToken);
         return rows.Select(t => new TraceTransaction(
-            t.Id.ToString("D"), t.TransactionNumber, t.MovementType, t.LotId, t.ItemId, t.SkuId, t.SkuLevel, t.BaseQuantity, t.BaseUomId, t.SourceModule,
-            t.SourceDocumentId, t.PostingDate, t.ReversesTransactionId?.ToString("D"), t.SerialIds ?? [])).ToList();
+            t.Id.ToString("D"), t.TransactionNumber, t.MovementType, t.LotId, t.ItemId, t.SkuId, t.SkuLevel, t.BaseQuantity, t.BaseUomId,
+            // the panel never reads the source module / document (no KPI decides on them)
+            string.Empty, null, t.PostingDate, t.ReversesTransactionId?.ToString("D"), t.SerialIds ?? [])).ToList();
     }
 }
