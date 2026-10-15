@@ -49,6 +49,7 @@ Projeyi tam fonksiyonel çalıştırmak için servisleri aşağıdaki sırayla b
 - **Komut:** dotnet run (Development)
 - **Neden:** Diğer tüm servislerin yetki kontrolü (JWT validation) yapabilmesi için kimlik servisinin ayakta olması gerekir.
 - **Seed Kullanıcı (yalnız Development, MongoDB açık olmalı):** `admin@diten.com` — dev parolası depoda yazılmaz, yerel kurulum notundadır. Development dışında (Staging, Production) açılışta hiçbir hesap yaratılmaz; yeni bir ortamın ilk platform yöneticisi `services/Diten.AuthService/tools/Diten.AuthService.FirstPlatformAdministrator` komutuyla, tek kullanımlık şifre belirleme bağlantısıyla kurulur (WP-AUTH-ADMIN-BOOTSTRAP-01).
+- **Dev platform yöneticisi isteğe bağlıdır:** yerel (commit edilmeyen) `appsettings.Development.json`'a `"DevSeeds": { "PlatformAdmin": true }` ekleyin (Auth ve Platform aynı anahtarı okur); anahtar yoksa Development'ta da yönetici yaratılmaz.
 
 ### 2. TAB 2: DevEnablement Service (Port: 5058)
 - **Dizin:** services/Diten.DevEnablementService/src/Diten.DevEnablementService.Api
