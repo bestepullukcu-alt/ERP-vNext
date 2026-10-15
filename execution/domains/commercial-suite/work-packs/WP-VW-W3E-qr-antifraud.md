@@ -904,3 +904,36 @@ Test dalına alındı: `c0ab04054` (ajan `f0542c1bc`), çakışmasız. Yalnız C
 - **CT sabotajı:** Türkçe "i" sınıfı `[iIıİ]` → `[iI]` → `istanbul ↔ TR-34-İSTANBUL` **kırmızı**; geri alındı.
 
 **Takip (yalnız rapor, karar gerekli) — FU-CITY-TERRITORY:** `TerritoryAssignmentPreviewEngine.cs:107` bölge atama kuralının `CityRefs` değerlerini (`istanbul`) kurum `CityRef`'i (`TR-34-ISTANBUL`) ile doğrudan karşılaştırıyor. Bölge kuralı önizlemesi gerçek veride şehir eşleşmesini kaçırabilir. Aynı `CityRefMatcher` kullanılarak küçük bir CRM düzeltmesi (MOD-0151). Zamanı kullanıcıda.
+
+
+## §37 CT kabul — W3E-FLAGS-STD E2 ACCEPTED (2026-10-15) — K-STD Kanıt işaretleri sayfasında; CT-5 kapandı
+Test dalına alındı: `659540cef` (ajan `44f8036f4`) + ortak fabrika düzeltmesi `2de604edc` (ayrı görev, `2af02820b`), ikisi de çakışmasız.
+
+**Ne değişti:**
+- Ziyaretler tablosu Golden Compact standardında: `_ListShell`, v2 işareti, sunucu modu.
+- Temsilci özeti ikinci v2 tablo: istemci modu, sayfa boyutu yok.
+- Özet kartı, temsilci tablosu ve liste tek süzgeç durumunu kullanıyor; Save View üçünü birlikte saklıyor.
+- Hızlı görünüm standart offcanvas'ta.
+- Seçim kapalı (`HasSelection = false`, Kullanıcılar listesi emsali). CRM'de toplu işlem ucu yok.
+- Arama kutusu yok (CRM'de metin araması yok). Sütun sıralaması kapalı: CRM her zaman başlangıca göre, en yeni önce sıralıyor.
+- Web vekili standart liste sorgusunu CRM'in `from` / `to` / `page` / `pageSize` / `onlyFlagged` biçimine çeviriyor; CRM koduna dokunulmadı. Dışa aktarma eşleşen tüm ziyaretleri 100'lük parçalarla okuyor; 50 000 üstünü reddediyor (413).
+- CT-5: `--vw-today` açık temada artık `rgba(var(--bs-primary-rgb), .06)`. Tema guard'ı eski ana renk ailesini rgb biçiminde de yakalıyor.
+
+**CT kontrolü:**
+- **Diff:** sayfada `serverSide`, `ajax.data` ya da `ext.search` yok. Fetch standart başlıklarla gidiyor. CSS'te yalnız token blokları var. 92 gün kuralı iki tarafta tutarlı: vekilde `ResolveRange`, sayfada `rangeError`; ikisi de UTC gün, iki uç dahil.
+- **Testler** (CT `-o`): Web tam takım 1786/3. Ajanın bildirdiği 2 `ShipmentDetailsDateNode` kırmızısı (Node 16, taban ile aynı) + `WorkCenterMenuWithoutPermissions`. Sonuncusu `-o` artefaktı: test dosyayı `C:\Diten.Web\…` altında arıyor, bu paketle ilgisi yok. Birleşik dalda (FLAGS-STD + fabrika düzeltmesi) ilgili sınıflar 77/77.
+- **CT sabotajı (ajanın dokunmadığı kural):** 92 gün sınırı vekilde ve sayfa betiğinde bir gün kaydırıldı (`+1` kaldırıldı, 93 gün geçer oldu). Sonuç **kırmızı**: S5 (93 günlük özel aralık), S6 (Apply koruması), C4, S2, S4 (5 test). md5 ile geri alındığı doğrulandı.
+
+**Ortak fabrika düzeltmesi (`2de604edc`, XMC-001 ayrı görevi):**
+- Sorun: `createList` tutamacındaki `appliedFilters`, `Object.assign` yüzünden ilk değerinde donuyordu.
+- Düzeltme: erişimci artık `Object.defineProperty` ile tanımlı. Değişiklik 6 satır.
+- Test: xUnit + Node düzeneği eski dosyada 2/2 kırmızı. vitest 4c/4d/6 eklendi ama bu makinede koşamıyor (Node 16).
+- CT kontrolü: kodda `handle.appliedFilters = …` biçiminde atama yok, yani salt okunur erişimci güvenli.
+- Kalan küçük not: düzenekte `RunNode` null dönerse (Node yoksa) test sessizce geçiyor. Repo deseni bu, kabul edildi.
+- Sayfa hâlâ `dt.ajax.params()` okuyor. İkisi de doğru sonuç veriyor; sayfanın `handle.appliedFilters`'a dönmesi isteğe bağlı küçük bir temizlik.
+
+**Bilerek bırakılanlar (kabul):**
+- Dışa aktarmada başlangıç saati UTC biçiminde yazılıyor.
+- Süzgeç rozetinde dönem "" iken alan adı görünüyor; seçili dönem özet kartında yazıyor.
+
+**Sıradaki:** E4 ikinci tur. Kapsam: QR okutma simülasyonu (kullanıcı izni var), şehir süzgeci (CITY), koyu tema, iki sayfanın standart tabloları, Arapça ve telefon.
