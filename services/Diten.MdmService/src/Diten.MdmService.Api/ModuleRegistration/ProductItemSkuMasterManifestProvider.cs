@@ -16,6 +16,8 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
     private const string Retire = "mdm.global-products.retire";
     private const string RequestCorrection = "mdm.global-products.request-correction";
     private const string RequestRetirement = "mdm.global-products.request-retirement";
+    // MOD-0290-FU05 slice 2 (owner Karar a): the approved product's brand change.
+    private const string UpdateBrand = "mdm.global-products.update-brand";
     private const string FinishedGoodsRead = "mdm.finished-goods.read";
     private const string FinishedGoodsCreate = "mdm.finished-goods.create";
     private const string FinishedGoodsSubmit = "mdm.finished-goods.submit";
@@ -76,7 +78,8 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
             Domain: "MASTER-DATA-MANAGEMENT",
             Service: "DitenMdmService",
             // S5: + the ITEMS page and the EDIT_STOCK_BEHAVIOUR actions. S2 lane merge FIX1 (1.2.0): + ITEMS WITHDRAW_APPROVAL.
-            ModuleVersion: "1.2.0",
+            // MOD-0290-FU05 slice 2 (1.3.0): + GLOBAL_PRODUCTS CHANGE_BRAND (mdm.global-products.update-brand).
+            ModuleVersion: "1.3.0",
             IsTenantAssignable: true,
             SortOrder: 340,
             Pages:
@@ -98,6 +101,7 @@ public sealed class ProductItemSkuMasterManifestProvider : IModuleManifestProvid
                         new ModuleManifestAction("SUBMIT", "Submit", Submit, "RowAction", 30, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("WITHDRAW_APPROVAL", "Withdraw Approval", Withdraw, "RowAction", 35, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("REQUEST_CORRECTION", "Request Correction", RequestCorrection, "RowAction", 37, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("CHANGE_BRAND", "Change Brand", UpdateBrand, "RowAction", 38, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("REQUEST_RETIREMENT", "Request Retirement", RequestRetirement, "RowAction", 40, IsDangerous: true, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("RETIRE", "Retire", Retire, "System", 41, IsDangerous: true, IsToolbarAction: false, IsRowAction: false),
                         new ModuleManifestAction(

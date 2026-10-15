@@ -113,6 +113,11 @@ public sealed class GetGlobalProductByIdHandler : IRequestHandler<GetGlobalProdu
             && product.ActiveLifecycleOperation is null
             && actorContext.HasPermission(ProductIdentityLifecyclePermissions.GlobalProductRequestRetirement))
             actions.Add("REQUEST_RETIREMENT");
+        // MOD-0290-FU05 slice 2: the approved product's brand — by its own key, only with no lifecycle operation running.
+        if (product.LifecycleStatus == ProductIdentityLifecycleStatus.IdentityApproved
+            && product.ActiveLifecycleOperation is null
+            && actorContext.HasPermission(ProductIdentityLifecyclePermissions.GlobalProductUpdateBrand))
+            actions.Add("CHANGE_BRAND");
         return actions;
     }
 

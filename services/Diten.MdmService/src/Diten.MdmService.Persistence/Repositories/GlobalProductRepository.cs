@@ -651,6 +651,59 @@ public sealed class GlobalProductRepository : IGlobalProductRepository
         }
     }
 
+    // MOD-0290-FU05 slice 2 (owner Karar a, CT decisions): an approved product's brand changes in ONE conditional write —
+    // approved, no lifecycle operation, still at expectedVersion and still carrying change.FromBrandId — with the change
+    // record and its intent (GlobalProductBrandChanged). Single document, no transaction: the version CAS orders it against
+    // a correction / retirement admission (each moves the version).
+    public async Task<GlobalProductLifecycleWriteResult> ChangeBrandAsync(
+        Guid id,
+        int expectedVersion,
+        GlobalProductBrandChange change,
+        LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(change);
+        ArgumentNullException.ThrowIfNull(auditIntent);
+        cancellationToken.ThrowIfCancellationRequested();
+        var contractError = change.ToBrandId == Guid.Empty
+                            || change.FromBrandId == Guid.Empty
+                            || change.FromBrandId == change.ToBrandId
+                            || change.PreVersion != expectedVersion
+                            || !string.Equals(change.OperationKey, auditIntent.IdempotencyKey, StringComparison.Ordinal)
+            ? "GLOBAL_PRODUCT_BRAND_CHANGE_CONTRACT_INVALID"
+            : ValidateAuditIntent(id, expectedVersion, ProductAuditOperation.GlobalProductBrandChanged, auditIntent);
+        if (contractError is not null)
+        {
+            return new(false, null, contractError);
+        }
+
+        var replay = await FindReplayAsync(id, auditIntent, cancellationToken);
+        if (replay is not null)
+        {
+            return replay;
+        }
+
+        var filter = ActiveTenantFilter
+                     & Builders<GlobalProduct>.Filter.Eq(x => x.Id, id)
+                     & Builders<GlobalProduct>.Filter.Eq(x => x.Version, expectedVersion)
+                     & Builders<GlobalProduct>.Filter.Eq(x => x.LifecycleStatus, ProductIdentityLifecycleStatus.IdentityApproved)
+                     & Builders<GlobalProduct>.Filter.Eq(x => x.ActiveLifecycleOperation, null)
+                     // A product stored before the field existed has no BrandId: Eq(null) matches it too.
+                     & Builders<GlobalProduct>.Filter.Eq(x => x.BrandId, change.FromBrandId)
+                     & Builders<GlobalProduct>.Filter.Where(x => x.AuditIntents.Count < AuditIntentLimits.MaxPerAggregate);
+        var update = Builders<GlobalProduct>.Update
+            .Set(x => x.BrandId, change.ToBrandId)
+            .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow)
+            .Inc(x => x.Version, 1)
+            .Push(x => x.BrandChanges, change)
+            .Push(x => x.AuditIntents, auditIntent);
+        var updated = await _globalProducts.FindOneAndUpdateAsync(filter, update,
+            new FindOneAndUpdateOptions<GlobalProduct> { ReturnDocument = ReturnDocument.After }, cancellationToken);
+        return updated is not null
+            ? new(true, updated)
+            : await ClassifyDraftUpdateFailureAsync(id, expectedVersion, auditIntent, cancellationToken);
+    }
+
     // FIX3 item 6: the edit's refusals (the same words as GSKU's, under Global Product's names).
     public const string SubmitInFlight = "GLOBAL_PRODUCT_IDENTITY_SUBMIT_IN_FLIGHT";
     // BL-552 flow 3 (S2): the draft is held by a submit stuck in manual reconciliation.

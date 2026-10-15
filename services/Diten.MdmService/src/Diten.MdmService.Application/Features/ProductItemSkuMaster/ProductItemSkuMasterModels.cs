@@ -119,6 +119,46 @@ public static class ProductItemSkuMasterModels
         string? BrandCode = null,
         string? BrandName = null);
 
+    /// <summary>
+    /// MOD-0290-FU05 slice 2 — an approved product's new brand. The field is required (its absence is a 400); null
+    /// removes the brand. Code and name are never accepted (unknown fields).
+    /// </summary>
+    public sealed class ChangeGlobalProductBrandRequest
+    {
+        private readonly Guid? _brandId;
+
+        public int? ExpectedVersion { get; init; }
+
+        public Guid? BrandId
+        {
+            get => _brandId;
+            init
+            {
+                _brandId = value;
+                BrandIdSpecified = true;
+            }
+        }
+
+        [JsonIgnore]
+        public bool BrandIdSpecified { get; private set; }
+
+        [JsonExtensionData]
+        public IDictionary<string, JsonElement>? UnmappedFields { get; init; }
+    }
+
+    /// <summary>MOD-0290-FU05 slice 2 — the product after the change (Changed = false: the same brand, nothing written).</summary>
+    public sealed record GlobalProductBrandChangeDto(
+        Guid Id,
+        string CanonicalCode,
+        string GlobalProductName,
+        ProductIdentityLifecycleStatus LifecycleStatus,
+        int Version,
+        bool Changed,
+        bool IsReplay,
+        Guid? BrandId,
+        string? BrandCode,
+        string? BrandName);
+
     /// <summary>MOD-0290-FU05 (T-1) — a brand a Global Product may be linked to now (active, inside its window).</summary>
     public sealed record GlobalProductBrandOptionDto(
         Guid Id,

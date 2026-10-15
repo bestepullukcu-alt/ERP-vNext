@@ -16,7 +16,7 @@ namespace Diten.MdmService.Api.Tests;
 /// is one test per row here; each test is its own tenant.
 /// </summary>
 [Collection(MdmHttpCollection.Name)]
-public sealed class GlobalProductBrandLinkHttpTests(MdmHttpHost host)
+public sealed partial class GlobalProductBrandLinkHttpTests(MdmHttpHost host)
 {
     private const string Read = "mdm.global-products.read";
     private const string Create = "mdm.global-products.create";

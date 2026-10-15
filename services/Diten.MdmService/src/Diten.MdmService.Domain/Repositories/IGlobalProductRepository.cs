@@ -126,6 +126,15 @@ public interface IGlobalProductRepository
         CancellationToken cancellationToken = default) => brandSpecified
             ? throw new NotSupportedException("Global Product draft brand update is not implemented by this repository.")
             : UpdateDraftAsync(id, globalProductName, normalizedName, expectedVersion, auditIntent, cancellationToken);
+    // MOD-0290-FU05 slice 2: an approved product's brand (null = none), only while it is approved with no lifecycle operation
+    // and still at expectedVersion with fromBrandId; the change record and the intent travel in the same write.
+    Task<GlobalProductLifecycleWriteResult> ChangeBrandAsync(
+        Guid id,
+        int expectedVersion,
+        GlobalProductBrandChange change,
+        LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("Global Product brand change is not implemented by this repository.");
     Task<GlobalProductLifecycleWriteResult> SubmitIdentityAsync(
         Guid id,
         int expectedVersion,

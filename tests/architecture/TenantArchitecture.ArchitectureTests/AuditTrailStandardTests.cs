@@ -100,6 +100,8 @@ public sealed class AuditTrailStandardTests(ITestOutputHelper output)
             + "/IProductLegalEntityScopePolicyRepository.UpdateAsync"
             + "/IGlobalProductRepository.CreateDraftAsync"
             + "/IGlobalProductRepository.UpdateDraftAsync"
+            // CT kararı 2026-10-15 (MOD-0290-FU05 T-2): onaylı ürün marka değişikliği, niyet aynı koşullu yazımda.
+            + "/IGlobalProductRepository.ChangeBrandAsync"
             + "/IGlobalProductRepository.RetireIdentityAsync"
             + "/IGlobalProductRepository.SubmitIdentityAsync"
             + "/IGlobalProductRepository.AcquireLifecycleOperationAsync"

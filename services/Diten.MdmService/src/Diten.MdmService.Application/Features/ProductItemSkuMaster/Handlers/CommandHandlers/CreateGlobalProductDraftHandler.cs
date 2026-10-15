@@ -60,8 +60,13 @@ public sealed class CreateGlobalProductDraftHandler
         }
 
         // MOD-0290-FU05: the brand is checked before the code reservation is consumed — a refused brand burns nothing.
+        // CT decision (slice 1 §7.3): a repeat of a create that already wrote its product is not a new link — the link
+        // rule is skipped (the brand may have been archived since) and the repository compares the brand id instead
+        // (the same brand repeats the first answer, another brand is CODE_RESERVATION_MISMATCH).
         Domain.Entities.Brand? brand = null;
-        if (command.BrandId is { } brandId)
+        var alreadyCreated = command.BrandId is not null
+                             && await _globalProducts.GetByReservationIdAsync(command.ReservationId, cancellationToken) is not null;
+        if (command.BrandId is { } brandId && !alreadyCreated)
         {
             var link = await GlobalProductBrands.ResolveLinkAsync(_brands, brandId, _clock.GetUtcNow(), cancellationToken);
             if (link.Refusal is { } refusal)
@@ -103,12 +108,17 @@ public sealed class CreateGlobalProductDraftHandler
             command.IdempotencyKey,
             visibleName,
             normalizedName,
-            brand?.Id);
+            command.BrandId);
         GlobalProductCreateResult createResult;
 
         try
         {
             createResult = await _globalProducts.CreateDraftAsync(globalProduct, cancellationToken);
+            if (alreadyCreated && createResult.GlobalProduct?.BrandId is { } repeatedBrand)
+            {
+                brand = (await GlobalProductBrands.ReadAsync(_brands, [repeatedBrand], cancellationToken))
+                    .GetValueOrDefault(repeatedBrand);
+            }
         }
         catch (Exception)
         {

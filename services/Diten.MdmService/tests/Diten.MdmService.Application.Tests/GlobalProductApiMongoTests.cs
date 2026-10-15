@@ -482,7 +482,11 @@ public sealed class GlobalProductApiMongoTests
                 .Contains("{id:guid}/", StringComparison.Ordinal))
             .ToArray();
 
-        Assert.Equal(5, lifecycleRoutes.Length);
+        // MOD-0290-FU05 slice 2 (CT decision): 5 → 6 — the approved product's brand change.
+        Assert.Equal(6, lifecycleRoutes.Length);
+        Assert.Contains(lifecycleRoutes, item => item.Name == nameof(GlobalProductsController.ChangeBrand)
+            && item.Http!.HttpMethods.SequenceEqual(["POST"])
+            && item.Http.Template == "{id:guid}/brand");
         Assert.Contains(lifecycleRoutes, item => item.Name == nameof(GlobalProductsController.SubmitIdentity)
             && item.Http!.HttpMethods.SequenceEqual(["POST"])
             && item.Http.Template == "{id:guid}/submit");
