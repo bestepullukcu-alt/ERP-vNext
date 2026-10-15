@@ -14,7 +14,7 @@ rules are unchanged.
 |---|---|---|
 | exit 0, nothing but its own info lines (`[shell]`, `[factory]`, `[pack]`, the producers' exact formats) | no deviation | no deviation |
 | exit 1, numbered gaps 1..n (with info lines or not) | the gap list | the gap list, byte-identical text |
-| exit 1 or 2 with no numbered gap; the full report (early return); exit 0 with a gap; another exit code; gap numbers not 1..n; an unknown line; the shell WARNING without a gap; anything on stderr | no deviation | DOĞRULANAMADI — reason, and the command to run by hand |
+| exit 1 or 2 with no numbered gap; the full report (early return); exit 0 with a gap; another exit code; gap numbers not 1..n; an unknown line; the shell WARNING without a gap; anything on stderr | numbered gap lines present: the gap list; none: no deviation — the exit code and stderr were ignored | DOĞRULANAMADI — reason, and the command to run by hand |
 | a timeout | silent | DOĞRULANAMADI — zaman aşımı (25 sn) |
 | no verifier | no deviation | DOĞRULANAMADI — doğrulayıcı bulunamadı |
 | an error after the file matched | silent | DOĞRULANAMADI — hook iç hatası (type only) |
