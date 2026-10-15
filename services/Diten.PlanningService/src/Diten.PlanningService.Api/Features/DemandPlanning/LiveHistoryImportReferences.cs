@@ -1,4 +1,7 @@
 using System.Net;
+using System.Globalization;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using Diten.PlanningService.Application.Features.DemandPlanning.HistoryImports;
 using Microsoft.Extensions.Configuration;
@@ -76,15 +79,96 @@ public sealed class LiveHistoryImportReferences : IHistoryImportScopeAuthority, 
             $"api/product-master/skus/{skuId:D}?level={skuLevel}", cancellationToken, wrapped: false);
         if (productSku is null || RequiredGuid(productSku.Value, "skuId") != skuId ||
             RequiredString(productSku.Value, "skuLevel") != skuLevel ||
-            RequiredString(productSku.Value, "contractVersion") != "v1") return invalid;
-        var uom = await ReadAsync($"api/product-master/skus/{skuId:D}/uom",
+            RequiredString(productSku.Value, "lifecycleStatus") != "Active" ||
+            RequiredString(productSku.Value, "contractVersion") != "v1.1") return invalid;
+        var uom = await ReadAsync($"api/product-master/skus/{skuId:D}/uom?level={skuLevel}",
             cancellationToken, wrapped: false);
-        if (uom is null || RequiredString(uom.Value, "contractVersion") != "v1") return invalid;
+        if (uom is null || RequiredString(uom.Value, "contractVersion") != "v1.1") return invalid;
         var baseUomId = RequiredString(uom.Value, "baseUomId");
         if (string.IsNullOrWhiteSpace(baseUomId) ||
-            !string.Equals(originalUomId, baseUomId, StringComparison.Ordinal)) return invalid;
-        return new HistoryReferenceResult(HistoryReferenceState.Verified,
-            baseUomId, 1m, "PRODUCT-MASTER-BUNDLE/getSkuUom", "v1");
+            RequiredString(productSku.Value, "baseUomId") != baseUomId) return invalid;
+        if (originalUomId == baseUomId)
+            return new HistoryReferenceResult(HistoryReferenceState.Verified,
+                baseUomId, 1m, "PRODUCT-MASTER-BUNDLE/getSkuUom", "v1.1",
+                ConversionNumerator: 1m, ConversionDenominator: 1m);
+        return ResolveConversion(uom.Value, originalUomId, baseUomId) ?? invalid;
+    }
+
+    private static HistoryReferenceResult? ResolveConversion(JsonElement uom, string from, string to)
+    {
+        if (!uom.TryGetProperty("conversions", out var conversions) ||
+            conversions.ValueKind != JsonValueKind.Array) return null;
+        var edges = new List<(string From, string To, decimal Numerator, decimal Denominator,
+            string Evidence)>();
+        foreach (var item in conversions.EnumerateArray())
+        {
+            if ((item.TryGetProperty("effectiveFrom", out var effectiveFrom) &&
+                 effectiveFrom.ValueKind != JsonValueKind.Null) ||
+                (item.TryGetProperty("effectiveTo", out var effectiveTo) &&
+                 effectiveTo.ValueKind != JsonValueKind.Null)) return null;
+            var source = RequiredString(item, "fromUom");
+            var target = RequiredString(item, "toUom");
+            var numeratorText = RequiredString(item, "numerator");
+            var denominatorText = RequiredString(item, "denominator");
+            if (source.Length == 0 || target.Length == 0 || source == target ||
+                !decimal.TryParse(numeratorText, NumberStyles.AllowDecimalPoint,
+                    CultureInfo.InvariantCulture, out var numerator) || numerator <= 0 ||
+                !decimal.TryParse(denominatorText, NumberStyles.AllowDecimalPoint,
+                    CultureInfo.InvariantCulture, out var denominator) || denominator <= 0)
+                return null;
+            try
+            {
+                edges.Add((source, target, numerator, denominator,
+                    $"{source}>{target}:{numeratorText}:{denominatorText}"));
+                edges.Add((target, source, denominator, numerator,
+                    $"{target}>{source}:{denominatorText}:{numeratorText}"));
+            }
+            catch (OverflowException) { return null; }
+        }
+        var queue = new Queue<(string Unit, decimal Numerator, decimal Denominator,
+            string Evidence, string[] Seen)>();
+        queue.Enqueue((from, 1m, 1m, string.Empty, [from]));
+        var matches = new List<(decimal Numerator, decimal Denominator, string Evidence)>();
+        while (queue.Count != 0)
+        {
+            var current = queue.Dequeue();
+            if (current.Seen.Length > 4) continue;
+            foreach (var edge in edges.Where(edge => edge.From == current.Unit))
+            {
+                if (current.Seen.Contains(edge.To, StringComparer.Ordinal)) continue;
+                decimal numerator;
+                decimal denominator;
+                try
+                {
+                    numerator = checked(current.Numerator * edge.Numerator);
+                    denominator = checked(current.Denominator * edge.Denominator);
+                }
+                catch (OverflowException) { return null; }
+                var evidence = current.Evidence.Length == 0 ? edge.Evidence :
+                    current.Evidence + ">" + edge.Evidence;
+                if (edge.To == to) matches.Add((numerator, denominator, evidence));
+                else queue.Enqueue((edge.To, numerator, denominator, evidence,
+                    [.. current.Seen, edge.To]));
+            }
+        }
+        if (matches.Count == 0) return null;
+        try
+        {
+            if (matches.Any(match => checked(match.Numerator * matches[0].Denominator) !=
+                    checked(matches[0].Numerator * match.Denominator))) return null;
+        }
+        catch (OverflowException) { return null; }
+        var chosen = matches.OrderBy(match => match.Evidence, StringComparer.Ordinal).First();
+        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(chosen.Evidence)));
+        try
+        {
+            var factor = chosen.Numerator / chosen.Denominator;
+            return factor > 0 ? new HistoryReferenceResult(HistoryReferenceState.Verified, to,
+                factor, "PRODUCT-MASTER-BUNDLE/getSkuUom/" + hash, "v1.1",
+                ConversionNumerator: chosen.Numerator,
+                ConversionDenominator: chosen.Denominator) : null;
+        }
+        catch (OverflowException) { return null; }
     }
 
     private async Task<bool> IsActiveWarehouseAsync(Guid legalEntityId, string warehouseId,
@@ -124,18 +208,22 @@ public sealed class LiveHistoryImportReferences : IHistoryImportScopeAuthority, 
     }
 
     private static string RequiredString(JsonElement value, string name) =>
-        value.GetProperty(name).GetString() ?? throw new InvalidOperationException("Missing reference field.");
+        value.TryGetProperty(name, out var field) && field.ValueKind == JsonValueKind.String ?
+            field.GetString() ?? throw new InvalidOperationException("Missing reference field.") :
+            throw new InvalidOperationException("Missing reference field.");
 
     private static Guid RequiredGuid(JsonElement value, string name) =>
         Guid.TryParse(RequiredString(value, name), out var result) && result != Guid.Empty ?
             result : throw new InvalidOperationException("Invalid reference identifier.");
 
     private static bool RequiredBool(JsonElement value, string name) =>
-        value.GetProperty(name).GetBoolean();
+        value.TryGetProperty(name, out var field) && field.ValueKind is JsonValueKind.True or JsonValueKind.False ?
+            field.GetBoolean() : throw new InvalidOperationException("Missing reference field.");
 
     private static bool IsIdentityApproved(JsonElement value)
     {
-        var state = value.GetProperty("lifecycleStatus");
+        if (!value.TryGetProperty("lifecycleStatus", out var state))
+            throw new InvalidOperationException("Missing reference field.");
         return state.ValueKind == JsonValueKind.Number ? state.GetInt32() == 3 :
             state.ValueKind == JsonValueKind.String &&
             state.GetString() == "IdentityApproved";

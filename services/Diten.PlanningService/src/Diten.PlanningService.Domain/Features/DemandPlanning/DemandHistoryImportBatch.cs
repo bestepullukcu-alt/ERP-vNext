@@ -37,6 +37,8 @@ public sealed class DemandHistoryImportRow
     public string? RelatedSourceRecordKey { get; set; }
     public string? BaseUomId { get; set; }
     public decimal? ConversionFactor { get; set; }
+    public decimal? ConversionNumerator { get; set; }
+    public decimal? ConversionDenominator { get; set; }
     public string? ConversionContractId { get; set; }
     public string? ConversionContractVersion { get; set; }
     public decimal? BaseQuantity { get; set; }

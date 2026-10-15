@@ -3,7 +3,9 @@ using Diten.PlanningService.Domain.Features.DemandPlanning;
 namespace Diten.PlanningService.Application.Features.DemandPlanning.HistoryImports;
 
 public sealed record AcceptedDemandHistoryView(
-    AcceptedDemandHistoryRow Row, DemandHistoryAcceptanceAudit Audit);
+    AcceptedDemandHistoryRow Row, DemandHistoryAcceptanceAudit Audit,
+    bool? EffectiveUnitVerificationPending = null,
+    string? UnitWarning = null);
 
 public enum HistoryAcceptanceOutcome { Created, Existing, Conflict, Ineligible, Unavailable }
 public sealed record HistoryAcceptanceResult(HistoryAcceptanceOutcome Outcome,

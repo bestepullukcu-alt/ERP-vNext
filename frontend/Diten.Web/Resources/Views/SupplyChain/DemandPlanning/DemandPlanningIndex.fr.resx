@@ -60,6 +60,7 @@
   <data name="HistoryUnit" xml:space="preserve"><value>Unité acceptée</value></data>
   <data name="HistoryQuantity" xml:space="preserve"><value>Quantité acceptée</value></data>
   <data name="HistoryUnitPending" xml:space="preserve"><value>Unité non vérifiée par MOD-0290</value></data>
+  <data name="HistoryUnitMismatch" xml:space="preserve"><value>L'unité acceptée diffère de l'unité de base actuelle</value></data>
   <data name="HistoryBatch" xml:space="preserve"><value>Lot d'importation</value></data>
   <data name="HistoryDecision" xml:space="preserve"><value>Décision</value></data>
   <data name="HistoryActor" xml:space="preserve"><value>Décidé par</value></data>

@@ -18,6 +18,8 @@ public sealed class AcceptedDemandHistoryRow : EntityBase
     public decimal BaseQuantity { get; set; }
     public string BaseUomId { get; set; } = string.Empty;
     public decimal ConversionFactor { get; set; }
+    public decimal? ConversionNumerator { get; set; }
+    public decimal? ConversionDenominator { get; set; }
     public string ConversionContractId { get; set; } = string.Empty;
     public string ConversionContractVersion { get; set; } = string.Empty;
     public decimal AcceptedQuantity { get; set; }

@@ -60,6 +60,7 @@
   <data name="HistoryUnit" xml:space="preserve"><value>已接受单位</value></data>
   <data name="HistoryQuantity" xml:space="preserve"><value>已接受数量</value></data>
   <data name="HistoryUnitPending" xml:space="preserve"><value>单位尚未经 MOD-0290 验证</value></data>
+  <data name="HistoryUnitMismatch" xml:space="preserve"><value>已接受单位与当前基本单位不同</value></data>
   <data name="HistoryBatch" xml:space="preserve"><value>导入批次</value></data>
   <data name="HistoryDecision" xml:space="preserve"><value>决定</value></data>
   <data name="HistoryActor" xml:space="preserve"><value>决定人</value></data>

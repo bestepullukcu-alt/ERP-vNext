@@ -30,7 +30,9 @@ public sealed record HistoryReferenceResult(
     decimal? ConversionFactor,
     string? ConversionContractId,
     string? ConversionContractVersion,
-    bool UnitVerificationPending = false);
+    bool UnitVerificationPending = false,
+    decimal? ConversionNumerator = null,
+    decimal? ConversionDenominator = null);
 
 // Frozen contract/mock seam for SKU, Warehouse eligibility and dated UoM conversion.
 public interface IHistoryRowReferenceChecker

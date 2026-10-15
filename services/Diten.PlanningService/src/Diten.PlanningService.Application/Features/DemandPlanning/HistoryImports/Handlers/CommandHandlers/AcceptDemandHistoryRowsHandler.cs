@@ -93,9 +93,30 @@ public sealed class AcceptDemandHistoryRowsHandler :
             (!source.UnitVerificationPending &&
              (reference.BaseUomId != source.BaseUomId ||
               reference.ConversionFactor != source.ConversionFactor ||
+              reference.ConversionNumerator != source.ConversionNumerator ||
+              reference.ConversionDenominator != source.ConversionDenominator ||
               reference.ConversionContractId != source.ConversionContractId ||
               reference.ConversionContractVersion != source.ConversionContractVersion)))
             return Response<AcceptedDemandHistoryRow>.Fail("Row reference or conversion changed.", 409);
+        if (source.ConversionNumerator is > 0 && source.ConversionDenominator is > 0)
+        {
+            try
+            {
+                var recomputed = source.OriginalUomId == source.BaseUomId ?
+                    source.OriginalQuantity!.Value :
+                    HistoryUnitConversion.ToBaseQuantity(source.OriginalQuantity!.Value,
+                        source.ConversionNumerator.Value,
+                        source.ConversionDenominator.Value);
+                if (recomputed != source.BaseQuantity)
+                    return Response<AcceptedDemandHistoryRow>.Fail(
+                        "Converted quantity no longer matches its source.", 409);
+            }
+            catch (OverflowException)
+            {
+                return Response<AcceptedDemandHistoryRow>.Fail(
+                    "Converted quantity cannot be represented.", 409);
+            }
+        }
 
         var acceptedAt = DateTimeOffset.UtcNow;
         var row = new AcceptedDemandHistoryRow
@@ -109,6 +130,8 @@ public sealed class AcceptDemandHistoryRowsHandler :
             OriginalQuantity = source.OriginalQuantity.Value, OriginalUomId = source.OriginalUomId,
             BaseQuantity = source.BaseQuantity ?? 0, BaseUomId = source.BaseUomId ?? string.Empty,
             ConversionFactor = source.ConversionFactor ?? 0,
+            ConversionNumerator = source.ConversionNumerator,
+            ConversionDenominator = source.ConversionDenominator,
             ConversionContractId = source.ConversionContractId ?? string.Empty,
             ConversionContractVersion = source.ConversionContractVersion ?? string.Empty,
             AcceptedQuantity = source.UnitVerificationPending ? source.OriginalQuantity.Value :

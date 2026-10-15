@@ -79,9 +79,10 @@ public sealed class LiveHistoryImportReferencesTests
             var p when p.Contains("api/gskus/") =>
                 Ok(new { data = new { id = Sku, lifecycleStatus = 3 } }),
             var p when p.Contains("api/product-master/skus/") && p.EndsWith("/uom") =>
-                Ok(new { baseUomId = "EA", conversions = Array.Empty<object>(), contractVersion = "v1" }),
+                Ok(new { baseUomId = "EA", conversions = Array.Empty<object>(), contractVersion = "v1.1" }),
             var p when p.Contains("api/product-master/skus/") =>
-                Ok(new { skuId = Sku, skuLevel = "Gsku", itemId = Guid.NewGuid(), contractVersion = "v1" }),
+                Ok(new { skuId = Sku, skuLevel = "Gsku", itemId = Guid.NewGuid(),
+                    lifecycleStatus = "Active", baseUomId = "EA", contractVersion = "v1.1" }),
             _ => new HttpResponseMessage(HttpStatusCode.NotFound)
         }, "ProductMasterV1");
 
@@ -94,7 +95,7 @@ public sealed class LiveHistoryImportReferencesTests
     }
 
     [Fact]
-    public async Task ProductMasterV1_DifferentUnitNeedsDatedConversionAndIsRejected()
+    public async Task ProductMasterV1_DeclaredConversionToBaseUnitIsVerified()
     {
         var reader = Create(path => path switch
         {
@@ -104,15 +105,143 @@ public sealed class LiveHistoryImportReferencesTests
             var p when p.Contains("api/product-master/skus/") && p.EndsWith("/uom") =>
                 Ok(new { baseUomId = "EA", conversions = new[] { new {
                     fromUom = "BOX", toUom = "EA", numerator = "10", denominator = "1" } },
-                    contractVersion = "v1" }),
+                    contractVersion = "v1.1" }),
             var p when p.Contains("api/product-master/skus/") =>
-                Ok(new { skuId = Sku, skuLevel = "Gsku", itemId = Guid.NewGuid(), contractVersion = "v1" }),
+                Ok(new { skuId = Sku, skuLevel = "Gsku", itemId = Guid.NewGuid(),
+                    lifecycleStatus = "Active", baseUomId = "EA", contractVersion = "v1.1" }),
+            _ => new HttpResponseMessage(HttpStatusCode.NotFound)
+        }, "ProductMasterV1");
+
+        var result = await reader.CheckAsync(Tenant, LegalEntity, Sku, "Gsku", "wh-01",
+            new DateOnly(2026, 1, 1), "BOX", default);
+        Assert.Equal(HistoryReferenceState.Verified, result.State);
+        Assert.Equal("EA", result.BaseUomId);
+        Assert.Equal(10m, result.ConversionFactor);
+        Assert.StartsWith("PRODUCT-MASTER-BUNDLE/getSkuUom/", result.ConversionContractId);
+        Assert.Equal(10m, result.ConversionNumerator);
+        Assert.Equal(1m, result.ConversionDenominator);
+    }
+
+    [Fact]
+    public async Task ProductMasterV1_NonTerminatingRatioCarriesUnroundedOperands()
+    {
+        var reader = Create(path => path switch
+        {
+            var p when p.Contains("api/locations/") => Warehouse(),
+            var p when p.Contains("api/gskus/") =>
+                Ok(new { data = new { id = Sku, lifecycleStatus = 3 } }),
+            var p when p.EndsWith("/uom") =>
+                Ok(new { baseUomId = "EA", conversions = new[] { new {
+                    fromUom = "BOX", toUom = "EA", numerator = "1", denominator = "3" } },
+                    contractVersion = "v1.1" }),
+            var p when p.Contains("api/product-master/skus/") =>
+                Ok(new { skuId = Sku, skuLevel = "Gsku", itemId = Guid.NewGuid(),
+                    lifecycleStatus = "Active", baseUomId = "EA", contractVersion = "v1.1" }),
+            _ => new HttpResponseMessage(HttpStatusCode.NotFound)
+        }, "ProductMasterV1");
+
+        var result = await reader.CheckAsync(Tenant, LegalEntity, Sku, "Gsku", "wh-01",
+            new DateOnly(2026, 1, 1), "BOX", default);
+        Assert.Equal(HistoryReferenceState.Verified, result.State);
+        Assert.Equal(1m, result.ConversionNumerator);
+        Assert.Equal(3m, result.ConversionDenominator);
+    }
+
+    [Theory]
+    [InlineData("10", "Verified")]
+    [InlineData("11", "Invalid")]
+    public async Task ProductMasterV1_ConflictingPathsFailClosed(string secondPathFactor,
+        string expected)
+    {
+        var reader = Create(path => path switch
+        {
+            var p when p.Contains("api/locations/") => Warehouse(),
+            var p when p.Contains("api/gskus/") =>
+                Ok(new { data = new { id = Sku, lifecycleStatus = 3 } }),
+            var p when p.EndsWith("/uom") => Ok(new
+            {
+                baseUomId = "EA",
+                conversions = new object[]
+                {
+                    new { fromUom = "BOX", toUom = "EA", numerator = "10", denominator = "1" },
+                    new { fromUom = "BOX", toUom = "CASE", numerator = "1", denominator = "1" },
+                    new { fromUom = "CASE", toUom = "EA", numerator = secondPathFactor,
+                        denominator = "1" }
+                },
+                contractVersion = "v1.1"
+            }),
+            var p when p.Contains("api/product-master/skus/") =>
+                Ok(new { skuId = Sku, skuLevel = "Gsku", itemId = Guid.NewGuid(),
+                    lifecycleStatus = "Active", baseUomId = "EA", contractVersion = "v1.1" }),
+            _ => new HttpResponseMessage(HttpStatusCode.NotFound)
+        }, "ProductMasterV1");
+
+        var result = await reader.CheckAsync(Tenant, LegalEntity, Sku, "Gsku", "wh-01",
+            new DateOnly(2026, 1, 1), "BOX", default);
+        Assert.Equal(Enum.Parse<HistoryReferenceState>(expected), result.State);
+        if (result.State == HistoryReferenceState.Verified)
+            Assert.Equal(10m, result.ConversionFactor);
+    }
+
+    [Fact]
+    public async Task ProductMasterV1_MissingConversionRemainsInvalid()
+    {
+        var reader = Create(path => path switch
+        {
+            var p when p.Contains("api/locations/") => Warehouse(),
+            var p when p.Contains("api/gskus/") =>
+                Ok(new { data = new { id = Sku, lifecycleStatus = 3 } }),
+            var p when p.EndsWith("/uom") =>
+                Ok(new { baseUomId = "EA", conversions = Array.Empty<object>(), contractVersion = "v1.1" }),
+            var p when p.Contains("api/product-master/skus/") =>
+                Ok(new { skuId = Sku, skuLevel = "Gsku", itemId = Guid.NewGuid(),
+                    lifecycleStatus = "Active", baseUomId = "EA", contractVersion = "v1.1" }),
             _ => new HttpResponseMessage(HttpStatusCode.NotFound)
         }, "ProductMasterV1");
 
         var result = await reader.CheckAsync(Tenant, LegalEntity, Sku, "Gsku", "wh-01",
             new DateOnly(2026, 1, 1), "BOX", default);
         Assert.Equal(HistoryReferenceState.Invalid, result.State);
+    }
+
+    [Fact]
+    public async Task ProductMasterV1_DisagreeingBaseUnitsAreInvalid()
+    {
+        var reader = Create(path => path switch
+        {
+            var p when p.Contains("api/locations/") => Warehouse(),
+            var p when p.Contains("api/gskus/") =>
+                Ok(new { data = new { id = Sku, lifecycleStatus = 3 } }),
+            var p when p.EndsWith("/uom") =>
+                Ok(new { baseUomId = "EA", conversions = Array.Empty<object>(), contractVersion = "v1.1" }),
+            var p when p.Contains("api/product-master/skus/") =>
+                Ok(new { skuId = Sku, skuLevel = "Gsku", itemId = Guid.NewGuid(),
+                    lifecycleStatus = "Active", baseUomId = "BOX", contractVersion = "v1.1" }),
+            _ => new HttpResponseMessage(HttpStatusCode.NotFound)
+        }, "ProductMasterV1");
+
+        var result = await reader.CheckAsync(Tenant, LegalEntity, Sku, "Gsku", "wh-01",
+            new DateOnly(2026, 1, 1), "EA", default);
+        Assert.Equal(HistoryReferenceState.Invalid, result.State);
+    }
+
+    [Fact]
+    public async Task ProductMasterV1_MalformedSuccessfulResponseFailsClosed()
+    {
+        var reader = Create(path => path switch
+        {
+            var p when p.Contains("api/locations/") => Warehouse(),
+            var p when p.Contains("api/gskus/") =>
+                Ok(new { data = new { id = Sku, lifecycleStatus = 3 } }),
+            var p when p.Contains("api/product-master/skus/") =>
+                Ok(new { skuId = Sku, skuLevel = "Gsku", lifecycleStatus = "Active",
+                    contractVersion = "v1.1" }),
+            _ => new HttpResponseMessage(HttpStatusCode.NotFound)
+        }, "ProductMasterV1");
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => reader.CheckAsync(
+            Tenant, LegalEntity, Sku, "Gsku", "wh-01", new DateOnly(2026, 1, 1),
+            "BOX", default));
     }
 
     private static HttpResponseMessage Warehouse() => Ok(new {

@@ -29,6 +29,9 @@
             const audit = entry.audit ?? entry.Audit;
             if (!row || !audit) return;
             const unitPending = row.unitVerificationPending ?? row.UnitVerificationPending;
+            const effectivePending = entry.effectiveUnitVerificationPending ??
+                entry.EffectiveUnitVerificationPending ?? unitPending;
+            const unitWarning = entry.unitWarning ?? entry.UnitWarning;
             const article = document.createElement('article');
             article.className = 'dp-history-row';
             const heading = document.createElement('h2');
@@ -47,10 +50,11 @@
             field(fields, labels.HistoryActor, audit.actorId ?? audit.ActorId);
             field(fields, labels.HistoryAt, audit.occurredAt ?? audit.OccurredAt);
             article.append(heading, fields);
-            if (unitPending) {
+            if (effectivePending) {
                 const warning = document.createElement('p');
                 warning.className = 'dp-history-unit-pending mt-2 mb-0';
-                warning.textContent = labels.HistoryUnitPending;
+                warning.textContent = unitWarning === 'DifferentFromCurrentBase' ?
+                    labels.HistoryUnitMismatch : labels.HistoryUnitPending;
                 article.appendChild(warning);
             }
             rowsHost.appendChild(article);
