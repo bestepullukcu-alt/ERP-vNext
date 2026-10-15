@@ -94,6 +94,7 @@ public sealed class RecallEvidenceTests : IClassFixture<RecallApiFactory>
             {
                 var text = Encoding.UTF8.GetString(bytes);
                 Assert.StartsWith("﻿" + RecallEvidenceLabels.Of("title", "en") + ";" + Str(await w.S.GetAsync(caseId), "number"), text, StringComparison.Ordinal);
+                Assert.Contains("\n" + RecallEvidenceLabels.Of("number", "en") + ";", text, StringComparison.Ordinal); // the summary field worded, as in the PDF
                 Assert.All(RecallEvidenceSections.All, k => Assert.Contains("\r\n" + RecallEvidenceLabels.Of(k, "en") + "\r\n", text, StringComparison.Ordinal));
             }
 

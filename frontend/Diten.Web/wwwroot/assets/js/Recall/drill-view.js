@@ -30,9 +30,16 @@ var RecallDrillView = (function () {
         if (!run) return null;
         const targetMinutes = Math.max(0, Number(run.targetHours) || 0) * 60;
         let minutes;
-        const stopped = run.durationMinutes !== null && run.durationMinutes !== undefined;
-        if (stopped) {
+        const measured = run.durationMinutes !== null && run.durationMinutes !== undefined;
+        const stopped = measured || run.status !== 'Running';
+        if (measured) {
             minutes = Math.max(0, Math.round(Number(run.durationMinutes) || 0));
+        } else if (stopped) {
+            // a run cancelled before its timer stopped: the clock stands at the server's end time (never the browser's now)
+            const ended = Date.parse(run.endedAtUtc || run.cancelled?.atUtc || '');
+            const started = Date.parse(run.startedAtUtc || '');
+            if (Number.isNaN(ended) || Number.isNaN(started)) return null;
+            minutes = Math.max(0, Math.floor((ended - started) / 60000));
         } else {
             const now = Date.parse(serverNowUtc || '');
             const started = Date.parse(run.startedAtUtc || '');

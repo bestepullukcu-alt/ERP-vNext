@@ -143,7 +143,8 @@ public static class RecallEvidenceCsv
             foreach (var table in section.Tables)
             {
                 Line(table.Columns.Select(c => RecallEvidenceLabels.Of(c, l)));
-                foreach (var row in table.Rows) Line(row);
+                // a summary row names a field: its label in the reader's language (as the PDF); every other cell is the record's own value
+                foreach (var row in table.Rows) Line(table.Key == "summary" && row.Count > 0 ? [RecallEvidenceLabels.Of(row[0], l), .. row.Skip(1)] : row);
             }
         }
 

@@ -49,6 +49,8 @@ test('the running clock is the server\'s: serverNowUtc − startedAtUtc + the mo
     assert.equal(drill.clock(run, null, 0), null);                               // no server time → no guess
     const stopped = plain(drill.clock({ ...run, durationMinutes: 222, nextStep: null }, '2026-10-20T00:00:00Z', 999999));
     assert.deepEqual([stopped.minutes, stopped.text, stopped.stopped, stopped.over], [222, '03:42', true, false]); // the server's duration
+    const cancelled = plain(drill.clock({ ...run, status: 'Cancelled', endedAtUtc: '2026-10-15T08:25:00Z' }, '2026-10-20T00:00:00Z', 999999));
+    assert.deepEqual([cancelled.minutes, cancelled.stopped], [25, true]);           // a cancelled run stands at its end, not at the server's now
 });
 
 test('the step button always sends the run\'s own nextStep with its version; the panel offers by key and status', async () => {

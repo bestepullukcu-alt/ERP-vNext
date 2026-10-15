@@ -41,10 +41,8 @@
 
     // ── formatting ───────────────────────────────────────────────────────────────────────────────────────────────
     const frequency = (p) => (p.frequency === 'CustomDays' ? t('Recall.Freq.CustomN', p.customDays) : t('Recall.Freq.' + p.frequency) || p.frequency);
-    const resultBadge = (run) => {
-        if (run.status !== 'Completed') return ui.drillStatusBadge(run.status);
-        return `<span class="badge ${run.passed ? 'bg-label-success' : 'bg-label-danger'}">${esc(t(run.passed ? 'Recall.Drill.Passed' : 'Recall.Drill.Failed'))}</span>`;
-    };
+    const passBadge = (passed) => `<span class="badge ${passed ? 'bg-label-success' : 'bg-label-danger'}">${esc(t(passed ? 'Recall.Drill.Passed' : 'Recall.Drill.Failed'))}</span>`;
+    const resultBadge = (run) => (run.status === 'Completed' ? passBadge(run.passed) : ui.drillStatusBadge(run.status));
 
     // ── the lists ────────────────────────────────────────────────────────────────────────────────────────────────
     const drawWarning = () => {
@@ -91,7 +89,7 @@
         const c = view.clock(state.run, state.serverNow, performance.now() - state.answeredAt);
         byId('rc-drill-clock').textContent = c ? c.text : '—';
         byId('rc-drill-clock').classList.toggle('text-danger', !!c?.over);
-        byId('rc-drill-clock-sub').textContent = !c ? '' : c.stopped ? t('Recall.Drills.ClockStopped')
+        byId('rc-drill-clock-sub').textContent = !c ? '' : state.run?.status === 'Cancelled' ? t('Recall.DrillStatus.Cancelled') : c.stopped ? t('Recall.Drills.ClockStopped')
             : c.over ? t('Recall.Drills.ClockOver', c.targetHours) : t('Recall.Drills.ClockRemaining', c.targetHours, ui.duration(c.remaining));
     };
 
@@ -126,9 +124,9 @@
         const c = view.clock(run, state.serverNow, 0);
         byId('rc-drill-duration').textContent = c ? ui.duration(c.minutes) : '—';
         byId('rc-drill-result-label').textContent = t('Recall.Drills.ResultTarget', run.targetHours);
-        byId('rc-drill-result').innerHTML = run.passed == null
+        byId('rc-drill-result').innerHTML = run.status === 'Cancelled' ? '—' : run.passed == null
             ? (c ? `<span class="badge ${c.over ? 'bg-label-danger' : 'bg-label-success'}">${esc(t(c.over ? 'Recall.Badge.OverTarget' : 'Recall.Badge.OnTarget'))}</span>` : '—')
-            : resultBadge(run);
+            : passBadge(run.passed); // the server decides pass / fail when the timer stops (duration vs target)
         byId('rc-drill-gapcount').textContent = String(run.gapCount ?? 0);
         byId('rc-drill-status').innerHTML = ui.drillStatusBadge(run.status);
         const note = run.resultNote || run.cancelReason;
