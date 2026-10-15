@@ -1,4 +1,4 @@
-# CONTROL TOWER — Daily Operating Card v1.1
+# CONTROL TOWER — Daily Operating Card v1.2
 
 > **Purpose:** günlük Control Tower turu için hızlı gate. Yeni authority yaratmaz. Ayrıntı için [CONTROL TOWER SOP](./control-tower-sop.md) (v2.5).
 
@@ -14,8 +14,14 @@
 - [ ] **Target agent:** entry point §6'dan seçildi; o ajanın §17.4 zorunlu giriş alanları dolu; paste-ready prompt (§36.1) hazır.
 - [ ] **Acceptance:** golden/contract/inspection flow + measurable AC + required evidence level açık.
 - [ ] **Ledger row (v2.5 R8):** WP'nin CT-QUEUE satırı dağıtımdan önce var; yoksa STOP (SOP §0.1 madde 1, §20.1).
+- [ ] **Kuyruk kontrolü (yardımcı; zorunlu kapı değil):** `python3 scripts/ct_queue.py require <WP-ID> --queue <kuyruk>` — çıkış 1 = satır yok, aynı kimlikle birden çok satır ya da durum dağıtılabilir değil. Kuyruklar [`ct-queue-registry.tsv`](../../../execution/delivery/ct-queue-registry.tsv)'de; kayıtlı kuyruğu olmayan Control Tower için dağıtım kendiliğinden serbest değildir. Kuyruğa yazmadan önce `guard` (kilit değildir); dallar arası kimlik çakışması için `writers`.
 
 **Bir kritik madde FAIL → implementation dispatch yok.**
+
+> **Açık mimari karar — R8 (2026-10-15):** SOP v2.5 R8 ve T4 şablonu tek bir kuyruğu, SCE / MVP6 `CT-QUEUE.tsv`'yi gösterir;
+> diğer Control Tower'ların işleri o kuyruğa yazılmaz. Önerilen ilke: "Her Control Tower, kendisine ait kayıtlı ve
+> yetkilendirilmiş görev kaynağından sorumludur. Kaynak veya doğrulanmış görev kaydı yoksa dağıtım yapılamaz." SOP
+> güncellenene kadar R8 ve T4 metni olduğu gibi geçerlidir.
 
 ## 2. PARALLEL / Agent Lane gate
 
