@@ -19,6 +19,9 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
     public const string GlobalProductsWithdraw = "mdm.global-products.withdraw";
     public const string GlobalProductsRequestCorrection = "mdm.global-products.request-correction";
     public const string GlobalProductsRequestRetirement = "mdm.global-products.request-retirement";
+    // MOD-0290-FU05 slice 2 (XMC-001, owner-approved 2026-10-15; CT decision): an approved Global Product's brand change.
+    // An owned lifecycle key — dedicated roles only (ProductDataSteward, the role of the draft edit), never Admin's generic set.
+    public const string GlobalProductsUpdateBrand = "mdm.global-products.update-brand";
     public const string GskusRead = "mdm.gskus.read";
     public const string GskusCreate = "mdm.gskus.create";
     public const string GskusSubmit = "mdm.gskus.submit";
@@ -87,6 +90,7 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
             GlobalProductsWithdraw,
             GlobalProductsRequestCorrection,
             GlobalProductsRequestRetirement,
+            GlobalProductsUpdateBrand,
             GskusSubmit,
             GskusRetire,
             GskusUpdate,
@@ -184,6 +188,7 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
                         GlobalProductsUpdate,
                         GlobalProductsWithdraw,
                         GlobalProductsRequestCorrection,
+                        GlobalProductsUpdateBrand,
                         GskusSubmit,
                         GskusUpdate,
                         GskusWithdraw,
@@ -346,7 +351,7 @@ public static class ProductIdentityLifecycleEntitlementGrantProfile
         if (missing.Count != 0 || unexpected.Count != 0 || countMismatch)
         {
             throw new InvalidOperationException(
-                "Product Identity lifecycle reconciliation requires the exact eight base, eighteen lifecycle and one non-human recovery key — either without the three stock-behaviour edit keys or with exactly all three (mdm.gskus / mdm.lskus / mdm.finished-goods .edit-stock-behaviour), either without the item keys or with exactly all six (mdm.items .read / .create / .update / .submit / .deactivate / .retire) or those six and .withdraw, and mdm.product-master.read alone or nothing of that resource — with no Brand, Revision or product approve/reject key."
+                "Product Identity lifecycle reconciliation requires the exact eight base, nineteen lifecycle and one non-human recovery key — either without the three stock-behaviour edit keys or with exactly all three (mdm.gskus / mdm.lskus / mdm.finished-goods .edit-stock-behaviour), either without the item keys or with exactly all six (mdm.items .read / .create / .update / .submit / .deactivate / .retire) or those six and .withdraw, and mdm.product-master.read alone or nothing of that resource — with no Brand, Revision or product approve/reject key."
                 + $" Missing: [{string.Join(", ", missing)}]."
                 + $" Unexpected: [{string.Join(", ", unexpected)}]."
                 + $" Duplicated: [{string.Join(", ", duplicated)}].");
