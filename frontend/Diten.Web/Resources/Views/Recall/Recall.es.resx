@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Recall.Common.Crumb.Root" xml:space="preserve"><value>Retirada</value></data>
+  <data name="Recall.Common.Company.Label" xml:space="preserve"><value>Empresa</value></data>
+  <data name="Recall.Common.Company.Placeholder" xml:space="preserve"><value>Seleccione una empresa</value></data>
+  <data name="Recall.Common.Company.Required" xml:space="preserve"><value>Seleccione la empresa para ver su preparación ante retiradas.</value></data>
+  <data name="Recall.Common.Company.Unavailable" xml:space="preserve"><value>No se pudo cargar la lista de empresas. Inténtelo de nuevo en breve.</value></data>
+  <data name="Recall.Common.NamesUnavailable" xml:space="preserve"><value>No se pudieron leer los nombres de productos y almacenes; se muestran los códigos.</value></data>
+  <data name="Recall.Common.Loading" xml:space="preserve"><value>Cargando…</value></data>
+  <data name="Recall.Common.Cancel" xml:space="preserve"><value>Cancelar</value></data>
+  <data name="Recall.Common.Apply" xml:space="preserve"><value>Aplicar</value></data>
+  <data name="Recall.Common.Clear" xml:space="preserve"><value>Limpiar</value></data>
+  <data name="Recall.Common.ReasonMin" xml:space="preserve"><value>Escriba al menos 10 caracteres.</value></data>
+  <data name="Recall.Common.Required" xml:space="preserve"><value>Obligatorio.</value></data>
+  <data name="Recall.Common.None" xml:space="preserve"><value>Ninguno</value></data>
+  <data name="Recall.Tabs.Dashboard" xml:space="preserve"><value>Panel de preparación</value></data>
+  <data name="Recall.Tabs.Trace" xml:space="preserve"><value>Trazabilidad</value></data>
+  <data name="Recall.Tabs.Cases" xml:space="preserve"><value>Casos</value></data>
+  <data name="Recall.Dashboard.Subtitle" xml:space="preserve"><value>Hoy {0} · objetivo del simulacro {1} h</value></data>
+  <data name="Recall.Freq.Band" xml:space="preserve"><value>El último simulacro tiene más de {0} días.</value></data>
+  <data name="Recall.Freq.Detail" xml:space="preserve"><value>Último simulacro el {0} (hace {1} días). El umbral viene de la configuración.</value></data>
+  <data name="Recall.Freq.None" xml:space="preserve"><value>Aún no se ha completado ningún simulacro. El umbral viene de la configuración.</value></data>
+  <data name="Recall.Kpi.Open" xml:space="preserve"><value>Casos de retirada abiertos</value></data>
+  <data name="Recall.Kpi.OpenSub" xml:space="preserve"><value>Clase 1: {0} · Clase 2: {1} · Clase 3: {2}</value></data>
+  <data name="Recall.Kpi.LastDrill" xml:space="preserve"><value>Duración del último simulacro</value></data>
+  <data name="Recall.Kpi.LastDrillSub" xml:space="preserve"><value>{0} · objetivo {1} h</value></data>
+  <data name="Recall.Kpi.NoDrill" xml:space="preserve"><value>Ningún simulacro completado</value></data>
+  <data name="Recall.Kpi.Coverage" xml:space="preserve"><value>Cobertura de trazabilidad</value></data>
+  <data name="Recall.Kpi.CoverageSub" xml:space="preserve"><value>Últimos {0} días · {1} de {2} salidas con lote / serie</value></data>
+  <data name="Recall.Kpi.CoverageNone" xml:space="preserve"><value>Ninguna salida en los últimos {0} días</value></data>
+  <data name="Recall.Kpi.Gaps" xml:space="preserve"><value>Salidas sin lote (no trazables)</value></data>
+  <data name="Recall.Kpi.GapsSub" xml:space="preserve"><value>Últimos {0} días</value></data>
+  <data name="Recall.Kpi.Returned" xml:space="preserve"><value>Devuelto (casos abiertos)</value></data>
+  <data name="Recall.Kpi.ReturnedNone" xml:space="preserve"><value>Ninguna devolución vinculada</value></data>
+  <data name="Recall.Badge.OnTarget" xml:space="preserve"><value>En objetivo</value></data>
+  <data name="Recall.Badge.OverTarget" xml:space="preserve"><value>Objetivo superado</value></data>
+  <data name="Recall.Chart.Title" xml:space="preserve"><value>Historial de simulacros · últimos 12</value></data>
+  <data name="Recall.Chart.Target" xml:space="preserve"><value>Objetivo {0} h</value></data>
+  <data name="Recall.Chart.Hours" xml:space="preserve"><value>Horas</value></data>
+  <data name="Recall.Chart.Empty" xml:space="preserve"><value>Aún no se ha completado ningún simulacro.</value></data>
+  <data name="Recall.OpenCases.Title" xml:space="preserve"><value>Casos abiertos</value></data>
+  <data name="Recall.OpenCases.All" xml:space="preserve"><value>Todos los casos →</value></data>
+  <data name="Recall.OpenCases.Empty" xml:space="preserve"><value>No hay casos de retirada abiertos.</value></data>
+  <data name="Recall.Duration.HoursMinutes" xml:space="preserve"><value>{0} h {1} min</value></data>
+  <data name="Recall.Duration.Minutes" xml:space="preserve"><value>{0} min</value></data>
+  <data name="Recall.Col.Number" xml:space="preserve"><value>N.º de caso</value></data>
+  <data name="Recall.Col.ProductLot" xml:space="preserve"><value>Producto / lote</value></data>
+  <data name="Recall.Col.ProductRootLot" xml:space="preserve"><value>Producto / lote raíz</value></data>
+  <data name="Recall.Col.Class" xml:space="preserve"><value>Clase</value></data>
+  <data name="Recall.Col.Level" xml:space="preserve"><value>Nivel</value></data>
+  <data name="Recall.Col.Opened" xml:space="preserve"><value>Apertura</value></data>
+  <data name="Recall.Col.Affected" xml:space="preserve"><value>Afectado</value></data>
+  <data name="Recall.Col.ReturnedPct" xml:space="preserve"><value>% devuelto</value></data>
+  <data name="Recall.Col.Status" xml:space="preserve"><value>Estado</value></data>
+  <data name="Recall.Col.Type" xml:space="preserve"><value>Tipo</value></data>
+  <data name="Recall.Col.Owner" xml:space="preserve"><value>Responsable</value></data>
+  <data name="Recall.Col.Progress" xml:space="preserve"><value>Avance (devuelto / enviado)</value></data>
+  <data name="Recall.Class.N" xml:space="preserve"><value>Clase {0}</value></data>
+  <data name="Recall.Status.Draft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="Recall.Status.PendingScopeApproval" xml:space="preserve"><value>Aprobación del alcance pendiente</value></data>
+  <data name="Recall.Status.Active" xml:space="preserve"><value>Activo</value></data>
+  <data name="Recall.Status.EffectivenessCheck" xml:space="preserve"><value>Control de eficacia</value></data>
+  <data name="Recall.Status.Closed" xml:space="preserve"><value>Cerrado</value></data>
+  <data name="Recall.Status.Cancelled" xml:space="preserve"><value>Cancelado</value></data>
+  <data name="Recall.DrillStatus.Running" xml:space="preserve"><value>Simulacro en curso</value></data>
+  <data name="Recall.DrillStatus.Completed" xml:space="preserve"><value>Simulacro completado</value></data>
+  <data name="Recall.DrillStatus.Cancelled" xml:space="preserve"><value>Simulacro cancelado</value></data>
+  <data name="Recall.Level.Wholesale" xml:space="preserve"><value>Mayorista</value></data>
+  <data name="Recall.Level.Pharmacy" xml:space="preserve"><value>Farmacia</value></data>
+  <data name="Recall.Level.Patient" xml:space="preserve"><value>Paciente</value></data>
+  <data name="Recall.Type.Real" xml:space="preserve"><value>Real</value></data>
+  <data name="Recall.Type.Drill" xml:space="preserve"><value>Simulacro</value></data>
+  <data name="Recall.Drill.Passed" xml:space="preserve"><value>Superado</value></data>
+  <data name="Recall.Drill.Failed" xml:space="preserve"><value>No superado</value></data>
+  <data name="Recall.Drill.NoClass" xml:space="preserve"><value>Un simulacro no tiene clase ni nivel</value></data>
+  <data name="Recall.Trace.Subtitle" xml:space="preserve"><value>Genealogía MOD-0174 · libro de existencias MOD-0173 · envíos MOD-0183</value></data>
+  <data name="Recall.Trace.Lot" xml:space="preserve"><value>Número de lote</value></data>
+  <data name="Recall.Trace.LotPlaceholder" xml:space="preserve"><value>Buscar un número de lote</value></data>
+  <data name="Recall.Trace.Product" xml:space="preserve"><value>Producto</value></data>
+  <data name="Recall.Trace.Direction" xml:space="preserve"><value>Dirección</value></data>
+  <data name="Recall.Direction.Backward" xml:space="preserve"><value>Hacia atrás</value></data>
+  <data name="Recall.Direction.Forward" xml:space="preserve"><value>Hacia adelante</value></data>
+  <data name="Recall.Direction.Both" xml:space="preserve"><value>Ambas</value></data>
+  <data name="Recall.Trace.Run" xml:space="preserve"><value>Trazar</value></data>
+  <data name="Recall.Trace.Recent" xml:space="preserve"><value>Lotes recientes:</value></data>
+  <data name="Recall.Trace.Busy" xml:space="preserve"><value>Analizando la genealogía y el libro de existencias…</value></data>
+  <data name="Recall.Trace.Empty" xml:space="preserve"><value>Elija un lote y ejecute la trazabilidad.</value></data>
+  <data name="Recall.Trace.Summary" xml:space="preserve"><value>{0} lotes de producto terminado · {1} líneas de stock · {2} envíos · {3} brechas</value></data>
+  <data name="Recall.Trace.Duration" xml:space="preserve"><value>Consulta completada en {0} s · la medida de un simulacro</value></data>
+  <data name="Recall.Trace.OpenCase" xml:space="preserve"><value>Abrir un caso de retirada con este alcance</value></data>
+  <data name="Recall.Trace.Csv" xml:space="preserve"><value>Descargar CSV</value></data>
+  <data name="Recall.Trace.GapBand" xml:space="preserve"><value>{0} brecha(s) de trazabilidad: no se puede demostrar por lote adónde fueron estas cantidades.</value></data>
+  <data name="Recall.Trace.Truncated" xml:space="preserve"><value>La trazabilidad alcanzó su límite: el resultado está incompleto.</value></data>
+  <data name="Recall.Trace.OtherCompany" xml:space="preserve"><value>Hay {0} movimiento(s) de estos lotes en otras empresas de su organización: ejecute también allí la trazabilidad.</value></data>
+  <data name="Recall.Trace.Tree" xml:space="preserve"><value>Árbol</value></data>
+  <data name="Recall.Trace.Table" xml:space="preserve"><value>Tabla</value></data>
+  <data name="Recall.Trace.ExpandAll" xml:space="preserve"><value>Expandir todo</value></data>
+  <data name="Recall.TCol.Kind" xml:space="preserve"><value>Tipo de nodo</value></data>
+  <data name="Recall.TCol.Place" xml:space="preserve"><value>Almacén / cliente</value></data>
+  <data name="Recall.TCol.Quantity" xml:space="preserve"><value>Cantidad</value></data>
+  <data name="Recall.TCol.Ref" xml:space="preserve"><value>N.º de movimiento / envío</value></data>
+  <data name="Recall.TCol.Date" xml:space="preserve"><value>Fecha</value></data>
+  <data name="Recall.Kind.RawMaterialLot" xml:space="preserve"><value>Lote de materia prima</value></data>
+  <data name="Recall.Kind.FinishedGoodLot" xml:space="preserve"><value>Lote de producto terminado</value></data>
+  <data name="Recall.Kind.Lot" xml:space="preserve"><value>Lote</value></data>
+  <data name="Recall.Kind.Input" xml:space="preserve"><value>Insumo</value></data>
+  <data name="Recall.Kind.Stock" xml:space="preserve"><value>Stock de almacén</value></data>
+  <data name="Recall.Kind.Shipment" xml:space="preserve"><value>Envío</value></data>
+  <data name="Recall.Kind.Customer" xml:space="preserve"><value>Cliente</value></data>
+  <data name="Recall.Kind.Gap" xml:space="preserve"><value>Brecha de trazabilidad</value></data>
+  <data name="Recall.Kind.Disposal" xml:space="preserve"><value>Destrucción / devolución al proveedor</value></data>
+  <data name="Recall.Badge.Untracked" xml:space="preserve"><value>No rastreado</value></data>
+  <data name="Recall.StockStatus.AVAILABLE" xml:space="preserve"><value>En existencia</value></data>
+  <data name="Recall.StockStatus.QUARANTINE" xml:space="preserve"><value>En cuarentena</value></data>
+  <data name="Recall.StockStatus.QUALITY_INSPECTION" xml:space="preserve"><value>En inspección de calidad</value></data>
+  <data name="Recall.StockStatus.BLOCKED" xml:space="preserve"><value>Bloqueado</value></data>
+  <data name="Recall.Gap.LOTLESS_OUTBOUND" xml:space="preserve"><value>Salida sin lote</value></data>
+  <data name="Recall.Gap.UNRESOLVED_TYPED_LOT" xml:space="preserve"><value>Texto de lote escrito no vinculado a un lote</value></data>
+  <data name="Recall.Gap.MISSING_GENEALOGY_LINK" xml:space="preserve"><value>Falta el vínculo genealógico</value></data>
+  <data name="Recall.Gap.CONSUMED_WITHOUT_OUTPUT_LINK" xml:space="preserve"><value>Consumido en producción sin vínculo de salida</value></data>
+  <data name="Recall.Gap.NO_CUSTOMER_REFERENCE" xml:space="preserve"><value>Envío sin referencia de cliente</value></data>
+  <data name="Recall.Gap.LIMIT_REACHED" xml:space="preserve"><value>Límite de trazabilidad alcanzado</value></data>
+  <data name="Recall.Gap.OTHER_COMPANY_ACTIVITY" xml:space="preserve"><value>Movimientos en otra empresa (solo el número)</value></data>
+  <data name="Recall.Shipment.Unreadable" xml:space="preserve"><value>No se pudieron leer los detalles del envío (campos faltantes)</value></data>
+  <data name="Recall.Shipment.Customer" xml:space="preserve"><value>Cliente {0}</value></data>
+  <data name="Recall.Shipment.UnknownCustomer" xml:space="preserve"><value>Desconocido (sin documento)</value></data>
+  <data name="Recall.OpenCase.Title" xml:space="preserve"><value>Abrir un caso de retirada</value></data>
+  <data name="Recall.OpenCase.Intro" xml:space="preserve"><value>El caso se abre como borrador; su alcance se toma de la trazabilidad de {0}.</value></data>
+  <data name="Recall.OpenCase.Reason" xml:space="preserve"><value>Motivo</value></data>
+  <data name="Recall.OpenCase.Reference" xml:space="preserve"><value>N.º de desviación / reclamación</value></data>
+  <data name="Recall.OpenCase.Submit" xml:space="preserve"><value>Abrir caso en borrador</value></data>
+  <data name="Recall.OpenCase.Done" xml:space="preserve"><value>Caso en borrador {0} abierto.</value></data>
+  <data name="Recall.Cases.Subtitle" xml:space="preserve"><value>Casos reales y simulacros · estado: Borrador → Aprobación del alcance pendiente → Activo → Control de eficacia → Cerrado</value></data>
+  <data name="Recall.Filter.AllTypes" xml:space="preserve"><value>Todos los tipos</value></data>
+  <data name="Recall.Filter.AllStatuses" xml:space="preserve"><value>Todos los estados</value></data>
+  <data name="Recall.Filter.AllClasses" xml:space="preserve"><value>Todas las clases</value></data>
+  <data name="Recall.Filter.AllProducts" xml:space="preserve"><value>Todos los productos</value></data>
+  <data name="Recall.Filter.OpenedFrom" xml:space="preserve"><value>Abierto desde</value></data>
+  <data name="Recall.Filter.CaseStatuses" xml:space="preserve"><value>Estados de los casos</value></data>
+  <data name="Recall.Filter.DrillStatuses" xml:space="preserve"><value>Estados de los simulacros</value></data>
+  <data name="Recall.Cases.Empty" xml:space="preserve"><value>Ningún caso coincide con el filtro.</value></data>
+  <data name="Recall.Cases.Count" xml:space="preserve"><value>{0} registros</value></data>
+  <data name="Recall.Errors.GENERIC" xml:space="preserve"><value>No se pudo completar la solicitud.</value></data>
+  <data name="Recall.Errors.FORBIDDEN" xml:space="preserve"><value>No tiene permiso para esto.</value></data>
+  <data name="Recall.Errors.UNAUTHORIZED" xml:space="preserve"><value>Su sesión ha finalizado. Inicie sesión de nuevo.</value></data>
+  <data name="Recall.Errors.SERVICE_UNAVAILABLE" xml:space="preserve"><value>No se puede acceder al servicio de retiradas. Inténtelo de nuevo en breve.</value></data>
+  <data name="Recall.Errors.INVALID_REQUEST" xml:space="preserve"><value>Faltan algunos campos o no son válidos.</value></data>
+  <data name="Recall.Errors.REASON_REQUIRED" xml:space="preserve"><value>Escriba un motivo de al menos 10 caracteres.</value></data>
+  <data name="Recall.Errors.UNKNOWN_LOT" xml:space="preserve"><value>No se encontró el lote.</value></data>
+  <data name="Recall.Errors.CROSS_LE_FORBIDDEN" xml:space="preserve"><value>Este registro pertenece a otra empresa.</value></data>
+  <data name="Recall.Errors.RECALL_CASE_ALREADY_OPEN" xml:space="preserve"><value>Este lote ya tiene un caso de retirada abierto.</value></data>
+  <data name="Recall.Errors.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>Esta solicitud ya se envió con otro contenido. Actualice la página.</value></data>
+  <data name="Recall.Errors.COMPANY_NOT_SELECTED" xml:space="preserve"><value>Seleccione primero una empresa.</value></data>
+  <data name="Help.RECALLDASHBOARD.Purpose" xml:space="preserve"><value>Muestra lo preparada que está la empresa para una retirada: casos abiertos, el último simulacro frente a su objetivo, la cobertura por lote de las salidas, las salidas no trazables y las devoluciones de los casos abiertos.</value></data>
+  <data name="Help.RECALLDASHBOARD.Audience" xml:space="preserve"><value>Calidad (responsable de retiradas), administrador del sistema de calidad y dirección (solo lectura).</value></data>
+  <data name="Help.RECALLDASHBOARD.Step1Title" xml:space="preserve"><value>Elija la empresa</value></data>
+  <data name="Help.RECALLDASHBOARD.Step1" xml:space="preserve"><value>Cada cifra de esta página pertenece solo a la empresa seleccionada.</value></data>
+  <data name="Help.RECALLDASHBOARD.Step2Title" xml:space="preserve"><value>Lea las tarjetas</value></data>
+  <data name="Help.RECALLDASHBOARD.Step2" xml:space="preserve"><value>Un «Objetivo superado» en rojo en el último simulacro o un número de salidas no trazables mayor que cero requiere atención.</value></data>
+  <data name="Help.RECALLDASHBOARD.Step3Title" xml:space="preserve"><value>Revise el historial de simulacros</value></data>
+  <data name="Help.RECALLDASHBOARD.Step3" xml:space="preserve"><value>El gráfico muestra los últimos 12 simulacros completados frente a la línea de objetivo; la banda superior avisa cuando el último simulacro es demasiado antiguo.</value></data>
+  <data name="Help.RECALLTRACE.Purpose" xml:space="preserve"><value>Traza un lote en toda la genealogía, hacia atrás hasta sus insumos y hacia adelante hasta el stock, los envíos y los clientes, y muestra las brechas en las que el lote no prueba adónde fue la mercancía.</value></data>
+  <data name="Help.RECALLTRACE.Audience" xml:space="preserve"><value>Calidad (responsable de retiradas) y el administrador del sistema de calidad.</value></data>
+  <data name="Help.RECALLTRACE.Step1Title" xml:space="preserve"><value>Elija el lote</value></data>
+  <data name="Help.RECALLTRACE.Step1" xml:space="preserve"><value>Busque el número de lote y elija la dirección: hacia atrás, hacia adelante o ambas.</value></data>
+  <data name="Help.RECALLTRACE.Step2Title" xml:space="preserve"><value>Lea el árbol o la tabla</value></data>
+  <data name="Help.RECALLTRACE.Step2" xml:space="preserve"><value>Ambas vistas muestran los mismos nodos. Las filas rojas son brechas; la actividad de otra empresa aparece solo como un número.</value></data>
+  <data name="Help.RECALLTRACE.Step3Title" xml:space="preserve"><value>Exporte o abra un caso</value></data>
+  <data name="Help.RECALLTRACE.Step3" xml:space="preserve"><value>«Descargar CSV» da las mismas filas; «Abrir un caso de retirada con este alcance» abre un caso en borrador a partir de esta trazabilidad.</value></data>
+  <data name="Help.RECALLTRACE.Immediate" xml:space="preserve"><value>Abrir un caso crea un borrador de inmediato; nada se bloquea hasta que se aprueba el alcance.</value></data>
+  <data name="Help.RECALLCASES.Purpose" xml:space="preserve"><value>Muestra juntos los casos de retirada reales y los simulacros de la empresa, del más reciente al más antiguo, con su estado y avance.</value></data>
+  <data name="Help.RECALLCASES.Audience" xml:space="preserve"><value>Todos los que siguen las retiradas: calidad, almacén, comercial y dirección.</value></data>
+  <data name="Help.RECALLCASES.Step1Title" xml:space="preserve"><value>Filtre la lista</value></data>
+  <data name="Help.RECALLCASES.Step1" xml:space="preserve"><value>Use el tipo, el estado, la clase, el producto y la fecha de apertura. Un filtro de clase muestra solo casos reales.</value></data>
+  <data name="Help.RECALLCASES.Step2Title" xml:space="preserve"><value>Distinga los simulacros</value></data>
+  <data name="Help.RECALLCASES.Step2" xml:space="preserve"><value>Una fila de simulacro indica «Simulacro», muestra su resultado y duración, y no tiene clase ni nivel.</value></data>
+</root>

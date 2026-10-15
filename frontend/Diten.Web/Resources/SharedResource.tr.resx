@@ -1154,4 +1154,7 @@
   <data name="Nav.Page.EXPIRYEXCEPTIONDETAILS" xml:space="preserve"><value>İstisna Detayı</value></data>
   <data name="Nav.Page.EXPIRYPOLICY" xml:space="preserve"><value>Raf Ömrü Kuralları ve Ayarlar</value></data>
   <data name="Nav.Page.EXPIRYEVIDENCE" xml:space="preserve"><value>Kanıt Paketi</value></data>
+  <data name="Nav.Page.RECALLDASHBOARD" xml:space="preserve"><value>Geri Çağırma Hazırlığı</value></data>
+  <data name="Nav.Page.RECALLTRACE" xml:space="preserve"><value>Geri Çağırma İzleme</value></data>
+  <data name="Nav.Page.RECALLCASES" xml:space="preserve"><value>Geri Çağırma Vakaları</value></data>
 </root>

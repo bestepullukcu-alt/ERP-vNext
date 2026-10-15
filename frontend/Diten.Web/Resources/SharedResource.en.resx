@@ -1154,4 +1154,7 @@
   <data name="Nav.Page.EXPIRYEXCEPTIONDETAILS" xml:space="preserve"><value>Exception detail</value></data>
   <data name="Nav.Page.EXPIRYPOLICY" xml:space="preserve"><value>Shelf-life rules and settings</value></data>
   <data name="Nav.Page.EXPIRYEVIDENCE" xml:space="preserve"><value>Evidence pack</value></data>
+  <data name="Nav.Page.RECALLDASHBOARD" xml:space="preserve"><value>Recall readiness</value></data>
+  <data name="Nav.Page.RECALLTRACE" xml:space="preserve"><value>Recall trace</value></data>
+  <data name="Nav.Page.RECALLCASES" xml:space="preserve"><value>Recall cases</value></data>
 </root>

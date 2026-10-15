@@ -188,7 +188,7 @@ public sealed class NavManifestL10nGuardTests
     // and asks for the entry to be deleted. A page-less manifest that is NOT listed here stays red; nothing else is relaxed.
     private static readonly IReadOnlyDictionary<string, string> PagelessUntil = new Dictionary<string, string>(StringComparer.Ordinal)
     {
-        ["RECALL-READINESS"] = "RECALL-READINESS — API-only until WP-0177-R6 (CT FIX-F4R1)"
+        // WP-0177-R6: RECALL-READINESS declares its first pages — its entry was deleted (the guard below forced it)
     };
 
     [Fact]

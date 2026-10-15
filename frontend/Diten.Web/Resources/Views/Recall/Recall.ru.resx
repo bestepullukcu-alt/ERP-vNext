@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Recall.Common.Crumb.Root" xml:space="preserve"><value>Отзыв продукции</value></data>
+  <data name="Recall.Common.Company.Label" xml:space="preserve"><value>Компания</value></data>
+  <data name="Recall.Common.Company.Placeholder" xml:space="preserve"><value>Выберите компанию</value></data>
+  <data name="Recall.Common.Company.Required" xml:space="preserve"><value>Выберите компанию, чтобы увидеть её готовность к отзыву.</value></data>
+  <data name="Recall.Common.Company.Unavailable" xml:space="preserve"><value>Не удалось загрузить список компаний. Повторите попытку позже.</value></data>
+  <data name="Recall.Common.NamesUnavailable" xml:space="preserve"><value>Не удалось прочитать названия товаров и складов; показаны коды.</value></data>
+  <data name="Recall.Common.Loading" xml:space="preserve"><value>Загрузка…</value></data>
+  <data name="Recall.Common.Cancel" xml:space="preserve"><value>Отмена</value></data>
+  <data name="Recall.Common.Apply" xml:space="preserve"><value>Применить</value></data>
+  <data name="Recall.Common.Clear" xml:space="preserve"><value>Очистить</value></data>
+  <data name="Recall.Common.ReasonMin" xml:space="preserve"><value>Введите не менее 10 символов.</value></data>
+  <data name="Recall.Common.Required" xml:space="preserve"><value>Обязательно.</value></data>
+  <data name="Recall.Common.None" xml:space="preserve"><value>Нет</value></data>
+  <data name="Recall.Tabs.Dashboard" xml:space="preserve"><value>Панель готовности</value></data>
+  <data name="Recall.Tabs.Trace" xml:space="preserve"><value>Прослеживание</value></data>
+  <data name="Recall.Tabs.Cases" xml:space="preserve"><value>Случаи</value></data>
+  <data name="Recall.Dashboard.Subtitle" xml:space="preserve"><value>Сегодня {0} · цель учения {1} ч</value></data>
+  <data name="Recall.Freq.Band" xml:space="preserve"><value>Последнее учение было более {0} дней назад.</value></data>
+  <data name="Recall.Freq.Detail" xml:space="preserve"><value>Последнее учение {0} ({1} дн. назад). Порог задаётся в настройках.</value></data>
+  <data name="Recall.Freq.None" xml:space="preserve"><value>Ни одно учение ещё не завершено. Порог задаётся в настройках.</value></data>
+  <data name="Recall.Kpi.Open" xml:space="preserve"><value>Открытые случаи отзыва</value></data>
+  <data name="Recall.Kpi.OpenSub" xml:space="preserve"><value>Класс 1: {0} · Класс 2: {1} · Класс 3: {2}</value></data>
+  <data name="Recall.Kpi.LastDrill" xml:space="preserve"><value>Длительность последнего учения</value></data>
+  <data name="Recall.Kpi.LastDrillSub" xml:space="preserve"><value>{0} · цель {1} ч</value></data>
+  <data name="Recall.Kpi.NoDrill" xml:space="preserve"><value>Нет завершённых учений</value></data>
+  <data name="Recall.Kpi.Coverage" xml:space="preserve"><value>Охват прослеживаемости</value></data>
+  <data name="Recall.Kpi.CoverageSub" xml:space="preserve"><value>Последние {0} дн. · {1} из {2} отгрузок с партией / серийным номером</value></data>
+  <data name="Recall.Kpi.CoverageNone" xml:space="preserve"><value>За последние {0} дн. отгрузок нет</value></data>
+  <data name="Recall.Kpi.Gaps" xml:space="preserve"><value>Отгрузки без партии (не прослеживаются)</value></data>
+  <data name="Recall.Kpi.GapsSub" xml:space="preserve"><value>Последние {0} дн.</value></data>
+  <data name="Recall.Kpi.Returned" xml:space="preserve"><value>Возвращено (открытые случаи)</value></data>
+  <data name="Recall.Kpi.ReturnedNone" xml:space="preserve"><value>Нет связанных возвратов</value></data>
+  <data name="Recall.Badge.OnTarget" xml:space="preserve"><value>В пределах цели</value></data>
+  <data name="Recall.Badge.OverTarget" xml:space="preserve"><value>Цель превышена</value></data>
+  <data name="Recall.Chart.Title" xml:space="preserve"><value>История учений · последние 12</value></data>
+  <data name="Recall.Chart.Target" xml:space="preserve"><value>Цель {0} ч</value></data>
+  <data name="Recall.Chart.Hours" xml:space="preserve"><value>Часы</value></data>
+  <data name="Recall.Chart.Empty" xml:space="preserve"><value>Ни одно учение ещё не завершено.</value></data>
+  <data name="Recall.OpenCases.Title" xml:space="preserve"><value>Открытые случаи</value></data>
+  <data name="Recall.OpenCases.All" xml:space="preserve"><value>Все случаи →</value></data>
+  <data name="Recall.OpenCases.Empty" xml:space="preserve"><value>Открытых случаев отзыва нет.</value></data>
+  <data name="Recall.Duration.HoursMinutes" xml:space="preserve"><value>{0} ч {1} мин</value></data>
+  <data name="Recall.Duration.Minutes" xml:space="preserve"><value>{0} мин</value></data>
+  <data name="Recall.Col.Number" xml:space="preserve"><value>№ случая</value></data>
+  <data name="Recall.Col.ProductLot" xml:space="preserve"><value>Товар / партия</value></data>
+  <data name="Recall.Col.ProductRootLot" xml:space="preserve"><value>Товар / корневая партия</value></data>
+  <data name="Recall.Col.Class" xml:space="preserve"><value>Класс</value></data>
+  <data name="Recall.Col.Level" xml:space="preserve"><value>Уровень</value></data>
+  <data name="Recall.Col.Opened" xml:space="preserve"><value>Открыт</value></data>
+  <data name="Recall.Col.Affected" xml:space="preserve"><value>Затронуто</value></data>
+  <data name="Recall.Col.ReturnedPct" xml:space="preserve"><value>Возвращено, %</value></data>
+  <data name="Recall.Col.Status" xml:space="preserve"><value>Статус</value></data>
+  <data name="Recall.Col.Type" xml:space="preserve"><value>Тип</value></data>
+  <data name="Recall.Col.Owner" xml:space="preserve"><value>Ответственный</value></data>
+  <data name="Recall.Col.Progress" xml:space="preserve"><value>Ход (возвращено / отгружено)</value></data>
+  <data name="Recall.Class.N" xml:space="preserve"><value>Класс {0}</value></data>
+  <data name="Recall.Status.Draft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="Recall.Status.PendingScopeApproval" xml:space="preserve"><value>Ожидает утверждения объёма</value></data>
+  <data name="Recall.Status.Active" xml:space="preserve"><value>Активен</value></data>
+  <data name="Recall.Status.EffectivenessCheck" xml:space="preserve"><value>Проверка эффективности</value></data>
+  <data name="Recall.Status.Closed" xml:space="preserve"><value>Закрыт</value></data>
+  <data name="Recall.Status.Cancelled" xml:space="preserve"><value>Отменён</value></data>
+  <data name="Recall.DrillStatus.Running" xml:space="preserve"><value>Учение идёт</value></data>
+  <data name="Recall.DrillStatus.Completed" xml:space="preserve"><value>Учение завершено</value></data>
+  <data name="Recall.DrillStatus.Cancelled" xml:space="preserve"><value>Учение отменено</value></data>
+  <data name="Recall.Level.Wholesale" xml:space="preserve"><value>Оптовый</value></data>
+  <data name="Recall.Level.Pharmacy" xml:space="preserve"><value>Аптека</value></data>
+  <data name="Recall.Level.Patient" xml:space="preserve"><value>Пациент</value></data>
+  <data name="Recall.Type.Real" xml:space="preserve"><value>Реальный</value></data>
+  <data name="Recall.Type.Drill" xml:space="preserve"><value>Учение</value></data>
+  <data name="Recall.Drill.Passed" xml:space="preserve"><value>Пройдено</value></data>
+  <data name="Recall.Drill.Failed" xml:space="preserve"><value>Не пройдено</value></data>
+  <data name="Recall.Drill.NoClass" xml:space="preserve"><value>У учения нет класса и уровня</value></data>
+  <data name="Recall.Trace.Subtitle" xml:space="preserve"><value>Генеалогия MOD-0174 · складской учёт MOD-0173 · отгрузки MOD-0183</value></data>
+  <data name="Recall.Trace.Lot" xml:space="preserve"><value>Номер партии</value></data>
+  <data name="Recall.Trace.LotPlaceholder" xml:space="preserve"><value>Найдите номер партии</value></data>
+  <data name="Recall.Trace.Product" xml:space="preserve"><value>Товар</value></data>
+  <data name="Recall.Trace.Direction" xml:space="preserve"><value>Направление</value></data>
+  <data name="Recall.Direction.Backward" xml:space="preserve"><value>Назад</value></data>
+  <data name="Recall.Direction.Forward" xml:space="preserve"><value>Вперёд</value></data>
+  <data name="Recall.Direction.Both" xml:space="preserve"><value>Оба</value></data>
+  <data name="Recall.Trace.Run" xml:space="preserve"><value>Проследить</value></data>
+  <data name="Recall.Trace.Recent" xml:space="preserve"><value>Недавние партии:</value></data>
+  <data name="Recall.Trace.Busy" xml:space="preserve"><value>Анализ генеалогии и складского учёта…</value></data>
+  <data name="Recall.Trace.Empty" xml:space="preserve"><value>Выберите партию и запустите прослеживание.</value></data>
+  <data name="Recall.Trace.Summary" xml:space="preserve"><value>{0} партий готовой продукции · {1} строк запаса · {2} отгрузок · {3} пробелов</value></data>
+  <data name="Recall.Trace.Duration" xml:space="preserve"><value>Запрос выполнен за {0} с · основа измерения учения</value></data>
+  <data name="Recall.Trace.OpenCase" xml:space="preserve"><value>Открыть случай отзыва с этим объёмом</value></data>
+  <data name="Recall.Trace.Csv" xml:space="preserve"><value>Скачать CSV</value></data>
+  <data name="Recall.Trace.GapBand" xml:space="preserve"><value>Пробелов прослеживания: {0}. Куда ушли эти количества, по партии доказать нельзя.</value></data>
+  <data name="Recall.Trace.Truncated" xml:space="preserve"><value>Прослеживание достигло предела — результат неполный.</value></data>
+  <data name="Recall.Trace.OtherCompany" xml:space="preserve"><value>В других компаниях вашей организации есть движения этих партий: {0}. Запустите прослеживание и там.</value></data>
+  <data name="Recall.Trace.Tree" xml:space="preserve"><value>Дерево</value></data>
+  <data name="Recall.Trace.Table" xml:space="preserve"><value>Таблица</value></data>
+  <data name="Recall.Trace.ExpandAll" xml:space="preserve"><value>Развернуть всё</value></data>
+  <data name="Recall.TCol.Kind" xml:space="preserve"><value>Тип узла</value></data>
+  <data name="Recall.TCol.Place" xml:space="preserve"><value>Склад / клиент</value></data>
+  <data name="Recall.TCol.Quantity" xml:space="preserve"><value>Количество</value></data>
+  <data name="Recall.TCol.Ref" xml:space="preserve"><value>№ движения / отгрузки</value></data>
+  <data name="Recall.TCol.Date" xml:space="preserve"><value>Дата</value></data>
+  <data name="Recall.Kind.RawMaterialLot" xml:space="preserve"><value>Партия сырья</value></data>
+  <data name="Recall.Kind.FinishedGoodLot" xml:space="preserve"><value>Партия готовой продукции</value></data>
+  <data name="Recall.Kind.Lot" xml:space="preserve"><value>Партия</value></data>
+  <data name="Recall.Kind.Input" xml:space="preserve"><value>Вход</value></data>
+  <data name="Recall.Kind.Stock" xml:space="preserve"><value>Складской запас</value></data>
+  <data name="Recall.Kind.Shipment" xml:space="preserve"><value>Отгрузка</value></data>
+  <data name="Recall.Kind.Customer" xml:space="preserve"><value>Клиент</value></data>
+  <data name="Recall.Kind.Gap" xml:space="preserve"><value>Пробел прослеживания</value></data>
+  <data name="Recall.Kind.Disposal" xml:space="preserve"><value>Утилизация / возврат поставщику</value></data>
+  <data name="Recall.Badge.Untracked" xml:space="preserve"><value>Не отслеживается</value></data>
+  <data name="Recall.StockStatus.AVAILABLE" xml:space="preserve"><value>В наличии</value></data>
+  <data name="Recall.StockStatus.QUARANTINE" xml:space="preserve"><value>На карантине</value></data>
+  <data name="Recall.StockStatus.QUALITY_INSPECTION" xml:space="preserve"><value>На контроле качества</value></data>
+  <data name="Recall.StockStatus.BLOCKED" xml:space="preserve"><value>Заблокировано</value></data>
+  <data name="Recall.Gap.LOTLESS_OUTBOUND" xml:space="preserve"><value>Отгрузка без партии</value></data>
+  <data name="Recall.Gap.UNRESOLVED_TYPED_LOT" xml:space="preserve"><value>Введённый текст партии не связан с партией</value></data>
+  <data name="Recall.Gap.MISSING_GENEALOGY_LINK" xml:space="preserve"><value>Нет генеалогической связи</value></data>
+  <data name="Recall.Gap.CONSUMED_WITHOUT_OUTPUT_LINK" xml:space="preserve"><value>Израсходовано в производстве без связи с выпуском</value></data>
+  <data name="Recall.Gap.NO_CUSTOMER_REFERENCE" xml:space="preserve"><value>Отгрузка без ссылки на клиента</value></data>
+  <data name="Recall.Gap.LIMIT_REACHED" xml:space="preserve"><value>Достигнут предел прослеживания</value></data>
+  <data name="Recall.Gap.OTHER_COMPANY_ACTIVITY" xml:space="preserve"><value>Движения в другой компании (только количество)</value></data>
+  <data name="Recall.Shipment.Unreadable" xml:space="preserve"><value>Не удалось прочитать данные отгрузки (поля отсутствуют)</value></data>
+  <data name="Recall.Shipment.Customer" xml:space="preserve"><value>Клиент {0}</value></data>
+  <data name="Recall.Shipment.UnknownCustomer" xml:space="preserve"><value>Неизвестно (без документа)</value></data>
+  <data name="Recall.OpenCase.Title" xml:space="preserve"><value>Открыть случай отзыва</value></data>
+  <data name="Recall.OpenCase.Intro" xml:space="preserve"><value>Случай открывается как черновик; объём берётся из прослеживания {0}.</value></data>
+  <data name="Recall.OpenCase.Reason" xml:space="preserve"><value>Причина</value></data>
+  <data name="Recall.OpenCase.Reference" xml:space="preserve"><value>№ отклонения / жалобы</value></data>
+  <data name="Recall.OpenCase.Submit" xml:space="preserve"><value>Открыть черновик случая</value></data>
+  <data name="Recall.OpenCase.Done" xml:space="preserve"><value>Черновик случая {0} открыт.</value></data>
+  <data name="Recall.Cases.Subtitle" xml:space="preserve"><value>Реальные случаи и учения · статус: Черновик → Ожидает утверждения объёма → Активен → Проверка эффективности → Закрыт</value></data>
+  <data name="Recall.Filter.AllTypes" xml:space="preserve"><value>Все типы</value></data>
+  <data name="Recall.Filter.AllStatuses" xml:space="preserve"><value>Все статусы</value></data>
+  <data name="Recall.Filter.AllClasses" xml:space="preserve"><value>Все классы</value></data>
+  <data name="Recall.Filter.AllProducts" xml:space="preserve"><value>Все товары</value></data>
+  <data name="Recall.Filter.OpenedFrom" xml:space="preserve"><value>Открыт с</value></data>
+  <data name="Recall.Filter.CaseStatuses" xml:space="preserve"><value>Статусы случаев</value></data>
+  <data name="Recall.Filter.DrillStatuses" xml:space="preserve"><value>Статусы учений</value></data>
+  <data name="Recall.Cases.Empty" xml:space="preserve"><value>Нет случаев, соответствующих фильтру.</value></data>
+  <data name="Recall.Cases.Count" xml:space="preserve"><value>Записей: {0}</value></data>
+  <data name="Recall.Errors.GENERIC" xml:space="preserve"><value>Не удалось выполнить запрос.</value></data>
+  <data name="Recall.Errors.FORBIDDEN" xml:space="preserve"><value>У вас нет разрешения на это.</value></data>
+  <data name="Recall.Errors.UNAUTHORIZED" xml:space="preserve"><value>Сеанс завершён. Войдите снова.</value></data>
+  <data name="Recall.Errors.SERVICE_UNAVAILABLE" xml:space="preserve"><value>Служба отзыва недоступна. Повторите попытку позже.</value></data>
+  <data name="Recall.Errors.INVALID_REQUEST" xml:space="preserve"><value>Некоторые поля не заполнены или неверны.</value></data>
+  <data name="Recall.Errors.REASON_REQUIRED" xml:space="preserve"><value>Укажите причину не короче 10 символов.</value></data>
+  <data name="Recall.Errors.UNKNOWN_LOT" xml:space="preserve"><value>Партия не найдена.</value></data>
+  <data name="Recall.Errors.CROSS_LE_FORBIDDEN" xml:space="preserve"><value>Эта запись принадлежит другой компании.</value></data>
+  <data name="Recall.Errors.RECALL_CASE_ALREADY_OPEN" xml:space="preserve"><value>Для этой партии уже есть открытый случай отзыва.</value></data>
+  <data name="Recall.Errors.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>Этот запрос уже отправлен с другим содержимым. Обновите страницу.</value></data>
+  <data name="Recall.Errors.COMPANY_NOT_SELECTED" xml:space="preserve"><value>Сначала выберите компанию.</value></data>
+  <data name="Help.RECALLDASHBOARD.Purpose" xml:space="preserve"><value>Показывает готовность компании к отзыву: открытые случаи, последнее учение относительно цели, охват отгрузок партиями, непрослеживаемые отгрузки и возвраты по открытым случаям.</value></data>
+  <data name="Help.RECALLDASHBOARD.Audience" xml:space="preserve"><value>Качество (ответственный за отзыв), администратор системы качества и руководство (только чтение).</value></data>
+  <data name="Help.RECALLDASHBOARD.Step1Title" xml:space="preserve"><value>Выберите компанию</value></data>
+  <data name="Help.RECALLDASHBOARD.Step1" xml:space="preserve"><value>Все показатели на странице относятся только к выбранной компании.</value></data>
+  <data name="Help.RECALLDASHBOARD.Step2Title" xml:space="preserve"><value>Изучите карточки</value></data>
+  <data name="Help.RECALLDASHBOARD.Step2" xml:space="preserve"><value>Красная отметка «Цель превышена» у последнего учения или ненулевое число непрослеживаемых отгрузок требуют внимания.</value></data>
+  <data name="Help.RECALLDASHBOARD.Step3Title" xml:space="preserve"><value>Следите за историей учений</value></data>
+  <data name="Help.RECALLDASHBOARD.Step3" xml:space="preserve"><value>График показывает 12 последних завершённых учений относительно линии цели; полоса сверху предупреждает, если последнее учение слишком давнее.</value></data>
+  <data name="Help.RECALLTRACE.Purpose" xml:space="preserve"><value>Прослеживает партию по всей генеалогии: назад до входов и вперёд до запасов, отгрузок и клиентов, и показывает пробелы, где партия не доказывает, куда ушёл товар.</value></data>
+  <data name="Help.RECALLTRACE.Audience" xml:space="preserve"><value>Качество (ответственный за отзыв) и администратор системы качества.</value></data>
+  <data name="Help.RECALLTRACE.Step1Title" xml:space="preserve"><value>Выберите партию</value></data>
+  <data name="Help.RECALLTRACE.Step1" xml:space="preserve"><value>Найдите номер партии и выберите направление: назад, вперёд или оба.</value></data>
+  <data name="Help.RECALLTRACE.Step2Title" xml:space="preserve"><value>Изучите дерево или таблицу</value></data>
+  <data name="Help.RECALLTRACE.Step2" xml:space="preserve"><value>Оба вида показывают одни и те же узлы. Красные строки — пробелы; активность другой компании видна только как число.</value></data>
+  <data name="Help.RECALLTRACE.Step3Title" xml:space="preserve"><value>Экспортируйте или откройте случай</value></data>
+  <data name="Help.RECALLTRACE.Step3" xml:space="preserve"><value>«Скачать CSV» даёт те же строки; «Открыть случай отзыва с этим объёмом» открывает черновик случая по этому прослеживанию.</value></data>
+  <data name="Help.RECALLTRACE.Immediate" xml:space="preserve"><value>Открытие случая сразу создаёт черновик; до утверждения объёма ничего не блокируется.</value></data>
+  <data name="Help.RECALLCASES.Purpose" xml:space="preserve"><value>Показывает реальные случаи отзыва и учения компании вместе, от новых к старым, со статусом и ходом.</value></data>
+  <data name="Help.RECALLCASES.Audience" xml:space="preserve"><value>Все, кто следит за отзывами: качество, склад, коммерция и руководство.</value></data>
+  <data name="Help.RECALLCASES.Step1Title" xml:space="preserve"><value>Отфильтруйте список</value></data>
+  <data name="Help.RECALLCASES.Step1" xml:space="preserve"><value>Используйте тип, статус, класс, товар и дату открытия. Фильтр по классу показывает только реальные случаи.</value></data>
+  <data name="Help.RECALLCASES.Step2Title" xml:space="preserve"><value>Отличайте учения</value></data>
+  <data name="Help.RECALLCASES.Step2" xml:space="preserve"><value>Строка учения помечена «Учение», показывает результат и длительность и не имеет класса и уровня.</value></data>
+</root>

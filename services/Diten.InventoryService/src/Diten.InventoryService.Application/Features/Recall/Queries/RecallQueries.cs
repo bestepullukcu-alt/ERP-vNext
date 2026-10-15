@@ -11,7 +11,7 @@ public sealed record GetRecallSettingsQuery : IRequest<Response<RecallSettingsDt
 /// <summary>§4.21 getSettingsHistory — newest first.</summary>
 public sealed record GetRecallSettingsHistoryQuery(string? Page, string? PageSize) : IRequest<Response<RecallSettingsHistoryPageDto>>;
 
-/// <summary>§4.4 listCases (R1: real cases; drill rows join in R5).</summary>
+/// <summary>§4.4 listCases — R6 (1.5.0): the union read of real cases and drill runs (<paramref name="DrillStatus"/> filters the drill rows).</summary>
 public sealed record ListRecallCasesQuery(
     string? Type,
     IReadOnlyList<string> Status,
@@ -21,7 +21,8 @@ public sealed record ListRecallCasesQuery(
     string? Q,
     string? Sort,
     string? Page,
-    string? PageSize) : IRequest<Response<RecallCasePageDto>>;
+    string? PageSize,
+    IReadOnlyList<string>? DrillStatus = null) : IRequest<Response<RecallCasePageDto>>;
 
 /// <summary>§4.5 getCase.</summary>
 public sealed record GetRecallCaseQuery(string CaseId) : IRequest<Response<RecallCaseDetailDto>>;

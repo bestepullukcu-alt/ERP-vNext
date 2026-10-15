@@ -1,0 +1,143 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@using Diten.Web.Models.DataTable
+@inject IHtmlLocalizer<Diten.Web.Views.Recall.Recall> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["Recall.Tabs.Cases"].Value;
+    ViewData["PageCode"] = "RECALLCASES";
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    MOD-0177 R6 — Vakalar (RECALLCASES, pack §11.1, §8.10, mockup "isCases"). Slim DataTable, SERVER mode, door /Recall/list/cases (the
+    RECALL 1.5.0 union read): real cases and drill runs in ONE list by date; a drill row says "Tatbikat", shows its result and duration and
+    has NO class or level ("—", CT decision A, mockup difference D-25). Status chips (case statuses), filters type / case status /
+    drill status / class / product / opened from. Rows open nothing yet: the case detail and the drill planner are R7 (no dead link).
+    UAS-001 — nothing below is drawn without recall.cases.read. No redirect.
+*@
+@if (!Perms.Has(Diten.Web.Controllers.RecallKeys.CasesRead))
+{
+    <partial name="_AccessDenied" model="@Localizer["Recall.Tabs.Cases"].Value" />
+    return;
+}
+
+@{
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["Recall.Common.Company.Label"].Value;
+    company.Placeholder = Localizer["Recall.Common.Company.Placeholder"].Value;
+    company.SelectHint = Localizer["Recall.Common.Company.Required"].Value;
+    company.UnavailableText = Localizer["Recall.Common.Company.Unavailable"].Value;
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-recall-cases",
+        DataMode = "server",
+        Slug = "recall-cases",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["Recall.Col.Number"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["Recall.Col.Type"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Recall.Col.ProductRootLot"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["Recall.Col.Class"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Recall.Col.Level"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Recall.Col.Opened"].Value },
+            new DataTableColumnViewModel { Header = Localizer["Recall.Col.Owner"].Value, CssClass = "min-tablet-l" },
+            new DataTableColumnViewModel { Header = Localizer["Recall.Col.Progress"].Value, CssClass = "min-tablet-l" },
+            new DataTableColumnViewModel { Header = Localizer["Recall.Col.Status"].Value, CssClass = "all" }
+        ]
+    };
+}
+
+<partial name="~/Views/Recall/_Header.cshtml" model="@("RECALLCASES")" />
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready)
+{
+    <p class="text-muted mb-3">@Localizer["Recall.Cases.Subtitle"]</p>
+    <div class="d-flex flex-wrap gap-2 mb-3" id="rc-status-chips">
+        @foreach (var status in new[] { "Draft", "PendingScopeApproval", "Active", "EffectivenessCheck", "Closed", "Cancelled" })
+        {
+            <button type="button" class="btn btn-sm btn-label-secondary d-flex align-items-center gap-2" data-status-chip="@status">
+                <span>@Localizer["Recall.Status." + status]</span><span class="badge bg-white text-body" data-status-count="@status">0</span>
+            </button>
+        }
+    </div>
+
+    <div id="inlineFilterHost">
+        <div class="collapse" id="inlineFilterCollapse">
+            <div class="pt-0 pb-3">
+                <form class="m-0" id="filterForm" data-no-tracker>
+                    <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                        <div class="filter-chip">
+                            <select id="filterType" class="form-select form-select-sm" aria-label="@Localizer["Recall.Filter.AllTypes"]">
+                                <option value="">@Localizer["Recall.Filter.AllTypes"]</option>
+                                <option value="Real">@Localizer["Recall.Type.Real"]</option>
+                                <option value="Drill">@Localizer["Recall.Type.Drill"]</option>
+                            </select>
+                        </div>
+                        <div class="filter-chip">
+                            <select id="filterStatus" class="form-select form-select-sm" aria-label="@Localizer["Recall.Filter.CaseStatuses"]">
+                                <option value="">@Localizer["Recall.Filter.AllStatuses"]</option>
+                                @foreach (var status in new[] { "Draft", "PendingScopeApproval", "Active", "EffectivenessCheck", "Closed", "Cancelled" })
+                                {
+                                    <option value="@status">@Localizer["Recall.Status." + status]</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="filter-chip">
+                            <select id="filterDrillStatus" class="form-select form-select-sm" aria-label="@Localizer["Recall.Filter.DrillStatuses"]">
+                                <option value="">@Localizer["Recall.Filter.DrillStatuses"]</option>
+                                @foreach (var status in new[] { "Running", "Completed", "Cancelled" })
+                                {
+                                    <option value="@status">@Localizer["Recall.DrillStatus." + status]</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="filter-chip">
+                            <select id="filterClass" class="form-select form-select-sm" aria-label="@Localizer["Recall.Filter.AllClasses"]">
+                                <option value="">@Localizer["Recall.Filter.AllClasses"]</option>
+                                @foreach (var c in new[] { 1, 2, 3 })
+                                {
+                                    <option value="@c">@string.Format(Localizer["Recall.Class.N"].Value, c)</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="filter-chip">
+                            <select id="filterProduct" class="form-select form-select-sm" aria-label="@Localizer["Recall.Filter.AllProducts"]">
+                                <option value="">@Localizer["Recall.Filter.AllProducts"]</option>
+                            </select>
+                        </div>
+                        <div class="filter-chip d-flex align-items-center gap-2">
+                            <label class="small text-muted text-nowrap" for="filterOpenedFrom">@Localizer["Recall.Filter.OpenedFrom"]</label>
+                            <input type="date" id="filterOpenedFrom" class="form-control form-control-sm" />
+                        </div>
+                        <div class="ms-auto d-flex gap-3">
+                            <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">@Localizer["Recall.Common.Apply"]</button>
+                            <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">@Localizer["Recall.Common.Clear"]</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="rc-labels-unavailable" class="alert alert-warning d-none" role="status">@Localizer["Recall.Common.NamesUnavailable"]</div>
+    <div id="rc-list-error" class="alert alert-danger d-none" role="alert"></div>
+
+    @* Contract markers are rendered by _ListShell: <partial name="_TableSkeleton" /> (id="skeleton-loader"), <table data-dt-standard="v2" data-dt-data-mode="server"> *@
+    <partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    <partial name="~/Views/Recall/_RecallActions.cshtml" />
+    <partial name="~/Views/Recall/_RecallL10n.cshtml" />
+    @if (company.Ready)
+    {
+        <script src="~/assets/js/Recall/cases-view.js" asp-append-version="true"></script>
+        <script src="~/assets/js/Recall/cases.js" asp-append-version="true"></script>
+    }
+}

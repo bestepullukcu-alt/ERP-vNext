@@ -117,6 +117,14 @@ public interface IRecallRepository
     Task<bool> SignatureUsedAsync(string signatureId, CancellationToken cancellationToken = default);
 
     Task<T> InTransactionAsync<T>(Func<IRecallWriteSession, CancellationToken, Task<T>> work, CancellationToken cancellationToken = default);
+
+    // ── R6 (Hazırlık Paneli, pack §8.9) ──
+
+    /// <summary>The company's OPEN cases (status not Closed / Cancelled), newest opened first.</summary>
+    Task<IReadOnlyList<RecallCase>> OpenCasesAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>The return links of these cases in the company (the panel's "Geri dönen" per SKU + unit).</summary>
+    Task<IReadOnlyList<RecallReturnLink>> ReturnLinksOfCasesAsync(IReadOnlyCollection<Guid> caseIds, CancellationToken cancellationToken = default);
 }
 
 /// <summary>

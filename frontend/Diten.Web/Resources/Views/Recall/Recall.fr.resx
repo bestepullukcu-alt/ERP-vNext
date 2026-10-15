@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Recall.Common.Crumb.Root" xml:space="preserve"><value>Rappel</value></data>
+  <data name="Recall.Common.Company.Label" xml:space="preserve"><value>Société</value></data>
+  <data name="Recall.Common.Company.Placeholder" xml:space="preserve"><value>Sélectionnez une société</value></data>
+  <data name="Recall.Common.Company.Required" xml:space="preserve"><value>Sélectionnez la société pour voir sa préparation au rappel.</value></data>
+  <data name="Recall.Common.Company.Unavailable" xml:space="preserve"><value>La liste des sociétés n’a pas pu être chargée. Réessayez plus tard.</value></data>
+  <data name="Recall.Common.NamesUnavailable" xml:space="preserve"><value>Les noms des produits et des entrepôts n’ont pas pu être lus ; les codes sont affichés.</value></data>
+  <data name="Recall.Common.Loading" xml:space="preserve"><value>Chargement…</value></data>
+  <data name="Recall.Common.Cancel" xml:space="preserve"><value>Annuler</value></data>
+  <data name="Recall.Common.Apply" xml:space="preserve"><value>Appliquer</value></data>
+  <data name="Recall.Common.Clear" xml:space="preserve"><value>Effacer</value></data>
+  <data name="Recall.Common.ReasonMin" xml:space="preserve"><value>Saisissez au moins 10 caractères.</value></data>
+  <data name="Recall.Common.Required" xml:space="preserve"><value>Obligatoire.</value></data>
+  <data name="Recall.Common.None" xml:space="preserve"><value>Aucun</value></data>
+  <data name="Recall.Tabs.Dashboard" xml:space="preserve"><value>Tableau de préparation</value></data>
+  <data name="Recall.Tabs.Trace" xml:space="preserve"><value>Traçabilité</value></data>
+  <data name="Recall.Tabs.Cases" xml:space="preserve"><value>Dossiers</value></data>
+  <data name="Recall.Dashboard.Subtitle" xml:space="preserve"><value>Aujourd’hui {0} · objectif d’exercice {1} h</value></data>
+  <data name="Recall.Freq.Band" xml:space="preserve"><value>Le dernier exercice date de plus de {0} jours.</value></data>
+  <data name="Recall.Freq.Detail" xml:space="preserve"><value>Dernier exercice le {0} (il y a {1} jours). Le seuil vient des paramètres.</value></data>
+  <data name="Recall.Freq.None" xml:space="preserve"><value>Aucun exercice n’a encore été terminé. Le seuil vient des paramètres.</value></data>
+  <data name="Recall.Kpi.Open" xml:space="preserve"><value>Dossiers de rappel ouverts</value></data>
+  <data name="Recall.Kpi.OpenSub" xml:space="preserve"><value>Classe 1 : {0} · Classe 2 : {1} · Classe 3 : {2}</value></data>
+  <data name="Recall.Kpi.LastDrill" xml:space="preserve"><value>Durée du dernier exercice</value></data>
+  <data name="Recall.Kpi.LastDrillSub" xml:space="preserve"><value>{0} · objectif {1} h</value></data>
+  <data name="Recall.Kpi.NoDrill" xml:space="preserve"><value>Aucun exercice terminé</value></data>
+  <data name="Recall.Kpi.Coverage" xml:space="preserve"><value>Taux de couverture de la traçabilité</value></data>
+  <data name="Recall.Kpi.CoverageSub" xml:space="preserve"><value>{0} derniers jours · {1} sorties sur {2} avec lot / série</value></data>
+  <data name="Recall.Kpi.CoverageNone" xml:space="preserve"><value>Aucune sortie au cours des {0} derniers jours</value></data>
+  <data name="Recall.Kpi.Gaps" xml:space="preserve"><value>Sorties sans lot (non traçables)</value></data>
+  <data name="Recall.Kpi.GapsSub" xml:space="preserve"><value>{0} derniers jours</value></data>
+  <data name="Recall.Kpi.Returned" xml:space="preserve"><value>Retourné (dossiers ouverts)</value></data>
+  <data name="Recall.Kpi.ReturnedNone" xml:space="preserve"><value>Aucun retour lié</value></data>
+  <data name="Recall.Badge.OnTarget" xml:space="preserve"><value>Dans l’objectif</value></data>
+  <data name="Recall.Badge.OverTarget" xml:space="preserve"><value>Objectif dépassé</value></data>
+  <data name="Recall.Chart.Title" xml:space="preserve"><value>Historique des exercices · 12 derniers</value></data>
+  <data name="Recall.Chart.Target" xml:space="preserve"><value>Objectif {0} h</value></data>
+  <data name="Recall.Chart.Hours" xml:space="preserve"><value>Heures</value></data>
+  <data name="Recall.Chart.Empty" xml:space="preserve"><value>Aucun exercice n’a encore été terminé.</value></data>
+  <data name="Recall.OpenCases.Title" xml:space="preserve"><value>Dossiers ouverts</value></data>
+  <data name="Recall.OpenCases.All" xml:space="preserve"><value>Tous les dossiers →</value></data>
+  <data name="Recall.OpenCases.Empty" xml:space="preserve"><value>Aucun dossier de rappel ouvert.</value></data>
+  <data name="Recall.Duration.HoursMinutes" xml:space="preserve"><value>{0} h {1} min</value></data>
+  <data name="Recall.Duration.Minutes" xml:space="preserve"><value>{0} min</value></data>
+  <data name="Recall.Col.Number" xml:space="preserve"><value>N° de dossier</value></data>
+  <data name="Recall.Col.ProductLot" xml:space="preserve"><value>Produit / lot</value></data>
+  <data name="Recall.Col.ProductRootLot" xml:space="preserve"><value>Produit / lot racine</value></data>
+  <data name="Recall.Col.Class" xml:space="preserve"><value>Classe</value></data>
+  <data name="Recall.Col.Level" xml:space="preserve"><value>Niveau</value></data>
+  <data name="Recall.Col.Opened" xml:space="preserve"><value>Ouverture</value></data>
+  <data name="Recall.Col.Affected" xml:space="preserve"><value>Concerné</value></data>
+  <data name="Recall.Col.ReturnedPct" xml:space="preserve"><value>% retourné</value></data>
+  <data name="Recall.Col.Status" xml:space="preserve"><value>Statut</value></data>
+  <data name="Recall.Col.Type" xml:space="preserve"><value>Type</value></data>
+  <data name="Recall.Col.Owner" xml:space="preserve"><value>Responsable</value></data>
+  <data name="Recall.Col.Progress" xml:space="preserve"><value>Avancement (retourné / expédié)</value></data>
+  <data name="Recall.Class.N" xml:space="preserve"><value>Classe {0}</value></data>
+  <data name="Recall.Status.Draft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="Recall.Status.PendingScopeApproval" xml:space="preserve"><value>Approbation du périmètre en attente</value></data>
+  <data name="Recall.Status.Active" xml:space="preserve"><value>Actif</value></data>
+  <data name="Recall.Status.EffectivenessCheck" xml:space="preserve"><value>Contrôle d’efficacité</value></data>
+  <data name="Recall.Status.Closed" xml:space="preserve"><value>Clôturé</value></data>
+  <data name="Recall.Status.Cancelled" xml:space="preserve"><value>Annulé</value></data>
+  <data name="Recall.DrillStatus.Running" xml:space="preserve"><value>Exercice en cours</value></data>
+  <data name="Recall.DrillStatus.Completed" xml:space="preserve"><value>Exercice terminé</value></data>
+  <data name="Recall.DrillStatus.Cancelled" xml:space="preserve"><value>Exercice annulé</value></data>
+  <data name="Recall.Level.Wholesale" xml:space="preserve"><value>Grossiste</value></data>
+  <data name="Recall.Level.Pharmacy" xml:space="preserve"><value>Pharmacie</value></data>
+  <data name="Recall.Level.Patient" xml:space="preserve"><value>Patient</value></data>
+  <data name="Recall.Type.Real" xml:space="preserve"><value>Réel</value></data>
+  <data name="Recall.Type.Drill" xml:space="preserve"><value>Exercice</value></data>
+  <data name="Recall.Drill.Passed" xml:space="preserve"><value>Réussi</value></data>
+  <data name="Recall.Drill.Failed" xml:space="preserve"><value>Échoué</value></data>
+  <data name="Recall.Drill.NoClass" xml:space="preserve"><value>Un exercice n’a ni classe ni niveau</value></data>
+  <data name="Recall.Trace.Subtitle" xml:space="preserve"><value>Généalogie MOD-0174 · registre des stocks MOD-0173 · expéditions MOD-0183</value></data>
+  <data name="Recall.Trace.Lot" xml:space="preserve"><value>Numéro de lot</value></data>
+  <data name="Recall.Trace.LotPlaceholder" xml:space="preserve"><value>Rechercher un numéro de lot</value></data>
+  <data name="Recall.Trace.Product" xml:space="preserve"><value>Produit</value></data>
+  <data name="Recall.Trace.Direction" xml:space="preserve"><value>Sens</value></data>
+  <data name="Recall.Direction.Backward" xml:space="preserve"><value>En amont</value></data>
+  <data name="Recall.Direction.Forward" xml:space="preserve"><value>En aval</value></data>
+  <data name="Recall.Direction.Both" xml:space="preserve"><value>Les deux</value></data>
+  <data name="Recall.Trace.Run" xml:space="preserve"><value>Tracer</value></data>
+  <data name="Recall.Trace.Recent" xml:space="preserve"><value>Lots récents :</value></data>
+  <data name="Recall.Trace.Busy" xml:space="preserve"><value>Analyse de la généalogie et du registre des stocks…</value></data>
+  <data name="Recall.Trace.Empty" xml:space="preserve"><value>Choisissez un lot et lancez la traçabilité.</value></data>
+  <data name="Recall.Trace.Summary" xml:space="preserve"><value>{0} lots de produits finis · {1} lignes de stock · {2} expéditions · {3} écarts</value></data>
+  <data name="Recall.Trace.Duration" xml:space="preserve"><value>Requête terminée en {0} s · la mesure d’un exercice</value></data>
+  <data name="Recall.Trace.OpenCase" xml:space="preserve"><value>Ouvrir un dossier de rappel avec ce périmètre</value></data>
+  <data name="Recall.Trace.Csv" xml:space="preserve"><value>Télécharger le CSV</value></data>
+  <data name="Recall.Trace.GapBand" xml:space="preserve"><value>{0} écart(s) de traçabilité : la destination de ces quantités ne peut pas être prouvée par lot.</value></data>
+  <data name="Recall.Trace.Truncated" xml:space="preserve"><value>La traçabilité a atteint sa limite — le résultat est incomplet.</value></data>
+  <data name="Recall.Trace.OtherCompany" xml:space="preserve"><value>{0} mouvement(s) de ces lots existent dans d’autres sociétés de votre organisation — lancez aussi la traçabilité là-bas.</value></data>
+  <data name="Recall.Trace.Tree" xml:space="preserve"><value>Arbre</value></data>
+  <data name="Recall.Trace.Table" xml:space="preserve"><value>Tableau</value></data>
+  <data name="Recall.Trace.ExpandAll" xml:space="preserve"><value>Tout déplier</value></data>
+  <data name="Recall.TCol.Kind" xml:space="preserve"><value>Type de nœud</value></data>
+  <data name="Recall.TCol.Place" xml:space="preserve"><value>Entrepôt / client</value></data>
+  <data name="Recall.TCol.Quantity" xml:space="preserve"><value>Quantité</value></data>
+  <data name="Recall.TCol.Ref" xml:space="preserve"><value>N° de mouvement / d’expédition</value></data>
+  <data name="Recall.TCol.Date" xml:space="preserve"><value>Date</value></data>
+  <data name="Recall.Kind.RawMaterialLot" xml:space="preserve"><value>Lot de matière première</value></data>
+  <data name="Recall.Kind.FinishedGoodLot" xml:space="preserve"><value>Lot de produit fini</value></data>
+  <data name="Recall.Kind.Lot" xml:space="preserve"><value>Lot</value></data>
+  <data name="Recall.Kind.Input" xml:space="preserve"><value>Intrant</value></data>
+  <data name="Recall.Kind.Stock" xml:space="preserve"><value>Stock d’entrepôt</value></data>
+  <data name="Recall.Kind.Shipment" xml:space="preserve"><value>Expédition</value></data>
+  <data name="Recall.Kind.Customer" xml:space="preserve"><value>Client</value></data>
+  <data name="Recall.Kind.Gap" xml:space="preserve"><value>Écart de traçabilité</value></data>
+  <data name="Recall.Kind.Disposal" xml:space="preserve"><value>Destruction / retour fournisseur</value></data>
+  <data name="Recall.Badge.Untracked" xml:space="preserve"><value>Non suivi</value></data>
+  <data name="Recall.StockStatus.AVAILABLE" xml:space="preserve"><value>En stock</value></data>
+  <data name="Recall.StockStatus.QUARANTINE" xml:space="preserve"><value>En quarantaine</value></data>
+  <data name="Recall.StockStatus.QUALITY_INSPECTION" xml:space="preserve"><value>En contrôle qualité</value></data>
+  <data name="Recall.StockStatus.BLOCKED" xml:space="preserve"><value>Bloqué</value></data>
+  <data name="Recall.Gap.LOTLESS_OUTBOUND" xml:space="preserve"><value>Sortie sans lot</value></data>
+  <data name="Recall.Gap.UNRESOLVED_TYPED_LOT" xml:space="preserve"><value>Texte de lot saisi non relié à un lot</value></data>
+  <data name="Recall.Gap.MISSING_GENEALOGY_LINK" xml:space="preserve"><value>Lien généalogique manquant</value></data>
+  <data name="Recall.Gap.CONSUMED_WITHOUT_OUTPUT_LINK" xml:space="preserve"><value>Consommé en production sans lien de sortie</value></data>
+  <data name="Recall.Gap.NO_CUSTOMER_REFERENCE" xml:space="preserve"><value>Expédition sans référence client</value></data>
+  <data name="Recall.Gap.LIMIT_REACHED" xml:space="preserve"><value>Limite de traçabilité atteinte</value></data>
+  <data name="Recall.Gap.OTHER_COMPANY_ACTIVITY" xml:space="preserve"><value>Mouvements dans une autre société (nombre seulement)</value></data>
+  <data name="Recall.Shipment.Unreadable" xml:space="preserve"><value>Les détails de l’expédition n’ont pas pu être lus (champs manquants)</value></data>
+  <data name="Recall.Shipment.Customer" xml:space="preserve"><value>Client {0}</value></data>
+  <data name="Recall.Shipment.UnknownCustomer" xml:space="preserve"><value>Inconnu (sans document)</value></data>
+  <data name="Recall.OpenCase.Title" xml:space="preserve"><value>Ouvrir un dossier de rappel</value></data>
+  <data name="Recall.OpenCase.Intro" xml:space="preserve"><value>Le dossier s’ouvre en brouillon ; son périmètre est repris de la traçabilité de {0}.</value></data>
+  <data name="Recall.OpenCase.Reason" xml:space="preserve"><value>Motif</value></data>
+  <data name="Recall.OpenCase.Reference" xml:space="preserve"><value>N° d’écart / de réclamation</value></data>
+  <data name="Recall.OpenCase.Submit" xml:space="preserve"><value>Ouvrir le dossier brouillon</value></data>
+  <data name="Recall.OpenCase.Done" xml:space="preserve"><value>Dossier brouillon {0} ouvert.</value></data>
+  <data name="Recall.Cases.Subtitle" xml:space="preserve"><value>Dossiers réels et exercices · statut : Brouillon → Approbation du périmètre en attente → Actif → Contrôle d’efficacité → Clôturé</value></data>
+  <data name="Recall.Filter.AllTypes" xml:space="preserve"><value>Tous les types</value></data>
+  <data name="Recall.Filter.AllStatuses" xml:space="preserve"><value>Tous les statuts</value></data>
+  <data name="Recall.Filter.AllClasses" xml:space="preserve"><value>Toutes les classes</value></data>
+  <data name="Recall.Filter.AllProducts" xml:space="preserve"><value>Tous les produits</value></data>
+  <data name="Recall.Filter.OpenedFrom" xml:space="preserve"><value>Ouvert à partir du</value></data>
+  <data name="Recall.Filter.CaseStatuses" xml:space="preserve"><value>Statuts des dossiers</value></data>
+  <data name="Recall.Filter.DrillStatuses" xml:space="preserve"><value>Statuts des exercices</value></data>
+  <data name="Recall.Cases.Empty" xml:space="preserve"><value>Aucun dossier ne correspond au filtre.</value></data>
+  <data name="Recall.Cases.Count" xml:space="preserve"><value>{0} enregistrements</value></data>
+  <data name="Recall.Errors.GENERIC" xml:space="preserve"><value>La demande n’a pas pu aboutir.</value></data>
+  <data name="Recall.Errors.FORBIDDEN" xml:space="preserve"><value>Vous n’avez pas l’autorisation pour cela.</value></data>
+  <data name="Recall.Errors.UNAUTHORIZED" xml:space="preserve"><value>Votre session a expiré. Reconnectez-vous.</value></data>
+  <data name="Recall.Errors.SERVICE_UNAVAILABLE" xml:space="preserve"><value>Le service de rappel est injoignable. Réessayez plus tard.</value></data>
+  <data name="Recall.Errors.INVALID_REQUEST" xml:space="preserve"><value>Certains champs sont manquants ou invalides.</value></data>
+  <data name="Recall.Errors.REASON_REQUIRED" xml:space="preserve"><value>Saisissez un motif d’au moins 10 caractères.</value></data>
+  <data name="Recall.Errors.UNKNOWN_LOT" xml:space="preserve"><value>Le lot est introuvable.</value></data>
+  <data name="Recall.Errors.CROSS_LE_FORBIDDEN" xml:space="preserve"><value>Cet enregistrement appartient à une autre société.</value></data>
+  <data name="Recall.Errors.RECALL_CASE_ALREADY_OPEN" xml:space="preserve"><value>Ce lot a déjà un dossier de rappel ouvert.</value></data>
+  <data name="Recall.Errors.IDEMPOTENCY_KEY_REUSED" xml:space="preserve"><value>Cette demande a déjà été envoyée avec un autre contenu. Actualisez la page.</value></data>
+  <data name="Recall.Errors.COMPANY_NOT_SELECTED" xml:space="preserve"><value>Sélectionnez d’abord une société.</value></data>
+  <data name="Help.RECALLDASHBOARD.Purpose" xml:space="preserve"><value>Montre dans quelle mesure la société est prête pour un rappel : dossiers ouverts, dernier exercice par rapport à son objectif, couverture par lot des sorties, sorties non traçables et retours des dossiers ouverts.</value></data>
+  <data name="Help.RECALLDASHBOARD.Audience" xml:space="preserve"><value>Qualité (responsable des rappels), administrateur du système qualité et direction (lecture seule).</value></data>
+  <data name="Help.RECALLDASHBOARD.Step1Title" xml:space="preserve"><value>Choisissez la société</value></data>
+  <data name="Help.RECALLDASHBOARD.Step1" xml:space="preserve"><value>Chaque chiffre de cette page concerne uniquement la société sélectionnée.</value></data>
+  <data name="Help.RECALLDASHBOARD.Step2Title" xml:space="preserve"><value>Lisez les cartes</value></data>
+  <data name="Help.RECALLDASHBOARD.Step2" xml:space="preserve"><value>Un « Objectif dépassé » rouge sur le dernier exercice ou un nombre de sorties non traçables supérieur à zéro demande attention.</value></data>
+  <data name="Help.RECALLDASHBOARD.Step3Title" xml:space="preserve"><value>Suivez l’historique des exercices</value></data>
+  <data name="Help.RECALLDASHBOARD.Step3" xml:space="preserve"><value>Le graphique montre les 12 derniers exercices terminés par rapport à la ligne d’objectif ; le bandeau du haut avertit lorsque le dernier exercice est trop ancien.</value></data>
+  <data name="Help.RECALLTRACE.Purpose" xml:space="preserve"><value>Trace un lot dans toute sa généalogie, en amont jusqu’à ses intrants et en aval jusqu’au stock, aux expéditions et aux clients, et montre les écarts où le lot ne prouve pas la destination des marchandises.</value></data>
+  <data name="Help.RECALLTRACE.Audience" xml:space="preserve"><value>Qualité (responsable des rappels) et administrateur du système qualité.</value></data>
+  <data name="Help.RECALLTRACE.Step1Title" xml:space="preserve"><value>Choisissez le lot</value></data>
+  <data name="Help.RECALLTRACE.Step1" xml:space="preserve"><value>Recherchez le numéro de lot et choisissez le sens : en amont, en aval ou les deux.</value></data>
+  <data name="Help.RECALLTRACE.Step2Title" xml:space="preserve"><value>Lisez l’arbre ou le tableau</value></data>
+  <data name="Help.RECALLTRACE.Step2" xml:space="preserve"><value>Les deux vues montrent les mêmes nœuds. Les lignes rouges sont des écarts ; l’activité d’une autre société n’apparaît que comme un nombre.</value></data>
+  <data name="Help.RECALLTRACE.Step3Title" xml:space="preserve"><value>Exportez ou ouvrez un dossier</value></data>
+  <data name="Help.RECALLTRACE.Step3" xml:space="preserve"><value>« Télécharger le CSV » donne les mêmes lignes ; « Ouvrir un dossier de rappel avec ce périmètre » ouvre un dossier brouillon à partir de cette traçabilité.</value></data>
+  <data name="Help.RECALLTRACE.Immediate" xml:space="preserve"><value>L’ouverture d’un dossier crée immédiatement un brouillon ; rien n’est bloqué avant l’approbation du périmètre.</value></data>
+  <data name="Help.RECALLCASES.Purpose" xml:space="preserve"><value>Liste ensemble les dossiers de rappel réels et les exercices de la société, du plus récent au plus ancien, avec leur statut et leur avancement.</value></data>
+  <data name="Help.RECALLCASES.Audience" xml:space="preserve"><value>Tous ceux qui suivent les rappels : qualité, entrepôt, commercial et direction.</value></data>
+  <data name="Help.RECALLCASES.Step1Title" xml:space="preserve"><value>Filtrez la liste</value></data>
+  <data name="Help.RECALLCASES.Step1" xml:space="preserve"><value>Utilisez le type, le statut, la classe, le produit et la date d’ouverture. Un filtre de classe n’affiche que les dossiers réels.</value></data>
+  <data name="Help.RECALLCASES.Step2Title" xml:space="preserve"><value>Distinguez les exercices</value></data>
+  <data name="Help.RECALLCASES.Step2" xml:space="preserve"><value>Une ligne d’exercice indique « Exercice », montre son résultat et sa durée, et n’a ni classe ni niveau.</value></data>
+</root>

@@ -1411,6 +1411,28 @@ Dal `feature/sce/mod-0177-r5` (taban `394c05550`). Kanıt `docs/records/audits/2
 **R5 CT-ACCEPTED (2026-10-14).** First result sound (1199 + 4; CT sabotage: cancelling a closed run → `A_cancelled_run_is_kept_and_a_closed_run_never_changes` red) but on the BL-501 tip 3 central-audit tests were red → follow-up: MVP-1 tip merged, 7 drill commands marked, drill repository transaction enlisted, write-count test exempts only `central_audit_outbox` by name; O-R5-2 CT decision: drill-run subject readable with `recall.drills.read` (additive `x-permission-by-subject-type`). CT run on the branch tip (contains `a27519491`): Inventory **1217 + 4**, architecture 71/79 same 8, Inventory new-unaudited **0**. **CT sabotage (reverse leak):** `recall.drills.read` accepted for a CASE subject too → `A_signer_with_only_recall_drills_read_reads_a_drill_run_subject_but_not_a_case_subject` red; restored. O-R5-3 (panel, Vakalar "Tatbikat" row, screens) → R6 / R7; O-R5-5 → FU. Merged `--no-ff` into MVP-1; live after the owner Inventory restart (approval).
 
 
+### 19.17 WP-0177-R6 — agent result, pending CT (2026-10-15)
+
+Dal `feature/sce/mod-0177-r6` (taban `9c41cc92c`). Kanıt `docs/records/audits/2026-10/mod-0177-r6-evidence-2026-10-15.md`. Commit'ler:
+`2c8089fc8` RECALL **1.5.0** (yalnız ekleme), `f5a1b75aa` + `a160433b5` Inventory, `bebec8cc3` Web, `7cfc7e703` test, `87fed11d8` Web düzeltme,
+(kanıt commit'i) kanıt + bu not + §21.3 D-25.
+
+- **Teslim (UI 1):** `/Recall` Hazırlık Paneli (§8.9 KPI'ları servis hesaplar: açık vaka sınıf kırılımı, son tatbikat vs hedef, son 12
+  tatbikat grafiği + hedef çizgisi, lot kapsamı / lotsuz çıkış 90 gün, geri dönen SKU + birim başına, sıklık bandı `>`), `/Recall/Trace` İzleme
+  (ağaç / tablo aynı veri, CSV baytları değişmeden, Vaka aç = gerçek Taslak, CT-R8 başka şirket yalnız sayı), `/Recall/Cases` Vakalar.
+- **CT kararı A:** `DrillCaseRow` + isteğe bağlı `CasePage.drillRows` / `drillStatusCounts`, `drillStatus` parametresi, ortak `sortAt` +
+  `position`; `CaseRef` zorunluları değişmedi; `class` süzgeci tatbikatı dışarıda bırakır; ekranda tatbikat satırı sınıf / seviye "—",
+  "Tatbikat" çipi, R7'ye kadar tıklanmaz. Mockup farkı **D-25** §21.3'e eklendi.
+- **Web:** 7 kapı, her biri kendi anahtarı (anahtarsız 403 + gateway'e istek yok), catch-all yok; UAS-001 üç sayfa; 7 dil; UXH-001 metinleri
+  resx'te, panel bağlaması FU-0177-HELP-PANEL; `PagelessUntil` girdisi silindi; ApexCharts (repo'daki kütüphane).
+- **Sabotaj:** a–f + g (CT) 7/7 kırmızı → yeşil, özgün baytlar, SHA eşit. d ilk koşuda yeşil kaldı (motor bakiyeleri yer başına
+  topluyor) → test miktar toplamıyla sıkılaştırıldı, yeniden kırmızı → yeşil (kanıt §6).
+- **Sayılar:** Inventory 1217 + 4 → **1238 + 4**; Web 2280 → **2320**; mimari 71/79 aynı 8; AuditTrail listesi birebir aynı (yeni yazma
+  komutu yok, denetimsiz 0); gateway 164/165 aynı; derleme 0 hata, uyarı aynı (Recall kaynaklı 0).
+- **Önizleme:** kendi portlar 5168 / 5105 / 5104 (+ anahtarsız 5106); gerçek API'ye karşı üç sayfa, anahtarsız kullanıcı iskelet görmez
+  ve gateway'e istek gitmez; ekran görüntüleri alındı; dar ekranda İzleme formu taşması bulundu ve düzeltildi.
+- Açık: O-R6-1 (yardım paneli bağlama), O-R6-2 (R7 ekranları, Panel "Tatbikat planla", satır tıklama, 375 px), O-R6-3 (önizleme ortamı notu).
+
 ## 20. Follow-up Items
 
 | ID | Item | Owner |
@@ -1426,6 +1448,7 @@ Dal `feature/sce/mod-0177-r5` (taban `394c05550`). Kanıt `docs/records/audits/2
 | FU-0177-REG-01 | Registry row `MOD-0177` → `in-progress` when R1 starts (proposal; not changed here) | CT |
 | FU-0177-RPT-01 | Report `:232` "RECALL-BUNDLE ✓" corrected to "proposal (drafts)" until R1 freezes | CT / docs |
 | FU-SYNC1-AUDIT | 0177 write commands join the Inventory audit-ledger debt (0176 O-F1-1) | CT |
+| FU-0177-HELP-PANEL | Bind the Recall pages' UXH-001 help texts (`Help.RECALL*`, delivered in 7 languages by R6) to the page help panel once the rule / component is on the base branch | MOD-0177 / UI |
 
 ## 21. UI input — approved mockup ("Geri Çağırma Recall (offline).html", 2026-10-12)
 
@@ -1477,3 +1500,4 @@ instruction. Seed data (`USERS` `L:9-15`, `RM` `L:16`, `FG` `L:17-31`, `CONSUMED
 | D-22 | "Vaka aç" from İzleme only toasts a draft (`L:236`) | real Draft case with trace | — |
 | D-23 | Ad-hoc trace quick lots (`L:226`) | recent lots of the user (no fixed list) | seed |
 | D-24 | Scope tab traces forward only (`L:258`) | case direction parameter (default Both for scope: backward shows inputs, forward drives blocks / requests) | KR-D |
+| D-25 | Vakalar'daki tatbikat satırı sınıf / seviye taşır (mockup `cls:1`, `lvl`) | tatbikat satırı (`DrillCaseRow`, RECALL 1.5.0) sınıf / seviye taşımaz — ekranda "—"; sınıf süzgeci tatbikatları dışarıda bırakır | tatbikat koşusunun sınıfı / seviyesi yok (CT kararı A, WP-0177-R6) |

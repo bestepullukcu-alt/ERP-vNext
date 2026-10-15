@@ -51,7 +51,7 @@ public sealed class RecallContract140Tests
     public void The_1_4_0_change_is_additive_only()
     {
         var before = Load(RecallContract130Tests.FixtureV130Path);
-        var after = Load(ContractSchemas.RecallContractPath);
+        var after = Load(RecallContract150Tests.FixtureV140Path); // WP-0177-R6: 1.4.0 is pinned (the live file moved to 1.5.0)
         Assert.Equal(("1.3.0", "1.4.0"), (before["info"]!["version"]!.GetValue<string>(), after["info"]!["version"]!.GetValue<string>()));
 
         Assert.Equal(R5, Strings(after["info"]!["x-implemented-by-slice"]!["R5"]));

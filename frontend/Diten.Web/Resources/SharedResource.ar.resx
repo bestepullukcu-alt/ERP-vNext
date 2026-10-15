@@ -1097,4 +1097,7 @@
   <data name="Nav.Page.EXPIRYEXCEPTIONDETAILS" xml:space="preserve"><value>تفاصيل الاستثناء</value></data>
   <data name="Nav.Page.EXPIRYPOLICY" xml:space="preserve"><value>قواعد مدة الصلاحية والإعدادات</value></data>
   <data name="Nav.Page.EXPIRYEVIDENCE" xml:space="preserve"><value>حزمة الأدلة</value></data>
+  <data name="Nav.Page.RECALLDASHBOARD" xml:space="preserve"><value>جاهزية الاستدعاء</value></data>
+  <data name="Nav.Page.RECALLTRACE" xml:space="preserve"><value>تتبّع الاستدعاء</value></data>
+  <data name="Nav.Page.RECALLCASES" xml:space="preserve"><value>حالات الاستدعاء</value></data>
 </root>
