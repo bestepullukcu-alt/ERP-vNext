@@ -937,3 +937,50 @@ Test dalına alındı: `659540cef` (ajan `44f8036f4`) + ortak fabrika düzeltmes
 - Süzgeç rozetinde dönem "" iken alan adı görünüyor; seçili dönem özet kartında yazıyor.
 
 **Sıradaki:** E4 ikinci tur. Kapsam: QR okutma simülasyonu (kullanıcı izni var), şehir süzgeci (CITY), koyu tema, iki sayfanın standart tabloları, Arapça ve telefon.
+
+
+## E4 ikinci tur — yerel, kullanıcı sekmesi (2026-10-15, CT)
+Test dalı `a078eecb2`. Fleet yeniden başlatıldı, kullanıcı oturumu açık.
+
+**Geçenler:**
+- **Kanıt işaretleri:**
+  - v2 tablo ×2; temsilci satırı → liste + özet `resourceId` ile süzülüyor, Ziyaretler sekmesine geçiliyor.
+  - 93 gün: istek gitmiyor, uyarı çıkıyor, alanlar kırmızı. 92 gün gidiyor ve kart dönemi güncelleniyor (ortak fabrika düzeltmesi canlıda).
+  - Hızlı görünüm, koyu tema, Arapça (RTL) doğru. Telefonda (375 px) yatay kaydırma yok.
+- **Kurum QR kodları:** `city=konya` → 1 189 kurum, hepsi Konya (K-CITY canlıda kapandı).
+- **QR okutma simülasyonu** (kullanıcı izniyle; ayar: QR modu off → required → off; 75.YIL ve 100.YIL ECZANESİ kodları için birer "yazdırıldı" olayı; sahte kamera = tuval akışı, sahte konum = kuruma 40 m, ikisi de yalnız sekme belleğinde):
+  - Sunucu ön kontrolü:
+    - kod yok → `missing` (başlatma reddedilir);
+    - kodu basılmamış kurum → `not_issued` + `qr_not_issued` işareti;
+    - bozuk içerik → `invalid`;
+    - sahte imza → `invalid`;
+    - imzanın son harfi değişmiş → `invalid`;
+    - başka kurumun kodu → `wrong_account` + kurum adı;
+    - doğru kod → `ok` (`self`).
+  - Arayüz: başka kurumun kodu → uyarı "Bu kod başka bir kuruma ait (100.YIL ECZANESİ)", başlatma kapalı, "Eksik: konum, QR kodu". Doğru kod → yeşil kutu, "Okundu 17:37". Konumla birlikte "Sunumu başlat" açılıyor.
+  - Ziyaret başlatıldı (SEZEN GENÇ · 75.YIL, yürütme `fa7d21e3`): işaret yok, QR `ok` sürüm 1, konum 40 m / ±20 m. Kanıt işaretleri hızlı görünümünde aynen görünüyor; kart 7 ziyaret sayıyor. Ziyaret açık bırakıldı (bitirme kullanıcıda).
+
+**Bulgular:**
+| # | Bulgu | Önem | Nereye |
+|---|---|---|---|
+| E2-1 | Kanıt işaretleri: sayfanın asıl içeriği "İşaretler" sütunu 800 px panelde ve telefonda "+" altına gizleniyor; "Tür" görünüyor. Telefonda kurum ve temsilci de gizli. | Orta | W3E-E4R2-FIX |
+| E2-2 | Özel aralık tarih alanları çok dar: placeholder "Başlı", seçilen tarih yalnız "2026" görünüyor (gün okunamıyor). | Orta | W3E-E4R2-FIX |
+| E2-3 | Süzgeç rozeti özel aralığı 3 süzgeç sayıyor (dönem + temsilci = "4"). | Düşük | Takip FU-DT-BADGE-RANGE (ortak) |
+| E2-4 | Bilgi satırı Türkçede "43,374" (DataTables `thousands` ayarı yok; bütün listeler). | Düşük | Takip FU-DT-THOUSANDS (ortak) |
+
+## §36.1 Agent Prompt — W3E-E4R2-FIX (paste-ready · yalnız Web)
+```text
+@[.antigravity/agents/frontend-ui-ux.md]
+WP: WP-VW-W3E · W3E-E4R2-FIX — E4 ikinci tur: Kanıt işaretleri listesinde sütun önceliği (İşaretler gizlenmesin) + özel tarih aralığı alanları okunur genişlikte ve kullanıcının dilinde; sayfa uygulanan süzgeci fabrikanın artık canlı olan tutamacından okusun
+Repository: C:\tmp\vw-w3e-e4r2-fix (worktree, test/crm-content-visit-e2e güncel başı — FLAGS-STD 659540cef + fabrika düzeltmesi 2de604edc içerir) · Branch: wp/vw-w3e-e4r2-fix · commit bu dala, push YOK
+
+Paket belgesi: execution/domains/commercial-suite/work-packs/WP-VW-W3E-qr-antifraud.md — önce oku: "E4 ikinci tur" (E2-1, E2-2), §37 W3E-FLAGS-STD, K-STD, K-THEME. Standartlar: .antigravity/rules/frontend-datatable-template.md, frontend-form-template.md (.diten-field + ikon), frontend-js-standard.md; canlı örnek Views/DevEnablement/GoldenReferenceCompact/*.
+MEVCUT: wwwroot/assets/js/CRM/VisitEvidenceFlags/index.js 378-420 (columnDefs: 0 control responsivePriority 2, eylemler 'cell-fit all'; diğer sütunlarda öncelik yok) · Views/CRM/VisitEvidenceFlags/_Filter.cshtml 31-33 (vf-from / vf-to: .diten-field + bx-calendar, flatpickr-date, form-control-sm) · visit-evidence-flags.css · Kurum QR kodları sayfası (Views/CRM/VisitQrCodes/_Filter.cshtml + index.js) aynı tarih alanı desenini kullanıyor (W3E-FIX U-2) — aynı sorun varsa ikisi birlikte.
+NE:
+(1) E2-1 — Ziyaretler tablosu sütun önceliği (DataTables Responsive responsivePriority, standart düzende): Başlangıç ve eylemler her zaman; sonra İşaretler, Kurum / doktor, Temsilci; en son Tür, Süre, İstisna. 800 px'de İşaretler görünür kalır; telefonda (375 px) en az Başlangıç + İşaretler + eylemler görünür, işaret çipleri hücrede alt satıra kayar (taşma / yatay kaydırma yok). Temsilci özeti tablosunda da aynı mantık: Temsilci + Oran + En sık işaret önce. Kurum QR kodları listesinde QR durumu sütunu Tür'den önce gelir (aynı ilke: sayfanın asıl bilgisi).
+(2) E2-2 — Özel aralık alanları: placeholder ("Başlangıç" / "Bitiş") ve seçilen tarih tam okunur; gösterim kullanıcının dilinde (flatpickr altInput + altFormat kültürden: tr 15.10.2026, en 15/10/2026 ya da Oct 15, 2026 — Web'in mevcut tarih biçimi yardımcısını kullan; kendi biçimini YAZMA), gönderilen değer yine yyyy-MM-dd (vekil sözleşmesi değişmez; ICON_MAP kimlikleri vf-from / vf-to korunur, ikon takvimi açar). Genişlik sayfa CSS'inde (min-width / flex-basis), ortak backbone-custom.css'e DOKUNMA (XMC-001); 375 px'de iki alan alt alta düşebilir. 92 gün uyarısında kırmızı çerçeve korunur. Kurum QR kodları sayfasında aynı alanlar varsa aynı düzeltme.
+(3) FU-VF-APPLIED-CLEANUP — 2de604edc ile fabrika tutamacının appliedFilters'ı artık canlı: sayfa uygulanmış süzgeci list.appliedFilters'tan okusun, dt.ajax.params() geçici çözümü ve açıklaması kalksın. Davranış aynı kalır (S6 senaryosu: temsilci satırı → liste + özet aynı süzgeç; 92 gün → kart dönemi güncellenir).
+KORU/YAPMA: K-STD (v2, _ListShell, createList, Save View, HasSelection=false), K-THEME (yalnız --bs-primary; tema guard yeşil), W3E-FIX G-6 / G-7 / G-8 / CT-3, W3E-DARK koyu blokları, 92 gün koruması (vekil + sayfa); vekil sözleşmesi ve CRM koduna DOKUNMA; ortak diten-datatable.js'e DOKUNMA (E2-3 / E2-4 ayrı takip: FU-DT-BADGE-RANGE, FU-DT-THOUSANDS — bu pakette YAPMA); kalıcı veri yazma YOK; kullanıcının oturum açık sekmesine harness enjekte etme (görsel kanıt AYRI sekmede).
+DOĞRULA: Web.Tests (xUnit + RunNode; vitest bu makinede çalışmaz): sütun öncelikleri (Başlangıç / eylemler 'all' ya da öncelik 1, İşaretler Tür'den önce — üretim index.js'ten okunur), Temsilci özeti ve QR listesi öncelikleri, tarih alanı altInput / altFormat kültürden ve gönderilen değer yyyy-MM-dd (tr + ar), sayfa appliedFilters'ı tutamaçtan okur (düzenekteki sahte tutamaç gerçek fabrika gibi Object.defineProperty getter'ı taşır), S6 yeşil kalır, verify_datatable_page.py iki sayfa için yeşil + 3 sabotaj (.bak + touch): (1) İşaretler sütununun önceliği Tür'ün arkasına düşsün → kırmızı; (2) altFormat sabit 'Y-m-d' olsun → kırmızı; (3) sayfa yine dt.ajax.params() okusun ve tutamaç okuması kalksın → kırmızı. Web tam takım (-o repo içi), taban karşılaştırması. Görsel kanıt (AYRI sekme): 800 px ve 375 px liste (İşaretler görünür), özel aralık seçili (tam tarih okunur, tr + ar), açık + koyu.
+Commit: "fix(web): WP-VW-W3E-E4R2-FIX — evidence flags and QR lists keep the flags / QR status columns visible on narrow screens, custom date range fields readable in the reader's culture, page reads the live applied filters from the list handle" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
+```
