@@ -60,27 +60,59 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
 
         // Intentionally NOT tenant-scoped: the anonymous set-password caller has no tenant context.
         // The token hash is a cryptographically-random unique value, so it maps to one user + tenant.
-        var filter = Builders<User>.Filter.And(
-            Builders<User>.Filter.Eq(u => u.PasswordResetTokenHash, tokenHash),
-            Builders<User>.Filter.Eq(u => u.IsDeleted, false));
+        var filter = PasswordResetTokenLookup(tokenHash);
 
         return await Collection.Find(filter).FirstOrDefaultAsync(ct);
     }
 
-    public async Task<IEnumerable<User>> GetAllByTenantAsync(Guid tenantId, int page, int pageSize, CancellationToken ct)
+    // WP-USERS-ROLES-CLOSE-FIX1 FIX3 item 7 — the link lookup states the partial index's own filter ($type: string), so the
+    // planner can always use ix_users_password_reset_token_hash_v2 (it serves only a query that implies its filter).
+    public static FilterDefinition<User> PasswordResetTokenLookup(string tokenHash) => Builders<User>.Filter.And(
+        Builders<User>.Filter.Type(u => u.PasswordResetTokenHash, MongoDB.Bson.BsonType.String),
+        Builders<User>.Filter.Eq(u => u.PasswordResetTokenHash, tokenHash),
+        Builders<User>.Filter.Eq(u => u.IsDeleted, false));
+
+    public Task<IEnumerable<User>> GetAllByTenantAsync(Guid tenantId, int page, int pageSize, CancellationToken ct)
+        => GetAllByTenantAsync(tenantId, page, pageSize, excludePlatformAccounts: false, ct);
+
+    // BL-521 FIX7 item 2 - the platform-account exclusion is part of the QUERY, so Skip/Limit count only the rows the caller
+    // may see (dropping them in memory afterwards returned too few rows).
+    public async Task<IEnumerable<User>> GetAllByTenantAsync(Guid tenantId, int page, int pageSize, bool excludePlatformAccounts, CancellationToken ct)
     {
+        var filters = new List<FilterDefinition<User>>
+        {
+            Builders<User>.Filter.Eq(u => u.TenantId, tenantId),
+            Builders<User>.Filter.Eq(u => u.IsDeleted, false)
+        };
+
+        if (excludePlatformAccounts)
+        {
+            filters.Add(NotAPlatformAccount);
+        }
+
         return await Collection
-            .Find(u => u.TenantId == tenantId && u.IsDeleted == false)
+            .Find(Builders<User>.Filter.And(filters))
+            // ATT-FIX1 — Skip/Limit needs an order to be a paging: without one, a sweep past 500 users can repeat a
+            // user and miss another (natural order is not guaranteed across reads).
+            .SortBy(u => u.Id)
             .Skip((page - 1) * pageSize)
             .Limit(pageSize)
             .ToListAsync(ct);
     }
 
+    // BL-521 FIX8 item 3 - what a tenant actor is allowed to see is decided by ONE filter (PlatformAccountFilter), equal to
+    // User.IsPlatformAccount: an account whose actor type is missing, null, empty or whitespace is not a platform account.
+    private static readonly FilterDefinition<User> NotAPlatformAccount = PlatformAccountFilter.IsNotPlatformAccount;
+
     // WP-INFRA-AUTH-ACCOUNT-KIND-01 — see IUserRepository. The filter IS the contract: TenantId + IsDeleted=false +
     // IsActive=true, then each whitespace-separated token of the term must match the FIRST or the LAST name
     // (case-insensitive, regex-escaped substring), so "jane sm" finds Jane Smith. Email is deliberately not a
     // match field. Ordered by last name, first name; capped at `limit`.
-    public async Task<IReadOnlyList<User>> SearchActiveAsync(Guid tenantId, string? term, int limit, CancellationToken ct)
+    public Task<IReadOnlyList<User>> SearchActiveAsync(Guid tenantId, string? term, int limit, CancellationToken ct)
+        => SearchActiveAsync(tenantId, term, limit, excludePlatformAccounts: false, ct);
+
+    // BL-521 FIX7 item 2 - the exclusion is in the query: Limit(n) is n rows the caller may see, not n rows of which some are dropped.
+    public async Task<IReadOnlyList<User>> SearchActiveAsync(Guid tenantId, string? term, int limit, bool excludePlatformAccounts, CancellationToken ct)
     {
         var filters = new List<FilterDefinition<User>>
         {
@@ -88,6 +120,11 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
             Builders<User>.Filter.Eq(u => u.IsDeleted, false),
             Builders<User>.Filter.Eq(u => u.IsActive, true)
         };
+
+        if (excludePlatformAccounts)
+        {
+            filters.Add(NotAPlatformAccount);
+        }
 
         foreach (var token in (term ?? string.Empty).Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
         {
@@ -135,33 +172,206 @@ public sealed class UserRepository : RepositoryBase<User>, IUserRepository
            && (ex.WriteError.Message ?? string.Empty).Contains(
                Configurations.MongoDbIndexConfigurations.UserEmailIndexName, StringComparison.Ordinal);
 
-    public async Task<User> UpdateAsync(User user, CancellationToken ct)
-    {
-        return await ReplaceOneAsync(user, ct);
-    }
+    public Task RecordLoginOutcomeAsync(User user, Guid tenantId, CancellationToken ct)
+        => RecordLoginOutcomeAsync(user, tenantId, excludePlatformAccounts: false, ct);
 
-    public async Task<User> UpdateForTenantAsync(User user, Guid tenantId, CancellationToken ct)
+    // Merge WP-CT-LANE-BL521-MERGE-01 FIX1 (small 2) — the by-id writes take the platform-account exclusion IN the Mongo filter
+    // (as the list and search do): the decorator's hidden caller writes nothing to a STORED platform account.
+    private static FilterDefinition<User> LiveAccount(Guid userId, Guid tenantId, bool excludePlatformAccounts)
     {
         var filter = Builders<User>.Filter.And(
-            Builders<User>.Filter.Eq(u => u.Id, user.Id),
+            Builders<User>.Filter.Eq(u => u.Id, userId),
             Builders<User>.Filter.Eq(u => u.TenantId, tenantId),
             Builders<User>.Filter.Eq(u => u.IsDeleted, false));
-
-        await Collection.ReplaceOneAsync(filter, user, cancellationToken: ct);
-        return user;
+        return excludePlatformAccounts ? filter & NotAPlatformAccount : filter;
     }
 
-    public async Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct)
+    public async Task RecordLoginOutcomeAsync(User user, Guid tenantId, bool excludePlatformAccounts, CancellationToken ct)
     {
-        var filter = Builders<User>.Filter.And(
-            Builders<User>.Filter.Eq(u => u.Id, id),
-            Builders<User>.Filter.Eq(u => u.TenantId, tenantId),
-            Builders<User>.Filter.Eq(u => u.IsDeleted, false)
-        );
-        var update = Builders<User>.Update
-            .Set(u => u.IsDeleted, true)
-            .Set(u => u.UpdatedAt, DateTimeOffset.UtcNow);
+        // FIX5 addendum item 3 — the success write carries ONLY the sign-in time. The count and the lock are reset by the
+        // claim's conditional write alone; writing the loaded copy's 0 / null here would erase a lock a flood set between the
+        // claim and this write.
+        var filter = LiveAccount(user.Id, tenantId, excludePlatformAccounts);
+        var update = Builders<User>.Update.Set(u => u.LastLoginAt, user.LastLoginAt);
 
         await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
+    }
+
+    public Task<bool> TryClaimSignInAsync(Guid userId, Guid tenantId, CancellationToken ct)
+        => TryClaimSignInAsync(userId, tenantId, excludePlatformAccounts: false, ct);
+
+    public async Task<bool> TryClaimSignInAsync(Guid userId, Guid tenantId, bool excludePlatformAccounts, CancellationToken ct)
+    {
+        // FIX5 — "not locked" is the whole condition. The lock is set by the very write that reaches the threshold (with the
+        // count reset), so a flood that reached it has locked the account before this claim can land; a count at or past the
+        // threshold with no running lock is a row written before FIX5 — its lock ended, its right password may sign in (and
+        // this write normalizes it to 0). FIX4's "count below the threshold" condition shut such an account for good.
+        var claimable = LiveAccount(userId, tenantId, excludePlatformAccounts) & NotLockedAt(DateTime.UtcNow);
+        var claimed = await Collection.UpdateOneAsync(claimable,
+            Builders<User>.Update.Set(u => u.FailedLoginAttempts, 0).Set(u => u.LockoutEnd, null), cancellationToken: ct);
+        return claimed.MatchedCount == 1;
+    }
+
+    public object CaptureState(User user) => user.ToBsonDocument();
+
+
+    public async Task<bool> TryWriteChangesAsync(User user, object capturedState, Guid tenantId, UserWriteCondition condition, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(user);
+        if (capturedState is not BsonDocument before)
+        {
+            throw new ArgumentException("The captured state does not come from this repository.", nameof(capturedState));
+        }
+
+        var filters = new List<FilterDefinition<User>>
+        {
+            Builders<User>.Filter.Eq(u => u.Id, user.Id),
+            Builders<User>.Filter.Eq(u => u.TenantId, tenantId),
+            Builders<User>.Filter.Eq(u => u.IsDeleted, false)
+        };
+        if (condition.PasswordHash is { } hash) filters.Add(Builders<User>.Filter.Eq(u => u.PasswordHash, hash));
+        if (condition.IsActive is { } active) filters.Add(Builders<User>.Filter.Eq(u => u.IsActive, active));
+        // BL-529 FIX7 — a field BL-529 ADDED is missing from every account written before it, and Eq(false) does not match a
+        // missing field: every such account (admin@diten.com included) failed this condition for good. "Not marked" is
+        // therefore "not true" — Ne(true) matches false, a missing field and null alike, which is exactly what the
+        // serializer reads them as (the property's default, false). One predicate, no Or/Exists pair, no backfill.
+        if (condition.DeactivatedByAdministrator is { } marked)
+        {
+            filters.Add(marked
+                ? Builders<User>.Filter.Eq(u => u.DeactivatedByAdministrator, true)
+                : Builders<User>.Filter.Ne(u => u.DeactivatedByAdministrator, true));
+        }
+        if (condition.PasswordResetTokenHash is { } link) filters.Add(Builders<User>.Filter.Eq(u => u.PasswordResetTokenHash, link));
+        if (condition.ExcludePlatformAccounts) filters.Add(NotAPlatformAccount);
+        var filter = Builders<User>.Filter.And(filters);
+
+        // Only the elements whose value differs from the state read — never the whole document.
+        var after = user.ToBsonDocument();
+        var changed = new BsonDocument(after.Elements
+            .Where(element => element.Name != "_id" && (!before.TryGetValue(element.Name, out var old) || !old.Equals(element.Value))));
+        if (changed.ElementCount == 0)
+        {
+            return await Collection.Find(filter).AnyAsync(ct);
+        }
+
+        // A raw $set of the serialized values: the field serializers already ran in ToBsonDocument (a null stays a BSON null).
+        UpdateDefinition<User> update = new BsonDocument("$set", changed);
+        var result = await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
+        return result.MatchedCount == 1;
+    }
+
+    public Task<bool> SetPasswordResetTokenAsync(Guid userId, Guid tenantId, string tokenHash, DateTime expiresAtUtc, CancellationToken ct)
+        => SetPasswordResetTokenAsync(userId, tenantId, tokenHash, expiresAtUtc, excludePlatformAccounts: false, ct);
+
+    public async Task<bool> SetPasswordResetTokenAsync(Guid userId, Guid tenantId, string tokenHash, DateTime expiresAtUtc, bool excludePlatformAccounts, CancellationToken ct)
+    {
+        var filter = LiveAccount(userId, tenantId, excludePlatformAccounts);
+        var update = Builders<User>.Update
+            .Set(u => u.PasswordResetTokenHash, tokenHash)
+            .Set(u => u.PasswordResetTokenExpiresAt, expiresAtUtc)
+            .Set(u => u.PasswordResetRequestedAt, DateTime.UtcNow)
+            .Set(u => u.UpdatedAt, (DateTimeOffset?)DateTimeOffset.UtcNow);
+
+        var result = await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
+        return result.MatchedCount == 1;
+    }
+
+    public Task<LoginFailureOutcome> RecordLoginFailureAsync(
+        Guid userId, Guid tenantId, int maxFailedAttempts, int lockoutDurationMinutes, CancellationToken ct)
+        => RecordLoginFailureAsync(userId, tenantId, maxFailedAttempts, lockoutDurationMinutes, excludePlatformAccounts: false, ct);
+
+    /// <summary>
+    /// WP-USERS-ROLES-CLOSE-FIX1 FIX5 — THE LOCKOUT MODEL (ASP.NET Core Identity's): ONE atomic write. While the account is
+    /// locked an attempt is NOT counted (the caller audits it): it neither extends the lock nor is carried past it. Otherwise
+    /// the count goes up by one, and the write that reaches <paramref name="maxFailedAttempts"/> sets the lock AND resets the
+    /// count to 0 in the same operation. Before (FIX2–FIX4) the count was never reset at the lock and the claim refused a count
+    /// at the threshold: once locked, an account stayed shut after its lock ended — the right password was refused, counted,
+    /// and locked it again (CT, FIX5 blocker). One write also leaves no gap between the count and the lock (FIX1's seam is gone).
+    /// </summary>
+    public async Task<LoginFailureOutcome> RecordLoginFailureAsync(
+        Guid userId, Guid tenantId, int maxFailedAttempts, int lockoutDurationMinutes, bool excludePlatformAccounts, CancellationToken ct)
+    {
+        var now = DateTime.UtcNow;
+        var lockoutEnd = now.AddMinutes(lockoutDurationMinutes);
+        var counting = LiveAccount(userId, tenantId, excludePlatformAccounts) & NotLockedAt(now);
+
+        // FIX6 S1 — a row WITHOUT the field (written before it existed) counts from 0, as `$inc` did: `$add` on a missing
+        // field is null, so it would never reach the threshold (no lock, ever) and `$set` would write null into an int —
+        // every later read of the account would fail.
+        var stored = new BsonDocument("$ifNull", new BsonArray { "$" + nameof(User.FailedLoginAttempts), 0 });
+        var next = new BsonDocument("$add", new BsonArray { stored, 1 });
+        var reaches = new BsonDocument("$gte", new BsonArray { next, maxFailedAttempts });
+        var count = PipelineDefinition<User, User>.Create(new[]
+        {
+            new BsonDocument("$set", new BsonDocument
+            {
+                { nameof(User.FailedLoginAttempts), new BsonDocument("$cond", new BsonArray { reaches, 0, next }) },
+                { nameof(User.LockoutEnd), new BsonDocument("$cond", new BsonArray { reaches, new BsonDateTime(lockoutEnd), "$" + nameof(User.LockoutEnd) }) }
+            })
+        });
+
+        var counted = await Collection.FindOneAndUpdateAsync(counting, Builders<User>.Update.Pipeline(count),
+            new FindOneAndUpdateOptions<User> { ReturnDocument = ReturnDocument.After }, ct);
+        if (counted is null)
+        {
+            return new LoginFailureOutcome(0, null); // locked (not counted), or no such account for this caller
+        }
+
+        // The filter required "not locked": a lock in the written row is the one THIS write set.
+        var started = counted.LockoutEnd is { } end && end > now;
+        return new LoginFailureOutcome(counted.FailedLoginAttempts, counted.LockoutEnd, LockoutStarted: started);
+    }
+
+    private static FilterDefinition<User> NotLockedAt(DateTime now) =>
+        Builders<User>.Filter.Eq(u => u.LockoutEnd, null) | Builders<User>.Filter.Lte(u => u.LockoutEnd, now);
+
+    public Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct)
+        => SoftDeleteAsync(id, tenantId, excludePlatformAccounts: false, ct);
+
+    // WP-USERS-ROLES-CLOSE-FIX1 item 6 — the delete takes the platform-account exclusion IN the filter too (the decorator's
+    // hidden caller): an account Platform made a platform account after the load is not deleted.
+    public async Task SoftDeleteAsync(Guid id, Guid tenantId, bool excludePlatformAccounts, CancellationToken ct)
+    {
+        var filter = LiveAccount(id, tenantId, excludePlatformAccounts);
+        var update = Builders<User>.Update
+            .Set(u => u.IsDeleted, true)
+            .Set(u => u.UpdatedAt, (DateTimeOffset?)DateTimeOffset.UtcNow);
+
+        await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
+    }
+
+    // BL-521 FIX7 item 1 - a targeted $set, never a replace (see IUserRepository).
+    public async Task<bool> SetPlatformActorTypeAsync(Guid userId, Guid tenantId, string actorType, CancellationToken ct)
+    {
+        var filter = Builders<User>.Filter.And(
+            Builders<User>.Filter.Eq(u => u.Id, userId),
+            Builders<User>.Filter.Eq(u => u.TenantId, tenantId),
+            Builders<User>.Filter.Eq(u => u.IsDeleted, false));
+        var update = Builders<User>.Update
+            .Set(u => u.PlatformActorType, actorType.Trim())
+            .Set(u => u.UpdatedAt, DateTimeOffset.UtcNow);
+
+        var result = await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
+        return result.MatchedCount > 0; // a $set of the value the document already holds still MATCHES; only a missing account does not
+    }
+
+    // BL-521 FIX7 item 3 - this repository applies no caller scope (see IUserRepository); the decorator does.
+    public Task<IReadOnlyCollection<Guid>> VisibleUserIdsAsync(Guid tenantId, IReadOnlyCollection<Guid> userIds, CancellationToken ct)
+        => Task.FromResult(userIds);
+
+    /// <summary>The ids among <paramref name="userIds"/> (of this tenant) that belong to a platform account.</summary>
+    public async Task<IReadOnlyCollection<Guid>> PlatformAccountIdsAmongAsync(Guid tenantId, IReadOnlyCollection<Guid> userIds, CancellationToken ct)
+    {
+        if (userIds.Count == 0)
+        {
+            return [];
+        }
+
+        var filter = Builders<User>.Filter.And(
+            Builders<User>.Filter.Eq(u => u.TenantId, tenantId),
+            Builders<User>.Filter.In(u => u.Id, userIds),
+            PlatformAccountFilter.IsPlatformAccount);
+
+        return await Collection.Find(filter).Project(u => u.Id).ToListAsync(ct);
     }
 }

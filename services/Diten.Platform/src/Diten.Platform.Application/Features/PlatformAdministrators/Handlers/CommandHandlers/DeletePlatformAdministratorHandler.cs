@@ -37,9 +37,17 @@ public sealed class DeletePlatformAdministratorHandler : IRequestHandler<DeleteP
             return Response<NoContent>.Fail("Platform administrator not found.", 404);
         }
 
-        if (administrator.Email.Equals("admin@diten.com", StringComparison.OrdinalIgnoreCase))
+        // BL-521 FIX4 item 3 — decided on the record as loaded, written at the version that was read.
+        if (administrator.Version != request.Request.Version)
         {
-            return Response<NoContent>.Fail("The system seed administrator cannot be deleted.", 409);
+            return Response<NoContent>.Fail(AdminSafetyMessages.ChangedByAnotherUser, 409);
+        }
+
+        var loadedVersion = administrator.Version;
+
+        if (PlatformAdministratorMutationSupport.IsSystemSeed(administrator))
+        {
+            return Response<NoContent>.Fail(AdminSafetyMessages.SeedCannotBeDeleted, 409, AdminSafetyReasonCodes.SystemSeedProtected);
         }
 
         // §7.21 rule 2 — last SuperAdmin protection
@@ -47,9 +55,14 @@ public sealed class DeletePlatformAdministratorHandler : IRequestHandler<DeleteP
             request.Id, AdminSafetyAction.Delete, ct);
         if (lastAdminGuard is not null) return lastAdminGuard;
 
-        var deleted = await _repository.SoftDeleteAsync(request.Id, request.Request.Version, _currentUser.ActorName, ct);
-        return deleted
+        // BL-521 FIX3 item 3 — deleting an active platform super administrator is written under the guard.
+        var outcome = PlatformAdministratorMutationSupport.IsActivePlatformSuperAdmin(administrator)
+            ? await _repository.SoftDeleteGuardedAsync(request.Id, loadedVersion, _currentUser.ActorName, ct)
+            : await _repository.SoftDeleteAsync(request.Id, loadedVersion, _currentUser.ActorName, ct)
+                ? SuperAdminGuardedWriteResult.Written
+                : SuperAdminGuardedWriteResult.VersionConflict;
+        return outcome == SuperAdminGuardedWriteResult.Written
             ? Response<NoContent>.Success(204)
-            : Response<NoContent>.Fail("The administrator was changed by another user. Reload and try again.", 409);
+            : PlatformAdministratorMutationSupport.RefusedWrite(outcome, AdminSafetyMessages.ChangedByAnotherUser);
     }
 }

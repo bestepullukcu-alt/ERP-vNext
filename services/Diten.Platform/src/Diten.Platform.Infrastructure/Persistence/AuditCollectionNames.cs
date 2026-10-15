@@ -6,4 +6,5 @@ internal static class AuditCollectionNames
     internal const string AuditEventRetentionPolicies = "audit_event_retention_policies";
     internal const string TenantAuditPreferences = "tenant_audit_preferences";
     internal const string AuditOutbox = "audit_outbox";
+    internal const string AuditOutboxTemporalMigrations = "audit_outbox_temporal_migrations";
 }

@@ -200,20 +200,9 @@ public sealed class TaskNotificationLocaleTests
     // ── 4. The multi-language question, answered where it is decided ─────────
 
     [Fact]
-    public async Task Recipients_in_one_tenant_share_ONE_dispatch_because_nothing_distinguishes_their_languages()
+    public async Task Recipients_who_chose_no_language_share_ONE_dispatch_in_the_tenants_language()
     {
-        /*
-         * The decision, made explicit and tested rather than left as a comment.
-         *
-         * Grouping recipients by language and dispatching per group is the right shape and it is NOT implemented,
-         * because the input does not exist: TaskNotificationRecipient carries id, e-mail and display name, and the
-         * AuthService User entity behind it has no Locale/Language/Culture field at all. Grouping on data nobody
-         * supplies produces exactly one group every time — the same single dispatch as here, plus a fan-out loop
-         * that is never exercised and rots.
-         *
-         * So: one dispatch, in the tenant's language. The seven seeded template languages are not wasted by this —
-         * the tenant chooses which of them is used. What is still missing is a per-reader choice.
-         */
+        // WP-EMAIL-LANG-01 — without a preference nothing distinguishes them: one group, one dispatch, as before.
         var harness = new Harness(
             tenantSettingsLanguage: "tr",
             recipients: [("ayse@diten.com", "Ayşe"), ("jean@diten.com", "Jean"), ("li@diten.com", "Li")]);
@@ -226,19 +215,33 @@ public sealed class TaskNotificationLocaleTests
     }
 
     [Fact]
-    public void The_recipient_contract_carries_no_language_which_is_WHY_grouping_is_absent()
+    public async Task Recipients_who_chose_a_language_are_written_to_in_it_through_the_task_producer()
     {
-        /*
-         * The structural half of the decision above. Stated as an assertion so that adding a language to
-         * TaskNotificationRecipient is a visible, deliberate change that fails here and forces the grouping
-         * question to be answered rather than a field being added and quietly ignored.
-         */
+        // WP-EMAIL-LANG-01 (CT decision 2026-10-09) — the producer passes each person's preference (from AuthService's
+        // contacts) and the REAL adapter and validator write one dispatch per language: preference → tenant → en.
+        var harness = new Harness(
+            tenantSettingsLanguage: "tr",
+            recipients: [("ayse@diten.com", "Ayşe"), ("jean@diten.com", "Jean"), ("li@diten.com", "Li")],
+            preferredLanguages: new Dictionary<string, string> { ["jean@diten.com"] = "fr", ["li@diten.com"] = "zh" });
+
+        await harness.NotifyAssignedAsync();
+
+        Assert.Equal(3, harness.Queued.Count);
+        Assert.Equal("ayse@diten.com", Assert.Single(Assert.Single(harness.Queued, q => q.Request.Locale == "tr").Request.To).Email);
+        Assert.Equal("jean@diten.com", Assert.Single(Assert.Single(harness.Queued, q => q.Request.Locale == "fr").Request.To).Email);
+        Assert.Equal("li@diten.com", Assert.Single(Assert.Single(harness.Queued, q => q.Request.Locale == "zh").Request.To).Email);
+    }
+
+    [Fact]
+    public void The_recipient_contract_carries_the_persons_preferred_language()
+    {
+        // Stated as an assertion so a change to what a recipient carries is a visible, deliberate one.
         var carried = typeof(TaskNotificationRecipient)
             .GetProperties()
             .Select(p => p.Name)
             .ToArray();
 
-        Assert.Equal(["UserId", "Email", "DisplayName"], carried);
+        Assert.Equal(["UserId", "Email", "DisplayName", "PreferredLanguage"], carried);
     }
 
     // ── 5. Where the seven languages actually pay off ────────────────────────
@@ -282,7 +285,8 @@ public sealed class TaskNotificationLocaleTests
             bool tenantRegistryThrows = false,
             string recipientEmail = "ayse@diten.com",
             IReadOnlyList<(string Email, string Name)>? recipients = null,
-            Guid? tenantId = null)
+            Guid? tenantId = null,
+            IReadOnlyDictionary<string, string>? preferredLanguages = null)
         {
             var tenant = tenantId ?? TaskTestData.Tenant;
             TenantId = tenant;
@@ -315,7 +319,7 @@ public sealed class TaskNotificationLocaleTests
                 localeResolver,
                 NullLogger<NotificationEventDispatchAdapter>.Instance);
 
-            var resolver = new FixedRecipients(people);
+            var resolver = new FixedRecipients(people, preferredLanguages);
 
             _service = new TaskNotificationService(
                 Adapter,
@@ -532,9 +536,10 @@ public sealed class TaskNotificationLocaleTests
     {
         private readonly List<TaskNotificationRecipient> _people;
 
-        public FixedRecipients(IReadOnlyList<(string Email, string Name)> people)
+        public FixedRecipients(IReadOnlyList<(string Email, string Name)> people, IReadOnlyDictionary<string, string>? preferredLanguages = null)
             => _people = people
-                .Select(p => new TaskNotificationRecipient(Guid.NewGuid(), p.Email, p.Name))
+                .Select(p => new TaskNotificationRecipient(Guid.NewGuid(), p.Email, p.Name,
+                    preferredLanguages is not null && preferredLanguages.TryGetValue(p.Email, out var language) ? language : null))
                 .ToList();
 
         public IReadOnlyCollection<Guid> KnownIds => _people.Select(p => p.UserId).ToList();

@@ -13,6 +13,8 @@ const TenantsList = (function () {
     let L = window.L10n || {};
 
     const dtTableEl = document.querySelector('.datatables-tenants');
+    // BL-521 — the server says whether this reader may create tenants (platform administrators only).
+    const canCreateTenant = () => document.getElementById('tenantsCanCreate')?.value === 'true';
     const endpoint = '/Platform/Tenants/api';
     const personalizationClient = window.personalizationClient;
     const personalizationContext = { moduleKey: 'Platform', pageKey: 'Tenants' };
@@ -702,7 +704,8 @@ const TenantsList = (function () {
                 }
             ],
             buttons: window.DtDefaults.exportButtons(
-                L.AddNewTenants,
+                // BL-521 — no "add" button for a partner administrator: only a platform administrator creates tenants.
+                canCreateTenant() ? L.AddNewTenants : null,
                 { href: '/Platform/Tenants/Create' },
                 extraButtons,
                 { exportColumns: defaultVisibleColumnIndexes, colvisColumns: saveViewColumnIndexes }

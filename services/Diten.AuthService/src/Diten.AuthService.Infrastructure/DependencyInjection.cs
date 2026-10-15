@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Diten.AuthService.Infrastructure;
@@ -27,6 +28,7 @@ public static class DependencyInjection
 
         // Settings
         services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
+        services.AddServiceIdentityTokenIssuance(configuration);
         services.Configure<InternalEventAuthSettings>(configuration.GetSection("InternalEventAuth"));
         services.Configure<PlatformServiceOptions>(configuration.GetSection(PlatformServiceOptions.SectionName));
         services.Configure<MfaOptions>(configuration.GetSection(MfaOptions.SectionName));
@@ -62,12 +64,28 @@ public static class DependencyInjection
 
         // Services
         services.AddScoped<Diten.AuthService.Application.Common.Interfaces.ICurrentUserAccessor, Services.CurrentUserAccessor>(); // FEAT-AUDIT-RBAC
+        services.AddScoped<IPlatformAccountVisibility, Services.HttpPlatformAccountVisibility>(); // BL-521 FIX6 item 13 (D')
         services.AddScoped<PasswordHasher>(); // concrete class registration
-        services.AddScoped<IPasswordHasher>(sp => sp.GetRequiredService<PasswordHasher>());
+        // WP-USERS-ROLES-CLOSE-FIX1 FIX5 addendum item 1 — every hash and verification takes a slot of the process-wide gate,
+        // for the BCrypt call only.
+        services.AddSingleton<Security.PasswordWorkGate>();
+        services.AddScoped<IPasswordHasher>(sp => new Security.BoundedPasswordHasher(
+            sp.GetRequiredService<PasswordHasher>(), sp.GetRequiredService<Security.PasswordWorkGate>()));
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IRefreshTokenHasher, RefreshTokenHasher>();
         services.AddScoped<IInternalEventAuthService, InternalEventAuthService>();
         services.AddScoped<IPlatformAuthEmailService, PlatformAuthEmailService>();
+        // BL-529 FIX2 — the two anonymous platform password doors (forgot-password, set-password link) are rate-limited.
+        // FIX3 — the parameterless constructor is the production one (the other is for tests); stated, not left to DI.
+        services.AddSingleton(_ => new Security.PasswordDoorRateLimiter());
+        // WP-EMAIL-LANG-01 FIX1 — a user's own writes (me/preferences), per user.
+        services.AddSingleton(_ => new Security.SelfServiceRateLimiter());
+        // FIX4 — the trusted-proxy list is read and validated HERE, at registration: a bad entry stops the start.
+        var trustedProxies = Security.ClientAddressResolver.ParseTrustedProxies(configuration);
+        services.AddSingleton(sp => new Security.ClientAddressResolver(
+            trustedProxies, sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Security.ClientAddressResolver>>()));
+        services.AddHostedService<Security.ClientAddressStartupWarning>();
+        services.AddHostedService<Security.SignInTimingWarmup>();
         services.AddScoped<ITenantUserInvitationEmailService, TenantUserInvitationEmailService>();
         services.AddScoped<IMfaChallengeService, MfaChallengeService>();
         // MOD-0022 E1 — e-signature re-authentication tickets and KS-3 windows.
@@ -78,26 +96,39 @@ public static class DependencyInjection
             var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<PlatformServiceOptions>>().Value;
             client.BaseAddress = new Uri(options.BaseUrl);
             client.Timeout = TimeSpan.FromSeconds(Math.Clamp(options.TimeoutSeconds, 1, 30));
-        });
+        })
+            .WithoutRedirects(); // BL-454 — carries the internal API key: never follows a redirect.
+        // BL-454 — the tenant's e-mail identity (name, language, reply address) for the invitation mail. Its own
+        // short timeout, not PlatformService:TimeoutSeconds: an e-mail waits two seconds for Platform and then goes
+        // out under the product's name. The cache is a singleton; the typed client is not.
+        // It never follows a redirect: the internal API key must not travel to another host.
+        PlatformTenantEmailIdentityClient.Register(services);
+        // BL-521 FIX5 item 1 — this client carries the internal API key in a CUSTOM header (X-Internal-Api-Key), which
+        // HttpClient keeps across a redirect (it drops only Authorization): a 302 would hand the key to whatever host the
+        // answer named, and the answer now decides the roles a token is minted with. A redirect is an answer like any other
+        // non-success — no answer (503), never followed. The timeout bounds a Platform that never answers (1–30 s).
         services.AddHttpClient<IPlatformAdministratorStatusClient, PlatformAdministratorStatusClient>((sp, client) =>
         {
             var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<PlatformServiceOptions>>().Value;
             client.BaseAddress = new Uri(options.BaseUrl);
             client.Timeout = TimeSpan.FromSeconds(Math.Clamp(options.TimeoutSeconds, 1, 30));
-        });
+        })
+            .WithoutRedirects(); // BL-454 / BL-521 FIX5 item 1 — carries the internal API key: never follows a redirect.
         services.AddHttpClient<ITenantEntitlementClient, PlatformTenantEntitlementClient>((sp, client) =>
         {
             var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<PlatformServiceOptions>>().Value;
             client.BaseAddress = new Uri(options.BaseUrl);
             client.Timeout = TimeSpan.FromSeconds(Math.Clamp(options.TimeoutSeconds, 1, 30));
-        });
+        })
+            .WithoutRedirects(); // BL-454 — carries the internal API key: never follows a redirect.
         // FIX-TENANT-ADMIN-INVITE-ACTIVATION (Part B) — S2S callback posting invited-admin activation to Platform.
         services.AddHttpClient<ITenantAdminActivationClient, PlatformTenantAdminActivationClient>((sp, client) =>
         {
             var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<PlatformServiceOptions>>().Value;
             client.BaseAddress = new Uri(options.BaseUrl);
             client.Timeout = TimeSpan.FromSeconds(Math.Clamp(options.TimeoutSeconds, 1, 30));
-        });
+        })
+            .WithoutRedirects(); // BL-454 — carries the internal API key: never follows a redirect.
 
         // BL-456 — user-lifecycle audit events forwarded to Platform's central audit log (best-effort, S2S).
         services.AddHttpClient<IPlatformAuditForwarder, PlatformAuditForwarder>((sp, client) =>
@@ -105,7 +136,8 @@ public static class DependencyInjection
             var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<PlatformServiceOptions>>().Value;
             client.BaseAddress = new Uri(options.BaseUrl);
             client.Timeout = TimeSpan.FromSeconds(Math.Clamp(options.TimeoutSeconds, 1, 30));
-        });
+        })
+            .WithoutRedirects(); // BL-454 — carries the internal API key: never follows a redirect.
 
         // BL-459 — the plan's user limit (users.max) through Platform's internal quota contract.
         services.AddHttpClient<IUserQuotaClient, PlatformUserQuotaClient>((sp, client) =>
@@ -113,7 +145,8 @@ public static class DependencyInjection
             var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<PlatformServiceOptions>>().Value;
             client.BaseAddress = new Uri(options.BaseUrl);
             client.Timeout = TimeSpan.FromSeconds(Math.Clamp(options.TimeoutSeconds, 1, 30));
-        });
+        })
+            .WithoutRedirects(); // BL-454 — carries the internal API key: never follows a redirect.
 
         // Tenant Context Registration
         services.AddScoped<TenantContext>();
@@ -121,6 +154,18 @@ public static class DependencyInjection
 
         AddEntitlementEventing(services, configuration);
 
+        return services;
+    }
+
+    public static IServiceCollection AddServiceIdentityTokenIssuance(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.Configure<ServiceIdentityTokenIssuerOptions>(
+            configuration.GetSection(ServiceIdentityTokenIssuerOptions.SectionName));
+        services.TryAddSingleton(TimeProvider.System);
+        services.AddScoped<IServiceClientCredentialVerifier, ServiceClientCredentialVerifier>();
+        services.AddScoped<IServiceIdentityTokenIssuer, ServiceIdentityTokenIssuer>();
         return services;
     }
 

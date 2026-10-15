@@ -2,6 +2,7 @@ using Diten.Web;
 using Diten.BuildingBlocks.Security.Secrets;
 using Diten.Web.Filters;
 using Diten.Web.Security;
+using Diten.Web.Services;
 using Diten.Web.Services.Auth;
 using Diten.Web.Services.EnterpriseStrategy;
 using Diten.Web.Services.ManagementGovernance;
@@ -17,6 +18,10 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// BL-517 — every log line (message, structured values, scopes; every category) keeps a URL's path and loses its query
+// string (person searches put name fragments there). Levels are unchanged; see QueryStringRedactingLoggerFactory.
+Diten.Web.Services.Http.QueryStringRedactingLoggerFactory.AddQueryStringRedaction(builder.Services);
 
 /*
  * ⚠ HEADER BUDGET RAISED FROM KESTREL'S 32 KB DEFAULT (2026-09-04).
@@ -111,28 +116,10 @@ builder.Services.AddHttpClient<IAuthGateway, AuthGateway>(client =>
 {
     client.BaseAddress = new Uri(authServiceUrl);
 });
-// Pre-auth tenant branding lookup for the login screen. Targets the Platform service DIRECTLY
-// (the internal branding endpoint is not exposed through the gateway), authenticated with the
-// shared internal API key. Best-effort: failures fall back to platform default branding.
 var platformServiceUrl = builder.Configuration["PlatformServiceUrl"] ?? "http://localhost:5057";
-builder.Services.AddHttpClient<Diten.Web.Services.Branding.IBrandingGateway, Diten.Web.Services.Branding.BrandingGateway>(client =>
-{
-    client.BaseAddress = new Uri(platformServiceUrl);
-});
-// FIX-4: per-request tenant liveness lookup for the shell session guard (deleted/suspended tenant → sign-out).
-// Same Platform target + shared internal API key; best-effort/fail-open and short-cached (~30s) in the gateway.
-builder.Services.AddHttpClient<Diten.Web.Services.TenantStatus.ITenantStatusGateway, Diten.Web.Services.TenantStatus.TenantStatusGateway>(client =>
-{
-    client.BaseAddress = new Uri(platformServiceUrl);
-    client.Timeout = TimeSpan.FromSeconds(5);
-});
-// Vanity slug → tenant login redirect (e.g. http://<host>/gmg → /account/login?tenantId=...).
-// Targets the Platform service DIRECTLY with the shared internal API key (same pattern as branding).
-builder.Services.AddHttpClient<Diten.Web.Services.TenantResolution.ITenantSlugResolver, Diten.Web.Services.TenantResolution.TenantSlugResolver>(client =>
-{
-    client.BaseAddress = new Uri(platformServiceUrl);
-    client.Timeout = TimeSpan.FromSeconds(5);
-});
+// BL-454 — branding, tenant liveness and vanity-slug lookups go to Platform DIRECTLY with the shared internal API key;
+// registered in one place, and none of them follows a redirect (the key must not travel to the host a 3xx names).
+builder.Services.AddPlatformInternalClients(platformServiceUrl);
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMemoryCache();
 // FE-A-harden (A5): the default HttpClient is registered TRANSIENT — each scoped (per-request)

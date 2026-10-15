@@ -265,7 +265,7 @@ public sealed class TaskPlanTests
                 new TaskLifecycleService(),
                 new FakeCurrentUserContext(TaskTestData.Me),
                 new FakeWorkingHoursProvider(),
-                new FakeCalendarMeetingReader());
+                new FakeCalendarMeetingReader(), writeGate: TaskWriteGateDoubles.Open);
 
             var correlation = new CorrelationContext();
             correlation.SetCorrelationId("corr");

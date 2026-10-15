@@ -59,6 +59,9 @@ public sealed class CountingTaskGateway(TaskGatewayAdapter inner, TaskPortCallLo
     public Task<IReadOnlySet<Guid>> ReadableTaskIdsAsync(Guid userId, IReadOnlyCollection<Guid> taskIds, CancellationToken ct = default)
         => inner.ReadableTaskIdsAsync(userId, taskIds, ct);
 
+    public Task<IReadOnlySet<Guid>> TimeWritableTaskIdsAsync(Guid userId, IReadOnlyCollection<Guid> taskIds, CancellationToken ct = default)
+        => inner.TimeWritableTaskIdsAsync(userId, taskIds, ct);
+
     public async Task<IReadOnlyDictionary<Guid, TimeEntryTaskSummary>> ReadableTaskSummariesAsync(
         Guid userId, IReadOnlyCollection<Guid> taskIds, CancellationToken ct = default)
     {

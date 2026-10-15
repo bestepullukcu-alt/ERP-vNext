@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Diten.Platform.API.Controllers;
+using Diten.Platform.API.Models.Workflow;
 using Diten.Platform.API.Observability;
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
@@ -123,6 +124,8 @@ public sealed class WorkflowActorBindingTests
         }
     }
 
+    // Main sync 2026-10-13: still refused before anything is sent — with the lane's B4 answer for a token that names
+    // no subject, 401 WORKFLOW_ACTOR_UNAUTHENTICATED (WorkflowPublicActorBindingTests), where main answered 403.
     [Fact]
     public async Task A_caller_without_a_user_id_cannot_act_on_a_task()
     {
@@ -131,14 +134,15 @@ public sealed class WorkflowActorBindingTests
 
         var result = await Invoke(controller, "approve", "");
 
-        Assert.Equal(StatusCodes.Status403Forbidden, Assert.IsAssignableFrom<ObjectResult>(result).StatusCode);
+        Assert.Equal(StatusCodes.Status401Unauthorized, Assert.IsAssignableFrom<ObjectResult>(result).StatusCode);
         mediator.VerifyNoOtherCalls();
     }
 
     private static Task<IActionResult> Invoke(WorkflowDefinitionsController controller, string action, string actorId) => action switch
     {
-        "approve" => controller.ApproveTask(TaskId, new ApproveWorkflowTaskRequest(actorId, "APPROVED", "idem-1", null, null), default),
-        "reject" => controller.RejectTask(TaskId, new RejectWorkflowTaskRequest(actorId, "REJECTED", "idem-1", null, null), default),
+        // Main sync 2026-10-13: approve / reject take the lane's strict transport bodies (WorkflowTaskTransitionTransportModels).
+        "approve" => controller.ApproveTask(TaskId, new ApproveWorkflowTaskTransportRequest("APPROVED", "idem-1", null, null, ActorId: actorId), default),
+        "reject" => controller.RejectTask(TaskId, new RejectWorkflowTaskTransportRequest("REJECTED", "idem-1", null, null, ActorId: actorId), default),
         "delegate" => controller.DelegateTask(TaskId, new DelegateWorkflowTaskRequest(actorId, "user:someone", "DELEGATED", "idem-1", null), default),
         "request-info" => controller.RequestInfoTask(TaskId, new RequestInfoWorkflowTaskRequest(actorId, null, "INFO", "idem-1", null, null), default),
         "cancel" => controller.CancelTask(TaskId, new CancelWorkflowTaskRequest(actorId, "CANCELLED", "idem-1", null), default),
@@ -174,7 +178,8 @@ public sealed class WorkflowActorBindingTests
         var id = userId ?? Caller;
         var correlation = new Mock<ICorrelationContext>();
         correlation.SetupGet(c => c.CorrelationId).Returns("corr");
-        var controller = new WorkflowDefinitionsController(mediator, correlation.Object, new SessionUser(id, CallerEmail));
+        // Main sync 2026-10-13: the lane's controller reads the caller from the TOKEN only (sub, and email for the e-mail rule).
+        var controller = new WorkflowDefinitionsController(mediator, correlation.Object);
         var claims = id == Guid.Empty
             ? new List<Claim>()
             : new List<Claim> { new("sub", id.ToString()), new("email", CallerEmail) };

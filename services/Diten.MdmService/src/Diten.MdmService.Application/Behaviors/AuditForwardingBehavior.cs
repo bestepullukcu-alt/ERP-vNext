@@ -18,13 +18,16 @@ public sealed class AuditForwardingBehavior<TRequest, TResponse> : IPipelineBeha
 
     private readonly IPlatformAuditForwarder _forwarder;
     private readonly ILogger<AuditForwardingBehavior<TRequest, TResponse>> _logger;
+    private readonly IRequestCorrelation? _correlation;
 
     public AuditForwardingBehavior(
         IPlatformAuditForwarder forwarder,
-        ILogger<AuditForwardingBehavior<TRequest, TResponse>> logger)
+        ILogger<AuditForwardingBehavior<TRequest, TResponse>> logger,
+        IRequestCorrelation? correlation = null)
     {
         _forwarder = forwarder;
         _logger = logger;
+        _correlation = correlation;
     }
 
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
@@ -36,6 +39,17 @@ public sealed class AuditForwardingBehavior<TRequest, TResponse> : IPipelineBeha
             try
             {
                 var metadata = provider.GetAuditMetadata();
+                var succeeded = ReadIsSuccessful(response);
+                // S2 FIX1 item 5: a retried command's repeated refusal is not a new fact.
+                if (!succeeded && request is IAuditFailureRepeatFilter repeats
+                    && !repeats.ShouldAuditFailure(ReadFirstError(response)))
+                    return response;
+                // FIX1 item 2: an opted-in command's own before / after / metadata, plus a refusal's response code.
+                // FIX2 item 1: only an opted-in command carries details, and a refusal enters only in code shape — a
+                // command that has not opted in (BL-574) keeps its old record; a sentence is never forwarded.
+                var details = (request as IAuditDetailsProvider)?.AuditDetails;
+                if (details is not null && !succeeded && ReadFirstError(response) is { } refusal && AuditCodes.IsCode(refusal))
+                    details.Set(AuditDetails.RefusalCodeKey, refusal);
                 var forwardRequest = new AuditForwardRequest(
                     RequestType: typeof(TRequest).Name,
                     Category: (int)metadata.Category,
@@ -43,7 +57,14 @@ public sealed class AuditForwardingBehavior<TRequest, TResponse> : IPipelineBeha
                     EntityType: metadata.EntityType,
                     SourceModule: metadata.SourceModule,
                     EntityId: ResolveEntityId(request, response),
-                    Outcome: ReadIsSuccessful(response) ? OutcomeSucceeded : OutcomeFailed);
+                    Outcome: succeeded ? OutcomeSucceeded : OutcomeFailed,
+                    CorrelationId: _correlation?.CorrelationId,
+                    BeforeState: details?.BeforeState,
+                    AfterState: details?.AfterState,
+                    Metadata: details is { Metadata.Count: > 0 } ? details.Metadata : null,
+                    TenantId: (request as IAuditTenantProvider)?.AuditTenantId is { } tenant && tenant != Guid.Empty
+                        ? tenant : null,
+                    SystemActor: request is IAuditSystemActor);
 
                 await _forwarder.ForwardAsync(forwardRequest, cancellationToken);
             }
@@ -79,6 +100,11 @@ public sealed class AuditForwardingBehavior<TRequest, TResponse> : IPipelineBeha
 
         return null;
     }
+
+    private static string? ReadFirstError(object? response) =>
+        response?.GetType().GetProperty("Errors")?.GetValue(response) is IEnumerable<string> errors
+            ? errors.FirstOrDefault()
+            : null;
 
     private static bool ReadIsSuccessful(object? response)
     {

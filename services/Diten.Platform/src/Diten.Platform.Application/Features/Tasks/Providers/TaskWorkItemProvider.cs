@@ -65,6 +65,10 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     private const string ActionReturnKey = "WorkAggregation_Action_Return";
     /// <summary>Hand work to a different person. Code and endpoint are both <c>reassign</c>.</summary>
     private const string ActionReassignKey = "WorkAggregation_Action_Reassign";
+    // BL-509 — the request's own acts. The sentences behind these keys arrive with the screen slice (D3).
+    private const string ActionDeclineKey = "WorkAggregation_Action_Decline";
+    private const string ActionWithdrawKey = "WorkAggregation_Action_Withdraw";
+    private const string ActionOfferKey = "WorkAggregation_Action_Offer";
     private const string ActionScheduleReviewMeetingKey = "WorkAggregation_Action_ScheduleReviewMeeting";
     // MOD-0280-FU01 T2b (pack §19.2) — the holder's own timer on an InProgress task.
     private const string ActionStartTimerKey = "WorkAggregation_Action_StartTimer";
@@ -309,6 +313,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         TaskPermissions.Delete,     // administrative authority to cancel someone else's task
         TaskPermissions.Assign,     // reassign — moving work onto another person IS assigning it
         TaskPermissions.Read,       // answer (BL-439) — the addressee needs no key beyond reading the task
+        TaskPermissions.RequestsCreate, // offer (BL-509) — addressing a request to somebody else
         TimeEntry.TimeEntryPermissions.TimesheetsUpdate  // startTimer / stopTimer (MOD-0280-FU01 T2b, §19.2)
     ];
 
@@ -343,12 +348,22 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             foreach (var member in team.UserIds)
             {
                 theirs.AddRange(await _tasks.ListByAssigneeAsync(member, ct));
+
+                // BL-509 (owner decision 4) — a request a subordinate has not answered is not their work yet, so
+                // it is not on the manager's list. One switch, the same one the read rule asks.
+                if (TaskRequestPolicy.RecipientManagerSeesPendingOffer)
+                {
+                    theirs.AddRange(await _tasks.ListOfferedToAsync(member, ct));
+                }
             }
 
             // BL-417 (a) — the list keeps exactly what TaskTeamScope.Covers admits. The task read rule asks the SAME
             // predicate over the SAME resolver, so a row on this list is a task its reader may open by id
             // (TaskTeamReadParityTests); there is no second definition of "my subordinate's task".
-            tasks = theirs.Where(team.Covers).DistinctBy(t => t.Id).ToList();
+            tasks = theirs
+                .Where(t => team.Covers(t) || TaskRequestPolicy.TeamSeesPendingOffer(t, team))
+                .DistinctBy(t => t.Id)
+                .ToList();
         }
         else
         {
@@ -380,7 +395,18 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
              *
              * `Except` on the id set is what enforces that, so the DistinctBy below never has to choose.
              */
-            var alreadyOnTheBoard = mine.Concat(pooled).Select(t => t.Id).ToHashSet();
+            /*
+             * BL-509 — THE FIFTH QUESTION: what is somebody ASKING me to take on.
+             *
+             * A request nobody has accepted has no assignee, so `mine` cannot return it — which is the point: it
+             * is in nobody's work until they say yes. It is read on its own, lands beside pooled work (an offer
+             * the reader can press), and outranks "opened it" for the same reason claimable work does.
+             */
+            var offered = (await _tasks.ListOfferedToAsync(actor.UserId, ct))
+                .Where(t => TaskRequestPolicy.IsOfferedTo(t, actor.UserId))
+                .ToList();
+
+            var alreadyOnTheBoard = mine.Concat(pooled).Concat(offered).Select(t => t.Id).ToHashSet();
 
             /*
              * BL-439 — THE FOURTH QUESTION: what is somebody else holding, waiting for MY answer.
@@ -413,6 +439,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
 
             tasks = mine
                 .Concat(pooled)
+                .Concat(offered)
                 .Concat(initiated)
                 .DistinctBy(t => t.Id)
                 .ToList();
@@ -693,7 +720,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         // N+1 across the page. Best effort: if AuthService is down this comes back empty and names are omitted.
         var userIds = tasks
             // The approval manager joins the batch so the gates card can name a person instead of an id.
-            .SelectMany(t => new[] { t.AssigneeUserId, t.CreatedByUserId, t.ApprovalManagerUserId })
+            .SelectMany(t => new[] { t.AssigneeUserId, t.CreatedByUserId, t.ApprovalManagerUserId, t.OfferedToUserId })
             .Concat(childrenByParent.SelectMany(pair => pair.Value).Select(child => child.AssigneeUserId))
             // Whoever performed each recorded act. A history that says "the task was released" without saying by
             // whom answers half the question it was asked.
@@ -719,11 +746,14 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         // Review joins the SAME read rather than getting one of its own: GetStatesAsync keys off the INSTANCE id
         // and never asks what the instance decides, so it serves both decisions unchanged. Two calls would be two
         // round-trips for one page, and a per-item read would be an N+1 across every gated row on the surface.
+        //
+        // D2-FIX3 item 3 — every HELD link is read, requirement on or off: the gates ask a held link (TaskWorkflowLinkGate),
+        // so the projection must know its state too, or a task whose withdraw failed shows `start` enabled and 409s.
         var instanceIds = tasks
-            .Where(t => t.ApprovalRequired && t.WorkflowInstanceId is not null)
+            .Where(t => t.WorkflowInstanceId is not null)
             .Select(t => t.WorkflowInstanceId!.Value)
             .Concat(tasks
-                .Where(t => t.ReviewRequired && t.ReviewWorkflowInstanceId is not null)
+                .Where(t => t.ReviewWorkflowInstanceId is not null)
                 .Select(t => t.ReviewWorkflowInstanceId!.Value))
             .Distinct()
             .ToList();
@@ -871,7 +901,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                     reviewMeetingUnlockedByTask.GetValueOrDefault(t.Id),
                     spentByTask.GetValueOrDefault(t.Id, TaskSpentTime.None),
                     readerTime,
-                    timerEnabled);
+                    timerEnabled,
+                    TaskReviewView.Withdrawn(t, approvalStates));
             })
             .ToList();
     }
@@ -925,7 +956,9 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         // MOD-0280-FU01 §19.2 — THIS reader's running timer and own draft minutes (only read with time tracking on).
         TaskReaderTime? readerTime = null,
         // MOD-0280-FU01 T2b — the reader's timer is switched on for their legal entity (read once per page).
-        bool timerEnabled = false)
+        bool timerEnabled = false,
+        // D2-FIX3 — the linked review was WITHDRAWN (reviewRejected is true for it too): its chip reads "required".
+        bool reviewWithdrawn = false)
     {
         spent ??= TaskSpentTime.None;
         var spentHours = spent.ApprovedHours;
@@ -957,7 +990,15 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                 : null;
 
         var activity = ToActivity(
-            comments ?? [], transitions ?? [], displayNames, actor.UserId, fieldDefinitions, _permissions,
+            comments ?? [],
+            // BL-509 — WHO declined a request, and their words, are the sender's alone — before and after somebody
+            // else accepts. Every other reader's feed has no such entry (not an anonymised one: the person who
+            // declined is in another company, and "somebody declined" is already more than BL-057 allows).
+            // FIX2 (A3) — and so are the offered and withdrawn rows: from those two an outsider could infer the decline.
+            (transitions ?? [])
+                .Where(t => TaskRequestPolicy.MaySeeRequestRow(task, t.Kind, actor.UserId))
+                .ToList(),
+            displayNames, actor.UserId, fieldDefinitions, _permissions,
             resolvedType);
 
         /*
@@ -1080,7 +1121,9 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         {
             var isRequesterForReview = task.CreatedByUserId is not null && task.CreatedByUserId == actor.UserId;
             var isHolderForReview = task.AssigneeUserId == actor.UserId;
-            if (isHolderForReview || isRequesterForReview)
+            // BL-509 — an unanswered request is nobody's work yet; there is nothing to hold a review meeting about.
+            var unansweredRequest = task.AssignmentTarget == TaskAssignmentTarget.Offered && task.AssigneeUserId is null;
+            if ((isHolderForReview || isRequesterForReview) && !unansweredRequest)
             {
                 var requirement = resolvedType?.ReviewMeetingRequirement ?? TaskReviewMeetingRequirement.Optional;
                 reviewMeetingPolicy = new WorkItemReviewMeetingPolicyDto(
@@ -1201,7 +1244,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             Attachments: attachmentsBlock,
             ParentTaskItemId: task.ParentTaskItemId?.ToString(),
             Gates: BuildGates(
-                task, actor, displayNames, approvalOutstanding, approvalRejected, reviewOutstanding, reviewRejected),
+                task, actor, displayNames, approvalOutstanding, approvalRejected, reviewOutstanding, reviewRejected,
+                reviewWithdrawn),
             // The engine's own spelling, straight through — the contract's PRIORITIES are that enum (BL-032).
             Priority: task.Priority.ToString(),
             Dependencies: dependencyList,
@@ -1363,7 +1407,43 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             // BL-016 — stated ONLY when the shell cannot work it out for itself; see the DTO for why the holder
             // and pool cases are deliberately silent.
             ViewerRelation: initiatorOnly ? WorkItemContract.ViewerRelationInitiator : null,
-            ReviewMeetingPolicy: reviewMeetingPolicy);
+            ReviewMeetingPolicy: reviewMeetingPolicy,
+            Offer: ToOffer(task, actor, displayNames));
+    }
+
+    /// <summary>
+    /// BL-509 — where an unaccepted request stands, for whoever is reading it: the sender ("waiting for an answer",
+    /// "declined: …") and the person asked. Null for everything that is not an open request.
+    /// </summary>
+    private static WorkItemOfferDto? ToOffer(
+        TaskItem task, WorkItemActor actor, IReadOnlyDictionary<Guid, string> displayNames)
+    {
+        if (task.AssignmentTarget != TaskAssignmentTarget.Offered
+            || task.AssigneeUserId is not null
+            || task.Lifecycle is TaskLifecycle.Done or TaskLifecycle.Cancelled)
+        {
+            return null;
+        }
+
+        if (task.OfferedToUserId is { } offeredTo)
+        {
+            // WHO was asked is for the sender and the person asked. Anybody else who may read the task (the
+            // sender's own company, through the unit scope) learns that it waits for an answer, not whose —
+            // naming a person across the company boundary is exactly what the sending key is granted for.
+            return new WorkItemOfferDto("pending",
+                TaskRequestPolicy.MaySeeAddressee(task, actor.UserId) ? Person(offeredTo, actor, displayNames) : null);
+        }
+
+        // Declined or withdrawn — and which one, and why, is the sender's to know: anybody else reading learns only
+        // that the request is waiting for its sender.
+        if (!TaskRequestPolicy.MaySeeDecline(task, actor.UserId))
+        {
+            return new WorkItemOfferDto("unaddressed");
+        }
+
+        return string.IsNullOrWhiteSpace(task.OfferDeclineReason)
+            ? new WorkItemOfferDto("withdrawn")
+            : new WorkItemOfferDto("declined", DeclineReason: WorkItemLabelDto.Display(task.OfferDeclineReason));
     }
 
     /// <summary>
@@ -1646,7 +1726,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         bool approvalOutstanding,
         bool approvalRejected,
         bool reviewOutstanding,
-        bool reviewRejected)
+        bool reviewRejected,
+        bool reviewWithdrawn = false)
     {
         var approvalStatus = !task.ApprovalRequired ? GateNotRequired
             : approvalRejected ? GateRejected
@@ -1655,6 +1736,9 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             : GateApproved;
 
         var reviewStatus = !task.ReviewRequired ? GateNotRequired
+            // D2-FIX3 — a WITHDRAWN review (a hand-over took it back) sends the work back like a refusal does, but nobody
+            // refused anything: it is required again, never "rejected".
+            : reviewWithdrawn ? GateRequired
             : reviewRejected ? GateRejected
             // Sitting with a reviewer right now — an instance exists and MOD-0023 has not answered it.
             : reviewOutstanding && task.ReviewWorkflowInstanceId is not null ? GatePending
@@ -2559,6 +2643,53 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
          * transition and no endpoint behind it today; the spec puts it at v1.5. Projecting it would be the
          * mock-era failure this provider's own remarks refuse — an action with nothing behind it.
          */
+        /*
+         * ── BL-509 · A REQUEST NOBODY HAS TAKEN ON ───────────────────────────────────────────────────────
+         *
+         * Two people have an act here and nobody else has any.
+         *
+         *   the person asked — accept (it becomes their task) or decline (a reason is required);
+         *   the sender       — withdraw while it waits; once it is declined or withdrawn, address it to somebody
+         *                      else, assign it inside their own scope, or call it off.
+         *
+         * WITHHELD from both: start · plan · inquire · complete — nobody holds the work, and the server refuses
+         * each of them for an unaccepted request (TaskLifecycleService.CanTransition), so this is the hint and
+         * that is the rule.
+         */
+        if (task.AssignmentTarget == TaskAssignmentTarget.Offered && task.AssigneeUserId is null)
+        {
+            var request = new List<WorkItemActionDto>();
+            string? requestPrimary = null;
+
+            if (TaskRequestPolicy.IsOfferedTo(task, actor.UserId))
+            {
+                request.Add(Build("accept", ActionAcceptKey, actor.Has(TaskPermissions.Update),
+                    targetStatus: task.Lifecycle == TaskLifecycle.Open ? TaskLifecycleService.InProgress : null));
+                request.Add(Build("decline", ActionDeclineKey, actor.Has(TaskPermissions.Update),
+                    requiresReason: true));
+                requestPrimary = "accept";
+            }
+            else if (isRequester)
+            {
+                if (task.OfferedToUserId is not null)
+                {
+                    request.Add(Build("withdraw", ActionWithdrawKey, actor.Has(TaskPermissions.Update),
+                        requiresConfirmation: true));
+                    requestPrimary = "withdraw";
+                }
+                else
+                {
+                    request.Add(Build("offer", ActionOfferKey, actor.Has(TaskPermissions.RequestsCreate)));
+                    request.Add(ReassignAction(task, actor, isRequester));
+                    requestPrimary = "offer";
+                }
+
+                request.Add(CancelAction(actor));
+            }
+
+            return (request, requestPrimary, request.Select(a => a.Code).Where(c => c != requestPrimary).ToList());
+        }
+
         if (initiatorOnly)
         {
             var outbox = new List<WorkItemActionDto>();
@@ -2679,7 +2810,9 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                  *
                  * Approval is still checked FIRST: it is the gate the user cannot clear themselves.
                  */
-                if (task.ReviewRequired && task.ReviewWorkflowInstanceId is null)
+                // D2-FIX3 item 2 — also when the linked review came back without passing (refused, or withdrawn by a
+                // hand-over): the work has to be submitted again, and `complete` would only be refused by the review gate.
+                if (task.ReviewRequired && (task.ReviewWorkflowInstanceId is null || reviewRejected))
                 {
                     // Precedence, same rule everywhere in this method: approval first, then the review-meeting
                     // gate, then the checklist — each is its own reason, and only the first unmet one is shown.
@@ -2705,10 +2838,17 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                     // cannot clear themselves, so pointing them at something else they COULD clear without
                     // unblocking anything would be a lie. The server refuses Done in every case (409), so this is
                     // a hint about a real refusal, never the enforcement.
+                    //
+                    // D2-FIX3 item 3 — then a review still holding the work: a held link the gate asks whatever the
+                    // requirement says (TaskWorkflowLinkGate), so `complete` here would be refused with REVIEW_PENDING.
                     actions.Add(approvalOutstanding
                         ? Disabled("complete", ActionCompleteKey,
                             TaskReasonCodes.ApprovalPending, DisabledApprovalCompleteKey,
                             targetStatus: TaskLifecycleService.Done)
+                        : reviewOutstanding
+                            ? Disabled("complete", ActionCompleteKey,
+                                TaskReasonCodes.ReviewPending, DisabledReviewCompleteKey,
+                                targetStatus: TaskLifecycleService.Done)
                         : reviewMeetingBlocked
                             ? Disabled("complete", ActionCompleteKey,
                                 TaskReasonCodes.ReviewMeetingRequired, DisabledReviewMeetingRequiredKey,

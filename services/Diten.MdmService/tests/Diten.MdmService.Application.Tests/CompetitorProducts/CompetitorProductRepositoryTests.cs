@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Diten.MdmService.Application.Tests.CompetitorProducts;
 
-/// <summary>WP-VW-W4 (W4-BE-b2) — the Mongo repositories on a throw-away database (<c>MDM_TEST_MONGO</c> or localhost):
+/// <summary>WP-VW-W4 (W4-BE-b2) — the Mongo repositories on a throw-away database (<c>MdmTestMongo</c>, the run's own replica set):
 /// the class maps round-trip prices / history / the merge trace, Guid FKs are stored as standard UUIDs (queryable), reads
 /// and writes are tenant-scoped, a replace is a compare-and-swap.</summary>
 public sealed class CompetitorProductRepositoryTests
@@ -19,7 +19,7 @@ public sealed class CompetitorProductRepositoryTests
     public async Task The_record_round_trips_is_tenant_scoped_and_replaces_only_on_the_expected_version()
     {
         CompetitorProductClassMaps.Register();
-        var settings = MongoClientSettings.FromConnectionString(Environment.GetEnvironmentVariable("MDM_TEST_MONGO") ?? "mongodb://localhost:27017");
+        var settings = MongoClientSettings.FromConnectionString(MdmTestMongo.ConnectionString); // main-sync 2026-10-14: shared Mongo (MdmTestMongo.SharedPort) default removed (BL-595), owner approved
 #pragma warning disable CS0618
         settings.GuidRepresentation = GuidRepresentation.Standard;
 #pragma warning restore CS0618

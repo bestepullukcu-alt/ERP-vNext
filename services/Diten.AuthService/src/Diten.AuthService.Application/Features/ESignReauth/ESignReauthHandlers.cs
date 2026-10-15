@@ -88,19 +88,28 @@ public sealed class ReauthenticateForESignCommandHandler
         }
 
         // 2) The password — the login counter on failure.
-        if (!_passwordHasher.Verify(request.Password, user.PasswordHash))
+        // Main sync 2026-10-13 (lane FIX6): the request path waits for its CPU slot through VerifyAsync, never the
+        // synchronous Verify (BoundedPasswordHasher's work gate).
+        if (!await _passwordHasher.VerifyAsync(request.Password, user.PasswordHash, ct))
         {
-            user.RecordLoginFailure(settings.MaxFailedLoginAttempts, settings.LockoutDurationMinutes);
-            await _users.UpdateAsync(user, ct);
-            var remaining = Math.Max(0, settings.MaxFailedLoginAttempts - user.FailedLoginAttempts);
+            // Main sync 2026-10-13 (lane BL-529 / FIX2) — the login counter is INCREMENTED in the store, never the whole
+            // account written back: a whole write could undo a password reset that landed meanwhile, and two wrong
+            // passwords in parallel must count twice. The lock starts on exactly one write (LockoutStarted).
+            var failure = await _users.RecordLoginFailureAsync(
+                user.Id, request.TenantId, settings.MaxFailedLoginAttempts, settings.LockoutDurationMinutes, ct);
+            var remaining = Math.Max(0, settings.MaxFailedLoginAttempts - failure.FailedLoginAttempts);
             await _audit.WriteAsync(ESignReauthCodes.AuditPasswordFailed, user.Id, request.TenantId,
                 ESignReauthResponses.Metadata(new { intent = request.Intent, remainingAttempts = remaining }), ct);
 
-            if (user.LockoutEnd.HasValue && user.LockoutEnd > DateTime.UtcNow)
+            if (failure.LockoutEnd is { } lockoutEnd && lockoutEnd > DateTime.UtcNow)
             {
-                await _audit.WriteAsync(ESignReauthCodes.AuditLockoutStarted, user.Id, request.TenantId,
-                    ESignReauthResponses.Metadata(new { intent = request.Intent }), ct);
-                return ESignReauthResponses.Locked<ESignReauthTicketDto>(user.LockoutEnd.Value, remainingAttempts: 0);
+                if (failure.LockoutStarted)
+                {
+                    await _audit.WriteAsync(ESignReauthCodes.AuditLockoutStarted, user.Id, request.TenantId,
+                        ESignReauthResponses.Metadata(new { intent = request.Intent }), ct);
+                }
+
+                return ESignReauthResponses.Locked<ESignReauthTicketDto>(lockoutEnd, remainingAttempts: 0);
             }
 
             return Response<ESignReauthTicketDto>.Fail("Re-authentication failed.",
@@ -117,8 +126,21 @@ public sealed class ReauthenticateForESignCommandHandler
             return ESignReauthResponses.Fail<ESignReauthTicketDto>("Account is disabled.", ESignReauthCodes.AccountDisabled, 403);
         }
 
+        // Main sync 2026-10-13 (lane FIX4 / FIX5, as LoginCommandHandler) — the right password claims the account against
+        // the STORED row: the count and the lock are reset by that one conditional write, never by writing the loaded
+        // copy back. Parallel wrong guesses that reached the threshold meanwhile win; this attempt is the locked account's.
+        if (!await _users.TryClaimSignInAsync(user.Id, request.TenantId, ct))
+        {
+            await _audit.WriteAsync(ESignReauthCodes.AuditBlockedByLockout, user.Id, request.TenantId,
+                ESignReauthResponses.Metadata(new { intent = request.Intent }), ct);
+            var stored = await _users.GetByIdAndTenantAsync(user.Id, request.TenantId, ct);
+            return ESignReauthResponses.Locked<ESignReauthTicketDto>(
+                stored?.LockoutEnd ?? DateTime.UtcNow, remainingAttempts: 0);
+        }
+
+        // Main sync 2026-10-13 (lane BL-529) — then only the sign-in time (RecordLoginOutcomeAsync).
         user.RecordLoginSuccess();
-        await _users.UpdateAsync(user, ct);
+        await _users.RecordLoginOutcomeAsync(user, request.TenantId, ct);
 
         var verifiedAt = DateTime.UtcNow;
         var issued = await _tickets.IssueAsync(request.TenantId, user.Id, request.Intent, ESignReauthKind.Password, verifiedAt,

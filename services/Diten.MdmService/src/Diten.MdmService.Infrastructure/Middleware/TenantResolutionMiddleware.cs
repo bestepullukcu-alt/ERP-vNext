@@ -7,6 +7,8 @@ namespace Diten.MdmService.Infrastructure.Middleware;
 public sealed class TenantResolutionMiddleware
 {
     private const string TenantHeader = "X-Tenant-Id";
+    private const string CanonicalTenantClaim = "tenant_id";
+    private const string LegacyTenantClaim = "tenantId";
     private readonly RequestDelegate _next;
     private readonly ILogger<TenantResolutionMiddleware> _logger;
 
@@ -24,7 +26,13 @@ public sealed class TenantResolutionMiddleware
             return;
         }
 
-        var jwtTenant = ReadJwtTenant(context);
+        if (!TryReadJwtTenant(context, out var jwtTenant))
+        {
+            _logger.LogWarning("Tenant mismatch detected for {Path}", context.Request.Path);
+            await WriteProblemDetails(context, StatusCodes.Status400BadRequest, "Tenant mismatch", "JWT tenant and X-Tenant-Id must match.");
+            return;
+        }
+
         var headerTenant = ReadHeaderTenant(context);
 
         if (jwtTenant.HasValue && headerTenant.HasValue && jwtTenant.Value != headerTenant.Value)
@@ -46,9 +54,39 @@ public sealed class TenantResolutionMiddleware
         await _next(context);
     }
 
-    private static Guid? ReadJwtTenant(HttpContext context)
+    private static bool TryReadJwtTenant(HttpContext context, out Guid? tenantId)
     {
-        var claimValue = context.User.FindFirst("tenant_id")?.Value;
+        var canonicalClaims = context.User.FindAll(CanonicalTenantClaim).ToArray();
+        if (canonicalClaims.Length > 1)
+        {
+            tenantId = null;
+            return false;
+        }
+
+        var canonicalTenant = ReadClaimTenant(canonicalClaims);
+        var legacyClaims = context.User.FindAll(LegacyTenantClaim).ToArray();
+        if (legacyClaims.Length > 1)
+        {
+            tenantId = null;
+            return false;
+        }
+
+        var legacyTenant = ReadClaimTenant(legacyClaims);
+        if (canonicalTenant.HasValue && legacyTenant.HasValue && canonicalTenant.Value != legacyTenant.Value)
+        {
+            tenantId = null;
+            return false;
+        }
+
+        // Legacy tenantId claims participate only in contradiction validation.
+        // Tenant resolution retains the canonical tenant_id-only contract.
+        tenantId = canonicalTenant;
+        return true;
+    }
+
+    private static Guid? ReadClaimTenant(IEnumerable<System.Security.Claims.Claim> claims)
+    {
+        var claimValue = claims.FirstOrDefault()?.Value;
         return Guid.TryParse(claimValue, out var tenantId) ? tenantId : null;
     }
 

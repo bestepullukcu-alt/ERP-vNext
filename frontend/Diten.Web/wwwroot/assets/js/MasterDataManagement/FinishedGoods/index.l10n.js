@@ -11,7 +11,17 @@
         'LifecycleDraft', 'LifecycleIdentityApproved',
         'LifecyclePendingIdentityApproval', 'LifecycleRetired', 'NotAvailable',
         'QuickView', 'RecordSaved', 'Reset', 'Save', 'SaveView', 'Search', 'Status',
-        'Unknown', 'ViewDetails'
+        'Unknown', 'ViewDetails',
+        // FG FIX1 item 4/5, item 6 and m9.
+        'ErrorInvalidFormAttempt', 'ErrorTimeout', 'CurrentPageOnly', 'LifecycleCancelled',
+        'CancellationPendingAudit', 'ErrorOccurred',
+        'RefusalAdmissionCapacity', 'RefusalAuditBusy', 'RefusalBindingInvariant', 'RefusalCodeBurnRefused',
+        'RefusalCodeNotIssued', 'RefusalConcurrencyConflict', 'RefusalCreationNotSettled',
+        'RefusalDraftAlreadyCancelled', 'RefusalDraftCancelled', 'RefusalGskuLifecycleBusy', 'RefusalGskuNotApproved',
+        'RefusalIdempotencyKeyConflict', 'RefusalIdempotencyKeyInvalid', 'RefusalNotADraft',
+        'RefusalReconciliationRequired', 'RefusalScopeUnavailable', 'RefusalStoreUnavailable', 'RefusalWriteFailed',
+        // FG FIX2 K4.
+        'RefusalBurnTransactionUnavailable', 'RefusalRetrySameForm'
     ];
     const warnMissing = (dictionary) => requiredKeys.forEach((key) => {
         if (!dictionary[key]) console.warn(`[L10N WARNING] Missing localization key: ${key}`);

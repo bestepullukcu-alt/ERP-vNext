@@ -23,6 +23,7 @@
   <data name="Archive" xml:space="preserve"><value>Archive</value></data>
   <data name="ArchiveConfirm" xml:space="preserve"><value>The template will be archived and removed from the active list. Continue?</value></data>
   <data name="TemplateArchived" xml:space="preserve"><value>Template archived.</value></data>
+  <data name="TemplateChangedReload" xml:space="preserve"><value>This template was changed after you opened it. Reload the page and make your change again.</value></data>
   <data name="StatusDraft" xml:space="preserve"><value>Draft</value></data>
   <data name="StatusActive" xml:space="preserve"><value>Active</value></data>
   <data name="StatusArchived" xml:space="preserve"><value>Archived</value></data>

@@ -102,4 +102,5 @@
   <data name="ScopeTenant" xml:space="preserve"><value>كل المستأجر</value></data>
   <data name="ScopeScoped" xml:space="preserve"><value>اجتماعاتي</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>ليس لديك صلاحية الوصول إلى هذا التقرير.</value></data>
+  <data name="UnknownUser" xml:space="preserve"><value>مستخدم غير معروف</value></data>
 </root>

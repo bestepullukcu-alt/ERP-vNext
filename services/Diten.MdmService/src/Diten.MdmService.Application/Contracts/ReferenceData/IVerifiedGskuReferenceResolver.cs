@@ -49,6 +49,10 @@ public sealed record VerifiedGskuReferenceResolveResult(
     string? FailureCode,
     IReadOnlyList<VerifiedGskuReferenceSelection> Selections)
 {
+    /// <summary>The answer is well formed and says a value can no longer be chosen (retired, or withdrawn from new
+    /// use). Not a broken contract and not an outage: waiting will not change it.</summary>
+    public const string NotSelectable = "REFERENCE_NOT_SELECTABLE";
+
     public static VerifiedGskuReferenceResolveResult Success(
         IReadOnlyList<VerifiedGskuReferenceSelection> selections) => new(true, 200, null, selections);
 

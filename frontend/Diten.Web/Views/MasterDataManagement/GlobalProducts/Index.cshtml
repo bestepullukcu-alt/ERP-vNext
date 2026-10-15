@@ -2,11 +2,26 @@
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<GlobalProductsIndex> Localizer
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
-@inject Diten.Web.Services.IPermissionSnapshot Permissions
 @{
     ViewData["Title"] = Localizer["GlobalProductsTitle"].Value;
     Layout = "_LayoutTenantShell";
-    var canCreate = Permissions.Has("mdm.global-products.create");
+    // FIX6 item 5 (d): the same reader as the controller's gates (PermissionClaims), for Add as for the list.
+    var canCreate = Diten.Web.Security.PermissionClaims.HasPermission(User, "mdm.global-products.create");
+}
+
+@*
+    UAS-001 (WP-MDM-GP-LIST-01, the GSKU register's B17 rule) — nothing of the register is drawn without
+    mdm.global-products.read: no filter bar, no heading, no skeleton, no empty table. GlobalProductsController.Index
+    answers 403 with this surface instead of redirecting.
+
+    ⚠ Display only. MDM's [HasPermission("mdm.global-products.read")] and the proxy's own check remain the authority.
+*@
+@* EK item 11 (FIX5): the same reader as GlobalProductsController.Index (PermissionClaims) — "*", a "permissions" claim and a
+   comma-separated list count the same here as there; the UX snapshot reads only exact "permission" claims. *@
+@if (!Diten.Web.Security.PermissionClaims.HasPermission(User, "mdm.global-products.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["GlobalProductsTitle"].Value" />
+    return;
 }
 
 @* Contract marker: <partial name="_Filter" /> *@
@@ -16,6 +31,10 @@
     <h5 class="mb-0">@Localizer["GlobalProductsTitle"]</h5>
     <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
 </div>
+
+<form id="globalProductLifecycleToken" class="d-none" data-no-tracker>
+    @Html.AntiForgeryToken()
+</form>
 
 <partial name="~/Views/MasterDataManagement/GlobalProducts/_DataTable.cshtml" />
 @* Contract marker rendered by the partial: id="offcanvasDetailsPreview" *@

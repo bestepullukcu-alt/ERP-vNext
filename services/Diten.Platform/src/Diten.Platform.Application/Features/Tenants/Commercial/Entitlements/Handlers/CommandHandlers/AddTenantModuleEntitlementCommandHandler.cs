@@ -47,11 +47,11 @@ public sealed class AddTenantModuleEntitlementCommandHandler : IRequestHandler<A
 
     public async Task<Response<Guid>> Handle(AddTenantModuleEntitlementCommand request, CancellationToken ct)
     {
-        var moduleCode = TenantModuleEntitlementCommandSupport.NormalizeModuleCode(request.Request.ModuleCode);
+        var moduleCode = TenantModuleEntitlementCommandSupport.NormalizeModuleCode(request.Request.ModuleCode!);
         var moduleValidation = await TenantModuleEntitlementCommandSupport.ValidateModuleAsync(_moduleRepository, moduleCode, ct);
         if (!moduleValidation.IsValid)
         {
-            return Response<Guid>.Fail(moduleValidation.Error!, moduleValidation.StatusCode);
+            return Response<Guid>.Fail(moduleValidation.Error!, moduleValidation.StatusCode, moduleValidation.Code);
         }
 
         var duplicate = await TenantModuleEntitlementCommandSupport.ValidateDuplicateAsync(
@@ -59,10 +59,11 @@ public sealed class AddTenantModuleEntitlementCommandHandler : IRequestHandler<A
             request.TenantId,
             moduleCode,
             null,
-            ct);
+            ct,
+            request.Request.Source);
         if (!duplicate.IsValid)
         {
-            return Response<Guid>.Fail(duplicate.Error!, duplicate.StatusCode);
+            return Response<Guid>.Fail(duplicate.Error!, duplicate.StatusCode, duplicate.Code);
         }
 
         var entitlement = new TenantModuleEntitlement
@@ -109,13 +110,25 @@ public sealed class AddTenantModuleEntitlementCommandHandler : IRequestHandler<A
                         TenantId = request.TenantId, Producer = "Diten.Platform", OccurredAtUtc = occurredAtUtc }, transactionCt);
                 await PhysicalEntitlementAuditIntent.EnqueueAsync(_audit, session, request.TenantId, correlationId,
                     auditIntentId, nameof(AddTenantModuleEntitlementCommand), AuditOperation.Assign,
-                    entitlement.Id, moduleCode, transactionCt);
+                    entitlement.Id, moduleCode, transactionCt,
+                    before: null, after: PhysicalEntitlementAuditIntent.StateOf(entitlement));
                 return true;
             }, ct);
         }
         catch (PhysicalEntitlementMutationRejectedException exception)
         {
             return Response<Guid>.Fail(exception.Errors, exception.StatusCode);
+        }
+        catch (TenantModuleEntitlementTenantMismatchException)
+        {
+            return Response<Guid>.Fail("Entitlement was not found.", 404, TenantModuleEntitlementRefusalCodes.NotFound);
+        }
+        catch (TenantModuleEntitlementConcurrencyException)
+        {
+            // FIX2 A3 — another add of the same row got there first (the repository maps the unique index and the
+            // in-transaction write conflict to this exception, for this path and Disable's alike). It used to reach
+            // the global handler as a 500.
+            return TenantModuleEntitlementCommandSupport.Stale<Guid>();
         }
 
         return Response<Guid>.Success(entitlement.Id, 201);

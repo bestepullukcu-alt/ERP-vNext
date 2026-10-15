@@ -51,7 +51,8 @@ public sealed class TaskLinkTests
     public async Task A_meetings_related_task_row_sends_the_reader_to_the_task_center_detail()
     {
         var task = NewTask();
-        var resolver = new TaskRelatedRecordResolver(new FakeTaskItemRepository(task));
+        var resolver = new TaskRelatedRecordResolver(
+            new FakeTaskItemRepository(task), new AlwaysAdmitReadAccessPolicy(), new FakeCurrentUserContext(TaskTestData.Me));
 
         var resolved = await resolver.ResolveAsync([task.Id], CancellationToken.None);
 

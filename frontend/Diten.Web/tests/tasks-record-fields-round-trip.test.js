@@ -132,6 +132,7 @@ describe("MOD-0024 module-record field — the whole round trip", () => {
     delete global.TaskForm;
     delete global.TasksApi;
     loadScript("wwwroot/assets/js/shared/diten-person-picker.js");
+    loadScript("wwwroot/assets/js/shared/diten-people-search.js");   // the pages load it before form.js (BL-512 FIX1)
     loadScript("wwwroot/assets/js/Tasks/form.js");
     loadScript("wwwroot/assets/js/Tasks/api.js");
     loadScript("wwwroot/assets/js/Tasks/form-page.js");

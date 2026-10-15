@@ -128,27 +128,191 @@ public sealed class NotificationEventDispatchAdapter : INotificationEventDispatc
         }
 
         /*
-         * 7) Locale. QueueEmailNotificationRequest.Locale is a non-nullable string and its validator says NotEmpty,
-         *    so this adapter is the last place that can honour its own optional-looking Locale. It resolves rather
-         *    than defaults: caller's value → tenant's configured language → "en". The previous line here was
-         *    `request.Locale ?? string.Empty`, which satisfied the compiler and failed the validator.
+         * 7) Locale, per recipient. WP-EMAIL-LANG-01 (CT decision 2026-10-09) — each person is written to in their own
+         *    language, one dispatch per language: its own row, id and retries, so a retry never sends to another group.
+         *    FIX1 — in this order:
+         *    a) one address, one send: To / Cc / Bcc are de-duplicated together (NormalizeEmail; To first, then Cc, then Bcc);
+         *    b) the language is RESOLVED per person first (their own → the caller's Locale → the tenant's → "en"), and the
+         *       groups are made by the RESOLVED value: no preference and an explicit choice of the tenant's language are one
+         *       group, not two;
+         *    c) each group is tried on its own: an exception in one group (other than cancellation) is caught, logged and
+         *       counted, and the next group is still tried — when NO group was queued, the first exception is thrown again
+         *       as it was (a single dispatch behaves exactly as before);
+         *    d) Cc and Bcc ride with the first group that is QUEUED, or refused with its row due for a retry (FIX3: the
+         *       handler's PROVIDER_REJECTED_RETRY_PENDING); any other failed group sent nobody, so they move on;
+         *    e) the answer: every group queued → that dispatch; SOME queued → success with PARTIAL_RECIPIENT_FAILURE (the
+         *       queued readers have their mail, so a caller that retries on failure would mail them again); none → failure.
+         *    A group's To is a subset of the caller's To, so nobody sees an address the single message would not have shown.
          */
-        var locale = await _localeResolver.ResolveAsync(request.TenantId, request.Locale, ct);
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        var to = Distinct(PreferringALanguage(request.To), seen);
+        var cc = Distinct(request.Cc, seen);
+        var bcc = Distinct(request.Bcc, seen);
 
+        var resolved = new Dictionary<string, string>(StringComparer.Ordinal);
+        var people = new List<(EmailRecipientDto Recipient, string Locale)>(to.Count);
+        foreach (var recipient in to)
+        {
+            var asked = SupportedLocaleOrNull(recipient.Locale) ?? request.Locale ?? string.Empty;
+            if (!resolved.TryGetValue(asked, out var locale))
+            {
+                locale = await _localeResolver.ResolveAsync(request.TenantId, asked.Length == 0 ? null : asked, ct);
+                resolved[asked] = locale;
+            }
+
+            people.Add((recipient with { Locale = null }, locale));
+        }
+
+        var groups = people.GroupBy(person => person.Locale, StringComparer.Ordinal).ToList();
+        Response<NotificationDispatchDto>? firstQueued = null;
+        Response<NotificationDispatchDto>? firstFailure = null;
+        var failures = new List<string>();
+        System.Runtime.ExceptionServices.ExceptionDispatchInfo? firstException = null;
+        var copiesPending = cc.Count > 0 || bcc.Count > 0;
+        foreach (var group in groups)
+        {
+            Response<NotificationDispatchDto> response;
+            try
+            {
+                response = await QueueAsync(
+                    request, eventCode, templateKey, group.Key,
+                    group.Select(person => person.Recipient).ToList(),
+                    copiesPending ? cc : null,
+                    copiesPending ? bcc : null,
+                    ct);
+            }
+            // FIX2 — only the CALLER's cancellation stops the loop; a cancellation that is not ours (a provider's own
+            // timeout) is one group's failure like any other.
+            catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+            {
+                _logger.LogWarning(
+                    ex,
+                    "notification.dispatch_group_failed TenantId={TenantId} EventCode={EventCode} Locale={Locale} Recipients={Count}",
+                    request.TenantId, eventCode, group.Key, group.Count());
+                firstException ??= System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(ex);
+                response = Response<NotificationDispatchDto>.Fail(
+                    "The dispatch of one language group failed.", 500, ReasonGroupDispatchFailed);
+            }
+
+            if (response.IsSuccessful)
+            {
+                firstQueued ??= response;
+                copiesPending = false;
+            }
+            else
+            {
+                // FIX3 — only a refusal whose row is DUE for the retry job keeps the copies with it; the handler says so
+                // with its own code. Any other refusal — PROVIDER_REJECTED on a server without the retry job (live today,
+                // BL-536) is final — sent nobody, so the copies move on: a copy twice is lighter than no copy at all.
+                if (string.Equals(response.ReasonCode, Handlers.CommandHandlers.QueueEmailNotificationHandler.ReasonProviderRejectedRetryPending, StringComparison.Ordinal))
+                {
+                    copiesPending = false;
+                }
+
+                firstFailure ??= response;
+                failures.Add($"{group.Key}: {response.ReasonCode ?? "<none>"}");
+            }
+        }
+
+        if (firstQueued is null)
+        {
+            // Nobody was queued: the call answers exactly as a single dispatch did before FIX1 — a thrown refusal (e.g. the
+            // pipeline's validator) is thrown again, unchanged; a refused answer is returned.
+            firstException?.Throw();
+            return firstFailure!;
+        }
+
+        return firstFailure is null
+            ? firstQueued
+            : Response<NotificationDispatchDto>.PartialSuccess(firstQueued.Data!, ReasonPartialRecipientFailure, failures, firstQueued.StatusCode);
+    }
+
+    /// <summary>FIX1 — some language groups were queued and some were not. The call SUCCEEDED (the queued readers have their
+    /// mail); <see cref="Response{T}.Errors"/> names each failed group's language and reason.</summary>
+    public const string ReasonPartialRecipientFailure = "PARTIAL_RECIPIENT_FAILURE";
+
+    /// <summary>FIX1 — one language group's dispatch threw (caught, logged; the other groups were still tried).</summary>
+    public const string ReasonGroupDispatchFailed = "GROUP_DISPATCH_FAILED";
+
+    // FIX2 — the same address twice in To: the entry that carries a language is the one kept (it knows more), in the place
+    // of the first occurrence; otherwise the first one.
+    private static List<EmailRecipientDto> PreferringALanguage(IReadOnlyList<EmailRecipientDto> to)
+    {
+        var withLanguage = new Dictionary<string, EmailRecipientDto>(StringComparer.Ordinal);
+        foreach (var recipient in to)
+        {
+            var key = NotificationParsing.NormalizeEmail(recipient.Email);
+            if (!withLanguage.ContainsKey(key) && SupportedLocaleOrNull(recipient.Locale) is not null)
+            {
+                withLanguage[key] = recipient;
+            }
+        }
+
+        return to.Select(recipient => withLanguage.TryGetValue(NotificationParsing.NormalizeEmail(recipient.Email), out var better) ? better : recipient).ToList();
+    }
+
+    // One address, one send — across To, Cc and Bcc together; the first occurrence wins (To before Cc before Bcc).
+    private static List<EmailRecipientDto> Distinct(IReadOnlyList<EmailRecipientDto>? recipients, HashSet<string> seen)
+    {
+        var kept = new List<EmailRecipientDto>();
+        foreach (var recipient in recipients ?? [])
+        {
+            if (seen.Add(NotificationParsing.NormalizeEmail(recipient.Email)))
+            {
+                kept.Add(recipient);
+            }
+        }
+
+        return kept;
+    }
+
+    /// <summary>The supported recipient languages (the seven tenant languages); anything else is "no language".</summary>
+    public static readonly IReadOnlyList<string> RecipientLocales = ["en", "tr", "fr", "es", "zh", "ar", "ru"];
+
+    private static string? SupportedLocaleOrNull(string? locale)
+    {
+        if (string.IsNullOrWhiteSpace(locale))
+        {
+            return null;
+        }
+
+        var normalized = NotificationParsing.NormalizeLocale(locale);
+        var separator = normalized.IndexOfAny(['-', '_']);
+        var primary = separator > 0 ? normalized[..separator] : normalized;
+        return RecipientLocales.Contains(primary) ? primary : null;
+    }
+
+    private async Task<Response<NotificationDispatchDto>> QueueAsync(
+        NotificationEventDispatchRequest request, string eventCode, string templateKey, string locale,
+        IReadOnlyList<EmailRecipientDto> to, IReadOnlyList<EmailRecipientDto>? cc, IReadOnlyList<EmailRecipientDto>? bcc,
+        CancellationToken ct)
+    {
         // Delegate to the EXISTING pipeline unchanged. OptionalVariables pass through as-is (no adapter mutation).
         var queueRequest = new QueueEmailNotificationRequest(
             TemplateKey: templateKey,
             Locale: locale,
             Variables: request.Variables,
-            To: request.To,
-            Cc: request.Cc,
-            Bcc: request.Bcc,
+            To: to,
+            Cc: cc,
+            Bcc: bcc,
             CausationId: request.CausationId,
             Attachments: request.Attachments,
             MeetingAttendeeUserId: request.MeetingAttendeeUserId);
 
         var command = new QueueEmailNotificationCommand(request.TenantId, queueRequest, request.CorrelationId);
-        var response = await _mediator.Send(command, ct);
+        Response<NotificationDispatchDto> response;
+        try
+        {
+            response = await _mediator.Send(command, ct);
+        }
+        catch (Exception ex) when (Validators.QueueEmailNotificationValidator.IsRecipientRefusal(ex))
+        {
+            // BL-454 — the pipeline refused an address that is not ONE plain address. Said with its code, so a caller
+            // can tell it from a transient failure: no retry and no redelivery will ever make it valid.
+            response = Response<NotificationDispatchDto>.Fail(
+                "A recipient address is not a single valid address.", 400,
+                Handlers.CommandHandlers.QueueEmailNotificationHandler.ReasonRecipientInvalid);
+        }
 
         if (!response.IsSuccessful)
         {

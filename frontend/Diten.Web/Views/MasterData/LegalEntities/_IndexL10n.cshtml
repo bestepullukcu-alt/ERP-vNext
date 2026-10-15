@@ -7,14 +7,12 @@
 @{
     // Map the request culture's .NET short-date pattern to flatpickr tokens so the filter date pickers display in
     // the user's locale format while the stored filter value stays ISO (Y-m-d).
-    static string ToFlatpickr(string net) =>
-        net.Replace("dd", "\x01").Replace("d", "\x02")
-           .Replace("MM", "\x03").Replace("M", "\x04")
-           .Replace("yyyy", "Y").Replace("yy", "y")
-           .Replace("\x01", "d").Replace("\x02", "j").Replace("\x03", "m").Replace("\x04", "n");
+    // WCN-FIX-04 — one conversion for every view (FlatpickrDateFormat: drops the bidi marks Arabic's pattern carries).
     var payload = new
     {
-        DateFormat = ToFlatpickr(CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern),
+        DateFormat = Diten.Web.Services.Localization.FlatpickrDateFormat.ForCurrentCulture(),
+        // WCN-FIX-04 — a filter date the shared guard refused: Apply stops and says why (SharedResource, 7 languages).
+        DateNotRecognized = SharedLocalizer["DateNotRecognized"].Value,
         SaveView = SharedLocalizer["SaveView"].Value,
         RecordSaved = SharedLocalizer["RecordSaved"].Value,
         LegalEntitiesTitle = Localizer["LegalEntitiesTitle"].Value,

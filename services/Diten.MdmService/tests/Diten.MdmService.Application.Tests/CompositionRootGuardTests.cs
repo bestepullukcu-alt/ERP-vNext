@@ -22,6 +22,7 @@ namespace Diten.MdmService.Application.Tests;
 ///     dependency that is never registered fails silently instead of loudly (Platform's MdmLegalEntityReferenceValidator, Q362).
 /// MDM reads its Mongo settings while Program.cs registers services, so the guard needs a real, disposable
 /// mongod: set MDM_COMPOSITION_GUARD_MONGO_URI. Unset, the guard FAILS — a guard that skips is not a guard.
+/// Main sync FIX1 (CT decision B): unset, it now uses MDM's test-owned mongod (MdmTestMongo, DITEN_TEST_MONGOD); with neither, it still FAILS by name.
 /// No hosted service runs and no request is sent; the host is only built, once per process (the BSON
 /// serializers it registers are process-global).
 /// </summary>
@@ -34,7 +35,7 @@ public sealed class CompositionRootGuardCollection
 [Collection(CompositionRootGuardCollection.Name)]
 public sealed class CompositionRootGuardTests(CompositionRootGuardTests.Host host) : IClassFixture<CompositionRootGuardTests.Host>
 {
-    private const string MongoVariable = "MDM_COMPOSITION_GUARD_MONGO_URI";
+    internal const string MongoVariable = "MDM_COMPOSITION_GUARD_MONGO_URI";
 
     [Fact]
     public void EveryControllerConstructorParameter_IsResolvableFromTheProductionContainer()
@@ -57,9 +58,12 @@ public sealed class CompositionRootGuardTests(CompositionRootGuardTests.Host hos
 
         public Host()
         {
-            var mongo = Environment.GetEnvironmentVariable(MongoVariable);
-            if (string.IsNullOrWhiteSpace(mongo))
-                throw new InvalidOperationException($"{MongoVariable} is not set. Point it at a disposable mongod (never 27017); this guard must not be skipped.");
+            // Main sync FIX1 (CT decision B, the Platform decision C model): the guard's own variable first, as main wrote
+            // it; otherwise MDM's test-owned mongod (MdmTestMongo, BL-595 — red by name when none can be resolved), so CI's
+            // mdm-app row runs it with DITEN_TEST_MONGOD alone. Never the shared Mongo: a given URI on the operational band
+            // (or with no port) is refused.
+            var given = Environment.GetEnvironmentVariable(MongoVariable);
+            var mongo = given is not null ? ValidGivenUri(given) : MdmTestMongo.ConnectionString;
             var settings = new Dictionary<string, string?>
             {
                 ["Mongo:ConnectionString"] = mongo,
@@ -120,6 +124,16 @@ public sealed class CompositionRootGuardTests(CompositionRootGuardTests.Host hos
             type.IsGenericTypeDefinition ? null : type.GetConstructors().OrderByDescending(c => c.GetParameters().Length).FirstOrDefault();
 
         public void Dispose() => _factory.Dispose();
+
+        /// <summary>Main's rule (set and not blank) plus the shared-Mongo refusal: not the operational band, not portless.</summary>
+        internal static string ValidGivenUri(string given)
+        {
+            if (string.IsNullOrWhiteSpace(given))
+                throw new InvalidOperationException($"{MongoVariable} is not set. Point it at a disposable mongod (never the shared one); this guard must not be skipped.");
+            if (new MongoDB.Driver.MongoUrl(given).Servers.Any(server => server.Port >= MdmTestMongo.SharedPort && server.Port <= MdmTestMongo.SharedPort + 4))
+                throw new InvalidOperationException($"{MongoVariable} names the shared Mongo's port band; point it at a disposable mongod.");
+            return given;
+        }
     }
 
     public sealed class Factory(IReadOnlyDictionary<string, string?> settings) : WebApplicationFactory<Program>

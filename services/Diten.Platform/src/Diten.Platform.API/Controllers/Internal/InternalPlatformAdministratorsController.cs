@@ -59,7 +59,13 @@ public sealed class InternalPlatformAdministratorsController : CustomBaseControl
             administrator.Email,
             administrator.Status.ToString(),
             administrator.IsDeleted,
-            administrator.Status == AdministratorStatus.Active && !administrator.IsDeleted);
+            administrator.Status == AdministratorStatus.Active && !administrator.IsDeleted,
+            // BL-521 FIX1 F1(b) — the record's actor type, so Auth re-issues a refreshed token as what the record says
+            // (a demoted platform administrator becomes partner_admin at its next refresh), not as the old token said.
+            administrator.ActorType.ToString(),
+            // FIX4 item 2 — the record's roles, so every platform sign-in and refresh converges Auth's copy of them to the
+            // record before minting (a sync that was lost no longer outlives the next token).
+            administrator.Roles.Select(role => role.ToString()).ToList());
 
         return CreateActionResultInstance(Response<PlatformAdministratorStatusDto>.Success(dto));
     }
@@ -92,15 +98,16 @@ public sealed class InternalPlatformAdministratorsController : CustomBaseControl
             return CreateActionResultInstance(Response<NoContent>.Success(204));
         }
 
-        administrator.InvitationStatus = AdministratorInvitationStatus.Accepted;
-        administrator.LastLoginAtUtc = DateTimeOffset.UtcNow;
-        administrator.UpdatedAt = DateTimeOffset.UtcNow;
-        administrator.UpdatedBy = "auth-service";
-
-        var updated = await _repository.UpdateAsync(administrator, administrator.Version, ct);
-        return updated
+        // BL-521 FIX5 item 9 — A TARGETED WRITE of the sign-in moment and the accepted invitation. It used to replace the
+        // whole record at the loaded version on EVERY platform sign-in and refresh: it bumped the version (so an
+        // administrator's open edit form was refused as "changed by another user" by a mere sign-in), stamped UpdatedBy
+        // "auth-service", erased the pending-sync mark, and — refused by a concurrent edit — answered a 409 the caller could
+        // not tell from a write that had landed. Now neither version, UpdatedBy nor mark changes, and nothing here can be
+        // refused by a concurrent edit.
+        var accepted = await _repository.RecordLoginAcceptedAsync(administrator.Id, DateTimeOffset.UtcNow, ct);
+        return accepted
             ? CreateActionResultInstance(Response<NoContent>.Success(204))
-            : CreateActionResultInstance(Response<NoContent>.Fail("Platform administrator login state could not be updated.", 409));
+            : CreateActionResultInstance(Response<NoContent>.Fail("Platform administrator not found or inactive.", 404));
     }
 
     private bool IsInternalRequestAuthorized()
@@ -133,7 +140,9 @@ public sealed class InternalPlatformAdministratorsController : CustomBaseControl
         string Email,
         string Status,
         bool IsDeleted,
-        bool IsActive);
+        bool IsActive,
+        string ActorType,
+        IReadOnlyList<string> Roles);
 
     public sealed record PlatformAdministratorLoginAcceptedRequest(string Email);
 }

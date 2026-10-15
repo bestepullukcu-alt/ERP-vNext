@@ -69,7 +69,9 @@ public sealed class GetTenantAvailableModulesForAssignmentQueryHandler
         }
 
         var rows = modules
-            .Where(x => !x.IsBaseline && !entitledCodes.Contains(x.ModuleCode))
+            // FIX2 A2 — neither a baseline nor a core module can be added (the add path refuses both with their codes),
+            // so neither is offered.
+            .Where(x => !x.IsBaseline && !x.IsCoreModule && !entitledCodes.Contains(x.ModuleCode))
             .Select(x => new TenantAvailableModuleDto(x.ModuleCode, x.ModuleName, x.DisplayName))
             .ToList();
 

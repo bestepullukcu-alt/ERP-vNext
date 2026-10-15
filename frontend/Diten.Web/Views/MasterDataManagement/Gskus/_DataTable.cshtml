@@ -1,29 +1,32 @@
 @using Diten.Web.Views.MasterDataManagement.Gskus
+@using Diten.Web.Models.DataTable
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<GskusIndex> Localizer
+@{
+    // The table card is the shared component (BL-440): the page describes it, _ListShell renders it, with the shared
+    // shaped skeleton. Every header is localized HERE; the shell produces no text.
+    //
+    // SERVER data (FIX3 B17): MDM pages, searches, filters and sorts (orderBy whitelist: canonicalCode, packQuantity,
+    // lifecycleStatus); index.js declares the same mode.
+    //
+    // NO SELECTION COLUMN, deliberately: GSKU identities are never bulk-deleted or bulk-changed (GxP — every identity
+    // change is its own maker-checker request), so a checkbox would select into nothing.
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-gskus",
+        DataMode = "server",
+        Slug = "gskus",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["CanonicalCode"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["GlobalProduct"].Value },
+            new DataTableColumnViewModel { Header = Localizer["RevisionIdentifier"].Value },
+            new DataTableColumnViewModel { Header = Localizer["PackQuantity"].Value },
+            new DataTableColumnViewModel { Header = Localizer["LifecycleStatus"].Value }
+        ],
+        ActionsHeader = Localizer["Actions"].Value
+    };
+}
 
-<div class="card">
-    <div id="skeleton-loader" class="backbone-skeleton p-4">
-        <div class="shimmer skeleton-row skeleton-row-lg"></div>
-        <div class="shimmer skeleton-row"></div>
-        <div class="shimmer skeleton-row"></div>
-        <div class="shimmer skeleton-row"></div>
-        <div class="shimmer skeleton-row skeleton-row-last"></div>
-    </div>
-
-    <div class="card-datatable table-responsive">
-        <table id="dt-gskus" data-dt-standard="v2" class="datatables-gskus table border-top">
-            <thead>
-                <tr>
-                    <th></th>
-                    <th class="all">@Localizer["CanonicalCode"]</th>
-                    <th>@Localizer["GlobalProduct"]</th>
-                    <th>@Localizer["RevisionIdentifier"]</th>
-                    <th>@Localizer["PackQuantity"]</th>
-                    <th>@Localizer["LifecycleStatus"]</th>
-                    <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
-                </tr>
-            </thead>
-        </table>
-    </div>
-</div>
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />

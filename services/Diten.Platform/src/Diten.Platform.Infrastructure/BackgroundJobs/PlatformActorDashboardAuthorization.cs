@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using System.Net;
 using Diten.BuildingBlocks.BackgroundJobs;
 using Microsoft.AspNetCore.Http;
@@ -10,8 +9,17 @@ namespace Diten.Platform.Infrastructure.BackgroundJobs;
 
 public static class PlatformActorDashboardAuthorization
 {
-    public static bool IsAuthorized(ClaimsPrincipal user)
+    /// <summary>
+    /// BL-521 — the job dashboard shows and runs every tenant's jobs: platform administrators only, never a partner.
+    ///
+    /// <para>FIX2 item 4 — decided by the administrator RECORD, the same decision the <c>PlatformAdminOnly</c> policy makes
+    /// (<c>DependencyInjection.IsConfirmedPlatformAdministratorAsync</c>): a <c>platform_admin</c>
+    /// token whose own record is live and is not a partner record. Before, the token alone decided, so an administrator
+    /// demoted to partner, suspended or deleted kept the dashboard for as long as its token lived.</para>
+    /// </summary>
+    public static async Task<bool> IsAuthorizedAsync(HttpContext httpContext)
     {
+        var user = httpContext.User;
         if (user.Identity?.IsAuthenticated != true)
         {
             return false;
@@ -20,9 +28,12 @@ public static class PlatformActorDashboardAuthorization
         var actorType = user.Claims
             .FirstOrDefault(claim => string.Equals(claim.Type, "actor_type", StringComparison.OrdinalIgnoreCase))
             ?.Value;
+        if (!string.Equals(actorType, "platform_admin", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
 
-        return string.Equals(actorType, "platform_admin", StringComparison.OrdinalIgnoreCase)
-               || string.Equals(actorType, "partner_admin", StringComparison.OrdinalIgnoreCase);
+        return await DependencyInjection.IsConfirmedPlatformAdministratorAsync(httpContext);
     }
 
     public static bool IsDevelopmentAnonymousBypassAllowed(HttpContext httpContext)

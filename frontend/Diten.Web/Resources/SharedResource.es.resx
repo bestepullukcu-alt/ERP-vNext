@@ -520,6 +520,35 @@
   <data name="Password.Error.NewRequired" xml:space="preserve"><value>La nueva contraseña es obligatoria.</value></data>
   <data name="Password.Error.ResetEmailRequired" xml:space="preserve"><value>El correo electrónico es obligatorio.</value></data>
   <data name="Password.Error.ResetTokenRequired" xml:space="preserve"><value>El token de restablecimiento es obligatorio.</value></data>
+  <data name="Auth.Error.TooManyRequests" xml:space="preserve"><value>Demasiadas solicitudes. Espere unos minutos e inténtelo de nuevo.</value></data>
+  <data name="Auth.Error.PasswordChangedMeanwhile" xml:space="preserve"><value>Su contraseña se cambió mientras tanto (por ejemplo, un administrador). Vuelva a iniciar sesión.</value></data>
+  <data name="Auth.Error.AccountDeactivated" xml:space="preserve"><value>Un administrador ha desactivado su cuenta. Póngase en contacto con su administrador.</value></data>
+  <data name="Auth.Error.InvalidCredentials" xml:space="preserve"><value>El correo electrónico o la contraseña son incorrectos, o la cuenta está bloqueada temporalmente. Vuelva a intentarlo más tarde.</value></data>
+  <data name="Auth.Error.LoginUnavailable" xml:space="preserve"><value>El inicio de sesión no está disponible temporalmente. Vuelva a intentarlo en unos instantes.</value></data>
+  <data name="Auth.Error.EmailLoginDisabled" xml:space="preserve"><value>El inicio de sesión con correo electrónico está desactivado para esta organización.</value></data>
+  <data name="Auth.Error.TemporaryPasswordExpired" xml:space="preserve"><value>Su contraseña temporal ha caducado. Restablezca su contraseña.</value></data>
+  <data name="Auth.Error.PlatformPrivilegesRequired" xml:space="preserve"><value>Esta cuenta no tiene ningún rol de administración de la plataforma.</value></data>
+  <data name="Auth.Error.InvalidVerificationCode" xml:space="preserve"><value>El código de verificación no es válido o ha caducado.</value></data>
+  <data name="Auth.Error.CurrentPasswordIncorrect" xml:space="preserve"><value>Su contraseña actual es incorrecta.</value></data>
+  <data name="Auth.Error.SessionEnded" xml:space="preserve"><value>Su sesión ha finalizado. Vuelva a iniciar sesión.</value></data>
+  <data name="Auth.Error.LinkInvalid" xml:space="preserve"><value>Este enlace ya no es válido. Solicite un nuevo enlace a su administrador.</value></data>
+  <data name="Auth.Error.LoginFailed" xml:space="preserve"><value>No se pudo iniciar sesión. Inténtelo de nuevo.</value></data>
+  <data name="Auth.Error.VerificationFailed" xml:space="preserve"><value>No se pudo completar la verificación. Inténtelo de nuevo.</value></data>
+  <data name="Auth.Error.PasswordChangeFailed" xml:space="preserve"><value>No se pudo cambiar su contraseña. Inténtelo de nuevo.</value></data>
+  <data name="Auth.Error.ServiceUnavailable" xml:space="preserve"><value>El servicio de inicio de sesión no está disponible temporalmente. Vuelva a intentarlo en unos instantes.</value></data>
+  <data name="Auth.Error.RequestInvalid" xml:space="preserve"><value>La solicitud está incompleta. Revise los campos e inténtelo de nuevo.</value></data>
+  <data name="Auth.Error.TenantMissing" xml:space="preserve"><value>Este enlace de inicio de sesión no contiene información de la organización. Vuelva a usar su enlace de invitación.</value></data>
+  <data name="Auth.Error.VerificationCodeRequired" xml:space="preserve"><value>Introduzca el código de verificación.</value></data>
+  <data name="Auth.Error.VerificationChallengeRequired" xml:space="preserve"><value>El paso de verificación ha caducado. Vuelva a iniciar sesión.</value></data>
+  <data name="Auth.Dialog.Ok" xml:space="preserve"><value>Aceptar</value></data>
+  <data name="Auth.Mfa.Title" xml:space="preserve"><value>Verificación en dos pasos</value></data>
+  <data name="Auth.Mfa.Prompt" xml:space="preserve"><value>Introduzca el código de verificación enviado a</value></data>
+  <data name="Auth.Mfa.CodeLabel" xml:space="preserve"><value>Código de verificación</value></data>
+  <data name="Auth.Mfa.Resend" xml:space="preserve"><value>Reenviar código</value></data>
+  <data name="Auth.Mfa.Verifying" xml:space="preserve"><value>Verificando...</value></data>
+  <data name="Auth.Mfa.Resending" xml:space="preserve"><value>Enviando...</value></data>
+  <data name="Auth.Mfa.ResentTitle" xml:space="preserve"><value>Código enviado</value></data>
+  <data name="Auth.Mfa.ResentMessage" xml:space="preserve"><value>Se ha enviado un nuevo código de verificación.</value></data>
   <!-- Tenant navigation names (FEAT-NAV-L10N: generic code→resx localization, keyed by stable nav codes) -->
   <data name="Nav.Domain.ADMINISTRATION" xml:space="preserve"><value>Administración</value></data>
   <data name="Nav.Domain.DEVENABLEMENT" xml:space="preserve"><value>Habilitación para desarrolladores</value></data>
@@ -626,6 +655,9 @@
   <data name="Nav.Page.TASKEDIT" xml:space="preserve">
     <value>Editar tarea</value>
   </data>
+  <data name="Nav.Module.BRANDPRODUCTMASTER" xml:space="preserve">
+    <value>Maestro de Marcas y Productos</value>
+  </data>
   <data name="Nav.Module.PRODUCTITEMSKUMASTER" xml:space="preserve">
     <value>Maestro de Producto / Artículo / SKU</value>
   </data>
@@ -634,6 +666,9 @@
   </data>
   <data name="Nav.Page.GSKUS" xml:space="preserve">
     <value>GSKU</value>
+  </data>
+  <data name="Nav.Page.ITEMS" xml:space="preserve">
+    <value>Artículos</value>
   </data>
   <data name="Nav.Page.TASKTYPES" xml:space="preserve">
     <value>Tipos de tarea</value>
@@ -1056,6 +1091,21 @@
   <data name="InviteAcceptAnyway" xml:space="preserve">
     <value>Aceptar De Todos Modos</value>
   </data>
+  <data name="DtLoadFailed" xml:space="preserve">
+    <value>No se pudo cargar la lista.</value>
+  </data>
+  <data name="DtLoadNoPermission" xml:space="preserve">
+    <value>No tiene permiso para ver esta lista.</value>
+  </data>
+  <data name="DtRetry" xml:space="preserve">
+    <value>Reintentar</value>
+  </data>
+  <data name="ShellSearchPlaceholder" xml:space="preserve">
+    <value>Buscar ({0})</value>
+  </data>
+  <data name="DateNotRecognized" xml:space="preserve">
+    <value>Una fecha que escribió no se pudo leer, por lo que no se guardó. Escríbala de nuevo en el formato del campo o elíjala en el calendario.</value>
+  </data>
   <data name="Nav.Domain.MANUFACTURING" xml:space="preserve"><value>Fabricación</value></data>
   <data name="Nav.Module.BOMROUTINGS" xml:space="preserve"><value>Listas de materiales y rutas</value></data>
   <data name="Nav.Page.BOMS" xml:space="preserve"><value>Listas de materiales</value></data>
@@ -1082,6 +1132,9 @@
   <data name="Nav.Page.LOADS" xml:space="preserve"><value>Cargas</value></data>
   <data name="Nav.Module.CLAIMSMANAGEMENT" xml:space="preserve"><value>Gestión de reclamaciones</value></data>
   <data name="Nav.Page.SHIPMENTCLAIMS" xml:space="preserve"><value>Reclamaciones de transporte</value></data>
+  <data name="Activate" xml:space="preserve"><value>Activar</value></data>
+  <data name="Deactivate" xml:space="preserve"><value>Desactivar</value></data>
+  <data name="Login.EmailOrUsername" xml:space="preserve"><value>Correo electrónico o nombre de usuario</value></data>
   <data name="Nav.Module.INVENTORYLEDGER" xml:space="preserve"><value>Inventario</value></data>
   <data name="Nav.Page.STOCKLEDGER" xml:space="preserve"><value>Libro de existencias</value></data>
   <data name="Nav.Page.LOCATIONTREE" xml:space="preserve"><value>Ubicaciones</value></data>

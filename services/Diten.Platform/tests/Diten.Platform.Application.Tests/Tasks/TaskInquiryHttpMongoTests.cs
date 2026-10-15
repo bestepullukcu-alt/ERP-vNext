@@ -497,11 +497,11 @@ public sealed class TaskInquiryHttpMongoTests : IAsyncLifetime
                     services.GetRequiredService<IEnumerable<IWorkItemProvider>>()).Handle(query, ct),
                 InquireTaskItemCommand command => await new InquireTaskItemHandler(
                     tasks, new TaskLifecycleService(), currentUser, seats, positions, units,
-                    notifications, NullLogger<InquireTaskItemHandler>.Instance).Handle(command, ct),
+                    notifications, NullLogger<InquireTaskItemHandler>.Instance, writeGate: TaskWriteGateDoubles.Open).Handle(command, ct),
                 AnswerInquiryCommand command => await new AnswerInquiryHandler(
                     tasks, services.GetRequiredService<ITaskTransitionRepository>(), new TaskLifecycleService(),
                     currentUser, new FakeWorkflowTransitionGate(), new FakeTaskDependencyRepository(),
-                    notifications, NullLogger<AnswerInquiryHandler>.Instance).Handle(command, ct),
+                    notifications, NullLogger<AnswerInquiryHandler>.Instance, writeGate: TaskWriteGateDoubles.Open).Handle(command, ct),
                 TransitionTaskItemCommand command => await new TransitionTaskItemHandler(
                     tasks, new TaskLifecycleService(), currentUser,
                     new FakeChecklistRunRepository(), new TaskChecklistService(),
@@ -510,7 +510,7 @@ public sealed class TaskInquiryHttpMongoTests : IAsyncLifetime
                     new TaskFieldDefinitionService(
                         new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()),
                     new FakeTaskAttachmentRepository(),
-                    NullLogger<TransitionTaskItemHandler>.Instance).Handle(command, ct),
+                    NullLogger<TransitionTaskItemHandler>.Instance, writeGate: TaskWriteGateDoubles.Open).Handle(command, ct),
                 _ => throw new InvalidOperationException($"Unexpected request {request.GetType().Name}.")
             };
             return (TResponse)response;

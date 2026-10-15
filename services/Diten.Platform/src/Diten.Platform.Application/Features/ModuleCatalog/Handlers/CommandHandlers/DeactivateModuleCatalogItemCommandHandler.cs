@@ -31,10 +31,12 @@ public sealed class DeactivateModuleCatalogItemCommandHandler : IRequestHandler<
                 if (item is null) return new(Response<NoContent>.Fail("Module catalog item not found.", 404), false);
                 if (item.IsBaseline) return new(Response<NoContent>.Fail(ModuleCatalogErrorCodes.BaselineCannotBeDeactivated, 409), false);
                 if (item.Status != ModuleCatalogStatus.Active) return new(Response<NoContent>.Fail($"Invalid status transition from {item.Status} to Inactive.", 400), false);
+                var auditBefore = GlobalApplicabilityAuditChange.StateOf(item);
                 item.Status = ModuleCatalogStatus.Inactive;
                 await _repository.UpdateAsync(session, item, transactionCt);
                 return new(Response<NoContent>.Success(204), true,
-                    (s, version, token) => _state.UpsertModuleCatalogAsync(s, item, version, token));
+                    (s, version, token) => _state.UpsertModuleCatalogAsync(s, item, version, token),
+                    GlobalApplicabilityAuditChange.Between(auditBefore, GlobalApplicabilityAuditChange.StateOf(item)));
             }, ct);
     }
 }

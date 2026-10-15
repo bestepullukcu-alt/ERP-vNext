@@ -204,7 +204,7 @@ public sealed class TaskTemplateSnapshotTests
             new FakeCurrentUserContext(TaskTestData.Me),
             _tenant,
             NullLogger<CreateTaskItemHandler>.Instance,
-            TaskDocumentFreezerDoubles.OverAnEmptyRegister(), TaskAssignmentGuards.AdmitAll());
+            TaskDocumentFreezerDoubles.OverAnEmptyRegister(), TaskAssignmentGuards.AdmitAll(), writeGate: TaskWriteGateDoubles.Open);
 
         /// <summary>Routes the ONE command the from-template handler sends to the real create handler.</summary>
         private sealed class SnapshotMediator(Harness harness) : IMediator

@@ -42,6 +42,15 @@ public sealed class RefreshToken : EntityBase
     public string? RevokedReason { get; private set; }
     public string ActorType { get; private set; } = string.Empty;
 
+    /// <summary>
+    /// BL-529 FIX3 — a keyed fingerprint of the password hash this session was opened with (never the hash itself). A
+    /// refresh refuses when it no longer matches the account's password: a reset or a change ends the session even if
+    /// the token escaped every sweep. Carried unchanged through rotation.
+    /// </summary>
+    public string? PasswordFingerprint { get; private set; }
+
+    public void BindToPassword(string passwordFingerprint) => PasswordFingerprint = passwordFingerprint;
+
     public bool IsExpired => DateTime.UtcNow >= ExpiresAt;
     public bool IsActive => RevokedAt == null && !IsExpired;
 

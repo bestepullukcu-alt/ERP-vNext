@@ -6,6 +6,7 @@
 @inject Diten.Web.Services.IPermissionSnapshot Perms
 @{
     ViewData["Title"] = Localizer["ApprovalsTitle"].Value;
+    ViewData["PageCode"] = "TIMEAPPROVALS"; // WP-UX-COMMON-01 — the help panel / tour code, also when the menu did not load
     Layout = "_LayoutTenantShell";
     var canDecide = Perms.Has("platform.workflow.tasks.approve");
     var bulkActionBar = new DataTableBulkActionBarViewModel
@@ -42,7 +43,7 @@
 @* Contract marker: <partial name="_Filter" /> *@
 <partial name="~/Views/TimeEntry/Approvals/_Filter.cshtml" />
 
-<div class="mb-3">
+<div class="mb-3" data-tour="ta-header">
     <h5 class="mb-0">@Localizer["ApprovalsTitle"]</h5>
     <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
     <p class="mb-0 text-muted small time-entry-approvals-hint">@Localizer["BulkMarkedHint"]</p>
@@ -51,7 +52,10 @@
 <partial name="~/Views/Shared/Components/DataTable/_BulkActionBar.cshtml" model="bulkActionBar" />
 
 @* Contract markers are rendered by _DataTable.cshtml: the shared <partial name="_TableSkeleton" /> (which carries id="skeleton-loader"), <table id="dt-timeapprovals" data-dt-standard="v2"> *@
-<partial name="~/Views/TimeEntry/Approvals/_DataTable.cshtml" />
+@* WP-UX-COMMON-01 — the approvals tour's list target (diten-tour-catalog.js); the wrapper draws nothing of its own. *@
+<div data-tour="ta-list">
+    <partial name="~/Views/TimeEntry/Approvals/_DataTable.cshtml" />
+</div>
 
 @* Contract marker: id="offcanvasDetailsPreview" — the approvals list has no quick view; a row opens the read-only week page. *@
 

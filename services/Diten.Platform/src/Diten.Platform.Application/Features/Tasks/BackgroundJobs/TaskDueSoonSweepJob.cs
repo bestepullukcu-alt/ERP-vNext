@@ -67,6 +67,7 @@ public sealed class TaskDueSoonSweepJob : IBackgroundJobHandler<TaskDueSoonSweep
         var notDelivered = 0;
         var failedTasks = 0;
         var failedTenants = 0;
+        var partial = 0;
 
         foreach (var tenant in tenants)
         {
@@ -86,6 +87,7 @@ public sealed class TaskDueSoonSweepJob : IBackgroundJobHandler<TaskDueSoonSweep
                         alreadyReminded += data.AlreadyReminded;
                         notDelivered += data.NotDelivered;
                         failedTasks += data.Failed;
+                        partial += data.Partial;
                     }
                 }
             }
@@ -110,23 +112,24 @@ public sealed class TaskDueSoonSweepJob : IBackgroundJobHandler<TaskDueSoonSweep
          * LEVEL is what a reader scanning a log actually sees, and the first live failure was reported at
          * Information with four zeroes beside it.
          */
-        var lostWork = notDelivered + failedTasks + failedTenants;
+        // FIX2 — a reminder that reached only some of its readers lost work too.
+        var lostWork = notDelivered + failedTasks + failedTenants + partial;
         const string completedTemplate =
             "task.duesoon.sweep.completed Tenants={Tenants} Sent={Sent} AlreadyReminded={AlreadyReminded} "
-            + "NotDelivered={NotDelivered} FailedTasks={FailedTasks} FailedTenants={FailedTenants} "
+            + "NotDelivered={NotDelivered} FailedTasks={FailedTasks} FailedTenants={FailedTenants} Partial={Partial} "
             + "CorrelationId={CorrelationId}";
 
         if (lostWork > 0)
         {
             _logger.LogWarning(
                 completedTemplate,
-                tenants.Count, sent, alreadyReminded, notDelivered, failedTasks, failedTenants, correlationId);
+                tenants.Count, sent, alreadyReminded, notDelivered, failedTasks, failedTenants, partial, correlationId);
         }
         else
         {
             _logger.LogInformation(
                 completedTemplate,
-                tenants.Count, sent, alreadyReminded, notDelivered, failedTasks, failedTenants, correlationId);
+                tenants.Count, sent, alreadyReminded, notDelivered, failedTasks, failedTenants, partial, correlationId);
         }
     }
 }

@@ -1,3 +1,4 @@
+using Diten.AuthService.Application.Tests.Persistence;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -22,6 +23,7 @@ namespace Diten.AuthService.Application.Tests;
 ///     dependency that is never registered fails silently instead of loudly (Platform's MdmLegalEntityReferenceValidator, Q362).
 /// AuthService builds its MongoClient and runs its seeder while Program.cs registers services, so the guard needs a real, disposable
 /// mongod: set AUTH_COMPOSITION_GUARD_MONGO_URI. Unset, the guard FAILS — a guard that skips is not a guard.
+/// Main sync FIX1 (CT decision B): unset, it now uses Auth's test-owned mongod (DITEN_TEST_MONGOD); with neither, it still FAILS by name.
 /// No hosted service runs and no request is sent; the host is only built, once per process (the BSON
 /// serializers it registers are process-global).
 /// </summary>
@@ -34,7 +36,7 @@ public sealed class CompositionRootGuardCollection
 [Collection(CompositionRootGuardCollection.Name)]
 public sealed class CompositionRootGuardTests(CompositionRootGuardTests.Host host) : IClassFixture<CompositionRootGuardTests.Host>
 {
-    private const string MongoVariable = "AUTH_COMPOSITION_GUARD_MONGO_URI";
+    internal const string MongoVariable = "AUTH_COMPOSITION_GUARD_MONGO_URI";
 
     [Fact]
     public void EveryControllerConstructorParameter_IsResolvableFromTheProductionContainer()
@@ -54,12 +56,27 @@ public sealed class CompositionRootGuardTests(CompositionRootGuardTests.Host hos
     {
         private readonly Factory _factory;
         private readonly IServiceProviderIsService _isService;
+        private readonly DisposableAuthMongoReplicaSet? _ownedMongo;
 
         public Host()
         {
-            var mongo = Environment.GetEnvironmentVariable(MongoVariable);
-            if (string.IsNullOrWhiteSpace(mongo))
-                throw new InvalidOperationException($"{MongoVariable} is not set. Point it at a disposable mongod (never 27017); this guard must not be skipped.");
+            // Main sync FIX1 (CT decision B, the Platform decision C model): the guard's own variable first, as main wrote
+            // it; otherwise Auth's test-owned mongod (DITEN_TEST_MONGOD, BL-570's resolver) — so CI's auth-app row runs it
+            // with what it already sets; with neither, red by name. Never the shared Mongo: a given URI on the operational
+            // band (or with no port) is refused.
+            string mongo;
+            var given = Environment.GetEnvironmentVariable(MongoVariable);
+            if (given is not null)
+            {
+                mongo = ValidGivenUri(given);
+            }
+            else
+            {
+                RequireOwnedMongod(DisposableAuthMongoReplicaSet.ResolveExecutable());
+                _ownedMongo = new DisposableAuthMongoReplicaSet();
+                Task.Run(() => _ownedMongo.InitializeAsync()).GetAwaiter().GetResult();
+                mongo = _ownedMongo.ConnectionString;
+            }
             var settings = new Dictionary<string, string?>
             {
                 ["MongoDbSettings:ConnectionString"] = mongo,
@@ -120,7 +137,29 @@ public sealed class CompositionRootGuardTests(CompositionRootGuardTests.Host hos
         private static ConstructorInfo? Constructor(Type type) =>
             type.IsGenericTypeDefinition ? null : type.GetConstructors().OrderByDescending(c => c.GetParameters().Length).FirstOrDefault();
 
-        public void Dispose() => _factory.Dispose();
+        public void Dispose()
+        {
+            _factory.Dispose();
+            if (_ownedMongo is not null) Task.Run(() => _ownedMongo.DisposeAsync()).GetAwaiter().GetResult();
+        }
+
+        /// <summary>No given URI and no owned mongod: red BY NAME — never a skip, never a fallback to the shared Mongo.</summary>
+        internal static void RequireOwnedMongod(string? executable)
+        {
+            if (executable is null)
+                throw new InvalidOperationException(
+                    $"{DisposableAuthMongoReplicaSet.RequiredButUnavailable}: neither {MongoVariable} nor {OwnedMongo.Variable} names a mongod; this guard must not be skipped.");
+        }
+
+        /// <summary>Main's rule (set and not blank) plus the shared-Mongo refusal: not the operational band, not portless.</summary>
+        internal static string ValidGivenUri(string given)
+        {
+            if (string.IsNullOrWhiteSpace(given))
+                throw new InvalidOperationException($"{MongoVariable} is not set. Point it at a disposable mongod (never the shared one); this guard must not be skipped.");
+            if (new MongoDB.Driver.MongoUrl(given).Servers.Any(server => server.Port is >= 27017 and <= 27021))
+                throw new InvalidOperationException($"{MongoVariable} names the shared Mongo's port band; point it at a disposable mongod.");
+            return given;
+        }
     }
 
     public sealed class Factory(IReadOnlyDictionary<string, string?> settings) : WebApplicationFactory<Program>

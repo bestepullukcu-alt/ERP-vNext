@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Diten.BuildingBlocks.Email;
 using Diten.Platform.Application.Features.Notifications;
 using Diten.Platform.Application.Features.Notifications.Services;
 using Diten.Platform.Domain.Entities.Notifications;
@@ -48,10 +49,14 @@ internal sealed class SmtpMessagingProvider : IMessagingProvider
         var stopwatch = Stopwatch.StartNew();
         var options = _options.CurrentValue;
 
-        var settings = await ResolveSettingsAsync(request.TenantId, ct);
+        var (settings, refusal) = await ResolveSettingsAsync(request.TenantId, ct);
         if (settings is null)
         {
-            return LogAndReturnFailure(request, MessagingProviderErrorCodes.ProviderConfigInvalid, "Tenant SMTP settings could not be resolved.", stopwatch);
+            // Every refusal is named by the rule that refused it (C-FIX1 K8: PLATFORM_DEFAULT_UNAVAILABLE too, as the
+            // resolver says it); the configuration code only if the selection ever gave none.
+            return refusal is null
+                ? LogAndReturnFailure(request, MessagingProviderErrorCodes.ProviderConfigInvalid, "Tenant SMTP settings could not be resolved.", stopwatch)
+                : LogAndReturnFailure(request, refusal, MessagingSettingsSelection.Describe(refusal), stopwatch);
         }
 
         var validation = ValidateRequest(request, settings, options);
@@ -78,6 +83,12 @@ internal sealed class SmtpMessagingProvider : IMessagingProvider
         try
         {
             var message = BuildMessage(request, settings);
+            if (!string.IsNullOrWhiteSpace(settings.ReplyToEmail) && message.ReplyTo.Count == 0)
+            {
+                _logger.LogWarning(
+                    "smtp.provider.reply_to_refused DispatchId={DispatchId} TenantId={TenantId}. The configured reply address is not a single valid address; the message is sent without one.",
+                    request.DispatchId, request.TenantId);
+            }
 
             await transport.ConnectAsync(settings.Host!, settings.Port!.Value, secureSocketOptions, timeoutCts.Token);
             // Batch 1.1 limitation: TenantMessagingSettings carries no dedicated SMTP-AUTH username field;
@@ -120,16 +131,18 @@ internal sealed class SmtpMessagingProvider : IMessagingProvider
         }
     }
 
-    private async Task<TenantMessagingSettings?> ResolveSettingsAsync(Guid tenantId, CancellationToken ct)
+    private async Task<(TenantMessagingSettings? Settings, string? RefusalCode)> ResolveSettingsAsync(Guid tenantId, CancellationToken ct)
     {
+        // BL-499 (2) — the tenant's fallback policy decides, exactly as in the settings resolver (one rule): a disabled
+        // tenant row whose policy is not "use the platform default" is never sent through the platform's mailbox.
         var tenantSettings = await _settingsRepository.GetByTenantIdAsync(tenantId, ct);
-        if (tenantSettings is { IsDeleted: false, IsEnabled: true })
+        TenantMessagingSettings? platformDefault = null;
+        if (tenantSettings is not { IsDeleted: false, IsEnabled: true })
         {
-            return tenantSettings;
+            platformDefault = await _settingsRepository.GetPlatformDefaultAsync(ct);
         }
 
-        var platformDefault = await _settingsRepository.GetPlatformDefaultAsync(ct);
-        return platformDefault is { IsDeleted: false, IsEnabled: true } ? platformDefault : null;
+        return MessagingSettingsSelection.Select(tenantSettings, () => platformDefault);
     }
 
     private static (string ErrorCode, string ErrorMessage)? ValidateRequest(
@@ -189,18 +202,26 @@ internal sealed class SmtpMessagingProvider : IMessagingProvider
     private static MimeMessage BuildMessage(MessagingProviderEmailRequest request, TenantMessagingSettings settings)
     {
         var message = new MimeMessage();
-        message.From.Add(new MailboxAddress(settings.SenderName ?? string.Empty, settings.SenderEmail));
+        // BL-454 — the name comes from the one sender-name rule when the caller composed one; the address is always
+        // the settings row's. Every header value a person can type (names, subject) is cleaned of CR/LF and other
+        // control characters HERE as well, so no caller can reach a header with a line break — MimeKit's own
+        // encoding is not what this relies on.
+        message.From.Add(new MailboxAddress(
+            EmailHeaderText.CleanDisplayName(request.SenderName ?? settings.SenderName), settings.SenderEmail));
 
-        if (!string.IsNullOrWhiteSpace(settings.ReplyToEmail))
+        // BL-454 — a reply address from a tenant's settings goes in only if it is ONE plain address: a value with a
+        // line break or a second mailbox never reaches the header. A refused value is logged by the caller below,
+        // never with the value itself.
+        if (EmailAddressText.IsSingleAddress(settings.ReplyToEmail?.Trim()))
         {
-            message.ReplyTo.Add(new MailboxAddress(string.Empty, settings.ReplyToEmail));
+            message.ReplyTo.Add(new MailboxAddress(string.Empty, settings.ReplyToEmail!.Trim()));
         }
 
         AddRecipients(message.To, request.To);
         AddRecipients(message.Cc, request.Cc);
         AddRecipients(message.Bcc, request.Bcc);
 
-        message.Subject = request.Subject ?? string.Empty;
+        message.Subject = EmailHeaderText.CleanSubject(request.Subject);
 
         // Prefer the full rendered body (Batch 1.1). Preview is the truncated audit/log form
         // and is only used as a fallback for retries that re-issue from a persisted dispatch.
@@ -249,7 +270,7 @@ internal sealed class SmtpMessagingProvider : IMessagingProvider
                 continue;
             }
 
-            list.Add(new MailboxAddress(recipient.DisplayName ?? string.Empty, recipient.Email));
+            list.Add(new MailboxAddress(EmailHeaderText.CleanDisplayName(recipient.DisplayName), recipient.Email));
         }
     }
 

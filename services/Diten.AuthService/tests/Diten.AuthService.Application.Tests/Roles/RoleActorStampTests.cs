@@ -1,3 +1,4 @@
+using Diten.AuthService.Application.Tests.Testing;
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.Features.Roles.Commands;
@@ -123,13 +124,13 @@ public sealed class RoleActorStampTests
     }
 
     private static CreateRoleCommandHandler CreateHandler(FakeRoleRepository roles, FakeRoleAssignmentVersionService version, Guid? actor)
-        => new(roles, version, Tenant(), new NoOpRbacAuditRecorder(), new FakeCurrentUser(actor), NullLogger<CreateRoleCommandHandler>.Instance);
+        => new(roles, version, Tenant(), RoleAuditForTests.Over(new NoOpRbacAuditRecorder()), new FakeCurrentUser(actor), NullLogger<CreateRoleCommandHandler>.Instance);
 
     private static UpdateRoleCommandHandler UpdateHandler(FakeRoleRepository roles, FakeRoleAssignmentVersionService version, Guid? actor)
-        => new(roles, new FakeRolePermissionRepository(), version, Tenant(), new NoOpRbacAuditRecorder(), new FakeCurrentUser(actor));
+        => new(roles, new FakeRolePermissionRepository(), version, Tenant(), RoleAuditForTests.Over(new NoOpRbacAuditRecorder()), new FakeCurrentUser(actor));
 
     private static DeleteRoleCommandHandler DeleteHandler(FakeRoleRepository roles, FakeRoleAssignmentVersionService version, Guid? actor)
-        => new(roles, version, Tenant(), new NoOpRbacAuditRecorder(), new FakeCurrentUser(actor), NullLogger<DeleteRoleCommandHandler>.Instance);
+        => new(roles, version, Tenant(), RoleAuditForTests.Over(new NoOpRbacAuditRecorder()), new FakeCurrentUser(actor), NullLogger<DeleteRoleCommandHandler>.Instance);
 
     // ── Minimal inline fakes ──
 

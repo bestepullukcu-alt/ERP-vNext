@@ -99,9 +99,18 @@ public sealed class BrandEditViewModel : IValidatableObject
     public string? ContractError { get; set; }
     public bool IsArchived { get; set; }
 
+    // WP-MDM-BRAND-ACCEPT-01 FIX1 (item 2) — the version this edit was made on; posted back with the form and sent as
+    // ExpectedVersion, so an edit made on an older read is refused (409) instead of overwriting a newer one.
+    public int? ExpectedVersion { get; set; }
+
+    // FIX1 (item 8) — the owner company is picked by NAME; the GUID never reaches the reader.
+    public IReadOnlyList<LegalEntityOptionViewModel> OwnerCompanies { get; set; } = [];
+    public bool OwnerCompaniesUnavailable { get; set; }
+
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        if (EffectiveFrom.HasValue && EffectiveTo.HasValue && EffectiveTo.Value.Date < EffectiveFrom.Value.Date)
+        // FIX4 (K4) — the calendar days entered, compared once through the web's calendar-day rule.
+        if (CalendarDay.EndsBeforeStart(EffectiveFrom, EffectiveTo))
         {
             yield return new ValidationResult("EffectiveToBeforeEffectiveFrom", [nameof(EffectiveTo)]);
         }
@@ -129,7 +138,19 @@ public sealed class BrandDetailViewModel
     public int Version { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset? UpdatedAt { get; set; }
+
+    /// <summary>FIX1 (item 3) — products of this brand that are not archived (detail read only).</summary>
+    public int? LiveProductCount { get; set; }
+
+    /// <summary>
+    /// P-2026-10-07-BRAND-FIX3 (R-5) — computed by MDM (active + inside its validity window today, UTC). The web never
+    /// recomputes it; null = an MDM build that does not send it yet, and such a brand is not offered as a new link.
+    /// </summary>
+    public bool? IsLinkable { get; set; }
 }
+
+/// <summary>FIX1 (item 8) — one legal entity of the owner-company picker: shown as code and name, never as its id.</summary>
+public sealed record LegalEntityOptionViewModel(Guid LegalEntityId, string Code, string Name);
 
 public sealed class BrandListResultViewModel
 {
@@ -143,6 +164,14 @@ public sealed class BrandPageViewModel
     public BrandProductContractViewModel Contract { get; set; } = new();
     public bool CanManage { get; set; }
     public bool CanReadProducts { get; set; }
+
+    // WP-MDM-BRAND-ACCEPT-01 FIX1 (item 13) — decided by the controller through PermissionClaims, the same gate the
+    // proxies enforce, so the page never offers an action the proxy then refuses.
+    public bool CanUpdate { get; set; }
+    public bool CanArchive { get; set; }
+
+    /// <summary>FIX1 (item 8) — the owner company's code and name; null when it could not be resolved.</summary>
+    public string? OwnerCompanyName { get; set; }
 }
 
 #endregion
@@ -195,8 +224,21 @@ public sealed class ProductEditViewModel : IValidatableObject
     public IReadOnlyList<string> DosageForms { get; set; } = [];
     public IReadOnlyList<string> UnitsOfMeasure { get; set; } = [];
 
-    /// <summary>Active, non-archived brands fetched through the Gateway; empty when none exist.</summary>
+    /// <summary>
+    /// The brands MDM would link (its isLinkable) plus — on edit — the product's current brand even when it is not
+    /// linkable any more, so saving never drops it (P-2026-10-07-BRAND-FIX3 R-4).
+    /// </summary>
     public IReadOnlyList<BrandOptionViewModel> BrandOptions { get; set; } = [];
+
+    /// <summary>
+    /// R-4 — the editor may not read brands: the picker shows only the current brand, disabled, and a hidden input carries
+    /// BrandId so the save keeps it. Decided by the controller, never bound from the form.
+    /// </summary>
+    [Microsoft.AspNetCore.Mvc.ModelBinding.BindNever]
+    public bool BrandReadOnly { get; set; }
+
+    /// <summary>R-3 — the version this edit was made on; sent as expectedVersion so a stale save is refused (409).</summary>
+    public int? ExpectedVersion { get; set; }
 
     public string? ContractError { get; set; }
     public bool IsArchived { get; set; }
@@ -211,7 +253,8 @@ public sealed class ProductEditViewModel : IValidatableObject
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        if (EffectiveFrom.HasValue && EffectiveTo.HasValue && EffectiveTo.Value.Date < EffectiveFrom.Value.Date)
+        // FIX4 (K4) — the calendar days entered, compared once through the web's calendar-day rule.
+        if (CalendarDay.EndsBeforeStart(EffectiveFrom, EffectiveTo))
         {
             yield return new ValidationResult("EffectiveToBeforeEffectiveFrom", [nameof(EffectiveTo)]);
         }
@@ -225,7 +268,21 @@ public sealed class ProductEditViewModel : IValidatableObject
     }
 }
 
-public sealed record BrandOptionViewModel(Guid BrandId, string BrandCode, string BrandName);
+// WP-MDM-BRAND-ACCEPT-01 FIX1 (item 3) — IsArchived lets the product page say the brand was archived.
+// P-2026-10-07-BRAND-FIX3 (R-4) — IsLinkable false marks the product's current brand that MDM would not link any more.
+// P-2026-10-07-BRAND-FIX4 (F3) — NameUnreadable marks a kept brand whose name could not be read: shown as its id plus a
+// localized "(could not be read)", still selected, so a save posts the same BrandId.
+public sealed record BrandOptionViewModel(
+    Guid BrandId, string BrandCode, string BrandName, bool IsArchived = false, bool IsLinkable = true, bool NameUnreadable = false);
+
+/// <summary>R-4 — MDM's ProductDetailDto.linkedBrand: the product's current brand, readable with mdm.products.read alone.</summary>
+public sealed class LinkedBrandViewModel
+{
+    public Guid BrandId { get; set; }
+    public string BrandCode { get; set; } = string.Empty;
+    public string BrandName { get; set; } = string.Empty;
+    public bool IsLinkable { get; set; }
+}
 
 public sealed class ProductDetailViewModel
 {
@@ -254,6 +311,9 @@ public sealed class ProductDetailViewModel
     public int Version { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset? UpdatedAt { get; set; }
+
+    /// <summary>R-4 — the current brand resolved by MDM; null when the product has none or MDM does not send it yet.</summary>
+    public LinkedBrandViewModel? LinkedBrand { get; set; }
 }
 
 public sealed class ProductListResultViewModel

@@ -138,10 +138,13 @@ public sealed partial class WorkflowESignatureGateTests : IClassFixture<Workflow
     private async Task<(int Status, string? Reason)> ApproveViaWorkCenterAsync(World w, Guid actor, Guid taskId, Guid? signatureId)
     {
         using var client = _host.Client(w.Token(actor));
+        // WP-LANE-MAIN-SYNC-02 P3 — the lane's Task Center card always sends the task's version (the dispatcher refuses an
+        // approve without it, WORK_ITEM_ACTION_PAYLOAD_INVALID): read here as the card reads it.
+        var version = (await _host.Database.GetCollection<ApprovalTask>(PlatformCollections.ApprovalTasks).Find(t => t.Id == taskId).FirstAsync()).Version;
         var response = await client.PostAsJsonAsync($"api/v1/work-items/{taskId}/actions/approve", new
         {
             providerCode = "workflow",
-            payload = new { idempotencyKey = Key(), signatureId = signatureId?.ToString("D") }
+            payload = new { expectedVersion = version, idempotencyKey = Key(), signatureId = signatureId?.ToString("D") }
         });
         return ((int)response.StatusCode, Reason(await response.Content.ReadAsStringAsync()));
     }
@@ -318,10 +321,21 @@ public sealed partial class WorkflowESignatureGateTests : IClassFixture<Workflow
     {
         var w = NewWorld();
         var code = await TemplateAsync(w);
-        var s = await StartAsync(w, code, candidate: w.A);
-        Assert.Equal((409, WorkflowReasonCodes.SodViolation), await ApproveAsync(w, w.A, s.TaskId, null));
-        var own = await SignAsync(w, w.A, s);
-        Assert.Equal((409, WorkflowReasonCodes.SodViolation), await ApproveAsync(w, w.A, s.TaskId, own));
+        // WP-LANE-MAIN-SYNC-02 P2a (owner decision 2026-10-14): the lane's SoD stops the starter EARLIER — at start, 400
+        // WORKFLOW_NO_ELIGIBLE_APPROVER — so there is no task to approve, with or without a signature. Main expected the
+        // start to pass and both approvals to be 409 WORKFLOW_SOD_VIOLATION.
+        using var client = _host.Client(w.Token(w.A));
+        var objectId = "QKR-" + Guid.NewGuid().ToString("N")[..8];
+        var response = await client.PostAsJsonAsync($"{Workflow}/instances", new
+        {
+            templateCode = code, objectType = "e4.test-object", objectId, objectRef = objectId,
+            candidatePrincipalIds = new[] { "user:" + w.A.ToString("D") },
+            reasonCode = "SUBMITTED", idempotencyKey = Key(), commentRequired = false, evidenceRequired = false,
+            displayContext = new { title = "Karantina kararı " + objectId, subtitle = "Lot PRS-26A014 · 1200 EA", sourceModule = "MOD-0175", deepLinkUrl = "/Quarantine/Details/x", chips = new[] { "Serbest bırak" } }
+        });
+        var body = await response.Content.ReadAsStringAsync();
+        Assert.Equal(400, (int)response.StatusCode);
+        Assert.Contains(WorkflowReasonCodes.WorkflowNoEligibleApprover, body, StringComparison.Ordinal);
     }
 
     [Fact]

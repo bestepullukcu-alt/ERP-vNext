@@ -1,6 +1,7 @@
 using Diten.AuthService.Api.Controllers;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.Common.Services;
+using Diten.AuthService.Domain.Authorization;
 using Diten.AuthService.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -145,6 +146,29 @@ public sealed class InternalPermissionsControllerTests
     }
 
     [Fact]
+    public async Task Brand_dependency_owner_payload_replay_converges_to_one_lowercase_auth_catalog_row()
+    {
+        var repo = new FakePermissionRepository();
+        var grant = new FakeFullCatalogPermissionGrantService();
+        var controller = Build(repo, authorized: true, grant);
+        var request = new InternalPermissionsController.SyncPermissionRequest(
+            "mdm.brands.read",
+            "Read Brands",
+            null,
+            "BRAND-PRODUCT-MASTER",
+            "Tenant");
+
+        await controller.Sync(request, CancellationToken.None);
+        await controller.Sync(request, CancellationToken.None);
+
+        var permission = Assert.Single(repo.Items);
+        Assert.Equal("mdm.brands.read", permission.Key);
+        Assert.Equal("brand-product-master", permission.Module);
+        Assert.Equal(PermissionScope.Tenant, permission.Scope);
+        Assert.Single(grant.GrantAttempts);
+    }
+
+    [Fact]
     public async Task Update_lowercases_uppercase_moduleCode()
     {
         var repo = new FakePermissionRepository();
@@ -191,6 +215,178 @@ public sealed class InternalPermissionsControllerTests
         Assert.Equal(PermissionScope.PlatformAdmin, p.Scope); // not downgraded
     }
 
+    [Theory]
+    [InlineData("workflow.instances", "start")]
+    [InlineData("workflow.tasks", "approve")]
+    [InlineData("workflow.tasks", "reject")]
+    public async Task Catalog_replay_cannot_promote_seed_owned_tenant_workflow_execution_scope(string resource, string action)
+    {
+        var repo = new FakePermissionRepository();
+        repo.Items.Add(new Permission(
+            "platform",
+            resource,
+            action,
+            action,
+            null,
+            moduleOverride: "workflow",
+            scope: PermissionScope.Tenant));
+        var controller = Build(repo, authorized: true);
+
+        var first = await controller.Sync(new InternalPermissionsController.SyncPermissionRequest(
+            $"platform.{resource}.{action}", action, null, "workflow", "PlatformAdmin"), CancellationToken.None);
+        var replay = await controller.Sync(new InternalPermissionsController.SyncPermissionRequest(
+            $"platform.{resource}.{action}", action, null, "workflow", "PlatformAdmin"), CancellationToken.None);
+
+        Assert.Equal("updated", Assert.IsType<InternalPermissionsController.SyncPermissionResponse>(Assert.IsType<OkObjectResult>(first).Value).Status);
+        Assert.Equal("updated", Assert.IsType<InternalPermissionsController.SyncPermissionResponse>(Assert.IsType<OkObjectResult>(replay).Value).Status);
+        var permission = Assert.Single(repo.Items);
+        Assert.True(permission.IsSystem);
+        Assert.Equal(PermissionScope.Tenant, permission.Scope);
+    }
+
+    [Fact]
+    public async Task Non_exception_system_key_keeps_generic_most_restrictive_tie_break()
+    {
+        var repo = new FakePermissionRepository();
+        repo.Items.Add(new Permission(
+            "platform",
+            "workflow.tasks",
+            "delegate",
+            "Delegate",
+            null,
+            moduleOverride: "workflow",
+            scope: PermissionScope.Tenant));
+        var controller = Build(repo, authorized: true);
+
+        await controller.Sync(new InternalPermissionsController.SyncPermissionRequest(
+            "platform.workflow.tasks.delegate", "Delegate", null, "workflow", "PlatformAdmin"), CancellationToken.None);
+
+        Assert.Equal(PermissionScope.PlatformAdmin, Assert.Single(repo.Items).Scope);
+    }
+
+    [Theory]
+    [InlineData("workflow.instances", "start")]
+    [InlineData("workflow.tasks", "approve")]
+    [InlineData("workflow.tasks", "reject")]
+    public async Task Catalog_created_workflow_execution_key_keeps_catalog_scope_behavior(string resource, string action)
+    {
+        var repo = new FakePermissionRepository();
+        var controller = Build(repo, authorized: true);
+
+        await controller.Sync(new InternalPermissionsController.SyncPermissionRequest(
+            $"platform.{resource}.{action}", action, null, "workflow", "PlatformAdmin"), CancellationToken.None);
+        await controller.Sync(new InternalPermissionsController.SyncPermissionRequest(
+            $"platform.{resource}.{action}", action, null, "workflow", "Tenant"), CancellationToken.None);
+
+        var permission = Assert.Single(repo.Items);
+        Assert.False(permission.IsSystem);
+        Assert.Equal(PermissionScope.PlatformAdmin, permission.Scope);
+    }
+
+    // Owner + CT decision 2026-10-01 — the exception is SeedOwnedTenantScopeKeys and nothing wider. The ten Workflow
+    // keys that are NOT on it come from the production seed, so a key added to the list by mistake shows up here.
+    public static TheoryData<string, string> UnlistedSeededWorkflowKeys()
+    {
+        var data = new TheoryData<string, string>();
+        foreach (var permission in Diten.AuthService.Persistence.Seed.DataSeeder.BuildCanonicalPermissions()
+                     .Where(p => p.Key.StartsWith("platform.workflow.", StringComparison.Ordinal)
+                                 && !SeedOwnedTenantScopeKeys.Keys.Contains(p.Key))
+                     .OrderBy(p => p.Key, StringComparer.Ordinal))
+        {
+            data.Add(permission.Resource, permission.Action);
+        }
+
+        return data;
+    }
+
+    [Fact]
+    public void There_are_exactly_ten_unlisted_seeded_workflow_keys()
+    {
+        Assert.Equal(10, UnlistedSeededWorkflowKeys().Count());
+    }
+
+    [Theory]
+    [MemberData(nameof(UnlistedSeededWorkflowKeys))]
+    public async Task An_unlisted_workflow_system_key_is_promoted_to_PlatformAdmin_by_the_sync_and_stays_there(string resource, string action)
+    {
+        var repo = new FakePermissionRepository();
+        // Deliberately Tenant + SYSTEM: the only thing separating this row from the exception is the list itself.
+        repo.Items.Add(new Permission("platform", resource, action, action, null, moduleOverride: "workflow", scope: PermissionScope.Tenant));
+        var controller = Build(repo, authorized: true);
+        var key = $"platform.{resource}.{action}";
+
+        await controller.Sync(new InternalPermissionsController.SyncPermissionRequest(key, action, null, "workflow", "PlatformAdmin"), CancellationToken.None);
+        Assert.Equal(PermissionScope.PlatformAdmin, Assert.Single(repo.Items).Scope);
+
+        await controller.Sync(new InternalPermissionsController.SyncPermissionRequest(key, action, null, "workflow", "Tenant"), CancellationToken.None);
+        var permission = Assert.Single(repo.Items);
+        Assert.True(permission.IsSystem);
+        Assert.Equal(PermissionScope.PlatformAdmin, permission.Scope);
+    }
+
+    [Theory]
+    [InlineData("workflow.instances", "start")]
+    [InlineData("workflow.tasks", "approve")]
+    [InlineData("workflow.tasks", "reject")]
+    public async Task A_listed_key_whose_system_row_is_PlatformAdmin_is_not_lowered_by_the_sync(string resource, string action)
+    {
+        var repo = new FakePermissionRepository();
+        repo.Items.Add(new Permission("platform", resource, action, action, null, moduleOverride: "workflow", scope: PermissionScope.PlatformAdmin));
+        var controller = Build(repo, authorized: true);
+
+        await controller.Sync(new InternalPermissionsController.SyncPermissionRequest(
+            $"platform.{resource}.{action}", action, null, "workflow", "Tenant"), CancellationToken.None);
+
+        var permission = Assert.Single(repo.Items);
+        Assert.True(permission.IsSystem);
+        Assert.Equal(PermissionScope.PlatformAdmin, permission.Scope);
+    }
+
+    [Theory]
+    [InlineData("workflow.instances", "start")]
+    [InlineData("workflow.tasks", "approve")]
+    [InlineData("workflow.tasks", "reject")]
+    public async Task A_listed_key_on_a_catalog_created_Tenant_row_is_promoted_like_any_other_key(string resource, string action)
+    {
+        // Same key, same Tenant scope, same incoming PlatformAdmin as the exception case — the ONLY difference is that
+        // the row is catalog-created (not a seeded system row), so the generic rule applies.
+        var repo = new FakePermissionRepository();
+        var row = new Permission("platform", resource, action, action, null, moduleOverride: "workflow", scope: PermissionScope.Tenant);
+        row.MarkAsUserDefined();
+        repo.Items.Add(row);
+        var controller = Build(repo, authorized: true);
+
+        await controller.Sync(new InternalPermissionsController.SyncPermissionRequest(
+            $"platform.{resource}.{action}", action, null, "workflow", "PlatformAdmin"), CancellationToken.None);
+
+        var permission = Assert.Single(repo.Items);
+        Assert.False(permission.IsSystem);
+        Assert.Equal(PermissionScope.PlatformAdmin, permission.Scope);
+    }
+
+    [Theory]
+    [InlineData("workflow.instances", "start")]
+    [InlineData("workflow.tasks", "approve")]
+    [InlineData("workflow.tasks", "reject")]
+    public async Task The_exception_adds_and_removes_no_grant(string resource, string action)
+    {
+        var repo = new FakePermissionRepository();
+        repo.Items.Add(new Permission("platform", resource, action, action, null, moduleOverride: "workflow", scope: PermissionScope.Tenant));
+        var grant = new FakeFullCatalogPermissionGrantService();
+        // Assign/Revoke/RemoveById throw on this fake, so any grant write through the repository fails the test outright.
+        var rolePermissions = new FakeRolePermissionRepository();
+        var audit = new FakeRbacAuditRecorder();
+        var controller = Build(repo, authorized: true, grant, rolePermissions, audit);
+
+        await controller.Sync(new InternalPermissionsController.SyncPermissionRequest(
+            $"platform.{resource}.{action}", action, null, "workflow", "PlatformAdmin"), CancellationToken.None);
+
+        Assert.Equal(PermissionScope.Tenant, Assert.Single(repo.Items).Scope);
+        Assert.Empty(grant.GrantAttempts);
+        Assert.Null(rolePermissions.RemovedPermissionId);
+        Assert.Null(audit.EventName);
+    }
+
     [Fact]
     public async Task Update_from_old_sender_without_fields_leaves_module_and_scope_untouched()
     {
@@ -220,8 +416,9 @@ public sealed class InternalPermissionsControllerTests
         await controller.Sync(new InternalPermissionsController.SyncPermissionRequest("platform.workflow.definitions.view", "View", null), CancellationToken.None);
 
         var created = Assert.Single(repo.Items);
-        var grantedId = Assert.Single(grant.GrantedPermissionIds);
-        Assert.Equal(created.Id, grantedId);
+        var grantAttempt = Assert.Single(grant.GrantAttempts);
+        Assert.Same(created, grantAttempt);
+        Assert.Same(created, Assert.Single(grant.GrantedPermissions));
     }
 
     [Fact]
@@ -235,7 +432,83 @@ public sealed class InternalPermissionsControllerTests
         await controller.Sync(new InternalPermissionsController.SyncPermissionRequest("platform.workflow.definitions.view", "View again", null), CancellationToken.None);
 
         // Grant only fires on first-time creation; the second sync is an "updated" no-op for grants.
-        Assert.Single(grant.GrantedPermissionIds);
+        Assert.Single(grant.GrantAttempts);
+    }
+
+    [Fact]
+    public async Task Recovery_create_passes_the_full_entity_to_the_key_aware_grant_boundary_once()
+    {
+        var repo = new FakePermissionRepository();
+        var grant = new FakeFullCatalogPermissionGrantService();
+        var controller = Build(repo, authorized: true, grant);
+
+        await controller.Sync(new InternalPermissionsController.SyncPermissionRequest(
+            "mdm.product-identity.lifecycle-operations.recover",
+            "Recover Product Identity Lifecycle Operation",
+            null,
+            "product-item-sku-master",
+            "Tenant"), CancellationToken.None);
+
+        var created = Assert.Single(repo.Items);
+        var grantAttempt = Assert.Single(grant.GrantAttempts);
+        Assert.Same(created, grantAttempt);
+        Assert.Equal("mdm.product-identity.lifecycle-operations.recover", grantAttempt.Key);
+        Assert.Empty(grant.GrantedPermissions);
+    }
+
+    [Fact]
+    public async Task Recovery_soft_delete_reactivation_reuses_one_row_and_reenters_the_key_aware_grant_boundary()
+    {
+        var repo = new FakePermissionRepository();
+        var recovery = new Permission(
+            "mdm",
+            "product-identity.lifecycle-operations",
+            "recover",
+            "Stale Recovery",
+            null,
+            moduleOverride: "product-item-sku-master",
+            scope: PermissionScope.Tenant);
+        recovery.MarkAsUserDefined();
+        recovery.IsDeleted = true;
+        repo.Items.Add(recovery);
+        var grant = new FakeFullCatalogPermissionGrantService();
+        var controller = Build(repo, authorized: true, grant);
+
+        var result = await controller.Sync(new InternalPermissionsController.SyncPermissionRequest(
+            recovery.Key,
+            "Recover Product Identity Lifecycle Operation",
+            null,
+            "product-item-sku-master",
+            "Tenant"), CancellationToken.None);
+
+        var body = Assert.IsType<InternalPermissionsController.SyncPermissionResponse>(
+            Assert.IsType<OkObjectResult>(result).Value);
+        Assert.Equal("reactivated", body.Status);
+        Assert.Single(repo.Items);
+        Assert.False(recovery.IsDeleted);
+        Assert.Same(recovery, Assert.Single(grant.GrantAttempts));
+        Assert.Empty(grant.GrantedPermissions);
+    }
+
+    [Fact]
+    public async Task Recovery_replay_updates_without_an_additional_grant_attempt()
+    {
+        var repo = new FakePermissionRepository();
+        var grant = new FakeFullCatalogPermissionGrantService();
+        var controller = Build(repo, authorized: true, grant);
+        var request = new InternalPermissionsController.SyncPermissionRequest(
+            "mdm.product-identity.lifecycle-operations.recover",
+            "Recover Product Identity Lifecycle Operation",
+            null,
+            "product-item-sku-master",
+            "Tenant");
+
+        await controller.Sync(request, CancellationToken.None);
+        await controller.Sync(request, CancellationToken.None);
+
+        Assert.Single(repo.Items);
+        Assert.Single(grant.GrantAttempts);
+        Assert.Empty(grant.GrantedPermissions);
     }
 
     [Fact]
@@ -327,7 +600,7 @@ public sealed class InternalPermissionsControllerTests
         // 1) create
         await controller.Sync(new InternalPermissionsController.SyncPermissionRequest("goldenslim.records.read", "Read", null), CancellationToken.None);
         Assert.Single(repo.Items);
-        Assert.Single(grant.GrantedPermissionIds);
+        Assert.Single(grant.GrantAttempts);
 
         // 2) delete (soft)
         Assert.IsType<NoContentResult>(await controller.Delete("goldenslim.records.read", CancellationToken.None));
@@ -342,7 +615,7 @@ public sealed class InternalPermissionsControllerTests
         Assert.False(permission.IsDeleted);               // revived
         Assert.False(permission.IsSystem);                // stays catalog-owned (user-defined)
         Assert.Equal("Read again", permission.DisplayName);
-        Assert.Equal(2, grant.GrantedPermissionIds.Count); // re-granted to the full-catalog role
+        Assert.Equal(2, grant.GrantAttempts.Count); // re-entered the key-aware full-catalog boundary
     }
 
     [Fact]
@@ -511,13 +784,16 @@ public sealed class InternalPermissionsControllerTests
 
     private sealed class FakeFullCatalogPermissionGrantService : IFullCatalogPermissionGrantService
     {
-        public List<Guid> GrantedPermissionIds { get; } = [];
-        public List<string> GrantedPermissionKeys { get; } = [];
+        public List<Permission> GrantAttempts { get; } = [];
+        public List<Permission> GrantedPermissions { get; } = [];
 
-        public Task GrantToFullCatalogRolesAsync(Guid permissionId, string permissionKey, CancellationToken ct)
+        public Task GrantToFullCatalogRolesAsync(Permission permission, CancellationToken ct)
         {
-            GrantedPermissionIds.Add(permissionId);
-            GrantedPermissionKeys.Add(permissionKey);
+            GrantAttempts.Add(permission);
+            if (DefaultRolePermissionTemplate.CanBeGrantedToHumanRole(permission))
+            {
+                GrantedPermissions.Add(permission);
+            }
             return Task.CompletedTask;
         }
     }

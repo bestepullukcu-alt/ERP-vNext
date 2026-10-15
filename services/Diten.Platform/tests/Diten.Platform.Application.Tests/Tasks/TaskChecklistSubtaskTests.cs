@@ -111,7 +111,7 @@ public sealed class TaskChecklistSubtaskTests
 
         var handler = new SetChecklistItemStateHandler(
             tasks, runs, new TaskChecklistService(), new FakeCurrentUserContext(TaskTestData.Me),
-            new FakeTaskAttachmentRepository());
+            new FakeTaskAttachmentRepository(), writeGate: TaskWriteGateDoubles.Open);
         var result = await handler.Handle(
             new SetChecklistItemStateCommand(
                 task.Id, new SetChecklistItemStateRequest("i0", true, run.Version), "corr"),
@@ -155,7 +155,7 @@ public sealed class TaskChecklistSubtaskTests
 
         var handler = new AddChecklistItemHandler(
             tasks, runs, new TaskChecklistService(),
-            new FakeCurrentUserContext(TaskTestData.Me), new FakeTenantContext(TaskTestData.Tenant));
+            new FakeCurrentUserContext(TaskTestData.Me), new FakeTenantContext(TaskTestData.Tenant), writeGate: TaskWriteGateDoubles.Open);
 
         var result = await handler.Handle(
             new AddChecklistItemCommand(
@@ -433,7 +433,7 @@ public sealed class TaskChecklistSubtaskTests
             new FakeTaskNotificationService(),
             new FakeCurrentUserContext(TaskTestData.Me), new FakeTenantContext(TaskTestData.Tenant),
             Microsoft.Extensions.Logging.Abstractions.NullLogger<CreateTaskItemHandler>.Instance,
-                TaskDocumentFreezerDoubles.OverAnEmptyRegister(), TaskAssignmentGuards.AdmitAll());
+                TaskDocumentFreezerDoubles.OverAnEmptyRegister(), TaskAssignmentGuards.AdmitAll(), writeGate: TaskWriteGateDoubles.Open);
 
         var request = new CreateTaskItemRequest(
             Title: "From template", Description: null, Priority: TaskPriority.Medium,
@@ -472,7 +472,7 @@ public sealed class TaskChecklistSubtaskTests
                 tasks, new TaskLifecycleService(), new FakeCurrentUserContext(TaskTestData.Me),
                 runs, new TaskChecklistService(), new FakeWorkflowTransitionGate(),
                 new FakeTaskDependencyRepository(), new FakeTaskTypeRepository(), new FakeTaskNotificationService(),
-                new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()), new FakeTaskAttachmentRepository(), NullLogger<TransitionTaskItemHandler>.Instance)
+                new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()), new FakeTaskAttachmentRepository(), NullLogger<TransitionTaskItemHandler>.Instance, writeGate: TaskWriteGateDoubles.Open)
             .Handle(
                 new TransitionTaskItemCommand(id, target, new TaskTransitionRequest(expectedVersion, null, null), "corr"),
                 CancellationToken.None);
@@ -504,7 +504,7 @@ public sealed class TaskChecklistSubtaskTests
             new FakeCurrentUserContext(TaskTestData.Me),
             new FakeTenantContext(TaskTestData.Tenant),
             Microsoft.Extensions.Logging.Abstractions.NullLogger<CreateTaskItemHandler>.Instance,
-                TaskDocumentFreezerDoubles.OverAnEmptyRegister(), TaskAssignmentGuards.AdmitAll());
+                TaskDocumentFreezerDoubles.OverAnEmptyRegister(), TaskAssignmentGuards.AdmitAll(), writeGate: TaskWriteGateDoubles.Open);
 
         var request = new CreateTaskItemRequest(
             Title: "Child work", Description: null, Priority: TaskPriority.Medium,

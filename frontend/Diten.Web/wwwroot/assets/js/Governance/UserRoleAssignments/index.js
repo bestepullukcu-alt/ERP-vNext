@@ -59,6 +59,9 @@ const UserRoleAssignments = (function () {
 
     const showError = (msg) => { if (els.alert) { els.alert.textContent = msg || L.ErrorOccurred || ''; els.alert.classList.remove('d-none'); } };
     const clearError = () => els.alert?.classList.add('d-none');
+    // WP-ROLES-CLOSE-01 — a refusal tagged with a stable code is said in the reader's language (shared/diten-refusal.js).
+    const ERROR_CODE_KEYS = { ROLE_ACTOR_REQUIRED: 'ErrorRoleActorRequired', ROLE_NOT_FOUND: 'ErrorRoleNotFound', USER_ROLE_USER_NOT_FOUND: 'ErrorUserRoleUserNotFound' };
+    const refusalText = (json) => window.DitenRefusal.message(json, ERROR_CODE_KEYS, L, 'UserRoleAssignments');
 
     const unwrap = (json) => {
         if (json?.data?.data !== undefined) return json.data.data;
@@ -281,7 +284,7 @@ const UserRoleAssignments = (function () {
         clearError();
         try {
             const json = await postForm('/UserRoleAssignments/assign', currentUserId, role.id);
-            if (!json.success) { showError((json.errors || [])[0]); return; }
+            if (!json.success) { showError(refusalText(json)); return; }
             window.showToast?.(L.RecordCreated, 'success');
             await loadUserRoles(currentUserId);
             render();
@@ -294,7 +297,7 @@ const UserRoleAssignments = (function () {
             clearError();
             try {
                 const json = await postForm('/UserRoleAssignments/revoke', currentUserId, role.id);
-                if (!json.success) { showError((json.errors || [])[0]); return; }
+                if (!json.success) { showError(refusalText(json)); return; }
                 window.showToast?.(L.RecordDeleted, 'success');
                 await loadUserRoles(currentUserId);
                 render();

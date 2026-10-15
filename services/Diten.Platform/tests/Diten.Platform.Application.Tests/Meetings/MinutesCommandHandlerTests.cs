@@ -36,6 +36,10 @@ public sealed class MinutesCommandHandlerTests
         public Task<MeetingMinutesVersion?> TryCreateAsync(MeetingMinutesVersion version, CancellationToken ct = default)
             => inner.TryCreateAsync(version, ct);
 
+        public Task<MeetingMinutesVersion?> TryCreateAsync(
+            Domain.Repositories.IPlatformTransactionSession session, MeetingMinutesVersion version, CancellationToken ct = default)
+            => inner.TryCreateAsync(version, ct);
+
         public Task<MeetingMinutesVersion?> GetLatestByMeetingIdAsync(Guid meetingId, CancellationToken ct = default)
             => inner.GetLatestByMeetingIdAsync(meetingId, ct);
 
@@ -51,6 +55,13 @@ public sealed class MinutesCommandHandlerTests
             UpdateAttemptsAgainstStoredStatus.Add(inner.StoredStatusOf(version.Id));
             return inner.UpdateAsync(version, expectedVersion, ct);
         }
+
+        /// <summary>BL-533 — the publish writes inside its transaction: watched exactly like the plain overload, so the
+        /// source guard keeps seeing every row a handler hands to an update.</summary>
+        public Task<bool> UpdateAsync(
+            Domain.Repositories.IPlatformTransactionSession session, MeetingMinutesVersion version, int expectedVersion,
+            CancellationToken ct = default)
+            => UpdateAsync(version, expectedVersion, ct);
     }
 
     private sealed class Fixture
@@ -67,10 +78,10 @@ public sealed class MinutesCommandHandlerTests
             => new(Meetings, Attendees, Minutes, new FakeCurrentUserContext(actingUserId), DisplayNames);
 
         public PublishMinutesHandler PublishHandler(Guid actingUserId)
-            => new(Meetings, Attendees, Minutes, new FakeCurrentUserContext(actingUserId), DisplayNames);
+            => new(Meetings, Attendees, Minutes, new FakeCurrentUserContext(actingUserId), DisplayNames, new InlineTransactionExecutor());
 
         public CorrectPublishedMinutesHandler CorrectHandler(Guid actingUserId)
-            => new(Meetings, Attendees, Minutes, new FakeCurrentUserContext(actingUserId), DisplayNames);
+            => new(Meetings, Attendees, Minutes, new FakeCurrentUserContext(actingUserId), DisplayNames, new InlineTransactionExecutor());
 
         public Meeting SeedMeeting(MeetingLifecycle lifecycle = MeetingLifecycle.Scheduled)
         {
@@ -403,5 +414,47 @@ public sealed class MinutesCommandHandlerTests
         Assert.False(response.IsSuccessful);
         Assert.Equal(409, response.StatusCode);
         Assert.Equal(MeetingReasonCodes.MinutesNotPublished, response.ReasonCode);
+    }
+
+    // ── BL-533 — a cancelled meeting ────────────────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task Publishing_the_minutes_of_a_cancelled_meeting_is_409_and_nothing_changes()
+    {
+        var fx = new Fixture();
+        var meeting = fx.SeedMeeting();
+        fx.SeedAttendee(meeting.Id, Attendee1);
+        var draft = await fx.DraftHandler(Organizer).Handle(
+            new SaveMinutesDraftCommand(
+                meeting.Id, DraftRequest(attendance: [new MinutesAttendanceRequest(Attendee1, AttendanceStatus.Present)]), "corr"),
+            CancellationToken.None);
+        meeting.Lifecycle = MeetingLifecycle.Cancelled; // cancelled after the draft was written
+
+        var response = await fx.PublishHandler(Organizer).Handle(
+            new PublishMinutesCommand(meeting.Id, new PublishMinutesRequest(draft.Data!.Version), "corr"), CancellationToken.None);
+
+        Assert.False(response.IsSuccessful);
+        Assert.Equal(409, response.StatusCode);
+        Assert.Equal(MeetingReasonCodes.Cancelled, response.ReasonCode);
+        Assert.Equal(MinutesStatus.Draft, (await fx.MinutesInner.GetLatestByMeetingIdAsync(meeting.Id))!.Status);
+        Assert.Equal(MeetingLifecycle.Cancelled, (await fx.Meetings.GetByIdAsync(meeting.Id))!.Lifecycle);
+        Assert.Null((await fx.Attendees.FindAsync(meeting.Id, Attendee1))!.AttendanceStatus);
+    }
+
+    /// <summary>A correction is not refused on a meeting cancelled after its minutes were published (a state the publish
+    /// allowed before BL-533) — but the meeting is never made Completed by it.</summary>
+    [Fact]
+    public async Task A_correction_never_makes_a_cancelled_meeting_Completed()
+    {
+        var (fx, meeting, _) = await PublishedFixtureAsync();
+        meeting.Lifecycle = MeetingLifecycle.Cancelled;
+
+        var response = await fx.CorrectHandler(Organizer).Handle(
+            new CorrectPublishedMinutesCommand(
+                meeting.Id, new CorrectPublishedMinutesRequest([], [new MinutesDecisionRequest("Düzeltilmiş", null)], "sebep"), "corr"),
+            CancellationToken.None);
+
+        Assert.Equal(201, response.StatusCode);
+        Assert.Equal(MeetingLifecycle.Cancelled, (await fx.Meetings.GetByIdAsync(meeting.Id))!.Lifecycle);
     }
 }

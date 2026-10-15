@@ -28,6 +28,22 @@ public interface IActorSafetyGuard
         CancellationToken ct = default);
 
     /// <summary>
+    /// BL-521 FIX5 item 7 — Rule 2 for a SET of targets taken out together (bulk delete): refuses when removing ALL of them
+    /// would leave the system with zero active platform super administrators, although each of them alone could be removed.
+    /// Decided on the records as loaded. Returns <c>null</c> when the set is permitted.
+    /// </summary>
+    Task<Response<NoContent>?> EnsureNotLastActiveSuperAdminsAsync(
+        IReadOnlyCollection<Diten.Platform.Domain.Entities.PlatformAdministrator> targets,
+        AdminSafetyAction action,
+        CancellationToken ct = default);
+
+    /// <summary>
+    /// The current user's own administrator record is the target (resolved the way <see cref="EnsureNotSelfAsync"/>
+    /// resolves it). BL-521 FIX2 item 5 — for the update path, which refuses only SOME self changes.
+    /// </summary>
+    Task<bool> IsSelfAsync(Guid targetActorId, CancellationToken ct = default);
+
+    /// <summary>
     /// Rule 4 — silently removes the current user id from a bulk target list.
     /// Result.EffectiveTargets contains the ids the handler should still act on;
     /// Result.SkippedSelfIds contains what was filtered out (always 0 or 1 entries).
@@ -35,4 +51,66 @@ public interface IActorSafetyGuard
     Task<BulkSafetyResult> FilterSelfFromBulkAsync(
         IReadOnlyCollection<Guid> targetActorIds,
         CancellationToken ct = default);
+}
+
+/// <summary>BL-521 FIX2 item 5 — the stable reason codes of the administrator safety refusals.</summary>
+public static class AdminSafetyReasonCodes
+{
+    /// <summary>403 — an administrator tried to change its own actor type, status, e-mail or (FIX3 item 1) roles.</summary>
+    public const string SelfChangeForbidden = "PLATFORM_ADMINISTRATOR_SELF_CHANGE_FORBIDDEN";
+
+    /// <summary>409 — the change would leave no active platform administrator holding SuperAdmin.</summary>
+    public const string LastActiveSuperAdmin = "PLATFORM_ADMINISTRATOR_LAST_ACTIVE_SUPER_ADMIN";
+
+    /// <summary>409 — FIX3 item 3: another change that could take a platform super administrator out of the set was being
+    /// written at the same moment; nothing was written, reload and retry.</summary>
+    public const string ConcurrentSuperAdminChange = "PLATFORM_ADMINISTRATOR_CONCURRENT_SUPER_ADMIN_CHANGE";
+
+    /// <summary>409 — FIX3 item 2(c): the system seed administrator is not suspended, deleted or moved to another e-mail.</summary>
+    public const string SystemSeedProtected = "PLATFORM_ADMINISTRATOR_SYSTEM_SEED_PROTECTED";
+
+    /// <summary>503 — FIX3 item 3: the guarded write could not run (no transaction support, the database unreachable);
+    /// nothing was written.</summary>
+    public const string SafetyCheckUnavailable = "PLATFORM_ADMINISTRATOR_SAFETY_CHECK_UNAVAILABLE";
+
+    /// <summary>409 — FIX4 item 1: an administrator's e-mail never changes (Platform and Auth find the administrator by it);
+    /// a new address is invited as a new administrator and the old one removed.</summary>
+    public const string EmailImmutable = "PLATFORM_ADMINISTRATOR_EMAIL_IMMUTABLE";
+
+    /// <summary>400 — FIX5 item 7: the same administrator is listed more than once in a bulk delete; nothing was deleted.</summary>
+    public const string BulkDuplicateIds = "PLATFORM_ADMINISTRATOR_BULK_DUPLICATE_IDS";
+
+    /// <summary>409 / 503 — FIX5 item 7: a bulk delete was refused AFTER some of its targets had been deleted (another request
+    /// changed a later target in between). The answer lists the deleted ids and the refused one.</summary>
+    public const string BulkDeletePartial = "PLATFORM_ADMINISTRATOR_BULK_DELETE_PARTIAL";
+}
+
+/// <summary>
+/// The English source sentences of the administrator safety refusals. The administrators screen shows them in the user's
+/// language by matching the sentence (Web AdministratorsController.LocalizeErrorMessage for the edit form; index.js
+/// localizeServerError for the list actions — the two FIX3 sentences are mapped in the controller only), so a sentence
+/// here is changed only together with that mapping.
+/// </summary>
+public static class AdminSafetyMessages
+{
+    public const string LastActiveSuperAdmin = "At least one active Super Admin must remain in the system.";
+    public const string ChangedByAnotherUser = "The administrator was changed by another user. Reload and try again.";
+    public const string SeedCannotBeSuspended = "The system seed administrator cannot be suspended.";
+    public const string SeedCannotBeDeleted = "The system seed administrator cannot be deleted.";
+
+    /// <summary>FIX3 item 2(c) — new; the screen's en + tr text: SharedResource AdminSeedEmailChangeDenied.</summary>
+    public const string SeedEmailCannotChange = "The system seed administrator's e-mail cannot be changed.";
+
+    /// <summary>FIX3 item 3 — new; the screen's en + tr text: SharedResource AdminChangeUnavailable.</summary>
+    public const string SafetyCheckUnavailable = "The administrator change could not be saved right now. Nothing was written. Please try again.";
+
+    /// <summary>FIX4 item 1 — new; the edit form says it from the CODE (<see cref="AdminSafetyReasonCodes.EmailImmutable"/>),
+    /// en + tr: SharedResource AdminEmailImmutable.</summary>
+    public const string EmailImmutable = "An administrator's e-mail cannot be changed. Invite the new address as a new administrator and remove the old one.";
+
+    /// <summary>FIX5 item 7 — new; the screen's en + tr text: SharedResource AdminBulkDuplicateIds.</summary>
+    public const string BulkDuplicateIds = "The same administrator is listed more than once. Nothing was deleted.";
+
+    /// <summary>FIX5 item 7 — new; the screen's en + tr text: SharedResource AdminBulkDeletePartial.</summary>
+    public const string BulkDeletePartial = "Some administrators were deleted, but the request stopped at one that could not be deleted. Reload the list to see what remains.";
 }

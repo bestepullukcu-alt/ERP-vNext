@@ -17,74 +17,13 @@ public sealed class TenantLifecycleNotificationMapperTests
             .AddApplication()
             .BuildServiceProvider();
 
-        Assert.IsType<TenantCreatedV1NotificationMapper>(
-            provider.GetRequiredService<INotificationEventMapper<TenantCreatedV1>>());
+        // BL-454 slice 2 stage D — TenantCreatedV1 has no mail mapper: the created event INVITES the initial administrator
+        // (TenantLifecycleNotificationConsumer → IAdminUserInvitationService), it does not send a template by key.
+        Assert.Null(provider.GetService<INotificationEventMapper<TenantCreatedV1>>());
         Assert.IsType<TenantSuspendedV1NotificationMapper>(
             provider.GetRequiredService<INotificationEventMapper<TenantSuspendedV1>>());
         Assert.IsType<TenantReactivatedV1NotificationMapper>(
             provider.GetRequiredService<INotificationEventMapper<TenantReactivatedV1>>());
-    }
-
-    [Fact]
-    public void TenantCreatedMapper_MapsResolvedInitialAdminRecipient()
-    {
-        var tenantId = Guid.NewGuid();
-        var correlationId = Guid.NewGuid();
-        var causationId = Guid.NewGuid();
-        var initialAdminUserId = Guid.NewGuid();
-        var envelope = CreateEnvelope(
-            TenantCreatedV1.Name,
-            new TenantCreatedV1(
-                tenantId,
-                DateTimeOffset.UtcNow,
-                Guid.NewGuid(),
-                Guid.NewGuid(),
-                "Tenant Alpha",
-                "tr-TR",
-                initialAdminUserId),
-            tenantId,
-            correlationId,
-            causationId);
-
-        var result = new TenantCreatedV1NotificationMapper().Map(
-            envelope,
-            [new("admin@example.com", "Tenant Admin")]);
-
-        Assert.NotNull(result);
-        Assert.Equal("tenant.invite.email", result!.TemplateKey);
-        Assert.Equal("tr-TR", result.Locale);
-        Assert.Equal(tenantId, result.Variables["TenantId"]);
-        Assert.Equal("Tenant Alpha", result.Variables["TenantDisplayName"]);
-        Assert.Equal(initialAdminUserId, result.Variables["InitialAdminUserId"]);
-        Assert.Equal(causationId, result.CausationId);
-        Assert.Single(result.To);
-        Assert.Equal("admin@example.com", result.To[0].Email);
-        Assert.Equal("Tenant Admin", result.To[0].DisplayName);
-    }
-
-    [Fact]
-    public void TenantCreatedMapper_ReturnsControlledNull_WhenResolvedRecipientsAreMissing()
-    {
-        var tenantId = Guid.NewGuid();
-        var envelope = CreateEnvelope(
-            TenantCreatedV1.Name,
-            new TenantCreatedV1(
-                tenantId,
-                DateTimeOffset.UtcNow,
-                Guid.NewGuid(),
-                Guid.NewGuid(),
-                "Tenant Alpha",
-                "tr-TR",
-                Guid.NewGuid()),
-            tenantId,
-            Guid.NewGuid());
-
-        var result = new TenantCreatedV1NotificationMapper().Map(envelope, []);
-
-        Assert.Null(result);
-        Assert.Equal("tenant.invite.email", TenantCreatedV1NotificationMapper.TemplateKey);
-        Assert.Contains("InitialAdminUserId", TenantCreatedV1NotificationMapper.MissingRecipientResolutionContractReason);
-        Assert.DoesNotContain("AdminEmail", TenantCreatedV1NotificationMapper.MissingRecipientResolutionContractReason, StringComparison.Ordinal);
     }
 
     [Fact]

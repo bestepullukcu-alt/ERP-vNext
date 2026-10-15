@@ -357,7 +357,7 @@ public sealed class TaskReviewGateTests
                 new FakeCurrentUserContext(TaskTestData.Me),
                 reviews,
                 states ?? new FakeTaskApprovalService(),
-                NullLogger<SubmitTaskForReviewHandler>.Instance)
+                NullLogger<SubmitTaskForReviewHandler>.Instance, writeGate: TaskWriteGateDoubles.Open)
             .Handle(
                 new SubmitTaskForReviewCommand(id, new TaskTransitionRequest(expectedVersion, null, null), "corr"),
                 CancellationToken.None);
@@ -376,7 +376,7 @@ public sealed class TaskReviewGateTests
                 tasks, new TaskLifecycleService(), new FakeCurrentUserContext(TaskTestData.Me),
                 new FakeChecklistRunRepository(), new TaskChecklistService(), gate,
                 new FakeTaskDependencyRepository(), new FakeTaskTypeRepository(), new FakeTaskNotificationService(),
-                new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()), new FakeTaskAttachmentRepository(), NullLogger<TransitionTaskItemHandler>.Instance)
+                new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()), new FakeTaskAttachmentRepository(), NullLogger<TransitionTaskItemHandler>.Instance, writeGate: TaskWriteGateDoubles.Open)
             .Handle(
                 new TransitionTaskItemCommand(id, target, new TaskTransitionRequest(expectedVersion, null, null), "corr"),
                 CancellationToken.None);

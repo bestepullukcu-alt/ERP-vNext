@@ -1,10 +1,6 @@
 using System.Reflection;
 using Diten.Platform.Application.Contracts.Audit;
 using Diten.Platform.Domain.Enums;
-using Diten.Platform.Application.Features.Tenants.Commercial.Entitlements.Commands;
-using Diten.Platform.Application.Features.SubscriptionPlans.Commands;
-using Diten.Platform.Application.Features.ModuleCatalog.Commands;
-using Diten.Platform.Application.Features.ModuleRegistration;
 using Diten.Platform.Common.Authorization;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -86,24 +82,8 @@ public sealed class AuditBehavior<TRequest, TResponse> : IPipelineBehavior<TRequ
     }
 
     private static bool IsAuthorizedTransactionOwnedAuditCommand(Type requestType) =>
-        requestType == typeof(AddTenantModuleEntitlementCommand)
-        || requestType == typeof(EnableTenantModuleEntitlementCommand)
-        || requestType == typeof(DisableTenantModuleEntitlementCommand)
-        || requestType == typeof(UpdateTenantModuleEntitlementExpiryCommand)
-        || requestType == typeof(RemoveTenantManualModuleOverrideCommand)
-        || requestType == typeof(CreateSubscriptionPlanCommand)
-        || requestType == typeof(UpdateSubscriptionPlanCommand)
-        || requestType == typeof(ActivateSubscriptionPlanCommand)
-        || requestType == typeof(DeactivateSubscriptionPlanCommand)
-        || requestType == typeof(SeedDefaultSubscriptionPlansCommand)
-        || requestType == typeof(CreateModuleCatalogItemCommand)
-        || requestType == typeof(UpdateModuleCatalogItemCommand)
-        || requestType == typeof(ActivateModuleCatalogItemCommand)
-        || requestType == typeof(DeactivateModuleCatalogItemCommand)
-        || requestType == typeof(DeleteModuleCatalogItemCommand)
-        || requestType == typeof(BulkDeleteModuleCatalogItemsCommand)
-        || requestType == typeof(RegisterModuleManifestCommand)
-        // MOD-0022 — e-signature commands write their audit intent inside their own business transaction.
+        TransactionOwnedAuditCommands.Authorized.Contains(requestType)
+        // MOD-0022 (main) — e-signature commands write their audit intent inside their own business transaction.
         || Features.ESignature.ESignatureTransactionAudit.Owns(requestType);
 
     private AuditPlan BuildAuditPlan(TRequest request)

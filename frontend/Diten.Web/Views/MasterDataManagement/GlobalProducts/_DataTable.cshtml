@@ -1,27 +1,30 @@
 @using Diten.Web.Views.MasterDataManagement.GlobalProducts
+@using Diten.Web.Models.DataTable
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<GlobalProductsIndex> Localizer
+@{
+    // The table card is the shared component (BL-440, WP-MDM-GP-LIST-01): the page describes it, _ListShell renders it,
+    // with the shared shaped skeleton. Every header is localized HERE; the shell produces no text.
+    //
+    // SERVER data: MDM pages, searches, filters and sorts (orderBy whitelist: globalProductName, canonicalCode,
+    // lifecycleStatus); index.js declares the same mode.
+    //
+    // NO SELECTION COLUMN, deliberately: Global Product identities are never bulk-deleted or bulk-changed (GxP — every
+    // identity change is its own maker-checker request), so a checkbox would select into nothing.
+    var listShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-globalproducts",
+        DataMode = "server",
+        Slug = "globalproducts",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["CanonicalCode"].Value },
+            new DataTableColumnViewModel { Header = Localizer["GlobalProductName"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["LifecycleStatus"].Value }
+        ],
+        ActionsHeader = Localizer["Actions"].Value
+    };
+}
 
-<div class="card">
-    <div id="skeleton-loader" class="backbone-skeleton p-4">
-        <div class="shimmer skeleton-row skeleton-row-lg"></div>
-        <div class="shimmer skeleton-row"></div>
-        <div class="shimmer skeleton-row"></div>
-        <div class="shimmer skeleton-row"></div>
-        <div class="shimmer skeleton-row skeleton-row-last"></div>
-    </div>
-
-    <div class="card-datatable table-responsive">
-        <table id="dt-globalproducts" data-dt-standard="v2" class="datatables-globalproducts table border-top">
-            <thead>
-                <tr>
-                    <th></th>
-                    <th>@Localizer["CanonicalCode"]</th>
-                    <th class="all">@Localizer["GlobalProductName"]</th>
-                    <th>@Localizer["LifecycleStatus"]</th>
-                    <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
-                </tr>
-            </thead>
-        </table>
-    </div>
-</div>
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="listShell" />

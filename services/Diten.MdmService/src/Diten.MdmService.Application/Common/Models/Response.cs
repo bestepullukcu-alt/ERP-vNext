@@ -18,6 +18,10 @@ public sealed class Response<T>
     public static Response<T> Fail(string error, int statusCode = 400)
         => new() { StatusCode = statusCode, IsSuccessful = false, Errors = [error] };
 
+    // A failure that still carries data the caller needs to act on (e.g. the command to repeat).
+    public static Response<T> Fail(string error, int statusCode, T data)
+        => new() { StatusCode = statusCode, IsSuccessful = false, Errors = [error], Data = data };
+
     public static Response<T> Fail(IReadOnlyList<string> errors, int statusCode = 400)
         => new() { StatusCode = statusCode, IsSuccessful = false, Errors = errors };
 }

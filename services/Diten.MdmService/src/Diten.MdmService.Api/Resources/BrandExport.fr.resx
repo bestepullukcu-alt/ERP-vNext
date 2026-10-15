@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <!-- WP-MDM-BRAND-ACCEPT-01 FIX2 (item 1, BL-452): the brand register export's headers and values — the SAME words the screen shows (frontend Resources/Views/MasterData/Brands/BrandsIndex.*.resx), 7 tenant languages; a guard test holds them equal. -->
+  <data name="Title" xml:space="preserve"><value>Marques</value></data>
+  <data name="BrandCode" xml:space="preserve"><value>Code de marque</value></data>
+  <data name="BrandName" xml:space="preserve"><value>Nom de marque</value></data>
+  <data name="BrandStatus" xml:space="preserve"><value>Statut de la marque</value></data>
+  <data name="BusinessUnitId" xml:space="preserve"><value>Unité opérationnelle</value></data>
+  <data name="TherapeuticAreaId" xml:space="preserve"><value>Aire thérapeutique</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Valide à partir du</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Valide jusqu’au</value></data>
+  <data name="Archived" xml:space="preserve"><value>Archivé</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Mis à jour le</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="Status_active" xml:space="preserve"><value>Actif</value></data>
+  <data name="Status_inactive" xml:space="preserve"><value>Inactif</value></data>
+  <data name="Status_archived" xml:space="preserve"><value>Archivé</value></data>
+  <data name="Yes" xml:space="preserve"><value>Oui</value></data>
+  <data name="No" xml:space="preserve"><value>Non</value></data>
+  <data name="Unresolved" xml:space="preserve"><value>Non résolu</value></data>
+</root>

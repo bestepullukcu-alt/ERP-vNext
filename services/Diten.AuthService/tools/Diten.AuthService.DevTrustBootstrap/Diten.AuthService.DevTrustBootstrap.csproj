@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- MOD-0033-FU02 §F.3 — the Development bootstrap behind scripts/dev/setup-service-trust.*. It writes three
+       git-ignored appsettings.Development.local.json files and nothing else: no database, no network. The credential
+       pair comes from the §F.2 generator's own code (project reference), not from a copy of it. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Diten.AuthService.DevTrustBootstrap</RootNamespace>
+    <AssemblyName>Diten.AuthService.DevTrustBootstrap</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Diten.AuthService.ServiceClientCredentialGenerator\Diten.AuthService.ServiceClientCredentialGenerator.csproj" />
+    <ProjectReference Include="..\..\src\Diten.AuthService.Domain\Diten.AuthService.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

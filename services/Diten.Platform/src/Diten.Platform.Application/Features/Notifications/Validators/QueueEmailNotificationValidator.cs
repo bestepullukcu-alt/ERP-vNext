@@ -15,9 +15,14 @@ public sealed class QueueEmailNotificationValidator : AbstractValidator<QueueEma
             .WithMessage("TemplateKey must use lowercase dotted format.");
         RuleFor(x => x.Request.Locale).NotEmpty().MaximumLength(32);
         RuleFor(x => x.Request.Variables).NotNull();
+        // BL-454 — no recipient at all is as permanent a refusal as a bad one: the same code, so an in-process caller
+        // (IsRecipientRefusal) lets the event go instead of redelivering it forever.
         RuleFor(x => x.Request.To)
             .NotNull()
-            .Must(x => x.Count > 0)
+            .WithErrorCode(Handlers.CommandHandlers.QueueEmailNotificationHandler.ReasonRecipientInvalid)
+            .WithMessage("At least one To recipient is required.")
+            .Must(x => x is { Count: > 0 })
+            .WithErrorCode(Handlers.CommandHandlers.QueueEmailNotificationHandler.ReasonRecipientInvalid)
             .WithMessage("At least one To recipient is required.");
         RuleForEach(x => x.Request.To).SetValidator(new EmailRecipientDtoValidator());
         RuleForEach(x => x.Request.Cc!)
@@ -27,18 +32,47 @@ public sealed class QueueEmailNotificationValidator : AbstractValidator<QueueEma
             .SetValidator(new EmailRecipientDtoValidator())
             .When(x => x.Request.Bcc is not null);
     }
+
+    /// <summary>
+    /// BL-454 — is this the refusal of a recipient that is not ONE plain address? A caller INSIDE the process (an
+    /// event consumer, the event-code adapter) gets the pipeline's <see cref="ValidationException"/>, not a response
+    /// with a reason code; this is how it recognises the one refusal no retry can ever fix.
+    /// </summary>
+    public static bool IsRecipientRefusal(Exception exception) =>
+        exception is ValidationException validation
+        && validation.Errors.Any(error => error.ErrorCode
+            == Diten.Platform.Application.Features.Notifications.Handlers.CommandHandlers.QueueEmailNotificationHandler.ReasonRecipientInvalid);
 }
 
 public sealed class EmailRecipientDtoValidator : AbstractValidator<EmailRecipientDto>
 {
+    private const string RecipientInvalid =
+        Diten.Platform.Application.Features.Notifications.Handlers.CommandHandlers.QueueEmailNotificationHandler.ReasonRecipientInvalid;
+
     public EmailRecipientDtoValidator()
     {
+        // BL-454 — ONE rule for an address (EmailAddressText.IsSingleAddress), refused with the curated code
+        // RECIPIENT_INVALID: GlobalExceptionHandler carries a curated ErrorCode through verbatim as reason_code. The
+        // FluentValidation EmailAddress() this replaces accepted a value with a line break, and refused others with a
+        // code-less failure. This is the ONE place the rule is applied: every caller reaches the handler through the
+        // MediatR pipeline, and in-process callers recognise the refusal by IsRecipientRefusal.
+        // Every rule on the address carries the SAME code: an empty or over-long address is as permanently invalid as a
+        // second mailbox, and an in-process caller must recognise all three (IsRecipientRefusal) or it redelivers forever.
         RuleFor(x => x.Email)
             .Cascade(CascadeMode.Stop)
             .NotEmpty()
-            .EmailAddress()
-            .MaximumLength(256);
-        RuleFor(x => x.DisplayName).MaximumLength(160);
+            .WithErrorCode(RecipientInvalid)
+            .WithMessage("A recipient address is not a single valid address.")
+            .MaximumLength(256)
+            .WithErrorCode(RecipientInvalid)
+            .WithMessage("A recipient address is not a single valid address.")
+            .Must(email => Diten.BuildingBlocks.Email.EmailAddressText.IsSingleAddress(email?.Trim()))
+            .WithErrorCode(RecipientInvalid)
+            .WithMessage("A recipient address is not a single valid address.");
+        RuleFor(x => x.DisplayName)
+            .MaximumLength(160)
+            .WithErrorCode(RecipientInvalid)
+            .WithMessage("A recipient name is longer than 160 characters.");
     }
 }
 

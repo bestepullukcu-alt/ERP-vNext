@@ -112,7 +112,8 @@ public sealed class NotificationDispatchMongoTests : IAsyncLifetime
         var response = await HandleAsync(TaskNotificationEvents.Assigned, "en");
 
         Assert.False(response.IsSuccessful);
-        Assert.Equal(QueueEmailNotificationHandler.ReasonMessagingSettingsUnavailable, response.ReasonCode);
+        // C-FIX1 3 — the resolver's own name reaches the producer: with no settings at all, no platform default.
+        Assert.Equal(Diten.Platform.Application.Features.Notifications.Services.MessagingSettingsSelection.ReasonPlatformDefaultUnavailable, response.ReasonCode);
         Assert.Empty(await Collection<NotificationDispatch>("notification_dispatches")
             .Find(FilterDefinition<NotificationDispatch>.Empty).ToListAsync());
     }
@@ -253,8 +254,7 @@ public sealed class NotificationDispatchMongoTests : IAsyncLifetime
         Port = 1025,
         Enabled = true,
         EnableSsl = false,
-        FromEmail = "no-reply@yourcompany.com",
-        FromName = "Diten PPM"
+        FromEmail = "no-reply@yourcompany.com"
     };
 
     private IMongoCollection<T> Collection<T>(string name) => _harness.Database.GetCollection<T>(name);
@@ -272,7 +272,7 @@ public sealed class NotificationDispatchMongoTests : IAsyncLifetime
                 new FakeMessagingProvider(Options.Create(new FakeMessagingProviderOptions()), new FakeHostEnvironment()),
                 new StubSmtpProvider()]),
             new NoOpEventBus(),
-            NullLogger<QueueEmailNotificationHandler>.Instance);
+            NullLogger<QueueEmailNotificationHandler>.Instance, jobOptions: Diten.Platform.Application.Tests.Notifications.NotificationTestJobs.RetriesOn());
 
         return await handler.Handle(
             new QueueEmailNotificationCommand(

@@ -46,6 +46,27 @@ public sealed class ModuleCatalogRepository : GlobalRepository<ModuleCatalogItem
             : await Collection.Find(session, filter).FirstOrDefaultAsync(ct);
     }
 
+    public async Task<IReadOnlyDictionary<string, ModuleCatalogItem>> GetByCodesAsync(IReadOnlyCollection<string> moduleCodes, CancellationToken ct = default)
+    {
+        // The same filter as GetByCodeCoreAsync, for many codes at once (BL-500: the Modules list read one record per module).
+        var codes = moduleCodes.Distinct(StringComparer.Ordinal).ToArray();
+        var found = new Dictionary<string, ModuleCatalogItem>(StringComparer.OrdinalIgnoreCase);
+        if (codes.Length == 0)
+        {
+            return found;
+        }
+
+        var filter = Builders<ModuleCatalogItem>.Filter.And(
+            ExecutionFilter,
+            Builders<ModuleCatalogItem>.Filter.In(x => x.ModuleCode, codes));
+        foreach (var item in await Collection.Find(filter).ToListAsync(ct))
+        {
+            found.TryAdd(item.ModuleCode, item);
+        }
+
+        return found;
+    }
+
     public async Task<ModuleCatalogItem?> GetByCodeIncludingDeletedAsync(string moduleCode, CancellationToken ct = default)
     {
         var filter = Builders<ModuleCatalogItem>.Filter.Eq(x => x.ModuleCode, moduleCode);

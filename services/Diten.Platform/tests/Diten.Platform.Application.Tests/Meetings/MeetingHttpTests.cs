@@ -225,7 +225,8 @@ public sealed class MeetingHttpTests
                         new MeetingIdempotencyKeyResolver(), host._eligibility, host._inviteMailer).Handle(cmd, ct),
                     GetMeetingByIdQuery query => new GetMeetingByIdHandler(
                         host._meetings, host._types, host._attendees, host._agenda,
-                        new FakeCurrentUserContext(Organizer), new FakeActorPermissionContext()).Handle(query, ct),
+                        new FakeCurrentUserContext(Organizer), new FakeActorPermissionContext(),
+                        new Diten.Platform.Application.Tests.Tasks.FakeUserDisplayNameResolver()).Handle(query, ct),
                     UpdateMeetingCommand cmd => new UpdateMeetingHandler(
                         host._meetings, host._types, host._attendees,
                         new FakeCurrentUserContext(Organizer), host._inviteMailer).Handle(cmd, ct),

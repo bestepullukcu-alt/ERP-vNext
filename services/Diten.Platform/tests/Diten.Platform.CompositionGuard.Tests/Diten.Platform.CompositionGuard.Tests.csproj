@@ -22,4 +22,9 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Diten.Platform.API\Diten.Platform.API.csproj" />
   </ItemGroup>
+
+  <!-- WP-PLATFORM-COMPOSITION-GUARD-OWNED-01: the Platform tests' ONE Mongo source (CT decision C), linked, not copied. -->
+  <ItemGroup>
+    <Compile Include="..\Shared\PlatformTestMongo.cs" Link="Shared\PlatformTestMongo.cs" />
+  </ItemGroup>
 </Project>
