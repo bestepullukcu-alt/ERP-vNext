@@ -28,7 +28,9 @@ strict    a queue registered with strict=yes (a new Control Tower's queue) treat
           a valid `module` value on every row (MOD-nnnn[-FUn], or `ortak:` + MOD list or a scope record path; known in
           the module registry, Blueprint or packs; a deprecated alias is refused); leaving a terminal state between
           consecutive committed versions of the queue (skipped steps are NOT inferred from snapshots); and `<id>-R<n>`
-          rows that must name their original in depends_on (-R3 and later need a reassessment record, SOP §28.2).
+          rows that must name their original in depends_on (-R3 and later need a reassessment record, SOP §28.2, in the
+          reassessment_record column; old strict data without that column keeps it in record). An ACCEPTED row names
+          its REP-001 v2 acceptance record in record as path@commit (CT-OPS-03, scripts/acceptance_record.py).
 guard     without --expect-*: prints the queue's SHA-256 and row count; with both: exit 1 if the file changed since.
           It detects a change between two moments; it is NOT a file lock.
 writers   git refs on this machine whose copy of the queue differs from its merge base with --base (default
@@ -324,7 +326,13 @@ def check_queue(cur: Table, base: Table, vocab: dict[str, dict], strict: bool = 
         if mod_i is None:
             error(None, "katı kuyrukta 'module' sütunu yok")
         ids_now = {row[id_i] for row in cur.rows}
+        accept = profile.get("acceptance")
         for i, row in enumerate(cur.rows, start=2):
+            if row[state_i] == "ACCEPTED":
+                problems = accept(dict(zip(base.header, row))) if accept else [
+                    "katı kuyruk profilinde kabul denetimi yok — ACCEPTED doğrulanamadı (CT-OPS-03)"]
+                for text in problems:
+                    error(row[id_i], f"satır {i} {row[id_i]}: {text}")
             if mod_i is not None:
                 problem = module_problem(row[mod_i], profile["known"])
                 if problem:
@@ -338,10 +346,15 @@ def check_queue(cur: Table, base: Table, vocab: dict[str, dict], strict: bool = 
                 elif original not in deps:
                     error(row[id_i], f"satır {i} {row[id_i]}: depends_on asıl kimliği '{original}' göstermiyor")
                 if n >= 3:
-                    rec = (row[rec_i] if rec_i is not None else "").split("@")[0].strip()
+                    rr_i = base.index("reassessment_record")  # its own column; old strict data without it: record
+                    src_i = rr_i if rr_i is not None else rec_i
+                    rec = (row[src_i] if src_i is not None else "").split("@")[0].strip()
                     if not (rec.startswith("docs/records/decisions/") and ".." not in Path(rec).parts
                             and (ROOT / rec).is_file()):
                         error(row[id_i], f"satır {i} {row[id_i]}: -R{n} için yeniden değerlendirme kaydı gerekli (SOP §28.2)")
+                    elif not decision_resolved(ROOT / rec):
+                        error(row[id_i], f"satır {i} {row[id_i]}: -R{n} yeniden değerlendirme kaydı onaylı ya da karara "
+                                         f"bağlanmış değil (künyede tek 'status: approved|decided' yok) — SOP §28.2")
     for i, row in enumerate(cur.rows, start=2):
         if row[id_i] != row[id_i].strip() or re.search(r"\s", row[id_i]):
             error(row[id_i], f"satır {i}: kimlik '{row[id_i]}' boşluk içeriyor — kimlikler birebir karşılaştırılır")
@@ -657,7 +670,7 @@ class ProfileError(Exception):
     """A strict queue's transition profile cannot be built: its checks would silently switch off, so the tool stops."""
 
 
-def build_profile(queue: dict, vocab: dict[str, dict], states: list[dict]) -> dict | None:
+def build_profile(queue: dict, vocab: dict[str, dict], states: list[dict], ref: str | None = None) -> dict | None:
     """None for a tolerant queue. For a strict queue the profile is mandatory: a missing or broken transition table, or
     one without rows for the queue's vocabulary, raises ProfileError instead of turning the strict checks off."""
     if queue.get("strict") != "yes":
@@ -669,10 +682,10 @@ def build_profile(queue: dict, vocab: dict[str, dict], states: list[dict]) -> di
         rows = read_table(TRANSITIONS, TRANSITION_COLUMNS)
     except SystemExit as e:
         raise ProfileError(f"geçiş tablosu okunamadı: {e}")
-    return profile_from_rows(queue, vocab, states, rows)
+    return profile_from_rows(queue, vocab, states, rows, ref)
 
 
-def profile_from_rows(queue: dict, vocab: dict[str, dict], states: list[dict], rows: list[dict]) -> dict:
+def profile_from_rows(queue: dict, vocab: dict[str, dict], states: list[dict], rows: list[dict], ref: str | None = None) -> dict:
     mine = [r for r in rows if r["vocabulary"] == queue["vocabulary"]]
     if not mine:
         raise ProfileError(f"geçiş tablosunda '{queue['vocabulary']}' sözlüğünün satırı yok")
@@ -680,7 +693,46 @@ def profile_from_rows(queue: dict, vocab: dict[str, dict], states: list[dict], r
     if problems:
         raise ProfileError(f"geçiş tablosu geçersiz: {problems[0]}" + (f" (+{len(problems) - 1})" if len(problems) > 1 else ""))
     edges = {(r["from_state"], r["to_state"]) for r in mine}
-    return {"edges": edges, "terminal": terminal_states(vocab, edges), "known": known_modules()}
+    return {"edges": edges, "terminal": terminal_states(vocab, edges), "known": known_modules(),
+            "acceptance": acceptance_checker(queue, ref)}
+
+
+def decision_resolved(path: Path) -> bool:
+    """A reassessment record counts as resolved only when its künye holds exactly one status that is approved or
+    decided. The file's existence alone proves nothing; whether the decision really resolves the cause is the CT's."""
+    lines = path.read_text(encoding="utf-8", errors="replace").replace("\r\n", "\n").split("\n")
+    if not lines or lines[0].strip() != "---":
+        return False
+    statuses = []
+    for line in lines[1:]:
+        if line.strip() == "---":
+            break
+        if re.match(r"^status\s*:", line):
+            statuses.append(line.split(":", 1)[1].strip())
+    return len(statuses) == 1 and re.match(r"^(approved|decided)\b", statuses[0], re.I) is not None
+
+
+def acceptance_checker(queue: dict, ref: str | None = None):
+    """CT-OPS-03: an ACCEPTED row of a strict queue names its acceptance record as path@commit, and that record must
+    allow ACCEPTED (scripts/acceptance_record.py, imported, not copied). The record index is read from the same ref as
+    the queue (HEAD for the working tree), never from another tree. Returns the problems for one row."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("acceptance_record", ROOT / "scripts" / "acceptance_record.py")
+    ar = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(ar)
+    git_access = ar.Git(ROOT)
+
+    def check(row: dict) -> list[str]:
+        record = (row.get("record") or "").strip()
+        m = ar.SPEC.match(record)
+        if not m or m.group(3):
+            return [f"ACCEPTED satırı kabul kaydını yol@commit ile göstermeli (record: '{record[:40]}') — CT-OPS-03"]
+        code, lines = ar.run_check(record, {"queue": queue.get("queue_id"), "work_package": row.get("id"),
+                                            "module": row.get("module")}, git_access, safe_ref(ref) if ref else "HEAD")
+        if code == 0:
+            return []
+        return [f"kabul kaydı {record[:60]}: " + "; ".join(l for l in lines if l.startswith(("ENGEL", "sonuç")))[:400]]
+    return check
 
 
 def history_errors(queue: dict, profile: dict | None, ref: str | None) -> list[tuple[str | None, str]]:
@@ -939,7 +991,7 @@ def self_test() -> int:
                   not terminal_exits([snap("READY"), snap("VERIFIED"), snap("ACCEPTED")], term)))
     cases.append(("sabotage: a version without a state column -> history not checkable, reported",
                   any(qid is None for qid, _ in terminal_exits([snap("READY"), Table("id\titem\nW1\tx\n")], term))))
-    prof = {"edges": edges, "terminal": term, "known": known}
+    prof = {"edges": edges, "terminal": term, "known": known, "acceptance": lambda row: []}
     b7 = Table(h)
 
     def errs(rows: str) -> list[str]:
@@ -957,6 +1009,30 @@ def self_test() -> int:
     cases.append(("-R3 naming an existing decision record -> accepted; a path escaping docs/records/decisions/ -> refused",
                   not r3(rec_ok) and any("§28.2" in e for e in r3("docs/records/decisions/../../AGENTS.md"))
                   and any("§28.2" in e for e in r3("docs/records/decisions/2026-10"))))
+    refusing = dict(prof, acceptance=lambda row: [f"kabul kaydı {row.get('record')}: ENGEL zorunlu ölçüt kaldı"])
+    acc_errs = check_queue(Table(h + ok_rows), b7, v7, strict=True, profile=refusing)
+    cases.append(("CT-OPS-03: an ACCEPTED row whose acceptance record does not allow ACCEPTED -> HATA on that row",
+                  any("W1" in e and "kabul kaydı" in e for e in acc_errs["errors"]) and "W1" in acc_errs["bad"]))
+    # Y3 and acceptance share no column: -R3+ names its reassessment in reassessment_record, ACCEPTED its acceptance in record
+    h2 = h.rstrip("\n") + "\treassessment_record\n"
+    b2r = Table(h2)
+    dec = "docs/records/decisions/2026-10/ct-new-ct-standards-owner-decision-01.md"
+    base_rows = "W1\tx\tMOD-0288\tACCEPTED\tCT\t-\t-\t2026-10-15\taudits/k.md@abcdef1\t-\n"
+    r3_ready = base_rows + f"W1-R3\tfix\tMOD-0288\tREADY\tCT\tW1\t-\t2026-10-15\t-\t{dec}\n"
+    r3_acc = base_rows + f"W1-R3\tfix\tMOD-0288\tACCEPTED\tCT\tW1\t-\t2026-10-15\taudits/k3.md@abcdef1\t{dec}\n"
+    cq = lambda rows: check_queue(Table(h2 + rows), b2r, v7, True, prof)["errors"]
+    cases.append(("Y3 + CT-OPS-03: a -R3 READY row with its reassessment in reassessment_record -> no error", not cq(r3_ready)))
+    cases.append(("Y3 + CT-OPS-03: a -R3 ACCEPTED row (acceptance in record, reassessment in its own column) -> no error", not cq(r3_acc)))
+    cases.append(("sabotage (Y3): a -R3 ACCEPTED row without a reassessment decision -> refused (SOP §28.2)",
+                  any("§28.2" in e for e in cq(r3_acc.replace(f"\t{dec}\n", "\t-\n")))))
+    draft_dec = "docs/records/decisions/2026-10/ct-audit-corrections-2026-10-15-01.md"
+    cases.append(("sabotage (Y3): a reassessment record that is not an approved / decided decision -> refused (SOP §28.2)",
+                  any("§28.2" in e for e in cq(r3_ready.replace(dec, draft_dec)))))
+    no_check = {k: v for k, v in prof.items() if k != "acceptance"}
+    cases.append(("CT-OPS-03: a strict profile without the acceptance check -> ACCEPTED not silently accepted",
+                  any("kabul denetimi yok" in e for e in check_queue(Table(h + ok_rows), b7, v7, True, no_check)["errors"])))
+    cases.append(("CT-OPS-03: the real checker refuses an ACCEPTED row without a path@commit record",
+                  any("yol@commit" in e for e in acceptance_checker({"queue_id": "x"})({"id": "W1", "record": "-", "module": "MOD-0288"}))))
     cases.append(("sabotage: a strict queue without a module column -> refused",
                   any("module" in e for e in check_queue(Table("id\tstate\nW1\tREADY\n"), Table("id\tstate\n"), v7, True, prof)["errors"])))
     sq = {"queue_id": "nq", "vocabulary": "sop7", "strict": "yes"}
@@ -1051,7 +1127,7 @@ def main() -> int:
             cur = Table(decode(current_bytes(q, a.ref), q["path"]))
             vocab = vocabulary(states, q["vocabulary"])
             try:
-                profile, profile_error = build_profile(q, vocab, states), None
+                profile, profile_error = build_profile(q, vocab, states, a.ref), None
             except ProfileError as e:
                 profile, profile_error = None, str(e)
             errors, warnings = validate_queue(cur, baseline(q), vocab, q["strict"] == "yes", profile)

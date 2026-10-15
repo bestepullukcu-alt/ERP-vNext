@@ -1629,6 +1629,34 @@ gerektiriyorsa ayrı gate'tir.
 WP ACCEPTED ≠ MERGED ≠ MODULE DONE ≠ CAPABILITY DONE ≠ RELEASE VERIFIED
 ```
 
+## 29.5 Kabul kaydı ve Done seviyesi (CT-OPS-03)
+
+> Karar: `ct-ops-03-acceptance-contract-joint-decision-01.md`. **Zorunlu:** yeni (katı kuyruklu) Control Tower'lar.
+> Eski kayıtlar ve eski Control Tower'ların işleri değişmez.
+
+Üç alan ayrıdır ve birbirine otomatik çevrilmez:
+
+| Alan | Değer | Nerede |
+|---|---|---|
+| Karar | `accepted` · `rejected` · `conditional` | REP-001 §6.1 künyesi, `decision` |
+| Kuyruk durumu | §7 durumları (ACCEPTED dahil) | görev kaynağı, `state` |
+| Tamamlanma | WP · Module · Capability · Release Done · `yok` | künye, `completion`; yalnız §29.1–29.4 koşullarıyla |
+
+İlişki yazılıdır, otomatik değildir:
+
+- **ACCEPTED:** Satırın `record` sütunu aynı kuyruk + WP + modülün yetkili, `decision: accepted` kaydını `yol@commit`
+  ile gösterir ve kayıt REP-001 §6.1–6.2'ye uyar. `ct_queue.py validate` bunu denetler.
+- **conditional:** Koşullar (ne · sahip · son tarih) kapanana kadar satır ACCEPTED olmaz; tamamlanma `yok`'tur ve
+  tamamlanan efora sayılmaz. Koşullar kapanınca aynı iş için `supersedes` ile yeni bir `accepted` kaydı yazılır.
+- **rejected:** Satır ACCEPTED olmaz; devam `-R<n>` satırıyladır (kart Y1).
+- **Muafiyet (K19)** otomatik kabul değildir; sahip, son tarih ve kanıtla ayrı değerlendirilir.
+- **Gerekli kanıt seviyesi (§23.1):** Kayıt onaylı bir WP ya da paket satırına bağlıdır. Yoksa ya da belirsizse kabul
+  durur.
+- **`-R3` ve sonrası (§28.2):** Yeniden değerlendirme kararı `reassessment_record` sütunundadır, kabul kaydı
+  `record`'dadır. Kararın künyesinde tek `status: approved` ya da `decided` gerekir. Dosyanın varlığı kararın çözüldüğünü
+  kanıtlamaz; çözümü CT doğrular. Karar çözülmeden `-R3` açılmaz ve dağıtılmaz.
+- **Sınır:** Betikler kaydın ve kanıtın bütünlüğünü denetler; anlamca kabul bağımsız doğrulayıcının ve CT'nindir.
+
 ---
 
 # 30. Kayıt disiplini

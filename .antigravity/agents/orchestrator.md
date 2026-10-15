@@ -207,6 +207,8 @@ Canonical roster 20 agent file'dir: 1 `orchestrator` + aşağıdaki 19 specialis
       ADR (karar alındıysa) → `docs/records/decisions/<yyyy-mm>/` ✓ — yol yazılmadan bu madde işaretlenemez.
 - [x] **Backlog kapanış kaydı (demir kural #10):** `git diff --name-only <base>..HEAD -- docs/roadmap/backlog/product-backlog.md` çıktısı buraya yapıştırılır. Boş çıktı = madde işaretlenemez.
 - [x] **Kapanışın derecesi (demir kural #10):** Kayıt **✅** mi **⚠️ KISMİ** mi olarak yazıldı? ⚠️ ise **doğrulanacak davranışların adım adım listesi** kayda kondu mu? Canlı doğrulama yapılmadan ✅ yazmak **ihlaldir** — kod bitti + testler yeşil, kapanış için yetmez.
+- [x] **Done seviyesi (SOP §29):** Rapor "tamamlandı" derken hangi SOP §29 seviyesini kastettiğini yazar; bu liste
+      o seviyeye kanıt üretir, kendi başına "bitti" demez.
 
 > ⛔ Yukarıdaki Mimari Onay, Runtime Smoke Test, CRUD, Dokümantasyon ve **Backlog kapanış kaydı** maddeleri işaretlenmeden rapor "tamamlandı" olarak gönderilemez. "Smoke test yapıldı" denirken Kanal C kullanıldıysa kullanıcı yanıtı alıntılanır.
 >

@@ -1,4 +1,4 @@
-# CONTROL TOWER — Daily Operating Card v1.7
+# CONTROL TOWER — Daily Operating Card v1.8
 
 > **Purpose:** günlük Control Tower turu için hızlı gate. Yeni authority yaratmaz. Ayrıntı için [CONTROL TOWER SOP](./control-tower-sop.md) (v2.5 r3).
 
@@ -58,13 +58,15 @@ python3 .antigravity/scripts/verify_module_id.py --check-report <kanıt yolu>
   ACCEPTED ya da başka bir son durumdaysa olduğu gibi kalır ve yeni iş `depends_on` ile ona bağlanır (SOP §19.1, §19.3).
 - **Y3. İki tur sınırı.** Aynı kök neden iki ardışık turda kapanmazsa `docs/records/decisions/` altında bir
   ARCHITECTURE_REASSESSMENT_REQUIRED karar/engel kaydı açılır; bu bir kuyruk durumu değildir (SOP §28.2). Kayıt
-  çözülmeden yeni `-R` satırı açılmaz ve dağıtılmaz. `-R3` ve sonrası, `record` sütununda bu kaydı gösterir.
+  çözülmeden yeni `-R` satırı açılmaz ve dağıtılmaz. `-R3` ve sonrası bu kaydı `reassessment_record` sütununda
+  gösterir (sütunu olmayan eski katı kuyrukta `record`); kaydın künyesinde tek `status: approved` ya da `decided` gerekir
+  ve dosyanın varlığı kararın çözüldüğünü kanıtlamaz. ACCEPTED satırında `record` kabul kaydıdır (SOP §29.5).
 - **Y4. `-R` satırı da kapılardan geçer:** dağıtımdan önce DoR (§1) ve CT-PQG-01.
 
 `ct_queue.py validate` katı kuyrukta mekanik olarak denetler: durum adlarının sözlükte olması, son durumdan çıkış
 (kuyruk dosyasının git geçmişindeki ardışık sürümler arasında), `-R<n>` satırının var olan asıl kimliğe bağlı olması ve
-`depends_on`'da onu göstermesi, `-R3` ve sonrası için karar kaydı, `module` sütunu. Atlanmış adım anlık görüntülerden
-çıkarılamaz; kanıtların varlığını denetlemek CT-OPS-03'ün işidir.
+`depends_on`'da onu göstermesi, `-R3` ve sonrası için karar kaydı, `module` sütunu ve ACCEPTED satırının kabul kaydı
+(CT-OPS-03). Atlanmış adım anlık görüntülerden çıkarılamaz.
 
 ## 1. START / DoR — dispatch etmeden önce
 
@@ -137,6 +139,9 @@ Aşağıdakilerde STOP: wrong branch/HEAD, overlapping dirty files, draft pack, 
 - [ ] Agent Verdict ayrı, Verification Verdict ayrı, CT Status ayrı.
 - [ ] Backlog / Module Pack / Seam / DCP / Delivery Board applicable kayıtları güncellendi.
 - [ ] Decision / waiver / intentionally-not-done kaydedildi.
+- [ ] **Kabul kaydı (yeni Control Tower, CT-OPS-03):** ACCEPTED'ten önce
+  `python3 scripts/acceptance_record.py check <kayıt>@<commit> --queue <kuyruk> --wp <WP> --module <modül>` çıkış 0;
+  satırın `record` sütunu bu kaydı gösterir (REP-001 §6.1–6.2, SOP §29.5).
 - [ ] Dependency gates yeniden hesaplandı.
 - [ ] Newly-unblocked work belirlendi.
 - [ ] Güvenli paralellik varsa sonraki **2+ WP** üretildi; yoksa neden yazıldı.

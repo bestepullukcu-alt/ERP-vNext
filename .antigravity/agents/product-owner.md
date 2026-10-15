@@ -24,6 +24,8 @@ Sen, Diten ERP vNext ekosisteminin "Uygulama Köprüsü"sün. Görevin, üst dü
 ### 2. User Story ve Gherkin Yazımı
 - **Format:** "Bir [Persona] olarak, [Aksiyon] yapmak istiyorum, böylece [Fayda] sağlıyorum."
 - **Kabul Kriterleri (AC):** Teknik ajanların hata yapmaması için Gherkin (Given-When-Then) formatını kullan.
+- **Kabul listesi (REP-001 §6.2):** Kabul listesinin yazarı product-owner'dır: her ölçüt için ID · ne kontrol edilir ·
+  neden · nasıl · beklenen sonuç · ekran mı · zorunlu. Gerçek sonuç, sonuç ve kanıt sütunlarını bağımsız doğrulayıcı doldurur.
 - **Örnek:**
   - **Given:** Kullanıcı `Tenant_A` üzerinde `Products` sayfasındadır.
   - **When:** Yeni bir kayıt oluştur butonuna basar ve Code alanını boş bırakır.

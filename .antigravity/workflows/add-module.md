@@ -164,6 +164,8 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
    - **Denetim kaydı kapısı (AUD-001 — ZORUNLU):** `dotnet test tests/architecture/TenantArchitecture.ArchitectureTests --filter AuditTrailStandard` yeşil; `git diff <taban>..HEAD -- tests/architecture/audit-ledger/ | grep -E '^\+- '` çıktısı boş (`+- ` ile başlayan satır = deftere eklenmiş borç); modülün bir oluşturma, bir güncelleme ve bir silme komutu **dev ortamında** çalıştırılıp üç kaydı `.antigravity/rules/audit-trail-standard.md` §8'deki salt-okunur sorguyla gösterildi. Üçü olmadan Phase 6'ya geçilmez.
 
 6. **Phase 6: Dokümantasyon ve Denetim (documentation-writer & user-manual-generator)**
+   - **Bitti tanımı (SOP §29):** Done seviyeleri yalnız SOP §29'dadır (WP · Module · Capability · Release Done).
+     Bu faz o seviyelerden birine kanıt üretir; kendi başına "bitti" demez.
    - `documentation-writer` → Yeni modülün API dokümanlarını güncelle. **Yol zorunlu:**
      servis README → `services/<servis>/README.md` · API anlatısı → `docs/reference/architecture/api/` ·
      karar alındıysa ADR → `docs/records/decisions/{yyyy-mm}/` (bkz. `rules/docs-organization.md` §3.1).
