@@ -976,6 +976,15 @@ Rapor formatı: §22
     except Exception:
         crashed = False
     cases.append(("sabotage: an unreadable prompt -> exit 2, never a pass", crashed))
+    sop = (ROOT / "docs/guides/operations/control-tower-sop.md").read_text(encoding="utf-8").split("\n")
+    start = next(i for i, l in enumerate(sop) if l.startswith("## 36.1 "))
+    body = sop[next(i for i in range(start, len(sop)) if sop[i].startswith("```text")) + 1:]
+    template = body[:next(i for i, l in enumerate(body) if l.startswith("```"))]
+    parsed = ("Repository:", "Risk:", "Görev sınıfı:", "İzinli yollar:", "Korunan yollar:", "Sözleşme yüzeyleri:", "- ",
+              "Keşif:", "Keşif kararı", "NE:", "NEDEN:", "NASIL:", "YAPMA:", "DOĞRULA:", "Durma koşulları:", "Rapor formatı:")
+    commented = [l for l in template if l.startswith(parsed) and re.search(r"\s#", l)]
+    cases.append(("SOP §36.1 template: no line the gate reads carries a trailing '#' comment (filled verbatim it must parse)",
+                  not commented))
     src = Path(__file__).read_text(encoding="utf-8")
     cases.append(("read-only: no write call in this script", not re.search(r"\.(write_text|write_bytes|unlink|rename|mkdir)\(|open\([^)]*['\"][wa]", src.split("def self_test")[0])))
     failed = 0

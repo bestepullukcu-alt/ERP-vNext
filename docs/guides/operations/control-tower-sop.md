@@ -2077,7 +2077,7 @@ dispatch edilemez.
 WP: {WP ID} · Prompt {Prompt ID} v{version}
 
 Repository: {path} · Branch: {branch} · Expected HEAD: {sha} · Worktree: {path}
-Risk: {LOW|MEDIUM|HIGH} · §9.1 sinyalleri: {§20.2 listesinden, virgülle | yok}      # §20.2
+Risk: {LOW|MEDIUM|HIGH} · §9.1 sinyalleri: {§20.2 listesinden, virgülle | yok}
 Görev sınıfı: {ürün · Paket: <pack yolu> | yönetişim · Kapsam kaydı: <docs/records/decisions/… yolu>}
 İzinli yollar: {virgülle ayrılmış yollar / desenler}
 Korunan yollar: {virgülle ayrılmış yollar / desenler | yok}
@@ -2085,14 +2085,14 @@ Korunan yollar: {virgülle ayrılmış yollar / desenler | yok}
 Önce oku (sırayla):
 {authority paths — module pack, domain-config, AGENTS.md, ilgili .antigravity/rules/**}
 
-Sözleşme yüzeyleri:                                                                   # §20.2 — alıntı ya da gerekçeli N/A
+Sözleşme yüzeyleri:
 - API: «birebir metin» (yol:satır) | N/A — {gerekçe}
 - İzin: «…» (yol:satır) | N/A — {gerekçe}
 - Test: «…» (yol:satır) | N/A — {gerekçe}
 - Sabotaj: «…» (yol:satır) | N/A — {gerekçe}
 
-Keşif: {sonuç} · rapor {yol}@{commit} · sha256 {rapor-sha256}                         # katı kuyrukta zorunlu (kart §0.1)
-Keşif kararı {n}: {parent|FU|child|yeni} — {gerekçe}                                    # "inceleme gerekli" ise her BULGU için
+Keşif: {sonuç} · rapor {yol}@{commit} · sha256 {rapor-sha256}
+Keşif kararı {n}: {parent|FU|child|yeni} — {gerekçe}
 
 {§17.4 tablosundan hedef ajanın zorunlu giriş alanları — doldurulmuş halde}
 
@@ -2111,6 +2111,9 @@ Senin PASS'in kapanış değildir (K13).
 
 `Repository:` alanı **ölçülmüş** değerdir; başka makineden kalan mutlak yol kopyalanmaz (§20 preflight).
 Yeni alanlar ve kapı: §20.2. `PQG:` sonucu ve HIGH inceleme kaydı promptun içine değil, iş paketi kaydına yazılır.
+Kapının okuduğu satırlara açıklama (`# …`) eklenmez; satır olduğu gibi okunur. `Sözleşme yüzeyleri` her yüzey için
+alıntı ya da gerekçeli N/A taşır. `Keşif:` katı kuyrukta zorunludur (kart §0.1); `Keşif kararı` satırları sonuç
+"inceleme gerekli" olduğunda her BULGU için birer tanedir.
 
 ## 36.2 Lane-typed prompt templates (v1)
 
