@@ -488,6 +488,8 @@ Dikkat notları (ölçülen):
 
 ## 22. Follow-up Items
 
+> **Bilinen sınır (Dilim 2 kabulü, 2026-10-15):** oluşturma isteğinin birebir tekrarı, ürün oluşturulduktan SONRA markası `ChangeGlobalProductBrandCommand` ile değiştirilmişse 409 `CODE_RESERVATION_MISMATCH` alır (depo saklı markayla karşılaştırır, `GlobalProductRepository.CreateDraftAsync`). Veri bozulmaz, güvenli taraf; istemci ürünü kimliğiyle okur. İleride gerekirse tekrar karşılaştırması oluşturma anındaki markaya (ilk niyet) yapılır. Ayrıca: "aynı marka → yazım yok" kuralı iki katmanda (işleyici + depo `FromBrandId == ToBrandId`); CT sabotajı ikisi birlikte kaldırılınca `The_same_brand_is_200_and_writes_nothing` KIRMIZI.
+
 | # | Konu | Sahip | Regresyon riski |
 |---|---|---|---|
 | F-1 | Eski "Ürünler" → Global Ürün eşlemesi ve `Product.BrandId` göçü; CRM'in 4 eski yerinin geçişi (Karar c) | MDM + CRM, W10 ile | 🟡 |
