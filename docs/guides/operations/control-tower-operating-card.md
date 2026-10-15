@@ -1,4 +1,4 @@
-# CONTROL TOWER — Daily Operating Card v1.4
+# CONTROL TOWER — Daily Operating Card v1.5
 
 > **Purpose:** günlük Control Tower turu için hızlı gate. Yeni authority yaratmaz. Ayrıntı için [CONTROL TOWER SOP](./control-tower-sop.md) (v2.5 r3).
 
@@ -65,7 +65,7 @@ Aşağıdakilerde STOP: wrong branch/HEAD, overlapping dirty files, draft pack, 
 - [ ] State-changing ise UI/API + persisted state + audit/observability.
 - [ ] RBAC + tenant + concurrency + idempotency applicable kontrolleri.
 - [ ] Cross-module ise Integration Gate.
-- [ ] Bilinen kırmızılar: koşu TRX ile alınır (`dotnet test … --logger "trx;LogFileName=<dosya>"`) ve `python3 scripts/known_failures.py check <trx> --suite <ad>` ile `tests/known-failures.tsv`'ye karşı okunur. Çıkış 0 = yalnız kayıtlı kırmızılar, ayrıntıları (parmak izi) aynı; 1 = YENİ ya da YENİ-AYRINTI → regresyon, STOP; 2 = koşu güvenilir değil (boş, bozuk, eksik, iptal) → STOP; 3 = konsol çıktısı, ayrıntı doğrulanmadı → kabul için yetmez. Yerel tekrar tanıdan önce `should-rerun --suite <ad>`: ATLA yalnız adı verilen kayıtlı testler içindir — süitin geri kalanı, CI, zorunlu kabul, güvenlik testleri ve sahibin açıkça istediği testler atlanmaz.
+- [ ] Bilinen kırmızılar: koşu TRX ile alınır (`dotnet test … --logger "trx;LogFileName=<dosya>"`) ve `python3 scripts/known_failures.py check <trx> --suite <ad>` ile `tests/known-failures.tsv`'ye karşı okunur. Çıkış 0 = bu karşılaştırmada yeni regresyon yok (testler geçti ya da kabul edildi demek değildir): kayıtlı kırmızılar aynı, ya da KISMEN-DÜZELDİ — kayıtlı öğelerin bir kısmı gitti, yeni öğe yok; kayıt (`tests/known-failures.tsv` + `tests/known-failures-items.json`) elle güncellenir; 1 = YENİ ya da YENİ-AYRINTI → regresyon, STOP; 2 = koşu ya da kayıt güvenilir değil (boş, bozuk, eksik, iptal, hiç test koşmamış, TSV ile JSON uyuşmuyor) → STOP; 3 = konsol çıktısı, ayrıntı doğrulanmadı → kabul için yetmez. Yerel tekrar tanıdan önce `should-rerun --suite <ad>`: ATLA yalnız adı verilen kayıtlı testler içindir — süitin geri kalanı, CI, zorunlu kabul, güvenlik testleri ve sahibin açıkça istediği testler atlanmaz.
 
 ## 6. CLOSE / REPLAN
 
@@ -111,7 +111,7 @@ Replanning = Closure
 
 | Domain | Control Tower | Kanıt |
 |---|---|---|
-| supply-chain-execution | MVP6 Control Tower (CT-QUEUE) — **kısmi**: MOD-0147, 0148, 0183–0187, 0190, 0192; domainin diğer modülleri Belirsiz | `docs/roadmap/plans/mvp6-process-pilot-01/CT-QUEUE.tsv@6b8a62d5a` (bu modüllerin satırları; MOD-0188 yalnız başka bir sahibe atıf olarak geçer, 0189 ve 0191 hiç geçmez) · `docs/guides/operations/mvp6-development-process-v1.0.md@6b8a62d5a` |
+| supply-chain-execution | MVP6 Control Tower (CT-QUEUE) — **kısmi**: MOD-0147, 0148, 0183–0187, 0190, 0192; domainin diğer modülleri Belirsiz | `docs/roadmap/plans/mvp6-process-pilot-01/CT-QUEUE.tsv@6b8a62d5a` (bu modüllerin satırları; MOD-0188 yalnız başka bir sahibe atıf olarak geçer, 0189 ve 0191 hiç geçmez) · `docs/guides/operations/mvp6-development-process-v1.0.md@6b8a62d5a` · güncel: PR #146 (`3912d568b`) `execution/domains/supply-chain-execution/work-packs/CT-QUEUE.tsv` dosyasını ekledi (MOD-0188, 3 satır) — kayıtlı görev kaynağı değildir; sahipliği doğrulanmadı |
 | pharmacovigilance | PVG Control Tower — planda; güncelliği doğrulanmadı | `docs/roadmap/plans/pvg-control-tower-development-plan-2026-08-13.md@6b8a62d5a` |
 | platform-shared-services | Backlog'daki "CT" — **kısmi**: Auth, Platform, MOD-0023 onay motoru, MOD-0024 Görev Merkezi, MOD-0027 bildirimler. Etiket yalnız "CT" der, hangi Control Tower olduğunu söylemez; bugünkü sahip, sahip kararı bekliyor | `docs/roadmap/backlog/product-backlog.md@6b8a62d5a` "SAHİP: CT (…)" etiketleri (Auth 13, MOD-0024/Görev Merkezi/WorkCenter 12, MOD-0023 ve onay motoru 10, Platform ve bildirimler 6); paketler `execution/domains/platform-shared-services/module-packs/@6b8a62d5a` |
 | master-data-management | Backlog'daki "CT" — **kısmi**: MDM devralma, MOD-0220. Bugünkü sahip, sahip kararı bekliyor | `docs/roadmap/backlog/product-backlog.md@6b8a62d5a` "SAHİP: CT (…)" etiketleri (MDM devralma 10, MDM 4, MOD-0220 2) |

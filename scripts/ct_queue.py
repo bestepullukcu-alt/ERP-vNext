@@ -16,7 +16,12 @@ validate  registry and vocabulary files; the queue header and the column count o
           Rows unchanged since the baseline are accepted exactly as they are.                     exit 1 on HATA
 require   exit 0 only when WP-ID has exactly one row and its state is classed dispatch=yes (or dispatch=new-version
           with --new-version, SOP §19.2). Missing row, ambiguous id, undefined or non-dispatchable state -> exit 1.
-          A Control Tower without a registered queue has no dispatch path here.
+          A Control Tower without a registered queue has no dispatch path here. It reports two registrations:
+          HAZIRLIK (the registry in this working tree) and YÜRÜRLÜK (the registry in the LOCAL ref origin/main, with
+          the measured SHA and the last fetch time — the remote itself is not checked). --in-force refuses when the
+          queue has no row in origin/main's registry.
+strict    a queue registered with strict=yes (a new Control Tower's queue) treats an undefined state as an error on
+          every row; strict=no (the SCE / MVP6 queue) keeps its tolerance for historical rows.
 guard     without --expect-*: prints the queue's SHA-256 and row count; with both: exit 1 if the file changed since.
           It detects a change between two moments; it is NOT a file lock.
 writers   git refs on this machine whose copy of the queue differs from its merge base with --base (default
@@ -47,7 +52,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 REGISTRY = ROOT / "execution" / "delivery" / "ct-queue-registry.tsv"
 STATES = ROOT / "execution" / "delivery" / "ct-queue-states.tsv"
-REGISTRY_COLUMNS = ["queue_id", "control_tower", "path", "baseline_commit", "owner_confirmation", "scope", "evidence"]
+REGISTRY_COLUMNS = ["queue_id", "control_tower", "path", "baseline_commit", "owner_confirmation", "scope", "evidence", "strict"]
+MAIN_REF = "origin/main"
 STATE_COLUMNS = ["queue_id", "state", "class", "dispatch", "source", "confirmation"]
 DISPATCH_VALUES = ("yes", "new-version", "no")
 CONFIRMATION_VALUES = ("pending", "confirmed")
@@ -145,6 +151,8 @@ def check_registry(registry: list[dict], states: list[dict], commit_exists=None,
         ids.add(q["queue_id"]); paths.add(q["path"])
         if q["owner_confirmation"] not in CONFIRMATION_VALUES:
             problems.append(f"registry {q['queue_id']}: owner_confirmation must be {' or '.join(CONFIRMATION_VALUES)}")
+        if q.get("strict") not in ("yes", "no"):
+            problems.append(f"registry {q['queue_id']}: strict must be yes or no")
         if not commit_exists(q["baseline_commit"]):
             problems.append(f"registry {q['queue_id']}: baseline_commit '{q['baseline_commit']}' is not a commit here")
         elif not path_at(q["baseline_commit"], q["path"]):
@@ -186,7 +194,7 @@ def structure_errors(cur: Table, base: Table) -> list[str]:
     return errors
 
 
-def check_queue(cur: Table, base: Table, vocab: dict[str, dict]) -> dict:
+def check_queue(cur: Table, base: Table, vocab: dict[str, dict], strict: bool = False) -> dict:
     """errors and warnings as text, plus the ids an error is about (require refuses those ids)."""
     out = {"errors": [], "warnings": [], "bad": defaultdict(list)}
 
@@ -200,6 +208,10 @@ def check_queue(cur: Table, base: Table, vocab: dict[str, dict]) -> dict:
     if out["errors"]:
         return out
     id_i, state_i, since_i, trig_i = base.index("id"), base.index("state"), base.index("since"), base.index("redispatch_trigger")
+    if strict:
+        for i, row in enumerate(cur.rows, start=2):
+            if row[state_i] not in vocab:
+                error(row[id_i], f"satır {i} {row[id_i]}: katı kuyrukta tanımsız durum '{row[state_i][:40]}'")
     for i, row in enumerate(cur.rows, start=2):
         if row[id_i] != row[id_i].strip() or re.search(r"\s", row[id_i]):
             error(row[id_i], f"satır {i}: kimlik '{row[id_i]}' boşluk içeriyor — kimlikler birebir karşılaştırılır")
@@ -253,9 +265,29 @@ def check_queue(cur: Table, base: Table, vocab: dict[str, dict]) -> dict:
     return out
 
 
-def validate_queue(cur: Table, base: Table, vocab: dict[str, dict]) -> tuple[list[str], list[str]]:
-    result = check_queue(cur, base, vocab)
+def validate_queue(cur: Table, base: Table, vocab: dict[str, dict], strict: bool = False) -> tuple[list[str], list[str]]:
+    result = check_queue(cur, base, vocab, strict)
     return result["errors"], result["warnings"]
+
+
+def registered_in(queue_id: str, registry_text: str | None) -> bool | None:
+    """True / False when the registry text has / lacks a row for queue_id; None when there is no registry there."""
+    if registry_text is None:
+        return None
+    table = Table(registry_text)
+    if table.header[:1] != ["queue_id"]:
+        return False
+    return any(row and row[0] == queue_id for row in table.rows)
+
+
+def main_ref_status() -> tuple[str | None, str]:
+    """(SHA of the local ref origin/main or None, last fetch time or 'doğrulanamadı'). No fetch is made."""
+    sha = git("rev-parse", "--verify", "--quiet", f"{MAIN_REF}^{{commit}}")
+    head = sha.stdout.decode().strip() if sha.returncode == 0 else None
+    fetch_head = ROOT / git_text("rev-parse", "--git-common-dir") / "FETCH_HEAD"
+    when = (datetime.datetime.fromtimestamp(fetch_head.stat().st_mtime).strftime("%Y-%m-%dT%H:%M")
+            if fetch_head.exists() else "doğrulanamadı")
+    return head, when
 
 
 def loss_against(cur: Table, other: Table) -> list[str]:
@@ -634,6 +666,15 @@ def self_test() -> int:
         refused = True
     cases.append(("sabotage: a ref starting with '-' is refused before git runs", refused))
     cases.append(("merge check: rows lost against another version are reported", loss_against(Table(lost), b2) != []))
+    strict_new = hb + "Q30\tnew\tREADY (local Mac)\tCT\t-\t-\t2026-10-15\t-\n"
+    cases.append(("strict queue: an undefined state is an error on any row",
+                  any("katı kuyrukta" in e for e in check_queue(Table(strict_new), b2, vocab, strict=True)["errors"])))
+    cases.append(("tolerant queue: the same undefined state is only a warning",
+                  not check_queue(Table(strict_new), b2, vocab, strict=False)["errors"]))
+    reg_text = "queue_id\tcontrol_tower\npq\tX\n"
+    cases.append(("in force: registered / not registered / no registry file are told apart",
+                  registered_in("pq", reg_text) is True and registered_in("zz", reg_text) is False
+                  and registered_in("pq", None) is None))
 
     for name, ok in cases:
         print(f"{'PASS' if ok else 'FAIL'} {name}")
@@ -655,6 +696,7 @@ def main() -> int:
     pv.add_argument("--against", action="append", default=[], help="also report rows this version lost against REF")
     pr = sub.add_parser("require"); pr.add_argument("wp_id"); pr.add_argument("--queue", required=True)
     pr.add_argument("--new-version", action="store_true")
+    pr.add_argument("--in-force", action="store_true", help=f"refuse unless the queue is registered in the local ref {MAIN_REF}")
     pg = sub.add_parser("guard"); pg.add_argument("--queue", required=True)
     pg.add_argument("--expect-sha256"); pg.add_argument("--expect-rows", type=int)
     pw = sub.add_parser("writers"); pw.add_argument("--queue"); pw.add_argument("--base", default="origin/main")
@@ -669,7 +711,7 @@ def main() -> int:
         failed = bool(problems)
         for q in queues:
             cur = Table(decode(current_bytes(q, a.ref), q["path"]))
-            errors, warnings = validate_queue(cur, baseline(q), vocabulary(states, q["queue_id"]))
+            errors, warnings = validate_queue(cur, baseline(q), vocabulary(states, q["queue_id"]), q["strict"] == "yes")
             for other in a.against:
                 data = git_file(other, q["path"])
                 if data is None:
@@ -693,9 +735,18 @@ def main() -> int:
         if structure_errors(cur, base):
             print(f"DUR: kuyruk okunamıyor (başlık, sütun ya da boş satır) — python3 scripts/ct_queue.py validate --queue {q['queue_id']}")
             return 1
-        checked = check_queue(cur, base, vocab)
+        checked = check_queue(cur, base, vocab, q["strict"] == "yes")
         code, line = require(cur, vocab, a.wp_id.strip(), a.new_version, checked["bad"])
         print(line)
+        head, fetched = main_ref_status()
+        main_data = git_file(head, REGISTRY.relative_to(ROOT).as_posix()) if head else None
+        on_main = registered_in(q["queue_id"], decode(main_data, MAIN_REF) if main_data is not None else None)
+        print(f"HAZIRLIK: '{q['queue_id']}' bu çalışma ağacının kayıt dosyasında kayıtlı")
+        state = {True: "kayıtlı", False: "kayıtlı değil", None: "kayıt dosyası yok"}[on_main]
+        print(f"YÜRÜRLÜK: yerel {MAIN_REF} referansı {head[:9] if head else 'yok'} (son fetch: {fetched}) — {state}; uzak durum doğrulanmadı")
+        if a.in_force and on_main is not True:
+            print(f"DUR: --in-force — '{q['queue_id']}' {MAIN_REF}'de kayıtlı değil; R8 r3'e göre yürürlükte bir kayıtlı kaynak yok")
+            code = 1
         if checked["errors"]:
             print(f"NOT: kuyrukta {len(checked['errors'])} doğrulama hatası var (validate).")
         if q["owner_confirmation"] != "confirmed" or any(v["confirmation"] != "confirmed" for v in vocab.values()):
