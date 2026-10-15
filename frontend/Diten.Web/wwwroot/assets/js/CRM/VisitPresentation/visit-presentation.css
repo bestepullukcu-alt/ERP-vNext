@@ -9,6 +9,18 @@
     --vp-seb: #ebeef0; --vp-se: #6d7887; --vp-card: #fff; --vp-slide: #fff;
     --vp-sh: 0 3px 8px rgba(34, 48, 62, .08); --vp-sh2: 0 6px 20px rgba(34, 48, 62, .18); --vp-ov: rgba(34, 48, 62, .45);
 }
+/* WP-VW-W3E (W3E-DARK, CT-4) — the dark theme (the shell's data-bs-theme; 00-tema.css dark palette). The primary stays the
+   layout's (K-THEME): --bs-primary, the soft / line tones from --bs-primary-rgb, the text tones lightened by color-mix. */
+[data-bs-theme="dark"] #vp-root, [data-bs-theme="dark"] #vp-pin, [data-bs-theme="dark"] #vp-confirm {
+    --vp-p: var(--bs-primary); --vp-pl: rgba(var(--bs-primary-rgb), .22); --vp-pbd: rgba(var(--bs-primary-rgb), .45);
+    --vp-pt: color-mix(in srgb, var(--bs-primary) 60%, #fff); --vp-pt2: color-mix(in srgb, var(--bs-primary) 45%, #fff);
+    --vp-h: #d5d5e2; --vp-tx: #b2b2c4; --vp-mu: #8a8ba5; --vp-bd: #3d3e58; --vp-bd2: #4e4f6c; --vp-soft: #34354e; --vp-soft2: #303148;
+    --vp-okb: #344a35; --vp-ok: #86e05a; --vp-okc: #71dd37; --vp-wab: #4d4130; --vp-wa: #ffbf3d; --vp-wac: #ffab00;
+    --vp-dab: #4f2e36; --vp-da: #ff7a66; --vp-dac: #ff3e1d; --vp-inb: #23435a; --vp-in: #4fd6f2; --vp-inc: #03c3ec;
+    --vp-seb: #3a3b55; --vp-se: #a1a2b8; --vp-card: #2b2c40;
+    --vp-slide: #1c1d2b; --vp-sh: 0 3px 8px rgba(0, 0, 0, .25); --vp-sh2: 0 6px 24px rgba(0, 0, 0, .45); --vp-ov: rgba(10, 10, 20, .6);
+    color-scheme: dark;
+}
 [dir="rtl"] .vp-flip { transform: scaleX(-1); }
 .vp-root { color: var(--vp-tx); }
 .vp-muted { color: var(--vp-mu); }
