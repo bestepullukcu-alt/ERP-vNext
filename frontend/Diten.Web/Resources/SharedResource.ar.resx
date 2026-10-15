@@ -1101,4 +1101,7 @@
   <data name="Nav.Page.RECALLTRACE" xml:space="preserve"><value>تتبّع الاستدعاء</value></data>
   <data name="Nav.Page.RECALLCASES" xml:space="preserve"><value>حالات الاستدعاء</value></data>
   <data name="Nav.Page.RECALLCASEDETAILS" xml:space="preserve"><value>حالة الاستدعاء</value></data>
+  <data name="Nav.Page.RECALLDRILLS" xml:space="preserve"><value>مخطط تمارين الاستدعاء</value></data>
+  <data name="Nav.Page.RECALLEVIDENCE" xml:space="preserve"><value>حزمة أدلة الاستدعاء</value></data>
+  <data name="Nav.Page.RECALLSETTINGS" xml:space="preserve"><value>إعدادات الاستدعاء</value></data>
 </root>

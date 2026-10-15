@@ -26,14 +26,21 @@ public sealed class RecallWebTests : IClassFixture<WebApplicationFactory<Program
         "Recall.Kind.Lot", "Recall.Duration.HoursMinutes", "Recall.Duration.Minutes", "Recall.Col.Type", "Recall.Level.Patient", "Recall.Type.Real",
         "Recall.TCol.Date",
         // R7a — the same word in the language: es / fr "Total {0}", "Fax"; fr "Lot", "Source"
-        "Recall.Stock.Totals", "Recall.Channel.Fax", "Recall.StCol.Lot", "Recall.RCol.Source"
+        "Recall.Stock.Totals", "Recall.Channel.Fax", "Recall.StCol.Lot", "Recall.RCol.Source",
+        // R7b — a code or the same word: SKU everywhere; tr / fr / es "Plan", tr / fr "Lot"; fr "Signature(s)", "Document", "Date"
+        "Recall.Ev.W.sku", "Recall.Ev.W.skuId", "Recall.Drills.Plan", "Recall.Ev.W.planCode", "Recall.Drills.Lot", "Recall.Ev.W.lot", "Recall.Ev.W.7_signatures",
+        "Recall.Ev.W.signatures", "Recall.Ev.W.signatureId", "Recall.Ev.W.document", "Recall.Ev.W.date"
     };
 
     public static readonly TheoryData<string, string, string> Pages = new()
     {
         { "Index", RecallKeys.DashboardRead, "id=\"rc-kpis\"" },
         { "Trace", RecallKeys.TraceRun, "id=\"rc-trace-form\"" },
-        { "Cases", RecallKeys.CasesRead, "id=\"rc-status-chips\"" }
+        { "Cases", RecallKeys.CasesRead, "id=\"rc-status-chips\"" },
+        // WP-0177-R7b
+        { "Drills", RecallKeys.DrillsRead, "id=\"rc-plans\"" },
+        { "Evidence", RecallKeys.EvidenceExport, "id=\"rc-ev-form\"" },
+        { "Settings", RecallKeys.SettingsRead, "id=\"rc-settings-form\"" }
     };
 
     private readonly WebApplicationFactory<Program> _factory;
@@ -109,6 +116,9 @@ public sealed class RecallWebTests : IClassFixture<WebApplicationFactory<Program
     [InlineData("RECALLTRACE")]
     [InlineData("RECALLCASES")]
     [InlineData("RECALLCASEDETAILS")]
+    [InlineData("RECALLDRILLS")]
+    [InlineData("RECALLEVIDENCE")]
+    [InlineData("RECALLSETTINGS")]
     public void The_page_help_texts_follow_the_UXH_001_key_structure(string code)
     {
         var keys = Diten.Web.Views.Recall.Recall.Keys.Where(k => k.StartsWith($"Help.{code}.", StringComparison.Ordinal)).ToHashSet(StringComparer.Ordinal);
@@ -127,7 +137,8 @@ public sealed class RecallWebTests : IClassFixture<WebApplicationFactory<Program
     [MemberData(nameof(Pages))]
     public async Task UAS_001_without_the_page_key_only_the_access_explanation_is_drawn(string view, string pageKey, string skeleton)
     {
-        var others = new[] { RecallKeys.DashboardRead, RecallKeys.TraceRun, RecallKeys.TraceExport, RecallKeys.CasesRead, RecallKeys.CasesCreate }
+        // every other recall key held (R7b: from RecallKeys itself, so a new key is in the list without editing it)
+        var others = typeof(RecallKeys).GetFields(BindingFlags.Public | BindingFlags.Static).Where(f => f.IsLiteral).Select(f => (string)f.GetRawConstantValue()!)
             .Where(k => k != pageKey).ToArray();
         var denied = await TraceViewRenderer.RenderAsync(_factory, $"/Views/Recall/{view}.cshtml", null, others);
         Assert.Contains("diten-access-denied", denied, StringComparison.Ordinal);
@@ -154,19 +165,23 @@ public sealed class RecallWebTests : IClassFixture<WebApplicationFactory<Program
         Assert.DoesNotContain("Tatbikat olarak kaydet", full, StringComparison.Ordinal); // D-15: not built
     }
 
+    /// <summary>WP-0177-R7b: every recall page a view or script links to is a page of the controller (no dead link); the panel's "Tatbikat planla" needs the planner's key.</summary>
     [Fact]
-    public async Task The_panel_draws_no_dead_link_to_R7_pages()
+    public async Task Every_link_between_the_recall_pages_reaches_a_page_and_the_panel_offers_the_planner_only_with_its_key()
     {
-        var html = await TraceViewRenderer.RenderAsync(_factory, "/Views/Recall/Index.cshtml", null, RecallKeys.DashboardRead, RecallKeys.CasesRead);
-        foreach (var r7 in new[] { "/Recall/Drills", "/Recall/Evidence", "/Recall/Settings" }) // R7b pages; the case detail exists since R7a
-            Assert.DoesNotContain(r7, html, StringComparison.Ordinal);
-        Assert.Contains("href=\"/Recall/Cases\"", html, StringComparison.Ordinal);
-        foreach (var file in Directory.EnumerateFiles(Js, "*.js"))
-        {
-            var code = Code(File.ReadAllText(file));
-            foreach (var r7 in new[] { "/Recall/Drills", "/Recall/Evidence", "/Recall/Settings" })
-                Assert.DoesNotContain(r7, code, StringComparison.Ordinal);
-        }
+        var pages = typeof(RecallController).GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+            .Where(m => m.ReturnType == typeof(IActionResult)).Select(m => m.GetCustomAttribute<HttpGetAttribute>()!.Template ?? string.Empty)
+            .Select(t => t.Split('/')[0]).ToHashSet(StringComparer.Ordinal);
+        var sources = Directory.EnumerateFiles(Path.Combine(Web, "Views", "Recall"), "*.cshtml").Concat(Directory.EnumerateFiles(Js, "*.js")).ToList();
+        var linked = sources.SelectMany(f => Regex.Matches(Code(File.ReadAllText(f)), @"[""'`]/Recall/(?<p>[A-Z][A-Za-z]+)").Select(m => m.Groups["p"].Value)).ToHashSet(StringComparer.Ordinal);
+        Assert.Superset(new HashSet<string> { "Cases", "Drills", "Evidence" }, linked);
+        Assert.All(linked, p => Assert.Contains(p, pages));
+
+        var without = await TraceViewRenderer.RenderAsync(_factory, "/Views/Recall/Index.cshtml", null, RecallKeys.DashboardRead, RecallKeys.CasesRead);
+        Assert.DoesNotContain("/Recall/Drills", without, StringComparison.Ordinal);
+        Assert.Contains("href=\"/Recall/Cases\"", without, StringComparison.Ordinal);
+        var with = await TraceViewRenderer.RenderAsync(_factory, "/Views/Recall/Index.cshtml", null, RecallKeys.DashboardRead, RecallKeys.DrillsRead);
+        Assert.Contains("href=\"/Recall/Drills\" id=\"rc-plan-drill\"", with, StringComparison.Ordinal);
     }
 
     // ── routes = manifest ────────────────────────────────────────────────────────────────────────────────────────
@@ -179,7 +194,7 @@ public sealed class RecallWebTests : IClassFixture<WebApplicationFactory<Program
             .Where(m => m.ReturnType == typeof(IActionResult))
             .Select(m => "/Recall" + (m.GetCustomAttribute<HttpGetAttribute>()!.Template is { Length: > 0 } t ? "/" + t : string.Empty))
             .OrderBy(x => x, StringComparer.Ordinal).ToList();
-        Assert.Equal(["/Recall", "/Recall/Cases", "/Recall/Cases/Details/{id}", "/Recall/Trace"], pages); // + R7a Vaka Detayı
+        Assert.Equal(["/Recall", "/Recall/Cases", "/Recall/Cases/Details/{id}", "/Recall/Drills", "/Recall/Evidence", "/Recall/Settings", "/Recall/Trace"], pages); // + R7a Vaka Detayı, R7b
 
         var manifest = File.ReadAllText(Path.Combine(TraceViewRenderer.RepoRoot(), "services", "Diten.InventoryService", "src", "Diten.InventoryService.Api", "Recall",
             "RecallReadinessManifestProvider.cs"));

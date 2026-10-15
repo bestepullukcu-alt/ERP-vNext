@@ -1,0 +1,106 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@using Diten.Web.Controllers
+@inject IHtmlLocalizer<Diten.Web.Views.Recall.Recall> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = Localizer["Recall.Tabs.Evidence"].Value;
+    ViewData["PageCode"] = "RECALLEVIDENCE";
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    MOD-0177 R7b — Kanıt Paketi (RECALLEVIDENCE, pack §11.1, §4.13; mockup "isEv"). The subject: a case, a drill run or a period; the preview
+    is the seven sections exactly as the file carries them (/Recall/data/evidence/preview). "PDF indir" / "CSV indir" → createEvidenceExport:
+    the SERVICE renders, hashes THE produced bytes (SHA-256, D-12 — never a random "hash") and logs the export; the page downloads the stored
+    file and hashes it again before saying "verified". The export log lists file, user, time and SHA-256. Signatures are read from MOD-0022;
+    an unreadable one says so — nothing is filled in. The PDF / CSV labels are tr or en (FU-0176-PDF-L10N); the screen speaks 7 languages.
+    UAS-001 — nothing below without recall.evidence.export. No redirect.
+*@
+@if (!Perms.Has(RecallKeys.EvidenceExport))
+{
+    <partial name="_AccessDenied" model="@Localizer["Recall.Tabs.Evidence"].Value" />
+    return;
+}
+
+@{
+    var company = await Diten.Web.Models.Inventory.CompanySelection.ResolveAsync(
+        Http, Configuration["GatewayUrl"] ?? string.Empty, Context.Request, User, Context.RequestAborted);
+    company.Label = Localizer["Recall.Common.Company.Label"].Value;
+    company.Placeholder = Localizer["Recall.Common.Company.Placeholder"].Value;
+    company.SelectHint = Localizer["Recall.Common.Company.Required"].Value;
+    company.UnavailableText = Localizer["Recall.Common.Company.Unavailable"].Value;
+    var caseParam = Guid.TryParse(Context.Request.Query["case"], out var c) ? c.ToString("D") : string.Empty;
+    var runParam = Guid.TryParse(Context.Request.Query["run"], out var r) ? r.ToString("D") : string.Empty;
+}
+
+<partial name="~/Views/Recall/_Header.cshtml" model="@("RECALLEVIDENCE")" />
+<partial name="~/Views/Inventory/Shared/_CompanySelector.cshtml" model="company" />
+
+@if (company.Ready)
+{
+    <div id="rc-evidence" data-case="@caseParam" data-run="@runParam">
+        <p class="text-muted mb-3">@Localizer["Recall.Evidence.Subtitle"]</p>
+        <div id="rc-error" class="alert alert-danger d-none" role="alert"></div>
+        <div id="rc-exported" class="alert d-none" role="status"></div>
+
+        <div class="card mb-4">
+            <div class="card-body d-flex flex-wrap align-items-end gap-3" id="rc-ev-form">
+                <div>
+                    <label class="form-label d-block">@Localizer["Recall.Evidence.Kind"]</label>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-primary active" data-ev-kind="Case">@Localizer["Recall.Type.Real"]</button>
+                        <button type="button" class="btn btn-outline-primary" data-ev-kind="DrillRun">@Localizer["Recall.Type.Drill"]</button>
+                        <button type="button" class="btn btn-outline-primary" data-ev-kind="Period">@Localizer["Recall.Evidence.Period"]</button>
+                    </div>
+                </div>
+                <div class="flex-grow-1" style="min-width:16rem" id="rc-ev-pick-box">
+                    <label class="form-label" for="rc-ev-pick">@Localizer["Recall.Evidence.Subject"]</label>
+                    <select class="form-select" id="rc-ev-pick"></select>
+                </div>
+                <div class="d-none" id="rc-ev-period-box">
+                    <div class="d-flex gap-2">
+                        <div><label class="form-label" for="rc-ev-from">@Localizer["Recall.Evidence.From"]</label><input type="date" class="form-control" id="rc-ev-from" /></div>
+                        <div><label class="form-label" for="rc-ev-to">@Localizer["Recall.Evidence.To"]</label><input type="date" class="form-control" id="rc-ev-to" /></div>
+                    </div>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <button type="button" class="btn btn-label-primary" id="rc-ev-preview"><i class="bx bx-show me-1"></i>@Localizer["Recall.Evidence.Preview"]</button>
+                    <button type="button" class="btn btn-danger" data-ev-format="Pdf" disabled><i class="bx bxs-file-pdf me-1"></i>@Localizer["Recall.Evidence.Pdf"]</button>
+                    <button type="button" class="btn btn-label-secondary" data-ev-format="Csv" disabled><i class="bx bx-download me-1"></i>@Localizer["Recall.Evidence.Csv"]</button>
+                </div>
+            </div>
+            <div class="card-footer small text-muted border-top">@Localizer["Recall.Evidence.PdfLanguages"]</div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-12 col-xl-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0" id="rc-ev-title">@Localizer["Recall.Evidence.PreviewTitle"]</h5>
+                        <small class="text-muted" id="rc-ev-sub"></small>
+                    </div>
+                    <div class="card-body" id="rc-ev-sections"><p class="text-muted mb-0">@Localizer["Recall.Evidence.PickFirst"]</p></div>
+                </div>
+            </div>
+            <div class="col-12 col-xl-4">
+                <div class="card">
+                    <div class="card-header"><h5 class="card-title mb-0">@Localizer["Recall.Evidence.Log"]</h5></div>
+                    <ul class="list-group list-group-flush" id="rc-ev-log"><li class="list-group-item text-muted">@Localizer["Recall.Common.Loading"]</li></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    <partial name="~/Views/Recall/_RecallActions.cshtml" />
+    <partial name="~/Views/Recall/_RecallL10n.cshtml" />
+    @if (company.Ready)
+    {
+        <script src="~/assets/js/Recall/evidence-view.js" asp-append-version="true"></script>
+        <script src="~/assets/js/Recall/evidence.js" asp-append-version="true"></script>
+    }
+}

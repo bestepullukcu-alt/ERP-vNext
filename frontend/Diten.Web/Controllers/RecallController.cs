@@ -26,6 +26,8 @@ namespace Diten.Web.Controllers;
 //   • list/cases            → listCases (union)     (recall.cases.read)      — server-mode DataTable door: cases + drill rows by position
 //   • lookups/lots          → TRACE listLots        (recall.trace.run)       — the İzleme lot picker (TRACE's own key decides at the service)
 //   • lookups/products      → listCases             (recall.cases.read)      — the products of the company's cases (Vakalar filter)
+//   R7a: data/cases/{id} + one cmd/cases/{id}/… door per case command; R7b: the drill doors (recall.drills.read / .manage / .run), the
+//   evidence doors (recall.evidence.export), the settings doors (recall.settings.read / .manage) — RecallDataGateTests lists them all.
 // The caller's own token, TenantId from the token, the W-0173-02 company rule (X-Legal-Entity-Id when the token names none), correlation
 // id, Accept-Language, Idempotency-Key (writes) travel. Bodies are never logged. UAS-001 is the views' (display only).
 [Authorize]
@@ -75,6 +77,16 @@ public sealed class RecallController : Controller
     // WP-0177-R7a — Vaka Detayı (RECALLCASEDETAILS, not in the menu; parent Vakalar). The id is the page's model; the view validates it.
     [HttpGet("Cases/Details/{id}")]
     public IActionResult CaseDetails(string id) => View($"{ViewRoot}/CaseDetails.cshtml", id);
+
+    // WP-0177-R7b — Tatbikat Planlayıcı (RECALLDRILLS), Kanıt Paketi (RECALLEVIDENCE), Ayarlar (RECALLSETTINGS); each its own page key.
+    [HttpGet("Drills")]
+    public IActionResult Drills() => View($"{ViewRoot}/Drills.cshtml");
+
+    [HttpGet("Evidence")]
+    public IActionResult Evidence() => View($"{ViewRoot}/Evidence.cshtml");
+
+    [HttpGet("Settings")]
+    public IActionResult Settings() => View($"{ViewRoot}/Settings.cshtml");
 
     // ── Hazırlık Paneli ───────────────────────────────────────────────────────────────────────────────────────
 
@@ -164,15 +176,7 @@ public sealed class RecallController : Controller
         if (trace is null) return Refuse(401, null);
         var reply = await trace.GetAsync($"/api/trace/lots?q={Uri.EscapeDataString(q ?? string.Empty)}&page=1&pageSize=20", ct);
         if (!reply.IsSuccess) return Failed("lookups.lots", reply);
-        JsonNode? root;
-        try { root = JsonNode.Parse(reply.Body); } catch (JsonException) { root = null; }
-        var list = root as JsonArray ?? root?["items"] as JsonArray ?? root?["data"] as JsonArray ?? new JsonArray();
-        return Json(new JsonObject
-        {
-            ["items"] = new JsonArray(list.OfType<JsonObject>()
-                .Select(l => (JsonNode)new JsonObject { ["value"] = (string?)l["lotId"], ["text"] = (string?)l["lotNumber"] ?? (string?)l["lotId"] })
-                .ToArray())
-        });
+        return Json(new JsonObject { ["items"] = LotItems(reply.Body) });
     }
 
     // ── Vakalar ───────────────────────────────────────────────────────────────────────────────────────────────
@@ -496,6 +500,265 @@ public sealed class RecallController : Controller
         return new JsonArray(rows.OrderBy(r => r.Position).Select(r => (JsonNode)r.Row).ToArray());
     }
 
+    // ── Tatbikat Planlayıcı (WP-0177-R7b, pack §11.1 RECALLDRILLS, §8.10) ─────────────────────────────────────────────
+
+    /// <summary>listDrillPlans — the company's plans (owner names added).</summary>
+    [HttpGet("data/drill-plans")]
+    public async Task<IActionResult> DrillPlans(CancellationToken ct)
+    {
+        if (!_permissions.Has(RecallKeys.DrillsRead)) return Refuse(403, null);
+        var reply = await SendAsync(HttpMethod.Get, $"{ApiBase}/drill-plans", null, null, ct);
+        if (!reply.IsSuccess) return Failed("listDrillPlans", reply);
+        var plans = JsonNode.Parse(reply.Body) ?? new JsonArray();
+        await PeopleAsync(ct, plans);
+        return Json(new JsonObject { ["data"] = plans.DeepClone() });
+    }
+
+    /// <summary>
+    /// listDrillRuns — the recent runs + the frequency warning, and <c>serverNowUtc</c>: the SERVICE's clock (its Date header; the Web's own
+    /// clock only when the answer carries none). The running panel's clock is serverNowUtc − startedAtUtc, never the browser's time.
+    /// </summary>
+    [HttpGet("data/drill-runs")]
+    public async Task<IActionResult> DrillRuns(CancellationToken ct)
+    {
+        if (!_permissions.Has(RecallKeys.DrillsRead)) return Refuse(403, null);
+        var query = new QueryBuilder().Add("page", Request.Query["page"]).Add("pageSize", Request.Query["pageSize"]).Add("status", Request.Query["status"]);
+        var reply = await SendAsync(HttpMethod.Get, $"{ApiBase}/drill-runs{query}", null, null, ct);
+        if (!reply.IsSuccess) return Failed("listDrillRuns", reply);
+        var page = JsonNode.Parse(reply.Body) ?? new JsonObject();
+        await PeopleAsync(ct, page);
+        return Json(new JsonObject { ["data"] = page.DeepClone(), ["serverNowUtc"] = ServerNow(reply) });
+    }
+
+    /// <summary>getDrillRun — one run (the planner's running panel and the Vakalar drill row's view) + <c>serverNowUtc</c> as above.</summary>
+    [HttpGet("data/drill-runs/{id}")]
+    public async Task<IActionResult> DrillRun(string id, CancellationToken ct)
+    {
+        if (!_permissions.Has(RecallKeys.DrillsRead)) return Refuse(403, null);
+        if (!Guid.TryParse(id, out var runId)) return Refuse(400, "INVALID_REQUEST");
+        var reply = await SendAsync(HttpMethod.Get, $"{ApiBase}/drill-runs/{runId:D}", null, null, ct);
+        if (!reply.IsSuccess) return Failed("getDrillRun", reply);
+        var run = JsonNode.Parse(reply.Body) ?? new JsonObject();
+        await PeopleAsync(ct, run);
+        return Json(new JsonObject { ["data"] = run.DeepClone(), ["serverNowUtc"] = ServerNow(reply) });
+    }
+
+    /// <summary>The "Ben seçeyim" lot picker — TRACE listLots of the company (TRACE's own key decides at the service; this door needs recall.drills.run).</summary>
+    [HttpGet("lookups/drill-lots")]
+    public async Task<IActionResult> DrillLotLookup([FromQuery] string? q, CancellationToken ct)
+    {
+        if (!_permissions.Has(RecallKeys.DrillsRun)) return Refuse(403, null);
+        var trace = TraceGatewayClient.For(_httpClient, _gatewayUrl, Request, User);
+        if (trace is null) return Refuse(401, null);
+        var reply = await trace.GetAsync($"/api/trace/lots?q={Uri.EscapeDataString(q ?? string.Empty)}&page=1&pageSize=20", ct);
+        if (!reply.IsSuccess) return Failed("lookups.drill-lots", reply);
+        return Json(new JsonObject { ["items"] = LotItems(reply.Body) });
+    }
+
+    /// <summary>createDrillPlan — "Plan ekle".</summary>
+    [HttpPost("cmd/drill-plans")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateDrillPlan(CancellationToken ct)
+    {
+        if (!_permissions.Has(RecallKeys.DrillsManage)) return Refuse(403, null);
+        return await CommandAsync(HttpMethod.Post, $"{ApiBase}/drill-plans", "createDrillPlan", ct);
+    }
+
+    /// <summary>updateDrillPlan — "Düzenle" (If-Match = the plan version).</summary>
+    [HttpPost("cmd/drill-plans/{id}")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateDrillPlan(string id, CancellationToken ct)
+    {
+        if (!_permissions.Has(RecallKeys.DrillsManage)) return Refuse(403, null);
+        if (!Guid.TryParse(id, out var planId)) return Refuse(400, "INVALID_REQUEST");
+        return await CommandAsync(HttpMethod.Put, $"{ApiBase}/drill-plans/{planId:D}", "updateDrillPlan", ct);
+    }
+
+    /// <summary>startDrill — "Sayacı başlat" (Auto = "Sistem seçsin": the SERVER picks the lot; Manual = "Ben seçeyim").</summary>
+    [HttpPost("cmd/drill-runs")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> StartDrill(CancellationToken ct)
+    {
+        if (!_permissions.Has(RecallKeys.DrillsRun)) return Refuse(403, null);
+        return await CommandAsync(HttpMethod.Post, $"{ApiBase}/drill-runs", "startDrill", ct);
+    }
+
+    /// <summary>completeDrillStep — the three steps in order (Trace → Scope → CustomerList; the service refuses another order).</summary>
+    [HttpPost("cmd/drill-runs/{id}/steps/{step}")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CompleteDrillStep(string id, string step, CancellationToken ct)
+    {
+        if (!_permissions.Has(RecallKeys.DrillsRun)) return Refuse(403, null);
+        if (!Guid.TryParse(id, out var runId) || step is not ("Trace" or "Scope" or "CustomerList")) return Refuse(400, "INVALID_REQUEST");
+        return await CommandAsync(HttpMethod.Post, $"{ApiBase}/drill-runs/{runId:D}/steps/{step}", "completeDrillStep", ct);
+    }
+
+    /// <summary>prepareDrillResult — step 1 of "Sonucu imzala" (the result note; the server says whether MOD-0022 asks for a signature).</summary>
+    [HttpPost("cmd/drill-runs/{id}/prepare-result")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> PrepareDrillResult(string id, CancellationToken ct)
+    {
+        if (!_permissions.Has(RecallKeys.DrillsRun)) return Refuse(403, null);
+        if (!Guid.TryParse(id, out var runId)) return Refuse(400, "INVALID_REQUEST");
+        return await CommandAsync(HttpMethod.Post, $"{ApiBase}/drill-runs/{runId:D}/pending-result", "prepareDrillResult", ct);
+    }
+
+    /// <summary>signDrillResult — step 2 of "Sonucu imzala" (signatureId from the ONE MOD-0022 dialog).</summary>
+    [HttpPost("cmd/drill-runs/{id}/result")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SignDrillResult(string id, CancellationToken ct)
+    {
+        if (!_permissions.Has(RecallKeys.DrillsRun)) return Refuse(403, null);
+        if (!Guid.TryParse(id, out var runId)) return Refuse(400, "INVALID_REQUEST");
+        return await CommandAsync(HttpMethod.Post, $"{ApiBase}/drill-runs/{runId:D}/result", "signDrillResult", ct);
+    }
+
+    /// <summary>cancelDrill — "Tatbikatı iptal et" with a reason; the run is kept as Cancelled (CT-R17, D-13).</summary>
+    [HttpPost("cmd/drill-runs/{id}/cancel")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CancelDrill(string id, CancellationToken ct)
+    {
+        if (!_permissions.Has(RecallKeys.DrillsRun)) return Refuse(403, null);
+        if (!Guid.TryParse(id, out var runId)) return Refuse(400, "INVALID_REQUEST");
+        return await CommandAsync(HttpMethod.Post, $"{ApiBase}/drill-runs/{runId:D}/cancel", "cancelDrill", ct);
+    }
+
+    // ── Kanıt Paketi (WP-0177-R7b, pack §11.1 RECALLEVIDENCE, §4.13) ────────────────────────────────────────────────
+
+    /// <summary>The subject picker — the company's cases and drill runs (listCases union; the service asks for recall.cases.read itself).</summary>
+    [HttpGet("lookups/evidence-subjects")]
+    public async Task<IActionResult> EvidenceSubjects(CancellationToken ct)
+    {
+        if (!_permissions.Has(RecallKeys.EvidenceExport)) return Refuse(403, null);
+        var reply = await SendAsync(HttpMethod.Get, $"{ApiBase}/cases?page=1&pageSize={MaxServicePageSize}", null, null, ct);
+        if (!reply.IsSuccess) return Failed("lookups.evidence-subjects", reply);
+        var rows = Merge(JsonNode.Parse(reply.Body) as JsonObject ?? new JsonObject());
+        var labels = await LabelsAsync(rows, ct);
+        Decorate(rows, labels);
+        return Json(new JsonObject { ["items"] = rows, ["labelsAvailable"] = labels.Available });
+    }
+
+    /// <summary>previewEvidence — the seven sections exactly as the file will carry them (caseId | runId | from + to).</summary>
+    [HttpGet("data/evidence/preview")]
+    public async Task<IActionResult> EvidencePreview(CancellationToken ct)
+    {
+        if (!_permissions.Has(RecallKeys.EvidenceExport)) return Refuse(403, null);
+        var query = new QueryBuilder().Add("caseId", Request.Query["caseId"]).Add("runId", Request.Query["runId"]).Add("from", Request.Query["from"])
+            .Add("to", Request.Query["to"]);
+        var reply = await SendAsync(HttpMethod.Get, $"{ApiBase}/evidence/preview{query}", null, null, ct);
+        if (!reply.IsSuccess) return Failed("previewEvidence", reply);
+        return Json(new JsonObject { ["data"] = JsonNode.Parse(reply.Body)?.DeepClone() });
+    }
+
+    /// <summary>listEvidenceExports — the export log (file, who, when, SHA-256).</summary>
+    [HttpGet("data/evidence/exports")]
+    public async Task<IActionResult> EvidenceExports(CancellationToken ct)
+    {
+        if (!_permissions.Has(RecallKeys.EvidenceExport)) return Refuse(403, null);
+        var query = new QueryBuilder().Add("page", Request.Query["page"]).Add("pageSize", Request.Query["pageSize"]);
+        var reply = await SendAsync(HttpMethod.Get, $"{ApiBase}/evidence/exports{query}", null, null, ct);
+        if (!reply.IsSuccess) return Failed("listEvidenceExports", reply);
+        var page = JsonNode.Parse(reply.Body) ?? new JsonObject();
+        await PeopleAsync(ct, page);
+        return Json(new JsonObject { ["data"] = page.DeepClone() });
+    }
+
+    /// <summary>createEvidenceExport — "PDF indir" / "CSV indir": the service renders, hashes THE bytes and logs; the page then downloads them.</summary>
+    [HttpPost("cmd/evidence/exports")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateEvidenceExport(CancellationToken ct)
+    {
+        if (!_permissions.Has(RecallKeys.EvidenceExport)) return Refuse(403, null);
+        return await CommandAsync(HttpMethod.Post, $"{ApiBase}/evidence/exports", "createEvidenceExport", ct);
+    }
+
+    /// <summary>getEvidenceFile — the stored bytes unchanged (their SHA-256 is the one in the log).</summary>
+    [HttpGet("export/evidence/{id}")]
+    public async Task<IActionResult> EvidenceFile(string id, CancellationToken ct)
+    {
+        if (!_permissions.Has(RecallKeys.EvidenceExport)) return Refuse(403, null);
+        if (!Guid.TryParse(id, out var exportId)) return Refuse(400, "INVALID_REQUEST");
+        var file = await SendFileAsync($"{ApiBase}/evidence/exports/{exportId:D}/file", ct);
+        if (file.Bytes is null) return Refuse(file.Status == 0 ? 503 : file.Status, file.Code);
+        return File(file.Bytes, file.ContentType ?? "application/octet-stream", file.FileName ?? $"kanit_{exportId:N}");
+    }
+
+    // ── Ayarlar (WP-0177-R7b, pack §11.1 RECALLSETTINGS, §4.14) ──────────────────────────────────────────────────────
+
+    /// <summary>getSettings — the company's settings (or the KR-G defaults at version 0).</summary>
+    [HttpGet("data/settings")]
+    public async Task<IActionResult> SettingsData(CancellationToken ct)
+    {
+        if (!_permissions.Has(RecallKeys.SettingsRead)) return Refuse(403, null);
+        var reply = await SendAsync(HttpMethod.Get, $"{ApiBase}/settings", null, null, ct);
+        if (!reply.IsSuccess) return Failed("getSettings", reply);
+        var settings = JsonNode.Parse(reply.Body) ?? new JsonObject();
+        await PeopleAsync(ct, settings);
+        return Json(new JsonObject { ["data"] = settings.DeepClone() });
+    }
+
+    /// <summary>getSettingsHistory — one row per changed field (who, when, old → new, reason, signature).</summary>
+    [HttpGet("data/settings/history")]
+    public async Task<IActionResult> SettingsHistory(CancellationToken ct)
+    {
+        if (!_permissions.Has(RecallKeys.SettingsRead)) return Refuse(403, null);
+        var query = new QueryBuilder().Add("page", Request.Query["page"]).Add("pageSize", Request.Query["pageSize"]);
+        var reply = await SendAsync(HttpMethod.Get, $"{ApiBase}/settings/history{query}", null, null, ct);
+        if (!reply.IsSuccess) return Failed("getSettingsHistory", reply);
+        var page = JsonNode.Parse(reply.Body) ?? new JsonObject();
+        await PeopleAsync(ct, page);
+        return Json(new JsonObject { ["data"] = page.DeepClone() });
+    }
+
+    /// <summary>prepareSettingsChange — step 1 of "Kaydet" (the proposal + reason; the server says whether the MOD-0022 row asks for a signature, rs-v1).</summary>
+    [HttpPost("cmd/settings/prepare")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> PrepareSettings(CancellationToken ct)
+    {
+        if (!_permissions.Has(RecallKeys.SettingsManage)) return Refuse(403, null);
+        return await CommandAsync(HttpMethod.Post, $"{ApiBase}/settings/pending-change", "prepareSettingsChange", ct);
+    }
+
+    /// <summary>updateSettings — step 2 of "Kaydet" (full replacement, reason ≥ 10, If-Match; signatureId when the policy asked for one).</summary>
+    [HttpPost("cmd/settings")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SaveSettings(CancellationToken ct)
+    {
+        if (!_permissions.Has(RecallKeys.SettingsManage)) return Refuse(403, null);
+        return await CommandAsync(HttpMethod.Put, $"{ApiBase}/settings", "updateSettings", ct);
+    }
+
+    /// <summary>
+    /// One R7b command after its door's key check: the body as the page sent it, its idempotency key as the Idempotency-Key header, the page's
+    /// If-Match passed through; the service's answer (status + body) comes back unchanged.
+    /// </summary>
+    private async Task<IActionResult> CommandAsync(HttpMethod method, string path, string operation, CancellationToken ct)
+    {
+        using var reader = new StreamReader(Request.Body, Encoding.UTF8, leaveOpen: true);
+        var text = await reader.ReadToEndAsync(ct);
+        JsonObject body;
+        try { body = JsonNode.Parse(text) as JsonObject ?? throw new JsonException(); }
+        catch (JsonException) { return Refuse(400, "INVALID_REQUEST"); }
+        if (body["idempotencyKey"] is not JsonValue keyValue || !keyValue.TryGetValue<string>(out var key) || string.IsNullOrWhiteSpace(key)) return Refuse(400, "INVALID_REQUEST");
+        var reply = await SendAsync(method, path, body.ToJsonString(), key, ct, Header("If-Match"));
+        if (!reply.IsSuccess) return Failed(operation, reply);
+        return new ContentResult { StatusCode = reply.StatusCode, Content = reply.Body, ContentType = "application/json" };
+    }
+
+    /// <summary>The service's clock at its answer (HTTP Date); the Web's own clock only when the answer carries none — never the browser's.</summary>
+    private static string ServerNow(Reply reply)
+        => (reply.Date ?? DateTimeOffset.UtcNow).UtcDateTime.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture);
+
+    private static JsonArray LotItems(string body)
+    {
+        JsonNode? root;
+        try { root = JsonNode.Parse(body); } catch (JsonException) { root = null; }
+        var list = root as JsonArray ?? root?["items"] as JsonArray ?? root?["data"] as JsonArray ?? new JsonArray();
+        return new JsonArray(list.OfType<JsonObject>()
+            .Select(l => (JsonNode)new JsonObject { ["value"] = (string?)l["lotId"], ["text"] = (string?)l["lotNumber"] ?? (string?)l["lotId"] })
+            .ToArray());
+    }
+
     // ── plumbing ─────────────────────────────────────────────────────────────────────────────────────────────────
 
     /// <summary>rootLotId (a GUID) + direction (Backward | Forward | Both, default Both) → the runTrace query; null = refused.</summary>
@@ -540,7 +803,7 @@ public sealed class RecallController : Controller
             _logger.Log(response.IsSuccessStatusCode ? LogLevel.Information : LogLevel.Warning,
                 "Recall proxy completed. method={Method} path={Path} status={StatusCode} correlation_id={CorrelationId} elapsed_ms={ElapsedMs}",
                 method.Method, pathAndQuery.Split('?')[0], (int)response.StatusCode, correlationId, stopwatch.ElapsedMilliseconds);
-            return new Reply((int)response.StatusCode, text);
+            return new Reply((int)response.StatusCode, text) { Date = response.Headers.Date };
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
@@ -554,16 +817,16 @@ public sealed class RecallController : Controller
     }
 
     /// <summary>A file answer of the service — the BYTES as they came (the CSV's BOM included).</summary>
-    private async Task<(int Status, byte[]? Bytes, string? FileName, string? Code)> SendFileAsync(string pathAndQuery, CancellationToken ct)
+    private async Task<(int Status, byte[]? Bytes, string? FileName, string? Code, string? ContentType)> SendFileAsync(string pathAndQuery, CancellationToken ct)
     {
         var token = Diten.Web.Services.Auth.AuthTokenCookies.GetAccessToken(Request);
         var tenantId = string.IsNullOrWhiteSpace(token) ? null : ResolveTenantId(token);
-        if (tenantId is null) return (401, null, null, "UNAUTHORIZED");
+        if (tenantId is null) return (401, null, null, "UNAUTHORIZED", null);
         Guid? selected = null;
         if (CompanySelection.TokenLegalEntity(User) is null)
         {
             selected = CompanySelection.SelectedCompany(Request, User);
-            if (selected is null) return (403, null, null, InventoryGatewayClient.CompanyNotSelected);
+            if (selected is null) return (403, null, null, InventoryGatewayClient.CompanyNotSelected, null);
         }
 
         try
@@ -577,16 +840,17 @@ public sealed class RecallController : Controller
             if (!response.IsSuccessStatusCode)
             {
                 var text = await response.Content.ReadAsStringAsync(ct);
-                return ((int)response.StatusCode, null, null, new Reply((int)response.StatusCode, text).Code);
+                return ((int)response.StatusCode, null, null, new Reply((int)response.StatusCode, text).Code, null);
             }
 
             return (200, await response.Content.ReadAsByteArrayAsync(ct),
-                response.Content.Headers.ContentDisposition?.FileNameStar ?? response.Content.Headers.ContentDisposition?.FileName?.Trim('"'), null);
+                response.Content.Headers.ContentDisposition?.FileNameStar ?? response.Content.Headers.ContentDisposition?.FileName?.Trim('"'), null,
+                response.Content.Headers.ContentType?.MediaType);
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException && !ct.IsCancellationRequested)
         {
             _logger.LogWarning("Recall file unreachable. path={Path}", pathAndQuery.Split('?')[0]);
-            return (503, null, null, "SERVICE_UNAVAILABLE");
+            return (503, null, null, "SERVICE_UNAVAILABLE", null);
         }
     }
 
@@ -688,6 +952,9 @@ public sealed class RecallController : Controller
     {
         public bool IsSuccess => StatusCode is >= 200 and < 300;
 
+        /// <summary>The answer's HTTP Date (the service clock — WP-0177-R7b drill clock).</summary>
+        public DateTimeOffset? Date { get; init; }
+
         public string? Code
         {
             get
@@ -745,6 +1012,14 @@ public static class RecallKeys
     public const string ConsumptionsCreate = "recall.consumptions.create";
     public const string ReturnsLink = "recall.returns.link";
 
+    // WP-0177-R7b — Tatbikat Planlayıcı, Kanıt Paketi, Ayarlar (pack §11.3, §14.2)
+    public const string DrillsRead = "recall.drills.read";
+    public const string DrillsManage = "recall.drills.manage";
+    public const string DrillsRun = "recall.drills.run";
+    public const string EvidenceExport = "recall.evidence.export";
+    public const string SettingsRead = "recall.settings.read";
+    public const string SettingsManage = "recall.settings.manage";
+
     public static readonly IReadOnlyDictionary<string, string> Actions = new Dictionary<string, string>(StringComparer.Ordinal)
     {
         ["RECALL_TRACE_EXPORT"] = TraceExport,
@@ -766,7 +1041,15 @@ public static class RecallKeys
         ["RECALL_EFFECTIVENESS_START"] = EffectivenessComplete,
         ["RECALL_EFFECTIVENESS_COMPLETE"] = EffectivenessComplete,
         ["RECALL_CASE_CLOSE"] = CasesClose,
-        ["RECALL_CASE_CANCEL"] = CasesCancel
+        ["RECALL_CASE_CANCEL"] = CasesCancel,
+        // R7b — the links between the pages, and the buttons of the three pages (verbatim pack §11.3)
+        ["RECALL_DRILLS_VIEW"] = DrillsRead,
+        ["RECALL_EVIDENCE_VIEW"] = EvidenceExport,
+        ["RECALL_DRILL_PLAN_SAVE"] = DrillsManage,
+        ["RECALL_DRILL_RUN"] = DrillsRun,
+        ["RECALL_DRILL_SIGN"] = DrillsRun,
+        ["RECALL_EVIDENCE_EXPORT"] = EvidenceExport,
+        ["RECALL_SETTINGS_SAVE"] = SettingsManage
     };
 
     public static IReadOnlyDictionary<string, bool> For(IPermissionSnapshot permissions)

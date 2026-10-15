@@ -398,4 +398,250 @@
   <data name="Recall.Scope.PendingHint" xml:space="preserve"><value>范围正在等待批准；如需更改，请退回草稿。</value></data>
   <data name="Recall.Sign.LineQuarantine" xml:space="preserve"><value>隔离请求：{0}</value></data>
   <data name="Recall.Sign.LineNotified" xml:space="preserve"><value>已通知客户：{0} / {1}</value></data>
+  <data name="Recall.Tabs.Drills" xml:space="preserve"><value>演练计划</value></data>
+  <data name="Recall.Tabs.Evidence" xml:space="preserve"><value>证据包</value></data>
+  <data name="Recall.Tabs.Settings" xml:space="preserve"><value>设置</value></data>
+  <data name="Recall.Dashboard.PlanDrill" xml:space="preserve"><value>安排演练</value></data>
+  <data name="Recall.Case.Evidence" xml:space="preserve"><value>证据包</value></data>
+  <data name="Recall.Drills.Badge" xml:space="preserve"><value>演练</value></data>
+  <data name="Recall.Drills.ReadOnly" xml:space="preserve"><value>只读演练：不产生库存移动，不发送隔离请求，不通知客户。</value></data>
+  <data name="Recall.Drills.Plan" xml:space="preserve"><value>计划</value></data>
+  <data name="Recall.Drills.Lot" xml:space="preserve"><value>批次</value></data>
+  <data name="Recall.Drills.ServerClock" xml:space="preserve"><value>时间来自服务器</value></data>
+  <data name="Recall.Drills.LotSelection" xml:space="preserve"><value>批次选择</value></data>
+  <data name="Recall.Drills.ModeAuto" xml:space="preserve"><value>由系统选择</value></data>
+  <data name="Recall.Drills.ModeManual" xml:space="preserve"><value>我来选择</value></data>
+  <data name="Recall.Drills.LotRequired" xml:space="preserve"><value>请选择批次。</value></data>
+  <data name="Recall.Drills.StartTimer" xml:space="preserve"><value>开始计时</value></data>
+  <data name="Recall.Drills.Cancel" xml:space="preserve"><value>取消演练</value></data>
+  <data name="Recall.Drills.CancelTitle" xml:space="preserve"><value>取消演练</value></data>
+  <data name="Recall.Drills.CancelledDone" xml:space="preserve"><value>演练已取消；记录以“已取消”状态保留。</value></data>
+  <data name="Recall.Drills.CancelledReason" xml:space="preserve"><value>取消原因：{0}</value></data>
+  <data name="Recall.Drills.Duration" xml:space="preserve"><value>用时</value></data>
+  <data name="Recall.Drills.GapsFound" xml:space="preserve"><value>发现的缺口</value></data>
+  <data name="Recall.Drills.Result" xml:space="preserve"><value>结果</value></data>
+  <data name="Recall.Drills.ResultTarget" xml:space="preserve"><value>结果 · 目标 {0} 小时</value></data>
+  <data name="Recall.Drills.Sign" xml:space="preserve"><value>以电子签名保存结果</value></data>
+  <data name="Recall.Drills.SignTitle" xml:space="preserve"><value>签署演练结果</value></data>
+  <data name="Recall.Drills.SignLine.Duration" xml:space="preserve"><value>用时 {0} · 目标 {1} 小时 · {2}</value></data>
+  <data name="Recall.Drills.SignLine.Gaps" xml:space="preserve"><value>发现的追溯缺口：{0}</value></data>
+  <data name="Recall.Drills.ResultNote" xml:space="preserve"><value>结果说明（至少 10 个字符）</value></data>
+  <data name="Recall.Drills.ResultNoteShown" xml:space="preserve"><value>结果说明：{0}</value></data>
+  <data name="Recall.Drills.Signed" xml:space="preserve"><value>演练结果已保存。</value></data>
+  <data name="Recall.Drills.Plans" xml:space="preserve"><value>演练计划</value></data>
+  <data name="Recall.Drills.AddPlan" xml:space="preserve"><value>添加计划</value></data>
+  <data name="Recall.Drills.EditPlan" xml:space="preserve"><value>编辑</value></data>
+  <data name="Recall.Drills.SavePlan" xml:space="preserve"><value>保存计划</value></data>
+  <data name="Recall.Drills.PlanSaved" xml:space="preserve"><value>计划已保存。</value></data>
+  <data name="Recall.Drills.PlanName" xml:space="preserve"><value>计划名称</value></data>
+  <data name="Recall.Drills.Frequency" xml:space="preserve"><value>频率</value></data>
+  <data name="Recall.Drills.CustomDays" xml:space="preserve"><value>每隔…天</value></data>
+  <data name="Recall.Drills.CustomDaysRange" xml:space="preserve"><value>请输入 1 到 730 之间的天数。</value></data>
+  <data name="Recall.Drills.Scope" xml:space="preserve"><value>范围</value></data>
+  <data name="Recall.Drills.NextDue" xml:space="preserve"><value>下次日期</value></data>
+  <data name="Recall.Drills.LastResult" xml:space="preserve"><value>上次结果</value></data>
+  <data name="Recall.Drills.Recent" xml:space="preserve"><value>近期演练结果</value></data>
+  <data name="Recall.Drills.Active" xml:space="preserve"><value>启用</value></data>
+  <data name="Recall.Drills.Inactive" xml:space="preserve"><value>停用</value></data>
+  <data name="Recall.Drills.StartRun" xml:space="preserve"><value>开始演练</value></data>
+  <data name="Recall.Drills.NoPlans" xml:space="preserve"><value>尚无演练计划。</value></data>
+  <data name="Recall.Drills.NoRuns" xml:space="preserve"><value>尚未进行演练。</value></data>
+  <data name="Recall.Drills.ClockStopped" xml:space="preserve"><value>计时已停止</value></data>
+  <data name="Recall.Drills.ClockOver" xml:space="preserve"><value>已超过 {0} 小时目标</value></data>
+  <data name="Recall.Drills.ClockRemaining" xml:space="preserve"><value>目标 {0} 小时 · 剩余 {1}</value></data>
+  <data name="Recall.Drills.Target" xml:space="preserve"><value>目标时间 {0} 小时 · 公司设置</value></data>
+  <data name="Recall.Drills.Step.Trace" xml:space="preserve"><value>追溯</value></data>
+  <data name="Recall.Drills.Step.Scope" xml:space="preserve"><value>范围</value></data>
+  <data name="Recall.Drills.Step.CustomerList" xml:space="preserve"><value>客户清单</value></data>
+  <data name="Recall.Drills.StepInfo.Trace" xml:space="preserve"><value>第 1 步：对该批次执行前向 + 后向追溯。</value></data>
+  <data name="Recall.Drills.StepInfo.Scope" xml:space="preserve"><value>第 2 步：核实范围（成品批次、现有库存、发货）。</value></data>
+  <data name="Recall.Drills.StepInfo.CustomerList" xml:space="preserve"><value>第 3 步：完成受影响客户清单。</value></data>
+  <data name="Recall.Drills.StepButton.Trace" xml:space="preserve"><value>执行追溯</value></data>
+  <data name="Recall.Drills.StepButton.Scope" xml:space="preserve"><value>核实范围</value></data>
+  <data name="Recall.Drills.StepButton.CustomerList" xml:space="preserve"><value>完成客户清单 · 停止计时</value></data>
+  <data name="Recall.Drills.Summary" xml:space="preserve"><value>{0} 个节点 · {1} 个批次 · {2} 条库存 · {3} 次发货</value></data>
+  <data name="Recall.Drills.GapBand" xml:space="preserve"><value>发现 {0} 个追溯缺口（例如无批次出库）。</value></data>
+  <data name="Recall.Drills.Owner" xml:space="preserve"><value>负责人：{0}</value></data>
+  <data name="Recall.Drills.OwnerMe" xml:space="preserve"><value>您（保存该计划的用户）</value></data>
+  <data name="Recall.Freq.Yearly1" xml:space="preserve"><value>每年 1 次</value></data>
+  <data name="Recall.Freq.Yearly2" xml:space="preserve"><value>每年 2 次</value></data>
+  <data name="Recall.Freq.Quarterly" xml:space="preserve"><value>每季度</value></data>
+  <data name="Recall.Freq.CustomDays" xml:space="preserve"><value>自定义（天）</value></data>
+  <data name="Recall.Freq.CustomN" xml:space="preserve"><value>每 {0} 天</value></data>
+  <data name="Recall.DrillScope.RandomFinishedGoodLot" xml:space="preserve"><value>随机成品批次</value></data>
+  <data name="Recall.DrillScope.RawMaterialLot" xml:space="preserve"><value>原料批次</value></data>
+  <data name="Recall.DrillScope.SelectedLot" xml:space="preserve"><value>指定批次</value></data>
+  <data name="Recall.Errors.RECALL_DRILL_ALREADY_RUNNING" xml:space="preserve"><value>该公司已有正在进行的演练；请先完成或取消。</value></data>
+  <data name="Recall.Errors.RECALL_DRILL_NO_CANDIDATE" xml:space="preserve"><value>该计划找不到可用于演练的批次。</value></data>
+  <data name="Recall.Errors.RECALL_DRILL_STEP_ORDER" xml:space="preserve"><value>步骤须按顺序：追溯、范围、客户清单。</value></data>
+  <data name="Recall.Errors.RECALL_DRILL_NOT_FOUND" xml:space="preserve"><value>未找到该演练。</value></data>
+  <data name="Recall.Evidence.Subtitle" xml:space="preserve"><value>选择案例（真实或演练）或期间；预览内容与导出文件完全一致。</value></data>
+  <data name="Recall.Evidence.Kind" xml:space="preserve"><value>对象</value></data>
+  <data name="Recall.Evidence.Period" xml:space="preserve"><value>期间</value></data>
+  <data name="Recall.Evidence.Subject" xml:space="preserve"><value>案例或演练</value></data>
+  <data name="Recall.Evidence.From" xml:space="preserve"><value>开始</value></data>
+  <data name="Recall.Evidence.To" xml:space="preserve"><value>结束</value></data>
+  <data name="Recall.Evidence.Preview" xml:space="preserve"><value>预览</value></data>
+  <data name="Recall.Evidence.Pdf" xml:space="preserve"><value>下载 PDF</value></data>
+  <data name="Recall.Evidence.Csv" xml:space="preserve"><value>下载 CSV</value></data>
+  <data name="Recall.Evidence.PdfLanguages" xml:space="preserve"><value>PDF 和 CSV 的标签为土耳其语或英语（其他语言为英语 — FU-0176-PDF-L10N）；数值为记录本身。</value></data>
+  <data name="Recall.Evidence.PreviewTitle" xml:space="preserve"><value>召回证据包</value></data>
+  <data name="Recall.Evidence.PickFirst" xml:space="preserve"><value>请选择对象并点击“预览”。</value></data>
+  <data name="Recall.Evidence.Log" xml:space="preserve"><value>导出日志</value></data>
+  <data name="Recall.Evidence.LogEmpty" xml:space="preserve"><value>尚无导出。</value></data>
+  <data name="Recall.Evidence.NoSubjects" xml:space="preserve"><value>没有此类案例或演练</value></data>
+  <data name="Recall.Evidence.SubjectsUnavailable" xml:space="preserve"><value>无法读取案例列表；请选择期间或从案例打开证据包。</value></data>
+  <data name="Recall.Evidence.Generated" xml:space="preserve"><value>生成于 {0}</value></data>
+  <data name="Recall.Evidence.Missing" xml:space="preserve"><value>未提供此部分。</value></data>
+  <data name="Recall.Evidence.Unreadable" xml:space="preserve"><value>有签名无法从 MOD-0022 读取；列为“无法读取”，不填充任何内容。</value></data>
+  <data name="Recall.Evidence.Verified" xml:space="preserve"><value>{0} 已下载；其 SHA-256 与导出日志一致。</value></data>
+  <data name="Recall.Evidence.NotVerified" xml:space="preserve"><value>{0}：下载的文件与日志中的 SHA-256 不一致。请勿使用。</value></data>
+  <data name="Recall.Evidence.LocalHash" xml:space="preserve"><value>浏览器计算值：{0}</value></data>
+  <data name="Recall.Evidence.PeriodRequired" xml:space="preserve"><value>请输入期间的两个日期。</value></data>
+  <data name="Recall.Evidence.SubjectRequired" xml:space="preserve"><value>请选择案例或演练。</value></data>
+  <data name="Recall.Errors.RECALL_EVIDENCE_RANGE_INVALID" xml:space="preserve"><value>期间结束日不得早于开始日，且最长 366 天。</value></data>
+  <data name="Recall.Errors.RECALL_EVIDENCE_EXPORT_NOT_FOUND" xml:space="preserve"><value>未找到该导出。</value></data>
+  <data name="Recall.Settings.Subtitle" xml:space="preserve"><value>公司设置 · 由质量体系管理员说明原因后修改</value></data>
+  <data name="Recall.Settings.Target" xml:space="preserve"><value>演练目标时间（小时）</value></data>
+  <data name="Recall.Settings.TargetHint" xml:space="preserve"><value>默认 4。在此时间内完成客户清单即演练通过。</value></data>
+  <data name="Recall.Settings.Frequency" xml:space="preserve"><value>演练频率提醒（天）</value></data>
+  <data name="Recall.Settings.FrequencyHint" xml:space="preserve"><value>默认 180。面板提醒条依据此阈值。</value></data>
+  <data name="Recall.Settings.Effectiveness" xml:space="preserve"><value>有效性目标（%）· 按等级</value></data>
+  <data name="Recall.Settings.SignatureNote" xml:space="preserve"><value>电子签名策略（范围审批、关闭、设置）不在此处设置：由 MOD-0022 电子签名策略行管理。</value></data>
+  <data name="Recall.Settings.Reset" xml:space="preserve"><value>撤销</value></data>
+  <data name="Recall.Settings.History" xml:space="preserve"><value>变更历史</value></data>
+  <data name="Recall.Settings.HistoryEmpty" xml:space="preserve"><value>尚无变更。</value></data>
+  <data name="Recall.Settings.RangeHours" xml:space="preserve"><value>请输入 1 到 72 之间的整数小时。</value></data>
+  <data name="Recall.Settings.RangeDays" xml:space="preserve"><value>请输入 30 到 730 之间的整数天数。</value></data>
+  <data name="Recall.Settings.RangePercent" xml:space="preserve"><value>请输入 0 到 100 之间的百分比。</value></data>
+  <data name="Recall.Settings.Defaults" xml:space="preserve"><value>当前为默认值（尚未为该公司保存）。</value></data>
+  <data name="Recall.Settings.Updated" xml:space="preserve"><value>最近由 {0} 于 {1} 修改</value></data>
+  <data name="Recall.Settings.ReasonShown" xml:space="preserve"><value>原因：{0}</value></data>
+  <data name="Recall.Settings.Saved" xml:space="preserve"><value>设置已保存。</value></data>
+  <data name="Recall.Settings.SignTitle" xml:space="preserve"><value>签署设置变更</value></data>
+  <data name="Recall.Settings.Field.drillTargetHours" xml:space="preserve"><value>演练目标时间</value></data>
+  <data name="Recall.Settings.Field.drillFrequencyWarningDays" xml:space="preserve"><value>演练频率提醒</value></data>
+  <data name="Recall.Settings.Field.effectivenessTargetPercent_1" xml:space="preserve"><value>有效性目标 · 1 级</value></data>
+  <data name="Recall.Settings.Field.effectivenessTargetPercent_2" xml:space="preserve"><value>有效性目标 · 2 级</value></data>
+  <data name="Recall.Settings.Field.effectivenessTargetPercent_3" xml:space="preserve"><value>有效性目标 · 3 级</value></data>
+  <data name="Recall.Settings.Field.traceMaxDepth" xml:space="preserve"><value>追溯深度上限</value></data>
+  <data name="Recall.Settings.Field.traceMaxNodes" xml:space="preserve"><value>追溯节点上限</value></data>
+  <data name="Recall.Errors.RECALL_SETTINGS_INVALID" xml:space="preserve"><value>某项设置超出允许范围。</value></data>
+  <data name="Recall.Errors.RECALL_NO_CHANGES" xml:space="preserve"><value>没有任何更改。</value></data>
+  <data name="Help.RECALLDRILLS.Purpose" xml:space="preserve"><value>计划召回演练，并在不触碰库存的情况下计时执行。</value></data>
+  <data name="Help.RECALLDRILLS.Audience" xml:space="preserve"><value>质量保证人员和质量体系管理员。</value></data>
+  <data name="Help.RECALLDRILLS.Step1Title" xml:space="preserve"><value>计划</value></data>
+  <data name="Help.RECALLDRILLS.Step1" xml:space="preserve"><value>添加计划：频率、范围和下次日期。</value></data>
+  <data name="Help.RECALLDRILLS.Step2Title" xml:space="preserve"><value>执行</value></data>
+  <data name="Help.RECALLDRILLS.Step2" xml:space="preserve"><value>开始计时，然后按顺序完成三个步骤：追溯、范围、客户清单。</value></data>
+  <data name="Help.RECALLDRILLS.Step3Title" xml:space="preserve"><value>签署</value></data>
+  <data name="Help.RECALLDRILLS.Step3" xml:space="preserve"><value>填写结果说明；如策略要求，以电子签名保存。</value></data>
+  <data name="Help.RECALLEVIDENCE.Purpose" xml:space="preserve"><value>为审计生成案例、演练或期间的证据包。</value></data>
+  <data name="Help.RECALLEVIDENCE.Audience" xml:space="preserve"><value>质量保证人员、质量体系管理员和审计员。</value></data>
+  <data name="Help.RECALLEVIDENCE.Step1Title" xml:space="preserve"><value>选择并预览</value></data>
+  <data name="Help.RECALLEVIDENCE.Step1" xml:space="preserve"><value>选择对象；预览显示文件的七个部分。</value></data>
+  <data name="Help.RECALLEVIDENCE.Step2Title" xml:space="preserve"><value>下载并核验</value></data>
+  <data name="Help.RECALLEVIDENCE.Step2" xml:space="preserve"><value>下载 PDF 或 CSV；导出日志中的 SHA-256 由文件字节计算。</value></data>
+  <data name="Help.RECALLSETTINGS.Purpose" xml:space="preserve"><value>设置公司的演练目标、频率提醒和有效性目标。</value></data>
+  <data name="Help.RECALLSETTINGS.Audience" xml:space="preserve"><value>质量体系管理员。</value></data>
+  <data name="Help.RECALLSETTINGS.Step1Title" xml:space="preserve"><value>修改</value></data>
+  <data name="Help.RECALLSETTINGS.Step1" xml:space="preserve"><value>修改数值并填写至少 10 个字符的原因。</value></data>
+  <data name="Help.RECALLSETTINGS.Step2Title" xml:space="preserve"><value>保存</value></data>
+  <data name="Help.RECALLSETTINGS.Step2" xml:space="preserve"><value>保存；如策略要求，在电子签名窗口签署。每项变更都记录在历史中。</value></data>
+  <data name="Recall.Ev.W.1_summary" xml:space="preserve"><value>1 · 摘要</value></data>
+  <data name="Recall.Ev.W.2_trace" xml:space="preserve"><value>2 · 追溯结果</value></data>
+  <data name="Recall.Ev.W.3_quarantine" xml:space="preserve"><value>3 · 隔离请求及结果</value></data>
+  <data name="Recall.Ev.W.4_customers" xml:space="preserve"><value>4 · 客户与通知</value></data>
+  <data name="Recall.Ev.W.5_returnsAndEffectiveness" xml:space="preserve"><value>5 · 退回与有效性检查</value></data>
+  <data name="Recall.Ev.W.6_timeline" xml:space="preserve"><value>6 · 时间线</value></data>
+  <data name="Recall.Ev.W.7_signatures" xml:space="preserve"><value>7 · 签名</value></data>
+  <data name="Recall.Ev.W.notApplicable" xml:space="preserve"><value>不适用</value></data>
+  <data name="Recall.Ev.W.notApplicableDrill" xml:space="preserve"><value>不适用 — 演练为只读演习</value></data>
+  <data name="Recall.Ev.W.notApplicablePeriod" xml:space="preserve"><value>不适用 — 期间报告仅列出演练</value></data>
+  <data name="Recall.Ev.W.notSealed" xml:space="preserve"><value>范围尚未封存；无追溯快照</value></data>
+  <data name="Recall.Ev.W.none" xml:space="preserve"><value>无记录</value></data>
+  <data name="Recall.Ev.W.field" xml:space="preserve"><value>字段</value></data>
+  <data name="Recall.Ev.W.value" xml:space="preserve"><value>值</value></data>
+  <data name="Recall.Ev.W.nodeKind" xml:space="preserve"><value>节点</value></data>
+  <data name="Recall.Ev.W.lot" xml:space="preserve"><value>批次</value></data>
+  <data name="Recall.Ev.W.place" xml:space="preserve"><value>仓库 / 客户</value></data>
+  <data name="Recall.Ev.W.quantity" xml:space="preserve"><value>数量</value></data>
+  <data name="Recall.Ev.W.unit" xml:space="preserve"><value>单位</value></data>
+  <data name="Recall.Ev.W.document" xml:space="preserve"><value>单据</value></data>
+  <data name="Recall.Ev.W.date" xml:space="preserve"><value>日期</value></data>
+  <data name="Recall.Ev.W.warehouse" xml:space="preserve"><value>仓库</value></data>
+  <data name="Recall.Ev.W.location" xml:space="preserve"><value>库位</value></data>
+  <data name="Recall.Ev.W.status" xml:space="preserve"><value>状态</value></data>
+  <data name="Recall.Ev.W.reason" xml:space="preserve"><value>原因</value></data>
+  <data name="Recall.Ev.W.held" xml:space="preserve"><value>已隔离</value></data>
+  <data name="Recall.Ev.W.holds" xml:space="preserve"><value>隔离记录</value></data>
+  <data name="Recall.Ev.W.customer" xml:space="preserve"><value>客户</value></data>
+  <data name="Recall.Ev.W.notifiedOn" xml:space="preserve"><value>通知日期</value></data>
+  <data name="Recall.Ev.W.channel" xml:space="preserve"><value>渠道</value></data>
+  <data name="Recall.Ev.W.note" xml:space="preserve"><value>备注</value></data>
+  <data name="Recall.Ev.W.transaction" xml:space="preserve"><value>库存移动</value></data>
+  <data name="Recall.Ev.W.sku" xml:space="preserve"><value>SKU</value></data>
+  <data name="Recall.Ev.W.shipped" xml:space="preserve"><value>已发货</value></data>
+  <data name="Recall.Ev.W.returned" xml:space="preserve"><value>已退回</value></data>
+  <data name="Recall.Ev.W.consumed" xml:space="preserve"><value>已消耗</value></data>
+  <data name="Recall.Ev.W.open" xml:space="preserve"><value>未结</value></data>
+  <data name="Recall.Ev.W.percent" xml:space="preserve"><value>有效性 %</value></data>
+  <data name="Recall.Ev.W.target" xml:space="preserve"><value>目标 %</value></data>
+  <data name="Recall.Ev.W.met" xml:space="preserve"><value>达标</value></data>
+  <data name="Recall.Ev.W.seq" xml:space="preserve"><value>序号</value></data>
+  <data name="Recall.Ev.W.at" xml:space="preserve"><value>时间</value></data>
+  <data name="Recall.Ev.W.event" xml:space="preserve"><value>事件</value></data>
+  <data name="Recall.Ev.W.actor" xml:space="preserve"><value>用户</value></data>
+  <data name="Recall.Ev.W.text" xml:space="preserve"><value>说明</value></data>
+  <data name="Recall.Ev.W.signatureId" xml:space="preserve"><value>签名</value></data>
+  <data name="Recall.Ev.W.action" xml:space="preserve"><value>操作</value></data>
+  <data name="Recall.Ev.W.signer" xml:space="preserve"><value>签署人</value></data>
+  <data name="Recall.Ev.W.meaning" xml:space="preserve"><value>含义</value></data>
+  <data name="Recall.Ev.W.signedAt" xml:space="preserve"><value>签署时间</value></data>
+  <data name="Recall.Ev.W.run" xml:space="preserve"><value>演练</value></data>
+  <data name="Recall.Ev.W.started" xml:space="preserve"><value>开始</value></data>
+  <data name="Recall.Ev.W.duration" xml:space="preserve"><value>用时（分钟）</value></data>
+  <data name="Recall.Ev.W.targetHours" xml:space="preserve"><value>目标（小时）</value></data>
+  <data name="Recall.Ev.W.passed" xml:space="preserve"><value>结果</value></data>
+  <data name="Recall.Ev.W.returns" xml:space="preserve"><value>退回</value></data>
+  <data name="Recall.Ev.W.effectiveness" xml:space="preserve"><value>有效性</value></data>
+  <data name="Recall.Ev.W.summary" xml:space="preserve"><value>摘要</value></data>
+  <data name="Recall.Ev.W.runs" xml:space="preserve"><value>演练</value></data>
+  <data name="Recall.Ev.W.trace" xml:space="preserve"><value>追溯</value></data>
+  <data name="Recall.Ev.W.requests" xml:space="preserve"><value>请求</value></data>
+  <data name="Recall.Ev.W.customers" xml:space="preserve"><value>客户</value></data>
+  <data name="Recall.Ev.W.timeline" xml:space="preserve"><value>事件</value></data>
+  <data name="Recall.Ev.W.signatures" xml:space="preserve"><value>签名</value></data>
+  <data name="Recall.Ev.W.number" xml:space="preserve"><value>编号</value></data>
+  <data name="Recall.Ev.W.class" xml:space="preserve"><value>等级</value></data>
+  <data name="Recall.Ev.W.level" xml:space="preserve"><value>层级</value></data>
+  <data name="Recall.Ev.W.itemId" xml:space="preserve"><value>物料</value></data>
+  <data name="Recall.Ev.W.skuId" xml:space="preserve"><value>SKU</value></data>
+  <data name="Recall.Ev.W.rootLot" xml:space="preserve"><value>根批次</value></data>
+  <data name="Recall.Ev.W.reasonReference" xml:space="preserve"><value>原因参考</value></data>
+  <data name="Recall.Ev.W.openedBy" xml:space="preserve"><value>开立人</value></data>
+  <data name="Recall.Ev.W.openedAtUtc" xml:space="preserve"><value>开立时间</value></data>
+  <data name="Recall.Ev.W.direction" xml:space="preserve"><value>方向</value></data>
+  <data name="Recall.Ev.W.scopeRevision" xml:space="preserve"><value>范围修订</value></data>
+  <data name="Recall.Ev.W.snapshotSha256" xml:space="preserve"><value>追溯封印（SHA-256）</value></data>
+  <data name="Recall.Ev.W.scopeApprovedBy" xml:space="preserve"><value>范围审批人</value></data>
+  <data name="Recall.Ev.W.scopeApprovedAtUtc" xml:space="preserve"><value>范围审批时间</value></data>
+  <data name="Recall.Ev.W.effectivenessCompletedBy" xml:space="preserve"><value>有效性完成人</value></data>
+  <data name="Recall.Ev.W.effectivenessCompletedAtUtc" xml:space="preserve"><value>有效性完成时间</value></data>
+  <data name="Recall.Ev.W.closedBy" xml:space="preserve"><value>关闭人</value></data>
+  <data name="Recall.Ev.W.closedAtUtc" xml:space="preserve"><value>关闭时间</value></data>
+  <data name="Recall.Ev.W.closureSummary" xml:space="preserve"><value>关闭摘要</value></data>
+  <data name="Recall.Ev.W.openQuantityAcceptance" xml:space="preserve"><value>未结数量接受说明</value></data>
+  <data name="Recall.Ev.W.cancelledBy" xml:space="preserve"><value>取消人</value></data>
+  <data name="Recall.Ev.W.cancelReason" xml:space="preserve"><value>取消原因</value></data>
+  <data name="Recall.Ev.W.planCode" xml:space="preserve"><value>计划</value></data>
+  <data name="Recall.Ev.W.selectionMode" xml:space="preserve"><value>批次选择</value></data>
+  <data name="Recall.Ev.W.startedAtUtc" xml:space="preserve"><value>开始时间</value></data>
+  <data name="Recall.Ev.W.endedAtUtc" xml:space="preserve"><value>结束时间</value></data>
+  <data name="Recall.Ev.W.durationMinutes" xml:space="preserve"><value>用时（分钟）</value></data>
+  <data name="Recall.Ev.W.gapCount" xml:space="preserve"><value>追溯缺口</value></data>
+  <data name="Recall.Ev.W.resultNote" xml:space="preserve"><value>结果说明</value></data>
+  <data name="Recall.Ev.W.from" xml:space="preserve"><value>开始日期</value></data>
+  <data name="Recall.Ev.W.to" xml:space="preserve"><value>结束日期</value></data>
+  <data name="Recall.Ev.W.runCount" xml:space="preserve"><value>演练次数</value></data>
 </root>

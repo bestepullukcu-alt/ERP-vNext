@@ -57,9 +57,30 @@ public sealed class RecallDataGateTests
         ["PrepareClosure"] = [RecallKeys.CasesClose],
         ["CloseCase"] = [RecallKeys.CasesClose],
         ["CancelCase"] = [RecallKeys.CasesCancel],
+        // WP-0177-R7b — Tatbikat Planlayıcı (read / manage / run), Kanıt Paketi (export), Ayarlar (read / manage)
+        ["DrillPlans"] = [RecallKeys.DrillsRead],
+        ["DrillRuns"] = [RecallKeys.DrillsRead],
+        ["DrillRun"] = [RecallKeys.DrillsRead],
+        ["DrillLotLookup"] = [RecallKeys.DrillsRun],
+        ["CreateDrillPlan"] = [RecallKeys.DrillsManage],
+        ["UpdateDrillPlan"] = [RecallKeys.DrillsManage],
+        ["StartDrill"] = [RecallKeys.DrillsRun],
+        ["CompleteDrillStep"] = [RecallKeys.DrillsRun],
+        ["PrepareDrillResult"] = [RecallKeys.DrillsRun],
+        ["SignDrillResult"] = [RecallKeys.DrillsRun],
+        ["CancelDrill"] = [RecallKeys.DrillsRun],
+        ["EvidenceSubjects"] = [RecallKeys.EvidenceExport],
+        ["EvidencePreview"] = [RecallKeys.EvidenceExport],
+        ["EvidenceExports"] = [RecallKeys.EvidenceExport],
+        ["CreateEvidenceExport"] = [RecallKeys.EvidenceExport],
+        ["EvidenceFile"] = [RecallKeys.EvidenceExport],
+        ["SettingsData"] = [RecallKeys.SettingsRead],
+        ["SettingsHistory"] = [RecallKeys.SettingsRead],
+        ["PrepareSettings"] = [RecallKeys.SettingsManage],
+        ["SaveSettings"] = [RecallKeys.SettingsManage],
     };
 
-    public static readonly string[] Pages = ["CaseDetails", "Cases", "Index", "Trace"];
+    public static readonly string[] Pages = ["CaseDetails", "Cases", "Drills", "Evidence", "Index", "Settings", "Trace"];
 
     [Fact]
     public void Every_routed_action_is_a_page_or_a_door_of_the_gate_table_and_there_is_no_catch_all_proxy()
@@ -183,6 +204,7 @@ public sealed class RecallDataGateTests
             "direction" => "Both",
             "q" => "L-2026",
             "id" or "requestId" => SampleId,
+            "step" => "Trace",
             "part" => null,
             _ => throw new InvalidOperationException($"{action}: no sample for parameter '{parameter.Name}' — add one here.")
         };

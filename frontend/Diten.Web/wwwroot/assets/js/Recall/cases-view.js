@@ -2,7 +2,8 @@
  * MOD-0177 R6 — Vakalar, the PURE part (no DOM; the Node test runs it against THIS file). One merged row (RecallController list door:
  * rowKind Case | Drill, already in the server's order) → the texts of the nine columns. A DRILL row is not a case (RECALL 1.5.0, CT
  * decision A): its class and level are "—" (mockup difference D-25), its type says "Tatbikat", its progress cell is the drill result.
- * R7a: a REAL case row opens its Vaka Detayı (/Recall/Cases/Details/{caseId}); a drill row still opens nothing (the drill planner is R7b).
+ * R7a: a REAL case row opens its Vaka Detayı (/Recall/Cases/Details/{caseId}). R7b: a drill row opens its run in the Tatbikat Planlayıcı
+ * (/Recall/Drills?run={runId}) — only when fmt.canDrills (RECALL_DRILLS_VIEW); otherwise it stays without a link (no dead link).
  */
 'use strict';
 
@@ -22,7 +23,7 @@ var RecallCasesView = (function () {
             return {
                 number: row.number, kind: 'Drill', type: t('Recall.Type.Drill'), product: row.itemLabel || row.item?.itemId || '', lot: lot || '',
                 class: DASH, level: DASH, opened: fmt.date(row.startedAtUtc), owner, progress: result, status: t('Recall.DrillStatus.' + row.status),
-                statusCode: row.status, clickable: false
+                statusCode: row.status, clickable: !!fmt.canDrills && !!row.runId, href: `/Recall/Drills?run=${encodeURIComponent(row.runId || '')}`
             };
         }
 

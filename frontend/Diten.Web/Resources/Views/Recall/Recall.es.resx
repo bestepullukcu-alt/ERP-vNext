@@ -398,4 +398,250 @@
   <data name="Recall.Scope.PendingHint" xml:space="preserve"><value>El alcance espera aprobación; para cambiarlo, devuélvalo a borrador.</value></data>
   <data name="Recall.Sign.LineQuarantine" xml:space="preserve"><value>Solicitudes de cuarentena: {0}</value></data>
   <data name="Recall.Sign.LineNotified" xml:space="preserve"><value>Clientes informados: {0} / {1}</value></data>
+  <data name="Recall.Tabs.Drills" xml:space="preserve"><value>Planificador de simulacros</value></data>
+  <data name="Recall.Tabs.Evidence" xml:space="preserve"><value>Paquete de evidencias</value></data>
+  <data name="Recall.Tabs.Settings" xml:space="preserve"><value>Configuración</value></data>
+  <data name="Recall.Dashboard.PlanDrill" xml:space="preserve"><value>Planificar un simulacro</value></data>
+  <data name="Recall.Case.Evidence" xml:space="preserve"><value>Paquete de evidencias</value></data>
+  <data name="Recall.Drills.Badge" xml:space="preserve"><value>SIMULACRO</value></data>
+  <data name="Recall.Drills.ReadOnly" xml:space="preserve"><value>Ensayo de solo lectura: sin movimiento de stock, sin solicitud de cuarentena, sin aviso a clientes.</value></data>
+  <data name="Recall.Drills.Plan" xml:space="preserve"><value>Plan</value></data>
+  <data name="Recall.Drills.Lot" xml:space="preserve"><value>Lote</value></data>
+  <data name="Recall.Drills.ServerClock" xml:space="preserve"><value>Hora tomada del servidor</value></data>
+  <data name="Recall.Drills.LotSelection" xml:space="preserve"><value>Selección de lote</value></data>
+  <data name="Recall.Drills.ModeAuto" xml:space="preserve"><value>Que elija el sistema</value></data>
+  <data name="Recall.Drills.ModeManual" xml:space="preserve"><value>Elijo yo</value></data>
+  <data name="Recall.Drills.LotRequired" xml:space="preserve"><value>Elija un lote.</value></data>
+  <data name="Recall.Drills.StartTimer" xml:space="preserve"><value>Iniciar el cronómetro</value></data>
+  <data name="Recall.Drills.Cancel" xml:space="preserve"><value>Cancelar el simulacro</value></data>
+  <data name="Recall.Drills.CancelTitle" xml:space="preserve"><value>Cancelar el simulacro</value></data>
+  <data name="Recall.Drills.CancelledDone" xml:space="preserve"><value>El simulacro se canceló; la ejecución se conserva como cancelada.</value></data>
+  <data name="Recall.Drills.CancelledReason" xml:space="preserve"><value>Motivo de cancelación: {0}</value></data>
+  <data name="Recall.Drills.Duration" xml:space="preserve"><value>Duración</value></data>
+  <data name="Recall.Drills.GapsFound" xml:space="preserve"><value>Brechas encontradas</value></data>
+  <data name="Recall.Drills.Result" xml:space="preserve"><value>Resultado</value></data>
+  <data name="Recall.Drills.ResultTarget" xml:space="preserve"><value>Resultado · objetivo {0} h</value></data>
+  <data name="Recall.Drills.Sign" xml:space="preserve"><value>Guardar el resultado con firma electrónica</value></data>
+  <data name="Recall.Drills.SignTitle" xml:space="preserve"><value>Firmar el resultado del simulacro</value></data>
+  <data name="Recall.Drills.SignLine.Duration" xml:space="preserve"><value>Duración {0} · objetivo {1} h · {2}</value></data>
+  <data name="Recall.Drills.SignLine.Gaps" xml:space="preserve"><value>Brechas de trazabilidad encontradas: {0}</value></data>
+  <data name="Recall.Drills.ResultNote" xml:space="preserve"><value>Nota de resultado (mínimo 10 caracteres)</value></data>
+  <data name="Recall.Drills.ResultNoteShown" xml:space="preserve"><value>Nota de resultado: {0}</value></data>
+  <data name="Recall.Drills.Signed" xml:space="preserve"><value>Se guardó el resultado del simulacro.</value></data>
+  <data name="Recall.Drills.Plans" xml:space="preserve"><value>Planes de simulacro</value></data>
+  <data name="Recall.Drills.AddPlan" xml:space="preserve"><value>Añadir plan</value></data>
+  <data name="Recall.Drills.EditPlan" xml:space="preserve"><value>Editar</value></data>
+  <data name="Recall.Drills.SavePlan" xml:space="preserve"><value>Guardar plan</value></data>
+  <data name="Recall.Drills.PlanSaved" xml:space="preserve"><value>Se guardó el plan.</value></data>
+  <data name="Recall.Drills.PlanName" xml:space="preserve"><value>Nombre del plan</value></data>
+  <data name="Recall.Drills.Frequency" xml:space="preserve"><value>Frecuencia</value></data>
+  <data name="Recall.Drills.CustomDays" xml:space="preserve"><value>Cada … días</value></data>
+  <data name="Recall.Drills.CustomDaysRange" xml:space="preserve"><value>Introduzca un número de días entre 1 y 730.</value></data>
+  <data name="Recall.Drills.Scope" xml:space="preserve"><value>Alcance</value></data>
+  <data name="Recall.Drills.NextDue" xml:space="preserve"><value>Próxima fecha</value></data>
+  <data name="Recall.Drills.LastResult" xml:space="preserve"><value>Último resultado</value></data>
+  <data name="Recall.Drills.Recent" xml:space="preserve"><value>Resultados recientes de simulacros</value></data>
+  <data name="Recall.Drills.Active" xml:space="preserve"><value>Activo</value></data>
+  <data name="Recall.Drills.Inactive" xml:space="preserve"><value>Inactivo</value></data>
+  <data name="Recall.Drills.StartRun" xml:space="preserve"><value>Iniciar el simulacro</value></data>
+  <data name="Recall.Drills.NoPlans" xml:space="preserve"><value>Todavía no hay planes de simulacro.</value></data>
+  <data name="Recall.Drills.NoRuns" xml:space="preserve"><value>Todavía no se ha realizado ningún simulacro.</value></data>
+  <data name="Recall.Drills.ClockStopped" xml:space="preserve"><value>Cronómetro detenido</value></data>
+  <data name="Recall.Drills.ClockOver" xml:space="preserve"><value>Objetivo de {0} h superado</value></data>
+  <data name="Recall.Drills.ClockRemaining" xml:space="preserve"><value>Objetivo {0} h · quedan {1}</value></data>
+  <data name="Recall.Drills.Target" xml:space="preserve"><value>Tiempo objetivo {0} horas · configuración de la empresa</value></data>
+  <data name="Recall.Drills.Step.Trace" xml:space="preserve"><value>Trazabilidad</value></data>
+  <data name="Recall.Drills.Step.Scope" xml:space="preserve"><value>Alcance</value></data>
+  <data name="Recall.Drills.Step.CustomerList" xml:space="preserve"><value>Lista de clientes</value></data>
+  <data name="Recall.Drills.StepInfo.Trace" xml:space="preserve"><value>Paso 1: ejecute la trazabilidad hacia atrás y hacia adelante del lote.</value></data>
+  <data name="Recall.Drills.StepInfo.Scope" xml:space="preserve"><value>Paso 2: verifique el alcance (lotes de producto terminado, stock disponible, envíos).</value></data>
+  <data name="Recall.Drills.StepInfo.CustomerList" xml:space="preserve"><value>Paso 3: complete la lista de clientes afectados.</value></data>
+  <data name="Recall.Drills.StepButton.Trace" xml:space="preserve"><value>Ejecutar la trazabilidad</value></data>
+  <data name="Recall.Drills.StepButton.Scope" xml:space="preserve"><value>Verificar el alcance</value></data>
+  <data name="Recall.Drills.StepButton.CustomerList" xml:space="preserve"><value>Completar la lista de clientes · detener el cronómetro</value></data>
+  <data name="Recall.Drills.Summary" xml:space="preserve"><value>{0} nodos · {1} lotes · {2} líneas de stock · {3} envíos</value></data>
+  <data name="Recall.Drills.GapBand" xml:space="preserve"><value>Se encontraron {0} brecha(s) de trazabilidad (p. ej., salida sin lote).</value></data>
+  <data name="Recall.Drills.Owner" xml:space="preserve"><value>Responsable: {0}</value></data>
+  <data name="Recall.Drills.OwnerMe" xml:space="preserve"><value>usted (el usuario que guarda el plan)</value></data>
+  <data name="Recall.Freq.Yearly1" xml:space="preserve"><value>Una vez al año</value></data>
+  <data name="Recall.Freq.Yearly2" xml:space="preserve"><value>Dos veces al año</value></data>
+  <data name="Recall.Freq.Quarterly" xml:space="preserve"><value>Trimestral</value></data>
+  <data name="Recall.Freq.CustomDays" xml:space="preserve"><value>Personalizada (días)</value></data>
+  <data name="Recall.Freq.CustomN" xml:space="preserve"><value>Cada {0} días</value></data>
+  <data name="Recall.DrillScope.RandomFinishedGoodLot" xml:space="preserve"><value>Lote aleatorio de producto terminado</value></data>
+  <data name="Recall.DrillScope.RawMaterialLot" xml:space="preserve"><value>Lote de materia prima</value></data>
+  <data name="Recall.DrillScope.SelectedLot" xml:space="preserve"><value>Lote seleccionado</value></data>
+  <data name="Recall.Errors.RECALL_DRILL_ALREADY_RUNNING" xml:space="preserve"><value>Ya hay un simulacro en curso en esta empresa; termínelo o cancélelo primero.</value></data>
+  <data name="Recall.Errors.RECALL_DRILL_NO_CANDIDATE" xml:space="preserve"><value>El plan no encuentra ningún lote para el simulacro.</value></data>
+  <data name="Recall.Errors.RECALL_DRILL_STEP_ORDER" xml:space="preserve"><value>Los pasos van en orden: trazabilidad, alcance, lista de clientes.</value></data>
+  <data name="Recall.Errors.RECALL_DRILL_NOT_FOUND" xml:space="preserve"><value>No se encontró el simulacro.</value></data>
+  <data name="Recall.Evidence.Subtitle" xml:space="preserve"><value>Elija un caso (real o simulacro) o un periodo; la vista previa es exactamente el contenido del archivo.</value></data>
+  <data name="Recall.Evidence.Kind" xml:space="preserve"><value>Asunto</value></data>
+  <data name="Recall.Evidence.Period" xml:space="preserve"><value>Periodo</value></data>
+  <data name="Recall.Evidence.Subject" xml:space="preserve"><value>Caso o simulacro</value></data>
+  <data name="Recall.Evidence.From" xml:space="preserve"><value>Desde</value></data>
+  <data name="Recall.Evidence.To" xml:space="preserve"><value>Hasta</value></data>
+  <data name="Recall.Evidence.Preview" xml:space="preserve"><value>Vista previa</value></data>
+  <data name="Recall.Evidence.Pdf" xml:space="preserve"><value>Descargar PDF</value></data>
+  <data name="Recall.Evidence.Csv" xml:space="preserve"><value>Descargar CSV</value></data>
+  <data name="Recall.Evidence.PdfLanguages" xml:space="preserve"><value>Las etiquetas del PDF y del CSV están en turco o inglés (otros idiomas: inglés — FU-0176-PDF-L10N); los valores son los de los registros.</value></data>
+  <data name="Recall.Evidence.PreviewTitle" xml:space="preserve"><value>Paquete de evidencias de retirada</value></data>
+  <data name="Recall.Evidence.PickFirst" xml:space="preserve"><value>Elija un asunto y pulse Vista previa.</value></data>
+  <data name="Recall.Evidence.Log" xml:space="preserve"><value>Registro de exportaciones</value></data>
+  <data name="Recall.Evidence.LogEmpty" xml:space="preserve"><value>Todavía no hay exportaciones.</value></data>
+  <data name="Recall.Evidence.NoSubjects" xml:space="preserve"><value>No hay casos ni simulacros de este tipo</value></data>
+  <data name="Recall.Evidence.SubjectsUnavailable" xml:space="preserve"><value>No se pudo leer la lista de casos; elija un periodo o abra el paquete desde el caso.</value></data>
+  <data name="Recall.Evidence.Generated" xml:space="preserve"><value>Generado el {0}</value></data>
+  <data name="Recall.Evidence.Missing" xml:space="preserve"><value>Esta sección no se entregó.</value></data>
+  <data name="Recall.Evidence.Unreadable" xml:space="preserve"><value>No se pudo leer una firma de MOD-0022; figura como ilegible y no se rellena nada.</value></data>
+  <data name="Recall.Evidence.Verified" xml:space="preserve"><value>Se descargó {0}; su SHA-256 coincide con el registro de exportaciones.</value></data>
+  <data name="Recall.Evidence.NotVerified" xml:space="preserve"><value>{0}: el archivo descargado NO coincide con el SHA-256 registrado. No lo utilice.</value></data>
+  <data name="Recall.Evidence.LocalHash" xml:space="preserve"><value>Calculado en el navegador: {0}</value></data>
+  <data name="Recall.Evidence.PeriodRequired" xml:space="preserve"><value>Introduzca las dos fechas del periodo.</value></data>
+  <data name="Recall.Evidence.SubjectRequired" xml:space="preserve"><value>Elija un caso o un simulacro.</value></data>
+  <data name="Recall.Errors.RECALL_EVIDENCE_RANGE_INVALID" xml:space="preserve"><value>El periodo debe terminar en o después de su inicio y durar como máximo 366 días.</value></data>
+  <data name="Recall.Errors.RECALL_EVIDENCE_EXPORT_NOT_FOUND" xml:space="preserve"><value>No se encontró la exportación.</value></data>
+  <data name="Recall.Settings.Subtitle" xml:space="preserve"><value>Configuración de la empresa · la modifica el administrador del sistema de calidad, con un motivo</value></data>
+  <data name="Recall.Settings.Target" xml:space="preserve"><value>Tiempo objetivo del simulacro (horas)</value></data>
+  <data name="Recall.Settings.TargetHint" xml:space="preserve"><value>Por defecto 4. El simulacro se aprueba si la lista de clientes se completa en este tiempo.</value></data>
+  <data name="Recall.Settings.Frequency" xml:space="preserve"><value>Aviso de frecuencia de simulacros (días)</value></data>
+  <data name="Recall.Settings.FrequencyHint" xml:space="preserve"><value>Por defecto 180. La banda de aviso del panel procede de este umbral.</value></data>
+  <data name="Recall.Settings.Effectiveness" xml:space="preserve"><value>Objetivo de eficacia (%) · por clase</value></data>
+  <data name="Recall.Settings.SignatureNote" xml:space="preserve"><value>La política de firma electrónica (aprobación del alcance, cierre, configuración) no se define aquí: se gestiona en las filas de política de MOD-0022.</value></data>
+  <data name="Recall.Settings.Reset" xml:space="preserve"><value>Deshacer</value></data>
+  <data name="Recall.Settings.History" xml:space="preserve"><value>Historial de cambios</value></data>
+  <data name="Recall.Settings.HistoryEmpty" xml:space="preserve"><value>Todavía no hay cambios.</value></data>
+  <data name="Recall.Settings.RangeHours" xml:space="preserve"><value>Introduzca horas enteras entre 1 y 72.</value></data>
+  <data name="Recall.Settings.RangeDays" xml:space="preserve"><value>Introduzca días enteros entre 30 y 730.</value></data>
+  <data name="Recall.Settings.RangePercent" xml:space="preserve"><value>Introduzca un porcentaje entre 0 y 100.</value></data>
+  <data name="Recall.Settings.Defaults" xml:space="preserve"><value>Se aplican los valores por defecto (aún no guardados para esta empresa).</value></data>
+  <data name="Recall.Settings.Updated" xml:space="preserve"><value>Último cambio por {0} el {1}</value></data>
+  <data name="Recall.Settings.ReasonShown" xml:space="preserve"><value>Motivo: {0}</value></data>
+  <data name="Recall.Settings.Saved" xml:space="preserve"><value>Se guardó la configuración.</value></data>
+  <data name="Recall.Settings.SignTitle" xml:space="preserve"><value>Firmar el cambio de configuración</value></data>
+  <data name="Recall.Settings.Field.drillTargetHours" xml:space="preserve"><value>Tiempo objetivo del simulacro</value></data>
+  <data name="Recall.Settings.Field.drillFrequencyWarningDays" xml:space="preserve"><value>Aviso de frecuencia de simulacros</value></data>
+  <data name="Recall.Settings.Field.effectivenessTargetPercent_1" xml:space="preserve"><value>Objetivo de eficacia · clase 1</value></data>
+  <data name="Recall.Settings.Field.effectivenessTargetPercent_2" xml:space="preserve"><value>Objetivo de eficacia · clase 2</value></data>
+  <data name="Recall.Settings.Field.effectivenessTargetPercent_3" xml:space="preserve"><value>Objetivo de eficacia · clase 3</value></data>
+  <data name="Recall.Settings.Field.traceMaxDepth" xml:space="preserve"><value>Límite de profundidad de trazabilidad</value></data>
+  <data name="Recall.Settings.Field.traceMaxNodes" xml:space="preserve"><value>Límite de nodos de trazabilidad</value></data>
+  <data name="Recall.Errors.RECALL_SETTINGS_INVALID" xml:space="preserve"><value>Un valor de configuración está fuera de su rango permitido.</value></data>
+  <data name="Recall.Errors.RECALL_NO_CHANGES" xml:space="preserve"><value>No se cambió nada.</value></data>
+  <data name="Help.RECALLDRILLS.Purpose" xml:space="preserve"><value>Planificar simulacros de retirada y ejecutarlos contra reloj sin tocar el stock.</value></data>
+  <data name="Help.RECALLDRILLS.Audience" xml:space="preserve"><value>Aseguramiento de la calidad y administrador del sistema de calidad.</value></data>
+  <data name="Help.RECALLDRILLS.Step1Title" xml:space="preserve"><value>Planificar</value></data>
+  <data name="Help.RECALLDRILLS.Step1" xml:space="preserve"><value>Añada un plan: frecuencia, alcance y próxima fecha.</value></data>
+  <data name="Help.RECALLDRILLS.Step2Title" xml:space="preserve"><value>Ejecutar</value></data>
+  <data name="Help.RECALLDRILLS.Step2" xml:space="preserve"><value>Inicie el cronómetro y complete los tres pasos en orden: trazabilidad, alcance, lista de clientes.</value></data>
+  <data name="Help.RECALLDRILLS.Step3Title" xml:space="preserve"><value>Firmar</value></data>
+  <data name="Help.RECALLDRILLS.Step3" xml:space="preserve"><value>Escriba la nota de resultado y guárdela con firma electrónica si la política lo exige.</value></data>
+  <data name="Help.RECALLEVIDENCE.Purpose" xml:space="preserve"><value>Generar el paquete de evidencias de un caso, un simulacro o un periodo para auditorías.</value></data>
+  <data name="Help.RECALLEVIDENCE.Audience" xml:space="preserve"><value>Aseguramiento de la calidad, administrador del sistema de calidad y auditores.</value></data>
+  <data name="Help.RECALLEVIDENCE.Step1Title" xml:space="preserve"><value>Elegir y previsualizar</value></data>
+  <data name="Help.RECALLEVIDENCE.Step1" xml:space="preserve"><value>Elija el asunto; la vista previa muestra las siete secciones del archivo.</value></data>
+  <data name="Help.RECALLEVIDENCE.Step2Title" xml:space="preserve"><value>Descargar y verificar</value></data>
+  <data name="Help.RECALLEVIDENCE.Step2" xml:space="preserve"><value>Descargue el PDF o el CSV; el SHA-256 del registro se calcula a partir de los bytes del archivo.</value></data>
+  <data name="Help.RECALLSETTINGS.Purpose" xml:space="preserve"><value>Definir el objetivo de simulacro, el aviso de frecuencia y los objetivos de eficacia de la empresa.</value></data>
+  <data name="Help.RECALLSETTINGS.Audience" xml:space="preserve"><value>El administrador del sistema de calidad.</value></data>
+  <data name="Help.RECALLSETTINGS.Step1Title" xml:space="preserve"><value>Cambiar</value></data>
+  <data name="Help.RECALLSETTINGS.Step1" xml:space="preserve"><value>Cambie los valores y escriba un motivo de al menos 10 caracteres.</value></data>
+  <data name="Help.RECALLSETTINGS.Step2Title" xml:space="preserve"><value>Guardar</value></data>
+  <data name="Help.RECALLSETTINGS.Step2" xml:space="preserve"><value>Guarde; si la política lo exige, firme en la ventana de firma. Cada cambio queda en el historial.</value></data>
+  <data name="Recall.Ev.W.1_summary" xml:space="preserve"><value>1 · Resumen</value></data>
+  <data name="Recall.Ev.W.2_trace" xml:space="preserve"><value>2 · Resultado de trazabilidad</value></data>
+  <data name="Recall.Ev.W.3_quarantine" xml:space="preserve"><value>3 · Solicitudes de cuarentena y resultados</value></data>
+  <data name="Recall.Ev.W.4_customers" xml:space="preserve"><value>4 · Clientes y notificación</value></data>
+  <data name="Recall.Ev.W.5_returnsAndEffectiveness" xml:space="preserve"><value>5 · Devoluciones y control de eficacia</value></data>
+  <data name="Recall.Ev.W.6_timeline" xml:space="preserve"><value>6 · Cronología</value></data>
+  <data name="Recall.Ev.W.7_signatures" xml:space="preserve"><value>7 · Firmas</value></data>
+  <data name="Recall.Ev.W.notApplicable" xml:space="preserve"><value>No aplica</value></data>
+  <data name="Recall.Ev.W.notApplicableDrill" xml:space="preserve"><value>No aplica — un simulacro es un ensayo de solo lectura</value></data>
+  <data name="Recall.Ev.W.notApplicablePeriod" xml:space="preserve"><value>No aplica — un informe de periodo solo enumera los simulacros</value></data>
+  <data name="Recall.Ev.W.notSealed" xml:space="preserve"><value>El alcance no está sellado; no hay instantánea de trazabilidad</value></data>
+  <data name="Recall.Ev.W.none" xml:space="preserve"><value>Sin registros</value></data>
+  <data name="Recall.Ev.W.field" xml:space="preserve"><value>Campo</value></data>
+  <data name="Recall.Ev.W.value" xml:space="preserve"><value>Valor</value></data>
+  <data name="Recall.Ev.W.nodeKind" xml:space="preserve"><value>Nodo</value></data>
+  <data name="Recall.Ev.W.lot" xml:space="preserve"><value>Lote</value></data>
+  <data name="Recall.Ev.W.place" xml:space="preserve"><value>Almacén / cliente</value></data>
+  <data name="Recall.Ev.W.quantity" xml:space="preserve"><value>Cantidad</value></data>
+  <data name="Recall.Ev.W.unit" xml:space="preserve"><value>Unidad</value></data>
+  <data name="Recall.Ev.W.document" xml:space="preserve"><value>Documento</value></data>
+  <data name="Recall.Ev.W.date" xml:space="preserve"><value>Fecha</value></data>
+  <data name="Recall.Ev.W.warehouse" xml:space="preserve"><value>Almacén</value></data>
+  <data name="Recall.Ev.W.location" xml:space="preserve"><value>Ubicación</value></data>
+  <data name="Recall.Ev.W.status" xml:space="preserve"><value>Estado</value></data>
+  <data name="Recall.Ev.W.reason" xml:space="preserve"><value>Motivo</value></data>
+  <data name="Recall.Ev.W.held" xml:space="preserve"><value>Retenido</value></data>
+  <data name="Recall.Ev.W.holds" xml:space="preserve"><value>Registro de cuarentena</value></data>
+  <data name="Recall.Ev.W.customer" xml:space="preserve"><value>Cliente</value></data>
+  <data name="Recall.Ev.W.notifiedOn" xml:space="preserve"><value>Notificado el</value></data>
+  <data name="Recall.Ev.W.channel" xml:space="preserve"><value>Canal</value></data>
+  <data name="Recall.Ev.W.note" xml:space="preserve"><value>Nota</value></data>
+  <data name="Recall.Ev.W.transaction" xml:space="preserve"><value>Movimiento</value></data>
+  <data name="Recall.Ev.W.sku" xml:space="preserve"><value>SKU</value></data>
+  <data name="Recall.Ev.W.shipped" xml:space="preserve"><value>Enviado</value></data>
+  <data name="Recall.Ev.W.returned" xml:space="preserve"><value>Devuelto</value></data>
+  <data name="Recall.Ev.W.consumed" xml:space="preserve"><value>Consumido</value></data>
+  <data name="Recall.Ev.W.open" xml:space="preserve"><value>Abierto</value></data>
+  <data name="Recall.Ev.W.percent" xml:space="preserve"><value>Eficacia %</value></data>
+  <data name="Recall.Ev.W.target" xml:space="preserve"><value>Objetivo %</value></data>
+  <data name="Recall.Ev.W.met" xml:space="preserve"><value>En objetivo</value></data>
+  <data name="Recall.Ev.W.seq" xml:space="preserve"><value>N.º</value></data>
+  <data name="Recall.Ev.W.at" xml:space="preserve"><value>Hora</value></data>
+  <data name="Recall.Ev.W.event" xml:space="preserve"><value>Evento</value></data>
+  <data name="Recall.Ev.W.actor" xml:space="preserve"><value>Usuario</value></data>
+  <data name="Recall.Ev.W.text" xml:space="preserve"><value>Texto</value></data>
+  <data name="Recall.Ev.W.signatureId" xml:space="preserve"><value>Firma</value></data>
+  <data name="Recall.Ev.W.action" xml:space="preserve"><value>Operación</value></data>
+  <data name="Recall.Ev.W.signer" xml:space="preserve"><value>Firmante</value></data>
+  <data name="Recall.Ev.W.meaning" xml:space="preserve"><value>Significado</value></data>
+  <data name="Recall.Ev.W.signedAt" xml:space="preserve"><value>Firmado el</value></data>
+  <data name="Recall.Ev.W.run" xml:space="preserve"><value>Simulacro</value></data>
+  <data name="Recall.Ev.W.started" xml:space="preserve"><value>Inicio</value></data>
+  <data name="Recall.Ev.W.duration" xml:space="preserve"><value>Duración (min)</value></data>
+  <data name="Recall.Ev.W.targetHours" xml:space="preserve"><value>Objetivo (h)</value></data>
+  <data name="Recall.Ev.W.passed" xml:space="preserve"><value>Resultado</value></data>
+  <data name="Recall.Ev.W.returns" xml:space="preserve"><value>Devoluciones</value></data>
+  <data name="Recall.Ev.W.effectiveness" xml:space="preserve"><value>Eficacia</value></data>
+  <data name="Recall.Ev.W.summary" xml:space="preserve"><value>Resumen</value></data>
+  <data name="Recall.Ev.W.runs" xml:space="preserve"><value>Simulacros</value></data>
+  <data name="Recall.Ev.W.trace" xml:space="preserve"><value>Trazabilidad</value></data>
+  <data name="Recall.Ev.W.requests" xml:space="preserve"><value>Solicitudes</value></data>
+  <data name="Recall.Ev.W.customers" xml:space="preserve"><value>Clientes</value></data>
+  <data name="Recall.Ev.W.timeline" xml:space="preserve"><value>Eventos</value></data>
+  <data name="Recall.Ev.W.signatures" xml:space="preserve"><value>Firmas</value></data>
+  <data name="Recall.Ev.W.number" xml:space="preserve"><value>Número</value></data>
+  <data name="Recall.Ev.W.class" xml:space="preserve"><value>Clase</value></data>
+  <data name="Recall.Ev.W.level" xml:space="preserve"><value>Nivel</value></data>
+  <data name="Recall.Ev.W.itemId" xml:space="preserve"><value>Artículo</value></data>
+  <data name="Recall.Ev.W.skuId" xml:space="preserve"><value>SKU</value></data>
+  <data name="Recall.Ev.W.rootLot" xml:space="preserve"><value>Lote raíz</value></data>
+  <data name="Recall.Ev.W.reasonReference" xml:space="preserve"><value>Referencia del motivo</value></data>
+  <data name="Recall.Ev.W.openedBy" xml:space="preserve"><value>Abierto por</value></data>
+  <data name="Recall.Ev.W.openedAtUtc" xml:space="preserve"><value>Abierto el</value></data>
+  <data name="Recall.Ev.W.direction" xml:space="preserve"><value>Sentido</value></data>
+  <data name="Recall.Ev.W.scopeRevision" xml:space="preserve"><value>Revisión del alcance</value></data>
+  <data name="Recall.Ev.W.snapshotSha256" xml:space="preserve"><value>Sello de trazabilidad (SHA-256)</value></data>
+  <data name="Recall.Ev.W.scopeApprovedBy" xml:space="preserve"><value>Alcance aprobado por</value></data>
+  <data name="Recall.Ev.W.scopeApprovedAtUtc" xml:space="preserve"><value>Alcance aprobado el</value></data>
+  <data name="Recall.Ev.W.effectivenessCompletedBy" xml:space="preserve"><value>Eficacia completada por</value></data>
+  <data name="Recall.Ev.W.effectivenessCompletedAtUtc" xml:space="preserve"><value>Eficacia completada el</value></data>
+  <data name="Recall.Ev.W.closedBy" xml:space="preserve"><value>Cerrado por</value></data>
+  <data name="Recall.Ev.W.closedAtUtc" xml:space="preserve"><value>Cerrado el</value></data>
+  <data name="Recall.Ev.W.closureSummary" xml:space="preserve"><value>Resumen de cierre</value></data>
+  <data name="Recall.Ev.W.openQuantityAcceptance" xml:space="preserve"><value>Aceptación de la cantidad abierta</value></data>
+  <data name="Recall.Ev.W.cancelledBy" xml:space="preserve"><value>Cancelado por</value></data>
+  <data name="Recall.Ev.W.cancelReason" xml:space="preserve"><value>Motivo de cancelación</value></data>
+  <data name="Recall.Ev.W.planCode" xml:space="preserve"><value>Plan</value></data>
+  <data name="Recall.Ev.W.selectionMode" xml:space="preserve"><value>Selección de lote</value></data>
+  <data name="Recall.Ev.W.startedAtUtc" xml:space="preserve"><value>Iniciado el</value></data>
+  <data name="Recall.Ev.W.endedAtUtc" xml:space="preserve"><value>Finalizado el</value></data>
+  <data name="Recall.Ev.W.durationMinutes" xml:space="preserve"><value>Duración (min)</value></data>
+  <data name="Recall.Ev.W.gapCount" xml:space="preserve"><value>Brechas de trazabilidad</value></data>
+  <data name="Recall.Ev.W.resultNote" xml:space="preserve"><value>Nota de resultado</value></data>
+  <data name="Recall.Ev.W.from" xml:space="preserve"><value>Desde</value></data>
+  <data name="Recall.Ev.W.to" xml:space="preserve"><value>Hasta</value></data>
+  <data name="Recall.Ev.W.runCount" xml:space="preserve"><value>Número de simulacros</value></data>
 </root>

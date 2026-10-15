@@ -12,8 +12,7 @@
 @*
     MOD-0177 R6 — Hazırlık Paneli (RECALLDASHBOARD, pack §11.1, §8.9, mockup "isDash"). One door /Recall/data/dashboard → RECALL getDashboard.
     The frequency band, five KPI cards, the drill chart (ApexCharts — the repo's vendored chart library, Tasks/WorkReport) with the target
-    line, the open cases table. Rows open nothing yet: the case detail is R7 (no dead link). The mockup's "Tatbikat planla" button needs the
-    Tatbikat Planlayıcı page (R7) and is not drawn in R6.
+    line, the open cases table. R7b: the band's "Tatbikat planla" opens the Tatbikat Planlayıcı (drawn only with recall.drills.read).
     UAS-001 — nothing below is drawn without recall.dashboard.read: no heading, no card, no table. No redirect.
 *@
 @if (!Perms.Has(Diten.Web.Controllers.RecallKeys.DashboardRead))
@@ -40,7 +39,11 @@
 
     <div class="alert alert-warning d-none align-items-center gap-2" role="status" id="rc-freq-band">
         <i class="bx bx-time-five fs-4"></i>
-        <span><strong id="rc-freq-title"></strong> <span id="rc-freq-detail"></span></span>
+        <span class="flex-grow-1"><strong id="rc-freq-title"></strong> <span id="rc-freq-detail"></span></span>
+        @if (Perms.Has(Diten.Web.Controllers.RecallKeys.DrillsRead))
+        {
+            <a class="btn btn-sm btn-warning" href="/Recall/Drills" id="rc-plan-drill">@Localizer["Recall.Dashboard.PlanDrill"]</a>
+        }
     </div>
     <div id="rc-labels-unavailable" class="alert alert-warning d-none" role="status">@Localizer["Recall.Common.NamesUnavailable"]</div>
     <div id="rc-error" class="alert alert-danger d-none" role="alert"></div>

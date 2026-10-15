@@ -1102,4 +1102,7 @@
   <data name="Nav.Page.RECALLTRACE" xml:space="preserve"><value>Trazabilidad de retirada</value></data>
   <data name="Nav.Page.RECALLCASES" xml:space="preserve"><value>Casos de retirada</value></data>
   <data name="Nav.Page.RECALLCASEDETAILS" xml:space="preserve"><value>Caso de retirada</value></data>
+  <data name="Nav.Page.RECALLDRILLS" xml:space="preserve"><value>Planificador de simulacros de retirada</value></data>
+  <data name="Nav.Page.RECALLEVIDENCE" xml:space="preserve"><value>Paquete de evidencias de retirada</value></data>
+  <data name="Nav.Page.RECALLSETTINGS" xml:space="preserve"><value>Configuración de retirada</value></data>
 </root>
