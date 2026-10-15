@@ -1,2 +1,2 @@
-queue_id	control_tower	path	baseline_commit	owner_confirmation	scope	evidence	strict
-sce-mvp6	SCE / MVP6 Control Tower	docs/roadmap/plans/mvp6-process-pilot-01/CT-QUEUE.tsv	6b8a62d5a68082c41da202e0e92f765e20461b02	pending	SCE / MVP6 only; not a shared source for other Control Towers (owner decision CT-OPS-02, 2026-10-15)	17/17 commits on every ref by gmg-10 (git log --all, 2026-10-15); docs/guides/operations/mvp6-development-process-v1.0.md §2, §8 @6b8a62d5a	no
+queue_id	control_tower	path	baseline_commit	owner_confirmation	scope	evidence	strict	vocabulary
+sce-mvp6	SCE / MVP6 Control Tower	docs/roadmap/plans/mvp6-process-pilot-01/CT-QUEUE.tsv	6b8a62d5a68082c41da202e0e92f765e20461b02	pending	SCE / MVP6 only; not a shared source for other Control Towers (owner decision CT-OPS-02, 2026-10-15)	17/17 commits on every ref by gmg-10 (git log --all, 2026-10-15); docs/guides/operations/mvp6-development-process-v1.0.md §2, §8 @6b8a62d5a	no	sce-mvp6

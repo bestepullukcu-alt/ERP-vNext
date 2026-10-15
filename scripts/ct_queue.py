@@ -22,7 +22,13 @@ require   exit 0 only when WP-ID has exactly one row and its state is classed di
           origin/main's registry is well-formed and holds exactly one valid row for the queue that points at the
           same task source file.
 strict    a queue registered with strict=yes (a new Control Tower's queue) treats an undefined state as an error on
-          every row; strict=no (the SCE / MVP6 queue) keeps its tolerance for historical rows.
+          every row; strict=no (the SCE / MVP6 queue) keeps its tolerance for historical rows. The registry's
+          `vocabulary` column names the state vocabulary of each queue (sce-mvp6 for SCE; sop7 for new Control Towers).
+          A strict queue with a transitions profile (execution/delivery/ct-sop7-transitions.tsv) is also checked for:
+          a valid `module` value on every row (MOD-nnnn[-FUn], or `ortak:` + MOD list or a scope record path; known in
+          the module registry, Blueprint or packs; a deprecated alias is refused); leaving a terminal state between
+          consecutive committed versions of the queue (skipped steps are NOT inferred from snapshots); and `<id>-R<n>`
+          rows that must name their original in depends_on (-R3 and later need a reassessment record, SOP §28.2).
 guard     without --expect-*: prints the queue's SHA-256 and row count; with both: exit 1 if the file changed since.
           It detects a change between two moments; it is NOT a file lock.
 writers   git refs on this machine whose copy of the queue differs from its merge base with --base (default
@@ -53,8 +59,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 REGISTRY = ROOT / "execution" / "delivery" / "ct-queue-registry.tsv"
 STATES = ROOT / "execution" / "delivery" / "ct-queue-states.tsv"
-REGISTRY_COLUMNS = ["queue_id", "control_tower", "path", "baseline_commit", "owner_confirmation", "scope", "evidence", "strict"]
+REGISTRY_COLUMNS = ["queue_id", "control_tower", "path", "baseline_commit", "owner_confirmation", "scope", "evidence",
+                    "strict", "vocabulary"]
 MAIN_REF = "origin/main"
+TRANSITIONS = ROOT / "execution" / "delivery" / "ct-sop7-transitions.tsv"
+TRANSITION_COLUMNS = ["vocabulary", "from_state", "to_state", "evidence", "source", "kind"]
+MOD_VALUE = re.compile(r"MOD-\d{4}(?:-FU\d+)?")
 STATE_COLUMNS = ["queue_id", "state", "class", "dispatch", "source", "confirmation"]
 DISPATCH_VALUES = ("yes", "new-version", "no")
 CONFIRMATION_VALUES = ("pending", "confirmed")
@@ -142,7 +152,91 @@ def vocabulary(states: list[dict], queue_id: str) -> dict[str, dict]:
     return {s["state"]: s for s in states if s["queue_id"] == queue_id}
 
 
-def check_registry(registry: list[dict], states: list[dict], commit_exists=None, path_at=None) -> list[str]:
+def load_transitions(name: str) -> set[tuple[str, str]]:
+    if not TRANSITIONS.exists():
+        return set()
+    return {(r["from_state"], r["to_state"]) for r in read_table(TRANSITIONS, TRANSITION_COLUMNS) if r["vocabulary"] == name}
+
+
+def check_transitions(rows: list[dict], states: list[dict]) -> list[str]:
+    problems = []
+    for i, r in enumerate(rows, start=2):
+        names = {st["state"] for st in states if st["queue_id"] == r["vocabulary"]}
+        for key in ("from_state", "to_state"):
+            if r[key] not in names:
+                problems.append(f"transitions line {i}: '{r[key]}' is not a state of vocabulary '{r['vocabulary']}'")
+        if r["kind"] not in ("sop", "öneri"):
+            problems.append(f"transitions line {i}: kind must be sop or öneri")
+        if not r["evidence"].strip():
+            problems.append(f"transitions line {i}: evidence is required")
+    return problems
+
+
+def terminal_states(vocab: dict[str, dict], edges: set[tuple[str, str]]) -> set[str]:
+    return {state for state in vocab if not any(a == state for a, _ in edges)}
+
+
+def module_problem(value: str, known: dict) -> str | None:
+    """None when the module value is valid; otherwise the reason. known: active ids, deprecated-only ids,
+    whether the Blueprint could be read, and a path-exists function for ortak: scope records."""
+    value = value.strip()
+    if value.startswith("ortak:"):
+        rest = value[len("ortak:"):].strip()
+        if not rest:
+            return "ortak: bağlantı yok (ilgili MOD listesi ya da kapsam kaydı yolu gerekli)"
+        if "/" in rest:
+            return None if known["path_exists"](rest) else f"ortak: kapsam kaydı '{rest}' yok"
+        for part in (x.strip() for x in rest.split(",")):
+            problem = module_problem(part, known)
+            if problem:
+                return f"ortak: {problem}"
+        return None
+    if not MOD_VALUE.fullmatch(value):
+        return f"geçersiz modül değeri '{value[:30]}' (MOD-nnnn, MOD-nnnn-FUn ya da ortak:…)"
+    if not known["blueprint"]:
+        return "Blueprint okunamadı — modül varlığı doğrulanamadı (tamamlanamadı)"
+    if value in known["active"]:
+        return None
+    if value in known["deprecated"]:
+        return f"{value} kullanımdan kalkmış takma ad"
+    return f"{value} kayıt dosyasında, Blueprint'te ya da paketlerde yok"
+
+
+def known_modules() -> dict:
+    """Module ids from the same sources and rules as .antigravity/scripts/verify_module_id.py (imported, not copied)."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("verify_module_id", ROOT / ".antigravity" / "scripts" / "verify_module_id.py")
+    vmi = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(vmi)
+    reg = vmi.load_registry(str(ROOT))
+    bp = vmi.load_blueprint(str(ROOT))
+    packs = {fid for fid in vmi.load_packs(str(ROOT)).values() if fid}
+    active = {r["id"] for r in reg if not vmi.is_deprecated(r)} | set(bp or {}) | packs
+    return {"active": active, "deprecated": {r["id"] for r in reg if vmi.is_deprecated(r)} - active,
+            "blueprint": bp is not None, "path_exists": lambda rel: (ROOT / rel).resolve().is_relative_to(ROOT) and (ROOT / rel).exists()}
+
+
+def terminal_exits(snapshots: list[Table], terminal: set[str]) -> list[tuple[str | None, str]]:
+    """(id, message) for every id whose state left a terminal state between consecutive versions."""
+    last, out = {}, []
+    for n, table in enumerate(snapshots):
+        id_i, state_i = table.index("id"), table.index("state")
+        if id_i is None or state_i is None:
+            out.append((None, f"geçmiş sürüm {n}: 'id' ya da 'state' sütunu yok — geçmiş denetlenemedi"))
+            continue
+        for row in table.rows:
+            if len(row) <= max(id_i, state_i):
+                continue
+            qid, state = row[id_i], row[state_i]
+            before = last.get(qid)
+            if before is not None and before != state and before in terminal:
+                out.append((qid, f"{qid}: son durum '{before}' sonraki sürümde '{state}' oldu — son durumdan çıkılamaz"))
+            last[qid] = state
+    return out
+
+
+def check_registry(registry: list[dict], states: list[dict], commit_exists=None, path_at=None,
+                   check_vocab_rows: bool = True) -> list[str]:
     commit_exists = commit_exists or (lambda sha: git("cat-file", "-e", f"{sha}^{{commit}}").returncode == 0)
     path_at = path_at or (lambda sha, path: git("cat-file", "-e", f"{sha}:{path}").returncode == 0)
     problems, ids, paths = [], set(), set()
@@ -154,15 +248,20 @@ def check_registry(registry: list[dict], states: list[dict], commit_exists=None,
             problems.append(f"registry {q['queue_id']}: owner_confirmation must be {' or '.join(CONFIRMATION_VALUES)}")
         if q.get("strict") not in ("yes", "no"):
             problems.append(f"registry {q['queue_id']}: strict must be yes or no")
+        if not (q.get("vocabulary") or "").strip():
+            problems.append(f"registry {q['queue_id']}: vocabulary is required")
+        elif check_vocab_rows and not any(st["queue_id"] == q["vocabulary"] for st in states):
+            problems.append(f"registry {q['queue_id']}: vocabulary '{q['vocabulary']}' has no rows in the states file")
         if not commit_exists(q["baseline_commit"]):
             problems.append(f"registry {q['queue_id']}: baseline_commit '{q['baseline_commit']}' is not a commit here")
         elif not path_at(q["baseline_commit"], q["path"]):
             problems.append(f"registry {q['queue_id']}: '{q['path']}' does not exist at the baseline commit")
     seen = set()
+    profiles = ids | {q.get("vocabulary", "") for q in registry} | {"sop7"}
     for s in states:
         key = (s["queue_id"], s["state"])
-        if s["queue_id"] not in ids:
-            problems.append(f"states: queue '{s['queue_id']}' is not in the registry")
+        if s["queue_id"] not in profiles:
+            problems.append(f"states: queue or vocabulary '{s['queue_id']}' is not in the registry")
         if key in seen:
             problems.append(f"states: '{s['state']}' is listed twice for {s['queue_id']}")
         seen.add(key)
@@ -195,7 +294,7 @@ def structure_errors(cur: Table, base: Table) -> list[str]:
     return errors
 
 
-def check_queue(cur: Table, base: Table, vocab: dict[str, dict], strict: bool = False) -> dict:
+def check_queue(cur: Table, base: Table, vocab: dict[str, dict], strict: bool = False, profile: dict | None = None) -> dict:
     """errors and warnings as text, plus the ids an error is about (require refuses those ids)."""
     out = {"errors": [], "warnings": [], "bad": defaultdict(list)}
 
@@ -213,6 +312,29 @@ def check_queue(cur: Table, base: Table, vocab: dict[str, dict], strict: bool = 
         for i, row in enumerate(cur.rows, start=2):
             if row[state_i] not in vocab:
                 error(row[id_i], f"satır {i} {row[id_i]}: katı kuyrukta tanımsız durum '{row[state_i][:40]}'")
+    if strict and profile is not None:
+        mod_i, dep_i, rec_i = base.index("module"), base.index("depends_on"), base.index("record")
+        if mod_i is None:
+            error(None, "katı kuyrukta 'module' sütunu yok")
+        ids_now = {row[id_i] for row in cur.rows}
+        for i, row in enumerate(cur.rows, start=2):
+            if mod_i is not None:
+                problem = module_problem(row[mod_i], profile["known"])
+                if problem:
+                    error(row[id_i], f"satır {i} {row[id_i]}: {problem}")
+            m = re.fullmatch(r"(.+)-R(\d+)", row[id_i])
+            if m:
+                original, n = m.group(1), int(m.group(2))
+                deps = [x.strip() for x in row[dep_i].split(",")] if dep_i is not None else []
+                if original not in ids_now:
+                    error(row[id_i], f"satır {i} {row[id_i]}: asıl kimlik '{original}' kuyrukta yok")
+                elif original not in deps:
+                    error(row[id_i], f"satır {i} {row[id_i]}: depends_on asıl kimliği '{original}' göstermiyor")
+                if n >= 3:
+                    rec = (row[rec_i] if rec_i is not None else "").split("@")[0].strip()
+                    if not (rec.startswith("docs/records/decisions/") and ".." not in Path(rec).parts
+                            and (ROOT / rec).is_file()):
+                        error(row[id_i], f"satır {i} {row[id_i]}: -R{n} için yeniden değerlendirme kaydı gerekli (SOP §28.2)")
     for i, row in enumerate(cur.rows, start=2):
         if row[id_i] != row[id_i].strip() or re.search(r"\s", row[id_i]):
             error(row[id_i], f"satır {i}: kimlik '{row[id_i]}' boşluk içeriyor — kimlikler birebir karşılaştırılır")
@@ -266,8 +388,9 @@ def check_queue(cur: Table, base: Table, vocab: dict[str, dict], strict: bool = 
     return out
 
 
-def validate_queue(cur: Table, base: Table, vocab: dict[str, dict], strict: bool = False) -> tuple[list[str], list[str]]:
-    result = check_queue(cur, base, vocab, strict)
+def validate_queue(cur: Table, base: Table, vocab: dict[str, dict], strict: bool = False,
+                   profile: dict | None = None) -> tuple[list[str], list[str]]:
+    result = check_queue(cur, base, vocab, strict, profile)
     return result["errors"], result["warnings"]
 
 
@@ -292,7 +415,7 @@ def in_force_status(queue: dict, registry_text: str | None, commit_exists=None, 
     empty = [c for c in REGISTRY_COLUMNS if not row[c].strip()]
     if empty:
         return "kayıt geçersiz", f"boş alan: {', '.join(empty)}"
-    problems = check_registry([row], [], commit_exists=commit_exists, path_at=path_at)
+    problems = check_registry([row], [], commit_exists=commit_exists, path_at=path_at, check_vocab_rows=False)
     if problems:
         return "kayıt geçersiz", problems[0]
     if row["path"] != queue["path"]:
@@ -482,6 +605,30 @@ def current_bytes(queue: dict, ref: str | None) -> bytes:
     if data is None:
         raise SystemExit(f"{ref}: '{queue['path']}' yok")
     return data
+
+
+def queue_snapshots(queue: dict, ref: str | None) -> list[Table]:
+    """Every committed version of the queue on ref (or HEAD), oldest first, then the working tree when ref is None."""
+    commits = git_text("log", "--reverse", "--format=%H", safe_ref(ref) if ref else "HEAD", "--", queue["path"]).split()
+    tables = []
+    for c in commits:
+        data = git_file(c, queue["path"])
+        if data is not None:
+            tables.append(Table(decode(data, c)))
+    if ref is None:
+        tables.append(Table(decode(current_bytes(queue, None), queue["path"])))
+    return tables
+
+
+def build_profile(queue: dict, vocab: dict[str, dict]) -> dict | None:
+    edges = load_transitions(queue["vocabulary"])
+    if queue.get("strict") != "yes" or not edges:
+        return None
+    return {"edges": edges, "terminal": terminal_states(vocab, edges), "known": known_modules()}
+
+
+def history_errors(queue: dict, profile: dict | None, ref: str | None) -> list[tuple[str | None, str]]:
+    return terminal_exits(queue_snapshots(queue, ref), profile["terminal"]) if profile else []
 
 
 def baseline(queue: dict) -> Table:
@@ -692,7 +839,7 @@ def self_test() -> int:
     cases.append(("tolerant queue: the same undefined state is only a warning",
                   not check_queue(Table(strict_new), b2, vocab, strict=False)["errors"]))
     head = "\t".join(REGISTRY_COLUMNS)
-    good_row = "pq\tX CT\tq.tsv\tabc\tpending\tX only\tevidence\tno"
+    good_row = "pq\tX CT\tq.tsv\tabc\tpending\tX only\tevidence\tno\tsop7"
     qd = {"queue_id": "pq", "path": "q.tsv"}
 
     def status(text):
@@ -703,11 +850,59 @@ def self_test() -> int:
     cases.append(("sabotage: the queue registered twice -> kayıt geçersiz", status(f"{head}\n{good_row}\n{good_row}\n") == "kayıt geçersiz"))
     cases.append(("sabotage: a required field empty -> kayıt geçersiz",
                   status(f"{head}\n{good_row.replace('X only', '')}\n") == "kayıt geçersiz"))
-    cases.append(("sabotage: an invalid strict value -> kayıt geçersiz", status(f"{head}\n{good_row[:-2]}\tmaybe\n") == "kayıt geçersiz"))
+    cases.append(("sabotage: an invalid strict value -> kayıt geçersiz", status(f"{head}\n{good_row.replace(chr(9) + 'no' + chr(9), chr(9) + 'maybe' + chr(9))}\n") == "kayıt geçersiz"))
     cases.append(("sabotage: the same id pointing at another task source -> farklı görev kaynağı",
                   status(f"{head}\n{good_row.replace('q.tsv', 'other.tsv')}\n") == "farklı görev kaynağı"))
     cases.append(("no registry file / not registered are told apart",
                   status(None) == "kayıt dosyası yok" and status(f"{head}\n{good_row.replace('pq', 'zz', 1)}\n") == "kayıtlı değil"))
+
+    # step 2: sop7 profile, module values, terminal exits, -R rows (all in memory)
+    v7 = {st: {"class": c, "dispatch": d} for st, c, d in [("READY", "dispatchable", "yes"), ("IN_PROGRESS", "active", "no"),
+          ("VERIFIED", "active", "no"), ("ACCEPTED", "closed", "no"), ("REWORK", "rework", "no")]}
+    edges = {("READY", "IN_PROGRESS"), ("IN_PROGRESS", "VERIFIED"), ("VERIFIED", "ACCEPTED"), ("VERIFIED", "REWORK")}
+    term = terminal_states(v7, edges)
+    cases.append(("sop7: terminal states are the states without an outgoing transition", term == {"ACCEPTED", "REWORK"}))
+    known = {"active": {"MOD-0288", "MOD-0288-FU01", "MOD-0024"}, "deprecated": {"MOD-0999"}, "blueprint": True,
+             "path_exists": lambda rel: rel == "docs/reference/scope/x.md"}
+    cases.append(("module: MOD-0288-FU01 and ortak: with a MOD list or a scope record are accepted",
+                  module_problem("MOD-0288-FU01", known) is None and module_problem("ortak:MOD-0288, MOD-0024", known) is None
+                  and module_problem("ortak:docs/reference/scope/x.md", known) is None))
+    cases.append(("sabotage: bare 'ortak', an invented FU, a deprecated alias and a free-text value -> refused",
+                  all(module_problem(v, known) for v in ("ortak", "ortak:", "MOD-0288-FU09", "MOD-0999", "Organization"))))
+    cases.append(("sabotage: Blueprint unreadable -> module existence not proved (fail-closed)",
+                  module_problem("MOD-0288", dict(known, blueprint=False)) is not None))
+    h = "id\titem\tmodule\tstate\towner\tdepends_on\tredispatch_trigger\tsince\trecord\n"
+    snap = lambda st: Table(h + f"W1\tx\tMOD-0288\t{st}\tCT\t-\t-\t2026-10-15\t-\n")
+    cases.append(("sabotage: ACCEPTED in one version, READY in the next -> terminal exit", len(terminal_exits([snap("ACCEPTED"), snap("READY")], term)) == 1))
+    cases.append(("READY then VERIFIED then ACCEPTED -> no error (skipped steps are not inferred)",
+                  not terminal_exits([snap("READY"), snap("VERIFIED"), snap("ACCEPTED")], term)))
+    cases.append(("sabotage: a version without a state column -> history not checkable, reported",
+                  any(qid is None for qid, _ in terminal_exits([snap("READY"), Table("id\titem\nW1\tx\n")], term))))
+    prof = {"edges": edges, "terminal": term, "known": known}
+    b7 = Table(h)
+
+    def errs(rows: str) -> list[str]:
+        return check_queue(Table(h + rows), b7, v7, strict=True, profile=prof)["errors"]
+
+    ok_rows = "W1\tx\tMOD-0288\tACCEPTED\tCT\t-\t-\t2026-10-15\t-\nW1-R1\tfix\tMOD-0288\tREADY\tCT\tW1\t-\t2026-10-15\t-\n"
+    cases.append(("a -R1 row naming its original in depends_on -> accepted", not errs(ok_rows)))
+    cases.append(("sabotage: -R1 without its original, or without depends_on -> refused",
+                  any("asıl kimlik" in e for e in errs("W2-R1\tfix\tMOD-0288\tREADY\tCT\t-\t-\t2026-10-15\t-\n"))
+                  and any("depends_on" in e for e in errs(ok_rows.replace("\tW1\t-\t2026", "\t-\t-\t2026")))))
+    cases.append(("sabotage: -R3 without a reassessment record -> refused (SOP §28.2)",
+                  any("§28.2" in e for e in errs(ok_rows + "W1-R3\tfix\tMOD-0288\tREADY\tCT\tW1\t-\t2026-10-15\t-\n"))))
+    rec_ok = "docs/records/decisions/2026-10/ct-new-ct-standards-owner-decision-01.md"
+    r3 = lambda rec: errs(ok_rows + f"W1-R3\tfix\tMOD-0288\tREADY\tCT\tW1\t-\t2026-10-15\t{rec}\n")
+    cases.append(("-R3 naming an existing decision record -> accepted; a path escaping docs/records/decisions/ -> refused",
+                  not r3(rec_ok) and any("§28.2" in e for e in r3("docs/records/decisions/../../AGENTS.md"))
+                  and any("§28.2" in e for e in r3("docs/records/decisions/2026-10"))))
+    cases.append(("sabotage: a strict queue without a module column -> refused",
+                  any("module" in e for e in check_queue(Table("id\tstate\nW1\tREADY\n"), Table("id\tstate\n"), v7, True, prof)["errors"])))
+    cases.append(("registry: a vocabulary without rows in the states file -> problem",
+                  any("vocabulary 'nope'" in pr for pr in check_registry(
+                      [{"queue_id": "t", "path": "q.tsv", "baseline_commit": "abc", "owner_confirmation": "pending", "strict": "yes", "vocabulary": "nope"}],
+                      [{"queue_id": "sop7", "state": "READY", "class": "dispatchable", "dispatch": "yes", "source": "s", "confirmation": "confirmed"}],
+                      commit_exists=lambda c: True, path_at=lambda c, x: True))))
 
     for name, ok in cases:
         print(f"{'PASS' if ok else 'FAIL'} {name}")
@@ -739,12 +934,17 @@ def main() -> int:
 
     if a.cmd == "validate":
         problems = check_registry(read_table(REGISTRY, REGISTRY_COLUMNS), states)
+        if TRANSITIONS.exists():
+            problems += check_transitions(read_table(TRANSITIONS, TRANSITION_COLUMNS), states)
         for line in problems:
             print(f"HATA {line}")
         failed = bool(problems)
         for q in queues:
             cur = Table(decode(current_bytes(q, a.ref), q["path"]))
-            errors, warnings = validate_queue(cur, baseline(q), vocabulary(states, q["queue_id"]), q["strict"] == "yes")
+            vocab = vocabulary(states, q["vocabulary"])
+            profile = build_profile(q, vocab)
+            errors, warnings = validate_queue(cur, baseline(q), vocab, q["strict"] == "yes", profile)
+            errors += [text for _, text in history_errors(q, profile, a.ref)]
             for other in a.against:
                 data = git_file(other, q["path"])
                 if data is None:
@@ -762,13 +962,18 @@ def main() -> int:
 
     q = queues[0] if a.cmd in ("require", "guard") else None
     if a.cmd == "require":
-        vocab = vocabulary(states, q["queue_id"])
+        vocab = vocabulary(states, q["vocabulary"])
         cur = Table(decode(current_bytes(q, None), q["path"]))
         base = baseline(q)
         if structure_errors(cur, base):
             print(f"DUR: kuyruk okunamıyor (başlık, sütun ya da boş satır) — python3 scripts/ct_queue.py validate --queue {q['queue_id']}")
             return 1
-        checked = check_queue(cur, base, vocab, q["strict"] == "yes")
+        profile = build_profile(q, vocab)
+        checked = check_queue(cur, base, vocab, q["strict"] == "yes", profile)
+        for qid, text in history_errors(q, profile, None):
+            checked["errors"].append(text)
+            if qid is not None:
+                checked["bad"][qid].append(text)
         code, line = require(cur, vocab, a.wp_id.strip(), a.new_version, checked["bad"])
         print(line)
         head, fetched = main_ref_status()
@@ -815,7 +1020,7 @@ def main() -> int:
             broken = structure_errors(cur, baseline(q))
             if broken:
                 fail(f"DUR: {q['queue_id']} kuyruğu okunamıyor — {broken[0]}")
-            result.append(summarize(cur, vocabulary(states, q["queue_id"]), q))
+            result.append(summarize(cur, vocabulary(states, q["vocabulary"]), q))
         if a.json:
             print(json.dumps(result, ensure_ascii=False, indent=2))
         else:

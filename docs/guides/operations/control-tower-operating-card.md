@@ -1,6 +1,68 @@
-# CONTROL TOWER — Daily Operating Card v1.5
+# CONTROL TOWER — Daily Operating Card v1.6
 
 > **Purpose:** günlük Control Tower turu için hızlı gate. Yeni authority yaratmaz. Ayrıntı için [CONTROL TOWER SOP](./control-tower-sop.md) (v2.5 r3).
+
+## 0. Yeni Control Tower açılışı
+
+> Sahip kararı 2026-10-15 (`CT-STEP2-STARTER-KIT-OWNER-DECISION-01`). Yalnız bu karardan sonra açılan Control Tower'lar
+> için. Eski Control Tower'lar ve onaylı işleri geriye dönük değişmez, durdurulmaz.
+
+- [ ] **Araç bağımlılığı:** `python3 -m pip install -r scripts/requirements-tools.txt`. Kütüphane yoksa keşif
+  "tamamlanamadı" der (çıkış 2).
+- [ ] **Görev kaynağı:** [`ct-queue-template.tsv`](../../../execution/delivery/ct-queue-template.tsv)'den başlar. Kayıt
+  satırı ([`ct-queue-registry.tsv`](../../../execution/delivery/ct-queue-registry.tsv)) `vocabulary` = `sop7`,
+  `strict` = `yes` ile, sahip onayıyla `main`'e girer. `python3 scripts/ct_queue.py validate --queue <kuyruk>` 0 hata.
+- [ ] **Durumlar:** sözlük `sop7` = SOP §7'nin 13 ana + 6 istisna durumu. İzinli geçişler ve her geçişin kanıtı
+  [`ct-sop7-transitions.tsv`](../../../execution/delivery/ct-sop7-transitions.tsv)'de; `öneri` işaretli satırlar SOP'de
+  açıkça yazmayan, sahibin onayladığı geçişlerdir. Son durumlar (çıkış yok): ACCEPTED, REWORK, FAILED, SUPERSEDED,
+  CANCELLED. Dağıtılabilir durum: yalnız READY.
+- [ ] **`module` sütunu:** `MOD-nnnn`, `MOD-nnnn-FUn` ya da `ortak:<MOD listesi | kapsam yolu>`. Kayıt dosyasında
+  olmayan kimlik ve kullanımdan kalkmış takma ad reddedilir.
+- [ ] **Kalite kapısı:** Elle keşif denetimi yalnız hazırlık içindir. CT-PQG-01 hazır olmadan yeni bir Control Tower ilk
+  geliştirme işini dağıtamaz.
+
+### 0.1 Keşif — her yeni iş için (DISCOVERED → INSPECTION_REQUIRED)
+
+```text
+python3 .antigravity/scripts/verify_module_id.py --discover "<ad>" [--resource <gateway kaynağı>] [--sor "<SoR nesnesi>"] > <kanıt yolu>
+python3 .antigravity/scripts/verify_module_id.py --check-report <kanıt yolu>
+```
+
+- Araç raporu yalnız ekrana yazar; Control Tower onu tek yönlendirmeyle iş paketinin kanıt yoluna kaydeder.
+- Rapor: aracın kimliği (commit + betiğin SHA-256'sı), sorgu, `origin/main` SHA'sı ve son fetch zamanı, incelenen
+  kaynakların kimlikleri, eksikler, sonuç ve çıkış kodu.
+- Raporun son satırı `rapor-sha256: <hex>`. Değer, bu satır **hariç** önceki bütün satırların `\n` ile birleştirilip
+  sonuna bir `\n` eklenmiş UTF-8 içeriğinin SHA-256'sıdır. `--check-report` aynı kuralla yeniden hesaplar: 0 = geçerli,
+  2 = bozuk ya da değiştirilmiş.
+- Sonuç: 0 = "incelenen kaynaklarda eşleşme bulunamadı" (işin yeni olduğunu kanıtlamaz; rapordaki eksikler geçerlidir),
+  3 = "inceleme gerekli", 2 = "tamamlanamadı".
+- İş paketi kaydındaki keşif satırı, sabit biçim:
+
+  ```text
+  Keşif: <sonuç> · rapor <yol>@<commit> · sha256 <rapor-sha256>
+  ```
+
+- **"İnceleme gerekli":** dağıtımdan önce iş paketi kaydına her bulgu için (1) karar — parent, FU, child ya da gerçekten
+  yeni; (2) çakışmanın neden yeni işi engellemediği ya da mevcut işin nasıl kullanılacağı yazılır. Çözülmemiş tek bir
+  bulgu varken dağıtım yok.
+- Keşif çalıştırılmamış ya da "tamamlanamadı" → CT-PQG-01'de engelleyici. Yalnız yeni Control Tower'lar için.
+
+### 0.2 Yeniden işleme
+
+- **Y1. Yeni satır, eski durum korunur.** REWORK, FAILED ve kabulden sonra bulunan hata eski bir duruma dönmez. Yeni
+  `<kimlik>-R<n>` satırı READY'de açılır; `depends_on` asıl kimliği içerir, iş metni kök nedeni yazar. Asıl satır ve
+  raporu üzerine yazılmaz; kabul edilmiş satır ACCEPTED kalır (SOP §19.2).
+- **Y2. Esaslı değişiklik yeni iş paketidir.** Yeni bir kimlik verilir. Asıl satır **sonlanmamışsa** SUPERSEDED olur;
+  ACCEPTED ya da başka bir son durumdaysa olduğu gibi kalır ve yeni iş `depends_on` ile ona bağlanır (SOP §19.1, §19.3).
+- **Y3. İki tur sınırı.** Aynı kök neden iki ardışık turda kapanmazsa `docs/records/decisions/` altında bir
+  ARCHITECTURE_REASSESSMENT_REQUIRED karar/engel kaydı açılır; bu bir kuyruk durumu değildir (SOP §28.2). Kayıt
+  çözülmeden yeni `-R` satırı açılmaz ve dağıtılmaz. `-R3` ve sonrası, `record` sütununda bu kaydı gösterir.
+- **Y4. `-R` satırı da kapılardan geçer:** dağıtımdan önce DoR (§1) ve CT-PQG-01.
+
+`ct_queue.py validate` katı kuyrukta mekanik olarak denetler: durum adlarının sözlükte olması, son durumdan çıkış
+(kuyruk dosyasının git geçmişindeki ardışık sürümler arasında), `-R<n>` satırının var olan asıl kimliğe bağlı olması ve
+`depends_on`'da onu göstermesi, `-R3` ve sonrası için karar kaydı, `module` sütunu. Atlanmış adım anlık görüntülerden
+çıkarılamaz; kanıtların varlığını denetlemek CT-OPS-03'ün işidir.
 
 ## 1. START / DoR — dispatch etmeden önce
 

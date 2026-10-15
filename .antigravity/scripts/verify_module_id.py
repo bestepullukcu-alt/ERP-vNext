@@ -276,6 +276,267 @@ def check_all(root):
     return 1 if hard else 0
 
 
+# ----------------------------------------------------------------------------------------------- discovery (İ3)
+# Added 2026-10-15 (CT step 2). Separate, explicitly called modes; --check-id, --check-all and --candidate are unchanged.
+#
+#   --discover "<name>" [--resource <gateway resource>] [--sor "<SoR object>"]
+#       Looks for existing or in-flight work that a new module / work package could duplicate, in: Blueprint_Data
+#       (id, name, domain, capability group, SoR objects), SoR_Map, the module registry (deprecated aliases are
+#       information, not findings), module packs on every git ref visible on this machine, the gateway's resource ->
+#       service map, and the registered Control Tower task sources. Read-only.
+#       exit 0  "incelenen kaynaklarda eşleşme bulunamadı" (absence is NOT proved: see the EKSİK lines)
+#       exit 3  "inceleme gerekli" — every finding with its reason and possible explanations
+#       exit 2  "tamamlanamadı" — a source could not be read (missing openpyxl, unreadable workbook, missing column,
+#               malformed gateway file, git error); never reported as "not found"
+#       The last line is "rapor-sha256: <hex>": SHA-256 of the UTF-8 text of every line before it, joined with
+#       "\n" and ending with "\n".
+#   --check-report <file>
+#       Recomputes rapor-sha256 of a saved report. exit 0 = matches, exit 2 = malformed or altered.
+
+DISCOVER_STOP = {"and", "the", "for", "with", "management", "service", "services", "module", "system", "api",
+                 "platform", "internal", "tenant", "admin"}
+GATEWAY = "gateway/Diten.ApiGateway/ocelot.json"
+QUEUE_REGISTRY = "execution/delivery/ct-queue-registry.tsv"
+BLUEPRINT_COLUMNS = ["Module ID", "Module Name", "Domain / Landscape", "Capability Group", "SoR Primary Object(s)"]
+SOR_COLUMNS = ["SoR Primary Object(s)", "Owning Module IDs", "Owning Module Names"]
+ROUTE_SKIP = {"api", "v1", "v2", "platform", "internal", "tenant", "admin"}
+EXPLAIN = "olası açıklamalar: üretici-tüketici ilişkisi · eski takma ad · onaylı devir · eski dal"
+GAPS = [
+    "EKSİK: bu makinede bulunmayan ya da son fetch'ten sonra itilen dallar görülmedi",
+    "EKSİK: commit edilmemiş ya da başka makinedeki işler görülmedi",
+    "EKSİK: kayıtlı olmayan görev kaynakları (sohbetler, notlar) görülmedi",
+]
+
+
+class Incomplete(Exception):
+    """A discovery source could not be read: the result is 'tamamlanamadı', never 'not found'."""
+
+
+def _tokens(text):
+    out = set()
+    for w in re.findall(r"[a-z0-9]+", str(text or "").lower()):
+        if len(w) < 3 or w in DISCOVER_STOP:
+            continue
+        if w.endswith("ies"):
+            w = w[:-3] + "y"
+        elif w.endswith("s") and not w.endswith("ss"):
+            w = w[:-1]
+        out.add(w)
+    return out
+
+
+def _similar(query, text):
+    t = _tokens(text)
+    return len(query & t) >= 2 or (len(query) == 1 and query <= t)
+
+
+def _git(root, *args, stdin=None):
+    import subprocess
+    if not args or args[0] not in ("rev-parse", "for-each-ref", "ls-tree", "show", "cat-file"):
+        raise Incomplete(f"git {args[:1]} is not a read-only command allowed here")
+    env = dict(os.environ, GIT_OPTIONAL_LOCKS="0")
+    done = subprocess.run(["git", "-C", root, *args], capture_output=True, input=stdin, env=env)
+    if done.returncode != 0:
+        raise Incomplete(f"git {' '.join(args[:2])} → {done.returncode}")
+    return done.stdout.decode("utf-8", errors="replace")
+
+
+def _sha256_bytes(data):
+    import hashlib
+    return hashlib.sha256(data).hexdigest()
+
+
+def read_blueprint_sheets(path):
+    """(Blueprint_Data rows as dicts, SoR_Map rows as dicts). Raises Incomplete on any reading problem."""
+    try:
+        import openpyxl
+    except ImportError:
+        raise Incomplete("openpyxl yok — python3 -m pip install -r scripts/requirements-tools.txt")
+    try:
+        wb = openpyxl.load_workbook(path, read_only=True, data_only=True)
+    except Exception as e:  # unreadable or not a workbook
+        raise Incomplete(f"Blueprint okunamadı ({type(e).__name__})")
+    out = []
+    for sheet, columns in (("Blueprint_Data", BLUEPRINT_COLUMNS), ("SoR_Map", SOR_COLUMNS)):
+        if sheet not in wb.sheetnames:
+            raise Incomplete(f"Blueprint'te '{sheet}' sayfası yok")
+        rows = list(wb[sheet].iter_rows(values_only=True))
+        header = [str(h).strip() if h is not None else "" for h in (rows[0] if rows else [])]
+        missing = [c for c in columns if c not in header]
+        if missing:
+            raise Incomplete(f"'{sheet}' sayfasında sütun yok: {', '.join(missing)}")
+        idx = {c: header.index(c) for c in columns}
+        out.append([{c: (str(r[i]).strip() if i < len(r) and r[i] is not None else "") for c, i in idx.items()} for r in rows[1:]])
+    return out[0], out[1]
+
+
+def gateway_resources(text):
+    """{resource: {service port, ...}} from an ocelot.json text. Raises Incomplete when the file is not usable."""
+    import json
+    try:
+        data = json.loads(text)
+    except ValueError:
+        raise Incomplete("gateway dosyası geçerli JSON değil")
+    routes = data.get("Routes") if isinstance(data, dict) else None
+    if not isinstance(routes, list) or not routes:
+        raise Incomplete("gateway dosyasında rota yok")
+    out = {}
+    for r in routes:
+        segs = [x for x in str(r.get("UpstreamPathTemplate", "")).lower().strip("/").split("/")
+                if x and not x.startswith("{") and x not in ROUTE_SKIP]
+        hosts = r.get("DownstreamHostAndPorts") or [{}]
+        if segs:
+            out.setdefault(segs[0], set()).add(str(hosts[0].get("Port") or r.get("ServiceName") or "?"))
+    return out
+
+
+def discover(root, name, resource=None, sor=None):
+    """Return (report lines without the hash line, exit code)."""
+    query = _tokens(name)
+    lines = ["KEŞİF RAPORU v1", f"sorgu: {name} | kaynak: {resource or '-'} | sor: {sor or '-'}"]
+    findings, info = [], []
+    try:
+        script = os.path.abspath(__file__)
+        head = _git(root, "rev-parse", "HEAD").strip()
+        lines.append(f"araç: .antigravity/scripts/verify_module_id.py sha256 {_sha256_bytes(open(script, 'rb').read())} · depo HEAD {head}")
+        try:
+            main_sha = _git(root, "rev-parse", "--verify", "origin/main^{commit}").strip()
+        except Incomplete:
+            main_sha = None
+        fetch_head = os.path.join(root, _git(root, "rev-parse", "--git-common-dir").strip(), "FETCH_HEAD")
+        import datetime
+        fetched = (datetime.datetime.fromtimestamp(os.path.getmtime(fetch_head)).strftime("%Y-%m-%dT%H:%M")
+                   if os.path.exists(fetch_head) else "doğrulanamadı")
+        lines.append(f"origin/main: {main_sha or 'yok'} · son fetch: {fetched} · uzak durum doğrulanmadı")
+        if not query:
+            raise Incomplete("sorgu adında anlamlı sözcük yok")
+
+        # Blueprint and SoR_Map
+        bp_path = os.path.join(root, BLUEPRINT)
+        if not os.path.exists(bp_path):
+            raise Incomplete("Blueprint dosyası yok")
+        bp_rows, sor_rows = read_blueprint_sheets(bp_path)
+        lines.append(f"kaynak blueprint: {BLUEPRINT} sha256 {_sha256_bytes(open(bp_path, 'rb').read())} · "
+                     f"Blueprint_Data {len(bp_rows)} satır · SoR_Map {len(sor_rows)} satır")
+        matched_ids = set()
+        for r in bp_rows:
+            if r["Module ID"] and _similar(query, r["Module Name"]):
+                matched_ids.add(r["Module ID"])
+                findings.append(f"BULGU blueprint: {r['Module ID']} '{r['Module Name']}' ({r['Domain / Landscape']} / "
+                                f"{r['Capability Group']}) — ad benzer; veri nesneleri: {r['SoR Primary Object(s)'][:80] or '-'}")
+        for r in sor_rows:
+            obj = r["SoR Primary Object(s)"]
+            if (sor and sor.lower() in obj.lower()) or _similar(query, obj):
+                findings.append(f"BULGU sor: '{obj[:80]}' sahibi {r['Owning Module IDs']} ({r['Owning Module Names'][:60]})")
+
+        # module registry (deprecated aliases are information only)
+        reg_path = os.path.join(root, REGISTRY)
+        if not os.path.exists(reg_path):
+            raise Incomplete("modül kayıt dosyası yok")
+        reg = load_registry(root)
+        lines.append(f"kaynak registry: {REGISTRY} sha256 {_sha256_bytes(open(reg_path, 'rb').read())} · {len(reg)} satır")
+        for r in reg:
+            if _similar(query, r["name"]) or r["id"] in matched_ids:
+                if is_deprecated(r):
+                    info.append(f"BİLGİ registry: {r['id']} '{r['name']}' eski takma ad/kullanımdan kalkmış — çakışma sayılmaz")
+                else:
+                    findings.append(f"BULGU registry: {r['id']} '{r['name']}' ({r['status']})")
+
+        # module packs on every visible ref
+        refs = [x for x in _git(root, "for-each-ref", "--format=%(refname) %(objectname)", "refs/heads", "refs/remotes").splitlines()
+                if x and not x.split()[0].endswith("/HEAD")]
+        specs = "\n".join(f"{x.split()[0]}:execution/domains" for x in refs) + "\n"
+        trees = _git(root, "cat-file", "--batch-check=%(objectname) %(objecttype)", stdin=specs.encode()).splitlines()
+        by_tree = {}
+        for ref_line, tree_line in zip(refs, trees):
+            parts = tree_line.split()
+            if len(parts) == 2 and parts[1] == "tree":
+                by_tree.setdefault(parts[0], []).append(ref_line.split()[0])
+        packs = {}
+        for tree, ref_names in by_tree.items():
+            for path in _git(root, "ls-tree", "-r", "--name-only", tree).splitlines():
+                if "/module-packs/" in path and path.endswith(".md") and not path.lower().endswith("readme.md"):
+                    packs.setdefault("execution/domains/" + path, set()).update(ref_names)
+        ref_digest = _sha256_bytes("\n".join(sorted(refs)).encode())
+        lines.append(f"kaynak paketler: {len(refs)} ref · {len(by_tree)} farklı execution/domains ağacı · "
+                     f"{len(packs)} paket yolu · ref-listesi-sha256 {ref_digest}")
+        for path, ref_names in sorted(packs.items()):
+            stem = os.path.basename(path)[:-3]
+            pack_id = re.match(r"^(MOD-\d+(?:-FU\w+)?)", stem)
+            if (pack_id and pack_id.group(1) in matched_ids) or _similar(query, stem.replace("-", " ")):
+                shown = ", ".join(sorted(ref_names)[:3]) + (f", … +{len(ref_names) - 3}" if len(ref_names) > 3 else "")
+                findings.append(f"BULGU paket: {path} — {len(ref_names)} ref'te ({shown})")
+
+        # gateway resource -> service
+        if main_sha:
+            gw_text, gw_where = _git(root, "show", f"{main_sha}:{GATEWAY}"), f"origin/main {main_sha[:9]}"
+        else:
+            gw_text, gw_where = open(os.path.join(root, GATEWAY), encoding="utf-8").read(), "çalışma ağacı"
+        resources = gateway_resources(gw_text)
+        lines.append(f"kaynak gateway: {gw_where}:{GATEWAY} sha256 {_sha256_bytes(gw_text.encode())} · {len(resources)} kaynak")
+        wanted = (resource or "").strip("/").lower()
+        for res, ports in sorted(resources.items()):
+            hit = (res == wanted) if wanted else (_tokens(res.replace("-", " ")) and _tokens(res.replace("-", " ")) <= query)
+            if hit:
+                note = " — AYNI KAYNAK BİRDEN ÇOK SERVİSTE" if len(ports) > 1 else ""
+                findings.append(f"BULGU gateway: '{res}' → servis port(lar)ı {', '.join(sorted(ports))}{note}")
+
+        # registered Control Tower task sources
+        q_reg = os.path.join(root, QUEUE_REGISTRY)
+        if os.path.exists(q_reg):
+            q_lines = open(q_reg, encoding="utf-8").read().split("\n")
+            header = q_lines[0].split("\t")
+            if "path" not in header:
+                raise Incomplete("görev kaynağı kayıt dosyasında 'path' sütunu yok")
+            for row in (l.split("\t") for l in q_lines[1:] if l.strip()):
+                qpath = row[header.index("path")]
+                full = os.path.join(root, qpath)
+                if not os.path.exists(full):
+                    raise Incomplete(f"kayıtlı görev kaynağı '{qpath}' yok")
+                text = open(full, encoding="utf-8").read()
+                lines.append(f"kaynak görev-kaynağı: {qpath} sha256 {_sha256_bytes(text.encode())}")
+                t_lines = text.split("\n")
+                t_head = t_lines[0].split("\t")
+                for t_row in (l.split("\t") for l in t_lines[1:] if l.strip()):
+                    cells = dict(zip(t_head, t_row))
+                    if (cells.get("module") and cells["module"] in matched_ids) or _similar(query, cells.get("item", "")[:200]):
+                        findings.append(f"BULGU görev: {qpath} {cells.get('id', '?')} [{cells.get('state', '?')}] {cells.get('item', '')[:70]}")
+    except Incomplete as e:
+        lines += info + findings + GAPS + [f"sonuç: tamamlanamadı — {e}", "çıkış: 2"]
+        return lines, 2
+    except OSError as e:
+        lines += info + findings + GAPS + [f"sonuç: tamamlanamadı — {type(e).__name__}", "çıkış: 2"]
+        return lines, 2
+    lines += info + findings
+    if findings:
+        lines += [EXPLAIN] + GAPS + ["sonuç: inceleme gerekli — her bulgu için karar ve gerekçe iş paketi kaydına yazılmalı", "çıkış: 3"]
+        return lines, 3
+    lines += GAPS + ["sonuç: incelenen kaynaklarda eşleşme bulunamadı", "çıkış: 0"]
+    return lines, 0
+
+
+def report_hash(lines):
+    return _sha256_bytes(("\n".join(lines) + "\n").encode("utf-8"))
+
+
+def check_report(path):
+    try:
+        text = open(path, encoding="utf-8").read()
+    except (OSError, UnicodeDecodeError) as e:
+        print(f"RAPOR OKUNAMADI: {type(e).__name__}")
+        return 2
+    lines = text.rstrip("\n").split("\n")
+    if not lines or not lines[-1].startswith("rapor-sha256: "):
+        print("RAPOR BOZUK: son satır 'rapor-sha256: <hex>' değil")
+        return 2
+    body, recorded = lines[:-1], lines[-1][len("rapor-sha256: "):].strip()
+    if report_hash(body) != recorded:
+        print("RAPOR DEĞİŞTİRİLMİŞ: rapor-sha256 içerikle uyuşmuyor")
+        return 2
+    print(f"RAPOR GEÇERLİ: {next((l for l in body if l.startswith('sonuç:')), 'sonuç satırı yok')}")
+    return 0
+
+
 def main():
     ap = argparse.ArgumentParser(description="Module ID Canonicalization Gate (DCP-002)")
     ap.add_argument("root", nargs="?", default=".")
@@ -285,7 +546,20 @@ def main():
     ap.add_argument("--repo-only", action="store_true")
     ap.add_argument("--candidate")
     ap.add_argument("--check-all", action="store_true")
+    ap.add_argument("--discover", help="look for existing or in-flight work a new module / work package could duplicate")
+    ap.add_argument("--resource", help="with --discover: a gateway resource name, e.g. position-assignments")
+    ap.add_argument("--sor", help="with --discover: a SoR primary object text")
+    ap.add_argument("--check-report", help="recompute rapor-sha256 of a saved --discover report")
     a = ap.parse_args()
+    if a.check_report or a.discover:
+        if hasattr(sys.stdout, "reconfigure"):
+            sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        if a.check_report:
+            sys.exit(check_report(a.check_report))
+        report, code = discover(a.root, a.discover, a.resource, a.sor)
+        print("\n".join(report))
+        print(f"rapor-sha256: {report_hash(report)}")
+        sys.exit(code)
     if a.check_all:
         sys.exit(check_all(a.root))
     if a.candidate:
