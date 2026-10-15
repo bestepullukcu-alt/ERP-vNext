@@ -41,15 +41,15 @@
     <div class="card mb-4">
         <div class="card-body">
             <form class="row g-3 align-items-end" id="rc-trace-form" novalidate>
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-md-6 col-xl-3">
                     <label class="form-label" for="rc-trace-lot">@Localizer["Recall.Trace.Lot"]</label>
                     <select id="rc-trace-lot" class="form-select" data-placeholder="@Localizer["Recall.Trace.LotPlaceholder"]"><option value=""></option></select>
                 </div>
-                <div class="col-12 col-md-3">
+                <div class="col-12 col-md-6 col-xl-3">
                     <label class="form-label" for="rc-trace-product">@Localizer["Recall.Trace.Product"]</label>
                     <input id="rc-trace-product" class="form-control" readonly value="—" />
                 </div>
-                <div class="col-12 col-md-3">
+                <div class="col-12 col-md-8 col-xl-4">
                     <span class="form-label d-block">@Localizer["Recall.Trace.Direction"]</span>
                     <div class="btn-group w-100" role="group" aria-label="@Localizer["Recall.Trace.Direction"]">
                         @foreach (var (value, icon) in new[] { ("Backward", "bx-left-arrow-alt"), ("Forward", "bx-right-arrow-alt"), ("Both", "bx-transfer-alt") })
@@ -59,7 +59,7 @@
                         }
                     </div>
                 </div>
-                <div class="col-12 col-md-2 d-grid">
+                <div class="col-12 col-md-4 col-xl-2 d-grid">
                     <button type="submit" class="btn btn-primary" id="rc-trace-run"><i class="bx bx-search-alt me-1"></i>@Localizer["Recall.Trace.Run"]</button>
                 </div>
             </form>
