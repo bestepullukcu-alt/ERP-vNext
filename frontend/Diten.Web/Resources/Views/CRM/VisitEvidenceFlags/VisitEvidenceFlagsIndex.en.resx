@@ -5,7 +5,6 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <data name="PageTitle" xml:space="preserve"><value>Evidence flags</value></data>
-  <data name="Crumb" xml:space="preserve"><value>CRM / Visit / Evidence flags</value></data>
   <data name="Intro" xml:space="preserve"><value>Flags are hints to review; on their own they do not mean a rule was broken.</value></data>
   <data name="SumStarted" xml:space="preserve"><value>Visits started</value></data>
   <data name="SumFlagged" xml:space="preserve"><value>Flagged visits</value></data>
@@ -140,4 +139,5 @@
   <data name="Err_permission_denied" xml:space="preserve"><value>You are not allowed to do this.</value></data>
   <data name="Err_unavailable" xml:space="preserve"><value>The evidence flags cannot be read right now. Try again in a moment.</value></data>
   <data name="Err_generic" xml:space="preserve"><value>The request could not be completed.</value></data>
+  <data name="UnitKm" xml:space="preserve"><value>{0} km</value></data>
 </root>

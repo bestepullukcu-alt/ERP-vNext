@@ -19,10 +19,11 @@ public sealed class VisitQrService
     private readonly IInstitutionQrEventRepository _events;
     private readonly IVisitQrKeyRing _keys;
     private readonly TimeProvider _clock;
+    private readonly IUserDisplayNameResolver? _names;
 
     public VisitQrService(
         ITenantContext tenant, IActorContext actor, IAccountRepository accounts, IInstitutionQrCodeRepository codes,
-        IInstitutionQrEventRepository events, IVisitQrKeyRing keys, TimeProvider? clock = null)
+        IInstitutionQrEventRepository events, IVisitQrKeyRing keys, TimeProvider? clock = null, IUserDisplayNameResolver? names = null)
     {
         _tenant = tenant;
         _actor = actor;
@@ -31,6 +32,17 @@ public sealed class VisitQrService
         _events = events;
         _keys = keys;
         _clock = clock ?? TimeProvider.System;
+        _names = names;
+    }
+
+    /// <summary>W3E-FIX (G-4) — the people behind <paramref name="ids"/> by display name, ONE call (the settings DTO's
+    /// <c>DisplayNames</c> pattern). The resolver is tenant-scoped server-side and fail-closed: another tenant's user, an
+    /// unknown id or a failed call is simply absent (the screen shows "—", never the id).</summary>
+    public async Task<Func<string?, string?>> NamesAsync(IEnumerable<string?> ids, CancellationToken ct)
+    {
+        var map = await UserDisplayNames.MapAsync(_names, ids, ct);
+        return id => id is not null && map is not null && Guid.TryParse(id, out var g) && map.TryGetValue(g.ToString("D"), out var name)
+            && !string.IsNullOrWhiteSpace(name) ? name : null;
     }
 
     public Guid? TenantId => _tenant.TenantId;
@@ -89,12 +101,14 @@ public sealed class VisitQrService
             parentId = parent.ParentAccountId;
         }
 
+        var name = await NamesAsync(new[] { latest?.IssuedBy, latest?.RevokedBy }, ct);
         return new VisitQrAccountDto(
             account.Id, account.AccountName, account.AccountCode,
             latest?.Status ?? InstitutionQrCodeStatuses.None,
             latest?.CodeVersion, latest?.IssuedAt, latest?.IssuedBy, latest?.RevokedAt, latest?.RevokedBy, latest?.RevokeReason,
             rows.Where(r => r.LastScannedAt is not null).Select(r => r.LastScannedAt).Max(),
-            rows.Sum(r => r.ScanCount), recent, inherited);
+            rows.Sum(r => r.ScanCount), recent, inherited,
+            name(latest?.IssuedBy), name(latest?.RevokedBy));
     }
 
     public InstitutionQrCode NewCode(Guid tenantId, Guid accountId, int version, string keyId) => new()
@@ -156,8 +170,9 @@ public sealed class GetVisitQrHistoryHandler(VisitQrService qr) : IRequestHandle
         if (qr.TenantId is not { } tenantId) return VisitQrService.NoTenant<IReadOnlyList<VisitQrEventDto>>();
         if (await qr.AccountAsync(tenantId, request.AccountId, ct) is null) return VisitQrService.AccountNotFound<IReadOnlyList<VisitQrEventDto>>();
         var events = await qr.Events.ListByAccountAsync(tenantId, request.AccountId, ct);
+        var name = await qr.NamesAsync(events.Select(e => e.By), ct);
         return Response<IReadOnlyList<VisitQrEventDto>>.Success(events
-            .Select(e => new VisitQrEventDto(e.Id, e.Kind, e.CodeVersion, e.At, e.By, e.Reason, e.Paper, e.Copies)).ToList());
+            .Select(e => new VisitQrEventDto(e.Id, e.Kind, e.CodeVersion, e.At, e.By, e.Reason, e.Paper, e.Copies, name(e.By))).ToList());
     }
 }
 

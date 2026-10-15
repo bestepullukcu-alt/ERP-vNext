@@ -41,7 +41,7 @@
 
     function labelHtml(item) {
         return '<div class="vq-sticker">'
-            + '<div class="vq-l-parent">' + esc(item.parent || '') + '</div>'
+            + '<div class="vq-l-parent"><bdi>' + esc(item.parent || '') + '</bdi></div>'
             + '<div class="vq-l-name"><bdi>' + esc(item.name || '—') + '</bdi></div>'
             + '<div class="vq-l-qr">' + (item.svg || decoyImg('vq-decoy')) + '</div>'
             + '<div class="vq-l-text">' + esc(L.StickerText) + '</div>'
@@ -65,7 +65,9 @@
         el('vq-mode-labels').classList.toggle('vq-on', !single);
         show('vq-paper-single', single);
         show('vq-paper-labels', !single);
-        document.querySelectorAll('[data-paper]').forEach(b => b.classList.toggle('vq-on', b.getAttribute('data-paper') === (single ? s.single : s.labels)));
+        // U-2: the paper is a select in the form field standard (the same values as before: a4 / a5, labels4 / labels8)
+        el('vq-paper-single-select').value = s.single;
+        el('vq-paper-labels-select').value = s.labels;
         el('vq-print-hint').textContent = single ? (L.HintSingle || '') : (L.HintLabels || '');
         show('vq-single', single);
         show('vq-labels', !single);
@@ -127,9 +129,9 @@
 
     el('vq-mode-single').addEventListener('click', () => { if (singleId) { s.mode = 'single'; fail(''); render(); } });
     el('vq-mode-labels').addEventListener('click', () => { s.mode = 'labels'; fail(''); render(); });
-    document.querySelectorAll('[data-paper]').forEach(b => b.addEventListener('click', () => {
-        const p = b.getAttribute('data-paper');
-        if (C.SINGLE_PAPERS.indexOf(p) > -1) { s.single = p; } else { s.labels = p; }
+    ['vq-paper-single-select', 'vq-paper-labels-select'].forEach(id => el(id).addEventListener('change', e => {
+        const p = e.target.value;
+        if (C.SINGLE_PAPERS.indexOf(p) > -1) { s.single = p; } else if (C.LABEL_PAPERS.indexOf(p) > -1) { s.labels = p; }
         render();
     }));
     el('vq-print-go').addEventListener('click', print);

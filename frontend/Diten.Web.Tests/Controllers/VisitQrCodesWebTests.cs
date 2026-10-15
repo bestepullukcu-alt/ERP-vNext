@@ -23,7 +23,7 @@ namespace Diten.Web.Tests.Controllers;
 /// never logged), the list path clamped and escaped; (4) UAS-001, seven languages without echo, the view / script keys,
 /// RTL logical properties, the local jsQR (Apache-2.0) and QRCoder (MIT) pinned — no CDN.
 /// </summary>
-public sealed class VisitQrCodesWebTests
+public sealed partial class VisitQrCodesWebTests
 {
     private const string GatewayUrl = "http://gateway.test";
     private static readonly Guid TenantId = Guid.Parse("97c59330-dbc4-4665-b29c-0c26dbb5cc93");
@@ -37,10 +37,10 @@ public sealed class VisitQrCodesWebTests
     {
         var node = RunNode(Core() + """
             const m = (st, manage) => C.cardModel(st, { read: true, manage });
-            const active = { status: 'active', version: 3, issuedBy: 'Elif Şahin', issuedAt: '2026-10-12T12:18:00Z', lastScannedAt: '2026-10-14T07:42:00Z', recentScanCount: 48, inheritedFrom: { accountId: 'p', accountName: 'Acıbadem', version: 2 } };
+            const active = { status: 'active', version: 3, issuedBy: '0a0a0a0a-0000-0000-0000-00000000000a', issuedByName: 'Elif Şahin', issuedAt: '2026-10-12T12:18:00Z', lastScannedAt: '2026-10-14T07:42:00Z', recentScanCount: 48, inheritedFrom: { accountId: 'p', accountName: 'Acıbadem', version: 2 } };
             process.stdout.write(JSON.stringify({
               none: m({ status: 'none' }, true), sub: m({ status: 'none', inheritedFrom: { accountId: 'p', accountName: 'Acıbadem Altunizade Hastanesi', version: 2 } }, true),
-              active: m(active, true), readonly: m(active, false), revoked: m({ status: 'revoked', version: 3, revokedBy: 'Murat Demir', revokedAt: '2026-10-13T08:00:00Z', revokeReason: 'kat değişti' }, true),
+              active: m(active, true), readonly: m(active, false), revoked: m({ status: 'revoked', version: 3, revokedBy: '0b0b0b0b-0000-0000-0000-00000000000b', revokedByName: 'Murat Demir', revokedAt: '2026-10-13T08:00:00Z', revokeReason: 'kat değişti' }, true),
               unknown: m({ status: 'weird' }, true), empty: m(null, false)
             }));
             """);
@@ -98,7 +98,7 @@ public sealed class VisitQrCodesWebTests
     {
         var node = RunNode(Core() + """
             process.stdout.write(JSON.stringify([
-              C.eventLine({ kind: 'printed', version: 3, paper: 'a4', copies: 2, by: 'Elif', at: '2026-10-12T12:20:00Z' }),
+              C.eventLine({ kind: 'printed', version: 3, paper: 'a4', copies: 2, by: '0a0a0a0a-0000-0000-0000-00000000000a', byName: 'Elif', at: '2026-10-12T12:20:00Z' }),
               C.eventLine({ kind: 'printed', version: 2 }),
               C.eventLine({ kind: 'revoked', version: 2, reason: 'Kabul bankosu taşındı' }),
               C.eventLine({ kind: 'regenerated', version: 2, reason: 'yıprandı' }),
@@ -122,35 +122,26 @@ public sealed class VisitQrCodesWebTests
     }
 
     [Fact]
-    public void A4_the_list_query_rows_and_selection()
+    public void A4_the_list_rows_the_label_grid_and_the_print_urls()
     {
+        // W3E-FIX (U-1): paging, filters and the selection are the shared list factory's now; the row model stays here
         var node = RunNode(Core() + """
-            const sel = new Set();
-            for (let i = 0; i < 205; i++) C.select(sel, 'id' + i, true);
             const lookups = { types: { hospital: 'Hastane', polyclinic: 'Poliklinik' }, cities: { '34': 'İstanbul' } };
             process.stdout.write(JSON.stringify({
-              q: C.listQuery({ status: 'none', accountType: 'hospital', city: '34', territoryId: 'n1', search: ' Acı & badem ' }, 3, 25),
-              qEmpty: C.listQuery({ status: '', search: '  ' }, 0, 1000), has: C.hasFilters({ search: ' ' }), has2: C.hasFilters({ city: '34' }),
               row: C.listRow({ accountId: 'a', accountName: 'Göğüs Hastalıkları Polikliniği', accountType: 'polyclinic', cityRef: '34', status: 'none', parentAccountId: 'p', parentAccountName: 'Acıbadem Altunizade Hastanesi', inheritedFrom: { accountId: 'p', accountName: 'Acıbadem', version: 2 }, recentScanCount: 0 }, lookups),
               rowActive: C.listRow({ accountId: 'b', accountName: 'Acıbadem', accountType: 'hospital', cityRef: '06', status: 'active', version: 2, lastScannedAt: '2026-10-14T06:15:00Z', recentScanCount: 112 }, lookups),
               rowRevoked: C.listRow({ accountId: 'c', accountName: 'Ege', accountType: 'x', status: 'revoked', version: 2, recentScanCount: 0 }, lookups),
-              size: sel.size, all: C.toggleAll(new Set(['x']), ['a', 'b'], true).size, none: C.toggleAll(new Set(['a', 'b', 'x']), ['a', 'b'], false).size,
               grid4: C.labelGrid('labels4'), grid8: C.labelGrid('labels8'), bulk: C.bulkResultArgs({ issued: 120, skippedActive: 8 }),
               print: C.printUrl('/CRM/VisitQrCodes', 'a b'), labels: C.labelsUrl('/CRM/VisitQrCodes', ['a', 'b']), copies: [C.copiesOf('0'), C.copiesOf('70'), C.copiesOf('x'), C.copiesOf('3')]
             }));
             """);
         if (node is null) { return; }
         var r = JsonDocument.Parse(node).RootElement;
-        Assert.Equal("status=none&accountType=hospital&city=34&territoryId=n1&search=Ac%C4%B1%20%26%20badem&page=3&pageSize=25", r.GetProperty("q").GetString());
-        Assert.Equal("page=1&pageSize=100", r.GetProperty("qEmpty").GetString());                          // empty filters out, the CRM cap
-        Assert.Equal((false, true), (r.GetProperty("has").GetBoolean(), r.GetProperty("has2").GetBoolean()));
         var row = r.GetProperty("row");
         Assert.Equal(("Acıbadem Altunizade Hastanesi", "Poliklinik", "İstanbul", "Chip_none", true, false), (S(r, "row", "parent"), S(r, "row", "typeLabel"), S(r, "row", "cityLabel"), S(r, "row", "chipKey"), B(r, "row", "inherits"), B(r, "row", "printable")));
         Assert.Equal(JsonValueKind.Null, row.GetProperty("recent").ValueKind);                              // "—" for a code-less row
         Assert.Equal(("06", 112, true, false), (S(r, "rowActive", "cityLabel"), r.GetProperty("rowActive").GetProperty("recent").GetInt32(), B(r, "rowActive", "printable"), B(r, "rowActive", "inherits")));
         Assert.Equal(("Chip_revoked", false), (S(r, "rowRevoked", "chipKey"), B(r, "rowRevoked", "printable")));
-        Assert.Equal(200, r.GetProperty("size").GetInt32());                                                // the CRM bulk cap
-        Assert.Equal((3, 1), (r.GetProperty("all").GetInt32(), r.GetProperty("none").GetInt32()));
         Assert.Equal((2, 4), (r.GetProperty("grid4").GetProperty("rows").GetInt32(), r.GetProperty("grid8").GetProperty("rows").GetInt32()));
         Assert.Equal("[120,8]", r.GetProperty("bulk").GetRawText());
         Assert.Equal("/CRM/VisitQrCodes/Print?accountId=a%20b", r.GetProperty("print").GetString());
@@ -165,7 +156,7 @@ public sealed class VisitQrCodesWebTests
     [InlineData(true)]
     public void A5_a_read_only_user_never_gets_print_regenerate_or_revoke_and_the_preview_reads_no_payload(bool manage)
     {
-        var node = RunNode(CardHarness(manage, "{ status: 'active', version: 3, issuedBy: 'Elif Şahin', issuedAt: '2026-10-12T12:18:00Z', lastScannedAt: null, recentScanCount: 48 }"));
+        var node = RunNode(CardHarness(manage, "{ status: 'active', version: 3, issuedBy: '0a0a0a0a-0000-0000-0000-00000000000a', issuedByName: 'Elif Şahin', issuedAt: '2026-10-12T12:18:00Z', lastScannedAt: null, recentScanCount: 48 }"));
         if (node is null) { return; }
         var r = JsonDocument.Parse(node).RootElement;
         var html = r.GetProperty("state").GetString()!;
@@ -192,7 +183,7 @@ public sealed class VisitQrCodesWebTests
         Assert.Contains("Üst kurumun (<bdi>Acıbadem Altunizade Hastanesi</bdi>) kodu bu birimde de geçerli.", n.GetProperty("state").GetString());
         Assert.False(n.GetProperty("historyShown").GetBoolean());
 
-        var revoked = JsonDocument.Parse(RunNode(CardHarness(manage, "{ status: 'revoked', version: 3, revokedBy: 'Murat Demir', revokedAt: '2026-10-13T06:40:00Z', revokeReason: 'Poliklinik kat değiştirdi' }"))!).RootElement;
+        var revoked = JsonDocument.Parse(RunNode(CardHarness(manage, "{ status: 'revoked', version: 3, revokedBy: '0b0b0b0b-0000-0000-0000-00000000000b', revokedByName: 'Murat Demir', revokedAt: '2026-10-13T06:40:00Z', revokeReason: 'Poliklinik kat değiştirdi' }"))!).RootElement;
         var html = revoked.GetProperty("state").GetString()!;
         Assert.Equal(manage, html.Contains("data-vq=\"generate\"", StringComparison.Ordinal));
         Assert.Contains("Gerekçe: <bdi>Poliklinik kat değiştirdi</bdi>", html);
@@ -204,12 +195,15 @@ public sealed class VisitQrCodesWebTests
     [Fact]
     public async Task A6_reads_need_read_writes_need_manage_and_nothing_else_reaches_the_crm()
     {
-        var (gw, read) = Arrange([VisitQrCodesController.Read]);
+        var (gw, read) = Arrange([VisitQrCodesController.Read], answer: "{\"data\":{\"items\":[],\"total\":0}}");
         Assert.Equal(200, Status(await read.Get(Guid.Parse(Account), CancellationToken.None)));
         Assert.Equal(200, Status(await read.History(Guid.Parse(Account), CancellationToken.None)));
-        Assert.Equal(200, Status(await read.List("none", "hospital", "34", null, "Acı & x", 2, 500, CancellationToken.None)));
+        // W3E-FIX (U-1): the list contract (start / length / search / filters) → the CRM's page / pageSize; a filtered list
+        // also reads the tenant's whole count (one row)
+        Assert.Equal(200, Status(await read.List(100, 100, "Acı & x", null, null, "none", "hospital", "34", null, CancellationToken.None)));
         Assert.Equal(new[] { "/api/crm/visit-qr/accounts/" + Account, "/api/crm/visit-qr/accounts/" + Account + "/history",
-            "/api/crm/visit-qr/accounts?status=none&accountType=hospital&city=34&search=Ac%C4%B1%20%26%20x&page=2&pageSize=100" }, gw.Paths());
+            "/api/crm/visit-qr/accounts?status=none&accountType=hospital&city=34&search=Ac%C4%B1%20%26%20x&page=2&pageSize=100",
+            "/api/crm/visit-qr/accounts?page=1&pageSize=1" }, gw.Paths());
 
         // a read-only user: every write / payload is 403 and nothing reaches the gateway
         var (gw2, ro) = Arrange([VisitQrCodesController.Read], "{\"expectedVersion\":3}");
@@ -312,7 +306,8 @@ public sealed class VisitQrCodesWebTests
         var index = View("VisitQrCodes", "Index.cshtml");
         Assert.True(index.IndexOf("@if (!Model.CanRead)", StringComparison.Ordinal) < index.IndexOf("id=\"vq-list-root\"", StringComparison.Ordinal));
         Assert.Contains("<partial name=\"_AccessDenied\"", index);
-        Assert.True(index.IndexOf("@if (Model.CanManage)", StringComparison.Ordinal) < index.IndexOf("id=\"vq-bulk-generate\"", StringComparison.Ordinal)); // no selection without manage
+        Assert.True(index.IndexOf("@if (Model.CanManage)", StringComparison.Ordinal) < index.IndexOf("_BulkActionBar.cshtml", StringComparison.Ordinal)); // no bulk bar without manage
+        Assert.Contains("visible: canManage", Script("index.js"));                                         // …and no selection column
         var print = View("VisitQrCodes", "Print.cshtml");
         Assert.True(print.IndexOf("@if (!Model.CanPrint)", StringComparison.Ordinal) < print.IndexOf("id=\"vq-print-root\"", StringComparison.Ordinal));
         var card = View("Accounts", "_VisitQrCard.cshtml");
@@ -347,15 +342,17 @@ public sealed class VisitQrCodesWebTests
         Assert.Equal("Kurum QR kodu", Resx("tr")["CardTitle"]);
         Assert.Equal("Seçilenlere kod üret (kodu olmayanlar)", Resx("tr")["BulkGenerate"]);
 
-        foreach (var file in new[] { View("VisitQrCodes", "Index.cshtml"), View("VisitQrCodes", "Print.cshtml"), View("Accounts", "_VisitQrCard.cshtml") })
+        // the QR words (Print: Localizer; card / list: QrLocalizer) are VisitQrIndex's; the list page's own (U-1) VisitQrCodesIndex's
+        foreach (var (file, marker) in new[] { (View("VisitQrCodes", "Print.cshtml"), "Localizer"), (View("Accounts", "_VisitQrCard.cshtml"), "QrLocalizer"),
+                     (View("VisitQrCodes", "Index.cshtml"), "QrLocalizer"), (View("VisitQrCodes", "_IndexL10n.cshtml"), "QrLocalizer") })
         {
-            foreach (System.Text.RegularExpressions.Match m in System.Text.RegularExpressions.Regex.Matches(file, "Localizer\\[\"([A-Za-z0-9_]+)\"\\]"))
+            foreach (System.Text.RegularExpressions.Match m in System.Text.RegularExpressions.Regex.Matches(file, "(?<![A-Za-z])" + marker + "\\[\"([A-Za-z0-9_]+)\"\\]"))
             {
                 Assert.Contains(m.Groups[1].Value, VisitQrIndex.ScriptKeys);
             }
         }
 
-        foreach (var js in new[] { "qr-card.js", "qr-codes.js", "qr-print.js" })
+        foreach (var js in new[] { "qr-card.js", "qr-print.js" })
         {
             foreach (System.Text.RegularExpressions.Match m in System.Text.RegularExpressions.Regex.Matches(Script(js), "\\bL\\.([A-Za-z0-9_]+)"))
             {
@@ -387,7 +384,7 @@ public sealed class VisitQrCodesWebTests
         Assert.Contains("Apache License", File.ReadAllText(Path.Combine(jsqr, "LICENSE")));
         Assert.Contains("jsQR 1.4.0", File.ReadAllText(Path.Combine(jsqr, "VERSION.txt")));
         foreach (var source in new[] { View("VisitQrCodes", "Index.cshtml"), View("VisitQrCodes", "Print.cshtml"), View("Accounts", "_VisitQrCard.cshtml"),
-                     Script("qr-card.js"), Script("qr-codes.js"), Script("qr-print.js"), Script("qr-core.js") })
+                     Script("qr-card.js"), Script("index.js"), Script("index.l10n.js"), Script("qr-print.js"), Script("qr-core.js") })
         {
             Assert.DoesNotContain("https://", source);
             Assert.DoesNotContain("cdn", source, StringComparison.OrdinalIgnoreCase);

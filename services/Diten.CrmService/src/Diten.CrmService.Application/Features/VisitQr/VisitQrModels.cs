@@ -7,7 +7,8 @@ namespace Diten.CrmService.Application.Features.VisitQr;
 
 /// <summary>The institution's QR state (NO payload): the latest row (active, or the last revoked one; <c>none</c> when the
 /// institution never had a code), the last scan, the successful scans of the last 30 days, and the parent's active code
-/// a visit here also accepts (K-W3E-5).</summary>
+/// a visit here also accepts (K-W3E-5). WP-VW-W3E (W3E-FIX, G-4): <see cref="IssuedByName"/> / <see cref="RevokedByName"/>
+/// are the people's display names (the tenant's users only; null when unresolved — the screen then shows "—", never the id).</summary>
 public sealed record VisitQrAccountDto(
     Guid AccountId,
     string AccountName,
@@ -22,12 +23,16 @@ public sealed record VisitQrAccountDto(
     DateTimeOffset? LastScannedAt,
     int ScanCount,
     int RecentScanCount,
-    VisitQrInheritedDto? InheritedFrom);
+    VisitQrInheritedDto? InheritedFrom,
+    string? IssuedByName = null,
+    string? RevokedByName = null);
 
 public sealed record VisitQrInheritedDto(Guid AccountId, string AccountName, int Version);
 
-/// <summary>WP-VW-W3E (W3E-BE-c, D-4) — a <c>printed</c> event carries the paper and copies the print said (else null).</summary>
-public sealed record VisitQrEventDto(Guid Id, string Kind, int Version, DateTimeOffset At, string? By, string? Reason, string? Paper = null, int? Copies = null);
+/// <summary>WP-VW-W3E (W3E-BE-c, D-4) — a <c>printed</c> event carries the paper and copies the print said (else null).
+/// W3E-FIX (G-4): <see cref="ByName"/> is the person's display name (the tenant's users only; null when unresolved).</summary>
+public sealed record VisitQrEventDto(
+    Guid Id, string Kind, int Version, DateTimeOffset At, string? By, string? Reason, string? Paper = null, int? Copies = null, string? ByName = null);
 
 /// <summary>The print payload (the ONLY place a payload leaves the server; <c>Cache-Control: no-store</c>).</summary>
 public sealed record VisitQrPayloadDto(Guid AccountId, string AccountName, string? AccountCode, int Version, string Payload, DateTimeOffset IssuedAt);

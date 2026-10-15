@@ -247,4 +247,6 @@
   <data name="ColPhoto" xml:space="preserve"><value>Foto</value></data>
   <data name="ColQr" xml:space="preserve"><value>Código QR</value></data>
   <data name="ColDevice" xml:space="preserve"><value>Dispositivo</value></data>
+  <data name="PvQr" xml:space="preserve"><value>Código QR de la institución</value></data>
+  <data name="PvDeviceWeb" xml:space="preserve"><value>Este dispositivo no se puede verificar; su visita se marcará como «dispositivo no verificado». Se recomienda usar la app móvil.</value></data>
 </root>

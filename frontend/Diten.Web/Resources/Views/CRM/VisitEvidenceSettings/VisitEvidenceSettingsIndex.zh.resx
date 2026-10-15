@@ -247,4 +247,6 @@
   <data name="ColPhoto" xml:space="preserve"><value>照片</value></data>
   <data name="ColQr" xml:space="preserve"><value>二维码</value></data>
   <data name="ColDevice" xml:space="preserve"><value>设备</value></data>
+  <data name="PvQr" xml:space="preserve"><value>机构二维码</value></data>
+  <data name="PvDeviceWeb" xml:space="preserve"><value>无法验证此设备；您的拜访将被标记为“设备未验证”。建议使用移动应用。</value></data>
 </root>

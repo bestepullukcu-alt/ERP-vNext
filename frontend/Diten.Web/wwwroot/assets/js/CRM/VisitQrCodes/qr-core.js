@@ -12,9 +12,9 @@
  *   eventLine(ev)                    → { key, version, tone, paperKey, copies, reason, by, at }
  *   whenKey(iso, nowMs, offsetMin)   → 'Today' | 'Yesterday' | null (the page writes the time / the date)
  *   errorKey(response)               → the error text key (Err_<code> | Err_permission | Err_generic)
- *   listQuery(filters, page, size)   → the list query string (empty filters left out)
- *   listRow(item, lookups)           → a Q5 row model
- *   select / toggleAll               → the selection (a Set of ids), at most MAX_BULK
+ *   listRow(item, lookups)           → a Q5 row model (W3E-FIX: the Golden Compact list's renderers read it; paging, filters
+ *                                        and the selection are the shared list factory's now)
+ *   personName(name) / cityLabel(code, cities)   W3E-FIX G-4 (a name, never an id) / G-3 (the city in words)
  *   bulkResultArgs(dto)              → [issued, skippedActive]
  *   PRINT: SINGLE_PAPERS, LABEL_PAPERS, labelGrid(paper), printUrl(...)
  */
@@ -28,6 +28,16 @@
     const STATUSES = ['active', 'revoked', 'none'];
 
     const statusOf = state => (state && STATUSES.indexOf(state.status) > -1 ? state.status : 'none');
+
+    /**
+     * W3E-FIX (G-4) — the person to show: the NAME the CRM resolved (issuedByName / revokedByName / byName; this tenant's
+     * users only), never the id field next to it, and never anything shaped like an id. No name → null (the page writes "—").
+     */
+    const GUID = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i;
+    const personName = name => {
+        const t = String(name == null ? '' : name).trim();
+        return t && !GUID.test(t) ? t : null;
+    };
 
     /** The card (Q1a none · Q1b active · Q1c revoked · Q1d read only). perms = { read, manage }. */
     const cardModel = (state, perms) => {
@@ -44,11 +54,11 @@
             inherited: status === 'active' ? null : (s.inheritedFrom && s.inheritedFrom.accountName ? s.inheritedFrom : null),
             version: s.version == null ? null : s.version,
             nextVersion: s.version == null ? 1 : s.version + 1,
-            issuedBy: s.issuedBy || null,
+            issuedBy: personName(s.issuedByName),
             issuedAt: s.issuedAt || null,
             lastScannedAt: s.lastScannedAt || null,
             recent: typeof s.recentScanCount === 'number' ? s.recentScanCount : 0,
-            revokedBy: s.revokedBy || null,
+            revokedBy: personName(s.revokedByName),
             revokedAt: s.revokedAt || null,
             reason: s.revokeReason || null
         };
@@ -88,7 +98,7 @@
             paperKey: paper && ['a4', 'a5', 'labels4', 'labels8'].indexOf(paper) > -1 ? 'Paper_' + paper : null,
             copies: kind === 'printed' && typeof e.copies === 'number' ? e.copies : null,
             reason: e.reason || null,
-            by: e.by || null,
+            by: personName(e.byName),
             at: e.at || null
         };
     };
@@ -117,21 +127,36 @@
     };
 
     // ── Q5 ──
-    const FILTERS = ['status', 'accountType', 'city', 'territoryId', 'search'];
-
-    const listQuery = (filters, page, pageSize) => {
-        const f = filters || {};
-        const parts = [];
-        FILTERS.forEach(k => {
-            const v = trimmed(f[k]);
-            if (v) { parts.push(k + '=' + encodeURIComponent(v)); }
-        });
-        parts.push('page=' + Math.max(1, page || 1));
-        parts.push('pageSize=' + Math.min(100, Math.max(1, pageSize || 25)));
-        return parts.join('&');
+    /**
+     * W3E-FIX (G-3) — the city in words (the twin of Web's CrmCityLabels): the city set's label for the code; for a
+     * "CC-NN-NAME" code (the account's TR-42-KONYA) the set's label of NAME (konya → "Konya", istanbul → "İstanbul"); else
+     * a readable name from NAME (Turkish letters cased the Turkish way: İSTANBUL → "İstanbul"); any other shape as it is.
+     */
+    const TR_LETTERS = /[İıĞğŞşÇçÖöÜü]/;
+    const fold = s => String(s).toLocaleLowerCase('tr').replace(/ı/g, 'i').replace(/ğ/g, 'g').replace(/ş/g, 's').replace(/ç/g, 'c').replace(/ö/g, 'o').replace(/ü/g, 'u');
+    const lookup = (map, key) => {
+        if (!map || key == null) { return null; }
+        if (Object.prototype.hasOwnProperty.call(map, key) && map[key]) { return map[key]; }
+        const k = String(key).toLowerCase();
+        const hit = Object.keys(map).find(x => x.toLowerCase() === k);
+        return hit && map[hit] ? map[hit] : null;
     };
-
-    const hasFilters = filters => FILTERS.some(k => !!trimmed((filters || {})[k]));
+    const readable = name => {
+        const tr = TR_LETTERS.test(name);
+        return String(name).split(/[-_\s]+/).filter(Boolean).map(w => {
+            const lower = tr ? w.toLocaleLowerCase('tr') : w.toLowerCase();
+            return (tr ? lower.charAt(0).toLocaleUpperCase('tr') : lower.charAt(0).toUpperCase()) + lower.slice(1);
+        }).join(' ');
+    };
+    const cityLabel = (code, cities) => {
+        const c = String(code == null ? '' : code).trim();
+        if (!c) { return null; }
+        const direct = lookup(cities, c);
+        if (direct) { return direct; }
+        const m = /^[A-Za-z]{2}-\d{1,3}-(.+)$/.exec(c);
+        if (!m) { return c; }
+        return lookup(cities, m[1]) || lookup(cities, fold(m[1])) || lookup(cities, fold(m[1]).replace(/-/g, '')) || readable(m[1]);
+    };
 
     /** A list item → the row: the type / city in the user's language (the lookups), the chip, "parent code applies". */
     const listRow = (item, lookups) => {
@@ -143,8 +168,9 @@
             name: i.accountName || '—',
             parent: i.parentAccountName || null,
             parentId: i.parentAccountId || null,
-            typeLabel: (l.types && l.types[i.accountType]) || i.accountType || '—',
-            cityLabel: (l.cities && i.cityRef && l.cities[i.cityRef]) || i.cityRef || '—',
+            // G-2: the BRD account-type label in the reader's language (the set's code, any case); none → the code
+            typeLabel: lookup(l.types, i.accountType) || i.accountType || '—',
+            cityLabel: cityLabel(i.cityRef, l.cities) || '—',
             status: status,
             chipKey: 'Chip_' + status,
             inherits: status !== 'active' && !!i.inheritedFrom,
@@ -154,21 +180,6 @@
             printable: status === 'active'
         };
     };
-
-    /** Toggle one id; a full selection (200) takes no more. Returns whether it is selected now. */
-    const select = (set, id, on) => {
-        if (!id) { return false; }
-        if (on && !set.has(id)) {
-            if (set.size >= MAX_BULK) { return false; }
-            set.add(id);
-        } else if (!on) {
-            set.delete(id);
-        }
-        return set.has(id);
-    };
-
-    /** The page's header checkbox: all of the page (up to the cap) or none of it. */
-    const toggleAll = (set, ids, on) => { (ids || []).forEach(id => select(set, id, on)); return set; };
 
     const bulkResultArgs = dto => [(dto && dto.issued) || 0, (dto && dto.skippedActive) || 0];
 
@@ -190,7 +201,7 @@
 
     return {
         MAX_REASON, MAX_BULK, STATUSES, cardModel, reasonState, issueBody, revokeBody, toastKey, eventLine, whenKey,
-        KNOWN_ERRORS, errorKey, FILTERS, listQuery, hasFilters, listRow, select, toggleAll, bulkResultArgs,
+        KNOWN_ERRORS, errorKey, listRow, bulkResultArgs, personName, cityLabel,
         SINGLE_PAPERS, LABEL_PAPERS, labelGrid, printUrl, labelsUrl, copiesOf
     };
 }));

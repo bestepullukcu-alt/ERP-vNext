@@ -1,113 +1,121 @@
 @model Diten.Web.Models.CRM.VisitQrCodesViewModel
 @using Diten.Web.Views.CRM.VisitQrCodes
+@using Diten.Web.Models.DataTable
 @using Microsoft.AspNetCore.Mvc.Localization
-@inject IHtmlLocalizer<VisitQrIndex> Localizer
+@inject IHtmlLocalizer<VisitQrCodesIndex> Localizer
+@inject IHtmlLocalizer<VisitQrIndex> QrLocalizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 @{
-    ViewData["Title"] = Localizer["PageTitle"].Value;
+    ViewData["Title"] = Localizer["VisitQrCodesTitle"].Value;
     Layout = "_LayoutTenantShell";
+    var bulkActionBar = new DataTableBulkActionBarViewModel
+    {
+        SelectedText = SharedLocalizer["SelectedCount"].Value,
+        ClearSelectionText = SharedLocalizer["ClearSelection"].Value,
+        Actions =
+        [
+            new DataTableActionItemViewModel
+            {
+                Key = "issue",
+                Text = QrLocalizer["BulkGenerate"].Value,
+                Icon = "bx bx-plus",
+                ButtonClass = "btn btn-primary",
+                ConfirmKey = "BulkGenerateConfirm",
+                Endpoint = "/CRM/VisitQrCodes/api/accounts/bulk",
+                Method = "POST"
+            },
+            new DataTableActionItemViewModel
+            {
+                Key = "print",
+                Text = QrLocalizer["BulkPrint"].Value,
+                Icon = "bx bx-printer",
+                ButtonClass = "btn btn-label-primary"
+            }
+        ]
+    };
 }
 
 @*
-    WP-VW-W3E (W3E-WEB-a, Q5) — the institution QR codes: filters (region = territory node, type, city, QR status, name
-    search), the server-paged list (43K institutions never leave the CRM), "↳ parent" and "parent code applies" in the row,
-    multi-select → "Generate for selected (those without a code)" (bulk-issue) and "Print selected (label sheet)", the result
-    strip, the empty state. Every call is a same-origin proxy under /CRM/VisitQrCodes/api/*. UAS-001: without
-    crm.visit-qr.read NOTHING but the notice; without .manage no selection and no print.
+    WP-VW-W3E · Q5 the institution QR codes — W3E-FIX (U-1): the Golden Compact LIST STANDARD (frontend-datatable-template.md,
+    data_mode: server): the inline filter (region · institution type · city · QR status as Select2 chips; the toolbar search),
+    Save View, the shaped placeholder, the selection + the actions column (print, go to the institution), the shared bulk bar
+    ("generate for the selected" behind the showConfirm standard, "print the selected" → the label sheet), the quick view.
+    The standard wins over the mockup; the mockup gives the content (the columns, the words, the states). 43K institutions
+    never leave the CRM: the factory asks /CRM/VisitQrCodes/api/accounts with the list contract, the proxy translates it.
+    UAS-001: without crm.visit-qr.read NOTHING but the notice; without .manage no selection, no bulk bar and no print.
 *@
 @if (!Model.CanRead)
 {
-    <partial name="_AccessDenied" model="@Localizer["PageTitle"].Value" />
+    <partial name="_AccessDenied" model="@Localizer["VisitQrCodesTitle"].Value" />
     return;
 }
 
-<div class="vq-scope vq-page" id="vq-list-root"
-     data-api-base="/CRM/VisitQrCodes/api"
-     data-print-base="/CRM/VisitQrCodes"
+@* ① Inline Filter partial *@
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/CRM/VisitQrCodes/_Filter.cshtml" />
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["VisitQrCodesTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div id="vq-list-root" class="d-none"
      data-can-manage="@Model.CanManage.ToString().ToLowerInvariant()"
-     data-can-read-accounts="@Model.CanReadAccounts.ToString().ToLowerInvariant()">
-    <div>
-        <div class="vq-crumb">@Localizer["Crumb"]</div>
-        <h4 class="vq-title" style="margin-top:4px">@Localizer["PageTitle"]</h4>
-        <div class="vq-intro">@Localizer["Intro"]</div>
-    </div>
+     data-can-read-accounts="@Model.CanReadAccounts.ToString().ToLowerInvariant()"></div>
 
-    <div class="vq-result d-none" id="vq-result" role="status">
-        <i class="bx bx-check-circle"></i><span class="vq-result-text" id="vq-result-text"></span>
-        <a href="#" id="vq-result-print">@Localizer["PrintLabelsLink"]</a>
-        <button type="button" class="vq-x" id="vq-result-close" aria-label="@Localizer["CloseButton"]"><i class="bx bx-x"></i></button>
-    </div>
-    <div class="vq-callout vq-callout-danger d-none" id="vq-list-error" role="alert"><i class="bx bx-error-circle"></i><span class="vq-grow" id="vq-list-error-text"></span></div>
+@* ② Bulk Action Bar — selection is a manage right (no bar, no checkbox without it) *@
+@if (Model.CanManage)
+{
+    <partial name="~/Views/Shared/Components/DataTable/_BulkActionBar.cshtml" model="bulkActionBar" />
+}
 
-    <div class="vq-card">
-        <div class="vq-filters-title">@Localizer["FiltersTitle"]</div>
-        <div class="vq-filters">
-            @if (Model.CanReadAccounts)
-            {
-                <select class="vq-select" id="vq-f-region" aria-label="@Localizer["AllRegions"]"><option value="">@Localizer["AllRegions"]</option></select>
-            }
-            <select class="vq-select" id="vq-f-type" aria-label="@Localizer["AllTypes"]"><option value="">@Localizer["AllTypes"]</option></select>
-            <select class="vq-select" id="vq-f-city" aria-label="@Localizer["AllCities"]"><option value="">@Localizer["AllCities"]</option></select>
-            <select class="vq-select" id="vq-f-status" aria-label="@Localizer["AllStatuses"]">
-                <option value="">@Localizer["AllStatuses"]</option>
-                <option value="none">@Localizer["StatusOpt_none"]</option>
-                <option value="active">@Localizer["StatusOpt_active"]</option>
-                <option value="revoked">@Localizer["StatusOpt_revoked"]</option>
-            </select>
-        </div>
-        <div class="vq-toolbar">
-            <div class="vq-search"><i class="bx bx-search"></i><input type="search" class="vq-input" id="vq-f-search" placeholder="@Localizer["SearchPlaceholder"]" aria-label="@Localizer["SearchPlaceholder"]" /></div>
-            <div class="vq-grow"></div>
-            @if (Model.CanManage)
-            {
-                <div class="vq-selbar d-none" id="vq-selbar">
-                    <span class="vq-selcount" id="vq-selcount"></span>
-                    <button type="button" class="vq-btn vq-btn-p vq-btn-sm" id="vq-bulk-generate"><i class="bx bx-plus"></i>@Localizer["BulkGenerate"]</button>
-                    <button type="button" class="vq-btn vq-btn-o vq-btn-sm" id="vq-bulk-print"><i class="bx bx-printer"></i>@Localizer["BulkPrint"]</button>
-                </div>
-            }
-            <span class="vq-count-label" id="vq-count"></span>
-        </div>
-        <div class="vq-grid-wrap">
-            <div class="vq-grid" role="table" aria-label="@Localizer["PageTitle"]">
-                <div class="vq-row vq-row-head" role="row">
-                    @if (Model.CanManage)
-                    {
-                        <input type="checkbox" id="vq-select-all" aria-label="@Localizer["SelectAll"]" />
-                    }
-                    else
-                    {
-                        <span></span>
-                    }
-                    <span role="columnheader">@Localizer["ColInstitution"]</span><span role="columnheader">@Localizer["ColType"]</span><span role="columnheader">@Localizer["ColCity"]</span>
-                    <span role="columnheader">@Localizer["ColStatus"]</span><span role="columnheader">@Localizer["ColVersion"]</span><span role="columnheader">@Localizer["ColLastScan"]</span>
-                    <span role="columnheader">@Localizer["ColRecent"]</span><span role="columnheader">@Localizer["ColActions"]</span>
-                </div>
-                <div id="vq-rows"><div class="vq-skel"><i class="bx bx-loader-alt bx-spin"></i></div></div>
-                <div class="vq-empty d-none" id="vq-empty">
-                    <div class="vq-empty-icon"><i class="bx bx-filter-alt"></i></div>
-                    <div class="vq-empty-title">@Localizer["EmptyTitle"]</div>
-                    <button type="button" class="vq-btn vq-btn-o vq-btn-sm" id="vq-clear">@Localizer["ClearFilters"]</button>
-                </div>
+@* ③ DataTable Card *@
+@* Contract markers are rendered by _DataTable.cshtml: the shared <partial name="_TableSkeleton" /> (which carries id="skeleton-loader"), <table id="dt-visitqrcodes" data-dt-standard="v2"> *@
+<partial name="~/Views/CRM/VisitQrCodes/_DataTable.cshtml" />
+
+@* ④ Quick view — the row's QR state (no extra request; never a payload) *@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasDetailsPreview" aria-labelledby="oc-title" style="width: 480px;">
+    <div class="offcanvas-header border-bottom">
+        <div class="d-flex align-items-center">
+            <div class="avatar avatar-md bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center me-3">
+                <i class="bx bx-qr fs-4"></i>
+            </div>
+            <div>
+                <h5 id="oc-title" class="offcanvas-title mb-0">-</h5>
+                <small id="oc-subtitle" class="text-muted">-</small>
             </div>
         </div>
-        <div class="vq-pager d-none" id="vq-pager">
-            <span id="vq-page-info"></span>
-            <button type="button" class="vq-btn vq-btn-s vq-btn-sm" id="vq-prev"><i class="bx bx-chevron-left vq-flip"></i>@Localizer["PrevPage"]</button>
-            <button type="button" class="vq-btn vq-btn-s vq-btn-sm" id="vq-next">@Localizer["NextPage"]<i class="bx bx-chevron-right vq-flip"></i></button>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+    <div class="offcanvas-body flex-grow-1 p-0">
+        <div class="p-4">
+            <div class="bg-label-secondary rounded p-3 mb-4 d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="d-block text-muted small fw-medium mb-1">@Localizer["ColStatus"]</span>
+                    <span id="oc-status" class="badge bg-label-secondary">-</span>
+                </div>
+            </div>
+            <dl class="row mb-4" id="oc-details-list">
+                <dt class="col-5 fw-medium text-heading mb-2">@Localizer["ColType"]</dt><dd id="oc-type" class="col-7 mb-2">-</dd>
+                <dt class="col-5 fw-medium text-heading mb-2">@Localizer["ColCity"]</dt><dd id="oc-city" class="col-7 mb-2">-</dd>
+                <dt class="col-5 fw-medium text-heading mb-2">@Localizer["ColVersion"]</dt><dd id="oc-version" class="col-7 mb-2">-</dd>
+                <dt class="col-5 fw-medium text-heading mb-2">@Localizer["ColLastScan"]</dt><dd id="oc-last-scan" class="col-7 mb-2">-</dd>
+                <dt class="col-5 fw-medium text-heading mb-2">@Localizer["ColRecent"]</dt><dd id="oc-recent" class="col-7 mb-2">-</dd>
+            </dl>
+            <div id="oc-inherits" class="alert alert-info d-none mb-0" role="note"></div>
         </div>
+    </div>
+    <div class="offcanvas-footer border-top p-4 d-flex justify-content-between gap-2">
+        <a id="oc-btn-print" href="#" class="btn btn-label-primary flex-grow-1 d-none"><i class="bx bx-printer me-1"></i>@QrLocalizer["RowPrint"]</a>
+        <a id="oc-btn-edit" href="#" class="btn btn-primary flex-grow-1">@QrLocalizer["RowOpen"]</a>
     </div>
 </div>
 
-@section Styles {
-    <link rel="stylesheet" href="~/assets/js/CRM/VisitQrCodes/visit-qr.css" asp-append-version="true" />
-}
-
 @section Scripts {
-    <script>
-        window.VisitQrL10n = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
-            VisitQrIndex.ScriptKeys.ToDictionary(k => k, k => Localizer[k].Value)));
-    </script>
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/CRM/VisitQrCodes/_IndexL10n.cshtml" />
+    <script src="~/assets/js/CRM/VisitQrCodes/index.l10n.js" asp-append-version="true"></script>
     <script src="~/assets/js/CRM/VisitPlanning/format.js" asp-append-version="true"></script>
     <script src="~/assets/js/CRM/VisitQrCodes/qr-core.js" asp-append-version="true"></script>
-    <script src="~/assets/js/CRM/VisitQrCodes/qr-codes.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/VisitQrCodes/index.js" asp-append-version="true"></script>
 }

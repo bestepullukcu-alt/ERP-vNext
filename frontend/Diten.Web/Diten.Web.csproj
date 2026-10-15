@@ -18,6 +18,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\services\Diten.Building.Blocks\Diten.BuildingBlocks.Security.Secrets\Diten.BuildingBlocks.Security.Secrets.csproj" />
+    <!-- WP-VW-W3E (W3E-FIX, U-1) — the shared list-export contract and writer (BL-452): the institution QR list's export is
+         written here from the CRM list (the CRM has no export of its own). The same building block every service export uses. -->
+    <ProjectReference Include="..\..\services\Diten.Building.Blocks\src\Diten.BuildingBlocks.ListExport\Diten.BuildingBlocks.ListExport.csproj" />
   </ItemGroup>
 
 </Project>

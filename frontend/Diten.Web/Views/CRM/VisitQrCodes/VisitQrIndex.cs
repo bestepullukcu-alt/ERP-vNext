@@ -2,9 +2,11 @@ namespace Diten.Web.Views.CRM.VisitQrCodes;
 
 /// <summary>
 /// Localization marker for the WP-VW-W3E (W3E-WEB-a) institution QR screens (tenant module: 7 languages): the account
-/// card + dialogs + history (Q1 / Q3 / Q4), the bulk page (Q5) and the print page (Q2). <see cref="ScriptKeys"/> are the
-/// strings the scripts read (window.VisitQrL10n) — ONE list, so the views serialize exactly these and the tests check
-/// exactly these in every language (the views write their own headings with the same keys).
+/// card + dialogs + history (Q1 / Q3 / Q4), the QR words of the bulk page's rows (Q5) and the print page (Q2).
+/// <see cref="ScriptKeys"/> are the strings the scripts read (window.VisitQrL10n) — ONE list, so the views serialize exactly
+/// these and the tests check exactly these in every language (the views write their own headings with the same keys).
+/// W3E-FIX (U-1): the list page's own words (title, description, columns, filters) moved to <see cref="VisitQrCodesIndex"/>,
+/// the Golden Compact page's marker.
 /// </summary>
 public sealed class VisitQrIndex
 {
@@ -19,14 +21,10 @@ public sealed class VisitQrIndex
         "Ev_revoked", "Ev_printed", "Ev_bulk_issued", "PrintedDetail", "Paper_a4", "Paper_a5", "Paper_labels4",
         "Paper_labels8", "NoHistory", "Today", "Yesterday", "Err_visit_execution_concurrency_conflict",
         "Err_visit_qr_signing_unavailable", "Err_visit_qr_not_active", "Err_visit_qr_account_not_found",
-        "Err_visit_qr_request_invalid", "Err_permission", "Err_generic", "LoadFailed", "Retry", "PageTitle", "Crumb",
-        "Intro", "FiltersTitle", "AllRegions", "AllTypes", "AllCities", "AllStatuses", "StatusOpt_none", "StatusOpt_active",
-        "StatusOpt_revoked", "SearchPlaceholder", "CountLabel", "SelectedLabel", "BulkGenerate", "BulkPrint", "BulkLimit",
-        "ColInstitution", "ColType", "ColCity", "ColStatus", "ColVersion", "ColLastScan", "ColRecent", "ColActions",
-        "Chip_active", "Chip_revoked", "Chip_none", "InheritsParent", "VersionShort", "BulkResult", "PrintLabelsLink",
-        "EmptyTitle", "ClearFilters", "RowPrint", "RowOpen", "SelectAll", "SelectRow", "PageInfo", "PrevPage", "NextPage",
-        "PrintTitle", "PrintCrumb", "ModeSingle", "ModeLabels", "PaperLabel", "PerA4", "Labels4", "Labels8", "CopiesLabel",
-        "HintSingle", "HintLabels", "StickerText", "StickerFooter", "LabelFooter", "CutHint", "PreviewNote",
+        "Err_visit_qr_request_invalid", "Err_permission", "Err_generic", "LoadFailed", "Retry", "BulkGenerate", "BulkPrint",
+        "BulkLimit", "Chip_active", "Chip_revoked", "Chip_none", "InheritsParent", "VersionShort", "BulkResult", "RowPrint",
+        "RowOpen", "PrintTitle", "PrintCrumb", "ModeSingle", "ModeLabels", "PaperLabel", "PerA4", "Labels4", "Labels8",
+        "CopiesLabel", "HintSingle", "HintLabels", "StickerText", "StickerFooter", "LabelFooter", "CutHint", "PreviewNote",
         "NothingToPrint", "NoSelection", "SkippedNote", "BackToList"
     ];
 }

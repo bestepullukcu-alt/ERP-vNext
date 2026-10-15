@@ -247,4 +247,6 @@
   <data name="ColPhoto" xml:space="preserve"><value>Photo</value></data>
   <data name="ColQr" xml:space="preserve"><value>QR code</value></data>
   <data name="ColDevice" xml:space="preserve"><value>Device</value></data>
+  <data name="PvQr" xml:space="preserve"><value>Institution QR code</value></data>
+  <data name="PvDeviceWeb" xml:space="preserve"><value>This device cannot be verified; your visit will be flagged “device not verified”. Using the mobile app is recommended.</value></data>
 </root>

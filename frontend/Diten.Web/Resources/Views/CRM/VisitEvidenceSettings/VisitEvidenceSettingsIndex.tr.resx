@@ -247,4 +247,6 @@
   <data name="ColPhoto" xml:space="preserve"><value>Fotoğraf</value></data>
   <data name="ColQr" xml:space="preserve"><value>QR kodu</value></data>
   <data name="ColDevice" xml:space="preserve"><value>Cihaz</value></data>
+  <data name="PvQr" xml:space="preserve"><value>Kurum QR kodu</value></data>
+  <data name="PvDeviceWeb" xml:space="preserve"><value>Bu cihaz doğrulanamıyor; ziyaretiniz 'cihaz doğrulanamadı' olarak işaretlenecek. Mobil uygulamayı kullanmanız önerilir.</value></data>
 </root>

@@ -9,6 +9,16 @@
    all   (.read-all + the photo keys): "all reps", the drawer's photo thumbnail from the existing evidence path.
    empty (no flagged visit): M4. */
 const fs = require('fs');
+// CT-3 (W3E-FIX) — THE CLOCK IS PINNED: "today" is 2026-10-14 (12:00 UTC) on every run, so the first call's period
+// (the last 7 days = 08–14 Oct) and every date the page derives from it are the same tomorrow as today. Without the pin
+// C5 went red the day after it was written. Only the no-argument `new Date()` and `Date.now()` move; a given date is as it is.
+const PINNED_NOW = Date.UTC(2026, 9, 14, 12, 0, 0);
+const RealDate = Date;
+class PinnedDate extends RealDate {
+  constructor(...args) { if (args.length === 0) { super(PINNED_NOW); } else { super(...args); } }
+  static now() { return PINNED_NOW; }
+}
+global.Date = PinnedDate;
 const dir = process.argv[2];
 const texts = JSON.parse(fs.readFileSync(process.argv[3], 'utf8'));
 const mode = process.argv[4] || 'team';
@@ -40,7 +50,11 @@ const rows = mode === 'empty' ? [] : [
   row('e2', { repName: 'Murat Demir', resourceId: 'rep-2', flags: ['location_far'], location: { distanceMeters: 820, accuracyMeters: 18, radiusMeters: 300, mode: 'info', status: 'far' } }),
   row('e4', { flags: ['short_visit', 'qr_not_issued'], durationSeconds: 100, qr: { status: 'not_issued', accountId: null, accountName: null, version: null, scannedAt: null, matchedVia: null },
     target: { type: 'pharmacy', targetId: 'ph1', name: 'Eczane Yıldız (Kadıköy)', accountId: 'acc-2', accountName: 'Eczane Yıldız (Kadıköy)' } }),
-  row('e7', { flags: ['started_with_exception'], exceptionId: EXC, qr: { status: 'missing', accountId: null, accountName: null, version: null, scannedAt: null, matchedVia: null } })
+  row('e7', { flags: ['started_with_exception'], exceptionId: EXC, qr: { status: 'missing', accountId: null, accountName: null, version: null, scannedAt: null, matchedVia: null } }),
+  // W3E-FIX — G-8: a far start (198 290 m → "198,3 km"); G-7: two institutions with the SAME name in different cities
+  row('e8', { flags: ['location_far'], location: { distanceMeters: 198290, accuracyMeters: 15, radiusMeters: 300, mode: 'info', status: 'far' },
+    target: { type: 'pharmacy', targetId: 'ph3', name: '100.YIL ECZANESİ', accountId: 'acc-3', accountName: '100.YIL ECZANESİ' } }),
+  row('e9', { flags: ['device_unverified'], target: { type: 'pharmacy', targetId: 'ph4', name: '100.YIL ECZANESİ', accountId: 'acc-4', accountName: '100.YIL ECZANESİ' } })
 ];
 const summary = { from: '2026-10-08', to: '2026-10-14', started: mode === 'empty' ? 12 : 412, flagged: mode === 'empty' ? 0 : 37, flaggedRate: 0.09,
   byFlag: mode === 'empty' ? {} : { device_unverified: 12, location_far: 7, short_visit: 5, qr_not_issued: 4, started_with_exception: 3, location_inaccurate: 3, qr_revoked: 2, mock_location: 2, location_missing: 1, qr_wrong_account: 1 },
@@ -55,6 +69,7 @@ global.fetch = (url) => {
   if (path === '/api/flags') d = { items: rows, total: mode === 'empty' ? 0 : 37, page: Number((/page=(\d+)/.exec(url) || [])[1] || 1), pageSize: 10, from: '2026-10-08', to: '2026-10-14' };
   else if (path === '/api/summary') d = summary;
   else if (path.indexOf('/api/flags/') === 0) d = detail;
+  else if (path === '/api/account-labels') d = [{ accountId: 'acc-3', code: 'ECZ-0042', city: 'Konya' }, { accountId: 'acc-4', code: 'ECZ-0107', city: 'İstanbul' }];
   return Promise.resolve({ ok: true, status: 200, text: () => Promise.resolve(JSON.stringify({ data: d })) });
 };
 const shown = [];
@@ -68,7 +83,8 @@ const tick = () => new Promise(r => setTimeout(r, 15));
 const target = map => ({ closest: q => (map[q] ? Object.assign({ getAttribute: k => map[q][k] }, map[q].props || {}) : null) });
 
 (async () => {
-  await tick(); await tick();
+  await tick(); await tick(); await tick();
+  out.today = new Date().toISOString().slice(0, 10);
   out.firstCalls = calls.slice();
   out.started = el('vf-sum-started').textContent;
   out.flagged = el('vf-sum-flagged').textContent;

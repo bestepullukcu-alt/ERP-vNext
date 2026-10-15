@@ -65,47 +65,17 @@
   <data name="Err_generic" xml:space="preserve"><value>فشل الإجراء. حاول مرة أخرى.</value></data>
   <data name="LoadFailed" xml:space="preserve"><value>تعذر تحميل رمز QR.</value></data>
   <data name="Retry" xml:space="preserve"><value>إعادة المحاولة</value></data>
-  <data name="PageTitle" xml:space="preserve"><value>رموز QR للمؤسسات</value></data>
-  <data name="Crumb" xml:space="preserve"><value>CRM / الزيارة / رموز QR للمؤسسات</value></data>
-  <data name="Intro" xml:space="preserve"><value>رموز معلقة في استقبال المؤسسات. إذا لم يكن للوحدة رمز خاص بها فرمز المؤسسة الأم صالح.</value></data>
-  <data name="FiltersTitle" xml:space="preserve"><value>عوامل التصفية</value></data>
-  <data name="AllRegions" xml:space="preserve"><value>كل المناطق</value></data>
-  <data name="AllTypes" xml:space="preserve"><value>كل أنواع المؤسسات</value></data>
-  <data name="AllCities" xml:space="preserve"><value>كل المدن</value></data>
-  <data name="AllStatuses" xml:space="preserve"><value>كل حالات QR</value></data>
-  <data name="StatusOpt_none" xml:space="preserve"><value>لا يوجد</value></data>
-  <data name="StatusOpt_active" xml:space="preserve"><value>نشط</value></data>
-  <data name="StatusOpt_revoked" xml:space="preserve"><value>ملغى</value></data>
-  <data name="SearchPlaceholder" xml:space="preserve"><value>ابحث باسم المؤسسة</value></data>
-  <data name="CountLabel" xml:space="preserve"><value>{0} مؤسسة</value></data>
-  <data name="SelectedLabel" xml:space="preserve"><value>تم تحديد {0}</value></data>
   <data name="BulkGenerate" xml:space="preserve"><value>إنشاء للمحدد (التي بلا رمز)</value></data>
   <data name="BulkPrint" xml:space="preserve"><value>طباعة المحدد (ورقة ملصقات)</value></data>
   <data name="BulkLimit" xml:space="preserve"><value>حدد 200 مؤسسة على الأكثر.</value></data>
-  <data name="ColInstitution" xml:space="preserve"><value>المؤسسة</value></data>
-  <data name="ColType" xml:space="preserve"><value>النوع</value></data>
-  <data name="ColCity" xml:space="preserve"><value>المدينة</value></data>
-  <data name="ColStatus" xml:space="preserve"><value>حالة QR</value></data>
-  <data name="ColVersion" xml:space="preserve"><value>الإصدار</value></data>
-  <data name="ColLastScan" xml:space="preserve"><value>آخر مسح</value></data>
-  <data name="ColRecent" xml:space="preserve"><value>آخر 30 يومًا</value></data>
-  <data name="ColActions" xml:space="preserve"><value>الإجراءات</value></data>
   <data name="Chip_active" xml:space="preserve"><value>نشط</value></data>
   <data name="Chip_revoked" xml:space="preserve"><value>ملغى</value></data>
   <data name="Chip_none" xml:space="preserve"><value>لا يوجد</value></data>
   <data name="InheritsParent" xml:space="preserve"><value>رمز المؤسسة الأم صالح</value></data>
   <data name="VersionShort" xml:space="preserve"><value>v{0}</value></data>
   <data name="BulkResult" xml:space="preserve"><value>تم إنشاء {0} رمز · {1} مؤسسة لديها رمز نشط بالفعل، تم تخطيها</value></data>
-  <data name="PrintLabelsLink" xml:space="preserve"><value>طباعة ورقة الملصقات</value></data>
-  <data name="EmptyTitle" xml:space="preserve"><value>لا توجد مؤسسة تطابق عوامل التصفية</value></data>
-  <data name="ClearFilters" xml:space="preserve"><value>مسح عوامل التصفية</value></data>
   <data name="RowPrint" xml:space="preserve"><value>طباعة الرمز</value></data>
   <data name="RowOpen" xml:space="preserve"><value>فتح المؤسسة</value></data>
-  <data name="SelectAll" xml:space="preserve"><value>تحديد الكل في هذه الصفحة</value></data>
-  <data name="SelectRow" xml:space="preserve"><value>تحديد {0}</value></data>
-  <data name="PageInfo" xml:space="preserve"><value>{0}–{1} من {2}</value></data>
-  <data name="PrevPage" xml:space="preserve"><value>السابق</value></data>
-  <data name="NextPage" xml:space="preserve"><value>التالي</value></data>
   <data name="PrintTitle" xml:space="preserve"><value>طباعة رمز QR</value></data>
   <data name="PrintCrumb" xml:space="preserve"><value>CRM / المؤسسات / طباعة رمز QR</value></data>
   <data name="ModeSingle" xml:space="preserve"><value>مفرد</value></data>

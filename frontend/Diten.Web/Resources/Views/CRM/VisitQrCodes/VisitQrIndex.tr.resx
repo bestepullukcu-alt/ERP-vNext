@@ -65,47 +65,17 @@
   <data name="Err_generic" xml:space="preserve"><value>İşlem tamamlanamadı. Tekrar deneyin.</value></data>
   <data name="LoadFailed" xml:space="preserve"><value>QR kodu yüklenemedi.</value></data>
   <data name="Retry" xml:space="preserve"><value>Tekrar dene</value></data>
-  <data name="PageTitle" xml:space="preserve"><value>Kurum QR kodları</value></data>
-  <data name="Crumb" xml:space="preserve"><value>CRM / Ziyaret / Kurum QR kodları</value></data>
-  <data name="Intro" xml:space="preserve"><value>Kurumların kabulüne asılan kodlar. Alt birim kendi kodunu almadıysa üst kurumun kodu geçer.</value></data>
-  <data name="FiltersTitle" xml:space="preserve"><value>Süzgeçler</value></data>
-  <data name="AllRegions" xml:space="preserve"><value>Tüm bölgeler</value></data>
-  <data name="AllTypes" xml:space="preserve"><value>Tüm kurum türleri</value></data>
-  <data name="AllCities" xml:space="preserve"><value>Tüm şehirler</value></data>
-  <data name="AllStatuses" xml:space="preserve"><value>Tüm QR durumları</value></data>
-  <data name="StatusOpt_none" xml:space="preserve"><value>Yok</value></data>
-  <data name="StatusOpt_active" xml:space="preserve"><value>Aktif</value></data>
-  <data name="StatusOpt_revoked" xml:space="preserve"><value>İptal</value></data>
-  <data name="SearchPlaceholder" xml:space="preserve"><value>Kurum adında ara</value></data>
-  <data name="CountLabel" xml:space="preserve"><value>{0} kurum</value></data>
-  <data name="SelectedLabel" xml:space="preserve"><value>{0} kurum seçildi</value></data>
   <data name="BulkGenerate" xml:space="preserve"><value>Seçilenlere kod üret (kodu olmayanlar)</value></data>
   <data name="BulkPrint" xml:space="preserve"><value>Seçilenleri yazdır (etiket sayfası)</value></data>
   <data name="BulkLimit" xml:space="preserve"><value>En çok 200 kurum seçebilirsiniz.</value></data>
-  <data name="ColInstitution" xml:space="preserve"><value>Kurum</value></data>
-  <data name="ColType" xml:space="preserve"><value>Tür</value></data>
-  <data name="ColCity" xml:space="preserve"><value>Şehir</value></data>
-  <data name="ColStatus" xml:space="preserve"><value>QR durumu</value></data>
-  <data name="ColVersion" xml:space="preserve"><value>Sürüm</value></data>
-  <data name="ColLastScan" xml:space="preserve"><value>Son okutma</value></data>
-  <data name="ColRecent" xml:space="preserve"><value>Son 30 gün</value></data>
-  <data name="ColActions" xml:space="preserve"><value>Eylemler</value></data>
   <data name="Chip_active" xml:space="preserve"><value>Aktif</value></data>
   <data name="Chip_revoked" xml:space="preserve"><value>İptal</value></data>
   <data name="Chip_none" xml:space="preserve"><value>Yok</value></data>
   <data name="InheritsParent" xml:space="preserve"><value>üst kurum kodu geçer</value></data>
   <data name="VersionShort" xml:space="preserve"><value>v{0}</value></data>
   <data name="BulkResult" xml:space="preserve"><value>{0} kod üretildi · {1} kurumda zaten aktif kod vardı, atlandı</value></data>
-  <data name="PrintLabelsLink" xml:space="preserve"><value>Etiket sayfasını yazdır</value></data>
-  <data name="EmptyTitle" xml:space="preserve"><value>Süzgece uyan kurum yok</value></data>
-  <data name="ClearFilters" xml:space="preserve"><value>Süzgeçleri temizle</value></data>
   <data name="RowPrint" xml:space="preserve"><value>Kodu yazdır</value></data>
   <data name="RowOpen" xml:space="preserve"><value>Kurumu aç</value></data>
-  <data name="SelectAll" xml:space="preserve"><value>Bu sayfadakilerin tümünü seç</value></data>
-  <data name="SelectRow" xml:space="preserve"><value>{0} seç</value></data>
-  <data name="PageInfo" xml:space="preserve"><value>{2} kurumdan {0}–{1}</value></data>
-  <data name="PrevPage" xml:space="preserve"><value>Önceki</value></data>
-  <data name="NextPage" xml:space="preserve"><value>Sonraki</value></data>
   <data name="PrintTitle" xml:space="preserve"><value>QR kodu yazdır</value></data>
   <data name="PrintCrumb" xml:space="preserve"><value>CRM / Kurumlar / QR kodu yazdır</value></data>
   <data name="ModeSingle" xml:space="preserve"><value>Tekli</value></data>

@@ -1,8 +1,12 @@
+using System.Globalization;
 using System.Text;
 using System.Text.Json;
+using Diten.BuildingBlocks.ListExport;
 using Diten.Web.Models.CRM;
+using Diten.Web.Views.CRM.VisitQrCodes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 
 namespace Diten.Web.Controllers.CRM;
 
@@ -84,7 +88,8 @@ public sealed class VisitQrCodesController : CrmGatewayProxy
 
             var cityCode = Str(account, "cityRef");
             var districtCode = Str(account, "districtRef");
-            var city = string.IsNullOrWhiteSpace(cityCode) ? null : (await ReadReferenceLabelsAsync(CitySet, ct)).GetValueOrDefault(cityCode, cityCode);
+            // G-3: the city in words — the set's label, else the readable name of TR-NN-NAME (never the raw code)
+            var city = string.IsNullOrWhiteSpace(cityCode) ? null : CrmCityLabels.Resolve(cityCode, await ReadReferenceLabelsAsync(CitySet, ct));
             var district = string.IsNullOrWhiteSpace(districtCode) ? null : (await ReadReferenceLabelsAsync("district", ct)).GetValueOrDefault(districtCode, districtCode);
             model.Address = AddressOf(Str(account, "addressLine"), district, city);
         }
@@ -102,11 +107,180 @@ public sealed class VisitQrCodesController : CrmGatewayProxy
 
     // ---------------- reads ----------------
 
+    /// <summary>
+    /// W3E-FIX (U-1) — Q5 is a Golden Compact server-mode list: the shared factory asks with the list contract (start ·
+    /// length · search · orderBy · orderDir · draw · each applied filter by its key) and reads { items, total, filteredTotal }.
+    /// The CRM list keeps ITS contract (page / pageSize ≤ 100, one value per filter, ordered by institution name); this
+    /// proxy translates between the two and nothing else. <c>total</c> is the tenant's whole list (a second, one-row read
+    /// only when a filter or a search is applied), <c>filteredTotal</c> what matched. Contract refusals: a sort key (the CRM
+    /// orders by name only — no column is sortable, so the factory never sends one) or a page size outside 1–100 → 400.
+    /// </summary>
     [HttpGet("api/accounts")]
-    public Task<IActionResult> List(
-        [FromQuery] string? status, [FromQuery] string? accountType, [FromQuery] string? city, [FromQuery] string? territoryId,
-        [FromQuery] string? search, [FromQuery] int? page, [FromQuery] int? pageSize, CancellationToken ct)
-        => ProxyAsync(HttpMethod.Get, ListPath(status, accountType, city, territoryId, search, page, pageSize), null, MayRead, ct);
+    public async Task<IActionResult> List(
+        [FromQuery] int? start, [FromQuery] int? length, [FromQuery] string? search, [FromQuery] string? orderBy, [FromQuery] string? orderDir,
+        [FromQuery] string? status, [FromQuery] string? accountType, [FromQuery] string? city, [FromQuery] string? territoryId, CancellationToken ct)
+    {
+        if (!MayRead) return Denied();
+        if (ListRefusal(length, orderBy, orderDir) is { } refusal) return BadRequest(new { errors = new[] { refusal, "visit_qr_request_invalid" } });
+        var size = length ?? 10;
+        var page = Math.Max(0, start ?? 0) / size + 1;
+        using var response = await SendGatewayAsync(HttpMethod.Get, ListPath(status, accountType, city, territoryId, search, page, size), null, ct);
+        if (response is null || !response.IsSuccessStatusCode) return await ToProxyResultAsync(response, ct);
+        if (await PageOf(response, ct) is not { } matched) return StatusCode(502, new { errors = new[] { "Gateway unavailable." } });
+
+        var total = matched.Total;
+        var narrowed = new[] { status, accountType, city, territoryId, search }.Any(x => !string.IsNullOrWhiteSpace(x));
+        if (narrowed)
+        {
+            using var all = await SendGatewayAsync(HttpMethod.Get, ListPath(null, null, null, null, null, 1, 1), null, ct);
+            total = all is { IsSuccessStatusCode: true } && await PageOf(all, ct) is { } whole ? whole.Total : matched.Total;
+        }
+
+        return Ok(new { data = new { items = matched.Items, total, filteredTotal = matched.Total } });
+    }
+
+    /// <summary>Static, so MVC never treats it as an action: the list contract's refusals (null = acceptable).</summary>
+    public static string? ListRefusal(int? length, string? orderBy, string? orderDir)
+    {
+        if (length is { } n && (n < 1 || n > MaxPageSize)) return $"length must be 1–{MaxPageSize}.";
+        if (!string.IsNullOrWhiteSpace(orderBy)) return "The list is ordered by institution name; orderBy is not accepted.";
+        if (!string.IsNullOrWhiteSpace(orderDir) && orderDir is not ("asc" or "desc")) return "orderDir must be asc or desc.";
+        return null;
+    }
+
+    private sealed record ListPage(JsonElement Items, long Total);
+
+    private static async Task<ListPage?> PageOf(HttpResponseMessage response, CancellationToken ct)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
+            var root = doc.RootElement;
+            var data = root.ValueKind == JsonValueKind.Object && root.TryGetProperty("data", out var d) ? d : root;
+            if (data.ValueKind != JsonValueKind.Object || !data.TryGetProperty("items", out var items) || items.ValueKind != JsonValueKind.Array) return null;
+            var total = data.TryGetProperty("total", out var t) && t.ValueKind == JsonValueKind.Number && t.TryGetInt64(out var n) ? n : items.GetArrayLength();
+            return new ListPage(items.Clone(), total);
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
+    // ---------------- the export (BL-452: the file is the screen) ----------------
+
+    /// <summary>The export's columns: the list's own data keys, in the screen's words (the request culture).</summary>
+    public static readonly IReadOnlyList<string> ExportKeys = ["accountName", "accountType", "cityRef", "status", "version", "lastScannedAt", "recentScanCount"];
+
+    /// <summary>
+    /// W3E-FIX (U-1) — <c>GET api/accounts/export?format=csv|xlsx&amp;columns=…</c> + the list's own search and filters: EVERY
+    /// matching institution (the CRM list read page by page, 100 at a time — the CRM has no export of its own and this
+    /// package changes nothing there), the visible columns in screen order, the type / city / QR status in the reader's
+    /// language. More than 50 000 → 413 EXPORT_TOO_LARGE before a single row is written; an unknown column → 400. The QR
+    /// payload is not part of a list row, so it can never reach a file.
+    /// </summary>
+    [HttpGet("api/accounts/export")]
+    public async Task<IActionResult> Export(
+        [FromQuery] string? format, [FromQuery] string[]? columns, [FromQuery] string? search, [FromQuery] string? orderBy, [FromQuery] string? orderDir,
+        [FromQuery] string? status, [FromQuery] string? accountType, [FromQuery] string? city, [FromQuery] string? territoryId, CancellationToken ct)
+    {
+        if (!MayRead) return Denied();
+        if (!ListExportContract.TryParseFormat(format, out var fileFormat)) return ExportRefusal(400, "format must be 'csv' or 'xlsx'.", ListExportContract.FormatInvalidCode);
+        var culture = ListExportContract.ResolveCulture(Request.Headers.AcceptLanguage.ToString());
+        var set = ExportColumns(culture);
+        if (!set.TryResolve(columns, out var exportColumns, out var columnsError)) return ExportRefusal(400, columnsError!, ListExportContract.ColumnsInvalidCode);
+        if (ListRefusal(null, orderBy, orderDir) is { } refusal) return ExportRefusal(400, refusal, "visit_qr_request_invalid");
+
+        var rows = new List<JsonElement>();
+        for (var page = 1; ; page++)
+        {
+            using var response = await SendGatewayAsync(HttpMethod.Get, ListPath(status, accountType, city, territoryId, search, page, MaxPageSize), null, ct);
+            if (response is null || !response.IsSuccessStatusCode) return await ToProxyResultAsync(response, ct);
+            if (await PageOf(response, ct) is not { } chunk) return StatusCode(502, new { errors = new[] { "Gateway unavailable." } });
+            if (chunk.Total > ListExportContract.MaxRows)
+            {
+                return ExportRefusal(StatusCodes.Status413PayloadTooLarge,
+                    $"{chunk.Total} institutions match; an export carries at most {ListExportContract.MaxRows}. Narrow the filter.", ListExportContract.TooLargeCode);
+            }
+
+            rows.AddRange(chunk.Items.EnumerateArray());
+            if (chunk.Items.GetArrayLength() < MaxPageSize || rows.Count >= chunk.Total) break;
+        }
+
+        var before = CultureInfo.CurrentUICulture;
+        CultureInfo.CurrentUICulture = culture;
+        try
+        {
+            var types = await ReadReferenceLabelsAsync(AccountTypeSet, ct);
+            var cities = await ReadReferenceLabelsAsync(CitySet, ct);
+            var lines = rows.Select(r => ExportRowOf(r, types, cities)).ToList();
+            var content = ListExportWriter.Write(fileFormat, exportColumns, lines, culture, Text<VisitQrCodesIndex>("VisitQrCodesTitle", culture));
+            return File(content, ListExportContract.ContentType(fileFormat), ListExportContract.FileName("institution-qr-codes", DateTimeOffset.UtcNow, fileFormat));
+        }
+        finally
+        {
+            CultureInfo.CurrentUICulture = before;
+        }
+    }
+
+    /// <summary>One institution as the export writes it (the labels already in the request culture).</summary>
+    public sealed record QrExportRow(string Name, string? Parent, string? Type, string? City, string Status, int? Version, DateTimeOffset? LastScannedAt, int? Recent);
+
+    private static QrExportRow ExportRowOf(JsonElement row, IReadOnlyDictionary<string, string> types, IReadOnlyDictionary<string, string> cities)
+    {
+        var type = Str(row, "accountType");
+        var status = Str(row, "status") is { Length: > 0 } s ? s : "none";
+        return new QrExportRow(
+            Str(row, "accountName") ?? string.Empty,
+            Str(row, "parentAccountName"),
+            string.IsNullOrWhiteSpace(type) ? null : types.GetValueOrDefault(type, type),
+            CrmCityLabels.Resolve(Str(row, "cityRef"), cities),
+            status,
+            Int(row, "version"),
+            row.TryGetProperty("lastScannedAt", out var l) && l.ValueKind == JsonValueKind.String && l.TryGetDateTimeOffset(out var at) ? at : null,
+            Int(row, "recentScanCount"));
+    }
+
+    /// <summary>A number field of a CRM row; null when absent or null (a code-less institution has no version).</summary>
+    private static int? Int(JsonElement row, string name)
+        => row.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.Number && v.TryGetInt32(out var n) ? n : null;
+
+    private ListExportColumnSet<QrExportRow> ExportColumns(CultureInfo culture) => new(
+    [
+        new("accountName", c => Text<VisitQrCodesIndex>("ColInstitution", c), (r, _) => r.Parent is { Length: > 0 } p ? r.Name + " (↳ " + p + ")" : r.Name),
+        new("accountType", c => Text<VisitQrCodesIndex>("ColType", c), (r, _) => r.Type),
+        new("cityRef", c => Text<VisitQrCodesIndex>("ColCity", c), (r, _) => r.City),
+        new("status", c => Text<VisitQrCodesIndex>("ColStatus", c), (r, c) => Text<VisitQrIndex>("Chip_" + r.Status, c)),
+        new("version", c => Text<VisitQrCodesIndex>("ColVersion", c), (r, _) => r.Version?.ToString(CultureInfo.InvariantCulture)),
+        new("lastScannedAt", c => Text<VisitQrCodesIndex>("ColLastScan", c), (r, c) => r.LastScannedAt?.ToString("g", c)),
+        new("recentScanCount", c => Text<VisitQrCodesIndex>("ColRecent", c), (r, _) => r.Recent?.ToString(CultureInfo.InvariantCulture))
+    ]);
+
+    /// <summary>A screen word in <paramref name="culture"/> (the page's own resx); the key itself when no localizer is wired.</summary>
+    private string Text<TMarker>(string key, CultureInfo culture)
+    {
+        var localizer = HttpContext?.RequestServices?.GetService(typeof(IStringLocalizer<TMarker>)) as IStringLocalizer<TMarker>;
+        if (localizer is null) return key;
+        var before = CultureInfo.CurrentUICulture;
+        CultureInfo.CurrentUICulture = culture;
+        try
+        {
+            var text = localizer[key];
+            return text.ResourceNotFound ? key : text.Value;
+        }
+        finally
+        {
+            CultureInfo.CurrentUICulture = before;
+        }
+    }
+
+    private ObjectResult ExportRefusal(int statusCode, string message, string code) => StatusCode(statusCode, new
+    {
+        isSuccessful = false,
+        statusCode,
+        errors = new[] { message },
+        errorCodes = new[] { new { code } }
+    });
 
     /// <summary>Static, so MVC never treats it as an action: the CRM list path — every filter escaped, the page clamped
     /// (1 … ; 1 … 100), empty filters left out.</summary>
@@ -161,8 +335,9 @@ public sealed class VisitQrCodesController : CrmGatewayProxy
     public async Task<IActionResult> Revoke(Guid accountId, CancellationToken ct)
         => await ProxyAsync(HttpMethod.Post, $"{Base}/accounts/{accountId}/revoke", await ReadBodyAsync(ct) ?? "{}", HasAny(Manage), ct);
 
-    /// <summary>Q5 "Generate for the selected (those without a code)".</summary>
-    [HttpPost("api/bulk-issue")]
+    /// <summary>Q5 "Generate for the selected (those without a code)" — the list's bulk endpoint (W3E-FIX U-1: the shared bulk
+    /// bar's action; the CRM <c>bulk-issue</c> skips the institutions that already have an active code, ≤ 200).</summary>
+    [HttpPost("api/accounts/bulk")]
     public async Task<IActionResult> BulkIssue(CancellationToken ct)
         => await ProxyAsync(HttpMethod.Post, $"{Base}/bulk-issue", await ReadBodyAsync(ct) ?? "{}", HasAny(Manage), ct);
 

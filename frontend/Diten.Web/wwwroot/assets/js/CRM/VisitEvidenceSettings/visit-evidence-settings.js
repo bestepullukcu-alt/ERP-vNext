@@ -178,6 +178,10 @@
         chip.textContent = L[pv.locationKey] || '';
         setText('ve-pv-loc-text', T(pv.locationTextKey, ...pv.locationArgs));
         show('ve-pv-sign', pv.sign);
+        // W3E-FIX (G-5) — the QR row (off → no row) and the device line on the web (antiFraudMode = flag)
+        show('ve-pv-qr', !!pv.qr);
+        if (pv.qr) { const q = el('ve-pv-qr-mode'); q.className = 've-pill ve-tone-' + pv.qr.tone; q.textContent = L[pv.qr.modeKey] || ''; }
+        show('ve-pv-device', pv.deviceWeb);
         el('ve-pv-start').classList.toggle('ve-faded', pv.startDisabled);
         el('ve-pv-lines').innerHTML = pv.lines.map(l => '<li><i class="bx ' + l.icon + ' ve-tone-text-' + l.tone + '"></i><span>' + esc(T(l.key, ...l.args.map(a => F.isolate(a)))) + '</span></li>').join('');
     }

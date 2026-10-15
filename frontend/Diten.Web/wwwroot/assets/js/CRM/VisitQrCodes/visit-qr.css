@@ -14,9 +14,9 @@
     --vq-it: #4fd6f2; --vq-is: #23435a; --vq-st: #a1a2b8; --vq-ss: #3a3b55; --vq-dt: #ff7a66; --vq-ds: #4f2e36;
     --vq-sh: 0 3px 8px rgba(0, 0, 0, .25); --vq-ov: rgba(0, 0, 0, .6);
 }
-.vq-scope a:not(.vq-btn):not(.vq-icon-btn), .vq-link { color: var(--vq-p); text-decoration: none; cursor: pointer; background: none; border: 0; padding: 0; font: inherit; }
-.vq-scope a:not(.vq-btn):not(.vq-icon-btn):hover, .vq-link:hover { text-decoration: underline; }
-.vq-scope a.vq-btn, .vq-scope a.vq-icon-btn { text-decoration: none; }
+.vq-scope a:not(.vq-btn), .vq-link { color: var(--vq-p); text-decoration: none; cursor: pointer; background: none; border: 0; padding: 0; font: inherit; }
+.vq-scope a:not(.vq-btn):hover, .vq-link:hover { text-decoration: underline; }
+.vq-scope a.vq-btn { text-decoration: none; }
 .vq-scope a.vq-btn-p, .vq-scope a.vq-btn-p:hover { color: #fff; }
 
 /* ── the card (Q1) ── */
@@ -62,7 +62,6 @@
 .vq-btn-p { background: var(--vq-p); color: #fff; border-color: var(--vq-p); box-shadow: 0 2px 4px color-mix(in srgb, var(--vq-p) 35%, transparent); }
 .vq-btn-o { background: transparent; color: var(--vq-p); border-color: var(--vq-p); }
 .vq-btn-s { background: var(--vq-ss); color: var(--vq-st); }
-.vq-btn-sm { padding: 6px 14px; font-size: 14px; }
 
 /* ── dialogs (Q3 / Q4 / history) ── */
 .vq-modal .modal-content { background: var(--vq-card); border: 0; border-radius: 8px; box-shadow: 0 10px 40px rgba(0, 0, 0, .25); color: var(--vq-t); }
@@ -77,7 +76,6 @@
 .vq-label-cap { font-size: 12.5px; font-weight: 500; letter-spacing: .4px; text-transform: uppercase; color: var(--vq-h); }
 .vq-label-cap span { text-transform: none; font-weight: 400; color: var(--vq-m); }
 .vq-req { color: var(--vq-dt); }
-.vq-textarea { border: 1px solid var(--vq-b); border-radius: 6px; background: var(--vq-in); color: var(--vq-h); padding: 8px 12px; font-size: 14.5px; resize: vertical; min-height: 84px; width: 100%; }
 .vq-count { font-size: 12.5px; color: var(--vq-m); text-align: end; }
 .vq-err { font-size: 13px; color: var(--vq-dt); }
 .vq-timeline { padding: 16px 24px 24px; display: flex; flex-direction: column; }
@@ -101,38 +99,6 @@
 .vq-crumb { font-size: 14px; color: var(--vq-m); }
 .vq-crumb b { color: var(--vq-h); font-weight: 400; }
 .vq-title { margin: 0; font-size: 22px; font-weight: 500; color: var(--vq-h); }
-.vq-intro { font-size: 14.5px; margin-block-start: 4px; }
-.vq-filters-title { padding: 20px 24px 4px; font-size: 17px; font-weight: 500; color: var(--vq-h); }
-.vq-filters { padding: 12px 24px 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; border-block-end: 1px solid var(--vq-b); }
-.vq-select, .vq-input { height: 38px; border: 1px solid var(--vq-b); border-radius: 6px; background: var(--vq-in); color: var(--vq-h); padding: 0 10px; font-size: 14.5px; width: 100%; }
-.vq-toolbar { padding: 16px 24px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-.vq-search { position: relative; width: 300px; max-width: 100%; }
-.vq-search i { position: absolute; inset-inline-start: 12px; top: 10px; font-size: 18px; color: var(--vq-m); }
-.vq-search .vq-input { padding-inline-start: 38px; }
-.vq-selbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.vq-selcount { font-size: 14px; color: var(--vq-h); font-weight: 500; }
-.vq-count-label { font-size: 14px; color: var(--vq-m); }
-.vq-grid-wrap { overflow-x: auto; }
-.vq-grid { min-width: 980px; }
-.vq-row { display: grid; grid-template-columns: 44px minmax(220px, 2.2fr) 1fr 1fr 1fr 70px 1.2fr 110px 90px; gap: 10px; padding: 12px 24px; border-block-end: 1px solid var(--vq-b); font-size: 14.5px; align-items: center; }
-.vq-row-head { border-block-start: 1px solid var(--vq-b); font-size: 12.5px; font-weight: 500; letter-spacing: .4px; text-transform: uppercase; color: var(--vq-h); }
-.vq-row.vq-selected { background: color-mix(in srgb, var(--vq-p) 6%, transparent); }
-.vq-row-name { color: var(--vq-h); font-weight: 500; }
-.vq-row-parent { font-size: 12.5px; color: var(--vq-m); }
-.vq-status-cell { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
-.vq-inherit { font-size: 12px; color: var(--vq-m); }
-.vq-row-actions { display: flex; gap: 6px; color: var(--vq-h); }
-.vq-icon-btn { background: none; border: 0; color: var(--vq-h); font-size: 20px; padding: 4px; border-radius: 50%; cursor: pointer; line-height: 1; }
-.vq-icon-btn:hover { background: var(--vq-hover); }
-.vq-icon-btn:disabled { opacity: .35; cursor: default; }
-.vq-empty { padding: 56px 24px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
-.vq-empty-icon { width: 56px; height: 56px; border-radius: 50%; background: var(--vq-ss); color: var(--vq-st); display: flex; align-items: center; justify-content: center; }
-.vq-empty-icon i { font-size: 26px; }
-.vq-empty-title { font-size: 16px; font-weight: 500; color: var(--vq-h); }
-.vq-result { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 12px 16px; border-radius: 6px; background: var(--vq-oks); color: var(--vq-h); }
-.vq-result i.bx-check-circle { font-size: 20px; color: var(--vq-ok); }
-.vq-result-text { flex: 1; font-weight: 500; }
-.vq-pager { display: flex; align-items: center; justify-content: flex-end; gap: 12px; padding: 12px 24px; font-size: 14px; color: var(--vq-m); }
 .vq-skel { color: var(--vq-m); padding: 24px; text-align: center; }
 
 /* ── the print page (Q2) ── */
@@ -141,7 +107,11 @@
 .vq-seg button { border: 0; padding: 6px 14px; font-size: 14px; cursor: pointer; background: transparent; color: var(--vq-p); }
 .vq-seg button.vq-on { background: var(--vq-p); color: #fff; }
 .vq-bar-group { display: flex; align-items: center; gap: 10px; font-size: 14px; }
-.vq-copies { width: 72px; }
+/* U-2 — the print bar's fields in the form field standard (.diten-field: the icon on the inline start). The shared rule
+   pads .form-control only; the paper SELECT gets the same room here (module scope, XMC-001). */
+.vq-field { min-width: 130px; }
+.vq-copies { width: 110px; min-width: 0; }
+.vq-scope .diten-field .form-select { padding-inline-start: calc(0.9375rem + 1rem + 0.5rem); }
 .vq-bar-hint { flex: 1 1 220px; min-width: 220px; font-size: 13.5px; color: var(--vq-m); }
 .vq-stage { display: flex; justify-content: center; padding: 28px; background: var(--vq-hover); border-radius: 8px; overflow: auto; }
 .vq-sheet { flex-shrink: 0; background: #fff; color: #1d2129; box-shadow: 0 4px 18px rgba(0, 0, 0, .14); display: flex; flex-direction: column; align-items: center; text-align: center; }

@@ -130,6 +130,9 @@
                                         <div class="ve-col ve-gap-xs"><span class="ve-pv-cap">@Localizer["PvPhoto"] <span class="ve-mu" id="ve-pv-photo"></span></span><div class="ve-pv-shot"><i class="bx bx-camera"></i></div></div>
                                         <div class="ve-col ve-gap-xs"><span class="ve-pv-cap">@Localizer["PvLocation"]</span><div class="ve-pv-loc"><span class="ve-pill" id="ve-pv-loc-chip"></span><span class="ve-sub" id="ve-pv-loc-text"></span></div></div>
                                     </div>
+                                    @* W3E-FIX (G-5) — the institution QR code on the start window (required / optional; none when off) *@
+                                    <div class="ve-pv-sign ve-pv-qr d-none" id="ve-pv-qr"><i class="bx bx-qr-scan"></i> <span class="ve-grow">@Localizer["PvQr"]</span><span class="ve-pill" id="ve-pv-qr-mode"></span></div>
+                                    <div class="ve-pv-sign ve-pv-device d-none" id="ve-pv-device"><i class="bx bx-mobile-alt"></i> <span>@Localizer["PvDeviceWeb"]</span></div>
                                     <div class="ve-pv-sign d-none" id="ve-pv-sign"><i class="bx bx-pen"></i> @Localizer["PvSign"]</div>
                                     <div class="ve-pv-foot"><span class="ve-btn ve-btn-p ve-btn-sm" id="ve-pv-start"><i class="bx bx-play"></i> @Localizer["PvStart"]</span></div>
                                 </div>

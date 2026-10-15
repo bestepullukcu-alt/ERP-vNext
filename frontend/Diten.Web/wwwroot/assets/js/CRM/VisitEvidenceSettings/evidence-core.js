@@ -157,6 +157,11 @@
         const block = d.accountWithoutLocation === 'block';
         lines.push({ icon: block ? 'bx-block' : 'bx-flag', tone: block ? 'danger' : 'warning', key: block ? 'PvNoLocationBlock' : 'PvNoLocationFlag', args: [] });
         if (d.durationConsistency) { lines.push({ icon: 'bx-timer', tone: 'muted', key: 'PvShort', args: [d.shortVisitSeconds] }); }
+        // W3E-FIX (G-5) — the QR code as the rep will meet it: a row on the start window (required / optional; NONE when off)
+        // + the rule sentence; device verification "flag" → the web line the rep sees on the start window (S7 — never blocks).
+        const qrMode = d.qrMode === 'required' || d.qrMode === 'optional' ? d.qrMode : null;
+        if (qrMode) { lines.push({ icon: 'bx-qr', tone: qrMode === 'required' ? 'warning' : 'info', key: 'D_qrMode_' + qrMode, args: [] }); }
+        const deviceWeb = d.antiFraudMode === 'flag';
         return {
             photoKey: photo ? 'PvRequired' : 'PvOptional',
             locationKey: loc ? 'PvRequired' : 'PvInfo',
@@ -164,7 +169,9 @@
             locationTextKey: loc ? 'PvLocationRequired' : 'PvLocationInfo',
             locationArgs: [d.radiusMeters],
             sign: !!d.doctorConfirmation,
-            startDisabled: photo || loc,
+            startDisabled: photo || loc || qrMode === 'required',
+            qr: qrMode ? { modeKey: qrMode === 'required' ? 'PvRequired' : 'PvOptional', tone: qrMode === 'required' ? 'warning' : 'info' } : null,
+            deviceWeb: deviceWeb,
             lines: lines
         };
     };

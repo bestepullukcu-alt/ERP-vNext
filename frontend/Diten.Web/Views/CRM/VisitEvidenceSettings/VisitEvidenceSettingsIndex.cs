@@ -56,7 +56,7 @@ public sealed class VisitEvidenceSettingsIndex
         "ScopesNote", "TenantDefault", "Locked", "AddLegalEntity", "AddLegalEntityHint", "LookTitle", "LookSearch",
         "EffectiveTitle", "CloseButton", "ColField", "ColValue", "ColSource", "Priority", "SourceException", "SourceTenant",
         "ScopeUnresolved", "TypeTenant", "PaneForm", "PaneHistory", "PreviewTitle",
-        "PvStartTitle", "PvSample", "PvPhoto", "PvLocation", "PvSign", "PvStart", "LastChange", "Unsaved", "CancelButton", "SaveButton",
+        "PvStartTitle", "PvSample", "PvPhoto", "PvLocation", "PvSign", "PvQr", "PvDeviceWeb", "PvStart", "LastChange", "Unsaved", "CancelButton", "SaveButton",
         "HistoryTitle", "AuditReadOnly", "ColDate", "ColPerson", "ColChange", "ExceptionsInfo", "ExceptionsTitle",
         "XColRep", "XColRules", "XColRange", "XColReason", "XColPeople", "XColStatus", "OpenRow", "SaveTitle", "SaveConfirm",
         "XNewTitle", "XRep", "XRules", "XRulesHint", "XFrom", "XTo", "XReason", "XReasonPlaceholder", "XSodNew", "XSubmit",

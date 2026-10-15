@@ -11,7 +11,7 @@ public sealed class VisitEvidenceFlagsIndex
     public static readonly string[] ScriptKeys =
     [
         "PeriodLast7", "PeriodLast7Short", "PeriodLast30", "PeriodCustom", "RepAllTeam", "RepAllTenant", "FlagAll", "FlagSome",
-        "AccountAll", "SumOther", "SumNoFlags", "Percent", "UnitMeters", "Accuracy", "Minutes", "MinSec", "Seconds",
+        "AccountAll", "SumOther", "SumNoFlags", "Percent", "UnitMeters", "UnitKm", "Accuracy", "Minutes", "MinSec", "Seconds",
         "ExceptionLink", "EmptyTitle", "EmptyAllTitle", "EmptyText", "PageFlagged", "PageAll", "RepsEmpty", "Kind_in_person",
         "Kind_remote", "Flag_location_far", "Flag_location_missing", "Flag_location_inaccurate", "Flag_account_location_unknown",
         "Flag_short_visit", "Flag_started_with_exception", "Flag_qr_not_issued", "Flag_qr_invalid", "Flag_qr_wrong_account",
@@ -32,7 +32,7 @@ public sealed class VisitEvidenceFlagsIndex
     /// <summary>The strings the view itself writes (headings, buttons, labels).</summary>
     public static readonly string[] ViewKeys =
     [
-        "PageTitle", "Crumb", "Intro", "SumStarted", "SumFlagged", "SumReview", "SumByFlag", "SumByFlagNote", "PeriodLabel",
+        "PageTitle", "Intro", "SumStarted", "SumFlagged", "SumReview", "SumByFlag", "SumByFlagNote", "PeriodLabel",
         "CustomFrom", "CustomTo", "RepLabel", "AccountLabel", "OnlyFlagged", "TabVisits", "TabReps", "ColStart", "ColRep",
         "ColTarget", "ColKind", "ColFlags", "ColDuration", "ColException", "ColStarted", "ColFlagged", "ColRate", "ColTopFlag",
         "RepsHint", "DrawerTitle", "CloseButton", "OpenVisit"

@@ -5,7 +5,6 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <data name="PageTitle" xml:space="preserve"><value>علامات إثبات الزيارة</value></data>
-  <data name="Crumb" xml:space="preserve"><value>إدارة علاقات العملاء / الزيارة / علامات الإثبات</value></data>
   <data name="Intro" xml:space="preserve"><value>العلامات مؤشرات تحتاج إلى مراجعة، ولا تعني بمفردها مخالفة للقواعد.</value></data>
   <data name="SumStarted" xml:space="preserve"><value>الزيارات المبدوءة</value></data>
   <data name="SumFlagged" xml:space="preserve"><value>الزيارات المُعلَّمة</value></data>
@@ -140,4 +139,5 @@
   <data name="Err_permission_denied" xml:space="preserve"><value>ليست لديك صلاحية لهذا الإجراء.</value></data>
   <data name="Err_unavailable" xml:space="preserve"><value>تعذّرت قراءة علامات الإثبات الآن. حاول مرة أخرى بعد قليل.</value></data>
   <data name="Err_generic" xml:space="preserve"><value>تعذّر إكمال الطلب.</value></data>
+  <data name="UnitKm" xml:space="preserve"><value>{0} كم</value></data>
 </root>

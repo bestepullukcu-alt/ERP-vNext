@@ -247,4 +247,6 @@
   <data name="ColPhoto" xml:space="preserve"><value>Фото</value></data>
   <data name="ColQr" xml:space="preserve"><value>QR-код</value></data>
   <data name="ColDevice" xml:space="preserve"><value>Устройство</value></data>
+  <data name="PvQr" xml:space="preserve"><value>QR-код учреждения</value></data>
+  <data name="PvDeviceWeb" xml:space="preserve"><value>Это устройство нельзя проверить; визит будет помечен «устройство не проверено». Рекомендуется мобильное приложение.</value></data>
 </root>

@@ -188,7 +188,61 @@ const ICON_MAP = {
    *
    * The rule follows the markup: see "the shared add row keeps the form's field shape" below.
    */
+
+  /*
+   * WP-VW-W3E (W3E-FIX, U-2) — the visit evidence screens. Not the task form, so they are checked in their OWN views
+   * (W3E_FIELD_VIEWS below; Diten.Web.Tests VwW3EFixFieldIconWebTests reads this block too — vitest does not run on
+   * every machine). The two reasons are free text → the "comment" glyph, on top (textareas); the paper is a sheet, the
+   * label sheet a grid; the copies are copies; the custom range opens a calendar (diten-datefield.js binds the icon).
+   */
+  "vq-regen-reason": "bx-message-square-detail",
+  "vq-revoke-reason": "bx-message-square-detail",
+  "vq-paper-single-select": "bx-file",
+  "vq-paper-labels-select": "bx-grid-alt",
+  "vq-copies": "bx-copy",
+  "vf-from": "bx-calendar",
+  "vf-to": "bx-calendar",
 };
+
+/** The task form's own fields — the assertions below that read Tasks/_Form.cshtml are about these, not the W3E ones. */
+const TASK_FIELDS = Object.keys(ICON_MAP).filter((id) => id.startsWith("task"));
+
+/** WP-VW-W3E (W3E-FIX, U-2) — where each W3E field lives. */
+const W3E_FIELD_VIEWS = {
+  "vq-regen-reason": ["Views", "CRM", "Accounts", "_VisitQrCard.cshtml"],
+  "vq-revoke-reason": ["Views", "CRM", "Accounts", "_VisitQrCard.cshtml"],
+  "vq-paper-single-select": ["Views", "CRM", "VisitQrCodes", "Print.cshtml"],
+  "vq-paper-labels-select": ["Views", "CRM", "VisitQrCodes", "Print.cshtml"],
+  "vq-copies": ["Views", "CRM", "VisitQrCodes", "Print.cshtml"],
+  "vf-from": ["Views", "CRM", "VisitEvidenceFlags", "Index.cshtml"],
+  "vf-to": ["Views", "CRM", "VisitEvidenceFlags", "Index.cshtml"],
+};
+
+describe("WP-VW-W3E — every W3E field carries its icon (U-2)", () => {
+  const wrapperIn = (text, id) => {
+    const at = text.indexOf(`id="${id}"`);
+    if (at < 0) { return null; }
+    const openedAt = text.lastIndexOf('class="diten-field', at);
+    if (openedAt < 0) { return null; }
+    const between = text.slice(openedAt, at);
+    return between.includes("</div>") || between.includes("</span>") ? null : between;
+  };
+
+  test("each W3E field: the wrapper, the map's glyph before the control, hidden from assistive tech", () => {
+    Object.entries(W3E_FIELD_VIEWS).forEach(([id, file]) => {
+      const wrapper = wrapperIn(read(...file), id);
+      expect(wrapper, `${id} has no .diten-field wrapper`).toBeTruthy();
+      expect(wrapper, `${id} does not carry ${ICON_MAP[id]}`).toMatch(new RegExp(`${ICON_MAP[id]}(?![a-z-])`));
+      expect(wrapper, `${id}'s icon is announced`).toMatch(/aria-hidden="true"/);
+    });
+  });
+
+  test("the textareas park the glyph on the first line", () => {
+    ["vq-regen-reason", "vq-revoke-reason"].forEach((id) => {
+      expect(wrapperIn(read(...W3E_FIELD_VIEWS[id]), id)).toMatch(/diten-field-icon--top/);
+    });
+  });
+});
 
 describe("an icon marks the fields where typing is not the whole story", () => {
   const iconWrapper = (id) => {
@@ -208,7 +262,7 @@ describe("an icon marks the fields where typing is not the whole story", () => {
   };
 
   test("every mapped field has a wrapper and a glyph", () => {
-    Object.keys(ICON_MAP).forEach((id) => {
+    TASK_FIELDS.forEach((id) => {
       const wrapper = iconWrapper(id);
       expect(wrapper, `${id} has no icon wrapper`).toBeTruthy();
       expect(wrapper, `${id} has no icon`).toMatch(/<i class="[^"]*\bbx\b/);
@@ -216,7 +270,7 @@ describe("an icon marks the fields where typing is not the whole story", () => {
   });
 
   test("each field carries the glyph the map assigns it", () => {
-    Object.entries(ICON_MAP).forEach(([id, glyph]) => {
+    TASK_FIELDS.map((id) => [id, ICON_MAP[id]]).forEach(([id, glyph]) => {
       expect(iconWrapper(id), `${id} does not carry ${glyph}`)
         .toMatch(new RegExp(`${glyph}(?![a-z-])`));
     });
@@ -254,14 +308,14 @@ describe("an icon marks the fields where typing is not the whole story", () => {
      * Configurable fields stay out: they are rendered by renderCustomFields from tenant definitions, and their
      * value types are not fixed, so there is no glyph to pick per field.
      */
-    Object.keys(ICON_MAP).forEach((id) => {
+    TASK_FIELDS.forEach((id) => {
       expect(iconWrapper(id), `${id} has no icon — every field carries one now`).toBeTruthy();
     });
 
     // …and the count is pinned, so a field added later cannot slip through unnoticed.
     const wrappers = [...FORM().matchAll(/class="diten-field[ "]/g)].length;
     expect(wrappers, "a field was added or removed without updating the icon map")
-      .toBe(Object.keys(ICON_MAP).length);
+      .toBe(TASK_FIELDS.length);
   });
 
   test("the icon says what the FIELD is, and never repeats its own card header", () => {

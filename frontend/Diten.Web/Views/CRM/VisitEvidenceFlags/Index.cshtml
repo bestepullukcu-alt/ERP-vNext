@@ -22,18 +22,18 @@
     return;
 }
 
+@* U-3 — the list page header standard (frontend-datatable-template.md): div.mb-3 > h5.mb-0 + p.mb-0.text-muted *@
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["PageTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["Intro"]</p>
+</div>
+
 <div id="vf-root" class="vf-page"
      data-api-base="/CRM/VisitEvidenceFlags/api"
      data-can-read-all="@Model.CanReadAll.ToString().ToLowerInvariant()"
      data-can-see-photos="@Model.CanSeePhotos.ToString().ToLowerInvariant()"
      data-visit-url="/CRM/VisitReport"
      data-exception-url="/CRM/VisitEvidenceSettings">
-
-    <div class="vf-head">
-        <div class="vf-crumb">@Localizer["Crumb"]</div>
-        <h4 class="vf-title">@Localizer["PageTitle"]</h4>
-        <div class="vf-intro">@Localizer["Intro"]</div>
-    </div>
 
     <div class="vf-alert vf-alert-danger d-none" id="vf-error" role="alert"></div>
 
@@ -48,10 +48,11 @@
         @* the filters *@
         <div class="vf-filters">
             <select class="vf-select" id="vf-period" aria-label="@Localizer["PeriodLabel"]"></select>
+            @* U-2 — the shared date field: .diten-field + the calendar icon that OPENS it (diten-datefield.js) *@
             <span class="vf-custom d-none" id="vf-custom">
-                <input type="date" class="vf-input" id="vf-from" aria-label="@Localizer["CustomFrom"]" />
+                <span class="diten-field vf-date"><i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i><input type="text" class="form-control flatpickr-date" id="vf-from" autocomplete="off" aria-label="@Localizer["CustomFrom"]" /></span>
                 <span class="vf-sub">–</span>
-                <input type="date" class="vf-input" id="vf-to" aria-label="@Localizer["CustomTo"]" />
+                <span class="diten-field vf-date"><i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i><input type="text" class="form-control flatpickr-date" id="vf-to" autocomplete="off" aria-label="@Localizer["CustomTo"]" /></span>
             </span>
             <select class="vf-select" id="vf-rep" aria-label="@Localizer["RepLabel"]"></select>
             <div class="vf-multi" id="vf-flag-filter">
@@ -113,6 +114,7 @@
             VisitEvidenceFlagsIndex.ScriptKeys.ToDictionary(k => k, k => Localizer[k].Value)));
     </script>
     <script src="~/assets/js/CRM/VisitPlanning/format.js" asp-append-version="true"></script>
+    <script src="~/assets/js/shared/diten-datefield.js" asp-append-version="true"></script>
     <script src="~/assets/js/CRM/VisitEvidenceFlags/flags-core.js" asp-append-version="true"></script>
     <script src="~/assets/js/CRM/VisitEvidenceFlags/visit-evidence-flags.js" asp-append-version="true"></script>
 }

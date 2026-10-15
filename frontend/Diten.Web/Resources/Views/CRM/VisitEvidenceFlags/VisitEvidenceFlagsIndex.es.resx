@@ -5,7 +5,6 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <data name="PageTitle" xml:space="preserve"><value>Marcas de evidencia</value></data>
-  <data name="Crumb" xml:space="preserve"><value>CRM / Visita / Marcas de evidencia</value></data>
   <data name="Intro" xml:space="preserve"><value>Las marcas son indicios para revisar; por sí solas no significan que se haya incumplido una regla.</value></data>
   <data name="SumStarted" xml:space="preserve"><value>Visitas iniciadas</value></data>
   <data name="SumFlagged" xml:space="preserve"><value>Visitas marcadas</value></data>
@@ -140,4 +139,5 @@
   <data name="Err_permission_denied" xml:space="preserve"><value>No tiene permiso para hacer esto.</value></data>
   <data name="Err_unavailable" xml:space="preserve"><value>Las marcas no se pueden leer ahora. Inténtelo de nuevo en un momento.</value></data>
   <data name="Err_generic" xml:space="preserve"><value>No se pudo completar la solicitud.</value></data>
+  <data name="UnitKm" xml:space="preserve"><value>{0} km</value></data>
 </root>

@@ -13,6 +13,8 @@
  *                                onlyFlagged, page, pageSize)
  *   summaryBars(byFlag, max)     the flag-type bars: the top `max`, the rest summed as "Other (N types)" (D-11)
  *   duration(seconds)            "18 dk" / "1 dk 40 sn" / "40 sn" as { key, args }
+ *   distance(meters)             "820 m" / "198,3 km" (≥ 1000 m, one decimal) as { key, args, digits } (W3E-FIX G-8)
+ *   accountOptions(entries) / sameNameIds(entries)   the institution filter: same names told apart by city / code (G-7)
  *   qrResult(qr, kind, exception)   the drawer's QR result key; device(row)  the platform / app / verdict keys
  *   pageRange(total, page, size) "1–10 of 37"; repRate(started, flagged) the rate in tenths
  *   errorKey(response)           a CRM refusal → the user's text key (never a raw code)
@@ -68,6 +70,16 @@
         return r === 0 || m >= 10 ? { key: 'Minutes', args: [m >= 10 ? Math.round(s / 60) : m] } : { key: 'MinSec', args: [m, r] };
     };
 
+    /**
+     * W3E-FIX (G-8) — a distance: under 1000 m in whole metres ("820 m"), from 1000 m in kilometres with ONE decimal
+     * ("198,3 km" — the page writes the number in the user's language, so the decimal separator is theirs).
+     * → { key, args, digits } (digits = the fraction digits the page formats args[0] with).
+     */
+    const distance = meters => {
+        const m = Math.max(0, Number(meters) || 0);
+        return m < 1000 ? { key: 'UnitMeters', args: [Math.round(m)], digits: 0 } : { key: 'UnitKm', args: [Math.round(m / 100) / 10], digits: 1 };
+    };
+
     /** The exact form (the drawer's slide time, the mockup "11 dk 50 sn"): minutes + seconds, never rounded. */
     const durationExact = seconds => {
         const s = Math.max(0, Math.round(Number(seconds) || 0));
@@ -89,8 +101,8 @@
             const f = flagOf(code);
             const loc = r.location || {};
             let value = null;
-            if (f && f.value === 'distance' && loc.distanceMeters != null) { value = { key: 'UnitMeters', args: [Math.round(loc.distanceMeters)] }; }
-            if (f && f.value === 'accuracy' && loc.accuracyMeters != null) { value = { key: 'UnitMeters', args: [Math.round(loc.accuracyMeters)] }; }
+            if (f && f.value === 'distance' && loc.distanceMeters != null) { value = distance(loc.distanceMeters); }
+            if (f && f.value === 'accuracy' && loc.accuracyMeters != null) { value = distance(loc.accuracyMeters); }
             if (f && f.value === 'duration' && r.durationSeconds != null) { value = duration(r.durationSeconds); }
             return { code: code, key: 'Flag_' + code, cat: f ? f.cat : 'exc', value: value, flag: true };
         });
@@ -190,6 +202,37 @@
         return { platformKey: 'Plat_' + d.platform, platformExtra: web ? d.appVersion || null : null, appKey: web ? 'AppWeb' : null, appVersion: web ? null : d.appVersion || null, verdictKey: verdictKey };
     };
 
+    /**
+     * W3E-FIX (G-7) — the institution filter's options: [{ id, name, city, code }] → [{ id, text }] sorted by name. Two
+     * institutions with the same name ("100.YIL ECZANESİ" × 3) are told apart by their city; when the city does not tell
+     * them apart either (or is unknown), by the institution code. A unique name stays as it is. `compare` sorts (the
+     * page passes its culture's localeCompare).
+     */
+    const accountOptions = (entries, compare) => {
+        const list = (entries || []).filter(e => e && e.id);
+        const key = s => String(s == null ? '' : s).trim().toLocaleLowerCase();
+        const count = (fn) => { const m = {}; list.forEach(e => { const k = fn(e); m[k] = (m[k] || 0) + 1; }); return m; };
+        const byName = count(e => key(e.name));
+        const byNameCity = count(e => key(e.name) + '\u0000' + key(e.city));
+        const sorter = compare || ((a, b) => String(a).localeCompare(String(b)));
+        return list.map(e => {
+            const name = String(e.name || '—');
+            if (byName[key(e.name)] < 2) { return { id: e.id, text: name }; }
+            const parts = [];
+            if (e.city) { parts.push(e.city); }
+            if (e.code && (!e.city || byNameCity[key(e.name) + '\u0000' + key(e.city)] > 1)) { parts.push(e.code); }
+            return { id: e.id, text: parts.length ? name + ' · ' + parts.join(' · ') : name, name: name, suffix: parts.join(' · ') };
+        }).sort((a, b) => sorter(a.text, b.text));
+    };
+
+    /** The ids whose name another institution in the list also carries (the ones that need a city / code). */
+    const sameNameIds = entries => {
+        const list = (entries || []).filter(e => e && e.id);
+        const key = s => String(s == null ? '' : s).trim().toLocaleLowerCase();
+        const n = {}; list.forEach(e => { n[key(e.name)] = (n[key(e.name)] || 0) + 1; });
+        return list.filter(e => n[key(e.name)] > 1).map(e => e.id);
+    };
+
     const initials = name => String(name || '').split(/\s+/).filter(Boolean).map(w => w[0]).join('').slice(0, 2).toUpperCase() || '·';
 
     // ── refusals ─────────────────────────────────────────────────────────────────────────────────────────────
@@ -205,7 +248,7 @@
     };
 
     return {
-        CATS, FLAGS, FLAG_CODES, NOT_SCANNED, MAX_RANGE_DAYS, PERIODS, PAGE_SIZE, flagOf, chipsOf, duration, durationExact, rangeOf, rangeError,
+        CATS, FLAGS, FLAG_CODES, NOT_SCANNED, MAX_RANGE_DAYS, PERIODS, PAGE_SIZE, flagOf, chipsOf, duration, durationExact, distance, accountOptions, sameNameIds, rangeOf, rangeError,
         listQuery, summaryQuery, summaryBars, repRate, pageRange, pageCount, qrResult, device, initials, ERROR_CODES, errorKey
     };
 }));

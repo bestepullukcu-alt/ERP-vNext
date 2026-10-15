@@ -65,47 +65,17 @@
   <data name="Err_generic" xml:space="preserve"><value>Действие не выполнено. Повторите.</value></data>
   <data name="LoadFailed" xml:space="preserve"><value>Не удалось загрузить QR-код.</value></data>
   <data name="Retry" xml:space="preserve"><value>Повторить</value></data>
-  <data name="PageTitle" xml:space="preserve"><value>QR-коды учреждений</value></data>
-  <data name="Crumb" xml:space="preserve"><value>CRM / Визит / QR-коды учреждений</value></data>
-  <data name="Intro" xml:space="preserve"><value>Коды на ресепшенах учреждений. Если у подразделения нет своего кода, действует код головного учреждения.</value></data>
-  <data name="FiltersTitle" xml:space="preserve"><value>Фильтры</value></data>
-  <data name="AllRegions" xml:space="preserve"><value>Все регионы</value></data>
-  <data name="AllTypes" xml:space="preserve"><value>Все типы учреждений</value></data>
-  <data name="AllCities" xml:space="preserve"><value>Все города</value></data>
-  <data name="AllStatuses" xml:space="preserve"><value>Все статусы QR</value></data>
-  <data name="StatusOpt_none" xml:space="preserve"><value>Нет</value></data>
-  <data name="StatusOpt_active" xml:space="preserve"><value>Активен</value></data>
-  <data name="StatusOpt_revoked" xml:space="preserve"><value>Отозван</value></data>
-  <data name="SearchPlaceholder" xml:space="preserve"><value>Поиск по названию учреждения</value></data>
-  <data name="CountLabel" xml:space="preserve"><value>Учреждений: {0}</value></data>
-  <data name="SelectedLabel" xml:space="preserve"><value>Выбрано: {0}</value></data>
   <data name="BulkGenerate" xml:space="preserve"><value>Создать для выбранных (без кода)</value></data>
   <data name="BulkPrint" xml:space="preserve"><value>Печать выбранных (лист наклеек)</value></data>
   <data name="BulkLimit" xml:space="preserve"><value>Выберите не более 200 учреждений.</value></data>
-  <data name="ColInstitution" xml:space="preserve"><value>Учреждение</value></data>
-  <data name="ColType" xml:space="preserve"><value>Тип</value></data>
-  <data name="ColCity" xml:space="preserve"><value>Город</value></data>
-  <data name="ColStatus" xml:space="preserve"><value>Статус QR</value></data>
-  <data name="ColVersion" xml:space="preserve"><value>Версия</value></data>
-  <data name="ColLastScan" xml:space="preserve"><value>Последнее сканирование</value></data>
-  <data name="ColRecent" xml:space="preserve"><value>За 30 дней</value></data>
-  <data name="ColActions" xml:space="preserve"><value>Действия</value></data>
   <data name="Chip_active" xml:space="preserve"><value>Активен</value></data>
   <data name="Chip_revoked" xml:space="preserve"><value>Отозван</value></data>
   <data name="Chip_none" xml:space="preserve"><value>Нет</value></data>
   <data name="InheritsParent" xml:space="preserve"><value>действует код головного</value></data>
   <data name="VersionShort" xml:space="preserve"><value>v{0}</value></data>
   <data name="BulkResult" xml:space="preserve"><value>Создано кодов: {0} · у {1} учреждений уже был активный код, пропущены</value></data>
-  <data name="PrintLabelsLink" xml:space="preserve"><value>Печать листа наклеек</value></data>
-  <data name="EmptyTitle" xml:space="preserve"><value>Нет учреждений по этим фильтрам</value></data>
-  <data name="ClearFilters" xml:space="preserve"><value>Сбросить фильтры</value></data>
   <data name="RowPrint" xml:space="preserve"><value>Напечатать код</value></data>
   <data name="RowOpen" xml:space="preserve"><value>Открыть учреждение</value></data>
-  <data name="SelectAll" xml:space="preserve"><value>Выбрать все на странице</value></data>
-  <data name="SelectRow" xml:space="preserve"><value>Выбрать {0}</value></data>
-  <data name="PageInfo" xml:space="preserve"><value>{0}–{1} из {2}</value></data>
-  <data name="PrevPage" xml:space="preserve"><value>Назад</value></data>
-  <data name="NextPage" xml:space="preserve"><value>Далее</value></data>
   <data name="PrintTitle" xml:space="preserve"><value>Печать QR-кода</value></data>
   <data name="PrintCrumb" xml:space="preserve"><value>CRM / Учреждения / Печать QR-кода</value></data>
   <data name="ModeSingle" xml:space="preserve"><value>Один</value></data>

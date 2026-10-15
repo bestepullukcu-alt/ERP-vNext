@@ -35,13 +35,15 @@
             <button type="button" id="vq-mode-single" @(Model.AccountId is null && Model.AccountIds.Count != 1 ? "disabled" : "")>@Localizer["ModeSingle"]</button>
             <button type="button" id="vq-mode-labels">@Localizer["ModeLabels"]</button>
         </div>
-        <div class="vq-bar-group" id="vq-paper-single">@Localizer["PaperLabel"]
-            <div class="vq-seg" role="group"><button type="button" data-paper="a4">A4</button><button type="button" data-paper="a5">A5</button></div>
+        <div class="vq-bar-group" id="vq-paper-single"><label for="vq-paper-single-select">@Localizer["PaperLabel"]</label>
+            <div class="diten-field vq-field"><i class="bx bx-file diten-field-icon" aria-hidden="true"></i><select class="form-select" id="vq-paper-single-select"><option value="a4">A4</option><option value="a5">A5</option></select></div>
         </div>
-        <div class="vq-bar-group d-none" id="vq-paper-labels">@Localizer["PerA4"]
-            <div class="vq-seg" role="group"><button type="button" data-paper="labels4">@Localizer["Labels4"]</button><button type="button" data-paper="labels8">@Localizer["Labels8"]</button></div>
+        <div class="vq-bar-group d-none" id="vq-paper-labels"><label for="vq-paper-labels-select">@Localizer["PerA4"]</label>
+            <div class="diten-field vq-field"><i class="bx bx-grid-alt diten-field-icon" aria-hidden="true"></i><select class="form-select" id="vq-paper-labels-select"><option value="labels4">@Localizer["Labels4"]</option><option value="labels8">@Localizer["Labels8"]</option></select></div>
         </div>
-        <label class="vq-bar-group">@Localizer["CopiesLabel"] <input type="number" class="vq-input vq-copies" id="vq-copies" min="1" max="50" value="1" /></label>
+        <div class="vq-bar-group"><label for="vq-copies">@Localizer["CopiesLabel"]</label>
+            <div class="diten-field vq-field vq-copies"><i class="bx bx-copy diten-field-icon" aria-hidden="true"></i><input type="number" class="form-control" id="vq-copies" min="1" max="50" value="1" /></div>
+        </div>
         <div class="vq-bar-hint" id="vq-print-hint"></div>
         <button type="button" class="vq-btn vq-btn-p" id="vq-print-go"><i class="bx bx-printer"></i>@Localizer["PrintButton"]</button>
     </div>
@@ -52,9 +54,10 @@
         <div id="vq-print-area">
             @* the single sticker *@
             <div class="vq-sheet vq-sheet-a4" id="vq-single">
-                <div class="vq-s-parent" id="vq-s-parent">@(Model.ParentName ?? string.Empty)</div>
+                @* G-6 — every name and the address isolated: "75.YIL …" never turns into "YIL.75" in a right-to-left page *@
+                <div class="vq-s-parent" id="vq-s-parent"><bdi>@(Model.ParentName ?? string.Empty)</bdi></div>
                 <div class="vq-s-name" id="vq-s-name"><bdi>@(Model.AccountName ?? "—")</bdi></div>
-                <div class="vq-s-addr">@(Model.Address ?? string.Empty)</div>
+                <div class="vq-s-addr"><bdi>@(Model.Address ?? string.Empty)</bdi></div>
                 <div class="vq-s-qr" id="vq-s-qr"></div>
                 <div class="vq-s-text">@Localizer["StickerText"]</div>
                 <div class="vq-s-foot">

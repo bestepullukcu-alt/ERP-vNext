@@ -57,6 +57,33 @@ public sealed class VisitEvidenceFlagsController : CrmGatewayProxy
     public Task<IActionResult> Detail(Guid executionId, CancellationToken ct)
         => ProxyAsync(HttpMethod.Get, $"{Flags}/{executionId:D}", null, MayRead, ct);
 
+    /// <summary>The most institutions one <see cref="AccountLabels"/> call reads (the filter's same-name ones only).</summary>
+    public const int MaxAccountLabels = 50;
+
+    /// <summary>
+    /// W3E-FIX (G-7) — the institution filter tells same-name institutions apart: for the ids the page names (only those
+    /// whose name another one in the list also carries, ≤ 50) the institution code and the city in words (G-3). Each is
+    /// the CRM's own account read with the caller's session (the tenant's, its keys); an institution it does not answer
+    /// for is simply left out — the option then keeps its plain name. Never a payload, never a person.
+    /// </summary>
+    [HttpGet("api/account-labels")]
+    public async Task<IActionResult> AccountLabels([FromQuery] string? ids, CancellationToken ct)
+    {
+        if (!MayRead) return Denied();
+        var list = (ids ?? string.Empty).Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(x => Guid.TryParse(x, out var g) ? g : Guid.Empty).Where(g => g != Guid.Empty).Distinct().Take(MaxAccountLabels).ToList();
+        if (list.Count == 0) return Ok(new { data = Array.Empty<object>() });
+        var cities = await ReadReferenceLabelsAsync("city", ct);
+        var rows = new List<object>();
+        foreach (var id in list)
+        {
+            if (await ReadDataAsync($"/api/crm/accounts/{id:D}", ct) is not { ValueKind: System.Text.Json.JsonValueKind.Object } account) continue;
+            rows.Add(new { accountId = id, code = Str(account, "accountCode"), city = CrmCityLabels.Resolve(Str(account, "cityRef"), cities) });
+        }
+
+        return Ok(new { data = rows });
+    }
+
     /// <summary>The start photo (bytes) through the existing evidence stream, with its own keys (never the flags key alone).</summary>
     [HttpGet("api/flags/{executionId:guid}/photo")]
     public Task<IActionResult> Photo(Guid executionId, CancellationToken ct)

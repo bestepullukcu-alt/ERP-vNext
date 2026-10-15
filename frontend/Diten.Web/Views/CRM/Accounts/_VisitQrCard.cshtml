@@ -38,10 +38,14 @@
                 <div class="vq-dlg-body">
                     <div class="vq-callout vq-callout-warn"><i class="bx bx-error"></i><span id="vq-regen-warn"></span></div>
                     <div id="vq-regen-versions"></div>
-                    <label class="vq-label">
-                        <span class="vq-label-cap">@QrLocalizer["ReasonLabel"] <span>· @QrLocalizer["Optional"]</span></span>
-                        <textarea class="vq-textarea" id="vq-regen-reason" rows="3" maxlength="500" placeholder="@QrLocalizer["ReasonPlaceholderRegen"]"></textarea>
-                    </label>
+                    @* U-2 — the form field standard: the label above, .diten-field = the icon (top: a textarea) + the control *@
+                    <div class="vq-label">
+                        <label class="vq-label-cap" for="vq-regen-reason">@QrLocalizer["ReasonLabel"] <span>· @QrLocalizer["Optional"]</span></label>
+                        <div class="diten-field">
+                            <i class="bx bx-message-square-detail diten-field-icon diten-field-icon--top" aria-hidden="true"></i>
+                            <textarea class="form-control" id="vq-regen-reason" rows="3" maxlength="500" placeholder="@QrLocalizer["ReasonPlaceholderRegen"]"></textarea>
+                        </div>
+                    </div>
                     <div class="vq-err d-none" id="vq-regen-error" role="alert"></div>
                 </div>
                 <div class="vq-dlg-foot">
@@ -60,10 +64,13 @@
                 <div class="vq-dlg-body">
                     <div id="vq-revoke-text"></div>
                     <div class="vq-callout vq-callout-info"><i class="bx bx-info-circle"></i><span>@QrLocalizer["RevokeInfo"]</span></div>
-                    <label class="vq-label">
-                        <span class="vq-label-cap">@QrLocalizer["ReasonLabel"] <span class="vq-req">*</span></span>
-                        <textarea class="vq-textarea" id="vq-revoke-reason" rows="4" maxlength="500" placeholder="@QrLocalizer["ReasonPlaceholderRevoke"]" aria-required="true"></textarea>
-                    </label>
+                    <div class="vq-label">
+                        <label class="vq-label-cap" for="vq-revoke-reason">@QrLocalizer["ReasonLabel"] <span class="vq-req">*</span></label>
+                        <div class="diten-field">
+                            <i class="bx bx-message-square-detail diten-field-icon diten-field-icon--top" aria-hidden="true"></i>
+                            <textarea class="form-control" id="vq-revoke-reason" rows="4" maxlength="500" placeholder="@QrLocalizer["ReasonPlaceholderRevoke"]" aria-required="true"></textarea>
+                        </div>
+                    </div>
                     <div class="vq-count" id="vq-revoke-count"></div>
                     <div class="vq-err d-none" id="vq-revoke-error" role="alert"></div>
                 </div>

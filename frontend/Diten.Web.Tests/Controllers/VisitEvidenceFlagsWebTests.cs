@@ -25,7 +25,7 @@ namespace Diten.Web.Tests.Controllers;
 /// its keys, the pure rules in Node (the period ≤ 92 days, the query, "QR not scanned" is not a flag, the bars + "Other",
 /// the chips, the drawer lines), the page in a fake DOM (team / tenant-wide / empty), seven languages, Arabic, RTL, dark.
 /// </summary>
-public sealed class VisitEvidenceFlagsWebTests
+public sealed partial class VisitEvidenceFlagsWebTests
 {
     private const string GatewayUrl = "http://gateway.test";
     private static readonly Guid TenantId = Guid.Parse("97c59330-dbc4-4665-b29c-0c26dbb5cc93");

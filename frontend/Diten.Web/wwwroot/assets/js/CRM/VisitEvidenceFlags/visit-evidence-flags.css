@@ -16,10 +16,10 @@
 }
 [dir="rtl"] .vf-flip { transform: scaleX(-1); }
 
+/* W3E-FIX (G-1) — .vf-page is the ROOT only (it wraps its content; the footer stays below it). The paging buttons are
+   .vf-pg: sharing one class made the root a 32 px button box and the footer rode over the table. The page header is the
+   list standard now (div.mb-3 > h5 + p.text-muted, U-3), so the old crumb / title / intro rules are gone. */
 .vf-page { display: flex; flex-direction: column; gap: 20px; }
-.vf-crumb { font-size: 13px; color: var(--vf-mu); }
-.vf-title { margin: 2px 0 0; font-size: 22px; font-weight: 500; color: var(--vf-h); }
-.vf-intro { font-size: 14px; margin-top: 4px; }
 .vf-card { background: var(--vf-card); border-radius: 8px; box-shadow: var(--vf-sh); }
 .vf-row { display: flex; gap: 8px; align-items: center; min-width: 0; }
 .vf-col { display: flex; flex-direction: column; min-width: 0; }
@@ -57,6 +57,7 @@
 .vf-select, .vf-input { min-height: 38px; border: 1px solid var(--vf-bd2); border-radius: 6px; background: var(--vf-card); color: var(--vf-h); padding-inline: 12px; font-size: 14.5px; }
 .vf-select { min-width: 200px; }
 .vf-custom { display: inline-flex; gap: 6px; align-items: center; }
+.vf-date { display: inline-block; width: 170px; }
 .vf-multi { position: relative; }
 .vf-multi-btn { display: inline-flex; justify-content: space-between; align-items: center; gap: 8px; cursor: pointer; }
 .vf-multi-menu { position: absolute; z-index: 20; inset-inline-start: 0; top: calc(100% + 4px); min-width: 280px; max-height: 340px; overflow: auto; background: var(--vf-card); border: 1px solid var(--vf-bd); border-radius: 8px; box-shadow: var(--vf-sh); padding: 6px; }
@@ -101,8 +102,8 @@
 .vf-empty i { width: 52px; height: 52px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 26px; background: var(--vf-sub); color: var(--vf-su); margin-bottom: 6px; }
 .vf-pager { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 24px; }
 .vf-pages { display: flex; gap: 6px; }
-.vf-page { min-width: 32px; height: 32px; border: 0; border-radius: 6px; background: var(--vf-soft); color: var(--vf-tx); cursor: pointer; font-size: 14px; }
-.vf-page.active { background: var(--vf-p); color: #fff; }
+.vf-pg { min-width: 32px; height: 32px; border: 0; border-radius: 6px; background: var(--vf-soft); color: var(--vf-tx); cursor: pointer; font-size: 14px; }
+.vf-pg.active { background: var(--vf-p); color: #fff; }
 
 /* ── the drawer ── */
 .vf-drawer { --bs-offcanvas-width: min(460px, 100vw); width: min(460px, 100vw); background: var(--vf-card); color: var(--vf-tx); }

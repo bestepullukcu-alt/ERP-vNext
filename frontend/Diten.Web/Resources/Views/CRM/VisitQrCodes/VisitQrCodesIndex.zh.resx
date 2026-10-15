@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="VisitQrCodesTitle" xml:space="preserve"><value>机构二维码</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>张贴在机构前台的二维码。下属单元没有自己的二维码时，上级机构的二维码有效。</value></data>
+  <data name="ColInstitution" xml:space="preserve"><value>机构</value></data>
+  <data name="ColType" xml:space="preserve"><value>类型</value></data>
+  <data name="ColCity" xml:space="preserve"><value>城市</value></data>
+  <data name="ColStatus" xml:space="preserve"><value>二维码状态</value></data>
+  <data name="ColVersion" xml:space="preserve"><value>版本</value></data>
+  <data name="ColLastScan" xml:space="preserve"><value>最近扫描</value></data>
+  <data name="ColRecent" xml:space="preserve"><value>近 30 天</value></data>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="StatusOpt_none" xml:space="preserve"><value>无</value></data>
+  <data name="StatusOpt_active" xml:space="preserve"><value>有效</value></data>
+  <data name="StatusOpt_revoked" xml:space="preserve"><value>已撤销</value></data>
+  <data name="FilterRegion" xml:space="preserve"><value>区域</value></data>
+  <data name="FilterType" xml:space="preserve"><value>机构类型</value></data>
+  <data name="QuickView" xml:space="preserve"><value>快速查看</value></data>
+  <data name="BulkGenerateConfirm" xml:space="preserve"><value>为所选的 {0} 家机构生成二维码？已有有效二维码的机构将被跳过。</value></data>
+</root>

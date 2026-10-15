@@ -44,7 +44,7 @@
     const monthText = today => dtf({ month: 'long', year: 'numeric' }).format(new Date(today + 'T00:00:00Z'));
     const num = n => F.isolate(F.number(n, 0));
     const pct = n => { let v; try { v = new Intl.NumberFormat(culture(), { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(n); } catch (e) { v = String(n); } return T('Percent', v); }; // %9,0 (the mockup)
-    const valueText = v => (v ? T(v.key, ...v.args.map(a => F.number(a, 0))) : '');
+    const valueText = v => (v ? T(v.key, ...v.args.map(a => F.number(a, v.digits || 0))) : '');
     const durationText = s => (s == null ? '—' : valueText(C.duration(s)));
     const today = () => new Date(Date.now()).toISOString().slice(0, 10);
 
@@ -57,7 +57,7 @@
     // ── state ────────────────────────────────────────────────────────────────────────────────────────────────
     const state = {
         period: 'last7', custom: { from: '', to: '' }, resourceId: '', flags: [], accountId: '', onlyFlagged: true,
-        page: 1, tab: 'visits', list: null, summary: null, accounts: {}, current: null, menuOpen: false
+        page: 1, tab: 'visits', list: null, summary: null, accounts: {}, accountInfo: {}, current: null, menuOpen: false
     };
     const range = () => C.rangeOf(state.period, today(), state.custom);
     const filters = () => { const r = range(); return { from: r.from, to: r.to, resourceId: state.resourceId, flags: state.flags, accountId: state.accountId, onlyFlagged: state.onlyFlagged }; };
@@ -79,7 +79,23 @@
         if (withSummary !== false) {
             jobs.push(call('/summary' + C.summaryQuery(filters())).then(res => { const d = data(res); if (!d) { showError(res); return; } state.summary = d; }));
         }
-        return Promise.all(jobs).then(render);
+        return Promise.all(jobs).then(render).then(tellApart);
+    }
+
+    /**
+     * W3E-FIX (G-7) — institutions with the same name in the filter ("100.YIL ECZANESİ" × 3): their city / code is read
+     * ONCE per id through the page's proxy (only for the same-name ones), then the options carry it.
+     */
+    function tellApart() {
+        const ask = C.sameNameIds(Object.keys(state.accounts).map(id => ({ id: id, name: state.accounts[id] })))
+            .filter(id => !state.accountInfo[id]);
+        if (!ask.length) { return Promise.resolve(); }
+        ask.forEach(id => { state.accountInfo[id] = {}; });
+        return call('/account-labels?ids=' + encodeURIComponent(ask.join(','))).then(res => {
+            const d = data(res);
+            (Array.isArray(d) ? d : []).forEach(x => { if (x && x.accountId) { state.accountInfo[x.accountId] = { city: x.city || null, code: x.code || null }; } });
+            renderFilters();
+        });
     }
 
     function showError(res) {
@@ -121,9 +137,12 @@
         }
         const acc = el('vf-account');
         if (acc) {
-            const ids = Object.keys(state.accounts).sort((a, b) => String(state.accounts[a]).localeCompare(String(state.accounts[b]), culture()));
+            const options = C.accountOptions(Object.keys(state.accounts).map(id => Object.assign({ id: id, name: state.accounts[id] }, state.accountInfo[id] || {})),
+                (a, b) => String(a).localeCompare(String(b), culture()));
+            // the name isolated as a whole (G-6): "75.YIL" never turns into "YIL.75" in Arabic; the city / code after it
             acc.innerHTML = '<option value="">' + esc(L.AccountAll) + '</option>'
-                + ids.map(id => '<option value="' + esc(id) + '"' + (state.accountId === id ? ' selected' : '') + '>' + esc(F.isolate(state.accounts[id])) + '</option>').join('');
+                + options.map(o => '<option value="' + esc(o.id) + '"' + (state.accountId === o.id ? ' selected' : '') + '>'
+                    + esc(o.suffix ? F.isolate(o.name) + ' · ' + F.isolate(o.suffix) : F.isolate(o.text)) + '</option>').join('');
         }
         const only = el('vf-only'); if (only) { only.checked = state.onlyFlagged; }
     }
@@ -187,7 +206,7 @@
         const current = list.page || state.page;
         const first = Math.max(1, Math.min(current - 3, pages - 6));
         const shown = []; for (let p = first; p <= Math.min(pages, first + 6); p++) { shown.push(p); }
-        el('vf-pages').innerHTML = pages > 1 ? shown.map(p => '<button type="button" class="vf-page' + (p === current ? ' active' : '') + '" data-page="' + p + '"' + (p === current ? ' aria-current="page"' : '') + '>' + esc(F.number(p, 0)) + '</button>').join('') : '';
+        el('vf-pages').innerHTML = pages > 1 ? shown.map(p => '<button type="button" class="vf-pg' + (p === current ? ' active' : '') + '" data-page="' + p + '"' + (p === current ? ' aria-current="page"' : '') + '>' + esc(F.number(p, 0)) + '</button>').join('') : '';
     }
 
     function renderReps() {
@@ -230,7 +249,7 @@
         el('vf-drawer-sub').innerHTML = F.bidi(row.repName || row.resourceId) + ' · ' + esc(startDay(row.startedAt) + ' ' + timeText(row.startedAt)) + ' · ' + esc(L['Kind_' + row.kind] || row.kind);
         el('vf-drawer-target').innerHTML = t.type === 'contact' ? F.bidi(t.accountName || '—') + ' · ' + F.bidi(t.name || '') : F.bidi(t.name || t.accountName || '—');
         const remote = row.kind === 'remote';
-        const distance = remote || loc.distanceMeters == null ? (loc.status === 'account_unknown' ? esc(L.LocNotMeasured) : '—') : esc(T('UnitMeters', F.number(loc.distanceMeters, 0)));
+        const distance = remote || loc.distanceMeters == null ? (loc.status === 'account_unknown' ? esc(L.LocNotMeasured) : '—') : esc(valueText(C.distance(loc.distanceMeters)));
         const accuracy = remote || loc.accuracyMeters == null ? '—' : esc(T('Accuracy', F.number(loc.accuracyMeters, 0)));
         const qr = row.qr;
         const dev = C.device(row);
@@ -264,6 +283,8 @@
 
     // ── wiring ───────────────────────────────────────────────────────────────────────────────────────────────
     const on = (id, ev, fn) => { const n = el(id); if (n) { n.addEventListener(ev, fn); } };
+    // the shared date field keeps its own calendar in step; a plain input (no flatpickr) takes the value
+    const setDate = (id, iso) => { const n = el(id); if (!n) { return; } if (n._flatpickr) { n._flatpickr.setDate(iso, false); } else { n.value = iso; } };
     const refilter = () => { state.page = 1; load(true); };
 
     root.addEventListener('click', e => {
@@ -288,7 +309,7 @@
     });
     on('vf-period', 'change', e => {
         state.period = e.target.value;
-        if (state.period === 'custom' && !state.custom.from) { const r = C.rangeOf('last30', today()); state.custom = { from: r.from, to: r.to }; el('vf-from').value = r.from; el('vf-to').value = r.to; }
+        if (state.period === 'custom' && !state.custom.from) { const r = C.rangeOf('last30', today()); state.custom = { from: r.from, to: r.to }; setDate('vf-from', r.from); setDate('vf-to', r.to); }
         refilter();
     });
     on('vf-from', 'change', e => { state.custom.from = e.target.value; refilter(); });
@@ -296,6 +317,10 @@
     on('vf-rep', 'change', e => { state.resourceId = e.target.value; refilter(); });
     on('vf-account', 'change', e => { state.accountId = e.target.value; state.page = 1; load(false); });
     on('vf-only', 'change', e => { state.onlyFlagged = !!e.target.checked; state.page = 1; load(false); });
+
+    // U-2 — the custom range is the shared date field: flatpickr in the page's language, the calendar icon OPENS it
+    // (assets/js/shared/diten-datefield.js); the value stays yyyy-mm-dd, so the change handlers above are unchanged.
+    if (window.DitenDateField) { window.DitenDateField.enhance(root); }
 
     window.VisitEvidenceFlagsPage = { state: state, load: load, openDrawer: openDrawer, setTab: setTab };
     setTab('visits');

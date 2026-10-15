@@ -247,4 +247,6 @@
   <data name="ColPhoto" xml:space="preserve"><value>الصورة</value></data>
   <data name="ColQr" xml:space="preserve"><value>رمز QR</value></data>
   <data name="ColDevice" xml:space="preserve"><value>الجهاز</value></data>
+  <data name="PvQr" xml:space="preserve"><value>رمز QR للمؤسسة</value></data>
+  <data name="PvDeviceWeb" xml:space="preserve"><value>لا يمكن التحقق من هذا الجهاز؛ ستُعلَّم زيارتك بأنها «جهاز غير متحقَّق منه». يُنصح باستخدام تطبيق الجوال.</value></data>
 </root>
