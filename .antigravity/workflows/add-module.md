@@ -155,7 +155,7 @@ Bu workflow, bir modülün sıfırdan son kullanıcıya ulaşana kadarki tüm ka
      - [ ] Bulk delete onayı + silme akışı çalışıyor mu?
      - [ ] Platform/Admin modülü ise Ctrl+K `en` ve `tr` kültürlerinde açılıyor mu, yeni modül adı/grup/keyword araması sonuç döndürüyor mu ve sonuç doğru `/Platform/...` route'una gidiyor mu?
    - **Kanal A/B otomasyon başarısız ya da kullanılamıyorsa Kanal C zorunludur — orchestrator, browser kontrolünü uydurarak "yapıldı" diyemez.**
-   - Herhangi bir madde başarısızsa → Phase 4'e geri dön ve düzelt.
+   - Herhangi bir madde başarısızsa → Phase 4'e geri dön ve düzelt. Yeni Control Tower işlerinde aynı kök neden iki ardışık turda kapanmazsa üçüncü tura girme: dur ve raporla; yeniden değerlendirme kararı (kart §0.2 Y3, SOP §28.2) çözülmeden yeni uygulama yok.
 
 5. **Phase 5: Kalite & Güvenlik (testing-agent & security-agent & code-quality-agent)**
    - xUnit testlerini yaz (Tenant isolation check).

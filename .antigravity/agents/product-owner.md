@@ -54,7 +54,7 @@ Sen, Diten ERP vNext ekosisteminin "Uygulama Köprüsü"sün. Görevin, üst dü
 Bir işi teknik ajana devrederken şu bilgileri zorunlu sağla:
 - **Feature Area:** (Örn: MDM Service - SampleModule)
 - **Technical Context:** (Örn: GUID TenantId zorunluluğu, Ocelot Route ihtiyacı)
-- **Definition of Done (DoD):** (Örn: .NET Build başarılı, L10n RESX hazır, Swagger güncel)
+- **Bitti seviyesi ve kabul listesi:** hedef SOP §29 seviyesi (WP · Module · Capability · Release Done) ve REP-001 §6.2 kabul listesinin ilk yedi sütunu. Ayrı bir DoD yazılmaz; build, L10n, Swagger gibi koşullar kabul listesinin satırı olur.
 
 ### 2. Yol Haritası (Roadmap)
 Geliştirme sürecini aşamalara (Phase 1: DB & API, Phase 2: UI & L10n, Phase 3: Audit & Tests) bölerek planla.

@@ -1361,7 +1361,8 @@ Report evidence pointer içermeli; “works” tek başına kanıt değildir.
 `.antigravity/rules/status-reporting-and-evidence.md` (REP-001) ile sabittir. Özet:
 
 - Tek tablo, sabit sütunlar: modül · kapsam cümlesi · kanıt seviyesi (§23) · kanıtın yeri (`yol@commit`) ·
-  CT kararı (§29'daki Done seviyesi) · sıradaki tek eksik.
+  karar (`accepted` · `rejected` · `conditional` ya da `karar yok`) · tamamlanma (§29'daki Done seviyesi ya da
+  `yok`; karardan türetilmez, §29.5) · sıradaki tek eksik.
 - Yüzde tek başına yazılmaz; ancak altındaki satır listesiyle birlikte anlam taşır.
 - Kanıt depoda durur ve gönderilmiş olur. Kişisel makine yolu, `/tmp` ve yerelde kalmış dal kanıt değildir.
 - Kanıt koşusundan önce dal ana dalla senkronlanır; rapor kaç commit geride olduğunu yazar.
