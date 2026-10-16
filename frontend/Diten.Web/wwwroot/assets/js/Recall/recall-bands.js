@@ -187,6 +187,15 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') window.Rec
         document.getElementById('qr-decide-form')?.addEventListener('change', decision);
         document.getElementById('qr-decide-form')?.addEventListener('input', decision);
         movement();
+        // the form sets type / source programmatically too (prefill, select2 "change.select2" — a namespaced event a plain listener does not
+        // hear): a light watch of the two values keeps the band right whatever set them
+        if (exitBox()) {
+            let seen = '';
+            setInterval(() => {
+                const now = `${document.getElementById('movementType')?.value || ''}|${document.getElementById('source')?.value || ''}`;
+                if (now !== seen) { seen = now; movement(); }
+            }, 600);
+        }
     };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 

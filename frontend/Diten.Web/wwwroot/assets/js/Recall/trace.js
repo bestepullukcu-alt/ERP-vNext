@@ -47,15 +47,15 @@
         const box = byId('rc-trace-tree');
         const hidden = (r) => r.ancestors.some((a) => collapsed.has(a));
         box.innerHTML = rows.filter((r) => !hidden(r)).map((r) => `
-            <div class="list-group-item d-flex align-items-center gap-2 ${r.gap ? 'list-group-item-danger' : ''}" data-node="${esc(r.key)}" style="padding-inline-start:${1 + r.depth * 1.5}rem">
+            <div class="list-group-item d-flex flex-wrap align-items-center gap-2 ${r.gap ? 'list-group-item-danger' : ''}" data-node="${esc(r.key)}" style="padding-inline-start:${1 + r.depth * 1.5}rem">
                 ${r.hasChildren ? `<button type="button" class="btn btn-icon btn-sm btn-text-secondary" data-toggle-node="${esc(r.key)}" aria-label="${esc(r.kindText)}"><i class="bx ${collapsed.has(r.key) ? 'bx-chevron-right' : 'bx-chevron-down'}"></i></button>` : '<span style="width:2rem"></span>'}
                 <i class="bx ${ICON[r.kind] || 'bx-circle'} text-muted"></i>
-                <div class="d-flex flex-column min-w-0 flex-grow-1">
+                <div class="d-flex flex-column" style="flex:1 1 10rem;min-width:0">
                     <small class="text-muted">${esc(r.kindText)}</small>
                     <span class="fw-medium text-heading text-truncate">${esc(r.title)}</span>
                     ${r.sub ? `<small class="text-muted text-truncate">${esc(r.sub)}</small>` : ''}
                 </div>
-                ${r.place && r.kind === 'Shipment' ? `<small class="text-muted">${esc(r.place)}</small>` : ''}
+                ${r.place && r.kind === 'Shipment' ? `<small class="text-muted text-break">${esc(r.place)}</small>` : ''}
                 <span class="text-end">${amount(r.quantity)}</span>
                 <span class="d-flex flex-wrap gap-1">${r.badges.map(badge).join('')}</span>
             </div>`).join('');
@@ -111,7 +111,7 @@
         event?.preventDefault();
         const rootLotId = lotSelect().value;
         if (!rootLotId) return;
-        const lotNumber = lotSelect().selectedOptions?.[0]?.textContent || rootLotId;
+        let lotNumber = lotSelect().selectedOptions?.[0]?.textContent || rootLotId;
         ui.hideError(byId('rc-error'));
         byId('rc-trace-busy').classList.remove('d-none');
         byId('rc-trace-run').disabled = true;
@@ -123,7 +123,11 @@
             return;
         }
         byId('rc-labels-unavailable').classList.toggle('d-none', reply.json?.labelsAvailable !== false);
-        last = { rootLotId, lotNumber, direction: direction(), trace: reply.json?.trace || { nodes: [] } };
+        const trace = reply.json?.trace || { nodes: [] };
+        // R7c: opened by ?lot={id} the picker knows only the id — the root node names the lot; the option and the recent list take its number
+        const rootNumber = (trace.nodes || []).find((n) => view.isLot(n) && n.lot?.lotId === rootLotId)?.lot?.lotNumber;
+        if (rootNumber && rootNumber !== lotNumber) { lotNumber = rootNumber; const select = lotSelect(); [...select.options].filter((o) => o.value === rootLotId).forEach((o) => o.remove()); select.add(new Option(rootNumber, rootLotId, true, true)); if (window.jQuery?.fn?.select2) window.jQuery(select).trigger('change.select2'); }
+        last = { rootLotId, lotNumber, direction: direction(), trace };
         remember(rootLotId, lotNumber);
         drawRecent();
         draw();
