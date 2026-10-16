@@ -98,7 +98,7 @@ Künye insan için değil, §7'deki betik için vardır: kararların listesi ell
 ### 6.1 Künye v2 — yeni Control Tower'lar (CT-OPS-03)
 
 Katı kuyruklu (kayıtta `strict=yes`) Control Tower'ların kabul kayıtları bu künyeyi taşır. Eski (v1) künyeler yerinde
-geçerlidir; göç yoktur. Künye kapalı bir bloktur; yalnız aşağıdaki alanlar, her biri tek satırda ve bir kez yazılır;
+geçerlidir; göç yoktur. Künye kapalı bir bloktur; yalnız aşağıdaki alanlar ve isteğe bağlı `module_pack`, her biri tek satırda ve bir kez yazılır;
 değerde `#` olmaz (eski okuyucu onu keser). Örneğe açıklama eklenmez:
 
 ```yaml
@@ -136,6 +136,7 @@ implementer: geliştirme ajanının kimliği
 | `evidence`, `acceptance_list` | Commit'lenmiş `yol@commit`; kabul listesi §6.2 biçimindedir |
 | `supersedes` | `-` ya da aynı kuyruk + WP + modülün önceki kaydının yolu. Döngü olmaz; iş başına tek yetkili kayıt vardır. En yüksek E seviyesi ya da dosya sırası seçim ölçütü değildir |
 | `verifier`, `implementer` | Farklı olur (SOP K13). Beyandır, kimlik doğrulaması değildir |
+| `module_pack` | İsteğe bağlı; yazılırsa bir kez. Kaydın kapsadığı onaylı paket sürümü: `execution/domains/<domain>/module-packs/<dosya>.md@<40 haneli commit>`. Yalnız `module-check` ister; olmaması bugünkü kayıtları bozmaz |
 
 Muafiyet (SOP K19) kabul kaydını otomatik geçirmez; sahip, son tarih ve kanıtla ayrı değerlendirilir.
 
@@ -159,6 +160,17 @@ listesinin ve kanıtın anlamca yeterli olduğuna bağımsız doğrulayıcı ve 
 - Başlıktan sonra ayırıcı satır gelir; tablonun dışında ölçüt satırı kalmaz; boş liste olmaz.
 - `accepted` karar için zorunlu ölçütlerin hepsi `geçti` ya da gerekçeli `N/A` olur.
 - Mevcut senaryo dosyaları değişmez; bu biçim yeni kabul listeleri içindir.
+- `ID` bir paket ölçütünü kapatıyorsa paketteki `AC-<n>` kimliğidir (yeni paketler, `module-pack-standard.md` §7).
+
+```bash
+python3 scripts/acceptance_record.py module-check --queue <kuyruk> --module <modül> --pack <paket yolu>@<40 haneli commit> [--ref <ref>]
+```
+
+Çıkış 0 yalnız şunu söyler: seçilen paket sürümünün her zorunlu `AC-<n>`'si, bu modülün yürürlükteki revizyonu ACCEPTED
+olan ve künyesinde `module_pack` ile tam bu sürümü gösteren yetkili kabul kayıtlarında `geçti` ya da gerekçeli `N/A`'dır.
+**Module Done değildir**; SOP §29.2'nin diğer koşulları denetlenmez. 1 = açık zorunlu ölçüt var; 2 = ölçülemez (onaylı
+olmayan, kimliksiz ya da bozuk biçimli paket; geçersiz kuyruk). Aynı AC kimliği paketin başka sürümünde başka anlam
+taşıyabilir; sürüm bağı olmayan kayıt bu yüzden sayılmaz.
 
 ---
 

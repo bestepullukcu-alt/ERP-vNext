@@ -233,32 +233,39 @@ def business(d: dict) -> dict:
 
 
 # ------------------------------------------------------------------------------------------------ counting
+def current_revision(wid: str, rows: list[dict]) -> tuple[dict | None, str]:
+    """A work's current revision — the highest -R<n>, or the work itself — when its whole revision chain is valid
+    (one root; no -R<n> twice; every -R<n> of the root's exact module with the root in depends_on); else (None, why).
+    Shared by count_works() and acceptance_record.py module-check."""
+    roots = [r for r in rows if r["id"] == wid]
+    if len(roots) != 1:
+        return None, f"kök satır {len(roots)} kez var"
+    root = roots[0]
+    revs: dict[int, list[dict]] = {}
+    for r in rows:
+        m = re.fullmatch(re.escape(wid) + r"-R(\d+)", r["id"])
+        if m:
+            revs.setdefault(int(m.group(1)), []).append(r)
+    twice = [f"{wid}-R{n}" for n, rs in revs.items() if len(rs) > 1]
+    if twice:
+        return None, f"zincir belirsiz: {', '.join(twice)} birden çok"
+    broken = [r["id"] for rs in revs.values() for r in rs
+              if r["module"] != root["module"] or wid not in [x.strip() for x in r["depends_on"].split(",")]]
+    if broken:
+        return None, f"zincir geçersiz: {', '.join(broken)} aynı modülde değil ya da depends_on kökü göstermiyor"
+    return (revs[max(revs)][0] if revs else root), ""
+
+
 def count_works(base_ids: list[str], rows: list[dict], accepted_ok) -> dict[str, tuple[bool, str]]:
     """A baseline work counts once, when its whole revision chain is valid and its current revision (the highest
     -R<n>, or the work itself) is ACCEPTED with a record that allows it. An invalid newer revision never brings an
     older acceptance back."""
     out = {}
     for wid in base_ids:
-        roots = [r for r in rows if r["id"] == wid]
-        if len(roots) != 1:
-            out[wid] = (False, f"kök satır {len(roots)} kez var")
+        current, why = current_revision(wid, rows)
+        if current is None:
+            out[wid] = (False, why)
             continue
-        root = roots[0]
-        revs: dict[int, list[dict]] = {}
-        for r in rows:
-            m = re.fullmatch(re.escape(wid) + r"-R(\d+)", r["id"])
-            if m:
-                revs.setdefault(int(m.group(1)), []).append(r)
-        twice = [f"{wid}-R{n}" for n, rs in revs.items() if len(rs) > 1]
-        if twice:
-            out[wid] = (False, f"zincir belirsiz: {', '.join(twice)} birden çok")
-            continue
-        broken = [r["id"] for rs in revs.values() for r in rs
-                  if r["module"] != root["module"] or wid not in [x.strip() for x in r["depends_on"].split(",")]]
-        if broken:
-            out[wid] = (False, f"zincir geçersiz: {', '.join(broken)} aynı modülde değil ya da depends_on kökü göstermiyor")
-            continue
-        current = revs[max(revs)][0] if revs else root
         if current["state"] != "ACCEPTED":
             out[wid] = (False, f"yürürlükteki revizyon {current['id']} {current['state']}")
         elif not accepted_ok(current):
@@ -819,11 +826,10 @@ def _status_of(text: str | None) -> str:
     return st[0][:30] if len(st) == 1 else f"{len(st)} status satırı"
 
 
-def build(queue_id: str, ref: str = "HEAD", effort: str | None = None, previous: str | None = None) -> dict:
-    ctq = _load("ct_queue", ROOT / "scripts" / "ct_queue.py")
-    ar = _load("acceptance_record", ROOT / "scripts" / "acceptance_record.py")
-    vmi = _load("verify_module_id", ROOT / ".antigravity" / "scripts" / "verify_module_id.py")
-    src = Source(ref)
+def read_strict_queue(ctq, vmi, src: "Source", queue_id: str) -> dict:
+    """The registered strict queue at the source's fixed SHA, fully validated as the report reads it: registry,
+    vocabulary, transitions, required columns, module ids, history and the acceptance records of ACCEPTED rows.
+    Shared by build() and acceptance_record.py module-check; nothing is read from the working tree."""
     S = src.sha
     reasons: list[str] = []
     reg_path = ctq.REGISTRY.relative_to(ctq.ROOT).as_posix()
@@ -887,6 +893,19 @@ def build(queue_id: str, ref: str = "HEAD", effort: str | None = None, previous:
             bad.add(qid)
     if errors:
         reasons.append(f"kuyruk doğrulaması: {len(errors)} hata — ilk: {errors[0][:120]}")
+    return {"q": q, "reg_path": reg_path, "vocab": vocab, "cur": cur, "rows_raw": rows_raw, "errors": errors, "bad": bad,
+            "reasons": reasons}
+
+
+def build(queue_id: str, ref: str = "HEAD", effort: str | None = None, previous: str | None = None) -> dict:
+    ctq = _load("ct_queue", ROOT / "scripts" / "ct_queue.py")
+    ar = _load("acceptance_record", ROOT / "scripts" / "acceptance_record.py")
+    vmi = _load("verify_module_id", ROOT / ".antigravity" / "scripts" / "verify_module_id.py")
+    src = Source(ref)
+    S = src.sha
+    sq = read_strict_queue(ctq, vmi, src, queue_id)
+    reasons, reg_path, q, vocab = list(sq["reasons"]), sq["reg_path"], sq["q"], sq["vocab"]
+    rows_raw, errors, bad = sq["rows_raw"], sq["errors"], sq["bad"]
     s_date = src.git("show", "-s", "--format=%cs", S).stdout.decode().strip()
     gitread = ar.Git(ROOT)
     rows, linked, pending, conditions, causes = [], [], [], [], {}

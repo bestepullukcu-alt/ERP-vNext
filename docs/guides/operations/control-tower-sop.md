@@ -1598,6 +1598,9 @@ Module:
 
 ile done olur.
 
+Yeni Control Tower'da ilk madde (zorunlu paket AC'leri) `python3 scripts/acceptance_record.py module-check` ile ölçülür
+(REP-001 §6.2); çıkış 0 yalnız AC kapsamıdır, Module Done değildir.
+
 ## 29.3 Capability Done
 
 Capability:

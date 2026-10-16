@@ -3,6 +3,7 @@
 CT-OPS-03 — acceptance record check (REP-001 §6.1 künye v2, §6.2 acceptance list; SOP §29.5). Read-only; fail-closed.
 
     python3 scripts/acceptance_record.py check RECORD@COMMIT [--queue ID] [--wp ID] [--module VALUE]
+    python3 scripts/acceptance_record.py module-check --queue ID --module VALUE --pack PACK@COMMIT40 [--ref REF]
     python3 scripts/acceptance_record.py --self-test
 
 check   exit 0  the record allows the queue state ACCEPTED: a valid v2 künye, decision accepted, the authoritative record
@@ -11,6 +12,10 @@ check   exit 0  the record allows the queue state ACCEPTED: a valid v2 künye, d
         exit 1  ENGEL — the record does not allow ACCEPTED. A valid conditional or rejected record is also exit 1: it is
                 a record, not an acceptance. A legacy (v1) künye is exit 1 for this check; it stays valid where it is
         exit 2  the check could not complete (unreadable record or commit, git error) — never a pass
+
+module-check (İ4 S2)  exit 0  every mandatory AC-<n> of that approved pack version is covered by an accepted,
+                              authoritative record of the module bound to it (künye module_pack) — AC coverage only,
+                              never Module Done; exit 1 a mandatory AC open; exit 2 not measurable
 
 The künye's `commit` is the verified code tree; the record itself is read at RECORD@COMMIT, a different commit.
 Nothing is derived: decision, queue state and completion level are separate fields (SOP §29.5).
@@ -44,6 +49,15 @@ GIT_ALLOWED = {"rev-parse", "cat-file", "ls-tree"}
 
 
 SOURCE_STATUS = {"approved", "ready-for-dev", "in-progress", "review", "done"}  # REP-001 §5 pack states except draft
+# İ4 S2 (CT-I4-AC-TRACEABILITY): the optional binding of a record to the approved pack version it covers, and a pack's
+# identified acceptance criteria (module-pack-standard.md §7)
+OPTIONAL_FIELDS = ["module_pack"]
+MODULE_PACK = re.compile(r"^(execution/domains/[a-z0-9][a-z0-9-]*/module-packs/[A-Za-z0-9][A-Za-z0-9._-]*\.md)@([0-9a-f]{40})$")
+PACK_STATUS = {"approved", "ready-for-dev"}
+AC_HEADING = re.compile(r"^#{1,6}[ \t]*Acceptance Criteria[ \t]*$", re.I)
+AC_ITEM = re.compile(r"^- \[[ xX]\] AC-([1-9][0-9]*) \((zorunlu|isteğe bağlı)\) — (\S.*)$")
+AC_ID = re.compile(r"^AC-([1-9][0-9]*)$")
+FENCE = re.compile(r"^(`{3,}|~{3,})")
 
 
 def is_v2(text: str) -> bool:
@@ -112,7 +126,7 @@ def strict_front_matter(text: str) -> tuple[dict[str, str], list[str]]:
             bad.append(f"künye satır {n}: okunamadı ya da çok satırlı değer — desteklenmez: '{l.strip()[:40]}'")
             continue
         key, value = m.group(1), m.group(2)
-        if key not in FIELDS:
+        if key not in FIELDS and key not in OPTIONAL_FIELDS:
             bad.append(f"künye satır {n}: tanımsız alan '{key}'")
         elif key in fields:
             bad.append(f"künye: '{key}' iki kez var — çelişkili değer sessizce seçilmez")
@@ -123,6 +137,8 @@ def strict_front_matter(text: str) -> tuple[dict[str, str], list[str]]:
     for k in FIELDS:
         if k not in fields and not any(b.startswith(f"künye: '{k}'") for b in bad):
             bad.append(f"künye: '{k}' yok")
+    if "module_pack" in fields and not MODULE_PACK.match(fields["module_pack"]):  # optional; when present, well formed
+        bad.append("künye: 'module_pack' biçimi execution/domains/<domain>/module-packs/<dosya>.md@<40 haneli commit> değil")
     legacy = front_matter_reader().front_matter(text)
     if not bad and any(legacy.get(k) != v for k, v in fields.items()):
         bad.append("künye: eski okuyucu (status_report.front_matter) aynı değerleri okumuyor")
@@ -426,6 +442,183 @@ def run_check(spec: str, expect: dict, git: Git | None = None, index_ref: str = 
         return 2, [f"sonuç: tamamlanamadı — beklenmeyen hata ({type(e).__name__})", "çıkış: 2"]
 
 
+def parse_pack(text: str, module: str) -> tuple[dict[int, tuple[bool, str]], list[str], bool]:
+    """A pack version's identified acceptance criteria: ({n: (mandatory, text)}, problems, old format). The künye is a
+    closed block with a single id equal to the module and a single status approved / ready-for-dev. One pass over the
+    body tracks fenced code by its opening mark and length (only the same mark, at least as long, alone on its line
+    closes it); an unclosed fence anywhere makes the pack unreadable. Outside fences: one '## Acceptance Criteria'
+    section up to the next heading of level 1–2, every item there '- [ ] AC-<n> (zorunlu|isteğe bağlı) — <criterion>',
+    at least one mandatory. A section without any identity is the old format: not measurable."""
+    lines = text.replace("\r\n", "\n").split("\n")
+    if not lines or lines[0].strip() != "---":
+        return {}, ["paket: künye '---' ile başlamıyor"], False
+    close = next((i for i in range(1, len(lines)) if lines[i].strip() == "---"), None)
+    if close is None:
+        return {}, ["paket: künye kapanmıyor"], False
+    bad: list[str] = []
+    hv = header_values(text, ("id", "status"))
+    if len(hv["id"]) != 1 or hv["id"][0] != module:
+        bad.append(f"paket: künyede tek id '{module}' olmalı (bulunan: {hv['id'] or 'yok'})")
+    if len(hv["status"]) != 1 or hv["status"][0] not in PACK_STATUS:
+        bad.append(f"paket: künyede tek status approved ya da ready-for-dev olmalı (bulunan: {hv['status'] or 'yok'})")
+    outside: list[int] = []          # body lines that are not fenced code (fence delimiter lines are code)
+    fence, opened = None, 0
+    for i in range(close + 1, len(lines)):
+        s = lines[i].strip()
+        m = FENCE.match(s)
+        if fence is None:
+            if m:
+                fence, opened = (m.group(1)[0], len(m.group(1))), i
+            else:
+                outside.append(i)
+        elif m and s == m.group(1) and m.group(1)[0] == fence[0] and len(m.group(1)) >= fence[1]:
+            fence = None
+    if fence is not None:
+        return {}, bad + [f"paket: satır {opened + 1}'de açılan kod çiti kapanmıyor — sonrası okunamaz"], False
+    heads = [i for i in outside if AC_HEADING.match(lines[i].strip())]
+    if len(heads) != 1 or lines[heads[0]].strip() != "## Acceptance Criteria":
+        return {}, bad + [f"paket: tek '## Acceptance Criteria' bölümü olmalı ({len(heads)} başlık)"], False
+    after = [i for i in outside if i > heads[0]]
+    end = next((i for i in after if re.match(r"^#{1,2}\s", lines[i])), len(lines))
+    criteria: dict[int, tuple[bool, str]] = {}
+    other = []
+    for i in after:
+        if i >= end:
+            break
+        s = lines[i].strip()
+        if not s:
+            continue
+        m = AC_ITEM.match(s)
+        if m:
+            n = int(m.group(1))
+            if n in criteria:
+                bad.append(f"paket: AC-{n} iki kez var")
+            criteria[n] = (m.group(2) == "zorunlu", m.group(3))
+        elif re.search(r"\bAC-\d", s) or re.match(r"^([-*+]|\d+[.)])\s", s):
+            other.append(s[:60])
+    if not criteria:
+        return {}, bad, True
+    if other:
+        bad.append(f"paket: AC biçimine uymayan madde var: '{other[0]}'")
+    if not any(m for m, _ in criteria.values()):
+        bad.append("paket: zorunlu AC yok — boş bir başarı üretilmez")
+    return criteria, bad, False
+
+
+def module_coverage(criteria: dict[int, tuple[bool, str]], works: list[dict], pack_spec: str) -> tuple[int, list[str]]:
+    """Which mandatory criteria of one pack version are covered. A work counts when its current revision is ACCEPTED,
+    its record allows it (check exit 0) and its künye binds exactly this pack version; its list rows 'AC-<n>' with
+    'geçti' or a reasoned 'N/A' cover. Never an implicit match, never Module Done; no mandatory criterion -> 2."""
+    if not any(m for m, _ in criteria.values()):
+        return 2, ["sonuç: ölçülemez — seçilen paket sürümünde zorunlu AC yok; boş bir başarı üretilmez", "çıkış: 2"]
+    out, covered = [], {}
+    for w in works:
+        label = f"{w['root']} → {w['current'] or '-'}"
+        why = ""
+        if w["current"] is None:
+            why = w["why"]
+        elif w["state"] != "ACCEPTED":
+            why = f"yürürlükteki revizyon {w['current']} {w['state']}"
+        elif w["check"] != 0:
+            why = f"kabul kaydı {w['record']} ACCEPTED'e izin vermiyor"
+        elif not w["module_pack"]:
+            why = "künyede module_pack yok — aynı AC kimliğiyle örtük eşleştirme yapılmaz"
+        elif w["module_pack"] != pack_spec:
+            why = f"başka paket sürümüne bağlı ({w['module_pack']}) — seçilen sürümün ölçütü kapanmaz"
+        if why:
+            out.append(f"İŞ {label}: sayılmadı — {why}")
+            continue
+        ids = [r["ID"] for r in w["rows"]]
+        here = []
+        for r in w["rows"]:
+            m = AC_ID.match(r["ID"])
+            if not m or ids.count(r["ID"]) != 1:
+                continue
+            result = r["Sonuç"]
+            if result == "geçti" or re.match(r"^N/A\s*[—-]\s*\S", result):
+                n = int(m.group(1))
+                covered.setdefault(n, []).append(w["record"])
+                here.append(f"AC-{n}")
+        out.append(f"İŞ {label}: sayıldı · {w['record']} · kapadığı: {', '.join(here) or 'yok'}")
+    open_ = []
+    for n, (mandatory, _) in sorted(criteria.items()):
+        if n in covered:
+            out.append(f"AC-{n} ({'zorunlu' if mandatory else 'isteğe bağlı'}): kapalı — {covered[n][0]}")
+        elif mandatory:
+            open_.append(n)
+            out.append(f"AC-{n} (zorunlu): AÇIK")
+        else:
+            out.append(f"AC-{n} (isteğe bağlı): kapsanmadı")
+    mandatory_n = sum(1 for m, _ in criteria.values() if m)
+    if open_:
+        out += [f"sonuç: zorunlu AC kapsamı eksik — {len(open_)}/{mandatory_n} açık; bu Module Done değildir", "çıkış: 1"]
+        return 1, out
+    out += [f"sonuç: seçilen paket sürümünün {mandatory_n} zorunlu AC'si kapalı — yalnız AC kapsamı; Module Done değildir "
+            "(SOP §29.2'nin diğer koşulları denetlenmez)", "çıkış: 0"]
+    return 0, out
+
+
+def run_module_check(queue: str, module: str, pack_spec: str, ref: str = "HEAD") -> tuple[int, list[str]]:
+    """İ4 S2: one fixed SHA for the queue and the records (the queue fully validated as status_report.py --mode v2 reads
+    it); the pack version from its own commit. 0 = every mandatory AC of that version covered (not Module Done);
+    1 = a mandatory AC open; 2 = not measurable."""
+    head = [f"MODULE-CHECK v1 — kuyruk {queue} · modül {module} · paket {pack_spec}"]
+    try:
+        if not MODULE_VALUE.match(module or ""):
+            raise Incomplete(f"modül '{module}' MOD-nnnn, MOD-nnnn-FUn ya da ortak:… değil")
+        pm = MODULE_PACK.match(pack_spec or "")
+        if not pm:
+            raise Incomplete("paket execution/domains/<domain>/module-packs/<dosya>.md@<40 haneli commit> biçiminde verilir")
+        v2 = _load("status_report_v2", ROOT / "scripts" / "status_report_v2.py")
+        ctq = _load("ct_queue", ROOT / "scripts" / "ct_queue.py")
+        vmi = _load("verify_module_id", ROOT / ".antigravity" / "scripts" / "verify_module_id.py")
+        try:
+            src = v2.Source(ref)
+        except v2.Incomplete as e:
+            raise Incomplete(str(e))
+        S = src.sha
+        head.append(f"kaynak: {S} (kuyruk ve kayıtlar); paket kendi commit'inden")
+        try:
+            sq = v2.read_strict_queue(ctq, vmi, src, queue)
+        except v2.Incomplete as e:
+            raise Incomplete(str(e))
+        if sq["reasons"]:
+            raise Incomplete(f"kuyruk {S[:12]}'de geçersiz — {sq['reasons'][0]}")
+        git = Git(ROOT)
+        data = git.read(pm.group(2), pm.group(1))
+        if data is None:
+            raise Incomplete(f"paket {pack_spec} commit'te yok")
+        criteria, bad, old = parse_pack(data.decode("utf-8"), module)
+        if old:
+            raise Incomplete("pakette AC kimliği yok (eski biçim) — AC kapsamı mekanik olarak ölçülemez")
+        if bad:
+            raise Incomplete("; ".join(bad))
+        rows = sq["rows_raw"]
+        works = []
+        for root in [r for r in rows if r["module"] == module and not re.match(r"^.+-R\d+$", r["id"])]:
+            current, why = v2.current_revision(root["id"], rows)
+            w = {"root": root["id"], "current": current["id"] if current else None, "why": why,
+                 "state": current["state"] if current else "", "check": 1, "record": (current or {}).get("record", "-"),
+                 "module_pack": None, "rows": []}
+            if current and current["state"] == "ACCEPTED":
+                w["check"], _ = run_check(w["record"], {"queue": queue, "work_package": current["id"], "module": module}, git, S)
+                if w["check"] == 0:
+                    rm = SPEC.match(w["record"])
+                    fields, _ = strict_front_matter(git.read(rm.group(2), rm.group(1)).decode("utf-8"))
+                    w["module_pack"] = fields.get("module_pack")
+                    lm = SPEC.match(fields["acceptance_list"])
+                    _, _, w["rows"] = check_list(git.read(lm.group(2), lm.group(1)).decode("utf-8"), git.read)
+            works.append(w)
+        code, lines = module_coverage(criteria, works, pack_spec)
+        return code, head + [f"paket: {len(criteria)} AC, {sum(1 for m, _ in criteria.values() if m)} zorunlu"] + lines
+    except Incomplete as e:
+        return 2, head + [f"sonuç: ölçülemez — {e}", "çıkış: 2"]
+    except (OSError, UnicodeDecodeError, ValueError, KeyError) as e:
+        return 2, head + [f"sonuç: ölçülemez — {type(e).__name__}", "çıkış: 2"]
+    except Exception as e:  # never a pass, never an undefined exit code
+        return 2, head + [f"sonuç: ölçülemez — beklenmeyen hata ({type(e).__name__})", "çıkış: 2"]
+
+
 # ------------------------------------------------------------------------------------------------ self-test
 def self_test() -> int:
     C1, C2 = "a" * 40, "b" * 40
@@ -582,6 +775,137 @@ def self_test() -> int:
     ex_fields, ex_bad = strict_front_matter(example) if example else ({}, ["REP-001 §6.1 örneği yok"])
     cases.append(("REP-001 §6.1 example künye, copied as it is, passes the strict v2 reader (no comments, all fields)",
                   not ex_bad and is_v2(example) and ex_fields.get("format") == FORMAT))
+    # İ4 S2 — the optional module_pack binding (backward compatible) ------------------------------------------
+    PK = "execution/domains/commercial-suite/module-packs/MOD-0151-territory-management.md"
+    good_mp = f"module_pack: {PK}@{C1}\n"
+    f_mp, bad_mp = strict_front_matter(rec(_extra_fm=good_mp))
+    cases.append(("İ4 S2: a record with a well-formed module_pack -> the strict reader accepts it and reads the value",
+                  not bad_mp and f_mp.get("module_pack") == f"{PK}@{C1}"))
+    cases.append(("İ4 S2: a record with a module_pack -> check still allows ACCEPTED (exit 0)", run(rec(_extra_fm=good_mp))[0] == 0))
+    cases.append(("İ4 S2 (backward compatible): a record without module_pack -> no künye problem", not strict_front_matter(rec())[1]))
+    for label, extra in (("twice", good_mp + good_mp), ("a short SHA", f"module_pack: {PK}@abc1234\n"),
+                         ("a path outside module-packs", f"module_pack: docs/x/MOD-0151.md@{C1}\n"),
+                         ("a path with '..'", f"module_pack: execution/domains/x/module-packs/../../a.md@{C1}\n"),
+                         ("no commit", f"module_pack: {PK}\n")):
+        _, b = strict_front_matter(rec(_extra_fm=extra))
+        cases.append((f"sabotage İ4 S2: module_pack {label} -> refused by the strict reader for that reason (not as an unknown field)",
+                      any("module_pack" in x and "tanımsız" not in x for x in b)))
+
+    # İ4 S2 — a pack's identified acceptance criteria ------------------------------------------------------------
+    def pack(ac, fm="id: MOD-0151\nstatus: approved\n", heading="## Acceptance Criteria", after=""):
+        return ("---\n" + fm + "---\n\n# MOD-0151 Territory Management\n\n## Owned Objects\n- Entity: x\n\n"
+                + heading + "\n" + ac + "\n## Test Expectations\n- unit\n" + after)
+    good_ac = ("- [ ] AC-1 (zorunlu) — liste açılır\n- [ ] AC-2 (zorunlu) — yetkisiz kullanıcı 403 alır\n"
+               "- [x] AC-3 (zorunlu) — dışa aktarma XLSX verir\n- [ ] AC-4 (isteğe bağlı) — sıralama hatırlanır\n\n"
+               "Ölçütlerin kanıtı kabul listesindedir.\n\n```text\n- [ ] AC-9 (zorunlu) — bir kod örneği, ölçüt değil\n```\n")
+    def pp(text, module="MOD-0151"):
+        try:
+            return parse_pack(text, module)
+        except NotImplementedError:
+            return None
+    r = pp(pack(good_ac))
+    cases.append(("İ4 S2: a well-formed pack -> AC-1..4 read, AC-1..3 mandatory, the fenced example not counted, no problem",
+                  r is not None and not r[1] and not r[2] and sorted(r[0]) == [1, 2, 3, 4]
+                  and [n for n, (m, _) in sorted(r[0].items()) if m] == [1, 2, 3]))
+    r = pp(pack(good_ac, after="- [ ] AC-7 (zorunlu) — başka bölümde\n"))
+    cases.append(("İ4 S2: an AC-like line in another section is not a criterion", r is not None and not r[1] and 7 not in r[0]))
+    r = pp(pack("- [ ] liste açılır\n- [ ] yetkisiz kullanıcı 403 alır\n"))
+    cases.append(("İ4 S2: an old pack without identities -> not measurable (old format), no criteria", r is not None and r[2] and not r[0]))
+    for label, text, module, why in (
+            ("the pack's id is another module (FU)", pack(good_ac), "MOD-0151-FU01", "tek id"),
+            ("no id", pack(good_ac, fm="status: approved\n"), "MOD-0151", "tek id"),
+            ("two ids", pack(good_ac, fm="id: MOD-0151\nid: MOD-0151\nstatus: approved\n"), "MOD-0151", "tek id"),
+            ("two statuses", pack(good_ac, fm="id: MOD-0151\nstatus: approved\nstatus: draft\n"), "MOD-0151", "tek status"),
+            ("status draft", pack(good_ac, fm="id: MOD-0151\nstatus: draft\n"), "MOD-0151", "tek status"),
+            ("no Acceptance Criteria section", pack(good_ac, heading="## Kabul"), "MOD-0151", "bölümü olmalı"),
+            ("two Acceptance Criteria sections", pack(good_ac, after="\n## Acceptance Criteria\n- [ ] AC-5 (zorunlu) — x\n"), "MOD-0151", "bölümü olmalı"),
+            ("the section at another heading level", pack(good_ac, heading="### Acceptance Criteria"), "MOD-0151", "bölümü olmalı"),
+            ("an unidentified item beside identified ones", pack(good_ac + "- [ ] gizli madde\n"), "MOD-0151", "uymayan madde"),
+            ("an AC line outside the item form", pack(good_ac + "AC-5 (zorunlu) — liste dışı\n"), "MOD-0151", "uymayan madde"),
+            ("AC-0", pack(good_ac + "- [ ] AC-0 (zorunlu) — sıfır\n"), "MOD-0151", "uymayan madde"),
+            ("an empty criterion", pack(good_ac + "- [ ] AC-5 (zorunlu) — \n"), "MOD-0151", "uymayan madde"),
+            ("a repeated AC-2", pack(good_ac + "- [ ] AC-2 (zorunlu) — tekrar\n"), "MOD-0151", "iki kez"),
+            ("no mandatory criterion", pack("- [ ] AC-1 (isteğe bağlı) — x\n- [ ] AC-2 (isteğe bağlı) — y\n"), "MOD-0151", "zorunlu AC yok")):
+        r = pp(text, module)
+        cases.append((f"sabotage İ4 S2: a pack with {label} -> not measurable ({why}), never an empty success",
+                      r is not None and any(why in x for x in r[1])))
+
+    # İ4 S2 — fences and the künye (Codex's boundary review) ------------------------------------------------------
+    one = "- [ ] AC-1 (zorunlu) — liste açılır\n"
+    for label, text, why in (
+            ("an unclosed künye", "---\nid: MOD-0151\nstatus: approved\n\n## Acceptance Criteria\n" + one, "künye kapanmıyor"),
+            ("an unclosed fence that hides AC-2", pack(one + "```text\nörnek\n- [ ] AC-2 (zorunlu) — gizlenen ölçüt\n"), "kod çiti"),
+            ("a backtick fence 'closed' by tildes", pack(one + "```\nörnek\n~~~\n- [ ] AC-2 (zorunlu) — gizlenen ölçüt\n"), "kod çiti"),
+            ("a four-backtick fence 'closed' by three", pack(one + "````\nörnek\n```\n- [ ] AC-2 (zorunlu) — gizlenen ölçüt\n"), "kod çiti")):
+        r = pp(text)
+        cases.append((f"sabotage İ4 S2 (Codex): a pack with {label} -> not measurable ({why}), never a partial success",
+                      r is not None and any(why in x for x in r[1])))
+    r = pp(pack(good_ac, after="\n## Examples\n```markdown\n## Acceptance Criteria\n- [ ] AC-8 (zorunlu) — örnek\n```\n"))
+    cases.append(("İ4 S2 (Codex): a heading inside a closed fence elsewhere is not a second section", r is not None and not r[1] and 8 not in r[0]))
+    r = pp(pack("- [ ] AC-1 (zorunlu) — a\n```text\n## bir kod başlığı\n```\n- [ ] AC-2 (zorunlu) — b\n"))
+    cases.append(("İ4 S2 (Codex): a heading inside a closed fence in the section does not end it", r is not None and not r[1] and sorted(r[0]) == [1, 2]))
+    r = pp(pack("- [ ] AC-1 (zorunlu) — a\n````text\n```\nhâlâ kod\n````\n- [ ] AC-2 (zorunlu) — b\n"))
+    cases.append(("İ4 S2 (Codex): a longer fence closes only with as many marks; the item after it is read", r is not None and not r[1] and sorted(r[0]) == [1, 2]))
+
+    # İ4 S2 — coverage over the works of the module ---------------------------------------------------------------
+    crit = {1: (True, "liste"), 2: (True, "403"), 3: (True, "xlsx"), 4: (False, "sıralama")}
+    spec_v1, spec_v2 = f"{PK}@{C1}", f"{PK}@{C2}"
+    def work(root, rows, **over):
+        w = {"root": root, "current": root, "why": "", "state": "ACCEPTED", "check": 0, "record": f"docs/records/x/{root}.md@{C2}",
+             "module_pack": spec_v1, "rows": rows}
+        w.update(over)
+        return w
+    w1 = work("W1", [{"ID": "AC-1", "Sonuç": "geçti"}, {"ID": "AC-2", "Sonuç": "N/A — bu dilimde ekran yok, yetki ayrı işte ölçüldü"}])
+    w2 = work("W2", [{"ID": "AC-3", "Sonuç": "geçti"}, {"ID": "K9", "Sonuç": "geçti"}])
+    def cov(works):
+        try:
+            return module_coverage(crit, works, spec_v1)
+        except NotImplementedError:
+            return None
+    r = cov([w1, w2])
+    cases.append(("İ4 S2: every mandatory AC covered (geçti or a reasoned N/A) -> exit 0, said to be AC coverage only, not Module Done",
+                  r is not None and r[0] == 0 and any("Module Done değildir" in l for l in r[1])))
+    r = cov([w1])
+    cases.append(("İ4 S2: AC-3 not covered -> exit 1, AC-3 named open", r is not None and r[0] == 1 and any("AC-3" in l and "AÇIK" in l for l in r[1])))
+    for label, w, why in (
+            ("no module_pack (no implicit match on the same AC id)", work("W2", w2["rows"], module_pack=None), "module_pack yok"),
+            ("bound to another version of the same pack (v1/v2: the same AC id may mean something else)", work("W2", w2["rows"], module_pack=spec_v2), "başka paket sürümüne"),
+            ("a record that does not allow ACCEPTED (conditional, rejected, superseded)", work("W2", w2["rows"], check=1), "izin vermiyor"),
+            ("a newer open revision W2-R1", work("W2", w2["rows"], current="W2-R1", state="READY"), "W2-R1 READY"),
+            ("an invalid revision chain", work("W2", w2["rows"], current=None, why="zincir geçersiz: W2-R1 aynı modülde değil"), "zincir geçersiz"),
+            ("AC-3 'kaldı'", work("W2", [{"ID": "AC-3", "Sonuç": "kaldı"}]), "kapadığı: yok"),
+            ("AC-3 'denenmedi'", work("W2", [{"ID": "AC-3", "Sonuç": "denenmedi"}]), "kapadığı: yok"),
+            ("AC-3 twice in its list", work("W2", [{"ID": "AC-3", "Sonuç": "geçti"}, {"ID": "AC-3", "Sonuç": "geçti"}]), "kapadığı: yok")):
+        r = cov([w1, w])
+        cases.append((f"sabotage İ4 S2: AC-3 only from a work with {label} -> not counted ({why}), exit 1",
+                      r is not None and r[0] == 1 and any("AC-3" in l and "AÇIK" in l for l in r[1])
+                      and any(l.startswith("İŞ W2") and why in l for l in r[1])))
+    try:
+        r = module_coverage({}, [w1, w2], spec_v1)
+    except NotImplementedError:
+        r = None
+    cases.append(("sabotage İ4 S2: no criteria at all -> not measurable (2), never an empty success", r is not None and r[0] == 2))
+    try:
+        r = module_coverage({4: (False, "sıralama")}, [w1, w2], spec_v1)
+    except NotImplementedError:
+        r = None
+    cases.append(("sabotage İ4 S2: only optional criteria -> not measurable (2), never an empty success", r is not None and r[0] == 2))
+    r = cov([w1, w2])
+    cases.append(("İ4 S2: no output line claims Module Done", r is not None and not any(re.search(r"Module Done(?! değildir)", l) for l in r[1])))
+
+    std_path = ROOT / ".antigravity/rules/module-pack-standard.md"
+    std = std_path.read_text(encoding="utf-8").split("\n") if std_path.exists() else []
+    at = [i for i, l in enumerate(std) if l.strip() == "## Acceptance Criteria"]
+    block = []
+    if at:
+        for l in std[at[-1] + 1:]:
+            if l.startswith("## "):
+                break
+            block.append(l)
+    r = pp(pack("\n".join(block) + "\n")) if block else None
+    cases.append(("İ4 S2: the standard's own example pack, its Acceptance Criteria block as written, reads AC-1 mandatory and AC-2 optional",
+                  r is not None and not r[1] and not r[2] and r[0].get(1, (None,))[0] is True and r[0].get(2, (None,))[0] is False))
+
     src = Path(__file__).read_text(encoding="utf-8")
     cases.append(("read-only: no write call in this script",
                   not re.search(r"\.(write_text|write_bytes|unlink|rename|mkdir)\(|open\([^)]*['\"][wa]", src.split("def self_test")[0])))
@@ -604,9 +928,18 @@ def main() -> int:
     pc.add_argument("--wp")
     pc.add_argument("--module")
     pc.add_argument("--index-ref", default="HEAD", help="the tree whose v2 records decide which record is authoritative")
+    pm = sub.add_parser("module-check", help="İ4 S2: mandatory AC coverage of one approved pack version (never Module Done)")
+    pm.add_argument("--queue", required=True)
+    pm.add_argument("--module", required=True)
+    pm.add_argument("--pack", required=True, help="PACK_PATH@40-HEX-COMMIT of the approved pack version")
+    pm.add_argument("--ref", default="HEAD", help="the queue and records are read at this ref, resolved once")
     a = ap.parse_args()
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    if a.cmd == "module-check":
+        code, lines = run_module_check(a.queue, a.module, a.pack, a.ref)
+        print("\n".join(lines))
+        return code
     code, lines = run_check(a.record, {"queue": a.queue, "work_package": a.wp, "module": a.module}, index_ref=a.index_ref)
     print("\n".join(lines))
     return code
