@@ -21,10 +21,18 @@ public static partial class MovementRules
     public const string WriteOff = "WRITE_OFF";
     public const string WarehouseTransfer = "WAREHOUSE_TRANSFER";
     public const string LocationTransfer = "LOCATION_TRANSFER";
+    public const string CustomerReturn = "CUSTOMER_RETURN";
 
     /// <summary>The 7 manual types (parent §21) — STATUS_TRANSFER and the automatic types are never offered.</summary>
     public static readonly IReadOnlyList<string> ManualTypes =
         [OpeningBalance, CountGain, CountLoss, Scrap, WriteOff, WarehouseTransfer, LocationTransfer];
+
+    /// <summary>
+    /// WP-0177-R7c (KR-H, CT decision A): the types the NEW-movement form offers = the 7 manual types + <see cref="CustomerReturn"/>. A separate
+    /// set on purpose: <see cref="ManualTypes"/> also decides which history rows get "Düzelt" (InventoryListAdapter.IsCorrectable) and what the
+    /// correction screen accepts — neither changes.
+    /// </summary>
+    public static readonly IReadOnlyList<string> FormTypes = [.. ManualTypes, CustomerReturn];
 
     /// <summary>KD-2: the stock-entry page (StockLedger/Create) offers the inbound manual types only.</summary>
     public static readonly IReadOnlyList<string> EntryTypes = [OpeningBalance, CountGain];
@@ -32,11 +40,28 @@ public static partial class MovementRules
     /// <summary>Inbound target status: exactly these three (parent §21; no status transfer here).</summary>
     public static readonly IReadOnlyList<string> InboundStatuses = ["AVAILABLE", "QUALITY_INSPECTION", "QUARANTINE"];
 
+    /// <summary>
+    /// WP-0177-R7c (KR-H, CT-R10): a customer return is inspected first — ONLY a held status, never AVAILABLE (MOD-0174's lot rule takes the same
+    /// three for a held lot; MOD-0173 / 0174 stay the authority).
+    /// </summary>
+    public static readonly IReadOnlyList<string> CustomerReturnStatuses = ["QUARANTINE", "QUALITY_INSPECTION", "BLOCKED"];
+
+    /// <summary>The target statuses a type may name (inbound only; empty otherwise).</summary>
+    public static IReadOnlyList<string> TargetStatusesOf(string? movementType) => movementType switch
+    {
+        CustomerReturn => CustomerReturnStatuses,
+        OpeningBalance or CountGain => InboundStatuses,
+        _ => []
+    };
+
+    /// <summary>Every target status the form draws, in its order (each option says which types it belongs to).</summary>
+    public static readonly IReadOnlyList<string> FormTargetStatuses = [.. InboundStatuses, "BLOCKED"];
+
     public enum Direction { Inbound, Outbound, WarehouseTransfer, LocationTransfer }
 
     public static Direction? DirectionOf(string? movementType) => movementType switch
     {
-        OpeningBalance or CountGain => Direction.Inbound,
+        OpeningBalance or CountGain or CustomerReturn => Direction.Inbound,
         CountLoss or Scrap or WriteOff => Direction.Outbound,
         WarehouseTransfer => Direction.WarehouseTransfer,
         LocationTransfer => Direction.LocationTransfer,
@@ -216,7 +241,7 @@ public static partial class MovementRules
                 toWarehouse = Required(form.ToWarehouseId, Fields.TargetWarehouse, errors);
                 toLocation = Required(form.ToLocationId, Fields.TargetLocation, errors);
                 toStatus = form.ToStockStatus?.Trim();
-                if (toStatus is null || !InboundStatuses.Contains(toStatus, StringComparer.Ordinal)) errors[Fields.TargetStatus] = "ValRequired";
+                if (toStatus is null || !TargetStatusesOf(type).Contains(toStatus, StringComparer.Ordinal)) errors[Fields.TargetStatus] = "ValRequired";
                 if (!TryNormalizeLot(form.LotId, out lot)) errors[Fields.Lot] = "ValLotFormat";
                 break;
 

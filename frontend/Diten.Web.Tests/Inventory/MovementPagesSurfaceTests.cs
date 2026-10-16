@@ -60,13 +60,21 @@ public sealed class MovementPagesSurfaceTests : IClassFixture<WebApplicationFact
     }
 
     [Fact]
-    public async Task New_movement_offers_the_seven_manual_types_and_three_inbound_statuses_only()
+    public async Task New_movement_offers_the_seven_manual_types_plus_customer_return_and_a_customer_return_only_held_statuses()
     {
         var html = await RenderAsync(Create, StockMovementFormViewModel.ForCreate(new QueryCollection()), "inventory.stock.read", PostPermission);
 
         Assert.DoesNotContain("diten-access-denied", html, StringComparison.Ordinal);
-        Assert.Equal(ManualTypes.OrderBy(t => t), OptionsOf(html, "movementType").OrderBy(t => t));
-        Assert.Equal(["AVAILABLE", "QUALITY_INSPECTION", "QUARANTINE"], OptionsOf(html, "toStockStatus"));
+        // WP-0177-R7c (KR-H, CT decision A): the 7 manual types + CUSTOMER_RETURN — exactly MovementRules.FormTypes, nothing else
+        Assert.Equal([.. ManualTypes, "CUSTOMER_RETURN"], MovementRules.FormTypes);
+        Assert.Equal(MovementRules.FormTypes.OrderBy(t => t), OptionsOf(html, "movementType").OrderBy(t => t));
+        // the target statuses: the three inbound ones as before + BLOCKED; each option names the types that may use it
+        Assert.Equal(["AVAILABLE", "QUALITY_INSPECTION", "QUARANTINE", "BLOCKED"], OptionsOf(html, "toStockStatus"));
+        string Types(string status) => Regex.Match(html, $@"<option value=""{status}"" data-types=""(?<t>[^""]*)""").Groups["t"].Value;
+        Assert.Equal("OPENING_BALANCE COUNT_GAIN", Types("AVAILABLE"));                              // a customer return never into AVAILABLE
+        Assert.Equal("OPENING_BALANCE COUNT_GAIN CUSTOMER_RETURN", Types("QUALITY_INSPECTION"));
+        Assert.Equal("OPENING_BALANCE COUNT_GAIN CUSTOMER_RETURN", Types("QUARANTINE"));
+        Assert.Equal("CUSTOMER_RETURN", Types("BLOCKED"));                                           // BLOCKED belongs to it alone
         Assert.DoesNotContain("STATUS_TRANSFER", html, StringComparison.Ordinal);
         Assert.DoesNotContain("GOODS_RECEIPT", html, StringComparison.Ordinal);
         // BG-03: the Reason field is not drawn while no MOD-0173 movement-reason set exists.
