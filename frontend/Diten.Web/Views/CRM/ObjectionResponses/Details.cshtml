@@ -1,0 +1,153 @@
+@model Diten.Web.Models.CRM.ObjectionResponsesPageViewModel
+@using Diten.Web.Views.CRM.ObjectionResponses
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ObjectionResponsesIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["RecordTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    Context.Items["NavActivePath"] = "/CRM/ObjectionResponses";
+}
+
+@*
+    WP-VW-W3 (W3-WEB-c) — A3 · one answer (also the Work Center deep link /CRM/ObjectionResponses/{id}). The status band
+    ("Onay bekliyor · who, when" / approved / retired / returned to draft) with the actions CRM's abilities allow for this
+    status: Onaya gönder · Geri çek · Onayla · Taslağa geri gönder (a note is required) · Emekliye ayır ("used in N steps") ·
+    Kopyasından yeni taslak · Düzenle. Left: the content + "Kullanıldığı yerler"; right: the rep preview + the history.
+    UAS-001: without crm.objection-response.read NOTHING but the access notice.
+*@
+@if (!Model.CanRead)
+{
+    <partial name="_AccessDenied" model="@Localizer["PageTitle"].Value" />
+    return;
+}
+
+<div id="orDetailsRoot"
+     data-api-base="/CRM/ObjectionResponses/api"
+     data-id="@Model.Id"
+     data-can-read-claims="@(Model.CanReadClaims ? "true" : "false")">
+
+    <div class="mb-3">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0 small">
+                <li class="breadcrumb-item"><a href="/CRM/ObjectionResponses">@Localizer["PageTitle"]</a></li>
+                <li class="breadcrumb-item active" id="orCrumbProduct" aria-current="page"></li>
+            </ol>
+        </nav>
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <h5 class="mb-0">@Localizer["RecordTitle"]</h5>
+            <span id="orStatusChips" class="d-flex flex-wrap gap-2"></span>
+        </div>
+    </div>
+
+    <div id="orAlert" class="alert alert-danger d-none" role="alert"></div>
+
+    @* The status band: one line of facts + the actions this record allows (CRM abilities × status). *@
+    <div id="orBand" class="alert d-none d-flex flex-wrap align-items-center gap-2" role="status">
+        <i class="bx fs-5" id="orBandIcon" aria-hidden="true"></i>
+        <span class="flex-grow-1" id="orBandText"></span>
+        <span class="d-flex flex-wrap gap-2" id="orActions"></span>
+    </div>
+    <p class="small text-danger text-end d-none" id="orSodHint"><i class="bx bx-user-x me-1" aria-hidden="true"></i><span></span></p>
+
+    <div class="row g-4" id="orBody">
+        <div class="col-12 col-xl-7">
+            <section class="card">
+                <div class="card-header"><h6 class="mb-0">@Localizer["SectionContent"]</h6></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <small class="text-uppercase text-muted fw-semibold d-block">@Localizer["FieldProduct"]</small>
+                            <span class="fw-medium text-heading" id="orProductText">—</span>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-uppercase text-muted fw-semibold d-block">@Localizer["FieldCategory"]</small>
+                            <span id="orCategoryText">—</span>
+                        </div>
+                        <div class="col-12">
+                            <small class="text-uppercase text-muted fw-semibold d-block">@Localizer["FieldQuestion"]</small>
+                            <p class="mb-0 text-heading text-break" id="orQuestionText"></p>
+                        </div>
+                        <div class="col-12">
+                            <small class="text-uppercase text-muted fw-semibold d-block">@Localizer["FieldAnswer"]</small>
+                            <p class="mb-0 text-break or-prewrap" id="orAnswerText"></p>
+                        </div>
+                        <div class="col-12">
+                            <small class="text-uppercase text-muted fw-semibold d-block mb-1" id="orClaimsTitle">@Localizer["FieldClaims"] · <span id="orClaimsTotal">0</span></small>
+                            <div class="d-grid gap-2" id="orClaimsList"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mt-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">@Localizer["UsagesTitle"]</h6>
+                    <small class="text-muted" id="orUsageCount"></small>
+                </div>
+                <div class="card-body p-0" id="orUsages"></div>
+            </section>
+        </div>
+
+        <div class="col-12 col-xl-5">
+            <partial name="~/Views/CRM/ObjectionResponses/_Preview.cshtml" />
+            <section class="card mt-4">
+                <div class="card-header"><h6 class="mb-0" id="orHistoryTitle"></h6></div>
+                <div class="card-body">
+                    <ul class="or-timeline mb-0" id="orHistory"></ul>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+@* Taslağa geri gönder — the note is REQUIRED (K-A1); the button stays disabled until something is written. *@
+<div class="modal fade" id="orReturnModal" tabindex="-1" aria-labelledby="orReturnTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="orReturnTitle"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["CloseButton"]"></button>
+            </div>
+            <div class="modal-body">
+                <label class="form-label" for="orReturnNote" id="orReturnNoteLabel"></label>
+                <textarea class="form-control" id="orReturnNote" rows="4" maxlength="2000"></textarea>
+                <small class="text-danger d-none" id="orReturnNoteError"></small>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal" id="orReturnCancel"></button>
+                <button type="button" class="btn btn-warning" id="orReturnConfirm" disabled></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Emekliye ayır — names how many steps use it and that it leaves published presentations at once (K-A5). *@
+<div class="modal fade" id="orRetireModal" tabindex="-1" aria-labelledby="orRetireTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="orRetireTitle"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["CloseButton"]"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2" id="orRetireText"></p>
+                <p class="mb-0 fw-medium text-danger d-none" id="orRetireUsed"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal" id="orRetireCancel"></button>
+                <button type="button" class="btn btn-danger" id="orRetireConfirm"></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/js/CRM/ObjectionResponses/objection-responses.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <partial name="~/Views/CRM/ObjectionResponses/_L10n.cshtml" />
+    <script src="~/assets/js/CRM/ObjectionResponses/objection-core.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/ObjectionResponses/objection-common.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/ObjectionResponses/objection-details.js" asp-append-version="true"></script>
+}

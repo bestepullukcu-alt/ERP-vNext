@@ -137,7 +137,9 @@ public sealed class PhysicalEntitlementTransactionGuardMongoTests
         });
 
         entitlement.IsEnabled = false;
-        await Assert.ThrowsAsync<TenantModuleEntitlementConcurrencyException>(() =>
+        // BL-500 FIX1 — its own exception (never read as "stale"); every handler answers it exactly as "not found",
+        // which is what keeps it non-disclosing (TenantModuleEntitlementMutationEventPublishTests).
+        await Assert.ThrowsAsync<TenantModuleEntitlementTenantMismatchException>(() =>
             executor.ExecuteAsync(async (session, ct) =>
             {
                 await attackerRepository.UpdateAsync(session, entitlement, entitlement.RowVersion, ct);

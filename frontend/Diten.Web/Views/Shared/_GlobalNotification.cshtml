@@ -115,6 +115,21 @@
             .replace(/'/g, '&#39;');
     };
 
+    /*
+     * WP-VW-W3-FIX (F4) — the exact inverse of DitenToastText. Notyf writes the message TWICE: the visible toast with
+     * `innerHTML` (where the escaped text renders as typed) and the screen-reader announcement with `textContent`
+     * (where it does not: "… &#39;Onayla&#39; …" was read out — and seen in the accessibility tree at the live E4).
+     * The announcement gets the plain text back here, at the same one door; callers still never escape.
+     */
+    window.DitenToastPlain = function (value) {
+        return String(value)
+            .replace(/&#39;/g, "'")
+            .replace(/&quot;/g, '"')
+            .replace(/&gt;/g, '>')
+            .replace(/&lt;/g, '<')
+            .replace(/&amp;/g, '&');
+    };
+
     window.showToast = function (key, type) {
         var TOAST_TYPES = ['success', 'error', 'warning', 'info'];
 
@@ -195,6 +210,12 @@
                             }
                         ]
                     });
+                    // F4 — the announcer (textContent) gets the plain text, the visible toast (innerHTML) the escaped one.
+                    var _notyfView = _notyfInstance.view;
+                    if (_notyfView && typeof _notyfView._announce === 'function') {
+                        var _announce = _notyfView._announce.bind(_notyfView);
+                        _notyfView._announce = function (announced) { _announce(window.DitenToastPlain(announced)); };
+                    }
                 }
 
                 var notyfText = window.DitenToastText(message);

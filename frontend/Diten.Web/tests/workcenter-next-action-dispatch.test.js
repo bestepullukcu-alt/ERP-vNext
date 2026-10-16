@@ -19,6 +19,14 @@ const { loadScript } = require("./load-script");
 const APP = fs.readFileSync(
   path.resolve(__dirname, "..", "wwwroot", "assets", "js", "WorkCenterNext", "app.js"), "utf8");
 
+const actionAttemptHelpers = () => {
+  const start = APP.indexOf("const hashActionAttemptTuple");
+  const end = APP.indexOf("const submitRealTransition", start);
+  expect(start).toBeGreaterThan(-1);
+  expect(end).toBeGreaterThan(start);
+  return Function(`${APP.slice(start, end)}; return { stableWorkItemActionIdentity };`)();
+};
+
 describe("the routing decision no longer names a provider", () => {
   it("has no `providerCode === 'tasks'` comparison anywhere in the write path", () => {
     /*
@@ -108,6 +116,75 @@ describe("every provider's action leaves the browser through ONE address", () =>
 
     expect(result.ok).toBe(false);
     expect(result.reasonCode).toBe("UNAVAILABLE");
+  });
+});
+
+describe("a projected action keeps one bounded attempt identity", () => {
+  const tuple = [
+    "workflow",
+    "ac65ce1d-7d3a-46c3-a3e9-fd8c54f6b2b0",
+    "approve",
+    17
+  ];
+
+  it("reuses the exact same identity for double-click and retry", () => {
+    const { stableWorkItemActionIdentity } = actionAttemptHelpers();
+
+    const first = stableWorkItemActionIdentity(...tuple);
+    const doubleClick = stableWorkItemActionIdentity(...tuple);
+    const lostResponseRetry = stableWorkItemActionIdentity(...tuple);
+
+    expect(first).toBe(doubleClick);
+    expect(first).toBe(lostResponseRetry);
+    expect(first.length).toBeLessThanOrEqual(128);
+  });
+
+  it.each([
+    ["provider", ["tasks", tuple[1], tuple[2], tuple[3]]],
+    ["item", [tuple[0], "another-item", tuple[2], tuple[3]]],
+    ["action", [tuple[0], tuple[1], "reject", tuple[3]]],
+    ["projected version", [tuple[0], tuple[1], tuple[2], 18]]
+  ])("changes when the %s changes", (_label, changedTuple) => {
+    const { stableWorkItemActionIdentity } = actionAttemptHelpers();
+    expect(stableWorkItemActionIdentity(...changedTuple))
+      .not.toBe(stableWorkItemActionIdentity(...tuple));
+  });
+
+  it.each([-1, 1.5, "not-a-version"])("refuses invalid expected version %s", (version) => {
+    const { stableWorkItemActionIdentity } = actionAttemptHelpers();
+    expect(stableWorkItemActionIdentity(tuple[0], tuple[1], tuple[2], version)).toBeNull();
+  });
+
+  // CT (product takeover) — a provider whose records START at version 0 (MDM) is as writable as one that starts at 1.
+  // The old rule refused 0 here AND toasted an error before the request left the browser, so a first decision on such
+  // a record could never be taken from the Task Center.
+  it("treats version 0 as a real version, distinct from version 1", () => {
+    const { stableWorkItemActionIdentity } = actionAttemptHelpers();
+    const zero = stableWorkItemActionIdentity(tuple[0], tuple[1], tuple[2], 0);
+    expect(zero).toMatch(/^wcn-action-v1:/);
+    expect(zero).not.toBe(stableWorkItemActionIdentity(tuple[0], tuple[1], tuple[2], 1));
+  });
+
+  it("never refuses in the browser — a missing version or key is the owning module's refusal", () => {
+    const submit = APP.slice(
+      APP.indexOf("const submitRealTransition"),
+      APP.indexOf("/*\n     * ── Phase 2 writes", APP.indexOf("const submitRealTransition")));
+
+    expect(submit).not.toMatch(/expectedVersion\s*<=\s*0/);
+    // An item that carries NO token sends no key: two honest attempts on it must not look like one replayed attempt.
+    expect(submit).toMatch(/projectedToken === null \|\| projectedToken === undefined\s*\?\s*null/);
+    expect(submit).toContain("...(idempotencyKey ? { idempotencyKey } : {})");
+  });
+
+  it("places both concurrency facts in the single dispatch payload", () => {
+    const submit = APP.slice(
+      APP.indexOf("const submitRealTransition"),
+      APP.indexOf("/*\n     * ── Phase 2 writes", APP.indexOf("const submitRealTransition")));
+
+    expect(submit).toContain("expectedVersion");
+    expect(submit).toContain("idempotencyKey");
+    expect(submit).toContain("WorkCenterNextApi.dispatchAction");
+    expect(submit).not.toMatch(/5056|5057|5059|localhost/);
   });
 });
 

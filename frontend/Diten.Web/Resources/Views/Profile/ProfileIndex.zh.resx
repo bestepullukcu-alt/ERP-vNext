@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ProfileTitle" xml:space="preserve"><value>我的资料</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>您的账户信息以及我们与您沟通所用的语言。</value></data>
+  <data name="NameLabel" xml:space="preserve"><value>姓名</value></data>
+  <data name="EmailLabel" xml:space="preserve"><value>电子邮件</value></data>
+  <data name="LanguageTitle" xml:space="preserve"><value>语言</value></data>
+  <data name="LanguageHelp" xml:space="preserve"><value>发送给您的电子邮件将使用此语言，此浏览器也将以此语言显示界面。未选择时，使用您所在组织的语言。</value></data>
+  <data name="LanguageLabel" xml:space="preserve"><value>首选语言</value></data>
+  <data name="LanguageTenantDefault" xml:space="preserve"><value>组织的语言</value></data>
+  <data name="Save" xml:space="preserve"><value>保存</value></data>
+  <data name="Loading" xml:space="preserve"><value>正在加载您的资料…</value></data>
+  <data name="Saved" xml:space="preserve"><value>您的语言已保存。</value></data>
+  <data name="Cleared" xml:space="preserve"><value>您的选择已清除。电子邮件现在使用您所在组织的语言。</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>无法加载您的资料。请稍后重试。</value></data>
+  <data name="SaveFailed" xml:space="preserve"><value>无法保存您的语言。请稍后重试。</value></data>
+  <data name="ErrorLanguageInvalid" xml:space="preserve"><value>此语言不可用。请从列表中选择一种语言。</value></data>
+</root>

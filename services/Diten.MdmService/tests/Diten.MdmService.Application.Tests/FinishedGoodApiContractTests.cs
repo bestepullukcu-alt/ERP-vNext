@@ -36,6 +36,8 @@ public sealed class FinishedGoodApiContractTests
     [InlineData(nameof(FinishedGoodsController.GetById), "GET", "{id:guid}")]
     [InlineData(nameof(FinishedGoodsController.GetGskuSelector), "GET", "gsku-selector")]
     [InlineData(nameof(FinishedGoodsController.CreateDraft), "POST", "drafts")]
+    [InlineData(nameof(FinishedGoodsController.CancelDraft), "POST", "{id:guid}/cancel-draft")]
+    [InlineData(nameof(FinishedGoodsController.RepairChildAdmissions), "POST", "operator/child-admission-repairs")]
     public void Endpoint_route_and_verb_are_exact(string methodName, string verb, string? route)
     {
         var method = typeof(FinishedGoodsController).GetMethod(methodName)!;
@@ -54,8 +56,10 @@ public sealed class FinishedGoodApiContractTests
             .SelectMany(method => method.GetCustomAttributes<HttpMethodAttribute>())
             .ToArray();
 
-        Assert.Equal(4, actions.Length);
-        Assert.Equal(4, routes.Length);
+        // FG FIX1: + the audited Draft cancel (item 1) and the operator admission repair (item 2) — neither is a
+        // reservation, update, delete, bulk or lifecycle-transition endpoint.
+        Assert.Equal(6, actions.Length);
+        Assert.Equal(6, routes.Length);
         Assert.DoesNotContain(routes, route => route.HttpMethods.Any(method =>
             method is "PUT" or "PATCH" or "DELETE"));
         Assert.DoesNotContain(routes, route =>

@@ -35,6 +35,7 @@ public sealed class PlatformRecurringJobRegistrar : IRecurringJobRegistrar
             CreateDeferred("Diten.Platform.MOD-0021.AuditLogArchiveJob", "AuditLogArchiveJob", "MOD-0021", "0 4 * * 0"),
             CreateEmailDispatchSweepRegistration(),
             CreateWorkflowEscalationSweepRegistration(),
+            CreateWorkflowStartRecoverySweepRegistration(),
             CreateTaskRecurrenceSweepRegistration(),
             CreateTaskDueSoonSweepRegistration(),
             CreateMeetingSeriesSweepRegistration(),
@@ -72,14 +73,16 @@ public sealed class PlatformRecurringJobRegistrar : IRecurringJobRegistrar
 
     private RecurringJobRegistration CreateEmailDispatchSweepRegistration()
     {
-        const string id = "Diten.Platform.MOD-0027.EmailDispatchJob";
+        // BL-454 — the same id EmailDispatchSweepJob.IsScheduled reads: QueueEmailNotificationHandler decides from it
+        // whether a failed first send can ever be retried.
+        const string id = EmailDispatchSweepJob.JobId;
         const string jobName = "EmailDispatchSweepJob";
         const string owner = "MOD-0027";
         const string cron = "* * * * *";
 
-        var enabled = _options.RegisterStandardJobs
-                      && _options.EnabledJobs.TryGetValue(id, out var configuredEnabled)
-                      && configuredEnabled;
+        // BL-454 — the very rule QueueEmailNotificationHandler reads to decide whether a failed first send can ever be
+        // retried: the registrar and the handler cannot give two answers.
+        var enabled = EmailDispatchSweepJob.IsScheduled(_options);
 
         var descriptor = new BackgroundJobDescriptor(
             Id: id,
@@ -153,6 +156,46 @@ public sealed class PlatformRecurringJobRegistrar : IRecurringJobRegistrar
             typeof(WorkflowEscalationSweepJob),
             typeof(WorkflowEscalationSweepJobArgs),
             new WorkflowEscalationSweepJobArgs(MaxItemsPerTenant: 100),
+            new BackgroundJobContext(
+                TriggerType: BackgroundJobTriggerTypes.Recurring,
+                TriggeredBy: nameof(PlatformRecurringJobRegistrar),
+                Metadata: new Dictionary<string, string>
+                {
+                    ["owner"] = owner,
+                    ["execution"] = "sweep"
+                }));
+    }
+
+    private RecurringJobRegistration CreateWorkflowStartRecoverySweepRegistration()
+    {
+        // BL-549 + BL-539 — the abandoned-start recovery. OFF unless EnabledJobs names this id: it closes instances, and
+        // where it runs (which environment, against which data) is the operator's decision, not this registrar's.
+        const string id = "Diten.Platform.MOD-0023.WorkflowStartRecoverySweepJob";
+        const string jobName = "WorkflowStartRecoverySweepJob";
+        const string owner = "MOD-0023";
+        const string cron = "*/10 * * * *"; // every 10 minutes; a start is abandoned only after 30 (at least 15)
+
+        var enabled = _options.RegisterStandardJobs
+                      && _options.EnabledJobs.TryGetValue(id, out var configuredEnabled)
+                      && configuredEnabled;
+
+        var descriptor = new BackgroundJobDescriptor(
+            Id: id,
+            ServiceName: ServiceName,
+            JobName: jobName,
+            Owner: owner,
+            CronExpression: cron,
+            TimeZoneId: "UTC",
+            IsEnabled: enabled,
+            Queue: "platform",
+            MaxRetryAttempts: _options.DefaultRetryAttempts,
+            TriggerType: BackgroundJobTriggerTypes.Recurring);
+
+        return new RecurringJobRegistration(
+            descriptor,
+            typeof(WorkflowStartRecoverySweepJob),
+            typeof(WorkflowStartRecoverySweepJobArgs),
+            new WorkflowStartRecoverySweepJobArgs(MaxClosesPerTenant: 0),
             new BackgroundJobContext(
                 TriggerType: BackgroundJobTriggerTypes.Recurring,
                 TriggeredBy: nameof(PlatformRecurringJobRegistrar),

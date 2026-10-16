@@ -106,6 +106,30 @@ fi
 echo "[phase1] audit ledger growth"
 check_audit_ledger_growth
 
+# BL-609 (WP-CI-SERVICE-TESTS-04) — the page-help ledger's ceilings only go down, against the BASE branch: the web test
+# measures rows under the ceiling but cannot see the ceiling raised in the same PR. Same base as the audit step (the
+# PR base tip, fetched with depth 1; locally PAGE_HELP_LEDGER_BASE=<ref>). No base, no ledger here or on the base →
+# the script SKIPS by name. A deliberate raise is a reasoned CT line in the ledger (scripts/check_page_help_ledger_ceiling.py).
+check_page_help_ledger_ceiling() {
+  local base="${PAGE_HELP_LEDGER_BASE:-}"
+  if [ -z "$base" ] && [ -n "${GITHUB_BASE_REF:-}" ]; then
+    if git fetch --no-tags --depth=1 origin "$GITHUB_BASE_REF" >/dev/null 2>&1; then
+      base="FETCH_HEAD"
+    else
+      echo "[phase1] page-help ceiling: *** SKIPPED *** — base branch '$GITHUB_BASE_REF' could not be fetched. NOTHING WAS CHECKED."
+      return 0
+    fi
+  fi
+  if [ -z "$base" ]; then
+    python3 scripts/check_page_help_ledger_ceiling.py
+  else
+    python3 scripts/check_page_help_ledger_ceiling.py --base "$base"
+  fi
+}
+
+echo "[phase1] page-help ledger ceiling"
+check_page_help_ledger_ceiling
+
 echo "[phase1] validate event schemas"
 ./scripts/validate_event_schemas.sh
 
@@ -127,6 +151,28 @@ if [ -f "services/Diten.MdmService/Diten.MdmService.sln" ]; then
 else
   echo "[phase1] skip mdm: services/Diten.MdmService/Diten.MdmService.sln not found"
 fi
+
+# WP-CI-SERVICE-TESTS-03 FIX1: the CI helper scripts' own tests (the skip allow-list of check_trx_no_skipped.py).
+echo "[phase1] test ci scripts"
+python3 -m unittest discover -s scripts/tests -p 'test_*.py'
+
+# WP-CI-SERVICE-TESTS-03 (CT decision b; FIX1: here, not in the workflow, so a local gates run builds them too). These
+# service test projects are NOT in their service's solution, so the solution builds above never compile them —
+# e3d3a7331 broke Platform.Eventing.Tests and nobody saw it. BUILD only: their tests need RabbitMQ / an owned mongod and
+# run in service-tests.yml. Guard: CiServiceTestsGuardTests (both ways — every such project built here, nothing else).
+echo "[phase1] build test projects outside their solution"
+dotnet build services/Diten.Platform/tests/Diten.Platform.Eventing.Tests/Diten.Platform.Eventing.Tests.csproj -c Debug
+dotnet build services/Diten.Platform/tests/Diten.Platform.BackgroundJobs.Tests/Diten.Platform.BackgroundJobs.Tests.csproj -c Debug
+dotnet build services/Diten.AuthService/tests/Diten.AuthService.AccountKindAcceptanceHost.Tests/Diten.AuthService.AccountKindAcceptanceHost.Tests.csproj -c Debug
+dotnet build services/Diten.Building.Blocks/Diten.BuildingBlocks.Security.Secrets.Tests/Diten.BuildingBlocks.Security.Secrets.Tests.csproj -c Debug
+dotnet build services/Diten.ProcurementService/tests/Diten.ProcurementService.Api.Tests/Diten.ProcurementService.Api.Tests.csproj -c Debug
+dotnet build services/Diten.PlanningService/tests/Diten.PlanningService.Cycles.Tests/Diten.PlanningService.Cycles.Tests.csproj -c Debug
+dotnet build services/Diten.PvgService/tests/Diten.PvgService.Api.Tests/Diten.PvgService.Api.Tests.csproj -c Debug
+dotnet build services/Diten.PvgService/tests/Diten.PvgService.CaseProcessing.Tests/Diten.PvgService.CaseProcessing.Tests.csproj -c Debug
+dotnet build services/Diten.PvgService/tests/Diten.PvgService.MeddraCoding.Tests/Diten.PvgService.MeddraCoding.Tests.csproj -c Debug
+dotnet build services/Diten.PvgService/tests/Diten.PvgService.RegPvBase.Tests/Diten.PvgService.RegPvBase.Tests.csproj -c Debug
+dotnet build services/Diten.PvgService/tests/Diten.PvgService.SignalManagement.Tests/Diten.PvgService.SignalManagement.Tests.csproj -c Debug
+dotnet build gateway/Diten.ApiGateway.Tests/Diten.ApiGateway.Tests.csproj -c Debug
 
 echo "[phase1] test tenancy"
 dotnet test tests/tenancy/TenantArchitecture.TenancyTests/TenantArchitecture.TenancyTests.csproj -c Debug

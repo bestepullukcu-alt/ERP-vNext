@@ -38,14 +38,16 @@ public sealed class MeetingQueryHandlerTests
         public GetMeetingByIdHandler ByIdHandler(Guid callerId, bool hasReadAll = false) => new(
             Meetings, Types, Attendees, Agenda,
             new FakeCurrentUserContext(callerId),
-            new FakeActorPermissionContext(hasReadAll ? [MeetingPermissions.ReadAll] : []));
+            new FakeActorPermissionContext(hasReadAll ? [MeetingPermissions.ReadAll] : []),
+            new Diten.Platform.Application.Tests.Tasks.FakeUserDisplayNameResolver());
 
         public GetMeetingListHandler ListHandler(Guid callerId, bool hasReadAll = false) => new(
             Meetings, Types, Attendees,
             new Diten.Platform.Application.Features.Meetings.RecordLinks.RecordLinkService(
                 Links, new FakeTenantContext(Tenant), new FakeCurrentUserContext(callerId)),
             new FakeCurrentUserContext(callerId),
-            new FakeActorPermissionContext(hasReadAll ? [MeetingPermissions.ReadAll] : []));
+            new FakeActorPermissionContext(hasReadAll ? [MeetingPermissions.ReadAll] : []),
+            new Diten.Platform.Application.Tests.Tasks.FakeUserDisplayNameResolver());
     }
 
     [Fact]

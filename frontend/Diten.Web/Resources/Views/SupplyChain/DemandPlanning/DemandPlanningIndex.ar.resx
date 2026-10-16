@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="Title" xml:space="preserve"><value>تخطيط الطلب</value></data>
+  <data name="UnavailableTitle" xml:space="preserve"><value>مساحة العمل غير متاحة</value></data>
+  <data name="UnavailableBody" xml:space="preserve"><value>مسار البوابة المعتمد وقائمة الشركات المخولة غير متاحين بعد. لا يمكن فتح بيانات الخطة بأمان.</value></data>
+  <data name="UnavailableNext" xml:space="preserve"><value>يجب على مالكي التكامل التحقق من المصدرين قبل الاستخدام الفعلي.</value></data>
+  <data name="PreviewBanner" xml:space="preserve"><value>معاينة بيانات الاختبار</value></data>
+  <data name="PreviewNotice" xml:space="preserve"><value>هذا عرض واجهة محلي غير محفوظ، وليس خطة فعلية أو قائمة شركات مخولة.</value></data>
+  <data name="Company" xml:space="preserve"><value>الشركة</value></data>
+  <data name="Cycle" xml:space="preserve"><value>دورة التخطيط</value></data>
+  <data name="Revision" xml:space="preserve"><value>المراجعة</value></data>
+  <data name="Series" xml:space="preserve"><value>سلسلة SKU × المستودع</value></data>
+  <data name="Week" xml:space="preserve"><value>الأسبوع</value></data>
+  <data name="Quantity" xml:space="preserve"><value>الكمية</value></data>
+  <data name="Origin" xml:space="preserve"><value>المصدر</value></data>
+  <data name="Reason" xml:space="preserve"><value>السبب</value></data>
+  <data name="SavePreview" xml:space="preserve"><value>تطبيق في المعاينة</value></data>
+  <data name="SubmitReview" xml:space="preserve"><value>إرسال للمراجعة</value></data>
+  <data name="Approve" xml:space="preserve"><value>اعتماد</value></data>
+  <data name="Reject" xml:space="preserve"><value>رفض</value></data>
+  <data name="NextWeeks" xml:space="preserve"><value>الأسابيع 13 التالية</value></data>
+  <data name="PreviousWeeks" xml:space="preserve"><value>الأسابيع 13 السابقة</value></data>
+  <data name="ShowAllWeeks" xml:space="preserve"><value>عرض الأسابيع 52 كلها</value></data>
+  <data name="FirstThirteen" xml:space="preserve"><value>عرض أول 13 أسبوعًا</value></data>
+  <data name="KnownZero" xml:space="preserve"><value>صفر صريح</value></data>
+  <data name="Missing" xml:space="preserve"><value>مفقود</value></data>
+  <data name="Manual" xml:space="preserve"><value>يدوي</value></data>
+  <data name="InvalidatedWarning" xml:space="preserve"><value>ملغاة الصلاحية: للتدقيق التاريخي فقط. لا تستخدم هذه الخطة للتخطيط أو MRP.</value></data>
+  <data name="ReasonRequired" xml:space="preserve"><value>أدخل سببًا قبل المتابعة.</value></data>
+  <data name="InvalidQuantity" xml:space="preserve"><value>أدخل كمية غير سالبة لأسبوع معروف.</value></data>
+  <data name="NoScope" xml:space="preserve"><value>اختر شركة اختبار واحدة لعرض المثال. لا يمنح هذا الاختيار وصولًا فعليًا.</value></data>
+  <data name="NoEditPermission" xml:space="preserve"><value>يلزم إذن تعديل المسودة.</value></data>
+  <data name="NoReviewPermission" xml:space="preserve"><value>يلزم إذن المراجعة المستقلة.</value></data>
+  <data name="Draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="InReview" xml:space="preserve"><value>قيد المراجعة</value></data>
+  <data name="ApprovedState" xml:space="preserve"><value>معتمد</value></data>
+  <data name="Published" xml:space="preserve"><value>منشور</value></data>
+  <data name="Superseded" xml:space="preserve"><value>تم استبداله</value></data>
+  <data name="Invalidated" xml:space="preserve"><value>ملغى الصلاحية</value></data>
+  <data name="Changes" xml:space="preserve"><value>سجل التغييرات في هذه المعاينة</value></data>
+  <data name="NoChanges" xml:space="preserve"><value>لا تغييرات في المعاينة.</value></data>
+  <data name="SavedLocally" xml:space="preserve"><value>تم التحديث في هذه المعاينة فقط؛ لم يُحفظ شيء.</value></data>
+  <data name="RevisionHistory" xml:space="preserve"><value>معاينة المراجعة والحالة</value></data>
+  <data name="SelectSeries" xml:space="preserve"><value>اختر سلسلة</value></data>
+  <data name="EditWeek" xml:space="preserve"><value>تعديل الأسبوع</value></data>
+  <data name="IncompleteWeeks" xml:space="preserve"><value>تحتاج كل سلسلة محددة إلى كميات صريحة لكل الأسابيع 52 قبل المراجعة. تبقى القيم المفقودة والمجهولة كما هي.</value></data>
+  <data name="NoAuditPermission" xml:space="preserve"><value>يتطلب المحتوى التاريخي إذن تدقيق منفصلًا.</value></data>
+  <data name="WeekWindow" xml:space="preserve"><value>الأسابيع</value></data>
+  <data name="ReviewReason" xml:space="preserve"><value>سبب القرار</value></data>
+  <data name="NoActionPermission" xml:space="preserve"><value>الإجراء غير متاح ضمن هذه الصلاحيات.</value></data>
+  <data name="NoCompanyData" xml:space="preserve"><value>لا يتوفر نطاق شركة موثق.</value></data>
+  <data name="SupersededReadOnly" xml:space="preserve"><value>تُعرض حالة النسخة المستبدلة فقط. يبقى المحتوى مغلقًا دون دليل MRP مرتبط ومعتمد.</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>سجل الطلب المقبول</value></data>
+  <data name="HistorySelectCompany" xml:space="preserve"><value>لا توجد شركة نشطة متاحة.</value></data>
+  <data name="HistoryEmpty" xml:space="preserve"><value>لا توجد سجلات مقبولة لهذه الشركة.</value></data>
+  <data name="HistoryUnavailable" xml:space="preserve"><value>سجل الطلب المقبول غير متاح.</value></data>
+  <data name="HistorySku" xml:space="preserve"><value>رمز المنتج</value></data>
+  <data name="HistoryWarehouse" xml:space="preserve"><value>المستودع</value></data>
+  <data name="HistoryDate" xml:space="preserve"><value>تاريخ الحدوث</value></data>
+  <data name="HistoryUnit" xml:space="preserve"><value>الوحدة المقبولة</value></data>
+  <data name="HistoryQuantity" xml:space="preserve"><value>الكمية المقبولة</value></data>
+  <data name="HistoryUnitPending" xml:space="preserve"><value>لم يتم التحقق من الوحدة عبر MOD-0290</value></data>
+  <data name="HistoryBatch" xml:space="preserve"><value>دفعة الاستيراد</value></data>
+  <data name="HistoryDecision" xml:space="preserve"><value>القرار</value></data>
+  <data name="HistoryActor" xml:space="preserve"><value>صاحب القرار</value></data>
+  <data name="HistoryAt" xml:space="preserve"><value>وقت القرار</value></data>
+  <data name="HistoryPrevious" xml:space="preserve"><value>السابق</value></data>
+  <data name="HistoryNext" xml:space="preserve"><value>التالي</value></data>
+  <data name="HistoryLoading" xml:space="preserve"><value>جار تحميل السجل المقبول...</value></data>
+  <data name="ForecastIntro" xml:space="preserve"><value>قيّم السجل المقبول لصنف × مستودع واحد واختر الطريقة صراحةً.</value></data>
+  <data name="ForecastAuthorityPending" xml:space="preserve"><value>الشركات هي شركات المستأجر النشطة في MDM. تفويض المستخدم للشركة والتحقق الفعلي من السلسلة قيد الانتظار؛ تعذّر التحقق يمنع العملية.</value></data>
+  <data name="ForecastLoading" xml:space="preserve"><value>جارٍ تحميل البيانات المتحققة…</value></data>
+  <data name="ForecastCycleVersion" xml:space="preserve"><value>إصدار الدورة المتوقع</value></data>
+  <data name="ForecastScopeHelp" xml:space="preserve"><value>أدخل معرّفات الدورة والصنف والمستودع الموجودة. يعيد الخادم التحقق منها ولا تمنح حق الوصول.</value></data>
+  <data name="ForecastEvaluate" xml:space="preserve"><value>تقييم الطرق</value></data>
+  <data name="ForecastCandidates" xml:space="preserve"><value>مقارنة الطرق</value></data>
+  <data name="ForecastComparisonHelp" xml:space="preserve"><value>لا اختيار فائز أو ترتيب تلقائي. يكون WAPE غير معرّف إذا كان مقام الطلب الفعلي صفراً، ولا يُستبدل بمقياس آخر. الانحياز الموجب يعني توقعاً أقل من الواقع. كل نقطة بداية × أسبوع اختبار عينة مستقلة؛ وقد تُحسب الأسابيع المتداخلة أكثر من مرة.</value></data>
+  <data name="ForecastPolicy" xml:space="preserve"><value>إصدار السياسة</value></data>
+  <data name="ForecastMethod" xml:space="preserve"><value>اختيار الطريقة صراحةً</value></data>
+  <data name="ForecastChooseMethod" xml:space="preserve"><value>اختر طريقة مؤهلة</value></data>
+  <data name="ForecastCreate" xml:space="preserve"><value>إنشاء التوقع والمسودة</value></data>
+  <data name="ForecastOpenDraft" xml:space="preserve"><value>فتح المسودة المنشأة</value></data>
+  <data name="ForecastCreated" xml:space="preserve"><value>حُفظ تشغيل التوقع والمسودة مع سجلات التدقيق الإلزامية.</value></data>
+  <data name="ForecastSelectExplicitly" xml:space="preserve"><value>حدد سلسلة واحدة وقيّمها واختر طريقة مؤهلة صراحةً.</value></data>
+  <data name="ForecastInvalidScope" xml:space="preserve"><value>أدخل قيماً صالحة للشركة والدورة والصنف والمستودع وإصدار الدورة.</value></data>
+  <data name="ForecastUnavailable" xml:space="preserve"><value>التحقق غير متاح. لم يُؤكد نجاح العملية. أعد المحاولة عند توفر المصدر.</value></data>
+  <data name="ForecastSessionExpired" xml:space="preserve"><value>انتهت الجلسة. سجّل الدخول مجدداً وأعد تحميل الصفحة.</value></data>
+  <data name="ForecastPermissionLost" xml:space="preserve"><value>هذا الإجراء غير متاح لحسابك. اطلب الصلاحية من المسؤول وأعد تحميل الصفحة.</value></data>
+  <data name="ForecastScopeLost" xml:space="preserve"><value>السجل أو السلسلة المختارة غير متاحة ضمن نطاقك. اخترها مجدداً بعد التحقق من الوصول.</value></data>
+  <data name="ForecastConflict" xml:space="preserve"><value>تغيّرت الدورة أو الطلب. تحقق من الإصدار الأحدث وأعد التقييم.</value></data>
+  <data name="ForecastSelectionRejected" xml:space="preserve"><value>لم تعد الطريقة أو المدخلات مؤهلة. أعد التقييم وأدخل السبب.</value></data>
+  <data name="ForecastUndefined" xml:space="preserve"><value>غير معرّف</value></data>
+  <data name="ForecastEligible" xml:space="preserve"><value>مؤهلة</value></data>
+  <data name="ForecastBacktestUnavailable" xml:space="preserve"><value>مؤهلة؛ مقاييس الاختبار التاريخي غير متاحة.</value></data>
+  <data name="ForecastInsufficientWeeks" xml:space="preserve"><value>الأسابيع المكتملة الموثوقة غير كافية لهذه الطريقة.</value></data>
+  <data name="ForecastInsufficientEvents" xml:space="preserve"><value>أحداث الطلب الفعلي أو الأسابيع الإيجابية المختلفة غير كافية لطريقة كروستون.</value></data>
+  <data name="ForecastMixedUnit" xml:space="preserve"><value>وحدات السجل مختلطة أو مفقودة؛ التحويل غير متحقق.</value></data>
+  <data name="ForecastUntrustedHistory" xml:space="preserve"><value>تعذّر التحقق من موثوقية السجل أو اتساق وحداته.</value></data>
+  <data name="ForecastInvalidOutput" xml:space="preserve"><value>أنتجت الطريقة توقعاً غير صالح ولا يمكن اختيارها.</value></data>
+  <data name="ForecastReliableWeeks" xml:space="preserve"><value>الأسابيع الموثوقة</value></data>
+  <data name="ForecastRealEvents" xml:space="preserve"><value>أحداث الطلب الفعلي</value></data>
+  <data name="ForecastWape" xml:space="preserve"><value>نسبة WAPE</value></data>
+  <data name="ForecastMae" xml:space="preserve"><value>MAE</value></data>
+  <data name="ForecastBias" xml:space="preserve"><value>الانحياز (الفعلي − التوقع)</value></data>
+  <data name="ForecastMase" xml:space="preserve"><value>MASE</value></data>
+  <data name="ForecastHorizonMetrics" xml:space="preserve"><value>المقاييس حسب بُعد التوقع</value></data>
+  <data name="ForecastWeeksAhead" xml:space="preserve"><value>الأسابيع القادمة</value></data>
+  <data name="ForecastSamples" xml:space="preserve"><value>العينات</value></data>
+  <data name="ForecastMethodNaive" xml:space="preserve"><value>الطريقة البسيطة</value></data>
+  <data name="ForecastMethodMovingAverage" xml:space="preserve"><value>المتوسط المتحرك</value></data>
+  <data name="ForecastMethodSimpleExponentialSmoothing" xml:space="preserve"><value>التنعيم الأسي البسيط</value></data>
+  <data name="ForecastMethodHoltTrend" xml:space="preserve"><value>اتجاه هولت</value></data>
+  <data name="ForecastMethodSeasonalNaive" xml:space="preserve"><value>الطريقة البسيطة الموسمية</value></data>
+  <data name="ForecastMethodHoltWinters" xml:space="preserve"><value>هولت وينترز</value></data>
+  <data name="ForecastMethodBiasCorrectedCroston" xml:space="preserve"><value>كروستون المصحح للانحياز</value></data>
+</root>

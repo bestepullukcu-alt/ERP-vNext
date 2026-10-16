@@ -1,0 +1,22 @@
+@using Diten.Web.Views.MasterDataManagement.ProductLegalEntityScopes
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ProductLegalEntityScopesIndex> Localizer
+@inject IHtmlLocalizer<SharedResource> SharedLocalizer
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasDetailsPreview">
+    <div class="offcanvas-header">
+        <div><small class="text-muted">@Localizer["QuickView"]</small><h5 id="oc-title" class="offcanvas-title">@Localizer["Unknown"]</h5></div>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div id="scopeDetailLoading" class="d-none">@SharedLocalizer["Loading"]</div>
+        <div id="scopeDetailError" class="alert alert-danger d-none"></div>
+        <dl class="row">
+            <dt class="col-5">@Localizer["PolicyStatus"]</dt><dd id="oc-policy-status" class="col-7">-</dd>
+            <dt class="col-5">@Localizer["ScopeMode"]</dt><dd id="oc-mode" class="col-7">-</dd>
+            <dt class="col-5">@Localizer["LegalEntities"]</dt><dd id="oc-legal-entities" class="col-7">-</dd>
+            <dt class="col-5">@Localizer["EffectiveFrom"]</dt><dd id="oc-effective-from" class="col-7">-</dd>
+            <dt class="col-5">@Localizer["EffectiveTo"]</dt><dd id="oc-effective-to" class="col-7">-</dd>
+            <dt class="col-5">@Localizer["Version"]</dt><dd id="oc-version" class="col-7">-</dd>
+        </dl>
+    </div>
+</div>

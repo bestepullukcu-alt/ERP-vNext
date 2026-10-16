@@ -21,7 +21,11 @@ public sealed record VisitReportContractDto(
     VisitReportContractLimits Limits,
     IReadOnlyList<string> ErrorCodes,
     IReadOnlyList<string> Permissions,
-    IReadOnlyList<string> Limitations);
+    IReadOnlyList<string> Limitations,
+    // WP-VW-W1 (additive) — the report deadline in hours after the end of the planned day (UTC), and the derived work
+    // status codes in PRIORITY order (mobile uses this as its fixed list).
+    int ReportDeadlineHours = VisitReportLimits.ReportDeadlineHours,
+    IReadOnlyList<string>? WorkStatuses = null);
 
 /// <summary>The in-domain vocabulary exactly as the runtime enforces it. Every dropdown is fed from here.</summary>
 public sealed record VisitReportVocabularyDto(
@@ -40,7 +44,7 @@ public sealed record VisitReportSupportedFilters(IReadOnlyList<string> List)
 {
     public static VisitReportSupportedFilters Current => new(new[]
     {
-        "from", "to", "resourceId", "plannedVisitId", "reportStatus", "executionOutcome"
+        "from", "to", "resourceId", "plannedVisitId", "reportStatus", "executionOutcome", "workStatus"
     });
 }
 

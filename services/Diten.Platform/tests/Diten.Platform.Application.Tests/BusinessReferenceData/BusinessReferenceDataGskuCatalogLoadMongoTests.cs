@@ -362,8 +362,9 @@ public sealed class BusinessReferenceDataGskuCatalogLoadMongoTests : IAsyncLifet
  * a BsonDocument reply, takes the machine-wide lock, and stamps the marker — all in the one place that already
  * does those correctly.
  *
- * ⚠ WHY A SCOPED DATABASE AND NOT THE SHARED ONE + A FRESH TENANT — FOR THE CLASSES THAT NEED IT. Four classes
- * (GovernanceMode, GskuCatalogLoad, VerifiedMarketCatalogLoad, VerifiedMarketOperational) assert on the WHOLE collection:
+ * ⚠ WHY A SCOPED DATABASE AND NOT THE SHARED ONE + A FRESH TENANT — FOR THE CLASSES THAT NEED IT. Three classes
+ * (GovernanceMode, GskuCatalogLoad, VerifiedMarketCatalogLoad) assert on the WHOLE collection (on this branch
+ * VerifiedMarketOperational runs on its own replica set and owns no scope):
  * "the loader wrote nothing at all" (CountDocuments(Empty) == 0), "exactly one operation exists" (Single over an
  * empty filter), "no OTHER tenant got a market set". In the shared database those are false the moment a parallel
  * class writes, and narrowing them to one tenant would stop them proving what they are there to prove. Their
@@ -399,8 +400,9 @@ internal sealed class BusinessReferenceDataTestHarness : IAsyncDisposable
         "gsku_catalog_noprovider",
         "harness_blank_proof",
         "harness_scope_proof",
-        "market_catalog",
-        "market_operational"
+        "market_catalog"
+        // (No "market_operational" on this branch: VerifiedMarketOperationalMongoTests runs against its own replica
+        //  set here — VerifiedMarketReplicaSetFixture — and owns no scope on the shared mongod.)
     };
 
     private readonly Persistence.MongoIntegrationHarness _mongo;

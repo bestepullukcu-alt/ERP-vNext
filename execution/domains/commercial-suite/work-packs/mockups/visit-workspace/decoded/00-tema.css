@@ -1,0 +1,31 @@
+:root{--bg:#f5f5f9;--card:#fff;--h:#384551;--tx:#646e78;--mu:#8592a3;--bd:#e4e6e8;--bd2:#d9dee3;--soft:#f5f5f9;--soft2:#fafafb;--pl:#e0e2f3;--pbd:#c5c9e8;--p:#0b1a8c;--pt:#0b1a8c;--pt2:#4b55a8;
+--okb:#e8fadf;--ok:#4a9a22;--okc:#71dd37;--wab:#fff2d6;--wa:#b27800;--wac:#ffab00;--dab:#ffe0db;--da:#d1301a;--dac:#ff3e1d;--inb:#d7f5fc;--in:#028aa6;--inc:#03c3ec;--seb:#ebeef0;--se:#6d7887;--sh:0 3px 8px rgba(34,48,62,.08);--sh2:0 6px 20px rgba(34,48,62,.18);--ov:rgba(34,48,62,.45);--slide:#fff}
+body[data-theme=dark]{--bg:#232333;--card:#2b2c40;--h:#d5d5e2;--tx:#b2b2c4;--mu:#8a8ba5;--bd:#3d3e58;--bd2:#4e4f6c;--soft:#34354e;--soft2:#303148;--pl:#2f3163;--pbd:#4a4f8c;--p:#4655d6;--pt:#a3aaf5;--pt2:#9ca2e0;
+--okb:#344a35;--ok:#86e05a;--okc:#71dd37;--wab:#4d4130;--wa:#ffbf3d;--wac:#ffab00;--dab:#4f2e36;--da:#ff7a66;--dac:#ff3e1d;--inb:#23435a;--in:#4fd6f2;--inc:#03c3ec;--seb:#3a3b55;--se:#a1a2b8;--sh:0 3px 8px rgba(0,0,0,.25);--sh2:0 6px 24px rgba(0,0,0,.45);--ov:rgba(10,10,20,.6);--slide:#1c1d2b}
+html,body{margin:0}
+body{background:var(--bg);font-family:'Public Sans',sans-serif;color:var(--tx);font-size:15px}
+*{box-sizing:border-box;scrollbar-width:thin;scrollbar-color:var(--pbd) transparent}
+a{color:var(--pt);text-decoration:none}a:hover{color:var(--pt2);text-decoration:underline}
+button,input,select,textarea{font-family:inherit}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--p);outline-offset:2px}
+/* FullCalendar (3rd-party DOM) */
+.fc{--fc-border-color:var(--bd);--fc-page-bg-color:var(--card);--fc-neutral-bg-color:var(--soft2);--fc-today-bg-color:color-mix(in oklab,var(--pl) 45%,transparent);--fc-now-indicator-color:var(--dac);--fc-event-border-color:transparent;font-size:13px;color:var(--tx)}
+.fc .fc-col-header-cell{background:var(--soft2)!important;vertical-align:top}
+.fc .fc-col-header-cell-cushion{display:block;padding:8px 6px;color:var(--h);text-decoration:none!important}
+.fc .fc-timegrid-slot{height:34px!important}
+.fc .fc-timegrid-slot-label-cushion,.fc .fc-daygrid-day-number{color:var(--mu);text-decoration:none!important}
+.fc .fc-event,.fc .fc-v-event,.fc .fc-h-event{background:transparent!important;border:0!important;box-shadow:none!important;cursor:pointer}
+.fc .fc-timegrid-event-harness-inset .fc-timegrid-event{box-shadow:none}
+.fc .fc-event-main{padding:0!important;color:inherit}
+.fc .fc-daygrid-event{white-space:normal;margin:1px 3px}
+.fc .fc-scrollgrid{border-radius:6px;overflow:hidden}
+.fc-theme-standard td,.fc-theme-standard th{border-color:var(--bd)}
+.fc .fc-highlight{background:var(--pl)}
+.fc-direction-ltr .fc-timegrid-col-events{margin:0 3px 0 2px}
+@keyframes zpulse{0%{box-shadow:0 0 0 0 rgba(3,195,236,.6)}70%{box-shadow:0 0 0 6px rgba(3,195,236,0)}100%{box-shadow:0 0 0 0 rgba(3,195,236,0)}}
+.zlive{animation:zpulse 1.6s infinite}
+
+.fc .fc-timegrid-now-indicator-line{border-width:2px 0 0}
+.fc .fc-daygrid-day.fc-day-today,.fc .fc-timegrid-col.fc-day-today{background:var(--fc-today-bg-color)!important}
+.fc .fc-bg-event{opacity:1!important}
+.fc .fc-timegrid-slot-minor{border-top-style:dotted!important}

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="SectionTitle" xml:space="preserve"><value>Stok davranışı</value></data>
+  <data name="Edit" xml:space="preserve"><value>Stok davranışını düzenle</value></data>
+  <data name="FillIn" xml:space="preserve"><value>Stok davranışını doldur</value></data>
+  <data name="BaseUom" xml:space="preserve"><value>Temel birim</value></data>
+  <data name="UomConversions" xml:space="preserve"><value>Birim çevrimleri</value></data>
+  <data name="DerivedPackConversion" xml:space="preserve"><value>Ambalajdan türetilir — girilmez</value></data>
+  <data name="ShelfLife" xml:space="preserve"><value>Raf ömrü (gün)</value></data>
+  <data name="RetestDays" xml:space="preserve"><value>Yeniden test aralığı (gün)</value></data>
+  <data name="MinRemainingShelfLife" xml:space="preserve"><value>Asgari kalan raf ömrü (gün)</value></data>
+  <data name="StorageConditions" xml:space="preserve"><value>Saklama koşulları</value></data>
+  <data name="LotControlled" xml:space="preserve"><value>Lot takipli</value></data>
+  <data name="SerialControlled" xml:space="preserve"><value>Seri takipli</value></data>
+  <data name="Gtin" xml:space="preserve"><value>GTIN (satış kutusu)</value></data>
+  <data name="Stockable" xml:space="preserve"><value>Stoklanabilir</value></data>
+  <data name="Yes" xml:space="preserve"><value>Evet</value></data>
+  <data name="No" xml:space="preserve"><value>Hayır</value></data>
+  <data name="NotSet" xml:space="preserve"><value>Girilmedi</value></data>
+  <data name="SourceGsku" xml:space="preserve"><value>GSKU'dan</value></data>
+  <data name="LockedReason" xml:space="preserve"><value>Onaylı kayıtta dolu — yalnız düzeltmeyle değişebilir; düzeltme sonraki bir sürümde gelecek.</value></data>
+  <data name="AddOnlyReason" xml:space="preserve"><value>Onaylı kayıt — mevcut satırlar olduğu gibi kalır; yeni satır ekleyebilirsiniz.</value></data>
+  <data name="NotEditable" xml:space="preserve"><value>Bu kaydın durumu stok davranışı değişikliğine izin vermiyor.</value></data>
+  <data name="NotStockableBecause" xml:space="preserve"><value>Henüz stoklanamaz. Eksik:</value></data>
+  <data name="StockableFlag" xml:space="preserve"><value>Stoklanabilir = evet</value></data>
+  <data name="MissingCaseBox" xml:space="preserve"><value>Koli ↔ kutu çevrimi</value></data>
+  <data name="MissingGskuBaseUom" xml:space="preserve"><value>GSKU'nun temel birimi</value></data>
+  <data name="MissingGskuStockable" xml:space="preserve"><value>GSKU'nun stoklanabilir olması</value></data>
+  <data name="GroupUnits" xml:space="preserve"><value>Birimler</value></data>
+  <data name="GroupShelfLife" xml:space="preserve"><value>Raf ömrü</value></data>
+  <data name="GroupStorageControl" xml:space="preserve"><value>Saklama ve takip</value></data>
+  <data name="GroupGtin" xml:space="preserve"><value>Satış kutusu tanımı</value></data>
+  <data name="AddConversion" xml:space="preserve"><value>Çevrim ekle</value></data>
+  <data name="RemoveConversion" xml:space="preserve"><value>Çevrimi kaldır</value></data>
+  <data name="ConversionFrom" xml:space="preserve"><value>Kaynak birim</value></data>
+  <data name="ConversionTo" xml:space="preserve"><value>Hedef birim</value></data>
+  <data name="ConversionNumerator" xml:space="preserve"><value>Pay</value></data>
+  <data name="ConversionDenominator" xml:space="preserve"><value>Payda</value></data>
+  <data name="ConversionHelp" xml:space="preserve"><value>1 kaynak birim = pay ÷ payda hedef birim. Birimler listeden seçilir.</value></data>
+  <data name="UomHelp" xml:space="preserve"><value>Birimi listeden seçin.</value></data>
+  <data name="StorageHelp" xml:space="preserve"><value>Listeden bir veya daha fazla koşul seçin. En fazla bir sıcaklık koşulu.</value></data>
+  <data name="ShelfLifeFromGskuHelp" xml:space="preserve"><value>GSKU'nun raf ömrünü kullanmak için boş bırakın; kendi değeri ondan uzun olamaz.</value></data>
+  <data name="GtinHelp" xml:space="preserve"><value>Geçerli GS1 kontrol haneli 14 rakam.</value></data>
+  <data name="LskuInheritsHelp" xml:space="preserve"><value>Diğer her şey (birimler, raf ömrü, saklama, lot, stoklanabilir) GSKU'dan okunur.</value></data>
+  <data name="Save" xml:space="preserve"><value>Kaydet</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Vazgeç</value></data>
+  <data name="SaveConfirmation" xml:space="preserve"><value>Stok davranışı değişiklikleri kaydedilsin mi?</value></data>
+  <data name="Saved" xml:space="preserve"><value>Stok davranışı kaydedildi.</value></data>
+  <data name="NoChanges" xml:space="preserve"><value>Değişiklik yok.</value></data>
+  <data name="SaveFailed" xml:space="preserve"><value>Stok davranışı kaydedilemedi. Yeniden deneyin.</value></data>
+  <data name="StateChanged" xml:space="preserve"><value>Kayıt bu arada değişti; en güncel değerler gösteriliyor.</value></data>
+  <data name="InvalidCode" xml:space="preserve"><value>Kodları büyük harfle (harf, rakam, alt çizgi) ve virgülle ayırarak girin.</value></data>
+  <data name="InvalidDays" xml:space="preserve"><value>Gün değerleri 0–3650 arası tam sayıdır (raf ömrü 1'den başlar).</value></data>
+  <data name="InvalidConversion" xml:space="preserve"><value>Her çevrim iki farklı birim kodu ile sıfırdan büyük pay ve payda ister.</value></data>
+  <data name="InvalidGtin" xml:space="preserve"><value>GTIN tam olarak 14 rakam olmalıdır.</value></data>
+  <data name="ListCannotBeEmpty" xml:space="preserve"><value>Değeri olan bir liste boşaltılamaz; en az birini bırakın.</value></data>
+  <data name="Uom_C62" xml:space="preserve"><value>Adet</value></data>
+  <data name="Uom_MC" xml:space="preserve"><value>Mikrogram (µg)</value></data>
+  <data name="Uom_MGM" xml:space="preserve"><value>Miligram (mg)</value></data>
+  <data name="Uom_GRM" xml:space="preserve"><value>Gram (g)</value></data>
+  <data name="Uom_KGM" xml:space="preserve"><value>Kilogram (kg)</value></data>
+  <data name="Uom_IU" xml:space="preserve"><value>Uluslararası birim (IU)</value></data>
+  <data name="Uom_MLT" xml:space="preserve"><value>Mililitre (mL)</value></data>
+  <data name="Uom_LTR" xml:space="preserve"><value>Litre (L)</value></data>
+  <data name="Uom_MTR" xml:space="preserve"><value>Metre (m)</value></data>
+  <data name="Uom_MTK" xml:space="preserve"><value>Metrekare (m²)</value></data>
+  <data name="Uom_XBX" xml:space="preserve"><value>Kutu</value></data>
+  <data name="Uom_XCS" xml:space="preserve"><value>Koli</value></data>
+  <data name="Uom_XRO" xml:space="preserve"><value>Rulo</value></data>
+  <data name="Storage_AMBIENT_15_25" xml:space="preserve"><value>Oda sıcaklığı (15–25 °C)</value></data>
+  <data name="Storage_COOL_2_8" xml:space="preserve"><value>Buzdolabında (2–8 °C)</value></data>
+  <data name="Storage_FROZEN_BELOW_MINUS_20" xml:space="preserve"><value>Dondurulmuş (−20 °C altı)</value></data>
+  <data name="Storage_PROTECT_FROM_LIGHT" xml:space="preserve"><value>Işıktan koruyun</value></data>
+  <data name="Storage_PROTECT_FROM_MOISTURE" xml:space="preserve"><value>Nemden koruyun</value></data>
+  <data name="OptionsUnavailable" xml:space="preserve"><value>Birim ve saklama koşulu listeleri şu anda yüklenemiyor; bu alanlar değiştirilemez. Diğer alanlar yine kaydedilebilir; biraz sonra tekrar deneyin.</value></data>
+  <data name="OptionsUnavailableCreate" xml:space="preserve"><value>Liste gelene kadar kalem oluşturulamaz.</value></data>
+  <data name="TemperatureOnlyOne" xml:space="preserve"><value>Yalnızca bir sıcaklık koşulu seçilebilir. Önce seçili olanı kaldırın.</value></data>
+  <data name="SelectUnit" xml:space="preserve"><value>Birim seçin</value></data>
+</root>

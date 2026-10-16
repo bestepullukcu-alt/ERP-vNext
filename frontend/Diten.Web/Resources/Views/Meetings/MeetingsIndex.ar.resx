@@ -32,8 +32,6 @@
   <data name="LocationPlaceholder" xml:space="preserve"><value>الغرفة أو المبنى أو رابط مكالمة الفيديو</value></data>
   <data name="FollowUpOfMeeting" xml:space="preserve"><value>متابعة للاجتماع</value></data>
   <data name="Attendees" xml:space="preserve"><value>الحضور</value></data>
-  <data name="AttendeesPlaceholder" xml:space="preserve"><value>ابحث عن أشخاص لدعوتهم</value></data>
-  <data name="NoEligibleAttendees" xml:space="preserve"><value>لم يتم العثور على أشخاص مؤهلين. يمكن دعوة مستخدمي المستأجر النشطين الذين يشغلون منصبًا فقط.</value></data>
   <data name="AddAgendaItem" xml:space="preserve"><value>إضافة</value></data>
   <data name="AgendaItemPlaceholder" xml:space="preserve"><value>بند جدول الأعمال</value></data>
   <data name="RemoveAttendee" xml:space="preserve"><value>إزالة الحاضر</value></data>
@@ -72,6 +70,14 @@
   <data name="PreviousMeetingLabel" xml:space="preserve"><value>الاجتماع السابق</value></data>
   <data name="FollowUpMeetingLabel" xml:space="preserve"><value>اجتماع المتابعة</value></data>
   <data name="CarriedFromPreviousMeetingBadge" xml:space="preserve"><value>من الاجتماع السابق</value></data>
+  <data name="CarriedOpenActionLine" xml:space="preserve"><value>إجراء مفتوح من الاجتماع السابق</value></data>
+  <data name="LinkedTaskNotAccessible" xml:space="preserve"><value>مهمة ليس لديك صلاحية الوصول إليها</value></data>
+  <data name="LinkExistingTaskTruncated" xml:space="preserve"><value>تم البحث في جزء من القائمة فقط. إذا لم تجد المهمة المطلوبة هنا، فضيّق نطاق البحث.</value></data>
+  <data name="LinkExistingTaskListUnreadable" xml:space="preserve"><value>تعذّرت قراءة قائمة المهام. أعد تحميل الصفحة وحاول مرة أخرى.</value></data>
+  <data name="LinkExistingTaskListFailed" xml:space="preserve"><value>تعذّر تحميل قائمة المهام. حاول مرة أخرى.</value></data>
+  <data name="LinkExistingTaskSearching" xml:space="preserve"><value>جارٍ البحث…</value></data>
+  <data name="LinkExistingTaskNoResults" xml:space="preserve"><value>لا توجد مهمة مطابقة.</value></data>
+  <data name="LinkExistingTaskInputTooShort" xml:space="preserve"><value>اكتب حرفين على الأقل للبحث.</value></data>
   <data name="Yes" xml:space="preserve"><value>نعم</value></data>
   <data name="No" xml:space="preserve"><value>لا</value></data>
   <data name="IdentitySection" xml:space="preserve"><value>معلومات الاجتماع</value></data>
@@ -110,6 +116,15 @@
   <data name="ErrorReportInvalidPeriod" xml:space="preserve"><value>يجب أن تنتهي فترة التقرير بعد بدايتها.</value></data>
   <data name="ErrorReportExportTooLarge" xml:space="preserve"><value>يحتوي هذا التقرير على عدد كبير جدًا من الصفوف للتصدير. ضيّق الفترة أو عوامل التصفية.</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>ليست لديك صلاحية لتنفيذ هذا الإجراء.</value></data>
+  <data name="PeopleSearchHint" xml:space="preserve"><value>اكتب اسمًا أو منصبًا…</value></data>
+  <data name="PeopleSearchMinimumLength" xml:space="preserve"><value>اكتب حرفين على الأقل للبحث.</value></data>
+  <data name="PeopleSearchNoResults" xml:space="preserve"><value>لم يتم العثور على أحد لهذا البحث.</value></data>
+  <data name="PeopleSearching" xml:space="preserve"><value>جارٍ البحث…</value></data>
+  <data name="ErrorPeopleSearchRateLimited" xml:space="preserve"><value>عمليات بحث كثيرة في وقت قصير. انتظر قليلًا ثم حاول مرة أخرى.</value></data>
+  <data name="SearchFailed" xml:space="preserve"><value>تعذّر إجراء البحث. يُرجى المحاولة مرة أخرى بعد قليل.</value></data>
+  <data name="NewOrganizerRequired" xml:space="preserve"><value>اختر المنظّم الجديد.</value></data>
+  <data name="MeetingNotAccessible" xml:space="preserve"><value>اجتماع ليس لديك صلاحية الوصول إليه</value></data>
+  <data name="MeetingsListTruncated" xml:space="preserve"><value>تعرض القائمة 10,000 اجتماع كحد أقصى؛ استخدم عرض التقويم للباقي.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>خدمة الاجتماعات غير متاحة حاليًا.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>يرجى تعبئة جميع الحقول المطلوبة.</value></data>
   <data name="ManageTypes" xml:space="preserve"><value>أنواع الاجتماعات</value></data>

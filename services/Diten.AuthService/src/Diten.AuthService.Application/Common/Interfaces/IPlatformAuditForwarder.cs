@@ -13,7 +13,12 @@ public sealed record PlatformAuditEvent(
     Guid? EntityId,
     int Operation,
     int Outcome,
-    IReadOnlyDictionary<string, object?> Metadata);
+    IReadOnlyDictionary<string, object?> Metadata,
+    // WP-ROLES-CLOSE-01 — Platform's AuditAppendRequest.BeforeState / AfterState: what the entity's own fields were and
+    // are. Only an update that knows both sends them (role_updated); the user events send neither (they list the names
+    // of the changed fields in Metadata and never the values, which are personal data).
+    IReadOnlyDictionary<string, object?>? BeforeState = null,
+    IReadOnlyDictionary<string, object?>? AfterState = null);
 
 /// <summary>
 /// BL-456 — forwards an AuthService audit event to Platform's central audit store, S2S, with the internal key.

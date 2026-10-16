@@ -13,5 +13,5 @@ public sealed class StoreRepositoryObjectHandler
     public StoreRepositoryObjectHandler(DocumentRepositoryService service) => _service = service;
 
     public Task<Response<RepositoryObjectModel>> Handle(StoreRepositoryObjectCommand request, CancellationToken cancellationToken) =>
-        _service.StoreAsync(request.Input, request.CorrelationId, cancellationToken);
+        _service.StoreForCallerAsync(request.Input, request.CorrelationId, cancellationToken);
 }

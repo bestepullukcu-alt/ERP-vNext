@@ -1,7 +1,9 @@
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using Diten.MdmService.Application.Contracts;
 using Diten.MdmService.Application.Features.ProductAbbreviationRegister.Services;
+using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 
 namespace Diten.MdmService.Application;
 
@@ -16,12 +18,25 @@ public static class DependencyInjection
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(Behaviors.LoggingBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(Behaviors.ExceptionHandlingBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(Behaviors.PerformanceBehavior<,>));
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(Behaviors.ProductLegalEntityScopeWriteFenceBehavior<,>));
         // Registered last => innermost: only wraps real handler executions, so it audits the handler's actual outcome
         // (validation/exception failures short-circuit before reaching it).
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(Behaviors.AuditForwardingBehavior<,>));
         services.AddValidatorsFromAssembly(assembly);
+        // WP-MDM-BL598-01: Lazy<T> of any registered service — built on first use, inside the caller's own failure handling.
+        services.AddTransient(typeof(Lazy<>), typeof(Common.DeferredService<>));
+        // WP-VW-W4 (W4-BE-b2) — the competitor products service (the handlers are thin calls onto it).
+        services.AddScoped<Features.CompetitorProducts.CompetitorProductService>();
         services.AddScoped<ProductAbbreviationAuthorization>();
         services.AddScoped<ProductAbbreviationWorkflow>();
+        services.AddScoped<IProductLegalEntityScopeEvaluator, ProductLegalEntityScopeEvaluator>();
+        services.AddScoped<ProductLegalEntityScopeWriteFenceCoordinator>();
+        services.AddScoped<ProductIdentityBackgroundScope>();
+        services.AddScoped<LskuBackgroundScope>();
+        services.AddSingleton<IProductLegalEntityScopeActivationDebt>(ProductLegalEntityScopeActivationDebt.Instance);
+        services.AddScoped<ProductLegalEntityScopeProductAccess>();
+        // MOD-0290-FU04 S3 — what the four stock-behaviour handlers share (permission, scope, write shape).
+        services.AddScoped<Features.ProductItemSkuMaster.StockBehaviour.StockBehaviourContext>();
 
         return services;
     }

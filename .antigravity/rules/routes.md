@@ -70,7 +70,9 @@ Explicit tanımlanmamış istekler için fallback. `ocelot.json`'da **en sona** 
 Frontend DataTable sayfalarında iki API profili vardır:
 
 ### Profil 1 — `proxy-profile` (Platform/admin MVC default)
-Browser JS aynı origin'deki frontend proxy'yi çağırır. MVC controller, HttpOnly `access_token` cookie'sini server-side okuyup Gateway'e `Authorization: Bearer` olarak aktarır.
+Browser JS aynı origin'deki frontend proxy'yi çağırır. MVC controller, HttpOnly `access_token` cookie'sini server-side **`AuthTokenCookies.GetAccessToken(Request)`** ile okuyup Gateway'e `Authorization: Bearer` olarak aktarır (`frontend/Diten.Web/Services/Auth/AuthTokenCookies.cs`).
+
+`Request.Cookies["access_token"]` doğrudan **okunmaz**: token 3800 karakteri aşınca parçalı çerezlere (`access_tokenC1..CN`) yazılır ve taban çerezde yalnız `chunks-N` işareti kalır. Doğrudan okuma Gateway'e `Bearer chunks-N` gönderir ve istek 401 döner (BL-294 — parçalı token; `GoldenReferenceSlimController.TryCreateRequest`). `GetAccessToken` parçaları birleştirir, kısa token'ı olduğu gibi döner.
 
 ```javascript
 // ✅ Doğru (browser network: frontend 5001)
@@ -100,8 +102,8 @@ Her iki profilde de browser JS mikroservis portlarına (`5056`, `5057`, `5058`) 
 Tüm isteklerde aşağıdaki header'ların varlığı ve formatı denetlenmelidir:
 
 1. **Multi-Tenant Header:**
-   - `X-Tenant-Id`: Her zaman bir **GUID** olmalıdır.
-   - Örn: `00000000-0000-0000-0000-000000000001`
+   - `X-Tenant-Id`: Yalnız kiracı (tenant) bağlamındaki isteklerde bulunur ve her zaman bir **GUID** olmalıdır. Platform/admin bağlamında gönderilmez.
+   - Biçim örneği: `550e8400-e29b-41d4-a716-446655440000` (yalnız biçim örneğidir; koda sabit kiracı kimliği yazılmaz — `multi-tenancy.md`).
 2. **Auth Header:**
    - Gateway'e giden servis çağrısında `Authorization`: `Bearer <JWT_TOKEN>` formatında olmalıdır.
    - HttpOnly cookie kullanan MVC shell modüllerinde bu header browser JS tarafından değil, frontend proxy tarafından server-side eklenir.

@@ -382,7 +382,10 @@ const NotificationTemplatesList = (function () {
             if (!row?.id || row.status === 'Archived') return;
             window.showConfirm?.(L.ArchiveConfirm, async () => {
                 try {
-                    const res = await fetch(`${apiBase}/templates/${row.id}/archive`, {
+                    // A tenant's override is archived under its tenant; an id alone reaches platform defaults only.
+                    const res = await fetch(row.tenantId
+                        ? `${apiBase}/tenant/${row.tenantId}/templates/${row.id}/archive`
+                        : `${apiBase}/templates/${row.id}/archive`, {
                         method: 'POST',
                         credentials: 'same-origin'
                     });

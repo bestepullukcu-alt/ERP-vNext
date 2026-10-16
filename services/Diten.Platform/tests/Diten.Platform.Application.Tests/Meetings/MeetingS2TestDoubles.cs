@@ -33,6 +33,9 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
     public Task<Meeting?> GetByIdAsync(Guid id, CancellationToken ct = default)
         => Task.FromResult(_items.FirstOrDefault(x => x.Id == id && x.TenantId == Tenant && !x.IsDeleted));
 
+    public Task<Meeting?> GetByIdAsync(IPlatformTransactionSession session, Guid id, CancellationToken ct = default)
+        => GetByIdAsync(id, ct);
+
     public Task<Meeting?> FindByIdempotencyKeyAsync(string idempotencyKey, CancellationToken ct = default)
         => Task.FromResult(_items.FirstOrDefault(x => x.TenantId == Tenant && !x.IsDeleted && x.IdempotencyKey == idempotencyKey));
 
@@ -49,10 +52,12 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
         return Task.FromResult(candidate);
     }
 
+    /// <summary>BL-533 — the real store's rule: written only when the meeting in hand was READ at
+    /// <paramref name="expectedVersion"/> and is still stored at it; a refusal leaves the copy in hand untouched.</summary>
     public Task<bool> UpdateAsync(Meeting meeting, int expectedVersion, CancellationToken ct = default)
     {
         var stored = _items.FirstOrDefault(x => x.Id == meeting.Id && x.TenantId == Tenant && !x.IsDeleted);
-        if (stored is null || stored.Version != expectedVersion)
+        if (meeting.Version != expectedVersion || stored is null || stored.Version != expectedVersion)
         {
             return Task.FromResult(false);
         }
@@ -62,6 +67,9 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
         _items.Add(meeting);
         return Task.FromResult(true);
     }
+
+    public Task<bool> UpdateAsync(IPlatformTransactionSession session, Meeting meeting, int expectedVersion, CancellationToken ct = default)
+        => UpdateAsync(meeting, expectedVersion, ct);
 
     public Task<IReadOnlyList<Meeting>> ListAsync(CancellationToken ct = default)
         => Task.FromResult<IReadOnlyList<Meeting>>(_items.Where(x => x.TenantId == Tenant && !x.IsDeleted).ToList());
@@ -138,6 +146,10 @@ internal sealed class FakeMeetingAttendeeRepository : IMeetingAttendeeRepository
         return Task.CompletedTask;
     }
 
+    public Task UpdateAttendanceStatusAsync(
+        IPlatformTransactionSession session, Guid meetingId, Guid userId, AttendanceStatus status, CancellationToken ct = default)
+        => UpdateAttendanceStatusAsync(meetingId, userId, status, ct);
+
     public Task<bool> MarkMailUndeliveredAsync(Guid meetingId, Guid userId, DateTimeOffset failedAt, CancellationToken ct = default)
     {
         var item = _items.FirstOrDefault(x => x.TenantId == Tenant && !x.IsDeleted && x.MeetingId == meetingId && x.UserId == userId);
@@ -194,6 +206,10 @@ internal sealed class FakeMeetingMinutesVersionRepository : IMeetingMinutesVersi
         return Task.FromResult<MeetingMinutesVersion?>(version);
     }
 
+    public Task<MeetingMinutesVersion?> TryCreateAsync(
+        IPlatformTransactionSession session, MeetingMinutesVersion version, CancellationToken ct = default)
+        => TryCreateAsync(version, ct);
+
     public Task<MeetingMinutesVersion?> GetLatestByMeetingIdAsync(Guid meetingId, CancellationToken ct = default)
         => Task.FromResult(_items
             .Where(x => x.TenantId == Tenant && !x.IsDeleted && x.MeetingId == meetingId)
@@ -216,10 +232,11 @@ internal sealed class FakeMeetingMinutesVersionRepository : IMeetingMinutesVersi
             .Select(Clone)
             .ToList());
 
+    /// <summary>BL-533 — the real store's read-version rule (see <see cref="FakeMeetingRepository.UpdateAsync(Meeting, int, CancellationToken)"/>).</summary>
     public Task<bool> UpdateAsync(MeetingMinutesVersion version, int expectedVersion, CancellationToken ct = default)
     {
         var stored = _items.FirstOrDefault(x => x.Id == version.Id && x.TenantId == Tenant && !x.IsDeleted);
-        if (stored is null || stored.Version != expectedVersion)
+        if (version.Version != expectedVersion || stored is null || stored.Version != expectedVersion)
         {
             return Task.FromResult(false);
         }
@@ -229,6 +246,10 @@ internal sealed class FakeMeetingMinutesVersionRepository : IMeetingMinutesVersi
         _items.Add(Clone(version));
         return Task.FromResult(true);
     }
+
+    public Task<bool> UpdateAsync(
+        IPlatformTransactionSession session, MeetingMinutesVersion version, int expectedVersion, CancellationToken ct = default)
+        => UpdateAsync(version, expectedVersion, ct);
 }
 
 internal sealed class FakeAgendaItemRepository : IAgendaItemRepository
@@ -250,17 +271,23 @@ internal sealed class FakeAgendaItemRepository : IAgendaItemRepository
             _items.Where(x => x.TenantId == Tenant && !x.IsDeleted && x.MeetingId == meetingId)
                 .OrderBy(x => x.SortOrder).ToList());
 
+    /// <summary>BL-533 — the real store's read-version rule and its whole-document replace: the line in hand, read at
+    /// <paramref name="expectedVersion"/>, becomes the stored line (its link included); a refusal leaves it untouched.</summary>
     public Task<bool> UpdateAsync(AgendaItem item, int expectedVersion, CancellationToken ct = default)
     {
         var stored = _items.FirstOrDefault(x => x.Id == item.Id && x.TenantId == Tenant && !x.IsDeleted);
-        if (stored is null || stored.Version != expectedVersion)
+        if (item.Version != expectedVersion || stored is null || stored.Version != expectedVersion)
         {
             return Task.FromResult(false);
         }
 
-        stored.Text = item.Text;
-        stored.SortOrder = item.SortOrder;
-        stored.Version = expectedVersion + 1;
+        item.Version = expectedVersion + 1;
+        if (!ReferenceEquals(stored, item))
+        {
+            _items.Remove(stored);
+            _items.Add(item);
+        }
+
         return Task.FromResult(true);
     }
 
@@ -294,10 +321,11 @@ internal sealed class FakeMeetingTypeRepository : IMeetingTypeRepository
     public Task<MeetingType?> FindByNameAsync(string name, CancellationToken ct = default)
         => Task.FromResult(_items.FirstOrDefault(x => x.TenantId == Tenant && !x.IsDeleted && x.Name == name));
 
+    /// <summary>BL-533 — the real store's read-version rule.</summary>
     public Task<bool> UpdateAsync(MeetingType type, int expectedVersion, CancellationToken ct = default)
     {
         var stored = _items.FirstOrDefault(x => x.Id == type.Id && x.TenantId == Tenant && !x.IsDeleted);
-        if (stored is null || stored.Version != expectedVersion)
+        if (type.Version != expectedVersion || stored is null || stored.Version != expectedVersion)
         {
             return Task.FromResult(false);
         }
@@ -346,10 +374,11 @@ internal sealed class FakeMeetingSeriesRepository : IMeetingSeriesRepository
     public Task<MeetingSeries?> FindByNameAsync(string name, CancellationToken ct = default)
         => Task.FromResult(_items.FirstOrDefault(x => x.TenantId == Tenant && !x.IsDeleted && x.Name == name));
 
+    /// <summary>BL-533 — the real store's read-version rule.</summary>
     public Task<bool> UpdateAsync(MeetingSeries series, int expectedVersion, CancellationToken ct = default)
     {
         var stored = _items.FirstOrDefault(x => x.Id == series.Id && x.TenantId == Tenant && !x.IsDeleted);
-        if (stored is null || stored.Version != expectedVersion)
+        if (series.Version != expectedVersion || stored is null || stored.Version != expectedVersion)
         {
             return Task.FromResult(false);
         }
@@ -460,4 +489,19 @@ internal sealed class FakeActorPermissionContext : IActorPermissionContext
     public bool IsPlatformActor { get; init; }
 
     public bool Has(string? permissionKey) => permissionKey is null || _granted.Contains(permissionKey);
+}
+
+/// <summary>BL-533 — the Platform transaction executor for the in-memory doubles: runs the body once, with a session
+/// nothing can unwrap. The doubles above accept the session and ignore it — there is nothing to roll back in memory;
+/// the transaction itself is proven against a real replica set (<c>MeetingReadVersionRaceMongoTests</c>).</summary>
+internal sealed class InlineTransactionExecutor : IPlatformTransactionExecutor
+{
+    public Task<T> ExecuteAsync<T>(
+        Func<IPlatformTransactionSession, CancellationToken, Task<T>> body, CancellationToken cancellationToken = default)
+        => body(new Session(), cancellationToken);
+
+    private sealed class Session : IPlatformTransactionSession
+    {
+        public Guid TransactionId { get; } = Guid.NewGuid();
+    }
 }

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PageTitle" xml:space="preserve"><value>حدود الإمكانات</value></data>
+  <data name="Crumb" xml:space="preserve"><value>إعدادات CRM / رؤى الأطباء</value></data>
+  <data name="Intro" xml:space="preserve"><value>يُصنَّف عدد مرضى الطبيب الشهري في دواعي استعمال المنتج إلى منخفض أو متوسط أو مرتفع وفق هذه الحدود. يتقدّم سطر المنتج على الإعداد الافتراضي للمستأجر؛ وإن لم يوجد أيٌّ منهما تُطبَّق القيم المضمَّنة.</value></data>
+  <data name="AddProduct" xml:space="preserve"><value>إضافة منتج</value></data>
+  <data name="ReadOnly" xml:space="preserve"><value>يمكنك عرض الحدود؛ ويتطلب تغييرها صلاحية إدارة الحدود.</value></data>
+  <data name="RetryButton" xml:space="preserve"><value>إعادة المحاولة</value></data>
+  <data name="ThresholdsTitle" xml:space="preserve"><value>الحدود</value></data>
+  <data name="ThresholdsNote" xml:space="preserve"><value>منخفض &lt; X · متوسط · مرتفع &gt; Y (مرضى شهريًا)</value></data>
+  <data name="ColProduct" xml:space="preserve"><value>المنتج</value></data>
+  <data name="ColLow" xml:space="preserve"><value>منخفض</value></data>
+  <data name="ColMedium" xml:space="preserve"><value>متوسط</value></data>
+  <data name="ColHigh" xml:space="preserve"><value>مرتفع</value></data>
+  <data name="ColSource" xml:space="preserve"><value>المصدر</value></data>
+  <data name="ColLastChange" xml:space="preserve"><value>آخر تغيير</value></data>
+  <data name="RowActions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>سجل التغييرات</value></data>
+  <data name="AuditReadOnly" xml:space="preserve"><value>سجل تدقيق · للقراءة فقط</value></data>
+  <data name="ColDate" xml:space="preserve"><value>التاريخ</value></data>
+  <data name="ColPerson" xml:space="preserve"><value>الشخص</value></data>
+  <data name="ColTarget" xml:space="preserve"><value>السطر</value></data>
+  <data name="ColField" xml:space="preserve"><value>الحقل</value></data>
+  <data name="ColChange" xml:space="preserve"><value>التغيير</value></data>
+  <data name="ProductLabel" xml:space="preserve"><value>المنتج</value></data>
+  <data name="LowLabel" xml:space="preserve"><value>منخفض أقل من (X)</value></data>
+  <data name="LowHint" xml:space="preserve"><value>أقل من X مريض شهريًا = منخفض</value></data>
+  <data name="HighLabel" xml:space="preserve"><value>مرتفع أكثر من (Y)</value></data>
+  <data name="HighHint" xml:space="preserve"><value>أكثر من Y مريض شهريًا = مرتفع</value></data>
+  <data name="PreviewTitle" xml:space="preserve"><value>معاينة</value></data>
+  <data name="PreviewPatients" xml:space="preserve"><value>جرّب عدد مرضى شهريًا:</value></data>
+  <data name="CloseButton" xml:space="preserve"><value>إغلاق</value></data>
+  <data name="CancelButton" xml:space="preserve"><value>إلغاء</value></data>
+  <data name="SaveButton" xml:space="preserve"><value>حفظ</value></data>
+  <data name="SaveTitle" xml:space="preserve"><value>حفظ الحدود؟</value></data>
+  <data name="SaveConfirm" xml:space="preserve"><value>نعم، احفظ</value></data>
+  <data name="TenantDefault" xml:space="preserve"><value>الإعداد الافتراضي للمستأجر</value></data>
+  <data name="Source_product" xml:space="preserve"><value>المنتج</value></data>
+  <data name="Source_default" xml:space="preserve"><value>افتراضي المستأجر</value></data>
+  <data name="Source_built_in" xml:space="preserve"><value>مضمَّن</value></data>
+  <data name="BandLow" xml:space="preserve"><value>منخفض &lt; {0}</value></data>
+  <data name="BandMedium" xml:space="preserve"><value>متوسط {0}–{1}</value></data>
+  <data name="BandHigh" xml:space="preserve"><value>مرتفع &gt; {0}</value></data>
+  <data name="Field_lowBelow" xml:space="preserve"><value>الحد المنخفض</value></data>
+  <data name="Field_highAbove" xml:space="preserve"><value>الحد المرتفع</value></data>
+  <data name="Field_own" xml:space="preserve"><value>سطر المنتج</value></data>
+  <data name="OwnRow" xml:space="preserve"><value>يحصل المنتج على سطره الخاص (القيم نفسها)</value></data>
+  <data name="Never" xml:space="preserve"><value>لم يتغير بعد</value></data>
+  <data name="EditButton" xml:space="preserve"><value>تعديل</value></data>
+  <data name="EditTitle" xml:space="preserve"><value>الحدود · {0}</value></data>
+  <data name="NewTitle" xml:space="preserve"><value>حدود لمنتج</value></data>
+  <data name="ProductPlaceholder" xml:space="preserve"><value>اختر منتجًا</value></data>
+  <data name="SaveText" xml:space="preserve"><value>تُطبَّق الحدود الجديدة على {0} اعتبارًا من التصنيف التالي.</value></data>
+  <data name="SaveTextDefault" xml:space="preserve"><value>تُطبَّق الحدود الجديدة على كل منتج ليس له سطر خاص.</value></data>
+  <data name="Saved" xml:space="preserve"><value>تم حفظ الحدود.</value></data>
+  <data name="NothingChanged" xml:space="preserve"><value>لا توجد تغييرات.</value></data>
+  <data name="NoProducts" xml:space="preserve"><value>لا توجد حدود بعد.</value></data>
+  <data name="NoHistory" xml:space="preserve"><value>لا توجد تغييرات بعد.</value></data>
+  <data name="HistoryDefault" xml:space="preserve"><value>افتراضي المستأجر</value></data>
+  <data name="YouLabel" xml:space="preserve"><value>أنت</value></data>
+  <data name="Class_low" xml:space="preserve"><value>منخفض</value></data>
+  <data name="Class_medium" xml:space="preserve"><value>متوسط</value></data>
+  <data name="Class_high" xml:space="preserve"><value>مرتفع</value></data>
+  <data name="ErrRequired" xml:space="preserve"><value>أدخل عددًا صحيحًا.</value></data>
+  <data name="ErrRange" xml:space="preserve"><value>عدد صحيح من 1 إلى 100000.</value></data>
+  <data name="ErrOrder" xml:space="preserve"><value>لا يمكن أن يكون المرتفع (Y) أقل من المنخفض (X).</value></data>
+  <data name="ErrProduct" xml:space="preserve"><value>اختر منتجًا.</value></data>
+  <data name="Err_potential_threshold_invalid" xml:space="preserve"><value>رُفضت الحدود: يجب أن يكون 0 &lt; منخفض ≤ مرتفع ≤ 100000.</value></data>
+  <data name="Err_version_conflict" xml:space="preserve"><value>غيّر شخص آخر هذه الحدود. أعد التحميل وحاول مرة أخرى.</value></data>
+  <data name="Err_doctor_insights_product_invalid" xml:space="preserve"><value>هذا المنتج غير موجود في البيانات الرئيسية للمنتجات.</value></data>
+  <data name="Err_doctor_insights_invalid" xml:space="preserve"><value>الطلب غير صالح.</value></data>
+  <data name="Err_reference_data_unavailable" xml:space="preserve"><value>تعذّرت قراءة البيانات الرئيسية للمنتجات؛ لم يُحفظ شيء.</value></data>
+  <data name="Err_dependency_unavailable" xml:space="preserve"><value>قائمة المنتجات غير متاحة حاليًا.</value></data>
+  <data name="Err_permission_denied" xml:space="preserve"><value>ليست لديك صلاحية لهذا الإجراء.</value></data>
+  <data name="Err_unavailable" xml:space="preserve"><value>تعذّر الوصول إلى الخادم؛ قيمك محفوظة في هذه الشاشة.</value></data>
+  <data name="Err_generic" xml:space="preserve"><value>تعذّر إكمال العملية.</value></data>
+</root>

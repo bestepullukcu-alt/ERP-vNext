@@ -1,6 +1,7 @@
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Domain.Entities;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace Diten.AuthService.Persistence.Repositories;
@@ -15,42 +16,63 @@ public sealed class UserRoleRepository : RepositoryBase<UserRole>, IUserRoleRepo
         _roleCollection = database.GetCollection<Role>("roles");
     }
 
+    // BL-521 FIX5 item 4(d) — THE READS ARE BOUNDED TO THE TENANT AND THE USER THEY ARE ASKED ABOUT, in the database. They
+    // used to load the whole userRoles and roles collections on every call (every sign-in, refresh and convergence) and
+    // filter in memory; the result is the same, the cost no longer grows with every tenant's every assignment. (The
+    // existing (UserId, TenantId) index serves the first read; no index or schema changes.)
     public async Task<IEnumerable<string>> GetRolesByUserAsync(Guid userId, Guid tenantId, CancellationToken ct)
     {
-        var userRoles = await Collection.Find(ur => ur.IsDeleted == false).ToListAsync(ct);
-        var roleIds = userRoles
-            .Where(ur => ur.UserId == userId && ur.TenantId == tenantId)
-            .Select(ur => ur.RoleId)
-            .ToList();
+        var roleIds = await Collection
+            .Find(ur => ur.UserId == userId && ur.TenantId == tenantId && ur.IsDeleted == false)
+            .Project(ur => ur.RoleId)
+            .ToListAsync(ct);
 
-        if (!roleIds.Any()) return Enumerable.Empty<string>();
+        if (roleIds.Count == 0) return Enumerable.Empty<string>();
 
-        var allRoles = await _roleCollection.Find(r => r.IsDeleted == false).ToListAsync(ct);
-        return allRoles
-            .Where(r => roleIds.Contains(r.Id) && r.TenantId == tenantId)
-            .Select(r => r.Name);
+        var distinctRoleIds = roleIds.Distinct().ToList();
+        return await _roleCollection
+            .Find(r => distinctRoleIds.Contains(r.Id) && r.TenantId == tenantId && r.IsDeleted == false)
+            .Project(r => r.Name)
+            .ToListAsync(ct);
     }
 
+    // BL-521 FIX5 item 4(c) — A GRANT IS AN IDEMPOTENT UPSERT on user + role + tenant: granting what is already granted
+    // changes nothing and fails nothing, with or without the unique index. Two grants at the same moment: the index lets
+    // one insert and the other's duplicate-key error is the same "already granted" (and a duplicate that got in without
+    // the index is harmless: every read de-duplicates and a revoke removes them all).
     public async Task AssignAsync(UserRole userRole, CancellationToken ct)
     {
-        await InsertOneAsync(userRole, ct);
+        var filter = Builders<UserRole>.Filter.And(
+            Builders<UserRole>.Filter.Eq(ur => ur.UserId, userRole.UserId),
+            Builders<UserRole>.Filter.Eq(ur => ur.RoleId, userRole.RoleId),
+            Builders<UserRole>.Filter.Eq(ur => ur.TenantId, userRole.TenantId));
+        var update = new BsonDocumentUpdateDefinition<UserRole>(
+            new BsonDocument("$setOnInsert", userRole.ToBsonDocument(Collection.DocumentSerializer)));
+
+        try
+        {
+            await Collection.UpdateOneAsync(filter, update, new UpdateOptions { IsUpsert = true }, ct);
+        }
+        catch (MongoWriteException ex) when (ex.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+        {
+            // A concurrent grant of the same user + role + tenant won the insert: it is granted, which is all this asks.
+        }
     }
 
+    // BL-521 FIX5 item 4(c) — EVERY matching assignment row is removed, not the first one found: a duplicate left behind
+    // kept the role alive after "revoking" it.
     public async Task RevokeAsync(Guid userId, Guid roleId, Guid tenantId, CancellationToken ct)
     {
-        var userRoles = await Collection.Find(ur => ur.IsDeleted == false).ToListAsync(ct);
-        var target = userRoles.FirstOrDefault(ur => ur.UserId == userId && ur.RoleId == roleId && ur.TenantId == tenantId);
-        
-        if (target != null)
-        {
-            await Collection.DeleteOneAsync(ur => ur.Id == target.Id, ct);
-        }
+        await Collection.DeleteManyAsync(
+            ur => ur.UserId == userId && ur.RoleId == roleId && ur.TenantId == tenantId && ur.IsDeleted == false,
+            ct);
     }
 
     public async Task<bool> ExistsAsync(Guid userId, Guid roleId, Guid tenantId, CancellationToken ct)
     {
-        var userRoles = await Collection.Find(ur => ur.IsDeleted == false).ToListAsync(ct);
-        return userRoles.Any(ur => ur.UserId == userId && ur.RoleId == roleId && ur.TenantId == tenantId);
+        return await Collection
+            .Find(ur => ur.UserId == userId && ur.RoleId == roleId && ur.TenantId == tenantId && ur.IsDeleted == false)
+            .AnyAsync(ct);
     }
 
     // AG-STEP-010 / MOD-0018-FU13 Group C — distinct, tenant-scoped holder user ids (active rows only). The role,

@@ -35,9 +35,14 @@ public sealed class Brand : EntityBase
     public string? UpdatedBy { get; set; }
 
     /// <summary>
-    /// A NEW product link is refused once the brand is archived (FU01 §11 / pack §4.2). Draft and inactive
-    /// brands stay linkable on purpose: a brand is normally set up before its products exist, and FU01 only
-    /// closes ARCHIVED brands to new linking.
+    /// WP-MDM-BRAND-ACCEPT-01 FIX2 (item 2, CT decision) — a NEW product link goes only to a brand that is ACTIVE and inside
+    /// its validity window on <paramref name="asOf"/> (compared by date, as the window is validated). A draft, inactive,
+    /// archived or expired / not-yet-valid brand is closed to new links; products already linked keep their link.
     /// </summary>
-    public bool IsLinkable => !IsArchived && !IsDeleted;
+    public bool IsLinkableAt(DateTimeOffset asOf)
+        => !IsArchived
+           && !IsDeleted
+           && string.Equals(BrandStatus, BrandProductVocabulary.StatusActive, StringComparison.Ordinal)
+           // FIX3 (R-5) — calendar days, the one rule (BrandProductCalendar).
+           && BrandProductCalendar.IsWithin(EffectiveFrom, EffectiveTo, asOf);
 }

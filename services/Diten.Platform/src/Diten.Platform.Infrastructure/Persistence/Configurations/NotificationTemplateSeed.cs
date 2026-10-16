@@ -7,10 +7,18 @@ namespace Diten.Platform.Infrastructure.Persistence.Configurations;
 
 public static class NotificationTemplateSeed
 {
-    public static async Task EnsureSeededAsync(IMongoDatabase database, CancellationToken ct = default)
+    /// <summary>The seven languages a tenant reader can have; a task template exists in each.</summary>
+    internal static readonly string[] TenantLocales = ["en", "tr", "fr", "es", "zh", "ar", "ru"];
+
+    public static async Task<NotificationTemplateSeedResult> EnsureSeededAsync(
+        IMongoDatabase database, CancellationToken ct = default, Action<string>? log = null)
     {
         var collection = database.GetCollection<NotificationTemplate>(PlatformCollections.NotificationTemplates);
 
+        // Upgrades FIRST: a row carried forward here is then found by the insert-if-missing pass below and left alone.
+        var (upgraded, keptModified) = await UpgradeUntouchedSeedsAsync(collection, SeedUpgrades(), ct);
+
+        var inserted = 0;
         foreach (var template in CreatePlatformDefaults())
         {
             var exists = await collection.Find(x =>
@@ -29,19 +37,197 @@ public static class NotificationTemplateSeed
             }
 
             await collection.InsertOneAsync(template, cancellationToken: ct);
+            inserted++;
         }
+
+        var result = new NotificationTemplateSeedResult(inserted, upgraded, keptModified);
+        (log ?? Console.Out.WriteLine)(
+            $"notification.template.seed Inserted={result.Inserted} Upgraded={result.Upgraded} KeptModified={result.KeptModified}");
+        return result;
     }
 
-    private static IReadOnlyList<NotificationTemplate> CreatePlatformDefaults()
+    /// <summary>
+    /// BL-454 — carries a seeded template forward to its current content, and ONLY a row nobody has touched.
+    ///
+    /// <para><b>Why this exists.</b> The pass above inserts what is missing and never looks at a row again, so a
+    /// template changed in code never reached a database that already had it. The shell's heading, table and action
+    /// for <c>platform.tasks.assigned</c> would have existed in new databases only.</para>
+    ///
+    /// <para><b>What "untouched" means — measured, not assumed.</b> A row is upgraded only when it is the platform
+    /// default (<c>TenantId == null</c>, <c>IsPlatformDefault</c>) AND its subject, HTML body, text body, variables
+    /// and version are character for character what the PREVIOUS seed wrote AND it was never updated AND it has no
+    /// shell part. <c>SemanticVersion == "1.0.0"</c> alone is not that evidence: an operator's edit leaves the
+    /// version where it was. A row an operator or a tenant changed is counted and left exactly as it is; a tenant
+    /// override (<c>TenantId != null</c>) is never read here at all.</para>
+    ///
+    /// <para><b>Idempotent, and safe with two instances starting together.</b> The write is one conditional
+    /// update whose filter repeats the previous content: after the first instance writes, the filter no longer
+    /// matches, so the second instance — and every later start — modifies nothing.</para>
+    /// </summary>
+    internal static async Task<(int Upgraded, int KeptModified)> UpgradeUntouchedSeedsAsync(
+        IMongoCollection<NotificationTemplate> collection,
+        IReadOnlyList<(NotificationTemplate Previous, NotificationTemplate Current)> upgrades,
+        CancellationToken ct)
+    {
+        var upgraded = 0;
+        var keptModified = 0;
+        var filters = Builders<NotificationTemplate>.Filter;
+        // One row is one row: a key with two previous seeds must not count the same operator-edited row twice.
+        var countedKept = new HashSet<(string Key, string Locale, NotificationChannelCode Channel)>();
+
+        foreach (var (previous, current) in upgrades)
+        {
+            var scope = filters.And(
+                filters.Eq(x => x.IsDeleted, false),
+                filters.Eq(x => x.TenantId, null),
+                filters.Eq(x => x.IsPlatformDefault, true),
+                filters.Eq(x => x.Status, NotificationTemplateStatus.Active),
+                filters.Eq(x => x.Channel, current.Channel),
+                filters.Eq(x => x.Locale, current.Locale),
+                filters.Eq(x => x.TemplateKey, current.TemplateKey));
+
+            var row = await collection.Find(scope).FirstOrDefaultAsync(ct);
+            if (row is null || HasContentOf(row, current))
+            {
+                // Missing: the insert pass writes the current content. Already current: nothing to do.
+                continue;
+            }
+
+            if (!IsUntouchedSeed(row, previous))
+            {
+                // BL-454 slice 2 stage D — a key may have more than one previous seed (tenant.invite.email: 1.0.0 and
+                // 1.1.0 both go to 1.2.0). A row that ANOTHER pair of the same key and language carries forward is not
+                // an operator's change: that pair handles it, and it is not counted here.
+                if (!upgrades.Any(other => !ReferenceEquals(other.Previous, previous)
+                        && other.Current.TemplateKey == current.TemplateKey
+                        && other.Current.Locale == current.Locale
+                        && other.Current.Channel == current.Channel
+                        && IsUntouchedSeed(row, other.Previous))
+                    && countedKept.Add((current.TemplateKey, current.Locale, current.Channel)))
+                {
+                    keptModified++;
+                }
+
+                continue;
+            }
+
+            var unchangedSinceRead = UpgradeWriteFilter(scope, row, previous);
+
+            var update = Builders<NotificationTemplate>.Update
+                .Set(x => x.SubjectTemplate, current.SubjectTemplate)
+                .Set(x => x.BodyHtmlTemplate, current.BodyHtmlTemplate)
+                .Set(x => x.BodyTextTemplate, current.BodyTextTemplate)
+                .Set(x => x.Variables, current.Variables)
+                .Set(x => x.Shell, current.Shell)
+                .Set(x => x.SemanticVersion, current.SemanticVersion)
+                .Set(x => x.UpdatedAt, DateTimeOffset.UtcNow)
+                .Set(x => x.UpdatedBy, SeedActor)
+                // BL-454 — a carried-forward row is a new version: an editor still holding the old one is refused.
+                .Inc(x => x.Version, 1);
+
+            var written = await collection.UpdateOneAsync(unchangedSinceRead, update, cancellationToken: ct);
+            if (written.ModifiedCount == 1)
+            {
+                upgraded++;
+            }
+        }
+
+        return (upgraded, keptModified);
+    }
+
+    /// <summary>
+    /// The conditional write of one upgrade: the row exactly as it was read — its own stamp (or none), the previous
+    /// seed's content and version. Anything an operator or a second instance did in between moves one of these and the
+    /// write matches nothing. Internal so its matching can be measured against a real collection.
+    /// </summary>
+    internal static FilterDefinition<NotificationTemplate> UpgradeWriteFilter(
+        FilterDefinition<NotificationTemplate> scope, NotificationTemplate row, NotificationTemplate previous)
+    {
+        var filters = Builders<NotificationTemplate>.Filter;
+        return filters.And(
+            scope,
+            filters.Eq(x => x.Id, row.Id),
+            filters.Eq(x => x.UpdatedAt, row.UpdatedAt),
+            filters.Eq(x => x.UpdatedBy, row.UpdatedBy),
+            filters.Eq(x => x.SubjectTemplate, previous.SubjectTemplate),
+            filters.Eq(x => x.BodyHtmlTemplate, previous.BodyHtmlTemplate),
+            filters.Eq(x => x.BodyTextTemplate, previous.BodyTextTemplate),
+            filters.Eq(x => x.SemanticVersion, previous.SemanticVersion));
+    }
+
+    /// <summary>
+    /// The seed's own stamp. A row the seed itself carried forward is still untouched by an operator: the next
+    /// version may carry it forward again. (Before this, the 1.0.0 → 1.1.0 stamp would have made every later upgrade
+    /// see "an operator changed this" and skip it.)
+    /// </summary>
+    internal const string SeedActor = "system.seed";
+
+    private static bool IsUntouchedSeed(NotificationTemplate row, NotificationTemplate previous) =>
+        (row.UpdatedAt is null || string.Equals(row.UpdatedBy, SeedActor, StringComparison.Ordinal))
+        && SameShell(row.Shell, previous.Shell)
+        && string.Equals(row.SemanticVersion, previous.SemanticVersion, StringComparison.Ordinal)
+        && string.Equals(row.SubjectTemplate, previous.SubjectTemplate, StringComparison.Ordinal)
+        && string.Equals(row.BodyHtmlTemplate, previous.BodyHtmlTemplate, StringComparison.Ordinal)
+        && string.Equals(row.BodyTextTemplate, previous.BodyTextTemplate, StringComparison.Ordinal)
+        && SameVariables(row.Variables, previous.Variables);
+
+    private static bool HasContentOf(NotificationTemplate row, NotificationTemplate current) =>
+        string.Equals(row.SemanticVersion, current.SemanticVersion, StringComparison.Ordinal)
+        && string.Equals(row.SubjectTemplate, current.SubjectTemplate, StringComparison.Ordinal)
+        && string.Equals(row.BodyHtmlTemplate, current.BodyHtmlTemplate, StringComparison.Ordinal)
+        && string.Equals(row.BodyTextTemplate, current.BodyTextTemplate, StringComparison.Ordinal);
+
+    private static bool SameShell(NotificationTemplateShell? left, NotificationTemplateShell? right)
+    {
+        if (left is null || right is null)
+        {
+            return left is null && right is null;
+        }
+
+        return string.Equals(left.HeadingTemplate, right.HeadingTemplate, StringComparison.Ordinal)
+               && string.Equals(left.ActionLabel, right.ActionLabel, StringComparison.Ordinal)
+               && string.Equals(left.ActionUrlVariable, right.ActionUrlVariable, StringComparison.Ordinal)
+               && string.Equals(left.FootnoteTemplate, right.FootnoteTemplate, StringComparison.Ordinal)
+               && left.InfoRows.Count == right.InfoRows.Count
+               && left.InfoRows.Zip(right.InfoRows).All(pair =>
+                   string.Equals(pair.First.Label, pair.Second.Label, StringComparison.Ordinal)
+                   && string.Equals(pair.First.ValueTemplate, pair.Second.ValueTemplate, StringComparison.Ordinal));
+    }
+
+    private static bool SameVariables(IReadOnlyList<TemplateVariableDefinition> left, IReadOnlyList<TemplateVariableDefinition> right) =>
+        left.Count == right.Count
+        && left.Zip(right).All(pair =>
+            string.Equals(pair.First.Name, pair.Second.Name, StringComparison.Ordinal)
+            && pair.First.Type == pair.Second.Type
+            && pair.First.IsRequired == pair.Second.IsRequired);
+
+    /// <summary>(what the previous seed wrote, what the current seed writes) — one pair per upgraded row.</summary>
+    internal static IReadOnlyList<(NotificationTemplate Previous, NotificationTemplate Current)> SeedUpgrades() =>
+        TenantLocales.Select(locale => (TaskAssignedV1(locale), TaskAssigned(locale)))
+            // BL-454 slice 2 — the tenant lifecycle mails existed in en and tr only (1.0.0); an untouched row of either
+            // is carried forward to the 1.1.0 shell form. The other five languages are new and simply inserted.
+            .Concat(LifecycleV1Locales.SelectMany(locale => new[]
+            {
+                (TenantInviteV1(locale), TenantInvite(locale)),
+                (TenantSuspendedV1(locale), TenantSuspended(locale)),
+                (TenantReactivatedV1(locale), TenantReactivated(locale))
+            }))
+            // BL-454 slice 2 stage D — the invitation's 1.1.0 (seven languages, no link) carried forward to 1.2.0.
+            .Concat(TenantLocales.Select(locale => (TenantInviteV11(locale), TenantInvite(locale))))
+            .ToList();
+
+    /// <summary>The two languages the 1.0.0 tenant lifecycle mails were written in.</summary>
+    internal static readonly string[] LifecycleV1Locales = ["en", "tr"];
+
+    /// <summary>Every platform-default template the seed writes (internal: the seven-language parity test reads it).</summary>
+    internal static IReadOnlyList<NotificationTemplate> CreatePlatformDefaults()
     {
         return
         [
-            TenantInvite("en"),
-            TenantInvite("tr"),
-            TenantSuspended("en"),
-            TenantSuspended("tr"),
-            TenantReactivated("en"),
-            TenantReactivated("tr"),
+            // BL-454 slice 2 — the tenant lifecycle mails in all seven tenant languages, in the shell form.
+            .. TenantLocales.Select(TenantInvite),
+            .. TenantLocales.Select(TenantSuspended),
+            .. TenantLocales.Select(TenantReactivated),
 
             /*
              * MOD-0024 task notifications (WC-4), SEVEN languages each.
@@ -234,7 +420,12 @@ public static class NotificationTemplateSeed
         ];
     }
 
-    private static NotificationTemplate TenantInvite(string locale)
+    /// <summary>
+    /// The tenant lifecycle mails as 1.0.0 wrote them (en and tr only, no shell). Kept ONLY so an untouched 1.0.0 row
+    /// can be recognised and carried forward to <see cref="TenantInvite"/> / <see cref="TenantSuspended"/> /
+    /// <see cref="TenantReactivated"/>; never inserted any more.
+    /// </summary>
+    internal static NotificationTemplate TenantInviteV1(string locale)
     {
         var isTurkish = locale == "tr";
         return Create(
@@ -250,7 +441,7 @@ public static class NotificationTemplateSeed
             ["TenantId", "TenantDisplayName"]);
     }
 
-    private static NotificationTemplate TenantSuspended(string locale)
+    internal static NotificationTemplate TenantSuspendedV1(string locale)
     {
         var isTurkish = locale == "tr";
         return Create(
@@ -266,7 +457,7 @@ public static class NotificationTemplateSeed
             ["Reason", "SuspendedAtUtc"]);
     }
 
-    private static NotificationTemplate TenantReactivated(string locale)
+    internal static NotificationTemplate TenantReactivatedV1(string locale)
     {
         var isTurkish = locale == "tr";
         return Create(
@@ -283,11 +474,133 @@ public static class NotificationTemplateSeed
     }
 
     /// <summary>
+    /// The tenant administrator's invitation as slice 2 stage C wrote it (1.1.0, seven languages, shell form, and still no
+    /// way in: no link, no password). Kept ONLY so an untouched 1.1.0 row is recognised and carried forward to
+    /// <see cref="TenantInvite"/>; never inserted any more.
+    /// </summary>
+    internal static NotificationTemplate TenantInviteV11(string locale)
+    {
+        var (subject, heading, sentence, idLabel, why) = locale switch
+        {
+            "en" => ("Your Diten tenant invitation", "You have been invited", "You have been invited to the {{TenantDisplayName}} tenant.", "Tenant ID", "You received this e-mail because you were added as an administrator of this tenant."),
+            "tr" => ("Diten kiracı davetiniz", "Davet edildiniz", "{{TenantDisplayName}} kiracısına davet edildiniz.", "Kiracı kimliği", "Bu e-postayı bu kiracının yöneticisi olarak eklendiğiniz için aldınız."),
+            "fr" => ("Votre invitation au locataire Diten", "Vous avez été invité", "Vous avez été invité dans le locataire {{TenantDisplayName}}.", "ID du locataire", "Vous recevez cet e-mail parce que vous avez été ajouté comme administrateur de ce locataire."),
+            "es" => ("Su invitación al inquilino de Diten", "Ha recibido una invitación", "Ha sido invitado al inquilino {{TenantDisplayName}}.", "ID del inquilino", "Recibe este correo porque se le ha añadido como administrador de este inquilino."),
+            "zh" => ("您的 Diten 租户邀请", "您已受到邀请", "您已被邀请加入租户 {{TenantDisplayName}}。", "租户 ID", "您收到此邮件，是因为您已被添加为该租户的管理员。"),
+            "ar" => ("دعوتك إلى مستأجر Diten", "لقد تمت دعوتك", "تمت دعوتك إلى المستأجر {{TenantDisplayName}}.", "معرّف المستأجر", "تلقيت هذه الرسالة لأنه تمت إضافتك مسؤولاً عن هذا المستأجر."),
+            "ru" => ("Ваше приглашение в арендатора Diten", "Вы приглашены", "Вас пригласили в арендатора {{TenantDisplayName}}.", "ID арендатора", "Вы получили это письмо, потому что вас добавили администратором этого арендатора."),
+            _ => throw new ArgumentOutOfRangeException(nameof(locale), locale, "Unsupported tenant mail locale.")
+        };
+
+        return Lifecycle(
+            "tenant.invite.email", locale, subject, heading, sentence, why,
+            [new NotificationTemplateShellRow { Label = idLabel, ValueTemplate = "{{TenantId}}" }],
+            ["TenantId", "TenantDisplayName"]);
+    }
+
+    /// <summary>
+    /// BL-454 slice 2 stage D — the tenant administrator's invitation, 1.2.0, seven languages, shell form, and for the
+    /// first time a way in: the button is BL-529's one-time set-password link (<c>SetPasswordUrl</c>, a secret name — the
+    /// dispatch row never stores it), the table says until when it works. No password, in any language. Every variable
+    /// is required: without the link the renderer refuses the mail instead of sending an invitation nobody can use.
+    /// </summary>
+    internal static NotificationTemplate TenantInvite(string locale)
+    {
+        var (subject, heading, sentence, idLabel, untilLabel, action, why) = locale switch
+        {
+            "en" => ("Your Diten tenant invitation", "You have been invited", "You have been invited to the {{TenantDisplayName}} tenant as its administrator. Use the button below to set your password; the link can be used only once.", "Tenant ID", "Link valid until (UTC)", "Set my password", "You received this e-mail because you were added as an administrator of this tenant. If you were not expecting it, you can ignore it; the account cannot be used until a password is set."),
+            "tr" => ("Diten kiracı davetiniz", "Davet edildiniz", "{{TenantDisplayName}} kiracısına yönetici olarak davet edildiniz. Parolanızı aşağıdaki düğmeyle belirleyin; bağlantı yalnız bir kez kullanılabilir.", "Kiracı kimliği", "Bağlantının geçerlilik sonu (UTC)", "Parolamı belirle", "Bu e-postayı bu kiracının yöneticisi olarak eklendiğiniz için aldınız. Beklemiyorsanız yok sayabilirsiniz; hesap, parola belirlenmeden kullanılamaz."),
+            "fr" => ("Votre invitation au locataire Diten", "Vous avez été invité", "Vous avez été invité dans le locataire {{TenantDisplayName}} en tant qu'administrateur. Définissez votre mot de passe avec le bouton ci-dessous ; le lien ne peut être utilisé qu'une seule fois.", "ID du locataire", "Lien valable jusqu'à (UTC)", "Définir mon mot de passe", "Vous recevez cet e-mail parce que vous avez été ajouté comme administrateur de ce locataire. Si vous ne l'attendiez pas, vous pouvez l'ignorer ; le compte reste inutilisable tant qu'aucun mot de passe n'est défini."),
+            "es" => ("Su invitación al inquilino de Diten", "Ha recibido una invitación", "Ha sido invitado al inquilino {{TenantDisplayName}} como administrador. Establezca su contraseña con el botón siguiente; el enlace solo puede usarse una vez.", "ID del inquilino", "Enlace válido hasta (UTC)", "Establecer mi contraseña", "Recibe este correo porque se le ha añadido como administrador de este inquilino. Si no lo esperaba, puede ignorarlo; la cuenta no puede usarse hasta que se establezca una contraseña."),
+            "zh" => ("您的 Diten 租户邀请", "您已受到邀请", "您已被邀请成为租户 {{TenantDisplayName}} 的管理员。请点击下方按钮设置密码；该链接只能使用一次。", "租户 ID", "链接有效期至（UTC）", "设置我的密码", "您收到此邮件，是因为您已被添加为该租户的管理员。如果您并未预期收到此邮件，可以忽略；在设置密码之前，该账户无法使用。"),
+            "ar" => ("دعوتك إلى مستأجر Diten", "لقد تمت دعوتك", "تمت دعوتك إلى المستأجر {{TenantDisplayName}} بصفتك مسؤولاً. عيّن كلمة المرور باستخدام الزر أدناه؛ لا يمكن استخدام الرابط إلا مرة واحدة.", "معرّف المستأجر", "الرابط صالح حتى (UTC)", "تعيين كلمة المرور", "تلقيت هذه الرسالة لأنه تمت إضافتك مسؤولاً عن هذا المستأجر. إذا لم تكن تتوقعها فيمكنك تجاهلها؛ لا يمكن استخدام الحساب قبل تعيين كلمة المرور."),
+            "ru" => ("Ваше приглашение в арендатора Diten", "Вы приглашены", "Вас пригласили администратором арендатора {{TenantDisplayName}}. Задайте пароль с помощью кнопки ниже; ссылку можно использовать только один раз.", "ID арендатора", "Ссылка действует до (UTC)", "Задать пароль", "Вы получили это письмо, потому что вас добавили администратором этого арендатора. Если вы его не ожидали, просто проигнорируйте его: пока пароль не задан, учётной записью пользоваться нельзя."),
+            _ => throw new ArgumentOutOfRangeException(nameof(locale), locale, "Unsupported tenant mail locale.")
+        };
+
+        var template = Lifecycle(
+            "tenant.invite.email", locale, subject, heading, sentence, why,
+            [
+                new NotificationTemplateShellRow { Label = idLabel, ValueTemplate = "{{TenantId}}" },
+                new NotificationTemplateShellRow { Label = untilLabel, ValueTemplate = "{{LinkExpiresAtUtc}}" }
+            ],
+            ["TenantId", "TenantDisplayName", "SetPasswordUrl", "LinkExpiresAtUtc"]);
+        template.SemanticVersion = "1.2.0";
+        template.Shell!.ActionLabel = action;
+        template.Shell.ActionUrlVariable = "SetPasswordUrl";
+        return template;
+    }
+
+    /// <summary>BL-454 slice 2 — the tenant's access suspended, 1.1.0, seven languages, shell form; content as 1.0.0.</summary>
+    internal static NotificationTemplate TenantSuspended(string locale)
+    {
+        var (subject, heading, sentence, reasonLabel, dateLabel, why) = locale switch
+        {
+            "en" => ("Diten tenant access suspended", "Tenant access suspended", "Your tenant access has been suspended.", "Reason", "Date", "You received this e-mail because you are an administrator of this tenant."),
+            "tr" => ("Diten kiracı erişimi askıya alındı", "Kiracı erişimi askıya alındı", "Kiracı erişiminiz askıya alındı.", "Neden", "Tarih", "Bu e-postayı bu kiracının yöneticisi olduğunuz için aldınız."),
+            "fr" => ("Accès au locataire Diten suspendu", "Accès au locataire suspendu", "Votre accès au locataire a été suspendu.", "Motif", "Date", "Vous recevez cet e-mail parce que vous êtes administrateur de ce locataire."),
+            "es" => ("Acceso al inquilino de Diten suspendido", "Acceso al inquilino suspendido", "Se ha suspendido su acceso al inquilino.", "Motivo", "Fecha", "Recibe este correo porque es administrador de este inquilino."),
+            "zh" => ("Diten 租户访问已暂停", "租户访问已暂停", "您的租户访问已被暂停。", "原因", "日期", "您收到此邮件，是因为您是该租户的管理员。"),
+            "ar" => ("تم تعليق الوصول إلى مستأجر Diten", "تم تعليق الوصول إلى المستأجر", "تم تعليق وصولك إلى المستأجر.", "السبب", "التاريخ", "تلقيت هذه الرسالة لأنك مسؤول عن هذا المستأجر."),
+            "ru" => ("Доступ к арендатору Diten приостановлен", "Доступ к арендатору приостановлен", "Ваш доступ к арендатору приостановлен.", "Причина", "Дата", "Вы получили это письмо, потому что вы администратор этого арендатора."),
+            _ => throw new ArgumentOutOfRangeException(nameof(locale), locale, "Unsupported tenant mail locale.")
+        };
+
+        return Lifecycle(
+            "tenant.suspended.email", locale, subject, heading, sentence, why,
+            [
+                new NotificationTemplateShellRow { Label = reasonLabel, ValueTemplate = "{{Reason}}" },
+                new NotificationTemplateShellRow { Label = dateLabel, ValueTemplate = "{{SuspendedAtUtc}}" }
+            ],
+            ["Reason", "SuspendedAtUtc"]);
+    }
+
+    /// <summary>BL-454 slice 2 — the tenant's access reactivated, 1.1.0, seven languages, shell form; content as 1.0.0.</summary>
+    internal static NotificationTemplate TenantReactivated(string locale)
+    {
+        var (subject, heading, sentence, dateLabel, why) = locale switch
+        {
+            "en" => ("Diten tenant access reactivated", "Tenant access reactivated", "Your tenant access has been reactivated.", "Date", "You received this e-mail because you are an administrator of this tenant."),
+            "tr" => ("Diten kiracı erişimi yeniden açıldı", "Kiracı erişimi yeniden açıldı", "Kiracı erişiminiz yeniden açıldı.", "Tarih", "Bu e-postayı bu kiracının yöneticisi olduğunuz için aldınız."),
+            "fr" => ("Accès au locataire Diten rétabli", "Accès au locataire rétabli", "Votre accès au locataire a été rétabli.", "Date", "Vous recevez cet e-mail parce que vous êtes administrateur de ce locataire."),
+            "es" => ("Acceso al inquilino de Diten reactivado", "Acceso al inquilino reactivado", "Se ha reactivado su acceso al inquilino.", "Fecha", "Recibe este correo porque es administrador de este inquilino."),
+            "zh" => ("Diten 租户访问已恢复", "租户访问已恢复", "您的租户访问已恢复。", "日期", "您收到此邮件，是因为您是该租户的管理员。"),
+            "ar" => ("تمت إعادة تفعيل الوصول إلى مستأجر Diten", "تمت إعادة تفعيل الوصول إلى المستأجر", "تمت إعادة تفعيل وصولك إلى المستأجر.", "التاريخ", "تلقيت هذه الرسالة لأنك مسؤول عن هذا المستأجر."),
+            "ru" => ("Доступ к арендатору Diten восстановлен", "Доступ к арендатору восстановлен", "Ваш доступ к арендатору восстановлен.", "Дата", "Вы получили это письмо, потому что вы администратор этого арендатора."),
+            _ => throw new ArgumentOutOfRangeException(nameof(locale), locale, "Unsupported tenant mail locale.")
+        };
+
+        return Lifecycle(
+            "tenant.reactivated.email", locale, subject, heading, sentence, why,
+            [new NotificationTemplateShellRow { Label = dateLabel, ValueTemplate = "{{ReactivatedAtUtc}}" }],
+            ["ReactivatedAtUtc"]);
+    }
+
+    /// <summary>
+    /// The one form of a tenant lifecycle mail: the sentence is the body, the rows carry the values (the shell writes them
+    /// into the HTML table and the text part alike), and every required variable is rendered at least once.
+    /// </summary>
+    private static NotificationTemplate Lifecycle(
+        string key, string locale, string subject, string heading, string sentence, string why,
+        List<NotificationTemplateShellRow> rows, string[] variables)
+    {
+        var template = Create(key, locale, subject, $"<p>{sentence}</p>", sentence, variables);
+        template.SemanticVersion = "1.1.0";
+        template.Shell = new NotificationTemplateShell
+        {
+            HeadingTemplate = heading,
+            InfoRows = rows,
+            FootnoteTemplate = why
+        };
+        return template;
+    }
+
+    /// <summary>
     /// <c>platform.tasks.assigned</c> in seven languages. The required variables match the manifest's declaration
     /// exactly — a template that renders a variable the event does not supply produces a silent blank, which is
     /// the kind of defect nobody reports because the email still "arrived".
     /// </summary>
-    private static NotificationTemplate TaskAssigned(string locale)
+    internal static NotificationTemplate TaskAssignedV1(string locale)
     {
         var (subject, html, text) = locale switch
         {
@@ -302,6 +615,60 @@ public static class NotificationTemplateSeed
         };
 
         return Create("platform.tasks.assigned", locale, subject, html, text, ["TaskTitle", "TaskId"]);
+    }
+
+    /// <summary>
+    /// BL-454 — <c>platform.tasks.assigned</c> as the shell shows it ("A · Card", the owner's prototype): a heading,
+    /// one sentence, a table (task, due date, priority, assigned by), one button to the task and the reason the
+    /// reader got it. Version 1.1.0; <see cref="TaskAssignedV1"/> is what 1.0.0 wrote and is kept only so an
+    /// untouched 1.0.0 row can be recognised and carried forward.
+    ///
+    /// <para>The subject and the two required variables are unchanged. The body no longer repeats what the table
+    /// says. <c>Priority</c>, <c>AssignerName</c> and <c>TaskUrl</c> are optional: a row whose value is empty is
+    /// left out and a missing address draws no button, so a producer that supplies none of them still sends a
+    /// complete e-mail. There is no "Hello {name}": one dispatch goes to every recipient of the event, and the
+    /// template language has no conditional to drop a greeting whose name is missing.</para>
+    /// </summary>
+    internal static NotificationTemplate TaskAssigned(string locale)
+    {
+        var previous = TaskAssignedV1(locale);
+        var (heading, body, reference, task, due, priority, assignedBy, open, why) = locale switch
+        {
+            "en" => ("A task was assigned to you", "The task below is yours. Once you accept it, it appears under \"My Work\" in the Task Center.", "Reference", "Task", "Due date", "Priority", "Assigned by", "Open the task", "You received this notification because the task was assigned to you."),
+            "tr" => ("Size bir görev atandı", "Aşağıdaki görev sizde. Kabul ettiğinizde Görev Merkezi'nde \"İşlerim\" altında görünür.", "Referans", "Görev", "Son tarih", "Öncelik", "Atayan", "Görevi aç", "Bu bildirimi görev size atandığı için aldınız."),
+            "fr" => ("Une tâche vous a été attribuée", "La tâche ci-dessous vous revient. Une fois acceptée, elle apparaît sous « Mon travail » dans le Centre des tâches.", "Référence", "Tâche", "Échéance", "Priorité", "Attribuée par", "Ouvrir la tâche", "Vous recevez cette notification parce que la tâche vous a été attribuée."),
+            "es" => ("Se le ha asignado una tarea", "La tarea siguiente es suya. Cuando la acepte, aparecerá en «Mi trabajo» del Centro de tareas.", "Referencia", "Tarea", "Fecha de vencimiento", "Prioridad", "Asignada por", "Abrir la tarea", "Ha recibido esta notificación porque se le asignó la tarea."),
+            "zh" => ("有一项任务已分配给您", "以下任务由您负责。接受后，它将显示在任务中心的“我的工作”中。", "编号", "任务", "截止日期", "优先级", "分配人", "打开任务", "您收到此通知是因为该任务已分配给您。"),
+            "ar" => ("تم إسناد مهمة إليك", "المهمة التالية مسندة إليك. بعد قبولها تظهر ضمن «أعمالي» في مركز المهام.", "المرجع", "المهمة", "تاريخ الاستحقاق", "الأولوية", "أسندها", "فتح المهمة", "تلقيت هذا الإشعار لأن المهمة أُسندت إليك."),
+            "ru" => ("Вам назначена задача", "Задача ниже назначена вам. После принятия она появится в разделе «Моя работа» Центра задач.", "Ссылка", "Задача", "Срок", "Приоритет", "Назначил", "Открыть задачу", "Вы получили это уведомление, потому что задача назначена вам."),
+            _ => throw new ArgumentOutOfRangeException(nameof(locale), locale, "Unsupported task template locale.")
+        };
+
+        var template = Create(
+            "platform.tasks.assigned",
+            locale,
+            previous.SubjectTemplate,
+            // The reference stays in the body, as in 1.0.0: it is a required variable of the event, and a required
+            // variable that no part of the template renders is a silent blank (TaskNotificationTemplateTests).
+            $"<p>{body}</p><p>{reference}: {{{{TaskId}}}}</p>",
+            $"{body} {reference}: {{{{TaskId}}}}",
+            ["TaskTitle", "TaskId"]);
+        template.SemanticVersion = "1.1.0";
+        template.Shell = new NotificationTemplateShell
+        {
+            HeadingTemplate = heading,
+            InfoRows =
+            [
+                new NotificationTemplateShellRow { Label = task, ValueTemplate = "{{TaskTitle}}" },
+                new NotificationTemplateShellRow { Label = due, ValueTemplate = "{{DueAt}}" },
+                new NotificationTemplateShellRow { Label = priority, ValueTemplate = "{{Priority}}" },
+                new NotificationTemplateShellRow { Label = assignedBy, ValueTemplate = "{{AssignerName}}" }
+            ],
+            ActionLabel = open,
+            ActionUrlVariable = "TaskUrl",
+            FootnoteTemplate = why
+        };
+        return template;
     }
 
     /// <summary>
@@ -801,3 +1168,9 @@ public static class NotificationTemplateSeed
         };
     }
 }
+
+/// <summary>What one start-up pass over the seeded templates did — written to the log, returned to tests.</summary>
+/// <param name="Inserted">Rows that did not exist and were written.</param>
+/// <param name="Upgraded">Untouched previous-seed rows carried forward to the current content.</param>
+/// <param name="KeptModified">Rows an operator changed, left exactly as they are.</param>
+public sealed record NotificationTemplateSeedResult(int Inserted, int Upgraded, int KeptModified);

@@ -40,9 +40,10 @@ public sealed class VisitPlanningFix2WebTests
         Assert.Contains(".replace(/[iı]/g, '[iıIİ]')", pattern); // every i letter matches all four
         Assert.Contains(@"'\\$&'", pattern);                     // the term is escaped (literal text)
 
-        // regex = true, smart = false, caseInsensitive = true: the other Turkish letters fold through the i flag.
-        Assert.Contains("contactsDt.search(term ? trSearchPattern(term) : '', !!term, false, true)", js);
-        Assert.DoesNotContain("contactsDt.search(this.value || '')", js);
+        // WP-VP-4J — the plain table: the pattern as a case-insensitive regex over the Turkish-lower-cased name / specialty.
+        Assert.Contains("docTerm ? new RegExp(trSearchPattern(docTerm), 'i') : null", js);
+        Assert.Contains("re.test(String(row.name || '').toLocaleLowerCase('tr'))", js);
+        Assert.DoesNotContain("contactsDt", js);
     }
 
     private static string Between(string text, string start, string end)

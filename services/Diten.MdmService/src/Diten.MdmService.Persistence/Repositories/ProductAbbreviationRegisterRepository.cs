@@ -18,6 +18,54 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
         EnsureIndexes();
     }
 
+    public async Task<IReadOnlyList<ProductAbbreviationRegisterEntry>> GetInitialPendingWorkItemsAsync(
+        int limit,
+        CancellationToken cancellationToken = default)
+    {
+        if (limit is < 1 or > 101)
+        {
+            throw new ArgumentOutOfRangeException(nameof(limit));
+        }
+
+        return await _collection
+            .Find(
+                TenantFilter
+                & Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(
+                    x => x.LifecycleStatus,
+                    ProductAbbreviationLifecycleStatus.REQUESTED)
+                & Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(x => x.ReplacesEntryId, null))
+            // BL-030: DateTimeOffset is stored as a BSON array in this service. An ascending
+            // RequestedAtUtc sort can silently order by offset minutes instead of the instant.
+            .SortBy(x => x.Id)
+            .Limit(limit)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<ProductAbbreviationRegisterEntry>> GetPendingWorkItemsAsync(
+        int limit,
+        CancellationToken cancellationToken = default)
+    {
+        if (limit is < 1 or > 101)
+        {
+            throw new ArgumentOutOfRangeException(nameof(limit));
+        }
+
+        var requested = Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(
+            x => x.LifecycleStatus,
+            ProductAbbreviationLifecycleStatus.REQUESTED);
+        var retirement = Builders<ProductAbbreviationRegisterEntry>.Filter.And(
+            Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(
+                x => x.LifecycleStatus,
+                ProductAbbreviationLifecycleStatus.ACTIVE),
+            Builders<ProductAbbreviationRegisterEntry>.Filter.Ne(x => x.RetirementRequestId, null));
+
+        return await _collection
+            .Find(TenantFilter & Builders<ProductAbbreviationRegisterEntry>.Filter.Or(requested, retirement))
+            .SortBy(x => x.Id)
+            .Limit(limit)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<ProductAbbreviationRegisterEntry?> GetByIdAsync(
         Guid id,
         CancellationToken cancellationToken = default)
@@ -106,6 +154,68 @@ public sealed class ProductAbbreviationRegisterRepository : IProductAbbreviation
 
             return new(false, replay, "ABBREVIATION_REGISTER_CONFLICT");
         }
+    }
+
+    public async Task<bool> AppendAuditIntentIfAbsentAsync(
+        Guid id,
+        LocalAuditIntent intent,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(intent);
+        if (id == Guid.Empty || intent.IntentId == Guid.Empty || intent.TenantId != _tenantId
+            || intent.AggregateType != AuditAggregateType.ProductAbbreviation || intent.AggregateId != id
+            || intent.SourceService != AuditIntentContract.SourceService
+            || intent.ContractVersion != "mod-0290.audit-intent.v1"
+            || AuditIntentTemporalStorage.Validate(intent) != AuditIntentTemporalStorageKind.Current)
+        {
+            return false;
+        }
+
+        var filter = Builders<ProductAbbreviationRegisterEntry>.Filter.And(
+            TenantFilter,
+            Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(item => item.Id, id),
+            Builders<ProductAbbreviationRegisterEntry>.Filter.Eq(item => item.Version, intent.PostVersion),
+            Builders<ProductAbbreviationRegisterEntry>.Filter.Not(
+                Builders<ProductAbbreviationRegisterEntry>.Filter.ElemMatch(
+                    item => item.AuditIntents,
+                    embedded => embedded.IntentId == intent.IntentId)),
+            Builders<ProductAbbreviationRegisterEntry>.Filter.Not(
+                Builders<ProductAbbreviationRegisterEntry>.Filter.ElemMatch(
+                    item => item.AuditIntentReceipts, receipt => receipt.IntentId == intent.IntentId)));
+        var result = await _collection.UpdateOneAsync(
+            filter,
+            Builders<ProductAbbreviationRegisterEntry>.Update.Push(item => item.AuditIntents, intent),
+            cancellationToken: cancellationToken);
+        if (result.ModifiedCount == 1)
+        {
+            return true;
+        }
+
+        var stored = await GetByIdAsync(id, cancellationToken);
+        if (stored is null) return false;
+        var existing = stored.AuditIntents.Where(x => x.IntentId == intent.IntentId).Take(2).ToArray();
+        var receipts = stored.AuditIntentReceipts.Where(x => x.IntentId == intent.IntentId).Take(2).ToArray();
+        if (existing.Length == 1 && receipts.Length == 0)
+        {
+            var original = existing[0];
+            return original.TenantId == intent.TenantId && original.AggregateId == intent.AggregateId
+                && original.AggregateType == intent.AggregateType && original.Operation == intent.Operation
+                && original.SourceService == intent.SourceService && original.ContractVersion == intent.ContractVersion
+                && original.PreVersion == intent.PreVersion && original.PostVersion == intent.PostVersion
+                && original.ActorId == intent.ActorId && original.CorrelationId == intent.CorrelationId
+                && original.CausationId == intent.CausationId && original.CommandId == intent.CommandId
+                && original.Sequence == intent.Sequence && original.TimestampUtc == intent.TimestampUtc
+                && original.EvidenceHash == intent.EvidenceHash && original.SnapshotReference == intent.SnapshotReference
+                && original.IdempotencyKey == intent.IdempotencyKey;
+        }
+        if (existing.Length != 0 || receipts.Length != 1) return false;
+        var receipt = receipts[0];
+        return receipt.TenantId == intent.TenantId && receipt.SourceService == intent.SourceService
+            && receipt.IdempotencyKey == intent.IdempotencyKey && receipt.EvidenceHash == intent.EvidenceHash
+            && receipt.ContractVersion == intent.ContractVersion && !string.IsNullOrWhiteSpace(receipt.CentralAcknowledgement)
+            && !string.IsNullOrWhiteSpace(receipt.CompactReceiptReference)
+            && receipt.CentralIdempotencyKey == AuditIntentContract.BuildCentralIdempotencyKey(
+                intent.TenantId, intent.IntentId, intent.ContractVersion);
     }
 
     public async Task<ProductAbbreviationRegisterWriteResult> TransitionAsync(

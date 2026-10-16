@@ -21,7 +21,7 @@ sessizce işlevsiz kalıyor — dosya var görünür, içerik yoktur.
 
 Bir talep birden fazla kaynakta yer alıyorsa, en spesifik katman kazanır:
 
-1. **Module Pack** — `execution/domains/{domain}/module-packs/{ID}.md`
+1. **Module Pack** — `execution/domains/{domain}/module-packs/{ID}-{slug}.md`
 2. **Domain Config** — `execution/domains/{domain}/domain-config.md`
 3. **AGENTS.md** — bu dosya (repo root)
 4. **Global Engineering System** — `.antigravity/` (ajanlar, kurallar, workflow'lar, skill'ler)
@@ -87,6 +87,8 @@ module pack `approved` / `ready-for-dev` olduktan ve açık kullanıcı onayı v
 | Procurement Service | 5065 | `services/Diten.ProcurementService/src/Diten.ProcurementService.Api` |
 | SupplyChain Service | 5066 | `services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api` |
 | Inventory Service | 5067 | `services/Diten.InventoryService/src/Diten.InventoryService.Api` |
+| Planning Service | 5068 | `services/Diten.PlanningService/src/Diten.PlanningService.Api` |
+| Manufacturing Service | 5070 | `services/Diten.ManufacturingService/src/Diten.ManufacturingService.Api` |
 | MongoDB | 27017 | yerel çalışmalı |
 
 > **Not (2026-09-11):** Mikroservis bandı 5011–5060'tan **5061'e uzatıldı** — `SupplyChain Service` (DCP-009, supply-chain-execution domain, kullanıcı onaylı). Sonraki mikroservisler 5062+ kullanır.
@@ -94,6 +96,7 @@ module pack `approved` / `ready-for-dev` olduktan ve açık kullanıcı onayı v
 > **Not (2026-09-30):** `Inventory Service` (DCP-009 OD-5, supply-chain-execution domain, kullanıcı onaylı) **port 5066** — MOD-0173…0177 (stok defteri + izlenebilirlik) `Diten.SupplyChainService`'ten ayrılıp kendi servisine alındı. 5066 ölçümü: HEAD'de ve tüm remote dallarda config/launchSettings/script kullanımı yok. **Sonraki mikroservisler 5067+ kullanır.**
 > ⚠ **Drift (2026-09-30 ölçümü):** `services/Diten.CrmService/.../launchSettings.json` **5061** kullanıyor — tabloda `SupplyChain Service`'e ayrılı port. SupplyChainService henüz main'de değil; MVP-6 servisi main'e inmeden önce çözülmeli (EA / MVP-6 kararı).
 > **Not (2026-10-12, sahip kararı OD-P1 — yukarıdaki drift'i kapatır):** MVP-6 main'e indiğinde `SupplyChain Service` fiilen **5066**'da çalışıyordu (`appsettings.json` `Urls`, gateway `/api/shipment-bundle` → 5066) ve `Inventory Service` ile çakıştı. Karar: SupplyChain **5066**'da kalır, `Inventory Service` **5067**'ye taşındı (WP-MVP1-SYNC1, gateway'de bizim 8 rotamız 5067'de). 5061 = **CRM Service** (fiili kullanım). Kanıt: `docs/roadmap/plans/mvp1-mvp6-integration-2026-10-12.md`. **Sonraki mikroservisler 5068+ kullanır.**
+> **Not (2026-10-06, revize 2026-10-12):** `Manufacturing Service` (MOD-0193 BOM & Routings, MVP-3, DCP-009, ürün sahibi onaylı ayrı servis) **port 5070**. İlk atama 5067'ydi; OD-P1 (2026-10-12) ile **5067 Inventory'nin**, Manufacturing **5070**'e taşındı (5070 ölçümü: tüm remote dallarda config/launchSettings/script kullanımı yok). 5068 ve 5069 boş kalır.
 > ⚠ **Drift (EA reconciliation gerek):** yukarıdaki tablo `PpmService (5062)`, `DataKnowledgeService (5062, çalışıyor)`, `HumanCapitalService (5063)`, `TalentEcosystemService (5064)` satırlarını içermiyor; bu servisler §3 port authority'sine kayıtlı değil ve 5062 config-seviyesinde Ppm+Procurement tarafından çift-talep edildi. Bu satırların canonical port tahsisi + §3'e eklenmesi ilgili domain owner'lar/EA kararıdır (procurement sınırı dışı).
 
 **Kural:** Frontend (5001) asla doğrudan servis portlarına (5056/5057/5058) istek atmaz. Her istek Gateway (5000) üzerinden geçer.
@@ -196,7 +199,7 @@ Alan sayımı yalnızca create/edit formunda kullanıcının doldurduğu modül 
 
 ## 6.1 Kural Haritası — hangi işte hangi kural
 
-`.antigravity/rules/` altında 41 kural var ve **hiçbiri otomatik yüklenmez.**
+`.antigravity/rules/` altında 44 kural var ve **hiçbiri otomatik yüklenmez.**
 `.antigravity/rules/GEMINI.md` yalnız Antigravity'de `always_on`'dur; Claude Code
 ve Codex o klasörü hiç okumaz. Bu dosya (`AGENTS.md` = `CLAUDE.md`) her üç araçta
 da yüklenen tek dosyadır, bu yüzden harita burada durur.
@@ -207,7 +210,8 @@ kuralların dosyasını aç** — harita kuralın yerini söyler, içeriğini de
 ### Daima — istisnasız
 `multi-tenancy` kiracı izolasyonu · `security-jwt` token ve yetki ·
 `git-safety` dal ve commit güvenliği · `code-style` kod stili ·
-`docs-organization` belge nereye yazılır
+`docs-organization` belge nereye yazılır ·
+`cross-module-change-consent` kapsam dışı başka bir modülde düzeltme gerekirse durup sorar: "bunu da düzeltelim mi?" (XMC-001)
 
 ### Backend / handler yazıyorsan
 `handler-design` · `repository-standard` · `response-envelope` ·
@@ -220,7 +224,8 @@ kuralların dosyasını aç** — harita kuralın yerini söyler, içeriğini de
 `unauthorized-surface-standard` yetkisiz kullanıcı ne görür (UAS-001) ·
 `frontend-js-standard` · `premium-modal-standard` uyarı ve modal ·
 liste → `frontend-datatable-template` · detay → `frontend-details-template` ·
-create/edit → `frontend-form-template`
+create/edit → `frontend-form-template` ·
+`page-help-and-keyboard` "?" yardım metni (yoksa borç defteri), yan panelde Enter, kısayol katmanı, tur (UXH-001)
 
 ### Kullanıcıya görünen metin varsa
 `localization-standard` (Platform 2 dil · Tenant 7 dil) ·
@@ -235,7 +240,8 @@ modül yetki zorlaması · `data-scope-enforcement` hangi satırları görür (S
 ### Yeni modül / pack açıyorsan
 `module-pack-standard` · `capability-pack-standard` ·
 `module-self-registration-standard` manifest ·
-`audit-trail-standard` pakette "Denetlenen Olaylar" bölümü (AUD-001)
+`audit-trail-standard` pakette "Denetlenen Olaylar" bölümü (AUD-001) ·
+`record-coding-standard` kullanıcıya görünen kayıt kodu: `MG-ORG-000042` biçimi, OTOMATİK / İKİSİ DE / KALSIN (RCS-001)
 
 ### Ortam, çalıştırma, kayıt
 `dev-runbook` yerel ortam · `configuration-safety` ayar ve bağımlılık ·
@@ -268,7 +274,7 @@ Tüm git operasyonları (branch, staging, commit, push) [GIT-002 git-safety.md](
 Orchestrator çağrıldığında Aşama 0'da şu dosyaları okur:
 1. `AGENTS.md` (bu dosya)
 2. İlgili `execution/domains/{domain}/domain-config.md`
-3. Varsa `execution/domains/{domain}/module-packs/{ID}.md`
+3. Varsa `execution/domains/{domain}/module-packs/{ID}-{slug}.md`
 4. Görev tipine uygun `.antigravity/workflows/*.md`
 
 **Kural:** `@orchestrator` module pack oluşturmaz. Yeni modül geliştirmesi yalnızca mevcut ve kullanıcı tarafından onaylanmış (`approved` veya `ready-for-dev`) module pack üzerinden başlar. Module pack yoksa veya `draft` durumundaysa kod yazılmaz; kullanıcı önce `/prepare-module-pack` veya `module-pack-author` ile module pack hazırlamaya yönlendirilir.
@@ -362,7 +368,7 @@ Module pack minimum içermeli:
 |-------|-------|
 | **Global Engineering System** | `.antigravity/` — tüm projeler arası yeniden kullanılabilir katman |
 | **Domain** | `execution/domains/{name}/` — bir iş alanı (DEVEN, PSS; MDM/ESBP planlı) |
-| **Module Pack** | `execution/domains/{d}/module-packs/{ID}.md` — tek bir modülün kimlik + AC dosyası |
+| **Module Pack** | `execution/domains/{d}/module-packs/{ID}-{slug}.md` — tek bir modülün kimlik + AC dosyası |
 | **Domain Config** | `execution/domains/{d}/domain-config.md` — domain sınırları ve kararlar |
 | **Master Development Plan** | `execution/portfolio/master-development-plan.md` — High-level wave planı ve modül envanteri (eski monolith `docs/platform/master-plan.md` yerine) |
 | **Platform Delivery Board** | `execution/delivery/platform-delivery-board.md` — Aktif iş/hardening takibi ve status panosu |

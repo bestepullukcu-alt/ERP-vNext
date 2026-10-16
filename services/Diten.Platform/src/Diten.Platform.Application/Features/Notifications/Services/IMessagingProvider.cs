@@ -29,7 +29,14 @@ public sealed record MessagingProviderEmailRequest(
     /// (only <see cref="BodyHtmlPreview"/>/<see cref="BodyTextPreview"/>) — an existing, accepted limitation
     /// this field does not change.
     /// </summary>
-    IReadOnlyList<MessagingProviderAttachment>? Attachments = null);
+    IReadOnlyList<MessagingProviderAttachment>? Attachments = null,
+    /// <summary>
+    /// BL-454 — ADDITIVE ONLY. The name this message is sent under, composed by the one sender-name rule
+    /// (<c>Diten.BuildingBlocks.Email.EmailSender</c>). Null — every caller that predates the rule — leaves the
+    /// provider on its settings row's own name, exactly as before. The ADDRESS is never carried here: it stays
+    /// the settings row's.
+    /// </summary>
+    string? SenderName = null);
 
 /// <summary>One file attached to an outgoing e-mail — MOD-0357 S5b's own reason to exist is the meeting
 /// <c>.ics</c> invite, but the shape carries nothing meeting-specific.</summary>

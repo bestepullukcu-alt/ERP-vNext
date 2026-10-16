@@ -54,6 +54,9 @@ public sealed class CreatePlannedVisitRequest
     /// <summary>Snapshot provenance (D10/D11) — not validated, not an FK, not a form field.</summary>
     public Guid? StrategyTemplateId { get; set; }
     public Guid? SegmentId { get; set; }
+
+    /// <summary>WP-VW-W2 — true: an unplanned visit, today only (Source = unplanned).</summary>
+    public bool? Unplanned { get; set; }
 }
 
 /// <summary>An edit. <c>VisitCode</c> and <c>PlanStatus</c> are absent: the code is never renamed, and the lifecycle
@@ -92,4 +95,10 @@ public sealed class CancelPlannedVisitRequest
 {
     public string? CancellationReason { get; set; }
     public int? ExpectedVersion { get; set; }
+
+    /// <summary>WP-VW-W2 — visit-outcome-reason code (applies_to ∋ cancel). Will become required.</summary>
+    public string? ReasonCode { get; set; }
+
+    /// <summary>WP-VW-W2 — note (≤ 500; required when the reason's requires_note).</summary>
+    public string? Note { get; set; }
 }

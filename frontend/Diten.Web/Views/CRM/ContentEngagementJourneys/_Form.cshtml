@@ -211,6 +211,11 @@
                 <select id="stageType" class="form-select"></select>
             </div>
             <div class="col-6">
+                <label class="form-label fw-medium" for="stageAdoption">@Localizer["AdoptionStage"]</label>
+                <select id="stageAdoption" class="form-select"></select>
+                <small class="text-muted">@Localizer["AdoptionStageHelp"]</small>
+            </div>
+            <div class="col-6">
                 <label class="form-label fw-medium" for="stagePathPin">@Localizer["PathVersionPinPolicy"]</label>
                 <select id="stagePathPin" class="form-select"></select>
                 <small class="text-muted">@Localizer["PathPinHelp"]</small>
@@ -265,7 +270,7 @@
             </div>
         </div>
         <div class="d-flex gap-2 mt-4">
-            <button type="button" id="stageSaveBtn" class="btn btn-primary"><i class="bx bx-check me-1"></i>@Localizer["Save"]</button>
+            <button data-dt-primary="enter" type="button" id="stageSaveBtn" class="btn btn-primary"><i class="bx bx-check me-1"></i>@Localizer["Save"]</button>
             <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@Localizer["Cancel"]</button>
         </div>
     </div>

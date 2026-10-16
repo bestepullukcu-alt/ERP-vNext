@@ -222,10 +222,12 @@ public sealed class SubscriptionTransactionFailureMongoTests
         { SessionCreateCalls++; Sessions.Add(s.TransactionId); return inner.CreateAsync(s, x, ct); }
         public Task<TenantSubscription> CreateAsync(TenantSubscription x, CancellationToken ct = default) => inner.CreateAsync(x, ct);
         public Task<TenantSubscription?> GetByIdAsync(Guid id, CancellationToken ct = default) => inner.GetByIdAsync(id, ct);
+        public Task<TenantSubscription?> GetByIdAsync(IPlatformTransactionSession session, Guid id, CancellationToken ct = default) => inner.GetByIdAsync(session, id, ct);
         public Task<TenantSubscription?> GetByTenantIdAsync(Guid t, Guid id, CancellationToken ct = default) => inner.GetByTenantIdAsync(t, id, ct);
         public Task<TenantSubscription?> GetCurrentByTenantIdAsync(Guid t, CancellationToken ct = default) => inner.GetCurrentByTenantIdAsync(t, ct);
         public Task<IReadOnlyList<TenantSubscription>> GetHistoryByTenantIdAsync(Guid t, CancellationToken ct = default) => inner.GetHistoryByTenantIdAsync(t, ct);
         public Task<bool> HasCurrentAsync(Guid t, Guid? x = null, CancellationToken ct = default) => inner.HasCurrentAsync(t, x, ct);
+        public Task<bool> HasCurrentAsync(IPlatformTransactionSession s, Guid t, Guid? x = null, CancellationToken ct = default) => inner.HasCurrentAsync(s, t, x, ct);
         public Task UpdateAsync(TenantSubscription x, byte[]? row, CancellationToken ct = default) => inner.UpdateAsync(x, row, ct);
         public Task UpdateAsync(IPlatformTransactionSession s, TenantSubscription x, byte[]? row, CancellationToken ct = default) => inner.UpdateAsync(s, x, row, ct);
     }

@@ -1,0 +1,417 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<root xmlns:ns1="urn:schemas-microsoft-com:xml-msdata" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:schema id="root">
+    <xs:element name="root" ns1:IsDataSet="true">
+      <xs:complexType>
+        <xs:choice maxOccurs="unbounded">
+          <xs:element name="metadata">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="value" type="xsd:string" minOccurs="0" />
+              </xs:sequence>
+              <xs:attribute name="name" type="xsd:string" />
+              <xs:attribute name="type" type="xsd:string" />
+              <xs:attribute name="mimetype" type="xsd:string" />
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="assembly">
+            <xs:complexType>
+              <xs:attribute name="alias" type="xsd:string" />
+              <xs:attribute name="name" type="xsd:string" />
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="data">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="value" type="xsd:string" minOccurs="0" ns1:Ordinal="1" />
+                <xs:element name="comment" type="xsd:string" minOccurs="0" ns1:Ordinal="2" />
+              </xs:sequence>
+              <xs:attribute name="name" type="xsd:string" ns1:Ordinal="1" />
+              <xs:attribute name="type" type="xsd:string" ns1:Ordinal="3" />
+              <xs:attribute name="mimetype" type="xsd:string" ns1:Ordinal="4" />
+            </xs:complexType>
+          </xs:element>
+          <xs:element name="resheader">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="value" type="xsd:string" minOccurs="0" ns1:Ordinal="1" />
+              </xs:sequence>
+              <xs:attribute name="name" type="xsd:string" use="required" />
+            </xs:complexType>
+          </xs:element>
+        </xs:choice>
+      </xs:complexType>
+    </xs:element>
+  </xs:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0,
+      Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0,
+      Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Help.Panel.Open" xml:space="preserve">
+    <value>Справка по этой странице</value>
+  </data>
+  <data name="Help.Panel.Title" xml:space="preserve">
+    <value>Справка</value>
+  </data>
+  <data name="Help.Panel.Close" xml:space="preserve">
+    <value>Закрыть</value>
+  </data>
+  <data name="Help.Panel.PurposeHeading" xml:space="preserve">
+    <value>Для чего эта страница</value>
+  </data>
+  <data name="Help.Panel.ChordTitle" xml:space="preserve">
+    <value>Ctrl+Enter (⌘+Enter на Mac). Один Enter не выполняет это действие.</value>
+  </data>
+  <data name="Help.Panel.StartTour" xml:space="preserve">
+    <value>Начать обзор</value>
+  </data>
+  <data name="Help.Panel.Preparing" xml:space="preserve">
+    <value>Справочный текст для этой страницы готовится.</value>
+  </data>
+  <data name="Help.Panel.Eyebrow" xml:space="preserve">
+    <value>Справка по странице</value>
+  </data>
+  <data name="Help.Panel.Tabs" xml:space="preserve">
+    <value>Разделы справки</value>
+  </data>
+  <data name="Help.Panel.TabOverview" xml:space="preserve">
+    <value>Обзор</value>
+  </data>
+  <data name="Help.Panel.TabSteps" xml:space="preserve">
+    <value>Пошагово</value>
+  </data>
+  <data name="Help.Panel.TabKeys" xml:space="preserve">
+    <value>Клавиатура</value>
+  </data>
+  <data name="Help.Panel.GeneralCard" xml:space="preserve">
+    <value>Общие сведения</value>
+  </data>
+  <data name="Help.Panel.RelatedCard" xml:space="preserve">
+    <value>Связанные страницы</value>
+  </data>
+  <data name="Help.Panel.AudienceLabel" xml:space="preserve">
+    <value>Кто пользуется</value>
+  </data>
+  <data name="Help.Panel.ImmediateLabel" xml:space="preserve">
+    <value>Действия, которые применяются сразу</value>
+  </data>
+  <data name="Help.Panel.StepNumber" xml:space="preserve">
+    <value>Шаг {0}</value>
+  </data>
+  <data name="Help.Panel.KeysEverywhere" xml:space="preserve">
+    <value>На каждой странице</value>
+  </data>
+  <data name="Help.Panel.KeysThisPage" xml:space="preserve">
+    <value>На этой странице</value>
+  </data>
+  <data name="Help.Panel.KeyHelp" xml:space="preserve">
+    <value>Открывает эту панель</value>
+  </data>
+  <data name="Help.Panel.KeySearch" xml:space="preserve">
+    <value>Поиск страниц, переход в меню</value>
+  </data>
+  <data name="Help.Panel.KeyEnter" xml:space="preserve">
+    <value>Сохраняет в боковой панели (действия, которые можно отменить)</value>
+  </data>
+  <data name="Help.Panel.KeyChord" xml:space="preserve">
+    <value>Выполняет действие, которое нельзя отменить (отправить, утвердить, удалить…); сохраняет в многострочном поле</value>
+  </data>
+  <data name="Help.Panel.KeyEscape" xml:space="preserve">
+    <value>Закрывает открытую панель</value>
+  </data>
+  <data name="Help.Panel.MacNote" xml:space="preserve">
+    <value>На Mac используйте ⌘ вместо Ctrl.</value>
+  </data>
+  <data name="Tour.Next" xml:space="preserve">
+    <value>Далее</value>
+  </data>
+  <data name="Tour.Previous" xml:space="preserve">
+    <value>Назад</value>
+  </data>
+  <data name="Tour.Done" xml:space="preserve">
+    <value>Готово</value>
+  </data>
+  <data name="Tour.Progress" xml:space="preserve">
+    <value>{{current}} из {{total}}</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step1.Title" xml:space="preserve">
+    <value>Вкладки</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step1.Text" xml:space="preserve">
+    <value>Во «Входящих» — работа и запросы на согласование, адресованные вам, в «Мои задачи» — ваша работа, в «Пул» — работа, которую может взять ваша команда.</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step2.Title" xml:space="preserve">
+    <value>Поиск</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step2.Text" xml:space="preserve">
+    <value>Введите часть названия, чтобы сузить список; фильтры уточняют его по типу и статусу.</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step3.Title" xml:space="preserve">
+    <value>Список</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step3.Text" xml:space="preserve">
+    <value>Нажмите на строку, чтобы открыть работу: там её подробности, чек-лист, комментарии и история.</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step4.Title" xml:space="preserve">
+    <value>Действия</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step4.Text" xml:space="preserve">
+    <value>Кнопки «Принять», «Начать» и «Завершить» находятся в строке. Откройте запрос, чтобы «Согласовать» или «Отклонить» его; чтобы передать работу другому, используйте «Делегировать» в открытой работе.</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step5.Title" xml:space="preserve">
+    <value>Создать</value>
+  </data>
+  <data name="Tour.WORKCENTER.Step5.Text" xml:space="preserve">
+    <value>Отсюда создаётся новая задача, заметка или встреча.</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step1.Title" xml:space="preserve">
+    <value>Неделя</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step1.Text" xml:space="preserve">
+    <value>Переключайте недели стрелками; «Сегодня» возвращает к текущей неделе.</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step2.Title" xml:space="preserve">
+    <value>Добавьте строку</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step2.Text" xml:space="preserve">
+    <value>Используйте «+ Строка задачи» или «+ Строка категории», чтобы добавить то, над чем вы работали на этой неделе.</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step3.Title" xml:space="preserve">
+    <value>Введите время</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step3.Text" xml:space="preserve">
+    <value>Вводите часы в ячейку каждого дня; итоги обновляются сразу.</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step4.Title" xml:space="preserve">
+    <value>Отправьте неделю</value>
+  </data>
+  <data name="Tour.MYTIMESHEET.Step4.Text" xml:space="preserve">
+    <value>Когда неделя заполнена, выберите «Отправить на утверждение»; утверждающий увидит её в разделе «Утверждение табелей».</value>
+  </data>
+  <data name="Tour.TIMEAPPROVALS.Step1.Title" xml:space="preserve">
+    <value>Недели на утверждении</value>
+  </data>
+  <data name="Tour.TIMEAPPROVALS.Step1.Text" xml:space="preserve">
+    <value>Здесь перечислены недели, отправленные вашей командой на утверждение.</value>
+  </data>
+  <data name="Tour.TIMEAPPROVALS.Step2.Title" xml:space="preserve">
+    <value>Откройте неделю</value>
+  </data>
+  <data name="Tour.TIMEAPPROVALS.Step2.Text" xml:space="preserve">
+    <value>Откройте строку, чтобы просмотреть неделю, затем выберите «Утвердить» или «Вернуть» с указанием причины для исправления.</value>
+  </data>
+  <data name="Help.USERS.Purpose" xml:space="preserve">
+    <value>Управляйте всеми, кто может входить в ваш арендатор: приглашайте пользователей, меняйте их данные, включайте и отключайте учётные записи.</value>
+  </data>
+  <data name="Help.USERS.Step1" xml:space="preserve">
+    <value>Сузьте список полем поиска или нажмите «Фильтр», выберите «Статус», «Роли» или «Тип учётной записи» и нажмите «Применить».</value>
+  </data>
+  <data name="Help.USERS.Step2" xml:space="preserve">
+    <value>Нажмите «Добавить пользователя», заполните «Эл. почта», «Имя» и «Фамилия» в боковой панели, затем нажмите «Сохранить» или Ctrl+Enter (⌘+Enter на Mac). Отправляется письмо-приглашение, поэтому один Enter не сохраняет.</value>
+  </data>
+  <data name="Help.USERS.Step3" xml:space="preserve">
+    <value>Попросите нового пользователя задать пароль по ссылке из письма; до этого его статус «Приглашён», а в строке доступно «Повторить приглашение».</value>
+  </data>
+  <data name="Help.USERS.Step4" xml:space="preserve">
+    <value>Откройте действия строки, чтобы выбрать «Просмотр» или «Редактировать запись», «Отключить» или «Включить» учётную запись, «Сбросить пароль» или «Удалить».</value>
+  </data>
+  <data name="Help.USERS.Step5" xml:space="preserve">
+    <value>Чтобы выдать пользователю роли, откройте страницу «Роли пользователей»; столбец «Роли» здесь только показывает уже назначенные.</value>
+  </data>
+  <data name="Help.USERS.Audience" xml:space="preserve">
+    <value>Администраторы</value>
+  </data>
+  <data name="Help.USERS.Immediate" xml:space="preserve">
+    <value>Отключение, удаление, сброс пароля</value>
+  </data>
+  <data name="Help.USERS.Step1Title" xml:space="preserve">
+    <value>Сузьте список</value>
+  </data>
+  <data name="Help.USERS.Step2Title" xml:space="preserve">
+    <value>Пригласите пользователя</value>
+  </data>
+  <data name="Help.USERS.Step3Title" xml:space="preserve">
+    <value>Следите за приглашением</value>
+  </data>
+  <data name="Help.USERS.Step4Title" xml:space="preserve">
+    <value>Управляйте учётной записью</value>
+  </data>
+  <data name="Help.USERS.Step5Title" xml:space="preserve">
+    <value>Выдайте роли</value>
+  </data>
+  <data name="Help.USERS.Related.USERROLES" xml:space="preserve">
+    <value>Чтобы выдать пользователю роли</value>
+  </data>
+  <data name="Help.USERS.Related.ROLES" xml:space="preserve">
+    <value>Чтобы узнать, что разрешает каждая роль</value>
+  </data>
+  <data name="Help.ROLES.Purpose" xml:space="preserve">
+    <value>Здесь перечислены роли арендатора: системные, поставляемые с платформой, и пользовательские, созданные вами.</value>
+  </data>
+  <data name="Help.ROLES.Step1" xml:space="preserve">
+    <value>Воспользуйтесь поиском или нажмите «Фильтр», выберите в «Тип» «Системная (встроенная, заблокирована)» или «Пользовательская (редактируемая)» и нажмите «Применить».</value>
+  </data>
+  <data name="Help.ROLES.Step2" xml:space="preserve">
+    <value>Нажмите «Добавить роль», введите «Имя» и «Отображаемое имя» (при необходимости «Описание») и нажмите «Сохранить»; имя потом изменить нельзя.</value>
+  </data>
+  <data name="Help.ROLES.Step3" xml:space="preserve">
+    <value>Нажмите значок ключа «Управление разрешениями» в строке, чтобы открыть «Разрешения ролей» с уже выбранной ролью.</value>
+  </data>
+  <data name="Help.ROLES.Step4" xml:space="preserve">
+    <value>Для пользовательской роли используйте «Просмотр», «Редактировать запись» или «Удалить»; системная роль отмечена замком и доступна только для просмотра.</value>
+  </data>
+  <data name="Help.ROLES.Audience" xml:space="preserve">
+    <value>Администраторы</value>
+  </data>
+  <data name="Help.ROLES.Immediate" xml:space="preserve">
+    <value>Удаление пользовательской роли</value>
+  </data>
+  <data name="Help.ROLES.Step1Title" xml:space="preserve">
+    <value>Найдите роль</value>
+  </data>
+  <data name="Help.ROLES.Step2Title" xml:space="preserve">
+    <value>Добавьте роль</value>
+  </data>
+  <data name="Help.ROLES.Step3Title" xml:space="preserve">
+    <value>Управляйте её разрешениями</value>
+  </data>
+  <data name="Help.ROLES.Step4Title" xml:space="preserve">
+    <value>Просмотрите, измените или удалите</value>
+  </data>
+  <data name="Help.ROLES.Related.ROLEPERMISSIONS" xml:space="preserve">
+    <value>Чтобы задать, что разрешено роли</value>
+  </data>
+  <data name="Help.ROLES.Related.USERROLES" xml:space="preserve">
+    <value>Чтобы выдать роли пользователям</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Purpose" xml:space="preserve">
+    <value>Здесь задаётся, что разрешено роли: назначайте или снимайте разрешения, сгруппированные по модулям, для одной роли за раз.</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step1" xml:space="preserve">
+    <value>Выберите роль в поле «Роль»; при переходе через «Управление разрешениями» на странице «Роли» она уже выбрана.</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step2" xml:space="preserve">
+    <value>Сузьте список разрешений полем «Модуль», строкой «Поиск разрешений…» или вкладками «Все», «Назначено» и «Не назначено».</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step3" xml:space="preserve">
+    <value>Нажмите на метку неназначенного разрешения, чтобы выдать его роли; изменение сохраняется сразу.</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step4" xml:space="preserve">
+    <value>Нажмите на назначенную метку и подтвердите, чтобы снять её; метки с замком получены из базового набора или модуля и здесь не изменяются.</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step5" xml:space="preserve">
+    <value>Справа в блоке «Выбранная роль» проверьте «Охват разрешений» и число назначенных, заблокированных и неназначенных разрешений.</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Audience" xml:space="preserve">
+    <value>Администраторы</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Immediate" xml:space="preserve">
+    <value>Назначение и снятие разрешения; касается всех пользователей с этой ролью</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step1Title" xml:space="preserve">
+    <value>Выберите роль</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step2Title" xml:space="preserve">
+    <value>Сузьте список разрешений</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step3Title" xml:space="preserve">
+    <value>Выдайте разрешение</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step4Title" xml:space="preserve">
+    <value>Снимите разрешение</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Step5Title" xml:space="preserve">
+    <value>Проверьте охват</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Related.ROLES" xml:space="preserve">
+    <value>Чтобы добавить или изменить роли</value>
+  </data>
+  <data name="Help.ROLEPERMISSIONS.Related.USERROLES" xml:space="preserve">
+    <value>Чтобы выдать роли пользователям</value>
+  </data>
+  <data name="Help.USERROLES.Purpose" xml:space="preserve">
+    <value>Эта страница связывает пользователей с ролями: выберите пользователя и назначьте или снимите роли.</value>
+  </data>
+  <data name="Help.USERROLES.Step1" xml:space="preserve">
+    <value>Выберите человека в поле «Пользователь», чтобы увидеть его роли и роли, которых у него нет.</value>
+  </data>
+  <data name="Help.USERROLES.Step2" xml:space="preserve">
+    <value>Сузьте список ролей полем «Поиск ролей» или вкладками «Все», «Назначенные» и «Неназначенные».</value>
+  </data>
+  <data name="Help.USERROLES.Step3" xml:space="preserve">
+    <value>Нажмите «Назначить» у роли в разделе «Неназначенные роли», чтобы выдать её пользователю; изменение сохраняется сразу.</value>
+  </data>
+  <data name="Help.USERROLES.Step4" xml:space="preserve">
+    <value>Чтобы снять роль, нажмите «Удалить» у назначенной роли или x рядом с ней в блоке «Активные роли» и подтвердите.</value>
+  </data>
+  <data name="Help.USERROLES.Audience" xml:space="preserve">
+    <value>Администраторы</value>
+  </data>
+  <data name="Help.USERROLES.Immediate" xml:space="preserve">
+    <value>Назначение и снятие роли; пользователь получает разрешения всех своих ролей вместе</value>
+  </data>
+  <data name="Help.USERROLES.Step1Title" xml:space="preserve">
+    <value>Выберите пользователя</value>
+  </data>
+  <data name="Help.USERROLES.Step2Title" xml:space="preserve">
+    <value>Сузьте список ролей</value>
+  </data>
+  <data name="Help.USERROLES.Step3Title" xml:space="preserve">
+    <value>Назначьте роль</value>
+  </data>
+  <data name="Help.USERROLES.Step4Title" xml:space="preserve">
+    <value>Снимите роль</value>
+  </data>
+  <data name="Help.USERROLES.Related.USERS" xml:space="preserve">
+    <value>Чтобы пригласить пользователей или управлять ими</value>
+  </data>
+  <data name="Help.USERROLES.Related.ROLES" xml:space="preserve">
+    <value>Чтобы добавить или изменить роли</value>
+  </data>
+  <data name="Help.ITEMS.Purpose" xml:space="preserve">
+    <value>На этой странице перечислены позиции (материалы, хранящиеся на складе: действующие вещества, вспомогательные вещества, упаковка, промежуточные продукты) с их идентификацией, типом материала и поведением запаса. Каждая позиция создаётся здесь и проходит через статусы: «Черновик», «Ожидает утверждения», «Активна», «Деактивирована», «Выведена из оборота».</value>
+  </data>
+  <data name="Help.ITEMS.Step1" xml:space="preserve">
+    <value>Сузьте список полем поиска или нажмите «Фильтр», выберите «Статус» или «Тип материала» и нажмите «Применить».</value>
+  </data>
+  <data name="Help.ITEMS.Step2" xml:space="preserve">
+    <value>Нажмите «Добавить позицию», заполните идентификацию и поведение запаса на полностраничной форме, затем нажмите «Сохранить»: позиция сохраняется в статусе «Черновик». Когда курсор стоит в однострочном поле этой формы, Enter тоже её сохраняет (в поле «Описание» Enter начинает новую строку). В дальнейшем у активной позиции свободно меняются только название и описание; заполненное поле запаса требует утверждённого исправления.</value>
+  </data>
+  <data name="Help.ITEMS.Step3" xml:space="preserve">
+    <value>В «Действиях» черновика выберите «Отправить на утверждение»: позиция остаётся в статусе «Ожидает утверждения», пока её не утвердят, и только после этого переходит в статус «Активна». Пока позиция ожидает утверждения, отправивший запрос может выбрать «Отозвать запрос на утверждение» в её «Действиях»: позиция возвращается в прежний статус.</value>
+  </data>
+  <data name="Help.ITEMS.Step4" xml:space="preserve">
+    <value>«Деактивировать» исключает активную позицию из новых поступлений на склад; «Запросить повторную активацию» снова отправляет позицию на то же утверждение; «Вывести из оборота» — окончательное действие, допустимое только для деактивированной позиции с нулевым запасом, и код больше никогда не используется. Каждое из этих действий требует указать причину.</value>
+  </data>
+  <data name="Help.ITEMS.Step5" xml:space="preserve">
+    <value>Вне текстового поля, когда не открыто ни диалоговое окно, ни боковая панель, клавиша «?» открывает эту справку с сочетаниями клавиш страницы.</value>
+  </data>
+  <data name="Help.ITEMS.Audience" xml:space="preserve">
+    <value>Команда основных данных</value>
+  </data>
+  <data name="Help.ITEMS.Step1Title" xml:space="preserve">
+    <value>Сузьте список</value>
+  </data>
+  <data name="Help.ITEMS.Step2Title" xml:space="preserve">
+    <value>Добавьте позицию</value>
+  </data>
+  <data name="Help.ITEMS.Step3Title" xml:space="preserve">
+    <value>Отправьте на утверждение</value>
+  </data>
+  <data name="Help.ITEMS.Step4Title" xml:space="preserve">
+    <value>Измените статус</value>
+  </data>
+  <data name="Help.ITEMS.Step5Title" xml:space="preserve">
+    <value>Пользуйтесь клавиатурой</value>
+  </data>
+</root>

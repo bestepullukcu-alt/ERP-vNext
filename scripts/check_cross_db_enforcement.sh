@@ -33,10 +33,26 @@ fi
 
 filtered=""
 
+# WP-CI-SERVICE-TESTS-03 FIX1 (CT decision b) — ONE named exception, by exact path, and for ONE client only.
+# 61af28b01 (2026-09-23, "add isolated Market operational mode") added a second composition root for the Platform
+# Market operational command mode: it builds its own MongoClient the way Infrastructure/DependencyInjection.cs does
+# (allowed above by name). Its folder (Diten.Platform.Infrastructure/Persistence/) is the Platform persistence layer, but
+# the "/Infrastructure/Persistence/" pattern needs a "/" before "Infrastructure", so it never matched. Moving the file
+# would end the exception (CT may do so). No glob: a second `new MongoClient(` in this file, or any other file, is red.
+exact_exception="services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/VerifiedMarketOperationalPersistenceServiceCollectionExtensions.cs"
+exact_exception_hits=0
+
 while IFS= read -r line; do
   [ -z "$line" ] && continue
   path="${line%%:*}"
   normalized="${path//\\//}"
+
+  if [[ "$normalized" == "$exact_exception" ]]; then
+    exact_exception_hits=$((exact_exception_hits + 1))
+    if [[ "$exact_exception_hits" -le 1 ]]; then
+      continue
+    fi
+  fi
 
   if [[ "$normalized" == *"/tests/"* ]] ||
      [[ "$normalized" == *".Persistence/"* ]] ||

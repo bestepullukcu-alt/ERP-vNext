@@ -1,3 +1,4 @@
+using Diten.Platform.Application.Contracts;
 using System.Net;
 using System.Text;
 using Diten.Platform.Application.Common;
@@ -25,7 +26,7 @@ public sealed class AdminUserInvitationServiceTests
         var tenant = CreateTenant();
         var adminUser = new TenantAdminUser { Id = Guid.NewGuid(), Name = "Ada Admin", Email = "ada@example.com" };
 
-        var result = await service.InviteAsync(tenant, adminUser, default);
+        var result = await service.InviteAsync(tenant, adminUser, AdminInvitationTrigger.Operator, default);
 
         Assert.True(result.InvitationEmailSent);
         Assert.Empty(mediator.QueueCommands); // no direct QueueEmailNotificationCommand
@@ -36,8 +37,11 @@ public sealed class AdminUserInvitationServiceTests
         Assert.Equal("Grand Medical Group", request.Variables["TenantDisplayName"]);
         Assert.Equal("Ada Admin", request.Variables["RecipientName"]);
         Assert.Equal("ada@example.com", request.Variables["Email"]);
-        Assert.Equal("TmpPw123!", request.Variables["TemporaryPassword"]);
-        Assert.True(request.Variables.ContainsKey("LoginUrl"));
+        // BL-454 slice 2 stage D — the one-time set-password link and its expiry; never a password.
+        Assert.Equal("https://app.gmg.test/account/set-password?email=ada%40example.com&token=setup-test-only", request.Variables["SetPasswordUrl"]);
+        Assert.Equal("2026-10-14 09:30", request.Variables["LinkExpiresAtUtc"]);
+        Assert.Equal(tenant.Id, request.Variables["TenantId"]);
+        Assert.False(request.Variables.ContainsKey("TemporaryPassword"));
     }
 
     [Fact]
@@ -52,7 +56,7 @@ public sealed class AdminUserInvitationServiceTests
         var adminUser = new TenantAdminUser { Id = Guid.NewGuid(), Name = "Ada", Email = "ada@example.com" };
 
         // No throw: provisioning already succeeded; only the email flag reflects the failure.
-        var result = await service.InviteAsync(tenant, adminUser, default);
+        var result = await service.InviteAsync(tenant, adminUser, AdminInvitationTrigger.Operator, default);
 
         Assert.True(result.UserProvisioned);
         Assert.False(result.InvitationEmailSent);
@@ -62,11 +66,12 @@ public sealed class AdminUserInvitationServiceTests
     private static AdminUserInvitationService CreateService(RecordingMediator mediator)
     {
         var httpFactory = new StubHttpClientFactory(new StubHandler(
-            HttpStatusCode.OK, """{"userProvisioned":true,"temporaryPassword":"TmpPw123!","message":null}"""));
+            HttpStatusCode.OK, """{"userProvisioned":true,"setupToken":"setup-test-only","setupExpiresAtUtc":"2026-10-14T09:30:00Z","message":null}"""));
         var authOptions = Options.Create(new AuthServiceOptions
         {
             BaseUrl = "http://auth.local",
             InternalApiKey = "internal-key",
+            FrontendBaseUrl = "https://app.gmg.test",
             TenantLoginUrlTemplate = "https://{tenantDomain}/account/login?tenantId={tenantId}"
         });
         return new AdminUserInvitationService(httpFactory, mediator, authOptions, NullLogger<AdminUserInvitationService>.Instance);

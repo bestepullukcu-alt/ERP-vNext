@@ -32,6 +32,7 @@ public sealed class AccessGovernanceManifestProvider : IModuleManifestProvider
     private const string RolesCreate = "auth.roles.create";
     private const string RolesUpdate = "auth.roles.update";
     private const string RolesDelete = "auth.roles.delete";
+    private const string RolesExport = "auth.roles.export";
 
     public ModuleManifestDocument GetManifest() =>
         new(
@@ -58,6 +59,7 @@ public sealed class AccessGovernanceManifestProvider : IModuleManifestProvider
                 new ModuleManifestPage("ROLES", "Roles", "/Roles", RolesRead, null, true, "List", 20,
                 [
                     new ModuleManifestAction("CREATE", "Create Role", RolesCreate, "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
+                    new ModuleManifestAction("EXPORT", "Export", RolesExport, "Toolbar", 15, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
                     new ModuleManifestAction("UPDATE", "Edit", RolesUpdate, "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                     new ModuleManifestAction("DELETE", "Delete", RolesDelete, "RowAction", 30, IsDangerous: true, IsToolbarAction: false, IsRowAction: true)
                 ]),

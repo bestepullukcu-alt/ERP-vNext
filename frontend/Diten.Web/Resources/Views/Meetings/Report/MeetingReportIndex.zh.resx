@@ -102,4 +102,5 @@
   <data name="ScopeTenant" xml:space="preserve"><value>整个租户</value></data>
   <data name="ScopeScoped" xml:space="preserve"><value>我的会议</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>您无权访问此报告。</value></data>
+  <data name="UnknownUser" xml:space="preserve"><value>未知用户</value></data>
 </root>

@@ -636,6 +636,7 @@ public sealed class CreateKnowledgePathVersionHandler
                 TargetStepId = b.TargetStepId is { } t && idMap.TryGetValue(t, out var nt) ? nt : b.TargetStepId
             }).ToList(),
             Arrangement = s.Arrangement is null ? null : KnowledgePathStudio.Copy(s.Arrangement),
+            Presentation = s.Presentation?.Copy(), // WP-VW-W3 (W3-BE-b) — the notes travel with the new version
             StepStatus = s.StepStatus,
             ArchivedAt = s.ArchivedAt,
             ArchivedBy = s.ArchivedBy,

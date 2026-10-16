@@ -5,6 +5,7 @@ using Diten.Platform.Application.Features.Meetings.RecordLinks;
 using Diten.Platform.Application.Features.Meetings.Services;
 using Diten.Platform.Application.Features.Tasks;
 using Diten.Platform.Application.Features.Tasks.Commands;
+using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Domain.Entities.Meetings;
 using Diten.Platform.Domain.Enums.Meetings;
 using Diten.Platform.Domain.Enums.Tasks;
@@ -16,6 +17,83 @@ namespace Diten.Platform.Application.Features.Meetings.Handlers.CommandHandlers;
 // MOD-0357 S4 — the meeting↔task bridge (pack §3 Commands "bridge", §7, §13, K1/K2/K3/K9/K11). Every write here
 // either delegates to MOD-0024's own commands unchanged (K2) or writes exactly one RecordLink (K1) — never
 // both a link AND a second copy of MOD-0024's own data.
+
+/// <summary>
+/// BL-533 — attaching a link to an agenda line or to a decision is a write of ONE field on a row someone else may be
+/// editing at that moment (a text edit, a draft save). The task and its <see cref="RecordLink"/> already exist when it is
+/// written, so a refused write is not answered with "nothing happened": the row is read again and the link applied to it
+/// as it is now — a bounded number of times. A row that is gone meanwhile (deleted; or a decision whose minutes were
+/// published or replaced — K4: a Published version is never written to) has nothing left to attach to.
+/// </summary>
+internal static class MeetingLinkAttachment
+{
+    internal const int MaxAttempts = 3;
+
+    /// <returns>True when the line carries the link (or no longer exists); false when every attempt lost its race.</returns>
+    public static async Task<bool> AttachToAgendaItemAsync(
+        IAgendaItemRepository agendaItems, AgendaItem item, Guid linkId, CancellationToken ct)
+    {
+        var meetingId = item.MeetingId;
+        for (var attempt = 1; ; attempt++)
+        {
+            item.RecordLinkId = linkId;
+            if (await agendaItems.UpdateAsync(item, item.Version, ct))
+            {
+                return true;
+            }
+
+            if (attempt >= MaxAttempts)
+            {
+                return false;
+            }
+
+            var current = await agendaItems.GetByIdAsync(item.Id, ct);
+            if (current is null || current.MeetingId != meetingId)
+            {
+                return true;
+            }
+
+            item = current;
+        }
+    }
+
+    /// <returns>True when the decision carries the link (or no Draft decision is left to carry it); false when every
+    /// attempt lost its race.</returns>
+    public static async Task<bool> AttachToDecisionAsync(
+        IMeetingMinutesVersionRepository minutes, MeetingMinutesVersion version, string decisionCode, Guid linkId, CancellationToken ct)
+    {
+        for (var attempt = 1; ; attempt++)
+        {
+            var decision = version.Status == MinutesStatus.Draft
+                ? version.Decisions.FirstOrDefault(d => d.Code == decisionCode)
+                : null;
+            if (decision is null)
+            {
+                return true;
+            }
+
+            decision.RecordLinkId = linkId;
+            version.ActionReferences = MinutesEligibility.DeriveActionReferences(version.Decisions);
+            if (await minutes.UpdateAsync(version, version.Version, ct))
+            {
+                return true;
+            }
+
+            if (attempt >= MaxAttempts)
+            {
+                return false;
+            }
+
+            var current = await minutes.GetLatestByMeetingIdAsync(version.MeetingId, ct);
+            if (current is null || current.Id != version.Id)
+            {
+                return true;
+            }
+
+            version = current;
+        }
+    }
+}
 
 /// <summary>"Create-and-link" — delegates to <c>CreateTaskItemCommand</c> unchanged; see the command's own
 /// doc comment for K2/K11.</summary>
@@ -173,21 +251,24 @@ public sealed class CreateTaskFromMeetingHandler
             createdAfterMinutesPublished,
             ct);
 
-        if (agendaItem is not null)
+        // BL-533 — the link lands on the agenda line / the decision as they are NOW: a refused write is read again and
+        // retried (bounded), never taken as written. Only a write that keeps losing its race answers 409.
+        if (agendaItem is not null
+            && !await MeetingLinkAttachment.AttachToAgendaItemAsync(_agendaItems, agendaItem, link.Id, ct))
         {
-            agendaItem.RecordLinkId = link.Id;
-            await _agendaItems.UpdateAsync(agendaItem, agendaItem.Version, ct);
+            return Response<CreateTaskFromMeetingResultDto>.Fail(
+                "The agenda item changed meanwhile; reload and retry.", 409, MeetingReasonCodes.ConcurrencyConflict, command.CorrelationId);
         }
 
         // K4's source guard: a decision inside an ALREADY-Published version is never written to — this
         // embeds the link only while the owning version is still Draft. A decision that spawns a task after
         // its version published stays exactly as published; CreatedAfterMinutesPublished on the link above is
         // how the UI finds that task instead (see MinutesDecision.RecordLinkId's own doc comment).
-        if (decision is not null && latestMinutes is not null && latestMinutes.Status == MinutesStatus.Draft)
+        if (decision is not null && latestMinutes is not null && latestMinutes.Status == MinutesStatus.Draft
+            && !await MeetingLinkAttachment.AttachToDecisionAsync(_minutes, latestMinutes, decision.Code, link.Id, ct))
         {
-            decision.RecordLinkId = link.Id;
-            latestMinutes.ActionReferences = MinutesEligibility.DeriveActionReferences(latestMinutes.Decisions);
-            await _minutes.UpdateAsync(latestMinutes, latestMinutes.Version, ct);
+            return Response<CreateTaskFromMeetingResultDto>.Fail(
+                "The record changed meanwhile; reload and retry.", 409, MeetingReasonCodes.MinutesConcurrencyConflict, command.CorrelationId);
         }
 
         return Response<CreateTaskFromMeetingResultDto>.Success(
@@ -203,17 +284,25 @@ public sealed class LinkExistingTaskHandler : IRequestHandler<LinkExistingTaskCo
     private readonly IAgendaItemRepository _agendaItems;
     private readonly ITaskItemRepository _tasks;
     private readonly IRecordLinkService _links;
+    private readonly ITaskReadAccessPolicy _readAccess;
+    private readonly ICurrentUserContext _currentUser;
 
     public LinkExistingTaskHandler(
         IMeetingRepository meetings,
         IAgendaItemRepository agendaItems,
         ITaskItemRepository tasks,
-        IRecordLinkService links)
+        IRecordLinkService links,
+        // WP-WCN-TASK-REQUEST-01 FIX3 (item 4) — required, for the reason the task write gate is: a read rule that
+        // defaults to "everybody reads" cannot be caught by review.
+        ITaskReadAccessPolicy readAccess,
+        ICurrentUserContext currentUser)
     {
         _meetings = meetings;
         _agendaItems = agendaItems;
         _tasks = tasks;
         _links = links;
+        _readAccess = readAccess;
+        _currentUser = currentUser;
     }
 
     public async Task<Response<NoContent>> Handle(LinkExistingTaskCommand command, CancellationToken ct)
@@ -228,11 +317,14 @@ public sealed class LinkExistingTaskHandler : IRequestHandler<LinkExistingTaskCo
 
         // Tenant-filtered by the repository's own execution filter — a cross-tenant or deleted task id reads as
         // "not found", never a metadata leak (pack §13).
+        //
+        // FIX3 (item 4) — and so does a task the caller cannot READ (MOD-0024's own read rule, BL-349): it was linked
+        // all the same, and the 404 / 200 / 409 that followed told the caller which ids exist in the tenant — then the
+        // meeting's linked-task list printed the title. Unreadable is absent: the same 404, the same body.
         var task = await _tasks.GetByIdAsync(request.TaskId, ct);
-        if (task is null)
+        if (task is null || !await _readAccess.CanReadAsync(task, _currentUser.UserId, ct))
         {
-            return Response<NoContent>.Fail(
-                "This task could not be found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+            return TaskWriteGate.NotFound.ToResponse<NoContent>(command.CorrelationId);
         }
 
         AgendaItem? agendaItem = null;
@@ -266,10 +358,11 @@ public sealed class LinkExistingTaskHandler : IRequestHandler<LinkExistingTaskCo
             RecordLinkTypes.Agenda,
             ct: ct);
 
-        if (agendaItem is not null)
+        if (agendaItem is not null
+            && !await MeetingLinkAttachment.AttachToAgendaItemAsync(_agendaItems, agendaItem, link.Id, ct))
         {
-            agendaItem.RecordLinkId = link.Id;
-            await _agendaItems.UpdateAsync(agendaItem, agendaItem.Version, ct);
+            return Response<NoContent>.Fail(
+                "The agenda item changed meanwhile; reload and retry.", 409, MeetingReasonCodes.ConcurrencyConflict, command.CorrelationId);
         }
 
         return Response<NoContent>.Success(200, command.CorrelationId);
@@ -286,14 +379,17 @@ public sealed class ScheduleReviewMeetingForTaskHandler
     private readonly IMeetingIdempotencyKeyResolver _idempotency;
     private readonly ICurrentUserContext _currentUser;
     private readonly IMediator _mediator;
+    private readonly Tasks.Services.ITaskWriteGate _writeGate;
 
     public ScheduleReviewMeetingForTaskHandler(
         ITaskItemRepository tasks,
         IRecordLinkService links,
         IMeetingIdempotencyKeyResolver idempotency,
         ICurrentUserContext currentUser,
-        IMediator mediator)
+        IMediator mediator,
+        Tasks.Services.ITaskWriteGate writeGate)
     {
+        _writeGate = writeGate;
         _tasks = tasks;
         _links = links;
         _idempotency = idempotency;
@@ -308,8 +404,18 @@ public sealed class ScheduleReviewMeetingForTaskHandler
         var task = await _tasks.GetByIdAsync(command.TaskId, ct);
         if (task is null)
         {
+            // FIX3 (item 3) — the write gate's own "not found", body and all: the three ways this handler says a task
+            // is not there (none, unreadable, neither holder nor requester) must not be told apart by their text.
+            return Tasks.Services.TaskWriteGate.NotFound.ToResponse<ScheduleReviewMeetingForTaskResultDto>(command.CorrelationId);
+        }
+
+        // WP-WCN-TASK-REQUEST-01 FIX2 — the review meeting is linked ONTO the task and gates its completion: a write on
+        // the task, through its write gate (read 404; the sender of an accepted request may not direct its holder's
+        // review, 403). The holder-or-requester rule below narrows it further.
+        if (await _writeGate.CheckAsync(task, Tasks.Services.TaskWriteKind.Change, ct) is { } refused)
+        {
             return Response<ScheduleReviewMeetingForTaskResultDto>.Fail(
-                "This task could not be found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+                refused.Message, refused.StatusCode, refused.ReasonCode, command.CorrelationId);
         }
 
         // "the task must be one the actor can read" (pack §7 NE, K9-adjacent) — holder or requester, never a
@@ -318,8 +424,7 @@ public sealed class ScheduleReviewMeetingForTaskHandler
         var isRequester = task.CreatedByUserId == _currentUser.UserId;
         if (!isHolder && !isRequester)
         {
-            return Response<ScheduleReviewMeetingForTaskResultDto>.Fail(
-                "This task could not be found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+            return Tasks.Services.TaskWriteGate.NotFound.ToResponse<ScheduleReviewMeetingForTaskResultDto>(command.CorrelationId);
         }
 
         // K11 — the bridge's own idempotency, checked BEFORE the "already scheduled" guard below: a resubmit of

@@ -1,4 +1,5 @@
 using Diten.MdmService.Domain.Entities;
+using Diten.MdmService.Domain.ValueObjects;
 
 namespace Diten.MdmService.Domain.Repositories;
 
@@ -21,6 +22,11 @@ public interface IProductDefinitionRevisionRepository
 
         return results;
     }
+    /// <summary>WP-VW-W4 (W4-FIX-d, G-8) — the ids of the tenant's active revisions of these global products.</summary>
+    Task<IReadOnlyList<Guid>> FindIdsByGlobalProductIdsAsync(
+        IReadOnlyCollection<Guid> globalProductIds,
+        CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyList<Guid>>(Array.Empty<Guid>());
     Task<ProductDefinitionRevision?> GetByCreationCommandIdAsync(
         string creationCommandId,
         CancellationToken cancellationToken = default);
@@ -31,6 +37,22 @@ public interface IProductDefinitionRevisionRepository
     Task<ProductDefinitionRevisionCreateResult> CreateForFirstGskuAsync(
         ProductDefinitionRevision revision,
         CancellationToken cancellationToken = default);
+    Task<FirstGskuIdentityLifecycleMutationResult<ProductDefinitionRevision>> MarkIdentityPendingAsync(
+        Guid id, int expectedVersion, FirstGskuIdentityWorkflowBinding binding, LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("FIRST_GSKU_IDENTITY_LIFECYCLE_NOT_IMPLEMENTED");
+    Task<FirstGskuIdentityLifecycleMutationResult<ProductDefinitionRevision>> ApproveIdentityAsync(
+        Guid id, int expectedVersion, FirstGskuIdentityWorkflowBinding binding, LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("FIRST_GSKU_IDENTITY_LIFECYCLE_NOT_IMPLEMENTED");
+    Task<FirstGskuIdentityLifecycleMutationResult<ProductDefinitionRevision>> RestoreDraftAfterRejectionAsync(
+        Guid id, int expectedVersion, FirstGskuIdentityWorkflowBinding binding, LocalAuditIntent auditIntent,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("FIRST_GSKU_IDENTITY_LIFECYCLE_NOT_IMPLEMENTED");
+    Task<FirstGskuIdentityRetirementWriteResult<ProductDefinitionRevision>> RetireIdentityAsync(
+        Guid id, int expectedVersion, Guid operationId, string operationFingerprint,
+        LocalAuditIntent auditIntent, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("FIRST_GSKU_RETIREMENT_NOT_IMPLEMENTED");
 }
 
 public sealed record ProductDefinitionRevisionCreateResult(

@@ -12,6 +12,9 @@ namespace Diten.Platform.API.Controllers.Platform;
 [ApiController]
 [Route("api/platform/tenants/{tenantId:guid}/commercial/module-entitlements")]
 [Authorize(Policy = "PlatformActor")]
+// BL-521 — a partner administrator reaches it only for a tenant it is allowed (else 404); it reads the module list,
+// every module entitlement write is platform administrators' (FIX1 F4, closed until the owner opens it).
+[PartnerAdminScope("tenantId")]
 public sealed class TenantModuleEntitlementsController : CustomBaseController
 {
     private const string ViewPermission = "platform.tenants.commercial.subscription.read";
@@ -58,6 +61,7 @@ public sealed class TenantModuleEntitlementsController : CustomBaseController
 
     [HttpPost]
     [HasPermission(AssignPermission)]
+    [Authorize(Policy = "PlatformAdminOnly")] // BL-521 FIX1 F4
     public async Task<IActionResult> Add(Guid tenantId, [FromBody] TenantModuleEntitlementRequest request, CancellationToken ct)
     {
         var response = await _mediator.Send(new AddTenantModuleEntitlementCommand(tenantId, request), ct);
@@ -66,6 +70,7 @@ public sealed class TenantModuleEntitlementsController : CustomBaseController
 
     [HttpPost("{entitlementId:guid}/enable")]
     [HasPermission(AssignPermission)]
+    [Authorize(Policy = "PlatformAdminOnly")] // BL-521 FIX1 F4
     public async Task<IActionResult> Enable(Guid tenantId, Guid entitlementId, [FromBody] byte[]? rowVersion, CancellationToken ct)
     {
         var response = await _mediator.Send(new EnableTenantModuleEntitlementCommand(tenantId, entitlementId, rowVersion), ct);
@@ -74,6 +79,7 @@ public sealed class TenantModuleEntitlementsController : CustomBaseController
 
     [HttpPost("disable")]
     [HasPermission(AssignPermission)]
+    [Authorize(Policy = "PlatformAdminOnly")] // BL-521 FIX1 F4
     public async Task<IActionResult> Disable(Guid tenantId, [FromBody] DisableTenantModuleEntitlementRequest request, CancellationToken ct)
     {
         var response = await _mediator.Send(new DisableTenantModuleEntitlementCommand(tenantId, request), ct);
@@ -82,6 +88,7 @@ public sealed class TenantModuleEntitlementsController : CustomBaseController
 
     [HttpPatch("{entitlementId:guid}/expiry")]
     [HasPermission(AssignPermission)]
+    [Authorize(Policy = "PlatformAdminOnly")] // BL-521 FIX1 F4
     public async Task<IActionResult> UpdateExpiry(Guid tenantId, Guid entitlementId, [FromBody] UpdateTenantModuleEntitlementExpiryRequest request, CancellationToken ct)
     {
         var response = await _mediator.Send(new UpdateTenantModuleEntitlementExpiryCommand(tenantId, entitlementId, request), ct);
@@ -90,6 +97,7 @@ public sealed class TenantModuleEntitlementsController : CustomBaseController
 
     [HttpDelete("{entitlementId:guid}/manual-override")]
     [HasPermission(AssignPermission)]
+    [Authorize(Policy = "PlatformAdminOnly")] // BL-521 FIX1 F4
     public async Task<IActionResult> RemoveManualOverride(Guid tenantId, Guid entitlementId, [FromBody] RemoveTenantManualModuleOverrideRequest request, CancellationToken ct)
     {
         var response = await _mediator.Send(new RemoveTenantManualModuleOverrideCommand(tenantId, entitlementId, request), ct);
@@ -98,6 +106,7 @@ public sealed class TenantModuleEntitlementsController : CustomBaseController
 
     [HttpPost("refresh-projection")]
     [HasPermission(AssignPermission)]
+    [Authorize(Policy = "PlatformAdminOnly")] // BL-521 FIX1 F4
     public async Task<IActionResult> RefreshProjection(Guid tenantId, CancellationToken ct)
     {
         var response = await _mediator.Send(new RefreshTenantModuleEntitlementProjectionCommand(tenantId), ct);

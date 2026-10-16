@@ -114,4 +114,16 @@
   <data name="Err_content_engagement_journey_overlapping_published_version" xml:space="preserve"><value>此旅程代码（同一语言）的另一已发布版本已覆盖这些日期。请修改生效日期或归档另一版本。</value></data>
   <data name="Err_content_engagement_journey_archived_no_mutation" xml:space="preserve"><value>已归档的旅程无法发布。</value></data>
   <data name="Err_content_engagement_journey_concurrency_conflict" xml:space="preserve"><value>此旅程已被他人修改。请重新加载页面后重试。</value></data>
+  <data name="AdoptionStage" xml:space="preserve">
+    <value>采用阶段</value>
+  </data>
+  <data name="AdoptionStageHelp" xml:space="preserve">
+    <value>代表报告医生的采用阶段；旅程将前进到其后第一个已映射的阶段。</value>
+  </data>
+  <data name="AdoptionStageNone" xml:space="preserve">
+    <value>未映射</value>
+  </data>
+  <data name="AdoptionStageUnavailable" xml:space="preserve">
+    <value>无法读取采用阶段列表。</value>
+  </data>
 </root>

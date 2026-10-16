@@ -1,0 +1,251 @@
+@model Diten.Web.Models.CRM.VisitEvidenceSettingsIndexViewModel
+@using Diten.Web.Views.CRM.VisitEvidenceSettings
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<VisitEvidenceSettingsIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["PageTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    WP-VW-W3 (W3-WEB-d) — the visit evidence settings (mockup "W3 Yazim Ekranlari", screens C1–C4): the tenant's "Start the
+    visit" rules (form + preview + save confirm), a rep's effective rules, the change history and the time-boxed
+    exceptions approved in the Work Center. This round the scope tree holds ONLY the tenant default: the legal entity /
+    business unit layers come with their package ("Add legal entity" is disabled with its hint). Every call is a
+    same-origin proxy under /CRM/VisitEvidenceSettings/api/*. UAS-001: without a policy read key NOTHING but the notice.
+*@
+@if (!Model.CanRead)
+{
+    <partial name="_AccessDenied" model="@Localizer["PageTitle"].Value" />
+    return;
+}
+
+<div id="ve-root" class="ve-page"
+     data-api-base="/CRM/VisitEvidenceSettings/api"
+     data-can-manage-policy="@Model.CanManagePolicy.ToString().ToLowerInvariant()"
+     data-can-read-exceptions="@Model.CanReadExceptions.ToString().ToLowerInvariant()"
+     data-can-manage-exceptions="@Model.CanManageExceptions.ToString().ToLowerInvariant()"
+     data-me="@Model.Me">
+
+    <div class="ve-head">
+        <div>
+            <div class="ve-crumb">@Localizer["Crumb"]</div>
+            <h4 class="ve-title">@Localizer["PageTitle"]</h4>
+            <div class="ve-intro">@Localizer["Intro"]</div>
+        </div>
+        <button type="button" class="ve-btn ve-btn-p d-none" id="ve-new-exception"><i class="bx bx-plus"></i> @Localizer["NewException"]</button>
+    </div>
+
+    <div class="ve-tabs" role="tablist">
+        <button type="button" role="tab" class="ve-tab active" data-tab="settings" aria-selected="true"><i class="bx bx-layer"></i> @Localizer["TabSettings"]</button>
+        @if (Model.CanReadExceptions)
+        {
+            <button type="button" role="tab" class="ve-tab" data-tab="exceptions" aria-selected="false"><i class="bx bx-time-five"></i> @Localizer["TabExceptions"] <span class="ve-badge d-none" id="ve-tab-badge"></span></button>
+        }
+    </div>
+
+    <div class="ve-alert ve-alert-danger d-none" id="ve-save-error" role="alert">
+        <span><i class="bx bx-error-circle"></i> <span id="ve-save-error-text"></span></span>
+        <button type="button" class="ve-link" id="ve-save-retry">@Localizer["Retry"]</button>
+    </div>
+    @if (!Model.CanManagePolicy)
+    {
+        <div class="ve-alert ve-alert-info" id="ve-readonly"><i class="bx bx-lock-alt"></i> @Localizer["ReadOnly"]</div>
+    }
+    <div class="ve-alert ve-alert-danger d-none" id="ve-load-error" role="alert"></div>
+
+    @* ── the settings tab ── *@
+    <section id="ve-pane-settings" class="ve-settings">
+        <aside class="ve-side">
+            <div class="ve-card">
+                <div class="ve-card-head ve-col"><span class="ve-card-title">@Localizer["ScopesTitle"]</span><span class="ve-sub">@Localizer["ScopesNote"]</span></div>
+                <div class="ve-tree">
+                    <button type="button" class="ve-node active" id="ve-node-tenant">
+                        <span class="ve-node-icon"><i class="bx bx-buildings"></i></span>
+                        <span class="ve-node-body">
+                            <span class="ve-node-name">@Localizer["TenantDefault"] <i class="bx bx-lock-alt ve-mu" title="@Localizer["Locked"]"></i></span>
+                            <span class="ve-node-meta" id="ve-node-meta"></span>
+                            <span class="ve-node-last" id="ve-node-last"></span>
+                        </span>
+                    </button>
+                    <button type="button" class="ve-add" disabled aria-describedby="ve-add-hint"><i class="bx bx-plus-circle"></i> @Localizer["AddLegalEntity"]</button>
+                    <div class="ve-hint" id="ve-add-hint">@Localizer["AddLegalEntityHint"]</div>
+                </div>
+            </div>
+            <div class="ve-card ve-pad ve-col">
+                <span class="ve-card-title ve-row"><i class="bx bx-user-check ve-ic"></i> @Localizer["LookTitle"]</span>
+                <input type="search" class="ve-input" id="ve-look-search" placeholder="@Localizer["LookSearch"]" aria-label="@Localizer["LookSearch"]" autocomplete="off" />
+                <select class="ve-input" id="ve-look" aria-label="@Localizer["LookTitle"]"></select>
+            </div>
+        </aside>
+
+        <div class="ve-main">
+            @* C1 — a rep's effective rules *@
+            <div class="ve-card d-none" id="ve-effective">
+                <div class="ve-card-head">
+                    <div class="ve-row"><span class="ve-avatar" id="ve-eff-initials"></span><div class="ve-col"><span class="ve-sub">@Localizer["EffectiveTitle"]</span><span class="ve-name" id="ve-eff-name"></span></div></div>
+                    <button type="button" class="ve-x" id="ve-eff-close" aria-label="@Localizer["CloseButton"]"><i class="bx bx-x"></i></button>
+                </div>
+                <div class="ve-alert ve-alert-warning ve-m d-none" id="ve-eff-exception"></div>
+                <div class="ve-table-wrap">
+                    <table class="ve-table">
+                        <thead><tr><th>@Localizer["ColField"]</th><th>@Localizer["ColValue"]</th><th>@Localizer["ColSource"]</th></tr></thead>
+                        <tbody id="ve-eff-rows"></tbody>
+                    </table>
+                </div>
+                <div class="ve-foot-note"><span>@Localizer["Priority"]</span> <span class="ve-pill ve-tone-warning">@Localizer["SourceException"]</span> › <span class="ve-pill ve-tone-secondary">@Localizer["SourceTenant"]</span> · <span class="ve-mu">@Localizer["ScopeUnresolved"]</span></div>
+            </div>
+
+            @* C2 — the tenant scope: its header, the form / history panes *@
+            <div id="ve-scope">
+                <div class="ve-card">
+                    <div class="ve-card-head">
+                        <div class="ve-row">
+                            <span class="ve-scope-icon"><i class="bx bx-buildings"></i></span>
+                            <div class="ve-col"><span class="ve-row"><span class="ve-name">@Localizer["TenantDefault"]</span><span class="ve-pill ve-tone-secondary">@Localizer["TypeTenant"]</span></span><span class="ve-sub" id="ve-scope-meta"></span></div>
+                        </div>
+                    </div>
+                    <div class="ve-panes" role="tablist">
+                        <button type="button" role="tab" class="ve-pane-tab active" data-pane="form" aria-selected="true"><i class="bx bx-slider-alt"></i> @Localizer["PaneForm"]</button>
+                        <button type="button" role="tab" class="ve-pane-tab" data-pane="history" aria-selected="false"><i class="bx bx-history"></i> @Localizer["PaneHistory"]</button>
+                    </div>
+                </div>
+
+                <div class="ve-form-grid" id="ve-pane-form">
+                    <div class="ve-col ve-gap">
+                        <div id="ve-groups" class="ve-col ve-gap"></div>
+                        <div class="ve-card ve-soon">
+                            <div class="ve-card-head"><div class="ve-row"><i class="bx bx-qr-scan ve-ic"></i><div class="ve-col"><span class="ve-card-title">@Localizer["SoonTitle"]</span><span class="ve-sub">@Localizer["SoonText"]</span></div></div><span class="ve-pill ve-tone-secondary">@Localizer["SoonBadge"]</span></div>
+                        </div>
+                    </div>
+                    <div class="ve-col ve-gap ve-sticky">
+                        <div class="ve-card">
+                            <div class="ve-card-head"><span class="ve-card-title ve-row"><i class="bx bx-show ve-ic"></i> @Localizer["PreviewTitle"]</span></div>
+                            <div class="ve-pad ve-col ve-gap-s">
+                                <div class="ve-pv">
+                                    <div class="ve-pv-head"><div><div class="ve-pv-title">@Localizer["PvStartTitle"]</div><div class="ve-sub">@Localizer["PvSample"]</div></div><span class="ve-x ve-x-sm" aria-hidden="true"><i class="bx bx-x"></i></span></div>
+                                    <div class="ve-pv-grid">
+                                        <div class="ve-col ve-gap-xs"><span class="ve-pv-cap">@Localizer["PvPhoto"] <span class="ve-mu" id="ve-pv-photo"></span></span><div class="ve-pv-shot"><i class="bx bx-camera"></i></div></div>
+                                        <div class="ve-col ve-gap-xs"><span class="ve-pv-cap">@Localizer["PvLocation"]</span><div class="ve-pv-loc"><span class="ve-pill" id="ve-pv-loc-chip"></span><span class="ve-sub" id="ve-pv-loc-text"></span></div></div>
+                                    </div>
+                                    <div class="ve-pv-sign d-none" id="ve-pv-sign"><i class="bx bx-pen"></i> @Localizer["PvSign"]</div>
+                                    <div class="ve-pv-foot"><span class="ve-btn ve-btn-p ve-btn-sm" id="ve-pv-start"><i class="bx bx-play"></i> @Localizer["PvStart"]</span></div>
+                                </div>
+                                <ul class="ve-pv-lines" id="ve-pv-lines"></ul>
+                            </div>
+                        </div>
+                        <div class="ve-card ve-pad ve-col ve-gap-s">
+                            <div class="ve-row"><span class="ve-avatar ve-avatar-sm" id="ve-last-initials"></span><div class="ve-col"><span class="ve-sub">@Localizer["LastChange"]</span><span class="ve-strong" id="ve-last-by"></span></div></div>
+                            <div class="ve-unsaved d-none" id="ve-unsaved"><i class="bx bx-edit-alt"></i> @Localizer["Unsaved"]</div>
+                            @* read-only: the bar stays hidden (the script shows it only with crm.visit-evidence-policy.manage) *@
+                            <div class="ve-row ve-end d-none" id="ve-save-bar">
+                                <button type="button" class="ve-btn ve-btn-s" id="ve-revert" disabled>@Localizer["CancelButton"]</button>
+                                <button type="button" class="ve-btn ve-btn-p" id="ve-save" disabled>@Localizer["SaveButton"]</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* C3 — the change history (append-only) *@
+                <div class="ve-card d-none" id="ve-pane-history">
+                    <div class="ve-card-head"><span class="ve-card-title">@Localizer["HistoryTitle"]</span><span class="ve-sub ve-row"><i class="bx bx-lock-alt"></i> @Localizer["AuditReadOnly"]</span></div>
+                    <div class="ve-table-wrap">
+                        <table class="ve-table">
+                            <thead><tr><th>@Localizer["ColDate"]</th><th>@Localizer["ColPerson"]</th><th>@Localizer["ColField"]</th><th>@Localizer["ColChange"]</th></tr></thead>
+                            <tbody id="ve-history-rows"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    @* ── C4 — the time-boxed exceptions ── *@
+    @if (Model.CanReadExceptions)
+    {
+        <section id="ve-pane-exceptions" class="ve-col ve-gap d-none">
+            <div class="ve-alert ve-alert-info"><i class="bx bx-info-circle"></i> @Localizer["ExceptionsInfo"]</div>
+            <div class="ve-card">
+                <div class="ve-card-head"><span class="ve-card-title ve-lg">@Localizer["ExceptionsTitle"]</span><div class="ve-chips" id="ve-x-filters" role="group"></div></div>
+                <div class="ve-table-wrap">
+                    <table class="ve-table">
+                        <thead><tr><th>@Localizer["XColRep"]</th><th>@Localizer["XColRules"]</th><th>@Localizer["XColRange"]</th><th>@Localizer["XColReason"]</th><th>@Localizer["XColPeople"]</th><th>@Localizer["XColStatus"]</th><th><span class="visually-hidden">@Localizer["OpenRow"]</span></th></tr></thead>
+                        <tbody id="ve-x-rows"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    }
+</div>
+
+@* ── the save confirm (fark satırları, "N temsilciye uygulanır") ── *@
+<div class="modal fade ve-modal" id="ve-save-modal" tabindex="-1" aria-labelledby="ve-save-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="ve-dlg">
+                <div class="ve-row ve-top"><span class="ve-dlg-icon"><i class="bx bx-error"></i></span><div class="ve-col"><h5 class="ve-dlg-title" id="ve-save-title">@Localizer["SaveTitle"]</h5><span class="ve-sub" id="ve-save-text"></span></div></div>
+                <div class="ve-diff" id="ve-save-diff"></div>
+                <div class="ve-row ve-end">
+                    <button type="button" class="ve-btn ve-btn-s" data-bs-dismiss="modal">@Localizer["CancelButton"]</button>
+                    <button type="button" class="ve-btn ve-btn-p" id="ve-save-confirm">@Localizer["SaveConfirm"]</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ── the new exception drawer ── *@
+<div class="offcanvas offcanvas-end ve-drawer" tabindex="-1" id="ve-new-drawer" aria-labelledby="ve-new-title">
+    <div class="ve-drawer-head"><h5 class="ve-dlg-title" id="ve-new-title">@Localizer["XNewTitle"]</h5><button type="button" class="ve-x" data-bs-dismiss="offcanvas" aria-label="@Localizer["CloseButton"]"><i class="bx bx-x"></i></button></div>
+    <div class="offcanvas-body ve-col ve-gap">
+        <div class="ve-field">
+            <label class="ve-label" for="ve-nx-rep">@Localizer["XRep"] <span class="ve-req">*</span></label>
+            <input type="search" class="ve-input" id="ve-nx-rep-search" placeholder="@Localizer["LookSearch"]" aria-label="@Localizer["LookSearch"]" autocomplete="off" />
+            <select class="ve-input" id="ve-nx-rep"></select>
+            <span class="ve-err d-none" id="ve-nx-err-rep"></span>
+        </div>
+        <div class="ve-field">
+            <span class="ve-label">@Localizer["XRules"] <span class="ve-req">*</span></span>
+            <div class="ve-col ve-gap-xs" id="ve-nx-rules"></div>
+            <span class="ve-err d-none" id="ve-nx-err-rules"></span>
+            <span class="ve-hint"><i class="bx bx-info-circle"></i> @Localizer["XRulesHint"]</span>
+        </div>
+        <div class="ve-two">
+            <div class="ve-field"><label class="ve-label" for="ve-nx-from">@Localizer["XFrom"] <span class="ve-req">*</span></label><input type="date" class="ve-input" id="ve-nx-from" /><span class="ve-err d-none" id="ve-nx-err-from"></span></div>
+            <div class="ve-field"><label class="ve-label" for="ve-nx-to">@Localizer["XTo"] <span class="ve-req">*</span></label><input type="date" class="ve-input" id="ve-nx-to" /><span class="ve-err d-none" id="ve-nx-err-to"></span></div>
+        </div>
+        <span class="ve-sub" id="ve-nx-days"></span>
+        <div class="ve-field">
+            <div class="ve-row ve-between"><label class="ve-label" for="ve-nx-why">@Localizer["XReason"] <span class="ve-req">*</span></label><span class="ve-sub" id="ve-nx-why-count"></span></div>
+            <textarea class="ve-input ve-textarea" id="ve-nx-why" rows="4" placeholder="@Localizer["XReasonPlaceholder"]"></textarea>
+            <span class="ve-err d-none" id="ve-nx-err-why"></span>
+        </div>
+        <div class="ve-alert ve-alert-warning"><i class="bx bx-user-x"></i> @Localizer["XSodNew"]</div>
+        <div class="ve-alert ve-alert-danger d-none" id="ve-nx-error" role="alert"></div>
+    </div>
+    <div class="ve-drawer-foot">
+        <button type="button" class="ve-btn ve-btn-s" data-bs-dismiss="offcanvas">@Localizer["CloseButton"]</button>
+        <button type="button" class="ve-btn ve-btn-p" id="ve-nx-submit"><i class="bx bx-send"></i> @Localizer["XSubmit"]</button>
+    </div>
+</div>
+
+@* ── the exception detail drawer ── *@
+<div class="offcanvas offcanvas-end ve-drawer" tabindex="-1" id="ve-x-drawer" aria-labelledby="ve-x-title">
+    <div class="ve-drawer-head"><h5 class="ve-dlg-title" id="ve-x-title">@Localizer["XDetailTitle"]</h5><button type="button" class="ve-x" data-bs-dismiss="offcanvas" aria-label="@Localizer["CloseButton"]"><i class="bx bx-x"></i></button></div>
+    <div class="offcanvas-body ve-col ve-gap" id="ve-x-body"></div>
+    <div class="ve-drawer-foot" id="ve-x-foot"></div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/js/CRM/VisitEvidenceSettings/visit-evidence-settings.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script>
+        window.VisitEvidenceSettingsL10n = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+            VisitEvidenceSettingsIndex.ScriptKeys.ToDictionary(k => k, k => Localizer[k].Value)));
+    </script>
+    <script src="~/assets/js/CRM/VisitPlanning/format.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/VisitEvidenceSettings/evidence-core.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/VisitEvidenceSettings/visit-evidence-settings.js" asp-append-version="true"></script>
+}

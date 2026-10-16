@@ -111,6 +111,47 @@ public static class DependencyInjection
         // WP-VP-3B (4b) — the tenant-keyed, short-lived memory of the calendar's resolved per-day answers (singleton).
         services.AddSingleton(_ => new Features.VisitPlanning.PlanningCalendarDayCache());
         services.AddScoped<Features.VisitPlanning.VisitPlanningEngine>();
+        // WP-VW-W2 — the visit workspace: the reason check against the visit-outcome-reason reference set, and the rep's
+        // day kinds / budget / load (calendar days, reschedule options and the reschedule date rule share it).
+        services.AddScoped<Features.VisitWorkspace.VisitReasonValidator>();
+        services.AddScoped<Features.VisitWorkspace.VisitWorkspaceDays>();
+        // WP-VW-W3 (W3-BE-b) — the objection library's content rules (category set, MDM product, approved claims).
+        services.AddScoped<Features.Knowledge.ObjectionResponses.ObjectionResponseRules>();
+        // WP-VW-W3 (W3-BE-c) — approvals via MOD-0023 + the Work Center for the objection answer and the time-boxed
+        // evidence exception: the ONE outcome applier (event consumer, reconcile, withdraw), reconcile-on-read, the shared
+        // submit / withdraw / decide flow; the library reader; the path's product (K-A4); the evidence resolver (tenant ⊕
+        // active approved exception — the visit start and the contract read it), the rep roster, the exception service.
+        services.AddScoped<Features.Approvals.WorkflowApprovalOutcomeApplier>();
+        services.AddScoped<Features.Approvals.WorkflowApprovalReconciler>();
+        services.AddScoped<Features.Approvals.WorkflowApprovalFlow>();
+        services.AddScoped<Features.Knowledge.ObjectionResponses.ObjectionResponseReader>();
+        services.AddScoped<Features.Knowledge.Path.IKnowledgePathProductResolver, Features.Knowledge.Path.ChainKnowledgePathProductResolver>();
+        services.AddScoped<Features.VisitEvidence.IVisitEvidencePolicyResolver, Features.VisitEvidence.VisitEvidencePolicyResolver>();
+        services.AddScoped<Features.VisitEvidence.IVisitEvidenceRepRoster, Features.VisitEvidence.VisitEvidenceRepRoster>();
+        services.AddScoped<Features.VisitEvidence.VisitEvidenceExceptionService>();
+        // WP-VW-W4 (W4-BE-c) — doctor insights: the team scope (subtree assignments), the visibility (own / team /
+        // read-all, 404 outside), the Concept Graph indication × profile reader, the ONE writer (manual edit + the report's
+        // recorder seam for BE-a) and the shared read plumbing.
+        services.AddScoped<Features.DoctorInsights.TeamScopeResolver>();
+        services.AddScoped<Features.DoctorInsights.DoctorInsightsVisibility>();
+        services.AddScoped<Features.DoctorInsights.ProductIndicationProfileReader>();
+        services.AddScoped<Features.DoctorInsights.DoctorInsightsRecorder>();
+        services.AddScoped<Features.DoctorInsights.IDoctorInsightsRecorder>(sp => sp.GetRequiredService<Features.DoctorInsights.DoctorInsightsRecorder>());
+        services.AddScoped<Features.DoctorInsights.DoctorInsightsReader>();
+        // WP-VW-W4 (W4-BE-a) — the report v2 (pre-fill, draft, submit, amend, competitor usage).
+        services.AddScoped<Features.VisitReport.V2.VisitReportV2Service>();
+        // W2-BE-c (C1) — the engine preview behind a tenant-keyed, bounded cache (session version + today + the rep's
+        // written visits / reports stamp in the key); the calendar and the reschedule options share it.
+        services.AddSingleton<Features.VisitWorkspace.WorkspacePreviewCache>();
+        services.AddScoped<Features.VisitWorkspace.EngineWorkspacePlanPreviewSource>();
+        services.AddScoped<Features.VisitWorkspace.IWorkspacePlanPreviewSource>(sp => new Features.VisitWorkspace.CachedWorkspacePlanPreviewSource(
+            sp.GetRequiredService<Features.VisitWorkspace.EngineWorkspacePlanPreviewSource>(),
+            sp.GetRequiredService<Features.VisitWorkspace.WorkspacePreviewCache>(),
+            sp.GetRequiredService<Common.ITenantContext>(),
+            sp.GetRequiredService<Domain.Repositories.IPlannedVisitRepository>(),
+            sp.GetRequiredService<Domain.Repositories.IVisitReportRepository>()));
+        // The workspace calendar reuses the W1 execution calendar read as-is (same work status / names / content).
+        services.AddScoped<Features.VisitReport.Handlers.QueryHandlers.GetVisitCalendarHandler>();
         // WP-VP-3D — the shared per-doctor period-status reader (bulk reads only) + its batched segment seam.
         services.AddScoped<Features.Segmentation.Resolution.IContactSegmentSetReader,
             Features.Segmentation.Resolution.ContactSegmentSetReader>();

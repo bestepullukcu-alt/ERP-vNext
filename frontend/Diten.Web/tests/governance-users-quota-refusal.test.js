@@ -43,7 +43,7 @@ describe("USER_QUOTA_EXCEEDED on the Users screen", () => {
 
     const [text] = loadLocalizedErrors(labels)({
       success: false,
-      errors: ["The subscription plan's user limit is reached; no user was added."],
+      ownMessages: [], // the proxy relays no service sentence (WP-USERS-ERROR-CODES-01): the code and its params only
       errorCode: "USER_QUOTA_EXCEEDED",
       errorParams: { max: "25", current: "25" }
     });
@@ -56,7 +56,7 @@ describe("USER_QUOTA_EXCEEDED on the Users screen", () => {
 
   test("without the numbers the sentence stands alone — never a raw placeholder", () => {
     const labels = labelsFor("tr");
-    const [text] = loadLocalizedErrors(labels)({ success: false, errors: ["x"], errorCode: "USER_QUOTA_EXCEEDED", errorParams: null });
+    const [text] = loadLocalizedErrors(labels)({ success: false, ownMessages: [], errorCode: "USER_QUOTA_EXCEEDED", errorParams: null });
 
     expect(text).toBe(labels.ErrorUserQuotaExceeded);
   });
@@ -65,6 +65,6 @@ describe("USER_QUOTA_EXCEEDED on the Users screen", () => {
     const bridge = read("Views", "Governance", "Users", "_IndexL10n.cshtml");
     expect(bridge).toMatch(/ErrorUserQuotaExceeded = Localizer\["ErrorUserQuotaExceeded"\]\.Value/);
     expect(bridge).toMatch(/ErrorUserQuotaUsage = Localizer\["ErrorUserQuotaUsage"\]\.Value/);
-    expect(read("Controllers", "UsersController.cs")).toMatch(/errorParams = await ExtractGatewayErrorParamsAsync\(response\)/);
+    expect(read("Controllers", "UsersController.cs")).toMatch(/errorParams = codes\.Count > 0 \? codes\[0\]\.Params : null/);
   });
 });

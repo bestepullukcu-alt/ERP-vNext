@@ -487,4 +487,57 @@
   <data name="Err_note_not_found" xml:space="preserve"><value>未找到该备注，请刷新页面。</value></data>
   <data name="DecisionApprovedFinal" xml:space="preserve"><value>已记录批准。审核已完成。</value></data>
   <data name="Err_withdraw_not_submitter" xml:space="preserve"><value>只有提交此审核的人才能撤回。</value></data>
+  <data name="PnButton" xml:space="preserve"><value>演示备注</value></data>
+  <data name="PnBar" xml:space="preserve"><value>演示备注：已填写 {0} / {1} 个步骤</value></data>
+  <data name="PnMissing" xml:space="preserve"><value>缺少：</value></data>
+  <data name="PnFilledRule" xml:space="preserve"><value>已填写：已写关键信息和讲解词。</value></data>
+  <data name="PnFilled" xml:space="preserve"><value>备注已填写</value></data>
+  <data name="PnEmpty" xml:space="preserve"><value>备注缺失</value></data>
+  <data name="PnStepOf" xml:space="preserve"><value>步骤 {0} / {1}</value></data>
+  <data name="PnTabContent" xml:space="preserve"><value>内容</value></data>
+  <data name="PnTabNotes" xml:space="preserve"><value>演示备注</value></data>
+  <data name="PnRequired" xml:space="preserve"><value>是否必需</value></data>
+  <data name="PnEstimatedDuration" xml:space="preserve"><value>预计时长</value></data>
+  <data name="PnPrerequisite" xml:space="preserve"><value>前置条件</value></data>
+  <data name="PnContentNote" xml:space="preserve"><value>内容设置（是否必需、时长、前置条件）仍在步骤卡片的设置按钮中。</value></data>
+  <data name="PnReadOnly" xml:space="preserve"><value>此版本已发布或不是草稿，演示备注为只读。</value></data>
+  <data name="PnKeyMessage" xml:space="preserve"><value>关键信息</value></data>
+  <data name="PnTalkTrack" xml:space="preserve"><value>讲解词</value></data>
+  <data name="PnTarget" xml:space="preserve"><value>目标时长</value></data>
+  <data name="PnSeconds" xml:space="preserve"><value>秒</value></data>
+  <data name="PnTargetHint" xml:space="preserve"><value>留空则使用步骤的预计时长（{0} 秒）。</value></data>
+  <data name="PnTargetHintNone" xml:space="preserve"><value>留空则不显示目标时长。</value></data>
+  <data name="PnEstimate" xml:space="preserve"><value>目标 {0} 秒</value></data>
+  <data name="PnTransition" xml:space="preserve"><value>过渡语</value></data>
+  <data name="PnObjections" xml:space="preserve"><value>预期异议 · {0} / {1}</value></data>
+  <data name="PnObjectionsHint" xml:space="preserve"><value>只能选择 {0} 的已批准异议回应。</value></data>
+  <data name="PnReasonObjectionReadMissing" xml:space="preserve"><value>您无权读取异议库。</value></data>
+  <data name="PnReasonObjectionNoProduct" xml:space="preserve"><value>此路径没有产品，无法关联异议回应。</value></data>
+  <data name="PnCreateInLibrary" xml:space="preserve"><value>在库中新建</value></data>
+  <data name="PnCreateUnsaved" xml:space="preserve"><value>此步骤有未保存的更改。库将在新标签页中打开，返回后请保存步骤。</value></data>
+  <data name="PnRefresh" xml:space="preserve"><value>刷新列表</value></data>
+  <data name="PnAddObjection" xml:space="preserve"><value>添加异议</value></data>
+  <data name="PnPickerSearch" xml:space="preserve"><value>搜索回应</value></data>
+  <data name="PnPickerEmpty" xml:space="preserve"><value>此产品没有已批准的异议回应。</value></data>
+  <data name="PnPickerMax" xml:space="preserve"><value>最多可选择 {0} 条异议。</value></data>
+  <data name="PnClaimCount" xml:space="preserve"><value>{0} 条支持声明</value></data>
+  <data name="PnRemove" xml:space="preserve"><value>移除</value></data>
+  <data name="PnUnusable" xml:space="preserve"><value>不可用（未批准或属于其他产品）；保存时将移除。</value></data>
+  <data name="PnPreview" xml:space="preserve"><value>预览</value></data>
+  <data name="PnDoctorScreen" xml:space="preserve"><value>医生屏幕</value></data>
+  <data name="PnNotHere" xml:space="preserve"><value>备注不在此显示</value></data>
+  <data name="PnRemote" xml:space="preserve"><value>代表遥控 · 备注</value></data>
+  <data name="PnThisSlide" xml:space="preserve"><value>本页幻灯片</value></data>
+  <data name="PnTargetShort" xml:space="preserve"><value>目标 ≈ {0}</value></data>
+  <data name="PnApprovedAnswer" xml:space="preserve"><value>预期异议 · 已批准回应</value></data>
+  <data name="PnSave" xml:space="preserve"><value>保存步骤</value></data>
+  <data name="PnCancel" xml:space="preserve"><value>取消</value></data>
+  <data name="PnSaved" xml:space="preserve"><value>步骤已保存。</value></data>
+  <data name="PnInvalid" xml:space="preserve"><value>请检查：关键信息 ≤ 500、讲解词 ≤ 4000、目标 10–3600 秒、过渡语 ≤ 500、最多 10 条异议。</value></data>
+  <data name="PnUnsavedClose" xml:space="preserve"><value>未保存的更改将丢失。仍要关闭吗？</value></data>
+  <data name="PnDuration" xml:space="preserve"><value>{0} 分 {1} 秒</value></data>
+  <data name="PnSecondsValue" xml:space="preserve"><value>{0} 秒</value></data>
+  <data name="Err_path_step_presentation_invalid" xml:space="preserve"><value>演示备注超出限制（关键信息 ≤ 500、讲解词 ≤ 4000、目标 10–3600 秒、过渡语 ≤ 500、≤ 10 条异议）。</value></data>
+  <data name="Err_path_step_objection_invalid" xml:space="preserve"><value>只能关联此路径产品的已批准异议回应。</value></data>
+  <data name="Err_path_step_objection_not_found" xml:space="preserve"><value>未找到已关联的异议回应，请刷新列表。</value></data>
 </root>

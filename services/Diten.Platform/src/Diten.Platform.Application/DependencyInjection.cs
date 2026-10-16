@@ -36,6 +36,9 @@ public static class DependencyInjection
     {
         var assembly = typeof(DependencyInjection).Assembly;
 
+        // BL-512 FIX1 — the decision-makers directory, kept per tenant for a minute (bounded, in process).
+        services.AddSingleton(_ => new Diten.Platform.Application.Features.Tasks.DecisionMakerDirectoryCache(TimeProvider.System));
+
         services.AddMediatR(cfg =>
         {
             cfg.RegisterServicesFromAssembly(assembly);
@@ -62,6 +65,7 @@ public static class DependencyInjection
         // See IWorkReportScopeSource for why a second copy in the items handler would be the dangerous shape.
         services.AddScoped<Features.Tasks.Services.IWorkReportScopeSource,
             Features.Tasks.Services.WorkReportScopeSource>();
+        services.AddScoped<IOrgDataScopeCandidateResolver, OrgDataScopeCandidateResolver>();
         /*
          * The ONE surface MOD-0024 asks "who sits in which seat" through. Nine files used to inject the
          * assignment repository directly and each re-wrote the active-window rule; BL-071 moves that fact to
@@ -81,6 +85,9 @@ public static class DependencyInjection
         // assigned to. ONE rule, asked by every read-side endpoint that resolves a single task by id.
         services.AddScoped<Features.Tasks.Services.ITaskReadAccessPolicy,
             Features.Tasks.Services.TaskReadAccessPolicy>();
+        // WP-WCN-TASK-REQUEST-01 FIX2 — and the base of every WRITE on one task: who cannot read it reaches no write.
+        services.AddScoped<Features.Tasks.Services.ITaskWriteGate,
+            Features.Tasks.Services.TaskWriteGate>();
         // BL-023 — turns that resolver's DESCENT into "my team". Walks nothing of its own.
         services.AddScoped<Features.Tasks.Services.ITaskTeamResolver,
             Features.Tasks.Services.TaskTeamResolver>();
@@ -301,14 +308,15 @@ public static class DependencyInjection
         services.AddScoped<ITenantMessagingSettingsResolver, TenantMessagingSettingsResolver>();
         services.AddScoped<Features.Notifications.Services.INotificationLocaleResolver, Features.Notifications.Services.TenantNotificationLocaleResolver>();
         services.AddScoped<IEmailTemplateRenderer, EmailTemplateRenderer>();
+        // BL-454 — every notification e-mail is framed by the one shell, and sent under the one sender-name rule.
+        services.AddScoped<ITenantEmailIdentityResolver, TenantEmailIdentityResolver>();
+        services.AddScoped<IEmailShellComposer, EmailShellComposer>();
         services.AddScoped<Features.Notifications.Services.INotificationEventManifestSyncService, Features.Notifications.Services.NotificationEventManifestSyncService>();
         // MOD-0027-FU04B — eventCode → dispatch adapter (resolves Active event + validates, delegates to the existing
         // QueueEmailNotificationCommand). Producers wiring it is a separate follow-up (FU04B-Tenant / FU04D).
         services.AddScoped<Features.Notifications.Services.INotificationEventDispatchAdapter, Features.Notifications.Services.NotificationEventDispatchAdapter>();
-        services.AddScoped<TenantCreatedV1NotificationMapper>();
         services.AddScoped<TenantSuspendedV1NotificationMapper>();
         services.AddScoped<TenantReactivatedV1NotificationMapper>();
-        services.AddScoped<INotificationEventMapper<TenantCreatedV1>>(sp => sp.GetRequiredService<TenantCreatedV1NotificationMapper>());
         services.AddScoped<INotificationEventMapper<TenantSuspendedV1>>(sp => sp.GetRequiredService<TenantSuspendedV1NotificationMapper>());
         services.AddScoped<INotificationEventMapper<TenantReactivatedV1>>(sp => sp.GetRequiredService<TenantReactivatedV1NotificationMapper>());
         services.AddSingleton<AuditBehaviorOptions>();
@@ -318,6 +326,8 @@ public static class DependencyInjection
         services.AddSingleton<IAuditRecursionGuard, AuditRecursionGuard>();
         services.AddScoped<IAuditRetentionPolicyResolver, AuditRetentionPolicyResolver>();
         services.AddScoped<IAuditService, AuditService>();
+        // WP-PLATFORM-AUDIT-INTX-01 — the in-transaction audit door: what handlers get as ITransactionalAuditOutboxWriter.
+        services.AddScoped<ITransactionalAuditOutboxWriter, CanonicalTransactionalAuditOutboxWriter>();
         services.AddScoped<IAuditMetaAuditWriter, AuditMetaAuditWriter>();
         // BL-347 — tenant-side data export audit (MOD-0024 work report; MOD-0357 S12 meeting report next).
         services.AddScoped<IDataExportAuditWriter, DataExportAuditWriter>();
@@ -326,8 +336,20 @@ public static class DependencyInjection
         services.AddScoped<SchedulerSmokeTestJob>();
         services.AddScoped<DeferredPlatformJobHandler>();
         services.AddScoped<EmailDispatchJob>();
-        services.AddScoped<EmailDispatchSweepJob>();
+        // BL-454 — the one permanent-failure path (counter, organizer notification, attendee badge) shared by the last
+        // failed retry, the sweep's retry window and a first send on a server where no retry can run.
+        services.AddScoped(sp => new Features.Notifications.Services.NotificationPermanentFailureEffects(
+            sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<Features.Notifications.Services.NotificationPermanentFailureEffects>>(),
+            sp.GetService<Diten.Platform.Domain.Repositories.IMeetingRepository>(),
+            sp.GetService<Diten.Platform.Domain.Repositories.IMeetingAttendeeRepository>(),
+            sp.GetService<Diten.Platform.Domain.Repositories.IUserNotificationRepository>()));
+        // EmailDispatchSweepJob: registered once, with the scheduler-bound handlers (Infrastructure, takeover).
         services.AddScoped<Features.Workflow.BackgroundJobs.WorkflowEscalationSweepJob>();
+        // BL-549 + BL-539 — the abandoned-start recovery and its gauges (one meter for the process).
+        services.AddScoped<Features.Workflow.BackgroundJobs.WorkflowStartRecoverySweepJob>();
+        services.AddSingleton<Features.Workflow.Services.WorkflowStartRecoveryMetrics>();
+        // FIX1 item 4 — the gauges while the recovery job is off (read-only; idle when the job runs).
+        services.AddHostedService<Features.Workflow.BackgroundJobs.WorkflowStartRecoveryCountingService>();
         // MOD-0022 — e-signature request expiry sweep (runs only when BackgroundJobs:EnabledJobs switches it on).
         services.AddScoped<Features.ESignature.BackgroundJobs.ESignatureRequestExpirySweepJob>();
         // WC-4 — the ONE place a task notification is sent from (opt-out, actor skip, real addresses,
@@ -349,6 +371,10 @@ public static class DependencyInjection
         // A3 — workflow transition gate (defence-in-depth): business modules inject this and must check it
         // BEFORE committing a state transition. Blocked ⇒ do not commit (not best-effort).
         services.AddScoped<Contracts.IWorkflowTransitionGate, Services.WorkflowTransitionGate>();
+        services.AddScoped<Features.Workflow.Services.IWorkflowInstanceStartCoordinator,
+            Features.Workflow.Services.WorkflowInstanceStartCoordinator>();
+        services.AddScoped<Features.Workflow.Services.ITrustedWorkflowCancellationCoordinator,
+            Features.Workflow.Services.TrustedWorkflowCancellationCoordinator>();
 
         // WC-1 (DCP-004) — read-only work-item projection + provider abstraction. The
         // projection service is pure; providers are registered as an IEnumerable so WC-5 adds more without
@@ -466,6 +492,10 @@ public static class DependencyInjection
             Features.Tasks.Services.TaskAssignmentDirection>();
         services.AddScoped<Features.Tasks.Services.ITaskUpwardRequestService,
             Features.Tasks.Services.TaskUpwardRequestService>();
+        // BL-509 — the task REQUEST: who may be asked to take work on, across the assignment scope. It consumes the
+        // seat directory and the shared eligibility rule; BL-057's scope is deliberately not among its dependencies.
+        services.AddScoped<Features.Tasks.Services.ITaskRequestService,
+            Features.Tasks.Services.TaskRequestService>();
 
         /*
          * WC-2 — the working-time seam and the SLA decision that rides on it.

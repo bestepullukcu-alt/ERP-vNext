@@ -1,0 +1,6 @@
+# gateway suite — feature/mvp3-bom-routings @ 9f96b1ff2 (after merging origin/main a814bad0f), SDK 10.0.112, 2026-10-12
+Failed!  - Failed:     1, Passed:    86, Skipped:     0, Total:    87
+  Failed Diten.ApiGateway.Tests.OcelotConfigurationTests.EveryRoute_DownstreamPortIsInKnownServiceSet 
+  red test lists:      46 port 5063
+  red test lists:      62 port 5064
+  red test lists:      14 port 5065

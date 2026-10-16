@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader><resheader name="version"><value>2.0</value></resheader><resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader><resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="RefusalBusy" xml:space="preserve"><value>Ya se está realizando una operación en este registro. Inténtelo de nuevo en un momento.</value></data>
+  <data name="RefusalCapacity" xml:space="preserve"><value>Este registro no puede aceptar más cambios en este momento. Inténtelo más tarde; si persiste, contacte con soporte.</value></data>
+  <data name="RefusalChangedElsewhere" xml:space="preserve"><value>Este registro cambió mientras trabajaba en él. Actualice la página e inténtelo de nuevo.</value></data>
+  <data name="RefusalDependents" xml:space="preserve"><value>Hay registros que dependen de este GSKU o se está creando uno bajo él. Retírelos o espere a que terminen.</value></data>
+  <data name="RefusalForbidden" xml:space="preserve"><value>No tiene permiso para realizar esta acción.</value></data>
+  <data name="RefusalInternal" xml:space="preserve"><value>Una incoherencia inesperada detuvo esta acción; no se cambió nada. Contacte con soporte.</value></data>
+  <data name="RefusalInvalidRequest" xml:space="preserve"><value>La solicitud no es válida. Revise los campos e inténtelo de nuevo.</value></data>
+  <data name="RefusalNotFound" xml:space="preserve"><value>No se encontró el registro o no puede verlo.</value></data>
+  <data name="RefusalNotRequester" xml:space="preserve"><value>Solo la persona que envió esta aprobación puede retirarla.</value></data>
+  <data name="RefusalPackInvalid" xml:space="preserve"><value>La cantidad o la unidad de embalaje no es válida. Corríjalas e inténtelo de nuevo.</value></data>
+  <data name="RefusalParentNotReady" xml:space="preserve"><value>El producto global no está aprobado o ya no se puede referenciar.</value></data>
+  <data name="RefusalReconciliation" xml:space="preserve"><value>Esta solicitud espera la revisión de un especialista y permanece como está hasta entonces. Contacte con soporte.</value></data>
+  <data name="RefusalRepeatDiffers" xml:space="preserve"><value>Esta solicitud ya se envió con otros datos. Actualice la página y vuelva a empezar.</value></data>
+  <data name="RefusalRequestEnded" xml:space="preserve"><value>La solicitud terminó sin aplicarse. Iníciela de nuevo si todavía es necesaria.</value></data>
+  <data name="RefusalResubmit" xml:space="preserve"><value>La solicitud no llegó al servicio de aprobación. Envíe la misma solicitud de nuevo.</value></data>
+  <data name="RefusalRetirementInProgress" xml:space="preserve"><value>Este GSKU se está retirando.</value></data>
+  <data name="RefusalSelfApproval" xml:space="preserve"><value>La solicitud fue decidida por quien la envió, por lo que la decisión no se aplicó.</value></data>
+  <data name="RefusalServiceUnavailable" xml:space="preserve"><value>Un servicio que necesita esta acción no está disponible ahora. Inténtelo de nuevo en un momento.</value></data>
+  <data name="RefusalSessionExpired" xml:space="preserve"><value>El servicio de aprobación no aceptó su sesión. Inicie sesión de nuevo y repita la acción.</value></data>
+  <data name="RefusalSetupIncomplete" xml:space="preserve"><value>La configuración de aprobación de esta acción está incompleta. Informe a su administrador.</value></data>
+  <data name="RefusalManualReconciliation" xml:space="preserve"><value>El servicio de aprobación y este registro no coinciden, y repetir la solicitud no lo resolvió. Queda como está hasta que alguien lo concilie; contacte con su administrador.</value></data>
+  <data name="RefusalClosedWithoutDecision" xml:space="preserve"><value>La aprobación se cerró sin una decisión (cancelada o vencida). El borrador puede editarse y enviarse de nuevo.</value></data>
+  <data name="InfoRetiredAfterApproval" xml:space="preserve"><value>Una unidad que usa este GSKU se retiró después de la aprobación. La aprobación sigue vigente: se aplicó con los valores validados al enviarla; la unidad retirada no puede elegirse para registros nuevos.</value></data>
+  <data name="RefusalStockFlagsRequired" xml:space="preserve"><value>Antes de enviar este GSKU a aprobación, defina en el comportamiento de stock: {0}.</value></data>
+  <data name="RefusalSubmitDuringWithdrawal" xml:space="preserve"><value>Hay una retirada de este envío en curso; vuelva a enviar la retirada para terminarla antes de enviar de nuevo.</value></data>
+  <data name="RefusalStockDaysRequireShelfLife" xml:space="preserve"><value>Introduzca primero la vida útil: en un GSKU aprobado, {0} solo puede definirse cuando su vida útil es conocida.</value></data>
+  <data name="RefusalStockReferenceUnavailable" xml:space="preserve"><value>Las listas de unidades y condiciones de almacenamiento no se pueden leer ahora. Inténtelo de nuevo en un momento.</value></data>
+  <data name="RefusalStockGskuBaseUomMissing" xml:space="preserve"><value>Introduzca primero la unidad base del GSKU: el producto terminado la utiliza.</value></data>
+  <data name="RefusalStockGskuShelfLifeMissing" xml:space="preserve"><value>Introduzca primero la vida útil del GSKU: la del producto terminado no puede superarla.</value></data>
+  <data name="RefusalStockConversionInvalid" xml:space="preserve"><value>Una conversión de unidades no es válida: defina primero la unidad base; cada unidad debe alcanzarla en cuatro pasos como máximo, sin bucles, y los pares de la misma dimensión (como kg ↔ g) no se introducen a mano.</value></data>
+  <data name="RefusalStockStorageConflict" xml:space="preserve"><value>Solo se puede elegir una condición de temperatura.</value></data>
+  <data name="RefusalStockStorageInvalid" xml:space="preserve"><value>Un código de condición de almacenamiento no está en la lista. Revise los códigos.</value></data>
+  <data name="RefusalStockUomInvalid" xml:space="preserve"><value>Un código de unidad no está en la lista. Revise los códigos.</value></data>
+  <data name="RefusalStockPackUomUnknown" xml:space="preserve"><value>La unidad de envase de este GSKU no está en la lista de unidades, por lo que no se puede derivar su conversión caja ↔ envase.</value></data>
+  <data name="RefusalStockIncomplete" xml:space="preserve"><value>Todavía no puede ser almacenable: complete primero todos los campos de stock obligatorios.</value></data>
+  <data name="RefusalStockShelfLifeInvalid" xml:space="preserve"><value>La vida útil debe ser un número entero de días entre 1 y 3650.</value></data>
+  <data name="RefusalStockFgShelfLifeExceedsGsku" xml:space="preserve"><value>La vida útil del producto terminado no puede superar la de su GSKU.</value></data>
+  <data name="RefusalStockGtinInvalid" xml:space="preserve"><value>El GTIN debe tener 14 dígitos con un dígito de control GS1 válido.</value></data>
+  <data name="RefusalStockDaysInvalid" xml:space="preserve"><value>El intervalo de reanálisis y la vida útil residual mínima deben ser números enteros de días entre 0 y 3650.</value></data>
+  <data name="RefusalStockNotEditable" xml:space="preserve"><value>El estado de este registro no permite cambiar el comportamiento de stock.</value></data>
+  <data name="RefusalStockFieldLocked" xml:space="preserve"><value>Un valor completado en un registro aprobado no puede cambiarse aquí: solo mediante una corrección. Las listas solo admiten filas nuevas.</value></data>
+  <data name="RefusalStockGtinConflict" xml:space="preserve"><value>Otro producto terminado ya utiliza este GTIN.</value></data>
+</root>

@@ -208,7 +208,7 @@ public sealed class TaskApprovalHttpContractTests
                 new FakeTaskDependencyRepository(), new FakeTaskTypeRepository(), new FakeTaskNotificationService(),
                 new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()),
                 new FakeTaskAttachmentRepository(),
-                NullLogger<TransitionTaskItemHandler>.Instance);
+                NullLogger<TransitionTaskItemHandler>.Instance, writeGate: TaskWriteGateDoubles.Open);
         }
 
         public Task<Response<NoContent>> StartAsync() => Send(TaskLifecycle.InProgress);

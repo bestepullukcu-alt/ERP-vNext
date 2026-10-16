@@ -13,6 +13,8 @@
 <form asp-action="Edit" asp-route-productId="@Model.ProductId" method="post" id="productForm">
     @Html.AntiForgeryToken()
     <input asp-for="ProductId" type="hidden" />
+    @* R-3 — the version this edit was made on; MDM refuses a stale save with 409 version_conflict. *@
+    <input asp-for="ExpectedVersion" type="hidden" />
     <partial name="~/Views/MasterData/Products/_Form.cshtml" model="Model" />
     <div class="d-flex justify-content-end gap-2 mt-3">
         <a href="/MasterData/Products/@Model.ProductId" class="btn btn-label-secondary">@Localizer["Cancel"]</a>

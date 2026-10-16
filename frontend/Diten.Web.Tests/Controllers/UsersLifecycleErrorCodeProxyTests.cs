@@ -39,7 +39,8 @@ public sealed class UsersLifecycleErrorCodeProxyTests
 
         Assert.False(json.GetProperty("success").GetBoolean());
         Assert.Equal("USER_EMAIL_TAKEN", json.GetProperty("errorCode").GetString());
-        Assert.Equal("Email is already in use.", json.GetProperty("errors")[0].GetString()); // English fallback kept
+        Assert.Equal(0, json.GetProperty("ownMessages").GetArrayLength()); // the service's English sentence stays in the server log
+        Assert.DoesNotContain("Email is already in use.", json.GetRawText());
     }
 
     [Fact]
@@ -87,14 +88,293 @@ public sealed class UsersLifecycleErrorCodeProxyTests
     }
 
     [Fact]
-    public async Task A_refusal_without_a_code_carries_errorCode_null_and_the_gateway_text()
+    public async Task A_refusal_without_a_code_says_so_and_carries_no_service_text()
     {
         var controller = ControllerWith(new CapturingGateway(HttpStatusCode.BadRequest, """{"isSuccessful":false,"errors":["Something else."]}"""), Form());
 
         var json = Body(await controller.Disable(UserId));
 
+        Assert.False(json.GetProperty("success").GetBoolean());
         Assert.Equal(JsonValueKind.Null, json.GetProperty("errorCode").ValueKind);
-        Assert.Equal("Something else.", json.GetProperty("errors")[0].GetString());
+        Assert.Equal(0, json.GetProperty("errorCodes").GetArrayLength());
+        Assert.True(json.GetProperty("uncoded").GetBoolean());
+        Assert.Equal(400, json.GetProperty("status").GetInt32());
+        Assert.Equal(0, json.GetProperty("ownMessages").GetArrayLength());
+        Assert.DoesNotContain("Something else.", json.GetRawText());
+    }
+
+    // ── WP-USERS-ERROR-CODES-01, acceptance round: nothing the proxy did not write reaches the browser ──────────
+
+    [Theory]
+    [InlineData("""{"isSuccessful":false,"statusCode":409,"errors":["User has already completed setup."],"errorCodes":[{"code":"USER_SETUP_ALREADY_COMPLETED"}]}""", "User has already completed setup.")]
+    [InlineData("""{"title":"Validation failed","status":400,"detail":"Validation failed: \n -- FirstName: Ad boş bırakılamaz. Severity: Error","traceId":"t","errorCodes":[{"code":"USER_FIRST_NAME_REQUIRED","params":null}]}""", "Ad boş bırakılamaz.")]
+    [InlineData("""<html><body>upstream proxy error at 10.0.0.5:5056</body></html>""", "10.0.0.5")]
+    public async Task The_services_own_text_never_enters_the_response(string upstreamBody, string mustNotAppear)
+    {
+        var controller = ControllerWith(new CapturingGateway(HttpStatusCode.BadRequest, upstreamBody), Form());
+
+        var raw = Body(await controller.ResendInvite(UserId)).GetRawText();
+
+        Assert.DoesNotContain(mustNotAppear, raw);
+        Assert.DoesNotContain("rawText", raw); // the flag is gone: there is no relayed text left to flag
+    }
+
+    [Fact]
+    public async Task An_exceptions_message_never_enters_the_response()
+    {
+        var controller = ControllerWith(new ThrowingGateway("Connection refused (auth.internal:5056)"), Form());
+
+        foreach (var result in new[]
+                 {
+                     await controller.Disable(UserId),
+                     await controller.Create(new UserEditViewModel { Email = "a@b.test", FirstName = "A", LastName = "B" }),
+                     await controller.Edit(UserId, new UserEditViewModel { Email = "a@b.test", FirstName = "A", LastName = "B", IsActive = true })
+                 })
+        {
+            var json = Body(result);
+            Assert.False(json.GetProperty("success").GetBoolean());
+            Assert.DoesNotContain("auth.internal", json.GetRawText());
+            Assert.DoesNotContain("Connection refused", json.GetRawText());
+            Assert.Equal("GatewayError", json.GetProperty("ownMessages")[0].GetString()); // the proxy's OWN localized sentence (key localizer)
+        }
+    }
+
+    [Fact]
+    public async Task A_401_is_the_proxys_own_sentence_and_not_an_uncoded_gap()
+    {
+        var controller = ControllerWith(new CapturingGateway(HttpStatusCode.Unauthorized, """{"title":"Unauthorized"}"""), Form());
+
+        var json = Body(await controller.Disable(UserId));
+
+        Assert.Equal("Unauthorized", json.GetProperty("ownMessages")[0].GetString());
+        Assert.False(json.GetProperty("uncoded").GetBoolean());
+        Assert.Equal(401, json.GetProperty("status").GetInt32());
+    }
+
+    // Item 9 — EVERY code travels (not only the first), and a failure without a code is announced, never dropped.
+    [Fact]
+    public async Task All_codes_of_a_refusal_are_handed_over_and_an_uncoded_failure_is_announced()
+    {
+        const string body = """{"title":"Validation failed","status":400,"detail":"Validation failed: \n -- FirstName: Ad boş bırakılamaz. Severity: Error\n -- LastName: Soyad boş bırakılamaz. Severity: Error\n -- Password: Şifre en fazla 128 karakter olabilir. Severity: Error","traceId":"t","errorCodes":[{"code":"USER_FIRST_NAME_REQUIRED","params":null},{"code":"USER_LAST_NAME_REQUIRED","params":null}]}""";
+        var controller = ControllerWith(new CapturingGateway(HttpStatusCode.BadRequest, body), Form());
+
+        var json = Body(await controller.Edit(UserId, new UserEditViewModel { Email = "a@b.test", FirstName = "A", LastName = "B", IsActive = true }));
+
+        Assert.Equal(["USER_FIRST_NAME_REQUIRED", "USER_LAST_NAME_REQUIRED"], json.GetProperty("errorCodes").EnumerateArray().Select(c => c.GetProperty("code").GetString()));
+        Assert.Equal("USER_FIRST_NAME_REQUIRED", json.GetProperty("errorCode").GetString()); // the older single-code shape: the first
+        Assert.True(json.GetProperty("uncoded").GetBoolean()); // three failures, two codes
+    }
+
+    [Fact]
+    public async Task A_fully_coded_refusal_is_not_announced_as_uncoded()
+    {
+        var controller = ControllerWith(new CapturingGateway(HttpStatusCode.Conflict, Refusal("USER_NOT_FOUND", "User not found.")), Form());
+
+        Assert.False(Body(await controller.ResetPassword(UserId)).GetProperty("uncoded").GetBoolean());
+    }
+
+    // Item 2 — the form's own check answers in CODES (the screen has their sentences in seven languages), never in
+    // MVC's English DataAnnotations text. Driven on the real controller with what a reader can actually type.
+    [Theory]
+    [InlineData("a@b.test", "   ", "Veli", new[] { "USER_FIRST_NAME_REQUIRED" })]
+    [InlineData("a@b.test", "Ali", "", new[] { "USER_LAST_NAME_REQUIRED" })]
+    [InlineData("", "Ali", "Veli", new[] { "USER_EMAIL_REQUIRED" })]
+    [InlineData("not-an-address", "Ali", "Veli", new[] { "USER_EMAIL_INVALID" })]
+    [InlineData("  ", " ", null, new[] { "USER_EMAIL_REQUIRED", "USER_FIRST_NAME_REQUIRED", "USER_LAST_NAME_REQUIRED" })]
+    public async Task The_forms_own_refusal_is_codes_not_English(string? email, string? firstName, string? lastName, string[] codes)
+    {
+        var gateway = new CapturingGateway(HttpStatusCode.OK, "{}");
+        var controller = ControllerWith(gateway, Form());
+
+        var json = Body(await controller.Create(new UserEditViewModel { Email = email, FirstName = firstName, LastName = lastName }));
+
+        Assert.False(json.GetProperty("success").GetBoolean());
+        Assert.Equal(codes, json.GetProperty("errorCodes").EnumerateArray().Select(c => c.GetProperty("code").GetString()));
+        Assert.Equal(0, json.GetProperty("ownMessages").GetArrayLength());
+        Assert.False(json.GetProperty("uncoded").GetBoolean());
+        Assert.DoesNotContain("field is required", json.GetRawText());
+        Assert.Empty(gateway.Requests); // refused before the gateway is asked
+    }
+
+    [Fact]
+    public async Task A_name_over_the_limit_is_refused_by_the_form_with_the_too_long_codes()
+    {
+        var controller = ControllerWith(new CapturingGateway(HttpStatusCode.OK, "{}"), Form());
+        var tooLong = new string('a', UserEditViewModel.NameMaxLength + 1);
+
+        var json = Body(await controller.Edit(UserId, new UserEditViewModel { Email = "a@b.test", FirstName = tooLong, LastName = tooLong, IsActive = true }));
+
+        Assert.Equal(["USER_FIRST_NAME_TOO_LONG", "USER_LAST_NAME_TOO_LONG"], json.GetProperty("errorCodes").EnumerateArray().Select(c => c.GetProperty("code").GetString()));
+    }
+
+    [Fact]
+    public async Task A_binding_failure_the_form_check_does_not_know_is_uncoded_never_English()
+    {
+        var controller = ControllerWith(new CapturingGateway(HttpStatusCode.OK, "{}"), Form());
+        controller.ModelState.AddModelError("IsActive", "The value 'maybe' is not valid for IsActive.");
+
+        var json = Body(await controller.Create(new UserEditViewModel { Email = "a@b.test", FirstName = "A", LastName = "B" }));
+
+        Assert.True(json.GetProperty("uncoded").GetBoolean());
+        Assert.DoesNotContain("is not valid", json.GetRawText());
+    }
+
+    [Fact]
+    public void Every_code_the_form_can_answer_with_is_one_the_screen_knows()
+    {
+        var js = File.ReadAllText(RepoPath("frontend", "Diten.Web", "wwwroot", "assets", "js", "Governance", "Users", "index.js"));
+        var tooLong = new string('a', UserEditViewModel.NameMaxLength + 1);
+        var codes = UsersController.FormRefusalCodes(new UserEditViewModel { Email = "", FirstName = "", LastName = "" }, isCreate: true)
+            .Concat(UsersController.FormRefusalCodes(new UserEditViewModel { Email = new string('x', UserEditViewModel.EmailMaxLength + 1), FirstName = tooLong, LastName = tooLong }, isCreate: true))
+            .ToList();
+
+        Assert.Equal(7, codes.Distinct().Count());
+        Assert.All(codes, code => Assert.Matches($@"\b{code}: '[A-Za-z]+'", js));
+    }
+
+    // The limits are the validators': AuthService keeps them in UserFieldLimits, the validators read them there
+    // (UserErrorCodeBridgeGuardTests), and the form's maxlength and this proxy's check read the Web constants —
+    // which must be the same numbers.
+    [Fact]
+    public void The_name_limit_of_the_form_is_the_validators()
+    {
+        Assert.Equal(AuthLimit("NameMaxLength"), UserEditViewModel.NameMaxLength);
+
+        var form = File.ReadAllText(RepoPath("frontend", "Diten.Web", "Views", "Governance", "Users", "_CreateEditOffcanvas.cshtml"));
+        foreach (var field in new[] { "FirstName", "LastName" })
+        {
+            Assert.Matches($@"name=""{field}""[^>]*maxlength=""@Diten\.Web\.Models\.Governance\.UserEditViewModel\.NameMaxLength""", form);
+        }
+    }
+
+    [Fact]
+    public void The_email_limit_of_the_form_is_the_validators()
+    {
+        Assert.Equal(AuthLimit("EmailMaxLength"), UserEditViewModel.EmailMaxLength);
+
+        var form = File.ReadAllText(RepoPath("frontend", "Diten.Web", "Views", "Governance", "Users", "_CreateEditOffcanvas.cshtml"));
+        Assert.Matches(@"name=""Email""[^>]*maxlength=""@Diten\.Web\.Models\.Governance\.UserEditViewModel\.EmailMaxLength""", form);
+    }
+
+    private static int AuthLimit(string name)
+    {
+        var source = File.ReadAllText(RepoPath("services", "Diten.AuthService", "src", "Diten.AuthService.Application", "Features", "Users", "Services", "UserFieldLimits.cs"));
+        var match = System.Text.RegularExpressions.Regex.Match(source, $@"public const int {name} = (\d+);");
+        Assert.True(match.Success, $"UserFieldLimits.{name} was not found in AuthService.");
+        return int.Parse(match.Groups[1].Value);
+    }
+
+    // ── acceptance round 2 ──────────────────────────────────────────────────────────────────────────────
+
+    // Item 7 — the limit itself: exactly at the limit goes to the gateway, one more character is refused here.
+    [Fact]
+    public async Task A_name_of_exactly_the_limit_is_sent_on_and_one_more_character_is_refused()
+    {
+        var atLimit = new string('n', UserEditViewModel.NameMaxLength);
+        var gateway = new CapturingGateway(HttpStatusCode.OK, "{}");
+
+        var sent = Body(await ControllerWith(gateway, Form()).Edit(UserId, new UserEditViewModel { Email = "a@b.test", FirstName = atLimit, LastName = atLimit, IsActive = true }));
+        Assert.True(sent.GetProperty("success").GetBoolean());
+        Assert.Single(gateway.Requests);
+
+        var refused = Body(await ControllerWith(new CapturingGateway(HttpStatusCode.OK, "{}"), Form()).Edit(UserId, new UserEditViewModel { Email = "a@b.test", FirstName = atLimit + "n", LastName = atLimit, IsActive = true }));
+        Assert.Equal(["USER_FIRST_NAME_TOO_LONG"], refused.GetProperty("errorCodes").EnumerateArray().Select(c => c.GetProperty("code").GetString()));
+    }
+
+    [Fact]
+    public async Task An_address_of_exactly_the_limit_is_sent_on_and_one_more_character_is_refused()
+    {
+        var atLimit = new string('e', UserEditViewModel.EmailMaxLength - "@b.test".Length) + "@b.test";
+        var gateway = new CapturingGateway(HttpStatusCode.OK, "{}");
+
+        var sent = Body(await ControllerWith(gateway, Form()).Create(new UserEditViewModel { Email = atLimit, FirstName = "A", LastName = "B" }));
+        Assert.True(sent.GetProperty("success").GetBoolean());
+        Assert.Single(gateway.Requests);
+
+        var refused = Body(await ControllerWith(new CapturingGateway(HttpStatusCode.OK, "{}"), Form()).Create(new UserEditViewModel { Email = "e" + atLimit, FirstName = "A", LastName = "B" }));
+        Assert.Equal(["USER_EMAIL_TOO_LONG"], refused.GetProperty("errorCodes").EnumerateArray().Select(c => c.GetProperty("code").GetString()));
+    }
+
+    // Item 3 — a binding failure the check does not know is announced ALSO next to codes, never swallowed by them.
+    [Fact]
+    public async Task A_binding_failure_next_to_a_coded_one_is_still_announced_as_uncoded()
+    {
+        var controller = ControllerWith(new CapturingGateway(HttpStatusCode.OK, "{}"), Form());
+        controller.ModelState.AddModelError("IsActive", "The value 'maybe' is not valid for IsActive.");
+
+        var json = Body(await controller.Create(new UserEditViewModel { Email = "a@b.test", FirstName = "", LastName = "B" }));
+
+        Assert.Equal(["USER_FIRST_NAME_REQUIRED"], json.GetProperty("errorCodes").EnumerateArray().Select(c => c.GetProperty("code").GetString()));
+        Assert.True(json.GetProperty("uncoded").GetBoolean());
+        Assert.DoesNotContain("is not valid", json.GetRawText());
+    }
+
+    // Item 4 — the e-mail is not judged on edit: an update never sends it, so an older account whose address is not
+    // address-shaped (or is missing from the post) can still be renamed.
+    [Theory]
+    [InlineData("not-an-address")]
+    [InlineData("")]
+    [InlineData(null)]
+    public async Task Edit_does_not_judge_the_email(string? email)
+    {
+        var gateway = new CapturingGateway(HttpStatusCode.OK, "{}");
+
+        var json = Body(await ControllerWith(gateway, Form()).Edit(UserId, new UserEditViewModel { Email = email, FirstName = "New", LastName = "Name", IsActive = true }));
+
+        Assert.True(json.GetProperty("success").GetBoolean());
+        var (_, _, sent) = Assert.Single(gateway.Requests);
+        Assert.Equal("New", sent.RootElement.GetProperty("firstName").GetString());
+        Assert.False(sent.RootElement.TryGetProperty("email", out _));
+    }
+
+    // Item 10 — AuthService reads a MISSING isActive as "leave it as it is"; the form's update always says it.
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Edit_always_sends_isActive(bool isActive)
+    {
+        var gateway = new CapturingGateway(HttpStatusCode.OK, "{}");
+
+        await ControllerWith(gateway, Form()).Edit(UserId, new UserEditViewModel { Email = "a@b.test", FirstName = "A", LastName = "B", IsActive = isActive });
+
+        var (_, _, sent) = Assert.Single(gateway.Requests);
+        Assert.Equal(isActive, sent.RootElement.GetProperty("isActive").GetBoolean());
+    }
+
+    // Item 2 — there is no `errors` field at all: the screen reads `ownMessages` and the codes, nothing else.
+    [Fact]
+    public async Task No_refusal_of_this_proxy_carries_an_errors_field()
+    {
+        var answers = new List<JsonElement>
+        {
+            Body(await ControllerWith(new CapturingGateway(HttpStatusCode.Conflict, Refusal("USER_NOT_FOUND", "User not found.")), Form()).Disable(UserId)),
+            Body(await ControllerWith(new CapturingGateway(HttpStatusCode.Unauthorized, "{}"), Form()).Disable(UserId)),
+            Body(await ControllerWith(new ThrowingGateway("boom"), Form()).Disable(UserId)),
+            Body(await ControllerWith(new CapturingGateway(HttpStatusCode.OK, "{}"), Form()).Create(new UserEditViewModel { Email = "", FirstName = "", LastName = "" })),
+        };
+
+        Assert.All(answers, json =>
+        {
+            Assert.False(json.TryGetProperty("errors", out _), json.GetRawText());
+            Assert.Equal(JsonValueKind.Array, json.GetProperty("ownMessages").ValueKind);
+        });
+    }
+
+    private static string RepoPath(params string[] parts)
+    {
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir is not null && !Directory.Exists(Path.Combine(dir.FullName, "frontend", "Diten.Web", "Resources")))
+        {
+            dir = dir.Parent;
+        }
+
+        return Path.Combine([dir?.FullName ?? throw new DirectoryNotFoundException("repo root"), .. parts]);
+    }
+
+    private sealed class ThrowingGateway(string message) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            => throw new HttpRequestException(message);
     }
 
     private static JsonElement Body(IActionResult result)
@@ -117,7 +397,7 @@ public sealed class UsersLifecycleErrorCodeProxyTests
         return new FormCollection(values);
     }
 
-    private static UsersController ControllerWith(CapturingGateway gateway, FormCollection form)
+    private static UsersController ControllerWith(HttpMessageHandler gateway, FormCollection form)
     {
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?> { ["GatewayUrl"] = Gateway }).Build();
         var controller = new UsersController(

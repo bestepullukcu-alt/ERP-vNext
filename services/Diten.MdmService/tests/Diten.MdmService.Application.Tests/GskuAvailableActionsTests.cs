@@ -1,0 +1,200 @@
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.StockBehaviour;
+using Diten.MdmService.Application.Contracts;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Handlers.QueryHandlers;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle;
+using Diten.MdmService.Domain.Entities;
+using Diten.MdmService.Domain.Enums;
+using Diten.MdmService.Domain.ValueObjects;
+using System.Reflection;
+using Xunit;
+
+namespace Diten.MdmService.Application.Tests;
+
+public sealed class GskuAvailableActionsTests
+{
+    [Fact]
+    public void Draft_actions_are_permission_gated_and_ordered()
+    {
+        // S3b FIX1 (R2): a draft with its lot flag set; without it the submit is replaced by the gate's reason.
+        var gsku = new Gsku { LifecycleStatus = ProductIdentityLifecycleStatus.Draft, LotControlled = false };
+
+        Assert.Equal(["DETAILS", "EDIT", "SUBMIT"], Actions(gsku,
+            new Actor(Guid.NewGuid(), FirstGskuIdentityLifecyclePermissions.Update,
+                FirstGskuIdentityLifecyclePermissions.Submit)));
+        Assert.Equal(["DETAILS"], Actions(gsku, new Actor(Guid.NewGuid())));
+
+        gsku.LotControlled = null;
+        Assert.Equal(["DETAILS", "EDIT", StockFlagGate.SubmitNeedsStockFlagsAction], Actions(gsku,
+            new Actor(Guid.NewGuid(), FirstGskuIdentityLifecyclePermissions.Update,
+                FirstGskuIdentityLifecyclePermissions.Submit)));
+    }
+
+    [Fact]
+    public void Withdrawal_is_exposed_only_to_the_original_human_submitter()
+    {
+        var maker = Guid.NewGuid();
+        var gsku = new Gsku
+        {
+            LifecycleStatus = ProductIdentityLifecycleStatus.PendingIdentityApproval,
+            IdentityWorkflowBinding = new FirstGskuIdentityWorkflowBinding { SubmitterSubjectId = maker }
+        };
+
+        Assert.Equal(["DETAILS", "WITHDRAW_APPROVAL"], Actions(gsku,
+            new Actor(maker, FirstGskuIdentityLifecyclePermissions.Withdraw)));
+        Assert.Equal(["DETAILS"], Actions(gsku,
+            new Actor(Guid.NewGuid(), FirstGskuIdentityLifecyclePermissions.Withdraw)));
+        Assert.Equal(["DETAILS"], Actions(gsku, new Actor(null,
+            FirstGskuIdentityLifecyclePermissions.Withdraw)));
+    }
+
+    [Fact]
+    public void Correction_is_exposed_only_for_approved_idle_gsku_with_exact_permission()
+    {
+        var gsku = new Gsku { LifecycleStatus = ProductIdentityLifecycleStatus.IdentityApproved };
+        var authorized = new Actor(Guid.NewGuid(), GskuCorrectionPermissions.Request);
+
+        Assert.Equal(["DETAILS", "REQUEST_CORRECTION"], Actions(gsku, authorized));
+
+        gsku.ActiveLifecycleOperation = new(GskuLifecycleOperationKind.Correction, Guid.NewGuid(), 0);
+        Assert.Equal(["DETAILS"], Actions(gsku, authorized));
+
+        gsku.ActiveLifecycleOperation = null;
+        Assert.Equal(["DETAILS"], Actions(gsku, new Actor(Guid.NewGuid())));
+        Assert.Equal(["DETAILS"], Actions(gsku,
+            new Actor(null, GskuCorrectionPermissions.Request)));
+    }
+
+    [Fact]
+    public void Retirement_request_is_exposed_only_for_approved_idle_gsku_with_exact_permission()
+    {
+        var gsku = new Gsku { LifecycleStatus = ProductIdentityLifecycleStatus.IdentityApproved };
+        var authorized = new Actor(Guid.NewGuid(), GskuRetirementRequestPermissions.Request);
+
+        Assert.Equal(["DETAILS", "REQUEST_RETIREMENT"], Actions(gsku, authorized));
+
+        gsku.ActiveLifecycleOperation = new(GskuLifecycleOperationKind.Correction, Guid.NewGuid(), 0);
+        Assert.Equal(["DETAILS"], Actions(gsku, authorized));
+
+        gsku.ActiveLifecycleOperation = null;
+        Assert.Equal(["DETAILS"], Actions(gsku, new Actor(Guid.NewGuid())));
+        Assert.Equal(["DETAILS"], Actions(gsku,
+            new Actor(null, GskuRetirementRequestPermissions.Request)));
+    }
+
+    [Theory]
+    [InlineData(ProductIdentityLifecycleStatus.Retired)]
+    public void Non_green_lifecycle_actions_fail_closed(ProductIdentityLifecycleStatus status)
+    {
+        var gsku = new Gsku { LifecycleStatus = status };
+        Assert.Equal(["DETAILS"], Actions(gsku, new Actor(Guid.NewGuid(),
+            FirstGskuIdentityLifecyclePermissions.Update,
+            FirstGskuIdentityLifecyclePermissions.Submit,
+            FirstGskuIdentityLifecyclePermissions.Withdraw)));
+    }
+
+    [Fact]
+    public void Inconsistent_pair_or_fenced_draft_never_promotes_actions()
+    {
+        var revision = new ProductDefinitionRevision { Id = Guid.NewGuid(), TenantId = Guid.NewGuid() };
+        var gsku = new Gsku { ProductDefinitionRevisionId = revision.Id, TenantId = revision.TenantId };
+        var actor = new Actor(Guid.NewGuid(), FirstGskuIdentityLifecyclePermissions.Update);
+        IReadOnlyList<string> Pair() => (IReadOnlyList<string>)typeof(GetGskuByIdHandler)
+            .GetMethod("BuildPairAvailableActions", BindingFlags.NonPublic | BindingFlags.Static)!
+            .Invoke(null, [gsku, revision, actor, FirstGskuIdentitySubmitStateKind.None, false, null])!;
+        Assert.Equal(["DETAILS", "EDIT"], Pair());
+        revision.LifecycleStatus = ProductIdentityLifecycleStatus.PendingIdentityApproval;
+        Assert.Equal(["DETAILS"], Pair());
+        revision.LifecycleStatus = ProductIdentityLifecycleStatus.Draft;
+        revision.IdentityWorkflowBinding = new FirstGskuIdentityWorkflowBinding();
+        Assert.Equal(["DETAILS"], Pair());
+        revision.IdentityWorkflowBinding = null;
+        gsku.RetirementOperationId = Guid.NewGuid();
+        Assert.Equal(["DETAILS"], Pair());
+        gsku.RetirementOperationId = null;
+        Assert.Equal(["DETAILS"], Actions(gsku, new Actor(null, FirstGskuIdentityLifecyclePermissions.Update)));
+    }
+
+    // B7 + FIX2 item 1 (changed): every draft state offers its way out — FIX1 hid both edit and submit for any
+    // unfinished submit, which froze a draft whose submit never reached the engine, or waited for reconciliation.
+    [Theory]
+    [InlineData(FirstGskuIdentitySubmitStateKind.None, true, true)]
+    [InlineData(FirstGskuIdentitySubmitStateKind.InFlight, false, false)]
+    [InlineData(FirstGskuIdentitySubmitStateKind.ResubmitRequired, true, true)]
+    [InlineData(FirstGskuIdentitySubmitStateKind.ReconciliationRequired, false, true)]
+    [InlineData(FirstGskuIdentitySubmitStateKind.Ended, true, false)]
+    public void A_drafts_actions_follow_where_its_latest_submit_stands(
+        FirstGskuIdentitySubmitStateKind submit, bool edit, bool resubmit)
+    {
+        // S3b FIX1: the lot flag set, so only the submit state decides here.
+        var gsku = new Gsku { Id = Guid.NewGuid(), LifecycleStatus = ProductIdentityLifecycleStatus.Draft, LotControlled = true };
+        var submitter = Guid.NewGuid();
+        var actor = new Actor(submitter, "mdm.gskus.update", "mdm.gskus.submit");
+
+        var actions = Assert.IsAssignableFrom<IReadOnlyList<string>>(typeof(GetGskuByIdHandler)
+            .GetMethod("BuildAvailableActions", BindingFlags.NonPublic | BindingFlags.Static)!
+            .Invoke(null, [gsku, actor, submit, submitter]));
+
+        Assert.Equal(edit, actions.Contains("EDIT"));
+        Assert.Equal(resubmit, actions.Contains("SUBMIT"));
+    }
+
+    // FIX4 item 11: only the submitter's repeat reconciles a submit — anyone else with the submit permission is not
+    // offered a SUBMIT that would only be refused (the screen tells them who can).
+    [Fact]
+    public void A_submit_in_reconciliation_is_offered_to_its_submitter_only()
+    {
+        var gsku = new Gsku { Id = Guid.NewGuid(), LifecycleStatus = ProductIdentityLifecycleStatus.Draft };
+        var submitter = Guid.NewGuid();
+
+        IReadOnlyList<string> For(Guid actorId) => Assert.IsAssignableFrom<IReadOnlyList<string>>(typeof(GetGskuByIdHandler)
+            .GetMethod("BuildAvailableActions", BindingFlags.NonPublic | BindingFlags.Static)!
+            .Invoke(null, [gsku, new Actor(actorId, "mdm.gskus.update", "mdm.gskus.submit"),
+                FirstGskuIdentitySubmitStateKind.ReconciliationRequired, submitter]));
+
+        Assert.Contains("SUBMIT", For(submitter));
+        Assert.DoesNotContain("SUBMIT", For(Guid.NewGuid()));
+    }
+
+    // FIX5 item 8: the same rule on the PAIR branch (a pending pair whose submit is in reconciliation — the revision may
+    // be half-written): the SUBMIT that settles it is the submitter's only.
+    [Fact]
+    public void A_submit_in_reconciliation_on_a_pending_pair_is_offered_to_its_submitter_only()
+    {
+        var revision = new ProductDefinitionRevision
+        {
+            Id = Guid.NewGuid(), LifecycleStatus = ProductIdentityLifecycleStatus.PendingIdentityApproval
+        };
+        var gsku = new Gsku
+        {
+            Id = Guid.NewGuid(), ProductDefinitionRevisionId = revision.Id,
+            LifecycleStatus = ProductIdentityLifecycleStatus.PendingIdentityApproval
+        };
+        var submitter = Guid.NewGuid();
+
+        IReadOnlyList<string> For(Guid actorId) => Assert.IsAssignableFrom<IReadOnlyList<string>>(typeof(GetGskuByIdHandler)
+            .GetMethod("BuildPairAvailableActions", BindingFlags.NonPublic | BindingFlags.Static)!
+            .Invoke(null, [gsku, revision, new Actor(actorId, "mdm.gskus.update", "mdm.gskus.submit"),
+                FirstGskuIdentitySubmitStateKind.ReconciliationRequired, false, submitter]));
+
+        Assert.Contains("SUBMIT", For(submitter));
+        Assert.DoesNotContain("SUBMIT", For(Guid.NewGuid()));
+    }
+
+    private static IReadOnlyList<string> Actions(Gsku gsku, IProductIdentityLifecycleActorContext actor) =>
+        Assert.IsAssignableFrom<IReadOnlyList<string>>(
+            typeof(GetGskuByIdHandler)
+                .GetMethod("BuildAvailableActions", BindingFlags.NonPublic | BindingFlags.Static)!
+                .Invoke(null, [gsku, actor, FirstGskuIdentitySubmitStateKind.None, null]));
+
+    private sealed class Actor(Guid? subjectId, params string[] permissions)
+        : IProductIdentityLifecycleActorContext
+    {
+        public bool TryResolveCanonicalHumanSubject(out Guid resolved)
+        {
+            resolved = subjectId ?? Guid.Empty;
+            return subjectId.HasValue;
+        }
+
+        public bool HasPermission(string permission) => permissions.Contains(permission, StringComparer.Ordinal);
+    }
+}

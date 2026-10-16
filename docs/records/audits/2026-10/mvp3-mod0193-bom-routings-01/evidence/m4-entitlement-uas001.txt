@@ -1,0 +1,38 @@
+# M-4 rest — entitlement, tenant Admin token, UAS-001 (live fleet: Auth 5056, Platform 5057, MDM 5059, Gateway 5000, Web 5001, Manufacturing 5067)
+# 2026-10-12T08:27:57Z · feature/mvp3-bom-routings @ bbd345ffb
+# Login: admin@diten.com via Web /platform/login — admin login succeeded (no password change, reset or DB write).
+# Test tenant d703d845-b823-4a52-a013-be39ac01d323 (plan FREE, type Internal) registered by that admin through Platform POST /api/admin/tenants;
+# its initial admin invited through POST /api/admin/tenants/{id}/admin-users/{id}/invite (Development returns a temp password);
+# first tenant login forced /account/change-password (normal flow). Passwords are kept outside the repository and are not recorded here.
+
+## Module visible in Platform catalog
+GET /api/platform/module-catalog?search=BOM -> 200: moduleCode=BOM-ROUTINGS displayName='BOM & Routings' domain=MANUFACTURING service=Manufacturing status=Active origin=SelfRegistered isTenantAssignable=true
+
+## 1. Before entitlement (= the unauthorized user)
+[before-entitlement] tenant admin login 200; token tenant_id=d703d845-b823-4a52-a013-be39ac01d323 role=Admin permissions=36
+[before-entitlement] manufacturing.bom.* in token: []
+[before-entitlement] mdm.legal-entities.read in token: True
+[before-entitlement] Web GET /Manufacturing/Boms -> HTTP 200; Location=None; shell(layout-menu)=True; access-denied card=True; BOM skeleton(#bomLegalEntity/form)=False
+[before-entitlement] Web GET /Manufacturing/Boms/Create -> HTTP 200; Location=None; shell(layout-menu)=True; access-denied card=True; BOM skeleton(#bomLegalEntity/form)=False
+[before-entitlement] Gateway GET /api/bom/versions -> HTTP 403 
+
+## 2. Entitlement by the platform admin
+available-modules 200 ['BOM-ROUTINGS']
+add entitlement BOM-ROUTINGS (Addon) 201 {"data":"06cf84e7-9b67-49f4-b6e8-4ba0210c6c9e","statusCode":201,"isSuccessful":true,"errors":[],"reason_code":null,"correlation_id":null}
+effective-access 200 {"data":{"tenantId":"d703d845-b823-4a52-a013-be39ac01d323","moduleCode":"BOM-ROUTINGS","moduleName":"BOM & Routings","source":"Addon","effectiveAccess":1,"hasAccess":true,"reason":"MVP-3 M-4 acceptance test tenant","expiryDateUtc":null},"statusCode":200,"isSuccessful":true,"errors":[],"reason_code":
+
+## 3. After entitlement (same user, new login)
+[after-entitlement] tenant admin login 200; token tenant_id=d703d845-b823-4a52-a013-be39ac01d323 role=Admin permissions=42
+[after-entitlement] manufacturing.bom.* in token: ['manufacturing.bom.create', 'manufacturing.bom.delete', 'manufacturing.bom.export', 'manufacturing.bom.read', 'manufacturing.bom.release', 'manufacturing.bom.update']
+[after-entitlement] mdm.legal-entities.read in token: True
+[after-entitlement] Web GET /Manufacturing/Boms -> HTTP 200; Location=None; shell(layout-menu)=True; access-denied card=False; BOM skeleton(#bomLegalEntity/form)=True
+[after-entitlement] Web GET /Manufacturing/Boms/Create -> HTTP 200; Location=None; shell(layout-menu)=True; access-denied card=False; BOM skeleton(#bomLegalEntity/form)=True
+[after-entitlement] Gateway GET /api/bom/versions -> HTTP 422 {"error":{"code":"LEGAL_ENTITY_NOT_REFERENCEABLE","message":"The legal entity does not belong to this tenant or is not active.","correlationId":"bf1f16be-860b-4
+  (422 = the placeholder LE id is not this tenant's — the BOM permission gate is passed; LE proof is M-3.)
+
+## 4. Admin permissions come from the entitlement, not from the role template
+git grep -n -i 'bom|manufactur' -- services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/DefaultRolePermissionTemplate.cs -> no match
+Admin token: 36 permissions before, 42 after; the 6 added are exactly manufacturing.bom.{create,delete,export,read,release,update}.
+
+## UAS-001 note
+Signed-in, unpermitted: in-shell _AccessDenied card, no redirect (Location none), no BOM skeleton. HTTP status is 200 — the shared _AccessDenied partial pattern (UAS-001 §4) does not set 403; same on every page using it.

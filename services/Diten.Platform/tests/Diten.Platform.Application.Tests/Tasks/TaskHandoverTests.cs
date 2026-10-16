@@ -347,7 +347,7 @@ public sealed class TaskHandoverTests
     private static Task<Response<NoContent>> Return(
         FakeTaskItemRepository tasks, FakeTaskAssignmentRepository events, TaskItem task, string reason)
         => new ReturnTaskItemHandler(
-                tasks, events, new FakeCurrentUserContext(TaskTestData.Me), new FakeTenantContext(TaskTestData.Tenant))
+                tasks, events, new FakeCurrentUserContext(TaskTestData.Me), new FakeTenantContext(TaskTestData.Tenant), writeGate: TaskWriteGateDoubles.Open)
             .Handle(
                 new ReturnTaskItemCommand(task.Id, new ReturnTaskItemRequest(task.Version, reason), "corr-return"),
                 CancellationToken.None);
@@ -571,7 +571,7 @@ public sealed class TaskHandoverTests
                 repository,
                 new FakeTaskAssignmentRepository(),
                 new FakeCurrentUserContext(TaskTestData.Me),
-                new FakeTenantContext(TaskTestData.Tenant))
+                new FakeTenantContext(TaskTestData.Tenant), writeGate: TaskWriteGateDoubles.Open)
             .Handle(
                 new ReleaseTaskItemCommand(task.Id, new TaskTransitionRequest(task.Version, null, null), "corr-release"),
                 CancellationToken.None);
@@ -628,7 +628,7 @@ public sealed class TaskHandoverTests
                     actingAs ?? TaskTestData.Me,
                     UnitId),
                 new FakeCurrentUserContext(actingAs ?? TaskTestData.Me),
-                new FakeTenantContext(TaskTestData.Tenant))
+                new FakeTenantContext(TaskTestData.Tenant), writeGate: TaskWriteGateDoubles.Open)
             .Handle(
                 new ReassignTaskItemCommand(
                     task.Id, new ReassignTaskItemRequest(task.Version, newAssignee, reason), "corr-reassign"),

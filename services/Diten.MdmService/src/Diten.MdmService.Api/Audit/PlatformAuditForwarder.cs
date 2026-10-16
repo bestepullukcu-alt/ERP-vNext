@@ -50,34 +50,43 @@ public sealed class PlatformAuditForwarder : IPlatformAuditForwarder
 
         var httpContext = _httpContextAccessor.HttpContext;
         var user = httpContext?.User;
-        var (actorType, actorId) = ResolveActor(user);
-        var tenantId = ReadGuid(user?.FindFirst("tenant_id")?.Value);
+        // S2 FIX1 item 5: a command that is never its caller's act is recorded as the system's.
+        var (actorType, actorId) = request.SystemActor ? (ActorSystem, (Guid?)null) : ResolveActor(user);
+        // FU04 S2: a worker's command names its tenant itself; a user's token always wins.
+        var tenantId = ReadGuid(user?.FindFirst("tenant_id")?.Value) ?? request.TenantId;
 
         // BL-014 — thread the originating request's X-Correlation-Id so MDM audits correlate to the source request;
         // fall back to a fresh id when the header is absent or not a Guid (AuditAppendRequest.CorrelationId is a Guid).
         string? correlationHeader = httpContext?.Request.Headers["X-Correlation-Id"];
-        var correlationId = Guid.TryParse(correlationHeader, out var incomingCorrelation) && incomingCorrelation != Guid.Empty
-            ? incomingCorrelation
-            : Guid.NewGuid();
+        // FIX2 (M2) — the request's one normalised id when the pipeline supplied it (the brand history row carries the same).
+        var correlationId = request.CorrelationId
+            ?? (Guid.TryParse(correlationHeader, out var incomingCorrelation) && incomingCorrelation != Guid.Empty
+                ? incomingCorrelation
+                : Guid.NewGuid());
 
-        var payload = new
+        var payload = new Dictionary<string, object?>
         {
-            CorrelationId = correlationId,
-            RequestType = request.RequestType,
-            ActorType = actorType,
-            ActorId = actorId,
-            ActorEmail = user?.FindFirst(ClaimTypes.Email)?.Value ?? user?.FindFirst("email")?.Value,
-            TargetTenantId = tenantId,
-            Category = request.Category,
-            EntityType = request.EntityType,
-            EntityId = request.EntityId,
-            Operation = request.Operation,
-            Outcome = request.Outcome,
-            SourceService = SourceServiceName,
-            SourceModule = request.SourceModule,
-            IsPlatformGlobal = false,
-            OccurredAtUtc = DateTimeOffset.UtcNow
+            ["correlationId"] = correlationId,
+            ["requestType"] = request.RequestType,
+            ["actorType"] = actorType,
+            ["actorId"] = actorId,
+            ["actorEmail"] = request.SystemActor ? null : user?.FindFirst(ClaimTypes.Email)?.Value ?? user?.FindFirst("email")?.Value,
+            ["targetTenantId"] = tenantId,
+            ["category"] = request.Category,
+            ["entityType"] = request.EntityType,
+            ["entityId"] = request.EntityId,
+            ["operation"] = request.Operation,
+            ["outcome"] = request.Outcome,
+            ["sourceService"] = SourceServiceName,
+            ["sourceModule"] = request.SourceModule,
+            ["isPlatformGlobal"] = false,
+            ["occurredAtUtc"] = DateTimeOffset.UtcNow
         };
+        // MOD-0290-FU04 S1 FIX1 item 2: Platform's AuditAppendRequest already takes these three; they are sent only when
+        // the command supplied them, so every other command's body is unchanged (keys camel-cased as the anonymous object was).
+        if (request.BeforeState is not null) payload["beforeState"] = request.BeforeState;
+        if (request.AfterState is not null) payload["afterState"] = request.AfterState;
+        if (request.Metadata is not null) payload["metadata"] = request.Metadata;
 
         try
         {

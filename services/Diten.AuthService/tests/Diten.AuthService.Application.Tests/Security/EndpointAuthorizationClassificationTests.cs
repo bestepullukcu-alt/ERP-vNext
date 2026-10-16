@@ -46,6 +46,7 @@ public sealed class EndpointAuthorizationClassificationTests
     [InlineData(typeof(AuthController), nameof(AuthController.Logout))]
     [InlineData(typeof(AuthController), nameof(AuthController.ChangePassword))]
     [InlineData(typeof(AuthController), nameof(AuthController.Me))]
+    [InlineData(typeof(AuthController), nameof(AuthController.UpdateMyPreferences))] // WP-EMAIL-LANG-01: own record only
     [InlineData(typeof(PlatformAuthController), nameof(PlatformAuthController.ForcedChangePassword))]
     // (b) self-service — invited user redeems their set-password link before holding any permission.
     [InlineData(typeof(UsersController), nameof(UsersController.SetPassword))]
@@ -54,6 +55,7 @@ public sealed class EndpointAuthorizationClassificationTests
     [InlineData(typeof(PlatformAuthController), nameof(PlatformAuthController.SyncPlatformAdmin))]
     [InlineData(typeof(InternalEventsController), nameof(InternalEventsController.TenantActivated))]
     [InlineData(typeof(InternalEventsController), nameof(InternalEventsController.TenantAdminInvited))]
+    [InlineData(typeof(InternalEventsController), nameof(InternalEventsController.TenantAdminCreated))]
     public void Lifecycle_and_internal_endpoints_are_not_has_permission_guarded(Type controller, string methodName)
     {
         var method = controller.GetMethod(methodName)!;

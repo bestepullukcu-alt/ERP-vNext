@@ -487,4 +487,57 @@
   <data name="Err_note_not_found" xml:space="preserve"><value>Note introuvable ; rechargez la page.</value></data>
   <data name="DecisionApprovedFinal" xml:space="preserve"><value>Approbation enregistrée. La revue est terminée.</value></data>
   <data name="Err_withdraw_not_submitter" xml:space="preserve"><value>Seule la personne qui a soumis cette revue peut la retirer.</value></data>
+  <data name="PnButton" xml:space="preserve"><value>Notes de présentation</value></data>
+  <data name="PnBar" xml:space="preserve"><value>Notes de présentation : {0} / {1} étapes remplies</value></data>
+  <data name="PnMissing" xml:space="preserve"><value>Manquantes :</value></data>
+  <data name="PnFilledRule" xml:space="preserve"><value>Remplie : message clé et argumentaire rédigés.</value></data>
+  <data name="PnFilled" xml:space="preserve"><value>Notes remplies</value></data>
+  <data name="PnEmpty" xml:space="preserve"><value>Notes manquantes</value></data>
+  <data name="PnStepOf" xml:space="preserve"><value>Étape {0} / {1}</value></data>
+  <data name="PnTabContent" xml:space="preserve"><value>Contenu</value></data>
+  <data name="PnTabNotes" xml:space="preserve"><value>Notes de présentation</value></data>
+  <data name="PnRequired" xml:space="preserve"><value>Obligation</value></data>
+  <data name="PnEstimatedDuration" xml:space="preserve"><value>Durée estimée</value></data>
+  <data name="PnPrerequisite" xml:space="preserve"><value>Prérequis</value></data>
+  <data name="PnContentNote" xml:space="preserve"><value>Les réglages du contenu (obligation, durée, prérequis) restent sur le bouton de réglages de la carte d’étape.</value></data>
+  <data name="PnReadOnly" xml:space="preserve"><value>Cette version est publiée ou n’est pas un brouillon ; les notes de présentation sont en lecture seule.</value></data>
+  <data name="PnKeyMessage" xml:space="preserve"><value>Message clé</value></data>
+  <data name="PnTalkTrack" xml:space="preserve"><value>Argumentaire</value></data>
+  <data name="PnTarget" xml:space="preserve"><value>Durée cible</value></data>
+  <data name="PnSeconds" xml:space="preserve"><value>s</value></data>
+  <data name="PnTargetHint" xml:space="preserve"><value>Si vide, la durée estimée de l’étape ({0} s) est utilisée.</value></data>
+  <data name="PnTargetHintNone" xml:space="preserve"><value>Si vide, aucune durée cible n’est affichée.</value></data>
+  <data name="PnEstimate" xml:space="preserve"><value>Cible {0} s</value></data>
+  <data name="PnTransition" xml:space="preserve"><value>Phrase de transition</value></data>
+  <data name="PnObjections" xml:space="preserve"><value>Objections attendues · {0} / {1}</value></data>
+  <data name="PnObjectionsHint" xml:space="preserve"><value>Seules les réponses approuvées pour {0} peuvent être choisies.</value></data>
+  <data name="PnReasonObjectionReadMissing" xml:space="preserve"><value>Vous n’avez pas l’autorisation de lire la bibliothèque d’objections.</value></data>
+  <data name="PnReasonObjectionNoProduct" xml:space="preserve"><value>Ce parcours n’a pas de produit : aucune réponse ne peut être liée.</value></data>
+  <data name="PnCreateInLibrary" xml:space="preserve"><value>Créer dans la bibliothèque</value></data>
+  <data name="PnCreateUnsaved" xml:space="preserve"><value>Cette étape a des modifications non enregistrées. La bibliothèque s’ouvre dans un nouvel onglet ; enregistrez l’étape à votre retour.</value></data>
+  <data name="PnRefresh" xml:space="preserve"><value>Actualiser la liste</value></data>
+  <data name="PnAddObjection" xml:space="preserve"><value>Ajouter une objection</value></data>
+  <data name="PnPickerSearch" xml:space="preserve"><value>Rechercher dans les réponses</value></data>
+  <data name="PnPickerEmpty" xml:space="preserve"><value>Aucune réponse approuvée pour ce produit.</value></data>
+  <data name="PnPickerMax" xml:space="preserve"><value>Au plus {0} objections peuvent être choisies.</value></data>
+  <data name="PnClaimCount" xml:space="preserve"><value>{0} allégation(s) à l’appui</value></data>
+  <data name="PnRemove" xml:space="preserve"><value>Retirer</value></data>
+  <data name="PnUnusable" xml:space="preserve"><value>Inutilisable (non approuvée ou autre produit) ; retirée à l’enregistrement.</value></data>
+  <data name="PnPreview" xml:space="preserve"><value>Aperçu</value></data>
+  <data name="PnDoctorScreen" xml:space="preserve"><value>Écran du médecin</value></data>
+  <data name="PnNotHere" xml:space="preserve"><value>Les notes n’apparaissent pas ici</value></data>
+  <data name="PnRemote" xml:space="preserve"><value>Télécommande du délégué · Notes</value></data>
+  <data name="PnThisSlide" xml:space="preserve"><value>Cette diapositive</value></data>
+  <data name="PnTargetShort" xml:space="preserve"><value>cible ≈ {0}</value></data>
+  <data name="PnApprovedAnswer" xml:space="preserve"><value>Objections attendues · réponse approuvée</value></data>
+  <data name="PnSave" xml:space="preserve"><value>Enregistrer l’étape</value></data>
+  <data name="PnCancel" xml:space="preserve"><value>Annuler</value></data>
+  <data name="PnSaved" xml:space="preserve"><value>Étape enregistrée.</value></data>
+  <data name="PnInvalid" xml:space="preserve"><value>Vérifiez : message clé ≤ 500, argumentaire ≤ 4000, cible 10–3600 s, transition ≤ 500, au plus 10 objections.</value></data>
+  <data name="PnUnsavedClose" xml:space="preserve"><value>Les modifications non enregistrées seront perdues. Fermer quand même ?</value></data>
+  <data name="PnDuration" xml:space="preserve"><value>{0} min {1} s</value></data>
+  <data name="PnSecondsValue" xml:space="preserve"><value>{0} s</value></data>
+  <data name="Err_path_step_presentation_invalid" xml:space="preserve"><value>Les notes de présentation dépassent une limite (message clé ≤ 500, argumentaire ≤ 4000, cible 10–3600 s, transition ≤ 500, ≤ 10 objections).</value></data>
+  <data name="Err_path_step_objection_invalid" xml:space="preserve"><value>Seules les réponses approuvées du produit de ce parcours peuvent être liées.</value></data>
+  <data name="Err_path_step_objection_not_found" xml:space="preserve"><value>Une réponse liée est introuvable ; actualisez la liste.</value></data>
 </root>

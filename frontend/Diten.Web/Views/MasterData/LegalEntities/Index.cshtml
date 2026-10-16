@@ -24,5 +24,7 @@
     <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
     <partial name="_IndexL10n" />
     <script src="~/assets/vendor/libs/flatpickr/flatpickr.js"></script>
+    @* BL-391 × WCN-FIX-03 (XMC-001) — the shared typed-date guard the dates use; without it they open read-only. *@
+    <script src="~/assets/js/shared/diten-datefield.js" asp-append-version="true"></script>
     <script src="~/assets/js/MasterData/LegalEntities/index.js" asp-append-version="true"></script>
 }

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Localization;
 using Diten.Web.Services.Auth;
 using Diten.Web.Services.Branding;
 
@@ -21,29 +22,76 @@ public class AccountController : Controller
     private readonly IAuthCookieService _authCookieService;
     private readonly IBrandingGateway _brandingGateway;
     private readonly IWebHostEnvironment _environment;
+    private readonly IStringLocalizer<SharedResource> _localizer;
+    private readonly ILogger<AccountController> _logger;
 
     public AccountController(
         IAuthGateway authGateway,
         IAuthCookieService authCookieService,
         IBrandingGateway brandingGateway,
-        IWebHostEnvironment environment)
+        IWebHostEnvironment environment,
+        IStringLocalizer<SharedResource> localizer,
+        ILogger<AccountController>? logger = null)
     {
+        _logger = logger ?? Microsoft.Extensions.Logging.Abstractions.NullLogger<AccountController>.Instance;
         _authGateway = authGateway;
         _authCookieService = authCookieService;
         _brandingGateway = brandingGateway;
         _environment = environment;
+        _localizer = localizer;
     }
+
+    // WP-USERS-ROLES-CLOSE-FIX1 item 2 (BL-496) — EVERY refusal of these doors is said in the reader's language: the
+    // service's sentence when it came with a code the bridge knows (already localized), otherwise this door's own
+    // sentence — never the service's English. The body is the shape diten-refusal.js reads ({ errors, local: true }: a
+    // sentence this application produced, already localized), with `detail` kept for the existing readers.
+    private ObjectResult Refused(int status, AuthBridgeResult? result, string fallbackKey)
+        => StatusCode(status, new { detail = SentenceOf(result, fallbackKey), errors = new[] { SentenceOf(result, fallbackKey) }, local = true });
+
+    private string SentenceOf(AuthBridgeResult? result, string fallbackKey)
+        => result is { ErrorLocalized: true } && !string.IsNullOrWhiteSpace(result.ErrorMessage)
+            ? result.ErrorMessage
+            : Say(fallbackKey);
+
+    // FIX2 item 6 — the refresh answers like every other door (the reader's language, the shape diten-refusal.js reads)
+    // and keeps `reauthRequired`, which dt-defaults' refresh reads; the service's English and an exception's text never
+    // reach the browser.
+    private ObjectResult RefreshRefused(int status, AuthBridgeResult? result, string fallbackKey, bool reauthRequired)
+    {
+        var detail = SentenceOf(result, fallbackKey);
+        return StatusCode(status, new { detail, errors = new[] { detail }, local = true, reauthRequired });
+    }
+
+    private string Say(string key)
+    {
+        var sentence = _localizer[key];
+        return sentence.ResourceNotFound ? _localizer["ErrorOccurred"].Value : sentence.Value;
+    }
+
+    private ObjectResult RequestInvalid() => Refused(StatusCodes.Status400BadRequest, null, "Auth.Error.RequestInvalid");
+
+    // BL-529 FIX3 — the set-password link doors keep the service's status where it means something to the page (429 too
+    // many requests, 409 a deactivated account); the localized sentence travels in `detail`.
+    private IActionResult PasswordDoorFailure(AuthBridgeResult result, string fallbackKey)
+        => result.StatusCode switch
+        {
+            429 => Refused(429, result, "Auth.Error.TooManyRequests"),
+            409 => Refused(409, result, fallbackKey),
+            >= 500 => Refused(503, result, "Auth.Error.ServiceUnavailable"),
+            _ => Refused(400, result, fallbackKey)
+        };
 
     // FIX-LOGIN-BRIDGE-RESILIENCE — a transport failure (auth service / gateway unreachable) surfaces from the
     // bridge as StatusCode >= 500 with a clean ErrorMessage; map it to 503 so the client shows "service
     // unavailable" instead of a misleading 401. Credential / validation failures keep the existing 401.
-    private IActionResult AuthFailureResult(AuthBridgeResult result, string fallbackMessage)
-    {
-        var detail = result.ErrorMessage ?? fallbackMessage;
-        return result.StatusCode is >= 500
-            ? StatusCode(503, new { detail })
-            : Unauthorized(new { detail });
-    }
+    private IActionResult AuthFailureResult(AuthBridgeResult result, string fallbackKey)
+        => result.StatusCode switch
+        {
+            >= 500 => Refused(503, result, "Auth.Error.ServiceUnavailable"),
+            // FIX3 item 2 — the sign-in doors' rate limit keeps its status (and says it in the reader's language).
+            429 => Refused(429, result, "Auth.Error.TooManyRequests"),
+            _ => Refused(401, result, fallbackKey)
+        };
 
     [HttpGet("/account/login")]
     public async Task<IActionResult> Login(Guid? tenantId = null, string? returnUrl = null, CancellationToken ct = default)
@@ -105,7 +153,7 @@ public class AccountController : Controller
 
         if (!ModelState.IsValid || effectiveTenantId == Guid.Empty)
         {
-            return BadRequest(new { detail = "Tenant login requires a valid tenant identifier." });
+            return RequestInvalid();
         }
 
         var result = await _authGateway.LoginTenantAsync(request.Email, request.Password, effectiveTenantId, request.RememberMe, ct);
@@ -123,7 +171,7 @@ public class AccountController : Controller
 
         if (!result.Success || string.IsNullOrWhiteSpace(result.AccessToken) || string.IsNullOrWhiteSpace(result.RefreshToken) || !result.ExpiresAt.HasValue)
         {
-            return AuthFailureResult(result, "Login failed.");
+            return AuthFailureResult(result, "Auth.Error.LoginFailed");
         }
 
         _authCookieService.WriteTokens(Response, result.AccessToken, result.RefreshToken, result.ExpiresAt.Value);
@@ -140,13 +188,13 @@ public class AccountController : Controller
     {
         if (!ModelState.IsValid || string.IsNullOrWhiteSpace(request.ChallengeId) || string.IsNullOrWhiteSpace(request.Code))
         {
-            return BadRequest(new { detail = "Verification code is required." });
+            return RequestInvalid();
         }
 
         var result = await _authGateway.VerifyTenantMfaAsync(request.ChallengeId, request.Code, ct);
         if (!result.Success || string.IsNullOrWhiteSpace(result.AccessToken) || string.IsNullOrWhiteSpace(result.RefreshToken) || !result.ExpiresAt.HasValue)
         {
-            return AuthFailureResult(result, "Verification failed.");
+            return AuthFailureResult(result, "Auth.Error.VerificationFailed");
         }
 
         _authCookieService.WriteTokens(Response, result.AccessToken, result.RefreshToken, result.ExpiresAt.Value);
@@ -160,13 +208,13 @@ public class AccountController : Controller
     {
         if (!ModelState.IsValid || string.IsNullOrWhiteSpace(request.ChallengeId))
         {
-            return BadRequest(new { detail = "Verification challenge is required." });
+            return RequestInvalid();
         }
 
         var result = await _authGateway.ResendTenantMfaAsync(request.ChallengeId, ct);
         if (!result.Success || string.IsNullOrWhiteSpace(result.ChallengeId))
         {
-            return AuthFailureResult(result, "Verification code could not be resent.");
+            return AuthFailureResult(result, "Auth.Error.VerificationFailed");
         }
 
         return Ok(new LoginBridgeResponse(
@@ -198,13 +246,13 @@ public class AccountController : Controller
     {
         if (!ModelState.IsValid)
         {
-            return BadRequest(new { detail = "Platform login request is invalid." });
+            return RequestInvalid();
         }
 
         var result = await _authGateway.LoginPlatformAsync(request.Email, request.Password, request.RememberMe, ct);
         if (!result.Success || string.IsNullOrWhiteSpace(result.AccessToken) || string.IsNullOrWhiteSpace(result.RefreshToken) || !result.ExpiresAt.HasValue)
         {
-            return AuthFailureResult(result, "Platform login failed.");
+            return AuthFailureResult(result, "Auth.Error.LoginFailed");
         }
 
         _authCookieService.ClearTokens(Response);
@@ -228,16 +276,26 @@ public class AccountController : Controller
     {
         if (string.IsNullOrWhiteSpace(request.Email))
         {
-            return BadRequest(new { detail = "Email is required." });
+            return RequestInvalid();
         }
 
-        await _authGateway.ForgotPlatformPasswordAsync(request.Email, ct);
+        // BL-529 FIX3 — a refusal the person must see (too many requests, the service down) is passed on in their language;
+        // every other answer stays "sent" (the door never says whether the address exists).
+        var result = await _authGateway.ForgotPlatformPasswordAsync(request.Email, ct);
+        if (!result.Success && result.StatusCode is 429 or >= 500)
+        {
+            return result.StatusCode == 429
+                ? Refused(429, result, "Auth.Error.TooManyRequests")
+                : Refused(503, result, "Auth.Error.ServiceUnavailable");
+        }
+
         return Ok(new { success = true });
     }
 
     [HttpGet("/platform/reset-password")]
     public IActionResult PlatformResetPassword([FromQuery] string? email, [FromQuery] string? token)
     {
+        KeepLinkOutOfReferrerAndCache();
         ViewBag.AuthMode = "platform";
         ViewBag.Email = email ?? string.Empty;
         ViewBag.Token = token ?? string.Empty;
@@ -248,9 +306,17 @@ public class AccountController : Controller
     }
 
     // Tenant invitation redemption — reuses the ResetPassword view/JS with tenant wiring.
+    // WP-USERS-ROLES-CLOSE-FIX1 item 3 (KR4) — the link is checked BEFORE the form is drawn (read-only, AuthService's
+    // set-password/check, the redemption's own reader): a deactivated account's link and a dead link get no form, only
+    // their sentence. Two faces, never more than the redemption would say: "deactivated" (the link is still the account's —
+    // a pending invitation) and one generic "this link is no longer valid" for everything else (missing, expired, used, or
+    // deleted by a deactivation — a deleted link is never called "deactivated"). The service unreachable draws the form as
+    // before: the redemption then answers for itself. The link is not logged here.
     [HttpGet("/account/set-password")]
-    public IActionResult SetPassword([FromQuery] string? email, [FromQuery] string? token)
+    public async Task<IActionResult> SetPassword([FromQuery] string? email, [FromQuery] string? token, CancellationToken ct)
     {
+        KeepLinkOutOfReferrerAndCache();
+        ViewBag.LinkRefusal = await SetPasswordLinkRefusalAsync(email, token, ct);
         ViewBag.AuthMode = "tenant";
         ViewBag.Email = email ?? string.Empty;
         ViewBag.Token = token ?? string.Empty;
@@ -258,6 +324,33 @@ public class AccountController : Controller
         ViewBag.SetPasswordUrl = "/account/set-password";
         ViewBag.BackToLoginUrl = "/account/login";
         return View("ResetPassword");
+    }
+
+    // FIX2 small item — a page opened from a set-password link carries the link in its address: no Referer leaves it (to a
+    // font, an image, the next site) and no cache keeps it.
+    private void KeepLinkOutOfReferrerAndCache()
+    {
+        Response.Headers["Referrer-Policy"] = "no-referrer";
+        Response.Headers.CacheControl = "no-store";
+        Response.Headers.Pragma = "no-cache";
+    }
+
+    private async Task<string?> SetPasswordLinkRefusalAsync(string? email, string? token, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(token))
+        {
+            return Say("Auth.Error.LinkInvalid");
+        }
+
+        var check = await _authGateway.CheckTenantPasswordLinkAsync(email, token, ct);
+        return check.StatusCode switch
+        {
+            _ when check.Success => null,
+            409 => Say("Auth.Error.AccountDeactivated"),
+            429 => Say("Auth.Error.TooManyRequests"),
+            >= 500 => null,
+            _ => Say("Auth.Error.LinkInvalid")
+        };
     }
 
     [HttpPost("/account/set-password")]
@@ -268,13 +361,13 @@ public class AccountController : Controller
             string.IsNullOrWhiteSpace(request.NewPassword) ||
             !string.Equals(request.NewPassword, request.ConfirmPassword, StringComparison.Ordinal))
         {
-            return BadRequest(new { detail = "Password setup request is invalid." });
+            return RequestInvalid();
         }
 
         var result = await _authGateway.ResetTenantPasswordAsync(request.Email, request.Token, request.NewPassword, ct);
         return result.Success
             ? Ok(new { success = true, redirectUrl = "/account/login" })
-            : BadRequest(new { detail = result.ErrorMessage ?? "Password setup link is invalid or expired." });
+            : PasswordDoorFailure(result, "Auth.Error.LinkInvalid");
     }
 
     [HttpPost("/platform/reset-password")]
@@ -285,13 +378,13 @@ public class AccountController : Controller
             string.IsNullOrWhiteSpace(request.NewPassword) ||
             !string.Equals(request.NewPassword, request.ConfirmPassword, StringComparison.Ordinal))
         {
-            return BadRequest(new { detail = "Password reset request is invalid." });
+            return RequestInvalid();
         }
 
         var result = await _authGateway.ResetPlatformPasswordAsync(request.Email, request.Token, request.NewPassword, ct);
         return result.Success
             ? Ok(new { success = true, redirectUrl = "/platform/login" })
-            : BadRequest(new { detail = result.ErrorMessage ?? "Password reset token is invalid or expired." });
+            : PasswordDoorFailure(result, "Auth.Error.LinkInvalid");
     }
 
     [HttpGet("/platform/change-password")]
@@ -313,13 +406,13 @@ public class AccountController : Controller
             string.IsNullOrWhiteSpace(request.NewPassword) ||
             !string.Equals(request.NewPassword, request.ConfirmPassword, StringComparison.Ordinal))
         {
-            return BadRequest(new { detail = "Password change request is invalid." });
+            return RequestInvalid();
         }
 
         var result = await _authGateway.ChangePlatformPasswordAsync(request.CurrentPassword, request.NewPassword, request.RememberMe, ct);
         if (!result.Success || string.IsNullOrWhiteSpace(result.AccessToken) || string.IsNullOrWhiteSpace(result.RefreshToken) || !result.ExpiresAt.HasValue)
         {
-            return AuthFailureResult(result, "Password change failed.");
+            return AuthFailureResult(result, "Auth.Error.PasswordChangeFailed");
         }
 
         _authCookieService.ClearTokens(Response);
@@ -348,13 +441,13 @@ public class AccountController : Controller
             string.IsNullOrWhiteSpace(request.NewPassword) ||
             !string.Equals(request.NewPassword, request.ConfirmPassword, StringComparison.Ordinal))
         {
-            return BadRequest(new { detail = "Password change request is invalid." });
+            return RequestInvalid();
         }
 
         var result = await _authGateway.ChangeTenantPasswordAsync(request.CurrentPassword, request.NewPassword, request.RememberMe, ct);
         if (!result.Success || string.IsNullOrWhiteSpace(result.AccessToken) || string.IsNullOrWhiteSpace(result.RefreshToken) || !result.ExpiresAt.HasValue)
         {
-            return AuthFailureResult(result, "Password change failed.");
+            return AuthFailureResult(result, "Auth.Error.PasswordChangeFailed");
         }
 
         _authCookieService.ClearTokens(Response);
@@ -368,7 +461,7 @@ public class AccountController : Controller
         if (!TryGetCookie("access_token", out var accessToken) || !TryGetCookie("refresh_token", out var refreshToken))
         {
             _authCookieService.ClearTokens(Response);
-            return Unauthorized(new { detail = "Authentication cookies are missing." });
+            return RefreshRefused(StatusCodes.Status401Unauthorized, null, "Auth.Error.SessionEnded", reauthRequired: true);
         }
 
         var tenantId = TryReadTenantId(accessToken);
@@ -381,21 +474,19 @@ public class AccountController : Controller
                 {
                     _authCookieService.ClearTokens(Response);
                 }
-                return StatusCode(result.StatusCode ?? 500, new { 
-                    detail = result.ErrorMessage ?? "Refresh failed.",
-                    reauthRequired = result.ReauthRequired
-                });
+                var status = result.StatusCode ?? StatusCodes.Status500InternalServerError;
+                return RefreshRefused(status, result,
+                    status >= 500 ? "Auth.Error.ServiceUnavailable" : "Auth.Error.SessionEnded", result.ReauthRequired);
             }
 
             _authCookieService.WriteTokens(Response, result.AccessToken, result.RefreshToken, result.ExpiresAt.Value);
             return Ok(new { success = true, user = result.User });
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
-            return StatusCode(500, new { 
-                detail = "Transient error during token refresh: " + ex.Message,
-                reauthRequired = false
-            });
+            // The exception is the server's to read (its type, in the log); the browser gets the general sentence.
+            _logger.LogWarning(ex, "Token refresh failed with {ExceptionType}; the session is kept.", ex.GetType().Name);
+            return RefreshRefused(StatusCodes.Status500InternalServerError, null, "Auth.Error.ServiceUnavailable", reauthRequired: false);
         }
     }
 

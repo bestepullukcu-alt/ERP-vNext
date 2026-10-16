@@ -99,7 +99,7 @@ public sealed class ListPlannedVisitsHandler : IRequestHandler<ListPlannedVisits
         var page = query.ToList();
         var names = await _names.ReadAsync(
             tenantId,
-            page.Select(v => v.AccountId).Concat(page.Where(v => v.TargetType != PlannedVisitTargetType.Contact).Select(v => (Guid?)v.TargetId)),
+            page.Select(v => v.AccountId).Concat(page.Where(v => VisitTargetNameReader.NamedByInstitution(v.TargetType)).Select(v => (Guid?)v.TargetId)),
             page.Select(v => v.ContactId),
             cancellationToken);
         var items = page.Select(v => PlannedVisitMapper.ToListItem(v, names)).ToList();

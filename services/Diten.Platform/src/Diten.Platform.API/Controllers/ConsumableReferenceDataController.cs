@@ -28,13 +28,16 @@ public sealed class ConsumableReferenceDataController : CustomBaseController
 {
     private readonly IMediator _mediator;
     private readonly BusinessReferenceDataCatalogLoadOptions _catalogOptions;
+    private readonly IOptions<Diten.Platform.Infrastructure.Persistence.Settings.BusinessReferenceDataProviderOptions>? _providerOptions;
 
     public ConsumableReferenceDataController(
         IMediator mediator,
-        IOptions<BusinessReferenceDataCatalogLoadOptions> catalogOptions)
+        IOptions<BusinessReferenceDataCatalogLoadOptions> catalogOptions,
+        IOptions<Diten.Platform.Infrastructure.Persistence.Settings.BusinessReferenceDataProviderOptions>? providerOptions = null)
     {
         _mediator = mediator;
         _catalogOptions = catalogOptions.Value;
+        _providerOptions = providerOptions;
     }
 
     [HttpGet("consumable-sets/{setCode}/published-values")]
@@ -53,8 +56,11 @@ public sealed class ConsumableReferenceDataController : CustomBaseController
             ? parsed
             : null;
 
+        // W4-FIX-d (G-2): the verified catalogs (market, uom, pack-applicability) live in the verified provider tenant
+        var provider = Diten.Platform.Infrastructure.Persistence.Settings.BusinessReferenceDataProviderOptionsResolver.Resolve(_providerOptions);
         var response = await _mediator.Send(
-            new GetConsumableBusinessReferenceDataPublishedValuesQuery(setCode, caller.TenantId, referenceTenantId), ct);
+            new GetConsumableBusinessReferenceDataPublishedValuesQuery(setCode, caller.TenantId, referenceTenantId,
+                provider.IsValid ? provider.ReferenceTenantId : null), ct);
         return CreateActionResultInstance(response);
     }
 }

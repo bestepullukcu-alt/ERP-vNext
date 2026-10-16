@@ -16,7 +16,7 @@ public sealed class SetUserActiveStatusCommandHandler : IRequestHandler<SetUserA
     /// way back in from that seat. Same shape as <see cref="DeleteUserCommandHandler.SelfDeleteCode"/>: refused with a
     /// code the screen can translate, before anything is written. SAP (SU01) and Oracle Fusion refuse the same act.
     /// </summary>
-    public const string SelfDeactivateCode = "USER_DEACTIVATE_SELF";
+    public const string SelfDeactivateCode = UserErrorCodes.DeactivateSelf;
 
     private readonly IUserRepository _userRepository;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
@@ -47,7 +47,7 @@ public sealed class SetUserActiveStatusCommandHandler : IRequestHandler<SetUserA
     public async Task<Response<NoContent>> Handle(SetUserActiveStatusCommand request, CancellationToken ct)
     {
         var user = await _userRepository.GetByIdAndTenantAsync(request.Id, _tenantContext.TenantId, ct);
-        if (user is null) return Response<NoContent>.Fail("User not found.", 404);
+        if (user is null) return UserErrorCodes.NotFoundRefusal<NoContent>();
 
         if (!request.IsActive && _currentUser.UserId == request.Id)
         {
@@ -77,16 +77,22 @@ public sealed class SetUserActiveStatusCommandHandler : IRequestHandler<SetUserA
             }
         }
 
+        var state = _userRepository.CaptureState(user);
         if (request.IsActive)
         {
-            user.Activate();
+            // BL-529 FIX3 — the mark moves only on a real switch: enabling an account that is already on changes nothing.
+            if (!wasActive) user.ActivateByAdministrator();
         }
         else
         {
-            user.Deactivate();
+            // The kebab's "Disable" is an explicit act, also on a pending invitation (FIX2 item 8): it marks the account,
+            // and a pending reset link goes with it (User.DeactivateByAdministrator).
+            user.DeactivateByAdministrator();
         }
 
-        await _userRepository.UpdateAsync(user, ct);
+        // BL-529 FIX3 — the switch, the mark and the link fields only; never a whole-document write from the copy read
+        // before the Platform seat call (which put back a password an administrator's reset replaced meanwhile).
+        await _userRepository.TryWriteChangesAsync(user, state, _tenantContext.TenantId, UserWriteCondition.None, ct);
 
         // Disabling must terminate active sessions immediately.
         if (!request.IsActive)

@@ -26,7 +26,10 @@ public sealed record ProductWriteRequest(
     string? Description,
     DateTimeOffset EffectiveFrom,
     DateTimeOffset? EffectiveTo,
-    IReadOnlyList<BrandProductExternalReferenceDto>? ExternalReferences);
+    IReadOnlyList<BrandProductExternalReferenceDto>? ExternalReferences,
+    // WP-MDM-BRAND-ACCEPT-01 FIX3 (R-3) — the version the edit was made on, as for a brand. Required on update (missing = 400
+    // expected_version_required, older than stored = 409 version_conflict, nothing written); ignored on create.
+    int? ExpectedVersion = null);
 
 public sealed record ProductDetailDto(
     Guid ProductId,
@@ -53,7 +56,13 @@ public sealed record ProductDetailDto(
     string? UpdatedBy,
     int Version,
     DateTimeOffset CreatedAt,
-    DateTimeOffset? UpdatedAt);
+    DateTimeOffset? UpdatedAt,
+    // FIX3 (R-4) — the product's own brand reference, resolved in the tenant for the detail read: the edit form keeps it
+    // (even when it is no longer linkable, or the editor cannot read brands). Null on list rows and for a brand-less product.
+    ProductLinkedBrandDto? LinkedBrand = null);
+
+/// <summary>FIX3 (R-4) — the brand a product points at: who it is and whether a NEW link to it would be accepted today.</summary>
+public sealed record ProductLinkedBrandDto(Guid BrandId, string BrandCode, string BrandName, bool IsLinkable);
 
 public sealed record ProductListResultDto(IReadOnlyList<ProductDetailDto> Items, int TotalCount);
 
@@ -133,8 +142,9 @@ public static class ProductMappings
         entity.TherapeuticAreaId = Normalize(request.TherapeuticAreaId);
         entity.IndicationRefs = (request.IndicationRefs ?? []).Where(x => x != Guid.Empty).Distinct().ToList();
         entity.Description = BrandProductExternalReferences.Clean(request.Description);
-        entity.EffectiveFrom = request.EffectiveFrom;
-        entity.EffectiveTo = request.EffectiveTo;
+        // FIX3 (R-5) — stored as the calendar day entered, at offset zero.
+        entity.EffectiveFrom = BrandProductCalendar.Normalize(request.EffectiveFrom);
+        entity.EffectiveTo = BrandProductCalendar.Normalize(request.EffectiveTo);
         entity.ExternalReferences = BrandProductExternalReferences.ToEntities(request.ExternalReferences);
     }
 

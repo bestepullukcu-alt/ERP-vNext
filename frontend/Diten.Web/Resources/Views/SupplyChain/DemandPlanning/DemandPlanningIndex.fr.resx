@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="Title" xml:space="preserve"><value>Planification de la demande</value></data>
+  <data name="UnavailableTitle" xml:space="preserve"><value>Espace de travail indisponible</value></data>
+  <data name="UnavailableBody" xml:space="preserve"><value>La route Gateway approuvée et la liste officielle des sociétés ne sont pas encore disponibles. Aucun plan ne peut être ouvert en sécurité.</value></data>
+  <data name="UnavailableNext" xml:space="preserve"><value>Les responsables de l&apos;intégration doivent vérifier les deux sources avant l&apos;utilisation réelle.</value></data>
+  <data name="PreviewBanner" xml:space="preserve"><value>Aperçu des données d&apos;essai</value></data>
+  <data name="PreviewNotice" xml:space="preserve"><value>Il s&apos;agit d&apos;une démonstration locale non enregistrée, sans plan réel ni liste officielle des sociétés.</value></data>
+  <data name="Company" xml:space="preserve"><value>Société</value></data>
+  <data name="Cycle" xml:space="preserve"><value>Cycle de planification</value></data>
+  <data name="Revision" xml:space="preserve"><value>Révision</value></data>
+  <data name="Series" xml:space="preserve"><value>Série SKU × entrepôt</value></data>
+  <data name="Week" xml:space="preserve"><value>Semaine</value></data>
+  <data name="Quantity" xml:space="preserve"><value>Quantité</value></data>
+  <data name="Origin" xml:space="preserve"><value>Origine</value></data>
+  <data name="Reason" xml:space="preserve"><value>Motif</value></data>
+  <data name="SavePreview" xml:space="preserve"><value>Appliquer dans l&apos;aperçu</value></data>
+  <data name="SubmitReview" xml:space="preserve"><value>Soumettre à la revue</value></data>
+  <data name="Approve" xml:space="preserve"><value>Approuver</value></data>
+  <data name="Reject" xml:space="preserve"><value>Rejeter</value></data>
+  <data name="NextWeeks" xml:space="preserve"><value>13 semaines suivantes</value></data>
+  <data name="PreviousWeeks" xml:space="preserve"><value>13 semaines précédentes</value></data>
+  <data name="ShowAllWeeks" xml:space="preserve"><value>Afficher les 52 semaines</value></data>
+  <data name="FirstThirteen" xml:space="preserve"><value>Afficher les 13 premières semaines</value></data>
+  <data name="KnownZero" xml:space="preserve"><value>zéro explicite</value></data>
+  <data name="Missing" xml:space="preserve"><value>Manquant</value></data>
+  <data name="Manual" xml:space="preserve"><value>Manuel</value></data>
+  <data name="InvalidatedWarning" xml:space="preserve"><value>Invalidé : consultation historique uniquement. Ne pas utiliser ce plan pour la planification ou le MRP.</value></data>
+  <data name="ReasonRequired" xml:space="preserve"><value>Saisissez un motif avant de continuer.</value></data>
+  <data name="InvalidQuantity" xml:space="preserve"><value>Saisissez une quantité positive ou nulle pour une semaine connue.</value></data>
+  <data name="NoScope" xml:space="preserve"><value>Sélectionnez une société d&apos;essai pour voir l&apos;exemple. Ce choix ne donne aucun accès réel.</value></data>
+  <data name="NoEditPermission" xml:space="preserve"><value>Une autorisation de modification du brouillon est requise.</value></data>
+  <data name="NoReviewPermission" xml:space="preserve"><value>Une autorisation de revue indépendante est requise.</value></data>
+  <data name="Draft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="InReview" xml:space="preserve"><value>En revue</value></data>
+  <data name="ApprovedState" xml:space="preserve"><value>Approuvé</value></data>
+  <data name="Published" xml:space="preserve"><value>Publié</value></data>
+  <data name="Superseded" xml:space="preserve"><value>Remplacé</value></data>
+  <data name="Invalidated" xml:space="preserve"><value>Invalidé</value></data>
+  <data name="Changes" xml:space="preserve"><value>Historique des changements de cet aperçu</value></data>
+  <data name="NoChanges" xml:space="preserve"><value>Aucun changement dans l&apos;aperçu.</value></data>
+  <data name="SavedLocally" xml:space="preserve"><value>Modifié uniquement dans cet aperçu ; rien n&apos;a été enregistré.</value></data>
+  <data name="RevisionHistory" xml:space="preserve"><value>Aperçu de la révision et de son état</value></data>
+  <data name="SelectSeries" xml:space="preserve"><value>Sélectionner une série</value></data>
+  <data name="EditWeek" xml:space="preserve"><value>Modifier la semaine</value></data>
+  <data name="IncompleteWeeks" xml:space="preserve"><value>Chaque série sélectionnée doit avoir une quantité explicite pour les 52 semaines avant la revue. Les valeurs manquantes et inconnues restent inchangées.</value></data>
+  <data name="NoAuditPermission" xml:space="preserve"><value>Le contenu historique nécessite une autorisation d&apos;audit distincte.</value></data>
+  <data name="WeekWindow" xml:space="preserve"><value>Semaines</value></data>
+  <data name="ReviewReason" xml:space="preserve"><value>Motif de la décision</value></data>
+  <data name="NoActionPermission" xml:space="preserve"><value>Action indisponible avec ces droits.</value></data>
+  <data name="NoCompanyData" xml:space="preserve"><value>Aucun périmètre de société vérifié n&apos;est disponible.</value></data>
+  <data name="SupersededReadOnly" xml:space="preserve"><value>Seul l'état de la révision remplacée est visible. Le contenu reste fermé sans preuve MRP liée approuvée.</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>Historique de la demande acceptée</value></data>
+  <data name="HistorySelectCompany" xml:space="preserve"><value>Aucune société active disponible.</value></data>
+  <data name="HistoryEmpty" xml:space="preserve"><value>Aucune ligne acceptée pour cette société.</value></data>
+  <data name="HistoryUnavailable" xml:space="preserve"><value>Historique accepté indisponible.</value></data>
+  <data name="HistorySku" xml:space="preserve"><value>SKU</value></data>
+  <data name="HistoryWarehouse" xml:space="preserve"><value>Entrepôt</value></data>
+  <data name="HistoryDate" xml:space="preserve"><value>Date de réalisation</value></data>
+  <data name="HistoryUnit" xml:space="preserve"><value>Unité acceptée</value></data>
+  <data name="HistoryQuantity" xml:space="preserve"><value>Quantité acceptée</value></data>
+  <data name="HistoryUnitPending" xml:space="preserve"><value>Unité non vérifiée par MOD-0290</value></data>
+  <data name="HistoryBatch" xml:space="preserve"><value>Lot d'importation</value></data>
+  <data name="HistoryDecision" xml:space="preserve"><value>Décision</value></data>
+  <data name="HistoryActor" xml:space="preserve"><value>Décidé par</value></data>
+  <data name="HistoryAt" xml:space="preserve"><value>Date de décision</value></data>
+  <data name="HistoryPrevious" xml:space="preserve"><value>Précédent</value></data>
+  <data name="HistoryNext" xml:space="preserve"><value>Suivant</value></data>
+  <data name="HistoryLoading" xml:space="preserve"><value>Chargement de l'historique...</value></data>
+  <data name="ForecastIntro" xml:space="preserve"><value>Évaluez l’historique accepté d’un SKU × entrepôt et choisissez explicitement une méthode.</value></data>
+  <data name="ForecastAuthorityPending" xml:space="preserve"><value>Les sociétés sont celles actives du locataire dans MDM. L’autorisation utilisateur par société et la vérification réelle des séries restent ouvertes ; toute vérification indisponible bloque l’opération.</value></data>
+  <data name="ForecastLoading" xml:space="preserve"><value>Chargement des données vérifiées…</value></data>
+  <data name="ForecastCycleVersion" xml:space="preserve"><value>Version attendue du cycle</value></data>
+  <data name="ForecastScopeHelp" xml:space="preserve"><value>Saisissez les identifiants existants du cycle, du SKU et de l’entrepôt. Le serveur les revérifie ; ils ne donnent aucun droit d’accès.</value></data>
+  <data name="ForecastEvaluate" xml:space="preserve"><value>Évaluer Les Méthodes</value></data>
+  <data name="ForecastCandidates" xml:space="preserve"><value>Comparaison des méthodes</value></data>
+  <data name="ForecastComparisonHelp" xml:space="preserve"><value>Aucun gagnant ni classement automatique. WAPE est indéfini si le total de demande réelle est nul ; aucune métrique ne le remplace. Un biais positif indique une sous-prévision. Chaque origine × semaine test est un échantillon distinct ; les semaines superposées peuvent être comptées plusieurs fois.</value></data>
+  <data name="ForecastPolicy" xml:space="preserve"><value>Version de politique</value></data>
+  <data name="ForecastMethod" xml:space="preserve"><value>Choix explicite de méthode</value></data>
+  <data name="ForecastChooseMethod" xml:space="preserve"><value>Choisissez une méthode admissible</value></data>
+  <data name="ForecastCreate" xml:space="preserve"><value>Créer La Prévision Et Le Brouillon</value></data>
+  <data name="ForecastOpenDraft" xml:space="preserve"><value>Ouvrir Le Brouillon Créé</value></data>
+  <data name="ForecastCreated" xml:space="preserve"><value>Prévision et brouillon enregistrés avec les traces obligatoires.</value></data>
+  <data name="ForecastSelectExplicitly" xml:space="preserve"><value>Sélectionnez une série, évaluez-la et choisissez explicitement une méthode admissible.</value></data>
+  <data name="ForecastInvalidScope" xml:space="preserve"><value>Saisissez une société, un cycle, un SKU, un entrepôt et une version de cycle valides.</value></data>
+  <data name="ForecastUnavailable" xml:space="preserve"><value>La vérification est indisponible. Aucune réussite n’est confirmée. Réessayez lorsque la source est disponible.</value></data>
+  <data name="ForecastSessionExpired" xml:space="preserve"><value>Votre session a expiré. Reconnectez-vous puis rechargez cette page.</value></data>
+  <data name="ForecastPermissionLost" xml:space="preserve"><value>Cette action n’est pas autorisée pour votre compte. Demandez l’accès à votre administrateur et rechargez la page.</value></data>
+  <data name="ForecastScopeLost" xml:space="preserve"><value>Le dossier ou la série sélectionnée est indisponible dans votre périmètre. Sélectionnez-la après vérification de l’accès.</value></data>
+  <data name="ForecastConflict" xml:space="preserve"><value>Le cycle ou la demande a changé. Vérifiez la version actuelle et réévaluez.</value></data>
+  <data name="ForecastSelectionRejected" xml:space="preserve"><value>La méthode ou les données ne sont plus admissibles. Réévaluez et indiquez un motif.</value></data>
+  <data name="ForecastUndefined" xml:space="preserve"><value>Indéfini</value></data>
+  <data name="ForecastEligible" xml:space="preserve"><value>Admissible</value></data>
+  <data name="ForecastBacktestUnavailable" xml:space="preserve"><value>Admissible ; métriques de validation rétrospective indisponibles.</value></data>
+  <data name="ForecastInsufficientWeeks" xml:space="preserve"><value>Semaines complètes fiables insuffisantes pour cette méthode.</value></data>
+  <data name="ForecastInsufficientEvents" xml:space="preserve"><value>Événements de demande réelle ou semaines positives distinctes insuffisants pour Croston.</value></data>
+  <data name="ForecastMixedUnit" xml:space="preserve"><value>Unités mixtes ou manquantes ; conversion non vérifiée.</value></data>
+  <data name="ForecastUntrustedHistory" xml:space="preserve"><value>Fiabilité ou cohérence des unités non vérifiée.</value></data>
+  <data name="ForecastInvalidOutput" xml:space="preserve"><value>La méthode a produit une prévision invalide et ne peut être choisie.</value></data>
+  <data name="ForecastReliableWeeks" xml:space="preserve"><value>Semaines fiables</value></data>
+  <data name="ForecastRealEvents" xml:space="preserve"><value>Événements de demande réelle</value></data>
+  <data name="ForecastWape" xml:space="preserve"><value>Ratio WAPE</value></data>
+  <data name="ForecastMae" xml:space="preserve"><value>MAE</value></data>
+  <data name="ForecastBias" xml:space="preserve"><value>Biais (réel − prévision)</value></data>
+  <data name="ForecastMase" xml:space="preserve"><value>MASE</value></data>
+  <data name="ForecastHorizonMetrics" xml:space="preserve"><value>Métriques par distance de prévision</value></data>
+  <data name="ForecastWeeksAhead" xml:space="preserve"><value>Semaines à l’avance</value></data>
+  <data name="ForecastSamples" xml:space="preserve"><value>Échantillons</value></data>
+  <data name="ForecastMethodNaive" xml:space="preserve"><value>Naïf</value></data>
+  <data name="ForecastMethodMovingAverage" xml:space="preserve"><value>Moyenne Mobile</value></data>
+  <data name="ForecastMethodSimpleExponentialSmoothing" xml:space="preserve"><value>Lissage Exponentiel Simple</value></data>
+  <data name="ForecastMethodHoltTrend" xml:space="preserve"><value>Tendance De Holt</value></data>
+  <data name="ForecastMethodSeasonalNaive" xml:space="preserve"><value>Naïf Saisonnier</value></data>
+  <data name="ForecastMethodHoltWinters" xml:space="preserve"><value>Holt-Winters</value></data>
+  <data name="ForecastMethodBiasCorrectedCroston" xml:space="preserve"><value>Croston Corrigé Du Biais</value></data>
+</root>

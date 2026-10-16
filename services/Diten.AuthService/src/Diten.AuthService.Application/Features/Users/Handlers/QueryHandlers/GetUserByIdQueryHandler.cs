@@ -32,6 +32,6 @@ public sealed class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, 
 
         return Response<UserDto>.Success(new UserDto(user.Id, user.Email, user.FirstName, user.LastName, user.IsActive, roles, user.TenantId,
             user.LastLoginAt, user.FailedLoginAttempts, user.MustChangePassword, "TenantPolicy",
-            AccountKind: user.AccountKind.ToString(), Status: UserLifecycle.StatusOf(user)));
+            AccountKind: user.AccountKind.ToString(), Status: UserLifecycle.StatusOf(user), PreferredLanguage: user.PreferredLanguage));
     }
 }

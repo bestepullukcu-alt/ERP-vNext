@@ -10,11 +10,14 @@ public sealed class GetTenantsQueryHandler : IRequestHandler<GetTenantsQuery, Pa
 {
     private readonly ITenantRegistryRepository _repository;
     private readonly IMapper _mapper;
+    private readonly Diten.Platform.Application.Contracts.IPlatformActorTenantScope _scope;
 
-    public GetTenantsQueryHandler(ITenantRegistryRepository repository, IMapper mapper)
+    public GetTenantsQueryHandler(ITenantRegistryRepository repository, IMapper mapper,
+        Diten.Platform.Application.Contracts.IPlatformActorTenantScope scope)
     {
         _repository = repository;
         _mapper = mapper;
+        _scope = scope;
     }
 
     public async Task<PagedResult<TenantListItemDto>> Handle(GetTenantsQuery request, CancellationToken cancellationToken)
@@ -25,7 +28,9 @@ public sealed class GetTenantsQueryHandler : IRequestHandler<GetTenantsQuery, Pa
             request.Region,
             request.Page,
             request.PageSize,
-            request.Sort);
+            request.Sort,
+            // BL-521 — a partner administrator lists only its tenants (and the total counts only them).
+            (await _scope.GetAsync(cancellationToken)).QueryFilter);
 
         var (items, totalCount) = await _repository.QueryAsync(query, cancellationToken);
         var page = Math.Max(1, request.Page);

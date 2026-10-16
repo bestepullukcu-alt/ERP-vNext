@@ -31,7 +31,14 @@ public sealed record SchemaProfileBudget(SchemaProfile Profile, int MaxCollectio
     public static readonly SchemaProfileBudget BusinessReferenceData =
         new(SchemaProfile.BusinessReferenceData, MaxCollections: 8, MaxLogicalIndexes: 19);
 
-    public static IReadOnlyList<SchemaProfileBudget> Declared { get; } = new[] { BusinessReferenceData };
+    // CT kararı 2026-10-09 (WP-CT-LANE-TKO-MERGE-01): 20 → 21, yalnız hattın INTX teslim kimliği dizini
+    // (audit_events.ix_audit_events_outbox_idempotency_key, WP-PLATFORM-AUDIT-INTX-01). Takeover'ın 5 koleksiyon / 20 dizin
+    // onayı bu dizinden önce yazılmıştı. Bir sonraki dizin yeni karar ister.
+    public static readonly SchemaProfileBudget AccessGovernance =
+        new(SchemaProfile.AccessGovernance, MaxCollections: 5, MaxLogicalIndexes: 21);
+
+    public static IReadOnlyList<SchemaProfileBudget> Declared { get; } =
+        new[] { BusinessReferenceData, AccessGovernance };
 
     public static SchemaProfileBudget? ForOrDefault(SchemaProfile profile)
         => Declared.FirstOrDefault(b => b.Profile == profile);

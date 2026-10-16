@@ -1,0 +1,100 @@
+@model Diten.Web.Models.CRM.PharmacyReportViewModel
+@using Diten.Web.Views.CRM.PharmacyReport
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PharmacyReportIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["PageTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@*
+    WP-VW-W4 (W4-WEB-b, §2.5) — the pharmacy visit report (mockup 03-rapor, pharmacy steps): General · Stock and shelf ·
+    Order and sales · Competitor and recommendation · Safety · Summary. The pre-order stays PASSIVE ("soon", W6). Every call
+    is a same-origin proxy under /CRM/PharmacyReport/api/*; the CRM report v2 decides (kind, completeness, the 60-minute
+    rule). UAS-001: without crm.visit-report.read NOTHING but the notice.
+*@
+@if (!Model.CanRead)
+{
+    <partial name="_AccessDenied" model="@Localizer["PageTitle"].Value" />
+    return;
+}
+
+<div id="ph-root" class="ph-page"
+     data-api-base="/CRM/PharmacyReport/api"
+     data-planned-visit-id="@Model.PlannedVisitId.ToString("D")"
+     data-can-record="@Model.CanRecord.ToString().ToLowerInvariant()"
+     data-can-amend="@Model.CanAmend.ToString().ToLowerInvariant()"
+     data-can-read-gskus="@Model.CanReadGskus.ToString().ToLowerInvariant()"
+     data-can-read-contacts="@Model.CanReadContacts.ToString().ToLowerInvariant()"
+     data-can-read-competitors="@Model.CanReadCompetitors.ToString().ToLowerInvariant()"
+     data-me="@Model.Me">
+
+    <div class="ph-head">
+        <a class="ph-back" href="/CRM/VisitWorkspace" aria-label="@Localizer["BackButton"]"><i class="bx bx-arrow-back ph-flip"></i></a>
+        <div class="ph-col ph-grow">
+            <h4 class="ph-title">@Localizer["PageTitle"]</h4>
+            <div class="ph-sub" id="ph-sub"></div>
+        </div>
+    </div>
+
+    <div class="ph-alert ph-alert-danger d-none" id="ph-load-error" role="alert"></div>
+
+    <div id="ph-main" class="ph-col ph-gap d-none">
+        <div class="ph-row ph-wrap">
+            <span class="ph-chip" id="ph-chip-valid"></span>
+            <span class="ph-sub ph-row"><i class="bx bx-cloud-upload"></i> <span id="ph-chip-saved"></span></span>
+        </div>
+
+        @if (!Model.CanRecord)
+        {
+            <div class="ph-alert ph-alert-info" id="ph-readonly"><i class="bx bx-lock-alt"></i> @Localizer["ReadOnly"]</div>
+        }
+
+        <div class="ph-alert ph-alert-success d-none" id="ph-sent">
+            <span class="ph-row"><i class="bx bx-check-circle"></i> <span><strong>@Localizer["SentTitle"]</strong> <span id="ph-sent-text"></span></span></span>
+            <button type="button" class="ph-btn ph-btn-p ph-btn-sm d-none" id="ph-unlock">@Localizer["Unlock"]</button>
+        </div>
+
+        <div class="ph-card ph-fix d-none" id="ph-fix">
+            <div class="ph-h">@Localizer["FixTitle"]</div>
+            <div class="ph-sub">@Localizer["FixText"]</div>
+            <textarea class="ph-input ph-textarea" rows="2" id="ph-fix-why" data-act="fix-why" maxlength="500" placeholder="@Localizer["FixPlaceholder"]" aria-label="@Localizer["FixPlaceholder"]"></textarea>
+            <div class="ph-row ph-between"><span class="ph-err d-none" id="ph-fix-err"></span><span class="ph-sub" id="ph-fix-count"></span></div>
+        </div>
+
+        <div class="ph-alert ph-alert-danger d-none" id="ph-error" role="alert"><span id="ph-error-text"></span></div>
+
+        <div class="ph-steps" id="ph-steps" role="tablist" aria-label="@Localizer["StepsLabel"]"></div>
+
+        <section class="ph-card" id="ph-pane-general"><div class="ph-h">@Localizer["Step_general"]</div><div class="ph-col ph-gap" id="ph-general"></div></section>
+        <section class="ph-card d-none" id="ph-pane-stock"><div class="ph-col ph-gap" id="ph-stock"></div></section>
+        <section class="ph-card d-none" id="ph-pane-order"><div class="ph-col ph-gap" id="ph-order"></div></section>
+        <section class="ph-card d-none" id="ph-pane-market"><div class="ph-col ph-gap" id="ph-market"></div></section>
+        <section class="ph-card d-none" id="ph-pane-safety"><div class="ph-h">@Localizer["Step_safety"]</div><div class="ph-col ph-gap" id="ph-safety"></div></section>
+        <section class="ph-card d-none" id="ph-pane-summary"><div class="ph-h">@Localizer["Step_summary"]</div><div class="ph-col ph-gap" id="ph-summary"></div></section>
+
+        <input type="file" class="d-none" id="ph-photo-input" accept="image/jpeg,image/png" capture="environment" aria-label="@Localizer["ShelfPhoto"]" />
+    </div>
+
+    <div class="ph-bar">
+        <button type="button" class="ph-btn ph-btn-w d-none" id="ph-prev"><i class="bx bx-chevron-left ph-flip"></i> @Localizer["PrevButton"]</button>
+        <span class="ph-grow ph-sub ph-center" id="ph-step-label"></span>
+        <button type="button" class="ph-btn ph-btn-s d-none" id="ph-draft">@Localizer["SaveDraft"]</button>
+        <button type="button" class="ph-btn ph-btn-p" id="ph-next"><span id="ph-next-label"></span> <i class="bx bx-chevron-right ph-flip"></i></button>
+        <button type="button" class="ph-btn ph-btn-p ph-btn-send d-none" id="ph-submit"><i class="bx bx-send"></i> <span id="ph-submit-label"></span></button>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/js/CRM/PharmacyReport/pharmacy-report.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script>
+        window.PharmacyReportL10n = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+            PharmacyReportIndex.ScriptKeys.ToDictionary(k => k, k => Localizer[k].Value)));
+    </script>
+    <script src="~/assets/js/CRM/VisitPlanning/format.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/PharmacyReport/report-pharmacy-core.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/PharmacyReport/pharmacy-report.js" asp-append-version="true"></script>
+}

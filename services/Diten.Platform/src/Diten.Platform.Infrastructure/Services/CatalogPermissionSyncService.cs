@@ -71,7 +71,7 @@ public sealed class CatalogPermissionSyncService : ICatalogPermissionSyncService
             };
             request.Headers.Add(InternalApiKeyHeader, _authServiceOptions.InternalApiKey);
 
-            var client = _httpClientFactory.CreateClient();
+            var client = _httpClientFactory.CreateClient(InternalHttpClients.AuthInternal);
             using var response = await client.SendAsync(request, ct);
             if (!response.IsSuccessStatusCode)
             {
@@ -129,7 +129,7 @@ public sealed class CatalogPermissionSyncService : ICatalogPermissionSyncService
                 $"{_authServiceOptions.BaseUrl.TrimEnd('/')}/internal/permissions/{Uri.EscapeDataString(normalized)}");
             request.Headers.Add(InternalApiKeyHeader, _authServiceOptions.InternalApiKey);
 
-            var client = _httpClientFactory.CreateClient();
+            var client = _httpClientFactory.CreateClient(InternalHttpClients.AuthInternal);
             using var response = await client.SendAsync(request, ct);
 
             // 204 (removed) and 404 (already gone) are both success — removal is idempotent. Anything else (incl. 409

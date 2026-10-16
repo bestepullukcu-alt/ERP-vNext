@@ -30,7 +30,23 @@ public sealed record ContactPeriodStatusDto(
     bool DueThisWeek,
     IReadOnlyList<string> SegmentBadges,
     string? ConsentStatus,
-    bool Inactive);
+    bool Inactive)
+{
+    /// <summary>WP-VP-4L (1) — <c>weekly</c> when the frequency is unknown: the period counts one visit per working week
+    /// (<see cref="FrequencyDefaults"/>); null otherwise.</summary>
+    public string? FrequencyDefault { get; init; }
+
+    /// <summary>WP-VP-4L (2) — the doctor has an extra visit (the rep's addition) in the asked week (null = no week asked).</summary>
+    public bool? ExtraThisWeek { get; init; }
+
+    /// <summary>WP-VP-4L (2) — visits beyond the period's requirement (done + planned − required, never below 0): an extra
+    /// visit counts, <see cref="Remaining"/> never goes under 0.</summary>
+    public int OverFrequency { get; init; }
+
+    /// <summary>WP-VP-4M (2) — the doctor has a WRITTEN visit (planned / approved) in the selected week; null when no week
+    /// was asked. A draft week's visits are not written yet (they are in the preview).</summary>
+    public bool? PlannedThisWeek { get; init; }
+}
 
 /// <summary>The period the statuses were counted in (null fields ⇒ no period could be resolved: counts are 0, remaining
 /// and dueThisWeek are not computed, lastVisitDate still is).</summary>
@@ -46,7 +62,15 @@ public sealed record AccountDoctorsDto(
     IReadOnlyList<AccountDoctorItemDto> Items,
     int TotalCount,
     int Page,
-    int PageSize);
+    int PageSize)
+{
+    /// <summary>WP-VP-4M (1) — the quick filters' counts over the same doctors (search + specialty applied, the selected
+    /// week as "this week"): <c>due</c> = the quick=due list's size, <c>never</c>, <c>all</c>.</summary>
+    public TargetQuickCountsDto? QuickCounts { get; init; }
+}
+
+/// <summary>WP-VP-4M (1) — the counted quick filters of an institution's doctors.</summary>
+public sealed record TargetQuickCountsDto(int Due, int Never, int All);
 
 public sealed record AccountDoctorItemDto(
     Guid ContactId,

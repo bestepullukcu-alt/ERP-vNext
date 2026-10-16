@@ -33,13 +33,22 @@
     };
 
     /*
-     * select2 4.0.13 wires DropdownSearch only for single selects; the attendee MULTI select needs it too —
-     * otherwise a tenant with dozens of eligible people has no way to find one by typing.
-     *
-     * Delegates to shared/diten-person-picker.js (WP-WC-SHARED-UI-01, E2) — this file carried its own copy,
-     * identical to Governance/RoleAssignments/index.js's, and both now call the one place it is built.
+     * BL-531 — every people picker on these pages SEARCHES (shared/diten-people-search.js over the attendee lookup,
+     * which is the task approver picker's own search-only contract, BL-512): at least two characters, nothing
+     * fetched when the page opens. `exclude` (ids, or a function returning them) is never offered.
      */
-    const buildSearchableDropdownAdapter = () => window.DitenPersonPicker.buildSearchableDropdownAdapter();
+    const peopleSearchSettings = (exclude) => window.DitenPeopleSearch.options({
+        search: (term) => window.MeetingsApi.lookupAttendees({ search: term }),
+        text: {
+            minimumLength: t('peopleSearchMinimumLength'),
+            noResults: t('peopleSearchNoResults'),
+            searching: t('peopleSearching'),
+            unknown: t('unknownUser'),
+            rateLimited: t('errorPeopleSearchRateLimited'),
+            failed: t('searchFailed')
+        },
+        exclude
+    });
 
     const initSelect2 = (selector, options) => {
         if (!window.jQuery || !$.fn.select2) { return; }
@@ -63,10 +72,11 @@
         const isEdit = mode === 'edit';
         const meetingId = document.getElementById('meetingId')?.value || '';
 
-        const [typesResult, attendeesResult, listResult] = await Promise.all([
+        const [typesResult, listResult] = await Promise.all([
             window.MeetingsApi.lookupTypes(),
-            isEdit ? Promise.resolve({ ok: true, data: { people: [] } }) : window.MeetingsApi.lookupAttendees(),
-            isEdit ? Promise.resolve({ ok: true, data: { items: [] } }) : window.MeetingsApi.listQuery({ pageSize: 1000 })
+            // ATT-FIX1 — every meeting, paged (≤ 200 a call), titles only: this list names no one.
+            // ATT-FIX2 — the light read: titles and visibility only (no linked tasks, types or names).
+            isEdit ? Promise.resolve({ ok: true, data: [] }) : window.MeetingsApi.listAll({ titlesOnly: true })
         ]);
 
         const types = typesResult.ok ? (typesResult.data || []) : [];
@@ -76,21 +86,14 @@
         if (isEdit) {
             document.getElementById('createOnlySection')?.classList.add('d-none');
         } else {
-            const people = attendeesResult.ok ? (attendeesResult.data?.people || []) : [];
-            // AssignablePersonDto rows, straight from the same lookup Tasks' own assignee picker uses — the
-            // shared picker renders the avatar+name(+unit) row and its own "nobody eligible" state (E2).
-            window.DitenPersonPicker.renderPersonOptions(
-                document.getElementById('fieldAttendeeUserIds'),
-                people,
-                { placeholder: t('attendeesPlaceholder'), empty: t('noEligibleAttendees') },
-                { multiple: true });
-            initSelect2('#fieldAttendeeUserIds', {
-                placeholder: t('attendeesPlaceholder'),
-                dropdownAdapter: buildSearchableDropdownAdapter(),
-                closeOnSelect: false
-            });
+            // BL-531 — the attendees are SEARCHED (≥ 2 characters); no people list is read when the form opens. The
+            // create form is the only place attendees are chosen in a batch; editing a meeting never posts them.
+            // ATT-FIX1 (5) — the placeholder has ONE source, the markup's data-placeholder (PeopleSearchHint):
+            // select2 4.0.13 lets a data-* attribute win over the same JS option, so a JS one was never seen.
+            initSelect2('#fieldAttendeeUserIds', Object.assign({ closeOnSelect: false }, peopleSearchSettings()));
 
-            const meetings = listResult.ok ? (listResult.data?.items || []) : [];
+            const meetings = listResult.ok ? (listResult.data || []) : [];
+            if (listResult.truncated) { window.showToast?.(t('meetingsListTruncated'), 'warning'); }
             populateOptions('#fieldFollowUpOfMeetingId', meetings, 'id', 'title');
             initSelect2('#fieldFollowUpOfMeetingId', { placeholder: t('showAll'), allowClear: true });
         }
@@ -217,7 +220,6 @@
     ][response] ?? response);
 
     let currentMeeting = null;
-    let eligiblePeopleById = {};
 
     const renderMeeting = (meeting) => {
         currentMeeting = meeting;
@@ -226,9 +228,9 @@
         document.getElementById('dStartAt').textContent = new Date(meeting.startAt).toLocaleString(window.CurrentLanguage || undefined);
         document.getElementById('dEndAt').textContent = new Date(meeting.endAt).toLocaleString(window.CurrentLanguage || undefined);
         document.getElementById('dLocation').textContent = meeting.location || '-';
-        // BL-390 — an organizer id the eligible-people lookup does not resolve (deleted/test identity) must
-        // never render as the raw GUID on screen.
-        document.getElementById('dOrganizer').textContent = eligiblePeopleById[meeting.organizerUserId] || t('unknownUser');
+        // BL-390 / BL-531 — the name comes with the meeting read itself; an organizer it cannot name reads
+        // "unknown user", never the raw GUID.
+        document.getElementById('dOrganizer').textContent = meeting.organizerDisplayName || t('unknownUser');
         document.getElementById('dDescription').textContent = meeting.description || '-';
         document.getElementById('dStatus').innerHTML =
             `<span class="badge ${meeting.lifecycle === MEETING_LIFECYCLE.CANCELLED ? 'bg-label-secondary' : meeting.lifecycle === MEETING_LIFECYCLE.COMPLETED ? 'bg-label-success' : 'bg-label-info'}">${statusLabelFor(meeting.lifecycle)}</span>`;
@@ -244,14 +246,16 @@
         followUpOfRow?.classList.toggle('d-none', !meeting.followUpOfMeetingId);
         if (meeting.followUpOfMeetingId) {
             const link = document.getElementById('dFollowUpOfLink');
-            link.textContent = meeting.followUpOfMeetingTitle || meeting.followUpOfMeetingId;
+            // ATT-FIX2 — the server names a linked meeting only for a reader who may open it; otherwise the words say
+            // so. Never the raw id.
+            link.textContent = meeting.followUpOfMeetingTitle || t('meetingNotAccessible');
             link.href = `/Meetings/${meeting.followUpOfMeetingId}`;
         }
         const followedByRow = document.getElementById('dFollowedByRow');
         followedByRow?.classList.toggle('d-none', !meeting.followedByMeetingId);
         if (meeting.followedByMeetingId) {
             const link = document.getElementById('dFollowedByLink');
-            link.textContent = meeting.followedByMeetingTitle || meeting.followedByMeetingId;
+            link.textContent = meeting.followedByMeetingTitle || t('meetingNotAccessible');
             link.href = `/Meetings/${meeting.followedByMeetingId}`;
         }
 
@@ -283,7 +287,7 @@
             const undeliveredBadge = a.mailUndelivered
                 ? `<span class="badge bg-label-danger ms-1">${esc(t('mailUndeliveredBadge'))}</span>`
                 : '';
-            li.innerHTML = `<span>${eligiblePeopleById[a.userId] || t('unknownUser')} <span class="badge bg-label-secondary ms-1">${invitationLabelFor(a.invitationResponse)}</span>${undeliveredBadge}</span>`;
+            li.innerHTML = `<span>${esc(a.displayName || t('unknownUser'))} <span class="badge bg-label-secondary ms-1">${invitationLabelFor(a.invitationResponse)}</span>${undeliveredBadge}</span>`;
             if (editable) {
                 const removeBtn = document.createElement('button');
                 removeBtn.type = 'button';
@@ -310,7 +314,7 @@
             const carriedBadge = item.carriedFromMeetingId
                 ? `<span class="badge bg-label-info ms-2">${esc(t('carriedFromPreviousMeetingBadge'))}</span>`
                 : '';
-            li.innerHTML = `<span>${esc(item.text)}${carriedBadge}</span>`;
+            li.innerHTML = `<span>${esc(agendaLineText(item))}${carriedBadge}</span>`;
             if (editable) {
                 const rowActions = document.createElement('div');
                 rowActions.className = 'd-flex gap-1';
@@ -361,11 +365,32 @@
      * task, so a badge would repeat the same word on every line): `resolveTypeLabel` is omitted, and the row
      * prints without one.
      */
+    /*
+     * WP-WCN-TASK-REQUEST-01 FIX4 — a linked task this reader may not read arrives with the CODE in place of its title
+     * (the server never sends a title its read rule refuses); it is shown as a sentence, never as the code.
+     */
+    const TASK_NOT_ACCESSIBLE = 'TASK_NOT_ACCESSIBLE';
+    const linkedTaskTitle = (title) => (title === TASK_NOT_ACCESSIBLE ? t('linkedTaskNotAccessible') : title);
+
+    /*
+     * FIX4 (item 1) — a carried-forward agenda line is STORED as a neutral code (one row every reader sees) and names
+     * its task only through its RecordLink: the title comes from THIS reader's linked-task list, which the server has
+     * already passed through the task read rule. Since FIX5 the server sends the code for EVERY carried line, whatever
+     * it stored (lines carried before FIX4 included), so no stored title reaches this screen.
+     */
+    const CARRIED_OPEN_ACTION = 'MEETING_CARRIED_OPEN_ACTION';
+    let linkedTaskTitleByRecordLinkId = {};
+    const agendaLineText = (item) => {
+        if (item.text !== CARRIED_OPEN_ACTION) { return item.text; }
+        const title = item.recordLinkId ? linkedTaskTitleByRecordLinkId[item.recordLinkId] : null;
+        return title ? `${t('carriedOpenActionLine')}: ${linkedTaskTitle(title)}` : t('carriedOpenActionLine');
+    };
+
     const renderLinkedTasks = (tasks) => {
         const list = document.getElementById('linkedTasksList');
         document.getElementById('noLinkedTasksHint')?.classList.toggle('d-none', tasks.length > 0);
         list.innerHTML = window.DitenRelatedRecords.renderRelatedRows(
-            tasks.map((task) => ({ id: '', title: task.title, link: task.link })),
+            tasks.map((task) => ({ id: '', title: linkedTaskTitle(task.title), link: task.link })),
             { esc, showId: false });
     };
 
@@ -382,8 +407,10 @@
         }
         document.getElementById('meetingNotFound')?.classList.add('d-none');
         document.getElementById('meetingDetailsBody')?.classList.remove('d-none');
+        const linkedTasks = tasksResult.ok ? (tasksResult.data || []) : [];
+        linkedTaskTitleByRecordLinkId = Object.fromEntries(linkedTasks.map((task) => [task.recordLinkId, task.title]));
         renderMeeting(meetingResult.data);
-        renderLinkedTasks(tasksResult.ok ? (tasksResult.data || []) : []);
+        renderLinkedTasks(linkedTasks);
     };
 
     /*
@@ -419,21 +446,12 @@
         const root = document.getElementById('meetingDetailsRoot');
         const meetingId = root.dataset.meetingId;
 
-        const attendeesResult = await window.MeetingsApi.lookupAttendees();
-        const people = attendeesResult.ok ? (attendeesResult.data?.people || []) : [];
-        eligiblePeopleById = {};
-        // BL-390 — the eligible-people lookup only carries ACTIVE tenant users; an organizer/attendee whose
-        // account was deactivated or removed since the meeting was created falls out of it. A `displayName`
-        // this sparse (missing) never gets backfilled with the raw id here — see dOrganizer/attendeesList above.
-        people.forEach((p) => { eligiblePeopleById[p.userId] = p.displayName || t('unknownUser'); });
-        // Same shared picker as the Create form's attendee select (E2) — avatar+name(+unit) rows, and its own
-        // disabled/explained state when nobody is eligible, in place of the plain list this select used to get.
-        // The reassign-organizer picker no longer lives on the page at all — M2 opens it through the shared
-        // confirm's own select, built from `eligiblePeopleById` at click time.
-        window.DitenPersonPicker.renderPersonOptions(
-            document.getElementById('newAttendeeUserId'), people,
-            { placeholder: t('attendeesPlaceholder'), empty: t('noEligibleAttendees') });
-        initSelect2('#newAttendeeUserId', { placeholder: t('attendeesPlaceholder'), dropdownAdapter: buildSearchableDropdownAdapter() });
+        // BL-531 — the names on this page come WITH the meeting (organizerDisplayName, attendees[].displayName); the
+        // "add attendee" picker SEARCHES and never offers the organizer or someone already invited.
+        initSelect2('#newAttendeeUserId', Object.assign({}, peopleSearchSettings(() => [
+            currentMeeting?.organizerUserId,
+            ...(currentMeeting?.attendees || []).map((a) => a.userId)
+        ])));
 
         await reloadMeeting(meetingId);
         if (currentMeeting && await prefillAgendaFromTypeIfRequested(currentMeeting)) {
@@ -518,13 +536,17 @@
                 showInput: true,
                 inputType: 'select',
                 inputLabel: t('newOrganizer'),
-                inputOptions: eligiblePeopleById,
+                // BL-531 — no directory behind this select: it SEARCHES once open (the delegate window's pattern), and
+                // the current organizer is never offered as their own replacement.
+                inputOptions: { '': t('peopleSearchHint') },
+                // ATT-FIX1 (6) — confirming with nobody chosen says so (it used to close silently).
+                inputRequired: true,
+                inputValidationMessage: t('newOrganizerRequired'),
                 didOpen: (popup) => {
                     const box = (window.Swal && typeof window.Swal.getInput === 'function' && window.Swal.getInput())
                         || popup.querySelector('.swal2-select');
                     if (!box) { return; }
-                    box.value = currentMeeting.organizerUserId || '';
-                    window.DitenDialog?.bindDialogSelect2?.(box, popup);
+                    window.DitenDialog?.bindDialogSelect2?.(box, popup, peopleSearchSettings([currentMeeting.organizerUserId]));
                 }
             });
         });
@@ -551,10 +573,56 @@
      * "Link existing task" is ONE field — a search-select — so it goes through `window.showConfirm` exactly
      * like the reassign-organizer picker above (M2), never the raw-Swal path `openCreateTaskDialog` takes.
      */
+    /*
+     * WP-WCN-TASK-REQUEST-01 FIX5/FIX6 — the candidates answer: { items, truncated } today; a plain array from a server
+     * deployed before FIX5 (the switch-over), read as it is. Anything else is UNREADABLE — said so, never shown as an
+     * empty list that looks like "no task to link". FIX7 — a refused call (403 / 500 / no answer) is FAILED, said so the
+     * same way: neither opens as an empty list.
+     */
+    const readLinkCandidates = (result) => {
+        if (!result?.ok) { return { items: [], truncated: false, unreadable: false, failed: true }; }
+        const data = result.data;
+        if (Array.isArray(data)) { return { items: data, truncated: false, unreadable: false }; }
+        if (data && Array.isArray(data.items)) { return { items: data.items, truncated: data.truncated === true, unreadable: false }; }
+        return { items: [], truncated: false, unreadable: true };
+    };
+
     const openLinkExistingTaskDialog = () => {
         void (async () => {
-            const candidatesResult = await window.TasksApi?.linkCandidates?.(null, 20);
-            const candidates = candidatesResult?.ok ? candidatesResult.data : [];
+            const first = readLinkCandidates(await window.TasksApi?.linkCandidates?.(null, 20));
+            if (first.failed || first.unreadable) {
+                const message = first.failed ? t('linkExistingTaskListFailed') : t('linkExistingTaskListUnreadable');
+                window.DitenModal?.error?.({ title: t('errorOccurred'), message });
+                return;
+            }
+            const candidates = first.items;
+            /*
+             * FIX6 (item 1) — the typed term goes to the SERVER (select2's search box, through the shared binder's
+             * optional remote mode), so "narrow your search" is advice the reader can follow. It is only given when
+             * the search can be sent — select2 is on the page.
+             */
+            const canSearch = !!(window.jQuery && window.jQuery.fn && window.jQuery.fn.select2);
+            const truncated = first.truncated && canSearch;
+            const remoteSearch = {
+                // FIX7 — select2's own texts are English; this screen speaks the reader's language.
+                messages: {
+                    searching: t('linkExistingTaskSearching'),
+                    noResults: t('linkExistingTaskNoResults'),
+                    inputTooShort: t('linkExistingTaskInputTooShort'),
+                    errorLoading: t('linkExistingTaskListFailed')
+                },
+                search: async (term) => {
+                    const answer = readLinkCandidates(await window.TasksApi.linkCandidates(term, 20));
+                    // FIX7 — a failed or unreadable answer is never "no results": it rejects with its sentence.
+                    if (answer.failed) { throw Object.assign(new Error('LINK_CANDIDATES_FAILED'), { userMessage: t('linkExistingTaskListFailed') }); }
+                    if (answer.unreadable) { throw Object.assign(new Error('LINK_CANDIDATES_UNREADABLE'), { userMessage: t('linkExistingTaskListUnreadable') }); }
+                    const results = answer.items.map((candidate) => ({ id: candidate.id, text: candidate.title }));
+                    if (answer.truncated) {
+                        results.push({ id: '__truncated', text: t('linkExistingTaskTruncated'), disabled: true });
+                    }
+                    return results;
+                }
+            };
             // A leading BLANK entry, deliberately: a native `<select>` otherwise opens on its first real option
             // already selected, and confirming without touching it would link a task nobody chose.
             const taskOptions = { '': t('linkExistingTaskPlaceholder') };
@@ -572,7 +640,7 @@
                 window.DitenModal?.success?.({ title: t('toastTaskLinked'), timer: 1200 });
                 await reloadMeeting();
             }, {
-                subtext: '',
+                subtext: truncated ? t('linkExistingTaskTruncated') : '',
                 confirmButtonText: t('linkExistingTask'),
                 showInput: true,
                 inputType: 'select',
@@ -582,7 +650,7 @@
                 didOpen: (popup) => {
                     const box = (window.Swal && typeof window.Swal.getInput === 'function' && window.Swal.getInput())
                         || popup.querySelector('.swal2-select');
-                    if (box) { window.DitenDialog?.bindDialogSelect2?.(box, popup, { allowClear: false }); }
+                    if (box) { window.DitenDialog?.bindDialogSelect2?.(box, popup, { allowClear: false, remoteSearch }); }
                 }
             });
         })();

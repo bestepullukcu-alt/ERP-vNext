@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="Title" xml:space="preserve"><value>Планирование спроса</value></data>
+  <data name="UnavailableTitle" xml:space="preserve"><value>Рабочая область недоступна</value></data>
+  <data name="UnavailableBody" xml:space="preserve"><value>Утверждённый маршрут шлюза и достоверный список компаний пока недоступны. Безопасно открыть план нельзя.</value></data>
+  <data name="UnavailableNext" xml:space="preserve"><value>Перед рабочим использованием владельцы интеграции должны проверить оба источника.</value></data>
+  <data name="PreviewBanner" xml:space="preserve"><value>Предпросмотр тестовых данных</value></data>
+  <data name="PreviewNotice" xml:space="preserve"><value>Это локальная демонстрация без сохранения, а не действующий план или список разрешённых компаний.</value></data>
+  <data name="Company" xml:space="preserve"><value>Компания</value></data>
+  <data name="Cycle" xml:space="preserve"><value>Цикл планирования</value></data>
+  <data name="Revision" xml:space="preserve"><value>Версия</value></data>
+  <data name="Series" xml:space="preserve"><value>Ряд SKU × склад</value></data>
+  <data name="Week" xml:space="preserve"><value>Неделя</value></data>
+  <data name="Quantity" xml:space="preserve"><value>Количество</value></data>
+  <data name="Origin" xml:space="preserve"><value>Источник</value></data>
+  <data name="Reason" xml:space="preserve"><value>Причина</value></data>
+  <data name="SavePreview" xml:space="preserve"><value>Применить в предпросмотре</value></data>
+  <data name="SubmitReview" xml:space="preserve"><value>Отправить на проверку</value></data>
+  <data name="Approve" xml:space="preserve"><value>Утвердить</value></data>
+  <data name="Reject" xml:space="preserve"><value>Отклонить</value></data>
+  <data name="NextWeeks" xml:space="preserve"><value>Следующие 13 недель</value></data>
+  <data name="PreviousWeeks" xml:space="preserve"><value>Предыдущие 13 недель</value></data>
+  <data name="ShowAllWeeks" xml:space="preserve"><value>Показать все 52 недели</value></data>
+  <data name="FirstThirteen" xml:space="preserve"><value>Показать первые 13 недель</value></data>
+  <data name="KnownZero" xml:space="preserve"><value>явный ноль</value></data>
+  <data name="Missing" xml:space="preserve"><value>Отсутствует</value></data>
+  <data name="Manual" xml:space="preserve"><value>Вручную</value></data>
+  <data name="InvalidatedWarning" xml:space="preserve"><value>Недействителен: только для исторического аудита. Не используйте план для планирования или MRP.</value></data>
+  <data name="ReasonRequired" xml:space="preserve"><value>Укажите причину перед продолжением.</value></data>
+  <data name="InvalidQuantity" xml:space="preserve"><value>Для известной недели укажите неотрицательное количество.</value></data>
+  <data name="NoScope" xml:space="preserve"><value>Выберите тестовую компанию для просмотра примера. Выбор не даёт рабочего доступа.</value></data>
+  <data name="NoEditPermission" xml:space="preserve"><value>Требуется право редактирования черновика.</value></data>
+  <data name="NoReviewPermission" xml:space="preserve"><value>Требуется право независимой проверки.</value></data>
+  <data name="Draft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="InReview" xml:space="preserve"><value>На проверке</value></data>
+  <data name="ApprovedState" xml:space="preserve"><value>Утверждён</value></data>
+  <data name="Published" xml:space="preserve"><value>Опубликован</value></data>
+  <data name="Superseded" xml:space="preserve"><value>Заменён</value></data>
+  <data name="Invalidated" xml:space="preserve"><value>Недействителен</value></data>
+  <data name="Changes" xml:space="preserve"><value>История изменений в предпросмотре</value></data>
+  <data name="NoChanges" xml:space="preserve"><value>В предпросмотре изменений нет.</value></data>
+  <data name="SavedLocally" xml:space="preserve"><value>Обновлено только в предпросмотре; ничего не сохранено.</value></data>
+  <data name="RevisionHistory" xml:space="preserve"><value>Предпросмотр версии и состояния</value></data>
+  <data name="SelectSeries" xml:space="preserve"><value>Выбрать ряд</value></data>
+  <data name="EditWeek" xml:space="preserve"><value>Изменить неделю</value></data>
+  <data name="IncompleteWeeks" xml:space="preserve"><value>До проверки для каждого выбранного ряда нужны явные количества на все 52 недели. Пропуски и неизвестные значения сохраняются.</value></data>
+  <data name="NoAuditPermission" xml:space="preserve"><value>Для исторического содержимого требуется отдельное право аудита.</value></data>
+  <data name="WeekWindow" xml:space="preserve"><value>Недели</value></data>
+  <data name="ReviewReason" xml:space="preserve"><value>Причина решения</value></data>
+  <data name="NoActionPermission" xml:space="preserve"><value>Действие недоступно с этими правами.</value></data>
+  <data name="NoCompanyData" xml:space="preserve"><value>Нет проверенного списка компаний.</value></data>
+  <data name="SupersededReadOnly" xml:space="preserve"><value>Для заменённой версии показан только статус. Содержимое закрыто без утверждённого подтверждения связанного MRP.</value></data>
+  <data name="HistoryTitle" xml:space="preserve"><value>История принятого спроса</value></data>
+  <data name="HistorySelectCompany" xml:space="preserve"><value>Нет доступной активной компании.</value></data>
+  <data name="HistoryEmpty" xml:space="preserve"><value>Для этой компании нет принятых строк.</value></data>
+  <data name="HistoryUnavailable" xml:space="preserve"><value>История принятого спроса недоступна.</value></data>
+  <data name="HistorySku" xml:space="preserve"><value>SKU</value></data>
+  <data name="HistoryWarehouse" xml:space="preserve"><value>Склад</value></data>
+  <data name="HistoryDate" xml:space="preserve"><value>Дата события</value></data>
+  <data name="HistoryUnit" xml:space="preserve"><value>Принятая единица</value></data>
+  <data name="HistoryQuantity" xml:space="preserve"><value>Принятое количество</value></data>
+  <data name="HistoryUnitPending" xml:space="preserve"><value>Единица не проверена через MOD-0290</value></data>
+  <data name="HistoryBatch" xml:space="preserve"><value>Партия импорта</value></data>
+  <data name="HistoryDecision" xml:space="preserve"><value>Решение</value></data>
+  <data name="HistoryActor" xml:space="preserve"><value>Кем принято</value></data>
+  <data name="HistoryAt" xml:space="preserve"><value>Время решения</value></data>
+  <data name="HistoryPrevious" xml:space="preserve"><value>Назад</value></data>
+  <data name="HistoryNext" xml:space="preserve"><value>Далее</value></data>
+  <data name="HistoryLoading" xml:space="preserve"><value>Загрузка принятой истории...</value></data>
+  <data name="ForecastIntro" xml:space="preserve"><value>Оцените принятые данные одной пары SKU × склад и явно выберите метод.</value></data>
+  <data name="ForecastAuthorityPending" xml:space="preserve"><value>Показаны активные компании арендатора в MDM. Авторизация пользователя по компании и проверка серий в реальном окружении ожидаются; без проверки операция блокируется.</value></data>
+  <data name="ForecastLoading" xml:space="preserve"><value>Загрузка проверенных данных…</value></data>
+  <data name="ForecastCycleVersion" xml:space="preserve"><value>Ожидаемая версия цикла</value></data>
+  <data name="ForecastScopeHelp" xml:space="preserve"><value>Введите существующие идентификаторы цикла, SKU и склада. Сервер проверяет их повторно; сами значения не дают доступа.</value></data>
+  <data name="ForecastEvaluate" xml:space="preserve"><value>Оценить Методы</value></data>
+  <data name="ForecastCandidates" xml:space="preserve"><value>Сравнение методов</value></data>
+  <data name="ForecastComparisonHelp" xml:space="preserve"><value>Автоматического победителя и ранжирования нет. WAPE не определён при нулевом знаменателе фактического спроса; другая метрика его не заменяет. Положительное смещение означает заниженный прогноз. Каждая пара начало × тестовая неделя — отдельная выборка; пересекающиеся недели могут учитываться повторно.</value></data>
+  <data name="ForecastPolicy" xml:space="preserve"><value>Версия политики</value></data>
+  <data name="ForecastMethod" xml:space="preserve"><value>Явный выбор метода</value></data>
+  <data name="ForecastChooseMethod" xml:space="preserve"><value>Выберите допустимый метод</value></data>
+  <data name="ForecastCreate" xml:space="preserve"><value>Создать Прогноз И Черновик</value></data>
+  <data name="ForecastOpenDraft" xml:space="preserve"><value>Открыть Созданный Черновик</value></data>
+  <data name="ForecastCreated" xml:space="preserve"><value>Прогноз и черновик сохранены с обязательными записями аудита.</value></data>
+  <data name="ForecastSelectExplicitly" xml:space="preserve"><value>Выберите одну серию, оцените её и явно укажите допустимый метод.</value></data>
+  <data name="ForecastInvalidScope" xml:space="preserve"><value>Введите корректные значения компании, цикла, SKU, склада и версии цикла.</value></data>
+  <data name="ForecastUnavailable" xml:space="preserve"><value>Проверка недоступна. Успех операции не подтверждён. Повторите попытку после восстановления источника.</value></data>
+  <data name="ForecastSessionExpired" xml:space="preserve"><value>Сеанс истёк. Войдите снова и обновите страницу.</value></data>
+  <data name="ForecastPermissionLost" xml:space="preserve"><value>Это действие недоступно вашей учётной записи. Запросите доступ у администратора и обновите страницу.</value></data>
+  <data name="ForecastScopeLost" xml:space="preserve"><value>Выбранная запись или серия недоступна в вашей области доступа. Выберите её заново после проверки доступа.</value></data>
+  <data name="ForecastConflict" xml:space="preserve"><value>Цикл или запрос изменился. Проверьте текущую версию и повторите оценку.</value></data>
+  <data name="ForecastSelectionRejected" xml:space="preserve"><value>Метод или входные данные больше не соответствуют условиям. Повторите оценку и укажите причину.</value></data>
+  <data name="ForecastUndefined" xml:space="preserve"><value>Не определено</value></data>
+  <data name="ForecastEligible" xml:space="preserve"><value>Допустим</value></data>
+  <data name="ForecastBacktestUnavailable" xml:space="preserve"><value>Допустим; метрики ретроспективной проверки недоступны.</value></data>
+  <data name="ForecastInsufficientWeeks" xml:space="preserve"><value>Недостаточно достоверных завершённых недель для этого метода.</value></data>
+  <data name="ForecastInsufficientEvents" xml:space="preserve"><value>Недостаточно реальных событий спроса или отдельных положительных недель для метода Кростона.</value></data>
+  <data name="ForecastMixedUnit" xml:space="preserve"><value>В истории смешаны или отсутствуют единицы; пересчёт не подтверждён.</value></data>
+  <data name="ForecastUntrustedHistory" xml:space="preserve"><value>Достоверность истории или согласованность единиц не подтверждена.</value></data>
+  <data name="ForecastInvalidOutput" xml:space="preserve"><value>Метод дал недопустимый прогноз и не может быть выбран.</value></data>
+  <data name="ForecastReliableWeeks" xml:space="preserve"><value>Достоверные недели</value></data>
+  <data name="ForecastRealEvents" xml:space="preserve"><value>Реальные события спроса</value></data>
+  <data name="ForecastWape" xml:space="preserve"><value>Отношение WAPE</value></data>
+  <data name="ForecastMae" xml:space="preserve"><value>MAE</value></data>
+  <data name="ForecastBias" xml:space="preserve"><value>Смещение (факт − прогноз)</value></data>
+  <data name="ForecastMase" xml:space="preserve"><value>MASE</value></data>
+  <data name="ForecastHorizonMetrics" xml:space="preserve"><value>Метрики по дальности прогноза</value></data>
+  <data name="ForecastWeeksAhead" xml:space="preserve"><value>Недель вперёд</value></data>
+  <data name="ForecastSamples" xml:space="preserve"><value>Выборки</value></data>
+  <data name="ForecastMethodNaive" xml:space="preserve"><value>Наивный</value></data>
+  <data name="ForecastMethodMovingAverage" xml:space="preserve"><value>Скользящее Среднее</value></data>
+  <data name="ForecastMethodSimpleExponentialSmoothing" xml:space="preserve"><value>Простое Экспоненциальное Сглаживание</value></data>
+  <data name="ForecastMethodHoltTrend" xml:space="preserve"><value>Тренд Холта</value></data>
+  <data name="ForecastMethodSeasonalNaive" xml:space="preserve"><value>Сезонный Наивный</value></data>
+  <data name="ForecastMethodHoltWinters" xml:space="preserve"><value>Холт — Винтерс</value></data>
+  <data name="ForecastMethodBiasCorrectedCroston" xml:space="preserve"><value>Кростон С Коррекцией Смещения</value></data>
+</root>

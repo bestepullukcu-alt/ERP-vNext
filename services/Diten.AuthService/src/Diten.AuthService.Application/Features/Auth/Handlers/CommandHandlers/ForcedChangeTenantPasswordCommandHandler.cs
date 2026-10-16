@@ -1,5 +1,7 @@
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
+using Diten.AuthService.Application.Features.Auth.Services;
+using Diten.AuthService.Application.Common.Services;
 using Diten.AuthService.Application.DTOs;
 using Diten.AuthService.Application.Features.Auth.Commands;
 using Diten.AuthService.Domain.Entities;
@@ -73,23 +75,38 @@ public sealed class ForcedChangeTenantPasswordCommandHandler
     public async Task<Response<AuthResponse>> Handle(ForcedChangeTenantPasswordCommand request, CancellationToken ct)
     {
         var user = await _userRepository.GetByIdAndTenantAsync(request.UserId, request.TenantId, ct);
-        if (user is null || !user.IsActive)
+
+        // BL-521 FIX6 item 13 (A') — this door mints a tenant token and a refresh row, so it refuses a platform account like the
+        // sign-in door does, with its own generic 401: no password is checked, nothing is changed, nothing is minted.
+        if (user is { IsPlatformAccount: true })
         {
-            return Response<AuthResponse>.Fail("Unauthorized.", 401);
+            // FIX7 item 5 - one warning (event code, door, tenant id - no e-mail, no user id); the answer is the same 401.
+            TenantDoorPlatformAccountRefusal.Log(_logger, TenantDoorPlatformAccountRefusal.ForcedChangeDoor, request.TenantId);
         }
 
-        if (!_passwordHasher.Verify(request.CurrentPassword, user.PasswordHash))
+        if (user is null || !user.IsActive || user.IsPlatformAccount)
         {
-            return Response<AuthResponse>.Fail("Current password is incorrect.", 401);
+            return Response<AuthResponse>.Fail("Unauthorized.", [new ResponseError(AuthRefusalCodes.SessionEnded)], 401);
+        }
+
+        if (!await _passwordHasher.VerifyAsync(request.CurrentPassword, user.PasswordHash, ct))
+        {
+            return Response<AuthResponse>.Fail("Current password is incorrect.", [new ResponseError(AuthRefusalCodes.CurrentPasswordIncorrect)], 401);
         }
 
         // Enforce the tenant password policy (throws ValidationException → 400 via the pipeline, like the platform flow).
         await _passwordPolicyService.ValidateTenantPasswordAsync(request.TenantId, user.Id, request.NewPassword, "tenant_forced_change", ct);
 
-        user.UpdatePassword(_passwordHasher.Hash(request.NewPassword));
+        var verifiedHash = user.PasswordHash;
+        var state = _userRepository.CaptureState(user);
+        user.UpdatePassword(await _passwordHasher.HashAsync(request.NewPassword, ct));
         user.ClearPasswordChangeRequirement(); // MustChangePassword → false
-        await _userRepository.UpdateForTenantAsync(user, request.TenantId, ct);
-        await _refreshTokenRepository.RevokeAllByUserAsync(user.Id, request.TenantId, ct);
+        // BL-529 FIX2 — only over the password just verified (never over a reset that landed meanwhile).
+        if (!await _userRepository.TryWriteChangesAsync(user, state, request.TenantId, new UserWriteCondition(PasswordHash: verifiedHash), ct))
+        {
+            return ChangePasswordCommandHandler.PasswordChangedMeanwhile<AuthResponse>();
+        }
+        await _refreshTokenRepository.RevokeLiveSessionsAsync(user.Id, request.TenantId, SessionRevocationReasons.PasswordChanged, ct);
         if (_eSignTickets is not null) await _eSignTickets.RevokeWindowsAsync(request.TenantId, user.Id, "forced_password_changed", ct);
         await _authAuditService.WriteAsync("tenant_forced_password_changed", user.Id, request.TenantId, "{}", ct);
 
@@ -144,6 +161,8 @@ public sealed class ForcedChangeTenantPasswordCommandHandler
             request.TenantId,
             TenantActorType,
             request.UserAgent);
+        // BL-529 FIX3 — the session is bound to the password it was opened with (SessionPasswordBinding).
+        SessionPasswordBinding.Bind(refreshToken, _refreshTokenHasher, user);
         await _refreshTokenRepository.CreateAsync(refreshToken, ct);
 
         return new AuthResponse(

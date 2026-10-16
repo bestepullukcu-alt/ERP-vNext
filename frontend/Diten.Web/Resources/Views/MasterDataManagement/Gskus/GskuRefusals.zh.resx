@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader><resheader name="version"><value>2.0</value></resheader><resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader><resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="RefusalBusy" xml:space="preserve"><value>此记录正在处理另一项操作。请稍后重试。</value></data>
+  <data name="RefusalCapacity" xml:space="preserve"><value>此记录目前无法接受更多更改。请稍后重试；如果问题持续，请联系支持团队。</value></data>
+  <data name="RefusalChangedElsewhere" xml:space="preserve"><value>您操作期间此记录已被更改。请刷新页面后重试。</value></data>
+  <data name="RefusalDependents" xml:space="preserve"><value>有记录依赖于此 GSKU，或正在其下创建记录。请先停用它们或等待其完成。</value></data>
+  <data name="RefusalForbidden" xml:space="preserve"><value>您无权执行此操作。</value></data>
+  <data name="RefusalInternal" xml:space="preserve"><value>意外的不一致导致此操作停止；未做任何更改。请联系支持团队。</value></data>
+  <data name="RefusalInvalidRequest" xml:space="preserve"><value>请求无效。请检查字段后重试。</value></data>
+  <data name="RefusalNotFound" xml:space="preserve"><value>未找到该记录，或您无权查看。</value></data>
+  <data name="RefusalNotRequester" xml:space="preserve"><value>只有提交此审批的人才能撤回它。</value></data>
+  <data name="RefusalPackInvalid" xml:space="preserve"><value>包装数量或单位无效。请更正后重试。</value></data>
+  <data name="RefusalParentNotReady" xml:space="preserve"><value>全局产品未获批准，或已无法再被引用。</value></data>
+  <data name="RefusalReconciliation" xml:space="preserve"><value>此请求正在等待专人审核，在此之前保持不变。请联系支持团队。</value></data>
+  <data name="RefusalRepeatDiffers" xml:space="preserve"><value>此请求此前已以不同的信息发送。请刷新页面后重新开始。</value></data>
+  <data name="RefusalRequestEnded" xml:space="preserve"><value>该请求已结束且未被应用。如仍需要，请重新发起。</value></data>
+  <data name="RefusalResubmit" xml:space="preserve"><value>请求未到达审批服务。请再次发送相同的请求。</value></data>
+  <data name="RefusalRetirementInProgress" xml:space="preserve"><value>此 GSKU 正在停用中。</value></data>
+  <data name="RefusalSelfApproval" xml:space="preserve"><value>该请求由提交人自己作出决定，因此该决定未被应用。</value></data>
+  <data name="RefusalServiceUnavailable" xml:space="preserve"><value>此操作所需的服务当前不可用。请稍后重试。</value></data>
+  <data name="RefusalSessionExpired" xml:space="preserve"><value>审批服务未接受您的会话。请重新登录并重复该操作。</value></data>
+  <data name="RefusalSetupIncomplete" xml:space="preserve"><value>此操作的审批设置不完整。请通知您的管理员。</value></data>
+  <data name="RefusalManualReconciliation" xml:space="preserve"><value>审批服务与此记录不一致，重复请求也未能解决。在有人手动核对之前，记录保持不变；请联系您的管理员。</value></data>
+  <data name="RefusalClosedWithoutDecision" xml:space="preserve"><value>该审批未作决定即已关闭（已取消或已过期）。草稿可以编辑并重新提交。</value></data>
+  <data name="InfoRetiredAfterApproval" xml:space="preserve"><value>此 GSKU 使用的某个单位在审批之后被停用。审批依然有效：它按提交时验证的值应用；被停用的单位不能用于新记录。</value></data>
+  <data name="RefusalStockFlagsRequired" xml:space="preserve"><value>在提交此 GSKU 审批之前，请在库存行为中设置：{0}。</value></data>
+  <data name="RefusalSubmitDuringWithdrawal" xml:space="preserve"><value>此提交的撤回正在进行中；请重新发送撤回以完成它，然后再次提交。</value></data>
+  <data name="RefusalStockDaysRequireShelfLife" xml:space="preserve"><value>请先输入保质期：已批准的 GSKU 只有在保质期已知后才能设置{0}。</value></data>
+  <data name="RefusalStockReferenceUnavailable" xml:space="preserve"><value>暂时无法读取单位和储存条件列表。请稍后重试。</value></data>
+  <data name="RefusalStockGskuBaseUomMissing" xml:space="preserve"><value>请先填写 GSKU 的基本单位——成品使用该单位。</value></data>
+  <data name="RefusalStockGskuShelfLifeMissing" xml:space="preserve"><value>请先填写 GSKU 的保质期——成品自有保质期不能超过它。</value></data>
+  <data name="RefusalStockConversionInvalid" xml:space="preserve"><value>单位换算无效：请先设置基本单位；每个单位须在四步以内、无循环地换算到基本单位，同量纲单位对（如 kg ↔ g）无需手工输入。</value></data>
+  <data name="RefusalStockStorageConflict" xml:space="preserve"><value>只能选择一个温度条件。</value></data>
+  <data name="RefusalStockStorageInvalid" xml:space="preserve"><value>有储存条件代码不在列表中。请检查代码。</value></data>
+  <data name="RefusalStockUomInvalid" xml:space="preserve"><value>有单位代码不在列表中。请检查代码。</value></data>
+  <data name="RefusalStockPackUomUnknown" xml:space="preserve"><value>该 GSKU 的包装单位不在单位列表中，因此无法推导盒 ↔ 包装换算。</value></data>
+  <data name="RefusalStockIncomplete" xml:space="preserve"><value>尚不能设为可库存：请先填写所有必填的库存字段。</value></data>
+  <data name="RefusalStockShelfLifeInvalid" xml:space="preserve"><value>保质期必须为 1 至 3650 的整数天。</value></data>
+  <data name="RefusalStockFgShelfLifeExceedsGsku" xml:space="preserve"><value>成品的保质期不能长于其 GSKU 的保质期。</value></data>
+  <data name="RefusalStockGtinInvalid" xml:space="preserve"><value>GTIN 必须为 14 位数字且 GS1 校验位有效。</value></data>
+  <data name="RefusalStockDaysInvalid" xml:space="preserve"><value>复验间隔和最短剩余保质期必须为 0 至 3650 的整数天。</value></data>
+  <data name="RefusalStockNotEditable" xml:space="preserve"><value>该记录的状态不允许更改库存行为。</value></data>
+  <data name="RefusalStockFieldLocked" xml:space="preserve"><value>已批准记录中已填写的值不能在此更改——只能通过更正来更改。列表只能添加新行。</value></data>
+  <data name="RefusalStockGtinConflict" xml:space="preserve"><value>另一个成品已使用此 GTIN。</value></data>
+</root>

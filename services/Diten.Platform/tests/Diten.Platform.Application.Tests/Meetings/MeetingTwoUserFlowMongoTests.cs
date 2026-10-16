@@ -466,7 +466,8 @@ public sealed class MeetingTwoUserFlowMongoTests : IAsyncLifetime
     private async Task<MeetingDto> OrganizerViewAsync(Guid meetingId)
     {
         var response = await new GetMeetingByIdHandler(
-                _meetings, _types, _attendees, _agenda, new FakeCurrentUserContext(_organizer), new FakeActorPermissionContext())
+                _meetings, _types, _attendees, _agenda, new FakeCurrentUserContext(_organizer), new FakeActorPermissionContext(),
+                new Diten.Platform.Application.Tests.Tasks.FakeUserDisplayNameResolver())
             .Handle(new GetMeetingByIdQuery(meetingId, "corr"), CancellationToken.None);
         Assert.True(response.IsSuccessful, $"organizer view refused: {response.StatusCode} {response.ReasonCode}");
         return response.Data!;

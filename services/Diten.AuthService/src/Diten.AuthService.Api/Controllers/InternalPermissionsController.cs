@@ -93,7 +93,7 @@ public sealed class InternalPermissionsController : ControllerBase
             // A1 — a first-time permission must land on the full-catalog role (default-tenant SuperAdmin) so it
             // becomes usable on re-login without a hand-edited seed. Idempotent + best-effort (never blocks sync).
             // BL-359 — the grant service itself refuses an explicit-grant-only key (e.g. assign-owner).
-            await _fullCatalogGrantService.GrantToFullCatalogRolesAsync(permission.Id, permission.Key, ct);
+            await _fullCatalogGrantService.GrantToFullCatalogRolesAsync(permission, ct);
 
             _logger.LogInformation(
                 "Catalog permission synced (created). Key={Key} Module={Module}",
@@ -114,7 +114,7 @@ public sealed class InternalPermissionsController : ControllerBase
             // and re-grant it to the full-catalog role (like first creation). ReactivateAsync uses an Id-only filter —
             // the normal filtered UpdateAsync/ReplaceOne would match zero rows on a soft-deleted doc and never persist.
             await _permissionRepository.ReactivateAsync(existing.Id, newDisplayName, newDescription, ct);
-            await _fullCatalogGrantService.GrantToFullCatalogRolesAsync(existing.Id, existing.Key, ct);
+            await _fullCatalogGrantService.GrantToFullCatalogRolesAsync(existing, ct);
 
             _logger.LogInformation(
                 "Catalog permission synced (reactivated). Key={Key} Module={Module}",
@@ -145,10 +145,19 @@ public sealed class InternalPermissionsController : ControllerBase
         {
             // Tie-break (most restrictive wins): the same key can be synced from several pages with different
             // routes. If ANY of them is platform-scoped the key stays PlatformAdmin — never downgrade to Tenant.
-            // This is now the ONLY thing standing between a manifest and the escalation boundary — do not relax it.
-            var effectiveScope = existing.Scope == PermissionScope.PlatformAdmin || incomingScope.Value == PermissionScope.PlatformAdmin
-                ? PermissionScope.PlatformAdmin
-                : PermissionScope.Tenant;
+            // This is the ONLY thing standing between a manifest and the escalation boundary — do not relax it.
+            //
+            // ONE explicit exception, owned by the Domain (SeedOwnedTenantScopeKeys — MOD-0018-FU24/FU25; decided by
+            // the owner + Control Tower on 2026-10-01): the three seeded Workflow EXECUTION keys (start / approve /
+            // reject). After startup has reconciled their SYSTEM rows to Tenant, a catalog replay may refresh their
+            // metadata/module but may not promote them back to PlatformAdmin. Catalog-created/user-defined rows, a
+            // row that is PlatformAdmin, and every other key keep the generic rule. The list and its reasons live
+            // there, not here.
+            var effectiveScope = SeedOwnedTenantScopeKeys.KeepsTenantScope(existing)
+                ? PermissionScope.Tenant
+                : existing.Scope == PermissionScope.PlatformAdmin || incomingScope.Value == PermissionScope.PlatformAdmin
+                    ? PermissionScope.PlatformAdmin
+                    : PermissionScope.Tenant;
             existing.SetScope(effectiveScope);
         }
 
