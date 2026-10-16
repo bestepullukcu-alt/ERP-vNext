@@ -1,0 +1,154 @@
+{
+  "clones": [
+    {
+      "clone": "A",
+      "head": "95de60936e34e9c2d967f2fbc4f2cc2f3c30a614",
+      "origin_main": "3912d568b18193f627539a1b27965167ac4077b6",
+      "index_tree": "fcc4d6dcfe4a8fdce4fb7d61242fe71f88f6290f",
+      "tracked_worktree_vs_index_exit": 0,
+      "push_disabled": true,
+      "push_check": "nonexistent disabled sentinel, no network destination; no push attempted"
+    },
+    {
+      "clone": "B",
+      "head": "95de60936e34e9c2d967f2fbc4f2cc2f3c30a614",
+      "origin_main": "3912d568b18193f627539a1b27965167ac4077b6",
+      "index_tree": "136e5fa1be9508a2d4ae7efb65cb7f5c9c318ca0",
+      "tracked_worktree_vs_index_exit": 0,
+      "push_disabled": true,
+      "push_check": "nonexistent disabled sentinel, no network destination; no push attempted"
+    }
+  ],
+  "self_tests": [
+    {
+      "tool": "scripts/ct_queue.py",
+      "expected": 69,
+      "case_count_A_B": [
+        69,
+        69
+      ],
+      "no_failures": true,
+      "case_lines_equal": true,
+      "total_summary_A_B": [
+        [
+          "self-test: 69/69 passed"
+        ],
+        [
+          "self-test: 69/69 passed"
+        ]
+      ]
+    },
+    {
+      "tool": "scripts/acceptance_record.py",
+      "expected": 54,
+      "case_count_A_B": [
+        54,
+        54
+      ],
+      "no_failures": true,
+      "case_lines_equal": true,
+      "total_summary_A_B": [
+        [
+          "self-test: 54/54 passed"
+        ],
+        [
+          "self-test: 54/54 passed"
+        ]
+      ]
+    },
+    {
+      "tool": "scripts/prompt_gate.py",
+      "expected": 71,
+      "case_count_A_B": [
+        71,
+        71
+      ],
+      "no_failures": true,
+      "case_lines_equal": true,
+      "total_summary_A_B": [
+        [
+          "self-test: 71/71 passed"
+        ],
+        [
+          "self-test: 71/71 passed"
+        ]
+      ]
+    },
+    {
+      "tool": "scripts/status_report.py",
+      "expected": 75,
+      "case_count_A_B": [
+        75,
+        75
+      ],
+      "no_failures": true,
+      "case_lines_equal": true,
+      "total_summary_A_B": [
+        [
+          "self-test: 75/75 passed"
+        ],
+        [
+          "self-test: 75/75 passed"
+        ]
+      ]
+    },
+    {
+      "tool": ".antigravity/scripts/list_screen_touch_hook.py",
+      "expected": 21,
+      "case_count_A_B": [
+        21,
+        21
+      ],
+      "no_failures": true,
+      "case_lines_equal": true,
+      "total_summary_A_B": [
+        [
+          "self-test: 21/21 passed"
+        ],
+        [
+          "self-test: 21/21 passed"
+        ]
+      ]
+    },
+    {
+      "tool": "scripts/known_failures.py",
+      "expected": 24,
+      "case_count_A_B": [
+        24,
+        24
+      ],
+      "no_failures": true,
+      "case_lines_equal": true,
+      "total_summary_A_B": [
+        [
+          "self-test: 24/24 passed"
+        ],
+        [
+          "self-test: 24/24 passed"
+        ]
+      ]
+    }
+  ],
+  "architecture_counters": {
+    "total": "138",
+    "executed": "138",
+    "passed": "131",
+    "failed": "7",
+    "error": "0",
+    "timeout": "0",
+    "aborted": "0",
+    "inconclusive": "0",
+    "passedButRunAborted": "0",
+    "notRunnable": "0",
+    "notExecuted": "0",
+    "disconnected": "0",
+    "warning": "0",
+    "completed": "0",
+    "inProgress": "0",
+    "pending": "0"
+  },
+  "raw_trx_sha256": "daf2b5dad475a157b7a67d41faa3aec978c19f540a5dd26bbdaa81168d26234e",
+  "failure_names_and_messages_equal_ct": true,
+  "raw_results": 138,
+  "validator_parity_summary": "source tree A: 152 list screens · 304 runs (report + gaps) · A's verifier vs B's verifier: 304/304 identical (stdout, stderr, exit)\nsource tree B: 152 list screens · 304 runs (report + gaps) · A's verifier vs B's verifier: 304/304 identical (stdout, stderr, exit)\nscreens only in the merged tree: 0 · only in the CT tree: 0\n"
+}

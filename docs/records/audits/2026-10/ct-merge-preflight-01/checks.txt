@@ -1,0 +1,60 @@
+=== Sources
+This branch 95de60936 · the local origin/main 3912d568b (read on the remote at 2026-10-16T08:23:57Z by Codex: the same SHA) · merge base 6b8a62d5a · git merge-tree --write-tree 3912d568b 95de60936 → exit 0, tree 136e5fa1be9508a2d4ae7efb65cb7f5c9c318ca0. No merge commit was made; no branch or worktree of the repository changed.
+
+=== The merged-tree test (scratch clones outside the repository)
+MERGED-TREE TEST — 2026-10-16 (outside the repository; no commit, no merge; branches unchanged)
+clone A: __TEST_REPO_A__ · HEAD 95de60936 (detached), worktree = that commit
+clone B: __TEST_REPO_B__ · HEAD 95de60936 (detached, NOT a merge commit); index and worktree = git merge-tree --write-tree 3912d568b 95de60936 = 136e5fa1be9508a2d4ae7efb65cb7f5c9c318ca0
+both: refs/remotes/origin/main pinned to 3912d568b (a local test copy, not a remote check); push URL disabled
+
+CT files (merge-base 6b8a62d5a..95de60936): 100 · same blob in A and B: 98 · merged: .antigravity/agents/orchestrator.md, .antigravity/workflows/add-module.md
+
+self-tests (A | B, case lines compared):
+scripts/ct_queue.py: A exit 0 · self-test: 69/69 passed | B exit 0 · self-test: 69/69 passed | case lines identical: True
+scripts/acceptance_record.py: A exit 0 · self-test: 54/54 passed | B exit 0 · self-test: 54/54 passed | case lines identical: True
+scripts/prompt_gate.py: A exit 0 · self-test: 71/71 passed | B exit 0 · self-test: 71/71 passed | case lines identical: True
+scripts/status_report.py: A exit 0 · self-test: 75/75 passed | B exit 0 · self-test: 75/75 passed | case lines identical: True
+.antigravity/scripts/list_screen_touch_hook.py: A exit 0 · self-test: 21/21 passed | B exit 0 · self-test: 21/21 passed | case lines identical: True
+scripts/known_failures.py: A exit 0 · self-test: 24/24 passed | B exit 0 · self-test: 24/24 passed | case lines identical: True
+
+validator parity (A's and B's verify_datatable_page.py on the same source tree):
+source tree A: 152 list screens · 304 runs (report + gaps) · A's verifier vs B's verifier: 304/304 identical (stdout, stderr, exit)
+source tree B: 152 list screens · 304 runs (report + gaps) · A's verifier vs B's verifier: 304/304 identical (stdout, stderr, exit)
+screens only in the merged tree: 0 · only in the CT tree: 0
+
+architecture suite on B (ct-heavy lock; restore from the local NuGet folder, no network source):
+Failed!  - Failed:     7, Passed:   131, Skipped:     0, Total:   138, Duration: 11 s - TenantArchitecture.ArchitectureTests.dll (net8.0)
+raw TRX: __TEST_REPO_B__-run-raw.trx sha256 daf2b5dad475a157b7a67d41faa3aec978c19f540a5dd26bbdaa81168d26234e
+sanitised TRX: __TEST_REPO_B__-run.sanitized.trx sha256 d9f113f7e5598c1df05468dd2a644279d383ff26a239fc227b564a3aeb799430 — NOT CLEAN: R1=0, user name left 306 (the scratch path holds the user name); not for the repository
+known_failures check raw: ÖZET BİLİNEN=7 KISMEN-DÜZELDİ=0 YENİ=0 YENİ-AYRINTI=0 DÜZELDİ=0 KOŞMADI=0 BİLİNMİYOR=0 · sanitised: ÖZET BİLİNEN=7 KISMEN-DÜZELDİ=0 YENİ=0 YENİ-AYRINTI=0 DÜZELDİ=0 KOŞMADI=0 BİLİNMİYOR=0
+failure fingerprints: identical to the CT-base run of 6188349c8
+B index tree after the run: unchanged; known-failures files unchanged
+
+=== The re-sanitisation of the merged-tree TRX (derived evidence)
+RE-SANITISATION OF THE MERGED-TREE TRX — derived evidence, outside the repository (raw file and source code unchanged; no new run)
+
+inputs and tools (sha256):
+  raw TRX            daf2b5dad475a157b7a67d41faa3aec978c19f540a5dd26bbdaa81168d26234e  B-run-raw.trx (unchanged)
+  normalize_trx_roots.py 477d89b15d541a927c410d8d15cd2f19fd18d8146e640909563cfad27c008a47  (no machine path inside; roots are run-time parameters)
+  sanitize_trx.py    b015a9b480d0ceec3e0bf561da4cdad56940c518465e814405085cfa10195b72  (step 1, R1–R4, unchanged)
+
+step 1 — path roots, longest first, exact case-sensitive matches:
+  test-clone root (4 forms: the temp path with and without the macOS alias prefix, each as written and in lower case, as .NET wrote it) -> __TEST_REPO__ : 168 + 138 + 0 + 0
+  scratch root (4 forms) -> __SCRATCH__ : 0
+  intermediate sha256 4cf1007e762aeb5782367bfdbbe1b283ecede198da3e5477fb92c69d3ef70380  B-run.roots2.trx
+step 2 — sanitize_trx.py R1–R4: R1=0 R2=145 R3=1 R4=1; leftover home=0 user=0 unsanitised computerName=0; exit 0
+  final sha256 179d2aa21c5caf328211ed50be816b968d8c7d3f4a8c28274e7dffdda70896a8  B-run.sanitized2.trx
+
+checks on the final file:
+  XML valid; 138 results (131 Passed, 7 Failed); name+outcome identical to raw; the 7 failure names and messages identical to raw
+  known_failures check: ÖZET BİLİNEN=7 KISMEN-DÜZELDİ=0 YENİ=0 YENİ-AYRINTI=0 DÜZELDİ=0 KOŞMADI=0 BİLİNMİYOR=0 (raw: ÖZET BİLİNEN=7 KISMEN-DÜZELDİ=0 YENİ=0 YENİ-AYRINTI=0 DÜZELDİ=0 KOŞMADI=0 BİLİNMİYOR=0)
+  failure fingerprints identical to raw (and to the CT-base run of 6188349c8)
+  leftovers: user name 0 · home 0 · full host name 0 · test-clone root 0 · scratch root 0 · '__TMP__' 0 · unsanitised computerName 0
+  note: the 3-character short host token occurs once inside a test's output table (data; R1–R4 leave data alone); the same token is already in the committed TRX files of ct-ops-04, ct-i2-list-hook-01 and ct-vdp-early-return-01
+
+clone B, all tracked files: before the run (setup) `git diff --name-only` = 0 entries (worktree = index); after the run `git diff-files --exit-code` = 0; index tree 136e5fa1be9508a2d4ae7efb65cb7f5c9c318ca0 before (setup, and B-tree-before.txt) and after
+
+superseded derived files (kept for audit, not evidence): B-run.sanitized.trx (user 306), resan/B-run.sanitized.trx (user 138, lower-case root missed)
+
+=== A note on pin-B-before/after.txt
+Those two files hold three lines each — scripts/known_failures.py, tests/known-failures.tsv and tests/known-failures-items.json — with full 64-digit sha256 values and their paths cut at 80 characters; before and after are equal. They are not a manifest of the 100 CT files. The source identity of the tested tree is the index tree 136e5fa1 with no difference between the tracked worktree and the index before and after the run.
