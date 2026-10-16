@@ -124,7 +124,9 @@ public sealed class RecallCaseDetailWebTests : IClassFixture<WebApplicationFacto
         Assert.Contains(scripts, f => f.EndsWith("case-detail.js", StringComparison.Ordinal));
         foreach (var file in scripts.Concat(Directory.EnumerateFiles(Path.Combine(Web, "Views", "Recall"), "*.cshtml")))
         {
-            var code = Code(File.ReadAllText(file));
+            // R7c (D-27 closed): the ONE allowed mention is the GET link that OPENS the MOD-0173 form ("Müşteri iadesi gir" — case-view.js builds it,
+            // CaseDetails.cshtml draws it); MOD-0173 posts the movement. Taken out here, every other mention still fails.
+            var code = Regex.Replace(Code(File.ReadAllText(file)), @"(""|`)/StockMovements/Create\?(type=CUSTOMER_RETURN|\$\{query\})[^""`]*(""|`)|new URLSearchParams\(\{ type: 'CUSTOMER_RETURN' \}\)", string.Empty);
             foreach (var forbidden in new[] { "StockMovements", "/api/inventory", "/movements", "CUSTOMER_RETURN" })
                 Assert.False(code.Contains(forbidden, StringComparison.Ordinal), $"{Path.GetFileName(file)} names {forbidden}");
         }

@@ -86,7 +86,24 @@ var RecallCaseView = (function () {
         ? 'Recall.Errors.RECALL_SOD_VIOLATION_CLOSE'
         : `Recall.Errors.${code}`);
 
-    return { STEPS, step, offers, retryable, segregatable, requestable, hasOpen, customerRows, treeOrder, errorKey };
+    /**
+     * WP-0177-R7c (D-27 closed, KR-H): "Müşteri iadesi gir" → the MOD-0173 form pre-filled with CUSTOMER_RETURN, the case's product / SKU / root lot
+     * and QUARANTINE (a return is inspected first; the form offers only held statuses for this type). Only once the scope is approved (returns
+     * link from then on) and only for a registered root lot; null otherwise. The form is MOD-0173's: it posts the movement, never 0177.
+     */
+    const customerReturnHref = (c) => {
+        if (!c || !['Active', 'EffectivenessCheck'].includes(c.status)) return null;
+        const lotId = c.rootLot?.lotId;
+        if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(String(lotId || ''))) return null;
+        const query = new URLSearchParams({ type: 'CUSTOMER_RETURN' });
+        if (c.item?.itemId) query.set('itemId', c.item.itemId);
+        if (c.item?.skuId && c.item?.skuLevel) query.set('sku', `${c.item.skuLevel}:${c.item.skuId}`);
+        query.set('lotId', lotId);
+        query.set('toStatus', 'QUARANTINE');
+        return `/StockMovements/Create?${query}`;
+    };
+
+    return { STEPS, step, offers, retryable, segregatable, requestable, hasOpen, customerRows, treeOrder, errorKey, customerReturnHref };
 })();
 
 if (typeof window !== 'undefined') window.RecallCaseView = RecallCaseView;

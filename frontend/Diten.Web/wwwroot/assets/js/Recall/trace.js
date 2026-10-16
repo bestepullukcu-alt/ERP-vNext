@@ -184,6 +184,10 @@
     const init = () => {
         initLotPicker();
         drawRecent();
+        // R7c: "İzle" from the 0174 lot badge and "Tam izleme (geri çağırma)" from /LotTrace open here with ?lot={lotId} — the lot is chosen and
+        // the trace runs (its number comes back with the trace; until then the id stands in). Anything else in ?lot is ignored.
+        const asked = new URLSearchParams(window.location.search).get('lot');
+        if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(asked || '')) { choose(asked, asked); run(); }
         byId('rc-trace-form').addEventListener('submit', run);
         byId('rc-recent-list').addEventListener('click', (event) => {
             const button = event.target.closest('[data-recent-lot]');

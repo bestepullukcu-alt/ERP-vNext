@@ -88,8 +88,8 @@ test('a drill row is not a case: "Tatbikat", class and level "—" (D-25), its r
     assert.deepEqual([drill.type, drill.class, drill.level, drill.progress, drill.clickable],
         [tr['Recall.Type.Drill'], '—', '—', `${tr['Recall.Drill.Passed']} · ${t('Recall.Duration.HoursMinutes', 1, 42)}`, false]);
     assert.equal(drill.status, tr['Recall.DrillStatus.Completed']);
-    const linked = plain(views.RecallCasesView.cells({ rowKind: 'Drill', runId: 'r-11', number: 'RC-2026-D011', status: 'Completed', lot: { lotNumber: 'PRC-2502' } }, { ...fmt, canDrills: true }));
-    assert.deepEqual([linked.clickable, linked.href], [true, '/Recall/Drills?run=r-11']); // R7b: the run in the Tatbikat Planlayıcı
+    const linked = plain(views.RecallCasesView.cells({ rowKind: 'Drill', runId: 'r-11', number: 'RC-2026-D011', status: 'Completed', lot: { lotNumber: 'PRC-2502' } }, { ...fmt, canDrills: true, canEvidence: true }));
+    assert.deepEqual([linked.clickable, linked.href], [true, '/Recall/Evidence?drillRun=r-11']); // R7c (O-R7b-1): a finished run opens its Kanıt Paketi
     const real = plain(views.RecallCasesView.cells({ rowKind: 'Case', caseId: 'c-4', number: 'RC-2026-0004', status: 'Active', class: 2, level: 'Pharmacy',
         rootLot: { lotNumber: 'LKT-25K004' }, openedAtUtc: '2026-10-06T09:12:00Z', owner: { userId: 'u' }, progress: [{ returned: 180, shipped: 1150, baseUomId: 'EA' }] }, fmt));
     assert.deepEqual([real.type, real.class, real.level, real.progress, real.clickable],

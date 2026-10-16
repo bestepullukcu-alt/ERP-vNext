@@ -18,8 +18,9 @@
     it only in the statuses the server allows and never to the user four-eyes excludes (CT-R1: the scope submitter gets no "Kapsamı onayla",
     the effectiveness completer no "Vakayı kapat"). Scope approval, effectiveness completion and closure are TWO steps (pack §8.8): the decision
     dialog prepares (PendingAction), the ONE MOD-0022 dialog (ESign.open) signs, the command carries the signatureId.
-    Not built: the "Hedef tarih · N gün kaldı" header line (D-26 — no target date in the pack), the "Müşteri iadesi gir" button (D-27 — the
-    return is recorded as a stock movement elsewhere and appears here as a candidate), the demo status selector / role switcher (D-14).
+    Not built: the "Hedef tarih · N gün kaldı" header line (D-26 — no target date in the pack), the demo status selector / role switcher (D-14).
+    R7c (D-27 closed): "Müşteri iadesi gir" opens the MOD-0173 form pre-filled (a customer return into a held status) — drawn only for a holder
+    of inventory.movements.create; the return is posted by MOD-0173 and appears here as a candidate (0177 still posts no movement).
     UAS-001 — nothing below is drawn without recall.cases.read. No redirect.
 *@
 @if (!Perms.Has(RecallKeys.CasesRead))
@@ -179,6 +180,10 @@ else if (company.Ready)
 
             <div class="tab-pane fade" id="rc-tab-returns" role="tabpanel">
                 <div class="alert alert-info small" role="note" id="rc-ret-info">@Localizer["Recall.Ret.Info"]</div>
+                @if (Perms.Has("inventory.movements.create"))
+                {
+                    <a class="btn btn-sm btn-label-primary mb-3 d-none" id="rc-enter-return" href="/StockMovements/Create?type=CUSTOMER_RETURN"><i class="bx bx-undo me-1"></i>@Localizer["Recall.Ret.EnterReturn"]</a>
+                }
                 <h6>@Localizer["Recall.Ret.Linked"]</h6>
                 <div class="table-responsive mb-4">
                     <table class="table table-sm align-middle mb-0" id="rc-ret-links">

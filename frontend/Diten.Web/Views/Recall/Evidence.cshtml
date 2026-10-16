@@ -32,7 +32,9 @@
     company.SelectHint = Localizer["Recall.Common.Company.Required"].Value;
     company.UnavailableText = Localizer["Recall.Common.Company.Unavailable"].Value;
     var caseParam = Guid.TryParse(Context.Request.Query["case"], out var c) ? c.ToString("D") : string.Empty;
-    var runParam = Guid.TryParse(Context.Request.Query["run"], out var r) ? r.ToString("D") : string.Empty;
+    // R7c: Vakalar's finished drill row opens ?drillRun=…; ?run=… (R7b) is kept
+    var runParam = Guid.TryParse(Context.Request.Query["drillRun"], out var dr) ? dr.ToString("D")
+        : Guid.TryParse(Context.Request.Query["run"], out var r) ? r.ToString("D") : string.Empty;
 }
 
 <partial name="~/Views/Recall/_Header.cshtml" model="@("RECALLEVIDENCE")" />
