@@ -85,6 +85,8 @@
                             }
                         </div>
                         <div class="invalid-feedback d-block" data-err="decision"></div>
+                        @* WP-0177-R7c (owner step MOD-0175, CT-R9): a yellow WARNING when a release meets a recalled lot — never a block *@
+                        <partial name="~/Views/Shared/Recall/_ReleaseRecallBand.cshtml" />
                     </div>
 
                     <div id="qr-lines" class="mb-4 d-none">

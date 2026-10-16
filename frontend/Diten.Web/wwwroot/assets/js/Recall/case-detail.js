@@ -70,6 +70,12 @@
         byId('rc-h-badges').innerHTML = `${ui.typeBadge('Case')} ${ui.classBadge(c.class)} <span class="badge bg-label-secondary">${esc(t('Recall.Level.' + c.level) || c.level)}</span> ${ui.statusBadge(c.status)}`;
         byId('rc-h-product').textContent = c.itemLabel || c.item?.itemId || '';
         byId('rc-h-lot').textContent = c.rootLot?.lotNumber || '';
+        const enterReturn = byId('rc-enter-return'); // R7c: drawn only for a holder of inventory.movements.create (MOD-0173's key)
+        if (enterReturn) {
+            const href = view.customerReturnHref(c);
+            enterReturn.classList.toggle('d-none', !href);
+            if (href) enterReturn.setAttribute('href', href);
+        }
         byId('rc-h-reason').textContent = [c.reason, c.reasonReference].filter(Boolean).join(' · ');
         byId('rc-h-opened').innerHTML = `${person(c.owner)} · ${when(c.openedAtUtc)}`;
         const final = byId('rc-h-final');

@@ -4,11 +4,20 @@
  * decision A): its class and level are "—" (mockup difference D-25), its type says "Tatbikat", its progress cell is the drill result.
  * R7a: a REAL case row opens its Vaka Detayı (/Recall/Cases/Details/{caseId}). R7b: a drill row opens its run in the Tatbikat Planlayıcı
  * (/Recall/Drills?run={runId}) — only when fmt.canDrills (RECALL_DRILLS_VIEW); otherwise it stays without a link (no dead link).
+ * R7c (CT decision on O-R7b-1): a FINISHED run (Completed / Cancelled) opens its Kanıt Paketi (/Recall/Evidence?drillRun={runId}, needs
+ * fmt.canEvidence = RECALL_EVIDENCE_VIEW); a Running run opens the Tatbikat Planlayıcı.
  */
 'use strict';
 
 var RecallCasesView = (function () {
     const DASH = '—';
+
+    /** A drill row's link: Running → the planner; Completed / Cancelled → that run's evidence pack; none without the page's key. */
+    const drillLink = (row, fmt) => {
+        const id = encodeURIComponent(row.runId || '');
+        if (row.status === 'Running') return { clickable: !!fmt.canDrills && !!row.runId, href: `/Recall/Drills?run=${id}` };
+        return { clickable: !!fmt.canEvidence && !!row.runId, href: `/Recall/Evidence?drillRun=${id}` };
+    };
 
     /** column → { text, html? } for one row; fmt = { t, qty, date, duration }. */
     const cells = (row, fmt) => {
@@ -23,7 +32,7 @@ var RecallCasesView = (function () {
             return {
                 number: row.number, kind: 'Drill', type: t('Recall.Type.Drill'), product: row.itemLabel || row.item?.itemId || '', lot: lot || '',
                 class: DASH, level: DASH, opened: fmt.date(row.startedAtUtc), owner, progress: result, status: t('Recall.DrillStatus.' + row.status),
-                statusCode: row.status, clickable: !!fmt.canDrills && !!row.runId, href: `/Recall/Drills?run=${encodeURIComponent(row.runId || '')}`
+                statusCode: row.status, ...drillLink(row, fmt)
             };
         }
 
@@ -35,7 +44,7 @@ var RecallCasesView = (function () {
         };
     };
 
-    return { cells, DASH };
+    return { cells, drillLink, DASH };
 })();
 
 if (typeof window !== 'undefined') window.RecallCasesView = RecallCasesView;

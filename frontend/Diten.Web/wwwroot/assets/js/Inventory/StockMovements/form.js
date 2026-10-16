@@ -57,7 +57,7 @@ const StockMovementForm = (function () {
     // A GS1 / ITS code typed or scanned into the "one by one" box goes through the code check (K-B).
     const GS1 = /^\(01\)|^01\d{14}|\u001d/;
     const DIRECTION = {
-        OPENING_BALANCE: 'in', COUNT_GAIN: 'in',
+        OPENING_BALANCE: 'in', COUNT_GAIN: 'in', CUSTOMER_RETURN: 'in', // WP-0177-R7c: a customer return is an inbound into a held status
         COUNT_LOSS: 'out', SCRAP: 'out', WRITE_OFF: 'out',
         WAREHOUSE_TRANSFER: 'wh', LOCATION_TRANSFER: 'loc'
     };
@@ -173,8 +173,24 @@ const StockMovementForm = (function () {
     };
 
     // ── the direction matrix ────────────────────────────────────────────────────────────────────────────
+    // WP-0177-R7c (KR-H): the target statuses of the chosen type only (each server-drawn option names its types); the list is REBUILT so the
+    // picker never offers another type's status (BLOCKED belongs to CUSTOMER_RETURN alone, AVAILABLE never to it). The server checks the same.
+    const statusOptions = [...(byId('toStockStatus')?.options || [])].map((o) => ({
+        value: o.value, text: o.textContent, types: (o.dataset.types || '').split(' ').filter(Boolean), defaults: (o.dataset.defaultFor || '').split(' ').filter(Boolean)
+    }));
+    const applyTargetStatuses = () => {
+        if (!el.toStatus || statusOptions.length === 0) return;
+        const type = el.type?.value || '';
+        const allowed = statusOptions.filter((o) => o.types.includes(type));
+        const keep = allowed.some((o) => o.value === el.toStatus.value) ? el.toStatus.value : (allowed.find((o) => o.defaults.includes(type)) || allowed[0])?.value;
+        el.toStatus.innerHTML = '';
+        allowed.forEach((o) => el.toStatus.add(new Option(o.text, o.value, false, o.value === keep)));
+        if (hasSelect2()) $(el.toStatus).trigger('change.select2');
+    };
+
     const applyType = () => {
         const dir = direction();
+        applyTargetStatuses();
         const shown = dir ? MATRIX[dir] : { source: false, 'target-warehouse': false, 'target-location': false, 'target-status': false, lot: false };
         form.querySelector('[data-matrix-empty]')?.classList.toggle('d-none', !!dir);
         form.querySelectorAll('[data-matrix]').forEach((block) => {
@@ -736,6 +752,9 @@ const StockMovementForm = (function () {
     const handleRefusal = (res, json) => {
         if (!res) { showAlert('movement-page-alert', t('ErrServiceUnavailable')); return; }
         if (res.status === 401) { showAlert('movement-form-alert', t('ErrSessionExpired')); return; }
+        // WP-0177-R7c: 422 LOT_UNDER_RECALL — the recall band shows it and the form says THE SAME sentence (the server is the control)
+        const recall = window.RecallBands?.exitRefused(res.status, json);
+        if (recall) { showAlert('movement-form-alert', recall, json?.error?.correlationId); return; }
 
         if (json?.fields) {
             Object.entries(json.fields).forEach(([id, message]) => fieldError(id, message));

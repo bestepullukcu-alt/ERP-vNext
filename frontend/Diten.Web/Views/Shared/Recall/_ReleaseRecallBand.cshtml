@@ -1,0 +1,11 @@
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@*
+    MOD-0177 R7c — 0175 decision (CT-R9): a YELLOW warning when "Serbest bırak" (→ Kullanılabilir) is chosen for a lot under recall:
+    "Bu lot geri çağırmada (RC-…); serbest bırakmak çıkış engelini kaldırmaz." A WARNING, never a block — no button is disabled, the decision
+    can be made (the exit block keeps refusing the outbound movements). Needs recall.lots.status.read.
+*@
+@if (Perms.Has(Diten.Web.Controllers.RecallKeys.LotsStatusRead))
+{
+    <div class="d-none" data-recall-release-band role="status"></div>
+    <partial name="~/Views/Shared/Recall/_RecallBandAssets.cshtml" />
+}

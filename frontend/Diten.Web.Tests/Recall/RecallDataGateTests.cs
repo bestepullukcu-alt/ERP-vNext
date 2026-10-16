@@ -78,6 +78,8 @@ public sealed class RecallDataGateTests
         ["SettingsHistory"] = [RecallKeys.SettingsRead],
         ["PrepareSettings"] = [RecallKeys.SettingsManage],
         ["SaveSettings"] = [RecallKeys.SettingsManage],
+        // WP-0177-R7c — the bands on 0173 / 0174 / 0175 (getLotRecallStatus, the one API-only key)
+        ["LotRecallStatus"] = [RecallKeys.LotsStatusRead],
     };
 
     public static readonly string[] Pages = ["CaseDetails", "Cases", "Drills", "Evidence", "Index", "Settings", "Trace"];

@@ -644,4 +644,11 @@
   <data name="Recall.Ev.W.from" xml:space="preserve"><value>С даты</value></data>
   <data name="Recall.Ev.W.to" xml:space="preserve"><value>По дату</value></data>
   <data name="Recall.Ev.W.runCount" xml:space="preserve"><value>Количество учений</value></data>
+  <data name="Recall.Band.Badge" xml:space="preserve"><value>Открытый отзыв: {0}</value></data>
+  <data name="Recall.Band.Trace" xml:space="preserve"><value>Проследить</value></data>
+  <data name="Recall.Band.FullTrace" xml:space="preserve"><value>Полное прослеживание (отзыв)</value></data>
+  <data name="Recall.Band.Exit" xml:space="preserve"><value>Партия на отзыве — отпуск заблокирован ({0})</value></data>
+  <data name="Recall.Band.Release" xml:space="preserve"><value>Партия на отзыве ({0}); снятие карантина не снимает запрет отпуска.</value></data>
+  <data name="Recall.Band.HoldSource" xml:space="preserve"><value>Источник: отзыв {0}</value></data>
+  <data name="Recall.Ret.EnterReturn" xml:space="preserve"><value>Оформить возврат клиента</value></data>
 </root>

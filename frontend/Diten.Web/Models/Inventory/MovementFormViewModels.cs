@@ -61,7 +61,12 @@ public sealed class StockMovementFormViewModel
 
     public string PostUrl => Mode == MovementFormMode.Correct ? "/StockMovements/Edit" : "/StockMovements/Create";
 
-    public static StockMovementFormViewModel ForCreate(IQueryCollection query) => Prefilled(MovementFormMode.Create, MovementRules.ManualTypes, query);
+    /// <summary>
+    /// WP-0177-R7c (KR-H): the new-movement form offers <see cref="MovementRules.FormTypes"/> (the 7 manual types + CUSTOMER_RETURN) and may open
+    /// pre-filled with <c>lotId</c> (a registered lot id only) and <c>toStatus</c> (only a status the chosen type may name); anything else in
+    /// the address is ignored. ForEntry / ForCorrection are unchanged.
+    /// </summary>
+    public static StockMovementFormViewModel ForCreate(IQueryCollection query) => Prefilled(MovementFormMode.Create, MovementRules.FormTypes, query, targets: true);
 
     public static StockMovementFormViewModel ForEntry(IQueryCollection query) => Prefilled(MovementFormMode.Entry, MovementRules.EntryTypes, query);
 
@@ -96,14 +101,19 @@ public sealed class StockMovementFormViewModel
         };
     }
 
-    private static StockMovementFormViewModel Prefilled(MovementFormMode mode, IReadOnlyList<string> allowed, IQueryCollection query)
+    private static StockMovementFormViewModel Prefilled(MovementFormMode mode, IReadOnlyList<string> allowed, IQueryCollection query, bool targets = false)
     {
         var type = Text(query, "type");
+        var chosen = type is not null && allowed.Contains(type, StringComparer.Ordinal) ? type : null;
+        var lot = Text(query, "lotId");
+        var status = Text(query, "toStatus");
         return new StockMovementFormViewModel
         {
             Mode = mode,
             AllowedTypes = allowed,
-            MovementType = type is not null && allowed.Contains(type, StringComparer.Ordinal) ? type : null,
+            MovementType = chosen,
+            LotId = targets && MovementRules.IsRegisteredLotId(lot) ? lot : null,
+            ToStockStatus = targets && status is not null && MovementRules.TargetStatusesOf(chosen).Contains(status, StringComparer.Ordinal) ? status : null,
             ItemId = Guid.TryParse(Text(query, "itemId"), out var item) ? item.ToString("D") : null,
             ItemText = Text(query, "itemText"),
             Sku = InventoryListAdapter.TryParseSku(Text(query, "sku") ?? string.Empty, out var level, out var skuId) ? level + ":" + skuId : null,

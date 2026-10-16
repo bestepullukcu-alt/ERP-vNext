@@ -141,6 +141,7 @@
         set('where', `${esc(h.warehouseLabel || '')}<small class="d-block text-muted">${esc(h.locationLabel || '')}</small>`);
         set('wait', `<span class="${h.late ? 'text-warning' : ''}">${esc(t('Quarantine.Common.Days', h.waitDays))}</span><small class="d-block text-muted">${esc(t('Quarantine.Common.Target', h.targetDays))}</small>`);
         set('source', `${esc(t('Quarantine.Source.' + h.source) || h.source)}<small class="d-block text-muted font-monospace">${esc(h.sourceDocument?.number || h.sourceDocument?.text || '')}</small>`);
+        window.RecallBands?.holdSource(null, h); // WP-0177-R7c: "Kaynak: Geri çağırma RC-…" (link only with recall.cases.read)
         set('createdBy', `${esc(ui.person(h.createdBy))}<small class="d-block text-muted">${esc(dateTime(h.enteredAtUtc))}</small>`);
         set('coa', esc(h.lot?.coaReference || '—'));
         set('lotStatus', h.lot?.lotStatus ? `<span class="badge bg-label-secondary">${esc(t('Quarantine.LotStatus.' + h.lot.lotStatus) || h.lot.lotStatus)}</span>` : '—');

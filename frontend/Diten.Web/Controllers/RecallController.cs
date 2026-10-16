@@ -500,6 +500,22 @@ public sealed class RecallController : Controller
         return new JsonArray(rows.OrderBy(r => r.Position).Select(r => (JsonNode)r.Row).ToArray());
     }
 
+    // ── Diğer Ekranlar bantları (WP-0177-R7c, pack §11.1 / §11.2) ──────────────────────────────────────────────────────
+
+    /// <summary>
+    /// getLotRecallStatus — the one read of the bands on 0173 / 0174 / 0175 (lot badge, exit band, CT-R9 release warning). The service answers
+    /// for the lot in every company of the tenant (CT-R7): another company's case carries its number, not its id — passed through unchanged.
+    /// </summary>
+    [HttpGet("band/lots/{id}/status")]
+    public async Task<IActionResult> LotRecallStatus(string id, CancellationToken ct)
+    {
+        if (!_permissions.Has(RecallKeys.LotsStatusRead)) return Refuse(403, null);
+        if (!Guid.TryParse(id, out var lotId)) return Refuse(400, "INVALID_REQUEST");
+        var reply = await SendAsync(HttpMethod.Get, $"{ApiBase}/lots/{lotId:D}/status", null, null, ct);
+        if (!reply.IsSuccess) return Failed("getLotRecallStatus", reply);
+        return new ContentResult { StatusCode = 200, Content = reply.Body, ContentType = "application/json" };
+    }
+
     // ── Tatbikat Planlayıcı (WP-0177-R7b, pack §11.1 RECALLDRILLS, §8.10) ─────────────────────────────────────────────
 
     /// <summary>listDrillPlans — the company's plans (owner names added).</summary>
@@ -1019,6 +1035,9 @@ public static class RecallKeys
     public const string EvidenceExport = "recall.evidence.export";
     public const string SettingsRead = "recall.settings.read";
     public const string SettingsManage = "recall.settings.manage";
+
+    // WP-0177-R7c — the bands on MOD-0173 / 0174 / 0175 screens read getLotRecallStatus (pack §14.2, the one API-only key)
+    public const string LotsStatusRead = "recall.lots.status.read";
 
     public static readonly IReadOnlyDictionary<string, string> Actions = new Dictionary<string, string>(StringComparer.Ordinal)
     {

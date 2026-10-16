@@ -644,4 +644,11 @@
   <data name="Recall.Ev.W.from" xml:space="preserve"><value>من تاريخ</value></data>
   <data name="Recall.Ev.W.to" xml:space="preserve"><value>إلى تاريخ</value></data>
   <data name="Recall.Ev.W.runCount" xml:space="preserve"><value>عدد التمارين</value></data>
+  <data name="Recall.Band.Badge" xml:space="preserve"><value>استدعاء مفتوح: {0}</value></data>
+  <data name="Recall.Band.Trace" xml:space="preserve"><value>تتبّع</value></data>
+  <data name="Recall.Band.FullTrace" xml:space="preserve"><value>تتبّع كامل (استدعاء)</value></data>
+  <data name="Recall.Band.Exit" xml:space="preserve"><value>هذه التشغيلة قيد الاستدعاء — حركات الإخراج محظورة ({0})</value></data>
+  <data name="Recall.Band.Release" xml:space="preserve"><value>هذه التشغيلة قيد الاستدعاء ({0})؛ الإفراج عنها لا يرفع حظر الإخراج.</value></data>
+  <data name="Recall.Band.HoldSource" xml:space="preserve"><value>المصدر: استدعاء {0}</value></data>
+  <data name="Recall.Ret.EnterReturn" xml:space="preserve"><value>إدخال مرتجع عميل</value></data>
 </root>

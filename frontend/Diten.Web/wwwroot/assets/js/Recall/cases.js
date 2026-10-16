@@ -11,7 +11,7 @@
     const ui = window.RecallUi;
     const { t, esc } = ui;
     const tableEl = document.querySelector('.datatables-recall-cases');
-    const fmt = { t, qty: ui.qty, date: ui.date, duration: ui.duration, canDrills: ui.can('RECALL_DRILLS_VIEW') };
+    const fmt = { t, qty: ui.qty, date: ui.date, duration: ui.duration, canDrills: ui.can('RECALL_DRILLS_VIEW'), canEvidence: ui.can('RECALL_EVIDENCE_VIEW') };
     let list = null;
 
     const filterFields = [

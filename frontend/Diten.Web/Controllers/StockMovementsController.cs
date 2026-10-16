@@ -77,7 +77,8 @@ public sealed partial class StockMovementsController : Controller
         if (model is null || !Guid.TryParse(model.IdempotencyKey, out var key))
             return Refuse(StatusCodes.Status400BadRequest, InventoryListAdapter.InvalidFilter, null);
 
-        var check = MovementRules.Check(model, model.Entry ? MovementRules.EntryTypes : MovementRules.ManualTypes, MovementKey(key));
+        // WP-0177-R7c (KR-H): the new-movement form posts FormTypes (the 7 manual types + CUSTOMER_RETURN); the correction below keeps ManualTypes
+        var check = MovementRules.Check(model, model.Entry ? MovementRules.EntryTypes : MovementRules.FormTypes, MovementKey(key));
         if (!check.IsValid)
             return FieldErrors(check.Errors);
         if (await RetestRefusalAsync(model, cancellationToken) is { } retest)
@@ -500,6 +501,15 @@ public sealed partial class StockMovementsController : Controller
     /// A MOD-0173 refusal of a movement, placed where it belongs (field / form / page / restart — pack §13). With a
     /// <paramref name="reversalNumber"/> it is the partial-correction answer: the reversal stands, this movement did not.
     /// </summary>
+    /// <summary>
+    /// WP-0177-R7c (KR-C): INVENTORY 1.4.0 422 LOT_UNDER_RECALL — the case number travels to the form, whose recall band words the refusal with
+    /// the same sentence (another company's case: its number only, never its id — CT-R7). Nothing else of the details is passed.
+    /// </summary>
+    public static Dictionary<string, object?>? RecallRefusalDetails(string? code, IReadOnlyDictionary<string, object?>? details)
+        => code == "LOT_UNDER_RECALL"
+            ? new Dictionary<string, object?>(StringComparer.Ordinal) { ["recallCaseNumber"] = MovementErrorFields.Detail(details, "recallCaseNumber") }
+            : null;
+
     private IActionResult MovementRefusal(GatewayReply reply, MovementSubmitViewModel model, MovementRules.SourceRow? source, string? reversalNumber)
     {
         var code = reply.Error?.Code;
@@ -519,6 +529,8 @@ public sealed partial class StockMovementsController : Controller
 
         _logger.LogWarning("Movement refused with {Status} {Code} (correlation {CorrelationId}).", reply.StatusCode, code, reply.Error?.CorrelationId ?? reply.CorrelationId);
         var expiry = ExpiryRefusalDetails(code, details);
+        // WP-0177-R7c: LOT_UNDER_RECALL rides the same seam (its case number only)
+        expiry ??= RecallRefusalDetails(code, details);
         if (expiry is not null)
         {
             // WP-0176-F5 seam (CT decision A): the FEFO / minimum-shelf-life bands need the server's details (CT-F1: requiredToStockStatus)

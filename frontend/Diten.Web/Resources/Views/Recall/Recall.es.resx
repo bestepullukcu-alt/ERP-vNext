@@ -644,4 +644,11 @@
   <data name="Recall.Ev.W.from" xml:space="preserve"><value>Desde</value></data>
   <data name="Recall.Ev.W.to" xml:space="preserve"><value>Hasta</value></data>
   <data name="Recall.Ev.W.runCount" xml:space="preserve"><value>Número de simulacros</value></data>
+  <data name="Recall.Band.Badge" xml:space="preserve"><value>Retirada abierta: {0}</value></data>
+  <data name="Recall.Band.Trace" xml:space="preserve"><value>Trazar</value></data>
+  <data name="Recall.Band.FullTrace" xml:space="preserve"><value>Trazabilidad completa (retirada)</value></data>
+  <data name="Recall.Band.Exit" xml:space="preserve"><value>Este lote está en retirada: las salidas están bloqueadas ({0})</value></data>
+  <data name="Recall.Band.Release" xml:space="preserve"><value>Este lote está en retirada ({0}); liberarlo no levanta el bloqueo de salidas.</value></data>
+  <data name="Recall.Band.HoldSource" xml:space="preserve"><value>Origen: retirada {0}</value></data>
+  <data name="Recall.Ret.EnterReturn" xml:space="preserve"><value>Registrar devolución de cliente</value></data>
 </root>

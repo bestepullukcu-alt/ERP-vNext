@@ -248,6 +248,8 @@
                             <div class="invalid-feedback d-block" data-error-for="source"></div>
                             @* WP-0176-F5: the outbound FEFO band (KF-B) *@
                             <partial name="~/Views/Shared/Expiry/_FefoBand.cshtml" />
+                            @* WP-0177-R7c: the recall exit band — the source row's lot under recall on a blocked type (KR-C; the server's 422 is the control) *@
+                            <partial name="~/Views/Shared/Recall/_ExitBlockBand.cshtml" />
                         </div>
                         <div class="col-12 col-md-6" data-matrix="target-warehouse">
                             <label for="toWarehouseId" class="form-label fw-medium">@Localizer["FieldTargetWarehouse"] <span class="text-danger">*</span></label>
@@ -275,10 +277,17 @@
                             <label for="toStockStatus" class="form-label fw-medium">@Localizer["FieldTargetStockStatus"] <span class="text-danger">*</span></label>
                             <div class="diten-field">
                                 <i class="bx bx-check-shield diten-field-icon" aria-hidden="true"></i>
+                                @*
+                                    WP-0177-R7c (KR-H): each option names the types that may use it (MovementRules.TargetStatusesOf) — form.js keeps only
+                                    the chosen type's: OPENING_BALANCE / COUNT_GAIN as before (AVAILABLE first), CUSTOMER_RETURN only the held three
+                                    (QUARANTINE first; BLOCKED belongs to it alone). The server checks the same rule.
+                                *@
                                 <select id="toStockStatus" class="form-select">
-                                    @foreach (var status in MovementRules.InboundStatuses)
+                                    @foreach (var status in MovementRules.FormTargetStatuses)
                                     {
-                                        <option value="@status" selected="@(status == "AVAILABLE")">@Localizer["Status" + status]</option>
+                                        var types = string.Join(" ", MovementRules.FormTypes.Where(type => MovementRules.TargetStatusesOf(type).Contains(status)));
+                                        var defaults = string.Join(" ", MovementRules.FormTypes.Where(type => MovementRules.TargetStatusesOf(type).FirstOrDefault() is { } first && first == status));
+                                        <option value="@status" data-types="@types" data-default-for="@defaults" selected="@(status == "AVAILABLE")">@Localizer["Status" + status]</option>
                                     }
                                 </select>
                             </div>

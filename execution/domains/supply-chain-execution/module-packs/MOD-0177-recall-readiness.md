@@ -1487,6 +1487,28 @@ Dal `feature/sce/mod-0177-r7b` (taban `a62f8a39a`). Kanıt `docs/records/audits/
   kaydeden (FU-0177-PLAN-OWNER); O-R7b-3 konu seçici `recall.cases.read` ister.
 **R7b CT-ACCEPTED (2026-10-16).** BLOCKED once → CT decision A: owner step MOD-0175 (read-only `HoldOfMovementAsync` on the 0177 port; `QuarantineRecallRequester` answers with the existing `FindHoldBySourceMovementAsync`; 0175 Quarantine tests 150 → 150). CT run on the branch tip (contains `a62f8a39a`): Inventory **1251 + 4**, Web **2507/2507** all green. **CT sabotage (not in a–h):** the evidence export and file reads lose their company / tenant scope (`Scope<…>()` dropped in `RecallRepository.FindEvidenceExportAsync` / `FindEvidenceFileAsync`) → `Another_company_cannot_preview_export_or_download_the_case_evidence_and_the_requests_are_checked` red; restored, porcelain clean. CT answers: O-R7b-1 → in R7c a Completed / Cancelled drill row in Vakalar opens its Kanıt Paketi (mockup), a Running one opens the planner; O-R7b-2 FU-0177-PLAN-OWNER accepted (user picker, same family as FU-0173-UI-USER-01); O-R7b-3 accepted as is (evidence subject picker needs `recall.cases.read`; QA roles hold both); the save key `recall.settings.manage` is correct (`recall.settings.update` is the signable action code). PDF reviewed by hash and header only (no viewer in the agent environment) → visual check in the owner live round. Merged `--no-ff` into MVP-1.
 
+### 19.20 WP-0177-R7c — agent result, pending CT (2026-10-16)
+
+Dal `feature/sce/mod-0177-r7c` (MVP-1 ucu `55b13fa24`). Kanıt `docs/records/audits/2026-10/mod-0177-r7c-evidence-2026-10-16.md`. Commit'ler:
+`160f77312` bant altyapısı (Recall), `565988047` **owner step MOD-0173**, `558184647` **owner step MOD-0174**, `95cc52c17` **owner step MOD-0175**,
+`cb2c085fc` Recall sayfaları + testler, `bedf51a96` önizleme bulguları, (kanıt commit'i) kanıt + bu not + §21.3 D-27.
+
+- **İki kez BLOCKED → CT kararı A / A:** `ManualTypes` "Düzelt" / düzeltme ekranında da kullanılıyor → ayrı `FormTypes`; 0173 sahip adımına
+  `MovementFormViewModels.cs` (yalnız `ForCreate`) + `_Form.cshtml`, sonra `MovementPagesSurfaceTests.cs` (tek test, sıkılaştırıldı).
+- **Bantlar** (`Views/Shared/Recall/*`, `recall-bands.js`, `/Recall/band/lots/{id}/status` recall.lots.status.read): 0174 lot rozeti + "İzle",
+  /LotTrace "Tam izleme (geri çağırma)" (CT-R15), 0175 kayıt kaynağı, 0175 karar CT-R9 sarı uyarı (engel değil), 0173 kırmızı çıkış bandı +
+  422 LOT_UNDER_RECALL aynı cümle; başka şirketin vakası yalnız numara (CT-R7); okuma hatasında bant yok.
+- **KR-H:** CUSTOMER_RETURN yeni hareket formunda, hedef yalnız QUARANTINE / QI / BLOCKED; `?type / lotId / toStatus` ön doldurma; R7a
+  "Müşteri iadesi gir" (inventory.movements.create). D-27 kapatıldı. "Düzelt" / düzeltme ekranı / diğer türlerin hedefleri önce / sonra aynı.
+- **O-R7b-1:** biten tatbikat satırı → Kanıt Paketi (`?drillRun=`), çalışan → Planlayıcı.
+- **375 px:** 12 sayfa scrollWidth = 375 (İzleme 816 → 375 düzeltildi); otomatik test yapısal (sabit genişlik + tablo kutusu).
+- **Sabotaj:** a–g 7 / 7 kırmızı → yeşil (c ve g 0173 testini de kırdı), özgün baytlar, SHA eşit, porcelain aynı.
+- **Sayılar:** Web 2507 → **2562**; Inventory **1251 + 4** (değişmedi); 0173 191, 0174 110, 0175 37, 0176 76 → aynı; mimari aynı 8 (iletiler
+  birebir); gateway 164 / 165; derleme uyarısı aynı.
+- **Önizleme:** dört bant 375 px'te; önceden dolu müşteri iadesi → karantinaya kayıt (201) → R7a aday → bağlandı → KRN-2026-0002 →.
+- **CT'ye:** O-R7c-1 çıkış bandı formda yalnız WAREHOUSE_TRANSFER'da görünebilir; O-R7c-2 "iade önce incelenir" formun kuralı (servis normal
+  lotta AVAILABLE'ı kabul ediyor); O-R7c-3 tarayıcı tabanlı 375 px testi (FU-0177-375-BROWSER önerisi).
+
 
 
 ## 20. Follow-up Items
@@ -1507,6 +1529,7 @@ Dal `feature/sce/mod-0177-r7b` (taban `a62f8a39a`). Kanıt `docs/records/audits/
 | FU-0177-TARGET-DATE | Recall case target date / days left (mockup `template.html:392` "Hedef tarih · N gün kaldı") — the rule is undefined (who sets it, how it is computed); product decision, then an additive RECALL change (D-26) | Product / CT |
 | FU-0177-HELP-PANEL | Bind the Recall pages' UXH-001 help texts (`Help.RECALL*`, delivered in 7 languages by R6) to the page help panel once the rule / component is on the base branch | MOD-0177 / UI |
 | FU-0177-PLAN-OWNER | Drill plan owner picker (R7b: the owner is the user who saves the plan; an edit keeps the owner) — needs a tenant user lookup door (proposal, WP-0177-R7b O-R7b-2) | MOD-0177 / UI |
+| FU-0177-375-BROWSER | A browser-driven 375 px test (scrollWidth per page) — R7c's automated guard is structural; content overflow was found only in the preview (proposal, WP-0177-R7c O-R7c-3) | MOD-0177 / QA |
 
 ## 21. UI input — approved mockup ("Geri Çağırma Recall (offline).html", 2026-10-12)
 
@@ -1560,5 +1583,5 @@ instruction. Seed data (`USERS` `L:9-15`, `RM` `L:16`, `FG` `L:17-31`, `CONSUMED
 | D-24 | Scope tab traces forward only (`L:258`) | case direction parameter (default Both for scope: backward shows inputs, forward drives blocks / requests) | KR-D |
 | D-25 | Vakalar'daki tatbikat satırı sınıf / seviye taşır (mockup `cls:1`, `lvl`) | tatbikat satırı (`DrillCaseRow`, RECALL 1.5.0) sınıf / seviye taşımaz — ekranda "—"; sınıf süzgeci tatbikatları dışarıda bırakır | tatbikat koşusunun sınıfı / seviyesi yok (CT kararı A, WP-0177-R6) |
 | D-26 | Vaka başlığında hedef tarih / kalan gün (mockup `template.html:392`) | pack'te ve `CaseDetail`'de vaka hedef tarihi yok; kuralı tanımsız (kim belirler / nasıl hesaplanır) → çizilmez | FU-0177-TARGET-DATE (ürün kararı; CT kararı A, WP-0177-R7a) |
-| D-27 | "Müşteri iadesi gir" bağlantısı (mockup `L:296` + §11.3) | R7a'da yok — 0173 formu `CUSTOMER_RETURN` sunmuyor (`MovementRules.ManualTypes`) ve `lotId` / `toStatus` okumuyor; KR-H (sahip: elle müşteri iadesi de bağlanabilir) için form genişletmesi + bağlantı WP-0177-R7b'de, 0173 sahip adımı olarak. Geri dönüşler'de bilgi notu: "Müşteri iadesi stok hareketi olarak kaydedilir; kaydedildiğinde burada aday olarak görünür." | CT kararı A, WP-0177-R7a |
+| D-27 | "Müşteri iadesi gir" bağlantısı (mockup `L:296` + §11.3) | R7a'da yok — 0173 formu `CUSTOMER_RETURN` sunmuyor (`MovementRules.ManualTypes`) ve `lotId` / `toStatus` okumuyor; KR-H (sahip: elle müşteri iadesi de bağlanabilir) için form genişletmesi + bağlantı WP-0177-R7b'de, 0173 sahip adımı olarak. Geri dönüşler'de bilgi notu: "Müşteri iadesi stok hareketi olarak kaydedilir; kaydedildiğinde burada aday olarak görünür." | CT kararı A, WP-0177-R7a **Kapatıldı (R7c, 2026-10-16):** 0173 formu CUSTOMER_RETURN'ü yalnız QUARANTINE / QI / BLOCKED hedefiyle sunar ve `type / lotId / toStatus` ile önceden dolu açılır (0173 sahip adımı); Geri dönüşler'de "Müşteri iadesi gir" bağlantısı (inventory.movements.create). |
 | D-28 | Geri dönüşler: each return links to its quarantine record (KRN →) (`app.js:275`) | `ReturnLink` carries no hold in RECALL 1.6.0 → added in R7b (RECALL 1.7.0 additive `holdId` / `holdNumber`) | CT decision A (R7a) |

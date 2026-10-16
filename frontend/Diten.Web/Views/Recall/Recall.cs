@@ -646,6 +646,24 @@ public sealed class Recall
         "Recall.Ev.W.resultNote",
         "Recall.Ev.W.from",
         "Recall.Ev.W.to",
-        "Recall.Ev.W.runCount"
+        "Recall.Ev.W.runCount",
+        "Recall.Band.Badge",
+        "Recall.Band.Trace",
+        "Recall.Band.FullTrace",
+        "Recall.Band.Exit",
+        "Recall.Band.Release",
+        "Recall.Band.HoldSource",
+        "Recall.Ret.EnterReturn"
+    ];
+
+    /// <summary>WP-0177-R7c — the sentences of the bands on 0173 / 0174 / 0175 (Views/Shared/Recall/_RecallBandAssets.cshtml → recall-bands.js).</summary>
+    public static readonly IReadOnlyList<string> BandKeys =
+    [
+        "Recall.Band.Badge",
+        "Recall.Band.Trace",
+        "Recall.Band.FullTrace",
+        "Recall.Band.Exit",
+        "Recall.Band.Release",
+        "Recall.Band.HoldSource"
     ];
 }
