@@ -222,3 +222,20 @@ Kullanıcı (2026-10-16): **planın sonunda düzeltilecek.** Yol haritası `ROAD
 - ℹ **"route / permission / namespace" taşıması:** §8 ölçümüne göre bunların hiçbiri eski numara taşımıyor. Gerçek iş belgeler + 2 çalışma anı değeri (CRM denetim `sourceModule`, Platform Hangfire iş kimlikleri).
 
 **Karar bekleyen tek nokta (kullanıcı / EA):** 0043 / 0044 / 0046 için kayıttaki MOD-0009-FU01..03 kararı mı korunacak (CT önerisi), yoksa öneri mi uygulanacak?
+
+## 12. Dördüncü mesaj (2026-10-16) — iş bölümü: proje mi, Master mı
+**Öneri:** Teknik göç projede yapılır. Master'da kanonik mimari ve eskiden kanoniğe eşleme (özet / not) güncellenir.
+
+| İş | Proje | Master |
+|---|---|---|
+| Eski takma adları emekli etme | Evet | Hayır |
+| Rota / izin / namespace / test / belge kimlik göçü | Evet | Hayır |
+| Eski anlamı yeni kanonik modüle bağlama | Evet | Evet |
+| Kanonik Blueprint anlamını koruma | — | Evet |
+| Eski kimlik → kanonik hedef eşlemesi | tercihen belge / kayıt | Evet, özet / not |
+| Yeni gerçek modül ekleme | geliştirme sonra | Evet |
+
+**CT değerlendirmesi:** ✅ §9 ile aynı.
+- **Tek koşul:** Eşleme iki yerde tutulursa yetkili kaynak **kimlik kaydı** (`module-id-registry.md`) olmalı. Master'daki özet ona atıf yapan bir not olarak kalmalı; ikisi ayrışırsa kayıt kazanır. Bu, iki haritanın zamanla birbirinden kopmasını önler.
+- **İş yükü:** "Rota / izin / namespace" bugün boş çıkıyor (§8); projede gerçek iş belgeler + 2 çalışma anı değeri.
+- **Açık karar** hâlâ §11'deki: 0043 / 0044 / 0046.
