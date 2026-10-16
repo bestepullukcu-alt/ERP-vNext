@@ -160,6 +160,8 @@ public sealed class ContractLineFactAttribute : FactAttribute
     public ContractLineFactAttribute()
     {
         if (ContractLine.Locate() is null)
-            Skip = "The contract line (SOURCE.txt) is not on this machine: the fixture was not compared with the line's current file.";
+            // WP-CI-SERVICE-TESTS-05 (BL-646 item 6): the reason starts with a code, so the CI skip check can name it
+            // (scripts/ci-skip-allowlist.tsv, mdm-api CONTRACT_LINE_ABSENT, at most 1) instead of counting it as unexplained.
+            Skip = "CONTRACT_LINE_ABSENT: the contract line (SOURCE.txt) is not on this machine: the fixture was not compared with the line's current file.";
     }
 }

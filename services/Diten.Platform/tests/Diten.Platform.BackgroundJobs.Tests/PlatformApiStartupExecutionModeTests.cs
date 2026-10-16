@@ -253,6 +253,19 @@ public sealed class PlatformApiStartupExecutionModeTests
         start.Environment["BackgroundJobs__DashboardEnabled"] = "false";
         start.Environment["BusinessReferenceData__Provider__ReferenceTenantId"] =
             "00000000-0000-0000-0000-000000000001";
+        // WP-CI-SERVICE-TESTS-05 (BL-646 item A): appsettings.Development.json provisions the MOD-0290 verified-GSKU
+        // pilot for the dev database (fb4042c3b). This host's database is empty by design (the manifest assertion
+        // below), so the pilot is "not provisioned here": every value of the section is cleared, which is the state
+        // the readiness rule reads as Healthy. The rule itself is unchanged.
+        foreach (var key in new[]
+                 {
+                     "Enabled", "EnumerationEnabled", "ConsumerTenantId",
+                     "ExpectedCatalogVersion", "ExpectedCatalogFingerprint"
+                 })
+        {
+            start.Environment[$"BusinessReferenceData__VerifiedGskuOperationalProvisioning__{key}"] =
+                key.EndsWith("Enabled", StringComparison.Ordinal) ? "false" : string.Empty;
+        }
         using var process = new Process { StartInfo = start };
         Assert.True(process.Start());
         var stdout = process.StandardOutput.ReadToEndAsync();
