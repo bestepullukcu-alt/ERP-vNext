@@ -1,0 +1,114 @@
+# CAND-CAP → kanonik modül kimliği göçü — CT kontrolü ve düzeltilecekler (2026-10-16)
+
+> **Durum:** not + yapılacaklar. Göç işi **başlamadı**. Kaynak: dışarıdan gelen bir öneri (CAND-CAP-0001…0011'in Blueprint 8.1 / 8.2 hedefleri). CT, öneriyi repodaki kaynaklarla karşılaştırdı:
+> - `docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx`
+> - `execution/registries/module-id-registry.md`
+> - `execution/portfolio/delivery-capability-packs/DCP-006-crm-commercial-delivery-capability-pack.md`
+> - modül paketleri ve kod
+>
+> **Kural:** Tek seferde bul-değiştir YOK. Her kimlik göçü kendi iş paketiyle yapılır. Önce şunların hepsi ölçülür: rota, izin anahtarı, namespace, Mongo koleksiyonu, API / olay, test, belge, modül paketi, ağ geçidi eşlemesi, eski takma ad.
+
+## 1. Önerilen hedefler ve CT sonucu
+
+| Aday | Yetenek | Önerilen işlem | Hedef | CT sonucu |
+|---|---|---|---|---|
+| CAND-CAP-0001 | Tenant User / Identity Foundation | yeniden adlandır | MOD-0360 | ⚠ 8.2 gerekli (8.1'de yok) |
+| CAND-CAP-0002 | SaaS Subscription, Plan & Entitlement | yeniden adlandır | MOD-0361 | ⚠ 8.2 gerekli |
+| CAND-CAP-0003 | Platform Administration & Operations | ayrı modül değil; konsol | MOD-0009 çalışma alanı | ◐ kısmen (§3.3) |
+| CAND-CAP-0004 | Tenant Impersonation / Support Tooling | kod yok, bekle | ileride MOD-0360 özelliği | ✅ makul |
+| CAND-CAP-0005 | SaaS Billing & Invoicing | kod yok, bekle | ileride MOD-0364 | ⚠ 8.2 gerekli |
+| CAND-CAP-0006 | Work Aggregation / Task Center (WorkCenter) | adayı emekli et | MOD-0024 çalışma alanı | ✅ 8.1'de 0024 = Task & Checklist Engine · ⚠ §3.2 |
+| CAND-CAP-0007 | Enterprise Strategy & Performance Mgmt | yeniden adlandır | MOD-0352 | ✅ 8.1'de var; kayıtta zaten "deprecated alias" · ⚠ §3.2 |
+| CAND-CAP-0008 | Decomposition & Work Structuring Engine | yeniden adlandır | MOD-0354 | ✅ 8.1'de var · ❗ §3.1 |
+| CAND-CAP-0009 | Business Process Management | yeniden adlandır | MOD-0355 | ✅ 8.1'de var; kayıtta "deprecated alias" |
+| CAND-CAP-0010 | Working Calendar & Public Holidays | yeniden adlandır | MOD-0362 | ⚠ 8.2 gerekli · ❗ §3.1 |
+| CAND-CAP-0011 | Structured Content & Messaging (Content Studio / SCMM) | yeniden adlandır | MOD-0363 | ⚠ 8.2 gerekli · kodda 51 dosya (büyük göç) |
+
+**Doğrulananlar:**
+- 8.1 adları: MOD-0009 Tenant / Environment Management, 0018 RBAC / ABAC Authorization, 0021 Audit Trail Service, 0024 Task & Checklist Engine, 0352 Enterprise Strategy Management, 0354 Decomposition & Work Structuring Engine, 0355 Business Process Architecture & Modeling.
+- Kayıttaki aday adları öneriyle birebir aynı.
+- **Eski numara çakışması gerçek.** Kayıt, eski numara olarak 0001 → MOD-0047, 0002 → MOD-0297, 0002-FU05 → MOD-0298, 0005 → MOD-0299 gösteriyor. 8.1'de MOD-0047 = Business Continuity & Crisis Management; 0297 / 0298 / 0299 = HR Capability Block Shell / Employee Profile Workspace / Position & Organization Assignment. Bu numaralar çalışan kodda takma ad olarak KALMAMALI.
+
+## 2. Doğrulanamayan — 8.2 gerekli
+8.1'deki en büyük numara **MOD-0359**. MOD-0360…0364 öneriye göre **Master 8.2**'de; 8.2 repoda yok.
+→ **Yapılacak:** 8.2 dosyası `docs/reference/blueprint/` altına konur (kanonik kaynak). CT 0360–0364'ü ondan doğrular.
+
+## 3. Önerinin görmediği çakışmalar — düzeltilecek
+
+### 3.1 CAND-CAP-0008 iki anlamda kullanılıyor ❗
+- Kayıtta 0008 = **Decomposition** (→ MOD-0354); Çalışma Takvimi = **0010** (→ MOD-0362).
+- Ama Çalışma Takvimi modül paketleri ve CRM kodu Çalışma Takvimi'ni **"CAND-CAP-0008"** diye anıyor:
+  - `execution/domains/platform-shared-services/module-packs/CAND-CAP-0008-FU02-working-calendar-public-holiday-auto-fetch.md` (+ FU01 / FU03 referansları);
+  - `MOD-0155-FU06-cycle-capacity.md`, `MOD-0165-FU06-cycle-period.md`, `MOD-0165-FU07-…`;
+  - CRM: `Features/CycleCapacity/Contract/CycleCapacityFeatureFlags.cs`, `Read/IWorkingDayChecker.cs`, `Read/IWorkingDayCounter.cs`, `Domain/Entities/CycleCapacity.cs` (+ toplam 7 kod dosyası, 18 belge).
+- **Risk:** "0008 → MOD-0354" göçü yapılırsa Çalışma Takvimi referansları yanlış modüle (Decomposition) bağlanır.
+- **Düzeltme:** 0008'in Çalışma Takvimi anlamındaki her kullanımı ayrı listelenip **MOD-0362**'ye (8.2 doğrulanınca) taşınır. Decomposition göçü yalnız `management-governance` tarafındaki gerçek 0008 kullanımlarına uygulanır.
+- Hafıza / WP notlarımızdaki "CAND-CAP-0008 Working Calendar" ifadeleri de düzeltilir.
+
+### 3.2 CAND-CAP-0006 / 0007 CRM'de başka anlamda ❗
+- DCP-006 (satır ~149-152) iki CRM yeteneğine kayda yazılmadan "sıradaki boş numara" diye bu numaraları vermiş:
+  - **CAND-CAP-0006** = Commercial Activity, Interaction and Commitment;
+  - **CAND-CAP-0007** = Commercial Model and Proposition Routing.
+- Kayıtta 0006 = WorkCenter, 0007 = Enterprise Strategy. Yani çakışma var; DCP-006'nın kendisi de "unresolved identity debt — EA must reserve" diyor.
+- **Düzeltme:** DCP-006'daki iki yetenek yeni kimlik alır (8.2'de modül ya da yeni aday numarası); DCP-006 güncellenir.
+- **Bağ:** "Commercial Activity, Interaction and Commitment" = BD analizindeki **"Commercial Activity & Correspondence Register"** boşluğu (2026-10-16 BD notu; e-posta, toplantı, taahhüt kaydı). İkisi tek yetenek olarak tanımlanmalı. Partner / BD planı: artifact Fe9v4weD.
+
+### 3.3 CAND-CAP-0003 → MOD-0009: kısmen ◐
+- Yönetim konsolunun tek ekranda toplanması doğru. Ama 8.1'de MOD-0009 "Environment & Release Management" grubunda.
+- CAND-CAP-0003'ün alt işleri (FU01 profil ve ayarlar, FU02 şifre ve MFA, platform yöneticisi CRUD) kimlik işi.
+- **Öneri:** konsol / çalışma alanı → MOD-0009; platform yöneticisi hesap yaşam döngüsü, şifre ve MFA → MOD-0360 (+ MOD-0018 yetki).
+
+## 4. Sıra (öneri, CT notlarıyla)
+1. **Ön koşul:** 8.2'yi repoya koy; 0360–0364'ü doğrula.
+2. **Envanter:** §3.1 ve §3.2 çakışma listeleri (kod + belge + hafıza).
+3. Göç iş paketleri:
+   - **Önerinin kendi sırası:** 0007 → 0352 · 0008 (yalnız Decomposition) → 0354 · 0009 → 0355 · 0001 → 0360 · 0002 → 0361 · 0010 (+ 0008'in Çalışma Takvimi kullanımları) → 0362 · 0011 → 0363 · 0006 → 0024 çalışma alanı · 0003 → 0009 konsol + 0360 hesap yaşam döngüsü.
+   - Ayrıca **DCP-006 yeni kimlikleri** ve eski numaraların (0047 / 0297–0299) çalışma zamanından temizlenmesi.
+4. **Sahiplik:** kayıt ve EA kararı Kapanış / mimari hattı. CRM tarafındaki düzeltmeler (CycleCapacity referansları, DCP-006) bizim; göç paketi geldiğinde paketlenir.
+
+## 5. İkinci öneri — eski proje anlamlı MOD numaraları (0040 / 0043 / 0044 / 0046 / 0047 / 0297 / 0298 / 0299)
+
+**Öneri:** Master anlamları korunsun. Eski proje anlamlarından yalnız bağımsız kayıt sahibi (SoR) olanlar yeni kimlik alsın (MOD-0360 / 0361 / 0364); diğerleri özellik, çalışma alanı ya da mimari yönetişim olsun. Master'a bir "Legacy Module Identity Map" eklensin.
+
+**8.1 doğrulaması (hepsi ✅):**
+- MOD-0040 = Canonical ID & Correlation Standard · 0043 = SLO/SLA Monitoring · 0044 = Backup & Restore · 0046 = Performance & Capacity Management · 0047 = BCM.
+- 0297 / 0298 / 0299 = HR Capability Block Shell / Employee Profile Workspace / Position & Organization Assignment.
+- Atıf yapılan modüller: 0001 SoR & Ownership Registry · 0002 Interface Registry · 0013 Platform Standards Registry · 0014 Module Boundary Registry · 0169 Billing & Invoicing · 0286 UI Design System & Page Pattern Governance · 0288 Organization, Person & Position Directory.
+
+**Repo bunu zaten büyük ölçüde yapmış** (`module-id-registry.md`, DCP-002):
+
+| Eski | Repo kararı (bugün) | Öneri | Fark |
+|---|---|---|---|
+| MOD-0040 Tenant Organization Foundation | deprecated alias → **MOD-0288** (+ FU01 → 0288-FU01) | 0009 + 0288'e böl | küçük; repo 0288'e vermiş, tenant tarafı zaten 0009'da |
+| MOD-0043 Tenant Architecture Foundation | deprecated alias → **MOD-0009-FU01** (done) | emekli; 0013 / 0014 | **farklı** — repo 0009'un alt işi yapmış |
+| MOD-0044 Tenant Manager Backend | deprecated alias → **MOD-0009-FU02** | emekli; 0009 / 0360 / 0361'e dağıt | **farklı** |
+| MOD-0046 Tenant Core UI | deprecated alias → **MOD-0009-FU03**; 0046-QG → MOD-0033-FU01 | çalışma alanı; 0009 + 0286 | **farklı** |
+| MOD-0047 Tenant User Foundation | deprecated alias → CAND-CAP-0001 | MOD-0360 | aynı yön |
+| MOD-0297 / 0298 | → CAND-CAP-0002 / 0002-FU05 | MOD-0361 (birleşik) | aynı yön |
+| MOD-0299 SaaS Billing | → CAND-CAP-0005 | MOD-0364 | aynı yön; 0169 (müşteri O2C faturası) ayrımı doğru |
+
+**CT değerlendirmesi:**
+- "Master anlamını değiştirme" ilkesi **kesin doğru**. Değiştirmek, 0040 vb.'ye bağlı her paket, sözleşme ve plan için zincirleme göç demek.
+- 0043 / 0044 / 0046 için **yeni bir karar verme**: repo bunları zaten MOD-0009'un FU01 / 02 / 03'ü yapmış ve aktif paketleri var. Önerinin "emekli et, 0013 / 0014'e dağıt" yaklaşımı mevcut kararla çelişir ve bir yeniden kimliklendirme turu daha doğurur. Mevcut karar korunmalı. Yalnız 0009-FU02 içindeki kullanıcı ve abonelik parçaları 0360 / 0361 kurulunca oraya bağlanır.
+- **"Legacy Module Identity Map" zaten var:** `module-id-registry.md`'deki "Deprecated Alias" satırları tam olarak bu. Master'a ikinci bir tablo eklenirse iki harita zamanla ayrışır. Öneri: Master'da yalnız kayda bir atıf olsun, harita tek yerde (registry) kalsın.
+- **Kod yükü küçük:** eski MOD numaraları kodda 0–2 dosyada, belgelerde 9–39 dosyada geçiyor. Gerçek kod göçü yalnız CAND-CAP-0008 (Çalışma Takvimi anlamında, 7 dosya) ve CAND-CAP-0011 (Content Studio, 51 dosya).
+
+## 6. Blueprint ile karışıklığı kalıcı önleme — kurallar ve sıra
+
+**Kurallar:**
+1. **Anlamın tek kaynağı Blueprint** (8.1 → 8.2). Mevcut bir MOD numarasının anlamı hiçbir zaman değiştirilmez; numara yeniden kullanılmaz.
+2. **Eşlemenin tek kaynağı `module-id-registry.md`.** Eski / aday / takma ad → kanonik hedef ve durum (Deprecated Alias · Migrating · Retired) yalnız burada tutulur. Master ve DCP'ler buna atıf yapar, kopyalamaz.
+3. **Yeni MOD numarası yalnız Blueprint'ten gelir.** Geçici ihtiyaç için CAND-CAP numarası kayda **önce yazılır, sonra kullanılır**. DCP-006'daki gibi "sıradaki boş numara" varsayımı yasak.
+4. **Çalışan kodda (rota, izin anahtarı, modül kodu, koleksiyon, olay) yalnız kanonik kimlik** kullanılır. Eski takma ad belgede tarihî not olarak kalabilir, kodda kalamaz.
+5. **Koruma testi:** mimari testte, kodda "Deprecated Alias" durumundaki bir kimlik ya da kayıtta olmayan bir CAND-CAP / MOD numarası geçerse kırmızı. Sabotaj kanıtıyla.
+
+**Sıra:**
+1. 8.2'yi `docs/reference/blueprint/` altına koy; 0360–0364'ü doğrula.
+2. Kayıt güncellemesi (tek iş paketi, mimari / Kapanış hattı):
+   - 0360–0364 satırlarını aç;
+   - CAND-CAP-0001 / 0002 / 0005 / 0010 / 0011 → hedefleri "Migrating";
+   - 0006 → MOD-0024 çalışma alanı; 0003 → MOD-0009 konsol + 0360;
+   - DCP-006'nın iki CRM yeteneğine yeni kimlik (BD etkileşim kaydıyla birlikte).
+3. Envanter: CAND-CAP-0008'in Çalışma Takvimi kullanımları (7 kod + 18 belge) ve eski numaraların kod içi kullanımları (0040 → 2, 0297 → 1, 0299 → 1 dosya vb.).
+4. Göç iş paketleri (kimlik başına; önce kod, sonra belge). Büyükler: 0011 → 0363 (Content Studio) ve 0010 + 0008-takvim → 0362.
+5. Koruma testi (kural 5) en sonda; böylece geriye dönüş olmaz.
