@@ -46,6 +46,11 @@
             </ol>
         </nav>
         <div id="lot-warnings" class="d-flex flex-wrap gap-2 mt-1"></div>
+        @* WP-0177-R7c (owner step MOD-0174): "Açık geri çağırma: RC-…" + "İzle" — recall.lots.status.read only; nothing when the read fails *@
+        @if (company.Ready && Model.LotId is not null)
+        {
+            <partial name="~/Views/Shared/Recall/_LotRecallBadge.cshtml" model="@Model.LotId" />
+        }
     </div>
     @if (company.Ready && Model.LotId is not null)
     {
