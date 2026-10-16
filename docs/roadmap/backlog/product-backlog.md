@@ -8637,6 +8637,8 @@ Yapılacak:
 
 Gelecek regresyon riski: 🟢 eski sayfa kullanılmıyor; risk yanlış sayfanın açılması ve bakım yükü.
 
+> **2026-10-16 (CT):** Parça 1 yapıldı — eski `/WorkCenter` kaldırıldı (dal `chore/web/bl-619-remove-old-workcenter`, 0e28f845e + e10370600). Parça 2 denetimi: dondurulmuş eski çerçevede 96 sayfa, hiçbir eylemin çizmediği 22 ölü sayfa, taklit veriyle 4 alan (Yönetim/Yönetişim, Teslimat yürütme, Envanter yönetişimi, Strateji kütüphanesi). **Sahip kararı (2026-10-16):** bunlar şimdi elle kaldırılmaz / tamamlanmaz; zamanı gelince kendi modülleriyle taşınacak. Kalan açık: `.antigravity/workflows/details-page-rules.md:59` silinen `WorkCenterTabs.cshtml`'i örnek gösteriyor (sahip onayı bekliyor).
+
 ---
 
 ### BL-618
