@@ -187,11 +187,15 @@ public sealed class VwW3FixWebTests
     {
         var page = Source("wwwroot", "assets", "js", "CRM", "VisitEvidenceSettings", "visit-evidence-settings.js");
         Assert.Contains("const nameOf = id => C.personLabel(id, state.people, state.repNames, me, L);", page);
-        foreach (var read in new[] { "const p = absorb(data(r));", "const h = absorb(data(r));", "const list = absorb(data(r));",
+        foreach (var read in new[] { "const p = absorb(data(r));", "const list = absorb(data(r));",
                      "const x = absorb(data(r));", "state.current = absorb(data(r)) || x;" })
         {
-            Assert.Contains(read, page);   // policy (last change), history, list, detail, after an action
+            Assert.Contains(read, page);   // policy (last change), list, detail, after an action
         }
+
+        // W3E-E4R2-FIX-d — the history is the server-mode table: every page's displayNames reach the same map
+        Assert.Contains("onNames: names => C.mergeNames(state.people, names),", page);
+        Assert.Contains("person: id => F.bidi(nameOf(id)),", page);
 
         var node = RunNode("const E = require('" + ScriptPath("VisitEvidenceSettings", "evidence-core.js") + "');\n" + """
             const L = { YouLabel: 'Siz', WorkflowActor: 'İş akışı' };

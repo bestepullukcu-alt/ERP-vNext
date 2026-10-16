@@ -11,6 +11,10 @@
  *   W3E-E4R2-FIX-b — the exceptions LIST is the Golden Compact DataTable (index.js, client mode); this script keeps the
  *   full list for the tab's corner count, the reps pane and the "?exception=" link, and hands index.js its quick view and
  *   its "New exception" action through window.VisitEvidenceSettingsPage. The tabs are the shared tab card (diten-tabs.js).
+ *   W3E-E4R2-FIX-d (U-7) — the settings tab's inner panes (form · history · reps) are a second shared tab card; the change
+ *   history and the rep roster are Golden Compact DataTables in server mode (settings-tables.js), built when their pane is
+ *   first shown, measured again on every diten:tab-change. The rep cells stay this page's rule (C.repRows, one row at a
+ *   time, over the exception list the page already reads — no read per rep).
  */
 (function (window, document) {
     'use strict';
@@ -61,7 +65,7 @@
 
     // ── state ────────────────────────────────────────────────────────────────────────────────────────────────
     const state = {
-        policy: null, original: null, draft: null, reps: [], repNames: {}, people: {}, history: null,
+        policy: null, original: null, draft: null, reps: [], repNames: {}, people: {}, tables: { history: null, reps: null },
         tab: 'settings', pane: 'form', look: '', effective: null,
         list: null, current: null, close: null, closeTried: false,
         nx: null, nxTried: false, nxFields: null
@@ -86,8 +90,7 @@
             renderForm();
             renderPreview();
             renderDirty();
-            if (state.pane === 'history') { loadHistory(); }
-            if (state.pane === 'reps') { renderReps(); }
+            refreshTables();
         });
     }
 
@@ -222,8 +225,7 @@
             }
             show('ve-save-error', false);
             toast(T('Saved', (state.policy && state.policy.repCount) || 0));
-            state.history = null;
-            loadPolicy();
+            loadPolicy(); // → refreshTables: the history shows the new change, the reps their new values
         });
     }
 
@@ -278,42 +280,78 @@
     }
 
     // ── C3 — the change history ──────────────────────────────────────────────────────────────────────────────
-    function loadHistory() {
-        get('/policy/history?page=1&pageSize=100').then(r => {
-            const h = absorb(data(r));
-            state.history = h;
-            const rows = C.historyRows(h ? h.items : []);
-            el('ve-history-rows').innerHTML = rows.length
-                ? rows.map(x => '<tr><td>' + esc(when(x.at)) + '</td><td>' + F.bidi(nameOf(x.by)) + '</td><td>' + esc(x.field ? L['F_' + x.field] || x.field : '—') + '</td><td>'
-                    + (x.kind === 'created' ? '<span class="ve-mu">—</span> <i class="bx bx-right-arrow-alt ve-flip"></i> <strong>' + esc(L.HistCreated) + '</strong>'
-                        : '<span class="ve-mu">' + esc(valueText(x.field, C.typed(x.field, x.from))) + '</span> <i class="bx bx-right-arrow-alt ve-flip"></i> <strong>' + esc(valueText(x.field, C.typed(x.field, x.to))) + '</strong>') + '</td></tr>').join('')
-                : '<tr><td colspan="4" class="ve-empty">' + esc(L.NoHistory) + '</td></tr>';
-        });
+    /** C3 — one history change, its "old → new" cell (a creation: "— → Settings created"). */
+    function historyChange(item) {
+        const x = C.historyRows([item])[0];
+        return x.kind === 'created'
+            ? '<span class="ve-mu">—</span> <i class="bx bx-right-arrow-alt ve-flip" aria-hidden="true"></i> <strong>' + esc(L.HistCreated) + '</strong>'
+            : '<span class="ve-mu">' + esc(valueText(x.field, C.typed(x.field, x.from))) + '</span> <i class="bx bx-right-arrow-alt ve-flip" aria-hidden="true"></i> <strong>' + esc(valueText(x.field, C.typed(x.field, x.to))) + '</strong>';
     }
 
-    function setPane(pane) {
-        state.pane = pane;
-        document.querySelectorAll('.ve-pane-tab').forEach(b => { const on = b.getAttribute('data-pane') === pane; b.classList.toggle('active', on); b.setAttribute('aria-selected', String(on)); });
-        show('ve-pane-form', pane === 'form');
-        show('ve-pane-history', pane === 'history');
-        show('ve-pane-reps', pane === 'reps');
-        if (pane === 'history' && !state.history) { loadHistory(); }
-        if (pane === 'reps') { renderReps(); }
+    /** C3 — the change history: the Golden Compact DataTable (server mode), built once, when its pane first shows. */
+    function buildHistory() {
+        const tableEl = el('dt-ve-history');
+        if (state.tables.history || !tableEl || !window.VisitEvidenceSettingsTables) { return state.tables.history; }
+        state.tables.history = window.VisitEvidenceSettingsTables.history({
+            tableEl: tableEl,
+            endpoint: base,
+            onNames: names => C.mergeNames(state.people, names),
+            cells: {
+                esc: esc,
+                when: when,
+                person: id => F.bidi(nameOf(id)),
+                field: f => (f ? L['F_' + f] || f : '—'),
+                change: historyChange
+            }
+        });
+        return state.tables.history;
     }
 
     /**
-     * WP-VW-W3E (W3E-WEB-b, E3) — the reps and their effective location / photo / QR / device values: the tenant policy
-     * relaxed by each rep's approved exception active today ("· exception"), from the roster + the exception list the page
-     * already reads (no read per rep).
+     * WP-VW-W3E (W3E-WEB-b, E3) — one rep's effective location / photo / QR / device value: the tenant policy relaxed by the
+     * rep's approved exception active today ("· exception"), from the exception list the page already reads (no read per
+     * rep). W3E-E4R2-FIX-d — the rule of C.repRows, one roster row at a time (the roster page is the CRM's).
      */
-    function renderReps() {
-        const host = el('ve-rep-rows');
-        if (!host || !state.policy) { return; }
-        const rows = C.repRows(state.reps, state.policy, state.list ? state.list.items : []);
-        host.innerHTML = rows.length
-            ? rows.map(r => '<tr><td><div class="ve-row"><span class="ve-avatar ve-avatar-sm">' + esc(initials(r.name)) + '</span><span class="ve-strong">' + F.bidi(r.name) + '</span></div></td>'
-                + C.REP_COLUMNS.map(f => { const c = r.cells[f]; return '<td' + (C.NEW_FIELDS.indexOf(f) > -1 ? ' class="ve-col-new"' : '') + '>' + esc(valueText(f, c.value)) + (c.fromException ? ' <span class="ve-mu">· ' + esc(L.SourceExceptionShort) + '</span>' : '') + '</td>'; }).join('') + '</tr>').join('')
-            : '<tr><td colspan="5" class="ve-empty">' + esc(L.RepsEmpty) + '</td></tr>';
+    function repCell(rep, field, type) {
+        if (!state.policy) { return type === 'display' ? '<span class="ve-mu">—</span>' : ''; }
+        const c = C.repRows([rep], state.policy, state.list ? state.list.items : [])[0].cells[field];
+        const text = valueText(field, c.value);
+        if (type !== 'display') { return text; }
+        return esc(text) + (c.fromException ? ' <span class="ve-mu">· ' + esc(L.SourceExceptionShort) + '</span>' : '');
+    }
+
+    function buildReps() {
+        const tableEl = el('dt-ve-reps');
+        if (state.tables.reps || !tableEl || !window.VisitEvidenceSettingsTables) { return state.tables.reps; }
+        state.tables.reps = window.VisitEvidenceSettingsTables.reps({
+            tableEl: tableEl,
+            endpoint: base,
+            cells: {
+                isNew: f => C.NEW_FIELDS.indexOf(f) > -1,
+                rep: r => { const name = r.displayName || r.resourceId; state.repNames[r.resourceId] = name; return '<div class="ve-row"><span class="ve-avatar ve-avatar-sm">' + esc(initials(name)) + '</span><span class="ve-strong">' + F.bidi(name) + '</span></div>'; },
+                value: repCell
+            }
+        });
+        return state.tables.reps;
+    }
+
+    /** The policy / the exception list changed: a table already built reads its page again (never one not yet shown). */
+    function refreshTables() {
+        if (state.tables.history) { state.tables.history.reload(); }
+        if (state.tables.reps) { state.tables.reps.redraw(); }
+    }
+
+    /** A table drawn while its pane was hidden measures itself when the pane shows (K-TABS). */
+    function adjust(table) {
+        const dt = table && table.table;
+        try { if (dt && dt.columns) { dt.columns.adjust(); } if (dt && dt.responsive) { dt.responsive.recalc(); } } catch (e) { /* not drawn yet: nothing to measure */ }
+    }
+
+    /** K-TABS — the inner tab card selected a pane (diten-tabs.js has shown it already). */
+    function setPane(pane) {
+        state.pane = pane;
+        if (pane === 'history') { adjust(buildHistory()); }
+        if (pane === 'reps') { adjust(buildReps()); }
     }
 
     // ── C4 — the exceptions ──────────────────────────────────────────────────────────────────────────────────
@@ -347,7 +385,7 @@
             state.list = list;
             (list.items || []).forEach(x => { if (x.resourceId && x.repDisplayName) { state.repNames[x.resourceId] = x.repDisplayName; } });
             renderBadge(C.tabBadge(list));
-            if (state.pane === 'reps') { renderReps(); }
+            if (state.tables.reps) { state.tables.reps.redraw(); }
             openLinkedException();
         });
     }
@@ -538,16 +576,23 @@
     const on = (id, ev, fn) => { const n = el(id); if (n) { n.addEventListener(ev, fn); } };
 
     root.addEventListener('click', e => {
-        const pane = e.target.closest('[data-pane]');
-        if (pane) { setPane(pane.getAttribute('data-pane')); return; }
         const opt = e.target.closest('button[data-opt]');
         // W3E — an "additional evidence" value is taken only when it is one of the field's wire values (never "block")
         if (opt && !opt.disabled && perms.managePolicy && (C.KIND[opt.getAttribute('data-field')] !== 'extra' || C.canSelect(opt.getAttribute('data-field'), opt.getAttribute('data-opt')))) { state.draft[opt.getAttribute('data-field')] = opt.getAttribute('data-opt'); changed(); return; }
         const sw = e.target.closest('[data-switch]');
         if (sw && !sw.disabled && perms.managePolicy) { const f = sw.getAttribute('data-switch'); state.draft[f] = !state.draft[f]; changed(); }
     });
-    // K-TABS — the shared tab card says which tab shows
-    document.addEventListener('diten:tab-change', e => { const key = e.detail && e.detail.key; if (key === 'settings' || key === 'exceptions') { state.tab = key; } });
+    // K-TABS — the shared tab cards say which tab / pane shows: the outer (settings · exceptions), the inner (form · history
+    // · reps); coming back to the settings tab measures the pane's table again (it was laid out hidden)
+    document.addEventListener('diten:tab-change', e => {
+        const key = e.detail && e.detail.key;
+        if (key === 'settings' || key === 'exceptions') {
+            state.tab = key;
+            if (key === 'settings') { adjust(state.pane === 'history' ? state.tables.history : state.pane === 'reps' ? state.tables.reps : null); }
+            return;
+        }
+        if (key === 'form' || key === 'history' || key === 'reps') { setPane(key); }
+    });
     root.addEventListener('change', e => {
         const radio = e.target.closest && e.target.closest('input[data-opt]');
         if (radio && perms.managePolicy) { state.draft[radio.getAttribute('data-field')] = radio.getAttribute('data-opt'); changed(); }

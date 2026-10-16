@@ -289,8 +289,9 @@ public sealed class VisitEvidenceSettingsListWebTests : IClassFixture<WebApplica
         // the quick view keeps the page's tokens (light + dark) through .ve-drawer
         Assert.Contains("class=\"offcanvas offcanvas-end ve-drawer\" tabindex=\"-1\" id=\"offcanvasDetailsPreview\"", View("Index.cshtml"));
         Assert.Contains("#ve-root, .ve-modal, .ve-drawer {", css);
-        // the change history on the settings tab stays a hand-written table this package (reported, not converted)
-        Assert.Contains("<tbody id=\"ve-history-rows\"></tbody>", View("Index.cshtml"));
+        // the change history on the settings tab: no longer a hand-written table (W3E-E4R2-FIX-d — the Golden Compact DataTable)
+        Assert.DoesNotContain("ve-history-rows", View("Index.cshtml"));
+        Assert.Contains("<partial name=\"~/Views/CRM/VisitEvidenceSettings/_HistoryTable.cshtml\" />", View("Index.cshtml"));
     }
 
     // ── helpers ─────────────────────────────────────────────────────────────────────────────────────────

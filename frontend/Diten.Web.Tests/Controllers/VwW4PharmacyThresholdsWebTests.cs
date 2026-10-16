@@ -735,11 +735,11 @@ public sealed partial class VwW4PharmacyThresholdsWebTests
         }
     }
 
-    private JsonElement? Smoke(string smokeFile, string[] keys, string folder, string baseName, string mode)
+    private JsonElement? Smoke(string smokeFile, string[] keys, string folder, string baseName, string mode, string culture = "tr")
     {
         var smoke = Path.Combine(Path.GetDirectoryName(WebRoot())!, "Diten.Web.Tests", "Js", smokeFile).Replace("\\", "/");
         var crm = Path.Combine(WebRoot(), "wwwroot", "assets", "js", "CRM").Replace("\\", "/");
-        var tr = Resx(folder, baseName, "tr");
+        var tr = Resx(folder, baseName, culture);
         var texts = Path.Combine(Path.GetTempPath(), "w4b-tr-" + Guid.NewGuid().ToString("N") + ".json");
         File.WriteAllText(texts, JsonSerializer.Serialize(keys.ToDictionary(k => k, k => tr[k])), new UTF8Encoding(false));
         try

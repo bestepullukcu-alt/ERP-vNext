@@ -1,0 +1,26 @@
+@using Diten.Web.Views.CRM.VisitEvidenceSettings
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<VisitEvidenceSettingsIndex> Localizer
+@{
+    // W3E-E4R2-FIX-d (U-7) — the change history: the SAME shared table card (_ListShell, v2) in SERVER mode — the CRM pages
+    // the append-only history (newest first). Read only: no selection, no actions column, no filter bar, no Save View
+    // (settings-tables.js: the page's second table, built when its pane is first shown).
+    var historyShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-ve-history",
+        DataMode = "server",
+        Slug = "ve-history",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["ColDate"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["ColPerson"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColField"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColChange"].Value, CssClass = "all" }
+        ],
+        ActionsHeader = null
+    };
+}
+
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="historyShell" />

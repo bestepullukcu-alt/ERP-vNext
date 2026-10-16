@@ -35,6 +35,17 @@ public sealed record GetVisitEvidenceEffectiveQuery(string? ResourceId) : IReque
 
 public sealed record ListVisitEvidenceRepsQuery(string? Q) : IRequest<Response<IReadOnlyList<EvidenceRepDto>>>;
 
+/// <summary>
+/// WP-VW-W3E (W3E-E4R2-FIX-d, U-7) — the settings page's REP ROSTER: the same reps as the picker read (the same source, the
+/// same <c>q</c> filter) but PAGED with the total, so the panel never cuts the list silently. The picker read
+/// (<see cref="ListVisitEvidenceRepsQuery"/>, at most <see cref="VisitEvidencePolicyReadHandlers.MaxReps"/>) is unchanged.
+/// </summary>
+public sealed record ListVisitEvidenceRepRosterQuery(string? Q, int? Page = null, int? PageSize = null)
+    : IRequest<Response<EvidenceRepRosterDto>>;
+
+/// <summary>A roster page: the reps by name (ties by id — a stable order across pages), the matching total.</summary>
+public sealed record EvidenceRepRosterDto(IReadOnlyList<EvidenceRepDto> Items, long Total, int Page, int PageSize);
+
 public static class VisitEvidencePolicyHistory
 {
     /// <summary>
@@ -71,9 +82,14 @@ public static class VisitEvidencePolicyHistory
 public sealed class VisitEvidencePolicyReadHandlers :
     IRequestHandler<GetVisitEvidencePolicyHistoryQuery, Response<VisitEvidencePolicyHistoryDto>>,
     IRequestHandler<GetVisitEvidenceEffectiveQuery, Response<VisitEvidenceEffectiveDto>>,
-    IRequestHandler<ListVisitEvidenceRepsQuery, Response<IReadOnlyList<EvidenceRepDto>>>
+    IRequestHandler<ListVisitEvidenceRepsQuery, Response<IReadOnlyList<EvidenceRepDto>>>,
+    IRequestHandler<ListVisitEvidenceRepRosterQuery, Response<EvidenceRepRosterDto>>
 {
     public const int MaxReps = 20;
+
+    /// <summary>The roster page size: default 25, at most 100.</summary>
+    public const int RosterDefaultPageSize = 25;
+    public const int RosterMaxPageSize = 100;
 
     private readonly ITenantContext _tenant;
     private readonly IVisitEvidencePolicyChangeRepository _changes;
@@ -145,10 +161,43 @@ public sealed class VisitEvidencePolicyReadHandlers :
 
         var q = request.Q?.Trim();
         var reps = (await _reps.ListAsync(tenantId, _clock.GetUtcNow(), ct))
-            .Where(r => string.IsNullOrEmpty(q) || r.DisplayName.Contains(q, StringComparison.CurrentCultureIgnoreCase)
-                                                 || r.ResourceId.Contains(q, StringComparison.OrdinalIgnoreCase))
+            .Where(r => Matches(r, q))
             .Take(MaxReps)
             .ToList();
         return Response<IReadOnlyList<EvidenceRepDto>>.Success(reps);
     }
+
+    public async Task<Response<EvidenceRepRosterDto>> Handle(ListVisitEvidenceRepRosterQuery request, CancellationToken ct)
+    {
+        if (_tenant.TenantId is not { } tenantId)
+        {
+            return Response<EvidenceRepRosterDto>.Fail("Tenant context is required.", 400);
+        }
+
+        if (request.PageSize is { } bad && (bad < 1 || bad > RosterMaxPageSize))
+        {
+            return VisitEvidenceExceptionChecks.Invalid<EvidenceRepRosterDto>($"pageSize must be 1–{RosterMaxPageSize}.");
+        }
+
+        if (request.Page is < 1)
+        {
+            return VisitEvidenceExceptionChecks.Invalid<EvidenceRepRosterDto>("page must be 1 or more.");
+        }
+
+        var page = request.Page ?? 1;
+        var size = request.PageSize ?? RosterDefaultPageSize;
+        var q = request.Q?.Trim();
+        var matching = (await _reps.ListAsync(tenantId, _clock.GetUtcNow(), ct))
+            .Where(r => Matches(r, q))
+            .OrderBy(r => r.DisplayName, StringComparer.CurrentCultureIgnoreCase)
+            .ThenBy(r => r.ResourceId, StringComparer.Ordinal)
+            .ToList();
+        var items = matching.Skip((page - 1) * size).Take(size).ToList();
+        return Response<EvidenceRepRosterDto>.Success(new EvidenceRepRosterDto(items, matching.Count, page, size));
+    }
+
+    /// <summary>The picker's and the roster's one filter: the name (culture, case-insensitive) or the resource id.</summary>
+    public static bool Matches(EvidenceRepDto r, string? q)
+        => string.IsNullOrEmpty(q) || r.DisplayName.Contains(q, StringComparison.CurrentCultureIgnoreCase)
+                                   || r.ResourceId.Contains(q, StringComparison.OrdinalIgnoreCase);
 }

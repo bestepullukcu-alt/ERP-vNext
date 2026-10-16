@@ -12,7 +12,7 @@ namespace Diten.CrmService.Api.Controllers.CRM;
 /// <summary>
 /// WP-VW-W3 (W3-BE-c, §2.2–2.3) — the visit evidence settings page's API:
 /// <list type="bullet">
-/// <item><c>api/crm/visit-evidence-policy/{history|effective|reps}</c> — read with <c>crm.visit-evidence-policy.read</c>
+/// <item><c>api/crm/visit-evidence-policy/{history|effective|reps|reps/roster}</c> — read with <c>crm.visit-evidence-policy.read</c>
 /// OR <c>.manage</c> (the policy GET / PUT themselves stay on <see cref="VisitExecutionController"/>);</item>
 /// <item><c>api/crm/visit-evidence-exceptions</c> — the time-boxed exceptions: read (<c>crm.visit-evidence-exception.read</c>),
 /// write / submit / withdraw / cancel / end early (<c>…manage</c>), decide (<c>…read</c>; the Work Center task decides
@@ -51,6 +51,14 @@ public sealed class VisitEvidenceSettingsController : CustomBaseController
     public async Task<IActionResult> Reps([FromQuery] string? q, CancellationToken cancellationToken)
         => MayReadPolicy(User)
             ? CreateActionResultInstance(await _mediator.Send(new ListVisitEvidenceRepsQuery(q), cancellationToken))
+            : Forbidden();
+
+    /// <summary>WP-VW-W3E (W3E-E4R2-FIX-d) — the paged rep roster of the settings page ({ items, total, page, pageSize };
+    /// pageSize 1–100, default 25). The picker read above stays as it is.</summary>
+    [HttpGet(Policy + "/reps/roster")]
+    public async Task<IActionResult> RepRoster([FromQuery] string? q, [FromQuery] int? page, [FromQuery] int? pageSize, CancellationToken cancellationToken)
+        => MayReadPolicy(User)
+            ? CreateActionResultInstance(await _mediator.Send(new ListVisitEvidenceRepRosterQuery(q, page, pageSize), cancellationToken))
             : Forbidden();
 
     [HttpGet(Exceptions)]

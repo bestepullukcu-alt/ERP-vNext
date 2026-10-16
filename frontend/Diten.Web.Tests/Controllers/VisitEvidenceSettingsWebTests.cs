@@ -276,7 +276,8 @@ public sealed class VisitEvidenceSettingsWebTests
         { "GetPolicy", "GET", "/api/crm/visit-evidence-policy", new[] { PolicyRead } },
         { "GetPolicy", "GET", "/api/crm/visit-evidence-policy", new[] { PolicyManage } },
         { "PutPolicy", "PUT", "/api/crm/visit-evidence-policy", new[] { PolicyManage } },
-        { "History", "GET", "/api/crm/visit-evidence-policy/history?page=1", new[] { PolicyRead } },
+        { "History", "GET", "/api/crm/visit-evidence-policy/history?page=1&pageSize=10", new[] { PolicyRead } },
+        { "Roster", "GET", "/api/crm/visit-evidence-policy/reps/roster?page=1&pageSize=10", new[] { PolicyManage } },
         { "Effective", "GET", "/api/crm/visit-evidence-policy/effective?resourceId=rep-1", new[] { PolicyManage } },
         { "Reps", "GET", "/api/crm/visit-evidence-policy/reps?q=ok", new[] { PolicyRead } },
         { "ListExceptions", "GET", "/api/crm/visit-evidence-exceptions?status=draft", new[] { ExcRead } },
@@ -303,7 +304,7 @@ public sealed class VisitEvidenceSettingsWebTests
 
         // every other key of the page is not enough
         var others = new[] { PolicyRead, PolicyManage, ExcRead, ExcManage }.Where(k => !keys.Contains(k)
-            && !(action is "GetPolicy" or "History" or "Effective" or "Reps" && k is PolicyRead or PolicyManage)).ToArray();
+            && !(action is "GetPolicy" or "History" or "Roster" or "Effective" or "Reps" && k is PolicyRead or PolicyManage)).ToArray();
         var (none, refused) = Arrange(others);
         refused.ControllerContext.HttpContext.Request.QueryString = new QueryString(query);
         Assert.Equal(403, Status(await Invoke(refused, action)));
@@ -445,7 +446,8 @@ public sealed class VisitEvidenceSettingsWebTests
     {
         "GetPolicy" => c.GetPolicy(CancellationToken.None),
         "PutPolicy" => c.PutPolicy(CancellationToken.None),
-        "History" => c.History(CancellationToken.None),
+        "History" => c.History(null, null, null, null, null, CancellationToken.None),
+        "Roster" => c.Roster(null, null, null, null, null, CancellationToken.None),
         "Effective" => c.Effective(CancellationToken.None),
         "Reps" => c.Reps(CancellationToken.None),
         "ListExceptions" => c.ListExceptions(CancellationToken.None),
@@ -533,7 +535,7 @@ public sealed class VisitEvidenceSettingsWebTests
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
         {
             Requests.Add((request.Method.Method, request.RequestUri!.ToString(), request.Headers.TryGetValues("X-Tenant-Id", out var t) ? t.Single() : null));
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{\"data\":{}}", Encoding.UTF8, "application/json") });
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{\"data\":{\"items\":[],\"total\":0}}", Encoding.UTF8, "application/json") });
         }
     }
 }

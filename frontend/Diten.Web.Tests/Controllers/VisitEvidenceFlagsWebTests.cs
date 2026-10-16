@@ -164,7 +164,7 @@ public sealed partial class VisitEvidenceFlagsWebTests
 
         var view = File.ReadAllText(Path.Combine(WebRoot(), "Views", "CRM", "VisitEvidenceSettings", "Index.cshtml")).Replace("\r\n", "\n");
         Assert.Contains("<div id=\"ve-extra\"></div>", view);
-        Assert.Contains("data-pane=\"reps\"", view);
+        Assert.Contains("Key = \"reps\", Id = \"ve-ptab-reps\"", view); // W3E-E4R2-FIX-d — the reps pane on the inner tab card
         Assert.DoesNotContain("ve-soon", view);
         Assert.DoesNotContain("business-unit", view, StringComparison.OrdinalIgnoreCase); // D-1: no layered scope
         Assert.DoesNotContain("legal-entity", view, StringComparison.OrdinalIgnoreCase);

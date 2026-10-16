@@ -1,0 +1,28 @@
+@using Diten.Web.Views.CRM.VisitEvidenceSettings
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<VisitEvidenceSettingsIndex> Localizer
+@{
+    // W3E-E4R2-FIX-d (U-7) — the reps and their effective location / photo / QR / device values: the SAME shared table card
+    // (_ListShell, v2) in SERVER mode — the CRM pages the roster (name, then id) with its total, the search asks the CRM.
+    // The cells are the page's rule (the tenant policy relaxed by the rep's approved exception active today, "· exception")
+    // over the exception list the page already reads — no read per rep. Read only (settings-tables.js: the third table).
+    var repsShell = new DataTableListShellViewModel
+    {
+        TableId = "dt-ve-reps",
+        DataMode = "server",
+        Slug = "ve-reps",
+        HasSelection = false,
+        Columns =
+        [
+            new DataTableColumnViewModel { Header = Localizer["ColRep"].Value, CssClass = "all" },
+            new DataTableColumnViewModel { Header = Localizer["ColLocation"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColPhoto"].Value },
+            new DataTableColumnViewModel { Header = Localizer["ColQr"].Value, CssClass = "ve-col-new" },
+            new DataTableColumnViewModel { Header = Localizer["ColDevice"].Value, CssClass = "ve-col-new" }
+        ],
+        ActionsHeader = null
+    };
+}
+
+<partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="repsShell" />

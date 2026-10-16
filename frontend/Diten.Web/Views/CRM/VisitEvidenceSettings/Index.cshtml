@@ -16,6 +16,18 @@
         tabs.Add(new() { Key = "exceptions", Id = "ve-tab-exceptions", Icon = "bx-time-five", Text = Localizer["TabExceptions"].Value, Controls = "ve-pane-exceptions" });
     }
     var tabCard = new Diten.Web.Models.Tabs.TabCardViewModel { AriaLabel = Localizer["PageTitle"].Value, Tabs = tabs };
+    // W3E-E4R2-FIX-d (U-7, K-TABS) — the settings tab's inner panes (form · history · reps) on the SAME shared tab card,
+    // a second card inside the outer tab's content (the former hand-made ve-pane-tab strip is gone).
+    var paneCard = new Diten.Web.Models.Tabs.TabCardViewModel
+    {
+        AriaLabel = Localizer["TenantDefault"].Value,
+        Tabs =
+        [
+            new() { Key = "form", Id = "ve-ptab-form", Icon = "bx-slider-alt", Text = Localizer["PaneForm"].Value, Active = true, Controls = "ve-pane-form" },
+            new() { Key = "history", Id = "ve-ptab-history", Icon = "bx-history", Text = Localizer["PaneHistory"].Value, Controls = "ve-pane-history" },
+            new() { Key = "reps", Id = "ve-ptab-reps", Icon = "bx-group", Text = Localizer["PaneReps"].Value, Controls = "ve-pane-reps" }
+        ]
+    };
 }
 
 @*
@@ -113,14 +125,14 @@
                             <div class="ve-col"><span class="ve-row"><span class="ve-name">@Localizer["TenantDefault"]</span><span class="ve-pill ve-tone-secondary">@Localizer["TypeTenant"]</span></span><span class="ve-sub" id="ve-scope-meta"></span></div>
                         </div>
                     </div>
-                    <div class="ve-panes" role="tablist">
-                        <button type="button" role="tab" class="ve-pane-tab active" data-pane="form" aria-selected="true"><i class="bx bx-slider-alt"></i> @Localizer["PaneForm"]</button>
-                        <button type="button" role="tab" class="ve-pane-tab" data-pane="history" aria-selected="false"><i class="bx bx-history"></i> @Localizer["PaneHistory"]</button>
-                        <button type="button" role="tab" class="ve-pane-tab" data-pane="reps" aria-selected="false"><i class="bx bx-group"></i> @Localizer["PaneReps"]</button>
-                    </div>
                 </div>
 
-                <div class="ve-form-grid" id="ve-pane-form">
+                @* K-TABS — the inner panes on the shared tab card (diten-tabs.js; the page listens to diten:tab-change) *@
+                <partial name="~/Views/Shared/Components/Tabs/_TabCard.cshtml" model="paneCard" />
+
+                <div class="tab-content p-0" id="ve-scope-panes">
+                <div class="tab-pane fade show active" id="ve-pane-form" role="tabpanel" aria-labelledby="ve-ptab-form">
+                <div class="ve-form-grid">
                     <div class="ve-col ve-gap">
                         <div id="ve-groups" class="ve-col ve-gap"></div>
                         @* WP-VW-W3E (W3E-WEB-b, E1) — "Additional evidence" (QR code, device verification) in place of the former "coming soon" card *@
@@ -156,27 +168,20 @@
                         </div>
                     </div>
                 </div>
-
-                @* WP-VW-W3E (W3E-WEB-b, E3) — the reps and their effective location / photo / QR / device values *@
-                <div class="ve-card d-none" id="ve-pane-reps">
-                    <div class="ve-card-head"><span class="ve-card-title">@Localizer["RepsTitle"]</span><span class="ve-sub">@Localizer["RepsNote"]</span></div>
-                    <div class="ve-table-wrap">
-                        <table class="ve-table">
-                            <thead><tr><th>@Localizer["ColRep"]</th><th>@Localizer["ColLocation"]</th><th>@Localizer["ColPhoto"]</th><th class="ve-col-new">@Localizer["ColQr"]</th><th class="ve-col-new">@Localizer["ColDevice"]</th></tr></thead>
-                            <tbody id="ve-rep-rows"></tbody>
-                        </table>
-                    </div>
                 </div>
 
-                @* C3 — the change history (append-only) *@
-                <div class="ve-card d-none" id="ve-pane-history">
-                    <div class="ve-card-head"><span class="ve-card-title">@Localizer["HistoryTitle"]</span><span class="ve-sub ve-row"><i class="bx bx-lock-alt"></i> @Localizer["AuditReadOnly"]</span></div>
-                    <div class="ve-table-wrap">
-                        <table class="ve-table">
-                            <thead><tr><th>@Localizer["ColDate"]</th><th>@Localizer["ColPerson"]</th><th>@Localizer["ColField"]</th><th>@Localizer["ColChange"]</th></tr></thead>
-                            <tbody id="ve-history-rows"></tbody>
-                        </table>
-                    </div>
+                @* C3 — the change history (append-only): the Golden Compact DataTable, server mode (W3E-E4R2-FIX-d) *@
+                <div class="tab-pane fade" id="ve-pane-history" role="tabpanel" aria-labelledby="ve-ptab-history">
+                    <div class="ve-pane-note"><span class="ve-card-title">@Localizer["HistoryTitle"]</span><span class="ve-sub ve-row"><i class="bx bx-lock-alt"></i> @Localizer["AuditReadOnly"]</span></div>
+                    <partial name="~/Views/CRM/VisitEvidenceSettings/_HistoryTable.cshtml" />
+                </div>
+
+                @* WP-VW-W3E (W3E-WEB-b, E3) — the reps and their effective location / photo / QR / device values: the Golden
+                   Compact DataTable, server mode (the CRM's paged roster with its total — W3E-E4R2-FIX-d) *@
+                <div class="tab-pane fade" id="ve-pane-reps" role="tabpanel" aria-labelledby="ve-ptab-reps">
+                    <div class="ve-pane-note"><span class="ve-card-title">@Localizer["RepsTitle"]</span><span class="ve-sub">@Localizer["RepsNote"]</span></div>
+                    <partial name="~/Views/CRM/VisitEvidenceSettings/_RepsTable.cshtml" />
+                </div>
                 </div>
             </div>
         </div>
@@ -286,6 +291,7 @@
     <script src="~/assets/js/CRM/VisitPlanning/format.js" asp-append-version="true"></script>
     <script src="~/assets/js/CRM/VisitEvidenceSettings/evidence-core.js" asp-append-version="true"></script>
     <script src="~/assets/js/diten-tabs.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/VisitEvidenceSettings/settings-tables.js" asp-append-version="true"></script>
     <script src="~/assets/js/CRM/VisitEvidenceSettings/visit-evidence-settings.js" asp-append-version="true"></script>
     <script src="~/assets/js/CRM/VisitEvidenceSettings/index.js" asp-append-version="true"></script>
 }

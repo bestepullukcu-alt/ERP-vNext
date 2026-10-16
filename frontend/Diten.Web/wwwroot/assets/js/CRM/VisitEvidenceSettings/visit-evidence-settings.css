@@ -88,7 +88,8 @@
 .ve-side { flex: 1 1 280px; max-width: 360px; display: flex; flex-direction: column; gap: 20px; min-width: 0; }
 .ve-main { flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 20px; }
 #ve-scope { display: flex; flex-direction: column; gap: 20px; }
-#ve-scope.d-none, #ve-effective.d-none, #ve-pane-form.d-none, #ve-pane-history.d-none, #ve-pane-settings.d-none, #ve-pane-exceptions.d-none { display: none !important; }
+#ve-scope > .wcn-tabcard { margin-bottom: 0 !important; } /* the column gap spaces it */
+#ve-scope.d-none, #ve-effective.d-none, #ve-pane-settings.d-none, #ve-pane-exceptions.d-none { display: none !important; }
 .ve-tree { padding: 8px; display: flex; flex-direction: column; gap: 4px; }
 .ve-node { border: 0; background: transparent; border-radius: 6px; padding: 10px 12px; display: flex; gap: 10px; align-items: flex-start; text-align: start; width: 100%; }
 .ve-node.active { background: var(--ve-pl); }
@@ -103,9 +104,10 @@
 .ve-input { height: 38px; border: 1px solid var(--ve-bd2); border-radius: 6px; padding: 0 12px; font-size: 14px; color: var(--ve-h); background: var(--ve-card); width: 100%; }
 .ve-textarea { height: auto; padding: 8px 12px; resize: vertical; }
 .ve-invalid { border-color: var(--ve-dac); }
-.ve-panes { display: flex; gap: 4px; padding: 0 24px; }
-.ve-pane-tab { border: 0; background: transparent; height: 46px; padding: 0 14px; font-size: 15px; color: var(--ve-tx); display: inline-flex; gap: 6px; align-items: center; box-shadow: inset 0 -2px 0 transparent; }
-.ve-pane-tab.active { color: var(--ve-pt); font-weight: 500; box-shadow: inset 0 -2px 0 var(--ve-p); }
+/* W3E-E4R2-FIX-d — the inner panes are the shared tab card (its own mb-3); the scope header stands alone above it, each table pane opens
+   with its title line (the table card is the shared one) */
+#ve-scope > .ve-card > .ve-card-head { border-bottom: 0; }
+.ve-pane-note { display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: .75rem; }
 .ve-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr)); gap: 20px; align-items: start; }
 .ve-form-grid.d-none { display: none !important; }
 .ve-sticky { position: sticky; top: 80px; }

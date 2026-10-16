@@ -67,7 +67,7 @@ const PotentialThresholdsList = (function () {
     const sourceChip = src => '<span class="pt-pill pt-tone-' + (src === 'product' ? 'primary' : src === 'default' ? 'secondary' : 'muted') + '">' + esc(L['Source_' + src] || src) + '</span>';
     const lastChange = row => (row.updatedAt ? esc(when(row.updatedAt)) + ' · ' + F.bidi(personName(row.updatedBy)) : esc(L.Never));
     const bandsOf = row => '<span class="pt-band pt-band-low">' + esc(T('BandLow', num(row.lowBelow))) + '</span>'
-        + '<span class="pt-band pt-band-medium">' + esc(T('BandMedium', num(row.lowBelow), num(row.highAbove))) + '</span>'
+        + '<span class="pt-band pt-band-medium">' + esc(C.isolateRange(T('BandMedium', num(row.lowBelow), num(row.highAbove)))) + '</span>'
         + '<span class="pt-band pt-band-high">' + esc(T('BandHigh', num(row.highAbove))) + '</span>';
 
     // ── the table's load failure keeps the page's own notice + retry ───────────────────────────────────────────
@@ -266,7 +266,7 @@ const PotentialThresholdsList = (function () {
                             : rowText(row))
                     },
                     { targets: 2, responsivePriority: 2, render: (d, type) => (type === 'display' ? '<span class="pt-band pt-band-low">&lt; ' + esc(num(d)) + '</span>' : d) },
-                    { targets: 3, orderable: false, responsivePriority: 4, render: (d, type, row) => (type === 'display' ? '<span class="pt-band pt-band-medium">' + esc(num(row.lowBelow)) + '–' + esc(num(row.highAbove)) + '</span>' : num(row.lowBelow) + '–' + num(row.highAbove)) },
+                    { targets: 3, orderable: false, responsivePriority: 4, render: (d, type, row) => (type === 'display' ? '<span class="pt-band pt-band-medium">' + esc(C.isolateRange(num(row.lowBelow) + '–' + num(row.highAbove))) + '</span>' : num(row.lowBelow) + '–' + num(row.highAbove)) },
                     { targets: 4, responsivePriority: 3, render: (d, type) => (type === 'display' ? '<span class="pt-band pt-band-high">&gt; ' + esc(num(d)) + '</span>' : d) },
                     { targets: 5, responsivePriority: 5, render: (d, type) => (type === 'display' ? sourceChip(d) : (L['Source_' + d] || d)) },
                     { targets: 6, responsivePriority: 6, render: (d, type, row) => (type === 'display' ? '<span class="pt-sub">' + lastChange(row) + '</span>' : (d || '')) },

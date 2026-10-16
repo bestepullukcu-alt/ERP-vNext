@@ -8,7 +8,10 @@
    any call → a valid pair → the save confirm (changed rows) → PUT with the version → the list reloads with the standard
    toast and the history reloads (server mode: start / length on the wire, the person named); "add a product" (the
    toolbar's Add New) offers only products without a row and needs a product.
-   readonly: no Edit action, no Add New, nothing written. */
+   readonly: no Edit action, no Add New, nothing written.
+   W3E-E4R2-FIX-d (7): the list's order the way DataTables builds it (orderFixed.pre BEFORE the reader's order, each column
+   compared by its 'sort' render value) for every sortable column, both directions — the tenant default must stay first;
+   (8): the medium band (cell + band preview) carries the left-to-right isolate (LRI…PDI). */
 const fs = require('fs');
 const dir = process.argv[2];
 const texts = JSON.parse(fs.readFileSync(process.argv[3], 'utf8'));
@@ -66,9 +69,11 @@ const listHandle = {
   dt: { rows: () => ({ invalidate: () => ({ draw: () => { void drawList(); } }) }), ajax: { reload: () => { void drawList(); } } },
   reload: key => { void drawList().then(() => toasts.push(global.window.L10n[key])); }
 };
+let lastRows = [];
 async function drawList() {
   const r = await fetch(listOptions.ajax.url, { method: 'GET' });
   const rows = listOptions.ajax.dataSrc(JSON.parse(await r.text()));
+  lastRows = rows.slice();
   el('rows').innerHTML = renderRows(listOptions.config, rows);
 }
 async function drawHistory() {
@@ -106,6 +111,28 @@ const tick = () => new Promise(r => setTimeout(r, 15));
   out.rows = el('rows').innerHTML;
   out.historyRows = el('history').innerHTML;
   out.historyUrl = historyUrls[0];
+  // (7) the DataTables order: orderFixed.pre, then the reader's column; a column's 'sort' render value when it has a renderer
+  const cfg = listOptions.config;
+  const sortValue = (row, i) => {
+    const c = cfg.columns[i];
+    const def = cfg.columnDefs.find(d => d.targets === i);
+    return def && def.render ? def.render(row[c.data], 'sort', row) : row[c.data];
+  };
+  const compare = (a, b) => (typeof a === 'number' && typeof b === 'number' ? a - b : String(a == null ? '' : a).localeCompare(String(b == null ? '' : b), 'tr'));
+  const sorted = order => lastRows.slice().sort((x, y) => {
+    for (const [col, dir] of order) { const c = compare(sortValue(x, col), sortValue(y, col)); if (c) { return dir === 'desc' ? -c : c; } }
+    return 0;
+  });
+  const pre = (cfg.orderFixed && cfg.orderFixed.pre) || [];
+  out.orderFixedPre = pre;
+  out.controlSortValues = lastRows.map(row => [row.key, sortValue(row, 0)]);
+  out.firstByOrder = {};
+  cfg.columns.forEach((c, i) => {
+    const def = cfg.columnDefs.find(d => d.targets === i);
+    if (i === 0 || (def && def.orderable === false)) { return; }
+    ['asc', 'desc'].forEach(dir => { out.firstByOrder[c.name + ':' + dir] = sorted(pre.concat([[i, dir]]))[0].key; });
+  });
+  out.rowCount = lastRows.length;
   if (mode === 'manage') {
     listOptions.actions.onRowAction.edit({ id: 'P1' }); await tick();
     out.drawerShown = shown.includes('pt-edit-drawer');

@@ -1,11 +1,15 @@
+using System.Globalization;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using Diten.BuildingBlocks.ListExport;
 using Diten.Web.Models.CRM;
 using Diten.Web.Security;
+using Diten.Web.Views.CRM.VisitEvidenceSettings;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 
 namespace Diten.Web.Controllers.CRM;
 
@@ -69,9 +73,195 @@ public sealed class VisitEvidenceSettingsController : Controller
     public Task<IActionResult> PutPolicy(CancellationToken ct)
         => ProxyBodyAsync(HttpMethod.Put, Policy, ct, PolicyManage);
 
+    /// <summary>The list contract's page cap (the Golden page sizes 10 / 25 / 50 / 100).</summary>
+    public const int MaxListPageSize = 100;
+
+    /// <summary>
+    /// W3E-E4R2-FIX-d (U-7) — the change history as a Golden Compact SERVER-mode list: the page asks with the list contract
+    /// (start · length · draw; no search, no sort — the CRM pages the append-only history newest first) and reads
+    /// { items, total, filteredTotal, displayNames }. The CRM keeps ITS contract (page / pageSize); this proxy translates and
+    /// nothing else. Refusals before any CRM call: a page size outside 1–100, a search, a sort key.
+    /// </summary>
     [HttpGet("api/policy/history")]
-    public Task<IActionResult> History(CancellationToken ct)
-        => ProxyAsync(HttpMethod.Get, $"{Policy}/history{Request.QueryString}", null, ct, PolicyRead, PolicyManage);
+    public async Task<IActionResult> History(
+        [FromQuery] int? start, [FromQuery] int? length, [FromQuery] string? search, [FromQuery] string? orderBy, [FromQuery] string? orderDir, CancellationToken ct)
+    {
+        if (!HasAny(PolicyRead, PolicyManage)) return Denied();
+        var refusal = ListRefusal(length, orderBy, orderDir) ?? (string.IsNullOrWhiteSpace(search) ? null : "The history has no search.");
+        if (refusal is not null) return Refused(refusal);
+        var size = length ?? 10;
+        var page = Math.Max(0, start ?? 0) / size + 1;
+        using var response = await SendGatewayAsync(HttpMethod.Get, $"{Policy}/history?page={page}&pageSize={size}", null, ct);
+        if (response is null || !response.IsSuccessStatusCode) return await ToProxyResultAsync(response, ct);
+        if (await ListPageOf(response, ct) is not { } chunk) return new ObjectResult(new { errors = new[] { "Gateway unavailable." } }) { StatusCode = 502 };
+        return Ok(new { data = new { items = chunk.Items, total = chunk.Total, filteredTotal = chunk.Total, displayNames = chunk.Names } });
+    }
+
+    /// <summary>
+    /// W3E-E4R2-FIX-d (U-7) — the REP ROSTER as a Golden Compact SERVER-mode list: start · length · search → the CRM's paged
+    /// roster (page · pageSize · q, ordered by name then id). <c>total</c> is the tenant's whole roster (a second, one-row read
+    /// only when a search is applied), <c>filteredTotal</c> what matched — never a silently cut list (the picker read keeps its
+    /// 20 for the pickers only). Refusals before any CRM call: a page size outside 1–100, a sort key.
+    /// </summary>
+    [HttpGet("api/policy/reps/roster")]
+    public async Task<IActionResult> Roster(
+        [FromQuery] int? start, [FromQuery] int? length, [FromQuery] string? search, [FromQuery] string? orderBy, [FromQuery] string? orderDir, CancellationToken ct)
+    {
+        if (!HasAny(PolicyRead, PolicyManage)) return Denied();
+        if (ListRefusal(length, orderBy, orderDir) is { } refusal) return Refused(refusal);
+        var size = length ?? 10;
+        var page = Math.Max(0, start ?? 0) / size + 1;
+        using var response = await SendGatewayAsync(HttpMethod.Get, RosterPath(search, page, size), null, ct);
+        if (response is null || !response.IsSuccessStatusCode) return await ToProxyResultAsync(response, ct);
+        if (await ListPageOf(response, ct) is not { } matched) return new ObjectResult(new { errors = new[] { "Gateway unavailable." } }) { StatusCode = 502 };
+        var total = matched.Total;
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            using var all = await SendGatewayAsync(HttpMethod.Get, RosterPath(null, 1, 1), null, ct);
+            total = all is { IsSuccessStatusCode: true } && await ListPageOf(all, ct) is { } whole ? whole.Total : matched.Total;
+        }
+
+        return Ok(new { data = new { items = matched.Items, total, filteredTotal = matched.Total } });
+    }
+
+    /// <summary>Static, so MVC never treats it as an action: the CRM roster path (q escaped and trimmed, left out when empty).</summary>
+    public static string RosterPath(string? q, int page, int pageSize)
+        => $"{Policy}/reps/roster?" + (string.IsNullOrWhiteSpace(q) ? string.Empty : "q=" + Uri.EscapeDataString(q.Trim()) + "&")
+           + $"page={Math.Max(1, page)}&pageSize={Math.Clamp(pageSize, 1, MaxListPageSize)}";
+
+    /// <summary>Static, so MVC never treats it as an action: the list contract's refusals (null = acceptable).</summary>
+    public static string? ListRefusal(int? length, string? orderBy, string? orderDir)
+    {
+        if (length is { } n && (n < 1 || n > MaxListPageSize)) return $"length must be 1–{MaxListPageSize}.";
+        if (!string.IsNullOrWhiteSpace(orderBy)) return "The list keeps the CRM's order; orderBy is not accepted.";
+        if (!string.IsNullOrWhiteSpace(orderDir) && orderDir is not ("asc" or "desc")) return "orderDir must be asc or desc.";
+        return null;
+    }
+
+    private sealed record ListPage(JsonElement Items, long Total, JsonElement? Names);
+
+    private static async Task<ListPage?> ListPageOf(HttpResponseMessage response, CancellationToken ct)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
+            var root = doc.RootElement;
+            var data = root.ValueKind == JsonValueKind.Object && root.TryGetProperty("data", out var d) ? d : root;
+            if (data.ValueKind != JsonValueKind.Object || !data.TryGetProperty("items", out var items) || items.ValueKind != JsonValueKind.Array) return null;
+            var total = data.TryGetProperty("total", out var t) && t.ValueKind == JsonValueKind.Number && t.TryGetInt64(out var n) ? n : items.GetArrayLength();
+            JsonElement? names = data.TryGetProperty("displayNames", out var dn) && dn.ValueKind == JsonValueKind.Object ? dn.Clone() : null;
+            return new ListPage(items.Clone(), total, names);
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
+    // ---------------- the history export (BL-452: the file is the screen) ----------------
+
+    /// <summary>The fields whose value is a number (with its unit) or a switch — the rest are choices (Opt_{field}_{value}).</summary>
+    private static readonly IReadOnlyDictionary<string, string> NumberUnits = new Dictionary<string, string>
+    {
+        ["radiusMeters"] = "UnitMeters", ["maxAccuracyMeters"] = "UnitMeters", ["shortVisitSeconds"] = "UnitSeconds"
+    };
+
+    private static readonly IReadOnlySet<string> Switches = new HashSet<string> { "doctorConfirmation", "durationConsistency" };
+
+    /// <summary>
+    /// W3E-E4R2-FIX-d — <c>GET api/policy/history/export?format=csv|xlsx&amp;columns=…</c>: EVERY change (the CRM history read
+    /// page by page, 200 at a time), the visible columns in screen order, the person by name and the field / values in the
+    /// reader's language (the page's own words). More than 50 000 → 413 EXPORT_TOO_LARGE before a row is written; an
+    /// unknown column → 400.
+    /// </summary>
+    [HttpGet("api/policy/history/export")]
+    public async Task<IActionResult> HistoryExport([FromQuery] string? format, [FromQuery] string[]? columns, CancellationToken ct)
+    {
+        if (!HasAny(PolicyRead, PolicyManage)) return Denied();
+        if (!ListExportContract.TryParseFormat(format, out var fileFormat)) return ExportRefusal(400, "format must be 'csv' or 'xlsx'.", ListExportContract.FormatInvalidCode);
+        var culture = ListExportContract.ResolveCulture(Request.Headers.AcceptLanguage.ToString());
+        if (!HistoryColumns().TryResolve(columns, out var exportColumns, out var columnsError)) return ExportRefusal(400, columnsError!, ListExportContract.ColumnsInvalidCode);
+
+        var rows = new List<JsonElement>();
+        var people = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        for (var page = 1; ; page++)
+        {
+            using var response = await SendGatewayAsync(HttpMethod.Get, $"{Policy}/history?page={page}&pageSize=200", null, ct);
+            if (response is null || !response.IsSuccessStatusCode) return await ToProxyResultAsync(response, ct);
+            if (await ListPageOf(response, ct) is not { } chunk) return new ObjectResult(new { errors = new[] { "Gateway unavailable." } }) { StatusCode = 502 };
+            if (chunk.Total > ListExportContract.MaxRows)
+            {
+                return ExportRefusal(StatusCodes.Status413PayloadTooLarge, $"{chunk.Total} changes match; an export carries at most {ListExportContract.MaxRows}.", ListExportContract.TooLargeCode);
+            }
+
+            if (chunk.Names is { } names) foreach (var p in names.EnumerateObject()) if (p.Value.ValueKind == JsonValueKind.String) people[p.Name] = p.Value.GetString()!;
+            rows.AddRange(chunk.Items.EnumerateArray());
+            if (chunk.Items.GetArrayLength() < 200 || rows.Count >= chunk.Total) break;
+        }
+
+        var lines = rows.Select(r => new HistoryExportRow(
+            r.TryGetProperty("at", out var a) && a.ValueKind == JsonValueKind.String && a.TryGetDateTimeOffset(out var at) ? at : null,
+            Str(r, "by") is { } by ? people.GetValueOrDefault(by) : null,
+            Str(r, "field"), Str(r, "oldValue"), Str(r, "newValue"), Str(r, "kind") ?? "set")).ToList();
+        var content = ListExportWriter.Write(fileFormat, exportColumns, lines, culture, Text("PaneHistory", culture));
+        return File(content, ListExportContract.ContentType(fileFormat), ListExportContract.FileName("visit-evidence-policy-history", DateTimeOffset.UtcNow, fileFormat));
+    }
+
+    /// <summary>One change as the export writes it (the person by name — never the id).</summary>
+    public sealed record HistoryExportRow(DateTimeOffset? At, string? By, string? Field, string? OldValue, string? NewValue, string Kind);
+
+    private ListExportColumnSet<HistoryExportRow> HistoryColumns() => new(
+    [
+        new("at", c => Text("ColDate", c), (r, c) => r.At?.ToString("g", c)),
+        new("by", c => Text("ColPerson", c), (r, _) => r.By ?? "—"),
+        new("field", c => Text("ColField", c), (r, c) => r.Field is { Length: > 0 } f ? Text("F_" + f, c) : "—"),
+        new("newValue", c => Text("ColChange", c), (r, c) => r.Kind == "created"
+            ? "— → " + Text("HistCreated", c)
+            : ValueText(r.Field, r.OldValue, c) + " → " + ValueText(r.Field, r.NewValue, c))
+    ]);
+
+    /// <summary>A history value in the reader's words — the page's valueKey rule (evidence-core.js): a switch On / Off, a
+    /// number with its unit, a choice its option text.</summary>
+    private string ValueText(string? field, string? raw, CultureInfo culture)
+    {
+        if (string.IsNullOrEmpty(field) || raw is null) return "—";
+        if (Switches.Contains(field)) return Text(raw is "true" or "True" ? "ValueOn" : "ValueOff", culture);
+        if (NumberUnits.TryGetValue(field, out var unit)) return Text(unit, culture).Replace("{0}", raw, StringComparison.Ordinal);
+        return Text("Opt_" + field + "_" + raw, culture);
+    }
+
+    /// <summary>A screen word in <paramref name="culture"/> (the page's own resx); the key itself when no localizer is wired.</summary>
+    private string Text(string key, CultureInfo culture)
+    {
+        var localizer = HttpContext?.RequestServices?.GetService(typeof(IStringLocalizer<VisitEvidenceSettingsIndex>)) as IStringLocalizer<VisitEvidenceSettingsIndex>;
+        if (localizer is null) return key;
+        var before = CultureInfo.CurrentUICulture;
+        CultureInfo.CurrentUICulture = culture;
+        try
+        {
+            var text = localizer[key];
+            return text.ResourceNotFound ? key : text.Value;
+        }
+        finally
+        {
+            CultureInfo.CurrentUICulture = before;
+        }
+    }
+
+    private ObjectResult ExportRefusal(int statusCode, string message, string code) => StatusCode(statusCode, new
+    {
+        isSuccessful = false,
+        statusCode,
+        errors = new[] { message },
+        errorCodes = new[] { new { code } }
+    });
+
+    private IActionResult Denied() => StatusCode(StatusCodes.Status403Forbidden, new { message = "Permission denied." });
+
+    private BadRequestObjectResult Refused(string message) => BadRequest(new { errors = new[] { message, "visit_evidence_policy_invalid" } });
+
+    private static string? Str(JsonElement e, string name)
+        => e.ValueKind == JsonValueKind.Object && e.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() : null;
 
     [HttpGet("api/policy/effective")]
     public Task<IActionResult> Effective(CancellationToken ct)

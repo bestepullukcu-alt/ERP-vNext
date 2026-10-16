@@ -10,6 +10,9 @@
  *   diff(before, low, high)        the save confirm's changed rows (field, old, new); none = nothing to save
  *   putBody(low, high, version)    the PUT body
  *   historyRows(items, names)      the change history (newest first, the product named, "default" for the tenant row)
+ *   isolateRange(text)             W3E-E4R2-FIX-d (8) — every "a–b" number range kept left-to-right as ONE isolate (LRI…PDI;
+ *                                  plain text, so it works in a localized template): in Arabic "5–20" never reads "20–5";
+ *                                  the digits stay the culture's (Latin or Arabic-Indic)
  *   errorKey(response)             a CRM refusal → the user's text key
  */
 (function (root, factory) {
@@ -95,5 +98,10 @@
         return 'Err_generic';
     };
 
-    return { MAX, DEFAULT, intOf, validate, classOf, keyOf, rowsOf, diff, putBody, historyRows, ERROR_CODES, errorKey };
+    // the G-6 / VisitPlanningFormat.ratio pattern: a number range isolated left-to-right as a whole
+    const LRI = String.fromCharCode(0x2066), PDI = String.fromCharCode(0x2069);
+    const RANGE = /[0-9\u0660-\u0669\u06F0-\u06F9][0-9\u0660-\u0669\u06F0-\u06F9.,\u066B\u066C\u00A0\u202F]*\s*–\s*[0-9\u0660-\u0669\u06F0-\u06F9][0-9\u0660-\u0669\u06F0-\u06F9.,\u066B\u066C\u00A0\u202F]*/g;
+    const isolateRange = text => String(text == null ? '' : text).replace(RANGE, m => LRI + m + PDI);
+
+    return { MAX, DEFAULT, intOf, validate, classOf, keyOf, rowsOf, diff, putBody, historyRows, ERROR_CODES, errorKey, isolateRange };
 }));
