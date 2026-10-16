@@ -1151,7 +1151,47 @@ NE:
 (4) Değişiklik geçmişi = Golden görünümü, server mode, salt okuma: kart, araç çubuğu (sayfa boyutu, CSV / Excel, sütun görünürlüğü), iskelet, bilgi + sayfalama, v2 + data_mode server; kişi adları bugünkü gibi (displayNames). Kayıt sonrası (Kaydet ve uygula) yenilenir.
 (5) Temsilciler paneli = Golden görünümü, server mode: arama (q → CRM), sayfalama, toplam; hücre değerleri bugünkü kurala göre istemcide hesaplanır (C.repRows mantığı satır başına; istisna listesi sayfanın zaten okuduğu tam liste — temsilci başına okuma YOK). "· istisna" işareti korunur.
 (6) İkinci / üçüncü tablo yöntemi FIX-c'deki gibi (sayfanın tek createList'i istisna listesi); fabrika bu sayıda tabloyu taşıyamıyorsa DUR, raporla (diten-datatable.js'e DOKUNMA). Gizli bölmede çizilen tablo diten:tab-change'de yeniden ölçülür; iskelet sırası FU-DT-SKELETON-ID notuna uyar.
+(7) [FIX-c'den] Potansiyel Eşikleri test eksiği: "kiracı varsayılanı her sıralamada ilk satır" kuralı (wwwroot/assets/js/CRM/PotentialThresholds/index.js ~243-249, orderFixed: { pre: [[0,'asc']] } + kontrol sütununun sıralama değeri) bugün hiçbir testle korunmuyor — test yaz (smoke düzeneğinde createList seçenekleri + mümkünse gerçek DataTables sıralaması).
+(8) [FIX-c'den] Potansiyel Eşikleri Arapça bant aralığı: orta bant 5–20 sağdan sola "20–5" diziliyor — aralık tek yalıtılmış dizi olarak yazılsın (F.isolate ya da <bdi> / dir="ltr"; G-6 deseni), rakamlar kültürde kalsın.
 KORU/YAPMA: ayar formu, önizleme, Kaydet ve uygula, Etkin kurallar kartı (ve-effective — bu pakette dönüştürülmez), istisna listesi ve dış sekmeler (FIX-b) aynen; picker ucu değişmez; K-THEME (yalnız --bs-primary; guard yeşil) + koyu blok; ortak dosyalar (backbone-custom.css, diten-datatable.js, _TabCard, diten-tabs.js) DEĞİŞMEZ; kalıcı veri yazma YOK (görsel kanıtta kaydetme denenmez); kullanıcının sekmesine harness yok.
-DOĞRULA: CRM testleri — roster: sayfalama + toplam (25 / 26. kayıt, son sayfa), q süzgeci, kararlı sıra, pageSize sınırı (0 / 101 → 400), kiracı izolasyonu, izinsiz 403; picker ucu hâlâ 20 ve aynı şekil. Web.Tests (xUnit + RunNode): iç sekmeler _TabCard'dan; geçmiş + temsilciler v2 + server + vekil çevirisi (start / length → page / pageSize, search → q); 20'den fazla temsilcide toplam doğru ve 2. sayfa okunur (sessiz kesme yok); "· istisna" hücresi; diten:tab-change'de yeniden ölçme; UAS-001; 7 dil; tema guard + 3 sabotaj (.bak + touch): (1) roster Take(20)'ye dönsün / total kalksın → kırmızı; (2) vekil page çevirisini bozsun → kırmızı; (3) iç şerit ve-pane-tab'a dönsün → kırmızı. CRM + Web tam takım (-o repo içi), taban karşılaştırması. Görsel kanıt (AYRI sekme; fleet kapalıysa RAPORLA, fleet'i başlatma): iç sekmeler, geçmiş sayfalama, temsilciler arama + sayfalama, Arapça, açık + koyu, telefon.
+DOĞRULA: CRM testleri — roster: sayfalama + toplam (25 / 26. kayıt, son sayfa), q süzgeci, kararlı sıra, pageSize sınırı (0 / 101 → 400), kiracı izolasyonu, izinsiz 403; picker ucu hâlâ 20 ve aynı şekil. Web.Tests (xUnit + RunNode): iç sekmeler _TabCard'dan; geçmiş + temsilciler v2 + server + vekil çevirisi (start / length → page / pageSize, search → q); 20'den fazla temsilcide toplam doğru ve 2. sayfa okunur (sessiz kesme yok); "· istisna" hücresi; diten:tab-change'de yeniden ölçme; UAS-001; 7 dil; tema guard + 3 sabotaj (.bak + touch): (1) roster Take(20)'ye dönsün / total kalksın → kırmızı; (2) vekil page çevirisini bozsun → kırmızı; (3) iç şerit ve-pane-tab'a dönsün → kırmızı; (4) Eşikler orderFixed kalksın → kırmızı; (5) Eşikler bant aralığının yalıtımı kalksın (ar) → kırmızı. CRM + Web tam takım (-o repo içi), taban karşılaştırması. Görsel kanıt (AYRI sekme; fleet kapalıysa RAPORLA, fleet'i başlatma): iç sekmeler, geçmiş sayfalama, temsilciler arama + sayfalama, Arapça, açık + koyu, telefon.
 Commit: "fix(crm,web): WP-VW-W3E-E4R2-FIX-d — visit evidence settings inner tabs on the shared tab card; change history and rep roster on the Golden Compact DataTable (server mode); paged rep roster read (the picker's 20-row read silently truncated the panel)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Rapor TÜRKÇE (§22). K13.
 ```
+
+
+## §37 CT kabul — W3E-E4R2-FIX-c E2 ACCEPTED (2026-10-16) — Potansiyel Eşikleri Golden + K-TABS
+Test dalına alındı: `6aecefcac` (ajan `d6e96fcc5`, `fb628988b` üstüne taşınmış), çakışmasız. Birleşik dalda FIX-a + b + c ilgili sınıflar 155/155.
+
+**Ne geldi:**
+- **Başlık:** `pt-crumb` + `h4` kalktı → `h5` + `p.text-muted`. `Intro` → `PageDescription` (8 resx); "Ürün ekle" araç çubuğunun standart Ekle düğmesi.
+- **Sekmeler:** `_TabCard` ile "Eşikler" / "Değişiklik geçmişi"; gizli sekmedeki tablo açılınca yeniden ölçülüyor.
+- **Eşikler** (birincil liste):
+  - `createList`, client; arama ürün adında + kaynak çipi.
+  - Save View, CSV / Excel, hızlı bakış + Düzenle; `HasSelection=false`.
+  - Düzenleme çekmecesi, bant önizlemesi, `thresholds-core.js` doğrulamaları ve kaydet onayı aynen.
+  - Kiracı varsayılanı `orderFixed.pre` ile her sıralamada ilk.
+- **Değişiklik geçmişi** (ikinci tablo, server mode):
+  - `createCrudTable` + fabrikanın dışa açık parçaları (`toServerQuery`, `toDataTablesResponse`, `toExportQuery`, `parseCsv`); `diten-datatable.js`'e dokunulmadı.
+  - Web vekili `start / length` → `page / pageSize`. Sayfa boyutu 1–100 dışıysa, arama ya da sıralama gelirse CRM'e gitmeden 400 dönüyor.
+  - Dışa aktarma Web'de (CRM 200'er satır okunuyor, 50 000 üstü 413).
+
+**CT kontrolü:**
+- **Diff:** ortak dosyalar (`diten-datatable.js`, `backbone-custom.css`, `_TabCard`, `diten-tabs.js`, `dt-defaults`) değişmedi. Eski `potential-thresholds.js` kaldırıldı, `thresholds-core.js` aynı. `Crumb` / `Intro` kullanan yer kalmadı.
+- **Not:** İkinci tablo `serverSide` + `ajax.data`'yı sayfada yazıyor. K-STD bunu sunucu modunda yasaklıyor; ama fabrika sayfa başına tek `createList` kurduğu için başka yol yok ve kopya kod yok, fabrikanın kendi parçaları kullanılıyor. Kabul edildi; ortak takip **FU-DT-MULTI-LIST**.
+- **Testler** (CT `-o`): Web tam takım 1812/3. Kırmızılar bilinen 2 `ShipmentDetailsDateNode` + `-o` artefaktı. Ajan 1812/3, taban 1799/3 (+6 yeni test, +7'si FIX-b'den).
+- **CT sabotajları:**
+  - (1) Vekil `length` sınırı ×10 gevşetildi → FixC4 **kırmızı**.
+  - (2) **Test eksiği:** "kiracı varsayılanı her zaman ilk satır" (`orderFixed: { pre: [[0,'asc']] }`) kaldırıldı → 36/36 **yeşil kaldı**. Kural ajanın görsel kanıt sırasında eklediği bir düzeltme; testi yok. → FIX-d madde (7).
+  - İkisi de md5 ile geri alındı.
+
+**Ajan notları → yerleri:**
+- Arapçada orta bant `5–20` sağdan sola "20–5" diziliyor (eskiden de böyleydi) → FIX-d madde (8).
+- Tablo bazındaki boş durum metni gösterilemiyor; `dt-defaults` ortak sözlükle eziyor. Emsal Temsilci özetinde de aynı → ortak takip **FU-DT-EMPTY-TEXT**.
+- Telefonda yalnız ürün + işlemler görünüyor, bantlar satır açılımında: kabul.
+- Geride kalan kilitli klasör `C:\tmp\vw-fixc-base`: kullanıcı elle silebilir.
+
+## FIX-d'ye ek maddeler (2026-10-16, FIX-c kabulünden — FIX-d istemi bu iki maddeyle birlikte çalıştırılır)
+- **(7) FIX-c test eksiği (Potansiyel Eşikleri):** "kiracı varsayılanı her sıralamada ilk satır" kuralı test edilsin. Smoke düzeneğinde `createList` seçeneklerinden `orderFixed.pre` + kontrol sütununun sıralama değeri (varsayılan 0, ürünler 1); mümkünse gerçek DataTables sıralamasıyla.
+  - Sabotaj: `orderFixed` kaldırılsın → kırmızı. Dosya: `wwwroot/assets/js/CRM/PotentialThresholds/index.js` ~243-249.
+- **(8) Arapça bant aralığı (Potansiyel Eşikleri):** orta bant `5–20` sağdan sola "20–5" diziliyor. Aralık tek bir yalıtılmış dizi olarak yazılsın (`F.isolate` ya da `<bdi>` / `dir="ltr"`; G-6 deseni). Sayılar kültürün rakamlarıyla kalsın.
+  - Test: ar'da çıktı yalıtım işaretlerini taşır. Sabotaj: yalıtım kalksın → kırmızı.
