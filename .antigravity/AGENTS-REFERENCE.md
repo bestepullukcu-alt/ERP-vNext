@@ -9,15 +9,15 @@ dosyanın taşındığı `docs/guides/operations/agent-usage-guide.md`'ye, §12'
 
 ## 2. Proje Klasör Yapısı
 
-**Güncel (2026-10-15, klasörlerden ölçüldü):**
+**2026-10-15 envanteri (İ5-B'nin kaynak tabanında klasörlerden ölçüldü; tarihsel).** Güncel servis ve domain listesi `AGENTS.md` §2'dedir.
 
 - `services/` — 16 servis: `Diten.AuthService`, `Diten.CrmService`, `Diten.DevEnablementService`, `Diten.EnterpriseStrategyService`, `Diten.HcmService`, `Diten.HumanCapitalService`, `Diten.InventoryService`, `Diten.ManagementGovernanceService`, `Diten.ManufacturingService`, `Diten.MdmService`, `Diten.Platform`, `Diten.PpmService`, `Diten.ProcurementService`, `Diten.PvgService`, `Diten.SupplyChainService`, `Diten.TalentEcosystemService`; 3 ortak kütüphane: `Diten.Building.Blocks`, `Diten.Platform.Common`, `Diten.Platform.Contracts`
 - `execution/domains/` — 11 domain: `commercial-suite`, `developer-enablement`, `enterprise-strategy-business-performance`, `human-capital-management`, `management-governance`, `master-data-management`, `pharmacovigilance`, `platform-shared-services`, `portfolio-delivery`, `procurement`, `supply-chain-execution`
 
 ### Taşınmadan önceki metin (tarihsel)
 
-> Aşağıdaki ağaçtaki servis ve domain notları yazıldıkları tarihteki durumu anlatır. Bugün MDM, MG ve PVG servisleri dahil
-> yukarıdaki güncel liste geçerlidir; ağaçtaki onay kuralları (module pack ve kullanıcı onayı) yeni servis açarken geçerliliğini korur.
+> Aşağıdaki ağaçtaki servis ve domain notları yazıldıkları tarihteki durumu anlatır. Bugün geçerli liste
+> `AGENTS.md` §2'dedir; ağaçtaki onay kuralları (module pack ve kullanıcı onayı) yeni servis açarken geçerliliğini korur.
 
 ```
 ERP-vNext/
