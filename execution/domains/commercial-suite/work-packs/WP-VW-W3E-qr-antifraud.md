@@ -1226,3 +1226,28 @@ Test dalına alındı: `77c3b3171` (ajan `7817c9489`; CT ara notundan sonra `978
 - Kadroda arama başına toplam için bir tek satırlık ek okuma yapılıyor.
 
 **Sıradaki:** E4 üçüncü tur (fleet + kullanıcı oturumu). Kapsam: FIX-b / c / d görsel kontrolü (Ziyaret kanıtı: dış + iç sekmeler, istisna listesi, geçmiş, temsilciler; Potansiyel Eşikleri; Arapça, koyu, telefon) + FIX-a'nın canlı hali.
+
+## E4 üçüncü tur — yerel, kullanıcı sekmesi (2026-10-16, CT)
+Test dalı `0827083ed` (FIX-a / b / c / d dahil). Fleet yeniden başlatıldı, kullanıcı oturumu açık. Hiçbir şey kaydedilmedi; dil `tr`'ye, tema açığa geri alındı.
+
+**Geçenler:**
+- **Ziyaret kanıtı:**
+  - Golden başlık; dış ve iç sekme kartları (`_TabCard` ×2); eski şerit yok; 3 v2 tablo.
+  - Değişiklik geçmişi server mode (7 kayıt, dünkü QR değişiklikleri). Temsilciler yeni roster ucundan (arama, sayfa boyutu, toplam).
+  - İstisna listesi client: süzgeç durum / aşama, hızlı görünüm çekmecesi (zaman çizelgesi), "Yeni istisna" düğmesi.
+  - Telefon 375 px (yatay kaydırma yok, sekmelerde yalnız ikon); Arapça + koyu tema (değişiklik oku sağdan sola düzende sola dönük).
+- **Potansiyel Eşikleri:**
+  - Golden başlık + iki sekme. Eşikler client (varsayılan satır 4 farklı sıralamada da ilk — FIX-d (7) canlıda doğru).
+  - Düzenle çekmecesi (kaydetmeden kapatıldı). Geçmiş server mode (4 kayıt).
+  - Arapça orta bant "10–30" LTR yalıtımı (U+2066 / 2069) — FIX-d (8) canlıda doğru.
+- **Kanıt işaretleri (FIX-a canlı):** sekme kartı; Temsilci özeti Golden araç çubuğuyla (sayfa boyutu, İşlem, sütun seçimi); özet kartı 7 / 6 (%85,7).
+
+**Bulgular:**
+| # | Bulgu | Önem | Nereye |
+|---|---|---|---|
+| E3-1 | Potansiyel Eşikleri düzenleme çekmecesinde "Az sınırı" / "Çok sınırı" alanları `.diten-field` + ikon kuralına uymuyor (eski; FIX-c kapsamında değildi). | Düşük | Takip FU-PT-FORM-ICONS |
+| E3-2 | Sekme yazıları ortak CSS `text-transform: capitalize` ile ("Kapsamlı Ayarlar", "Süreli İstisnalar"); `lang=tr` olduğu için "İ" beklenir, ekran görüntüsü noktayı ayırt edemedi → kullanıcı gözle doğrulayacak. | Düşük | Kullanıcı kontrolü |
+
+**Not:** İlk süzgeç tıklaması hızlı görünüm kapanırken arka plana denk geldi (CT test sırası); tekrar denemede süzgeç açılıp kapanıyor — ürün hatası değil.
+
+**W3E durumu:** E4 üçüncü tur geçti. W3E kapanışa hazır. Sıradaki: kullanıcı PR'ı (test dalı → main) + SYNC-144 (PR #144 main'e girince).
