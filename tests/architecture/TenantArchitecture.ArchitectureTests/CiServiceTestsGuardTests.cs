@@ -200,6 +200,9 @@ public class CiServiceTestsGuardTests
         Assert.Contains("if: matrix.suite == 'platform-eventing'", step, StringComparison.Ordinal);
         Assert.Contains("docker run -d --name rabbitmq --network host \"$RABBITMQ_IMAGE\"", step, StringComparison.Ordinal);
         Assert.Matches(@"for attempt in \$\(seq 1 \d+\)", step);
+        // The 120 s budget is a real deadline (bash SECONDS), checked in the loop — an attempt count alone ran ~240 s.
+        Assert.Contains("deadline=$((SECONDS + 120))", step, StringComparison.Ordinal);
+        Assert.Contains("if [ \"$SECONDS\" -ge \"$deadline\" ]; then last=1; fi", step, StringComparison.Ordinal);
         Assert.Contains("RABBITMQ_NOT_READY", step, StringComparison.Ordinal);
         Assert.Contains("Eventing__RabbitMq__IntegrationTestsEnabled=true", step, StringComparison.Ordinal);
         Assert.DoesNotMatch(@"(?i)(Username|Password|RABBITMQ_DEFAULT_)", step);

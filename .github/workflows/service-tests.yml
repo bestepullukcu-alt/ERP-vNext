@@ -170,6 +170,9 @@ jobs:
         run: |
           set -euo pipefail
           docker run -d --name rabbitmq --network host "$RABBITMQ_IMAGE"
+          # A real 120 s deadline (bash SECONDS), not an attempt count: each attempt can take up to ~4 s (2 s TCP timeout
+          # + 2 s sleep), so 60 attempts alone could run ~240 s while the message said 120 s (Codex measurement, 2026-10-16).
+          deadline=$((SECONDS + 120))
           for attempt in $(seq 1 60); do
             if [ "$(docker inspect -f '{{.State.Running}}' rabbitmq)" != "true" ]; then
               docker logs rabbitmq 2>&1 | tail -80
@@ -182,9 +185,12 @@ jobs:
               echo "[rabbitmq] ok — accepting a TCP connection, running and listening after $attempt attempt(s)"
               break
             fi
-            if [ "$attempt" -eq 60 ]; then
+            last=0
+            if [ "$SECONDS" -ge "$deadline" ]; then last=1; fi
+            if [ "$attempt" -eq 60 ]; then last=1; fi
+            if [ "$last" -eq 1 ]; then
               docker logs rabbitmq 2>&1 | tail -80
-              echo "[rabbitmq] *** FAILED *** RABBITMQ_NOT_READY — not accepting / running / listening within 120 s"
+              echo "[rabbitmq] *** FAILED *** RABBITMQ_NOT_READY — not accepting / running / listening within 120 s ($attempt attempt(s), ${SECONDS}s)"
               exit 1
             fi
             sleep 2
