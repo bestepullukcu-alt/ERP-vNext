@@ -203,6 +203,9 @@ def check_instruction_budget(manifest: dict) -> tuple[list[str], list[str]]:
     for path in budget.get("link_check", []):
         p = rel(path)
         if not p.is_file():
+            # İ5B-FIX-01 (independent audit 2026-10-17, finding 02): a listed file that is gone is a problem, not a file
+            # to skip — deleting .antigravity/AGENTS-REFERENCE.md would otherwise lose the moved text with a clean check.
+            problems.append(f"MISSING {path} (link_check)")
             continue
         for target in re.findall(r"\]\(([^)\s]+)\)", p.read_text(encoding="utf-8")):
             if re.match(r"(https?:|mailto:|#)", target):

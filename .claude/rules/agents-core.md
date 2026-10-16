@@ -1,8 +1,8 @@
-> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `AGENTS.md` · kaynak özeti: `sha256:9a8c009001a5` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
+> **Üretilmiş kopya — elle düzenlemeyin.** Kaynak: `AGENTS.md` · kaynak özeti: `sha256:c9fc70b86047` · yeniden üret: `python3 .antigravity/scripts/sync_adapters.py`
 
 ## Çekirdek — her işte geçerli davranış kuralları
 
-> Kısa ama **bağlayıcıdır**; her araçta her oturumda yüklenir. Ayrıntı gerektiğinde belirtilen bölümü (§N) ya da kural dosyasını **aç** — özetle yetinme.
+> Kısa ama **bağlayıcıdır** — hangi araçta kendiliğinden yüklendiğinden bağımsız olarak her işte geçerlidir. Ayrıntı gerektiğinde belirtilen bölümü (§N) ya da kural dosyasını **aç** — özetle yetinme.
 
 1. **Yetki sırası (§1):** Module Pack > Domain Config > AGENTS.md > `.antigravity/` > Archive. Çakışmada üstteki kazanır; bu sırayı bozma.
 2. **Kiracı izolasyonu (§6, `multi-tenancy`):** Kiracı verisine dokunan her sorgu ve endpoint `TenantId` ile sınırlanır; kiracılar arası erişim 404 döner. Üretim kodunda sabit ya da varsayılan kiracı kullanma. Silme yalnız soft delete (`IsDeleted`, `DeletedAt`).

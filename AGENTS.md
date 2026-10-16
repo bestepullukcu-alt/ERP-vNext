@@ -2,9 +2,11 @@
 
 Bu dosya, Claude Code, Codex ve diğer AI ajanlarının repo genelinde uyması gereken yürütme kontratıdır.
 
-**Yükleme:** Codex ve Antigravity bu dosyayı kendileri yükler. Claude Code, `CLAUDE.md` varken bu dosyayı yüklemez; bu yüzden
-aşağıdaki **Çekirdek** bloğu `.claude/rules/agents-core.md` olarak üretilir ve her Claude oturumunda (alt ajanlar dahil) yüklenir
-(`python3 .antigravity/scripts/sync_adapters.py`). Sembolik bağ kullanılmaz (Windows). Ayrıntı ve tarihçe: `.antigravity/AGENTS-REFERENCE.md`.
+**Yükleme:** Codex ve Antigravity bu dosyayı kendileri yükler (bu denetimde canlı ölçülmedi). Claude Code, `CLAUDE.md` varken bu
+dosyayı yüklemez; bu yüzden aşağıdaki **Çekirdek** bloğu `.claude/rules/agents-core.md` olarak üretilir
+(`python3 .antigravity/scripts/sync_adapters.py`) ve Claude Code'un başlangıç bağlamına girmesi için oraya konur. Canlı ölçüm:
+2026-10-17'de başsız CLI 2.1.71 oturumunda, önceki çekirdek sürümüyle (`c02b28c16`) bir kez geçti; güncel revizyon, etkileşimli
+oturum ve alt ajanlar bu denetimde ölçülmedi. Sembolik bağ kullanılmaz (Windows). Ayrıntı ve tarihçe: `.antigravity/AGENTS-REFERENCE.md`.
 
 `CLAUDE.md` bir kopya değildir ve olmamalıdır; çakışmada **bu dosya kazanır**.
 
@@ -16,7 +18,7 @@ aşağıdaki **Çekirdek** bloğu `.claude/rules/agents-core.md` olarak üretili
 <!-- core:start -->
 ## Çekirdek — her işte geçerli davranış kuralları
 
-> Kısa ama **bağlayıcıdır**; her araçta her oturumda yüklenir. Ayrıntı gerektiğinde belirtilen bölümü (§N) ya da kural dosyasını **aç** — özetle yetinme.
+> Kısa ama **bağlayıcıdır** — hangi araçta kendiliğinden yüklendiğinden bağımsız olarak her işte geçerlidir. Ayrıntı gerektiğinde belirtilen bölümü (§N) ya da kural dosyasını **aç** — özetle yetinme.
 
 1. **Yetki sırası (§1):** Module Pack > Domain Config > AGENTS.md > `.antigravity/` > Archive. Çakışmada üstteki kazanır; bu sırayı bozma.
 2. **Kiracı izolasyonu (§6, `multi-tenancy`):** Kiracı verisine dokunan her sorgu ve endpoint `TenantId` ile sınırlanır; kiracılar arası erişim 404 döner. Üretim kodunda sabit ya da varsayılan kiracı kullanma. Silme yalnız soft delete (`IsDeleted`, `DeletedAt`).
@@ -150,9 +152,11 @@ Alan sayımı yalnızca create/edit formunda kullanıcının doldurduğu modül 
 
 ## 6.1 Kural Haritası — hangi işte hangi kural
 
-`.antigravity/rules/` altında 44 kural var ve **hiçbiri otomatik yüklenmez.**
-Codex ve Antigravity bu haritayı bu dosyayla birlikte yükler; Claude Code'da Çekirdek bloğu (madde 11) işe başlamadan
-bu haritanın açılmasını şart koşar.
+`.antigravity/rules/` altında 46 kural dosyası var (2026-10-17, `git ls-tree` ile sayıldı). Kural dosyaları kendiliğinden
+yüklenmez; `.antigravity/adapters.json`'da listelenenlerin üretilmiş kopyaları `.claude/rules/` (Claude Code) ve
+`.agents/rules/` (Antigravity) altına konur — bu denetimde yalnız `agents-core.md`'nin yüklenmesi ölçüldü. Codex ve
+Antigravity bu haritayı bu dosyayla birlikte yükler (bu denetimde canlı ölçülmedi); Claude Code'da Çekirdek bloğu (madde 11)
+işe başlamadan bu haritanın açılmasını şart koşar.
 
 Kural, ona atıf verildiği kadar görünür. **İşe başlamadan önce satırını bul ve o
 kuralların dosyasını aç** — harita kuralın yerini söyler, içeriğini değil.
