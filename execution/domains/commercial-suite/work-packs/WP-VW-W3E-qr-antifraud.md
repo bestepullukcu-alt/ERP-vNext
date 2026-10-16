@@ -1195,3 +1195,34 @@ Test dalına alındı: `6aecefcac` (ajan `d6e96fcc5`, `fb628988b` üstüne taş�
   - Sabotaj: `orderFixed` kaldırılsın → kırmızı. Dosya: `wwwroot/assets/js/CRM/PotentialThresholds/index.js` ~243-249.
 - **(8) Arapça bant aralığı (Potansiyel Eşikleri):** orta bant `5–20` sağdan sola "20–5" diziliyor. Aralık tek bir yalıtılmış dizi olarak yazılsın (`F.isolate` ya da `<bdi>` / `dir="ltr"`; G-6 deseni). Sayılar kültürün rakamlarıyla kalsın.
   - Test: ar'da çıktı yalıtım işaretlerini taşır. Sabotaj: yalıtım kalksın → kırmızı.
+
+
+## §37 CT kabul — W3E-E4R2-FIX-d E2 ACCEPTED (2026-10-16) — ayar sekmesi iç sekmeler + geçmiş + temsilci kadrosu; (7)(8) Eşikler
+Test dalına alındı: `77c3b3171` (ajan `7817c9489`; CT ara notundan sonra `9782cb8c5` üstünde), çakışmasız. Birleşik dalda a + b + c + d ilgili sınıflar 175/175.
+
+**Ne geldi:**
+- **CRM:** yeni okuma `GET api/crm/visit-evidence-policy/reps/roster?q&page&pageSize` → `{ items, total, page, pageSize }`.
+  - Sıra ad, sonra kimlik (kararlı); sayfa boyutu 1–100, varsayılan 25; aynı izin ve kiracı sınırı.
+  - Süzgeç picker ile ortak (`Matches`). Picker ucu (20) aynen.
+- **Web vekili:** geçmiş ve kadro standart liste sözleşmesiyle (`start / length / search` → `page / pageSize / q`); geçmiş için CSV / Excel.
+- **Sayfa:**
+  - İç şerit Form / Geçmiş / Temsilciler `_TabCard`'a geçti (dış kartın içinde ikinci kart).
+  - Geçmiş ve temsilciler Golden, server mode (`settings-tables.js`; FIX-c yöntemi). Temsilci hücreleri istemcide, "· istisna" korundu.
+- **(7):** Eşikler "varsayılan satır her sıralamada ilk" artık testli (FixD7).
+- **(8):** Arapça bant aralığı tek LTR yalıtımı (FixD8).
+
+**CT kontrolü:**
+- **Diff:** CRM değişikliği yalnız okuma (AUD-001 gerekmez); ortak dosyalar değişmedi.
+  - `VwW3FixWebTests.F5` beklentisi yeni yola çekildi; kural aynı: geçmişin her sayfasındaki `displayNames` aynı ad haritasına birleşiyor.
+- **Testler** (CT `-o`):
+  - Web tam takım: yalnız bilinen 3 kırmızı (2 `ShipmentDetailsDateNode` + `-o` artefaktı). Ajan 1827/3, taban 1812/3 (+15).
+  - CRM ilgili sınıflar 223/1. Kırmızı `VwW4DoctorInsightsTests.A_manual_profile_edit…` ("Sequence contains no elements") FIX-d'siz test dalında da kırmızı → FIX-d'den değil. Bugün ortaya çıktı, büyük olasılıkla tarihe bağlı → takip **FU-W4-DOCINSIGHT-DATE**.
+  - Ajan CRM tam 2890/2, taban 2882/3; `PiiMasking` bilinen kararsız test.
+- **CT sabotajı:** CRM kadro sırası ad → kimlik yapıldı → R1 + R2 **kırmızı**; md5 ile geri alındı.
+
+**Bilinen / kabul:**
+- Temsilciler tablosunda dosya dışa aktarma yok (hücreler istemci kuralı; sunucuda kopya gerekirdi). Yalnız sütun seçimi var.
+- İskelet sırası: istisna listesi geç yüklenirken başka tablo açılırsa iskelet erken kalkabilir (yalnız görsel) → FU-DT-SKELETON-ID.
+- Kadroda arama başına toplam için bir tek satırlık ek okuma yapılıyor.
+
+**Sıradaki:** E4 üçüncü tur (fleet + kullanıcı oturumu). Kapsam: FIX-b / c / d görsel kontrolü (Ziyaret kanıtı: dış + iç sekmeler, istisna listesi, geçmiş, temsilciler; Potansiyel Eşikleri; Arapça, koyu, telefon) + FIX-a'nın canlı hali.
