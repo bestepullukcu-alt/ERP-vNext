@@ -1,58 +1,10 @@
-# CLAUDE.md — giriş kapısı
+# CLAUDE.md — Claude Code giriş kapısı
 
-> Bu dosya **kısadır ve öyle kalmalıdır.** Her oturumda otomatik yüklenir; uzarsa her
-> oturumdan bağlam çalar. Sözleşmenin kendisi `AGENTS.md`'dedir.
+Proje sözleşmesi `AGENTS.md`'dedir. Claude Code, `CLAUDE.md` varken `AGENTS.md`'yi kendiliğinden yüklemez; bu yüzden
+`AGENTS.md`'nin başındaki **Çekirdek** bloğu `.claude/rules/agents-core.md` olarak üretilir ve her oturumda (alt ajanlar dahil) yüklenir.
 
-## İLK İŞ: `AGENTS.md`'yi oku
-
-```
-Read AGENTS.md
-```
-
-⚠ Claude Code **yalnız bu dosyayı** otomatik yükler. `AGENTS.md`, `.antigravity/rules/`
-(44 kural), `.antigravity/agents/` (20 ajan) ve `.antigravity/workflows/` (18 akış)
-**otomatik yüklenmez** — 2026-09-08'de canlı oturumda ölçüldü: bağlamdaki tek proje
-dosyası `MEMORY.md`'ydi.
-
-Yani bu dosyayı okuyup `AGENTS.md`'yi açmazsan, 1.3 MB'lık mühendislik standardının
-hiçbirini görmemiş olursun.
-
-*(Windows'ta sembolik bağ güvenilir olmadığı için bu dosya bir kopya değil, bir
-yönlendirmedir. `AGENTS.md` tek kaynak olarak kalır; buradaki hiçbir madde onun yerine
-geçmez, çakışma halinde `AGENTS.md` kazanır.)*
-
-## Okumadan önce bilinmesi gerekenler
-
-Aşağıdakiler `AGENTS.md`'nin özeti değil, **onu açana kadar hata yapmanı önleyecek asgari
-set**. Tamamı için `AGENTS.md` §6.1 Kural Haritası.
-
-| konu | kural |
-|---|---|
-| **Yetki sırası** | Module Pack > Domain Config > `AGENTS.md` > `.antigravity/` > Archive |
-| **Kiracı izolasyonu** | Her sorgu `TenantId` ile sınırlanır. İhlali sessizdir ve veri sızdırır. |
-| **Dil** | Platform modülleri **2 dil** (en, tr) · Tenant modülleri **7 dil** (en, tr, fr, es, zh, ar, ru). Bir dil eksikse iş bitmemiştir. |
-| **Git** | `main`'e asla commit edilmez. Modül başına bir dal. |
-| **Ekran** | Yetkisiz kullanıcıya sayfa iskeleti çizilmez (UAS-001), yönlendirme yapılmaz. |
-| **Belge** | `docs/` köküne dosya konmaz; yeri `.antigravity/rules/docs-organization.md` beş soruyla belirlenir. |
-| **Test** | Kural, kendi kopyasıyla değil üretim koduyla ölçülür. Sabotaj kanıtı olmayan guard, guard değildir. |
-| **Başka modül** | İşin kapsamı dışındaki bir modülde düzeltme gerekirse dokunmadan önce sor: "bunu da düzeltelim mi?" (XMC-001). |
-| **Kayıt kodu** | Yeni kayıt türünün görünen kodu `MG-ORG-000042` biçiminde ortak servisten gelir (RCS-001). |
-
-## Portlar
-
-```
-5000 Gateway · 5001 Web · 5056 Auth · 5057 Platform · 5058 DevEnablement
-5059 MDM · 5060 HCM · 5061 CRM · 5062 PPM · 5063 HumanCapital · 5064 TEP · 5065 Procurement
-5066 SupplyChain · 5067 Inventory · 5070 Manufacturing · 5011 PVG · 5004 ESBP/teslim/yükleme
-(bant 5061+ uzatıldı — tam tablo ve notlar AGENTS.md §3 (5062–5064 orada "drift" notunda); sıradaki boş port 5068;
-ağ geçidi testinin bildiği küme: OcelotConfigurationTests.KnownDownstreamPorts)
-```
-
-## Neden bu dosya var
-
-`AGENTS.md` yıllardır "Claude Code tarafından otomatik yüklenir" diyordu ve bu doğru
-değildi. Ekip Antigravity'den Claude Code'a geçtiğinde `.antigravity/` altındaki her şey
-sessizce görünmez oldu — dosyalar duruyordu, kimse okumuyordu.
-
-Bu dosya o boşluğu kapatır. Tek işi seni `AGENTS.md`'ye götürmek; büyümeye başlarsa
-amacını kaybeder.
+- Çekirdek kurallar her zaman bağlayıcıdır. Ayrıntı gerektiğinde `AGENTS.md`'nin ilgili bölümünü (§N), §6.1 kural haritasındaki
+  kural dosyalarını ve `.antigravity/AGENTS-REFERENCE.md`'yi aç.
+- Çakışmada `AGENTS.md` kazanır. Bu dosyaya kural yazılmaz: kural `AGENTS.md`'ye yazılır, ardından
+  `python3 .antigravity/scripts/sync_adapters.py` çalıştırılır.
+- `AGENTS.md`'yi bu dosyaya içe aktarmayın (`@AGENTS.md`): her oturuma ve alt ajana ~9k token ekler (İ5-B ölçümü).

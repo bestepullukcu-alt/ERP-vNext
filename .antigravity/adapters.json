@@ -9,7 +9,66 @@
     ".agents/skills",
     ".agents/rules"
   ],
+  "instruction_budget": {
+    "about": "İ5-B: AGENTS.md Codex ve Antigravity'de tam yüklenir (Antigravity 24000 baytta keser); Claude yalnız Çekirdek bloğunu yükler. CLAUDE.md AGENTS.md'yi içe aktarmaz (her oturuma ve alt ajana ~9k token ekler).",
+    "files": [
+      {
+        "path": "AGENTS.md",
+        "max_bytes": 24000,
+        "warn_bytes": 22000,
+        "required_headings": ["Çekirdek", "1.", "2.", "3.", "4.", "5.", "6.", "6.1", "7.", "8.", "9.", "10.", "11.", "12.", "Module ID Canonicalization Gate (DCP-002)"]
+      },
+      {
+        "path": "CLAUDE.md",
+        "max_bytes": 2000,
+        "forbidden_regex": ["(?m)^\\s*@AGENTS\\.md\\b"]
+      }
+    ],
+    "core": {
+      "source": "AGENTS.md",
+      "required_text": [
+        "Module Pack > Domain Config > AGENTS.md > `.antigravity/` > Archive",
+        "`TenantId` ile sınırlanır",
+        "kiracılar arası erişim 404 döner",
+        "sabit ya da varsayılan kiracı kullanma",
+        "soft delete",
+        "`[HasPermission]`",
+        "UAS-001",
+        "Platform modülü 2 dil (en, tr), kiracı modülü 7 dil (en, tr, fr, es, zh, ar, ru)",
+        "Portların tek kaynağı §3",
+        "`.antigravity/**` değişikliği kullanıcı onayı ister",
+        "`ocelot.json`'u yalnız `integration-agent` değiştirir",
+        "`approved` / `ready-for-dev` module pack",
+        "`@orchestrator` pack oluşturmaz",
+        "MOD kimliği uydurulmaz",
+        "`verify_module_id.py`",
+        "`main`'e commit/push yok",
+        "`git add -A` / `git add .` yok",
+        "Commit, push, PR ve merge yalnız kullanıcının açık onayıyla",
+        "XMC-001",
+        "RCS-001",
+        "sabotaj kanıtı olmayan guard, guard değildir",
+        "`docs-organization`",
+        "§6.1",
+        "`.antigravity/AGENTS-REFERENCE.md`"
+      ]
+    },
+    "link_check": ["AGENTS.md", "CLAUDE.md", ".antigravity/AGENTS-REFERENCE.md"]
+  },
   "items": [
+    {
+      "id": "agents-core",
+      "kind": "core-block",
+      "source": "AGENTS.md",
+      "extract": "core",
+      "targets": [
+        {
+          "tool": "claude-code",
+          "format": "markdown",
+          "path": ".claude/rules/agents-core.md"
+        }
+      ]
+    },
     {
       "id": "l10n-agent",
       "kind": "agent",
